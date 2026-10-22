@@ -2584,3 +2584,184 @@ pub fn ulepszenia_budowa() -> &'static UlepszeniaBudowaFile {
     static TABLE: std::sync::OnceLock<UlepszeniaBudowaFile> = std::sync::OnceLock::new();
     TABLE.get_or_init(|| parse_ulepszenia_budowa().expect("ulepszenia-budowa.json must parse"))
 }
+
+// ---------------------------------------------------------------------------
+// P6.M10 (R-RUSTPORT-P6-M10-KLASTRY-MASY-BRAMKI-Q1): progi i wagi mas ladu, bramek startu
+// i rozmieszczenia srodkow klastrow (clusters.ts:59-1345) oraz punktacja startu gracza
+// (startScoring.ts). Czytane przez `domain/mapgen/cluster_mass.rs`. Wartosci balansowe sa
+// EDYTOWALNE w `data/derived/mapgen-cluster-mass.json` i `data/derived/start-scoring.json`.
+// ---------------------------------------------------------------------------
+
+pub const MAPGEN_CLUSTER_MASS_JSON: &str =
+    include_str!("../../data/derived/mapgen-cluster-mass.json");
+pub const START_SCORING_JSON: &str = include_str!("../../data/derived/start-scoring.json");
+
+/// Wiersz progu pola mapy (`mapSizeLabel`, clusters.ts:152).
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct ClusterMapSizeStep {
+    pub ponizej: f64,
+    pub etykieta: String,
+    pub zrodlo_web: String,
+}
+
+/// Etykieta wyniku po przekroczeniu wszystkich progow.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct ClusterMapSizeFallback {
+    pub etykieta: String,
+    pub zrodlo_web: String,
+}
+
+/// Liczba aktywnych typow wg etykiety rozmiaru (`aktywneTypyFromSize`, clusters.ts:161).
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct ClusterActiveTypes {
+    pub mala: StartValue<i64>,
+    pub srednia: StartValue<i64>,
+    pub duza: StartValue<i64>,
+    pub ogromna: StartValue<i64>,
+    #[serde(rename = "super")]
+    pub super_: StartValue<i64>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct ClusterMapSizeParams {
+    pub progi_pola: Vec<ClusterMapSizeStep>,
+    pub w_przeciwnym_razie: ClusterMapSizeFallback,
+    pub aktywne_typy: ClusterActiveTypes,
+}
+
+/// Progi mas ladu (clusters.ts:212-235).
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct ClusterMassThresholds {
+    pub min_masa_srodka_hex: StartValue<i64>,
+    pub min_masa_spawn_hex: StartValue<i64>,
+    pub min_przestrzen_rozwoju_na_cywilizacje: StartValue<i64>,
+    pub prog_malej_masy_mnoznik: StartValue<i64>,
+    pub promien_przestrzeni_rozwoju: StartValue<i64>,
+    pub frakcja_wyspy_najwiekszej_masy: StartValue<f64>,
+    pub obca_masa_min_bezwzgledny: StartValue<i64>,
+    pub obca_masa_frakcja_najwiekszej: StartValue<f64>,
+}
+
+/// Bramki startu gracza (clusters.ts:240-248, :577).
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct ClusterPlayerStartParams {
+    pub lokalny_lad_frakcja: StartValue<f64>,
+    pub lokalny_lad_promien: StartValue<i64>,
+    pub min_masa_hex: StartValue<i64>,
+    pub min_masa_bezwzgledna_hex: StartValue<i64>,
+    pub min_masa_frakcja_najwiekszej: StartValue<f64>,
+}
+
+/// Wagi i tolerancje wyboru hexu srodka (clusters.ts:584-1004).
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct ClusterPickParams {
+    pub tolerancja_przestrzeni_rozwoju: StartValue<f64>,
+    pub tolerancja_udzialu_lasu: StartValue<f64>,
+    pub tolerancja_odleglosci_od_morza: StartValue<f64>,
+    pub waga_bliskosci_preferowanego: StartValue<f64>,
+    pub waga_losowego_rozstrzygniecia: StartValue<f64>,
+    pub sentinel_brak_srodkow: StartValue<f64>,
+    pub limit_morza_w_wyniku_powyzej_min: StartValue<f64>,
+    pub tolerancja_min_exist_pasma: StartValue<f64>,
+    pub tolerancja_obciazenia_cwiartki_pasma: StartValue<i64>,
+    pub min_liczba_typow_filtra_cwiartek: StartValue<i64>,
+}
+
+/// Parametry rozmieszczenia srodkow (clusters.ts:1009-1344).
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct ClusterPlacementParams {
+    pub balans_prog_dziury_mnoznik: StartValue<f64>,
+    pub balans_zblizenie_do_dziury: StartValue<f64>,
+    pub balans_duza_dziura_mnoznik: StartValue<f64>,
+    pub wymus_cwiartki_max_iteracji: StartValue<i64>,
+    pub wymus_cwiartki_min_centrow: StartValue<i64>,
+    pub wymus_cwiartki_min_obciazenie: StartValue<i64>,
+    pub wyrownanie_min_iteracji: StartValue<i64>,
+    pub wyrownanie_max_iteracji: StartValue<i64>,
+    pub wyrownanie_dzielnik_typow: StartValue<i64>,
+    pub min_centrow_wyrownania: StartValue<i64>,
+    pub straznik_faza2_mnoznik: StartValue<i64>,
+    pub straznik_faza5_mnoznik: StartValue<i64>,
+    pub straznik_faza5b_mnoznik: StartValue<i64>,
+    pub min_twardy_dystans: StartValue<f64>,
+}
+
+/// Plik `mapgen-cluster-mass.json`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct MapgenClusterMassFile {
+    pub meta: serde_json::Value,
+    pub roster_klucze: StartValue<Vec<String>>,
+    pub rozmiar_mapy: ClusterMapSizeParams,
+    pub masy: ClusterMassThresholds,
+    pub start_gracza: ClusterPlayerStartParams,
+    pub wybor_hexu: ClusterPickParams,
+    pub rozmieszczenie: ClusterPlacementParams,
+}
+
+pub fn parse_mapgen_cluster_mass() -> Result<MapgenClusterMassFile, serde_json::Error> {
+    serde_json::from_str(MAPGEN_CLUSTER_MASS_JSON)
+}
+
+/// Tabela progow mas / bramek / rozmieszczenia klastrow (jednorazowy odczyt; blad = panika).
+pub fn mapgen_cluster_mass() -> &'static MapgenClusterMassFile {
+    static TABLE: std::sync::OnceLock<MapgenClusterMassFile> = std::sync::OnceLock::new();
+    TABLE.get_or_init(|| parse_mapgen_cluster_mass().expect("mapgen-cluster-mass.json must parse"))
+}
+
+/// Promien oswietlenia startu wg trudnosci (`startRevealRadiusForDifficulty`).
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct StartRevealRadii {
+    pub domyslny_legacy: StartValue<i64>,
+    pub easy: StartValue<i64>,
+    pub normal: StartValue<i64>,
+    pub hard: StartValue<i64>,
+}
+
+/// Punktacja `scoreCityStartHex` (startScoring.ts:51-95) i waga przestrzeni rozwoju (:131).
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct StartScoringPoints {
+    pub laka_rownina: StartValue<f64>,
+    pub wzgorza: StartValue<f64>,
+    pub pustynia: StartValue<f64>,
+    pub inny_teren: StartValue<f64>,
+    pub rzeka_na_hexie: StartValue<f64>,
+    pub rzeka_u_sasiada: StartValue<f64>,
+    pub promien_okolicy: StartValue<i64>,
+    pub promien_pol_blisko: StartValue<i64>,
+    pub pola_uprawne_blisko: StartValue<f64>,
+    pub pola_uprawne_dalej: StartValue<f64>,
+    pub min_dystans_wzniesien: StartValue<i64>,
+    pub gory_w_okolicy: StartValue<f64>,
+    pub wzgorza_w_okolicy: StartValue<f64>,
+    pub waga_przestrzeni_rozwoju: StartValue<f64>,
+}
+
+/// Plik `start-scoring.json`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct StartScoringFile {
+    pub meta: serde_json::Value,
+    pub promien_oswietlenia: StartRevealRadii,
+    pub punktacja: StartScoringPoints,
+}
+
+pub fn parse_start_scoring() -> Result<StartScoringFile, serde_json::Error> {
+    serde_json::from_str(START_SCORING_JSON)
+}
+
+/// Tabela punktacji startu gracza (jednorazowy odczyt; blad danych = panika z komunikatem).
+pub fn start_scoring() -> &'static StartScoringFile {
+    static TABLE: std::sync::OnceLock<StartScoringFile> = std::sync::OnceLock::new();
+    TABLE.get_or_init(|| parse_start_scoring().expect("start-scoring.json must parse"))
+}

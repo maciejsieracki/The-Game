@@ -1,0 +1,272 @@
+{
+  "meta": {
+    "status": "BOOTSTRAP P6.M10: wartosci startowe przepisane z weba. Zrodlem prawdy do recznego balansu jest TA tabela (edytuj liczby, nie kod).",
+    "pin_web": "edb8fb56",
+    "temat": "R-RUSTPORT-P6-M10-KLASTRY-MASY-BRAMKI-Q1",
+    "uwaga": "Tu sa progi i wagi BALANSU z clusters.ts:59-1345. Strukturalne literaly (0, 1, indeksy, krok petli, 999 jako 'brak istniejacych srodkow' w minExist liczone wprost w kodzie z odnosnikiem) nie sa balansem. 999 jest tu jawnie jako 'sentinel_brak_srodkow', bo wplywa na porownania odleglosci. Parametry wejsciowe wywolan (minDist, marginBrzeg itd.) przekazuje wywolujacy (M11/M12)."
+  },
+  "roster_klucze": {
+    "wartosc": [
+      "grecy",
+      "rzymianie",
+      "chinczycy",
+      "inkowie",
+      "zulusi",
+      "egipt",
+      "sumer",
+      "celtowie",
+      "germanie",
+      "harappa",
+      "hetyci",
+      "slowianie",
+      "babilonia",
+      "asyria",
+      "fenicjanie"
+    ],
+    "zrodlo_web": "gra/src/map/clusters.ts:69-85 (ROSTER_KLUCZE)",
+    "uzycie": "rosterKluczeForStartEpoch: pula kluczy typow cywilizacji (kolejnosc rosteru = kolejnosc wyniku)"
+  },
+  "rozmiar_mapy": {
+    "progi_pola": [
+      {
+        "ponizej": 4800,
+        "etykieta": "mala",
+        "zrodlo_web": "gra/src/map/clusters.ts:154"
+      },
+      {
+        "ponizej": 12000,
+        "etykieta": "srednia",
+        "zrodlo_web": "gra/src/map/clusters.ts:155"
+      },
+      {
+        "ponizej": 25200,
+        "etykieta": "duza",
+        "zrodlo_web": "gra/src/map/clusters.ts:156"
+      },
+      {
+        "ponizej": 100000,
+        "etykieta": "ogromna",
+        "zrodlo_web": "gra/src/map/clusters.ts:157"
+      }
+    ],
+    "w_przeciwnym_razie": {
+      "etykieta": "super",
+      "zrodlo_web": "gra/src/map/clusters.ts:158"
+    },
+    "aktywne_typy": {
+      "mala": {
+        "wartosc": 4,
+        "zrodlo_web": "gra/src/map/clusters.ts:163 (aktywneTypyFromSize)"
+      },
+      "srednia": {
+        "wartosc": 5,
+        "zrodlo_web": "gra/src/map/clusters.ts:163 (aktywneTypyFromSize)"
+      },
+      "duza": {
+        "wartosc": 6,
+        "zrodlo_web": "gra/src/map/clusters.ts:163 (aktywneTypyFromSize)"
+      },
+      "ogromna": {
+        "wartosc": 8,
+        "zrodlo_web": "gra/src/map/clusters.ts:163 (aktywneTypyFromSize)"
+      },
+      "super": {
+        "wartosc": 10,
+        "zrodlo_web": "gra/src/map/clusters.ts:163 (aktywneTypyFromSize)"
+      }
+    }
+  },
+  "masy": {
+    "min_masa_srodka_hex": {
+      "wartosc": 12,
+      "zrodlo_web": "gra/src/map/clusters.ts:212 (MIN_MASS_HEXES_FOR_CENTER)",
+      "uzycie": "groupHabitableMasses: masy mniejsze sa pomijane; qualifyingMassThreshold"
+    },
+    "min_masa_spawn_hex": {
+      "wartosc": 60,
+      "zrodlo_web": "gra/src/map/clusters.ts:217 (MIN_MASS_HEXES_FOR_SPAWN)",
+      "uzycie": "eksportowana stala; w clusters.ts nieuzywana przez inne symbole w zakresie M10"
+    },
+    "min_przestrzen_rozwoju_na_cywilizacje": {
+      "wartosc": 90,
+      "zrodlo_web": "gra/src/map/clusters.ts:222 (MIN_DEVELOPMENT_HEX_PER_CIV)",
+      "uzycie": "massTypeCap: mniej obcych typow niz masa/wartosc"
+    },
+    "prog_malej_masy_mnoznik": {
+      "wartosc": 2,
+      "zrodlo_web": "gra/src/map/clusters.ts:224 (SMALL_MASS_CAP_THRESHOLD = 2 * MIN_DEVELOPMENT_HEX_PER_CIV)",
+      "uzycie": "SMALL_MASS_CAP_THRESHOLD = mnoznik * min_przestrzen_rozwoju_na_cywilizacje; masa ponizej: max 1 typ"
+    },
+    "promien_przestrzeni_rozwoju": {
+      "wartosc": 6,
+      "zrodlo_web": "gra/src/map/clusters.ts:226 (DEVELOPMENT_SPACE_RADIUS)",
+      "uzycie": "developmentSpaceScore: domyslny promien zliczania"
+    },
+    "frakcja_wyspy_najwiekszej_masy": {
+      "wartosc": 0.25,
+      "zrodlo_web": "gra/src/map/clusters.ts:228 (ISLAND_FALLBACK_MASS_FRAC)",
+      "uzycie": "qualifyingMassThreshold (prywatna, nieuzywana w zakresie M10)"
+    },
+    "obca_masa_min_bezwzgledny": {
+      "wartosc": 90,
+      "zrodlo_web": "gra/src/map/clusters.ts:233 (FOREIGN_MASS_MIN_ABSOLUTE)",
+      "uzycie": "foreignSpawnMassThreshold"
+    },
+    "obca_masa_frakcja_najwiekszej": {
+      "wartosc": 0.09,
+      "zrodlo_web": "gra/src/map/clusters.ts:235 (FOREIGN_MASS_FRAC_OF_LARGEST)",
+      "uzycie": "foreignSpawnMassThreshold"
+    }
+  },
+  "start_gracza": {
+    "lokalny_lad_frakcja": {
+      "wartosc": 0.7,
+      "zrodlo_web": "gra/src/map/clusters.ts:240 (LOCAL_LAND_DOMINANCE_FRAC); alias :242 REGION_MASS_DOMINANCE_FRAC",
+      "uzycie": "passesLocalLandGate; filtry pickBestLocalLandSpawn / pickCenterInMass*"
+    },
+    "lokalny_lad_promien": {
+      "wartosc": 3,
+      "zrodlo_web": "gra/src/map/clusters.ts:244 (LOCAL_LAND_DOMINANCE_RADIUS)",
+      "uzycie": "localLandFraction: domyslny promien"
+    },
+    "min_masa_hex": {
+      "wartosc": 25,
+      "zrodlo_web": "gra/src/map/clusters.ts:246 (PLAYER_START_MIN_MASS_HEXES)",
+      "uzycie": "passesPlayerStartMassGate: dolny prog masy przy spelnionym lokalnym lacie"
+    },
+    "min_masa_bezwzgledna_hex": {
+      "wartosc": 30,
+      "zrodlo_web": "gra/src/map/clusters.ts:248 (PLAYER_START_MASS_MIN_ABSOLUTE)",
+      "uzycie": "passesPlayerStartMassGate: dolna granica scaledMin"
+    },
+    "min_masa_frakcja_najwiekszej": {
+      "wartosc": 0.08,
+      "zrodlo_web": "gra/src/map/clusters.ts:578 (Math.floor(largest * 0.08))",
+      "uzycie": "passesPlayerStartMassGate: scaledMin = max(min_masa_bezwzgledna_hex, floor(najwieksza * frakcja))"
+    }
+  },
+  "wybor_hexu": {
+    "tolerancja_przestrzeni_rozwoju": {
+      "wartosc": 1,
+      "zrodlo_web": "gra/src/map/clusters.ts:678,780,905 (x.dev >= top.dev - 1)",
+      "uzycie": "pasmo remisu przy losowym wyborze posrod rownych kandydatow"
+    },
+    "tolerancja_udzialu_lasu": {
+      "wartosc": 0.001,
+      "zrodlo_web": "gra/src/map/clusters.ts:679,780,905 (x.land.ratio >= top.land.ratio - 0.001)",
+      "uzycie": "pasmo remisu: udzial lokalnego lasu"
+    },
+    "tolerancja_odleglosci_od_morza": {
+      "wartosc": 1,
+      "zrodlo_web": "gra/src/map/clusters.ts:680,780 (x.sea <= top.sea + 1)",
+      "uzycie": "pasmo remisu: odleglosc od morza"
+    },
+    "waga_bliskosci_preferowanego": {
+      "wartosc": 0.05,
+      "zrodlo_web": "gra/src/map/clusters.ts:862,889 (hexDistanceAxial(..., preferNear) * 0.05)",
+      "uzycie": "pickCenterInMass / pickCenterInMassWithLandGate: skladnik score"
+    },
+    "waga_losowego_rozstrzygniecia": {
+      "wartosc": 0.01,
+      "zrodlo_web": "gra/src/map/clusters.ts:863 (rand() * 0.01)",
+      "uzycie": "pickCenterInMass: losowy skladnik score"
+    },
+    "sentinel_brak_srodkow": {
+      "wartosc": 999,
+      "zrodlo_web": "gra/src/map/clusters.ts:636,941,1326 (existing.length === 0 ? 999 : ...)",
+      "uzycie": "minExist gdy nie ma jeszcze zadnego srodka"
+    },
+    "limit_morza_w_wyniku_powyzej_min": {
+      "wartosc": 4,
+      "zrodlo_web": "gra/src/map/clusters.ts:968-969 (Math.min(sea, minSeaDist + 4))",
+      "uzycie": "pickCenterInMassSpread: sufit odleglosci od morza liczonej do sortowania"
+    },
+    "tolerancja_min_exist_pasma": {
+      "wartosc": 1,
+      "zrodlo_web": "gra/src/map/clusters.ts:976 (x.minExist < top.minExist - 1)",
+      "uzycie": "pickCenterInMassSpread: pasmo wyboru wokol najlepszego minExist"
+    },
+    "tolerancja_obciazenia_cwiartki_pasma": {
+      "wartosc": 1,
+      "zrodlo_web": "gra/src/map/clusters.ts:979 (quadCounts[x.quad] <= tq + 1)",
+      "uzycie": "pickCenterInMassSpread: pasmo wyboru wokol obciazenia cwiartki"
+    },
+    "min_liczba_typow_filtra_cwiartek": {
+      "wartosc": 5,
+      "zrodlo_web": "gra/src/map/clusters.ts:953,1099,1292 (nNeeded >= 5)",
+      "uzycie": "twardy filtr cwiartek / enforceQuarterSpread / faza 4"
+    }
+  },
+  "rozmieszczenie": {
+    "balans_prog_dziury_mnoznik": {
+      "wartosc": 0.75,
+      "zrodlo_web": "gra/src/map/clusters.ts:1035 (minDist * 0.75)",
+      "uzycie": "balanceClusterSpread: przerwij gdy najdalsza dziura blizej niz minDist * wartosc"
+    },
+    "balans_zblizenie_do_dziury": {
+      "wartosc": 2,
+      "zrodlo_web": "gra/src/map/clusters.ts:1071 (towardHole < currentToward - 2)",
+      "uzycie": "balanceClusterSpread: wymagana poprawa odleglosci do dziury"
+    },
+    "balans_duza_dziura_mnoznik": {
+      "wartosc": 1.25,
+      "zrodlo_web": "gra/src/map/clusters.ts:1072 (minCenterDist > minDist * 1.25)",
+      "uzycie": "balanceClusterSpread: przesun gdy dziura wieksza niz minDist * wartosc"
+    },
+    "wymus_cwiartki_max_iteracji": {
+      "wartosc": 10,
+      "zrodlo_web": "gra/src/map/clusters.ts:1106 (iter < 10)",
+      "uzycie": "enforceQuarterSpreadOnCenters: limit iteracji"
+    },
+    "wymus_cwiartki_min_centrow": {
+      "wartosc": 3,
+      "zrodlo_web": "gra/src/map/clusters.ts:1099,1292 (centers.length < 3)",
+      "uzycie": "enforceQuarterSpreadOnCenters / faza 4: minimalna liczba srodkow"
+    },
+    "wymus_cwiartki_min_obciazenie": {
+      "wartosc": 1,
+      "zrodlo_web": "gra/src/map/clusters.ts:1120 (maxQuadLoad <= 1)",
+      "uzycie": "enforceQuarterSpreadOnCenters: nie przenos z cwiartki o obciazeniu <= wartosc"
+    },
+    "wyrownanie_min_iteracji": {
+      "wartosc": 2,
+      "zrodlo_web": "gra/src/map/clusters.ts:1283 (Math.max(2, ...)); domyslne maxIterations :1019",
+      "uzycie": "faza 3: dolna granica liczby iteracji wyrownania"
+    },
+    "wyrownanie_max_iteracji": {
+      "wartosc": 6,
+      "zrodlo_web": "gra/src/map/clusters.ts:1283 (Math.min(6, ...))",
+      "uzycie": "faza 3: gorna granica liczby iteracji wyrownania"
+    },
+    "wyrownanie_dzielnik_typow": {
+      "wartosc": 2,
+      "zrodlo_web": "gra/src/map/clusters.ts:1283 (Math.ceil(nNeeded / 2))",
+      "uzycie": "faza 3: iteracje = ceil(nNeeded / dzielnik)"
+    },
+    "min_centrow_wyrownania": {
+      "wartosc": 2,
+      "zrodlo_web": "gra/src/map/clusters.ts:1022,1282 (centers.length < 2 / >= 2)",
+      "uzycie": "balanceClusterSpread / faza 3: minimalna liczba srodkow"
+    },
+    "straznik_faza2_mnoznik": {
+      "wartosc": 6,
+      "zrodlo_web": "gra/src/map/clusters.ts:1253 (guard++ < nNeeded * 6)",
+      "uzycie": "faza 2: limit prob = nNeeded * wartosc"
+    },
+    "straznik_faza5_mnoznik": {
+      "wartosc": 12,
+      "zrodlo_web": "gra/src/map/clusters.ts:1303 (guard++ < nNeeded * 12)",
+      "uzycie": "faza 5: limit prob = nNeeded * wartosc"
+    },
+    "straznik_faza5b_mnoznik": {
+      "wartosc": 16,
+      "zrodlo_web": "gra/src/map/clusters.ts:1319 (guard++ < nNeeded * 16)",
+      "uzycie": "faza 5b: limit prob = nNeeded * wartosc"
+    },
+    "min_twardy_dystans": {
+      "wartosc": 1,
+      "zrodlo_web": "gra/src/map/clusters.ts:1169 (Math.max(1, minDistBase))",
+      "uzycie": "hardMin: dolna granica minimalnego dystansu srodkow"
+    }
+  }
+}

@@ -1,0 +1,84 @@
+{
+  "meta": {
+    "status": "BOOTSTRAP P6.M10: wartosci startowe przepisane z weba. Zrodlem prawdy do recznego balansu jest TA tabela (edytuj liczby, nie kod).",
+    "pin_web": "edb8fb56",
+    "temat": "R-RUSTPORT-P6-M10-KLASTRY-MASY-BRAMKI-Q1",
+    "uwaga": "Punktacja preferowanego hexu startu gracza i promien oswietlenia startu (gra/src/map/startScoring.ts). Promien oswietlenia wg trudnosci jest uzywany przez main.ts; Rust is_hex_in_start_reveal przyjmuje promien jako parametr."
+  },
+  "promien_oswietlenia": {
+    "domyslny_legacy": {
+      "wartosc": 5,
+      "zrodlo_web": "gra/src/map/startScoring.ts:14 (START_REVEAL_RADIUS)"
+    },
+    "easy": {
+      "wartosc": 10,
+      "zrodlo_web": "gra/src/map/startScoring.ts:19"
+    },
+    "normal": {
+      "wartosc": 8,
+      "zrodlo_web": "gra/src/map/startScoring.ts:21 (default)"
+    },
+    "hard": {
+      "wartosc": 5,
+      "zrodlo_web": "gra/src/map/startScoring.ts:20"
+    }
+  },
+  "punktacja": {
+    "laka_rownina": {
+      "wartosc": 6,
+      "zrodlo_web": "gra/src/map/startScoring.ts:60"
+    },
+    "wzgorza": {
+      "wartosc": 3,
+      "zrodlo_web": "gra/src/map/startScoring.ts:63"
+    },
+    "pustynia": {
+      "wartosc": -4,
+      "zrodlo_web": "gra/src/map/startScoring.ts:66"
+    },
+    "inny_teren": {
+      "wartosc": 2,
+      "zrodlo_web": "gra/src/map/startScoring.ts:69 (default)"
+    },
+    "rzeka_na_hexie": {
+      "wartosc": 14,
+      "zrodlo_web": "gra/src/map/startScoring.ts:72"
+    },
+    "rzeka_u_sasiada": {
+      "wartosc": 8,
+      "zrodlo_web": "gra/src/map/startScoring.ts:78"
+    },
+    "promien_okolicy": {
+      "wartosc": 4,
+      "zrodlo_web": "gra/src/map/startScoring.ts:80-83 (dq, dr, dist w -4..4)"
+    },
+    "promien_pol_blisko": {
+      "wartosc": 2,
+      "zrodlo_web": "gra/src/map/startScoring.ts:86 (dist <= 2)"
+    },
+    "pola_uprawne_blisko": {
+      "wartosc": 2,
+      "zrodlo_web": "gra/src/map/startScoring.ts:86"
+    },
+    "pola_uprawne_dalej": {
+      "wartosc": 0.5,
+      "zrodlo_web": "gra/src/map/startScoring.ts:86"
+    },
+    "min_dystans_wzniesien": {
+      "wartosc": 2,
+      "zrodlo_web": "gra/src/map/startScoring.ts:87 (dist >= 2)"
+    },
+    "gory_w_okolicy": {
+      "wartosc": 3,
+      "zrodlo_web": "gra/src/map/startScoring.ts:88"
+    },
+    "wzgorza_w_okolicy": {
+      "wartosc": 1.5,
+      "zrodlo_web": "gra/src/map/startScoring.ts:89"
+    },
+    "waga_przestrzeni_rozwoju": {
+      "wartosc": 0.05,
+      "zrodlo_web": "gra/src/map/startScoring.ts:131 (developmentSpaceScore * 0.05)"
+    }
+  }
+}
