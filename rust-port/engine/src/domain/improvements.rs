@@ -609,7 +609,7 @@ impl ImprovementCatalog {
         })
     }
 
-    /// Web `IMPROVEMENTS[key]` (bez prototypu obiektu JS, zob. `known_divergence` w dokumencie).
+    /// Web `IMPROVEMENTS[key]` (wlasne wiersze pliku; nazwy prototypu JS obsluguje `normalize_improvement_key`).
     pub fn row(&self, key: &str) -> Option<&CatalogRow> {
         self.rows
             .iter()
@@ -688,23 +688,29 @@ pub fn improvement_keys() -> Vec<String> {
     improvement_catalog().keys()
 }
 
-/// Web `normalizeImprovementKey` (`terrain-improvements.ts:109`). Roznica wobec weba (JS):
-/// klucze prototypu obiektu (`constructor`, `toString`, ...) web przepuszcza, port zwraca `None`.
+/// Web `normalizeImprovementKey` (`terrain-improvements.ts:109`). `IMPROVEMENTS` jest zwyklym
+/// obiektem JS, wiec `IMPROVEMENTS[klucz]` jest prawdziwe tez dla nazw z `Object.prototype`
+/// (`constructor`, `toString`, ...): takie klucze przechodza, tak jak w webie
+/// (tabela `klucze_prototypu_js` w `ulepszenia-reguly.json`).
 pub fn normalize_improvement_key(raw: Option<&str>) -> Option<String> {
     let raw = raw.filter(|raw| !raw.is_empty())?;
     if raw == "brak" {
         return None;
     }
     let catalog = improvement_catalog();
-    let key = rules()
+    let rules = rules();
+    let truthy = |name: &str| {
+        catalog.row(name).is_some() || rules.klucze_prototypu_js.klucze.iter().any(|k| k == name)
+    };
+    let key = rules
         .aliasy_legacy
         .aliasy
         .iter()
         .find(|alias| alias.stary == raw)
         .map_or(raw, |alias| alias.nowy.as_str());
-    if catalog.row(key).is_some() {
+    if truthy(key) {
         Some(key.to_owned())
-    } else if catalog.row(raw).is_some() {
+    } else if truthy(raw) {
         Some(raw.to_owned())
     } else {
         None

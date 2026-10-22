@@ -7,7 +7,7 @@ mod common;
 
 use std::collections::BTreeMap;
 
-use civ_engine::domain::porzadek::{
+use civ_engine::domain::types::porzadek::{
     compute_order, evaluate_order, fallback_order_params, happiness_breakdown, load_order_params,
     order_effects, order_effects_to_yield_mults, order_tier, pick_revolt_migration_target,
     society_params, OrderEffects, OrderInputs, OrderParams, OrderTier, RevoltMigrationCity,

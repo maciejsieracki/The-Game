@@ -285,14 +285,6 @@ for (const k of KN) {
     tc('terrainImprovementEraForKey').push({ key: enc(k), out: enc(ti.terrainImprovementEraForKey(k)) });
   }
 }
-// prototypowe klucze obiektu: normalizeImprovementKey zwraca je w webie (osobliwosc JS), Rust zwraca None
-const protoKeys = ['constructor', 'toString', 'hasOwnProperty', '__proto__'];
-const knownDivergence = protoKeys.map((k) => ({
-  key: k,
-  web_normalize: enc(ti.normalizeImprovementKey(k)),
-  web_improvementKeysForHex: enc(ti.improvementKeysForHex({ ulepszenie: k })),
-}));
-
 const CIVS = [undefined, null, '', ' ', 'inkowie', 'INKOWIE', ' Inkowie ', 'chinczycy', 'rzymianie'];
 for (const k of K) for (const c of CIVS) {
   tc('isImprovementAllowedForCiv').push({ key: k, civ: enc(c), out: ti.isImprovementAllowedForCiv(k, c) });
@@ -407,6 +399,32 @@ for (const k of K) {
   }
 }
 
+// Klucze prototypu obiektu JS (IMPROVEMENTS jest zwyklym obiektem): web je przepuszcza, port odtwarza to
+// tabela klucze_prototypu_js. Osobne przypadki (bez rnd(), by nie zmieniac pozostalych wektorow).
+const PROTO_KEYS = Object.getOwnPropertyNames(Object.prototype);
+for (const k of PROTO_KEYS) {
+  tc('normalizeImprovementKey').push({ key: enc(k), out: enc(ti.normalizeImprovementKey(k)) });
+  tc('improvementBonusForKey').push({ key: k, out: enc(ti.improvementBonusForKey(k)) });
+  tc('terrainImprovementEraForKey').push({ key: k, out: enc(ti.terrainImprovementEraForKey(k)) });
+  tc('improvementDisplayName').push({ key: k, out: enc(ti.improvementDisplayName(k)) });
+  tc('isLivestockImprovementKey').push({ key: k, out: ti.isLivestockImprovementKey(k) });
+  tc('improvementAllowedCivs').push({ key: k, out: enc(ti.improvementAllowedCivs(k)) });
+  tc('isImprovementAllowedForCiv').push({ key: k, civ: enc('inkowie'), out: ti.isImprovementAllowedForCiv(k, 'inkowie') });
+  tc('territoryResourceYieldForImprovement').push({ key: k, zloze: enc(undefined), era: enc(undefined), out: enc(ti.territoryResourceYieldForImprovement(k, undefined, undefined)) });
+  tc('improvementHidesDepositOnHex').push({ key: k, hex: enc({ nakladka: 'zloze_gliny', zloze: 'glina' }), out: ti.improvementHidesDepositOnHex(k, { nakladka: 'zloze_gliny', zloze: 'glina' }) });
+  const y0 = { zywnosc: 2, praca: 1, handel: 3, drewno: 4, kamien: 5, glina: 6, ruda: 7, ruda_zelaza: 8 };
+  const y = { ...y0 };
+  ti.applyImprovementBonus(y, k);
+  tc('applyImprovementBonus').push({ key: enc(k), yield: y0, out: enc(y) });
+  for (const h of [{ ulepszenie: k }, { ulepszenia: [k, 'farma', k, 'pastwisko'], nakladka: 'zloze_bydla' }, { ulepszenia: [], ulepszenie: k }]) {
+    tc('improvementKeysForHex').push({ hex: enc(h), out: enc(ti.improvementKeysForHex(h)) });
+    tc('hexHasCoveringTerrainImprovement').push({ hex: enc(h), out: ti.hexHasCoveringTerrainImprovement(h) });
+    tc('hexSuppressesDepositOverlay').push({ hex: enc(h), extra: [k], out: ti.hexSuppressesDepositOverlay(h, [k]) });
+  }
+  tc('foodPotentialForHex').push({ teren: 'laka', nakladka: 'brak', keys: [k], out: enc(ti.foodPotentialForHex('laka', 'brak', [k])) });
+  tc('oreYieldFromImprovements').push({ keys: [k, 'kopalnia_miedzi'], zloze: enc(undefined), out: enc(ti.oreYieldFromImprovements([k, 'kopalnia_miedzi'], undefined)) });
+}
+
 const tiOut = {
   meta: { pin_web: 'edb8fb56', plik: 'gra/src/game/terrain-improvements.ts', generator: 'gen-p623-vectors.mjs' },
   constants: enc({
@@ -421,7 +439,7 @@ const tiOut = {
     RESOURCE_UPKEEP_IMPROVEMENT_KEYS: [...ti.RESOURCE_UPKEEP_IMPROVEMENT_KEYS],
   }),
   json_keys_in_order: Object.keys(improvementsJson),
-  known_divergence_prototype_keys: knownDivergence,
+  proto_keys: PROTO_KEYS,
   cases: tiCases,
 };
 writeFileSync(join(outDir, 'improvements.json'), JSON.stringify(tiOut));

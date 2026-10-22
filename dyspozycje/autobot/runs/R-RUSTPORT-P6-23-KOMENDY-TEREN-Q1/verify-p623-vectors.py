@@ -291,13 +291,26 @@ def row_of(key):
     return ROWS.get(key) if isinstance(key, str) else None
 
 
+# Wlasne nazwy wlasciwosci Object.prototype wg ECMAScript (w tym Annex B) - lista NIEZALEZNA od Node/Rust.
+JS_PROTO_KEYS = {
+    "constructor", "__defineGetter__", "__defineSetter__", "hasOwnProperty", "__lookupGetter__",
+    "__lookupSetter__", "isPrototypeOf", "propertyIsEnumerable", "toString", "valueOf", "__proto__",
+    "toLocaleString",
+}
+
+
+def js_truthy_lookup(name):
+    # IMPROVEMENTS[name] w JS: wiersz pliku albo wlasciwosc prototypu obiektu (funkcja/obiekt = prawda)
+    return name in ROWS or name in JS_PROTO_KEYS
+
+
 def normalize(raw):
     if not raw or raw == "brak":
         return None
     key = ts_alias.get(raw, raw)
-    if key in ROWS:
+    if js_truthy_lookup(key):
         return key
-    return raw if raw in ROWS else None
+    return raw if js_truthy_lookup(raw) else None
 
 
 def bonus_for(key):
@@ -417,6 +430,8 @@ check("ti.RESOURCE_UPKEEP", [k for k in KEYS if ROWS[k].get("typ") != "wycinka"]
 check("ti.ROAD", ts_road_keys, constants["ROAD_IMPROVEMENT_KEYS"], "drogi")
 check("ti.FARMA", ROWS["farma"]["bonus"].get("zywnosc", ts_farma_default), constants["FARMA_POTENTIAL_FOOD_BONUS"], "farma")
 
+check("ti.proto_keys_vector_vs_ecma", sorted(ti_v["proto_keys"]), sorted(JS_PROTO_KEYS), "Object.prototype")
+check("ti.proto_keys_rust_table", sorted(ul["klucze_prototypu_js"]["klucze"]), sorted(JS_PROTO_KEYS), "tabela Rust")
 for c in CASES["normalizeImprovementKey"]:
     check("ti.normalizeImprovementKey", normalize(c.get("key")), c.get("out"), c)
 for c in CASES["improvementBonusForKey"]:

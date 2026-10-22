@@ -242,27 +242,34 @@ fn normalize_and_lookup_functions_match_web() {
 }
 
 #[test]
-fn prototype_keys_are_a_documented_divergence_from_web() {
+fn prototype_keys_pass_normalize_like_in_web() {
+    // Web: IMPROVEMENTS jest obiektem JS, wiec nazwy z Object.prototype przechodza przez
+    // normalizeImprovementKey; wektory (cases) obejmuja je we wszystkich funkcjach, a tu
+    // sprawdzamy, ze tabela portu pokrywa dokladnie liste z uruchomionego Node.
     let root = root();
-    for row in root["known_divergence_prototype_keys"]
-        .as_array()
-        .expect("rows")
-    {
-        let key = row["key"].as_str().expect("key");
-        // Web (JS) przepuszcza klucze prototypu obiektu przez normalizeImprovementKey ...
-        assert_eq!(row["web_normalize"].as_str(), Some(key));
-        // ... a port nie ma prototypu: brak wiersza w katalogu = None (swiadoma roznica).
-        assert_eq!(normalize_improvement_key(Some(key)), None);
+    let proto: Vec<String> = string_list(&root["proto_keys"]);
+    assert!(!proto.is_empty());
+    for key in &proto {
+        assert_eq!(
+            normalize_improvement_key(Some(key)).as_deref(),
+            Some(key.as_str()),
+            "normalizeImprovementKey {key}"
+        );
         let hex = HexLike {
-            ulepszenie: Some(key.to_owned()),
+            ulepszenie: Some(key.clone()),
             ..HexLike::default()
         };
-        assert_eq!(
-            string_list(&row["web_improvementKeysForHex"]),
-            vec![key.to_owned()]
-        );
-        assert!(improvement_keys_for_hex(&hex).is_empty());
+        assert_eq!(improvement_keys_for_hex(&hex), vec![key.clone()]);
     }
+    let cases_for_proto = cases(&root, "normalizeImprovementKey")
+        .iter()
+        .filter(|case| {
+            case["key"]
+                .as_str()
+                .is_some_and(|key| proto.iter().any(|p| p == key))
+        })
+        .count();
+    assert!(cases_for_proto >= proto.len());
 }
 
 #[test]

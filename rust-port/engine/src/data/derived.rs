@@ -1280,6 +1280,14 @@ pub struct TypWycinka {
     pub typ: String,
 }
 
+/// Nazwy wlasciwosci `Object.prototype` (efekt obiektu JS `IMPROVEMENTS`).
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct KluczePrototypuJs {
+    pub zrodlo_web: String,
+    pub klucze: Vec<String>,
+}
+
 /// Plik `ulepszenia-reguly.json`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -1290,6 +1298,7 @@ pub struct UlepszeniaRegulyFile {
     pub terytorium: TerytoriumReguly,
     pub ruda: RudaReguly,
     pub aliasy_legacy: AliasyLegacy,
+    pub klucze_prototypu_js: KluczePrototypuJs,
     pub migracja_kopalni: MigracjaKopalni,
     pub hodowla: HodowlaReguly,
     pub zywnosc: ZywnoscReguly,

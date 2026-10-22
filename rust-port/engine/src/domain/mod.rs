@@ -26,7 +26,7 @@ pub mod terrain;
 
 pub mod trade;
 pub mod turn_economy;
-mod types;
+pub mod types;
 pub mod unit_epoch;
 
 pub use error::EngineError;
@@ -51,7 +51,6 @@ pub use session::{GameState, Turn};
 pub use state::{
     CanonicalState, CityState, CivilizationState, GameStateDto, MapState, TurnState, UnitState,
 };
-pub use types::porzadek;
 pub use types::{
     CityDto, CivilizationDto, Difficulty, MapDto, PositionDto, TerrainDto, TileDto, TurnDto,
     UnitDto, UnitKindDto, ValidationError,

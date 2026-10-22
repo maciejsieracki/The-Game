@@ -46,6 +46,10 @@
     "zrodlo_web": "terrain-improvements.ts:32-34 (LEGACY_KEY_ALIASES)",
     "aliasy": [{ "stary": "pastwisko", "nowy": "bydlo" }]
   },
+  "klucze_prototypu_js": {
+    "zrodlo_web": "terrain-improvements.ts:29,109-115 (IMPROVEMENTS to zwykly obiekt JS: IMPROVEMENTS[klucz] dla nazw wlasciwosci Object.prototype jest prawdziwe, wiec normalizeImprovementKey zwraca taki klucz); lista = Object.getOwnPropertyNames(Object.prototype) w Node 22",
+    "klucze": ["constructor", "__defineGetter__", "__defineSetter__", "hasOwnProperty", "__lookupGetter__", "__lookupSetter__", "isPrototypeOf", "propertyIsEnumerable", "toString", "valueOf", "__proto__", "toLocaleString"]
+  },
   "migracja_kopalni": {
     "zrodlo_web": "terrain-improvements.ts:40-51 (migrateLegacyKopalniaKey)",
     "klucz_legacy": "kopalnia",
