@@ -850,7 +850,9 @@ pub fn start_llama_params() -> &'static StartLlamaParamsFile {
 pub fn start_braz_access() -> &'static StartBrazAccessFile {
     static TABLE: std::sync::OnceLock<StartBrazAccessFile> = std::sync::OnceLock::new();
     TABLE.get_or_init(|| parse_start_braz_access().expect("start-braz-access.json must parse"))
+}
 
+// ---------------------------------------------------------------------------
 // P6.1D: tabele bonusow cywilizacji i pul nazw miast (civ-bonuses.ts, city-names-pool.ts).
 // Pliki `data/derived/civ-bonus-*.json` sa EDYTOWALNE; generator: `gen-p61d-tables.mjs`
 // w runie R-RUSTPORT-P6-1D-CIV-BONUSY-NAZWY-Q1.
