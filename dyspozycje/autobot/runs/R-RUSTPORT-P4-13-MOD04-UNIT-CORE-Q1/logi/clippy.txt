@@ -1,0 +1,3 @@
+    Checking civ-renderer v0.1.0 (<repo>/rust-port/renderer)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 1.68s
+EXIT=0
