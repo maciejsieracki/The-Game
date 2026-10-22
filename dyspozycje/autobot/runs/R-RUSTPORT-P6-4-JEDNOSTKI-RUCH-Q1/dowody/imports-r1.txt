@@ -1,0 +1,15 @@
+embarkation.ts:16:import type { GameMap } from '../types/map';
+embarkation.ts:17:import type { Hex } from '../types/hex';
+embarkation.ts:18:import type { RuntimeUnit } from '../units/setup';
+embarkation.ts:19:import { keyOf, isWaterTerrain, embarkMoveCost, terrainMoveCost } from '../units/setup';
+embarkation.ts:20:import { TerenBazowy } from '../types/hex';
+embarkation.ts:21:import type { CivBonusEntry } from './civ-bonuses';
+embarkation.ts:22:import { civMovementMultiplier } from './civ-bonuses';
+planned-march.ts:6:import type { GameMap } from '../types/map';
+planned-march.ts:7:import type { Hex } from '../types/hex';
+planned-march.ts:8:import { computePath, pathCost, keyOf, terrainMoveCost, type RuntimeUnit } from '../units/setup';
+rally-point.ts:9:import type { RuntimeUnit } from '../units/setup';
+rally-point.ts:10:import { stackGroupIdOf } from './armyMerge';
+scout-auto-explore.ts:7:import type { GameMap } from '../types/map';
+scout-auto-explore.ts:8:import {
+scout-auto-explore.ts:15:import { addExplored, computeVisibleAt, type UnitSightResolver } from './visibility';

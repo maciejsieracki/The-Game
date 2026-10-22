@@ -1,0 +1,57 @@
+{
+  "meta": {
+    "status": "P6.4 (R-RUSTPORT-P6-4-JEDNOSTKI-RUCH-Q1): edytowalne stale i teksty ruchu jednostek (embarkacja, wyszukiwanie trasy, zaplanowany marsz, zwiad). Kod Rust (domain/pathfinding.rs, modul ruch_jednostek) nie zawiera tych wartosci.",
+    "pin_web": "edb8fb56",
+    "wygenerowano": "R-RUSTPORT-P6-4-JEDNOSTKI-RUCH-Q1 runda 1: wartosci przepisane z TS; zgodnosc z webem sprawdzona wektorami (tests/p6_4_vectors/*.json) i verify-p64-vectors.py (regex po zrodlach TS)."
+  },
+  "embarkacja": {
+    "zrodlo_web": "gra/src/game/embarkation.ts:25 (EMBARK_TECH), :28 (EMBARK_DEFENSE_MULT), :41 (kategoria galera), :61 (Math.max(1, mult): dolna granica mnoznika); gra/src/units/setup.ts:683 (EMBARKED_WATER_MOVE_COST)",
+    "technologia": "Żegluga",
+    "mnoznik_obrony": 0.5,
+    "koszt_wody": 1,
+    "min_mnoznik_ruchu": 1,
+    "kategoria_okretu": "galera"
+  },
+  "teren": {
+    "zrodlo_web": "gra/src/units/setup.ts:628 (RIVER_HEX_MOVE_COST), :457 i :460 (prog nieprzejezdnosci w configureTerrainMovement: >= 90), :609-616 (HEX_NEIGHBORS: kolejnosc sasiadow; ta sama kolejnosc w embarkation.ts:106-108 i scout-auto-explore.ts:17-19), gra/src/map/road-movement.ts:73-84 (nazwy ulepszen drogi)",
+    "koszt_rzeki": 1,
+    "prog_nieprzejezdny": 90,
+    "ulepszenie_droga": "droga",
+    "ulepszenie_droga_brukowana": "droga_brukowana",
+    "sasiedzi": [[1, 0], [-1, 0], [0, 1], [0, -1], [1, -1], [-1, 1]]
+  },
+  "trasa": {
+    "zrodlo_web": "gra/src/units/setup.ts:882 (PATH_SEARCH_RADIUS_BUFFER), :904 (promien = mnoznik x dystans + bufor), :995 (koszt nieprzejezdnego celu)",
+    "mnoznik_promienia": 2,
+    "bufor_promienia": 12,
+    "koszt_celu_nieprzejezdnego": 1
+  },
+  "marsz": {
+    "zrodlo_web": "gra/src/game/planned-march.ts:182-208 (truncatePathToBudget, MIN-MOVE), :237 (Math.max(1, perTurnMove)), :288-340, :343-421; gra/src/units/setup.ts:827 (MIN-MOVE w computeReachable)",
+    "min_budzet_kroku": 1,
+    "min_tury_ruchu": 1,
+    "teksty": {
+      "brak_ruchu": "brak punktów ruchu",
+      "brak_trasy": "brak trasy do celu",
+      "zablokowany_heks": "zablokowany heks na trasie",
+      "obce_miasto": "obce miasto na trasie",
+      "mgla": "granica mgły — czeka na odkrycie"
+    }
+  },
+  "zwiad": {
+    "zrodlo_web": "gra/src/game/scout-auto-explore.ts:21 (SCOUT_TYPE_ID), :23-25 (kategoria zwiadowca), :64 i :68 (punktacja legacy), :85 i :232 (minimalny ruch do kroku), :165-170 (szum i tolerancja losowania), :242 (limit krokow)",
+    "typ_jednostki": "Zwiadowca",
+    "kategoria": "zwiadowca",
+    "punkty_nieodkryty_w_zasiegu": 2,
+    "punkty_sasiad_ukryty": 3,
+    "szum_losowania": 0.001,
+    "tolerancja_remisu": 0.0005,
+    "limit_krokow": 96,
+    "min_ruch_do_kroku": 1
+  },
+  "stos": {
+    "zrodlo_web": "gra/src/game/armyMerge.ts:56-61 (stackGroupIdOf: separator '|' i przyrostek '|g')",
+    "separator": "|",
+    "przyrostek_garnizon": "|g"
+  }
+}
