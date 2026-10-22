@@ -46,7 +46,7 @@ export type ProposedCommand =
   | { kind: 'city_set_paused'; owner: PlayerId; city: CityId; paused: boolean }
   | { kind: 'recruit_cancel'; owner: PlayerId; city: CityId; index: number }
   | { kind: 'set_trade_split'; owner: PlayerId; city: CityId | null; raw: Readonly<Record<string, number>> }
-  | { kind: 'set_labor_split'; owner: PlayerId; city: CityId | null; rawPercent: number }
+  | { kind: 'set_labor_split'; owner: PlayerId; city: CityId | null; raw_percent: number }
   | { kind: 'set_ration_level'; owner: PlayerId; city: CityId | null; level: number }
   | { kind: 'list_saves' }
   | { kind: 'save_game'; slot: SlotId; label: string }

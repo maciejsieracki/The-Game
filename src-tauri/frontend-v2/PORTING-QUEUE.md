@@ -1,8 +1,8 @@
 # PORTING-QUEUE — moduły `gra/src/ui/**` NIE skopiowane w P5.1
 
-**Temat:** `R-RUSTPORT-P5-1-UI-SHELL-SKELETON-Q1` (runda 1/5) · **Pin web:** `edb8fb56` · **Źródło klasyfikacji:** `P5-0-VIEWMODEL-CATALOG.md` §3 (49 modułów) + graf importów tego tematu (`dyspozycje/autobot/runs/R-RUSTPORT-P5-1-UI-SHELL-SKELETON-Q1/r1-pomiar/`).
+**Temat:** `R-RUSTPORT-P5-1-UI-SHELL-SKELETON-Q1` (runda 1/5, akapit „Reguły wpisane bez importu” uzupełniony w rundzie 2/5) · **Pin web:** `edb8fb56` · **Źródło klasyfikacji:** `P5-0-VIEWMODEL-CATALOG.md` §3 (49 modułów) + graf importów tego tematu (`dyspozycje/autobot/runs/R-RUSTPORT-P5-1-UI-SHELL-SKELETON-Q1/r1-pomiar/`).
 
-Reguła nadrzędna **P5.13**: UI nie liczy reguł gry. Moduł trafia do `frontend-v2/src/ui/` dopiero, gdy każdy jego import logiki (`game|map|units|battle|render|data`, `three`, a także `types|audio|perf` i `buildInfo` spoza `ui/`) zostanie zastąpiony polem DTO (`src/viewmodel/types.ts`) albo komendą kontrolera (`src/controller/`), a `npm run check` daje 0 trafień.
+Reguła nadrzędna **P5.13**: UI nie liczy reguł gry. Moduł trafia do `frontend-v2/src/ui/` dopiero, gdy każdy jego import logiki (`game|map|units|battle|render|data`, `three`, a także `types|audio|perf|util` i `buildInfo` spoza `ui/` — po rundzie 2 wszystkie te formy łapie `npm run check`) zostanie zastąpiony polem DTO (`src/viewmodel/types.ts`) albo komendą kontrolera (`src/controller/`), a `npm run check` daje 0 trafień.
 
 ## Skład (117 plików `.ts` w `gra/src/ui` na pinie)
 
@@ -20,7 +20,22 @@ Kolumny: **Poziom** = długość najdłuższego łańcucha zależności UI z kol
 
 **Wskazówka planistyczna (nie decyzja):** `icons/brandAssets.ts` (poz. 1) blokuje bezpośrednio 46 modułów kolejki; jego jedyna logika to `categoryOf` (`units/**`) i dane (`src/data/**`) → `StaticCatalogDto.unitCategory`. Przeniesienie go jako pierwszego odblokowuje większość modułów PRZECHODNICH (przy D-UI-4: dane statyczne tylko jako ten sam plik). Zasoby, które wnosi: `icons/brand/**` (JSON/CSS/SVG przez `import.meta.glob('./brand/**/*.svg')`, `brandAssets.ts:23`); `leaderPortraits.ts:172` wnosi `gra/src/assets/portrety/*.jpg`; `mainMenu.ts`/`newGameFlow.ts` — `ui/assets/hero/*.png`.
 
-**Reguły wpisane bez importu** (brama ich nie wykrywa, przegląd ręczny przy porcie — P5-0 §9 pkt 3): `siegeMapPanel.ts:219-223`, `cityPanel.ts:3228-3229`, `cityPanel.ts:645-720`. Dodatkowo w zbiorze CZYSTYM skopiowanym w P5.1: `scienceHubSnapshotLogic.ts` (`buildHubTechEntries`, blokada wg prereq — `P5-1-UI-SHELL-SKELETON.md` §6 pkt 3).
+**Reguły wpisane bez importu** (brama ich nie wykrywa; P5-0 §9 pkt 3).
+
+- W kolejce (z P5-0, przegląd ręczny przy porcie każdego modułu): `siegeMapPanel.ts:219-223`, `cityPanel.ts:3228-3229`, `cityPanel.ts:645-720`. Pozostałe moduły kolejki: `NIE_ZMIERZONO`.
+- W zbiorze CZYSTYM skopiowanym w P5.1 (runda 2: pełny przegląd 34 plików linia po linii, `P5-1-UI-SHELL-SKELETON.md` §6 pkt 5). Skopiowane 1:1 i nieużywane w `frontend-v2`. Nie wolno ich wpiąć do kodu P5.x bez zastąpienia polem DTO:
+
+| Moduł | Wynik | Plik:linia | Docelowe DTO |
+|---|---|---|---|
+| `aiCivPicker.ts` | REGUŁA | `:22-25` limit = `civ_types_count − 1`; `:31-36` kandydaci; `:49-65` sanityzacja wyboru; `:74-76` blokada karty | `NewGameOptionsDto` (proponowane `aiCivCap`, `aiCivCandidateIds`); sanityzacja w silniku przy `create_session` |
+| `scienceHubSnapshotLogic.ts` | REGUŁA | `:56-70` epoka gracza → etykieta; `:89-134` lista „Możesz wybrać” i podgląd 4 zablokowanych | `ResearchViewDto.techs[].state`/`effectiveCost` (+ proponowane `hubEpoch`) |
+| `mapUnitCursor.ts` | REGUŁA | `:75-116` legalność ataku/wejścia/scalenia/ruchu pod kursorem | proponowane `HexContextDto.cursorAction` (lub `HoverChanged`, P4-5B) |
+| `empireMiastaTable.ts` | GRANICZNY | `:74-87` suma surowców; `:119-143` sumy i średnia wzrostu % (`:138`) | proponowane `EmpireDetailDto.citiesSummary` |
+| `sideListHud.css.ts` | GRANICZNY | `:115-126` priorytet stanów armii | proponowane `ArmyStackDto.cards[].status` |
+| `empirePanelSectionMap.ts` | GRANICZNY | `:121-126` widoczność suwaków wg modelu ekonomii | routing UI (bez nowego pola) |
+| `entityCards/slug.ts` | GRANICZNY | `:30-49` slugify id encji | `EntityCardDto.id` z silnika |
+| `techIcons.ts` | GRANICZNY (dane) | `:14-47` klucz = nazwa PL z `tech.json` | klucz `TechId` ze `StaticCatalogDto.tech` |
+| `triumphCityStateNotice.ts` | GRANICZNY (tekst) | `:81-92` tekst odtwarza sens komunikatu z `game/triumph-city-state.ts` | tekst/klucz komunikatu z silnika |
 
 ## Tabela (83 moduły)
 

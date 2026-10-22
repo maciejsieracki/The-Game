@@ -6,7 +6,7 @@
   "description": "Szkielet frontendu Tauri (P5.1, UI-Q1=A): kopia paneli gra/src/ui/** niezaleznych od logiki + Vite + kontroler MOCK.",
   "scripts": {
     "typecheck": "tsc --noEmit",
-    "check": "node tools/check-no-logic-imports.mjs --self-test && node tools/check-no-logic-imports.mjs src && node tools/verify-pin-copies.mjs",
+    "check": "node tools/check-no-logic-imports.mjs --self-test && node tools/check-no-logic-imports.mjs src index.html vite.config.ts && node tools/verify-pin-copies.mjs",
     "build": "vite build"
   },
   "devDependencies": {
