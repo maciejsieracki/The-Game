@@ -30,7 +30,7 @@ dotykające tych samych plików — zawsze sekwencyjnie, nigdy w tej samej fali.
 | 1 | `R-RUSTPORT-P3-22-FLATTEN-STAGE2-Q1` | etap 2 mnożników — runda 4: AI, barbarzyńcy, walka/oblężenie (dyplomacja+Difficulty przyjęte w r3: `3e6940fc`) | 4/5 | `wf_cfef13c9-7c9` | DISPATCHED | 2026-10-22 |
 | 2 | `R-RUSTPORT-P4-17-MOD03-TERRAIN-DECOR-Q1` | MOD-03 dekor terenu — Opus 5.5 | 1/5 | `wf_b84d99df-bfb` | DISPATCHED | 2026-10-22 |
 | 3 | `R-RUSTPORT-P4-21-MOD09-CITIES-Q1` | MOD-09 istniejące modele miast i osad — Opus 5.5 | 1/5 | `wf_33be5035-445` | DISPATCHED | 2026-10-22 |
-| 4 | `R-RUSTPORT-P4-18-JSMATH-CONSOLIDATE-Q1` | konsolidacja jsmath (unit_core, pick, skaner) — Opus 5.5 | 1/5 | `wf_efb43141-a66` | DISPATCHED | 2026-10-22 |
+| 4 | `R-RUSTPORT-P4-22-MOD13-MISC-Q1` | MOD-13 wioski/obozy/oblężenie/nakładki zasięgu i tras/sky decor — Opus 5.5 | 1/5 | (patrz niżej) | DISPATCHED | 2026-10-22 |
 | 5 | `R-RUSTPORT-P4-19-MOD05-UNITS-STONE-Q1` | MOD-05 jednostki kamienia (10 rekordów) — Opus 5.5 | 1/5 | `wf_b18637ca-db2` | DISPATCHED | 2026-10-22 |
 | 6 | `R-RUSTPORT-P4-20-MOD11-IMPROVEMENTS-Q1` | MOD-11 ulepszenia/złoża/zwierzęta — Opus 5.5 | 1/5 | `wf_abfb7ff0-c37` | DISPATCHED | 2026-10-22 |
 
