@@ -1,0 +1,4 @@
+CMD (rust-port/engine): cargo clean -p civ-engine; CARGO_INCREMENTAL=0 CARGO_PROFILE_DEV_DEBUG=0 cargo clippy --all-targets -- -D warnings
+    Checking civ-engine v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_53c8e07a-dff-1/rust-port/engine)
+    Finished `dev` profile [unoptimized] target(s) in 57.57s
+EXIT=0

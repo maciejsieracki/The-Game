@@ -2460,3 +2460,127 @@ pub fn army_merge_params() -> &'static ArmyMergeParamsFile {
     static TABLE: std::sync::OnceLock<ArmyMergeParamsFile> = std::sync::OnceLock::new();
     TABLE.get_or_init(|| parse_army_merge_params().expect("army-merge-params.json must parse"))
 }
+
+// ---------------------------------------------------------------------------
+// P6.M16 (R-RUSTPORT-P6-M16-ULEPSZENIA-BUDOWA-REGULY-Q1): tabele regul budowy ulepszen na mapie
+// (`gra/src/map/improvement-build.ts`). Wartosci sa EDYTOWALNE w
+// `data/derived/ulepszenia-budowa.json`; kod `domain/improvement_build.rs` nie zawiera ich literalow.
+// ---------------------------------------------------------------------------
+
+pub const ULEPSZENIA_BUDOWA_JSON: &str = include_str!("../../data/derived/ulepszenia-budowa.json");
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct BudowaMeta {
+    pub zrodlo_web: String,
+    pub opis: String,
+}
+
+/// Nazwane zbiory kodow terenu (`TerenBazowy`) uzywane przez bramki budowy.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct BudowaTeren {
+    pub ladu: Vec<String>,
+    pub tartak: Vec<String>,
+    pub farma_plaski: Vec<String>,
+    pub irygacja: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct BudowaLas {
+    pub zaleznosc: Vec<String>,
+    pub wspolistnieje: Vec<String>,
+    pub zablokowane: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct BudowaZywnosc {
+    pub warstwy: Vec<String>,
+    pub solo: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct BudowaSektory {
+    pub przypisanie: std::collections::BTreeMap<String, String>,
+    pub wykluczajace: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct BudowaTarasyCywilizacje {
+    pub zawiera: Vec<String>,
+    pub rowne: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct BudowaHodowla {
+    pub odblokowanie: std::collections::BTreeMap<String, String>,
+    pub klucze_konia: Vec<String>,
+    pub kon: String,
+    pub lama: String,
+    pub cywilizacje_inkaskie: Vec<String>,
+    pub cywilizacje_inkaskie_zawiera: Vec<String>,
+    pub stadnina_koszt_koni: f64,
+    pub nowy_swiat_min_epoka_hodowli: f64,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct BudowaTechnologie {
+    pub kanoniczne: std::collections::BTreeMap<String, String>,
+    pub wiele_tech: std::collections::BTreeMap<String, Vec<String>>,
+    pub brak_wymagania: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct BudowaDomyslne {
+    pub epoka_gracza: f64,
+    pub wlasciciel_gracza: i64,
+    pub praca_bez_wpisu: f64,
+    pub praca_meta_bez_wpisu: f64,
+    pub typ_ulepszenia: String,
+    pub pierscien_kandydatow: f64,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct BudowaTeksty {
+    pub etykieta_lasu: String,
+    pub separator_listy: String,
+    pub podpowiedz_bydlo: String,
+    pub podpowiedz_las_prefiks: String,
+}
+
+/// Plik `ulepszenia-budowa.json`. `teren_dozwolony`: `null` = brak ograniczenia terenu.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct UlepszeniaBudowaFile {
+    pub meta: BudowaMeta,
+    pub teren: BudowaTeren,
+    pub teren_dozwolony: std::collections::BTreeMap<String, Option<Vec<String>>>,
+    pub las: BudowaLas,
+    pub zywnosc: BudowaZywnosc,
+    pub sektory: BudowaSektory,
+    pub kopalnie: Vec<String>,
+    pub nakladki_zwierzece: Vec<String>,
+    pub tarasy_cywilizacje: BudowaTarasyCywilizacje,
+    pub hodowla: BudowaHodowla,
+    pub technologie: BudowaTechnologie,
+    pub domyslne: BudowaDomyslne,
+    pub teksty: BudowaTeksty,
+}
+
+pub fn parse_ulepszenia_budowa() -> Result<UlepszeniaBudowaFile, serde_json::Error> {
+    serde_json::from_str(ULEPSZENIA_BUDOWA_JSON)
+}
+
+/// Tabela regul budowy ulepszen (jednorazowy odczyt; blad danych = panika z komunikatem).
+pub fn ulepszenia_budowa() -> &'static UlepszeniaBudowaFile {
+    static TABLE: std::sync::OnceLock<UlepszeniaBudowaFile> = std::sync::OnceLock::new();
+    TABLE.get_or_init(|| parse_ulepszenia_budowa().expect("ulepszenia-budowa.json must parse"))
+}

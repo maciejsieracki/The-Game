@@ -1,0 +1,119 @@
+{
+  "meta": {
+    "zrodlo_web": "gra/src/map/improvement-build.ts:155-565, 673-760, 905-1166, 1294-1405, 1435-1557 (pin edb8fb56); zaleznosci: game/livestock-unlock.ts, game/improvement-tech.ts, game/okolica.ts",
+    "opis": "Edytowalne tabele regul budowy ulepszen na mapie (zbiory terenow, sektory, warstwy zywnosci, bramki lasu, hodowla, domyslne). Klucze ulepszen i kody terenu to wartosci webowe (ImprovementKey, TerenBazowy)."
+  },
+  "teren": {
+    "ladu": ["laka", "rownina", "wzgorza", "gory", "pustynia"],
+    "tartak": ["laka", "rownina", "wzgorza", "pustynia"],
+    "farma_plaski": ["laka", "rownina"],
+    "irygacja": ["laka", "rownina", "pustynia"]
+  },
+  "teren_dozwolony": {
+    "farma": ["laka", "rownina"],
+    "irygacja": ["laka", "rownina", "pustynia"],
+    "bydlo": ["laka", "rownina"],
+    "owce": ["wzgorza"],
+    "lama": ["wzgorza", "gory"],
+    "stadnina": ["laka", "rownina"],
+    "glinianka": null,
+    "kamieniolom": ["wzgorza", "gory"],
+    "oboz_lowiecki": null,
+    "wyrab": null,
+    "lodzie_rybackie": ["plytkie_morze", "morze"],
+    "tarasy": ["wzgorza"],
+    "fort": null,
+    "droga": null,
+    "droga_brukowana": null,
+    "posterunek": null,
+    "kopalnia_miedzi": ["wzgorza", "gory"],
+    "kopalnia_zelaza": ["wzgorza", "gory"],
+    "kopalnia_zlota": ["wzgorza", "gory"],
+    "kopalnia_cyny": ["wzgorza", "gory"]
+  },
+  "las": {
+    "zaleznosc": ["oboz_lowiecki", "tartak"],
+    "wspolistnieje": ["tartak", "oboz_lowiecki", "glinianka", "lama", "stadnina"],
+    "zablokowane": ["irygacja", "tarasy", "farma", "bydlo", "owce"]
+  },
+  "zywnosc": {
+    "warstwy": ["farma", "irygacja", "bydlo", "owce", "lama", "tarasy"],
+    "solo": ["tarasy", "owce", "lama"]
+  },
+  "sektory": {
+    "przypisanie": {
+      "glinianka": "surowiec",
+      "stadnina": "surowiec",
+      "kopalnia_miedzi": "surowiec",
+      "kopalnia_zelaza": "surowiec",
+      "kopalnia_cyny": "surowiec",
+      "kopalnia_zlota": "surowiec",
+      "kamieniolom": "kamien",
+      "wyrab": "las",
+      "tartak": "las",
+      "oboz_lowiecki": "lowiectwo",
+      "farma": "foodteren",
+      "tarasy": "foodteren",
+      "bydlo": "hodowla",
+      "owce": "hodowla",
+      "lama": "hodowla",
+      "pastwisko": "hodowla",
+      "fort": "militaria",
+      "posterunek": "militaria",
+      "irygacja": "overlay",
+      "pole_irygowane": "overlay",
+      "droga": "droga",
+      "droga_brukowana": "droga",
+      "lodzie_rybackie": "woda",
+      "warzelnia_soli": "woda"
+    },
+    "wykluczajace": ["surowiec", "las", "foodteren", "hodowla", "militaria"]
+  },
+  "kopalnie": ["kopalnia_miedzi", "kopalnia_zelaza", "kopalnia_cyny", "kopalnia_zlota"],
+  "nakladki_zwierzece": ["zloze_konia", "zloze_owiec", "zloze_bydla", "zloze_lamy"],
+  "tarasy_cywilizacje": {
+    "zawiera": ["inkow", "inka", "incas", "chinc"],
+    "rowne": ["chiny"]
+  },
+  "hodowla": {
+    "odblokowanie": {
+      "bydlo": "bydlo",
+      "owce": "owce",
+      "lama": "lama",
+      "stadnina": "kon"
+    },
+    "klucze_konia": ["kon", "konie"],
+    "kon": "kon",
+    "lama": "lama",
+    "cywilizacje_inkaskie": ["inkowie", "inka", "incas", "astekowie", "astek", "aztekowie", "aztek"],
+    "cywilizacje_inkaskie_zawiera": ["inkow", "astek", "aztek"],
+    "stadnina_koszt_koni": 50,
+    "nowy_swiat_min_epoka_hodowli": 3
+  },
+  "technologie": {
+    "kanoniczne": {
+      "Irygacja": "Gospodarka wodna",
+      "Kalendarz": "Matematyka",
+      "-": "",
+      "": ""
+    },
+    "wiele_tech": {
+      "posterunek": ["Obróbka drewna", "Murarstwo"]
+    },
+    "brak_wymagania": ["-", ""]
+  },
+  "domyslne": {
+    "epoka_gracza": 1,
+    "wlasciciel_gracza": 0,
+    "praca_bez_wpisu": 20,
+    "praca_meta_bez_wpisu": 0,
+    "typ_ulepszenia": "ulepszenie",
+    "pierscien_kandydatow": 1
+  },
+  "teksty": {
+    "etykieta_lasu": "Las",
+    "separator_listy": ", ",
+    "podpowiedz_bydlo": "Aby zbudować Trzodę na tym polu, najpierw usuń las.",
+    "podpowiedz_las_prefiks": " na lesie zabroniona — najpierw wyrąb las (Wycinka w panelu ulepszeń)."
+  }
+}

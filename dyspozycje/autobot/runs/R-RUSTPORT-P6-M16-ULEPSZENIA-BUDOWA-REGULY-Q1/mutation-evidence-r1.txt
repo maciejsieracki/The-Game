@@ -1,0 +1,67 @@
+# Mutacje M16 (mutate-m16.py), przebieg koncowy na wektorach koncowych; kopia silnika poza repo, plik przywracany po kazdej mutacji.
+# Komenda: python3 -I mutate-m16.py <kopia rust-port/engine> <CARGO_TARGET_DIR>
+# Testy uruchamiane po kazdej mutacji: cargo test --no-fail-fast --test p6_m16_rules --test p6_m16_qualifier --test p6_m16_gallery --test p6_m16_tables
+MUTANT strip_forest: bez negacji: WYKRYTY (test czerwony)
+MUTANT legacy_farm: nakladka != Las: WYKRYTY (test czerwony)
+MUTANT farm_base: las dozwolony: WYKRYTY (test czerwony)
+MUTANT forest_blocked: wyrab zablokowany: WYKRYTY (test czerwony)
+MUTANT forest_blocked: pomija wspolistnieje: WYKRYTY (test czerwony)
+MUTANT replaced: sektor !=: WYKRYTY (test czerwony)
+MUTANT replaced: solo bez gałęzi else: WYKRYTY (test czerwony)
+MUTANT impact: owce bez negacji: WYKRYTY (test czerwony)
+MUTANT impact: oboz wymaga las: WYKRYTY (test czerwony)
+MUTANT impact: oboz bez tartaku: WYKRYTY (test czerwony)
+MUTANT food: farma 1 warstwa: WYKRYTY (test czerwony)
+MUTANT food: bydlo wymaga farmy: WYKRYTY (test czerwony)
+MUTANT deposit: miedz bez ruda: WYKRYTY (test czerwony)
+MUTANT clay: bez lowercase: WYKRYTY (test czerwony)
+MUTANT reserve: las: WYKRYTY (test czerwony)
+MUTANT tarasy: rowne: WYKRYTY (test czerwony)
+MUTANT livestock: era <=: WYKRYTY (test czerwony)
+MUTANT livestock: koszt >: WYKRYTY (test czerwony)
+MUTANT radius: ceil: WYKRYTY (test czerwony)
+MUTANT tech: all->any: WYKRYTY (test czerwony)
+MUTANT meta: era: WYKRYTY (test czerwony)
+MUTANT qual: fort rival: WYKRYTY (test czerwony)
+MUTANT qual: fort own unit: WYKRYTY (test czerwony)
+MUTANT qual: road dist: WYKRYTY (test czerwony)
+MUTANT qual: river present: WYKRYTY (test czerwony)
+MUTANT qual: bruk: WYKRYTY (test czerwony)
+MUTANT qual: layers lower: WYKRYTY (test czerwony)
+MUTANT qual: pending: WYKRYTY (test czerwony)
+MUTANT qual: wyrab clearing: WYKRYTY (test czerwony)
+MUTANT qual: territory fallback: WYKRYTY (test czerwony)
+MUTANT api: click pending: WYKRYTY (test czerwony)
+MUTANT api: tech request: WYKRYTY (test czerwony)
+MUTANT api: candidate placed: WYKRYTY (test czerwony)
+MUTANT gallery: oboz: WYKRYTY (test czerwony)
+MUTANT gallery: combo bydlo+owce: PRZEZYL
+MUTANT scan: enemy: WYKRYTY (test czerwony)
+MUTANT reason: all wrong: WYKRYTY (test czerwony)
+MUTANT format: las: WYKRYTY (test czerwony)
+MUTANT hint: bydlo: WYKRYTY (test czerwony)
+MUTANT remove: placed.remove: WYKRYTY (test czerwony)
+MUTANT tab: pierscien 1->0: WYKRYTY (test czerwony)
+MUTANT tab: kamieniolom sektor: WYKRYTY (test czerwony)
+MUTANT tab: las zablokowane bez owce: WYKRYTY (test czerwony)
+MUTANT tab: ladu bez pustyni: WYKRYTY (test czerwony)
+MUTANT tab: koszt koni: WYKRYTY (test czerwony)
+MUTANT tab: praca domyslna: WYKRYTY (blad kompilacji)   [przejsciowy brak miejsca na dysku, powtorzone ponizej]
+MUTANT tab: posterunek tech: WYKRYTY (blad kompilacji)  [przejsciowy brak miejsca na dysku, powtorzone ponizej]
+MUTANT tab: nowy swiat epoka: WYKRYTY (test czerwony)
+PODSUMOWANIE (surowe wyjscie skryptu): wykrytych=47 przezylo=1 pominietych=0
+PRZEZYL: gallery: combo bydlo+owce
+
+# Powtorzenie dwoch mutacji z bledem kompilacji (osobne uruchomienie ze filtrem nazwy):
+MUTANT tab: praca domyslna: WYKRYTY (test czerwony)
+MUTANT tab: posterunek tech: WYKRYTY (test czerwony)
+
+# Wynik: 48 mutacji (40 w kodzie, 8 w tabeli JSON); 47 wykrytych testem czerwonym, 1 rownowazna.
+# Uwaga 1: jedyny PRZEZYL 'gallery: combo bydlo+owce' jest ROWNOWAZNY: warunek bydlo+owce (bez farmy) w galleryComboEligible jest nadmiarowy,
+#   bo teren bydla (Laka/Rownina) i owiec/lamy (Wzgorza/Gory) sa rozlaczne - koncowe ks.every(galleryTerrainEligible) daje false tak czy inaczej
+#   (to samo dla farma+owce bez bydla). Regula jest portowana 1:1 (wektory 3000 + 6000), mutacja nie zmienia obserwowalnego wyniku.
+# Uwaga 2: mutacje rownowazne usuniete z listy: 'api: candidate undo idx' (idx > 0 -> idx >= 0): kompozyt zaczynajacy sie od ':' daje pusty klucz
+#   kandydata, ktory nie jest kluczem zadnego heksa, wiec wynik sie nie zmienia; warunek web 'teren !== Pustynia' w case 'lama' jest nadmiarowy,
+#   bo Pustynia nie nalezy do TERRAIN_ALLOW.lama.
+# Uwaga 3: poprzedni przebieg (przed dodaniem 80 ukierunkowanych przypadkow 'placed' ze samymi farmami do generatora) zostawil przy zyciu
+#   'remove: placed.remove' - luka w wektorach zamknieta (mutacja jest teraz wykrywana), przebieg powtorzony w calosci na wektorach koncowych.

@@ -1,0 +1,2 @@
+CMD (rust-port/engine): cargo fmt --check
+EXIT=0
