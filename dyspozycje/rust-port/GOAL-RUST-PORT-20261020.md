@@ -27,7 +27,7 @@ dotykające tych samych plików — zawsze sekwencyjnie, nigdy w tej samej fali.
 
 | # | Temat | Faza | Runda | runId Workflow | Status | Ostatnia aktualizacja |
 |---|---|---|---|---|---|---|
-| 1 | `R-RUSTPORT-P3-23-FLATTEN-STAGE3-Q1` | etap 3 mnożników (macierz counter, struktury, wzrost, społeczeństwo, produkcja, mapa, wioski, ruch) — Haiku/Haiku/Sonnet | 1/5 | `wf_e461f64a-457` | DISPATCHED | 2026-10-22 |
+| 1 | `R-RUSTPORT-P3-23-FLATTEN-STAGE3-Q1` | etap 3 mnożników — runda 3: wzrost, ruch, społeczeństwo, produkcja, mapa, AI (counter i struktury przyjęte w r1–2: `7e37c6ec`, `278ff735`) | 3/5 | `wf_059cda80-fd8` | DISPATCHED | 2026-10-22 |
 | 2 | `R-RUSTPORT-P5-2-PORT-LEVEL0-Q1` | P5-2 portowanie paneli UI poziomu 0 (15 modułów) — Opus 5.5 | 1/5 | `wf_18adcd70-aa5` | DISPATCHED | 2026-10-22 |
 | 3 | `R-RUSTPORT-P4-25-TEXT-RASTER-AUDIT-Q1` | audyt Canvas/tekstu/fontów i spec rasteryzatora (D-RR-4, D-MOD-6; odblokowuje MOD-08/10) — doc, Opus 5.5 | 1/5 | `wf_aae17b00-09b` | DISPATCHED | 2026-10-22 |
 | 4 | `R-RUSTPORT-P4-24-MISC-RELIEF-WIRE-Q1` | podpięcie prawdziwego samplera reliefu w `models/misc` + deduplikacja `toFixed` — Opus 5.5 | 1/5 | `wf_4f3a5fff-372` | DISPATCHED | 2026-10-22 |
