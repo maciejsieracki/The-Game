@@ -1,0 +1,240 @@
+{
+  "pin": "edb8fb56",
+  "source": "git show <pin>:<path>",
+  "files": [
+    {
+      "path": "index.html",
+      "pin": "edb8fb56:gra/index.html",
+      "sha256": "25c1cfcdb9198b2b7a7ccd57a5e3ac4065939fc5bbd4194b91234bd1d18f01c2",
+      "bytes": 1812
+    },
+    {
+      "path": "src/ui/aiCivPicker.ts",
+      "pin": "edb8fb56:gra/src/ui/aiCivPicker.ts",
+      "sha256": "24827022c974d8dd997a9a7436659e56e62c7ddf60216513190b818febfd7245",
+      "bytes": 3539
+    },
+    {
+      "path": "src/ui/armyStackPrompt.ts",
+      "pin": "edb8fb56:gra/src/ui/armyStackPrompt.ts",
+      "sha256": "7cc2c169b2a265eb7b3ce64c81e3c02fde266bc48f2f1efa4c1576ab1e3aac56",
+      "bytes": 6627
+    },
+    {
+      "path": "src/ui/brandTokenVars.ts",
+      "pin": "edb8fb56:gra/src/ui/brandTokenVars.ts",
+      "sha256": "11df3dee110c54d4cab72742182c360089d21f53b2dd119bf755b273236cb9c9",
+      "bytes": 3805
+    },
+    {
+      "path": "src/ui/buildStampToggle.ts",
+      "pin": "edb8fb56:gra/src/ui/buildStampToggle.ts",
+      "sha256": "79d154a3370e13dac7c1bcd4f7bf9a934d8150ac6955dc7c3b0a48f7bd857a49",
+      "bytes": 2916
+    },
+    {
+      "path": "src/ui/buildingHoverTooltip.ts",
+      "pin": "edb8fb56:gra/src/ui/buildingHoverTooltip.ts",
+      "sha256": "02b77dd20d42fbba10c426bec282aa2a3c5f277baf07f8a7c14b684a2a00b315",
+      "bytes": 239
+    },
+    {
+      "path": "src/ui/civElimNotice.ts",
+      "pin": "edb8fb56:gra/src/ui/civElimNotice.ts",
+      "sha256": "52cdf7674498e894ab5174f81bbad07e70c2bb7423e7dc5efe202c1e8263505c",
+      "bytes": 6349
+    },
+    {
+      "path": "src/ui/empireBalance.ts",
+      "pin": "edb8fb56:gra/src/ui/empireBalance.ts",
+      "sha256": "18d5170114f4cc992645cbd435e31a4ab4a7ec561fbd10d0cce6d68afa288ba3",
+      "bytes": 4668
+    },
+    {
+      "path": "src/ui/empireMiastaTable.ts",
+      "pin": "edb8fb56:gra/src/ui/empireMiastaTable.ts",
+      "sha256": "b4eb5ff0665ed08d8caa0bf2ac6669ae490cf1b96779d90d2b66b2cbe614ec21",
+      "bytes": 6550
+    },
+    {
+      "path": "src/ui/empirePanelSectionMap.ts",
+      "pin": "edb8fb56:gra/src/ui/empirePanelSectionMap.ts",
+      "sha256": "0ed29bdb871326613f6add9357213fecb6f98389e564786cd7e1a3e3e44c413c",
+      "bytes": 9456
+    },
+    {
+      "path": "src/ui/entityCards/civpediaOpenGate.ts",
+      "pin": "edb8fb56:gra/src/ui/entityCards/civpediaOpenGate.ts",
+      "sha256": "d0054c9ea90540b811070f2fcbd51f8ecfe23c7c81ced8978d8c7cd14a2d6ea0",
+      "bytes": 3626
+    },
+    {
+      "path": "src/ui/entityCards/slug.ts",
+      "pin": "edb8fb56:gra/src/ui/entityCards/slug.ts",
+      "sha256": "727eed9f1f7378a71362d4a715c8a63220dcf87158703ba51289c77ceaeb9b8c",
+      "bytes": 2717
+    },
+    {
+      "path": "src/ui/entityCards/types.ts",
+      "pin": "edb8fb56:gra/src/ui/entityCards/types.ts",
+      "sha256": "3cd01b861ed7d8168445503c734eec186d62f04cca766a0d1f667ff3a6c89d81",
+      "bytes": 11191
+    },
+    {
+      "path": "src/ui/escapeOverlayStack.ts",
+      "pin": "edb8fb56:gra/src/ui/escapeOverlayStack.ts",
+      "sha256": "cebedfac5c316a428300014758a151b8585b3f07f52d9566072e72147eefd0aa",
+      "bytes": 4042
+    },
+    {
+      "path": "src/ui/formatPl.ts",
+      "pin": "edb8fb56:gra/src/ui/formatPl.ts",
+      "sha256": "e76cfe23efc9da1c5d4050e2f239e810e164b36b93115cd32db37d1b23649b0f",
+      "bytes": 2938
+    },
+    {
+      "path": "src/ui/hoverDetailDock.ts",
+      "pin": "edb8fb56:gra/src/ui/hoverDetailDock.ts",
+      "sha256": "a3d67b463e34f803e67e359a6730597348a1e0552ba331477b83d69a301690c7",
+      "bytes": 11821
+    },
+    {
+      "path": "src/ui/hudLayout.ts",
+      "pin": "edb8fb56:gra/src/ui/hudLayout.ts",
+      "sha256": "28d0b26b3f8db0170bfd3f2fe601057a8310fef02de07f57bf35d1ab33bb1b12",
+      "bytes": 3310
+    },
+    {
+      "path": "src/ui/hudPanelDismiss.ts",
+      "pin": "edb8fb56:gra/src/ui/hudPanelDismiss.ts",
+      "sha256": "8ce6b9f1bcf89f99877c1772179c370785429c975c824afe083e057337795d55",
+      "bytes": 1122
+    },
+    {
+      "path": "src/ui/hudTitleTooltip.ts",
+      "pin": "edb8fb56:gra/src/ui/hudTitleTooltip.ts",
+      "sha256": "08d6fee8e646ae21a351a7106a12f3fbbd3a02cec9ddb62c81134d7a562ef557",
+      "bytes": 10294
+    },
+    {
+      "path": "src/ui/icons/brand/tier1/res-science-24.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/tier1/res-science-24.svg",
+      "sha256": "acad6c665118046bea09093343ef2b40af05494858aa63c8810092fee03e8625",
+      "bytes": 490
+    },
+    {
+      "path": "src/ui/icons/brand/tokens.css",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/tokens.css",
+      "sha256": "71ffe744d894783d14b53e393096ee482007dc84ed6ec928bc55a78f5eeff706",
+      "bytes": 4348
+    },
+    {
+      "path": "src/ui/icons/scienceOwlIcon.ts",
+      "pin": "edb8fb56:gra/src/ui/icons/scienceOwlIcon.ts",
+      "sha256": "1e2337e4a3edd98e69b3228ca4d4a480679964c86247e31d6c1255591aa658b6",
+      "bytes": 1291
+    },
+    {
+      "path": "src/ui/icons/scienceProgressRing.ts",
+      "pin": "edb8fb56:gra/src/ui/icons/scienceProgressRing.ts",
+      "sha256": "9be680850340c0aa4391b01ea378780682b75edbafab9ef8ceb378b063ccacbe",
+      "bytes": 1138
+    },
+    {
+      "path": "src/ui/mapUnitCursor.ts",
+      "pin": "edb8fb56:gra/src/ui/mapUnitCursor.ts",
+      "sha256": "45ff8208a7dabd7843c6a46ec1e651120440fe692832be7b89b2c79d8825df1e",
+      "bytes": 4120
+    },
+    {
+      "path": "src/ui/markdownLite.ts",
+      "pin": "edb8fb56:gra/src/ui/markdownLite.ts",
+      "sha256": "d62eb8c57c07eef36afbe36dff9ec0b37e158378109b647a3f27982814fcb7b9",
+      "bytes": 3205
+    },
+    {
+      "path": "src/ui/minimapLayout.ts",
+      "pin": "edb8fb56:gra/src/ui/minimapLayout.ts",
+      "sha256": "2d1ce4ef608e639a1ad3b48432661dbea42665ec21ebacfbd6c28585211d9c96",
+      "bytes": 4963
+    },
+    {
+      "path": "src/ui/naukaLabel.ts",
+      "pin": "edb8fb56:gra/src/ui/naukaLabel.ts",
+      "sha256": "080daba99c142687db33852504ac274c65e9dc5424892721974e2d19d04db8b1",
+      "bytes": 546
+    },
+    {
+      "path": "src/ui/resourceColors.ts",
+      "pin": "edb8fb56:gra/src/ui/resourceColors.ts",
+      "sha256": "257bf5674faccdcdeaa9ddf53282af23521789a371aa3e6b54b71f0436ba8b5b",
+      "bytes": 5429
+    },
+    {
+      "path": "src/ui/scienceHubSnapshotLogic.ts",
+      "pin": "edb8fb56:gra/src/ui/scienceHubSnapshotLogic.ts",
+      "sha256": "15c93dfb0280640e57b3a085df0ee36b7486489d9e09e1faad70f786a09e4675",
+      "bytes": 4284
+    },
+    {
+      "path": "src/ui/sideListHud.css.ts",
+      "pin": "edb8fb56:gra/src/ui/sideListHud.css.ts",
+      "sha256": "7ff6f34493faf1421853c3635ae4d43f47bc651a8737e06a6b9bcb7f0d31d1e8",
+      "bytes": 9050
+    },
+    {
+      "path": "src/ui/sidePanelLayout.ts",
+      "pin": "edb8fb56:gra/src/ui/sidePanelLayout.ts",
+      "sha256": "7bb606522f4f5f7b0cc5147aecd86dc82e351352d5cd05886d69ee2d7926448d",
+      "bytes": 1669
+    },
+    {
+      "path": "src/ui/techIcons.ts",
+      "pin": "edb8fb56:gra/src/ui/techIcons.ts",
+      "sha256": "23d39e124e9f4366ac22e1496446f6ccc1935915b5617477686ad73a37c0e08c",
+      "bytes": 14188
+    },
+    {
+      "path": "src/ui/treasuryBalanceFormat.ts",
+      "pin": "edb8fb56:gra/src/ui/treasuryBalanceFormat.ts",
+      "sha256": "640e93f7a37cec554e7f88282b8fd0c86c79e74b3297b6d5704a223b2cb0d56e",
+      "bytes": 453
+    },
+    {
+      "path": "src/ui/triumphCityStateNotice.ts",
+      "pin": "edb8fb56:gra/src/ui/triumphCityStateNotice.ts",
+      "sha256": "54e417848187effed531b92c181b3c3ee1992afb718000cb0239b88a0d90b62d",
+      "bytes": 6489
+    },
+    {
+      "path": "src/ui/turnTransitionOverlay.ts",
+      "pin": "edb8fb56:gra/src/ui/turnTransitionOverlay.ts",
+      "sha256": "0959dc1b2661ee98b9cb58ff5e37934e44876270470c9057fbe31ba7a5142bef",
+      "bytes": 4567
+    },
+    {
+      "path": "src/ui/unitCtxDockDiploGate.ts",
+      "pin": "edb8fb56:gra/src/ui/unitCtxDockDiploGate.ts",
+      "sha256": "fcf4c9b4c627cf1715c2bc15b689492f1067203b03da4efadcde27928baf98dd",
+      "bytes": 909
+    },
+    {
+      "path": "src/ui/wonderCompletedNotice.ts",
+      "pin": "edb8fb56:gra/src/ui/wonderCompletedNotice.ts",
+      "sha256": "901c56d5597d26d5ed9b12cba0f94bee76d8ebe9a2e69462c5188036334e8fa9",
+      "bytes": 6325
+    },
+    {
+      "path": "src/vite-env.d.ts",
+      "pin": "edb8fb56:gra/src/vite-env.d.ts",
+      "sha256": "d2f6540c0d9381d5e52325991d22d3c8975bd4d8ba486fd1f5d4a9643945669d",
+      "bytes": 614
+    },
+    {
+      "path": "tsconfig.json",
+      "pin": "edb8fb56:gra/tsconfig.json",
+      "sha256": "ecbd969da3afc489083e354e018fdd12046432c0a644895391d0bf9937d38ad5",
+      "bytes": 461
+    }
+  ]
+}

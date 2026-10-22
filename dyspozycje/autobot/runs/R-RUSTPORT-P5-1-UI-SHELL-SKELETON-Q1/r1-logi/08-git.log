@@ -1,0 +1,20 @@
+$ git rev-parse HEAD
+8761c6c30c112ebf5caf9cfc4d43325ded8e1550
+$ git status --porcelain --untracked-files=all | grep -v '^A ' (niezaindeksowane / poza indeksem)
+(koniec)
+$ git diff --cached --name-only | sed 's#/.*##' | sort | uniq -c   (korzenie zmian)
+     21 dyspozycje/autobot
+      1 dyspozycje/rust-port
+     54 src-tauri/frontend-v2
+$ git diff --cached --name-only | grep -v -E '^(src-tauri/frontend-v2/|dyspozycje/rust-port/p5/P5-1-UI-SHELL-SKELETON\.md$|dyspozycje/autobot/runs/R-RUSTPORT-P5-1-UI-SHELL-SKELETON-Q1/)'   (poza allowlistą)
+(koniec)
+$ git diff --cached --name-only -- gra src-tauri/frontend src-tauri/src src-tauri/Cargo.toml src-tauri/Cargo.lock src-tauri/tauri.conf.json rust-port .github   (zakazane)
+(koniec)
+$ git diff --name-only -- gra src-tauri/frontend src-tauri/src src-tauri/Cargo.toml src-tauri/Cargo.lock src-tauri/tauri.conf.json rust-port .github   (zakazane, drzewo robocze)
+(koniec)
+$ git diff --cached --name-only | grep -E 'node_modules|/dist/'
+(koniec)
+$ git diff --cached --stat | tail -n 1
+ 76 files changed, 9311 insertions(+)
+$ git diff --cached --check
+EXIT=0

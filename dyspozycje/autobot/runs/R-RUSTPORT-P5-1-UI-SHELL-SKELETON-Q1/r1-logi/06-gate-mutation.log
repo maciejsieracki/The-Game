@@ -1,0 +1,13 @@
+$ (mutacja: +2 linie w src/ui/formatPl.ts, +1 plik src/controller/leak.ts) node tools/check-no-logic-imports.mjs <mut>/src
+<mut>/src/controller/leak.ts:1: [CORE:game] export { x } from '../../game/production';
+<mut>/src/ui/formatPl.ts:65: [CORE:data] import { loadGameData } from '../data/loader';
+<mut>/src/ui/formatPl.ts:66: [CORE:game] type E = import('../game/research').EraGateInfo;
+check-no-logic-imports: katalog=<mut>/src plików=42 plików_z_trafieniami=2 trafień=3 {"CORE:game":2,"CORE:data":1}
+EXIT=1 (oczekiwane 1)
+$ (mutacja kopii: +1 bajt \\n na końcu src/ui/naukaLabel.ts w drzewie roboczym, potem przywrócenie) node tools/verify-pin-copies.mjs
+RÓŻNY src/ui/naukaLabel.ts oczekiwano 080daba99c142687db33852504ac274c65e9dc5424892721974e2d19d04db8b1 jest b708851466583f232bb3b03b6d0ed36fcc2e851231fb1f69ebda9b1b91edcac7
+verify-pin-copies: pin=edb8fb56 plików=39 niezgodnych=1
+EXIT=1 (oczekiwane 1)
+$ (po przywróceniu) node tools/verify-pin-copies.mjs
+verify-pin-copies: pin=edb8fb56 plików=39 niezgodnych=0
+EXIT=0

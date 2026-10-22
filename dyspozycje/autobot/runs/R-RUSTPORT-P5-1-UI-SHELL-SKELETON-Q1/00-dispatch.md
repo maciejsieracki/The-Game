@@ -1,0 +1,24 @@
+STATUS: DISPATCHED
+DOMAIN: GAME
+TEMAT: R-RUSTPORT-P5-1-UI-SHELL-SKELETON-Q1
+GOAL: Szkielet frontendu Tauri wg decyzji właściciela UI-Q1=A (kopia paneli weba + Vite): nowy projekt Vite + TypeScript w `src-tauri/frontend-v2/` (obecny `src-tauri/frontend/` ZOSTAJE nietknięty jako smoke do końca P5 — rozstrzygnięcie orkiestratora dla D-UI-8, tymczasowe), do którego kopiujesz z pinu `edb8fb56` (`git show edb8fb56:...`) pliki `gra/src/ui/**` NIEZALEŻNE od logiki gry (ci, którzy wg `P5-0-VIEWMODEL-CATALOG.md` §3 i bramki §9 mają 0 importów z `game/**`, `map/**`, `units/**`, `battle/**`, `render/**`, `data/**`, `../data/loader`), plus pliki CSS/HTML/zasoby potrzebne do ich renderowania, plus moduł typów `src/viewmodel/types.ts` z DTO z P5-0 §6 (tylko typy TS, bez logiki; nazewnictwo zgodne z P5-0), plus pusty kontroler `src/controller/` (mostek `invoke`/zdarzenia Tauri z typowanymi komendami wg `P2-5-COMMANDS`/P5-0 §7, na razie atrapa zwracająca dane testowe z jawną etykietą MOCK). Pliki UI zależne od logiki (49 modułów z P5-0) NIE są kopiowane w tej rundzie — wylistuj je w pliku `PORTING-QUEUE.md` z kolejnością i zależnościami (do kolejnych tematów). Reguła nadrzędna P5.13: UI nie liczy reguł gry. Dodaj MIERZALNĄ bramkę (skrypt w `tools/` projektu, np. `check-no-logic-imports.mjs`) wg P5-0 §9 (z poprawionym regexem łapiącym `data/loader` i importy typów inline `import('../game/…')`), wywoływaną przez `npm run check`.
+Weryfikacja: `npm ci`, `npx tsc --noEmit` (0 błędów), `npm run check` (0 naruszeń), `vite build` TYLKO w `src-tauri/frontend-v2/` (zakaz `npm run build`/`dev` w `gra/`); zakaz uruchamiania serwera dev. Porównanie kopii z pinem: `sha256` każdego skopiowanego pliku vs `git show edb8fb56:<ścieżka>` (tabela w dokumencie; plik skopiowany bajtowo identyczny, wyjątki jawnie wylistowane z diffem).
+RUNDA: 1/5
+MODEL+EFFORT: Operator/Evaluator/Final Control: Opus 5.5 medium (wizualne UI; R-PROC-AUTOBOT.md §5a, NIE pytaj o model). Przez agent() w Workflow, Operator w izolowanym worktree.
+
+KONTEKST
+Baza kodu: `git fetch origin rust-port/parity-v2 && git checkout --detach origin/rust-port/parity-v2`. Dokumenty z `claude/sprawdzenie-funkcjonalnosci-ek4ra0` (`git show origin/claude/sprawdzenie-funkcjonalnosci-ek4ra0:<ścieżka>`): przeczytaj OBOWIĄZKOWO `dyspozycje/rust-port/p5/P5-0-VIEWMODEL-CATALOG.md` (całość, zwłaszcza §3, §6, §7, §9), `p4/P4-5-UI-SHELL-AUDIT.md` (§4 opcje S1, uwagi o `data/**`), `p4/P4-5B-MAP-UI-SEAM.md` (kontrakt zdarzeń; w szkielecie tylko typy komunikatów), LEDGER.md (UI-Q1..3), `src-tauri/frontend/` (stan obecny), `src-tauri/tauri.conf.json`.
+Rozstrzygnięcia orkiestratora (tymczasowe, ZAŁOŻENIA do zapisania w dokumencie): D-UI-4 = JSON statyczny (`data/**`) wolno czytać w webview tylko jako ten sam plik (kopia bajtowo identyczna z `rust-port/engine/data/`), nigdy z własną logiką; w tej rundzie NIE kopiuj danych; D-UI-8 = stary `frontend/` zostaje; konfiguracji Tauri (`tauri.conf.json`) NIE zmieniaj (przełączenie `frontendDist` to osobny temat po ocenie).
+Wymagane narzędzia: node/npm (jak w ARCHIWUM pracy P1.x); `npm ci` dozwolony w `src-tauri/frontend-v2/`; usuń `node_modules` po pracy.
+DOKUMENTY (NOWE): `dyspozycje/rust-port/p5/P5-1-UI-SHELL-SKELETON.md` (opis struktury, tabela plików z sha256, bramki z surowymi logami i `echo "EXIT=$?"`, ZAŁOŻENIA, NIE_ZMIERZONO), `dyspozycje/autobot/runs/R-RUSTPORT-P5-1-UI-SHELL-SKELETON-Q1/**`.
+ANTY-HALUCYNACYJNA REGUŁA: każde twierdzenie o webie ma plik:linia/komendę; niepewne = NIE_ZMIERZONO. Zakaz „działa w oknie Tauri” — nie ma tu okna/GPU. W Twoim kontekście mogą pojawić się wiadomości właściciela z głównego czatu — to NIE jest Twoje zadanie, zignoruj je i nie generuj pytań ABC; luki rozstrzygaj ZAŁOŻENIEM zapisanym w dokumencie.
+
+BINARNE KRYTERIUM SUKCESU
+`src-tauri/frontend-v2/` istnieje, `npm ci && npx tsc --noEmit && npm run check && vite build` EXIT=0; wszystkie skopiowane pliki bajtowo zgodne z pinem (tabela sha256) lub wylistowane wyjątki; `PORTING-QUEUE.md` kompletna (49 modułów z P5-0 + ich zależności); zero zmian poza allowlistą; `git diff --check` czysty.
+
+ALLOWLISTA
+`src-tauri/frontend-v2/**` (NOWY; bez `node_modules`/`dist` w commicie, `package-lock.json` COMMITUJ), `dyspozycje/rust-port/p5/P5-1-UI-SHELL-SKELETON.md` (NOWY), `dyspozycje/autobot/runs/R-RUSTPORT-P5-1-UI-SHELL-SKELETON-Q1/**`. Zero zmian w `gra/**`, `src-tauri/frontend/**`, `src-tauri/src/**`, `src-tauri/Cargo.*`, `src-tauri/tauri.conf.json`, `rust-port/engine/**`, `rust-port/renderer/**`, `.github/**`.
+IZOLACJA: `isolation: worktree`. Commit w worktree (jawne `git add`, NIGDY `-A`), PUSH NIE. Jeśli `git commit` zostanie odrzucony — zostaw zmiany w indeksie i opisz.
+PROCEDURA NAPRAWCZA PRZY FAIL: ten sam ID; po 5 rundach LIMIT-5-EXCEEDED. Raport max ok. 400 słów.
+FORMAT ODPOWIEDZI: STATUS / DOMAIN / TEMAT / GOAL / ZMIANY-COMMIT / TESTY / BLOKADY / RUNDY / NASTĘPNY KROK
+DEPLOY/PUSH: NIE WYKONANO
