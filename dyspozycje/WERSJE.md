@@ -1,3 +1,13 @@
+## ROBOCZA 0c7f13d9 -- 2026-10-22 -- poprawki wyciekow pamieci weba (R-WEB-MEMORY-LEAKS)
+
+- STATUS: PUBLISHED to `origin/main` at `ecef9ff8b47681211cf9bb2d7cbb2363ad2841a4` (fast-forward z `cfc26c17`), integration branch `integration/robocza-memleaks-20261022` na tym samym SHA. Readback z `origin/main`: bundle MD5/SHA-256/bajty zgodne z manifestem (przeliczone z opublikowanego pliku). Wydanie na jawne polecenie wlasciciela w czacie (deploy do roboczej + push). Production host nie testowany.
+- Bundle `gra-robocza/Gra-ROBOCZA.html`: MD5 `0c7f13d9dbb869ea648bd65dfd3bea1c`, SHA-256 `0ab5f654d19f1be30c8139ca3de77781b75e327d5d4c0e8e262bbcd3be839a22`, 69,945,591 bytes. `verify-robocza-bundle.cjs` VERIFY OK; stamp self-MD5 WARN to znane ograniczenie (dotyczy tez poprzedniego bundla).
+- Zakres: M1 dispose modeli miast, M2 przycinanie cache plakietek, M3 zdejmowanie nasluchiwaczy bitwy, `?memdebug=1` (licznik pamieci/obiektow GPU). Zmienione: `gra/src/render/cities.ts`, `gra/src/battle/battleScene.ts`, `gra/src/main.ts`, `gra/src/render/memDebug.ts`, `gra/tools/web-memory-leaks-test.cjs`, bundle, manifest, START.html.
+- Bramki (Final Control PASS-WITH-NOTES): npm ci, tsc, Vite 894 modules; web-memory-leaks 30/0, city-badge-growth, city-badge-zoom-lod, autosave-quota-fail, ai-city-recovery, city-map-badge zielone; smoke Chromium 8 tur (jsHeap 293-333 MB bez trendu rosnacego; geometries/programs stale).
+- NIE ZMIERZONO: porownanie przed/po poprawce; liczba tekstur 18->22 w turach 7-9 (przyczyna nieustalona); M3 (nasluchiwacze bitwy) tylko straz statyczna, bez sprawdzenia w przegladarce; brak pelnej akceptacji rozgrywki. Test dlugiej gry przez wlasciciela z `?memdebug=1` nadal potrzebny.
+- Rollback: poprzedni bundle MD5 `3b6610b74fd6586c5507908fe7665369` (commit `b4d37d9f`), `git revert` commitow wydania.
+- Run: `dyspozycje/autobot/runs/R-WEB-MEMORY-LEAKS-RELEASE-ROBOCZA-Q1/`.
+
 ## ROBOCZA APPROVED 3b6610b7 -- 2026-10-20 -- PR141 bounded source release
 
 - STATUS: PUBLISHED to `origin/main` at `b4d37d9f81686b5b21bb256087a55e3a592721f0`; pinned GitHub raw readback PASS for bundle, manifest, and START (all HTTP 200, exact hashes/bytes). A separate bounded menu/canvas check passed on the fetched bundle. Both predeploy full-flow browser attempts remain FAIL; no complete gameplay smoke or external website deployment is claimed.
