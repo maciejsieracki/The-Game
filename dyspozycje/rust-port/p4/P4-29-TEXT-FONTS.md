@@ -13,7 +13,7 @@ Konwencja: `plik:linia` bez prefiksu = `gra/src/` w pinie `edb8fb56`. `[zewn.]` 
 
 1. Nowy podmoduł `rust-port/renderer/src/raster/text/` (`mod.rs`, `font.rs`, `fonts.rs`) + `pub mod text;` w `raster/mod.rs`. `Canvas2dLite` dostaje 6 członków tekstowych (`set_font`, `set_text_align`, `set_text_baseline`, `fill_text`, `stroke_text`, `measure_text`) — **dokładnie** te z P4-25 §4.1, lista zamknięta testem `tests/text_api_closed.rs`. `#![forbid(unsafe_code)]` bez zmian. `src/lib.rs` **nietknięty** (moduł jest podmodułem `raster`).
 2. Zależności: **`ab_glyph =0.2.32`**, **`rustybuzz =0.20.1`** (obie `default-features = false, features = ["std"]`). Lock: +10 pakietów (`ab_glyph`, `ab_glyph_rasterizer`, `owned_ttf_parser`, `ttf-parser`, `rustybuzz`, `core_maths`, `unicode-bidi-mirroring`, `unicode-ccc`, `unicode-properties`, `unicode-script`); `libm`, `bitflags`, `smallvec`, `bytemuck`, `log` były już w locku. Build + testy na **rustc 1.87.0: EXIT=0** (§7). Bez `cosmic-text`/`vello`.
-3. Fonty w `rust-port/renderer/assets/fonts/`: 6 plików TTF + 2 licencje + `SOURCES.txt` + `MANIFEST.sha256`, razem **3 069 907 B** (≤ 6 MB). Wkompilowane `include_bytes!`. Test `text_fonts::fonts_match_manifest_sha256` liczy sha256 (własna implementacja FIPS 180-4 sprawdzona wektorami NIST) i porównuje z bajtami w binarce.
+3. Fonty w `rust-port/renderer/assets/fonts/`: 6 plików TTF + 2 licencje + `SOURCES.txt` + `MANIFEST.sha256`, razem **3 069 998 B** (≤ 6 MB). Wkompilowane `include_bytes!`. Test `text_fonts::fonts_match_manifest_sha256` liczy sha256 (własna implementacja FIPS 180-4 sprawdzona wektorami NIST) i porównuje z bajtami w binarce.
 4. **`measureText().width`: 5 105/5 105 szerokości bit w bit jak Chromium 141** (max |Δ| = 0; wszystkie 1 543 unikalne nazwy miast po `toUpperCase` + z „…”, etykiety WZROST% −25…25 co 0,25, liczby, `×N`, cyfry T9, wiersze hover z `buildings.json`/`units.json`, 22+25 liter, interpunkcja, pary kerningowe, symbole z fallbackiem). **Decyzje przycięcia „…”: 12 620/12 620 identyczne** (2 532 przycięte przez web).
 5. Linie bazowe (`textBaseline` ×6) — 216/216 wartości `TextMetrics.alphabeticBaseline` zgodne (3 rodziny × 2 grubości × 12 rozmiarów × 6). Parser skrótu `font`: 39/39 sond zgodnych z Chromium co do akceptacji, rozmiaru i grubości.
 6. **Sceny: 36** (T5 ×3, T6 ×3, **T9 ×10 cyfr**, T15 ×4, T10 glif ×2, T13 cyfry z cieniem ×2, T14 tekst ×4 skale + wiersz hover, 7 scen semantycznych) — **wszystkie w progach RR-T8a**: SSIM min **0,9933**, mean_abs max **1,34**, px>16 max **4,35 %** (§5).
@@ -194,6 +194,8 @@ $ cargo clippy --locked --all-targets --features gpu -- -D warnings  EXIT=0
 $ cargo test --locked --all-targets           (rustc 1.97.0)         EXIT=0   253 passed, 0 failed
 $ cargo +1.87.0 test --locked --all-targets   (MSRV rustc 1.87.0)    EXIT=0   253 passed, 0 failed
 (HEAD bazowy d8429335; skrypt dowody/01-gates.sh; clippy na 1.87.0 — cargo-clippy niezainstalowany w kontenerze, NIE_ZMIERZONO jak w P4-28)
+Po bramach: z LICENSE-DejaVu.txt usunięto 2 końcowe spacje (git diff --check) i przeliczono assets/fonts/MANIFEST.sha256;
+`cargo test --locked --test text_fonts` ponownie: 5 passed, EXIT=0 (pliki TTF bez zmian).
 ```
 
 ---
