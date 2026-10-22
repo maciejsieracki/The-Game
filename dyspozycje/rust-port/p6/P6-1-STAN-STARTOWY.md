@@ -10,6 +10,7 @@ Niezależny weryfikator: `verify-p61-web-vectors.py` (Python, bez TS i bez gener
 - **Temat pozostaje NIEKOMPLETNY** wg binarnego kryterium dispatchu: z 16 plików P6.1 zportowano 3 pliki (civ-entry-epoch, owner-utils, human-owners) oraz `makeRng` z civ-roster.ts. Pozostałe symbole są RUNDA-2 z listą w §4 (kolejność r3…).
 - Liczba eksportów: parser (§3, `gen-p61-symbol-status.py`) znajduje **198** unikalnych eksportów w 16 plikach (r1 podawał „~204” jako szacunek; liczba wiarygodna to 198).
 - Stan po r2: PORTOWANY **17**, NIE-DOTYCZY **2**, RUNDA-2 **179** (§3).
+- Stan po r4 (§9): PORTOWANY **21**, NIE-DOTYCZY **3**, RUNDA-2 **174** (`symbols-p61-r4.tsv`). Temat nadal NIEKOMPLETNY.
 - r2 nie dokłada portów logiki gry poza etykietami UI i RNG; cel r2 to zamknięcie zarzutów r1 (§8).
 
 ## 1. Metoda wektorów (ANTY-HALUCYNACJA)
@@ -84,11 +85,11 @@ Tabela generowana przez `gen-p61-symbol-status.py` (ta sama zawartość w `symbo
 | `owner-epoch.ts` | `eraOwnWonderSatisfied` | function | RUNDA-2 | nieportowane w r2 (lista r3, patrz sekcja 4) |
 | `owner-epoch.ts` | `maxDefinedEra` | function | RUNDA-2 | nieportowane w r2 (lista r3, patrz sekcja 4) |
 | `owner-epoch.ts` | `computeMainCivEraFromResearch` | function | RUNDA-2 | nieportowane w r2 (lista r3, patrz sekcja 4) |
-| `first-player-city.ts` | `FIRST_CITY_START_REVEAL_DENIED` | const | RUNDA-2 | nieportowane w r2 (lista r3, patrz sekcja 4) |
-| `first-player-city.ts` | `CityOwnerRef` | interface | RUNDA-2 | nieportowane w r2 (lista r3, patrz sekcja 4) |
-| `first-player-city.ts` | `isAwaitingFirstPlayerCity` | function | RUNDA-2 | nieportowane w r2 (lista r3, patrz sekcja 4) |
-| `first-player-city.ts` | `isHexInStartReveal` | function | RUNDA-2 | nieportowane w r2 (lista r3, patrz sekcja 4) |
-| `first-player-city.ts` | `validateFirstPlayerCityPlacement` | function | RUNDA-2 | nieportowane w r2 (lista r3, patrz sekcja 4) |
+| `first-player-city.ts` | `FIRST_CITY_START_REVEAL_DENIED` | const | PORTOWANY | player::FIRST_CITY_START_REVEAL_DENIED (r3); wektor constants.FIRST_CITY_START_REVEAL_DENIED |
+| `first-player-city.ts` | `CityOwnerRef` | interface | NIE-DOTYCZY | typ danych wejściowych `{ownerId}` (first-player-city.ts:9), bez logiki; rolę przejmuje `OwnerRef` w `is_awaiting_first_player_city` (r4, zarzut 4) |
+| `first-player-city.ts` | `isAwaitingFirstPlayerCity` | function | PORTOWANY | player::is_awaiting_first_player_city (r3); wektory awaiting 14 + awaitingWithOwnerOne 14 |
+| `first-player-city.ts` | `isHexInStartReveal` | function | PORTOWANY | player::is_hex_in_start_reveal (r3); wektor reveal 108; hexDistance werbatim setup.ts:354-359 (r4, zarzut 3) |
+| `first-player-city.ts` | `validateFirstPlayerCityPlacement` | function | PORTOWANY | player::validate_first_player_city_placement (r3); wektor validate 16 |
 | `civ-entry-epoch.ts` | `GAME_EPOCH_ORDER` | const | PORTOWANY | unit_epoch::GAME_EPOCH_ORDER; wektor constants.GAME_EPOCH_ORDER |
 | `civ-entry-epoch.ts` | `GameEpochId` | type | NIE-DOTYCZY | typ TS (union literalow) = parse_game_epoch_id -> Option<Epoch>; brak osobnego symbolu w Rust |
 | `civ-entry-epoch.ts` | `CivEntryEpochRow` | interface | NIE-DOTYCZY | typ danych wejsciowych = unit_epoch::CivEntryRow (bez logiki) |
@@ -243,7 +244,7 @@ Tabela generowana przez `gen-p61-symbol-status.py` (ta sama zawartość w `symbo
 | `civ-ai-data.ts` | `nastawienieBazoweZaufanieDelta` | function | RUNDA-2 | nieportowane w r2 (lista r3, patrz sekcja 4) |
 <!-- SYMBOLS:END -->
 
-Podsumowanie: PORTOWANY 17 (civ-entry-epoch 7, owner-utils 1, human-owners 7, civ-roster 2 — `makeRng` i re-eksport `civIdsAvailableAtGameEpoch`); NIE-DOTYCZY 2 (typy `GameEpochId`, `CivEntryEpochRow` = nazwy typów TS bez logiki, zastąpione przez `parse_game_epoch_id` i `CivEntryRow`); RUNDA-2 179.
+Podsumowanie (stan po r4, źródło: `symbols-p61-r4.tsv`): PORTOWANY 21 (r2: 17 + r3/r4 `first-player-city` 4), NIE-DOTYCZY 3 (r2: `GameEpochId`, `CivEntryEpochRow`; r4: `CityOwnerRef`), RUNDA-2 174. Suma 198. Tabela powyżej to stan r2 z aktualizacją pięciu wierszy `first-player-city`; reszta wierszy nadal odpowiada r2 (patrz `symbols-p61-r4.tsv` jako aktualne źródło).
 
 Uwagi do wierszy NIE-DOTYCZY/RUNDA-2 o statusach zbiorczych (zarzut 6): symbole `CITY_NAMES_POOL_COMMON_LEN`, `CITY_NAMES_POOL_REGULAR_LEN`, `CITY_NAMES_POOL_STATE_LEN`, `NAZWY_KLASTRA_LEN`, `MIASTA_CYWILIZACJI_LEN` są stałymi-danymi (długości pul) i mają osobne wiersze; `CityNamesPools`/`CityNamesPoolsData` to typy danych; osiem typów `CivMatrix*` (`CivMatrixFormula`, `CivMatrixDifficulty`, `CivMatrixParamDef`, `CivMatrixRow`, `CivMatrixData`, `CivMatrixSemanticPolarity`, `CivMatrixConsumerStatus`, `CivMatrixSemanticLabel`, `CivMatrixNeutralBand`, `CivMatrixSemanticCell`, `CivMatrixSemanticProfile`, `CivMatrixSemanticSnapshot`, `CivMatrixSemanticCellInput`) ma własne wiersze z kolumną statusu.
 
@@ -296,3 +297,32 @@ Brak r5/r6 w tej rundzie to decyzja zakresu (zarzut 1 — przyjęty, §8).
 8. **Wektor -5 — ODRZUCONE jako wada wektora, PRZYJĘTE jako dokumentacja.** Rozbieżność jest poza dziedziną (NIE-DOTYCZY, §7); dowód: JSON `outOfDomain` (web) + test `web_owner_minus_five_is_out_of_domain_and_not_representable`.
 9. **`allow(dead_code)` — PRZYJĘTE.** Usunięte; harness `tests/unit_epoch.rs` wywołuje API (`p6_1_civ_entry_api_is_exercised`). `clippy -D warnings` EXIT=0.
 10. **RNG/seed — PRZYJĘTE i ZMIENIONE.** Okazało się, że `domain/rng.rs` (`Rng`, LCG Numerical Recipes) NIE jest zgodny z web `makeRng` (mulberry32). Nie podmieniam `Rng`; dodano `Mulberry32` zgodny bit-w-bit z wektorem `rng` (7 ziaren × 8 kroków, test `mulberry32_matches_web_make_rng_vectors_bit_for_bit`). `pickActiveCivPool` i `assignAiCivTypes` (użycie `makeRng` w `civ-roster.ts`) — RUNDA-2 (r5), z wektorami na ich wyjściach; `seedIncaLlamaDeposits` (`inca-llama-seed.ts`) — RUNDA-2 (r4).
+
+## 9. Odpowiedzi na zarzuty r3 (Evaluator BLOCK, 12 zarzutów; commit 6a3f89cf, runda 4)
+
+Stan po r4: `first-player-city.ts` PEŁNY (5 eksportów: 4 PORTOWANY, 1 NIE-DOTYCZY). Temat NADAL NIEKOMPLETNY — kryterium binarne z dispatchu nie jest spełnione (wiersze RUNDA-2: 174).
+
+1. **Zakres r3 nieportowany — PRZYJĘTE, NIE ZAMKNIĘTE w r4.** `playerState.ts` (27 eksportów), `city-names-pool.ts` (23), `civ-bonuses.ts` (17), `cluster-start.ts` (9), `inca-llama-seed.ts` (3), `braz-access.ts` (5) nadal RUNDA-2. Brak czasu/zakresu w tej rundzie; przeniesione do r5 (§4 zaktualizowane w kolejnej rundzie).
+2. **Brak weryfikatora Python dla first-player-city — PRZYJĘTE i ZAMKNIĘTE.** `verify-p61-first-city.py` (NOWY, bez TS/Node/generatora; semantyka z tekstu `first-player-city.ts`; hexDistance z tekstu `setup.ts:354-359`, z asercją linii). Wynik: `RAZEM: 159 sprawdzen, rozbieznosci: 0`, `EXIT=0` (uruchomienie: `python3 -I verify-p61-first-city.py <WEB_ROOT> rust-port/engine/tests/p6_1_vectors/first-player-city.json`).
+3. **Generator liczy hexDistance własną kopią — PRZYJĘTE i NAPRAWIONE.** `gen-p61-first-city-vectors.mjs` wycina `hexDistance` werbatim z `gra/src/units/setup.ts:354-359` (kotwice linii; zapis do `stubs/hex-distance.ts`). Import całego `setup.ts` odrzucony: ma importy `map/startScoring`, `data/loader`, `types/*` (ciężki graf). Wektory regenerowane: JSON zmienił się tylko w 2 liniach metadanych (`hexDistanceSource`, `generator: r4`). Odstępstwo jak w stubach r2: wykonywana jest wycięta funkcja, nie cały moduł.
+4. **CityOwnerRef — PRZYJĘTE i ZAMKNIĘTE jako NIE-DOTYCZY.** Interfejs TS `{ownerId: number}` (first-player-city.ts:9) to wyłącznie kształt danych wejściowych; w Rust rolę przejmuje `OwnerRef` w argumencie `is_awaiting_first_player_city` (player.rs). Brak logiki do portu.
+5. **symbols-p61-r2.tsv nieaktualny — PRZYJĘTE i NAPRAWIONE.** Nowy `symbols-p61-r4.tsv` (kopia r2 + 5 wierszy first-player-city zaktualizowanych). Liczby: PORTOWANY 21, NIE-DOTYCZY 3, RUNDA-2 174 (suma 198). `symbols-p61-r2.tsv` zostawiony jako historia.
+6. **Brak aktualizacji dokumentu P6-1 — PRZYJĘTE i NAPRAWIONE** dla first-player-city: §0 podsumowanie, §3 (5 wierszy + podsumowanie), §9 (ten rozdział). Tabela było/jest (§2) i lista RUNDA-2 (§4) do zaktualizowania w r5, gdy zamknięte zostaną pozostałe pliki.
+7. **Brak danych w `data/derived/*.json` (PIENIADZ_MNOZNIK=10, RESEARCH_QUEUE_MAX=4) — PRZYJĘTE, NIE ZROBIONE w r4.** Dotyczy portu `playerState.ts` (r5). Brak katalogu `rust-port/engine/data/derived/` z nowymi tabelami dla tych mnożników; nie dodano.
+8. **Hot-seat dla playerState i cluster-start — PRZYJĘTE, NIE ZROBIONE.** Test hot-seat (owner 1) istnieje dla `first-player-city` (`awaitingWithOwnerOne`, 14 wektorów). Pozostałe pliki — r5.
+9. **inca-llama-seed nieportowany — PRZYJĘTE, NIE ZROBIONE** (r5).
+10. **Allowlista: `tests/p6_1_vectors/first-player-city.json` nie pasuje do `tests/p6_1_*.rs` — PRZYJĘTE, WYMAGA DECYZJI ORKIESTRATORA.** Operator nie ma prawa samodzielnie poszerzać allowlisty. Plik jest potrzebny (`include_str!`) przez `tests/p6_1_first_player_city.rs`. Prośba: orkiestrator dopisuje wzorzec `rust-port/engine/tests/p6_1_vectors/*.json` do allowlisty tematu. Bez tego dopisku temat NIE jest zgodny z allowlistą.
+11. **Logi z innej ścieżki worktree — PRZYJĘTE i NAPRAWIONE.** Logi `gate-{fmt,clippy,test}-r4.log` wygenerowane w worktree `wf_1b6ac8de-518-3` (`EXIT=0` na końcu każdego). Logi r3 zostają w repo jako historia; nie są dowodem r4.
+12. **Commit deklaruje temat niezamknięty — PRZYJĘTE.** Zgodnie z §0 i §9 pkt 1.
+
+### Bramki r4 (surowe logi w runie, EXIT z echo)
+
+- `gate-fmt-r4.log`: `EXIT=0`
+- `gate-clippy-r4.log`: `cargo clippy --all-targets -- -D warnings` → `EXIT=0`
+- `gate-test-r4.log`: `cargo test` → `EXIT=0`, 406 passed, 0 failed (baseline 401 + 5 z p6_1_first_player_city)
+- `verify-p61-first-city.py`: `RAZEM: 159 sprawdzen, rozbieznosci: 0`
+
+### Pozostaje do zamknięcia tematu (RUNDA-2 = 174 symbole)
+
+- `playerState.ts` (27), `city-names-pool.ts` (23), `civ-bonuses.ts` (17), `cluster-start.ts` (9), `inca-llama-seed.ts` (3), `braz-access.ts` (5) — w r5 z wektorami weba i weryfikatorami.
+- `owner-epoch.ts` (6), `civ-roster.ts` (5), `civ-names.ts`, `civ-matrix*.ts`, `civ-ai-data.ts` — kolejne rundy wg §4.

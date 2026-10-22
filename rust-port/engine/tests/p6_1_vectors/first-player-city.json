@@ -1,6 +1,7 @@
 {
  "pin": "edb8fb56",
- "generator": "gen-p61-first-city-vectors.mjs (r3)",
+ "hexDistanceSource": "gra/src/units/setup.ts:354-359 (werbatim, stubs/hex-distance.ts)",
+ "generator": "gen-p61-first-city-vectors.mjs (r4)",
  "sourceFile": "gra/src/game/first-player-city.ts",
  "constants": {
   "FIRST_CITY_START_REVEAL_DENIED": "poza oświetlonym obszarem startu"

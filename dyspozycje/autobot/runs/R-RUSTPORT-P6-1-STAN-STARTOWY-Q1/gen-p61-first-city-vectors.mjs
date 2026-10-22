@@ -1,10 +1,10 @@
 // P6.1 r3 — wektory z URUCHOMIONEGO weba dla first-player-city.ts (pin edb8fb56).
-// Plik weba nie ma importow, wiec laduje sie bez loadera. Callback hexDistance: werbatim
-// formula z gra/src/units/setup.ts:354-359 (przekazywana przez wywolujacego, jak w webie).
+// Plik weba nie ma importow, wiec laduje sie bez loadera. hexDistance: werbatim z
+// gra/src/units/setup.ts:354-359 (stubs/hex-distance.ts, kotwice linii).
 // Uzycie: node --experimental-strip-types ./gen-p61-first-city-vectors.mjs <WEB_ROOT> <OUT_JSON>
-import { writeFileSync } from 'node:fs';
+import { readFileSync, writeFileSync } from 'node:fs';
 import { join, resolve as presolve } from 'node:path';
-import { pathToFileURL } from 'node:url';
+import { pathToFileURL, fileURLToPath } from 'node:url';
 
 const [, , webRootArg, outArg] = process.argv;
 if (!webRootArg || !outArg) {
@@ -14,12 +14,25 @@ if (!webRootArg || !outArg) {
 const webRoot = presolve(webRootArg);
 const fpc = await import(pathToFileURL(join(webRoot, 'gra/src/game/first-player-city.ts')).href);
 
-const hexDistance = (aq, ar, bq, br) => {
-  const dq = Math.abs(aq - bq);
-  const dr = Math.abs(ar - br);
-  const ds = Math.abs((-aq - ar) - (-bq - br));
-  return Math.max(dq, dr, ds);
+// r4 (zarzut 3): hexDistance WERBATIM z gra/src/units/setup.ts:354-359 (linie wyciete z weba,
+// kotwice sprawdzone). Plik setup.ts ma ciezkie importy (map/startScoring, data/loader), wiec
+// nie jest importowany; wycinamy tylko funkcje, jak stuby r2.
+const setupLines = readFileSync(join(webRoot, 'gra/src/units/setup.ts'), 'utf8').split('\n');
+const hexAnchors = {
+  l354: setupLines[353] === 'export function hexDistance(aq: number, ar: number, bq: number, br: number): number {',
+  l355: setupLines[354] === '  const dq = Math.abs(aq - bq);',
+  l356: setupLines[355] === '  const dr = Math.abs(ar - br);',
+  l357: setupLines[356] === '  const ds = Math.abs((-aq - ar) - (-bq - br));',
+  l358: setupLines[357] === '  return Math.max(dq, dr, ds);',
+  l359: setupLines[358] === '}',
 };
+for (const [k, v] of Object.entries(hexAnchors)) {
+  if (!v) throw new Error(`hexDistance anchor drift: ${k}`);
+}
+const hexStubDir = fileURLToPath(new URL('./stubs/', import.meta.url));
+const hexStubPath = join(hexStubDir, 'hex-distance.ts');
+writeFileSync(hexStubPath, setupLines.slice(353, 359).join('\n') + '\n');
+const { hexDistance } = await import(pathToFileURL(hexStubPath).href);
 
 const OWNER_SETS = [
   [],
@@ -93,7 +106,8 @@ for (const baseOk of [true, false]) {
 
 const out = {
   pin: 'edb8fb56',
-  generator: 'gen-p61-first-city-vectors.mjs (r3)',
+  hexDistanceSource: 'gra/src/units/setup.ts:354-359 (werbatim, stubs/hex-distance.ts)',
+  generator: 'gen-p61-first-city-vectors.mjs (r4)',
   sourceFile: 'gra/src/game/first-player-city.ts',
   constants: { FIRST_CITY_START_REVEAL_DENIED: fpc.FIRST_CITY_START_REVEAL_DENIED },
   awaiting,
