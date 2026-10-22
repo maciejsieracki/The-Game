@@ -1,0 +1,68 @@
+# Literaly liczbowe w NOWYM kodzie rust-port/engine/src (tylko linie dodane przez ten temat, bez komentarzy)
+# Zrodlo: diff -U0 drzewa src wzgledem origin/rust-port/parity-v2 (a29c1657), zapisany jako src.diff.
+# Polecenie: grep '^+' src.diff | grep -v '^+++' | grep -vE '^\+\s*(//|///|//!)' | grep -nE '(^|[^A-Za-z_0-9"])[0-9]+(\.[0-9]+)?([^A-Za-z_0-9"]|$)' | grep -vE 'include_str|f64::|i32::|i64::'
+#
+# KLASYFIKACJA: WSZYSTKIE trafienia sa STRUKTURALNE (nie balans):
+#   0.0 / 1.0           elementy neutralne mnozenia/dodawania, granice max/clamp (web: Math.max(0, ..), clamp01, mnozniki neutralne)
+#   0.5                 definicja Math.round (polowka zaokraglana w gore), nie parametr gry
+#   != 1                sasiedztwo heksow (dystans 1) w canAiEnterEmptyEnemyCity
+#   / 2.0               wzor axialDistance (suma trzech wspolrzednych / 2)
+#   < 1.0               miasto bez mieszkancow nie jest celem migracji buntu (web: c.population < 1)
+#   1..=max_ring        poczatek petli pierscieni ewakuacji (max_ring z tabeli)
+#   FORT_NODE_*         nazwane stale opakowania FortNode -> CityNode (web: pop 0, level 1; pole zgodnosci interfejsu)
+# Liczby balansowe (wagi, progi, kary, mnozniki epok, stawki, promienie, limity) czytane z tabel
+# data/derived/{porzadek-params,ulepszenia-reguly,teren-ruch-reguly}.json, terrain-improvements.json
+# (zasieg_terytorium, koszt_praca, surowiec_ilosc_tura) i miasto-params.json (zasieg_okolicy_*).
+#
+# --- wynik polecenia (numer = numer linii w liscie linii dodanych) ---
+250:+    if x - floor >= 0.5 {
+251:+        floor + 1.0
+363:+                .0
+528:+    if !base.is_finite() || base <= 0.0 {
+529:+        return 0.0;
+531:+    js_round(base * rules().skala_pracy.fala2_mnoznik).max(1.0)
+536:+    if stone_base <= 0.0 {
+537:+        return 0.0;
+550:+    if let Some(value) = bonus.filter(|value| *value != 0.0 && !value.is_nan()) {
+605:+        Some(era) if era.fract() == 0.0 && era > first && era <= production.epoka_max as f64 => era,
+615:+        .filter(|amount| amount.is_finite() && *amount > 0.0)
+787:+        return 0.0;
+795:+    0.0
+843:+    if HexCoord::new(unit_q, unit_r).distance(HexCoord::new(city.q, city.r)) != 1 {
+899:+const FORT_NODE_POPULATION: f64 = 0.0;
+900:+const FORT_NODE_LEVEL: f64 = 1.0;
+986:+    sum as f64 / 2.0
+1001:+        0.0
+1003:+    if pop <= 0.0 {
+1004:+        return 0.0;
+1085:+    for index in (0..forts.len()).rev() {
+1152:+    for ring in 1..=max_ring {
+1340:+            0.0
+1345:+            0.0
+1361:+        if !x.is_finite() || x < 0.0 {
+1362:+            return 0.0;
+1364:+        if x > 1.0 {
+1365:+            return 1.0;
+1372:+            production_mult: 1.0,
+1373:+            pieniadz_mult: 1.0,
+1374:+            nauka_mult: 1.0,
+1375:+            kultura_mult: 1.0,
+1376:+            growth_mult: 1.0,
+1377:+            trade_mult: 1.0,
+1378:+            revolt_risk: 0.0,
+1386:+                production_mult: (neutral.production_mult + params.kara_produkcja_t1).max(0.0),
+1387:+                pieniadz_mult: (neutral.pieniadz_mult + params.kara_pieniadz_t1).max(0.0),
+1388:+                nauka_mult: (neutral.nauka_mult + params.kara_nauka_t1).max(0.0),
+1389:+                kultura_mult: (neutral.kultura_mult + params.kara_kultura_t1).max(0.0),
+1390:+                growth_mult: (neutral.growth_mult + params.kara_wzrost_t1).max(0.0),
+1443:+            if city.id == source_id || city.owner_id != owner_id || city.population < 1.0 {
+1450:+                .unwrap_or(0.0);
+1460:+        let pop = if population.is_finite() && population > 0.0 {
+1463:+            0.0
+1465:+        if pop <= 0.0 {
+1467:+                zadowoleni: 0.0,
+1468:+                kontentni: 0.0,
+1469:+                niezadowoleni: 0.0,
+1475:+            0.0
+1478:+        let happy_frac = (hap / scale).clamp(0.0, 1.0);
+1479:+        let unhappy_frac = (-hap / scale).clamp(0.0, 1.0);

@@ -1,0 +1,65 @@
+dane.miasto-params: 1
+dane.society-params: 1
+dane.terrain-improvements: 1
+fort.applyFortTakeoverOnCityFounded.events: 400
+fort.applyFortTakeoverOnCityFounded.forts: 400
+fort.axialDistance: 150
+fort.cityRangeForPopulation: 20
+fort.cityTerritoryRadius: 80
+fort.findEvacuationHexOutsideCity: 160
+fort.fortNodeAsCityNode: 6
+fort.foundingNodesForOwner: 150
+fort.isHexReservedByRivalFort: 300
+hex.addForeignCityBlocks: 120
+hex.canAiEnterEmptyEnemyCity: 876
+hex.canUnitOccupyCityHex: 120
+hex.cityAtHex: 120
+hex.foreignCityHexKeys: 120
+order.FALLBACK_ORDER_PARAMS: 1
+order.computeOrder: 3544
+order.evaluateOrder: 385
+order.happinessBreakdown: 357
+order.loadOrderParams: 44
+order.orderEffects: 38
+order.orderEffectsToYieldMults: 36
+order.orderTier: 217
+order.pickRevoltMigrationTarget: 400
+tabela.porzadek-params: 14
+tabela.teren-ruch-reguly: 2
+tabela.ulepszenia-reguly: 13
+tabela.zasieg-fortu: 2
+ti.FARMA: 1
+ti.IMPROVEMENT_KEYS: 1
+ti.LIVESTOCK: 1
+ti.RESOURCE_UPKEEP: 1
+ti.ROAD: 1
+ti.applyImprovementBonus: 102
+ti.applyImprovementBonuses: 80
+ti.foodLayerFromAnimalDeposit: 9
+ti.foodPotentialForHex: 960
+ti.hexHasCoveringTerrainImprovement: 260
+ti.hexSuppressesDepositOverlay: 520
+ti.improvementAllowedCivs: 32
+ti.improvementBonusForKey: 32
+ti.improvementDisplayName: 32
+ti.improvementHidesDepositOnHex: 1989
+ti.improvementKeysForHex: 260
+ti.isImprovementAllowedForCiv: 288
+ti.isLivestockImprovementKey: 32
+ti.json_keys_in_order: 1
+ti.migrateImprovementLayers: 80
+ti.migrateLegacyKopalniaKey: 255
+ti.normalizeImprovementKey: 34
+ti.oreYieldFromImprovements: 60
+ti.resourceProductionAmountForEra: 1320
+ti.scaleTerrainImprovementWorkCost: 399
+ti.terrainImprovementEraForKey: 34
+ti.terrainImprovementEraMultiplier: 20
+ti.territoryResourceYieldForImprovement: 1360
+RAZEM przypadkow/porownan: 16242
+ROZBIEZNOSCI: 5
+  order.pickRevoltMigrationTarget: got='c6' web='c1' ctx={"sourceId": "c2", "ownerId": 2, "cities": [{"id": "c0", "ownerId": 1, "population": 5}, {"id": "c1", "ownerId": 2, "population": 2}, {"id": "c2", "ownerId": 2, "population": 0.5}, {"id": "c3", "ownerId": 1, "population": 5}, {"id": "c4", "ownerId": 1, "population": 9}, {"id": "c5", "ownerId": 1, "p
+  order.pickRevoltMigrationTarget: got='c2' web='c1' ctx={"sourceId": "c-none", "ownerId": 1, "cities": [{"id": "c0", "ownerId": 2, "population": 1}, {"id": "c1", "ownerId": 1, "population": 1}, {"id": "c2", "ownerId": 1, "population": 2}, {"id": "c3", "ownerId": 2, "population": 1}, {"id": "c4", "ownerId": 2, "population": 0}, {"id": "c5", "ownerId": 2,
+  order.pickRevoltMigrationTarget: got='c3' web='c1' ctx={"sourceId": "c2", "ownerId": 2, "cities": [{"id": "c0", "ownerId": 1, "population": 9}, {"id": "c1", "ownerId": 2, "population": 9}, {"id": "c2", "ownerId": 2, "population": 1}, {"id": "c3", "ownerId": 2, "population": 2}], "orders": [["c0", 2], ["c1", 0], ["c2", 2]], "out": "c1"}
+  order.pickRevoltMigrationTarget: got='c0' web='c1' ctx={"sourceId": "c3", "ownerId": 2, "cities": [{"id": "c0", "ownerId": 2, "population": 9}, {"id": "c1", "ownerId": 2, "population": 5}, {"id": "c2", "ownerId": 2, "population": 0}, {"id": "c3", "ownerId": 2, "population": 0.5}], "orders": [["c1", 1]], "out": "c1"}
+  order.pickRevoltMigrationTarget: got='c4' web='c1' ctx={"sourceId": "c3", "ownerId": 1, "cities": [{"id": "c0", "ownerId": 1, "population": 0}, {"id": "c1", "ownerId": 1, "population": 2}, {"id": "c2", "ownerId": 1, "population": 0}, {"id": "c3", "ownerId": 2, "population": 5}, {"id": "c4", "ownerId": 1, "population": 2}, {"id": "c5", "ownerId": 1, "pop

@@ -1,0 +1,14 @@
+test era_and_cost_scaling_match_web ... ok
+test catalog_key_order_equals_json_file_order_including_meta_rows ... ok
+test constants_match_web ... ok
+test applying_bonuses_matches_web ... ok
+test migration_functions_match_web ... ok
+test rules_tables_have_consistent_shape ... ok
+test territory_and_ore_yields_match_web ... ok
+test hex_layer_functions_match_web ... FAILED
+test normalize_and_lookup_functions_match_web ... FAILED
+test prototype_keys_pass_normalize_like_in_web ... FAILED
+thread 'hex_layer_functions_match_web' (19881) panicked at tests/p6_23_improvements.rs:406:9:
+thread 'normalize_and_lookup_functions_match_web' (19886) panicked at tests/p6_23_improvements.rs:188:9:
+thread 'prototype_keys_pass_normalize_like_in_web' (19887) panicked at tests/p6_23_improvements.rs:253:9:
+test result: FAILED. 7 passed; 3 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.66s

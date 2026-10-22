@@ -27,7 +27,6 @@ dotykające tych samych plików — zawsze sekwencyjnie, nigdy w tej samej fali.
 
 | # | Temat | Faza | Runda | runId Workflow | Status | Ostatnia aktualizacja |
 |---|---|---|---|---|---|---|
-| 5 | `R-RUSTPORT-P6-23-KOMENDY-TEREN-Q1` | P6.2+P6.3 `order`, `terrain-improvements`, `city-hex-movement`, `fort-territory` — Operator Sonnet | 1/5 | `wf_fb33da4c-2f2` | DISPATCHED | 2026-10-22 |
 | 2 | `R-RUSTPORT-P4-27-SCENE-UNIFY-Q1` | ujednolicenie typu drzewa sceny (decor, wonders, unit_core, units_*, improvements, cities, misc) — Opus 5.5 | 1/5 | `wf_f2947d22-ac9` | DISPATCHED | 2026-10-22 |
 | 1 | `R-RUSTPORT-P6-1E-CIV-DANE-MACIERZE-Q1` | P6.1E `civ-names`, `civ-matrix`, `civ-matrix-semantic`, `civ-ai-data`, reszta `civ-roster`/`braz-access` — Operator Sonnet | 1/5 | `wf_51b09228-dc0` | DISPATCHED | 2026-10-22 |
 | 3 | `R-RUSTPORT-P6-25-MAPA-GAP-Q1` | P6.25 analiza luk katalogu `gra/src/map/` (27 plików, niepokryty przez P6.0) — Operator Sonnet | 1/5 | `wf_aa802f0f-4ff` | DISPATCHED | 2026-10-22 |
