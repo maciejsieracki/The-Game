@@ -10,7 +10,7 @@
 - Drzewo to wyłącznie `unit_core::model::UnitModel`. Stuby `NotYetPorted` MOD-06 są zastąpione (`registry::build_base`), a sygnatury publiczne się nie zmieniły.
 - **Parytet z uruchomionym webem:** 180 przypadków (`fn:` 60, `unit:` PL 40, `unitB:` PL owner B 40, `unitEn:` 40). Sprawdzono **478 906 wartości bitowo, 0 rozbieżności**.
 - **Konsolidacja `js_asin`:** funkcja przeniesiona do `src/jsmath/inverse.rs` (port fdlibm `e_asin`). `units_kamien::kit` re-eksportuje ją jedną linią. Nowy wektor V8 `asin.bin` ma 20 021 argumentów, a test bitowy daje 0 rozbieżności. `jsmath_wiring` jest zielony.
-- **Mutacje:** 20/20 wykrytych.
+- **Mutacje:** 20/20 wykrytych; po obronie rundy 1 23/23 (z `jsmath_wiring`, §4).
 - **Bramki:** fmt, clippy, clippy `--features gpu` i `cargo test --all-targets` kończą się EXIT=0 (20 celów, 123 testy, 0 failed).
 
 ## 1. Zakres, decyzje i ZAŁOŻENIA
@@ -145,6 +145,8 @@ Uwagi:
 - M20 ma w etykiecie „libm”, a faktyczna mutacja to `js_asin(x)·(1+ε)`.
 - Pierwsza wersja M07 (zmiana kolejności sumowania w `apply_quat`) **PRZEŻYŁA** (log `logi/mutate-v1-M07-survived.txt`). Jedyny wywołujący obraca wokół `Y_UP` (qx = qz = 0), więc na wszystkich wejściach webu to mutant równoważny. Zastąpiono go obserwowalną mutacją znaku kąta.
 
+**Obrona rundy 1 (uwaga 2 Evaluatora, E10–E12):** podmiana `js_cos`/`js_sin`/`js_atan2` na funkcje systemowe daje na danych webu te same bity (glibc), więc testy parytetu jej nie widzą; łapie ją wyłącznie skaner `jsmath_wiring`. `mutate.py` uruchamia teraz także `--test jsmath_wiring` i ma mutacje M21 (`geo.rs` `js_cos`→`.cos()`), M22 (`geo.rs` `js_sin`→`.sin()`), M23 (`procarz.rs` `js_atan2`→`.atan2()`). **Wynik: 23/23 DETECTED, 0 build errors, EXIT=0** (log `logi/mutate-obrona.txt`; M21–M23 przez `no_platform_transcendentals_anywhere_in_src`). Log `logi/mutate.txt` (20/20) zostaje jako zapis pierwotnego przebiegu.
+
 ## 5. Fixture i skrypty (`rust-port/renderer/tests/fixtures/units_braz/`, 4,06 MB < 8 MB)
 
 | Plik | SHA-256 |
@@ -168,7 +170,8 @@ Uwagi:
 | `cargo clippy --locked --all-targets --features gpu -- -D warnings` | `clippy-gpu.txt` | EXIT=0 |
 | `cargo test --locked --all-targets` | `test.txt` | EXIT=0 (20 celów, 123 passed, 0 failed) |
 | `cargo test … -- --nocapture` | `test-nocapture.txt` | EXIT=0 |
-| `python3 mutate.py` | `mutate.txt` | 20/20, EXIT=0 |
+| `python3 mutate.py` (runda 1) | `mutate.txt` | 20/20, EXIT=0 |
+| `python3 mutate.py` (obrona, + `jsmath_wiring`, M21–M23) | `mutate-obrona.txt` | 23/23, EXIT=0 |
 
 Pozostałe kontrole:
 - `git diff --check` jest czysty. Jedyna obróbka surowych logów: w `logi/test-nocapture.txt` usunięto końcowe spacje z 3 linii wypisywanych przez test P4.13 (`renderer:`/`trig:`/`models: … within_1e-12=0`); treść się nie zmieniła.
@@ -199,7 +202,7 @@ Jedno lokalne `#[allow(clippy::approx_constant)]` (`taran.rs`, literał webu `0.
 - `rust-port/renderer/tests/fixtures/units_braz/{units_braz.json, units_braz.json.sha256, gen.ts, build.mjs, README.md}`;
 - `rust-port/renderer/tests/fixtures/jsmath/asin.bin`;
 - ten dokument;
-- `dyspozycje/autobot/runs/R-RUSTPORT-P4-23-MOD06-UNITS-BRONZE-Q1/{00-dispatch.md, 01-operator-r1.md, gates.sh, mutate.py, logi/}`.
+- `dyspozycje/autobot/runs/R-RUSTPORT-P4-23-MOD06-UNITS-BRONZE-Q1/{00-dispatch.md, 01-operator-r1.md, 02-operator-obrona-r1.md, gates.sh, mutate.py, logi/}`.
 
 **Zmienione:**
 - `src/models.rs` (+1 linia);
@@ -219,4 +222,4 @@ Jedno lokalne `#[allow(clippy::approx_constant)]` (`taran.rs`, literał webu `0.
 
 **Integracja:** spodziewany konflikt jednej linii w `src/models.rs`, a w `jsmath/mod.rs`/`registry.rs` także z równoległymi tematami.
 
-**Scratch:** katalog `p423/` w scratchpadzie sesji, usunięty po zakończeniu. Podczas pracy wykonano jednorazowo `npm install` (te same wersje) we współdzielonym `scratchpad/ref`. Dwa pliki skopiowane przez pomyłkę do współdzielonego `refscript/` zostały usunięte.
+**Scratch:** katalog `p423/` w scratchpadzie sesji, usunięty po zakończeniu. Podczas pracy wykonano jednorazowo `npm install` (te same wersje) w `scratchpad/ref` (katalog utworzony przez tego Operatora 2026-10-22 13:48 UTC, ok. 39 MB). W obronie (uwaga 4 Evaluatora) sprawdzono, że żaden skrypt w scratchpadzie ani żaden proces go nie używa, i **usunięto go** (`rm -rf …/scratchpad/ref`). Dwa pliki skopiowane przez pomyłkę do współdzielonego `refscript/` zostały usunięte.

@@ -65,12 +65,21 @@ MUTATIONS = [
     ("M20 units_kamien kit: js_asin re-route returns libm asin", "src/models/units_kamien/kit.rs",
      "pub use crate::jsmath::js_asin;",
      "#[must_use]\npub fn js_asin(x: f64) -> f64 {\n    crate::jsmath::js_asin(x) * (1.0 + f64::EPSILON)\n}"),
+    # Round 1 defence (Evaluator note 2, E10-E12): replacing jsmath by the
+    # platform functions gives the same bits as V8 on the web inputs (glibc),
+    # so ONLY the source scanner `jsmath_wiring` can catch it; it is now in CMD.
+    ("M21 oval ring: js_cos -> platform f64::cos", B + "geo.rs",
+     "let x = js_cos(ang) * a;", "let x = ang.cos() * a;"),
+    ("M22 oval ring: js_sin -> platform f64::sin", B + "geo.rs",
+     "let y = js_sin(ang) * b;", "let y = ang.sin() * b;"),
+    ("M23 procarz yaw: js_atan2 -> platform f64::atan2", B + "procarz.rs",
+     "let yaw = js_atan2(d.x, d.z);", "let yaw = d.x.atan2(d.z);"),
 ]
 
 CMD = ["cargo", "test", "--locked", "--no-fail-fast",
        "--test", "units_braz_web_parity", "--test", "unit_core_web_parity",
        "--test", "unit_core_model_rule", "--test", "jsmath_v8_parity",
-       "--test", "units_kamien_web_parity"]
+       "--test", "units_kamien_web_parity", "--test", "jsmath_wiring"]
 
 
 def main() -> int:
