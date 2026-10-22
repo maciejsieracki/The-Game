@@ -14,6 +14,7 @@ use tiny_skia::{
 use super::color::{parse_css_color, CssColor};
 use super::path::{segs_to_skia, CanvasPath, Pt, Seg};
 use super::shadow::shadow_from_layer;
+use super::text::TextState;
 use super::Affine;
 use crate::jsmath::{js_cos, js_sin};
 
@@ -154,6 +155,9 @@ struct State {
     shadow_blur: f64,
     shadow_offset_y: f64,
     clip: Option<Mask>,
+    /// `font`, `textAlign`, `textBaseline` (RR-T8b, `raster::text`); saved
+    /// and restored with the rest of the state, as in Canvas 2D.
+    text: TextState,
 }
 
 impl Default for State {
@@ -168,6 +172,7 @@ impl Default for State {
             shadow_blur: 0.0,
             shadow_offset_y: 0.0,
             clip: None,
+            text: TextState::default(),
         }
     }
 }
@@ -650,6 +655,42 @@ impl Canvas2dLite {
         let Some(device) = segs_to_skia(segs) else {
             return;
         };
+        self.stroke_device_path(device);
+    }
+
+    // ----- hooks for `raster::text` (RR-T8b) -----------------------------
+    // Crate-private on purpose: the public Canvas surface of this file stays
+    // the closed RR-T8a list (`tests/raster_api_closed.rs`); the text members
+    // live in `raster/text` and are guarded by `tests/text_api_closed.rs`.
+
+    /// The current transformation matrix.
+    pub(crate) fn ctm(&self) -> Affine {
+        self.state.ctm
+    }
+
+    /// Text attributes of the current state.
+    pub(crate) fn text_state(&self) -> &TextState {
+        &self.state.text
+    }
+
+    /// Mutable text attributes of the current state.
+    pub(crate) fn text_state_mut(&mut self) -> &mut TextState {
+        &mut self.state.text
+    }
+
+    /// Fills a device-space path with the fill style, shadow and clip, like
+    /// [`Self::fill`], without touching the current path (`fillText`).
+    pub(crate) fn fill_device_path(&mut self, path: tiny_skia::Path) {
+        let Some(paint) = self.paint(true, self.state.ctm.to_skia()) else {
+            return;
+        };
+        self.run(&Op::Fill(path, paint));
+    }
+
+    /// Strokes a device-space path with the stroke style and line state,
+    /// like [`Self::stroke`], without touching the current path
+    /// (`strokeText`).
+    pub(crate) fn stroke_device_path(&mut self, device: tiny_skia::Path) {
         let ctm = self.state.ctm;
         let Some(inv) = ctm.invert() else {
             return;

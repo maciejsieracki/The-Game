@@ -1,0 +1,40 @@
+# input<TAB>accepted(1/0)<TAB>Chromium ctx.font serialisation
+700 22px Georgia, "Times New Roman", serif	1	bold 22px Georgia, "Times New Roman", serif
+700 16px Arial, Helvetica, sans-serif	1	bold 16px Arial, Helvetica, sans-serif
+700 13px Arial, Helvetica, sans-serif	1	bold 13px Arial, Helvetica, sans-serif
+600 11px Arial, Helvetica, sans-serif	1	600 11px Arial, Helvetica, sans-serif
+bold 11px Arial, Helvetica, sans-serif	1	bold 11px Arial, Helvetica, sans-serif
+bold 20px "Segoe UI Symbol", "Segoe UI", Arial, sans-serif	1	bold 20px "Segoe UI Symbol", "Segoe UI", Arial, sans-serif
+bold 26px Segoe UI, Arial, sans-serif	1	bold 26px "Segoe UI", Arial, sans-serif
+bold 20px Segoe UI, Arial, sans-serif	1	bold 20px "Segoe UI", Arial, sans-serif
+bold 104px "Segoe UI Symbol", "Segoe UI Emoji", "Segoe UI", Arial, sans-serif	1	bold 104px "Segoe UI Symbol", "Segoe UI Emoji", "Segoe UI", Arial, sans-serif
+900 118px "Segoe UI", Arial, sans-serif	1	900 118px "Segoe UI", Arial, sans-serif
+bold 58px "Segoe UI Symbol", "Segoe UI", Arial, sans-serif	1	bold 58px "Segoe UI Symbol", "Segoe UI", Arial, sans-serif
+bold 96px Arial	1	bold 96px Arial
+bold 16px sans-serif	1	bold 16px sans-serif
+bold 16px Arial, Helvetica, sans-serif	1	bold 16px Arial, Helvetica, sans-serif
+bold 20px Arial, Helvetica, sans-serif	1	bold 20px Arial, Helvetica, sans-serif
+48px serif	1	48px serif
+italic small-caps bold condensed 12px/1.2 Arial	1	italic bold small-caps 12px Arial
+normal normal 12pt "A B"	1	16px "A B"
+lighter 10px x	1	100 10px x
+12px/normal x	1	12px x
+10px "sans-serif", serif	1	10px "sans-serif", serif
+	0	10px sentinel-a
+bold	0	10px sentinel-a
+12px	0	10px sentinel-a
+Arial 12px	0	10px sentinel-a
+bold bold 12px x	0	10px sentinel-a
+12em x	1	120px x
+12% x	1	1.2px x
+-1px x	0	10px sentinel-a
+1001 12px x	0	10px sentinel-a
+12px 'unterminated	1	12px unterminated
+12px x,	0	10px sentinel-a
+12px inherit	0	10px sentinel-a
+12px x y, , z	0	10px sentinel-a
+500 11px Arial	1	500 11px Arial
+1in serif	1	96px serif
+10.5px Arial	1	10.5px Arial
+oblique 12px x	1	italic 12px x
+semi-expanded 9px x	1	9px x

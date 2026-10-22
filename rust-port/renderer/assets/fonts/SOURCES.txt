@@ -1,0 +1,26 @@
+Bundled fonts of civ-renderer (R-RUSTPORT-P4-29-TEXT-FONTS-Q1, owner decision D-TXT-1 = A)
+================================================================================
+
+Files are unmodified copies of the Debian packages installed in the build
+container (2026-10-22), taken from /usr/share/fonts/truetype/:
+
+  LiberationSans-Regular.ttf   fonts-liberation 1:2.1.5-3   (Liberation Fonts 2.1.5)
+  LiberationSans-Bold.ttf      fonts-liberation 1:2.1.5-3
+  LiberationSerif-Regular.ttf  fonts-liberation 1:2.1.5-3
+  LiberationSerif-Bold.ttf     fonts-liberation 1:2.1.5-3
+  DejaVuSans.ttf               fonts-dejavu-core 2.37-8     (DejaVu Fonts 2.37)
+  DejaVuSans-Bold.ttf          fonts-dejavu-core 2.37-8
+
+Licences (copied from /usr/share/doc/<package>/copyright; only trailing spaces stripped
+from LICENSE-DejaVu.txt lines 8 and 54 for `git diff --check`):
+  LICENSE-Liberation.txt  SIL Open Font License 1.1 (Reserved Font Names: Liberation; Arimo, Tinos, Cousine)
+  LICENSE-DejaVu.txt      Bitstream Vera Fonts licence (Copyright 2003 Bitstream, Inc.) + DejaVu changes in public domain
+                          (NOT the OFL — permissive, redistribution with software allowed; see the file)
+
+Role (family mapping, raster::text::map_family):
+  Liberation Sans  <- Arial, Helvetica, sans-serif           (metric-compatible with Arial)
+  Liberation Serif <- Times New Roman, Times, serif          (metric-compatible with Times New Roman)
+  DejaVu Sans      <- last-resort per-glyph fallback (symbols such as U+2620, U+25C6, U+2694)
+
+Integrity: MANIFEST.sha256 (sha256sum format) — checked by tests/text_fonts.rs.
+Total size of the directory must stay <= 6 MB (dispatch limit).

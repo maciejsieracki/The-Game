@@ -24,6 +24,7 @@ mod color;
 pub mod metric;
 mod path;
 mod shadow;
+pub mod text;
 
 pub use canvas::{Canvas2dLite, CanvasGradient, LineJoin, RasterError, RasterImage};
 pub use color::{parse_css_color, CssColor};

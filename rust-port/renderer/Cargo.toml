@@ -27,6 +27,13 @@ wgpu = { version = "=30.0.1", optional = true }
 # tests/raster_*.rs depend on its AA/stroker/gradient arithmetic. Default
 # features (std, simd, png-format) are not needed: `std` is enough.
 tiny-skia = { version = "=0.12.0", default-features = false, features = ["std"] }
+# Text (RR-T8b, R-RUSTPORT-P4-29-TEXT-FONTS-Q1, owner decision D-TXT-6 = A):
+# `ab_glyph` parses the bundled TrueType fonts (glyph outlines, metrics, cmap);
+# `rustybuzz` shapes runs (GPOS kerning, GSUB) like HarfBuzz in Chromium.
+# Pinned exactly: golden RGBA hashes and measured widths in tests/text_*.rs
+# depend on their arithmetic. Both build on rustc 1.87.0 (P4-29 §2).
+ab_glyph = { version = "=0.2.32", default-features = false, features = ["std"] }
+rustybuzz = { version = "=0.20.1", default-features = false, features = ["std"] }
 
 [dev-dependencies]
 # Blocks on wgpu's async adapter request in tests/gpu_probe.rs (no async
