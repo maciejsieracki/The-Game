@@ -1,0 +1,35 @@
+--- pin:gra/src/ui/postBattleSummary.ts
++++ v2:src-tauri/frontend-v2/src/ui/postBattleSummary.ts
+@@ -2,8 +2,11 @@
+  * postBattleSummary.ts — wynik po bitwie mapowej (layout TW jak preBattle C-01 v3).
+  */
+ 
+-import type { PostBattleSummaryData, BattleSummaryUnitCard, BattleSummarySide } from '../game/battle-summary';
+-import { buildPostBattleSummary } from '../game/battle-summary';
++import type {
++  BattleSummaryDto as PostBattleSummaryData,
++  BattleSummarySideDto as BattleSummarySide,
++  BattleSummaryUnitCardDto as BattleSummaryUnitCard,
++} from '../viewmodel/types';
+ import {
+   PB_SVG,
+   BATTLE_GOLD,
+@@ -16,7 +19,7 @@
+   BATTLE_FONT,
+   BATTLE_FONT_TITLE,
+   applyBtnStartBattle,
+-} from '../battle/battleHudTheme';
++} from './battleHudTheme';
+ import { pushOverlay, popOverlay } from './escapeOverlayStack';
+ import { civIconSvg, brandIconSvg } from './icons/brandAssets';
+ import { leaderPortraitUrl } from './leaderPortraits';
+@@ -591,8 +594,8 @@
+ // tools/r-bitwa-etykieta-tozsamosc-strony-live-atak-test.cjs (realny klik w mapie,
+ // realny BattleScene).
+ if (typeof window !== 'undefined') {
++  // P5.3: bez `build` (pin `buildPostBattleSummary` = reguła → Rust `BattleSummaryDto`, P5-0 §6.13).
+   (window as any).__postBattleSummaryTestDebug = {
+-    build: buildPostBattleSummary,
+     show: showPostBattleSummary,
+     hide: hidePostBattleSummary,
+     civIconSvg,
