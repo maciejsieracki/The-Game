@@ -2467,6 +2467,18 @@
       "pin": "edb8fb56:gra/tsconfig.json",
       "sha256": "ecbd969da3afc489083e354e018fdd12046432c0a644895391d0bf9937d38ad5",
       "bytes": 461
+    },
+    {
+      "path": "src/ui/entityCards/renderer.ts",
+      "pin": "edb8fb56:gra/src/ui/entityCards/renderer.ts",
+      "sha256": "4447902a1d4c976ac31a4853beb8c3a0dc48d8ec2f78a1c3941dbfad08742a3d",
+      "bytes": 73561
+    },
+    {
+      "path": "src/ui/entityCards/wonderAdapter.ts",
+      "pin": "edb8fb56:gra/src/ui/entityCards/wonderAdapter.ts",
+      "sha256": "a2fe269f16bacf333ba65e4df2188afe568611aa9a04ee5439e8ed07135edf9d",
+      "bytes": 7747
     }
   ]
 }

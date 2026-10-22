@@ -18,9 +18,11 @@ export const MOCK_STATIC_CATALOG: StaticCatalogDto = {
     { Jednostka: 'MOCK-Wojownik', Tech: 'MOCK-Brąz', 'Super-jednostka': null, 'Rola (linia)': 'MOCK', Typ: null },
     { Jednostka: 'MOCK-Łucznik', Tech: 'MOCK-Brąz', 'Super-jednostka': null, 'Rola (linia)': 'MOCK', Typ: null },
   ],
-  tech: [],
+  // P5.4: kształty JSON (`tech.json` → `{ technologie }`, `wonders.json` → `{ cuda }`) — czytane przez
+  // `entityCards/registry.ts`, `sciencePicker.ts`, `techDiscoveryNotice.ts` przy ewaluacji modułu.
+  tech: { technologie: [] },
   terrainImprovements: {},
-  wonders: [],
+  wonders: { cuda: [] },
   counters: {},
   civs: {
     cywilizacje: [
@@ -85,6 +87,7 @@ export const MOCK_STATIC_CATALOG: StaticCatalogDto = {
   },
   unitCategory: { 'MOCK-Wojownik': 'maczuga', 'MOCK-Łucznik': 'lucznik' },
   unitCategoryNameOnly: { 'MOCK-Wojownik': 'domyslny', 'MOCK-Łucznik': 'domyslny' },
+  techTerrainUnlockLabels: {},
 };
 
 export const MOCK_PERF_DIAGNOSTICS: PerfDiagnosticsDto = {

@@ -1,0 +1,6 @@
+$ git ls-tree edb8fb56 <2 ścieżki pinu>   vs   git hash-object <2 kopie w src-tauri/frontend-v2/src/ui>
+pin blob                                  v2 hash-object                            ścieżka
+304dbef5fa52b615e399883fd4c4b80c59444686  304dbef5fa52b615e399883fd4c4b80c59444686  gra/src/ui/entityCards/renderer.ts -> src/ui/entityCards/renderer.ts
+48176af0aeed4f8b6e28b4fc25fe5c0862016c95  48176af0aeed4f8b6e28b4fc25fe5c0862016c95  gra/src/ui/entityCards/wonderAdapter.ts -> src/ui/entityCards/wonderAdapter.ts
+zgodnych=2/2
+EXIT=0

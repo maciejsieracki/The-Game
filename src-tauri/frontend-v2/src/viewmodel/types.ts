@@ -181,6 +181,13 @@ export interface StaticCatalogDto {
    * `cityPanel.ts:6403`). Osobna mapa, by zachować 1:1 zachowanie web (może różnić się od `unitCategory`).
    */
   unitCategoryNameOnly: Readonly<Record<UnitTypeKey, string>>;
+  /**
+   * P5.4 (`sciencePicker.ts:130-135,182`): nazwy ulepszeń terenu odblokowywanych przez technologię
+   * (klucz = nazwa technologii z `tech.json`) = web `terrainUnlockLabelsForTech(name)`
+   * (`game/improvement-tech.ts:129-138`, bramka tech ulepszeń) policzone w Rust dla każdej technologii
+   * katalogu. Brak klucza = pusta lista (web: fallback na pole `tech.json`). ROZSZ. Z4-4.
+   */
+  techTerrainUnlockLabels: Readonly<Record<string, readonly string[]>>;
 }
 
 // ─── §5 / §6.2 Miasto (pola dzielone renderer ↔ UI, D-UI-9) ───────────────────
@@ -728,15 +735,71 @@ export interface ArmyStackDto {
 
 // ─── §6.9 Badania ────────────────────────────────────────────────────────────
 
-export type EraGateInfoDto = NieZmierzonoDto;
+/** P5.4 (`scienceHubHud.ts:16,354-403`): = web `EraGateMissingTech` (`game/era-gate-ui.ts:19-22`). */
+export interface EraGateMissingTechDto {
+  id: string;
+  name: string;
+}
+
+/** P5.4: = web `EraGateWonderStatus` (`game/era-gate-ui.ts:24-30`). */
+export interface EraGateWonderStatusDto {
+  id: string;
+  name: string;
+  built: boolean;
+  inProgress: boolean;
+}
+
+/**
+ * P5.4 (`scienceHubHud.ts:121,354-403,573-576`): = web `EraGateInfo` (`game/era-gate-ui.ts:46-67`);
+ * wszystkie pola liczy silnik (bramka awansu epoki), panel tylko je wyświetla.
+ */
+export interface EraGateInfoDto {
+  era: number;
+  eraLabel: string;
+  nextEraLabel: string;
+  maxEra: number;
+  isMaxEra: boolean;
+  missingTechs: EraGateMissingTechDto[];
+  techsComplete: boolean;
+  wonderRequired: boolean;
+  wonders: EraGateWonderStatusDto[];
+  wonderSatisfied: boolean;
+  canAdvance: boolean;
+  blocked: boolean;
+}
+
+/**
+ * P5.4 (`sciencePicker.ts:489-497`): wpis listy huba badań = web `HubEntryDraft`
+ * (`ui/scienceHubSnapshotLogic.ts:14-21`) — wynik `buildHubTechEntries` (`:76-141`, reguła wpisana bez importu,
+ * `PORTING-QUEUE.md`: REGUŁA `:89-134`) policzony w Rust. `id` = slug węzła drzewka.
+ */
+export interface HubTechEntryDto {
+  id: TechId;
+  name: string;
+  epoka: string;
+  koszt: number;
+  locked: boolean;
+  isTarget: boolean;
+}
 
 export interface ResearchViewDto {
+  /**
+   * `id` = slug węzła drzewka (`techToSlug`); `effectiveCost` = web `scaledResearchCost(base, tempo, owner,
+   * difficulty, epoka)` (`game/difficulty-cost.ts:86-101`, użycie `sciencePicker.ts:1176-1180`).
+   */
   techs: { id: TechId; baseCost: number; effectiveCost: number; epoka: string; state: string; terrainUnlockLabels: string[] }[];
   queue: TechId[];
   queueMax: number;
   eraGate: EraGateInfoDto | null;
   tempo: string;
   difficulty: string;
+  /**
+   * P5.4 (ROZSZ. Z4-3): epoka widoczna na drzewku (`sciencePicker.ts:521-532` `currentEpochLabel`:
+   * numer epoki gracza → etykieta, przycięcie do znanych epok); `null` = wszystkie epoki.
+   */
+  treeEpoch: string | null;
+  /** P5.4 (ROZSZ. Z4-2): lista „Możesz wybrać” + podgląd ≤4 zablokowanych (`buildHubTechEntries`). */
+  hubEntries: HubTechEntryDto[];
 }
 
 // ─── §6.10 Nowa gra ──────────────────────────────────────────────────────────
@@ -767,6 +830,47 @@ export type EntityCardDto =
   | { kind: 'tech'; id: string; card: NieZmierzonoDto }
   | { kind: 'improvement'; id: string; card: NieZmierzonoDto }
   | { kind: 'wonder'; id: string; card: NieZmierzonoDto };
+
+/**
+ * P5.4 (`entityCards/buildingAdapter.ts:58-71`): stan zależny od miasta/gracza, z którym Rust liczy kartę
+ * budynku (web `BuildingCardCityState`). `buildCostPace` = web `BuildingCostPace` (`niski|normalny|wysoki`),
+ * `difficulty` = web `GameDifficulty` (`easy|normal|hard`) — tu jako `string` (typy web z `game/**`).
+ */
+export interface BuildingCardStateDto {
+  hasCity: boolean;
+  displayLevel: number;
+  buildCostPace: string;
+  difficulty: string;
+  ownerId: number;
+}
+
+/**
+ * P5.4 (§6.11 `EntityCardDto::Building`, ROZSZ. Z4-1): wartości karty budynku policzone przez silnik
+ * (web: `buildingAdapter.ts:137,152,257-259,267,278-280,296-297` — funkcje `game/**`). Klucze plonów =
+ * klucze `BuildingDef.baza` (`praca|pieniadz|zywnosc|nauka|kultura|zadowolenie|obrona`).
+ */
+export interface BuildingCardRulesDto {
+  /** `buildingEffectAtLevel(baza, przyrost, displayLevel)` per klucz plonu. */
+  yieldAtDisplayLevel: Readonly<Record<string, number>>;
+  /** `buildingEffectAtLevel(baza, przyrost, l)` dla l = 1..maksPoziom (indeks l−1) per klucz plonu. */
+  yieldScale: Readonly<Record<string, readonly number[]>>;
+  /** `mnoznikRoleForBuildingId(id)`. */
+  mnoznikRole: 'pancerz' | 'parametry' | null;
+  /** `cumulativeMnoznikForBuildingId(id, buildings)`. */
+  cumulativeMnoznik: number;
+  /** `buildingStructuralDefenseBonusLine(id)`. */
+  structuralDefenseLine: string | null;
+  /** `buildingWorkCost(itemCost('budynek', id, …, 1), undefined, pace, ownerId, difficulty)`. */
+  workCost: number;
+  /** `buildingStockCost(def)` (kolejność kluczy = web). */
+  stockCost: Readonly<Record<string, number>>;
+  /** `buildingUpkeep(def, 1)`. */
+  upkeepGold: number;
+  /** `buildingResourceUpkeep(def)` (kolejność kluczy = web). */
+  upkeepResources: Readonly<Record<string, number>>;
+  /** `stockResourceLabel(k)` dla kluczy `stockCost` ∪ `upkeepResources`. */
+  resourceLabels: Readonly<Record<string, string>>;
+}
 
 // ─── §6.12 Oblężenie ─────────────────────────────────────────────────────────
 

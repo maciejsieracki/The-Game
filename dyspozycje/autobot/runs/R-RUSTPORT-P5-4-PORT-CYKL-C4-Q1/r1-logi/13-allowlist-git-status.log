@@ -1,0 +1,36 @@
+$ git status --porcelain --untracked-files=all   (przed commitem; logi *.log są ignorowane przez .gitignore i dodawane jawnie `git add -f`)
+ M src-tauri/frontend-v2/PORTING-QUEUE.md
+ M src-tauri/frontend-v2/package.json
+ M src-tauri/frontend-v2/src/controller/index.ts
+ M src-tauri/frontend-v2/src/controller/mockCatalog.ts
+ M src-tauri/frontend-v2/src/main.ts
+ M src-tauri/frontend-v2/src/viewmodel/types.ts
+ M src-tauri/frontend-v2/tools/pin-manifest.json
+?? dyspozycje/autobot/runs/R-RUSTPORT-P5-4-PORT-CYKL-C4-Q1/.gitattributes
+?? dyspozycje/autobot/runs/R-RUSTPORT-P5-4-PORT-CYKL-C4-Q1/01-operator-r1.md
+?? dyspozycje/autobot/runs/R-RUSTPORT-P5-4-PORT-CYKL-C4-Q1/r1-logi/05-dom-harness-c4.json
+?? dyspozycje/autobot/runs/R-RUSTPORT-P5-4-PORT-CYKL-C4-Q1/r1-logi/diffs/entityCards_buildingAdapter.ts.diff
+?? dyspozycje/autobot/runs/R-RUSTPORT-P5-4-PORT-CYKL-C4-Q1/r1-logi/diffs/entityCards_improvementAdapter.ts.diff
+?? dyspozycje/autobot/runs/R-RUSTPORT-P5-4-PORT-CYKL-C4-Q1/r1-logi/diffs/entityCards_registry.ts.diff
+?? dyspozycje/autobot/runs/R-RUSTPORT-P5-4-PORT-CYKL-C4-Q1/r1-logi/diffs/entityCards_technologyAdapter.ts.diff
+?? dyspozycje/autobot/runs/R-RUSTPORT-P5-4-PORT-CYKL-C4-Q1/r1-logi/diffs/entityCards_unitAdapter.ts.diff
+?? dyspozycje/autobot/runs/R-RUSTPORT-P5-4-PORT-CYKL-C4-Q1/r1-logi/diffs/scienceHubHud.ts.diff
+?? dyspozycje/autobot/runs/R-RUSTPORT-P5-4-PORT-CYKL-C4-Q1/r1-logi/diffs/sciencePicker.ts.diff
+?? dyspozycje/autobot/runs/R-RUSTPORT-P5-4-PORT-CYKL-C4-Q1/r1-logi/diffs/techDiscoveryNotice.ts.diff
+?? dyspozycje/rust-port/p5/P5-4-PORT-CYKL-C4.md
+?? src-tauri/frontend-v2/src/controller/entityCardRules.ts
+?? src-tauri/frontend-v2/src/ui/entityCards/buildingAdapter.ts
+?? src-tauri/frontend-v2/src/ui/entityCards/improvementAdapter.ts
+?? src-tauri/frontend-v2/src/ui/entityCards/registry.ts
+?? src-tauri/frontend-v2/src/ui/entityCards/renderer.ts
+?? src-tauri/frontend-v2/src/ui/entityCards/technologyAdapter.ts
+?? src-tauri/frontend-v2/src/ui/entityCards/unitAdapter.ts
+?? src-tauri/frontend-v2/src/ui/entityCards/wonderAdapter.ts
+?? src-tauri/frontend-v2/src/ui/portCycleC4.ts
+?? src-tauri/frontend-v2/src/ui/scienceHubHud.ts
+?? src-tauri/frontend-v2/src/ui/sciencePicker.ts
+?? src-tauri/frontend-v2/src/ui/techDiscoveryNotice.ts
+?? src-tauri/frontend-v2/tools/dom-harness/mutate-c4.mjs
+?? src-tauri/frontend-v2/tools/dom-harness/run-c4.mjs
+Wynik: wszystkie ścieżki w allowliście (src-tauri/frontend-v2/**, dyspozycje/rust-port/p5/P5-4-PORT-CYKL-C4.md, dyspozycje/autobot/runs/R-RUSTPORT-P5-4-PORT-CYKL-C4-Q1/**); package-lock.json bez zmian; 0 ścieżek w gra/**, src-tauri/frontend/**, src-tauri/src/**, src-tauri/Cargo.*, src-tauri/tauri.conf.json, rust-port/**, .github/**.
+EXIT=0

@@ -18,6 +18,8 @@ export { installStaticCatalog, hasStaticCatalog, staticCatalog, unitCategoryFrom
 export { installPerfDiagnostics, perfDiagnostics } from './diagnostics';
 export type { SaveSlotsService } from './saveSlots';
 export { installSaveSlotsService, saveSlotsService } from './saveSlots';
+export type { BuildingCardRulesProvider } from './entityCardRules';
+export { installBuildingCardRulesProvider, buildingCardRules, MOCK_BUILDING_CARD_RULES } from './entityCardRules';
 export { MOCK_STATIC_CATALOG, MOCK_PERF_DIAGNOSTICS, MOCK_SAVE_SLOTS, createMockSaveSlotsService } from './mockCatalog';
 
 export interface Controller {

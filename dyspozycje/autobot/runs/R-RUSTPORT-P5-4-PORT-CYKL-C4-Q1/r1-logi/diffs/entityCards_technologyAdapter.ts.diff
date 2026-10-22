@@ -1,0 +1,44 @@
+--- pin:gra/src/ui/entityCards/technologyAdapter.ts
++++ v2:src-tauri/frontend-v2/src/ui/entityCards/technologyAdapter.ts
+@@ -30,10 +30,8 @@
+  * ekonomiczne → (pusta, gdy brak odblokowań). Wzajemna kolejność tej ostatniej piątki
+  * zostaje jak przed tym tematem — tylko przesunięta niżej, za miejsce wstawienia historii.
+  */
+-import buildingsData from '../../../data/buildings.json';
+-import unitsData from '../../../data/units.json';
+-import terrainImprovementsData from '../../../data/terrain-improvements.json';
+-import techData from '../../../data/tech.json';
++// P5.4: 4 pliki `gra/data/*.json` (pin `:33-36`) → `StaticCatalogDto` (D-UI-4).
++import { staticCatalog } from '../../controller/staticCatalog';
+ import { techIconSvg } from '../techIcons';
+ import { buildingIconSvg, unitIconSvg, improvementIconSvg } from '../icons/brandAssets';
+ import { naukaCostSuffix } from '../naukaLabel';
+@@ -97,7 +95,7 @@
+  * etykiet — `improvementIconSvg` i tak spada na `_default` (imp-farm). */
+ const IMPROVEMENT_NAME_TO_KEY: Record<string, string> = (() => {
+   const map: Record<string, string> = {};
+-  for (const [key, row] of Object.entries(terrainImprovementsData as Record<string, { nazwa?: string }>)) {
++  for (const [key, row] of Object.entries(staticCatalog().terrainImprovements as Record<string, { nazwa?: string }>)) {
+     if (key.startsWith('_')) continue;
+     const nazwa = row?.nazwa;
+     if (typeof nazwa === 'string' && nazwa) map[nazwa] = key;
+@@ -105,7 +103,7 @@
+   return map;
+ })();
+ 
+-const ALL_TECHS = (techData as unknown as { technologie: RawTech[] }).technologie;
++const ALL_TECHS = (staticCatalog().tech as unknown as { technologie: RawTech[] }).technologie;
+ 
+ /** `Historia` (capitalizowane, konwencja `tech.json` — zgodna z istniejącym
+  * `Uwagi`/`Technologia`) — pole NIE jest jeszcze zadeklarowane w `RawTech` (dodadzą
+@@ -132,8 +130,8 @@
+ }
+ 
+ export const technologyAdapter: EntityCardAdapter<RawTech> = (tech) => {
+-  const buildings = (buildingsData as BuildingRow[]).filter((b) => b.techUnlock === tech['Technologia']);
+-  const units = (unitsData as UnitRow[]).filter((u) => u.Tech === tech['Technologia']);
++  const buildings = (staticCatalog().buildings as BuildingRow[]).filter((b) => b.techUnlock === tech['Technologia']);
++  const units = (staticCatalog().units as UnitRow[]).filter((u) => u.Tech === tech['Technologia']);
+   const nextTechRows = ALL_TECHS.filter((t) => list(t['Wymaga (prereq)']).includes(tech['Technologia']));
+   const improvementNames = list(tech['Odblokowuje ulepszenie terenu']);
+   const resourceUnlocked = tech['Odblokowuje surowiec.'] || null;
