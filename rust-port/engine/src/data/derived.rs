@@ -464,7 +464,9 @@ pub fn parse_storage_caps() -> Result<StorageCapsFile, serde_json::Error> {
     serde_json::from_str(STORAGE_CAPS_JSON)
 }
 
-/// Stałe handlu (P3-22 grupa HANDEL): `trade-multipliers.json`. Bez mechaniki w Rust.
+/// Stałe handlu (P3-22 grupa HANDEL): `trade-multipliers.json`.
+/// Wiersze ROZWINIĘTE (`TRADE_ROUTE_BUILDING_BONUS_RATE`, `PORT_SEA_TRADE_BONUS_PIENIADZ`)
+/// są czytane przez `domain/trade.rs`; pozostałe są BEZ MECHANIKI (NIEUŻYWANE).
 pub const TRADE_MULTIPLIERS_JSON: &str = include_str!("../../data/derived/trade-multipliers.json");
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -474,12 +476,17 @@ pub struct TradeMultipliersFile {
     pub wiersze: Vec<TradeMultiplierRow>,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct TradeMultiplierRow {
     pub id: String,
     pub klasa: String,
-    pub wartosc: u32,
+    /// Wartość klasy a (stała). Brak dla wiersza klasy b.
+    #[serde(default)]
+    pub wartosc: Option<f64>,
+    /// Wartości klasy b po kluczu trudności (`easy` / `normal` / `hard`).
+    #[serde(default)]
+    pub wartosci_po_trudnosci: Option<BTreeMap<String, f64>>,
     pub definicja_web: String,
     pub uzycie_web: String,
     pub opis: String,
@@ -488,4 +495,18 @@ pub struct TradeMultiplierRow {
 
 pub fn parse_trade_multipliers() -> Result<TradeMultipliersFile, serde_json::Error> {
     serde_json::from_str(TRADE_MULTIPLIERS_JSON)
+}
+
+/// Wartość klasy a wiersza `id` z `trade-multipliers.json`. Brak wiersza lub wartości
+/// to błąd danych (pokrywa go test kształtu), więc panika z komunikatem.
+pub fn trade_multiplier_value(id: &str) -> f64 {
+    static TABLE: std::sync::OnceLock<TradeMultipliersFile> = std::sync::OnceLock::new();
+    let table =
+        TABLE.get_or_init(|| parse_trade_multipliers().expect("trade-multipliers.json must parse"));
+    table
+        .wiersze
+        .iter()
+        .find(|row| row.id == id)
+        .and_then(|row| row.wartosc)
+        .unwrap_or_else(|| panic!("trade-multipliers.json: brak wartosc klasy a dla {id}"))
 }

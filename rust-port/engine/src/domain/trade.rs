@@ -1475,7 +1475,11 @@ where
     result
 }
 
-pub const TRADE_ROUTE_BUILDING_BONUS_RATE: f64 = 0.05;
+/// Udział bonusu budynku trasy (web `TRADE_ROUTE_BUILDING_BONUS_RATE`), z tabeli
+/// `data/derived/trade-multipliers.json` (P3-22, wiersz ROZWINIĘTE).
+pub fn trade_route_building_bonus_rate() -> f64 {
+    crate::data::derived::trade_multiplier_value("TRADE_ROUTE_BUILDING_BONUS_RATE")
+}
 
 pub fn trade_route_building_bonus_for_route(route: &TradeRoute) -> f64 {
     trade_route_building_bonus_for_route_with_params(route, &DEFAULT_TRADE_ROUTE_INCOME_PARAMS)
@@ -1488,7 +1492,7 @@ pub fn trade_route_building_bonus_for_route_with_params(
     if !route.is_connected() || !route.building_unlocked {
         return 0.0;
     }
-    TRADE_ROUTE_BUILDING_BONUS_RATE
+    trade_route_building_bonus_rate()
         * total_distance_income_impl(route.distance, route.medium, params) as f64
 }
 
@@ -1536,7 +1540,7 @@ pub struct SeaTradeBonusParams {
 impl Default for SeaTradeBonusParams {
     fn default() -> Self {
         Self {
-            bonus_per_extra_route: 1,
+            bonus_per_extra_route: port_sea_trade_bonus_pieniadz(),
         }
     }
 }
@@ -1549,7 +1553,11 @@ impl From<u64> for SeaTradeBonusParams {
     }
 }
 
-pub const PORT_SEA_TRADE_BONUS_PIENIADZ: u64 = 1;
+/// Premia Pieniądza za dodatkową trasę morską portu (web `PORT_SEA_TRADE_BONUS_PIENIADZ`),
+/// z tabeli `data/derived/trade-multipliers.json` (P3-22, wiersz ROZWINIĘTE).
+pub fn port_sea_trade_bonus_pieniadz() -> u64 {
+    crate::data::derived::trade_multiplier_value("PORT_SEA_TRADE_BONUS_PIENIADZ") as u64
+}
 
 pub fn compute_sea_trade_bonus_income_by_city<P>(
     sea_trade_route_count_by_city: &BTreeMap<String, u32>,

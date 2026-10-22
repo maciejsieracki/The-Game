@@ -713,20 +713,62 @@ fn storage_caps_cover_each_era_and_difficulty_once() {
 }
 
 #[test]
-fn trade_multipliers_cover_each_constant_once_with_class_a() {
+fn trade_multipliers_cover_each_constant_once_with_values() {
     use civ_engine::data::derived::parse_trade_multipliers;
+    use civ_engine::domain::trade::{
+        port_sea_trade_bonus_pieniadz, trade_route_building_bonus_rate,
+    };
     let table = parse_trade_multipliers().expect("trade multipliers parse");
     let ids: BTreeSet<&str> = table.wiersze.iter().map(|r| r.id.as_str()).collect();
-    assert_eq!(table.wiersze.len(), 2);
-    assert_eq!(ids.len(), 2);
-    assert!(ids.contains("TRADE_ROUTE_INTERNATIONAL_MULTIPLIER"));
-    assert!(ids.contains("FALLBACK_TRADE_MULT"));
+    assert_eq!(table.wiersze.len(), 6);
+    assert_eq!(ids.len(), 6);
+    let row = |id: &str| {
+        table
+            .wiersze
+            .iter()
+            .find(|r| r.id == id)
+            .unwrap_or_else(|| panic!("brak wiersza {id}"))
+    };
+    // Wektory Rust-autorskie: wartosci z weba edb8fb56 (zob. dowody runu).
+    assert_eq!(
+        row("TRADE_ROUTE_INTERNATIONAL_MULTIPLIER").wartosc,
+        Some(2.0)
+    );
+    assert_eq!(row("TRADE_ROUTE_INCOME_HALF_DIVISOR").wartosc, Some(2.0));
+    assert_eq!(row("FALLBACK_TRADE_MULT").wartosc, Some(1.0));
+    assert_eq!(row("TRADE_ROUTE_BUILDING_BONUS_RATE").wartosc, Some(0.05));
+    assert_eq!(row("PORT_SEA_TRADE_BONUS_PIENIADZ").wartosc, Some(1.0));
+    let delta = row("MNOZNIK_HANDEL_TRUDNOSC_DELTA");
+    assert_eq!(delta.klasa, "b");
+    assert_eq!(delta.wartosc, None);
+    let by_difficulty = delta
+        .wartosci_po_trudnosci
+        .as_ref()
+        .expect("wiersz klasy b ma wartosci po trudnosci");
+    assert_eq!(by_difficulty.len(), 3);
+    assert_eq!(by_difficulty.get("easy"), Some(&0.5));
+    assert_eq!(by_difficulty.get("normal"), Some(&0.0));
+    assert_eq!(by_difficulty.get("hard"), Some(&-0.5));
+    // Klasa a: dokladnie jedna wartosc, brak mapy po trudnosci.
     assert!(table
         .wiersze
         .iter()
-        .all(|r| r.klasa == "a" && r.wartosc >= 1));
+        .filter(|r| r.klasa == "a")
+        .all(|r| r.wartosc.is_some() && r.wartosci_po_trudnosci.is_none()));
+    // Status kazdego wiersza: ROZWINIETE (czytany w domenie) albo BEZ MECHANIKI.
     assert!(table
         .wiersze
         .iter()
-        .all(|r| r.rust.starts_with("bez mechaniki")));
+        .all(|r| r.rust.starts_with("BEZ MECHANIKI") || r.rust.starts_with("ROZWINI")));
+    assert_eq!(
+        table
+            .wiersze
+            .iter()
+            .filter(|r| r.rust.starts_with("ROZWINI"))
+            .count(),
+        2
+    );
+    // Wiazanie domeny: wartosci odczytywane z tabeli daja wektory weba.
+    assert_eq!(trade_route_building_bonus_rate(), 0.05);
+    assert_eq!(port_sea_trade_bonus_pieniadz(), 1);
 }

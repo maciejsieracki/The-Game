@@ -1,8 +1,8 @@
 {
   "meta": {
-    "status": "P3-22 ETAP 2, grupa HANDEL. Stałe klasy a (bez zmiennych stanów). Tabela jest edytowalnym źródłem prawdy. Silnik Rust NIE ma mechaniki tras międzynarodowych ani mnożnika kulturowego, więc wiersze są NIEUŻYWANE (bez mechaniki).",
+    "status": "P3-22 ETAP 2, grupa HANDEL (runda 2, poprawka po FAIL Evaluatora). Tabela jest edytowalnym źródłem prawdy: zmienia się konkretną liczbę w polu wartosc / wartosci_po_trudnosci. Wiersze klasy a mają pole wartosc; wiersz klasy b (skończony zbiór stanów: trudność) ma wartosci_po_trudnosci.",
     "pin_web": "edb8fb56",
-    "wygenerowano": "R-RUSTPORT-P3-22-FLATTEN-STAGE2-Q1 runda 1, ręcznie z odczytu źródła (grep -n na pinie edb8fb56); brak generatora node, bo stałe są literałami TS"
+    "wygenerowano": "R-RUSTPORT-P3-22-FLATTEN-STAGE2-Q1 runda 2: wartości zapisane z odczytu literałów TS przez gen-trade-web.py (runs/R-RUSTPORT-P3-22-FLATTEN-STAGE2-Q1/), niezależnie sprawdzone verify-trade-web.py (0 rozbieżności)."
   },
   "wiersze": [
     {
@@ -12,7 +12,16 @@
       "definicja_web": "gra/src/game/trade-routes.ts:1558",
       "uzycie_web": "gra/src/game/trade-routes.ts:1575",
       "opis": "Międzynarodowa trasa: dochód bazowy x2 przed końcową redukcją (ceil/2).",
-      "rust": "bez mechaniki (brak tras międzynarodowych w rust-port/engine/src/domain/trade.rs)"
+      "rust": "BEZ MECHANIKI: domain/trade.rs nie ma trasy międzynarodowej (dowód: runs/.../dowody/grep-handel-rust.txt)"
+    },
+    {
+      "id": "TRADE_ROUTE_INCOME_HALF_DIVISOR",
+      "klasa": "a",
+      "wartosc": 2,
+      "definicja_web": "gra/src/game/trade-routes.ts:1565",
+      "uzycie_web": "gra/src/game/trade-routes.ts:1576",
+      "opis": "Końcowa redukcja dochodu trasy: Math.ceil(beforeHalf / 2).",
+      "rust": "BEZ MECHANIKI: domain/trade.rs nie ma kroku ceil(x/2) w dochodzie tras (dowód: grep-handel-rust.txt). Rozbieżność zachowania NIE_ZMIERZONO, zachowanie nie zmienione."
     },
     {
       "id": "FALLBACK_TRADE_MULT",
@@ -21,7 +30,38 @@
       "definicja_web": "gra/src/game/culture-religion.ts:1268",
       "uzycie_web": "gra/src/game/culture-religion.ts:1313",
       "opis": "Mnożnik handlu miasta, gdy bramka Waluta+Mennica nie jest spełniona lub religia nie pasuje (neutralny 1.0).",
-      "rust": "bez mechaniki (brak mnożnika kulturowo-religijnego w rust-port/engine/src/domain/trade.rs)"
+      "rust": "BEZ MECHANIKI: brak mnożnika kulturowo-religijnego w domain/trade.rs (dowód: grep-handel-rust.txt)"
+    },
+    {
+      "id": "TRADE_ROUTE_BUILDING_BONUS_RATE",
+      "klasa": "a",
+      "wartosc": 0.05,
+      "definicja_web": "gra/src/game/trade-routes.ts:1646",
+      "uzycie_web": "gra/src/game/trade-routes.ts:1670",
+      "opis": "Bonus budynku trasy: udział 5% dochodu trasy (gdy budynek odblokowany).",
+      "rust": "ROZWINIĘTE: domain/trade.rs trade_route_building_bonus_rate() czyta tę wartość z tabeli (wcześniej literał 0.05)."
+    },
+    {
+      "id": "PORT_SEA_TRADE_BONUS_PIENIADZ",
+      "klasa": "a",
+      "wartosc": 1,
+      "definicja_web": "gra/src/game/trade-routes.ts:1742",
+      "uzycie_web": "gra/src/game/trade-routes.ts:1746 (domyślny parametr bonusPerRoutePieniadz)",
+      "opis": "Premia Pieniądza za każdą dodatkową trasę morską portu (domyślnie 1).",
+      "rust": "ROZWINIĘTE: domain/trade.rs SeaTradeBonusParams::default() czyta tę wartość z tabeli (wcześniej literał 1). Zgodność semantyki 'za dodatkową trasę' NIE_ZMIERZONO w tej rundzie (porównano tylko wartość)."
+    },
+    {
+      "id": "MNOZNIK_HANDEL_TRUDNOSC_DELTA",
+      "klasa": "b",
+      "wartosci_po_trudnosci": {
+        "easy": 0.5,
+        "normal": 0,
+        "hard": -0.5
+      },
+      "definicja_web": "gra/src/game/economy.ts:810",
+      "uzycie_web": "gra/src/game/economy.ts:840 (mnoznikHandelPieniadzForCivByDifficulty)",
+      "opis": "Delta mnożnika Handel->Pieniądz skalowana trudnością, dodawana do wartości civs.json (poziom normal).",
+      "rust": "BEZ MECHANIKI: civilizations.rs:70 niesie pole mnoznik_handel_pieniadz, ale domena Rust go nie czyta (dowód: grep-handel-rust.txt). Brak wejścia stanu (trudność) w API domeny, bo brak mechaniki."
     }
   ]
 }
