@@ -21,12 +21,12 @@ use std::collections::HashSet;
 use std::sync::Arc;
 
 use crate::core::map_style::{style_terrain_color, MapRenderStyle};
-use crate::core::scene::{Geometry, SceneNode};
 use crate::geom::{
     box_geometry, cone_geometry, cylinder_geometry, icosahedron_geometry, Euler, Vec3,
 };
 use crate::pick::hex::{axial_to_world, js_round, sqrt3, HexCoord, HEX_R};
 use crate::pick::terrain::{hash_heksa as hash2d, Terrain};
+use crate::scene::{Geometry, Material, ROOT};
 use crate::terrain::coast::{TerrainAt, AXIAL_NEIGHBORS, COAST_SAND_ROBLOX, LAND_COAST_SAND_FRAC};
 use crate::terrain::roblox_terrain_hex;
 
@@ -38,7 +38,7 @@ pub use crate::core::map_style::{forest_tree_count_for_hex, jungle_forest_tree_c
 use crate::pick::terrain::TERRAIN_SOLID_VARIANTS as LICZBA_WARIANTOW_TERENU;
 
 use super::js::{js_atan2, js_cos, js_hypot, js_max, js_sin, PI};
-use super::object::{DecorObject, GroupBuilder};
+use super::object::{DecorObject, GroupBuilder, Leaf};
 use super::parts::lambert;
 use super::relief::{
     gora_geometria, powierzchnia_reliefu_y, rotacja_dla_heksa, teren_material, wariant_dla_heksa,
@@ -46,7 +46,7 @@ use super::relief::{
 };
 
 /// `mat(color, flat = true)` (`:353-355`).
-fn mat(color: u32) -> crate::core::scene::Material {
+fn mat(color: u32) -> Material {
     lambert(color, true)
 }
 
@@ -69,8 +69,8 @@ fn boxg(w: f64, h: f64, d: f64) -> Arc<Geometry> {
     geo(box_geometry(w, h, d, 1, 1, 1))
 }
 
-fn mesh(g: Arc<Geometry>, color: u32, x: f64, y: f64, z: f64) -> SceneNode {
-    let mut m = SceneNode::mesh(g, mat(color));
+fn mesh(g: Arc<Geometry>, color: u32, x: f64, y: f64, z: f64) -> Leaf {
+    let mut m = Leaf::mesh(g, mat(color));
     m.position = Vec3::new(x, y, z);
     m
 }
@@ -416,8 +416,8 @@ pub struct ReliefParams {
 
 fn relief_group(p: &ReliefParams, g: Arc<Geometry>) -> DecorObject {
     let mut root = GroupBuilder::new();
-    root.group_mut().position = Vec3::new(p.x, 0.0, p.z);
-    let mut m = SceneNode::mesh(g, teren_material());
+    root.scene.nodes[ROOT].position = Vec3::new(p.x, 0.0, p.z);
+    let mut m = Leaf::mesh(g, teren_material());
     m.position = Vec3::new(0.0, p.y, 0.0);
     m.rotation.y = rotacja_dla_heksa(p.q, p.r, p.seed);
     m.cast_shadow = true;
@@ -743,8 +743,8 @@ pub fn build_style_coast_sand_top_cap(
     );
     cap.receive_shadow = true;
     cap.cast_shadow = !lite;
-    let mut o = DecorObject::new(cap);
-    o.meta[0].render_order = 2;
+    let mut o = cap.into_scene();
+    o.nodes[ROOT].render_order = 2;
     o
 }
 

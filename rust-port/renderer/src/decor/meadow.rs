@@ -8,8 +8,8 @@
 
 use std::sync::{Arc, OnceLock};
 
-use crate::core::scene::{Geometry, Material, SceneNode};
 use crate::pick::terrain::hash_heksa;
+use crate::scene::{Geometry, Material, Scene};
 
 use super::js::{floor_index, js_cos, js_hypot, js_max, js_sin, wrap_variant, PI};
 use super::object::DecorObject;
@@ -470,14 +470,13 @@ fn build(t: DekorTyp, wariant: i32) -> DecorObject {
         DekorTyp::Laka => dekor_laka_geometria(wariant),
         DekorTyp::Rownina => dekor_rownina_geometria(wariant),
     };
-    let mut m = SceneNode::mesh(geo, dekor_material());
-    m.cast_shadow = false;
-    m.receive_shadow = true;
+    let mut m = Scene::mesh_root(geo, dekor_material());
+    m.root_mut().shadows(false, true);
     let prefix = match t {
         DekorTyp::Laka => "dekor-laka-l",
         DekorTyp::Rownina => "dekor-rownina-r",
     };
-    DecorObject::new(m).named(&format!("{prefix}{}", wrap_variant(wariant, 4)))
+    m.named(&format!("{prefix}{}", wrap_variant(wariant, 4)))
 }
 
 /// `buildDekorLaka(wariant)` (`:442-448`).

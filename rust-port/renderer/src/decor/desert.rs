@@ -9,13 +9,13 @@
 
 use std::sync::{Arc, OnceLock};
 
-use crate::core::scene::{Geometry, Material, SceneNode};
 use crate::geom::{box_geometry, Euler, Mesh, Vec3};
 use crate::pick::terrain::hash_heksa;
+use crate::scene::{Geometry, Material, Scene, ROOT};
 
 use super::js::{floor_index, js_cos, js_hypot, js_max, js_pow, js_sin, wrap_variant, PI};
 use super::meadow::{kamyk, okta, ostrze, rot2, Ostrze};
-use super::object::DecorObject;
+use super::object::{add_leaf, DecorObject, Leaf};
 use super::parts::{lambert, rgb, vertex_color_material, Parts, V3};
 
 // ===========================================================================
@@ -28,15 +28,15 @@ fn mat(c: u32) -> Material {
 
 /// `B(g, w, h, d, cx, cy, cz, m, rx, ry, rz)` (`:90-101`).
 #[allow(clippy::too_many_arguments)]
-fn bx(g: &mut SceneNode, w: f64, h: f64, d: f64, c: [f64; 3], m: Material, rot: [f64; 3]) {
-    let mut mesh = SceneNode::mesh(Arc::new(box_geometry(w, h, d, 1, 1, 1).into()), m);
+fn bx(g: &mut Scene, w: f64, h: f64, d: f64, c: [f64; 3], m: Material, rot: [f64; 3]) {
+    let mut mesh = Leaf::mesh(Arc::new(box_geometry(w, h, d, 1, 1, 1).into()), m);
     mesh.position = Vec3::new(c[0], c[1], c[2]);
     let [rx, ry, rz] = rot;
     if rx != 0.0 || ry != 0.0 || rz != 0.0 {
         mesh.rotation = Euler::xyz(rx, ry, rz);
     }
     mesh.cast_shadow = true;
-    g.add(mesh);
+    add_leaf(g, ROOT, mesh, 0);
 }
 
 const WODA_GLEBIA: u32 = 0x1f_97b0;
@@ -55,7 +55,7 @@ const STAW_R: [f64; 8] = [0.36, 0.29, 0.40, 0.33, 0.26, 0.38, 0.30, 0.34];
 
 /// `tafla(skala, y, kolor, jitterFaza)` (`:121-142`).
 #[allow(clippy::cast_possible_truncation, clippy::cast_precision_loss)]
-fn tafla(skala: f64, y: f64, kolor: u32, jitter_faza: f64) -> SceneNode {
+fn tafla(skala: f64, y: f64, kolor: u32, jitter_faza: f64) -> Leaf {
     let n = STAW_R.len();
     let pt = |i: usize| -> [f64; 2] {
         let a = jitter_faza + (i % n) as f64 * (PI * 2.0 / n as f64);
@@ -73,7 +73,7 @@ fn tafla(skala: f64, y: f64, kolor: u32, jitter_faza: f64) -> SceneNode {
         ..Mesh::default()
     };
     mesh.compute_vertex_normals();
-    let mut node = SceneNode::mesh(Arc::new(mesh.into()), mat(kolor));
+    let mut node = Leaf::mesh(Arc::new(mesh.into()), mat(kolor));
     node.position.y = y;
     node.receive_shadow = true;
     node
@@ -94,7 +94,7 @@ struct PalmaOpts {
 
 /// `palma(g, px, pz, o)` (`:158-189`) (`hSeg` default `0.145`).
 #[allow(clippy::cast_precision_loss)]
-fn palma(g: &mut SceneNode, px: f64, pz: f64, o: &PalmaOpts) {
+fn palma(g: &mut Scene, px: f64, pz: f64, o: &PalmaOpts) {
     let seg = o.segmenty;
     let n_lisci = o.liscie;
     let s = o.skala;
@@ -147,14 +147,14 @@ fn palma(g: &mut SceneNode, px: f64, pz: f64, o: &PalmaOpts) {
             0.016 * s,
             szer,
             [cx, cy, cz],
-            lisc_m[i % 2].clone(),
+            lisc_m[i % 2],
             [0.0, fi, -opad * 0.8],
         );
     }
 }
 
 /// `krzak(g, cx, cz, sk, ciemny, ry)` (`:192-195`).
-fn krzak(g: &mut SceneNode, cx: f64, cz: f64, sk: f64, ciemny: bool, ry: f64) {
+fn krzak(g: &mut Scene, cx: f64, cz: f64, sk: f64, ciemny: bool, ry: f64) {
     bx(
         g,
         0.16 * sk,
@@ -170,13 +170,12 @@ fn krzak(g: &mut SceneNode, cx: f64, cz: f64, sk: f64, ciemny: bool, ry: f64) {
 /// `(-0.14, 0, 0.10)`), 3 leaning palms, 4 shrubs, 2 boulders.
 #[must_use]
 pub fn build_oaza() -> DecorObject {
-    let mut g = SceneNode::group();
-    let mut w = SceneNode::group();
-    w.position = Vec3::new(-0.14, 0.0, 0.10);
-    w.add(tafla(1.30, 0.006, MOKRY_PIASEK, 0.20));
-    w.add(tafla(1.00, 0.016, WODA_GLEBIA, 0.0));
-    w.add(tafla(0.60, 0.026, WODA_PLYCIZNA, 0.55));
-    g.add(w);
+    let mut g = Scene::new();
+    let w = g.add_group(ROOT);
+    g.nodes[w].position = Vec3::new(-0.14, 0.0, 0.10);
+    add_leaf(&mut g, w, tafla(1.30, 0.006, MOKRY_PIASEK, 0.20), 0);
+    add_leaf(&mut g, w, tafla(1.00, 0.016, WODA_GLEBIA, 0.0), 0);
+    add_leaf(&mut g, w, tafla(0.60, 0.026, WODA_PLYCIZNA, 0.55), 0);
 
     palma(
         &mut g,
@@ -242,7 +241,7 @@ pub fn build_oaza() -> DecorObject {
         [0.45, 1.9, 0.4],
     );
 
-    DecorObject::new(g).named("oaza")
+    g.named("oaza")
 }
 
 // ===========================================================================
@@ -591,10 +590,9 @@ pub fn dekor_pustynia_material() -> Material {
 /// `buildDekorPustynia(wariant)` (`:567-573`).
 #[must_use]
 pub fn build_dekor_pustynia(wariant: i32) -> DecorObject {
-    let mut m = SceneNode::mesh(dekor_pustynia_geometria(wariant), dekor_pustynia_material());
-    m.cast_shadow = false;
-    m.receive_shadow = true;
-    DecorObject::new(m).named(&format!("dekor-pustynia-p{}", wrap_variant(wariant, 4)))
+    let mut m = Scene::mesh_root(dekor_pustynia_geometria(wariant), dekor_pustynia_material());
+    m.root_mut().shadows(false, true);
+    m.named(&format!("dekor-pustynia-p{}", wrap_variant(wariant, 4)))
 }
 
 /// `trojkatyDekoruPustyni(wariant)` (`:576-578`).

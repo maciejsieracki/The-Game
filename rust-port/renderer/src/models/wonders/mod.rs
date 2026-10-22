@@ -11,10 +11,11 @@
 //!   `WONDER_LIFT`), uniform scale `WONDER_SCALE`, model reuse keyed by
 //!   `visualKey`, fog visibility.
 //!
-//! A model is a tree of [`Node`]s (groups and meshes) whose meshes carry a
-//! [`Primitive`] (CPU geometry from [`crate::geom`]) and an index into the
-//! model's [`LambertMaterial`] list (material parameters as data, no GPU
-//! upload). Nothing here needs a GPU.
+//! A model is a [`crate::scene::Scene`] (the renderer's one scene-tree type
+//! since P4.27; [`WonderModel`] is an alias): groups and meshes whose meshes
+//! carry a [`Primitive`] (= [`crate::scene::Prim`], CPU geometry from
+//! [`crate::geom`]) and a slot into the model's materials (material
+//! parameters as data, no GPU upload). Nothing here needs a GPU.
 //!
 //! Registry ([`WonderShape`]): adding a wonder means one enum variant, one
 //! arm in [`WonderShape::from_id`] and one builder arm. The 5 "parked" wonders
@@ -30,8 +31,8 @@ mod renderer;
 pub use builders::{build_wonder_model, WonderModelOptions, WonderShape, WONDER_MODEL_IDS};
 pub use js_trig::{js_cos, js_sin};
 pub use model::{
-    LambertMaterial, MaterialSlot, Node, NodeKind, Primitive, WonderModel, WorldMesh,
-    WONDER_MATERIAL_COLORS,
+    banner_material, user_data_material_count, LambertMaterial, MaterialSlot, Node, NodeKind,
+    Primitive, WonderModel, WorldMesh, WONDER_MATERIAL_COLORS,
 };
 pub use renderer::{
     default_owner_color, PlacedWonder, RenderedWonder, WonderRenderOptions, WonderRenderer,

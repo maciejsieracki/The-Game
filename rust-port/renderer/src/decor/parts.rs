@@ -10,8 +10,8 @@
 //! normals come from `computeVertexNormals()` on the non-indexed geometry
 //! (flat face normals), [`crate::geom::Mesh::compute_vertex_normals`].
 
-use crate::core::scene::{Geometry, Material, MaterialKind};
 use crate::geom::Mesh;
+use crate::scene::{Geometry, Material, MaterialKind};
 
 /// `type V3 = [number, number, number]`.
 pub(crate) type V3 = [f64; 3];

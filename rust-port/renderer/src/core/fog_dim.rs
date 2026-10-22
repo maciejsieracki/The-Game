@@ -9,7 +9,7 @@
 use std::collections::HashSet;
 use std::hash::{BuildHasher, Hash};
 
-use super::scene::{MaterialKind, NodeKind, SceneNode};
+use crate::scene::{MaterialKind, NodeId, NodeKind, Scene, ROOT};
 pub use crate::terrain::FOG_EXPLORED_BRIGHTNESS;
 
 /// `fogBrightnessForHex(hexKey, visible, explored, fogActive)`
@@ -47,25 +47,30 @@ pub fn is_fog_dimmed_material(kind: MaterialKind) -> bool {
 }
 
 /// `applyFogDimToObject3D(root, brightness)` (`fogDim.ts:29-44`): for every
-/// mesh of the tree (pre-order, the root included), every material of a
-/// dimmed class gets `color = fogBaseColor × brightness`, where
+/// mesh of the tree (pre-order from the scene root, the root included), every
+/// material of a dimmed class gets `color = fogBaseColor × brightness`, where
 /// `fogBaseColor` is the colour captured on the first call. `brightness <= 0`
 /// returns without touching anything (hidden hexes are not drawn at all);
 /// `NaN` is *not* `<= 0` and propagates, as in the web.
 ///
-/// Difference in representation (not in result): three materials may be
-/// shared by several meshes, here every mesh owns its copy. The web result is
-/// the same either way because the base colour is captured once and the
-/// operation is `base × brightness` (idempotent per call).
-pub fn apply_fog_dim(root: &mut SceneNode, brightness: f64) {
+/// Materials are shared by slot like three material objects; a slot visited
+/// twice gets the same result because the base colour is captured once and
+/// the operation is `base × brightness` (idempotent per call).
+pub fn apply_fog_dim(root: &mut Scene, brightness: f64) {
+    apply_fog_dim_from(root, ROOT, brightness);
+}
+
+/// [`apply_fog_dim`] on the sub-tree of `node`.
+pub fn apply_fog_dim_from(scene: &mut Scene, node: NodeId, brightness: f64) {
     if brightness <= 0.0 {
         return;
     }
-    root.traverse_mut(&mut |node| {
-        let NodeKind::Mesh { materials, .. } = &mut node.kind else {
-            return;
+    for id in scene.traverse_from(node) {
+        let NodeKind::Mesh(md) = &scene.nodes[id].kind else {
+            continue;
         };
-        for m in materials.iter_mut() {
+        for &slot in &md.materials {
+            let m = &mut scene.materials[slot];
             if !is_fog_dimmed_material(m.kind) {
                 continue;
             }
@@ -73,5 +78,5 @@ pub fn apply_fog_dim(root: &mut SceneNode, brightness: f64) {
             let base = *m.fog_base_color.get_or_insert(color);
             m.color = Some(base.scale(brightness));
         }
-    });
+    }
 }

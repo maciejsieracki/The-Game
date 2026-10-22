@@ -17,7 +17,7 @@ use std::collections::{HashMap, HashSet};
 use std::path::PathBuf;
 use std::sync::Arc;
 
-use civ_renderer::core::scene::{Geometry, Material, NodeKind, SceneNode};
+// P4.27: the scene types live in `civ_renderer::scene` (forced type adjustment).
 use civ_renderer::decor::desert::{
     build_dekor_pustynia, build_oaza, dekor_pustyni_dla_heksa, dekor_pustynia_geometria,
     dekor_pustynia_material, rotacja_dekoru_pustyni, rotacja_oazy, trojkaty_dekoru_pustyni,
@@ -64,6 +64,7 @@ use civ_renderer::decor::{lambert, DecorObject};
 use civ_renderer::geom::{box_geometry, cylinder_geometry, plane_geometry, EulerOrder};
 use civ_renderer::pick::hex::HexCoord;
 use civ_renderer::pick::terrain::Terrain;
+use civ_renderer::scene::{Geometry, Material, NodeKind, Scene};
 use civ_renderer::terrain::coast::{river_delta_hexes, river_mouth_edges, TerrainAt};
 use civ_renderer::terrain::{RiverKind, RiverPath};
 
@@ -463,37 +464,38 @@ fn cmp_object(c: &mut Cmp, ctx: &str, obj: Option<&DecorObject>, w: &Json) {
         c.eq(&format!("{ctx}.null"), false, true);
         return;
     }
-    let mut flat: Vec<(&SceneNode, i64)> = Vec::new();
-    fn walk<'a>(n: &'a SceneNode, parent: i64, out: &mut Vec<(&'a SceneNode, i64)>) {
-        let me = i64::try_from(out.len()).expect("index");
-        out.push((n, parent));
-        for ch in &n.children {
-            walk(ch, me, out);
-        }
-    }
-    walk(&obj.root, -1, &mut flat);
-    let worlds = world_matrices(&obj.root);
+    // P4.27: pre-order walk of the arena (`traverse_with_parent`) instead of
+    // the recursive `SceneNode` walk; `name` / `renderOrder` are node fields
+    // (forced type adjustment, same assertions).
+    let flat: Vec<(&civ_renderer::scene::Node, i64)> = obj
+        .traverse_with_parent()
+        .into_iter()
+        .map(|(id, p)| {
+            (
+                &obj.nodes[id],
+                p.map_or(-1, |p| i64::try_from(p).expect("index")),
+            )
+        })
+        .collect();
+    let worlds = world_matrices(obj);
     let nodes = w.get("nodes").arr();
     c.eq(&format!("{ctx}.nodes"), flat.len(), nodes.len());
-    c.eq(&format!("{ctx}.meta"), obj.meta.len(), flat.len());
+    c.eq(&format!("{ctx}.meta"), obj.node_count(), flat.len());
     for (i, ((n, parent), wn)) in flat.iter().zip(nodes).enumerate() {
         let k = format!("{ctx}#{i}");
         let ty = match &n.kind {
-            NodeKind::Mesh { .. } => "Mesh",
+            NodeKind::Mesh(_) => "Mesh",
             NodeKind::Group => "Group",
             NodeKind::Object3D => "Object3D",
-            NodeKind::Sprite { .. } => "Sprite",
+            NodeKind::Sprite(_) => "Sprite",
+            NodeKind::LineLoop(_) => "LineLoop",
         };
         c.eq(&format!("{k}.type"), ty, wn.get("type").str());
         c.eq(&format!("{k}.parent"), *parent, wn.get("parent").i64());
-        c.eq(
-            &format!("{k}.name"),
-            obj.meta[i].name.as_str(),
-            wn.get("name").str(),
-        );
+        c.eq(&format!("{k}.name"), n.name.as_str(), wn.get("name").str());
         c.eq(
             &format!("{k}.ro"),
-            i64::from(obj.meta[i].render_order),
+            i64::from(n.render_order),
             wn.get("ro").i64(),
         );
         let p = wn.get("pos").f64s();
@@ -523,18 +525,22 @@ fn cmp_object(c: &mut Cmp, ctx: &str, obj: Option<&DecorObject>, w: &Json) {
         for (j, (a, b)) in worlds[i].e.iter().zip(&mw).enumerate() {
             c.f(&format!("{k}.mw[{j}]"), *a, *b);
         }
-        if let NodeKind::Mesh {
-            geometry,
-            materials,
-            material_array,
-        } = &n.kind
-        {
-            c.eq(&format!("{k}.matArray"), *material_array, false);
-            cmp_material(c, &format!("{k}.mat"), &materials[0], wn.get("mat"));
-            cmp_geo_summary(c, &format!("{k}.geo"), geometry, wn.get("geo"));
+        if let NodeKind::Mesh(md) = &n.kind {
+            c.eq(&format!("{k}.matArray"), md.material_array, false);
+            cmp_material(
+                c,
+                &format!("{k}.mat"),
+                &obj.materials[md.material()],
+                wn.get("mat"),
+            );
+            let geometry: Geometry = match md.geo.buffer() {
+                Some(g) => Geometry::clone(g),
+                None => md.geo.build().into(),
+            };
+            cmp_geo_summary(c, &format!("{k}.geo"), &geometry, wn.get("geo"));
         }
     }
-    let b = bounding_box(&obj.root);
+    let b = bounding_box(obj);
     let wb = w.get("box").f64s();
     for (j, (a, e)) in [b.min.x, b.min.y, b.min.z, b.max.x, b.max.y, b.max.z]
         .iter()
@@ -1378,7 +1384,7 @@ fn river_lod_matches_web() {
     for (si, f) in d.get("flushes").arr().iter().enumerate() {
         let kinds = f.get("kinds").strs();
         let ro = i32::try_from(si).expect("ro");
-        let mut b = create_river_bucket(mat.clone(), ro);
+        let mut b = create_river_bucket(mat, ro);
         for (k, kind) in kinds.iter().enumerate() {
             let keys = [format!("{k},{si}"), "0,0".to_owned(), format!("{si},{k}")];
             queue_river_geo(&mut b, rl_geo(kind), keys.iter().map(String::as_str));
@@ -1400,18 +1406,19 @@ fn river_lod_matches_web() {
                 i64::from(e.render_order),
                 w.get("ro").i64(),
             );
+            let root = &e.mesh.nodes[e.mesh.root()];
             c.eq(
                 &format!("{ctx}.cast"),
-                e.mesh.cast_shadow,
+                root.cast_shadow,
                 w.get("cast").bool(),
             );
             c.eq(
                 &format!("{ctx}.recv"),
-                e.mesh.receive_shadow,
+                root.receive_shadow,
                 w.get("recv").bool(),
             );
-            let same = match &e.mesh.kind {
-                NodeKind::Mesh { geometry, .. } => Arc::ptr_eq(geometry, &e.geometry),
+            let same = match &root.kind {
+                NodeKind::Mesh(md) => md.geo.buffer().is_some_and(|g| Arc::ptr_eq(g, &e.geometry)),
                 _ => false,
             };
             c.eq(&format!("{ctx}.sameGeo"), same, w.get("sameGeo").bool());
@@ -1433,7 +1440,7 @@ fn river_lod_matches_web() {
             .iter()
             .enumerate()
             .map(|(si, sc)| {
-                let mut b = create_river_bucket(mat.clone(), 10 + i32::try_from(si).expect("ro"));
+                let mut b = create_river_bucket(mat, 10 + i32::try_from(si).expect("ro"));
                 for kind in sc {
                     queue_river_geo(&mut b, rl_geo(kind), [format!("k{si}").as_str()]);
                 }
@@ -1488,7 +1495,7 @@ fn river_lod_matches_web() {
             ks.add(k);
         }
         RiverBucketMesh {
-            mesh: SceneNode::group(),
+            mesh: Scene::new(),
             render_order: 0,
             visible: true,
             geometry: Arc::new(Geometry::default()),

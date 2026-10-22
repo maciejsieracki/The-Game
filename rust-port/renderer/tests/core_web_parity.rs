@@ -25,7 +25,8 @@ use civ_renderer::core::merge_decor::{
     collapse_to_merged_mesh, count_meshes_in_group, dispose_merged_decor, is_already_merged_decor,
     MERGED_DECOR_FLAG,
 };
-use civ_renderer::core::scene::{Geometry, Material, MaterialKind, NodeKind, SceneNode};
+// P4.27: one scene type (`civ_renderer::scene::Scene`, arena) — forced type adjustment.
+use civ_renderer::core::scene::{Geometry, Material, MaterialKind, NodeKind, Scene, ROOT};
 use civ_renderer::core::vitals as vit;
 use civ_renderer::core::zoom_lod as zl;
 use civ_renderer::geom::{
@@ -33,6 +34,7 @@ use civ_renderer::geom::{
     sphere_geometry, Euler, EulerOrder, Mesh, Path2, Shape, Vec3,
 };
 use civ_renderer::pick::terrain::Terrain;
+use civ_renderer::scene::{MatId, NodeId, UserValue};
 
 // ---------------------------------------------------------------------------
 // Minimal JSON reader (the crate has no dependencies; fixtures are trusted
@@ -505,15 +507,27 @@ fn euler_order(s: &str) -> EulerOrder {
     }
 }
 
-fn build(spec: &Json, shared: &mut HashMap<String, Vec<Material>>) -> SceneNode {
-    let mut node = match spec.get("type").str() {
+// P4.27: the spec is built into a `Scene` arena; a `shared` material is one
+// slot referenced by several meshes (like the one three object of the web).
+fn build(
+    scene: &mut Scene,
+    parent: Option<NodeId>,
+    spec: &Json,
+    shared: &mut HashMap<String, Vec<MatId>>,
+) -> NodeId {
+    let kind = match spec.get("type").str() {
         "mesh" => {
             let mats = match spec.opt("shared").map(Json::str) {
                 Some(name) if shared.contains_key(name) => shared[name].clone(),
                 other => {
-                    let mats: Vec<Material> = spec
+                    let mats: Vec<MatId> = spec
                         .opt("mats")
-                        .map(|m| m.arr().iter().map(material).collect())
+                        .map(|m| {
+                            m.arr()
+                                .iter()
+                                .map(|x| scene.add_material(material(x)))
+                                .collect()
+                        })
                         .unwrap_or_default();
                     if let Some(name) = other {
                         shared.insert(name.to_owned(), mats.clone());
@@ -522,17 +536,27 @@ fn build(spec: &Json, shared: &mut HashMap<String, Vec<Material>>) -> SceneNode 
                 }
             };
             let geo = Arc::new(geometry(spec.get("geo")));
-            if spec.opt("array").is_some_and(Json::bool) {
-                SceneNode::mesh_multi(geo, mats)
-            } else {
-                SceneNode::mesh(geo, mats.into_iter().next().expect("one material"))
-            }
+            let array = spec.opt("array").is_some_and(Json::bool);
+            assert!(array || mats.len() == 1, "one material");
+            NodeKind::Mesh(civ_renderer::scene::MeshData {
+                geo: geo.into(),
+                materials: mats,
+                material_array: array,
+            })
         }
-        "sprite" => SceneNode::sprite(material(&spec.get("mats").arr()[0])),
-        "group" => SceneNode::group(),
-        "object3d" => SceneNode::object3d(),
+        "sprite" => NodeKind::Sprite(scene.add_material(material(&spec.get("mats").arr()[0]))),
+        "group" => NodeKind::Group,
+        "object3d" => NodeKind::Object3D,
         other => panic!("node {other}"),
     };
+    let id = match parent {
+        Some(p) => scene.push(Some(p), kind),
+        None => {
+            scene.nodes[ROOT].kind = kind;
+            ROOT
+        }
+    };
+    let node = scene.node(id);
     let v3 = |j: &Json| {
         let a = j.arr();
         Vec3::new(a[0].num(), a[1].num(), a[2].num())
@@ -542,43 +566,45 @@ fn build(spec: &Json, shared: &mut HashMap<String, Vec<Material>>) -> SceneNode 
     }
     if let Some(r) = spec.opt("rot") {
         let a = r.arr();
-        node.rotation = Euler {
+        node.set_rotation(Euler {
             x: a[0].num(),
             y: a[1].num(),
             z: a[2].num(),
             order: euler_order(a[3].str()),
-        };
+        });
     }
     if let Some(s) = spec.opt("scale") {
         node.scale = v3(s);
     }
-    node.merged_decor = spec.opt("flag").is_some_and(Json::bool);
+    if spec.opt("flag").is_some_and(Json::bool) {
+        node.user_data.set(MERGED_DECOR_FLAG, UserValue::Bool(true));
+    }
     if let Some(ch) = spec.opt("children") {
         for c in ch.arr() {
-            node.add(build(c, shared));
+            build(scene, Some(id), c, shared);
         }
     }
-    node
+    id
 }
 
-fn build_root(spec: &Json) -> SceneNode {
-    build(spec, &mut HashMap::new())
+fn build_root(spec: &Json) -> Scene {
+    let mut scene = Scene::new();
+    build(&mut scene, None, spec, &mut HashMap::new());
+    scene
 }
 
 /// `dumpColors` of the generator: pre-order meshes and sprites, per material
 /// `[r, g, b]` or `null`.
-fn check_colors(c: &mut Check, what: &str, root: &SceneNode, want: &Json) {
+fn check_colors(c: &mut Check, what: &str, root: &Scene, want: &Json) {
     let mut got: Vec<Vec<Option<[f64; 3]>>> = Vec::new();
-    root.traverse(&mut |n| match &n.kind {
-        NodeKind::Mesh { materials, .. } => got.push(
-            materials
-                .iter()
-                .map(|m| m.color.map(|c| c.to_array()))
-                .collect(),
-        ),
-        NodeKind::Sprite { material } => got.push(vec![material.color.map(|c| c.to_array())]),
-        _ => {}
-    });
+    let col = |m: MatId| root.materials[m].color.map(|c| c.to_array());
+    for id in root.traverse() {
+        match &root.nodes[id].kind {
+            NodeKind::Mesh(md) => got.push(md.materials.iter().map(|&m| col(m)).collect()),
+            NodeKind::Sprite(m) => got.push(vec![col(*m)]),
+            _ => {}
+        }
+    }
     let want = want.arr();
     c.eq(&format!("{what}.meshes"), got.len(), want.len());
     for (i, (g, w)) in got.iter().zip(want).enumerate() {
@@ -801,19 +827,19 @@ fn merge_decor_matches_web() {
         );
         c.eq(
             &format!("{name}.before.children"),
-            i64::try_from(g.children.len()).unwrap(),
+            i64::try_from(g.nodes[ROOT].children.len()).unwrap(),
             b.get("children").i64(),
         );
         let collapsed = collapse_to_merged_mesh(&mut g);
         let a = cs.get("after");
         c.eq(
             &format!("{name}.children"),
-            i64::try_from(g.children.len()).unwrap(),
+            i64::try_from(g.nodes[ROOT].children.len()).unwrap(),
             a.get("children").i64(),
         );
         c.eq(
             &format!("{name}.groupFlag"),
-            g.merged_decor,
+            g.nodes[ROOT].user_data.flag(MERGED_DECOR_FLAG),
             a.get("groupFlag").bool(),
         );
         c.eq(
@@ -832,20 +858,17 @@ fn merge_decor_matches_web() {
             a.get("count").i64(),
         );
         if let Some(m) = a.opt("merged") {
-            let only = &g.children[0];
+            let only = &g.nodes[g.nodes[ROOT].children[0]];
             c.eq(
                 &format!("{name}.childFlag"),
-                only.merged_decor,
+                only.user_data.flag(MERGED_DECOR_FLAG),
                 m.get("childFlag").bool(),
             );
-            let NodeKind::Mesh {
-                geometry,
-                materials,
-                material_array,
-            } = &only.kind
-            else {
+            let NodeKind::Mesh(md) = &only.kind else {
                 panic!("{name}: merged child is not a mesh");
             };
+            let geometry = md.geo.buffer().expect("merged buffer");
+            let material_array = &md.material_array;
             let attrs: Vec<&str> = m.get("attrs").arr().iter().map(Json::str).collect();
             c.eq(&format!("{name}.attrs"), attrs, vec!["position", "color"]);
             c.eq(
@@ -875,7 +898,7 @@ fn merge_decor_matches_web() {
             }
             let wm = m.get("mat");
             c.eq(&format!("{name}.mat.array"), *material_array, false);
-            let mat = &materials[0];
+            let mat = &g.materials[md.materials[0]];
             c.eq(
                 &format!("{name}.mat.type"),
                 mat.kind.three_type(),
@@ -918,19 +941,21 @@ fn merge_decor_matches_web() {
                 c.f64(&format!("{name}.pos[{k}]"), *gv, wv.num());
             }
         }
-        let before_children = g.children.len();
+        let before_children = g.nodes[ROOT].children.len();
         let again = collapse_to_merged_mesh(&mut g);
         c.eq(
             &format!("{name}.secondSame"),
-            !again && g.children.len() == before_children,
+            !again && g.nodes[ROOT].children.len() == before_children,
             a.get("secondSame").bool(),
         );
         apply_fog_dim(&mut g, FOG_EXPLORED_BRIGHTNESS);
         check_colors(&mut c, &format!("{name}.fogged"), &g, a.get("fogged"));
-        g.add(SceneNode::mesh(
+        let extra = g.add_material(Material::new(MaterialKind::Lambert, None));
+        g.add_mesh_id(
+            ROOT,
             Arc::new(Geometry::from(box_geometry(1.0, 1.0, 1.0, 1, 1, 1))),
-            Material::new(MaterialKind::Lambert, None),
-        ));
+            extra,
+        );
         let (gd, md) = dispose_merged_decor(&g);
         let wd = a.get("dispose").arr();
         c.eq(

@@ -18,13 +18,12 @@ use std::path::PathBuf;
 
 use civ_renderer::geom::{Mat4, Mesh};
 use civ_renderer::models::wonders::{
-    build_wonder_model, js_cos, js_sin, LambertMaterial, NodeKind, PlacedWonder, Primitive,
-    WonderModel, WonderModelOptions, WonderRenderOptions, WonderRenderer, WonderShape,
-    WONDER_MODEL_IDS,
+    banner_material, build_wonder_model, js_cos, js_sin, user_data_material_count, LambertMaterial,
+    NodeKind, PlacedWonder, Primitive, WonderModel, WonderModelOptions, WonderRenderOptions,
+    WonderRenderer, WonderShape, WONDER_MODEL_IDS,
 };
 use civ_renderer::pick::hex::HexCoord;
 use civ_renderer::pick::terrain::Terrain;
-use civ_renderer::terrain::color::Color;
 
 // ---------------------------------------------------------------------------
 // Minimal JSON reader (the crate has no dependencies; fixtures are trusted
@@ -348,11 +347,13 @@ fn usize_of(j: &Json) -> usize {
 }
 
 fn primitive_matches(c: &mut Cmp, ctx: &str, p: &Primitive, web: &Json) {
+    // P4.27: `Primitive` is an alias of `scene::Prim` (field names `w/h/d`,
+    // `rt/rb/h/radial/open`, `r/h/radial`) — forced type adjustment.
     match *p {
         Primitive::Box {
-            width,
-            height,
-            depth,
+            w: width,
+            h: height,
+            d: depth,
         } => {
             c.eq(&format!("{ctx}.type"), "box", web.get("type").str());
             c.f(&format!("{ctx}.w"), width, web.get("w").num());
@@ -360,11 +361,13 @@ fn primitive_matches(c: &mut Cmp, ctx: &str, p: &Primitive, web: &Json) {
             c.f(&format!("{ctx}.d"), depth, web.get("d").num());
         }
         Primitive::Cylinder {
-            radius_top,
-            radius_bottom,
-            height,
-            radial_segments,
+            rt: radius_top,
+            rb: radius_bottom,
+            h: height,
+            radial: radial_segments,
+            open,
         } => {
+            c.eq(&format!("{ctx}.open"), open, false);
             c.eq(&format!("{ctx}.type"), "cyl", web.get("type").str());
             c.f(&format!("{ctx}.rt"), radius_top, web.get("rt").num());
             c.f(&format!("{ctx}.rb"), radius_bottom, web.get("rb").num());
@@ -376,9 +379,9 @@ fn primitive_matches(c: &mut Cmp, ctx: &str, p: &Primitive, web: &Json) {
             );
         }
         Primitive::Cone {
-            radius,
-            height,
-            radial_segments,
+            r: radius,
+            h: height,
+            radial: radial_segments,
         } => {
             c.eq(&format!("{ctx}.type"), "cone", web.get("type").str());
             c.f(&format!("{ctx}.r"), radius, web.get("r").num());
@@ -389,6 +392,7 @@ fn primitive_matches(c: &mut Cmp, ctx: &str, p: &Primitive, web: &Json) {
                 u32_of(web.get("seg")),
             );
         }
+        other => panic!("{ctx}: unexpected wonder primitive {other:?}"),
     }
 }
 
@@ -396,9 +400,11 @@ fn material_matches(c: &mut Cmp, ctx: &str, m: &LambertMaterial, web: &Json) {
     c.eq(&format!("{ctx}.type"), "lambert", web.get("type").str());
     let lin = m.linear_color();
     c.eq(&format!("{ctx}.hex"), lin.to_hex(), u32_of(web.get("hex")));
+    // P4.27: the colour is stored linear (`Color.setHex`); `hex()` is
+    // `getHex()` of it (exact round trip, `scene::material` unit test).
     c.eq(
         &format!("{ctx}.hex(input)"),
-        m.color,
+        m.hex(),
         u32_of(web.get("hex")),
     );
     c.fs(
@@ -418,7 +424,7 @@ fn material_matches(c: &mut Cmp, ctx: &str, m: &LambertMaterial, web: &Json) {
 fn model_matches(c: &mut Cmp, ctx: &str, model: &WonderModel, web: &Json) -> usize {
     c.eq(
         &format!("{ctx}.userMats"),
-        model.user_data_material_count(),
+        user_data_material_count(model),
         usize_of(web.get("userMats")),
     );
     let wm = web.get("materials").arr();
@@ -431,10 +437,14 @@ fn model_matches(c: &mut Cmp, ctx: &str, model: &WonderModel, web: &Json) -> usi
         material_matches(c, &format!("{ctx}.mat{i}"), m, w);
     }
 
-    let mut nodes = Vec::new();
-    model.root.traverse(None, &mut |n, parent, w| {
-        nodes.push((n.clone(), parent, *w));
-    });
+    // P4.27: arena traversal (pre-order, parent index in that order, world
+    // matrices of `updateMatrixWorld`) — forced type adjustment.
+    let worlds = model.world_matrices(None);
+    let nodes: Vec<_> = model
+        .traverse_with_parent()
+        .into_iter()
+        .map(|(id, parent)| (model.nodes[id].clone(), parent, worlds[id]))
+        .collect();
     let wn = web.get("nodes").arr();
     c.eq(&format!("{ctx}.nodes.len"), nodes.len(), wn.len());
     let mut meshes = 0usize;
@@ -442,7 +452,7 @@ fn model_matches(c: &mut Cmp, ctx: &str, model: &WonderModel, web: &Json) -> usi
     let mut triangles = 0usize;
     for (i, ((n, parent, world), w)) in nodes.iter().zip(wn).enumerate() {
         let cx = format!("{ctx}.node{i}");
-        let is_mesh = matches!(n.kind, NodeKind::Mesh { .. });
+        let is_mesh = matches!(n.kind, NodeKind::Mesh(_));
         c.eq(
             &format!("{cx}.t"),
             if is_mesh { "M" } else { "G" },
@@ -472,15 +482,12 @@ fn model_matches(c: &mut Cmp, ctx: &str, model: &WonderModel, web: &Json) -> usi
         c.eq(&format!("{cx}.cs"), n.cast_shadow, w.get("cs").bool());
         c.eq(&format!("{cx}.rs"), n.receive_shadow, w.get("rs").bool());
         c.fs(&format!("{cx}.w"), &world.e, w.get("w"));
-        if let NodeKind::Mesh {
-            primitive,
-            material,
-        } = &n.kind
-        {
+        if let NodeKind::Mesh(md) = &n.kind {
             meshes += 1;
+            let primitive = &md.geo.prim().expect("wonder meshes are primitives");
             primitive_matches(c, &format!("{cx}.geo"), primitive, w.get("geo"));
-            c.eq(&format!("{cx}.mat"), *material, usize_of(w.get("mat")));
-            let g = primitive.geometry();
+            c.eq(&format!("{cx}.mat"), md.material(), usize_of(w.get("mat")));
+            let g = primitive.build();
             c.eq(&format!("{cx}.nv"), g.vertex_count(), usize_of(w.get("nv")));
             c.eq(
                 &format!("{cx}.ni"),
@@ -688,12 +695,12 @@ fn renderer_scenario_is_bit_identical_to_web() {
             );
             c.eq(
                 &format!("{cx}.mat0"),
-                Color::from_hex(g.model.materials[0].color).to_hex(),
+                g.model.materials[0].hex(),
                 u32_of(w.get("mat0")),
             );
             c.eq(
                 &format!("{cx}.banner"),
-                g.model.banner_material().map(|m| m.color),
+                banner_material(&g.model).map(LambertMaterial::hex),
                 opt_u32(w.get("bannerHex")),
             );
             checked += 1;

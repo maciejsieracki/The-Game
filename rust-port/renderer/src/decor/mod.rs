@@ -15,10 +15,10 @@
 //!
 //! 34 shared geometry variants: 5 + 5 + 2×5 + 2×4 + 4 + 2.
 //!
-//! A model is a [`crate::core::scene::SceneNode`] tree (the scene type of
-//! P4.12 — no third tree type) wrapped in [`DecorObject`] with the two
-//! `Object3D` fields `SceneNode` lacks (`name`, `renderOrder`). Meshes carry
-//! CPU geometry ([`crate::core::scene::Geometry`]: `geom::Mesh` + the
+//! A model is a [`crate::scene::Scene`] (the renderer's one scene-tree type
+//! since P4.27; [`DecorObject`] is an alias). `name` and `renderOrder` are
+//! node fields. Meshes carry CPU geometry
+//! ([`crate::scene::Geometry`]: `geom::Mesh` + the
 //! `color` attribute) and material parameters as data. No GPU.
 //!
 //! Numerics: `Math.sin/cos/pow/hypot` follow V8 ([`js`]); every geometry,
@@ -38,5 +38,5 @@ pub mod river_lod;
 pub mod style;
 pub mod terraces;
 
-pub use object::{DecorObject, NodeMeta};
+pub use object::DecorObject;
 pub use parts::{lambert, vertex_color_material};

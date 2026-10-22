@@ -5,8 +5,8 @@
 
 use std::sync::{Arc, OnceLock};
 
-use crate::core::scene::{Geometry, Material, SceneNode};
 use crate::pick::terrain::hash_heksa;
+use crate::scene::{Geometry, Material, Scene};
 
 use super::js::{floor_index, js_cos, js_sin, wrap_variant, PI};
 use super::object::DecorObject;
@@ -464,10 +464,9 @@ pub fn las_material() -> Material {
 /// `name = "las-l<w>"`.
 #[must_use]
 pub fn build_las(wariant: i32) -> DecorObject {
-    let mut m = SceneNode::mesh(las_geometria(wariant), las_material());
-    m.cast_shadow = true;
-    m.receive_shadow = true;
-    DecorObject::new(m).named(&format!("las-l{}", wrap_variant(wariant, 5)))
+    let mut m = Scene::mesh_root(las_geometria(wariant), las_material());
+    m.root_mut().shadows(true, true);
+    m.named(&format!("las-l{}", wrap_variant(wariant, 5)))
 }
 
 /// `trojkatyLasu(wariant)` (`:438-440`).

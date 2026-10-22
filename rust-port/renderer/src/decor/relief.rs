@@ -9,11 +9,11 @@
 
 use std::sync::{Arc, OnceLock};
 
-use crate::core::scene::{Geometry, Material, SceneNode};
 use crate::pick::raycast::{intersect_objects, PickMesh, PickObject, Side, TriGeometry};
 use crate::pick::terrain::hash_heksa;
 pub use crate::pick::terrain::{rotacja_dla_heksa, wariant_dla_heksa};
 use crate::pick::three::{Mat4 as PMat4, Quat as PQuat, Ray, Vec3 as PVec3};
+use crate::scene::{Geometry, Material, Scene};
 
 use super::js::{floor_index, js_cos, js_max, js_sin, wrap_variant, PI};
 use super::object::DecorObject;
@@ -555,19 +555,17 @@ pub fn teren_material() -> Material {
 /// `buildWzgorze(wariant)` (`:445-451`).
 #[must_use]
 pub fn build_wzgorze(wariant: i32) -> DecorObject {
-    let mut m = SceneNode::mesh(wzgorze_geometria(wariant), teren_material());
-    m.cast_shadow = true;
-    m.receive_shadow = true;
-    DecorObject::new(m).named(&format!("wzgorze-w{}", wrap_variant(wariant, 5)))
+    let mut m = Scene::mesh_root(wzgorze_geometria(wariant), teren_material());
+    m.root_mut().shadows(true, true);
+    m.named(&format!("wzgorze-w{}", wrap_variant(wariant, 5)))
 }
 
 /// `buildGora(wariant)` (`:454-460`).
 #[must_use]
 pub fn build_gora(wariant: i32) -> DecorObject {
-    let mut m = SceneNode::mesh(gora_geometria(wariant), teren_material());
-    m.cast_shadow = true;
-    m.receive_shadow = true;
-    DecorObject::new(m).named(&format!("gora-g{}", wrap_variant(wariant, 5)))
+    let mut m = Scene::mesh_root(gora_geometria(wariant), teren_material());
+    m.root_mut().shadows(true, true);
+    m.named(&format!("gora-g{}", wrap_variant(wariant, 5)))
 }
 
 /// `PROMIEN_START_Y` (`:473`).

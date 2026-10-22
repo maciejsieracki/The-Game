@@ -1,117 +1,109 @@
-//! [`DecorObject`]: a [`crate::core::scene::SceneNode`] tree (the crate's
-//! scene type from P4.12 — no third tree type, per dispatch) plus the two
-//! `Object3D` fields the decor builders set and `SceneNode` does not carry:
-//! `name` and `renderOrder`. They are kept in a side table in `traverse`
-//! (pre-)order, so the tree itself stays a plain `SceneNode` usable by
-//! `core::fog_dim` / `core::merge_decor`.
+//! [`DecorObject`]: a decor model is a [`Scene`] (the renderer's one
+//! scene-tree type, P4.27); `name` and `renderOrder` are ordinary node
+//! fields there, so the side table of P4.17 (`NodeMeta`) is gone.
+//!
+//! The builders assemble leaf meshes as [`Leaf`] values (a standalone
+//! [`Node`] with its own material, the shape of `new THREE.Mesh(geo, mat)`
+//! before `g.add(mesh)`), then add them with [`add_leaf`]. A leaf's Euler
+//! `rotation` may be written field by field before it is added; [`add_leaf`]
+//! derives the quaternion from it (`onRotationChange`), so the result equals
+//! three setting `rotation.x/y/z` on the object.
 
-use crate::core::scene::SceneNode;
+use std::ops::{Deref, DerefMut};
+use std::sync::Arc;
 
-/// `Object3D.name` / `Object3D.renderOrder` of one node.
-#[derive(Clone, Debug, Default, PartialEq, Eq)]
-pub struct NodeMeta {
-    /// `name` (`''` by default).
-    pub name: String,
-    /// `renderOrder` (`0` by default).
-    pub render_order: i32,
-}
+use crate::geom::Quat;
+use crate::scene::{Geo, Geometry, Material, MeshData, Node, NodeId, NodeKind, Scene, ROOT};
 
-/// A decor model: the scene tree and its per-node metadata.
+/// A decor model (alias of [`Scene`]).
+pub type DecorObject = Scene;
+
+/// `new THREE.Mesh(geometry, material)` before it is added to a group.
 #[derive(Clone, Debug, PartialEq)]
-pub struct DecorObject {
-    /// Root (`THREE.Group` or `THREE.Mesh`).
-    pub root: SceneNode,
-    /// Metadata of every node in `root.traverse` order (`meta[0]` = root).
-    pub meta: Vec<NodeMeta>,
+pub(crate) struct Leaf {
+    pub(crate) node: Node,
+    pub(crate) material: Material,
 }
 
-impl DecorObject {
-    /// Wraps a tree with default metadata (`name = ''`, `renderOrder = 0`).
-    #[must_use]
-    pub fn new(root: SceneNode) -> Self {
-        let mut n = 0;
-        root.traverse(&mut |_| n += 1);
+impl Leaf {
+    /// A mesh leaf with the `Object3D` defaults.
+    pub(crate) fn mesh(geometry: Arc<Geometry>, material: Material) -> Self {
         Self {
-            root,
-            meta: vec![NodeMeta::default(); n],
+            node: Node::new(NodeKind::Mesh(MeshData::new(Geo::Buffer(geometry), 0))),
+            material,
         }
     }
 
-    /// Sets the root `name`.
-    #[must_use]
-    pub fn named(mut self, name: &str) -> Self {
-        self.meta[0].name = name.to_owned();
-        self
-    }
-
-    /// Number of nodes.
-    #[must_use]
-    pub fn node_count(&self) -> usize {
-        self.meta.len()
-    }
-
-    /// Number of meshes.
-    #[must_use]
-    pub fn mesh_count(&self) -> usize {
-        let mut n = 0;
-        self.root.traverse(&mut |x| {
-            if x.is_mesh() {
-                n += 1;
-            }
-        });
-        n
-    }
-
-    /// Total triangle count of all meshes.
-    #[must_use]
-    pub fn triangle_count(&self) -> usize {
-        let mut n = 0;
-        self.root.traverse(&mut |x| {
-            if let crate::core::scene::NodeKind::Mesh { geometry, .. } = &x.kind {
-                n += geometry.mesh.triangle_count();
-            }
-        });
-        n
+    /// The leaf as a one-node scene (the mesh is the root).
+    pub(crate) fn into_scene(self) -> Scene {
+        let mut s = Scene::with_root(NodeKind::Group);
+        add_leaf_as_root(&mut s, self);
+        s
     }
 }
 
-/// Group children collector that tracks per-child metadata (used by the
-/// builders: children are leaf meshes, so the traverse index of child `i`
-/// is `1 + i`).
+impl Deref for Leaf {
+    type Target = Node;
+    fn deref(&self) -> &Node {
+        &self.node
+    }
+}
+
+impl DerefMut for Leaf {
+    fn deref_mut(&mut self) -> &mut Node {
+        &mut self.node
+    }
+}
+
+fn finish(leaf: Leaf, slot: usize) -> Node {
+    let mut node = leaf.node;
+    node.quaternion = Quat::from_euler(node.rotation);
+    if let NodeKind::Mesh(md) = &mut node.kind {
+        md.materials = vec![slot];
+    }
+    node
+}
+
+/// `parent.add(leaf)` with `leaf.renderOrder = render_order`; returns the
+/// new node id.
+pub(crate) fn add_leaf(scene: &mut Scene, parent: NodeId, leaf: Leaf, render_order: i32) -> NodeId {
+    let slot = scene.add_material(leaf.material);
+    let mut node = finish(leaf, slot);
+    node.render_order = render_order;
+    scene.nodes.push(node);
+    let id = scene.nodes.len() - 1;
+    scene.attach(parent, id);
+    id
+}
+
+/// Replaces the (childless) root of `scene` by `leaf`.
+fn add_leaf_as_root(scene: &mut Scene, leaf: Leaf) {
+    let slot = scene.add_material(leaf.material);
+    let children = std::mem::take(&mut scene.nodes[ROOT].children);
+    debug_assert!(children.is_empty());
+    scene.nodes[ROOT] = finish(leaf, slot);
+}
+
+/// Group children collector used by the builders (a `THREE.Group` root and
+/// leaf meshes added in order).
 #[derive(Debug, Default)]
 pub(crate) struct GroupBuilder {
-    pub(crate) root: Option<SceneNode>,
-    pub(crate) child_meta: Vec<NodeMeta>,
+    pub(crate) scene: Scene,
 }
 
 impl GroupBuilder {
     pub(crate) fn new() -> Self {
         Self {
-            root: Some(SceneNode::group()),
-            child_meta: Vec::new(),
+            scene: Scene::new(),
         }
     }
 
-    pub(crate) fn group_mut(&mut self) -> &mut SceneNode {
-        self.root.as_mut().expect("group")
-    }
-
     /// `g.add(mesh)` for a leaf mesh with the given `renderOrder`.
-    pub(crate) fn add_leaf(&mut self, node: SceneNode, render_order: i32) -> &mut SceneNode {
-        debug_assert!(node.children.is_empty());
-        self.child_meta.push(NodeMeta {
-            name: String::new(),
-            render_order,
-        });
-        let g = self.group_mut();
-        g.add(node);
-        g.children.last_mut().expect("just added")
+    pub(crate) fn add_leaf(&mut self, leaf: Leaf, render_order: i32) -> NodeId {
+        add_leaf(&mut self.scene, ROOT, leaf, render_order)
     }
 
-    pub(crate) fn finish(mut self) -> DecorObject {
-        let root = self.root.take().expect("group");
-        let mut meta = vec![NodeMeta::default()];
-        meta.extend(self.child_meta);
-        DecorObject { root, meta }
+    pub(crate) fn finish(self) -> DecorObject {
+        self.scene
     }
 }

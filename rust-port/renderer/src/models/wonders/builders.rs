@@ -10,10 +10,11 @@
 use std::f64::consts::{PI, SQRT_2};
 
 use super::js_trig::{js_cos, js_sin};
-use super::model::{LambertMaterial, MaterialSlot, Node, Primitive, WonderModel};
+use super::model::{MaterialSlot, WonderModel};
 use super::model::{MaterialSlot as S, WONDER_MATERIAL_COLORS};
 use crate::geom::Vec3;
 use crate::pick::hex::{js_round, HEX_R};
+use crate::scene::{Material, Node, NodeId, Prim, Scene, UserValue, ROOT};
 
 /// `R = HEX_R` (`wonderModels.ts:15`).
 const R: f64 = HEX_R;
@@ -142,10 +143,34 @@ pub(crate) fn grey(c: u32, ruin: bool) -> u32 {
     (ch(r) << 16) | (ch(g) << 8) | ch(b)
 }
 
-fn mat(c: u32, ruin: bool) -> LambertMaterial {
-    LambertMaterial {
-        color: grey(c, ruin),
-        flat_shading: true,
+fn mat(c: u32, ruin: bool) -> Material {
+    Material::lambert_flat(grey(c, ruin))
+}
+
+/// The group a builder adds to (`g` of the web helpers): a node of the
+/// model's [`Scene`].
+struct G<'a> {
+    s: &'a mut Scene,
+    id: NodeId,
+}
+
+impl G<'_> {
+    /// `g.add(new THREE.Mesh(prim, mats[m]))`.
+    fn add(&mut self, prim: Prim, m: usize) -> &mut Node {
+        self.s.add_mesh(self.id, prim, m)
+    }
+
+    /// `const sub = new THREE.Group(); …; g.add(sub)` — the sub-group is
+    /// attached when created (nothing else is added to `g` before the web
+    /// adds it, so the child order is the same).
+    fn group(&mut self) -> G<'_> {
+        let id = self.s.add_group(self.id);
+        G { s: self.s, id }
+    }
+
+    /// The group node itself.
+    fn node(&mut self) -> &mut Node {
+        self.s.node(self.id)
     }
 }
 
@@ -153,50 +178,25 @@ fn mat(c: u32, ruin: bool) -> LambertMaterial {
 // Helpers (`wonderModels.ts:32-61`). `m` is a material index.
 
 #[allow(clippy::too_many_arguments)]
-fn bx(g: &mut Node, w: f64, h: f64, d: f64, x: f64, y: f64, z: f64, m: usize) {
-    let mut mesh = Node::mesh(
-        Primitive::Box {
-            width: w,
-            height: h,
-            depth: d,
-        },
-        m,
-    );
+fn bx(g: &mut G, w: f64, h: f64, d: f64, x: f64, y: f64, z: f64, m: usize) {
+    let mesh = g.add(Prim::bx(w, h, d), m);
     mesh.position = Vec3::new(x, y + h / 2.0, z);
     mesh.cast_shadow = true;
     mesh.receive_shadow = true;
-    g.children.push(mesh);
 }
 
 #[allow(clippy::too_many_arguments)]
-fn cyl(g: &mut Node, rt: f64, rb: f64, h: f64, x: f64, y: f64, z: f64, m: usize, seg: u32) {
-    let mut mesh = Node::mesh(
-        Primitive::Cylinder {
-            radius_top: rt,
-            radius_bottom: rb,
-            height: h,
-            radial_segments: seg,
-        },
-        m,
-    );
+fn cyl(g: &mut G, rt: f64, rb: f64, h: f64, x: f64, y: f64, z: f64, m: usize, seg: u32) {
+    let mesh = g.add(Prim::cyl(rt, rb, h, seg), m);
     mesh.position = Vec3::new(x, y + h / 2.0, z);
     mesh.cast_shadow = true;
-    g.children.push(mesh);
 }
 
 #[allow(clippy::too_many_arguments)]
-fn cone(g: &mut Node, r: f64, h: f64, x: f64, y: f64, z: f64, m: usize, seg: u32) {
-    let mut mesh = Node::mesh(
-        Primitive::Cone {
-            radius: r,
-            height: h,
-            radial_segments: seg,
-        },
-        m,
-    );
+fn cone(g: &mut G, r: f64, h: f64, x: f64, y: f64, z: f64, m: usize, seg: u32) {
+    let mesh = g.add(Prim::cone(r, h, seg), m);
     mesh.position = Vec3::new(x, y + h / 2.0, z);
     mesh.cast_shadow = true;
-    g.children.push(mesh);
 }
 
 /// Loop counter as a JavaScript number.
@@ -208,7 +208,7 @@ fn n(i: i32) -> f64 {
 // Builders (`wonderModels.ts:63-418`).
 
 /// `egyptianPyramid` (`:64-70`).
-fn egyptian_pyramid(g: &mut Node, sand: usize, gold: usize) {
+fn egyptian_pyramid(g: &mut G, sand: usize, gold: usize) {
     let base_w = 0.52 * R;
     let h = 0.48 * R;
     let base_radius = (base_w / 2.0) * SQRT_2;
@@ -217,14 +217,14 @@ fn egyptian_pyramid(g: &mut Node, sand: usize, gold: usize) {
 }
 
 /// `obelisk` (`:72-76`).
-fn obelisk(g: &mut Node, stone: usize, cap: usize) {
+fn obelisk(g: &mut G, stone: usize, cap: usize) {
     bx(g, 0.14 * R, 0.06 * R, 0.14 * R, 0.0, 0.0, 0.0, stone);
     bx(g, 0.10 * R, 0.52 * R, 0.10 * R, 0.0, 0.06 * R, 0.0, stone);
     cone(g, 0.07 * R, 0.10 * R, 0.0, 0.58 * R, 0.0, cap, 4);
 }
 
 /// `hangingGardens` (`:78-87`).
-fn hanging_gardens(g: &mut Node, brick: usize, leaf: usize, water: usize) {
+fn hanging_gardens(g: &mut G, brick: usize, leaf: usize, water: usize) {
     for i in 0..4 {
         let w = (0.50 - n(i) * 0.08) * R;
         let h = 0.07 * R;
@@ -245,7 +245,7 @@ fn hanging_gardens(g: &mut Node, brick: usize, leaf: usize, water: usize) {
 }
 
 /// `oracleTemple` (`:89-96`).
-fn oracle_temple(g: &mut Node, stone: usize, roof: usize) {
+fn oracle_temple(g: &mut G, stone: usize, roof: usize) {
     cyl(g, 0.28 * R, 0.30 * R, 0.05 * R, 0.0, 0.0, 0.0, stone, 6);
     for i in 0..6 {
         let a = (n(i) / 6.0) * PI * 2.0;
@@ -264,7 +264,7 @@ fn oracle_temple(g: &mut Node, stone: usize, roof: usize) {
 }
 
 /// `stupa` (`:98-103`).
-fn stupa(g: &mut Node, white: usize, gold: usize) {
+fn stupa(g: &mut G, white: usize, gold: usize) {
     cyl(g, 0.22 * R, 0.24 * R, 0.08 * R, 0.0, 0.0, 0.0, white, 8);
     cyl(
         g,
@@ -282,7 +282,7 @@ fn stupa(g: &mut Node, white: usize, gold: usize) {
 }
 
 /// `rockFacade` (`:105-111`).
-fn rock_facade(g: &mut Node, rock: usize, cave: usize) {
+fn rock_facade(g: &mut G, rock: usize, cave: usize) {
     bx(g, 0.48 * R, 0.38 * R, 0.14 * R, 0.0, 0.08 * R, 0.0, rock);
     bx(
         g,
@@ -310,7 +310,7 @@ fn rock_facade(g: &mut Node, rock: usize, cave: usize) {
 }
 
 /// `trilithon` (`:113-118`).
-fn trilithon(g: &mut Node, stone: usize) {
+fn trilithon(g: &mut G, stone: usize) {
     for sx in [-0.16, 0.16] {
         bx(g, 0.10 * R, 0.32 * R, 0.10 * R, sx * R, 0.0, 0.0, stone);
     }
@@ -318,7 +318,7 @@ fn trilithon(g: &mut Node, stone: usize) {
 }
 
 /// `colossus` (`:121-162`).
-fn colossus(g: &mut Node, bronze: usize, stone: usize, water: usize, flame: usize) {
+fn colossus(g: &mut G, bronze: usize, stone: usize, water: usize, flame: usize) {
     bx(g, 0.14 * R, 0.025 * R, 0.28 * R, 0.0, 0.012 * R, 0.0, water);
     for sx in [-1.0, 1.0] {
         let x = sx * 0.20 * R;
@@ -378,7 +378,7 @@ fn colossus(g: &mut Node, bronze: usize, stone: usize, water: usize, flame: usiz
 /// `celticWalledSettlement` (`:165-214`).
 #[allow(clippy::similar_names)]
 fn celtic_walled_settlement(
-    g: &mut Node,
+    g: &mut G,
     earth: usize,
     wood: usize,
     thatch: usize,
@@ -520,7 +520,7 @@ fn celtic_walled_settlement(
 }
 
 /// `ziggurat` (`:216-232`).
-fn ziggurat(g: &mut Node, mud: usize, stair: usize) {
+fn ziggurat(g: &mut G, mud: usize, stair: usize) {
     let tiers = [
         [0.48 * R, 0.09 * R],
         [0.38 * R, 0.08 * R],
@@ -537,14 +537,14 @@ fn ziggurat(g: &mut Node, mud: usize, stair: usize) {
 }
 
 /// `mayanPyramid` (`:234-238`).
-fn mayan_pyramid(g: &mut Node, stone: usize, temple: usize) {
+fn mayan_pyramid(g: &mut G, stone: usize, temple: usize) {
     bx(g, 0.44 * R, 0.16 * R, 0.44 * R, 0.0, 0.0, 0.0, stone);
     bx(g, 0.30 * R, 0.12 * R, 0.30 * R, 0.0, 0.16 * R, 0.0, stone);
     bx(g, 0.18 * R, 0.08 * R, 0.14 * R, 0.0, 0.28 * R, 0.0, temple);
 }
 
 /// `terracottaPit` (`:240-247`).
-fn terracotta_pit(g: &mut Node, clay: usize, earth: usize) {
+fn terracotta_pit(g: &mut G, clay: usize, earth: usize) {
     bx(g, 0.50 * R, 0.06 * R, 0.36 * R, 0.0, 0.0, 0.0, earth);
     for row in 0..3 {
         for col in -2..=2 {
@@ -565,7 +565,7 @@ fn terracotta_pit(g: &mut Node, clay: usize, earth: usize) {
 /// `archUnit` (`:249-262`).
 #[allow(clippy::too_many_arguments)]
 fn arch_unit(
-    parent: &mut Node,
+    parent: &mut G,
     tier_h: f64,
     arch_w: f64,
     pillar_w: f64,
@@ -628,20 +628,11 @@ struct ColosseumTier {
 }
 
 /// `colosseum` (`:265-328`).
-fn colosseum(g: &mut Node, stone: usize, sand: usize, dark: usize) {
-    let mut arena = Node::mesh(
-        Primitive::Cylinder {
-            radius_top: 0.19 * R,
-            radius_bottom: 0.19 * R,
-            height: 0.028 * R,
-            radial_segments: 24,
-        },
-        sand,
-    );
+fn colosseum(g: &mut G, stone: usize, sand: usize, dark: usize) {
+    let arena = g.add(Prim::cyl(0.19 * R, 0.19 * R, 0.028 * R, 24), sand);
     arena.scale = Vec3::new(1.55, 1.0, 1.05);
     arena.position.y = 0.014 * R;
     arena.receive_shadow = true;
-    g.children.push(arena);
 
     let tiers = [
         ColosseumTier {
@@ -680,9 +671,9 @@ fn colosseum(g: &mut Node, stone: usize, sand: usize, dark: usize) {
             let a = (n(i) / n(tier.n)) * PI * 2.0;
             let px = js_cos(a) * tier.rx * R;
             let pz = js_sin(a) * tier.rz * R;
-            let mut arch = Node::group();
-            arch.position = Vec3::new(px, tier.base_y * R, pz);
-            arch.rotation.y = -a + PI / 2.0;
+            let mut arch = g.group();
+            arch.node().position = Vec3::new(px, tier.base_y * R, pz);
+            arch.node().rot_y(-a + PI / 2.0);
             arch_unit(
                 &mut arch,
                 tier.tier_h * R,
@@ -692,7 +683,6 @@ fn colosseum(g: &mut Node, stone: usize, sand: usize, dark: usize) {
                 stone,
                 dark,
             );
-            g.children.push(arch);
         }
     }
 
@@ -703,9 +693,9 @@ fn colosseum(g: &mut Node, stone: usize, sand: usize, dark: usize) {
         let a = (n(i) / n(attic_n)) * PI * 2.0;
         let px = js_cos(a) * 0.30 * R;
         let pz = js_sin(a) * 0.21 * R;
-        let mut seg = Node::group();
-        seg.position = Vec3::new(px, attic_y, pz);
-        seg.rotation.y = -a + PI / 2.0;
+        let mut seg = g.group();
+        seg.node().position = Vec3::new(px, attic_y, pz);
+        seg.node().rot_y(-a + PI / 2.0);
         bx(
             &mut seg,
             0.07 * R,
@@ -726,7 +716,6 @@ fn colosseum(g: &mut Node, stone: usize, sand: usize, dark: usize) {
             0.012 * R,
             dark,
         );
-        g.children.push(seg);
     }
 
     bx(
@@ -762,7 +751,7 @@ fn colosseum(g: &mut Node, stone: usize, sand: usize, dark: usize) {
 }
 
 /// `citadel` (`:330-337`).
-fn citadel(g: &mut Node, wall: usize, zig: usize) {
+fn citadel(g: &mut G, wall: usize, zig: usize) {
     bx(g, 0.46 * R, 0.14 * R, 0.46 * R, 0.0, 0.0, 0.0, wall);
     for (sx, sz) in [(-0.22, -0.22), (0.22, -0.22), (-0.22, 0.22), (0.22, 0.22)] {
         bx(
@@ -781,7 +770,7 @@ fn citadel(g: &mut Node, wall: usize, zig: usize) {
 }
 
 /// `grandGate` (`:339-347`).
-fn grand_gate(g: &mut Node, stone: usize, gold: usize) {
+fn grand_gate(g: &mut G, stone: usize, gold: usize) {
     bx(g, 0.10 * R, 0.28 * R, 0.10 * R, -0.18 * R, 0.0, 0.0, stone);
     bx(g, 0.10 * R, 0.28 * R, 0.10 * R, 0.18 * R, 0.0, 0.0, stone);
     bx(g, 0.44 * R, 0.08 * R, 0.12 * R, 0.0, 0.28 * R, 0.0, stone);
@@ -801,7 +790,7 @@ fn grand_gate(g: &mut Node, stone: usize, gold: usize) {
 }
 
 /// `palaceWeiyang` (`:349-356`).
-fn palace_weiyang(g: &mut Node, red: usize, roof: usize, gold: usize) {
+fn palace_weiyang(g: &mut G, red: usize, roof: usize, gold: usize) {
     bx(g, 0.48 * R, 0.08 * R, 0.28 * R, 0.0, 0.0, 0.0, red);
     bx(g, 0.40 * R, 0.10 * R, 0.22 * R, 0.0, 0.08 * R, 0.0, roof);
     for sx in [-0.16, 0.0, 0.16] {
@@ -820,7 +809,7 @@ fn palace_weiyang(g: &mut Node, red: usize, roof: usize, gold: usize) {
 }
 
 /// `rampGate` (`:358-364`).
-fn ramp_gate(g: &mut Node, earth: usize, stone: usize) {
+fn ramp_gate(g: &mut G, earth: usize, stone: usize) {
     bx(g, 0.40 * R, 0.14 * R, 0.30 * R, 0.0, 0.0, -0.06 * R, earth);
     bx(
         g,
@@ -847,7 +836,7 @@ fn ramp_gate(g: &mut Node, earth: usize, stone: usize) {
 }
 
 /// `woodenIdol` (`:366-371`).
-fn wooden_idol(g: &mut Node, wood: usize, iron: usize) {
+fn wooden_idol(g: &mut G, wood: usize, iron: usize) {
     bx(g, 0.12 * R, 0.06 * R, 0.12 * R, 0.0, 0.0, 0.0, wood);
     bx(g, 0.14 * R, 0.34 * R, 0.10 * R, 0.0, 0.06 * R, 0.0, wood);
     bx(g, 0.20 * R, 0.04 * R, 0.04 * R, 0.0, 0.28 * R, 0.0, iron);
@@ -855,7 +844,7 @@ fn wooden_idol(g: &mut Node, wood: usize, iron: usize) {
 }
 
 /// `gallicOppidum` (`:374-418`).
-fn gallic_oppidum(g: &mut Node, earth: usize, wood: usize, thatch: usize, stone: usize) {
+fn gallic_oppidum(g: &mut G, earth: usize, wood: usize, thatch: usize, stone: usize) {
     cyl(g, 0.46 * R, 0.48 * R, 0.07 * R, 0.0, 0.0, 0.0, earth, 10);
     cyl(
         g,
@@ -951,7 +940,7 @@ fn gallic_oppidum(g: &mut Node, earth: usize, wood: usize, thatch: usize, stone:
 }
 
 /// `ownerBanner` (`:420-424`): a new material at index [`MaterialSlot::COUNT`].
-fn owner_banner(g: &mut Node, banner: usize) {
+fn owner_banner(g: &mut G, banner: usize) {
     bx(
         g,
         0.04 * R,
@@ -978,11 +967,18 @@ fn owner_banner(g: &mut Node, banner: usize) {
 #[must_use]
 pub fn build_wonder_model(wonder_id: &str, opts: WonderModelOptions) -> WonderModel {
     let ruin = opts.ruin;
-    let mut materials: Vec<LambertMaterial> = WONDER_MATERIAL_COLORS
-        .iter()
-        .map(|&c| mat(c, ruin))
-        .collect();
-    let mut g = Node::group();
+    let mut scene = Scene::new();
+    for &c in &WONDER_MATERIAL_COLORS {
+        scene.add_material(mat(c, ruin));
+    }
+    // `group.userData.mats = Object.values(mats)` (the 20 shared materials).
+    scene.nodes[ROOT]
+        .user_data
+        .set("mats", UserValue::Mats((0..MaterialSlot::COUNT).collect()));
+    let mut g = G {
+        s: &mut scene,
+        id: ROOT,
+    };
     let k = MaterialSlot::index;
     match WonderShape::from_id(wonder_id) {
         WonderShape::EgyptianPyramid => egyptian_pyramid(&mut g, k(S::Sand), k(S::Gold)),
@@ -1044,10 +1040,11 @@ pub fn build_wonder_model(wonder_id: &str, opts: WonderModelOptions) -> WonderMo
         }
     }
     if let Some(owner) = opts.owner_color {
-        materials.push(mat(owner, ruin));
-        owner_banner(&mut g, MaterialSlot::COUNT);
+        let banner = g.s.add_material(mat(owner, ruin));
+        debug_assert_eq!(banner, MaterialSlot::COUNT);
+        owner_banner(&mut g, banner);
     }
-    WonderModel { root: g, materials }
+    scene
 }
 
 #[cfg(test)]

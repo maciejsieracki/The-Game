@@ -5,8 +5,8 @@
 //! Line references are to `gra/src/render/riverLod.ts`.
 //!
 //! Differences in form (not behaviour): the web `flushRiverBucket(scene, …)`
-//! also does `scene.add(mesh)`; the Rust renderer has no scene object yet,
-//! so the returned [`RiverBucketMesh`] is what the caller inserts. `dispose`
+//! also does `scene.add(mesh)`; the returned [`RiverBucketMesh`] (its mesh is a
+//! one-node [`Scene`]) is what the caller inserts into its scene. `dispose`
 //! of source geometries is memory management in WebGL and has no CPU
 //! counterpart (dropping the `Arc`s frees them). Hex keys are the web
 //! `"q,r"` strings; the `Set` keeps insertion order like a JS `Set`.
@@ -14,8 +14,8 @@
 use std::collections::HashSet;
 use std::sync::Arc;
 
-use crate::core::scene::{Geometry, Material, SceneNode};
 use crate::geom::merge_geometries;
+use crate::scene::{Geometry, Material, Scene};
 
 /// `RIVER_LOD_MARKER` (`:33`).
 pub const RIVER_LOD_MARKER: &str = "civ-river-lod-merge";
@@ -66,8 +66,9 @@ pub struct RiverGeoBucket {
 /// `RiverBucketMesh` (`:58-67`).
 #[derive(Clone, Debug, PartialEq)]
 pub struct RiverBucketMesh {
-    /// `mesh` (castShadow / receiveShadow `false`).
-    pub mesh: SceneNode,
+    /// `mesh` (castShadow / receiveShadow `false`), as a scene whose root is
+    /// the mesh (its `renderOrder` is set too).
+    pub mesh: Scene,
     /// `mesh.renderOrder`.
     pub render_order: i32,
     /// `mesh.visible`.
@@ -135,9 +136,9 @@ pub fn flush_river_bucket(bucket: &mut RiverGeoBucket) -> Option<RiverBucketMesh
     } else {
         Arc::new(merge_river_geometries(&bucket.geos)?)
     };
-    let mut mesh = SceneNode::mesh(Arc::clone(&merged), bucket.mat.clone());
-    mesh.cast_shadow = false;
-    mesh.receive_shadow = false;
+    let mut mesh = Scene::mesh_root(Arc::clone(&merged), bucket.mat);
+    mesh.root_mut().shadows(false, false);
+    mesh.root_mut().render_order = bucket.render_order;
     let was_merged = bucket.geos.len() > 1;
     bucket.geos.clear();
     Some(RiverBucketMesh {

@@ -5,11 +5,11 @@
 
 use std::sync::{Arc, OnceLock};
 
-use crate::core::scene::{Geometry, Material, SceneNode};
 use crate::pick::terrain::hash_heksa;
+use crate::scene::{Geometry, Material};
 
 use super::js::{js_cos, js_hypot, js_sin, PI};
-use super::object::{DecorObject, GroupBuilder};
+use super::object::{DecorObject, GroupBuilder, Leaf};
 use super::parts::{rgb, vertex_color_material, Parts, V3};
 
 const MUR_SCIANA: u32 = 0x9a_a5b1;
@@ -694,15 +694,13 @@ pub fn build_tarasy(w: TarasyWariant) -> DecorObject {
         TarasyWariant::W0 => "tarasy-w0",
         TarasyWariant::W3 => "tarasy-w3",
     };
-    let mut m = SceneNode::mesh(tarasy_geometria(w), tarasy_material());
+    let mut m = Leaf::mesh(tarasy_geometria(w), tarasy_material());
     m.cast_shadow = true;
     m.receive_shadow = true;
+    m.name = name.to_owned();
     let mut g = GroupBuilder::new();
     g.add_leaf(m, 0);
-    let mut o = g.finish();
-    o.meta[1].name = name.to_owned();
-    o.meta[0].name = name.to_owned();
-    o
+    g.finish().named(name)
 }
 
 /// `trojkatyTarasow(wariantWzgorza)` (`:401-403`).

@@ -8,17 +8,17 @@
 //! No platform `libm` transcendental is called by `decor/**` (checked by the
 //! source scan of `tests/decor_web_parity.rs`).
 //!
-//! `Object3D.updateMatrix()` is `core::scene::SceneNode::local_matrix`
-//! (`geom::Quat::from_euler`, which uses `jsmath` since P4.16); this module
-//! only adds the `updateMatrixWorld(true)` walk ([`world_matrices`]) and
-//! `Box3.setFromObject(root, true)` ([`bounding_box`]), which `core::scene`
-//! does not provide.
+//! `Object3D.updateMatrix()` is `scene::Node::local_matrix` (the quaternion
+//! comes from `geom::Quat::from_euler`, which uses `jsmath` since P4.16);
+//! this module adds the traverse-ordered `updateMatrixWorld(true)` walk
+//! ([`world_matrices`]) and `Box3.setFromObject(root, true)` with a
+//! [`Box3`] result ([`bounding_box`]) that the decor dumps use.
 
 pub use crate::jsmath::{js_atan2, js_cos, js_hypot, js_pow, js_sin};
 pub use crate::pick::three::js_max;
 
-use crate::core::scene::SceneNode;
 use crate::geom::{Mat4, Vec3};
+use crate::scene::{Scene, ROOT};
 
 /// `Math.PI`.
 pub const PI: f64 = std::f64::consts::PI;
@@ -42,27 +42,15 @@ pub fn wrap_variant(w: i32, n: usize) -> usize {
 /// `matrixWorld` of every node of `root` after `root.updateMatrixWorld(true)`
 /// (root without a parent), in `traverse` (pre-)order.
 #[must_use]
-pub fn world_matrices(root: &SceneNode) -> Vec<Mat4> {
-    fn go(n: &SceneNode, parent: Option<&Mat4>, out: &mut Vec<Mat4>) {
-        let local = n.local_matrix();
-        let world = match parent {
-            None => local,
-            Some(p) => p.mul(&local),
-        };
-        out.push(world);
-        for c in &n.children {
-            go(c, Some(&world), out);
-        }
-    }
-    let mut out = Vec::new();
-    go(root, None, &mut out);
-    out
+pub fn world_matrices(root: &Scene) -> Vec<Mat4> {
+    let world = root.world_matrices(None);
+    root.traverse().into_iter().map(|id| world[id]).collect()
 }
 
 /// `matrixWorld` of the root alone.
 #[must_use]
-pub fn world_matrix(root: &SceneNode) -> Mat4 {
-    root.local_matrix()
+pub fn world_matrix(root: &Scene) -> Mat4 {
+    root.nodes[ROOT].local_matrix()
 }
 
 /// Axis-aligned box (`THREE.Box3`).
@@ -109,25 +97,25 @@ impl Box3 {
 /// mesh through its `matrixWorld`, `Vector3.applyMatrix4` with the projective
 /// divide).
 #[must_use]
-pub fn bounding_box(root: &SceneNode) -> Box3 {
-    let worlds = world_matrices(root);
+pub fn bounding_box(root: &Scene) -> Box3 {
+    let worlds = root.world_matrices(None);
     let mut b = Box3::empty();
-    let mut i = 0;
-    root.traverse(&mut |n| {
-        if let crate::core::scene::NodeKind::Mesh { geometry, .. } = &n.kind {
-            let m = &worlds[i];
-            let p = &geometry.mesh.positions;
-            for k in 0..p.len() / 3 {
-                let v = Vec3::new(
-                    f64::from(p[3 * k]),
-                    f64::from(p[3 * k + 1]),
-                    f64::from(p[3 * k + 2]),
-                )
-                .apply_mat4(m);
-                b.expand(v);
-            }
+    for id in root.meshes() {
+        let Some(md) = root.nodes[id].mesh() else {
+            continue;
+        };
+        let m = &worlds[id];
+        let g = md.geo.mesh();
+        let p = &g.positions;
+        for k in 0..p.len() / 3 {
+            let v = Vec3::new(
+                f64::from(p[3 * k]),
+                f64::from(p[3 * k + 1]),
+                f64::from(p[3 * k + 2]),
+            )
+            .apply_mat4(m);
+            b.expand(v);
         }
-        i += 1;
-    });
+    }
     b
 }

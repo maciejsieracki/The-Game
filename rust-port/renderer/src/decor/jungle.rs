@@ -8,8 +8,8 @@
 
 use std::sync::{Arc, OnceLock};
 
-use crate::core::scene::{Geometry, Material};
 use crate::pick::terrain::hash_heksa;
+use crate::scene::{Geometry, Material};
 
 use super::forest::{blob, cone, pien, ring_n};
 use super::js::{floor_index, js_cos, js_sin, wrap_variant, PI};
