@@ -31,7 +31,7 @@ dotykające tych samych plików — zawsze sekwencyjnie, nigdy w tej samej fali.
 | 2 | `R-RUSTPORT-P4-12-MOD01-CORE-Q1` | MOD-01 rdzeń renderera (hex, fog, LOD, rnd, palety) — Opus 5.5 | 1/5 | `wf_911d780b-448` | DISPATCHED | 2026-10-22 |
 | 3 | `R-RUSTPORT-P4-13-MOD04-UNIT-CORE-Q1` | MOD-04 rdzeń modeli jednostek + routing D-MOD-9 — Opus 5.5 | 1/5 | `wf_590a7af3-626` | DISPATCHED | 2026-10-22 |
 | 4 | `R-RUSTPORT-P4-15-GPU-SPIKE-PREP-Q1` | RR-T1 przygotowanie spike'a GPU (crate `spike-gpu-embed`, instrukcja dla właściciela) — Opus 5.5 | 1/5 | `wf_d050c8fc-9a3` | DISPATCHED | 2026-10-22 |
-| 5 | `R-RUSTPORT-P5-0-VIEWMODEL-CATALOG-Q1` | P5-0 katalog modelu widoku (DTO UI) — doc, Opus 5.5 | 1/5 | `wf_fa168dd5-cbe` | DISPATCHED | 2026-10-22 |
+| 5 | `R-RUSTPORT-P5-1-UI-SHELL-SKELETON-Q1` | P5-1 szkielet frontendu (Vite + kopia paneli bez logiki + typy DTO + bramka importów) w `src-tauri/frontend-v2` — Opus 5.5 | 1/5 | `wf_bcb1b0ee-f7d` | DISPATCHED | 2026-10-22 |
 | 6 | `R-RUSTPORT-P4-16-JSMATH-Q1` | wspólny `jsmath` (fdlibm/V8) dla geom/terrain/wonders — Opus 5.5 | 1/5 | `wf_294ff433-765` | DISPATCHED | 2026-10-22 |
 
 Kolejka (po MOD-01/04): MOD-03 teren-dekor, MOD-05/06/07 jednostki epok, MOD-09 miasta, MOD-11 ulepszenia, MOD-13 misc; P3.21 `CityId` po P3.19. Zasada: blokada na pytaniach NIE zatrzymuje puli — uruchamiaj niezależne tematy równolegle (korekta właściciela 2026-10-22).
