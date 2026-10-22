@@ -5,3 +5,5 @@
 //!
 //! Topics: **RR-T7..RR-T7n** (one sub-module per batch). Empty until the
 //! first batch lands.
+
+pub mod wonders;
