@@ -156,3 +156,11 @@ plecionka, groty kościane obrócone o π/4), Taran (płozy, kozioł, kłoda z k
 - `rust-port/renderer/tests/unit_core_web_parity.rs`, `tests/unit_core_model_rule.rs` — wyłącznie liczniki stubów (ODCHYLENIE Z4)
 - `dyspozycje/rust-port/p4/P4-19-MOD05-UNITS-STONE.md` (ten dokument), `dyspozycje/autobot/runs/R-RUSTPORT-P4-19-MOD05-UNITS-STONE-Q1/**` (raport, logi, `mutate.py`, `gates.sh`)
 - Bez zmian: `gra/**`, `src-tauri/**`, `rust-port/engine/**`, `rust-port/renderer/src/{geom,pick,assets,camera,terrain,jsmath}/**`, `lib.rs`, `jstrig.rs`, `Cargo.toml`, `Cargo.lock`.
+
+## 11. Obrona Operatora r1 (po Evaluatorze)
+
+Szczegóły: `dyspozycje/autobot/runs/R-RUSTPORT-P4-19-MOD05-UNITS-STONE-Q1/02-obrona-operator-r1.md`.
+Zmiany: `is_ported` w `unit_core/registry.rs` prywatna (zero nowych publicznych funkcji w `unit_core`);
+test parytetu porównuje też `geometry.type` (156 496 wartości, 0 rozbieżności; mutant → 24 rozbieżności);
+osobny plik `tests/fixtures/units_kamien/units_kamien.json.sha256`. Odchylenia 1 (testy P4.13) i 2
+(`Prim::Kamien`) podtrzymane jako wymuszone — do akceptacji orkiestratora; `js_asin` → `jsmath` = osobny temat.

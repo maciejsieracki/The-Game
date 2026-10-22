@@ -1,0 +1,2 @@
+units_kamien.json: OK
+EXIT=0

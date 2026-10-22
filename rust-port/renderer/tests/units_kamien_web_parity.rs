@@ -11,13 +11,14 @@
 mod json;
 
 use civ_renderer::geom::Vec3;
-use civ_renderer::models::unit_core::model::{geo_hash, Material};
+use civ_renderer::models::unit_core::model::{geo_hash, Material, Prim};
 use civ_renderer::models::unit_core::registry::{pending, Package};
 use civ_renderer::models::unit_core::{
     build_base, build_category_model, build_model, legacy_route, model_for, Base, UnitCategory,
     UnitModel, UnitTypeId,
 };
 use civ_renderer::models::units_kamien;
+use civ_renderer::models::units_kamien::geo::KamienGeo;
 use civ_renderer::models::units_kamien::kit::js_asin;
 use civ_renderer::terrain::color::Color;
 use json::{parse, J};
@@ -93,6 +94,27 @@ fn rust_case(fx: &J, id: &str) -> UnitModel {
         return build_model(id, OWNER_A).expect("ported");
     }
     panic!("no Rust mapping for fixture case {id}");
+}
+
+/// `geometry.type` of the Three class the web builder allocates for `prim`
+/// (exhaustive: a new `Prim` variant must be mapped here).
+fn three_type(prim: &Prim) -> &'static str {
+    match prim {
+        Prim::Box { .. } => "BoxGeometry",
+        Prim::Cylinder { .. } => "CylinderGeometry",
+        Prim::Cone { .. } => "ConeGeometry",
+        Prim::Sphere { .. } => "SphereGeometry",
+        Prim::Torus { .. } => "TorusGeometry",
+        Prim::Icosahedron { .. } => "IcosahedronGeometry",
+        Prim::HexRing { .. } => "ShapeGeometry",
+        Prim::LeafBlade { .. } => "BufferGeometry",
+        Prim::Kamien(k) => match k {
+            KamienGeo::Taper { .. }
+            | KamienGeo::NguniShell { .. }
+            | KamienGeo::NguniFace { .. } => "BufferGeometry",
+            KamienGeo::Circle { .. } => "CircleGeometry",
+        },
+    }
 }
 
 fn f64_bits(v: &[f64]) -> Vec<u64> {
@@ -220,6 +242,11 @@ fn compare_model(c: &mut Cmp, id: &str, m: &UnitModel, w: &J) {
                 wg.at("tri").u() as usize,
             );
             c.eq(&format!("{tag}.geo.hash"), geo_hash(&g), wg.at("hash").u());
+            c.eq(
+                &format!("{tag}.geo.type"),
+                three_type(&md.geo.prim()),
+                wg.at("type").s(),
+            );
             material_check(
                 c,
                 &format!("{tag}.mat"),

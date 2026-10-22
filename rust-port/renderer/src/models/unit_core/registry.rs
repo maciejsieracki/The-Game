@@ -195,9 +195,8 @@ impl std::error::Error for NotYetPorted {}
 
 /// `true` for the packages whose builders are ported: MOD-04 (this module)
 /// and MOD-05 Stone ([`crate::models::units_kamien`],
-/// `R-RUSTPORT-P4-19-MOD05-UNITS-STONE-Q1`).
-#[must_use]
-pub const fn is_ported(pkg: Package) -> bool {
+/// `R-RUSTPORT-P4-19-MOD05-UNITS-STONE-Q1`). Private: no new public API.
+const fn is_ported(pkg: Package) -> bool {
     matches!(pkg, Package::Mod04Core | Package::Mod05Stone)
 }
 
