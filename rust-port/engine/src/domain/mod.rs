@@ -51,6 +51,7 @@ pub use session::{GameState, Turn};
 pub use state::{
     CanonicalState, CityState, CivilizationState, GameStateDto, MapState, TurnState, UnitState,
 };
+pub use types::porzadek;
 pub use types::{
     CityDto, CivilizationDto, Difficulty, MapDto, PositionDto, TerrainDto, TileDto, TurnDto,
     UnitDto, UnitKindDto, ValidationError,

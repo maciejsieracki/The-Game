@@ -514,3 +514,355 @@ impl Difficulty {
         }
     }
 }
+
+/// P6.2 (R-RUSTPORT-P6-23-KOMENDY-TEREN-Q1): port `gra/src/game/order.ts` (Porzadek miasta =
+/// funkcja Szczescia i Prawa, progi T1/T2, efekty unrest/neutral/order, migracja buntu, rozklad
+/// nastrojow). UWAGA NAZEWNICZA: web `order.ts` to "Porzadek" (stabilnosc miasta), a NIE kolejka
+/// rozkazow; dispatch/GAP-ANALYSIS nazywaja go "komendy/rozkazy" (ZALOZENIE 1 dokumentu P6-23).
+/// Wszystkie liczby balansowe leza w `data/derived/porzadek-params.json` i
+/// `data/society-params.json` (blok `porzadek`, `szczescie`); kod nie zawiera ich literalow.
+pub mod porzadek {
+    use std::collections::BTreeMap;
+
+    use serde_json::Value;
+
+    use super::Difficulty;
+    use crate::data::derived::porzadek_param;
+    use crate::domain::improvements::js_round;
+
+    /// Web `OrderTier` (`order.ts:90`).
+    #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+    pub enum OrderTier {
+        Unrest,
+        Neutral,
+        Order,
+    }
+
+    /// Web `OrderInputs` (`order.ts:97`).
+    #[derive(Debug, Clone, Copy, PartialEq)]
+    pub struct OrderInputs {
+        pub szczescie: f64,
+        pub prawo: f64,
+    }
+
+    /// Web `OrderParams` (`order.ts:105`).
+    #[derive(Debug, Clone, Copy, PartialEq)]
+    pub struct OrderParams {
+        pub waga_szczescie: f64,
+        pub waga_prawo: f64,
+        pub prog_t1: f64,
+        pub prog_t2: f64,
+        pub kara_produkcja_t1: f64,
+        pub kara_pieniadz_t1: f64,
+        pub kara_nauka_t1: f64,
+        pub kara_kultura_t1: f64,
+        pub kara_wzrost_t1: f64,
+        pub ryzyko_buntu_t1: f64,
+        pub bonus_produkcja_t2: f64,
+        pub bonus_handel_t2: f64,
+        pub por_pct_cap: Option<f64>,
+    }
+
+    /// Web `OrderEffects` (`order.ts:144`).
+    #[derive(Debug, Clone, Copy, PartialEq)]
+    pub struct OrderEffects {
+        pub production_mult: f64,
+        pub pieniadz_mult: f64,
+        pub nauka_mult: f64,
+        pub kultura_mult: f64,
+        pub growth_mult: f64,
+        pub trade_mult: f64,
+        pub revolt_risk: f64,
+    }
+
+    /// Web `OrderYieldMults` (`order.ts:162`).
+    #[derive(Debug, Clone, Copy, PartialEq)]
+    pub struct OrderYieldMults {
+        pub production_mult: f64,
+        pub pieniadz_mult: f64,
+        pub nauka_mult: f64,
+        pub kultura_mult: f64,
+    }
+
+    /// Web `OrderResult` (`order.ts:416`).
+    #[derive(Debug, Clone, Copy, PartialEq)]
+    pub struct OrderResult {
+        pub order: f64,
+        pub tier: OrderTier,
+        pub effects: OrderEffects,
+    }
+
+    /// Web `RevoltMigrationCity` (`order.ts:464`).
+    #[derive(Debug, Clone, PartialEq)]
+    pub struct RevoltMigrationCity {
+        pub id: String,
+        pub owner_id: i64,
+        pub population: f64,
+    }
+
+    /// Web `HappinessBreakdown` (`order.ts:515`).
+    #[derive(Debug, Clone, Copy, PartialEq)]
+    pub struct HappinessBreakdown {
+        pub zadowoleni: f64,
+        pub kontentni: f64,
+        pub niezadowoleni: f64,
+    }
+
+    /// Web `FALLBACK_ORDER_PARAMS` (`order.ts:174`), czytane z `porzadek-params.json`.
+    pub fn fallback_order_params() -> OrderParams {
+        OrderParams {
+            waga_szczescie: porzadek_param("waga_szczescie"),
+            waga_prawo: porzadek_param("waga_prawo"),
+            prog_t1: porzadek_param("prog_t1"),
+            prog_t2: porzadek_param("prog_t2"),
+            kara_produkcja_t1: porzadek_param("kara_produkcja_t1"),
+            kara_pieniadz_t1: porzadek_param("kara_pieniadz_t1"),
+            kara_nauka_t1: porzadek_param("kara_nauka_t1"),
+            kara_kultura_t1: porzadek_param("kara_kultura_t1"),
+            kara_wzrost_t1: porzadek_param("kara_wzrost_t1"),
+            ryzyko_buntu_t1: porzadek_param("ryzyko_buntu_t1"),
+            bonus_produkcja_t2: porzadek_param("bonus_produkcja_t2"),
+            bonus_handel_t2: porzadek_param("bonus_handel_t2"),
+            por_pct_cap: Some(porzadek_param("por_pct_cap")),
+        }
+    }
+
+    /// `society-params.json` z silnika (zrodlo bloku `porzadek` / `szczescie`).
+    pub fn society_params() -> &'static Value {
+        static SOCIETY: std::sync::OnceLock<Value> = std::sync::OnceLock::new();
+        SOCIETY.get_or_init(|| {
+            serde_json::from_str(crate::data::derived::SOCIETY_PARAMS_JSON)
+                .expect("society-params.json must parse")
+        })
+    }
+
+    /// Web `pick` (`order.ts:236`): wartosc dla poziomu trudnosci albo `fallback`, gdy wiersza
+    /// brak lub wartosc nie jest skonczona liczba.
+    fn pick(row: Option<&Value>, difficulty: Difficulty, fallback: f64) -> f64 {
+        row.and_then(|row| row.get(difficulty.key()))
+            .and_then(Value::as_f64)
+            .filter(|value| value.is_finite())
+            .unwrap_or(fallback)
+    }
+
+    /// Web `loadOrderParams` (`order.ts:259`): `society` = `None` -> same wartosci domyslne.
+    pub fn load_order_params(society: Option<&Value>, difficulty: Difficulty) -> OrderParams {
+        let block = society.and_then(|society| society.get("porzadek"));
+        let row = |key: &str| block.and_then(|block| block.get(key));
+        let f = fallback_order_params();
+        OrderParams {
+            waga_szczescie: pick(row("porzadek_waga_szczescie"), difficulty, f.waga_szczescie),
+            waga_prawo: pick(row("porzadek_waga_prawo"), difficulty, f.waga_prawo),
+            prog_t1: pick(row("porzadek_prog_t1"), difficulty, f.prog_t1),
+            prog_t2: pick(row("porzadek_prog_t2"), difficulty, f.prog_t2),
+            kara_produkcja_t1: pick(
+                row("porzadek_kara_produkcja_t1"),
+                difficulty,
+                f.kara_produkcja_t1,
+            ),
+            kara_pieniadz_t1: pick(
+                row("porzadek_kara_pieniadz_t1"),
+                difficulty,
+                f.kara_pieniadz_t1,
+            ),
+            kara_nauka_t1: pick(row("porzadek_kara_nauka_t1"), difficulty, f.kara_nauka_t1),
+            kara_kultura_t1: pick(
+                row("porzadek_kara_kultura_t1"),
+                difficulty,
+                f.kara_kultura_t1,
+            ),
+            kara_wzrost_t1: pick(row("porzadek_kara_wzrost_t1"), difficulty, f.kara_wzrost_t1),
+            ryzyko_buntu_t1: pick(
+                row("porzadek_ryzyko_buntu_t1"),
+                difficulty,
+                f.ryzyko_buntu_t1,
+            ),
+            bonus_produkcja_t2: pick(
+                row("porzadek_bonus_produkcja_t2"),
+                difficulty,
+                f.bonus_produkcja_t2,
+            ),
+            bonus_handel_t2: pick(
+                row("porzadek_bonus_handel_t2"),
+                difficulty,
+                f.bonus_handel_t2,
+            ),
+            // Cap PorPct mieszka w bloku `szczescie` (jak w webie), nie w `porzadek`.
+            por_pct_cap: Some(pick(
+                society
+                    .and_then(|society| society.get("szczescie"))
+                    .and_then(|block| block.get("szczescie_pct_cap")),
+                difficulty,
+                f.por_pct_cap
+                    .unwrap_or_else(|| porzadek_param("por_pct_cap")),
+            )),
+        }
+    }
+
+    /// Web `computeOrder` (`order.ts:317`): `round(wagaSzczescie * szczescie + wagaPrawo * prawo)`;
+    /// wejscia nieskonczone / NaN liczone jako 0.
+    pub fn compute_order(inputs: OrderInputs, params: &OrderParams) -> f64 {
+        let szczescie = if inputs.szczescie.is_finite() {
+            inputs.szczescie
+        } else {
+            0.0
+        };
+        let prawo = if inputs.prawo.is_finite() {
+            inputs.prawo
+        } else {
+            0.0
+        };
+        js_round(params.waga_szczescie * szczescie + params.waga_prawo * prawo)
+    }
+
+    /// Web `orderTier` (`order.ts:344`).
+    pub fn order_tier(order: f64, params: &OrderParams) -> OrderTier {
+        if order < params.prog_t1 {
+            return OrderTier::Unrest;
+        }
+        if order >= params.prog_t2 {
+            return OrderTier::Order;
+        }
+        OrderTier::Neutral
+    }
+
+    /// Web `clamp01` (`order.ts:499`).
+    fn clamp01(x: f64) -> f64 {
+        if !x.is_finite() || x < 0.0 {
+            return 0.0;
+        }
+        if x > 1.0 {
+            return 1.0;
+        }
+        x
+    }
+
+    /// Efekt neutralny (wszystkie mnozniki 1, brak ryzyka). Jedynka to element neutralny mnozenia,
+    /// a nie parametr balansowy.
+    const fn neutral_effects() -> OrderEffects {
+        OrderEffects {
+            production_mult: 1.0,
+            pieniadz_mult: 1.0,
+            nauka_mult: 1.0,
+            kultura_mult: 1.0,
+            growth_mult: 1.0,
+            trade_mult: 1.0,
+            revolt_risk: 0.0,
+        }
+    }
+
+    /// Web `orderEffects` (`order.ts:372`).
+    pub fn order_effects(tier: OrderTier, params: &OrderParams) -> OrderEffects {
+        let neutral = neutral_effects();
+        match tier {
+            OrderTier::Unrest => OrderEffects {
+                production_mult: (neutral.production_mult + params.kara_produkcja_t1).max(0.0),
+                pieniadz_mult: (neutral.pieniadz_mult + params.kara_pieniadz_t1).max(0.0),
+                nauka_mult: (neutral.nauka_mult + params.kara_nauka_t1).max(0.0),
+                kultura_mult: (neutral.kultura_mult + params.kara_kultura_t1).max(0.0),
+                growth_mult: (neutral.growth_mult + params.kara_wzrost_t1).max(0.0),
+                trade_mult: neutral.trade_mult,
+                revolt_risk: clamp01(params.ryzyko_buntu_t1),
+            },
+            OrderTier::Order => OrderEffects {
+                production_mult: neutral.production_mult + params.bonus_produkcja_t2,
+                trade_mult: neutral.trade_mult + params.bonus_handel_t2,
+                ..neutral
+            },
+            OrderTier::Neutral => neutral,
+        }
+    }
+
+    /// Web `evaluateOrder` (`order.ts:429`).
+    pub fn evaluate_order(inputs: OrderInputs, params: &OrderParams) -> OrderResult {
+        let order = compute_order(inputs, params);
+        let tier = order_tier(order, params);
+        let effects = order_effects(tier, params);
+        OrderResult {
+            order,
+            tier,
+            effects,
+        }
+    }
+
+    /// Web `orderEffectsToYieldMults` (`order.ts:443`): w stanie `order` bonus handlu idzie na
+    /// mnoznik Pieniadza.
+    pub fn order_effects_to_yield_mults(
+        tier: OrderTier,
+        effects: &OrderEffects,
+    ) -> OrderYieldMults {
+        if tier == OrderTier::Order {
+            return OrderYieldMults {
+                production_mult: effects.production_mult,
+                pieniadz_mult: effects.trade_mult,
+                nauka_mult: neutral_effects().nauka_mult,
+                kultura_mult: neutral_effects().kultura_mult,
+            };
+        }
+        OrderYieldMults {
+            production_mult: effects.production_mult,
+            pieniadz_mult: effects.pieniadz_mult,
+            nauka_mult: effects.nauka_mult,
+            kultura_mult: effects.kultura_mult,
+        }
+    }
+
+    /// Web `pickRevoltMigrationTarget` (`order.ts:474`): inne miasto tego samego wlasciciela z
+    /// najwyzszym Porzadkiem (remis: pierwsze na liscie); brak wpisu / wartosc nieskonczona = 0.
+    pub fn pick_revolt_migration_target(
+        source_id: &str,
+        owner_id: i64,
+        cities: &[RevoltMigrationCity],
+        order_by_city_id: &BTreeMap<String, f64>,
+    ) -> Option<String> {
+        let mut best_id: Option<&str> = None;
+        let mut best_order = f64::NEG_INFINITY;
+        for city in cities {
+            if city.id == source_id || city.owner_id != owner_id || city.population < 1.0 {
+                continue;
+            }
+            let order_val = order_by_city_id
+                .get(&city.id)
+                .copied()
+                .filter(|value| value.is_finite())
+                .unwrap_or(0.0);
+            if order_val > best_order {
+                best_order = order_val;
+                best_id = Some(&city.id);
+            }
+        }
+        best_id.map(str::to_owned)
+    }
+
+    /// Web `happinessBreakdown` (`order.ts:548`): rozklad populacji na zadowolonych / kontentnych /
+    /// niezadowolonych (tylko UI, nie wplywa na mechanike).
+    pub fn happiness_breakdown(population: f64, szczescie: f64) -> HappinessBreakdown {
+        let pop = if population.is_finite() && population > 0.0 {
+            population.floor()
+        } else {
+            0.0
+        };
+        if pop <= 0.0 {
+            return HappinessBreakdown {
+                zadowoleni: 0.0,
+                kontentni: 0.0,
+                niezadowoleni: 0.0,
+            };
+        }
+        let hap = if szczescie.is_finite() {
+            szczescie
+        } else {
+            0.0
+        };
+        let scale = porzadek_param("szczescie_skala_max");
+        let happy_frac = (hap / scale).clamp(0.0, 1.0);
+        let unhappy_frac = (-hap / scale).clamp(0.0, 1.0);
+        let zadowoleni = (pop * happy_frac).floor();
+        let niezadowoleni = (pop * unhappy_frac).floor();
+        HappinessBreakdown {
+            zadowoleni,
+            kontentni: pop - zadowoleni - niezadowoleni,
+            niezadowoleni,
+        }
+    }
+}

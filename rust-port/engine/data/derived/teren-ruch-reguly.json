@@ -1,0 +1,18 @@
+{
+  "meta": {
+    "status": "P6.3 (R-RUSTPORT-P6-23-KOMENDY-TEREN-Q1): edytowalne listy i stale regul zajmowania heksu miasta (city-hex-movement.ts) oraz rejestru fortow (fort-territory.ts). Kod Rust nie zawiera tych wartosci.",
+    "pin_web": "edb8fb56",
+    "wygenerowano": "R-RUSTPORT-P6-23-KOMENDY-TEREN-Q1 runda 1: wartosci przepisane z TS; zgodnosc z webem sprawdzona wektorami (tests/p6_23_vectors/hexmove.json, fort.json) i verify-p623-vectors.py.",
+    "uwaga": "Promienie terytorium fortu i posterunku NIE sa tu duplikowane: czytane z data/terrain-improvements.json (fort.zasieg_terytorium, posterunek.zasieg_terytorium). Promien miasta z data/miasto-params.json (zasieg_okolicy_baza, zasieg_okolicy_max)."
+  },
+  "miasto_obce": {
+    "zrodlo_web": "city-hex-movement.ts:61 (canAiEnterEmptyEnemyCity: lista budynkow obronnych blokujacych wejscie AI)",
+    "budynki_obronne": ["palisada", "mury", "fort", "baszta"]
+  },
+  "fort": {
+    "zrodlo_web": "fort-territory.ts:185-193 (findEvacuationHexOutsideCity: maxRing = 20); map/territory.ts:74-78 (cityTerritoryRadius)",
+    "ewakuacja_maks_pierscien": 20,
+    "ulepszenie_fort": "fort",
+    "ulepszenie_posterunek": "posterunek"
+  }
+}

@@ -1,0 +1,98 @@
+{
+  "meta": {
+    "status": "P6.3 (R-RUSTPORT-P6-23-KOMENDY-TEREN-Q1): edytowalne stale i listy regul ulepszen terenu (terrain-improvements.ts). Zmienia sie konkretna liczbe lub wpis listy; kod Rust nie zawiera tych liczb ani list.",
+    "pin_web": "edb8fb56",
+    "wygenerowano": "R-RUSTPORT-P6-23-KOMENDY-TEREN-Q1 runda 1: wartosci przepisane ze stalych TS; zgodnosc z webem sprawdzona wektorami (tests/p6_23_vectors/improvements.json) i verify-p623-vectors.py.",
+    "uwaga": "Koszt Pracy i stawki surowcow per ulepszenie pozostaja w data/terrain-improvements.json (koszt_praca, surowiec_ilosc_tura) oraz w gotowej tabeli data/derived/improvement-work.json; tu sa tylko skale i listy regul."
+  },
+  "skala_pracy": {
+    "zrodlo_web": "terrain-improvements.ts:76-107 (TERRAIN_IMPROVEMENT_ERA_MULTIPLIERS, terrainImprovementEraMultiplier, scaleTerrainImprovementWorkCost); r-stawki-strojenie.ts:9,50-53 (R_STAWKI_FALA2_MULT, scaleImprovementWorkCost)",
+    "fala2_mnoznik": 2,
+    "epoka_domyslna": 1,
+    "mnozniki_epoki": { "1": 1, "2": 2, "3": 4 },
+    "podstawa_podwajania": 2
+  },
+  "produkcja_epoka": {
+    "zrodlo_web": "terrain-improvements.ts:218-239 (ERA_SCALED_RESOURCE_IMPROVEMENTS, normalizeProductionEra, resourceProductionAmountForEra)",
+    "mnoznik_za_epoke": 1.5,
+    "epoka_min": 1,
+    "epoka_max": 3,
+    "ulepszenia_skalowane": ["tartak", "kamieniolom"]
+  },
+  "terytorium": {
+    "zrodlo_web": "terrain-improvements.ts:213-217,242,256-290 (TERRITORY_YIELD_IMPROVEMENTS, TERRITORY_YIELD_DEFAULT_AMOUNT, territoryResourceYieldForImprovement)",
+    "domyslna_ilosc": 10,
+    "ulepszenia": [
+      { "ulepszenie": "tartak", "surowiec": "drewno" },
+      { "ulepszenie": "kamieniolom", "surowiec": "kamien" },
+      { "ulepszenie": "glinianka", "surowiec": "glina" },
+      { "ulepszenie": "kopalnia_miedzi", "surowiec": "ruda" },
+      { "ulepszenie": "kopalnia_zelaza", "surowiec": "ruda_zelaza" },
+      { "ulepszenie": "kopalnia_cyny", "surowiec": "ruda_cyny" },
+      { "ulepszenie": "warzelnia_soli", "surowiec": "sol" },
+      { "ulepszenie": "stadnina", "surowiec": "kon" },
+      { "ulepszenie": "kopalnia_zlota", "surowiec": "zloto" }
+    ]
+  },
+  "ruda": {
+    "zrodlo_web": "terrain-improvements.ts:152,157-173 (ORE_YIELD_PER_MINE, oreYieldFromImprovements)",
+    "na_kopalnie": 2,
+    "kopalnie": [
+      { "ulepszenie": "kopalnia_miedzi", "surowiec": "ruda" },
+      { "ulepszenie": "kopalnia_zelaza", "surowiec": "ruda_zelaza" }
+    ]
+  },
+  "aliasy_legacy": {
+    "zrodlo_web": "terrain-improvements.ts:32-34 (LEGACY_KEY_ALIASES)",
+    "aliasy": [{ "stary": "pastwisko", "nowy": "bydlo" }]
+  },
+  "migracja_kopalni": {
+    "zrodlo_web": "terrain-improvements.ts:40-51 (migrateLegacyKopalniaKey)",
+    "klucz_legacy": "kopalnia",
+    "zloze_zelazo": { "zloze": "zelazo", "ulepszenie": "kopalnia_zelaza" },
+    "zloza_miedzi": ["miedz", "ruda"],
+    "nakladka_rudy": "zloze_rudy",
+    "ulepszenie_miedzi": "kopalnia_miedzi",
+    "zloze_bez_migracji": "wegiel"
+  },
+  "hodowla": {
+    "zrodlo_web": "terrain-improvements.ts:390-399 (LIVESTOCK_SUROWIEC_KEYS)",
+    "surowce": ["bydlo", "owce", "lama", "kon"]
+  },
+  "zywnosc": {
+    "zrodlo_web": "terrain-improvements.ts:445-481 (FARMA_POTENTIAL_FOOD_BONUS, FOREST_FOOD_POTENTIAL_PENALTY, FOOD_IMPROVEMENT_KEYS, foodPotentialForHex)",
+    "ulepszenie_farmy": "farma",
+    "farma_bonus_domyslny": 3,
+    "kara_las": -3,
+    "ulepszenia": ["farma", "irygacja", "tarasy", "bydlo", "owce", "lama", "oboz_lowiecki", "lodzie_rybackie"]
+  },
+  "drogi": {
+    "zrodlo_web": "terrain-improvements.ts:320 (ROAD_IMPROVEMENT_KEYS)",
+    "ulepszenia": ["droga", "droga_brukowana"]
+  },
+  "zloze_zwierzece": {
+    "zrodlo_web": "terrain-improvements.ts:293-297 (foodLayerFromAnimalDeposit)",
+    "wiersze": [
+      { "nakladka": "zloze_bydla", "ulepszenie": "bydlo" },
+      { "nakladka": "zloze_owiec", "ulepszenie": "owce" }
+    ]
+  },
+  "ukrywanie_zloza": {
+    "zrodlo_web": "terrain-improvements.ts:333-368 (improvementHidesDepositOnHex)",
+    "wiersze": [
+      { "ulepszenie": "glinianka", "nakladki": ["zloze_gliny"], "zloza": ["glina"] },
+      { "ulepszenie": "kopalnia_miedzi", "nakladki": ["zloze_rudy"], "zloza": ["miedz", "ruda"] },
+      { "ulepszenie": "kopalnia_zelaza", "nakladki": [], "zloza": ["zelazo"] },
+      { "ulepszenie": "kopalnia_zlota", "nakladki": [], "zloza": ["zloto"] },
+      { "ulepszenie": "warzelnia_soli", "nakladki": [], "zloza": ["sol"] },
+      { "ulepszenie": "stadnina", "nakladki": ["zloze_konia"], "zloza": [] },
+      { "ulepszenie": "bydlo", "nakladki": ["zloze_bydla"], "zloza": [] },
+      { "ulepszenie": "owce", "nakladki": ["zloze_owiec"], "zloza": [] },
+      { "ulepszenie": "lama", "nakladki": ["zloze_lamy"], "zloza": [] }
+    ]
+  },
+  "typ_wycinka": {
+    "zrodlo_web": "terrain-improvements.ts:482-484 (RESOURCE_UPKEEP_IMPROVEMENT_KEYS)",
+    "typ": "wycinka"
+  }
+}

@@ -1092,3 +1092,254 @@ impl ResearchCostsFile {
             .map(|w| w.koszt)
     }
 }
+
+// ---------------------------------------------------------------------------
+// P6.2 / P6.3 (R-RUSTPORT-P6-23-KOMENDY-TEREN-Q1): tabele Porzadku, regul ulepszen
+// terenu i regul ruchu/fortow. Wartosci balansowe sa EDYTOWALNE w
+// `data/derived/{porzadek-params,ulepszenia-reguly,teren-ruch-reguly}.json`; kod
+// (`domain/types.rs::porzadek`, `domain/improvements.rs`, `domain/pathfinding.rs`,
+// `domain/terrain.rs`) nie zawiera ich literalow.
+// ---------------------------------------------------------------------------
+
+pub const PORZADEK_PARAMS_JSON: &str = include_str!("../../data/derived/porzadek-params.json");
+pub const ULEPSZENIA_REGULY_JSON: &str = include_str!("../../data/derived/ulepszenia-reguly.json");
+pub const TEREN_RUCH_REGULY_JSON: &str = include_str!("../../data/derived/teren-ruch-reguly.json");
+/// `society-params.json` jako zrodlo bloku `porzadek` / `szczescie` dla `load_order_params`.
+pub const SOCIETY_PARAMS_JSON: &str = include_str!("../../data/society-params.json");
+
+/// Wiersz tabeli nazwanych wartosci liczbowych.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct NamedValueRow {
+    pub id: String,
+    pub wartosc: f64,
+    pub definicja_web: String,
+    pub opis: String,
+}
+
+/// Plik `porzadek-params.json`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct PorzadekParamsFile {
+    pub meta: serde_json::Value,
+    pub wiersze: Vec<NamedValueRow>,
+}
+
+pub fn parse_porzadek_params() -> Result<PorzadekParamsFile, serde_json::Error> {
+    serde_json::from_str(PORZADEK_PARAMS_JSON)
+}
+
+/// Wartosc wiersza `id` z `porzadek-params.json`. Brak wiersza to blad danych (pokrywa go test
+/// ksztaltu), wiec panika z komunikatem.
+pub fn porzadek_param(id: &str) -> f64 {
+    static TABLE: std::sync::OnceLock<PorzadekParamsFile> = std::sync::OnceLock::new();
+    let table =
+        TABLE.get_or_init(|| parse_porzadek_params().expect("porzadek-params.json must parse"));
+    table
+        .wiersze
+        .iter()
+        .find(|row| row.id == id)
+        .map(|row| row.wartosc)
+        .unwrap_or_else(|| panic!("porzadek-params.json: brak wiersza {id}"))
+}
+
+/// Para `ulepszenie` -> `surowiec`.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct UlepszenieSurowiec {
+    pub ulepszenie: String,
+    pub surowiec: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct SkalaPracy {
+    pub zrodlo_web: String,
+    pub fala2_mnoznik: f64,
+    pub epoka_domyslna: f64,
+    pub mnozniki_epoki: BTreeMap<i64, f64>,
+    pub podstawa_podwajania: f64,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct ProdukcjaEpoka {
+    pub zrodlo_web: String,
+    pub mnoznik_za_epoke: f64,
+    pub epoka_min: i64,
+    pub epoka_max: i64,
+    pub ulepszenia_skalowane: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct TerytoriumReguly {
+    pub zrodlo_web: String,
+    pub domyslna_ilosc: f64,
+    pub ulepszenia: Vec<UlepszenieSurowiec>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct RudaReguly {
+    pub zrodlo_web: String,
+    pub na_kopalnie: f64,
+    pub kopalnie: Vec<UlepszenieSurowiec>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct AliasLegacy {
+    pub stary: String,
+    pub nowy: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct AliasyLegacy {
+    pub zrodlo_web: String,
+    pub aliasy: Vec<AliasLegacy>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct ZlozeUlepszenie {
+    pub zloze: String,
+    pub ulepszenie: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct MigracjaKopalni {
+    pub zrodlo_web: String,
+    pub klucz_legacy: String,
+    pub zloze_zelazo: ZlozeUlepszenie,
+    pub zloza_miedzi: Vec<String>,
+    pub nakladka_rudy: String,
+    pub ulepszenie_miedzi: String,
+    pub zloze_bez_migracji: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct HodowlaReguly {
+    pub zrodlo_web: String,
+    pub surowce: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct ZywnoscReguly {
+    pub zrodlo_web: String,
+    pub ulepszenie_farmy: String,
+    pub farma_bonus_domyslny: f64,
+    pub kara_las: f64,
+    pub ulepszenia: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct DrogiReguly {
+    pub zrodlo_web: String,
+    pub ulepszenia: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct NakladkaUlepszenie {
+    pub nakladka: String,
+    pub ulepszenie: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct ZlozeZwierzeceReguly {
+    pub zrodlo_web: String,
+    pub wiersze: Vec<NakladkaUlepszenie>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct UkrywanieZlozaRow {
+    pub ulepszenie: String,
+    pub nakladki: Vec<String>,
+    pub zloza: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct UkrywanieZloza {
+    pub zrodlo_web: String,
+    pub wiersze: Vec<UkrywanieZlozaRow>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct TypWycinka {
+    pub zrodlo_web: String,
+    pub typ: String,
+}
+
+/// Plik `ulepszenia-reguly.json`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct UlepszeniaRegulyFile {
+    pub meta: serde_json::Value,
+    pub skala_pracy: SkalaPracy,
+    pub produkcja_epoka: ProdukcjaEpoka,
+    pub terytorium: TerytoriumReguly,
+    pub ruda: RudaReguly,
+    pub aliasy_legacy: AliasyLegacy,
+    pub migracja_kopalni: MigracjaKopalni,
+    pub hodowla: HodowlaReguly,
+    pub zywnosc: ZywnoscReguly,
+    pub drogi: DrogiReguly,
+    pub zloze_zwierzece: ZlozeZwierzeceReguly,
+    pub ukrywanie_zloza: UkrywanieZloza,
+    pub typ_wycinka: TypWycinka,
+}
+
+pub fn parse_ulepszenia_reguly() -> Result<UlepszeniaRegulyFile, serde_json::Error> {
+    serde_json::from_str(ULEPSZENIA_REGULY_JSON)
+}
+
+/// Tabela regul ulepszen terenu (jednorazowy odczyt; blad danych = panika z komunikatem).
+pub fn ulepszenia_reguly() -> &'static UlepszeniaRegulyFile {
+    static TABLE: std::sync::OnceLock<UlepszeniaRegulyFile> = std::sync::OnceLock::new();
+    TABLE.get_or_init(|| parse_ulepszenia_reguly().expect("ulepszenia-reguly.json must parse"))
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct MiastoObceReguly {
+    pub zrodlo_web: String,
+    pub budynki_obronne: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct FortReguly {
+    pub zrodlo_web: String,
+    pub ewakuacja_maks_pierscien: u32,
+    pub ulepszenie_fort: String,
+    pub ulepszenie_posterunek: String,
+}
+
+/// Plik `teren-ruch-reguly.json`.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct TerenRuchRegulyFile {
+    pub meta: serde_json::Value,
+    pub miasto_obce: MiastoObceReguly,
+    pub fort: FortReguly,
+}
+
+pub fn parse_teren_ruch_reguly() -> Result<TerenRuchRegulyFile, serde_json::Error> {
+    serde_json::from_str(TEREN_RUCH_REGULY_JSON)
+}
+
+/// Tabela regul ruchu / fortow.
+pub fn teren_ruch_reguly() -> &'static TerenRuchRegulyFile {
+    static TABLE: std::sync::OnceLock<TerenRuchRegulyFile> = std::sync::OnceLock::new();
+    TABLE.get_or_init(|| parse_teren_ruch_reguly().expect("teren-ruch-reguly.json must parse"))
+}

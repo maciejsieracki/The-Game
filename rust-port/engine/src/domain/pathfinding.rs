@@ -566,3 +566,99 @@ pub fn reachable_with_rules(
     result.remove(&start);
     result
 }
+
+// ---------------------------------------------------------------------------
+// P6.3 (R-RUSTPORT-P6-23-KOMENDY-TEREN-Q1): port `gra/src/game/city-hex-movement.ts`.
+// Reguly zajmowania heksu miasta (garnizon vs obcy). Lista budynkow obronnych blokujacych
+// wejscie AI jest w `data/derived/teren-ruch-reguly.json`; kod nie zawiera jej literalow.
+// ---------------------------------------------------------------------------
+
+/// Web `CityHexRef` (`city-hex-movement.ts:9`): `q`, `r`, `ownerId` oraz opcjonalne `maMur`.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct CityHexRef {
+    pub q: i32,
+    pub r: i32,
+    pub owner_id: i64,
+    pub ma_mur: Option<bool>,
+}
+
+/// Web `cityAtHex` (`city-hex-movement.ts:11`): pierwsze miasto na heksie `(q, r)`.
+pub fn city_at_hex(q: i32, r: i32, cities: &[CityHexRef]) -> Option<&CityHexRef> {
+    cities.iter().find(|city| city.q == q && city.r == r)
+}
+
+/// Web `canUnitOccupyCityHex` (`city-hex-movement.ts:23`): heks miasta obcego wlasciciela jest
+/// zablokowany (tylko zdobycie z sasiedztwa).
+pub fn can_unit_occupy_city_hex(unit_owner_id: i64, q: i32, r: i32, cities: &[CityHexRef]) -> bool {
+    city_at_hex(q, r, cities).is_none_or(|city| city.owner_id == unit_owner_id)
+}
+
+/// Web `canAiEnterEmptyEnemyCity` (`city-hex-movement.ts:48`): zwykle AI wchodzi na obce miasto
+/// tylko z sasiedniego heksu, bez obroncow, bez muru i fortyfikacji; jednostka cywilna nigdy.
+pub fn can_ai_enter_empty_enemy_city(
+    unit_owner_id: i64,
+    unit_q: i32,
+    unit_r: i32,
+    city: &CityHexRef,
+    city_built_ids: &[String],
+    has_defenders: bool,
+    unit_is_civilian: bool,
+) -> bool {
+    if city.owner_id == unit_owner_id {
+        return false;
+    }
+    if unit_is_civilian {
+        return false;
+    }
+    if HexCoord::new(unit_q, unit_r).distance(HexCoord::new(city.q, city.r)) != 1 {
+        return false;
+    }
+    if has_defenders {
+        return false;
+    }
+    if city.ma_mur == Some(true) {
+        return false;
+    }
+    let defensive = &crate::data::derived::teren_ruch_reguly()
+        .miasto_obce
+        .budynki_obronne;
+    !city_built_ids.iter().any(|id| defensive.contains(id))
+}
+
+/// Web `foreignCityHexKeys` (`city-hex-movement.ts:66`): klucze `"q,r"` heksow miast, ktorych
+/// wlascicielem NIE jest dana frakcja.
+pub fn foreign_city_hex_keys(unit_owner_id: i64, cities: &[CityHexRef]) -> BTreeSet<String> {
+    cities
+        .iter()
+        .filter(|city| city.owner_id != unit_owner_id)
+        .map(|city| HexCoord::new(city.q, city.r).key())
+        .collect()
+}
+
+/// Web `addForeignCityBlocks` (`city-hex-movement.ts:77`): `occupied` + heksy obcych miast.
+pub fn add_foreign_city_blocks(
+    occupied: &BTreeSet<String>,
+    unit_owner_id: i64,
+    cities: &[CityHexRef],
+) -> BTreeSet<String> {
+    let mut out = occupied.clone();
+    out.extend(foreign_city_hex_keys(unit_owner_id, cities));
+    out
+}
+
+/// Wariant `add_foreign_city_blocks` na wspolrzednych, czytany przez `find_path` / `reachable`
+/// (parametr `occupied`): obce miasta sa nieprzechodnie dla jednostek frakcji `unit_owner_id`.
+pub fn add_foreign_city_block_coords(
+    occupied: &BTreeSet<HexCoord>,
+    unit_owner_id: i64,
+    cities: &[CityHexRef],
+) -> BTreeSet<HexCoord> {
+    let mut out = occupied.clone();
+    out.extend(
+        cities
+            .iter()
+            .filter(|city| city.owner_id != unit_owner_id)
+            .map(|city| HexCoord::new(city.q, city.r)),
+    );
+    out
+}

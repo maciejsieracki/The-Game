@@ -1,0 +1,94 @@
+{
+  "meta": {
+    "status": "P6.2 (R-RUSTPORT-P6-23-KOMENDY-TEREN-Q1): edytowalne wartosci modulu Porzadek (order.ts). Zmienia sie konkretna liczbe w polu wartosc; kod Rust nie zawiera tych liczb.",
+    "pin_web": "edb8fb56",
+    "wygenerowano": "R-RUSTPORT-P6-23-KOMENDY-TEREN-Q1 runda 1: wartosci przepisane z FALLBACK_ORDER_PARAMS i stalej MAX_HAP; zgodnosc z webem sprawdzona wektorami (tests/p6_23_vectors/order.json) i verify-p623-vectors.py.",
+    "uwaga": "Wartosci z society-params.json (blok porzadek, szczescie) pozostaja w data/society-params.json; ta tabela to ODPOWIEDNIK FALLBACK_ORDER_PARAMS (uzywany gdy klucza brak) oraz stala happinessBreakdown."
+  },
+  "wiersze": [
+    {
+      "id": "waga_szczescie",
+      "wartosc": 0.5,
+      "definicja_web": "gra/src/game/order.ts:175 (FALLBACK_ORDER_PARAMS.wagaSzczescie)",
+      "opis": "Waga Szczescia w Porzadku, gdy society-params.json nie ma porzadek_waga_szczescie."
+    },
+    {
+      "id": "waga_prawo",
+      "wartosc": 0.5,
+      "definicja_web": "gra/src/game/order.ts:176 (FALLBACK_ORDER_PARAMS.wagaPrawo)",
+      "opis": "Waga Prawa w Porzadku, gdy society-params.json nie ma porzadek_waga_prawo."
+    },
+    {
+      "id": "prog_t1",
+      "wartosc": 0,
+      "definicja_web": "gra/src/game/order.ts:177 (FALLBACK_ORDER_PARAMS.progT1)",
+      "opis": "T1: ponizej tej wartosci Porzadku miasto jest w stanie unrest."
+    },
+    {
+      "id": "prog_t2",
+      "wartosc": 6,
+      "definicja_web": "gra/src/game/order.ts:178 (FALLBACK_ORDER_PARAMS.progT2)",
+      "opis": "T2: od tej wartosci Porzadku miasto dostaje bonus order."
+    },
+    {
+      "id": "kara_produkcja_t1",
+      "wartosc": -0.15,
+      "definicja_web": "gra/src/game/order.ts:179 (FALLBACK_ORDER_PARAMS.karaProdukcjaT1)",
+      "opis": "Kara produkcji w unrest (ulamek ujemny)."
+    },
+    {
+      "id": "kara_pieniadz_t1",
+      "wartosc": -0.15,
+      "definicja_web": "gra/src/game/order.ts:180 (FALLBACK_ORDER_PARAMS.karaPieniadzT1)",
+      "opis": "Kara Pieniadza w unrest (ulamek ujemny)."
+    },
+    {
+      "id": "kara_nauka_t1",
+      "wartosc": -0.1,
+      "definicja_web": "gra/src/game/order.ts:181 (FALLBACK_ORDER_PARAMS.karaNaukaT1)",
+      "opis": "Kara Nauki w unrest (ulamek ujemny)."
+    },
+    {
+      "id": "kara_kultura_t1",
+      "wartosc": -0.1,
+      "definicja_web": "gra/src/game/order.ts:182 (FALLBACK_ORDER_PARAMS.karaKulturaT1)",
+      "opis": "Kara Kultury w unrest (ulamek ujemny)."
+    },
+    {
+      "id": "kara_wzrost_t1",
+      "wartosc": -0.25,
+      "definicja_web": "gra/src/game/order.ts:183 (FALLBACK_ORDER_PARAMS.karaWzrostT1)",
+      "opis": "Kara wzrostu populacji w unrest (ulamek ujemny)."
+    },
+    {
+      "id": "ryzyko_buntu_t1",
+      "wartosc": 0.05,
+      "definicja_web": "gra/src/game/order.ts:184 (FALLBACK_ORDER_PARAMS.ryzykoBuntuT1)",
+      "opis": "Ryzyko buntu / migracji na ture w unrest, przedzial [0,1]."
+    },
+    {
+      "id": "bonus_produkcja_t2",
+      "wartosc": 0.1,
+      "definicja_web": "gra/src/game/order.ts:185 (FALLBACK_ORDER_PARAMS.bonusProdukcjaT2)",
+      "opis": "Bonus produkcji w stanie order (ulamek dodatni)."
+    },
+    {
+      "id": "bonus_handel_t2",
+      "wartosc": 0.1,
+      "definicja_web": "gra/src/game/order.ts:186 (FALLBACK_ORDER_PARAMS.bonusHandelT2)",
+      "opis": "Bonus handlu w stanie order (ulamek dodatni)."
+    },
+    {
+      "id": "por_pct_cap",
+      "wartosc": 120,
+      "definicja_web": "gra/src/game/order.ts:190 (FALLBACK_ORDER_PARAMS.porPctCap)",
+      "opis": "Gorne ograniczenie PorPct (%), gdy society-params.json nie ma szczescie.szczescie_pct_cap."
+    },
+    {
+      "id": "szczescie_skala_max",
+      "wartosc": 20,
+      "definicja_web": "gra/src/game/order.ts:558 (happinessBreakdown: MAX_HAP)",
+      "opis": "Skala rozkladu nastrojow: szczescie >= wartosc to cala populacja zadowolona, <= -wartosc cala niezadowolona (komentarz w webie mowi 10, kod uzywa tej wartosci)."
+    }
+  ]
+}
