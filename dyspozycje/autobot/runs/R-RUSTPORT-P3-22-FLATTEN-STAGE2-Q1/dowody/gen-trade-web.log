@@ -1,0 +1,31 @@
+{
+  "FALLBACK_TRADE_MULT": {
+    "wartosc": 1.0,
+    "zrodlo": "gra/src/game/culture-religion.ts:1268"
+  },
+  "MNOZNIK_HANDEL_TRUDNOSC_DELTA": {
+    "wartosci_po_trudnosci": {
+      "easy": 0.5,
+      "hard": -0.5,
+      "normal": 0.0
+    },
+    "zrodlo": "gra/src/game/economy.ts:810"
+  },
+  "PORT_SEA_TRADE_BONUS_PIENIADZ": {
+    "wartosc": 1.0,
+    "zrodlo": "gra/src/game/trade-routes.ts:1742"
+  },
+  "TRADE_ROUTE_BUILDING_BONUS_RATE": {
+    "wartosc": 0.05,
+    "zrodlo": "gra/src/game/trade-routes.ts:1646"
+  },
+  "TRADE_ROUTE_INCOME_HALF_DIVISOR": {
+    "wartosc": 2.0,
+    "zrodlo": "gra/src/game/trade-routes.ts:1565"
+  },
+  "TRADE_ROUTE_INTERNATIONAL_MULTIPLIER": {
+    "wartosc": 2.0,
+    "zrodlo": "gra/src/game/trade-routes.ts:1558"
+  }
+}
+EXIT=0
