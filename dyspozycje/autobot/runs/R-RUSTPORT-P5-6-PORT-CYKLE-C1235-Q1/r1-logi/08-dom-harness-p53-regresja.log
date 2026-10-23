@@ -1,0 +1,7 @@
+$ node tools/dom-harness/run-level1a.mjs --pin-dir <PIN_DIR>
+armyListHud.ts               przypadki=   23 różnice=0 asercje_v2=1/1 DOM_puste=0/23
+bottomBarHud.ts              przypadki=    8 różnice=0 DOM_puste=0/8
+cityListHud.ts               przypadki=    7 różnice=0 DOM_puste=0/7
+empireOverlayHud.ts          przypadki=    5 różnice=0 DOM_puste=0/5
+dom-harness-level1a: pin=edb8fb56 modułów=17 przypadków=3618 różnic=0 jsdomErrors=0
+EXIT=0

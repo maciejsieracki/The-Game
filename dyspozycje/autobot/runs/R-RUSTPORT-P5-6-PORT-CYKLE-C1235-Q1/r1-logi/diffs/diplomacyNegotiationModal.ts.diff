@@ -1,0 +1,42 @@
+--- pin:gra/src/ui/diplomacyNegotiationModal.ts
++++ v2:src-tauri/frontend-v2/src/ui/diplomacyNegotiationModal.ts
+@@ -3,11 +3,17 @@
+  * Handel/dar (PN) → diplomacyTradeBasket.ts · reszta formularzy tutaj.
+  */
+ import type { AudienceAction } from './diplomacyAudience';
+-import type { BasketItem } from '../game/diplomacy-pn-engine';
+-import type { TempoGry } from '../game/tech-tempo';
+-import type { GameDifficulty } from '../game/difficulty-cost';
++// P5.6 (R-RUSTPORT-P5-6-PORT-CYKLE-C1235-Q1): typy koszyka → `viewmodel/types.ts`; etykieta traktatu handlowego →
++// `StaticCatalogDto.labels.traktatHandlowyLabel` (web `TRAKTAT_HANDLOWY_LABEL`, `game/diplomacy-display.ts:279`).
++import type { BasketItemDto as BasketItem } from '../viewmodel/types';
++import { staticCatalog } from '../controller/staticCatalog';
+ import { DIPLO_1E_SHARED_CSS, ensureDiploBrandScope } from './diploUiSkin';
+-import { TRAKTAT_HANDLOWY_LABEL } from '../game/diplomacy-display';
++
++/** Web `TempoGry` (`game/tech-tempo.ts`) — klucz `StaticCatalogDto.constants.tempoGry` (jak P5.5 `techTreeView.ts`). */
++type TempoGry = string;
++/** Web `GameDifficulty` (`game/difficulty-cost.ts`) — klucz poziomu trudności z Rust. */
++type GameDifficulty = string;
++const TRAKTAT_HANDLOWY_LABEL = staticCatalog().labels.traktatHandlowyLabel;
+ 
+ export interface NegotiationPayload {
+   actionId: string;
+@@ -115,15 +121,8 @@
+   playerSkarbiec?: number;
+   /** Trwa wojna z partnerem — blokuje zwykły handel/dar złotem (tylko ugoda pokojowa). */
+   atWar?: boolean;
+-  /**
+-   * Live preview of the same PW gate used by `evaluateProposal` for the ordinary
+-   * exchange. The basket renderer cannot reconstruct the partner's willingness
+-   * from relation/amounts alone, so the game layer may provide this callback.
+-   */
+-  tradeFairnessPreview?: (
+-    givePn: number,
+-    receivePn: number,
+-  ) => { accepted: boolean; pwBalance?: number };
++  // P5.6: hak `tradeFairnessPreview` (pin `:123-126`, podgląd bramki PW zwykłej wymiany) usunięty — tę samą bramkę
++  // liczy Rust w `DiplomacyBasketPreviewDto.accepted`/`balancePn` (P5.2, P5-0 §6.6 wymóg), zapytanie `basketSummary`.
+   /** Id akcji dyplomatycznej (np. '10' pokój, '8' trybut) — kontekst koszyka. */
+   negotiationActionId?: string;
+   /** R-GRACZ-WCHLONIECIE: wymagana opłata ¤ za wchłonięcie MP */

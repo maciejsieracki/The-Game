@@ -1,0 +1,591 @@
+--- pin:gra/src/ui/hexContextTooltip.ts
++++ v2:src-tauri/frontend-v2/src/ui/hexContextTooltip.ts
+@@ -1,50 +1,35 @@
+ /**
+  * hexContextTooltip.ts — treść panelu kontekstowego mapy (heks / jednostka, D17=A).
+  */
+-import type { Hex } from '../types/hex';
+-import { Nakladka, TerenBazowy, Ulepszenie } from '../types/hex';
+-import type { GameMap } from '../types/map';
+-import { tileYield, type TileYield } from '../game/economy';
+-import {
+-  IMPROVEMENT_KEYS,
+-  improvementKeysForHex,
+-  improvementDisplayName,
+-  improvementBonusForKey,
+-  normalizeImprovementKey,
+-  isImprovementAllowedForCiv,
+-  territoryResourceYieldForImprovement,
+-  type ImprovementBonus,
+-  type TerritoryResourceKey,
+-} from '../game/terrain-improvements';
+-import {
+-  galleryTerrainEligible,
+-  hexHasClayDeposit,
+-  isFarmBaseTerrain,
+-  isImprovementBlockedOnForest,
+-} from '../map/improvement-build';
+-import type { ImprovementKey } from '../render/improvements';
++// P5.6 (R-RUSTPORT-P5-6-PORT-CYKLE-C1235-Q1): typy heksa/mapy i reguły plonu, ulepszeń, złóż, bramek
++// terenu oraz Mocy pola liczy Rust — panel dostaje `HexTooltipViewDto` (P5-0 §6.7) i `UnitCardDto`-owe pola (§6.8).
++import type {
++  FieldPowerDto,
++  HexImprovementLineDto,
++  HexTooltipViewDto,
++  TerritoryResourceKeyDto as TerritoryResourceKey,
++  TerritoryResourceYieldDto,
++  TileYieldDto as TileYield,
++  ImprovementBonusDto as ImprovementBonus,
++  UnitCardBadgesDto,
++  UnitCardCombatDisplayDto as UnitCardCombatDisplay,
++  VeteranProgressDto as VeteranProgress,
++} from '../viewmodel/types';
+ // R-ZETON-PASKI (Maciej 2026-07-29): kolory pasków Zdrowia i Ruchu były tu
+ // wpisane na sztywno w CSS. Wyciągnięte do JEDNEGO źródła prawdy, bo te same
+ // barwy niesie teraz tabliczka nad żetonem na mapie (render/unitStatPlate.ts) —
+ // „żeby mapa i panel nie mogły się rozjechać”. Moduł to czyste stałe, nie
+ // wciąga do UI ani grama THREE.
++// P5.6: kopia bajtowa `gra/src/render/unitVitalsPalette.ts` → `ui/unitVitalsPalette.ts` (stałe wyglądu, klasa X —
++// jak `battleHudTheme.ts` w P5.3).
+ import {
+   VITALS_HP_DARK_CSS,
+   VITALS_HP_FULL_CSS,
+   VITALS_MOVE_DARK_CSS,
+   VITALS_MOVE_FULL_CSS,
+-} from '../render/unitVitalsPalette';
+-import {
+-  hexDepositDisplayLabel,
+-  hexHiddenDepositHint,
+-  labelsForImprovementUnlock,
+-} from '../game/resource-access';
+-import { isLamaDepositVisibleForCiv } from '../game/livestock-unlock';
+-import { formatEntityDisplayName } from '../game/display-names';
+-import type { DaninaLabel } from '../game/danina-nazwa';
+-import type { UnitCardCombatDisplay } from '../game/unit-card-stats';
+-import { fieldPower } from '../game/unit-power';
+-import type { VeteranProgress } from '../game/veteran';
++} from './unitVitalsPalette';
++/** Web: `DaninaLabel` (`game/danina-nazwa.ts:15`) = zawsze `'Podatek'`. */
++type DaninaLabel = 'Podatek';
+ import {
+   buildPathLevelIconsRowHtml,
+   buildUnitExtraStatusLinesHtml,
+@@ -82,6 +67,19 @@
+   return `<span class="cp-yield-ic">${yieldIconSvg(key)}</span>`;
+ }
+ 
++/** P5.6: wartości enumu `TerenBazowy` (`types/hex.ts:12-24`) — wyłącznie klucze etykiet (prezentacja). */
++const TerenBazowy = {
++  Laka: 'laka',
++  Rownina: 'rownina',
++  Wzgorza: 'wzgorza',
++  Gory: 'gory',
++  PlytkieMorze: 'plytkie_morze',
++  Morze: 'morze',
++  Pustynia: 'pustynia',
++  Polarny: 'polarny',
++} as const;
++type TerenBazowy = (typeof TerenBazowy)[keyof typeof TerenBazowy];
++
+ const TEREN_LABEL: Record<TerenBazowy, string> = {
+   [TerenBazowy.Laka]: 'Łąka',
+   [TerenBazowy.Rownina]: 'Równina',
+@@ -112,9 +110,6 @@
+   { key: 'handel', label: 'Podatek' },
+ ];
+ 
+-const RIVER_BONUS: TileYield = { zywnosc: 3, praca: 2, handel: 2, drewno: 0, kamien: 0, glina: 2, ruda: 0, ruda_zelaza: 0 };
+-const FOREST_BONUS: TileYield = { zywnosc: -1, praca: 3, handel: -1, drewno: 3, kamien: 0, glina: 0, ruda: 0, ruda_zelaza: 0 };
+-
+ /** Etykiety surowców magazynowych (SUROW-TERYT-01 — `surowiec_ilosc_tura`). */
+ const TERRITORY_RESOURCE_LABEL: Record<TerritoryResourceKey, string> = {
+   drewno: 'Drewno',
+@@ -132,9 +127,8 @@
+   return `<span class="cp-yield-ic">${mapResourceIconSvg(key, 16)}</span>`;
+ }
+ 
+-/** Magazyn państwa z ulepszenia (automatycznie, bez 👤). */
+-function formatTerritoryMagazynPart(key: string, zloze?: string | null): string | null {
+-  const row = territoryResourceYieldForImprovement(key, zloze);
++/** Magazyn państwa z ulepszenia (automatycznie, bez 👤). P5.6: wiersz `territoryResourceYieldForImprovement` z Rust. */
++function formatTerritoryMagazynPart(row: TerritoryResourceYieldDto | null): string | null {
+   if (!row || !(row.amount > 0)) return null;
+   const label = TERRITORY_RESOURCE_LABEL[row.resourceKey];
+   const icon = territoryResourceIconHtml(row.resourceKey);
+@@ -153,8 +147,8 @@
+ }
+ 
+ /** Drewno/kamień z terrain-yields — trafia do magazynu przy obrabianiu pola. */
+-function formatTerrainMagazynWorkedNotes(hex: Hex): string[] {
+-  const y = fullTileYield(hex);
++function formatTerrainMagazynWorkedNotes(view: HexTooltipViewDto): string[] {
++  const y = view.yieldFull;
+   const notes: string[] = [];
+   const drewno = formatTerrainMagazynWorkedPart('drewno', y.drewno ?? 0);
+   if (drewno) notes.push(drewno);
+@@ -166,15 +160,14 @@
+ }
+ 
+ function formatImprovementDesc(
+-  key: string,
+-  hex: Hex,
++  imp: HexImprovementLineDto,
+   esc: (raw: string) => string,
+   tag?: string,
+ ): string {
+-  const name = esc(improvementDisplayName(key));
+-  const bonus = formatCityBonusParts(improvementBonusForKey(key));
+-  const mag = formatTerritoryMagazynPart(key, (hex as { zloze?: string }).zloze);
+-  const unlocks = labelsForImprovementUnlock(key);
++  const name = esc(imp.name);
++  const bonus = formatCityBonusParts(imp.bonus);
++  const mag = formatTerritoryMagazynPart(imp.magazyn);
++  const unlocks = imp.unlockLabels;
+   let s = `<b>${name}</b>`;
+   if (tag) s += ` (${esc(tag)})`;
+   s += ` → plony miasta: ${bonus}`;
+@@ -186,13 +179,13 @@
+ }
+ 
+ /** Podsumowanie wpływu do magazynu państwa z tego heksa (tylko ulepszenia SUROW-TERYT-01). */
+-function formatHexMagazynSummary(hex: Hex, esc: (raw: string) => string): string | null {
++function formatHexMagazynSummary(view: HexTooltipViewDto, esc: (raw: string) => string): string | null {
+   const lines: string[] = [];
+ 
+-  for (const key of builtImprovementKeys(hex)) {
+-    const mag = formatTerritoryMagazynPart(key, (hex as { zloze?: string }).zloze);
++  for (const imp of view.built) {
++    const mag = formatTerritoryMagazynPart(imp.magazyn);
+     if (!mag) continue;
+-    lines.push(`${esc(improvementDisplayName(key))}: ${mag} · automatycznie`);
++    lines.push(`${esc(imp.name)}: ${mag} · automatycznie`);
+   }
+ 
+   return lines.length ? lines.join('<br>') : null;
+@@ -244,60 +237,13 @@
+   return `<div class="cp-yield-row"><span class="cp-yield-lbl">${label}</span> ${value}</div>`;
+ }
+ 
+-function builtImprovementKeys(hex: Hex): string[] {
+-  return improvementKeysForHex(hex);
+-}
+-
+-function terrainBaseYield(hex: Hex): TileYield {
+-  return tileYield({
+-    terenBazowy: hex.terenBazowy,
+-    nakladka: Nakladka.Brak,
+-    maRzeke: false,
+-  });
+-}
+-
+-function fullTileYield(hex: Hex): TileYield {
+-  return tileYield({
+-    terenBazowy: hex.terenBazowy,
+-    nakladka: hex.nakladka ?? Nakladka.Brak,
+-    maRzeke: !!(hex.rzeka && hex.rzeka.obecna),
+-    zloze: (hex as { zloze?: string }).zloze,
+-    ulepszeniaKeys: improvementKeysForHex(hex),
+-  });
+-}
+-
+-interface YieldPart {
+-  label: string;
+-  delta: TileYield;
+-}
+-
+-/** Składowe plonów — teren, las, rzeka, ulepszenia / złoża hodowlane. */
+-function yieldParts(hex: Hex): YieldPart[] {
+-  const parts: YieldPart[] = [
+-    { label: 'teren bazowy', delta: terrainBaseYield(hex) },
+-  ];
+-  if (hex.nakladka === Nakladka.Las) {
+-    parts.push({ label: 'las', delta: { ...FOREST_BONUS } });
+-  }
+-  if (hex.rzeka?.obecna) {
+-    parts.push({ label: 'rzeka', delta: { ...RIVER_BONUS } });
+-  }
+-  const builtSet = new Set(builtImprovementKeys(hex));
+-  for (const key of improvementKeysForHex(hex)) {
+-    const bonus = cityYieldOnly(bonusToTileYield(improvementBonusForKey(key)));
+-    const hasBonus = CITY_YIELD_ROWS.some(({ key: yk }) => (bonus[yk] ?? 0) !== 0);
+-    if (!hasBonus) continue;
+-    const name = improvementDisplayName(key);
+-    const tag = builtSet.has(key) ? 'postawione' : 'złoże / hodowla';
+-    parts.push({ label: `${name} (${tag})`, delta: bonus });
+-  }
+-  return parts;
+-}
++// P5.6: `builtImprovementKeys`/`terrainBaseYield`/`fullTileYield`/`yieldParts` (pin `:247-295`: `improvementKeysForHex`,
++// `tileYield`, bonus lasu/rzeki, ulepszenia z niezerowym plonem miasta) → `HexTooltipViewDto.{built, yieldParts, yieldFull}` (Rust).
+ 
+ /** Rozbicie plonów miasta: baza + modyfikatory = suma (tylko Żywność/Praca/Podatek). */
+-function formatCityYieldBreakdownHtml(hex: Hex): string {
+-  const parts = yieldParts(hex);
+-  const total = cityYieldOnly(fullTileYield(hex));
++function formatCityYieldBreakdownHtml(view: HexTooltipViewDto): string {
++  const parts = view.yieldParts;
++  const total = cityYieldOnly(view.yieldFull);
+   const lines: string[] = [];
+ 
+   for (const { key, label } of CITY_YIELD_ROWS) {
+@@ -324,222 +270,44 @@
+   return lines.join('');
+ }
+ 
+-function collectResourceLabels(hex: Hex, era: number, playerCivType?: string | null): string[] {
+-  const out: string[] = [];
+-  const seen = new Set<string>();
+-
+-  const push = (label: string): void => {
+-    const k = label.toLowerCase();
+-    if (seen.has(k)) return;
+-    seen.add(k);
+-    out.push(label);
+-  };
+-
+-  if (hex.nakladka === Nakladka.ZlozeLamy && !isLamaDepositVisibleForCiv(playerCivType)) {
+-    // Lama — tylko cywilizacje andyjskie (Inkowie / Astekowie).
+-  } else {
+-    const deposit = hexDepositDisplayLabel(hex, era);
+-    if (deposit) push(deposit);
+-
+-    const hidden = hexHiddenDepositHint(hex, era);
+-    if (hidden) push(hidden);
+-  }
+-
+-  for (const key of improvementKeysForHex(hex)) {
+-    for (const u of labelsForImprovementUnlock(key)) push(u);
+-  }
+-
+-  if (hex.nakladka === Nakladka.Las) push('Las (drewno)');
+-  if (hex.rzeka?.obecna) push('Rzeka');
+-
+-  return out;
+-}
+-
+-/**
+- * Ulepszenia możliwe na tym terenie (bez bramki tech/terytorium — podgląd mapy).
+- *
+- * P-HEX-TOOLTIP-MOZLIWE-ULEPSZENIA-BRAK-FILTRA-ZLOZA (Maciej 2026-08-14): sam teren bazowy
+- * (`galleryTerrainEligible`) to za mało — wiele ulepszeń wymaga też konkretnej nakładki/złoża
+- * NA TYM heksie (Las/glina/ruda/sól/żelazo/miedź/złoto/cyna/zwierzę), nie tylko pasującego
+- * terenu. Sprawdzenia niżej są lustrzanym odbiciem (wyłącznie części hex-property, bez
+- * terytorium/tech/stanu gracza) `createQualifier()`/`qualifies()` w `map/improvement-build.ts`
+- * — jedynego autorytatywnego źródła tej logiki. Nie duplikuj warunków ręcznie tam, gdzie
+- * istnieje eksportowana funkcja (hexHasClayDeposit, isFarmBaseTerrain,
+- * isImprovementBlockedOnForest) — reużyj.
+- * EN: base terrain alone is not enough — many improvements also require a specific
+- * overlay/deposit ON THIS hex (forest/clay/ore/salt/iron/copper/gold/tin/animal), not just a
+- * matching terrain type. The checks below mirror (hex-property parts only, no
+- * territory/tech/player-state) `createQualifier()`/`qualifies()` in `map/improvement-build.ts`
+- * — the one authoritative source for this logic. Reuse the exported helpers instead of
+- * duplicating conditions by hand.
+- */
+-
+-/**
+- * Te same przesunięcia osi aksjalnej co `hexNeighbors()` w map/improvement-build.ts i
+- * `hexNeighborCoords()` w units/setup.ts — skopiowane lokalnie (nie importowane), żeby nie
+- * ciągnąć do tego modułu UI całego łańcucha importów `units/setup.ts` (m.in. `map/startScoring`)
+- * tylko dla 6 stałych.
+- * EN: same axial-offset pairs as `hexNeighbors()` in map/improvement-build.ts and
+- * `hexNeighborCoords()` in units/setup.ts — copied locally (not imported) to avoid pulling this
+- * UI module's dependency graph through `units/setup.ts` (incl. `map/startScoring`) just for 6
+- * constants.
+- */
+-const HEX_NEIGHBOR_OFFSETS: ReadonlyArray<readonly [number, number]> = [
+-  [1, 0], [-1, 0], [0, 1], [0, -1], [1, -1], [-1, 1],
+-];
+-
+-/**
+- * Zbiór kluczy heksów `"q,r"` faktycznie leżących NA rzece, zbudowany z `map.riverPaths` —
+- * kopia lokalna `buildRiverHexSet()` z map/improvement-build.ts (linia ~563). Ten zbiór jest
+- * ŚCIŚLE WĘŻSZY niż flaga `hex.rzeka.obecna`: `syncRiverEdgeBonusHexes()`
+- * (gen-helpers.ts:~7241) świadomie ROZLEWA `rzeka.obecna` na wszystkie heksy stykające się
+- * z rzeką jednym bokiem (bonus plonu), więc `rzeka.obecna` sąsiada NIE jest dowodem, że ten
+- * sąsiad leży na `riverPaths` — a to właśnie `riverPaths`/`riverHexSet`, nie `rzeka.obecna`,
+- * silnik sprawdza dla SĄSIADÓW w `isRiverAdjacent()`.
+- * EN: set of hex keys `"q,r"` actually ON a river, built from `map.riverPaths` — local copy of
+- * `buildRiverHexSet()` in map/improvement-build.ts (line ~563). This set is STRICTLY NARROWER
+- * than the `hex.rzeka.obecna` flag: `syncRiverEdgeBonusHexes()` deliberately SPREADS
+- * `rzeka.obecna` onto every hex touching a river on one edge (yield bonus), so a neighbor's
+- * `rzeka.obecna` is not proof it's on `riverPaths` — and it's `riverPaths`/`riverHexSet`, not
+- * `rzeka.obecna`, that the engine checks for NEIGHBORS in `isRiverAdjacent()`.
+- */
+-function buildRiverHexSet(map: GameMap): Set<string> {
+-  const set = new Set<string>();
+-  for (const path of map.riverPaths) {
+-    for (const p of path) set.add(`${p.q},${p.r}`);
+-  }
+-  return set;
+-}
+-
+-/**
+- * Rzeka NA heksie LUB na dowolnym z 6 sąsiadów — lustrzane odbicie `isRiverAdjacent()` z
+- * `createQualifier()` w map/improvement-build.ts (linia ~636): `hex?.rzeka?.obecna` LUB
+- * `riverHexSet.has(ownKey)` dla sam heks; WYŁĄCZNIE `riverHexSet` (nie `rzeka.obecna`) dla
+- * sąsiadów — dokładnie ta sama kolejność i te same trzy warunki co silnik. Bez dostępu do `map`
+- * (np. wołający nie ma jej pod ręką) sprawdzamy tylko flagę na samym heksie — bezpieczny,
+- * węższy fallback (podzbiór poprawnego wyniku, nigdy fałszywy pozytyw).
+- * EN: river ON the hex OR any of its 6 neighbors — mirrors `isRiverAdjacent()` from
+- * `createQualifier()` in map/improvement-build.ts (line ~636): `hex?.rzeka?.obecna` OR
+- * `riverHexSet.has(ownKey)` for the hex itself; `riverHexSet` ONLY (not `rzeka.obecna`) for
+- * neighbors — same order, same three conditions as the engine. Without a `map` reference
+- * (caller doesn't have one) we fall back to the hex's own flag only — a safe, narrower fallback
+- * (subset of the correct result, never a false positive).
+- */
+-export function hexHasRiverAccess(hex: Hex, map?: GameMap): boolean {
+-  if (hex.rzeka?.obecna) return true;
+-  if (!map) return false;
+-  const riverHexSet = buildRiverHexSet(map);
+-  const { q, r } = hex.coords;
+-  if (riverHexSet.has(`${q},${r}`)) return true;
+-  for (const [dq, dr] of HEX_NEIGHBOR_OFFSETS) {
+-    if (riverHexSet.has(`${q + dq},${r + dr}`)) return true;
+-  }
+-  return false;
+-}
+-
+-function listTerrainPossibleImprovements(
+-  hex: Hex,
+-  playerCivType?: string | null,
+-  map?: GameMap,
+-): string[] {
+-  const active = new Set(improvementKeysForHex(hex));
+-  const teren = hex.terenBazowy;
+-  const nakladka = hex.nakladka;
+-  const zloze = (hex as { zloze?: string }).zloze;
+-  const out: string[] = [];
+-  for (const key of IMPROVEMENT_KEYS) {
+-    if (active.has(key)) continue;
+-    if (!isImprovementAllowedForCiv(key, playerCivType)) continue;
+-    if (!galleryTerrainEligible(key as ImprovementKey, teren)) continue;
+-    // Ulepszenia zablokowane pod lasem (irygacja/tarasy/farma — trzeba najpierw wyrąbać);
+-    // tartak/wyrąb/glinianka/obóz łowiecki MOGĄ stać na Lesie — wyjątki żyją w tej funkcji.
+-    // `farma` dołączyła do zablokowanych 2026-08-27 (R-ULEPSZENIA-FARMA-NIE-W-LESIE-Q1,
+-    // ECHO właściciela uchylające regułę z 2026-07-21) — warunek terenu farmy egzekwuje
+-    // niżej `isFarmBaseTerrain`, ta linia jest drugą, niezależną bramką.
+-    if (isImprovementBlockedOnForest(key, nakladka)) continue;
+-    if (key === 'bydlo' && nakladka !== Nakladka.ZlozeBydla) continue;
+-    if (key === 'owce' && nakladka !== Nakladka.ZlozeOwiec) continue;
+-    if (key === 'lama' && nakladka !== Nakladka.ZlozeLamy) continue;
+-    // N5 (P-HEX-TOOLTIP-MOZLIWE-ULEPSZENIA-BRAK-FILTRA-ZLOZA): stadnina wymaga złoża konia NA TYM
+-    // heksie -- silnik (createQualifier) dodatkowo pozwala budować stadninę BEZ złoża, gdy imperium
+-    // ma już odblokowane 'kon' gdzie indziej (isLivestockUnlockedForPlacement/empireUnlocks) -- to
+-    // stan gracza/imperium, nie własność heksu, więc świadomie POMINIĘTE tu, tak samo jak
+-    // terytorium/tech są pominięte w całej tej funkcji (patrz docstring wyżej).
+-    // EN: stadnina requires a horse deposit ON THIS hex -- the engine additionally allows building
+-    // it WITHOUT a deposit once the empire already unlocked 'kon' elsewhere
+-    // (isLivestockUnlockedForPlacement/empireUnlocks) -- that is player/empire state, not a hex
+-    // property, so it's deliberately SKIPPED here, same as territory/tech are skipped throughout
+-    // this function (see docstring above).
+-    if (key === 'stadnina' && nakladka !== Nakladka.ZlozeKonia) continue;
+-    if (key === 'farma' && !isFarmBaseTerrain(teren, nakladka)) continue;
+-    if (key === 'tartak' && nakladka !== Nakladka.Las) continue;
+-    if (key === 'wyrab' && nakladka !== Nakladka.Las) continue;
+-    if (key === 'glinianka' && !hexHasClayDeposit(hex)) continue;
+-    // R-ULEPSZENIA-OBOZ-LOWIECKI-TYLKO-LAS-Q1 (Maciej): obóz łowiecki WYŁĄCZNIE na nakładce
+-    // Las, na dowolnym terenie pod lasem (także wzgórze). Było `Las LUB złoże zwierzęce`.
+-    // Ta sama reguła co `createQualifier` (map/improvement-build.ts) — tooltip nie może
+-    // obiecywać więcej niż silnik. Porównanie enumu, nie podciągu nazwy terenu.
+-    if (key === 'oboz_lowiecki' && nakladka !== Nakladka.Las) continue;
+-    // R-ULEPSZENIA-OBOZ-LOWIECKI-WYMAGA-TARTAKU-Q1: obóz łowiecki wymaga WCZEŚNIEJ zbudowanego
+-    // `tartak` na TYM SAMYM heksie — ten sam wzorzec `active.has(...)` co `droga_brukowana`
+-    // niżej (wymaga `droga`). Ta sama reguła co `createQualifier`
+-    // (map/improvement-build.ts, `existing.includes('tartak')`) — tooltip nie może obiecywać
+-    // więcej niż silnik.
+-    if (key === 'oboz_lowiecki' && !active.has('tartak')) continue;
+-    if (key === 'warzelnia_soli' && teren !== TerenBazowy.PlytkieMorze && zloze !== 'sol') continue;
+-    if (key === 'kopalnia_zelaza' && zloze !== 'zelazo') continue;
+-    if (key === 'kopalnia_miedzi'
+-      && zloze !== 'miedz' && nakladka !== Nakladka.ZlozeRudy && zloze !== 'ruda') continue;
+-    if (key === 'kopalnia_zlota' && zloze !== 'zloto') continue;
+-    if (key === 'kopalnia_cyny' && zloze !== 'cyna') continue;
+-    // Droga brukowana to upgrade istniejącej Drogi — silnik (createQualifier) wymaga JUŻ
+-    // zbudowanej zwykłej Drogi na tym heksie, nie samego terenu lądowego.
+-    // EN: cobblestone road is an upgrade of an existing Road — the engine (createQualifier)
+-    // requires an ALREADY-BUILT plain Road on this hex, not just land terrain.
+-    if (key === 'droga_brukowana' && !active.has('droga') && hex.ulepszenie !== Ulepszenie.Droga) continue;
+-    // Irygacja wymaga rzeki NA heksie lub na sąsiedzie (isRiverAdjacent w createQualifier).
+-    // EN: irrigation requires a river on the hex or a neighbor (isRiverAdjacent in createQualifier).
+-    if (key === 'irygacja' && !hexHasRiverAccess(hex, map)) continue;
+-    const bonus = formatCityBonusParts(improvementBonusForKey(key));
+-    const mag = formatTerritoryMagazynPart(key);
+-    const unlocks = labelsForImprovementUnlock(key);
+-    let line = `<b>${improvementDisplayName(key)}</b> → plony miasta: ${bonus}`;
++// P5.6: `collectResourceLabels` (pin `:327-358`: widoczność złoża lamy wg cywilizacji, etykieta złoża i ukrytego złoża
++// wg epoki, etykiety odblokowań ulepszeń, las, rzeka) → `HexTooltipViewDto.resourceLabels` (Rust).
++// P5.6: `hexHasRiverAccess` + `listTerrainPossibleImprovements` (pin `:360-513`: bramki terenu/lasu/złoża/cywilizacji,
++// rzeka na heksie lub u sąsiada, limit 10 pozycji) → `HexTooltipViewDto.possible` (Rust; ta sama reguła co
++// `createQualifier` silnika). Panel tylko formatuje wiersz (jak pin `:503-509`).
++function formatPossibleImprovementLine(p: HexImprovementLineDto): string {
++    const bonus = formatCityBonusParts(p.bonus);
++    const mag = formatTerritoryMagazynPart(p.magazyn);
++    const unlocks = p.unlockLabels;
++    let line = `<b>${p.name}</b> → plony miasta: ${bonus}`;
+     if (mag) line += ` · magazyn państwa: ${mag} · bez 👤`;
+     if (unlocks.length) line += ` · odblok. ${unlocks.join(', ')}`;
+-    out.push(line);
+-    if (out.length >= 10) break;
+-  }
+-  return out;
++    return line;
+ }
+ 
+ export interface HexContextTooltipInput {
+   q: number;
+   r: number;
+-  hex: Hex;
++  /**
++   * P5.6: zamiast `hex`/`map`/`playerCivType`/`currentEra` (pin `:518,527,536,542`) — widok heksa policzony przez
++   * Rust (`HexTooltipViewDto`, P5-0 §6.7) dla gracza (bramka lamy, epoka złóż, rzeka u sąsiada).
++   */
++  view: HexTooltipViewDto;
+   cityName?: string | null;
+-  /** Miasto-państwo klastra — dopisek w etykiecie (Maciej 2026-07-07). */
+-  cityIsCityState?: boolean;
++  /**
++   * P5.6: nazwa wyświetlana miasta z Rust (`display_name`, P5-0 §3.2; web `formatEntityDisplayName({ baseName:
++   * cityName, isCityState })`, pin `:620` — dopisek miasta-państwa). Zastępuje `cityIsCityState`.
++   */
++  cityDisplayLabel?: string | null;
+   /** Etykieta cywilizacji właściciela (obce miasto). */
+   cityOwnerLabel?: string | null;
+   /** Ludność miasta (gdy znana z odkrycia). */
+   cityPopulation?: number | null;
+-  /** typCywilizacji gracza — bramka widoczności lamy. */
+-  playerCivType?: string | null;
+-  /**
+-   * Mapa świata (opcjonalna) — dostęp do sąsiadów heksa. Dziś jedyny użytek: warunek rzeki
+-   * przy Irygacji (`hexHasRiverAccess`) sprawdzający sąsiadów, nie tylko sam heks. Bez `map`
+-   * funkcja bezpiecznie zawęża się do sprawdzenia rzeki na samym heksie.
+-   * EN: world map (optional) — gives access to hex neighbors. Today's only use: the river
+-   * condition for Irrigation (`hexHasRiverAccess`), which checks neighbors, not just the hex
+-   * itself. Without `map` the check safely narrows to the hex alone.
+-   */
+-  map?: GameMap;
+   /**
+    * R-HEX-PLONY-MAGAZYN B: plony drewno/kamień/glina z terenu trafiają do magazynu
+    * tylko przy 👤 (lub centrum miasta). Bez tego — nie pokazuj „przy 👤" na gołym heksie.
+    */
+   hexWorkedForMagazyn?: boolean;
+-  currentEra?: number;
+   /**
+    * Etykieta strumienia podatkowego (zawsze "Podatek" od 2026-07-27); opcjonalna
+    * dla kompatybilności wołających.
+@@ -549,17 +317,16 @@
+ }
+ 
+ export function buildHexContextTooltipHtml(input: HexContextTooltipInput): string {
+-  const { q, r, hex, esc, cityName } = input;
+-  const era = input.currentEra ?? 99;
+-  const teren = TEREN_LABEL[hex.terenBazowy] ?? esc(String(hex.terenBazowy));
+-  const resources = collectResourceLabels(hex, era, input.playerCivType);
+-  const built = builtImprovementKeys(hex);
+-  const implicitKeys = improvementKeysForHex(hex).filter(k => !built.includes(k));
+-  const possible = listTerrainPossibleImprovements(hex, input.playerCivType, input.map);
++  const { q, r, view, esc, cityName } = input;
++  const teren = TEREN_LABEL[view.terrainBase as TerenBazowy] ?? esc(String(view.terrainBase));
++  const resources = view.resourceLabels;
++  const built = view.built;
++  const implicitKeys = view.implicit;
++  const possible = view.possible.map(formatPossibleImprovementLine);
+ 
+   const lines: string[] = [];
+ 
+-  const terrainIc = `<span class="cp-terrain-ic">${terrainIconSvg(String(hex.terenBazowy), 18)}</span>`;
++  const terrainIc = `<span class="cp-terrain-ic">${terrainIconSvg(String(view.terrainBase), 18)}</span>`;
+   lines.push(`<div class="cp-hero-names">${terrainIc}${esc(teren)}</div>`);
+   lines.push(`<div class="cp-hero-sub">heks (${q}, ${r})</div>`);
+ 
+@@ -574,14 +341,14 @@
+   }
+ 
+   if (built.length > 0) {
+-    const builtDesc = built.map((key) => formatImprovementDesc(key, hex, esc, 'postawione')).join('<br>');
++    const builtDesc = built.map((imp) => formatImprovementDesc(imp, esc, 'postawione')).join('<br>');
+     lines.push(subLine('Ulepszenia postawione', builtDesc));
+   }
+ 
+   if (implicitKeys.length > 0) {
+-    const impDesc = implicitKeys.map((key) => {
+-      const bonus = formatCityBonusParts(improvementBonusForKey(key));
+-      return `<b>${esc(improvementDisplayName(key))}</b> (naturalne) → plony miasta: ${bonus}`;
++    const impDesc = implicitKeys.map((imp) => {
++      const bonus = formatCityBonusParts(imp.bonus);
++      return `<b>${esc(imp.name)}</b> (naturalne) → plony miasta: ${bonus}`;
+     }).join('<br>');
+     lines.push(subLine('Hodowla / złoże aktywne', impDesc));
+   }
+@@ -590,9 +357,9 @@
+     lines.push(subLine('Ulepszenie', 'brak — goły teren'));
+   }
+ 
+-  const magazynSummary = formatHexMagazynSummary(hex, esc);
++  const magazynSummary = formatHexMagazynSummary(view, esc);
+   const terrainMagazyn = input.hexWorkedForMagazyn
+-    ? formatTerrainMagazynWorkedNotes(hex)
++    ? formatTerrainMagazynWorkedNotes(view)
+     : [];
+   if (magazynSummary || terrainMagazyn.length > 0) {
+     lines.push('<div class="cp-yield-head">Do magazynu państwa</div>');
+@@ -605,8 +372,8 @@
+   }
+ 
+   lines.push('<div class="cp-yield-head">Plony miasta — rozbicie (przy 👤)</div>');
+-  lines.push(formatCityYieldBreakdownHtml(hex));
+-  lines.push(`<div class="cp-total">Razem (miasto): ${formatCityYieldLine(cityYieldOnly(fullTileYield(hex)), '0')}</div>`);
++  lines.push(formatCityYieldBreakdownHtml(view));
++  lines.push(`<div class="cp-total">Razem (miasto): ${formatCityYieldLine(cityYieldOnly(view.yieldFull), '0')}</div>`);
+   lines.push('<div class="cp-sub cp-yield-foot">Żywność · Praca · Podatek → ekonomia miasta (przy 👤). Magazyn → ulepszenia (Tartak, Kamieniołom… — auto) + drewno/kamień/glina z terenu (przy 👤 lub centrum).</div>');
+ 
+   if (possible.length > 0) {
+@@ -617,7 +384,7 @@
+   }
+ 
+   if (cityName) {
+-    const label = formatEntityDisplayName({ baseName: cityName, isCityState: input.cityIsCityState });
++    const label = input.cityDisplayLabel ?? cityName;
+     lines.push(subLine('Miasto', esc(label)));
+     if (input.cityOwnerLabel) {
+       lines.push(subLine('Właściciel', esc(input.cityOwnerLabel)));
+@@ -642,6 +409,13 @@
+   ruchMax: number;
+   /** Efektywne staty bojowe (C-UNIT-CARD-Q1–Q3). */
+   combat: UnitCardCombatDisplay;
++  /**
++   * P5.6: Moc pola (`fieldPower` z 8 pól `*Effective`, pin `:818-827`) liczy Rust — P5-0 §6.8 (`UnitCardDto.power`
++   * rozpisane na atak/obronę/razem).
++   */
++  fieldPower: FieldPowerDto;
++  /** P5.6: poziomy odznak ścieżek + gwiazdki weterana z Rust (`UnitCardDto.badges`; wymóg `unitCardStatus.ts` od P5.3). */
++  badges: UnitCardBadgesDto;
+   hp?: number;
+   category?: string;
+   inGarnizon?: boolean;
+@@ -727,6 +501,7 @@
+     oblegaCityName: u.oblegaCityName,
+     // R-STATUS-PRZYCZYNA-CIERPIENIA-Q1=C: głód wojska + deficyt Złota.
+     ...pickUnitSufferingFields(u),
++    badges: u.badges,
+     esc: u.esc,
+   };
+ }
+@@ -815,16 +590,8 @@
+   // to tylko 8/75 jednostek, nie wartość typowa). Wszystkie 8 pól czytane z tej samej konwencji "*Effective"
+   // (softFrac budynki+weteran) co atakEffective/obronaEffective, dla spójności
+   // wewnątrz tego tooltipa.
+-  const power = fieldPower({
+-    meleeAttack: combat.atakEffective,
+-    meleeDefence: combat.obronaEffective,
+-    armor: combat.pancerzEffective,
+-    health: combat.hpMaxEffective,
+-    weaponDamage: combat.weaponDamageEffective,
+-    piercing: combat.piercingEffective,
+-    chargeBonus: combat.chargeBonusEffective,
+-    missileAttack: combat.missileAttackEffective,
+-  });
++  // P5.6: `fieldPower({ meleeAttack: atakEffective, … missileAttack: missileAttackEffective })` → `u.fieldPower` (Rust).
++  const power = u.fieldPower;
+   return '<div class="sp-unit-forces">'
+     + '<div class="sp-unit-forces-head">Siły zastosowane</div>'
+     + `<div class="sp-unit-forces-line"><span class="sp-unit-forces-l">Atak / obrona</span>`
