@@ -36,6 +36,7 @@ import { canCaptureCityWithoutBattle } from './siegeDefenders';
 import type { Hex } from '../types/hex';
 import type { RuntimeUnit } from '../units/setup';
 import { hexDistance, computePath, pathCost, keyOf, isWaterTerrain, embarkMoveCost, terrainMoveCost, isCivilianUnit } from '../units/setup';
+import { isWarAllInCapitalEnabled, planWarAllInCapital, type WarAllInContext } from './warAllInCapital';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -1751,6 +1752,7 @@ export function decideBarbarianMoves(
   canEngageOwner?: (targetOwnerId: number) => boolean,
   difficulty?: SeaRaidDifficulty,
   turn?: number,
+  warAllIn?: WarAllInContext,
 ): BarbCommand[] {
   const commands: BarbCommand[] = [];
   const engageOk = canEngageOwner ?? ((_targetOwnerId: number) => true);
@@ -1798,7 +1800,36 @@ export function decideBarbarianMoves(
   // R-ARMIA-KONCENTRACJA-AI-BARB-Q1=A: rally precedes chase/attack. A unit
   // receives at most one command below; once the group is physically gathered
   // at the camp, the existing tactical planner resumes unchanged.
-  const rallyCommands = planBarbarianRally(barbUnits, camps, map, allUnits, cities);
+  // R-WEB-WAR-ALLIN-CAPITAL-Q1 (TYMCZASOWE, flaga WAR_ALLIN_CAPITAL_ENABLED): barbarzyncy w
+  // wojnie z kims (engageOk) wysylaja WSZYSTKIE jednostki bojowe na NAJBLIZSZA stolice takiego
+  // przeciwnika (liczona od polozenia grupy). Garnizony wlasnych miast barbarzynskich zostaja.
+  // Zastepuje rally/odwrot/poscig dla tych jednostek; atak sasiedniego wroga zostaje.
+  const allInTargets = isWarAllInCapitalEnabled() && warAllIn !== undefined
+    ? warAllIn.targets.filter(t => engageOk(t.ownerId) && !isBarbarian(t.ownerId))
+    : [];
+  const allInActive = allInTargets.length > 0;
+  const barbCityHexes = new Set(
+    cities.filter(c => c.ownerId !== undefined && isBarbarian(c.ownerId)).map(c => keyOf(c.q, c.r)),
+  );
+  const allInEligible = allInActive
+    ? barbUnits.filter(u =>
+      u.ruchLeft > 0 && u.embarked !== true && u.seaRaider !== true
+      && !isCivilianUnit(u) && !barbCityHexes.has(keyOf(u.q, u.r)))
+    : [];
+  const allInOrders = new Map<string, { q: number; r: number; cityId: string }>();
+  if (allInEligible.length > 0) {
+    // Heksy nie-tranzytowe: jednostki + obce (nie-barbarzynskie) miasta (addForeignCityBlocks).
+    const blocked = new Set(allUnits.map(u => keyOf(u.q, u.r)));
+    for (const c of cities) {
+      if (c.ownerId !== undefined && isBarbarian(c.ownerId)) continue;
+      blocked.add(keyOf(c.q, c.r));
+    }
+    const plan = planWarAllInCapital(allInEligible, allInTargets, { map, blocked });
+    for (const o of plan.orders) allInOrders.set(o.unitId, { q: o.step.q, r: o.step.r, cityId: o.targetCityId });
+  }
+  const allInUnitIds = new Set(allInEligible.map(u => u.id));
+
+  const rallyCommands = allInActive ? [] : planBarbarianRally(barbUnits, camps, map, allUnits, cities);
   const ralliedUnitIds = new Set(rallyCommands.map(c => c.unitId));
   const rallyCampIds = new Set(
     rallyCommands
@@ -1832,6 +1863,17 @@ export function decideBarbarianMoves(
     // TEMAT #15: jednostki Ludów Morza (rajderzy / zaokrętowane) prowadzi
     // decideSeaPeoplesRaids — logika lądowa ich nie rusza.
     if (unit.embarked === true || unit.seaRaider === true) continue;
+
+    if (allInUnitIds.has(unit.id)) {
+      const adj = enemies.find(e => hexDistance(unit.q, unit.r, e.q, e.r) === 1 && engageOk(e.ownerId));
+      if (adj !== undefined) {
+        commands.push({ type: 'attack', unitId: unit.id, targetUnitId: adj.id });
+      } else {
+        const ord = allInOrders.get(unit.id);
+        if (ord !== undefined) commands.push({ type: 'move', unitId: unit.id, toQ: ord.q, toR: ord.r });
+      }
+      continue;
+    }
 
     const occ = addForeignCityBlocks(
       occupiedExcluding(allUnits, unit.id),

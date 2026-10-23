@@ -17,6 +17,7 @@ import { Nakladka }     from '../types/hex';
 import type { GameData, BuildingDef } from '../data/loader';
 import aiParamsRaw from '../../data/ai-params.json';
 import type { RuntimeUnit } from '../units/setup';
+import { isWarAllInCapitalEnabled, planWarAllInCapital, type WarAllInContext } from './warAllInCapital';
 import { hexDistance, computePath, computeReachable, keyOf, isCivilianUnit } from '../units/setup';
 import {
   cityStateMilitaryProductionCap,
@@ -445,6 +446,12 @@ export interface AITurnOpts {
     /** Mutable per-turn handoff: main.ts records a newly formed wave after AI planning. */
     wavePlan?: ForcedWarWavePlan;
   };
+  /**
+   * R-WEB-WAR-ALLIN-CAPITAL-Q1 (TYMCZASOWE): aktualne stolice cywilizacji, z ktorymi ten AI
+   * jest w wojnie. Gdy ustawione (main.ts robi to tylko przy fladze ON) i niepuste, WSZYSTKIE
+   * jednostki bojowe tego AI ida na najblizsza stolice (patrz warAllInCapital.ts).
+   */
+  warAllIn?: WarAllInContext;
   /**
    * C-AI-PAKIET (2026-07-26): profil z civ-ai.json per typ cywilizacji —
    * ekspansywnosc i sklonnoscDoPodboju sterują ekspansją i agresją wojskową.
@@ -3761,8 +3768,64 @@ export function decideAITurn(
   // Suppress unused-variable lint: unitActed populated for potential future use.
   void unitActed;
 
+  // R-WEB-WAR-ALLIN-CAPITAL-Q1 (TYMCZASOWE, flaga WAR_ALLIN_CAPITAL_ENABLED): w wojnie cala
+  // armia idzie na stolice przeciwnika. Nadpisuje komendy RUCHU jednostek bojowych (zostawia
+  // ataki oraz wejscie na heks wrogiego miasta); gracz nigdy tu nie trafia (decideAITurn = AI).
+  if (isWarAllInCapitalEnabled() && opts.warAllIn !== undefined && opts.warAllIn.targets.length > 0) {
+    applyWarAllInCapitalToCommands(commands, myUnits, units, cities, playerId, map, opts.warAllIn);
+  }
+
   commands.push({ type: 'endTurn' });
   return commands;
+}
+
+/**
+ * R-WEB-WAR-ALLIN-CAPITAL-Q1: zastepuje komendy ruchu jednostek bojowych rozkazem marszu na
+ * najblizsza stolice wroga (grupowanie/rendezvous w planWarAllInCapital). Mutuje `commands`.
+ */
+function applyWarAllInCapitalToCommands(
+  commands: AICommand[],
+  myUnits: RuntimeUnit[],
+  units: RuntimeUnit[],
+  cities: AICity[],
+  playerId: number,
+  map: GameMap,
+  ctx: WarAllInContext,
+): void {
+  const eligible = myUnits.filter(u => !isCivilianUnit(u) && !isScoutUnit(u) && u.ruchLeft > 0);
+  if (eligible.length === 0) return;
+  const enemyCityHex = new Set(
+    cities.filter(c => c.ownerId !== playerId).map(c => keyOf(c.q, c.r)),
+  );
+  const eligibleIds = new Set(eligible.map(u => u.id));
+  // Jednostki ktore juz atakuja lub wchodza na wrogie miasto zachowuja swoj rozkaz.
+  const keep = new Set<string>();
+  for (const cmd of commands) {
+    if (cmd.type === 'attack' && eligibleIds.has(cmd.unitId)) keep.add(cmd.unitId);
+    else if (cmd.type === 'move' && eligibleIds.has(cmd.unitId) && enemyCityHex.has(keyOf(cmd.toQ, cmd.toR))) {
+      keep.add(cmd.unitId);
+    }
+  }
+  const planned = eligible.filter(u => !keep.has(u.id));
+  if (planned.length === 0) return;
+  const plannedIds = new Set(planned.map(u => u.id));
+  for (let i = commands.length - 1; i >= 0; i--) {
+    const cmd = commands[i]!;
+    if (cmd.type === 'move' && plannedIds.has(cmd.unitId)) commands.splice(i, 1);
+  }
+  // Heksy nie-tranzytowe: wszystkie jednostki + obce miasta (silnik: addForeignCityBlocks).
+  const blocked = new Set(units.map(u => keyOf(u.q, u.r)));
+  for (const k of enemyCityHex) blocked.add(k);
+  const plan = planWarAllInCapital(planned, ctx.targets, { map, blocked });
+  for (const o of plan.orders) {
+    commands.push({
+      type: 'move',
+      unitId: o.unitId,
+      toQ: o.step.q,
+      toR: o.step.r,
+      targetCityId: o.targetCityId,
+    });
+  }
 }
 
 /** Progi posiłków w klastrze per poziom „Wsparcie miast-państw" (setup nowej gry). */

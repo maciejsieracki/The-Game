@@ -1,0 +1,10 @@
+OFF aiVsAi battles 0 captures 0 moves 152 foreign 0 humanMoves 0 ms 428 hash 7fc4cb5399d10a2e
+OFF aiVsPlayer battles 0 captures 0 moves 24 foreign 0 humanMoves 0 ms 35 hash aa57ed77b8ca8270
+OFF barbarians battles 0 captures 0 moves 0 foreign 0 humanMoves 0 ms 88 hash c07e60985cb8a2ab
+OFF noLandPath battles 0 captures 0 moves 152 foreign 0 humanMoves 0 ms 215 hash 7fc4cb5399d10a2e
+ON  aiVsAi battles 43 captures 3 moves 574 foreign 0 humanMoves 0 ms 396 hash 04cf3464945f297f captured c1a by 2;captured c1b by 2;captured c1c by 2
+ON  aiVsPlayer battles 9 captures 2 moves 200 foreign 0 humanMoves 0 ms 90 hash 6931b2dad8e76050 captured c0a by 1;captured c0b by 1
+ON  barbarians battles 3 captures 4 moves 145 foreign 0 humanMoves 0 ms 160 hash 2e7e71e93e765538 captured c1a by -1;captured c1b by -1;captured c0a by -1;captured c0b by -1
+ON  noLandPath battles 0 captures 0 moves 34 foreign 0 humanMoves 0 ms 579 hash 6e16d8ae8cd434d4
+
+EXIT=0
