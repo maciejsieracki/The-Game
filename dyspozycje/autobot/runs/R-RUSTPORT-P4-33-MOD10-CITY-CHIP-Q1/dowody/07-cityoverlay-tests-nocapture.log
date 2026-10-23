@@ -1,0 +1,280 @@
+$ cargo test --locked --test cityoverlay_web_parity -- --nocapture --test-threads=1
+   Compiling civ-renderer v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_2652eab6-49a-1/rust-port/renderer)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.20s
+     Running tests/cityoverlay_web_parity.rs (target/debug/deps/cityoverlay_web_parity-e32a2939db6862a1)
+
+running 15 tests
+test chip_helpers_match_the_web ... helpers: 111 comparisons, 0 differences
+ok
+test chip_sprites_match_the_web_bit_for_bit ... chip sprites: 1631 comparisons, 0 differences
+ok
+test chip_textures_match_chromium ... chip@page | ref | size | max_abs | mean_abs | px>16 % | ssim
+na_major@main final | main-r0 | 311x48 | 76 | 1.3058 | 2.264 | 0.99593
+na_major@main initial | main-r0 | 311x48 | 76 | 1.3058 | 2.264 | 0.99593
+na_city_state@main final | main-r1 | 209x48 | 53 | 1.2736 | 2.572 | 0.99497
+na_city_state@main initial | main-r1 | 209x48 | 53 | 1.2736 | 2.572 | 0.99497
+minimal@main final | main-r3 | 180x48 | 61 | 1.3657 | 2.604 | 0.99549
+minimal@main initial | main-r2 | 180x48 | 61 | 1.3474 | 2.616 | 0.99552
+major_full@main final | main-r4 | 311x48 | 76 | 1.3608 | 2.324 | 0.99581
+major_full@main initial | main-r0 | 311x48 | 76 | 1.3058 | 2.264 | 0.99593
+zulu_capital_long@main final | main-r6 | 456x48 | 76 | 1.5170 (exception ≤ 1.6) | 3.130 | 0.99487
+zulu_capital_long@main initial | main-r5 | 456x48 | 76 | 1.4904 | 3.075 | 0.99491
+widest@main final | main-r8 | 456x48 | 76 | 1.3956 | 2.458 | 0.99553
+widest@main initial | main-r7 | 456x48 | 76 | 1.3631 | 2.440 | 0.99556
+city_state@main final | main-r9 | 209x48 | 53 | 1.2915 | 2.711 | 0.99494
+city_state@main initial | main-r1 | 209x48 | 53 | 1.2736 | 2.572 | 0.99497
+cs_nosigil@main final | main-r10 | 260x48 | 61 | 1.4292 | 2.925 | 0.99483
+cs_nosigil@main initial | main-r10 | 260x48 | 61 | 1.4292 | 2.925 | 0.99483
+egipt@main final | main-r12 | 222x48 | 59 | 1.4131 | 2.787 | 0.99524
+egipt@main initial | main-r11 | 222x48 | 59 | 1.3878 | 2.834 | 0.99517
+unknown_civ@main final | main-r14 | 344x48 | 73 | 1.2513 | 2.441 | 0.99540
+unknown_civ@main initial | main-r13 | 344x48 | 73 | 1.2430 | 2.471 | 0.99540
+spaced_civ@main final | main-r16 | 164x48 | 53 | 1.3491 | 2.287 | 0.99555
+spaced_civ@main initial | main-r15 | 164x48 | 53 | 1.3014 | 2.337 | 0.99544
+starving@main final | main-r18 | 259x48 | 63 | 1.1914 | 2.099 | 0.99514
+starving@main initial | main-r17 | 259x48 | 63 | 1.1787 | 2.107 | 0.99516
+neg_zero@main final | main-r20 | 194x48 | 53 | 1.2480 | 2.309 | 0.99558
+neg_zero@main initial | main-r19 | 194x48 | 53 | 1.2310 | 2.320 | 0.99561
+nan_pop@main final | main-r22 | 270x48 | 64 | 1.4698 | 3.287 | 0.99499
+nan_pop@main initial | main-r21 | 270x48 | 64 | 1.4444 | 3.194 | 0.99500
+empty_name@main final | main-r24 | 193x48 | 73 | 1.3691 | 2.645 | 0.99544
+empty_name@main initial | main-r23 | 193x48 | 73 | 1.3586 | 2.655 | 0.99541
+blank_name@main final | main-r26 | 134x48 | 53 | 1.1580 | 1.648 | 0.99567
+blank_name@main initial | main-r25 | 134x48 | 53 | 1.1000 | 1.710 | 0.99554
+prod_no_kind@main final | main-r28 | 288x48 | 58 | 1.3252 | 2.532 | 0.99509
+prod_no_kind@main initial | main-r27 | 288x48 | 58 | 1.2980 | 2.561 | 0.99503
+prod_unknown_icon@main final | main-r30 | 283x48 | 73 | 1.2949 | 2.385 | 0.99512
+prod_unknown_icon@main initial | main-r29 | 283x48 | 73 | 1.2832 | 2.393 | 0.99514
+hover_full@main final | main-r32 | 296x70 | 62 | 1.1123 | 1.902 | 0.99555
+hover_full@main initial | main-r31 | 296x70 | 62 | 1.0776 | 1.916 | 0.99556
+hover_paused@main final | main-r34 | 183x70 | 63 | 1.2492 | 2.045 | 0.99572
+hover_paused@main initial | main-r33 | 183x70 | 63 | 1.2179 | 2.077 | 0.99566
+hover_paused_item@main final | main-r36 | 205x70 | 58 | 1.2368 | 2.244 | 0.99588
+hover_paused_item@main initial | main-r35 | 205x70 | 58 | 1.2089 | 2.272 | 0.99583
+hover_warning_only@main final | main-r38 | 136x70 | 63 | 1.2866 | 2.300 | 0.99540
+hover_warning_only@main initial | main-r37 | 136x70 | 63 | 1.2463 | 2.342 | 0.99534
+hover_truncated@main final | main-r40 | 169x70 | 63 | 1.3793 | 2.722 | 0.99518
+hover_truncated@main initial | main-r39 | 169x70 | 63 | 1.3469 | 2.756 | 0.99513
+hover_no_detail@main final | main-r42 | 178x48 | 57 | 1.3585 | 2.294 | 0.99532
+hover_no_detail@main initial | main-r41 | 178x48 | 57 | 1.3145 | 2.341 | 0.99522
+capital_only@main final | main-r44 | 230x48 | 76 | 1.5173 (exception ≤ 1.6) | 2.799 | 0.99580
+capital_only@main initial | main-r43 | 230x48 | 76 | 1.4833 | 2.835 | 0.99572
+lod1@main final | main-r45 | 462x96 | 52 | 0.8366 | 0.972 | 0.99709
+lod2@main final | main-r46 | 582x144 | 75 | 0.6617 | 0.793 | 0.99638
+lod15@main final | main-r47 | 136x48 | 63 | 1.3734 | 2.436 | 0.99521
+cached_minimal@main final | main-r3 | 180x48 | 61 | 1.3657 | 2.604 | 0.99549
+cached_minimal@main initial | main-r3 | 180x48 | 61 | 1.3657 | 2.604 | 0.99549
+legacy@main final | main-r49 | 199x48 | 68 | 1.2856 | 2.198 | 0.99530
+legacy@main initial | main-r48 | 199x48 | 68 | 1.2690 | 2.209 | 0.99534
+major_full@dpr2 final | dpr2-r0 | 622x96 | 123 | 0.8470 | 1.124 | 0.99681
+hover_full@dpr2 final | dpr2-r1 | 592x140 | 95 | 0.7637 | 1.036 | 0.99616
+lod2@dpr2 final | dpr2-r2 | 776x192 | 63 | 0.6110 | 0.738 | 0.99631
+zulu_capital_long@dpr15 final | dpr15-r0 | 684x72 | 74 | 1.0841 | 1.917 | 0.99588
+drawCityMapBadgeCanvas(hover_full) | main-r31 | 296x70 | 62 | 1.0776 | 1.916 | 0.99556
+drawCityMapBadgeCanvasLegacy | main-r48 | 199x48 | 68 | 1.2690 | 2.209 | 0.99534
+ok
+test chromium_tree_differences_are_last_bit_noise ... okolica.0.children.2.objects.1.pos: 1 f32 elements differ by ≤ 1e-6
+okolica.1.children.0.objects.1.pos: 1 f32 elements differ by ≤ 1e-6
+okolica.1.children.2.objects.1.pos: 2 f32 elements differ by ≤ 1e-6
+okolica.2.children.0.objects.1.pos: 2 f32 elements differ by ≤ 1e-6
+okolica.5.children.0.objects.1.pos: 2 f32 elements differ by ≤ 1e-6
+chromium-vs-node: 13 colour channels (1 ulp), 5 vertex arrays (≤ 1e-6)
+ok
+test constants_match_the_web ... constants: 22 comparisons, 0 differences
+ok
+test fixtures_match_manifest_sha256 ... manifest entries=98 fixture files=91 bytes=5258499 (with manifest/README/golden: 5277209)
+ok
+test inputs_equal_the_rr_t8c_pin_inputs ... ok
+test mean_abs_exceptions_are_needed ... ok
+test okolica_textures_match_chromium ... label | ref | size | max_abs | mean_abs | px>16 % | ssim
+r2_default (-2, 1) worker=false rows=3 | main-r50 | 128x72 | 38 | 0.2131 | 0.109 | 0.99938
+r2_default (-2, 2) worker=false rows=2 | main-r51 | 128x54 | 38 | 0.2171 | 0.145 | 0.99916
+r2_default (-1, -1) worker=false rows=2 | main-r52 | 128x54 | 49 | 0.2587 | 0.391 | 0.99856
+r2_default (-1, 0) worker=false rows=2 | main-r53 | 128x54 | 46 | 0.6556 | 1.056 | 0.99746
+r2_default (-1, 1) worker=true rows=3 | main-r54 | 128x98 | 55 | 0.5708 | 1.116 | 0.99872
+r2_default (0, -2) worker=false rows=3 | main-r55 | 128x72 | 35 | 0.3481 | 0.586 | 0.99893
+r2_default (0, -1) worker=false rows=1 | main-r56 | 128x46 | 38 | 0.1551 | 0.170 | 0.99903
+r2_default (0, 0) worker=false rows=3 | main-r57 | 128x72 | 38 | 0.2131 | 0.109 | 0.99932
+r2_default (0, 2) worker=false rows=3 | main-r50 | 128x72 | 38 | 0.2131 | 0.109 | 0.99938
+r2_default (1, -1) worker=false rows=1 | main-r58 | 128x46 | 49 | 0.2259 | 0.459 | 0.99832
+r2_default (1, 0) worker=true rows=2 | main-r59 | 128x78 | 49 | 0.3636 | 0.691 | 0.99921
+r2_default (2, -2) worker=false rows=1 | main-r60 | 128x46 | 38 | 0.1543 | 0.170 | 0.99912
+r2_default (2, 0) worker=false rows=1 | main-r56 | 128x46 | 38 | 0.1551 | 0.170 | 0.99903
+r3_owner3 (-3, 1) worker=false rows=1 | main-r60 | 128x46 | 38 | 0.1543 | 0.170 | 0.99912
+r3_owner3 (-3, 2) worker=false rows=3 | main-r55 | 128x72 | 35 | 0.3481 | 0.586 | 0.99893
+r3_owner3 (-2, 1) worker=true rows=3 | main-r61 | 128x98 | 43 | 0.3313 | 0.710 | 0.99903
+r3_owner3 (-2, 2) worker=false rows=2 | main-r51 | 128x54 | 38 | 0.2171 | 0.145 | 0.99916
+r3_owner3 (-2, 3) worker=false rows=1 | main-r58 | 128x46 | 49 | 0.2259 | 0.459 | 0.99832
+r3_owner3 (-1, -1) worker=false rows=2 | main-r52 | 128x54 | 49 | 0.2587 | 0.391 | 0.99856
+r3_owner3 (-1, 0) worker=false rows=2 | main-r53 | 128x54 | 46 | 0.6556 | 1.056 | 0.99746
+r3_owner3 (-1, 1) worker=false rows=3 | main-r62 | 128x72 | 54 | 0.6143 | 1.183 | 0.99661
+r3_owner3 (-1, 3) worker=false rows=3 | main-r55 | 128x72 | 35 | 0.3481 | 0.586 | 0.99893
+r3_owner3 (0, -3) worker=true rows=1 | main-r63 | 128x68 | 43 | 0.2757 | 0.483 | 0.99930
+r3_owner3 (0, -2) worker=false rows=3 | main-r55 | 128x72 | 35 | 0.3481 | 0.586 | 0.99893
+r3_owner3 (0, -1) worker=false rows=1 | main-r56 | 128x46 | 38 | 0.1551 | 0.170 | 0.99903
+r3_owner3 (0, 0) worker=false rows=3 | main-r57 | 128x72 | 38 | 0.2131 | 0.109 | 0.99932
+r3_owner3 (0, 2) worker=false rows=3 | main-r50 | 128x72 | 38 | 0.2131 | 0.109 | 0.99938
+r3_owner3 (1, -1) worker=true rows=1 | main-r64 | 128x68 | 49 | 0.3016 | 0.574 | 0.99930
+r3_owner3 (1, 0) worker=false rows=2 | main-r52 | 128x54 | 49 | 0.2587 | 0.391 | 0.99856
+r3_owner3 (1, 2) worker=false rows=3 | main-r62 | 128x72 | 54 | 0.6143 | 1.183 | 0.99661
+r3_owner3 (2, -3) worker=false rows=3 | main-r62 | 128x72 | 54 | 0.6143 | 1.183 | 0.99661
+r3_owner3 (2, -2) worker=false rows=1 | main-r60 | 128x46 | 38 | 0.1543 | 0.170 | 0.99912
+r3_owner3 (2, 0) worker=false rows=1 | main-r56 | 128x46 | 38 | 0.1551 | 0.170 | 0.99903
+r3_owner3 (3, -2) worker=false rows=3 | main-r50 | 128x72 | 38 | 0.2131 | 0.109 | 0.99938
+r3_owner3 (3, -1) worker=false rows=2 | main-r51 | 128x54 | 38 | 0.2171 | 0.145 | 0.99916
+r25_owner9 (-3, 1) worker=false rows=1 | main-r60 | 128x46 | 38 | 0.1543 | 0.170 | 0.99912
+r25_owner9 (-3, 2) worker=false rows=3 | main-r55 | 128x72 | 35 | 0.3481 | 0.586 | 0.99893
+r25_owner9 (-2, 1) worker=false rows=3 | main-r50 | 128x72 | 38 | 0.2131 | 0.109 | 0.99938
+r25_owner9 (-2, 2) worker=false rows=2 | main-r51 | 128x54 | 38 | 0.2171 | 0.145 | 0.99916
+r25_owner9 (-1, -1) worker=false rows=2 | main-r52 | 128x54 | 49 | 0.2587 | 0.391 | 0.99856
+r25_owner9 (-1, 0) worker=false rows=2 | main-r53 | 128x54 | 46 | 0.6556 | 1.056 | 0.99746
+r25_owner9 (-1, 1) worker=true rows=3 | main-r65 | 128x98 | 55 | 0.5431 | 1.116 | 0.99874
+r25_owner9 (0, -2) worker=false rows=3 | main-r55 | 128x72 | 35 | 0.3481 | 0.586 | 0.99893
+r25_owner9 (0, -1) worker=false rows=1 | main-r56 | 128x46 | 38 | 0.1551 | 0.170 | 0.99903
+r25_owner9 (1, -1) worker=false rows=1 | main-r58 | 128x46 | 49 | 0.2259 | 0.459 | 0.99832
+r25_owner9 (1, 0) worker=false rows=2 | main-r52 | 128x54 | 49 | 0.2587 | 0.391 | 0.99856
+edge (1, -1) worker=false rows=1 | main-r58 | 128x46 | 49 | 0.2259 | 0.459 | 0.99832
+edge (1, 0) worker=false rows=2 | main-r52 | 128x54 | 49 | 0.2587 | 0.391 | 0.99856
+edge (2, -2) worker=false rows=1 | main-r60 | 128x46 | 38 | 0.1543 | 0.170 | 0.99912
+edge (2, 0) worker=false rows=1 | main-r56 | 128x46 | 38 | 0.1551 | 0.170 | 0.99903
+edge (3, -2) worker=false rows=3 | main-r50 | 128x72 | 38 | 0.2131 | 0.109 | 0.99938
+edge (3, -1) worker=false rows=2 | main-r51 | 128x54 | 38 | 0.2171 | 0.145 | 0.99916
+edge (3, 1) worker=false rows=2 | main-r52 | 128x54 | 49 | 0.2587 | 0.391 | 0.99856
+edge (4, -3) worker=false rows=2 | main-r53 | 128x54 | 46 | 0.6556 | 1.056 | 0.99746
+edge (4, -2) worker=true rows=3 | main-r65 | 128x98 | 55 | 0.5431 | 1.116 | 0.99874
+edge (4, 0) worker=false rows=3 | main-r55 | 128x72 | 35 | 0.3481 | 0.586 | 0.99893
+r1_no_worked (-3, 2) worker=false rows=3 | main-r55 | 128x72 | 35 | 0.3481 | 0.586 | 0.99893
+r1_no_worked (-2, 1) worker=false rows=3 | main-r50 | 128x72 | 38 | 0.2131 | 0.109 | 0.99938
+r1_no_worked (-2, 2) worker=false rows=2 | main-r51 | 128x54 | 38 | 0.2171 | 0.145 | 0.99916
+r1_no_worked (-2, 3) worker=false rows=1 | main-r58 | 128x46 | 49 | 0.2259 | 0.459 | 0.99832
+r1_no_worked (-1, 1) worker=false rows=3 | main-r62 | 128x72 | 54 | 0.6143 | 1.183 | 0.99661
+ok
+test okolica_trees_match_the_web_bit_for_bit ... okolica trees: 12902 comparisons, 0 differences
+ok
+test rendering_twice_is_identical ... ok
+test sha256_matches_standard_vectors ... ok
+test textures_match_golden_hashes ... # R-RUSTPORT-P4-33 golden FNV-1a 64 of the premultiplied RGBA8 of every MOD-10 texture
+# kind<TAB>id<TAB>initial<TAB>final
+chip	na_major@main	4794de35a43b7a45	4794de35a43b7a45
+chip	na_city_state@main	4fbff23988809c24	4fbff23988809c24
+chip	minimal@main	db1ac4cceaef6437	577a4cdd276e96f4
+chip	major_full@main	4794de35a43b7a45	0df97431cd29e510
+chip	zulu_capital_long@main	a32f8dca649fcb8c	11b2832b25813abf
+chip	widest@main	7a9e9a1d2f49e64a	d68bdb65346bf76b
+chip	city_state@main	4fbff23988809c24	e3a514e41ba18d00
+chip	cs_nosigil@main	9d94da63820f8658	9d94da63820f8658
+chip	egipt@main	485f2d2080651a1b	03eef94910071aee
+chip	unknown_civ@main	f4e8d1749fbaece4	ea53795e81e8fab1
+chip	spaced_civ@main	01277295a5651e07	49d50117086d7c80
+chip	starving@main	dd5a7db06a68ac33	35a2a486796ec698
+chip	neg_zero@main	ecc7030aa5ad2988	8703d1a73bc068d7
+chip	nan_pop@main	f0f66d2e2dde3e0c	07ef791839fd960c
+chip	empty_name@main	8dedc16c131208d9	571e2a31b02778b1
+chip	blank_name@main	bd3d25747b993995	c5b00c39ed940f8a
+chip	prod_no_kind@main	6208ad6311da1dd9	3a382cc18c8b511a
+chip	prod_unknown_icon@main	6bd6bd874e5bc5ba	761f7c185f9beb79
+chip	hover_full@main	9557dfffdacab763	fad4f46dfe20ea02
+chip	hover_paused@main	eedb52ecb25c76ae	10fcc358a9372d92
+chip	hover_paused_item@main	9c53cce0ade9d724	fa683a770698bd58
+chip	hover_warning_only@main	8ed93ac14c64aebe	8e1555c4c27164e9
+chip	hover_truncated@main	e3459a37049a6c70	d5aec8f2daaee7cf
+chip	hover_no_detail@main	4b768cc788c9834f	d62640f927970690
+chip	capital_only@main	c531879b2f6e0020	743123778446c71f
+chip	lod1@main	f65f62340f29ba86	8e0ba88832622bd4
+chip	lod2@main	f2d1359a730a1ea1	781c7b42e3aa4c73
+chip	lod15@main	cada211bf29a9f66	0d42d7a2e09cfc65
+chip	cached_minimal@main	db1ac4cceaef6437	577a4cdd276e96f4
+chip	legacy@main	037e0a5f6bf3ab2c	0036c21b03adafef
+chip	major_full@dpr2	a6613e6c99c04d0c	46186b6d411416e8
+chip	hover_full@dpr2	ecfb49789f8d7979	bc2a7b5cdead71e7
+chip	lod2@dpr2	de577b5227563407	961881f7528ceb7b
+chip	zulu_capital_long@dpr15	64f5dbd763ff312b	b32cf966ac586f14
+label	r2_default -2,1	-	08937c7eaac00b4c
+label	r2_default -2,2	-	743a19269a91b7ba
+label	r2_default -1,-1	-	855db24b5109dd44
+label	r2_default -1,0	-	cfeab612d22bd9f5
+label	r2_default -1,1	-	f6b70e821f77312f
+label	r2_default 0,-2	-	e6e648180ab64c93
+label	r2_default 0,-1	-	93b62fd583e244ed
+label	r2_default 0,0	-	ce49d4ab529aab44
+label	r2_default 0,2	-	08937c7eaac00b4c
+label	r2_default 1,-1	-	ed5cb667a148bdb1
+label	r2_default 1,0	-	b00c8490cc6672a8
+label	r2_default 2,-2	-	1819bd962ec68fb2
+label	r2_default 2,0	-	93b62fd583e244ed
+label	r3_owner3 -3,1	-	1819bd962ec68fb2
+label	r3_owner3 -3,2	-	e6e648180ab64c93
+label	r3_owner3 -2,1	-	f044c645eb5ab5cc
+label	r3_owner3 -2,2	-	743a19269a91b7ba
+label	r3_owner3 -2,3	-	ed5cb667a148bdb1
+label	r3_owner3 -1,-1	-	855db24b5109dd44
+label	r3_owner3 -1,0	-	cfeab612d22bd9f5
+label	r3_owner3 -1,1	-	a3e7ded88dd72c3c
+label	r3_owner3 -1,3	-	e6e648180ab64c93
+label	r3_owner3 0,-3	-	5fd89a0841f2cc02
+label	r3_owner3 0,-2	-	e6e648180ab64c93
+label	r3_owner3 0,-1	-	93b62fd583e244ed
+label	r3_owner3 0,0	-	ce49d4ab529aab44
+label	r3_owner3 0,2	-	08937c7eaac00b4c
+label	r3_owner3 1,-1	-	5f6d5c3b8311139d
+label	r3_owner3 1,0	-	855db24b5109dd44
+label	r3_owner3 1,2	-	a3e7ded88dd72c3c
+label	r3_owner3 2,-3	-	a3e7ded88dd72c3c
+label	r3_owner3 2,-2	-	1819bd962ec68fb2
+label	r3_owner3 2,0	-	93b62fd583e244ed
+label	r3_owner3 3,-2	-	08937c7eaac00b4c
+label	r3_owner3 3,-1	-	743a19269a91b7ba
+label	r25_owner9 -3,1	-	1819bd962ec68fb2
+label	r25_owner9 -3,2	-	e6e648180ab64c93
+label	r25_owner9 -2,1	-	08937c7eaac00b4c
+label	r25_owner9 -2,2	-	743a19269a91b7ba
+label	r25_owner9 -1,-1	-	855db24b5109dd44
+label	r25_owner9 -1,0	-	cfeab612d22bd9f5
+label	r25_owner9 -1,1	-	655692ee1de38f93
+label	r25_owner9 0,-2	-	e6e648180ab64c93
+label	r25_owner9 0,-1	-	93b62fd583e244ed
+label	r25_owner9 1,-1	-	ed5cb667a148bdb1
+label	r25_owner9 1,0	-	855db24b5109dd44
+label	edge 1,-1	-	ed5cb667a148bdb1
+label	edge 1,0	-	855db24b5109dd44
+label	edge 2,-2	-	1819bd962ec68fb2
+label	edge 2,0	-	93b62fd583e244ed
+label	edge 3,-2	-	08937c7eaac00b4c
+label	edge 3,-1	-	743a19269a91b7ba
+label	edge 3,1	-	855db24b5109dd44
+label	edge 4,-3	-	cfeab612d22bd9f5
+label	edge 4,-2	-	655692ee1de38f93
+label	edge 4,0	-	e6e648180ab64c93
+label	r1_no_worked -3,2	-	e6e648180ab64c93
+label	r1_no_worked -2,1	-	08937c7eaac00b4c
+label	r1_no_worked -2,2	-	743a19269a91b7ba
+label	r1_no_worked -2,3	-	ed5cb667a148bdb1
+label	r1_no_worked -1,1	-	a3e7ded88dd72c3c
+worker	0|ring:1	-	c4b1322d8632b8df
+worker	1|ring:0	-	2a1d7c99a5da09f6
+worker	9|ring:0	-	2a1d7c99a5da09f6
+worker	1.5|ring:0	-	98847f2e73714140
+worker	2|ring:0	-	c10e1ae9353449ae
+worker	3|ring:0	-	913b6b30a98783ad
+worker	0|ring:0	-	fa09a405c4b4de21
+worker	2|ring:1	-	b9dce4877be3ec74
+worker	5|ring:0	-	c0df03202a25a8ab
+ok
+test worker_textures_match_chromium ... worker icon | ref | size | max_abs | mean_abs | px>16 % | ssim
+0|ring:1 | main-r66 | 64x64 | 36 | 0.5436 | 0.732 | 0.99835
+1|ring:0 | main-r67 | 64x64 | 23 | 0.1374 | 0.195 | 0.99945
+9|ring:0 | main-r67 | 64x64 | 23 | 0.1374 | 0.195 | 0.99945
+1.5|ring:0 | main-r68 | 64x64 | 23 | 0.0872 | 0.195 | 0.99951
+2|ring:0 | main-r69 | 64x64 | 23 | 0.1293 | 0.195 | 0.99936
+3|ring:0 | main-r70 | 64x64 | 23 | 0.1275 | 0.195 | 0.99928
+0|ring:0 | main-r71 | 64x64 | 23 | 0.1548 | 0.195 | 0.99928
+2|ring:1 | main-r72 | 64x64 | 36 | 0.3936 | 0.708 | 0.99849
+5|ring:0 | main-r73 | 64x64 | 23 | 0.1362 | 0.195 | 0.99943
+worker texture metadata: 72 comparisons, 0 differences
+ok
+test worker_trees_match_the_web_bit_for_bit ... worker trees: 740 comparisons, 0 differences
+ok
+
+test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 42.86s
+
+EXIT=0

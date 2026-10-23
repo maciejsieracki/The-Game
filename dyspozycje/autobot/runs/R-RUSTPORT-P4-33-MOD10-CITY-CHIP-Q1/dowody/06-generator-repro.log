@@ -1,0 +1,9 @@
+   ["okolica.6.children.1.objects.0.mat.lin","3f9e4425950a893b3fcba1511e38879a3fe7da59edc81e22","3f9e4425950a893b3fcba1511e38879b3fe7da59edc81e22"]
+chips=34 okolica=7 worker=3 workerTex=9 refs=78 chromium=141.0.7390.37
+run a EXIT=0 manifest sha256=de47236aa421894e9f99e3ff87ecd35314afc37dafe66f677753d3fcc0543832
+   ["okolica.6.children.1.objects.0.mat.lin","3f9e4425950a893b3fcba1511e38879a3fe7da59edc81e22","3f9e4425950a893b3fcba1511e38879b3fe7da59edc81e22"]
+chips=34 okolica=7 worker=3 workerTex=9 refs=78 chromium=141.0.7390.37
+run b EXIT=0 manifest sha256=de47236aa421894e9f99e3ff87ecd35314afc37dafe66f677753d3fcc0543832
+run a == run b
+run a == committed MANIFEST.sha256
+EXIT=0
