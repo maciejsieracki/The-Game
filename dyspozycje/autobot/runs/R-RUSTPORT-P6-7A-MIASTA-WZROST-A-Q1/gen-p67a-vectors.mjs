@@ -698,7 +698,7 @@ function popCapMapFor(world) {
 function levelsOf(cities) {
   return cities.map((c) => ({ id: c.id, poziomRacji: c.poziomRacji, rationMigratedV114: c.rationMigratedV114, wzrostUlamkowy: c.wzrostUlamkowy, turyBezDoplaty: c.turyBezDoplaty, hungerLossUlamkowy: c.hungerLossUlamkowy }));
 }
-function planScenario(kind, i) {
+function planScenario(kind, i, tune = false) {
   const w = makeWorld({ owners: pick([[0], [0, 1], [1, 0]]), minCities: 1, maxCities: 6 });
   const econ = settledEcon(w);
   // 30% scenariuszy "niedoboru": produkcja miast zbita tak, ze nawet minimum Wyzywienia nie karmi wszystkich
@@ -710,12 +710,21 @@ function planScenario(kind, i) {
     TE.recomputeCityFoodBalancesInEcon(econ.perCity, w.cities, RATION_PARAMS, undefined);
   }
   const ownerId = chance(0.85) ? w.owners[0] : 5;
-  const zap = chance(0.2) ? 0 : Math.round(rf(0, 400) * 100) / 100;
-  const kosztArmii = chance(0.5) ? 0 : Math.round(rf(0, 60) * 100) / 100;
+  let zap = chance(0.2) ? 0 : Math.round(rf(0, 400) * 100) / 100;
+  let kosztArmii = chance(0.5) ? 0 : Math.round(rf(0, 60) * 100) / 100;
   const spMap = chance(0.5) ? w.spichlerzByCity : undefined;
   const popCap = chance(0.7) ? popCapMapFor(w) : undefined;
   const onlyAuto = chance(0.4);
-  const flow = chance(0.5);
+  let flow = chance(0.5);
+  if (tune) {
+    // runda 2b (tylko edge.json): koszt armii zblizony do biezacej nadwyzki produkcji i dodatnia rezerwa, wiec
+    // kryterium FLOW (nadwyzka - koszt >= 0, `requireFlowBalance`) rozni sie od kryterium zapasowego
+    // (nadwyzka + zapasy - koszt >= 0) - zamyka mutanta [107] "raise - flow dla gracza"; wlasciciel = pierwszy fotel
+    const nad = EF.computeEmpireCityFoodNadwyzka(econ.perCity, ownerId);
+    kosztArmii = Math.round(Math.max(0.1, Math.abs(nad) * rf(0.4, 1.6)) * 100) / 100;
+    zap = Math.round(rf(30, 400) * 100) / 100;
+    flow = true;
+  }
   const cities = clone(w.cities);
   const econCopy = clone(econ);
   const base = {
@@ -739,7 +748,7 @@ function planScenario(kind, i) {
     return { ...base, out: { result: r, citiesAfter: levelsOf(cities), econAfter: econCopy } };
   }
   if (kind === 'raise') {
-    const surplus = chance(0.5);
+    const surplus = tune ? true : chance(0.5);
     const r = EF.autoRaiseRationsForGrowth({
       ownerId, cities, econ: econCopy, zapasyPrzed: zap, rationParams: RATION_PARAMS,
       spichlerzByCity: spMap, requireProductionSurplus: surplus, onlyAutoManaged: onlyAuto, kosztArmii, popCapByCityId: popCap,
@@ -920,10 +929,40 @@ for (let i = 0; i < 40; i++) {
     countdown: (() => { const c = EF.getArmyStarvationCountdown(o, params.glodWojskaKarencjaTur); return c === null ? { isNull: true } : c; })(),
     last: EF.getLastEmpireFoodTick(o) ?? null,
   }));
+  // runda 2b: cykl zycia runtime po `advanceEmpireFood` (zamyka mutanty [84] i [85])
+  //  (i) `clearLastEmpireFoodTicks` po realnym advance czysci tiki ORAZ `_maxCapByOwner` (empire-food.ts:369-372),
+  //  (ii) `_setLastEmpireFoodTicks` (eksport weba) wstrzykuje tik wlasciciela -1 (barbarzynca) z glodWojska i
+  //       glodWojskaAtrycjaAktywna = true: guardy `isBarbarian` w isArmyHungry/isArmyStarving (empire-food.ts:345,351)
+  //       sa nieosiagalne przez sama `advanceEmpireFood` (pomija barbarzyncow, empire-food.ts:216).
+  const realTicks = new Map();
+  for (const o of accOwners) {
+    const t = EF.getLastEmpireFoodTick(o);
+    if (t) realTicks.set(o, t);
+  }
+  const accessorsOf = (owners, kar) => owners.map((o) => ({
+    o,
+    reserve: EF.getEmpireFoodReserve(o),
+    maxCap: EF.getEmpireFoodMaxCap(o),
+    hungry: EF.isArmyHungry(o),
+    starving: EF.isArmyStarving(o),
+    countdown: (() => { const c = EF.getArmyStarvationCountdown(o, kar); return c === null ? { isNull: true } : c; })(),
+    last: EF.getLastEmpireFoodTick(o) ?? null,
+  }));
+  EF.clearLastEmpireFoodTicks();
+  const accAfterClear = accessorsOf(accOwners, params.glodWojskaKarencjaTur);
+  const baseTick = realTicks.get(w.owners[0]);
+  let injected = null;
+  if (baseTick) {
+    const injTick = { ...baseTick, ownerId: -1, glodWojska: true, glodWojskaAtrycjaAktywna: true };
+    const injMap = new Map(realTicks);
+    injMap.set(-1, injTick);
+    EF._setLastEmpireFoodTicks(injMap);
+    injected = { baseOwner: w.owners[0], tick: injTick, accessors: accessorsOf([...accOwners, -1], params.glodWojskaKarencjaTur) };
+  }
   edge.advance.push({
     params, d: 'normal', raw: rawParams, cities: w.cities, econ: econBefore, unitOwners, armyCost, statesBefore,
     built: [...w.builtByCity.entries()], eraByOwner: null,
-    out: { perOwner: res.perOwner, byOwnerKeys: [...res.byOwner.keys()], statesAfter: states, accessors: acc },
+    out: { perOwner: res.perOwner, byOwnerKeys: [...res.byOwner.keys()], statesAfter: states, accessors: acc, accessorsAfterClear: accAfterClear, injected },
   });
 }
 // (b) ujemne zapasy "przed" w symulacjach puli (clamp `max(0, central)` w empire-food.ts:446,484)
@@ -999,6 +1038,16 @@ for (let i = 0; i < 40; i++) {
   CM.cywilizacje.splice(0, CM.cywilizacje.length, ...structuredClone(CM_ORIG.cywilizacje));
 }
 edge.matrixSynth = edgeMatrix;
+
+// (g) runda 2b: scenariusze auto-raise / plan / balance z kryterium FLOW (gracz) przy dodatniej rezerwie i
+//     koszcie armii bliskim nadwyzce (zamyka mutanta [107]); `planScenario(kind, i, true)`.
+rnd = mulberry32(0x67a9f10);
+edge.raiseFlow = [];
+edge.planFlow = [];
+edge.balanceFlow = [];
+for (let i = 0; i < 60; i++) edge.raiseFlow.push(planScenario('raise', i, true));
+for (let i = 0; i < 40; i++) edge.planFlow.push(planScenario('plan', i, true));
+for (let i = 0; i < 40; i++) edge.balanceFlow.push(planScenario('balance', i, true));
 write('edge.json', edge);
 writeFileSync(join(outDir, 'SHA256SUMS.txt'), Object.entries(hashes).map(([k, v]) => `${v}  ${k}`).join('\n') + '\n');
 console.log(JSON.stringify(hashes, null, 1));

@@ -1,0 +1,47 @@
+WYKRYTY   : [12] g: wzrost - szczescie ceil -> 2 testow czerwonych: growth_percent_matches_web, post_central_growth_matches_web
+  przywrocono src/domain/city_growth.rs: SHA-256 zgodny
+WYKRYTY   : [15] g: wzrost - mnoznik zdrowia macierzy -> 2 testow czerwonych: growth_percent_matches_web, post_central_growth_matches_web
+  przywrocono src/domain/city_growth.rs: SHA-256 zgodny
+WYKRYTY   : [16] g: macierz - glod bez max -> 1 testow czerwonych: population_matrix_synthetic_matches_web
+  przywrocono src/domain/city_growth.rs: SHA-256 zgodny
+WYKRYTY   : [23] g: ulamkowy - ubytek -> 2 testow czerwonych: fractional_growth_matches_web, post_central_growth_matches_web
+  przywrocono src/domain/city_growth.rs: SHA-256 zgodny
+WYKRYTY   : [27] g: cap - spichlerz -> 3 testow czerwonych: fractional_growth_matches_web, population_cap_matches_web, post_central_growth_matches_web
+  przywrocono src/domain/city_growth.rs: SHA-256 zgodny
+WYKRYTY   : [29] g: cap - macierz civ -> 1 testow czerwonych: population_matrix_synthetic_matches_web
+  przywrocono src/domain/city_growth.rs: SHA-256 zgodny
+WYKRYTY   : [30] g: przyrost slotow - cap -> 1 testow czerwonych: gain_and_turns_match_web
+  przywrocono src/domain/city_growth.rs: SHA-256 zgodny
+WYKRYTY   : [32] g: tury do obywatela - ceil -> 1 testow czerwonych: gain_and_turns_match_web
+  przywrocono src/domain/city_growth.rs: SHA-256 zgodny
+KOMPILACJA: [35] g: glod - nakarmione zeruje tury (mutant nie kompiluje sie)
+  przywrocono src/domain/city_growth.rs: SHA-256 zgodny
+WYKRYTY   : [36] g: glod - dlug -> 1 testow czerwonych: hunger_penalty_matches_web
+  przywrocono src/domain/city_growth.rs: SHA-256 zgodny
+WYKRYTY   : [37] g: ensure - flaga migracji -> 5 testow czerwonych: equal_growth_plan_matches_web, auto_balance_matches_web, auto_raise_matches_web
+  przywrocono src/domain/city_growth.rs: SHA-256 zgodny
+WYKRYTY   : [39] g: ensure - domyslny poziom -> 5 testow czerwonych: equal_growth_plan_matches_web, auto_balance_matches_web, auto_raise_matches_web
+  przywrocono src/domain/city_growth.rs: SHA-256 zgodny
+WYKRYTY   : [40] g: ensure - bufor glodu -> 5 testow czerwonych: auto_raise_matches_web, auto_balance_matches_web, equal_growth_plan_matches_web
+  przywrocono src/domain/city_growth.rs: SHA-256 zgodny
+WYKRYTY   : [41] g: build - sekcja -> 2 testow czerwonych: advance_empire_food_matches_web, build_params_match_web
+  przywrocono src/domain/city_growth.rs: SHA-256 zgodny
+PRZEZYL   : [42] g: build - tylko skonczone
+  przywrocono src/domain/city_growth.rs: SHA-256 zgodny
+WYKRYTY   : [44] t: tempo - klucz -> 2 testow czerwonych: pace_table_matches_web, tempo_threshold_matches_web
+  przywrocono src/domain/city_growth.rs: SHA-256 zgodny
+WYKRYTY   : [47] t: stawki - rekord >0 -> 1 testow czerwonych: stock_cost_record_matches_web
+  przywrocono src/domain/city_growth.rs: SHA-256 zgodny
+WYKRYTY   : [48] t: stawki - cudo -> 1 testow czerwonych: stawki_constants_and_scalars_match_web
+  przywrocono src/domain/city_growth.rs: SHA-256 zgodny
+WYKRYTY   : [52] t: era - hangul T -> 1 testow czerwonych: research_era_matches_web
+  przywrocono src/domain/city_growth.rs: SHA-256 zgodny
+WYKRYTY   : [53] t: era - hangul V -> 1 testow czerwonych: research_era_matches_web
+  przywrocono src/domain/city_growth.rs: SHA-256 zgodny
+PRZEZYL   : [55] t: era - alias
+  przywrocono src/domain/city_growth.rs: SHA-256 zgodny
+WYKRYTY   : [59] t: spichlerz - tier II koszt -> 7 testow czerwonych: auto_balance_matches_web, equal_growth_plan_matches_web, auto_raise_matches_web
+  przywrocono src/domain/city_growth.rs: SHA-256 zgodny
+WYKRYTY   : [60] t: spichlerz - budynek -> 1 testow czerwonych: spichlerz_inputs_match_web
+  przywrocono src/domain/city_growth.rs: SHA-256 zgodny
+  przywrocono src/domain/city_growth.rs: SHA-256 zgodny

@@ -1,0 +1,10 @@
+# web pin: git archive edb8fb56 gra/src gra/data -> /tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/web-r2 (poza repo)
+gen EXIT=0
+params.json IDENTYCZNY z zatwierdzonym
+tempo_stawki.json IDENTYCZNY z zatwierdzonym
+growth.json IDENTYCZNY z zatwierdzonym
+empire.json IDENTYCZNY z zatwierdzonym
+post_central.json IDENTYCZNY z zatwierdzonym
+manpower.json IDENTYCZNY z zatwierdzonym
+edge.json IDENTYCZNY z zatwierdzonym
+SHA256SUMS.txt IDENTYCZNY

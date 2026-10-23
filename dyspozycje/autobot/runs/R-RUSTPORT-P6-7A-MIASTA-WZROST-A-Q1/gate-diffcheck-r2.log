@@ -1,0 +1,2 @@
+$ git diff --cached --check   (indeks po jawnym git add plikow tematu; wynik bez wyjscia = czysto)
+EXIT=0

@@ -16,7 +16,7 @@ use civ_engine::domain::city_growth::p6_7a::empire_food::{
     max_safe_poziom_racji_for_city, resolve_equal_growth_ration_plan, simulate_city_food_all_fed,
     simulate_city_food_central_pool, wyzywienie_poziom_na_limicie, AutoBalanceRationsOpts,
     AutoRaiseRationsOpts, AutoRationAdjustResult, EmpireFoodRuntime, EqualGrowthRationPlanOpts,
-    MaxSafePoziomOpts, DEFAULT_HUMAN_OWNER_IDS,
+    MaxSafePoziomOpts, OwnerFoodStates, DEFAULT_HUMAN_OWNER_IDS,
 };
 use civ_engine::domain::city_growth::p6_7a::growth_v85::GrowthCity;
 use civ_engine::domain::city_growth::p6_7a::{
@@ -182,39 +182,99 @@ fn advance_empire_food_matches_web() {
             &want["statesAfter"],
         );
         // akcesory runtime (HUD)
-        for a in arr(want, "accessors") {
-            let o = a["o"].as_i64().expect("owner");
-            assert_bits(
-                &format!("reserve[{i}] {o}"),
-                rt.get_empire_food_reserve(&states, o),
-                num(&a["reserve"]),
+        let karencja = params.glod_wojska_karencja_tur;
+        check_accessors(
+            &format!("[{i}]"),
+            &rt,
+            &states,
+            karencja,
+            arr(want, "accessors"),
+        );
+        // runda 2b (edge.json): cykl zycia runtime po realnym advance
+        if let Some(after_clear) = want.get("accessorsAfterClear") {
+            // `clearLastEmpireFoodTicks` czysci tiki ORAZ `_maxCapByOwner` (zamyka mutanta [85])
+            let mut cleared = rt.clone();
+            cleared.clear_last_empire_food_ticks();
+            check_accessors(
+                &format!("afterClear[{i}]"),
+                &cleared,
+                &states,
+                karencja,
+                after_clear.as_array().expect("accessorsAfterClear"),
             );
-            assert_bits(
-                &format!("maxCap[{i}] {o}"),
-                rt.get_empire_food_max_cap(o),
-                num(&a["maxCap"]),
-            );
-            assert_eq!(
-                rt.is_army_hungry(o),
-                a["hungry"].as_bool().expect("bool"),
-                "hungry[{i}] {o}"
-            );
-            assert_eq!(
-                rt.is_army_starving(o),
-                a["starving"].as_bool().expect("bool"),
-                "starving[{i}] {o}"
-            );
-            let cd = rt.get_army_starvation_countdown(o, params.glod_wojska_karencja_tur);
-            match (&a["countdown"], cd) {
-                (w, None) => assert!(w.get("isNull").is_some(), "countdown[{i}] {o} web={w}"),
-                (w, Some(x)) => assert_bits(&format!("countdown[{i}] {o}"), x, num(w)),
+            // `_setLastEmpireFoodTicks` z wstrzyknietym tikiem wlasciciela -1 (zamyka mutanta [84]): guardy
+            // `isBarbarian` w `isArmyHungry`/`isArmyStarving` sa nieosiagalne przez sama `advanceEmpireFood`
+            if let Some(inj) = want.get("injected").filter(|v| !v.is_null()) {
+                let base_owner = inj["baseOwner"].as_i64().expect("baseOwner");
+                let mut ticks: BTreeMap<i64, _> = BTreeMap::new();
+                for a in arr(want, "accessors") {
+                    let o = a["o"].as_i64().expect("owner");
+                    if let Some(t) = rt.get_last_empire_food_tick(o) {
+                        ticks.insert(o, t.clone());
+                    }
+                }
+                let mut barb = ticks
+                    .get(&base_owner)
+                    .expect("tik wlasciciela bazowego")
+                    .clone();
+                barb.owner_id = -1;
+                barb.glod_wojska = true;
+                barb.glod_wojska_atrycja_aktywna = true;
+                ticks.insert(-1, barb);
+                let mut injected = cleared.clone();
+                injected.set_last_empire_food_ticks(ticks);
+                check_accessors(
+                    &format!("injected[{i}]"),
+                    &injected,
+                    &states,
+                    karencja,
+                    arr(inj, "accessors"),
+                );
             }
-            let last = rt.get_last_empire_food_tick(o).map(ef_tick_value);
-            match (&a["last"], last) {
-                (Value::Null, None) => {}
-                (w, Some(g)) => assert_values(&format!("last[{i}] {o}"), &g, w),
-                (w, None) => panic!("last[{i}] {o}: web={w} rust=None"),
-            }
+        }
+    }
+}
+
+/// Akcesory runtime (HUD) wzgledem oczekiwan weba (`accessors`, `accessorsAfterClear`, `injected.accessors`).
+fn check_accessors(
+    tag: &str,
+    rt: &EmpireFoodRuntime,
+    states: &OwnerFoodStates,
+    karencja: f64,
+    list: &[Value],
+) {
+    for a in list {
+        let o = a["o"].as_i64().expect("owner");
+        assert_bits(
+            &format!("reserve{tag} {o}"),
+            rt.get_empire_food_reserve(states, o),
+            num(&a["reserve"]),
+        );
+        assert_bits(
+            &format!("maxCap{tag} {o}"),
+            rt.get_empire_food_max_cap(o),
+            num(&a["maxCap"]),
+        );
+        assert_eq!(
+            rt.is_army_hungry(o),
+            a["hungry"].as_bool().expect("bool"),
+            "hungry{tag} {o}"
+        );
+        assert_eq!(
+            rt.is_army_starving(o),
+            a["starving"].as_bool().expect("bool"),
+            "starving{tag} {o}"
+        );
+        let cd = rt.get_army_starvation_countdown(o, karencja);
+        match (&a["countdown"], cd) {
+            (w, None) => assert!(w.get("isNull").is_some(), "countdown{tag} {o} web={w}"),
+            (w, Some(x)) => assert_bits(&format!("countdown{tag} {o}"), x, num(w)),
+        }
+        let last = rt.get_last_empire_food_tick(o).map(ef_tick_value);
+        match (&a["last"], last) {
+            (Value::Null, None) => {}
+            (w, Some(g)) => assert_values(&format!("last{tag} {o}"), &g, w),
+            (w, None) => panic!("last{tag} {o}: web={w} rust=None"),
         }
     }
 }
@@ -365,7 +425,13 @@ fn result_value(r: &AutoRationAdjustResult) -> Value {
 
 #[test]
 fn equal_growth_plan_matches_web() {
-    for (i, c) in arr(&data(), "plan").iter().enumerate() {
+    // `plan` z empire.json + `planFlow` z edge.json (kryterium FLOW gracza, runda 2b)
+    let (main, edge) = (data(), load("edge.json"));
+    for (i, c) in arr(&main, "plan")
+        .iter()
+        .chain(arr(&edge, "planFlow"))
+        .enumerate()
+    {
         let mut s = scenario(c);
         let plan = resolve_equal_growth_ration_plan(
             &EqualGrowthRationPlanOpts {
@@ -401,7 +467,13 @@ fn equal_growth_plan_matches_web() {
 
 #[test]
 fn auto_balance_matches_web() {
-    for (i, c) in arr(&data(), "balance").iter().enumerate() {
+    // `balance` z empire.json + `balanceFlow` z edge.json (kryterium FLOW gracza, runda 2b)
+    let (main, edge) = (data(), load("edge.json"));
+    for (i, c) in arr(&main, "balance")
+        .iter()
+        .chain(arr(&edge, "balanceFlow"))
+        .enumerate()
+    {
         let mut s = scenario(c);
         let r = auto_balance_rations_to_solvency(
             &AutoBalanceRationsOpts {
@@ -427,7 +499,13 @@ fn auto_balance_matches_web() {
 
 #[test]
 fn auto_raise_matches_web() {
-    for (i, c) in arr(&data(), "raise").iter().enumerate() {
+    // `raise` z empire.json + `raiseFlow` z edge.json (kryterium FLOW gracza, runda 2b; zamyka mutanta [107])
+    let (main, edge) = (data(), load("edge.json"));
+    for (i, c) in arr(&main, "raise")
+        .iter()
+        .chain(arr(&edge, "raiseFlow"))
+        .enumerate()
+    {
         let mut s = scenario(c);
         let r = auto_raise_rations_for_growth(
             &AutoRaiseRationsOpts {

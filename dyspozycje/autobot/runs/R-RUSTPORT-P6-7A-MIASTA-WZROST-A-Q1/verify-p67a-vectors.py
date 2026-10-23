@@ -956,6 +956,44 @@ def verify_empire():
                 check('advance', f'countdown{i}.{o}', {'isNull': True}, a['countdown'])
             else:
                 check('advance', f'countdown{i}.{o}', jmax(1.0, pc['glodWojskaKarencjaTur'] - t['turyUjemnychZapasowPo']), a['countdown'])
+        # runda 2b: cykl zycia runtime (edge.json): po `clearLastEmpireFoodTicks` oraz po `_setLastEmpireFoodTicks`
+        res_by = dict((int(k), v) for k, v in st_after)
+        for a in c['out'].get('accessorsAfterClear', []):
+            o = int(a['o'])
+            r = res_by.get(o)
+            check('runtimeClear', f'reserve{i}.{o}', r['zapasyPanstwa'] if r else 0.0, a['reserve'])
+            check('runtimeClear', f'maxCap{i}.{o}', 0.0, a['maxCap'])
+            check('runtimeClear', f'hungry{i}.{o}', False, a['hungry'])
+            check('runtimeClear', f'starving{i}.{o}', False, a['starving'])
+            check('runtimeClear', f'countdown{i}.{o}', {'isNull': True}, a['countdown'])
+            check('runtimeClear', f'last{i}.{o}', None, a['last'])
+        inj = c['out'].get('injected')
+        if inj:
+            ticks = {o: deep(t) for o, t in by_owner.items()}
+            base = deep(by_owner[int(inj['baseOwner'])])
+            base.update({'ownerId': -1, 'glodWojska': True, 'glodWojskaAtrycjaAktywna': True})
+            ticks[-1] = base
+            want_tick = deep(inj['tick'])
+            want_tick['ownerId'] = int(want_tick['ownerId'])
+            check('runtimeInject', f'tick{i}', base, want_tick)
+            for a in inj['accessors']:
+                o = int(a['o'])
+                t = ticks.get(o)
+                r = res_by.get(o)
+                check('runtimeInject', f'reserve{i}.{o}', r['zapasyPanstwa'] if r else 0.0, a['reserve'])
+                check('runtimeInject', f'maxCap{i}.{o}', 0.0, a['maxCap'])
+                check('runtimeInject', f'hungry{i}.{o}', bool(t and t['glodWojska']) and o != -1, a['hungry'])
+                check('runtimeInject', f'starving{i}.{o}', bool(t and t['glodWojskaAtrycjaAktywna']) and o != -1, a['starving'])
+                if t is None or not t['glodWojska'] or t['glodWojskaAtrycjaAktywna']:
+                    check('runtimeInject', f'countdown{i}.{o}', {'isNull': True}, a['countdown'])
+                else:
+                    check('runtimeInject', f'countdown{i}.{o}', jmax(1.0, pc['glodWojskaKarencjaTur'] - t['turyUjemnychZapasowPo']), a['countdown'])
+                if t is None:
+                    check('runtimeInject', f'last{i}.{o}', None, a['last'])
+                else:
+                    want_last = deep(a['last'])
+                    want_last['ownerId'] = int(want_last['ownerId'])
+                    check('runtimeInject', f'last{i}.{o}', t, want_last)
     empty_ok = all(a['reserve'] == 0 for a in e['afterClear'])
     check('advance', 'afterClear', empty_ok, True)
 
@@ -1033,8 +1071,10 @@ def verify_empire():
         recompute(econ['perCity'], cities, sp)
         return {'level': clamp_r(best), 'citiesAfter': levels_of(cities), 'econAfter': econ}
 
+    # runda 2b: edge.json ma dodatkowe scenariusze kryterium FLOW (planFlow / balanceFlow / raiseFlow)
+    extra = {'plan': edge.get('planFlow', []), 'balance': edge.get('balanceFlow', []), 'raise': edge.get('raiseFlow', []), 'maxSafe': []}
     for kind, key in (('plan', 'plan'), ('balance', 'balance'), ('raise', 'raise'), ('maxSafe', 'maxSafe')):
-        for i, c in enumerate(e[key]):
+        for i, c in enumerate(e[key] + extra[key]):
             got = run_scn(kind, c)
             check(key, str(i), got, c['out'])
 
