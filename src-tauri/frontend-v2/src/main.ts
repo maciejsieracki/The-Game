@@ -91,6 +91,9 @@ async function boot(): Promise<void> {
   // P5.7 r2: kreator nowej gry (`newGameFlow.ts`) — jw., nic nie montuje.
   const newGame = await import('./ui/portNewGame');
   shell.append(el('p', `Kreator nowej gry (P5.7 r2): ${newGame.PORTED_NEW_GAME.length}${mockTag}`));
+  // P5.7 r3: ramka panelu miasta (`cityUxFrame.ts`, cykl C1; `cityPanel.ts` → r4 przez most) — jw., nic nie montuje.
+  const cityUx = await import('./ui/portCityUx');
+  shell.append(el('p', `Ramka panelu miasta (P5.7 r3): ${cityUx.PORTED_CITY_UX.length}${mockTag}`));
   const status = el('p', `Źródło danych: ${controller.source}`, 'v2-status');
   shell.append(status);
 

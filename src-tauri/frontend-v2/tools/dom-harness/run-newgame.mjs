@@ -42,7 +42,7 @@ const want = (m) => ONLY === null || ONLY.includes(m);
 const STOP_ON_DIFF = args.includes('--stop-on-diff');
 class StopOnDiff extends Error {}
 if (!PIN_DIR) {
-  console.error('Użycie: node tools/dom-harness/run-hud-empire.mjs --pin-dir <katalog z gra/src i gra/data z edb8fb56>');
+  console.error('Użycie: node tools/dom-harness/run-newgame.mjs --pin-dir <katalog z gra/src i gra/data z edb8fb56>');
   process.exit(2);
 }
 const V2_ROOT = resolve(fileURLToPath(new URL('../../', import.meta.url)));

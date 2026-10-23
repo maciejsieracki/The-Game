@@ -69,6 +69,15 @@ const vitePlugin = {
   setup(b) {
     // Tylko strona pin: `three` → atrapa (frontend-v2 nie importuje `three`, brama check).
     b.onResolve({ filter: /^three(\/.*)?$/ }, () => ({ path: THREE_STUB }));
+    // P5.7 r3 (`bundle(..., { alias })`, harness `run-cityux.mjs`): import względny rozwiązany do `from` (ścieżka
+    // bezwzględna bez rozszerzenia) → plik `to` (atrapa modułu po stronie pinu — izolacja ramki od `cityPanel.ts`).
+    // Domyślnie (`alias` puste — inne harnessy) brak efektu.
+    b.onResolve({ filter: /^\.\.?\// }, (args) => {
+      if (aliases.length === 0) return undefined;
+      const abs = resolve(args.resolveDir, args.path).replace(/\.ts$/, '');
+      const hit = aliases.find((x) => x.from === abs);
+      return hit ? { path: hit.to } : undefined;
+    });
     b.onResolve({ filter: /\?raw$/ }, (args) => ({
       path: resolve(args.resolveDir, args.path.replace(/\?raw$/, '')),
       namespace: 'raw',
@@ -99,8 +108,10 @@ const vitePlugin = {
 
 /** Pakuje `entries` (ścieżki .ts) do `outdir` jako ESM ze wspólnymi chunkami (jedna instancja stanu modułów). */
 let urlAsHash = false;
-export async function bundle(entries, outdir, { external = [], urlAsHash: hashUrls = false } = {}) {
+let aliases = [];
+export async function bundle(entries, outdir, { external = [], urlAsHash: hashUrls = false, alias = [] } = {}) {
   urlAsHash = hashUrls;
+  aliases = alias;
   await build({
     entryPoints: entries,
     outdir,

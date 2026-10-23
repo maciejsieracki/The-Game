@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "description": "Frontend Tauri (UI-Q1=A): kopia paneli gra/src/ui/** + Vite + kontroler MOCK; P5.2: panele poziomu 0 przeniesione na DTO (harness DOM: tools/dom-harness, jsdom); P5.3: poziom 1 bez cyklu (17 modułów, harness run-level1a.mjs); P5.4: cykl C4 (10 modułów, harness run-c4.mjs); P5.5: poziom 2 (26 modułów, harness run-level2.mjs); P5.6: cykle C2/C5 + hexContextTooltip + preBattle (7 modułów, harness run-cycles.mjs); P5.7 r1: cykl C3 (hud + panel imperium) + sceneTimingReport (4 moduły, harness run-hud-empire.mjs); P5.7 r2: newGameFlow (harness run-newgame.mjs).",
+  "description": "Frontend Tauri (UI-Q1=A): kopia paneli gra/src/ui/** + Vite + kontroler MOCK; P5.2: panele poziomu 0 przeniesione na DTO (harness DOM: tools/dom-harness, jsdom); P5.3: poziom 1 bez cyklu (17 modułów, harness run-level1a.mjs); P5.4: cykl C4 (10 modułów, harness run-c4.mjs); P5.5: poziom 2 (26 modułów, harness run-level2.mjs); P5.6: cykle C2/C5 + hexContextTooltip + preBattle (7 modułów, harness run-cycles.mjs); P5.7 r1: cykl C3 (hud + panel imperium) + sceneTimingReport (4 moduły, harness run-hud-empire.mjs); P5.7 r2: newGameFlow (harness run-newgame.mjs); P5.7 r3: cityUxFrame + most cityPanelUxBridge (harness run-cityux.mjs).",
   "scripts": {
     "typecheck": "tsc --noEmit",
     "check": "node tools/check-no-logic-imports.mjs --self-test && node tools/check-no-logic-imports.mjs src index.html vite.config.ts && node tools/verify-pin-copies.mjs",
@@ -21,7 +21,9 @@
     "harness:hud": "node tools/dom-harness/run-hud-empire.mjs",
     "harness:hud:mutate": "node tools/dom-harness/mutate-hud-empire.mjs",
     "harness:newgame": "node tools/dom-harness/run-newgame.mjs",
-    "harness:newgame:mutate": "node tools/dom-harness/mutate-newgame.mjs"
+    "harness:newgame:mutate": "node tools/dom-harness/mutate-newgame.mjs",
+    "harness:cityux": "node tools/dom-harness/run-cityux.mjs",
+    "harness:cityux:mutate": "node tools/dom-harness/mutate-cityux.mjs"
   },
   "devDependencies": {
     "esbuild": "0.21.5",

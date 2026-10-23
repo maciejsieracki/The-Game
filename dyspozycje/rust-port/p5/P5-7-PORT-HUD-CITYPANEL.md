@@ -1,6 +1,6 @@
 # P5.7 — Port `hud.ts`, panelu imperium (cykl C3), `cityPanel.ts` (cykl C1) i `newGameFlow.ts` do `src-tauri/frontend-v2/` — dokument tematu
 
-**Temat:** `R-RUSTPORT-P5-7-PORT-HUD-CITYPANEL-Q1` · **Domena:** GAME · **Rola:** Operator (Opus 5.5 medium) · **Runda:** 2/5 (r1 = C3 + `sceneTimingReport.ts`; r2 = `newGameFlow.ts` + poprawki zarzutów Evaluatora r1, §10)
+**Temat:** `R-RUSTPORT-P5-7-PORT-HUD-CITYPANEL-Q1` · **Domena:** GAME · **Rola:** Operator (Opus 5.5 medium) · **Runda:** 3/5 (r1 = C3 + `sceneTimingReport.ts`; r2 = `newGameFlow.ts` + poprawki zarzutów Evaluatora r1, §10; r3 = `cityUxFrame.ts` + most + inwentarz `cityPanel.ts` + uwaga FC r2, §11)
 **Baza kodu:** `origin/rust-port/parity-v2` @ `51a62a89` (detached, izolowany worktree; zawiera P5.1–P5.6). **Pin web:** `edb8fb56` (wyłącznie `git archive edb8fb56 gra/src gra/data` do katalogu scratch poza repo; zero `npm`/buildu w `gra/`; gałąź `fix/web-recruitment-panel-A` NIE była czytana).
 **Dokumenty wejściowe** (`git show origin/claude/sprawdzenie-funkcjonalnosci-ek4ra0:…`): `dyspozycje/autobot/runs/R-RUSTPORT-P5-7-PORT-HUD-CITYPANEL-Q1/00-dispatch.md`, `dyspozycje/rust-port/p5/P5-0-VIEWMODEL-CATALOG.md` (§2, §3.1, §6.5, §6.17, §7, §8, §9), `p5/P5-6-PORT-CYKLE.md` (wzorzec), `PORTING-QUEUE.md`.
 **Legenda:** `plik:linia` bez prefiksu = `gra/src/ui/<plik>` na pinie `edb8fb56`; `v2:` = `src-tauri/frontend-v2/src/…` po tej rundzie; `NIE_ZMIERZONO` = nie sprawdzone; **ZAŁOŻENIE** = luka rozstrzygnięta przez Operatora. Nic nie było uruchamiane w Tauri ani w realnej przeglądarce (harness = jsdom).
@@ -27,7 +27,8 @@
 | 32 | `sceneTimingReport.ts` | **PRZENIESIONY (r1)** | niezależny od reszty (jedyna zależność UI = `perfReport.ts`, P5.2); D-UI-7: tylko typy/struktura — kod nie dotyka WebGL (`SceneBuildTimings` to liczby ms) |
 | 30 | `perfTestPanel.ts` | **POMINIĘTY Z POWODEM** | D-UI-7 (bez sond WebGL): `perfTestPanel.ts:299-312` tworzy `THREE.WebGLRenderer` + scenę (benchmark GPU), `:270-282` uruchamia generator świata `generujSwiatAsync` (klasa M, P5-0 §7: „D-UI-7”), `:21-34` detekcja sprzętu `perf/hardwareProfile` — rdzeń modułu to sondy, nie panel |
 | 29 | `newGameFlow.ts` | **PRZENIESIONY (r2)** | §10.2 |
-| 81, 82 | cykl **C1**: `cityPanel.ts`, `cityUxFrame.ts` | **RUNDA 3 (+4)** | podział na rundy (§1.1); port z PINU `edb8fb56` |
+| 82 | cykl **C1**: `cityUxFrame.ts` | **PRZENIESIONY (r3)** | §11.2; import `./cityPanel` → most `cityPanelUxBridge.ts` (Z7) |
+| 81 | cykl **C1**: `cityPanel.ts` | **RUNDA 4** | podział na rundy (§1.1, aktualizacja §11.5); port z PINU `edb8fb56` |
 
 ### 1.1 Jawny podział pracy na rundy (dispatch: „nie osłabiaj kryteriów”)
 
@@ -35,7 +36,7 @@
 |---|---|---|
 | 1 (ta) | C3 (`hud.ts` + panel imperium) + `sceneTimingReport.ts`; decyzja `perfTestPanel.ts` | `hud.ts` blokuje C1 (`cityPanel.ts` importuje `hud.ts`) — musi być pierwszy; most `armyStackHudSuppression.ts` (P5.6-Z3) domknięty |
 | 2 | `newGameFlow.ts` (2373 LOC, R15 F5 K5 — `NewGameOptionsDto` + zapytanie `new_game_preview`, P5-0 §6.10) | niezależny od C1; mniejszy |
-| 3 (4) | C1: `cityPanel.ts` (11 986 LOC, R97 M7 F15 K19 S8 X2 T32 — P5-0 §4) + `cityUxFrame.ts` | największy moduł; reguły bez importu `:645-720`, `:3228-3229` (P5-0) |
+| 3 (4) | C1: `cityPanel.ts` (11 986 LOC, R97 M7 F15 K19 S8 X2 T32 — P5-0 §4) + `cityUxFrame.ts` | największy moduł; reguły bez importu `:645-720`, `:3228-3229` (P5-0). **Aktualizacja r3 (§11.5):** r3 = `cityUxFrame.ts` + most + inwentarz importów `cityPanel.ts`; r4 = cały `cityPanel.ts`; r5 = rezerwa |
 | 5 | rezerwa (FAIL/poprawki) | limit 5 rund |
 
 Kryteria binarne dotyczą każdej rundy w całości dla jej grupy (brama 0 trafień, harness 0 różnic, mutacje, regresja). Temat kończy się PASS dopiero po porcie wszystkich grup.
@@ -271,3 +272,94 @@ Mutacje (`r2-logi/18-harness-mutations-newgame.log`): 33 — stałe katalogu (N1
 ### 10.8 Stan kryterium binarnego po r2
 
 Moduły z zakresu: C3 (3) + `sceneTimingReport.ts` + `newGameFlow.ts` przeniesione, `perfTestPanel.ts` pominięty z powodem; **C1 (`cityPanel.ts`, `cityUxFrame.ts`) — runda 3 (i 4)**. Temat nie jest domknięty do czasu portu C1 (podział §1.1 bez zmian).
+
+---
+
+## 11. Runda 3 (cykl C1 część 1: `cityUxFrame.ts` + most; inwentarz `cityPanel.ts`; uwaga FC r2)
+
+Baza: commit obrony r2 `c55d130c` (rodzic `ad5116d4` → `c3f84c3d` → `51a62a89`), odtworzony w izolowanym worktree (detached, bez rebase — integruje orkiestrator). Pin: `git archive edb8fb56 gra/src gra/data` do katalogu scratch poza repo (zero `npm`/buildu w `gra/`; gałąź `fix/web-recruitment-panel-A` i `main` NIE były czytane). Logi: `r3-logi/` (każdy kończy się `EXIT=`).
+
+### 11.1 Zakres r3 i decyzja o podziale
+
+| Moduł | Decyzja r3 | Powód |
+|---|---|---|
+| `cityUxFrame.ts` (PQ 82, 296 LOC) | **PRZENIESIONY** | §11.2 |
+| `cityPanel.ts` (PQ 81, 11 986 LOC) | **RUNDA 4 (cały plik)**; w r3 wykonany inwentarz importów (§11.5) | 56 modułów źródłowych importu, **233 symbole** (194 wartości, 39 typów), z tego `game/**` **170 symboli / 141 wartości** w 30 modułach (`r3-logi/20-cityPanel-import-inventory.log`); P5-0 §4: R97 M7. Częściowego portu pliku (np. połowy) nie da się skompilować (`tsc`) ani porównać harnessem — moduł to jeden graf stanu (`activeCity`, `cfg`, `localProd`), a kryterium „harness 0 różnic” jest per moduł, więc podział wewnątrz pliku nie dałby mierzalnego wyniku (ZAŁOŻENIE P5.7-Z8) |
+| uwaga FC r2: komunikat użycia `run-newgame.mjs` | **NAPRAWIONA** | `tools/dom-harness/run-newgame.mjs:45` drukuje teraz `run-newgame.mjs` (było `run-hud-empire.mjs`); dowód `r3-logi/18-newgame-usage-msg.log` (EXIT=2 = brak `--pin-dir`, oczekiwany). Przegląd pozostałych harnessów: każdy komunikat `Użycie:` wskazuje własny plik (Grep `Użycie: node tools/dom-harness/\S+` — 21 trafień, 0 niezgodnych) |
+
+### 11.2 `cityUxFrame.ts` (PQ 82) — tabela zmian vs pin
+
+| PQ | Moduł | Typ | Status | LOC pin → v2 | +/− | Zakres zmian (wyłącznie) |
+|---:|---|---|---|---|---|---|
+| 82 | `cityUxFrame.ts` | BEZP. | PRZENIESIONY (typ → DTO, import cyklu → most) | 296 → 294 | +7/−9 | `:4` `City` → `CityRefDto` (`viewmodel/types.ts`); `:5` `GameMap` usunięty (w jego miejscu 1 linia komentarza); `:11` `./cityPanel` → `./cityPanelUxBridge`; `:220-221`, `:276-277` parametr `map` usunięty z `showCityUxFrame`/`refreshCityUxFrame`; `:270`, `:281` wywołanie `paintCityPanelSections` bez `map`. CSS (`ensureFrameStyles`), markup ramki, klawisze, `isPointOverCityPanelUi`, `getCityUxLayoutMetrics` — bajtowo jak pin (`r3-logi/diffs/cityUxFrame.diff`, `19-diff-stat.log`) |
+
+Nowe pliki: `v2:ui/cityPanelUxBridge.ts` (most + typ `CityPanelUxMounts` przeniesiony 1:1 z `cityPanel.ts:10349-10363` razem z komentarzami), `v2:ui/portCityUx.ts` (import dynamiczny z `main.ts`, jak P5.2-Z1/P5.6-Z1 — nic nie montuje). Zależności UI ramki (`hoverDetailDock.ts`, `brandTokenVars.ts`, `hudLayout.ts`, `escapeOverlayStack.ts`) są w v2 bajtowo równe pinowi (`cmp` — 4× identyczne).
+
+**ZAŁOŻENIE P5.7-Z7 (most C1):** `cityUxFrame.ts` woła `paintCityPanelSections`/`clearCityPanelUxMode`/`navigateCityPanel` przez `cityPanelUxBridge.ts`; `cityPanel.ts` po porcie (r4) rejestruje implementację `registerCityPanelUx({…})` przy ewaluacji modułu (wzorzec P5.6-Z3, domknięty w P5.7 r1 dla `hud.ts`). Do tego czasu brak rejestracji = brak efektu: ramka montuje puste kontenery i działa (asercja harnessu). Sygnatura w v2 bez `map: GameMap` (pin `cityPanel.ts:11759`): ramka nigdy nie czytała mapy, a panel w v2 czyta `CityPanelDto` (P5-0 §6.2), nie `GameMap` (stan mapy w Rust, P4-5B). Jeśli r4 wykaże potrzebę innego argumentu (np. `CityPanelDto` zamiast `CityRefDto`), zmiana jest lokalna (most + 2 sygnatury ramki).
+**ZAŁOŻENIE P5.7-Z8 (granulacja r3):** dispatch r3 dopuszcza „`cityUxFrame.ts` + część `cityPanel.ts`”; „częścią” w r3 jest pomiar i plan (inwentarz importów §11.5), nie kod — z powodu podanego w §11.1.
+
+### 11.3 Mapowanie import → DTO, reguły, rejestr rozszerzeń (`cityUxFrame.ts`)
+
+| Import na pinie | Użycie | Zastąpienie w v2 | P5-0 | Status rejestru |
+|---|---|---|---|---|
+| `:4` `type City` (`game/cities`) | typ parametru `city` (`:220`, `:276`), tylko przekazywany | `CityRefDto` | §3.2 wiersz `cityUxFrame.ts` („`CityRefDto {id, owner, q, r, name}`”), §6.2 `city: CityRefDto` | W KONTRAKCIE |
+| `:5` `type GameMap` (`types/map`) | typ parametru `map` (`:221`, `:277`), tylko przekazywany | usunięty (Z7) | P5-0 nie wymienia (PQ: `types 1`) | — (brak pola) |
+| `:6-11` `./cityPanel` (cykl C1) | 3 funkcje + typ | `./cityPanelUxBridge` (Z7) | — (UI↔UI) | — |
+
+**Reguły bez importu:** przegląd wszystkich `Math.*` i porównań liczb na pinie: `:166`, `:173` `Math.min(innerWidth × 0,24|0,26, W)` = metryka układu (odwzorowanie CSS `min(24vw,…)`), `:185-217` test trafienia współrzędnych w panele = układ UI. **Brak reguł gry** (klasa R = 0, zgodnie z PQ: `T1`). Nowych pól DTO: 0.
+
+### 11.4 Harness `tools/dom-harness/run-cityux.mjs` i mutacje `mutate-cityux.mjs`
+
+Izolacja ramki: po stronie pinu import `./cityPanel` w `cityUxFrame.ts` podmieniony na atrapę `tools/dom-harness/city-panel-stub.mjs` (nowa opcja `alias` w `build.mjs`; domyślnie pusta — pozostałe harnessy bez zmian, regresja §11.6); po stronie v2 TA SAMA atrapa zarejestrowana w moście. Atrapa loguje każde wywołanie (id/nazwa/owner/q/r miasta, obecne kontenery, `typeof refresh/onClose`) i maluje w kontenerach znaczniki, pola formularza (blokada skrótów), `#cs-okolica-center`, `.civ-v-map-bottom-stack` oraz przyciski wołające `refresh`/`onClose`.
+
+Pokrycie (164 przypadki): `getCityUxLayoutMetrics` × 8 szerokości (w tym progi 1416/1417, 1167); stan zamkniętej ramki (2); 17 sekwencji cyklu życia (czysty dokument, pusta atrapa, elementy legacy `#civ-okolica-ux-frame-css`/maski/stara `.civ-ux-frame`, istniejący arkusz i przyciemnienie, `show×2`, `refresh` przed/po, `hide`, podwójne `hide`, `show→hide→show`, przyciski atrapy, ponowne wejście `onClose→hide`); klawisze 10 × 7 celów (dokument, `body`, `input`, `textarea`, `select`, wnętrze `contenteditable`, zwykły element) z `defaultPrevented`, propagacją do `body` i do późniejszego nasłuchu `document` (`stopImmediatePropagation`), Escape przez `escapeOverlayStack`; klawisze po `hide`/`show×2`/Escape (3); `isPointOverCityPanelUi` × 2 szerokości × 8 konfiguracji elementów (prostokąty `getBoundingClientRect` jawne) × 4 stany docków (`setHoverDetailDocks` + `is-open`), każdy przypadek = siatka 44 × 11 punktów (granice paneli, szyn i docków dla 1280/1920 px). Asercje v2 (5/5): malowanie i sprzątanie trafiają do mostu, v2 nie przekazuje `map`, most bez rejestracji = brak efektu i brak wyjątku, kontrola atrapy pinu (dostaje `map`).
+
+Wynik: **164 przypadki, 0 różnic, asercje v2 5/5, `jsdomErrors=0`** (`r3-logi/05-dom-harness-cityux.log` + `.json`). Mutacje: **25/25 WYKRYTYCH w jednym przebiegu, EXIT=0** (`06-harness-mutations-cityux.log`): stałe/metryki C1–C5, granice trafienia C6–C11, klawisze C12–C15, cykl życia/CSS/markup C16–C22, most B1–B3; pliki przywrócone bajtowo (asercja w skrypcie).
+
+**NIE_ZMIERZONO:** układ i wygląd CSS w realnej przeglądarce (jsdom bez układu — CSS porównany bajtowo jako tekst `<style>`, prostokąty jawne); treść panelu miasta (atrapa po obu stronach — port `cityPanel.ts` = r4); okno Tauri — nie uruchamiane.
+
+### 11.5 `cityPanel.ts` — inwentarz importów i plan rundy 4
+
+Inwentarz (`r3-logi/cityPanel-import-inventory.py`, wynik `20-cityPanel-import-inventory.log`): dla każdego z 233 symboli — linia importu, liczba wierszy użycia i pierwsze 8 numerów wierszy. Podsumowanie wg katalogu (symbole / wartości): `game` 170/141, `ui` 49/44, `data` 6/3, `types` 4/2, `render` 2/2, `map` 1/1, `gra/data` JSON 1/1. Importy martwe (0 wierszy użycia): `snapHandelPct`, `getEmpireFoodMaxCap` (zgodnie z P5-0 §1), `buildOrderSectionHtml` (`./orderPanel`; nieodnotowany w P5-0 — usunąć przy porcie). Wszystkie 21 zależności UI (`./…`) są w v2 (`ls` — 21/21) (od P5.2–P5.7 r3), w tym `cityUxFrame.ts` i `hud.ts`.
+
+Plan r4 (kryteria bez zmian: tabela zmian vs pin, brama 0 trafień, harness 0 różnic, mutacje, regresja P5.2–P5.7 r3):
+
+| Grupa importów (pin; symbole/wartości) | Rola | Docelowo w v2 | P5-0 |
+|---|---|---|---|
+| `game/production` 28/23, `building-resource-gate` 10/10, `building-upgrades` 7/7, `building-stock-cost` 8/8, `research` 1/1, `unit-power` 2/1 | katalog budowy/rekrutacji, koszty, ETA, bramki | `CityPanelDto.build_options`/`recruit_options` (`BuildOptionDto`/`RecruitOptionDto`), `CityProductionDto` | §6.2, §6.3, §4 |
+| mutacje `enqueue`/`dequeue`/`promoteToFront`/`setPaused`/`dequeueRecruitment`, pobór/zwrot surowców | M7 | komendy (`controller.send`) — bez lokalnej mapy `localProd` | §7 |
+| `game/cities` 24/18, `empire-handel-split` 1/1, `empire-hud-totals` 2/2 | podziały handlu/pracy, listy budowy, stałe | `empireQueries()` (P5.7-Z2, już w v2) + `StaticCatalogDto.constants`/`labels` + `EmpireHudDto` | §6.1, §6.4, §6.5 Z7 |
+| `population-growth-v85` 14/12, `empire-food` 3/1, `citizen-resource-upkeep` 3/2 | WZROST%, racje, spichlerz | `CityGrowthDto`, `CityPanelDto.food` (`RationPreviewDto`) | §5, §6.2 |
+| `society-breakdown` 9/8, `society-inputs` 2/2, `post-capture-law` 3/3, `order` 2/1, `culture-religion` 2/2 | porządek, bunt, kultura/religia | `CityPanelDto.order` (`CityRevoltDto`), `culture`/`religion` | §5, §6.2 |
+| `wealth` 9/7, `economy` 9/7, `economy-upkeep` 6/6, `turn-economy` 6/4, `trade-routes` 2/1, `converters` 2/1, `unit-building-bonuses` 2/2, `manpower` 6/5, `danina-nazwa` 4/3, `display-names` 1/1, `resource-access` 1/1 | zamożność, pieniądz, utrzymanie, szlaki, pobór | `CityPanelDto.money` (`CityMoneySnapDto`), pola utrzymania w `BuildOptionDto`; formatery F → kopie 1:1 (jak P5.3/P5.7 r1) | §6.2, §2 F |
+| `map/territory-work` 1/1, `render/hexutil` 2/2, `types/hex` 3/2, `types/map` 1/0, `game/terrain-improvements` 1/1 + JSON | obrabiane pola, kolejność nawigacji (`axialToWorld`) | `CityPanelDto.nav_order`, pola okolicy | §6.2 |
+| `data/loader` 6/3 | `loadGameData`, `getTechDef`, `getUnitDef` | `staticCatalog()` | §6.1 |
+
+Kolejność pracy r4: (1) typy DTO brakujące w `viewmodel/types.ts` względem §6.2–§6.4 (część jest od P5.1 jako `NieZmierzonoDto`) + rejestr rozszerzeń; (2) przepisanie importów `cityPanel.ts` grupami wg tabeli, `tsc` po każdej grupie; (3) rejestracja w moście (`registerCityPanelUx`) i rozszerzenie harnessu ramki o wariant z prawdziwym panelem; (4) harness `run-citypanel.mjs` (pin z funkcjami `game/**` jako „Rust”, metoda r1/r2) + mutacje; (5) przegląd reguł bez importu (`:645-720`, `:3228-3229` — P5-0) i rejestr. Panel rekrutacji — wyłącznie wersja z pinu. Runda 5 = rezerwa (FAIL/poprawki). **Ryzyko jawne:** 11 986 LOC to ~2,7× największego modułu portowanego dotąd w jednej rundzie (`empireDetailPanel.ts`, 4433 LOC); jeśli r4 nie domknie `cityPanel.ts`, r5 pozostaje jedyną rundą, a po niej LIMIT-5-EXCEEDED z jawnym stanem.
+
+### 11.6 Bramki r3 (`r3-logi/`, cwd `src-tauri/frontend-v2`, czysty `npm ci`)
+
+| Log | Komenda | Wynik |
+|---|---|---|
+| `01-npm-ci.log` | `npm ci` | EXIT=0 (`package-lock.json` bez zmian) |
+| `02-tsc.log` | `npx tsc --noEmit` | EXIT=0 |
+| `03-check.log` | `npm run check` | EXIT=0; self-test 33+/15−/1, błędów 0; `plików=146 plików_z_trafieniami=0 trafień=0` (cały `src/` + `index.html` + `vite.config.ts`); `verify-pin-copies` `plików=435 niezgodnych=0` |
+| `04-vite-build.log` | `npx vite build` | EXIT=0 (chunk `portCityUx-*.js` 9,75 kB) |
+| `05-dom-harness-cityux.log` (+ `.json`) | `node tools/dom-harness/run-cityux.mjs --pin-dir <PIN>` | EXIT=0; **164 / 0**, asercje v2 5/5 |
+| `06-harness-mutations-cityux.log` | `node tools/dom-harness/mutate-cityux.mjs --pin-dir <PIN>` | EXIT=0; **25/25** |
+| `07-…p52`, `08-…p53`, `09-…p54`, `10-…p55`, `13-…p56-regresja.log` | `run.mjs`, `run-level1a.mjs`, `run-c4.mjs`, `run-level2.mjs`, `run-cycles.mjs` | EXIT=0 ×5; 3861/0, 3618/0, 1649/0, 1784/0, 6401/0 (`jsdomErrors` c4=75, level2=354 — identycznie jak w `r2-logi/09`, `10`; odziedziczone) |
+| `14-…p57r1-hud-empire-regresja.log`, `17-…p57r2-newgame-regresja.log` | `run-hud-empire.mjs`, `run-newgame.mjs` | EXIT=0 ×2; 927/0, 1194/0 |
+| `11-gate-calibration-pin-cityux.log` | brama na `cityUxFrame.ts` pinu | EXIT=1: 2 trafienia (`CORE:game` 1, `EXT:types` 1) — kalibracja |
+| `12-gate-v2-cityux.log` | brama na `cityUxFrame.ts`, `cityPanelUxBridge.ts`, `portCityUx.ts`, `main.ts` | EXIT=0: 0 trafień |
+| `18-newgame-usage-msg.log` | `node tools/dom-harness/run-newgame.mjs` (bez argumentów) | EXIT=2; komunikat wskazuje `run-newgame.mjs` (uwaga FC r2) |
+| `19-diff-stat.log`, `diffs/cityUxFrame.diff` | `difflib.unified_diff` pin vs v2 | 296→294 +7/−9 |
+| `20-cityPanel-import-inventory.log` | `python3 -I cityPanel-import-inventory.py <PIN>/gra/src/ui/cityPanel.ts` | EXIT=0; 56 modułów, 233 symbole |
+| `15-allowlist-git-status.log` | `git status`, `git diff --cached --name-only`, `git diff --cached --check` przed commitem | §11.7 |
+
+Przebiegi sekwencyjne (bez równoległych harnessów; load avg ~3–5). Regresja P5.5 w r3: 0 różnic w pierwszym przebiegu (niestabilność tostu `mainMenu.ts` — zarzut 8 r1, odziedziczona, poza zakresem).
+
+### 11.7 Allowlista i stan kryterium binarnego po r3
+
+Zmienione/nowe pliki wyłącznie w `src-tauri/frontend-v2/**` (`src/ui/cityUxFrame.ts`, `src/ui/cityPanelUxBridge.ts`, `src/ui/portCityUx.ts`, `src/main.ts`, `PORTING-QUEUE.md`, `package.json` (skrypty `harness:cityux*`, opis), `tools/dom-harness/{build.mjs,run-cityux.mjs,mutate-cityux.mjs,city-panel-stub.mjs,run-newgame.mjs}`), ten dokument i `runs/<ID>/**` — `r3-logi/15-allowlist-git-status.log`. `package-lock.json` bez zmian.
+
+Moduły z zakresu tematu: C3 (3) + `sceneTimingReport.ts` + `newGameFlow.ts` + `cityUxFrame.ts` przeniesione, `perfTestPanel.ts` pominięty z powodem; **`cityPanel.ts` — runda 4**. Temat nie jest domknięty do czasu portu `cityPanel.ts` (kryteria nieosłabione).
