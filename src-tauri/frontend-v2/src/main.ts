@@ -13,8 +13,12 @@ import { ensureBrandRootTokens } from './ui/brandTokenVars';
 import { formatLiczbaPl } from './ui/formatPl';
 import {
   createController,
+  createMockAudioService,
+  createMockDiplomacyQueries,
   createMockSaveSlotsService,
   createMockTransport,
+  installAudioService,
+  installDiplomacyQueries,
   installPerfDiagnostics,
   installSaveSlotsService,
   installStaticCatalog,
@@ -40,6 +44,9 @@ async function boot(): Promise<void> {
   installStaticCatalog(await controller.getView<StaticCatalogDto>({ kind: 'staticCatalog' }));
   installPerfDiagnostics(MOCK_PERF_DIAGNOSTICS);
   installSaveSlotsService(createMockSaveSlotsService());
+  // P5.6: atrapy MOCK zapytań koszyka PW (`controller/diplomacyQueries.ts`) i muzyki nakładek (`controller/audio.ts`).
+  installDiplomacyQueries(createMockDiplomacyQueries());
+  installAudioService(createMockAudioService());
 
   const shell = el('section', undefined, 'v2-shell');
   shell.style.cssText =
@@ -67,6 +74,9 @@ async function boot(): Promise<void> {
   // P5.5: poziom 2 (+ przechodnie poziomu 1 i poziom 3 bez cyklu) — jw., nic nie montują.
   const level2 = await import('./ui/portLevel2');
   shell.append(el('p', `Panele poziomu 2 (P5.5): ${level2.PORTED_LEVEL2.length}${mockTag}`));
+  // P5.6: cykle C2, C5 + `hexContextTooltip.ts`, `preBattle.ts` — jw., nic nie montują.
+  const cycles = await import('./ui/portCycles');
+  shell.append(el('p', `Moduły cykli C2/C5 i poziomu 4–7 (P5.6): ${cycles.PORTED_CYCLES.length}${mockTag}`));
   const status = el('p', `Źródło danych: ${controller.source}`, 'v2-status');
   shell.append(status);
 

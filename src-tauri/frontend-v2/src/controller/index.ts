@@ -21,6 +21,11 @@ export { installSaveSlotsService, saveSlotsService } from './saveSlots';
 export type { BuildingCardRulesProvider } from './entityCardRules';
 export { installBuildingCardRulesProvider, buildingCardRules, MOCK_BUILDING_CARD_RULES } from './entityCardRules';
 export { MOCK_STATIC_CATALOG, MOCK_PERF_DIAGNOSTICS, MOCK_SAVE_SLOTS, createMockSaveSlotsService } from './mockCatalog';
+// P5.6: zapytania koszyka PW (dyplomacja) i usługa muzyki nakładek.
+export type { DiplomacyQueriesProvider } from './diplomacyQueries';
+export { installDiplomacyQueries, hasDiplomacyQueries, diplomacyQueries, createMockDiplomacyQueries } from './diplomacyQueries';
+export type { AudioService } from './audio';
+export { installAudioService, createMockAudioService } from './audio';
 
 export interface Controller {
   readonly source: Transport['source'];

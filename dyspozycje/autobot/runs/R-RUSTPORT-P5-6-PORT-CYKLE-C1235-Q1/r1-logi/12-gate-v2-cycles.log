@@ -1,0 +1,3 @@
+$ node tools/check-no-logic-imports.mjs src/ui/{7 modułów P5.6 + pliki pomocnicze} src/controller/{diplomacyQueries,audio}.ts
+check-no-logic-imports: cele=src/ui/diplomacyAudience.ts,src/ui/diplomacyNegotiationModal.ts,src/ui/diplomacyTradeBasket.ts,src/ui/hexContextTooltip.ts,src/ui/sidePanelHud.ts,src/ui/sidePanelEventFilter.ts,src/ui/preBattle.ts,src/ui/unitVitalsPalette.ts,src/ui/armyStackHudSuppression.ts,src/ui/portCycles.ts,src/controller/diplomacyQueries.ts,src/controller/audio.ts plików=12 plików_z_trafieniami=0 trafień=0
+EXIT=0

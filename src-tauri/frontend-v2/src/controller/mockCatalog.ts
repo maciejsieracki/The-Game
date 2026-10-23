@@ -76,6 +76,12 @@ export const MOCK_STATIC_CATALOG: StaticCatalogDto = {
     waterAccessBuildingIds: [],
     cityPanelRangeDepositLabels: { mock: MOCK_LABEL },
     tempoGry: { 'MOCK-tempo': 1 },
+    // P5.6: stałe koszyka dyplomacji / audiencji (MOCK — nie kopia `gra/data`).
+    zywnoscNaPn: 1,
+    progDarRelacja: 0,
+    handelZaufaniePerTura: 0,
+    handelSurowceKeys: ['mock-surowiec'],
+    audienceMultiOwnActionIds: [],
   },
   labels: {
     podzialPracyPulaLbl: 'MOCK',
@@ -85,6 +91,7 @@ export const MOCK_STATIC_CATALOG: StaticCatalogDto = {
     traktatHandlowyLabel: 'MOCK',
     resourceAccessTradeWithdrawnReason: 'MOCK',
     powerHudLabelPl: 'MOCK-Moc',
+    resourceKeyLabels: { 'mock-surowiec': 'MOCK-Surowiec' },
   },
   unitCategory: { 'MOCK-Wojownik': 'maczuga', 'MOCK-Łucznik': 'lucznik' },
   unitCategoryNameOnly: { 'MOCK-Wojownik': 'domyslny', 'MOCK-Łucznik': 'domyslny' },

@@ -1,0 +1,7 @@
+$ node tools/dom-harness/run-c4.mjs --pin-dir <PIN_DIR>
+   NIE_ZMIERZONO: miniatura jednostki w medalionie (`unit3d` → `mountUnitMiniPreview`, kolejka rAF): pin renderuje WebGL (three), v2 obraz z Rust/placeholder (D-UI-3, P5.2) — zrzut DOM robiony PRZED rAF (stan „…” identyczny), stan po rAF nieporównywalny
+   NIE_ZMIERZONO: klawisz Escape (stos `escapeOverlayStack.ts`, moduł P5.1) — nie wysyłany (wspólny `document` obu stron)
+entityCards/wonderAdapter.ts       przypadki=   20 różnice=0
+dom-harness-c4: pin=edb8fb56 modułów=10 przypadków=1649 różnic=0 jsdomErrors=75 consoleErrors=0
+jsdomErrors (unikalne): Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+EXIT=0

@@ -1,0 +1,102 @@
+{
+  "pin": "edb8fb56",
+  "totalCases": 6401,
+  "totalDiffs": 0,
+  "modules": [
+    {
+      "module": "diplomacyAudience.ts",
+      "cases": 224,
+      "diffs": 0,
+      "examples": [],
+      "notMeasured": [
+        "muzyka dyplomacji (`startDiplomacyMusic(otherCivId)`/`stopDiplomacyMusic`) — pin: odtwarzacz nie gra (muzyka gry nie uruchomiona), v2: usługa audio niezainstalowana; nie wpływa na DOM",
+        "eksploracja wewnątrz koszyka/modalu otwartego z audiencji — tylko pierwszy poziom (koszyk eksplorowany osobno w `diplomacyTradeBasket.ts`)"
+      ],
+      "domCases": 182,
+      "domEmpty": 15
+    },
+    {
+      "module": "diplomacyNegotiationModal.ts",
+      "cases": 165,
+      "diffs": 0,
+      "examples": [],
+      "notMeasured": [],
+      "domCases": 138,
+      "domEmpty": 54
+    },
+    {
+      "module": "diplomacyTradeBasket.ts",
+      "cases": 4747,
+      "diffs": 0,
+      "examples": [],
+      "notMeasured": [
+        "koszyk#1(trade,14,pelny): kliknięto 70 z 72 elementów (limit przypadków)",
+        "koszyk#7(trade,14,limit): kliknięto 70 z 138 elementów (limit przypadków)",
+        "koszyk#23(treaty,7,minimalny): kliknięto 70 z 128 elementów (limit przypadków)",
+        "szybka-umowa(pelny): kliknięto 20 z 59 elementów (limit przypadków)",
+        "szybka-umowa(sredni): kliknięto 20 z 43 elementów (limit przypadków)",
+        "szybka-umowa(limit): kliknięto 20 z 138 elementów (limit przypadków)",
+        "pola `validation`/`currencyForbiddenWar`/`treatyPw` w wyniku `basketSummary` — UI ich nie czyta (wartości atrapy harnessu)"
+      ],
+      "domCases": 1359,
+      "domEmpty": 94,
+      "v2Assertions": [
+        {
+          "check": "v2 woła zapytania Rust: basketSummary (2), treatyBasketSummary (1), basketSumPn (7)",
+          "ok": true
+        }
+      ],
+      "v2AssertionsFailed": 0
+    },
+    {
+      "module": "hexContextTooltip.ts",
+      "cases": 931,
+      "diffs": 0,
+      "examples": [],
+      "notMeasured": [
+        "filtr „Możliwe ulepszenia” i rozbicie plonów po stronie „Rust” = transkrypcja kodu pinu na funkcjach pinu (zgodność z przyszłym silnikiem Rust — poza harnessem)"
+      ],
+      "v2Assertions": [
+        {
+          "check": "v2 nie eksportuje `hexHasRiverAccess` (reguła rzeki u sąsiada → Rust)",
+          "ok": true
+        }
+      ],
+      "v2AssertionsFailed": 0
+    },
+    {
+      "module": "sidePanelHud.ts",
+      "cases": 56,
+      "diffs": 0,
+      "examples": [],
+      "notMeasured": [],
+      "domCases": 56
+    },
+    {
+      "module": "sidePanelEventFilter.ts",
+      "cases": 8,
+      "diffs": 0,
+      "examples": [],
+      "notMeasured": []
+    },
+    {
+      "module": "preBattle.ts",
+      "cases": 270,
+      "diffs": 0,
+      "examples": [],
+      "notMeasured": [
+        "efekt `setArmyStackHudSuppressed` na panelu rosteru armii (`hud.ts`, poza paczką) — v2: asercja wywołania mostu; pin: `hud.ts` bez zamontowanego panelu nie zmienia DOM",
+        "muzyka nakładki (`startPreBattleMusic`/`stopPreBattleMusic`) — pin: odtwarzacz nie gra (muzyka gry nie uruchomiona), v2: usługa audio niezainstalowana; nie wpływa na DOM"
+      ],
+      "domCases": 270,
+      "domEmpty": 170,
+      "v2Assertions": [
+        {
+          "check": "most ukrycia rosteru armii: pokaż → [false, true], ukryj → false ([false,true,false])",
+          "ok": true
+        }
+      ],
+      "v2AssertionsFailed": 0
+    }
+  ]
+}
