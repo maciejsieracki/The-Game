@@ -23,9 +23,18 @@
 //!    `Canvas2dLite` fills or strokes (style, shadow, clip, CTM), grey-scale
 //!    AA, no hinting (P4-25 Z-4).
 //!
-//! Emoji/colour glyphs (RR-T8c) and glyph atlases (RR-T8d) are out of scope:
-//! a character no bundled face has is drawn with the `.notdef` glyph of the
-//! first face of the chain (an empty box in these fonts).
+//! **One text path (RR-T8f, `R-RUSTPORT-P4-35-TEXT-EMOJI-UNIFY-Q1`).**
+//! `fill_text` / `stroke_text` / `measure_text` select every character like
+//! a browser (`raster::image::emoji::source_chain`, D-TXT-2 / D-TXT-3): the
+//! outline faces above, then the bundled colour emoji face (RR-T8c). A string
+//! with no colour glyph takes exactly the RR-T8b pipeline above; a string
+//! with one is laid out by `raster::image::emoji` (outline runs through the
+//! same pipeline, colour glyphs as bitmaps with the style's alpha — Z-7).
+//! The baseline is that of the chain's **primary** face even for a string
+//! without emoji (Chromium; measured, `P4-35-TEXT-EMOJI-UNIFY.md` §3).
+//! A character no face has is drawn with the `.notdef` glyph of the first
+//! outline face of the chain (an empty box in these fonts). Glyph atlases
+//! (RR-T8d) are out of scope.
 
 mod font;
 mod fonts;
@@ -33,6 +42,7 @@ mod fonts;
 use ab_glyph::{Font as _, GlyphId, OutlineCurve};
 use tiny_skia::PathBuilder;
 
+use super::image::emoji;
 use super::{Affine, Canvas2dLite};
 
 pub use font::{parse_font, FamilyName, FontSpec, FontStyle};
@@ -80,6 +90,34 @@ pub struct TextState {
     font: FontSpec,
     align: TextAlign,
     baseline: TextBaseline,
+}
+
+impl TextState {
+    /// The current `font`.
+    pub(crate) fn font(&self) -> &FontSpec {
+        &self.font
+    }
+
+    /// The current `textAlign`.
+    pub(crate) fn align(&self) -> TextAlign {
+        self.align
+    }
+
+    /// The current `textBaseline`.
+    pub(crate) fn baseline(&self) -> TextBaseline {
+        self.baseline
+    }
+}
+
+/// How a text call paints its outline glyphs (RR-T8f): `fillText` fills
+/// them, `strokeText` strokes them. Colour glyphs are drawn as bitmaps in
+/// both cases (measured in Chromium 141, `P4-35-TEXT-EMOJI-UNIFY.md` §3.2).
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub(crate) enum TextPaint {
+    /// `fillText`.
+    Fill,
+    /// `strokeText`.
+    Stroke,
 }
 
 /// The part of `TextMetrics` the web reads.
@@ -380,34 +418,40 @@ impl Canvas2dLite {
         true
     }
 
-    /// `ctx.measureText(text)` (only `.width` is provided).
+    /// `ctx.measureText(text)` (only `.width` is provided). Colour glyphs
+    /// count with their bitmap advance (RR-T8f).
     #[must_use]
     pub fn measure_text(&self, text: &str) -> TextMetrics {
-        TextMetrics {
-            width: shape_text(&self.text_state().font, text).width,
-        }
+        let font = &self.text_state().font;
+        let width = if emoji::has_color_glyph(font, text) {
+            emoji::mixed_width(font, text)
+        } else {
+            shape_text(font, text).width
+        };
+        TextMetrics { width }
     }
 
-    /// `ctx.fillText(text, x, y)` (no `maxWidth`, unused by the web).
+    /// `ctx.fillText(text, x, y)` (no `maxWidth`, unused by the web);
+    /// colour glyphs included (RR-T8f).
     pub fn fill_text(&mut self, text: &str, x: f64, y: f64) {
-        if let Some(p) = self.text_path(text, x, y) {
-            self.fill_device_path(p);
-        }
+        self.draw_text(text, x, y, TextPaint::Fill);
     }
 
     /// `ctx.strokeText(text, x, y)` with `lineWidth` / `lineJoin` /
-    /// `strokeStyle` (no `maxWidth`, unused by the web).
+    /// `strokeStyle` (no `maxWidth`, unused by the web); a colour glyph is
+    /// drawn filled with the stroke style's alpha, as Chromium does (RR-T8f).
     pub fn stroke_text(&mut self, text: &str, x: f64, y: f64) {
-        if let Some(p) = self.text_path(text, x, y) {
-            self.stroke_device_path(p);
-        }
+        self.draw_text(text, x, y, TextPaint::Stroke);
     }
 
-    /// Device-space outline of `text` drawn at `(x, y)` with the current
-    /// font, alignment, baseline and CTM. `None` = nothing to draw.
-    fn text_path(&self, text: &str, x: f64, y: f64) -> Option<tiny_skia::Path> {
+    /// The one text drawing path (RR-T8f).
+    fn draw_text(&mut self, text: &str, x: f64, y: f64, paint: TextPaint) {
         if !(x.is_finite() && y.is_finite()) {
-            return None;
+            return;
+        }
+        if emoji::has_color_glyph(&self.text_state().font, text) {
+            emoji::draw_mixed(self, text, x, y, paint);
+            return;
         }
         let st = self.text_state();
         let shaped = shape_text(&st.font, text);
@@ -416,8 +460,38 @@ impl Canvas2dLite {
             TextAlign::Center => -shaped.width / 2.0,
             TextAlign::End | TextAlign::Right => -shaped.width,
         };
-        let dy = baseline_shift(&st.font, st.baseline);
-        build_path(&shaped, &st.font, x + dx, y + dy, &self.ctm())
+        let dy = emoji::emoji_aware_baseline_shift(&st.font, st.baseline);
+        if let Some(p) = build_path(&shaped, &st.font, x + dx, y + dy, &self.ctm()) {
+            self.paint_text_path(p, paint);
+        }
+    }
+
+    /// Fills or strokes a device-space text outline.
+    fn paint_text_path(&mut self, p: tiny_skia::Path, paint: TextPaint) {
+        match paint {
+            TextPaint::Fill => self.fill_device_path(p),
+            TextPaint::Stroke => self.stroke_device_path(p),
+        }
+    }
+}
+
+/// Paints the outline glyphs of `text` (no colour glyph in it, no
+/// alignment) with the pen at user-space `(x, baseline_y)` on the alphabetic
+/// baseline — one outline run of a mixed string (RR-T8f, used by
+/// `raster::image::emoji::draw_mixed`). Exactly what `fill_text` /
+/// `stroke_text` did for that run with `textAlign = left`,
+/// `textBaseline = alphabetic` before RR-T8f.
+pub(crate) fn paint_outline_run(
+    ctx: &mut Canvas2dLite,
+    text: &str,
+    x: f64,
+    baseline_y: f64,
+    paint: TextPaint,
+) {
+    let spec = ctx.text_state().font.clone();
+    let shaped = shape_text(&spec, text);
+    if let Some(p) = build_path(&shaped, &spec, x, baseline_y, &ctx.ctm()) {
+        ctx.paint_text_path(p, paint);
     }
 }
 

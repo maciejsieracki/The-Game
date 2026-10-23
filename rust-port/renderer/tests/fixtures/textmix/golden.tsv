@@ -1,0 +1,19 @@
+# R-RUSTPORT-P4-35 golden FNV-1a 64 of the premultiplied RGBA8 buffer per scene
+m01_stat_line_left_middle	e6d08b4876f781b1
+m02_worker_center	9d31e630cc2bdbd2
+m03_yield_emoji_stack_top	79ba1758836cd7d5
+m04_text_only_emoji_primary	a6260de65c06b7a9
+m05_right_align	63434f89b9ab8f94
+m06_end_align_serif	ba1b38b53a30d184
+m07_skull_symbol_stack	2150992a300d2aad
+m08_stroke_then_fill	2616fa2f36942c25
+m09_stroke_alpha_emoji	9bedcd17f5c4742f
+m10_fill_alpha	75a4736604631594
+m11_shadow_mixed	6800050de005ed31
+m12_scaled_ctm	c2737fd733d04577
+m13_r4_label	4752b8b3da971346
+m14_hanging_ideographic	d96cc45b4ea6451d
+m15_text_only_regression	eb7da969810218f8
+m16_subpixel_mixed	979b146aa0fa3a06
+m17_symbols_mono	e300257dbb1c67b4
+m18_siege_word	15416fd083f27904

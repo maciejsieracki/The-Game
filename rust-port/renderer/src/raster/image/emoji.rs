@@ -23,11 +23,16 @@
 //! P4-29 §3.5); the RGB of `fillStyle` is ignored, its **alpha multiplies**
 //! the bitmap (ZAŁOŻENIE Z-7 of P4-25 confirmed); shadow and clip apply.
 //!
-//! The RR-T8b text API (`Canvas2dLite::fill_text`, closed list
-//! `tests/text_api_closed.rs`) is not changed by this module (its files are
-//! outside the RR-T8c allowlist): emoji-aware drawing goes through
-//! [`fill_text`] / [`measure_text`] here, which delegate every non-emoji run
-//! to it.
+//! **One text path (RR-T8f, `R-RUSTPORT-P4-35-TEXT-EMOJI-UNIFY-Q1`).**
+//! `Canvas2dLite::fill_text` / `stroke_text` / `measure_text` (RR-T8b,
+//! closed list `tests/text_api_closed.rs`) select glyphs themselves: a string
+//! with a colour glyph is laid out here ([`draw_mixed`], [`mixed_width`] —
+//! crate-private), every outline run through the RR-T8b pipeline. The
+//! RR-T8c entry points [`fill_text`] / [`measure_text`] stay as thin
+//! delegations to those methods (same pixels and widths, bit for bit —
+//! `tests/textmix_unify.rs`). `strokeText` draws a colour glyph **filled**
+//! with the stroke style's alpha (`lineWidth` and the fill style ignored —
+//! measured in Chromium 141, `P4-35-TEXT-EMOJI-UNIFY.md` §3.2).
 
 use std::sync::OnceLock;
 
@@ -35,8 +40,8 @@ use resvg::tiny_skia::{FilterQuality, Pixmap, PixmapPaint};
 use rustybuzz::ttf_parser;
 
 use crate::raster::text::{
-    baseline_shift, face_has_glyph, map_family, parse_font, BundledFace, FamilyName, FontSpec,
-    TextAlign, TextBaseline, FALLBACK_FAMILY,
+    baseline_shift, face_has_glyph, map_family, paint_outline_run, parse_font, shape_text,
+    BundledFace, FamilyName, FontSpec, TextAlign, TextBaseline, TextPaint, FALLBACK_FAMILY,
 };
 use crate::raster::{Affine, Canvas2dLite};
 
@@ -262,7 +267,11 @@ fn has_glyph(src: GlyphSource, c: char) -> bool {
 /// `.notdef` glyph of its primary face, RR-T8b).
 #[must_use]
 pub fn glyph_source(spec: &FontSpec, c: char) -> GlyphSource {
-    let chain = source_chain(spec);
+    pick_source(&source_chain(spec), spec, c)
+}
+
+/// [`glyph_source`] over an already built chain.
+fn pick_source(chain: &[GlyphSource], spec: &FontSpec, c: char) -> GlyphSource {
     chain
         .iter()
         .copied()
@@ -274,6 +283,20 @@ pub fn glyph_source(spec: &FontSpec, c: char) -> GlyphSource {
                 .find(|s| matches!(s, GlyphSource::Text(_)))
                 .unwrap_or(GlyphSource::Text(FALLBACK_FAMILY.face(spec.weight)))
         })
+}
+
+/// Whether `text` (after canvas whitespace preparation) has a character
+/// drawn from the colour emoji face with `spec` — the switch between the
+/// RR-T8b outline pipeline and [`draw_mixed`] / [`mixed_width`] (RR-T8f).
+/// Only characters the emoji face has can be colour glyphs, so the chain is
+/// built only when one occurs.
+pub(crate) fn has_color_glyph(spec: &FontSpec, text: &str) -> bool {
+    let mut chain: Option<Vec<GlyphSource>> = None;
+    prepare(text).chars().any(|c| {
+        color_glyph(c).is_some()
+            && pick_source(chain.get_or_insert_with(|| source_chain(spec)), spec, c)
+                == GlyphSource::Emoji
+    })
 }
 
 /// Canvas text preparation (HTML: ASCII whitespace → U+0020), as RR-T8b.
@@ -306,9 +329,10 @@ enum Run {
 }
 
 fn runs(spec: &FontSpec, text: &str) -> Vec<Run> {
+    let chain = source_chain(spec);
     let mut out: Vec<Run> = Vec::new();
     for c in prepare(text).chars() {
-        match glyph_source(spec, c) {
+        match pick_source(&chain, spec, c) {
             GlyphSource::Emoji => {
                 let g = color_glyph(c).expect("emoji source has the glyph");
                 match out.last_mut() {
@@ -411,67 +435,100 @@ pub fn emoji_aware_baseline_shift(spec: &FontSpec, baseline: TextBaseline) -> f6
     }
 }
 
-fn run_widths(ctx: &mut Canvas2dLite, style: &TextStyle, runs: &[Run]) -> Vec<f64> {
-    ctx.set_font(&style.font_css);
+/// Width of each run: an outline run as `measureText` of RR-T8b
+/// (`shape_text`), a colour run as the sum of its bitmap advances.
+fn run_widths(spec: &FontSpec, runs: &[Run]) -> Vec<f64> {
     runs.iter()
         .map(|r| match r {
-            Run::Text(s) => ctx.measure_text(s).width,
-            Run::Emoji(gs, _) => gs
-                .iter()
-                .map(|g| color_advance(g, style.spec.size_px))
-                .sum(),
+            Run::Text(s) => shape_text(spec, s).width,
+            Run::Emoji(gs, _) => gs.iter().map(|g| color_advance(g, spec.size_px)).sum(),
         })
         .collect()
 }
 
+/// `measureText(text).width` of a string with colour glyphs (RR-T8f; used
+/// by `Canvas2dLite::measure_text` when [`has_color_glyph`]).
+///
+/// Model (fitted on Chromium 141, `P4-35-TEXT-EMOJI-UNIFY.md` §4 —
+/// ZAŁOŻENIE Z-35-3): the width of every run (outline run: `shape_text`;
+/// colour run: its advances summed exactly) is rounded to **single
+/// precision** and the runs are accumulated in single precision (Blink's
+/// `float` text widths). Bit for bit on all 308 mixed rows of
+/// `tests/fixtures/textmix/widths.tsv` and on 252/255 rows of RR-T8c
+/// (`image/widths.tsv`, the same 3 documented deviations as before); a plain
+/// `f64` sum of runs (the RR-T8c model) misses 20/308 mixed rows (each wider
+/// than 256 px, where `f32` keeps only 15 fractional bits).
+pub(crate) fn mixed_width(spec: &FontSpec, text: &str) -> f64 {
+    f32_total(&run_widths(spec, &runs(spec, text)))
+}
+
+/// Single-precision accumulation of run widths (see [`mixed_width`]).
+fn f32_total(widths: &[f64]) -> f64 {
+    f64::from(widths.iter().fold(0.0_f32, |acc, w| acc + *w as f32))
+}
+
 /// `ctx.measureText(text).width` with emoji (font as CSS `font` value).
-/// `None` for a `font` value that does not parse.
+/// `None` for a `font` value that does not parse. Thin delegation to
+/// `Canvas2dLite::measure_text` (RR-T8f), kept for the RR-T8c callers.
 #[must_use]
 pub fn measure_text(font: &str, text: &str) -> Option<f64> {
-    let style = TextStyle::new(font, "start", "alphabetic")?;
-    let rs = runs(&style.spec, text);
     let mut scratch = Canvas2dLite::new(1, 1).expect("1×1 canvas");
-    Some(run_widths(&mut scratch, &style, &rs).iter().sum())
+    if !scratch.set_font(font) {
+        return None;
+    }
+    Some(scratch.measure_text(text).width)
 }
 
 /// `ctx.font = …; ctx.textAlign = …; ctx.textBaseline = …;
 /// ctx.fillText(text, x, y)` with colour emoji. On return the canvas text
-/// state is `style` (as after the web's three assignments).
+/// state is `style` (as after the web's three assignments). Thin delegation
+/// to `Canvas2dLite::fill_text` (RR-T8f), kept for the RR-T8c callers.
 pub fn fill_text(ctx: &mut Canvas2dLite, style: &TextStyle, text: &str, x: f64, y: f64) {
     ctx.set_font(&style.font_css);
     ctx.set_text_align(&style.align_css);
     ctx.set_text_baseline(&style.baseline_css);
-    if !(x.is_finite() && y.is_finite()) {
-        return;
-    }
-    let rs = runs(&style.spec, text);
-    let widths = run_widths(ctx, style, &rs);
-    let total: f64 = widths.iter().sum();
-    let x0 = match style.align {
+    ctx.fill_text(text, x, y);
+}
+
+/// `fillText` / `strokeText` of a string with colour glyphs, with the
+/// canvas's current font, `textAlign`, `textBaseline` and CTM (RR-T8f; the
+/// RR-T8c algorithm): alignment by the total width of all runs, one
+/// alphabetic baseline from the chain's primary face, outline runs through
+/// the RR-T8b pipeline (filled or stroked), colour glyphs as bitmaps with the
+/// alpha of the fill style (`fillText`) or of the stroke style
+/// (`strokeText`) — measured in Chromium 141 (`P4-35-TEXT-EMOJI-UNIFY.md`
+/// §3.2). `x`, `y` are finite (checked by the caller).
+pub(crate) fn draw_mixed(ctx: &mut Canvas2dLite, text: &str, x: f64, y: f64, paint: TextPaint) {
+    let st = ctx.text_state();
+    let spec = st.font().clone();
+    let (align, baseline) = (st.align(), st.baseline());
+    let rs = runs(&spec, text);
+    let widths = run_widths(&spec, &rs);
+    // Aligned by `measureText().width` (Chromium aligns by its float width).
+    let total = f32_total(&widths);
+    let x0 = match align {
         TextAlign::Start | TextAlign::Left => x,
         TextAlign::Center => x - total / 2.0,
         TextAlign::End | TextAlign::Right => x - total,
     };
-    let base_y = y + emoji_aware_baseline_shift(&style.spec, style.baseline);
-    let alpha = ctx.fill_color_alpha().unwrap_or(1.0);
+    let base_y = y + emoji_aware_baseline_shift(&spec, baseline);
+    let alpha = match paint {
+        TextPaint::Fill => ctx.fill_color_alpha(),
+        TextPaint::Stroke => ctx.stroke_color_alpha(),
+    }
+    .unwrap_or(1.0);
     let mut pen = x0;
     for (r, w) in rs.iter().zip(&widths) {
         match r {
-            Run::Text(s) => {
-                // Same font; placed by the alphabetic baseline computed from
-                // the primary face of the whole string.
-                ctx.set_text_align("left");
-                ctx.set_text_baseline("alphabetic");
-                ctx.fill_text(s, pen, base_y);
-                ctx.set_text_align(&style.align_css);
-                ctx.set_text_baseline(&style.baseline_css);
-            }
+            // Same font; placed by the alphabetic baseline computed from the
+            // primary face of the whole string.
+            Run::Text(s) => paint_outline_run(ctx, s, pen, base_y, paint),
             Run::Emoji(_, cs) => {
                 let mut gx = pen;
                 for c in cs {
                     if let Some((g, png)) = color_glyph_png(*c) {
-                        draw_color_glyph(ctx, &g, png, style.spec.size_px, gx, base_y, alpha);
-                        gx += color_advance(&g, style.spec.size_px);
+                        draw_color_glyph(ctx, &g, png, spec.size_px, gx, base_y, alpha);
+                        gx += color_advance(&g, spec.size_px);
                     }
                 }
             }

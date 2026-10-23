@@ -1,0 +1,309 @@
+# font (web value)<TAB>text (\t = U+0009)<TAB>Chromium measureText(text).width (font mapped to the bundled faces)
+bold 16px Segoe UI, Arial	Zbrojmistrz ⚔ 12 ☠ 3 👤	184.6898651123047
+bold 16px Segoe UI, Arial	👤 Robotnik 2	107.07267761230469
+bold 16px Segoe UI, Arial	🍞 3 🔨 2 💰 5	108.81178283691406
+bold 16px Segoe UI, Arial	Złoto 💰 +15	95.08830261230469
+bold 16px Segoe UI, Arial	🔥 Bunt	60.83830261230469
+bold 16px Segoe UI, Arial	☠ 3 👤	52.09611511230469
+bold 16px Segoe UI, Arial	Ateny 🔥 ⚔	87.65080261230469
+bold 16px Segoe UI, Arial	A🔥B👤	63.035980224609375
+bold 16px Segoe UI, Arial	Rzym 🍞 4	80.43205261230469
+bold 16px Segoe UI, Arial	⛏ Kopalnia 🌾 Farma 🏛	193.25709533691406
+bold 16px Segoe UI, Arial	12	17.796875
+bold 16px Segoe UI, Arial	x🔥	28.861740112304688
+bold 16px Segoe UI, Arial	🔥x	28.861740112304688
+bold 16px Segoe UI, Arial	 👤 	28.853927612304688
+bold 16px Segoe UI, Arial	a\t🔥	33.30705261230469
+bold 16px Segoe UI, Arial	👤👤👤 3	73.23365783691406
+bold 16px Segoe UI, Arial	Łódź🏰Kraków	115.08049011230469
+bold 16px Segoe UI, Arial	◆ 7 ◆	42.3984375
+bold 16px Segoe UI, Arial	ŻÓŁW 💰	71.50236511230469
+bold 16px Segoe UI, Arial	AV🔥AV	62.04142761230469
+bold 16px Segoe UI, Arial	Hp 💧 9 🛡	83.48910522460938
+bold 16px Segoe UI, Arial	7👤	28.861740112304688
+bold 13px Segoe UI, Arial	Zbrojmistrz ⚔ 12 ☠ 3 👤	150.06051635742188
+bold 13px Segoe UI, Arial	👤 Robotnik 2	86.99655151367188
+bold 13px Segoe UI, Arial	🍞 3 🔨 2 💰 5	88.40957641601562
+bold 13px Segoe UI, Arial	Złoto 💰 +15	77.25924682617188
+bold 13px Segoe UI, Arial	🔥 Bunt	49.431121826171875
+bold 13px Segoe UI, Arial	☠ 3 👤	42.328094482421875
+bold 13px Segoe UI, Arial	Ateny 🔥 ⚔	71.21627807617188
+bold 13px Segoe UI, Arial	A🔥B👤	51.21673583984375
+bold 13px Segoe UI, Arial	Rzym 🍞 4	65.35104370117188
+bold 13px Segoe UI, Arial	⛏ Kopalnia 🌾 Farma 🏛	157.02139282226562
+bold 13px Segoe UI, Arial	12	14.4599609375
+bold 13px Segoe UI, Arial	x🔥	23.450164794921875
+bold 13px Segoe UI, Arial	🔥x	23.450164794921875
+bold 13px Segoe UI, Arial	 👤 	23.443817138671875
+bold 13px Segoe UI, Arial	a\t🔥	27.061981201171875
+bold 13px Segoe UI, Arial	👤👤👤 3	59.502349853515625
+bold 13px Segoe UI, Arial	Łódź🏰Kraków	93.50289916992188
+bold 13px Segoe UI, Arial	◆ 7 ◆	34.44873046875
+bold 13px Segoe UI, Arial	ŻÓŁW 💰	58.095672607421875
+bold 13px Segoe UI, Arial	AV🔥AV	50.408660888671875
+bold 13px Segoe UI, Arial	Hp 💧 9 🛡	67.83489990234375
+bold 13px Segoe UI, Arial	7👤	23.450164794921875
+16px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif	Zbrojmistrz ⚔ 12 ☠ 3 👤	187.92115783691406
+16px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif	👤 Robotnik 2	100.90080261230469
+16px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif	🍞 3 🔨 2 💰 5	108.81178283691406
+16px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif	Złoto 💰 +15	91.56486511230469
+16px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif	🔥 Bunt	57.32267761230469
+16px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif	☠ 3 👤	57.715667724609375
+16px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif	Ateny 🔥 ⚔	89.73129272460938
+16px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif	A🔥B👤	61.270355224609375
+16px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif	Rzym 🍞 4	78.63517761230469
+16px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif	⛏ Kopalnia 🌾 Farma 🏛	186.17115783691406
+16px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif	12	17.796875
+16px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif	x🔥	27.963302612304688
+16px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif	🔥x	27.963302612304688
+16px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif	 👤 	28.853927612304688
+16px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif	a\t🔥	33.30705261230469
+16px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif	👤👤👤 3	73.23365783691406
+16px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif	Łódź🏰Kraków	108.01017761230469
+16px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif	◆ 7 ◆	42.3984375
+16px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif	ŻÓŁW 💰	70.62736511230469
+16px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif	AV🔥AV	60.27580261230469
+16px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif	Hp 💧 9 🛡	82.61410522460938
+16px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif	7👤	28.861740112304688
+17px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif	Zbrojmistrz ⚔ 12 ☠ 3 👤	199.66619873046875
+17px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif	👤 Robotnik 2	107.20709228515625
+17px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif	🍞 3 🔨 2 💰 5	115.61248779296875
+17px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif	Złoto 💰 +15	97.28765869140625
+17px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif	🔥 Bunt	60.90533447265625
+17px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif	☠ 3 👤	61.3228759765625
+17px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif	Ateny 🔥 ⚔	95.3394775390625
+17px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif	A🔥B👤	65.0997314453125
+17px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif	Rzym 🍞 4	83.54986572265625
+17px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif	⛏ Kopalnia 🌾 Farma 🏛	197.80682373046875
+17px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif	12	18.9091796875
+17px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif	x🔥	29.71099853515625
+17px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif	🔥x	29.71099853515625
+17px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif	 👤 	30.65728759765625
+17px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif	a\t🔥	35.38873291015625
+17px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif	👤👤👤 3	77.81072998046875
+17px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif	Łódź🏰Kraków	114.76080322265625
+17px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif	◆ 7 ◆	45.04833984375
+17px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif	ŻÓŁW 💰	75.04156494140625
+17px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif	AV🔥AV	64.04302978515625
+17px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif	Hp 💧 9 🛡	87.7774658203125
+17px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif	7👤	30.66558837890625
+13px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif	Zbrojmistrz ⚔ 12 ☠ 3 👤	152.68594360351562
+13px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif	👤 Robotnik 2	81.98190307617188
+13px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif	🍞 3 🔨 2 💰 5	88.40957641601562
+13px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif	Złoto 💰 +15	74.39645385742188
+13px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif	🔥 Bunt	46.574676513671875
+13px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif	☠ 3 👤	46.89398193359375
+13px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif	Ateny 🔥 ⚔	72.90667724609375
+13px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif	A🔥B👤	49.78216552734375
+13px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif	Rzym 🍞 4	63.891082763671875
+13px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif	⛏ Kopalnia 🌾 Farma 🏛	151.26406860351562
+13px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif	12	14.4599609375
+13px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif	x🔥	22.720184326171875
+13px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif	🔥x	22.720184326171875
+13px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif	 👤 	23.443817138671875
+13px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif	a\t🔥	27.061981201171875
+13px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif	👤👤👤 3	59.502349853515625
+13px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif	Łódź🏰Kraków	87.75827026367188
+13px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif	◆ 7 ◆	34.44873046875
+13px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif	ŻÓŁW 💰	57.384735107421875
+13px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif	AV🔥AV	48.974090576171875
+13px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif	Hp 💧 9 🛡	67.12396240234375
+13px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif	7👤	23.450164794921875
+bold 16px Arial, Helvetica, sans-serif	Zbrojmistrz ⚔ 12 ☠ 3 👤	184.6898651123047
+bold 16px Arial, Helvetica, sans-serif	👤 Robotnik 2	107.07267761230469
+bold 16px Arial, Helvetica, sans-serif	🍞 3 🔨 2 💰 5	108.81178283691406
+bold 16px Arial, Helvetica, sans-serif	Złoto 💰 +15	95.08830261230469
+bold 16px Arial, Helvetica, sans-serif	🔥 Bunt	60.83830261230469
+bold 16px Arial, Helvetica, sans-serif	☠ 3 👤	52.09611511230469
+bold 16px Arial, Helvetica, sans-serif	Ateny 🔥 ⚔	87.65080261230469
+bold 16px Arial, Helvetica, sans-serif	A🔥B👤	63.035980224609375
+bold 16px Arial, Helvetica, sans-serif	Rzym 🍞 4	80.43205261230469
+bold 16px Arial, Helvetica, sans-serif	⛏ Kopalnia 🌾 Farma 🏛	193.25709533691406
+bold 16px Arial, Helvetica, sans-serif	12	17.796875
+bold 16px Arial, Helvetica, sans-serif	x🔥	28.861740112304688
+bold 16px Arial, Helvetica, sans-serif	🔥x	28.861740112304688
+bold 16px Arial, Helvetica, sans-serif	 👤 	28.853927612304688
+bold 16px Arial, Helvetica, sans-serif	a\t🔥	33.30705261230469
+bold 16px Arial, Helvetica, sans-serif	👤👤👤 3	73.23365783691406
+bold 16px Arial, Helvetica, sans-serif	Łódź🏰Kraków	115.08049011230469
+bold 16px Arial, Helvetica, sans-serif	◆ 7 ◆	42.3984375
+bold 16px Arial, Helvetica, sans-serif	ŻÓŁW 💰	71.50236511230469
+bold 16px Arial, Helvetica, sans-serif	AV🔥AV	62.04142761230469
+bold 16px Arial, Helvetica, sans-serif	Hp 💧 9 🛡	83.48910522460938
+bold 16px Arial, Helvetica, sans-serif	7👤	28.861740112304688
+48px serif	Zbrojmistrz ⚔ 12 ☠ 3 👤	504.569580078125
+48px serif	👤 Robotnik 2	286.577392578125
+48px serif	🍞 3 🔨 2 💰 5	311.66973876953125
+48px serif	Złoto 💰 +15	262.952392578125
+48px serif	🔥 Bunt	165.24147033691406
+48px serif	☠ 3 👤	150.92115783691406
+48px serif	Ateny 🔥 ⚔	244.22584533691406
+48px serif	A🔥B👤	186.45950317382812
+48px serif	Rzym 🍞 4	222.54615783691406
+48px serif	⛏ Kopalnia 🌾 Farma 🏛	526.239990234375
+48px serif	12	48
+48px serif	x🔥	83.88990783691406
+48px serif	🔥x	83.88990783691406
+48px serif	 👤 	83.88990783691406
+48px serif	a\t🔥	93.19459533691406
+48px serif	👤👤👤 3	215.6697235107422
+48px serif	Łódź🏰Kraków	313.132080078125
+48px serif	◆ 7 ◆	121.828125
+48px serif	ŻÓŁW 💰	210.49928283691406
+48px serif	AV🔥AV	186.17115783691406
+48px serif	Hp 💧 9 🛡	238.44387817382812
+48px serif	7👤	83.88990783691406
+bold 96px Arial	Zbrojmistrz ⚔ 12 ☠ 3 👤	1108.13916015625
+bold 96px Arial	👤 Robotnik 2	642.43603515625
+bold 96px Arial	🍞 3 🔨 2 💰 5	652.8707275390625
+bold 96px Arial	Złoto 💰 +15	570.52978515625
+bold 96px Arial	🔥 Bunt	365.0298156738281
+bold 96px Arial	☠ 3 👤	312.5766906738281
+bold 96px Arial	Ateny 🔥 ⚔	525.90478515625
+bold 96px Arial	A🔥B👤	378.21588134765625
+bold 96px Arial	Rzym 🍞 4	482.5923156738281
+bold 96px Arial	⛏ Kopalnia 🌾 Farma 🏛	1159.54248046875
+bold 96px Arial	12	106.78125
+bold 96px Arial	x🔥	173.17044067382812
+bold 96px Arial	🔥x	173.17044067382812
+bold 96px Arial	 👤 	173.12356567382812
+bold 96px Arial	a\t🔥	199.84231567382812
+bold 96px Arial	👤👤👤 3	439.4019470214844
+bold 96px Arial	Łódź🏰Kraków	690.48291015625
+bold 96px Arial	◆ 7 ◆	254.390625
+bold 96px Arial	ŻÓŁW 💰	429.0141906738281
+bold 96px Arial	AV🔥AV	372.2485656738281
+bold 96px Arial	Hp 💧 9 🛡	500.93463134765625
+bold 96px Arial	7👤	173.17044067382812
+bold 40px "Segoe UI Symbol", "Segoe UI Emoji", "Segoe UI", Arial, sans-serif	Zbrojmistrz ⚔ 12 ☠ 3 👤	461.72467041015625
+bold 40px "Segoe UI Symbol", "Segoe UI Emoji", "Segoe UI", Arial, sans-serif	👤 Robotnik 2	267.68170166015625
+bold 40px "Segoe UI Symbol", "Segoe UI Emoji", "Segoe UI", Arial, sans-serif	🍞 3 🔨 2 💰 5	272.0294189453125
+bold 40px "Segoe UI Symbol", "Segoe UI Emoji", "Segoe UI", Arial, sans-serif	Złoto 💰 +15	237.7207489013672
+bold 40px "Segoe UI Symbol", "Segoe UI Emoji", "Segoe UI", Arial, sans-serif	🔥 Bunt	152.0957489013672
+bold 40px "Segoe UI Symbol", "Segoe UI Emoji", "Segoe UI", Arial, sans-serif	☠ 3 👤	130.2402801513672
+bold 40px "Segoe UI Symbol", "Segoe UI Emoji", "Segoe UI", Arial, sans-serif	Ateny 🔥 ⚔	219.1269989013672
+bold 40px "Segoe UI Symbol", "Segoe UI Emoji", "Segoe UI", Arial, sans-serif	A🔥B👤	157.58993530273438
+bold 40px "Segoe UI Symbol", "Segoe UI Emoji", "Segoe UI", Arial, sans-serif	Rzym 🍞 4	201.0801239013672
+bold 40px "Segoe UI Symbol", "Segoe UI Emoji", "Segoe UI", Arial, sans-serif	⛏ Kopalnia 🌾 Farma 🏛	483.1427001953125
+bold 40px "Segoe UI Symbol", "Segoe UI Emoji", "Segoe UI", Arial, sans-serif	12	44.4921875
+bold 40px "Segoe UI Symbol", "Segoe UI Emoji", "Segoe UI", Arial, sans-serif	x🔥	72.15434265136719
+bold 40px "Segoe UI Symbol", "Segoe UI Emoji", "Segoe UI", Arial, sans-serif	🔥x	72.15434265136719
+bold 40px "Segoe UI Symbol", "Segoe UI Emoji", "Segoe UI", Arial, sans-serif	 👤 	72.13481140136719
+bold 40px "Segoe UI Symbol", "Segoe UI Emoji", "Segoe UI", Arial, sans-serif	a\t🔥	83.26762390136719
+bold 40px "Segoe UI Symbol", "Segoe UI Emoji", "Segoe UI", Arial, sans-serif	👤👤👤 3	183.08412170410156
+bold 40px "Segoe UI Symbol", "Segoe UI Emoji", "Segoe UI", Arial, sans-serif	Łódź🏰Kraków	287.70123291015625
+bold 40px "Segoe UI Symbol", "Segoe UI Emoji", "Segoe UI", Arial, sans-serif	◆ 7 ◆	105.99609375
+bold 40px "Segoe UI Symbol", "Segoe UI Emoji", "Segoe UI", Arial, sans-serif	ŻÓŁW 💰	178.7559051513672
+bold 40px "Segoe UI Symbol", "Segoe UI Emoji", "Segoe UI", Arial, sans-serif	AV🔥AV	155.1035614013672
+bold 40px "Segoe UI Symbol", "Segoe UI Emoji", "Segoe UI", Arial, sans-serif	Hp 💧 9 🛡	208.72274780273438
+bold 40px "Segoe UI Symbol", "Segoe UI Emoji", "Segoe UI", Arial, sans-serif	7👤	72.15434265136719
+12px Arial,sans-serif	Zbrojmistrz ⚔ 12 ☠ 3 👤	132.51153564453125
+12px Arial,sans-serif	👤 Robotnik 2	75.67559814453125
+12px Arial,sans-serif	🍞 3 🔨 2 💰 5	81.60882568359375
+12px Arial,sans-serif	Złoto 💰 +15	68.67364501953125
+12px Arial,sans-serif	🔥 Bunt	42.99200439453125
+12px Arial,sans-serif	☠ 3 👤	39.07208251953125
+12px Arial,sans-serif	Ateny 🔥 ⚔	63.08380126953125
+12px Arial,sans-serif	A🔥B👤	45.9527587890625
+12px Arial,sans-serif	Rzym 🍞 4	58.97637939453125
+12px Arial,sans-serif	⛏ Kopalnia 🌾 Farma 🏛	139.62835693359375
+12px Arial,sans-serif	12	13.34765625
+12px Arial,sans-serif	x🔥	20.97247314453125
+12px Arial,sans-serif	🔥x	20.97247314453125
+12px Arial,sans-serif	 👤 	21.64044189453125
+12px Arial,sans-serif	a\t🔥	24.98028564453125
+12px Arial,sans-serif	👤👤👤 3	54.92523193359375
+12px Arial,sans-serif	Łódź🏰Kraków	81.00762939453125
+12px Arial,sans-serif	◆ 7 ◆	31.798828125
+12px Arial,sans-serif	ŻÓŁW 💰	52.97052001953125
+12px Arial,sans-serif	AV🔥AV	45.20684814453125
+12px Arial,sans-serif	Hp 💧 9 🛡	61.9605712890625
+12px Arial,sans-serif	7👤	21.64630126953125
+900 28px "Segoe UI", Arial, sans-serif	Zbrojmistrz ⚔ 12 ☠ 3 👤	323.207275390625
+900 28px "Segoe UI", Arial, sans-serif	👤 Robotnik 2	187.37718200683594
+900 28px "Segoe UI", Arial, sans-serif	🍞 3 🔨 2 💰 5	190.4206085205078
+900 28px "Segoe UI", Arial, sans-serif	Złoto 💰 +15	166.40452575683594
+900 28px "Segoe UI", Arial, sans-serif	🔥 Bunt	106.46702575683594
+900 28px "Segoe UI", Arial, sans-serif	☠ 3 👤	91.16819763183594
+900 28px "Segoe UI", Arial, sans-serif	Ateny 🔥 ⚔	153.38890075683594
+900 28px "Segoe UI", Arial, sans-serif	A🔥B👤	110.31295776367188
+900 28px "Segoe UI", Arial, sans-serif	Rzym 🍞 4	140.75608825683594
+900 28px "Segoe UI", Arial, sans-serif	⛏ Kopalnia 🌾 Farma 🏛	338.19989013671875
+900 28px "Segoe UI", Arial, sans-serif	12	31.14453125
+900 28px "Segoe UI", Arial, sans-serif	x🔥	50.50804138183594
+900 28px "Segoe UI", Arial, sans-serif	🔥x	50.50804138183594
+900 28px "Segoe UI", Arial, sans-serif	 👤 	50.49436950683594
+900 28px "Segoe UI", Arial, sans-serif	a\t🔥	58.28733825683594
+900 28px "Segoe UI", Arial, sans-serif	👤👤👤 3	128.1588897705078
+900 28px "Segoe UI", Arial, sans-serif	Łódź🏰Kraków	201.39085388183594
+900 28px "Segoe UI", Arial, sans-serif	◆ 7 ◆	74.197265625
+900 28px "Segoe UI", Arial, sans-serif	ŻÓŁW 💰	125.12913513183594
+900 28px "Segoe UI", Arial, sans-serif	AV🔥AV	108.57249450683594
+900 28px "Segoe UI", Arial, sans-serif	Hp 💧 9 🛡	146.10592651367188
+900 28px "Segoe UI", Arial, sans-serif	7👤	50.50804138183594
+bold 20px Arial, sans-serif	Zbrojmistrz ⚔ 12 ☠ 3 👤	230.86231994628906
+bold 20px Arial, sans-serif	👤 Robotnik 2	133.84083557128906
+bold 20px Arial, sans-serif	🍞 3 🔨 2 💰 5	136.0146942138672
+bold 20px Arial, sans-serif	Złoto 💰 +15	118.86036682128906
+bold 20px Arial, sans-serif	🔥 Bunt	76.04786682128906
+bold 20px Arial, sans-serif	☠ 3 👤	65.12013244628906
+bold 20px Arial, sans-serif	Ateny 🔥 ⚔	109.56349182128906
+bold 20px Arial, sans-serif	A🔥B👤	78.79495239257812
+bold 20px Arial, sans-serif	Rzym 🍞 4	100.54005432128906
+bold 20px Arial, sans-serif	⛏ Kopalnia 🌾 Farma 🏛	241.5713348388672
+bold 20px Arial, sans-serif	12	22.24609375
+bold 20px Arial, sans-serif	x🔥	36.07716369628906
+bold 20px Arial, sans-serif	🔥x	36.07716369628906
+bold 20px Arial, sans-serif	 👤 	36.06739807128906
+bold 20px Arial, sans-serif	a\t🔥	41.63380432128906
+bold 20px Arial, sans-serif	👤👤👤 3	91.54203796386719
+bold 20px Arial, sans-serif	Łódź🏰Kraków	143.85060119628906
+bold 20px Arial, sans-serif	◆ 7 ◆	52.998046875
+bold 20px Arial, sans-serif	ŻÓŁW 💰	89.37794494628906
+bold 20px Arial, sans-serif	AV🔥AV	77.55177307128906
+bold 20px Arial, sans-serif	Hp 💧 9 🛡	104.36135864257812
+bold 20px Arial, sans-serif	7👤	36.07716369628906
+24px Arial, sans-serif	Zbrojmistrz ⚔ 12 ☠ 3 👤	265.0230712890625
+24px Arial, sans-serif	👤 Robotnik 2	151.3511962890625
+24px Arial, sans-serif	🍞 3 🔨 2 💰 5	163.2176513671875
+24px Arial, sans-serif	Złoto 💰 +15	137.3472900390625
+24px Arial, sans-serif	🔥 Bunt	85.9840087890625
+24px Arial, sans-serif	☠ 3 👤	78.1441650390625
+24px Arial, sans-serif	Ateny 🔥 ⚔	126.1676025390625
+24px Arial, sans-serif	A🔥B👤	91.905517578125
+24px Arial, sans-serif	Rzym 🍞 4	117.9527587890625
+24px Arial, sans-serif	⛏ Kopalnia 🌾 Farma 🏛	279.2567138671875
+24px Arial, sans-serif	12	26.6953125
+24px Arial, sans-serif	x🔥	41.9449462890625
+24px Arial, sans-serif	🔥x	41.9449462890625
+24px Arial, sans-serif	 👤 	43.2808837890625
+24px Arial, sans-serif	a\t🔥	49.9605712890625
+24px Arial, sans-serif	👤👤👤 3	109.8504638671875
+24px Arial, sans-serif	Łódź🏰Kraków	162.0152587890625
+24px Arial, sans-serif	◆ 7 ◆	63.59765625
+24px Arial, sans-serif	ŻÓŁW 💰	105.9410400390625
+24px Arial, sans-serif	AV🔥AV	90.4136962890625
+24px Arial, sans-serif	Hp 💧 9 🛡	123.921142578125
+24px Arial, sans-serif	7👤	43.2926025390625
+bold 18px Arial, sans-serif	Zbrojmistrz ⚔ 12 ☠ 3 👤	207.77609252929688
+bold 18px Arial, sans-serif	👤 Robotnik 2	120.45675659179688
+bold 18px Arial, sans-serif	🍞 3 🔨 2 💰 5	122.41323852539062
+bold 18px Arial, sans-serif	Złoto 💰 +15	106.97433471679688
+bold 18px Arial, sans-serif	🔥 Bunt	68.44308471679688
+bold 18px Arial, sans-serif	☠ 3 👤	58.608123779296875
+bold 18px Arial, sans-serif	Ateny 🔥 ⚔	98.60714721679688
+bold 18px Arial, sans-serif	A🔥B👤	70.91546630859375
+bold 18px Arial, sans-serif	Rzym 🍞 4	90.48605346679688
+bold 18px Arial, sans-serif	⛏ Kopalnia 🌾 Farma 🏛	217.41421508789062
+bold 18px Arial, sans-serif	12	20.021484375
+bold 18px Arial, sans-serif	x🔥	32.469451904296875
+bold 18px Arial, sans-serif	🔥x	32.469451904296875
+bold 18px Arial, sans-serif	 👤 	32.460662841796875
+bold 18px Arial, sans-serif	a\t🔥	37.470428466796875
+bold 18px Arial, sans-serif	👤👤👤 3	82.38784790039062
+bold 18px Arial, sans-serif	Łódź🏰Kraków	129.46554565429688
+bold 18px Arial, sans-serif	◆ 7 ◆	47.6982421875
+bold 18px Arial, sans-serif	ŻÓŁW 💰	80.44015502929688
+bold 18px Arial, sans-serif	AV🔥AV	69.79660034179688
+bold 18px Arial, sans-serif	Hp 💧 9 🛡	93.92523193359375
+bold 18px Arial, sans-serif	7👤	32.469451904296875

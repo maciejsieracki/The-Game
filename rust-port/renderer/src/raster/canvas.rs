@@ -694,6 +694,17 @@ impl Canvas2dLite {
         }
     }
 
+    /// Alpha (0..=1) of the stroke style when it is a colour, `None` for a
+    /// gradient. Used by `raster::image::emoji` (RR-T8f): Chromium's
+    /// `strokeText` draws a colour glyph filled, with the stroke style's
+    /// alpha (measured, `P4-35-TEXT-EMOJI-UNIFY.md` §3.2).
+    pub(crate) fn stroke_color_alpha(&self) -> Option<f32> {
+        match &self.state.stroke {
+            Style::Color(c) => Some(c.a),
+            Style::Gradient(_) => None,
+        }
+    }
+
     /// Text attributes of the current state.
     pub(crate) fn text_state(&self) -> &TextState {
         &self.state.text
