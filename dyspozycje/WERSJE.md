@@ -1,3 +1,11 @@
+## ROBOCZA 99c6b33b -- 2026-10-23 -- kompaktowy panel rekrutacji (R-WEB-RECRUITMENT-RELEASE-ROBOCZA)
+
+- STATUS: PUBLISHED to `origin/main` at `9b38334f` (fast-forward z `caa05fca`), integration branch `integration/robocza-recruitment-20261023` na tym samym SHA. Readback `gra-robocza/Gra-ROBOCZA.html` z `origin/main`: MD5 `99c6b33b2587673b3c377d40d22f6396` (zgodny z manifestem).
+- Bundle `gra-robocza/Gra-ROBOCZA.html`: SHA-256 `6f969412d7e9b8a651b92259b135e299ca04d9b238d6722714522d75c4a51b07`, 69,956,805 bytes.
+- Zakres: panel rekrutacji jednostek (`gra/src/ui/unitRecruitCard.ts`, `cityPanel.ts`): wiersz jednostki w jednej linii (wariant A) + pula rekrutow nad lista; commity produktowe `72e876d6`, `54b47e3e` (wydane jako `1be48b7d`).
+- Bramki: tsc, Vite, verify-robocza-bundle OK, logic 213/213, territory-border 9/0, recruitment-panel-compact-row 39/0, recruit-card-manpower 20/0, recruitment-panel-height 13/0, web-memory-leaks 30/0, ai-prod-fallback 17/0, ai-city-recovery 7/0, autosave-quota-fail 20/0, city-badge-growth 38/0, city-badge-zoom-lod 67/0, city-map-badge 62/0; smoke Chromium `?memdebug=1` tury 1-9 OK. Final Control PASS.
+- Rollback: poprzedni bundle MD5 `517406ca871523b7c72ea8e3cd61d9b1` (publikacja `0e6aa590`), `git revert` commitow `1be48b7d` i `9b38334f`.
+
 ## ROBOCZA 517406ca -- 2026-10-23 -- spowolnienie w dalszych turach (R-WEB-TURN-SLOWDOWN)
 
 - STATUS: PUBLISHED to `origin/main` at `0e6aa5906c8f95b5fa4ce45bcef44ecd9fac9c23` (fast-forward z `c11f5087`), integration branch `integration/robocza-turnslow-20261023` na tym samym SHA. Readback z `origin/main`: bundle MD5/SHA-256/bajty zgodne z manifestem (przeliczone z opublikowanego pliku). Wydanie na jawna zgode wlasciciela w czacie (AskUserQuestion 2026-10-23: „A: Tak, wdroz na ROBOCZA”). Production host nie testowany.
