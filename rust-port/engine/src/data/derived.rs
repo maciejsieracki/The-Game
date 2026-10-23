@@ -4420,3 +4420,65 @@ pub fn era_diakrytyki_map() -> &'static BTreeMap<u32, String> {
             .collect()
     })
 }
+
+// P6.M12 (R-RUSTPORT-P6-M12-KLASTRY-COMPUTE-SPAWN-PLAN-Q1): domyslne i progi `computeClusters`.
+// Czytane przez `domain/mapgen/cluster_compute.rs`. Wartosci balansowe sa EDYTOWALNE
+// w `data/derived/mapgen-cluster-compute.json`; kod nie zawiera ich literalow.
+// ---------------------------------------------------------------------------
+
+pub const MAPGEN_CLUSTER_COMPUTE_JSON: &str =
+    include_str!("../../data/derived/mapgen-cluster-compute.json");
+
+/// Domyslne wejscia `computeClusters` (clusters.ts:3398).
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct ClusterComputeDefaults {
+    pub rywale_na_klaster: StartValue<i64>,
+}
+
+/// Miekki zapas min. odleglosci srodkow klastrow (clusters.ts:3433).
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct ClusterComputeCenterDistance {
+    pub min_zapas_krotszy_bok: StartValue<i64>,
+    pub dzielnik_krotszego_boku: StartValue<i64>,
+}
+
+/// Margines od krawedzi mapy dla srodkow klastrow (clusters.ts:3463).
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct ClusterComputeEdgeMargin {
+    pub minimum: StartValue<i64>,
+    pub dzielnik_dystansu_klastrow: StartValue<i64>,
+}
+
+/// Promien regionu klastra dopelnionego (clusters.ts:4054, 4069).
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct ClusterComputeTopUpRegion {
+    pub minimum_promienia: StartValue<i64>,
+    pub dzielnik_dystansu_klastrow: StartValue<i64>,
+}
+
+/// Plik `mapgen-cluster-compute.json`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct MapgenClusterComputeFile {
+    pub meta: serde_json::Value,
+    pub domyslne: ClusterComputeDefaults,
+    pub dystans_klastrow: ClusterComputeCenterDistance,
+    pub margines_brzegu: ClusterComputeEdgeMargin,
+    pub region_dopelnienia: ClusterComputeTopUpRegion,
+}
+
+pub fn parse_mapgen_cluster_compute() -> Result<MapgenClusterComputeFile, serde_json::Error> {
+    serde_json::from_str(MAPGEN_CLUSTER_COMPUTE_JSON)
+}
+
+/// Tabela `computeClusters` (jednorazowy odczyt; blad danych = panika z komunikatem).
+pub fn mapgen_cluster_compute() -> &'static MapgenClusterComputeFile {
+    static TABLE: std::sync::OnceLock<MapgenClusterComputeFile> = std::sync::OnceLock::new();
+    TABLE.get_or_init(|| {
+        parse_mapgen_cluster_compute().expect("mapgen-cluster-compute.json must parse")
+    })
+}

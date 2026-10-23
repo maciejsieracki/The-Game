@@ -1,0 +1,51 @@
+{
+  "meta": {
+    "status": "BOOTSTRAP P6.M12: wartosci startowe przepisane z weba. Zrodlem prawdy do recznego balansu jest TA tabela (edytuj liczby, nie kod).",
+    "pin_web": "edb8fb56",
+    "temat": "R-RUSTPORT-P6-M12-KLASTRY-COMPUTE-SPAWN-PLAN-Q1",
+    "uwaga": "Tu sa progi i domyslne wartosci BALANSU z clusters.ts:3373-4250 (computeClusters) i cluster-spawn.ts:210-445 (buildClusterSpawnPlan). Stale ALGORYTMICZNE (maski/mnozniki ziaren: 0xca041a01, 0xca041a02, 0x9e3779b1, domyslne ziarno 42) sa nazwanymi const w domain/mapgen/cluster_compute.rs z odnosnikiem plik:linia weba. Strukturalne literaly (0, 1, indeksy, polowa /2 w srodku mapy, kolejnosc argumentow) zostaja w kodzie. Stale z zakresu M09-M11 (MIN_DIST_FOREIGN_FROM_PLAYER, CLUSTER_CITY_STATE_MAX_HEX, MIN_DIST_START_CITY_STATE, CLUSTER_GROWTH_RESERVE, tabele ukladu stolic) czyta kod z ich tabel (bez kopii liczb)."
+  },
+  "domyslne": {
+    "rywale_na_klaster": {
+      "wartosc": 9,
+      "zrodlo_web": "gra/src/map/clusters.ts:3398 (opts?.rywaleNaKlaster ?? 9); opis :3370 (razem z kapitalem = 10)",
+      "uzycie": "computeClusters: domyslna liczba miast-panstw w klastrze, gdy wywolujacy jej nie poda"
+    }
+  },
+  "dystans_klastrow": {
+    "min_zapas_krotszy_bok": {
+      "wartosc": 4,
+      "zrodlo_web": "gra/src/map/clusters.ts:3433 (Math.max(4, ...))",
+      "uzycie": "dolna granica min. odleglosci miedzy srodkami klastrow, gdy ani separacja srodkow, ani separacja stolic nie dziala (mapa o krotszym boku < progu)"
+    },
+    "dzielnik_krotszego_boku": {
+      "wartosc": 15,
+      "zrodlo_web": "gra/src/map/clusters.ts:3433 (Math.floor(shortSide / 15))",
+      "uzycie": "min. odleglosc srodkow klastrow = floor(krotszy bok mapy / dzielnik) w trybie miekkim"
+    }
+  },
+  "margines_brzegu": {
+    "minimum": {
+      "wartosc": 2,
+      "zrodlo_web": "gra/src/map/clusters.ts:3463 (Math.max(2, ...))",
+      "uzycie": "dolna granica marginesu od krawedzi mapy przy rozmieszczaniu srodkow klastrow"
+    },
+    "dzielnik_dystansu_klastrow": {
+      "wartosc": 3,
+      "zrodlo_web": "gra/src/map/clusters.ts:3463 (Math.floor(minDystKlastrow / 3))",
+      "uzycie": "margines od krawedzi = floor(min. odleglosc klastrow / dzielnik)"
+    }
+  },
+  "region_dopelnienia": {
+    "minimum_promienia": {
+      "wartosc": 8,
+      "zrodlo_web": "gra/src/map/clusters.ts:4054 i :4069 (Math.max(8, ...))",
+      "uzycie": "dolna granica promienia regionu klastra dopelnionego (top-up): hexy ladu w tym promieniu od stolicy"
+    },
+    "dzielnik_dystansu_klastrow": {
+      "wartosc": 2,
+      "zrodlo_web": "gra/src/map/clusters.ts:4054 i :4069 (Math.floor(minDystKlastrow / 2))",
+      "uzycie": "promien regionu klastra dopelnionego = floor(min. odleglosc klastrow / dzielnik), nie mniej niz minimum"
+    }
+  }
+}

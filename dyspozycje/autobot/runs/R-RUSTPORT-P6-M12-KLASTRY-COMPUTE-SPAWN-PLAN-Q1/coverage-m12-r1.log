@@ -1,0 +1,103 @@
+CMD: node --experimental-transform-types --no-warnings coverage-report.mjs /home/user/m12web-wf40 <NODE_V8_COVERAGE przebiegu generatora gen-m12-r1>
+gra/src/map/clusters.ts: linii kodu ze znanym licznikiem w 3373-4250: 776, NIEPOKRYTYCH: 77
+   3566: activeKlucze.push(`typ${activeKlucze.length}`);
+   3567: }
+   3626: activeKlucze.push(`typ${activeKlucze.length}`);
+   3627: }
+   3669: playerCentrumFinal = forced;
+   3670: playerLayout = {
+   3671: cities: [{ q: forced.q, r: forced.r, isCapital: true }],
+   3672: pendingStateSlots: [],
+   3673: growthSlot: null,
+   3674: };
+   3739: const relocatedLayout = buildClusterCitiesWithLandGate(
+   3740: map,
+   3741: playerRegion,
+   3742: fixed,
+   3743: stateCityCount,
+   3744: minDystMiastaPanstwa,
+   3745: rand,
+   3746: undefined,
+   3747: seed,
+   3748: landCache,
+   3749: [],
+   3750: minDystKlastrow,
+   3751: seaDist,
+   3752: minSeaDist,
+   3753: placedCapitals,
+   3754: minCapitalSep,
+   3756: if (
+   3757: relocatedLayout
+   3758: && passesMinSeaDistGate(seaDist, relocatedLayout.cities.find(m => m.isCapital)?.q ?? fixed.q, relocatedLayout.cities.find(m => m.isCapital)?
+   3759: && passesMinCapitalSeparationGate(
+   3760: clusterCapitalPos(relocatedLayout, fixed),
+   3761: placedCapitals,
+   3762: minCapitalSep,
+   3764: ) {
+   3765: playerLayout = relocatedLayout;
+   3766: playerCentrumFinal = relocatedLayout.centrum;
+   3767: const cap = relocatedLayout.cities.find(m => m.isCapital) ?? relocatedLayout.cities[0];
+   3768: playerCapitalPos = cap ? { q: cap.q, r: cap.r } : fixed;
+   3769: } else if (
+   3770: passesMinSeaDistGate(seaDist, fixed.q, fixed.r, minSeaDist)
+   3771: && passesMinCapitalSeparationGate(fixed, placedCapitals, minCapitalSep)
+   3772: ) {
+   3773: playerCentrumFinal = fixed;
+   3774: playerCapitalPos = fixed;
+   3775: playerLayout = {
+   3776: cities: [{ q: fixed.q, r: fixed.r, isCapital: true }],
+   3777: pendingStateSlots: [],
+   3778: growthSlot: null,
+   3779: };
+   3780: }
+   3781: }
+   3787: ) {
+   3788: resolvePlayerCapitalPos();
+   3789: }
+   3921: if (typeof console !== 'undefined') {
+   3922: console.warn(
+   3923: `[clusters] Pominięto typ '${activeKlucze[ci] ?? `typ${ci}`}'` +
+   3924: ` — brak hexu startowego z bramką lądu (region=${region.length} hex)`,
+   3926: }
+   3927: continue;
+   3928: }
+   3938: ) {
+   3939: if (typeof console !== 'undefined') {
+   3940: console.warn(
+   3941: `[clusters] Pominięto typ '${activeKlucze[ci] ?? `typ${ci}`}'` +
+   3942: ` — stolica zbyt blisko morza (seaDist=${seaDistAt(seaDist, foreignCap.q, foreignCap.r)}, floor=${softSeaFloor})`,
+   3944: }
+   3945: continue;
+   3946: }
+   3951: )) {
+   3952: if (typeof console !== 'undefined') {
+   3953: console.warn(
+   3954: `[clusters] Pominięto typ '${activeKlucze[ci] ?? `typ${ci}`}'` +
+   3955: ` — stolica zbyt blisko innej stolicy (minSep=${minCapitalSep})`,
+   3957: }
+   3958: continue;
+   3959: }
+gra/src/map/cluster-spawn.ts: linii kodu ze znanym licznikiem w 216-438: 204, NIEPOKRYTYCH: 22
+   315: capPos = retryPlayerCap;
+   319: ) {
+   320: if (typeof console !== 'undefined') {
+   321: console.warn(
+   322: `[cluster-spawn] HARD: brak legalnego hexu gracza ≥${minCapitalSep} — hard apply dropnie kolidujące obce typy`,
+   324: }
+   325: }
+   350: )) {
+   351: if (typeof console !== 'undefined') {
+   352: console.warn(
+   353: `[cluster-spawn] Pominięto typ '${klaster.typ}' — stolica zbyt blisko innej (minSep=${minCapitalSep})`,
+   355: }
+   356: continue;
+   357: }
+   390: )) {
+   391: droppedForeignTyps.add(slot.typ);
+   392: if (typeof console !== 'undefined') {
+   393: console.warn(
+   394: `[cluster-spawn] HARD apply: pominięto typ '${slot.typ}' — stolica (${slot.q},${slot.r}) < ${minCapitalSep} hex od innej stolicy`,
+   396: }
+   397: continue;
+   398: }
+EXIT=0

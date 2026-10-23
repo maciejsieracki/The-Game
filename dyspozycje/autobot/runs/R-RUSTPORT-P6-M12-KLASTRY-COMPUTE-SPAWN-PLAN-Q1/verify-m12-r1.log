@@ -1,0 +1,7 @@
+CMD: python3 -I verify-m12-vectors.py /home/user/m12web-wf40 ../../../../rust-port/engine/tests/p6_m12_vectors/web-vectors.json ../../../../rust-port/engine/data/derived/mapgen-cluster-compute.json ../../../../rust-port/engine/tests/p6_m11_vectors/web-vectors.json ../../../../rust-port/engine/data/derived/mapgen-cluster-layout.json ../../../../rust-port/engine/tests/p6_m10_vectors/web-vectors.json ../../../../rust-port/engine/data/derived/mapgen-cluster-mass.json ../../../../rust-port/engine/data/derived/start-scoring.json ../../../../rust-port/engine/tests/p6_m09_vectors/web-vectors.json ../../../../rust-port/engine/tests/p6_1c_vectors/maps.json ../../../../rust-port/engine/data/derived/mapgen-cluster-rivals.json (wektory SHA-256 83c7b6ffffe48dc8...)
+[zaleznosc] dep-verify-m11-vectors.py: sprawdzen 17034 (+ 36960 z jego zaleznosci), rozbieznosci 0 (+ 0), exit 0
+compute: {'compute_checked': 654, 'compute_skipped': 0, 'threw': 21} czas 478s
+spawn: {'checked': 372, 'skipped': 0, 'threw': 3} czas 290s
+sprawdzen M12: 1115, rozbieznosci M12: 0
+RAZEM (M12 + zaleznosci M11/M10/M09): 55109 sprawdzen, rozbieznosci: 0
+EXIT=0
