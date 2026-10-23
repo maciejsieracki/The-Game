@@ -3367,3 +3367,127 @@ pub fn mapgen_masks() -> &'static MapgenMasksFile {
     static TABLE: std::sync::OnceLock<MapgenMasksFile> = std::sync::OnceLock::new();
     TABLE.get_or_init(|| parse_mapgen_masks().expect("mapgen-masks.json must parse"))
 }
+
+// ---------------------------------------------------------------------------
+// P6.M11 (R-RUSTPORT-P6-M11-KLASTRY-UKLAD-STOLIC-Q1): parametry ukladu stolic klastrow.
+// Czytane przez `domain/mapgen/cluster_layout.rs`. Wartosci balansowe sa EDYTOWALNE
+// w `data/derived/mapgen-cluster-layout.json`; kod nie zawiera ich literalow.
+// ---------------------------------------------------------------------------
+
+pub const MAPGEN_CLUSTER_LAYOUT_JSON: &str =
+    include_str!("../../data/derived/mapgen-cluster-layout.json");
+
+/// Pas stolicy od morza (`capitalMinSeaDist`, `capitalSeaBandPenalty`, clusters.ts:1370-1464).
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct ClusterSeaBandParams {
+    pub min_odleglosc_od_morza: ClusterActiveTypes,
+    pub szerokosc_pasa: StartValue<i64>,
+    pub min_krotszy_bok_mapy: StartValue<i64>,
+    pub kara_ponizej_pasa: StartValue<f64>,
+    pub kara_powyzej_pasa: StartValue<f64>,
+}
+
+/// Separacja stolic roznych civ (`capitalMinSeparation`, clusters.ts:1470-1530).
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct ClusterSeparationParams {
+    pub min_odstep: ClusterActiveTypes,
+    pub dodatek_odstepu_srodkow: StartValue<i64>,
+}
+
+/// Drabinka miekniecia odleglosci od morza (`seaDistRescueLadder`, clusters.ts:1678-1689).
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct ClusterSeaRescueParams {
+    pub mnoznik_ceil_pierwszy: StartValue<f64>,
+    pub mnoznik_ceil_drugi: StartValue<f64>,
+    pub mnoznik_floor: StartValue<f64>,
+    pub dolna_granica_stopnia: StartValue<f64>,
+}
+
+/// Jeden prog `minimumSpreadQuartersRequired` (clusters.ts:1580-1582).
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct ClusterQuarterStep {
+    pub od_liczby_typow: i64,
+    pub min_cwiartek: usize,
+    pub zrodlo_web: String,
+}
+
+/// Progi cwiartek bboxa ladu (clusters.ts:1579-1600, 3259-3329).
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct ClusterLayoutQuarters {
+    pub progi_minimum: Vec<ClusterQuarterStep>,
+    pub w_przeciwnym_razie_min_cwiartek: StartValue<usize>,
+    pub min_typow_preferencji: StartValue<i64>,
+    pub min_typow_biasu_wyboru_hexu: StartValue<i64>,
+    pub wyrownanie_min_typow: StartValue<i64>,
+    pub wyrownanie_min_klastrow: StartValue<usize>,
+    pub wyrownanie_max_iteracji: StartValue<usize>,
+    pub wyrownanie_min_obciazenie: StartValue<usize>,
+}
+
+/// Wybor stolicy w regionie (clusters.ts:2261, 2616).
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct ClusterCapitalPickParams {
+    pub waga_losowego_rozstrzygniecia: StartValue<f64>,
+    pub proby_ladu: StartValue<usize>,
+}
+
+/// Luzny przebieg `poissonPickCities` (clusters.ts:1835-1836).
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct ClusterPoissonParams {
+    pub min_wybranych_przed_luzem: StartValue<usize>,
+    pub luz_odstepu: StartValue<i64>,
+}
+
+/// Straznicy petli napraw (clusters.ts:2693, 3055).
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct ClusterGuardParams {
+    pub twarda_separacja_mnoznik: StartValue<usize>,
+    pub separacja_bryl_mnoznik: StartValue<usize>,
+}
+
+/// Ponowienia `repackClusterStateCitiesIfSparse` (clusters.ts:2892-2932).
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct ClusterRepackParams {
+    pub luzny_bufor_dzielnik: StartValue<f64>,
+    pub luzny_min_dystans_dolny: StartValue<i64>,
+    pub luzny_min_dystans_odjecie: StartValue<i64>,
+    pub pierscienie_po_maksymalnym: StartValue<Vec<i64>>,
+    pub pierscienie_ostateczne: StartValue<Vec<i64>>,
+    pub ostateczny_min_dystans: StartValue<i64>,
+}
+
+/// Plik `mapgen-cluster-layout.json`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct MapgenClusterLayoutFile {
+    pub meta: serde_json::Value,
+    pub morze_stolicy: ClusterSeaBandParams,
+    pub separacja_stolic: ClusterSeparationParams,
+    pub ratunek_morza: ClusterSeaRescueParams,
+    pub cwiartki: ClusterLayoutQuarters,
+    pub wybor_stolicy: ClusterCapitalPickParams,
+    pub poisson: ClusterPoissonParams,
+    pub straznicy: ClusterGuardParams,
+    pub repack: ClusterRepackParams,
+}
+
+pub fn parse_mapgen_cluster_layout() -> Result<MapgenClusterLayoutFile, serde_json::Error> {
+    serde_json::from_str(MAPGEN_CLUSTER_LAYOUT_JSON)
+}
+
+/// Tabela ukladu stolic klastrow (jednorazowy odczyt; blad danych = panika z komunikatem).
+pub fn mapgen_cluster_layout() -> &'static MapgenClusterLayoutFile {
+    static TABLE: std::sync::OnceLock<MapgenClusterLayoutFile> = std::sync::OnceLock::new();
+    TABLE.get_or_init(|| {
+        parse_mapgen_cluster_layout().expect("mapgen-cluster-layout.json must parse")
+    })
+}

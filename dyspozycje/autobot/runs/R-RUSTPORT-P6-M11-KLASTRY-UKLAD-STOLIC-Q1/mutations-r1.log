@@ -1,0 +1,68 @@
+WYKRYTA   hub-reach-no-reserve: 1 testow FAILED: hub_reach_and_body_buffer_match_web
+WYKRYTA   max-sea-minus-band: 3 testow FAILED: by_label_matches_web, derived_constants_are_aliases_of_table_fields, for_map_matches_web
+WYKRYTA   for-map-min-sea-le: 1 testow FAILED: for_map_matches_web
+WYKRYTA   for-map-max-sea-le: 1 testow FAILED: for_map_matches_web
+WYKRYTA   for-map-sep-le: 1 testow FAILED: for_map_matches_web
+WYKRYTA   for-map-body-le: 1 testow FAILED: for_map_matches_web
+WYKRYTA   for-map-placement-le: 1 testow FAILED: for_map_matches_web
+WYKRYTA   band-gate-min-le: 2 testow FAILED: pick_spawn_hex_matches_web, sea_gates_match_web
+WYKRYTA   penalty-below-le: 11 testow FAILED: band_penalty_matches_web, body_separation_matches_web, build_cluster_cities_matches_web, cities_with_land_gate_match_web
+WYKRYTA   penalty-ideal-lo: 13 testow FAILED: band_penalty_matches_web, body_separation_matches_web, build_cluster_cities_matches_web, cities_with_land_gate_match_web
+WYKRYTA   quadrant-east-gt: 7 testow FAILED: hooks_impl_matches_web, m11_hooks_match_m10_web_hook_vectors, m11_hooks_reproduce_m10_candidate_sorting, m11_hooks_reproduce_m10_center_placement
+WYKRYTA   quadrant-weights-swapped: 3 testow FAILED: hooks_impl_matches_web, m11_hooks_match_m10_web_hook_vectors, quadrant_helpers_match_web
+PRZEZYLA  preferred-occupied-le: wszystkie testy zielone
+WYKRYTA   sep-gate-gt: 11 testow FAILED: body_separation_matches_web, build_cluster_cities_matches_web, capital_separation_gate_and_distance_match_web, cities_with_land_gate_match_web
+WYKRYTA   ladder-no-dedupe: 1 testow FAILED: rescue_ladder_matches_web
+PRZEZYLA  spawn-preferred-band-always: wszystkie testy zielone
+WYKRYTA   spawn-band-filter-lt: 1 testow FAILED: pick_spawn_hex_matches_web
+WYKRYTA   spawn-sort-max-band-only: 1 testow FAILED: pick_spawn_hex_matches_web
+PRZEZYLA  spawn-bias-ignores-prior: wszystkie testy zielone
+PRZEZYLA  spawn-sea-fallback-min: wszystkie testy zielone
+WYKRYTA   spawn-not-progressive: 5 testow FAILED: body_separation_matches_web, enforce_local_land_dominance_matches_web, hard_capital_separation_matches_web, pick_spawn_hex_matches_web
+PRZEZYLA  poisson-no-skip-picked: wszystkie testy zielone
+WYKRYTA   poisson-anchor-le: 1 testow FAILED: poisson_pick_cities_matches_web
+PRZEZYLA  poisson-luz-plus: wszystkie testy zielone
+WYKRYTA   capital-sort-copy-not-inplace: 5 testow FAILED: build_cluster_cities_matches_web, cities_with_land_gate_match_web, layout_with_edge_capital_matches_web, pick_capital_hex_in_region_matches_web
+WYKRYTA   capital-no-rand-in-comparator: 6 testow FAILED: body_separation_matches_web, build_cluster_cities_matches_web, cities_with_land_gate_match_web, hard_capital_separation_matches_web
+PRZEZYLA  capital-penalty-hi-no-band: wszystkie testy zielone
+WYKRYTA   capital-in-band-lt: 6 testow FAILED: body_separation_matches_web, build_cluster_cities_matches_web, cities_with_land_gate_match_web, hard_capital_separation_matches_web
+WYKRYTA   capital-anchor-gt: 7 testow FAILED: body_separation_matches_web, build_cluster_cities_matches_web, cities_with_land_gate_match_web, hard_capital_separation_matches_web
+PRZEZYLA  capital-active-sea-min: wszystkie testy zielone
+WYKRYTA   layout-growth-zero: 3 testow FAILED: build_cluster_cities_matches_web, cities_with_land_gate_match_web, layout_with_edge_capital_matches_web
+WYKRYTA   assign-quota-plus: 1 testow FAILED: assign_types_matches_web
+WYKRYTA   assign-falsy-only-none: 1 testow FAILED: assign_types_matches_web
+WYKRYTA   assign-no-shuffle: 1 testow FAILED: assign_types_matches_web
+WYKRYTA   dominance-keep-all: 1 testow FAILED: enforce_local_land_dominance_matches_web
+PRZEZYLA  dominance-spread-n-plus: wszystkie testy zielone
+WYKRYTA   hard-fix-idx-swapped: 1 testow FAILED: hard_capital_separation_matches_web
+WYKRYTA   hard-d-gt: 1 testow FAILED: hard_capital_separation_matches_web
+WYKRYTA   body-cap-le: 1 testow FAILED: body_separation_matches_web
+WYKRYTA   body-pending-none: 1 testow FAILED: body_separation_matches_web
+PRZEZYLA  body-no-last-try: wszystkie testy zielone
+WYKRYTA   anchor-for-always-player: 1 testow FAILED: quarter_spread_matches_web
+WYKRYTA   repack-mp-now-gt: 2 testow FAILED: repack_all_matches_web, repack_one_matches_web
+PRZEZYLA  repack-loose-ceil: wszystkie testy zielone
+WYKRYTA   quarter-new-spread-lt: 1 testow FAILED: quarter_spread_matches_web
+WYKRYTA   quarter-load-ge: 1 testow FAILED: quarter_spread_matches_web
+WYKRYTA   quarter-no-centrum-update: 1 testow FAILED: quarter_spread_matches_web
+PRZEZYLA  seed-mul-ki: wszystkie testy zielone
+WYKRYTA   foreign-anchor-le: 3 testow FAILED: cluster_helpers_match_web, repack_all_matches_web, repack_one_matches_web
+WYKRYTA   body-buffer-floor: 2 testow FAILED: cluster_helpers_match_web, hub_reach_and_body_buffer_match_web
+WYKRYTA   table-min-sea-duza-9: 2 testow FAILED: by_label_matches_web, for_map_matches_web
+WYKRYTA   table-sep-duza-14: 2 testow FAILED: by_label_matches_web, for_map_matches_web
+WYKRYTA   table-band-width-6: 14 testow FAILED: band_penalty_matches_web, body_separation_matches_web, build_cluster_cities_matches_web, by_label_matches_web
+WYKRYTA   table-short-side-79: 1 testow FAILED: for_map_matches_web
+WYKRYTA   table-penalty-below-1: 5 testow FAILED: band_penalty_matches_web, hooks_impl_matches_web, m11_hooks_match_m10_web_hook_vectors, m11_hooks_reproduce_m10_candidate_sorting
+WYKRYTA   table-penalty-above-1: 4 testow FAILED: band_penalty_matches_web, hooks_impl_matches_web, m11_hooks_match_m10_web_hook_vectors, m11_hooks_reproduce_m10_candidate_sorting
+WYKRYTA   table-ladder-first-0.8: 7 testow FAILED: body_separation_matches_web, build_cluster_cities_matches_web, cities_with_land_gate_match_web, layout_with_edge_capital_matches_web
+WYKRYTA   table-quarter-step-3-to-3: 3 testow FAILED: hooks_impl_matches_web, m11_hooks_match_m10_web_hook_vectors, quadrant_helpers_match_web
+WYKRYTA   table-quarter-iters-1: 1 testow FAILED: quarter_spread_matches_web
+WYKRYTA   table-land-attempts-1: 1 testow FAILED: cities_with_land_gate_match_web
+WYKRYTA   table-guard-hard-0: 2 testow FAILED: hard_capital_separation_matches_web, values_have_sane_shape
+WYKRYTA   table-guard-body-0: 2 testow FAILED: body_separation_matches_web, values_have_sane_shape
+PRZEZYLA  table-desperate-min-dist-3: wszystkie testy zielone
+PRZEZYLA  table-poisson-luz-1: wszystkie testy zielone
+WYKRYTA   table-placement-add-3: 2 testow FAILED: by_label_matches_web, for_map_matches_web
+ROWNOWAZNE (wylaczone z listy, patrz §6a): []
+PODSUMOWANIE: wykryte 51/65, przezyly: ['preferred-occupied-le', 'spawn-preferred-band-always', 'spawn-bias-ignores-prior', 'spawn-sea-fallback-min', 'poisson-no-skip-picked', 'poisson-luz-plus', 'capital-penalty-hi-no-band', 'capital-active-sea-min', 'dominance-spread-n-plus', 'body-no-last-try', 'repack-loose-ceil', 'seed-mul-ki', 'table-desperate-min-dist-3', 'table-poisson-luz-1'], pliki przywrocone: True
+EXIT=1

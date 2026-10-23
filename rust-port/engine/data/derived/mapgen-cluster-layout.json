@@ -1,0 +1,235 @@
+{
+  "meta": {
+    "status": "BOOTSTRAP P6.M11: wartosci startowe przepisane z weba. Zrodlem prawdy do recznego balansu jest TA tabela (edytuj liczby, nie kod).",
+    "pin_web": "edb8fb56",
+    "temat": "R-RUSTPORT-P6-M11-KLASTRY-UKLAD-STOLIC-Q1",
+    "uwaga": "Tu sa progi i parametry BALANSU z clusters.ts:1351-1769, 1801-1846 i 2166-3361 (uklad stolic klastrow). Stale ALGORYTMICZNE (mnozniki/maski ziaren: 0x9e3779b1, 0x85ebca6b, 0xc2b2ae35, +17) sa nazwanymi const w domain/mapgen/cluster_layout.rs z odnosnikiem plik:linia weba. Strukturalne literaly (0, 1, indeksy, polowa /2, liczba cwiartek 4, wzor ćwiartki east + south * 2) zostaja w kodzie. Stale z zakresu M09 (CLUSTER_CITY_STATE_MAX_HEX, CLUSTER_GROWTH_RESERVE, MIN_DIST_START_CITY_STATE, MIN_DIST_FOREIGN_IN_CLUSTER) czyta kod z mapgen-cluster-rivals.json (bez kopii liczb). Parametry wejsciowe wywolan (minDist, minSeaDist, seed, nNeeded...) przekazuje wywolujacy (M12)."
+  },
+  "morze_stolicy": {
+    "min_odleglosc_od_morza": {
+      "mala": {
+        "wartosc": 4,
+        "zrodlo_web": "gra/src/map/clusters.ts:1372",
+        "uzycie": "capitalMinSeaDist: min. seaDist stolicy, mapa mala"
+      },
+      "srednia": {
+        "wartosc": 7,
+        "zrodlo_web": "gra/src/map/clusters.ts:1373",
+        "uzycie": "capitalMinSeaDist: mapa srednia"
+      },
+      "duza": {
+        "wartosc": 10,
+        "zrodlo_web": "gra/src/map/clusters.ts:1374",
+        "uzycie": "capitalMinSeaDist: mapa duza (Standard)"
+      },
+      "ogromna": {
+        "wartosc": 12,
+        "zrodlo_web": "gra/src/map/clusters.ts:1375",
+        "uzycie": "capitalMinSeaDist: mapa ogromna"
+      },
+      "super": {
+        "wartosc": 14,
+        "zrodlo_web": "gra/src/map/clusters.ts:1376",
+        "uzycie": "capitalMinSeaDist: mapa super"
+      }
+    },
+    "szerokosc_pasa": {
+      "wartosc": 5,
+      "zrodlo_web": "gra/src/map/clusters.ts:1386 (capitalMinSeaDist(rozmiar) + 5); te sama liczba: :1459 (lo + 5), :1719 (minSeaDist + 5), :2244 (minSeaDist + 5), :2255 (minSeaDist + 5)",
+      "uzycie": "szerokosc pasa stolicy od morza: max = min + wartosc"
+    },
+    "min_krotszy_bok_mapy": {
+      "wartosc": 80,
+      "zrodlo_web": "gra/src/map/clusters.ts:1401 (short < 80); te sama liczba: :1411, :1491, :1518, :1528",
+      "uzycie": "ForMap: dla krotszego boku mapy < wartosc bramka wylaczona (zwraca 0)"
+    },
+    "kara_ponizej_pasa": {
+      "wartosc": 1000,
+      "zrodlo_web": "gra/src/map/clusters.ts:1460 (1000 + (lo - sea))",
+      "uzycie": "capitalSeaBandPenalty: baza kary gdy sea < dolna granica pasa"
+    },
+    "kara_powyzej_pasa": {
+      "wartosc": 100,
+      "zrodlo_web": "gra/src/map/clusters.ts:1461 (100 + (sea - hi))",
+      "uzycie": "capitalSeaBandPenalty: baza kary gdy sea > gorna granica pasa"
+    }
+  },
+  "separacja_stolic": {
+    "min_odstep": {
+      "mala": {
+        "wartosc": 12,
+        "zrodlo_web": "gra/src/map/clusters.ts:1472",
+        "uzycie": "capitalMinSeparation: min. odleglosc stolic roznych civ, mapa mala"
+      },
+      "srednia": {
+        "wartosc": 12,
+        "zrodlo_web": "gra/src/map/clusters.ts:1473",
+        "uzycie": "capitalMinSeparation: mapa srednia"
+      },
+      "duza": {
+        "wartosc": 15,
+        "zrodlo_web": "gra/src/map/clusters.ts:1474",
+        "uzycie": "capitalMinSeparation: mapa duza (Standard)"
+      },
+      "ogromna": {
+        "wartosc": 16,
+        "zrodlo_web": "gra/src/map/clusters.ts:1475",
+        "uzycie": "capitalMinSeparation: mapa ogromna"
+      },
+      "super": {
+        "wartosc": 19,
+        "zrodlo_web": "gra/src/map/clusters.ts:1476",
+        "uzycie": "capitalMinSeparation: mapa super"
+      }
+    },
+    "dodatek_odstepu_srodkow": {
+      "wartosc": 2,
+      "zrodlo_web": "gra/src/map/clusters.ts:1509 (capitalMinSeparation(rozmiar) + 2)",
+      "uzycie": "clusterCenterPlacementSep: odstep srodkow klastrow = odstep stolic + wartosc"
+    }
+  },
+  "ratunek_morza": {
+    "mnoznik_ceil_pierwszy": {
+      "wartosc": 0.75,
+      "zrodlo_web": "gra/src/map/clusters.ts:1682 (Math.max(2, Math.ceil(minSeaDist * 0.75)))",
+      "uzycie": "seaDistRescueLadder: drugi stopien drabinki"
+    },
+    "mnoznik_ceil_drugi": {
+      "wartosc": 0.55,
+      "zrodlo_web": "gra/src/map/clusters.ts:1683 (Math.max(2, Math.ceil(minSeaDist * 0.55)))",
+      "uzycie": "seaDistRescueLadder: trzeci stopien drabinki"
+    },
+    "mnoznik_floor": {
+      "wartosc": 0.4,
+      "zrodlo_web": "gra/src/map/clusters.ts:1684 (Math.max(2, Math.floor(minSeaDist * 0.4)))",
+      "uzycie": "seaDistRescueLadder: czwarty stopien drabinki"
+    },
+    "dolna_granica_stopnia": {
+      "wartosc": 2,
+      "zrodlo_web": "gra/src/map/clusters.ts:1682-1685 (Math.max(2, ...) x3 oraz stopien 2); ostatni stopien 0 = brak bramki (strukturalny)",
+      "uzycie": "seaDistRescueLadder: dolna granica stopni miekkich i stopien przedostatni"
+    }
+  },
+  "cwiartki": {
+    "progi_minimum": [
+      {
+        "od_liczby_typow": 6,
+        "min_cwiartek": 3,
+        "zrodlo_web": "gra/src/map/clusters.ts:1580 (nNeeded >= 6 -> 3)"
+      },
+      {
+        "od_liczby_typow": 5,
+        "min_cwiartek": 3,
+        "zrodlo_web": "gra/src/map/clusters.ts:1581 (nNeeded >= 5 -> 3)"
+      },
+      {
+        "od_liczby_typow": 3,
+        "min_cwiartek": 2,
+        "zrodlo_web": "gra/src/map/clusters.ts:1582 (nNeeded >= 3 -> 2)"
+      }
+    ],
+    "w_przeciwnym_razie_min_cwiartek": {
+      "wartosc": 1,
+      "zrodlo_web": "gra/src/map/clusters.ts:1583 (return 1)",
+      "uzycie": "minimumSpreadQuartersRequired: gdy zaden prog nie pasuje"
+    },
+    "min_typow_preferencji": {
+      "wartosc": 5,
+      "zrodlo_web": "gra/src/map/clusters.ts:1593 (nNeeded < 5 -> null)",
+      "uzycie": "preferredQuadrantsForSpread: ponizej tej liczby typow brak preferencji"
+    },
+    "min_typow_biasu_wyboru_hexu": {
+      "wartosc": 5,
+      "zrodlo_web": "gra/src/map/clusters.ts:1758 (spreadN >= 5)",
+      "uzycie": "pickSpawnHexWithCapitalGates: sortowanie z biasem cwiartek od tej liczby typow"
+    },
+    "wyrownanie_min_typow": {
+      "wartosc": 5,
+      "zrodlo_web": "gra/src/map/clusters.ts:3259 (nNeeded < 5)",
+      "uzycie": "enforceQuarterSpreadOnKlastry: ponizej tej liczby typow brak wyrownania"
+    },
+    "wyrownanie_min_klastrow": {
+      "wartosc": 3,
+      "zrodlo_web": "gra/src/map/clusters.ts:3259 (klastry.length < 3); te sama liczba: :3271 (caps.length < 3)",
+      "uzycie": "enforceQuarterSpreadOnKlastry: min. liczba klastrow / stolic do wyrownania"
+    },
+    "wyrownanie_max_iteracji": {
+      "wartosc": 10,
+      "zrodlo_web": "gra/src/map/clusters.ts:3265 (iter < 10)",
+      "uzycie": "enforceQuarterSpreadOnKlastry: limit iteracji"
+    },
+    "wyrownanie_min_obciazenie": {
+      "wartosc": 1,
+      "zrodlo_web": "gra/src/map/clusters.ts:3287 (maxLoad <= 1); te sama liczba: :3329 (counts[oldQuad] <= 1)",
+      "uzycie": "enforceQuarterSpreadOnKlastry: nie relokuj z cwiartki o obciazeniu <= wartosc"
+    }
+  },
+  "wybor_stolicy": {
+    "waga_losowego_rozstrzygniecia": {
+      "wartosc": 0.01,
+      "zrodlo_web": "gra/src/map/clusters.ts:2261 (rand() * 0.01)",
+      "uzycie": "pickCapitalHexInRegion: jitter komparatora (rand() woła sie przy KAZDYM porownaniu)"
+    },
+    "proby_ladu": {
+      "wartosc": 5,
+      "zrodlo_web": "gra/src/map/clusters.ts:2616 (attempt < 5)",
+      "uzycie": "buildClusterCitiesWithLandGate: liczba prob zmiany srodka"
+    }
+  },
+  "poisson": {
+    "min_wybranych_przed_luzem": {
+      "wartosc": 2,
+      "zrodlo_web": "gra/src/map/clusters.ts:1835 (picked.length < 2)",
+      "uzycie": "poissonPickCities: ponizej tej liczby wybranych wlacza sie luzny odstep"
+    },
+    "luz_odstepu": {
+      "wartosc": 2,
+      "zrodlo_web": "gra/src/map/clusters.ts:1836 (minDist - 2)",
+      "uzycie": "poissonPickCities: o ile zmniejsza sie minDist w drugim przebiegu"
+    }
+  },
+  "straznicy": {
+    "twarda_separacja_mnoznik": {
+      "wartosc": 4,
+      "zrodlo_web": "gra/src/map/clusters.ts:2693 (guard++ < klastry.length * 4)",
+      "uzycie": "enforceHardCapitalSeparationOnKlastry: limit napraw = liczba klastrow * wartosc"
+    },
+    "separacja_bryl_mnoznik": {
+      "wartosc": 6,
+      "zrodlo_web": "gra/src/map/clusters.ts:3055 (guard++ < klastry.length * 6)",
+      "uzycie": "enforceClusterBodySeparationOnKlastry: limit napraw = liczba klastrow * wartosc"
+    }
+  },
+  "repack": {
+    "luzny_bufor_dzielnik": {
+      "wartosc": 2,
+      "zrodlo_web": "gra/src/map/clusters.ts:2892 (Math.floor(bufferRadius / 2))",
+      "uzycie": "repackClusterStateCitiesIfSparse: luzny bufor = floor(bufor / wartosc)"
+    },
+    "luzny_min_dystans_dolny": {
+      "wartosc": 3,
+      "zrodlo_web": "gra/src/map/clusters.ts:2894 (Math.max(3, minDist - 2))",
+      "uzycie": "repackClusterStateCitiesIfSparse: dolna granica luznego minDist"
+    },
+    "luzny_min_dystans_odjecie": {
+      "wartosc": 2,
+      "zrodlo_web": "gra/src/map/clusters.ts:2894 (Math.max(3, minDist - 2))",
+      "uzycie": "repackClusterStateCitiesIfSparse: o ile zmniejsza sie minDist w ponowieniu"
+    },
+    "pierscienie_po_maksymalnym": {
+      "wartosc": [4, 3, 2],
+      "zrodlo_web": "gra/src/map/clusters.ts:2908 ([CLUSTER_CITY_STATE_MAX_HEX, 4, 3, 2])",
+      "uzycie": "repackClusterStateCitiesIfSparse: pierscienie ponowienia po CLUSTER_CITY_STATE_MAX_HEX"
+    },
+    "pierscienie_ostateczne": {
+      "wartosc": [3, 2],
+      "zrodlo_web": "gra/src/map/clusters.ts:2932 (ringDistances: [3, 2])",
+      "uzycie": "repackClusterStateCitiesIfSparse: pierscienie ostatniej szansy (desperate)"
+    },
+    "ostateczny_min_dystans": {
+      "wartosc": 2,
+      "zrodlo_web": "gra/src/map/clusters.ts:2926 (minDist = 2)",
+      "uzycie": "repackClusterStateCitiesIfSparse: minDist ostatniej szansy (desperate)"
+    }
+  }
+}
