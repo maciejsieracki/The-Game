@@ -1,0 +1,63 @@
+========================================================================
+P-MGLA-ODKRYCIE-SCIEZKA-INWARIANT-Q1 -- INWARIANT odkrywania wzdluz sciezki
+KOMENDA: grep -rnE '\.(q|r)[[:space:]]*=[^=>]' gra/src --include=*.ts
+========================================================================
+
+[1] SKAN NEGATYWNY gra/src -- ZERO niesklasyfikowanych zapisow pozycji jednostki
+  FAIL: [1] kazdy zapis pozycji jednostki w gra/src jest jawnie sklasyfikowany w KLASYFIKACJA (nowe trafienie = nowe miejsce przemieszczenia -> sklasyfikuj albo domknij odkryciem) -- ["src/battle/battleScene.ts:8009 ru.q = col;","src/battle/battleScene.ts:8010 ru.r = row;"]
+  OK: [1] whitelist nie zawiera MARTWYCH wpisow (kod zniknal, uzasadnienie zostalo) -- inaczej bramka po cichu traci pokrycie
+  OK: [1] kazdy wpis whitelisty ma niepuste uzasadnienie (zakaz wpisow „zeby przeszlo")
+
+[1b] STRAZNIK POKRYCIA -- skan przeczytal realne drzewo zrodel
+  OK: [1b] skan objal >= 300 plikow .ts/.tsx
+  OK: [1b] skan objal > 1 000 000 znakow zrodla
+  OK: [1b] skan znalazl realna liczbe zapisow pozycji (>= 40) -- nie oslepl na wzorcu
+  OK: [1b] skan objal wszystkie pliki niosace znane miejsca przemieszczenia
+
+[1c] WZORCE POSREDNIE -- notacja nawiasowa i Object.assign
+  OK: [1c] ZERO nieuzasadnionych zapisow notacja nawiasowa (`['q'] =` / `['r'] =`) w gra/src -- nowy zapis tej postaci to nowe miejsce przemieszczenia, sklasyfikuj albo domknij odkryciem
+  OK: [1c] whitelist notacji nawiasowej nie zawiera MARTWYCH wpisow
+  OK: [1c] kazdy wpis whitelisty nawiasowej ma niepuste uzasadnienie
+  OK: [1c] sanity: skaner nawiasowy widzi co najmniej tyle trafien, ile ma whitelist (dzis 6: 4x render/cities.ts + 2x manualBattle.ts) -- asercja wyzej nie jest pusta ani slepa
+  OK: [1c] ZERO wywolan `Object.assign(cel, ...)` z celem innym niz `*.style` w gra/src -- `Object.assign(u, { q, r })` zapisuje pozycje jednostki niewidocznie dla wzorca `.q =`
+  OK: [1c] ZERO przypisan ZLOZONYCH i inkrementacji na pozycji jednostki (`u.q += dq`, `u.q++`) w gra/src -- `u.q += 5` przesuwa o piec heksow tak samo jak `u.q = q0 + 5`
+  OK: [1c] sanity: skaner Object.assign widzi realna liczbe wywolan (>= 200; na bazie 20f9993d: 244) -- asercja wyzej nie jest pusta ani slepa
+
+[2] OKNO ODKRYCIA -- kazde miejsce WIELOHEKS-ODKRYWA w main.ts domkniete odkryciem
+  OK: [2] sanity: dokladnie 6 zapisow (3 miejsca x .q + .r) klasy WIELOHEKS-ODKRYWA w main.ts -- asercja nizej nie jest pusta ani slepa
+  OK: [2] kazdy zapis WIELOHEKS-ODKRYWA ma wywolanie odkrycia wzdluz sciezki w oknie -5/+45 linii
+  OK: [2] `computeVisibleAlongPath` zaimportowane z ./game/visibility w main.ts
+
+[3] CZWARTE MIEJSCE -- auto-eksploracja zwiadowcy odkrywa po KAZDYM kroku
+  OK: [3] wywolanie `runScoutsAutoExplore(` znalezione w main.ts
+  OK: [3] hak `onAfterStep` przekazany do runScoutsAutoExplore odkrywa mgle (revealAlongPathForStack/computeVisibleAlongPath) -- bez tego `refreshFog()` po petli odkrywa TYLKO pozycje koncowa
+  OK: [3] odkrycie per-krok zwiadowcy woła helper dla BIEZACEGO heksu kroku
+
+[4] INTEGRALNOSC helpera revealAlongPathForStack
+  OK: [4] definicja `revealAlongPathForStack` znaleziona w main.ts
+  OK: [4] korpus helpera faktycznie dopisuje do `explored` unie widocznosci z CALEJ sciezki
+  OK: [4] helper liczy widocznosc PER JEDNOSTKA stosu (rozny unitSight)
+  OK: [4] miejsce 1/3 (applyMarchSegmentInstant) nietkniete
+  OK: [4] miejsce 2/3 (koniec tury w animacji) nietkniete
+  OK: [4] miejsce 3/3 (koniec animacji, renderLoop) ORAZ korpus helpera — oba obecne (2 wystapienia wzorca `computeVisibleAlongPath(pathHexes, ...)`)
+
+[5] NIETAUTOLOGICZNOSC skanera na zrodle syntetycznym
+  OK: [5] skaner wykrywa NOWE, nieuzasadnione miejsce przemieszczenia (u.q/u.r) w zrodle syntetycznym
+  OK: [5] takie trafienie NIE jest na whiteliscie -> blok [1] bylby czerwony (piate miejsce wykryte)
+  OK: [5] skaner NIE zglasza zapisow pozycji z calych linii komentarza (brak falszywych alarmow)
+  OK: [5] skaner NIE myli porownania (`==`, `===`) z przypisaniem
+  OK: [5] dwa przypisania w jednej linii to JEDNO trafienie (klucz = tekst linii) -- zgodne z whitelista
+  OK: [5] skaner nawiasowy wykrywa NOWE miejsce zapisane jako u['q'] / u["r"] (oba cudzyslowy)
+  OK: [5] takie trafienie NIE jest na whiteliscie nawiasowej -> blok [1c] bylby czerwony
+  OK: [5] skaner nawiasowy NIE myli porownania z przypisaniem
+  OK: [5] skaner nawiasowy NIE lapie innych pol o nazwie zaczynajacej sie na q/r (`['queue']`)
+  OK: [5] skaner Object.assign wyciaga pierwszy argument (`u`) z `Object.assign(u, { q, r })`
+  OK: [5] taki cel NIE jest `*.style` -> blok [1c] bylby czerwony (piate miejsce przez Object.assign)
+  OK: [5] `Object.assign(el.style, ...)` jest rozpoznane jako dozwolone (brak falszywych alarmow)
+  OK: [5] skaner zlozony wykrywa przypisanie zlozone (`u.q += dq`)
+  OK: [5] skaner zlozony wykrywa inkrementacje/dekrementacje (`u.q++`, `--u.r`)
+  OK: [5] skaner zlozony NIE myli operatorow POROWNANIA (`>=`, `<=`, `!==`) z przypisaniem
+  OK: [5] przecinek WEWNATRZ pierwszego argumentu go nie ucina (wycinanie z uwzglednieniem zagniezdzen)
+
+41 pass, 1 fail
+EXIT=1

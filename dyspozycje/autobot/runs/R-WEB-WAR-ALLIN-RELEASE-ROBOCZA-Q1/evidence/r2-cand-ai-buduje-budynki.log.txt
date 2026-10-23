@@ -1,0 +1,255 @@
+  OK  sanity: empire-city-defaults.ts zawiera ciało naprawy nowej gry (mutacja wykonalna)
+  OK  sanity: empire-city-defaults.ts zawiera ciało migracji wczytania (mutacja wykonalna)
+  OK  sanity: migracja wczytania ma gałąź barbarzyńską (MUT-B może zdjąć OBA nośniki gwarancji)
+  OK  sanity: migracja wczytania ma linię pomijającą ownera 0 (MUT-C wykonalny, A10 nietautologiczna)
+  OK  sanity: main.ts woła upgradeBudowaProfilAutoDefaultsOnLoad na OBU ścieżkach wczytania
+  OK  H0: katalogi buildu leżą POZA drzewem repo (§9 pkt 1 / C-001)
+[ai-buduje-budynki-test] vite build (fix) -> /tmp/civ-ai-buduje-budynki-23675-diocbe/dist-fix ...
+[ai-buduje-budynki-test] build (fix) OK.
+[ai-buduje-budynki-test] vite build (mut-a) -> /tmp/civ-ai-buduje-budynki-23675-diocbe/dist-mut-a ...
+[ai-buduje-budynki-test] build (mut-a) OK.
+[ai-buduje-budynki-test] vite build (mut-b) -> /tmp/civ-ai-buduje-budynki-23675-diocbe/dist-mut-b ...
+[ai-buduje-budynki-test] build (mut-b) OK.
+[ai-buduje-budynki-test] vite build (mut-c) -> /tmp/civ-ai-buduje-budynki-23675-diocbe/dist-mut-c ...
+[ai-buduje-budynki-test] build (mut-c) OK.
+  OK  H0b: bramka nie zmieniła ŻADNEGO śledzonego pliku źródłowego
+[ai-buduje-budynki-test] domyślny Chromium niedostępny, fallback na /opt/pw-browsers/chromium-1194/chrome-linux/chrome
+
+--- FIX: budynki (b=cityBuilt, q=kolejka, p=postep Pracy) per tura ---
+  tura   2  duzeAI[b=0 q=2 p=7 (n=2)]  panstwaMiasta[b=0 q=6 p=20 (n=6)]  barbarzyncy[b=0 q=0 p=0 (n=1)]  gracz[b=0 q=1 p=4 (n=1)]
+  tura   3  duzeAI[b=0 q=2 p=13 (n=2)]  panstwaMiasta[b=0 q=6 p=40 (n=6)]  barbarzyncy[b=0 q=0 p=0 (n=1)]  gracz[b=0 q=1 p=8 (n=1)]
+  tura   4  duzeAI[b=0 q=2 p=19 (n=2)]  panstwaMiasta[b=0 q=6 p=60 (n=6)]  barbarzyncy[b=0 q=0 p=0 (n=1)]  gracz[b=0 q=1 p=12 (n=1)]
+  tura   5  duzeAI[b=0 q=2 p=24 (n=2)]  panstwaMiasta[b=0 q=6 p=80 (n=6)]  barbarzyncy[b=0 q=0 p=0 (n=1)]  gracz[b=0 q=1 p=16 (n=1)]
+  tura   6  duzeAI[b=0 q=2 p=30 (n=2)]  panstwaMiasta[b=0 q=6 p=100 (n=6)]  barbarzyncy[b=0 q=0 p=0 (n=1)]  gracz[b=0 q=1 p=20 (n=1)]
+  tura   7  duzeAI[b=0 q=2 p=35 (n=2)]  panstwaMiasta[b=0 q=6 p=120 (n=6)]  barbarzyncy[b=0 q=0 p=0 (n=1)]  gracz[b=0 q=1 p=24 (n=1)]
+  tura   8  duzeAI[b=0 q=2 p=41 (n=2)]  panstwaMiasta[b=0 q=6 p=140 (n=6)]  barbarzyncy[b=0 q=0 p=0 (n=1)]  gracz[b=0 q=1 p=28 (n=1)]
+  tura   9  duzeAI[b=0 q=2 p=46 (n=2)]  panstwaMiasta[b=1 q=5 p=132 (n=6)]  barbarzyncy[b=0 q=0 p=0 (n=1)]  gracz[b=1 q=0 p=0 (n=1)]
+  tura  10  duzeAI[b=0 q=2 p=52 (n=2)]  panstwaMiasta[b=1 q=5 p=152 (n=6)]  barbarzyncy[b=0 q=0 p=0 (n=1)]  gracz[b=1 q=0 p=0 (n=1)]
+  tura  11  duzeAI[b=0 q=2 p=57 (n=2)]  panstwaMiasta[b=3 q=3 p=92 (n=6)]  barbarzyncy[b=0 q=0 p=0 (n=1)]  gracz[b=1 q=0 p=0 (n=1)]
+  tura  12  duzeAI[b=0 q=2 p=63 (n=2)]  panstwaMiasta[b=5 q=1 p=22 (n=6)]  barbarzyncy[b=0 q=0 p=0 (n=1)]  gracz[b=1 q=0 p=0 (n=1)]
+  tura  13  duzeAI[b=0 q=2 p=68 (n=2)]  panstwaMiasta[b=5 q=1 p=24 (n=6)]  barbarzyncy[b=0 q=0 p=0 (n=1)]  gracz[b=1 q=0 p=0 (n=1)]
+  tura  14  duzeAI[b=1 q=1 p=31 (n=2)]  panstwaMiasta[b=5 q=1 p=28 (n=6)]  barbarzyncy[b=0 q=0 p=0 (n=1)]  gracz[b=1 q=0 p=0 (n=1)]
+  tura  15  duzeAI[b=1 q=1 p=33 (n=2)]  panstwaMiasta[b=6 q=0 p=0 (n=6)]  barbarzyncy[b=0 q=0 p=0 (n=1)]  gracz[b=1 q=0 p=0 (n=1)]
+  tura  16  duzeAI[b=1 q=1 p=35 (n=2)]  panstwaMiasta[b=6 q=0 p=0 (n=6)]  barbarzyncy[b=0 q=0 p=0 (n=1)]  gracz[b=1 q=0 p=0 (n=1)]
+  tura  17  duzeAI[b=1 q=1 p=37 (n=2)]  panstwaMiasta[b=6 q=0 p=0 (n=6)]  barbarzyncy[b=0 q=0 p=0 (n=1)]  gracz[b=1 q=0 p=0 (n=1)]
+  tura  18  duzeAI[b=1 q=1 p=40 (n=2)]  panstwaMiasta[b=6 q=0 p=0 (n=6)]  barbarzyncy[b=0 q=0 p=0 (n=1)]  gracz[b=1 q=0 p=0 (n=1)]
+  tura  19  duzeAI[b=2 q=0 p=0 (n=2)]  panstwaMiasta[b=6 q=0 p=0 (n=6)]  barbarzyncy[b=0 q=0 p=0 (n=1)]  gracz[b=1 q=0 p=0 (n=1)]
+  tura  20  duzeAI[b=2 q=0 p=0 (n=2)]  panstwaMiasta[b=6 q=0 p=0 (n=6)]  barbarzyncy[b=0 q=0 p=0 (n=1)]  gracz[b=1 q=0 p=0 (n=1)]
+  tura  21  duzeAI[b=2 q=0 p=0 (n=2)]  panstwaMiasta[b=6 q=0 p=0 (n=6)]  barbarzyncy[b=0 q=0 p=0 (n=1)]  gracz[b=1 q=0 p=0 (n=1)]
+  tura  22  duzeAI[b=4 q=1 p=0 (n=4)]  panstwaMiasta[b=4 q=0 p=0 (n=4)]  barbarzyncy[b=0 q=0 p=0 (n=1)]  gracz[b=1 q=0 p=0 (n=1)]
+  tura  23  duzeAI[b=4 q=1 p=3 (n=4)]  panstwaMiasta[b=4 q=0 p=0 (n=4)]  barbarzyncy[b=0 q=0 p=0 (n=1)]  gracz[b=1 q=0 p=0 (n=1)]
+  tura  24  duzeAI[b=4 q=1 p=7 (n=4)]  panstwaMiasta[b=4 q=0 p=0 (n=4)]  barbarzyncy[b=0 q=0 p=0 (n=1)]  gracz[b=1 q=0 p=0 (n=1)]
+  tura  25  duzeAI[b=4 q=1 p=11 (n=4)]  panstwaMiasta[b=4 q=0 p=0 (n=4)]  barbarzyncy[b=0 q=0 p=0 (n=1)]  gracz[b=1 q=0 p=0 (n=1)]
+  tura  26  duzeAI[b=4 q=1 p=15 (n=4)]  panstwaMiasta[b=4 q=0 p=0 (n=4)]  barbarzyncy[b=0 q=0 p=0 (n=1)]  gracz[b=1 q=0 p=0 (n=1)]
+  tura  27  duzeAI[b=5 q=0 p=0 (n=4)]  panstwaMiasta[b=4 q=0 p=0 (n=4)]  barbarzyncy[b=0 q=0 p=0 (n=1)]  gracz[b=1 q=0 p=0 (n=1)]
+  tura  28  duzeAI[b=5 q=0 p=0 (n=4)]  panstwaMiasta[b=4 q=0 p=0 (n=4)]  barbarzyncy[b=0 q=0 p=0 (n=1)]  gracz[b=1 q=0 p=0 (n=1)]
+  tura  29  duzeAI[b=5 q=0 p=0 (n=4)]  panstwaMiasta[b=4 q=0 p=0 (n=4)]  barbarzyncy[b=0 q=0 p=0 (n=1)]  gracz[b=1 q=0 p=0 (n=1)]
+  tura  30  duzeAI[b=6 q=3 p=23 (n=4)]  panstwaMiasta[b=4 q=0 p=0 (n=4)]  barbarzyncy[b=0 q=0 p=0 (n=1)]  gracz[b=1 q=0 p=0 (n=1)]
+  tura  31  duzeAI[b=9 q=3 p=0 (n=4)]  panstwaMiasta[b=4 q=0 p=0 (n=4)]  barbarzyncy[b=0 q=0 p=0 (n=1)]  gracz[b=1 q=0 p=0 (n=1)]
+  tura  32  duzeAI[b=9 q=3 p=46 (n=4)]  panstwaMiasta[b=4 q=0 p=0 (n=4)]  barbarzyncy[b=0 q=0 p=0 (n=1)]  gracz[b=1 q=0 p=0 (n=1)]
+  tura  33  duzeAI[b=10 q=3 p=0 (n=4)]  panstwaMiasta[b=4 q=0 p=0 (n=4)]  barbarzyncy[b=0 q=0 p=0 (n=1)]  gracz[b=1 q=0 p=0 (n=1)]
+  tura  34  duzeAI[b=10 q=3 p=50 (n=4)]  panstwaMiasta[b=4 q=0 p=0 (n=4)]  barbarzyncy[b=0 q=0 p=0 (n=1)]  gracz[b=1 q=0 p=0 (n=1)]
+  tura  35  duzeAI[b=10 q=3 p=0 (n=4)]  panstwaMiasta[b=5 q=1 p=0 (n=4)]  barbarzyncy[b=0 q=0 p=0 (n=1)]  gracz[b=1 q=0 p=0 (n=1)]
+  tura  36  duzeAI[b=10 q=6 p=52 (n=4)]  panstwaMiasta[b=6 q=1 p=0 (n=4)]  barbarzyncy[b=0 q=0 p=0 (n=1)]  gracz[b=1 q=0 p=0 (n=1)]
+  tura  37  duzeAI[b=10 q=6 p=43 (n=4)]  panstwaMiasta[b=6 q=1 p=0 (n=4)]  barbarzyncy[b=0 q=0 p=0 (n=1)]  gracz[b=1 q=0 p=0 (n=1)]
+  tura  38  duzeAI[b=13 q=7 p=47 (n=4)]  panstwaMiasta[b=6 q=1 p=0 (n=4)]  barbarzyncy[b=0 q=0 p=0 (n=1)]  gracz[b=1 q=0 p=0 (n=1)]
+  tura  39  duzeAI[b=13 q=10 p=113 (n=4)]  panstwaMiasta[b=6 q=1 p=0 (n=4)]  barbarzyncy[b=0 q=0 p=0 (n=1)]  gracz[b=1 q=0 p=0 (n=1)]
+  tura  40  duzeAI[b=15 q=12 p=91 (n=4)]  panstwaMiasta[b=6 q=1 p=0 (n=4)]  barbarzyncy[b=0 q=0 p=0 (n=1)]  gracz[b=1 q=0 p=0 (n=1)]
+  tura  41  duzeAI[b=19 q=8 p=72 (n=4)]  panstwaMiasta[b=6 q=1 p=0 (n=4)]  barbarzyncy[b=0 q=0 p=0 (n=1)]  gracz[b=1 q=0 p=0 (n=1)]
+  tura  42  duzeAI[b=22 q=5 p=111 (n=4)]  panstwaMiasta[b=6 q=1 p=0 (n=4)]  barbarzyncy[b=0 q=0 p=0 (n=1)]  gracz[b=1 q=0 p=0 (n=1)]
+  tura  43  duzeAI[b=25 q=4 p=46 (n=4)]  panstwaMiasta[b=6 q=2 p=13 (n=4)]  barbarzyncy[b=0 q=0 p=0 (n=1)]  gracz[b=1 q=0 p=0 (n=1)]
+  tura  44  duzeAI[b=29 q=4 p=0 (n=4)]  panstwaMiasta[b=7 q=1 p=0 (n=4)]  barbarzyncy[b=0 q=0 p=0 (n=1)]  gracz[b=1 q=0 p=0 (n=1)]
+  tura  45  duzeAI[b=32 q=4 p=7 (n=4)]  panstwaMiasta[b=7 q=1 p=0 (n=4)]  barbarzyncy[b=0 q=0 p=0 (n=1)]  gracz[b=1 q=0 p=0 (n=1)]
+  tura  46  duzeAI[b=35 q=4 p=15 (n=4)]  panstwaMiasta[b=7 q=1 p=0 (n=4)]  barbarzyncy[b=0 q=0 p=0 (n=1)]  gracz[b=1 q=0 p=0 (n=1)]
+  FIX PODSUMOWANIE po 45 turach: duzeAI=35 panstwaMiasta=7 barbarzyncy=0 gracz=1
+  FIX ROZKLAD per miasto (dlugo trzymane miasta duzego AI):
+    city6 "Cusco" owner=4 tryb=zrownowazone wiek=45 budynki=11
+    city7 "Machu Picchu" owner=4 tryb=zrownowazone wiek=45 budynki=10
+    city8 "Ollantaytambo" owner=4 tryb=zrownowazone wiek=45 budynki=11
+    city9 "Ateny" owner=8 tryb=zrownowazone wiek=45 budynki=3
+  FIX POKRYCIE (miasta duzego AI w wieku >=15 tur): 4/4 ma >=1 budynek
+  FIX WCZYTANIE ZAPISU (legacy) w turze 13: duzeAI=0 panstwaMiasta=5 -> na koncu duzeAI=35 panstwaMiasta=7 | tryb miast AI po wczytaniu: ["zrownowazone"]
+[ai-buduje-budynki-test] domyślny Chromium niedostępny, fallback na /opt/pw-browsers/chromium-1194/chrome-linux/chrome
+
+--- MUT-A: budynki (b=cityBuilt, q=kolejka, p=postep Pracy) per tura ---
+  tura   2  duzeAI[b=0 q=0 p=0 (n=2)]  panstwaMiasta[b=0 q=0 p=0 (n=6)]  barbarzyncy[b=0 q=0 p=0 (n=1)]  gracz[b=0 q=0 p=0 (n=1)]
+  tura   3  duzeAI[b=0 q=0 p=0 (n=2)]  panstwaMiasta[b=0 q=0 p=0 (n=6)]  barbarzyncy[b=0 q=0 p=0 (n=1)]  gracz[b=0 q=0 p=0 (n=1)]
+  tura   4  duzeAI[b=0 q=0 p=0 (n=2)]  panstwaMiasta[b=0 q=0 p=0 (n=6)]  barbarzyncy[b=0 q=0 p=0 (n=1)]  gracz[b=0 q=0 p=0 (n=1)]
+  tura   5  duzeAI[b=0 q=0 p=0 (n=2)]  panstwaMiasta[b=0 q=0 p=0 (n=6)]  barbarzyncy[b=0 q=0 p=0 (n=1)]  gracz[b=0 q=0 p=0 (n=1)]
+  tura   6  duzeAI[b=0 q=0 p=0 (n=2)]  panstwaMiasta[b=0 q=0 p=0 (n=6)]  barbarzyncy[b=0 q=0 p=0 (n=1)]  gracz[b=0 q=0 p=0 (n=1)]
+  tura   7  duzeAI[b=0 q=0 p=0 (n=2)]  panstwaMiasta[b=0 q=0 p=0 (n=6)]  barbarzyncy[b=0 q=0 p=0 (n=1)]  gracz[b=0 q=0 p=0 (n=1)]
+  tura   8  duzeAI[b=0 q=0 p=0 (n=2)]  panstwaMiasta[b=0 q=0 p=0 (n=6)]  barbarzyncy[b=0 q=0 p=0 (n=1)]  gracz[b=0 q=0 p=0 (n=1)]
+  tura   9  duzeAI[b=0 q=0 p=0 (n=2)]  panstwaMiasta[b=0 q=0 p=0 (n=6)]  barbarzyncy[b=0 q=0 p=0 (n=1)]  gracz[b=0 q=0 p=0 (n=1)]
+  tura  10  duzeAI[b=0 q=0 p=0 (n=2)]  panstwaMiasta[b=0 q=0 p=0 (n=6)]  barbarzyncy[b=0 q=0 p=0 (n=1)]  gracz[b=0 q=0 p=0 (n=1)]
+  tura  11  duzeAI[b=0 q=0 p=0 (n=2)]  panstwaMiasta[b=0 q=0 p=0 (n=6)]  barbarzyncy[b=0 q=0 p=0 (n=1)]  gracz[b=0 q=0 p=0 (n=1)]
+  tura  12  duzeAI[b=0 q=0 p=0 (n=2)]  panstwaMiasta[b=0 q=0 p=0 (n=6)]  barbarzyncy[b=0 q=0 p=0 (n=1)]  gracz[b=0 q=0 p=0 (n=1)]
+  tura  13  duzeAI[b=0 q=0 p=0 (n=2)]  panstwaMiasta[b=0 q=0 p=0 (n=6)]  barbarzyncy[b=0 q=0 p=0 (n=1)]  gracz[b=0 q=0 p=0 (n=1)]
+  tura  14  duzeAI[b=0 q=0 p=0 (n=2)]  panstwaMiasta[b=0 q=0 p=0 (n=6)]  barbarzyncy[b=0 q=0 p=0 (n=1)]  gracz[b=0 q=0 p=0 (n=1)]
+  tura  15  duzeAI[b=0 q=0 p=0 (n=2)]  panstwaMiasta[b=0 q=0 p=0 (n=6)]  barbarzyncy[b=0 q=0 p=0 (n=1)]  gracz[b=0 q=0 p=0 (n=1)]
+  tura  16  duzeAI[b=0 q=0 p=0 (n=2)]  panstwaMiasta[b=0 q=0 p=0 (n=6)]  barbarzyncy[b=0 q=0 p=0 (n=1)]  gracz[b=0 q=0 p=0 (n=1)]
+  tura  17  duzeAI[b=0 q=0 p=0 (n=2)]  panstwaMiasta[b=0 q=0 p=0 (n=6)]  barbarzyncy[b=0 q=0 p=0 (n=1)]  gracz[b=0 q=0 p=0 (n=1)]
+  tura  18  duzeAI[b=0 q=0 p=0 (n=2)]  panstwaMiasta[b=0 q=0 p=0 (n=6)]  barbarzyncy[b=0 q=0 p=0 (n=1)]  gracz[b=0 q=0 p=0 (n=1)]
+  tura  19  duzeAI[b=0 q=1 p=0 (n=2)]  panstwaMiasta[b=0 q=0 p=0 (n=6)]  barbarzyncy[b=0 q=0 p=0 (n=1)]  gracz[b=0 q=0 p=0 (n=1)]
+  tura  20  duzeAI[b=0 q=1 p=3 (n=2)]  panstwaMiasta[b=0 q=1 p=0 (n=6)]  barbarzyncy[b=0 q=0 p=0 (n=1)]  gracz[b=0 q=0 p=0 (n=1)]
+  tura  21  duzeAI[b=0 q=1 p=7 (n=2)]  panstwaMiasta[b=0 q=1 p=8 (n=6)]  barbarzyncy[b=0 q=0 p=0 (n=1)]  gracz[b=0 q=0 p=0 (n=1)]
+  tura  22  duzeAI[b=0 q=3 p=27 (n=4)]  panstwaMiasta[b=0 q=0 p=0 (n=4)]  barbarzyncy[b=0 q=0 p=0 (n=1)]  gracz[b=0 q=0 p=0 (n=1)]
+  tura  23  duzeAI[b=0 q=4 p=40 (n=4)]  panstwaMiasta[b=0 q=0 p=0 (n=4)]  barbarzyncy[b=0 q=0 p=0 (n=1)]  gracz[b=0 q=0 p=0 (n=1)]
+  tura  24  duzeAI[b=0 q=4 p=54 (n=4)]  panstwaMiasta[b=0 q=0 p=0 (n=4)]  barbarzyncy[b=0 q=0 p=0 (n=1)]  gracz[b=0 q=0 p=0 (n=1)]
+  tura  25  duzeAI[b=1 q=3 p=29 (n=4)]  panstwaMiasta[b=0 q=0 p=0 (n=4)]  barbarzyncy[b=0 q=0 p=0 (n=1)]  gracz[b=0 q=0 p=0 (n=1)]
+  tura  26  duzeAI[b=2 q=3 p=23 (n=4)]  panstwaMiasta[b=0 q=0 p=0 (n=4)]  barbarzyncy[b=0 q=0 p=0 (n=1)]  gracz[b=0 q=0 p=0 (n=1)]
+  tura  27  duzeAI[b=2 q=3 p=29 (n=4)]  panstwaMiasta[b=0 q=0 p=0 (n=4)]  barbarzyncy[b=0 q=0 p=0 (n=1)]  gracz[b=0 q=0 p=0 (n=1)]
+  tura  28  duzeAI[b=2 q=3 p=35 (n=4)]  panstwaMiasta[b=0 q=0 p=0 (n=4)]  barbarzyncy[b=0 q=0 p=0 (n=1)]  gracz[b=0 q=0 p=0 (n=1)]
+  tura  29  duzeAI[b=2 q=3 p=42 (n=4)]  panstwaMiasta[b=0 q=0 p=0 (n=4)]  barbarzyncy[b=0 q=0 p=0 (n=1)]  gracz[b=0 q=0 p=0 (n=1)]
+  tura  30  duzeAI[b=3 q=2 p=10 (n=4)]  panstwaMiasta[b=0 q=0 p=0 (n=4)]  barbarzyncy[b=0 q=0 p=0 (n=1)]  gracz[b=0 q=0 p=0 (n=1)]
+  tura  31  duzeAI[b=3 q=2 p=17 (n=4)]  panstwaMiasta[b=0 q=0 p=0 (n=4)]  barbarzyncy[b=0 q=0 p=0 (n=1)]  gracz[b=0 q=0 p=0 (n=1)]
+  tura  32  duzeAI[b=3 q=2 p=26 (n=4)]  panstwaMiasta[b=0 q=0 p=0 (n=4)]  barbarzyncy[b=0 q=0 p=0 (n=1)]  gracz[b=0 q=0 p=0 (n=1)]
+  tura  33  duzeAI[b=4 q=1 p=15 (n=4)]  panstwaMiasta[b=0 q=0 p=0 (n=4)]  barbarzyncy[b=0 q=0 p=0 (n=1)]  gracz[b=0 q=0 p=0 (n=1)]
+  tura  34  duzeAI[b=4 q=1 p=18 (n=4)]  panstwaMiasta[b=0 q=0 p=0 (n=4)]  barbarzyncy[b=0 q=0 p=0 (n=1)]  gracz[b=0 q=0 p=0 (n=1)]
+  tura  35  duzeAI[b=4 q=1 p=20 (n=4)]  panstwaMiasta[b=0 q=0 p=0 (n=4)]  barbarzyncy[b=0 q=0 p=0 (n=1)]  gracz[b=0 q=0 p=0 (n=1)]
+  tura  36  duzeAI[b=4 q=4 p=22 (n=4)]  panstwaMiasta[b=0 q=0 p=0 (n=4)]  barbarzyncy[b=0 q=0 p=0 (n=1)]  gracz[b=0 q=0 p=0 (n=1)]
+  tura  37  duzeAI[b=4 q=7 p=65 (n=4)]  panstwaMiasta[b=0 q=0 p=0 (n=4)]  barbarzyncy[b=0 q=0 p=0 (n=1)]  gracz[b=0 q=0 p=0 (n=1)]
+  tura  38  duzeAI[b=7 q=7 p=56 (n=4)]  panstwaMiasta[b=0 q=0 p=0 (n=4)]  barbarzyncy[b=0 q=0 p=0 (n=1)]  gracz[b=0 q=0 p=0 (n=1)]
+  tura  39  duzeAI[b=10 q=6 p=50 (n=4)]  panstwaMiasta[b=0 q=1 p=0 (n=4)]  barbarzyncy[b=0 q=0 p=0 (n=1)]  gracz[b=0 q=0 p=0 (n=1)]
+  tura  40  duzeAI[b=13 q=3 p=54 (n=4)]  panstwaMiasta[b=0 q=1 p=11 (n=4)]  barbarzyncy[b=0 q=0 p=0 (n=1)]  gracz[b=0 q=0 p=0 (n=1)]
+  tura  41  duzeAI[b=15 q=1 p=33 (n=4)]  panstwaMiasta[b=0 q=1 p=24 (n=4)]  barbarzyncy[b=0 q=0 p=0 (n=1)]  gracz[b=0 q=0 p=0 (n=1)]
+  tura  42  duzeAI[b=15 q=3 p=35 (n=4)]  panstwaMiasta[b=1 q=1 p=0 (n=4)]  barbarzyncy[b=0 q=0 p=0 (n=1)]  gracz[b=0 q=0 p=0 (n=1)]
+  tura  43  duzeAI[b=15 q=4 p=91 (n=4)]  panstwaMiasta[b=1 q=1 p=9 (n=4)]  barbarzyncy[b=0 q=0 p=0 (n=1)]  gracz[b=0 q=0 p=0 (n=1)]
+  tura  44  duzeAI[b=17 q=2 p=69 (n=4)]  panstwaMiasta[b=1 q=1 p=20 (n=4)]  barbarzyncy[b=0 q=0 p=0 (n=1)]  gracz[b=0 q=0 p=0 (n=1)]
+  tura  45  duzeAI[b=19 q=0 p=0 (n=4)]  panstwaMiasta[b=1 q=1 p=31 (n=4)]  barbarzyncy[b=0 q=0 p=0 (n=1)]  gracz[b=0 q=0 p=0 (n=1)]
+  tura  46  duzeAI[b=19 q=0 p=0 (n=4)]  panstwaMiasta[b=2 q=0 p=0 (n=4)]  barbarzyncy[b=0 q=0 p=0 (n=1)]  gracz[b=0 q=0 p=0 (n=1)]
+  MUT-A PODSUMOWANIE po 45 turach: duzeAI=19 panstwaMiasta=2 barbarzyncy=0 gracz=0
+  MUT-A ROZKLAD per miasto (dlugo trzymane miasta duzego AI):
+    city6 "Cusco" owner=4 tryb=reczny wiek=45 budynki=6
+    city7 "Machu Picchu" owner=4 tryb=reczny wiek=45 budynki=7
+    city8 "Ollantaytambo" owner=4 tryb=reczny wiek=45 budynki=5
+    city9 "Ateny" owner=8 tryb=reczny wiek=45 budynki=1
+  MUT-A POKRYCIE (miasta duzego AI w wieku >=15 tur): 4/4 ma >=1 budynek
+  MUT-A WCZYTANIE ZAPISU (legacy) w turze 13: duzeAI=0 panstwaMiasta=0 -> na koncu duzeAI=19 panstwaMiasta=2 | tryb miast AI po wczytaniu: ["reczny"]
+[ai-buduje-budynki-test] domyślny Chromium niedostępny, fallback na /opt/pw-browsers/chromium-1194/chrome-linux/chrome
+
+--- MUT-B: budynki (b=cityBuilt, q=kolejka, p=postep Pracy) per tura ---
+  tura   2  duzeAI[b=0 q=2 p=7 (n=2)]  panstwaMiasta[b=0 q=6 p=20 (n=6)]  barbarzyncy[b=0 q=1 p=3 (n=1)]  gracz[b=0 q=1 p=4 (n=1)]
+  tura   3  duzeAI[b=0 q=2 p=13 (n=2)]  panstwaMiasta[b=0 q=6 p=40 (n=6)]  barbarzyncy[b=0 q=1 p=6 (n=1)]  gracz[b=0 q=1 p=8 (n=1)]
+  tura   4  duzeAI[b=0 q=2 p=19 (n=2)]  panstwaMiasta[b=0 q=6 p=60 (n=6)]  barbarzyncy[b=0 q=1 p=9 (n=1)]  gracz[b=0 q=1 p=12 (n=1)]
+  tura   5  duzeAI[b=0 q=2 p=24 (n=2)]  panstwaMiasta[b=0 q=6 p=80 (n=6)]  barbarzyncy[b=0 q=1 p=12 (n=1)]  gracz[b=0 q=1 p=16 (n=1)]
+  tura   6  duzeAI[b=0 q=2 p=30 (n=2)]  panstwaMiasta[b=0 q=6 p=100 (n=6)]  barbarzyncy[b=0 q=1 p=15 (n=1)]  gracz[b=0 q=1 p=20 (n=1)]
+  tura   7  duzeAI[b=0 q=2 p=35 (n=2)]  panstwaMiasta[b=0 q=6 p=120 (n=6)]  barbarzyncy[b=0 q=1 p=17 (n=1)]  gracz[b=0 q=1 p=24 (n=1)]
+  tura   8  duzeAI[b=0 q=2 p=41 (n=2)]  panstwaMiasta[b=0 q=6 p=140 (n=6)]  barbarzyncy[b=0 q=1 p=19 (n=1)]  gracz[b=0 q=1 p=28 (n=1)]
+  tura   9  duzeAI[b=0 q=2 p=46 (n=2)]  panstwaMiasta[b=1 q=5 p=132 (n=6)]  barbarzyncy[b=0 q=1 p=21 (n=1)]  gracz[b=1 q=0 p=0 (n=1)]
+  tura  10  duzeAI[b=0 q=2 p=52 (n=2)]  panstwaMiasta[b=1 q=5 p=152 (n=6)]  barbarzyncy[b=0 q=1 p=23 (n=1)]  gracz[b=1 q=0 p=0 (n=1)]
+  tura  11  duzeAI[b=0 q=2 p=57 (n=2)]  panstwaMiasta[b=3 q=3 p=92 (n=6)]  barbarzyncy[b=0 q=1 p=25 (n=1)]  gracz[b=1 q=0 p=0 (n=1)]
+  tura  12  duzeAI[b=0 q=2 p=63 (n=2)]  panstwaMiasta[b=5 q=1 p=22 (n=6)]  barbarzyncy[b=0 q=1 p=27 (n=1)]  gracz[b=1 q=0 p=0 (n=1)]
+  tura  13  duzeAI[b=0 q=2 p=68 (n=2)]  panstwaMiasta[b=5 q=1 p=24 (n=6)]  barbarzyncy[b=0 q=1 p=29 (n=1)]  gracz[b=1 q=0 p=0 (n=1)]
+  tura  14  duzeAI[b=1 q=1 p=31 (n=2)]  panstwaMiasta[b=5 q=1 p=28 (n=6)]  barbarzyncy[b=0 q=1 p=31 (n=1)]  gracz[b=1 q=0 p=0 (n=1)]
+  tura  15  duzeAI[b=1 q=1 p=33 (n=2)]  panstwaMiasta[b=6 q=0 p=0 (n=6)]  barbarzyncy[b=0 q=1 p=33 (n=1)]  gracz[b=1 q=0 p=0 (n=1)]
+  tura  16  duzeAI[b=1 q=1 p=35 (n=2)]  panstwaMiasta[b=6 q=0 p=0 (n=6)]  barbarzyncy[b=0 q=1 p=35 (n=1)]  gracz[b=1 q=0 p=0 (n=1)]
+  tura  17  duzeAI[b=1 q=1 p=37 (n=2)]  panstwaMiasta[b=6 q=0 p=0 (n=6)]  barbarzyncy[b=0 q=1 p=37 (n=1)]  gracz[b=1 q=0 p=0 (n=1)]
+  tura  18  duzeAI[b=1 q=1 p=40 (n=2)]  panstwaMiasta[b=6 q=0 p=0 (n=6)]  barbarzyncy[b=0 q=1 p=39 (n=1)]  gracz[b=1 q=0 p=0 (n=1)]
+  tura  19  duzeAI[b=2 q=0 p=0 (n=2)]  panstwaMiasta[b=6 q=0 p=0 (n=6)]  barbarzyncy[b=1 q=0 p=0 (n=1)]  gracz[b=1 q=0 p=0 (n=1)]
+  tura  20  duzeAI[b=2 q=0 p=0 (n=2)]  panstwaMiasta[b=6 q=0 p=0 (n=6)]  barbarzyncy[b=1 q=0 p=0 (n=1)]  gracz[b=1 q=0 p=0 (n=1)]
+  tura  21  duzeAI[b=2 q=0 p=0 (n=2)]  panstwaMiasta[b=6 q=0 p=0 (n=6)]  barbarzyncy[b=1 q=0 p=0 (n=1)]  gracz[b=1 q=0 p=0 (n=1)]
+  tura  22  duzeAI[b=4 q=1 p=0 (n=4)]  panstwaMiasta[b=4 q=0 p=0 (n=4)]  barbarzyncy[b=1 q=0 p=0 (n=1)]  gracz[b=1 q=0 p=0 (n=1)]
+  tura  23  duzeAI[b=4 q=1 p=3 (n=4)]  panstwaMiasta[b=4 q=0 p=0 (n=4)]  barbarzyncy[b=1 q=0 p=0 (n=1)]  gracz[b=1 q=0 p=0 (n=1)]
+  tura  24  duzeAI[b=4 q=1 p=7 (n=4)]  panstwaMiasta[b=4 q=0 p=0 (n=4)]  barbarzyncy[b=1 q=0 p=0 (n=1)]  gracz[b=1 q=0 p=0 (n=1)]
+  tura  25  duzeAI[b=4 q=1 p=11 (n=4)]  panstwaMiasta[b=4 q=0 p=0 (n=4)]  barbarzyncy[b=1 q=0 p=0 (n=1)]  gracz[b=1 q=0 p=0 (n=1)]
+  tura  26  duzeAI[b=4 q=1 p=15 (n=4)]  panstwaMiasta[b=4 q=0 p=0 (n=4)]  barbarzyncy[b=1 q=0 p=0 (n=1)]  gracz[b=1 q=0 p=0 (n=1)]
+  tura  27  duzeAI[b=5 q=0 p=0 (n=4)]  panstwaMiasta[b=4 q=0 p=0 (n=4)]  barbarzyncy[b=1 q=0 p=0 (n=1)]  gracz[b=1 q=0 p=0 (n=1)]
+  tura  28  duzeAI[b=5 q=0 p=0 (n=4)]  panstwaMiasta[b=4 q=0 p=0 (n=4)]  barbarzyncy[b=1 q=0 p=0 (n=1)]  gracz[b=1 q=0 p=0 (n=1)]
+  tura  29  duzeAI[b=5 q=0 p=0 (n=4)]  panstwaMiasta[b=4 q=0 p=0 (n=4)]  barbarzyncy[b=1 q=0 p=0 (n=1)]  gracz[b=1 q=0 p=0 (n=1)]
+  tura  30  duzeAI[b=6 q=3 p=23 (n=4)]  panstwaMiasta[b=4 q=0 p=0 (n=4)]  barbarzyncy[b=1 q=0 p=0 (n=1)]  gracz[b=1 q=0 p=0 (n=1)]
+  tura  31  duzeAI[b=9 q=3 p=0 (n=4)]  panstwaMiasta[b=4 q=0 p=0 (n=4)]  barbarzyncy[b=1 q=0 p=0 (n=1)]  gracz[b=1 q=0 p=0 (n=1)]
+  tura  32  duzeAI[b=9 q=3 p=46 (n=4)]  panstwaMiasta[b=4 q=0 p=0 (n=4)]  barbarzyncy[b=1 q=0 p=0 (n=1)]  gracz[b=1 q=0 p=0 (n=1)]
+  tura  33  duzeAI[b=10 q=3 p=0 (n=4)]  panstwaMiasta[b=4 q=0 p=0 (n=4)]  barbarzyncy[b=1 q=0 p=0 (n=1)]  gracz[b=1 q=0 p=0 (n=1)]
+  tura  34  duzeAI[b=10 q=3 p=50 (n=4)]  panstwaMiasta[b=4 q=0 p=0 (n=4)]  barbarzyncy[b=1 q=0 p=0 (n=1)]  gracz[b=1 q=0 p=0 (n=1)]
+  tura  35  duzeAI[b=10 q=3 p=0 (n=4)]  panstwaMiasta[b=5 q=1 p=0 (n=4)]  barbarzyncy[b=1 q=0 p=0 (n=1)]  gracz[b=1 q=0 p=0 (n=1)]
+  tura  36  duzeAI[b=10 q=6 p=52 (n=4)]  panstwaMiasta[b=6 q=1 p=0 (n=4)]  barbarzyncy[b=1 q=0 p=0 (n=1)]  gracz[b=1 q=0 p=0 (n=1)]
+  tura  37  duzeAI[b=10 q=6 p=43 (n=4)]  panstwaMiasta[b=6 q=1 p=0 (n=4)]  barbarzyncy[b=1 q=0 p=0 (n=1)]  gracz[b=1 q=0 p=0 (n=1)]
+  tura  38  duzeAI[b=13 q=7 p=47 (n=4)]  panstwaMiasta[b=6 q=1 p=0 (n=4)]  barbarzyncy[b=1 q=0 p=0 (n=1)]  gracz[b=1 q=0 p=0 (n=1)]
+  tura  39  duzeAI[b=13 q=10 p=113 (n=4)]  panstwaMiasta[b=6 q=1 p=0 (n=4)]  barbarzyncy[b=1 q=0 p=0 (n=1)]  gracz[b=1 q=0 p=0 (n=1)]
+  tura  40  duzeAI[b=15 q=12 p=91 (n=4)]  panstwaMiasta[b=6 q=1 p=0 (n=4)]  barbarzyncy[b=1 q=0 p=0 (n=1)]  gracz[b=1 q=0 p=0 (n=1)]
+  tura  41  duzeAI[b=19 q=8 p=72 (n=4)]  panstwaMiasta[b=6 q=1 p=0 (n=4)]  barbarzyncy[b=1 q=0 p=0 (n=1)]  gracz[b=1 q=0 p=0 (n=1)]
+  tura  42  duzeAI[b=22 q=5 p=111 (n=4)]  panstwaMiasta[b=6 q=1 p=0 (n=4)]  barbarzyncy[b=1 q=0 p=0 (n=1)]  gracz[b=1 q=0 p=0 (n=1)]
+  tura  43  duzeAI[b=25 q=4 p=46 (n=4)]  panstwaMiasta[b=6 q=2 p=13 (n=4)]  barbarzyncy[b=1 q=0 p=0 (n=1)]  gracz[b=1 q=0 p=0 (n=1)]
+  tura  44  duzeAI[b=29 q=4 p=0 (n=4)]  panstwaMiasta[b=7 q=1 p=0 (n=4)]  barbarzyncy[b=1 q=0 p=0 (n=1)]  gracz[b=1 q=0 p=0 (n=1)]
+  tura  45  duzeAI[b=32 q=4 p=7 (n=4)]  panstwaMiasta[b=7 q=1 p=0 (n=4)]  barbarzyncy[b=1 q=0 p=0 (n=1)]  gracz[b=1 q=0 p=0 (n=1)]
+  tura  46  duzeAI[b=35 q=4 p=15 (n=4)]  panstwaMiasta[b=7 q=1 p=0 (n=4)]  barbarzyncy[b=1 q=0 p=0 (n=1)]  gracz[b=1 q=0 p=0 (n=1)]
+  MUT-B PODSUMOWANIE po 45 turach: duzeAI=35 panstwaMiasta=7 barbarzyncy=1 gracz=1
+  MUT-B ROZKLAD per miasto (dlugo trzymane miasta duzego AI):
+    city6 "Cusco" owner=4 tryb=zrownowazone wiek=45 budynki=11
+    city7 "Machu Picchu" owner=4 tryb=zrownowazone wiek=45 budynki=10
+    city8 "Ollantaytambo" owner=4 tryb=zrownowazone wiek=45 budynki=11
+    city9 "Ateny" owner=8 tryb=zrownowazone wiek=45 budynki=3
+  MUT-B POKRYCIE (miasta duzego AI w wieku >=15 tur): 4/4 ma >=1 budynek
+  MUT-B WCZYTANIE ZAPISU (legacy) w turze 13: duzeAI=0 panstwaMiasta=5 -> na koncu duzeAI=35 panstwaMiasta=7 | tryb miast AI po wczytaniu: ["zrownowazone"]
+[ai-buduje-budynki-test] domyślny Chromium niedostępny, fallback na /opt/pw-browsers/chromium-1194/chrome-linux/chrome
+
+--- MUT-C: budynki (b=cityBuilt, q=kolejka, p=postep Pracy) per tura ---
+  tura   2  duzeAI[b=0 q=2 p=7 (n=2)]  panstwaMiasta[b=0 q=6 p=20 (n=6)]  barbarzyncy[b=0 q=0 p=0 (n=1)]  gracz[b=0 q=1 p=4 (n=1)]
+  tura   3  duzeAI[b=0 q=2 p=13 (n=2)]  panstwaMiasta[b=0 q=6 p=40 (n=6)]  barbarzyncy[b=0 q=0 p=0 (n=1)]  gracz[b=0 q=1 p=8 (n=1)]
+  tura   4  duzeAI[b=0 q=2 p=19 (n=2)]  panstwaMiasta[b=0 q=6 p=60 (n=6)]  barbarzyncy[b=0 q=0 p=0 (n=1)]  gracz[b=0 q=1 p=12 (n=1)]
+  tura   5  duzeAI[b=0 q=2 p=24 (n=2)]  panstwaMiasta[b=0 q=6 p=80 (n=6)]  barbarzyncy[b=0 q=0 p=0 (n=1)]  gracz[b=0 q=1 p=16 (n=1)]
+  tura   6  duzeAI[b=0 q=2 p=30 (n=2)]  panstwaMiasta[b=0 q=6 p=100 (n=6)]  barbarzyncy[b=0 q=0 p=0 (n=1)]  gracz[b=0 q=1 p=20 (n=1)]
+  tura   7  duzeAI[b=0 q=2 p=35 (n=2)]  panstwaMiasta[b=0 q=6 p=120 (n=6)]  barbarzyncy[b=0 q=0 p=0 (n=1)]  gracz[b=0 q=1 p=24 (n=1)]
+  tura   8  duzeAI[b=0 q=2 p=41 (n=2)]  panstwaMiasta[b=0 q=6 p=140 (n=6)]  barbarzyncy[b=0 q=0 p=0 (n=1)]  gracz[b=0 q=1 p=28 (n=1)]
+  tura   9  duzeAI[b=0 q=2 p=46 (n=2)]  panstwaMiasta[b=1 q=5 p=132 (n=6)]  barbarzyncy[b=0 q=0 p=0 (n=1)]  gracz[b=1 q=0 p=0 (n=1)]
+  tura  10  duzeAI[b=0 q=2 p=52 (n=2)]  panstwaMiasta[b=1 q=5 p=152 (n=6)]  barbarzyncy[b=0 q=0 p=0 (n=1)]  gracz[b=1 q=0 p=0 (n=1)]
+  tura  11  duzeAI[b=0 q=2 p=57 (n=2)]  panstwaMiasta[b=3 q=3 p=92 (n=6)]  barbarzyncy[b=0 q=0 p=0 (n=1)]  gracz[b=1 q=0 p=0 (n=1)]
+  tura  12  duzeAI[b=0 q=2 p=63 (n=2)]  panstwaMiasta[b=5 q=1 p=22 (n=6)]  barbarzyncy[b=0 q=0 p=0 (n=1)]  gracz[b=1 q=0 p=0 (n=1)]
+  tura  13  duzeAI[b=0 q=2 p=68 (n=2)]  panstwaMiasta[b=5 q=1 p=24 (n=6)]  barbarzyncy[b=0 q=0 p=0 (n=1)]  gracz[b=1 q=0 p=0 (n=1)]
+  tura  14  duzeAI[b=1 q=1 p=31 (n=2)]  panstwaMiasta[b=5 q=1 p=28 (n=6)]  barbarzyncy[b=0 q=0 p=0 (n=1)]  gracz[b=1 q=0 p=0 (n=1)]
+  tura  15  duzeAI[b=1 q=1 p=33 (n=2)]  panstwaMiasta[b=6 q=0 p=0 (n=6)]  barbarzyncy[b=0 q=0 p=0 (n=1)]  gracz[b=1 q=0 p=0 (n=1)]
+  MUT-C PODSUMOWANIE po 14 turach: duzeAI=1 panstwaMiasta=6 barbarzyncy=0 gracz=1
+  MUT-C ROZKLAD per miasto (dlugo trzymane miasta duzego AI):
+  MUT-C POKRYCIE (miasta duzego AI w wieku >=15 tur): 0/0 ma >=1 budynek
+  MUT-C WCZYTANIE ZAPISU (legacy) w turze 13: duzeAI=0 panstwaMiasta=5 -> na koncu duzeAI=1 panstwaMiasta=6 | tryb miast AI po wczytaniu: ["zrownowazone"]
+
+=== ASERCJE ===
+  OK  W1: świat zawiera miasta dużego AI
+  OK  W2: świat zawiera miasta-państwa
+  OK  W3: miasto oddane barbarzyńcom istnieje i miało 0 budynków w chwili przejęcia
+  OK  A1: duże AI ma >0 budynków po 45 turach (wzrost cityBuilt w realnej pętli ekonomii)
+  OK  A1b: co najmniej jedno KONKRETNE miasto dużego AI ma >=1 wpis w cityBuilt
+  OK  A2: państwo-miasto ma >0 budynków po 45 turach (druga, niezależna ścieżka)
+  OK  A2b: co najmniej jedno KONKRETNE miasto-państwo ma >=1 wpis w cityBuilt
+  OK  A3-pre: miasto pozostało barbarzyńskie przez min. 5 tur (asercja niepusta)
+  OK  A3: miasto barbarzyńskie ma ZERO budynków w KAŻDEJ z 45 tur pod flagą barbarzyńców
+  OK  A3b: budowaTryb miasta barbarzyńskiego to 'reczny' w każdej turze
+  OK  A3c: barbarzyńcy mają ZERO budynków także PO wczytaniu zapisu (migracja ich nie podnosi)
+  OK  A4: miasto gracza po założeniu ma tryb AUTOMATYCZNY (ECHO: auto dla wszystkich właścicieli)
+  OK  A4b: w grze wczytanej ze STAREGO zapisu miasto zdobyte przez GRACZA dziedziczy 'reczny' (przyjęty skutek Decyzji 1 — gracz włącza automat sam)
+  OK  A4d: w NOWEJ partii (tura 0) GLOBALNY default budowy ownera 0 jest AUTOMATYCZNY — to wartość, którą seedCityOwnerDefaults daje miastu i przy założeniu, i przy PRZEJĘCIU
+  OK  A4d-b: w NOWEJ partii (tura 0) KAŻDY owner AI (id > 0) ma globalny default automatyczny, a KAŻDY owner ujemny (barbarzyńcy -1 / rebelianci -99) 'reczny'
+  OK  A4e: po roundtripie zapisu SPRZED naprawy GLOBALNY default ownera 0 to 'reczny' (Decyzja 1), ownerów AI automatyczny, ownerów ujemnych 'reczny' — A4b mierzy więc skutek decyzji, a nie przypadkowy stan
+  OK  A5: zdobyte miasto AI zachowuje wszystkie budynki sprzed przejęcia
+  OK  A6: miasto AI po przejęciu przez INNE AI ma tryb automatyczny, nie 'reczny'
+  OK  A7-pre: istnieją długo trzymane miasta dużego AI (asercja niepusta)
+  OK  A7: KAŻDE miasto dużego AI istniejące od startu gry ma >=1 wpis w cityBuilt (pokrycie 4/4)
+  OK  A8: po wczytaniu zapisu SPRZED naprawy miasta dużego AI mają tryb automatyczny
+  OK  A8b: po wczytaniu zapisu SPRZED naprawy miasta-państwa mają tryb automatyczny
+  OK  A9: po wczytaniu zapisu SPRZED naprawy AI DALEJ stawia budynki (realne tury 13 → 46)
+  OK  A10-pre: gracz ma po wczytaniu co najmniej jedno miasto BEZ pinu (asercja niepusta)
+  OK  A10: po roundtripie zapisu SPRZED naprawy owner 0 ZOSTAJE na 'reczny', a duże AI i miasta-państwa przechodzą na tryb automatyczny (ECHO „Tylko nowe partie")
+  OK  M1 (MUT-A = stan sprzed naprawy): duże AI stawia co najmniej 3 budynków MNIEJ niż po naprawie
+  OK  M2 (MUT-A): państwa-miasta stawiają co najmniej 3 budynków MNIEJ niż po naprawie
+  OK  M3 (MUT-A): budowaTryb miast AI to 'reczny' (odtworzony defekt zgłoszenia)
+  OK  M3b (MUT-A): po wczytaniu zapisu miasta AI ZOSTAJĄ na 'reczny' — migracja wczytania jest realnie nośna (zarzut 2)
+  OK  M4 (MUT-B, zdjęcie resetu globalnie): miasto barbarzyńskie DOSTAJE budynki — asercja A3 realnie czerwienieje, gwarancja zależy od gałęzi barbarzyńskiej
+  OK  M5 (MUT-B): budowaTryb miasta barbarzyńskiego przestaje być 'reczny' w KAŻDEJ turze (dowód, że mutacja zadziałała na obu nośnikach)
+  OK  M7 (MUT-C): bez linii pomijającej ownera 0 gracz PO WCZYTANIU starego zapisu wchodzi w tryb automatyczny — A10 realnie czerwienieje po cofnięciu tej jednej linii
+  OK  M7b (MUT-C): ta sama mutacja NIE rusza AI ani miast-państw (zmiana rundy 2 jest wąska — dotyczy wyłącznie ownera 0)
+ FAIL H1: zero błędów konsoli / pageerror w przebiegu FIX -- ["[Wojna wymuszona] DECISION_REQUIRED: brak niezablokowanej sojuszem pary/trójkąta dla ownerów [0] -- wszystkie istniejące pary zablokowane, lub brak jakiejkolwiek pary do dołączenia. Przydział pominięty tej tury (ponowna próba w kolejnej).","[Wojna wymuszona] DECISION_REQUIRED: brak niezablokowanej sojuszem pary/trójkąta dla ownerów [0] -- wszystkie istniejące pary zablokowane, lub brak jakiejkolwiek pary do dołączenia. Przydział pominięty tej tury (ponowna próba w kolejnej).","[Wojna wymuszona] DECISION_REQUIRED: brak niezablokowanej sojuszem pary/trójkąta dla ownerów [0] -- wszystkie istniejące pary zablokowane, lub brak jakiejkolwiek pary do dołączenia. Przydział pominięty tej tury (ponowna próba w kolejnej).","[Wojna wymuszona] DECISION_REQUIRED: brak niezablokowanej sojuszem pary/trójkąta dla ownerów [0] -- wszystkie istniejące pary zablokowane, lub brak jakiejkolwiek pary do dołączenia. Przydział pominięty tej tury (ponowna próba w kolejnej).","[Wojna wymuszona] DECISION_REQUIRED: brak niezablokowanej sojuszem pary/trójkąta dla ownerów [0] -- wszystkie istniejące pary zablokowane, lub brak jakiejkolwiek pary do dołączenia. Przydział pominięty tej tury (ponowna próba w kolejnej)."]
+ FAIL M6 (MUT-A): stan sprzed naprawy ZOSTAWIA co najmniej jedno długo trzymane miasto dużego AI z ZEREM budynków (objaw zgłoszenia), FIX żadnego — pokrycie 4/4 vs 4/4 -- {"mutA_zero":[],"fix_zero":[]}
+
+=== TABELA BUDYNKÓW PO 45 TURACH (suma cityBuilt) ===
+  wariant | duze AI | panstwa-miasta | barbarzyncy | gracz | pokrycie duzeAI
+  FIX     | 35 | 7 | 0 | 1 | 4/4
+  MUT-A   | 19 | 2 | 0 | 0 | 4/4
+  MUT-B   | 35 | 7 | 1 | 1 | 4/4
+  MUT-C   | (przebieg skrocony do 14 tur -- mierzy wylacznie snapshot wczytania)
+
+=== TRYB BUDOWY PO WCZYTANIU ZAPISU SPRZED NAPRAWY (roundtrip legacy) ===
+  FIX     | gracz(bez pinu)=["reczny"] duzeAI=["zrownowazone"] panstwaMiasta=["zrownowazone"]
+  MUT-C   | gracz(bez pinu)=["zrownowazone"] duzeAI=["zrownowazone"] panstwaMiasta=["zrownowazone"]
+
+[ai-buduje-budynki-test] PASS=40 FAIL=2
+EXIT=1
