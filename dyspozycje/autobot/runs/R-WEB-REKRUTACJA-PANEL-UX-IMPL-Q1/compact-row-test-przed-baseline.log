@@ -1,0 +1,55 @@
+[mode] BASELINE origin/main (oczekiwany FAIL K1-K3)
+[shot] /home/user/The-Game/.claude/worktrees/wf_0f6b5d81-ecb-1/dyspozycje/autobot/runs/R-WEB-REKRUTACJA-PANEL-UX-IMPL-Q1/zrzuty/przed-rekrutacja-340px.png 130 KB
+
+[340] {"panelWidth":340,"rowCount":13,"maxRowHeight":189.5,"first13Visible":3,"first13Truncated":11,"truncatedNames":["Wieża oblężnicza","Taran okuty","Katapulta","Rydwan mykeński","Rydwan (woły)","Konnica","Hieros Lochos (Święty Zastęp)","Falanga","Thorakites","Wojownik mykeński","Zwiadowca"],"hScroll":0,"rowWidth":294,"overflowers":["ptitle"]}
+PASS: (340) panel ma oczekiwaną szerokość z cityUxFrame (±2 px)
+PASS: (340) lista ma >= 13 wierszy
+FAIL: (340) K1: wysokość każdego wiersza <= 36 px — [171,171,183,190,171,190,183,183,183,171,171,183,114]
+PASS: (340) K4: brak poziomego przewijania; wiersze w liście, lista w panelu
+PASS: (340) K4: koszt i akcje mieszczą się w wierszu, Rekrutuj widoczny
+FAIL: (340) K5: jedna linia puli rekrutów nad listą, tekst nie powtarza się na kartach — {"poolCount":0,"poolVisible":false,"poolAboveList":false,"occurrences":13,"poolText":null}
+FAIL: (340) K5: każdy wiersz ma widoczny wskaźnik potrzebnych rekrutów z pełnym tooltipem — []
+FAIL: (340) K2: >= 12 z 13 pierwszych wierszy widocznych w całości pod blokiem Produkcji — {"first13Visible":3,"list":{"left":53.984375,"top":352.953125,"right":350.015625,"bottom":1057.546875,"width":296.03125,"height":704.59375}}
+FAIL: (340) K3: ucięte nazwy <= 2 z 13 — ["Wieża oblężnicza","Taran okuty","Katapulta","Rydwan mykeński","Rydwan (woły)","Konnica","Hieros Lochos (Święty Zastęp)","Falanga","Thorakites","Wojownik mykeński","Zwiadowca"]
+PASS: (340) zero pageerror/console.error
+FAIL: (340) K5: przy puli 1 tys. każdy wiersz z niedoborem pokazuje widoczny, czerwony „brak N” — {"shortRows":12,"bad":[]}
+PASS: (340) K5: wiersze bez niedoboru nie pokazują fałszywego braku
+FAIL: (340) przy braku rekrutów: K1 <= 36 px i brak poziomego przewijania — {"maxRowHeight":216.296875,"hScroll":[],"clipped":[]}
+PASS: (340) zero pageerror/console.error (brak rekrutów)
+[shot] /home/user/The-Game/.claude/worktrees/wf_0f6b5d81-ecb-1/dyspozycje/autobot/runs/R-WEB-REKRUTACJA-PANEL-UX-IMPL-Q1/zrzuty/przed-rekrutacja-307px.png 114 KB
+
+[307] {"panelWidth":307,"rowCount":13,"maxRowHeight":237.4,"first13Visible":3,"first13Truncated":13,"truncatedNames":["Wieża oblężnicza","Taran okuty","Katapulta","Rydwan mykeński","Rydwan (woły)","Konnica","Hieros Lochos (Święty Zastęp)","Falanga","Thorakites","Wojownik mykeński","Galera","Procarz","Zwiadowca"],"hScroll":0,"rowWidth":261,"overflowers":["ptitle"]}
+PASS: (307) panel ma oczekiwaną szerokość z cityUxFrame (±2 px)
+PASS: (307) lista ma >= 13 wierszy
+FAIL: (307) K1: wysokość każdego wiersza <= 36 px — [208,208,208,237,208,237,208,208,208,208,208,208,114]
+PASS: (307) K4: brak poziomego przewijania; wiersze w liście, lista w panelu
+PASS: (307) K4: koszt i akcje mieszczą się w wierszu, Rekrutuj widoczny
+FAIL: (307) K5: jedna linia puli rekrutów nad listą, tekst nie powtarza się na kartach — {"poolCount":0,"poolVisible":false,"poolAboveList":false,"occurrences":13,"poolText":null}
+FAIL: (307) K5: każdy wiersz ma widoczny wskaźnik potrzebnych rekrutów z pełnym tooltipem — []
+PASS: (307) zero pageerror/console.error
+FAIL: (307) K5: przy puli 1 tys. każdy wiersz z niedoborem pokazuje widoczny, czerwony „brak N” — {"shortRows":12,"bad":[]}
+PASS: (307) K5: wiersze bez niedoboru nie pokazują fałszywego braku
+FAIL: (307) przy braku rekrutów: K1 <= 36 px i brak poziomego przewijania — {"maxRowHeight":264.203125,"hScroll":[],"clipped":[]}
+PASS: (307) zero pageerror/console.error (brak rekrutów)
+[shot] /home/user/The-Game/.claude/worktrees/wf_0f6b5d81-ecb-1/dyspozycje/autobot/runs/R-WEB-REKRUTACJA-PANEL-UX-IMPL-Q1/zrzuty/przed-rekrutacja-280px.png 111 KB
+
+[280] {"panelWidth":280,"rowCount":13,"maxRowHeight":237.4,"first13Visible":3,"first13Truncated":13,"truncatedNames":["Wieża oblężnicza","Taran okuty","Katapulta","Rydwan mykeński","Rydwan (woły)","Konnica","Hieros Lochos (Święty Zastęp)","Falanga","Thorakites","Wojownik mykeński","Galera","Procarz","Zwiadowca"],"hScroll":0,"rowWidth":234,"overflowers":["ptitle"]}
+PASS: (280) panel ma oczekiwaną szerokość z cityUxFrame (±2 px)
+PASS: (280) lista ma >= 13 wierszy
+FAIL: (280) K1: wysokość każdego wiersza <= 36 px — [208,208,208,237,208,237,208,208,208,208,208,208,114]
+PASS: (280) K4: brak poziomego przewijania; wiersze w liście, lista w panelu
+FAIL: (280) K4: koszt i akcje mieszczą się w wierszu, Rekrutuj widoczny — [{"n":"Wieża oblężnicza","w":{"row":234,"text":0,"cost":0,"stock":0,"mp":49,"actions":196}},{"n":"Taran okuty","w":{"row":234,"text":0,"cost":0,"stock":0,"mp":49,"actions":196}},{"n":"Katapulta","w":{"row":234,"text":0,"cost":0,"stock":0,"mp":49,"actions":196}},{"n":"Rydwan mykeński","w":{"row":234,"text":0,"cost":0,"stock":0,"mp":49,"actions":196}},{"n":"Rydwan (woły)","w":{"row":234,"text":0,"cost":0,"stock":0,"mp":49,"actions":196}},{"n":"Konnica","w":{"row":234,"text":0,"cost":0,"stock":0,"mp":49,"actions":196}},{"n":"Hieros Lochos (Święty Zastęp)","w":{"row":234,"text":0,"cost":0,"stock":0,"mp":49,"actions":196}},{"n":"Falanga","w":{"row":234,"text":0,"cost":0,"stock":0,"mp":49,"actions":196}},{"n":"Thorakites","w":{"row":234,"text":0,"cost":0,"stock":0,"mp":49,"actions":196}},{"n":"Wojownik mykeński","w":{"row":234,"text":0,"cost":0,"stock":0,"mp":49,"actions":196}},{"n":"Galera","w":{"row":234,"text":0,"cost":0,"stock":0,"mp":49,"actions":196}},{"n":"Procarz","w":{"row":234,"text":0,"cost":0,"stock":0,"mp":49,"actions":196}},{"n":"Zwiadowca","w":{"row":234,"text":0,"cost":0,"stock":0,"mp":49,"actions":196}}]
+FAIL: (280) K5: jedna linia puli rekrutów nad listą, tekst nie powtarza się na kartach — {"poolCount":0,"poolVisible":false,"poolAboveList":false,"occurrences":13,"poolText":null}
+FAIL: (280) K5: każdy wiersz ma widoczny wskaźnik potrzebnych rekrutów z pełnym tooltipem — []
+PASS: (280) zero pageerror/console.error
+[shot] /home/user/The-Game/.claude/worktrees/wf_0f6b5d81-ecb-1/dyspozycje/autobot/runs/R-WEB-REKRUTACJA-PANEL-UX-IMPL-Q1/zrzuty/przed-rekrutacja-280px-brak-rekrutow.png 115 KB
+FAIL: (280) K5: przy puli 1 tys. każdy wiersz z niedoborem pokazuje widoczny, czerwony „brak N” — {"shortRows":12,"bad":[]}
+PASS: (280) K5: wiersze bez niedoboru nie pokazują fałszywego braku
+FAIL: (280) przy braku rekrutów: K1 <= 36 px i brak poziomego przewijania — {"maxRowHeight":264.203125,"hScroll":[],"clipped":[{"n":"Wieża oblężnicza","w":{"row":234,"text":0,"cost":0,"stock":0,"mp":51,"actions":196}},{"n":"Taran okuty","w":{"row":234,"text":0,"cost":0,"stock":0,"mp":51,"actions":196}},{"n":"Katapulta","w":{"row":234,"text":0,"cost":0,"stock":0,"mp":51,"actions":196}},{"n":"Rydwan mykeński","w":{"row":234,"text":0,"cost":0,"stock":0,"mp":51,"actions":196}},{"n":"Rydwan (woły)","w":{"row":234,"text":0,"cost":0,"stock":0,"mp":51,"actions":196}},{"n":"Konnica","w":{"row":234,"text":0,"cost":0,"stock":0,"mp":51,"actions":196}},{"n":"Hieros Lochos (Święty Zastęp)","w":{"row":234,"text":0,"cost":0,"stock":0,"mp":51,"actions":196}},{"n":"Falanga","w":{"row":234,"text":0,"cost":0,"stock":0,"mp":51,"actions":196}},{"n":"Thorakites","w":{"row":234,"text":0,"cost":0,"stock":0,"mp":51,"actions":196}},{"n":"Wojownik mykeński","w":{"row":234,"text":0,"cost":0,"stock":0,"mp":51,"actions":196}},{"n":"Galera","w":{"row":234,"text":0,"cost":0,"stock":0,"mp":51,"actions":196}},{"n":"Procarz","w":{"row":234,"text":0,"cost":0,"stock":0,"mp":51,"actions":196}},{"n":"Zwiadowca","w":{"row":234,"text":0,"cost":0,"stock":0,"mp":49,"actions":196}}]}
+PASS: (280) zero pageerror/console.error (brak rekrutów)
+
+[summary] {"280":{"panelWidth":280,"rowCount":13,"maxRowHeight":237.4,"first13Visible":3,"first13Truncated":13,"truncatedNames":["Wieża oblężnicza","Taran okuty","Katapulta","Rydwan mykeński","Rydwan (woły)","Konnica","Hieros Lochos (Święty Zastęp)","Falanga","Thorakites","Wojownik mykeński","Galera","Procarz","Zwiadowca"],"hScroll":0,"rowWidth":234,"overflowers":["ptitle"]},"307":{"panelWidth":307,"rowCount":13,"maxRowHeight":237.4,"first13Visible":3,"first13Truncated":13,"truncatedNames":["Wieża oblężnicza","Taran okuty","Katapulta","Rydwan mykeński","Rydwan (woły)","Konnica","Hieros Lochos (Święty Zastęp)","Falanga","Thorakites","Wojownik mykeński","Galera","Procarz","Zwiadowca"],"hScroll":0,"rowWidth":261,"overflowers":["ptitle"]},"340":{"panelWidth":340,"rowCount":13,"maxRowHeight":189.5,"first13Visible":3,"first13Truncated":11,"truncatedNames":["Wieża oblężnicza","Taran okuty","Katapulta","Rydwan mykeński","Rydwan (woły)","Konnica","Hieros Lochos (Święty Zastęp)","Falanga","Thorakites","Wojownik mykeński","Zwiadowca"],"hScroll":0,"rowWidth":294,"overflowers":["ptitle"]}}
+
+SUMMARY [BASELINE]: 20 pass, 18 fail
+[shots] /home/user/The-Game/.claude/worktrees/wf_0f6b5d81-ecb-1/dyspozycje/autobot/runs/R-WEB-REKRUTACJA-PANEL-UX-IMPL-Q1/zrzuty
+[baseline] K1/K2/K3 czerwone na origin/main: TAK (oczekiwane)
