@@ -1,0 +1,52 @@
+SHA256 poczatkowe: src/domain/mapgen/relief.rs=81b64994923ceb3f77340d765bb39e50e1655f792d83d034a99ac4a75a1d355d data/derived/mapgen-relief-a.json=25aba4016ef7a2b1437820f08a369a1329893536d66a07ec7a2040520bd7e753
+DRZEWO CZYSTE przed przebiegiem (git status --porcelain --untracked-files=no puste)
+   eq-dist-inside-square-zero: PRZYWROCONO git checkout OK; src/domain/mapgen/relief.rs:sha256=81b64994923ceb3f..=OK data/derived/mapgen-relief-a.json:sha256=25aba4016ef7a2b1..=OK; drzewo CZYSTE
+PRZEZYLA  eq-dist-inside-square-zero (135 s): wszystkie testy zielone
+   eq-dist-empty-keys-zero: PRZYWROCONO git checkout OK; src/domain/mapgen/relief.rs:sha256=81b64994923ceb3f..=OK data/derived/mapgen-relief-a.json:sha256=25aba4016ef7a2b1..=OK; drzewo CZYSTE
+PRZEZYLA  eq-dist-empty-keys-zero (129 s): wszystkie testy zielone
+   eq-partition-lower-clamp: PRZYWROCONO git checkout OK; src/domain/mapgen/relief.rs:sha256=81b64994923ceb3f..=OK data/derived/mapgen-relief-a.json:sha256=25aba4016ef7a2b1..=OK; drzewo CZYSTE
+PRZEZYLA  eq-partition-lower-clamp (145 s): wszystkie testy zielone
+   eq-apply-nonpositive-count-lt: PRZYWROCONO git checkout OK; src/domain/mapgen/relief.rs:sha256=81b64994923ceb3f..=OK data/derived/mapgen-relief-a.json:sha256=25aba4016ef7a2b1..=OK; drzewo CZYSTE
+PRZEZYLA  eq-apply-nonpositive-count-lt (137 s): wszystkie testy zielone
+   eq-apply-empty-keys-guard: PRZYWROCONO git checkout OK; src/domain/mapgen/relief.rs:sha256=81b64994923ceb3f..=OK data/derived/mapgen-relief-a.json:sha256=25aba4016ef7a2b1..=OK; drzewo CZYSTE
+PRZEZYLA  eq-apply-empty-keys-guard (130 s): wszystkie testy zielone
+   eq-pick-spread-count-le-to-lt: PRZYWROCONO git checkout OK; src/domain/mapgen/relief.rs:sha256=81b64994923ceb3f..=OK data/derived/mapgen-relief-a.json:sha256=25aba4016ef7a2b1..=OK; drzewo CZYSTE
+PRZEZYLA  eq-pick-spread-count-le-to-lt (129 s): wszystkie testy zielone
+   eq-force-guard-ge-to-gt: PRZYWROCONO git checkout OK; src/domain/mapgen/relief.rs:sha256=81b64994923ceb3f..=OK data/derived/mapgen-relief-a.json:sha256=25aba4016ef7a2b1..=OK; drzewo CZYSTE
+PRZEZYLA  eq-force-guard-ge-to-gt (134 s): wszystkie testy zielone
+   eq-force-third-branch-sort: PRZYWROCONO git checkout OK; src/domain/mapgen/relief.rs:sha256=81b64994923ceb3f..=OK data/derived/mapgen-relief-a.json:sha256=25aba4016ef7a2b1..=OK; drzewo CZYSTE
+PRZEZYLA  eq-force-third-branch-sort (147 s): wszystkie testy zielone
+   eq-cap-min-guard-dropped: PRZYWROCONO git checkout OK; src/domain/mapgen/relief.rs:sha256=81b64994923ceb3f..=OK data/derived/mapgen-relief-a.json:sha256=25aba4016ef7a2b1..=OK; drzewo CZYSTE
+PRZEZYLA  eq-cap-min-guard-dropped (138 s): wszystkie testy zielone
+   eq-ensure-never-breaks-early: PRZYWROCONO git checkout OK; src/domain/mapgen/relief.rs:sha256=81b64994923ceb3f..=OK data/derived/mapgen-relief-a.json:sha256=25aba4016ef7a2b1..=OK; drzewo CZYSTE
+PRZEZYLA  eq-ensure-never-breaks-early (144 s): wszystkie testy zielone
+   eq-assert-coverage-ge-to-gt: PRZYWROCONO git checkout OK; src/domain/mapgen/relief.rs:sha256=81b64994923ceb3f..=OK data/derived/mapgen-relief-a.json:sha256=25aba4016ef7a2b1..=OK; drzewo CZYSTE
+PRZEZYLA  eq-assert-coverage-ge-to-gt (156 s): wszystkie testy zielone
+   eq-tbl-guard-extra: PRZYWROCONO git checkout OK; src/domain/mapgen/relief.rs:sha256=81b64994923ceb3f..=OK data/derived/mapgen-relief-a.json:sha256=25aba4016ef7a2b1..=OK; drzewo CZYSTE
+WYKRYTA   eq-tbl-guard-extra [INNY TEST (celowany zielony)] (177 s): 1 testow FAILED: values_have_sane_shape
+   apply-iron-uses-copper-cell: PRZYWROCONO git checkout OK; src/domain/mapgen/relief.rs:sha256=81b64994923ceb3f..=OK data/derived/mapgen-relief-a.json:sha256=25aba4016ef7a2b1..=OK; drzewo CZYSTE
+PRZEZYLA  apply-iron-uses-copper-cell (166 s): wszystkie testy zielone
+   force-shallow-penalty-sign: PRZYWROCONO git checkout OK; src/domain/mapgen/relief.rs:sha256=81b64994923ceb3f..=OK data/derived/mapgen-relief-a.json:sha256=25aba4016ef7a2b1..=OK; drzewo CZYSTE
+PRZEZYLA  force-shallow-penalty-sign (170 s): wszystkie testy zielone
+   force-initial-ge-to-gt: PRZYWROCONO git checkout OK; src/domain/mapgen/relief.rs:sha256=81b64994923ceb3f..=OK data/derived/mapgen-relief-a.json:sha256=25aba4016ef7a2b1..=OK; drzewo CZYSTE
+PRZEZYLA  force-initial-ge-to-gt (183 s): wszystkie testy zielone
+   force-placed-not-recorded: PRZYWROCONO git checkout OK; src/domain/mapgen/relief.rs:sha256=81b64994923ceb3f..=OK data/derived/mapgen-relief-a.json:sha256=25aba4016ef7a2b1..=OK; drzewo CZYSTE
+PRZEZYLA  force-placed-not-recorded (165 s): wszystkie testy zielone
+   cap-clears-deposit-removed: PRZYWROCONO git checkout OK; src/domain/mapgen/relief.rs:sha256=81b64994923ceb3f..=OK data/derived/mapgen-relief-a.json:sha256=25aba4016ef7a2b1..=OK; drzewo CZYSTE
+PRZEZYLA  cap-clears-deposit-removed (157 s): wszystkie testy zielone
+   ensure-copper-uses-iron-size: PRZYWROCONO git checkout OK; src/domain/mapgen/relief.rs:sha256=81b64994923ceb3f..=OK data/derived/mapgen-relief-a.json:sha256=25aba4016ef7a2b1..=OK; drzewo CZYSTE
+PRZEZYLA  ensure-copper-uses-iron-size (200 s): wszystkie testy zielone
+   ensure-sort-reversed: PRZYWROCONO git checkout OK; src/domain/mapgen/relief.rs:sha256=81b64994923ceb3f..=OK data/derived/mapgen-relief-a.json:sha256=25aba4016ef7a2b1..=OK; drzewo CZYSTE
+PRZEZYLA  ensure-sort-reversed (214 s): wszystkie testy zielone
+   ensure-pass-not-incremented-twice: PRZYWROCONO git checkout OK; src/domain/mapgen/relief.rs:sha256=81b64994923ceb3f..=OK data/derived/mapgen-relief-a.json:sha256=25aba4016ef7a2b1..=OK; drzewo CZYSTE
+PRZEZYLA  ensure-pass-not-incremented-twice (211 s): wszystkie testy zielone
+   tbl-shallow-penalty: PRZYWROCONO git checkout OK; src/domain/mapgen/relief.rs:sha256=81b64994923ceb3f..=OK data/derived/mapgen-relief-a.json:sha256=25aba4016ef7a2b1..=OK; drzewo CZYSTE
+PRZEZYLA  tbl-shallow-penalty (205 s): wszystkie testy zielone
+   tbl-passes: PRZYWROCONO git checkout OK; src/domain/mapgen/relief.rs:sha256=81b64994923ceb3f..=OK data/derived/mapgen-relief-a.json:sha256=25aba4016ef7a2b1..=OK; drzewo CZYSTE
+PRZEZYLA  tbl-passes (203 s): wszystkie testy zielone
+SHA256 koncowe:    src/domain/mapgen/relief.rs=81b64994923ceb3f77340d765bb39e50e1655f792d83d034a99ac4a75a1d355d data/derived/mapgen-relief-a.json=25aba4016ef7a2b1437820f08a369a1329893536d66a07ec7a2040520bd7e753
+DRZEWO na koncu: CZYSTE
+WYKRYTE PRZEZ INNY TEST NIZ CELOWANY: ['eq-tbl-guard-extra']
+POWTORZENIA Z POWODU INFRA: []
+TIMEOUTY: []
+PODSUMOWANIE [ROWNOWAZNE (oczekiwane: przezyly)]: wykryte 1/22, przezyly: ['eq-dist-inside-square-zero', 'eq-dist-empty-keys-zero', 'eq-partition-lower-clamp', 'eq-apply-nonpositive-count-lt', 'eq-apply-empty-keys-guard', 'eq-pick-spread-count-le-to-lt', 'eq-force-guard-ge-to-gt', 'eq-force-third-branch-sort', 'eq-cap-min-guard-dropped', 'eq-ensure-never-breaks-early', 'eq-assert-coverage-ge-to-gt', 'apply-iron-uses-copper-cell', 'force-shallow-penalty-sign', 'force-initial-ge-to-gt', 'force-placed-not-recorded', 'cap-clears-deposit-removed', 'ensure-copper-uses-iron-size', 'ensure-sort-reversed', 'ensure-pass-not-incremented-twice', 'tbl-shallow-penalty', 'tbl-passes'], pliki przywrocone bajt w bajt: True

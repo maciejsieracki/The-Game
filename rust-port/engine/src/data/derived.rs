@@ -3820,3 +3820,125 @@ pub fn display_names_params() -> &'static DisplayNamesParamsFile {
     TABLE
         .get_or_init(|| parse_display_names_params().expect("display-names-params.json must parse"))
 }
+
+// ---------------------------------------------------------------------------
+// P6.M05A (relief A: masy ladu i pokrycie siatki): ulamki, rozmiary komorek i mnozniki balansu.
+// ---------------------------------------------------------------------------
+
+pub const MAPGEN_RELIEF_A_JSON: &str = include_str!("../../data/derived/mapgen-relief-a.json");
+
+/// Sekcja `kwadrat_centrum` (web `CONTINENT_CENTER_SQUARE_SIZE`).
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct ReliefCenterSquareParams {
+    pub rozmiar_boku: StartValue<f64>,
+}
+
+/// Sekcja `las` (web `FOREST_SHARE_OF_DRY_LAND`, `FOREST_OVERLAY_CAP_FRAC`).
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct ReliefForestParams {
+    pub udzial_suchego_ladu: TierTriple<StartValue<f64>>,
+    pub sufit_nakladki_ulamek: StartValue<f64>,
+}
+
+/// Sekcja `limit_bonusu_reliefu` (web `reliefBonusCapMountain` / `reliefBonusCapHighland`).
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct ReliefBonusCapParams {
+    pub gory: TierTriple<StartValue<f64>>,
+    pub wzgorza: TierTriple<StartValue<f64>>,
+}
+
+/// Sekcja `rozrzut_reliefu` (web `pickSpreadReliefKeys(..., minDist)`).
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct ReliefSpreadParams {
+    pub min_odleglosc_gor: StartValue<f64>,
+    pub min_odleglosc_wzgorz: StartValue<f64>,
+}
+
+/// Sekcja `minima_komorki` (web `RELIEF_MIN_MOUNTAINS` / `RELIEF_MIN_HIGHLANDS`).
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct ReliefCellMinimaParams {
+    pub gory: TierTriple<StartValue<f64>>,
+    pub wzgorza: TierTriple<StartValue<f64>>,
+}
+
+/// Sekcja `rozmiary_komorek` (web `*CoverageCellSize`).
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct ReliefCellSizeParams {
+    pub woda: TierTriple<StartValue<f64>>,
+    pub zelazo: TierTriple<StartValue<f64>>,
+    pub miedz: TierTriple<StartValue<f64>>,
+    pub las: TierTriple<StartValue<f64>>,
+}
+
+/// Sekcja `min_ladu_w_komorce` (web `minLandHexesForReliefCell`).
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct ReliefMinLandParams {
+    pub dolna_granica: StartValue<f64>,
+    pub ulamek_rozmiaru_komorki: StartValue<f64>,
+}
+
+/// Sekcja `pokrycie` (web `MIN_RIVER_SOURCES_PER_WATER_CELL`, `reliefGridCoverageRatio`,
+/// `assertReliefGridCoverage`).
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct ReliefCoverageParams {
+    pub min_zrodel_rzek_na_komorke_wody: StartValue<f64>,
+    pub mnoznik_miedzi_wzgledem_zelaza: StartValue<f64>,
+    pub prog_pokrycia_siatki: StartValue<f64>,
+}
+
+/// Sekcja `wymuszanie` (web `pickReliefForceHex`, `forceReliefTypeInCell`, `ensureMass*`).
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct ReliefForceParams {
+    pub mnoznik_wyniku_wzgorza: StartValue<f64>,
+    pub limit_odleglosci_od_brzegu: StartValue<f64>,
+    pub waga_odleglosci_od_brzegu: StartValue<f64>,
+    pub kara_plytkie_morze: StartValue<f64>,
+    pub waga_losowa: StartValue<f64>,
+    pub dodatek_do_straznika_petli: StartValue<f64>,
+    pub max_przebiegow_domykania_komorek: StartValue<f64>,
+}
+
+/// Sekcja `sufit_przepelnienia` (web `RELIEF_OVERFLOW_CAP_MULT`, `FALLBACK_RELIEF_OVERFLOW_CAP`).
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct ReliefOverflowParams {
+    pub mnoznik: StartValue<f64>,
+    pub fallback_gory: TierTriple<StartValue<f64>>,
+    pub fallback_wzgorza: TierTriple<StartValue<f64>>,
+}
+
+/// Plik `mapgen-relief-a.json`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct MapgenReliefAFile {
+    pub meta: serde_json::Value,
+    pub kwadrat_centrum: ReliefCenterSquareParams,
+    pub las: ReliefForestParams,
+    pub limit_bonusu_reliefu: ReliefBonusCapParams,
+    pub rozrzut_reliefu: ReliefSpreadParams,
+    pub minima_komorki: ReliefCellMinimaParams,
+    pub rozmiary_komorek: ReliefCellSizeParams,
+    pub min_ladu_w_komorce: ReliefMinLandParams,
+    pub pokrycie: ReliefCoverageParams,
+    pub wymuszanie: ReliefForceParams,
+    pub sufit_przepelnienia: ReliefOverflowParams,
+}
+
+pub fn parse_mapgen_relief_a() -> Result<MapgenReliefAFile, serde_json::Error> {
+    serde_json::from_str(MAPGEN_RELIEF_A_JSON)
+}
+
+/// Tabela reliefu A (jednorazowy odczyt; blad danych = panika z komunikatem).
+pub fn mapgen_relief_a() -> &'static MapgenReliefAFile {
+    static TABLE: std::sync::OnceLock<MapgenReliefAFile> = std::sync::OnceLock::new();
+    TABLE.get_or_init(|| parse_mapgen_relief_a().expect("mapgen-relief-a.json must parse"))
+}

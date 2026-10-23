@@ -1,0 +1,100 @@
+{
+  "meta": {
+    "status": "BOOTSTRAP P6.M05A: wartosci startowe przepisane z weba. Zrodlem prawdy do recznego balansu jest TA tabela (edytuj liczby, nie kod).",
+    "pin_web": "edb8fb56",
+    "temat": "R-RUSTPORT-P6-M05A-RELIEF-A-MASY-POKRYCIE-Q1",
+    "uwaga": "Tu sa progi, ulamki, rozmiary komorek i mnozniki BALANSU z gen-helpers.ts:1408-2365 (oraz fallback sufitu przepelnienia z map-gen-params-loader.ts:36-40, uzywany przez reliefSpreadCap*). Strukturalne literaly (0, 1, 2 jako polowa/indeksy, 'wynik mniejszy od 1 jest brakiem pokrycia', porownania `> 0`) zostaja w kodzie. Zmiana liczby balansu zmienia wynik wzgledem weba, wiec lamie testy wektorowe p6_m05a_* (zamierzona detekcja driftu) i wymaga swiadomego przegenerowania wektorow."
+  },
+  "kwadrat_centrum": {
+    "rozmiar_boku": { "wartosc": 5, "zrodlo_web": "gra/src/map/gen-helpers.ts:1460" }
+  },
+  "las": {
+    "udzial_suchego_ladu": {
+      "low": { "wartosc": 0.38, "zrodlo_web": "gra/src/map/gen-helpers.ts:1591" },
+      "medium": { "wartosc": 0.58, "zrodlo_web": "gra/src/map/gen-helpers.ts:1592" },
+      "high": { "wartosc": 0.95, "zrodlo_web": "gra/src/map/gen-helpers.ts:1593" }
+    },
+    "sufit_nakladki_ulamek": { "wartosc": 0.95, "zrodlo_web": "gra/src/map/gen-helpers.ts:1605" }
+  },
+  "limit_bonusu_reliefu": {
+    "gory": {
+      "low": { "wartosc": 0.067, "zrodlo_web": "gra/src/map/gen-helpers.ts:1621" },
+      "medium": { "wartosc": 0.1, "zrodlo_web": "gra/src/map/gen-helpers.ts:1621" },
+      "high": { "wartosc": 0.187, "zrodlo_web": "gra/src/map/gen-helpers.ts:1621" }
+    },
+    "wzgorza": {
+      "low": { "wartosc": 0.1, "zrodlo_web": "gra/src/map/gen-helpers.ts:1626" },
+      "medium": { "wartosc": 0.15, "zrodlo_web": "gra/src/map/gen-helpers.ts:1626" },
+      "high": { "wartosc": 0.275, "zrodlo_web": "gra/src/map/gen-helpers.ts:1626" }
+    }
+  },
+  "rozrzut_reliefu": {
+    "min_odleglosc_gor": { "wartosc": 4, "zrodlo_web": "gra/src/map/gen-helpers.ts:1678" },
+    "min_odleglosc_wzgorz": { "wartosc": 3, "zrodlo_web": "gra/src/map/gen-helpers.ts:1717" }
+  },
+  "minima_komorki": {
+    "gory": {
+      "low": { "wartosc": 2, "zrodlo_web": "gra/src/map/gen-helpers.ts:1779" },
+      "medium": { "wartosc": 4, "zrodlo_web": "gra/src/map/gen-helpers.ts:1779" },
+      "high": { "wartosc": 5, "zrodlo_web": "gra/src/map/gen-helpers.ts:1779" }
+    },
+    "wzgorza": {
+      "low": { "wartosc": 2, "zrodlo_web": "gra/src/map/gen-helpers.ts:1780" },
+      "medium": { "wartosc": 4, "zrodlo_web": "gra/src/map/gen-helpers.ts:1780" },
+      "high": { "wartosc": 5, "zrodlo_web": "gra/src/map/gen-helpers.ts:1780" }
+    }
+  },
+  "rozmiary_komorek": {
+    "woda": {
+      "low": { "wartosc": 15, "zrodlo_web": "gra/src/map/gen-helpers.ts:1801" },
+      "medium": { "wartosc": 10, "zrodlo_web": "gra/src/map/gen-helpers.ts:1802" },
+      "high": { "wartosc": 5, "zrodlo_web": "gra/src/map/gen-helpers.ts:1800" }
+    },
+    "zelazo": {
+      "low": { "wartosc": 21, "zrodlo_web": "gra/src/map/gen-helpers.ts:1811" },
+      "medium": { "wartosc": 15, "zrodlo_web": "gra/src/map/gen-helpers.ts:1812" },
+      "high": { "wartosc": 12, "zrodlo_web": "gra/src/map/gen-helpers.ts:1810" }
+    },
+    "miedz": {
+      "low": { "wartosc": 21, "zrodlo_web": "gra/src/map/gen-helpers.ts:1821" },
+      "medium": { "wartosc": 15, "zrodlo_web": "gra/src/map/gen-helpers.ts:1822" },
+      "high": { "wartosc": 12, "zrodlo_web": "gra/src/map/gen-helpers.ts:1820" }
+    },
+    "las": {
+      "low": { "wartosc": 15, "zrodlo_web": "gra/src/map/gen-helpers.ts:1840" },
+      "medium": { "wartosc": 10, "zrodlo_web": "gra/src/map/gen-helpers.ts:1841" },
+      "high": { "wartosc": 5, "zrodlo_web": "gra/src/map/gen-helpers.ts:1839" }
+    }
+  },
+  "min_ladu_w_komorce": {
+    "dolna_granica": { "wartosc": 8, "zrodlo_web": "gra/src/map/gen-helpers.ts:1849" },
+    "ulamek_rozmiaru_komorki": { "wartosc": 0.32, "zrodlo_web": "gra/src/map/gen-helpers.ts:1849" }
+  },
+  "pokrycie": {
+    "min_zrodel_rzek_na_komorke_wody": { "wartosc": 1, "zrodlo_web": "gra/src/map/gen-helpers.ts:1777" },
+    "mnoznik_miedzi_wzgledem_zelaza": { "wartosc": 0.6, "zrodlo_web": "gra/src/map/gen-helpers.ts:2005" },
+    "prog_pokrycia_siatki": { "wartosc": 0.999, "zrodlo_web": "gra/src/map/gen-helpers.ts:2021" }
+  },
+  "wymuszanie": {
+    "mnoznik_wyniku_wzgorza": { "wartosc": 0.9, "zrodlo_web": "gra/src/map/gen-helpers.ts:2055" },
+    "limit_odleglosci_od_brzegu": { "wartosc": 8, "zrodlo_web": "gra/src/map/gen-helpers.ts:2056" },
+    "waga_odleglosci_od_brzegu": { "wartosc": 0.04, "zrodlo_web": "gra/src/map/gen-helpers.ts:2056" },
+    "kara_plytkie_morze": { "wartosc": 0.15, "zrodlo_web": "gra/src/map/gen-helpers.ts:2057" },
+    "waga_losowa": { "wartosc": 0.1, "zrodlo_web": "gra/src/map/gen-helpers.ts:2058" },
+    "dodatek_do_straznika_petli": { "wartosc": 8, "zrodlo_web": "gra/src/map/gen-helpers.ts:2084" },
+    "max_przebiegow_domykania_komorek": { "wartosc": 14, "zrodlo_web": "gra/src/map/gen-helpers.ts:2317", "uwaga": "ta sama wartosc 14 w petli miedzi: gra/src/map/gen-helpers.ts:2352" }
+  },
+  "sufit_przepelnienia": {
+    "mnoznik": { "wartosc": 1, "zrodlo_web": "gra/src/map/gen-helpers.ts:2181" },
+    "fallback_gory": {
+      "low": { "wartosc": 0.09, "zrodlo_web": "gra/src/data/map-gen-params-loader.ts:37" },
+      "medium": { "wartosc": 0.1, "zrodlo_web": "gra/src/data/map-gen-params-loader.ts:38" },
+      "high": { "wartosc": 0.24, "zrodlo_web": "gra/src/data/map-gen-params-loader.ts:39" }
+    },
+    "fallback_wzgorza": {
+      "low": { "wartosc": 0.132, "zrodlo_web": "gra/src/data/map-gen-params-loader.ts:37" },
+      "medium": { "wartosc": 0.15, "zrodlo_web": "gra/src/data/map-gen-params-loader.ts:38" },
+      "high": { "wartosc": 0.318, "zrodlo_web": "gra/src/data/map-gen-params-loader.ts:39" }
+    }
+  }
+}

@@ -1,0 +1,28 @@
+ce84f3864b5c9ba70e72394cbda71b9ec06466494ea47d266d1afe24ac84c3a4  /tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/m05a-repeat.json
+ROWNE consts
+PREFIKS-OK overflowVariants: stare 11 -> nowe 11 (+0)
+PREFIKS-OK caps: stare 2421 -> nowe 2421 (+0)
+PREFIKS-OK minLand: stare 325 -> nowe 325 (+0)
+PREFIKS-OK landCells: stare 80 -> nowe 80 (+0)
+PREFIKS-OK pickSpread: stare 400 -> nowe 400 (+0)
+PREFIKS-OK masses: stare 40 -> nowe 56 (+16)
+PREFIKS-OK center: stare 273 -> nowe 353 (+80)
+PREFIKS-OK nullSquareDist: stare 1 -> nowe 1 (+0)
+PREFIKS-OK partition: stare 480 -> nowe 672 (+192)
+PREFIKS-OK forestEligible: stare 8 -> nowe 8 (+0)
+PREFIKS-OK riverLand: stare 8 -> nowe 8 (+0)
+PREFIKS-OK cellCounts: stare 794 -> nowe 842 (+48)
+PREFIKS-OK ratios: stare 258 -> nowe 306 (+48)
+PREFIKS-OK pickForce: stare 794 -> nowe 890 (+96)
+PREFIKS-OK forceType: stare 1925 -> nowe 2105 (+180)
+PREFIKS-OK capCell: stare 1925 -> nowe 2105 (+180)
+PREFIKS-OK depositProtected: stare 3 -> nowe 3 (+0)
+PREFIKS-OK capSpread: stare 183 -> nowe 219 (+36)
+PREFIKS-OK ensureMass: stare 732 -> nowe 876 (+144)
+PREFIKS-OK applyKeys: stare 240 -> nowe 336 (+96)
+PREFIKS-OK applyRank: stare 480 -> nowe 672 (+192)
+PREFIKS-OK applyRankDefault: stare 36 -> nowe 36 (+0)
+NOWA-KATEGORIA canHostEdge: 2526
+PREFIKS-OK pula map: 40 -> 56
+kategorie zgodne: 23, roznice: 0
+EXIT=0

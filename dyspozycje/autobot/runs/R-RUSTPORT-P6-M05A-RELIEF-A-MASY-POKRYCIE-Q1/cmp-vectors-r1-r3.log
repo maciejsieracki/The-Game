@@ -1,0 +1,27 @@
+ROWNE consts
+PREFIKS-OK overflowVariants: stare 11 -> nowe 11 (+0)
+PREFIKS-OK caps: stare 2421 -> nowe 2421 (+0)
+PREFIKS-OK minLand: stare 325 -> nowe 325 (+0)
+PREFIKS-OK landCells: stare 80 -> nowe 80 (+0)
+PREFIKS-OK pickSpread: stare 400 -> nowe 400 (+0)
+PREFIKS-OK masses: stare 56 -> nowe 56 (+0)
+PREFIKS-OK center: stare 353 -> nowe 353 (+0)
+PREFIKS-OK nullSquareDist: stare 1 -> nowe 1 (+0)
+PREFIKS-OK partition: stare 672 -> nowe 672 (+0)
+PREFIKS-OK forestEligible: stare 8 -> nowe 8 (+0)
+PREFIKS-OK riverLand: stare 8 -> nowe 8 (+0)
+PREFIKS-OK cellCounts: stare 842 -> nowe 842 (+0)
+PREFIKS-OK canHostEdge: stare 2526 -> nowe 2526 (+0)
+PREFIKS-OK ratios: stare 306 -> nowe 306 (+0)
+PREFIKS-OK pickForce: stare 890 -> nowe 890 (+0)
+PREFIKS-OK forceType: stare 2105 -> nowe 2105 (+0)
+PREFIKS-OK capCell: stare 2105 -> nowe 2105 (+0)
+PREFIKS-OK depositProtected: stare 3 -> nowe 3 (+0)
+PREFIKS-OK capSpread: stare 219 -> nowe 219 (+0)
+PREFIKS-OK ensureMass: stare 876 -> nowe 876 (+0)
+PREFIKS-OK applyKeys: stare 336 -> nowe 336 (+0)
+PREFIKS-OK applyRank: stare 672 -> nowe 672 (+0)
+PREFIKS-OK applyRankDefault: stare 36 -> nowe 36 (+0)
+NOWA-KATEGORIA pickForceWater: 80
+PREFIKS-OK pula map: 56 -> 56
+kategorie zgodne: 24, roznice: 0
