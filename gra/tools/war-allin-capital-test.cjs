@@ -262,11 +262,11 @@ console.log('\n--- 8: planWarAllInCapital -- grupowanie / rendezvous ---');
   eq(oz.mode, 'rendezvous', '8a mala grupa blisko duzej => rendezvous');
   assert(oz.step.r < 17, '8b rendezvous: krok w strone duzej grupy (r maleje)');
   eq(plan.orders.filter(o => o.mode === 'capital').length, 0, '8c duza grupa CZEKA, az mala ja dogoni (zbiorka)');
-  eq(plan.held.length, 4, '8c2 czekajaca grupa jest w held (nie w noPath)');
-  eq(plan.orders.length + plan.held.length + plan.noPath.length, 5, '8d kazda jednostka ma rozkaz albo jawny powod postoju');
+  eq(plan.held.length, big.length, '8c2 czekajaca grupa jest w held (nie w noPath)');
+  eq(plan.orders.length + plan.held.length + plan.noPath.length, big.length + 1, '8d kazda jednostka ma rozkaz albo jawny powod postoju');
   eq(plan.noPath.length, 0, '8d1 noPath puste (zaden "brak ladu")');
   const alone = P(big, [target]);
-  eq(alone.orders.length, 4, '8d1b bez doganiajacych: cala grupa maszeruje');
+  eq(alone.orders.length, big.length, '8d1b bez doganiajacych: cala grupa maszeruje');
   assert(alone.orders.every(o => dist(o.step.q, o.step.r, 35, 10) <
     dist(big.find(b => b.id === o.unitId).q, big.find(b => b.id === o.unitId).r, 35, 10)),
   '8d2 kazdy krok na stolice zmniejsza dystans do niej');
@@ -292,6 +292,26 @@ console.log('\n--- 8: planWarAllInCapital -- grupowanie / rendezvous ---');
   const blk = P([{ id: 'x', q: 10, r: 10 }], [target], { map, blocked: new Set(['11,10', '11,9', '10,11']) });
   assert(blk.orders.length === 1 && !['11,10', '11,9', '10,11'].includes(`${blk.orders[0].step.q},${blk.orders[0].step.r}`),
     '8h3 krok omija zablokowane heksy');
+  // 8j: progi z gra/data/war-allin-params.json -- test GRANICZNY wyprowadzony z eksportowanych stalych
+  // (zmiana wartosci w JSON przesuwa granice, test nadal ma sens; zero literalow z balansu).
+  {
+    const L = E.WAR_ALLIN_LINK_RADIUS, M = E.WAR_ALLIN_MERGE_RADIUS, N = E.WAR_ALLIN_NO_MERGE_NEAR_CAPITAL;
+    assert([L, M, N].every(Number.isInteger) && L >= 1 && M > L && N >= 1, '8j stale z JSON to calkowite dodatnie, MERGE > LINK');
+    const head = { id: 'a', q: 20, r: 10 };
+    const linked = P([head, { id: 'b', q: 20 - L, r: 10 }], [target]);
+    eq(JSON.stringify(linked.groupsByTarget.T), JSON.stringify([2]), '8j1 dystans == LINK_RADIUS: jedna grupa');
+    const unlinked = P([head, { id: 'b', q: 20 - L - 1, r: 10 }], [target]);
+    eq(JSON.stringify(unlinked.groupsByTarget.T), JSON.stringify([1, 1]), '8j2 dystans == LINK_RADIUS+1: dwie grupy');
+    const mAt = P([head, { id: 'b', q: 20 - M, r: 10 }], [target]);
+    eq(mAt.orders.find(o => o.unitId === 'b').mode, 'rendezvous', '8j3 dystans == MERGE_RADIUS: rendezvous');
+    const mOut = P([head, { id: 'b', q: 20 - M - 1, r: 10 }], [target]);
+    eq(mOut.orders.find(o => o.unitId === 'b').mode, 'capital', '8j4 dystans == MERGE_RADIUS+1: bezposrednio na stolice');
+    const headPair = [{ id: 'h1', q: 30, r: 10 }, { id: 'h2', q: 31, r: 10 }];
+    const nAt = P([...headPair, { id: 'n', q: 35, r: 10 - N }], [target]);
+    eq(nAt.orders.find(o => o.unitId === 'n').mode, 'capital', '8j5 dystans do stolicy == NO_MERGE_NEAR_CAPITAL: natarcie');
+    const nOut = P([...headPair, { id: 'n', q: 35, r: 10 - N - 1 }], [target]);
+    eq(nOut.orders.find(o => o.unitId === 'n').mode, 'rendezvous', '8j6 dystans do stolicy == NO_MERGE+1: zbiorka');
+  }
   // Kolejnosc wejscia nie zmienia wyniku (determinizm).
   const a = P([...big, small], [target]);
   const b = P([small, ...[...big].reverse()], [target]);
@@ -375,6 +395,13 @@ console.log('\n--- 9: okablowanie main.ts (testy statyczne) ---');
   const aiSrc = fs.readFileSync(path.resolve(__dirname, '..', 'src', 'game', 'ai.ts'), 'utf8');
   assert(/u\.embarked !== true && u\.seaRaider !== true\);/.test(aiSrc), '9g AI: zaokretowane/seaRaider poza regula (parytet z barbarzyncami)');
   assert(/WAR_ALLIN_CAPITAL_ENABLED = true/.test(mod), '9f flaga jawna w module');
+  // 9h: stale balansowe w gra/data/war-allin-params.json, nie jako literaly w kodzie.
+  assert(!/export const WAR_ALLIN_(LINK_RADIUS|MERGE_RADIUS|NO_MERGE_NEAR_CAPITAL)[^=]*=\s*\d/.test(mod), '9h stale WAR_ALLIN_* bez literalow liczbowych w kodzie');
+  const prm = JSON.parse(fs.readFileSync(path.resolve(__dirname, '..', 'data', 'war-allin-params.json'), 'utf8'));
+  for (const k of ['link_radius', 'merge_radius', 'no_merge_near_capital']) {
+    assert(Number.isInteger(prm[k] && prm[k].wartosc) && prm[k].wartosc > 0, `9i war-allin-params.json: ${k}.wartosc to dodatnia liczba calkowita`);
+  }
+  assert(/warAllInParamsRaw\.link_radius\.wartosc/.test(mod) && /warAllInParamsRaw\.merge_radius\.wartosc/.test(mod) && /warAllInParamsRaw\.no_merge_near_capital\.wartosc/.test(mod), '9j modul czyta wszystkie 3 stale z JSON');
 }
 
 // ---------------------------------------------------------------------------

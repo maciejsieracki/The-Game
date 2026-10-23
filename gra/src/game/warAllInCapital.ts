@@ -24,6 +24,7 @@
  */
 
 import type { GameMap } from '../types/map';
+import warAllInParamsRaw from '../../data/war-allin-params.json';
 import { hexDistance, hexNeighborCoords, keyOf, terrainMoveCost } from '../units/setup';
 
 /** GLOWNA FLAGA (tymczasowa zasada -- latwa do wylaczenia jedna zmiana). */
@@ -183,17 +184,17 @@ export interface WarAllInPlan {
   groupsByTarget: Record<string, number[]>;
 }
 
-/** Jednostki w tym dystansie (lancuchowo) tworza jedna grupe. */
-export const WAR_ALLIN_LINK_RADIUS = 3;
+/** Wartosci balansowe sa w `gra/data/war-allin-params.json` (nie w kodzie). Jednostki w tym dystansie (lancuchowo) tworza jedna grupe. */
+export const WAR_ALLIN_LINK_RADIUS: number = warAllInParamsRaw.link_radius.wartosc;
 /**
  * Grupa dolacza do wiekszej/wczesniejszej grupy tego samego celu, jesli jest nie dalej.
  * Wieksza grupa CZEKA na miejscu, dopoki doganiajaca ja grupa faktycznie sie zbliza (inaczej
  * obie szlyby 1 heks/ture i odstep nigdy by sie nie zmniejszyl) -- zbiorka trwa najwyzej tyle
  * tur, ile heksow dzieli grupy.
  */
-export const WAR_ALLIN_MERGE_RADIUS = 10;
+export const WAR_ALLIN_MERGE_RADIUS: number = warAllInParamsRaw.merge_radius.wartosc;
 /** Blisko stolicy nie zbieramy sie -- natarcie. */
-export const WAR_ALLIN_NO_MERGE_NEAR_CAPITAL = 3;
+export const WAR_ALLIN_NO_MERGE_NEAR_CAPITAL: number = warAllInParamsRaw.no_merge_near_capital.wartosc;
 
 interface Cluster {
   members: WarAllInUnit[];

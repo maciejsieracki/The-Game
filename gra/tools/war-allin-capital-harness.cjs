@@ -28,7 +28,7 @@ function loadEngine(srcDir, tag) {
 export { decideAITurn } from ${J('game/ai')};
 export { decideBarbarianMoves, FALLBACK_BARB_PARAMS, BARBARIAN_OWNER_ID } from ${J('game/barbarians')};
 export { hexDistance, isCivilianUnit } from ${J('units/setup')};
-${hasMod ? `export { setWarAllInCapitalOverride, isWarAllInCapitalEnabled, planWarAllInCapital, WAR_ALLIN_CAPITAL_ENABLED } from ${J('game/warAllInCapital')};` : ''}
+${hasMod ? `export { setWarAllInCapitalOverride, isWarAllInCapitalEnabled, planWarAllInCapital, WAR_ALLIN_CAPITAL_ENABLED, WAR_ALLIN_LINK_RADIUS, WAR_ALLIN_MERGE_RADIUS, WAR_ALLIN_NO_MERGE_NEAR_CAPITAL } from ${J('game/warAllInCapital')};` : ''}
 `, 'utf8');
   esbuild.buildSync({
     entryPoints: [entry], bundle: true, platform: 'node', format: 'cjs', target: 'node18',

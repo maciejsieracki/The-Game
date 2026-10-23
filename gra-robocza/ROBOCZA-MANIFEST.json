@@ -1,18 +1,18 @@
 {
   "releaseState": "candidate (local commit, not published); publish by orchestrator after Final Control",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "4340812b7fc22163e5ca690c93527265",
-  "bundleSha256": "f60333f276bf5927e7fc1702e9956eb9937a1ec882d4c1402fe81fb0f177ec6d",
-  "bundleBytes": 69964169,
+  "bundleMd5": "23893f19cc904b61065b20e712fb6b35",
+  "bundleSha256": "0cf2f66f69d67711caa0c39c67ed6e2510e04b9d7e8bf46dfe99157e304b578b",
+  "bundleBytes": 69964335,
   "sourceSnapshot": {
     "baseCommit": "75f53d58",
     "productCommitSource": "cfa95f8f + 41e66aff (R-WEB-WAR-ALLIN-CAPITAL-Q1, tymczasowa regula wojny; Final Control PASS-WITH-NOTES)"
   },
   "scope": [
-    "origin/main 75f53d58 + wylacznie gra/src/game/warAllInCapital.ts, ai.ts, barbarians.ts, gra/src/main.ts i gra/tools/war-allin-capital-*.cjs z cfa95f8f + 41e66aff: TYMCZASOWA regula wojny - cala armia AI i barbarzyncow zmierza na stolice przeciwnika."
+    "origin/main 75f53d58 + wylacznie gra/src/game/warAllInCapital.ts, ai.ts, barbarians.ts, gra/src/main.ts, nowy gra/data/war-allin-params.json (stale balansowe regula wojny) i gra/tools/war-allin-capital-*.cjs z cfa95f8f + 41e66aff: TYMCZASOWA regula wojny - cala armia AI i barbarzyncow zmierza na stolice przeciwnika."
   ],
   "verification": [
-    "tsc --noEmit; direct Vite build; verify-robocza-bundle.cjs; testy i smoke Chromium ?memdebug=1 - patrz dyspozycje/autobot/runs/R-WEB-WAR-ALLIN-RELEASE-ROBOCZA-Q1/"
+    "tsc --noEmit; direct Vite build; verify-robocza-bundle.cjs; testy i smoke Chromium ?memdebug=1 - patrz dyspozycje/autobot/runs/R-WEB-WAR-ALLIN-RELEASE-ROBOCZA-Q1/ (runda r2: stale w gra/data/war-allin-params.json, bundle przebudowany)"
   ],
   "limits": [
     "Regula TYMCZASOWA (all-in na stolice); brak pelnej akceptacji rozgrywki; smoke Chromium bounded (patrz run).",
@@ -30,22 +30,22 @@
     "reportPath": "dyspozycje/autobot/runs/R-WEB-WAR-ALLIN-RELEASE-ROBOCZA-Q1/"
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-10-23T18:51:41",
-  "md5": "4340812b7fc22163e5ca690c93527265",
+  "hubGeneratedAt": "2026-10-23T20:28:52",
+  "md5": "23893f19cc904b61065b20e712fb6b35",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "4340812b7fc22163e5ca690c93527265",
-      "sizeBytes": 69964169
+      "md5": "23893f19cc904b61065b20e712fb6b35",
+      "sizeBytes": 69964335
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "4340812b7fc22163e5ca690c93527265",
-      "sizeBytes": 69964169
+      "md5": "23893f19cc904b61065b20e712fb6b35",
+      "sizeBytes": 69964335
     }
   ],
   "previousReleaseManifest": {
