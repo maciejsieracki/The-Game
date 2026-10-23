@@ -1,0 +1,21 @@
+| M01 | `src/labels/layout.rs` | LayoutUnit(float) rounds instead of truncating (line-height) | **KILLED** | anchored_rects_match_chromium, layout_matches_chromium_bit_for_bit, layout_sweep_matches_chromium_bit_for_bit, line_height_rules |
+| M02 | `src/labels/layout.rs` | text width rounded to 1/64 instead of ceil | **KILLED** | anchored_rects_match_chromium, layout_matches_chromium_bit_for_bit, layout_sweep_matches_chromium_bit_for_bit, scenes_match_golden_hashes |
+| M03 | `src/labels/layout.rs` | half-leading not floored to whole px | **KILLED** | anchored_rects_match_chromium, layout_matches_chromium_bit_for_bit, layout_sweep_matches_chromium_bit_for_bit, scenes_match_chromium, scenes_match_golden_hashes, texture_sizes_match_the_generator |
+| M04 | `src/labels/layout.rs` | line-height from the raw font size (no 1/64 rounding) | **KILLED** | anchored_rects_match_chromium, layout_matches_chromium_bit_for_bit, layout_sweep_matches_chromium_bit_for_bit, line_height_rules |
+| M05 | `src/labels/layout.rs` | font metrics floored instead of rounded | **KILLED** | anchored_rects_match_chromium, layout_matches_chromium_bit_for_bit, layout_sweep_matches_chromium_bit_for_bit, line_height_rules, scenes_match_chromium, scenes_match_golden_hashes, texture_sizes_match_the_generator |
+| M06 | `src/labels/layout.rs` | R5 first line not centred | **KILLED** | layout_matches_chromium_bit_for_bit, layout_sweep_matches_chromium_bit_for_bit, scenes_match_chromium, scenes_match_golden_hashes |
+| M07 | `src/labels/layout.rs` | R4 text span not centred on the cross axis | **KILLED** | layout_matches_chromium_bit_for_bit, layout_sweep_matches_chromium_bit_for_bit, scenes_match_chromium, scenes_match_golden_hashes |
+| M08 | `src/labels/layout.rs` | R4 reason max-width ignored | **KILLED** | anchored_rects_match_chromium, layout_matches_chromium_bit_for_bit, layout_sweep_matches_chromium_bit_for_bit, scenes_match_chromium, scenes_match_golden_hashes, texture_sizes_match_the_generator |
+| M09 | `src/labels/layout.rs` | R4 border colours swapped (valid/invalid) | **KILLED** | scenes_match_chromium, scenes_match_golden_hashes |
+| M10 | `src/labels/shape.rs` | DOM text shaped word by word (no kerning across spaces) | **KILLED** | layout_sweep_matches_chromium_bit_for_bit |
+| M11 | `src/labels/shape.rs` | GPOS kerning scaled by the quantised size instead of the font-key size | **KILLED** | layout_sweep_matches_chromium_bit_for_bit |
+| M12 | `src/labels/shape.rs` | font-key size not truncated to 1/100 px | **KILLED (build)** | error: could not compile `civ-renderer` (lib test) due to 1 previous error |
+| M13 | `src/labels/style.rs` | `smaller` ratio 1.25 instead of 1.2 | **KILLED (build)** | error: could not compile `civ-renderer` (lib test) due to 1 previous error |
+| M14 | `src/labels/paint.rs` | box-shadow not clipped to outside the border box | **KILLED (build)** | error: could not compile `civ-renderer` (lib test) due to 1 previous error |
+| M15 | `src/labels/paint.rs` | shadow Gaussian sigma = blur (CSS: blur / 2) | **KILLED (build)** | error: could not compile `civ-renderer` (lib test) due to 1 previous error |
+| M16 | `src/labels/paint.rs` | text-shadow offsets negated | **KILLED (build)** | error: could not compile `civ-renderer` (lib test) due to 1 previous error |
+| M17 | `src/labels/paint.rs` | element opacity not applied | **KILLED (build)** | error: could not compile `civ-renderer` (lib test) due to 1 previous error |
+| M18 | `src/labels/paint.rs` | box snapped in device px instead of CSS px (HiDPI) | **KILLED (build)** | error: could not compile `civ-renderer` (lib test) due to 1 previous error |
+| M19 | `src/labels/paint.rs` | text baseline not snapped to whole CSS px | **KILLED (build)** | error: could not compile `civ-renderer` (lib test) due to 1 previous error |
+| M20 | `src/labels/paint.rs` | text-shadow layers in list order (first at the bottom) | **KILLED (build)** | error: could not compile `civ-renderer` (lib test) due to 1 previous error |
+| M21 | `src/labels/anchor.rs` | translate(-50%, -50%) applied as -100% vertically | **K
