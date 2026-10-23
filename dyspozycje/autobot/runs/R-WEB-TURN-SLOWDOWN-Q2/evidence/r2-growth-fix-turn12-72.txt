@@ -1,0 +1,13 @@
+JS a=474.5 ms  b=1133.0 ms  przyrost=658.5 ms
+    85.5 ms ( 13.0% przyrostu)      5.4 ->    90.9  hexKeysWithinRadius
+    54.8 ms (  8.3% przyrostu)      1.8 ->    56.6  axialDistance$1
+    49.2 ms (  7.5% przyrostu)      0.6 ->    49.9  computeLostToNearerSiblingByCity
+    47.1 ms (  7.2% przyrostu)     13.3 ->    60.4  (anon)
+    34.1 ms (  5.2% przyrostu)      2.4 ->    36.5  okolicaTiles
+    25.4 ms (  3.9% przyrostu)     26.1 ->    51.5  updateMatrixWorld
+    25.4 ms (  3.9% przyrostu)      1.2 ->    26.6  placedImprovementsForOwner
+    16.7 ms (  2.5% przyrostu)      0.0 ->    16.7  cityTerritoryRadius
+    15.8 ms (  2.4% przyrostu)      1.7 ->    17.5  hexesInCitySight
+    15.0 ms (  2.3% przyrostu)      1.2 ->    16.2  hexDistance
+    14.2 ms (  2.2% przyrostu)      1.2 ->    15.3  getCityResourceAccessForCity
+    13.8 ms (  2.1% przyrostu)      3.7 ->    17.5  multiplyMatrices

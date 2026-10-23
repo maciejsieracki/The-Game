@@ -1,0 +1,1 @@
+[["        cities.filter(c => c.ownerId === ownerId),\n        map,\n        territoryNodes,\n        computeLostToNearerSiblingByCity(cities, map),\n", "        cities,\n        map,\n        territoryNodes,\n        computeLostToNearerSiblingByCity(cities, map),\n"]]

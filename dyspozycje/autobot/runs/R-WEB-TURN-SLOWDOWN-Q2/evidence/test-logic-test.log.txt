@@ -1,0 +1,259 @@
+[logic-test] Bundling src/ with esbuild...
+[logic-test] Bundle written to /home/user/The-Game/.claude/worktrees/wf_9ec3a81d-275-1/gra/tools/.logic-bundle.cjs
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=3 terrain=12 landSea=90 relief=71 coast=14 riversMain=663 riversFill=716 forest=4 deposits=10 starts=47 total=1631
+PASS  [1] generateMap hexes > 100
+PASS  [2] computeStartPlacements has playerStart
+PASS  [3] computeStartPlacements aiStarts >= 3
+PASS  [4] placeStartingUnits returns empty (A-START-01)
+PASS  [5] synthetic settler category === "osadnik"
+PASS  [6] computeReachable returns size > 0
+PASS  [7] computeReachable does NOT contain settler own hex
+PASS  [8] computePath returns non-empty path
+PASS  [9] computePath last step === dest
+PASS  [10] computePath does not include start hex
+PASS  [11] computeVisible includes settler own hex
+PASS  [12] every key in computeVisible exists in map.hexes
+PASS  [13] cityRangeForPopulation(4) === 5 (min start)
+PASS  [14] cityRangeForPopulation(9) === 9
+PASS  [15] cityRangeForPopulation(20) === 15 (cap)
+PASS  [16] citySightRadius(9,0) === 9
+PASS  [17] citySightRadius(1,0) === 5
+PASS  [18] computePlayerVisibility city pop9 radius <= 9
+PASS  [19] computePlayerVisibility city pop9 radius >= 9 at edge
+PASS  [20] computePlayerVisibility start fallback radius <= 5
+PASS  [21] unitsVisibleOnMap always shows player units
+PASS  [22] unitsVisibleOnMap hides enemy outside current vision
+PASS  [23] unitsVisibleOnMap shows enemy on visible hex
+PASS  [24] unitsVisibleOnMap shows own garnizon (token na heksie miasta)
+PASS  [25] unitsVisibleOnMap hides enemy garnizon even on visible hex
+PASS  [26] canFoundCity on settler (land) returns ok=true
+PASS  [27] canFoundCity on water hex returns reason="morze"
+PASS  [28] foundCity returns non-null
+PASS  [29] foundCity population === 1
+PASS  [30] MIN_CITY_DISTANCE = 4 heksy (R-AI-KOLONIZACJA, było 5)
+PASS  [31] canFoundCity near city returns "za blisko innego miasta"
+PASS  [32] canFoundCity far from city returns ok=true
+PASS  [33] buildEconParams returns finite progWzrostuWspolczynnik
+PASS  [34] buildEconParams trade-science slider default === 20
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=1 terrain=4 landSea=66 relief=73 coast=18 riversMain=184 riversFill=382 forest=2 deposits=6 starts=33 total=770
+PASS  [35] economy: player start hex resolved
+PASS  [36] economy: foundCity for tick test non-null
+PASS  [37] economy: workedTilesForCity returns 1..7 tiles
+PASS  [38] economy: every worked tile has a terenBazowy
+PASS  [39] economy: advanceCityEconomy processed 1 city
+PASS  [40] economy: aggregate yields are finite numbers
+PASS  [41] economy: city food store is a number >= 0 or undefined (oblezenie-only field)
+PASS  [42] economy: readCityFoodBuffer zawsze zwraca skończoną liczbę >= 0 (7 przypadków)
+PASS  [43] economy: readCityFoodBuffer(-3) klampuje do 0 (nie przepuszcza ujemnego bufora)
+PASS  [44] economy: readCityFoodBuffer czyta legacy { aktualny } ze starego zapisu
+PASS  [45] economy: population never goes below 1
+PASS  [46] economy: per-city result carries zywnoscNetto
+PASS  [47] research: fresh state era === 1
+PASS  [48] research: fresh state empty treasury+science
+PASS  [49] research: fresh state nothing researched + no current tech
+PASS  [50] research: fresh money multiplier === 1
+PASS  [51] research: found multi-prereq tech (Jeździectwo)
+PASS  [52] research: parsePrereqs splits "A + B" into 2 ids
+PASS  [53] research: prereqsMet false when prereqs missing
+PASS  [54] research: prereqsMet true when all prereqs present
+PASS  [55] research: with no research, only prereq-free techs available
+PASS  [56] research: a tech with prereqs is NOT available initially
+PASS  [57] research: cheapestAvailable returns an available prereq-free tech
+PASS  [58] research: cheapestAvailable has the minimum available cost
+PASS  [59] research: after all Kamień tier 1-2 techs, Brązownictwo becomes available
+PASS  [60] research: found Obróbka drewna (cost 5)
+PASS  [61] research: completing a tech moves it into zbadane
+PASS  [62] research: completing a tech deducts its cost from science
+PASS  [63] research: researchStep reports the completed tech
+PASS  [64] research: after spending all science, a new (different) tech is selected
+PASS  [65] research: insufficient science completes nothing
+PASS  [66] research: insufficient science leaves the pool untouched
+PASS  [67] research: era tech (Brązownictwo) marks the era-advance flag
+PASS  [68] research: era tech bumps player.era by 1
+PASS  [69] research: isEraAdvanceTech true for Brązownictwo
+PASS  [70] research: found Waluta (money tech)
+PASS  [71] research: isMoneyTech true for Waluta
+PASS  [72] research: money tech (Waluta) sets the money flag in completion
+PASS  [73] research: money tech sets pieniadzMnoznik to PIENIADZ_MNOZNIK (x10)
+PASS  [74] research: a large science budget completes multiple techs
+PASS  [75] research: cascade never researches a tech twice
+PASS  [76] research: cascade leaves no available tech behind when fully funded
+PASS  [77] player-research: setPlayerResearchTarget returns true for valid target
+PASS  [78] player-research: playerResearchTargetId set to chosen tech
+PASS  [79] player-research: setPlayerResearchTarget rejects completed tech
+PASS  [80] player-research: playerResearchTargetId unchanged on rejection
+PASS  [81] player-research: setPlayerResearchTarget rejects unmet prereqs
+PASS  [82] player-research: target set before researchStep
+PASS  [83] player-research: researchStep completes the player-chosen tech
+PASS  [84] player-research: playerResearchTargetId cleared after completion
+PASS  [85] player-research: Brązownictwo added to zbadane
+PASS  [86] player-research: no target -> researchStep picks first available (default)
+PASS  [87] player-research: default does not clear playerResearchTargetId (was null)
+PASS  [88] player-research: getResearchState pula equals nauka
+PASS  [89] player-research: getResearchState targetId equals chosen tech
+PASS  [90] player-research: getResearchState kosztCelu equals tech cost
+PASS  [91] player-research: getResearchState postepFraction = 0.5
+PASS  [92] player-research: getResearchState turnsLeft correct
+PASS  [93] player-research: getResearchState uses badana as fallback target
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=4 landSea=55 relief=44 coast=10 riversMain=134 riversFill=553 forest=3 deposits=7 starts=32 total=840
+PASS  [94] mapgen: generated map has BOTH land and water
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=5 landSea=48 relief=56 coast=11 riversMain=140 riversFill=592 forest=3 deposits=7 starts=36 total=898
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=1 terrain=4 landSea=52 relief=54 coast=12 riversMain=148 riversFill=626 forest=2 deposits=7 starts=37 total=944
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=7 landSea=56 relief=64 coast=11 riversMain=151 riversFill=514 forest=3 deposits=7 starts=31 total=846
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=3 landSea=61 relief=86 coast=10 riversMain=203 riversFill=499 forest=2 deposits=5 starts=25 total=895
+PASS  [95] mapgen: deposits obey terrain rules (ruda Wzgorza/Gory, glina Laka/coast/river, konie Rownina, wegiel Gory)
+PASS  [96] mapgen: at least some deposits are placed across seeds
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=3 landSea=50 relief=59 coast=8 riversMain=128 riversFill=611 forest=3 deposits=4 starts=26 total=893
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=2 landSea=46 relief=44 coast=11 riversMain=136 riversFill=569 forest=2 deposits=5 starts=31 total=847
+PASS  [97] mapgen: deposits identical for the same seed (deterministic)
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=4 landSea=49 relief=51 coast=10 riversMain=155 riversFill=442 forest=2 deposits=5 starts=27 total=745
+PASS  [98] mapgen: deposits differ for a different seed
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=3 landSea=43 relief=43 coast=8 riversMain=94 riversFill=497 forest=2 deposits=7 starts=34 total=731
+PASS  [99] mapgen: re-running placeDeposits never overwrites forest
+PASS  [100] mapgen: forest+deposit coexistence on the same hex is allowed (decyzja wlasciciela)
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=5 landSea=52 relief=45 coast=8 riversMain=104 riversFill=561 forest=4 deposits=8 starts=42 total=829
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=3 landSea=52 relief=51 coast=9 riversMain=133 riversFill=549 forest=2 deposits=7 starts=31 total=838
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=2 landSea=43 relief=43 coast=8 riversMain=129 riversFill=466 forest=2 deposits=5 starts=29 total=727
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=2 landSea=50 relief=45 coast=8 riversMain=170 riversFill=614 forest=3 deposits=5 starts=30 total=930
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=2 landSea=41 relief=52 coast=8 riversMain=112 riversFill=417 forest=3 deposits=6 starts=33 total=674
+PASS  [101] mapgen: startPositions has >=5 entries, all on land, pairwise distance >= absMinDist (all seeds)
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=3 landSea=60 relief=75 coast=8 riversMain=137 riversFill=548 forest=4 deposits=8 starts=50 total=893
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=1 terrain=4 landSea=75 relief=83 coast=11 riversMain=130 riversFill=580 forest=3 deposits=5 starts=41 total=932
+PASS  [102] mapgen: startPositions identical for the same seed (deterministic)
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=2 landSea=42 relief=44 coast=8 riversMain=74 riversFill=332 forest=2 deposits=6 starts=26 total=535
+PASS  [103] mapgen: computeStartPositions helper returns >=5 land starts
+PASS  [104] siege: wall constants retired to 0 in buildings.json mury (flat bonus removed 2026-07-25)
+PASS  [105] siege: exported WALL_BASE_OBRONA/PER_LEVEL match retired (0) data defaults
+PASS  [106] siege: no walls -> zero Obrona bonus
+PASS  [107] siege: level-1 walls add NO flat Obrona bonus (retired; was 5)
+PASS  [108] siege: wall level no longer changes the flat defence bonus (all 0)
+PASS  [109] siege: walls no longer harden Pancerz (retired; flat bonus == 0)
+PASS  [110] siege: hill terrain defence multiplier === HILL_DEFENSE_MULT (1.5)
+PASS  [111] siege: flat terrain has no defence multiplier (1.0)
+PASS  [112] siege: city on a hill carries the terrain multiplier in its bonus
+PASS  [113] siege: applyCityBonus raises defender effective Obrona on walled hill
+PASS  [114] siege: wall level no longer changes damage dealt here (flat bonus retired; was less)
+PASS  [115] siege: both engagements produced a defender HP loss (sanity)
+PASS  [116] siege: an overwhelming attacker defeats the garrison defender
+PASS  [117] siege: a city with no garrison is capturable
+PASS  [118] siege: captureCity transfers ownership to the new owner
+PASS  [119] siege: captureCity is PURE (does not mutate the input city)
+PASS  [120] siege: captured city has an empty garrison and is no longer fortified
+PASS  [121] siege: a defended city is NOT capturable
+PASS  [122] siege: captureCity refuses to flip a defended city
+PASS  [123] siege: a garrison of only dead units is capturable
+PASS  [124] siege: adjacent enemy may capture an undefended city
+PASS  [125] siege: a non-adjacent enemy may NOT capture (distance > 1)
+PASS  [126] siege: the owner cannot "capture" their own city
+PASS  [127] siege: makeMilitia builds a defender from ~20% of population
+PASS  [128] siege: militia is weaker than a Stone-age Warrior (half strength)
+PASS  [129] siege: a city with no population raises no militia
+PASS  [130] siege: effectiveGarrison falls back to militia for an empty garrison
+PASS  [131] siege: a militia-defended city is engaged (not a free walk-in)
+PASS  [132] siege: same seed => identical outcome, HP losses and round count (deterministic)
+PASS  [133] siege: resolveSiegeAttack never throws and returns finite HP for another seed
+PASS  [134] siege: hitChance clamps to [10,90] and matches 50+(A-D)*5
+PASS  [135] siege: baseDamage = max(1, A-Panc+Przeb) + Uderzenie only on charge
+PASS  [136] order: loadOrderParams reads T1/T2 from society-params.json (normal)
+PASS  [137] order: loadOrderParams reads the Szczęście/Prawo weights from the json
+PASS  [138] order: loadOrderParams scales by difficulty (easy T1=-1, hard T1=1)
+PASS  [139] order: loadOrderParams falls back to constants when block absent
+PASS  [140] order: loadOrderParams falls back per missing key (partial block)
+PASS  [141] order: Order rises with Szczęście
+PASS  [142] order: Order rises with Prawo
+PASS  [143] order: Order is monotonic non-decreasing across an input sweep
+PASS  [144] order: default formula is the average of Szczęście and Prawo (0.5/0.5)
+PASS  [145] order: weights tilt the sum (wP=1,wS=0 => Order === Prawo)
+PASS  [146] order: orderTier returns unrest below T1
+PASS  [147] order: orderTier returns order at/above T2
+PASS  [148] order: orderTier returns neutral between T1 and T2
+PASS  [149] order: unrest effects penalise production+growth+yields and carry revolt risk
+PASS  [150] order: neutral effects are all-1 with no revolt risk
+PASS  [151] order: orderEffectsToYieldMults maps trade bonus to pieniadz on order tier
+PASS  [152] order: pickRevoltMigrationTarget picks highest-order city of same owner
+PASS  [153] order: pickRevoltMigrationTarget returns null when no other city
+PASS  [154] order: loadOrderParams reads B2 unrest yield penalties from json
+PASS  [155] order: order-tier effects give a production+trade bonus and no risk
+PASS  [156] order: the three tiers yield strictly different production multipliers
+PASS  [157] order: revoltRisk is clamped to [0,1]
+PASS  [158] order: production multiplier floored at 0 for an extreme penalty
+PASS  [159] order: computeOrder is deterministic
+PASS  [160] order: evaluateOrder is deterministic (order+tier+effects)
+PASS  [161] order: non-finite inputs are coerced to 0 (NaN-safe, finite output)
+PASS  [162] order: evaluateOrder flags unrest for very low Szczęście+Prawo
+PASS  [163] order: evaluateOrder flags the order bonus for high Szczęście+Prawo
+PASS  [164] culture: loadCultureParams reads border thresholds from society-params.json (normal 100/250/500)
+PASS  [165] culture: cultureThresholds returns the sorted threshold triple
+PASS  [166] culture: loadCultureParams falls back to 100/250/500 when block absent
+PASS  [167] culture: loadCultureParams scales by difficulty (easy thresholds lower than hard)
+PASS  [168] culture: cityBorderRadius is 0 below the first threshold
+PASS  [169] culture: cityBorderRadius is 1 at/above prog1, 2 at prog2, 3 at prog3
+PASS  [170] culture: cityBorderRadius is NaN-safe (coerces to 0)
+PASS  [171] culture: accumulateCulture crossing a threshold expands the border radius
+PASS  [172] culture: accumulateCulture within a band does NOT expand the border
+PASS  [173] culture: accumulateCulture is deterministic and treats negative gain as 0
+PASS  [174] culture: cultureHappiness gives the full-unity bonus at 100% own culture
+PASS  [175] culture: cultureHappiness gives a smaller bonus at >=75% and neutral at 50%
+PASS  [176] culture: cultureHappiness penalises foreign-dominated cities (<50% and <25%)
+PASS  [177] culture: cultureHappiness defaults missing share to 100% (full bonus)
+PASS  [178] culture: convertCulture raises own-culture share toward 1.0
+PASS  [179] culture: a Biblioteka converts culture strictly faster than without
+PASS  [180] culture: Swiatynia (religious-only building, B-KULT-REL split) has NO effect on culture conversion
+PASS  [181] culture: convertCulture caps the per-turn rate (cap from params)
+PASS  [182] religion: loadReligionParams reads the 50% dominance threshold from society-params.json
+PASS  [183] religion: loadReligionParams falls back (dominance 50%) when block absent
+PASS  [184] religion: civReligion maps a civ from society-params.json (Grecy -> Politeizm olimpijski)
+PASS  [185] religion: civReligion returns null for an unknown civ
+PASS  [186] religion: isKnownCiv validates civ names against civs.json
+PASS  [187] religion: dominantReligion returns the >50% faith
+PASS  [188] religion: dominantReligion returns none when no faith exceeds 50% (split)
+PASS  [189] religion: dominantReligion returns none for an empty city
+PASS  [190] religion: dominance is exclusive at exactly 50% (must EXCEED the threshold)
+PASS  [191] religion: religionHappiness rewards our dominant religion and penalises a foreign one
+PASS  [192] religion: convertViaTemple shifts share toward the owner religion
+PASS  [193] religion: a temple converts faith strictly faster than without
+PASS  [194] religion: convertViaTemple is deterministic and conserves total adherents
+PASS  [195] religion: repeated convertViaTemple eventually fully converts the city
+PASS  [196] religion: convertViaTemple does nothing without a target or in an empty city
+PASS  [197] religion: spreadReligion reaches in-range neighbours and adds the source faith
+PASS  [198] religion: spreadReligion never reaches an out-of-range neighbour (n3 at dist 5 > max 3)
+PASS  [199] religion: spreadReligion is deterministic for the same seed
+PASS  [200] religion: a Swiatynia lets religion reach at least as many neighbours as without
+PASS  [201] religion: a city with no dominant religion does not spread
+PASS  [202] religion: makeRng (culture-religion) is a deterministic [0,1) generator for a fixed seed
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=2 landSea=41 relief=41 coast=8 riversMain=152 riversFill=565 forest=3 deposits=6 starts=31 total=848
+PASS  [203] cityfix: found a valid founding hex in test map
+PASS  [204] cityfix: canFoundCity passes for first city (no territory restriction)
+PASS  [205] cityfix: foundCityAt returns non-null city
+PASS  [206] cityfix: city has correct q,r
+PASS  [207] cityfix: city has id=city0
+PASS  [208] cityfix: city ownerId=0
+PASS  [209] cityfix: city population=1
+PASS  [210] cityfix: cities array has 1 city after push
+PASS  [211] cityfix: city coords in map.hexes
+PASS  [212] cityfix: after 1st city, playerCityNodes has 1 node
+PASS  [213] cityfix: pop1 territory radius is 5 (B min start)
+
+LOGIC OK (213/213)
+
+EXIT=0

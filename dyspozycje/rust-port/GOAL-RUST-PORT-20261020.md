@@ -34,7 +34,6 @@ dotykające tych samych plików — zawsze sekwencyjnie, nigdy w tej samej fali.
 | 5 | `R-RUSTPORT-P4-33-MOD10-CITY-CHIP-Q1` | MOD-10 nakładki miast (cityMapStatChip…) — Opus 5.5 | 1/5 | `wf_2652eab6-49a` | DISPATCHED | 2026-10-23 |
 | 6 | `R-RUSTPORT-P5-6-PORT-CYKLE-C1235-Q1` | P5.6 cykle C1/C2/C3/C5 paneli UI — Opus 5.5 | 1/5 | `wf_b0006b12-e31` | DISPATCHED | 2026-10-23 |
 
-Tematy webowe (poza pulą portu, priorytet właściciela): `R-WEB-TURN-SLOWDOWN-Q2` (spowolnienie od tury ~72; wznowiony po restarcie kontenera: `wf_9ec3a81d-275` / zadanie `w09v16rmh`, Opus 5.5). `R-WEB-REKRUTACJA-PANEL-UX-Q1` — analiza zamknięta, czeka na wybór wariantu A/B/C przez właściciela.
 
 
 Kolejka (aktualizacja 2026-10-22): P3.23 FLATTEN etap 3 (po P3.21 — te same pliki domeny: macierz counter 35g, struktury, wzrost 35b, mapa 35j–k, społeczeństwo 35n, wioski 35c, ruch 35i, produkcja 19–22b), MOD-07 jednostki żelaza, ujednolicenie typu drzewa sceny, P5.3+ kolejne poziomy `PORTING-QUEUE.md`, pierwotna kolejka: MOD-06/07 (jednostki brązu/żelaza, po P4.19), MOD-09 miasta, MOD-13 misc, ujednolicenie typu drzewa sceny (3 typy: `core::scene`, `wonders::model`, `unit_core::model`) po paczkach, P3.21 `CityId` po P3.22, P5.2+ kolejka portowania paneli (`PORTING-QUEUE.md`), RR-T1 spike (wymaga GPU właściciela).
@@ -232,4 +231,5 @@ w żywym Chromium — wymagają innego trybu pracy niż czysty katalog odczytowy
 - Integracja wyłącznie allowlist-only, scoped diff od merge-base.
 - `READY_FOR_DEPLOY`/push/deploy tylko po osobnej, jawnej zgodzie właściciela — nie dotyczy zwykłych commitów dokumentacji/postępu tego projektu na gałęzi roboczej.
 
-Tematy webowe (poza pulą portu, priorytet właściciela): `R-WEB-TURN-SLOWDOWN-Q2` (spowolnienie od tury ~72; `wf_9ec3a81d-275`, Opus 5.5). `R-WEB-REKRUTACJA-PANEL-UX-Q1` — analiza ZAMKNIĘTA (PASS-WITH-NOTES), czeka na wybór wariantu A/B/C przez właściciela (ABC), potem dispatch implementacyjny.
+
+Tematy webowe (poza pulą portu, priorytet właściciela): `R-WEB-TURN-SLOWDOWN-Q2` — ZAMKNIĘTY (PASS-WITH-NOTES), poprawki na gałęzi `fix/web-turn-slowdown-Q2` (`38c4a2c4`), NIE wydane na ROBOCZĄ (czeka na zgodę właściciela). `R-WEB-REKRUTACJA-PANEL-UX-Q1` — analiza zamknięta, czeka na wybór wariantu A/B/C.
