@@ -1,0 +1,86 @@
+SHA256 poczatkowe: src/domain/mapgen/terrain_class.rs=516614bcf230dfcd69493c7bd2f5fbec05d6ca7f36ea259945d6c8f030325315 data/derived/mapgen-terrain-class.json=f0cfb0626b889c0c5b5e3a6a7ef4db9412dc12a399b322c30520903e07c0f834
+   hash-shift13: PRZYWROCONO src/domain/mapgen/terrain_class.rs:sha256=516614bcf230dfcd..=OK data/derived/mapgen-terrain-class.json:sha256=f0cfb0626b889c0c..=OK
+WYKRYTA   hash-shift13: 3 testow FAILED: hash_int3_matches_web, reapply_land_terrain_matches_web, terrain_cell_bias_matches_web
+   hash-shift16: PRZYWROCONO src/domain/mapgen/terrain_class.rs:sha256=516614bcf230dfcd..=OK data/derived/mapgen-terrain-class.json:sha256=f0cfb0626b889c0c..=OK
+WYKRYTA   hash-shift16: 3 testow FAILED: hash_int3_matches_web, reapply_land_terrain_matches_web, terrain_cell_bias_matches_web
+   hash-const-a: PRZYWROCONO src/domain/mapgen/terrain_class.rs:sha256=516614bcf230dfcd..=OK data/derived/mapgen-terrain-class.json:sha256=f0cfb0626b889c0c..=OK
+WYKRYTA   hash-const-a: 3 testow FAILED: hash_int3_matches_web, reapply_land_terrain_matches_web, terrain_cell_bias_matches_web
+   hash-imul-const: PRZYWROCONO src/domain/mapgen/terrain_class.rs:sha256=516614bcf230dfcd..=OK data/derived/mapgen-terrain-class.json:sha256=f0cfb0626b889c0c..=OK
+WYKRYTA   hash-imul-const: 3 testow FAILED: hash_int3_matches_web, reapply_land_terrain_matches_web, terrain_cell_bias_matches_web
+   cell-bias-offset: PRZYWROCONO src/domain/mapgen/terrain_class.rs:sha256=516614bcf230dfcd..=OK data/derived/mapgen-terrain-class.json:sha256=f0cfb0626b889c0c..=OK
+WYKRYTA   cell-bias-offset: 2 testow FAILED: reapply_land_terrain_matches_web, terrain_cell_bias_matches_web
+   cell-bias-floor-to-trunc: PRZYWROCONO src/domain/mapgen/terrain_class.rs:sha256=516614bcf230dfcd..=OK data/derived/mapgen-terrain-class.json:sha256=f0cfb0626b889c0c..=OK
+WYKRYTA   cell-bias-floor-to-trunc: 1 testow FAILED: terrain_cell_bias_matches_web
+   jitter-center: PRZYWROCONO src/domain/mapgen/terrain_class.rs:sha256=516614bcf230dfcd..=OK data/derived/mapgen-terrain-class.json:sha256=f0cfb0626b889c0c..=OK
+WYKRYTA   jitter-center: 4 testow FAILED: classify_terrain_flat_matches_web, classify_terrain_matches_web, reapply_land_terrain_matches_web, rown_laka_jitter_matches_web
+   jitter-uses-global-only: PRZYWROCONO src/domain/mapgen/terrain_class.rs:sha256=516614bcf230dfcd..=OK data/derived/mapgen-terrain-class.json:sha256=f0cfb0626b889c0c..=OK
+WYKRYTA   jitter-uses-global-only: 4 testow FAILED: classify_terrain_flat_matches_web, classify_terrain_matches_web, reapply_land_terrain_matches_web, rown_laka_jitter_matches_web
+   gates-low-le-to-lt: PRZYWROCONO src/domain/mapgen/terrain_class.rs:sha256=516614bcf230dfcd..=OK data/derived/mapgen-terrain-class.json:sha256=f0cfb0626b889c0c..=OK
+WYKRYTA   gates-low-le-to-lt: 2 testow FAILED: classify_terrain_matches_web, relief_elev_gates_match_web
+   gates-high-ge-to-gt: PRZYWROCONO src/domain/mapgen/terrain_class.rs:sha256=516614bcf230dfcd..=OK data/derived/mapgen-terrain-class.json:sha256=f0cfb0626b889c0c..=OK
+WYKRYTA   gates-high-ge-to-gt: 3 testow FAILED: classify_terrain_matches_web, reapply_land_terrain_matches_web, relief_elev_gates_match_web
+   classify-sea-lt-to-le: PRZYWROCONO src/domain/mapgen/terrain_class.rs:sha256=516614bcf230dfcd..=OK data/derived/mapgen-terrain-class.json:sha256=f0cfb0626b889c0c..=OK
+WYKRYTA   classify-sea-lt-to-le: 1 testow FAILED: classify_terrain_matches_web
+   classify-landmask-lt-to-le: PRZYWROCONO src/domain/mapgen/terrain_class.rs:sha256=516614bcf230dfcd..=OK data/derived/mapgen-terrain-class.json:sha256=f0cfb0626b889c0c..=OK
+WYKRYTA   classify-landmask-lt-to-le: 1 testow FAILED: classify_terrain_matches_web
+   classify-highland-gt-to-ge: PRZYWROCONO src/domain/mapgen/terrain_class.rs:sha256=516614bcf230dfcd..=OK data/derived/mapgen-terrain-class.json:sha256=f0cfb0626b889c0c..=OK
+WYKRYTA   classify-highland-gt-to-ge: 1 testow FAILED: classify_terrain_matches_web
+   classify-mountain-elev-gt-to-ge: PRZYWROCONO src/domain/mapgen/terrain_class.rs:sha256=516614bcf230dfcd..=OK data/derived/mapgen-terrain-class.json:sha256=f0cfb0626b889c0c..=OK
+WYKRYTA   classify-mountain-elev-gt-to-ge: 1 testow FAILED: classify_terrain_matches_web
+   classify-highland-elev-gt-to-ge: PRZYWROCONO src/domain/mapgen/terrain_class.rs:sha256=516614bcf230dfcd..=OK data/derived/mapgen-terrain-class.json:sha256=f0cfb0626b889c0c..=OK
+WYKRYTA   classify-highland-elev-gt-to-ge: 1 testow FAILED: classify_terrain_matches_web
+   classify-desert-lo-gt-to-ge: PRZYWROCONO src/domain/mapgen/terrain_class.rs:sha256=516614bcf230dfcd..=OK data/derived/mapgen-terrain-class.json:sha256=f0cfb0626b889c0c..=OK
+WYKRYTA   classify-desert-lo-gt-to-ge: 1 testow FAILED: classify_terrain_matches_web
+   classify-no-climate-gate: PRZYWROCONO src/domain/mapgen/terrain_class.rs:sha256=516614bcf230dfcd..=OK data/derived/mapgen-terrain-class.json:sha256=f0cfb0626b889c0c..=OK
+WYKRYTA   classify-no-climate-gate: 2 testow FAILED: classify_terrain_matches_web, reapply_land_terrain_matches_web
+   classify-plains-gt-to-ge: PRZYWROCONO src/domain/mapgen/terrain_class.rs:sha256=516614bcf230dfcd..=OK data/derived/mapgen-terrain-class.json:sha256=f0cfb0626b889c0c..=OK
+WYKRYTA   classify-plains-gt-to-ge: 1 testow FAILED: classify_terrain_matches_web
+   flat-low-elev-to-sea: PRZYWROCONO src/domain/mapgen/terrain_class.rs:sha256=516614bcf230dfcd..=OK data/derived/mapgen-terrain-class.json:sha256=f0cfb0626b889c0c..=OK
+WYKRYTA   flat-low-elev-to-sea: 1 testow FAILED: classify_terrain_flat_matches_web
+   flat-desert-threshold-ignored: PRZYWROCONO src/domain/mapgen/terrain_class.rs:sha256=516614bcf230dfcd..=OK data/derived/mapgen-terrain-class.json:sha256=f0cfb0626b889c0c..=OK
+WYKRYTA   flat-desert-threshold-ignored: 1 testow FAILED: classify_terrain_flat_matches_web
+   forest-cap-ceil-to-floor: PRZYWROCONO src/domain/mapgen/terrain_class.rs:sha256=516614bcf230dfcd..=OK data/derived/mapgen-terrain-class.json:sha256=f0cfb0626b889c0c..=OK
+WYKRYTA   forest-cap-ceil-to-floor: 2 testow FAILED: reapply_forest_overlay_matches_web, reapply_forest_overlay_targeted_inland_cases_match_web
+   forest-no-zone-mul: PRZYWROCONO src/domain/mapgen/terrain_class.rs:sha256=516614bcf230dfcd..=OK data/derived/mapgen-terrain-class.json:sha256=f0cfb0626b889c0c..=OK
+WYKRYTA   forest-no-zone-mul: 2 testow FAILED: reapply_forest_overlay_matches_web, reapply_forest_overlay_targeted_inland_cases_match_web
+   forest-sort-ascending: PRZYWROCONO src/domain/mapgen/terrain_class.rs:sha256=516614bcf230dfcd..=OK data/derived/mapgen-terrain-class.json:sha256=f0cfb0626b889c0c..=OK
+WYKRYTA   forest-sort-ascending: 2 testow FAILED: reapply_forest_overlay_matches_web, reapply_forest_overlay_targeted_inland_cases_match_web
+   forest-keep-old-forest: PRZYWROCONO src/domain/mapgen/terrain_class.rs:sha256=516614bcf230dfcd..=OK data/derived/mapgen-terrain-class.json:sha256=f0cfb0626b889c0c..=OK
+WYKRYTA   forest-keep-old-forest: 1 testow FAILED: reapply_forest_overlay_matches_web
+   forest-pangea-min: PRZYWROCONO src/domain/mapgen/terrain_class.rs:sha256=516614bcf230dfcd..=OK data/derived/mapgen-terrain-class.json:sha256=f0cfb0626b889c0c..=OK
+WYKRYTA   forest-pangea-min: 1 testow FAILED: reapply_forest_overlay_matches_web
+   forest-mid-index: PRZYWROCONO src/domain/mapgen/terrain_class.rs:sha256=516614bcf230dfcd..=OK data/derived/mapgen-terrain-class.json:sha256=f0cfb0626b889c0c..=OK
+WYKRYTA   forest-mid-index: 1 testow FAILED: reapply_forest_overlay_matches_web
+   forest-height-zero-truthy: PRZYWROCONO src/domain/mapgen/terrain_class.rs:sha256=516614bcf230dfcd..=OK data/derived/mapgen-terrain-class.json:sha256=f0cfb0626b889c0c..=OK
+WYKRYTA   forest-height-zero-truthy: 1 testow FAILED: reapply_forest_overlay_matches_web
+   forest-min-land-lt-to-le: PRZYWROCONO src/domain/mapgen/terrain_class.rs:sha256=516614bcf230dfcd..=OK data/derived/mapgen-terrain-class.json:sha256=f0cfb0626b889c0c..=OK
+WYKRYTA   forest-min-land-lt-to-le: 1 testow FAILED: reapply_forest_overlay_matches_web
+   forest-ignores-desert-band: PRZYWROCONO src/domain/mapgen/terrain_class.rs:sha256=516614bcf230dfcd..=OK data/derived/mapgen-terrain-class.json:sha256=f0cfb0626b889c0c..=OK
+WYKRYTA   forest-ignores-desert-band: 1 testow FAILED: reapply_forest_overlay_matches_web
+   land-sea-to-grass-removed: PRZYWROCONO src/domain/mapgen/terrain_class.rs:sha256=516614bcf230dfcd..=OK data/derived/mapgen-terrain-class.json:sha256=f0cfb0626b889c0c..=OK
+WYKRYTA   land-sea-to-grass-removed: 1 testow FAILED: reapply_land_terrain_matches_web
+   land-budget-floor-to-ceil: PRZYWROCONO src/domain/mapgen/terrain_class.rs:sha256=516614bcf230dfcd..=OK data/derived/mapgen-terrain-class.json:sha256=f0cfb0626b889c0c..=OK
+WYKRYTA   land-budget-floor-to-ceil: 1 testow FAILED: reapply_land_terrain_matches_web
+   land-sort-ascending: PRZYWROCONO src/domain/mapgen/terrain_class.rs:sha256=516614bcf230dfcd..=OK data/derived/mapgen-terrain-class.json:sha256=f0cfb0626b889c0c..=OK
+WYKRYTA   land-sort-ascending: 1 testow FAILED: reapply_land_terrain_matches_web
+   land-count-not-counted: PRZYWROCONO src/domain/mapgen/terrain_class.rs:sha256=516614bcf230dfcd..=OK data/derived/mapgen-terrain-class.json:sha256=f0cfb0626b889c0c..=OK
+WYKRYTA   land-count-not-counted: 1 testow FAILED: reapply_land_terrain_matches_web
+   land-height-zero-truthy: PRZYWROCONO src/domain/mapgen/terrain_class.rs:sha256=516614bcf230dfcd..=OK data/derived/mapgen-terrain-class.json:sha256=f0cfb0626b889c0c..=OK
+WYKRYTA   land-height-zero-truthy: 1 testow FAILED: reapply_land_terrain_matches_web
+   land-flat-restore-skipped: PRZYWROCONO src/domain/mapgen/terrain_class.rs:sha256=516614bcf230dfcd..=OK data/derived/mapgen-terrain-class.json:sha256=f0cfb0626b889c0c..=OK
+WYKRYTA   land-flat-restore-skipped: 1 testow FAILED: reapply_land_terrain_matches_web
+INFRA     fractions-highland-tier: error: failed to build archive at `/home/user/cargo-target-shared/wf_5dbe3591-4a2-3/debug/deps/libciv_engine-04c4f13184038694.rlib`: No space left on device (os error 28) | error: could not compile `c -> powtorzenie
+   fractions-highland-tier: PRZYWROCONO src/domain/mapgen/terrain_class.rs:sha256=516614bcf230dfcd..=OK data/derived/mapgen-terrain-class.json:sha256=f0cfb0626b889c0c..=OK
+BLAD-KOMPILACJI fractions-highland-tier: error: failed to write to `/home/user/cargo-target-shared/wf_5dbe3591-4a2-3/debug/deps/rmetaBYuPUh/full.rmeta`: No space left on device (os error 28) | error: could not compile `civ-engine` (lib) due to 1 previous error
+   cap-le-to-lt: PRZYWROCONO src/domain/mapgen/terrain_class.rs:sha256=516614bcf230dfcd..=OK data/derived/mapgen-terrain-class.json:sha256=f0cfb0626b889c0c..=OK
+WYKRYTA   cap-le-to-lt: 2 testow FAILED: apply_marginal_land_zone_caps_matches_web, margin_cap_matches_web
+   cap-d-minus-1: PRZYWROCONO src/domain/mapgen/terrain_class.rs:sha256=516614bcf230dfcd..=OK data/derived/mapgen-terrain-class.json:sha256=f0cfb0626b889c0c..=OK
+WYKRYTA   cap-d-minus-1: 3 testow FAILED: apply_marginal_land_zone_caps_matches_web, fades_and_distances_match_web, margin_cap_matches_web
+INFRA     radial-sign: error: could not compile `civ-engine` (lib) |   process didn't exit successfully: `/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/rustc --crate-name civ_engine --edition=2021 src/lib.rs  -> powtorzenie
+   radial-sign: PRZYWROCONO src/domain/mapgen/terrain_class.rs:sha256=516614bcf230dfcd..=OK data/derived/mapgen-terrain-class.json:sha256=f0cfb0626b889c0c..=OK
+BLAD-KOMPILACJI radial-sign: error: failed to write to `/home/user/cargo-target-shared/wf_5dbe3591-4a2-3/debug/deps/rmetaWBrZs2/full.rmeta`: No space left on device (os error 28) | error: could not compile `civ-engine` (lib) due to 1 previous error
+SHA256 koncowe:    src/domain/mapgen/terrain_class.rs=516614bcf230dfcd69493c7bd2f5fbec05d6ca7f36ea259945d6c8f030325315 data/derived/mapgen-terrain-class.json=f0cfb0626b889c0c5b5e3a6a7ef4db9412dc12a399b322c30520903e07c0f834
+ROWNOWAZNE (wylaczone z listy, patrz §6a): ['fade-cap-le-to-lt', 'land-restore-keeps-overlay', 'parse-exponent-without-digits-ok']
+POWTORZENIA Z POWODU INFRA: ['fractions-highland-tier', 'radial-sign']
+PODSUMOWANIE: wykryte 37/39, przezyly: ['fractions-highland-tier (blad kompilacji)', 'radial-sign (blad kompilacji)'], pliki przywrocone bajt w bajt (SHA-256 poczatek == koniec): True
+EXIT=1

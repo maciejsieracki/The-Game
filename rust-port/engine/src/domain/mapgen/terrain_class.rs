@@ -112,18 +112,143 @@ fn loop_count(m: f64) -> usize {
     }
 }
 
-/// JS `Number(s)` w zakresie kluczy `"q,r"` generowanych przez `hexKey`: puste = 0, nie-liczba = NaN.
+/// ECMAScript `WhiteSpace` + `LineTerminator` (obcinane przez `Number(string)`); wlasny zbior,
+/// bo `char::is_whitespace` zawiera U+0085 (JS: nie), a pomija U+FEFF (JS: tak).
+fn is_js_whitespace(c: char) -> bool {
+    let en_quad_to_hair_space = ('\u{2000}'..='\u{200a}').contains(&c);
+    en_quad_to_hair_space
+        || matches!(
+            c,
+            '\u{0009}'
+                | '\u{000a}'
+                | '\u{000b}'
+                | '\u{000c}'
+                | '\u{000d}'
+                | '\u{0020}'
+                | '\u{00a0}'
+                | '\u{1680}'
+                | '\u{2028}'
+                | '\u{2029}'
+                | '\u{202f}'
+                | '\u{205f}'
+                | '\u{3000}'
+                | '\u{feff}'
+        )
+}
+
+/// Wartosc literalu calkowitego o podstawie potegi dwojki (`0x`/`0o`/`0b`), zaokraglona do
+/// najblizszej liczby f64 (remis -> parzysta), jak `Number("0x...")`; dowolna dlugosc cyfr.
+fn pow2_radix_digits_to_f64(digits: &str, radix: u32) -> f64 {
+    let bits_per_digit = radix.trailing_zeros();
+    let mut bits: Vec<bool> = Vec::with_capacity(digits.len() * bits_per_digit as usize);
+    for ch in digits.chars() {
+        let d = ch.to_digit(radix).expect("cyfra juz zwalidowana");
+        for shift in (0..bits_per_digit).rev() {
+            bits.push((d >> shift) & 1 == 1);
+        }
+    }
+    let first_one = match bits.iter().position(|b| *b) {
+        Some(p) => p,
+        None => return 0.0,
+    };
+    let bits = &bits[first_one..];
+    if bits.len() <= 64 {
+        let v = bits.iter().fold(0u64, |acc, b| (acc << 1) | u64::from(*b));
+        return v as f64; // `u64 as f64` zaokragla do najblizszej, remis do parzystej
+    }
+    let top = bits[..64]
+        .iter()
+        .fold(0u64, |acc, b| (acc << 1) | u64::from(*b));
+    let sticky = bits[64..].iter().any(|b| *b);
+    let mut mantissa = top >> 11;
+    let rem = top & 0x7ff;
+    let half = 0x400;
+    if rem > half || (rem == half && (sticky || mantissa & 1 == 1)) {
+        mantissa += 1;
+    }
+    // wartosc = mantissa * 2^(len - 64 + 11); powi(2, k) dla k > 1023 daje +inf (jak JS)
+    let exp = i32::try_from(bits.len() - 64 + 11).unwrap_or(i32::MAX);
+    (mantissa as f64) * 2f64.powi(exp)
+}
+
+/// ECMAScript `Number(string)` (StringToNumber): obcina biale znaki JS, pusty napis = 0,
+/// `0x`/`0o`/`0b` (bez znaku), `Infinity` (wielkosc liter ma znaczenie), notacja dziesietna z
+/// opcjonalnym znakiem i wykladnikiem; cokolwiek innego = `NaN` (m.in. `inf`, `1_0`, `-0x10`).
+fn js_string_to_number(raw: &str) -> f64 {
+    let s = raw.trim_matches(is_js_whitespace);
+    if s.is_empty() {
+        return 0.0;
+    }
+    for (prefix, radix) in [
+        ("0x", 16),
+        ("0X", 16),
+        ("0o", 8),
+        ("0O", 8),
+        ("0b", 2),
+        ("0B", 2),
+    ] {
+        if let Some(digits) = s.strip_prefix(prefix) {
+            if digits.is_empty() || !digits.chars().all(|c| c.is_digit(radix)) {
+                return f64::NAN;
+            }
+            return pow2_radix_digits_to_f64(digits, radix);
+        }
+    }
+    let (negative, body) = match s.as_bytes()[0] {
+        b'+' => (false, &s[1..]),
+        b'-' => (true, &s[1..]),
+        _ => (false, s),
+    };
+    let sign = if negative { -1.0 } else { 1.0 };
+    if body == "Infinity" {
+        return sign * f64::INFINITY;
+    }
+    let bytes = body.as_bytes();
+    let mut i = 0;
+    let mut int_digits = 0;
+    while i < bytes.len() && bytes[i].is_ascii_digit() {
+        i += 1;
+        int_digits += 1;
+    }
+    let mut frac_digits = 0;
+    if i < bytes.len() && bytes[i] == b'.' {
+        i += 1;
+        while i < bytes.len() && bytes[i].is_ascii_digit() {
+            i += 1;
+            frac_digits += 1;
+        }
+    }
+    if int_digits + frac_digits == 0 {
+        return f64::NAN;
+    }
+    if i < bytes.len() && (bytes[i] == b'e' || bytes[i] == b'E') {
+        i += 1;
+        if i < bytes.len() && (bytes[i] == b'+' || bytes[i] == b'-') {
+            i += 1;
+        }
+        let exp_start = i;
+        while i < bytes.len() && bytes[i].is_ascii_digit() {
+            i += 1;
+        }
+        if i == exp_start {
+            return f64::NAN;
+        }
+    }
+    if i != bytes.len() {
+        return f64::NAN;
+    }
+    match body.parse::<f64>() {
+        Ok(value) => sign * value,
+        Err(_) => f64::NAN,
+    }
+}
+
+/// JS `Number(part)` dla elementu klucza `"q,r"` po `split(',')`: brak elementu
+/// (`undefined`) = `NaN`, w pozostalych przypadkach `StringToNumber`.
 fn js_number_of_key_part(part: Option<&str>) -> f64 {
     match part {
         None => f64::NAN,
-        Some(s) => {
-            let t = s.trim();
-            if t.is_empty() {
-                0.0
-            } else {
-                t.parse::<f64>().unwrap_or(f64::NAN)
-            }
-        }
+        Some(s) => js_string_to_number(s),
     }
 }
 

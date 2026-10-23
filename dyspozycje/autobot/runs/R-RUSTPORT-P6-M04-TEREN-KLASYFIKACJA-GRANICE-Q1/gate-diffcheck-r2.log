@@ -1,0 +1,2 @@
+$ git diff --cached --check   (po jawnym git add listy plikow; bez -A)
+EXIT=0

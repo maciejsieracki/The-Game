@@ -1,0 +1,16 @@
+zmodyfikowano 9 wartosci -> /home/user/The-Game/.claude/worktrees/wf_5dbe3591-4a2-3/.m04-helpers/vectors-tampered.json
+EXIT(tamper)=0
+ROZBIEZNOSC: latBuffer r=6 h=4 e=0
+ROZBIEZNOSC: hashInt3 180,214,2807205797
+ROZBIEZNOSC: classify ['0.3343140913173557', '0.47349013248458505', '0.1294140717945993', '0.6045843951869756', '0.5499999990000001', {'desert': '0.4', 'highland': '0.7', 'mountain': '0.8'}, 'plains_south', None, 1]: laka != rownina
+ROZBIEZNOSC: forest #3: heks #5 [5, 0, 1, 0, 0, 0, 1] != [5, 0, 1, 1, 0, 0, 1]
+ROZBIEZNOSC: forestTie#0 tie-fp kontynenty/low/24x3: mutant python=True web=0
+ROZBIEZNOSC: forestTie #5: heks #7 [7, 0, 5, 0, 0, 0, 0] != [7, 0, 5, 1, 0, 0, 0]
+forestTie: przypadkow=51 max==1: 48 mutacja zmienia wynik w: 29 (przy max>1: 0); pozycji bez wpisu w polu odleglosci: 1440
+ROZBIEZNOSC: parseHexKey q '0x10,0b11': python=16.0 web=17
+parseHexKey: kluczy=788 (NaN: 1293, Infinity: 18)
+ROZBIEZNOSC: marginZone #4 adjusted 19 != 20
+ROZBIEZNOSC: landMaskBorderFade ['49', '4', '74', '6']
+wartosci tabeli sprawdzone wzgledem TS: 51/51
+checks=168826 rozbieznosci=9
+EXIT=1

@@ -1035,7 +1035,13 @@ def land_by_cell(mass_set, cell_size):
     return cells  # dict zachowuje kolejnosc wstawiania jak Map
 
 
-def reapply_forest(hexes, scratch, typ, tier, continent_of, n_cont, map_height):
+LAST_MAX_SEA = [1]  # maxSeaInPart ostatniego wywolania (do porownania z wartoscia zapisana przez generator)
+
+
+def reapply_forest(hexes, scratch, typ, tier, continent_of, n_cont, map_height, mutant_inland=False):
+    """`mutant_inland=True` = web z MUTACJA `maxSeaInPart >= 1` (zamiast `> 1`) - tylko do dowodu
+    nieekwiwalnosci (RUNDA 2, zarzut 3); wynik tej wersji NIE jest porownywany z wektorami weba."""
+    LAST_MAX_SEA[0] = 1
     share = FOREST_SHARE[tier]
     cell_size = FOREST_CELL[tier]
     min_land = max(MIN_LAND_FLOOR, math.floor(cell_size * MIN_LAND_MUL))
@@ -1051,6 +1057,7 @@ def reapply_forest(hexes, scratch, typ, tier, continent_of, n_cont, map_height):
             d = sea.get(k, 0)
             if d > max_sea:
                 max_sea = d
+        LAST_MAX_SEA[0] = max(LAST_MAX_SEA[0], max_sea)
         for land in land_by_cell(mass_set, cell_size).values():
             if len(land) < min_land:
                 continue
@@ -1062,7 +1069,8 @@ def reapply_forest(hexes, scratch, typ, tier, continent_of, n_cont, map_height):
                 if map_height and climate_band_at(r, map_height) == "desert":
                     continue
                 sd = sea.get(key(q, r), 0)
-                boost = (sd / max_sea) * INLAND if max_sea > 1 else 0
+                inland_on = (max_sea >= 1) if mutant_inland else (max_sea > 1)
+                boost = (sd / max_sea) * INLAND if inland_on else 0
                 eligible.append((key(q, r), scratch.get(key(q, r), 0.0) + boost))
             eligible = sorted(eligible, key=lambda e: -e[1])
             if not eligible:
@@ -1313,28 +1321,121 @@ for n, c in enumerate(CASES["reapplyLand"]):
     cmp_state(dump_state(hexes), c["out"], f"reapplyLand #{n}")
 
 # 3.8 reapplyForest (+ niezalezne policzenie zaleznosci i porownanie z wartosciami zapisanymi z weba)
-for n, c in enumerate(CASES["reapplyForest"]):
+def verify_forest_case(n, c, tag):
     hexes = decode_spec(c["spec"])
     scratch = {s[0]: vf(s[1]) for s in c["scratch"]}
     cont = None if c["continentOf"] is None else {k: v for k, v in c["continentOf"]}
     deps = c["deps"]
     tier = c["tier"]
-    check(same(FOREST_SHARE[tier], vf(deps["share"])), f"forest#{n} share")
-    check(same(FOREST_CAP, vf(deps["capFrac"])), f"forest#{n} capFrac")
-    check(same(FOREST_CELL[tier], vf(deps["cellSize"])), f"forest#{n} cellSize")
-    check(same(max(MIN_LAND_FLOOR, math.floor(FOREST_CELL[tier] * MIN_LAND_MUL)), vf(deps["minLand"])), f"forest#{n} minLand")
+    check(same(FOREST_SHARE[tier], vf(deps["share"])), f"{tag}#{n} share")
+    check(same(FOREST_CAP, vf(deps["capFrac"])), f"{tag}#{n} capFrac")
+    check(same(FOREST_CELL[tier], vf(deps["cellSize"])), f"{tag}#{n} cellSize")
+    check(same(max(MIN_LAND_FLOOR, math.floor(FOREST_CELL[tier] * MIN_LAND_MUL)), vf(deps["minLand"])), f"{tag}#{n} minLand")
     sd = sea_distance(hexes)
     exp_sd = {key(s[0], s[1]): vf(d) for s, d in zip(c["spec"], deps["seaDist"]) if d is not None}
-    check(all(same(sd[k], v) for k, v in exp_sd.items()) and set(sd) == set(exp_sd), f"forest#{n} seaDist (niezaleznie policzona)")
+    check(all(same(sd[k], v) for k, v in exp_sd.items()) and set(sd) == set(exp_sd), f"{tag}#{n} seaDist (niezaleznie policzona)")
     parts = partitions_for(hexes, c["typ"], cont, float(c["nContinents"]))
-    check(parts == deps["partitions"], f"forest#{n} partycje (niezaleznie policzone)")
+    check(parts == deps["partitions"], f"{tag}#{n} partycje (niezaleznie policzone)")
     for part, call in zip(parts, deps["cellCalls"]):
         mass_set = list(dict.fromkeys(k for k in part if (k not in hexes) or not is_water(hexes[k].tb)))
         cells = land_by_cell(mass_set, FOREST_CELL[tier])
-        check([[ck, v] for ck, v in cells.items()] == call["cells"], f"forest#{n} komorki pokrycia (niezaleznie)")
+        check([[ck, v] for ck, v in cells.items()] == call["cells"], f"{tag}#{n} komorki pokrycia (niezaleznie)")
+    mutant_hexes = decode_spec(c["spec"])
     assigned = reapply_forest(hexes, scratch, c["typ"], tier, cont, float(c["nContinents"]), c["mapHeight"])
-    check(assigned == c["assigned"], f"forest#{n} assigned {assigned} != {c['assigned']}")
-    cmp_state(dump_state(hexes), c["out"], f"reapplyForest #{n}")
+    max_sea = LAST_MAX_SEA[0]
+    check(assigned == c["assigned"], f"{tag}#{n} assigned {assigned} != {c['assigned']}")
+    cmp_state(dump_state(hexes), c["out"], f"{tag} #{n}")
+    # wersja z MUTACJA `maxSeaInPart >= 1` liczona NIEZALEZNIE w Pythonie
+    mut_assigned = reapply_forest(mutant_hexes, scratch, c["typ"], tier, cont, float(c["nContinents"]),
+                                  c["mapHeight"], mutant_inland=True)
+    differs = dump_state(mutant_hexes) != dump_state(hexes) or mut_assigned != assigned
+    return max_sea, differs
+
+
+for n, c in enumerate(CASES["reapplyForest"]):
+    verify_forest_case(n, c, "forest")
+
+# 3.8b RUNDA 2: przypadki ukierunkowane (zarzut 3). Niezalezny dowod NIEEKWIWALNOSCI mutacji
+# `maxSeaInPart > 1` -> `>= 1`: wersja Python z mutacja daje inny wynik niz oryginal dokladnie tam, gdzie
+# zapisal to web uruchomiony z mutacja (`mutantDiffers`), a przy max > 1 mutacja nic nie zmienia.
+tie_max_one = tie_differs = tie_differs_gt1 = tie_missing_sd = 0
+for n, c in enumerate(CASES["reapplyForestTie"]):
+    max_sea, differs = verify_forest_case(n, c, "forestTie")
+    check(max_sea == c["maxSeaInPart"], f"forestTie#{n} maxSeaInPart niezaleznie: {max_sea} != {c['maxSeaInPart']}")
+    check(differs == bool(c["mutantDiffers"]), f"forestTie#{n} {c['label']}: mutant python={differs} web={c['mutantDiffers']}")
+    if max_sea == 1:
+        tie_max_one += 1
+        tie_differs += int(differs)
+    else:
+        tie_differs_gt1 += int(differs)
+    tie_missing_sd += sum(1 for d in c["deps"]["seaDist"] if d is None)
+check(tie_max_one >= 40, f"forestTie: map z maxSeaInPart == 1 tylko {tie_max_one}")
+check(tie_differs >= 10, f"forestTie: mutacja zmienia wynik tylko w {tie_differs} mapach (potrzeba >= 10)")
+check(tie_differs_gt1 == 0, f"forestTie: mutacja zmienia wynik przy max > 1 ({tie_differs_gt1})")
+print(f"forestTie: przypadkow={len(CASES['reapplyForestTie'])} max==1: {tie_max_one} mutacja zmienia wynik w: {tie_differs} "
+      f"(przy max>1: {tie_differs_gt1}); pozycji bez wpisu w polu odleglosci: {tie_missing_sd}")
+
+# 3.8c RUNDA 2: parseHexKey na kluczach brzegowych (zarzut 4) - WLASNE `StringToNumber` wg ECMA-262
+# (Fraction/int: poprawne zaokraglenie dziesietne i potegi dwojki; bez Rust, bez Node).
+JS_WS = set("\u0009\u000a\u000b\u000c\u000d       　﻿") | {
+    chr(c) for c in range(0x2000, 0x200B)}
+DEC_RX = re.compile(r"^[+-]?(?:[0-9]+\.?[0-9]*|\.[0-9]+)(?:[eE][+-]?[0-9]+)?$")
+
+
+def int_to_f64_exact(n):
+    """Calkowita -> najblizszy f64 (remis do parzystej); powyzej zakresu = +inf (jak JS)."""
+    try:
+        return float(n)
+    except OverflowError:
+        return math.inf
+
+
+def js_string_to_number(raw):
+    s = raw
+    while s and s[0] in JS_WS:
+        s = s[1:]
+    while s and s[-1] in JS_WS:
+        s = s[:-1]
+    if s == "":
+        return 0.0
+    for prefix, base, digits in (("0x", 16, "0123456789abcdefABCDEF"), ("0X", 16, "0123456789abcdefABCDEF"),
+                                 ("0o", 8, "01234567"), ("0O", 8, "01234567"), ("0b", 2, "01"), ("0B", 2, "01")):
+        if s.startswith(prefix):
+            body = s[2:]
+            if body == "" or any(ch not in digits for ch in body):
+                return math.nan
+            return int_to_f64_exact(int(body, base))
+    sign = 1.0
+    body = s
+    if s[0] in "+-":
+        sign = -1.0 if s[0] == "-" else 1.0
+        body = s[1:]
+    if body == "Infinity":
+        return sign * math.inf
+    if not DEC_RX.fullmatch(body) or not body.isascii():
+        return math.nan
+    try:
+        return sign * float(body)
+    except OverflowError:
+        return sign * math.inf
+
+
+def parse_hex_key_js(k):
+    parts = k.split(",")
+    q = js_string_to_number(parts[0])
+    r = js_string_to_number(parts[1]) if len(parts) > 1 else math.nan
+    return q, r
+
+
+phk_nan = phk_inf = 0
+for kstr, qt, rt in CASES["parseHexKey"]:
+    q, r = parse_hex_key_js(kstr)
+    check(same(q, vf(qt)), f"parseHexKey q {kstr!r}: python={q!r} web={qt}")
+    check(same(r, vf(rt)), f"parseHexKey r {kstr!r}: python={r!r} web={rt}")
+    phk_nan += int(math.isnan(q)) + int(math.isnan(r))
+    phk_inf += int(math.isinf(q)) + int(math.isinf(r))
+check(phk_nan >= 200 and phk_inf >= 8, f"parseHexKey: pokrycie NaN={phk_nan} Inf={phk_inf}")
+print(f"parseHexKey: kluczy={len(CASES['parseHexKey'])} (NaN: {phk_nan}, Infinity: {phk_inf})")
 
 # 3.9 erosionSort
 for n, c in enumerate(CASES["erosionSort"]):

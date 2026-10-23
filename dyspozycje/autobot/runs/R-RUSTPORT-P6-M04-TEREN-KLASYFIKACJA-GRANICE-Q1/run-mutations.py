@@ -78,6 +78,25 @@ MUTATIONS = [
     ("morze-keeps-deposit", LIB, "hex.river_edges.clear();\n    hex.has_deposit = false;", "hex.river_edges.clear();", 0),
     ("laka-keeps-deposit", LIB, "hex.terrain = Terrain::Grassland;\n    hex.overlay = Nakladka::Brak;\n    hex.has_deposit = false;", "hex.terrain = Terrain::Grassland;\n    hex.overlay = Nakladka::Brak;", 0),
     ("laka-clears-river", LIB, "hex.terrain = Terrain::Grassland;\n    hex.overlay = Nakladka::Brak;\n    hex.has_deposit = false;", "hex.terrain = Terrain::Grassland;\n    hex.overlay = Nakladka::Brak;\n    hex.river_present = false;\n    hex.has_deposit = false;", 0),
+    # RUNDA 2 (zarzut 3): mutacja uznana w r1 za rownowazna - zabijana WEKTORAMI ukierunkowanymi
+    # (`reapplyForestTie`: max == 1 + remisy FP + skladowe bez wody; web z ta mutacja daje inny wynik).
+    ("forest-inland-gt-to-ge", LIB, "let inland_boost = if max_sea_in_part > 1.0 {", "let inland_boost = if max_sea_in_part >= 1.0 {", 0),
+    # RUNDA 2 (zarzut 4): `parseHexKey` / `Number(string)` na kluczach brzegowych z weba
+    ("parse-key-old-simplified", LIB, "        Some(s) => js_string_to_number(s),", "        Some(s) => {\n            let t = s.trim();\n            if t.is_empty() {\n                0.0\n            } else {\n                t.parse::<f64>().unwrap_or(f64::NAN)\n            }\n        }", 0),
+    ("parse-key-missing-second-zero", LIB, "        None => f64::NAN,\n        Some(s) => js_string_to_number(s),", "        None => 0.0,\n        Some(s) => js_string_to_number(s),", 0),
+    ("parse-ws-rust-set", LIB, "let s = raw.trim_matches(is_js_whitespace);", "let s = raw.trim_matches(char::is_whitespace);", 0),
+    ("parse-ws-no-feff", LIB, "                | '\\u{3000}'\n                | '\\u{feff}'\n", "                | '\\u{3000}'\n", 0),
+    ("parse-ws-no-en-quad-range", LIB, "let en_quad_to_hair_space = ('\\u{2000}'..='\\u{200a}').contains(&c);", "let en_quad_to_hair_space = false;", 0),
+    ("parse-hex-prefix-removed", LIB, "        (\"0x\", 16),\n        (\"0X\", 16),\n", "        (\"0X\", 16),\n", 0),
+    ("parse-binary-prefix-removed", LIB, "        (\"0b\", 2),\n        (\"0B\", 2),\n", "        (\"0B\", 2),\n", 0),
+    ("parse-radix-empty-digits-ok", LIB, "if digits.is_empty() || !digits.chars().all(|c| c.is_digit(radix)) {", "if !digits.chars().all(|c| c.is_digit(radix)) {", 0),
+    ("parse-radix-rounding-no-sticky", LIB, "if rem > half || (rem == half && (sticky || mantissa & 1 == 1)) {", "if rem > half || (rem == half && mantissa & 1 == 1) {", 0),
+    ("parse-radix-rounding-truncate", LIB, "if rem > half || (rem == half && (sticky || mantissa & 1 == 1)) {", "if false {", 0),
+    ("parse-infinity-case-insensitive", LIB, "if body == \"Infinity\" {", "if body.eq_ignore_ascii_case(\"infinity\") {", 0),
+    # `parse-exponent-without-digits-ok` (usuniecie sprawdzenia `i == exp_start`) przezyla w r2 i jest ROWNOWAZNA
+    # (patrz EQUIVALENT ponizej); zastapiona mutacja z realnym skutkiem (wielka litera wykladnika):
+    ("parse-exponent-uppercase-rejected", LIB, "if i < bytes.len() && (bytes[i] == b'e' || bytes[i] == b'E') {", "if i < bytes.len() && bytes[i] == b'e' {", 0),
+    ("parse-sign-dropped", LIB, "    let sign = if negative { -1.0 } else { 1.0 };", "    let sign = if negative { 1.0 } else { 1.0 };", 0),
     ("js-round-half", LIB, "if x - floor >= 0.5 { floor + 1.0 } else { floor };", "if x - floor > 0.5 { floor + 1.0 } else { floor };", 0),
     ("js-max-nan", LIB, "fn js_max(a: f64, b: f64) -> f64 {\n    if a.is_nan() || b.is_nan() {\n        return f64::NAN;\n    }", "fn js_max(a: f64, b: f64) -> f64 {\n    if a.is_nan() {\n        return b;\n    }\n    if b.is_nan() {\n        return a;\n    }", 0),
     ("js-min-nan", LIB, "fn js_min(a: f64, b: f64) -> f64 {\n    if a.is_nan() || b.is_nan() {\n        return f64::NAN;\n    }", "fn js_min(a: f64, b: f64) -> f64 {\n    if a.is_nan() {\n        return b;\n    }\n    if b.is_nan() {\n        return a;\n    }", 0),
@@ -138,14 +157,22 @@ def mutate_table(text, key):
 # Sa jawnie WYLACZONE z listy MUTATIONS i drukowane w podsumowaniu (EQUIVALENT), zeby nie znikaly po cichu.
 # Uwaga: `table-min-sufitu` w przebiegu r1 (wartosc 2 -> 3) tez byla rownowazna (petla `min(cap, len)` i
 # `ceil(len * 0.95)` ograniczaja wynik niezaleznie od 2 vs 3); zastapiona wartoscia 100, ktora zmienia wynik.
+# RUNDA 2: `forest-inland-gt-to-ge` USUNIETA z tej listy - nie jest rownowazna (zarzut 3 Evaluatora r1):
+# `forNoise + 0.14` zwija sasiednie wartosci (remisy FP, np. 0 i 1e-20 => 0.14), a heksy ladu bez wpisu w polu
+# odleglosci (`?? 0`) nie dostaja bonusu; web z ta mutacja daje inny wynik w 29/48 map z max == 1
+# (`stats.forestTie` w wektorach). Zabijana testem `reapply_forest_overlay_targeted_inland_cases_match_web`.
 EQUIVALENT = {
-    "forest-inland-gt-to-ge": "`maxSeaInPart > 1` vs `>= 1`: gdy maxSeaInPart == 1, KAZDY heks ladu partycji ma sd == 1 "
-                              "(land => sd >= 1, a max == 1), wiec bonus 0.14 dostaja wszystkie kwalifikowane heksy jednakowo "
-                              "i kolejnosc sortowania (jedyny konsument `n`) sie nie zmienia",
+    "parse-exponent-without-digits-ok": "usuniecie sprawdzenia `i == exp_start` w `js_string_to_number` nic nie zmienia: gdy po `e`/`E` "
+                                        "(i opcjonalnym znaku) nie ma cyfr, nastepujacy po nim `body.parse::<f64>()` ZAWSZE zwraca Err "
+                                        "(std: wykladnik wymaga >= 1 cyfry; zmierzone dla '1e', '1e+', '1e-', '1.e', '.e1', '1E', '5e+', "
+                                        "'0e', '.5e', '5.e+' w std-parse-exponent-proof.txt) => NaN, tak samo jak z wczesnym wyjsciem; "
+                                        "sprawdzenie zostaje jako jawne odwzorowanie gramatyki ECMA-262 (obrona w glebi)",
     "land-restore-keeps-overlay": "po przywroceniu reliefu `hex.nakladka = Brak` jest redundantne: ten sam heks dostal "
-                                  "`flatNak` (= Brak) w petli pierwszego przebiegu, a `classifyTerrainFlat` zawsze zwraca Brak",
-    "fade-cap-le-to-lt": "`cap <= 0 -> 0` vs `cap < 0`: dla cap == 0 galaz `min(1, cap / 0.45)` tez daje 0 "
-                         "(cap < 0 jest nieosiagalne: marginLandCapForBorderDistance zwraca >= 0)",
+                                  "`flatNak` w petli pierwszego przebiegu, a `classifyTerrainFlat` ma `const nakladka: Nakladka = "
+                                  "Nakladka.Brak;` (gen-helpers.ts:986, nigdy nie przypisywana ponownie) - dowod z kodu, nie z probek",
+    "fade-cap-le-to-lt": "`cap <= 0 -> 0` vs `cap < 0`: `marginLandCapForBorderDistance` zwraca 0 (literal +0), `0.05 * (d - 1)` "
+                         "dla d >= 2 (>= 0.05) albo null; dla cap == +0 galaz `Math.min(1, 0 / 0.45)` daje +0 (ten sam wzorzec "
+                         "bitowy), cap < 0 / -0 / NaN jest nieosiagalne (NaN: oba warunki falszywe)",
 }
 
 args = [a for a in sys.argv[1:] if not a.startswith("--")]
@@ -180,18 +207,70 @@ if DRY:
     print(f"DRY OK: {len(MUTATIONS)} mutacji pasuje")
     sys.exit(0)
 
+import hashlib
+import signal
+import time
+
+# SIGTERM/SIGINT => normalne wyjscie, zeby blok `finally` PRZYWROCIL pliki (w r2 przerwany przebieg
+# zostawil zmutowany plik; odtworzono go dopiero po skrocie SHA-256 oryginalu - patrz §6).
+signal.signal(signal.SIGTERM, lambda *_: sys.exit(143))
+signal.signal(signal.SIGINT, lambda *_: sys.exit(130))
+
+
+def disk_sha(path):
+    """SHA-256 BAJTOW pliku z dysku (nie z kopii w pamieci)."""
+    with open(path, "rb") as fh:
+        return hashlib.sha256(fh.read()).hexdigest()
+
+
+# RUNDA 2 (zarzut 5): dowod przywrocenia PER PLIK I PER MUTACJA - skrot bajtow z dysku przed przebiegiem,
+# po kazdej mutacji (po przywroceniu) i na koncu. Rozbieznosc => natychmiastowy blad (exit 3).
+ORIG_SHA = {p: disk_sha(p) for p in (LIB, TBL)}
+print("SHA256 poczatkowe: " + " ".join(f"{p}={h}" for p, h in ORIG_SHA.items()))
+sys.stdout.flush()
+
+
+def restore_and_check(mid):
+    for p, t in orig.items():
+        with open(p, "w", encoding="utf-8", newline="") as fh:
+            fh.write(t)
+    bad = [p for p in ORIG_SHA if disk_sha(p) != ORIG_SHA[p]]
+    status = "PRZYWROCONO " + " ".join(f"{p}:sha256={disk_sha(p)[:16]}..={'OK' if p not in bad else 'ROZNI-SIE'}" for p in ORIG_SHA)
+    print(f"   {mid}: {status}")
+    if bad:
+        print(f"BLAD KRYTYCZNY: plik(i) {bad} po mutacji {mid} nie sa identyczne bajt w bajt z oryginalem")
+        sys.exit(3)
+
+
+def run_tests():
+    r = subprocess.run(["cargo", "test", "--no-fail-fast", *TESTS], capture_output=True, text=True)
+    out = r.stdout + r.stderr
+    failed = sorted(set(re.findall(r"^test (\S+) \.\.\. FAILED", out, re.M)))
+    compile_err = "error[" in out or "could not compile" in out
+    infra = "No space left on device" in out
+    return out, failed, compile_err, infra
+
+
 detected = 0
 survived = []
+infra_retries = []
 try:
     for mid, path, old, new, nth in MUTATIONS:
         text = orig[path]
         mutated = build(mid, path, old, new, nth)
-        open(path, "w", encoding="utf-8").write(mutated)
-        r = subprocess.run(["cargo", "test", "--no-fail-fast", *TESTS], capture_output=True, text=True)
-        out = r.stdout + r.stderr
-        failed = sorted(set(re.findall(r"^test (\S+) \.\.\. FAILED", out, re.M)))
-        compile_err = "error[" in out or "could not compile" in out
-        open(path, "w", encoding="utf-8").write(text)
+        with open(path, "w", encoding="utf-8", newline="") as fh:
+            fh.write(mutated)
+        out, failed, compile_err, infra = run_tests()
+        attempts = 0
+        while compile_err and infra and attempts < 8:
+            # przyczyna INFRA (np. brak miejsca na dysku): to NIE jest wynik mutacji - czekaj i powtorz
+            attempts += 1
+            infra_retries.append(f"{mid}#{attempts}")
+            print(f"INFRA     {mid}: " + " | ".join(l for l in out.splitlines() if "error" in l)[:200] + f" -> powtorzenie {attempts}/8 po 60 s")
+            sys.stdout.flush()
+            time.sleep(60)
+            out, failed, compile_err, infra = run_tests()
+        restore_and_check(mid)
         if compile_err:
             print(f"BLAD-KOMPILACJI {mid}: " + " | ".join(l for l in out.splitlines() if "error" in l)[:300])
             survived.append(mid + " (blad kompilacji)")
@@ -204,8 +283,11 @@ try:
         sys.stdout.flush()
 finally:
     for p, t in orig.items():
-        open(p, "w", encoding="utf-8").write(t)
-same = all(open(p, encoding="utf-8").read() == t for p, t in orig.items())
+        with open(p, "w", encoding="utf-8", newline="") as fh:
+            fh.write(t)
+final_ok = all(disk_sha(p) == ORIG_SHA[p] for p in ORIG_SHA)
+print("SHA256 koncowe:    " + " ".join(f"{p}={disk_sha(p)}" for p in ORIG_SHA))
 print(f"ROWNOWAZNE (wylaczone z listy, patrz §6a): {sorted(EQUIVALENT)}")
-print(f"PODSUMOWANIE: wykryte {detected}/{len(MUTATIONS)}, przezyly: {survived}, pliki przywrocone: {same}")
-sys.exit(0 if not survived and same else 1)
+print(f"POWTORZENIA Z POWODU INFRA: {infra_retries}")
+print(f"PODSUMOWANIE: wykryte {detected}/{len(MUTATIONS)}, przezyly: {survived}, pliki przywrocone bajt w bajt (SHA-256 poczatek == koniec): {final_ok}")
+sys.exit(0 if not survived and final_ok else 1)

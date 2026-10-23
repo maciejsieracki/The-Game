@@ -623,6 +623,166 @@ cases.scatter = [];
   stats.powSquareDiffs = { total, diff };
 }
 
+// ---------- 18. RUNDA 2: parseHexKey - klucze BRZEGOWE (zarzut 4) ----------
+// Bezposrednio z uruchomionego weba (`Number(parts[0])`, `Number(parts[1])`): [key, q, r] (f64 jako tekst).
+// Osobny generator losowy (`rng2`), zeby NIE zmienic strumienia `rnd()` wczesniejszych kategorii.
+const rng2 = G.mulberry32(777001);
+const rnd2 = () => rng2();
+const ri2 = (a, b) => a + Math.floor(rnd2() * (b - a + 1));
+cases.parseHexKey = [];
+{
+  const fixed = [
+    '3,4', '-2,7', '0,0', '12,-9', '5', ',3', '', ',', '3,', 'a,b', '3,b', 'a,4', ' 3 , 4 ', '\t3,\n4',
+    '0x10,0b11', '0o7,0O7', '0X1f,0B101', '0x,0b', '0b2,0o8', '0xg,1', '-0x10,+0x10', '1e3,1E-2', '.5,5.',
+    '+5,-5', 'Infinity,-Infinity', '+Infinity,2', 'infinity,inf', 'INF,Inf', 'NaN,nan', '1_0,2', '1,2_0',
+    '٣,٤', '3,4,5', '3,4,', ',,', '-0,0', '0,-0', ' 3,4 ', ' 3,4 ', '﻿3,4',
+    '\u00853,4', '᠎3,4', '​3,4', '　3, 4', '\u000b3,\u000c4', '1e1000,-1e1000', '1e-1000,0e0',
+    '00012,007', '1.2.3,4', '..,.', '1e,e1', '- 5,+ 5', '9007199254740993,9007199254740992',
+    '0.1e1,5e+3', '.e1,1e+', '5e-3,0.0000001', '123456789012345678901234567890,1', '1e21,1e-7',
+    '0x1fffffffffffff,0x20000000000001', '0b1111111111111111111111111111111111111111111111111111111,0o7777',
+    'Infinity,Infinity', '-Infinity,Infinity', '+Infinity,+Infinity', '1e309,-1e309', 'Infinity ,\tInfinity\n',
+    '0x' + 'f'.repeat(260) + ',1', '0b' + '1'.repeat(1100) + ',0', '0x' + 'f'.repeat(13) + ',0x' + 'f'.repeat(15),
+    '0x1' + '0'.repeat(14) + '1,0x1' + '0'.repeat(13) + '8001', '0b' + '1'.repeat(53) + '1,0b' + '1'.repeat(53) + '10',
+    '+,-', '+.5,-.5', '.,-.', '1 2,3 4', '3 ,4', '３,４', '0x 10,0 x10', '0xFF,0Xff', '0b,0o', '-Infinity,-',
+    '1e+5,1E+5', '0e0,-0e0', '00,-00', '1.,-1.', 'Infinit,Infinityx', 'true,false', 'null,undefined', '[1],{}',
+  ];
+  const alphabet = '0123456789+-.eExXbBoOaAfF ,_\t ﻿Infity';
+  const fuzz = [];
+  for (let i = 0; i < 700; i++) {
+    const len = ri2(0, 9);
+    let s = '';
+    for (let j = 0; j < len; j++) s += alphabet[ri2(0, alphabet.length - 1)];
+    fuzz.push(s);
+  }
+  for (const key of [...fixed, ...fuzz]) {
+    const p = G.parseHexKey(key);
+    cases.parseHexKey.push([key, t(p.q), t(p.r)]);
+  }
+}
+
+// ---------- 19. RUNDA 2: reapplyForestOverlay - przypadki UKIERUNKOWANE (zarzut 3) ----------
+// Mutacja `forest-inland-gt-to-ge` (`maxSeaInPart > 1` -> `>= 1`) uznana w r1 za rownowazna "z reguly":
+// bonus 0,14 dostaja wszystkie heksy jednakowo. Rownowaznosc NIE jest dowiedziona dla (a) remisow
+// zmiennoprzecinkowych (`forNoise + 0.14` zwija sasiednie wartosci w jedna) i (b) heksow ladu bez wpisu
+// w polu odleglosci (`?? 0` - skladowe bez wody). Tu: mapy z `maxSeaInPart == 1` i takie wartosci szumu,
+// zeby mutacja ZMIENIALA wynik; generator uruchamia tez WEB z ta mutacja i liczy rozbieznosci
+// (`stats.forestTie.mutantDiffers`) - gdy 0, generator konczy sie bledem.
+const mutOriginal = original.replace('maxSeaInPart > 1 ?', 'maxSeaInPart >= 1 ?');
+if (mutOriginal === original || original.split('maxSeaInPart > 1 ?').length !== 2) {
+  throw new Error('mutacja inland: oczekiwano DOKLADNIE jednego wystapienia `maxSeaInPart > 1 ?`');
+}
+writeFileSync(`${mapDir}/gen-helpers.m04-mut-inland.ts`, mutOriginal);
+const GMUT = await import(pathToFileURL(`${mapDir}/gen-helpers.m04-mut-inland.ts`).href);
+
+cases.reapplyForestTie = [];
+{
+  const nextUpTie = (x) => nextUp(x);
+  const TIE_VALUES = [0, 1e-20, 2e-20, 3e-20, 5e-324, 0.9, nextUpTie(0.9), nextUpTie(nextUpTie(0.9)), 0.5,
+    nextUpTie(0.5), 0.3];
+  // comb: wiersze morza i ladu na przemian => KAZDY heks ladu graniczy z woda (sd == 1, max == 1)
+  const combSpec = (w, rows, landRows) => {
+    const sp = [];
+    for (let r = 0; r < rows; r++) for (let q = 0; q < w; q++) {
+      const isLand = landRows.includes(r);
+      sp.push([q, r, isLand ? [TerenBazowy.Laka, TerenBazowy.Rownina, TerenBazowy.Wzgorza][(q + r) % 3]
+        : TerenBazowy.Morze, Nakladka.Brak, 0, 0]);
+    }
+    return sp;
+  };
+  const mkCase = (label, spec, typ, tier, continentOf, nContinents, mapHeight, fnPicker) => {
+    const scratch = new Map();
+    const scratchArr = [];
+    for (const [q, r] of spec) {
+      const fn = fnPicker(q, r);
+      if (fn === undefined) continue;
+      scratch.set(G.hexKey(q, r), { elevContinental: 0, landMask: 1, mtnNoise: 0, forNoise: fn, desNoise: 0 });
+      scratchArr.push([G.hexKey(q, r), t(fn)]);
+    }
+    const hexes = specToHexes(spec);
+    const hexesMut = specToHexes(spec);
+    const cellSize = G.forestCoverageCellSize(tier);
+    const seaDist = G.buildSeaDistanceField(hexes);
+    const partitions = G.landPartitionKeysForDistribution(hexes, typ, continentOf, nContinents);
+    const cellCalls = partitions.map((part) => {
+      const massSet = [...new Set(part.filter((k) => { const hx = hexes[k]; return !hx || !G.isWaterTerrainLocal(hx.terenBazowy); }))];
+      const cellMap = G.landHexesByCoverageCell(new Set(massSet), cellSize);
+      return { massKey: fnv1a64(massSet.join(';')), massLen: massSet.length,
+        cells: [...cellMap.entries()].map(([ck, arr]) => [ck, arr.map(([q, r]) => [q, r])]) };
+    });
+    // maksimum odleglosci od morza w partycjach (jak w webie: start 1, brak wpisu => 0)
+    let maxSea = 1;
+    for (const part of partitions) for (const k of part) {
+      const hx = hexes[k];
+      if (hx && G.isWaterTerrainLocal(hx.terenBazowy)) continue;
+      const d = seaDist.get(k) ?? 0;
+      if (d > maxSea) maxSea = d;
+    }
+    const assigned = G.reapplyForestOverlay(hexes, scratch, undefined, typ, tier, continentOf, nContinents, mapHeight);
+    const assignedMut = GMUT.reapplyForestOverlay(hexesMut, scratch, undefined, typ, tier, continentOf, nContinents, mapHeight);
+    const outA = dumpHexes(hexes);
+    const outB = dumpHexes(hexesMut);
+    const differs = JSON.stringify(outA) !== JSON.stringify(outB) || assigned !== assignedMut;
+    cases.reapplyForestTie.push({
+      label, w: Math.max(...spec.map((s) => s[0])) + 1, h: Math.max(...spec.map((s) => s[1])) + 1,
+      typ, tier, nContinents, mapHeight: mapHeight === undefined ? null : mapHeight,
+      continentOf: continentOf === null ? null : [...continentOf.entries()].map(([k, v]) => [k, v]),
+      spec: dumpSpec(spec), scratch: scratchArr,
+      deps: {
+        share: t(G.FOREST_SHARE_OF_DRY_LAND[tier]),
+        capFrac: t(G.FOREST_OVERLAY_CAP_FRAC),
+        cellSize: t(cellSize),
+        minLand: t(G.minLandHexesForFairPlayCell(cellSize)),
+        seaDist: spec.map(([q, r]) => (seaDist.has(G.hexKey(q, r)) ? t(seaDist.get(G.hexKey(q, r))) : null)),
+        partitions,
+        cellCalls,
+      },
+      maxSeaInPart: maxSea, assigned, out: outA, mutantDiffers: differs ? 1 : 0,
+    });
+  };
+  // (a) remisy FP: wszystkie heksy ladu graniczą z woda (max == 1), szum z wartosci o zwijajacej sie sumie
+  for (const typ of TYPS) for (const tier of TIERS) for (const [w, rows] of [[24, 3], [30, 5], [40, 7]]) {
+    const landRows = rows === 3 ? [1] : (rows === 5 ? [1, 3] : [1, 3, 5]);
+    const spec = combSpec(w, rows, landRows);
+    mkCase(`tie-fp ${typ}/${tier}/${w}x${rows}`, spec, typ, tier, null, 1, undefined,
+      () => TIE_VALUES[ri2(0, TIE_VALUES.length - 1)]);
+  }
+  // (b) skladowe bez wody: czesc ladu BEZ wpisu w polu odleglosci (`?? 0`), reszta sd == 1 (max == 1);
+  //     blok ladu oddzielony pustymi wierszami (brak heksow) - jedna partycja przez continentOf
+  for (const tier of TIERS) for (const w of [20, 28]) for (const noise of ['random', 'tie']) {
+    const spec = [...combSpec(w, 5, [1, 3])];
+    for (let r = 8; r < 13; r++) for (let q = 0; q < w; q++) {
+      spec.push([q, r, [TerenBazowy.Laka, TerenBazowy.Rownina, TerenBazowy.Wzgorza][(q * 2 + r) % 3], Nakladka.Brak, 0, 0]);
+    }
+    const continentOf = new Map(spec.map(([q, r]) => [G.hexKey(q, r), 0]));
+    mkCase(`disconnected ${tier}/${w}/${noise}`, spec, 'kontynenty', tier, continentOf, 1, undefined,
+      noise === 'tie' ? () => TIE_VALUES[ri2(0, TIE_VALUES.length - 1)] : () => rnd2());
+  }
+  // (c) kontrola: ta sama rodzina map, ale z max > 1 (grube wyspy) - sciezka bonusu aktywna w obu wersjach
+  for (const tier of TIERS) {
+    const spec = [];
+    for (let r = 0; r < 12; r++) for (let q = 0; q < 24; q++) {
+      const edge = q === 0 || r === 0 || q === 23 || r === 11;
+      spec.push([q, r, edge ? TerenBazowy.Morze : [TerenBazowy.Laka, TerenBazowy.Rownina][(q + r) % 2], Nakladka.Brak, 0, 0]);
+    }
+    mkCase(`thick ${tier}`, spec, 'pangea', tier, null, 1, undefined, () => rnd2());
+  }
+}
+stats.forestTie = {
+  cases: cases.reapplyForestTie.length,
+  maxSeaOne: cases.reapplyForestTie.filter((c) => c.maxSeaInPart === 1).length,
+  mutantDiffers: cases.reapplyForestTie.filter((c) => c.mutantDiffers === 1).length,
+  assignedTotal: cases.reapplyForestTie.reduce((a, c) => a + c.assigned, 0),
+  casesWithForest: cases.reapplyForestTie.filter((c) => c.assigned > 0).length,
+  differsAmongMaxOne: cases.reapplyForestTie.filter((c) => c.maxSeaInPart === 1 && c.mutantDiffers === 1).length,
+  differsWhenMaxGt1: cases.reapplyForestTie.filter((c) => c.maxSeaInPart > 1 && c.mutantDiffers === 1).length,
+};
+if (stats.forestTie.differsAmongMaxOne < 10) {
+  throw new Error('zbior ukierunkowany nie rozroznia mutacji inland: ' + JSON.stringify(stats.forestTie));
+}
+if (stats.forestTie.differsWhenMaxGt1 !== 0) {
+  throw new Error('mutacja inland zmienia wynik przy max > 1 - to nie ten warunek: ' + JSON.stringify(stats.forestTie));
+}
+
 const result = {
   zrodlo: 'uruchomiony kod TS weba (gen-m04-vectors.mjs), pin edb8fb56',
   node: process.version,

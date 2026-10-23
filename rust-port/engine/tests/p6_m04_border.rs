@@ -199,6 +199,46 @@ fn parse_hex_key_matches_js_number_for_hexkey_strings() {
     assert_eq!(parse_hex_key(",3"), (0.0, 3.0));
 }
 
+/// RUNDA 2 (zarzut 4): klucze BRZEGOWE sprawdzane WEKTORAMI z uruchomionego weba
+/// (`Number(parts[0])`, `Number(parts[1])` dla `key.split(',')`), nie recznymi pinami.
+#[test]
+fn parse_hex_key_edge_keys_match_web() {
+    let rows = cases("parseHexKey");
+    assert!(rows.len() >= 700, "za malo kluczy: {}", rows.len());
+    let (mut nan_q, mut nan_r, mut inf, mut neg_zero, mut empty_part) = (0, 0, 0, 0, 0);
+    let (mut prefixed, mut ws_trim, mut missing_second, mut exp_form) = (0, 0, 0, 0);
+    for row in rows {
+        let key = s(&row[0]);
+        let (q, r) = parse_hex_key(key);
+        assert_f64(q, fv(&row[1]), &format!("parseHexKey q {key:?}"));
+        assert_f64(r, fv(&row[2]), &format!("parseHexKey r {key:?}"));
+        nan_q += usize::from(q.is_nan());
+        nan_r += usize::from(r.is_nan());
+        inf += usize::from(q.is_infinite() || r.is_infinite());
+        neg_zero +=
+            usize::from((q == 0.0 && q.is_sign_negative()) || (r == 0.0 && r.is_sign_negative()));
+        empty_part += usize::from(key.starts_with(',') || key.is_empty());
+        prefixed += usize::from(
+            key.contains("0x") || key.contains("0X") || key.contains("0b") || key.contains("0o"),
+        );
+        ws_trim += usize::from(key.starts_with(char::is_whitespace) || key.contains(" ,"));
+        missing_second += usize::from(!key.contains(','));
+        exp_form += usize::from(key.contains('e') || key.contains('E'));
+    }
+    // pokrycie wymuszone: kazda klasa kluczy brzegowych wystepuje (nie tylko "q,r" z cyframi)
+    assert!(nan_q >= 100 && nan_r >= 100, "NaN: {nan_q}/{nan_r}");
+    assert!(inf >= 8, "Infinity: {inf}");
+    assert!(neg_zero >= 4, "-0: {neg_zero}");
+    assert!(empty_part >= 10, "pusta czesc: {empty_part}");
+    assert!(prefixed >= 10, "prefiksy 0x/0o/0b: {prefixed}");
+    assert!(ws_trim >= 8, "biale znaki: {ws_trim}");
+    assert!(
+        missing_second >= 10,
+        "brak drugiej czesci: {missing_second}"
+    );
+    assert!(exp_form >= 10, "notacja wykladnicza: {exp_form}");
+}
+
 #[test]
 fn set_hex_to_morze_and_laka_match_web() {
     let rows = cases("setHex");
