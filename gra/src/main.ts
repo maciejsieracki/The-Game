@@ -3256,7 +3256,20 @@ async function boot(): Promise<void> {
       const byCity = computeTerritoryResourceYieldByCity(
         cities, map, territoryNodes, empireEpochForOwner,
       );
-      const workedByCity = computeWorkedMagazynYieldsByCity(cities, map, territoryNodes);
+      // R-WEB-TURN-SLOWDOWN-Q2 (P4): obrabiane pola liczone WYŁĄCZNIE dla miast tego
+      // ownera — wcześniej dla WSZYSTKICH miast mapy (pętla niżej i tak bierze tylko
+      // miasta `ownerId`), co rosło z liczbą miast AI i obciążało każde `updateHud`
+      // (m.in. otwarcie/zamknięcie panelu miasta). Wynik per miasto zależy tylko od
+      // samego miasta, `territoryNodes` (nadal wszystkie miasta) i mapy sporów z
+      // rodzeństwem — tę liczymy jak dotąd z PEŁNEJ listy `cities` — więc wartości
+      // dla miast ownera są identyczne. / EN: compute worked-tile yields only for this
+      // owner's cities; per-city result unchanged (same nodes + full sibling map).
+      const workedByCity = computeWorkedMagazynYieldsByCity(
+        cities.filter(c => c.ownerId === ownerId),
+        map,
+        territoryNodes,
+        computeLostToNearerSiblingByCity(cities, map),
+      );
       const out: Record<string, number> = {};
       for (const c of cities) {
         if (c.ownerId !== ownerId) continue;
@@ -4848,7 +4861,12 @@ async function boot(): Promise<void> {
       const out = new Map<string, PlacedLayers>();
       for (const [hexKey, layers] of placedImprovements) {
         const [qStr, rStr] = hexKey.split(',');
-        if (territoryOwnerAtLive(Number(qStr), Number(rStr)) === ownerId) {
+        // R-WEB-TURN-SLOWDOWN-Q2 (P3): `nodes` policzone RAZ wyżej (było policzone i
+        // nieużyte, a `territoryOwnerAtLive` budował tę samą tablicę węzłów wszystkich
+        // miast od nowa dla KAŻDEGO ulepszenia: koszt ulepszenia × miasta + alokacje).
+        // `buildAllTerritoryNodes()` to czyste mapowanie `cities`, które w tej pętli się
+        // nie zmienia — wynik identyczny z `territoryOwnerAtLive(q, r)`.
+        if (territoryOwnerAt(Number(qStr), Number(rStr), nodes) === ownerId) {
           out.set(hexKey, layers);
         }
       }
@@ -12797,12 +12815,22 @@ async function boot(): Promise<void> {
       clearTerritoryBorderOverlay();
       if (!(territoryBorderVisible || isCityPanelOpen())) return;
       const nodes = buildAllTerritoryNodes();
+      // R-WEB-TURN-SLOWDOWN-Q2 (P1): `currentVisible()` i `fogExploredForRender()` były
+      // liczone OD NOWA dla KAŻDEGO heksu cudzego terytorium (filtr wołany per heks) —
+      // koszt = (heksy terytorium AI) × (widoczność wszystkich jednostek/miast gracza),
+      // rosnący z każdą turą (więcej miast AI → więcej heksów; więcej jednostek gracza).
+      // Oba zbiory zależą wyłącznie od stanu sprzed wywołania i nie zmieniają się w
+      // trakcie pętli, więc liczymy je RAZ (leniwie, tylko gdy filtr ich potrzebuje).
+      // Wynik filtra identyczny. / EN: compute visibility/explored once per refresh
+      // instead of once per foreign-territory hex; identical filter result.
+      let visOnce: Set<string> | null = null;
+      let exploredOnce: Set<string> | null = null;
       const byOwner = collectTerritoryHexKeysByOwner(map, nodes, (key, ownerId) => {
         if (isMe(ownerId)) return true;
         if (!fogOn) return true;
-        const vis = currentVisible();
-        const explored = fogExploredForRender();
-        return vis.has(key) || explored.has(key);
+        if (visOnce === null) visOnce = currentVisible();
+        if (exploredOnce === null) exploredOnce = fogExploredForRender();
+        return visOnce.has(key) || exploredOnce.has(key);
       });
       if (byOwner.size === 0) return;
       territoryBorderGroup = buildTerritoryBorderGroup(
@@ -19532,6 +19560,20 @@ async function boot(): Promise<void> {
     /** Cache na jedną turę AI ownera — pickResourceTradeRelOffer wołany O(N²) w dyplomacji. */
     let aiDiploTradeGoodsCache: Map<number, TradeGoodEntry[]> | null = null;
     let aiDiploQtyOptionsCache: Map<number, Array<{ id: string; label: string; maxQty: number }>> | null = null;
+    /**
+     * R-WEB-TURN-SLOWDOWN-Q2 (P2): pamięć bramki `opts.isProductionAllowed` ważna WYŁĄCZNIE
+     * w trakcie jednego `decideAITurn` (włączana/czyszczona wokół tego wywołania w pętli
+     * ownerów AI). Poza tym oknem bramka liczy wszystko od nowa, jak przed zmianą.
+     */
+    const aiProdAllowedMemo = new Map<string, Set<string>>();
+    let aiProdAllowedMemoLive = false;
+    let aiProdAllowedOwnerInputs: {
+      unlockedTechs: string[];
+      placedImprovements: ReturnType<typeof placedImprovementsWithTradeGrants>;
+      hasKopalniaNaZlozuZelaza: boolean;
+      empireActiveResourceLabels: string[];
+      empireBuiltIds: string[];
+    } | null = null;
 
     function tradableGoodsForAiDiplo(ownerId: number): TradeGoodEntry[] {
       if (!aiDiploTradeGoodsCache) return tradableGoodsIndexForOwner(ownerId);
@@ -24966,6 +25008,303 @@ async function boot(): Promise<void> {
             frontKoszt: prod.kolejka[0]?.koszt ?? null,
           };
         }),
+      }),
+    };
+
+    // R-WEB-TURN-SLOWDOWN-Q2 — hak POMIAROWY (tylko odczyt + otwarcie/zamknięcie panelu
+    // miasta tą samą funkcją co klik na mapie), wołany WYŁĄCZNIE z Playwright w
+    // `tools/web-turn-slowdown-measure.cjs` / `tools/web-turn-slowdown-test.cjs`.
+    // Wzorzec jak `__aiBuildingsTestDebug` wyżej: same definicje funkcji, zero kosztu
+    // w normalnej grze (nic tu nie jest wołane bez testu).
+    // / EN: measurement hook (read-only + city panel open/close via the same function a
+    // map click uses), called ONLY from Playwright; zero cost in normal play.
+    (window as any).__turnSlowdownTestDebug = {
+      openFirstPlayerCityPanel: (): number => {
+        const c = cities.find(x => isMe(x.ownerId));
+        if (!c) return -1;
+        const t0 = performance.now();
+        openCityPanelForPlayer(c);
+        return performance.now() - t0;
+      },
+      closeCityPanel: (): number => {
+        const t0 = performance.now();
+        closeCityPanelIfOpen();
+        return performance.now() - t0;
+      },
+      isCityPanelOpen: (): boolean => isCityPanelOpen(),
+      /**
+       * Runda 2 (zarzut 5): czas `n` wywołań `empireTerritoryResourceRatesForOwner` dla
+       * gracza (to samo wywołanie co w każdym `updateHud`) — stabilna asercja kosztu P4
+       * bez szumu próbkowania profilu. Funkcja liczy wyłącznie (bez zapisu stanu).
+       */
+      timeTerritoryRatesMs: (n: number): number => {
+        const me = cities.find((c) => isMe(c.ownerId));
+        if (!me) return -1;
+        const t0 = performance.now();
+        for (let i = 0; i < n; i++) empireTerritoryResourceRatesForOwner(me.ownerId);
+        return performance.now() - t0;
+      },
+      /**
+       * Runda 2 (zarzut 2): koszt renderowania OSTATNIEJ klatki (`renderer.info` jest
+       * zerowane przed każdym `renderer.render` w pętli animacji) — tłumaczy wzrost
+       * natywnego `(program)` (swiftshader rasteryzuje na CPU) liczbą trójkątów/wywołań.
+       * Tylko odczyt.
+       */
+      renderInfo: (): { calls: number; triangles: number; points: number; lines: number } => ({
+        calls: renderer.info.render.calls,
+        triangles: renderer.info.render.triangles,
+        points: renderer.info.render.points,
+        lines: renderer.info.render.lines,
+      }),
+      /**
+       * Runda 2 (zarzut 1): liczba miast per owner — bramka sprawdza, że pamięć P2
+       * (per miasto) była ćwiczona przy ≥ 2 miastach jednego gracza AI. Tylko odczyt.
+       */
+      citiesPerOwner: (): Record<string, number> => {
+        const out: Record<string, number> = {};
+        for (const c of cities) {
+          const k = (isMe(c.ownerId) ? 'me:' : 'o:') + c.ownerId;
+          out[k] = (out[k] ?? 0) + 1;
+        }
+        return out;
+      },
+      /**
+       * Spis tekstur używanych przez obiekty sceny mapy (do ustalenia, CO rośnie w
+       * `renderer.info.memory.textures`): klucz = typ obiektu + rozmiar obrazu tekstury.
+       * Tylko odczyt grafu sceny.
+       */
+      textureCensus: (): Record<string, number> => {
+        const seenTex = new Set<THREE.Texture>();
+        const out: Record<string, number> = {};
+        scene.traverse((obj) => {
+          const mats = (obj as THREE.Mesh).material;
+          const list = Array.isArray(mats) ? mats : mats ? [mats] : [];
+          for (const m of list) {
+            for (const v of Object.values(m as unknown as Record<string, unknown>)) {
+              if (!(v instanceof THREE.Texture) || seenTex.has(v)) continue;
+              seenTex.add(v);
+              const img = v.image as { width?: number; height?: number; tagName?: string } | null;
+              const k = `${obj.type}:${img?.tagName ?? (img ? 'data' : 'none')}:${img?.width ?? 0}x${img?.height ?? 0}`;
+              out[k] = (out[k] ?? 0) + 1;
+            }
+          }
+        });
+        out.__uniqueTextures = seenTex.size;
+        return out;
+      },
+      /**
+       * Runda 2 (zarzut 4): spis tekstur sceny Z TOŻSAMOŚCIĄ (`Texture.id` rośnie z każdą
+       * nową teksturą) i nazwami obiektu/rodzica — różnica między turami pokazuje, KTÓRE
+       * tekstury doszły. Tylko odczyt grafu sceny.
+       */
+      textureCensusDetail: (): Array<{ texId: number; key: string; obj: string; parent: string; grand: string }> => {
+        const seenTex = new Set<THREE.Texture>();
+        const out: Array<{ texId: number; key: string; obj: string; parent: string; grand: string }> = [];
+        scene.traverse((obj) => {
+          const mats = (obj as THREE.Mesh).material;
+          const list = Array.isArray(mats) ? mats : mats ? [mats] : [];
+          for (const m of list) {
+            for (const v of Object.values(m as unknown as Record<string, unknown>)) {
+              if (!(v instanceof THREE.Texture) || seenTex.has(v)) continue;
+              seenTex.add(v);
+              const img = v.image as { width?: number; height?: number; tagName?: string } | null;
+              out.push({
+                texId: v.id,
+                key: `${obj.type}:${img?.tagName ?? (img ? 'data' : 'none')}:${img?.width ?? 0}x${img?.height ?? 0}`,
+                obj: obj.name || '',
+                parent: obj.parent?.name || obj.parent?.type || '',
+                grand: obj.parent?.parent?.name || obj.parent?.parent?.type || '',
+              });
+            }
+          }
+        });
+        return out.sort((a, b) => a.texId - b.texId);
+      },
+      /** Rozmiar i skrót (FNV-1a) migawki zapisu bez pól zależnych od zegara (savedAt/label). */
+      snapshotInfo: (): {
+        bytes: number; hash: string; ms: number;
+        sections: Record<string, number>; sectionHashes: Record<string, string>;
+      } => {
+        const fnv = (s: string): string => {
+          let h = 0x811c9dc5;
+          for (let i = 0; i < s.length; i++) {
+            h ^= s.charCodeAt(i);
+            h = Math.imul(h, 0x01000193) >>> 0;
+          }
+          return h.toString(16).padStart(8, '0');
+        };
+        const t0 = performance.now();
+        const snap = buildSaveGameSnapshot('turn-slowdown-test');
+        const meta = snap.meta as Record<string, unknown>;
+        meta.savedAt = '';
+        meta.label = '';
+        const json = JSON.stringify(snap);
+        const ms = performance.now() - t0;
+        const sections: Record<string, number> = {};
+        const sectionHashes: Record<string, string> = {};
+        // Identyfikatory grup stosu (`armyMerge.ts` newStackGroupId) zawierają zegar ściany
+        // `Date.now()` — normalizujemy ich część czasową, żeby skrót mierzył STAN gry, a nie
+        // godzinę przebiegu (licznik sekwencji zostaje, więc tożsamość grup jest zachowana).
+        const norm = (s: string): string => s.replace(/"sg(-?\d+)_[0-9a-z]+_([0-9a-z]+)"/g, '"sg$1_T_$2"');
+        const put = (k: string, v: unknown): void => {
+          const s = norm(JSON.stringify(v ?? null));
+          sections[k] = s.length;
+          sectionHashes[k] = fnv(s);
+        };
+        for (const [k, v] of Object.entries(snap)) if (k !== 'meta') put(k, v);
+        for (const [k, v] of Object.entries(meta)) put('meta.' + k, v);
+        return { bytes: json.length, hash: fnv(norm(json)), ms, sections, sectionHashes };
+      },
+      collections: (): Record<string, number> => ({
+        _menuCivIdByOwner: _menuCivIdByOwner.size,
+        siegeTurnByCity: siegeTurnByCity.size,
+        siegeBesiegerByCity: siegeBesiegerByCity.size,
+        siegeAiStateByKey: siegeAiStateByKey.size,
+        battlePowerPtsByOwner: battlePowerPtsByOwner.size,
+        ownerEraByOwner: ownerEraByOwner.size,
+        ownerStartEraByOwner: ownerStartEraByOwner.size,
+        objectivePowerByOwner: objectivePowerByOwner.size,
+        capitalCityIdByOwner: capitalCityIdByOwner.size,
+        zdobyczePowerByOwner: zdobyczePowerByOwner.size,
+        lootedVillageHexKeys: lootedVillageHexKeys.size,
+        bronzeForceWarPendingOwners: bronzeForceWarPendingOwners.size,
+        bronzeEraEnterTurnByOwner: bronzeEraEnterTurnByOwner.size,
+        bronzeForceWarCycleOwners: bronzeForceWarCycleOwners.size,
+        bronzeForceWarRestUntilByOwner: bronzeForceWarRestUntilByOwner.size,
+        bronzeForceWarActiveByPairKey: bronzeForceWarActiveByPairKey.size,
+        forcedWarWavesByPairKey: forcedWarWavesByPairKey.size,
+        regularWarCapturedByPairKey: regularWarCapturedByPairKey.size,
+        stoneForceWarPendingOwners: stoneForceWarPendingOwners.size,
+        stoneForceWarCycleOwners: stoneForceWarCycleOwners.size,
+        stoneForceWarRestUntilByOwner: stoneForceWarRestUntilByOwner.size,
+        stoneForceWarActiveByPairKey: stoneForceWarActiveByPairKey.size,
+        ironForceWarPendingOwners: ironForceWarPendingOwners.size,
+        ironForceWarCycleOwners: ironForceWarCycleOwners.size,
+        ironForceWarRestUntilByOwner: ironForceWarRestUntilByOwner.size,
+        ironForceWarActiveByPairKey: ironForceWarActiveByPairKey.size,
+        ironEraEnterTurnByOwner: ironEraEnterTurnByOwner.size,
+        playerStartHexByOwner: playerStartHexByOwner.size,
+        playerEverOwnedCityByOwner: playerEverOwnedCityByOwner.size,
+        villageMeshes: villageMeshes.size,
+        campMeshes: campMeshes.size,
+        cityBuilt: cityBuilt.size,
+        cityRelig: cityRelig.size,
+        tradeRouteBuildingBonusByCity: tradeRouteBuildingBonusByCity.size,
+        lastReligionSpreadByCity: lastReligionSpreadByCity.size,
+        growthMultMap: growthMultMap.size,
+        orderMultMap: orderMultMap.size,
+        orderValueMap: orderValueMap.size,
+        cityOrderState: cityOrderState.size,
+        citizenUpkeepByOwner: citizenUpkeepByOwner.size,
+        buildingResourceUpkeepByOwner: buildingResourceUpkeepByOwner.size,
+        unitResourceUpkeepByOwner: unitResourceUpkeepByOwner.size,
+        militiaDefOverrides: militiaDefOverrides.size,
+        empireFoodStates: empireFoodStates.size,
+        goldDeficitStates: goldDeficitStates.size,
+        ownerDefaultPodzialHandlu: ownerDefaultPodzialHandlu.size,
+        ownerDefaultPodzialPracy: ownerDefaultPodzialPracy.size,
+        ownerDefaultOkolicaFocus: ownerDefaultOkolicaFocus.size,
+        ownerDefaultBudowaProfil: ownerDefaultBudowaProfil.size,
+        ownerDefaultPoziomRacji: ownerDefaultPoziomRacji.size,
+        ulepszeniaEmpireByOwner: ulepszeniaEmpireByOwner.size,
+        lastCityKulturaTick: lastCityKulturaTick.size,
+        aiWonderPracaTickByCity: aiWonderPracaTickByCity.size,
+        aiWonderStuckTurnsByOwner: aiWonderStuckTurnsByOwner.size,
+        aiResearchDone: aiResearchDone.size,
+        eliminatedOwners: eliminatedOwners.size,
+        aiOwnerCivMap: aiOwnerCivMap.size,
+        ownerDisplayName: ownerDisplayName.size,
+        simplifiedDiplomacyOwners: simplifiedDiplomacyOwners.size,
+        foreignTypeOwners: foreignTypeOwners.size,
+        typCityCopyOwners: typCityCopyOwners.size,
+        clusterCapitalOwnerIds: clusterCapitalOwnerIds.size,
+        difficultyBonusGrantedOwners: difficultyBonusGrantedOwners.size,
+        diplomacyRelations: diplomacyRelations.size,
+        diplomacyPairMeta: diplomacyPairMeta.size,
+        diplomacyFactorLog: diplomacyFactorLog.size,
+        wiarygodnoscZdarzeniaByOwner: wiarygodnoscZdarzeniaByOwner.size,
+        wiarygodnoscStrumienByOwner: wiarygodnoscStrumienByOwner.size,
+        wiarygodnoscOstatniaWojnaTuraByOwner: wiarygodnoscOstatniaWojnaTuraByOwner.size,
+        wiarygodnoscCyclicDeliveryOkThisTurn: wiarygodnoscCyclicDeliveryOkThisTurn.size,
+        diplomaticContactEstablishedByHuman: diplomaticContactEstablishedByHuman.size,
+        diplomaticallyDiscoveredOwnersByHuman: diplomaticallyDiscoveredOwnersByHuman.size,
+        diplomaticDiscoveryPopupShownByHuman: diplomaticDiscoveryPopupShownByHuman.size,
+        lastDiplomaticContactsSnapshot: lastDiplomaticContactsSnapshot.size,
+        activeBattleUnitIds: activeBattleUnitIds.size,
+        aiSkarbiecByOwner: aiSkarbiecByOwner.size,
+        aiTargetMemoryByOwner: aiTargetMemoryByOwner.size,
+        aiSliderStateByOwner: aiSliderStateByOwner.size,
+        aiPracaPoolByOwner: aiPracaPoolByOwner.size,
+        aiImprovementBudgetByOwner: aiImprovementBudgetByOwner.size,
+        aiSurplusReportByOwner: aiSurplusReportByOwner.size,
+        aiSurplusRedirectedOwners: aiSurplusRedirectedOwners.size,
+        aiNaukaPoolByOwner: aiNaukaPoolByOwner.size,
+        aiBadanaByOwner: aiBadanaByOwner.size,
+        borderMarchEventTargets: borderMarchEventTargets.size,
+        civElimEventDetails: civElimEventDetails.size,
+        cityCaptureEventDetails: cityCaptureEventDetails.size,
+        autoManageCities: autoManageCities.size,
+        clearedBarbCampHexes: clearedBarbCampHexes.size,
+        deferredPlayerUnitRevealIds: deferredPlayerUnitRevealIds.size,
+        explored: explored.size,
+        seatsFinishedThisRound: seatsFinishedThisRound.size,
+        exploredByHuman: exploredByHuman.size,
+        playerStateByHuman: playerStateByHuman.size,
+        playerCivTypeByHuman: playerCivTypeByHuman.size,
+        pracaPoolByHuman: pracaPoolByHuman.size,
+        _maxSafeRationCache: _maxSafeRationCache.size,
+        aiOneShotGiftLastTurn: aiOneShotGiftLastTurn.size,
+        aiTradeAgreementLastProposalTurn: aiTradeAgreementLastProposalTurn.size,
+        aiAiTradeAgreementLastTurn: aiAiTradeAgreementLastTurn.size,
+        aiResourceTradeLastProposalTurn: aiResourceTradeLastProposalTurn.size,
+        aiCsFailCount: aiCsFailCount.size,
+        aiCsTrybutSince: aiCsTrybutSince.size,
+        aiCsWasalSince: aiCsWasalSince.size,
+        aiAudienceLastRequestTurn: aiAudienceLastRequestTurn.size,
+        placedImprovements: placedImprovements.size,
+        improvementMeshes: improvementMeshes.size,
+        roadRenderedHexes: roadRenderedHexes.size,
+        clearingMeshes: clearingMeshes.size,
+        hexClearingStates: hexClearingStates.size,
+        tradeRouteEventPlayerCityIds: tradeRouteEventPlayerCityIds.size,
+        prodEmptyDismissFp: prodEmptyDismissFp.size,
+        dismissedSidePanelEventIds: dismissedSidePanelEventIds.size,
+        plannedMarches: plannedMarches.size,
+        rallyPoints: rallyPoints.size,
+        movedByPlayerThisTurn: movedByPlayerThisTurn.size,
+        marchAttackTargets: marchAttackTargets.size,
+        units: units.length,
+        cities: cities.length,
+        resourceOverlays: resourceOverlays.length,
+        tradeRoutes: tradeRoutes.length,
+        tradeRouteResourceGrants: tradeRouteResourceGrants.length,
+        completedWorldWonders: completedWorldWonders.length,
+        placedWorldWonders: placedWorldWonders.length,
+        wonderBuildSites: wonderBuildSites.length,
+        powerSnapshotsForTurn: powerSnapshotsForTurn.length,
+        pendingSameTypeRivalHexes: pendingSameTypeRivalHexes.length,
+        pendingSameTypeRivalOwnerIds: pendingSameTypeRivalOwnerIds.length,
+        pendingSameTypeRivalOwnerIdsSecond: pendingSameTypeRivalOwnerIdsSecond.length,
+        pendingForeignSpawnCities: pendingForeignSpawnCities.length,
+        zlozeGrants: zlozeGrants.length,
+        pendingFirstContactCards: pendingFirstContactCards.length,
+        activeDeals: activeDeals.length,
+        barbarianCooperationGrace: barbarianCooperationGrace.length,
+        negotiationTable: negotiationTable.length,
+        rejectedOfferCooldowns: rejectedOfferCooldowns.length,
+        warEventLog: warEventLog.length,
+        barbCamps: barbCamps.length,
+        deferredMergePrompts: deferredMergePrompts.length,
+        interHumanDiplomacyInbox: interHumanDiplomacyInbox.length,
+        fortNodes: fortNodes.length,
+        siegeHtmlLabels: siegeHtmlLabels.length,
+        siegeHtmlLabelAnchors: siegeHtmlLabelAnchors.length,
+        villageEventLog: villageEventLog.length,
+        tradeRouteEventLog: tradeRouteEventLog.length,
+        rationAutoEventLog: rationAutoEventLog.length,
+        borderMarchEventLog: borderMarchEventLog.length,
+        deferredEotHints: deferredEotHints.length,
+        marchExecQueue: marchExecQueue.length,
       }),
     };
 
@@ -34005,15 +34344,44 @@ async function boot(): Promise<void> {
               // (availableProduction). Bez tego chooseCityProduction wybiera studnia/mury itd.
               // zanim tech odblokowany → Build blocked (epoka/tech) → pusta kolejka.
               isProductionAllowed: (cityId: string, itemId: string) => {
+                // R-WEB-TURN-SLOWDOWN-Q2 (P2): pamięć podręczna NA CZAS JEDNEGO
+                // `decideAITurn` (patrz `aiProdAllowedMemoLive` niżej). ai.ts woła tę
+                // bramkę dla KAŻDEJ pary (miasto, kandydat) — wcześniej każde wywołanie
+                // liczyło od nowa całą listę `availableProduction` łącznie z
+                // `empireActiveResourceLabelsForOwner` (dostęp do surowców WSZYSTKICH miast
+                // ownera) i dwukrotnym `placedImprovementsForOwner` (wszystkie ulepszenia
+                // mapy × terytorium): koszt ~ kandydaci × miasta × ulepszenia, rosnący z
+                // turą. Decyzja AI zapada z NIENARUSZONEGO stanu (komendy wykonywane są
+                // dopiero PO powrocie z decideAITurn — patrz komentarz przy
+                // pickExecutableCandidate niżej), więc lista dozwolonych pozycji miasta jest
+                // w tym oknie stała: liczymy ją raz na miasto, a części ownerowe raz na
+                // ownera. Wynik bramki identyczny (ten sam zbiór id/nazw).
+                // / EN: memoize per city (and owner-wide inputs per owner) for the duration
+                // of one decideAITurn call — state is unchanged until commands execute.
+                if (aiProdAllowedMemoLive) {
+                  const hit = aiProdAllowedMemo.get(cityId);
+                  if (hit) return hit.has(itemId);
+                }
                 const c = cities.find(x => x.id === cityId && x.ownerId === ownerId);
                 if (!c) return false;
                 const prod0 = cityProd.get(cityId) ?? { kolejka: [], postep: 0 };
                 const builtIds = cityBuilt.get(c.id) ?? [];
-                const ownImprovements = placedImprovementsForOwner(ownerId);
+                const ow = (aiProdAllowedMemoLive ? aiProdAllowedOwnerInputs : null) ?? (() => {
+                  const ownImprovements = placedImprovementsForOwner(ownerId);
+                  const fresh = {
+                    unlockedTechs: Array.from(unlockedTechSetForOwner(ownerId)),
+                    placedImprovements: placedImprovementsWithTradeGrants(ownerId, ownImprovements),
+                    hasKopalniaNaZlozuZelaza: hasKopalniaNaZlozuZelazaOrTradeGrant(ownerId, ownImprovements),
+                    empireActiveResourceLabels: empireActiveResourceLabelsForOwner(ownerId),
+                    empireBuiltIds: [...empireBuiltIdsForOwner(ownerId)],
+                  };
+                  if (aiProdAllowedMemoLive) aiProdAllowedOwnerInputs = fresh;
+                  return fresh;
+                })();
                 const allowed = availableProduction(
                   c,
                   data,
-                  Array.from(unlockedTechSetForOwner(ownerId)),
+                  ow.unlockedTechs,
                   {
                     epoch: empireEpochForOwner(ownerId),
                     builtBuildingIds: builtIds,
@@ -34021,22 +34389,28 @@ async function boot(): Promise<void> {
                     civBonusy: civBonusyForOwnerId(ownerId),
                     civKey: civKeyForOwnerId(ownerId),
                     civUnitNacja: unitNacjaForCivKey(civKeyForOwnerId(ownerId)),
-                    placedImprovements: placedImprovementsWithTradeGrants(ownerId, ownImprovements),
-                    hasKopalniaNaZlozuZelaza: hasKopalniaNaZlozuZelazaOrTradeGrant(ownerId, ownImprovements),
+                    placedImprovements: ow.placedImprovements,
+                    hasKopalniaNaZlozuZelaza: ow.hasKopalniaNaZlozuZelaza,
                     aliveUnitTypeNames: new Set(
                       units.filter(x => x.ownerId === ownerId).map(x => x.typeId),
                     ),
                     buildingCostPace: player.buildingCostPace ?? 'niski',
                     ownerId,
                     difficulty: effectiveGameDifficultyForOwner(ownerId),
-                    empireActiveResourceLabels: empireActiveResourceLabelsForOwner(ownerId),
-                    empireBuiltIds: [...empireBuiltIdsForOwner(ownerId)],
+                    empireActiveResourceLabels: ow.empireActiveResourceLabels,
+                    empireBuiltIds: ow.empireBuiltIds,
                     empireResourceStock: citySurowceSumForOwner(ownerId),
                     cityHasCoastOrRiver: cityHasCoastOrRiverAccess(c),
                     isCapital: capitalCityIdForOwner(ownerId) === c.id,
                   },
                 );
-                return allowed.some(a => a.id === itemId || a.nazwa === itemId);
+                const ids = new Set<string>();
+                for (const a of allowed) {
+                  ids.add(a.id);
+                  if (typeof a.nazwa === 'string') ids.add(a.nazwa);
+                }
+                if (aiProdAllowedMemoLive) aiProdAllowedMemo.set(cityId, ids);
+                return ids.has(itemId);
               },
             };
             const myCivTyp = aiOwnerCivMap.get(ownerId);
@@ -34790,7 +35164,18 @@ async function boot(): Promise<void> {
             }
 
             try {
-              commands = decideAITurn(ownerId, units, cities, map, data, opts);
+              // R-WEB-TURN-SLOWDOWN-Q2 (P2): okno ważności pamięci `isProductionAllowed`
+              // = dokładnie to jedno wywołanie decideAITurn (finally niżej je zamyka).
+              aiProdAllowedMemo.clear();
+              aiProdAllowedOwnerInputs = null;
+              aiProdAllowedMemoLive = true;
+              try {
+                commands = decideAITurn(ownerId, units, cities, map, data, opts);
+              } finally {
+                aiProdAllowedMemoLive = false;
+                aiProdAllowedMemo.clear();
+                aiProdAllowedOwnerInputs = null;
+              }
               const formedWave = forcedWarDirective?.wavePlan;
               if (forcedWarDirective?.role === 'attacker' && formedWave !== undefined) {
                 const pairKey = forcedWarDirective.pairKey;
