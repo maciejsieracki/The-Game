@@ -9,7 +9,8 @@
 //! | web file | module | output | round |
 //! |---|---|---|---|
 //! | `battle/siegeWall.ts` (1 047 LOC) | [`siege_wall`] | [`siege_wall::SiegeWall`]: the wall group as a [`crate::scene::Scene`] + its `userData` contract | 1 |
-//! | `battle/battleScene.ts` (3D part) | — | battlefield scene tree + render metadata | 2+ (plan in the document) |
+//! | `battle/battleScene.ts` (static field: `_buildBattlefield`, margins, `_carveWallTiles`, city interior, deploy zone, constructor lights/fog/camera) | [`field`] | [`field::BattleField`]: [`crate::scene::Scene`] + side tables (instanced meshes, lights, outlines) + render metadata | 2 (topic …-Q2) |
+//! | `battle/battleScene.ts` (units, dynamics, picking) | — | — | 3–5 (plan in the document) |
 //!
 //! Only the 3D scene is ported here. Battle game logic (turn order, AI,
 //! damage) belongs to `domain/combat.rs` (P6.13) and the DOM UI to P5; the
@@ -17,8 +18,10 @@
 //!
 //! Nothing here needs a GPU; `Math.*` goes through [`crate::jsmath`]. Models
 //! are verified against vectors produced by running the web code
-//! (`tests/battle3d_siege_wall.rs`, `tests/fixtures/battle3d/`).
+//! (`tests/battle3d_siege_wall.rs`, `tests/battle3d_field.rs`,
+//! `tests/fixtures/battle3d/`).
 
+pub mod field;
 pub mod siege_wall;
 
 pub use siege_wall::{

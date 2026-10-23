@@ -75,3 +75,77 @@ parity property; the NaN branch of `same_value_zero` is pinned by the unit test
 Floats are IEEE-754 binary64 bits (`hx()`: 16 hex digits per number); the Rust
 side compares `to_bits()`, so `-0` and the NaN payload (`0xfff8…`) survive.
 Hashes: FNV-1a 32-bit over little-endian bytes, the routine of `scene::{Fnv, geo_hash}`.
+
+---
+
+# Part 2: the static battlefield (R-RUSTPORT-P4-36-MOD14-BATTLE-3D-Q2)
+
+Reference vectors for `tests/battle3d_field.rs` (`battle::field`), produced by **running
+`battle/battleScene.ts` of `edb8fb56`** with the same toolchain (three@0.169.0, esbuild@0.24.0,
+node v22.22.0): the full constructor `new BattleScene(opts)` with empty armies, plus the scene
+builders called directly on `Object.create(BattleScene.prototype)` for synthetic terrain grids.
+
+## What differs from part 1 (all bundle-time; nothing is written to `gra/**`)
+
+| file | why |
+|---|---|
+| `build_field.mjs` | esbuild plugin `append-battle-scene-exports`: appends ONE line `export { BF_COLS, …, makeGableRoofGeometry, cellToWorld, … };` to `battle/battleScene.ts` (its text is otherwise byte-identical) so module-private constants/helpers are reachable; plugin `battle-scene-three-shim`: `three` imported **by battleScene.ts only** resolves to `three_shim.ts`; `define` `import.meta.glob` / `import.meta.env` → inert stubs (Vite-only features of UI modules imported transitively; not reached by the scene code). |
+| `three_shim.ts` | the real `three` with ONLY `WebGLRenderer` replaced by an inert recorder (no WebGL under node); its settings (`shadowMap`, `toneMapping`, exposure) are dumped as data. |
+| `dom_stub.ts` | universal DOM stub (Proxy: every read/call returns a stub); layout sizes (`clientWidth`, …) read 0, so `_syncRendererSize` returns early and `camera.aspect` keeps the constructor's 1. Only the THREE graph is dumped; no stub value reaches it. |
+
+`gen_field.mjs` (the bundle, 2.78 MB: `battleScene.ts`'s imports pull in the whole game) is
+**not committed** (fixture budget 12 MB); it is byte-reproducible: SHA-256
+`497e56661add95c804b6476ede7f7a34441a49bd8d096a760710ec7067d09143` (kept here, not in
+`MANIFEST.sha256`, so that `sha256sum -c MANIFEST.sha256` checks only committed files).
+
+## Regeneration (outside the repository only)
+
+```bash
+S=<scratch dir>
+mkdir -p $S/ref $S/websrc $S/refscript $S/out
+(cd $S/ref && npm init -y && npm install --ignore-scripts three@0.169.0 esbuild@0.24.0)
+git archive edb8fb56 gra/src gra/data | tar -x -C $S/websrc
+cp rust-port/renderer/tests/fixtures/battle3d/{gen_field.ts,build_field.mjs,dom_stub.ts,three_shim.ts} $S/refscript/
+ln -s $S/ref/node_modules $S/refscript/node_modules
+node $S/refscript/build_field.mjs           # -> $S/refscript/gen_field.mjs
+node $S/refscript/gen_field.mjs $S/out      # prints: battle3d field ctor=16 synthetic=9 nodes=281792
+sha256sum $S/out/field.json $S/refscript/gen_field.mjs   # field.json = MANIFEST.sha256, gen_field.mjs = 497e5666… (above)
+```
+
+Measured: two runs in two different scratch directories (separate `npm install`, separate
+`git archive`) give identical `field.json` (`39df4eb7…369929`) and `gen_field.mjs`
+(`497e5666…d09143`). The code that runs has no `Math.random`: decoration uses `tileJitter` (hash),
+the terrain generator a seeded mulberry32 (`'bf:' + teren`).
+
+## Cases
+
+| group | n | what |
+|---|---|---|
+| `ctor` | 16 | `new BattleScene({attacker: [], defender: [], teren, worldTerrain?, siege?, deploy?, deployPlayerSide?})`: 3 legacy terrains (`Laka`, `Las`, `Góry`), the 8 world presets (`laka`, `rownina`, `wzgorza`, `gory`, `pustynia` = desert palette, `plytkie_morze`, `rownina+las`, `rownina+rzeka`), 2 sieges (`rzym`; `wzgorza` + `defCiv: 'egipt'`), deploy `atk`, `def`, siege + `def`. The input DTO `tilesIn` = `generateBattleTerrain` + `_carveBattleBox` + `_fencePlayableZone` run by the generator; it is asserted equal (after the web `_carveWallTiles` for sieges) to the constructor's own grid. |
+| `synthetic` | 9 | builders called directly: all plains (grass cap 8000 reached: `break outerGrass`), all plains desert + carve + deploy `atk`, two LCG mixes of all 8 kinds (+ desert, deploy `def`, 4 + 1 cell outlines, dashed and solid, incl. a reversed rectangle and one past the grid), a 20×30 grid (out-of-range `at` = Plains; wall column given, no carve), all river (no decoration, no interior plot, no passable deploy tile), interior with no room (`siegeWallCol` 60), hills + rocks (`siegeWallCol` −1), all plains with `siegeGateRow` 79 (a plot row exactly `STREET_HALF` = 3 from the gate; in the game the gate row is always 77). |
+| `applyCamera` | 5 | `_applyCamera` for distances inside, below and above the clamp, a fractional target, and NaN (NaN-ness compared only, P4-36 §3a). |
+| `consts`, `helpers` | — | every constant read by the scene (equality test), `lighten` / `blend` (96 fixed + 200 LCG cases each), `makeGableRoofGeometry`, `cellToWorld`, `tileTopY`. |
+
+## Record format (`field.json`)
+
+Per scene: `nodeCount`, `sig` (FNV-1a over the record of every node in `traverse` order), `runs[]`
+(consecutive top-level children with the same label `kind:geometryType:geoHash:materialType`; the
+10 608 tiles are one run): `label`, `start`, `children`, `nodes`, `sig`, `full` (first 3 nodes field
+by field); `matSigs` (one per material identity, first use in traverse order) and `matFull` (first 40
+distinct materials field by field); `groundPick`, `deployZone`, `deployGroup` (traverse indices);
+constructor cases also `env`, `renderer`, `camera`, `siegeState`, `tilesOutHash`.
+A node record = kind, name, parent, position, Euler + order, quaternion, scale, `matrixWorld`,
+`castShadow`, `receiveShadow`, `visible`, `renderOrder`, material identity, geometry type / hash /
+constructor parameters; for a `Line` its `lineDistance` attribute; for an `InstancedMesh` capacity,
+count, FNV of the whole `instanceMatrix` / `instanceColor` arrays and `boundingSphere`; for a light
+colour, intensity, ground colour, target, target position and shadow camera. The byte stream is
+mirrored in `battle3d_field.rs` (`View::record`, `View::mat_sig`).
+
+**Excluded:** the siege wall group (`_placeSiegeWall`, part 3) is skipped in every dump
+(`wallIndexInChildren` says where it sits); units are not placed (empty armies).
+
+| File (part 2) | Content |
+|---|---|
+| `field.json` | the vectors above (3.17 MB, 3 165 207 B) |
+| `gen_field.ts`, `build_field.mjs`, `dom_stub.ts`, `three_shim.ts` | generator, bundler and the two documented stubs |
+| `mutate_field.py` | mutation run (mutants of `src/battle/field.rs`; runs `--lib battle::field` and `--test battle3d_field`) |

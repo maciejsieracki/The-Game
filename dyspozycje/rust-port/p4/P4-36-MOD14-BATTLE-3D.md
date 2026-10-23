@@ -324,3 +324,186 @@ EXIT=0
 
 Kod r2: tylko `src/battle/siege_wall.rs` (`map_set` + test jednostkowy) oraz `tests/battle3d_siege_wall.rs` (liczby przypadków
 95 / pełnych drzew 93 / meshy 11 877); `lib.rs`, `Cargo.*`, inne moduły bez zmian.
+
+---
+
+# CZĘŚĆ 2 — pole statyczne (R-RUSTPORT-P4-36-MOD14-BATTLE-3D-Q2)
+
+**TEMAT:** R-RUSTPORT-P4-36-MOD14-BATTLE-3D-Q2 · **DOMAIN:** GAME · **RUNDA:** 1/5 · **ROLA:** Operator ·
+**Baza:** `rust-port/parity-v2` @ `78bd7f1a` (część 1 zintegrowana) · **Pin weba:** `edb8fb56` (three@0.169.0).
+Sekcje §0–§10 wyżej (część 1) — bez zmian. Część 2 = §11–§17.
+
+## 11. Streszczenie części 2
+
+1. **Zakres §4 „2 — pole statyczne” zportowany w całości** → nowy moduł `rust-port/renderer/src/battle/field.rs`
+   (wejście: siatka terenu jako DTO, Z-36-3; wyjście: `BattleField` = jedno drzewo `scene::Scene` + tablice boczne
+   + metadane renderu). Mapa symboli §12.
+2. **Parytet bit w bit z webem — kod weba URUCHOMIONY**, nie przepisany: pełny konstruktor `new BattleScene(opts)`
+   (puste armie, stub DOM, `WebGLRenderer` zastąpiony nagrywaczem) dla 16 konfiguracji (3 legacy, 8 presetów świata,
+   2 oblężenia, 3 rozstawienia) + buildery wołane bezpośrednio na 9 syntetycznych siatkach + 5 przypadków
+   `_applyCamera` + stałe i helpery. **281 792 węzłów sceny, 20 314 tożsamości materiałów, 0 różnic** (podpis FNV
+   pełnego rekordu każdego węzła, per przebieg i dla całej sceny, plus porównanie pole po polu `to_bits` pierwszych
+   węzłów każdego przebiegu, materiałów, świateł, kamery, mgły, tła, ustawień renderera, stanu oblężenia).
+3. **Stałe `BF_*` / `PLAY_*` / `TILE_S` / kolory / `HILL_*` / `RIVER_DROP` / tabele `BT_FLOOR_COLOR*` /
+   `SIEGE_BLDG_*` / `WALL_TILE_HP` / `deployClearRanksFor` / `battleSafeCols`** — kopie w Rust z testem równości
+   z wartościami odczytanymi z modułu weba (`constants_equal_web`).
+4. **Mutacje: wynik w §15** (`tests/fixtures/battle3d/mutate_field.py`, 48 mutantów `src/battle/field.rs`).
+5. Determinizm: generator w 2 różnych katalogach (osobny `npm install`, osobny `git archive`) → identyczny
+   `field.json` (`39df4eb7…369929`) i bundel `gen_field.mjs` (`497e5666…d09143`).
+6. Ocena wizualna 1:1: **NIE_ZMIERZONO** (brak GPU) — lista w §16.
+
+## 12. Mapa symboli → Rust (`battle::field`)
+
+| web (`battleScene.ts` @ `edb8fb56`) | linie | Rust | uwagi |
+|---|---|---|---|
+| stałe pola `BF_COLS`…`PLAY_MID_ROW`, `MAX_PER_SIDE`, `RANK_WIDTH`, `MAX_RANKS`, `DEPLOY_MARGIN`, `TILE_S`, `FRONT_GAP`, `ATK/DEF_FRONT_COL`, `ATK/DEF_COL_STEP`, `DEPLOY_MID_COL`, `DEPLOY_DEF_MIN_COL`, `TILE_H` | 618–629, 676–708, 774, 872, 905 | `pub const` (i32 / f64) | test równości bitowej z wartością modułu weba; formuły w teście jednostkowym |
+| `BT_FLOOR_COLOR`, `BT_FLOOR_COLOR_DESERT`, kolory dekoracji, `HILL_LIFT`, `HILL_BUMP_RADIUS`, `HILL_SUMMIT_Y`, `RIVER_DROP`, `SIEGE_BLDG_*_COLORS` | 1130–1205 | `floor_color`, `floor_color_desert`, `pub const` | `?? 0x6fa84a` dla rodzaju spoza tabeli = `None` |
+| `deployClearRanksFor`, `battleSafeCols` | 734–771 | `deploy_clear_ranks_for`, `battle_safe_cols` | WSPÓLNE (domena); tu tylko do testu równości |
+| `tileJitter` (`battle-terrain.ts`) | 811–818 | `tile_jitter` | `Math.imul`/`>>>` na `i32`/`u32` z zawijaniem |
+| `lighten`, `blend` | 19442–19459 | `lighten`, `blend` | `Math.round` = `siege_wall::js_round`, `<<` ToInt32 (wynik może być ujemny jak w JS) |
+| `cellToWorld`, `cellBoundsXZ`, `tileTopY` | 1724–1739, 1831–1838 | `cell_to_world`, `cell_bounds_xz`, `tile_top_y` | |
+| `BattleTerrainMap` (`at`, `passable`) | `battle-terrain.ts:49-70`, 780–793 | `TerrainGrid` (DTO) | poza zakresem `at` = Plains |
+| `_carveWallTiles` | 3849–3888 | `carve_wall_tiles` → `SiegeLayout` | indeks `r * BF_COLS + col` jak w webie (nie `tm.cols`); zapis poza tablicą ignorowany jak w `Uint8Array` |
+| `makeGableRoofGeometry` | 1214–1235 | `make_gable_roof_geometry`, `FieldGeo::GableRoof` | 6 trójkątów bez indeksu, `computeVertexNormals` |
+| `_buildSiegeInteriorBuildings` | 3987–4117 | `FieldScene::build_siege_interior_buildings` | `Array.sort` stabilny (ES2019) = `sort_by_key` stabilny |
+| `_buildBattlefield` (kafle, las, wzgórza, woda, skały, kępy trawy, drobnica, czarny grunt) | 4462–4876 | `FieldScene::build_battlefield` | cache materiałów po kolorze jak `matCache`; `break outerGrass` = `break 'outer` |
+| `_buildPlayableMarginVisuals` (+ `refreshInstancedPickBounds`, `input/picker.ts:146-150`) | 4879–4962 | `build_playable_margin_visuals` (prywatna, wołana z `build_battlefield`) | `InstancedMesh.computeBoundingSphere` + `Sphere.union/expandByPoint` (three r169) dla meshy pickingu |
+| `_buildDeployZone` | 11568–11679 | `FieldScene::build_deploy_zone(grid, DeploySide)` | `_playerControlSide()` = parametr |
+| `_initDeployGhostLayer` | 15213–15222 | `FieldScene::init_deploy_ghost_layer` | wołane przez `_initDeployUI` w trybie rozstawienia |
+| `_appendDeployCellOutline` | 15246–15274 | `FieldScene::append_deploy_cell_outline` | `THREE.Line` + `LineBasic`/`LineDashedMaterial`, `computeLineDistances` |
+| konstruktor, część 3D: renderer, tło, mgła, kamera, światła, grupy `orderLines`/`orderPreview` | 3304–3366 | `build_battle_scene` → `BattleField { renderer, env, camera, field }` | mgła: konstruktor ustawia `FogExp2(…, 0.012)`, potem nadpisuje `0.005` — istnieje tylko końcowa |
+| `_applyCamera` (+ pola `camTarget`, `camDir`, `camDist*`, `:2080-2085`) | 9872–9880 | `BattleCamera::apply` (+ `world_matrix`, `projection_matrix`, `euler_xyz_from_quaternion`) | `lookAt` kamery = `pick::three::Mat4::look_at` + `Quat::from_rotation_matrix` |
+
+Typy minimalne (dispatch: `geom/**`, `scene/**` bez zmian): `FieldGeo` (body `GeoBody`: płaszczyzna, płaszczyzna
+obrócona `rotateX(-π/2)`, stożek z `translate`, dach dwuspadowy, polilinia), `InstancedMesh`, `Light` / `LightKind` /
+`DirectionalShadow`, `OutlineLine` / `Dash`. W drzewie `Scene` są to węzły-zastępcy `Object3D` (transformacja,
+flagi, kolejność `traverse` identyczna z webem), treść w tablicach bocznych `FieldScene::{instanced, lights, lines}`.
+Używane tylko publiczne API: `scene`, `geom` (prymitywy, `rotate_x`, `translate`, `compute_vertex_normals`),
+`pick::three` (`Vec3`, `Mat4`, `Quat`, `Sphere`), `pick::raycast::TriGeometry` (sfera geometrii), `jsmath`,
+`terrain::color::Color`, `battle::siege_wall::js_round`. `lib.rs` bez zmian (moduł `battle` istnieje od części 1;
+jedna linia `pub mod field;` w `battle/mod.rs`). `Cargo.toml` / `Cargo.lock` bez zmian.
+
+**Poza zakresem części 2 (świadomie):** `_placeSiegeWall` (umieszczenie muru — część 3; w dumpach weba poddrzewo
+muru jest pominięte, `wallIndexInChildren` pokazuje jego miejsce = 10 629, tuż po polu, przed zabudową),
+`_placeUnits*` (część 3; puste armie nie dodają węzłów — zmierzone: brak przebiegu jednostek w dumpach),
+`_setDeployZoneVisible`, `_tickZoom`, `_clampCamTarget`, `_tickCameraPanKeys` (część 4/5), listy `ownedGeos` /
+`ownedMats` (czas życia zasobów GPU — w Rust własność), `renderer.setPixelRatio(window.devicePixelRatio)`
+(wartość czasu wykonania, nie dana sceny), `_carveBattleBox` / `_fencePlayableZone` / `generateBattleTerrain`
+(domena, Z-36-3 — generator testu uruchamia je w webie, żeby zbudować DTO).
+
+**ZAŁOŻENIE Z-36-4:** wejście części 2 = siatka PO `_carveBattleBox` + `_fencePlayableZone` (DTO z domeny), a
+`_carveWallTiles` jest w scenie (dispatch wymienia go w części 2). Generator sprawdza, że DTO (+ webowy
+`_carveWallTiles` przy oblężeniu) jest identyczne z siatką, którą zbudował sam konstruktor.
+
+**ZAŁOŻENIE Z-36-5:** geometrie współdzielone w webie jednym obiektem (`tileGeo` na 10 608 kafli) są w Rust
+osobnymi wartościami `Geo` o tej samej treści (porównywane po typie, parametrach i haszu FNV); tożsamość
+geometrii nie jest częścią kontraktu (GPU deduplikuje po treści — `scene::export`). Tożsamość **materiałów**
+jest porównywana (bijekcja pierwszego użycia w `traverse`), bo `matCache` / materiał-na-kafel rozstawienia są
+zachowaniem do odtworzenia.
+
+## 13. Generator i dane referencyjne (`tests/fixtures/battle3d/`, README tamże, „Part 2”)
+
+- `gen_field.ts` importuje **niezmieniony** `battle/battleScene.ts` (+ cały graf importów) z `git archive edb8fb56`;
+  bundel `build_field.mjs` (esbuild 0.24.0). Trzy jawne kroki czasu bundlowania (nic nie trafia do `gra/**`):
+  (a) dopisanie jednej linii `export { … }` do `battleScene.ts` (dostęp do stałych/helperów prywatnych modułu),
+  (b) `three` widziane przez `battleScene.ts` = `three_shim.ts` (prawdziwe three@0.169.0, podmieniony tylko
+  `WebGLRenderer` → rejestrator ustawień), (c) `define` dla `import.meta.glob/env` (Vite) w modułach UI.
+  Stub DOM (`dom_stub.ts`): Proxy, rozmiary układu = 0 → `_syncRendererSize` kończy się na `w === 0`, `aspect` = 1.
+- Przypadki: §„Cases” README — 16 konstruktorów, 9 siatek syntetycznych (m.in. limit 8000 źdźbeł osiągnięty, brama w wierszu 79 — działka dokładnie `STREET_HALF` od bramy,
+  siatka 20×30 mniejsza niż pole, sama rzeka, brak miejsca na zabudowę, `siegeWallCol` −1), 6 obrysów komórek
+  (przerywane i ciągłe, odwrócony prostokąt, poza siatką), 5 × `_applyCamera`, stałe, 296 × `lighten`/`blend`.
+- `field.json` 3 165 207 B; bundel `gen_field.mjs` (2,78 MB, cały kod gry) **nie jest commitowany** (budżet
+  12 MB: część 1 zajmuje 7,69 MB) — odtwarzalny bajt w bajt, SHA-256 w README. Katalog fixtur po części 2:
+  wynik `du -b` w §15 (≤ 12 MB), największy plik nadal `siege_wall.json` 7,23 MB (≤ 8 MB).
+- Format rekordu węzła (identyczny strumień bajtów w `gen_field.ts::nodeRecord` i `battle3d_field.rs::View::record`):
+  rodzaj, nazwa, rodzic, pozycja, Euler + porządek, kwaternion, skala, `matrixWorld`, cienie, widoczność,
+  `renderOrder`, tożsamość materiału, typ / hasz / parametry geometrii; `Line`: `lineDistance`; `InstancedMesh`:
+  pojemność, `count`, FNV całych tablic `instanceMatrix` / `instanceColor` (`Float32`), `boundingSphere`;
+  światła: kolor liniowy, intensywność, kolor gruntu, cel, pozycja celu, kamera cienia.
+
+## 14. Testy (`tests/battle3d_field.rs`) i testy jednostkowe
+
+- `field_constructor_matches_web` — 16 konstruktorów: siatka po `_carveWallTiles` (FNV), `SiegeLayout`
+  (kolumna, wiersze, brama, HP bramy, `wallTileHp` w kolejności wstawiania), tło, mgła, renderer, kamera
+  (fov/aspect/near/far/zoom, pozycja, Euler, kwaternion, `up`, `matrixWorld`, `projectionMatrix`, cel, kierunek,
+  4 odległości), scena (liczba węzłów, przebiegi: etykieta / start / liczba dzieci / węzłów / podpis, pełne
+  rekordy pierwszych 3 węzłów każdego przebiegu, podpis całej sceny), materiały (podpis każdej tożsamości + pola
+  pierwszych 40 różnych), indeksy `_battleGroundPickMeshes` / `_deployZoneMeshes` / `_deployVisualGroup`.
+- `field_builders_match_web_on_synthetic_grids` — 9 siatek, te same porównania sceny.
+- `apply_camera_matches_web` — 5 przypadków (NaN: porównana tylko „NaN-owość”, wzorce bitów NaN zależne od
+  implementacji, §3a).
+- `constants_equal_web`, `helpers_match_web` — stałe, tabele, `lighten`/`blend`, dach, `cellToWorld`, `tileTopY`.
+- Jednostkowe w `battle::field`: formuły stałych, `tile_jitter` ∈ [0, 1), zapis karwowania poza krótką siatką.
+
+## 15. Bramy, mutacje (r1: `runs/R-RUSTPORT-P4-36-MOD14-BATTLE-3D-Q2/dowody/gates-r1.txt`, `test-full-r1.txt`, `mutate-field-r1.txt`)
+
+Polecenia z `rust-port/renderer`, `CARGO_PROFILE_DEV_DEBUG=0`, `CARGO_TARGET_DIR` w scratchu (usunięty po pracy), rustc 1.97.0:
+
+```text
+## $ cargo fmt --all -- --check
+EXIT=0
+## $ cargo clippy --locked --all-targets -- -D warnings
+EXIT=0
+## $ cargo clippy --locked --all-targets --features gpu -- -D warnings
+EXIT=0
+## $ cargo test --locked --all-targets
+EXIT=0
+## test totals: passed=397 failed=0 binaries=52   (część 1: 377; +5 testów battle3d_field, +3 jednostkowe battle::field, reszta = stan bazy 78bd7f1a)
+## $ cargo test --locked --test battle3d_field -- --nocapture
+field synthetic: 9 cases, scalars 7881, checks 15407
+field ctor: 16 cases, 177798 nodes, scalars 19299, checks 22567
+test result: ok. 5 passed; 0 failed
+## $ cargo test --locked --test battle3d_siege_wall   (część 1 bez zmian)
+test result: ok. 3 passed; 0 failed
+## $ sha256sum -c MANIFEST.sha256   (12 plików)
+EXIT=0
+## $ du -b tests/fixtures/battle3d
+10908890   (≤ 12 MB; największy plik siege_wall.json 7 228 812 B ≤ 8 MB)
+## $ python3 tests/fixtures/battle3d/mutate_field.py
+KILLED 48/48
+EXIT=0
+```
+
+(Liczby przepisane z `dowody/gates-r1.txt` i `dowody/mutate-field-r1.txt` — w razie różnicy wiąże log. Uwaga do
+„+5/+3”: suma 397 obejmuje też testy dodane w bazie po części 1; NIE_ZMIERZONO rozbicia poza `battle3d_field`.)
+
+**Mutacje (48):** podłoga (roughness, szachownica, krok wariancji, cel przyciemnienia, odcienie stron, wysokość płyty,
+`receiveShadow`, cache materiałów), dekoracje (wysokość korony, sól odcienia korony, skala Y kopuły, wysokość krzewu,
+woda brodu, `emissive` wody, liczba skał, limit trawy, przechył źdźbła, szansa kamyka, uniesienie krzaczka, wypełnienie
+`instanceColor` jedynkami), grunt / marginesy / ramka (`y`, zakładka INNER, `renderOrder`, `DoubleSide`), sfera
+`union`, oblężenie (wiersze bramy, HP kafla muru, `STREET_HALF`, `BUILDING_CAP`, kolejność działek, kalenica dachu,
+uniesienie dachu płaskiego), rozstawienie (krycie kafla, przesunięcie krawędzi, `renderOrder` duchów, uniesienie
+obrysu, kumulacja `lineDistance`, `passable` bramy), helpery (`tileJitter`, `lighten`, `tileTopY`), konstruktor
+(odległość kamery, clamp, cień słońca, `DEFAULT_UP` półkuli, gęstość mgły, Euler z kwaternionu). Przebieg 1: 47/48 —
+„`STREET_HALF` 3 → 2” przeżył, bo przy bramie w wierszu 77 i kroku 3 od wiersza 25 żadna działka nie leży dokładnie
+3 wiersze od bramy; dodany przypadek `interior-gate-79` (działka w wierszu 76), przebieg 2: 48/48. Mutant
+„`variance >= 0` → `> 0`” z pierwszego szkicu był RÓWNOWAŻNY (`blend(c, 0, -0)` = `lighten(c, 0)`) — zastąpiony
+„celem przyciemnienia”.
+
+## 16. Co ocenić wzrokiem po RR-T5 (NIE_ZMIERZONO — wymaga GPU)
+
+1. Pole 68×156 w kadrze domyślnym (kamera `fov 48`, odległość 101,2, kierunek (0, 1, 1)/√2): szachownica kafli
+   (+2,2 %), jitter jasności (±6,75 %, 7 koszyków), przyciemnienie/rozjaśnienie stron ataku/obrony.
+2. Czarne marginesy (nieprzezr. 0,94, `renderOrder` 5) — brak jasnej szpary na styku z wodą; złota ramka strefy gry
+   (0,35, `DoubleSide`, `renderOrder` 6).
+3. Lasy (korony białe × `instanceColor`, 2 odcienie), kopuły wzgórz zachodzące na siebie (promień 0,78), krzewy,
+   skały, woda półprzezroczysta z `emissive`, kępy trawy (bez cieni), kamyki/krzaczki — przy zbliżeniu.
+4. Paleta pustyni (`pustynia`): piasek, wydmy, piaskowiec, suche kępy.
+5. Zabudowa za murem (oblężenie): bryły z dachami dwuspadowymi i płaskimi, ulica od bramy wolna.
+6. Strefa rozstawienia: jasna połowa gracza z kaflami 0x44bbff (0,28), „mgła” przeciwnika (2 warstwy), złota linia
+   i krawędzie niebieska/czerwona; obrysy komórek na wysokości `tileTopY + 0,08` (przerywane: kreska 0,22 / przerwa 0,14).
+7. Oświetlenie: ambient + półkula + słońce z cieniem PCFSoft (mapa 2048², ortho ±40,8 × ±109,2) + wypełnienie;
+   ACES Filmic, ekspozycja 1,05; mgła `FogExp2(0x05070b, 0,005)`, tło 0x05070b.
+
+## 17. Obserwacje o webie (część 2; port 1:1, bez zmian w `gra/**`)
+
+- **W-7** `_carveWallTiles` indeksuje `r * BF_COLS + wallCol` (nie `tm.cols`) — dla siatki o innej szerokości zapis
+  trafia w złe miejsce lub poza tablicę (ignorowany przez `Uint8Array`); w grze siatka ma zawsze `BF_COLS` kolumn.
+- **W-8** `_buildBattlefield` liczy dekoracje po całym `tm.tiles` (np. `forestTiles`), a rysuje po prostokącie
+  `BF_COLS × BF_ROWS` — przy siatce większej niż pole pojemność `InstancedMesh` > liczba instancji (port liczy
+  identycznie; w grze siatka ma zawsze rozmiar pola; mniejsza siatka — przypadek `mix-small-grid` — daje równe
+  liczby, bo `at` poza zakresem = Plains).
+- **W-9** Materiał kafla rozstawienia jest tworzony osobno dla każdego kafla (do ~2 600 identycznych materiałów);
+  port zachowuje tożsamości (koszt tylko CPU; GPU może deduplikować — decyzja poza P4).
+- **W-10** Konstruktor ustawia mgłę `FogExp2(…, 0.012)` i kilka linii dalej zastępuje ją `FogExp2(…, 0.005)` (`:3315`, `:3359`).
+- **W-11** `_buildBattlefield(_teren)` nie używa parametru `teren` (teren steruje tylko ziarnem generatora).

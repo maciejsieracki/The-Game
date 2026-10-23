@@ -1,0 +1,13 @@
+## R-RUSTPORT-P4-36-MOD14-BATTLE-3D-Q2 r1 — generator determinism (two scratch dirs, separate npm install + git archive edb8fb56)
+## $ node $S/refscript/build_field.mjs && node $S/refscript/gen_field.mjs $S/out   (S = q2, then S = q2b)
+battle3d field ctor=16 synthetic=9 nodes=281792
+battle3d field ctor=16 synthetic=9 nodes=281792
+## $ sha256sum q2/out/field.json q2b/out/field.json q2/refscript/gen_field.mjs q2b/refscript/gen_field.mjs
+39df4eb712ed690454989b5ee3c66778924d8a8dcb09f3f9a164c6143b369929  q2/out/field.json
+39df4eb712ed690454989b5ee3c66778924d8a8dcb09f3f9a164c6143b369929  q2b/out/field.json
+497e56661add95c804b6476ede7f7a34441a49bd8d096a760710ec7067d09143  q2/refscript/gen_field.mjs
+497e56661add95c804b6476ede7f7a34441a49bd8d096a760710ec7067d09143  q2b/refscript/gen_field.mjs
+## committed tests/fixtures/battle3d/field.json = copy of q2/out/field.json (sha256 in MANIFEST.sha256)
+## toolchain: node v22.22.0, three@0.169.0, esbuild@0.24.0 (npm --ignore-scripts)
+## history: first generation (8 synthetic cases) gave field.json fc3d0a1c…6a0b81 / bundle 02c764c9…c27222, also
+## identical in both dirs; the 9th case (interior-gate-79) was added after mutant "interior street" survived.
