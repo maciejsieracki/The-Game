@@ -1,0 +1,56 @@
+WYKRYTY   : can_afford: skarbiec <= -> 1 testow czerwonych: can_afford_found_city_matches_web
+WYKRYTY   : read_param: nieskonczone przechodzi -> 1 testow czerwonych: read_param_accepts_only_finite_numbers
+WYKRYTY   : label: odwrocone free -> 2 testow czerwonych: costs_follow_injected_params, cost_labels_match_web
+WYKRYTY   : is_subsequent: != zamiast == -> 3 testow czerwonych: costs_follow_injected_params, is_subsequent_found_city_matches_web, evaluate_found_city_affordance_matches_web
+WYKRYTY   : tabela: prog AI 3 -> 2 -> 3 testow czerwonych: evaluate_found_city_affordance_matches_web, cost_constants_match_running_web, pick_source_city_matches_web_including_rand_protocol
+WYKRYTY   : hex: domyslnie nie-gora -> 1 testow czerwonych: clear_hex_for_city_center_matches_web
+WYKRYTY   : hex: gora wykrywana odwrotnie -> 1 testow czerwonych: apply_city_founding_to_hex_matches_web
+PRZEZYL   : hex: zloza odwrocone
+WYKRYTY   : hex: snapshot po czyszczeniu -> 1 testow czerwonych: apply_city_founding_to_hex_matches_web
+WYKRYTY   : hex: gora nie kasuje zloza -> 2 testow czerwonych: clear_hex_for_city_center_matches_web, apply_city_founding_to_hex_matches_web
+WYKRYTY   : hex: gora nie kasuje klucza ulepszenia -> 2 testow czerwonych: clear_hex_for_city_center_matches_web, apply_city_founding_to_hex_matches_web
+WYKRYTY   : hex: nie-gora kasuje zloza -> 2 testow czerwonych: apply_city_founding_to_hex_matches_web, clear_hex_for_city_center_matches_web
+PRZEZYL   : hex: las zostaje
+WYKRYTY   : hex: brak heksu tez zapisuje snapshot -> 1 testow czerwonych: apply_city_founding_to_hex_matches_web
+WYKRYTY   : tabela: droga nie zostaje -> 1 testow czerwonych: keep_set_and_predicate_match_web
+WYKRYTY   : conquest: prog obcej kultury <= -> 2 testow czerwonych: revolt_multiplier_and_deprecated_penalties_match_web, thresholds_match_web
+WYKRYTY   : conquest: niestabilny = lub -> 2 testow czerwonych: revolt_multiplier_and_deprecated_penalties_match_web, thresholds_match_web
+WYKRYTY   : revolt: garnizon >= 0 -> 1 testow czerwonych: revolt_multiplier_and_deprecated_penalties_match_web
+WYKRYTY   : revolt: odwrocony predykat niestabilnosci -> 1 testow czerwonych: revolt_multiplier_and_deprecated_penalties_match_web
+WYKRYTY   : captured: clamp bez semantyki JS -> 1 testow czerwonych: on_city_captured_culture_matches_web_with_injected_circle
+WYKRYTY   : captured: ten sam wlasciciel nie konczy -> 1 testow czerwonych: on_city_captured_culture_matches_web_with_injected_circle
+WYKRYTY   : captured: brak fallbacku kulturaOwnShare -> 1 testow czerwonych: on_city_captured_culture_matches_web_with_injected_circle
+WYKRYTY   : captured: kulturaOwnShare inna niz own -> 1 testow czerwonych: on_city_captured_culture_matches_web_with_injected_circle
+WYKRYTY   : captured: ten sam okreg nie czysci -> 1 testow czerwonych: on_city_captured_culture_matches_web_with_injected_circle
+WYKRYTY   : clear_city_culture_mix: zostaje kulturaOwnShare -> 2 testow czerwonych: clear_city_culture_mix_removes_both_fields, on_city_captured_culture_matches_web_with_injected_circle
+WYKRYTY   : tick: konwersja kultury dla share <= 1 -> 1 testow czerwonych: tick_city_culture_religion_matches_web_with_injected_conversions
+WYKRYTY   : tick: rate odwrocony -> 1 testow czerwonych: tick_city_culture_religion_matches_web_with_injected_conversions
+WYKRYTY   : tick: converted bez religii -> 1 testow czerwonych: tick_city_culture_religion_matches_web_with_injected_conversions
+WYKRYTY   : tick: pusta religia wlasciciela konwertuje -> 1 testow czerwonych: tick_city_culture_religion_matches_web_with_injected_conversions
+WYKRYTY   : tick: religia bez obcej dominacji -> 1 testow czerwonych: tick_city_culture_religion_matches_web_with_injected_conversions
+WYKRYTY   : ids: sad -> stela -> 2 testow czerwonych: tick_city_culture_religion_matches_web_with_injected_conversions, building_flags_match_web
+WYKRYTY   : ids: swiatynia -> kregi -> 2 testow czerwonych: tick_city_culture_religion_matches_web_with_injected_conversions, building_flags_match_web
+WYKRYTY   : tabela: teatr nie daje amfiteatru -> 2 testow czerwonych: tick_city_culture_religion_matches_web_with_injected_conversions, building_flags_match_web
+WYKRYTY   : tabela: prog obcej kultury 0.5 -> 0.4 -> 2 testow czerwonych: revolt_multiplier_and_deprecated_penalties_match_web, thresholds_match_web
+WYKRYTY   : tabela: mnoznik buntu 1.5 -> 1.4 -> 1 testow czerwonych: revolt_multiplier_and_deprecated_penalties_match_web
+WYKRYTY   : vis: zasieg < zamiast <= -> 5 testow czerwonych: compute_visible_along_path_matches_web, compute_visible_at_matches_web, compute_visible_fixed_sight_matches_web
+WYKRYTY   : vis: odleglosc bez trzeciej osi -> 5 testow czerwonych: compute_player_visibility_matches_web, compute_visible_along_path_matches_web, compute_visible_fixed_sight_matches_web
+WYKRYTY   : vis: miasto = DEFAULT -> 2 testow czerwonych: compute_player_visibility_matches_web, unit_sight_resolver_and_compute_visible_match_web
+WYKRYTY   : vis: Ruch przed Widok pola -> 2 testow czerwonych: compute_player_visibility_matches_web, unit_sight_resolver_and_compute_visible_match_web
+PRZEZYL   : vis: DEFAULT_SIGHT >= 0
+WYKRYTY   : vis: garnizon wroga widoczny -> 1 testow czerwonych: units_visible_on_map_matches_web
+WYKRYTY   : vis: ladu nie odslania plytkiego morza -> 1 testow czerwonych: key_listings_and_terrain_predicates_match_web
+WYKRYTY   : vis: dry = nie morze -> 1 testow czerwonych: key_listings_and_terrain_predicates_match_web
+WYKRYTY   : vis: miasto z zasiegiem 0 odslania centrum -> 1 testow czerwonych: compute_player_visibility_matches_web
+WYKRYTY   : vis: zasieg startu 0 -> 1 testow czerwonych: compute_player_visibility_matches_web
+WYKRYTY   : vis: kultura domyslna 100 -> 1 testow czerwonych: compute_player_visibility_matches_web
+WYKRYTY   : vis: gracz domyslny 1 -> 1 testow czerwonych: units_visible_on_map_matches_web
+WYKRYTY   : vis: render odwrocony -> 1 testow czerwonych: add_explored_and_render_sets_match_web
+WYKRYTY   : vis: start nawet przy widocznych -> 1 testow czerwonych: compute_player_visibility_matches_web
+WYKRYTY   : vis: sciezka tylko ostatni heks -> 1 testow czerwonych: compute_visible_along_path_matches_web
+WYKRYTY   : vis: addExplored nie dodaje -> 1 testow czerwonych: add_explored_and_render_sets_match_web
+mutantow=51 przezylo/niekompilujace=3
+   hex: zloza odwrocone
+   hex: las zostaje
+   vis: DEFAULT_SIGHT >= 0
+EXIT=1

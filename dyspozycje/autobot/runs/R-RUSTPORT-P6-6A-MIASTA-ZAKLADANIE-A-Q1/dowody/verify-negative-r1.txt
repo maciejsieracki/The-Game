@@ -1,0 +1,7 @@
+ROZBIEZNOSC pick[3].id: py=None json='zly-id'
+ROZBIEZNOSC evaluate[5].kp: py=0.0 json=21.0
+ROZBIEZNOSC clear[0]: py={'teren': 'laka', 'nakladka': 'brak', 'ulepszenie': 'brak', 'ulepszenia': None, 'zloze': None, 'improvementKey': None, 'rzeka': False} json={'teren': 'laka', 'nakladka': 'las', 'ulepszenie': 'brak', 'ulepszenia': None, 'zloze': None, 'improvementKey': None, 'rzeka': False}
+ROZBIEZNOSC revolt[0]: py=1.0 json=2.0
+ROZBIEZNOSC at[0]: py=[] json=['9,9']
+sprawdzen=14789 rozbieznosci=5
+EXIT=1

@@ -444,3 +444,108 @@ pub fn find_evacuation_hex_outside_city(
     }
     None
 }
+
+// ---------------------------------------------------------------------------
+// P6.6A (R-RUSTPORT-P6-6A-MIASTA-ZAKLADANIE-A-Q1): port `gra/src/game/city-hex-clear.ts` (74 linie,
+// pin edb8fb56). Reguly macierzy B: `data/derived/city-hex-clear-rules.json`.
+//
+// Moduly `city_founding`, `conquest_stability` i `visibility` (P6.6A) leza w `domain/state.rs`; `state`
+// jest modulem prywatnym `domain`, a `domain/mod.rs` jest poza allowlista tematu, wiec sa
+// udostepnione ponizej jako `domain::terrain::{city_founding, conquest_stability, visibility}`.
+// ---------------------------------------------------------------------------
+
+pub use super::state::{city_founding, conquest_stability, visibility};
+
+pub mod city_hex_clear {
+    use std::collections::BTreeMap;
+
+    use super::TerrainType;
+    use crate::data::derived::{city_hex_clear_rules, CityHexClearRulesFile};
+    use crate::domain::start_position::Overlay;
+
+    /// Podzbior web `HexExt` (`city-hex-clear.ts:21`) czytany i zmieniany przez te funkcje:
+    /// `terenBazowy`, `nakladka`, `ulepszenie` (napis `Ulepszenie`), `zloze?`, `improvementKey?`
+    /// oraz pola, ktore czyta tylko wstrzykniete `hexToWorkedTile` (`ulepszenia?`, `rzeka`).
+    #[derive(Debug, Clone, PartialEq, Eq)]
+    pub struct CityCenterHex {
+        pub teren: TerrainType,
+        pub nakladka: Overlay,
+        /// Web `hex.ulepszenie` (wartosc `Ulepszenie`, np. `"brak"`).
+        pub ulepszenie: String,
+        /// Web `hex.ulepszenia?` (warstwy; ta funkcja ich NIE zmienia).
+        pub ulepszenia: Option<Vec<String>>,
+        /// Web `hex.zloze?`.
+        pub zloze: Option<String>,
+        /// Web `hex.improvementKey?`.
+        pub improvement_key: Option<String>,
+        /// Web `hex.rzeka?.obecna`.
+        pub rzeka: bool,
+    }
+
+    /// Web `cityKeepsImprovement` (`city-hex-clear.ts:31`) + `CITY_KEEP_IMPROVEMENT_KEYS` (`:24`).
+    pub fn city_keeps_improvement(key: &str) -> bool {
+        city_hex_clear_rules()
+            .zostaje_ulepszenia
+            .iter()
+            .any(|kept| kept == key)
+    }
+
+    /// Web `CITY_KEEP_IMPROVEMENT_KEYS` w kolejnosci wstawiania.
+    pub fn city_keep_improvement_keys() -> &'static [String] {
+        &city_hex_clear_rules().zostaje_ulepszenia
+    }
+
+    /// Web `isKeptDeposit` (`city-hex-clear.ts:36`, prywatna).
+    fn is_kept_deposit(nakladka: Overlay, rules: &CityHexClearRulesFile) -> bool {
+        rules
+            .zostaja_zloza_nakladki
+            .iter()
+            .any(|kept| kept == nakladka.web_value())
+    }
+
+    /// Web `clearHexForCityCenter` (`city-hex-clear.ts:45`). `mountain_clears_all = None` oznacza
+    /// brak argumentu (domyslne `true` weba). Reguly z `data/derived/city-hex-clear-rules.json`.
+    pub fn clear_hex_for_city_center(hex: &mut CityCenterHex, mountain_clears_all: Option<bool>) {
+        clear_hex_for_city_center_with(hex, mountain_clears_all, city_hex_clear_rules());
+    }
+
+    /// `clear_hex_for_city_center` z jawnymi regulami (testy ksztaltu: edycja tabeli zmienia wynik).
+    pub fn clear_hex_for_city_center_with(
+        hex: &mut CityCenterHex,
+        mountain_clears_all: Option<bool>,
+        rules: &CityHexClearRulesFile,
+    ) {
+        if mountain_clears_all.unwrap_or(true) {
+            hex.nakladka = Overlay::Brak;
+            hex.ulepszenie = rules.ulepszenie_brak.clone();
+            hex.zloze = None;
+            hex.improvement_key = None;
+            return;
+        }
+        // Web: `if (Las) -> Brak; else if (nie-Brak && !zloze_zostajace) -> Brak` (dwie galezie o tym
+        // samym skutku): las znika ZAWSZE, reszta nakladek tylko gdy nie jest zostajacym zlozem.
+        let clears = hex.nakladka == Overlay::Las
+            || (hex.nakladka != Overlay::Brak && !is_kept_deposit(hex.nakladka, rules));
+        if clears {
+            hex.nakladka = Overlay::Brak;
+        }
+    }
+
+    /// Web `applyCityFoundingToHex` (`city-hex-clear.ts:64`): snapshot plonow PRZED czyszczeniem
+    /// (`hexToWorkedTile`, turn-economy.ts - wstrzykniete jako domkniecie `hex_to_worked_tile`), potem
+    /// czyszczenie z wyjatkiem GORY. Brak heksu na mapie = brak zmian.
+    pub fn apply_city_founding_to_hex<T>(
+        center_worked_tile: &mut Option<T>,
+        hexes: &mut BTreeMap<(i32, i32), CityCenterHex>,
+        q: i32,
+        r: i32,
+        hex_to_worked_tile: &dyn Fn(&CityCenterHex) -> T,
+    ) {
+        let Some(hex) = hexes.get_mut(&(q, r)) else {
+            return;
+        };
+        *center_worked_tile = Some(hex_to_worked_tile(hex));
+        let mountain = hex.teren == TerrainType::Gory;
+        clear_hex_for_city_center(hex, Some(mountain));
+    }
+}

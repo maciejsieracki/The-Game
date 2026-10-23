@@ -1,0 +1,10 @@
+{
+  "meta": {
+    "zrodlo_web": "gra/src/game/visibility.ts, gra/src/data/map-gen-params-loader.ts (pin edb8fb56)",
+    "uwaga": "Edytowalna tabela: zasieg wzroku zapasowy (FALLBACK_SIGHT; wartosc glowna: data/map-gen-params.json mgla.default_sight_jednostki), jasnosc heksow explored, promien odkrycia startu, typId miasta."
+  },
+  "fallback_sight": 3,
+  "fog_explored_brightness": 0.175,
+  "start_reveal_radius": 5,
+  "city_type_id": "city"
+}

@@ -2951,3 +2951,114 @@ pub fn locale_compare_ascii() -> &'static LocaleCompareAsciiFile {
     TABLE
         .get_or_init(|| parse_locale_compare_ascii().expect("locale-compare-ascii.json must parse"))
 }
+
+// ---------------------------------------------------------------------------------------------
+// P6.6A (R-RUSTPORT-P6-6A-MIASTA-ZAKLADANIE-A-Q1): city-founding / city-hex-clear /
+// conquest-stability / visibility - edytowalne tabele balansu (pin web edb8fb56)
+// ---------------------------------------------------------------------------------------------
+
+pub const CITY_FOUNDING_PARAMS_JSON: &str =
+    include_str!("../../data/derived/city-founding-params.json");
+pub const CITY_HEX_CLEAR_RULES_JSON: &str =
+    include_str!("../../data/derived/city-hex-clear-rules.json");
+pub const CONQUEST_STABILITY_PARAMS_JSON: &str =
+    include_str!("../../data/derived/conquest-stability-params.json");
+pub const VISIBILITY_PARAMS_JSON: &str = include_str!("../../data/derived/visibility-params.json");
+
+/// Teksty komunikatow zakladania miasta (szablony z `{koszt}` / `{praca}` / `{ludnosc}`).
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct CityFoundingTexts {
+    pub za_malo_pracy: String,
+    pub potrzebne_miasto: String,
+    pub za_malo_ludnosci: String,
+    pub etykieta_darmowe: String,
+    pub etykieta_platne: String,
+}
+
+/// Plik `city-founding-params.json`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct CityFoundingParamsFile {
+    pub meta: serde_json::Value,
+    pub fallback_koszt_praca: f64,
+    pub fallback_koszt_ludnosci: f64,
+    pub ai_source_min_pop: f64,
+    pub teksty: CityFoundingTexts,
+}
+
+pub fn parse_city_founding_params() -> Result<CityFoundingParamsFile, serde_json::Error> {
+    serde_json::from_str(CITY_FOUNDING_PARAMS_JSON)
+}
+
+/// Stale `city-founding.ts` (jednorazowy odczyt; blad danych = panika z komunikatem).
+pub fn city_founding_params() -> &'static CityFoundingParamsFile {
+    static TABLE: std::sync::OnceLock<CityFoundingParamsFile> = std::sync::OnceLock::new();
+    TABLE
+        .get_or_init(|| parse_city_founding_params().expect("city-founding-params.json must parse"))
+}
+
+/// Plik `city-hex-clear-rules.json` (macierz B: co zostaje na heksie centrum miasta).
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct CityHexClearRulesFile {
+    pub meta: serde_json::Value,
+    pub zostaje_ulepszenia: Vec<String>,
+    pub zostaja_zloza_nakladki: Vec<String>,
+    pub ulepszenie_brak: String,
+}
+
+pub fn parse_city_hex_clear_rules() -> Result<CityHexClearRulesFile, serde_json::Error> {
+    serde_json::from_str(CITY_HEX_CLEAR_RULES_JSON)
+}
+
+/// Reguly `city-hex-clear.ts` (jednorazowy odczyt; blad danych = panika z komunikatem).
+pub fn city_hex_clear_rules() -> &'static CityHexClearRulesFile {
+    static TABLE: std::sync::OnceLock<CityHexClearRulesFile> = std::sync::OnceLock::new();
+    TABLE
+        .get_or_init(|| parse_city_hex_clear_rules().expect("city-hex-clear-rules.json must parse"))
+}
+
+/// Plik `conquest-stability-params.json`. Mapy flaga -> lista id budynkow.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct ConquestStabilityParamsFile {
+    pub meta: serde_json::Value,
+    pub prog_obca_kultura: f64,
+    pub mnoznik_ryzyka_buntu_niestabilny_bez_garnizonu: f64,
+    pub budynki_kulturalne: BTreeMap<String, Vec<String>>,
+    pub budynki_religijne: BTreeMap<String, Vec<String>>,
+}
+
+pub fn parse_conquest_stability_params() -> Result<ConquestStabilityParamsFile, serde_json::Error> {
+    serde_json::from_str(CONQUEST_STABILITY_PARAMS_JSON)
+}
+
+/// Stale `conquest-stability.ts` (jednorazowy odczyt; blad danych = panika z komunikatem).
+pub fn conquest_stability_params() -> &'static ConquestStabilityParamsFile {
+    static TABLE: std::sync::OnceLock<ConquestStabilityParamsFile> = std::sync::OnceLock::new();
+    TABLE.get_or_init(|| {
+        parse_conquest_stability_params().expect("conquest-stability-params.json must parse")
+    })
+}
+
+/// Plik `visibility-params.json`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct VisibilityParamsFile {
+    pub meta: serde_json::Value,
+    pub fallback_sight: f64,
+    pub fog_explored_brightness: f64,
+    pub start_reveal_radius: f64,
+    pub city_type_id: String,
+}
+
+pub fn parse_visibility_params() -> Result<VisibilityParamsFile, serde_json::Error> {
+    serde_json::from_str(VISIBILITY_PARAMS_JSON)
+}
+
+/// Stale `visibility.ts` (jednorazowy odczyt; blad danych = panika z komunikatem).
+pub fn visibility_params() -> &'static VisibilityParamsFile {
+    static TABLE: std::sync::OnceLock<VisibilityParamsFile> = std::sync::OnceLock::new();
+    TABLE.get_or_init(|| parse_visibility_params().expect("visibility-params.json must parse"))
+}

@@ -1,0 +1,20 @@
+{
+  "meta": {
+    "zrodlo_web": "gra/src/game/conquest-stability.ts (pin edb8fb56)",
+    "uwaga": "Edytowalna tabela: progi i mnozniki stabilnosci podboju oraz mapowanie id budynkow na flagi konwersji (kultura/religia)."
+  },
+  "prog_obca_kultura": 0.5,
+  "mnoznik_ryzyka_buntu_niestabilny_bez_garnizonu": 1.5,
+  "budynki_kulturalne": {
+    "hasAmfiteatr": ["teatr", "akademia"],
+    "hasBiblioteka": ["biblioteka"],
+    "hasPalac": ["palac", "palac_ii", "palac_iii"],
+    "hasStela": ["stela"],
+    "hasSad": ["sad"],
+    "hasLaznia": ["laznia_publiczna"]
+  },
+  "budynki_religijne": {
+    "hasSwiatynia": ["swiatynia"],
+    "hasKamienneKregi": ["kamienne_kregi"]
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "meta": {
+    "zrodlo_web": "gra/src/game/city-founding.ts (pin edb8fb56)",
+    "uwaga": "Edytowalna tabela balansu. Wartosci koszt Pracy/Ludnosci zakladania miasta zyja w data/miasto-params.json (zaloz_miasto_koszt_praca / zaloz_miasto_koszt_ludnosci); tu tylko wartosci zapasowe (readParam fallback) i prog AI."
+  },
+  "fallback_koszt_praca": 20,
+  "fallback_koszt_ludnosci": 1,
+  "ai_source_min_pop": 3,
+  "teksty": {
+    "za_malo_pracy": "Za mało Pracy (potrzeba {koszt})",
+    "potrzebne_miasto": "Potrzebne miasto z co najmniej {koszt} ludności",
+    "za_malo_ludnosci": "Za mało ludności (potrzeba {koszt})",
+    "etykieta_darmowe": "FREE (pierwsze miasto)",
+    "etykieta_platne": "{praca} P · {ludnosc} 👤"
+  }
+}

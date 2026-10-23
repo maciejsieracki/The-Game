@@ -1,0 +1,15 @@
+{
+  "meta": {
+    "zrodlo_web": "gra/src/game/city-hex-clear.ts (pin edb8fb56), MACIERZ B (Maciej 2026-07-09)",
+    "uwaga": "Edytowalna tabela: co ZOSTAJE na heksie po zalozeniu miasta. Wszystko spoza list ZNIKA. Wyjatek GORY kasuje wszystko."
+  },
+  "zostaje_ulepszenia": [
+    "farma", "bydlo", "owce", "lama", "stadnina", "pastwisko",
+    "kopalnia_miedzi", "kopalnia_zelaza", "kopalnia_zlota", "kopalnia_cyny", "kamieniolom", "glinianka", "warzelnia_soli",
+    "droga", "droga_brukowana"
+  ],
+  "zostaja_zloza_nakladki": [
+    "zloze_gliny", "zloze_rudy", "zloze_konia", "zloze_owiec", "zloze_bydla", "zloze_lamy"
+  ],
+  "ulepszenie_brak": "brak"
+}

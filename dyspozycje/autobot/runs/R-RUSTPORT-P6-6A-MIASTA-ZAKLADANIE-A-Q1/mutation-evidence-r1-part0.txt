@@ -1,0 +1,10 @@
+WYKRYTY   : pick: remis -> ostatni -> 2 testow czerwonych: evaluate_found_city_affordance_matches_web, pick_source_city_matches_web_including_rand_protocol
+WYKRYTY   : pick: AI bez progu min -> 3 testow czerwonych: costs_follow_injected_params, evaluate_found_city_affordance_matches_web, pick_source_city_matches_web_including_rand_protocol
+WYKRYTY   : pick: gracz tez ma prog AI -> 3 testow czerwonych: pick_source_city_matches_web_including_rand_protocol, evaluate_found_city_affordance_matches_web, costs_follow_injected_params
+WYKRYTY   : pick: rand zawsze wolane -> 2 testow czerwonych: evaluate_found_city_affordance_matches_web, pick_source_city_matches_web_including_rand_protocol
+WYKRYTY   : pick: bez obslugi NaN/ujemnego indeksu -> 2 testow czerwonych: evaluate_found_city_affordance_matches_web, pick_source_city_matches_web_including_rand_protocol
+WYKRYTY   : pick: brak js_min (indeks poza zakresem) -> 2 testow czerwonych: evaluate_found_city_affordance_matches_web, pick_source_city_matches_web_including_rand_protocol
+WYKRYTY   : evaluate: komunikat min ludnosci bez progu AI -> 1 testow czerwonych: evaluate_found_city_affordance_matches_web
+WYKRYTY   : evaluate: skarbiec <= -> 2 testow czerwonych: first_city_is_free_for_any_params, evaluate_found_city_affordance_matches_web
+WYKRYTY   : evaluate: pierwsze miasto platne -> 3 testow czerwonych: first_city_is_free_for_any_params, costs_follow_injected_params, evaluate_found_city_affordance_matches_web
+WYKRYTY   : can_afford: ludnosc <= -> 1 testow czerwonych: can_afford_found_city_matches_web
