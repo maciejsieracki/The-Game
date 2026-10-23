@@ -1,0 +1,30 @@
+baseline green
+| O01 | `src/units/overlay/emblem.rs` | variant: city-state checked before barbarians | **KILLED** | textures_match_chromium, textures_match_golden_hashes |
+| O02 | `src/units/overlay/emblem.rs` | emblem key not lower-cased | **KILLED** | emblem_keys_match_the_web, units::overlay::emblem::tests::keys_follow_the_web_rules |
+| O03 | `src/units/overlay/emblem.rs` | disc radius 54 -> 53 | **KILLED** | textures_match_chromium, textures_match_golden_hashes |
+| O04 | `src/units/overlay/emblem.rs` | ring not stroked again over the portrait | **KILLED** | textures_match_chromium, textures_match_golden_hashes |
+| O05 | `src/units/overlay/emblem.rs` | portrait centred instead of top-anchored | **KILLED** | units::overlay::emblem::tests::portrait_is_anchored_at_the_top |
+| O06 | `src/units/overlay/emblem.rs` | ring width 14 -> 7 (pre R-ZETON-PASKI value) | **KILLED** | textures_match_chromium, textures_match_golden_hashes |
+| O07 | `src/units/overlay/emblem.rs` | fallback glyph without the +3 px offset | **KILLED** | textures_match_chromium, textures_match_golden_hashes |
+| O08 | `src/units/overlay/emblem.rs` | asset lookup with an untrimmed civId | **KILLED** | textures_match_chromium, textures_match_golden_hashes |
+| O09 | `src/units/overlay/stat_plate.rs` | bar gap 0.042 -> 0.028 | **KILLED** | constants_match_the_web_bit_for_bit, rendering_twice_is_identical, textures_match_chromium, textures_match_golden_hashes, trees_match_the_web_bit_for_bit, units::overlay::stat_plate::tests::canvas_sizes |
+| O10 | `src/units/overlay/stat_plate.rs` | missing bar value = empty bar instead of full | **KILLED** | rendering_twice_is_identical, textures_match_chromium, textures_match_golden_hashes, trees_match_the_web_bit_for_bit, units::overlay::stat_plate::tests::fractions_and_power_text |
+| O11 | `src/units/overlay/stat_plate.rs` | HP red band uses < instead of <= | **KILLED** | rendering_twice_is_identical, textures_match_chromium, textures_match_golden_hashes, trees_match_the_web_bit_for_bit |
+| O12 | `src/units/overlay/stat_plate.rs` | fill visible threshold 0.002 -> 0 | **KILLED** | rendering_twice_is_identical, textures_match_chromium, textures_match_golden_hashes, trees_match_the_web_bit_for_bit |
+| O13 | `src/units/overlay/stat_plate.rs` | packBars floors the movement fraction | **KILLED** | rendering_twice_is_identical, textures_match_chromium, textures_match_golden_hashes, trees_match_the_web_bit_for_bit |
+| O14 | `src/units/overlay/stat_plate.rs` | power 0 shown as a digit | **KILLED** | rendering_twice_is_identical, textures_match_chromium, textures_match_golden_hashes, trees_match_the_web_bit_for_bit, units::overlay::stat_plate::tests::fractions_and_power_text |
+| O15 | `src/units/overlay/stat_plate.rs` | digit advance not tightened for long numbers | **KILLED** | rendering_twice_is_identical, textures_match_chromium, textures_match_golden_hashes, trees_match_the_web_bit_for_bit |
+| O16 | `src/units/overlay/stat_plate.rs` | digit outline width 0.22 -> 0.15 of the height | **KILLED** | textures_match_chromium, textures_match_golden_hashes |
+| O17 | `src/units/overlay/stat_plate.rs` | trough corner radius 0.32 -> 0.5 of the bar height | **KILLED** | textures_match_golden_hashes |
+| O18 | `src/units/overlay/upgrade_badges.rs` | Barracks badge on the right | **KILLED** | rendering_twice_is_identical, textures_match_chromium, textures_match_golden_hashes, trees_match_the_web_bit_for_bit |
+| O19 | `src/units/overlay/upgrade_badges.rs` | icon gap 0.05 -> 0.03 | **KILLED** | rendering_twice_is_identical, textures_match_chromium, textures_match_golden_hashes, trees_match_the_web_bit_for_bit |
+| O20 | `src/units/overlay/upgrade_badges.rs` | badge icon stroke not boosted | **KILLED** | textures_match_chromium, textures_match_golden_hashes |
+| O21 | `src/units/overlay/veteran_badges.rs` | star inner radius 0.42 -> 0.5 | **KILLED** | rendering_twice_is_identical, textures_match_chromium, textures_match_golden_hashes, trees_match_the_web_bit_for_bit |
+| O22 | `src/units/overlay/veteran_badges.rs` | outline star in front of the star | **KILLED** | rendering_twice_is_identical, textures_match_chromium, textures_match_golden_hashes, trees_match_the_web_bit_for_bit |
+| O23 | `src/units/overlay/veteran_badges.rs` | star emissive 45 % -> 50 % | **KILLED** | rendering_twice_is_identical, textures_match_chromium, textures_match_golden_hashes, trees_match_the_web_bit_for_bit |
+| O24 | `src/units/overlay/mod.rs` | flat plate material single-sided | **KILLED** | rendering_twice_is_identical, textures_match_chromium, textures_match_golden_hashes, trees_match_the_web_bit_for_bit |
+| O25 | `src/units/overlay/mod.rs` | JS exponent form of String(n) dropped (1e21 printed in full) | **KILLED** | rendering_twice_is_identical, textures_match_chromium, textures_match_golden_hashes, trees_match_the_web_bit_for_bit, units::overlay::stat_plate::tests::fractions_and_power_text |
+
+Result: 25/25 killed
+restored tree green
+EXIT=0

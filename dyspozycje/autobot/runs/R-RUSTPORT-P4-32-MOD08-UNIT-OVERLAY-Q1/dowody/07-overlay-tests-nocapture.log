@@ -1,0 +1,158 @@
+   Compiling simd-adler32 v0.3.10
+   Compiling libm v0.2.16
+   Compiling adler2 v2.0.1
+   Compiling bytemuck v1.25.2
+   Compiling crc32fast v1.5.3
+   Compiling arrayvec v0.7.8
+   Compiling cfg-if v1.0.5
+   Compiling log v0.4.34
+   Compiling smallvec v1.16.3
+   Compiling float-cmp v0.9.0
+   Compiling polycool v0.4.0
+   Compiling strict-num v0.1.1
+   Compiling miniz_oxide v0.9.1
+   Compiling arrayref v0.3.9
+   Compiling bitflags v2.13.2
+   Compiling flate2 v1.1.10
+   Compiling tiny-skia-path v0.12.0
+   Compiling core_maths v0.1.1
+   Compiling ttf-parser v0.25.1
+   Compiling kurbo v0.13.1
+   Compiling fdeflate v0.3.7
+   Compiling miniz_oxide v0.8.9
+   Compiling memchr v2.8.3
+   Compiling siphasher v1.0.4
+   Compiling svgtypes v0.16.1
+   Compiling roxmltree v0.21.1
+   Compiling png v0.18.1
+   Compiling simplecss v0.2.2
+   Compiling data-url v0.3.2
+   Compiling imagesize v0.15.0
+   Compiling pico-args v0.5.0
+   Compiling tiny-skia v0.12.0
+   Compiling usvg v0.48.1
+   Compiling owned_ttf_parser v0.25.1
+   Compiling rgb v0.8.53
+   Compiling ab_glyph_rasterizer v0.1.10
+   Compiling unicode-script v0.5.8
+   Compiling unicode-bidi-mirroring v0.4.0
+   Compiling unicode-ccc v0.4.0
+   Compiling unicode-properties v0.1.4
+   Compiling zune-core v0.5.3
+   Compiling rustybuzz v0.20.1
+   Compiling zune-jpeg v0.5.15
+   Compiling resvg v0.48.1
+   Compiling ab_glyph v0.2.32
+   Compiling pollster v0.4.0
+   Compiling civ-renderer v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_2dc7845f-8c3-1/rust-port/renderer)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 33.24s
+     Running tests/overlay_web_parity.rs (target/debug/deps/overlay_web_parity-829e8e608ef2ca59)
+
+running 11 tests
+test badge_labels_match_the_web ... ok
+test chromium_tree_differences_are_only_last_bit_noise ... ok
+test constants_match_the_web_bit_for_bit ... ok
+test emblem_keys_match_the_web ... ok
+test fixtures_match_manifest_sha256 ... manifest entries=71 fixture files=64 bytes=3932567
+ok
+test inputs_equal_the_rr_t8c_pin_inputs ... ok
+test rendering_twice_is_identical ... ok
+test sha256_matches_standard_vectors ... ok
+test textures_match_chromium ... texture | phase | ref | size | max_abs | mean_abs | px>16 % | ssim
+t0 | final | OwnerEmblem("civ:grecy:2") | 128x128 | 123 | 1.0809 | 2.374 | 0.99066
+t0 | initial | OwnerEmblem("civ:grecy:2") | 128x128 | 91 | 0.9242 | 2.887 | 0.99177
+t1 | final | OwnerEmblem("civ:zulusi:3") | 128x128 | 123 | 1.1031 | 2.362 | 0.99076
+t1 | initial | OwnerEmblem("civ:zulusi:3") | 128x128 | 91 | 0.9242 | 2.887 | 0.99177
+t10 | final | OwnerEmblem("cs:nieznana") | 128x128 | 91 | 1.0334 | 2.869 | 0.99101
+t10 | initial | OwnerEmblem("cs:nieznana") | 128x128 | 91 | 0.9418 | 2.631 | 0.99165
+t11 | final | OwnerEmblem("barb") | 128x128 | 91 | 0.6463 | 2.930 | 0.99308
+t11 | initial | OwnerEmblem("barb") | 128x128 | 91 | 0.7140 | 3.235 | 0.99299
+t12 | final | PlateBackground | 512x168 | 37 | 0.4550 | 0.033 | 0.99146
+t13 | final | PowerFrame | 256x213 | 73 | 0.0857 | 0.189 | 0.99967
+t14 | final | PowerDigit(4) | 72x126 | 83 | 0.4859 | 1.565 | 0.99742
+t15 | final | PowerDigit(2) | 72x126 | 84 | 0.5868 | 2.458 | 0.99616
+t16 | final | PowerDigit(1) | 72x126 | 36 | 0.2244 | 0.661 | 0.99876
+t17 | final | PowerDigit(3) | 72x126 | 88 | 0.6663 | 2.954 | 0.99465
+t18 | final | PowerDigit(7) | 72x126 | 58 | 0.3620 | 1.036 | 0.99831
+t19 | final | PowerDigit(9) | 72x126 | 103 | 0.6461 | 2.679 | 0.99455
+t2 | final | OwnerEmblem("civ:egipt:1") | 128x128 | 123 | 1.0910 | 2.405 | 0.99053
+t2 | initial | OwnerEmblem("civ:egipt:1") | 128x128 | 91 | 0.9242 | 2.887 | 0.99177
+t20 | final | PowerDigit(0) | 72x126 | 90 | 0.6223 | 2.568 | 0.99471
+t21 | final | PowerDigit(5) | 72x126 | 111 | 0.6197 | 2.260 | 0.99502
+t22 | final | PowerDigit(6) | 72x126 | 70 | 0.7337 | 3.417 | 0.99390
+t23 | final | PowerDigit(8) | 72x126 | 87 | 0.7318 | 2.987 | 0.99325
+t24 | final | UpgradeBadge(Soft, 1) | 128x128 | 80 | 0.3228 | 1.074 | 0.99815
+t24 | initial | UpgradeBadge(Soft, 1) | 128x128 | 80 | 0.1869 | 0.653 | 0.99900
+t25 | final | UpgradeBadge(Soft, 2) | 128x128 | 80 | 0.5629 | 1.538 | 0.99738
+t25 | initial | UpgradeBadge(Soft, 2) | 128x128 | 80 | 0.3021 | 0.732 | 0.99866
+t26 | final | UpgradeBadge(Soft, 3) | 128x128 | 80 | 0.3940 | 1.581 | 0.99789
+t26 | initial | UpgradeBadge(Soft, 3) | 128x128 | 80 | 0.2211 | 0.751 | 0.99892
+t27 | final | UpgradeBadge(Armor, 1) | 128x128 | 80 | 0.2546 | 0.885 | 0.99862
+t27 | initial | UpgradeBadge(Armor, 1) | 128x128 | 80 | 0.1869 | 0.653 | 0.99900
+t28 | final | UpgradeBadge(Armor, 2) | 128x128 | 80 | 0.4278 | 1.031 | 0.99813
+t28 | initial | UpgradeBadge(Armor, 2) | 128x128 | 80 | 0.3021 | 0.732 | 0.99866
+t29 | final | UpgradeBadge(Armor, 3) | 128x128 | 80 | 0.3058 | 1.086 | 0.99847
+t29 | initial | UpgradeBadge(Armor, 3) | 128x128 | 80 | 0.2211 | 0.751 | 0.99892
+t3 | final | OwnerEmblem("civ:grecy:1") | 128x128 | 91 | 1.0078 | 3.101 | 0.99108
+t3 | initial | OwnerEmblem("civ:grecy:1") | 128x128 | 91 | 0.9242 | 2.887 | 0.99177
+t30 | final | OwnerEmblem("civ:grecy:2") (no assets) | 128x128 | 91 | 0.9242 | 2.887 | 0.99177
+t31 | final | OwnerEmblem("cs:grecy") (no assets) | 128x128 | 91 | 0.9418 | 2.631 | 0.99165
+t32 | final | OwnerEmblem("barb") (no assets) | 128x128 | 91 | 0.7140 | 3.235 | 0.99299
+t33 | final | UpgradeBadge(Soft, 2) (no assets) | 128x128 | 80 | 0.3021 | 0.732 | 0.99866
+t34 | final | UpgradeBadge(Armor, 1) (no assets) | 128x128 | 80 | 0.1869 | 0.653 | 0.99900
+t35 | final | UpgradeBadge(Armor, 3) (no assets) | 128x128 | 80 | 0.2211 | 0.751 | 0.99892
+t4 | final | OwnerEmblem("civ:nieznana:2") | 128x128 | 91 | 1.0124 | 2.985 | 0.99117
+t4 | initial | OwnerEmblem("civ:nieznana:2") | 128x128 | 91 | 0.9242 | 2.887 | 0.99177
+t5 | final | OwnerEmblem("civ:brak:2") | 128x128 | 91 | 0.9242 | 2.887 | 0.99177
+t6 | final | OwnerEmblem("civ:unknown:2") | 128x128 | 91 | 0.9242 | 2.887 | 0.99177
+t7 | final | OwnerEmblem("cs:grecy") | 128x128 | 91 | 1.0281 | 2.838 | 0.99093
+t7 | initial | OwnerEmblem("cs:grecy") | 128x128 | 91 | 0.9418 | 2.631 | 0.99165
+t8 | final | OwnerEmblem("cs:zulusi") | 128x128 | 91 | 1.0383 | 2.979 | 0.99100
+t8 | initial | OwnerEmblem("cs:zulusi") | 128x128 | 91 | 0.9418 | 2.631 | 0.99165
+t9 | final | OwnerEmblem("cs:brak") | 128x128 | 91 | 0.9418 | 2.631 | 0.99165
+ok
+test textures_match_golden_hashes ... # R-RUSTPORT-P4-32 golden FNV-1a 64 of the premultiplied RGBA8 of every overlay texture
+# web id<TAB>texture<TAB>initial<TAB>final
+t0	OwnerEmblem("civ:grecy:2")	8f02d91e198c8672	18260a17314e7f93
+t1	OwnerEmblem("civ:zulusi:3")	8f02d91e198c8672	edc9e7a5a9305055
+t10	OwnerEmblem("cs:nieznana")	bc37d5c899a96098	fbf6dafe5762d0ac
+t11	OwnerEmblem("barb")	d06c6326a68776cf	f53e86627109de3a
+t12	PlateBackground	4108f229edeb9dda	4108f229edeb9dda
+t13	PowerFrame	d9b90c083b0307a5	d9b90c083b0307a5
+t14	PowerDigit(4)	e217bfa068e1aa74	e217bfa068e1aa74
+t15	PowerDigit(2)	f2c39abe430f1cc2	f2c39abe430f1cc2
+t16	PowerDigit(1)	a71f3fc7c18787f0	a71f3fc7c18787f0
+t17	PowerDigit(3)	56d08594176cc86b	56d08594176cc86b
+t18	PowerDigit(7)	4f20d6d812b78f9b	4f20d6d812b78f9b
+t19	PowerDigit(9)	f4ac0b36fda15c00	f4ac0b36fda15c00
+t2	OwnerEmblem("civ:egipt:1")	8f02d91e198c8672	ccc7e95e40431545
+t20	PowerDigit(0)	82d23cd3db07c830	82d23cd3db07c830
+t21	PowerDigit(5)	d1aa4d12c2b3c894	d1aa4d12c2b3c894
+t22	PowerDigit(6)	602868bc52211a27	602868bc52211a27
+t23	PowerDigit(8)	148f48084c6a1332	148f48084c6a1332
+t24	UpgradeBadge(Soft, 1)	1f10b5f53f8f5f65	8653a6b53834e9f3
+t25	UpgradeBadge(Soft, 2)	27ae8091def08bb0	ffcadbeff523f186
+t26	UpgradeBadge(Soft, 3)	9bca68a74de6e726	42c171a8c583e82a
+t27	UpgradeBadge(Armor, 1)	1f10b5f53f8f5f65	3edf09ce99622110
+t28	UpgradeBadge(Armor, 2)	27ae8091def08bb0	1cffecfc3410cab8
+t29	UpgradeBadge(Armor, 3)	9bca68a74de6e726	bfcc393aa5e2e5e1
+t3	OwnerEmblem("civ:grecy:1")	8f02d91e198c8672	b9e9ed3d684ad405
+t30	OwnerEmblem("civ:grecy:2") no-assets	8f02d91e198c8672	8f02d91e198c8672
+t31	OwnerEmblem("cs:grecy") no-assets	bc37d5c899a96098	bc37d5c899a96098
+t32	OwnerEmblem("barb") no-assets	d06c6326a68776cf	d06c6326a68776cf
+t33	UpgradeBadge(Soft, 2) no-assets	27ae8091def08bb0	27ae8091def08bb0
+t34	UpgradeBadge(Armor, 1) no-assets	1f10b5f53f8f5f65	1f10b5f53f8f5f65
+t35	UpgradeBadge(Armor, 3) no-assets	9bca68a74de6e726	9bca68a74de6e726
+t4	OwnerEmblem("civ:nieznana:2")	8f02d91e198c8672	cb7502e396acc82f
+t5	OwnerEmblem("civ:brak:2")	8f02d91e198c8672	8f02d91e198c8672
+t6	OwnerEmblem("civ:unknown:2")	8f02d91e198c8672	8f02d91e198c8672
+t7	OwnerEmblem("cs:grecy")	bc37d5c899a96098	1c9ae47e6530e21c
+t8	OwnerEmblem("cs:zulusi")	bc37d5c899a96098	54df0ed3a9bd91c0
+t9	OwnerEmblem("cs:brak")	bc37d5c899a96098	bc37d5c899a96098
+ok
+test trees_match_the_web_bit_for_bit ... trees=111 checks=18089 web textures referenced by trees=24
+ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 5.01s
+
+EXIT=0

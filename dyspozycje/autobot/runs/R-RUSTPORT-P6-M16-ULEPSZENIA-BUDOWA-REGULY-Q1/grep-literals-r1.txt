@@ -1,0 +1,51 @@
+# Literaly liczbowe w src/domain/improvement_build.rs (kod, bez komentarzy `//` i bez tresci napisow)
+liczba 0: 13 wystapien
+liczba 0.0: 2 wystapien
+liczba 1: 17 wystapien
+liczba 1.0: 1 wystapien
+# Literaly tekstowe w kodzie (unikalne; identyfikatory domeny: klucze ulepszen/kody zloz/kody terenu, formaty)
+tekst "brak": 1
+tekst "bydlo": 1
+tekst "cyna": 1
+tekst "droga": 1
+tekst "droga_brukowana": 1
+tekst "farma": 1
+tekst "fort": 1
+tekst "glina": 1
+tekst "glinianka": 1
+tekst "gory": 1
+tekst "irygacja": 1
+tekst "kamieniolom": 1
+tekst "kopalnia_cyny": 1
+tekst "kopalnia_miedzi": 1
+tekst "kopalnia_zelaza": 1
+tekst "kopalnia_zlota": 1
+tekst "laka": 1
+tekst "lama": 1
+tekst "lodzie_rybackie": 1
+tekst "miedz": 1
+tekst "morze": 1
+tekst "nieznany kod terenu {c}": 1
+tekst "oboz_lowiecki": 1
+tekst "owce": 1
+tekst "plytkie_morze": 1
+tekst "polarny": 1
+tekst "posterunek": 1
+tekst "pustynia": 1
+tekst "rownina": 1
+tekst "ruda": 1
+tekst "sol": 1
+tekst "stadnina": 1
+tekst "tarasy": 1
+tekst "tartak": 1
+tekst "tech": 1
+tekst "terrain-improvements.json": 1
+tekst "warzelnia_soli": 1
+tekst "wyrab": 1
+tekst "wzgorza": 1
+tekst "zelazo": 1
+tekst "zloto": 1
+tekst "{hex_key_str}:{key}": 2
+tekst "{hex_key_str}:{}": 1
+tekst "{q},{r}": 1
+tekst "{}{}": 1

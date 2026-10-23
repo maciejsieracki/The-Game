@@ -1,0 +1,197 @@
+# Literaly liczbowe i napisowe w modulach manpower (recruitment.rs) i unit_building_bonuses (combat.rs); komentarze pominiete
+# Klasyfikacja: STRUKTURALNY = elementy neutralne/semantyka JS (0, 1, 0.5 w zaokragleniu, indeksy, format napisu),
+# nie sa danymi ani mnoznikami balansu. Dane/teksty/progi: data/derived/{manpower-params,unit-building-bonuses,locale-compare-ascii}.json.
+## src/domain/recruitment.rs od linii 1419
+1435: nums=[] strs=['NaN'] | return "NaN".to_owned();
+1437: nums=['0.0'] strs=[] | if x == 0.0 {
+1438: nums=[] strs=['0'] | return "0".to_owned();
+1441: nums=['0.0'] strs=['Infinity', '-Infinity'] | return if x > 0.0 { "Infinity" } else { "-Infinity" }.to_owned();
+1443: nums=['0.0'] strs=['-', ''] | let sign = if x < 0.0 { "-" } else { "" };
+1445: nums=[] strs=['liczba cyfr'] | let k = i32::try_from(digits.len()).expect("liczba cyfr");
+1446: nums=['21'] strs=[] | let body = if k <= n && n <= 21 {
+1448: nums=[] strs=['{digits}{}'] | "{digits}{}",
+1449: nums=[] strs=['0', 'n >= k'] | "0".repeat(usize::try_from(n - k).expect("n >= k"))
+1451: nums=['0', '21'] strs=[] | } else if 0 < n && n <= 21 {
+1452: nums=[] strs=['n > 0'] | let split = usize::try_from(n).expect("n > 0");
+1453: nums=[] strs=['{}.{}'] | format!("{}.{}", &digits[..split], &digits[split..])
+1454: nums=['-6', '0'] strs=[] | } else if -6 < n && n <= 0 {
+1456: nums=[] strs=['0.{}{digits}'] | "0.{}{digits}",
+1457: nums=[] strs=['0', 'n <= 0'] | "0".repeat(usize::try_from(-n).expect("n <= 0"))
+1460: nums=['1'] strs=[] | let e = n - 1;
+1461: nums=['0'] strs=['-', '+'] | let e_sign = if e < 0 { "-" } else { "+" };
+1462: nums=['1'] strs=[] | if k == 1 {
+1463: nums=[] strs=['{digits}e{e_sign}{}'] | format!("{digits}e{e_sign}{}", e.abs())
+1465: nums=['1'] strs=['{}.{}e{e_sign}{}'] | format!("{}.{}e{e_sign}{}", &digits[..1], &digits[1..], e.abs())
+1468: nums=[] strs=['{sign}{body}'] | format!("{sign}{body}")
+1475: nums=[] strs=['{abs:e}'] | let scientific = format!("{abs:e}");
+1478: nums=[] strs=['format {:e} ma wykladnik'] | .expect("format {:e} ma wykladnik");
+1480: nums=[] strs=['wykladnik'] | let exp10 = exponent.parse::<i32>().expect("wykladnik");
+1481: nums=['1'] strs=[] | let n = exp10 + 1;
+1483: nums=['18'] strs=[] | if k >= 18 {
+1487: nums=[] strs=['{abs:.k$e}'] | let longer = format!("{abs:.k$e}");
+1490: nums=[] strs=['wykladnik'] | .expect("wykladnik")
+1495: nums=['5'] strs=[] | if !longer_digits.ends_with('5') {
+1498: nums=[] strs=['{abs:.800e}'] | let exact = format!("{abs:.800e}");
+1501: nums=[] strs=['wykladnik'] | .expect("wykladnik")
+1505: nums=['1'] strs=[] | .skip(k + 1)
+1509: nums=[] strs=['wykladnik'] | .expect("wykladnik")
+1512: nums=[] strs=['wykladnik'] | .expect("wykladnik");
+1513: nums=['0'] strs=[] | if tail.chars().any(|c| c != '0') {
+1519: nums=['1'] strs=['k'] | let scale = exp_longer - (i32::try_from(k).expect("k") - 1);
+1520: nums=['1'] strs=[] | let candidates = [lower, lower + 1];
+1524: nums=['2', '0'] strs=[] | .filter(|c| c % 2 == 0)
+1525: nums=[] strs=['{c}e{scale}'] | .find(|c| format!("{c}e{scale}").parse::<f64>().ok() == Some(abs));
+1527: nums=['0'] strs=[] | Some(cand) if cand > 0 => {
+1529: nums=[] strs=['len'] | let nn = i32::try_from(text.len()).expect("len") + scale;
+1530: nums=['0'] strs=[] | (text.trim_end_matches('0').to_owned(), nn)
+1572: nums=['-1'] strs=[] | std::cmp::Ordering::Less => -1,
+1573: nums=['0'] strs=[] | std::cmp::Ordering::Equal => 0,
+1574: nums=['1'] strs=[] | std::cmp::Ordering::Greater => 1,
+1581: nums=['1'] strs=[] | for i in 1..items.len() {
+1583: nums=['0', '1', '0.0'] strs=[] | while j > 0 && cmp(&items[j - 1], &items[j]) > 0.0 {
+1584: nums=['1'] strs=[] | items.swap(j - 1, j);
+1585: nums=['1'] strs=[] | j -= 1;
+1604: nums=[] strs=['wartosc tabeli epok miesci sie w i32'] | f64::from(i32::try_from(value).expect("wartosc tabeli epok miesci sie w i32"))
+1612: nums=[] strs=['epoka-ludnosc-manpower.json must parse'] | .expect("epoka-ludnosc-manpower.json must parse")
+1663: nums=[] strs=['miasto-params.json'] | Self::from_miasto_params(&parse_miasto_params().expect("miasto-params.json"))
+1705: nums=['0.0'] strs=[] | value.filter(|v| v.is_finite() && *v >= 0.0)
+1742: nums=['0.0'] strs=[] | Some(pct) if pct >= 0.0 => pct,
+1747: nums=['0.0'] strs=[] | Some(block) => block != 0.0,
+1773: nums=['1.0'] strs=[] | let mut mult = 1.0;
+1779: nums=['1.0'] strs=[] | mult *= 1.0 + w;
+1790: nums=['1.0'] strs=[] | let mut mult = 1.0;
+1796: nums=['1.0'] strs=[] | mult *= 1.0 + w;
+1836: nums=['0'] strs=[] | q: 0,
+1837: nums=['0'] strs=[] | r: 0,
+1919: nums=['0.0', '0.0'] strs=[] | if max_hp <= 0.0 || cur_hp <= 0.0 || cur_hp >= max_hp {
+1920: nums=['0.0'] strs=[] | return 0.0;
+1923: nums=['0.0'] strs=[] | js_max(0.0, js_min(cap, max_hp - cur_hp))
+1928: nums=['0.0', '0.0', '0.0'] strs=[] | if heal_hp <= 0.0 || max_hp <= 0.0 || unit_cost <= 0.0 {
+1929: nums=['0.0'] strs=[] | return 0.0;
+1941: nums=['0.0', '0.0', '0.0', '0.0'] strs=[] | if desired_heal <= 0.0 || max_hp <= 0.0 || unit_cost <= 0.0 || available_mp <= 0.0 {
+1942: nums=['0.0'] strs=[] | return 0.0;
+1967: nums=['0.0'] strs=[] | let total_desired_mp = candidates.iter().fold(0.0, |sum, c| sum + c.desired_mp);
+1968: nums=['0.0', '0.0'] strs=[] | if total_desired_mp <= 0.0 || available_mp <= 0.0 {
+1993: nums=['0.0'] strs=[] | let used_mp = candidates.iter().fold(0.0, |sum, c| {
+1996: nums=['0.0'] strs=[] | let mut remaining_mp = js_max(0.0, available_mp - used_mp);
+1999: nums=['0.0'] strs=[] | while remaining_mp > 0.0 {
+2000: nums=['0'] strs=[] | let mut eligible: Vec<usize> = (0..candidates.len())
+2006: nums=['0.0'] strs=[] | if gap_diff != 0.0 {
+2016: nums=['1.0'] strs=[] | candidate.heal_hp + 1.0,
+2022: nums=['1.0'] strs=[] | candidate.heal_hp += 1.0;
+2043: nums=['0.0'] strs=[] | let base = if floored == 0.0 || floored.is_nan() {
+2053: nums=['0'] strs=[] | .unwrap_or(rows[0])
+2062: nums=['0.0'] strs=[] | if floored == 0.0 || floored.is_nan() {
+2078: nums=['0.0'] strs=[] | let n = js_max(0.0, count.floor());
+2079: nums=['1.0'] strs=[] | let word = if n == 1.0 {
+2084: nums=[] strs=['{} {word}'] | format!("{} {word}", js_number_to_string(n))
+2116: nums=['0.0'] strs=[] | return 0.0;
+2125: nums=['0.0'] strs=[] | Some(manpower) if manpower.is_finite() => js_max(0.0, js_min(max, manpower.floor())),
+2145: nums=['0.0'] strs=[] | let mut suma = 0.0;
+2158: nums=['0.0'] strs=[] | if cost <= 0.0 {
+2159: nums=['0.0'] strs=[] | return 0.0;
+2161: nums=['0.0'] strs=[] | (js_max(0.0, rekruci) / cost).floor()
+2171: nums=['0.0'] strs=[] | let mut suma_ludkow = 0.0;
+2172: nums=['0.0'] strs=[] | let mut ludnosc_absolutna = 0.0;
+2173: nums=['0.0'] strs=[] | let mut rekruci = 0.0;
+2225: nums=['0.0'] strs=[] | werb_max_przy_pelnej_puli: if koszt_jednostki > 0.0 {
+2228: nums=['0.0'] strs=[] | 0.0
+2242: nums=['0.0', '0.0'] strs=[] | if max <= 0.0 || params.regen_proc_max_per_turn <= 0.0 {
+2243: nums=['0.0'] strs=[] | return 0.0;
+2247: nums=['0.0'] strs=[] | (max * pct * js_max(0.0, regen_mult)).floor()
+2267: nums=['0.0'] strs=[] | if gain <= 0.0 {
+2281: nums=['0.0'] strs=[] | if cost <= 0.0 {
+2307: nums=['0'] strs=[] | let mut owned: Vec<usize> = (0..cities.len())
+2322: nums=['0.0'] strs=[] | if amount <= 0.0 {
+2332: nums=['0.0'] strs=[] | if cur_diff != 0.0 {
+2339: nums=['0.0'] strs=[] | if remaining <= 0.0 {
+2344: nums=['0.0'] strs=[] | if take > 0.0 {
+2349: nums=['0.0'] strs=[] | remaining <= 0.0
+2360: nums=['0.0'] strs=[] | if amount <= 0.0 {
+2370: nums=['0.0'] strs=[] | if room_diff != 0.0 {
+2377: nums=['0.0'] strs=[] | if remaining <= 0.0 {
+2383: nums=['0.0'] strs=[] | if room <= 0.0 {
+2404: nums=['0.0'] strs=[] | if koszt_manpower <= 0.0 {
+2453: nums=['0.0'] strs=[] | .unwrap_or(0.0);
+2454: nums=['0.0'] strs=[] | let recruiting_pop = recruiting.map(|i| cities[i].population).unwrap_or(0.0);
+2458: nums=['0.0'] strs=[] | population: 0.0,
+2459: nums=['0.0'] strs=[] | manpower: 0.0,
+2464: nums=['0.0'] strs=[] | if koszt_manpower > 0.0
+2504: nums=['0.0'] strs=[] | if pop_cost > 0.0 && city.population <= pop_cost {
+2580: nums=['0.0'] strs=[] | js_max(0.0, cur - cost)
+2605: nums=['0.0'] strs=[] | if params.heal_pct_max_per_turn <= 0.0 || units.is_empty() {
+2607: nums=['0'] strs=[] | healed_count: 0,
+2608: nums=['0.0'] strs=[] | total_mp_spent: 0.0,
+2624: nums=['0'] strs=[] | let mut healed_count = 0;
+2625: nums=['0.0'] strs=[] | let mut total_mp_spent = 0.0;
+2632: nums=['0.0'] strs=[] | if empire_mp <= 0.0 {
+2648: nums=['0.0'] strs=[] | let max_hp = if resolved_max_hp.is_finite() && resolved_max_hp > 0.0 {
+2653: nums=['0.0'] strs=[] | _ => 0.0,
+2656: nums=['0.0'] strs=[] | if max_hp <= 0.0 {
+2662: nums=['0.0'] strs=[] | Some(hp) if hp.is_finite() => js_max(0.0, js_min(max_hp, hp)),
+2666: nums=['0.0'] strs=[] | if cur_hp <= 0.0 || cur_hp >= max_hp {
+2675: nums=['0.0'] strs=[] | if unit_cost <= 0.0 || is_scout_type_id(Some(units[index].type_id.as_str())) {
+2680: nums=['0.0'] strs=[] | if desired_heal <= 0.0 {
+2685: nums=['0.0'] strs=[] | if desired_mp <= 0.0 {
+2696: nums=['0.0'] strs=[] | allocated_mp: 0.0,
+2697: nums=['0.0'] strs=[] | heal_hp: 0.0,
+2711: nums=['0.0'] strs=[] | if heal_hp <= 0.0 {
+2715: nums=['0.0'] strs=[] | if mp_cost <= 0.0 {
+2729: nums=['1'] strs=[] | healed_count += 1;
+2753: nums=[] strs=['{}{}'] | return format!("{}{}", js_number_to_string(shown), format.sufiks_mln);
+2762: nums=[] strs=['{}{}'] | return format!("{}{}", js_number_to_string(shown), format.sufiks_tys);
+## src/domain/combat.rs od linii 509
+556: nums=['0.0'] strs=[] | Some(v) if v.is_finite() && v > 0.0 => v,
+557: nums=['0.0'] strs=[] | _ => 0.0,
+566: nums=['9'] strs=[] | '\u{9}'..='\u{D}'
+567: nums=['20'] strs=[] | | '\u{20}'
+569: nums=['1680'] strs=[] | | '\u{1680}'
+570: nums=['2000'] strs=[] | | '\u{2000}'..='\u{200A}'
+571: nums=['2028'] strs=[] | | '\u{2028}'
+572: nums=['2029'] strs=[] | | '\u{2029}'
+575: nums=['3000'] strs=[] | | '\u{3000}'
+592: nums=['0.0'] strs=[] | let mut total = 0.0;
+594: nums=['0'] strs=[] | let mut depth = 0;
+608: nums=[] strs=[''] | let from = building.upgrade_from.as_deref().map_or("", js_trim);
+614: nums=['1'] strs=[] | depth += 1;
+638: nums=['0.0'] strs=[] | return 0.0;
+644: nums=['0.0'] strs=[] | let mut total = 0.0;
+676: nums=['0.0'] strs=[] | return 0.0;
+679: nums=['0.0'] strs=[] | return 0.0;
+700: nums=['0.0'] strs=[] | Some(v) if v.is_finite() && v > 0.0 => v,
+701: nums=['0.0'] strs=[] | _ => 0.0,
+741: nums=['2'] strs=[] | fn level_bounds(max_pp: f64) -> [f64; 2] {
+743: nums=['1.0'] strs=[] | let first = 1.0;
+744: nums=['1.0'] strs=[] | let second = first + 1.0;
+752: nums=['2'] strs=[] | pub fn armor_path_level_max_pp() -> [f64; 2] {
+757: nums=['2'] strs=[] | pub fn soft_path_level_max_pp() -> [f64; 2] {
+762: nums=['2'] strs=[] | pub fn path_badge_level_from_pp(pp: f64, bounds: &[f64; 2]) -> UnitPathBadgeLevel {
+763: nums=['0.0'] strs=[] | if !pp.is_finite() || pp <= 0.0 {
+764: nums=['0'] strs=[] | return 0;
+766: nums=['0'] strs=[] | if pp <= bounds[0] {
+767: nums=['1'] strs=[] | return 1;
+769: nums=['1'] strs=[] | if pp <= bounds[1] {
+770: nums=['2'] strs=[] | return 2;
+772: nums=['3'] strs=[] | 3
+852: nums=['0.0'] strs=[] | let armor_gained = js_max(0.0, next.pancerz_bonus_proc - prev_armor);
+853: nums=['0.0'] strs=[] | let soft_gained = js_max(0.0, next.parametry_bonus_proc - prev_soft);
+854: nums=['0.0', '0.0'] strs=[] | let changed = armor_gained > 0.0 || soft_gained > 0.0;
+876: nums=[] strs=['{{{key}}}'] | let token = format!("{{{key}}}");
+887: nums=['1'] strs=[] | rest = &tail[1..];
+903: nums=['0.0'] strs=[] | if gain.armor_gained > 0.0 {
+907: nums=[] strs=['przyrost'] | ("przyrost", &js_number_to_string(gain.armor_gained)),
+908: nums=[] strs=['razem'] | ("razem", &js_number_to_string(gain.armor_total)),
+912: nums=['0.0'] strs=[] | if gain.soft_gained > 0.0 {
+916: nums=[] strs=['przyrost'] | ("przyrost", &js_number_to_string(gain.soft_gained)),
+917: nums=[] strs=['razem'] | ("razem", &js_number_to_string(gain.soft_total)),
+927: nums=[] strs=['jednostka'] | ("jednostka", unit_label),
+928: nums=[] strs=['miasto'] | ("miasto", city_name),
+929: nums=[] strs=['czesci'] | ("czesci", &parts.join(&labels.separator)),
+940: nums=['0.0'] strs=[] | if armor > 0.0 {
+943: nums=[] strs=['wartosc'] | &[("wartosc", &js_number_to_string(armor))],
+946: nums=['0.0'] strs=[] | if soft > 0.0 {
+949: nums=[] strs=['wartosc'] | &[("wartosc", &js_number_to_string(soft))],
+965: nums=['0.0'] strs=[] | pancerz: 0.0,
+966: nums=['0.0'] strs=[] | other: 0.0,
+1026: nums=['0.0'] strs=[] | x != 0.0 && !x.is_nan()
+# linii z literalami: 191

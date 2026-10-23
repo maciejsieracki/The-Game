@@ -1,0 +1,3 @@
+WYKRYTY   : valid: n >= 0 -> 1 testow czerwonych: is_valid_matches_web_for_all_vectors
+mutantow=34 przezylo/niekompilujace=0
+EXIT=0

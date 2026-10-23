@@ -1,0 +1,78 @@
+32:pub const SNAPSHOT_FMT: i64 = 2;
+34:pub const NO_OWNER_IDX: i64 = -1;
+36:const MAX_ARRAY_INDEX: u64 = 4_294_967_294;
+45:pub struct JsNum(pub f64);
+49:        let v = self.0;
+50:        if v.is_finite() && v.fract() == 0.0 && v.abs() < 1e15 {
+52:            s.serialize_i64(v as i64)
+54:            s.serialize_f64(v)
+63:fn is_array_index_key(k: &str) -> Option<u64> {
+64:    if k.is_empty() || k.len() > 10 || !k.bytes().all(|b| b.is_ascii_digit()) {
+67:    if k.len() > 1 && k.starts_with('0') {
+70:    let v: u64 = k.parse().ok()?;
+88:            e.1 = value.to_string();
+131:    pub q: i32,
+132:    pub r: i32,
+138:    pub ludnosc: f64,
+144:    pub krawedzie: Vec<i32>,
+160:    pub zloze_min_era: Option<f64>,
+167:    pub q: i32,
+168:    pub r: i32,
+175:    pub szerokosc_q: f64,
+176:    pub wysokosc_r: f64,
+177:    pub seed: f64,
+191:    pub hex_idx: Vec<i64>,
+208:    pub hex_idx: Vec<i64>,
+210:    pub player_idx: Vec<i64>,
+212:    pub val_idx: Vec<i64>,
+218:    pub fmt: i64,
+234:    pub q: Vec<i32>,
+235:    pub r: Vec<i32>,
+237:    pub teren_idx: Vec<i64>,
+239:    pub nakladka_idx: Vec<i64>,
+241:    pub ulepszenie_idx: Vec<i64>,
+243:    pub wlasciciel_idx: Vec<i64>,
+251:    pub rzeka_krawedzie: SparseColumn<Vec<i32>>,
+252:    pub zloze: SparseColumn<i64>,
+255:    pub ulepszenia: SparseColumn<Vec<i64>>,
+257:    pub improvement_key: SparseColumn<i64>,
+265:    DictIndex { field: &'static str, index: i64 },
+267:    HexIndex { field: &'static str, index: i64 },
+302:    index: HashMap<String, i64>,
+306:    fn intern(&mut self, s: &str) -> i64 {
+310:        let idx = self.dict.len() as i64;
+335:    let mut rzeka_krawedzie = SparseColumn::<Vec<i32>>::empty();
+336:    let mut zloze = SparseColumn::<i64>::empty();
+338:    let mut ulepszenia = SparseColumn::<Vec<i64>>::empty();
+339:    let mut improvement_key = SparseColumn::<i64>::empty();
+347:        let i = i as i64;
+357:        wioska_istnieje.push(JsNum(if hex.wioska.istnieje { 1.0 } else { 0.0 }));
+359:        rzeka_obecna.push(JsNum(if hex.rzeka.obecna { 1.0 } else { 0.0 }));
+428:    index: i64,
+443:    index: i64,
+452:    hex_idx: &'a [i64],
+456:) -> Result<(i64, &'a T), MapSnapshotError> {
+470:    for i in 0..n {
+496:                istnieje: col(&snap.wioska_istnieje, "wioskaIstnieje", i)?.0 == 1.0,
+497:                ludnosc: col(&snap.wioska_ludnosc, "wioskaLudnosc", i)?.0,
+501:                obecna: col(&snap.rzeka_obecna, "rzekaObecna", i)?.0 == 1.0,
+513:    for k in 0..sc.hex_idx.len() {
+520:    for k in 0..sc.hex_idx.len() {
+526:    for k in 0..sc.hex_idx.len() {
+528:        hex_slot(&mut hex_list, "zlozeMinEra", idx)?.zloze_min_era = Some(val.0);
+531:    for k in 0..sc.hex_idx.len() {
+540:    for k in 0..sc.hex_idx.len() {
+546:    for k in 0..w.hex_idx.len() {
+571:            Some(&p) => hexes[p].1 = hex,
+580:        szerokosc_q: snap.szerokosc_q.0,
+581:        wysokosc_r: snap.wysokosc_r.0,
+582:        seed: snap.seed.0,
+598:fn js_number(v: Option<&Value>) -> Option<f64> {
+600:        Some(Value::Number(n)) => n.as_f64(),
+618:    if js_number(field(snap, "fmt")) != Some(SNAPSHOT_FMT as f64) {
+622:        Some(w) if w > 0.0 => {}
+626:        Some(h) if h > 0.0 => {}
+636:        Some(n) if n > 0.0 => n,
+643:    const DENSE: [&str; 9] = [
+656:            Some(len) if len as f64 == n => {}
+661:    const SPARSE: [&str; 5] = [

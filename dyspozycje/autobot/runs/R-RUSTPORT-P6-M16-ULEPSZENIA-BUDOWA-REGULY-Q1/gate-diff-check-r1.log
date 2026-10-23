@@ -1,0 +1,3 @@
+CMD (worktree root): git diff --cached --check
+(brak wyjscia = brak bialych znakow na koncu linii / konfliktow)
+EXIT=0

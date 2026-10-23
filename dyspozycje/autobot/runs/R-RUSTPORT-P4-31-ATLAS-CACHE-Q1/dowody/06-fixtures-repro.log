@@ -1,0 +1,18 @@
+## fixtures dir /home/user/The-Game/.claude/worktrees/wf_762d968f-38c-1/rust-port/renderer/tests/fixtures/atlas
+badgeKeys 1761 legacy 546 growth 4074 portrait 288 emblem 1216 canvasSizes 1794 purge 300
+64bba61511615daa647f3cb362d3c8b3bf967ee5fed68b0312124ee5c6a9f5a1  /tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/p431repro/keys/out/atlas_keys.json
+gen.sh EXIT=0
+ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver) 141.0.7390.37 cases 56
+gen_gl EXIT=0
+64bba61511615daa647f3cb362d3c8b3bf967ee5fed68b0312124ee5c6a9f5a1  /home/user/The-Game/.claude/worktrees/wf_762d968f-38c-1/rust-port/renderer/tests/fixtures/atlas/atlas_keys.json
+64bba61511615daa647f3cb362d3c8b3bf967ee5fed68b0312124ee5c6a9f5a1  /tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/p431repro/keys/out/atlas_keys.json
+6ff44618be4667235550904c5b89ef0507b4c099b937fa4d5ee0b1b18858f450  /home/user/The-Game/.claude/worktrees/wf_762d968f-38c-1/rust-port/renderer/tests/fixtures/atlas/atlas_gl.json
+6ff44618be4667235550904c5b89ef0507b4c099b937fa4d5ee0b1b18858f450  /tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/p431repro/gl/atlas_gl.json
+atlas_keys.json IDENTICAL
+atlas_gl.json IDENTICAL
+atlas_keys.json: OK
+atlas_gl.json: OK
+gen.ts: OK
+gen.sh: OK
+gen_gl.mjs: OK
+sha256sum -c EXIT=0

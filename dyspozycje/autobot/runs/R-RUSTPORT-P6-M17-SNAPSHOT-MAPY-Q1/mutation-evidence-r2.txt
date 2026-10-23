@@ -1,0 +1,37 @@
+WYKRYTY   : intern: teren po nakladce -> 2 testow czerwonych: serialize_text_is_byte_identical_to_web_json_stringify, serialize_matches_web_structurally
+WYKRYTY   : brak wlasciciela -> 0 -> 2 testow czerwonych: serialize_matches_web_structurally, serialize_text_is_byte_identical_to_web_json_stringify
+WYKRYTY   : zloze: pusty string trafia do kolumny -> 2 testow czerwonych: serialize_matches_web_structurally, serialize_text_is_byte_identical_to_web_json_stringify
+WYKRYTY   : zlozeMinEra: tylko > 0 -> 2 testow czerwonych: serialize_matches_web_structurally, serialize_text_is_byte_identical_to_web_json_stringify
+WYKRYTY   : ulepszenia: pusta tablica pomijana -> 2 testow czerwonych: serialize_text_is_byte_identical_to_web_json_stringify, serialize_matches_web_structurally
+WYKRYTY   : improvementKey: pusty string trafia do kolumny -> 2 testow czerwonych: serialize_matches_web_structurally, serialize_text_is_byte_identical_to_web_json_stringify
+WYKRYTY   : krawedzie: zawsze do kolumny -> 2 testow czerwonych: serialize_matches_web_structurally, serialize_text_is_byte_identical_to_web_json_stringify
+WYKRYTY   : krawedzie: tylko gdy obecna -> 2 testow czerwonych: serialize_matches_web_structurally, serialize_text_is_byte_identical_to_web_json_stringify
+WYKRYTY   : widocznosc: wartosc internowana przed graczem -> 2 testow czerwonych: serialize_text_is_byte_identical_to_web_json_stringify, serialize_matches_web_structurally
+WYKRYTY   : JsKeyedMap: bez porzadku indeksow -> 6 testow czerwonych: js_keyed_map_orders_array_index_keys_first, serialize_rebuild_serialize_is_stable_without_duplicate_coords, rebuild_matches_web, serialize_text_is_byte_identical_to_web_json_stringify
+WYKRYTY   : JsKeyedMap: nadpisanie dopisuje nowy wpis -> 2 testow czerwonych: js_keyed_map_orders_array_index_keys_first, rebuild_matches_web
+WYKRYTY   : indeks tablicy: bez reguly zer wiodacych -> 6 testow czerwonych: js_keyed_map_orders_array_index_keys_first, serialize_rebuild_serialize_is_stable_without_duplicate_coords, rebuild_matches_web, serialize_text_is_byte_identical_to_web_json_stringify
+WYKRYTY   : indeks tablicy: granica 2^32-1 -> 6 testow czerwonych: js_keyed_map_orders_array_index_keys_first, rebuild_matches_web, serialize_rebuild_serialize_is_stable_without_duplicate_coords, serialize_text_is_byte_identical_to_web_json_stringify
+WYKRYTY   : rebuild: powtorzony klucz - wygrywa pierwszy -> 1 testow czerwonych: rebuild_matches_web
+WYKRYTY   : rebuild: wioska.istnieje != 0 -> 1 testow czerwonych: rebuild_matches_web
+WYKRYTY   : rebuild: rzeka.obecna != 0 -> 1 testow czerwonych: rebuild_matches_web
+WYKRYTY   : rebuild: ujemny indeks heksa -> 0 -> 2 testow czerwonych: rebuild_error_class_matches_web_failure_class, rebuild_matches_web
+WYKRYTY   : rebuild: indeks dict poza zakresem -> pierwszy -> 3 testow czerwonych: rebuild_errors_name_the_failing_field, rebuild_error_class_matches_web_failure_class, rebuild_matches_web
+WYKRYTY   : rebuild: widocznosc pomijana -> 3 testow czerwonych: rebuild_error_class_matches_web_failure_class, rebuild_matches_web, serialize_rebuild_serialize_is_stable_without_duplicate_coords
+WYKRYTY   : rebuild: ulepszenia pomijane -> 2 testow czerwonych: rebuild_matches_web, serialize_rebuild_serialize_is_stable_without_duplicate_coords
+WYKRYTY   : rebuild: wlasciciel -1 nie daje None -> 4 testow czerwonych: rebuild_matches_web, rebuild_errors_name_the_failing_field, serialize_rebuild_serialize_is_stable_without_duplicate_coords, rebuild_error_class_matches_web_failure_class
+WYKRYTY   : serialize: riverPaths pominiete -> 2 testow czerwonych: serialize_text_is_byte_identical_to_web_json_stringify, serialize_matches_web_structurally
+WYKRYTY   : serialize: riverPathKinds pominiete -> 2 testow czerwonych: serialize_matches_web_structurally, serialize_text_is_byte_identical_to_web_json_stringify
+WYKRYTY   : JsNum: calkowite jako float -> 2 testow czerwonych: js_num_writes_integers_without_fraction_and_non_finite_as_null, serialize_text_is_byte_identical_to_web_json_stringify
+WYKRYTY   : valid: fmt nie sprawdzany -> 1 testow czerwonych: is_valid_matches_web_for_all_vectors
+WYKRYTY   : valid: szerokosc >= 0 -> 1 testow czerwonych: is_valid_matches_web_for_all_vectors
+WYKRYTY   : valid: wysokosc >= 0 -> 1 testow czerwonych: is_valid_matches_web_for_all_vectors
+WYKRYTY   : valid: n >= 0 -> 1 testow czerwonych: is_valid_matches_web_for_all_vectors
+WYKRYTY   : valid: seed nie sprawdzany -> 1 testow czerwonych: is_valid_matches_web_for_all_vectors
+WYKRYTY   : valid: dlugosc gestych nie sprawdzana -> 1 testow czerwonych: is_valid_matches_web_for_all_vectors
+WYKRYTY   : valid: pary rzadkie nie porownywane -> 1 testow czerwonych: is_valid_matches_web_for_all_vectors
+WYKRYTY   : valid: widocznosc valIdx nie porownywane -> 1 testow czerwonych: is_valid_matches_web_for_all_vectors
+WYKRYTY   : valid: riverPaths nie sprawdzane -> 1 testow czerwonych: is_valid_matches_web_for_all_vectors
+WYKRYTY   : valid: dict nie sprawdzany -> 1 testow czerwonych: is_valid_matches_web_for_all_vectors
+WYKRYTY   : rebuild: indeks dict poza zakresem -> wariant ColumnLength (RUNDA-2, klasa bledu) -> 2 testow czerwonych: rebuild_error_class_matches_web_failure_class, rebuild_errors_name_the_failing_field
+mutantow=35 przezylo/niekompilujace=0
+EXIT=0

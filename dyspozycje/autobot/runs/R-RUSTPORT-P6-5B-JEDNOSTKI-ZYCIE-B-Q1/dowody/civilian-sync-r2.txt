@@ -1,0 +1,6 @@
+CIVILIAN_CATEGORIES (web) = ['osadnik', 'robotnik', 'zwiadowca']
+CIVILIAN_TYPE_IDS (web)   = ['Zwiadowca', 'Osadnik', 'Robotnik']
+tabela cywilne            = kategorie ['osadnik', 'robotnik', 'zwiadowca'], typy ['Zwiadowca', 'Osadnik', 'Robotnik']
+cialo isCivilianUnit      = zgodne z oczekiwanym ksztaltem
+WYNIK: ROZBIEZNOSCI 0
+EXIT=0

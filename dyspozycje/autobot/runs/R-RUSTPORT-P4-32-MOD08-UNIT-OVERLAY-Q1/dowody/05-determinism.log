@@ -1,0 +1,9 @@
+golden.tsv body sha256: 8715a0e13ae78e943822dd3709346b5d3ccf582b6fc529aa741e50bc88d7402c  (36 textures)
+toolchain=1.87.0 profile=debug run=1 textures=36 sha256(hashes)=8715a0e13ae78e943822dd3709346b5d3ccf582b6fc529aa741e50bc88d7402c EXIT=0
+toolchain=1.87.0 profile=debug run=2 textures=36 sha256(hashes)=8715a0e13ae78e943822dd3709346b5d3ccf582b6fc529aa741e50bc88d7402c EXIT=0
+toolchain=1.87.0 profile=--release run=1 textures=36 sha256(hashes)=8715a0e13ae78e943822dd3709346b5d3ccf582b6fc529aa741e50bc88d7402c EXIT=0
+toolchain=1.87.0 profile=--release run=2 textures=36 sha256(hashes)=8715a0e13ae78e943822dd3709346b5d3ccf582b6fc529aa741e50bc88d7402c EXIT=0
+toolchain=stable profile=debug run=1 textures=36 sha256(hashes)=8715a0e13ae78e943822dd3709346b5d3ccf582b6fc529aa741e50bc88d7402c EXIT=0
+toolchain=stable profile=debug run=2 textures=36 sha256(hashes)=8715a0e13ae78e943822dd3709346b5d3ccf582b6fc529aa741e50bc88d7402c EXIT=0
+toolchain=stable profile=--release run=1 textures=36 sha256(hashes)=8715a0e13ae78e943822dd3709346b5d3ccf582b6fc529aa741e50bc88d7402c EXIT=0
+toolchain=stable profile=--release run=2 textures=36 sha256(hashes)=8715a0e13ae78e943822dd3709346b5d3ccf582b6fc529aa741e50bc88d7402c EXIT=0
