@@ -1,0 +1,29 @@
+   Compiling civ-engine v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_1cdaadde-d5c-3/rust-port/engine)
+    Finished `test` profile [unoptimized] target(s) in 40.12s
+     Running tests/p6_m03_strait.rs (/home/user/cargo-target-shared/wf_1cdaadde-d5c-3/debug/deps/p6_m03_strait-37e3722b9d7677a3)
+
+running 1 test
+test strait_vectors_match_web_at_exact_threshold_and_one_ulp_around_it ... FAILED
+
+failures:
+
+---- strait_vectors_match_web_at_exact_threshold_and_one_ulp_around_it stdout ----
+
+thread 'strait_vectors_match_web_at_exact_threshold_and_one_ulp_around_it' (19662) panicked at tests/p6_m03_strait.rs:42:9:
+{"centers":[["-0.008296471510448593","0.25252525252525254","0.3"],["0.06286468529385225","0.25252525252525254","0.3"]],"diff":"0.018","dist2":"0.04458057840215042","dist_c":"0.02658057840215042","h":100,"kind":"rowne","q":39,"r":25,"value":"1","w":2134}: rust 0.0
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+   1: core::panicking::panic_fmt
+   2: p6_m03_strait::strait_vectors_match_web_at_exact_threshold_and_one_ulp_around_it
+   3: p6_m03_strait::strait_vectors_match_web_at_exact_threshold_and_one_ulp_around_it::{closure#0}
+   4: <p6_m03_strait::strait_vectors_match_web_at_exact_threshold_and_one_ulp_around_it::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+
+failures:
+    strait_vectors_match_web_at_exact_threshold_and_one_ulp_around_it
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.20s
+
+error: test failed, to rerun pass `--test p6_m03_strait`
+EXIT=101

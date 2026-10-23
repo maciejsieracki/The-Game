@@ -28,7 +28,6 @@ dotykające tych samych plików — zawsze sekwencyjnie, nigdy w tej samej fali.
 | # | Temat | Faza | Runda | runId Workflow | Status | Ostatnia aktualizacja |
 |---|---|---|---|---|---|---|
 | 7 | `R-RUSTPORT-P6-6B-MIASTA-ZAKLADANIE-B-Q1` | P6.6B `cities.ts`, `empire-city-defaults.ts`, `display-names.ts` (XL; Evaluator Sonnet) | 1/5 | `wf_9188d0d5-3d2` | DISPATCHED | 2026-10-23 |
-| 1 | `R-RUSTPORT-P6-M03-MASKI-CENTRA-UZUPELNIENIE-Q1` | mapgen M03 maski centrum | 1/5 | `wf_1cdaadde-d5c` | DISPATCHED | 2026-10-23 |
 | 2 | `R-RUSTPORT-P6-M04-TEREN-KLASYFIKACJA-GRANICE-Q1` | mapgen M04 klasyfikacja terenu | 1/5 | `wf_5dbe3591-4a2` | DISPATCHED | 2026-10-23 |
 | 3 | `R-RUSTPORT-P6-M11-KLASTRY-UKLAD-STOLIC-Q1` | mapgen M11 klastry — układ stolic (L) | 1/5 | `wf_2bad25af-077` | DISPATCHED | 2026-10-23 |
 | 5 | `R-RUSTPORT-P4-33-MOD10-CITY-CHIP-Q1` | MOD-10 nakładki miast (cityMapStatChip…) — Opus 5.5 | 1/5 | `wf_2652eab6-49a` | DISPATCHED | 2026-10-23 |
