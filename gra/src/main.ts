@@ -25033,6 +25033,42 @@ async function boot(): Promise<void> {
       },
       isCityPanelOpen: (): boolean => isCityPanelOpen(),
       /**
+       * Runda 2 (zarzut 5): czas `n` wywołań `empireTerritoryResourceRatesForOwner` dla
+       * gracza (to samo wywołanie co w każdym `updateHud`) — stabilna asercja kosztu P4
+       * bez szumu próbkowania profilu. Funkcja liczy wyłącznie (bez zapisu stanu).
+       */
+      timeTerritoryRatesMs: (n: number): number => {
+        const me = cities.find((c) => isMe(c.ownerId));
+        if (!me) return -1;
+        const t0 = performance.now();
+        for (let i = 0; i < n; i++) empireTerritoryResourceRatesForOwner(me.ownerId);
+        return performance.now() - t0;
+      },
+      /**
+       * Runda 2 (zarzut 2): koszt renderowania OSTATNIEJ klatki (`renderer.info` jest
+       * zerowane przed każdym `renderer.render` w pętli animacji) — tłumaczy wzrost
+       * natywnego `(program)` (swiftshader rasteryzuje na CPU) liczbą trójkątów/wywołań.
+       * Tylko odczyt.
+       */
+      renderInfo: (): { calls: number; triangles: number; points: number; lines: number } => ({
+        calls: renderer.info.render.calls,
+        triangles: renderer.info.render.triangles,
+        points: renderer.info.render.points,
+        lines: renderer.info.render.lines,
+      }),
+      /**
+       * Runda 2 (zarzut 1): liczba miast per owner — bramka sprawdza, że pamięć P2
+       * (per miasto) była ćwiczona przy ≥ 2 miastach jednego gracza AI. Tylko odczyt.
+       */
+      citiesPerOwner: (): Record<string, number> => {
+        const out: Record<string, number> = {};
+        for (const c of cities) {
+          const k = (isMe(c.ownerId) ? 'me:' : 'o:') + c.ownerId;
+          out[k] = (out[k] ?? 0) + 1;
+        }
+        return out;
+      },
+      /**
        * Spis tekstur używanych przez obiekty sceny mapy (do ustalenia, CO rośnie w
        * `renderer.info.memory.textures`): klucz = typ obiektu + rozmiar obrazu tekstury.
        * Tylko odczyt grafu sceny.
@@ -25055,6 +25091,34 @@ async function boot(): Promise<void> {
         });
         out.__uniqueTextures = seenTex.size;
         return out;
+      },
+      /**
+       * Runda 2 (zarzut 4): spis tekstur sceny Z TOŻSAMOŚCIĄ (`Texture.id` rośnie z każdą
+       * nową teksturą) i nazwami obiektu/rodzica — różnica między turami pokazuje, KTÓRE
+       * tekstury doszły. Tylko odczyt grafu sceny.
+       */
+      textureCensusDetail: (): Array<{ texId: number; key: string; obj: string; parent: string; grand: string }> => {
+        const seenTex = new Set<THREE.Texture>();
+        const out: Array<{ texId: number; key: string; obj: string; parent: string; grand: string }> = [];
+        scene.traverse((obj) => {
+          const mats = (obj as THREE.Mesh).material;
+          const list = Array.isArray(mats) ? mats : mats ? [mats] : [];
+          for (const m of list) {
+            for (const v of Object.values(m as unknown as Record<string, unknown>)) {
+              if (!(v instanceof THREE.Texture) || seenTex.has(v)) continue;
+              seenTex.add(v);
+              const img = v.image as { width?: number; height?: number; tagName?: string } | null;
+              out.push({
+                texId: v.id,
+                key: `${obj.type}:${img?.tagName ?? (img ? 'data' : 'none')}:${img?.width ?? 0}x${img?.height ?? 0}`,
+                obj: obj.name || '',
+                parent: obj.parent?.name || obj.parent?.type || '',
+                grand: obj.parent?.parent?.name || obj.parent?.parent?.type || '',
+              });
+            }
+          }
+        });
+        return out.sort((a, b) => a.texId - b.texId);
       },
       /** Rozmiar i skrót (FNV-1a) migawki zapisu bez pól zależnych od zegara (savedAt/label). */
       snapshotInfo: (): {

@@ -1,0 +1,49 @@
+== PRE
+  endTurnMs         T10-20 śr=6161.8 med=6147.7  T70-80 śr=9311.7 med=9411.3  iloraz(śr)=1.51
+  cityOpenSyncMs    T10-20 śr=125.5 med=125.1  T70-80 śr=445.4 med=447.7  iloraz(śr)=3.55
+  cityOpenFrameMs   T10-20 śr=482.8 med=487.9  T70-80 śr=827.4 med=825.9  iloraz(śr)=1.71
+  turnJsMs          T10-20 śr=717.1 med=695.5  T70-80 śr=4502.6 med=4326.3  iloraz(śr)=6.28
+  cityJsMs          T10-20 śr=239.9 med=237.8  T70-80 śr=785.8 med=775.4  iloraz(śr)=3.28
+  turnProgramMs     T10-20 śr=6144.5 med=6157.1  T70-80 śr=5641.8 med=5630.4  iloraz(śr)=0.92
+  cityProgramMs     T10-20 śr=1557.1 med=1554.2  T70-80 śr=1720.7 med=1731.1  iloraz(śr)=1.11
+  triangles         T10-20 śr=546973.6 med=546802  T70-80 śr=573120.0 med=572956  iloraz(śr)=1.05
+  drawCalls         T10-20 śr=493.5 med=486  T70-80 śr=777.0 med=777  iloraz(śr)=1.57
+  cities            T10-20 śr=10.0 med=10  T70-80 śr=36.0 med=36  iloraz(śr)=3.60
+  playerCities      T10-20 śr=1.0 med=1  T70-80 śr=1.0 med=1  iloraz(śr)=1.00
+  units             T10-20 śr=20.4 med=22  T70-80 śr=160.5 med=137  iloraz(śr)=7.88
+  jsHeapMB          T10-20 śr=108.7 med=111  T70-80 śr=124.3 med=130  iloraz(śr)=1.14
+  domNodes          T10-20 śr=8605.6 med=7498  T70-80 śr=6398.7 med=6074  iloraz(śr)=0.74
+  jsEventListeners  T10-20 śr=843.7 med=562  T70-80 śr=737.5 med=719  iloraz(śr)=0.87
+  textures          T10-20 śr=14.6 med=15  T70-80 śr=23.0 med=23  iloraz(śr)=1.57
+  saveBytes         T10-20 śr=334855.0 med=335515  T70-80 śr=425938.3 med=419787  iloraz(śr)=1.27
+  elastyczność turnJsMs wzgl. cities: 1.43 (iloraz kosztu 6.28 / iloraz rozmiaru 3.60)
+  elastyczność turnJsMs wzgl. units: 0.89 (iloraz kosztu 6.28 / iloraz rozmiaru 7.88)
+  elastyczność cityJsMs wzgl. cities: 0.93 (iloraz kosztu 3.28 / iloraz rozmiaru 3.60)
+  elastyczność cityJsMs wzgl. units: 0.57 (iloraz kosztu 3.28 / iloraz rozmiaru 7.88)
+  elastyczność turnProgramMs wzgl. triangles: -1.83 (iloraz kosztu 0.92 / iloraz rozmiaru 1.05)
+  elastyczność cityProgramMs wzgl. triangles: 2.14 (iloraz kosztu 1.11 / iloraz rozmiaru 1.05)
+== FIX
+  endTurnMs         T10-20 śr=5694.2 med=5681.8  T70-80 śr=7097.7 med=7123.3  iloraz(śr)=1.25
+  cityOpenSyncMs    T10-20 śr=100.4 med=92.5  T70-80 śr=186.7 med=184  iloraz(śr)=1.86
+  cityOpenFrameMs   T10-20 śr=435.4 med=430.9  T70-80 śr=587.5 med=557.7  iloraz(śr)=1.35
+  turnJsMs          T10-20 śr=479.1 med=474.5  T70-80 śr=1195.8 med=1236.7  iloraz(śr)=2.50
+  cityJsMs          T10-20 śr=185.4 med=174.2  T70-80 śr=341.9 med=349.8  iloraz(śr)=1.84
+  turnProgramMs     T10-20 śr=5899.7 med=5833.7  T70-80 śr=6834.1 med=6713.6  iloraz(śr)=1.16
+  cityProgramMs     T10-20 śr=1491.7 med=1433.2  T70-80 śr=1908.2 med=1804.9  iloraz(śr)=1.28
+  triangles         T10-20 śr=546973.6 med=546802  T70-80 śr=573120.0 med=572956  iloraz(śr)=1.05
+  drawCalls         T10-20 śr=493.5 med=486  T70-80 śr=777.0 med=777  iloraz(śr)=1.57
+  cities            T10-20 śr=10.0 med=10  T70-80 śr=36.0 med=36  iloraz(śr)=3.60
+  playerCities      T10-20 śr=1.0 med=1  T70-80 śr=1.0 med=1  iloraz(śr)=1.00
+  units             T10-20 śr=20.4 med=22  T70-80 śr=160.5 med=137  iloraz(śr)=7.88
+  jsHeapMB          T10-20 śr=106.4 med=105.1  T70-80 śr=122.8 med=121.4  iloraz(śr)=1.15
+  domNodes          T10-20 śr=6221.5 med=5414  T70-80 śr=6278.9 med=6072  iloraz(śr)=1.01
+  jsEventListeners  T10-20 śr=669.4 med=589  T70-80 śr=686.9 med=703  iloraz(śr)=1.03
+  textures          T10-20 śr=14.6 med=15  T70-80 śr=23.0 med=23  iloraz(śr)=1.57
+  saveBytes         T10-20 śr=334855.0 med=335515  T70-80 śr=425938.3 med=419787  iloraz(śr)=1.27
+  elastyczność turnJsMs wzgl. cities: 0.71 (iloraz kosztu 2.50 / iloraz rozmiaru 3.60)
+  elastyczność turnJsMs wzgl. units: 0.44 (iloraz kosztu 2.50 / iloraz rozmiaru 7.88)
+  elastyczność cityJsMs wzgl. cities: 0.48 (iloraz kosztu 1.84 / iloraz rozmiaru 3.60)
+  elastyczność cityJsMs wzgl. units: 0.30 (iloraz kosztu 1.84 / iloraz rozmiaru 7.88)
+  elastyczność turnProgramMs wzgl. triangles: 3.15 (iloraz kosztu 1.16 / iloraz rozmiaru 1.05)
+  elastyczność cityProgramMs wzgl. triangles: 5.27 (iloraz kosztu 1.28 / iloraz rozmiaru 1.05)
+== skróty stanu PRE vs FIX: zgodne=81 różne=0

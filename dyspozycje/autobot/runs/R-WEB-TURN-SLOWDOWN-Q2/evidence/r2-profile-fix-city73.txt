@@ -1,0 +1,53 @@
+PROFIL r2fix-city73.cpuprofile: próbki 2066.1 ms; (program) 1754.2 ms; (idle) 5.1 ms; CZAS JS (mianownik %JS) 306.8 ms
+--- TOP self-time (bez (program)/(idle)) ---
+     32.5 ms  10.6%JS   1.6%all  computeTerritoryResourceYieldByCity @L103516         gra/src/game/turn-economy.ts:806
+     22.3 ms   7.3%JS   1.1%all  okolicaTiles @L68072                                 gra/src/game/okolica.ts:152
+     18.4 ms   6.0%JS   0.9%all  hexKeysWithinRadius @L68033                          gra/src/game/okolica.ts:66
+     18.3 ms   6.0%JS   0.9%all  findSvgRaw @L77563                                   gra/src/ui/icons/brandAssets.ts:42
+     16.4 ms   5.3%JS   0.8%all  updateMatrixWorld @L4696                             [poza gra/src]
+     15.2 ms   5.0%JS   0.7%all  computeLostToNearerSiblingByCity @L68352             gra/src/game/okolica.ts:767
+     10.4 ms   3.4%JS   0.5%all  measureText @L0                                      [poza gra/src]
+     10.4 ms   3.4%JS   0.5%all  improvementKeysForHex @L51134                        gra/src/game/terrain-improvements.ts:302
+      9.4 ms   3.1%JS   0.5%all  hexDistance @L51330                                  gra/src/battle/manualBattle.ts:273 | gra/src/game/first-player-city.ts:29 (+2) [niejednoznaczne 4]
+      8.7 ms   2.8%JS   0.4%all  axialDistance$1 @L67908                              gra/src/game/city-state-difficulty.ts:169 | gra/src/map/territory.ts:47 [niejednoznaczne 2]
+      7.0 ms   2.3%JS   0.3%all  territoryOwnerAt @L67924                             gra/src/map/territory.ts:106
+      6.1 ms   2.0%JS   0.3%all  texSubImage2D @L0                                    [poza gra/src]
+      6.0 ms   1.9%JS   0.3%all  renderBar @L141243                                   gra/src/ui/hud.ts:1432
+      5.5 ms   1.8%JS   0.3%all  getProgramInfoLog @L0                                [poza gra/src]
+      5.3 ms   1.7%JS   0.3%all  (garbage collector) @L0                              [pseudo-węzeł V8]
+      4.8 ms   1.6%JS   0.2%all  simulateResourcePipelineForPreview @L103730          gra/src/game/turn-economy.ts:1456
+      4.7 ms   1.5%JS   0.2%all  clearRect @L0                                        [poza gra/src]
+      4.1 ms   1.3%JS   0.2%all  projectObject @L17362                                [poza gra/src]
+      3.7 ms   1.2%JS   0.2%all  render2 @L123643                                     gra/src/ui/armyListHud.ts:126 | gra/src/ui/armyStackHud.ts:229 (+22) [niejednoznaczne 24]
+      3.0 ms   1.0%JS   0.1%all  drawYieldLine @L151380                               gra/src/render/cityOkolicaOverlay.ts:145
+      3.0 ms   1.0%JS   0.1%all  placedImprovementsForOwner @L190202                  gra/src/main.ts:4859
+      2.9 ms   1.0%JS   0.1%all  markUniformsLightsNeedsUpdate @L17814                [poza gra/src]
+      2.9 ms   1.0%JS   0.1%all  collectTerritoryHexKeysByOwner @L153877              gra/src/map/range-hexes.ts:28
+      2.9 ms   0.9%JS   0.1%all  getContext @L0                                       [poza gra/src]
+      2.7 ms   0.9%JS   0.1%all  crossfadeStep @L108923                               gra/src/audio/filePlayer.ts:326
+--- TOP total-time (inclusive, bez (root)/(program)/(idle)) ---
+    173.7 ms  56.6%JS   8.4%all  openCityPanelForPlayer @L191059                      gra/src/main.ts:6299
+    173.7 ms  56.6%JS   8.4%all  openFirstPlayerCityPanel @L208755                    gra/src/main.ts:25022
+    173.7 ms  56.6%JS   8.4%all  (anon) @L1                                           [pseudo-węzeł V8]
+    173.7 ms  56.6%JS   8.4%all  evaluate @L297                                       [poza gra/src]
+    119.9 ms  39.1%JS   5.8%all  buildHudState @L198645                               gra/src/main.ts:18746
+     89.1 ms  29.1%JS   4.3%all  updateHud @L141581                                   gra/src/main.ts:23218 | gra/src/ui/hud.ts:1826 [niejednoznaczne 2]
+     80.9 ms  26.4%JS   3.9%all  buildEmpireResourceRows @L189270                     gra/src/main.ts:3384
+     76.5 ms  24.9%JS   3.7%all  showCityPanel @L150461                               gra/src/ui/cityPanel.ts:12028
+     70.4 ms  22.9%JS   3.4%all  empireTerritoryResourceRatesForOwner @L189189        gra/src/main.ts:3254
+     62.6 ms  20.4%JS   3.0%all  frameOnClose @L120261                                [poza gra/src]
+     62.6 ms  20.4%JS   3.0%all  closeCityPanelIfOpen @L150478                        gra/src/ui/cityPanel.ts:12051
+     62.6 ms  20.4%JS   3.0%all  closeCityPanel @L208762                              gra/src/main.ts:25029
+     62.6 ms  20.4%JS   3.0%all  (anon) @L5                                           [pseudo-węzeł V8]
+     62.4 ms  20.3%JS   3.0%all  renderLoop @L205047                                  gra/src/main.ts:36875
+     62.0 ms  20.2%JS   3.0%all  (anon) @L191076                                      [pseudo-węzeł V8]
+     61.6 ms  20.1%JS   3.0%all  WebGLRenderer.render @L17275                         [poza gra/src]
+     60.7 ms  19.8%JS   2.9%all  renderBar @L141243                                   gra/src/ui/hud.ts:1432
+     58.4 ms  19.0%JS   2.8%all  paintCityPanelSections @L150380                      gra/src/ui/cityPanel.ts:11836
+     58.4 ms  19.0%JS   2.8%all  showCityUxFrame @L120221                             gra/src/ui/cityUxFrame.ts:219
+     58.1 ms  19.0%JS   2.8%all  computeLostToNearerSiblingByCity @L68352             gra/src/game/okolica.ts:767
+     56.6 ms  18.5%JS   2.7%all  updateHud$1 @L201639                                 gra/src/main.ts:23218 | gra/src/ui/hud.ts:1826 [niejednoznaczne 2]
+     51.7 ms  16.9%JS   2.5%all  refreshD1BModules @L141471                           gra/src/ui/hud.ts:1697
+     45.8 ms  14.9%JS   2.2%all  computeTerritoryResourceYieldByCity @L103516         gra/src/game/turn-economy.ts:806
+     44.4 ms  14.5%JS   2.1%all  okolicaTiles @L68072                                 gra/src/game/okolica.ts:152
+     36.3 ms  11.8%JS   1.8%all  renderObjects @L17499                                [poza gra/src]

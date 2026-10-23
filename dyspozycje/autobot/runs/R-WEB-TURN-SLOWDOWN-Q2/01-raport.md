@@ -4,6 +4,12 @@ TEMAT: R-WEB-TURN-SLOWDOWN-Q2
 GOAL: Znaleźć i naprawić przyczyny rosnącego czasu tury i otwarcia miasta w dalszych turach (zgłoszenie: tura 72).
 RUNDY: 1/5 · Operator (Opus 5.5 medium) · baza `origin/main` c11f5087
 
+> **ERRATA (runda 2, `02-obrona-r2.md`):**
+> - Kryterium (4) liczone na czasie JS NIE jest spełnione: tura ×2,50, panel ×1,84. Wcześniejsze „spełnione” ×1,26 dotyczyło czasu ściennego z narzutem swiftshadera.
+> - „Żadna funkcja >5%” jest fałszywe: `computeTerritoryResourceYieldByCity` ma 10,6% czasu JS panelu T73.
+> - Pamięć cyfr Mocy jest w `render/unitStatPlate.ts:545`, nie :539.
+> - Streszczenia profili z plik:linia są w `evidence/r2-profile-*.txt`.
+
 ## (A) Pomiar — konfiguracja
 `gra/tools/web-turn-slowdown-measure.cjs`: bundle z Vite (`--minify false`), headless Chromium 1194 (swiftshader), `?memdebug=1`, `__aiBuildingsTestDebug.startNewGame` (Mały, Kontynenty, 6 rywali, 2 miasta-państwa, seed 778899), `Math.random` = mulberry32 (ziarno stałe), tura = `__eraTestDebug.endTurn()` (to samo co przycisk). Gracz nic nie robi poza „Zakończ turę” — tryb przyspieszony (ZAŁOŻENIE: brak trybu obserwatora w grze, AI gra pełną turę). Per turę: czas tury, otwarcie panelu miasta (sync + do 2. klatki), heap, węzły DOM/nasłuchiwacze (CDP `Memory.getDOMCounters`), memdebug, rozmiar i skrót JSON zapisu, rozmiary 149 kolekcji stanu, spis tekstur. Nowy hak tylko-odczyt `__turnSlowdownTestDebug` (main.ts:25014).
 

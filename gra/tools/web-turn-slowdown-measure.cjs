@@ -15,10 +15,15 @@
  *
  * Użycie (z katalogu gra/):
  *   node tools/web-turn-slowdown-measure.cjs --dist <katalog z index.html> --out <katalog>
- *        [--turns 80] [--seed 778899] [--profile-at 12,72] [--label base]
+ *        [--turns 80] [--seed 778899] [--profile-at 12,72] [--label base] [--profile-all]
+ *   --profile-all (runda 2): profil CPU KAŻDEJ tury i KAŻDEGO otwarcia panelu miasta;
+ *        kolumny turnJsMs/cityJsMs = próbki bez „(program)” i „(idle)” (czas kodu gry
+ *        bez natywnego narzutu swiftshadera) oraz turnProgramMs/cityProgramMs. Pliki
+ *        .cpuprofile zapisywane tylko dla tur z --profile-at.
  * Wynik: <out>/<label>-turns.csv, <label>-collections.json, <label>-snapshot-sections.json,
  *        <label>-summary.json oraz (gdy --profile-at) <label>-turn<T>.cpuprofile,
- *        <label>-city<T>.cpuprofile.
+ *        <label>-city<T>.cpuprofile, <label>-textures.csv (spis tekstur sceny per tura,
+ *        `textureCensus`), <label>-cities-per-owner.json.
  */
 const path = require('path');
 const fs = require('fs');
@@ -35,6 +40,7 @@ const TURNS = Number(arg('turns', '80'));
 const SEED = Number(arg('seed', '778899'));
 const PROFILE_AT_LIST = String(arg('profile-at', '')).split(',').filter(Boolean).map(Number);
 const LABEL = arg('label', 'run');
+const PROFILE_ALL = process.argv.includes('--profile-all');
 const PRNG_SEED = Number(arg('prng', String(0x9e3779b9 | 0)));
 if (!DIST || !OUT) {
   console.error('Użycie: --dist <katalog z index.html> --out <katalog wyjściowy>');
@@ -121,15 +127,31 @@ async function main() {
   const header = ['turn', 'endTurnMs', 'cityOpenSyncMs', 'cityOpenFrameMs', 'cityCloseMs',
     'jsHeapMB', 'domNodes', 'jsEventListeners', 'documents', 'geometries', 'textures', 'programs',
     'cityModels', 'cityBadgeTextures', 'saveBytes', 'saveHash', 'snapshotMs', 'units', 'cities',
-    'endTurnRetries'];
+    'endTurnRetries', 'playerCities', 'maxAiCitiesPerOwner', 'drawCalls', 'triangles',
+    'turnJsMs', 'turnProgramMs', 'cityJsMs', 'cityProgramMs'];
+  const texRows = [];
+  const cpoHistory = [];
+  const lastProf = { turn: null, city: null };
+  /** Czas JS z profilu: suma próbek bez „(program)” i „(idle)” (GC wliczony). */
+  const splitProfile = (profile) => {
+    const byId = new Map(profile.nodes.map((n) => [n.id, n.callFrame.functionName]));
+    let all = 0, prog = 0, idle = 0;
+    for (let i = 0; i < profile.samples.length; i++) {
+      const d = profile.timeDeltas[i] || 0; all += d;
+      const fn = byId.get(profile.samples[i]);
+      if (fn === '(program)') prog += d; else if (fn === '(idle)') idle += d;
+    }
+    return { jsMs: (all - prog - idle) / 1000, programMs: prog / 1000 };
+  };
 
-  async function cpuProfile(fn, file) {
+  async function cpuProfile(fn, file, slot) {
     await cdp.send('Profiler.enable');
     await cdp.send('Profiler.setSamplingInterval', { interval: 500 });
     await cdp.send('Profiler.start');
     const r = await fn();
     const { profile } = await cdp.send('Profiler.stop');
-    fs.writeFileSync(path.join(OUT, file), JSON.stringify(profile));
+    if (file) fs.writeFileSync(path.join(OUT, file), JSON.stringify(profile));
+    if (slot) lastProf[slot] = splitProfile(profile);
     await cdp.send('Profiler.disable');
     return r;
   }
@@ -191,10 +213,14 @@ async function main() {
     } catch (e) {
       if (!String(e.message).startsWith('WATCHDOG')) throw e;
       log('WATCHDOG: krok wisi', what, '- pauza JS i stos');
+      // Runda 2 (zarzut 7): każde wywołanie CDP ograniczone czasem — w zawieszeniu z
+      // 2026-10-23 04:44 (przebieg PRE bramki) proces renderera strony już NIE ISTNIAŁ i
+      // `Debugger.enable` czekał bez końca, więc watchdog sam wisiał zamiast wyjść.
+      const bounded = (p, what2) => Promise.race([p, wait(20000).then(() => { throw new Error('CDP timeout ' + what2); })]);
       try {
-        await cdp.send('Debugger.enable');
+        await bounded(cdp.send('Debugger.enable'), 'Debugger.enable');
         const paused = new Promise((res) => cdp.once('Debugger.paused', res));
-        await cdp.send('Debugger.pause');
+        await bounded(cdp.send('Debugger.pause'), 'Debugger.pause');
         const ev = await Promise.race([paused, wait(20000).then(() => null)]);
         if (ev) {
           for (const f of ev.callFrames.slice(0, 25)) log('  at', f.functionName || '(anon)', 'L' + (f.location.lineNumber + 1));
@@ -204,6 +230,8 @@ async function main() {
       throw e;
     } finally { clearTimeout(timer); }
   };
+  page.on('crash', () => log('PAGE CRASH: proces renderera strony zakończony (nie pętla w kodzie gry)'));
+  page.on('close', () => log('PAGE CLOSE'));
   page.on('dialog', (d) => { log('DIALOG', d.type(), d.message().slice(0, 120)); d.dismiss().catch(() => {}); });
 
   let turn = await page.evaluate(() => window.__eraTestDebug.getWorldState().turn);
@@ -211,8 +239,9 @@ async function main() {
     let r = null; let retries = 0;
     const doTurn = () => withWatchdog('endTurn T' + turn, endTurnInPage());
     for (;;) {
-      if (PROFILE_AT_LIST.includes(turn) && retries === 0) {
-        r = await cpuProfile(doTurn, `${LABEL}-turn${turn}.cpuprofile`);
+      if ((PROFILE_ALL || PROFILE_AT_LIST.includes(turn)) && retries === 0) {
+        lastProf.turn = null;
+        r = await cpuProfile(doTurn, PROFILE_AT_LIST.includes(turn) ? `${LABEL}-turn${turn}.cpuprofile` : null, 'turn');
       } else {
         r = await doTurn();
       }
@@ -225,8 +254,12 @@ async function main() {
     turn = r.turn1;
     await wait(250);
     let city;
-    if (PROFILE_AT_LIST.includes(turn - 1)) {
-      city = await cpuProfile(() => withWatchdog('city T' + turn, cityOpenInPage()), `${LABEL}-city${turn}.cpuprofile`);
+    const rinfo = await page.evaluate(() => window.__turnSlowdownTestDebug.renderInfo
+      ? window.__turnSlowdownTestDebug.renderInfo() : null);
+    lastProf.city = null;
+    if (PROFILE_ALL || PROFILE_AT_LIST.includes(turn - 1)) {
+      city = await cpuProfile(() => withWatchdog('city T' + turn, cityOpenInPage()),
+        PROFILE_AT_LIST.includes(turn - 1) ? `${LABEL}-city${turn}.cpuprofile` : null, 'city');
     } else {
       city = await withWatchdog('city T' + turn, cityOpenInPage());
     }
@@ -242,6 +275,14 @@ async function main() {
       return out;
     }));
     const world = await page.evaluate(() => window.__eraTestDebug.getWorldState());
+    const cpo = await page.evaluate(() => window.__turnSlowdownTestDebug.citiesPerOwner
+      ? window.__turnSlowdownTestDebug.citiesPerOwner() : {});
+    cpoHistory.push({ turn, ...cpo });
+    const tex = { turn };
+    for (const [k, v] of Object.entries(coll)) if (k.startsWith('tex:')) tex[k.slice(4)] = v;
+    texRows.push(tex);
+    const aiCounts = Object.entries(cpo).filter(([k]) => k.startsWith('o:')).map(([, v]) => v);
+    const fmtMs = (x) => (x === null || x === undefined ? '' : x.toFixed(1));
     const ml = memLines[memLines.length - 1] || '';
     const num = (k) => { const m = ml.match(new RegExp(k + '=(\\d+)')); return m ? Number(m[1]) : ''; };
     const row = {
@@ -253,6 +294,11 @@ async function main() {
       cityModels: num('cityModels'), cityBadgeTextures: num('cityBadgeTextures'),
       saveBytes: snap.bytes, saveHash: snap.hash, snapshotMs: snap.ms.toFixed(1),
       units: world.unitsLen, cities: world.citiesLen, endTurnRetries: retries,
+      playerCities: Object.entries(cpo).filter(([k]) => k.startsWith('me:')).reduce((a, [, v]) => a + v, 0),
+      maxAiCitiesPerOwner: aiCounts.length ? Math.max(...aiCounts) : 0,
+      drawCalls: rinfo ? rinfo.calls : '', triangles: rinfo ? rinfo.triangles : '',
+      turnJsMs: fmtMs(lastProf.turn && lastProf.turn.jsMs), turnProgramMs: fmtMs(lastProf.turn && lastProf.turn.programMs),
+      cityJsMs: fmtMs(lastProf.city && lastProf.city.jsMs), cityProgramMs: fmtMs(lastProf.city && lastProf.city.programMs),
     };
     rows.push(row);
     collHistory.push({ turn, ...coll });
@@ -260,15 +306,32 @@ async function main() {
     if (snap.sectionHashes) sectionHashHistory.push({ turn, ...snap.sectionHashes });
     log(`T${turn} endTurn=${row.endTurnMs} city=${row.cityOpenFrameMs}/${row.cityOpenSyncMs} heap=${row.jsHeapMB}`
       + ` dom=${row.domNodes} lst=${row.jsEventListeners} tex=${row.textures} geo=${row.geometries}`
-      + ` save=${row.saveBytes} u=${row.units} c=${row.cities} hash=${row.saveHash}`);
+      + ` save=${row.saveBytes} u=${row.units} c=${row.cities} aiMaxC=${row.maxAiCitiesPerOwner}`
+      + (row.turnJsMs ? ` js=${row.turnJsMs}/${row.cityJsMs}` : '') + ` hash=${row.saveHash}`);
     fs.writeFileSync(path.join(OUT, `${LABEL}-turns.csv`),
       header.join(',') + '\n' + rows.map((x) => header.map((h) => x[h]).join(',')).join('\n') + '\n');
+    const texKeys = [...new Set(texRows.flatMap((x) => Object.keys(x)))].filter((k) => k !== 'turn').sort();
+    fs.writeFileSync(path.join(OUT, `${LABEL}-textures.csv`), ['turn', ...texKeys].join(',') + '\n'
+      + texRows.map((x) => [x.turn, ...texKeys.map((k) => x[k] ?? 0)].join(',')).join('\n') + '\n');
   }
   fs.writeFileSync(path.join(OUT, `${LABEL}-collections.json`), JSON.stringify(collHistory));
+  fs.writeFileSync(path.join(OUT, `${LABEL}-cities-per-owner.json`), JSON.stringify(cpoHistory));
   fs.writeFileSync(path.join(OUT, `${LABEL}-snapshot-sections.json`), JSON.stringify(sectionHistory));
   fs.writeFileSync(path.join(OUT, `${LABEL}-snapshot-section-hashes.json`), JSON.stringify(sectionHashHistory));
+  // Runda 2 (zarzut 5, K4): po OSTATNIEJ turze (skróty stanu już zebrane) — czas 20 wywołań
+  // `empireTerritoryResourceRatesForOwner` gracza, 5 serii po rozgrzewce, minimum serii.
+  const territoryRatesMs = await page.evaluate(() => {
+    const d = window.__turnSlowdownTestDebug;
+    if (!d.timeTerritoryRatesMs) return null;
+    d.timeTerritoryRatesMs(5);
+    const s = [];
+    for (let i = 0; i < 5; i++) s.push(d.timeTerritoryRatesMs(20));
+    return s;
+  });
+  if (territoryRatesMs) log('territoryRatesMs(20 wywołań, 5 serii)=' + territoryRatesMs.map((x) => x.toFixed(1)).join(','));
   fs.writeFileSync(path.join(OUT, `${LABEL}-summary.json`), JSON.stringify({
     seed: SEED, prng: PRNG_SEED, turns: TURNS, finalHash: rows.length ? rows[rows.length - 1].saveHash : null,
+    territoryRatesMs,
     errors: errors.slice(0, 50), errorCount: errors.length,
   }, null, 2));
   log('DONE errors=' + errors.length + ' finalHash=' + (rows.length ? rows[rows.length - 1].saveHash : ''));

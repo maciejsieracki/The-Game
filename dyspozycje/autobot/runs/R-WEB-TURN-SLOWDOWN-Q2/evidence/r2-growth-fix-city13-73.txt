@@ -1,0 +1,13 @@
+JS a=202.1 ms  b=306.8 ms  przyrost=104.7 ms
+    22.3 ms ( 21.3% przyrostu)      0.0 ->    22.3  okolicaTiles
+    16.3 ms ( 15.6% przyrostu)      2.0 ->    18.4  hexKeysWithinRadius
+    15.2 ms ( 14.5% przyrostu)      0.0 ->    15.2  computeLostToNearerSiblingByCity
+    10.5 ms ( 10.0% przyrostu)      5.9 ->    16.4  updateMatrixWorld
+     9.4 ms (  9.0% przyrostu)      0.0 ->     9.4  hexDistance
+     8.5 ms (  8.2% przyrostu)      1.8 ->    10.4  measureText
+     7.0 ms (  6.7% przyrostu)      0.0 ->     7.0  territoryOwnerAt
+     6.9 ms (  6.6% przyrostu)      1.8 ->     8.7  axialDistance$1
+     5.3 ms (  5.1% przyrostu)      2.5 ->     7.8  (anon)
+     4.3 ms (  4.2% przyrostu)      1.8 ->     6.1  texSubImage2D
+     3.3 ms (  3.2% przyrostu)      2.0 ->     5.3  (garbage collector)
+     2.7 ms (  2.6% przyrostu)      0.0 ->     2.7  crossfadeStep

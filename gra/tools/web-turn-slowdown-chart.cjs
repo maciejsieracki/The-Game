@@ -5,8 +5,8 @@
  * zrzut), bez dodatkowych zależności.
  *
  * Użycie: node tools/web-turn-slowdown-chart.cjs <out.png> <etykieta=plik.csv> [...]
- * Panele: czas tury (ms), czas JS tury bez stałego narzutu nie jest liczony tu —
- * rysowane są surowe kolumny endTurnMs, cityOpenSyncMs, cityOpenFrameMs, jsHeapMB.
+ * Panele: surowe kolumny endTurnMs, cityOpenSyncMs, cityOpenFrameMs, jsHeapMB oraz (runda 2,
+ * gdy CSV z `--profile-all`) turnJsMs i cityJsMs — czas kodu gry bez narzutu swiftshadera.
  */
 const path = require('path');
 const fs = require('fs');
@@ -33,7 +33,13 @@ const panels = [
   ['cityOpenSyncMs', 'Otwarcie panelu miasta — wywołanie synchroniczne (ms)'],
   ['cityOpenFrameMs', 'Otwarcie panelu miasta — do 2. klatki (ms)'],
   ['jsHeapMB', 'JS heap (MB)'],
-];
+  // Runda 2 (zarzut 2): czas KODU GRY z profilu CPU (bez natywnego „(program)” swiftshadera),
+  // rysowany tylko gdy CSV ma kolumny z przebiegu `--profile-all`.
+  ['turnJsMs', 'Czas JS tury (profil CPU, bez (program)) (ms)'],
+  ['cityJsMs', 'Czas JS panelu miasta (profil CPU, bez (program)) (ms)'],
+].filter(([key]) => series.some((s) => s.rows.some((r) => Number.isFinite(r[key]) && r[key] > 0)));
+const ROWS = Math.ceil(panels.length / 2);
+const CH = 50 + ROWS * 360;
 
 (async () => {
   const { chromium } = require(path.join(__dirname, '..', 'node_modules', 'playwright'));
@@ -42,8 +48,8 @@ const panels = [
     executablePath: fs.existsSync(FALLBACK_CHROME) ? FALLBACK_CHROME : undefined,
     args: ['--no-sandbox'],
   });
-  const page = await browser.newPage({ viewport: { width: 1000, height: 760 } });
-  await page.setContent('<canvas id="c" width="1000" height="760"></canvas>');
+  const page = await browser.newPage({ viewport: { width: 1000, height: CH } });
+  await page.setContent(`<canvas id="c" width="1000" height="${CH}"></canvas>`);
   await page.evaluate(({ series, panels }) => {
     const cv = document.getElementById('c');
     const ctx = cv.getContext('2d');

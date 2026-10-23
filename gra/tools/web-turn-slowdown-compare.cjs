@@ -23,9 +23,25 @@ const stat = (rows, key, a, b) => {
 };
 for (const run of runs) {
   console.log(`== ${run.label}`);
-  for (const key of ['endTurnMs', 'cityOpenSyncMs', 'cityOpenFrameMs', 'jsHeapMB', 'domNodes', 'jsEventListeners', 'textures', 'saveBytes']) {
+  const KEYS = ['endTurnMs', 'cityOpenSyncMs', 'cityOpenFrameMs', 'turnJsMs', 'cityJsMs', 'turnProgramMs',
+    'cityProgramMs', 'triangles', 'drawCalls', 'cities', 'playerCities', 'units', 'jsHeapMB', 'domNodes',
+    'jsEventListeners', 'textures', 'saveBytes'];
+  const has = (key) => run.rows.some((r) => r[key] !== undefined && r[key] !== '');
+  const ratio = {};
+  for (const key of KEYS) {
+    if (!has(key)) continue;
     const e = stat(run.rows, key, 10, 20), l = stat(run.rows, key, 70, 80);
+    ratio[key] = l.mean / e.mean;
     console.log(`  ${key.padEnd(17)} T10-20 śr=${e.mean.toFixed(1)} med=${e.med}  T70-80 śr=${l.mean.toFixed(1)} med=${l.med}  iloraz(śr)=${(l.mean / e.mean).toFixed(2)}`);
+  }
+  // Runda 2: elastyczność kosztu JS względem rozmiaru gry (ln iloraz kosztu / ln iloraz
+  // rozmiaru): ~1 = koszt rośnie proporcjonalnie, >1 = szybciej niż gra (podejrzane), <1 = wolniej.
+  for (const [cost, size] of [['turnJsMs', 'cities'], ['turnJsMs', 'units'], ['cityJsMs', 'cities'], ['cityJsMs', 'units'],
+    ['turnProgramMs', 'triangles'], ['cityProgramMs', 'triangles']]) {
+    if (ratio[cost] && ratio[size] && ratio[size] !== 1) {
+      console.log(`  elastyczność ${cost} wzgl. ${size}: ${(Math.log(ratio[cost]) / Math.log(ratio[size])).toFixed(2)}`
+        + ` (iloraz kosztu ${ratio[cost].toFixed(2)} / iloraz rozmiaru ${ratio[size].toFixed(2)})`);
+    }
   }
 }
 if (runs.length >= 2) {

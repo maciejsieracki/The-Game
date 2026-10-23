@@ -23,11 +23,24 @@
  *      tury) w FIX < 50% PRE,
  *  K2  koszt `placedImprovementsForOwner` (inclusive) w FIX < PRE,
  *  K3  koszt `currentVisible` w profilu otwarcia+zamknięcia panelu miasta w FIX < 50% PRE,
+ *  K4  (runda 2, P4) pomiar BEZPOŚREDNI po ostatniej turze (skróty D1 już zebrane):
+ *      min z 5 serii po 20 wywołań `empireTerritoryResourceRatesForOwner` gracza
+ *      (hak `timeTerritoryRatesMs`): FIX < 85% PRE. Warianty z profilu CPU jednej tury
+ *      okazały się szumem (całe funkcje: 206,9 vs 206,5 ms; część pod
+ *      computeWorked…/computeLostToNearer…: 85,3 vs 108,1 ms przy offline 40,7 vs 108,4
+ *      na innym przebiegu) — zostają w logu informacyjnie.
+ *  M   (runda 2) warunek nietrywialności D1 dla P2: przed ostatnią turą co najmniej jeden
+ *      gracz AI miał ≥ 2 miasta przez ≥ 3 tury (pamięć P2 jest PER MIASTO — przy jednym
+ *      mieście na gracza błąd „jedna pamięć dla wszystkich miast” jest niewidoczny; tak
+ *      było przy dawnym domyślnym 24 turach, wykryte mutacją Evaluatora rundy 1),
  *  S   drzewo repo nietknięte (mutacje wyłącznie w lustrze).
  *
  * Bramka (z katalogu gra/): node tools/web-turn-slowdown-test.cjs
- * ENV: TURN_SLOWDOWN_TEST_TURNS (domyślnie 24), TURN_SLOWDOWN_TEST_SKIP_D2=1.
- * Czas: 2–3 buildy Vite + 2–3 przebiegi Chromium (~20–30 min na swiftshader).
+ * ENV: TURN_SLOWDOWN_TEST_TURNS (domyślnie 40; runda 2 — było 24, patrz M),
+ *      TURN_SLOWDOWN_TEST_SKIP_D2=1, TURN_SLOWDOWN_TEST_EXTRA_REPLACE=<plik JSON
+ *      [[szukany, zamiennik], ...]> — dodatkowa podmiana w wariancie FIX (WYŁĄCZNIE do
+ *      testów mutacyjnych bramki; drzewo repo nietknięte).
+ * Czas: 2–3 buildy Vite + 2–3 przebiegi Chromium po 40 tur (~25–40 min na swiftshader).
  */
 const path = require('path');
 const fs = require('fs');
@@ -36,7 +49,7 @@ const { execSync, execFileSync } = require('child_process');
 
 const GRA_DIR = path.resolve(__dirname, '..');
 const MAIN_REL = path.join('src', 'main.ts');
-const TURNS = Number(process.env.TURN_SLOWDOWN_TEST_TURNS || 24);
+const TURNS = Number(process.env.TURN_SLOWDOWN_TEST_TURNS || 40);
 const RUN_ID = `${process.pid}-${Math.random().toString(36).slice(2, 8)}`;
 const TMP_ROOT = path.join(os.tmpdir(), `civ-turn-slowdown-test-${RUN_ID}`);
 process.on('exit', () => { try { fs.rmSync(TMP_ROOT, { recursive: true, force: true }); } catch { /* best-effort */ } });
@@ -91,7 +104,9 @@ function runMeasure(dist, label) {
   const rows = lines.slice(1).map((l) => Object.fromEntries(l.split(',').map((v, i) => [head[i], v])));
   const prof = JSON.parse(fs.readFileSync(path.join(out, `${label}-turn${TURNS - 1}.cpuprofile`), 'utf8'));
   const cityProf = JSON.parse(fs.readFileSync(path.join(out, `${label}-city${TURNS}.cpuprofile`), 'utf8'));
-  return { rows, prof, cityProf };
+  const cpo = JSON.parse(fs.readFileSync(path.join(out, `${label}-cities-per-owner.json`), 'utf8'));
+  const { territoryRatesMs } = JSON.parse(fs.readFileSync(path.join(out, `${label}-summary.json`), 'utf8'));
+  return { rows, prof, cityProf, cpo, territoryRatesMs };
 }
 
 /** Inclusive czas (ms) funkcji o danej nazwie w profilu CPU (bez podwójnego liczenia rekursji). */
@@ -110,6 +125,25 @@ function inclusiveMs(prof, fnName) {
   return us / 1000;
 }
 
+/** Czas (ms) próbek, w których stosie pod funkcją `outer` występuje którakolwiek z `inners`. */
+function inclusiveUnderMs(prof, outer, inners) {
+  const byId = new Map(prof.nodes.map((n) => [n.id, n]));
+  const parent = new Map();
+  for (const n of prof.nodes) for (const c of n.children || []) parent.set(c, n.id);
+  let us = 0;
+  for (let i = 0; i < prof.samples.length; i++) {
+    let cur = prof.samples[i];
+    let inner = false;
+    while (cur !== undefined) {
+      const fn = byId.get(cur).callFrame.functionName;
+      if (inners.includes(fn)) inner = true;
+      if (fn === outer) { if (inner) us += prof.timeDeltas[i] || 0; break; }
+      cur = parent.get(cur);
+    }
+  }
+  return us / 1000;
+}
+
 function main() {
   const live = fs.readFileSync(path.join(GRA_DIR, MAIN_REL), 'utf8');
   let pre = live;
@@ -121,7 +155,16 @@ function main() {
   if (fail) process.exit(1);
   fs.mkdirSync(TMP_ROOT, { recursive: true });
 
-  const distFix = makeMirror('fix', live);
+  let fixSrc = live;
+  if (process.env.TURN_SLOWDOWN_TEST_EXTRA_REPLACE) {
+    for (const [a, b] of JSON.parse(fs.readFileSync(process.env.TURN_SLOWDOWN_TEST_EXTRA_REPLACE, 'utf8'))) {
+      const n = fixSrc.split(a).length - 1;
+      assert(`mutacja: kotwica występuje dokładnie raz (${a.slice(0, 50)}...)`, n === 1, n);
+      fixSrc = fixSrc.replace(a, b);
+    }
+    console.log('[turn-slowdown-test] UWAGA: wariant FIX zmutowany (TURN_SLOWDOWN_TEST_EXTRA_REPLACE)');
+  }
+  const distFix = makeMirror('fix', fixSrc);
   const distPre = makeMirror('pre', pre);
   assert('S: bramka nie zmieniła śledzonego main.ts', fs.readFileSync(path.join(GRA_DIR, MAIN_REL), 'utf8') === live);
 
@@ -134,6 +177,14 @@ function main() {
   assert(`D1: identyczny skrót stanu FIX vs PRE w każdej z ${fixHashes.length} tur`,
     fixHashes.length === preHashes.length && fixHashes.length >= TURNS - 2 && firstDiff < 0,
     { firstDiff, fix: fixHashes[firstDiff], pre: preHashes[firstDiff] });
+
+  // M: pamięć P2 (per miasto) ćwiczona przy ≥ 2 miastach jednego gracza AI przez ≥ 3 tury
+  // przed końcem przebiegu (wtedy D1 wykrywa pomylenie miast w pamięci).
+  const multiTurns = fix.cpo.filter((r) => r.turn < TURNS
+    && Object.entries(r).some(([k, v]) => k.startsWith('o:') && v >= 2)).map((r) => r.turn);
+  console.log(`  tury z graczem AI o >= 2 miastach (przed T${TURNS}): ${multiTurns.length} (pierwsza: ${multiTurns[0]})`);
+  assert('M: co najmniej jeden gracz AI miał >= 2 miasta przez >= 3 tury (P2 per miasto ćwiczone)',
+    multiTurns.length >= 3, { multiTurns });
 
   if (process.env.TURN_SLOWDOWN_TEST_SKIP_D2 !== '1') {
     const fix2 = runMeasure(distFix, 'fix2');
@@ -155,6 +206,23 @@ function main() {
   const vPre = inclusiveMs(preRun.cityProf, 'currentVisible');
   console.log(`  koszt currentVisible przy otwarciu/zamknięciu panelu miasta: FIX=${vFix.toFixed(1)} ms PRE=${vPre.toFixed(1)} ms`);
   assert('K3: widoczność przy odświeżeniu granic (panel miasta) w FIX < 50% PRE', vPre > 0 && vFix < 0.5 * vPre, { vFix, vPre });
+
+  const P4_OUTER = 'empireTerritoryResourceRatesForOwner';
+  const P4_INNER = ['computeWorkedMagazynYieldsByCity', 'computeLostToNearerSiblingByCity'];
+  const eFix = inclusiveUnderMs(fix.prof, P4_OUTER, P4_INNER) + inclusiveUnderMs(fix.cityProf, P4_OUTER, P4_INNER);
+  const ePre = inclusiveUnderMs(preRun.prof, P4_OUTER, P4_INNER) + inclusiveUnderMs(preRun.cityProf, P4_OUTER, P4_INNER);
+  const eAllFix = inclusiveMs(fix.prof, P4_OUTER) + inclusiveMs(fix.cityProf, P4_OUTER);
+  const eAllPre = inclusiveMs(preRun.prof, P4_OUTER) + inclusiveMs(preRun.cityProf, P4_OUTER);
+  console.log(`  [informacyjnie] profil: część P4 (obrabiane pola + mapa sporów pod ${P4_OUTER}, tura + panel): FIX=${eFix.toFixed(1)} ms PRE=${ePre.toFixed(1)} ms`
+    + ` (całe ${P4_OUTER}: FIX=${eAllFix.toFixed(1)} PRE=${eAllPre.toFixed(1)})`);
+  // K4 (runda 2, po FAIL wariantu profilowego 85,3 vs 108,1 ms — pojedynczy profil jednej
+  // tury ma szum próbkowania tego samego rzędu co efekt): pomiar BEZPOŚREDNI po ostatniej
+  // turze, minimum z 5 serii po 20 wywołań `empireTerritoryResourceRatesForOwner` gracza.
+  const tFix = fix.territoryRatesMs ? Math.min(...fix.territoryRatesMs) : NaN;
+  const tPre = preRun.territoryRatesMs ? Math.min(...preRun.territoryRatesMs) : NaN;
+  console.log(`  koszt 20× ${P4_OUTER} (min z 5 serii, po T${TURNS}): FIX=${tFix.toFixed(1)} ms PRE=${tPre.toFixed(1)} ms`
+    + ` (serie FIX=${JSON.stringify(fix.territoryRatesMs)} PRE=${JSON.stringify(preRun.territoryRatesMs)})`);
+  assert('K4: P4 — przychody terytorium gracza w FIX < 85% PRE (pomiar bezpośredni)', tPre > 0 && tFix < 0.85 * tPre, { tFix, tPre });
 
   console.log(`\nweb-turn-slowdown-test: ${pass} OK, ${fail} FAIL`);
   process.exit(fail ? 1 : 0);

@@ -1,0 +1,23 @@
+top - 04:52:05 up  3:20,  0 user,  load average: 10.54, 11.98, 13.59
+Tasks: 139 total,   2 running, 137 sleeping,   0 stopped,   0 zombie
+%Cpu(s): 97.6 us,  2.4 sy,  0.0 ni,  0.0 id,  0.0 wa,  0.0 hi,  0.0 si,  0.0 st
+MiB Mem :  16091.2 total,   4083.5 free,   2866.4 used,   9486.2 buff/cache
+MiB Swap:      0.0 total,      0.0 free,      0.0 used.  13224.8 avail Mem
+
+  PID USER      PR  NI    VIRT    RES    SHR S  %CPU  %MEM     TIME+ COMMAND
+ 3370 root      20   0 1059904 541088  86620 S 110.0   3.3   0:03.35 rustc
+ 3192 root      20   0  856940 161724   7736 S 100.0   1.0   0:07.47 esbuild
+ 3310 root      20   0  920096 502320 126972 S  90.0   3.0   0:03.83 rustc
+ 3468 root      20   0  596868 195576  56100 S  90.0   1.2   0:00.68 rustc
+    1 root      20   0   25556   6312   5840 S   0.0   0.0   0:06.13 process_a+
+    2 root      20   0       0      0      0 S   0.0   0.0   0:00.01 kthreadd
+    3 root      20   0       0      0      0 S   0.0   0.0   0:00.00 pool_work+
+    4 root       0 -20       0      0      0 I   0.0   0.0   0:00.00 kworker/R+
+  PID %CPU     ELAPSED STAT COMMAND
+22308  0.1       25:45 Sl   /opt/node22/bin/node /home/user/The-Game/.claude/worktrees/wf_9ec3a81d-275-3/gra/tools/web-turn-slowdown-measure.cjs --dist /tmp/civ
+22356  0.1       25:44 S<sl /opt/pw-browsers/chromium-1194/chrome-linux/chrome --disable-field-trial-config --disable-background-networking --disable-background
+22426 40.1       25:44 S<l  /opt/pw-browsers/chromium-1194/chrome-linux/chrome --type=gpu-process --no-sandbox --disable-dev-shm-usage --disable-breakpad --head
+22432  0.0       25:44 S<l  /opt/pw-browsers/chromium-1194/chrome-linux/chrome --type=renderer --crashpad-handler-pid=0 --enable-crash-reporter=, --noerrdialogs
+State:	S (sleeping)
+voluntary_ctxt_switches:	42
+nonvoluntary_ctxt_switches:	10

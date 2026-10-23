@@ -1,0 +1,1 @@
+[["const hit = aiProdAllowedMemo.get(cityId);", "const hit = aiProdAllowedMemo.values().next().value;"]]
