@@ -6,7 +6,9 @@
 #[path = "p6_7a_vectors/common.rs"]
 mod common;
 
+use civ_engine::data::civilizations::Num;
 use civ_engine::data::derived::{cities_params, wzrost_ludnosci_params};
+use civ_engine::domain::civ_matrix::load_civ_matrix;
 use civ_engine::domain::city_growth::p6_7a::empire_food::build_empire_food_params;
 use civ_engine::domain::city_growth::p6_7a::growth_v85::{
     apply_fractional_growth_v85, apply_hunger_penalty_v85, build_ration_params,
@@ -14,12 +16,14 @@ use civ_engine::domain::city_growth::p6_7a::growth_v85::{
     compute_growth_percent_v85, default_poziom_racji, ensure_city_ration_defaults,
     format_wyzwienie_label, get_city_ration_level, growth_gain_per_turn_slots,
     migrate_legacy_ration_level, migrate_procent_rozwoj_to_poziom_racji, ration_food_cost_per_pop,
-    ration_growth_percent, resolve_population_matrix_for_civ, turns_until_next_citizen,
+    ration_growth_percent, resolve_population_matrix_for_civ, resolve_population_matrix_for_civ_in,
+    turns_until_next_citizen,
     wyzywienie_levels, wyzywienie_max, wyzywienie_min, wyzywienie_step, GrowthCity,
     GrowthPercentInput,
 };
 use civ_engine::domain::city_growth::p6_7a::{
     city_population_cap, game_difficulty_from_web, resolve_population_cap_matrix_delta,
+    resolve_population_cap_matrix_delta_in,
     GameDifficulty, PopCapParams,
 };
 use civ_engine::domain::terrain::city_founding::p6_6b::cities::City;
@@ -160,6 +164,56 @@ fn population_matrix_matches_web() {
             num(&c["capDelta"]),
         );
     }
+}
+
+/// Runda 2: macierz SYNTETYCZNA. W prawdziwym `civ-matrix.json` `lud_spadek_proc` i `lud_zdrowie_proc` sa
+/// rowne 0 dla kazdej cywilizacji, wiec klamry `max(0, 1 + x)` byly nieosiagalne. Web uruchomiony na
+/// `loadCivMatrix()` zmienionym w miejscu (patrz `gen-p67a-vectors.mjs`, sekcja (e)); tu ta sama zmiana
+/// (`patch`) nakladana na kopie wbudowanej macierzy Rust.
+#[test]
+fn population_matrix_synthetic_matches_web() {
+    fn to_num(v: &Value) -> Num {
+        let x = num(v);
+        if x.fract() == 0.0 && x.abs() < 9.0e15 {
+            Num::Int(x as i64)
+        } else {
+            Num::Float(x)
+        }
+    }
+    let edge = load("edge.json");
+    let mut reached_negative = 0usize;
+    for (i, case) in arr(&edge, "matrixSynth").iter().enumerate() {
+        let mut matrix = load_civ_matrix().file.clone();
+        for (k, v) in case["patch"]["defaults"].as_object().expect("defaults") {
+            matrix.defaults.insert(k.clone(), to_num(v));
+        }
+        for pr in arr(&case["patch"], "rows") {
+            let id = text(&pr["ikonaId"]);
+            let row = matrix
+                .cywilizacje
+                .iter_mut()
+                .find(|c| c.ikona_id == id)
+                .expect("wiersz");
+            for (k, v) in pr["params"].as_object().expect("params") {
+                row.params.insert(k.clone(), to_num(v));
+            }
+        }
+        for (j, c) in arr(case, "cases").iter().enumerate() {
+            let key: Option<&str> = c["civ"].as_str();
+            let m = resolve_population_matrix_for_civ_in(&matrix, key);
+            assert_values(&format!("synth[{i}][{j}]"), &matrix_value(&m), &c["out"]);
+            assert_bits(
+                &format!("synthCap[{i}][{j}]"),
+                resolve_population_cap_matrix_delta_in(&matrix, key),
+                num(&c["capDelta"]),
+            );
+            if m.hunger_loss_multiplier == 0.0 || m.health_growth_multiplier == 0.0 {
+                reached_negative += 1;
+            }
+        }
+    }
+    // test kontrolny wektorow: galaz klamry rzeczywiscie osiagnieta (inaczej wektor nic nie domyka)
+    assert!(reached_negative > 0, "wektory nie osiagaja klamry max(0, ...)");
 }
 
 #[test]

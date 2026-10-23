@@ -181,6 +181,10 @@ M = [
     ("j: epoka domyslna", P, '"domyslna": "kamien"', '"domyslna": "braz"', None),
     ("j: epoka fala2", P, '"fala2_extra": [\n      "braz",\n      "zelazo"\n    ]', '"fala2_extra": [\n      "braz"\n    ]', None),
     ("j: diakrytyki n z kreska", D, '[324,"n"]', '[324,"x"]', None),
+    # --- runda 2: klamry macierzy syntetycznej (dodatkowe mutanty) ---
+    ("g: macierz - zdrowie bez max", CG, "health_growth_multiplier: js_max(0.0, 1.0 + finite_or_zero(health_proc)),", "health_growth_multiplier: 1.0 + finite_or_zero(health_proc),", None),
+    ("g: macierz - glod zamiast zdrowia", CG, "health_growth_multiplier: js_max(0.0, 1.0 + finite_or_zero(health_proc)),", "health_growth_multiplier: js_max(0.0, 1.0 + finite_or_zero(hunger_proc)),", None),
+    ("g: macierz - delta cap z innego klucza", CG, "population_cap_delta: resolve_population_cap_matrix_delta_in(matrix, Some(key)),", "population_cap_delta: 0.0,", None),
     ("j: racje poziom 4", R, '"poziom_racji": 4,\n      "zywnosc_na_mieszkanca": 8', '"poziom_racji": 4,\n      "zywnosc_na_mieszkanca": 9', None),
 ]
 

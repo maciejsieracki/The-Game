@@ -72,7 +72,8 @@ const hashes = {};
 function write(name, data) {
   const text = JSON.stringify(data, replacer, 0);
   writeFileSync(join(outDir, name), text + '\n');
-  hashes[name] = createHash('sha256').update(text).digest('hex');
+  // runda 2: hash CALEGO pliku (z koncowym newline) -> `sha256sum -c SHA256SUMS.txt` dziala
+  hashes[name] = createHash('sha256').update(text + '\n').digest('hex');
 }
 const clone = (o) => structuredClone(o);
 /** Odpowiednik `JSON.parse(JSON.stringify(x, replacer))` dla porownan (stan po wywolaniu). */
@@ -763,7 +764,7 @@ for (let i = 0; i < 70; i++) empire.maxSafe.push(planScenario('maxSafe', i));
 // 5. post_central.json: applyPostCentralPopulationGrowth / applyCentralFoodPopulationGrowth
 // ---------------------------------------------------------------------------
 const postCentral = { scenarios: [] };
-function postCentralScenario(deleteFed) {
+function postCentralScenario(deleteFed, siege = false) {
   const w = makeWorld({ owners: pick([[0], [0, 1], [1, 0, 2]]), minCities: 1, maxCities: 5 });
   for (const c of w.cities) {
     // bez wartosci specjalnych w populacji: sciezka rebalance/manpower dziala na liczbach naturalnych
@@ -781,6 +782,16 @@ function postCentralScenario(deleteFed) {
   if (deleteFed) {
     // migawka z brakujacymi wpisami `fedByCityId` (web: `?? false`); tylko w edge.json
     for (const ot of efRes.perOwner) for (const k of [...ot.fedByCityId.keys()]) if (chance(0.4)) ot.fedByCityId.delete(k);
+  }
+  if (siege) {
+    // runda 2: miasto oblezone PO zlozeniu migawki centrali (wiersze `perCityRows` nadal je zawieraja);
+    // `advanceEmpireFood` nie wystawia wierszy oblezonych miast, wiec bez tego `tick.oblegany` w
+    // `applyPostCentralPopulationGrowth` (population-growth-v85.ts:481) jest nieosiagalne.
+    let any = false;
+    for (const t of econ.perCity) {
+      if (chance(0.5)) { t.oblegany = true; any = true; }
+    }
+    if (!any) econ.perCity[0].oblegany = true;
   }
   const efBefore = norm(efRes.perOwner);
 
@@ -934,6 +945,60 @@ for (let i = 0; i < 80; i++) {
 }
 // (c) migawka efResult bez wpisow `fedByCityId` dla czesci miast (`?? false` w population-growth-v85.ts:489)
 for (let i = 0; i < 40; i++) edge.postCentral.push(postCentralScenario(true));
+// (d) runda 2: oblezone miasta w migawce centrali (zamyka mutanta "p: oblegane miasto")
+edge.postCentralSiege = [];
+for (let i = 0; i < 40; i++) edge.postCentralSiege.push(postCentralScenario(false, true));
+
+// (e) runda 2: macierz SYNTETYCZNA (zamyka mutanty `max(0, 1 + x)` dla lud_spadek_proc / lud_zdrowie_proc).
+//     W prawdziwym civ-matrix.json (pin) lud_spadek_proc = lud_zdrowie_proc = 0 dla KAZDEJ cywilizacji, wiec
+//     galaz `1 + x < 0` nie byla osiagalna. Ten sam kod weba (`resolvePopulationMatrixForCiv`,
+//     `resolvePopulationCapMatrixDelta`) uruchamiany na danych `loadCivMatrix()` zmienionych w miejscu
+//     (zero stubow logiki); po kazdym przypadku macierz jest przywracana.
+rnd = mulberry32(0x67a5717);
+const CM = (await import(src('game/civ-matrix.ts'))).loadCivMatrix();
+const CM_ORIG = structuredClone(CM);
+const HUNGER_POOL = [-3, -2, -1.5, -1, -0.999, -0.5, 0, 0.25, 0.5, 1, 1.5, 2];
+const LIMIT_POOL = [-2, -1, 0, 0.5, 1, 2, 3, 4];
+const edgeMatrix = [];
+for (let i = 0; i < 40; i++) {
+  const patch = { defaults: {}, rows: [] };
+  if (chance(0.5)) patch.defaults.lud_spadek_proc = pick(HUNGER_POOL);
+  if (chance(0.5)) patch.defaults.lud_zdrowie_proc = pick(HUNGER_POOL);
+  if (chance(0.3)) patch.defaults.lud_zadowolenie_bazowe = pick([-2, 0.5, 3]);
+  if (chance(0.3)) patch.defaults.lud_limit_populacji = pick(LIMIT_POOL);
+  const nRows = ri(2, 5);
+  const used = new Set();
+  while (patch.rows.length < nRows) {
+    const idx = ri(0, CM_ORIG.cywilizacje.length - 1);
+    if (used.has(idx)) continue;
+    used.add(idx);
+    const params = {};
+    if (chance(0.7)) params.lud_spadek_proc = pick(HUNGER_POOL);
+    if (chance(0.7)) params.lud_zdrowie_proc = pick(HUNGER_POOL);
+    if (chance(0.4)) params.lud_zadowolenie_bazowe = pick([-2, -0.5, 0, 1, 2.5]);
+    if (chance(0.5)) params.lud_limit_populacji = pick(LIMIT_POOL);
+    patch.rows.push({ ikonaId: CM_ORIG.cywilizacje[idx].ikonaId, params });
+  }
+  for (const [k, v] of Object.entries(patch.defaults)) CM.defaults[k] = v;
+  for (const pr of patch.rows) {
+    const row = CM.cywilizacje.find((c) => c.ikonaId === pr.ikonaId);
+    Object.assign(row.params, pr.params);
+  }
+  const keys = [];
+  for (const pr of patch.rows) {
+    const row = CM.cywilizacje.find((c) => c.ikonaId === pr.ikonaId);
+    keys.push(row.ikonaId, row.typCywilizacji, row.Cywilizacja, row.ikonaId.toUpperCase());
+  }
+  keys.push('nieznana', '');
+  const cases = keys.map((k) => ({ civ: k, out: PG.resolvePopulationMatrixForCiv(k), capDelta: EC.resolvePopulationCapMatrixDelta(k) }));
+  cases.push({ civ: { absent: true }, out: PG.resolvePopulationMatrixForCiv(undefined), capDelta: EC.resolvePopulationCapMatrixDelta(undefined) });
+  edgeMatrix.push({ patch, cases });
+  // przywrocenie macierzy (w miejscu: ta sama referencja co w civ-matrix.ts)
+  for (const k of Object.keys(CM.defaults)) delete CM.defaults[k];
+  Object.assign(CM.defaults, structuredClone(CM_ORIG.defaults));
+  CM.cywilizacje.splice(0, CM.cywilizacje.length, ...structuredClone(CM_ORIG.cywilizacje));
+}
+edge.matrixSynth = edgeMatrix;
 write('edge.json', edge);
 writeFileSync(join(outDir, 'SHA256SUMS.txt'), Object.entries(hashes).map(([k, v]) => `${v}  ${k}`).join('\n') + '\n');
 console.log(JSON.stringify(hashes, null, 1));

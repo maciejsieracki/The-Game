@@ -915,8 +915,17 @@ pub mod p6_7a {
 
     /// Web `resolvePopulationCapMatrixDelta` (`economy.ts:1163`).
     pub fn resolve_population_cap_matrix_delta(civ_key: Option<&str>) -> f64 {
+        resolve_population_cap_matrix_delta_in(&load_civ_matrix().file, civ_key)
+    }
+
+    /// `resolve_population_cap_matrix_delta` na JAWNIE podanej macierzy (runda 2: wektory z macierza
+    /// syntetyczna; wersja bez argumentu czyta wbudowany `civ-matrix.json`, jak web `loadCivMatrix()`).
+    pub fn resolve_population_cap_matrix_delta_in(
+        matrix: &crate::data::civilizations::CivMatrixFile,
+        civ_key: Option<&str>,
+    ) -> f64 {
         let value = match civ_key.filter(|k| !k.is_empty()) {
-            Some(k) => civ_matrix_param(&load_civ_matrix().file, k, "lud_limit_populacji"),
+            Some(k) => civ_matrix_param(matrix, k, "lud_limit_populacji"),
             None => 0.0,
         };
         if delta_allowed(value) {
@@ -1004,6 +1013,15 @@ pub mod p6_7a {
         pub fn resolve_population_matrix_for_civ(
             civ_key: Option<&str>,
         ) -> PopulationMatrixResolved {
+            resolve_population_matrix_for_civ_in(&load_civ_matrix().file, civ_key)
+        }
+
+        /// `resolve_population_matrix_for_civ` na JAWNIE podanej macierzy (runda 2: wektory z macierza
+        /// syntetyczna, np. `lud_spadek_proc` < -1, ktorego nie ma w prawdziwym `civ-matrix.json`).
+        pub fn resolve_population_matrix_for_civ_in(
+            matrix: &crate::data::civilizations::CivMatrixFile,
+            civ_key: Option<&str>,
+        ) -> PopulationMatrixResolved {
             let Some(key) = civ_key.filter(|k| !k.is_empty()) else {
                 return PopulationMatrixResolved {
                     hunger_loss_multiplier: 1.0,
@@ -1012,7 +1030,6 @@ pub mod p6_7a {
                     population_cap_delta: 0.0,
                 };
             };
-            let matrix = &load_civ_matrix().file;
             let hunger_proc = civ_matrix_param(matrix, key, "lud_spadek_proc");
             let health_proc = civ_matrix_param(matrix, key, "lud_zdrowie_proc");
             let happiness = civ_matrix_param(matrix, key, "lud_zadowolenie_bazowe");
@@ -1020,7 +1037,7 @@ pub mod p6_7a {
                 hunger_loss_multiplier: js_max(0.0, 1.0 + finite_or_zero(hunger_proc)),
                 health_growth_multiplier: js_max(0.0, 1.0 + finite_or_zero(health_proc)),
                 happiness_base: finite_or_zero(happiness),
-                population_cap_delta: resolve_population_cap_matrix_delta(Some(key)),
+                population_cap_delta: resolve_population_cap_matrix_delta_in(matrix, Some(key)),
             }
         }
 

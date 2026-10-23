@@ -69,11 +69,13 @@ fn post_central_growth_matches_web() {
             &json!({}),
             GameDifficulty::Normal,
         );
-    // `scenarios` z post_central.json + przypadki graniczne z edge.json (brak wpisow `fedByCityId`)
+    // `scenarios` z post_central.json + przypadki graniczne z edge.json (brak wpisow `fedByCityId`;
+    // runda 2: `postCentralSiege` - miasta oblezone po zlozeniu migawki centrali)
     let edge = load("edge.json");
     let cases = arr(&data, "scenarios")
         .iter()
-        .chain(arr(&edge, "postCentral"));
+        .chain(arr(&edge, "postCentral"))
+        .chain(arr(&edge, "postCentralSiege"));
     for (i, sc) in cases.enumerate() {
         let mut cities: Vec<GrowthCity> = arr(sc, "cities").iter().map(growth_city).collect();
         let before: BTreeMap<String, f64> = cities
