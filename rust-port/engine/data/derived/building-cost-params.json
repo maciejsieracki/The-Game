@@ -1,0 +1,132 @@
+{
+  "meta": {
+    "zrodlo_web": "gra/src/game/building-cost-tempo.ts, building-stock-cost.ts, building-resource-gate.ts (pin edb8fb56)",
+    "uwaga": "Edytowalna tabela balansu P6.7B: mnozniki tempa i ery, slowa epok, etykiety i klucze magazynu panstwa, bramki surowcowe i prerekwizyty budynkow, stale Spichlerza i komunikaty UI. Sekcja wejscia_z_innych_modulow_weba zawiera stale z r-stawki-strojenie.ts i zloto-access.ts (poza zakresem tej czesci, ale wolane przez porty). Zgodnosc z webem sprawdza test wektorowy. Tabela NIE jest porownywana ze wzorem przy buildzie.",
+    "token_zloto": "Napis {zloto_label} w polu etykiety jest zastepowany etykieta Zlota z sekcji wejscia_z_innych_modulow_weba (jedno zrodlo)."
+  },
+  "tempo_kosztow_budynkow": [
+    { "klucz": "niski", "mnoznik": 1.0 },
+    { "klucz": "normalny", "mnoznik": 2.0 },
+    { "klucz": "wysoki", "mnoznik": 4.0 }
+  ],
+  "epoki": {
+    "progi": [
+      { "min_epoka": 3, "mnoznik": 4 },
+      { "min_epoka": 2, "mnoznik": 2 }
+    ],
+    "domyslny_mnoznik": 1,
+    "domyslna_epoka_wejscia_budynku": 1,
+    "slowa": [
+      { "mnoznik": 1, "slowa": ["kamien", "stone", "1"] },
+      { "mnoznik": 2, "slowa": ["braz", "bronze", "2"] },
+      { "mnoznik": 4, "slowa": ["zelazo", "zelazo+", "iron", "iron+", "iron plus", "steel", "stal"] }
+    ]
+  },
+  "wejscia_z_innych_modulow_weba": {
+    "zrodlo": "gra/src/game/r-stawki-strojenie.ts: R_STAWKI_FALA2_MULT (linia 9); gra/src/game/zloto-access.ts: ZLOTO_STOCK_KEY (linia 22), ZLOTO_LABEL (linia 25), MENNICA_ZLOTO_DRAIN_PER_TURN (linia 31)",
+    "r_stawki_fala2_mnoznik": 2,
+    "zloto_stock_klucz": "zloto",
+    "zloto_label": "Złoto",
+    "mennica_zloto_drain_na_ture": 1
+  },
+  "magazyn": {
+    "etykiety": [
+      { "klucz": "drewno", "etykieta": "Drewno" },
+      { "klucz": "kamien", "etykieta": "Kamień" },
+      { "klucz": "glina", "etykieta": "Glina" },
+      { "klucz": "ruda", "etykieta": "Ruda" },
+      { "klucz": "ruda_zelaza", "etykieta": "Ruda żelaza" },
+      { "klucz": "ruda_cyny", "etykieta": "Ruda cyny" },
+      { "klucz": "cegla", "etykieta": "Cegła" },
+      { "klucz": "ceramika", "etykieta": "Ceramika" },
+      { "klucz": "braz", "etykieta": "Brąz" },
+      { "klucz": "zelazo", "etykieta": "Żelazo" },
+      { "klucz": "stal", "etykieta": "Stal" },
+      { "klucz": "sol", "etykieta": "Sól" },
+      { "klucz": "zloto", "etykieta": "Złoto (surowiec)" },
+      { "klucz": "wegiel", "etykieta": "Węgiel" },
+      { "klucz": "kon", "etykieta": "Koń" }
+    ],
+    "klucze_magazynu_panstwa": [
+      "drewno", "kamien", "glina", "ruda", "ruda_zelaza", "ruda_cyny",
+      "cegla", "ceramika", "braz", "zelazo", "stal",
+      "sol", "zloto", "wegiel", "kon"
+    ]
+  },
+  "jednostki": {
+    "kon_koszt_bazowy": 25,
+    "kon_klucz": "kon",
+    "wyjatek_kon_jednostka": "Rydwan (woły)",
+    "typ_jezdny": "Mount",
+    "znacznik_braku_surowca": "-"
+  },
+  "bramka": {
+    "etykiety_ascii": [
+      { "klucz": "drewno", "etykieta": "Drewno" },
+      { "klucz": "kamien", "etykieta": "Kamień" },
+      { "klucz": "glina", "etykieta": "Glina" },
+      { "klucz": "ruda", "etykieta": "Ruda" },
+      { "klucz": "zelazo", "etykieta": "Żelazo" },
+      { "klucz": "stal", "etykieta": "Stal" },
+      { "klucz": "braz", "etykieta": "Brąz" },
+      { "klucz": "sol", "etykieta": "Sól" },
+      { "klucz": "cegla", "etykieta": "Cegła" },
+      { "klucz": "ceramika", "etykieta": "Ceramika" },
+      { "klucz": "zloto", "etykieta": "{zloto_label}" },
+      { "klucz": "kon", "etykieta": "Koń" }
+    ],
+    "zloza_budynkow": [
+      { "budynek": "garncarnia", "etykiety": ["Glina"] },
+      { "budynek": "cegielnia", "etykiety": ["Glina"] },
+      { "budynek": "spichlerz_ii", "etykiety": ["Sól"] },
+      { "budynek": "stolarnia", "etykiety": ["Drewno"] },
+      { "budynek": "kamieniarski", "etykiety": ["Kamień"] },
+      { "budynek": "kuznia", "etykiety": ["Ruda"] },
+      { "budynek": "odlewnia_brazu", "etykiety": ["Ruda"] },
+      { "budynek": "mennica", "etykiety": ["{zloto_label}"] }
+    ],
+    "prerekwizyty_miasta": [
+      { "budynek": "warsztat_oblezniczy", "wymaga": ["koszary", "akademia_wojskowa"] },
+      { "budynek": "laznia_publiczna", "wymaga": "studnia" },
+      { "budynek": "akademia", "wymaga": "biblioteka" },
+      { "budynek": "fort", "wymaga": "mury" },
+      { "budynek": "akademia_wojskowa", "wymaga": "koszary" },
+      { "budynek": "swiatynia", "wymaga": "kamienne_kregi" },
+      { "budynek": "mennica", "wymaga": "targowisko" },
+      { "budynek": "baszta", "wymaga": "mury" },
+      { "budynek": "akwedukt", "wymaga": "studnia" }
+    ],
+    "dostep_wodny": ["port", "port_wielki"],
+    "konwertery": [
+      { "etykieta": "Cegła", "budynek": "cegielnia" },
+      { "etykieta": "Ceramika", "budynek": "garncarnia" }
+    ],
+    "mennica_budynek": "mennica",
+    "komunikaty": {
+      "brak_prefiks": "Brak: ",
+      "separator": ", "
+    }
+  },
+  "spichlerz": {
+    "budynek_i": "spichlerz",
+    "budynek_ii": "spichlerz_ii",
+    "wykluczone_z_bramki_runtime": ["spichlerz", "spichlerz_ii"],
+    "klucz_ceramika": "ceramika",
+    "klucz_sol": "sol",
+    "etykieta_ceramika": "Ceramika",
+    "etykieta_sol": "Sól",
+    "drain_ceramika_na_ture": 25,
+    "drain_sol_na_ture": 25,
+    "zdrowie_ii": 10,
+    "zdrowie_i": 5,
+    "wzrost_procent_ii": 2,
+    "wzrost_procent_i": 1,
+    "racja_mnoznik_ii": 0.5,
+    "racja_mnoznik_i": 0.75,
+    "zadowolenie_json_domyslne": 2,
+    "cap_imperium_i": 1000,
+    "cap_imperium_ii_pelny": 1500,
+    "armia_mnoznik_poza_terytorium": 0.5,
+    "garnizon_mnoznik_sol": 0.5
+  }
+}

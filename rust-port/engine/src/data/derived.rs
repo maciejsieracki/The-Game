@@ -3942,3 +3942,266 @@ pub fn mapgen_relief_a() -> &'static MapgenReliefAFile {
     static TABLE: std::sync::OnceLock<MapgenReliefAFile> = std::sync::OnceLock::new();
     TABLE.get_or_init(|| parse_mapgen_relief_a().expect("mapgen-relief-a.json must parse"))
 }
+
+// ---------------------------------------------------------------------------------------------
+// P6.7B (R-RUSTPORT-P6-7B-MIASTA-WZROST-B-Q1): building-cost-tempo / building-stock-cost /
+// building-resource-gate - edytowalna tabela balansu (pin web edb8fb56)
+// ---------------------------------------------------------------------------------------------
+
+pub const BUILDING_COST_PARAMS_JSON: &str =
+    include_str!("../../data/derived/building-cost-params.json");
+
+/// Token zastepowany etykieta Zlota z sekcji wejsc z innych modulow weba (jedno zrodlo).
+pub const BUILDING_COST_ZLOTO_TOKEN: &str = "{zloto_label}";
+
+/// Wpis `KOSZT_BUDYNKOW_PACE`: klucz tempa kosztow i jego mnoznik.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct BuildingCostPaceEntry {
+    pub klucz: String,
+    pub mnoznik: f64,
+}
+
+/// Prog mnoznika ery: epoka >= `min_epoka` daje `mnoznik` (progi sprawdzane w kolejnosci pliku).
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct BuildingCostEraThreshold {
+    pub min_epoka: f64,
+    pub mnoznik: f64,
+}
+
+/// Slowa nazw epok (po normalizacji) przypisane do mnoznika.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct BuildingCostEraWords {
+    pub mnoznik: f64,
+    pub slowa: Vec<String>,
+}
+
+/// Mnoznik kosztu wg epoki (jednostki i budynki).
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct BuildingCostEras {
+    pub progi: Vec<BuildingCostEraThreshold>,
+    pub domyslny_mnoznik: f64,
+    pub domyslna_epoka_wejscia_budynku: f64,
+    pub slowa: Vec<BuildingCostEraWords>,
+}
+
+/// Stale z `r-stawki-strojenie.ts` i `zloto-access.ts` (poza zakresem P6.7B), kopia wejsciowa.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct BuildingCostForeignInputs {
+    pub zrodlo: String,
+    pub r_stawki_fala2_mnoznik: f64,
+    pub zloto_stock_klucz: String,
+    pub zloto_label: String,
+    pub mennica_zloto_drain_na_ture: f64,
+}
+
+/// Para klucz ASCII magazynu i etykieta PL.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct BuildingCostLabel {
+    pub klucz: String,
+    pub etykieta: String,
+}
+
+/// Etykiety i klucze magazynu panstwa.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct BuildingCostStorage {
+    pub etykiety: Vec<BuildingCostLabel>,
+    pub klucze_magazynu_panstwa: Vec<String>,
+}
+
+/// Parametry kosztu surowcowego jednostek (units.json `Surowiec`).
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct BuildingCostUnits {
+    pub kon_koszt_bazowy: u32,
+    pub kon_klucz: String,
+    pub wyjatek_kon_jednostka: String,
+    pub typ_jezdny: String,
+    pub znacznik_braku_surowca: String,
+}
+
+/// Bramka zloza: budynek wymaga zapasu surowcow o podanych etykietach w magazynie panstwa.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct BuildingGateDeposit {
+    pub budynek: String,
+    pub etykiety: Vec<String>,
+}
+
+/// Prerekwizyt miasta: jeden budynek albo lista alternatyw (semantyka OR).
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum BuildingGatePrereqValue {
+    One(String),
+    Many(Vec<String>),
+}
+
+/// Wpis `CITY_BUILDING_PREREQ`.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct BuildingGatePrereq {
+    pub budynek: String,
+    pub wymaga: BuildingGatePrereqValue,
+}
+
+/// Konwerter: etykieta surowca spelniona przez wybudowany/aktywny budynek.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct BuildingGateConverter {
+    pub etykieta: String,
+    pub budynek: String,
+}
+
+/// Teksty komunikatu o nieaktywnym budynku.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct BuildingGateMessages {
+    pub brak_prefiks: String,
+    pub separator: String,
+}
+
+/// Bramka surowcowa/budynkowa: etykiety, zloza, prerekwizyty, dostep wodny, konwertery.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct BuildingGateParams {
+    pub etykiety_ascii: Vec<BuildingCostLabel>,
+    pub zloza_budynkow: Vec<BuildingGateDeposit>,
+    pub prerekwizyty_miasta: Vec<BuildingGatePrereq>,
+    pub dostep_wodny: Vec<String>,
+    pub konwertery: Vec<BuildingGateConverter>,
+    pub mennica_budynek: String,
+    pub komunikaty: BuildingGateMessages,
+}
+
+/// Stale Spichlerza I/II (drain, bonusy, limity, mnozniki zywnosci).
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct SpichlerzParams {
+    pub budynek_i: String,
+    pub budynek_ii: String,
+    pub wykluczone_z_bramki_runtime: Vec<String>,
+    pub klucz_ceramika: String,
+    pub klucz_sol: String,
+    pub etykieta_ceramika: String,
+    pub etykieta_sol: String,
+    pub drain_ceramika_na_ture: f64,
+    pub drain_sol_na_ture: f64,
+    pub zdrowie_ii: f64,
+    pub zdrowie_i: f64,
+    pub wzrost_procent_ii: f64,
+    pub wzrost_procent_i: f64,
+    pub racja_mnoznik_ii: f64,
+    pub racja_mnoznik_i: f64,
+    pub zadowolenie_json_domyslne: f64,
+    pub cap_imperium_i: f64,
+    pub cap_imperium_ii_pelny: f64,
+    pub armia_mnoznik_poza_terytorium: f64,
+    pub garnizon_mnoznik_sol: f64,
+}
+
+/// Plik `building-cost-params.json`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct BuildingCostParamsFile {
+    pub meta: serde_json::Value,
+    pub tempo_kosztow_budynkow: Vec<BuildingCostPaceEntry>,
+    pub epoki: BuildingCostEras,
+    pub wejscia_z_innych_modulow_weba: BuildingCostForeignInputs,
+    pub magazyn: BuildingCostStorage,
+    pub jednostki: BuildingCostUnits,
+    pub bramka: BuildingGateParams,
+    pub spichlerz: SpichlerzParams,
+}
+
+pub fn parse_building_cost_params() -> Result<BuildingCostParamsFile, serde_json::Error> {
+    serde_json::from_str(BUILDING_COST_PARAMS_JSON)
+}
+
+/// Tabela `building-cost-params.json` (jednorazowy odczyt; blad danych = panika z komunikatem).
+/// Token `{zloto_label}` w etykietach bramki jest tu zamieniany na etykiete Zlota z sekcji wejsc.
+pub fn building_cost_params() -> &'static BuildingCostParamsFile {
+    static TABLE: std::sync::OnceLock<BuildingCostParamsFile> = std::sync::OnceLock::new();
+    TABLE.get_or_init(|| {
+        let mut file = parse_building_cost_params().expect("building-cost-params.json must parse");
+        let zloto = file.wejscia_z_innych_modulow_weba.zloto_label.clone();
+        let resolve = |text: &mut String| {
+            if text == BUILDING_COST_ZLOTO_TOKEN {
+                *text = zloto.clone();
+            }
+        };
+        for entry in &mut file.bramka.etykiety_ascii {
+            resolve(&mut entry.etykieta);
+        }
+        for deposit in &mut file.bramka.zloza_budynkow {
+            deposit.etykiety.iter_mut().for_each(resolve);
+        }
+        file
+    })
+}
+
+pub const NFD_STRIP_TABLE_JSON: &str = include_str!("../../data/derived/nfd-strip-table.json");
+
+/// Zakres znakow laczacych wycinanych po rozkladzie NFD (web: `/[̀-ͯ]/g`).
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct NfdStripRange {
+    pub od: u32,
+    #[serde(rename = "do")]
+    pub do_: u32,
+}
+
+/// Stale rozkladu sylab Hangul (Unicode, rozdzial 3.12).
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct NfdHangulParams {
+    pub s_base: u32,
+    pub l_base: u32,
+    pub v_base: u32,
+    pub t_base: u32,
+    pub l_count: u32,
+    pub v_count: u32,
+    pub t_count: u32,
+}
+
+/// Plik `nfd-strip-table.json`: rozklad NFD po wycieciu znakow laczacych (dane Unicode).
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct NfdStripTableFile {
+    pub meta: serde_json::Value,
+    pub wycinany_zakres: NfdStripRange,
+    pub hangul: NfdHangulParams,
+    pub wpisy: Vec<(u32, String)>,
+    /// Znaki laczace o klasie laczenia (ccc) != 0: `[punkt_kodowy, ranga]`, ranga rosnaca z ccc.
+    pub kolejnosc_znakow_laczacych: Vec<(u32, u32)>,
+}
+
+pub fn parse_nfd_strip_table() -> Result<NfdStripTableFile, serde_json::Error> {
+    serde_json::from_str(NFD_STRIP_TABLE_JSON)
+}
+
+/// Tabela rozkladu NFD z indeksem po punkcie kodowym (jednorazowy odczyt; blad danych = panika).
+pub struct NfdStripLookup {
+    pub file: NfdStripTableFile,
+    pub by_code_point: std::collections::HashMap<u32, String>,
+    pub combining_rank: std::collections::HashMap<u32, u32>,
+}
+
+pub fn nfd_strip_lookup() -> &'static NfdStripLookup {
+    static TABLE: std::sync::OnceLock<NfdStripLookup> = std::sync::OnceLock::new();
+    TABLE.get_or_init(|| {
+        let file = parse_nfd_strip_table().expect("nfd-strip-table.json must parse");
+        let by_code_point = file.wpisy.iter().cloned().collect();
+        let combining_rank = file.kolejnosc_znakow_laczacych.iter().copied().collect();
+        NfdStripLookup {
+            file,
+            by_code_point,
+            combining_rank,
+        }
+    })
+}
