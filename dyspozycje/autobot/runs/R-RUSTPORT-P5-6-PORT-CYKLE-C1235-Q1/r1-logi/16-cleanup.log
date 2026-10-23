@@ -1,0 +1,4 @@
+$ rm -rf node_modules dist && ls -d node_modules dist
+ls: cannot access 'node_modules': No such file or directory
+ls: cannot access 'dist': No such file or directory
+EXIT=0

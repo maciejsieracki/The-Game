@@ -2587,6 +2587,24 @@
       "pin": "edb8fb56:gra/src/ui/assets/hero/hero-menu.png",
       "sha256": "5a229b44374db46dfed1dad10eb8597d1ade40ec6b4645afda595964a694e93e",
       "bytes": 2175174
+    },
+    {
+      "path": "src/ui/sidePanelHud.ts",
+      "pin": "edb8fb56:gra/src/ui/sidePanelHud.ts",
+      "sha256": "64e6b3b1341e377fd4a552245540fed23c75b9bcdd346bab958c5e585f3e0388",
+      "bytes": 60647
+    },
+    {
+      "path": "src/ui/sidePanelEventFilter.ts",
+      "pin": "edb8fb56:gra/src/ui/sidePanelEventFilter.ts",
+      "sha256": "d504e3f3d018fbe1e17bd0a5d998a9d65d9320955f1aa5d4bf72743c3aac31df",
+      "bytes": 1258
+    },
+    {
+      "path": "src/ui/unitVitalsPalette.ts",
+      "pin": "edb8fb56:gra/src/render/unitVitalsPalette.ts",
+      "sha256": "2f4447576a90fc068c4e1a593f60594b9836d38cdc96e706e9ecfe942e12766d",
+      "bytes": 4740
     }
   ]
 }

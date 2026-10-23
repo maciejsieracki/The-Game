@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "description": "Frontend Tauri (UI-Q1=A): kopia paneli gra/src/ui/** + Vite + kontroler MOCK; P5.2: panele poziomu 0 przeniesione na DTO (harness DOM: tools/dom-harness, jsdom); P5.3: poziom 1 bez cyklu (17 modułów, harness run-level1a.mjs); P5.4: cykl C4 (10 modułów, harness run-c4.mjs); P5.5: poziom 2 (26 modułów, harness run-level2.mjs).",
+  "description": "Frontend Tauri (UI-Q1=A): kopia paneli gra/src/ui/** + Vite + kontroler MOCK; P5.2: panele poziomu 0 przeniesione na DTO (harness DOM: tools/dom-harness, jsdom); P5.3: poziom 1 bez cyklu (17 modułów, harness run-level1a.mjs); P5.4: cykl C4 (10 modułów, harness run-c4.mjs); P5.5: poziom 2 (26 modułów, harness run-level2.mjs); P5.6: cykle C2/C5 + hexContextTooltip + preBattle (7 modułów, harness run-cycles.mjs).",
   "scripts": {
     "typecheck": "tsc --noEmit",
     "check": "node tools/check-no-logic-imports.mjs --self-test && node tools/check-no-logic-imports.mjs src index.html vite.config.ts && node tools/verify-pin-copies.mjs",
@@ -15,7 +15,9 @@
     "harness:c4": "node tools/dom-harness/run-c4.mjs",
     "harness:c4:mutate": "node tools/dom-harness/mutate-c4.mjs",
     "harness:l2": "node tools/dom-harness/run-level2.mjs",
-    "harness:l2:mutate": "node tools/dom-harness/mutate-level2.mjs"
+    "harness:l2:mutate": "node tools/dom-harness/mutate-level2.mjs",
+    "harness:cycles": "node tools/dom-harness/run-cycles.mjs",
+    "harness:cycles:mutate": "node tools/dom-harness/mutate-cycles.mjs"
   },
   "devDependencies": {
     "esbuild": "0.21.5",

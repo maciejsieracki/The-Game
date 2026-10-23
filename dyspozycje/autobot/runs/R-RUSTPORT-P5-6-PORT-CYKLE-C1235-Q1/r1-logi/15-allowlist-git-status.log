@@ -1,0 +1,34 @@
+$ git status --porcelain --untracked-files=all   (przed commitem; logi *.log są w .gitignore — dodawane `git add -f`)
+ M src-tauri/frontend-v2/PORTING-QUEUE.md
+ M src-tauri/frontend-v2/package.json
+ M src-tauri/frontend-v2/src/controller/index.ts
+ M src-tauri/frontend-v2/src/controller/mockCatalog.ts
+ M src-tauri/frontend-v2/src/main.ts
+ M src-tauri/frontend-v2/src/viewmodel/types.ts
+ M src-tauri/frontend-v2/tools/pin-manifest.json
+?? dyspozycje/autobot/runs/R-RUSTPORT-P5-6-PORT-CYKLE-C1235-Q1/.gitattributes
+?? dyspozycje/autobot/runs/R-RUSTPORT-P5-6-PORT-CYKLE-C1235-Q1/r1-logi/05-dom-harness-cycles.json
+?? dyspozycje/autobot/runs/R-RUSTPORT-P5-6-PORT-CYKLE-C1235-Q1/r1-logi/diffs/diplomacyAudience.ts.diff
+?? dyspozycje/autobot/runs/R-RUSTPORT-P5-6-PORT-CYKLE-C1235-Q1/r1-logi/diffs/diplomacyNegotiationModal.ts.diff
+?? dyspozycje/autobot/runs/R-RUSTPORT-P5-6-PORT-CYKLE-C1235-Q1/r1-logi/diffs/diplomacyTradeBasket.ts.diff
+?? dyspozycje/autobot/runs/R-RUSTPORT-P5-6-PORT-CYKLE-C1235-Q1/r1-logi/diffs/hexContextTooltip.ts.diff
+?? dyspozycje/autobot/runs/R-RUSTPORT-P5-6-PORT-CYKLE-C1235-Q1/r1-logi/diffs/preBattle.ts.diff
+?? dyspozycje/rust-port/p5/P5-6-PORT-CYKLE.md
+?? src-tauri/frontend-v2/src/controller/audio.ts
+?? src-tauri/frontend-v2/src/controller/diplomacyQueries.ts
+?? src-tauri/frontend-v2/src/ui/armyStackHudSuppression.ts
+?? src-tauri/frontend-v2/src/ui/diplomacyAudience.ts
+?? src-tauri/frontend-v2/src/ui/diplomacyNegotiationModal.ts
+?? src-tauri/frontend-v2/src/ui/diplomacyTradeBasket.ts
+?? src-tauri/frontend-v2/src/ui/hexContextTooltip.ts
+?? src-tauri/frontend-v2/src/ui/portCycles.ts
+?? src-tauri/frontend-v2/src/ui/preBattle.ts
+?? src-tauri/frontend-v2/src/ui/sidePanelEventFilter.ts
+?? src-tauri/frontend-v2/src/ui/sidePanelHud.ts
+?? src-tauri/frontend-v2/src/ui/unitVitalsPalette.ts
+?? src-tauri/frontend-v2/tools/dom-harness/mutate-cycles.mjs
+?? src-tauri/frontend-v2/tools/dom-harness/run-cycles.mjs
+$ git status --porcelain --untracked-files=all --ignored -- gra src-tauri/frontend src-tauri/src src-tauri/Cargo.toml src-tauri/Cargo.lock src-tauri/tauri.conf.json rust-port .github
+(pusto — zero zmian poza allowlistą; package-lock.json bez zmian)
+$ git diff --check
+EXIT=0

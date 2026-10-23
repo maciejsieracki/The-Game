@@ -1,0 +1,7 @@
+$ node tools/dom-harness/run.mjs --pin-dir <PIN_DIR>
+saveLoadDialog.ts                przypadki=   17 różnice=0 wiersze_listy=pusto:0/0,3 sloty:3/3 NIE_ZMIERZONO=2
+   NIE_ZMIERZONO: zapisy z dysku (FSA) i „ostatnio grane”: jsdom nie ma File System Access API, a pin wymaga pełnego zapisu do walidacji lastPlayed — porównano listę pustą/3 sloty lokalne, lastPlayed=null, autosaves=[]
+   NIE_ZMIERZONO: akcje (klik usuń/wczytaj/zapisz → komendy) — nie klikane w harnessie
+victoryScreen.ts                 przypadki=   72 różnice=0
+dom-harness: pin=edb8fb56 modułów=15 przypadków=3861 różnic=0 kolizji_kategorii=0 jsdomErrors=0
+EXIT=0

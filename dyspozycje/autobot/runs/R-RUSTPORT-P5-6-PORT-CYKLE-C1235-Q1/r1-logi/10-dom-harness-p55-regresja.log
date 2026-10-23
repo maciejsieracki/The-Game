@@ -1,0 +1,7 @@
+$ node tools/dom-harness/run-level2.mjs --pin-dir <PIN_DIR>
+   NIE_ZMIERZONO: singleton `showDiploListHud`/`toggleDiploListHud`/`refreshDiploListHudIfOpen` — `api` modułu ustawiany wyłącznie wewnętrznie (brak publicznego settera); `createDiploListHud` porównany wprost
+unitActionBarHtml.ts           przypadki=    7 różnice=0
+dom-harness-level2: pin=edb8fb56 modułów=26 przypadków=1784 różnic=0 jsdomErrors=354 consoleErrors=150
+jsdomErrors (unikalne): Could not parse CSS stylesheet @mainMenu.ts/pin | Could not parse CSS stylesheet @mainMenu.ts/v2
+consoleErrors (unikalne): [unitInfoCard] błąd ścieżki entityCards, fallback do starej implementacji: Error: wymuszony wyjątek ścieżki entityCards
+EXIT=0

@@ -100,6 +100,28 @@ export interface StaticCatalogConstantsDto {
    * = web `TEMPO_GRY` (`game/tech-tempo.ts:23-27`; P5-0 §6.1 `tempo_gry`). Klucz = `ResearchViewDto.tempo`.
    */
   tempoGry: Readonly<Record<string, number>>;
+  /**
+   * P5.6 (`diplomacyTradeBasket.ts:1583`, podpowiedź „1 PW = N” przy żywności): web `diplomacyZywnoscNaPn()`
+   * (`game/diplomacy-value-catalog.ts:123-125`, `pn_zywnosc.jednostki_na_pn`).
+   */
+  zywnoscNaPn: number;
+  /**
+   * P5.6 (`diplomacyTradeBasket.ts:2138,2720`): próg Relacji daru, gdy kontekst modala go nie podaje — web
+   * `diplomacyProgDarRelacja()` (`game/diplomacy-value-catalog.ts:715-721`, poziom `normal`, jak pin bez argumentów).
+   */
+  progDarRelacja: number;
+  /** P5.6 (`diplomacyTradeBasket.ts:1962`): web `diplomacyHandelZaufaniePerTura()` (`:728-731`, `handel_zaufanie_perTura`). */
+  handelZaufaniePerTura: number;
+  /**
+   * P5.6 (`diplomacyTradeBasket.ts:465-472`, lista zastępcza surowców ilościowych): klucze cennika handlu surowcami
+   * w kolejności web `Object.keys(diplomacyHandelSurowceCatalog())` (`:424-431`).
+   */
+  handelSurowceKeys: string[];
+  /**
+   * P5.6 (`diplomacyAudience.ts:492,1777`): id akcji UI dopuszczających wiele własnych wpisów tego samego typu na stole
+   * negocjacji — web `uiActionAllowsMultipleOwnOnTable` (`game/diplomacy-audience-actions.ts:132-134`: dziś `['14']`).
+   */
+  audienceMultiOwnActionIds: string[];
 }
 
 export interface StaticCatalogLabelsDto {
@@ -115,6 +137,11 @@ export interface StaticCatalogLabelsDto {
    * z wartością domyślną „Moc”). Pusty string = UI używa `MOC_LABEL_PL`.
    */
   powerHudLabelPl: string;
+  /**
+   * P5.6 (`diplomacyTradeBasket.ts:95,1557`): nazwy wyświetlane surowców po kluczu (małe litery) = web `RESOURCE_KEY_LABEL`
+   * (`game/diplomacy-display.ts:416-432`); formatowanie zapasowe (wielka litera) zostaje w UI jak w `resourceDisplayLabel`.
+   */
+  resourceKeyLabels: Readonly<Record<string, string>>;
 }
 
 // ─── P5.2: wiersze katalogu statycznego czytane przez panele poziomu 0 ───────
@@ -281,7 +308,17 @@ export type ReligionStateDto = NieZmierzonoDto;
 export type CityMoneySnapDto = NieZmierzonoDto;
 export type CityManpowerSnapshotDto = NieZmierzonoDto;
 export type BuiltBuildingGroupDto = NieZmierzonoDto;
-export type TileYieldDto = NieZmierzonoDto;
+/** P5.6 (`hexContextTooltip.ts`): = web `TileYield` (`game/economy.ts:256-268`) — plon heksa liczy Rust. */
+export interface TileYieldDto {
+  zywnosc: number;
+  praca: number;
+  handel: number;
+  drewno: number;
+  kamien: number;
+  glina: number;
+  ruda: number;
+  ruda_zelaza: number;
+}
 export type GarrisonUnitDto = NieZmierzonoDto;
 export type BudowaListaTemplateDto = NieZmierzonoDto;
 
@@ -567,13 +604,24 @@ export interface DiplomacyBasketPreviewDto {
   treatyPw: { my: number; their: number; bilateral: number; base: number };
   trust: { surplusPn: number; delta: number; deltaRaw: number; cap: number; gained: number };
   dobraWola: { perTurn: number; turns: number } | null;
-  giftTrust: number | null;
+  /**
+   * P5.6 (`diplomacyTradeBasket.ts` `summaryHtml`, dar): dookreślenie P5-0 §6.6 `gift_trust: Option<u32>` do pary
+   * `{ delta, deltaRaw }` = web `diplomacyGiftTrustFromPn(givePn, trustGained)` (`deltaZaufanie`, `deltaZaufanieRaw`;
+   * pin `:1988-1992` pokazuje dopisek limitu, gdy `deltaRaw > delta`). `null` = brak wyceny / nie dar. ROZSZ. Z6-2.
+   */
+  giftTrust: { delta: number; deltaRaw: number } | null;
   validation: { valid: boolean; reason: string | null };
   currencyForbiddenWar: boolean;
   turnsMultiplier: number;
   brief: { give: string; receive: string };
   /** P5.2 — rozszerzenie P5-0 §6.6 (ZAŁOŻENIE P5.2-Z9): tylko `mode = 'treaty'`, inaczej `null`. */
   treatyGate: DiplomacyTreatyGateDto | null;
+  /**
+   * P5.6 (`summaryHtml`, wiersz „Fair min (Rel N)”, ostrzeżenie i werdykt; pin `:1923-1980`): web
+   * `diplomacyFairGivePn(receivePn, rel)` z Relacją BEZ limitu 100 — inna liczba niż `fairMinPn` panelu PW
+   * (P5.2: `min(100, rel)`), gdy Relacja > 100. ROZSZ. Z6-2.
+   */
+  summaryFairMinPn: number;
 }
 
 /**
@@ -635,6 +683,172 @@ export interface NegotiationDealSidesDto {
   turns: number | null;
 }
 
+// ─── P5.6: cykl C2 (audiencja, modal negocjacji, koszyk PW) ──────────────────
+
+/** P5.6: = web `CivBonusLite` (`game/production.ts:553-562`) — wiersz `bonusy[]` z `civs.json` (dane, nie reguła). */
+export interface CivBonusLiteDto {
+  typ: string;
+  cel: string;
+  wartosc: number | string | string[];
+  opis?: string;
+  realizuje?: string;
+  matrixParamId?: string;
+}
+
+/** P5.6: = web `FormalDiplomaticKind` (`game/diplomacy-display.ts:260`). */
+export type FormalDiplomaticKindDto = 'wojna' | 'sojusz' | 'pakt' | 'handel' | 'pokoj' | 'brak';
+
+/** P5.6: = web `TradeGoodsCategories` (`game/diplomacy-goods.ts:30-35`) — gotowe etykiety dóbr z Rust. */
+export interface TradeGoodsCategoriesDto {
+  surowce: string[];
+  technologie: string[];
+  inne: string[];
+}
+
+/** P5.6: = web `WiarygodnoscRozbicie` (`game/diplomacy-credibility.ts:407-418`). */
+export interface WiarygodnoscRozbicieDto {
+  startowa: number;
+  trwalyZyciorys: number;
+  biezaceUczynki: number;
+  strumien: number;
+  razem: number;
+}
+
+/** P5.6: = web `WiarygodnoscFactorRow` (`game/diplomacy-credibility.ts:517-522`). */
+export interface WiarygodnoscFactorRowDto {
+  label: string;
+  value: number;
+  perTurn?: boolean;
+}
+
+/** P5.6: = web `WiarygodnoscBreakdown` (`game/diplomacy-credibility.ts:525-528`). */
+export interface WiarygodnoscBreakdownDto {
+  pozytywne: WiarygodnoscFactorRowDto[];
+  negatywne: WiarygodnoscFactorRowDto[];
+}
+
+/**
+ * P5.6 (P5-0 §6.6 `DiplomacyAudienceDto.wiarygodnosc {label, tooltip, tooltip_def, rozbicie}`): teksty Wiarygodności
+ * jednej strony liczone w Rust dla wartości `round(clamp(W, −100, 100))` — `band` = web `wiarygodnoscLabelPl(w)`
+ * (`game/diplomacy-credibility.ts:61-63`, progi pasm); `tooltip` = treść `title` (web: z rozbiciem
+ * `WIARYGODNOSC_TOOLTIP_DEF_PL + ' ' + wiarygodnoscTooltipRozbiciePl(rozbicie, band)`, bez rozbicia
+ * `WIARYGODNOSC_TOOLTIP_PL`; `game/diplomacy-display.ts:244-257`, `diplomacyAudience.ts:1527-1535`).
+ */
+export interface WiarygodnoscViewDto {
+  band: string;
+  tooltip: string;
+}
+
+/**
+ * P5.6 (P5-0 §6.6 `DiplomacyAudienceDto.nastawienie {scores, label, hint}`): nastawienie rozmówcy z Rust —
+ * `scores` = web `effectiveNastawienieScores(zaufanie, respekt, atWar)` (podłoga wojny, `diplomacy-display.ts:330-338`),
+ * `label` = `nastawienieLabelFromScore(…, { atWar })` (`:315-327`), `hint` = `nastawienieHintPl(atWar)` (`:341-346`).
+ */
+export interface DiplomacyNastawienieDto {
+  scores: { zaufanie: number; respekt: number };
+  label: string;
+  hint: string;
+}
+
+/**
+ * P5.6: surowy payload propozycji na stole (web `ProposalPayload`, `game/diplomacy-proposals.ts`) — UI czyta wyłącznie
+ * pozycje koszyka (`giveItems`/`receiveItems`, filtr technologii już na stole `diplomacyAudience.ts:407-424`); reszta
+ * pól dociera bez typu.
+ */
+export interface ProposalPayloadDto {
+  giveItems?: readonly BasketItemDto[];
+  receiveItems?: readonly BasketItemDto[];
+  readonly [field: string]: unknown;
+}
+
+/**
+ * P5.6 (`diplomacyTradeBasket.ts`): kontekst wywołania zapytań koszyka — te same pola `NegotiationModalContext`, które
+ * pin podawał funkcjom reguł (`basketPnOpts`/`summaryHtml`/`balanceGiveItemsToFairMin`/`computeQuickDealBasket`,
+ * `:190-227,1899-1900,2545-2557,2800-2807`). Wartości surowe z kontekstu (bez domyślnych) — wartości domyślne
+ * (`'standardowa'`, `'normal'`, Relacja 100/0, skarbiec 0) stosuje Rust (ZAŁOŻENIE P5.6-Z6).
+ */
+export interface BasketRulesCtxDto {
+  relacjaTotal?: number;
+  trustPnGainedThisTurn?: number;
+  tempoGry?: string | number;
+  difficulty?: string;
+  playerSkarbiec?: number;
+}
+
+/** P5.6: zapytanie wyceny strony koszyka (web `sumBasketPn` → `diplomacySumPn(toPnItems, basketPnOpts)`, pin `:194-227`). */
+export interface BasketPnQueryDto {
+  items: readonly BasketItemDto[];
+  side: 'give' | 'receive';
+  resourceTradeMode: 'once' | 'per_turn';
+  dealTurns: number;
+  ctx: BasketRulesCtxDto;
+}
+
+/**
+ * P5.6: zapytanie podsumowania koszyka handlu/daru (`diplomacy_preview_basket`, P5-0 §6.6; pin `summaryHtml`
+ * `:1891-1999`) — wynik `DiplomacyBasketPreviewDto` (panel PW + liczby podsumowania).
+ */
+export interface BasketSummaryQueryDto {
+  mode: 'trade' | 'gift';
+  give: readonly BasketItemDto[];
+  receive: readonly BasketItemDto[];
+  resourceTradeMode: 'once' | 'per_turn';
+  dealTurns: number;
+  ctx: BasketRulesCtxDto;
+}
+
+/**
+ * P5.6: zapytanie podsumowania koszyka traktatu (pin `treatySummaryHtml` `:1056-1117`: `computePlayerAcceptanceSides`,
+ * `bilateralTreatyDisplayPw`, `sideDisplayOfferPw`, panel traktatu). `proposalActionId` = `proposalActionIdFromPayload`
+ * (mapowanie UI, `diplomacyNegotiationModal.ts`), `payload` = pola propozycji bez `actionId`.
+ */
+export interface TreatyBasketSummaryQueryDto {
+  proposalActionId: string;
+  payload: Readonly<Record<string, unknown>>;
+  give: readonly BasketItemDto[];
+  receive: readonly BasketItemDto[];
+  resourceTradeMode: 'once' | 'per_turn';
+  dealTurns: number;
+  ctx: BasketRulesCtxDto;
+}
+
+/**
+ * P5.6: wynik zapytania traktatu — PW stron (web `sideDisplayOfferPw`), PW dwustronne (`bilateralTreatyDisplayPw`) i gotowe
+ * dane paneli: `treatyPreview` (gdy `bilateralPw > 0`; = `DiplomacyTreatyBasketPreviewDto`, P5.2) albo `basketPreview`
+ * (gdy nie ma PW dwustronnego, a `myPw > 0 || theirPw > 0`; web `renderPnBalancePanelFromBasket(myPw, theirPw, rel)`).
+ */
+export interface TreatyBasketSummaryDto {
+  bilateralPw: number | null;
+  myPw: number;
+  theirPw: number;
+  treatyPreview: DiplomacyTreatyBasketPreviewDto | null;
+  basketPreview: Pick<DiplomacyBasketPreviewDto, 'givePn' | 'receivePn' | 'fairMinPn' | 'balancePn' | 'accepted' | 'relation'> | null;
+}
+
+/** P5.6: zapytanie „SZYBKA UMOWA” (`diplomacy_quick_deal`, P5-0 §6.6; web `computeQuickDealBasket`, pin `:2800-2807`). */
+export interface QuickDealQueryDto {
+  ctx: BasketRulesCtxDto;
+  ourQuantityResourceOptions: readonly { id: string; label: string; maxQty: number }[];
+  theirQuantityResourceOptions: readonly { id: string; label: string; maxQty: number }[];
+}
+
+/** P5.6: zapytanie „Wyrównaj (fair @ Rel)” (`diplomacy_balance_to_fair`, P5-0 §6.6; web `balanceGiveItemsToFairMin`, pin `:2539-2559`). */
+export interface BalanceToFairQueryDto {
+  giveItems: readonly BasketItemDto[];
+  receivePn: number;
+  resourceTradeMode: 'once' | 'per_turn';
+  dealTurns: number;
+  ctx: BasketRulesCtxDto;
+}
+
+/** P5.6: wycinek payloadu do bramki „waluta w wojnie” (web `CurrencyPayloadSlice`, `game/diplomacy-war-gates.ts`). */
+export interface CurrencyPayloadDto {
+  goldOnce?: number;
+  goldPerTurn?: number;
+  giveItems?: readonly BasketItemDto[];
+  receiveItems?: readonly BasketItemDto[];
+}
+
 export interface DiploListDto {
   lines: string[];
 }
@@ -666,6 +880,63 @@ export interface HexContextDto {
   ownerCity: CityRefDto | null;
   worked: boolean;
   units: UnitCardDto[];
+}
+
+/** P5.6: = web `ImprovementBonus` (`game/terrain-improvements.ts:11-14`) — bonus ulepszenia z `terrain-improvements.json`. */
+export type ImprovementBonusDto = Partial<Record<'zywnosc' | 'praca' | 'handel' | 'pieniadz' | 'drewno' | 'kamien' | 'glina', number>>;
+
+/** P5.6: = web `TerritoryResourceKey` (`game/terrain-improvements.ts:203-205`). */
+export type TerritoryResourceKeyDto = 'drewno' | 'kamien' | 'glina' | 'ruda' | 'ruda_zelaza' | 'ruda_cyny' | 'sol' | 'zloto' | 'kon';
+
+/** P5.6: = wynik web `territoryResourceYieldForImprovement(key, zloze)` (magazyn państwa z ulepszenia, SUROW-TERYT-01). */
+export interface TerritoryResourceYieldDto {
+  resourceKey: TerritoryResourceKeyDto;
+  amount: number;
+}
+
+/**
+ * P5.6 (`hexContextTooltip.ts`, ROZSZ. Z6-1 kontraktu P5-0 §6.7 `improvements_active`/`improvements_available`):
+ * jedna pozycja ulepszenia w panelu heksa — nazwa (`improvementDisplayName`), bonus (`improvementBonusForKey`),
+ * magazyn (`territoryResourceYieldForImprovement`; dla `built` ze złożem heksa, dla `possible` bez złoża — jak pin
+ * `:176,193` vs `:504`), etykiety odblokowań (`labelsForImprovementUnlock`).
+ */
+export interface HexImprovementLineDto {
+  key: string;
+  name: string;
+  bonus: ImprovementBonusDto;
+  magazyn: TerritoryResourceYieldDto | null;
+  unlockLabels: string[];
+}
+
+/** P5.6: składowa rozbicia plonów miasta (pin `yieldParts`, `:274-295`): `[0]` = teren bazowy, dalej las/rzeka/ulepszenia. */
+export interface HexYieldPartDto {
+  label: string;
+  delta: TileYieldDto;
+}
+
+/**
+ * P5.6 (`hexContextTooltip.ts`, ROZSZ. Z6-1): widok heksa dla `buildHexContextTooltipHtml` — dookreślenie `HexContextDto`
+ * (P5-0 §6.7) do pól, które pin liczył w UI z `Hex`/`GameMap`/cywilizacji/epoki gracza:
+ * `terrainBase` = `hex.terenBazowy`; `resourceLabels` = `collectResourceLabels` (`:327-358`); `built` = `improvementKeysForHex`
+ * (`:247-249`); `implicit` = klucze aktywne nie-postawione (`:557`; na pinie zawsze puste — `built` = te same klucze);
+ * `yieldParts`/`yieldFull` = `yieldParts`/`fullTileYield` (`:251-295`); `possible` = `listTerrainPossibleImprovements`
+ * (`:440-513`, ≤ 10 pozycji).
+ */
+export interface HexTooltipViewDto {
+  terrainBase: string;
+  resourceLabels: string[];
+  built: HexImprovementLineDto[];
+  implicit: HexImprovementLineDto[];
+  yieldParts: HexYieldPartDto[];
+  yieldFull: TileYieldDto;
+  possible: HexImprovementLineDto[];
+}
+
+/** P5.6: = web `PowerBreakdown` (`game/unit-power.ts:90-109`, `fieldPower`) — Moc pola jednostki liczy Rust (P5-0 §6.8 `power`). */
+export interface FieldPowerDto {
+  attack: number;
+  defense: number;
+  total: number;
 }
 
 export interface ImprovementBuildImpactDto {

@@ -1,0 +1,10 @@
+$ git ls-tree edb8fb56 gra/src/ui/sidePanelHud.ts gra/src/ui/sidePanelEventFilter.ts gra/src/render/unitVitalsPalette.ts
+100644 blob 7c47922c8aa35a0e543f9ca0df40ef57280fa6f9	gra/src/render/unitVitalsPalette.ts
+100644 blob 3321dc1c57021cdc00f91bb44ef9e5e422cc43a4	gra/src/ui/sidePanelEventFilter.ts
+100644 blob 63c5cf3f3f8928a71d3ca78dfddc79f8ebeb284b	gra/src/ui/sidePanelHud.ts
+$ git hash-object src-tauri/frontend-v2/src/ui/sidePanelHud.ts src-tauri/frontend-v2/src/ui/sidePanelEventFilter.ts src-tauri/frontend-v2/src/ui/unitVitalsPalette.ts
+63c5cf3f3f8928a71d3ca78dfddc79f8ebeb284b
+3321dc1c57021cdc00f91bb44ef9e5e422cc43a4
+7c47922c8aa35a0e543f9ca0df40ef57280fa6f9
+Wynik: 3/3 kopie bajtowe = blob pinu.
+EXIT=0
