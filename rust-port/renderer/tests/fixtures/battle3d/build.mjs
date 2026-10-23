@@ -14,5 +14,8 @@ await esbuild.build({
   format: 'esm',
   outfile: `${here}gen.mjs`,
   logLevel: 'warning',
+  // Round 2 (Evaluator r1, objection 4): path comments in the bundle are relative to `absWorkingDir`;
+  // pinning it to this script's directory makes `gen.mjs` byte-identical for any scratch location.
+  absWorkingDir: here.replace(/\/$/, ''),
   nodePaths: [new URL('./node_modules', import.meta.url).pathname],
 });

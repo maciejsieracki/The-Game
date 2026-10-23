@@ -225,6 +225,15 @@ const sweep: [string, SiegeWallOpts, Breach[]][] = [
   ['frac', { lengthTiles: 9.5, tileSize: 0.73, height: 2.5, gateWidthTiles: 2 }, [[4.25, 0, 9, 3, 4, 0.73]]],
   ['low-wide-gate', { lengthTiles: 5, tileSize: 2, height: 1, gateWidthTiles: 4 }, []],
   ['no-side', { lengthTiles: 2, tileSize: 1, height: 2.5, gateWidthTiles: 2 }, [[0.5, 0, 1, 0, 1, 1]]],
+  // Round 2 (Evaluator r1, objections 1-2): JS `Map` key semantics (SameValueZero, `-0` stored as `+0`, all
+  // NaN keys one entry). `gateWidthTiles < 1` puts a segment centre in (-0.5, 0) -> `Math.round` = `-0`;
+  // `rowLo = -0` makes the first breach row `-0`; `tileSize` 0 (`L = 0`: no segment, `0 / 0` in the breach lookup).
+  // `tileSize` NaN is NOT a case: NaN keys are unreachable (the segment loop `sx < endX - T * 0.01` is false for
+  // NaN, `r <= rowHi` likewise), and every NaN-producing output then carries V8's NaN bit pattern (measured
+  // 0xfff8... for an input of 0x7ff8...), which ECMA-262 leaves implementation-defined (P4-36 doc, §3a).
+  ['gate-zero', { lengthTiles: 6, tileSize: 1, height: 2.5, gateWidthTiles: 0 }, [[0, -0, 0, 5, 6, 1], [2.5, -0, 5, 9, 9, 1]]],
+  ['gate-half', { lengthTiles: 6, tileSize: 1, height: 2.5, gateWidthTiles: 0.5 }, [[0, -0, 0, 5, 6, 1], [2.5, -0, 5, 9, 9, 1]]],
+  ['tile-zero', { lengthTiles: 6, tileSize: 0, height: 2.5, gateWidthTiles: 2 }, [[2.5, 0, 5, 2, 3, 0], [2.5, -0, 5, 9, 9, 1]]],
 ];
 // Per-node world matrices are dumped for these sweeps only (size budget, README); every mesh's world
 // matrix of EVERY case still enters `sig` bit for bit.

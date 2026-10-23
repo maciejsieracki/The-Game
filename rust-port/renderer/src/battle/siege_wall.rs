@@ -228,11 +228,14 @@ fn map_get<V>(m: &[(f64, V)], key: f64) -> Option<&V> {
         .map(|(_, v)| v)
 }
 
-/// `Map.prototype.set`: overwrite in place, or append.
+/// `Map.prototype.set`: overwrite in place (the stored key is kept), or
+/// append. ECMA-262 `Map.prototype.set` step 4: "If key is -0𝔽, set key to
+/// +0𝔽" — so a new `-0` key is stored as `+0` (`key + 0.0`: `-0 + +0 = +0`
+/// under round-to-nearest; every other value, NaN included, is unchanged).
 fn map_set<V>(m: &mut Vec<(f64, V)>, key: f64, v: V) {
     match m.iter_mut().find(|(k, _)| same_value_zero(*k, key)) {
         Some(e) => e.1 = v,
-        None => m.push((key, v)),
+        None => m.push((key + 0.0, v)),
     }
 }
 
@@ -1490,6 +1493,44 @@ mod tests {
             assert_eq!(got.to_bits(), f64::to_bits(want), "round({x})");
         }
         assert!(js_round(f64::NAN).is_nan());
+    }
+
+    /// JS `Map` key semantics, measured with node v22.22.0 (P4-36 doc §3a):
+    /// `m.set(NaN,1); m.set(NaN,2); m.set(-0,3); m.set(0,4); m.set(1,5); m.set(-0,6)`
+    /// gives `size 3`, entries `[[NaN,2],[0,6],[1,5]]`, key 1 is `+0`,
+    /// `get(-0) = get(0) = 6`, `get(NaN) = 2`. NaN keys are unreachable from
+    /// `build_siege_wall` / `attach_row_breach_panels` (doc §3a), so this
+    /// unit test is what pins the NaN branch of `same_value_zero`.
+    #[test]
+    fn map_helpers_follow_js_map_same_value_zero() {
+        let mut m: Vec<(f64, i32)> = Vec::new();
+        for (k, v) in [
+            (f64::NAN, 1),
+            (f64::NAN, 2),
+            (-0.0, 3),
+            (0.0, 4),
+            (1.0, 5),
+            (-0.0, 6),
+        ] {
+            map_set(&mut m, k, v);
+        }
+        assert_eq!(m.len(), 3);
+        assert!(m[0].0.is_nan());
+        assert_eq!(m[0].1, 2);
+        assert_eq!(m[1].0.to_bits(), 0.0f64.to_bits(), "-0 key stored as +0");
+        assert_eq!(m[1].1, 6);
+        assert_eq!((m[2].0, m[2].1), (1.0, 5));
+        assert_eq!(map_get(&m, -0.0), Some(&6));
+        assert_eq!(map_get(&m, 0.0), Some(&6));
+        assert_eq!(map_get(&m, f64::NAN), Some(&2));
+        assert_eq!(map_get(&m, 2.0), None);
+        // `n.set(0,'a'); n.set(-0,'b')`: one entry, key +0, value 'b'.
+        let mut n: Vec<(f64, char)> = Vec::new();
+        map_set(&mut n, 0.0, 'a');
+        map_set(&mut n, -0.0, 'b');
+        assert_eq!(n.len(), 1);
+        assert_eq!(n[0].0.to_bits(), 0.0f64.to_bits());
+        assert_eq!(n[0].1, 'b');
     }
 
     #[test]

@@ -2,7 +2,8 @@
 """Mutation run for R-RUSTPORT-P4-36-MOD14-BATTLE-3D-Q1 (round 1, siegeWall).
 
 Applies each mutation below to `src/battle/siege_wall.rs` (one at a time),
-runs `cargo test --locked --test battle3d_siege_wall` and expects a FAIL
+runs `cargo test --locked --lib --test battle3d_siege_wall` (round 2: the
+unit tests of `battle::siege_wall` too) and expects a FAIL
 (mutant killed). The source file is restored after every mutant (also on
 error). Run from `rust-port/renderer` with CARGO_TARGET_DIR set:
 
@@ -48,6 +49,9 @@ MUTANTS = [
     ('gateOpen', '                gate_open: false,', '                gate_open: true,'),
     ('inka portcullis height', 'let gate = w.portcullis(gate_w, h * 0.88, wall_d, 0.0);', 'let gate = w.portcullis(gate_w, h * 0.9, wall_d, 0.0);'),
     ('segment key Map.set', '            map_set(&mut segs, key, seg);', '            segs.insert(0, (key, seg));'),
+    # Round 2 (Evaluator r1, objections 1-2): JS `Map` key semantics.
+    ('Map.set -0 -> +0', 'None => m.push((key + 0.0, v)),', 'None => m.push((key, v)),'),
+    ('SameValueZero NaN branch', 'a == b || (a.is_nan() && b.is_nan())', 'a == b'),
 ]
 
 
@@ -63,7 +67,7 @@ def main() -> int:
                 return 2
             open(SRC, 'w', encoding='utf-8').write(orig.replace(old, new))
             r = subprocess.run(
-                ['cargo', 'test', '--locked', '--test', 'battle3d_siege_wall'],
+                ['cargo', 'test', '--locked', '--lib', '--test', 'battle3d_siege_wall'],
                 stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True,
             )
             if r.returncode != 0:

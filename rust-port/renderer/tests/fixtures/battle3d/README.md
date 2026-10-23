@@ -23,19 +23,24 @@ git archive edb8fb56 gra/src gra/data | tar -x -C $S/websrc
 cp rust-port/renderer/tests/fixtures/battle3d/{gen.ts,build.mjs} $S/refscript/
 ln -s $S/ref/node_modules $S/refscript/node_modules
 node $S/refscript/build.mjs                 # -> $S/refscript/gen.mjs
-node $S/refscript/gen.mjs $S/out            # prints: battle3d siegeWall cases=68 meshes=10376
-sha256sum $S/out/siege_wall.json            # = MANIFEST.sha256
+node $S/refscript/gen.mjs $S/out            # prints: battle3d siegeWall cases=95 meshes=11877
+sha256sum $S/out/siege_wall.json $S/refscript/gen.mjs   # both = MANIFEST.sha256
 ```
 
 Two runs give the same SHA-256 (no random numbers: `hash01` is `Math.sin`-based).
+**`gen.mjs` is byte-reproducible** (round 2): `build.mjs` sets `absWorkingDir` to its own directory,
+so esbuild's path comments are relative to `refscript/` (`// ../ref/node_modules/three/…`,
+`// gen.ts`, `// ../websrc/gra/src/battle/siegeWall.ts`) whatever `$S` is. The layout
+`$S/{ref,websrc,refscript}` above is therefore part of the recipe. (Round 1's bundle carried
+absolute scratch paths in 5 comment lines; code was identical.)
 
-## Cases (68)
+## Cases (95)
 
 | group | cases | what |
 |---|---|---|
 | `game-<civ>` | 11 (all `BRONZE_CIVS`) | the game call `battleScene.ts:3905-3910` (`lengthTiles 156 = BF_ROWS`, `tileSize 1 = TILE_S`, `height 2.5`, `gateWidthTiles 2`) + `attachRowBreachPanels(77.5, 0, 155, 76, 77, 1)` (`:3930-3938`). `aztek`/`hetyci` (Grecja fallback): summary only, no node list. |
 | `unknown-*` | 3 | `''`, `'xyz'`, `'Grecja'` → `default` branch (Grecja) |
-| sweep `<name>-<style>` | 6 × 9 styles | `defaults` (12, 1; height/gate absent → 3 / 2; 3 breach calls incl. gate rows over real segments), `small-half` (10, 0.5, 1.8, gate 3), `odd-tall` (7, 1.3, 4.4, gate 1, ownerColor set — unused by the web), `frac` (9.5, 0.73, 2.5, 2), `low-wide-gate` (5, 2, 1, 4), `no-side` (2, 1, 2.5, 2: `leftW = 0` → `0/0 = NaN` positions in Zulu/Celtowie/Germanie, kept bit for bit) |
+| sweep `<name>-<style>` | 9 × 9 styles | `defaults` (12, 1; height/gate absent → 3 / 2; 3 breach calls incl. gate rows over real segments), `small-half` (10, 0.5, 1.8, gate 3), `odd-tall` (7, 1.3, 4.4, gate 1, ownerColor set — unused by the web), `frac` (9.5, 0.73, 2.5, 2), `low-wide-gate` (5, 2, 1, 4), `no-side` (2, 1, 2.5, 2: `leftW = 0` → `0/0 = NaN` positions in Zulu/Celtowie/Germanie, kept bit for bit); round 2 (JS `Map` keys, Evaluator r1 objections 1–2): `gate-zero` (6, 1, 2.5, gate 0) and `gate-half` (gate 0.5) — a segment centre in (−0.5, 0) gives `Math.round = −0`, stored by `Map.set` as `+0`; breach `rowLo = −0` → row key `+0`; `tile-zero` (6, 0, 2.5, 2: `L = 0`, no segment, `0/0` lookups) |
 
 ## Size budget (deliberate omissions, all still verified)
 
@@ -47,8 +52,16 @@ Two runs give the same SHA-256 (no random numbers: `hash01` is `Math.sin`-based)
   defaults (bit for bit) when the key is absent.
 - `aztek`/`hetyci` game cases: summary only (they call `buildGrecja`, the tree of `game-grecja`).
 
-Without these omissions the file was 10.0 MB (over the 8 MB per-file limit); with
-them it is 6.3 MB.
+Without these omissions the 68-case file of round 1 was 10.0 MB (over the 8 MB per-file
+limit); with them it was 6.3 MB, and with the 27 round-2 cases it is 7.2 MB (7 228 812 B).
+
+**Not a case: `tileSize = NaN`.** NaN keys cannot reach the JS maps (the segment loop
+`sx < endX - T * 0.01` and the breach loop `r <= rowHi` are false for NaN), and every
+NaN-valued output then carries V8's NaN bit pattern: measured in round 2, an input of
+`0x7ff8…` came out as `0xfff8…` in positions and geometry parameters, whereas Rust propagates
+the input payload. ECMA-262 leaves NaN bit patterns implementation-defined, so this is not a
+parity property; the NaN branch of `same_value_zero` is pinned by the unit test
+`map_helpers_follow_js_map_same_value_zero` (node-measured facts) instead.
 
 ## Files (SHA-256 in `MANIFEST.sha256`)
 
@@ -57,7 +70,7 @@ them it is 6.3 MB.
 | `siege_wall.json` | `cases[]`: `id`, `civ`, `opts`, `optsHx` (binary64 bits of lengthTiles, tileSize, height\|NaN, gateWidthTiles\|NaN), `nodeCount`, `meshes`, `tris`, `materials` (distinct material identities), `sig`, `bbox`, `nodes[]` (kind, name, parent, `p`, `r`, `q`, `s`, `w`, castShadow, receiveShadow, renderOrder, visible, material: identity id, type, `getHex`, linear rgb, roughness, metalness, side, flatShading, transparent, opacity, depthWrite, depthTest, emissive; geometry: type, vertex/triangle count, FNV hash, constructor parameters), `ud` (userData after build: key order, `wallSegsByLocalX`, `wallWalkY`, `depth`, `gateCenterX`, `gate` node, `gateOpen`), `breaches[]` (args + userData after each `attachRowBreachPanels`). |
 | `gen.ts`, `build.mjs` | generator and its bundler |
 | `gen.mjs` | the bundle that produced `siege_wall.json` (three + web code inlined) |
-| `mutate.py` | mutation run (32 mutants of `src/battle/siege_wall.rs`) |
+| `mutate.py` | mutation run (34 mutants of `src/battle/siege_wall.rs`; runs `--lib` and `--test battle3d_siege_wall`) |
 
 Floats are IEEE-754 binary64 bits (`hx()`: 16 hex digits per number); the Rust
 side compares `to_bits()`, so `-0` and the NaN payload (`0xfff8…`) survive.

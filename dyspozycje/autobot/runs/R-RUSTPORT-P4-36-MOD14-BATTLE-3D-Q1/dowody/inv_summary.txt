@@ -1,10 +1,36 @@
-file_lines 19494 pre_first_decl 291 symbols 731
-3D symbols 65 loc 3886
-MIX symbols 9 loc 1800
-UI symbols 112 loc 4687
-LOG symbols 529 loc 8479
+file_lines 19494 pre_first_decl 291 symbols 731 class_fields 290 typed_fields 149 ({'CAM': 12, 'DOM': 105, '3D': 18, 'AUDIO': 14})
+DEAD symbols 7 loc 42
+LOG symbols 146 loc 2357
+P5 symbols 192 loc 5744
+P5-AUDIO symbols 18 loc 1239
+R2 symbols 74 loc 2515
+R3 symbols 60 loc 2036
+R4 symbols 10 loc 301
+R5 symbols 28 loc 906
+SHARED symbols 72 loc 730
+SPLIT symbols 108 loc 2982
 TYPE symbols 16 loc 351
-RUNDA-2 loc 2865
-RUNDA-3 loc 1691
-RUNDA-4 loc 665
-RUNDA-5 loc 465
+R2 loc full 1815 split_or_shared 667 mix 700
+R3 loc full 1920 split_or_shared 1818 mix 116
+R4 loc full 301 split_or_shared 824 mix 0
+R5 loc full 744 split_or_shared 0 mix 162
+override BattleScene._tickCameraPanKeys -> R5
+override BattleScene._setPanKey -> R5
+override BattleScene._tickZoom -> R5
+override BattleScene._carveBattleBox -> SHARED-R2
+override BattleScene._fencePlayableZone -> SHARED-R2
+override BattleScene._updateOrderPreview -> R3
+override BattleScene._updateDeployPlacementPreview -> R3
+override BattleScene._refreshQueuedOrderVisuals -> R3
+override BattleScene._refreshDeploySelectionVisuals -> R3
+override BattleScene._unitTooltipHtml -> P5
+override BattleScene._buildGeneralPanelBodyHtml -> P5
+override BattleScene._buildEndDetailsSide -> P5
+override BattleScene._buildBattleSummaryData -> P5
+override BattleScene._collectMinimapData -> P5
+override BattleScene._sideDisplayLabel -> P5
+override BattleScene._teardownDeployUI -> P5
+override BattleScene._updateSiegeHud -> P5
+override BattleScene._syncSiegeHudLayout -> P5
+override BattleScene._syncDeployPanelLayout -> P5
+override BattleScene._syncDeployToolbarFromSelection -> P5

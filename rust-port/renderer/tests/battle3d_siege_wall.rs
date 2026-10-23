@@ -704,7 +704,7 @@ fn siege_wall_matches_web() {
     let root = load("siege_wall.json");
     assert_eq!(root.get("three").str(), "169");
     let cases = root.get("cases").arr();
-    assert_eq!(cases.len(), 68, "case count");
+    assert_eq!(cases.len(), 95, "case count");
     let mut c = Cmp::default();
     let mut full_trees = 0;
     let mut meshes = 0u32;
@@ -749,9 +749,9 @@ fn siege_wall_matches_web() {
         }
         meshes += sum.meshes;
     }
-    assert_eq!(full_trees, 66, "full trees");
-    assert_eq!(meshes, 10_376, "meshes over all cases");
-    c.finish("siegeWall: 68 cases");
+    assert_eq!(full_trees, 93, "full trees");
+    assert_eq!(meshes, 11_877, "meshes over all cases");
+    c.finish("siegeWall: 95 cases");
 }
 
 /// The game call (`battleScene.ts:3905-3910`): every civ of `BRONZE_CIVS`
