@@ -1,0 +1,55 @@
+$ grep -nE literaly liczbowe w src/domain/mapgen/terrain_class.rs (poza komentarzami //!)
+57:    if a == 0.0 && b == 0.0 {
+72:    if a == 0.0 && b == 0.0 {
+84:    if !x.is_finite() || x == 0.0 {
+88:    let rounded = if x - floor >= 0.5 { floor + 1.0 } else { floor };
+89:    if rounded == 0.0 && x < 0.0 {
+90:        -0.0
+99:    if y == 2.0 {
+108:    if m > 0.0 {
+122:                0.0
+405:    let mut h = js_to_int32(a * 374_761_393.0)
+406:        ^ js_to_int32(b * 668_265_263.0)
+407:        ^ js_to_int32(c * 2_246_822_519.0);
+408:    h = (h ^ ((h as u32) >> 13) as i32).wrapping_mul(1_274_126_177);
+409:    let u = ((h ^ ((h as u32) >> 16) as i32) as u32) as f64;
+410:    u / 4_294_967_296.0
+419:    (hash_int3(cx, cy, seed) - 0.5) * 2.0
+425:    let global = ((for_noise + des_noise) * 0.5 - 0.5) * mix.amplituda_globalna.wartosc;
+585:        let mut max_sea_in_part = 1.0_f64;
+587:            let d = sea_dist.get(k).copied().unwrap_or(0.0);
+613:                let sd = sea_dist.get(&key).copied().unwrap_or(0.0);
+614:                let inland_boost = if max_sea_in_part > 1.0 {
+617:                    0.0
+619:                let for_noise = scratch.get(&key).map_or(0.0, |s| s.for_noise);
+692:    let mut land_count: f64 = 0.0;
+701:        land_count += 1.0;
+812:        return Some(0.0);
+820:                * (d - 1.0),
+828:    let base = land_scores.get(&hex_key(q, r)).copied().unwrap_or(0.0);
+829:    let n = (js_to_int32(q as f64 * 73_856_093.0) ^ js_to_int32(r as f64 * 19_349_663.0)) & 0xffff;
+830:    base + (f64::from(n) / f64::from(0xffff_u32))
+892:    let mut d = 0.0_f64;
+895:        d += 1.0;
+993:        return 1.0;
+995:    if cap <= 0.0 {
+996:        return 0.0;
+999:        1.0,
+1010:    let cx = (width - 1.0) / 2.0;
+1011:    let cy = (height - 1.0) / 2.0;
+1012:    let dx = (q - cx) / (cx + 0.5);
+1013:    let dy = (r - cy) / (cy + 0.5);
+1017:        1.0 - js_pow(
+1031:    let nq = q / js_max(1.0, width - 1.0);
+1032:    let nr = r / js_max(1.0, height - 1.0);
+1033:    let margin_q = b / js_max(1.0, width - 1.0);
+1034:    let margin_r = b / js_max(1.0, height - 1.0);
+1037:            js_min(nq, 1.0 - nq) / js_max(margin_q, min_margin),
+1038:            js_min(nr, 1.0 - nr) / js_max(margin_r, min_margin),
+1040:        1.0,
+1046:    let cx = (width - 1.0) / 2.0;
+1047:    let cy = (height - 1.0) / 2.0;
+1048:    let dx = (q - cx) / (cx + 0.5);
+1049:    let dy = (r - cy) / (cy + 0.5);
+1055:    js_min(js_min(js_min(q, r), width - 1.0 - q), height - 1.0 - r)
+EXIT=0

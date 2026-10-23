@@ -1,0 +1,4 @@
+WYKRYTA   scatter-mask: 1 testow FAILED: margin_scatter_score_matches_web
+ROWNOWAZNE (wylaczone z listy, patrz §6a): ['fade-cap-le-to-lt', 'forest-inland-gt-to-ge', 'land-restore-keeps-overlay']
+PODSUMOWANIE: wykryte 1/1, przezyly: [], pliki przywrocone: True
+EXIT=0

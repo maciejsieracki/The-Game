@@ -1,0 +1,85 @@
+{
+  "meta": {
+    "status": "BOOTSTRAP P6.M04: wartosci startowe przepisane z weba. Zrodlem prawdy do recznego balansu jest TA tabela (edytuj liczby, nie kod).",
+    "pin_web": "edb8fb56",
+    "temat": "R-RUSTPORT-P6-M04-TEREN-KLASYFIKACJA-GRANICE-Q1",
+    "uwaga": "Tu sa progi i mnozniki BALANSU z gen-helpers.ts:233-236 i :825-1407. Strukturalne literaly (0, 1, 2 jako indeksy/polowa, srodek szumu 0.5, szczelina 'd - 1' w pierscieniu brzegu, `maxSeaInPart = 1`) oraz stale ALGORYTMICZNE (mnozniki haszy 374761393/668265263/2246822519/1274126177 i 73856093/19349663, maska 0xffff, przesuniecia 13/16) zostaja w kodzie z odnosnikiem do linii. Zmiana liczby balansu zmienia wynik wzgledem weba, wiec lamie testy wektorowe p6_m04_* (to zamierzona detekcja driftu) i wymaga swiadomego przegenerowania wektorow."
+  },
+  "klasyfikacja": {
+    "prog_pustyni_domyslny": { "wartosc": 0.63, "zrodlo_web": "gra/src/map/gen-helpers.ts:934" },
+    "prog_gor_domyslny": { "wartosc": 0.75, "zrodlo_web": "gra/src/map/gen-helpers.ts:935" },
+    "prog_wzgorz_domyslny": { "wartosc": 0.6, "zrodlo_web": "gra/src/map/gen-helpers.ts:936" },
+    "elev_ponizej_ktorego_woda_lub_laka": { "wartosc": 0.14, "zrodlo_web": "gra/src/map/gen-helpers.ts:941" },
+    "landmask_ponizej_ktorego_morze": { "wartosc": 0.22, "zrodlo_web": "gra/src/map/gen-helpers.ts:943" },
+    "pustynia_elev_wiekszy_niz": { "wartosc": 0.18, "zrodlo_web": "gra/src/map/gen-helpers.ts:955" },
+    "pustynia_elev_mniejszy_niz": { "wartosc": 0.45, "zrodlo_web": "gra/src/map/gen-helpers.ts:956" },
+    "rownina_prog_sumy": { "wartosc": 0.35, "zrodlo_web": "gra/src/map/gen-helpers.ts:959" }
+  },
+  "bramki_wysokosci_reliefu": {
+    "prog_niski_mtn_max_wlacznie": { "wartosc": 0.55, "zrodlo_web": "gra/src/map/gen-helpers.ts:862" },
+    "prog_wysoki_mtn_min_wlacznie": { "wartosc": 0.75, "zrodlo_web": "gra/src/map/gen-helpers.ts:865" },
+    "niski": {
+      "mountain": { "wartosc": 0.1, "zrodlo_web": "gra/src/map/gen-helpers.ts:863" },
+      "highland": { "wartosc": 0.08, "zrodlo_web": "gra/src/map/gen-helpers.ts:863" },
+      "land_mask_hi": { "wartosc": 0.12, "zrodlo_web": "gra/src/map/gen-helpers.ts:863" },
+      "land_mask_mtn": { "wartosc": 0.15, "zrodlo_web": "gra/src/map/gen-helpers.ts:863" }
+    },
+    "sredni": {
+      "mountain": { "wartosc": 0.14, "zrodlo_web": "gra/src/map/gen-helpers.ts:868" },
+      "highland": { "wartosc": 0.11, "zrodlo_web": "gra/src/map/gen-helpers.ts:868" },
+      "land_mask_hi": { "wartosc": 0.2, "zrodlo_web": "gra/src/map/gen-helpers.ts:868" },
+      "land_mask_mtn": { "wartosc": 0.22, "zrodlo_web": "gra/src/map/gen-helpers.ts:868" }
+    },
+    "wysoki": {
+      "mountain": { "wartosc": 0.22, "zrodlo_web": "gra/src/map/gen-helpers.ts:866" },
+      "highland": { "wartosc": 0.18, "zrodlo_web": "gra/src/map/gen-helpers.ts:866" },
+      "land_mask_hi": { "wartosc": 0.3, "zrodlo_web": "gra/src/map/gen-helpers.ts:866" },
+      "land_mask_mtn": { "wartosc": 0.35, "zrodlo_web": "gra/src/map/gen-helpers.ts:866" }
+    }
+  },
+  "przeplot_rownina_laka": {
+    "amplituda_globalna": { "wartosc": 0.12, "zrodlo_web": "gra/src/map/gen-helpers.ts:881" },
+    "amplituda_komorkowa": { "wartosc": 0.65, "zrodlo_web": "gra/src/map/gen-helpers.ts:882" },
+    "rozmiar_komorki_hex": { "wartosc": 4, "zrodlo_web": "gra/src/map/gen-helpers.ts:890" }
+  },
+  "relief_po_dopasowaniu_ladu": {
+    "budzet_ulamek_ladu": {
+      "low": { "wartosc": 0.186, "zrodlo_web": "gra/src/map/gen-helpers.ts:1104" },
+      "medium": { "wartosc": 0.25, "zrodlo_web": "gra/src/map/gen-helpers.ts:1105" },
+      "high": { "wartosc": 0.564, "zrodlo_web": "gra/src/map/gen-helpers.ts:1106" }
+    },
+    "docelowy_udzial_gor": {
+      "low": { "wartosc": 0.06, "zrodlo_web": "gra/src/map/gen-helpers.ts:1166" },
+      "medium": { "wartosc": 0.1, "zrodlo_web": "gra/src/map/gen-helpers.ts:1167" },
+      "high": { "wartosc": 0.24, "zrodlo_web": "gra/src/map/gen-helpers.ts:1168" }
+    },
+    "docelowy_udzial_wzgorz": {
+      "low": { "wartosc": 0.126, "zrodlo_web": "gra/src/map/gen-helpers.ts:1166" },
+      "medium": { "wartosc": 0.15, "zrodlo_web": "gra/src/map/gen-helpers.ts:1167" },
+      "high": { "wartosc": 0.324, "zrodlo_web": "gra/src/map/gen-helpers.ts:1168" }
+    }
+  },
+  "nakladka_lasu": {
+    "bonus_wnetrza_ladu_max": { "wartosc": 0.14, "zrodlo_web": "gra/src/map/gen-helpers.ts:1053" },
+    "mnoznik_strefy_umiarkowanej": { "wartosc": 1.35, "zrodlo_web": "gra/src/map/gen-helpers.ts:1062" },
+    "mnoznik_poza_strefa_umiarkowana": { "wartosc": 1.0, "zrodlo_web": "gra/src/map/gen-helpers.ts:1062" },
+    "minimum_lasu_pangea": { "wartosc": 0, "zrodlo_web": "gra/src/map/gen-helpers.ts:1064" },
+    "minimum_lasu_poza_pangea": { "wartosc": 1, "zrodlo_web": "gra/src/map/gen-helpers.ts:1064" },
+    "minimum_sufitu_komorki": { "wartosc": 2, "zrodlo_web": "gra/src/map/gen-helpers.ts:1066" }
+  },
+  "brzeg_mapy": {
+    "twardy_ocean_hex": { "wartosc": 2, "zrodlo_web": "gra/src/map/gen-helpers.ts:1177" },
+    "strefa_stopniowanego_ladu_hex": { "wartosc": 10, "zrodlo_web": "gra/src/map/gen-helpers.ts:1180" },
+    "przyrost_limitu_ladu_na_pierscien": { "wartosc": 0.05, "zrodlo_web": "gra/src/map/gen-helpers.ts:1193" },
+    "limit_pelnego_ladu_w_fade": { "wartosc": 0.45, "zrodlo_web": "gra/src/map/gen-helpers.ts:1299" },
+    "waga_rozproszenia_brzegu": { "wartosc": 0.38, "zrodlo_web": "gra/src/map/gen-helpers.ts:1201" },
+    "tolerancja_remisu_rozproszenia": { "wartosc": 0.02, "zrodlo_web": "gra/src/map/gen-helpers.ts:1268" },
+    "max_sasiadow_ladu_przy_dosypywaniu": { "wartosc": 5, "zrodlo_web": "gra/src/map/gen-helpers.ts:1276" },
+    "minimum_marginesu_krawedzi_rect": { "wartosc": 0.001, "zrodlo_web": "gra/src/map/gen-helpers.ts:1320" }
+  },
+  "srodek_mapy": {
+    "minimum_biasu_radialnego": { "wartosc": 0.12, "zrodlo_web": "gra/src/map/gen-helpers.ts:1309" },
+    "promien_biasu_radialnego": { "wartosc": 0.94, "zrodlo_web": "gra/src/map/gen-helpers.ts:1309" },
+    "wykladnik_biasu_radialnego": { "wartosc": 2.0, "zrodlo_web": "gra/src/map/gen-helpers.ts:1309" }
+  }
+}

@@ -3491,3 +3491,123 @@ pub fn mapgen_cluster_layout() -> &'static MapgenClusterLayoutFile {
         parse_mapgen_cluster_layout().expect("mapgen-cluster-layout.json must parse")
     })
 }
+
+// ---------------------------------------------------------------------------
+// P6.M04 (klasyfikacja terenu i granice mapy): progi i mnozniki balansu.
+// ---------------------------------------------------------------------------
+
+pub const MAPGEN_TERRAIN_CLASS_JSON: &str =
+    include_str!("../../data/derived/mapgen-terrain-class.json");
+
+/// Sekcja `klasyfikacja` (web `classifyTerrain` / `classifyTerrainFlat`).
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct TerrainClassifyParams {
+    pub prog_pustyni_domyslny: StartValue<f64>,
+    pub prog_gor_domyslny: StartValue<f64>,
+    pub prog_wzgorz_domyslny: StartValue<f64>,
+    pub elev_ponizej_ktorego_woda_lub_laka: StartValue<f64>,
+    pub landmask_ponizej_ktorego_morze: StartValue<f64>,
+    pub pustynia_elev_wiekszy_niz: StartValue<f64>,
+    pub pustynia_elev_mniejszy_niz: StartValue<f64>,
+    pub rownina_prog_sumy: StartValue<f64>,
+}
+
+/// Jeden wiersz bramek wysokosci reliefu (web `reliefElevGates`).
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct ReliefGateRow {
+    pub mountain: StartValue<f64>,
+    pub highland: StartValue<f64>,
+    pub land_mask_hi: StartValue<f64>,
+    pub land_mask_mtn: StartValue<f64>,
+}
+
+/// Sekcja `bramki_wysokosci_reliefu` (web `reliefElevGates`).
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct ReliefGateParams {
+    pub prog_niski_mtn_max_wlacznie: StartValue<f64>,
+    pub prog_wysoki_mtn_min_wlacznie: StartValue<f64>,
+    pub niski: ReliefGateRow,
+    pub sredni: ReliefGateRow,
+    pub wysoki: ReliefGateRow,
+}
+
+/// Sekcja `przeplot_rownina_laka` (web `TERRAIN_*_AMP`, `terenCoverageCellSize`).
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct TerrainCellMixParams {
+    pub amplituda_globalna: StartValue<f64>,
+    pub amplituda_komorkowa: StartValue<f64>,
+    pub rozmiar_komorki_hex: StartValue<f64>,
+}
+
+/// Sekcja `relief_po_dopasowaniu_ladu` (web `REAPPLY_RELIEF_BUDGET_FRAC`, `FALLBACK_RELIEF_FRAC`).
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct TerrainReliefTierParams {
+    pub budzet_ulamek_ladu: TierTriple<StartValue<f64>>,
+    pub docelowy_udzial_gor: TierTriple<StartValue<f64>>,
+    pub docelowy_udzial_wzgorz: TierTriple<StartValue<f64>>,
+}
+
+/// Sekcja `nakladka_lasu` (web `reapplyForestOverlay`).
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct ForestOverlayParams {
+    pub bonus_wnetrza_ladu_max: StartValue<f64>,
+    pub mnoznik_strefy_umiarkowanej: StartValue<f64>,
+    pub mnoznik_poza_strefa_umiarkowana: StartValue<f64>,
+    pub minimum_lasu_pangea: StartValue<f64>,
+    pub minimum_lasu_poza_pangea: StartValue<f64>,
+    pub minimum_sufitu_komorki: StartValue<f64>,
+}
+
+/// Sekcja `brzeg_mapy` (web `MAP_BORDER_*`, strefa stopniowanego brzegu, fade'y).
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct MapBorderParams {
+    pub twardy_ocean_hex: StartValue<f64>,
+    pub strefa_stopniowanego_ladu_hex: StartValue<f64>,
+    pub przyrost_limitu_ladu_na_pierscien: StartValue<f64>,
+    pub limit_pelnego_ladu_w_fade: StartValue<f64>,
+    pub waga_rozproszenia_brzegu: StartValue<f64>,
+    pub tolerancja_remisu_rozproszenia: StartValue<f64>,
+    pub max_sasiadow_ladu_przy_dosypywaniu: StartValue<f64>,
+    pub minimum_marginesu_krawedzi_rect: StartValue<f64>,
+}
+
+/// Sekcja `srodek_mapy` (web `mapCenterRadialBias`).
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct MapCenterParams {
+    pub minimum_biasu_radialnego: StartValue<f64>,
+    pub promien_biasu_radialnego: StartValue<f64>,
+    pub wykladnik_biasu_radialnego: StartValue<f64>,
+}
+
+/// Plik `mapgen-terrain-class.json`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct MapgenTerrainClassFile {
+    pub meta: serde_json::Value,
+    pub klasyfikacja: TerrainClassifyParams,
+    pub bramki_wysokosci_reliefu: ReliefGateParams,
+    pub przeplot_rownina_laka: TerrainCellMixParams,
+    pub relief_po_dopasowaniu_ladu: TerrainReliefTierParams,
+    pub nakladka_lasu: ForestOverlayParams,
+    pub brzeg_mapy: MapBorderParams,
+    pub srodek_mapy: MapCenterParams,
+}
+
+pub fn parse_mapgen_terrain_class() -> Result<MapgenTerrainClassFile, serde_json::Error> {
+    serde_json::from_str(MAPGEN_TERRAIN_CLASS_JSON)
+}
+
+/// Tabela klasyfikacji terenu i granic mapy (jednorazowy odczyt; blad danych = panika).
+pub fn mapgen_terrain_class() -> &'static MapgenTerrainClassFile {
+    static TABLE: std::sync::OnceLock<MapgenTerrainClassFile> = std::sync::OnceLock::new();
+    TABLE
+        .get_or_init(|| parse_mapgen_terrain_class().expect("mapgen-terrain-class.json must parse"))
+}
