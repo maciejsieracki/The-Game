@@ -1,0 +1,71 @@
+  OK  sanity: main.ts zawiera dokładnie jedną kotwicę poprawki P1 visible
+  OK  sanity: main.ts zawiera dokładnie jedną kotwicę poprawki P1 explored
+  OK  sanity: main.ts zawiera dokładnie jedną kotwicę poprawki P2 memo
+  OK  sanity: main.ts zawiera dokładnie jedną kotwicę poprawki P3 nodes
+  OK  sanity: main.ts zawiera dokładnie jedną kotwicę poprawki P4 worked-owner
+[turn-slowdown-test] vite build (fix) ...
+[turn-slowdown-test] vite build (pre) ...
+  OK  S: bramka nie zmieniła śledzonego main.ts
+[turn-slowdown-test] gra 40 tur (fix) ...
+06:38:07 worldgen ms 193922
+06:38:39 T2 endTurn=14030.6 city=1032.8/173.3 heap=106.9 dom=8175 lst=616 tex=14 geo=305 save=322842 u=14 c=10 aiMaxC=1 hash=5746fa14
+06:39:13 T3 endTurn=25113.5 city=846.6/109.4 heap=109.2 dom=12280 lst=880 tex=14 geo=305 save=323994 u=14 c=10 aiMaxC=1 hash=96313420
+06:39:36 T4 endTurn=14470.9 city=1155.4/204.7 heap=93.6 dom=4606 lst=457 tex=14 geo=305 save=324732 u=14 c=10 aiMaxC=1 hash=e63b39e4
+06:40:00 T5 endTurn=12674.0 city=893.3/95.2 heap=97.8 dom=8538 lst=796 tex=14 geo=304 save=326213 u=16 c=10 aiMaxC=1 hash=c5b5181a
+06:40:23 T6 endTurn=14513.9 city=1097.0/145.6 heap=95.9 dom=5755 lst=509 tex=14 geo=304 save=327170 u=16 c=10 aiMaxC=1 hash=ed0a2461
+06:40:48 T7 endTurn=15771.7 city=1085.7/116.8 heap=91.5 dom=3920 lst=489 tex=14 geo=304 save=327977 u=16 c=10 aiMaxC=1 hash=9336a576
+06:41:11 T8 endTurn=14078.0 city=1282.1/377.5 heap=93.9 dom=6658 lst=507 tex=14 geo=304 save=328778 u=16 c=10 aiMaxC=1 hash=a54184e7
+06:41:35 T9 endTurn=13852.5 city=1111.2/297.1 heap=91.1 dom=8456 lst=769 tex=14 geo=305 save=329876 u=16 c=10 aiMaxC=1 hash=83885c9a
+06:41:59 T10 endTurn=11443.5 city=1049.4/181.2 heap=95.9 dom=4189 lst=481 tex=14 geo=305 save=330911 u=17 c=10 aiMaxC=1 hash=9cdd2cf9
+06:42:21 T11 endTurn=13619.6 city=931.1/129.4 heap=99.2 dom=8743 lst=748 tex=14 geo=306 save=331803 u=18 c=10 aiMaxC=1 hash=83e919cb
+06:42:46 T12 endTurn=14144.5 city=1418.0/263.6 heap=91.1 dom=7374 lst=745 tex=15 geo=322 save=332197 u=18 c=10 aiMaxC=1 hash=1c44e526
+06:43:09 T13 endTurn=13580.1 city=1041.9/123.0 heap=95.6 dom=4883 lst=543 tex=15 geo=323 save=333240 u=18 c=10 aiMaxC=1 hash=8f011509
+06:43:29 T14 endTurn=10847.5 city=1190.5/145.4 heap=103.6 dom=8993 lst=536 tex=15 geo=331 save=334841 u=21 c=10 aiMaxC=1 hash=f830886f
+06:43:53 T15 endTurn=14910.2 city=906.4/118.2 heap=97.6 dom=9527 lst=939 tex=15 geo=332 save=335513 u=22 c=10 aiMaxC=1 hash=2400e3df
+06:44:16 T16 endTurn=13901.1 city=846.4/117.1 heap=102.6 dom=5161 lst=623 tex=15 geo=333 save=335821 u=22 c=10 aiMaxC=1 hash=0c13df44
+06:44:37 T17 endTurn=14474.9 city=762.4/148.9 heap=91.2 dom=5260 lst=650 tex=15 geo=353 save=336361 u=22 c=10 aiMaxC=1 hash=1081635c
+06:44:57 T18 endTurn=12382.7 city=728.8/109.7 heap=104.7 dom=7214 lst=782 tex=15 geo=371 save=337018 u=22 c=10 aiMaxC=1 hash=64754465
+06:45:16 T19 endTurn=12298.7 city=843.0/187.1 heap=118.4 dom=5406 lst=680 tex=14 geo=372 save=337395 u=22 c=10 aiMaxC=1 hash=e07d687f
+06:45:36 T20 endTurn=11867.3 city=677.9/107.6 heap=118.6 dom=5388 lst=680 tex=14 geo=390 save=338167 u=22 c=10 aiMaxC=1 hash=1e9e7c1c
+06:45:59 T21 endTurn=14177.3 city=933.0/133.0 heap=119.0 dom=5388 lst=681 tex=14 geo=399 save=338796 u=22 c=10 aiMaxC=1 hash=d89419a7
+06:46:19 T22 endTurn=10892.4 city=901.6/165.3 heap=104.4 dom=9417 lst=1010 tex=14 geo=401 save=327924 u=19 c=10 aiMaxC=3 hash=50e9bbcb
+06:46:38 T23 endTurn=10203.5 city=1064.8/405.8 heap=120.8 dom=5421 lst=681 tex=14 geo=409 save=326692 u=20 c=10 aiMaxC=3 hash=927bf15a
+06:46:57 T24 endTurn=11261.0 city=953.8/146.6 heap=123.0 dom=5421 lst=680 tex=14 geo=423 save=327705 u=19 c=11 aiMaxC=4 hash=414e2523
+06:47:17 T25 endTurn=10768.3 city=1025.5/210.9 heap=95.2 dom=6547 lst=548 tex=14 geo=423 save=328121 u=19 c=11 aiMaxC=4 hash=93ebe9eb
+06:47:35 T26 endTurn=10479.9 city=939.2/227.7 heap=104.3 dom=9080 lst=1050 tex=14 geo=423 save=328575 u=19 c=11 aiMaxC=4 hash=ebc4e98b
+06:47:52 T27 endTurn=9445.7 city=887.7/196.6 heap=121.8 dom=5456 lst=679 tex=14 geo=424 save=329802 u=19 c=12 aiMaxC=5 hash=232873a6
+06:48:10 T28 endTurn=10126.5 city=915.3/100.1 heap=90.7 dom=5418 lst=680 tex=14 geo=440 save=331086 u=19 c=13 aiMaxC=5 hash=1e771c3a
+06:48:31 T29 endTurn=10779.2 city=1706.2/238.4 heap=116.5 dom=7271 lst=794 tex=14 geo=440 save=331659 u=19 c=13 aiMaxC=5 hash=840efa37
+06:48:49 T30 endTurn=9890.7 city=976.1/264.9 heap=122.2 dom=5417 lst=680 tex=14 geo=443 save=333682 u=19 c=14 aiMaxC=6 hash=664bcbeb
+06:48:51 PAGE CRASH: proces renderera strony zakończony (nie pętla w kodzie gry)
+06:55:49 WATCHDOG: krok wisi endTurn T30 - pauza JS i stos
+06:56:09   pauza nieudana Error: CDP timeout Debugger.enable
+FATAL Error: WATCHDOG endTurn T30
+    at Timeout.<anonymous> (/home/user/The-Game/.claude/worktrees/wf_e6ce6528-0a5-1/gra/tools/web-turn-slowdown-measure.cjs:210:72)
+    at listOnTimeout (node:internal/timers:588:17)
+    at process.processTimers (node:internal/timers:523:7)
+node:child_process:955
+    throw err;
+    ^
+
+Error: Command failed: /opt/node22/bin/node /home/user/The-Game/.claude/worktrees/wf_e6ce6528-0a5-1/gra/tools/web-turn-slowdown-measure.cjs --dist /tmp/civ-turn-slowdown-test-27404-r0a39i/dist-fix --out /tmp/civ-turn-slowdown-test-27404-r0a39i/m-fix --turns 40 --profile-at 39 --label fix
+    at genericNodeError (node:internal/errors:983:15)
+    at wrappedFn (node:internal/errors:537:14)
+    at checkExecSyncError (node:child_process:916:11)
+    at execFileSync (node:child_process:952:15)
+    at runMeasure (/home/user/The-Game/.claude/worktrees/wf_e6ce6528-0a5-1/gra/tools/web-turn-slowdown-test.cjs:99:3)
+    at main (/home/user/The-Game/.claude/worktrees/wf_e6ce6528-0a5-1/gra/tools/web-turn-slowdown-test.cjs:171:15)
+    at Object.<anonymous> (/home/user/The-Game/.claude/worktrees/wf_e6ce6528-0a5-1/gra/tools/web-turn-slowdown-test.cjs:231:1)
+    at Module._compile (node:internal/modules/cjs/loader:1706:14)
+    at Object..js (node:internal/modules/cjs/loader:1839:10)
+    at Module.load (node:internal/modules/cjs/loader:1441:32) {
+  status: 1,
+  signal: null,
+  output: [ null, null, null ],
+  pid: 1455,
+  stdout: null,
+  stderr: null
+}
+
+Node.js v22.22.0
+EXIT=1
