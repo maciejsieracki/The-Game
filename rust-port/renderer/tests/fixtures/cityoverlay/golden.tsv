@@ -1,0 +1,106 @@
+# R-RUSTPORT-P4-33 golden FNV-1a 64 of the premultiplied RGBA8 of every MOD-10 texture
+# kind<TAB>id<TAB>initial<TAB>final
+chip	na_major@main	4794de35a43b7a45	4794de35a43b7a45
+chip	na_city_state@main	4fbff23988809c24	4fbff23988809c24
+chip	minimal@main	db1ac4cceaef6437	577a4cdd276e96f4
+chip	major_full@main	4794de35a43b7a45	0df97431cd29e510
+chip	zulu_capital_long@main	a32f8dca649fcb8c	11b2832b25813abf
+chip	widest@main	7a9e9a1d2f49e64a	d68bdb65346bf76b
+chip	city_state@main	4fbff23988809c24	e3a514e41ba18d00
+chip	cs_nosigil@main	9d94da63820f8658	9d94da63820f8658
+chip	egipt@main	485f2d2080651a1b	03eef94910071aee
+chip	unknown_civ@main	f4e8d1749fbaece4	ea53795e81e8fab1
+chip	spaced_civ@main	01277295a5651e07	49d50117086d7c80
+chip	starving@main	dd5a7db06a68ac33	35a2a486796ec698
+chip	neg_zero@main	ecc7030aa5ad2988	8703d1a73bc068d7
+chip	nan_pop@main	f0f66d2e2dde3e0c	07ef791839fd960c
+chip	empty_name@main	8dedc16c131208d9	571e2a31b02778b1
+chip	blank_name@main	bd3d25747b993995	c5b00c39ed940f8a
+chip	prod_no_kind@main	6208ad6311da1dd9	3a382cc18c8b511a
+chip	prod_unknown_icon@main	6bd6bd874e5bc5ba	761f7c185f9beb79
+chip	hover_full@main	9557dfffdacab763	fad4f46dfe20ea02
+chip	hover_paused@main	eedb52ecb25c76ae	10fcc358a9372d92
+chip	hover_paused_item@main	9c53cce0ade9d724	fa683a770698bd58
+chip	hover_warning_only@main	8ed93ac14c64aebe	8e1555c4c27164e9
+chip	hover_truncated@main	e3459a37049a6c70	d5aec8f2daaee7cf
+chip	hover_no_detail@main	4b768cc788c9834f	d62640f927970690
+chip	capital_only@main	c531879b2f6e0020	743123778446c71f
+chip	lod1@main	f65f62340f29ba86	8e0ba88832622bd4
+chip	lod2@main	f2d1359a730a1ea1	781c7b42e3aa4c73
+chip	lod15@main	cada211bf29a9f66	0d42d7a2e09cfc65
+chip	cached_minimal@main	db1ac4cceaef6437	577a4cdd276e96f4
+chip	legacy@main	037e0a5f6bf3ab2c	0036c21b03adafef
+chip	major_full@dpr2	a6613e6c99c04d0c	46186b6d411416e8
+chip	hover_full@dpr2	ecfb49789f8d7979	bc2a7b5cdead71e7
+chip	lod2@dpr2	de577b5227563407	961881f7528ceb7b
+chip	zulu_capital_long@dpr15	64f5dbd763ff312b	b32cf966ac586f14
+label	r2_default -2,1	-	08937c7eaac00b4c
+label	r2_default -2,2	-	743a19269a91b7ba
+label	r2_default -1,-1	-	855db24b5109dd44
+label	r2_default -1,0	-	cfeab612d22bd9f5
+label	r2_default -1,1	-	f6b70e821f77312f
+label	r2_default 0,-2	-	e6e648180ab64c93
+label	r2_default 0,-1	-	93b62fd583e244ed
+label	r2_default 0,0	-	ce49d4ab529aab44
+label	r2_default 0,2	-	08937c7eaac00b4c
+label	r2_default 1,-1	-	ed5cb667a148bdb1
+label	r2_default 1,0	-	b00c8490cc6672a8
+label	r2_default 2,-2	-	1819bd962ec68fb2
+label	r2_default 2,0	-	93b62fd583e244ed
+label	r3_owner3 -3,1	-	1819bd962ec68fb2
+label	r3_owner3 -3,2	-	e6e648180ab64c93
+label	r3_owner3 -2,1	-	f044c645eb5ab5cc
+label	r3_owner3 -2,2	-	743a19269a91b7ba
+label	r3_owner3 -2,3	-	ed5cb667a148bdb1
+label	r3_owner3 -1,-1	-	855db24b5109dd44
+label	r3_owner3 -1,0	-	cfeab612d22bd9f5
+label	r3_owner3 -1,1	-	a3e7ded88dd72c3c
+label	r3_owner3 -1,3	-	e6e648180ab64c93
+label	r3_owner3 0,-3	-	5fd89a0841f2cc02
+label	r3_owner3 0,-2	-	e6e648180ab64c93
+label	r3_owner3 0,-1	-	93b62fd583e244ed
+label	r3_owner3 0,0	-	ce49d4ab529aab44
+label	r3_owner3 0,2	-	08937c7eaac00b4c
+label	r3_owner3 1,-1	-	5f6d5c3b8311139d
+label	r3_owner3 1,0	-	855db24b5109dd44
+label	r3_owner3 1,2	-	a3e7ded88dd72c3c
+label	r3_owner3 2,-3	-	a3e7ded88dd72c3c
+label	r3_owner3 2,-2	-	1819bd962ec68fb2
+label	r3_owner3 2,0	-	93b62fd583e244ed
+label	r3_owner3 3,-2	-	08937c7eaac00b4c
+label	r3_owner3 3,-1	-	743a19269a91b7ba
+label	r25_owner9 -3,1	-	1819bd962ec68fb2
+label	r25_owner9 -3,2	-	e6e648180ab64c93
+label	r25_owner9 -2,1	-	08937c7eaac00b4c
+label	r25_owner9 -2,2	-	743a19269a91b7ba
+label	r25_owner9 -1,-1	-	855db24b5109dd44
+label	r25_owner9 -1,0	-	cfeab612d22bd9f5
+label	r25_owner9 -1,1	-	655692ee1de38f93
+label	r25_owner9 0,-2	-	e6e648180ab64c93
+label	r25_owner9 0,-1	-	93b62fd583e244ed
+label	r25_owner9 1,-1	-	ed5cb667a148bdb1
+label	r25_owner9 1,0	-	855db24b5109dd44
+label	edge 1,-1	-	ed5cb667a148bdb1
+label	edge 1,0	-	855db24b5109dd44
+label	edge 2,-2	-	1819bd962ec68fb2
+label	edge 2,0	-	93b62fd583e244ed
+label	edge 3,-2	-	08937c7eaac00b4c
+label	edge 3,-1	-	743a19269a91b7ba
+label	edge 3,1	-	855db24b5109dd44
+label	edge 4,-3	-	cfeab612d22bd9f5
+label	edge 4,-2	-	655692ee1de38f93
+label	edge 4,0	-	e6e648180ab64c93
+label	r1_no_worked -3,2	-	e6e648180ab64c93
+label	r1_no_worked -2,1	-	08937c7eaac00b4c
+label	r1_no_worked -2,2	-	743a19269a91b7ba
+label	r1_no_worked -2,3	-	ed5cb667a148bdb1
+label	r1_no_worked -1,1	-	a3e7ded88dd72c3c
+worker	0|ring:1	-	c4b1322d8632b8df
+worker	1|ring:0	-	2a1d7c99a5da09f6
+worker	9|ring:0	-	2a1d7c99a5da09f6
+worker	1.5|ring:0	-	98847f2e73714140
+worker	2|ring:0	-	c10e1ae9353449ae
+worker	3|ring:0	-	913b6b30a98783ad
+worker	0|ring:0	-	fa09a405c4b4de21
+worker	2|ring:1	-	b9dce4877be3ec74
+worker	5|ring:0	-	c0df03202a25a8ab

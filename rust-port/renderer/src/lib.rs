@@ -26,6 +26,7 @@
 
 pub mod assets;
 pub mod camera;
+pub mod cities;
 pub mod core;
 pub mod decor;
 pub mod geom;
