@@ -92,6 +92,9 @@ export const MOCK_STATIC_CATALOG: StaticCatalogDto = {
     resourceAccessTradeWithdrawnReason: 'MOCK',
     powerHudLabelPl: 'MOCK-Moc',
     resourceKeyLabels: { 'mock-surowiec': 'MOCK-Surowiec' },
+    // P5.7: etykiety panelu imperium (MOCK — nie kopia `gra/src/game`).
+    stockResourceLabels: { 'mock-surowiec': 'MOCK-Surowiec' },
+    daninaGenitive: 'MOCK',
   },
   unitCategory: { 'MOCK-Wojownik': 'maczuga', 'MOCK-Łucznik': 'lucznik' },
   unitCategoryNameOnly: { 'MOCK-Wojownik': 'domyslny', 'MOCK-Łucznik': 'domyslny' },

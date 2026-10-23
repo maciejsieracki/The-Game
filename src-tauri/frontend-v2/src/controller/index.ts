@@ -26,6 +26,9 @@ export type { DiplomacyQueriesProvider } from './diplomacyQueries';
 export { installDiplomacyQueries, hasDiplomacyQueries, diplomacyQueries, createMockDiplomacyQueries } from './diplomacyQueries';
 export type { AudioService } from './audio';
 export { installAudioService, createMockAudioService } from './audio';
+// P5.7: zapytania suwaków panelu imperium (podział handlu / Pracy).
+export type { EmpireQueriesProvider } from './empireQueries';
+export { installEmpireQueries, hasEmpireQueries, empireQueries, createMockEmpireQueries } from './empireQueries';
 
 export interface Controller {
   readonly source: Transport['source'];

@@ -1,0 +1,19 @@
+--- pin edb8fb56:gra/src/ui/hud.ts
++++ v2:src-tauri/frontend-v2/src/ui/hud.ts
+@@ -74,6 +74,8 @@
+ } from './empireOverlayHud';
+ import { empireSectionFromHudAct } from './empireDetailPanel';
+ import './buildStampToggle';
++// P5.7 (ZAŁOŻENIE P5.6-Z3): most `preBattle.ts` → `hud.ts` — rejestracja implementacji niżej (`setArmyStackHudSuppressed`).
++import { registerArmyStackHudSuppression } from './armyStackHudSuppression';
+ 
+ export type { PowerOverlayData, CultureOverlayData, ReligionOverlayData };
+ 
+@@ -1776,6 +1778,7 @@
+     armyStackApi.update();
+   }
+ }
++registerArmyStackHudSuppression(setArmyStackHudSuppressed);
+ 
+ // ---------------------------------------------------------------------------
+ // API publiczne

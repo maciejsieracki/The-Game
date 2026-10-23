@@ -1,0 +1,6 @@
+$ python3 diff (difflib.unified_diff, n=3): pin edb8fb56 gra/src/ui/<m>.ts vs v2 src-tauri/frontend-v2/src/ui/<m>.ts
+sceneTimingReport.ts LOC pin=212 v2=222 +14/-4
+empireDetailPanel.ts LOC pin=4433 v2=4451 +69/-51
+empireDetailTypes.ts LOC pin=732 v2=726 +35/-41
+hud.ts LOC pin=1861 v2=1864 +3/-0
+EXIT=0

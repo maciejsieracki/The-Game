@@ -142,6 +142,13 @@ export interface StaticCatalogLabelsDto {
    * (`game/diplomacy-display.ts:416-432`); formatowanie zapasowe (wielka litera) zostaje w UI jak w `resourceDisplayLabel`.
    */
   resourceKeyLabels: Readonly<Record<string, string>>;
+  /**
+   * P5.7 (`empireDetailPanel.ts`): nazwy surowców magazynu państwa po kluczu = web `STOCK_RESOURCE_LABEL`
+   * (`game/building-stock-cost.ts:143-159`); brak klucza = sam klucz (jak `stockResourceLabel`, `:170-172`).
+   */
+  stockResourceLabels: Readonly<Record<string, string>>;
+  /** P5.7 (`empireDetailPanel.ts:3729,3732`): dopełniacz etykiety daniny = web `daninaLabelGenitive()` (`game/danina-nazwa.ts:17-19`). */
+  daninaGenitive: string;
 }
 
 // ─── P5.2: wiersze katalogu statycznego czytane przez panele poziomu 0 ───────
@@ -481,6 +488,45 @@ export interface UlepszeniaEmpirePolicyDto {
   onlyWorked: boolean;
   pracaAutoPercent: UlepszeniaPracaPercentDto;
   wolnoWycinacLas: boolean;
+}
+
+// ─── P5.7: panel imperium (`empireDetailPanel.ts`, `empireDetailTypes.ts`; P5-0 §6.5) ─────────────
+
+/** P5.7: = web `CityPodzialHandlu` (`game/cities.ts:21-25`) — podział handlu w %, kroki `constants.handelPctStep`. */
+export interface CityPodzialHandluDto {
+  procentNauka: number;
+  procentPieniadz: number;
+  procentLuksus: number;
+}
+
+/** P5.7: = web `CityPodzialPracy` (`game/cities.ts:40-42`) — jedyny podział Pracy (udział budynków). */
+export interface CityPodzialPracyDto {
+  procentBudynki: number;
+}
+
+/**
+ * P5.7: = web `ResourceUsageBreakdown` (`game/resource-usage-breakdown.ts:66-88`) + `total`
+ * (= web `resourceUsageTotal(b)`, `:102-104` — liczy silnik; P5-0 §6.5 `resource_usage + total`).
+ */
+export interface ResourceUsageBreakdownDto {
+  buildings: number;
+  citizens: number;
+  units: number;
+  total: number;
+}
+
+/**
+ * P5.7: = web `MiastaSummaryRow` (`ui/empireMiastaTable.ts:109-121`) — wiersz SUMA/ŚREDNIA tabeli Miasta liczony
+ * przez silnik (proponowane w P5.1 `EmpireDetailDto.citiesSummary`; wejście WZROST = efektywny, ECHO B).
+ */
+export interface EmpireMiastaSummaryDto {
+  obywTotal: number;
+  ludnoscAbsolutnaTotal: number;
+  wzrostProcentAvg: number | null;
+  pracaTotal: number;
+  pieniadzTotal: number;
+  zywnoscTotal: number;
+  surowceTotal: Record<string, number>;
 }
 
 // ─── §6.6 Dyplomacja ─────────────────────────────────────────────────────────

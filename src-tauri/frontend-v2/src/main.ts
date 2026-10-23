@@ -15,10 +15,12 @@ import {
   createController,
   createMockAudioService,
   createMockDiplomacyQueries,
+  createMockEmpireQueries,
   createMockSaveSlotsService,
   createMockTransport,
   installAudioService,
   installDiplomacyQueries,
+  installEmpireQueries,
   installPerfDiagnostics,
   installSaveSlotsService,
   installStaticCatalog,
@@ -47,6 +49,8 @@ async function boot(): Promise<void> {
   // P5.6: atrapy MOCK zapytań koszyka PW (`controller/diplomacyQueries.ts`) i muzyki nakładek (`controller/audio.ts`).
   installDiplomacyQueries(createMockDiplomacyQueries());
   installAudioService(createMockAudioService());
+  // P5.7: atrapa MOCK zapytań suwaków panelu imperium (`controller/empireQueries.ts`).
+  installEmpireQueries(createMockEmpireQueries());
 
   const shell = el('section', undefined, 'v2-shell');
   shell.style.cssText =
@@ -77,6 +81,9 @@ async function boot(): Promise<void> {
   // P5.6: cykle C2, C5 + `hexContextTooltip.ts`, `preBattle.ts` — jw., nic nie montują.
   const cycles = await import('./ui/portCycles');
   shell.append(el('p', `Moduły cykli C2/C5 i poziomu 4–7 (P5.6): ${cycles.PORTED_CYCLES.length}${mockTag}`));
+  // P5.7 r1: cykl C3 (`hud.ts`, panel imperium) + `sceneTimingReport.ts` — jw., nic nie montują.
+  const hudEmpire = await import('./ui/portHudEmpire');
+  shell.append(el('p', `Moduły cyklu C3 i diagnostyki (P5.7): ${hudEmpire.PORTED_HUD_EMPIRE.length}${mockTag}`));
   const status = el('p', `Źródło danych: ${controller.source}`, 'v2-status');
   shell.append(status);
 
