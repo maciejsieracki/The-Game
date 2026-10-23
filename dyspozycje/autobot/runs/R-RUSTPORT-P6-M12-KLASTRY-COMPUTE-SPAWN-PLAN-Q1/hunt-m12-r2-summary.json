@@ -1,0 +1,439 @@
+{
+ "calls": 7833,
+ "files": {
+  "hunt-r2-11.json": {
+   "calls": 1402,
+   "found": {
+    "repack-final-and": 3,
+    "topup-centers-local-land": 3,
+    "topup-player-dist-le": 15
+   },
+   "nMaps": 150,
+   "reached": {
+    "alt": 47,
+    "altNull": 151,
+    "fill": 243,
+    "rfXor": 75,
+    "spawn:prefNull": 25,
+    "spawn:prefOk": 529,
+    "tc": 188,
+    "tcFail": 200,
+    "tcLast": 60,
+    "top1": 184,
+    "top2": 155
+   },
+   "seed": 11,
+   "tried": {
+    "enforce-hard-removed": 42,
+    "min-dyst-order-sep": 1402,
+    "plan-capital-name-swap": 557,
+    "plan-dropped-typ-not-skipped": 557,
+    "player-cap-xor-1": 557,
+    "player-cap-xor-retry": 557,
+    "player-growth-reserve-0-initial": 1402,
+    "repack-final-and": 75,
+    "table-topup-div-3": 184,
+    "table-topup-min-9": 184,
+    "topup-centers-local-land": 60,
+    "topup-dedupe-removed": 184,
+    "topup-player-dist-le": 184,
+    "topup-region-lt": 184
+   }
+  },
+  "hunt-r2-12.json": {
+   "calls": 1402,
+   "found": {
+    "repack-final-and": 8,
+    "topup-player-dist-le": 19
+   },
+   "nMaps": 150,
+   "reached": {
+    "alt": 50,
+    "altNull": 154,
+    "fill": 268,
+    "rfXor": 125,
+    "spawn:prefNull": 17,
+    "spawn:prefOk": 512,
+    "tc": 202,
+    "tcFail": 228,
+    "tcLast": 71,
+    "top1": 201,
+    "top2": 155
+   },
+   "seed": 12,
+   "tried": {
+    "enforce-hard-removed": 42,
+    "min-dyst-order-sep": 1402,
+    "plan-capital-name-swap": 529,
+    "plan-dropped-typ-not-skipped": 529,
+    "player-cap-xor-1": 529,
+    "player-cap-xor-retry": 529,
+    "player-growth-reserve-0-initial": 1402,
+    "repack-final-and": 125,
+    "table-topup-div-3": 201,
+    "table-topup-min-9": 201,
+    "topup-centers-local-land": 71,
+    "topup-dedupe-removed": 201,
+    "topup-player-dist-le": 201,
+    "topup-region-lt": 201
+   }
+  },
+  "hunt-r2-13.json": {
+   "calls": 1409,
+   "found": {
+    "repack-final-and": 8,
+    "topup-player-dist-le": 18
+   },
+   "nMaps": 150,
+   "reached": {
+    "alt": 60,
+    "altNull": 167,
+    "fill": 263,
+    "rfXor": 115,
+    "spawn:prefNull": 22,
+    "spawn:prefOk": 516,
+    "tc": 207,
+    "tcFail": 233,
+    "tcLast": 60,
+    "top1": 216,
+    "top2": 169
+   },
+   "seed": 13,
+   "tried": {
+    "enforce-hard-removed": 39,
+    "min-dyst-order-sep": 1409,
+    "plan-capital-name-swap": 542,
+    "plan-dropped-typ-not-skipped": 542,
+    "player-cap-xor-1": 542,
+    "player-cap-xor-retry": 542,
+    "player-growth-reserve-0-initial": 1409,
+    "repack-final-and": 115,
+    "table-topup-div-3": 216,
+    "table-topup-min-9": 216,
+    "topup-centers-local-land": 60,
+    "topup-dedupe-removed": 216,
+    "topup-player-dist-le": 216,
+    "topup-region-lt": 216
+   }
+  },
+  "hunt-r2c-23.json": {
+   "calls": 120,
+   "found": {
+    "plan-capital-name-swap": 10,
+    "table-topup-div-3": 12,
+    "table-topup-min-9": 1,
+    "topup-region-lt": 11
+   },
+   "nMaps": 40,
+   "reached": {
+    "alt": 12,
+    "altNull": 33,
+    "fill": 179,
+    "fixedNull": 240,
+    "forced": 240,
+    "klaszFill": 91,
+    "reassign": 91,
+    "resolveMass": 42,
+    "rfXor": 25,
+    "skipNoHex": 35,
+    "spawn:prefNull": 17,
+    "spawn:prefOk": 18,
+    "spawn:retryNull": 17,
+    "spawn:spawnSkipLand": 7,
+    "tc": 144,
+    "tcFail": 136,
+    "tcLast": 90,
+    "top1": 144,
+    "top2": 120
+   },
+   "seed": 23,
+   "tried": {
+    "enforce-hard-removed": 336,
+    "plan-capital-name-swap": 40,
+    "plan-dropped-typ-not-skipped": 40,
+    "player-cap-xor-1": 40,
+    "player-cap-xor-retry": 40,
+    "player-growth-reserve-0-initial": 336,
+    "table-topup-div-3": 144,
+    "table-topup-min-9": 144,
+    "topup-dedupe-removed": 144,
+    "topup-region-lt": 144
+   }
+  },
+  "hunt-r2c-24.json": {
+   "calls": 120,
+   "found": {
+    "table-topup-div-3": 1,
+    "table-topup-min-9": 3,
+    "topup-centers-local-land": 14,
+    "topup-region-lt": 4
+   },
+   "nMaps": 40,
+   "reached": {
+    "alt": 6,
+    "altNull": 34,
+    "fill": 139,
+    "fixedNull": 150,
+    "forced": 150,
+    "klaszFill": 38,
+    "reassign": 38,
+    "resolveMass": 15,
+    "rfXor": 2,
+    "skipNoHex": 26,
+    "spawn:prefMoved": 1,
+    "spawn:prefNull": 13,
+    "spawn:prefOk": 33,
+    "spawn:retryNull": 13,
+    "spawn:spawnSkipLand": 8,
+    "tc": 121,
+    "tcFail": 114,
+    "tcLast": 52,
+    "top1": 133,
+    "top2": 113
+   },
+   "seed": 24,
+   "tried": {
+    "enforce-hard-removed": 288,
+    "player-growth-reserve-0-initial": 288,
+    "table-topup-div-3": 133,
+    "table-topup-min-9": 133,
+    "topup-centers-local-land": 52,
+    "topup-dedupe-removed": 133,
+    "topup-player-dist-le": 133,
+    "topup-region-lt": 133
+   }
+  },
+  "hunt-r2c-30.json": {
+   "calls": 579,
+   "found": {},
+   "nMaps": 60,
+   "reached": {
+    "alt": 420,
+    "altNull": 1189,
+    "fill": 1482,
+    "fixedNull": 18,
+    "forced": 136,
+    "klaszFill": 369,
+    "reassign": 369,
+    "resolveMass": 135,
+    "rfXor": 531,
+    "skipNoHex": 4,
+    "spawn:prefNull": 2,
+    "spawn:prefOk": 225,
+    "spawn:retryNull": 2,
+    "spawn:spawnSkipLand": 6,
+    "tc": 1320,
+    "tcFail": 1434,
+    "tcLast": 251,
+    "top1": 1371,
+    "top2": 1197
+   },
+   "seed": 30,
+   "tried": {}
+  },
+  "hunt-r2c-31.json": {
+   "calls": 1151,
+   "found": {
+    "plan-capital-name-swap": 177
+   },
+   "nMaps": 120,
+   "reached": {
+    "alt": 510,
+    "altNull": 1420,
+    "fill": 1789,
+    "fixedNull": 15,
+    "forced": 73,
+    "klaszFill": 242,
+    "reassign": 242,
+    "resolveMass": 90,
+    "rfXor": 693,
+    "spawn:prefNull": 9,
+    "spawn:prefOk": 439,
+    "spawn:retryNull": 9,
+    "spawn:spawnSkipLand": 8,
+    "tc": 1573,
+    "tcFail": 1733,
+    "tcLast": 254,
+    "top1": 1681,
+    "top2": 1420
+   },
+   "seed": 31,
+   "tried": {
+    "plan-capital-name-swap": 448,
+    "plan-dropped-typ-not-skipped": 448,
+    "player-cap-xor-1": 448,
+    "player-cap-xor-retry": 448
+   }
+  },
+  "hunt-r2c-32.json": {
+   "calls": 1200,
+   "found": {
+    "plan-capital-name-swap": 138
+   },
+   "nMaps": 120,
+   "reached": {
+    "alt": 528,
+    "altNull": 3521,
+    "fill": 3881,
+    "forced": 330,
+    "klaszFill": 827,
+    "reassign": 827,
+    "resolveMass": 731,
+    "rfXor": 1780,
+    "spawn:prefNull": 7,
+    "spawn:prefOk": 397,
+    "spawn:retryNull": 7,
+    "spawn:spawnSkipLand": 54,
+    "tc": 3633,
+    "tcFail": 3774,
+    "tcLast": 404,
+    "top1": 3661,
+    "top2": 3521
+   },
+   "seed": 32,
+   "tried": {
+    "plan-capital-name-swap": 404,
+    "plan-dropped-typ-not-skipped": 404,
+    "player-cap-xor-1": 404,
+    "player-cap-xor-retry": 404
+   }
+  },
+  "hunt-r2c-33.json": {
+   "calls": 90,
+   "found": {},
+   "nMaps": 30,
+   "reached": {
+    "alt": 1,
+    "altNull": 22,
+    "fill": 79,
+    "fixedNull": 150,
+    "forced": 150,
+    "klaszFill": 10,
+    "reassign": 10,
+    "rfXor": 9,
+    "skipNoHex": 26,
+    "spawn:prefNull": 10,
+    "spawn:prefOk": 20,
+    "spawn:retryNull": 10,
+    "spawn:spawnSkipLand": 3,
+    "tc": 65,
+    "tcFail": 75,
+    "tcLast": 22,
+    "top1": 90,
+    "top2": 72
+   },
+   "seed": 33,
+   "tried": {
+    "plan-dropped-typ-not-skipped": 31,
+    "player-cap-xor-1": 31
+   }
+  },
+  "hunt-r2c-41.json": {
+   "calls": 180,
+   "found": {},
+   "nMaps": 60,
+   "reached": {
+    "alt": 11,
+    "altNull": 54,
+    "fill": 153,
+    "fixedNull": 339,
+    "forced": 339,
+    "klaszFill": 7,
+    "reassign": 7,
+    "resolveMass": 3,
+    "rfXor": 17,
+    "skipNoHex": 29,
+    "spawn:prefNull": 47,
+    "spawn:prefOk": 18,
+    "spawn:retryNull": 47,
+    "spawn:spawnSkipLand": 2,
+    "tc": 127,
+    "tcFail": 149,
+    "tcLast": 27,
+    "top1": 176,
+    "top2": 156
+   },
+   "seed": 41,
+   "tried": {
+    "player-growth-reserve-0-initial": 384
+   }
+  },
+  "hunt-r2c-42.json": {
+   "calls": 180,
+   "found": {},
+   "nMaps": 60,
+   "reached": {
+    "alt": 26,
+    "altNull": 58,
+    "fill": 212,
+    "fixedNull": 411,
+    "forced": 411,
+    "klaszFill": 22,
+    "reassign": 22,
+    "resolveMass": 45,
+    "rfXor": 10,
+    "skipNoHex": 35,
+    "spawn:prefNull": 57,
+    "spawn:prefOk": 8,
+    "spawn:retryNull": 57,
+    "spawn:spawnSkipLand": 4,
+    "tc": 134,
+    "tcFail": 199,
+    "tcLast": 83,
+    "top1": 226,
+    "top2": 156
+   },
+   "seed": 42,
+   "tried": {
+    "player-growth-reserve-0-initial": 468
+   }
+  }
+ },
+ "found": {
+  "plan-capital-name-swap": 325,
+  "repack-final-and": 19,
+  "table-topup-div-3": 13,
+  "table-topup-min-9": 4,
+  "topup-centers-local-land": 17,
+  "topup-player-dist-le": 52,
+  "topup-region-lt": 15
+ },
+ "reached": {
+  "alt": 1671,
+  "altNull": 6803,
+  "fill": 8688,
+  "fixedNull": 1323,
+  "forced": 1829,
+  "klaszFill": 1606,
+  "reassign": 1606,
+  "resolveMass": 1061,
+  "rfXor": 3382,
+  "skipNoHex": 155,
+  "spawn:prefMoved": 1,
+  "spawn:prefNull": 226,
+  "spawn:prefOk": 2715,
+  "spawn:retryNull": 162,
+  "spawn:spawnSkipLand": 92,
+  "tc": 7714,
+  "tcFail": 8275,
+  "tcLast": 1374,
+  "top1": 8083,
+  "top2": 7234
+ },
+ "tried": {
+  "enforce-hard-removed": 747,
+  "min-dyst-order-sep": 4213,
+  "plan-capital-name-swap": 2520,
+  "plan-dropped-typ-not-skipped": 2551,
+  "player-cap-xor-1": 2551,
+  "player-cap-xor-retry": 2520,
+  "player-growth-reserve-0-initial": 5689,
+  "repack-final-and": 315,
+  "table-topup-div-3": 878,
+  "table-topup-min-9": 878,
+  "topup-centers-local-land": 243,
+  "topup-dedupe-removed": 878,
+  "topup-player-dist-le": 734,
+  "topup-region-lt": 878
+ }
+}

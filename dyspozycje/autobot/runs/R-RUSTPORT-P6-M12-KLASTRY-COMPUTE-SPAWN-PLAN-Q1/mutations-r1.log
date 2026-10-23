@@ -1,0 +1,90 @@
+[default-seed-43] WYKRYTA: etap S1, 121s: compute_clusters_default_opts_matches_web_defaults, compute_clusters_matches_web_maps_up_to_500_hexes
+[player-cap-xor-1] PRZEZYLA: wszystkie 3 etapy zielone (664s)
+[player-cap-xor-retry] PRZEZYLA: wszystkie 3 etapy zielone (665s)
+[ki-seed-mul] PRZEZYLA-OCZEKIWANA: wszystkie 3 etapy zielone (604s)
+[empty-map-label-mala] WYKRYTA: etap S1, 81s: compute_clusters_default_opts_matches_web_defaults
+[n-typy-no-cap] WYKRYTA: etap S1, 81s: compute_clusters_matches_web_maps_up_to_500_hexes
+[min-dyst-order-sep] PRZEZYLA: wszystkie 3 etapy zielone (237s)
+[obcy-no-max] WYKRYTA: etap S1, 46s: compute_clusters_matches_web_maps_up_to_500_hexes, web_diagnostic_log_type_error_is_reproduced_on_every_thrown_vector
+[map-center-q] WYKRYTA: etap S1, 37s: compute_clusters_default_opts_matches_web_defaults, compute_clusters_matches_web_maps_up_to_500_hexes, web_diagnostic_log_type_error_is_reproduced_on_every_thrown_vector
+[shuffle-removed] BLAD DEFINICJI: fragment wystepuje 0 razy (oczekiwano 1)
+[land-pool-with-mountains] WYKRYTA: etap S1, 37s: compute_clusters_matches_web_maps_up_to_500_hexes, compute_clusters_default_opts_matches_web_defaults, no_land_returns_empty_structure_without_cache, web_diagnostic_log_type_error_is_reproduced_on_every_thrown_vector
+[sea-field-step] WYKRYTA: etap S1, 33s: sea_distance_field_basic_shape, compute_clusters_default_opts_matches_web_defaults, sea_distance_field_matches_web, compute_clusters_matches_web_maps_up_to_500_hexes ...
+[fill-centers-player-gate] PRZEZYLA: wszystkie 3 etapy zielone (260s)
+[fill-centers-sep-capital] WYKRYTA: etap S1, 30s: compute_clusters_matches_web_maps_up_to_500_hexes, web_diagnostic_log_type_error_is_reproduced_on_every_thrown_vector
+[player-in-epoch-true] WYKRYTA: etap S1, 34s: compute_clusters_matches_web_maps_up_to_500_hexes
+[foreign-slice-plus-one] WYKRYTA: etap S1, 37s: compute_clusters_matches_web_maps_up_to_500_hexes, compute_clusters_default_opts_matches_web_defaults, web_diagnostic_log_type_error_is_reproduced_on_every_thrown_vector
+[topup-centers-local-land] PRZEZYLA: wszystkie 3 etapy zielone (200s)
+[reassign-never] WYKRYTA: etap S1, 42s: compute_clusters_matches_web_maps_up_to_500_hexes
+[player-mass-gate-negated] WYKRYTA: etap S1, 34s: compute_clusters_matches_web_maps_up_to_500_hexes, compute_clusters_default_opts_matches_web_defaults
+[player-sea-gate-negated] WYKRYTA: etap S3, 118s: compute_clusters_matches_web_maps_over_5000_hexes
+[player-placed-push-removed] WYKRYTA: etap S1, 44s: compute_clusters_matches_web_maps_up_to_500_hexes
+[player-repack-empty-negated] WYKRYTA: etap S1, 46s: compute_clusters_matches_web_maps_up_to_500_hexes
+[player-growth-reserve-0-initial] PRZEZYLA: wszystkie 3 etapy zielone (247s)
+[player-pending-from-layout] PRZEZYLA: wszystkie 3 etapy zielone (222s)
+[foreign-loop-start-2] WYKRYTA: etap S1, 34s: compute_clusters_default_opts_matches_web_defaults, compute_clusters_matches_web_maps_up_to_500_hexes, web_diagnostic_log_type_error_is_reproduced_on_every_thrown_vector
+[foreign-anchor-min-dist] WYKRYTA: etap S1, 36s: compute_clusters_default_opts_matches_web_defaults, compute_clusters_matches_web_maps_up_to_500_hexes
+[foreign-existing-all] WYKRYTA: etap S1, 51s: compute_clusters_default_opts_matches_web_defaults, compute_clusters_matches_web_maps_up_to_500_hexes
+[foreign-retry-no-preferred] WYKRYTA: etap S1, 42s: compute_clusters_default_opts_matches_web_defaults, compute_clusters_matches_web_maps_up_to_500_hexes
+[foreign-growth-no-or] PRZEZYLA: wszystkie 3 etapy zielone (249s)
+[foreign-pending-empty] WYKRYTA: etap S1, 53s: compute_clusters_matches_web_maps_up_to_500_hexes, compute_clusters_default_opts_matches_web_defaults
+[foreign-cap-skip-sep] WYKRYTA: etap S1, 43s: compute_clusters_default_opts_matches_web_defaults, compute_clusters_matches_web_maps_up_to_500_hexes, web_diagnostic_log_type_error_is_reproduced_on_every_thrown_vector
+[topup-dedupe-removed] PRZEZYLA: wszystkie 3 etapy zielone (308s)
+[topup-player-dist-le] PRZEZYLA: wszystkie 3 etapy zielone (327s)
+[topup-key-idx-stuck] WYKRYTA: etap S3, 187s: compute_clusters_matches_web_maps_501_to_1100_hexes, compute_clusters_matches_web_maps_2501_to_5000_hexes, compute_clusters_matches_web_maps_1101_to_2500_hexes, compute_clusters_matches_web_maps_over_5000_hexes
+[topup-region-lt] PRZEZYLA: wszystkie 3 etapy zielone (266s)
+[topup-placed-push-removed] WYKRYTA: etap S1, 49s: web_diagnostic_log_type_error_is_reproduced_on_every_thrown_vector, compute_clusters_matches_web_maps_up_to_500_hexes
+[repack-final-and] PRZEZYLA: wszystkie 3 etapy zielone (341s)
+[enforce-hard-removed] PRZEZYLA: wszystkie 3 etapy zielone (332s)
+[enforce-body-removed] WYKRYTA: etap S3, 172s: compute_clusters_matches_web_maps_over_5000_hexes
+[repack-all-removed] WYKRYTA: etap S1, 51s: compute_clusters_matches_web_maps_up_to_500_hexes, compute_clusters_default_opts_matches_web_defaults
+[fillup-caps-empty] WYKRYTA: etap S1, 51s: compute_clusters_matches_web_maps_up_to_500_hexes, web_diagnostic_log_type_error_is_reproduced_on_every_thrown_vector
+[diag-le] WYKRYTA: etap S1, 49s: compute_clusters_matches_web_maps_up_to_500_hexes
+[diag-missing-always-ok] PRZEZYLA: wszystkie 3 etapy zielone (267s)
+[requested-typy-min] WYKRYTA: etap S1, 48s: compute_clusters_matches_web_maps_up_to_500_hexes
+[plan-fallback-hex] WYKRYTA: etap S2, 45s: spawn_plan_without_land_falls_back_to_origin_and_player_name, build_cluster_spawn_plan_matches_web_maps_up_to_500_hexes
+[plan-xor-no-preferred] WYKRYTA: etap S2, 48s: rust_spawn_plan_reproduces_p6_1c_web_spawn_plans, build_cluster_spawn_plan_matches_web_maps_up_to_500_hexes
+[plan-local-land-removed] WYKRYTA: etap S2, 53s: build_cluster_spawn_plan_matches_web_maps_up_to_500_hexes
+[plan-owner-start-0] WYKRYTA: etap S2, 41s: rust_spawn_plan_reproduces_p6_1c_web_spawn_plans, build_cluster_spawn_plan_matches_web_maps_up_to_500_hexes
+[plan-cluster-cap-flag] WYKRYTA: etap S2, 48s: build_cluster_spawn_plan_matches_web_maps_up_to_500_hexes, rust_spawn_plan_reproduces_p6_1c_web_spawn_plans
+[plan-hard-gate-le] WYKRYTA: etap S2, 45s: rust_spawn_plan_reproduces_p6_1c_web_spawn_plans, build_cluster_spawn_plan_matches_web_maps_up_to_500_hexes
+[plan-capital-name-swap] PRZEZYLA: wszystkie 3 etapy zielone (292s)
+[plan-used-names-not-updated] WYKRYTA: etap S2, 45s: build_cluster_spawn_plan_matches_web_maps_up_to_500_hexes, rust_spawn_plan_reproduces_p6_1c_web_spawn_plans
+[plan-pending-hexes-empty] WYKRYTA: etap S2, 37s: build_cluster_spawn_plan_matches_web_maps_up_to_500_hexes, rust_spawn_plan_reproduces_p6_1c_web_spawn_plans
+[plan-dropped-typ-not-skipped] PRZEZYLA: wszystkie 3 etapy zielone (257s)
+[plan-player-name-used] WYKRYTA: etap S2, 36s: rust_spawn_plan_reproduces_p6_1c_web_spawn_plans, build_cluster_spawn_plan_matches_web_maps_up_to_500_hexes
+[to-start-plan-swap-owners] WYKRYTA: etap S2, 37s: rust_spawn_plan_reproduces_p6_1c_web_spawn_plans, to_start_plan_keeps_every_field_and_drops_only_placement
+[to-start-plan-pending-count] WYKRYTA: etap S2, 38s: rust_spawn_plan_reproduces_p6_1c_web_spawn_plans
+[table-default-rivals-8] WYKRYTA: etap S1, 39s: compute_clusters_matches_web_maps_up_to_500_hexes, compute_clusters_default_opts_matches_web_defaults
+[table-center-dist-min-5] WYKRYTA: etap S1, 41s: compute_clusters_default_opts_matches_web_defaults, compute_clusters_matches_web_maps_up_to_500_hexes, web_diagnostic_log_type_error_is_reproduced_on_every_thrown_vector
+[table-center-dist-div-10] WYKRYTA: etap S3, 182s: compute_clusters_matches_web_maps_2501_to_5000_hexes
+[table-margin-min-3] WYKRYTA: etap S3, 147s: compute_clusters_matches_web_maps_1101_to_2500_hexes, compute_clusters_matches_web_maps_2501_to_5000_hexes, compute_clusters_matches_web_maps_501_to_1100_hexes
+[table-margin-div-2] WYKRYTA: etap S3, 152s: compute_clusters_matches_web_maps_over_5000_hexes, compute_clusters_matches_web_maps_2501_to_5000_hexes, compute_clusters_matches_web_maps_1101_to_2500_hexes
+[table-topup-min-9] PRZEZYLA: wszystkie 3 etapy zielone (345s)
+[table-topup-div-3] PRZEZYLA: wszystkie 3 etapy zielone (332s)
+PODSUMOWANIE: {'WYKRYTA': 44, 'PRZEZYLA': 18, 'PRZEZYLA-OCZEKIWANA': 1, 'BLAD-DEFINICJI': 1}
+  UWAGA: player-cap-xor-1 PRZEZYLA
+  UWAGA: player-cap-xor-retry PRZEZYLA
+  UWAGA: min-dyst-order-sep PRZEZYLA
+  UWAGA: shuffle-removed BLAD-DEFINICJI
+  UWAGA: fill-centers-player-gate PRZEZYLA
+  UWAGA: topup-centers-local-land PRZEZYLA
+  UWAGA: player-growth-reserve-0-initial PRZEZYLA
+  UWAGA: player-pending-from-layout PRZEZYLA
+  UWAGA: foreign-growth-no-or PRZEZYLA
+  UWAGA: topup-dedupe-removed PRZEZYLA
+  UWAGA: topup-player-dist-le PRZEZYLA
+  UWAGA: topup-region-lt PRZEZYLA
+  UWAGA: repack-final-and PRZEZYLA
+  UWAGA: enforce-hard-removed PRZEZYLA
+  UWAGA: diag-missing-always-ok PRZEZYLA
+  UWAGA: plan-capital-name-swap PRZEZYLA
+  UWAGA: plan-dropped-typ-not-skipped PRZEZYLA
+  UWAGA: table-topup-min-9 PRZEZYLA
+  UWAGA: table-topup-div-3 PRZEZYLA
+  OCZEKIWANE PRZEZYCIE: ki-seed-mul - mnoznik ziarna per klaster zasila wylacznie lancuch hubow, ktory tasuje kandydatow i sortuje po (q, r) (porzadek calkowity) => wynik pakowania nie zalezy od ziarna (jak w M11: seed-mul-ki)
+  OCZEKIWANE PRZEZYCIE: player-sea-gate-negated - galaz `fixed` (clusters.ts:3739-3781) NIEOSIAGALNA w nagraniach: pokrycie V8 = 0 (patrz doc §6)
+  OCZEKIWANE PRZEZYCIE: foreign-cap-skip-sep - separacja stolicy obcej jest gwarantowana przez `buildClusterCitiesWithLandGate` / `pickSpawnHex...` (kod martwy)
+  OCZEKIWANE PRZEZYCIE: plan-hard-gate-le - separacja stolic w planie spawnu jest juz gwarantowana przez computeClusters (galaz HARD apply niepokryta w nagraniach)
+pliki przywrocone: True
+EXIT=0

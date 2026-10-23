@@ -1,0 +1,7 @@
+mapa 10/60, wywolan 93, znalezione: {}
+mapa 20/60, wywolan 186, znalezione: {}
+mapa 30/60, wywolan 286, znalezione: {}
+mapa 40/60, wywolan 386, znalezione: {}
+mapa 50/60, wywolan 486, znalezione: {}
+mapa 60/60, wywolan 579, znalezione: {}
+koniec {"calls":579,"tried":{},"foundCounts":{},"reached":{"spawn:prefOk":225,"fill":1482,"tc":1320,"tcFail":1434,"klaszFill":369,"reassign":369,"top1":1371,"alt":420,"altNull":1189,"top2":1197,"tcLast":251,"rfXor":531,"spawn:spawnSkipLand":6,"forced":136,"fixedNull":18,"spawn:prefNull":2,"spawn:retryNull":2,"resolveMass":135,"skipNoHex":4}}

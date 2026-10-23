@@ -1,0 +1,15 @@
+[topup-dedupe-removed] PRZEZYLA-OCZEKIWANA: wszystkie 3 etapy zielone (199s)
+[topup-player-dist-le] WYKRYTA: etap S1, 43s: compute_clusters_matches_web_maps_up_to_500_hexes
+[topup-region-lt] WYKRYTA: etap S3, 143s: compute_clusters_matches_web_maps_over_5000_hexes
+[repack-final-and] WYKRYTA: etap S1, 41s: compute_clusters_matches_web_maps_up_to_500_hexes
+[enforce-hard-removed] PRZEZYLA-OCZEKIWANA: wszystkie 3 etapy zielone (173s)
+[plan-capital-name-swap] WYKRYTA: etap S2, 35s: build_cluster_spawn_plan_matches_web_maps_up_to_500_hexes
+[plan-dropped-typ-not-skipped] PRZEZYLA: wszystkie 3 etapy zielone (177s)
+[table-topup-min-9] WYKRYTA: etap S3, 102s: compute_clusters_matches_web_maps_over_5000_hexes
+[table-topup-div-3] WYKRYTA: etap S3, 107s: compute_clusters_matches_web_maps_over_5000_hexes
+PODSUMOWANIE: {'PRZEZYLA-OCZEKIWANA': 2, 'WYKRYTA': 6, 'PRZEZYLA': 1}
+  UWAGA: plan-dropped-typ-not-skipped PRZEZYLA
+  OCZEKIWANE PRZEZYCIE: topup-dedupe-removed - D5: zdublowane klucze w `unusedKeys` (:4002-4005) leza za wszystkimi unikalnymi kluczami rosteru; zuzyte sa co najwyzej `nTypy - klastry.length <= |roster| - klastry.length` pierwszych => dedupe nie zmienia zuzytych kluczy
+  OCZEKIWANE PRZEZYCIE: enforce-hard-removed - D6: kazde `placedCapitals.push` (:3791, :3996, :4056, :4071) poprzedza bramka sep wzgledem biezacego `placedCapitals`; stolice klastrow = zapamietane => `enforceHardCapitalSeparationOnKlastry` (clusters.ts:2660-2790) nie ma naruszen do naprawy (sonda `hardViol` = 0 na wywolaniach z duzych map)
+pliki przywrocone: True
+EXIT=0

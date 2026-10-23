@@ -1,0 +1,5 @@
+mapa 10/40, wywolan 30, znalezione: {"topup-centers-local-land":14}
+mapa 20/40, wywolan 60, znalezione: {"topup-centers-local-land":14,"topup-region-lt":1,"table-topup-div-3":1}
+mapa 30/40, wywolan 90, znalezione: {"topup-centers-local-land":14,"topup-region-lt":4,"table-topup-div-3":1,"table-topup-min-9":3}
+mapa 40/40, wywolan 120, znalezione: {"topup-centers-local-land":14,"topup-region-lt":4,"table-topup-div-3":1,"table-topup-min-9":3}
+koniec {"calls":120,"tried":{"player-growth-reserve-0-initial":288,"enforce-hard-removed":288,"topup-centers-local-land":52,"topup-dedupe-removed":133,"topup-player-dist-le":133,"topup-region-lt":133,"table-topup-min-9":133,"table-topup-div-3":133},"foundCounts":{"topup-centers-local-land":14,"topup-region-lt":4,"table-topup-div-3":1,"table-topup-min-9":3},"reached":{"spawn:prefOk":33,"fill":139,"tc":121,"tcLast":52,"klaszFill":38,"reassign":38,"spawn:spawnSkipLand":8,"tcFail":114,"top1":133,"top2":113,"skipNoHex":26,"rfXor":2,"spawn:prefMoved":1,"forced":150,"fixedNull":150,"spawn:prefNull":13,"spawn:retryNull":13,"alt":6,"altNull":34,"resolveMass":15}}
