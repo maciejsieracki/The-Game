@@ -1,0 +1,13 @@
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=8 terrain=50 landSea=300 relief=211 coast=37 riversMain=1552 riversFill=1896 forest=16 deposits=34 starts=130 total=4234
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=21 landSea=297 relief=193 coast=46 riversMain=859 riversFill=1320 forest=5 deposits=17 starts=118 total=2877
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=1 terrain=12 landSea=210 relief=306 coast=100 riversMain=135 riversFill=134 forest=3 deposits=20 starts=96 total=1016
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=4 landSea=59 relief=80 coast=23 riversMain=389 riversFill=332 forest=12 deposits=2 starts=60 total=961
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=1 terrain=17 landSea=197 relief=185 coast=15 riversMain=3341 riversFill=3319 forest=4 deposits=11 starts=105 total=7194
+OK {"insertedExports":53,"maps":18,"meta":{"pin":"edb8fb56","node":"v22.22.0","insertedExports":53,"clustersLines":4251,"pickCapitalRegionChanged":32,"localDominanceRelocated":112,"fixtures":190,"repairChanged":{"hard":107,"body":105,"repackOne":27,"repackAll":43,"quarter":30},"repairDropped":{"hard":69,"body":42,"repackOne":0,"repackAll":0,"quarter":0}},"counts":{"byLabel":5,"radius":1,"hubReach":21,"forMap":360,"bodyBuffer":18,"seaGates":432,"bandPenalty":832,"quadrant":300,"minQuarters":19,"countPerQuad":160,"spreadQuad":160,"minSepGate":1440,"minSepDist":160,"preferredQuads":1280,"ladder":22,"pickSpawn":520,"poisson":180,"centroid":100,"farEnough":400,"pickCapital":380,"layout":230,"cities":230,"fallback":230,"landGate":115,"capitalPos":60,"assignTypes":160,"localDominance":150,"localDominanceEmpty":2,"fixtures":190,"clusterHelpers":190,"clusterHelpersEdge":3,"foreignAnchorEdge":2,"repair_hard":150,"repair_body":150,"repair_repackOne":80,"repair_repackAll":60,"repair_quarter":110,"pickSpawnExtra":90,"poissonExtra":90,"pickCapitalExtra":140,"localDominanceExtra":100,"repair_repackOneExtra":120,"repair_repackAllExtra":40}}
+EXIT=0
+c1c8661ed8800833dd6851c43e19454edd22ab53f66ca1c9d8cb84b68ac30422  /tmp/claude-0/m11-vectors-final.json

@@ -1,0 +1,3 @@
+WYKRYTA   max-sea-minus-band: 3 testow FAILED: by_label_matches_web, derived_constants_are_aliases_of_table_fields, for_map_matches_web
+WYKRYTA   layout-growth-zero: 3 testow FAILED: build_cluster_cities_matches_web, cities_with_land_gate_match_web, layout_with_edge_capital_matches_web
+WYKRYTA   assign-quota-plus: 1 testow FAILED: assign_types_matches_web
