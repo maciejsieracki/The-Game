@@ -1,0 +1,42 @@
+## base: 78bd7f1afc51af80de72582cba76f7610a5630a0 + working tree (R-RUSTPORT-P4-36-MOD14-BATTLE-3D-Q2 r1)
+## rustc: rustc 1.97.0 (2d8144b78 2026-07-07)
+## $ cargo fmt --all -- --check
+EXIT=0
+## $ cargo clippy --locked --all-targets -- -D warnings
+    Checking civ-renderer v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_62d4657d-7aa-1/rust-port/renderer)
+    Finished `dev` profile [unoptimized] target(s) in 22.53s
+EXIT=0
+## $ cargo clippy --locked --all-targets --features gpu -- -D warnings
+    Checking civ-renderer v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_62d4657d-7aa-1/rust-port/renderer)
+    Finished `dev` profile [unoptimized] target(s) in 24.18s
+EXIT=0
+## $ cargo test --locked --all-targets   (full log: test-full-r1.txt)
+EXIT=0
+## test totals: passed=397 failed=0 binaries=52
+## $ cargo test --locked --test battle3d_field -- --nocapture
+field synthetic: 9 cases, scalars 7881, checks 15407
+field ctor: 16 cases, 177798 nodes, scalars 19299, checks 22567
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 12.29s
+EXIT=0
+## $ cargo test --locked --test battle3d_siege_wall   (part 1 unchanged)
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.86s
+EXIT=0
+## $ (cd tests/fixtures/battle3d && sha256sum -c MANIFEST.sha256)
+README.md: OK
+build.mjs: OK
+build_field.mjs: OK
+dom_stub.ts: OK
+field.json: OK
+gen.mjs: OK
+gen.ts: OK
+gen_field.ts: OK
+mutate.py: OK
+mutate_field.py: OK
+siege_wall.json: OK
+three_shim.ts: OK
+EXIT=0
+## $ du -b tests/fixtures/battle3d (budget 12 MB, file <= 8 MB)
+10908890	tests/fixtures/battle3d
+438606 gen.mjs
+3165207 field.json
+7228812 siege_wall.json

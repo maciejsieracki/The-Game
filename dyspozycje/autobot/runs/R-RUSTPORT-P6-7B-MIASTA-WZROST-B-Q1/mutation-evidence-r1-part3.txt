@@ -1,0 +1,4 @@
+WYKRYTY   : [8] cost: epoka - cyfry puste czesci -> 3 testow czerwonych: epoch_cost_multiplier_matches_running_web, scale_cost_by_epoch_matches_running_web, unit_stock_cost_matches_running_web
+WYKRYTY   : [52] unit: pusty klucz -> 1 testow czerwonych: unit_stock_cost_matches_running_web
+WYKRYTY   : [73] gate: filtr - dodatkowy wymagany surowiec -> 1 testow czerwonych: filter_runtime_active_built_ids_matches_running_web
+mutantow=3 przezylo/niekompilujace=0

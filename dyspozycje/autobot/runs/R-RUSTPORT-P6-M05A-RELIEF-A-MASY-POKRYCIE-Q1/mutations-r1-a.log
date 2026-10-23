@@ -1,0 +1,10 @@
+SHA256 poczatkowe: src/domain/mapgen/relief.rs=4c23993d004feed6202ceecf5f653fb360916f4975af75dc548bad595a4d75d3 data/derived/mapgen-relief-a.json=25aba4016ef7a2b1437820f08a369a1329893536d66a07ec7a2040520bd7e753
+DRZEWO CZYSTE przed przebiegiem (git status --porcelain --untracked-files=no puste)
+   group-bfs-queue: PRZYWROCONO git checkout OK; src/domain/mapgen/relief.rs:sha256=4c23993d004feed6..=OK data/derived/mapgen-relief-a.json:sha256=25aba4016ef7a2b1..=OK; drzewo CZYSTE
+WYKRYTA   group-bfs-queue [celowany] (97 s): 1 testow FAILED: group_land_mass_keys_matches_web
+   group-neighbor-water-ignored: PRZYWROCONO git checkout OK; src/domain/mapgen/relief.rs:sha256=4c23993d004feed6..=OK data/derived/mapgen-relief-a.json:sha256=25aba4016ef7a2b1..=OK; drzewo CZYSTE
+WYKRYTA   group-neighbor-water-ignored [celowany] (94 s): 1 testow FAILED: group_land_mass_keys_matches_web
+   group-start-water-ignored: PRZYWROCONO git checkout OK; src/domain/mapgen/relief.rs:sha256=4c23993d004feed6..=OK data/derived/mapgen-relief-a.json:sha256=25aba4016ef7a2b1..=OK; drzewo CZYSTE
+WYKRYTA   group-start-water-ignored [celowany] (90 s): 1 testow FAILED: group_land_mass_keys_matches_web
+   river-land-polar-removed: PRZYWROCONO git checkout OK; src/domain/mapgen/relief.rs:sha256=4c23993d004feed6..=OK data/derived/mapgen-relief-a.json:sha256=25aba4016ef7a2b1..=OK; drzewo CZYSTE
+WYKRYTA   river-land-polar-removed [celowany] (95 s): 1 testow FAILED: centroid_center_square_and_distance_match_web

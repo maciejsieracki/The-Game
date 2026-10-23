@@ -1,0 +1,16 @@
+SHA256 poczatkowe: src/domain/mapgen/relief.rs=4c23993d004feed6202ceecf5f653fb360916f4975af75dc548bad595a4d75d3 data/derived/mapgen-relief-a.json=25aba4016ef7a2b1437820f08a369a1329893536d66a07ec7a2040520bd7e753
+DRZEWO CZYSTE przed przebiegiem (git status --porcelain --untracked-files=no puste)
+   forest-eligible-desert: PRZYWROCONO git checkout OK; src/domain/mapgen/relief.rs:sha256=4c23993d004feed6..=OK data/derived/mapgen-relief-a.json:sha256=25aba4016ef7a2b1..=OK; drzewo CZYSTE
+WYKRYTA   forest-eligible-desert [celowany] (83 s): 1 testow FAILED: forest_eligible_and_deposit_protection_match_web
+   bonus-cap-mountain-ceil-to-floor: PRZYWROCONO git checkout OK; src/domain/mapgen/relief.rs:sha256=4c23993d004feed6..=OK data/derived/mapgen-relief-a.json:sha256=25aba4016ef7a2b1..=OK; drzewo CZYSTE
+WYKRYTA   bonus-cap-mountain-ceil-to-floor [celowany] (71 s): 1 testow FAILED: caps_match_web
+   overflow-resolve-mountain-ge: PRZYWROCONO git checkout OK; src/domain/mapgen/relief.rs:sha256=4c23993d004feed6..=OK data/derived/mapgen-relief-a.json:sha256=25aba4016ef7a2b1..=OK; drzewo CZYSTE
+WYKRYTA   overflow-resolve-mountain-ge [celowany] (110 s): 1 testow FAILED: overflow_cap_frac_with_damaged_json_matches_web
+   min-land-floor-to-ceil: PRZYWROCONO git checkout OK; src/domain/mapgen/relief.rs:sha256=4c23993d004feed6..=OK data/derived/mapgen-relief-a.json:sha256=25aba4016ef7a2b1..=OK; drzewo CZYSTE
+WYKRYTA   min-land-floor-to-ceil [celowany] (109 s): 1 testow FAILED: min_land_hexes_match_web
+   deprecated-min-mountains-tier: PRZYWROCONO git checkout OK; src/domain/mapgen/relief.rs:sha256=4c23993d004feed6..=OK data/derived/mapgen-relief-a.json:sha256=25aba4016ef7a2b1..=OK; drzewo CZYSTE
+WYKRYTA   deprecated-min-mountains-tier [celowany] (93 s): 1 testow FAILED: consts_and_tier_tables_match_web
+   iron-package-ge-to-gt: PRZYWROCONO git checkout OK; src/domain/mapgen/relief.rs:sha256=4c23993d004feed6..=OK data/derived/mapgen-relief-a.json:sha256=25aba4016ef7a2b1..=OK; drzewo CZYSTE
+WYKRYTA   iron-package-ge-to-gt [celowany] (85 s): 1 testow FAILED: cell_counters_and_packages_match_web
+   coverage-empty-ratio-zero: PRZYWROCONO git checkout OK; src/domain/mapgen/relief.rs:sha256=4c23993d004feed6..=OK data/derived/mapgen-relief-a.json:sha256=25aba4016ef7a2b1..=OK; drzewo CZYSTE
+WYKRYTA   coverage-empty-ratio-zero [celowany] (84 s): 1 testow FAILED: grid_coverage_ratios_match_web

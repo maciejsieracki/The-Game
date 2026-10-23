@@ -1,0 +1,9 @@
+WYKRYTO  tempo: exit=1 sprawdzen=335375 rozbieznosci=1 nfd_punktow=282230 nfd_nieprzypisane_w_unicode14=829834
+WYKRYTO  mnoznik epoki: exit=1 sprawdzen=335375 rozbieznosci=1 nfd_punktow=282230 nfd_nieprzypisane_w_unicode14=829834
+WYKRYTO  koszt jednostki: exit=1 sprawdzen=335375 rozbieznosci=1 nfd_punktow=282230 nfd_nieprzypisane_w_unicode14=829834
+WYKRYTO  nfd: exit=1 sprawdzen=335375 rozbieznosci=1 nfd_punktow=282230 nfd_nieprzypisane_w_unicode14=829834
+WYKRYTO  pula: exit=1 sprawdzen=335375 rozbieznosci=1 nfd_punktow=282230 nfd_nieprzypisane_w_unicode14=829834
+WYKRYTO  etykiety bramki: exit=1 sprawdzen=335375 rozbieznosci=1 nfd_punktow=282230 nfd_nieprzypisane_w_unicode14=829834
+WYKRYTO  prerekwizyt: exit=1 sprawdzen=335375 rozbieznosci=1 nfd_punktow=282230 nfd_nieprzypisane_w_unicode14=829834
+WYKRYTO  spichlerz drain: exit=1 sprawdzen=335375 rozbieznosci=1 nfd_punktow=282230 nfd_nieprzypisane_w_unicode14=829834
+WYKRYTO  status nieaktywny: exit=1 sprawdzen=335375 rozbieznosci=1 nfd_punktow=282230 nfd_nieprzypisane_w_unicode14=829834
