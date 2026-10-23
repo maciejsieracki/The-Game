@@ -4205,3 +4205,218 @@ pub fn nfd_strip_lookup() -> &'static NfdStripLookup {
         }
     })
 }
+
+// ---------------------------------------------------------------------------
+// P6.7A - wzrost ludnosci i zywnosc imperium
+// (`population-growth-v85.ts`, `empire-food.ts`, `population-growth-tempo.ts`,
+// `r-stawki-strojenie.ts`). Tabele: `wzrost-ludnosci-params.json`, `era-diakrytyki.json`.
+// ---------------------------------------------------------------------------
+
+pub const WZROST_LUDNOSCI_PARAMS_JSON: &str =
+    include_str!("../../data/derived/wzrost-ludnosci-params.json");
+pub const ERA_DIAKRYTYKI_JSON: &str = include_str!("../../data/derived/era-diakrytyki.json");
+
+/// Wiersz tabeli `WYZYWIENIE_GROWTH_PCT`: poziom Wyzywienia -> wzrost % na ture.
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct WzrostProcWiersz {
+    pub poziom: f64,
+    pub proc: f64,
+}
+
+/// Skala Wyzywienia (0..max co krok); max zyje w `cities-params.json`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct WyzywienieParams {
+    pub zrodlo: String,
+    pub min: f64,
+    pub krok: f64,
+    pub wzrost_proc: Vec<WzrostProcWiersz>,
+}
+
+/// Stale skladnikow `computeGrowthPercentV85`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct SkladnikiWzrostuParams {
+    pub zrodlo: String,
+    pub male_miasto_prog: f64,
+    pub zdrowie_na_punkt: f64,
+    pub szczescie_na_punkt: f64,
+    pub cywilizacja_skala: f64,
+}
+
+/// Mnoznik trudnosci dla wkladu `lud_wzrost_proc` macierzy cywilizacji.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct TrudnoscMnoznikParams {
+    pub zrodlo: String,
+    pub easy: f64,
+    pub normal: f64,
+    pub hard: f64,
+}
+
+/// Twardy sufit i dozwolone delty limitu ludnosci (wejscie z `economy.ts`).
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct LimitPopulacjiParams {
+    pub zrodlo: String,
+    pub twardy_max: f64,
+    pub dozwolone_delta: Vec<f64>,
+}
+
+/// Wejscia Spichlerza (z `building-resource-gate.ts`).
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct SpichlerzWzrostParams {
+    pub zrodlo: String,
+    pub id_i: String,
+    pub id_ii: String,
+    pub id_akwedukt: String,
+    pub id_magazyn: String,
+    pub wzrost_proc_tier_i: f64,
+    pub wzrost_proc_tier_ii: f64,
+    pub wzrost_proc_brak: f64,
+    pub mnoznik_kosztu_racji_tier_i: f64,
+    pub mnoznik_kosztu_racji_tier_ii: f64,
+    pub mnoznik_kosztu_racji_brak: f64,
+    pub cap_imperium_tier_i: f64,
+    pub cap_imperium_tier_ii: f64,
+}
+
+/// Wejscie z `economy-upkeep.ts::magazynEraMultiplier`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct MagazynEraParams {
+    pub zrodlo: String,
+    pub podstawa: f64,
+    pub epoka_min: f64,
+}
+
+/// Wartosci zapasowe `buildRationParams` (@deprecated w webie).
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct RacjeDomyslneParams {
+    pub zrodlo: String,
+    pub zywnosc: [f64; 3],
+    pub wzrost_proc: [f64; 3],
+}
+
+/// Wartosci zapasowe `buildEmpireFoodParams`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct EmpireFoodDomyslneParams {
+    pub zrodlo: String,
+    pub centralny_cap_baza: f64,
+    pub centralny_cap_bonus_magazyn: f64,
+    pub glod_hp_frac: f64,
+    pub glod_karencja_tur: f64,
+    pub glod_stat_mult: f64,
+}
+
+/// Wiersz migracji starych batonow Racji (1|2|3).
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct MigracjaRacjiWiersz {
+    pub stary: f64,
+    pub nowy: f64,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct MigracjaRacjiParams {
+    pub zrodlo: String,
+    pub wiersze: Vec<MigracjaRacjiWiersz>,
+}
+
+/// Tempo wzrostu z kreatora (mnoznik progu).
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct TempoWzrostuParams {
+    pub zrodlo: String,
+    pub wysoki: f64,
+    pub normalny: f64,
+    pub wolny: f64,
+    pub prog_min: f64,
+}
+
+/// Mnozniki R-STAWKI-STROJENIE.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct RStawkiParams {
+    pub zrodlo: String,
+    pub koszt_mult: f64,
+    pub fala2_mult: f64,
+    pub min_wartosc: f64,
+}
+
+/// Alias epoki badan (warianty zapisu -> id kanoniczny).
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct EpokaAlias {
+    pub kanon: String,
+    pub warianty: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct EpokiBadanParams {
+    pub zrodlo: String,
+    pub domyslna: String,
+    pub aliasy: Vec<EpokaAlias>,
+    pub fala2_extra: Vec<String>,
+}
+
+/// Plik `wzrost-ludnosci-params.json`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct WzrostLudnosciParamsFile {
+    pub meta: serde_json::Value,
+    pub wyzywienie: WyzywienieParams,
+    pub skladniki_wzrostu: SkladnikiWzrostuParams,
+    pub trudnosc_mnoznik_macierzy: TrudnoscMnoznikParams,
+    pub limit_populacji: LimitPopulacjiParams,
+    pub spichlerz: SpichlerzWzrostParams,
+    pub magazyn_era: MagazynEraParams,
+    pub racje_domyslne_deprecated: RacjeDomyslneParams,
+    pub empire_food_domyslne: EmpireFoodDomyslneParams,
+    pub migracja_racji_legacy: MigracjaRacjiParams,
+    pub tempo_wzrostu: TempoWzrostuParams,
+    pub r_stawki: RStawkiParams,
+    pub epoki_badan: EpokiBadanParams,
+}
+
+pub fn parse_wzrost_ludnosci_params() -> Result<WzrostLudnosciParamsFile, serde_json::Error> {
+    serde_json::from_str(WZROST_LUDNOSCI_PARAMS_JSON)
+}
+
+/// Stale P6.7A (jednorazowy odczyt; blad danych = panika z komunikatem).
+pub fn wzrost_ludnosci_params() -> &'static WzrostLudnosciParamsFile {
+    static TABLE: std::sync::OnceLock<WzrostLudnosciParamsFile> = std::sync::OnceLock::new();
+    TABLE.get_or_init(|| {
+        parse_wzrost_ludnosci_params().expect("wzrost-ludnosci-params.json must parse")
+    })
+}
+
+/// Plik `era-diakrytyki.json`: rozklad NFD bez znakow laczacych U+0300..U+036F.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct EraDiakrytykiFile {
+    pub meta: serde_json::Value,
+    pub wiersze: Vec<(u32, String)>,
+}
+
+pub fn parse_era_diakrytyki() -> Result<EraDiakrytykiFile, serde_json::Error> {
+    serde_json::from_str(ERA_DIAKRYTYKI_JSON)
+}
+
+/// Tabela rozkladu jako mapa punkt kodowy -> tekst (jednorazowy odczyt).
+pub fn era_diakrytyki_map() -> &'static BTreeMap<u32, String> {
+    static TABLE: std::sync::OnceLock<BTreeMap<u32, String>> = std::sync::OnceLock::new();
+    TABLE.get_or_init(|| {
+        parse_era_diakrytyki()
+            .expect("era-diakrytyki.json must parse")
+            .wiersze
+            .into_iter()
+            .collect()
+    })
+}

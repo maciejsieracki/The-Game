@@ -1,0 +1,9 @@
+WYKRYTY   : [81] e: magazyny - dedup tikow -> 1 testow czerwonych: advance_empire_food_matches_web
+  przywrocono src/domain/city_growth.rs: SHA-256 zgodny
+WYKRYTY   : [83] e: akcesor - odliczanie -> 1 testow czerwonych: advance_empire_food_matches_web
+  przywrocono src/domain/city_growth.rs: SHA-256 zgodny
+WYKRYTY   : [89] e: pula - pokrycie -> 1 testow czerwonych: simulation_helpers_match_web
+  przywrocono src/domain/city_growth.rs: SHA-256 zgodny
+WYKRYTY   : [126] p: domyslnie nienakarmione -> 1 testow czerwonych: post_central_growth_matches_web
+  przywrocono src/domain/city_growth.rs: SHA-256 zgodny
+mutantow=4 przezylo/niekompilujace/timeout=0

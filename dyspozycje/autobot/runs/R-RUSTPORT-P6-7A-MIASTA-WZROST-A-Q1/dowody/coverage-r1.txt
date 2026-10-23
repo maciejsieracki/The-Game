@@ -1,0 +1,11 @@
+post_central: scenariuszy 100 ze zmiana populacji 68 wywolan hookow 166 z wzrostem 51 z glodem 43 z exclude 77 z manpower 96 via {'efAlias': 38, 'post': 40, 'central2': 22}
+advance: 100 glodWojska 96 atrycja 16 pomocMiastom>0 158 ucieto cap 5 wlasciciel -1 pominiety 82
+plan: 70 z miastami na limicie 19 allFed 67 nie allFed 3
+balance: 70 adjusted 20 zmian poziomow 67
+raise: 70 adjusted 25 zmian poziomow 61
+maxSafe: 70 rozklad poziomow {'0': 42, '1': 2, '2': 2, '3': 3, '4': 1, '6': 11, '~0.5': 3, '~1.5': 2, '~3.5': 3, '~4.5': 1}
+percent: 700 z macierza cywilizacji niezerowa 261 z zaopatrzeniem != 0 423
+fractional: wzrost 129 ubytek 33 co najmniej +2 obywateli w turze 89
+hunger: ubytek 403 bez ubytku (dlug) 98
+era: 71 rozne wyniki 38 fala2 true 14
+edge: advance 40 z odliczaniem glodu (nie null) 25 | simulate (ujemne zapasy) 80 | postCentral (brak wpisow fed) 40 ze zmiana populacji 39

@@ -1,0 +1,4 @@
+SEKCJE: {"advance": 2589, "balance": 70, "build": 62, "cityLevel": 114, "diffMult": 4, "ensure": 122, "era": 142, "fractional": 900, "gain": 300, "happiness": 59, "hunger": 700, "magazynEra": 14, "manpower": 300, "matrix": 118, "maxSafe": 70, "params": 3, "percent": 700, "plan": 70, "popCap": 180, "postCentral": 560, "raise": 70, "ration": 1351, "rationCost": 400, "recompute": 60, "simulate": 1150, "spichlerz": 18, "stawki": 405, "tempo": 427, "turns": 300}
+PORUWNAN: 11258
+ROZBIEZNOSCI: 0
+EXIT=0
