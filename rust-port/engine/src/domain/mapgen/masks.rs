@@ -283,7 +283,9 @@ pub mod v8math {
     }
 
     /// `Math.sin` jak w V8 (fdlibm). Dla `|x| > 2^19 * pi/2` (poza uzyciem generatora: kat z
-    /// `atan2` lezy w `[-pi, pi]`) zwraca wynik `f64::sin`; `NaN`/nieskonczonosc daja `NaN`.
+    /// `atan2` lezy w `[-pi, pi]`) NIE jest odtwarzaniem V8 (brak redukcji Payne'a-Hanka): w buildzie
+    /// z `debug_assertions` (testy, dev) wywolanie z takim argumentem PANIKUJE, zamiast po cichu
+    /// zwrocic wynik `f64::sin` (libm); w release zwraca `f64::sin`. `NaN`/nieskonczonosc daja `NaN`.
     pub fn js_sin(x: f64) -> f64 {
         let ix = hi(x) & 0x7fff_ffff;
         if ix <= 0x3fe9_21fb {
@@ -293,6 +295,9 @@ pub mod v8math {
             return f64::NAN;
         }
         if ix > 0x4139_21fb {
+            if cfg!(debug_assertions) {
+                panic!("js_sin({x:?}): |x| > 2^19*pi/2 poza zakresem odtworzenia V8 (brak Payne-Hanka)");
+            }
             return x.sin();
         }
         let (n, y0, y1) = rem_pio2_medium(x);
