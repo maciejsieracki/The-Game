@@ -141,21 +141,27 @@ MUTATIONS = [
     ("table-topup-div-3", TBL, '"wartosc": 2,\n      "zrodlo_web": "gra/src/map/clusters.ts:4054', '"wartosc": 3,\n      "zrodlo_web": "gra/src/map/clusters.ts:4054', 0),
 ]
 
-# Mutacje, ktorych przezycie jest OCZEKIWANE i uzasadnione (wynik raportowany jako "rownowazna/nieosiagalna").
+# Mutacje, ktorych przezycie jest OCZEKIWANE: WYLACZNIE mutanty rownowazne / z dowodem nieosiagalnosci (doc §7.2, dowody
+# D1-D6 wraz z odnosnikami do linii weba). R2: lista ZAWEZONA wzgledem R1 - usunieto wpisy dopisane po fakcie bez dowodu
+# (`player-cap-xor-1`, `plan-dropped-typ-not-skipped`, `plan-hard-gate-le`, `plan-sep-skip-removed`, ... ); mutanty bez dowodu
+# i bez zabijajacego wektora raportowane sa jako PRZEZYLA (nieoczekiwane, NIE_ZMIERZONO) w doc §7.3.
 EXPECTED_SURVIVORS = {
-    "ki-seed-mul": "mnoznik ziarna per klaster zasila wylacznie lancuch hubow, ktory tasuje kandydatow i sortuje po (q, r) "
+    "ki-seed-mul": "D1: mnoznik ziarna per klaster zasila wylacznie lancuch hubow, ktory tasuje kandydatow i sortuje po (q, r) "
                    "(porzadek calkowity) => wynik pakowania nie zalezy od ziarna (jak w M11: seed-mul-ki)",
-    "player-cap-xor-1": "ziarno wyboru hexu gracza wplywa na wynik tylko gdy `preferred` jest niewazny (pierwsza proba zwraca preferred) - "
-                        "w nagraniach `hunt-rare-branches.mjs` nie znalazl takiego wejscia (patrz doc §6)",
-    "player-cap-xor-retry": "druga proba (bez preferred) jest nieosiagalna w nagraniach (patrz doc §6)",
-    "diag-missing-always-ok": "mutant rownowazny: dodane ramie `_ if false` jest nieosiagalne (brak zmiany zachowania)",
-    "foreign-seed-ci": "j.w. (ziarno pakowania obcego klastra nie wplywa na wynik)",
-    "player-sea-gate-negated": "galaz `fixed` (clusters.ts:3739-3781) NIEOSIAGALNA w nagraniach: pokrycie V8 = 0 (patrz doc §6)",
-    "foreign-cap-skip-sea-floor": "`softSeaFloor` = ostatni stopien drabinki = 0, wiec `softSeaFloor > 0` jest zawsze falszywe (kod martwy w webie)",
-    "foreign-cap-skip-sep": "separacja stolicy obcej jest gwarantowana przez `buildClusterCitiesWithLandGate` / `pickSpawnHex...` (kod martwy)",
-    "plan-hard-gate-le": "separacja stolic w planie spawnu jest juz gwarantowana przez computeClusters (galaz HARD apply niepokryta w nagraniach)",
-    "plan-sep-skip-removed": "j.w.",
-    "plan-foreign-capitals-all": "gracz jest pomijany takze przez `pickSpawnHex...` (stolica gracza == preferred), wiec dolozenie jej do `planned` nie zmienia wyniku",
+    "diag-missing-always-ok": "D2: mutant rownowazny: dodane ramie `_ if false` jest nieosiagalne (brak zmiany zachowania)",
+    "min-dyst-order-sep": "D3: `capitalMinSeparationForMap` i `clusterCenterPlacementSepForMap` (= tabela + 2, clusters.ts:1508-1530) sa "
+                          "NIEZEROWE dokladnie wtedy, gdy krotszy bok >= 80; galaz `minCapitalSepEarly > 0` (:3431) jest osiagana tylko gdy "
+                          "`centerPlacementSep == 0`, a wtedy `minCapitalSepEarly == 0` => ramie nieosiagalne (rownowaznosc)",
+    "fill-centers-player-gate": "D4: `requirePlayerMassGate: centrumy.length === 0` (:3509) - petla :3496 nigdy nie startuje z pustym `centrumy` "
+                                "(faza 5b `placeClusterCentersAcrossLandmasses` :1317-1334 stawia pierwszy srodek zawsze, gdy nNeeded >= 1) => "
+                                "warunek stale falszywy",
+    "topup-dedupe-removed": "D5: zdublowane klucze w `unusedKeys` (:4002-4005) leza za wszystkimi unikalnymi kluczami rosteru; zuzyte sa co "
+                            "najwyzej `nTypy - klastry.length <= |roster| - klastry.length` pierwszych => dedupe nie zmienia zuzytych kluczy",
+    "enforce-hard-removed": "D6: kazde `placedCapitals.push` (:3791, :3996, :4056, :4071) poprzedza bramka sep wzgledem biezacego "
+                            "`placedCapitals`; stolice klastrow = zapamietane => `enforceHardCapitalSeparationOnKlastry` (clusters.ts:2660-2790) nie ma "
+                            "naruszen do naprawy (sonda `hardViol` = 0 na wywolaniach z duzych map)",
+    "player-cap-xor-retry": "D7: druga proba (cluster-spawn.ts:299-313) ma te same bramki i pule co pierwsza, wiec zwraca null zawsze gdy pierwsza zwrocila "
+                            "null (`retryOk` nieosiagalne; sonda `retryOk` = 0, `retryNull` > 0) - ziarno retry nie jest nigdy zuzyte",
 }
 
 argv = [a for a in sys.argv[1:] if a != "--dry"]
@@ -233,7 +239,7 @@ for mid, tag in results:
     if tag in ("PRZEZYLA", "BLAD-DEFINICJI", "BLAD-KOMPILACJI"):
         print("  UWAGA:", mid, tag)
 for mid, why in EXPECTED_SURVIVORS.items():
-    if any(r[0] == mid for r in results):
+    if any(r[0] == mid and r[1].startswith("PRZEZYLA") for r in results):
         print("  OCZEKIWANE PRZEZYCIE:", mid, "-", why)
 print("pliki przywrocone:", ok)
 sys.exit(0 if ok else 1)

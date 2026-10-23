@@ -546,17 +546,31 @@ for (const id of SMALL_IDS.concat(MID_IDS)) {
 }
 
 // --- spawn ---
+// R2: `namesLimit` skraca listy nazw (civs `nazwyMiast` i pule) do n wpisow - wymusza gałęzie awaryjne nazw
+// (`Rywal N` / id typu), ktorych pelne listy (110 nazw) nigdy nie wyczerpuja.
+const limitedCache = new Map();
+function limitedData(n) {
+  if (!limitedCache.has(n)) {
+    const c = JSON.parse(JSON.stringify(civs));
+    for (const civ of c.cywilizacje) civ.nazwyMiast = civ.nazwyMiast.slice(0, n);
+    const p = JSON.parse(JSON.stringify(pools));
+    for (const k of Object.keys(p)) p[k].miasta_cywilizacji = p[k].miasta_cywilizacji.slice(0, n);
+    limitedCache.set(n, { civs: c, pools: p });
+  }
+  return limitedCache.get(n);
+}
 function runSpawn(id, spec) {
+  const data = spec.namesLimit !== undefined ? limitedData(spec.namesLimit) : { civs, pools };
   const input = {
     map: webMaps[id],
-    civs,
+    civs: data.civs,
     seed: spec.seed,
     playerTyp: spec.playerTyp,
     rywaleNaKlaster: spec.rywale,
   };
   if (spec.aktywneTypy !== undefined) input.aktywneTypy = spec.aktywneTypy;
   if (spec.epoch !== undefined) input.startEpochId = spec.epoch;
-  if (spec.pools) input.cityNamesPools = pools;
+  if (spec.pools) input.cityNamesPools = data.pools;
   if (spec.preferred !== undefined) input.preferredCivIds = spec.preferred;
   const row = { map: id, spec };
   let res;
@@ -599,7 +613,29 @@ for (const id of SMALL_IDS.concat(MID_IDS)) {
   cases.spawn.push(runSpawn(id, { seed: pick(SEEDS_DEF), playerTyp: pick(ROSTER), rywale: 4, pools: true, aktywneTypy: pick([5, 8, 10]) }));
 }
 
-const out = { pin: 'edb8fb56', meta, maps: mapsOut, cases };
+// --- RUNDA 2 (Obrona): wejscia znalezione przez `hunt-m12-mutants.mjs` jako zabijajace mutacje, ktore przezyly w R1.
+// Plik `m12-r2-extra.json` ({maps, compute, spawn}) jest dopisywany NA KONCU - przypadki R1 (kolejnosc ziaren
+// generatora) sa nietkniete. Wyniki liczy ORYGINALNY web (nie plik pomocniczy).
+const extraPath = process.env.M12_R2_EXTRA;
+let extraCounts = null;
+if (extraPath) {
+  const extra = JSON.parse(readFileSync(extraPath, 'utf8'));
+  for (const [id, rep] of Object.entries(extra.maps)) {
+    if (mapsOut[id]) throw new Error('mapa juz istnieje: ' + id);
+    const copy = { id, source: rep.source, w: rep.w, h: rep.h, terrain: rep.terrain, river: rep.river };
+    mapsOut[id] = finishRep(copy);
+    webMaps[id] = webMapFromRep(copy);
+    if (rep.hexesFnv !== copy.hexesFnv) throw new Error('hexesFnv mapy rozny od huntu: ' + id);
+    const hexes = Object.values(webMaps[id].hexes);
+    cases.seaField.push({ map: id, sea: seaSignature(buildSeaDistanceField(webMaps[id].hexes), hexes) });
+  }
+  // `tag` = po co dodano przypadek (mutacja R1, ktora przezyla, albo galaz weba) - czytane przez test `p6_m12_integration`
+  for (const c of extra.compute) cases.compute.push({ ...runCompute(c.map, c.spec, false), tag: c.for });
+  for (const c of extra.spawn) cases.spawn.push({ ...runSpawn(c.map, c.spec), tag: c.for });
+  extraCounts = { maps: Object.keys(extra.maps).length, compute: extra.compute.length, spawn: extra.spawn.length };
+}
+
+const out = { pin: 'edb8fb56', meta: { ...meta, r2Extra: extraCounts }, maps: mapsOut, cases };
 writeFileSync(outArg, JSON.stringify(out));
 const counts = Object.fromEntries(Object.entries(cases).map(([k, v]) => [k, v.length]));
 const threwCompute = cases.compute.filter((c) => c.threw).length;

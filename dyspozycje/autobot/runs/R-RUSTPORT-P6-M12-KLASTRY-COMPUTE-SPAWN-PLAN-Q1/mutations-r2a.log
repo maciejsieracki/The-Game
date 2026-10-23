@@ -1,0 +1,31 @@
+[player-cap-xor-1] PRZEZYLA: wszystkie 3 etapy zielone (228s)
+[player-cap-xor-retry] PRZEZYLA-OCZEKIWANA: wszystkie 3 etapy zielone (210s)
+[min-dyst-order-sep] PRZEZYLA-OCZEKIWANA: wszystkie 3 etapy zielone (312s)
+[fill-centers-player-gate] PRZEZYLA-OCZEKIWANA: wszystkie 3 etapy zielone (315s)
+[topup-centers-local-land] WYKRYTA: etap S3, 130s: compute_clusters_matches_web_maps_over_5000_hexes
+[player-growth-reserve-0-initial] PRZEZYLA: wszystkie 3 etapy zielone (188s)
+[player-pending-from-layout] PRZEZYLA: wszystkie 3 etapy zielone (171s)
+[foreign-growth-no-or] PRZEZYLA: wszystkie 3 etapy zielone (162s)
+Traceback (most recent call last):
+  File "/home/user/The-Game/.claude/worktrees/wf_40eda632-8b0-3/rust-port/engine/../../dyspozycje/autobot/runs/R-RUSTPORT-P6-M12-KLASTRY-COMPUTE-SPAWN-PLAN-Q1/run-mutations.py", line 216, in <module>
+    rc, failed, cerr, npass, dt, out = run(args)
+                                       ^^^^^^^^^
+  File "/home/user/The-Game/.claude/worktrees/wf_40eda632-8b0-3/rust-port/engine/../../dyspozycje/autobot/runs/R-RUSTPORT-P6-M12-KLASTRY-COMPUTE-SPAWN-PLAN-Q1/run-mutations.py", line 192, in run
+    p = subprocess.run(["cargo", "test", *args], capture_output=True, text=True, timeout=1800)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.11/subprocess.py", line 550, in run
+    stdout, stderr = process.communicate(input, timeout=timeout)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.11/subprocess.py", line 1209, in communicate
+    stdout, stderr = self._communicate(input, endtime, timeout)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.11/subprocess.py", line 2115, in _communicate
+    ready = selector.select(timeout)
+            ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.11/selectors.py", line 415, in select
+    fd_event_list = self._selector.poll(timeout)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/The-Game/.claude/worktrees/wf_40eda632-8b0-3/rust-port/engine/../../dyspozycje/autobot/runs/R-RUSTPORT-P6-M12-KLASTRY-COMPUTE-SPAWN-PLAN-Q1/run-mutations.py", line 22, in _term
+    raise KeyboardInterrupt
+KeyboardInterrupt
+UWAGA: przebieg przerwany po osmej mutacji (limit czasu zadania w tle 30 min; SIGTERM -> plik przywrocony, git diff src/data czysty). Pozostale mutacje: mutations-r2b.log.

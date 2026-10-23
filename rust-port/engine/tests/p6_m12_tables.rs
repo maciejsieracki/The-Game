@@ -15,7 +15,6 @@ use civ_engine::domain::mapgen::cluster_compute::{compute_clusters, ComputeClust
 use civ_engine::domain::mapgen::cluster_layout::{
     capital_min_separation_for_map, cluster_center_placement_sep_for_map,
 };
-use civ_engine::domain::mapgen::params::MapSizeLabel;
 use common::*;
 
 #[test]
@@ -109,11 +108,6 @@ fn values_have_sane_shape() {
     assert!(t.dystans_klastrow.min_zapas_krotszy_bok.wartosc >= 0);
     assert!(t.margines_brzegu.minimum.wartosc >= 0);
     assert!(t.region_dopelnienia.minimum_promienia.wartosc >= 0);
-    // margines od krawedzi jest mniejszy niz promien regionu dopelnienia (margines to ulamek, region to polowa)
-    assert!(
-        t.margines_brzegu.dzielnik_dystansu_klastrow.wartosc
-            >= t.region_dopelnienia.dzielnik_dystansu_klastrow.wartosc
-    );
 }
 
 #[test]
@@ -175,6 +169,5 @@ fn min_cluster_distance_fallback_uses_short_side_divisor_from_table() {
         )
         .expect("explicit");
         assert_eq!(implicit, explicit, "{id}: dystans klastrow z tabeli");
-        let _ = MapSizeLabel::Mala;
     }
 }

@@ -34,6 +34,8 @@ import time
 (web_root, vec_path, tbl_path, m11_vec, layout_tbl, m10_vec, m10_mass_tbl, m10_start_tbl, m09_vec, m09_maps, m09_tbl) = sys.argv[1:12]
 HERE = os.path.dirname(os.path.abspath(__file__))
 MAX_HEXES = int(os.environ.get("M12_MAX_HEXES", "0"))
+# R2: M12_ONLY_TAGGED=1 - tylko przypadki dopisane w rundzie 2 (maja pole `tag`); do szybkiej kontroli. Pelny przebieg: bez zmiennej.
+ONLY_TAGGED = os.environ.get("M12_ONLY_TAGGED") == "1"
 
 # ----------------------------------------------------------------------------------------------
 # 0. Zaleznosci: uruchom niezalezny weryfikator M11 (a przez niego M10 i M09) bez zmian
@@ -603,6 +605,8 @@ def too_big(mid):
 
 t0 = time.time()
 for c in CASES["compute"]:
+    if ONLY_TAGGED and "tag" not in c:
+        continue
     if too_big(c["map"]):
         STATS["compute_skipped"] += 1
         continue
@@ -643,21 +647,30 @@ def pick_next_from_names(names, used, fallback="Miasto"):
     return with_suffix(base, ordinal)
 
 
+# R2: `spec.namesLimit` skraca listy nazw (civs `nazwyMiast` i pule) do n wpisow (jak w generatorze/Rust).
+NAMES_LIMIT = None
+
+
 def common_names(pools, ikona):
     e = pools.get(ikona)
-    return e["miasta_cywilizacji"][:110] if e else []
+    if not e:
+        return []
+    names = e["miasta_cywilizacji"][:110]
+    return names[:NAMES_LIMIT] if NAMES_LIMIT is not None else names
 
 
 def civ_names(ikona):
     for c in CIVS["cywilizacje"]:
         if c.get("ikonaId") == ikona:
-            return c.get("nazwyMiast")
+            nm = c.get("nazwyMiast")
+            return nm[:NAMES_LIMIT] if (nm is not None and NAMES_LIMIT is not None) else nm
     return None
 
 
 def klastra_names(ikona):
     nm = civ_names(ikona)
-    if nm:
+    # JS: `def?.nazwyMiast ? ... : ...` - pusta tablica jest PRAWDZIWA (w odroznieniu od Pythona)
+    if nm is not None:
         return nm[100:110]
     for c in CIVS["cywilizacje"]:
         if c.get("ikonaId") == ikona:
@@ -707,6 +720,8 @@ def rival_name(pools, typ, idx, used):
 
 def build_spawn_plan(mid, gm, spec):
     """Zwraca None gdy web rzuca (computeClusters)."""
+    global NAMES_LIMIT
+    NAMES_LIMIT = spec.get("namesLimit")
     o = {"seed": spec["seed"], "playerTyp": spec["playerTyp"], "rywale": spec["rywale"], "roster": True}
     if "aktywneTypy" in spec:
         o["aktywneTypy"] = spec["aktywneTypy"]
@@ -850,6 +865,8 @@ def plan_matches(got, want):
 SP = {"checked": 0, "skipped": 0, "threw": 0}
 t0 = time.time()
 for c in CASES["spawn"]:
+    if ONLY_TAGGED and "tag" not in c:
+        continue
     if too_big(c["map"]):
         SP["skipped"] += 1
         continue

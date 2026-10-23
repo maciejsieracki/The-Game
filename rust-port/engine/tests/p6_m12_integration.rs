@@ -99,3 +99,42 @@ fn compute_on_land_only_map_places_one_cluster_per_region_without_sea() {
     assert!(cache.sea_dist.is_empty());
     assert_eq!(cache.ladowe.len(), 30 * 24);
 }
+
+/// R2 (Obrona): przypadki dopisane w rundzie 2 niosa pole `tag` - po co je dodano: nazwa mutacji R1, ktora wtedy
+/// przezyla i teraz jest zabijana (`topup-*`, `repack-final-and`, `plan-capital-name-swap`, `table-topup-*`), albo
+/// galaz weba bez nagrania w R1 (`branch:*`; dowod, ze wejscie trafia w galaz: sondy w `confirm-r2-branches.json`).
+/// Test pilnuje, zeby zestaw nie zostal po cichu przyciety (to metadane wektorow, nie wartosci balansu).
+#[test]
+fn r2_vectors_keep_a_case_for_every_closed_gap() {
+    const COMPUTE_TAGS: &[&str] = &[
+        "repack-final-and",
+        "table-topup-div-3",
+        "table-topup-min-9",
+        "topup-centers-local-land",
+        "topup-player-dist-le",
+        "topup-region-lt",
+        "branch:forced",
+        "branch:skipNoHex",
+        "branch:fixedNull",
+    ];
+    const SPAWN_TAGS: &[&str] = &[
+        "plan-capital-name-swap",
+        "branch:spawn:prefNull",
+        "branch:spawn:retryNull",
+        "branch:spawn:prefMoved",
+        "branch:spawn:spawnSkipLand",
+    ];
+    for (name, tags) in [("compute", COMPUTE_TAGS), ("spawn", SPAWN_TAGS)] {
+        for tag in tags {
+            let found = cases(name)
+                .iter()
+                .filter(|c| c["tag"].as_str() == Some(*tag))
+                .count();
+            assert!(found >= 1, "brak przypadku {name} z tagiem {tag}");
+        }
+        for c in cases(name).iter().filter(|c| c.get("tag").is_some()) {
+            // kazdy dopisany przypadek ma mape w wektorach (rep() panikuje, gdy jej brak)
+            let _ = rep(s(&c["map"]));
+        }
+    }
+}

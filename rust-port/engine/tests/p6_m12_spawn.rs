@@ -108,15 +108,31 @@ fn plan_diff(map: &GeneratedMap, got: &ClusterSpawnPlan, want: &Value) -> Option
 }
 
 fn run(map: &GeneratedMap, spec: &Spec) -> Result<ClusterSpawnPlan, ClusterComputeError> {
+    // `namesLimit` (R2): te same dane, ale z listami nazw skroconymi do `n` wpisow (jak w generatorze).
+    let limited = spec.names_limit.map(|n| {
+        let mut civs = civs().clone();
+        for c in &mut civs.cywilizacje {
+            c.nazwy_miast.truncate(n);
+        }
+        let mut pools = pools().clone();
+        for p in pools.values_mut() {
+            p.miasta_cywilizacji.truncate(n);
+        }
+        (civs, pools)
+    });
+    let (civs_ref, pools_ref) = match &limited {
+        Some((c, p)) => (c, p),
+        None => (civs(), pools()),
+    };
     build_cluster_spawn_plan(&BuildClusterSpawnInput {
         map,
-        civs: civs(),
+        civs: civs_ref,
         seed: spec.seed.expect("seed"),
         player_typ: spec.player_typ.as_deref().expect("playerTyp"),
         rywale_na_klaster: spec.rywale.expect("rywale"),
         aktywne_typy: spec.aktywne_typy,
         start_epoch_id: spec.epoch.as_deref(),
-        city_names_pools: if spec.pools { Some(pools()) } else { None },
+        city_names_pools: if spec.pools { Some(pools_ref) } else { None },
         preferred_civ_ids: spec.preferred.as_deref(),
     })
 }
@@ -460,6 +476,7 @@ fn to_start_plan_keeps_every_field_and_drops_only_placement() {
         epoch: None,
         roster: false,
         pools: true,
+        names_limit: None,
         preferred: None,
     };
     let plan = run(map, &spec).expect("plan");
@@ -499,6 +516,7 @@ fn spawn_plan_without_land_falls_back_to_origin_and_player_name() {
         epoch: None,
         roster: false,
         pools: true,
+        names_limit: None,
         preferred: None,
     };
     let plan = run(map, &spec).expect("plan");

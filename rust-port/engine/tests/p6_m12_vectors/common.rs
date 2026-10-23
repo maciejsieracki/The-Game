@@ -185,6 +185,8 @@ pub struct Spec {
     pub epoch: Option<String>,
     pub roster: bool,
     pub pools: bool,
+    /// R2: skraca listy nazw miast (civs `nazwyMiast` i pule) do `n` wpisow - wymusza gałęzie awaryjne nazw.
+    pub names_limit: Option<usize>,
     pub preferred: Option<Vec<String>>,
 }
 
@@ -215,6 +217,7 @@ pub fn spec_of(v: &Value) -> Spec {
         epoch: opt_s(&v["epoch"]),
         roster: v["roster"].as_bool().unwrap_or(false),
         pools: v["pools"].as_bool().unwrap_or(false),
+        names_limit: opt_i(&v["namesLimit"]).map(|x| usize::try_from(x).expect("namesLimit")),
         preferred: if v["preferred"].is_null() {
             None
         } else {

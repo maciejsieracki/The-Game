@@ -1,0 +1,7 @@
+CMD: python3 -I verify-m12-vectors.py /home/user/m12web-r2c ../../../../rust-port/engine/tests/p6_m12_vectors/web-vectors.json ../../../../rust-port/engine/data/derived/mapgen-cluster-compute.json ../../../../rust-port/engine/tests/p6_m11_vectors/web-vectors.json ../../../../rust-port/engine/data/derived/mapgen-cluster-layout.json ../../../../rust-port/engine/tests/p6_m10_vectors/web-vectors.json ../../../../rust-port/engine/data/derived/mapgen-cluster-mass.json ../../../../rust-port/engine/data/derived/start-scoring.json ../../../../rust-port/engine/tests/p6_m09_vectors/web-vectors.json ../../../../rust-port/engine/tests/p6_1c_vectors/maps.json ../../../../rust-port/engine/data/derived/mapgen-cluster-rivals.json  (web = git archive edb8fb56 gra/src gra/data w katalogu poza repo)
+[zaleznosc] dep-verify-m11-vectors.py: sprawdzen 17034 (+ 36960 z jego zaleznosci), rozbieznosci 0 (+ 0), exit 0
+compute: {'compute_checked': 678, 'compute_skipped': 0, 'threw': 24} czas 326s
+spawn: {'checked': 385, 'skipped': 0, 'threw': 3} czas 165s
+sprawdzen M12: 1179, rozbieznosci M12: 0
+RAZEM (M12 + zaleznosci M11/M10/M09): 55173 sprawdzen, rozbieznosci: 0
+EXIT=0

@@ -1,0 +1,4 @@
+mapa 10/30, wywolan 30, znalezione: {}
+mapa 20/30, wywolan 60, znalezione: {}
+mapa 30/30, wywolan 90, znalezione: {}
+koniec {"calls":90,"tried":{"player-cap-xor-1":31,"plan-dropped-typ-not-skipped":31},"foundCounts":{},"reached":{"forced":150,"fixedNull":150,"spawn:prefOk":20,"spawn:prefNull":10,"spawn:retryNull":10,"fill":79,"tc":65,"tcFail":75,"top1":90,"top2":72,"alt":1,"skipNoHex":26,"altNull":22,"spawn:spawnSkipLand":3,"tcLast":22,"klaszFill":10,"reassign":10,"rfXor":9}}

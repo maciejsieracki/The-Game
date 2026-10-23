@@ -1,0 +1,13 @@
+mapa 10/120, wywolan 100, znalezione: {"plan-capital-name-swap":15}
+mapa 20/120, wywolan 193, znalezione: {"plan-capital-name-swap":29}
+mapa 30/120, wywolan 293, znalezione: {"plan-capital-name-swap":36}
+mapa 40/120, wywolan 386, znalezione: {"plan-capital-name-swap":46}
+mapa 50/120, wywolan 479, znalezione: {"plan-capital-name-swap":58}
+mapa 60/120, wywolan 579, znalezione: {"plan-capital-name-swap":70}
+mapa 70/120, wywolan 679, znalezione: {"plan-capital-name-swap":87}
+mapa 80/120, wywolan 779, znalezione: {"plan-capital-name-swap":104}
+mapa 90/120, wywolan 872, znalezione: {"plan-capital-name-swap":125}
+mapa 100/120, wywolan 951, znalezione: {"plan-capital-name-swap":141}
+mapa 110/120, wywolan 1051, znalezione: {"plan-capital-name-swap":160}
+mapa 120/120, wywolan 1151, znalezione: {"plan-capital-name-swap":177}
+koniec {"calls":1151,"tried":{"player-cap-xor-1":448,"player-cap-xor-retry":448,"plan-dropped-typ-not-skipped":448,"plan-capital-name-swap":448},"foundCounts":{"plan-capital-name-swap":177},"reached":{"spawn:prefOk":439,"rfXor":693,"fill":1789,"tc":1573,"tcFail":1733,"top1":1681,"alt":510,"altNull":1420,"top2":1420,"tcLast":254,"klaszFill":242,"reassign":242,"forced":73,"resolveMass":90,"spawn:prefNull":9,"spawn:retryNull":9,"spawn:spawnSkipLand":8,"fixedNull":15}}
