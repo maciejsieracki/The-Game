@@ -1,0 +1,142 @@
+$ grep -nE literaly liczbowe w src/domain/mapgen/terrain_class.rs (poza komentarzami //); r2
+57:    if a == 0.0 && b == 0.0 {
+72:    if a == 0.0 && b == 0.0 {
+84:    if !x.is_finite() || x == 0.0 {
+88:    let rounded = if x - floor >= 0.5 { floor + 1.0 } else { floor };
+89:    if rounded == 0.0 && x < 0.0 {
+90:        -0.0
+99:    if y == 2.0 {
+108:    if m > 0.0 {
+111:        0
+118:    let en_quad_to_hair_space = ('\u{2000}'..='\u{200a}').contains(&c);
+122:            '\u{0009}'
+123:                | '\u{000a}'
+124:                | '\u{000b}'
+125:                | '\u{000c}'
+126:                | '\u{000d}'
+127:                | '\u{0020}'
+128:                | '\u{00a0}'
+129:                | '\u{1680}'
+130:                | '\u{2028}'
+131:                | '\u{2029}'
+132:                | '\u{202f}'
+133:                | '\u{205f}'
+134:                | '\u{3000}'
+135:                | '\u{feff}'
+146:        for shift in (0..bits_per_digit).rev() {
+147:            bits.push((d >> shift) & 1 == 1);
+152:        None => return 0.0,
+155:    if bits.len() <= 64 {
+156:        let v = bits.iter().fold(0u64, |acc, b| (acc << 1) | u64::from(*b));
+161:        .fold(0u64, |acc, b| (acc << 1) | u64::from(*b));
+162:    let sticky = bits[64..].iter().any(|b| *b);
+163:    let mut mantissa = top >> 11;
+164:    let rem = top & 0x7ff;
+165:    let half = 0x400;
+166:    if rem > half || (rem == half && (sticky || mantissa & 1 == 1)) {
+167:        mantissa += 1;
+170:    let exp = i32::try_from(bits.len() - 64 + 11).unwrap_or(i32::MAX);
+180:        return 0.0;
+183:        ("0x", 16),
+184:        ("0X", 16),
+185:        ("0o", 8),
+186:        ("0O", 8),
+187:        ("0b", 2),
+188:        ("0B", 2),
+197:    let (negative, body) = match s.as_bytes()[0] {
+198:        b'+' => (false, &s[1..]),
+199:        b'-' => (true, &s[1..]),
+202:    let sign = if negative { -1.0 } else { 1.0 };
+207:    let mut i = 0;
+208:    let mut int_digits = 0;
+210:        i += 1;
+211:        int_digits += 1;
+213:    let mut frac_digits = 0;
+215:        i += 1;
+217:            i += 1;
+218:            frac_digits += 1;
+221:    if int_digits + frac_digits == 0 {
+225:        i += 1;
+227:            i += 1;
+231:            i += 1;
+530:    let mut h = js_to_int32(a * 374_761_393.0)
+531:        ^ js_to_int32(b * 668_265_263.0)
+532:        ^ js_to_int32(c * 2_246_822_519.0);
+533:    h = (h ^ ((h as u32) >> 13) as i32).wrapping_mul(1_274_126_177);
+534:    let u = ((h ^ ((h as u32) >> 16) as i32) as u32) as f64;
+535:    u / 4_294_967_296.0
+544:    (hash_int3(cx, cy, seed) - 0.5) * 2.0
+550:    let global = ((for_noise + des_noise) * 0.5 - 0.5) * mix.amplituda_globalna.wartosc;
+681:    let map_height = map_height.filter(|h| *h != 0);
+693:    let mut assigned: i64 = 0;
+710:        let mut max_sea_in_part = 1.0_f64;
+712:            let d = sea_dist.get(k).copied().unwrap_or(0.0);
+738:                let sd = sea_dist.get(&key).copied().unwrap_or(0.0);
+739:                let inland_boost = if max_sea_in_part > 1.0 {
+742:                    0.0
+744:                let for_noise = scratch.get(&key).map_or(0.0, |s| s.for_noise);
+756:            let mid = land[land.len() / 2];
+789:                assigned += 1;
+815:    let map_height = map_height.filter(|h| *h != 0);
+817:    let mut land_count: f64 = 0.0;
+826:        land_count += 1.0;
+937:        return Some(0.0);
+945:                * (d - 1.0),
+953:    let base = land_scores.get(&hex_key(q, r)).copied().unwrap_or(0.0);
+954:    let n = (js_to_int32(q as f64 * 73_856_093.0) ^ js_to_int32(r as f64 * 19_349_663.0)) & 0xffff;
+964:    let mut n = 0;
+968:                n += 1;
+979:    for r in 0..height {
+980:        for q in 0..width {
+1016:    let mut adjusted: i64 = 0;
+1017:    let mut d = 0.0_f64;
+1020:        d += 1.0;
+1037:        let mut land: i64 = 0;
+1040:                land += 1;
+1062:                land -= 1;
+1063:                adjusted += 1;
+1101:                land += 1;
+1102:                adjusted += 1;
+1118:        return 1.0;
+1120:    if cap <= 0.0 {
+1121:        return 0.0;
+1124:        1.0,
+1135:    let cx = (width - 1.0) / 2.0;
+1136:    let cy = (height - 1.0) / 2.0;
+1137:    let dx = (q - cx) / (cx + 0.5);
+1138:    let dy = (r - cy) / (cy + 0.5);
+1142:        1.0 - js_pow(
+1156:    let nq = q / js_max(1.0, width - 1.0);
+1157:    let nr = r / js_max(1.0, height - 1.0);
+1158:    let margin_q = b / js_max(1.0, width - 1.0);
+1159:    let margin_r = b / js_max(1.0, height - 1.0);
+1162:            js_min(nq, 1.0 - nq) / js_max(margin_q, min_margin),
+1163:            js_min(nr, 1.0 - nr) / js_max(margin_r, min_margin),
+1165:        1.0,
+1171:    let cx = (width - 1.0) / 2.0;
+1172:    let cy = (height - 1.0) / 2.0;
+1173:    let dx = (q - cx) / (cx + 0.5);
+1174:    let dy = (r - cy) / (cy + 0.5);
+1180:    js_min(js_min(js_min(q, r), width - 1.0 - q), height - 1.0 - r)
+1200:    let mut n = 0;
+1201:    for r in 0..height {
+1202:        for q in 0..width {
+1204:                n += 1;
+1216:    for r in 0..height {
+1217:        for q in 0..width {
+1240:    let mut converted = 0;
+1241:    for r in 0..height {
+1242:        for q in 0..width {
+1253:            converted += 1;
+EXIT=0
+516614bcf230dfcd69493c7bd2f5fbec05d6ca7f36ea259945d6c8f030325315  rust-port/engine/src/domain/mapgen/terrain_class.rs
+
+KLASYFIKACJA TRAFIEN (r2). Trafienia z r1 (poza zakresem linii ~111-235; zob. grep-literals-terrain-class.txt) bez zmian: stale ALGORYTMICZNE
+haszy (374761393, 668265263, 2246822519, 1274126177, przesuniecia 13/16, 73856093, 19349663, maska 0xffff) i literaly STRUKTURALNE (0, 1, 2, 0.5, d - 1).
+Zadnej liczby balansowej w kodzie; balans jest w data/derived/mapgen-terrain-class.json (51 wartosci).
+NOWE trafienia r2 (linie ~111-235: parser kluczy `js_string_to_number` i pomocnicy) - WSZYSTKIE to stale SPECYFIKACJI jezyka lub reprezentacji IEEE-754, nie dane gry:
+ - \u{0009}..\u{feff}: punkty kodowe ECMA-262 WhiteSpace + LineTerminator (zbior obcinany przez Number(string));
+ - 16 / 8 / 2 oraz prefiksy "0x"/"0o"/"0b": podstawy literalow calkowitych StringToNumber;
+ - 64 (szerokosc u64), 11 (= 64 - 53, bity do zaokraglenia), 0x7ff (maska 11 mlodszych bitow), 0x400 (polowa = 1 << 10): zaokraglenie do najblizszej parzystej mantysy 53-bitowej;
+ - 0.0 / 1.0 / -1.0: wynik pustego napisu i znak liczby; 0, 1: liczniki cyfr i indeksy (`&s[1..]`).
+Zadne z nich nie jest wartoscia balansowa ani mnoznikiem; weryfikator Python (verify-m04-vectors.py) liczy Number(string) niezaleznie (788/788).

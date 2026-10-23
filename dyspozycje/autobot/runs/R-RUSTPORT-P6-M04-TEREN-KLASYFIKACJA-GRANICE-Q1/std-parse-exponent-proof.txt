@@ -1,0 +1,18 @@
+$ rustc --edition=2021 stdparse.rs && ./stdparse   (rustc 1.97.0 (2d8144b78 2026-07-07))
+fn main() {
+    for s in ["1e", "1e+", "1e-", "1.e", ".e1", "1E", "5e+", "0e", ".5e", "5.e+"] {
+        println!("{:?} -> {:?}", s, s.parse::<f64>());
+    }
+}
+--- wynik:
+"1e" -> Err(ParseFloatError { kind: Invalid })
+"1e+" -> Err(ParseFloatError { kind: Invalid })
+"1e-" -> Err(ParseFloatError { kind: Invalid })
+"1.e" -> Err(ParseFloatError { kind: Invalid })
+".e1" -> Err(ParseFloatError { kind: Invalid })
+"1E" -> Err(ParseFloatError { kind: Invalid })
+"5e+" -> Err(ParseFloatError { kind: Invalid })
+"0e" -> Err(ParseFloatError { kind: Invalid })
+".5e" -> Err(ParseFloatError { kind: Invalid })
+"5.e+" -> Err(ParseFloatError { kind: Invalid })
+EXIT=0

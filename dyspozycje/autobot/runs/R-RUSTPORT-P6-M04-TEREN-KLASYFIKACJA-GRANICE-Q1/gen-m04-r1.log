@@ -1,0 +1,2 @@
+OK {"node":"v22.22.0","lines":12562,"counts":{"consts":1,"latBuffer":10252,"hashInt3":4076,"cellBias":5012,"jitter":3000,"elevGates":514,"classify":6219,"classifyFlat":6219,"reapplyLand":45,"reapplyForest":64,"forestEligible":8,"erosionSort":42,"marginZone":42,"setHex":48,"marginCap":77,"fades":4512,"inBorderBuf":1500,"borderGrid":56,"scatter":2500},"stats":{"classifyTerrain":{"laka":2511,"wzgorza":538,"morze":732,"rownina":1726,"gory":556,"pustynia":156},"classifyTerrainFlat":{"laka":3599,"rownina":2379,"pustynia":241},"powSquareDiffs":{"total":200000,"diff":0}}}
+EXIT=0

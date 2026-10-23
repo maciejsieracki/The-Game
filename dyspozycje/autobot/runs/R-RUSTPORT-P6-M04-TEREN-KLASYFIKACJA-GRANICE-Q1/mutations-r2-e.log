@@ -1,0 +1,26 @@
+SHA256 poczatkowe: src/domain/mapgen/terrain_class.rs=516614bcf230dfcd69493c7bd2f5fbec05d6ca7f36ea259945d6c8f030325315 data/derived/mapgen-terrain-class.json=f0cfb0626b889c0c5b5e3a6a7ef4db9412dc12a399b322c30520903e07c0f834
+   fractions-highland-tier: PRZYWROCONO src/domain/mapgen/terrain_class.rs:sha256=516614bcf230dfcd..=OK data/derived/mapgen-terrain-class.json:sha256=f0cfb0626b889c0c..=OK
+WYKRYTA   fractions-highland-tier: 1 testow FAILED: consts_match_web
+   radial-sign: PRZYWROCONO src/domain/mapgen/terrain_class.rs:sha256=516614bcf230dfcd..=OK data/derived/mapgen-terrain-class.json:sha256=f0cfb0626b889c0c..=OK
+WYKRYTA   radial-sign: 1 testow FAILED: fades_and_distances_match_web
+   table-twardy-ocean: PRZYWROCONO src/domain/mapgen/terrain_class.rs:sha256=516614bcf230dfcd..=OK data/derived/mapgen-terrain-class.json:sha256=f0cfb0626b889c0c..=OK
+WYKRYTA   table-twardy-ocean: 6 testow FAILED: apply_marginal_land_zone_caps_matches_web, border_consts_match_web, border_grid_tools_match_web, consts_match_web
+   table-waga-rozproszenia: PRZYWROCONO src/domain/mapgen/terrain_class.rs:sha256=516614bcf230dfcd..=OK data/derived/mapgen-terrain-class.json:sha256=f0cfb0626b889c0c..=OK
+WYKRYTA   table-waga-rozproszenia: 2 testow FAILED: apply_marginal_land_zone_caps_matches_web, margin_scatter_score_matches_web
+   table-fade-limit: PRZYWROCONO src/domain/mapgen/terrain_class.rs:sha256=516614bcf230dfcd..=OK data/derived/mapgen-terrain-class.json:sha256=f0cfb0626b889c0c..=OK
+WYKRYTA   table-fade-limit: 1 testow FAILED: fades_and_distances_match_web
+   table-min-bias: PRZYWROCONO src/domain/mapgen/terrain_class.rs:sha256=516614bcf230dfcd..=OK data/derived/mapgen-terrain-class.json:sha256=f0cfb0626b889c0c..=OK
+WYKRYTA   table-min-bias: 1 testow FAILED: fades_and_distances_match_web
+   table-niski-mountain: PRZYWROCONO src/domain/mapgen/terrain_class.rs:sha256=516614bcf230dfcd..=OK data/derived/mapgen-terrain-class.json:sha256=f0cfb0626b889c0c..=OK
+WYKRYTA   table-niski-mountain: 1 testow FAILED: relief_elev_gates_match_web
+   table-max-sasiadow: PRZYWROCONO src/domain/mapgen/terrain_class.rs:sha256=516614bcf230dfcd..=OK data/derived/mapgen-terrain-class.json:sha256=f0cfb0626b889c0c..=OK
+WYKRYTA   table-max-sasiadow: 1 testow FAILED: apply_marginal_land_zone_caps_matches_web
+   table-min-sufitu: PRZYWROCONO src/domain/mapgen/terrain_class.rs:sha256=516614bcf230dfcd..=OK data/derived/mapgen-terrain-class.json:sha256=f0cfb0626b889c0c..=OK
+WYKRYTA   table-min-sufitu: 2 testow FAILED: reapply_forest_overlay_matches_web, reapply_forest_overlay_targeted_inland_cases_match_web
+   table-udzial-gor-high: PRZYWROCONO src/domain/mapgen/terrain_class.rs:sha256=516614bcf230dfcd..=OK data/derived/mapgen-terrain-class.json:sha256=f0cfb0626b889c0c..=OK
+WYKRYTA   table-udzial-gor-high: 1 testow FAILED: consts_match_web
+SHA256 koncowe:    src/domain/mapgen/terrain_class.rs=516614bcf230dfcd69493c7bd2f5fbec05d6ca7f36ea259945d6c8f030325315 data/derived/mapgen-terrain-class.json=f0cfb0626b889c0c5b5e3a6a7ef4db9412dc12a399b322c30520903e07c0f834
+ROWNOWAZNE (wylaczone z listy, patrz §6a): ['fade-cap-le-to-lt', 'land-restore-keeps-overlay', 'parse-exponent-without-digits-ok']
+POWTORZENIA Z POWODU INFRA: []
+PODSUMOWANIE: wykryte 10/10, przezyly: [], pliki przywrocone bajt w bajt (SHA-256 poczatek == koniec): True
+EXIT=0
