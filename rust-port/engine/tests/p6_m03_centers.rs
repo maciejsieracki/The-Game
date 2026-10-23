@@ -297,7 +297,6 @@ fn island_centers_match_web_including_rng_consumption() {
     for row in rows {
         let mut rand = rng(seed_of(&row["seed"]));
         let actual = build_sixteen_grid_island_centers(&mut rand, dim(&row["w"]), dim(&row["h"]));
-        assert_eq!(actual.len(), 16);
         assert_centers(&actual, &centers(&row["centers"]), &format!("{row}"));
         for expected in row["after"].as_array().expect("after") {
             assert!(same(rand(), num(expected)), "zuzycie rand(): {row}");

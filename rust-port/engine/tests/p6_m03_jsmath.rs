@@ -110,3 +110,21 @@ fn pow_follows_ecmascript_special_cases() {
     assert!(same(js_pow(0.0, -1.0), f64::INFINITY));
     assert!(same(js_pow(-0.0, -1.0), f64::NEG_INFINITY));
 }
+
+/// Poza zakresem odtworzenia V8 (`|x| > 2^19*pi/2`) `js_sin` nie udaje `Math.sin`: w buildzie z
+/// asercjami panikuje (zarzut 8 oceny r1); wektory weba nie siegaja tego zakresu.
+#[cfg(debug_assertions)]
+#[test]
+#[should_panic(expected = "poza zakresem odtworzenia V8")]
+fn sin_beyond_reconstructed_domain_panics_in_debug_builds() {
+    let _ = js_sin(1.0e7);
+}
+
+/// Wewnatrz zakresu `js_sin` nie panikuje i nie wpada w libm.
+#[test]
+fn sin_inside_domain_does_not_hit_the_fallback() {
+    let limit = 2f64.powi(19) * std::f64::consts::FRAC_PI_2;
+    for x in [0.0, 1.0, 1.0e5, limit * 0.999, -limit * 0.999] {
+        assert!(js_sin(x).is_finite());
+    }
+}

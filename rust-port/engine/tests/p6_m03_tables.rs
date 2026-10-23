@@ -158,3 +158,36 @@ fn accessors_are_driven_by_the_table_not_by_literals() {
         t.kontynenty.liczba_duze
     );
 }
+
+/// Niezmiennik tabeli `brzeg` (zarzut 4 oceny r1): web `landMaskBorderFade` zawiera
+/// `Math.min(1, cap / 0.45)`. Dla danych webowych iloraz nigdy nie przekracza 1, wiec `min`
+/// jest nieosiagalny (mutant M36 rownowazny TYLKO przy tym niezmienniku). Jesli ktos zmieni
+/// `krok_limitu`, `dzielnik_zaniku` lub `strefa_marginesu_heksy` tak, ze iloraz > 1, ten test
+/// ma sie zaczerwienic: wtedy `min` staje sie zywa galezia i wymaga wektora z weba.
+#[test]
+fn border_fade_clamp_is_unreachable_while_table_invariant_holds() {
+    use civ_engine::domain::mapgen::masks::{
+        land_mask_border_fade, map_border_ocean_hexes, map_margin_land_zone_hexes,
+        margin_land_cap_for_border_distance,
+    };
+    let t = &mapgen_masks().brzeg;
+    let mut d = map_border_ocean_hexes();
+    while d <= map_margin_land_zone_hexes() {
+        let cap = margin_land_cap_for_border_distance(d).expect("w strefie marginesu");
+        assert!(
+            cap / t.dzielnik_zaniku <= 1.0,
+            "d={d}: iloraz {} > 1 - `Math.min(1, ...)` stal sie zywy; dodaj wektor weba",
+            cap / t.dzielnik_zaniku
+        );
+        d += 1.0;
+    }
+    // Poza strefa marginesu fade == 1 (galaz `null` weba), na samym brzegu 0.
+    assert_eq!(
+        land_mask_border_fade(50, 50, 100, 100).to_bits(),
+        1.0f64.to_bits()
+    );
+    assert_eq!(
+        land_mask_border_fade(0, 50, 100, 100).to_bits(),
+        0.0f64.to_bits()
+    );
+}
