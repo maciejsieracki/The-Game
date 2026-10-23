@@ -1236,6 +1236,7 @@ import {
   canBarbarianWalkIntoEmptyCity, splitCampMoveCost, splitMoveCost,
 } from './game/barbarians';
 import type { BarbCamp, BarbUnit } from './game/barbarians';
+import { isWarAllInCapitalEnabled, type WarAllInContext, type WarCapitalTarget } from './game/warAllInCapital';
 // TEMAT #15 — embarkacja jednostek lądowych (gracz + AI + Ludy Morza).
 import {
   EMBARK_TECH, EMBARK_DEFENSE_MULT, moveCostFnFor, applyEmbarkStateAfterMove,
@@ -29205,6 +29206,32 @@ async function boot(): Promise<void> {
       return oldestCityOfOwner(ownerId, cities)?.id ?? null;
     }
 
+    /**
+     * R-WEB-WAR-ALLIN-CAPITAL-Q1 (TYMCZASOWE, flaga WAR_ALLIN_CAPITAL_ENABLED w
+     * game/warAllInCapital.ts): AKTUALNE stolice (capitalCityIdForOwner -- po utracie stolicy
+     * gra wyznacza nowa, patrz maybeRelocateThreatenedAiCapital / sukcesja ~29664) wszystkich
+     * cywilizacji, z ktorymi `selfOwnerId` jest w wojnie (`engage`). Owner bez miasta
+     * (wyeliminowany) nie daje celu. Zwraca undefined gdy flaga OFF -- wtedy ai.ts /
+     * barbarians.ts dzialaja jak dotychczas (i nie czytamy diplomacyRelations).
+     */
+    function warAllInContextFor(
+      selfOwnerId: number,
+      engage: (targetOwnerId: number) => boolean,
+    ): WarAllInContext | undefined {
+      if (!isWarAllInCapitalEnabled()) return undefined;
+      const ownerIds = [...new Set(cities.map(c => c.ownerId))]
+        .filter(o => o !== selfOwnerId && !isBarbarian(o) && !eliminatedOwners.has(o))
+        .sort((a, b) => a - b);
+      const targets: WarCapitalTarget[] = [];
+      for (const o of ownerIds) {
+        if (!engage(o)) continue;
+        const capId = capitalCityIdForOwner(o);
+        const cap = capId ? cities.find(c => c.id === capId && c.ownerId === o) : undefined;
+        if (cap) targets.push({ ownerId: o, cityId: cap.id, q: cap.q, r: cap.r });
+      }
+      return { targets };
+    }
+
     /** Domyślne miasto w HUD auto-ulepszeń (stolica gracza lub pierwsze miasto). */
     function ensureUlepszeniaHudCityId(): string | null {
       const pc = cities.filter(c => isMe(c.ownerId));
@@ -34246,6 +34273,13 @@ async function boot(): Promise<void> {
                 if (isBarbarian(targetOwnerId)) return true;
                 return getDiploRelation(ownerId, targetOwnerId).status === 'wojna';
               },
+              // R-WEB-WAR-ALLIN-CAPITAL-Q1 (TYMCZASOWE): cala armia AI w wojnie -> stolica wroga.
+              warAllIn: typCityCopyOwners.has(ownerId)
+                ? undefined
+                : warAllInContextFor(
+                  ownerId,
+                  (o: number) => getDiploRelation(ownerId, o).status === 'wojna',
+                ),
               civAiProfile: civAiProf
                 ? {
                     ekspansywnosc: civAiProf.ekspansywnosc,
@@ -36190,6 +36224,8 @@ async function boot(): Promise<void> {
             const barbCmds = decideBarbarianMoves(
               landBarbs, playerUnitsForBarbs, cities, barbCamps, map, barbLive, barbCanEngageOwner,
               _menuDifficulty, turn,
+              // R-WEB-WAR-ALLIN-CAPITAL-Q1 (TYMCZASOWE): wojna barbarzyncow -> najblizsza stolica.
+              warAllInContextFor(BARBARIAN_OWNER_ID, barbCanEngageOwner),
             );
             if (seaBarbs.length > 0) {
               const raidTargets = collectSeaRaidTargets(map);
