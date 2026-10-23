@@ -26,3 +26,11 @@ NIE_ZMIERZONO: układ/CSS w realnej przeglądarce, treść panelu miasta (atrapa
 RUNDY: 3/5
 NASTĘPNY KROK: Evaluator r3; potem r4 = `cityPanel.ts` wg planu P5-7 §11.5.
 DEPLOY/PUSH: NIE WYKONANO
+
+---
+OBRONA r3 (po FAIL Evaluatora r3; stan odtworzony z `04aca06c`; szczegóły i dowody: P5-7 §11.8)
+- Z1 kryterium binarne (`cityPanel.ts`): PRZYJMUJĘ — port = r4 (§11.5 + uzupełnienie §11.8); bez listowania jako „pominięty”.
+- Z2 `git diff --check`: ODRZUCAM fałsz — na checkoucie `04aca06c` EXIT=0 (atrybut `*.diff -whitespace` z `runs/<ID>/.gitattributes`, od r2); EXIT=2 odtworzone tylko z `--attr-source=51a62a89` (`r3-logi/21-obrona-diff-check.log`). Opis w §11.6 doprecyzowany. 35. plik = sam log `15-…`.
+- Z3 cytat dispatchu r3: PRZYJMUJĘ — wycofany; P5.7-Z8 = ZAŁOŻENIE WŁASNE oparte na `00-dispatch.md`.
+- Z4 ryzyko r4: PRZYJMUJĘ — commity cząstkowe per grupa; tabela pokrycia `GameMap` → DTO jako warunek r4 (inwentarz startowy w §11.8).
+TESTY obrony: kod bez zmian względem `04aca06c` (zmienione wyłącznie dokumenty/logi tematu); `git diff --check` na commicie obrony — w raporcie końcowym.
