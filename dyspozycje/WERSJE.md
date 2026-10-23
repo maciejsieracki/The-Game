@@ -1,3 +1,12 @@
+## ROBOCZA 23893f19 -- 2026-10-23 -- tymczasowa reguła wojny: cała armia na stolicę (R-WEB-WAR-ALLIN-CAPITAL / R-WEB-WAR-ALLIN-RELEASE-ROBOCZA)
+
+- STATUS: PUBLISHED to `origin/main` at `d783bfd6a266ae15d2216e0f1e1351a3344acd0a` (fast-forward z `75f53d58`), integration branch `integration/robocza-war-allin-20261023` na tym samym SHA. Readback `gra-robocza/Gra-ROBOCZA.html` z `origin/main`: MD5 `23893f19cc904b61065b20e712fb6b35` (zgodny z manifestem).
+- Bundle: SHA-256 `0cf2f66f69d67711caa0c39c67ed6e2510e04b9d7e8bf46dfe99157e304b578b`, 69,964,335 bytes.
+- Zakres: w stanie wojny cywilizacje AI (AI↔AI, AI→gracz) i barbarzyńcy wysyłają wszystkie jednostki bojowe na aktualną stolicę przeciwnika (barbarzyńcy: najbliższa stolica spośród cywilizacji, z którymi są w wojnie), łączą się po drodze w grupy; gracz NIE dostaje automatycznych rozkazów. Nowe: `gra/src/game/warAllInCapital.ts`, `gra/data/war-allin-params.json`, wpięcia w `ai.ts`, `barbarians.ts`, `main.ts`. Flaga `WAR_ALLIN_CAPITAL_ENABLED` (reguła tymczasowa; OFF = zachowanie bazowe, hash zgodny).
+- Bramki: tsc, Vite, verify-robocza-bundle OK, logic 213/213, war-allin-capital 91/0, barbarzyncy-krazenie 249/0, barb-city-behavior 177/0; ai-test 276/18 = baza; ai-buduje-budynki PASS=40/FAIL=2 = baza; smoke Chromium memdebug tury 1-13 OK. Final Control PASS-WITH-NOTES.
+- NIE ZMIERZONO: tura z dużą armią (>12 jednostek/stronę); dotarcie armii do stolic w przeglądarce (dowód tylko w harnessie headless); mgla-sciezka-inwariant na nowym bundlu.
+- Rollback: poprzedni bundle MD5 `99c6b33b2587673b3c377d40d22f6396`, `git revert` trzech commitów wydania.
+
 ## ROBOCZA 99c6b33b -- 2026-10-23 -- kompaktowy panel rekrutacji (R-WEB-RECRUITMENT-RELEASE-ROBOCZA)
 
 - STATUS: PUBLISHED to `origin/main` at `9b38334f` (fast-forward z `caa05fca`), integration branch `integration/robocza-recruitment-20261023` na tym samym SHA. Readback `gra-robocza/Gra-ROBOCZA.html` z `origin/main`: MD5 `99c6b33b2587673b3c377d40d22f6396` (zgodny z manifestem).
