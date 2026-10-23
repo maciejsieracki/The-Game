@@ -31,11 +31,22 @@ for idx, (name, s) in enumerate(order):
 
 def rust_line(mod, name):
     s, e = ranges[mod]
-    pat = re.compile(rf"^\s+pub (?:fn|struct|enum|type|const) {re.escape(name)}\b")
+    pat = re.compile(rf"^\s+(?:pub (?:fn|struct|enum|type|const) {re.escape(name)}\b|fn {re.escape(name)}\b|pub {re.escape(name)}:)")
     for i in range(s, e):
         if pat.match(STATE[i]):
             return i + 1
     raise SystemExit(f"BLAD: brak `{name}` w module {mod}")
+
+
+DERIVED = (ENG / "src/data/derived.rs").read_text(encoding="utf-8").split("\n")
+
+
+def derived_line(name):
+    pat = re.compile(rf"^\s+pub {re.escape(name)}:")
+    for i, l in enumerate(DERIVED):
+        if pat.match(l):
+            return i + 1
+    raise SystemExit(f"BLAD: brak pola `{name}` w derived.rs")
 
 
 def has_test(fname, test):
@@ -99,7 +110,7 @@ add(D, "formatCityMapLabel", R, dn, ["format_city_map_label"], "display::format_
 add(D, "formatOwnerDiploLabel", R, dn, ["format_owner_diplo_label"], "display::format_owner_diplo_label_matches_web", "-")
 add(D, "isTechnicalOwnerLabel", R, dn, ["is_technical_owner_label"], "display::is_technical_owner_label_matches_web", "regexy /^X \\d+$/i -> display-names-params.json wzorce_techniczne (ASCII)")
 add(D, "ResolveOwnerBaseNameInput", R, dn, ["ResolveOwnerBaseNameInput"], "display::resolve_owner_base_name_matches_web", "-")
-add(D, "cleanDisplayPart", R, dn, [], "display::resolve_owner_base_name_matches_web", "prywatna; fn clean_display_part (niepubliczna) w state.rs; Some(\"\") jest falsy, nie nullish")
+add(D, "cleanDisplayPart", R, dn, ["clean_display_part"], "display::resolve_owner_base_name_matches_web", "prywatna; fn clean_display_part (niepubliczna) w state.rs; Some(\"\") jest falsy, nie nullish")
 add(D, "foreignCapitalMapName", R, dn, ["foreign_capital_map_name"], "display::foreign_capital_map_name_matches_web", "-")
 add(D, "resolveOwnerBaseName", R, dn, ["resolve_owner_base_name"], "display::resolve_owner_base_name_matches_web", "ownerId w webie nieuzywane")
 add(D, "sanitizeOwnerDisplayBase", R, dn, ["sanitize_owner_display_base"], "display::sanitize_owner_display_base_matches_web", "-")
@@ -107,7 +118,7 @@ add(D, "sanitizeOwnerDisplayBase", R, dn, ["sanitize_owner_display_base"], "disp
 # ---------------- empire-city-defaults.ts ----------------
 em = "empire_city_defaults"
 add(E, "podzialPracyEqual", R, em, ["podzial_pracy_equal"], "empire::podzial_pracy_functions_match_web", "-")
-add(E, "normalizePodzialPracy", R, em, [], "empire::podzial_pracy_functions_match_web", "prywatna; fn normalize_podzial_pracy (niepubliczna)")
+add(E, "normalizePodzialPracy", R, em, ["normalize_podzial_pracy"], "empire::podzial_pracy_functions_match_web", "prywatna; fn normalize_podzial_pracy (niepubliczna)")
 add(E, "resolveCityPodzialPracy", R, em, ["resolve_city_podzial_pracy"], "empire::podzial_pracy_functions_match_web", "Pick<City,...> -> &City")
 add(E, "PodzialPracyLocalChange", R, em, ["PodzialPracyLocalChange"], "empire::podzial_pracy_functions_match_web", "undefined -> None")
 add(E, "applyPodzialPracyLocalChange", R, em, ["apply_podzial_pracy_local_change"], "empire::podzial_pracy_functions_match_web", "-")
@@ -143,15 +154,15 @@ add(C, "DEFAULT_OKOLICA_TRYB", R, ci, ["default_okolica_tryb"], "percent::consta
 add(C, "BudowaFocus", R, ci, ["BudowaFocus"], "percent::budowa_priority_helpers_match_web", "-")
 add(C, "BudowaTryb", R, ci, ["BudowaTryb"], "cities_ensure::ensure_city_save_defaults_matches_web", "dodatkowy wariant Auto = surowa wartosc legacy ('auto') czytana przez ensureCitySaveDefaults")
 add(C, "BudowaListaSzablon", R, ci, ["BudowaListaSzablon"], "lists::id_generator_and_loader_match_web_sequence", "budynki: Vec<serde_json::Value> (zawartosc z zapisu nie jest sprawdzana elementarnie)")
-add(C, "BudowaListaBiblioteka", R, ci, [], "lists::id_generator_and_loader_match_web_sequence", "alias tablicy -> Vec<BudowaListaSzablon>")
+add(C, "BudowaListaBiblioteka", R, ci, ["empty_budowa_lista_biblioteka"], "lists::id_generator_and_loader_match_web_sequence", "alias tablicy -> Vec<BudowaListaSzablon>")
 add(C, "EMPTY_BUDOWA_LISTA_BIBLIOTEKA", R, ci, ["empty_budowa_lista_biblioteka"], "percent::constants_match_running_web", "-")
-add(C, "BudowaListaSlot", R, ci, [], "lists::id_generator_and_loader_match_web_sequence", "unia 'A'|'B'|'C' -> dane cities-params.json budowa.lista_slot_legacy")
-add(C, "BudowaListaSzablonyLegacy", ND, ci, [], "lists::id_generator_and_loader_match_web_sequence", "typ Record<slot,string[]>; legacy format czytany z serde_json::Value w load_budowa_lista_biblioteka")
+add(C, "BudowaListaSlot", R, ci, ["derived:lista_slot_legacy"], "lists::id_generator_and_loader_match_web_sequence", "unia 'A'|'B'|'C' -> dane cities-params.json budowa.lista_slot_legacy")
+add(C, "BudowaListaSzablonyLegacy", ND, ci, ["load_budowa_lista_biblioteka"], "lists::id_generator_and_loader_match_web_sequence", "typ Record<slot,string[]>; legacy format czytany z serde_json::Value w load_budowa_lista_biblioteka")
 add(C, "_budowaListaSzablonSeq", R, ci, ["BudowaListaIdGen"], "lists::id_generator_and_loader_match_web_sequence", "zmienna modulu -> jawny stan BudowaListaIdGen.seq")
 add(C, "newBudowaListaSzablonId", RI, ci, ["BudowaListaIdGen"], "lists::id_generator_and_loader_match_web_sequence", "WSTRZYKNIETE: Date.now() jako parametr now_ms (metoda new_id)")
 add(C, "defaultBudowaListaNazwa", R, ci, ["default_budowa_lista_nazwa"], "lists::default_nazwa_matches_web", "trim/toLowerCase: js_trim + to_lowercase")
-add(C, "isLegacyBudowaListaSzablony", R, ci, [], "lists::id_generator_and_loader_match_web_sequence", "prywatna; zaszyta w load_budowa_lista_biblioteka")
-add(C, "isBudowaListaSzablonArray", R, ci, [], "lists::id_generator_and_loader_match_web_sequence", "prywatna; fn is_budowa_lista_szablon_array (niepubliczna)")
+add(C, "isLegacyBudowaListaSzablony", R, ci, ["load_budowa_lista_biblioteka"], "lists::id_generator_and_loader_match_web_sequence", "prywatna; zaszyta w load_budowa_lista_biblioteka")
+add(C, "isBudowaListaSzablonArray", R, ci, ["is_budowa_lista_szablon_array"], "lists::id_generator_and_loader_match_web_sequence", "prywatna; fn is_budowa_lista_szablon_array (niepubliczna)")
 add(C, "loadBudowaListaBiblioteka", RI, ci, ["load_budowa_lista_biblioteka"], "lists::id_generator_and_loader_match_web_sequence", "WSTRZYKNIETE: Date.now() (domkniecie now), licznik id (BudowaListaIdGen)")
 add(C, "dedupeBudowaLista", R, ci, ["dedupe_budowa_lista"], "lists::dedupe_matches_web", "-")
 add(C, "isAutoBudowaTryb", R, ci, ["is_auto_budowa_tryb"], "percent::budowa_priority_helpers_match_web", "-")
@@ -159,7 +170,7 @@ add(C, "DEFAULT_BUDOWA_FOCUS", R, ci, ["default_budowa_focus"], "percent::consta
 add(C, "DEFAULT_BUDOWA_TRYB", R, ci, ["default_budowa_tryb"], "percent::constants_match_running_web", "-")
 add(C, "UlepszeniaFocus", R, ci, ["UlepszeniaFocus"], "percent::resolve_effective_ulepszenia_matches_web", "-")
 add(C, "UlepszeniaTryb", R, ci, ["UlepszeniaTryb"], "percent::resolve_effective_ulepszenia_matches_web", "-")
-add(C, "UlepszeniaPracaPercent", ND, ci, [], "-", "alias number -> f64")
+add(C, "UlepszeniaPracaPercent", ND, ci, ["default_ulepszenia_praca_percent"], "-", "alias number -> f64")
 add(C, "DEFAULT_ULEPSZENIA_FOCUS", R, ci, ["default_ulepszenia_focus"], "percent::constants_match_running_web", "-")
 add(C, "DEFAULT_ULEPSZENIA_TRYB", R, ci, ["default_ulepszenia_tryb"], "percent::constants_match_running_web", "-")
 add(C, "DEFAULT_ULEPSZENIA_ONLY_WORKED", R, ci, ["default_ulepszenia_only_worked"], "percent::constants_match_running_web", "-")
@@ -203,7 +214,7 @@ add(C, "AI_FIXED_PROCENT_NAUKA", R, ci, ["ai_fixed_procent_nauki"], "percent::co
 add(C, "snapHandelPct", R, ci, ["snap_handel_pct"], "percent::snap_and_migrate_match_web", "-")
 add(C, "normalizePodzialHandlu", R, ci, ["normalize_podzial_handlu"], "percent::normalize_podzial_handlu_matches_web", "-")
 add(C, "adjustHandelSplit", R, ci, ["adjust_handel_split"], "percent::adjust_handel_split_matches_web", "-")
-add(C, "freshCityPodzial", R, ci, [], "found::found_city_at_matches_web", "prywatna; fn fresh_city_podzial_pracy (niepubliczna)")
+add(C, "freshCityPodzial", R, ci, ["fresh_city_podzial_pracy"], "found::found_city_at_matches_web", "prywatna; fn fresh_city_podzial_pracy (niepubliczna)")
 add(C, "ensureCityPodzialDefaults", R, ci, ["ensure_city_podzial_defaults"], "ensure::ensure_city_podzial_defaults_matches_web", "-")
 add(C, "ensureCitySaveDefaults", RI, ci, ["ensure_city_save_defaults", "SaveDefaultsDeps"], "ensure::ensure_city_save_defaults_matches_web", "WSTRZYKNIETE: readCityFoodBuffer (economy-upkeep.ts), ensureCityRationDefaults (population-growth-v85.ts); freshWealthState (wealth.ts) = wejscie z danych; testy sprawdzaja liczbe/kolejnosc/argumenty wywolan")
 add(C, "City", R, ci, ["City", "FoodBuffer", "WealthState"], "ensure::ensure_city_save_defaults_matches_web", "podzbior 38 z 61 pol interfejsu (wszystkie pola czytane lub zapisywane przez logike trzech plikow) + surowe pole legacy ulepszeniaPerTurn; pozostale 23 pola = dane bez logiki w tych plikach (grep: 0 uzyc, dokument §4)")
@@ -214,9 +225,9 @@ add(C, "wasIndependentCityStateBeforeCapture", R, ci, ["was_independent_city_sta
 add(C, "canFoundCity", R, ci, ["can_found_city", "CanFoundCityOpts", "GameConfig", "CanFoundCityResult"], "found::can_found_city_matches_web", "hexDistance lokalnie f64; isWaterTerrain = P6.4 (pathfinding::ruch_jednostek); klucz heksu `q,r` tylko dla calkowitych (ZALOZENIE)")
 add(C, "foundCity", R, ci, ["found_city", "Settler"], "found::found_city_matches_web", "RuntimeUnit -> Settler{ownerId,q,r}; freshWealthState = wejscie z danych")
 add(C, "foundCityAt", R, ci, ["found_city_at"], "found::found_city_at_matches_web", "-")
-add(C, "CITY_NAMES", R, ci, [], "found::city_name_and_predicates_match_web", "prywatna; dane: cities-params.json nazwy_miast.lista")
+add(C, "CITY_NAMES", R, ci, ["derived:nazwy_miast"], "found::city_name_and_predicates_match_web", "prywatna; dane: cities-params.json nazwy_miast.lista")
 add(C, "cityName", R, ci, ["city_name"], "found::city_name_and_predicates_match_web", "@deprecated; undefined (indeks niecalkowity w zakresie) -> None")
-add(C, "FoundFromVillageOpts", R, ci, [], "found::found_city_from_village_matches_web", "jedyne pole withinTerritory = parametr within_territory")
+add(C, "FoundFromVillageOpts", R, ci, ["within_territory", "found_city_from_village"], "found::found_city_from_village_matches_web", "jedyne pole withinTerritory = parametr within_territory")
 add(C, "FoundFromVillageResult", R, ci, ["FoundFromVillageResult"], "found::found_city_from_village_matches_web", "{ok:true}&City | {ok:false,reason} -> enum")
 add(C, "foundCityFromVillage", R, ci, ["found_city_from_village"], "found::found_city_from_village_matches_web", "-")
 
@@ -238,7 +249,10 @@ def main():
                 problems.append(f"zly status {key}")
             rl = []
             for r in rust:
-                rl.append(f"rust-port/engine/src/domain/state.rs:{rust_line(mod, r)} ({r})")
+                if r.startswith("derived:"):
+                    rl.append(f"rust-port/engine/src/data/derived.rs:{derived_line(r[8:])} ({r[8:]})")
+                else:
+                    rl.append(f"rust-port/engine/src/domain/state.rs:{rust_line(mod, r)} ({r})")
             if test != "-":
                 alias, name = test.split("::")
                 tf = T[alias.replace("cities_", "")] if alias.startswith("cities_") else T[alias]
