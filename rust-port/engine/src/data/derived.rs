@@ -3611,3 +3611,212 @@ pub fn mapgen_terrain_class() -> &'static MapgenTerrainClassFile {
     TABLE
         .get_or_init(|| parse_mapgen_terrain_class().expect("mapgen-terrain-class.json must parse"))
 }
+
+// ---------------------------------------------------------------------------------------------
+// P6.6B (R-RUSTPORT-P6-6B-MIASTA-ZAKLADANIE-B-Q1): cities / empire-city-defaults / display-names -
+// edytowalne tabele balansu i etykiet (pin web edb8fb56)
+// ---------------------------------------------------------------------------------------------
+
+pub const CITIES_PARAMS_JSON: &str = include_str!("../../data/derived/cities-params.json");
+pub const DISPLAY_NAMES_PARAMS_JSON: &str =
+    include_str!("../../data/derived/display-names-params.json");
+
+/// Podzial Pracy miasta: domyslna wartosc, granice i stale AI (procent udzialu budynkow).
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct CitiesPodzialPracyParams {
+    pub domyslnie_budynki: f64,
+    pub min_budynki: f64,
+    pub max_budynki: f64,
+    pub ai_stale_budynki: f64,
+    pub min_pula_zasada3_nadwyzka: f64,
+}
+
+/// Trzy udzialy podzialu Handlu (nazwy pol jak w webie).
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct CitiesHandelSplit {
+    #[serde(rename = "procentNauka")]
+    pub procent_nauka: f64,
+    #[serde(rename = "procentPieniadz")]
+    pub procent_pieniadz: f64,
+    #[serde(rename = "procentLuksus")]
+    pub procent_luksus: f64,
+}
+
+/// Podzial Handlu: domyslny podzial nowego miasta, krok suwaka i cap Nauki.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct CitiesPodzialHandluParams {
+    pub domyslnie: CitiesHandelSplit,
+    pub krok: f64,
+    pub max_nauka: f64,
+}
+
+/// Wiersz migracji starego `ulepszeniaPerTurn` (1|2|3 sztuk) na procent budzetu Pracy.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct CitiesPerTurnMigration {
+    pub per_turn: f64,
+    pub procent: f64,
+}
+
+/// Ustawienia auto-ulepszen terenu.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct CitiesUlepszeniaParams {
+    pub domyslny_focus: String,
+    pub domyslny_tryb: String,
+    pub domyslnie_only_worked: bool,
+    pub domyslnie_wolno_wycinac_las: bool,
+    pub domyslna_praca_procent: f64,
+    pub ai_major_praca_procent: f64,
+    pub max_auto_praca_procent: f64,
+    pub migracja_per_turn: Vec<CitiesPerTurnMigration>,
+}
+
+/// Ustawienia auto-kolejki budynkow i biblioteki list.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct CitiesBudowaParams {
+    pub domyslny_focus: String,
+    pub domyslny_tryb: String,
+    pub domyslny_tryb_ai: String,
+    pub domyslny_tryb_nowe_miasto: String,
+    pub domyslny_priorytet_typow: Vec<String>,
+    pub typy_focus: Vec<String>,
+    pub focus_bez_typu: String,
+    pub lista_domyslna_nazwa_prefiks: String,
+    pub lista_szablon_id_prefiks: String,
+    pub lista_slot_legacy: Vec<String>,
+    pub lista_nazwa_legacy_prefiks: String,
+    pub lista_limit_nazw: f64,
+}
+
+/// Domyslny profil pol okolicy.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct CitiesOkolicaParams {
+    pub domyslny_focus: String,
+    pub domyslny_tryb: String,
+}
+
+/// Stale z `population-growth-v85.ts` (poza zakresem P6.6B), kopia wejsciowa.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct CitiesForeignInputs {
+    pub zrodlo: String,
+    pub domyslny_poziom_racji: f64,
+    pub wyzywienie_max: f64,
+    pub swiezy_wealth_poziom: f64,
+    pub swiezy_wealth_pula: f64,
+}
+
+/// Domyslny suwak zywnosc -> wzrost.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct CitiesWyzywienieParams {
+    pub domyslny_procent_rozwoj: f64,
+}
+
+/// Teksty powodow odmowy zalozenia miasta.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct CitiesFoundingReasons {
+    pub poza_mapa: String,
+    pub morze: String,
+    pub gory: String,
+    pub za_blisko: String,
+    pub poza_terytorium: String,
+    pub limit_epoka: String,
+    pub found_city_at_null: String,
+}
+
+/// Parametry zakladania miasta (poza kosztami z `city-founding-params.json`).
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct CitiesFoundingParams {
+    pub min_dystans_miasto_panstwo: f64,
+    pub limit_miast_baza_zapas: f64,
+    pub limit_miast_krok_epoka: f64,
+    pub min_epoka: f64,
+    pub startowa_populacja: f64,
+    pub wealth_immunitet_tur: f64,
+    pub id_prefiks: String,
+    pub powody: CitiesFoundingReasons,
+}
+
+/// Pula nazw miast (deprecated `cityName`).
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct CitiesNamesParams {
+    pub lista: Vec<String>,
+    pub prefiks_generyczny: String,
+}
+
+/// Etykiety i tooltip podzialu Pracy dla UI.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct CitiesPodzialLabels {
+    pub pula: String,
+    pub pula_pelna: String,
+    pub pula_tip: String,
+}
+
+/// Plik `cities-params.json`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct CitiesParamsFile {
+    pub meta: serde_json::Value,
+    pub procent_calosc: f64,
+    pub podzial_pracy: CitiesPodzialPracyParams,
+    pub podzial_handlu: CitiesPodzialHandluParams,
+    pub ulepszenia: CitiesUlepszeniaParams,
+    pub budowa: CitiesBudowaParams,
+    pub okolica: CitiesOkolicaParams,
+    pub wejscia_z_innych_modulow_weba: CitiesForeignInputs,
+    pub wyzywienie: CitiesWyzywienieParams,
+    pub zakladanie: CitiesFoundingParams,
+    pub nazwy_miast: CitiesNamesParams,
+    pub etykiety_podzialu_pracy: CitiesPodzialLabels,
+}
+
+pub fn parse_cities_params() -> Result<CitiesParamsFile, serde_json::Error> {
+    serde_json::from_str(CITIES_PARAMS_JSON)
+}
+
+/// Stale `cities.ts` (jednorazowy odczyt; blad danych = panika z komunikatem).
+pub fn cities_params() -> &'static CitiesParamsFile {
+    static TABLE: std::sync::OnceLock<CitiesParamsFile> = std::sync::OnceLock::new();
+    TABLE.get_or_init(|| parse_cities_params().expect("cities-params.json must parse"))
+}
+
+/// Wzorzec techniczny etykiety wlasciciela (regex `^<prefiks>\d+$` z flaga `i`).
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct DisplayNamesTechnicalPattern {
+    pub prefiks: String,
+    pub cyfry: bool,
+    pub ignoruj_wielkosc: bool,
+}
+
+/// Plik `display-names-params.json`.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct DisplayNamesParamsFile {
+    pub meta: serde_json::Value,
+    pub etykieta_miasto_panstwo: String,
+    pub separator: String,
+    pub wzorce_techniczne: Vec<DisplayNamesTechnicalPattern>,
+}
+
+pub fn parse_display_names_params() -> Result<DisplayNamesParamsFile, serde_json::Error> {
+    serde_json::from_str(DISPLAY_NAMES_PARAMS_JSON)
+}
+
+/// Stale `display-names.ts` (jednorazowy odczyt; blad danych = panika z komunikatem).
+pub fn display_names_params() -> &'static DisplayNamesParamsFile {
+    static TABLE: std::sync::OnceLock<DisplayNamesParamsFile> = std::sync::OnceLock::new();
+    TABLE
+        .get_or_init(|| parse_display_names_params().expect("display-names-params.json must parse"))
+}

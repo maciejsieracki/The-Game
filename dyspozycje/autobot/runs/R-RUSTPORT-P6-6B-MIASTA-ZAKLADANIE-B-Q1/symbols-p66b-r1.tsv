@@ -1,0 +1,131 @@
+plik_ts	linia_ts	symbol	status	odpowiednik_rust	test	uwaga
+cities.ts	21	CityPodzialHandlu	PORTOWANY	rust-port/engine/src/domain/state.rs:1435 (CityPodzialHandlu); rust-port/engine/src/domain/state.rs:1443 (HandelKey)	percent::adjust_handel_split_matches_web	keyof -> enum HandelKey
+cities.ts	40	CityPodzialPracy	PORTOWANY	rust-port/engine/src/domain/state.rs:1469 (CityPodzialPracy)	percent::constants_match_running_web	-
+cities.ts	45	OkolicaFocus	PORTOWANY	rust-port/engine/src/domain/state.rs:1475 (OkolicaFocus)	empire::okolica_focus_functions_match_web	unia napisow -> enum + web_value/from_web
+cities.ts	48	OkolicaTryb	PORTOWANY	rust-port/engine/src/domain/state.rs:1505 (OkolicaTryb)	percent::constants_match_running_web	-
+cities.ts	56	DEFAULT_OKOLICA_FOCUS	PORTOWANY	rust-port/engine/src/domain/state.rs:1774 (default_okolica_focus)	percent::constants_match_running_web	dane: cities-params.json okolica
+cities.ts	57	DEFAULT_OKOLICA_TRYB	PORTOWANY	rust-port/engine/src/domain/state.rs:1779 (default_okolica_tryb)	percent::constants_match_running_web	dane: cities-params.json okolica
+cities.ts	60	BudowaFocus	PORTOWANY	rust-port/engine/src/domain/state.rs:1529 (BudowaFocus)	percent::budowa_priority_helpers_match_web	-
+cities.ts	69	BudowaTryb	PORTOWANY	rust-port/engine/src/domain/state.rs:1566 (BudowaTryb)	cities_ensure::ensure_city_save_defaults_matches_web	dodatkowy wariant Auto = surowa wartosc legacy ('auto') czytana przez ensureCitySaveDefaults
+cities.ts	72	BudowaListaSzablon	PORTOWANY	rust-port/engine/src/domain/state.rs:1655 (BudowaListaSzablon)	lists::id_generator_and_loader_match_web_sequence	budynki: Vec<serde_json::Value> (zawartosc z zapisu nie jest sprawdzana elementarnie)
+cities.ts	73	BudowaListaBiblioteka	PORTOWANY	-	lists::id_generator_and_loader_match_web_sequence	alias tablicy -> Vec<BudowaListaSzablon>
+cities.ts	75	EMPTY_BUDOWA_LISTA_BIBLIOTEKA	PORTOWANY	rust-port/engine/src/domain/state.rs:1769 (empty_budowa_lista_biblioteka)	percent::constants_match_running_web	-
+cities.ts	78	BudowaListaSlot	PORTOWANY	-	lists::id_generator_and_loader_match_web_sequence	unia 'A'|'B'|'C' -> dane cities-params.json budowa.lista_slot_legacy
+cities.ts	80	BudowaListaSzablonyLegacy	NIE-DOTYCZY	-	lists::id_generator_and_loader_match_web_sequence	typ Record<slot,string[]>; legacy format czytany z serde_json::Value w load_budowa_lista_biblioteka
+cities.ts	82	_budowaListaSzablonSeq	PORTOWANY	rust-port/engine/src/domain/state.rs:1973 (BudowaListaIdGen)	lists::id_generator_and_loader_match_web_sequence	zmienna modulu -> jawny stan BudowaListaIdGen.seq
+cities.ts	84	newBudowaListaSzablonId	PORTOWANY-Z-WSTRZYKNIETYMI	rust-port/engine/src/domain/state.rs:1973 (BudowaListaIdGen)	lists::id_generator_and_loader_match_web_sequence	WSTRZYKNIETE: Date.now() jako parametr now_ms (metoda new_id)
+cities.ts	90	defaultBudowaListaNazwa	PORTOWANY	rust-port/engine/src/domain/state.rs:1991 (default_budowa_lista_nazwa)	lists::default_nazwa_matches_web	trim/toLowerCase: js_trim + to_lowercase
+cities.ts	99	isLegacyBudowaListaSzablony	PORTOWANY	-	lists::id_generator_and_loader_match_web_sequence	prywatna; zaszyta w load_budowa_lista_biblioteka
+cities.ts	107	isBudowaListaSzablonArray	PORTOWANY	-	lists::id_generator_and_loader_match_web_sequence	prywatna; fn is_budowa_lista_szablon_array (niepubliczna)
+cities.ts	119	loadBudowaListaBiblioteka	PORTOWANY-Z-WSTRZYKNIETYMI	rust-port/engine/src/domain/state.rs:2043 (load_budowa_lista_biblioteka)	lists::id_generator_and_loader_match_web_sequence	WSTRZYKNIETE: Date.now() (domkniecie now), licznik id (BudowaListaIdGen)
+cities.ts	160	dedupeBudowaLista	PORTOWANY	rust-port/engine/src/domain/state.rs:2087 (dedupe_budowa_lista)	lists::dedupe_matches_web	-
+cities.ts	172	isAutoBudowaTryb	PORTOWANY	rust-port/engine/src/domain/state.rs:2100 (is_auto_budowa_tryb)	percent::budowa_priority_helpers_match_web	-
+cities.ts	177	DEFAULT_BUDOWA_FOCUS	PORTOWANY	rust-port/engine/src/domain/state.rs:1785 (default_budowa_focus)	percent::constants_match_running_web	-
+cities.ts	178	DEFAULT_BUDOWA_TRYB	PORTOWANY	rust-port/engine/src/domain/state.rs:1790 (default_budowa_tryb)	percent::constants_match_running_web	-
+cities.ts	181	UlepszeniaFocus	PORTOWANY	rust-port/engine/src/domain/state.rs:1599 (UlepszeniaFocus)	percent::resolve_effective_ulepszenia_matches_web	-
+cities.ts	184	UlepszeniaTryb	PORTOWANY	rust-port/engine/src/domain/state.rs:1629 (UlepszeniaTryb)	percent::resolve_effective_ulepszenia_matches_web	-
+cities.ts	200	UlepszeniaPracaPercent	NIE-DOTYCZY	-	-	alias number -> f64
+cities.ts	202	DEFAULT_ULEPSZENIA_FOCUS	PORTOWANY	rust-port/engine/src/domain/state.rs:1795 (default_ulepszenia_focus)	percent::constants_match_running_web	-
+cities.ts	203	DEFAULT_ULEPSZENIA_TRYB	PORTOWANY	rust-port/engine/src/domain/state.rs:1800 (default_ulepszenia_tryb)	percent::constants_match_running_web	-
+cities.ts	217	DEFAULT_ULEPSZENIA_ONLY_WORKED	PORTOWANY	rust-port/engine/src/domain/state.rs:1805 (default_ulepszenia_only_worked)	percent::constants_match_running_web	-
+cities.ts	226	DEFAULT_ULEPSZENIA_WOLNO_WYCINAC_LAS	PORTOWANY	rust-port/engine/src/domain/state.rs:1810 (default_ulepszenia_wolno_wycinac_las)	percent::constants_match_running_web	-
+cities.ts	229	DEFAULT_ULEPSZENIA_PRACA_PERCENT	PORTOWANY	rust-port/engine/src/domain/state.rs:1815 (default_ulepszenia_praca_percent)	percent::constants_match_running_web	-
+cities.ts	232	AI_MAJOR_ULEPSZENIA_PRACA_PERCENT	PORTOWANY	rust-port/engine/src/domain/state.rs:1820 (ai_major_ulepszenia_praca_percent)	percent::constants_match_running_web	-
+cities.ts	240	MAX_ULEPSZENIA_PRACA_AUTO_PERCENT	PORTOWANY	rust-port/engine/src/domain/state.rs:1825 (max_ulepszenia_praca_auto_percent)	percent::constants_match_running_web	-
+cities.ts	257	clampUlepszeniaPracaPercent	PORTOWANY	rust-port/engine/src/domain/state.rs:2132 (clamp_ulepszenia_praca_percent)	percent::clamp_functions_match_web	number|undefined|null -> Option<f64> (None = nie-liczba)
+cities.ts	279	migrateUlepszeniaPerTurnToPercent	PORTOWANY	rust-port/engine/src/domain/state.rs:2144 (migrate_ulepszenia_per_turn_to_percent)	percent::snap_and_migrate_match_web	tabela migracja_per_turn; wartosc spoza tabeli -> ostatni wiersz (galaz `return 100`)
+cities.ts	291	resolveUlepszeniaPracaPercentFromRaw	PORTOWANY	rust-port/engine/src/domain/state.rs:2155 (resolve_ulepszenia_praca_percent_from_raw)	percent::resolve_praca_percent_from_raw_matches_web	unknown -> Option<f64> (tylko typeof number ma znaczenie)
+cities.ts	303	UlepszeniaEmpirePolicy	PORTOWANY	rust-port/engine/src/domain/state.rs:2182 (UlepszeniaEmpirePolicy)	percent::ulepszenia_policy_and_caps_match_web	wolnoWycinacLas: Option<bool> (kod czyta `??`)
+cities.ts	312	freshUlepszeniaEmpirePolicy	PORTOWANY	rust-port/engine/src/domain/state.rs:2191 (fresh_ulepszenia_empire_policy)	percent::ulepszenia_policy_and_caps_match_web	-
+cities.ts	329	freshUlepszeniaEmpirePolicyForOwner	PORTOWANY	rust-port/engine/src/domain/state.rs:2203 (fresh_ulepszenia_empire_policy_for_owner)	percent::ulepszenia_policy_and_caps_match_web	isAiImprovementOwner jest PARAMETREM weba
+cities.ts	339	computeAiImprovementBudgetCap	PORTOWANY	rust-port/engine/src/domain/state.rs:2215 (compute_ai_improvement_budget_cap)	percent::ulepszenia_policy_and_caps_match_web	-
+cities.ts	348	computeAiImprovementBudgetCapForOwner	PORTOWANY	rust-port/engine/src/domain/state.rs:2224 (compute_ai_improvement_budget_cap_for_owner)	percent::ulepszenia_policy_and_caps_match_web	-
+cities.ts	358	EffectiveUlepszeniaSettings	PORTOWANY	rust-port/engine/src/domain/state.rs:2237 (EffectiveUlepszeniaSettings)	percent::resolve_effective_ulepszenia_matches_web	pole override -> is_override (slowo zarezerwowane)
+cities.ts	368	resolveEffectiveUlepszenia	PORTOWANY	rust-port/engine/src/domain/state.rs:2247 (resolve_effective_ulepszenia)	percent::resolve_effective_ulepszenia_matches_web	-
+cities.ts	396	DEFAULT_BUDOWA_PRIORYTET_TYPOW	PORTOWANY	rust-port/engine/src/domain/state.rs:1830 (default_budowa_priorytet_typow)	percent::constants_match_running_web	-
+cities.ts	405	BUDOWA_TYP_FOCUS	PORTOWANY	rust-port/engine/src/domain/state.rs:1840 (budowa_typ_focus)	percent::constants_match_running_web	-
+cities.ts	413	isBudowaTypFocus	PORTOWANY	rust-port/engine/src/domain/state.rs:2109 (is_budowa_typ_focus)	percent::budowa_priority_helpers_match_web	-
+cities.ts	418	sanitizeBudowaPriorytetTypow	PORTOWANY	rust-port/engine/src/domain/state.rs:2114 (sanitize_budowa_priorytet_typow)	percent::budowa_priority_helpers_match_web	-
+cities.ts	436	DEFAULT_PODZIAL_HANDLU	PORTOWANY	rust-port/engine/src/domain/state.rs:1850 (default_podzial_handlu)	percent::constants_match_running_web	-
+cities.ts	443	DEFAULT_PODZIAL_PRACY	PORTOWANY	rust-port/engine/src/domain/state.rs:1860 (default_podzial_pracy)	percent::constants_match_running_web	-
+cities.ts	456	MIN_PODZIAL_PRACY_BUDYNKI_PERCENT	PORTOWANY	rust-port/engine/src/domain/state.rs:1867 (min_podzial_pracy_budynki_percent)	percent::constants_match_running_web	-
+cities.ts	457	MAX_PODZIAL_PRACY_BUDYNKI_PERCENT	PORTOWANY	rust-port/engine/src/domain/state.rs:1872 (max_podzial_pracy_budynki_percent)	percent::constants_match_running_web	-
+cities.ts	469	AI_FIXED_PROCENT_BUDYNKI	PORTOWANY	rust-port/engine/src/domain/state.rs:1877 (ai_fixed_procent_budynki)	percent::constants_match_running_web	-
+cities.ts	478	MAX_PROCENT_PULI_IMPERIUM	PORTOWANY	rust-port/engine/src/domain/state.rs:1882 (max_procent_puli_imperium)	percent::constants_match_running_web	wyliczane: calosc - min budynkow
+cities.ts	515	MIN_PROCENT_PULI_IMPERIUM_ZASADA3_NADWYZKA	PORTOWANY	rust-port/engine/src/domain/state.rs:1887 (min_procent_puli_imperium_zasada3_nadwyzka)	percent::constants_match_running_web	-
+cities.ts	535	PODZIAL_PRACY_PULA_LBL	PORTOWANY	rust-port/engine/src/domain/state.rs:1892 (podzial_pracy_pula_lbl)	percent::constants_match_running_web	dane: cities-params.json etykiety_podzialu_pracy
+cities.ts	537	PODZIAL_PRACY_PULA_LBL_PELNA	PORTOWANY	rust-port/engine/src/domain/state.rs:1897 (podzial_pracy_pula_lbl_pelna)	percent::constants_match_running_web	-
+cities.ts	539	PODZIAL_PRACY_PULA_TIP	PORTOWANY	rust-port/engine/src/domain/state.rs:1902 (podzial_pracy_pula_tip)	percent::constants_match_running_web	-
+cities.ts	543	MIN_PROCENT_PULI_IMPERIUM	PORTOWANY	rust-port/engine/src/domain/state.rs:1907 (min_procent_puli_imperium)	percent::constants_match_running_web	wyliczane: calosc - max budynkow
+cities.ts	545	clampPodzialPracyBudynkiPercent	PORTOWANY	rust-port/engine/src/domain/state.rs:2286 (clamp_podzial_pracy_budynki_percent)	percent::clamp_functions_match_web	-
+cities.ts	557	procentPuliImperiumZBudynkow	PORTOWANY	rust-port/engine/src/domain/state.rs:2297 (procent_puli_imperium_z_budynkow)	percent::clamp_functions_match_web	-
+cities.ts	562	podzialPracyZProcentuPuli	PORTOWANY	rust-port/engine/src/domain/state.rs:2302 (podzial_pracy_z_procentu_puli)	percent::podzial_pracy_z_procentu_puli_matches_web	-
+cities.ts	570	DEFAULT_PROCENT_ROZWOJ	PORTOWANY	rust-port/engine/src/domain/state.rs:1912 (default_procent_rozwoj)	percent::constants_match_running_web	-
+cities.ts	573	DEFAULT_PROCENT_ROZWOJ_WYZYWIENIE	PORTOWANY	rust-port/engine/src/domain/state.rs:1918 (default_procent_rozwoj_wyzywienie); rust-port/engine/src/domain/state.rs:1924 (default_poziom_racji); rust-port/engine/src/domain/state.rs:1931 (wyzywienie_max)	percent::constants_match_running_web	Math.round(DEFAULT_POZIOM_RACJI / WYZYWIENIE_MAX * 100); oba skladniki z population-growth-v85.ts jako WEJSCIE z danych (cities-params.json wejscia_z_innych_modulow_weba)
+cities.ts	578	HANDEL_PCT_STEP	PORTOWANY	rust-port/engine/src/domain/state.rs:1936 (handel_pct_step)	percent::constants_match_running_web	-
+cities.ts	581	MAX_PROCENT_NAUKA	PORTOWANY	rust-port/engine/src/domain/state.rs:1941 (max_procent_nauki)	percent::constants_match_running_web	-
+cities.ts	601	AI_FIXED_PROCENT_NAUKA	PORTOWANY	rust-port/engine/src/domain/state.rs:1946 (ai_fixed_procent_nauki)	percent::constants_match_running_web	-
+cities.ts	603	snapHandelPct	PORTOWANY	rust-port/engine/src/domain/state.rs:2316 (snap_handel_pct)	percent::snap_and_migrate_match_web	-
+cities.ts	608	normalizePodzialHandlu	PORTOWANY	rust-port/engine/src/domain/state.rs:2322 (normalize_podzial_handlu)	percent::normalize_podzial_handlu_matches_web	-
+cities.ts	640	adjustHandelSplit	PORTOWANY	rust-port/engine/src/domain/state.rs:2351 (adjust_handel_split)	percent::adjust_handel_split_matches_web	-
+cities.ts	723	freshCityPodzial	PORTOWANY	-	found::found_city_at_matches_web	prywatna; fn fresh_city_podzial_pracy (niepubliczna)
+cities.ts	730	ensureCityPodzialDefaults	PORTOWANY	rust-port/engine/src/domain/state.rs:2458 (ensure_city_podzial_defaults)	ensure::ensure_city_podzial_defaults_matches_web	-
+cities.ts	746	ensureCitySaveDefaults	PORTOWANY-Z-WSTRZYKNIETYMI	rust-port/engine/src/domain/state.rs:2482 (ensure_city_save_defaults); rust-port/engine/src/domain/state.rs:2452 (SaveDefaultsDeps)	ensure::ensure_city_save_defaults_matches_web	WSTRZYKNIETE: readCityFoodBuffer (economy-upkeep.ts), ensureCityRationDefaults (population-growth-v85.ts); freshWealthState (wealth.ts) = wejscie z danych; testy sprawdzaja liczbe/kolejnosc/argumenty wywolan
+cities.ts	834	City	PORTOWANY	rust-port/engine/src/domain/state.rs:1683 (City); rust-port/engine/src/domain/state.rs:1672 (FoodBuffer); rust-port/engine/src/domain/state.rs:1663 (WealthState)	ensure::ensure_city_save_defaults_matches_web	podzbior 38 z 61 pol interfejsu (wszystkie pola czytane lub zapisywane przez logike trzech plikow) + surowe pole legacy ulepszeniaPerTurn; pozostale 23 pola = dane bez logiki w tych plikach (grep: 0 uzyc, dokument §4)
+cities.ts	1120	MIN_CITY_DISTANCE	DANE-JUZ-W-RUST	rust-port/engine/src/domain/state.rs:1952 (min_city_distance)	tables::min_city_distance_comes_from_miasto_params	data/miasto-params.json min_dystans_miast; zapasowe `?? 5` nieosiagalne (typ danych wymusza pole)
+cities.ts	1122	MIN_CITY_DISTANCE_START_CITY_STATE	PORTOWANY	rust-port/engine/src/domain/state.rs:1963 (min_city_distance_start_city_state)	percent::constants_match_running_web	-
+cities.ts	1125	countsTowardCityFoundingLimit	PORTOWANY	rust-port/engine/src/domain/state.rs:2583 (counts_toward_city_founding_limit)	found::city_name_and_predicates_match_web	Pick<City,'foundedByOwner'> -> Option<bool>
+cities.ts	1157	wasIndependentCityStateBeforeCapture	PORTOWANY	rust-port/engine/src/domain/state.rs:2588 (was_independent_city_state_before_capture)	found::city_name_and_predicates_match_web	Pick<City,'startCityState'> -> Option<bool>
+cities.ts	1163	canFoundCity	PORTOWANY	rust-port/engine/src/domain/state.rs:2647 (can_found_city); rust-port/engine/src/domain/state.rs:2602 (CanFoundCityOpts); rust-port/engine/src/domain/state.rs:2614 (GameConfig); rust-port/engine/src/domain/state.rs:2620 (CanFoundCityResult)	found::can_found_city_matches_web	hexDistance lokalnie f64; isWaterTerrain = P6.4 (pathfinding::ruch_jednostek); klucz heksu `q,r` tylko dla calkowitych (ZALOZENIE)
+cities.ts	1235	foundCity	PORTOWANY	rust-port/engine/src/domain/state.rs:2767 (found_city); rust-port/engine/src/domain/state.rs:2760 (Settler)	found::found_city_matches_web	RuntimeUnit -> Settler{ownerId,q,r}; freshWealthState = wejscie z danych
+cities.ts	1269	foundCityAt	PORTOWANY	rust-port/engine/src/domain/state.rs:2796 (found_city_at)	found::found_city_at_matches_web	-
+cities.ts	1309	CITY_NAMES	PORTOWANY	-	found::city_name_and_predicates_match_web	prywatna; dane: cities-params.json nazwy_miast.lista
+cities.ts	1328	cityName	PORTOWANY	rust-port/engine/src/domain/state.rs:2828 (city_name)	found::city_name_and_predicates_match_web	@deprecated; undefined (indeks niecalkowity w zakresie) -> None
+cities.ts	1343	FoundFromVillageOpts	PORTOWANY	-	found::found_city_from_village_matches_web	jedyne pole withinTerritory = parametr within_territory
+cities.ts	1351	FoundFromVillageResult	PORTOWANY	rust-port/engine/src/domain/state.rs:2845 (FoundFromVillageResult)	found::found_city_from_village_matches_web	{ok:true}&City | {ok:false,reason} -> enum
+cities.ts	1374	foundCityFromVillage	PORTOWANY	rust-port/engine/src/domain/state.rs:2851 (found_city_from_village)	found::found_city_from_village_matches_web	-
+empire-city-defaults.ts	59	podzialPracyEqual	PORTOWANY	rust-port/engine/src/domain/state.rs:2945 (podzial_pracy_equal)	empire::podzial_pracy_functions_match_web	-
+empire-city-defaults.ts	64	normalizePodzialPracy	PORTOWANY	-	empire::podzial_pracy_functions_match_web	prywatna; fn normalize_podzial_pracy (niepubliczna)
+empire-city-defaults.ts	69	resolveCityPodzialPracy	PORTOWANY	rust-port/engine/src/domain/state.rs:2957 (resolve_city_podzial_pracy)	empire::podzial_pracy_functions_match_web	Pick<City,...> -> &City
+empire-city-defaults.ts	101	PodzialPracyLocalChange	PORTOWANY	rust-port/engine/src/domain/state.rs:2982 (PodzialPracyLocalChange)	empire::podzial_pracy_functions_match_web	undefined -> None
+empire-city-defaults.ts	108	applyPodzialPracyLocalChange	PORTOWANY	rust-port/engine/src/domain/state.rs:2988 (apply_podzial_pracy_local_change)	empire::podzial_pracy_functions_match_web	-
+empire-city-defaults.ts	123	migratePodzialPracyOnLoad	PORTOWANY	rust-port/engine/src/domain/state.rs:3011 (migrate_podzial_pracy_on_load)	empire::podzial_pracy_migration_matches_web	Map<number,V> -> OwnerMap (kolejnosc wstawiania); delete city.podzialPracy -> None
+empire-city-defaults.ts	182	freshOwnerDefaultPodzialPracy	PORTOWANY	rust-port/engine/src/domain/state.rs:3067 (fresh_owner_default_podzial_pracy)	empire::podzial_pracy_functions_match_web	-
+empire-city-defaults.ts	192	resolveCityOkolicaFocus	PORTOWANY	rust-port/engine/src/domain/state.rs:3076 (resolve_city_okolica_focus)	empire::okolica_focus_functions_match_web	-
+empire-city-defaults.ts	207	broadcastOkolicaFocusToOwnerCities	PORTOWANY	rust-port/engine/src/domain/state.rs:3091 (broadcast_okolica_focus_to_owner_cities)	empire::okolica_focus_functions_match_web	pin (override) pomijany
+empire-city-defaults.ts	219	migrateOkolicaFocusOnLoad	PORTOWANY	rust-port/engine/src/domain/state.rs:3105 (migrate_okolica_focus_on_load)	empire::okolica_focus_functions_match_web	-
+empire-city-defaults.ts	250	freshOwnerDefaultOkolicaFocus	PORTOWANY	rust-port/engine/src/domain/state.rs:3149 (fresh_owner_default_okolica_focus)	empire::okolica_focus_functions_match_web	-
+empire-city-defaults.ts	261	CityBudowaProfil	PORTOWANY	rust-port/engine/src/domain/state.rs:3159 (CityBudowaProfil)	empire::budowa_profil_functions_match_web	-
+empire-city-defaults.ts	266	budowaProfilEqual	PORTOWANY	rust-port/engine/src/domain/state.rs:3165 (budowa_profil_equal)	empire::budowa_profil_functions_match_web	-
+empire-city-defaults.ts	270	resolveCityBudowaProfil	PORTOWANY	rust-port/engine/src/domain/state.rs:3170 (resolve_city_budowa_profil)	empire::budowa_profil_functions_match_web	-
+empire-city-defaults.ts	290	broadcastBudowaProfilToOwnerCities	PORTOWANY	rust-port/engine/src/domain/state.rs:3192 (broadcast_budowa_profil_to_owner_cities)	empire::budowa_profil_functions_match_web	pin (override) pomijany
+empire-city-defaults.ts	303	migrateBudowaProfilOnLoad	PORTOWANY	rust-port/engine/src/domain/state.rs:3207 (migrate_budowa_profil_on_load)	empire::budowa_profil_functions_match_web	-
+empire-city-defaults.ts	342	freshOwnerDefaultBudowaProfil	PORTOWANY	rust-port/engine/src/domain/state.rs:3270 (fresh_owner_default_budowa_profil)	empire::budowa_profil_functions_match_web	-
+empire-city-defaults.ts	354	AI_DEFAULT_BUDOWA_TRYB	PORTOWANY	rust-port/engine/src/domain/state.rs:3278 (ai_default_budowa_tryb)	empire::budowa_profil_functions_match_web	dane: cities-params.json budowa.domyslny_tryb_ai
+empire-city-defaults.ts	392	freshOwnerDefaultBudowaProfilForOwner	PORTOWANY	rust-port/engine/src/domain/state.rs:3285 (fresh_owner_default_budowa_profil_for_owner)	empire::budowa_profil_functions_match_web	isBarbarianOwner jest PARAMETREM weba (domkniecie podawane przez wolajacego)
+empire-city-defaults.ts	437	upgradeBudowaProfilAutoDefaultsOnLoad	PORTOWANY	rust-port/engine/src/domain/state.rs:3300 (upgrade_budowa_profil_auto_defaults_on_load)	empire::upgrade_budowa_profil_auto_defaults_matches_web	isBarbarianOwner = parametr weba; gracz (owner 0) pomijany; zwraca liste w kolejnosci wstawiania
+empire-city-defaults.ts	479	resolveCityPoziomRacji	PORTOWANY	rust-port/engine/src/domain/state.rs:3343 (resolve_city_poziom_racji)	empire::poziom_racji_functions_match_web	PoziomRacji = number -> f64
+empire-city-defaults.ts	494	broadcastPoziomRacjiToOwnerCities	PORTOWANY	rust-port/engine/src/domain/state.rs:3355 (broadcast_poziom_racji_to_owner_cities)	empire::poziom_racji_functions_match_web	-
+empire-city-defaults.ts	511	broadcastAutoWyzywienieToOwnerCities	PORTOWANY	rust-port/engine/src/domain/state.rs:3369 (broadcast_auto_wyzywienie_to_owner_cities)	empire::poziom_racji_functions_match_web	-
+empire-city-defaults.ts	522	migratePoziomRacjiOnLoad	PORTOWANY	rust-port/engine/src/domain/state.rs:3379 (migrate_poziom_racji_on_load)	empire::poziom_racji_functions_match_web	-
+empire-city-defaults.ts	552	freshOwnerDefaultPoziomRacji	PORTOWANY	rust-port/engine/src/domain/state.rs:3423 (fresh_owner_default_poziom_racji)	empire::poziom_racji_functions_match_web	-
+display-names.ts	8	CITY_STATE_LABEL	PORTOWANY	rust-port/engine/src/domain/state.rs:1078 (city_state_label)	display::labels_match_running_web	dane: display-names-params.json etykieta_miasto_panstwo
+display-names.ts	9	CITY_STATE_SEPARATOR	PORTOWANY	rust-port/engine/src/domain/state.rs:1083 (city_state_separator)	display::labels_match_running_web	dane: display-names-params.json separator
+display-names.ts	11	EntityDisplayCtx	PORTOWANY	rust-port/engine/src/domain/state.rs:1089 (EntityDisplayCtx)	display::format_entity_display_name_matches_web	baseName?/isCityState? -> Option
+display-names.ts	17	formatEntityDisplayName	PORTOWANY	rust-port/engine/src/domain/state.rs:1095 (format_entity_display_name)	display::format_entity_display_name_matches_web	trim = js_trim (BOM tak, U+0085 nie)
+display-names.ts	27	stripCityStateSuffix	PORTOWANY	rust-port/engine/src/domain/state.rs:1107 (strip_city_state_suffix)	display::strip_city_state_suffix_matches_web	-
+display-names.ts	33	isClusterCityStateSlot	PORTOWANY	rust-port/engine/src/domain/state.rs:1123 (is_cluster_city_state_slot); rust-port/engine/src/domain/state.rs:1116 (ClusterSlot)	display::is_cluster_city_state_slot_matches_web	slot: 3 pola Option<bool> (27 kombinacji w wektorze)
+display-names.ts	43	OwnerCityStateOpts	PORTOWANY	rust-port/engine/src/domain/state.rs:1142 (OwnerCityStateOpts); rust-port/engine/src/domain/state.rs:1135 (OwnerCityRef)	display::is_owner_cluster_city_state_matches_web	Set -> HashSet<i64>, cities -> &[OwnerCityRef]
+display-names.ts	50	isOwnerClusterCityState	PORTOWANY	rust-port/engine/src/domain/state.rs:1150 (is_owner_cluster_city_state)	display::is_owner_cluster_city_state_matches_web	ownerId jako i64
+display-names.ts	88	clearCityStateFlagOnCapture	PORTOWANY	rust-port/engine/src/domain/state.rs:1174 (clear_city_state_flag_on_capture)	display::clear_city_state_flag_on_capture_matches_web	city.startCityState -> &mut Option<bool>
+display-names.ts	96	ForceCultureIconOpts	PORTOWANY	rust-port/engine/src/domain/state.rs:1184 (ForceCultureIconOpts)	display::should_force_culture_icon_matches_web	extends OwnerCityStateOpts -> pole base
+display-names.ts	110	shouldForceCultureIconForOwner	PORTOWANY	rust-port/engine/src/domain/state.rs:1192 (should_force_culture_icon_for_owner)	display::should_force_culture_icon_matches_web	-
+display-names.ts	134	CityMapLabelOpts	PORTOWANY	rust-port/engine/src/domain/state.rs:1212 (CityMapLabelOpts); rust-port/engine/src/domain/state.rs:1221 (CityMapLabelCity)	display::format_city_map_label_matches_web	city: podzbior pol (name, ownerId, startCityState)
+display-names.ts	171	formatCityMapLabel	PORTOWANY	rust-port/engine/src/domain/state.rs:1228 (format_city_map_label)	display::format_city_map_label_matches_web	-
+display-names.ts	198	formatOwnerDiploLabel	PORTOWANY	rust-port/engine/src/domain/state.rs:1259 (format_owner_diplo_label)	display::format_owner_diplo_label_matches_web	-
+display-names.ts	210	isTechnicalOwnerLabel	PORTOWANY	rust-port/engine/src/domain/state.rs:1296 (is_technical_owner_label)	display::is_technical_owner_label_matches_web	regexy /^X \d+$/i -> display-names-params.json wzorce_techniczne (ASCII)
+display-names.ts	219	ResolveOwnerBaseNameInput	PORTOWANY	rust-port/engine/src/domain/state.rs:1309 (ResolveOwnerBaseNameInput)	display::resolve_owner_base_name_matches_web	-
+display-names.ts	229	cleanDisplayPart	PORTOWANY	-	display::resolve_owner_base_name_matches_web	prywatna; fn clean_display_part (niepubliczna) w state.rs; Some("") jest falsy, nie nullish
+display-names.ts	247	foreignCapitalMapName	PORTOWANY	rust-port/engine/src/domain/state.rs:1334 (foreign_capital_map_name)	display::foreign_capital_map_name_matches_web	-
+display-names.ts	262	resolveOwnerBaseName	PORTOWANY	rust-port/engine/src/domain/state.rs:1345 (resolve_owner_base_name)	display::resolve_owner_base_name_matches_web	ownerId w webie nieuzywane
+display-names.ts	301	sanitizeOwnerDisplayBase	PORTOWANY	rust-port/engine/src/domain/state.rs:1397 (sanitize_owner_display_base)	display::sanitize_owner_display_base_matches_web	-

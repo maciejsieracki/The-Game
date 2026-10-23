@@ -1,0 +1,13 @@
+{
+  "meta": {
+    "zrodlo_web": "gra/src/game/display-names.ts (pin edb8fb56)",
+    "uwaga": "Edytowalna tabela napisow etykiet (P6.6B). wzorce_techniczne opisuja regexy isTechnicalOwnerLabel: prefiks + (opcjonalnie) cyfry ASCII do konca napisu; ignoruj_wielkosc odpowiada fladze /i (dla liter ASCII)."
+  },
+  "etykieta_miasto_panstwo": "miasto-państwo",
+  "separator": " · ",
+  "wzorce_techniczne": [
+    { "prefiks": "Rywal ", "cyfry": true, "ignoruj_wielkosc": true },
+    { "prefiks": "AI ", "cyfry": true, "ignoruj_wielkosc": true },
+    { "prefiks": "oid-", "cyfry": true, "ignoruj_wielkosc": true }
+  ]
+}

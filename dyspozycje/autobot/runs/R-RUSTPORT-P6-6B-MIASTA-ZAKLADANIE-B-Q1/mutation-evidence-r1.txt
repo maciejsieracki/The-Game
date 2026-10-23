@@ -1,0 +1,215 @@
+# P6.6B mutacje: wynik ostateczny na kodzie i wektorach z commitu (kolejnosc jak w mutate-p66b.py).
+# Przebiegi: 4 rownolegle kopie katalogu engine (zakresy indeksow 0-69, 70-104, 105-174, 175-208), nastepnie
+# doprowadzenie na wlasciwym katalogu: mutanty niekompilujace sie z powodu braku miejsca na dysku, mutanty
+# przezywajace na starszych wektorach (po dodaniu przypadkow stalych) i mutanty nowe/zmienione. Dla kazdego mutanta
+# liczy sie OSTATNI wynik nie-KOMPILACJA. Surowe wyjscia czesciowe: mutation-evidence-r1-part*.txt.
+WYKRYTY   : disp: strip nie obcina dopisku -> 6 testow czerwonych: format_city_map_label_matches_web, foreign_capital_map_name_matches_web, format_owner_diplo_label_matches_web
+WYKRYTY   : disp: format - pusta baza zwraca baze -> 3 testow czerwonych: format_entity_display_name_matches_web, format_city_map_label_matches_web, format_owner_diplo_label_matches_web
+WYKRYTY   : disp: format - odwrocony isCityState -> 3 testow czerwonych: format_city_map_label_matches_web, format_owner_diplo_label_matches_web, format_entity_display_name_matches_web
+WYKRYTY   : disp: format - bez trim -> 3 testow czerwonych: format_city_map_label_matches_web, format_entity_display_name_matches_web, format_owner_diplo_label_matches_web
+WYKRYTY   : disp: slot - stolica gracza -> 1 testow czerwonych: is_cluster_city_state_slot_matches_web
+WYKRYTY   : disp: slot - rywal tego samego typu -> 1 testow czerwonych: is_cluster_city_state_slot_matches_web
+WYKRYTY   : disp: slot - stolica klastra -> 1 testow czerwonych: is_cluster_city_state_slot_matches_web
+WYKRYTY   : disp: ownerCs - wlasciciel 0 -> 2 testow czerwonych: is_owner_cluster_city_state_matches_web, format_owner_diplo_label_matches_web
+WYKRYTY   : disp: ownerCs - startCityState lub -> 3 testow czerwonych: format_owner_diplo_label_matches_web, is_owner_cluster_city_state_matches_web, should_force_culture_icon_matches_web
+WYKRYTY   : disp: ownerCs - brak typCopy -> 3 testow czerwonych: format_owner_diplo_label_matches_web, is_owner_cluster_city_state_matches_web, should_force_culture_icon_matches_web
+WYKRYTY   : disp: ownerCs - brak simplified -> 3 testow czerwonych: format_owner_diplo_label_matches_web, is_owner_cluster_city_state_matches_web, should_force_culture_icon_matches_web
+WYKRYTY   : disp: clear - warunek flagi -> 1 testow czerwonych: clear_city_state_flag_on_capture_matches_web
+WYKRYTY   : disp: clear - nie gasi flagi -> 1 testow czerwonych: clear_city_state_flag_on_capture_matches_web
+WYKRYTY   : disp: force - brak wykluczenia stolic klastra -> 1 testow czerwonych: should_force_culture_icon_matches_web
+WYKRYTY   : disp: force - klucze bez trim -> 1 testow czerwonych: should_force_culture_icon_matches_web
+WYKRYTY   : disp: force - puste klucze rowne -> 1 testow czerwonych: should_force_culture_icon_matches_web
+WYKRYTY   : disp: force - wlasciciel 0 -> 1 testow czerwonych: should_force_culture_icon_matches_web
+WYKRYTY   : disp: mapLabel - MP tylko obce -> 1 testow czerwonych: format_city_map_label_matches_web
+WYKRYTY   : disp: mapLabel - bez wykluczenia MP-wlasciciela -> 1 testow czerwonych: format_city_map_label_matches_web
+WYKRYTY   : disp: mapLabel - gracz domyslnie 1 -> 1 testow czerwonych: format_city_map_label_matches_web
+WYKRYTY   : disp: mapLabel - stolica niewymagana -> 1 testow czerwonych: format_city_map_label_matches_web
+WYKRYTY   : disp: diplo - bez obciecia dopisku -> 1 testow czerwonych: format_owner_diplo_label_matches_web
+WYKRYTY   : disp: technical - cyfry opcjonalne -> 5 testow czerwonych: is_technical_owner_label_matches_web, format_city_map_label_matches_web, foreign_capital_map_name_matches_web
+WYKRYTY   : disp: technical - wielkosc liter -> 5 testow czerwonych: foreign_capital_map_name_matches_web, format_city_map_label_matches_web, is_technical_owner_label_matches_web
+WYKRYTY   : disp: technical - wszystkie wzorce -> 5 testow czerwonych: foreign_capital_map_name_matches_web, format_city_map_label_matches_web, is_technical_owner_label_matches_web
+WYKRYTY   : disp: technical - bez trim -> 5 testow czerwonych: foreign_capital_map_name_matches_web, is_technical_owner_label_matches_web, format_city_map_label_matches_web
+WYKRYTY   : disp: technical - dowolne znaki po prefiksie -> 5 testow czerwonych: foreign_capital_map_name_matches_web, format_city_map_label_matches_web, is_technical_owner_label_matches_web
+WYKRYTY   : disp: clean - bez odsiewu placeholderow -> 3 testow czerwonych: format_city_map_label_matches_web, foreign_capital_map_name_matches_web, resolve_owner_base_name_matches_web
+WYKRYTY   : disp: resolve - rowne nazwy laczone -> 1 testow czerwonych: resolve_owner_base_name_matches_web
+WYKRYTY   : disp: resolve - stolica klastra -> 1 testow czerwonych: resolve_owner_base_name_matches_web
+WYKRYTY   : disp: resolve - nie-MP bierze kulture -> 1 testow czerwonych: resolve_owner_base_name_matches_web
+WYKRYTY   : disp: resolve - cache pusty po trim -> 1 testow czerwonych: resolve_owner_base_name_matches_web
+WYKRYTY   : disp: resolve - miasto pusty po trim -> 1 testow czerwonych: resolve_owner_base_name_matches_web
+WYKRYTY   : disp: truthy - pusty napis prawdziwy -> 1 testow czerwonych: resolve_owner_base_name_matches_web
+WYKRYTY   : disp: foreign - bez fallbacku na kulture -> 2 testow czerwonych: foreign_capital_map_name_matches_web, format_city_map_label_matches_web
+WYKRYTY   : disp: sanitize - bez odsiewu placeholderow -> 1 testow czerwonych: sanitize_owner_display_base_matches_web
+WYKRYTY   : disp: sanitize - civ bez odsiewu -> 1 testow czerwonych: sanitize_owner_display_base_matches_web
+WYKRYTY   : tab: separator -> 8 testow czerwonych: format_city_map_label_matches_web, format_entity_display_name_matches_web, foreign_capital_map_name_matches_web
+WYKRYTY   : tab: wzorzec oid- wielkosc liter -> 5 testow czerwonych: foreign_capital_map_name_matches_web, format_city_map_label_matches_web, is_technical_owner_label_matches_web
+WYKRYTY   : tab: wzorzec AI bez cyfr -> 5 testow czerwonych: format_city_map_label_matches_web, foreign_capital_map_name_matches_web, is_technical_owner_label_matches_web
+WYKRYTY   : pct: clamp ulepszen bez zaokraglenia -> 4 testow czerwonych: ensure_city_save_defaults_matches_web, clamp_functions_match_web, resolve_effective_ulepszenia_matches_web
+WYKRYTY   : pct: clamp ulepszen domyslna -> 4 testow czerwonych: ensure_city_save_defaults_matches_web, clamp_functions_match_web, resolve_effective_ulepszenia_matches_web
+WYKRYTY   : pct: clamp podzialu bez dolnej granicy -> 3 testow czerwonych: ensure_city_podzial_defaults_matches_web, ensure_city_save_defaults_matches_web, clamp_functions_match_web
+WYKRYTY   : pct: clamp podzialu domyslna -> 3 testow czerwonych: ensure_city_save_defaults_matches_web, ensure_city_podzial_defaults_matches_web, clamp_functions_match_web
+WYKRYTY   : pct: pula z budynkow -> 1 testow czerwonych: clamp_functions_match_web
+WYKRYTY   : pct: podzial z procentu puli - brak odwrotnosci -> 1 testow czerwonych: podzial_pracy_z_procentu_puli_matches_web
+ROWNOWAZNY: pct: podzial z procentu puli - gorna granica | pozniejszy clamp_podzial_pracy_budynki_percent (dolna granica budynkow 50) i tak ogranicza wynik do tego samego zakresu
+WYKRYTY   : pct: migracja per-turn - ostatni wiersz -> 1 testow czerwonych: snap_and_migrate_match_web
+WYKRYTY   : pct: resolve raw - nowe pole przed legacy -> 3 testow czerwonych: ensure_city_save_defaults_is_idempotent_on_web_outputs, ensure_city_save_defaults_matches_web, resolve_praca_percent_from_raw_matches_web
+WYKRYTY   : pct: resolve raw - legacy tylko 1|2|3 -> 2 testow czerwonych: ensure_city_save_defaults_matches_web, resolve_praca_percent_from_raw_matches_web
+WYKRYTY   : pct: cap AI - bez ograniczenia procentu -> 1 testow czerwonych: ulepszenia_policy_and_caps_match_web
+WYKRYTY   : pct: cap AI - sufit -> 1 testow czerwonych: ulepszenia_policy_and_caps_match_web
+WYKRYTY   : pct: polityka AI - pelna pula -> 1 testow czerwonych: ulepszenia_policy_and_caps_match_web
+WYKRYTY   : pct: polityka AI - odwrocony predykat -> 1 testow czerwonych: ulepszenia_policy_and_caps_match_web
+WYKRYTY   : pct: efektywne - override tylko true -> 1 testow czerwonych: resolve_effective_ulepszenia_matches_web
+WYKRYTY   : pct: efektywne - procent bez clampa -> 1 testow czerwonych: resolve_effective_ulepszenia_matches_web
+WYKRYTY   : pct: efektywne - wolno z imperium -> 1 testow czerwonych: resolve_effective_ulepszenia_matches_web
+WYKRYTY   : pct: snap - bez zaokraglenia -> 5 testow czerwonych: ensure_city_podzial_defaults_matches_web, ensure_city_save_defaults_matches_web, adjust_handel_split_matches_web
+WYKRYTY   : pct: normalize - brak limitu Nauki -> 3 testow czerwonych: ensure_city_save_defaults_matches_web, ensure_city_podzial_defaults_matches_web, normalize_podzial_handlu_matches_web
+WYKRYTY   : pct: normalize - nadwyzka do Luksusu -> 3 testow czerwonych: ensure_city_podzial_defaults_matches_web, ensure_city_save_defaults_matches_web, normalize_podzial_handlu_matches_web
+ROWNOWAZNY: pct: normalize - ponowny limit Nauki | po l = clamp(l + (100 - sum)) wartosc n nie moze przekroczyc limitu (sum < 100 przy l = 100 wymagaloby p + n < 0, a snap_handel_pct daje >= 0) - martwy kod weba
+WYKRYTY   : pct: normalize - korekta Pieniadza -> 2 testow czerwonych: ensure_city_save_defaults_matches_web, normalize_podzial_handlu_matches_web
+WYKRYTY   : pct: adjust - cap Nauki przy zmianie -> 1 testow czerwonych: adjust_handel_split_matches_web
+WYKRYTY   : pct: adjust - nadmiar zeruje reszte -> 1 testow czerwonych: adjust_handel_split_matches_web
+WYKRYTY   : pct: adjust - Nauka na capie -> 1 testow czerwonych: adjust_handel_split_matches_web
+ROWNOWAZNY: pct: adjust - reszta pod capem Nauki | nauka = min(max, reszta) <= reszta, wiec reszta - nauka >= 0 i js_max(0, .) nie zmienia wyniku
+WYKRYTY   : pct: adjust - suma pozostalych zero -> 1 testow czerwonych: adjust_handel_split_matches_web
+WYKRYTY   : pct: adjust - polowa po rowno -> 1 testow czerwonych: adjust_handel_split_matches_web
+WYKRYTY   : pct: adjust - proporcja -> 1 testow czerwonych: adjust_handel_split_matches_web
+ROWNOWAZNY: pct: adjust - v0 ponad reszta | reszta jest wielokrotnoscia kroku (100 - wartosc po snap), wiec v0 == reszta daje floor(reszta / krok) * krok == reszta
+WYKRYTY   : pct: adjust - cap Nauki k0 -> 1 testow czerwonych: adjust_handel_split_matches_web
+WYKRYTY   : pct: adjust - cap Nauki k1 -> 1 testow czerwonych: adjust_handel_split_matches_web
+WYKRYTY   : pct: priorytety - sanitize bez filtra -> 2 testow czerwonych: ensure_city_save_defaults_matches_web, budowa_priority_helpers_match_web
+WYKRYTY   : pct: priorytety - pusta lista -> 2 testow czerwonych: ensure_city_save_defaults_matches_web, budowa_priority_helpers_match_web
+WYKRYTY   : pct: isAuto - lista -> 1 testow czerwonych: budowa_priority_helpers_match_web
+WYKRYTY   : pct: isAuto - domyslny tryb -> 1 testow czerwonych: budowa_priority_helpers_match_web
+WYKRYTY   : pct: isTyp - zrownowazone -> 2 testow czerwonych: ensure_city_save_defaults_matches_web, budowa_priority_helpers_match_web
+WYKRYTY   : pct: procent rozwoj - bez zaokraglenia -> 1 testow czerwonych: constants_match_running_web
+WYKRYTY   : pct: max pula -> 2 testow czerwonych: constants_match_running_web, podzial_pracy_z_procentu_puli_matches_web
+WYKRYTY   : tab: domyslny podzial pracy 70 -> 60 -> 10 testow czerwonych: ensure_city_save_defaults_matches_web, ensure_city_podzial_defaults_matches_web, found_city_at_matches_web
+WYKRYTY   : tab: min budynki 50 -> 40 -> 7 testow czerwonych: ensure_city_podzial_defaults_matches_web, ensure_city_save_defaults_matches_web, podzial_pracy_functions_match_web
+WYKRYTY   : tab: cap Nauki 60 -> 50 -> 6 testow czerwonych: ensure_city_save_defaults_is_idempotent_on_web_outputs, ensure_city_save_defaults_matches_web, ensure_city_podzial_defaults_matches_web
+WYKRYTY   : tab: krok handlu 10 -> 5 -> 6 testow czerwonych: ensure_city_podzial_defaults_matches_web, ensure_city_save_defaults_matches_web, adjust_handel_split_matches_web
+WYKRYTY   : tab: domyslny handel 20/60/20 -> 30/50/20 -> 3 testow czerwonych: ensure_city_podzial_defaults_matches_web, ensure_city_save_defaults_matches_web, constants_match_running_web
+WYKRYTY   : tab: procent AI 100 -> 90 -> 2 testow czerwonych: constants_match_running_web, ulepszenia_policy_and_caps_match_web
+WYKRYTY   : tab: migracja 2 -> 50 -> 3 testow czerwonych: ensure_city_save_defaults_matches_web, snap_and_migrate_match_web, resolve_praca_percent_from_raw_matches_web
+WYKRYTY   : tab: focus okolicy -> 3 testow czerwonych: ensure_city_save_defaults_matches_web, okolica_focus_functions_match_web, constants_match_running_web
+WYKRYTY   : tab: poziom racji 4 -> 3 -> 5 testow czerwonych: found_city_at_matches_web, found_city_from_village_matches_web, found_city_matches_web
+WYKRYTY   : tab: wealth pula -> 5 testow czerwonych: ensure_city_save_defaults_matches_web, found_city_at_matches_web, found_city_from_village_matches_web
+WYKRYTY   : tab: dystans MP 3 -> 4 -> 5 testow czerwonych: found_city_at_matches_web, found_city_from_village_matches_web, can_found_city_matches_web
+WYKRYTY   : tab: limit miast 10 -> 12 -> 1 testow czerwonych: can_found_city_matches_web
+WYKRYTY   : tab: krok epoki 5 -> 4 -> 1 testow czerwonych: can_found_city_matches_web
+WYKRYTY   : tab: immunitet wealth 5 -> 4 -> 3 testow czerwonych: found_city_from_village_matches_web, found_city_at_matches_web, found_city_matches_web
+WYKRYTY   : tab: nazwa miasta Ur -> 2 testow czerwonych: found_city_from_village_matches_web, city_name_and_predicates_match_web
+WYKRYTY   : tab: prefiks generyczny -> 2 testow czerwonych: city_name_and_predicates_match_web, found_city_from_village_matches_web
+WYKRYTY   : tab: powod morze -> 2 testow czerwonych: can_found_city_matches_web, found_city_from_village_matches_web
+WYKRYTY   : tab: priorytet typow -> 3 testow czerwonych: ensure_city_save_defaults_matches_web, constants_match_running_web, budowa_priority_helpers_match_web
+WYKRYTY   : tab: tryb nowego miasta -> 2 testow czerwonych: found_city_at_matches_web, found_city_from_village_matches_web
+WYKRYTY   : tab: tryb AI -> 2 testow czerwonych: upgrade_budowa_profil_auto_defaults_matches_web, budowa_profil_functions_match_web
+WYKRYTY   : tab: etykieta puli -> 1 testow czerwonych: constants_match_running_web
+WYKRYTY   : tab: id prefiks -> 3 testow czerwonych: found_city_at_matches_web, found_city_from_village_matches_web, found_city_matches_web
+WYKRYTY   : tab: prefiks listy -> 1 testow czerwonych: default_nazwa_matches_web
+WYKRYTY   : list: id - licznik od 0 -> 1 testow czerwonych: id_generator_and_loader_match_web_sequence
+WYKRYTY   : list: nazwa - uwzglednia wielkosc liter -> 1 testow czerwonych: default_nazwa_matches_web
+WYKRYTY   : list: nazwa - bez trim -> 1 testow czerwonych: default_nazwa_matches_web
+WYKRYTY   : list: nazwa - zapas -> 1 testow czerwonych: default_nazwa_matches_web
+WYKRYTY   : list: nazwa - granica petli -> 1 testow czerwonych: default_nazwa_matches_web
+WYKRYTY   : list: loader - szablon bez budynkow -> 1 testow czerwonych: id_generator_and_loader_match_web_sequence
+WYKRYTY   : list: loader - pusta biblioteka nie jest tablica -> 1 testow czerwonych: id_generator_and_loader_match_web_sequence
+WYKRYTY   : list: loader - pusty slot legacy -> 1 testow czerwonych: id_generator_and_loader_match_web_sequence
+WYKRYTY   : list: loader - legacy wymaga wszystkich kluczy -> 1 testow czerwonych: id_generator_and_loader_match_web_sequence
+WYKRYTY   : list: loader - legacy tablica -> 1 testow czerwonych: id_generator_and_loader_match_web_sequence
+WYKRYTY   : list: loader - nazwa legacy -> 1 testow czerwonych: id_generator_and_loader_match_web_sequence
+WYKRYTY   : list: dedupe - puste id -> 1 testow czerwonych: dedupe_matches_web
+WYKRYTY   : list: dedupe - kolejnosc -> 1 testow czerwonych: dedupe_matches_web
+WYKRYTY   : emp: podzial equal bez clampa -> 1 testow czerwonych: podzial_pracy_functions_match_web
+WYKRYTY   : emp: resolve podzial - override -> 1 testow czerwonych: podzial_pracy_functions_match_web
+WYKRYTY   : emp: resolve podzial - bez normalizacji -> 1 testow czerwonych: podzial_pracy_functions_match_web
+WYKRYTY   : emp: resolve podzial - fallback parametrow -> 1 testow czerwonych: podzial_pracy_functions_match_web
+WYKRYTY   : emp: local - rowne globalnemu -> 1 testow czerwonych: podzial_pracy_functions_match_web
+WYKRYTY   : emp: local - globalny z domyslnej -> 1 testow czerwonych: podzial_pracy_functions_match_web
+WYKRYTY   : emp: migracja podzialu - kasowanie pola -> 1 testow czerwonych: podzial_pracy_migration_matches_web
+WYKRYTY   : emp: migracja podzialu - pominiecie z flaga -> 1 testow czerwonych: podzial_pracy_migration_matches_web
+WYKRYTY   : emp: migracja podzialu - bezwarunkowa normalizacja -> 1 testow czerwonych: podzial_pracy_migration_matches_web
+WYKRYTY   : emp: migracja podzialu - zapisane domyslne bez normalizacji -> 1 testow czerwonych: podzial_pracy_migration_matches_web
+WYKRYTY   : emp: migracja podzialu - uzupelnienie wlascicieli -> 1 testow czerwonych: podzial_pracy_migration_matches_web
+WYKRYTY   : emp: okolica resolve - override -> 1 testow czerwonych: okolica_focus_functions_match_web
+WYKRYTY   : emp: okolica resolve - kolejnosc fallbackow -> 1 testow czerwonych: okolica_focus_functions_match_web
+WYKRYTY   : emp: okolica broadcast - pin -> 1 testow czerwonych: okolica_focus_functions_match_web
+WYKRYTY   : emp: okolica migracja - zachowanie wartosci -> 1 testow czerwonych: okolica_focus_functions_match_web
+WYKRYTY   : emp: okolica migracja - nadpisanie przy braku roznicy -> 1 testow czerwonych: okolica_focus_functions_match_web
+WYKRYTY   : emp: okolica migracja - pierwsze miasto -> 1 testow czerwonych: okolica_focus_functions_match_web
+WYKRYTY   : emp: budowa equal - tryb -> 1 testow czerwonych: budowa_profil_functions_match_web
+WYKRYTY   : emp: budowa resolve - override -> 1 testow czerwonych: budowa_profil_functions_match_web
+WYKRYTY   : emp: budowa broadcast - pin -> 2 testow czerwonych: budowa_profil_functions_match_web, upgrade_budowa_profil_auto_defaults_matches_web
+WYKRYTY   : emp: budowa broadcast - tryb -> 2 testow czerwonych: budowa_profil_functions_match_web, upgrade_budowa_profil_auto_defaults_matches_web
+WYKRYTY   : emp: budowa migracja - brak pola -> 1 testow czerwonych: budowa_profil_functions_match_web
+WYKRYTY   : emp: budowa migracja - zachowanie pary -> 1 testow czerwonych: budowa_profil_functions_match_web
+WYKRYTY   : emp: budowa forOwner - ujemny sentinel -> 1 testow czerwonych: budowa_profil_functions_match_web
+WYKRYTY   : emp: budowa forOwner - predykat barbarzyncow -> 1 testow czerwonych: budowa_profil_functions_match_web
+WYKRYTY   : emp: upgrade - pomija gracza -> 1 testow czerwonych: upgrade_budowa_profil_auto_defaults_matches_web
+WYKRYTY   : emp: upgrade - ujemni wlasciciele -> 1 testow czerwonych: upgrade_budowa_profil_auto_defaults_matches_web
+WYKRYTY   : emp: upgrade - barbarzyncy -> 1 testow czerwonych: upgrade_budowa_profil_auto_defaults_matches_web
+WYKRYTY   : emp: upgrade - realne ustawienia -> 1 testow czerwonych: upgrade_budowa_profil_auto_defaults_matches_web
+WYKRYTY   : emp: upgrade - broadcast -> 1 testow czerwonych: upgrade_budowa_profil_auto_defaults_matches_web
+WYKRYTY   : emp: upgrade - tryb AI -> 1 testow czerwonych: upgrade_budowa_profil_auto_defaults_matches_web
+WYKRYTY   : emp: upgrade - kolejnosc wlascicieli -> 1 testow czerwonych: upgrade_budowa_profil_auto_defaults_matches_web
+WYKRYTY   : emp: racji resolve - override -> 1 testow czerwonych: poziom_racji_functions_match_web
+WYKRYTY   : emp: racji broadcast - pin -> 1 testow czerwonych: poziom_racji_functions_match_web
+WYKRYTY   : emp: racji auto - pin -> 1 testow czerwonych: poziom_racji_functions_match_web
+WYKRYTY   : emp: racji migracja - roznica -> 1 testow czerwonych: poziom_racji_functions_match_web
+WYKRYTY   : emp: OwnerMap - ponowne set zmienia miejsce -> 5 testow czerwonych: podzial_pracy_migration_matches_web, okolica_focus_functions_match_web, budowa_profil_functions_match_web
+WYKRYTY   : ens: handel - normalizacja override -> 2 testow czerwonych: ensure_city_podzial_defaults_matches_web, ensure_city_save_defaults_matches_web
+WYKRYTY   : ens: handel - domyslny dla override -> 2 testow czerwonych: ensure_city_save_defaults_matches_web, ensure_city_podzial_defaults_matches_web
+WYKRYTY   : ens: podzial pracy - clamp -> 2 testow czerwonych: ensure_city_podzial_defaults_matches_web, ensure_city_save_defaults_matches_web
+WYKRYTY   : ens: wealth -> 1 testow czerwonych: ensure_city_save_defaults_matches_web
+WYKRYTY   : ens: okolica tryb -> 1 testow czerwonych: ensure_city_save_defaults_matches_web
+WYKRYTY   : ens: budowa auto -> priorytet -> 1 testow czerwonych: ensure_city_save_defaults_matches_web
+WYKRYTY   : ens: budowa auto - lista typow -> 1 testow czerwonych: ensure_city_save_defaults_matches_web
+WYKRYTY   : ens: budowa - domyslny tryb -> 1 testow czerwonych: ensure_city_save_defaults_matches_web
+WYKRYTY   : ens: budowa - tylko zrownowazone -> 1 testow czerwonych: ensure_city_save_defaults_matches_web
+WYKRYTY   : ens: budowa - przejscie na zrownowazone -> 1 testow czerwonych: ensure_city_save_defaults_matches_web
+WYKRYTY   : ens: budowa - sanitize z zrownowazonym -> 1 testow czerwonych: ensure_city_save_defaults_matches_web
+WYKRYTY   : ens: budowa - zrownowazone: fokus -> 1 testow czerwonych: ensure_city_save_defaults_matches_web
+ROWNOWAZNY: ens: budowa - zrownowazone: pusta lista | sanitize_budowa_priorytet_typow(pusta) zwraca domyslna liste - ten sam wynik co galaz `pusta -> domyslna`
+WYKRYTY   : ens: budowa - priorytet: pusta lista -> 1 testow czerwonych: ensure_city_save_defaults_matches_web
+WYKRYTY   : ens: budowa lista -> 1 testow czerwonych: ensure_city_save_defaults_matches_web
+WYKRYTY   : ens: ulepszenia - override tylko true -> 2 testow czerwonych: ensure_city_save_defaults_matches_web, ensure_city_save_defaults_is_idempotent_on_web_outputs
+WYKRYTY   : ens: ulepszenia - onlyWorked -> 1 testow czerwonych: ensure_city_save_defaults_matches_web
+WYKRYTY   : ens: ulepszenia - wyrab -> 1 testow czerwonych: ensure_city_save_defaults_matches_web
+WYKRYTY   : ens: ulepszenia - procent legacy -> 1 testow czerwonych: ensure_city_save_defaults_matches_web
+WYKRYTY   : ens: magazyn - zawsze liczba -> 1 testow czerwonych: ensure_city_save_defaults_matches_web
+WYKRYTY   : ens: magazyn - bity -> 2 testow czerwonych: ensure_city_save_defaults_matches_web, ensure_city_save_defaults_is_idempotent_on_web_outputs
+WYKRYTY   : ens: ration po magazynie -> 1 testow czerwonych: ensure_city_save_defaults_matches_web
+WYKRYTY   : ens: surowce -> 1 testow czerwonych: ensure_city_save_defaults_matches_web
+WYKRYTY   : ens: postep -> 1 testow czerwonych: ensure_city_save_defaults_matches_web
+WYKRYTY   : found: limit miast > -> 1 testow czerwonych: can_found_city_matches_web
+WYKRYTY   : found: limit - brak miast przejetych -> 1 testow czerwonych: can_found_city_matches_web
+WYKRYTY   : found: limit - era minimalna -> 1 testow czerwonych: can_found_city_matches_web
+WYKRYTY   : found: limit - baza zapasowa -> 1 testow czerwonych: can_found_city_matches_web
+WYKRYTY   : found: limit - krok epoki -> 1 testow czerwonych: can_found_city_matches_web
+WYKRYTY   : found: limit - bez ownerEra -> 1 testow czerwonych: can_found_city_matches_web
+WYKRYTY   : found: dystans <= -> 4 testow czerwonych: found_city_from_village_matches_web, can_found_city_matches_web, found_city_at_matches_web
+WYKRYTY   : found: dystans - MP zakladane -> 2 testow czerwonych: found_city_at_matches_web, can_found_city_matches_web
+WYKRYTY   : found: dystans - MP istniejace -> 4 testow czerwonych: found_city_at_matches_web, can_found_city_matches_web, found_city_from_village_matches_web
+WYKRYTY   : found: slot klastra -> 4 testow czerwonych: can_found_city_matches_web, found_city_from_village_matches_web, found_city_at_matches_web
+WYKRYTY   : found: hex distance - os s -> 4 testow czerwonych: can_found_city_matches_web, found_city_from_village_matches_web, found_city_at_matches_web
+WYKRYTY   : found: terytorium -> 3 testow czerwonych: can_found_city_matches_web, found_city_from_village_matches_web, found_city_matches_web
+WYKRYTY   : found: gory -> 4 testow czerwonych: found_city_from_village_matches_web, found_city_at_matches_web, can_found_city_matches_web
+WYKRYTY   : found: woda -> 4 testow czerwonych: can_found_city_matches_web, found_city_from_village_matches_web, found_city_at_matches_web
+WYKRYTY   : found: klucz niecalkowity -> 4 testow czerwonych: found_city_from_village_matches_web, can_found_city_matches_web, found_city_at_matches_web
+WYKRYTY   : found: nowe miasto - id -> 3 testow czerwonych: found_city_from_village_matches_web, found_city_at_matches_web, found_city_matches_web
+WYKRYTY   : found: nowe miasto - populacja -> 3 testow czerwonych: found_city_at_matches_web, found_city_from_village_matches_web, found_city_matches_web
+WYKRYTY   : found: nowe miasto - override podzialu handlu -> 3 testow czerwonych: found_city_from_village_matches_web, found_city_at_matches_web, found_city_matches_web
+WYKRYTY   : found: nowe miasto - poziom racji -> 3 testow czerwonych: found_city_at_matches_web, found_city_from_village_matches_web, found_city_matches_web
+WYKRYTY   : found: nowe miasto - zalozone przez wlasciciela -> 3 testow czerwonych: found_city_from_village_matches_web, found_city_at_matches_web, found_city_matches_web
+WYKRYTY   : found: nowe miasto - procent rozwoj -> 3 testow czerwonych: found_city_at_matches_web, found_city_from_village_matches_web, found_city_matches_web
+WYKRYTY   : found: nowe miasto - auto wyzywienie tylko w foundCityAt -> 2 testow czerwonych: found_city_from_village_matches_web, found_city_at_matches_web
+WYKRYTY   : found: nowe miasto - MP flaga -> 2 testow czerwonych: found_city_at_matches_web, found_city_from_village_matches_web
+WYKRYTY   : found: foundCity - pelne pola -> 1 testow czerwonych: found_city_matches_web
+WYKRYTY   : found: foundCityAt - flagi -> 1 testow czerwonych: found_city_at_matches_web
+WYKRYTY   : found: nazwa - poza pula -> 2 testow czerwonych: city_name_and_predicates_match_web, found_city_from_village_matches_web
+WYKRYTY   : found: nazwa - niecalkowity -> 1 testow czerwonych: city_name_and_predicates_match_web
+WYKRYTY   : found: nazwa - generyczna -> 2 testow czerwonych: city_name_and_predicates_match_web, found_city_from_village_matches_web
+WYKRYTY   : found: wioska - nazwa z liczby miast -> 1 testow czerwonych: found_city_from_village_matches_web
+WYKRYTY   : found: wioska - wlasciciel 0 -> 1 testow czerwonych: found_city_from_village_matches_web
+WYKRYTY   : found: wioska - terytorium -> 1 testow czerwonych: found_city_from_village_matches_web
+WYKRYTY   : found: limit predykat -> 2 testow czerwonych: can_found_city_matches_web, city_name_and_predicates_match_web
+WYKRYTY   : found: proweniencja -> 1 testow czerwonych: city_name_and_predicates_match_web
+mutantow=209 wykrytych=204 rownowaznych=5 przezylo/niekompilujace=0

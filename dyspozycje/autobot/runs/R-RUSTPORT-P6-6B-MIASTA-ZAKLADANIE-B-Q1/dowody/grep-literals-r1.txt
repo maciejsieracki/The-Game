@@ -1,0 +1,117 @@
+# Literaly liczbowe i napisowe w modulach P6.6B (state.rs, derived.rs); komentarze pominiete
+# Klasyfikacja: STRUKTURALNY = elementy neutralne/semantyka JS (0.0, 1.0, `+ 1.0`, `/ 2.0`, indeksy pary kluczy, nazwy
+# wariantow wyliczen i pol JSON jako identyfikatory, formaty szablonow), nie dane ani mnozniki balansu.
+# Dane: data/derived/{cities-params,display-names-params}.json, data/miasto-params.json.
+## src/domain/state.rs od linii 1061
+1096: nums=[] strs=[''] | let base = js_trim(ctx.base_name.unwrap_or(""));
+1101: nums=[] strs=['{base}{}{}'] | return format!("{base}{}{}", city_state_separator(), city_state_label());
+1108: nums=[] strs=['{}{}'] | let suffix = format!("{}{}", city_state_separator(), city_state_label());
+1154: nums=['0'] strs=[] | if owner_id <= 0 {
+1196: nums=['0'] strs=[] | if owner_id <= 0 {
+1202: nums=[] strs=[''] | let player_key = js_trim(opts.and_then(|o| o.player_civ_key).unwrap_or(""));
+1203: nums=[] strs=[''] | let owner_key = js_trim(opts.and_then(|o| o.owner_civ_key).unwrap_or(""));
+1232: nums=['0'] strs=[] | let player_owner_id = opts.and_then(|o| o.player_owner_id).unwrap_or(0);
+1297: nums=[] strs=[''] | let t = js_trim(name.unwrap_or(""));
+1359: nums=[] strs=['{city}{}{civ}'] | return format!("{city}{}{civ}", city_state_separator());
+1401: nums=[] strs=[''] | let trimmed = js_trim(base.unwrap_or(""));
+1485: nums=[] strs=['zrownowazone'] | Self::Zrownowazone => "zrownowazone",
+1486: nums=[] strs=['zywnosc'] | Self::Zywnosc => "zywnosc",
+1487: nums=[] strs=['produkcja'] | Self::Produkcja => "produkcja",
+1488: nums=[] strs=['podatki'] | Self::Podatki => "podatki",
+1494: nums=[] strs=['zrownowazone'] | "zrownowazone" => Some(Self::Zrownowazone),
+1495: nums=[] strs=['zywnosc'] | "zywnosc" => Some(Self::Zywnosc),
+1496: nums=[] strs=['produkcja'] | "produkcja" => Some(Self::Produkcja),
+1497: nums=[] strs=['podatki'] | "podatki" => Some(Self::Podatki),
+1513: nums=[] strs=['auto'] | Self::Auto => "auto",
+1514: nums=[] strs=['reczny'] | Self::Reczny => "reczny",
+1520: nums=[] strs=['auto'] | "auto" => Some(Self::Auto),
+1521: nums=[] strs=['reczny'] | "reczny" => Some(Self::Reczny),
+1541: nums=[] strs=['zrownowazone'] | Self::Zrownowazone => "zrownowazone",
+1542: nums=[] strs=['wzrost'] | Self::Wzrost => "wzrost",
+1543: nums=[] strs=['wojsko'] | Self::Wojsko => "wojsko",
+1544: nums=[] strs=['kultura'] | Self::Kultura => "kultura",
+1545: nums=[] strs=['prawo'] | Self::Prawo => "prawo",
+1546: nums=[] strs=['produkcja'] | Self::Produkcja => "produkcja",
+1552: nums=[] strs=['zrownowazone'] | "zrownowazone" => Some(Self::Zrownowazone),
+1553: nums=[] strs=['wzrost'] | "wzrost" => Some(Self::Wzrost),
+1554: nums=[] strs=['wojsko'] | "wojsko" => Some(Self::Wojsko),
+1555: nums=[] strs=['kultura'] | "kultura" => Some(Self::Kultura),
+1556: nums=[] strs=['prawo'] | "prawo" => Some(Self::Prawo),
+1557: nums=[] strs=['produkcja'] | "produkcja" => Some(Self::Produkcja),
+1577: nums=[] strs=['reczny'] | Self::Reczny => "reczny",
+1578: nums=[] strs=['priorytet'] | Self::Priorytet => "priorytet",
+1579: nums=[] strs=['lista'] | Self::Lista => "lista",
+1580: nums=[] strs=['zrownowazone'] | Self::Zrownowazone => "zrownowazone",
+1581: nums=[] strs=['auto'] | Self::Auto => "auto",
+1587: nums=[] strs=['reczny'] | "reczny" => Some(Self::Reczny),
+1588: nums=[] strs=['priorytet'] | "priorytet" => Some(Self::Priorytet),
+1589: nums=[] strs=['lista'] | "lista" => Some(Self::Lista),
+1590: nums=[] strs=['zrownowazone'] | "zrownowazone" => Some(Self::Zrownowazone),
+1591: nums=[] strs=['auto'] | "auto" => Some(Self::Auto),
+1609: nums=[] strs=['zywnosc'] | Self::Zywnosc => "zywnosc",
+1610: nums=[] strs=['surowce'] | Self::Surowce => "surowce",
+1611: nums=[] strs=['infrastruktura'] | Self::Infrastruktura => "infrastruktura",
+1612: nums=[] strs=['zrownowazone'] | Self::Zrownowazone => "zrownowazone",
+1618: nums=[] strs=['zywnosc'] | "zywnosc" => Some(Self::Zywnosc),
+1619: nums=[] strs=['surowce'] | "surowce" => Some(Self::Surowce),
+1620: nums=[] strs=['infrastruktura'] | "infrastruktura" => Some(Self::Infrastruktura),
+1621: nums=[] strs=['zrownowazone'] | "zrownowazone" => Some(Self::Zrownowazone),
+1637: nums=[] strs=['auto'] | Self::Auto => "auto",
+1638: nums=[] strs=['reczny'] | Self::Reczny => "reczny",
+1644: nums=[] strs=['auto'] | "auto" => Some(Self::Auto),
+1645: nums=[] strs=['reczny'] | "reczny" => Some(Self::Reczny),
+1736: nums=['0.0'] strs=[] | js_max(0.0, js_min(pct_total(), x))
+1740: nums=[] strs=['cities-params.json: okolica focus'] | OkolicaFocus::from_web(value).expect("cities-params.json: okolica focus")
+1744: nums=[] strs=['cities-params.json: budowa focus'] | BudowaFocus::from_web(value).expect("cities-params.json: budowa focus")
+1748: nums=[] strs=['cities-params.json: budowa tryb'] | BudowaTryb::from_web(value).expect("cities-params.json: budowa tryb")
+1752: nums=[] strs=['cities-params.json: ulepszenia focus'] | UlepszeniaFocus::from_web(value).expect("cities-params.json: ulepszenia focus")
+1756: nums=[] strs=['cities-params.json: ulepszenia tryb'] | UlepszeniaTryb::from_web(value).expect("cities-params.json: ulepszenia tryb")
+1781: nums=[] strs=['cities-params.json: okolica tryb'] | .expect("cities-params.json: okolica tryb")
+1956: nums=[] strs=['miasto-params.json must parse'] | .expect("miasto-params.json must parse")
+1980: nums=['1'] strs=[] | self.seq += 1;
+1982: nums=[] strs=['{}{}-{}'] | "{}{}-{}",
+1998: nums=['1'] strs=[] | for i in 1..limit {
+1999: nums=[] strs=['{}{i}'] | let candidate = format!("{}{i}", budowa.lista_domyslna_nazwa_prefiks);
+2005: nums=[] strs=['{}{}'] | "{}{}",
+2007: nums=['1'] strs=[] | biblioteka.len() + 1
+2015: nums=[] strs=['id'] | matches!(o.get("id"), Some(Value::String(_)))
+2016: nums=[] strs=['nazwa'] | && matches!(o.get("nazwa"), Some(Value::String(_)))
+2017: nums=[] strs=['budynki'] | && matches!(o.get("budynki"), Some(Value::Array(_)))
+2034: nums=[] strs=['id'] | id: s["id"].as_str().unwrap_or_default().to_owned(),
+2035: nums=[] strs=['nazwa'] | nazwa: s["nazwa"].as_str().unwrap_or_default().to_owned(),
+2036: nums=[] strs=['budynki'] | budynki: s["budynki"].as_array().cloned().unwrap_or_default(),
+2054: nums=[] strs=['budowaListaBiblioteka'] | let raw_new = field("budowaListaBiblioteka");
+2056: nums=[] strs=['checked'] | return copy_szablony(raw_new.expect("checked"));
+2058: nums=[] strs=['budowaListaSzablony'] | let raw_legacy = field("budowaListaSzablony");
+2069: nums=[] strs=['{}{slot}'] | "{}{slot}",
+2081: nums=[] strs=['checked'] | return copy_szablony(raw_legacy.expect("checked"));
+2135: nums=['0.0'] strs=[] | 0.0,
+2149: nums=[] strs=['cities-params.json: migracja_per_turn'] | .expect("cities-params.json: migracja_per_turn")
+2318: nums=['0.0'] strs=[] | js_max(0.0, js_min(pct_total(), js_round(n / step) * step))
+2372: nums=['0.0'] strs=[] | if remainder < 0.0 {
+2375: nums=['0.0'] strs=[] | next.set(*k, 0.0);
+2379: nums=['0', '1'] strs=[] | let (k0, k1) = (keys[0], keys[1]);
+2399: nums=['0.0'] strs=[] | next.set(nn, js_max(0.0, remainder - next.procent_nauka));
+2405: nums=['0.0'] strs=[] | if sum_others <= 0.0 {
+2406: nums=['2.0'] strs=[] | let half = js_round(remainder / 2.0 / step) * step;
+2460: nums=[] strs=['checked'] | let current = city.podzial_handlu.expect("checked");
+2636: nums=['0.0'] strs=[] | if x.is_finite() && x.fract() == 0.0 && x.abs() <= f64::from(i32::MAX) {
+2727: nums=[] strs=['{}{index}'] | id: format!("{}{index}", founding.id_prefiks),
+2830: nums=['0.0'] strs=[] | if index >= 0.0 && index < names.lista.len() as f64 {
+2831: nums=['0.0'] strs=[] | if index.fract() != 0.0 {
+2837: nums=[] strs=['{}{}'] | "{}{}",
+2839: nums=['1.0'] strs=[] | js_number_to_string(index + 1.0)
+2870: nums=['0'] strs=[] | match found_city_at(q, r, 0, cities, map, &name, false, false) {
+3280: nums=[] strs=['cities-params.json: budowa domyslny_tryb_ai'] | .expect("cities-params.json: budowa domyslny_tryb_ai")
+3289: nums=['0'] strs=[] | if owner_id < 0 || is_barbarian_owner(owner_id) {
+3313: nums=['0'] strs=[] | if oid < 0 || is_barbarian_owner(oid) {
+3316: nums=['0'] strs=[] | if oid == 0 {
+## src/data/derived.rs od linii 3067
+3071: nums=[] strs=['../../data/derived/cities-params.json'] | pub const CITIES_PARAMS_JSON: &str = include_str!("../../data/derived/cities-params.json");
+3073: nums=[] strs=['../../data/derived/display-names-params.json'] | include_str!("../../data/derived/display-names-params.json");
+3090: nums=[] strs=['procentNauka'] | #[serde(rename = "procentNauka")]
+3092: nums=[] strs=['procentPieniadz'] | #[serde(rename = "procentPieniadz")]
+3094: nums=[] strs=['procentLuksus'] | #[serde(rename = "procentLuksus")]
+3242: nums=[] strs=['cities-params.json must parse'] | TABLE.get_or_init(|| parse_cities_params().expect("cities-params.json must parse"))
+3272: nums=[] strs=['display-names-params.json must parse'] | .get_or_init(|| parse_display_names_params().expect("display-names-params.json must parse"))
+# linii z literalami: 110

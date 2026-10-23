@@ -1,0 +1,101 @@
+{
+  "meta": {
+    "zrodlo_web": "gra/src/game/cities.ts (pin edb8fb56)",
+    "uwaga": "Edytowalna tabela balansu i domyslnych ustawien miasta (P6.6B). Odleglosc miedzy miastami (min_dystans_miast) zyje w data/miasto-params.json. Sekcja wejscia_z_innych_modulow_weba zawiera stale z population-growth-v85.ts (poza zakresem tej czesci), potrzebne do wyliczenia DEFAULT_PROCENT_ROZWOJ_WYZYWIENIE; zgodnosc z webem sprawdza test wektorowy."
+  },
+  "procent_calosc": 100,
+  "podzial_pracy": {
+    "domyslnie_budynki": 70,
+    "min_budynki": 50,
+    "max_budynki": 100,
+    "ai_stale_budynki": 50,
+    "min_pula_zasada3_nadwyzka": 10
+  },
+  "podzial_handlu": {
+    "domyslnie": { "procentNauka": 20, "procentPieniadz": 60, "procentLuksus": 20 },
+    "krok": 10,
+    "max_nauka": 60
+  },
+  "ulepszenia": {
+    "domyslny_focus": "zrownowazone",
+    "domyslny_tryb": "reczny",
+    "domyslnie_only_worked": true,
+    "domyslnie_wolno_wycinac_las": false,
+    "domyslna_praca_procent": 33,
+    "ai_major_praca_procent": 100,
+    "max_auto_praca_procent": 100,
+    "migracja_per_turn": [
+      { "per_turn": 1, "procent": 33 },
+      { "per_turn": 2, "procent": 66 },
+      { "per_turn": 3, "procent": 100 }
+    ]
+  },
+  "budowa": {
+    "domyslny_focus": "zrownowazone",
+    "domyslny_tryb": "reczny",
+    "domyslny_tryb_ai": "zrownowazone",
+    "domyslny_tryb_nowe_miasto": "zrownowazone",
+    "domyslny_priorytet_typow": ["wzrost", "produkcja", "wojsko", "kultura", "prawo"],
+    "typy_focus": ["wzrost", "wojsko", "kultura", "prawo", "produkcja"],
+    "focus_bez_typu": "zrownowazone",
+    "lista_domyslna_nazwa_prefiks": "Lista ",
+    "lista_szablon_id_prefiks": "budowa-lista-",
+    "lista_slot_legacy": ["A", "B", "C"],
+    "lista_nazwa_legacy_prefiks": "Lista ",
+    "lista_limit_nazw": 1000
+  },
+  "okolica": {
+    "domyslny_focus": "zywnosc",
+    "domyslny_tryb": "auto"
+  },
+  "wejscia_z_innych_modulow_weba": {
+    "zrodlo": "gra/src/game/population-growth-v85.ts: DEFAULT_POZIOM_RACJI (linia 70), WYZYWIENIE_MAX (linia 28); gra/src/game/wealth.ts: freshWealthState (linia 249)",
+    "domyslny_poziom_racji": 4,
+    "wyzywienie_max": 6,
+    "swiezy_wealth_poziom": 1,
+    "swiezy_wealth_pula": 0
+  },
+  "wyzywienie": {
+    "domyslny_procent_rozwoj": 100
+  },
+  "zakladanie": {
+    "min_dystans_miasto_panstwo": 3,
+    "limit_miast_baza_zapas": 10,
+    "limit_miast_krok_epoka": 5,
+    "min_epoka": 1,
+    "startowa_populacja": 1,
+    "wealth_immunitet_tur": 5,
+    "id_prefiks": "city",
+    "powody": {
+      "poza_mapa": "poza mapa",
+      "morze": "morze",
+      "gory": "gory",
+      "za_blisko": "za blisko innego miasta",
+      "poza_terytorium": "poza terytorium",
+      "limit_epoka": "limit miast na tej epoce",
+      "found_city_at_null": "foundCityAt zwrocil null (niespodziewane)"
+    }
+  },
+  "nazwy_miast": {
+    "lista": [
+      "Akropol",
+      "Memfis",
+      "Ur",
+      "Teby",
+      "Korynt",
+      "Sparta",
+      "Niniwa",
+      "Ateny",
+      "Knossos",
+      "Mykeny",
+      "Babilon",
+      "Tyr"
+    ],
+    "prefiks_generyczny": "Miasto "
+  },
+  "etykiety_podzialu_pracy": {
+    "pula": "Ulepszenia (pula)",
+    "pula_pelna": "Ulepszenia (pula imperium)",
+    "pula_tip": "Pula Pracy imperium — budżet ulepszeń terenu; z tej samej puli finansowane są też cuda na mapie, zakładanie miast, wycinka lasu i utrzymanie ulepszeń surowcowych."
+  }
+}
