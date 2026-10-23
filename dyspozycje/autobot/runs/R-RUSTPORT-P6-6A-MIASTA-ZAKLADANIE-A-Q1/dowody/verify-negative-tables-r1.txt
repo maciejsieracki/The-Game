@@ -1,0 +1,7 @@
+ROZBIEZNOSC tabela ai_source_min_pop vs TS: py=2 json=3.0
+ROZBIEZNOSC tabela zostaje_ulepszenia vs TS: py=['farma', 'bydlo', 'owce', 'lama', 'stadnina', 'pastwisko', 'kopalnia_miedzi', 'kopalnia_zelaza', 'kopalnia_zlota', 'kopalnia_cyny', 'kamieniolom', 'glinianka', 'warzelnia_soli', 'droga_brukowana'] json=['farma', 'bydlo', 'owce', 'lama', 'stadnina', 'pastwisko', 'kopalnia_miedzi', 'kopalnia_zelaza', 'kopalnia_zlota', 'kopalnia_cyny', 'kamieniolom', 'glinianka', 'warzelnia_soli', 'droga', 'droga_brukowana']
+ROZBIEZNOSC tabela prog_obca_kultura vs TS: py=0.4 json=0.5
+ROZBIEZNOSC tabela budynki_kulturalne vs TS: py={'hasAmfiteatr': ['akademia'], 'hasBiblioteka': ['biblioteka'], 'hasPalac': ['palac', 'palac_ii', 'palac_iii'], 'hasStela': ['stela'], 'hasSad': ['sad'], 'hasLaznia': ['laznia_publiczna']} json={'hasAmfiteatr': ['teatr', 'akademia'], 'hasBiblioteka': ['biblioteka'], 'hasPalac': ['palac', 'palac_ii', 'palac_iii'], 'hasStela': ['stela'], 'hasSad': ['sad'], 'hasLaznia': ['laznia_publiczna']}
+ROZBIEZNOSC tabela fog_explored_brightness vs TS: py=0.2 json=0.175
+sprawdzen=14808 rozbieznosci=5
+EXIT=1

@@ -1,0 +1,3 @@
+git diff --cached --check (staging: src/domain/{state,terrain}.rs, data/derived.rs, 4 tabele JSON, tests/p6_6a_*, wektory, artefakty runu)
+brak ostrzezen
+EXIT=0
