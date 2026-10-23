@@ -1,0 +1,5 @@
+01 R31 wyspy: dist_to_edge bez dolu: WYKRYTA [p6_m03_masks]: full_seed_pipeline_reproduces_the_web_land_masks, land_masks_match_web_for_every_type_size_and_seed
+02 R37 edge_rect: bez dolnego progu 0.001: WYKRYTA [p6_m03_edges]: edge_rect_floor_matches_web_for_maps_wider_than_2000_hexes
+03 R21 layout: n_blobs prog_srednie <=: WYKRYTA [p6_m03_edges]: pangea_layout_matches_web_at_exact_threshold_neighbourhoods
+04 R40 kontynenty: zamiana szumu gruby/drobny: WYKRYTA [p6_m03_masks]: full_seed_pipeline_reproduces_the_web_land_masks, land_masks_match_web_for_every_type_size_and_seed
+05 R36 brzeg: fade bez min (rownowazna?): NIEWYKRYTA

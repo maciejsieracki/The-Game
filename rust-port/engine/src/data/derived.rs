@@ -3062,3 +3062,308 @@ pub fn visibility_params() -> &'static VisibilityParamsFile {
     static TABLE: std::sync::OnceLock<VisibilityParamsFile> = std::sync::OnceLock::new();
     TABLE.get_or_init(|| parse_visibility_params().expect("visibility-params.json must parse"))
 }
+
+// ---------------------------------------------------------------------------
+// P6.M03 (maski centrum): wartosci kalibracyjne masek ladu (`gen-helpers.ts`:252-824 i zaleznosci).
+// Kod `domain/mapgen/masks.rs` nie zawiera tych literalow; struktura wzorow zostaje w kodzie.
+// ---------------------------------------------------------------------------
+
+pub const MAPGEN_MASKS_JSON: &str = include_str!("../../data/derived/mapgen-masks.json");
+
+/// Warstwa szumu `fbm(perm, q * skala * mnoznik + przesuniecie, ..., oktawy) * amplituda`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct MasksNoiseWarp {
+    pub mnoznik_skali: f64,
+    pub przesuniecie: f64,
+    pub oktawy: u32,
+    pub amplituda: f64,
+}
+
+/// Warstwa szumu kata: `fbm(perm, cos(a) * mnoznik_kata + strefa * mnoznik_strefy, ...)`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct MasksAngleNoise {
+    pub mnoznik_kata: f64,
+    pub mnoznik_strefy: f64,
+    pub przesuniecie: f64,
+    pub oktawy: u32,
+    pub amplituda: f64,
+}
+
+/// Warstwa szumu bez amplitudy (mnozona przez parametr ukladu).
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct MasksNoiseBase {
+    pub mnoznik_skali: f64,
+    pub przesuniecie: f64,
+    pub oktawy: u32,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct MasksShapeParams {
+    pub skala_szumu: f64,
+    pub skala_gor: f64,
+    pub skala_lasu: f64,
+    pub skala_pustyni: f64,
+    pub zakres_przesuniec: f64,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct MasksEllipticParams {
+    pub dodatek_polowki: f64,
+    pub promien: f64,
+    pub wykladnik: f64,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct MasksBorderParams {
+    pub ocean_heksy: u32,
+    pub strefa_marginesu_heksy: u32,
+    pub krok_limitu: f64,
+    pub dzielnik_zaniku: f64,
+    pub min_margines: f64,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct MasksCenterDefaults {
+    pub promien_min: f64,
+    pub promien_max: f64,
+    pub min_odleglosc: f64,
+    pub domyslna_szerokosc: f64,
+    pub domyslna_wysokosc: f64,
+    pub margines_min: f64,
+    pub kotwica_udzial_promienia: f64,
+    pub pierscien_min: f64,
+    pub pierscien_max: f64,
+    pub proby: u32,
+    pub jitter_kata: f64,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct MasksContinentsParams {
+    pub liczba_stref: u32,
+    pub obszar_male: f64,
+    pub obszar_srednie: f64,
+    pub liczba_male: u32,
+    pub liczba_srednie: u32,
+    pub liczba_duze: u32,
+    pub piecio_margines_min: f64,
+    pub piecio_jitter: f64,
+    pub piecio_odsuniecie: f64,
+    pub ciesnina: f64,
+    pub wykladnik_radialny: f64,
+    pub szum_gruby: MasksNoiseWarp,
+    pub szum_drobny: MasksNoiseWarp,
+    pub szum_kata: MasksAngleNoise,
+    pub odjemnik: f64,
+}
+
+/// Wspolczynniki zaciagniecia pierscienia (`ringPull`).
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct MasksPangeaDragCoeffs {
+    pub baza: f64,
+    pub rozmiar: f64,
+    pub wysoki: f64,
+    pub niski: f64,
+}
+
+/// Wspolczynniki `baza + t * t_wsp + rozmiar * rozmiar_wsp`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct MasksCoeffsTS {
+    pub baza: f64,
+    pub t: f64,
+    pub rozmiar: f64,
+}
+
+/// Wspolczynniki `baza + t * t_wsp`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct MasksCoeffsT {
+    pub baza: f64,
+    pub t: f64,
+}
+
+/// Wspolczynniki `baza + t * t_wsp + rozmiar * rozmiar_wsp + wysoki * wysoki_wsp`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct MasksCoeffsTSH {
+    pub baza: f64,
+    pub t: f64,
+    pub rozmiar: f64,
+    pub wysoki: f64,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct MasksRingMinCoeffs {
+    pub dolna_granica: f64,
+    pub baza: f64,
+    pub t: f64,
+    pub rozmiar: f64,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct MasksRingMaxCoeffs {
+    pub dolna_granica: f64,
+    pub baza: f64,
+    pub t: f64,
+    pub rozmiar: f64,
+    pub sciagniecie: f64,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct MasksValleyCoeffs {
+    pub dolna_granica: f64,
+    pub baza: f64,
+    pub t: f64,
+    pub niski: f64,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct MasksPangeaCenters {
+    pub margines_min: f64,
+    pub jitter: f64,
+    pub pierscien_promien_mnoznik: f64,
+    pub pierscien_rozrzut: f64,
+    pub jitter_kata: f64,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct MasksPangeaBlob {
+    pub wykladnik_radialny: f64,
+    pub szum_gruby: MasksNoiseWarp,
+    pub przesuniecie_strefy_gruby: f64,
+    pub szum_drobny: MasksNoiseWarp,
+    pub przesuniecie_strefy_drobny: f64,
+    pub szum_kata: MasksAngleNoise,
+    pub odjemnik: f64,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct MasksPangeaMask {
+    pub wykladnik_klastra: f64,
+    pub dolina: MasksNoiseBase,
+    pub warp_globalny: MasksNoiseBase,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct MasksPangeaParams {
+    pub t_dolny: f64,
+    pub t_zakres: f64,
+    pub powierzchnia_odniesienia: f64,
+    pub boost_max: f64,
+    pub boost_wsp: f64,
+    pub wysoki_prog: f64,
+    pub wysoki_zakres: f64,
+    pub niski_zakres: f64,
+    pub sciagniecie: MasksPangeaDragCoeffs,
+    pub prog_male: f64,
+    pub prog_srednie: f64,
+    pub liczba_male: u32,
+    pub liczba_srednie: u32,
+    pub liczba_duze: u32,
+    pub promien_blobu_min: MasksCoeffsTS,
+    pub promien_blobu_max: MasksCoeffsTS,
+    pub pierscien_min: MasksRingMinCoeffs,
+    pub pierscien_max: MasksRingMaxCoeffs,
+    pub promien_klastra: MasksCoeffsT,
+    pub prog: MasksCoeffsT,
+    pub scalanie_suma: MasksCoeffsTSH,
+    pub scalanie_max: MasksCoeffsTSH,
+    pub warp_globalny_wsp: MasksCoeffsT,
+    pub dolina_wsp: MasksValleyCoeffs,
+    pub wypelnienie_min: MasksCoeffsT,
+    pub centra: MasksPangeaCenters,
+    pub blob: MasksPangeaBlob,
+    pub maska: MasksPangeaMask,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct MasksIslandSize {
+    pub baza: f64,
+    pub wsp: f64,
+    pub min: f64,
+    pub max: f64,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct MasksIslandRadiusRange {
+    pub baza: f64,
+    pub rozrzut: f64,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct MasksIslandsParams {
+    pub siatka: u32,
+    pub margines_min: f64,
+    pub powierzchnia_odniesienia: f64,
+    pub rozmiar: MasksIslandSize,
+    pub promien_komorki: f64,
+    pub jitter: f64,
+    pub promien_zakres: MasksIslandRadiusRange,
+    pub pas_morski: f64,
+    pub wykladnik_radialny: f64,
+    pub szum_gruby: MasksNoiseWarp,
+    pub szum_drobny: MasksNoiseWarp,
+    pub szum_kata: MasksAngleNoise,
+    pub odjemnik: f64,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct MasksCenterRow {
+    pub nq: f64,
+    pub nr: f64,
+    pub radius: f64,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct MasksEarthParams {
+    pub centra: Vec<MasksCenterRow>,
+    pub szum_brzegu: MasksNoiseWarp,
+    pub poziom_ladu: f64,
+    pub odjemnik: f64,
+}
+
+/// Plik `mapgen-masks.json`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct MapgenMasksFile {
+    pub zrodlo: String,
+    pub ksztalt: MasksShapeParams,
+    pub eliptyczna: MasksEllipticParams,
+    pub brzeg: MasksBorderParams,
+    pub centra: MasksCenterDefaults,
+    pub kontynenty: MasksContinentsParams,
+    pub pangea: MasksPangeaParams,
+    pub wyspy: MasksIslandsParams,
+    pub ziemia: MasksEarthParams,
+}
+
+pub fn parse_mapgen_masks() -> Result<MapgenMasksFile, serde_json::Error> {
+    serde_json::from_str(MAPGEN_MASKS_JSON)
+}
+
+/// Tabela kalibracji masek ladu (jednorazowy odczyt; blad danych = panika z komunikatem).
+pub fn mapgen_masks() -> &'static MapgenMasksFile {
+    static TABLE: std::sync::OnceLock<MapgenMasksFile> = std::sync::OnceLock::new();
+    TABLE.get_or_init(|| parse_mapgen_masks().expect("mapgen-masks.json must parse"))
+}

@@ -1,0 +1,128 @@
+{
+  "zrodlo": "web gra/src/map/gen-helpers.ts:252-824 (+ zaleznosci :1177-1195, :1294-1300, :1313-1325, :1334-1336) (pin edb8fb56). Edytowalne wartosci kalibracyjne masek ladu (P6.M03); klucze nazywaja role, nie wzor. Struktura wzorow (kolejnosc dzialan) zyje w kodzie masks.rs.",
+  "ksztalt": {
+    "skala_szumu": 0.13,
+    "skala_gor": 0.22,
+    "skala_lasu": 0.19,
+    "skala_pustyni": 0.17,
+    "zakres_przesuniec": 500
+  },
+  "eliptyczna": {
+    "dodatek_polowki": 0.5,
+    "promien": 0.85,
+    "wykladnik": 2.0
+  },
+  "brzeg": {
+    "ocean_heksy": 2,
+    "strefa_marginesu_heksy": 10,
+    "krok_limitu": 0.05,
+    "dzielnik_zaniku": 0.45,
+    "min_margines": 0.001
+  },
+  "centra": {
+    "promien_min": 0.28,
+    "promien_max": 0.4,
+    "min_odleglosc": 0,
+    "domyslna_szerokosc": 120,
+    "domyslna_wysokosc": 80,
+    "margines_min": 0.12,
+    "kotwica_udzial_promienia": 0.5,
+    "pierscien_min": 0.16,
+    "pierscien_max": 0.32,
+    "proby": 40,
+    "jitter_kata": 0.45
+  },
+  "kontynenty": {
+    "liczba_stref": 5,
+    "obszar_male": 2000,
+    "obszar_srednie": 6000,
+    "liczba_male": 2,
+    "liczba_srednie": 3,
+    "liczba_duze": 4,
+    "piecio_margines_min": 0.14,
+    "piecio_jitter": 0.035,
+    "piecio_odsuniecie": 0.06,
+    "ciesnina": 0.018,
+    "wykladnik_radialny": 1.55,
+    "szum_gruby": { "mnoznik_skali": 0.55, "przesuniecie": 100, "oktawy": 4, "amplituda": 0.24 },
+    "szum_drobny": { "mnoznik_skali": 1.45, "przesuniecie": 510, "oktawy": 3, "amplituda": 0.16 },
+    "szum_kata": { "mnoznik_kata": 4, "mnoznik_strefy": 11, "przesuniecie": 220, "oktawy": 2, "amplituda": 0.1 },
+    "odjemnik": 0.09
+  },
+  "pangea": {
+    "t_dolny": 0.15,
+    "t_zakres": 0.7,
+    "powierzchnia_odniesienia": 20160,
+    "boost_max": 0.06,
+    "boost_wsp": 0.04,
+    "wysoki_prog": 0.55,
+    "wysoki_zakres": 0.45,
+    "niski_zakres": 0.45,
+    "sciagniecie": { "baza": 0.02, "rozmiar": 0.55, "wysoki": 0.04, "niski": 0.03 },
+    "prog_male": 0.28,
+    "prog_srednie": 0.55,
+    "liczba_male": 2,
+    "liczba_srednie": 4,
+    "liczba_duze": 6,
+    "promien_blobu_min": { "baza": 0.1, "t": 0.11, "rozmiar": 0.45 },
+    "promien_blobu_max": { "baza": 0.16, "t": 0.18, "rozmiar": 0.9 },
+    "pierscien_min": { "dolna_granica": 0.005, "baza": 0.012, "t": 0.02, "rozmiar": 0.06 },
+    "pierscien_max": { "dolna_granica": 0.02, "baza": 0.035, "t": 0.07, "rozmiar": 0.16, "sciagniecie": 1.2 },
+    "promien_klastra": { "baza": 0.18, "t": 0.36 },
+    "prog": { "baza": 0.17, "t": 0.1 },
+    "scalanie_suma": { "baza": 0.36, "t": 0.16, "rozmiar": 0.12, "wysoki": 0.08 },
+    "scalanie_max": { "baza": 0.22, "t": 0.18, "rozmiar": 0.06, "wysoki": 0.06 },
+    "warp_globalny_wsp": { "baza": 0.04, "t": 0.22 },
+    "dolina_wsp": { "dolna_granica": 0.015, "baza": 0.045, "t": 0.025, "niski": 0.02 },
+    "wypelnienie_min": { "baza": 0.03, "t": 0.08 },
+    "centra": {
+      "margines_min": 0.12,
+      "jitter": 0.028,
+      "pierscien_promien_mnoznik": 1.06,
+      "pierscien_rozrzut": 1.12,
+      "jitter_kata": 0.45
+    },
+    "blob": {
+      "wykladnik_radialny": 1.55,
+      "szum_gruby": { "mnoznik_skali": 0.55, "przesuniecie": 100, "oktawy": 4, "amplituda": 0.24 },
+      "przesuniecie_strefy_gruby": 37,
+      "szum_drobny": { "mnoznik_skali": 1.45, "przesuniecie": 510, "oktawy": 3, "amplituda": 0.16 },
+      "przesuniecie_strefy_drobny": 17,
+      "szum_kata": { "mnoznik_kata": 4, "mnoznik_strefy": 11, "przesuniecie": 220, "oktawy": 2, "amplituda": 0.1 },
+      "odjemnik": 0.09
+    },
+    "maska": {
+      "wykladnik_klastra": 2.2,
+      "dolina": { "mnoznik_skali": 0.38, "przesuniecie": 900, "oktawy": 4 },
+      "warp_globalny": { "mnoznik_skali": 0.45, "przesuniecie": 200, "oktawy": 3 }
+    }
+  },
+  "wyspy": {
+    "siatka": 4,
+    "margines_min": 0.08,
+    "powierzchnia_odniesienia": 8000,
+    "rozmiar": { "baza": 0.92, "wsp": 0.07, "min": 0.86, "max": 1.14 },
+    "promien_komorki": 0.32,
+    "jitter": 0.22,
+    "promien_zakres": { "baza": 0.82, "rozrzut": 0.28 },
+    "pas_morski": 0.062,
+    "wykladnik_radialny": 1.88,
+    "szum_gruby": { "mnoznik_skali": 0.62, "przesuniecie": 350, "oktawy": 4, "amplituda": 0.18 },
+    "szum_drobny": { "mnoznik_skali": 1.55, "przesuniecie": 620, "oktawy": 3, "amplituda": 0.1 },
+    "szum_kata": { "mnoznik_kata": 5, "mnoznik_strefy": 7, "przesuniecie": 330, "oktawy": 2, "amplituda": 0.07 },
+    "odjemnik": 0.12
+  },
+  "ziemia": {
+    "centra": [
+      { "nq": 0.17, "nr": 0.32, "radius": 0.15 },
+      { "nq": 0.22, "nr": 0.58, "radius": 0.11 },
+      { "nq": 0.48, "nr": 0.26, "radius": 0.13 },
+      { "nq": 0.6, "nr": 0.34, "radius": 0.19 },
+      { "nq": 0.5, "nr": 0.52, "radius": 0.12 },
+      { "nq": 0.8, "nr": 0.66, "radius": 0.08 }
+    ],
+    "szum_brzegu": { "mnoznik_skali": 0.85, "przesuniecie": 880, "oktawy": 3, "amplituda": 0.09 },
+    "poziom_ladu": 0.94,
+    "odjemnik": 0.05
+  }
+}
