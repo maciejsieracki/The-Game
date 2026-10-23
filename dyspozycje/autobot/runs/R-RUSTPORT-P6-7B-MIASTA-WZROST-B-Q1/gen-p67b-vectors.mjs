@@ -683,6 +683,25 @@ for (let i = 0; i < 1800; i++) {
   if (bld) entry.building = encGB(bld);
   gate.inactive.push(entry);
 }
+// filter z ROZNYMI activeLabels (drugi parametr): osobny generator liczb losowych, zeby nie przesunac
+// strumienia wczesniejszych blokow (wektory poprzednie pozostaja bajt w bajt)
+{
+  const rnd2 = mulberry32(0x67b0face);
+  const pick2 = (arr) => arr[Math.floor(rnd2() * arr.length)];
+  const LABEL_POOL = ['Drewno', 'Glina', 'Sol', 'Sól', 'Kamień', 'Ruda', 'Złoto', 'Ceramika', 'Cegła', 'x', ''];
+  gate.filterLabels = [];
+  for (let i = 0; i < 600; i++) {
+    const n = Math.floor(rnd2() * 9);
+    const built = Array.from({ length: n }, () => pick2(FILTER_POOL));
+    const nl = Math.floor(rnd2() * 5);
+    const labels = Array.from({ length: nl }, () => pick2(LABEL_POOL));
+    const stock = pick2(STOCK_SETS);
+    const kind = pick2(OPT_KINDS);
+    const { options, calls } = makeOptions(kind);
+    const out = G.filterRuntimeActiveBuiltIds(clone(built), clone(labels), clone(stock), options);
+    gate.filterLabels.push({ built, labels, stock: clone(stock), opt: optionsOut(kind, calls), out });
+  }
+}
 write('gate.json', gate);
 
 console.log('wektory: cost.json nfd.json pool.json gate.json -> ' + outDir);

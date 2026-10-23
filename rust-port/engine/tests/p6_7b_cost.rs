@@ -19,6 +19,16 @@ use civ_engine::domain::building_costs::p6_7b::{
 use common::*;
 use serde_json::Value;
 
+/// Liczba elementow tablicy w `data/<name>` silnika (zrodlo prawdy zamiast przypietej liczby).
+fn engine_json_len(name: &str) -> usize {
+    let p = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("data")
+        .join(name);
+    let text = std::fs::read_to_string(&p).unwrap_or_else(|e| panic!("brak {}: {e}", p.display()));
+    let v: Value = serde_json::from_str(&text).expect("JSON");
+    v.as_array().expect("tablica").len()
+}
+
 fn data() -> Value {
     load("cost.json")
 }
@@ -170,7 +180,11 @@ fn building_stock_cost_matches_running_web() {
             real += 1;
         }
     }
-    assert_eq!(real, 42, "wszystkie budynki z buildings.json");
+    assert_eq!(
+        real,
+        engine_json_len("buildings.json"),
+        "wszystkie budynki z buildings.json"
+    );
 }
 
 #[test]
@@ -265,7 +279,11 @@ fn unit_stock_cost_matches_running_web() {
             with_mount += 1;
         }
     }
-    assert_eq!(real, 75, "wszystkie jednostki z units.json");
+    assert_eq!(
+        real,
+        engine_json_len("units.json"),
+        "wszystkie jednostki z units.json"
+    );
     assert!(with_mount > 100, "za malo jednostek jezdnych: {with_mount}");
 }
 

@@ -221,6 +221,27 @@ fn filter_runtime_active_built_ids_matches_running_web() {
 }
 
 #[test]
+fn filter_runtime_active_built_ids_varied_labels_matches_running_web() {
+    // Drugi parametr (activeLabels) bywa rozny; web go nie czyta - wektor to potwierdza z uruchomionego weba.
+    let d = data();
+    let table = &d["resolverTable"];
+    let cases = arr(&d, "filterLabels");
+    assert!(cases.len() >= 500);
+    let mut distinct_labels = std::collections::BTreeSet::new();
+    for (i, c) in cases.iter().enumerate() {
+        let built = strings(&c["built"]);
+        let labels = strings(&c["labels"]);
+        distinct_labels.insert(labels.clone());
+        let stock = opt_stock_rec(&c["stock"]);
+        let got = with_options(&c["opt"], table, |options| {
+            filter_runtime_active_built_ids(&built, &labels, stock.as_ref(), options)
+        });
+        assert_eq!(got, strings(&c["out"]), "filterLabels #{i}");
+    }
+    assert!(distinct_labels.len() > 20, "za malo roznych list etykiet");
+}
+
+#[test]
 fn city_building_prereq_met_matches_running_web() {
     let d = data();
     let cases = arr(&d, "prereq");
@@ -259,7 +280,35 @@ fn city_building_prereq_met_matches_running_web() {
         real += usize::from(c.get("real").is_some());
         met += usize::from(want);
     }
-    assert_eq!(real, 9 * 12);
+    // Wektor obejmuje budynki z bramka zloza; kazdy ma te sama liczbe wariantow prereq i istnieje w buildings.json.
+    let mut per_id: std::collections::BTreeMap<String, usize> = std::collections::BTreeMap::new();
+    for c in cases {
+        if let Some(id) = c.get("real") {
+            *per_id.entry(text(id)).or_default() += 1;
+        }
+    }
+    let p = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("data")
+        .join("buildings.json");
+    let v: Value =
+        serde_json::from_str(&std::fs::read_to_string(&p).expect("buildings.json")).expect("JSON");
+    let data_ids: std::collections::BTreeSet<String> = v
+        .as_array()
+        .expect("tablica")
+        .iter()
+        .map(|b| b["id"].as_str().expect("id").to_string())
+        .collect();
+    assert_eq!(real, per_id.values().sum::<usize>());
+    assert!(!per_id.is_empty());
+    for id in per_id.keys() {
+        assert!(data_ids.contains(id), "budynek {id} spoza buildings.json");
+    }
+    let counts: std::collections::BTreeSet<usize> = per_id.values().copied().collect();
+    assert_eq!(
+        counts.len(),
+        1,
+        "rowna liczba wariantow na budynek: {per_id:?}"
+    );
     assert!(met > 100 && met < cases.len(), "zbyt jednostronne dane");
 }
 

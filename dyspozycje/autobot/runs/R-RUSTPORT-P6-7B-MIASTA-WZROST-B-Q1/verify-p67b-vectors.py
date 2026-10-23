@@ -823,6 +823,11 @@ for i, t in enumerate(gate["filter"]):
     res = filter_active(t["built"], dec_opt_rec(t.get("stock")), t["opt"]["kind"], table, sink)
     check(f"filter#{i}", res, t["out"])
     check(f"filter.calls#{i}", sink, t["opt"]["calls"])
+for i, t in enumerate(gate["filterLabels"]):
+    sink = []
+    res = filter_active(t["built"], dec_opt_rec(t.get("stock")), t["opt"]["kind"], table, sink)
+    check(f"filterLabels#{i}", res, t["out"])
+    check(f"filterLabels.calls#{i}", sink, t["opt"]["calls"])
 for i, t in enumerate(gate["prereq"]):
     res, calls = prereq_met(t.get("prereq"), t["built"], t["buildings"])
     check(f"prereq#{i}", res, t["out"])

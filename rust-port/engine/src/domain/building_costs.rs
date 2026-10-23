@@ -508,6 +508,11 @@ pub mod p6_7b {
         js_max(1.0, js_math_round(cost * epoch_cost_multiplier(epoch)))
     }
 
+    /// Domyslna epoka wejscia budynku (web `{ id, epokaWejscia: 1 }`) z `building-cost-params.json`.
+    fn default_entry_era() -> f64 {
+        building_cost_params().epoki.domyslna_epoka_wejscia_budynku
+    }
+
     /// Web `buildingEraCostMultiplier(epokaWejscia?)`.
     pub fn building_era_cost_multiplier(epoka_wejscia: Option<f64>) -> f64 {
         let era = match epoka_wejscia {
@@ -1188,7 +1193,7 @@ pub mod p6_7b {
                 }
                 let building = GateBuilding {
                     id: id.clone(),
-                    epoka_wejscia: Some(1.0),
+                    epoka_wejscia: Some(default_entry_era()),
                     wymagany_surowiec: None,
                 };
                 if building_runtime_gate_met(
@@ -1548,7 +1553,7 @@ pub mod p6_7b {
 
         let fallback = GateBuilding {
             id: building_id.to_owned(),
-            epoka_wejscia: Some(1.0),
+            epoka_wejscia: Some(default_entry_era()),
             wymagany_surowiec: None,
         };
         let building = opts.building.unwrap_or(&fallback);
