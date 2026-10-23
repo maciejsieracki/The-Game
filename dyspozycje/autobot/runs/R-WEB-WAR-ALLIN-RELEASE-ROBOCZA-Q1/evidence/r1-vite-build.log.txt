@@ -1,0 +1,15 @@
+vite v5.4.21 building for production...
+
+(!) outDir /tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/dist-war is not inside project root and will not be emptied.
+Use --emptyOutDir to override.
+
+transforming...
+✓ 895 modules transformed.
+rendering chunks...
+[plugin vite:singlefile] 
+
+[plugin vite:singlefile] Inlining: index-CideL4W2.js
+computing gzip size...
+../../../../../../../tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/dist-war/index.html  69,869.38 kB │ gzip: 48,669.50 kB
+✓ built in 26.65s
+EXIT=0
