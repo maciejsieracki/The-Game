@@ -1,0 +1,15 @@
+vite v5.4.21 building for production...
+
+(!) outDir /tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/dist-recruit is not inside project root and will not be emptied.
+Use --emptyOutDir to override.
+
+transforming...
+✓ 894 modules transformed.
+rendering chunks...
+[plugin vite:singlefile] 
+
+[plugin vite:singlefile] Inlining: index-xrqjNST-.js
+computing gzip size...
+../../../../../../../tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/dist-recruit/index.html  69,862.02 kB │ gzip: 48,667.33 kB
+✓ built in 1m 12s
+EXIT=0
