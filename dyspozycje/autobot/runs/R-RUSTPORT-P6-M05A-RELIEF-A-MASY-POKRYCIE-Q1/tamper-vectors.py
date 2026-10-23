@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-"""Test NEGATYWNY weryfikatora P6.M05A: zmienia 13 wartosci w KOPII wektorow (po jednej na kategorie
-logiki) i zapisuje do <WYJSCIE.json>. Weryfikator uruchomiony na kopii musi zglosic rozbieznosci (EXIT=1).
+"""Test NEGATYWNY weryfikatora P6.M05A: zmienia 25 wartosci w KOPII wektorow (po jednej na KAZDA z 25 kategorii
+wektorow) i zapisuje do <WYJSCIE.json>. Weryfikator uruchomiony na kopii musi zglosic rozbieznosci (EXIT=1).
 Uzycie: tamper-vectors.py <WEKTORY.json> <WYJSCIE.json>
 """
 import json
@@ -57,5 +57,30 @@ case["hash"] = "f" * 16
 case = c["pickForceWater"][17]
 case["calls"] += 1
 
+# 14. consts: stala tabeli (perTier[0] waterCoverageCellSize)
+c["consts"]["perTier"][0]["waterCoverageCellSize"] = flip_digit(c["consts"]["perTier"][0]["waterCoverageCellSize"])
+# 15. overflowVariants: wynik wariantu
+c["overflowVariants"][0]["rows"][0]["out"][0] = "0.987"
+# 16. nullSquareDist: dystans
+c["nullSquareDist"][0][2] = flip_digit(c["nullSquareDist"][0][2])
+# 17. forestEligible: odwrocony wynik
+c["forestEligible"][1][1] = 1 - c["forestEligible"][1][1]
+# 18. riverLand: odwrocony wynik
+c["riverLand"][1][1] = 1 - c["riverLand"][1][1]
+# 19. canHostEdge: odwrocony wynik
+c["canHostEdge"][50]["out"] = 1 - c["canHostEdge"][50]["out"]
+# 20. pickForce: liczba losowan
+c["pickForce"][100]["calls"] += 1
+# 21. capCell: zwrot
+c["capCell"][100]["ret"] += 1
+# 22. depositProtected: odwrocony wynik
+c["depositProtected"][2][1] = 1 - c["depositProtected"][2][1]
+# 23. capSpread: skrot stanu
+c["capSpread"][10]["hash"] = "e" * 16
+# 24. applyKeys: skrot stanu
+c["applyKeys"][20]["hash"] = "d" * 16
+# 25. applyRankDefault: skrot stanu
+c["applyRankDefault"][5]["hash"] = "c" * 16
+
 json.dump(v, open(dst, "w", encoding="utf-8"))
-print("zmodyfikowano 13 wartosci ->", dst)
+print("zmodyfikowano 25 wartosci ->", dst)
