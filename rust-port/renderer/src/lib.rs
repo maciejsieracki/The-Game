@@ -25,6 +25,7 @@
 #![warn(missing_docs)]
 
 pub mod assets;
+pub mod battle;
 pub mod camera;
 pub mod cities;
 pub mod core;
