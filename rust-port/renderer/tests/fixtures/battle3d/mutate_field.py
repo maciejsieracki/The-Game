@@ -55,6 +55,14 @@ MUTANTS = [
     ('interior cap', 'const BUILDING_CAP: usize = 38;', 'const BUILDING_CAP: usize = 37;'),
     ('interior plot order', 'plots.sort_by_key(|p| p.2);', 'plots.sort_by_key(|p| -p.2);'),
     ('gable ridge', 'let r0 = [-0.5, 1.0, 0.0];', 'let r0 = [-0.5, 0.9, 0.0];'),
+    # r2 (Ev-1): siege state handed to part 3 must be compared, not skipped
+    ('ctor drops siege', '        grid,\n        siege,\n    }', '        grid,\n        siege: None,\n    }'),
+    ('siege gate open', '        gate_open: false,\n        wall_tile_hp,', '        gate_open: true,\n        wall_tile_hp,'),
+    ('siege gate col', '        gate_col: wall_col,', '        gate_col: wall_col + 1,'),
+    ('siege gate row', '        gate_row: mid_row,', '        gate_row: mid_row - 1,'),
+    ('siege gate hp', '        gate_hp: GATE_MAX_HP,', '        gate_hp: GATE_MAX_HP + 1.0,'),
+    ('siege row hi', '        row_hi: r_hi,', '        row_hi: r_hi - 1,'),
+    ('siege tile hp skip gate', '        if r >= gate_lo && r <= gate_hi {\n            continue;\n        }\n        wall_tile_hp.push', '        if r == gate_lo {\n            continue;\n        }\n        wall_tile_hp.push'),
     ('flat roof lift', 'dummy.pos(px, body_h + roof_h * 0.4, pz);', 'dummy.pos(px, body_h + roof_h * 0.5, pz);'),
     # deploy
     ('deploy tile opacity', 'basic_transparent(0x0044_bbff, 0.28, false)', 'basic_transparent(0x0044_bbff, 0.3, false)'),

@@ -1,0 +1,11 @@
+## R-RUSTPORT-P4-36-MOD14-BATTLE-3D-Q2 r2 — uzgodnienie inwentarza (zarzut Ev-2)
+## wejścia (sha256):
+38c9773691a29f4d2dad43c08436bc21a3cfcc356ed1be80c8052f43153fbd95  battleScene.ts (git show edb8fb56:gra/src/battle/battleScene.ts)
+139b84eb4cc956a2b5d4f71cf4838a583d1e45bc10aa11c6c223c60817159dcd  runs/R-RUSTPORT-P4-36-MOD14-BATTLE-3D-Q1/inwentarz-battleScene.md
+53f7f57882a80bfee7dc27782cd40d146009300b2f968c4140933fa01a4eb848  rust-port/renderer/src/battle/field.rs (bez zmian względem b162688f)
+## $ grep -c RUNDA-2 inwentarz-battleScene.md
+117
+## $ python3 -I recon-r2.py <inwentarz> <battleScene.ts> <field.rs> > table 2> counter
+## (stdout identyczny z recon-r2-table.md: cmp OK)
+LICZNIK: wierszy RUNDA-2 = 117; NIE PORTOWANY = 1; PRZENIESIONY → cz. 3 = 12; PRZENIESIONY → cz. 4 = 22; WSPÓLNA (domena P6.13) — kopia w scenie odłożona do cz. 3 = 12; WSPÓLNA (domena P6.13) — kopia w scenie odłożona do cz. 4 = 2; WSPÓLNA (domena P6.13) — scena konsumuje tylko wynik (DTO), kopii w scenie nie będzie = 10; WSPÓLNA (domena, Z-36-3) — wejście części 2 jako DTO = 3; ZPORTOWANY = 54; ZPORTOWANY częściowo = 1; bez statusu / niezgodnych = 0
+EXIT=0

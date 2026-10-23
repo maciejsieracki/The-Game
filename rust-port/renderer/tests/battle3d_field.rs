@@ -1066,6 +1066,7 @@ fn compare_full(c: &mut Cmp, ctx: &str, v: &View<'_>, n: NodeId, w: &Json) {
 fn compare_camera(c: &mut Cmp, ctx: &str, cam: &BattleCamera, w: &Json, nan_agnostic: bool) {
     let mut f = |name: &str, r: &[f64], wv: &[f64]| {
         if nan_agnostic {
+            c.eq(&format!("{ctx} {name} len"), r.len(), wv.len());
             for (i, (a, b)) in r.iter().zip(wv).enumerate() {
                 if a.is_nan() && b.is_nan() {
                     c.checks += 1;
@@ -1115,6 +1116,12 @@ fn compare_camera(c: &mut Cmp, ctx: &str, cam: &BattleCamera, w: &Json, nan_agno
 }
 
 fn compare_siege(c: &mut Cmp, ctx: &str, s: Option<&field::SiegeLayout>, w: &Json) {
+    // The web carved a wall (`_carveWallTiles` ran) exactly when the full
+    // siege record is present (`rowLo` is emitted only by `siegeRecord`
+    // over a constructed scene / a carve) and `wallCol != -1`. Rust must
+    // then return `Some`, and `None` otherwise — no silent skip (r2, Ev-1).
+    let web_carved = w.opt("rowLo").is_some() && w.get("wallCol").i64() != -1;
+    c.eq(&format!("{ctx} present"), s.is_some(), web_carved);
     let Some(s) = s else { return };
     let ints = [
         ("wallCol", s.wall_col),
@@ -1291,6 +1298,19 @@ fn field_builders_match_web_on_synthetic_grids() {
             siege.as_ref(),
             case.get("siegeState"),
         );
+        let ss = case.get("siegeState");
+        c.eq(
+            &format!("{id} wallCol (input)"),
+            i64::from(wall_col),
+            ss.get("wallCol").i64(),
+        );
+        if !wall.is_null() {
+            c.eq(
+                &format!("{id} gateRow (input)"),
+                i64::from(gate_row),
+                ss.get("gateRow").i64(),
+            );
+        }
         fs.build_battlefield(&grid, desert);
         if !wall.is_null() {
             fs.build_siege_interior_buildings(&grid, wall_col, gate_row);
