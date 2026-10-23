@@ -200,6 +200,8 @@ async function main() {
         statusMissing: status ? status.dataset.missing : null,
         statusVisible: !!status && (() => { const r = status.getBoundingClientRect(); return r.width > 0 && r.height > 0; })(),
         shortfallText: shortfall ? shortfall.textContent : null,
+        shortfallVisible: !!shortfall && (() => { const r = shortfall.getBoundingClientRect(); return r.width > 0 && r.height > 0; })(),
+        shortfallColor: shortfall ? getComputedStyle(shortfall).color : null,
         buttonDisabled: button ? button.disabled : null,
         buttonTitle: button ? button.title : null,
         woodChipClass: woodChip ? woodChip.className : null,
@@ -219,10 +221,17 @@ async function main() {
     await page.screenshot({ path: path.join(shotDir, 'recruit-card-manpower-none-plus-no-wood.png'), fullPage: true });
     const requiredMissing = requiredLabel;
     check('B1: karta ma widoczny tekstowy status rekrutów', none.statusVisible, none);
-    check('B2: status opisuje dostępne i potrzebne wartości',
-      none.statusText === `Rekruci: dostępne 0 / potrzebne ${requiredLabel}`, none.statusText);
-    check('B3: status pokazuje brakującą pulę',
-      none.shortfallText === `Brakuje: ${requiredMissing}`, none.shortfallText);
+    // R-WEB-REKRUTACJA-PANEL-UX-IMPL-Q1: pula państwa („dostępne”) to jedna linia nad
+    // listą (cityPanel.renderPurchasableUnits); karta pokazuje widocznie „potrzebne”
+    // (summary) i „brak N”, a pełny tekst „dostępne X / potrzebne Y” jest w tooltipie.
+    check('B2: status pokazuje potrzebne na karcie, a dostępne/potrzebne/brak w tooltipie',
+      none.statusText === requiredLabel
+        && none.statusTitle === `Rekruci: dostępne 0 / potrzebne ${requiredLabel} — brakuje ${requiredMissing}`,
+      { statusText: none.statusText, statusTitle: none.statusTitle });
+    check('B3: status pokazuje widoczną, czerwoną brakującą pulę',
+      none.shortfallText === `brak ${requiredMissing}` && none.shortfallVisible
+        && none.shortfallColor === 'rgb(232, 138, 122)',
+      { text: none.shortfallText, visible: none.shortfallVisible, color: none.shortfallColor });
     check('B4: data attributes przechowują available/required/missing',
       none.statusAvailable === '0'
         && none.statusRequired === String(required)
@@ -245,11 +254,12 @@ async function main() {
     await page.screenshot({ path: path.join(shotDir, 'recruit-card-manpower-partial.png'), fullPage: true });
     const partialAvailableLabel = await format(partialAvailable);
     const partialMissingLabel = await format(required - partialAvailable);
-    check('B8: częściowa pula pokazuje dostępne / potrzebne',
-      partial.statusText === `Rekruci: dostępne ${partialAvailableLabel} / potrzebne ${requiredLabel}`,
-      partial.statusText);
-    check('B9: częściowa pula pokazuje dokładny shortfall',
-      partial.shortfallText === `Brakuje: ${partialMissingLabel}`
+    check('B8: częściowa pula: potrzebne na karcie, dostępne / potrzebne / brak w tooltipie',
+      partial.statusText === requiredLabel
+        && partial.statusTitle === `Rekruci: dostępne ${partialAvailableLabel} / potrzebne ${requiredLabel} — brakuje ${partialMissingLabel}`,
+      { statusText: partial.statusText, statusTitle: partial.statusTitle });
+    check('B9: częściowa pula pokazuje widoczny, dokładny shortfall',
+      partial.shortfallText === `brak ${partialMissingLabel}` && partial.shortfallVisible
         && partial.statusMissing === String(required - partialAvailable),
       partial);
     check('B10: brak rekrutów blokuje przy częściowym stanie i wskazuje przyczynę',
@@ -260,9 +270,10 @@ async function main() {
 
     console.log('\n-- PEŁNA PULA REKRUTÓW --');
     const full = await run(required, { drewno: 50 });
-    check('B12: pełna pula pokazuje dostępne / potrzebne',
-      full.statusText === `Rekruci: dostępne ${requiredLabel} / potrzebne ${requiredLabel}`,
-      full.statusText);
+    check('B12: pełna pula: potrzebne na karcie, dostępne / potrzebne w tooltipie (bez „brakuje”)',
+      full.statusText === requiredLabel
+        && full.statusTitle === `Rekruci: dostępne ${requiredLabel} / potrzebne ${requiredLabel}`,
+      { statusText: full.statusText, statusTitle: full.statusTitle });
     check('B13: pełna pula nie pokazuje fałszywego shortfallu',
       full.shortfallText === null && full.statusMissing === '0', full);
     check('B14: pełna pula odblokowuje Rekrutuj',

@@ -9042,6 +9042,22 @@ function renderPurchasableUnits(
     return;
   }
 
+  // R-WEB-REKRUTACJA-PANEL-UX-IMPL-Q1: pula rekrutów PAŃSTWA raz, jedną linią nad listą
+  // (wcześniej powtarzana w każdej karcie); wiersz pokazuje już tylko „potrzebne” i „brak N”.
+  const poolAvailable = empireRekruciTotal(city);
+  if (poolAvailable != null && Number.isFinite(poolAvailable)) {
+    const pool = el('div', 'unit-recruit-pool');
+    const poolValue = Math.max(0, Math.floor(poolAvailable));
+    pool.dataset.available = String(poolValue);
+    pool.title = 'Pula rekrutów imperium — wspólna dla wszystkich jednostek; '
+      + 'wiersz jednostki pokazuje, ile potrzebuje i ile brakuje';
+    pool.textContent = 'Rekruci: dostępne ';
+    const b = document.createElement('b');
+    b.textContent = formatManpower(poolValue);
+    pool.appendChild(b);
+    mount.appendChild(pool);
+  }
+
   const scroll = createScrollList(
     'list-scroll',
     opts?.scrollFill
