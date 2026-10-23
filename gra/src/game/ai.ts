@@ -3792,7 +3792,9 @@ function applyWarAllInCapitalToCommands(
   map: GameMap,
   ctx: WarAllInContext,
 ): void {
-  const eligible = myUnits.filter(u => !isCivilianUnit(u) && !isScoutUnit(u) && u.ruchLeft > 0);
+  // Zaokretowane / morskie jednostki zostawiamy dotychczasowej logice (parytet ze sciezka barbarzyncow).
+  const eligible = myUnits.filter(u =>
+    !isCivilianUnit(u) && !isScoutUnit(u) && u.ruchLeft > 0 && u.embarked !== true && u.seaRaider !== true);
   if (eligible.length === 0) return;
   const enemyCityHex = new Set(
     cities.filter(c => c.ownerId !== playerId).map(c => keyOf(c.q, c.r)),
@@ -3813,10 +3815,12 @@ function applyWarAllInCapitalToCommands(
     const cmd = commands[i]!;
     if (cmd.type === 'move' && plannedIds.has(cmd.unitId)) commands.splice(i, 1);
   }
-  // Heksy nie-tranzytowe: wszystkie jednostki + obce miasta (silnik: addForeignCityBlocks).
-  const blocked = new Set(units.map(u => keyOf(u.q, u.r)));
-  for (const k of enemyCityHex) blocked.add(k);
-  const plan = planWarAllInCapital(planned, ctx.targets, { map, blocked });
+  // Statycznie nietranzytowe: obce miasta (addForeignCityBlocks); jednostki jako `occupied`
+  // (ograniczaja tylko wybor kroku, nie trase -- brak krokow wstecz).
+  const blocked = new Set(enemyCityHex);
+  const occupied = new Set(units.map(u => keyOf(u.q, u.r)));
+  const plan = planWarAllInCapital(planned, ctx.targets, { map, blocked, occupied });
+  // Kolejnosc komend = kolejnosc planu (przod kolumny zwalnia heksy tylnym).
   for (const o of plan.orders) {
     commands.push({
       type: 'move',

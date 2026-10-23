@@ -62,7 +62,11 @@ eq(aiOn.stats.cmdsForForeignUnits, 0, '1e PO: AI nie wydaje komend cudzym jednos
     }
     eq(multi, 0, `1f owner ${owner}: zadna jednostka nie dostaje 2 ruchow`);
     eq(mil.length, 8, `1g owner ${owner}: 8 jednostek bojowych`);
-    assert(toward >= 7, `1h owner ${owner}: >=7/8 jednostek bojowych ma ruch w strone stolicy/grupy (got ${toward})`);
+    // Zbiorka: wieksza grupa swiadomie CZEKA na doganiajace ja male grupy (sekcja 10), wiec w
+    // pierwszej turze nie kazda jednostka sie rusza -- ale kazdy wydany ruch jest ku stolicy/grupie.
+    const movers = mil.filter(u => cmds.some(c => c.type === 'move' && c.unitId === u.id)).length;
+    eq(toward, movers, `1h owner ${owner}: kazdy wydany ruch zmierza ku stolicy/grupie (${toward}/${movers})`);
+    assert(movers >= 2, `1h2 owner ${owner}: doganiajace grupy ruszaja od 1. tury (${movers})`);
   }
 }
 
@@ -90,6 +94,13 @@ eq(aiOn.stats.cmdsForForeignUnits, 0, '1e PO: AI nie wydaje komend cudzym jednos
   H.simulate(st, { engine: E, flag: true, fog: true, turns: 8, onTurn: (t, s) => { if (t === 8) atTurn8 = clusters(s, 1); } });
   assert(initial >= 3, `1i start: armia AI 1 rozproszona (${initial} grup)`);
   assert(atTurn8 !== null && atTurn8 < initial, `1j po 8 turach mniej grup niz na starcie (${initial} -> ${atTurn8})`);
+}
+
+{
+  // Bezczynnosc ograniczona: w 20 turach >= 70% jednostko-tur to ruch (zbiorka trwa kilka tur).
+  const st = S.aiVsAi();
+  const s20 = H.simulate(st, { engine: E, flag: true, fog: true, turns: 20 });
+  assert(s20.cmdMoves >= 0.7 * 16 * 20, `1k w 20 turach >=70% jednostko-tur to ruch (${s20.cmdMoves}/${16 * 20})`);
 }
 
 // ---------------------------------------------------------------------------
@@ -250,14 +261,19 @@ console.log('\n--- 8: planWarAllInCapital -- grupowanie / rendezvous ---');
   const oz = plan.orders.find(o => o.unitId === 'z');
   eq(oz.mode, 'rendezvous', '8a mala grupa blisko duzej => rendezvous');
   assert(oz.step.r < 17, '8b rendezvous: krok w strone duzej grupy (r maleje)');
-  eq(plan.orders.filter(o => o.mode === 'capital').length, 4, '8c duza grupa idzie na stolice');
-  eq(plan.orders.length, 5, '8d kazda jednostka ma rozkaz (zero bezczynnych)');
-  assert(plan.orders.filter(o => o.mode === 'capital').every(o => dist(o.step.q, o.step.r, 35, 10) <
+  eq(plan.orders.filter(o => o.mode === 'capital').length, 0, '8c duza grupa CZEKA, az mala ja dogoni (zbiorka)');
+  eq(plan.held.length, 4, '8c2 czekajaca grupa jest w held (nie w noPath)');
+  eq(plan.orders.length + plan.held.length + plan.noPath.length, 5, '8d kazda jednostka ma rozkaz albo jawny powod postoju');
+  eq(plan.noPath.length, 0, '8d1 noPath puste (zaden "brak ladu")');
+  const alone = P(big, [target]);
+  eq(alone.orders.length, 4, '8d1b bez doganiajacych: cala grupa maszeruje');
+  assert(alone.orders.every(o => dist(o.step.q, o.step.r, 35, 10) <
     dist(big.find(b => b.id === o.unitId).q, big.find(b => b.id === o.unitId).r, 35, 10)),
   '8d2 kazdy krok na stolice zmniejsza dystans do niej');
-  // Daleko (> 8): kazdy na stolice.
-  const far = P([...big, { id: 'z', q: 10, r: 19 }], [target]);
-  eq(far.orders.find(o => o.unitId === 'z').mode, 'capital', '8e grupa dalej niz 8 => bezposrednio na stolice');
+  // Daleko (> MERGE_RADIUS): kazdy na stolice.
+  const bigN = big.map(b => ({ ...b, r: b.r - 8 }));
+  const far = P([...bigN, { id: 'z', q: 10, r: 19 }], [target]);
+  eq(far.orders.find(o => o.unitId === 'z').mode, 'capital', '8e grupa dalej niz MERGE_RADIUS => bezposrednio na stolice');
   // Dwa cele: grupa idzie do NAJBLIZSZEGO.
   const t2 = { ownerId: 3, cityId: 'N', q: 10, r: 0 };
   const two = P(big, [target, t2]);
@@ -284,6 +300,69 @@ console.log('\n--- 8: planWarAllInCapital -- grupowanie / rendezvous ---');
 }
 
 // ---------------------------------------------------------------------------
+console.log('\n--- 10: realne scalanie grup, gesta grupa, brak krokow wstecz i dubli ---');
+{
+  const map = H.makeMap(60, 30);
+  /** Wykonuje plan jak silnik: kolejnosc rozkazow, zajety heks = ruch nieudany; wejscie na stolice = koniec jednostki. */
+  const execute = (groups, cap, turns) => {
+    const units = [];
+    groups.forEach((g, gi) => g.forEach(([q, r], i) => units.push(H.mkUnit(`g${gi}_${i}`, 1, q, r))));
+    const targets = [{ ownerId: 2, cityId: 'T', q: cap[0], r: cap[1] }];
+    const m = { back: 0, dups: 0, noPath: 0, failed: 0, unaccounted: 0, mergedAt: null, spreadAtEnd: null, timeline: [] };
+    for (let t = 1; t <= turns; t++) {
+      const occupied = new Set(units.map(u => `${u.q},${u.r}`));
+      const plan = E.planWarAllInCapital(units, targets, { map, blocked: new Set(), occupied });
+      m.noPath += plan.noPath.length;
+      m.unaccounted += units.length - (plan.orders.length + plan.held.length + plan.noPath.length);
+      const seen = new Set();
+      for (const o of plan.orders) {
+        const u = units.find(x => x.id === o.unitId);
+        const k = `${o.step.q},${o.step.r}`;
+        if (seen.has(k)) m.dups++;
+        seen.add(k);
+        if (dist(o.step.q, o.step.r, cap[0], cap[1]) > dist(u.q, u.r, cap[0], cap[1])) m.back++;
+        if (units.some(v => v !== u && v.q === o.step.q && v.r === o.step.r)) { m.failed++; continue; }
+        if (o.step.q === cap[0] && o.step.r === cap[1]) { units.splice(units.indexOf(u), 1); continue; }
+        u.q = o.step.q; u.r = o.step.r;
+      }
+      let mx = 0;
+      for (const a of units) for (const b of units) mx = Math.max(mx, dist(a.q, a.r, b.q, b.r));
+      if (m.mergedAt === null && mx <= 5) m.mergedAt = t;
+      m.spreadAtEnd = mx;
+      m.timeline.push(mx);
+    }
+    return m;
+  };
+  const lead = [[10, 10], [11, 10], [10, 11], [11, 11]];
+  const lat = execute([lead, [[10, 17]]], [50, 10], 30);
+  assert(lat.mergedAt !== null && lat.mergedAt <= 8, `10a grupa z boku (odstep 7) scala sie w <=8 tur (${lat.mergedAt})`);
+  assert(lat.spreadAtEnd <= 5, `10b armia nie plynie strumieniem: rozstaw po 30 turach <=5 (${lat.spreadAtEnd})`);
+  const beh = execute([[[20, 10], [21, 10], [20, 11], [21, 11]], [[11, 10]]], [50, 10], 40);
+  assert(beh.mergedAt !== null && beh.mergedAt <= 12, `10c grupa 9 hexow z tylu dogania (odstep > dawny stały) w <=12 tur (${beh.mergedAt})`);
+  assert(beh.spreadAtEnd <= 5, `10d po dogonieniu rozstaw <=5 (${beh.spreadAtEnd})`);
+  const dense = execute([[[10, 8], [11, 8], [10, 9], [11, 9], [12, 8], [12, 9], [9, 9], [9, 10], [10, 10], [11, 10]]], [34, 10], 30);
+  eq(dense.noPath, 0, '10e gesta grupa 10: zero noPath ("otoczona" != "brak ladu")');
+  eq(dense.back, 0, '10f gesta grupa: zero krokow od stolicy');
+  eq(dense.dups, 0, '10g gesta grupa: zero dwoch jednostek na tym samym heksie docelowym');
+  eq(dense.failed, 0, '10h gesta grupa: kazdy rozkaz wykonalny w kolejnosci planu (zero nalozen)');
+  eq(dense.unaccounted, 0, '10i kazda jednostka ma rozkaz albo jawny powod postoju');
+  for (const [nm, r] of [['lat', lat], ['beh', beh]]) {
+    eq(r.back + r.dups + r.failed + r.noPath, 0, `10j ${nm}: zero krokow wstecz/dubli/nalozen/noPath`);
+  }
+  // Morze: noPath (nie held) -- rozroznienie "brak ladu" od "otoczona".
+  const sea = E.planWarAllInCapital([{ id: 's', q: 10, r: 10 }], [{ ownerId: 2, cityId: 'T', q: 35, r: 10 }],
+    { map: S.noLandPath().map, blocked: new Set(), occupied: new Set(['10,10']) });
+  assert(sea.noPath.includes('s') && !sea.held.includes('s'), '10k brak ladu => noPath, nie held');
+  // Otoczona wlasnymi jednostkami: held, nie noPath.
+  const ring = [[10, 10], [11, 10], [9, 10], [10, 9], [10, 11], [11, 9], [9, 11]];
+  const ringUnits = ring.map(([q, r], i) => ({ id: `r${i}`, q, r }));
+  const ringPlan = E.planWarAllInCapital([ringUnits[0]], [{ ownerId: 2, cityId: 'T', q: 35, r: 10 }],
+    { map, blocked: new Set(), occupied: new Set(ring.map(([q, r]) => `${q},${r}`)) });
+  assert(ringPlan.held.includes('r0') && ringPlan.noPath.length === 0 && ringPlan.orders.length === 0,
+    '10l otoczona wlasnymi: held, bez kroku wstecz');
+}
+
+// ---------------------------------------------------------------------------
 console.log('\n--- 9: okablowanie main.ts (testy statyczne) ---');
 {
   const main = fs.readFileSync(path.resolve(__dirname, '..', 'src', 'main.ts'), 'utf8');
@@ -293,6 +372,8 @@ console.log('\n--- 9: okablowanie main.ts (testy statyczne) ---');
   assert(/if \(!isWarAllInCapitalEnabled\(\)\) return undefined;/.test(main), '9d flaga OFF => brak kontekstu');
   const mod = fs.readFileSync(path.resolve(__dirname, '..', 'src', 'game', 'warAllInCapital.ts'), 'utf8');
   assert(!/Math\.random/.test(mod), '9e modul bez Math.random');
+  const aiSrc = fs.readFileSync(path.resolve(__dirname, '..', 'src', 'game', 'ai.ts'), 'utf8');
+  assert(/u\.embarked !== true && u\.seaRaider !== true\);/.test(aiSrc), '9g AI: zaokretowane/seaRaider poza regula (parytet z barbarzyncami)');
   assert(/WAR_ALLIN_CAPITAL_ENABLED = true/.test(mod), '9f flaga jawna w module');
 }
 

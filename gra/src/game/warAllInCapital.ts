@@ -63,8 +63,15 @@ export interface WarAllInContext {
  */
 export interface WarAllInNav {
   map: GameMap;
-  /** Heksy niedostepne jako tranzyt/krok: zajete przez jednostki + obce miasta. */
+  /** Heksy STATYCZNIE nietranzytowe (pole odleglosci je omija): obce miasta. */
   blocked: ReadonlySet<string>;
+  /**
+   * Heksy zajete przez jednostki. NIE wchodza do pola odleglosci (trasa nie zalezy od chwilowych
+   * pozycji -> brak krokow wstecz), tylko ograniczaja wybor kroku: jednostka nie wchodzi na heks
+   * zajety lub zarezerwowany przez inna jednostke planu, chyba ze jego wlasciciel odchodzi
+   * wczesniej w kolejnosci rozkazow (`plan.orders` sa wykonywane w tej kolejnosci).
+   */
+  occupied?: ReadonlySet<string>;
 }
 
 function distanceField(
@@ -139,40 +146,10 @@ function distanceField(
       }
     }
   }
-  return dist;
-}
-
-/** Najlepszy pierwszy krok jednostki wedlug pola odleglosci (null = brak sciezki). */
-function stepFromField(
-  nav: WarAllInNav,
-  field: Map<string, number>,
-  destKey: string,
-  u: { q: number; r: number },
-): { q: number; r: number } | null {
-  if (keyOf(u.q, u.r) === destKey) return null;
-  if (!field.has(keyOf(u.q, u.r))) return null;
-  let best: { q: number; r: number } | null = null;
-  let bestCost = Infinity;
-  for (const n of hexNeighborCoords(u.q, u.r)) {
-    const nk = keyOf(n.q, n.r);
-    const dn = field.get(nk);
-    if (dn === undefined) continue;
-    const hex = nav.map.hexes[nk];
-    if (hex === undefined) continue;
-    let enter: number;
-    if (nk === destKey) {
-      enter = terrainMoveCost(hex) === Infinity ? 1 : terrainMoveCost(hex);
-    } else {
-      enter = terrainMoveCost(hex);
-      if (enter === Infinity || nav.blocked.has(nk)) continue;
-    }
-    const total = enter + dn;
-    if (total < bestCost || (total === bestCost && best !== null && (n.q < best.q || (n.q === best.q && n.r < best.r)))) {
-      bestCost = total;
-      best = { q: n.q, r: n.r };
-    }
-  }
-  return best;
+  // Tylko ustalone (settled) wartosci sa ostateczne -- wczesne wyjscie zostawia tentatywne.
+  const out = new Map<string, number>();
+  for (const k of settled) out.set(k, dist.get(k)!);
+  return out;
 }
 
 export interface WarAllInUnit {
@@ -192,17 +169,29 @@ export interface WarAllInOrder {
 }
 
 export interface WarAllInPlan {
+  /** Rozkazy W KOLEJNOSCI WYKONANIA (przod kolumny pierwszy -- zwalnia heksy tylnym). */
   orders: WarAllInOrder[];
   /** Jednostki bez sciezki do zadnej stolicy (morze) -- zostaja na miejscu. */
   noPath: string[];
+  /**
+   * Jednostki ktore swiadomie stoja w tej turze (to NIE jest "brak lądu"): zablokowane przez
+   * wlasne jednostki / bez kroku "do przodu", doszly na stolice, albo grupa czekajaca na
+   * doganiajaca ja mniejsza grupe (zbiorka).
+   */
+  held: string[];
   /** Diagnostyka: liczba grup per cel (cityId -> rozmiary grup). */
   groupsByTarget: Record<string, number[]>;
 }
 
 /** Jednostki w tym dystansie (lancuchowo) tworza jedna grupe. */
 export const WAR_ALLIN_LINK_RADIUS = 3;
-/** Grupa dolacza do wiekszej/wczesniejszej grupy tego samego celu, jesli jest nie dalej. */
-export const WAR_ALLIN_MERGE_RADIUS = 8;
+/**
+ * Grupa dolacza do wiekszej/wczesniejszej grupy tego samego celu, jesli jest nie dalej.
+ * Wieksza grupa CZEKA na miejscu, dopoki doganiajaca ja grupa faktycznie sie zbliza (inaczej
+ * obie szlyby 1 heks/ture i odstep nigdy by sie nie zmniejszyl) -- zbiorka trwa najwyzej tyle
+ * tur, ile heksow dzieli grupy.
+ */
+export const WAR_ALLIN_MERGE_RADIUS = 10;
 /** Blisko stolicy nie zbieramy sie -- natarcie. */
 export const WAR_ALLIN_NO_MERGE_NEAR_CAPITAL = 3;
 
@@ -212,6 +201,18 @@ interface Cluster {
   target: WarCapitalTarget;
   distToTarget: number;
   minId: string;
+  /** Wieksza grupa tego samego celu, do ktorej ta dolacza (undefined = glowa/maszeruje). */
+  rendezvous?: Cluster;
+}
+
+/** Cel kroku: pole odleglosci + heks docelowy. */
+interface Goal {
+  field: Map<string, number>;
+  destKey: string;
+  destQ: number;
+  destR: number;
+  target: WarCapitalTarget;
+  mode: WarAllInOrder['mode'];
 }
 
 function cmpTarget(a: WarCapitalTarget, b: WarCapitalTarget): number {
@@ -235,10 +236,80 @@ function nearestTarget(
   return best;
 }
 
+type StepResult =
+  | { kind: 'step'; q: number; r: number }
+  | { kind: 'hold' }
+  | { kind: 'nopath' };
+
+interface StepState {
+  occupied: Set<string>;
+  claimed: Set<string>;
+  vacated: Set<string>;
+}
+
+/**
+ * Pierwszy krok jednostki wg pola odleglosci. Nigdy nie cofa: wybiera sasiada STRICTE blizszego
+ * celu w polu (dn < D[u]); gdy wolnych brak (zablokowany przez wlasne jednostki) -- krok boczny
+ * (rowne pole, dystans heksowy do celu nie rosnie); inaczej 'hold' (stoi; to nie "brak lądu").
+ */
+function chooseStep(
+  nav: WarAllInNav,
+  g: Goal,
+  u: WarAllInUnit,
+  st: StepState,
+): StepResult {
+  const uk = keyOf(u.q, u.r);
+  if (uk === g.destKey) return { kind: 'hold' };
+  const du = g.field.get(uk);
+  if (du === undefined) return { kind: 'nopath' };
+  const isFree = (nk: string): boolean => {
+    if (st.claimed.has(nk)) return false;
+    if (nk !== g.destKey && nav.blocked.has(nk)) return false;
+    if (st.occupied.has(nk) && !st.vacated.has(nk)) return false;
+    return true;
+  };
+  const uDist = hexDistance(u.q, u.r, g.destQ, g.destR);
+  let prog: { q: number; r: number } | null = null;
+  let progCost = Infinity;
+  let side: { q: number; r: number } | null = null;
+  let sideDist = Infinity;
+  for (const n of hexNeighborCoords(u.q, u.r)) {
+    const nk = keyOf(n.q, n.r);
+    const dn = g.field.get(nk);
+    if (dn === undefined) continue;
+    const hex = nav.map.hexes[nk];
+    if (hex === undefined) continue;
+    let enter: number;
+    if (nk === g.destKey) {
+      enter = terrainMoveCost(hex) === Infinity ? 1 : terrainMoveCost(hex);
+    } else {
+      enter = terrainMoveCost(hex);
+      if (enter === Infinity) continue;
+    }
+    if (!isFree(nk)) continue;
+    if (dn < du) {
+      const total = enter + dn;
+      if (total < progCost || (total === progCost && prog !== null && (n.q < prog.q || (n.q === prog.q && n.r < prog.r)))) {
+        progCost = total;
+        prog = { q: n.q, r: n.r };
+      }
+    } else if (dn === du) {
+      const hd = hexDistance(n.q, n.r, g.destQ, g.destR);
+      if (hd <= uDist && (hd < sideDist || (hd === sideDist && side !== null && (n.q < side.q || (n.q === side.q && n.r < side.r))))) {
+        sideDist = hd;
+        side = { q: n.q, r: n.r };
+      }
+    }
+  }
+  const pick = prog ?? side;
+  return pick !== null ? { kind: 'step', q: pick.q, r: pick.r } : { kind: 'hold' };
+}
+
 /**
  * Planuje rozkazy "cala armia na stolice". `units` = jednostki bojowe ktore maja dostac
- * rozkaz (wolajacy filtruje: bez cywilow/zwiadowcow, z ruchLeft > 0). `nav.blocked` = heksy
- * zajete przez jednostki + obce miasta (nie sa tranzytem; rendezvous nie wchodzi na zajety heks).
+ * rozkaz (wolajacy filtruje: bez cywilow/zwiadowcow, z ruchLeft > 0). `nav.blocked` = obce
+ * miasta (statyczne); `nav.occupied` = heksy zajete przez jednostki (tez te spoza `units`).
+ * Wolajacy MUSI wykonywac `plan.orders` w zwroconej kolejnosci.
  */
 export function planWarAllInCapital(
   units: readonly WarAllInUnit[],
@@ -247,28 +318,24 @@ export function planWarAllInCapital(
 ): WarAllInPlan {
   const allStartKeys = new Set(units.map(u => keyOf(u.q, u.r)));
   const fieldCache = new Map<string, Map<string, number>>();
-  /** Pierwszy krok `u` do stolicy `t` (pole odleglosci wspolne dla wszystkich jednostek). */
-  const stepToTarget = (u: WarAllInUnit, t: WarCapitalTarget): { q: number; r: number } | null => {
+  const targetGoal = (t: WarCapitalTarget): Goal => {
     const dk = keyOf(t.q, t.r);
     let f = fieldCache.get(dk);
     if (f === undefined) {
       f = distanceField(nav, t.q, t.r, allStartKeys);
       fieldCache.set(dk, f);
     }
-    return stepFromField(nav, f, dk, u);
+    return { field: f, destKey: dk, destQ: t.q, destR: t.r, target: t, mode: 'capital' };
   };
-  const rendezvousFields = new Map<Cluster, Map<string, number>>();
-  /** Pierwszy krok `u` (z grupy `from`) ku kotwicy wiekszej grupy `to`. */
-  const stepToCluster = (u: WarAllInUnit, from: Cluster, to: Cluster): { q: number; r: number } | null => {
-    let f = rendezvousFields.get(from);
-    const dk = keyOf(to.anchor.q, to.anchor.r);
-    if (f === undefined) {
-      f = distanceField(nav, to.anchor.q, to.anchor.r, new Set(from.members.map(m => keyOf(m.q, m.r))));
-      rendezvousFields.set(from, f);
-    }
-    return stepFromField(nav, f, dk, u);
-  };
-  const plan: WarAllInPlan = { orders: [], noPath: [], groupsByTarget: {} };
+  const clusterGoal = (from: Cluster, to: Cluster): Goal => ({
+    field: distanceField(nav, to.anchor.q, to.anchor.r, new Set(from.members.map(m => keyOf(m.q, m.r)))),
+    destKey: keyOf(to.anchor.q, to.anchor.r),
+    destQ: to.anchor.q,
+    destR: to.anchor.r,
+    target: from.target,
+    mode: 'rendezvous',
+  });
+  const plan: WarAllInPlan = { orders: [], noPath: [], held: [], groupsByTarget: {} };
   if (units.length === 0 || targets.length === 0) return plan;
 
   const sorted = [...units].sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
@@ -334,8 +401,8 @@ export function planWarAllInCapital(
     });
   }
 
-  // 3) Per cel: calkowity porzadek grup (rozmiar malejaco, blizej celu, id) i rendezvous
-  //    do najblizszej grupy ktora stoi WCZESNIEJ w porzadku (head idzie na stolice).
+  // 3) Per cel: calkowity porzadek grup (rozmiar malejaco, blizej celu, id); kazda grupa poza
+  //    pierwsza dolacza do najblizszej grupy stojacej WCZESNIEJ w porzadku (glowa maszeruje).
   const clustersByTarget = new Map<string, Cluster[]>();
   for (const c of clusters) {
     let arr = clustersByTarget.get(c.target.cityId);
@@ -345,73 +412,114 @@ export function planWarAllInCapital(
     }
     arr.push(c);
   }
-  const targetKeys = [...clustersByTarget.keys()].sort();
-  for (const tk of targetKeys) {
+  for (const tk of [...clustersByTarget.keys()].sort()) {
     const list = clustersByTarget.get(tk)!;
     list.sort((a, b) =>
       b.members.length - a.members.length
       || a.distToTarget - b.distToTarget
       || (a.minId < b.minId ? -1 : a.minId > b.minId ? 1 : 0));
     plan.groupsByTarget[tk] = list.map(c => c.members.length);
-    for (let ci = 0; ci < list.length; ci++) {
+    for (let ci = 1; ci < list.length; ci++) {
       const c = list[ci]!;
-      let rendezvous: Cluster | undefined;
-      if (ci > 0 && c.distToTarget > WAR_ALLIN_NO_MERGE_NEAR_CAPITAL) {
-        let bestD = Infinity;
-        for (let pi = 0; pi < ci; pi++) {
-          const p = list[pi]!;
-          const d = hexDistance(c.anchor.q, c.anchor.r, p.anchor.q, p.anchor.r);
-          if (d <= WAR_ALLIN_MERGE_RADIUS && d < bestD) {
-            bestD = d;
-            rendezvous = p;
-          }
+      if (c.distToTarget <= WAR_ALLIN_NO_MERGE_NEAR_CAPITAL) continue;
+      let bestD = Infinity;
+      for (let pi = 0; pi < ci; pi++) {
+        const p = list[pi]!;
+        const d = hexDistance(c.anchor.q, c.anchor.r, p.anchor.q, p.anchor.r);
+        if (d <= WAR_ALLIN_MERGE_RADIUS && d < bestD) {
+          bestD = d;
+          c.rendezvous = p;
         }
-      }
-      for (const u of c.members) {
-        let step: { q: number; r: number } | null = null;
-        let mode: WarAllInOrder['mode'] = 'capital';
-        if (rendezvous !== undefined) {
-          // Cel zbiorki = kotwica wiekszej grupy (krok na zajety heks odpada -> marsz na stolice).
-          const s = stepToCluster(u, c, rendezvous);
-          if (s !== null && !nav.blocked.has(keyOf(s.q, s.r))) {
-            step = s;
-            mode = 'rendezvous';
-          }
-        }
-        if (step === null) {
-          const s = stepToTarget(u, c.target);
-          if (s !== null) {
-            step = s;
-            mode = 'capital';
-          } else {
-            // Brak sciezki do najblizszej stolicy -- probuj pozostale (deterministycznie od najblizszej).
-            const others = [...targets]
-              .filter(t => t.cityId !== c.target.cityId)
-              .sort((a, b) =>
-                hexDistance(u.q, u.r, a.q, a.r) - hexDistance(u.q, u.r, b.q, b.r) || cmpTarget(a, b));
-            for (const t of others) {
-              const s2 = stepToTarget(u, t);
-              if (s2 !== null) {
-                step = s2;
-                plan.orders.push({
-                  unitId: u.id, step: s2, targetCityId: t.cityId, targetOwnerId: t.ownerId, mode: 'capital',
-                });
-                break;
-              }
-            }
-            if (step === null) plan.noPath.push(u.id);
-            continue;
-          }
-        }
-        plan.orders.push({
-          unitId: u.id,
-          step,
-          targetCityId: c.target.cityId,
-          targetOwnerId: c.target.ownerId,
-          mode,
-        });
       }
     }
   }
+
+  // 4) Rozstrzyganie krokow. Kolejnosc: front kolumny pierwszy (najmniejsza odleglosc w polu
+  //    celu), wiec jednostki z tylu moga wejsc na heksy zwolnione przez przednie; kazdy
+  //    wybrany heks jest rezerwowany (zero dwoch jednostek na tym samym heksie docelowym).
+  const st: StepState = {
+    occupied: new Set(nav.occupied ?? []),
+    claimed: new Set(),
+    vacated: new Set(),
+  };
+  for (const u of units) st.occupied.add(keyOf(u.q, u.r));
+  const emit = (u: WarAllInUnit, g: Goal, q: number, r: number): void => {
+    st.claimed.add(keyOf(q, r));
+    st.vacated.add(keyOf(u.q, u.r));
+    plan.orders.push({
+      unitId: u.id, step: { q, r }, targetCityId: g.target.cityId, targetOwnerId: g.target.ownerId, mode: g.mode,
+    });
+  };
+  /**
+   * Cele po kolei: krok -> rozkaz; 'hold' zbiorki -> sprobuj natarcia; 'hold' natarcia -> stoi;
+   * 'nopath' -> nastepny cel; wszystkie 'nopath' => noPath (np. morze).
+   */
+  const resolve = (u: WarAllInUnit, c: Cluster, first: Goal | undefined): Goal | undefined => {
+    let sawHold = false;
+    const tryGoal = (g: Goal): 'step' | 'stop' | 'next' => {
+      const res = chooseStep(nav, g, u, st);
+      if (res.kind === 'step') {
+        emit(u, g, res.q, res.r);
+        return 'step';
+      }
+      if (res.kind === 'hold') {
+        sawHold = true;
+        return g.mode === 'capital' ? 'stop' : 'next';
+      }
+      return 'next';
+    };
+    if (first !== undefined) {
+      const r = tryGoal(first);
+      if (r === 'step') return first;
+      if (r === 'stop') { plan.held.push(u.id); return undefined; }
+    }
+    const rc = tryGoal(targetGoal(c.target));
+    if (rc === 'step') return targetGoal(c.target);
+    if (rc === 'stop') { plan.held.push(u.id); return undefined; }
+    const others = [...targets]
+      .filter(t => t.cityId !== c.target.cityId)
+      .sort((a, b) => hexDistance(u.q, u.r, a.q, a.r) - hexDistance(u.q, u.r, b.q, b.r) || cmpTarget(a, b));
+    for (const t of others) {
+      const g = targetGoal(t);
+      const r = tryGoal(g);
+      if (r === 'step') return g;
+      if (r === 'stop') { plan.held.push(u.id); return undefined; }
+    }
+    if (sawHold) plan.held.push(u.id);
+    else plan.noPath.push(u.id);
+    return undefined;
+  };
+  /** Jeden przebieg po grupach; zwraca grupy, ktore w tym przebiegu faktycznie dolaczaja (rendezvous). */
+  const runPass = (pass: Cluster[]): Set<Cluster> => {
+    const entries: Array<{ u: WarAllInUnit; c: Cluster; first: Goal | undefined; key: number }> = [];
+    for (const c of pass) {
+      const first = c.rendezvous !== undefined ? clusterGoal(c, c.rendezvous) : undefined;
+      const primary = first ?? targetGoal(c.target);
+      for (const u of c.members) {
+        entries.push({ u, c, first, key: primary.field.get(keyOf(u.q, u.r)) ?? Infinity });
+      }
+    }
+    entries.sort((a, b) => a.key - b.key || (a.u.id < b.u.id ? -1 : a.u.id > b.u.id ? 1 : 0));
+    const joining = new Set<Cluster>();
+    for (const e of entries) {
+      const g = resolve(e.u, e.c, e.first);
+      if (g !== undefined && g.mode === 'rendezvous') joining.add(e.c);
+    }
+    return joining;
+  };
+  const joiningFollowers = runPass(clusters.filter(c => c.rendezvous !== undefined));
+  // Glowa czeka na miejscu, gdy doganiajaca ja grupa FAKTYCZNIE sie zbliza w tej turze
+  // (inaczej obie szlyby ta sama predkoscia i odstep nigdy by sie nie zmniejszyl).
+  const waiting = new Set<Cluster>();
+  for (const f of joiningFollowers) {
+    const p = f.rendezvous!;
+    if (p.rendezvous === undefined && p.distToTarget > WAR_ALLIN_NO_MERGE_NEAR_CAPITAL) waiting.add(p);
+  }
+  const marching: Cluster[] = [];
+  for (const h of clusters.filter(c => c.rendezvous === undefined)) {
+    if (waiting.has(h)) for (const m of h.members) plan.held.push(m.id);
+    else marching.push(h);
+  }
+  runPass(marching);
   return plan;
 }

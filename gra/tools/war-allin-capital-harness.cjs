@@ -79,7 +79,7 @@ function simulate(state, o) {
   if (E.hasModule) E.setWarAllInCapitalOverride(o.flag === null ? null : o.flag);
   const stats = {
     battles: 0, captures: 0, cmdMoves: 0, unitsOrderedToCapital: 0, perTurnMs: [], decisionMs: 0,
-    cmdsForForeignUnits: 0, humanUnitMoves: 0, log: [],
+    cmdsForForeignUnits: 0, humanUnitMoves: 0, moveBlockedByUnit: 0, log: [],
   };
   const atWar = (a, b) => {
     if (a === E.BARBARIAN_OWNER_ID || b === E.BARBARIAN_OWNER_ID) return a !== b;
@@ -122,7 +122,7 @@ function simulate(state, o) {
       if (E.hexDistance(u.q, u.r, c.toQ, c.toR) !== 1) continue;
       const occ = unitAt(c.toQ, c.toR);
       const city = cityAt(c.toQ, c.toR);
-      if (occ) continue;
+      if (occ) { stats.moveBlockedByUnit++; continue; }
       if (city && city.ownerId !== u.ownerId) {
         if (!atWar(u.ownerId, city.ownerId) || E.isCivilianUnit(u)) continue;
         city.ownerId = u.ownerId; stats.captures++;

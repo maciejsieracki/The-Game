@@ -1816,16 +1816,25 @@ export function decideBarbarianMoves(
       u.ruchLeft > 0 && u.embarked !== true && u.seaRaider !== true
       && !isCivilianUnit(u) && !barbCityHexes.has(keyOf(u.q, u.r)))
     : [];
-  const allInOrders = new Map<string, { q: number; r: number; cityId: string }>();
   if (allInEligible.length > 0) {
-    // Heksy nie-tranzytowe: jednostki + obce (nie-barbarzynskie) miasta (addForeignCityBlocks).
-    const blocked = new Set(allUnits.map(u => keyOf(u.q, u.r)));
+    // Jednostki w kontakcie z wrogiem walcza (atak), reszta maszeruje wg planu.
+    const marchers: RuntimeUnit[] = [];
+    for (const u of allInEligible) {
+      const adj = enemies.find(e => hexDistance(u.q, u.r, e.q, e.r) === 1 && engageOk(e.ownerId));
+      if (adj !== undefined) commands.push({ type: 'attack', unitId: u.id, targetUnitId: adj.id });
+      else marchers.push(u);
+    }
+    // Statycznie nietranzytowe: obce (nie-barbarzynskie) miasta (addForeignCityBlocks);
+    // jednostki jako `occupied` (ograniczaja tylko wybor kroku -- brak krokow wstecz).
+    const blocked = new Set<string>();
     for (const c of cities) {
       if (c.ownerId !== undefined && isBarbarian(c.ownerId)) continue;
       blocked.add(keyOf(c.q, c.r));
     }
-    const plan = planWarAllInCapital(allInEligible, allInTargets, { map, blocked });
-    for (const o of plan.orders) allInOrders.set(o.unitId, { q: o.step.q, r: o.step.r, cityId: o.targetCityId });
+    const occupied = new Set(allUnits.map(u => keyOf(u.q, u.r)));
+    const plan = planWarAllInCapital(marchers, allInTargets, { map, blocked, occupied });
+    // Kolejnosc komend = kolejnosc planu (przod kolumny zwalnia heksy tylnym).
+    for (const o of plan.orders) commands.push({ type: 'move', unitId: o.unitId, toQ: o.step.q, toR: o.step.r });
   }
   const allInUnitIds = new Set(allInEligible.map(u => u.id));
 
@@ -1864,16 +1873,7 @@ export function decideBarbarianMoves(
     // decideSeaPeoplesRaids — logika lądowa ich nie rusza.
     if (unit.embarked === true || unit.seaRaider === true) continue;
 
-    if (allInUnitIds.has(unit.id)) {
-      const adj = enemies.find(e => hexDistance(unit.q, unit.r, e.q, e.r) === 1 && engageOk(e.ownerId));
-      if (adj !== undefined) {
-        commands.push({ type: 'attack', unitId: unit.id, targetUnitId: adj.id });
-      } else {
-        const ord = allInOrders.get(unit.id);
-        if (ord !== undefined) commands.push({ type: 'move', unitId: unit.id, toQ: ord.q, toR: ord.r });
-      }
-      continue;
-    }
+    if (allInUnitIds.has(unit.id)) continue; // komendy wydane wyzej (kolejnosc planu)
 
     const occ = addForeignCityBlocks(
       occupiedExcluding(allUnits, unit.id),
