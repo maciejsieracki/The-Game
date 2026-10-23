@@ -29,7 +29,6 @@ dotykające tych samych plików — zawsze sekwencyjnie, nigdy w tej samej fali.
 
 | # | Temat | Faza | Runda | runId Workflow | Status | Ostatnia aktualizacja |
 |---|---|---|---|---|---|---|
-| 12 | `R-RUSTPORT-P5-7-PORT-HUD-CITYPANEL-Q1` | P5.7 `hud.ts`, `cityPanel.ts`, `newGameFlow.ts`, cykle C1/C3 — Opus 5.5 | 1/5 | `wf_8fd97c5f-69f` | DISPATCHED | 2026-10-23 |
 
 
 

@@ -1,0 +1,69 @@
+{
+  "pin": "edb8fb56",
+  "totalCases": 1194,
+  "totalDiffs": 0,
+  "modules": [
+    {
+      "module": "newGameFlow.ts",
+      "cases": 1194,
+      "diffs": 0,
+      "examples": [],
+      "notMeasured": [
+        "`syncSettLayoutHeight` (`offsetHeight` = 0 w jsdom, brak układu) — dopasowanie wysokości panelu AI do siatki ustawień",
+        "wygląd CSS (tło hero, rozmycie, animacje `cng-pulse`/`cng-spin`) w realnej przeglądarce; podpowiedzi `title` (hover `hudTitleTooltip`)"
+      ],
+      "domCases": 1194,
+      "v2Assertions": [
+        {
+          "check": "zapytanie miastaPanstwaMenuForMapLabel użyte przez kreator",
+          "ok": true
+        },
+        {
+          "check": "zapytanie civTypesMenuForMapLabel użyte przez kreator",
+          "ok": true
+        },
+        {
+          "check": "zapytanie defaultMiastaPanstwaFromMapLabel użyte przez kreator",
+          "ok": true
+        },
+        {
+          "check": "zapytanie defaultCivTypesFromMapLabel użyte przez kreator",
+          "ok": true
+        },
+        {
+          "check": "zapytanie maxCivTypesForStartEpoch użyte przez kreator",
+          "ok": true
+        },
+        {
+          "check": "zapytanie clampMiastaPanstwaCount użyte przez kreator",
+          "ok": true
+        },
+        {
+          "check": "zapytanie typSwiataFromMenuLabel użyte przez kreator",
+          "ok": true
+        },
+        {
+          "check": "zapytanie defaultLandFractionPercentForTyp użyte przez kreator",
+          "ok": true
+        },
+        {
+          "check": "zapytanie worldGenerationPresetFromLabels użyte przez kreator",
+          "ok": true
+        },
+        {
+          "check": "zapytanie buildStartPreview użyte przez kreator",
+          "ok": true
+        },
+        {
+          "check": "zapytanie civMatrixProfile użyte przez kreator",
+          "ok": true
+        },
+        {
+          "check": "zapytanie civAvailableAtEpoch użyte przez kreator",
+          "ok": true
+        }
+      ],
+      "v2AssertionsFailed": 0
+    }
+  ]
+}

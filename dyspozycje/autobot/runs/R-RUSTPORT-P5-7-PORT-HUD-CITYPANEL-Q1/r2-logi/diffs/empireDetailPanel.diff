@@ -1,0 +1,194 @@
+--- pin/empireDetailPanel.ts
++++ v2/empireDetailPanel.ts
+@@ -11,13 +11,18 @@
+   type EmpireUchwalaRow,
+ } from './empireDetailTypes';
+-import { formatObywateleLabel, formatManpower } from '../game/manpower';
+-import { stockResourceLabel } from '../game/building-stock-cost';
+-import { CITIZEN_UPKEEP_RATE_PER_CITIZEN } from '../game/citizen-resource-upkeep';
+-import { resourceUsageTotal } from '../game/resource-usage-breakdown';
++// P5.7 (`R-RUSTPORT-P5-7-PORT-HUD-CITYPANEL-Q1`): importy `game/**` (pin `:13-16,32-46`) zastąpione katalogiem
++// (`staticCatalog()` — stałe K i etykiety), zapytaniami suwaków (`controller/empireQueries.ts`, reguły R),
++// typami DTO (`viewmodel/types.ts`) i kopiami 1:1 czystych formaterów (klasa F, P5-0 Z1). Wynik reguł bez
++// importu (zużycie obywateli, wzrost efektywny, suma tabeli Miasta, baza dochodu szlaków) czytany z pól snapshotu.
++import type {
++  CityPodzialHandluDto as CityPodzialHandlu,
++  CityPodzialPracyDto as CityPodzialPracy,
++} from '../viewmodel/types';
++import { staticCatalog } from '../controller/staticCatalog';
++import { empireQueries } from '../controller/empireQueries';
+ import {
+   MIASTA_TABLE_COLUMNS,
+   visibleMiastaColumns,
+   miastaColumnGridTemplate,
+-  computeMiastaSummaryRow,
+   type MiastaColDef,
+ } from './empireMiastaTable';
+@@ -30,19 +35,55 @@
+ import { treasuryBalanceSignedTxt } from './treasuryBalanceFormat';
+ import { brandIconSvg, mapResourceIconSvg } from './icons/brandAssets';
+-import { daninaLabelGenitive } from '../game/danina-nazwa';
+-import { HANDEL_PCT_STEP, MAX_PROCENT_NAUKA, adjustHandelSplit, normalizePodzialHandlu, snapHandelPct } from '../game/cities';
+-import type { CityPodzialHandlu, CityPodzialPracy } from '../game/cities';
+-import {
+-  MAX_PROCENT_PULI_IMPERIUM,
+-  procentPuliImperiumZBudynkow,
+-  podzialPracyZProcentuPuli,
+-  PODZIAL_PRACY_PULA_LBL,
+-  PODZIAL_PRACY_PULA_LBL_PELNA,
+-  PODZIAL_PRACY_PULA_TIP,
+-} from '../game/cities';
+-import {
+-  WYZYWIENIE_MIN, WYZYWIENIE_MAX, WYZYWIENIE_STEP, formatWyzwienieLabel,
+-  type PoziomRacji,
+-} from '../game/population-growth-v85';
++// Stałe (K) — `StaticCatalogDto.constants`/`labels` (ZAŁOŻENIE P5.2-Z1: katalog zainstalowany przed ewaluacją modułu).
++const HANDEL_PCT_STEP = staticCatalog().constants.handelPctStep;
++const MAX_PROCENT_NAUKA = staticCatalog().constants.maxProcentNauka;
++const MAX_PROCENT_PULI_IMPERIUM = staticCatalog().constants.maxProcentPuliImperium;
++const PODZIAL_PRACY_PULA_LBL = staticCatalog().labels.podzialPracyPulaLbl;
++const PODZIAL_PRACY_PULA_LBL_PELNA = staticCatalog().labels.podzialPracyPulaPelna;
++const PODZIAL_PRACY_PULA_TIP = staticCatalog().labels.podzialPracyPulaTip;
++const WYZYWIENIE_MIN = staticCatalog().constants.wyzywienieMin;
++const WYZYWIENIE_MAX = staticCatalog().constants.wyzywienieMax;
++const WYZYWIENIE_STEP = staticCatalog().constants.wyzywienieStep;
++const CITIZEN_UPKEEP_RATE_PER_CITIZEN = staticCatalog().constants.citizenUpkeepRatePerCitizen;
++/** Pin `game/population-growth-v85.ts:25` (`type PoziomRacji = number`). */
++type PoziomRacji = number;
++// Reguły suwaków (R) — zapytania do silnika (P5-0 §6.5, ZAŁOŻENIE P5.7-Z2); te same nazwy co na pinie.
++const adjustHandelSplit = (
++  current: CityPodzialHandlu, changed: keyof CityPodzialHandlu, newVal: number,
++): CityPodzialHandlu => empireQueries().adjustHandelSplit(current, changed, newVal);
++const normalizePodzialHandlu = (split: CityPodzialHandlu): CityPodzialHandlu => empireQueries().normalizePodzialHandlu(split);
++const procentPuliImperiumZBudynkow = (procentBudynki: number | undefined | null): number =>
++  empireQueries().procentPuliImperiumZBudynkow(procentBudynki);
++const podzialPracyZProcentuPuli = (procentPuli: number | undefined | null): CityPodzialPracy =>
++  empireQueries().podzialPracyZProcentuPuli(procentPuli);
++// Etykiety (F/K) — katalog: `stockResourceLabel` (pin `game/building-stock-cost.ts:170-172`),
++// `daninaLabelGenitive` (pin `game/danina-nazwa.ts:17-19`, forma stała).
++const stockResourceLabel = (key: string): string => staticCatalog().labels.stockResourceLabels[key] ?? key;
++const daninaLabelGenitive = (_label?: string): string => staticCatalog().labels.daninaGenitive;
++// Czyste formatery liczb (F) — kopie 1:1 pinu (P5-0 Z1, wzorzec `unitRecruitCard.ts` P5.3).
++/** Kopia 1:1 `formatObywateleLabel` (pin `game/manpower.ts:495-499`). */
++function formatObywateleLabel(count: number): string {
++  const n = Math.max(0, Math.floor(count));
++  if (n === 1) return '1 obywatel';
++  return `${n} obywateli`;
++}
++/** Kopia 1:1 `formatManpower` → `formatPopulationAbs` (pin `game/manpower.ts:858-872`). */
++function formatManpower(n: number): string {
++  if (n >= 1_000_000) {
++    const m = n / 1_000_000;
++    return (m >= 10 ? Math.round(m) : Math.round(m * 10) / 10) + ' mln';
++  }
++  if (n >= 1_000) {
++    const t = n / 1_000;
++    return (t >= 100 ? Math.round(t) : Math.round(t * 10) / 10) + ' tys.';
++  }
++  return String(n);
++}
++/** Kopia 1:1 `formatWyzwienieLabel` + `clampPoziomRacji` (pin `game/population-growth-v85.ts:165-168,200-203`). */
++function formatWyzwienieLabel(level: PoziomRacji): string {
++  const clamped = Math.min(WYZYWIENIE_MAX, Math.max(WYZYWIENIE_MIN, level));
++  const v = Math.round(clamped / WYZYWIENIE_STEP) * WYZYWIENIE_STEP;
++  return Number.isInteger(v) ? String(v) : v.toFixed(1).replace('.', ',');
++}
+ import { formatCivBrandLine } from './civBrandDisplay';
+ import {
+@@ -1752,4 +1793,6 @@
+   food: EmpireFoodSnap,
+   e: EmpireDetailSnap['economy'],
++  // P5.7: wiersz SUMA/ŚREDNIA z silnika (było `computeMiastaSummaryRow`, `empireMiastaTable.ts` GRANICZNY — P5.1).
++  summary: EmpireDetailSnap['miastaSummary'],
+ ): string {
+   if (cp.length === 0) {
+@@ -1789,13 +1832,4 @@
+       // per-city cells stay nominal, unchanged.
+       wzrost: fd != null ? fd.wzrostProcent : null,
+-      // `wzrostEff` = EFEKTYWNA wartość (miasto głodujące → 0%), TA SAMA konwencja co
+-      // `wzrostEff` w renderSpichlerzCentralnySection() (identyczny warunek głodu
+-      // `nakarmione === false`) — czyta ją WYŁĄCZNIE wiersz podsumowania niżej, żeby ŚREDNIA
+-      // w zakładce Miasta zgadzała się z SUMĄ w zakładce Spichlerz dla tych samych danych.
+-      // / EN: `wzrostEff` = EFFECTIVE value (a starving city → 0%), same convention as
+-      // `wzrostEff` in renderSpichlerzCentralnySection() (identical `nakarmione === false`
+-      // hunger test) — read ONLY by the summary row, so the Miasta tab's AVG matches the
+-      // Spichlerz tab's SUM for the same data (ECHO B).
+-      wzrostEff: fd != null ? (fd.nakarmione === false ? 0 : fd.wzrostProcent) : null,
+       praca: (econ?.pracaPula ?? 0) + (econ?.pracaBudynki ?? 0),
+       pieniadz: econ?.pieniadz ?? 0,
+@@ -1826,13 +1860,4 @@
+   // NOT `r.wzrost` (nominal, read only by the per-city cells above) — otherwise this table's
+   // AVG would diverge from the Spichlerz tab's SUM for the same data.
+-  const summary = computeMiastaSummaryRow(rows.map(r => ({
+-    obyw: r.obyw,
+-    ludnoscAbsolutna: r.ludnoscAbsolutna,
+-    wzrostProcent: r.wzrostEff,
+-    praca: r.praca,
+-    pieniadz: r.pieniadz,
+-    zywnosc: r.zywnosc ?? 0,
+-    surowce: r.surowce,
+-  })));
+   const summaryCellFor = (colId: string): string => {
+     switch (colId) {
+@@ -2387,5 +2412,5 @@
+   // EN: same formula the engine uses — floor(population × rate) per resource required this era.
+   const citizenResCount = resources.filter(r => r.citizenRequired === true).length;
+-  const zuzyciePerTyp = Math.floor(sumObyw * CITIZEN_UPKEEP_RATE_PER_CITIZEN);
++  const zuzyciePerTyp = p.zuzycieObywateliPerTyp;
+   // `e.zadowolenie` (HudState, main.ts buildHudState()) NIE jest nigdzie wypełniane silnikiem —
+   // zawsze `undefined` (pre-istniejące, niezależne od tego dociągnięcia). Realny, na żywo liczony
+@@ -2574,5 +2599,5 @@
+     h += `<div class="civ-emp-mini">${miniHeader(['MIASTO', 'OBYW.', 'ZUŻYCIE / TURĘ'], grid)}`;
+     for (const c of cp) {
+-      const z = Math.floor(c.ludki * CITIZEN_UPKEEP_RATE_PER_CITIZEN);
++      const z = c.zuzycieObywateliPerTurn;
+       h += miniRow([
+         esc(c.name),
+@@ -3109,5 +3134,5 @@
+       // as `effectiveGrowthPctForUi()` in cityPanel.ts (`fed ? wzrostProcent : 0`) — duplicated
+       // locally instead of exported since it's a one-line rule with no extra state.
+-      const wzrostEff = unfed ? 0 : row.wzrostProcent;
++      const wzrostEff = row.wzrostProcentEff;
+       const wzrostTxt = `${Math.round(wzrostEff)}%`;
+       sumProdukcja += row.produkcja;
+@@ -3290,5 +3315,5 @@
+   if (!r.usage) return '';
+   const u = r.usage;
+-  const total = resourceUsageTotal(u);
++  const total = u.total;
+   if (total <= 0) return '';
+   const row = (label: string, val: number): string => val > 0
+@@ -3430,9 +3455,7 @@
+   const capBase = stored[0]?.capBase;
+   const capBonus = stored[0]?.capBonusPerMagazyn;
+-  // SUROW-UI-A1: liczba Magazynów wyliczona z REALNEJ bazy/bonusu (econ-params.json),
+-  // nie z zaszytej na sztywno starej wartości 100 — baza z econ-params.json (dziś 1000).
+-  const magazyny = (capBase != null && capBonus != null && capBonus > 0 && cap > capBase)
+-    ? Math.round((cap - capBase) / capBonus)
+-    : 0;
++  // P5.7 r2: liczba Magazynów = pole DTO `magazynyCount` (pin `:3434-3436` odwracał formułę capu silnika
++  // `(cap − capBase) / capBonus`; reguła → silnik, P5.13). Brak pola = 0, jak na pinie bez bazy/bonusu.
++  const magazyny = stored[0]?.magazynyCount ?? 0;
+   const magSlowo = magazyny === 1 ? 'Magazyn' : (magazyny >= 2 && magazyny <= 4 ? 'Magazyny' : 'Magazynów');
+   const magTip = magazynPanstwaTooltip(cap, capBase, capBonus, magazyny, magSlowo);
+@@ -3572,12 +3595,5 @@
+   // bonus the base equals the total, so box and hero legitimately show the same number then — not
+   // a regression, just nothing to differ.
+-  const tradeBase = t.routes.reduce((sum, r) => {
+-    const bonusPct = r.medium === 'morze' ? t.wonderBonusMorzePct : t.wonderBonusLadPct;
+-    // Math.round (nie Math.floor) tutaj — floor-po-floor odwrotności `main.ts` bywa niestabilny
+-    // na błędach zaokrągleń IEEE-754 (np. 110/1.1 = 99.99999999999999 w JS, floor dałby 99
+-    // zamiast realnej bazy 100). Round jest odporne na ten konkretny błąd zmiennoprzecinkowy,
+-    // a to i tak wartość informacyjna (etykieta boxa), nie pole używane do bilansu skarbca.
+-    return sum + (bonusPct > 0 ? Math.round(r.income / (1 + bonusPct / 100)) : r.income);
+-  }, 0);
++  const tradeBase = t.tradeBaseIncome;
+   h += `<div class="civ-emp-two">`
+     + `<div class="civ-emp-box"><div class="k">DOCHÓD SZLAKÓW (BAZA)</div>`
+@@ -3957,5 +3973,5 @@
+     // / EN: 'ludnosc' key REMOVED — no econRows entry has id 'ludnosc', so detailFor.ludnosc was
+     // never read — it only called cityMiastaMiniDetail() a needless second time (double-wiring).
+-    miasta: cityMiastaMiniDetail(ce, cp, snap.food, e),
++    miasta: cityMiastaMiniDetail(ce, cp, snap.food, e, snap.miastaSummary),
+     rekruci: cityPoborMiniRekruci(cp, p),
+   };

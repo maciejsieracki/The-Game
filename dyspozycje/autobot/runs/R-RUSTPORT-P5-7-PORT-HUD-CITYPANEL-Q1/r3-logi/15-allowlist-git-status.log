@@ -1,0 +1,43 @@
+$ git rev-parse HEAD   # baza r3 (przed commitem r3)
+c55d130c0df53d7fdc005c9b82b2466ddfcb7a2b
+$ git diff --cached --name-only   # indeks r3 przed commitem (ten log dodany do indeksu po pomiarze)
+dyspozycje/autobot/runs/R-RUSTPORT-P5-7-PORT-HUD-CITYPANEL-Q1/03-operator-r3.md
+dyspozycje/autobot/runs/R-RUSTPORT-P5-7-PORT-HUD-CITYPANEL-Q1/r3-logi/01-npm-ci.log
+dyspozycje/autobot/runs/R-RUSTPORT-P5-7-PORT-HUD-CITYPANEL-Q1/r3-logi/02-tsc.log
+dyspozycje/autobot/runs/R-RUSTPORT-P5-7-PORT-HUD-CITYPANEL-Q1/r3-logi/03-check.log
+dyspozycje/autobot/runs/R-RUSTPORT-P5-7-PORT-HUD-CITYPANEL-Q1/r3-logi/04-vite-build.log
+dyspozycje/autobot/runs/R-RUSTPORT-P5-7-PORT-HUD-CITYPANEL-Q1/r3-logi/05-dom-harness-cityux.json
+dyspozycje/autobot/runs/R-RUSTPORT-P5-7-PORT-HUD-CITYPANEL-Q1/r3-logi/05-dom-harness-cityux.log
+dyspozycje/autobot/runs/R-RUSTPORT-P5-7-PORT-HUD-CITYPANEL-Q1/r3-logi/06-harness-mutations-cityux.log
+dyspozycje/autobot/runs/R-RUSTPORT-P5-7-PORT-HUD-CITYPANEL-Q1/r3-logi/07-dom-harness-p52-regresja.log
+dyspozycje/autobot/runs/R-RUSTPORT-P5-7-PORT-HUD-CITYPANEL-Q1/r3-logi/08-dom-harness-p53-regresja.log
+dyspozycje/autobot/runs/R-RUSTPORT-P5-7-PORT-HUD-CITYPANEL-Q1/r3-logi/09-dom-harness-p54-regresja.log
+dyspozycje/autobot/runs/R-RUSTPORT-P5-7-PORT-HUD-CITYPANEL-Q1/r3-logi/10-dom-harness-p55-regresja.log
+dyspozycje/autobot/runs/R-RUSTPORT-P5-7-PORT-HUD-CITYPANEL-Q1/r3-logi/11-gate-calibration-pin-cityux.log
+dyspozycje/autobot/runs/R-RUSTPORT-P5-7-PORT-HUD-CITYPANEL-Q1/r3-logi/12-gate-v2-cityux.log
+dyspozycje/autobot/runs/R-RUSTPORT-P5-7-PORT-HUD-CITYPANEL-Q1/r3-logi/13-dom-harness-p56-regresja.log
+dyspozycje/autobot/runs/R-RUSTPORT-P5-7-PORT-HUD-CITYPANEL-Q1/r3-logi/14-dom-harness-p57r1-hud-empire-regresja.log
+dyspozycje/autobot/runs/R-RUSTPORT-P5-7-PORT-HUD-CITYPANEL-Q1/r3-logi/17-dom-harness-p57r2-newgame-regresja.log
+dyspozycje/autobot/runs/R-RUSTPORT-P5-7-PORT-HUD-CITYPANEL-Q1/r3-logi/18-newgame-usage-msg.log
+dyspozycje/autobot/runs/R-RUSTPORT-P5-7-PORT-HUD-CITYPANEL-Q1/r3-logi/19-diff-stat.log
+dyspozycje/autobot/runs/R-RUSTPORT-P5-7-PORT-HUD-CITYPANEL-Q1/r3-logi/20-cityPanel-import-inventory.log
+dyspozycje/autobot/runs/R-RUSTPORT-P5-7-PORT-HUD-CITYPANEL-Q1/r3-logi/cityPanel-import-inventory.py
+dyspozycje/autobot/runs/R-RUSTPORT-P5-7-PORT-HUD-CITYPANEL-Q1/r3-logi/diffs/cityUxFrame.diff
+dyspozycje/rust-port/p5/P5-7-PORT-HUD-CITYPANEL.md
+src-tauri/frontend-v2/PORTING-QUEUE.md
+src-tauri/frontend-v2/package.json
+src-tauri/frontend-v2/src/main.ts
+src-tauri/frontend-v2/src/ui/cityPanelUxBridge.ts
+src-tauri/frontend-v2/src/ui/cityUxFrame.ts
+src-tauri/frontend-v2/src/ui/portCityUx.ts
+src-tauri/frontend-v2/tools/dom-harness/build.mjs
+src-tauri/frontend-v2/tools/dom-harness/city-panel-stub.mjs
+src-tauri/frontend-v2/tools/dom-harness/mutate-cityux.mjs
+src-tauri/frontend-v2/tools/dom-harness/run-cityux.mjs
+src-tauri/frontend-v2/tools/dom-harness/run-newgame.mjs
+# plików w indeksie: 34
+# poza allowlistą (src-tauri/frontend-v2/**, P5-7-PORT-HUD-CITYPANEL.md, runs/<ID>/**): BRAK
+# node_modules / dist / package-lock.json w indeksie: BRAK
+$ git diff --cached --check
+check EXIT=0
+EXIT=0

@@ -1,0 +1,124 @@
+--- pin edb8fb56:gra/src/ui/empireDetailTypes.ts
++++ v2:src-tauri/frontend-v2/src/ui/empireDetailTypes.ts
+@@ -2,7 +2,12 @@
+  * empireDetailTypes.ts — snapshot panelu imperium (HUD mapy).
+  */
+ import type { HudState } from './hud';
+-import type { ResourceUsageBreakdown } from '../game/resource-usage-breakdown';
++// P5.7 (`R-RUSTPORT-P5-7-PORT-HUD-CITYPANEL-Q1`): typ z `game/resource-usage-breakdown.ts` (pin `:5`) → DTO z polem
++// `total` (było `resourceUsageTotal(u)` w panelu — P5-0 §6.5 `resource_usage + total`).
++import type {
++  EmpireMiastaSummaryDto,
++  ResourceUsageBreakdownDto as ResourceUsageBreakdown,
++} from '../viewmodel/types';
+ 
+ /** PYTANIE-84-U23A — uchwała imperium (perk widoczny, gdy ≥1 Spichlerz II płaci Sól). */
+ export const UCHWALA_SOL_SPICHLERZ_II_ID = 'uchwala-sol-spichlerz-ii';
+@@ -180,6 +185,11 @@
+   rekruciMaxLabel: string;
+   unitsOnMap: number;
+   kosztJednostki: number;
++  /**
++   * P5.7: zużycie surowców przez obywateli CAŁEGO imperium, szt./turę na każdy surowiec epoki — liczy silnik
++   * (pin `empireDetailPanel.ts:2389`: `floor(Σ ludki × CITIZEN_UPKEEP_RATE_PER_CITIZEN)`, `computeCitizenResourceDrain`).
++   */
++  zuzycieObywateliPerTyp: number;
+ }
+ 
+ /** Dochód / turę per miasto (ostatni tick ekonomii). */
+@@ -383,6 +393,8 @@
+   poziomRacji: number;
+   /** Wpływ bieżącego poziomu Racji na wzrost ludności, %/turę (`rationGrowthPercent()`). */
+   racjaGrowthPct: number;
++  /** P5.7: zużycie surowców przez obywateli tego miasta, szt./turę (pin `empireDetailPanel.ts:2576`) — liczy silnik. */
++  zuzycieObywateliPerTurn: number;
+   /** Masowa rekrutacja z tego miasta; akcja jest dostępna wyłącznie w panelu gracza. */
+   massRecruitment: EmpireCityMassRecruitmentSnap;
+ }
+@@ -412,45 +424,12 @@
+   hasData: boolean;
+ }
+ 
+-/**
+- * P-PANEL-MIASTO-OBYWATELE-TRESC-NIEPELNA RUNDA 2 (Maciej 2026-08-16, naprawa N1 Evaluatora):
+- * agregacja rozbicia Zadowolenia na źródła (suma po `id`, WSZYSTKIE miasta gracza) — wyciągnięta
+- * z `buildEmpireDetailSnap()` (main.ts) do czystej, eksportowanej funkcji, żeby dało się ją
+- * przetestować bezpośrednio (esbuild bundle + wywołanie), bez odtwarzania całego main.ts.
+- * `main.ts` woła TĘ SAMĄ funkcję — nie duplikat, więc test i silnik nie mogą się po cichu
+- * rozjechać. Sumowanie MUSI być `+=` (nie nadpisanie) — dwa miasta z tym samym `id` źródła
+- * (np. „Budynki") mają się zsumować, nie nadpisać ostatnią wartością.
+- * EN: happiness source-breakdown aggregation (sum by `id`, ALL player cities) — extracted from
+- * `buildEmpireDetailSnap()` into a pure, exported function so it can be unit-tested directly.
+- * `main.ts` calls this SAME function (not a duplicate), so test and engine can't silently drift.
+- * Summation MUST be `+=` (not overwrite) — two cities with the same source `id` must sum, not
+- * clobber each other.
+- */
+-export function aggregateHappinessSources(
+-  cityLines: ReadonlyArray<ReadonlyArray<{ id: string; label: string; value: number }> | undefined>,
+-): EmpireHappinessSnap {
+-  const agg = new Map<string, { label: string; value: number }>();
+-  let hasData = false;
+-  for (const szLines of cityLines) {
+-    if (!szLines) continue;
+-    hasData = true;
+-    for (const line of szLines) {
+-      const prev = agg.get(line.id);
+-      if (prev) prev.value += line.value;
+-      else agg.set(line.id, { label: line.label, value: line.value });
+-    }
+-  }
+-  const sources = Array.from(agg.entries())
+-    .map(([id, v]) => ({ id, label: v.label, value: Math.round(v.value * 10) / 10 }))
+-    .sort((a, b) => Math.abs(b.value) - Math.abs(a.value));
+-  const totalNetto = Math.round(sources.reduce((s, r) => s + r.value, 0) * 10) / 10;
+-  return { sources, totalNetto, hasData };
+-}
+-
+-/**
+- * TEMAT 14 (Maciej 2026-07-24) — jedna aktywna trasa handlowa gracz↔obca cywilizacja
+- * (trade-routes.ts TradeRoute), widziana z panelu imperium (nie panelu miasta).
+- */
++/*
++ * P5.7: `aggregateHappinessSources` (pin `:415-452`, agregacja rozbicia Zadowolenia po `id` z zaokrągleniem — wołana
++ * WYŁĄCZNIE przez `main.ts:16313` przy budowie snapshotu) usunięta z frontendu: `EmpireDetailSnap.happiness` liczy
++ * silnik (P5.13). Konsument (`main.ts`) dostaje gotowy `EmpireHappinessSnap`.
++ */
++
+ export interface EmpireTradeRouteRow {
+   id: string;
+   /**
+@@ -551,6 +530,11 @@
+   wonderBonusMorzePct: number;
+   /** Surowce "z trasy" aktywne DLA GRACZA teraz (pusta lista = brak). */
+   resourceGrants: EmpireTradeResourceGrantRow[];
++  /**
++   * P5.7: dochód szlaków BEZ premii cudów (box „DOCHÓD SZLAKÓW (BAZA)”) — liczy silnik (pin `empireDetailPanel.ts:3574-3581`
++   * odtwarzał go z `income` tras odwracając premię `wonderBonus*Pct`).
++   */
++  tradeBaseIncome: number;
+ }
+ 
+ /** PYTANIE-85 — wiersz tabeli miast w Spichlerzu centralnym. */
+@@ -562,6 +546,11 @@
+   bilans: number;
+   wzrostProcent: number;
+   nakarmione?: boolean;
++  /**
++   * P5.7: WZROST% EFEKTYWNY (miasto niedokarmione → 0) — reguła z pinu `empireDetailPanel.ts:3111`
++   * (`nakarmione === false ? 0 : wzrostProcent`, ta sama co `effectiveGrowthPctForUi()` w `cityPanel.ts`) — liczy silnik.
++   */
++  wzrostProcentEff: number;
+ }
+ 
+ /** PYTANIE-85 — podsumowanie tury + stan magazynu centralnego żywności. */
+@@ -729,4 +718,9 @@
+   /** P-ARMIA-PANEL-BRAK-INFO-PRODUKCJA-JEDNOSTEK — miasta gracza aktualnie budujące jednostkę
+    *  (front kolejki produkcji == jednostka); patrz JSDoc EmpireArmiaProductionRow. */
+   armiaProdukcja: EmpireArmiaProductionRow[];
+-}
++  /**
++   * P5.7: wiersz SUMA/ŚREDNIA tabeli Miasta — liczy silnik (pin `empireDetailPanel.ts:1828-1836` wołał
++   * `computeMiastaSummaryRow` z `empireMiastaTable.ts`, GRANICZNY wg P5.1; wejście WZROST = efektywny).
++   */
++  miastaSummary: EmpireMiastaSummaryDto;
++}

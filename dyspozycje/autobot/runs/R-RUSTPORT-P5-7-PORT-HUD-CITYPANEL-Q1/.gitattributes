@@ -1,0 +1,5 @@
+# P5.7 r2 (zarzut 4 Evaluatora r1): surowe diffy unified (pin vs v2) i logi bramek zawierają z natury spacje na końcu
+# linii (linia kontekstu pustego wiersza = " ") i puste linie na końcu pliku — to treść dowodu, nie błąd formatowania.
+# Wyłącza kontrolę białych znaków `git diff --check` WYŁĄCZNIE dla tych artefaktów tego tematu.
+*.diff -whitespace
+*.log -whitespace

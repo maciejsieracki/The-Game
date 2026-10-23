@@ -1,0 +1,15 @@
+--- pin/hud.ts
++++ v2/hud.ts
+@@ -75,4 +75,6 @@
+ import { empireSectionFromHudAct } from './empireDetailPanel';
+ import './buildStampToggle';
++// P5.7 (ZAŁOŻENIE P5.6-Z3): most `preBattle.ts` → `hud.ts` — rejestracja implementacji niżej (`setArmyStackHudSuppressed`).
++import { registerArmyStackHudSuppression } from './armyStackHudSuppression';
+ 
+ export type { PowerOverlayData, CultureOverlayData, ReligionOverlayData };
+@@ -1777,4 +1779,5 @@
+   }
+ }
++registerArmyStackHudSuppression(setArmyStackHudSuppressed);
+ 
+ // ---------------------------------------------------------------------------

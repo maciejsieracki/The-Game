@@ -1,0 +1,79 @@
+{
+  "pin": "edb8fb56",
+  "totalCases": 927,
+  "totalDiffs": 0,
+  "modules": [
+    {
+      "module": "sceneTimingReport.ts",
+      "cases": 42,
+      "diffs": 0,
+      "examples": [],
+      "notMeasured": [],
+      "domCases": 42
+    },
+    {
+      "module": "empireDetailPanel.ts",
+      "cases": 762,
+      "diffs": 0,
+      "examples": [],
+      "notMeasured": [
+        "przewijanie (`scrollTop`, `scrollIntoView` po `requestAnimationFrame`) — jsdom nie liczy układu; obie strony wołają te same API (zrzut DOM identyczny)",
+        "wygląd CSS (kolory, układ siatek) w realnej przeglądarce — porównanie dotyczy tekstu CSS i DOM, nie renderu"
+      ],
+      "domCases": 711,
+      "v2Assertions": [
+        {
+          "check": "normalizePodzialHandlu → zapytanie",
+          "ok": true
+        },
+        {
+          "check": "procentPuliImperiumZBudynkow → zapytanie",
+          "ok": true
+        },
+        {
+          "check": "podzialPracyZProcentuPuli → zapytanie",
+          "ok": true
+        },
+        {
+          "check": "adjustHandelSplit → zapytanie",
+          "ok": true
+        }
+      ],
+      "v2AssertionsFailed": 0
+    },
+    {
+      "module": "empireDetailTypes.ts",
+      "cases": 11,
+      "diffs": 0,
+      "examples": [],
+      "notMeasured": [
+        "pozostała zawartość = typy TS (brak wartości w runtime); kształt DTO sprawdza `tsc --noEmit`"
+      ],
+      "v2Assertions": [
+        {
+          "check": "aggregateHappinessSources usunięta z frontendu (P5.13 — liczy silnik)",
+          "ok": true
+        }
+      ],
+      "v2AssertionsFailed": 0
+    },
+    {
+      "module": "hud.ts",
+      "cases": 112,
+      "diffs": 0,
+      "examples": [],
+      "notMeasured": [
+        "minimapa (`getMinimapData` → dane) oraz `mapToolbar`/`buildMode` — moduły porównane z pinem w P5.2 (`minimapHud.ts`) i P5.5 (`mapToolbarHud.ts`, `buildModeHud.ts`); tu przekazywane bez zmian (`hud.ts` = pin + most)",
+        "pełny ekran / zoom UI (`requestFullscreen`, `transform: scale` na `body`) — jsdom bez API pełnego ekranu i układu"
+      ],
+      "domCases": 109,
+      "v2Assertions": [
+        {
+          "check": "most `armyStackHudSuppression` → `hud.setArmyStackHudSuppressed` (ukrywa panel rosteru)",
+          "ok": true
+        }
+      ],
+      "v2AssertionsFailed": 0
+    }
+  ]
+}
