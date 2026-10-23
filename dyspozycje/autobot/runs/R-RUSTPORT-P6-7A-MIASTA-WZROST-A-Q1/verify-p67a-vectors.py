@@ -448,6 +448,29 @@ def verify_growth():
         key = c['civ'] if isinstance(c['civ'], str) else None
         check('matrix', str(i), matrix_for(key), c['out'])
         check('matrix', f'delta{i}', cap_delta(key), c['capDelta'])
+    # runda 2: macierz SYNTETYCZNA (edge.json `matrixSynth`): ta sama funkcja `matrix_for`/`cap_delta` na
+    # civ-matrix zmienionej w miejscu wedlug `patch` (po kazdym przypadku przywracana)
+    edge_m = load('edge.json')
+    orig_defaults = json.loads(json.dumps(CIVM['defaults']))
+    orig_rows = json.loads(json.dumps(CIVM['cywilizacje']))
+    clamp_branches = 0
+    for i, case in enumerate(edge_m['matrixSynth']):
+        for k, v in case['patch']['defaults'].items():
+            CIVM['defaults'][k] = v
+        for pr in case['patch']['rows']:
+            row = next(c for c in CIVM['cywilizacje'] if c['ikonaId'] == pr['ikonaId'])
+            row['params'].update(pr['params'])
+        for j, c in enumerate(case['cases']):
+            key = c['civ'] if isinstance(c['civ'], str) else None
+            got = matrix_for(key)
+            check('matrixSynth', f'{i}.{j}', got, c['out'])
+            check('matrixSynth', f'delta{i}.{j}', cap_delta(key), c['capDelta'])
+            if got['hungerLossMultiplier'] == 0.0 or got['healthGrowthMultiplier'] == 0.0:
+                clamp_branches += 1
+        CIVM['defaults'].clear()
+        CIVM['defaults'].update(json.loads(json.dumps(orig_defaults)))
+        CIVM['cywilizacje'][:] = json.loads(json.dumps(orig_rows))
+    check('matrixSynth', 'galaz-klamry-osiagnieta', clamp_branches > 0, True)
     for i, c in enumerate(g['diffMult']):
         d = c['d'] if isinstance(c['d'], str) else 'normal'
         check('diffMult', str(i), DIFF_MULT[d], c['out'])
@@ -1073,7 +1096,7 @@ def mp_max_mult(bon):
 def verify_post_central():
     pc = load('post_central.json')
     edge = load('edge.json')
-    for i, sc in enumerate(pc['scenarios'] + edge['postCentral']):
+    for i, sc in enumerate(pc['scenarios'] + edge['postCentral'] + edge['postCentralSiege']):
         cities = deep(sc['cities'])
         econ = deep(sc['econ'])
         ef = deep(sc['ef'])

@@ -30,7 +30,7 @@ TB = "p6_7a_tables"
 
 # (plik, symbol TS, status, symbol Rust, test, uwaga)
 ROWS = [
-    (V, "PoziomRacji", P, "PoziomRacji", "-", "alias typu f64"),
+    (V, "PoziomRacji", N, "PoziomRacji", "-", "alias typu `number` bez zachowania (runda 2: bylo PORTOWANY bez testu); uzywany w sygnaturach funkcji pokrytych wektorami, np. clampPoziomRacji"),
     (V, "WYZYWIENIE_MIN", P, "wyzywienie_min", f"{G}::constants_match_running_web", "tabela wzrost-ludnosci-params.json::wyzywienie.min"),
     (V, "WYZYWIENIE_MAX", D, "wyzywienie_max", f"{G}::single_source_of_default_level_and_max", "cities-params.json::wejscia_z_innych_modulow_weba (P6.6B); jedno zrodlo"),
     (V, "WYZYWIENIE_STEP", P, "wyzywienie_step", f"{G}::constants_match_running_web", "tabela wyzywienie.krok"),

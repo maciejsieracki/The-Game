@@ -8,7 +8,6 @@ mod common;
 
 use civ_engine::data::civilizations::Num;
 use civ_engine::data::derived::{cities_params, wzrost_ludnosci_params};
-use civ_engine::domain::civ_matrix::load_civ_matrix;
 use civ_engine::domain::city_growth::p6_7a::empire_food::build_empire_food_params;
 use civ_engine::domain::city_growth::p6_7a::growth_v85::{
     apply_fractional_growth_v85, apply_hunger_penalty_v85, build_ration_params,
@@ -17,15 +16,14 @@ use civ_engine::domain::city_growth::p6_7a::growth_v85::{
     format_wyzwienie_label, get_city_ration_level, growth_gain_per_turn_slots,
     migrate_legacy_ration_level, migrate_procent_rozwoj_to_poziom_racji, ration_food_cost_per_pop,
     ration_growth_percent, resolve_population_matrix_for_civ, resolve_population_matrix_for_civ_in,
-    turns_until_next_citizen,
-    wyzywienie_levels, wyzywienie_max, wyzywienie_min, wyzywienie_step, GrowthCity,
-    GrowthPercentInput,
+    turns_until_next_citizen, wyzywienie_levels, wyzywienie_max, wyzywienie_min, wyzywienie_step,
+    GrowthCity, GrowthPercentInput,
 };
 use civ_engine::domain::city_growth::p6_7a::{
     city_population_cap, game_difficulty_from_web, resolve_population_cap_matrix_delta,
-    resolve_population_cap_matrix_delta_in,
-    GameDifficulty, PopCapParams,
+    resolve_population_cap_matrix_delta_in, GameDifficulty, PopCapParams,
 };
+use civ_engine::domain::civ_matrix::load_civ_matrix;
 use civ_engine::domain::terrain::city_founding::p6_6b::cities::City;
 use common::*;
 use serde_json::{json, Value};
@@ -213,7 +211,10 @@ fn population_matrix_synthetic_matches_web() {
         }
     }
     // test kontrolny wektorow: galaz klamry rzeczywiscie osiagnieta (inaczej wektor nic nie domyka)
-    assert!(reached_negative > 0, "wektory nie osiagaja klamry max(0, ...)");
+    assert!(
+        reached_negative > 0,
+        "wektory nie osiagaja klamry max(0, ...)"
+    );
 }
 
 #[test]
