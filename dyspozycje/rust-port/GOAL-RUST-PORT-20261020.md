@@ -27,6 +27,8 @@ dotykające tych samych plików — zawsze sekwencyjnie, nigdy w tej samej fali.
 
 | # | Temat | Faza | Runda | runId Workflow | Status | Ostatnia aktualizacja |
 |---|---|---|---|---|---|---|
+| 14 | `R-RUSTPORT-P6-7A-MIASTA-WZROST-A-Q1` | P6.7A `population-growth-v85`, `growth-happiness`, `population-growth-tempo`, `r-stawki-strojenie`, `empire-food` (`city_growth.rs`) | 1/5 | `wf_6c1214b7-ef6` | DISPATCHED | 2026-10-23 |
+| 15 | `R-RUSTPORT-P6-7B-MIASTA-WZROST-B-Q1` | P6.7B `building-cost-tempo`, `building-resource-gate`, `building-stock-cost` (`building_costs.rs`) | 1/5 | `wf_ad6f5f21-f40` | DISPATCHED | 2026-10-23 |
 | 13 | `R-RUSTPORT-P4-36-MOD14-BATTLE-3D-Q1` | MOD-14 bitwa 3D (`battleScene` część 3D, `siegeWall` 9 stylów) — Opus 5.5 | 1/5 | `wf_f82a6e6f-da7` | DISPATCHED | 2026-10-23 |
 | 12 | `R-RUSTPORT-P5-7-PORT-HUD-CITYPANEL-Q1` | P5.7 `hud.ts`, `cityPanel.ts`, `newGameFlow.ts`, cykle C1/C3 — Opus 5.5 | 1/5 | `wf_8fd97c5f-69f` | DISPATCHED | 2026-10-23 |
 | 11 | `R-RUSTPORT-P6-M05A-RELIEF-A-MASY-POKRYCIE-Q1` | mapgen M05A relief A, masy i pokrycie (Evaluator Sonnet) | 1/5 | `wf_3c3a998e-4cb` | DISPATCHED | 2026-10-23 |
