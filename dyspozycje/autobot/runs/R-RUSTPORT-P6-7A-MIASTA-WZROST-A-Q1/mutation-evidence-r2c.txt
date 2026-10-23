@@ -1,0 +1,8 @@
+WYKRYTY   : [84] e: akcesor - glodny barbarzynca -> 1 testow czerwonych: advance_empire_food_matches_web
+  przywrocono src/domain/city_growth.rs: SHA-256 zgodny
+WYKRYTY   : [85] e: akcesor - clear -> 1 testow czerwonych: advance_empire_food_matches_web
+  przywrocono src/domain/city_growth.rs: SHA-256 zgodny
+WYKRYTY   : [107] e: raise - flow dla gracza -> 1 testow czerwonych: auto_raise_matches_web
+  przywrocono src/domain/city_growth.rs: SHA-256 zgodny
+mutantow=3 przezylo/niekompilujace/timeout=0
+EXIT=0

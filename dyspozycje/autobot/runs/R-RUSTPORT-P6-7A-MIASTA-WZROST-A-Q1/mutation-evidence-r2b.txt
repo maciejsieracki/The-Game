@@ -1,0 +1,81 @@
+WYKRYTY   : [35] g: glod - nakarmione zeruje tury -> 2 testow czerwonych: hunger_penalty_matches_web, post_central_growth_matches_web
+  przywrocono src/domain/city_growth.rs: SHA-256 zgodny
+WYKRYTY   : [61] e: recompute - ostatnie id -> 1 testow czerwonych: recompute_city_food_balances_matches_web
+  przywrocono src/domain/city_growth.rs: SHA-256 zgodny
+WYKRYTY   : [63] e: recompute - poziom -> 5 testow czerwonych: equal_growth_plan_matches_web, auto_raise_matches_web, auto_balance_matches_web
+  przywrocono src/domain/city_growth.rs: SHA-256 zgodny
+WYKRYTY   : [64] e: recompute - spichlerz tika -> 5 testow czerwonych: auto_balance_matches_web, auto_raise_matches_web, equal_growth_plan_matches_web
+  przywrocono src/domain/city_growth.rs: SHA-256 zgodny
+WYKRYTY   : [77] e: advance - stan nowego wlasciciela -> 1 testow czerwonych: advance_empire_food_matches_web
+  przywrocono src/domain/city_growth.rs: SHA-256 zgodny
+WYKRYTY   : [80] e: cap - epoka -> 1 testow czerwonych: advance_empire_food_matches_web
+  przywrocono src/domain/city_growth.rs: SHA-256 zgodny
+PRZEZYL   : [84] e: akcesor - glodny barbarzynca
+  przywrocono src/domain/city_growth.rs: SHA-256 zgodny
+PRZEZYL   : [85] e: akcesor - clear
+  przywrocono src/domain/city_growth.rs: SHA-256 zgodny
+WYKRYTY   : [92] e: auto - force -> 1 testow czerwonych: runtime_clear_and_deprecated_helpers_match_web
+  przywrocono src/domain/city_growth.rs: SHA-256 zgodny
+WYKRYTY   : [93] e: limit - najnizszy nieujemny -> 5 testow czerwonych: auto_raise_matches_web, auto_balance_matches_web, equal_growth_plan_matches_web
+  przywrocono src/domain/city_growth.rs: SHA-256 zgodny
+WYKRYTY   : [100] e: plan - ensure -> 1 testow czerwonych: equal_growth_plan_matches_web
+  przywrocono src/domain/city_growth.rs: SHA-256 zgodny
+WYKRYTY   : [102] e: zmiany - przeliczenie -> 2 testow czerwonych: auto_raise_matches_web, auto_balance_matches_web
+  przywrocono src/domain/city_growth.rs: SHA-256 zgodny
+WYKRYTY   : [105] e: raise - AI zapasy -> 1 testow czerwonych: auto_raise_matches_web
+  przywrocono src/domain/city_growth.rs: SHA-256 zgodny
+PRZEZYL   : [107] e: raise - flow dla gracza
+  przywrocono src/domain/city_growth.rs: SHA-256 zgodny
+WYKRYTY   : [110] e: maxSafe - inny wlasciciel -> 1 testow czerwonych: max_safe_poziom_matches_web
+  przywrocono src/domain/city_growth.rs: SHA-256 zgodny
+WYKRYTY   : [111] e: maxSafe - kontrfaktyk min -> 1 testow czerwonych: max_safe_poziom_matches_web
+  przywrocono src/domain/city_growth.rs: SHA-256 zgodny
+WYKRYTY   : [112] e: maxSafe - przywrocenie -> 1 testow czerwonych: max_safe_poziom_matches_web
+  przywrocono src/domain/city_growth.rs: SHA-256 zgodny
+WYKRYTY   : [118] p: magazyn po turze -> 1 testow czerwonych: post_central_growth_matches_web
+  przywrocono src/domain/city_growth.rs: SHA-256 zgodny
+WYKRYTY   : [123] p: licznik glodu -> 1 testow czerwonych: post_central_growth_matches_web
+  przywrocono src/domain/city_growth.rs: SHA-256 zgodny
+WYKRYTY   : [124] p: oblegane miasto -> 1 testow czerwonych: post_central_growth_matches_web
+  przywrocono src/domain/city_growth.rs: SHA-256 zgodny
+WYKRYTY   : [128] p: macierz wlasciciela -> 1 testow czerwonych: post_central_growth_matches_web
+  przywrocono src/domain/city_growth.rs: SHA-256 zgodny
+WYKRYTY   : [129] p: zaopatrzenie obywateli -> 1 testow czerwonych: post_central_growth_matches_web
+  przywrocono src/domain/city_growth.rs: SHA-256 zgodny
+WYKRYTY   : [130] p: szczescie -> 1 testow czerwonych: post_central_growth_matches_web
+  przywrocono src/domain/city_growth.rs: SHA-256 zgodny
+WYKRYTY   : [131] p: spichlerz z tika -> 1 testow czerwonych: post_central_growth_matches_web
+  przywrocono src/domain/city_growth.rs: SHA-256 zgodny
+WYKRYTY   : [137] j: szczescie -> 2 testow czerwonych: growth_percent_matches_web, post_central_growth_matches_web
+  przywrocono data/derived/wzrost-ludnosci-params.json: SHA-256 zgodny
+WYKRYTY   : [139] j: trudnosc hard -> 4 testow czerwonych: constants_match_running_web, difficulty_multiplier_matches_web, growth_percent_matches_web
+  przywrocono data/derived/wzrost-ludnosci-params.json: SHA-256 zgodny
+WYKRYTY   : [142] j: spichlerz koszt I -> 7 testow czerwonych: equal_growth_plan_matches_web, auto_raise_matches_web, auto_balance_matches_web
+  przywrocono data/derived/wzrost-ludnosci-params.json: SHA-256 zgodny
+WYKRYTY   : [145] j: tempo normalny -> 2 testow czerwonych: pace_table_matches_web, tempo_threshold_matches_web
+  przywrocono data/derived/wzrost-ludnosci-params.json: SHA-256 zgodny
+WYKRYTY   : [148] j: stawki koszt -> 1 testow czerwonych: stawki_constants_and_scalars_match_web
+  przywrocono data/derived/wzrost-ludnosci-params.json: SHA-256 zgodny
+WYKRYTY   : [149] j: empire baza -> 3 testow czerwonych: runtime_clear_and_deprecated_helpers_match_web, advance_empire_food_matches_web, build_params_match_web
+  przywrocono data/derived/wzrost-ludnosci-params.json: SHA-256 zgodny
+WYKRYTY   : [151] j: migracja legacy -> 6 testow czerwonych: auto_raise_matches_web, auto_balance_matches_web, equal_growth_plan_matches_web
+  przywrocono data/derived/wzrost-ludnosci-params.json: SHA-256 zgodny
+WYKRYTY   : [152] j: racje domyslne -> 1 testow czerwonych: build_params_match_web
+  przywrocono data/derived/wzrost-ludnosci-params.json: SHA-256 zgodny
+WYKRYTY   : [153] j: epoka domyslna -> 1 testow czerwonych: research_era_matches_web
+  przywrocono data/derived/wzrost-ludnosci-params.json: SHA-256 zgodny
+WYKRYTY   : [154] j: epoka fala2 -> 1 testow czerwonych: research_era_matches_web
+  przywrocono data/derived/wzrost-ludnosci-params.json: SHA-256 zgodny
+WYKRYTY   : [155] j: diakrytyki n z kreska -> 1 testow czerwonych: research_era_matches_web
+  przywrocono data/derived/era-diakrytyki.json: SHA-256 zgodny
+WYKRYTY   : [156] g: macierz - zdrowie bez max -> 1 testow czerwonych: population_matrix_synthetic_matches_web
+  przywrocono src/domain/city_growth.rs: SHA-256 zgodny
+WYKRYTY   : [157] g: macierz - glod zamiast zdrowia -> 1 testow czerwonych: population_matrix_synthetic_matches_web
+  przywrocono src/domain/city_growth.rs: SHA-256 zgodny
+WYKRYTY   : [158] g: macierz - delta cap z innego klucza -> 3 testow czerwonych: population_matrix_matches_web, population_matrix_synthetic_matches_web, post_central_growth_matches_web
+  przywrocono src/domain/city_growth.rs: SHA-256 zgodny
+mutantow=38 przezylo/niekompilujace/timeout=3
+   e: akcesor - glodny barbarzynca
+   e: akcesor - clear
+   e: raise - flow dla gracza
+EXIT=1

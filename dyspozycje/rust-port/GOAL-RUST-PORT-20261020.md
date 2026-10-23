@@ -29,7 +29,6 @@ dotykające tych samych plików — zawsze sekwencyjnie, nigdy w tej samej fali.
 
 | # | Temat | Faza | Runda | runId Workflow | Status | Ostatnia aktualizacja |
 |---|---|---|---|---|---|---|
-| 14 | `R-RUSTPORT-P6-7A-MIASTA-WZROST-A-Q1` | P6.7A `population-growth-v85`, `growth-happiness`, `population-growth-tempo`, `r-stawki-strojenie`, `empire-food` (`city_growth.rs`) | 1/5 | `wf_6c1214b7-ef6` | DISPATCHED | 2026-10-23 |
 | 12 | `R-RUSTPORT-P5-7-PORT-HUD-CITYPANEL-Q1` | P5.7 `hud.ts`, `cityPanel.ts`, `newGameFlow.ts`, cykle C1/C3 — Opus 5.5 | 1/5 | `wf_8fd97c5f-69f` | DISPATCHED | 2026-10-23 |
 | 10 | `R-RUSTPORT-P6-M12-KLASTRY-COMPUTE-SPAWN-PLAN-Q1` | mapgen M12 klastry — compute i plan spawnu (L; Evaluator Sonnet) | 1/5 | `wf_40eda632-8b0` | DISPATCHED | 2026-10-23 |
 
