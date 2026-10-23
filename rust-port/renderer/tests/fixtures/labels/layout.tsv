@@ -1,0 +1,134 @@
+# box<TAB>scene<TAB>x<TAB>y<TAB>w<TAB>h  (border box, CSS px, relative to the margin origin)
+# text<TAB>scene<TAB>text<TAB>x<TAB>y<TAB>w<TAB>h  (one row per getClientRects() fragment)
+box	r4_valid_00	0	0	102	30
+text	r4_valid_00	🌾	11	6	19.96875	17
+text	r4_valid_00	Kliknij hex	36.96875	7.796875	54.03125	14
+box	r4_valid_01	0	0	102	30
+text	r4_valid_01	🐑	11	6	19.96875	17
+text	r4_valid_01	Kliknij hex	36.96875	7.796875	54.03125	14
+box	r4_valid_02	0	0	102	30
+text	r4_valid_02	⛏	11	6	19.96875	17
+text	r4_valid_02	Kliknij hex	36.96875	7.796875	54.03125	14
+box	r4_valid_03	0	0	102	30
+text	r4_valid_03	🪨	11	6	19.96875	17
+text	r4_valid_03	Kliknij hex	36.96875	7.796875	54.03125	14
+box	r4_valid_04	0	0	102	30
+text	r4_valid_04	🏹	11	6	19.96875	17
+text	r4_valid_04	Kliknij hex	36.96875	7.796875	54.03125	14
+box	r4_valid_05	0	0	102	30
+text	r4_valid_05	🪓	11	6	19.96875	17
+text	r4_valid_05	Kliknij hex	36.96875	7.796875	54.03125	14
+box	r4_valid_06	0	0	102	30
+text	r4_valid_06	🪚	11	6	19.96875	17
+text	r4_valid_06	Kliknij hex	36.96875	7.796875	54.03125	14
+box	r4_valid_07	0	0	102	30
+text	r4_valid_07	🎣	11	6	19.96875	17
+text	r4_valid_07	Kliknij hex	36.96875	7.796875	54.03125	14
+box	r4_valid_08	0	0	102	30
+text	r4_valid_08	🛤	11	6	19.96875	17
+text	r4_valid_08	Kliknij hex	36.96875	7.796875	54.03125	14
+box	r4_valid_09	0	0	102	30
+text	r4_valid_09	🏰	11	6	19.96875	17
+text	r4_valid_09	Kliknij hex	36.96875	7.796875	54.03125	14
+box	r4_valid_10	0	0	102	30
+text	r4_valid_10	💧	11	6	19.96875	17
+text	r4_valid_10	Kliknij hex	36.96875	7.796875	54.03125	14
+box	r4_valid_11	0	0	102	30
+text	r4_valid_11	🏺	11	6	19.96875	17
+text	r4_valid_11	Kliknij hex	36.96875	7.796875	54.03125	14
+box	r4_valid_12	0	0	102	30
+text	r4_valid_12	🧂	11	6	19.96875	17
+text	r4_valid_12	Kliknij hex	36.96875	7.796875	54.03125	14
+box	r4_valid_13	0	0	102	30
+text	r4_valid_13	🏔	11	6	19.96875	17
+text	r4_valid_13	Kliknij hex	36.96875	7.796875	54.03125	14
+box	r4_valid_14	0	0	102	30
+text	r4_valid_14	🛡	11	6	19.96875	17
+text	r4_valid_14	Kliknij hex	36.96875	7.796875	54.03125	14
+box	r4_valid_15	0	0	102	30
+text	r4_valid_15	🏛	11	6	19.96875	17
+text	r4_valid_15	Kliknij hex	36.96875	7.796875	54.03125	14
+box	r4_valid_16	0	0	102	30
+text	r4_valid_16	🔨	11	6	19.96875	17
+text	r4_valid_16	Kliknij hex	36.96875	7.796875	54.03125	14
+box	r4_invalid_farm	0	0	123.359375	30
+text	r4_invalid_farm	🌾	11	6	19.96875	17
+text	r4_invalid_farm	Niedozwolone	36.96875	7.796875	75.390625	14
+box	r4_invalid_city	0	0	123.359375	30
+text	r4_invalid_city	🏛	11	6	19.96875	17
+text	r4_invalid_city	Niedozwolone	36.96875	7.796875	75.390625	14
+box	r4_invalid_fallback	0	0	123.359375	30
+text	r4_invalid_fallback	🔨	11	6	19.96875	17
+text	r4_invalid_fallback	Niedozwolone	36.96875	7.796875	75.390625	14
+box	r4_invalid_road_reason	0	0	242	62.375
+text	r4_invalid_road_reason	🛤	11	6	19.96875	17
+text	r4_invalid_road_reason	Niedozwolone	36.96875	7.796875	75.390625	14
+text	r4_invalid_road_reason	Droga musi łączyć się z miastem lub już istniejącą drogą	11	29	195.015625	12
+text	r4_invalid_road_reason	Droga musi łączyć się z miastem lub już istniejącą drogą	11	42.1875	77.0625	12
+box	r4_valid_road_reason_ignored	0	0	102	30
+text	r4_valid_road_reason_ignored	🛤	11	6	19.96875	17
+text	r4_valid_road_reason_ignored	Kliknij hex	36.96875	7.796875	54.03125	14
+box	r4_dsf2_valid	0	0	102	30
+text	r4_dsf2_valid	⛏	11	6	19.96875	17
+text	r4_dsf2_valid	Kliknij hex	36.96875	7.796875	54.03125	14
+box	r4_dsf2_reason	0	0	242	62.375
+text	r4_dsf2_reason	🛤	11	6	19.96875	17
+text	r4_dsf2_reason	Niedozwolone	36.96875	7.796875	75.390625	14
+text	r4_dsf2_reason	Droga musi łączyć się z miastem lub już istniejącą drogą	11	29	195.015625	12
+text	r4_dsf2_reason	Droga musi łączyć się z miastem lub już istniejącą drogą	11	42.1875	77.0625	12
+box	r5_0	0	0	106.15625	50.3125
+text	r5_0	⚔	12	7	16.140625	20
+text	r5_0	 OBŁĘŻENIE	28.140625	13	66.015625	12
+text	r5_0	Lu	47.484375	32.390625	11.1875	10
+box	r5_1	0	0	106.15625	50.3125
+text	r5_1	⚔	12	7	16.140625	20
+text	r5_1	 OBŁĘŻENIE	28.140625	13	66.015625	12
+text	r5_1	Ateny	40.34375	32.390625	25.453125	10
+box	r5_2	0	0	106.15625	50.3125
+text	r5_2	⚔	12	7	16.140625	20
+text	r5_2	 OBŁĘŻENIE	28.140625	13	66.015625	12
+text	r5_2	Acemhöyük	27.125	32.390625	51.90625	10
+box	r5_3	0	0	106.15625	50.3125
+text	r5_3	⚔	12	7	16.140625	20
+text	r5_3	 OBŁĘŻENIE	28.140625	13	66.015625	12
+text	r5_3	Olbia Sardyńska	17.1875	32.390625	71.765625	10
+box	r5_4	0	0	106.15625	50.3125
+text	r5_4	⚔	12	7	16.140625	20
+text	r5_4	 OBŁĘŻENIE	28.140625	13	66.015625	12
+text	r5_4	Łęczyca	35.25	32.390625	35.640625	10
+box	r5_5	0	0	139	50.3125
+text	r5_5	⚔	28.421875	7	16.140625	20
+text	r5_5	 OBŁĘŻENIE	44.5625	13	66.015625	12
+text	r5_5	Stare Miasto na Morawach	12	32.390625	115	10
+box	r5_dsf2	0	0	106.15625	50.3125
+text	r5_dsf2	⚔	12	7	16.140625	20
+text	r5_dsf2	 OBŁĘŻENIE	28.140625	13	66.015625	12
+text	r5_dsf2	Ateny	40.34375	32.390625	25.453125	10
+box	r15a_1	0	0	13.34375	17
+text	r15a_1	-1	0	0	13.34375	17
+box	r15a_7	0	0	13.34375	17
+text	r15a_7	-7	0	0	13.34375	17
+box	r15a_23	0	0	21.6875	17
+text	r15a_23	-23	0	0	21.6875	17
+box	r15a_105	0	0	30.03125	17
+text	r15a_105	-105	0	0	30.03125	17
+box	r15b_dmg_12	0	0	55.625	15
+text	r15b_dmg_12	-12 (mur)	0	0	55.625	15
+box	r15b_dmg_3	0	0	48.390625	15
+text	r15b_dmg_3	-3 (mur)	0	0	48.390625	15
+box	r15b_breach	0	0	122.765625	15
+text	r15b_breach	MUR WYBURZONY!	0	0	122.765625	15
+box	r15a_dsf2	0	0	21.6875	17
+text	r15a_dsf2	-23	0	0	21.6875	17
+box	float_r15a_p000	0	0	21.6875	17
+text	float_r15a_p000	-23	0	0	21.6875	17
+box	float_r15b_p000	0	0	122.765625	15
+text	float_r15b_p000	MUR WYBURZONY!	0	0	122.765625	15
+box	float_r15a_p025	0	0	21.6875	17
+text	float_r15a_p025	-23	0	0	21.6875	17
+box	float_r15b_p025	0	0	122.765625	15
+text	float_r15b_p025	MUR WYBURZONY!	0	0	122.765625	15
+box	float_r15a_p050	0	0	21.6875	17
+text	float_r15a_p050	-23	0	0	21.6875	17
+box	float_r15b_p050	0	0	122.765625	15
+text	float_r15b_p050	MUR WYBURZONY!	0	0	122.765625	15

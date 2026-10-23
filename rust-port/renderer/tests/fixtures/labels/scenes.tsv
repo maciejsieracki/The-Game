@@ -1,0 +1,46 @@
+# scene<TAB>name<TAB>group<TAB>W<TAB>H<TAB>margin<TAB>dsf<TAB>opacity<TAB>params… (R4: icon, valid, reason; R5: city name; R15a: dmg; R15b: text, colour)
+scene	r4_valid_00	R4	154	82	26	1	-	🌾	true	-
+scene	r4_valid_01	R4	154	82	26	1	-	🐑	true	-
+scene	r4_valid_02	R4	154	82	26	1	-	⛏	true	-
+scene	r4_valid_03	R4	154	82	26	1	-	🪨	true	-
+scene	r4_valid_04	R4	154	82	26	1	-	🏹	true	-
+scene	r4_valid_05	R4	154	82	26	1	-	🪓	true	-
+scene	r4_valid_06	R4	154	82	26	1	-	🪚	true	-
+scene	r4_valid_07	R4	154	82	26	1	-	🎣	true	-
+scene	r4_valid_08	R4	154	82	26	1	-	🛤	true	-
+scene	r4_valid_09	R4	154	82	26	1	-	🏰	true	-
+scene	r4_valid_10	R4	154	82	26	1	-	💧	true	-
+scene	r4_valid_11	R4	154	82	26	1	-	🏺	true	-
+scene	r4_valid_12	R4	154	82	26	1	-	🧂	true	-
+scene	r4_valid_13	R4	154	82	26	1	-	🏔	true	-
+scene	r4_valid_14	R4	154	82	26	1	-	🛡	true	-
+scene	r4_valid_15	R4	154	82	26	1	-	🏛	true	-
+scene	r4_valid_16	R4	154	82	26	1	-	🔨	true	-
+scene	r4_invalid_farm	R4	176	82	26	1	-	🌾	false	-
+scene	r4_invalid_city	R4	176	82	26	1	-	🏛	false	-
+scene	r4_invalid_fallback	R4	176	82	26	1	-	🔨	false	-
+scene	r4_invalid_road_reason	R4	294	115	26	1	-	🛤	false	Droga musi łączyć się z miastem lub już istniejącą drogą
+scene	r4_valid_road_reason_ignored	R4	154	82	26	1	-	🛤	true	Droga musi łączyć się z miastem lub już istniejącą drogą
+scene	r4_dsf2_valid	R4	154	82	26	2	-	⛏	true	-
+scene	r4_dsf2_reason	R4	294	115	26	2	-	🛤	false	Droga musi łączyć się z miastem lub już istniejącą drogą
+scene	r5_0	R5	145	89	19	1	-	Lu
+scene	r5_1	R5	145	89	19	1	-	Ateny
+scene	r5_2	R5	145	89	19	1	-	Acemhöyük
+scene	r5_3	R5	145	89	19	1	-	Olbia Sardyńska
+scene	r5_4	R5	145	89	19	1	-	Łęczyca
+scene	r5_5	R5	177	89	19	1	-	Stare Miasto na Morawach
+scene	r5_dsf2	R5	145	89	19	2	-	Ateny
+scene	r15a_1	R15a	34	37	10	1	-	1
+scene	r15a_7	R15a	34	37	10	1	-	7
+scene	r15a_23	R15a	42	37	10	1	-	23
+scene	r15a_105	R15a	51	37	10	1	-	105
+scene	r15b_dmg_12	R15b	76	35	10	1	-	-12 (mur)	#ff8800
+scene	r15b_dmg_3	R15b	69	35	10	1	-	-3 (mur)	#ff8800
+scene	r15b_breach	R15b	143	35	10	1	-	MUR WYBURZONY!	#ff4400
+scene	r15a_dsf2	R15a	42	37	10	2	-	23
+scene	float_r15a_p000	R15a	42	37	10	1	1	23
+scene	float_r15b_p000	R15b	143	35	10	1	1	MUR WYBURZONY!	#ff4400
+scene	float_r15a_p025	R15a	42	37	10	1	0.9375	23
+scene	float_r15b_p025	R15b	143	35	10	1	0.9375	MUR WYBURZONY!	#ff4400
+scene	float_r15a_p050	R15a	42	37	10	1	0.75	23
+scene	float_r15b_p050	R15b	143	35	10	1	0.75	MUR WYBURZONY!	#ff4400

@@ -1,0 +1,6 @@
+## scratch /tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/repro ; node v22.22.0
+scenes=45 chromium=141.0.7390.37 three=0.169.0
+gen EXIT=0
+## diff of MANIFEST.sha256 (committed vs regenerated; empty = identical)
+diff EXIT=0
+## committed MANIFEST.sha256 sha256: dfcb4cdb5330277a480a34acf09923e7aef9b321958328a92a962d5f8bd8eb1e (60 entries)

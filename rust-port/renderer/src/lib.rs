@@ -31,6 +31,7 @@ pub mod core;
 pub mod decor;
 pub mod geom;
 pub mod jsmath;
+pub mod labels;
 pub mod material;
 pub mod models;
 pub mod overlays;

@@ -1,0 +1,36 @@
+# key<TAB>value<TAB>web source (pin edb8fb56)
+index_style	* { margin: 0; padding: 0; box-sizing: border-box; } body { background: #1a1a2e; color: #eee; font-family: monospace; } #app { display: flex; align-items: center; justify-content: center; height: 100vh; }	index.html:32
+r4_css	position:fixed;z-index:400;display:none;pointer-events:none;align-items:center;gap:6px;padding:6px 10px;border-radius:6px;font:12px/1.2 Arial,sans-serif;color:#ffe8a0;background:rgba(30,34,50,0.92);border:1px solid rgba(255,212,121,0.75);box-shadow:0 4px 14px rgba(0,0,0,0.55)	main.ts:12853
+r4_icon	farma=🌾	main.ts:12863
+r4_icon	pastwisko=🐑	main.ts:12863
+r4_icon	kopalnia_zelaza=⛏	main.ts:12863
+r4_icon	kamieniolom=🪨	main.ts:12863
+r4_icon	oboz_lowiecki=🏹	main.ts:12863
+r4_icon	wyrab=🪓	main.ts:12863
+r4_icon	tartak=🪚	main.ts:12863
+r4_icon	lodzie_rybackie=🎣	main.ts:12863
+r4_icon	droga=🛤	main.ts:12863
+r4_icon	posterunek=🏰	main.ts:12863
+r4_icon	irygacja=💧	main.ts:12863
+r4_icon	pole_irygowane=🌾	main.ts:12863
+r4_icon	glinianka=🏺	main.ts:12863
+r4_icon	warzelnia_soli=🧂	main.ts:12863
+r4_icon	tarasy=🏔	main.ts:12863
+r4_icon	fort=🛡	main.ts:12863
+r4_icon_city	🏛	main.ts:13049
+r4_icon_fallback	🔨	main.ts:13070
+r4_reason_droga	Droga musi łączyć się z miastem lub już istniejącą drogą	main.ts:13076
+r4_lift_y	1.5	main.ts:12939
+r5_css	position:fixed;z-index:340;pointer-events:none;transform:translate(-50%,-100%);padding:4px 10px;border-radius:8px;text-align:center;line-height:1.25;font:bold 11px/1.3 Arial,sans-serif;color:#ffe8e8;background:rgba(140,20,20,0.88);border:2px solid #ff5252;box-shadow:0 0 12px rgba(255,60,60,0.65);white-space:nowrap	main.ts:14568
+r5_lift_y	1.1	main.ts:14566
+r15a_style	{"position":"absolute","pointerEvents":"none","color":"#ff4444","fontFamily":"sans-serif","fontSize":"15px","fontWeight":"bold","textShadow":"0 0 6px #000, 1px 1px 2px #000","whiteSpace":"nowrap","transform":"translate(-50%, -50%)","zIndex":"10010"}	battle/battleScene.ts:9091
+r15a_duration	2000	battle/battleScene.ts:9091
+r15a_rise_rate	0.00012	battle/battleScene.ts:9091
+r15b_style	{"position":"absolute","pointerEvents":"none","color":"COLOR","fontFamily":"sans-serif","fontSize":"13px","fontWeight":"bold","textShadow":"0 0 6px #000, 1px 1px 2px #000","whiteSpace":"nowrap","transform":"translate(-50%, -50%)","zIndex":"10010"}	battle/battleScene.ts:7477
+r15b_duration	2000	battle/battleScene.ts:7477
+r15b_world_y	3.2	battle/battleScene.ts:7477
+r15b_rise_rate	0.00012	battle/battleScene.ts:7477
+r15b_dmg_color	#ff8800	battle/battleScene.ts:7225
+r15b_breach_text	MUR WYBURZONY!	battle/battleScene.ts:7311
+r15b_breach_color	#ff4400	battle/battleScene.ts:7311
+battle_overlay_style	{"position":"fixed","inset":"0","zIndex":"9999","background":"rgba(0,0,0,0.88)","display":"flex","flexDirection":"column","alignItems":"center","justifyContent":"flex-start"}	battle/battleScene.ts:2710

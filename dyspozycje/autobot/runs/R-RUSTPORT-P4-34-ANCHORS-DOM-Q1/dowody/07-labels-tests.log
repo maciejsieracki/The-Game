@@ -1,0 +1,149 @@
+$ cargo test --locked --release --lib labels -- --nocapture
+
+running 3 tests
+test labels::paint::tests::kernel_is_normalised_and_symmetric ... ok
+test labels::paint::tests::over_is_source_over ... ok
+test labels::paint::tests::first_text_shadow_is_on_top ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 70 filtered out; finished in 0.00s
+
+EXIT=0
+
+$ cargo test --locked --release --test labels_layout -- --nocapture --test-threads=1
+
+running 7 tests
+test layout_matches_chromium_bit_for_bit ... text fragments checked: 87
+ok
+test layout_sweep_matches_chromium_bit_for_bit ... sweep: 1984 labels, 5076 fragments, 0 differ
+ok
+test line_height_rules ... ok
+test r4_icons_table ... ok
+test reason_wraps_like_chromium ... ok
+test small_is_parent_over_1_2_in_f32 ... ok
+test texture_sizes_match_the_generator ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.69s
+
+EXIT=0
+
+$ cargo test --locked --release --test labels_anchors -- --nocapture --test-threads=1
+
+running 7 tests
+test anchored_rects_match_chromium ... ok
+test constants_are_the_webs ... ok
+test fixtures_match_manifest_sha256 ... ok
+test float_label_frames_match_tick_float_labels ... float frames 48, removed 8
+ok
+test js_round_is_math_round ... ok
+test projections_match_the_web_bit_for_bit ... w2c 24 (null 6), r4place 18, siege 12, w2s 12
+ok
+test sha256_matches_standard_vectors ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.15s
+
+EXIT=0
+
+$ cargo test --locked --release --test labels_scenes -- --nocapture --test-threads=1
+
+running 4 tests
+test float_frames_fade_like_css ... ok
+test rendering_twice_is_identical ... ok
+test scenes_match_chromium ... scene                          size      max   mean   px>16%   SSIM
+r4_valid_00                     154x82     58  0.372   0.958  0.9953
+r4_valid_01                     154x82     58  0.376   0.958  0.9953
+r4_valid_02                     154x82     58  0.363   0.958  0.9953
+r4_valid_03                     154x82     58  0.373   0.958  0.9953
+r4_valid_04                     154x82     58  0.374   0.958  0.9953
+r4_valid_05                     154x82     58  0.364   0.958  0.9953
+r4_valid_06                     154x82     58  0.367   0.958  0.9953
+r4_valid_07                     154x82     58  0.371   0.958  0.9953
+r4_valid_08                     154x82     58  0.371   0.958  0.9953
+r4_valid_09                     154x82     58  0.373   0.958  0.9953
+r4_valid_10                     154x82     58  0.362   0.958  0.9953
+r4_valid_11                     154x82     58  0.368   0.958  0.9953
+r4_valid_12                     154x82     58  0.372   0.958  0.9953
+r4_valid_13                     154x82     58  0.373   0.958  0.9953
+r4_valid_14                     154x82     58  0.368   0.958  0.9953
+r4_valid_15                     154x82     58  0.381   0.958  0.9953
+r4_valid_16                     154x82     58  0.362   0.958  0.9953
+r4_invalid_farm                 176x82     58  0.384   0.977  0.9945
+r4_invalid_city                 176x82     58  0.392   0.977  0.9946
+r4_invalid_fallback             176x82     58  0.376   0.977  0.9946
+r4_invalid_road_reason          294x115    58  0.452   1.346  0.9951
+r4_valid_road_reason_ignored    154x82     58  0.371   0.958  0.9953
+r4_dsf2_valid                   308x164    55  0.193   0.406  0.9976
+r4_dsf2_reason                  588x230    61  0.268   0.680  0.9976
+r5_0                            145x89     48  0.695   1.038  0.9881
+r5_1                            145x89     48  0.737   1.108  0.9880
+r5_2                            145x89     48  0.840   1.472  0.9876
+r5_3                            145x89     48  0.916   1.697  0.9873
+r5_4                            145x89     48  0.754   1.116  0.9880
+r5_5                            177x89     48  0.867   1.657  0.9879
+r5_dsf2                         290x178    74  0.381   0.562  0.9929
+r15a_1                           34x37     24  0.331   0.954  0.9980
+r15a_7                           34x37     69  0.449   1.113  0.9958
+r15a_23                          42x37     44  0.521   1.351  0.9975
+r15a_105                         51x37     45  0.660   2.332  0.9959
+r15b_dmg_12                      76x35     52  0.763   2.368  0.9972
+r15b_dmg_3                       69x35     38  0.758   2.774  0.9963
+r15b_breach                     143x35     57  0.883   3.417  0.9962
+r15a_dsf2                        84x74     57  0.368   0.724  0.9959
+float_r15a_p000                  42x37     44  0.521   1.351  0.9975
+float_r15b_p000                 143x35     57  0.883   3.417  0.9962
+float_r15a_p025                  42x37     42  0.508   0.965  0.9972
+float_r15b_p025                 143x35     53  0.872   2.897  0.9952
+float_r15a_p050                  42x37     33  0.405   0.579  0.9976
+float_r15b_p050                 143x35     42  0.695   1.938  0.9957
+
+ok
+test scenes_match_golden_hashes ... # scene<TAB>FNV-1a 64 of the premultiplied texture (LABELS_BLESS=1 to rewrite)
+r4_valid_00	da37963d82041a12
+r4_valid_01	169d309f6f8a9e9b
+r4_valid_02	b76889bdac2dea85
+r4_valid_03	55fa606f7f9ad5fd
+r4_valid_04	8823c1779d03b8c8
+r4_valid_05	ebcfaba979091687
+r4_valid_06	f185dfdf49f5104b
+r4_valid_07	bb5b30954e424f70
+r4_valid_08	153c4e567487274b
+r4_valid_09	a6eab52a3f3d1d72
+r4_valid_10	68b34d4446df28d4
+r4_valid_11	d44d604401966949
+r4_valid_12	7bd80d1ac835835e
+r4_valid_13	dd861b57b6134ad9
+r4_valid_14	72434b34cef9d021
+r4_valid_15	af2993090638bfe9
+r4_valid_16	f6b850ede87af176
+r4_invalid_farm	4f2de2dcb93a4513
+r4_invalid_city	3d8eafeb669a8a30
+r4_invalid_fallback	19a6ef8b642ae8d7
+r4_invalid_road_reason	8344aa1a47183b94
+r4_valid_road_reason_ignored	153c4e567487274b
+r4_dsf2_valid	a76735b65ac976b9
+r4_dsf2_reason	a030ef029fd3b924
+r5_0	f0bb218db235dfc8
+r5_1	053fc4b2810ef8fb
+r5_2	11569c1d7d020070
+r5_3	d7e3d3fe7cf79664
+r5_4	5610e2d8077d5b1d
+r5_5	de6c1879433ffb9c
+r5_dsf2	5a078d90823f5548
+r15a_1	0a3c9a4de5921259
+r15a_7	2619408ca673acd5
+r15a_23	fdf49e80f5e6b523
+r15a_105	fd4454b29642215f
+r15b_dmg_12	29b5bcb82af28eec
+r15b_dmg_3	41ff35d84e76899f
+r15b_breach	7d64f7038146c88e
+r15a_dsf2	d4e36cf05cfab48b
+float_r15a_p000	fdf49e80f5e6b523
+float_r15b_p000	7d64f7038146c88e
+float_r15a_p025	0fd6dea01ddaffed
+float_r15b_p025	ce63984ce435656a
+float_r15a_p050	713043f513dac3a8
+float_r15b_p050	1553a7b98865e360
+ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.84s
+
+EXIT=0
