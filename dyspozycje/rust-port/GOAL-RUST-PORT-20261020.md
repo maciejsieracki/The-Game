@@ -25,6 +25,8 @@ dotykające tych samych plików — zawsze sekwencyjnie, nigdy w tej samej fali.
 
 ## Status bieżący — aktywne tematy (max 6)
 
+> **WSTRZYMANIE NOWYCH DISPATCHY (właściciel, 2026-10-23):** limity się kończą — dokończ do Final Control i integracji wszystko, co już trwa (P6.7A, P6.7B, M05A, M12, P5.7, P4.36-Q2); NIE otwieraj nowych tematów ani nie wypełniaj zwolnionych slotów, dopóki właściciel nie wznowi w czacie.
+
 | # | Temat | Faza | Runda | runId Workflow | Status | Ostatnia aktualizacja |
 |---|---|---|---|---|---|---|
 | 13 | `R-RUSTPORT-P4-36-MOD14-BATTLE-3D-Q2` | MOD-14 część 2: pole statyczne bitwy (Q1 siegeWall PASS, zintegrowane `78bd7f1a`) — Opus 5.5 | 1/5 | (Workflow) | DISPATCHED | 2026-10-23 |
