@@ -12,9 +12,12 @@ import { staticCatalog } from '../controller/staticCatalog';
 import { perfDiagnostics } from '../controller/diagnostics';
 import { buildPerfReportText, persistPerfReport, type PerfReportPersistOptions } from './perfReport';
 type MapGenPhaseKey = Exclude<keyof MapGenPhaseTimings, 'total'>;
-/** Pin `map/mapGenProgress.ts:16-27` — odczyt z katalogu przy użyciu (raport powstaje po instalacji katalogu). */
+/**
+ * Pin `map/mapGenProgress.ts:16-27` — odczyt z katalogu przy użyciu (raport powstaje po instalacji katalogu).
+ * Brak klucza w katalogu = `undefined`, jak dostęp do zwykłego obiektu na pinie (bez zastępczej wartości).
+ */
 const MAP_GEN_PHASE_LABELS = new Proxy({} as Record<MapGenPhaseKey, string>, {
-  get: (_t, key: string) => staticCatalog().constants.mapGenPhaseLabels[key] ?? '',
+  get: (_t, key: string) => staticCatalog().constants.mapGenPhaseLabels[key],
 });
 const getRiverGenEnabled = (): boolean => perfDiagnostics().riverGenEnabled;
 

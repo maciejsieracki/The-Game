@@ -2589,6 +2589,12 @@
       "bytes": 2175174
     },
     {
+      "path": "src/ui/assets/hero/hero-intro.png",
+      "pin": "edb8fb56:gra/src/ui/assets/hero/hero-intro.png",
+      "sha256": "10f35cb1155e66d06da7348ada50ece8e48abe2d8af8552483e77d56bf25ece4",
+      "bytes": 2039500
+    },
+    {
       "path": "src/ui/sidePanelHud.ts",
       "pin": "edb8fb56:gra/src/ui/sidePanelHud.ts",
       "sha256": "64e6b3b1341e377fd4a552245540fed23c75b9bcdd346bab958c5e585f3e0388",

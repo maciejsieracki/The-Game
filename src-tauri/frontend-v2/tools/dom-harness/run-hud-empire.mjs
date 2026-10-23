@@ -457,9 +457,9 @@ try {
       { id: 'r3', cityId: 'c3', cityName: 'Ostia', partnerCityName: 'Ateny', partnerOwnerLabel: 'Grecja <x>', medium: 'lad', dystans: 6, income: 7, budynekOdblokowany: true, premiaBudynku: 1 },
     ];
     const resources = cities.length === 0 ? [] : [
-      { id: 'drewno', icon: '🪵', label: 'Drewno', stock: 40, ratePerTurn: 3, rateProductionPerTurn: 5, rateDiploOutPerTurn: 2, typ: 'surowy', dostep: true, cap: 1200, capBase: 1000, capBonusPerMagazyn: 100,
+      { id: 'drewno', icon: '🪵', label: 'Drewno', stock: 40, ratePerTurn: 3, rateProductionPerTurn: 5, rateDiploOutPerTurn: 2, typ: 'surowy', dostep: true, cap: variant === 'glod' ? 1100 : 1200, capBase: 1000, capBonusPerMagazyn: 100,
         citizenRequired: true, citizenCovered: true, usage: { buildings: 2, citizens: 14, units: 1 } },
-      { id: 'kamien', icon: '🪨', label: 'Kamień', stock: 0, ratePerTurn: -2, typ: 'surowy', dostep: true, cap: 1200, capBase: 1000, capBonusPerMagazyn: 100,
+      { id: 'kamien', icon: '🪨', label: 'Kamień', stock: 0, ratePerTurn: -2, typ: 'surowy', dostep: true, cap: variant === 'glod' ? 1100 : 1200, capBase: 1000, capBonusPerMagazyn: 100,
         citizenRequired: true, citizenCovered: false, usage: { buildings: 1, citizens: 0, units: 0 } },
       { id: 'ceramika', icon: '🏺', label: 'Ceramika', stock: 1200, ratePerTurn: 0, rateProductionPerTurn: 4, rateDiploInPerTurn: 1, typ: 'przetworzony', dostep: true, zrodlo: 'Warsztat', cap: 1200,
         usage: { buildings: 0, citizens: 0, units: 0 } },
@@ -551,7 +551,15 @@ try {
       power: { ...s.power, zuzycieObywateliPerTyp: Math.floor(s.cityPobor.reduce((a, c) => a + c.ludki, 0) * rate) },
       cityPobor: s.cityPobor.map((c) => ({ ...c, zuzycieObywateliPerTurn: Math.floor(c.ludki * rate) })),
       food: { ...s.food, perCityRows: s.food.perCityRows.map((r) => ({ ...r, wzrostProcentEff: r.nakarmione === false ? 0 : r.wzrostProcent })) },
-      resources: s.resources.map((r) => (r.usage ? { ...r, usage: { ...r.usage, total: RUB.resourceUsageTotal(r.usage) } } : r)),
+      resources: s.resources.map((r) => {
+        const out = r.usage ? { ...r, usage: { ...r.usage, total: RUB.resourceUsageTotal(r.usage) } } : { ...r };
+        // r2: transkrypcja pinu `empireDetailPanel.ts:3434-3436` (liczba Magazynów z capu) → `magazynyCount`.
+        if (r.cap != null) {
+          out.magazynyCount = (r.capBase != null && r.capBonusPerMagazyn != null && r.capBonusPerMagazyn > 0 && r.cap > r.capBase)
+            ? Math.round((r.cap - r.capBase) / r.capBonusPerMagazyn) : 0;
+        }
+        return out;
+      }),
       trade: {
         ...t,
         // Transkrypcja pinu `empireDetailPanel.ts:3574-3581`.
@@ -604,6 +612,26 @@ try {
     };
     const flush2 = async () => { await sleep(560); document.getElementById('civ-perf-report')?.remove(); };
     await domCase(M, 'retry-po-usunięciu', () => remount(P), () => remount(V), { cleanupPin: flush2, cleanupV2: flush2 });
+    // r2 (zarzut 5 Evaluatora r1): niepełny katalog etykiet faz — te same klucze usunięte po obu stronach (pin: obiekt
+    // `MAP_GEN_PHASE_LABELS` współdzielony przez chunk esbuild; v2: `catalog.constants.mapGenPhaseLabels`, czytany przez
+    // `staticCatalog()` przy użyciu). Pin daje `undefined` dla brakującej fazy — v2 musi dać to samo (bez wartości zastępczej).
+    const pinLabels = pin['map/mapGenProgress.ts'].MAP_GEN_PHASE_LABELS;
+    const v2Labels = catalog.constants.mapGenPhaseLabels;
+    for (const missing of [['relief'], ['prep', 'starts', 'deposits'], Object.keys(v2Labels)]) {
+      const savedPin = { ...pinLabels };
+      const savedV2 = { ...v2Labels };
+      for (const k of missing) { delete pinLabels[k]; delete v2Labels[k]; }
+      try {
+        await explore(M, `katalog-niepełny(${missing.length === 10 ? 'pusty' : missing.join('+')})`, (S) => { S.showSceneTimingReport(optsList[3]); },
+          { P, V, maxClicks: 1, cleanupP: flush2, cleanupV: flush2 });
+      } finally {
+        // Przywrócenie z zachowaniem kolejności kluczy (perfReport iteruje `Object.entries`).
+        for (const k of Object.keys(pinLabels)) delete pinLabels[k];
+        for (const k of Object.keys(v2Labels)) delete v2Labels[k];
+        Object.assign(pinLabels, savedPin);
+        Object.assign(v2Labels, savedV2);
+      }
+    }
   }
 
   // ─── 2–3. empireDetailPanel.ts / empireDetailTypes.ts ─────────────────────

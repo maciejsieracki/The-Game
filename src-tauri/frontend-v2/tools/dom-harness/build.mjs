@@ -10,6 +10,7 @@
  * Identyczna emulacja dla obu stron → różnice DOM pochodzą wyłącznie z kodu modułów.
  */
 import { build } from 'esbuild';
+import { createHash } from 'node:crypto';
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { dirname, join, relative, resolve, extname } from 'node:path';
 
@@ -79,10 +80,15 @@ const vitePlugin = {
       path: resolve(args.resolveDir, args.path.replace(/\?url$/, '')),
       namespace: 'url',
     }));
-    b.onLoad({ filter: /.*/, namespace: 'url' }, (args) => ({
-      contents: `export default ${JSON.stringify(`data:${MIME[extname(args.path).toLowerCase()] ?? 'application/octet-stream'};base64,${readFileSync(args.path).toString('base64')}`)};`,
-      loader: 'js',
-    }));
+    // P5.7 r2 (`bundle(..., { urlAsHash: true })`, harness `run-newgame.mjs`): zamiast base64 — `data:<mime>;sha256,<skrót
+    // bajtów>`. Te same bajty ⇔ ten sam skrót (porównanie bajtów zachowane), a 2 MB obrazu nie jest parsowane przy
+    // każdym renderze kreatora (koszt czasu jsdom). Domyślnie (inne harnessy) bez zmian.
+    b.onLoad({ filter: /.*/, namespace: 'url' }, (args) => {
+      const mime = MIME[extname(args.path).toLowerCase()] ?? 'application/octet-stream';
+      const buf = readFileSync(args.path);
+      const url = urlAsHash ? `data:${mime};sha256,${createHash('sha256').update(buf).digest('hex')}` : `data:${mime};base64,${buf.toString('base64')}`;
+      return { contents: `export default ${JSON.stringify(url)};`, loader: 'js' };
+    });
     b.onLoad({ filter: /\.ts$/ }, (args) => {
       const src = readFileSync(args.path, 'utf8');
       if (!src.includes('import.meta.glob')) return undefined;
@@ -92,7 +98,9 @@ const vitePlugin = {
 };
 
 /** Pakuje `entries` (ścieżki .ts) do `outdir` jako ESM ze wspólnymi chunkami (jedna instancja stanu modułów). */
-export async function bundle(entries, outdir, { external = [] } = {}) {
+let urlAsHash = false;
+export async function bundle(entries, outdir, { external = [], urlAsHash: hashUrls = false } = {}) {
+  urlAsHash = hashUrls;
   await build({
     entryPoints: entries,
     outdir,

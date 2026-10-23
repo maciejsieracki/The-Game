@@ -122,6 +122,18 @@ export interface StaticCatalogConstantsDto {
    * negocjacji — web `uiActionAllowsMultipleOwnOnTable` (`game/diplomacy-audience-actions.ts:132-134`: dziś `['14']`).
    */
   audienceMultiOwnActionIds: string[];
+  /**
+   * P5.7 r2 (`newGameFlow.ts`; P5-0 §6.10 `defaults: {player_civ, start_epoch, render_quality}`): domyślna cywilizacja
+   * gracza, epoka startowa i jakość mapy kreatora — web `DEFAULT_PLAYER_CIV_ID`, `DEFAULT_START_EPOCH_ID`,
+   * `DEFAULT_RENDER_QUALITY` (`map/newGameMapDefaults.ts:131,134,141`, Panel-E).
+   */
+  newGameDefaultPlayerCivId: string;
+  newGameDefaultStartEpochId: string;
+  newGameDefaultRenderQuality: QualityTierDto;
+  /** P5.7 r2: web `MAX_TYPY_CYWILIZACJI_MENU` (`map/newGameMapDefaults.ts:540`). */
+  maxTypyCywilizacjiMenu: number;
+  /** P5.7 r2 (§6.10 `menus_by_map_label.land_fraction_opts`): web `LAND_FRACTION_PERCENT_OPTS` (`:460`), kolejność 1:1. */
+  landFractionPercentOpts: readonly number[];
 }
 
 export interface StaticCatalogLabelsDto {
@@ -1153,11 +1165,43 @@ export interface ResearchViewDto {
 
 // ─── §6.10 Nowa gra ──────────────────────────────────────────────────────────
 
+/**
+ * §6.10 `CivMatrixCellDto` (`param_label, formatted, intensity, visible_by_default`). P5.7 r2 (`newGameFlow.ts`,
+ * profil macierzy kroku 3, pin `:1174-1354`): + pola komórki web `CivMatrixSemanticCell`
+ * (`game/civ-matrix-semantic.ts:33-62`), które UI wyświetla/filtruje, oraz gotowe teksty formatterów silnika
+ * (`baselineFormatted`, `intensityLabel`). `paramLabel` = `civMatrixParameterLabelPl(parameterId)`, `formatted` =
+ * `civMatrixFormattedValue(rawValue, unit)`, `intensity` = `signedIntensity`, `visibleByDefault` =
+ * `statusAllowsDefaultVisibility(consumerStatus)`.
+ */
 export interface CivMatrixCellDto {
   paramLabel: string;
   formatted: string;
   intensity: number;
   visibleByDefault: boolean;
+  /** P5.7 r2 (ROZSZ.): `civMatrixFormattedValue(baselineValue, unit)`. */
+  baselineFormatted: string;
+  /** P5.7 r2 (ROZSZ.): `civMatrixIntensityLabel(signedIntensity)`. */
+  intensityLabel: string;
+  /** P5.7 r2 (ROZSZ.): pola `CivMatrixSemanticCell` 1:1. */
+  parameterId: string;
+  domain: string;
+  consumerStatus: string;
+  statusLabelPl: string;
+  statusReasonPl: string;
+  explanationPl: string;
+  label: 'POZYTYWNY' | 'NEGATYWNY' | 'NEUTRALNY';
+  polarity: 'beneficial' | 'harmful' | 'neutral/not-applicable';
+}
+
+/** P5.7 r2 (ROZSZ. §6.10 `civs[].matrix`): = web `CivMatrixSemanticProfile` (`game/civ-matrix-semantic.ts:64-74`), komórki jako DTO. */
+export interface CivMatrixProfileDto {
+  civilizationId: string;
+  civilizationName: string;
+  parameterCount: number;
+  activeCount: number;
+  inactiveCount: number;
+  cells: CivMatrixCellDto[];
+  blockedReasonPl?: string;
 }
 
 export interface NewGameOptionsDto {
@@ -1167,9 +1211,61 @@ export interface NewGameOptionsDto {
   civs: { id: string; availableAtEpoch: number; matrix: CivMatrixCellDto[] }[];
 }
 
+/**
+ * §6.10 `StartPreviewDto { summary_rows, ... }`. P5.7 r2: „...” = pola web `StartPreview` (`game/start-preview.ts:21-37`)
+ * 1:1; `summaryRows` = web `startPreviewSummaryRows(p)` (`:120-128`).
+ */
 export interface StartPreviewDto {
   summaryRows: [string, string][];
+  playerCivId: string;
+  playerCapitalName: string;
+  sameTypeRivalNames: readonly string[];
+  sameTypeRivalCount: number;
+  activeTypesOnMap: number;
+  foreignTypesCount: number;
+  modelLine: string;
+  modelDetail: string;
 }
+
+/** P5.7 r2: wejście zapytania `new_game_preview` = web `BuildStartPreviewInput` (`game/start-preview.ts:39-54`, bez `rivalsCount` @deprecated). */
+export interface StartPreviewInputDto {
+  civs: CivsCatalogDto;
+  cityNamesPools?: unknown;
+  playerCivId: string;
+  mapSizeMenuLabel?: string;
+  cityStatesCount?: number;
+  activeTypesCount?: number;
+}
+
+/** P5.7 r2: = web `RywaleMenuBundle`/`CivTypesMenuBundle` (`map/newGameMapDefaults.ts:98-103,705-709`) — §6.10 `menus_by_map_label`. */
+export interface NewGameMenuBundleDto {
+  opts: string[];
+  descs: string[];
+  domyslny: number;
+}
+
+/** P5.7 r2: = web `QualityTier` (`map/newGameMapDefaults.ts:137`) — ustawienie renderera, nie reguła gry (P5-0 Z9). */
+export type QualityTierDto = 'low' | 'medium' | 'high';
+/** P5.7 r2: = web `DensityTier` (`map/newGameMapDefaults.ts:193`). */
+export type DensityTierDto = 'low' | 'medium' | 'high';
+/** P5.7 r2: = web `WorldGenerationPreset` (`map/newGameMapDefaults.ts:211-217`). */
+export interface WorldGenerationPresetDto {
+  resources: DensityTierDto;
+  rivers: DensityTierDto;
+  desert: DensityTierDto;
+  forest: DensityTierDto;
+  relief: DensityTierDto;
+}
+/** P5.7 r2: = web `TypSwiata` (`map/gen-helpers.ts:47`). */
+export type TypSwiataDto = 'kontynenty' | 'pangea' | 'wyspy' | 'ziemia';
+/** P5.7 r2: = web `BuildingCostPace` (`game/building-cost-tempo.ts:19-25`). */
+export type BuildingCostPaceDto = 'niski' | 'normalny' | 'wysoki';
+/** P5.7 r2: = web `KosztJednostekPace` (`game/unit-cost-tempo.ts:19-25`). */
+export type KosztJednostekPaceDto = 'niski' | 'normalny' | 'wysoki';
+/** P5.7 r2: = web `WzrostLudnosciPace` (`game/population-growth-tempo.ts:21-27`). */
+export type WzrostLudnosciPaceDto = 'wysoki' | 'normalny' | 'wolny';
+/** P5.7 r2: = web `RuchSwiataPace` (`game/ruch-swiata-tempo.ts:23-29`). */
+export type RuchSwiataPaceDto = 'krotki' | 'normalny' | 'dlugi';
 
 // ─── §6.11 Karty encji ───────────────────────────────────────────────────────
 

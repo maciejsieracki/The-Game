@@ -46,6 +46,9 @@ const MUTS = [
   ['E20 kopia F: formatObywateleLabel — forma mnoga', EP, `  return \`\${n} obywateli\`;\n}`, `  return \`\${n} obyw.\`;\n}`, E],
   ['E21 kopia F: formatWyzwienieLabel — przecinek dziesiętny', EP, `return Number.isInteger(v) ? String(v) : v.toFixed(1).replace('.', ',');`, `return Number.isInteger(v) ? String(v) : v.toFixed(1);`, E],
   ['E22 imperium GRANICZNY: koszty skarbca bez wojska', EP, `  const koszty = utrzB + utrzJ;\n  const netto = Math.round(economy.bogactwoRate ?? 0);\n  const stan`, `  const koszty = utrzB;\n  const netto = Math.round(economy.bogactwoRate ?? 0);\n  const stan`, E],
+  // r2 (zarzut 6 Evaluatora r1): liczba Magazynów z DTO zamiast odwracania formuły capu.
+  ['E24 imperium: liczba Magazynów z DTO +1', EP, `const magazyny = stored[0]?.magazynyCount ?? 0;`, `const magazyny = (stored[0]?.magazynyCount ?? 0) + 1;`, E],
+  ['E25 imperium: liczba Magazynów stała (ignoruje DTO)', EP, `const magazyny = stored[0]?.magazynyCount ?? 0;`, `const magazyny = 2;`, E],
   ['E23 kopia: imperium — nagłówek tabeli wpływów', EP, `h += subHdr('Wpływy do skarbca');`, `h += subHdr('Wpływy');`, E],
   // empireDetailTypes.ts
   ['T1 kopia: uchwała Solanka — nazwa', 'src/ui/empireDetailTypes.ts', `nazwa: 'Solanka zapasowa',`, `nazwa: 'Solanka',`, 'empireDetailTypes.ts'],
@@ -53,7 +56,10 @@ const MUTS = [
   ['H1 hud: most ukrycia rosteru niezarejestrowany', 'src/ui/hud.ts', `registerArmyStackHudSuppression(setArmyStackHudSuppressed);`, `registerArmyStackHudSuppression(null);`, 'hud.ts'],
   ['H2 kopia: hud — etykieta tury', 'src/ui/hud.ts', `'<div class="right"><span class="turn">Tura <b>'`, `'<div class="right"><span class="turn">Runda <b>'`, 'hud.ts'],
   // sceneTimingReport.ts
-  ['S1 raport: etykiety faz z katalogu — zły klucz', 'src/ui/sceneTimingReport.ts', `staticCatalog().constants.mapGenPhaseLabels[key] ?? ''`, `staticCatalog().constants.mapGenPhaseLabels.prep ?? ''`, 'sceneTimingReport.ts'],
+  ['S1 raport: etykiety faz z katalogu — zły klucz', 'src/ui/sceneTimingReport.ts', `staticCatalog().constants.mapGenPhaseLabels[key],`, `staticCatalog().constants.mapGenPhaseLabels.prep,`, 'sceneTimingReport.ts'],
+  // r2 (zarzut 5 Evaluatora r1): wartość zastępcza przy brakującym kluczu katalogu (pin: `undefined`), dwa warianty.
+  ['S4 raport: brak klucza fazy → wartość zastępcza „X”', 'src/ui/sceneTimingReport.ts', `staticCatalog().constants.mapGenPhaseLabels[key],`, `staticCatalog().constants.mapGenPhaseLabels[key] ?? 'X',`, 'sceneTimingReport.ts'],
+  ['S5 raport: brak klucza fazy → pusty napis', 'src/ui/sceneTimingReport.ts', `staticCatalog().constants.mapGenPhaseLabels[key],`, `staticCatalog().constants.mapGenPhaseLabels[key] ?? '',`, 'sceneTimingReport.ts'],
   ['S2 raport: przełącznik rzek z powłoki ignorowany', 'src/ui/sceneTimingReport.ts', `const getRiverGenEnabled = (): boolean => perfDiagnostics().riverGenEnabled;`, `const getRiverGenEnabled = (): boolean => true;`, 'sceneTimingReport.ts'],
   ['S3 kopia: raport — nagłówek', 'src/ui/sceneTimingReport.ts', `margin-bottom:4px;">Czasy ładowania</div>`, `margin-bottom:4px;">Czasy</div>`, 'sceneTimingReport.ts'],
 ];

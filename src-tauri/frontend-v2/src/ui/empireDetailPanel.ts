@@ -3454,11 +3454,9 @@ function renderSurowceSection(rows: EmpireResourceRow[]): string {
   const cap = stored[0]?.cap ?? 0;
   const capBase = stored[0]?.capBase;
   const capBonus = stored[0]?.capBonusPerMagazyn;
-  // SUROW-UI-A1: liczba Magazynów wyliczona z REALNEJ bazy/bonusu (econ-params.json),
-  // nie z zaszytej na sztywno starej wartości 100 — baza z econ-params.json (dziś 1000).
-  const magazyny = (capBase != null && capBonus != null && capBonus > 0 && cap > capBase)
-    ? Math.round((cap - capBase) / capBonus)
-    : 0;
+  // P5.7 r2: liczba Magazynów = pole DTO `magazynyCount` (pin `:3434-3436` odwracał formułę capu silnika
+  // `(cap − capBase) / capBonus`; reguła → silnik, P5.13). Brak pola = 0, jak na pinie bez bazy/bonusu.
+  const magazyny = stored[0]?.magazynyCount ?? 0;
   const magSlowo = magazyny === 1 ? 'Magazyn' : (magazyny >= 2 && magazyny <= 4 ? 'Magazyny' : 'Magazynów');
   const magTip = magazynPanstwaTooltip(cap, capBase, capBonus, magazyny, magSlowo);
 

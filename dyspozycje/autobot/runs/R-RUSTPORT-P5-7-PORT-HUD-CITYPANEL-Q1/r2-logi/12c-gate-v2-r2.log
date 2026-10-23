@@ -1,0 +1,3 @@
+$ node tools/check-no-logic-imports.mjs src/ui/newGameFlow.ts src/ui/portNewGame.ts src/controller/newGameQueries.ts src/ui/sceneTimingReport.ts src/ui/empireDetailPanel.ts src/ui/empireDetailTypes.ts
+check-no-logic-imports: cele=src/ui/newGameFlow.ts,src/ui/portNewGame.ts,src/controller/newGameQueries.ts,src/ui/sceneTimingReport.ts,src/ui/empireDetailPanel.ts,src/ui/empireDetailTypes.ts plików=6 plików_z_trafieniami=0 trafień=0
+EXIT=0

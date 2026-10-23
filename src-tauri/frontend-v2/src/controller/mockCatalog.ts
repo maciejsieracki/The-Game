@@ -82,6 +82,12 @@ export const MOCK_STATIC_CATALOG: StaticCatalogDto = {
     handelZaufaniePerTura: 0,
     handelSurowceKeys: ['mock-surowiec'],
     audienceMultiOwnActionIds: [],
+    // P5.7 r2: domyślne kreatora nowej gry (MOCK — nie kopia Panel-E / `gra/src/map`).
+    newGameDefaultPlayerCivId: 'mock',
+    newGameDefaultStartEpochId: 'kamien',
+    newGameDefaultRenderQuality: 'medium',
+    maxTypyCywilizacjiMenu: 1,
+    landFractionPercentOpts: [50],
   },
   labels: {
     podzialPracyPulaLbl: 'MOCK',

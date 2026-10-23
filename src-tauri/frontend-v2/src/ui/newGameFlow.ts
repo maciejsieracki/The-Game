@@ -1,0 +1,2414 @@
+/**
+ * newGameFlow.ts
+ * New-game wizard (UI task 5) — port of Makieta-flow-nowa-gra.html.
+ * 5 kroki: Intro -> Epoka -> Cywilizacja -> Ustawienia -> Generowanie.
+ *
+ * Visual language: dark + gold, Palatino serif (jak menu glowne / makieta).
+ * DECOUPLED: lista cywilizacji z danych gry (civs.json przez loader), reszta to
+ * UI + jeden callback onStart(params).  Co robi onStart (generacja mapy, start
+ * rozgrywki) = silnik.
+ *
+ * LANE: src/ui/* only.  Wpiecie (showNewGameFlow z menu "Nowa Gra", a onStart ->
+ * generacja + przejscie do mapy) robi SILNIK.
+ *
+ * UWAGA: ustawienia rozgrywki (trudnosc/mapa/rywale/predkosc) ladowane z
+ * ui-params.json (sekcja nowa_gra) przez UI_PARAMS.
+ *
+ * Source: literalny UTF-8 dla polskich napisow; symbole przez encje HTML.
+ */
+
+// P5.7 r2: dane gry → `StaticCatalogDto` (`civs`, `cityNamesPools`), reguły menu/podglądu/macierzy/dostępności epoki →
+// zapytania `controller/newGameQueries.ts` (ZAŁOŻENIE P5.7-Z4), stałe → `StaticCatalogDto.constants`, jakość mapy →
+// kopia 1:1 (ustawienie renderera, P5-0 Z9), typy → DTO. Martwy import `isCivAvailableAtGameEpoch` usunięty.
+import type {
+  BuildingCostPaceDto as BuildingCostPace,
+  CivDefDto as CivEntryEpochRow,
+  CivMatrixCellDto as CivMatrixSemanticCell,
+  CivsCatalogDto,
+  KosztJednostekPaceDto as KosztJednostekPace,
+  QualityTierDto as QualityTier,
+  RuchSwiataPaceDto as RuchSwiataPace,
+  StartPreviewDto as StartPreview,
+  StartPreviewInputDto,
+  TypSwiataDto,
+  WorldGenerationPresetDto as WorldGenerationPreset,
+  WzrostLudnosciPaceDto as WzrostLudnosciPace,
+} from '../viewmodel/types';
+import { staticCatalog } from '../controller/staticCatalog';
+import { newGameQueries } from '../controller/newGameQueries';
+import { CIV_BRAND_SCOPE_VARS, ensureBrandRootTokens } from './brandTokenVars';
+import { UI_PARAMS } from './uiParams';
+import {
+  aiCivSelectionCap,
+  aiCivCandidateIds,
+  sanitizeAiCivSelection,
+  isAiCivCardDisabled,
+} from './aiCivPicker';
+import { civIconSvg, epochIconSvg, newGameIntroEmblemSvg, settingIconSvg } from './icons/brandAssets';
+import heroIntroUrl from './assets/hero/hero-intro.png?url';
+import { installHudTitleTooltips } from './hudTitleTooltip';
+
+/** Pin `map/newGameMapDefaults.ts:131,134,141,460,540` — stałe z katalogu (odczyt przy ewaluacji modułu, P5.2-Z1). */
+const DEFAULT_PLAYER_CIV_ID = staticCatalog().constants.newGameDefaultPlayerCivId;
+const DEFAULT_START_EPOCH_ID = staticCatalog().constants.newGameDefaultStartEpochId;
+const DEFAULT_RENDER_QUALITY: QualityTier = staticCatalog().constants.newGameDefaultRenderQuality;
+const MAX_TYPY_CYWILIZACJI_MENU = staticCatalog().constants.maxTypyCywilizacjiMenu;
+const LAND_FRACTION_PERCENT_OPTS = staticCatalog().constants.landFractionPercentOpts;
+type LandFractionPercent = number;
+/** Pin: `GameData` (`data/loader.ts`) — kreator czyta wyłącznie `civs` i `cityNamesPools` (= pola `StaticCatalogDto`). */
+type GameData = { civs: CivsCatalogDto; cityNamesPools?: unknown };
+function loadGameData(): GameData {
+  return staticCatalog();
+}
+// Reguły → zapytania silnika (sygnatury pinu; wiersze rostera = dane katalogu, jak na pinie).
+const miastaPanstwaMenuForMapLabel = (mapLabel: string) => newGameQueries().miastaPanstwaMenuForMapLabel(mapLabel);
+const civTypesMenuForMapLabel = (mapLabel: string, epochId: string, roster: readonly CivEntryEpochRow[]) =>
+  newGameQueries().civTypesMenuForMapLabel(mapLabel, epochId, roster);
+const defaultMiastaPanstwaFromMapLabel = (mapLabel: string) => newGameQueries().defaultMiastaPanstwaFromMapLabel(mapLabel);
+const defaultCivTypesFromMapLabel = (mapLabel: string, epochId: string, roster: readonly CivEntryEpochRow[]) =>
+  newGameQueries().defaultCivTypesFromMapLabel(mapLabel, epochId, roster);
+const maxCivTypesForStartEpoch = (epochId: string, roster: readonly CivEntryEpochRow[]) =>
+  newGameQueries().maxCivTypesForStartEpoch(epochId, roster);
+const clampMiastaPanstwaCount = (raw: number) => newGameQueries().clampMiastaPanstwaCount(raw);
+const typSwiataFromMenuLabel = (label: string) => newGameQueries().typSwiataFromMenuLabel(label);
+const defaultLandFractionPercentForTyp = (typ: TypSwiataDto) => newGameQueries().defaultLandFractionPercentForTyp(typ);
+const worldGenerationPresetFromLabels = (labels: { resources: string; rivers: string; desert: string; forest: string; relief?: string }) =>
+  newGameQueries().worldGenerationPresetFromLabels(labels);
+const buildStartPreview = (input: StartPreviewInputDto) => newGameQueries().buildStartPreview(input);
+const buildCivMatrixSemanticProfile = (civKey: string) => newGameQueries().civMatrixProfile(civKey);
+
+// Kopia 1:1 pinu `map/newGameMapDefaults.ts:144-185` (jakość mapy = ustawienie renderera, nie reguła gry — P5-0 Z9).
+function normQualityLabel(label: string): string {
+  return label.toLowerCase()
+    .replace(/ł/g, 'l')
+    .replace(/[ó]/g, 'o')
+    .replace(/[ąà]/g, 'a')
+    .replace(/[ę]/g, 'e')
+    .replace(/[^a-z0-9]/g, '');
+}
+
+/** Etykieta PL z kreatora / menu → klucz silnika. */
+function qualityTierFromLabel(label: string): QualityTier {
+  const n = normQualityLabel(label);
+  if (n === 'niska' || n === 'low') return 'low';
+  if (n === 'wysoka' || n === 'high') return 'high';
+  return 'medium';
+}
+
+function qualityTierToLabel(tier: QualityTier): string {
+  if (tier === 'low') return 'Niska';
+  if (tier === 'high') return 'Wysoka';
+  return 'Średnia';
+}
+
+/** Pełny pakiet GPU + dekoracje z jednego suwaka „Jakość mapy” (E1-Q-BUNDLE, Maciej 2026-06-29). */
+interface BundledMapQualityPreset {
+  renderQuality: QualityTier;
+  mapDetailQuality: QualityTier;
+}
+
+/**
+ * Jeden wybór gracza → oba tiery silnika (1:1).
+ * UI nie eksponuje renderQuality osobno; SILNIK woła to przy starcie gry.
+ */
+function bundledMapQualityPreset(tier: QualityTier): BundledMapQualityPreset {
+  return { renderQuality: tier, mapDetailQuality: tier };
+}
+
+/** Etykieta PL z kreatora → pakiet presetów. */
+function bundledMapQualityFromLabel(label: string): BundledMapQualityPreset {
+  return bundledMapQualityPreset(qualityTierFromLabel(label));
+}
+
+// ---------------------------------------------------------------------------
+// Typy publiczne
+// ---------------------------------------------------------------------------
+
+export interface CivOption {
+  id: string;
+  name: string;
+  styl?: string;
+  superJednostka?: string;
+  bonusy?: string[];
+  religia?: string;
+  typGlowny?: string;
+  /** epokaWejscia — kanon kaskady (D-CYW-EPOKA-WEJSCIA). */
+  epokaWejscia: string;
+  /** Legacy — min = epokaWejscia. */
+  epokiStartowe: string[];
+  /** Kolor nacji (#RRGGBB) z civs.json. */
+  kolorHex?: string;
+}
+
+export interface NewGameParams {
+  /** ikonaId z civs.json (np. rzymianie) — NIE etykieta PL. */
+  civId: string;
+  civName: string;
+  /**
+   * R-HOTSEAT-ETAP6F-PART2-DATA-Q1: cywilizacja DRUGIEGO fotela ludzkiego
+   * (hot-seat). `undefined` = brak drugiego człowieka — zachowanie DOKŁADNIE
+   * jak dziś (Etap 1 default `humanOwnerIds=[0]`). Heks drugiego człowieka
+   * jest algorytmiczny (ABC-Q1), nie klikany — ten pod-temat dostarcza
+   * WYŁĄCZNIE pole danych, zero nowego ekranu kreatora (UI to następny
+   * pod-temat, `R-HOTSEAT-ETAP6F-PART2-UI-Q1`). Musi różnić się od `civId`
+   * (ABC-Q3, wykluczenie duplikatu) — walidacja po stronie generatora
+   * (`buildClusterStartPlan`), nie tutaj.
+   * / EN: second human seat's civ (hot-seat). `undefined` = no second human —
+   * behaviour identical to today. Data field only, no UI in this sub-topic.
+   */
+  civId2?: string;
+  /** Etykieta PL nazwy cywilizacji fotela 2 (analogicznie do `civName`), gdy `civId2` ustawione. */
+  civName2?: string;
+  /**
+   * R-HOTSEAT-ETAP6F-PART2-UI-Q1: tryb odległości heksu startowego fotela 2
+   * względem fotela 1 (ABC-Q4). `undefined` gdy `civId2` nie jest ustawione
+   * (hot-seat wyłączony) — bez efektu w generatorze (`cluster-start.ts`).
+   * Literal-union MUSI zostać zsynchronizowany ręcznie z `HumanDistanceMode`
+   * w `map/cluster-spawn.ts` — ten moduł UI jest świadomie odcięty (DECOUPLED,
+   * patrz nagłówek pliku) od importów z `game/`/`map/` (wzorzec identyczny do
+   * `BarbariansLevel` powyżej).
+   * / EN: distance mode for seat 2's start hex relative to seat 1 (ABC-Q4).
+   * `undefined` when `civId2` is unset (hot-seat off) — no effect in the
+   * generator. Manually kept in sync with `HumanDistanceMode` in
+   * `map/cluster-spawn.ts` (same pattern as `BarbariansLevel` above).
+   */
+  humanDistanceMode?: HumanDistanceMode;
+  /** Etykieta PL epoki (np. Epoka Kamienia). */
+  epoch: string;
+  /** Id epoki dla silnika: kamien | braz | zelazo. */
+  epochId: string;
+  difficulty: string;
+  mapSize: string;
+  rivals: string;
+  speed: string;
+  /** Etykieta menu typu świata (np. Kontynenty). */
+  worldType: string;
+  /** Klucz silnika: kontynenty | pangea | wyspy | ziemia. */
+  typSwiata: string;
+  seed: number;
+  /** Etykieta PL: Niska | Średnia | Wysoka — preset wyglądu mapy (MAPA). */
+  mapQualityLabel: string;
+  mapQuality: QualityTier;
+  /** Etykieta PL: Niska | Średnia | Wysoka */
+  renderQualityLabel: string;
+  /** Etykieta PL: Niska | Średnia | Wysoka */
+  mapDetailQualityLabel: string;
+  renderQuality: QualityTier;
+  mapDetailQuality: QualityTier;
+  /** Liczba głównych typów cywilizacji na mapie (suwak głównej siatki). */
+  civTypesCount: number;
+  /** Miasta-państwa w klastrze gracza (suwak głównej siatki). */
+  cityStatesCount: number;
+  /** Gęstość generatora (zaawansowane — E2). */
+  worldDensity: WorldGenerationPreset;
+  worldDensityLabels: {
+    resources: string;
+    rivers: string;
+    desert: string;
+    forest: string;
+    relief: string;
+  };
+  /** Zaawansowane opcje kreatora (decyzja Macieja B, 2026-06-27). */
+  advanced?: NewGameAdvancedOptions;
+  /** Udział lądu w % (reszta morze) — z zaawansowanych opcji. */
+  landFractionPercent: number;
+  /** Podgląd startu klastra (E1/D-START) — z kreatora do SILNIK. */
+  startPreview?: StartPreview;
+  /**
+   * R-KONFIGURATOR-WYBOR-CYWILIZACJI-PRZECIWNIKA: konkretne typy cywilizacji
+   * przeciwnika wybrane przez gracza (multi-select, kolejność zaznaczenia).
+   * Puste/undefined = dobór losowy jak dotychczas (backward-compatible).
+   * / EN: specific opponent civ types chosen by the player (multi-select,
+   * selection order). Empty/undefined = today's random pick (backward-compatible).
+   */
+  selectedAiCivIds?: string[];
+  /** P-CHATKI-NAGRODY-TOGGLE-USTAWIENIA-Q1: czy chatki z nagrodami mają być generowane na mapie.
+   * / EN: whether village treasure huts should be generated on the map. */
+  villageRewardsEnabled: boolean;
+}
+
+/**
+ * Decyzja B — modal „Zaawansowane opcje” krok 4.
+ * R-BARBARZYNCY-USTAWIENIA-NIEZALEZNE-OD-TRUDNOSCI (Maciej 2026-08-13): skala
+ * 4-poziomowa w duchu trudności (Łatwy/Normalny/Trudny/Brak), NIEZALEŻNA od
+ * `_menuDifficulty` (dokładnie ten sam wzorzec co `cityStateDifficultyOverride`
+ * niżej — własne pole w advOpts, nie pochodna głównej trudności). Zastępuje
+ * starą skalę 'wielu'|'nieliczni'|'wylaczeni'; ten literal-union MUSI zostać
+ * zsynchronizowany ręcznie z BarbariansLevel w game/barbarians.ts — moduł UI
+ * jest świadomie odcięty (DECOUPLED, patrz nagłówek pliku) od importów z game/.
+ * / EN: 4-tier difficulty-shaped scale, INDEPENDENT of `_menuDifficulty` (same
+ * pattern as `cityStateDifficultyOverride`). Must stay manually in sync with
+ * BarbariansLevel in game/barbarians.ts — this UI module is intentionally
+ * decoupled from game/ imports.
+ */
+export type BarbariansLevel = 'latwy' | 'normalny' | 'trudny' | 'brak';
+export type VictoryMode = 'moc' | 'dominacja' | 'moc_i_dominacja';
+/**
+ * R-HOTSEAT-ETAP6F-PART2-UI-Q1 (ABC-Q4) — MUSI zostać zsynchronizowany ręcznie
+ * z `HumanDistanceMode` w `game/cluster-start.ts`/`map/cluster-spawn.ts`.
+ * / EN: MUST stay manually in sync with `HumanDistanceMode` in
+ * `game/cluster-start.ts`/`map/cluster-spawn.ts`.
+ */
+export type HumanDistanceMode = 'blisko' | 'daleko' | 'losowo';
+
+export interface NewGameAdvancedOptions {
+  barbariansLevel: BarbariansLevel;
+  battleAlwaysManual: boolean;
+  victoryMode: VictoryMode;
+  /** Koszty budynkow: niski x1 / normalny x2 / wysoki x4 (bazowy = niski). */
+  buildingCostPace: BuildingCostPace;
+  /** Koszty jednostek: niski x1 / normalny x2 / wysoki x4 (bazowy = niski). */
+  kosztJednostekPace: KosztJednostekPace;
+  /** Wzrost ludnosci: wysoki x1 / normalny x2 / wolny x4 (bazowy prog = wysoki). */
+  wzrostLudnosciPace: WzrostLudnosciPace;
+  /**
+   * Zasieg ruchu jednostek NA MAPIE SWIATA: krotki x1 (bez zmian) / normalny x3 /
+   * dlugi x6. Dotyczy WYŁĄCZNIE pola "Ruch" (mapa świata) — NIE "Ruch w bitwie".
+   */
+  ruchSwiataPace: RuchSwiataPace;
+  /** Procent lądu (20–80); reszta morze. */
+  landFractionPercent: LandFractionPercent;
+  /** Gdy false — przy zmianie typu świata ustaw domyślny udział lądu. */
+  landFractionCustom: boolean;
+  /**
+   * Trudność miast-państw (R-TRUDNOSC-1, Maciej 2026-07-24) — niezależna od głównej
+   * trudności gry. Steruje: startowym zaufaniem miast-państw do gracza
+   * (applyCityStateDifficultyTrust), progiem sojuszu sióstr (sisterAllianceDiplomacyParams)
+   * i siłą posiłków obronnych (RESUP_TIERS) w main.ts.
+   * `null` = brak override — śledzi na bieżąco główną trudność (`difficulty` powyżej),
+   * dopóki gracz nie ustawi jej wprost w „Zaawansowane opcje". Zero regresji domyślnej.
+   * `'off'` (P-USTAWIENIA-MIASTA-PANSTWA-WYLACZONE-Q1, Maciej 2026-09-03): pełne
+   * wyłączenie generacji miast-państw — mapa ma wyłącznie cywilizacje (gracz + AI).
+   * Wzorzec identyczny jak `barbariansLevel`/'brak' powyżej.
+   */
+  cityStateDifficultyOverride: 'easy' | 'normal' | 'hard' | 'off' | null;
+  /** R-MIASTA-LIMIT-PER-EPOKA-Q1: bazowy limit miast na epokę (10 / 15 / 20); per-era limit = base + (era-1)*5. / EN: base city limit per era. */
+  cityLimitBase: number;
+}
+
+const DEFAULT_ADVANCED: NewGameAdvancedOptions = {
+  barbariansLevel: 'normalny',
+  battleAlwaysManual: false,
+  victoryMode: 'moc_i_dominacja',
+  buildingCostPace: 'niski',
+  kosztJednostekPace: 'niski',
+  wzrostLudnosciPace: 'wysoki',
+  ruchSwiataPace: 'krotki',
+  landFractionPercent: 30,
+  landFractionCustom: false,
+  cityStateDifficultyOverride: null,
+  cityLimitBase: 10, // R-MIASTA-LIMIT-PER-EPOKA-Q1 / EN: city limit base
+};
+
+/** Kanon v1 (2026-07-07) — stabilny klucz localStorage kreatora. */
+const NEWGAME_PREFS_KEY = 'civ-new-game-prefs-v1';
+/** Legacy (Grupa E) — odczyt migracyjny, zapis tylko do v1. */
+const NEWGAME_PREFS_KEY_LEGACY = 'civ-newgame-prefs-v2';
+
+interface SavedNewGamePrefs {
+  v: 3 | 4;
+  selEpoch: string;
+  selCiv: string | null;
+  /** Indeksy opcji (legacy / fallback). */
+  settings: Record<string, number>;
+  /** Etykiety PL opcji — preferowane przy wczytywaniu (odporne na skalowanie mapy). */
+  settingLabels: Record<string, string>;
+  advanced: NewGameAdvancedOptions;
+  /**
+   * R-KONFIGURATOR-WYBOR-CYWILIZACJI-PRZECIWNIKA (v4): typy AI wybrane w kreatorze,
+   * kolejność zaznaczenia. Brak pola (prefs v3 i starsze) = [] = losowo jak dziś.
+   * / EN: (v4) AI types picked in the wizard, selection order. Missing field (v3
+   * and older prefs) = [] = today's random pick.
+   */
+  selAiCivIds?: string[];
+}
+
+/** Zapis tylko po zmianie użytkownika — unikamy nadpisywania prefs domyślnymi przy otwarciu kreatora. */
+let prefsDirty = false;
+
+function getPrefsStorage(): Storage | null {
+  try {
+    if (typeof localStorage === 'undefined') return null;
+    return localStorage;
+  } catch {
+    return null;
+  }
+}
+
+function readStoredNewGamePrefsRaw(): string | null {
+  const storage = getPrefsStorage();
+  if (!storage) return null;
+  return storage.getItem(NEWGAME_PREFS_KEY) ?? storage.getItem(NEWGAME_PREFS_KEY_LEGACY);
+}
+
+function saveNewGamePrefs(): void {
+  if (!prefsDirty) return;
+  const storage = getPrefsStorage();
+  if (!storage) return;
+  try {
+    const settings: Record<string, number> = {};
+    const settingLabels: Record<string, string> = {};
+    for (const s of SETT) {
+      settings[s.key] = s.idx;
+      settingLabels[s.key] = s.opts[s.idx] ?? '';
+    }
+    const payload: SavedNewGamePrefs = {
+      v: 4,
+      selEpoch,
+      selCiv,
+      settings,
+      settingLabels,
+      advanced: { ...advOpts },
+      selAiCivIds: [...selAiCivIds],
+    };
+    storage.setItem(NEWGAME_PREFS_KEY, JSON.stringify(payload));
+    prefsDirty = false;
+  } catch {
+    /* prywatny tryb / brak localStorage */
+  }
+}
+
+function markNewGamePrefsDirtyAndSave(): void {
+  prefsDirty = true;
+  saveNewGamePrefs();
+}
+
+function flushNewGamePrefs(): void {
+  prefsDirty = true;
+  saveNewGamePrefs();
+}
+
+function migrateAdvanced(raw: Record<string, unknown>): NewGameAdvancedOptions {
+  const base = { ...DEFAULT_ADVANCED };
+  if (typeof raw.landFractionPercent === 'number') {
+    base.landFractionPercent = raw.landFractionPercent as LandFractionPercent;
+  }
+  if (typeof raw.landFractionCustom === 'boolean') base.landFractionCustom = raw.landFractionCustom;
+  if (typeof raw.battleAlwaysManual === 'boolean') base.battleAlwaysManual = raw.battleAlwaysManual;
+  if (
+    raw.barbariansLevel === 'latwy' || raw.barbariansLevel === 'normalny'
+    || raw.barbariansLevel === 'trudny' || raw.barbariansLevel === 'brak'
+  ) {
+    base.barbariansLevel = raw.barbariansLevel;
+  } else if (
+    // R-BARBARZYNCY-USTAWIENIA-NIEZALEZNE-OD-TRUDNOSCI: migracja starych prefs
+    // (skala 'wielu'/'nieliczni'/'wylaczeni' sprzed 2026-08-13) -- kompatybilność
+    // wsteczna, bez importu z game/barbarians.ts (moduł UI świadomie DECOUPLED,
+    // patrz nagłówek pliku), więc mapowanie zduplikowane lokalnie 1:1 z
+    // migrateBarbariansLevel() tamtego pliku. / EN: migrates old wizard prefs
+    // scale; duplicated in sync with migrateBarbariansLevel() in game/barbarians.ts
+    // because this UI module deliberately avoids importing from game/.
+    raw.barbariansLevel === 'wielu' || raw.barbariansLevel === 'nieliczni'
+    || raw.barbariansLevel === 'wylaczeni'
+  ) {
+    base.barbariansLevel = raw.barbariansLevel === 'wielu' ? 'trudny'
+      : raw.barbariansLevel === 'nieliczni' ? 'normalny'
+        : 'brak';
+  } else if (raw.barbariansEnabled === false) {
+    base.barbariansLevel = 'brak';
+  }
+  if (
+    raw.victoryMode === 'moc'
+    || raw.victoryMode === 'dominacja'
+    || raw.victoryMode === 'moc_i_dominacja'
+  ) {
+    base.victoryMode = raw.victoryMode;
+  } else if (raw.victoryPowerAndDominance === false) {
+    base.victoryMode = 'dominacja';
+  } else if (raw.victoryPowerAndDominance === true) {
+    base.victoryMode = 'moc_i_dominacja';
+  }
+  if (raw.buildingCostPace === 'niski' || raw.buildingCostPace === 'normalny' || raw.buildingCostPace === 'wysoki') {
+    base.buildingCostPace = raw.buildingCostPace;
+  }
+  if (raw.kosztJednostekPace === 'niski' || raw.kosztJednostekPace === 'normalny' || raw.kosztJednostekPace === 'wysoki') {
+    base.kosztJednostekPace = raw.kosztJednostekPace;
+  }
+  if (raw.wzrostLudnosciPace === 'wysoki' || raw.wzrostLudnosciPace === 'normalny' || raw.wzrostLudnosciPace === 'wolny') {
+    base.wzrostLudnosciPace = raw.wzrostLudnosciPace;
+  }
+  if (raw.ruchSwiataPace === 'krotki' || raw.ruchSwiataPace === 'normalny' || raw.ruchSwiataPace === 'dlugi') {
+    base.ruchSwiataPace = raw.ruchSwiataPace;
+  }
+  if (
+    raw.cityStateDifficultyOverride === 'easy'
+    || raw.cityStateDifficultyOverride === 'normal'
+    || raw.cityStateDifficultyOverride === 'hard'
+    || raw.cityStateDifficultyOverride === 'off'
+  ) {
+    base.cityStateDifficultyOverride = raw.cityStateDifficultyOverride;
+  }
+  if (typeof raw.cityLimitBase === 'number' && raw.cityLimitBase > 0) {
+    base.cityLimitBase = raw.cityLimitBase; // R-MIASTA-LIMIT-PER-EPOKA-Q1 / EN: city limit base
+  }
+  return base;
+}
+
+function applySettingLabel(key: string, label: string | undefined): boolean {
+  if (!label) return false;
+  const row = SETT.find(x => x.key === key);
+  if (!row) return false;
+  const idx = row.opts.indexOf(label);
+  if (idx < 0) return false;
+  row.idx = idx;
+  return true;
+}
+
+function applySettingFromPrefs(
+  parsed: SavedNewGamePrefs & { v?: number; settingLabels?: Record<string, string> },
+  key: string,
+): void {
+  const labels = parsed.settingLabels;
+  if (labels && typeof labels[key] === 'string' && applySettingLabel(key, labels[key])) return;
+  const idx = parsed.settings?.[key];
+  const row = SETT.find(x => x.key === key);
+  if (!row || typeof idx !== 'number') return;
+  if (idx >= 0 && idx < row.opts.length) row.idx = idx;
+}
+
+function loadNewGamePrefs(): void {
+  try {
+    const raw = readStoredNewGamePrefsRaw();
+    if (!raw) return;
+    const parsed = JSON.parse(raw) as SavedNewGamePrefs & { v?: number; settingLabels?: Record<string, string> };
+    if (parsed.selEpoch && EPOCHS.some(e => e.id === parsed.selEpoch)) selEpoch = parsed.selEpoch;
+    if (parsed.selCiv) selCiv = parsed.selCiv;
+    if (Array.isArray(parsed.selAiCivIds)) {
+      selAiCivIds = parsed.selAiCivIds.filter((id): id is string => typeof id === 'string' && id.length > 0);
+    }
+    if (parsed.settings && typeof parsed.settings === 'object') {
+      applySettingFromPrefs(parsed, 'map_size');
+      syncMapScaleOptions();
+      for (const s of SETT) {
+        if (s.key === 'map_size') continue;
+        applySettingFromPrefs(parsed, s.key);
+      }
+    }
+    if (parsed.advanced && typeof parsed.advanced === 'object') {
+      advOpts = migrateAdvanced(parsed.advanced as unknown as Record<string, unknown>);
+    }
+    migrateAdvLandFractionFromLegacy();
+    syncAdvLandFromWorldType();
+    ensureSelCivForEpoch();
+    sanitizeSelAiCivIds();
+  } catch {
+    /* ignore corrupt prefs — nie zapisuj domyślnych nadpisując stare dane */
+  }
+}
+
+function syncAdvLandFromWorldType(): void {
+  if (advOpts.landFractionCustom) return;
+  const worldLabel = settingValue('world_type') || 'Kontynenty';
+  advOpts.landFractionPercent = defaultLandFractionPercentForTyp(typSwiataFromMenuLabel(worldLabel));
+}
+
+/** Zmiana typu świata → domyślny udział lądu per typ (chyba że gracz znów ruszy suwak). */
+function resetAdvLandOnWorldTypeChange(): void {
+  const worldLabel = settingValue('world_type') || 'Kontynenty';
+  advOpts.landFractionPercent = defaultLandFractionPercentForTyp(typSwiataFromMenuLabel(worldLabel));
+  advOpts.landFractionCustom = false;
+}
+
+/** Stary kanon 20% lądu (2026-07-04) → per typ przy wczytaniu prefs. */
+function migrateAdvLandFractionFromLegacy(): void {
+  if (advOpts.landFractionCustom) return;
+  if (advOpts.landFractionPercent === 20) {
+    syncAdvLandFromWorldType();
+  }
+}
+
+function landFractionOptLabels(): string[] {
+  return LAND_FRACTION_PERCENT_OPTS.map((p) => `${p}% lądu / ${100 - p}% morze`);
+}
+
+interface AdvSettingRow {
+  key: string;
+  lbl: string;
+  hint: string;
+  opts: string[];
+  /** Dla pól boolean — indeks 0 = true-ish, 1 = false-ish */
+  getIdx: () => number;
+  setIdx: (i: number) => void;
+}
+
+let advOpts: NewGameAdvancedOptions = { ...DEFAULT_ADVANCED };
+
+export interface NewGameFlowConfig {
+  data?: GameData;
+  /** Nadpisanie listy cywilizacji; domyslnie z data.civs. */
+  getCivs?: () => CivOption[];
+  /** Silnik startuje gre z wybranymi parametrami. */
+  onStart: (params: NewGameParams) => void;
+  /** Powrot do menu glownego (przycisk Wstecz na kroku 1). */
+  onCancel?: () => void;
+}
+
+let cfg: NewGameFlowConfig | null = null;
+
+// ---------------------------------------------------------------------------
+// Dane
+// ---------------------------------------------------------------------------
+
+let cachedData: GameData | null = null;
+function gameData(): GameData | null {
+  if (cfg && cfg.data) return cfg.data;
+  if (cachedData) return cachedData;
+  try { cachedData = loadGameData(); } catch { cachedData = null; }
+  return cachedData;
+}
+
+const DEFAULT_CIV_START_EPOCHS = ['kamien', 'braz', 'zelazo'] as const;
+// P5.7 r2: `START_EPOCH_ORDER`, `startEpochIndex`, `civMinStartEpochIndex` (pin `:510-521`, kolejność epok startu i
+// najwcześniejsza epoka cywilizacji) → zapytanie `civAvailableAtEpoch` (reguła dostępności, P5-0 §6.10).
+
+function parseEpokiStartowe(raw: Record<string, unknown>): string[] {
+  const arr = raw['epokiStartowe'];
+  if (!Array.isArray(arr)) {
+    const ew = raw['epokaWejscia'];
+    if (typeof ew === 'string' && ew.length > 0) return [ew];
+    return [...DEFAULT_CIV_START_EPOCHS];
+  }
+  const out = arr.filter((x): x is string => typeof x === 'string' && x.length > 0);
+  return out.length > 0 ? out : [...DEFAULT_CIV_START_EPOCHS];
+}
+
+function parseEpokaWejscia(raw: Record<string, unknown>, epokiStartowe: string[]): string {
+  const ew = raw['epokaWejscia'];
+  if (typeof ew === 'string' && ew.length > 0) return ew;
+  return epokiStartowe[0] ?? 'kamien';
+}
+
+function civsFromData(data: GameData): CivOption[] {
+  const list = data.civs && data.civs.cywilizacje ? data.civs.cywilizacje : [];
+  return list
+    .filter((c): c is CivEntryEpochRow & { Cywilizacja: string } => !!c.Cywilizacja) // P5.7 r2: predykat typu (CivDefDto: pole opcjonalne)
+    .map(c => {
+      const raw = c as unknown as Record<string, unknown>;
+      const ikonaId = typeof raw['ikonaId'] === 'string' ? raw['ikonaId'] : c.Cywilizacja;
+      const religia = typeof raw['Religia'] === 'string' ? raw['Religia'] : undefined;
+      const typGlowny = typeof raw['Typ główny'] === 'string' ? raw['Typ główny'] : undefined;
+      const bonusyFromJson = Array.isArray(raw['bonusy'])
+        ? (raw['bonusy'] as Array<{ opis?: string }>)
+            .map(b => (typeof b.opis === 'string' ? b.opis.trim() : ''))
+            .filter(s => s.length > 0)
+        : [];
+      const legacyBonusy = [c['Bonus startowy'], c['Bonusy/minusy (do dopracowania)']]
+        .filter((x): x is string => typeof x === 'string' && x.trim().length > 0);
+      const epokiStartowe = parseEpokiStartowe(raw);
+      const kolorHex = typeof raw['kolorHex'] === 'string' ? raw['kolorHex'] : undefined;
+      return {
+        id: ikonaId,
+        name: c.Cywilizacja,
+        styl: c['Styl / charakter'] ?? undefined,
+        superJednostka: c['Jednostka specjalna'] ?? undefined,
+        bonusy: bonusyFromJson.length > 0 ? bonusyFromJson : legacyBonusy,
+        religia,
+        typGlowny,
+        epokaWejscia: parseEpokaWejscia(raw, epokiStartowe),
+        epokiStartowe,
+        kolorHex,
+      };
+    });
+}
+
+function civs(): CivOption[] {
+  if (cfg && cfg.getCivs) return cfg.getCivs();
+  const data = gameData();
+  return data ? civsFromData(data) : [];
+}
+
+/** Cywilizacja dostępna, gdy wybrana epoka gry >= jej najwcześniejszej epoki startu. */
+function civAvailableAtEpoch(c: CivOption, selectedEpochId: string): boolean {
+  return newGameQueries().civAvailableAtEpoch(c.epokiStartowe, selectedEpochId);
+}
+
+function civsForEpoch(epochId: string): CivOption[] {
+  return civs().filter(c => civAvailableAtEpoch(c, epochId));
+}
+
+function epochHasCivs(epochId: string): boolean {
+  return civsForEpoch(epochId).length > 0;
+}
+
+function ensureSelCivForEpoch(): void {
+  const list = civsForEpoch(selEpoch);
+  if (list.length === 0) {
+    selCiv = null;
+    return;
+  }
+  if (!selCiv || !list.some(c => c.id === selCiv)) {
+    const preferred = list.find(c => c.id === DEFAULT_PLAYER_CIV_ID);
+    selCiv = preferred?.id ?? list[0]!.id;
+  }
+}
+
+/**
+ * R-KONFIGURATOR-WYBOR-CYWILIZACJI-PRZECIWNIKA: kandydaci na cywilizację
+ * przeciwnika — pula epoki (`civsForEpoch`) bez nacji gracza. Cienki wrapper nad
+ * `aiCivCandidateIds` (aiCivPicker.ts) — filtrowanie po id, wynik z powrotem jako
+ * `CivOption[]` (potrzebne do renderu: nazwa, kolorHex).
+ * / EN: opponent civ candidates — thin wrapper over the pure `aiCivCandidateIds`,
+ * mapped back to `CivOption[]` for rendering (name, kolorHex).
+ */
+function aiCivCandidatesForEpoch(): CivOption[] {
+  const pool = civsForEpoch(selEpoch);
+  const ids = new Set(aiCivCandidateIds(pool.map(c => c.id), selCiv));
+  return pool.filter(c => ids.has(c.id));
+}
+
+/** Cienki wrapper nad `aiCivSelectionCap` (aiCivPicker.ts) — czyta suwak z SETT. */
+function currentAiSelectionCap(): number {
+  return aiCivSelectionCap(parseInt(settingValue('civ_types_count'), 10));
+}
+
+/**
+ * Domyka `selAiCivIds` po KAŻDEJ zmianie, która mogła unieważnić wybór: epoka
+ * (pula węższa), nacja gracza (kandydat stał się graczem), `civ_types_count`
+ * (limit spadł). Cienki wrapper nad `sanitizeAiCivSelection` (aiCivPicker.ts).
+ * / EN: closes `selAiCivIds` after ANY change that could invalidate the picks —
+ * thin wrapper over the pure `sanitizeAiCivSelection`.
+ */
+function sanitizeSelAiCivIds(): void {
+  const candidateIds = aiCivCandidatesForEpoch().map(c => c.id);
+  selAiCivIds = sanitizeAiCivSelection(selAiCivIds, candidateIds, currentAiSelectionCap());
+}
+
+interface EpochOption { id: string; name: string; icon: string; flavor: string; avail: boolean; badge: string; }
+const EPOCHS: EpochOption[] = [
+  { id: 'kamien', name: 'Epoka Kamienia', icon: 'K', flavor: 'Pierwsze osady, kamienne narzedzia. Fundamenty imperium.', avail: true, badge: 'Dostepna' },
+  { id: 'braz', name: 'Epoka Brazu', icon: 'B', flavor: 'Metalurgia i pierwsze armie. Rydwany, mury, wczesna dyplomacja.', avail: true, badge: 'Dostepna' },
+  { id: 'zelazo', name: 'Epoka Zelaza', icon: 'Z', flavor: 'Hartowane ostrza, potezne legiony, szlaki handlowe. Start: cale Kamien + caly Braz juz zbadane.', avail: true, badge: 'Dostepna' },
+];
+
+/** Medalion cywilizacji (Brand Book W1b — SVG z civ-icon-map). */
+function civMedallionHtml(
+  ikonaId: string,
+  active: boolean,
+  variant: 'card' | 'detail',
+  kolorHex?: string,
+): string {
+  const size = variant === 'detail' ? 28 : 24;
+  const dim = variant === 'detail' ? 58 : 52;
+  const cls = 'tg-medallion' + (active ? ' tg-medallion--active' : '');
+  const border = kolorHex ? `border-color:${kolorHex};` : '';
+  const svg = civIconSvg(ikonaId, size);
+  return `<span class="${cls}" style="width:${dim}px;height:${dim}px;flex-shrink:0;${border}">${svg}</span>`;
+}
+
+/** Medalion epoki (Brand Book W1e — SVG z epoch-icon-map). */
+function epochMedallionHtml(epochId: string, active: boolean): string {
+  const cls = 'tg-medallion' + (active ? ' tg-medallion--active' : '');
+  const svg = epochIconSvg(epochId, 40);
+  return `<span class="${cls}" style="width:64px;height:64px;flex-shrink:0;">${svg}</span>`;
+}
+const SETTING_GLYPHS: Record<string, string> = {
+  difficulty: 'Tr',
+  map_size: 'Mx',
+  world_type: 'Sw',
+  city_states_count: 'MP',
+  civ_types_count: 'Cy',
+  game_speed: 'Tp',
+  map_quality: 'Gf',
+  resources_density: 'Su',
+  rivers_density: 'Rz',
+  desert_density: 'Ps',
+  forest_density: 'Ls',
+  relief_density: 'Gw',
+};
+
+function settingIcon(key: string): string {
+  const svg = settingIconSvg(key, 20);
+  if (svg) return svg;
+  const g = SETTING_GLYPHS[key] ?? 'Op';
+  return '<span class="ng-glyph ng-glyph-sm">' + g + '</span>';
+}
+
+function bonusRowClass(text: string): 'bp' | 'bm' {
+  const t = text.toLowerCase();
+  if (/^[-−]|słab|slab|brak |trudn|wolniej|wysokie koszty|gorsz/.test(t)) return 'bm';
+  return 'bp';
+}
+
+function appendBonusRow(parent: HTMLElement, text: string): void {
+  const row = el('div', 'bonus ' + bonusRowClass(text));
+  row.innerHTML = '<div class="bdot"></div><span></span>';
+  (row.querySelector('span') as HTMLElement).textContent = text;
+  parent.appendChild(row);
+}
+
+interface Setting { key: string; lbl: string; opts: string[]; descs: string[]; idx: number; }
+const SETT: Setting[] = UI_PARAMS.nowa_gra.ustawienia.map(s => ({
+  key: s.key,
+  lbl: s.label,
+  opts: [...s.opts],
+  descs: [...s.descs],
+  idx: s.domyslny,
+}));
+
+/**
+ * R-MENU-TRUDNOSC-TOOLTIP-ROZNICE-Q1: rozszerzone treści tooltipa (info-icon,
+ * ten sam mechanizm co opcje Zaawansowane) głównego selektora trudności —
+ * czysto opisowe, ZERO zmian liczb balansu. Nadpisuje `descs` z data/ui-params.json
+ * (poza allowlistą tego tematu) treścią świeżo zweryfikowaną w kodzie źródłowym
+ * (difficulty-cost.ts, ai.ts, ai-difficulty-bonus.ts, diplomacy.ts, barbarians.ts,
+ * economy.ts / econ-params.json). Kolejność opcji zakładana ['Łatwy','Normalny','Trudny']
+ * — zabezpieczona dopasowaniem po treści `opts`, nie po samym indeksie.
+ */
+function applyDifficultyTooltipContent(): void {
+  const row = SETT.find(x => x.key === 'difficulty');
+  if (!row) return;
+  const idxEasy = row.opts.indexOf('Łatwy');
+  const idxNormal = row.opts.indexOf('Normalny');
+  const idxHard = row.opts.indexOf('Trudny');
+  if (idxEasy < 0 || idxNormal < 0 || idxHard < 0) return; // struktura się zmieniła — nie zgaduj, zostaw oryginał
+  row.descs[idxEasy] =
+    'Gracz płaci ×1 (AI/miasta-państwa ×2 za budynki/jednostki/badania), rośnie normalnie ' +
+    '(AI ×2 wolniej). AI bez bonusu produkcji/nauki/walki, mniej agresywna. Barbarzyńcy nie ' +
+    'przejmują miast. Trudność miast-państw ma osobne ustawienie w Zaawansowane.';
+  row.descs[idxNormal] =
+    'Symetryczne koszty i tempo wzrostu — gracz i AI na tych samych mnożnikach (×1). ' +
+    'AI: +10% produkcji, +1 nauki/turę, bez bonusu walki. Umiarkowana agresja i częstość ' +
+    'barbarzyńców. Trudność miast-państw ma osobne ustawienie w Zaawansowane.';
+  row.descs[idxHard] =
+    'Gracz płaci ×2 za budynki/jednostki/badania i rośnie ×2 wolniej (AI rośnie ×2 szybciej). ' +
+    'AI: +25% produkcji, +2 nauki/turę, +5% do walki. Dodatkowo: AI agresywniejsza dyplomatycznie ' +
+    'i militarnie, ostrzejsze progi dyplomacji, więcej barbarzyńców (mogą przejąć puste miasto) i ' +
+    'częstsze najazdy morskie. Trudność miast-państw ma osobne ustawienie w Zaawansowane.';
+}
+applyDifficultyTooltipContent();
+
+/** Skaluje opcje miast-państw do wybranej wielkości mapy. */
+function syncMiastaPanstwaOptions(): void {
+  const mapRow = SETT.find(x => x.key === 'map_size');
+  const cityRow = SETT.find(x => x.key === 'city_states_count');
+  if (!mapRow || !cityRow) return;
+  const mapLabel = mapRow.opts[mapRow.idx] ?? 'Standardowy';
+  const bundle = miastaPanstwaMenuForMapLabel(mapLabel);
+  const prev = cityRow.opts[cityRow.idx];
+  cityRow.opts = bundle.opts;
+  cityRow.descs = bundle.descs;
+  const keepIdx = prev != null ? bundle.opts.indexOf(prev) : -1;
+  cityRow.idx = keepIdx >= 0 ? keepIdx : bundle.domyslny;
+}
+
+function civRosterRows(): CivEntryEpochRow[] {
+  const data = gameData();
+  return (data?.civs?.cywilizacje ?? []) as CivEntryEpochRow[];
+}
+
+function syncCivTypesOptions(): void {
+  const mapRow = SETT.find(x => x.key === 'map_size');
+  const civRow = SETT.find(x => x.key === 'civ_types_count');
+  if (!mapRow || !civRow) return;
+  const mapLabel = mapRow.opts[mapRow.idx] ?? 'Standardowy';
+  const bundle = civTypesMenuForMapLabel(mapLabel, selEpoch, civRosterRows());
+  const prev = civRow.opts[civRow.idx];
+  civRow.opts = bundle.opts;
+  civRow.descs = bundle.descs;
+  const min = parseInt(bundle.opts[0] ?? '1', 10);
+  const max = parseInt(bundle.opts[bundle.opts.length - 1] ?? '1', 10);
+  const prevNum = prev != null ? parseInt(prev, 10) : NaN;
+  if (Number.isFinite(prevNum)) {
+    const clamped = Math.max(min, Math.min(max, prevNum));
+    const clampIdx = bundle.opts.indexOf(String(clamped));
+    civRow.idx = clampIdx >= 0 ? clampIdx : bundle.domyslny;
+  } else {
+    civRow.idx = bundle.domyslny;
+  }
+}
+
+function syncMapScaleOptions(): void {
+  syncMiastaPanstwaOptions();
+  syncCivTypesOptions();
+}
+
+function resetSettingsFromParams(): void {
+  SETT.length = 0;
+  for (const s of UI_PARAMS.nowa_gra.ustawienia) {
+    SETT.push({
+      key: s.key,
+      lbl: s.label,
+      opts: [...s.opts],
+      descs: [...s.descs],
+      idx: s.domyslny,
+    });
+  }
+  syncMapScaleOptions();
+  applyDifficultyTooltipContent();
+  advOpts = { ...DEFAULT_ADVANCED };
+}
+
+// ---------------------------------------------------------------------------
+// Stan
+// ---------------------------------------------------------------------------
+
+let rootEl: HTMLDivElement | null = null;
+let curStep = 1;
+let selCiv: string | null = null;
+/**
+ * R-HOTSEAT-ETAP6F-PART2-DATA-Q1: drugi slot stanu modułu, analogiczny do
+ * `selCiv`, dla cywilizacji DRUGIEGO fotela ludzkiego (hot-seat). `null` =
+ * brak drugiego człowieka (dzisiejsze zachowanie, bit-w-bit). Używany
+ * PROGRAMOWO (przyszły UI z `R-HOTSEAT-ETAP6F-PART2-UI-Q1` lub test) — ZERO
+ * nowego ekranu/kroku kreatora w tym pod-temacie, żaden kod w tym pliku dziś
+ * nie zapisuje do tej zmiennej poza resetem nowej gry.
+ * / EN: second module-state slot, mirroring `selCiv`, for the SECOND human
+ * seat's civ (hot-seat). `null` = no second human (today's behaviour,
+ * unchanged). Consumed programmatically only — no new wizard screen here.
+ */
+let selCiv2: string | null = null;
+/**
+ * R-HOTSEAT-ETAP6F-PART2-UI-Q1: świadomy przełącznik gracza — `false` (domyślnie
+ * WYŁĄCZONY) = zero wpływu na dzisiejszą ścieżkę jednoosobową. Jedyne miejsce,
+ * które ustawia `selCiv2`/`humanDistanceMode` na coś innego niż wartość domyślna
+ * jest ekran fotela 2 (`renderSeat2Step`), osiągalny WYŁĄCZNIE gdy ta flaga jest
+ * `true`.
+ */
+let hotSeatEnabled = false;
+/** ABC-Q4 — tryb odległości fotela 2. Bez efektu, dopóki `hotSeatEnabled===false`. */
+let humanDistanceMode: HumanDistanceMode = 'losowo';
+/** Czy krok 4 pokazuje ekran fotela 2 (podekran, NIE osobna pozycja `curStep`/`STEP_LABELS`). */
+let showSeat2Screen = false;
+let selEpoch = 'kamien';
+/**
+ * R-KONFIGURATOR-WYBOR-CYWILIZACJI-PRZECIWNIKA: typy AI wybrane w kreatorze (krok
+ * 4, multi-select), w kolejności zaznaczenia. Puste = losowy dobór jak dotychczas.
+ * / EN: AI types picked in the wizard (step 4, multi-select), in selection order.
+ * Empty = today's random pick.
+ */
+let selAiCivIds: string[] = [];
+
+// ---------------------------------------------------------------------------
+// Style (scoped .civ-newgame)
+// ---------------------------------------------------------------------------
+
+const STYLE_ID = 'civ-newgame-css-v3';
+function ensureStyles(): void {
+  ensureBrandRootTokens();
+  document.getElementById('civ-newgame-css')?.remove();
+  if (document.getElementById(STYLE_ID)) return;
+  const css = `
+.civ-newgame{position:fixed;inset:0;z-index:500;overflow:auto;
+  ${CIV_BRAND_SCOPE_VARS}
+  background:var(--bg-deep);color:var(--tx);font-family:var(--civ-font-title);
+  display:flex;flex-direction:column;}
+.civ-newgame *{box-sizing:border-box;}
+.civ-newgame .hdr{text-align:center;padding:1.8rem 2rem 1rem;border-bottom:1px solid var(--bd-sub);position:relative;}
+.civ-newgame .hdr-menu-back{position:absolute;left:1.2rem;top:50%;transform:translateY(-50%);
+  background:transparent;border:1px solid var(--bd-mid);color:var(--tx2);padding:7px 14px;border-radius:var(--radius);
+  cursor:pointer;font-family:Arial,sans-serif;font-size:11px;letter-spacing:.12em;text-transform:uppercase;}
+.civ-newgame .hdr-menu-back:hover{border-color:var(--gold);color:var(--gold-light);background:rgba(201,168,76,.06);}
+.civ-newgame .hdr .lab{font-size:10px;letter-spacing:.5em;text-transform:uppercase;color:var(--tx2);font-family:Arial,sans-serif;}
+.civ-newgame .hdr h1{font-size:34px;font-weight:400;letter-spacing:.18em;color:var(--gold-light);text-shadow:0 0 50px rgba(201,168,76,.28);margin-top:4px;}
+.civ-newgame .stepbar{display:flex;align-items:center;justify-content:center;padding:1rem;background:#12121A;border-bottom:1px solid var(--bd-sub);flex-wrap:wrap;}
+.civ-newgame .si{display:flex;align-items:center;cursor:pointer;}
+.civ-newgame .si-b{display:flex;align-items:center;gap:8px;padding:5px 14px;border-radius:20px;border:1px solid transparent;}
+.civ-newgame .si-n{width:22px;height:22px;border-radius:50%;border:1.5px solid var(--tx-muted);display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--tx-muted);font-family:Arial,sans-serif;}
+.civ-newgame .si-l{font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--tx-muted);font-family:Arial,sans-serif;}
+.civ-newgame .si.active .si-b{border-color:var(--bd-mid);background:rgba(201,168,76,.08);}
+.civ-newgame .si.active .si-n{border-color:var(--gold);background:var(--gold);color:#0A0A0F;font-weight:700;}
+.civ-newgame .si.active .si-l{color:var(--gold);}
+.civ-newgame .si.done .si-n{border-color:var(--gold-dim);color:var(--gold-dim);}
+.civ-newgame .si-c{width:26px;height:1px;background:var(--bd-sub);margin:0 3px;}
+.civ-newgame .flow-body{flex:0 0 auto;max-width:1000px;width:100%;margin:0 auto;padding:0 0 1.25rem;}
+.civ-newgame .content{flex:0 0 auto;padding:1.4rem 2rem 0.25rem;max-width:1000px;width:100%;margin:0 auto;}
+.civ-newgame .sh{text-align:center;margin-bottom:1.6rem;}
+.civ-newgame .sh h2{font-size:24px;font-weight:400;letter-spacing:.1em;color:var(--gold-light);}
+.civ-newgame.hero-flow{background:transparent;}
+.civ-newgame .hero-bg{position:fixed;inset:0;z-index:0;pointer-events:none;}
+.civ-newgame .hero-bg img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center top;display:block;}
+.civ-newgame .hero-bg .hero-veil-radial{position:absolute;inset:0;background:radial-gradient(1200px 900px at 50% 38%,rgba(8,10,18,.68),rgba(8,10,18,.45) 45%,rgba(8,10,18,.82) 100%);}
+.civ-newgame .hero-bg .hero-veil-linear{position:absolute;inset:0;background:linear-gradient(180deg,rgba(8,10,18,.45),transparent 18%,transparent 58%,rgba(8,10,18,.92));}
+.civ-newgame.hero-flow .hdr,
+.civ-newgame.hero-flow .stepbar,
+.civ-newgame.hero-flow .flow-body,
+.civ-newgame.hero-flow .content,
+.civ-newgame.hero-flow .nav{position:relative;z-index:2;}
+.civ-newgame.hero-flow .hdr{background:transparent;border-bottom-color:rgba(201,168,76,.12);}
+.civ-newgame.hero-flow .stepbar{background:rgba(18,18,26,.72);backdrop-filter:blur(4px);border-bottom-color:rgba(201,168,76,.12);}
+.civ-newgame.hero-flow .nav{background:rgba(18,18,26,.72);backdrop-filter:blur(4px);border-top-color:rgba(201,168,76,.12);}
+.civ-newgame.hero-flow .sh h2{text-shadow:0 2px 12px rgba(0,0,0,.85);}
+.civ-newgame.hero-flow .card,
+.civ-newgame.hero-flow .ec,
+.civ-newgame.hero-flow .srow,
+.civ-newgame.hero-flow .detail,
+.civ-newgame.hero-flow .civ-grid-panel,
+.civ-newgame.hero-flow .epoch-info,
+.civ-newgame.hero-flow .gp,
+.civ-newgame.hero-flow .ai-civ-panel,
+.civ-newgame.hero-flow .gen-visual,
+.civ-newgame.hero-flow .start-preview{background:rgba(18,18,26,.84);backdrop-filter:blur(8px);}
+.civ-newgame.hero-flow .card.sel,
+.civ-newgame.hero-flow .ec.sel{background:rgba(28,24,14,.88);}
+.civ-newgame.hero-flow .card:hover:not(.sel),
+.civ-newgame.hero-flow .ec:hover:not(.lock):not(.sel){background:rgba(22,22,30,.9);}
+.civ-newgame.hero-flow .intro{min-height:min(62vh,520px);justify-content:center;padding:1rem 0 2rem;}
+.civ-newgame.hero-flow .intro .em{width:104px;height:104px;border:2px solid var(--gold-dim);
+  background:radial-gradient(circle at 40% 34%,rgba(21,27,38,.85),rgba(8,10,18,.7));
+  box-shadow:inset 0 2px 6px rgba(232,216,138,.22),0 0 40px rgba(232,216,138,.2),0 6px 24px rgba(0,0,0,.6);backdrop-filter:blur(2px);}
+.civ-newgame.hero-flow .intro .em svg{width:58px;height:58px;}
+.civ-newgame.hero-flow .intro .big{font-size:clamp(42px,7vw,82px);letter-spacing:.16em;text-shadow:0 3px 20px rgba(0,0,0,.85),0 0 44px rgba(232,216,138,.22);}
+.civ-newgame.hero-flow .intro .sub{font-size:14px;letter-spacing:.28em;color:#c8b898;margin:18px 0 22px;text-shadow:0 2px 8px rgba(0,0,0,.8);}
+.civ-newgame.hero-flow .intro .cta-hero{display:inline-flex;align-items:center;gap:12px;margin-top:30px;height:64px;padding:0 48px;
+  background:linear-gradient(180deg,#f0dc88,#b99a28);border:1px solid #6a5212;border-top-color:#f8eea8;color:#2e2708;
+  font-size:16px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;border-radius:8px;cursor:pointer;font-family:var(--civ-font-ui);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.45),0 8px 26px rgba(0,0,0,.5);}
+.civ-newgame.hero-flow .intro .cta-hero:hover{filter:brightness(1.05);}
+.civ-newgame.hero-flow .intro .cta-menu-back{display:inline-block;margin-top:14px;background:transparent;border:1px solid rgba(201,168,76,.35);
+  color:var(--tx2);padding:9px 22px;border-radius:var(--radius);cursor:pointer;font-family:Arial,sans-serif;
+  font-size:11px;letter-spacing:.14em;text-transform:uppercase;}
+.civ-newgame.hero-flow .intro .cta-menu-back:hover{border-color:var(--gold);color:var(--gold-light);}
+.civ-newgame .intro{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:280px;text-align:center;gap:1.2rem;}
+.civ-newgame .intro .em{width:72px;height:72px;border-radius:50%;border:2px solid var(--bd-mid);display:flex;align-items:center;justify-content:center;color:var(--gold-light);background:rgba(201,168,76,.08);box-shadow:0 0 28px rgba(201,168,76,.12);}
+.civ-newgame .intro .em svg{display:block;}
+.civ-newgame .big{font-size:42px;letter-spacing:.2em;color:var(--gold-light);}
+.civ-newgame .sub{font-size:11px;letter-spacing:.4em;text-transform:uppercase;color:var(--tx2);font-family:Arial,sans-serif;}
+.civ-newgame .intro p{max-width:540px;font-size:14px;line-height:1.7;color:var(--tx2);font-style:italic;}
+.civ-newgame .civ-layout{display:grid;grid-template-columns:1fr min(360px,34vw);gap:1.5rem;align-items:stretch;}
+.civ-newgame .civ-grid-panel{background:var(--bg-card);border:1px solid var(--bd-sub);border-radius:var(--radius-lg);padding:14px;display:flex;flex-direction:column;height:100%;min-height:360px;}
+.civ-newgame .civ-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:10px;align-content:start;flex:1;}
+.civ-newgame .card{background:var(--bg-card);border:1.5px solid var(--bd-sub);border-radius:var(--radius-lg);padding:14px 8px;text-align:center;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:8px;transition:all .18s;}
+.civ-newgame .card:hover{border-color:var(--bd-mid);background:var(--bg-card-h);transform:translateY(-1px);}
+.civ-newgame .card.sel{border-color:var(--gold);background:var(--bg-sel);box-shadow:0 0 0 1px rgba(201,168,76,.18),inset 0 0 18px rgba(201,168,76,.06);}
+.civ-newgame .card .tg-medallion svg{display:block;}
+.civ-newgame .civ-dh .tg-medallion svg{display:block;}
+.civ-newgame .cn{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--tx2);font-family:Arial,sans-serif;line-height:1.3;}
+.civ-newgame .card.sel .cn{color:var(--gold);}
+.civ-newgame .detail{background:var(--bg-card);border:1px solid var(--bd-sub);border-radius:var(--radius-lg);padding:1.35rem;display:flex;flex-direction:column;gap:1rem;height:100%;min-height:360px;}
+.civ-newgame .detail .empty{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;color:var(--tx-muted);gap:10px;font-size:13px;text-align:center;font-style:italic;padding:2rem 1rem;}
+.civ-newgame .detail .empty .arr{font-size:28px;opacity:.35;line-height:1;}
+.civ-newgame .civ-dh{display:flex;align-items:center;gap:14px;padding-bottom:1rem;border-bottom:1px solid var(--bd-sub);}
+.civ-newgame .civ-dmeta{font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--tx-muted);font-family:Arial,sans-serif;margin-top:3px;}
+.civ-newgame .dn{font-size:20px;letter-spacing:.1em;color:var(--gold-light);margin:0;}
+.civ-newgame .dlbl{font-size:10px;letter-spacing:.32em;text-transform:uppercase;color:var(--tx2);font-family:Arial,sans-serif;margin-bottom:4px;}
+.civ-newgame .civ-ds{display:flex;flex-direction:column;gap:6px;}
+.civ-newgame .civ-matrix-profile{margin-top:1rem;padding-top:1rem;border-top:1px solid var(--bd-sub);}
+.civ-newgame .civ-matrix-profile-head{display:flex;flex-direction:column;gap:6px;margin-bottom:.7rem;}
+.civ-newgame .civ-matrix-profile-title{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--gold-dim);font-family:Arial,sans-serif;}
+.civ-newgame .civ-matrix-profile-note{font-size:11px;line-height:1.45;color:var(--tx-muted);font-family:Arial,sans-serif;}
+.civ-newgame .civ-matrix-profile-controls{display:flex;gap:6px;align-items:center;margin-bottom:.65rem;}
+.civ-newgame .civ-matrix-profile-search{flex:1;min-width:0;background:rgba(255,255,255,.04);border:1px solid var(--bd-mid);color:var(--tx);border-radius:var(--radius);padding:7px 9px;font:11px Arial,sans-serif;}
+.civ-newgame .civ-matrix-profile-search:focus{outline:1px solid var(--gold);border-color:var(--gold);}
+.civ-newgame .civ-matrix-profile-filter{background:#12121A;border:1px solid var(--bd-mid);color:var(--tx2);border-radius:var(--radius);padding:7px 6px;font:10px Arial,sans-serif;max-width:115px;}
+.civ-newgame .civ-matrix-profile-list{display:flex;flex-direction:column;gap:5px;}
+.civ-newgame .civ-matrix-profile-more{margin-top:7px;border:1px solid var(--bd-sub);border-radius:var(--radius);background:rgba(255,255,255,.025);padding:6px 8px;}
+.civ-newgame .civ-matrix-profile-more summary{cursor:pointer;color:var(--tx2);font:10px Arial,sans-serif;letter-spacing:.08em;}
+.civ-newgame .civ-matrix-profile-more[open] summary{color:var(--gold-light);margin-bottom:7px;}
+.civ-newgame .civ-matrix-cell{border:1px solid var(--bd-sub);border-left:3px solid var(--bd-mid);border-radius:var(--radius);padding:7px 8px;background:rgba(255,255,255,.025);}
+.civ-newgame .civ-matrix-cell[data-status="REAL_GAMEPLAY"]{border-left-color:#4A9A68;}
+.civ-newgame .civ-matrix-cell[data-status="UI_ONLY"]{border-left-color:var(--gold-dim);}
+.civ-newgame .civ-matrix-cell[data-status="UNWIRED"],.civ-newgame .civ-matrix-cell[data-status="BLOCKED"]{border-left-color:#9A5040;}
+.civ-newgame .civ-matrix-cell-head{display:flex;align-items:flex-start;gap:6px;}
+.civ-newgame .civ-matrix-cell-name{flex:1;color:var(--tx2);font:11px Arial,sans-serif;line-height:1.3;}
+.civ-newgame .civ-matrix-cell-badge{font:10px Arial,sans-serif;white-space:nowrap;font-weight:700;}
+.civ-newgame .civ-matrix-cell-badge[data-label="POZYTYWNY"]{color:#6FC58D;}
+.civ-newgame .civ-matrix-cell-badge[data-label="NEGATYWNY"]{color:#D77C66;}
+.civ-newgame .civ-matrix-cell-badge[data-label="NEUTRALNY"]{color:var(--gold-light);}
+.civ-newgame .civ-matrix-cell-meta{display:flex;flex-wrap:wrap;gap:5px 10px;margin-top:4px;color:var(--tx-muted);font:10px Arial,sans-serif;line-height:1.35;}
+.civ-newgame .civ-matrix-cell-status{display:inline-block;margin-top:5px;color:var(--tx2);font:9px Arial,sans-serif;letter-spacing:.08em;text-transform:uppercase;}
+.civ-newgame .civ-matrix-cell-status[data-status="UNWIRED"],.civ-newgame .civ-matrix-cell-status[data-status="BLOCKED"]{color:#D77C66;}
+.civ-newgame .civ-matrix-cell-explanation{margin-top:4px;color:var(--tx-muted);font:10px Arial,sans-serif;line-height:1.4;}
+.civ-newgame .civ-matrix-profile-legend{margin-top:7px;color:var(--tx-muted);font:10px Arial,sans-serif;line-height:1.4;}
+.civ-newgame .civ-matrix-profile-error{padding:10px;border:1px solid #9A5040;border-radius:var(--radius);color:#D77C66;font:11px Arial,sans-serif;line-height:1.4;}
+.civ-newgame .bonus{display:flex;align-items:flex-start;gap:8px;font-size:13px;color:var(--tx2);line-height:1.5;}
+.civ-newgame .bdot{width:6px;height:6px;border-radius:50%;flex-shrink:0;margin-top:6px;}
+.civ-newgame .bonus.bp .bdot{background:#4A9A68;}
+.civ-newgame .bonus.bm .bdot{background:#9A5040;}
+.civ-newgame .meta-row{font-size:12px;color:var(--tx2);padding:6px 10px;background:rgba(255,255,255,.03);border-radius:var(--radius);border-left:2px solid var(--gold-dim);}
+.civ-newgame .su{margin-top:.2rem;background:rgba(201,168,76,.08);border:1px solid var(--bd-mid);border-radius:var(--radius);padding:10px 14px;}
+.civ-newgame .su .l{font-size:10px;letter-spacing:.3em;text-transform:uppercase;color:var(--tx2);font-family:Arial,sans-serif;}
+.civ-newgame .su .v{font-size:15px;color:var(--gold-light);margin-top:3px;}
+.civ-newgame .klaster{margin-top:1rem;padding-top:.85rem;border-top:1px solid var(--bd-sub);}
+.civ-newgame .klaster .kh{font-size:10px;letter-spacing:.3em;text-transform:uppercase;color:var(--gold-dim);font-family:Arial,sans-serif;margin-bottom:.5rem;}
+.civ-newgame .klaster .kv{font-size:13px;color:var(--gold-light);margin-bottom:.35rem;}
+.civ-newgame .klaster .km{font-size:12px;color:var(--tx2);line-height:1.55;font-style:italic;}
+.civ-newgame .start-preview{background:rgba(201,168,76,.05);border:1px solid var(--bd-mid);border-radius:var(--radius-lg);padding:14px 16px;max-width:700px;margin:1rem auto 0;text-align:left;}
+.civ-newgame .start-preview .kh{font-size:10px;letter-spacing:.3em;text-transform:uppercase;color:var(--gold-dim);font-family:Arial,sans-serif;margin-bottom:.5rem;}
+.civ-newgame .epoch-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;max-width:760px;margin:0 auto;align-items:stretch;}
+.civ-newgame .epoch-foot{max-width:760px;margin:.85rem auto 0;display:flex;flex-direction:column;gap:10px;}
+.civ-newgame .epoch-info{background:rgba(201,168,76,.06);border:1px solid var(--bd-mid);border-radius:var(--radius-lg);padding:12px 16px;font-size:13px;line-height:1.55;color:var(--tx2);}
+.civ-newgame .epoch-info strong{color:var(--gold-light);font-weight:400;}
+.civ-newgame .epoch-navhint{text-align:center;font-size:11px;color:var(--tx-muted);font-family:Arial,sans-serif;letter-spacing:.08em;}
+.civ-newgame .ec{background:var(--bg-card);border:1.5px solid var(--bd-sub);border-radius:var(--radius-lg);padding:18px 14px;text-align:center;cursor:pointer;display:flex;flex-direction:column;gap:8px;align-items:center;height:100%;min-height:172px;box-sizing:border-box;transition:all .18s;}
+.civ-newgame .ec:hover:not(.lock){border-color:var(--bd-mid);background:var(--bg-card-h);}
+.civ-newgame .ec.sel{border-color:var(--gold);background:var(--bg-sel);box-shadow:0 0 0 1px rgba(201,168,76,.15);}
+.civ-newgame .ec.lock{opacity:.35;cursor:not-allowed;}
+.civ-newgame .ec-icon{font-size:32px;line-height:1;display:flex;align-items:center;justify-content:center;}
+.civ-newgame .ec .tg-medallion svg{width:36px;height:36px;display:block;}
+.civ-newgame .ec .en{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--tx2);font-family:Arial,sans-serif;font-weight:600;}
+.civ-newgame .ec.sel .en{color:var(--gold);}
+.civ-newgame .ec .bdg{font-size:9px;letter-spacing:.18em;text-transform:uppercase;font-family:Arial,sans-serif;padding:3px 10px;border-radius:12px;border:1px solid var(--gold-dim);color:var(--gold-dim);}
+.civ-newgame .ec.sel .bdg{border-color:var(--gold);color:var(--gold-light);background:rgba(201,168,76,.1);}
+.civ-newgame .ec .fl{flex:1;width:100%;font-size:11px;color:var(--tx2);font-style:italic;line-height:1.45;min-height:4.35em;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden;}
+.civ-newgame .sett-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1.1rem;max-width:720px;margin:0 auto;align-items:stretch;}
+/* PROTOTYP ZMIANA 1 (P-NEWGAME-CYWILIZACJE-ZASLANIAJA-START, wariant A): siatka 2×3
+   (lewo) + Cywilizacje przeciwnika (prawo) obok siebie. align-items:start — oba
+   dzieci mierzone na WŁASNEJ, naturalnej wysokości (nie rozciągnięte do wspólnego
+   wiersza) tak, żeby JS (syncSettLayoutHeight w render()) mogło zmierzyć prawdziwą
+   wysokość lewej siatki i dociąć do niej prawy panel (patrz .ai-civ-panel niżej).
+   / EN: 2×3 grid (left) + opponent-civ panel (right) side by side. align-items:start
+   so BOTH children report their own natural height (not row-stretched) — lets JS
+   measure the left grid's true height and clamp the right panel to match. */
+.civ-newgame .sett-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(230px,300px);gap:1.25rem;max-width:960px;margin:0 auto;align-items:start;}
+.civ-newgame .sett-layout .sett-grid{max-width:none;margin:0;}
+.civ-newgame .qual-sect{max-width:700px;margin:1.1rem auto 0;text-align:center;}
+.civ-newgame .qual-sect h3{font-size:11px;letter-spacing:.35em;text-transform:uppercase;color:var(--tx2);margin-bottom:.65rem;font-family:Arial,sans-serif;font-weight:400;}
+.civ-newgame .qual-hint{color:#E8C060;font-size:12px;line-height:1.55;margin:.75rem auto 0;max-width:520px;font-family:Arial,sans-serif;}
+.civ-newgame .srow{background:var(--bg-card);border:1px solid var(--bd-sub);border-radius:var(--radius-lg);padding:12px 16px;display:flex;flex-direction:column;gap:8px;height:100%;min-height:76px;box-sizing:border-box;}
+.civ-newgame .srow-hdr{display:flex;align-items:center;gap:8px;min-height:28px;}
+.civ-newgame .srow-ic{width:28px;height:28px;border-radius:8px;border:1px solid var(--bd-mid);display:flex;align-items:center;justify-content:center;font-size:17px;background:rgba(201,168,76,.07);flex-shrink:0;color:var(--gold-light);}
+.civ-newgame .srow-ic svg{display:block;width:18px;height:18px;}
+.civ-newgame .sl{font-size:10px;letter-spacing:.32em;text-transform:uppercase;color:var(--tx2);font-family:Arial,sans-serif;line-height:1.3;flex:1;}
+.civ-newgame .sctl{display:flex;align-items:center;gap:10px;flex:1;}
+.civ-newgame .arr{width:28px;height:28px;border:1px solid var(--bd-mid);background:transparent;color:var(--gold);cursor:pointer;border-radius:4px;font-size:15px;font-family:Arial,sans-serif;flex-shrink:0;}
+.civ-newgame .arr:hover{border-color:var(--gold);background:rgba(201,168,76,.1);}
+.civ-newgame .sv{flex:1;text-align:center;font-size:15px;display:flex;flex-direction:column;justify-content:center;}
+/* PROTOTYP P-NEWGAME-OPISY-DO-TOOLTIP: opis pod wartością -> ikona (i) + title (patrz makeInfoIcon).
+   / EN: description under the value -> (i) icon + title (see makeInfoIcon). */
+.civ-newgame .ng-info{flex-shrink:0;width:16px;height:16px;line-height:14px;text-align:center;
+  border-radius:50%;border:1px solid var(--bd-mid);color:var(--tx2);font-size:11px;
+  cursor:help;font-family:Arial,sans-serif;}
+.civ-newgame .ng-info:hover,.civ-newgame .ng-info:focus{border-color:var(--gold);color:var(--gold-light);outline:none;}
+.civ-newgame .gen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:340px;gap:1rem;text-align:center;}
+.civ-newgame .gen-visual{display:grid;grid-template-columns:repeat(6,1fr);gap:4px;max-width:220px;padding:10px;background:rgba(201,168,76,.04);border:1px solid var(--bd-sub);border-radius:var(--radius-lg);}
+.civ-newgame .gen-hex{width:28px;height:32px;background:rgba(201,168,76,.12);clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);animation:cng-pulse 1.6s ease-in-out infinite;}
+.civ-newgame .gen-hex.ocean{background:rgba(60,100,160,.25);}
+.civ-newgame .gen-hex.fog{opacity:.35;}
+@keyframes cng-pulse{0%,100%{opacity:.45;transform:scale(.92)}50%{opacity:1;transform:scale(1)}}
+.civ-newgame .gen-status{font-size:13px;color:var(--tx2);font-family:Arial,sans-serif;letter-spacing:.04em;min-height:1.2em;}
+.civ-newgame .ring{width:70px;height:70px;border-radius:50%;border:2px solid var(--bd-sub);border-top-color:var(--gold);animation:cng-spin 1.3s linear infinite;}
+@keyframes cng-spin{to{transform:rotate(360deg);}}
+.civ-newgame .gt{font-size:24px;color:var(--gold-light);letter-spacing:.12em;}
+.civ-newgame .gp{background:var(--bg-card);border:1px solid var(--bd-sub);border-radius:var(--radius-lg);padding:1rem 1.5rem;text-align:left;max-width:420px;width:100%;}
+.civ-newgame .pr{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid rgba(201,168,76,.06);font-size:13px;}
+.civ-newgame .pr .k{color:var(--tx2);font-family:Arial,sans-serif;}
+.civ-newgame .pr .v{color:var(--gold);}
+.civ-newgame .nav{margin-top:1rem;padding:1rem 2rem 0;display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--bd-sub);background:transparent;max-width:1000px;width:100%;margin-left:auto;margin-right:auto;}
+.civ-newgame .nb{padding:10px 26px;border-radius:var(--radius);font-size:12px;letter-spacing:.2em;text-transform:uppercase;font-family:Arial,sans-serif;cursor:pointer;}
+.civ-newgame .nb.back{background:transparent;border:1px solid var(--bd-mid);color:var(--tx2);}
+.civ-newgame .nb.next{background:rgba(201,168,76,.1);border:1.5px solid var(--bd-strong);color:var(--gold-light);}
+.civ-newgame .nb:disabled{opacity:.3;cursor:not-allowed;}
+.civ-newgame .ni{font-size:11px;color:var(--tx-muted);font-family:Arial,sans-serif;letter-spacing:.15em;text-transform:uppercase;}
+.civ-newgame .cta{padding:12px 40px;border:1.5px solid var(--gold-dim);color:var(--gold);background:transparent;font-size:12px;letter-spacing:.25em;text-transform:uppercase;cursor:pointer;border-radius:var(--radius);font-family:Arial,sans-serif;}
+.civ-newgame .cta:hover{border-color:var(--gold);background:rgba(201,168,76,.1);color:var(--gold-light);}
+.civ-newgame .ng-glyph{display:inline-flex;align-items:center;justify-content:center;width:100%;height:100%;
+  font-family:var(--civ-font-ui);font-size:18px;font-weight:700;letter-spacing:.04em;color:var(--gold-light);}
+.civ-newgame .ng-glyph-sm{font-size:11px;letter-spacing:.06em;}
+.civ-newgame .ng-glyph-lg{font-size:22px;letter-spacing:.12em;}
+.civ-newgame .ng-glyph-ep{font-size:22px;font-weight:600;}
+.civ-newgame .start{background:transparent;border:2px solid var(--gold);color:var(--gold-light);font-size:14px;letter-spacing:.3em;text-transform:uppercase;padding:13px 50px;cursor:pointer;border-radius:var(--radius);font-family:var(--civ-font-ui);margin:1.4rem auto 0;display:block;}
+.civ-newgame .start:hover{background:rgba(232,216,138,0.12);}
+.civ-newgame .sett-actions{max-width:700px;margin:1rem auto 0;display:flex;flex-direction:column;gap:10px;align-items:center;}
+.civ-newgame .btn-adv{background:transparent;border:1px solid var(--bd-mid);color:var(--tx2);font-size:12px;letter-spacing:.15em;text-transform:uppercase;padding:9px 28px;cursor:pointer;border-radius:var(--radius);font-family:Arial,sans-serif;}
+.civ-newgame .btn-adv:hover{color:var(--tx);background:rgba(255,255,255,.03);}
+.civ-newgame .sett-note{font-size:11px;color:var(--tx-muted);text-align:center;max-width:700px;margin:.35rem auto 0;font-family:Arial,sans-serif;line-height:1.4;}
+/* R-HOTSEAT-ETAP6F-PART2-UI-Q1: przełącznik hot-seat (krok 4) + ekran fotela 2. */
+.civ-newgame .seat2-toggle-row{max-width:700px;margin:.6rem auto 0;display:flex;justify-content:center;}
+.civ-newgame .seat2-toggle-btn{background:transparent;border:1px solid var(--bd-mid);color:var(--tx2);font-size:12px;letter-spacing:.1em;padding:9px 22px;cursor:pointer;border-radius:var(--radius);font-family:Arial,sans-serif;}
+.civ-newgame .seat2-toggle-btn.on{border-color:var(--gold);color:var(--gold-light);background:rgba(201,168,76,.08);}
+.civ-newgame .seat2-dist{max-width:700px;margin:1rem auto 0;}
+.civ-newgame .seat2-dist-row{display:flex;gap:10px;justify-content:center;margin-top:.5rem;}
+.civ-newgame .seat2-dist-opt{background:var(--bg-card);border:1.5px solid var(--bd-sub);color:var(--tx2);font-size:12px;letter-spacing:.1em;text-transform:uppercase;padding:9px 22px;cursor:pointer;border-radius:var(--radius);font-family:Arial,sans-serif;}
+.civ-newgame .seat2-dist-opt.sel{border-color:var(--gold);color:var(--gold-light);background:rgba(201,168,76,.1);}
+/* PROTOTYP ZMIANA 1: prawa kolumna kroku 4 — panel Cywilizacje przeciwnika.
+   overflow:hidden + .ai-civ-scroll{flex:1;overflow-y:auto} = ten sam wzorzec co
+   .adv-modal/.adv-modal-body (kolumna z limitem wysokości, scroll TYLKO wewnątrz
+   listy ikon, nigdy strony). max-height panelu ustawia JS (syncSettLayoutHeight).
+   / EN: step 4's right column — opponent-civ panel. Same capped-height + inner-
+   scroll pattern as .adv-modal/.adv-modal-body. Panel's max-height set by JS. */
+.civ-newgame .ai-civ-panel{background:rgba(201,168,76,.05);border:1px solid var(--bd-mid);border-radius:var(--radius-lg);padding:14px 16px;text-align:left;box-sizing:border-box;display:flex;flex-direction:column;overflow:hidden;}
+.civ-newgame .ai-civ-panel .kh{font-size:10px;letter-spacing:.3em;text-transform:uppercase;color:var(--gold-dim);font-family:Arial,sans-serif;margin-bottom:.5rem;flex-shrink:0;}
+.civ-newgame .ai-civ-panel .ai-civ-hint{text-align:left;margin:0 0 .6rem;max-width:none;flex-shrink:0;}
+.civ-newgame .ai-civ-scroll{flex:1;min-height:0;overflow-y:auto;padding-right:2px;}
+/* "Rozbijemy to na dwie części" (Maciej) — ZAWSZE 2 kolumny, nie auto-fill. */
+.civ-newgame .ai-civ-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;align-content:start;}
+.civ-newgame .ai-civ-grid .card{padding:10px 6px;}
+.civ-newgame .card.disabled{opacity:.35;cursor:not-allowed;}
+.civ-newgame .card.disabled:hover{border-color:var(--bd-sub);background:var(--bg-card);transform:none;}
+.civ-newgame .adv-overlay{position:fixed;inset:0;z-index:900;background:rgba(0,0,0,.72);display:none;align-items:flex-start;justify-content:flex-end;padding:1rem 2rem 1rem 1rem;overflow-y:auto;}
+.civ-newgame .adv-overlay.open{display:flex;}
+.civ-newgame .adv-modal{background:#12121A;border:1px solid var(--bd-mid);border-radius:var(--radius-lg);max-width:520px;width:100%;max-height:calc(100vh - 2rem);display:flex;flex-direction:column;overflow:hidden;margin-left:auto;flex-shrink:0;}
+.civ-newgame .adv-modal-head{padding:1.2rem 1.4rem 0;flex-shrink:0;}
+.civ-newgame .adv-modal h3{font-size:18px;font-weight:400;letter-spacing:.12em;color:var(--gold-light);margin-bottom:4px;}
+.civ-newgame .adv-sub{font-size:11px;color:var(--tx-muted);font-family:Arial,sans-serif;margin-bottom:.75rem;line-height:1.45;}
+.civ-newgame .adv-modal-body{flex:1;overflow-y:auto;padding:.5rem 1.4rem;min-height:0;}
+.civ-newgame .adv-row{background:var(--bg-card);border:1px solid var(--bd-sub);border-radius:var(--radius);padding:8px 12px;margin-bottom:6px;}
+.civ-newgame .adv-row .sv{min-height:auto;font-size:14px;}
+.civ-newgame .adv-lbl-row{display:flex;align-items:center;gap:8px;margin-bottom:4px;}
+.civ-newgame .adv-lbl{font-size:10px;letter-spacing:.28em;text-transform:uppercase;color:var(--tx2);font-family:Arial,sans-serif;}
+.civ-newgame .adv-modal-foot{flex-shrink:0;padding:.85rem 1.4rem 1.2rem;border-top:1px solid var(--bd-sub);background:#12121A;}
+.civ-newgame .adv-btns{display:flex;justify-content:flex-end;}
+.civ-newgame .adv-close{background:transparent;border:1px solid var(--bd-mid);color:var(--tx2);padding:8px 20px;border-radius:var(--radius);cursor:pointer;font-family:Arial,sans-serif;font-size:12px;letter-spacing:.1em;text-transform:uppercase;}
+`;
+  const s = document.createElement('style');
+  s.id = STYLE_ID;
+  s.textContent = css;
+  document.head.appendChild(s);
+}
+
+// ---------------------------------------------------------------------------
+// Render
+// ---------------------------------------------------------------------------
+
+function el(tag: string, cls?: string, html?: string): HTMLElement {
+  const n = document.createElement(tag);
+  if (cls) n.className = cls;
+  if (html !== undefined) n.innerHTML = html;
+  return n;
+}
+
+/**
+ * PROTOTYP (P-NEWGAME-OPISY-DO-TOOLTIP, 2026-08-14): ikona informacji (ⓘ) zamiast
+ * zawsze-widocznego opisu pod wartością ustawienia. `title` renderowany ładniejszym
+ * hoverem ze wspólnego wzorca `hudTitleTooltip.ts` (zasięg `.civ-newgame` dopisany
+ * tam celowo dla tego ekranu — patrz installHudTitleTooltips w showNewGameFlow).
+ * / EN: info icon (ⓘ) instead of an always-visible description under a setting's
+ * value. `title` rendered via the shared nicer-hover pattern in hudTitleTooltip.ts.
+ */
+function makeInfoIcon(text: string): HTMLSpanElement {
+  const icon = document.createElement('span');
+  icon.className = 'ng-info';
+  icon.innerHTML = '&#9432;';
+  icon.title = text;
+  icon.tabIndex = 0;
+  icon.setAttribute('role', 'img');
+  icon.setAttribute('aria-label', 'Informacja: ' + text);
+  return icon;
+}
+
+const STEP_LABELS = ['Intro', 'Epoka', 'Cywilizacja', 'Ustawienia', 'Start'];
+
+function selectedCiv(): CivOption | null {
+  return civs().find(c => c.id === selCiv) ?? null;
+}
+
+function currentStartPreview(): StartPreview | null {
+  const data = gameData();
+  if (!data || !selCiv) return null;
+  const mapLabel = curStep >= 4 ? settingValue('map_size') : 'Standardowy';
+  const cityN = curStep >= 4 ? parseInt(settingValue('city_states_count'), 10) : NaN;
+  const typesN = curStep >= 4 ? parseInt(settingValue('civ_types_count'), 10) : NaN;
+  return buildStartPreview({
+    civs: data.civs,
+    cityNamesPools: data.cityNamesPools,
+    playerCivId: selCiv,
+    mapSizeMenuLabel: mapLabel,
+    cityStatesCount: Number.isFinite(cityN) ? cityN : undefined,
+    activeTypesCount: Number.isFinite(typesN) ? typesN : undefined,
+  });
+}
+
+function appendKlasterBlock(parent: HTMLElement, preview: StartPreview): void {
+  const block = el('div', 'klaster');
+  block.appendChild(el('div', 'kh', '&#9670; Start w klastrze typu'));
+  block.appendChild(el('div', 'kv', 'Stolica: ' + preview.playerCapitalName));
+  const rivals = preview.sameTypeRivalNames.slice(0, 5).join(', ')
+    + (preview.sameTypeRivalNames.length > 5 ? '…' : '');
+  block.appendChild(el('div', 'kv', 'Rywale (' + preview.sameTypeRivalCount + '): ' + rivals));
+  if (preview.foreignTypesCount > 0) {
+    block.appendChild(el('div', 'kv', 'Obce typy na mapie: ' + preview.foreignTypesCount));
+  }
+  // Maciej 2026-07-24: podgląd startu = TYLKO parametry, bez prozy (modelDetail usunięty z UI).
+  parent.appendChild(block);
+}
+
+function polarityLabelPl(polarity: CivMatrixSemanticCell['polarity']): string {
+  if (polarity === 'beneficial') return 'wyższa wartość = korzystniej';
+  if (polarity === 'harmful') return 'niższa wartość = korzystniej';
+  return 'profil/opis — bez badge przewagi';
+}
+
+function statusFilterMatches(cell: CivMatrixSemanticCell, filter: string): boolean {
+  if (filter === 'all') return true;
+  if (filter === 'positive') return cell.label === 'POZYTYWNY';
+  if (filter === 'negative') return cell.label === 'NEGATYWNY';
+  if (filter === 'neutral') return cell.label === 'NEUTRALNY';
+  if (filter === 'active') return cell.consumerStatus === 'REAL_GAMEPLAY';
+  if (filter === 'display') return cell.consumerStatus === 'UI_ONLY';
+  if (filter === 'inactive') return !cell.visibleByDefault;
+  return true;
+}
+
+function civMatrixCellSearchText(cell: CivMatrixSemanticCell): string {
+  return [
+    cell.parameterId,
+    cell.paramLabel,
+    cell.domain,
+    cell.consumerStatus,
+    cell.statusLabelPl,
+    cell.label,
+    cell.explanationPl,
+  ].join(' ').toLocaleLowerCase('pl-PL');
+}
+
+function appendCivMatrixCell(parent: HTMLElement, cell: CivMatrixSemanticCell): HTMLElement {
+  const row = el('article', 'civ-matrix-cell');
+  row.dataset.civMatrixRow = 'true';
+  row.dataset.status = cell.consumerStatus;
+  row.dataset.label = cell.label;
+  row.dataset.parameterId = cell.parameterId;
+  row.dataset.search = civMatrixCellSearchText(cell);
+  row.setAttribute(
+    'aria-label',
+    `${cell.paramLabel}: ${cell.label}, ${cell.statusLabelPl}, siła ${cell.intensityLabel}`,
+  );
+
+  const head = el('div', 'civ-matrix-cell-head');
+  head.appendChild(el('div', 'civ-matrix-cell-name', cell.paramLabel));
+  const badge = el('span', 'civ-matrix-cell-badge', cell.label);
+  badge.dataset.label = cell.label;
+  badge.setAttribute('aria-label', `Etykieta: ${cell.label}`);
+  head.appendChild(badge);
+  row.appendChild(head);
+
+  const meta = el('div', 'civ-matrix-cell-meta');
+  meta.appendChild(el('span', '', `Wartość: ${cell.formatted}`));
+  meta.appendChild(el('span', '', `Mediana Normal: ${cell.baselineFormatted}`));
+  meta.appendChild(el('span', '', `Siła: ${cell.intensityLabel} / 10`));
+  meta.appendChild(el('span', '', polarityLabelPl(cell.polarity)));
+  row.appendChild(meta);
+
+  const status = el('div', 'civ-matrix-cell-status', cell.statusLabelPl);
+  status.dataset.status = cell.consumerStatus;
+  status.setAttribute('aria-label', `Status konsumenta: ${cell.statusLabelPl}`);
+  row.appendChild(status);
+
+  const explanation = el('div', 'civ-matrix-cell-explanation');
+  explanation.textContent = `${cell.statusReasonPl} W panelu pokazano wyłącznie tożsamość Normal.`;
+  row.appendChild(explanation);
+  parent.appendChild(row);
+  return row;
+}
+
+/**
+ * Pełny profil 113 pól w kroku wyboru cywilizacji.
+ *
+ * Tylko REAL_GAMEPLAY jest rozwinięte domyślnie. UI_ONLY, UNWIRED i BLOCKED
+ * pozostają w jednym natywnym `<details>`, ale wyszukiwarka może go otworzyć;
+ * żadna komórka nie jest usuwana ani zapisywana do stanu gry.
+ */
+function appendCivMatrixProfile(parent: HTMLElement, civKey: string): void {
+  const profile = buildCivMatrixSemanticProfile(civKey);
+  const box = el('section', 'civ-matrix-profile');
+  box.dataset.civMatrixProfile = profile.civilizationId;
+  box.setAttribute('aria-label', `Pełny profil macierzy Normal: ${profile.civilizationName}`);
+
+  const head = el('div', 'civ-matrix-profile-head');
+  head.appendChild(el('div', 'civ-matrix-profile-title', 'Profil macierzy — Normal'));
+  head.appendChild(el(
+    'div',
+    'civ-matrix-profile-note',
+    `113 wskaźników · mediana wszystkich 15 cywilizacji · aktywne domyślnie: ${profile.activeCount}`,
+  ));
+  box.appendChild(head);
+
+  if (profile.blockedReasonPl) {
+    const error = el('div', 'civ-matrix-profile-error');
+    error.textContent = profile.blockedReasonPl;
+    box.appendChild(error);
+    parent.appendChild(box);
+    return;
+  }
+
+  const controls = el('div', 'civ-matrix-profile-controls');
+  const search = document.createElement('input');
+  search.type = 'search';
+  search.dataset.civMatrixSearch = 'true';
+  search.className = 'civ-matrix-profile-search';
+  search.placeholder = 'Szukaj parametru, domeny lub statusu…';
+  search.setAttribute('aria-label', 'Szukaj w pełnym profilu macierzy');
+  const filter = document.createElement('select');
+  filter.dataset.civMatrixFilter = 'true';
+  filter.className = 'civ-matrix-profile-filter';
+  filter.setAttribute('aria-label', 'Filtruj profil macierzy');
+  const filterOptions: Array<[string, string]> = [
+    ['all', 'Wszystkie'],
+    ['active', 'Aktywne'],
+    ['display', 'Tylko UI'],
+    ['inactive', 'Nieaktywne'],
+    ['positive', 'Pozytywne'],
+    ['negative', 'Negatywne'],
+    ['neutral', 'Neutralne'],
+  ];
+  for (const [value, label] of filterOptions) {
+    const option = document.createElement('option');
+    option.value = value;
+    option.textContent = label;
+    filter.appendChild(option);
+  }
+  controls.appendChild(search);
+  controls.appendChild(filter);
+  box.appendChild(controls);
+
+  const activeList = el('div', 'civ-matrix-profile-list');
+  activeList.dataset.list = 'active';
+  const more = document.createElement('details');
+  more.dataset.civMatrixInactive = 'true';
+  more.className = 'civ-matrix-profile-more';
+  const summary = document.createElement('summary');
+  summary.textContent = `Pozostałe informacje (${profile.inactiveCount})`;
+  more.appendChild(summary);
+  const inactiveList = el('div', 'civ-matrix-profile-list');
+  inactiveList.dataset.list = 'inactive';
+  more.appendChild(inactiveList);
+
+  const rows = profile.cells.map(cell => ({
+    cell,
+    element: appendCivMatrixCell(
+      cell.visibleByDefault ? activeList : inactiveList,
+      cell,
+    ),
+  }));
+  box.appendChild(activeList);
+  box.appendChild(more);
+
+  const legend = el(
+    'div',
+    'civ-matrix-profile-legend',
+    'Badge opisuje kierunek względem mediany Normal. Status informuje, czy istnieje konsument; etykieta nie zapisuje się w sejwie i nie tworzy premii.',
+  );
+  box.appendChild(legend);
+
+  const refresh = () => {
+    const query = search.value.trim().toLocaleLowerCase('pl-PL');
+    const selectedFilter = filter.value;
+    let visible = 0;
+    let visibleInactive = 0;
+    for (const entry of rows) {
+      const matchesQuery = query.length === 0 || entry.element.dataset.search?.includes(query) === true;
+      const matchesFilter = statusFilterMatches(entry.cell, selectedFilter);
+      const show = matchesQuery && matchesFilter;
+      entry.element.style.display = show ? '' : 'none';
+      if (show) {
+        visible++;
+        if (!entry.cell.visibleByDefault) visibleInactive++;
+      }
+    }
+    more.open = (query.length > 0 || selectedFilter !== 'all') && visibleInactive > 0;
+    legend.textContent = query.length > 0 || selectedFilter !== 'all'
+      ? `Widoczne: ${visible} / ${profile.parameterCount}. Badge opisuje kierunek względem mediany Normal; status oddziela opis od aktywnego efektu.`
+      : 'Badge opisuje kierunek względem mediany Normal. Status informuje, czy istnieje konsument; etykieta nie zapisuje się w sejwie i nie tworzy premii.';
+  };
+  search.addEventListener('input', refresh);
+  filter.addEventListener('change', refresh);
+  parent.appendChild(box);
+}
+
+function renderCivStep(host: HTMLElement): void {
+  ensureSelCivForEpoch();
+  const available = civsForEpoch(selEpoch);
+  const ep = EPOCHS.find(e => e.id === selEpoch);
+  const epName = ep?.name ?? selEpoch;
+  host.appendChild(el('div', 'epoch-navhint', epName + ' — dostępnych cywilizacji: ' + available.length));
+
+  const layout = el('div', 'civ-layout');
+  const grid = el('div', 'civ-grid');
+  for (const c of available) {
+    const card = el('div', 'card' + (selCiv === c.id ? ' sel' : ''));
+    card.innerHTML = civMedallionHtml(c.id, selCiv === c.id, 'card', c.kolorHex) + '<div class="cn">' + c.name + '</div>';
+    card.addEventListener('click', () => { selCiv = c.id; markNewGamePrefsDirtyAndSave(); render(); });
+    grid.appendChild(card);
+  }
+  if (available.length === 0) {
+    grid.appendChild(el('div', 'cn', 'Brak cywilizacji dostępnych w tej epoce (epokaWejscia + kaskada).'));
+  }
+  const detail = el('div', 'detail');
+  const c = selectedCiv();
+  if (!c) {
+    const empty = el('div', 'empty');
+    empty.innerHTML = '<div class="arr">&#8592;</div><div>Wybierz cywilizację z siatki,<br>aby zobaczyć bonusy i jednostkę specjalną.</div>';
+    detail.appendChild(empty);
+  } else {
+    const head = el('div', 'civ-dh');
+    head.innerHTML = civMedallionHtml(c.id, true, 'detail', c.kolorHex) + '<div><div class="dn">' + c.name + '</div><div class="civ-dmeta">Cywilizacja</div></div>';
+    detail.appendChild(head);
+    const ds = el('div', 'civ-ds');
+    ds.appendChild(el('div', 'dlbl', 'Cechy &amp; bonusy'));
+    if (c.styl) appendBonusRow(ds, c.styl);
+    for (const b of (c.bonusy ?? [])) appendBonusRow(ds, b);
+    if (c.religia) {
+      const rel = el('div', 'meta-row');
+      rel.textContent = 'Religia: ' + c.religia;
+      ds.appendChild(rel);
+    }
+    if (c.typGlowny) {
+      const typ = el('div', 'meta-row');
+      typ.textContent = 'Typ: ' + c.typGlowny;
+      ds.appendChild(typ);
+    }
+    detail.appendChild(ds);
+    if (c.superJednostka) {
+      detail.appendChild(el('div', 'su', '<div class="l">\u2694 Jednostka specjalna</div><div class="v">' + c.superJednostka + '</div>'));
+    }
+    const preview = currentStartPreview();
+    if (preview) appendKlasterBlock(detail, preview);
+    appendCivMatrixProfile(detail, c.id);
+  }
+  const gridPanel = el('div', 'civ-grid-panel');
+  gridPanel.appendChild(grid);
+  layout.appendChild(gridPanel);
+  layout.appendChild(detail);
+  host.appendChild(layout);
+}
+
+/**
+ * R-HOTSEAT-ETAP6F-PART2-UI-Q1 — analogiczny do `ensureSelCivForEpoch`, ale
+ * wyklucza `selCiv` (ABC-Q3, wykluczenie duplikatu — obrona w głębi, warstwa
+ * danych i tak rzuca przy duplikacie w `buildClusterStartPlan`).
+ */
+function ensureSelCiv2ForEpoch(): void {
+  const list = civsForEpoch(selEpoch).filter(c => c.id !== selCiv);
+  if (list.length === 0) {
+    selCiv2 = null;
+    return;
+  }
+  if (!selCiv2 || selCiv2 === selCiv || !list.some(c => c.id === selCiv2)) {
+    selCiv2 = list[0]!.id;
+  }
+}
+
+function selectedCiv2(): CivOption | null {
+  return civs().find(c => c.id === selCiv2) ?? null;
+}
+
+const DISTANCE_MODE_LABELS: Record<HumanDistanceMode, string> = {
+  blisko: 'Blisko',
+  daleko: 'Daleko',
+  losowo: 'Losowo',
+};
+
+/**
+ * R-HOTSEAT-ETAP6F-PART2-UI-Q1 — ekran wyboru cywilizacji fotela 2 (hot-seat) +
+ * selektor trybu odległości (ABC-Q4). Podekran kroku 4 (`showSeat2Screen`), NIE
+ * osobna pozycja `curStep`/`STEP_LABELS` (ABC-Q2, Wariant A "sekwencyjny" —
+ * fotel 1 przechodzi standardową ścieżkę bez zmian, dopiero POTEM ten ekran).
+ * Wzorzec kafelków 1:1 z `renderCivStep` (linie ok. 1097-1151 przed tą zmianą).
+ */
+function renderSeat2Step(host: HTMLElement): void {
+  ensureSelCiv2ForEpoch();
+  const available = civsForEpoch(selEpoch);
+  host.appendChild(el(
+    'div',
+    'epoch-navhint',
+    'Fotel 2 (hot-seat) — wybierz cywilizację drugiego gracza. Cywilizacja fotela 1 jest niedostępna.',
+  ));
+
+  const layout = el('div', 'civ-layout');
+  const grid = el('div', 'civ-grid');
+  for (const c of available) {
+    const isPlayer1Civ = c.id === selCiv; // ABC-Q3: obrona w głębi — wyszarzone, nieklikalne.
+    const isSel = selCiv2 === c.id;
+    const card = el('div', 'card' + (isSel ? ' sel' : '') + (isPlayer1Civ ? ' disabled' : ''));
+    card.innerHTML = civMedallionHtml(c.id, isSel, 'card', c.kolorHex) + '<div class="cn">' + c.name + '</div>';
+    if (isPlayer1Civ) {
+      (card as HTMLElement).title = 'Cywilizacja fotela 1 — niedostępna dla fotela 2.';
+    } else {
+      card.addEventListener('click', () => { selCiv2 = c.id; render(); });
+    }
+    grid.appendChild(card);
+  }
+  if (available.length <= 1) {
+    grid.appendChild(el('div', 'cn', 'Brak innej cywilizacji dostępnej w tej epoce dla fotela 2.'));
+  }
+
+  const detail = el('div', 'detail');
+  const c2 = selectedCiv2();
+  if (!c2) {
+    const empty = el('div', 'empty');
+    empty.innerHTML = '<div class="arr">&#8592;</div><div>Wybierz cywilizację fotela 2 z siatki.</div>';
+    detail.appendChild(empty);
+  } else {
+    const head = el('div', 'civ-dh');
+    head.innerHTML = civMedallionHtml(c2.id, true, 'detail', c2.kolorHex) + '<div><div class="dn">' + c2.name + '</div><div class="civ-dmeta">Cywilizacja fotela 2</div></div>';
+    detail.appendChild(head);
+    const ds = el('div', 'civ-ds');
+    ds.appendChild(el('div', 'dlbl', 'Cechy &amp; bonusy'));
+    if (c2.styl) appendBonusRow(ds, c2.styl);
+    for (const b of (c2.bonusy ?? [])) appendBonusRow(ds, b);
+    detail.appendChild(ds);
+  }
+  const gridPanel = el('div', 'civ-grid-panel');
+  gridPanel.appendChild(grid);
+  layout.appendChild(gridPanel);
+  layout.appendChild(detail);
+  host.appendChild(layout);
+
+  const distBox = el('div', 'start-preview seat2-dist');
+  distBox.appendChild(el('div', 'kh', 'Odległość heksu startowego fotela 2 (ABC-Q4)'));
+  const distRow = el('div', 'seat2-dist-row');
+  (Object.keys(DISTANCE_MODE_LABELS) as HumanDistanceMode[]).forEach(mode => {
+    const btn = el(
+      'button',
+      'seat2-dist-opt' + (humanDistanceMode === mode ? ' sel' : ''),
+      DISTANCE_MODE_LABELS[mode],
+    );
+    btn.addEventListener('click', () => { humanDistanceMode = mode; render(); });
+    distRow.appendChild(btn);
+  });
+  distBox.appendChild(distRow);
+  host.appendChild(distBox);
+
+  const actions = el('div', 'sett-actions');
+  const back = el('button', 'btn-adv', '&#8592; Wstecz (ustawienia)');
+  back.addEventListener('click', () => { showSeat2Screen = false; render(); });
+  actions.appendChild(back);
+  const start = el('button', 'start', '&#9670; ROZPOCZNIJ GRE &#9670;') as HTMLButtonElement;
+  const canStart = !!selCiv2 && selCiv2 !== selCiv && civsForEpoch(selEpoch).some(c => c.id === selCiv2);
+  start.disabled = !canStart;
+  start.addEventListener('click', () => {
+    if (!canStart) return;
+    curStep = 5;
+    render();
+  });
+  actions.appendChild(start);
+  host.appendChild(actions);
+}
+
+function epochTechSummary(epochId: string): string {
+  if (epochId === 'kamien') return 'Brak wczesniejszych epok — badasz technologie Kamienia od zera.';
+  if (epochId === 'braz') return 'Masz juz <strong>wszystkie technologie epoki Kamienia</strong>. Epoke Braz badasz od zera.';
+  if (epochId === 'zelazo') return 'Masz juz <strong>wszystkie technologie Kamienia i Brazu</strong>. Epoke Zelaza badasz od zera.';
+  return '';
+}
+
+function renderEpochStep(host: HTMLElement): void {
+  const wrap = el('div', 'epoch-foot');
+  const grid = el('div', 'epoch-grid');
+  for (const e of EPOCHS) {
+    const hasCivs = epochHasCivs(e.id);
+    const count = civsForEpoch(e.id).length;
+    const ec = el('div', 'ec' + (hasCivs ? (selEpoch === e.id ? ' sel' : '') : ' lock'));
+    const badge = hasCivs ? (count + ' cyw.') : 'Brak cywilizacji';
+    ec.innerHTML = '<div class="ec-icon">' + epochMedallionHtml(e.id, selEpoch === e.id) + '</div><div class="en">' + e.name + '</div><div class="bdg">' + badge + '</div><div class="fl">' + e.flavor + '</div>';
+    if (hasCivs) {
+      ec.addEventListener('click', () => {
+        selEpoch = e.id;
+        ensureSelCivForEpoch();
+        syncCivTypesOptions();
+        markNewGamePrefsDirtyAndSave();
+        render();
+      });
+    }
+    grid.appendChild(ec);
+  }
+  wrap.appendChild(grid);
+  const info = el('div', 'epoch-info');
+  info.innerHTML = epochTechSummary(selEpoch);
+  wrap.appendChild(info);
+  wrap.appendChild(el('div', 'epoch-navhint', 'Wybrana epoka — kliknij „Dalej", aby wybrać cywilizację dostępną w tej epoce.'));
+  host.appendChild(wrap);
+}
+
+function renderSettingRows(host: HTMLElement, keys: string[]): void {
+  const grid = el('div', 'sett-grid');
+  for (const key of keys) {
+    const s = SETT.find(x => x.key === key);
+    if (!s) continue;
+    const row = el('div', 'srow');
+    row.innerHTML = '<div class="srow-hdr"><div class="srow-ic">' + settingIcon(s.key) + '</div><div class="sl">' + s.lbl + '</div></div><div class="sctl"></div>';
+    const hdr = row.querySelector('.srow-hdr') as HTMLElement;
+    const infoIcon = makeInfoIcon(s.descs[s.idx] ?? '');
+    hdr.appendChild(infoIcon);
+    const ctl = row.querySelector('.sctl') as HTMLElement;
+    const left = el('button', 'arr', '&#8249;');
+    const sv = el('div', 'sv');
+    sv.textContent = s.opts[s.idx] ?? '';
+    const right = el('button', 'arr', '&#8250;');
+    const refreshSv = () => {
+      sv.textContent = s.opts[s.idx] ?? '';
+      const desc = s.descs[s.idx] ?? '';
+      infoIcon.title = desc;
+      infoIcon.setAttribute('aria-label', 'Informacja: ' + desc);
+    };
+    const ch = (d: number) => {
+      s.idx = (s.idx + d + s.opts.length) % s.opts.length;
+      if (s.key === 'map_size') syncMapScaleOptions();
+      if (s.key === 'world_type') resetAdvLandOnWorldTypeChange();
+      refreshSv();
+      markNewGamePrefsDirtyAndSave();
+      if (s.key === 'map_size' || s.key === 'city_states_count' || s.key === 'civ_types_count') {
+        render();
+      }
+    };
+    left.addEventListener('click', () => ch(-1));
+    right.addEventListener('click', () => ch(1));
+    ctl.appendChild(left); ctl.appendChild(sv); ctl.appendChild(right);
+    grid.appendChild(row);
+  }
+  host.appendChild(grid);
+}
+
+function advRowFromSett(key: string, hint: string): AdvSettingRow {
+  const s = SETT.find(x => x.key === key);
+  return {
+    key,
+    lbl: s?.lbl ?? key,
+    hint,
+    opts: s?.opts ?? [],
+    getIdx: () => s?.idx ?? 0,
+    setIdx: (i) => { if (s) s.idx = i; },
+  };
+}
+
+function advancedSettingRows(): AdvSettingRow[] {
+  return [
+    advRowFromSett('map_quality', 'Jakość renderu mapy 3D — niska / średnia / wysoka (GPU).'),
+    advRowFromSett('resources_density', 'Gęstość wszystkich złóż (ruda, bydło, glina…). Reguły terenu bez zmian.'),
+    advRowFromSett(
+      'rivers_density',
+      'Fair play: min. 1 rzeka / komórkę siatki (Mało 10×10 · Normalnie 5×5 · Dużo 5×5). Wyższy tier = gęstsza siatka + ewentualnie dłuższe trasy.',
+    ),
+    advRowFromSett('desert_density', 'Udział pustynnych hexów.'),
+    advRowFromSett(
+      'forest_density',
+      'Fair play: min. 1 las / komórkę siatki (Mało 15 · Normalnie 10 · Dużo 5). Wyższy tier = gęstsza siatka + bonus lasu z szumu (więcej, równomiernie).',
+    ),
+    advRowFromSett(
+      'relief_density',
+      'Fair play: min. 2 góry / komórkę żelaza + 2 wzgórza / komórkę miedzi (Mało 35/21 · Normalnie 25/15 · Dużo 20/12). Wyższy tier = gęstsza siatka + bonus ukształtowania.',
+    ),
+    advRowFromSett('village_rewards_enabled', 'Wioski na mapie dają losowe nagrody: złoto, jednostki, technologia lub relikt. Wyłączenie usywa wszystkie wioski.'),
+    {
+      key: 'landFraction',
+      lbl: 'Udział lądu na mapie',
+      hint: 'Reszta to morze. Domyślnie: Pangea 60%, Kontynenty 30%, Wyspy 50%. Typ Ziemia = szablon kontynentów (~21%, bez suwaka).',
+      opts: landFractionOptLabels(),
+      getIdx: () => {
+        const i = LAND_FRACTION_PERCENT_OPTS.indexOf(advOpts.landFractionPercent);
+        return i >= 0 ? i : LAND_FRACTION_PERCENT_OPTS.indexOf(30);
+      },
+      setIdx: (i) => {
+        advOpts.landFractionPercent = LAND_FRACTION_PERCENT_OPTS[i] ?? 30;
+        advOpts.landFractionCustom = true;
+      },
+    },
+    {
+      key: 'victory_mode',
+      lbl: 'Warunki zwycięstwa',
+      hint: 'Moc = tech + rakieta · Dominacja = >50% Power w ostatniej epoce.',
+      opts: ['Tylko moc', 'Tylko dominacja', 'Moc + dominacja'],
+      getIdx: () => {
+        if (advOpts.victoryMode === 'moc') return 0;
+        if (advOpts.victoryMode === 'dominacja') return 1;
+        return 2;
+      },
+      setIdx: (i) => {
+        advOpts.victoryMode = i === 0 ? 'moc' : i === 1 ? 'dominacja' : 'moc_i_dominacja';
+      },
+    },
+    {
+      key: 'cityStateDifficulty',
+      lbl: 'Trudność miast-państw',
+      hint: 'Zaufanie startowe, próg sojuszu sióstr i posiłki obronne miast-państw — niezależnie od głównej trudności gry. Domyślnie = główna trudność. Wyłączone = pełne wyłączenie generacji miast-państw, mapa ma tylko cywilizacje.',
+      opts: ['Łatwy', 'Normalny', 'Trudny', 'Wyłączone'],
+      getIdx: () => {
+        if (advOpts.cityStateDifficultyOverride === 'easy') return 0;
+        if (advOpts.cityStateDifficultyOverride === 'hard') return 2;
+        if (advOpts.cityStateDifficultyOverride === 'off') return 3;
+        if (advOpts.cityStateDifficultyOverride === 'normal') return 1;
+        // Brak override -- pokaz biezaca glowna trudnosc (SETT difficulty).
+        const diffRow = SETT.find(x => x.key === 'difficulty');
+        return diffRow ? diffRow.idx : 1;
+      },
+      setIdx: (i) => {
+        advOpts.cityStateDifficultyOverride = i === 0 ? 'easy' : i === 2 ? 'hard' : i === 3 ? 'off' : 'normal';
+      },
+    },
+    {
+      key: 'barbariansLevel',
+      lbl: 'Barbarzyńcy',
+      hint: 'Gęstość frakcji barbarzyńskich na mapie — niezależnie od głównej trudności gry. Łatwy = zawsze jacyś, nigdy zero. Brak = pełne wyłączenie.',
+      opts: ['Łatwy', 'Normalny', 'Trudny', 'Brak'],
+      getIdx: () => {
+        if (advOpts.barbariansLevel === 'latwy') return 0;
+        if (advOpts.barbariansLevel === 'trudny') return 2;
+        if (advOpts.barbariansLevel === 'brak') return 3;
+        return 1;
+      },
+      setIdx: (i) => {
+        advOpts.barbariansLevel = i === 0 ? 'latwy' : i === 2 ? 'trudny' : i === 3 ? 'brak' : 'normalny';
+      },
+    },
+    {
+      key: 'battleAlwaysManual',
+      lbl: 'Bitwy',
+      hint: 'Automatyczne — wynik na mapie. Ręczna — wejście w scenę bitwy.',
+      opts: ['Automatyczne', 'Ręczna'],
+      getIdx: () => (advOpts.battleAlwaysManual ? 1 : 0),
+      setIdx: (i) => { advOpts.battleAlwaysManual = i === 1; },
+    },
+    {
+      key: 'buildingCostPace',
+      lbl: 'Koszty budynków',
+      hint: 'Mnożnik Pracy przy budowie — bazowe koszty z panelu = Niski (×1).',
+      opts: ['Niski', 'Normalny', 'Wysoki'],
+      getIdx: () => {
+        if (advOpts.buildingCostPace === 'normalny') return 1;
+        if (advOpts.buildingCostPace === 'wysoki') return 2;
+        return 0;
+      },
+      setIdx: (i) => {
+        advOpts.buildingCostPace = i === 1 ? 'normalny' : i === 2 ? 'wysoki' : 'niski';
+      },
+    },
+    {
+      key: 'kosztJednostekPace',
+      lbl: 'Koszty jednostek',
+      hint: 'Mnożnik złota rekrutacji — bazowe koszty z panelu = Niski (×1).',
+      opts: ['Niski', 'Normalny', 'Wysoki'],
+      getIdx: () => {
+        if (advOpts.kosztJednostekPace === 'normalny') return 1;
+        if (advOpts.kosztJednostekPace === 'wysoki') return 2;
+        return 0;
+      },
+      setIdx: (i) => {
+        advOpts.kosztJednostekPace = i === 1 ? 'normalny' : i === 2 ? 'wysoki' : 'niski';
+      },
+    },
+    {
+      key: 'wzrostLudnosciPace',
+      lbl: 'Wzrost ludności',
+      hint: 'Mnożnik progu 🍞 na +1 mieszkańca — bazowy = Wysoki (×1).',
+      opts: ['Wysoki', 'Normalny', 'Wolny'],
+      getIdx: () => {
+        if (advOpts.wzrostLudnosciPace === 'normalny') return 1;
+        if (advOpts.wzrostLudnosciPace === 'wolny') return 2;
+        return 0;
+      },
+      setIdx: (i) => {
+        advOpts.wzrostLudnosciPace = i === 1 ? 'normalny' : i === 2 ? 'wolny' : 'wysoki';
+      },
+    },
+    {
+      key: 'ruchSwiataPace',
+      lbl: 'Zasięg ruchu',
+      hint: 'Mnożnik punktów ruchu WSZYSTKICH jednostek na mapie świata — bitwa bez zmian. Bazowy = Krótki (×1).',
+      opts: ['Krótki', 'Normalny', 'Długi'],
+      getIdx: () => {
+        if (advOpts.ruchSwiataPace === 'normalny') return 1;
+        if (advOpts.ruchSwiataPace === 'dlugi') return 2;
+        return 0;
+      },
+      setIdx: (i) => {
+        advOpts.ruchSwiataPace = i === 1 ? 'normalny' : i === 2 ? 'dlugi' : 'krotki';
+      },
+    },
+    {
+      key: 'cityLimitBase',
+      lbl: 'Limit miast zakładanych (baza)',
+      hint: 'Bazowa liczba samodzielnie zakładanych miast — rzeczywisty limit per epoka = baza + (epoka−1)×5. Miasta zdobyte nie zużywają limitu. Domyślnie = 10. / EN: base limit for founded cities — actual limit per era = base + (era−1)×5. Captured cities do not use the limit.',
+      opts: ['10 miast', '15 miast', '20 miast'],
+      getIdx: () => {
+        const limits = [10, 15, 20];
+        const i = limits.indexOf(advOpts.cityLimitBase);
+        return i >= 0 ? i : 0;
+      },
+      setIdx: (i) => {
+        const limits = [10, 15, 20];
+        advOpts.cityLimitBase = limits[i] ?? 10;
+      },
+    },
+  ];
+}
+
+let advOverlayEl: HTMLDivElement | null = null;
+
+function ensureAdvOverlay(): HTMLDivElement {
+  if (advOverlayEl && advOverlayEl.isConnected) return advOverlayEl;
+  advOverlayEl = el('div', 'adv-overlay') as HTMLDivElement;
+  advOverlayEl.addEventListener('click', (e) => {
+    if (e.target === advOverlayEl) hideAdvancedModal();
+  });
+  (rootEl ?? document.body).appendChild(advOverlayEl);
+  return advOverlayEl;
+}
+
+function hideAdvancedModal(): void {
+  if (advOverlayEl) advOverlayEl.classList.remove('open');
+  saveNewGamePrefs();
+}
+
+function showAdvancedModal(): void {
+  const overlay = ensureAdvOverlay();
+  overlay.innerHTML = '';
+  const modal = el('div', 'adv-modal');
+  const head = el('div', 'adv-modal-head');
+  head.appendChild(el('h3', '', 'Zaawansowane opcje'));
+  head.appendChild(el('div', 'adv-sub', 'Parametry rzadko zmieniane — poza główną siatką kroku 4.'));
+  modal.appendChild(head);
+  const body = el('div', 'adv-modal-body');
+  const rows = advancedSettingRows();
+  for (const row of rows) {
+    const box = el('div', 'adv-row');
+    const lblRow = el('div', 'adv-lbl-row');
+    lblRow.appendChild(el('span', 'adv-lbl', row.lbl));
+    lblRow.appendChild(makeInfoIcon(row.hint));
+    box.appendChild(lblRow);
+    const ctl = el('div', 'sctl');
+    const left = el('button', 'arr', '&#8249;');
+    const sv = el('div', 'sv');
+    const refresh = () => {
+      const i = row.getIdx();
+      sv.textContent = row.opts[i] ?? '';
+    };
+    refresh();
+    const right = el('button', 'arr', '&#8250;');
+    const ch = (d: number) => {
+      const cur = row.getIdx();
+      const next = (cur + d + row.opts.length) % row.opts.length;
+      row.setIdx(next);
+      refresh();
+      markNewGamePrefsDirtyAndSave();
+    };
+    left.addEventListener('click', () => ch(-1));
+    right.addEventListener('click', () => ch(1));
+    ctl.appendChild(left);
+    ctl.appendChild(sv);
+    ctl.appendChild(right);
+    box.appendChild(ctl);
+    body.appendChild(box);
+  }
+  modal.appendChild(body);
+  const foot = el('div', 'adv-modal-foot adv-btns');
+  const close = el('button', 'adv-close', 'Zamknij');
+  close.addEventListener('click', hideAdvancedModal);
+  foot.appendChild(close);
+  modal.appendChild(foot);
+  overlay.appendChild(modal);
+  overlay.classList.add('open');
+}
+
+/**
+ * R-KONFIGURATOR-WYBOR-CYWILIZACJI-PRZECIWNIKA: multi-select cywilizacji
+ * przeciwnika (krok 4), wzorzec wizualny kroku 3 (`renderCivStep`/`civMedallionHtml`).
+ * Pula = epoka (`aiCivCandidatesForEpoch`); limit = `civ_types_count` − 1. Pusty
+ * wybór = losowy dobór silnika jak dotychczas (backward-compatible).
+ * / EN: opponent civ multi-select (step 4), visual pattern from step 3. Pool =
+ * epoch; cap = `civ_types_count` − 1. Empty selection = today's random engine
+ * pick (backward-compatible).
+ */
+function renderAiCivPicker(host: HTMLElement): void {
+  sanitizeSelAiCivIds();
+  const candidates = aiCivCandidatesForEpoch();
+  const cap = currentAiSelectionCap();
+  // PROTOTYP ZMIANA 1 (P-NEWGAME-CYWILIZACJE-ZASLANIAJA-START, wariant A): panel
+  // przenosi się do prawej kolumny obok siatki 2×3 (patrz renderSettStep/.sett-layout)
+  // — własna klasa `ai-civ-panel` zamiast dawnego `start-preview` (ten drugi ma
+  // margin/max-width myślane pod pełną szerokość, tu jest kolumną grid).
+  // / EN: panel moves to the right column next to the 2×3 grid — dedicated
+  // `ai-civ-panel` class instead of the old full-width `start-preview`.
+  const box = el('div', 'ai-civ-panel');
+  box.appendChild(el('div', 'kh', 'Cywilizacje przeciwnika (opcjonalnie)'));
+  const hint = candidates.length === 0
+    ? 'Brak dostępnych cywilizacji przeciwnika w tej epoce.'
+    : selAiCivIds.length === 0
+      ? 'Nic nie zaznaczono — silnik dobierze przeciwników losowo (jak dotychczas).'
+      : `Wybrano ${selAiCivIds.length} z ${cap} możliwych przy obecnym ustawieniu „Liczba cywilizacji”.`;
+  box.appendChild(el('div', 'sett-note ai-civ-hint', hint));
+  if (candidates.length > 0) {
+    // "Rozbijemy to na dwie części" (Maciej) — siatka ikon ZAWSZE 2 kolumny (nie
+    // auto-fill jak dawniej), żeby kolumna była węższa i wyższa zamiast szerokiej
+    // i niskiej przy wielu wybranych cywilizacjach.
+    // / EN: icon grid is ALWAYS 2 columns (not auto-fill) — narrower, taller
+    // column instead of a wide, short one with many civs selected.
+    const gridWrap = el('div', 'ai-civ-scroll');
+    const grid = el('div', 'civ-grid ai-civ-grid');
+    for (const c of candidates) {
+      const isSel = selAiCivIds.includes(c.id);
+      const atCap = isAiCivCardDisabled(isSel, selAiCivIds.length, cap);
+      const card = el('div', 'card' + (isSel ? ' sel' : '') + (atCap ? ' disabled' : ''));
+      card.innerHTML = civMedallionHtml(c.id, isSel, 'card', c.kolorHex) + '<div class="cn">' + c.name + '</div>';
+      if (atCap) {
+        (card as HTMLElement).title = 'Limit „Liczba cywilizacji” (' + cap + ') osiągnięty — zwiększ suwak albo odznacz inną cywilizację.';
+      } else {
+        card.addEventListener('click', () => {
+          if (isSel) {
+            selAiCivIds = selAiCivIds.filter(id => id !== c.id);
+          } else if (selAiCivIds.length < cap) {
+            selAiCivIds = [...selAiCivIds, c.id];
+          } else {
+            return;
+          }
+          markNewGamePrefsDirtyAndSave();
+          render();
+        });
+      }
+      grid.appendChild(card);
+    }
+    gridWrap.appendChild(grid);
+    box.appendChild(gridWrap);
+  }
+  host.appendChild(box);
+}
+
+function renderSettStep(host: HTMLElement): void {
+  syncMapScaleOptions();
+  syncAdvLandFromWorldType();
+  // PROTOTYP ZMIANA 1 (P-NEWGAME-CYWILIZACJE-ZASLANIAJA-START, wariant A, Maciej
+  // 2026-08-14): „damy to na prawą stronę i wyjustujemy... I rozbijemy to na dwie
+  // części." — siatka 2×3 ustawień (lewo) i Cywilizacje przeciwnika (prawo) jako
+  // dwie kolumny OBOK siebie, wysokość prawej dopasowana do lewej (syncSettLayoutHeight
+  // w render(), bo wymaga zmierzonej wysokości w żywym DOM — content w tym miejscu
+  // jeszcze nie jest zamontowany). "Twój start" + akcje zostają POD całym blokiem,
+  // zawsze na tej samej wysokości niezależnie od liczby wybranych cywilizacji.
+  // / EN: 2×3 settings grid (left) and opponent-civ picker (right) as two columns
+  // side by side; right column's height matched to the left one (measured in the
+  // live DOM after mount — see syncSettLayoutHeight in render()). "Your start" +
+  // actions stay BELOW the whole block, always at the same height.
+  const layout = el('div', 'sett-layout');
+  renderSettingRows(layout, [
+    'difficulty', 'map_size', 'world_type', 'game_speed', 'city_states_count', 'civ_types_count',
+  ]);
+  renderAiCivPicker(layout);
+  host.appendChild(layout);
+
+  const preview = currentStartPreview();
+  if (preview) {
+    const box = el('div', 'start-preview');
+    box.appendChild(el('div', 'kh', 'Twój start (podgląd)'));
+    box.appendChild(el('div', 'kv', preview.modelLine));
+    // Maciej 2026-07-24: bez prozy (modelDetail) — tylko zwięzła linia parametrów.
+    host.appendChild(box);
+  }
+
+  // R-HOTSEAT-ETAP6F-PART2-UI-Q1: przełącznik hot-seat, domyślnie WYŁĄCZONY
+  // (`hotSeatEnabled===false`) — zero wpływu na dzisiejszą ścieżkę
+  // jednoosobową, dopóki gracz świadomie nie kliknie (ABC-Q2 Wariant A).
+  const seat2Row = el('div', 'seat2-toggle-row');
+  const seat2Btn = el(
+    'button',
+    'seat2-toggle-btn' + (hotSeatEnabled ? ' on' : ''),
+    (hotSeatEnabled ? '&#9745;' : '&#9744;') + ' Dodaj drugiego gracza (hot-seat)',
+  );
+  seat2Btn.addEventListener('click', () => {
+    hotSeatEnabled = !hotSeatEnabled;
+    if (!hotSeatEnabled) {
+      // Wyłączenie = pełny reset do stanu domyślnego (zero regresji).
+      selCiv2 = null;
+      humanDistanceMode = 'losowo';
+      showSeat2Screen = false;
+    }
+    markNewGamePrefsDirtyAndSave();
+    render();
+  });
+  seat2Row.appendChild(seat2Btn);
+  host.appendChild(seat2Row);
+
+  const actions = el('div', 'sett-actions');
+  const advBtn = el('button', 'btn-adv', '&#9881;&nbsp; Zaawansowane opcje');
+  advBtn.addEventListener('click', showAdvancedModal);
+  actions.appendChild(advBtn);
+  const start = el('button', 'start', '&#9670; ROZPOCZNIJ GRE &#9670;');
+  start.addEventListener('click', () => {
+    if (hotSeatEnabled) { showSeat2Screen = true; render(); }
+    else { curStep = 5; render(); }
+  });
+  actions.appendChild(start);
+  host.appendChild(actions);
+  host.appendChild(el(
+    'div',
+    'sett-note',
+    'Miasta-państwa = miasta w Twoim klastrze (Sparta, Kapua…). Liczba cywilizacji = ile frakcji / obcych klastrów na mapie. Gęstość świata — w zaawansowanych.',
+  ));
+}
+
+function settingValue(key: string): string {
+  const s = SETT.find(x => x.key === key);
+  return s ? (s.opts[s.idx] ?? '') : '';
+}
+
+function buildParams(): NewGameParams {
+  sanitizeSelAiCivIds();
+  const c = selectedCiv();
+  const ep = EPOCHS.find(e => e.id === selEpoch);
+  const worldLabel = settingValue('world_type');
+  const mapQualityLabel = settingValue('map_quality') || qualityTierToLabel(DEFAULT_RENDER_QUALITY);
+  const bundle = bundledMapQualityFromLabel(mapQualityLabel);
+  const bundledLabel = qualityTierToLabel(bundle.renderQuality);
+  const densityLabels = {
+    resources: settingValue('resources_density') || 'Normalnie',
+    rivers: settingValue('rivers_density') || 'Normalnie',
+    desert: settingValue('desert_density') || 'Normalnie',
+    forest: settingValue('forest_density') || 'Normalnie',
+    relief: settingValue('relief_density') || 'Normalnie',
+  };
+  const worldDensity = worldGenerationPresetFromLabels(densityLabels);
+  const mapSizeLabel = settingValue('map_size');
+  const cityStatesCount = parseInt(settingValue('city_states_count'), 10);
+  const civTypesCount = parseInt(settingValue('civ_types_count'), 10);
+  const cityDefault = defaultMiastaPanstwaFromMapLabel(mapSizeLabel || 'Standardowy');
+  const typesDefault = defaultCivTypesFromMapLabel(
+    mapSizeLabel || 'Standardowy',
+    selEpoch,
+    civRosterRows(),
+  );
+  const epochCivMax = civRosterRows().length > 0
+    ? maxCivTypesForStartEpoch(selEpoch, civRosterRows())
+    : MAX_TYPY_CYWILIZACJI_MENU;
+  const data = gameData();
+  const startPreview = data
+    ? buildStartPreview({
+        civs: data.civs,
+        cityNamesPools: data.cityNamesPools,
+        playerCivId: selCiv ?? DEFAULT_PLAYER_CIV_ID,
+        mapSizeMenuLabel: mapSizeLabel,
+        cityStatesCount: Number.isFinite(cityStatesCount) ? cityStatesCount : undefined,
+        activeTypesCount: Number.isFinite(civTypesCount) ? civTypesCount : undefined,
+      })
+    : undefined;
+  const seed = Math.floor(Math.random() * 1_000_000);
+  // R-HOTSEAT-ETAP6F-PART2-DATA-Q1: `selCiv2` nie jest dziś zapisywany przez
+  // żaden ekran kreatora (zero UI w tym pod-temacie) — w praktyce zawsze
+  // `null`, więc `civId2`/`civName2` są zawsze `undefined` na dzisiejszej
+  // ścieżce menu (no-op). Pole istnieje dla przyszłego UI i testów.
+  const c2 = selCiv2 ? civs().find(x => x.id === selCiv2) ?? null : null;
+  return {
+    civId: selCiv ?? DEFAULT_PLAYER_CIV_ID,
+    civName: c ? c.name : '',
+    civId2: selCiv2 ?? undefined,
+    civName2: c2 ? c2.name : undefined,
+    // R-HOTSEAT-ETAP6F-PART2-UI-Q1: gate na `selCiv2` (nie samo `hotSeatEnabled`) —
+    // `selCiv2` jest `null` zawsze, dopóki gracz nie dotarł do ekranu fotela 2
+    // (`renderSeat2Step`), więc `undefined` tutaj jest gwarantowane na dzisiejszej
+    // ścieżce jednoosobowej niezależnie od stanu przełącznika.
+    humanDistanceMode: selCiv2 ? humanDistanceMode : undefined,
+    epoch: ep ? ep.name : '',
+    epochId: selEpoch,
+    difficulty: settingValue('difficulty'),
+    mapSize: mapSizeLabel,
+    rivals: String(Number.isFinite(cityStatesCount) ? cityStatesCount : cityDefault),
+    speed: settingValue('game_speed'),
+    worldType: worldLabel,
+    typSwiata: typSwiataFromMenuLabel(worldLabel),
+    seed,
+    mapQualityLabel,
+    mapQuality: qualityTierFromLabel(mapQualityLabel),
+    renderQualityLabel: bundledLabel,
+    mapDetailQualityLabel: bundledLabel,
+    renderQuality: bundle.renderQuality,
+    mapDetailQuality: bundle.mapDetailQuality,
+    civTypesCount: Math.min(
+      Number.isFinite(civTypesCount) ? civTypesCount : typesDefault,
+      epochCivMax,
+    ),
+    cityStatesCount: clampMiastaPanstwaCount(
+      Number.isFinite(cityStatesCount) ? cityStatesCount : cityDefault,
+    ),
+    worldDensity,
+    worldDensityLabels: densityLabels,
+    landFractionPercent: advOpts.landFractionPercent,
+    advanced: { ...advOpts },
+    startPreview,
+    selectedAiCivIds: [...selAiCivIds],
+    villageRewardsEnabled: settingValue('village_rewards_enabled') !== 'Wyłączone',
+  };
+}
+
+function buildGenVisual(): HTMLDivElement {
+  const box = el('div', 'gen-visual') as HTMLDivElement;
+  for (let i = 0; i < 24; i++) {
+    const hx = el('div', 'gen-hex');
+    if (i % 7 === 0 || i % 11 === 0) hx.classList.add('ocean');
+    if (i > 14) hx.classList.add('fog');
+    hx.style.animationDelay = (i * 0.08) + 's';
+    box.appendChild(hx);
+  }
+  return box;
+}
+
+const GEN_STATUS = [
+  '\u{1F5FA} Generowanie heksów mapy…',
+  '\u{1F333} Rozmieszczanie terenu i lasów…',
+  '\u{1F916} Inicjalizacja frakcji AI…',
+  '\u{1F3DB} Rozmieszczanie cywilizacji…',
+  '\u{1F32B} Ustawianie mgły wojennej…',
+  '\u2713 Finalizowanie parametrów…',
+];
+
+function renderGenStep(host: HTMLElement): void {
+  const p = buildParams();
+  const wrap = el('div', 'gen');
+  wrap.appendChild(buildGenVisual());
+  wrap.appendChild(el('div', 'ring'));
+  wrap.appendChild(el('div', 'gt', 'Generowanie świata…'));
+  wrap.appendChild(el('div', 'gen-status', GEN_STATUS[0]));
+  const rows: [string, string][] = [
+    ['Cywilizacja', p.civName || '(nie wybrano)'],
+    ['Epoka startowa', p.epoch],
+    ['Trudnosc', p.difficulty],
+    ['Rozmiar mapy', p.mapSize],
+    ['Typ swiata', p.worldType],
+    ['Miasta-panstwa', String(p.cityStatesCount) + ' w klastrze'],
+    ['Liczba cywilizacji', String(p.civTypesCount) + ' na mapie'],
+    ['Predkosc', p.speed],
+    ['Surowce', p.worldDensityLabels.resources],
+    ['Ląd / morze', p.landFractionPercent + '% / ' + (100 - p.landFractionPercent) + '%'],
+    ['Rzeki / pustynie / las / góry', p.worldDensityLabels.rivers + ' · ' + p.worldDensityLabels.desert + ' · ' + p.worldDensityLabels.forest + ' · ' + p.worldDensityLabels.relief],
+    ['Jakosc grafiki', p.mapQualityLabel],
+  ];
+  if (p.advanced) {
+    const vLabel = p.advanced.victoryMode === 'moc'
+      ? 'Tylko moc'
+      : p.advanced.victoryMode === 'dominacja'
+        ? 'Tylko dominacja'
+        : 'Moc + dominacja';
+    const bLabel = p.advanced.barbariansLevel === 'latwy'
+      ? 'Latwy'
+      : p.advanced.barbariansLevel === 'trudny'
+        ? 'Trudny'
+        : p.advanced.barbariansLevel === 'brak'
+          ? 'Brak'
+          : 'Normalny';
+    const costLabel = p.advanced.buildingCostPace === 'normalny'
+      ? 'Normalny (x2)'
+      : p.advanced.buildingCostPace === 'wysoki'
+        ? 'Wysoki (x4)'
+        : 'Niski (x1)';
+    const unitCostLabel = p.advanced.kosztJednostekPace === 'normalny'
+      ? 'Normalny (x2)'
+      : p.advanced.kosztJednostekPace === 'wysoki'
+        ? 'Wysoki (x4)'
+        : 'Niski (x1)';
+    const growthPaceLabel = p.advanced.wzrostLudnosciPace === 'normalny'
+      ? 'Normalny (x2 prog)'
+      : p.advanced.wzrostLudnosciPace === 'wolny'
+        ? 'Wolny (x4 prog)'
+        : 'Wysoki (x1 prog)';
+    const ruchSwiataLabel = p.advanced.ruchSwiataPace === 'normalny'
+      ? 'Normalny (x3)'
+      : p.advanced.ruchSwiataPace === 'dlugi'
+        ? 'Długi (x6)'
+        : 'Krótki (x1)';
+    const csOverride = p.advanced.cityStateDifficultyOverride;
+    const csLabel = csOverride === 'easy'
+      ? 'Łatwy'
+      : csOverride === 'hard'
+        ? 'Trudny'
+        : csOverride === 'off'
+          ? 'Wyłączone'
+          : csOverride === 'normal'
+            ? 'Normalny'
+            : p.difficulty + ' (jak glowna)';
+    const cityLimitLabel = p.advanced.cityLimitBase === 15
+      ? '15 miast'
+      : p.advanced.cityLimitBase === 20
+        ? '20 miast'
+        : '10 miast';
+    rows.push(
+      ['Barbarzyncy', bLabel],
+      ['Bitwy', p.advanced.battleAlwaysManual ? 'Ręczna' : 'Automatyczne'],
+      ['Zwyciestwo', vLabel],
+      ['Koszty budynkow', costLabel],
+      ['Koszty jednostek', unitCostLabel],
+      ['Wzrost ludnosci', growthPaceLabel],
+      ['Zasieg ruchu', ruchSwiataLabel],
+      ['Trudnosc miast-panstw', csLabel],
+      ['Limit miast zakładanych (baza)', cityLimitLabel],
+    );
+  }
+  if (p.startPreview) {
+    for (const [k, v] of p.startPreview.summaryRows) {
+      rows.splice(1, 0, [k, v]);
+    }
+  }
+  const gp = el('div', 'gp');
+  gp.innerHTML = rows.map(r => '<div class="pr"><span class="k">' + r[0] + '</span><span class="v">' + r[1] + '</span></div>').join('');
+  wrap.appendChild(gp);
+  host.appendChild(wrap);
+  flushNewGamePrefs();
+  if (cfg) cfg.onStart(p);
+}
+
+function mountHeroBackground(host: HTMLElement): void {
+  const bg = el('div', 'hero-bg');
+  bg.innerHTML =
+    '<img src="' + heroIntroUrl + '" alt="" />' +
+    '<div class="hero-veil-radial"></div>' +
+    '<div class="hero-veil-linear"></div>';
+  host.appendChild(bg);
+}
+
+function cancelNewGameFlow(): void {
+  cfg?.onCancel?.();
+}
+
+function appendMenuBackButton(parent: HTMLElement, className = 'hdr-menu-back'): void {
+  if (!cfg?.onCancel) return;
+  const btn = el('button', className, '&#8592; Menu g&#322;&#243;wne') as HTMLButtonElement;
+  btn.type = 'button';
+  btn.addEventListener('click', cancelNewGameFlow);
+  parent.appendChild(btn);
+}
+
+function render(): void {
+  if (rootEl === null) return;
+  hideAdvancedModal();
+  advOverlayEl = null;
+  rootEl.innerHTML = '';
+  rootEl.classList.add('hero-flow');
+  mountHeroBackground(rootEl);
+
+  const hdr = el('div', 'hdr');
+  if (curStep >= 1 && curStep <= 4) appendMenuBackButton(hdr);
+  const hdrInner = el('div');
+  hdrInner.innerHTML = '<div class="lab">Kreator Nowej Gry</div><h1>THE GAME</h1>';
+  hdr.appendChild(hdrInner);
+  rootEl.appendChild(hdr);
+
+  const bar = el('div', 'stepbar');
+  STEP_LABELS.forEach((lbl, i) => {
+    const n = i + 1;
+    const si = el('div', 'si' + (n < curStep ? ' done' : n === curStep ? ' active' : ''));
+    si.innerHTML = '<div class="si-b"><div class="si-n">' + n + '</div><span class="si-l">' + lbl + '</span></div>';
+    if (n < curStep) si.addEventListener('click', () => { curStep = n; showSeat2Screen = false; render(); });
+    bar.appendChild(si);
+    if (n < STEP_LABELS.length) bar.appendChild(el('div', 'si-c'));
+  });
+  rootEl.appendChild(bar);
+
+  const content = el('div', 'content');
+  if (curStep === 1) {
+    const intro = el('div', 'intro');
+    const em = el('div', 'em');
+    em.innerHTML = newGameIntroEmblemSvg(44);
+    intro.appendChild(em);
+    intro.appendChild(el('div', 'big', 'NOWA GRA'));
+    // Wersja NIE jest już zahardkodowana (Maciej 2026-07-26: „to już nie jest prototyp 0.1”).
+    // To samo źródło co mainMenu.ts (UI_PARAMS.menu.wersja/etap z data/ui-params.json) —
+    // drugie miejsce, pominięte przy poprzedniej poprawce stopki menu głównego.
+    const introEtap = (UI_PARAMS.menu.etap ?? '').trim();
+    const introVer = UI_PARAMS.menu.wersja;
+    intro.appendChild(el('div', 'sub', `Gra cywilizacyjna 4X \u2022 ${introEtap} v${introVer} \u2022 Kamień, Brąz &amp; Żelazo`));
+    const cta = el('button', 'cta-hero', 'Rozpocznij konfigurację \u2192');
+    cta.addEventListener('click', () => { curStep = 2; render(); });
+    intro.appendChild(cta);
+    if (cfg?.onCancel) {
+      appendMenuBackButton(intro, 'cta-menu-back');
+    }
+    content.appendChild(intro);
+  } else if (curStep === 2) {
+    content.appendChild(el('div', 'sh', '<h2>Epoka Startowa</h2>'));
+    renderEpochStep(content);
+  } else if (curStep === 3) {
+    content.appendChild(el('div', 'sh', '<h2>Wybór Cywilizacji</h2>'));
+    renderCivStep(content);
+  } else if (curStep === 4) {
+    if (showSeat2Screen) {
+      content.appendChild(el('div', 'sh', '<h2>Fotel 2 &mdash; Drugi Gracz</h2>'));
+      renderSeat2Step(content);
+    } else {
+      content.appendChild(el('div', 'sh', '<h2>Ustawienia Rozgrywki</h2>'));
+      renderSettStep(content);
+    }
+  } else {
+    renderGenStep(content);
+  }
+
+  const flowBody = el('div', 'flow-body');
+  flowBody.appendChild(content);
+
+  // nav (kroki 2–4; krok 1 = CTA w treści; krok 5 = generowanie)
+  if (curStep >= 2 && curStep <= 4) {
+    const nav = el('div', 'nav');
+    const back = el('button', 'nb back', '&#8592; Wstecz');
+    back.addEventListener('click', () => {
+      // R-HOTSEAT-ETAP6F-PART2-UI-Q1: na kroku 4 z otwartym ekranem fotela 2,
+      // "Wstecz" wraca do ustawień (podekran), nie do kroku 3.
+      if (curStep === 4 && showSeat2Screen) { showSeat2Screen = false; }
+      else { curStep -= 1; }
+      render();
+    });
+    const info = el('div', 'ni', 'Krok ' + curStep + ' z 5');
+    nav.appendChild(back);
+    nav.appendChild(info);
+    if (curStep >= 2 && curStep <= 3) {
+      const next = el('button', 'nb next', 'Dalej &#8594;') as HTMLButtonElement;
+      const canNext = curStep === 2
+        ? epochHasCivs(selEpoch)
+        : !!selCiv && civsForEpoch(selEpoch).some(c => c.id === selCiv);
+      next.disabled = !canNext;
+      next.addEventListener('click', () => {
+        if (curStep === 2 && !epochHasCivs(selEpoch)) return;
+        if (curStep === 3 && (!selCiv || !civsForEpoch(selEpoch).some(c => c.id === selCiv))) return;
+        if (curStep === 2) ensureSelCivForEpoch();
+        curStep += 1;
+        render();
+      });
+      nav.appendChild(next);
+    } else {
+      nav.appendChild(el('div'));
+    }
+    flowBody.appendChild(nav);
+  }
+  rootEl.appendChild(flowBody);
+  if (curStep === 4) syncSettLayoutHeight();
+}
+
+/**
+ * PROTOTYP ZMIANA 1 (P-NEWGAME-CYWILIZACJE-ZASLANIAJA-START, wariant A): dopina
+ * wysokość prawej kolumny (Cywilizacje przeciwnika) do ZMIERZONEJ, naturalnej
+ * wysokości lewej siatki 2×3 — musi biec PO zamontowaniu do żywego DOM (`content`
+ * w renderSettStep/render() jest budowany poza drzewem, offsetHeight tam zwróci 0).
+ * Przy nadmiarze kandydatów panel przewija się wewnątrz (.ai-civ-scroll), więc
+ * całkowita wysokość bloku nigdy nie rośnie ponad wysokość samej siatki ustawień —
+ * to dokładnie to, o co prosił właściciel ("Twój start" + akcje zawsze widoczne,
+ * niezależnie od liczby wybranych cywilizacji).
+ * / EN: clamps the right column's (opponent-civ panel) height to the MEASURED
+ * natural height of the left 2×3 grid — must run AFTER mounting into the live DOM.
+ * Excess candidates scroll inside the panel, so total block height never grows
+ * past the settings grid's own height.
+ */
+function syncSettLayoutHeight(): void {
+  if (!rootEl) return;
+  const grid = rootEl.querySelector('.sett-layout .sett-grid') as HTMLElement | null;
+  const panel = rootEl.querySelector('.sett-layout .ai-civ-panel') as HTMLElement | null;
+  if (!grid || !panel) return;
+  const h = grid.offsetHeight;
+  if (h > 0) panel.style.maxHeight = h + 'px';
+}
+
+// ---------------------------------------------------------------------------
+// Public API
+// ---------------------------------------------------------------------------
+
+/** Pokaz kreator nowej gry. */
+export function showNewGameFlow(config: NewGameFlowConfig): void {
+  cfg = config;
+  prefsDirty = false;
+  curStep = 1;
+  selCiv = DEFAULT_PLAYER_CIV_ID;
+  selCiv2 = null;
+  hotSeatEnabled = false;
+  humanDistanceMode = 'losowo';
+  showSeat2Screen = false;
+  selEpoch = DEFAULT_START_EPOCH_ID;
+  selAiCivIds = [];
+  ensureSelCivForEpoch();
+  resetSettingsFromParams();
+  loadNewGamePrefs();
+  ensureStyles();
+  // PROTOTYP P-NEWGAME-OPISY-DO-TOOLTIP: idempotentne — hud.ts woła to samo przy
+  // wejściu do gry; kreator działa PRZED tym momentem, więc włącza je tu sam.
+  // / EN: idempotent — hud.ts calls the same on game entry; the wizard runs
+  // before that point, so it installs it itself.
+  installHudTitleTooltips();
+  if (rootEl === null) {
+    rootEl = document.createElement('div');
+    rootEl.className = 'civ-newgame';
+    document.body.appendChild(rootEl);
+  }
+  rootEl.style.display = 'flex';
+  render();
+}
+
+/** Ukryj kreator nowej gry. */
+export function hideNewGameFlow(): void {
+  hideAdvancedModal();
+  saveNewGamePrefs();
+  if (rootEl !== null) rootEl.style.display = 'none';
+}
+
+/** Czy kreator nowej gry jest otwarty. */
+export function isNewGameFlowOpen(): boolean {
+  return rootEl !== null && rootEl.style.display !== 'none';
+}

@@ -29,6 +29,9 @@ export { installAudioService, createMockAudioService } from './audio';
 // P5.7: zapytania suwaków panelu imperium (podział handlu / Pracy).
 export type { EmpireQueriesProvider } from './empireQueries';
 export { installEmpireQueries, hasEmpireQueries, empireQueries, createMockEmpireQueries } from './empireQueries';
+// P5.7 r2: zapytania kreatora nowej gry (`newGameFlow.ts`, ZAŁOŻENIE P5.7-Z4).
+export type { NewGameQueriesProvider } from './newGameQueries';
+export { installNewGameQueries, hasNewGameQueries, newGameQueries, createMockNewGameQueries } from './newGameQueries';
 
 export interface Controller {
   readonly source: Transport['source'];

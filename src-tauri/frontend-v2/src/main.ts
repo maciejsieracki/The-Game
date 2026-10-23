@@ -16,11 +16,13 @@ import {
   createMockAudioService,
   createMockDiplomacyQueries,
   createMockEmpireQueries,
+  createMockNewGameQueries,
   createMockSaveSlotsService,
   createMockTransport,
   installAudioService,
   installDiplomacyQueries,
   installEmpireQueries,
+  installNewGameQueries,
   installPerfDiagnostics,
   installSaveSlotsService,
   installStaticCatalog,
@@ -51,6 +53,8 @@ async function boot(): Promise<void> {
   installAudioService(createMockAudioService());
   // P5.7: atrapa MOCK zapytań suwaków panelu imperium (`controller/empireQueries.ts`).
   installEmpireQueries(createMockEmpireQueries());
+  // P5.7 r2: atrapa MOCK zapytań kreatora nowej gry (`controller/newGameQueries.ts`).
+  installNewGameQueries(createMockNewGameQueries());
 
   const shell = el('section', undefined, 'v2-shell');
   shell.style.cssText =
@@ -84,6 +88,9 @@ async function boot(): Promise<void> {
   // P5.7 r1: cykl C3 (`hud.ts`, panel imperium) + `sceneTimingReport.ts` — jw., nic nie montują.
   const hudEmpire = await import('./ui/portHudEmpire');
   shell.append(el('p', `Moduły cyklu C3 i diagnostyki (P5.7): ${hudEmpire.PORTED_HUD_EMPIRE.length}${mockTag}`));
+  // P5.7 r2: kreator nowej gry (`newGameFlow.ts`) — jw., nic nie montuje.
+  const newGame = await import('./ui/portNewGame');
+  shell.append(el('p', `Kreator nowej gry (P5.7 r2): ${newGame.PORTED_NEW_GAME.length}${mockTag}`));
   const status = el('p', `Źródło danych: ${controller.source}`, 'v2-status');
   shell.append(status);
 

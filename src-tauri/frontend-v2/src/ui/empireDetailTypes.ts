@@ -102,6 +102,12 @@ export interface EmpireResourceRow {
   /** Bonus capu za KAŻDY Magazyn (econ-params.json magazyn_bonus_surowce_na_budynek). */
   capBonusPerMagazyn?: number;
   /**
+   * P5.7 r2 (ROZSZ. P5-0 §6.5 `resources[]`): liczba Magazynów ownera, z której silnik policzył `cap`
+   * (pin UI odwracał formułę: `round((cap − capBase) / capBonusPerMagazyn)`, `empireDetailPanel.ts:3434-3436`).
+   * Brak (undefined) = 0.
+   */
+  magazynyCount?: number;
+  /**
    * Opcjonalnie: skąd dostęp pochodzi (Ceramika/Sól/Koń/Złoto — budynek/złoże/szlak).
    * `undefined` gdy `dostep` jest false (nie ma czego pokazać).
    */
@@ -425,11 +431,15 @@ export interface EmpireHappinessSnap {
 }
 
 /*
- * P5.7: `aggregateHappinessSources` (pin `:415-452`, agregacja rozbicia Zadowolenia po `id` z zaokrągleniem — wołana
+ * P5.7: `aggregateHappinessSources` (pin `:415-448`, agregacja rozbicia Zadowolenia po `id` z zaokrągleniem — wołana
  * WYŁĄCZNIE przez `main.ts:16313` przy budowie snapshotu) usunięta z frontendu: `EmpireDetailSnap.happiness` liczy
  * silnik (P5.13). Konsument (`main.ts`) dostaje gotowy `EmpireHappinessSnap`.
  */
 
+/**
+ * TEMAT 14 (Maciej 2026-07-24) — jedna aktywna trasa handlowa gracz↔obca cywilizacja
+ * (trade-routes.ts TradeRoute), widziana z panelu imperium (nie panelu miasta).
+ */
 export interface EmpireTradeRouteRow {
   id: string;
   /**
