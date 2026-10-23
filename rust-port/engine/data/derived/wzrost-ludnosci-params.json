@@ -1,0 +1,200 @@
+{
+  "meta": {
+    "zrodlo_web": [
+      "gra/src/game/population-growth-v85.ts",
+      "gra/src/game/empire-food.ts",
+      "gra/src/game/population-growth-tempo.ts",
+      "gra/src/game/r-stawki-strojenie.ts",
+      "gra/src/game/building-resource-gate.ts (wejscia: Spichlerz)",
+      "gra/src/game/economy.ts (wejscia: cityPopulationCap, resolvePopulationCapMatrixDelta)",
+      "gra/src/game/economy-upkeep.ts (wejscie: magazynEraMultiplier)"
+    ],
+    "pin_web": "edb8fb56",
+    "wygenerowano": "R-RUSTPORT-P6-7A-MIASTA-WZROST-A-Q1 runda 1, generator: gen-p67a-params.mjs",
+    "uwaga": "Edytowalna tabela balansu wzrostu ludnosci i zywnosci imperium (P6.7A). Jedyne zrodlo stalych z population-growth-v85.ts / empire-food.ts / population-growth-tempo.ts / r-stawki-strojenie.ts. DEFAULT_POZIOM_RACJI i WYZYWIENIE_MAX NIE sa tu kopiowane: zyja w cities-params.json (sekcja wejscia_z_innych_modulow_weba, P6.6B) i modul czyta je stamtad (jedno zrodlo). Tabela NIE jest porownywana ze wzorem przy buildzie; zgodnosc z webem sprawdzaja wektory tests/p6_7a_vectors."
+  },
+  "wyzywienie": {
+    "zrodlo": "population-growth-v85.ts:27 (WYZYWIENIE_MIN), :44 (WYZYWIENIE_STEP), :53-67 (WYZYWIENIE_GROWTH_PCT)",
+    "min": 0,
+    "krok": 0.5,
+    "wzrost_proc": [
+      {
+        "poziom": 0,
+        "proc": -10
+      },
+      {
+        "poziom": 0.5,
+        "proc": -6
+      },
+      {
+        "poziom": 1,
+        "proc": -2
+      },
+      {
+        "poziom": 1.5,
+        "proc": 0
+      },
+      {
+        "poziom": 2,
+        "proc": 1.5
+      },
+      {
+        "poziom": 2.5,
+        "proc": 3
+      },
+      {
+        "poziom": 3,
+        "proc": 3.5
+      },
+      {
+        "poziom": 3.5,
+        "proc": 4
+      },
+      {
+        "poziom": 4,
+        "proc": 4.5
+      },
+      {
+        "poziom": 4.5,
+        "proc": 5
+      },
+      {
+        "poziom": 5,
+        "proc": 5.5
+      },
+      {
+        "poziom": 5.5,
+        "proc": 6
+      },
+      {
+        "poziom": 6,
+        "proc": 7
+      }
+    ]
+  },
+  "skladniki_wzrostu": {
+    "zrodlo": "population-growth-v85.ts:254-271 (computeGrowthPercentV85)",
+    "male_miasto_prog": 6,
+    "zdrowie_na_punkt": 10,
+    "szczescie_na_punkt": 10,
+    "cywilizacja_skala": 100
+  },
+  "trudnosc_mnoznik_macierzy": {
+    "zrodlo": "population-growth-v85.ts:92-96 (CIV_MATRIX_GROWTH_DIFFICULTY_MULT)",
+    "easy": 0.5,
+    "normal": 1,
+    "hard": 1.5
+  },
+  "limit_populacji": {
+    "zrodlo": "economy.ts:1156-1166 (cityPopulationCap / resolvePopulationCapMatrixDelta) - wejscie z innej grupy",
+    "twardy_max": 14,
+    "dozwolone_delta": [
+      -1,
+      0,
+      1,
+      2
+    ]
+  },
+  "spichlerz": {
+    "zrodlo": "building-resource-gate.ts:362-364,434-446,502-503 - wejscie z innej grupy",
+    "id_i": "spichlerz",
+    "id_ii": "spichlerz_ii",
+    "id_akwedukt": "akwedukt",
+    "id_magazyn": "magazyn",
+    "wzrost_proc_tier_i": 1,
+    "wzrost_proc_tier_ii": 2,
+    "wzrost_proc_brak": 0,
+    "mnoznik_kosztu_racji_tier_i": 0.75,
+    "mnoznik_kosztu_racji_tier_ii": 0.5,
+    "mnoznik_kosztu_racji_brak": 1,
+    "cap_imperium_tier_i": 1000,
+    "cap_imperium_tier_ii": 1500
+  },
+  "magazyn_era": {
+    "zrodlo": "economy-upkeep.ts:392-395 (magazynEraMultiplier) - wejscie z innej grupy",
+    "podstawa": 2,
+    "epoka_min": 1
+  },
+  "racje_domyslne_deprecated": {
+    "zrodlo": "population-growth-v85.ts:141-158 (buildRationParams, @deprecated)",
+    "zywnosc": [
+      2,
+      4,
+      6
+    ],
+    "wzrost_proc": [
+      3,
+      5,
+      7
+    ]
+  },
+  "empire_food_domyslne": {
+    "zrodlo": "empire-food.ts:106-134 (buildEmpireFoodParams - wartosci zapasowe pick())",
+    "centralny_cap_baza": 1000,
+    "centralny_cap_bonus_magazyn": 100,
+    "glod_hp_frac": 0.08,
+    "glod_karencja_tur": 3,
+    "glod_stat_mult": 0.75
+  },
+  "migracja_racji_legacy": {
+    "zrodlo": "population-growth-v85.ts:171-176 (migrateLegacyRationLevel)",
+    "wiersze": [
+      {
+        "stary": 1,
+        "nowy": 2
+      },
+      {
+        "stary": 2,
+        "nowy": 4
+      },
+      {
+        "stary": 3,
+        "nowy": 6
+      }
+    ]
+  },
+  "tempo_wzrostu": {
+    "zrodlo": "population-growth-tempo.ts:21-41 (WZROST_LUDNOSCI_PACE, applyGrowthThresholdPace)",
+    "wysoki": 1,
+    "normalny": 2,
+    "wolny": 4,
+    "prog_min": 1
+  },
+  "r_stawki": {
+    "zrodlo": "r-stawki-strojenie.ts:6-12,37-64",
+    "koszt_mult": 2,
+    "fala2_mult": 2,
+    "min_wartosc": 1
+  },
+  "epoki_badan": {
+    "zrodlo": "r-stawki-strojenie.ts:15-33 (stripDiacriticsLower, normalizeResearchEra, isResearchEraFala2Extra)",
+    "domyslna": "kamien",
+    "aliasy": [
+      {
+        "kanon": "braz",
+        "warianty": [
+          "braz",
+          "brąz"
+        ]
+      },
+      {
+        "kanon": "zelazo",
+        "warianty": [
+          "zelazo",
+          "żelazo"
+        ]
+      },
+      {
+        "kanon": "kamien",
+        "warianty": [
+          "kamien",
+          "kamień"
+        ]
+      }
+    ],
+    "fala2_extra": [
+      "braz",
+      "zelazo"
+    ]
+  }
+}
