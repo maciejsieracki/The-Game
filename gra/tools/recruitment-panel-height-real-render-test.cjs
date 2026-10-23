@@ -327,8 +327,12 @@ function measureScript() {
       exactlyOneActiveScrollbar,
       atMostOneActiveScrollbar,
       fiveFullCards,
+      // Evaluator r1 zarzut 1: with compact rows the large viewport legitimately has zero
+      // scrollbars, so layoutPass uses "at most one" (the small viewport still asserts
+      // exactlyOneActiveScrollbar separately). The clean layout must pass it (asserted below),
+      // otherwise the mutant control "layoutPass === false" would be vacuous.
       layoutPass: fullHeight && listAtPanelEnd && cardsStayInPanel && noOverlap
-        && exactlyOneActiveScrollbar && fiveFullCards,
+        && atMostOneActiveScrollbar && fiveFullCards,
     };
   })()`;
 }
@@ -405,6 +409,11 @@ async function main() {
         && clean.large.manpowerStatusCount === clean.large.rowCount
         && clean.large.recruitButtonCount === clean.large.rowCount,
       clean.large.text.slice(0, 900));
+    check('(clean/large) layoutPass = true (kontrola dodatnia dla asercji mutanta)',
+      clean.large.layoutPass === true,
+      { fullHeight: clean.large.fullHeight, listAtPanelEnd: clean.large.listAtPanelEnd,
+        cardsStayInPanel: clean.large.cardsStayInPanel, noOverlap: clean.large.noOverlap,
+        atMostOneActiveScrollbar: clean.large.atMostOneActiveScrollbar, fiveFullCards: clean.large.fiveFullCards });
     check('(clean/large) kolejność nazw jest stabilna po zmianie viewportu',
       clean.large.rowNames.join('|') === clean.small.rowNames.join('|'),
       { large: clean.large.rowNames, small: clean.small.rowNames });

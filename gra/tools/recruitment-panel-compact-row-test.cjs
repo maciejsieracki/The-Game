@@ -12,7 +12,8 @@
  *   K1 row height <= 36 px (every row, every width);
  *   K2 at 340 px at least 12 of the first 13 rows fully visible in the list
  *      without scrolling, with the Production block above the panel;
- *   K3 at 340 px at most 2 of the first 13 names truncated (ellipsis);
+ *   K3 at 340 px at most 2 of the first 13 names truncated (ellipsis), measured
+ *      sub-pixel exact, both with a full pool and with a short pool ("brak N" shown);
  *   K4 no horizontal scrolling at 280 px (and 307/340): list/body/panel
  *      scrollWidth <= clientWidth, row content (cost/actions) inside the row;
  *   K5 recruit info kept (R-REKRUTACJA-KARTY-BRAK-REKRUTOW-Q1): exactly one
@@ -256,6 +257,21 @@ const MEASURE_SRC = `(() => {
     }
     return true;
   };
+  // Unconstrained text width: clone the name off-flow with white-space:nowrap and no width limit.
+  const textWidth = (n) => {
+    const probe = n.cloneNode(true);
+    probe.style.cssText = 'position:absolute;visibility:hidden;left:-99999px;top:0;width:auto;max-width:none;'
+      + 'min-width:0;overflow:visible;text-overflow:clip;white-space:nowrap;display:inline-block;padding:0;border:0;';
+    n.parentElement.appendChild(probe);
+    const w = probe.getBoundingClientRect().width;
+    probe.remove();
+    return w;
+  };
+  const contentWidth = (n) => {
+    const st = getComputedStyle(n);
+    return n.getBoundingClientRect().width - parseFloat(st.paddingLeft) - parseFloat(st.paddingRight)
+      - parseFloat(st.borderLeftWidth) - parseFloat(st.borderRightWidth);
+  };
   const listRect = R(list);
   const first = rows.slice(0, 13);
   const rowData = rows.map((row, i) => {
@@ -272,7 +288,13 @@ const MEASURE_SRC = `(() => {
       i, name: name ? name.textContent.trim() : '',
       height: rr.height,
       fullyVisible: !!listRect && rr.top >= listRect.top - 1 && rr.bottom <= listRect.bottom + 1,
-      nameTruncated: !!name && (name.scrollWidth > name.clientWidth + 1 || name.clientWidth < 8),
+      // Sub-pixel exact (Evaluator r1 zarzut 3): integer scrollWidth with a 1 px tolerance
+      // missed names cut by < 2 px. Compare the laid-out text width (Range over the full
+      // text, ignoring ellipsis rendering) with the name box content width.
+      nameTruncated: !!name && (textWidth(name) > contentWidth(name) + 0.25
+        || name.scrollWidth > name.clientWidth || name.clientWidth < 8),
+      nameTextWidth: name ? Math.round(textWidth(name) * 10) / 10 : null,
+      nameBoxWidth: name ? Math.round(contentWidth(name) * 10) / 10 : null,
       contentInsideRow: !!cr && !!ar && cr.left >= rr.left - 1 && ar.right <= rr.right + 1
         && cr.right <= ar.left + 1 && ar.top >= rr.top - 1 && ar.bottom <= rr.bottom + 1,
       widths: {
@@ -434,6 +456,13 @@ async function main() {
       // Short pool: every row must show a visible, red "brak N" state.
       const short = await measureAt(browser, bundle, w, 1000, w.label === '280' ? `${TAG}-rekrutacja-280px-brak-rekrutow.png` : null);
       const s = short.m;
+      summary[w.label].shortFirst13Truncated = s.first13Truncated.length;
+      summary[w.label].shortTruncatedNames = s.first13Truncated;
+      console.log(`[${w.label}/brak] ucięte nazwy: ${s.first13Truncated.length}/13 ${JSON.stringify(s.first13Truncated)}`);
+      if (w.label === '340') {
+        // Evaluator r1 zarzut 4: "brak N" takes room from the name — K3 must hold in this state too.
+        check('(340) K3 przy braku rekrutów: ucięte nazwy <= 2 z 13', s.first13Truncated.length <= 2, s.first13Truncated);
+      }
       // Rows needing more than the pool (1000) must show "brak N"; rows needing <= 1000
       // (e.g. Zwiadowca, koszt 0) must NOT show a false shortfall.
       const shortRows = s.rows.filter((r) => r.statusData && Number(r.statusData.r) > 1000);
