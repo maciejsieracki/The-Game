@@ -33,6 +33,7 @@
 
 pub mod okolica;
 pub mod stat_chip;
+pub mod trace;
 pub mod worker_field;
 
 use crate::models::misc::HexKey;

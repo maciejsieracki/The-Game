@@ -20,6 +20,7 @@
 //! `:228-297`) only decide *when* an image arrives, not *what* is painted;
 //! caching belongs to the caller (RR-T8d, [`crate::raster::atlas`]).
 
+use crate::cities::overlay::trace;
 use crate::cities::overlay::{js_number_string, js_round, CanvasTexture, SpriteMaterial};
 use crate::cities::overlay::{SpriteNode, TextureRef};
 use crate::raster::atlas::keys::{js_floor_at_least_one, js_to_lower_case, js_trim};
@@ -232,7 +233,7 @@ pub fn draw_defense_shield(ctx: &mut Canvas2dLite, cx: f64, cy: f64, tier: u8) {
     ctx.quadratic_curve_to(cx, y + h + 2.0, x, y + h * 0.62);
     ctx.line_to(x, y + h * 0.22);
     ctx.close_path();
-    ctx.set_fill_style(fill);
+    trace::set_fill_style(ctx, fill);
     ctx.fill();
     ctx.set_stroke_style(stroke);
     ctx.set_line_width(1.5);
@@ -274,17 +275,17 @@ pub fn draw_capital_crown(ctx: &mut Canvas2dLite, cx: f64, cy: f64) -> Result<()
     ctx.line_to(x + w, y + h * 0.16);
     ctx.line_to(x + w, band_y + 0.5);
     ctx.close_path();
-    ctx.set_fill_style_gradient(&grad);
+    trace::set_fill_style_gradient(ctx, &grad);
     ctx.fill();
 
     rounded_rect(ctx, x, band_y, w, band_h, band_h * 0.4);
-    ctx.set_fill_style_gradient(&grad);
+    trace::set_fill_style_gradient(ctx, &grad);
     ctx.fill();
     ctx.set_stroke_style("rgba(255, 244, 200, 0.85)");
     ctx.set_line_width(0.8);
     ctx.stroke();
 
-    ctx.set_fill_style("rgba(42, 34, 8, 0.55)");
+    trace::set_fill_style(ctx, "rgba(42, 34, 8, 0.55)");
     for (gx, gy) in [
         (x + w * 0.10, y + h * 0.28),
         (cx, y + h * 0.16),
@@ -314,12 +315,15 @@ pub fn draw_civ_medallion_disc(
     let gg = f64::from((col >> 8) & 0xff);
     let bb = f64::from(col & 0xff);
     full_circle(ctx, cx, cy, r)?;
-    ctx.set_fill_style(&format!(
-        "rgb({}, {}, {})",
-        js_number_string(js_round(rr * 0.55)),
-        js_number_string(js_round(gg * 0.55)),
-        js_number_string(js_round(bb * 0.55))
-    ));
+    trace::set_fill_style(
+        ctx,
+        &format!(
+            "rgb({}, {}, {})",
+            js_number_string(js_round(rr * 0.55)),
+            js_number_string(js_round(gg * 0.55)),
+            js_number_string(js_round(bb * 0.55))
+        ),
+    );
     ctx.fill();
     ctx.set_stroke_style("#e8d88a");
     ctx.set_line_width(2.0);
@@ -372,7 +376,7 @@ pub fn draw_civ_medallion(
         ctx.restore();
         return Ok(());
     }
-    ctx.set_fill_style(CIV_SIGIL_STROKE);
+    trace::set_fill_style(ctx, CIV_SIGIL_STROKE);
     fill_text(
         ctx,
         MEDALLION_GLYPH_FONT,
@@ -397,6 +401,7 @@ fn fill_text(
     x: f64,
     y: f64,
 ) {
+    trace::fill_text_event(font, align, baseline, text, x, y);
     if let Some(style) = TextStyle::new(font, align, baseline) {
         emoji::fill_text(ctx, &style, text, x, y);
     }
@@ -423,12 +428,12 @@ pub fn draw_resource_warning_icon(
 ) -> Result<(), RasterError> {
     let r = 8.0;
     full_circle(ctx, cx, cy, r)?;
-    ctx.set_fill_style("#8a4a10");
+    trace::set_fill_style(ctx, "#8a4a10");
     ctx.fill();
     ctx.set_stroke_style("#e8a040");
     ctx.set_line_width(1.2);
     ctx.stroke();
-    ctx.set_fill_style("#ffd090");
+    trace::set_fill_style(ctx, "#ffd090");
     fill_text(ctx, WARNING_FONT, "center", "middle", "!", cx, cy + 0.5);
     Ok(())
 }
@@ -476,7 +481,7 @@ pub fn draw_hover_prod_row(
     ctx.set_text_align("left");
     ctx.set_text_baseline("middle");
     line = truncate_hover_line(ctx, &line, max_text_w);
-    ctx.set_fill_style("#c8b888");
+    trace::set_fill_style(ctx, "#c8b888");
     fill_text(ctx, HOVER_FONT, "left", "middle", &line, x, y);
     if input.resource_warning {
         draw_resource_warning_icon(ctx, x + max_text_w + warn_w * 0.5, y)?;
@@ -486,7 +491,7 @@ pub fn draw_hover_prod_row(
 
 /// `drawGrowthLabel(ctx, x, cy, label)` (`:753-764`).
 pub fn draw_growth_label(ctx: &mut Canvas2dLite, x: f64, cy: f64, label: &str) {
-    ctx.set_fill_style("#d4c48a");
+    trace::set_fill_style(ctx, "#d4c48a");
     fill_text(ctx, GROWTH_FONT, "left", "middle", label, x, cy);
 }
 
@@ -650,13 +655,13 @@ pub fn paint_city_map_badge(
     let mut ctx = Canvas2dLite::new(px.width, px.height)?;
     ctx.set_transform(dpr, 0.0, 0.0, dpr, 0.0, 0.0);
 
-    ctx.clear_rect(0.0, 0.0, w_css, h_css);
+    trace::clear_rect(&mut ctx, 0.0, 0.0, w_css, h_css);
     let pill_r = (h_css * 0.45).min(l.base_h * 0.45);
     rounded_rect(&mut ctx, 2.0, 2.0, w_css - 4.0, h_css - 4.0, pill_r);
     let mut grad = ctx.create_linear_gradient(0.0, 0.0, 0.0, h_css);
     grad.add_color_stop(0.0, "rgba(16, 22, 34, 0.96)")?;
     grad.add_color_stop(1.0, "rgba(8, 10, 16, 0.94)")?;
-    ctx.set_fill_style_gradient(&grad);
+    trace::set_fill_style_gradient(&mut ctx, &grad);
     ctx.fill();
     ctx.set_stroke_style(if is_capital {
         CAPITAL_RING_COLOR
@@ -706,7 +711,7 @@ pub fn paint_city_map_badge(
     }
 
     let name_x = PAD_X + l.left_icons_w;
-    ctx.set_fill_style("#f4f0e8");
+    trace::set_fill_style(&mut ctx, "#f4f0e8");
     fill_text(
         &mut ctx,
         NAME_FONT,
@@ -729,10 +734,10 @@ pub fn paint_city_map_badge(
 
     let cx = w_css - PAD_X - CIRCLE_D * 0.5;
     full_circle(&mut ctx, cx, cy, CIRCLE_D * 0.5)?;
-    ctx.set_fill_style("#e8d88a");
+    trace::set_fill_style(&mut ctx, "#e8d88a");
     ctx.fill();
 
-    ctx.set_fill_style("#2a2208");
+    trace::set_fill_style(&mut ctx, "#2a2208");
     fill_text(
         &mut ctx,
         POP_FONT,

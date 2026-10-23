@@ -27,7 +27,15 @@
 //! 8. `textures_match_golden_hashes` (`golden.tsv`; `CITYOVERLAY_BLESS=1`
 //!    re-blesses after a reviewed change), `rendering_twice_is_identical`;
 //! 9. `fixtures_match_manifest_sha256` (+ size ≤ 8 MB),
-//!    `inputs_equal_the_rr_t8c_pin_inputs`.
+//!    `inputs_equal_the_rr_t8c_pin_inputs`;
+//! 10. (round 2) every Chromium texture comparison also applies LOCAL
+//!     limits (`win6`: worst 6 × 6 window mean, `px>64`), per group
+//!     (`local_limits_are_tight` keeps them close to the measured maxima);
+//! 11. (round 2) `draw_traces_match_chromium` — the draw trace of every
+//!     paint (`cities::overlay::trace`: clearRect, fillStyle, shadow*,
+//!     fillText with text / raw font / align / baseline / position bits)
+//!     equals the trace `gen.mjs` recorded in Chromium, event by event;
+//!     `hover_row_text_matches_chromium` — the hover row strings.
 
 #[path = "unit_core_json.rs"]
 mod json;
@@ -45,6 +53,7 @@ use civ_renderer::cities::overlay::stat_chip::{
     paint_city_map_badge, render_city_map_badge, wall_kind_from_built, CityMapBadgeAssets,
     CityMapBadgeInput, CityMapWallKind, CivMedallionContent,
 };
+use civ_renderer::cities::overlay::trace::{capture, DrawEvent};
 use civ_renderer::cities::overlay::worker_field::{
     render_worker_icon, sync_worker_field_overlay, sync_worker_field_overlay_fog,
     worker_owner_color, worker_owner_color_rgba, WorkerFieldOverlay, WORKER_OWNER_COLORS,
@@ -493,6 +502,76 @@ fn diff(t: &CanvasTexture, id: &str) -> ImageDiff {
     compare_premultiplied(&t.premultiplied, &premultiply_straight(&want), w, h)
 }
 
+/// Local structure of a difference (r2): the per-pixel difference is the
+/// largest channel difference of the premultiplied pixels; `win_mean` is the
+/// largest mean of it over any `LOCAL_WIN × LOCAL_WIN` window of device
+/// pixels (integral image), `n_over_64` the number of pixels whose
+/// difference exceeds 64. A displaced / resized / re-blurred glyph moves a
+/// small area by a lot — invisible in the means over the whole texture,
+/// large in a window around it.
+#[derive(Clone, Copy, Debug)]
+struct LocalDiff {
+    win_mean: f64,
+    n_over_64: usize,
+}
+
+const LOCAL_WIN: usize = 6;
+
+/// Local limits (r2), per texture group, from the measured baseline
+/// (P4-33 §6.3): the largest `win_mean` of the unmutated port is 14.36
+/// (badges), 13.44 (yield labels), 5.50 (worker icons); `n_over_64` ≤ 5
+/// everywhere. Measured on the defects the global limits let through:
+/// hover separator (C07) 84.6 / 28 px, 👤 13 → 16 px (C19) 82.4 / 59 px,
+/// shadow blur 3 → 2 of the worked digits (C21) 16.03 / 0 px.
+const WIN_LIMIT_CHIP: f64 = 20.0;
+const WIN_LIMIT_LABEL: f64 = 15.0;
+const WIN_LIMIT_WORKER: f64 = 10.0;
+const MAX_PX_OVER_64: usize = 12;
+
+fn local_diff(a: &[u8], b: &[u8], w: usize, h: usize) -> LocalDiff {
+    let d: Vec<u32> = a
+        .chunks_exact(4)
+        .zip(b.chunks_exact(4))
+        .map(|(p, q)| {
+            p.iter()
+                .zip(q)
+                .map(|(x, y)| u32::from(x.abs_diff(*y)))
+                .max()
+                .unwrap_or(0)
+        })
+        .collect();
+    let n_over_64 = d.iter().filter(|v| **v > 64).count();
+    let k = LOCAL_WIN.min(w).min(h);
+    let mut ii = vec![0u64; (w + 1) * (h + 1)];
+    for y in 0..h {
+        let mut row = 0u64;
+        for x in 0..w {
+            row += u64::from(d[y * w + x]);
+            ii[(y + 1) * (w + 1) + x + 1] = ii[y * (w + 1) + x + 1] + row;
+        }
+    }
+    let mut best = 0u64;
+    for y in 0..=h - k {
+        for x in 0..=w - k {
+            let s = ii[(y + k) * (w + 1) + x + k] + ii[y * (w + 1) + x]
+                - ii[y * (w + 1) + x + k]
+                - ii[(y + k) * (w + 1) + x];
+            best = best.max(s);
+        }
+    }
+    #[allow(clippy::cast_precision_loss)]
+    let win_mean = best as f64 / (k * k) as f64;
+    LocalDiff {
+        win_mean,
+        n_over_64,
+    }
+}
+
+fn local_of(t: &CanvasTexture, id: &str) -> LocalDiff {
+    let want = premultiply_straight(&ref_rgba(id));
+    local_diff(&t.premultiplied, &want, t.width as usize, t.height as usize)
+}
+
 fn within(what: &str, d: &ImageDiff) -> bool {
     let max_mean = MEAN_ABS_EXCEPTIONS
         .iter()
@@ -502,20 +581,78 @@ fn within(what: &str, d: &ImageDiff) -> bool {
 }
 
 /// Prints one table row and returns whether it is within the limits.
-fn report(what: &str, t: &CanvasTexture, id: &str) -> bool {
+fn report(what: &str, t: &CanvasTexture, id: &str, win_limit: f64) -> bool {
     let d = diff(t, id);
+    let l = local_of(t, id);
     let exc = MEAN_ABS_EXCEPTIONS.iter().any(|(w, _)| *w == what);
     println!(
-        "{what} | {id} | {}x{} | {} | {:.4}{} | {:.3} | {:.5}",
+        "{what} | {id} | {}x{} | {} | {:.4}{} | {:.3} | {:.5} | {:.2} | {}",
         t.width,
         t.height,
         d.max_abs,
         d.mean_abs,
         if exc { " (exception ≤ 1.6)" } else { "" },
         d.frac_px_over_16 * 100.0,
-        d.ssim
+        d.ssim,
+        l.win_mean,
+        l.n_over_64
     );
-    within(what, &d)
+    within(what, &d) && l.win_mean <= win_limit && l.n_over_64 <= MAX_PX_OVER_64
+}
+
+/// The local limits are tight: each is within 6 of the measured maximum of
+/// its group (so a regression the global limits miss cannot hide under a
+/// generous local limit), and the window metric sees a 1-pixel change.
+#[test]
+fn local_limits_are_tight() {
+    let fx = fixture();
+    let mut chip_max = 0.0f64;
+    for (r, w) in render_chips(&fx).iter().zip(fx.at("chips").arr()) {
+        chip_max = chip_max.max(local_of(&r.texture, w.at("final").s()).win_mean);
+    }
+    let mut label_max = 0.0f64;
+    for (case, w) in fx
+        .at("inputs")
+        .at("okolica")
+        .arr()
+        .iter()
+        .zip(fx.at("okolica").arr())
+    {
+        let o = build_okolica(&fx, case);
+        let Some(labels) = &o.yields else { continue };
+        let wl = w
+            .at("children")
+            .arr()
+            .last()
+            .expect("yields")
+            .at("labels")
+            .arr();
+        for (l, wlab) in labels.iter().zip(wl) {
+            label_max = label_max.max(local_of(&l.texture, wlab.at("tex").s()).win_mean);
+        }
+    }
+    let wt = fx.at("workerTex").arr();
+    let mut worker_max = 0.0f64;
+    for (i, _, t, _) in worker_textures(&fx) {
+        let w = &wt[usize::try_from(i).expect("index")];
+        worker_max = worker_max.max(local_of(&t, w.at("tex").s()).win_mean);
+    }
+    println!("win6 max: chips {chip_max:.2} labels {label_max:.2} worker {worker_max:.2}");
+    for (what, max, limit) in [
+        ("chips", chip_max, WIN_LIMIT_CHIP),
+        ("labels", label_max, WIN_LIMIT_LABEL),
+        ("worker", worker_max, WIN_LIMIT_WORKER),
+    ] {
+        assert!(
+            max <= limit && limit - max <= 6.0,
+            "{what}: max {max} limit {limit}"
+        );
+    }
+    let a = vec![0u8; 8 * 8 * 4];
+    let mut b = a.clone();
+    b[(3 * 8 + 3) * 4] = 255;
+    let l = local_diff(&a, &b, 8, 8);
+    assert!(l.win_mean > 7.0 && l.n_over_64 == 1, "{l:?}");
 }
 
 /// Every exception is used and really needed (no stale entries).
@@ -824,17 +961,17 @@ fn chip_textures_match_chromium() {
     let fx = fixture();
     let renders = render_chips(&fx);
     let mut failures = Vec::new();
-    println!("chip@page | ref | size | max_abs | mean_abs | px>16 % | ssim");
+    println!("chip@page | ref | size | max_abs | mean_abs | px>16 % | ssim | win6 | px>64");
     for (r, w) in renders.iter().zip(fx.at("chips").arr()) {
         let cached = w.at("cached").b();
         let what = format!("{}@{} final", r.id, r.page);
-        if !report(&what, &r.texture, w.at("final").s()) {
+        if !report(&what, &r.texture, w.at("final").s(), WIN_LIMIT_CHIP) {
             failures.push(what);
         }
         if let Some(i) = w.get("initial").filter(|v| !v.is_null()) {
             let first = if cached { &r.texture } else { &r.initial };
             let what = format!("{}@{} initial", r.id, r.page);
-            if !report(&what, first, i.s()) {
+            if !report(&what, first, i.s(), WIN_LIMIT_CHIP) {
                 failures.push(what);
             }
         }
@@ -855,7 +992,12 @@ fn chip_textures_match_chromium() {
         ),
     ] {
         let cv = paint_city_map_badge(&input, &none, None, Some(1.0)).expect("paint");
-        if !report(what, &CanvasTexture::from_canvas(&cv, 1), id) {
+        if !report(
+            what,
+            &CanvasTexture::from_canvas(&cv, 1),
+            id,
+            WIN_LIMIT_CHIP,
+        ) {
             failures.push(what.to_owned());
         }
     }
@@ -900,7 +1042,7 @@ fn okolica_textures_match_chromium() {
     let fx = fixture();
     let mut failures = Vec::new();
     let cases = fx.at("inputs").at("okolica").arr();
-    println!("label | ref | size | max_abs | mean_abs | px>16 % | ssim");
+    println!("label | ref | size | max_abs | mean_abs | px>16 % | ssim | win6 | px>64");
     for (case, w) in cases.iter().zip(fx.at("okolica").arr()) {
         let o = build_okolica(&fx, case);
         let Some(labels) = &o.yields else { continue };
@@ -919,7 +1061,7 @@ fn okolica_textures_match_chromium() {
                 l.worker,
                 l.lines.len()
             );
-            if !report(&what, &l.texture, wlab.at("tex").s()) {
+            if !report(&what, &l.texture, wlab.at("tex").s(), WIN_LIMIT_LABEL) {
                 failures.push(what);
             }
         }
@@ -986,11 +1128,15 @@ fn worker_trees_match_the_web_bit_for_bit() {
     c.finish("worker trees");
 }
 
-/// The worker textures of the fixture: web index → (owner, player, Rust
-/// texture), from the sprites that use them.
-fn worker_textures(fx: &J) -> Vec<(i64, String, CanvasTexture)> {
+/// A worker texture of the fixture: web index, cache key, Rust texture and
+/// the draw trace of its paint.
+type WorkerTex = (i64, String, CanvasTexture, Vec<DrawEvent>);
+
+/// The worker textures of the fixture: web index → (key, Rust texture,
+/// trace), from the sprites that use them.
+fn worker_textures(fx: &J) -> Vec<WorkerTex> {
     let map: OverlayMap = okolica_map(fx).map;
-    let mut out: Vec<(i64, String, CanvasTexture)> = Vec::new();
+    let mut out: Vec<WorkerTex> = Vec::new();
     for w in fx.at("worker").arr() {
         if w.at("group").is_null() {
             continue;
@@ -1006,17 +1152,19 @@ fn worker_textures(fx: &J) -> Vec<(i64, String, CanvasTexture)> {
             .collect();
         for ((s, wsp), owner) in g.sprites.iter().zip(ws).zip(owners) {
             let ti = wsp.at("texIndex").i();
-            if out.iter().any(|(i, _, _)| *i == ti) {
+            if out.iter().any(|(i, _, _, _)| *i == ti) {
                 continue;
             }
             let TextureRef::WorkerIcon(k) = &s.material.map else {
                 panic!("worker texture")
             };
-            let t = render_worker_icon(owner, player.unwrap_or(0.0)).expect("icon");
-            out.push((ti, k.clone(), t));
+            let (t, segs) =
+                capture(|| render_worker_icon(owner, player.unwrap_or(0.0)).expect("icon"));
+            assert_eq!(segs.len(), 1, "{k}: one paint");
+            out.push((ti, k.clone(), t, segs.into_iter().next().expect("paint")));
         }
     }
-    out.sort_by_key(|(i, _, _)| *i);
+    out.sort_by_key(|(i, _, _, _)| *i);
     out
 }
 
@@ -1028,11 +1176,11 @@ fn worker_textures_match_chromium() {
     assert_eq!(mine.len(), wt.len(), "every web worker texture is rendered");
     let mut c = Cmp::default();
     let mut failures = Vec::new();
-    println!("worker icon | ref | size | max_abs | mean_abs | px>16 % | ssim");
-    for (i, k, t) in &mine {
+    println!("worker icon | ref | size | max_abs | mean_abs | px>16 % | ssim | win6 | px>64");
+    for (i, k, t, _) in &mine {
         let w = &wt[usize::try_from(*i).expect("index")];
         texture_meta_check(&mut c, k, t, w.at("meta"));
-        if !report(k, t, w.at("tex").s()) {
+        if !report(k, t, w.at("tex").s(), WIN_LIMIT_WORKER) {
             failures.push(k.clone());
         }
     }
@@ -1080,6 +1228,207 @@ fn chromium_tree_differences_are_last_bit_noise() {
     println!("chromium-vs-node: {colour} colour channels (1 ulp), {verts} vertex arrays (≤ 1e-6)");
 }
 
+// ------------------------------------------------------------------ draw traces (r2)
+
+/// One Rust trace event in the encoding of `gen.mjs` (numbers = 16 hex
+/// digits of the f64 bits).
+fn trace_row(e: &DrawEvent) -> Vec<String> {
+    let h = |v: f64| format!("{:016x}", v.to_bits());
+    match e {
+        DrawEvent::ClearRect(r) => {
+            let mut v = vec!["clearRect".to_owned()];
+            v.extend(r.iter().map(|x| h(*x)));
+            v
+        }
+        DrawEvent::FillStyle(c) => vec!["fillStyle".into(), c.clone()],
+        DrawEvent::ShadowColor(c) => vec!["shadowColor".into(), c.clone()],
+        DrawEvent::ShadowBlur(b) => vec!["shadowBlur".into(), h(*b)],
+        DrawEvent::ShadowOffsetY(y) => vec!["shadowOffsetY".into(), h(*y)],
+        DrawEvent::FillText {
+            text,
+            font,
+            align,
+            baseline,
+            x,
+            y,
+        } => vec![
+            "fillText".into(),
+            text.clone(),
+            font.clone(),
+            align.clone(),
+            baseline.clone(),
+            h(*x),
+            h(*y),
+        ],
+    }
+}
+
+fn web_trace(fx: &J, ref_id: &str) -> Vec<Vec<String>> {
+    fx.at("traces")
+        .at(ref_id)
+        .arr()
+        .iter()
+        .map(|e| e.arr().iter().map(|x| x.s().to_owned()).collect())
+        .collect()
+}
+
+/// Compares one Rust paint with the Chromium trace of `ref_id`, event by
+/// event (every field exactly, positions by their bits).
+fn trace_check(c: &mut Cmp, what: &str, rust: &[DrawEvent], fx: &J, ref_id: &str) {
+    let r: Vec<Vec<String>> = rust.iter().map(trace_row).collect();
+    let w = web_trace(fx, ref_id);
+    c.eq(&format!("{what} trace length"), r.len(), w.len());
+    for (i, (re, we)) in r.iter().zip(&w).enumerate() {
+        c.eq(&format!("{what} trace[{i}]"), re, we);
+    }
+}
+
+/// Every paint of MOD-10 with its Rust trace segment and the ref id of the
+/// Chromium paint it must equal: (label, Rust events, ref id).
+fn all_paint_traces(fx: &J) -> Vec<(String, Vec<DrawEvent>, String)> {
+    let mut out = Vec::new();
+    for c in fx.at("chips").arr() {
+        let id = c.at("id").s();
+        let input = chip_input_of(fx, id);
+        let dpr = c.at("dpr").f();
+        let (r, segs) =
+            capture(|| render_city_map_badge(&input, chip_assets(id), Some(dpr)).expect("render"));
+        let n_img = r.texture.version - 1;
+        // initial paint + (one repaint when images loaded)
+        assert_eq!(
+            segs.len(),
+            if n_img == 0 { 1 } else { 2 },
+            "{id}: Rust paints"
+        );
+        let page = c.at("page").s();
+        out.push((
+            format!("{id}@{page} final"),
+            segs.last().expect("paint").clone(),
+            c.at("final").s().to_owned(),
+        ));
+        if let Some(i) = c.get("initial").filter(|v| !v.is_null()) {
+            // a cache hit: the web returns the texture already painted (its
+            // last paint), as `chip_textures_match_chromium` compares it
+            let first = if c.at("cached").b() {
+                segs.last()
+            } else {
+                segs.first()
+            };
+            out.push((
+                format!("{id}@{page} initial"),
+                first.expect("paint").clone(),
+                i.s().to_owned(),
+            ));
+        }
+    }
+    let none = CivMedallionContent::default();
+    let hover = chip_input(fx.at("inputs").at("chips").at("hover_full"));
+    for (what, input, id) in [
+        (
+            "drawCityMapBadgeCanvas(hover_full)",
+            hover,
+            fx.at("drawCanvas").s(),
+        ),
+        (
+            "drawCityMapBadgeCanvasLegacy",
+            legacy_input("Legacy", 4.0),
+            fx.at("drawCanvasLegacy").s(),
+        ),
+    ] {
+        let (_, segs) =
+            capture(|| paint_city_map_badge(&input, &none, None, Some(1.0)).expect("paint"));
+        assert_eq!(segs.len(), 1, "{what}: one paint");
+        out.push((what.to_owned(), segs[0].clone(), id.to_owned()));
+    }
+    for (case, w) in fx
+        .at("inputs")
+        .at("okolica")
+        .arr()
+        .iter()
+        .zip(fx.at("okolica").arr())
+    {
+        let (o, segs) = capture(|| build_okolica(fx, case));
+        let Some(labels) = &o.yields else {
+            assert!(segs.is_empty(), "no labels, no paint");
+            continue;
+        };
+        let wl = w
+            .at("children")
+            .arr()
+            .last()
+            .expect("yields")
+            .at("labels")
+            .arr();
+        assert_eq!(segs.len(), labels.len(), "one paint per label");
+        for ((l, seg), wlab) in labels.iter().zip(&segs).zip(wl) {
+            out.push((
+                format!("{} {:?} worker={}", case.at("id").s(), l.hex, l.worker),
+                seg.clone(),
+                wlab.at("tex").s().to_owned(),
+            ));
+        }
+    }
+    let wt = fx.at("workerTex").arr();
+    for (i, k, _, seg) in worker_textures(fx) {
+        let w = &wt[usize::try_from(i).expect("index")];
+        out.push((k, seg, w.at("tex").s().to_owned()));
+    }
+    out
+}
+
+/// The draw trace of every MOD-10 paint equals the Chromium trace of the
+/// same paint (text, raw font, align / baseline, position bits, fill and
+/// shadow state in call order).
+#[test]
+fn draw_traces_match_chromium() {
+    let fx = fixture();
+    let mut c = Cmp::default();
+    let paints = all_paint_traces(&fx);
+    let mut texts = 0;
+    for (what, rust, id) in &paints {
+        texts += rust
+            .iter()
+            .filter(|e| matches!(e, DrawEvent::FillText { .. }))
+            .count();
+        trace_check(&mut c, what, rust, &fx, id);
+    }
+    println!("paints {} fillText {texts}", paints.len());
+    c.finish("draw traces");
+}
+
+/// The hover row (`drawHoverProdRow`, `cityMapStatChip.ts:691-721`): the
+/// line the web draws — separator ' · ', the paused / warning variants and
+/// the truncation to `maxTextW` with '…' — equals the Rust line for every
+/// badge that has one (a named subset of `draw_traces_match_chromium`, so
+/// that a failure says "hover row").
+#[test]
+fn hover_row_text_matches_chromium() {
+    let fx = fixture();
+    let mut c = Cmp::default();
+    let mut n = 0;
+    let mut truncated = 0;
+    for (what, rust, id) in all_paint_traces(&fx) {
+        let pick = |rows: Vec<Vec<String>>| -> Vec<String> {
+            rows.into_iter()
+                .filter(|r| r[0] == "fillText" && r[2] == HOVER_FONT_WEB)
+                .map(|r| r[1].clone())
+                .collect()
+        };
+        let r = pick(rust.iter().map(trace_row).collect());
+        let w = pick(web_trace(&fx, &id));
+        n += w.len();
+        truncated += w.iter().filter(|t| t.ends_with('\u{2026}')).count();
+        c.eq(&format!("{what} hover row"), r, w);
+    }
+    println!("hover rows {n} (truncated {truncated})");
+    assert!(n >= 4, "the fixture has hover rows ({n})");
+    assert!(truncated >= 1, "the fixture truncates a hover row");
+    c.finish("hover rows");
+}
+
+/// `const font = '600 11px Arial, Helvetica, sans-serif'` (`:707`).
+const HOVER_FONT_WEB: &str = "600 11px Arial, Helvetica, sans-serif";
+
 fn golden_text(fx: &J) -> String {
     let mut out = String::from(
         "# R-RUSTPORT-P4-33 golden FNV-1a 64 of the premultiplied RGBA8 of every MOD-10 texture\n# kind<TAB>id<TAB>initial<TAB>final\n",
@@ -1106,7 +1455,7 @@ fn golden_text(fx: &J) -> String {
             .expect("write");
         }
     }
-    for (_, k, t) in worker_textures(fx) {
+    for (_, k, t, _) in worker_textures(fx) {
         writeln!(out, "worker\t{k}\t-\t{:016x}", t.hash).expect("write");
     }
     out

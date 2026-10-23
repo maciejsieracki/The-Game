@@ -9,6 +9,7 @@ and restores the file (also on SIGTERM / SIGINT). KILLED = some test failed.
 Usage (from the repository root):
   python3 dyspozycje/autobot/runs/R-RUSTPORT-P4-33-MOD10-CITY-CHIP-Q1/dowody/08-mutations.py
 """
+import os
 import pathlib
 import re
 import signal
@@ -64,7 +65,7 @@ M = [
     ("C20", "okolica.rs", "if t == Terrain::Morze || t == Terrain::Gory {\n                continue;\n            }\n            if key != city_key",
      "if t == Terrain::Morze || t == Terrain::Gory || t == Terrain::PlytkieMorze {\n                continue;\n            }\n            if key != city_key",
      "shallow sea treated as unworkable (isWaterTerrain)"),
-    ("C21", "okolica.rs", "ctx.set_shadow_blur(if worked { 3.0 } else { 2.0 });", "ctx.set_shadow_blur(2.0);",
+    ("C21", "okolica.rs", "trace::set_shadow_blur(ctx, if worked { 3.0 } else { 2.0 });", "trace::set_shadow_blur(ctx, 2.0);",
      "worked digits with the idle shadow blur"),
     ("C22", "worker_field.rs", "let badge_r = if is_player { 11.0 } else { 12.0 };", "let badge_r = 12.0;",
      "player worker badge radius 11 -> 12"),
@@ -76,7 +77,15 @@ M = [
      "palette index wraps negatives (JS % keeps the sign)"),
     ("C26", "mod.rs", "    let h = hex.unwrap_or(0);", "    let h = hex.unwrap_or(0x00ff_ffff);",
      "undefined owner colour painted white instead of black"),
+    # round 2
+    ("C27", "okolica.rs", "trace::set_shadow_offset_y(ctx, 1.0);", "trace::set_shadow_offset_y(ctx, 2.0);",
+     "yield digit shadow offset 1 -> 2"),
+    ("C28", "okolica.rs", "\"rgba(0,0,0,0.75)\"", "\"rgba(0,0,0,0.6)\"",
+     "worked digit shadow alpha 0.75 -> 0.6"),
 ]
+
+# tests that compare with the Rust output itself, not with the web
+SELF = {"textures_match_golden_hashes", "rendering_twice_is_identical"}
 
 ORIG = {}
 
@@ -95,7 +104,7 @@ def run():
     r = subprocess.run(
         "cargo test --locked --lib cities::overlay 2>&1; echo LIBEXIT=$?; "
         "cargo test --locked --test cityoverlay_web_parity 2>&1; echo ITEXIT=$?",
-        shell=True, cwd=CRATE, capture_output=True, text=True)
+        shell=True, cwd=CRATE, capture_output=True, text=True, env=os.environ)
     out = r.stdout
     failed = sorted(set(re.findall(r"^test (\S+) \.\.\. FAILED", out, re.M)))
     compile_err = "error[E" in out or "could not compile" in out
@@ -112,8 +121,9 @@ def main():
     if not ok:
         sys.exit("baseline must pass")
     killed = 0
-    print("| ID | file | mutation | result | killed by |")
-    print("|---|---|---|---|---|")
+    web_killed = 0
+    print("| ID | file | mutation | result | killed by | without the golden hash |")
+    print("|---|---|---|---|---|---|")
     for mid, f, old, new, what in M:
         p = SRC / f
         text = p.read_text()
@@ -129,12 +139,14 @@ def main():
         res = "**KILLED**" if not ok else "SURVIVED"
         killed += not ok
         why = "compile error" if ce else ", ".join(failed)
-        print(f"| {mid} | `src/cities/overlay/{f}` | {what} | {res} | {why} |", flush=True)
-    print(f"\nResult: {killed}/{len(M)} killed")
+        web = [t for t in failed if t not in SELF]
+        web_killed += bool(web)
+        print(f"| {mid} | `src/cities/overlay/{f}` | {what} | {res} | {why} | {'yes' if web else '**NO**'} |", flush=True)
+    print(f"\nResult: {killed}/{len(M)} killed, {web_killed}/{len(M)} by a test other than the golden hash / rendering_twice")
     # the tree is clean again
     d = subprocess.run(["git", "diff", "--stat", "--", str(SRC)], cwd=ROOT, capture_output=True, text=True).stdout
     print("git diff after the run:", d.strip() or "(none)")
-    sys.exit(0 if killed == len(M) else 1)
+    sys.exit(0 if killed == len(M) and web_killed == len(M) else 1)
 
 
 main()

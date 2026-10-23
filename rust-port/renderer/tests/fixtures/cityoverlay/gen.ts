@@ -18,7 +18,12 @@
 //
 // Environment adaptations (NOT web code changes), done by gen.mjs before this
 // bundle runs: the canvas `font` setter maps the web font stacks onto the
-// bundled faces (mapFont); window.Image is wrapped to wait for every onload.
+// bundled faces (mapFont); window.Image is wrapped to wait for every onload;
+// the setters fillStyle / shadowColor / shadowBlur / shadowOffsetY and the
+// calls clearRect / fillText / save / restore are wrapped to RECORD a draw
+// trace per canvas (canvas.__civTrace, reset by clearRect = start of a paint;
+// the text event carries the RAW font string the web set, before mapFont).
+// The wrappers only record and then call the native implementation.
 
 import * as THREE from 'three';
 import * as Chip from '../websrc/gra/src/render/cityMapStatChip';
@@ -59,6 +64,9 @@ function hx32a(a: ArrayLike<number>): string {
 
 // ------------------------------------------------------------------ canvases
 const snapshots: Record<string, string> = {};
+/** Draw trace of the paint behind each snapshot id (P4-33 r2, gen.mjs hooks). */
+const traces: Record<string, unknown> = {};
+const traceConflicts: string[] = [];
 function b64(u8: Uint8ClampedArray): string {
   let s = '';
   for (let i = 0; i < u8.length; i += 0x8000) s += String.fromCharCode.apply(null, Array.from(u8.subarray(i, i + 0x8000)));
@@ -69,9 +77,16 @@ function snap(canvas: HTMLCanvasElement): string {
   const c = canvas.getContext('2d')!;
   const data = c.getImageData(0, 0, canvas.width, canvas.height).data;
   const s = b64(data);
-  for (const [id, v] of Object.entries(snapshots)) if (v === s) return id;
+  const tr = JSON.stringify((canvas as any).__civTrace ?? null);
+  for (const [id, v] of Object.entries(snapshots)) {
+    if (v === s) {
+      if (JSON.stringify(traces[id]) !== tr) traceConflicts.push(id);
+      return id;
+    }
+  }
   const id = 'r' + Object.keys(snapshots).length;
   snapshots[id] = s;
+  traces[id] = JSON.parse(tr);
   return id;
 }
 async function settle(): Promise<void> {
@@ -407,6 +422,8 @@ export async function run(): Promise<unknown> {
   }
   if (page !== 'node') await settle();
   out.snapshots = snapshots;
+  out.traces = traces;
+  out.traceConflicts = traceConflicts;
   return out;
 }
 (globalThis as any).CITY_RUN = run;

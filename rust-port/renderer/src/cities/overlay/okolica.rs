@@ -17,6 +17,7 @@
 
 use std::collections::HashSet;
 
+use super::trace;
 use super::worker_field::worker_owner_color_rgba;
 use super::{js_number_string, js_round, CanvasTexture, SpriteMaterial, SpriteNode, TextureRef};
 use crate::models::misc::range::{build_range_overlay_group_game, RangeOverlayStyle};
@@ -164,6 +165,7 @@ fn fill_text(
     x: f64,
     y: f64,
 ) {
+    trace::fill_text_event(font, align, baseline, t, x, y);
     if let Some(style) = TextStyle::new(font, align, baseline) {
         emoji::fill_text(ctx, &style, t, x, y);
     }
@@ -209,12 +211,12 @@ pub fn draw_worker_badge(
     )?;
     ctx.stroke();
 
-    ctx.set_fill_style(&worker_owner_color_rgba(owner_id, 0.72));
+    trace::set_fill_style(ctx, &worker_owner_color_rgba(owner_id, 0.72));
     ctx.begin_path();
     ctx.arc(cx, cy, WORKER_BADGE_R, 0.0, pi2, false)?;
     ctx.fill();
 
-    ctx.set_fill_style("rgba(255,255,255,0.92)");
+    trace::set_fill_style(ctx, "rgba(255,255,255,0.92)");
     let font = format!(
         "bold {}px Segoe UI, Arial",
         js_number_string(WORKER_BADGE_GLYPH_PX)
@@ -246,8 +248,8 @@ pub fn draw_yield_line(
 
     ctx.set_text_align("left");
     ctx.set_text_baseline("top");
-    ctx.set_shadow_color("transparent");
-    ctx.set_shadow_blur(0.0);
+    trace::set_shadow_color(ctx, "transparent");
+    trace::set_shadow_blur(ctx, 0.0);
 
     let ef = yield_emoji_font(emoji_px);
     let df = yield_digit_font(digit_px);
@@ -255,22 +257,28 @@ pub fn draw_yield_line(
     let num_w = measure(&df, &num_str);
     let mut x = cx - (emoji_w + num_w) / 2.0;
 
-    ctx.set_fill_style("rgba(255,255,255,0.95)");
+    trace::set_fill_style(ctx, "rgba(255,255,255,0.95)");
     fill_text(ctx, &ef, "left", "top", line.emoji, x, y);
     x += emoji_w;
 
-    ctx.set_fill_style(if worked {
-        YIELD_NUMBER_GOLD
-    } else {
-        YIELD_NUMBER_DEFAULT
-    });
-    ctx.set_shadow_color(if worked {
-        "rgba(0,0,0,0.75)"
-    } else {
-        "rgba(0,0,0,0.45)"
-    });
-    ctx.set_shadow_blur(if worked { 3.0 } else { 2.0 });
-    ctx.set_shadow_offset_y(1.0);
+    trace::set_fill_style(
+        ctx,
+        if worked {
+            YIELD_NUMBER_GOLD
+        } else {
+            YIELD_NUMBER_DEFAULT
+        },
+    );
+    trace::set_shadow_color(
+        ctx,
+        if worked {
+            "rgba(0,0,0,0.75)"
+        } else {
+            "rgba(0,0,0,0.45)"
+        },
+    );
+    trace::set_shadow_blur(ctx, if worked { 3.0 } else { 2.0 });
+    trace::set_shadow_offset_y(ctx, 1.0);
     fill_text(
         ctx,
         &df,
@@ -280,8 +288,8 @@ pub fn draw_yield_line(
         x,
         y - if worked { 2.0 } else { 0.0 },
     );
-    ctx.set_shadow_color("transparent");
-    ctx.set_shadow_blur(0.0);
+    trace::set_shadow_color(ctx, "transparent");
+    trace::set_shadow_blur(ctx, 0.0);
 }
 
 /// The canvas height of a label (`:184-194`).
@@ -327,7 +335,7 @@ pub fn render_yield_label(
     #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
     let h_px = h as u32; // integral, 46..=a few hundred
     let mut ctx = Canvas2dLite::new(LABEL_CANVAS_W, h_px)?;
-    ctx.clear_rect(0.0, 0.0, f64::from(LABEL_CANVAS_W), h);
+    trace::clear_rect(&mut ctx, 0.0, 0.0, f64::from(LABEL_CANVAS_W), h);
     if worker {
         draw_worker_badge(&mut ctx, 64.0, owner_id)?;
     }

@@ -12,7 +12,8 @@
 //    --disable-gpu --force-color-profile=srgb --font-render-hinting=none) on three
 //    pages (devicePixelRatio 1, 2, 1.5) with the bundled fonts loaded as FontFace
 //    objects and the canvas `font` setter mapped onto them (mapFont, as
-//    tests/fixtures/overlay/gen.mjs);
+//    tests/fixtures/overlay/gen.mjs); fillStyle / shadow* setters and clearRect /
+//    fillText / save / restore are wrapped to record a draw trace per canvas (r2);
 // 4. runs the same bundle in node 22 for the numbers of the okolica / worker trees
 //    (stub canvas), lists every Chromium-vs-node difference of those trees;
 // 5. writes city.json, ref/<id>.rgba (straight RGBA8 = getImageData, deduplicated by
@@ -148,9 +149,40 @@ async function runPage(pageName, dpr) {
     const mapFamily = new Function('return ' + mapFamilySrc)();
     const mapFont = new Function('mapFamily', 'return ' + mapFontSrc)(mapFamily);
     const d = Object.getOwnPropertyDescriptor(CanvasRenderingContext2D.prototype, 'font');
-    Object.defineProperty(CanvasRenderingContext2D.prototype, 'font', {
-      configurable: true, get() { return d.get.call(this); }, set(v) { d.set.call(this, mapFont(v)); },
+    // draw trace (P4-33 r2): record, then call the native implementation
+    const P = CanvasRenderingContext2D.prototype;
+    const hx = (v) => {
+      const dv = new DataView(new ArrayBuffer(8));
+      dv.setFloat64(0, Number(v), false);
+      let s = '';
+      for (let i = 0; i < 8; i++) s += dv.getUint8(i).toString(16).padStart(2, '0');
+      return s;
+    };
+    const st = new WeakMap(); // ctx -> { font: raw web string, stack }
+    const S = (c) => { let o = st.get(c); if (!o) { o = { font: '10px sans-serif', stack: [] }; st.set(c, o); } return o; };
+    const T = (c) => (c.canvas.__civTrace ??= []);
+    Object.defineProperty(P, 'font', {
+      configurable: true, get() { return d.get.call(this); }, set(v) { S(this).font = String(v); d.set.call(this, mapFont(v)); },
     });
+    const wrapSet = (name, enc) => {
+      const pd = Object.getOwnPropertyDescriptor(P, name);
+      Object.defineProperty(P, name, {
+        configurable: true, get() { return pd.get.call(this); },
+        set(v) { T(this).push([name, enc(v)]); pd.set.call(this, v); },
+      });
+    };
+    wrapSet('fillStyle', (v) => (typeof v === 'string' ? v : '<gradient>'));
+    wrapSet('shadowColor', (v) => String(v));
+    wrapSet('shadowBlur', hx);
+    wrapSet('shadowOffsetY', hx);
+    const nSave = P.save, nRestore = P.restore, nClear = P.clearRect, nFill = P.fillText;
+    P.save = function save() { const o = S(this); o.stack.push(o.font); return nSave.call(this); };
+    P.restore = function restore() { const o = S(this); if (o.stack.length) o.font = o.stack.pop(); return nRestore.call(this); };
+    P.clearRect = function clearRect(x, y, w, h) { this.canvas.__civTrace = [['clearRect', hx(x), hx(y), hx(w), hx(h)]]; return nClear.call(this, x, y, w, h); };
+    P.fillText = function fillText(t, x, y, ...rest) {
+      T(this).push(['fillText', String(t), S(this).font, this.textAlign, this.textBaseline, hx(x), hx(y)]);
+      return nFill.call(this, t, x, y, ...rest);
+    };
     window.CITY_PENDING = [];
     const NativeImage = window.Image;
     window.Image = function Image(...a) {
@@ -228,7 +260,13 @@ const json = {
   worker: nodeResult.worker,
   workerTex: nodeResult.workerTex.map((t, i) => ({ ...t, tex: main.workerTex[i].tex })),
   chromiumDiffs: diffs,
+  // draw traces of the Chromium paints, keyed like ref/ (P4-33 r2)
+  traces: Object.fromEntries([['main', main], ['dpr2', dpr2], ['dpr15', dpr15]]
+    .flatMap(([p, r]) => Object.entries(r.traces).map(([id, t]) => [`${p}-${id}`, t]))),
 };
+for (const [p, r] of [['main', main], ['dpr2', dpr2], ['dpr15', dpr15]]) {
+  if (r.traceConflicts.length) throw new Error(`${p}: one snapshot, two traces: ${r.traceConflicts}`);
+}
 const files = new Map();
 for (const [pageName, r] of [['main', main], ['dpr2', dpr2], ['dpr15', dpr15]]) {
   for (const [id, data] of Object.entries(r.snapshots)) files.set(`${pageName}-${id}`, data);

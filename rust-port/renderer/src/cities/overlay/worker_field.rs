@@ -8,6 +8,7 @@
 use std::collections::HashSet;
 use std::hash::BuildHasher;
 
+use super::trace;
 use super::{hex_to_rgba, CanvasTexture, SpriteMaterial, SpriteNode, TextureRef};
 use crate::core::fog_dim::fog_brightness_for_hex;
 use crate::models::misc::{HexKey, OverlayMap};
@@ -79,7 +80,7 @@ pub fn render_worker_icon(
     let color = worker_owner_color(owner_id);
     let is_player = owner_id == player_owner_id;
     let mut ctx = Canvas2dLite::new(WORKER_ICON_PX, WORKER_ICON_PX)?;
-    ctx.clear_rect(0.0, 0.0, 64.0, 64.0);
+    trace::clear_rect(&mut ctx, 0.0, 0.0, 64.0, 64.0);
     let pi2 = std::f64::consts::PI * 2.0;
     let cx = 32.0;
     let cy = 32.0;
@@ -98,12 +99,23 @@ pub fn render_worker_icon(
         ctx.stroke();
     }
 
-    ctx.set_fill_style(&hex_to_rgba(color, if is_player { 0.72 } else { 0.62 }));
+    trace::set_fill_style(
+        &mut ctx,
+        &hex_to_rgba(color, if is_player { 0.72 } else { 0.62 }),
+    );
     ctx.begin_path();
     ctx.arc(cx, cy, badge_r, 0.0, pi2, false)?;
     ctx.fill();
 
-    ctx.set_fill_style("rgba(255,255,255,0.92)");
+    trace::set_fill_style(&mut ctx, "rgba(255,255,255,0.92)");
+    trace::fill_text_event(
+        WORKER_ICON_FONT,
+        "center",
+        "middle",
+        "\u{1f464}",
+        cx,
+        cy + 1.0,
+    );
     if let Some(style) = TextStyle::new(WORKER_ICON_FONT, "center", "middle") {
         emoji::fill_text(&mut ctx, &style, "\u{1f464}", cx, cy + 1.0);
     }

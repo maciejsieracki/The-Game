@@ -1,6 +1,8 @@
 # P4-33 — MOD-10: nakładki miast (`cities::overlay`)
 
-TEMAT: `R-RUSTPORT-P4-33-MOD10-CITY-CHIP-Q1` · DOMAIN: GAME · runda 1/5 · Operator (Opus 5.5 medium)
+TEMAT: `R-RUSTPORT-P4-33-MOD10-CITY-CHIP-Q1` · DOMAIN: GAME · runda 2/5 (obrona po FAIL Evaluatora r1) · Operator (Opus 5.5 medium)
+
+> **Runda 2 (obrona):** odpowiedzi na zarzuty 1–3 Evaluatora r1 — §6.3 (lokalne miary pikseli), §6.4 (ślad rysowania vs Chromium, w tym napis wiersza hover), §9.2 (mutacje r2: każda zabita testem innym niż złoty hash). Piksele wszystkich referencji i złote hashe Rust bez zmian względem r1.
 Paczka katalogu: `R-RUSTPORT-P4-MOD-10-CITY-CHIP` (`P4-4-MODEL-CATALOG.md` §4 wiersz 10: `cityMapStatChip` (1 133), `cityOkolicaOverlay`, `workerFieldOverlay` → `<renderer>/cities/overlay/**`, zależności 8 (rasteryzator), 9, **13** (`cityOkolicaOverlay → rangeOverlay`); §1 wiersze 15, 16, 85: 1 133 / 347 / 211 LOC).
 Baza kodu: `origin/rust-port/parity-v2` @ `95b91471` (raster shapes/text/image, atlas P4.31, `units::overlay` P4.32 zintegrowane). Web: pin `edb8fb56` (`git archive edb8fb56 gra/src gra/data` do scratchpadu poza repo; zero buildu weba, zero zmian w `gra/**`).
 Dowody surowe (w commicie, `*.log` przez `git add -f`): `dyspozycje/autobot/runs/R-RUSTPORT-P4-33-MOD10-CITY-CHIP-Q1/dowody/` — `01-gates.{sh,log}`, `05-determinism.{sh,log}`, `06-generator-repro.{sh,log}`, `07-cityoverlay-tests-nocapture.log` (pełne tabele), `08-mutations.{py,log}`.
@@ -16,7 +18,8 @@ Konwencja: `plik:linia` bez prefiksu = `gra/src/` w pinie `edb8fb56`; w sekcjach
 3. **Referencje = uruchomiony kod weba** (nie transkrypcja): trzy moduły z pinu zbundlowane esbuild 0.24.0 + three@0.169.0, wywołane przez ich prawdziwe eksporty w **Chromium 141** (prawdziwy Canvas 2D, te same pliki fontów) na trzech stronach o `devicePixelRatio` 1, 2 i 1,5 — 34 plakietki, 7 drzew okolicy (61 etykiet), 3 przypadki pól pracowników (9 tekstur ikon), funkcje pomocnicze, stałe. Liczby drzew okolicy / pracowników z tego samego bundla w **node v22.22.0** (konwencja wszystkich fixtur MOD); Chromium daje 18 różnic w ostatnim bicie (§4.3).
 4. **Wyniki:** drzewa okolicy **bit w bit** (7 drzew, 12 902 porównania: grupy zasięgu/centrum/obrabianych — typ, nazwa, `renderOrder`, `frustumCulled`, materiał, tablice f32 pozycji/normalnych/UV, indeksy, macierze instancji; sprite'y etykiet), drzewa pracowników bit w bit (740 porównań, w tym przebieg mgły i powrót bez mgły), sprite'y i metadane 34 plakietek bit w bit (1 631 porównań), pomocnicze 111/111, stałe 22/22; **tekstury: 133 porównania (34 stany końcowe + 27 początkowych plakietek, 2 rysunki `drawCityMapBadgeCanvas*`, 61 etykiet, 9 ikon) w progach RR-T8a/b/c** (SSIM ≥ 0,985, mean_abs ≤ 1,5, px>16 ≤ 5 %) z **dwoma jawnymi wyjątkami mean_abs** (stolice ×1: 1,5170 i 1,5173 ≤ 1,6; §6.2); najgorszy SSIM 0,99483.
 5. Determinizm: złote hashe (104 wiersze: 34 plakietki × 2 stany, 61 etykiet, 9 ikon) identyczne na rustc **1.87.0 i stable (1.97.0), debug i release, ×2** (§7). Generator referencji uruchomiony ponownie do osobnego katalogu — `MANIFEST.sha256` identyczny.
-6. Mutacje: **26/26 zabitych** (§9). Bramy: fmt / clippy / clippy `gpu` / test stable / test 1.87.0 — EXIT=0 (§8).
+6. Mutacje: r1 **26/26 zabitych** (§9.1); r2 **28/28 zabitych, każda testem innym niż złoty hash / `rendering_twice`** (§9.2). Bramy: fmt / clippy / clippy `gpu` / test stable / test 1.87.0 — EXIT=0 (§8).
+7. **Runda 2:** lokalne miary pikseli `win6` / `px>64` z limitami per grupa w każdym porównaniu z Chromium (§6.3) oraz **ślad rysowania** porównywany z Chromium zdarzenie po zdarzeniu — 133 malowania, 2 396 porównań, 474 `fillText` bit w bit, 12 wierszy hover (4 przycięte) — 0 różnic (§6.4).
 
 ---
 
@@ -49,6 +52,8 @@ Konwencja: `plik:linia` bez prefiksu = `gra/src/` w pinie `edb8fb56`; w sekcjach
 - **Z-33-9 (rozmiar fixtur):** stany początkowe plakietek ×2 / ×1,5 / LOD nie są zapisywane (różnią się od wariantu ×1 tylko skalą; oszczędność ~2 MB); ich stan końcowy — tak.
 - **Z-33-10 (obrazek nieistniejącej ikony produkcji):** `prodIconSvgFn` zwraca `''` dla nieznanego id (`prod_unknown_icon`) → brak ikony, slot zostaje — jak web.
 - **Z-33-11 (wyjątki):** 2 wyjątki mean_abs ≤ 1,6 (§6.2), test `mean_abs_exceptions_are_needed` pilnuje, że oba są potrzebne.
+- **Z-33-12 (r2, ślad rysowania):** zakres śladu = `clearRect`, `fillStyle`, `shadowColor`, `shadowBlur`, `shadowOffsetY`, `fillText` (tekst, surowy font, `textAlign`, `textBaseline`, pozycja). Ścieżki, `strokeStyle`, `lineWidth`, `drawImage` nie są śledzone (pod progami pikseli §6/§6.3). Rejestracja w kodzie produkcyjnym przez `cities::overlay::trace` (thread-local, aktywna tylko w `trace::capture`) — nie zmienia pikseli (złote hashe = r1).
+- **Z-33-13 (r2, limity lokalne):** okno 6 × 6 px urządzenia i próg różnicy 64 dobrane jako najprostsze miary rozdzielające bazę od C07/C19/C21 (§6.3); limity per grupa (plakietki / etykiety / ikony), bo baza różni się między grupami (14,36 / 13,44 / 5,50).
 
 ---
 
@@ -156,6 +161,46 @@ Przyczyna (zmierzone na `capital_only`, mapa różnic kanał po kanale, skrypt w
 
 ---
 
+### 6.3 Lokalne miary pikseli (r2, zarzuty 1–2)
+
+Progi globalne (§6) uśredniają po całej teksturze, więc mała, realna wada (glif 👤 13 → 16 px, rozmycie cienia dwóch cyfr, separator w wierszu hover) może się pod nimi zmieścić — zarzut 1 Evaluatora r1 **przyjęty**, potwierdzony pomiarem (tabela niżej). Od r2 każde porównanie tekstury z Chromium (`report` w teście) liczy dodatkowo — na pikselach premultiplied, różnica piksela = największa różnica kanału:
+
+- `win6` — największa średnia różnicy w dowolnym oknie **6 × 6 px urządzenia** (obraz całkowy, `local_diff`);
+- `px>64` — liczba pikseli o różnicy > 64.
+
+Limity per grupa, z pomiaru niezmutowanego portu (133 porównania, `dowody/07-cityoverlay-tests-nocapture-r2.log`, kolumny `win6 | px>64`):
+
+| grupa | max `win6` zmierzone | limit `win6` | max `px>64` | limit `px>64` |
+|---|---|---|---|---|
+| plakietki (wszystkie dpr, oba stany, `drawCityMapBadgeCanvas*`) | 14,36 | **20** | 5 | **12** |
+| etykiety okolicy | 13,44 | **15** | 0 | **12** |
+| ikony pracowników | 5,50 | **10** | 0 | **12** |
+
+Pomiar na trzech wadach z zarzutu (skrypt sondy w scratchpadzie; to samo w `dowody/08-mutations-r2.log`):
+
+| mutacja | najgorsza tekstura | `win6` | `px>64` | max_abs | wynik r2 (piksele) |
+|---|---|---|---|---|---|
+| C07 separator ' · ' → ' - ' | `hover_full@dpr2 final` | 84,64 | 28 | 192 | zabita (`chip_textures_match_chromium`) |
+| C19 👤 13 → 16 px | `edge (4,-2) worker=true` | 82,44 | 59 | 227 | zabita (`okolica_textures_match_chromium`) |
+| C21 rozmycie cienia cyfr 3 → 2 | `edge (4,-2) worker=true` | 16,03 | 0 | 57 | zabita (`okolica_textures_match_chromium`), **margines cienki**: 16,03 vs limit 15 vs baza 13,44 |
+
+Dla C21 margines pikselowy jest jawnie mały (rozmycie 2 vs 3 px przy 16 px cyfrach to zmiana rzędu AA); dlatego C21 (i każda zmiana stanu cienia / koloru / fontu / tekstu) ma **drugie, niezależne od progów** zabezpieczenie: ślad rysowania (§6.4), porównywany dokładnie. `local_limits_are_tight` pilnuje, że każdy limit jest ≥ zmierzonego maksimum grupy i co najwyżej o 6 nad nim (limit nie może po cichu zrobić się luźny) oraz że miara widzi zmianę jednego piksela.
+
+### 6.4 Ślad rysowania vs Chromium (r2, zarzuty 1 i 3)
+
+Generator (`gen.mjs`) owija w Chromium `fillStyle` / `shadowColor` / `shadowBlur` / `shadowOffsetY` (settery) oraz `clearRect` / `fillText` / `save` / `restore` z `CanvasRenderingContext2D.prototype`: wrapper tylko zapisuje zdarzenie i woła natywną implementację (piksele `ref/*.rgba` identyczne z r1 — `dowody/06-generator-repro-r2.log`). Dla każdej referencji `city.json → traces[<ref>]` = zdarzenia malowania od ostatniego `clearRect`; `fillText` niesie tekst, **surowy** napis fontu ustawiony przez web (przed `mapFont`, z `save`/`restore`), `textAlign`, `textBaseline` i bity f64 `x`, `y`.
+
+Po stronie Rust te same wywołania idą przez `src/cities/overlay/trace.rs` (`trace::set_fill_style`, `set_fill_style_gradient`, `set_shadow_*`, `clear_rect`, zdarzenie `fillText` w pomocnikach `fill_text` trzech modułów); poza `trace::capture` koszt to jeden odczyt thread-local, piksele bez zmian (złote hashe = r1).
+
+| test | co porównuje | wynik |
+|---|---|---|
+| `draw_traces_match_chromium` | 133 malowania (34 plakietki: końcowy + 27 początkowych, 2 `drawCityMapBadgeCanvas*`, 61 etykiet, 9 ikon), zdarzenie po zdarzeniu, **dokładnie** (pozycje bitowo) | **2 396 porównań, 0 różnic**; 474 wywołania `fillText` — tekst, font, wyrównanie i pozycja bit w bit (także pozycje zależne od `measureText`: nazwa, WZROST%, wiersz hover, cyfry plonów) |
+| `hover_row_text_matches_chromium` | napis wiersza hover (`CMSC:691-721`: separator ' · ', „wstrzymana”, „Brak surowców…”, przycięcie z „…” do `maxTextW`) | 12 wierszy hover, w tym **4 przycięte**, 0 różnic |
+
+Mutacje zabite przez ślad (§9.2): C07 (tekst), C19 (font `bold 16px`), C21 (`shadowBlur`), C27 (`shadowOffsetY`), C28 (`shadowColor`), a także C09/C10/C11/C13 itd. Ślad nie obejmuje ścieżek (arc / lineTo / quadraticCurveTo), `strokeStyle`, `lineWidth`, `drawImage` — te zostają pod progami pikseli §6 i §6.3 (ZAŁOŻENIE Z-33-12: zakres śladu = tekst + wypełnienie + cień, czyli dokładnie klasy wad z zarzutu; rozszerzenie na ścieżki NIE_ZMIERZONO).
+
+---
+
 ## 7. Determinizm (`dowody/05-determinism.log`)
 `textures_match_golden_hashes` (FNV-1a 64 bufora premultiplied, `tests/fixtures/cityoverlay/golden.tsv`: 34 plakietki × (initial, final) + 61 etykiet + 9 ikon = 104 wiersze) — 8 przebiegów: rustc **1.87.0** i **stable 1.97.0** × debug/release × 2:
 
@@ -179,7 +224,19 @@ Przebłogosławienie: `CITYOVERLAY_BLESS=1 cargo test --test cityoverlay_web_par
 | plik | testy | co sprawdza |
 |---|---|---|
 | `src/cities/overlay/*` (unit) | 9 | portret ignorowany dla miasta-państwa (obraz 2×2 — §9 C02), inicjały (`ßab` → `SS`), mury/poziomy, reguły wiersza hover, układ plakietki z pustą nazwą, wysokości etykiet, pomijanie plonów ≤ 0 / NaN, kolejność wyliczania zasięgu i pusty zasięg dla NaN, zawijanie palety (JS `%`) |
-| `tests/cityoverlay_web_parity.rs` | 15 | §4, §4.3, §6 (+ wyjątki), §7, SHA-256 (wektory FIPS), manifest fixtur + ≤ 8 MB, wejścia = wejścia RR-T8c |
+| `src/cities/overlay/trace.rs` (unit, r2) | 1 | segmenty po `clearRect`, brak zapisu poza `capture` |
+| `tests/cityoverlay_web_parity.rs` | 18 (r1: 15) | §4, §4.3, §6 (+ wyjątki, + limity lokalne §6.3, `local_limits_are_tight`), §6.4 (`draw_traces_match_chromium`, `hover_row_text_matches_chromium`), §7, SHA-256 (wektory FIPS), manifest fixtur + ≤ 8 MB, wejścia = wejścia RR-T8c |
+
+Bramy r2: `dowody/01-gates-r2.log` (ten sam skrypt `01-gates.sh`, czysty target w scratchpadzie, `CARGO_INCREMENTAL=0`, `CARGO_PROFILE_DEV_DEBUG=0` — współdzielony dysk):
+
+```
+$ cargo fmt --all -- --check                                        EXIT=0
+$ cargo clippy --locked --all-targets -- -D warnings                EXIT=0
+$ cargo clippy --locked --all-targets --features gpu -- -D warnings EXIT=0
+$ cargo test --locked --all-targets                                 EXIT=0   passed=348 failed=0
+$ cargo +1.87.0 test --locked --all-targets                         EXIT=0   passed=348 failed=0
+```
+348 = 344 (r1) + 3 nowe testy integracyjne + 1 test jednostkowy `trace`. Złote hashe (`golden.tsv`, bez zmian od r1) przechodzą na 1.87.0 i stable (debug) oraz w release (`dowody/07-cityoverlay-tests-nocapture-r2.log`, pełne tabele z kolumnami `win6 | px>64`). Pierwszy przebieg bram r2 wykrył `jsmath_wiring::no_platform_transcendentals_anywhere_in_src` (zmienna `log` w teście jednostkowym `trace.rs` wyglądała dla skanera jak `f64::log`) — zmienna przemianowana, przebieg powtórzony = log wyżej; przebieg mutacji §9.2 był przed tą zmianą nazwy (bez wpływu na zachowanie). Poniżej log r1.
 
 Bramy — `dowody/01-gates.log` (surowe logi z `EXIT=`; poniżej linie poleceń, kodów wyjścia i sum, wiersze `test result` — w logu):
 
@@ -206,7 +263,9 @@ EXIT=0
 
 ---
 
-## 9. Mutacje (`dowody/08-mutations.py`, log `dowody/08-mutations.log`)
+## 9. Mutacje (`dowody/08-mutations.py`, log r1 `dowody/08-mutations.log`, log r2 `dowody/08-mutations-r2.log`)
+
+### 9.1 Runda 1
 Każda mutacja = jedna podmiana fragmentu w `src/cities/overlay/*.rs` (asercja jednokrotnego wystąpienia), uruchomienie `cargo test --lib cities::overlay` + `--test cityoverlay_web_parity`, przywrócenie pliku (także przy SIGTERM/SIGINT). Przed bazowym przebiegiem skrypt sprawdza, że każdy fragment występuje dokładnie raz.
 
 | ID | file | mutation | result | killed by |
@@ -243,6 +302,22 @@ Historia (jawnie): pierwszy przebieg dał 24/26 — przeżyły C02 (portret dla 
 
 ---
 
+### 9.2 Runda 2 (zarzut 1: C07, C19, C21 zabijał tylko złoty hash)
+
+Ten sam skrypt; zmiany: fragment C21 dostosowany do `trace::set_shadow_blur(ctx, …)` (ta sama mutacja), dwie nowe mutacje stanu cienia (C27 `shadowOffsetY` 1 → 2, C28 alfa cienia obrabianych cyfr 0,75 → 0,6) i kolumna **„without the golden hash”** — czy mutację zabił test inny niż `textures_match_golden_hashes` / `rendering_twice_is_identical` (porównania z webem lub testy jednostkowe reguł z pinu); skrypt kończy się kodem ≠ 0, jeśli którakolwiek mutacja przeżyła albo zabił ją wyłącznie złoty hash.
+
+**Wynik: 28/28 zabitych, 28/28 testem innym niż złoty hash** (`dowody/08-mutations-r2.log`, EXIT=0). Trzy mutacje z zarzutu:
+
+| ID | r1 zabita przez | r2 zabita przez |
+|---|---|---|
+| C07 separator hover | `textures_match_golden_hashes` | `chip_textures_match_chromium` (`win6`), `draw_traces_match_chromium`, `hover_row_text_matches_chromium`, `local_limits_are_tight` + złoty hash |
+| C19 👤 13 → 16 px | `textures_match_golden_hashes` | `okolica_textures_match_chromium` (`win6`/`px>64`), `draw_traces_match_chromium` (font), `local_limits_are_tight` + złoty hash |
+| C21 rozmycie cienia | `textures_match_golden_hashes` | `okolica_textures_match_chromium` (`win6`, cienki margines §6.3), `draw_traces_match_chromium` (`shadowBlur`), `local_limits_are_tight` + złoty hash |
+
+Ślad rysowania zabija 17/28 (C01 C05 C06 C07 C09 C10 C11 C13 C15 C17 C18 C19 C20 C21 C26 C27 C28); porównania tekstur z Chromium 22/28; `hover_row_text_matches_chromium` C06 C07 C10. Pozostałe zabijają porównania bitowe drzew / sprite'ów (C12, C16, C23, C24) lub testy jednostkowe reguł z pinu (C02, C25). Linia „diff after the run” w logu pokazuje zmiany r2 względem commita r1 (niezacommitowane w chwili przebiegu), nie pozostałości mutacji — skrypt przywraca każdy plik po mutacji.
+
+Przebieg: pierwszy przebieg r2 przerwałem (SIGTERM, pliki przywrócone przez handler) po C09, bo współdzielony dysk się zapełnił (`No space left on device` → fałszywy „compile error” w C10); po zwolnieniu miejsca pełny przebieg od nowa = log wyżej.
+
 ## 10. Obserwacje o webie (bez zmian w `gra/**`; do ewentualnych zgłoszeń)
 - **W-1:** `cityMapBadgeKey` (`CMSC:962-1012`) pomija rysowane pola `ownerColor`, `prodCategoryLabel`, `prodItemName`, `prodPaused` (znane z P4-31 §3). Zmierzone w pierwszym przebiegu generatora: plakietka z inną nazwą pozycji w hover, ale tym samym kluczem, dostała z cache teksturę poprzedniej (`version` 3 przed jakimkolwiek rysowaniem) — nieaktualny wiersz hover.
 - **W-2:** `drawHoverProdRow` (`CMSC:699`) liczy `maxTextW = w - x - warnW - 6`, a wywołanie (`:935`) przekazuje już `w = W - padX·2`: budżet tekstu wiersza hover jest o `padX` (10 px) węższy niż pigułka pozwala. Port odtwarza to 1:1 (mutacja C06).
@@ -255,11 +330,11 @@ Historia (jawnie): pierwszy przebieg dał 24/26 — przeżyły C02 (portret dla 
 1. Plakietka miasta przy kamerze gry na trzech progach LOD (`CITY_BADGE_LOD_NEAR_DIST` 5,5 / `MID` 11): ostrość nazwy, przejście tekstur przy przekraczaniu progu (czystka LOD), brak rozmycia przy dpr 1,5 i 2.
 2. Medalion 16 px: czytelność portretu po pomniejszeniu 256 → 29 px (mip), sygnet MP vs portret majora, kolor tarczy właściciela.
 3. Korona i podwójna obwódka stolicy w skali mapy (17×13 px), tarcza obrony szara / złota.
-4. Wiersz hover: przycięcie z „…”, ikona ostrzeżenia, separator.
+4. Wiersz hover: ikona ostrzeżenia i wygląd przycięcia na ekranie (sam napis, separator i miejsce przycięcia — zgodne z Chromium, §6.4).
 5. Etykiety plonów okolicy: emoji 🍞 🔨 💰 (Noto) vs Segoe UI Emoji na Windows, złote cyfry z cieniem na polach 👤, nakładanie się etykiet na heksach z reliefem.
 6. Ikony 👤 na mapie świata: kolory palety właścicieli, obwódka gracza, przyciemnienie mgłą (`opacity 0,9·0,55`), `renderOrder` 18 / 20 / 12 względem jednostek i miast (`depthTest: false`).
 
 ## 12. NIE_ZMIERZONO
-Wygląd na GPU i na Windows (Segoe UI / Segoe UI Emoji / Georgia — tu Liberation Serif), determinizm poza x86_64, `clippy` na 1.87.0 (niezainstalowany komponent, jak P4-28…32), upload / mipmapy GPU (RR-T8d), cache tekstur i kolejki obrazków po stronie Rust (Z-33-4), przyczyna różnicy gradientu w Chromium (§6.2), prawdziwe `leaderPortraitUrl` (Z-33-5).
+Wygląd na GPU i na Windows (Segoe UI / Segoe UI Emoji / Georgia — tu Liberation Serif), determinizm poza x86_64, `clippy` na 1.87.0 (niezainstalowany komponent, jak P4-28…32), upload / mipmapy GPU (RR-T8d), cache tekstur i kolejki obrazków po stronie Rust (Z-33-4), przyczyna różnicy gradientu w Chromium (§6.2), prawdziwe `leaderPortraitUrl` (Z-33-5), ślad ścieżek / obrysów / `drawImage` (Z-33-12).
 
 DEPLOY/PUSH: NIE WYKONANO
