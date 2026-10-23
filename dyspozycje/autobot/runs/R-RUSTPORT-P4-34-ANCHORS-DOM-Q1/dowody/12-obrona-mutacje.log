@@ -1,0 +1,80 @@
+# Obrona r1 - mutacje O1+O2 (jeden przebieg, obie naraz, potem przywrocone z kopii):
+# O1: src/labels/anchor.rs  tile_top_y + R15A_HPBAR_Y + R15A_LIFT -> tile_top_y + (R15A_HPBAR_Y + R15A_LIFT)
+# O2: tests/fixtures/labels/golden.tsv  dopisana linia "# x" (symulacja LABELS_BLESS bez aktualizacji manifestu)
+# $ CARGO_INCREMENTAL=0 cargo test --locked --test labels_anchors   -> EXIT=101
+# oczekiwane: anchor_heights_match_the_web FAILED (O1), fixtures_match_manifest_sha256 FAILED (O2)
+   Compiling civ-renderer v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_c43cd53a-064-3/rust-port/renderer)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 26.44s
+     Running tests/labels_anchors.rs (/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/target/debug/deps/labels_anchors-6bf05f8e042a6a23)
+
+running 8 tests
+test constants_are_the_webs ... ok
+test float_label_frames_match_tick_float_labels ... ok
+test js_round_is_math_round ... ok
+test projections_match_the_web_bit_for_bit ... ok
+test sha256_matches_standard_vectors ... ok
+test anchor_heights_match_the_web ... FAILED
+test anchored_rects_match_chromium ... ok
+test fixtures_match_manifest_sha256 ... FAILED
+
+failures:
+
+---- anchor_heights_match_the_web stdout ----
+
+thread 'anchor_heights_match_the_web' (9922) panicked at tests/labels_anchors.rs:350:9:
+assertion `left == right` failed: r15a|-0.08|0.8400000000000001: 0.84
+  left: 4605741266919258849
+ right: 4605741266919258850
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+             at /rustc/2d8144b7880597b6e6d3dfd63a9a9efae3f533d3/library/std/src/panicking.rs:689:5
+   1: core::panicking::panic_fmt
+             at /rustc/2d8144b7880597b6e6d3dfd63a9a9efae3f533d3/library/core/src/panicking.rs:80:14
+   2: core::panicking::assert_failed_inner
+             at /rustc/2d8144b7880597b6e6d3dfd63a9a9efae3f533d3/library/core/src/panicking.rs:434:23
+   3: core::panicking::assert_failed::<u64, u64>
+             at /rustc/2d8144b7880597b6e6d3dfd63a9a9efae3f533d3/library/core/src/panicking.rs:394:5
+   4: labels_anchors::anchor_heights_match_the_web
+             at ./tests/labels_anchors.rs:350:9
+   5: labels_anchors::anchor_heights_match_the_web::{closure#0}
+             at ./tests/labels_anchors.rs:335:34
+   6: <labels_anchors::anchor_heights_match_the_web::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+             at /rustc/2d8144b7880597b6e6d3dfd63a9a9efae3f533d3/library/core/src/ops/function.rs:250:5
+   7: <fn() -> core::result::Result<(), alloc::string::String> as core::ops::function::FnOnce<()>>::call_once
+             at /rustc/2d8144b7880597b6e6d3dfd63a9a9efae3f533d3/library/core/src/ops/function.rs:250:5
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+---- fixtures_match_manifest_sha256 stdout ----
+
+thread 'fixtures_match_manifest_sha256' (9925) panicked at tests/labels_anchors.rs:565:9:
+assertion `left == right` failed: golden.tsv: sha256
+  left: "1e2a015779ad9a67545cd9974300ccafe437f6b4072fdbf66ef40c1c67cdeff2"
+ right: "cb930be4deb452bd2fc28df2fccf93d02975b0922603035bfa5393a5439c43ad"
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+             at /rustc/2d8144b7880597b6e6d3dfd63a9a9efae3f533d3/library/std/src/panicking.rs:689:5
+   1: core::panicking::panic_fmt
+             at /rustc/2d8144b7880597b6e6d3dfd63a9a9efae3f533d3/library/core/src/panicking.rs:80:14
+   2: core::panicking::assert_failed_inner
+             at /rustc/2d8144b7880597b6e6d3dfd63a9a9efae3f533d3/library/core/src/panicking.rs:434:23
+   3: core::panicking::assert_failed::<alloc::string::String, &str>
+             at /rustc/2d8144b7880597b6e6d3dfd63a9a9efae3f533d3/library/core/src/panicking.rs:394:5
+   4: labels_anchors::fixtures_match_manifest_sha256
+             at ./tests/labels_anchors.rs:565:9
+   5: labels_anchors::fixtures_match_manifest_sha256::{closure#0}
+             at ./tests/labels_anchors.rs:558:36
+   6: <labels_anchors::fixtures_match_manifest_sha256::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+             at /rustc/2d8144b7880597b6e6d3dfd63a9a9efae3f533d3/library/core/src/ops/function.rs:250:5
+   7: <fn() -> core::result::Result<(), alloc::string::String> as core::ops::function::FnOnce<()>>::call_once
+             at /rustc/2d8144b7880597b6e6d3dfd63a9a9efae3f533d3/library/core/src/ops/function.rs:250:5
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+
+failures:
+    anchor_heights_match_the_web
+    fixtures_match_manifest_sha256
+
+test result: FAILED. 6 passed; 2 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.03s
+
+error: test failed, to rerun pass `--test labels_anchors`
+EXIT=101

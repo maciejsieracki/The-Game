@@ -213,6 +213,11 @@ pub const FLOAT_DURATION_MS: f64 = 2000.0;
 pub const FLOAT_RISE_RATE: f64 = 0.000_12;
 /// World height of a wall label (`battleScene.ts:7490`).
 pub const R15B_WORLD_Y: f64 = 3.2;
+/// `HPBAR_Y` (`battleScene.ts:978`): the HP bar height above the tile top.
+pub const R15A_HPBAR_Y: f64 = 0.72;
+/// Extra lift of a damage number above the HP bar (`battleScene.ts:9115`,
+/// `worldPos.y = wpTopY + HPBAR_Y + 0.20`).
+pub const R15A_LIFT: f64 = 0.20;
 
 // ----- texture margin -------------------------------------------------------
 

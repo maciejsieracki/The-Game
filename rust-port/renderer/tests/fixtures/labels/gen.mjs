@@ -149,6 +149,35 @@ consts.push(['r15b_dmg_color', R15B_DMG.g[1], R15B_DMG.where]);
 consts.push(['r15b_breach_text', R15B_BREACH.g[0], R15B_BREACH.where]);
 consts.push(['r15b_breach_color', R15B_BREACH.g[1], R15B_BREACH.where]);
 
+// World anchors of every group (Evaluator objection 1, round 2): the web's anchor-height EXPRESSIONS are
+// extracted verbatim and evaluated on probe tile tops; `anchor_y` rows = group|tileTop|y (Rust checks the
+// composition bit for bit, tests/labels_anchors.rs `anchor_heights_match_the_web`).
+const HPBAR = grab('battle/battleScene.ts', /^const HPBAR_Y = ([\d.]+);/m, 'HPBAR_Y');
+const R15A_ANCHOR = grab('battle/battleScene.ts', /private _spawnDamageLabel[\s\S]*?worldPos:\s*new THREE\.Vector3\(wp\.x, (wpTopY \+ HPBAR_Y \+ ([\d.]+)), wp\.z\),/, 'R15a anchor');
+const R4_ANCHOR = grab('main.ts', /function hexCenterClientPx\([^)]*\)[^{]*\{[\s\S]*?return worldToClientPx\(wp\.x, (unitRenderer\.topYAt\(q, r\) \+ liftY), wp\.z, camera, canvas\);/, 'R4 anchor');
+const R5_ANCHOR = grab('main.ts', /siegeHtmlLabelAnchors\.push\(\{ x: pos\.x, y: (topY \+ [\d.]+), z: pos\.z/, 'R5 anchor');
+const R15B_ANCHOR = grab('battle/battleScene.ts', /private _spawnWallLabel[\s\S]*?worldPos: new THREE\.Vector3\(x, ([\d.]+), z\),/, 'R15b anchor');
+consts.push(['r15a_hpbar_y', HPBAR.g[0], HPBAR.where]);
+consts.push(['r15a_lift', R15A_ANCHOR.g[1], R15A_ANCHOR.where]);
+// eslint-disable-next-line no-new-func
+const r4AnchorY = (top) => new Function('unitRenderer', 'q', 'r', 'liftY', 'return ' + R4_ANCHOR.g[0] + ';')({ topYAt: () => top }, 0, 0, Number(R4_HEX.g[0]));
+// eslint-disable-next-line no-new-func
+const r5AnchorY = (top) => new Function('topY', 'return ' + R5_ANCHOR.g[0] + ';')(top);
+// eslint-disable-next-line no-new-func
+const r15aAnchorY = (top) => new Function('wpTopY', 'HPBAR_Y', 'return ' + R15A_ANCHOR.g[0] + ';')(top, Number(HPBAR.g[0]));
+// eslint-disable-next-line no-new-func
+const r15bAnchorY = () => new Function('return ' + R15B_ANCHOR.g[0] + ';')();
+// Probe tile tops (inputs, not web constants): flat 0, river −0.08, hill summit 0.34, the float fixture's 1.03, 2.5.
+const ANCHOR_TOPS = [0, -0.08, 0.34, 1.03, 2.5];
+for (const top of ANCHOR_TOPS) {
+  consts.push(['anchor_y', `r4|${top}|${r4AnchorY(top)}`, R4_ANCHOR.where]);
+  consts.push(['anchor_y', `r5|${top}|${r5AnchorY(top)}`, R5_ANCHOR.where]);
+  consts.push(['anchor_y', `r15a|${top}|${r15aAnchorY(top)}`, R15A_ANCHOR.where]);
+  consts.push(['anchor_y', `r15b|${top}|${r15bAnchorY()}`, R15B_ANCHOR.where]);
+}
+/** The R15a float fixture's world y: the web's anchor expression on tile top 1.03 (= 1.95 exactly). */
+const R15A_FLOAT_TOP = 1.03;
+
 // ---------------------------------------------------------------------------
 // Fonts and family mapping (mirror of raster::text map_family + raster::image::emoji chain)
 // ---------------------------------------------------------------------------
@@ -279,7 +308,7 @@ for (const c of CAMS) {
 let float = '# frame<TAB>cam<TAB>label<TAB>world x,y,z<TAB>startTime<TAB>duration<TAB>riseRate<TAB>t<TAB>removed<TAB>left<TAB>top<TAB>opacity\n';
 const FLOAT_T = [0, 1, 250, 499.5, 500, 1000, 1234.5, 1500, 1999, 1999.999, 2000, 2500];
 const FLOAT_LABELS = [
-  { id: 'r15a', world: [12.5, 1.95, 9.75], start: 1000, duration: Number(R15A_PUSH.g[0]), rise: Number(R15A_PUSH.g[1]) },
+  { id: 'r15a', world: [12.5, r15aAnchorY(R15A_FLOAT_TOP), 9.75], start: 1000, duration: Number(R15A_PUSH.g[0]), rise: Number(R15A_PUSH.g[1]) },
   { id: 'r15b', world: [20.125, Number(R15B_PUSH.g[1]), 15.5], start: 333.25, duration: Number(R15B_PUSH.g[0]), rise: Number(R15B_PUSH.g[2]) },
 ];
 for (const c of CAMS) {
@@ -510,6 +539,9 @@ writeFileSync(OUT + 'versions.txt', `node ${process.version}\nplaywright ${requi
 
 const files = ['gen.mjs', 'scenes.tsv', 'layout.tsv', 'sweep.tsv', 'anchors.tsv', 'float.tsv', 'consts.tsv', 'versions.txt',
   ...readdirSync(OUT + 'ref').sort().map((f) => 'ref/' + f)];
+// golden.tsv (Rust output, `LABELS_BLESS=1`) is pinned too (Evaluator objection 2, round 2): a re-bless must
+// also update its line here (`sha256sum golden.tsv`), so it cannot pass silently. Absent on a first run.
+try { readFileSync(OUT + 'golden.tsv'); files.push('golden.tsv'); } catch { /* first generation: bless later */ }
 let man = '';
 for (const f of files) man += createHash('sha256').update(readFileSync(OUT + f)).digest('hex') + '  ' + f + '\n';
 for (const [, , file] of FACE_FILES) man += createHash('sha256').update(readFileSync(ASSETS + file)).digest('hex') + '  ../../../assets/' + file + '\n';

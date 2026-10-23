@@ -87,6 +87,8 @@ Generator wycina z pinu i wykonuje w node (z three@0.169.0): `worldToClientPx` (
 | prostokąt etykiety w Chromium (`getBoundingClientRect` z transformacją weba) | 21 (R4 ×6, R5 ×6, R15a ×6, R15b ×3) | bit w bit (`f32`) |
 | `_tickFloatLabels`: `left`, `top`, `opacity`, usunięcie | 48 klatek (2 kamery × 2 etykiety × 12 czasów; 8 usunięć przy `p ≥ 1`) | bit w bit |
 
+**Kotwice w świecie (obrona r1, zarzut 1 Evaluatora):** wysokości kotwic wszystkich czterech grup są funkcjami modułu (`labels::anchor`): `r4_anchor_world` = `topYAt + liftY(1.5)` (`main.ts:12939-12941`), `r5_anchor_world` = `topY + 1.1` (`main.ts:14566`), `r15a_anchor_world` = `wpTopY + HPBAR_Y(0.72, battleScene.ts:978) + 0.20` (`battleScene.ts:9110-9115`, stałe `R15A_HPBAR_Y`, `R15A_LIFT`), `r15b_anchor_world` = stałe `3.2` (`battleScene.ts:7490`). `gen.mjs` wycina z pinu same WYRAŻENIA wysokości i liczy je na 5 próbnych wysokościach kafla (0, −0,08, 0,34, 1,03, 2,5) → `consts.tsv` `anchor_y` (20 wierszy); test `anchor_heights_match_the_web` porównuje bitowo (zabija nawet zmianę łączności `a + (b + c)`). Kotwica R15a fixtury `float.tsv` (y = 1,95) jest teraz liczona wyrażeniem weba na kafelku 1,03 (`1.03 + 0.72 + 0.20 === 1.95`, bitowo — `float.tsv` bez zmian) i sprawdzana w `float_label_frames_match_tick_float_labels`.
+
 Zmierzona reguła położenia: CSS `left/top` → `LayoutUnit(float)` (obcięcie: `640.0078125px` → 640), `translate(-50%, …)` dokładnie w `f32` względem pudełka w `LayoutUnit` (np. R15b: 640 − 122,765625/2 = 578,6171875).
 
 ## 5. Piksele vs Chromium
@@ -207,6 +209,8 @@ Każda mutacja zmienia jeden fragment (sprawdzane: występuje dokładnie raz), u
 
 **Wynik: 29/29 zabitych** (`08-mutations.log`, `EXIT=0`). Historia (uczciwie): pierwszy przebieg (`08a-mutations-first-pass.log`) dał **28/29** — przeżyła M20 (kolejność warstw `text-shadow`): obie warstwy weba są czarne, więc dla danych weba zamiana kolejności jest nieobserwowalna (mutant równoważny w scenach). Dodano test jednostkowy `labels::paint::tests::first_text_shadow_is_on_top` (dwie warstwy w różnych kolorach, CSS: pierwsza na wierzchu). Drugi przebieg (`08b-mutations-second-pass-disk-full.log`) przerwał brak miejsca na dysku współdzielonym (od M12 „KILLED (build)” to błąd zapisu, nie zabicie) — odrzucony; trzeci, pełny przebieg z `CARGO_INCREMENTAL=0` to `08-mutations.log`. Po przebiegu mutacji zmieniono wyłącznie format pustych komórek TSV fixtur (`-` zamiast pustego pola na końcu wiersza — `git diff --check`) i odpowiadające mu 2 parsery w testach; kod `src/labels/**` i referencje `ref/*.rgba` bez zmian; bramki, testy, determinizm i odtworzenie referencji uruchomiono ponownie po tej zmianie (logi 01, 05, 06, 07). M19 zabija tylko złoty hash (przesunięcie linii bazowej o ułamek px przy dsf 1 mieści się w progach metryki).
 
+**`golden.tsv` a manifest (obrona r1, zarzut 2 Evaluatora):** `golden.tsv` (wyjście Rusta, `LABELS_BLESS=1`) jest od rundy obrony w `MANIFEST.sha256` (`gen.mjs` dopisuje go, gdy istnieje), a wyjątek w `fixtures_match_manifest_sha256` usunięto. Ponowne „bless” musi więc świadomie zaktualizować też linię manifestu (`sha256sum golden.tsv` albo ponowny `gen.mjs`) — sam `LABELS_BLESS` nie przejdzie po cichu (sprawdzone: dopisanie linii do `golden.tsv` → `fixtures_match_manifest_sha256` FAILED, `dowody/12-obrona-mutacje.log`). Mutacje obrony: O1 (`r15a_anchor_world` z nawiasami `a + (b + c)`) → `anchor_heights_match_the_web` FAILED; O2 (zmiana `golden.tsv`) → `fixtures_match_manifest_sha256` FAILED — 2/2 zabite.
+
 ## 8. Bramki (`dowody/01-gates.log`, surowe, z `EXIT=`)
 
 ```text
@@ -249,3 +253,5 @@ Do oceny wzrokowej właściciela po RR-T5 (scena z GPU):
 ## 11. Commit
 
 Jeden commit w izolowanym worktree na bazie `origin/rust-port/parity-v2` @ `df3027b7` (SHA w raporcie Operatora `dyspozycje/autobot/runs/R-RUSTPORT-P4-34-ANCHORS-DOM-Q1/01-operator-r1.md` i w `git log`), jawne `git add` ścieżek z allowlisty, bez push. Konflikt możliwy wyłącznie w linii `pub mod labels;` w `src/lib.rs` (rozwiązuje orkiestrator).
+
+Obrona r1 (zarzuty 1–2 Evaluatora, oba PRZYJĘTE): drugi commit na `27090d91` (SHA w `02-operator-obrona-r1.md`). Bramki obrony: `dowody/12-obrona-gates.log` (fmt, clippy ×2, `cargo test --all-targets`, `cargo +1.87.0 test` testów `labels_*` — wszystkie `EXIT=0`, 49× `test result: ok`, 0 FAILED). Referencje Chromium wygenerowane ponownie (`gen.mjs`, Chromium 141.0.7390.37, three 0.169.0): zmieniły się wyłącznie `gen.mjs`, `consts.tsv` i `MANIFEST.sha256` (+ linia `golden.tsv`); wszystkie `ref/*.rgba`, `scenes/layout/sweep/anchors/float.tsv` bitowo identyczne; `sha256sum -c` 61/61 OK.

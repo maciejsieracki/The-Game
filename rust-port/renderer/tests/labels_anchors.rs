@@ -16,8 +16,9 @@
 use civ_renderer::labels::anchor::js_round;
 use civ_renderer::labels::style::*;
 use civ_renderer::labels::{
-    anchored_rect, battle_world_to_screen, build_chip_left_top, siege_label_position,
-    world_to_client_px, AnchorTransform, FloatLabel, Label, ProjectionCamera, ScreenRect,
+    anchored_rect, battle_world_to_screen, build_chip_left_top, r15a_anchor_world,
+    r15b_anchor_world, r4_anchor_world, r5_anchor_world, siege_label_position, world_to_client_px,
+    AnchorTransform, FloatLabel, Label, ProjectionCamera, ScreenRect,
 };
 use civ_renderer::pick::camera::PickCamera;
 use civ_renderer::pick::three::{Mat4, Vec3};
@@ -277,6 +278,14 @@ fn float_label_frames_match_tick_float_labels() {
             (FLOAT_DURATION_MS, FLOAT_RISE_RATE)
         );
         assert_eq!(FloatLabel::spawn(fl.start_time, fl.world), fl);
+        // The anchors are the web's composition (gen.mjs: R15a on tile top
+        // 1.03, R15b at its fixed height).
+        let anchor = if r[2] == "r15a" {
+            r15a_anchor_world(w[0], 1.03, w[2])
+        } else {
+            r15b_anchor_world(w[0], w[2])
+        };
+        assert_eq!(anchor.y.to_bits(), w[1].to_bits(), "{r:?}: anchor y");
         let t = num(&r[7]);
         let got = fl.screen(t, &c.cam, c.w, c.h);
         if r[8] == "true" {
@@ -320,6 +329,31 @@ fn css_len(v: f64) -> String {
     }
 }
 
+/// Every group's world anchor height = the web's expression (extracted from
+/// the pin and evaluated by `gen.mjs` on probe tile tops), bit for bit.
+#[test]
+fn anchor_heights_match_the_web() {
+    let mut n = [0usize; 4];
+    for (k, v) in consts() {
+        if k != "anchor_y" {
+            continue;
+        }
+        let f: Vec<&str> = v.split('|').collect();
+        let (top, want) = (num(f[1]), num(f[2]));
+        let (i, got) = match f[0] {
+            "r4" => (0, r4_anchor_world(1.0, top, 2.0)),
+            "r5" => (1, r5_anchor_world(1.0, top, 2.0)),
+            "r15a" => (2, r15a_anchor_world(1.0, top, 2.0)),
+            "r15b" => (3, r15b_anchor_world(1.0, 2.0)),
+            g => panic!("group {g}"),
+        };
+        assert_eq!(got.y.to_bits(), want.to_bits(), "{v}: {}", got.y);
+        assert_eq!((got.x, got.z), (1.0, 2.0));
+        n[i] += 1;
+    }
+    assert_eq!(n, [5; 4]);
+}
+
 #[test]
 fn constants_are_the_webs() {
     let c = consts();
@@ -351,6 +385,8 @@ fn constants_are_the_webs() {
     assert_eq!(num(&get(&c, "r15a_rise_rate")), FLOAT_RISE_RATE);
     assert_eq!(num(&get(&c, "r15b_rise_rate")), FLOAT_RISE_RATE);
     assert_eq!(num(&get(&c, "r15b_world_y")), R15B_WORLD_Y);
+    assert_eq!(num(&get(&c, "r15a_hpbar_y")), R15A_HPBAR_Y);
+    assert_eq!(num(&get(&c, "r15a_lift")), R15A_LIFT);
     assert_eq!(get(&c, "r15b_dmg_color"), R15B_DMG_COLOR);
     assert_eq!(get(&c, "r15b_breach_text"), R15B_BREACH_TEXT);
     assert_eq!(get(&c, "r15b_breach_color"), R15B_BREACH_COLOR);
@@ -535,8 +571,9 @@ fn fixtures_match_manifest_sha256() {
             let e = e.expect("entry");
             if e.file_type().expect("type").is_file() {
                 let f = format!("{sub}{}", e.file_name().into_string().expect("utf-8"));
-                // `golden.tsv` is written by the Rust test (`LABELS_BLESS=1`).
-                if f != "MANIFEST.sha256" && f != "golden.tsv" {
+                // `golden.tsv` (written by `LABELS_BLESS=1`) is listed as
+                // well: a re-bless must update its manifest line too.
+                if f != "MANIFEST.sha256" {
                     assert!(listed.contains(&f), "{f} missing from MANIFEST.sha256");
                     checked += 1;
                 }

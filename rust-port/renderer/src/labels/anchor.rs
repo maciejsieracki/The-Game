@@ -19,7 +19,36 @@
 use crate::pick::three::{js_min, Mat4, Vec3};
 
 use super::layout::{lu_px, lu_trunc, Lu};
-use super::style::{FLOAT_DURATION_MS, FLOAT_RISE_RATE, R4_OFFSET};
+use super::style::{
+    FLOAT_DURATION_MS, FLOAT_RISE_RATE, R15A_HPBAR_Y, R15A_LIFT, R15B_WORLD_Y, R4_LIFT_Y,
+    R4_OFFSET, R5_LIFT_Y,
+};
+
+/// R4 world anchor: `(wp.x, topYAt(q, r) + liftY, wp.z)` with the default
+/// `liftY = 1.5` (`main.ts:12939-12941`); `top_y` = the tile top.
+#[must_use]
+pub fn r4_anchor_world(x: f64, top_y: f64, z: f64) -> Vec3 {
+    Vec3::new(x, top_y + R4_LIFT_Y, z)
+}
+
+/// R5 world anchor: `{ x: pos.x, y: topY + 1.1, z: pos.z }` (`main.ts:14566`).
+#[must_use]
+pub fn r5_anchor_world(x: f64, top_y: f64, z: f64) -> Vec3 {
+    Vec3::new(x, top_y + R5_LIFT_Y, z)
+}
+
+/// R15a world anchor: `(wp.x, wpTopY + HPBAR_Y + 0.20, wp.z)`
+/// (`battleScene.ts:9110-9115`), summed left to right as in JavaScript.
+#[must_use]
+pub fn r15a_anchor_world(x: f64, tile_top_y: f64, z: f64) -> Vec3 {
+    Vec3::new(x, tile_top_y + R15A_HPBAR_Y + R15A_LIFT, z)
+}
+
+/// R15b world anchor: `(x, 3.2, z)` — a fixed height (`battleScene.ts:7490`).
+#[must_use]
+pub fn r15b_anchor_world(x: f64, z: f64) -> Vec3 {
+    Vec3::new(x, R15B_WORLD_Y, z)
+}
 
 /// A camera as the projection needs it.
 #[derive(Clone, Copy, Debug, PartialEq)]

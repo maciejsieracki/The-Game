@@ -11,7 +11,9 @@
 //! 2. `scenes_match_golden_hashes` — FNV-1a 64 of the premultiplied texture
 //!    equals `golden.tsv` (determinism across runs and toolchains). Re-bless
 //!    with `LABELS_BLESS=1 cargo test --test labels_scenes` only after a
-//!    deliberate, reviewed change.
+//!    deliberate, reviewed change, then update the `golden.tsv` line of
+//!    `MANIFEST.sha256` (`sha256sum golden.tsv`, or rerun `gen.mjs`):
+//!    `fixtures_match_manifest_sha256` fails until both agree.
 //! 3. `float_frames_fade_like_css` — the fade frames (p = 0, 0.25, 0.5) are
 //!    the opaque texture × `1 − p²`, and match Chromium's `opacity`.
 

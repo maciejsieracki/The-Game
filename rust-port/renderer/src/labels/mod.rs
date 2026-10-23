@@ -36,8 +36,9 @@ pub mod shape;
 pub mod style;
 
 pub use anchor::{
-    anchored_rect, battle_world_to_screen, build_chip_left_top, siege_label_position,
-    world_to_client_px, AnchorTransform, FloatFrame, FloatLabel, ProjectionCamera, ScreenRect,
+    anchored_rect, battle_world_to_screen, build_chip_left_top, r15a_anchor_world,
+    r15b_anchor_world, r4_anchor_world, r5_anchor_world, siege_label_position, world_to_client_px,
+    AnchorTransform, FloatFrame, FloatLabel, ProjectionCamera, ScreenRect,
 };
 pub use layout::{layout_r15a, layout_r15b, layout_r4, layout_r5, LabelLayout, TextFragment};
 pub use paint::{render_label, LabelTexture};
