@@ -27,6 +27,7 @@ dotykające tych samych plików — zawsze sekwencyjnie, nigdy w tej samej fali.
 
 | # | Temat | Faza | Runda | runId Workflow | Status | Ostatnia aktualizacja |
 |---|---|---|---|---|---|---|
+| 10 | `R-RUSTPORT-P6-M12-KLASTRY-COMPUTE-SPAWN-PLAN-Q1` | mapgen M12 klastry — compute i plan spawnu (L; Evaluator Sonnet) | 1/5 | `wf_40eda632-8b0` | DISPATCHED | 2026-10-23 |
 | 9 | `R-RUSTPORT-P4-35-TEXT-EMOJI-UNIFY-Q1` | RR-T8f jedna ścieżka tekstu z emoji (domknięcie Z-30-4) — Opus 5.5 | 1/5 | `wf_eca72282-efa` | DISPATCHED | 2026-10-23 |
 | 8 | `R-RUSTPORT-P4-34-ANCHORS-DOM-Q1` | RR-T8e kotwice DOM → Rust (etykiety R4/R5/R15a/R15b, float label) — Opus 5.5 | 1/5 | `wf_c43cd53a-064` | DISPATCHED | 2026-10-23 |
 | 7 | `R-RUSTPORT-P6-6B-MIASTA-ZAKLADANIE-B-Q1` | P6.6B `cities.ts`, `empire-city-defaults.ts`, `display-names.ts` (XL; Evaluator Sonnet) | 1/5 | `wf_9188d0d5-3d2` | DISPATCHED | 2026-10-23 |
