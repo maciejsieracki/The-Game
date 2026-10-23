@@ -1,0 +1,24 @@
+WYKRYTY   : disp: resolve - miasto pusty po trim -> 1 testow czerwonych: resolve_owner_base_name_matches_web
+WYKRYTY   : disp: truthy - pusty napis prawdziwy -> 1 testow czerwonych: resolve_owner_base_name_matches_web
+WYKRYTY   : pct: pula z budynkow -> 1 testow czerwonych: clamp_functions_match_web
+PRZEZYL   : pct: podzial z procentu puli - gorna granica
+PRZEZYL   : pct: normalize - ponowny limit Nauki
+PRZEZYL   : pct: adjust - reszta pod capem Nauki
+PRZEZYL   : pct: adjust - v0 ponad reszta
+WYKRYTY   : tab: limit miast 10 -> 12 -> 1 testow czerwonych: can_found_city_matches_web
+WYKRYTY   : tab: krok epoki 5 -> 4 -> 1 testow czerwonych: can_found_city_matches_web
+WYKRYTY   : tab: id prefiks -> 3 testow czerwonych: found_city_at_matches_web, found_city_from_village_matches_web, found_city_matches_web
+WYKRYTY   : emp: upgrade - pomija gracza -> 1 testow czerwonych: upgrade_budowa_profil_auto_defaults_matches_web
+WYKRYTY   : emp: racji migracja - roznica -> 1 testow czerwonych: poziom_racji_functions_match_web
+PRZEZYL   : ens: budowa - zrownowazone: pusta lista
+WYKRYTY   : ens: budowa lista -> 1 testow czerwonych: ensure_city_save_defaults_matches_web
+WYKRYTY   : found: nowe miasto - poziom racji -> 3 testow czerwonych: found_city_at_matches_web, found_city_from_village_matches_web, found_city_matches_web
+WYKRYTY   : found: nowe miasto - procent rozwoj -> 3 testow czerwonych: found_city_at_matches_web, found_city_from_village_matches_web, found_city_matches_web
+WYKRYTY   : found: wioska - terytorium -> 1 testow czerwonych: found_city_from_village_matches_web
+mutantow=17 przezylo/niekompilujace=5
+   pct: podzial z procentu puli - gorna granica
+   pct: normalize - ponowny limit Nauki
+   pct: adjust - reszta pod capem Nauki
+   pct: adjust - v0 ponad reszta
+   ens: budowa - zrownowazone: pusta lista
+EXIT=1
