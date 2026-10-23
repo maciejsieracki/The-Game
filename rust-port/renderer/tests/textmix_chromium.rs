@@ -35,11 +35,14 @@ const MAX_FRAC_PX_OVER_16: f64 = 0.05;
 /// (`P4-35-TEXT-EMOJI-UNIFY.md` §5.2), with bounds = measured values rounded
 /// outward (a regression still fails): `(scene, min SSIM, max mean_abs,
 /// max px>16)`. Small light (`#f0e6c8`) bold 13 px Liberation text on a
-/// transparent canvas: Chromium/Skia renders outline glyph coverage
-/// differently (P4-29 §5.3 — not reproduced, D-TXT-6); the control scene
+/// transparent canvas: Chromium/Skia's outline glyph coverage depends on the
+/// text colour (P4-29 §5.2 — not reproduced, D-TXT-6). Measured by
+/// `textmix_aa_controls_localise_the_m01_m15_exception`: the light text has
+/// ≈ 6 % more alpha mass in Chromium than here, the same text in `#101010`
+/// ≈ 0.4 % less and is inside the limits, and on an opaque background both
+/// colours are inside the limits. The control scene
 /// `m15_text_only_regression` has **no colour glyph** (drawn by the
-/// unchanged RR-T8b branch) and misses by the same amount, while every
-/// scene where colour glyphs dominate is well inside the limits.
+/// unchanged RR-T8b branch) and misses by the same amount.
 const EXCEPTIONS: &[(&str, f64, f64, f64)] = &[
     ("m01_stat_line_left_middle", 0.983, 2.0, 0.050),
     ("m15_text_only_regression", 0.984, 2.01, 0.053),
@@ -251,7 +254,7 @@ fn textmix_stroke_probe_matches_chromium() {
             (r[0].clone(), [v(1), v(2), v(3), v(4)])
         })
         .collect();
-    assert_eq!(want.len(), 5);
+    assert_eq!(want.len(), 7);
     let run = |name: &str| -> [u64; 4] {
         let mut c = Canvas2dLite::new(80, 60).expect("canvas");
         assert!(c.set_font("40px Arial"));
@@ -282,6 +285,18 @@ fn textmix_stroke_probe_matches_chromium() {
                 c.set_line_width(3.0);
                 c.stroke_text("🔥", 10.0, 30.0);
             }
+            // Obrona r1 (zarzut 3): `fillStyle` = gradient. Chromium draws the
+            // colour glyph at full alpha whatever the gradient's alpha.
+            "fill_grad_alpha_0.5" | "fill_grad_alpha_0" => {
+                let a = if name == "fill_grad_alpha_0" { 0 } else { 5 };
+                let mut g = c.create_linear_gradient(0.0, 0.0, 80.0, 0.0);
+                g.add_color_stop(0.0, &format!("rgba(255,0,0,0.{a})"))
+                    .expect("stop");
+                g.add_color_stop(1.0, &format!("rgba(0,0,255,0.{a})"))
+                    .expect("stop");
+                c.set_fill_style_gradient(&g);
+                c.fill_text("🔥", 10.0, 30.0);
+            }
             x => panic!("probe {x}"),
         }
         probe_sums(&c)
@@ -291,6 +306,8 @@ fn textmix_stroke_probe_matches_chromium() {
     assert_eq!(w["fill_opaque"], w["stroke_opaque_lw3"]);
     assert_eq!(w["fill_opaque"], w["stroke_opaque_lw12"]);
     assert_eq!(w["fill_opaque"], w["stroke_fill_alpha_0.5"]);
+    assert_eq!(w["fill_opaque"], w["fill_grad_alpha_0.5"]);
+    assert_eq!(w["fill_opaque"], w["fill_grad_alpha_0"]);
     let fill = run("fill_opaque");
     let cf = w["fill_opaque"];
     for (name, chromium) in &want {
@@ -317,6 +334,67 @@ fn textmix_stroke_probe_matches_chromium() {
             assert_eq!(got, fill, "{name}: a colour glyph is drawn as filled");
         }
     }
+}
+
+/// Obrona r1 (zarzut 2): where the `m01`/`m15` exception comes from. The
+/// same 13 px bold text (`gen.mjs` `aaScenes`, `ref/aa_*.rgba`) in the light
+/// colour of the scenes vs `#101010`, on a transparent vs an opaque
+/// background. Measured facts locked here: (1) on a transparent canvas the
+/// light text has ≥ 4 % more alpha mass in Chromium than in RR-T8b, the dark
+/// text within ±1 % — the outline coverage of Skia depends on the colour;
+/// (2) the dark text and both colours on an opaque background are inside
+/// the RR-T8a/b/c limits — the exception is specific to light text on a
+/// transparent canvas, with or without colour glyphs.
+#[test]
+fn textmix_aa_controls_localise_the_m01_m15_exception() {
+    let alpha_mass = |px: &[u8]| -> u64 { px.chunks_exact(4).map(|p| u64::from(p[3])).sum() };
+    println!("control | mean_abs | px>16 % | ssim | alpha mass chromium/rust");
+    let mut bad = Vec::new();
+    for (key, text, w) in [
+        ("m15", "Zbrojmistrz 12", 120u32),
+        ("m01", "Zbrojmistrz ⚔ 12 ☠ 3 👤", 180),
+    ] {
+        for (tone, color, bg) in [
+            ("light", "#f0e6c8", None),
+            ("dark", "#101010", None),
+            ("light_on_dark", "#f0e6c8", Some("#203040")),
+            ("dark_on_light", "#101010", Some("#f0e6c8")),
+        ] {
+            let name = format!("aa_{key}_{tone}");
+            let mut c = Canvas2dLite::new(w, 24).expect("canvas");
+            if let Some(b) = bg {
+                assert!(c.set_fill_style(b));
+                c.fill_rect(0.0, 0.0, f64::from(w), 24.0);
+            }
+            assert!(c.set_font("bold 13px Segoe UI, Arial"));
+            assert!(c.set_text_align("left"));
+            assert!(c.set_text_baseline("middle"));
+            assert!(c.set_fill_style(color));
+            c.fill_text(text, 4.0, 12.0);
+            let path = fixture(&format!("ref/{name}.rgba"));
+            let reference = premultiply_straight(&std::fs::read(&path).expect("ref"));
+            let d = compare_premultiplied(c.pixels_premultiplied(), &reference, w as usize, 24);
+            let ratio = alpha_mass(&reference) as f64 / alpha_mass(c.pixels_premultiplied()) as f64;
+            println!(
+                "{name} | {:.4} | {:.3} | {:.5} | {ratio:.4}",
+                d.mean_abs,
+                d.frac_px_over_16 * 100.0,
+                d.ssim
+            );
+            let inside = d.ssim >= MIN_SSIM
+                && d.mean_abs <= MAX_MEAN_ABS
+                && d.frac_px_over_16 <= MAX_FRAC_PX_OVER_16;
+            let ok = match tone {
+                "light" => ratio >= 1.04,
+                "dark" => (ratio - 1.0).abs() <= 0.01 && inside,
+                _ => inside,
+            };
+            if !ok {
+                bad.push(name);
+            }
+        }
+    }
+    assert!(bad.is_empty(), "AA controls changed: {bad:?}");
 }
 
 #[test]

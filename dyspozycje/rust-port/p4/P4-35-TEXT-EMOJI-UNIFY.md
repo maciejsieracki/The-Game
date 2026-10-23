@@ -80,8 +80,12 @@ Płótno 80×60, `40px Arial`, 🔥 w (10, 30), `middle`; sumy kanałów straigh
 | `strokeText`, `#00ff00`, `lineWidth 12` | 275383 | 153154 | 49813 | 247556 |
 | `strokeText`, `rgba(255,0,0,0.5)` | 272538 | 151740 | 49160 | 124201 |
 | `strokeText`, `fillStyle` alfa 0,5, `strokeStyle` nieprzezroczysty | 275383 | 153154 | 49813 | 247556 |
+| `fillText`, `fillStyle` = gradient liniowy, oba stopy alfa 0,5 (obrona r1) | 275383 | 153154 | 49813 | 247556 |
+| `fillText`, `fillStyle` = gradient liniowy, oba stopy alfa 0 (obrona r1) | 275383 | 153154 | 49813 | 247556 |
 
 Wniosek (dokładny): glif kolorowy w `strokeText` = ten sam obraz co w `fillText`; `lineWidth`, kolor RGB i `fillStyle` bez wpływu; alfa `strokeStyle` mnoży (masa alfa ×0,5017). Odtworzone: `draw_mixed` z `TextPaint::Stroke` rysuje bitmapę z `stroke_color_alpha()`, przebiegi konturowe obrysowuje. Test `textmix_stroke_probe_matches_chromium`: u nas obrysy nieprzezroczyste **identyczne** z wypełnieniem (równość bitowa sum), stosunek mas alfa 0,5016 vs 0,5017 (≤ 0,002), sumy kanałów vs Chromium ≤ 3 % (różnica próbkowania bitmapy, ta sama co w scenach P4-30 §4.3). Web: `strokeText` tylko dla cyfr Mocy (`render/unitStatPlate.ts:615`) — bez emoji; reguła ma znaczenie dla poprawności API, nie dla obecnych scen gry.
+
+**Gradient jako styl (obrona r1, zarzut 3 — zmierzone):** gdy `fillStyle` jest `CanvasGradient`, Chromium 141 rysuje glif kolorowy z **pełną** alfą — sumy równe `fillText` z kolorem nieprzezroczystym, także dla gradientu o alfie 0 we wszystkich stopach (dwa ostatnie wiersze tabeli, `gen.mjs` `probe('fill_grad_alpha_*')`). Kod (`emoji.rs` `draw_mixed`: `fill_color_alpha()` = `None` dla gradientu → `unwrap_or(1.0)`) to odtwarza; test `textmix_stroke_probe_matches_chromium` sprawdza teraz oba przypadki (Chromium: równość bitowa z `fill_opaque`; u nas: równość bitowa z naszym `fill_opaque` i sumy ≤ 3 % vs Chromium). Mutacja E5 Evaluatora (`unwrap_or(0.0)`) jest **zabita**: `fill_grad_alpha_0.5 channel 0: rust 0 chromium 275383` (`dowody/09-obrona-r1.log`). `strokeStyle` = gradient: `Canvas2dLite` nie ma setera gradientu obrysu (`set_stroke_style_gradient` nie istnieje — tylko `set_fill_style_gradient`, `raster/canvas.rs:308`), więc przypadek jest nieosiągalny przez publiczne API; zachowanie Chromium dla niego zmierzono w scratchpadzie (`strokeText` z gradientem alfa 0,5 → sumy jak `fill_opaque`), ale nie ma czego testować w Rust (ZAŁOŻENIE Z-35-7).
 
 ---
 
@@ -130,7 +134,22 @@ Generator `tests/fixtures/textmix/gen.mjs` (node v22.22.0, playwright 1.56.1, Ch
 | `m18_siege_word` | 420x110 | 49 | 0.1244 | 0.457 | 0.99932 | `siegeMarker.ts:42` |
 
 ### 5.2 Wyjątki — AA konturów RR-T8b, nie RR-T8f
-`m01` i `m15`: mały (13 px) **jasny** (`#f0e6c8`) pogrubiony Liberation Sans na przezroczystym tle. `m15` nie zawiera ani jednego glifu kolorowego — rysuje go nietknięta gałąź RR-T8b — i odstaje tak samo (mean 2,00, SSIM 0,9846, px>16 5,28 %) jak `m01` (mean 1,96, SSIM 0,9834). Przyczyna opisana w P4-29 §5.3 (pokrycie AA masek glifów Skii zależne od jasności koloru — nieodtwarzane, D-TXT-6); RR-T8b mierzył mały tekst na nieprzezroczystych tłach (T14), gdzie różnica alfa się nie ujawnia. Każda scena, w której dominują glify kolorowe albo większy tekst, jest w progach. Test ma jawną listę `EXCEPTIONS` z granicami = zmierzone wartości zaokrąglone na zewnątrz (`m01`: SSIM ≥ 0,983, mean ≤ 2,0, px>16 ≤ 5,0 %; `m15`: ≥ 0,984, ≤ 2,01, ≤ 5,3 %), więc regresja nadal jest wykrywana. **Do decyzji Evaluatora/orkiestratora:** akceptacja jako odchylenie RR-T8b (ocena wzrokowa D-TXT-4 = A) albo osobny temat AA małego jasnego tekstu.
+`m01` i `m15`: mały (13 px) **jasny** (`#f0e6c8`) pogrubiony Liberation Sans na przezroczystym tle. `m15` nie zawiera ani jednego glifu kolorowego — rysuje go nietknięta gałąź RR-T8b — i odstaje tak samo (mean 2,00, SSIM 0,9846, px>16 5,28 %) jak `m01` (mean 1,96, SSIM 0,9834).
+
+**Przyczyna — zmierzona (obrona r1, zarzut 2; poprawiony cytat).** Mechanizm opisuje P4-29 **§5.2** („Pokrycie AA glifów”, `P4-29-TEXT-FONTS.md:161`; wersja r1 błędnie cytowała §5.3 — to hinting): pokrycie masek glifów Skii zależy od koloru tekstu, nieodtwarzane (D-TXT-6). P4-29 zmierzył to na innych napisach (ciemny `#101010` w `x_text_charset_sans`: Chromium −22 % masy alfa względem nas; jasny `#f4ead2` glif `t10_glyph_civ`: −1,3 %), więc nie można z niego przenosić wniosku „jasny gorszy” na ten font i rozmiar — r1 zrobiła to bez pomiaru, a teza o tłach T14 była niezmierzona. Zastąpiono ją bezpośrednim pomiarem kontroli (`gen.mjs` `aaScenes` → `ref/aa_*.rgba`; test `textmix_aa_controls_localise_the_m01_m15_exception`; log `dowody/09-obrona-r1.log`) — ten sam font `bold 13px Segoe UI, Arial`, napis `m15` i `m01`, `left`/`middle` w (4, 12):
+
+| kontrola | mean_abs | px>16 % | SSIM | masa alfa Chromium / nasza |
+|---|---|---|---|---|
+| `aa_m15_light` (`#f0e6c8`, przezroczyste) | 2,0278 | 5,382 | 0,98604 | **1,0628** |
+| `aa_m15_dark` (`#101010`, przezroczyste) | 0,5252 | 4,271 | 0,99586 | 0,9958 |
+| `aa_m15_light_on_dark` (tło `#203040`) | 1,1378 | 4,097 | 0,99319 | 1,0000 (tło nieprzezr.) |
+| `aa_m15_dark_on_light` (tło `#f0e6c8`) | 1,0357 | 3,090 | 0,99489 | 1,0000 (tło nieprzezr.) |
+| `aa_m01_light` | 1,9634 | 4,907 | 0,98341 | **1,0512** |
+| `aa_m01_dark` | 0,5532 | 3,796 | 0,99492 | 0,9907 |
+| `aa_m01_light_on_dark` | 1,0959 | 3,843 | 0,99201 | 1,0000 (tło nieprzezr.) |
+| `aa_m01_dark_on_light` | 1,0031 | 2,778 | 0,99400 | 1,0000 (tło nieprzezr.) |
+
+Wnioski (zmierzone): (1) dla **tego** fontu i rozmiaru Chromium rysuje tekst jasny **grubiej** niż RR-T8b (+6,3 % masy alfa `m15`), a ciemny prawie tak samo (−0,4 %) — kierunek względny zgodny z P4-29 §5.2 (w Chromium pokrycie rośnie z jasnością koloru względem nas: tam różnica jasny−ciemny ≈ +20,7 pp, tu ≈ +6,7 pp); (2) ten sam tekst w `#101010` jest w progach RR-T8a/b/c, a oba kolory na tle nieprzezroczystym też — odchylenie występuje **tylko** dla jasnego tekstu na przezroczystym płótnie, z glifami kolorowymi (`m01`) i bez nich (`m15`) jednakowo, więc nie pochodzi z RR-T8f. Test blokuje te fakty (jasny: stosunek ≥ 1,04; ciemny: |stosunek−1| ≤ 0,01 i w progach; tła nieprzezroczyste: w progach). Dlaczego Skia tak robi (tablice gamma/kontrastu masek) — NIE_ZMIERZONO (źródła Skii nieczytane, jak P4-29). Znaczenie dla gry: w źródle fontu `m01`/`m15` (`render/cityOkolicaOverlay.ts:138-142`) web rysuje tym fontem tylko 👤 (`rgba(255,255,255,0.92)`) na wypełnionym kółku plakietki (`:133-136`), nie jasny tekst na przezroczystym tle — napisy `m01`/`m15` są syntetyczne (Z-35-5); czy gdzieś w grze występuje mały jasny tekst konturowy na przezroczystej teksturze — NIE_ZMIERZONO (stąd wpis do oceny wzrokowej, §10). Każda scena, w której dominują glify kolorowe albo większy tekst, jest w progach. Test ma jawną listę `EXCEPTIONS` z granicami = zmierzone wartości zaokrąglone na zewnątrz (`m01`: SSIM ≥ 0,983, mean ≤ 2,0, px>16 ≤ 5,0 %; `m15`: ≥ 0,984, ≤ 2,01, ≤ 5,3 %), więc regresja nadal jest wykrywana. **Do decyzji Evaluatora/orkiestratora:** akceptacja jako odchylenie RR-T8b (ocena wzrokowa D-TXT-4 = A) albo osobny temat AA małego jasnego tekstu.
 
 ---
 
@@ -180,7 +199,7 @@ Generator `tests/fixtures/textmix/gen.mjs` (node v22.22.0, playwright 1.56.1, Ch
 
 ## 10. ZAŁOŻENIA, NIE_ZMIERZONO, ocena wzrokowa
 
-- **Z-35-0** szablon dispatchu (§1). **Z-35-1** stare API jako delegacja bez `#[deprecated]` (§2.3). **Z-35-2** wywołujące bez zmian (niekonieczne — §6). **Z-35-3** model szerokości `f32` (§4). **Z-35-4** wyjątki `m01`/`m15` (§5.2) — przyczyna RR-T8b. **Z-35-5** napisy testowe syntetyczne („napisy typu” z dispatchu) w prawdziwych fontach weba; web rysuje dziś mieszane ciągi w jednym `fillText` wyłącznie w scenach P4-30 (np. glif zastępczy, T13) — RR-T8f dotyczy API, nie nowych miejsc rysowania. **Z-35-6** `strokeText` glifu kolorowego (§3.2) — przypadek nieużywany przez web.
+- **Z-35-0** szablon dispatchu (§1). **Z-35-1** stare API jako delegacja bez `#[deprecated]` (§2.3). **Z-35-2** wywołujące bez zmian (niekonieczne — §6). **Z-35-3** model szerokości `f32` (§4). **Z-35-4** wyjątki `m01`/`m15` (§5.2) — przyczyna RR-T8b. **Z-35-5** napisy testowe syntetyczne („napisy typu” z dispatchu) w prawdziwych fontach weba; web rysuje dziś mieszane ciągi w jednym `fillText` wyłącznie w scenach P4-30 (np. glif zastępczy, T13) — RR-T8f dotyczy API, nie nowych miejsc rysowania. **Z-35-6** `strokeText` glifu kolorowego (§3.2) — przypadek nieużywany przez web. **Z-35-7** (obrona r1) gradient jako styl tekstu z glifem kolorowym: glif z pełną alfą — zmierzone w Chromium dla `fillStyle` (test) i `strokeStyle` (scratchpad); `strokeStyle` = gradient nieosiągalny przez API `Canvas2dLite` (§3.2); web nie rysuje tekstu gradientem z emoji (pin `edb8fb56`: wszystkie `fillText`/`strokeText` z emoji — Evaluator r1, potwierdzone przez niego).
 - NIE_ZMIERZONO: wygląd na Windows (Segoe UI Emoji/Symbol); GPU; architektury ≠ x86_64; clippy 1.87.0; 3 odchylenia szerokości RR-T8c (§4); źródła Blink dla modelu `f32` (wnioskowane z pomiaru).
 - **Ocena wzrokowa właściciela po RR-T5 (D-TXT-4 = A):** etykiety okolicy (🍞 🔨 💰 + cyfry) i ikony pracowników 👤 na mapie; linia bazowa cyfr w stosie T13 (§3.1) — w grze cyfry okolicy idą fontem Arial (`YIELD_DIGIT_FONT`), więc zmiana nie powinna być widoczna; mały jasny tekst 13 px (§5.2) na tle mapy.
 
@@ -191,4 +210,4 @@ Generator `tests/fixtures/textmix/gen.mjs` (node v22.22.0, playwright 1.56.1, Ch
 - `rust-port/renderer/src/raster/image/emoji.rs` — `has_color_glyph`, `mixed_width`, `draw_mixed`, `pick_source`; `fill_text`/`measure_text` jako delegacje.
 - `rust-port/renderer/src/raster/canvas.rs` — hook `stroke_color_alpha` (§2.2).
 - `rust-port/renderer/tests/textmix_chromium.rs`, `textmix_unify.rs`, `textmix_manifest.rs`.
-- `rust-port/renderer/tests/fixtures/textmix/` — `gen.mjs`, `scenes.tsv`, `ref/*.rgba` (18), `widths.tsv`, `baselines.tsv`, `probes.tsv`, `versions.txt`, `MANIFEST.sha256`, `golden.tsv` — razem ~692 KB (≤ 4 MB).
+- `rust-port/renderer/tests/fixtures/textmix/` — `gen.mjs`, `scenes.tsv`, `ref/*.rgba` (18 scen + 8 kontroli `aa_*` z obrony r1), `widths.tsv`, `baselines.tsv`, `probes.tsv` (7 prób), `versions.txt`, `MANIFEST.sha256`, `golden.tsv` — razem 804 661 B wg `textmix_manifest` (≤ 4 MB).

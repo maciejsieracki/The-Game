@@ -497,7 +497,9 @@ pub fn fill_text(ctx: &mut Canvas2dLite, style: &TextStyle, text: &str, x: f64, 
 /// the RR-T8b pipeline (filled or stroked), colour glyphs as bitmaps with the
 /// alpha of the fill style (`fillText`) or of the stroke style
 /// (`strokeText`) — measured in Chromium 141 (`P4-35-TEXT-EMOJI-UNIFY.md`
-/// §3.2). `x`, `y` are finite (checked by the caller).
+/// §3.2); a gradient style leaves the colour glyph at full alpha (also
+/// measured there, probes `fill_grad_alpha_*`). `x`, `y` are finite
+/// (checked by the caller).
 pub(crate) fn draw_mixed(ctx: &mut Canvas2dLite, text: &str, x: f64, y: f64, paint: TextPaint) {
     let st = ctx.text_state();
     let spec = st.font().clone();

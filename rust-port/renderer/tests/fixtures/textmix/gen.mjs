@@ -177,6 +177,20 @@ scene('m18_siege_word', 420, 110, 'siege font (siegeMarker.ts:42) with ⚔ and �
   ctx.fillText('⚔ 🔥 3', 210, 55);
 });
 
+// Obrona r1 (zarzut 2): AA controls of the m01/m15 exception — the same 13 px bold text in a
+// light vs a dark colour, on a transparent vs an opaque background. Written as ref/aa_<name>.rgba,
+// rebuilt in Rust by tests/textmix_chromium.rs::textmix_aa_controls_localise_the_m01_m15_exception
+// (not part of scenes.tsv: diagnostic, not a web scene).
+const aaScenes = [];
+for (const [key, text, w] of [['m15', 'Zbrojmistrz 12', 120], ['m01', 'Zbrojmistrz ⚔ 12 ☠ 3 👤', 180]]) {
+  for (const [tone, color, bg] of [['light', '#f0e6c8', null], ['dark', '#101010', null], ['light_on_dark', '#f0e6c8', '#203040'], ['dark_on_light', '#101010', '#f0e6c8']]) {
+    const ops = [];
+    if (bg) ops.push(['fillStyle', bg], ['fillRect', 0, 0, w, 24]);
+    ops.push(['font', F.okolica], ['textAlign', 'left'], ['textBaseline', 'middle'], ['fillStyle', color], ['fillText', text, 4, 12]);
+    aaScenes.push({ name: `aa_${key}_${tone}`, w, h: 24, src: 'diagnostic', ops });
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Widths / baselines
 // ---------------------------------------------------------------------------
@@ -239,6 +253,10 @@ const result = await page.evaluate(async ({ faces, scenes, widthRows, BASELINE_R
   probe('stroke_opaque_lw12', (c) => { c.strokeStyle = '#00ff00'; c.lineWidth = 12; c.strokeText('🔥', 10, 30); });
   probe('stroke_alpha_0.5', (c) => { c.strokeStyle = 'rgba(255,0,0,0.5)'; c.lineWidth = 3; c.strokeText('🔥', 10, 30); });
   probe('stroke_fill_alpha_0.5', (c) => { c.fillStyle = 'rgba(0,0,255,0.5)'; c.strokeStyle = '#ff0000'; c.lineWidth = 3; c.strokeText('🔥', 10, 30); });
+  // Obrona r1 (zarzut 3): fillStyle = CanvasGradient — does the gradient's alpha reach a colour glyph?
+  const grad = (c, a) => { const g = c.createLinearGradient(0, 0, 80, 0); g.addColorStop(0, `rgba(255,0,0,${a})`); g.addColorStop(1, `rgba(0,0,255,${a})`); return g; };
+  probe('fill_grad_alpha_0.5', (c) => { c.fillStyle = grad(c, 0.5); c.fillText('🔥', 10, 30); });
+  probe('fill_grad_alpha_0', (c) => { c.fillStyle = grad(c, 0); c.fillText('🔥', 10, 30); });
   const out = {};
   for (const sc of scenes) {
     const c = document.createElement('canvas');
@@ -256,7 +274,7 @@ const result = await page.evaluate(async ({ faces, scenes, widthRows, BASELINE_R
     out[sc.name] = b64(ctx.getImageData(0, 0, sc.w, sc.h).data);
   }
   return { widths, baselines, probes, out, ua: navigator.userAgent };
-}, { faces, scenes, widthRows, BASELINE_ROWS, mapFontSrc: mapFont.toString(), mapFamilySrc: mapFamily.toString() });
+}, { faces, scenes: [...scenes, ...aaScenes], widthRows, BASELINE_ROWS, mapFontSrc: mapFont.toString(), mapFamilySrc: mapFamily.toString() });
 await browser.close();
 
 rmSync(OUT + 'ref', { recursive: true, force: true });
