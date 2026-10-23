@@ -1,0 +1,443 @@
+## HEAD
+35e8ab7bdffd6c9e9c8c94e05c3db10911151585
+ M ../../dyspozycje/rust-port/p4/P4-35-TEXT-EMOJI-UNIFY.md
+ M src/raster/image/emoji.rs
+ M tests/fixtures/textmix/MANIFEST.sha256
+ M tests/fixtures/textmix/gen.mjs
+ M tests/fixtures/textmix/probes.tsv
+ M tests/textmix_chromium.rs
+?? ../../dyspozycje/autobot/runs/R-RUSTPORT-P4-35-TEXT-EMOJI-UNIFY-Q1/dowody/09-chromium-gradient-probe.mjs
+?? ../../dyspozycje/autobot/runs/R-RUSTPORT-P4-35-TEXT-EMOJI-UNIFY-Q1/dowody/09-obrona-r1.sh
+?? tests/fixtures/textmix/ref/aa_m01_dark.rgba
+?? tests/fixtures/textmix/ref/aa_m01_dark_on_light.rgba
+?? tests/fixtures/textmix/ref/aa_m01_light.rgba
+?? tests/fixtures/textmix/ref/aa_m01_light_on_dark.rgba
+?? tests/fixtures/textmix/ref/aa_m15_dark.rgba
+?? tests/fixtures/textmix/ref/aa_m15_dark_on_light.rgba
+?? tests/fixtures/textmix/ref/aa_m15_light.rgba
+?? tests/fixtures/textmix/ref/aa_m15_light_on_dark.rgba
+## rustc
+rustc 1.97.0 (2d8144b78 2026-07-07)
+rustc 1.87.0 (17067e9ac 2025-05-09)
+## Chromium: gradient jako fillStyle/strokeStyle a glif kolorowy (zarzut 3; sumy R G B A)
+fill_opaque	275383	153154	49813	247556
+fill_alpha_0.5	272538	151740	49160	124201
+fill_grad_opaque	275383	153154	49813	247556
+fill_grad_0.5	275383	153154	49813	247556
+fill_grad_0_to_1	275383	153154	49813	247556
+fill_grad_0	275383	153154	49813	247556
+stroke_grad_0.5	275383	153154	49813	247556
+stroke_opaque	275383	153154	49813	247556
+EXIT=0
+## generator: ponowny przebieg gen.mjs w kopii poza repo -> MANIFEST identyczny
+scenes=18 widths=308 baselines=144 probes=7 chromium=141.0.7390.37
+DIFF_EXIT=0
+## textmix (nocapture): kontrole AA (zarzut 2) i próby gradientu (zarzut 3)
+   Compiling civ-renderer v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_eca72282-efa-3/rust-port/renderer)
+    Finished `test` profile [unoptimized] target(s) in 24.00s
+     Running tests/textmix_chromium.rs (target/debug/deps/textmix_chromium-21db452a05fb294c)
+
+running 6 tests
+scene | size | max_abs | mean_abs | px>16 % | ssim | source
+control | mean_abs | px>16 % | ssim | alpha mass chromium/rust
+test textmix_baselines_match_chromium ... ok
+aa_m15_light | 2.0278 | 5.382 | 0.98604 | 1.0628
+aa_m15_dark | 0.5252 | 4.271 | 0.99586 | 0.9958
+aa_m15_light_on_dark | 1.1378 | 4.097 | 0.99319 | 1.0000
+aa_m15_dark_on_light | 1.0357 | 3.090 | 0.99489 | 1.0000
+probe fill_opaque: rust [276076, 156050, 50994, 247773] chromium [275383, 153154, 49813, 247556]
+probe stroke_opaque_lw3: rust [276076, 156050, 50994, 247773] chromium [275383, 153154, 49813, 247556]
+probe stroke_opaque_lw12: rust [276076, 156050, 50994, 247773] chromium [275383, 153154, 49813, 247556]
+probe stroke_alpha_0.5: rust [275315, 154994, 50561, 124291] chromium [272538, 151740, 49160, 124201]
+probe stroke_fill_alpha_0.5: rust [276076, 156050, 50994, 247773] chromium [275383, 153154, 49813, 247556]
+aa_m01_light | 1.9634 | 4.907 | 0.98341 | 1.0512
+probe fill_grad_alpha_0.5: rust [276076, 156050, 50994, 247773] chromium [275383, 153154, 49813, 247556]
+probe fill_grad_alpha_0: rust [276076, 156050, 50994, 247773] chromium [275383, 153154, 49813, 247556]
+test textmix_stroke_probe_matches_chromium ... ok
+aa_m01_dark | 0.5532 | 3.796 | 0.99492 | 0.9907
+aa_m01_light_on_dark | 1.0959 | 3.843 | 0.99201 | 1.0000
+m01_stat_line_left_middle | 180x24 | 74 | 1.9634 | 4.907 | 0.98341 | okolica font (cityOkolicaOverlay.ts:138) + mixed ⚔ ☠ 👤 label
+aa_m01_dark_on_light | 1.0031 | 2.778 | 0.99400 | 1.0000
+test textmix_aa_controls_localise_the_m01_m15_exception ... ok
+m02_worker_center | 150x28 | 64 | 1.4554 | 3.643 | 0.98971 | worker font (workerFieldOverlay.ts:98), center/middle
+m03_yield_emoji_stack_top | 160x24 | 55 | 0.8694 | 1.432 | 0.99362 | T13 emoji stack (cityOkolicaOverlay.ts:85-86), top/left, alpha 0.95
+m04_text_only_emoji_primary | 200x40 | 50 | 0.2389 | 0.975 | 0.99831 | text-only strings, primary face = emoji face (T13 stack): baselines
+m05_right_align | 200x34 | 52 | 0.6151 | 1.809 | 0.99787 | bold 20px Arial, right/alphabetic
+m06_end_align_serif | 220x64 | 67 | 0.5544 | 1.683 | 0.99667 | revolt font (cities.ts:714) end/alphabetic
+widths: 308/308 bit for bit
+test textmix_widths_match_chromium_bit_for_bit ... ok
+m07_skull_symbol_stack | 160x56 | 61 | 0.4977 | 1.830 | 0.99772 | skull stack (units.ts:6294) center/middle, red
+m08_stroke_then_fill | 200x44 | 57 | 0.7577 | 2.739 | 0.99623 | unitStatPlate.ts:609-618 pattern (strokeText outline, then fillText)
+m09_stroke_alpha_emoji | 120x36 | 24 | 0.2702 | 0.116 | 0.99885 | strokeText: colour glyph drawn filled, strokeStyle alpha multiplies it
+m10_fill_alpha | 120x30 | 16 | 0.1808 | 0.000 | 0.99883 | fillStyle alpha on text and colour glyph in one call
+m11_shadow_mixed | 140x36 | 43 | 0.6671 | 1.270 | 0.99722 | shadow on a mixed string
+# R-RUSTPORT-P4-35 golden FNV-1a 64 of the premultiplied RGBA8 buffer per scene
+m01_stat_line_left_middle	e6d08b4876f781b1
+m02_worker_center	9d31e630cc2bdbd2
+m03_yield_emoji_stack_top	79ba1758836cd7d5
+m04_text_only_emoji_primary	a6260de65c06b7a9
+m05_right_align	63434f89b9ab8f94
+m06_end_align_serif	ba1b38b53a30d184
+m07_skull_symbol_stack	2150992a300d2aad
+m08_stroke_then_fill	2616fa2f36942c25
+m09_stroke_alpha_emoji	9bedcd17f5c4742f
+m10_fill_alpha	75a4736604631594
+m11_shadow_mixed	6800050de005ed31
+m12_scaled_ctm	c2737fd733d04577
+m13_r4_label	4752b8b3da971346
+m14_hanging_ideographic	d96cc45b4ea6451d
+m15_text_only_regression	eb7da969810218f8
+m16_subpixel_mixed	979b146aa0fa3a06
+m17_symbols_mono	e300257dbb1c67b4
+m18_siege_word	15416fd083f27904
+test textmix_golden_hashes ... ok
+m12_scaled_ctm | 360x40 | 74 | 1.1798 | 2.681 | 0.99545 | setTransform(2) (cityMapStatChip.ts:846-851 pattern) + mixed label
+m13_r4_label | 200x20 | 69 | 1.4855 | 3.200 | 0.98565 | R4 font (main.ts:12856) with R4 icons inside a label
+m14_hanging_ideographic | 120x44 | 28 | 0.2901 | 0.341 | 0.99916 | hanging / ideographic baselines on a mixed string
+m15_text_only_regression | 120x24 | 69 | 2.0011 | 5.278 | 0.98458 | no emoji: the RR-T8b path unchanged
+m16_subpixel_mixed | 200x28 | 42 | 0.4504 | 0.643 | 0.99782 | fractional x/y: glyph origins quantised (1/4 px x, whole px y)
+m17_symbols_mono | 200x40 | 56 | 0.3513 | 1.175 | 0.99741 | monochrome ⚔ ☠ ◆ beside colour 👤 in the fill colour
+m18_siege_word | 420x110 | 49 | 0.1244 | 0.457 | 0.99932 | siege font (siegeMarker.ts:42) with ⚔ and 🔥
+test textmix_scenes_match_chromium ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 3.27s
+
+     Running tests/textmix_manifest.rs (target/debug/deps/textmix_manifest-241983ea8e0fc41d)
+
+running 2 tests
+test sha256_matches_standard_vectors ... ok
+textmix fixture: 32 files, 804661 B
+test textmix_fixtures_match_manifest_sha256 ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.48s
+
+EXIT=0
+## mutacja E5 (Evaluator r1): emoji.rs draw_mixed unwrap_or(1.0) -> unwrap_or(0.0)
+521c521
+<     .unwrap_or(1.0);
+---
+>     .unwrap_or(0.0);
+thread 'textmix_stroke_probe_matches_chromium' (22604) panicked at tests/textmix_chromium.rs:322:13:
+fill_grad_alpha_0.5 channel 0: rust 0 chromium 275383
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 5 filtered out; finished in 0.32s
+EXIT=101 (oczekiwane != 0: mutacja zabita)
+1
+## cargo fmt --all -- --check
+EXIT=0
+## cargo clippy --locked --all-targets -- -D warnings
+    Checking simd-adler32 v0.3.10
+    Checking arrayvec v0.7.8
+    Checking adler2 v2.0.1
+    Checking bytemuck v1.25.2
+    Checking libm v0.2.16
+    Checking float-cmp v0.9.0
+    Checking log v0.4.34
+    Checking smallvec v1.16.3
+    Checking cfg-if v1.0.5
+    Checking crc32fast v1.5.3
+    Checking polycool v0.4.0
+    Checking strict-num v0.1.1
+    Checking miniz_oxide v0.9.1
+    Checking bitflags v2.13.2
+    Checking arrayref v0.3.9
+    Checking tiny-skia-path v0.12.0
+    Checking kurbo v0.13.1
+    Checking core_maths v0.1.1
+    Checking flate2 v1.1.10
+    Checking ttf-parser v0.25.1
+    Checking fdeflate v0.3.7
+    Checking miniz_oxide v0.8.9
+    Checking memchr v2.8.3
+    Checking siphasher v1.0.4
+    Checking roxmltree v0.21.1
+    Checking svgtypes v0.16.1
+    Checking png v0.18.1
+    Checking simplecss v0.2.2
+    Checking imagesize v0.15.0
+    Checking data-url v0.3.2
+    Checking pico-args v0.5.0
+    Checking rgb v0.8.53
+    Checking usvg v0.48.1
+    Checking unicode-ccc v0.4.0
+    Checking tiny-skia v0.12.0
+    Checking unicode-bidi-mirroring v0.4.0
+    Checking zune-core v0.5.3
+    Checking unicode-properties v0.1.4
+    Checking owned_ttf_parser v0.25.1
+    Checking ab_glyph_rasterizer v0.1.10
+    Checking unicode-script v0.5.8
+    Checking ab_glyph v0.2.32
+    Checking rustybuzz v0.20.1
+    Checking zune-jpeg v0.5.15
+    Checking pollster v0.4.0
+    Checking resvg v0.48.1
+    Checking civ-renderer v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_eca72282-efa-3/rust-port/renderer)
+    Finished `dev` profile [unoptimized] target(s) in 1m 37s
+EXIT=0
+## cargo clippy --locked --all-targets --features gpu -- -D warnings
+   Compiling proc-macro2 v1.0.107
+   Compiling quote v1.0.47
+   Compiling unicode-ident v1.0.27
+   Compiling cfg_aliases v0.2.2
+    Checking foldhash v0.2.0
+    Checking smallvec v1.16.3
+    Checking equivalent v1.0.3
+   Compiling thiserror v2.0.21
+   Compiling autocfg v1.5.1
+    Checking hashbrown v0.17.1
+   Compiling num-traits v0.2.19
+    Checking libloading v0.8.9
+   Compiling libc v0.2.191
+   Compiling zerocopy v0.8.63
+   Compiling syn v3.0.9
+   Compiling syn v2.0.119
+    Checking indexmap v2.14.2
+    Checking rustc-hash v1.1.0
+   Compiling naga v30.0.1
+    Checking bit-vec v0.9.1
+   Compiling parking_lot_core v0.9.12
+    Checking once_cell v1.21.4
+   Compiling pkg-config v0.3.34
+    Checking unicode-width v0.2.2
+   Compiling ash v0.38.0+1.3.281
+    Checking codespan-reporting v0.13.1
+   Compiling wayland-sys v0.31.11
+    Checking bit-set v0.10.0
+    Checking spirv v0.4.0+sdk-1.4.341.0
+   Compiling khronos-egl v6.0.0
+    Checking scopeguard v1.2.0
+   Compiling bytemuck_derive v1.12.1
+   Compiling thiserror-impl v2.0.21
+    Checking bytemuck v1.25.2
+    Checking naga-types v30.0.1
+    Checking static_assertions v1.1.0
+    Checking raw-window-handle v0.6.2
+    Checking allocator-api2 v0.2.21
+    Checking lock_api v0.4.14
+    Checking hashbrown v0.16.1
+   Compiling zerocopy-derive v0.8.63
+    Checking wgpu-types v30.0.1
+    Checking dlib v0.5.3
+   Compiling wgpu-hal v30.0.1
+    Checking presser v0.3.1
+    Checking parking_lot v0.12.5
+    Checking ordered-float v5.4.0
+    Checking glow v0.17.0
+    Checking renderdoc-sys v1.1.0
+    Checking profiling v1.0.18
+    Checking tiny-skia-path v0.12.0
+    Checking kurbo v0.13.1
+   Compiling wgpu-core v30.0.1
+   Compiling litrs v1.0.1
+    Checking svgtypes v0.16.1
+   Compiling document-features v0.2.12
+   Compiling wgpu v30.0.1
+    Checking usvg v0.48.1
+    Checking tiny-skia v0.12.0
+    Checking rgb v0.8.53
+    Checking rustybuzz v0.20.1
+    Checking resvg v0.48.1
+    Checking half v2.7.1
+    Checking gpu-allocator v0.28.0
+    Checking wgpu-naga-bridge v30.0.1
+    Checking wgpu-core-deps-windows-linux-android v30.0.1
+    Checking civ-renderer v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_eca72282-efa-3/rust-port/renderer)
+    Finished `dev` profile [unoptimized] target(s) in 3m 46s
+EXIT=0
+## cargo test --locked --all-targets (stable)
+     Running unittests src/lib.rs (target/debug/deps/civ_renderer-415aa63799900207)
+test result: ok. 80 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.42s
+     Running tests/assets_nturns.rs (target/debug/deps/assets_nturns-c71ee1b3b9f1d55f)
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.93s
+     Running tests/assets_registry.rs (target/debug/deps/assets_registry-86339d11d876bad4)
+test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+     Running tests/atlas_gpu.rs (target/debug/deps/atlas_gpu-f45017a21099e866)
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/atlas_json.rs (target/debug/deps/atlas_json-80417938dde3527e)
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/atlas_keys.rs (target/debug/deps/atlas_keys-f2c1cbb18f72b1da)
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.48s
+     Running tests/atlas_mip.rs (target/debug/deps/atlas_mip-adb5419506e735d2)
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.93s
+     Running tests/atlas_nturns.rs (target/debug/deps/atlas_nturns-3391f29972f81078)
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.87s
+     Running tests/camera_web_parity.rs (target/debug/deps/camera_web_parity-a0b2fa0f06bb9dd7)
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.35s
+     Running tests/cities_web_parity.rs (target/debug/deps/cities_web_parity-e3f711a09ff99e7d)
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 12.65s
+     Running tests/cityoverlay_web_parity.rs (target/debug/deps/cityoverlay_web_parity-8637ab54d92b6f1c)
+test result: ok. 18 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 123.91s
+     Running tests/core_web_parity.rs (target/debug/deps/core_web_parity-e04a100442768078)
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+     Running tests/cpu_sanity.rs (target/debug/deps/cpu_sanity-f9e40b23efe942f9)
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/decor_web_parity.rs (target/debug/deps/decor_web_parity-56537f96dfeba1a8)
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 3.84s
+     Running tests/geom_three_parity.rs (target/debug/deps/geom_three_parity-b0b358e02b13db4c)
+test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.41s
+     Running tests/gpu_probe.rs (target/debug/deps/gpu_probe-d1e62fac1586f6d4)
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/image_assets.rs (target/debug/deps/image_assets-310f70886c7c6ab0)
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.50s
+     Running tests/image_metrics.rs (target/debug/deps/image_metrics-e62279e88096846b)
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.24s
+     Running tests/image_scenes.rs (target/debug/deps/image_scenes-b36c031bd1e2556d)
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 14.37s
+     Running tests/improvements_web_parity.rs (target/debug/deps/improvements_web_parity-92201854eb95c388)
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.99s
+     Running tests/jsmath_v8_parity.rs (target/debug/deps/jsmath_v8_parity-c9aeaef9eb5c0b17)
+test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.26s
+     Running tests/jsmath_wiring.rs (target/debug/deps/jsmath_wiring-da90b0d04c2429c1)
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.00s
+     Running tests/jsnum_to_fixed_v8.rs (target/debug/deps/jsnum_to_fixed_v8-a355c5ba0f0f9126)
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.33s
+     Running tests/misc_web_parity.rs (target/debug/deps/misc_web_parity-1148be654a01e9d9)
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 10.16s
+     Running tests/overlay_web_parity.rs (target/debug/deps/overlay_web_parity-f7914e194d794a2e)
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 15.36s
+     Running tests/pick_golden.rs (target/debug/deps/pick_golden-10c032ce692a4904)
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 4.94s
+     Running tests/raster_api_closed.rs (target/debug/deps/raster_api_closed-82f838fade47ecf9)
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+     Running tests/raster_color.rs (target/debug/deps/raster_color-469c9741abb21d49)
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.08s
+     Running tests/raster_scenes.rs (target/debug/deps/raster_scenes-8b0bcaf73fa801b6)
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 20.00s
+     Running tests/raster_unit.rs (target/debug/deps/raster_unit-c0835d24e48081c5)
+test result: ok. 32 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+     Running tests/terrain_web_parity.rs (target/debug/deps/terrain_web_parity-09cd3f83f8b9824b)
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.11s
+     Running tests/text_api_closed.rs (target/debug/deps/text_api_closed-a2a3d2ee245938fd)
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/text_fonts.rs (target/debug/deps/text_fonts-98572513c09757fa)
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.95s
+     Running tests/text_metrics.rs (target/debug/deps/text_metrics-ba89b210bc724226)
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 41.97s
+     Running tests/text_scenes.rs (target/debug/deps/text_scenes-70d43aa9341d3c84)
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 6.07s
+     Running tests/text_upper.rs (target/debug/deps/text_upper-5193ed35a1b2dc9d)
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+     Running tests/textmix_chromium.rs (target/debug/deps/textmix_chromium-21db452a05fb294c)
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 3.42s
+     Running tests/textmix_manifest.rs (target/debug/deps/textmix_manifest-241983ea8e0fc41d)
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.22s
+     Running tests/textmix_unify.rs (target/debug/deps/textmix_unify-e540a292242bfc1e)
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.73s
+     Running tests/unit_core_json.rs (target/debug/deps/unit_core_json-43d1465e4f9c4fbe)
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/unit_core_model_rule.rs (target/debug/deps/unit_core_model_rule-12b575805bc2039a)
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.44s
+     Running tests/unit_core_trig.rs (target/debug/deps/unit_core_trig-35e65152f9e1b3ae)
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s
+     Running tests/unit_core_web_parity.rs (target/debug/deps/unit_core_web_parity-72914bb5ff30948f)
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.83s
+     Running tests/units_braz_web_parity.rs (target/debug/deps/units_braz_web_parity-8ef5ddeb7a3135a7)
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 3.83s
+     Running tests/units_kamien_web_parity.rs (target/debug/deps/units_kamien_web_parity-663398b62f78b29b)
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.14s
+     Running tests/units_zelazo_web_parity.rs (target/debug/deps/units_zelazo_web_parity-3c726a841bc40151)
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.55s
+     Running tests/wonders_web_parity.rs (target/debug/deps/wonders_web_parity-2c0eba5ec7d38510)
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.84s
+EXIT=0
+## cargo +1.87.0 test --locked --all-targets
+     Running unittests src/lib.rs (target/debug/deps/civ_renderer-46caace5190e390e)
+test result: ok. 80 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.21s
+     Running tests/assets_nturns.rs (target/debug/deps/assets_nturns-72a699a3414abe82)
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.61s
+     Running tests/assets_registry.rs (target/debug/deps/assets_registry-8c5545a1b791865a)
+test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.09s
+     Running tests/atlas_gpu.rs (target/debug/deps/atlas_gpu-d89f020c3c668313)
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/atlas_json.rs (target/debug/deps/atlas_json-35ff9fb9f8a3bd0e)
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/atlas_keys.rs (target/debug/deps/atlas_keys-98ba36e0753ccc1b)
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.76s
+     Running tests/atlas_mip.rs (target/debug/deps/atlas_mip-87bc9ef0cf9c0970)
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.70s
+     Running tests/atlas_nturns.rs (target/debug/deps/atlas_nturns-870af2e1520206c5)
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.67s
+     Running tests/camera_web_parity.rs (target/debug/deps/camera_web_parity-60ae4b3e4c10f6d2)
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.32s
+     Running tests/cities_web_parity.rs (target/debug/deps/cities_web_parity-524e76b68b416be0)
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 9.95s
+     Running tests/cityoverlay_web_parity.rs (target/debug/deps/cityoverlay_web_parity-7ccd8d83033e0199)
+test result: ok. 18 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 145.07s
+     Running tests/core_web_parity.rs (target/debug/deps/core_web_parity-ee06bac7260c5366)
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
+     Running tests/cpu_sanity.rs (target/debug/deps/cpu_sanity-8cd9274326f2a087)
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+     Running tests/decor_web_parity.rs (target/debug/deps/decor_web_parity-2af10ce59e2917f7)
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 4.89s
+     Running tests/geom_three_parity.rs (target/debug/deps/geom_three_parity-8022c6c53c9cd7f4)
+test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.09s
+     Running tests/gpu_probe.rs (target/debug/deps/gpu_probe-26047528ec4892b7)
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/image_assets.rs (target/debug/deps/image_assets-94dd73ca2802d23b)
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.71s
+     Running tests/image_metrics.rs (target/debug/deps/image_metrics-2649b4177605b133)
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
+     Running tests/image_scenes.rs (target/debug/deps/image_scenes-29c3b5be817fe452)
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 14.01s
+     Running tests/improvements_web_parity.rs (target/debug/deps/improvements_web_parity-afeafc0cd4a8a3eb)
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.40s
+     Running tests/jsmath_v8_parity.rs (target/debug/deps/jsmath_v8_parity-49237018d55785f5)
+test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.21s
+     Running tests/jsmath_wiring.rs (target/debug/deps/jsmath_wiring-bcf65c04721610e1)
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.76s
+     Running tests/jsnum_to_fixed_v8.rs (target/debug/deps/jsnum_to_fixed_v8-4bc27d7a9bfa1853)
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.37s
+     Running tests/misc_web_parity.rs (target/debug/deps/misc_web_parity-182f8e80a26ee829)
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 10.69s
+     Running tests/overlay_web_parity.rs (target/debug/deps/overlay_web_parity-8a7a5308f3b47281)
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 14.88s
+     Running tests/pick_golden.rs (target/debug/deps/pick_golden-037e7642ded11299)
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 4.67s
+     Running tests/raster_api_closed.rs (target/debug/deps/raster_api_closed-79683b3e56ffbf55)
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/raster_color.rs (target/debug/deps/raster_color-83e85034d7cb776f)
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/raster_scenes.rs (target/debug/deps/raster_scenes-5c9d9ffa5c673883)
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 18.48s
+     Running tests/raster_unit.rs (target/debug/deps/raster_unit-4ac035f2d9dd1949)
+test result: ok. 32 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+     Running tests/terrain_web_parity.rs (target/debug/deps/terrain_web_parity-c36abe5bc7824888)
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.57s
+     Running tests/text_api_closed.rs (target/debug/deps/text_api_closed-40c6b85c409b8c94)
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+     Running tests/text_fonts.rs (target/debug/deps/text_fonts-3a16eb5ae813ccdd)
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.47s
+     Running tests/text_metrics.rs (target/debug/deps/text_metrics-b09660d62ab5eb77)
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 43.90s
+     Running tests/text_scenes.rs (target/debug/deps/text_scenes-d9e5dbc8974c060d)
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 5.65s
+     Running tests/text_upper.rs (target/debug/deps/text_upper-d9ea95eec187e85d)
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+     Running tests/textmix_chromium.rs (target/debug/deps/textmix_chromium-2b2f702ece05f165)
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.52s
+     Running tests/textmix_manifest.rs (target/debug/deps/textmix_manifest-d3e64e1115036a90)
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.46s
+     Running tests/textmix_unify.rs (target/debug/deps/textmix_unify-ec9b40a1344f75d1)
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.97s
+     Running tests/unit_core_json.rs (target/debug/deps/unit_core_json-7bcb01dff9de1e02)
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/unit_core_model_rule.rs (target/debug/deps/unit_core_model_rule-69edb68e8b094a1f)
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.79s
+     Running tests/unit_core_trig.rs (target/debug/deps/unit_core_trig-029d9a38aacc42c5)
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+     Running tests/unit_core_web_parity.rs (target/debug/deps/unit_core_web_parity-1288543767947f9e)
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.86s
+     Running tests/units_braz_web_parity.rs (target/debug/deps/units_braz_web_parity-a8d9e6b500cae0e5)
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 4.72s
+     Running tests/units_kamien_web_parity.rs (target/debug/deps/units_kamien_web_parity-57bc6631c3c99a60)
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.08s
+     Running tests/units_zelazo_web_parity.rs (target/debug/deps/units_zelazo_web_parity-8a95c6780c121e01)
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 4.02s
+     Running tests/wonders_web_parity.rs (target/debug/deps/wonders_web_parity-b7629007ed348ca7)
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.17s
+EXIT=0
+## golden textmix stable vs 1.87.0
+312d1543a351c8f216e18a5e952c081ae767de3dec0ec8cc8c967dc183a77e7d  stable
+312d1543a351c8f216e18a5e952c081ae767de3dec0ec8cc8c967dc183a77e7d  1.87.0
+## git diff --check
+EXIT=0

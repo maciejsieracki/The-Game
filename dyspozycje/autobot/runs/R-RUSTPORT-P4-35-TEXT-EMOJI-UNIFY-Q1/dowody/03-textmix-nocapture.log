@@ -1,0 +1,94 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.24s
+     Running tests/textmix_chromium.rs (target/debug/deps/textmix_chromium-a5c42fb4d54d0753)
+
+running 5 tests
+test textmix_baselines_match_chromium ... ok
+test textmix_golden_hashes ... # R-RUSTPORT-P4-35 golden FNV-1a 64 of the premultiplied RGBA8 buffer per scene
+m01_stat_line_left_middle	e6d08b4876f781b1
+m02_worker_center	9d31e630cc2bdbd2
+m03_yield_emoji_stack_top	79ba1758836cd7d5
+m04_text_only_emoji_primary	a6260de65c06b7a9
+m05_right_align	63434f89b9ab8f94
+m06_end_align_serif	ba1b38b53a30d184
+m07_skull_symbol_stack	2150992a300d2aad
+m08_stroke_then_fill	2616fa2f36942c25
+m09_stroke_alpha_emoji	9bedcd17f5c4742f
+m10_fill_alpha	75a4736604631594
+m11_shadow_mixed	6800050de005ed31
+m12_scaled_ctm	c2737fd733d04577
+m13_r4_label	4752b8b3da971346
+m14_hanging_ideographic	d96cc45b4ea6451d
+m15_text_only_regression	eb7da969810218f8
+m16_subpixel_mixed	979b146aa0fa3a06
+m17_symbols_mono	e300257dbb1c67b4
+m18_siege_word	15416fd083f27904
+ok
+test textmix_scenes_match_chromium ... scene | size | max_abs | mean_abs | px>16 % | ssim | source
+m01_stat_line_left_middle | 180x24 | 74 | 1.9634 | 4.907 | 0.98341 | okolica font (cityOkolicaOverlay.ts:138) + mixed ⚔ ☠ 👤 label
+m02_worker_center | 150x28 | 64 | 1.4554 | 3.643 | 0.98971 | worker font (workerFieldOverlay.ts:98), center/middle
+m03_yield_emoji_stack_top | 160x24 | 55 | 0.8694 | 1.432 | 0.99362 | T13 emoji stack (cityOkolicaOverlay.ts:85-86), top/left, alpha 0.95
+m04_text_only_emoji_primary | 200x40 | 50 | 0.2389 | 0.975 | 0.99831 | text-only strings, primary face = emoji face (T13 stack): baselines
+m05_right_align | 200x34 | 52 | 0.6151 | 1.809 | 0.99787 | bold 20px Arial, right/alphabetic
+m06_end_align_serif | 220x64 | 67 | 0.5544 | 1.683 | 0.99667 | revolt font (cities.ts:714) end/alphabetic
+m07_skull_symbol_stack | 160x56 | 61 | 0.4977 | 1.830 | 0.99772 | skull stack (units.ts:6294) center/middle, red
+m08_stroke_then_fill | 200x44 | 57 | 0.7577 | 2.739 | 0.99623 | unitStatPlate.ts:609-618 pattern (strokeText outline, then fillText)
+m09_stroke_alpha_emoji | 120x36 | 24 | 0.2702 | 0.116 | 0.99885 | strokeText: colour glyph drawn filled, strokeStyle alpha multiplies it
+m10_fill_alpha | 120x30 | 16 | 0.1808 | 0.000 | 0.99883 | fillStyle alpha on text and colour glyph in one call
+m11_shadow_mixed | 140x36 | 43 | 0.6671 | 1.270 | 0.99722 | shadow on a mixed string
+m12_scaled_ctm | 360x40 | 74 | 1.1798 | 2.681 | 0.99545 | setTransform(2) (cityMapStatChip.ts:846-851 pattern) + mixed label
+m13_r4_label | 200x20 | 69 | 1.4855 | 3.200 | 0.98565 | R4 font (main.ts:12856) with R4 icons inside a label
+m14_hanging_ideographic | 120x44 | 28 | 0.2901 | 0.341 | 0.99916 | hanging / ideographic baselines on a mixed string
+m15_text_only_regression | 120x24 | 69 | 2.0011 | 5.278 | 0.98458 | no emoji: the RR-T8b path unchanged
+m16_subpixel_mixed | 200x28 | 42 | 0.4504 | 0.643 | 0.99782 | fractional x/y: glyph origins quantised (1/4 px x, whole px y)
+m17_symbols_mono | 200x40 | 56 | 0.3513 | 1.175 | 0.99741 | monochrome ⚔ ☠ ◆ beside colour 👤 in the fill colour
+m18_siege_word | 420x110 | 49 | 0.1244 | 0.457 | 0.99932 | siege font (siegeMarker.ts:42) with ⚔ and 🔥
+ok
+test textmix_stroke_probe_matches_chromium ... probe fill_opaque: rust [276076, 156050, 50994, 247773] chromium [275383, 153154, 49813, 247556]
+probe stroke_opaque_lw3: rust [276076, 156050, 50994, 247773] chromium [275383, 153154, 49813, 247556]
+probe stroke_opaque_lw12: rust [276076, 156050, 50994, 247773] chromium [275383, 153154, 49813, 247556]
+probe stroke_alpha_0.5: rust [275315, 154994, 50561, 124291] chromium [272538, 151740, 49160, 124201]
+probe stroke_fill_alpha_0.5: rust [276076, 156050, 50994, 247773] chromium [275383, 153154, 49813, 247556]
+ok
+test textmix_widths_match_chromium_bit_for_bit ... widths: 308/308 bit for bit
+ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.73s
+
+     Running tests/textmix_manifest.rs (target/debug/deps/textmix_manifest-61dcff8fdc991252)
+
+running 2 tests
+test sha256_matches_standard_vectors ... ok
+test textmix_fixtures_match_manifest_sha256 ... textmix fixture: 24 files, 687896 B
+ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.60s
+
+     Running tests/textmix_unify.rs (target/debug/deps/textmix_unify-24e3a63683667c66)
+
+running 4 tests
+test emoji_measure_text_is_canvas_measure_text ... ok
+test fill_text_draws_colour_glyphs_not_notdef ... ok
+test image_text_scenes_through_canvas_fill_text_match_rr_t8c_golden ... t10_fallback_glyph_barbarian	d06c6326a68776cf	d06c6326a68776cf
+t10_fallback_glyph_civ	8f02d91e198c8672	8f02d91e198c8672
+t1_revolt_fire	19a708302e67a490	19a708302e67a490
+t2_siege_swords	8cb2ce87b7074eb8	8cb2ce87b7074eb8
+t3_starving_skull	d494ac2ba56516cd	d494ac2ba56516cd
+t12_worker_owner0	c4b1322d8632b8df	c4b1322d8632b8df
+t12_worker_owner1	2a1d7c99a5da09f6	2a1d7c99a5da09f6
+t12_worker_owner3	913b6b30a98783ad	913b6b30a98783ad
+t13_okolica_idle	722ee4045fdfc25a	722ee4045fdfc25a
+t13_okolica_worked	149541571782fd0a	149541571782fd0a
+t13_okolica_one_line	bfdd7bbd9b9968d7	bfdd7bbd9b9968d7
+x_emoji_alpha_and_colour	d0ee9909ec52fdd5	d0ee9909ec52fdd5
+x_emoji_subpixel	4f5bca41f954fdca	4f5bca41f954fdca
+x_emoji_sizes	548ebc8a447d7726	548ebc8a447d7726
+x_emoji_r4_icons	86a1c30c42128761	86a1c30c42128761
+x_emoji_mixed_text	e8567e6bcc765a12	e8567e6bcc765a12
+x_emoji_scaled_ctm	822db486c854dcfe	822db486c854dcfe
+x_emoji_clip_shadow	b7397f8167f59ebf	b7397f8167f59ebf
+ok
+test text_without_colour_glyphs_is_the_rr_t8b_pipeline ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.15s
+
+EXIT=0
