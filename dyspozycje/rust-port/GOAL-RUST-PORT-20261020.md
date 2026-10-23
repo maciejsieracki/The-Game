@@ -232,4 +232,4 @@ w żywym Chromium — wymagają innego trybu pracy niż czysty katalog odczytowy
 - `READY_FOR_DEPLOY`/push/deploy tylko po osobnej, jawnej zgodzie właściciela — nie dotyczy zwykłych commitów dokumentacji/postępu tego projektu na gałęzi roboczej.
 
 
-Tematy webowe (poza pulą portu, priorytet właściciela): `R-WEB-TURN-SLOWDOWN-Q2` — ZAMKNIĘTY (PASS-WITH-NOTES), poprawki na gałęzi `fix/web-turn-slowdown-Q2` (`38c4a2c4`), NIE wydane na ROBOCZĄ (czeka na zgodę właściciela). `R-WEB-REKRUTACJA-PANEL-UX-Q1` — analiza zamknięta, czeka na wybór wariantu A/B/C.
+Tematy webowe (poza pulą portu, priorytet właściciela; decyzje właściciela 2026-10-23: deploy spowolnienia = A (tak), panel rekrutacji = wariant A): `R-WEB-TURN-SLOWDOWN-RELEASE-ROBOCZA-Q1` (wydanie ROBOCZEJ z poprawkami spowolnienia; `wf_e6ce6528-0a5`, po Final Control publikuje orkiestrator) i `R-WEB-REKRUTACJA-PANEL-UX-IMPL-Q1` (implementacja wariantu A panelu rekrutacji; `wf_0f6b5d81-ecb`; wydanie osobno po zgodzie). `R-WEB-TURN-SLOWDOWN-Q2` zamknięty (gałąź `fix/web-turn-slowdown-Q2`).
