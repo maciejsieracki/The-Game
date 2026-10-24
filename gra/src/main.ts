@@ -260,6 +260,7 @@ import {
   canUnitOccupyCityHex, addForeignCityBlocks,
 } from './game/city-hex-movement';
 import { executeAiCityMove } from './game/ai-city-capture-executor';
+import { truncatePathWithinBudget, buildHexOccupancy, claimHexForMove } from './game/ai-move-range';
 import {
   evaluateFoundCityAffordance,
   foundCityCostLabel,
@@ -1100,7 +1101,9 @@ import { loadMapForSave } from './game/load-map-source';
 import {
   ensureFsaAutosaveReady, fsaRotatingAutosaveWrite, getFsaReadinessState,
   shouldUseFsaAutosave, fsaUnavailableMessage, autosaveFileName, loadFsaAutosaveFile,
+  listFsaAutosaveFiles, hasRememberedFsaDirectory,
 } from './game/fsa-autosave';
+import { createSavePresenceCache } from './game/save-presence';
 import { buildDefaultSaveLabel, type SaveLabelKind } from './game/save-label';
 import {
   diagInfo, diagWarn, diagError, installGlobalDiagHooks,
@@ -22174,17 +22177,21 @@ async function boot(): Promise<void> {
     // odświeżany na starcie gry (boot) i po każdym udanym zapisie (patrz
     // wywołania niżej), więc w praktyce jest aktualny w momencie, gdy gracz
     // faktycznie otwiera menu.
-    let cachedHasAnySaveSlot = false;
+    // R-WEB-LOAD-GAME-REGRESSION-Q1: "zapis istnieje" = slot IDB/localStorage,
+    // LUB plik rotacji FSA na dysku, LUB zapamiętany katalog FSA (po przeładowaniu
+    // strony lista plików jest pusta do kliknięcia -- patrz save-presence.ts).
+    const savePresence = createSavePresenceCache({
+      listSlots: listSaves,
+      listFsaFiles: listFsaAutosaveFiles,
+      hasRememberedFsaDir: hasRememberedFsaDirectory,
+      onSourceError: (source, err) => diagWarn('SAVE-PRESENCE', 'zrodlo=' + source + ' blad=' + String(err)),
+    });
     async function refreshHasAnySaveSlotCache(): Promise<void> {
-      try {
-        cachedHasAnySaveSlot = (await listSaves()).length > 0;
-      } catch {
-        cachedHasAnySaveSlot = false;
-      }
+      await savePresence.refresh();
     }
     function hasAnySaveSlot(): boolean {
       void refreshHasAnySaveSlotCache();
-      return cachedHasAnySaveSlot;
+      return savePresence.get();
     }
 
     function openSaveGameDialog(): void {
@@ -22222,12 +22229,7 @@ async function boot(): Promise<void> {
     // żeby ta konkretna decyzja (pokazać dialog czy hint "brak zapisów")
     // była tak świeża, jak to możliwe.
     async function openLoadGameDialog(fromInGamePause = false): Promise<void> {
-      let any: boolean;
-      try {
-        any = (await listSaves()).length > 0;
-      } catch {
-        any = false;
-      }
+      const any = await savePresence.refresh();
       if (!any) {
         showHintMessage(
           fromInGamePause
@@ -22303,7 +22305,14 @@ async function boot(): Promise<void> {
             }
           })();
         },
-        onLoad: () => { void triggerFsaAutosaveBootstrap(); void openLoadGameDialog(false); },
+        onLoad: () => {
+          // R-WEB-LOAD-GAME-REGRESSION-Q1: czekamy na bootstrap FSA przed
+          // listowaniem -- inaczej lista plików dysku jest jeszcze pusta.
+          void (async () => {
+            await triggerFsaAutosaveBootstrap();
+            await openLoadGameDialog(false);
+          })();
+        },
         onAbout: () => {
           showWikiHubHud({ tab: 'poradnik', layout: 'overlay' });
         },
@@ -31281,7 +31290,10 @@ async function boot(): Promise<void> {
     async function persistSaveToSlot(slotId: string, label: string): Promise<SaveToLocalResult> {
       try {
         const result = await saveToLocal(slotId, buildSaveGameSnapshot(label));
-        if (result.ok) setLastPlayedSlotId(slotId);
+        if (result.ok) {
+          setLastPlayedSlotId(slotId);
+          savePresence.markPresent(); // R-WEB-LOAD-GAME-REGRESSION-Q1: udany zapis = zapis istnieje
+        }
         return result;
       } catch (eSave) {
         console.error('[Save] Blad:', eSave);
@@ -31338,6 +31350,17 @@ async function boot(): Promise<void> {
     /** N4: pokaż komunikat o degradacji FSA→localStorage tylko RAZ na sesję karty (nie co turę). */
     let fsaAutosaveDegradedNotified = false;
 
+    /** R-WEB-LOAD-GAME-REGRESSION-Q1 (r5): nieudany autozapis sygnalizowany graczowi RAZ na sesję
+     *  (zamiast cichej porażki, bez zalewania toastami co turę). Logi konsoli bez zmian.
+     *  / EN: a failed autosave is signalled to the player ONCE per session (no silent failure,
+     *  no per-turn toast spam). Console logs unchanged. */
+    let autosaveFailureNotified = false;
+    function notifyAutosaveFailureOnce(msg: string): void {
+      if (autosaveFailureNotified) return;
+      autosaveFailureNotified = true;
+      showHintMessage(msg, 4000);
+    }
+
     function getAutosaveFrequency(): number {
       try {
         const v = parseInt(localStorage.getItem(AUTOSAVE_FREQ_KEY) ?? '1', 10);
@@ -31365,8 +31388,14 @@ async function boot(): Promise<void> {
      * it with `void` (fire-and-forget).
      */
     function triggerFsaAutosaveBootstrap(): Promise<void> {
-      return ensureFsaAutosaveReady().then(({ ok, reason }) => {
-        if (ok) return;
+      return ensureFsaAutosaveReady().then(async ({ ok, reason }) => {
+        if (ok) {
+          // R-WEB-LOAD-GAME-REGRESSION-Q1: po gotowym katalogu FSA lista plików
+          // rotacji może mieć zapisy -- odśwież stan „Wczytaj grę" w menu pauzy.
+          await refreshHasAnySaveSlotCache();
+          refreshGamePauseMenuLoadState();
+          return;
+        }
         if (reason === 'permission-denied' || reason === 'picker-cancelled') return; // świadomy wybór gracza, bez komunikatu
         let alreadyShown = false;
         try { alreadyShown = localStorage.getItem(FSA_HINT_SHOWN_KEY) === '1'; } catch { /* brak localStorage -- pokaz i tak */ }
@@ -31421,7 +31450,7 @@ async function boot(): Promise<void> {
         snapshot = buildSaveGameSnapshot(currentSaveLabel('autosave'));
       } catch (eSnap) {
         console.error('[Autosave] blad budowy migawki zapisu:', eSnap);
-        showHintMessage('Autozapis nieudany (blad zapisu)', 3000);
+        notifyAutosaveFailureOnce('Autozapis nieudany (blad zapisu)');
         return;
       }
       if (PERF_DEBUG) {
@@ -31455,6 +31484,10 @@ async function boot(): Promise<void> {
             // this save (see save.ts::getLastPlayedSlotId, saveLoadDialog.ts,
             // loadGameFromSlot).
             setLastPlayedSlotId(FSA_SLOT_PREFIX + autosaveFileName(idx));
+            // R-WEB-LOAD-GAME-REGRESSION-Q1: udany autozapis na dysk = zapis istnieje
+            // (przycisk „Wczytaj grę" nie może zostać "Brak zapisu" mimo pliku).
+            savePresence.markPresent();
+            autosaveFailureNotified = false; // R-WEB-LOAD-GAME-REGRESSION-Q1 (r6): sukces zeruje flage -- kolejna awaria znów sygnalizowana
             try { localStorage.setItem(AUTOSAVE_ROT_IDX_KEY, String(idx)); } catch { /* ignore */ }
             console.log('[Autosave] rotacyjny (dysk) slot=' + (idx + 1) + ' tura=' + turn);
             return;
@@ -31481,6 +31514,8 @@ async function boot(): Promise<void> {
         }
         if (ok) {
           setLastPlayedSlotId(slot);
+          savePresence.markPresent(); // R-WEB-LOAD-GAME-REGRESSION-Q1
+          autosaveFailureNotified = false; // R-WEB-LOAD-GAME-REGRESSION-Q1 (r6): sukces zeruje flage
           // Indeks rotacji przesuwamy WYŁĄCZNIE po udanym zapisie -- przy
           // niepowodzeniu kolejna próba celuje ponownie w ten sam slot
           // zamiast po cichu przeskoczyć dalej i zostawić go zamrożonym.
@@ -31488,16 +31523,15 @@ async function boot(): Promise<void> {
           console.log('[Autosave] rotacyjny slot=' + slot + ' tura=' + turn);
         } else {
           console.warn('[Autosave] rotacyjny zapis nieudany slot=' + slot + ' tura=' + turn + ' powod=' + (reason ?? 'nieznany'));
-          showHintMessage(
+          notifyAutosaveFailureOnce(
             reason === 'quota'
               ? 'Autozapis nieudany — brak miejsca w zapisie przeglądarki'
               : 'Autozapis nieudany (blad zapisu)',
-            3000,
           );
         }
       } catch (eRot) {
         console.error('[Autosave] blad rotacyjnego zapisu:', eRot);
-        showHintMessage('Autozapis nieudany (blad zapisu)', 3000);
+        notifyAutosaveFailureOnce('Autozapis nieudany (blad zapisu)');
       }
       } finally {
         autosaveInFlight = false;
@@ -31897,7 +31931,7 @@ async function boot(): Promise<void> {
         if (turn % getAutosaveFrequency() === 0) {
           void doRotatingAutosave().catch((eAutosave) => {
             console.error('[Autosave] nieobsluzony wyjatek rotacyjnego autozapisu:', eAutosave);
-            showHintMessage('Autozapis nieudany (blad zapisu)', 3000);
+            notifyAutosaveFailureOnce('Autozapis nieudany (blad zapisu)');
           });
         }
 
@@ -35655,6 +35689,11 @@ async function boot(): Promise<void> {
                     destinationKey: keyOf(cmd.toQ, cmd.toR),
                     computePath: (_moveUnit, toQ, toR, occupied) =>
                       computePath(u, map, toQ, toR, occupied, moveCostFnForUnit(u)),
+                    // R-WEB-AI-MOVE-RANGE-Q1: zasięg AI = budżet ruchu jak u gracza
+                    // (truncatePathToBudget). Budżet czytany PRZED zerowaniem ruchu.
+                    truncatePath: (fullPath) => u.ruchLeft > 0
+                      ? truncatePathWithinBudget(fullPath, u.ruchLeft, map, moveCostFnForUnit(u))
+                      : fullPath,
                     // TEMAT #15: AI z Żeglugą też się (dez)okrętowuje wg terenu.
                     onMoved: () => applyEmbarkStateAfterMove([u], map),
                     onCapture: (city) => tryAutoCaptureEmptyCityAt(
@@ -36377,6 +36416,10 @@ async function boot(): Promise<void> {
             // decideBarbarianMoves, barbarians.ts). easy/normal: unchanged (an empty city
             // still blocks barbarian entry, exactly as today).
             const barbAllowCityCapture = shouldAllowBarbCityCapture(_menuDifficulty);
+            // R-WEB-AI-MOVE-RANGE-Q1 r5: zajetosc heksow prowadzona PER TURA. Snapshot `occupied`
+            // z decideBarbarianMoves nie widzi ruchow wykonanych wczesniej w tej samej turze, wiec
+            // dwa komendy `move`/`raid` mogly wejsc na ten sam heks. Guard: claimHexForMove.
+            const barbOcc = buildHexOccupancy(units, keyOf);
             for (const bcmd of barbCmds) {
               try {
                 const bu = units.find(u => u.id === bcmd.unitId);
@@ -36397,6 +36440,9 @@ async function boot(): Promise<void> {
                     canBarbarianWalkIntoEmptyCity(moveDestCity, units, _menuDifficulty);
                   if (!barbCanWalkIntoEmptyCity
                       && !canUnitOccupyCityHex(bu.ownerId, bcmd.toQ, bcmd.toR, cities)) continue;
+                  // R-WEB-AI-MOVE-RANGE-Q1 r5: nie wchodz na heks zajety przez inna jednostke
+                  // (w tym barbarzynce ruszajacego wczesniej w tej turze).
+                  if (!claimHexForMove(barbOcc, keyOf(bu.q, bu.r), keyOf(bcmd.toQ, bcmd.toR))) continue;
                   bu.q = bcmd.toQ;
                   bu.r = bcmd.toR;
                   bu.ruchLeft = 0;
@@ -36408,6 +36454,11 @@ async function boot(): Promise<void> {
                     // wołanie nawet gdy moveDestCity jest już barbarzyńska.
                     tryAutoCaptureEmptyCityAt(bcmd.toQ, bcmd.toR, [bu]);
                   }
+                  // R-WEB-AI-MOVE-RANGE-Q1 r5: bonusy odwiedzin miasta jak u AI (egzekutor AI wola
+                  // applyCityVisitBonusesAlongPath na trasie). Barbarzynca dostaje bonus TYLKO z
+                  // wlasnego miasta z budynkami (np. przejete miasto zachowuje cityBuilt). Komenda
+                  // niesie tylko koncowy krok, wiec sprawdzany jest heks docelowy (ZALOZENIE w logu r5).
+                  if (applyCityVisitBonusesAtHex(bu, bcmd.toQ, bcmd.toR, false)) syncUnitsRender();
                   if (sfxUnitsEnabled && (barbVisNow === null || barbVisNow.has(keyOf(bcmd.toQ, bcmd.toR)))) {
                     playMarchAccent(1);
                   }
@@ -36417,6 +36468,8 @@ async function boot(): Promise<void> {
                   const raidHex = map.hexes[raidKey];
                   if (!raidHex || raidHex.ulepszenie === Ulepszenie.Brak) continue;
                   if (!canUnitOccupyCityHex(bu.ownerId, bcmd.toQ, bcmd.toR, cities)) continue;
+                  // R-WEB-AI-MOVE-RANGE-Q1 r5: ten sam guard zajetosci co w `move`.
+                  if (!claimHexForMove(barbOcc, keyOf(bu.q, bu.r), raidKey)) continue;
                   const destroyed = raidHex.ulepszenie;
                   raidHex.ulepszenie = Ulepszenie.Brak;
                   spawnImprovementMesh(raidKey);
@@ -40146,7 +40199,7 @@ async function boot(): Promise<void> {
     // P-INDEXEDDB-MENU-KONTYNUUJ-MARTWE (Evaluator, 2026-08-12): menu startowe
     // buduje się PONIŻEJ w TYM SAMYM synchronicznym ticku (openStartupMainMenu()),
     // więc odczyt IndexedDB (async) nie zdążył się rozwiązać -- mainMenu.build()
-    // czyta hasSave() RAZ i zawsze widzi cachedHasAnySaveSlot === false: przyciski
+    // czyta hasSave() RAZ i zawsze widzi savePresence.get() === false: przyciski
     // "Kontynuuj"/"Wczytaj grę" wychodzą trwale wyszarzone (btn() w mainMenu.ts
     // w ogóle nie podpina handlera kliknięcia, gdy enabled=false przy budowie --
     // menu się samo nie naprawia). Naprawa: gdy cache się rozwiąże, przebuduj
@@ -40157,7 +40210,7 @@ async function boot(): Promise<void> {
     // startup menu builds BELOW in the SAME synchronous tick
     // (openStartupMainMenu()), so the async IndexedDB read hasn't resolved yet --
     // mainMenu.build() reads hasSave() ONCE and always sees
-    // cachedHasAnySaveSlot === false: the "Continue"/"Load game" buttons come
+    // savePresence.get() === false: the "Continue"/"Load game" buttons come
     // up permanently greyed out (btn() in mainMenu.ts doesn't even attach a
     // click handler when enabled=false at build time -- the menu doesn't
     // self-heal). Fix: once the cache resolves, rebuild the main menu (if the

@@ -157,6 +157,11 @@ export interface WarAllInUnit {
   id: string;
   q: number;
   r: number;
+  /**
+   * R-WEB-AI-MOVE-RANGE-Q1: budżet ruchu w tej turze. Brak pola = 1 heks (dawne
+   * zachowanie); wołający z jednostkami gry przekazuje `ruchLeft`.
+   */
+  ruchLeft?: number;
 }
 
 export interface WarAllInOrder {
@@ -253,6 +258,63 @@ interface StepState {
  * celu w polu (dn < D[u]); gdy wolnych brak (zablokowany przez wlasne jednostki) -- krok boczny
  * (rowne pole, dystans heksowy do celu nie rosnie); inaczej 'hold' (stoi; to nie "brak lądu").
  */
+function isFreeFor(nav: WarAllInNav, g: Goal, st: StepState, nk: string): boolean {
+  if (st.claimed.has(nk)) return false;
+  if (nk !== g.destKey && nav.blocked.has(nk)) return false;
+  if (st.occupied.has(nk) && !st.vacated.has(nk)) return false;
+  return true;
+}
+
+/**
+ * R-WEB-AI-MOVE-RANGE-Q1: od pierwszego kroku `first` jednostka idzie dalej po
+ * polu odległości (wyłącznie krokami ZBLIŻAJĄCYMI, dn < poprzednie) tak długo, jak
+ * mieści się w `budget` (koszt terenu jak w computeReachable). Heks docelowy jest
+ * dopuszczalny jak u gracza (wejście w tej samej turze), o ile jest wolny i nie jest
+ * obcym miastem (`nav.blocked`); obcego miasta/zajętego celu nie wchodzi (atak/przejęcie
+ * zostaje w istniejącej logice). Nie wchodzi na heksy zajęte/zarezerwowane.
+ * Zwraca pełną listę heksów trasy (pierwszy = `first`); ostatni = rozkaz `step`.
+ */
+function extendWalk(
+  nav: WarAllInNav,
+  g: Goal,
+  st: StepState,
+  first: { q: number; r: number },
+  budget: number,
+): Array<{ q: number; r: number }> {
+  const walk: Array<{ q: number; r: number }> = [first];
+  const firstHex = nav.map.hexes[keyOf(first.q, first.r)];
+  if (firstHex === undefined) return walk;
+  let spent = terrainMoveCost(firstHex);
+  const firstKey = keyOf(first.q, first.r);
+  let curDist = g.field.get(firstKey);
+  if (!(budget > 1) || firstKey === g.destKey || spent === Infinity || curDist === undefined) return walk;
+  let cur = first;
+  for (;;) {
+    let best: { q: number; r: number; dn: number; enter: number } | null = null;
+    for (const n of hexNeighborCoords(cur.q, cur.r)) {
+      const nk = keyOf(n.q, n.r);
+      if (nk === g.destKey && nav.blocked.has(nk)) continue;
+      const dn = g.field.get(nk);
+      if (dn === undefined || dn >= (curDist as number)) continue;
+      const hex = nav.map.hexes[nk];
+      if (hex === undefined) continue;
+      const enter = terrainMoveCost(hex);
+      if (enter === Infinity || spent + enter > budget) continue;
+      if (!isFreeFor(nav, g, st, nk)) continue;
+      if (best === null || dn < best.dn
+        || (dn === best.dn && (n.q < best.q || (n.q === best.q && n.r < best.r)))) {
+        best = { q: n.q, r: n.r, dn, enter };
+      }
+    }
+    if (best === null) break;
+    walk.push({ q: best.q, r: best.r });
+    spent += best.enter;
+    curDist = best.dn;
+    cur = best;
+  }
+  return walk;
+}
+
 function chooseStep(
   nav: WarAllInNav,
   g: Goal,
@@ -263,12 +325,7 @@ function chooseStep(
   if (uk === g.destKey) return { kind: 'hold' };
   const du = g.field.get(uk);
   if (du === undefined) return { kind: 'nopath' };
-  const isFree = (nk: string): boolean => {
-    if (st.claimed.has(nk)) return false;
-    if (nk !== g.destKey && nav.blocked.has(nk)) return false;
-    if (st.occupied.has(nk) && !st.vacated.has(nk)) return false;
-    return true;
-  };
+  const isFree = (nk: string): boolean => isFreeFor(nav, g, st, nk);
   const uDist = hexDistance(u.q, u.r, g.destQ, g.destR);
   let prog: { q: number; r: number } | null = null;
   let progCost = Infinity;
@@ -444,11 +501,12 @@ export function planWarAllInCapital(
     vacated: new Set(),
   };
   for (const u of units) st.occupied.add(keyOf(u.q, u.r));
-  const emit = (u: WarAllInUnit, g: Goal, q: number, r: number): void => {
-    st.claimed.add(keyOf(q, r));
+  const emit = (u: WarAllInUnit, g: Goal, walk: ReadonlyArray<{ q: number; r: number }>): void => {
+    for (const h of walk) st.claimed.add(keyOf(h.q, h.r));
     st.vacated.add(keyOf(u.q, u.r));
+    const end = walk[walk.length - 1]!;
     plan.orders.push({
-      unitId: u.id, step: { q, r }, targetCityId: g.target.cityId, targetOwnerId: g.target.ownerId, mode: g.mode,
+      unitId: u.id, step: { q: end.q, r: end.r }, targetCityId: g.target.cityId, targetOwnerId: g.target.ownerId, mode: g.mode,
     });
   };
   /**
@@ -460,7 +518,7 @@ export function planWarAllInCapital(
     const tryGoal = (g: Goal): 'step' | 'stop' | 'next' => {
       const res = chooseStep(nav, g, u, st);
       if (res.kind === 'step') {
-        emit(u, g, res.q, res.r);
+        emit(u, g, extendWalk(nav, g, st, res, u.ruchLeft ?? 1));
         return 'step';
       }
       if (res.kind === 'hold') {

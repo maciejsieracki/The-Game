@@ -9,7 +9,10 @@
  * wykonuje komendy move/attack, przejmuje puste miasta, liczy bitwy. Stolica cywilizacji =
  * jej najstarsze (pierwsze po id) miasto; po utracie stolicy wyznaczana jest kolejna
  * (odpowiednik capitalCityIdForOwner). Gracz (owner 0) NIE dostaje zadnych rozkazow.
- * Ruch jak w main.ts (executeAiCityMove): JEDNO wywolanie decyzji na ture, ruch = 1 heks, ruchLeft=0.
+ * Ruch jak w main.ts (executeAiCityMove): JEDNO wywolanie decyzji na ture, ruchLeft=0 po ruchu.
+ * R-WEB-AI-MOVE-RANGE-Q1: komenda do heksu dalej niz 1 jest trasowana (computePath z blokadami
+ * jednostek i obcych miast), przycinana do ruchLeft (truncatePathWithinBudget) i konczy na
+ * ostatnim wolnym heksie -- jak truncatePath w main.ts. Baza bez modulu: stare 1-heksowe zachowanie.
  */
 const fs = require('fs');
 const path = require('path');
@@ -27,7 +30,8 @@ function loadEngine(srcDir, tag) {
   fs.writeFileSync(entry, `
 export { decideAITurn } from ${J('game/ai')};
 export { decideBarbarianMoves, FALLBACK_BARB_PARAMS, BARBARIAN_OWNER_ID } from ${J('game/barbarians')};
-export { hexDistance, isCivilianUnit } from ${J('units/setup')};
+export { hexDistance, isCivilianUnit, computePath } from ${J('units/setup')};
+${fs.existsSync(path.join(src, 'game', 'ai-move-range.ts')) ? `export { truncatePathWithinBudget } from ${J('game/ai-move-range')};` : ''}
 ${hasMod ? `export { setWarAllInCapitalOverride, isWarAllInCapitalEnabled, planWarAllInCapital, WAR_ALLIN_CAPITAL_ENABLED, WAR_ALLIN_LINK_RADIUS, WAR_ALLIN_MERGE_RADIUS, WAR_ALLIN_NO_MERGE_NEAR_CAPITAL } from ${J('game/warAllInCapital')};` : ''}
 `, 'utf8');
   esbuild.buildSync({
@@ -119,7 +123,22 @@ function simulate(state, o) {
         continue;
       }
       if (u.ruchLeft <= 0) continue;
-      if (E.hexDistance(u.q, u.r, c.toQ, c.toR) !== 1) continue;
+      if (E.hexDistance(u.q, u.r, c.toQ, c.toR) !== 1) {
+        if (!E.truncatePathWithinBudget || cityAt(c.toQ, c.toR)) continue;
+        const blocked = new Set();
+        for (const x of state.units) if (x !== u && x.hp > 0) blocked.add(`${x.q},${x.r}`);
+        for (const ct of state.cities) if (ct.ownerId !== u.ownerId) blocked.add(`${ct.q},${ct.r}`);
+        const full = E.computePath(u, state.map, c.toQ, c.toR, blocked);
+        if (full.length === 0) continue;
+        const cut = E.truncatePathWithinBudget(full, u.ruchLeft, state.map);
+        let end = cut.length;
+        if (end < full.length) while (end > 0 && blocked.has(`${cut[end - 1].q},${cut[end - 1].r}`)) end--;
+        if (end === 0) continue;
+        if (end === full.length && unitAt(c.toQ, c.toR)) { stats.moveBlockedByUnit++; continue; }
+        const dst = cut[end - 1];
+        u.q = dst.q; u.r = dst.r; u.ruchLeft = 0; moved++; stats.cmdMoves++;
+        continue;
+      }
       const occ = unitAt(c.toQ, c.toR);
       const city = cityAt(c.toQ, c.toR);
       if (occ) { stats.moveBlockedByUnit++; continue; }

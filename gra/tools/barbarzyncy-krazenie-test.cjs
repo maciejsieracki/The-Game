@@ -391,6 +391,10 @@ for (const nUndef of [1, 2, 3]) {
 //       BASE z `turn` i bez `turn` daje ten sam log (md5 `93d70635`) -- `turn` NIE jest tu
 //       czynnikiem, bo `raidReady` bierze sie z zywego obozu, nie z osierocenia.
 // ==============================================================================================
+function hexDistanceAx(aq, ar, bq, br) {
+  return Math.max(Math.abs(aq - bq), Math.abs(ar - br), Math.abs((-aq - ar) - (-bq - br)));
+}
+
 function simulateProd(nUndef, difficulty) {
   const map = makeMap(70, 8);
   const undef = [];
@@ -406,7 +410,7 @@ function simulateProd(nUndef, difficulty) {
   const seen = new Map(); const cmdLog = [];
   const arrivals = {}; const wasAt = {};
   for (const c of undef) { arrivals[c.id] = 0; wasAt[c.id] = false; }
-  let attackTurn = -1, cyclePeriod = -1, idle = 0, realMoves = 0;
+  let attackTurn = -1, cyclePeriod = -1, idle = 0, realMoves = 0, hexesMoved = 0;
 
   for (let t = 0; t < TURNS; t++) {
     // `turn` PRZEKAZANY -- dziewiaty argument, dokladnie jak main.ts:32209-32212.
@@ -416,7 +420,11 @@ function simulateProd(nUndef, difficulty) {
     if (!cmd) idle++;
     if (cmd && cmd.type === 'attack') { attackTurn = t; break; }
     if (cmd && cmd.type === 'move' && canUnitOccupyCityHex(unit.ownerId, cmd.toQ, cmd.toR, cities)) {
-      if (unit.q !== cmd.toQ || unit.r !== cmd.toR) realMoves++;
+      if (unit.q !== cmd.toQ || unit.r !== cmd.toR) {
+        realMoves++;
+        // R-WEB-AI-MOVE-RANGE-Q1: jednostka idzie na pelny zasieg -> liczymy heksy, nie komendy.
+        hexesMoved += hexDistanceAx(unit.q, unit.r, cmd.toQ, cmd.toR);
+      }
       unit.q = cmd.toQ; unit.r = cmd.toR;
     }
     for (const c of undef) {
@@ -428,7 +436,7 @@ function simulateProd(nUndef, difficulty) {
     if (cyclePeriod === -1 && seen.has(key)) cyclePeriod = t - seen.get(key);
     if (!seen.has(key)) seen.set(key, t);
   }
-  return { attackTurn, cyclePeriod, arrivals, idle, realMoves, cmdLog };
+  return { attackTurn, cyclePeriod, arrivals, idle, realMoves, hexesMoved, cmdLog };
 }
 {
   const prod = {};
@@ -450,9 +458,9 @@ function simulateProd(nUndef, difficulty) {
         `BRONIONE miasto w budzecie ${TURNS} tur (got attackTurn=${r.attackTurn}) -- BASE: NIGDY`);
       eq(r.idle, 0,
         `10 (SCIEZKA PRODUKCYJNA, ${n} niebronionych, difficulty=${label}): zero tur bez komendy`);
-      assert(r.realMoves >= 40,
+      assert(r.hexesMoved >= 40,
         `10 (SCIEZKA PRODUKCYJNA, ${n} niebronionych, difficulty=${label}): jednostka REALNIE ` +
-        `przemieszcza sie w kierunku celu (got ${r.realMoves} zmian pozycji) -- to odroznia ruch ` +
+        `przemieszcza sie w kierunku celu (got ${r.hexesMoved} heksow w ${r.realMoves} ruchach) -- to odroznia ruch ` +
         'od komendy bez skutku');
     }
     const base = prod[`${n}|normal`].cmdLog.join(';');

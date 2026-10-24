@@ -19,6 +19,7 @@ import aiParamsRaw from '../../data/ai-params.json';
 import type { RuntimeUnit } from '../units/setup';
 import { isWarAllInCapitalEnabled, planWarAllInCapital, type WarAllInContext } from './warAllInCapital';
 import { hexDistance, computePath, computeReachable, keyOf, isCivilianUnit } from '../units/setup';
+import { farthestStepWithinBudget } from './ai-move-range';
 import {
   cityStateMilitaryProductionCap,
   type DifficultyLevel,
@@ -839,6 +840,13 @@ function occupiedExcluding(units: RuntimeUnit[], excludeId: string): Set<string>
  * Returns the first step along the path toward (destQ, destR).
  * If the path is empty returns null (already there or unreachable).
  */
+/**
+ * R-WEB-AI-MOVE-RANGE-Q1: krok = NAJDALSZY heks trasy w budżecie `ruchLeft` (jak
+ * u gracza: truncatePathToBudget), nie sam path[0]. Dawniej AI schodziło o 1 heks
+ * na turę niezależnie od zasięgu. Gdy budżet <= 0 albo trasa krótka -- path[0]
+ * (stare zachowanie). Heks docelowy jest krokiem, gdy mieści się w budżecie i jest wolny
+ * (patrz farthestStepWithinBudget); zajęty cel -- krok do sąsiada.
+ */
 function firstStep(
   unit: RuntimeUnit,
   map: GameMap,
@@ -849,7 +857,7 @@ function firstStep(
   const occ = occupiedExcluding(units, unit.id);
   const path = computePath(unit, map, destQ, destR, occ);
   if (path.length === 0) return null;
-  return path[0] ?? null;
+  return farthestStepWithinBudget(path, unit.ruchLeft, map, undefined, occ) ?? path[0] ?? null;
 }
 
 // ---------------------------------------------------------------------------

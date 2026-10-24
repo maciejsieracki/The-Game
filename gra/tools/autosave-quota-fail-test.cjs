@@ -292,9 +292,21 @@ if (rotMatch) {
     /console\.warn\(/.test(elseBody),
     'Galaz niepowodzenia woa console.warn (dzis: calkowita cisza) -- body: ' + JSON.stringify(elseBody.trim()),
   );
+  // R-WEB-LOAD-GAME-REGRESSION-Q1 (r6): galaz niepowodzenia sygnalizuje graczowi przez
+  // helper notifyAutosaveFailureOnce (raz na sesje), a helper woa showHintMessage.
+  // Literalny showHintMessage( w galezi nie jest juz wymagany -- wymagany jest lancuch.
+  const notifyMatch = mainTsSrc.match(/function notifyAutosaveFailureOnce\(msg: string\): void \{([\s\S]*?)\n {4}\}/);
+  assert(!!notifyMatch, 'main.ts ma helper notifyAutosaveFailureOnce(msg)');
   assert(
-    /showHintMessage\(/.test(elseBody),
-    'Galaz niepowodzenia woa showHintMessage (gracz jest informowany, nie milczy jak dzis)',
+    (/notifyAutosaveFailureOnce\(/.test(elseBody)) &&
+      !!notifyMatch && /showHintMessage\(/.test(notifyMatch[1]),
+    'Galaz niepowodzenia sygnalizuje gracza: elseBody -> notifyAutosaveFailureOnce -> showHintMessage (gracz jest informowany, nie milczy jak dzis)',
+  );
+  // r6: flaga zerowana po udanym autozapisie (co najmniej w obu galeziach sukcesu) i NIE w else
+  const resetCount = (body.match(/autosaveFailureNotified = false/g) || []).length;
+  assert(
+    resetCount >= 2 && !/autosaveFailureNotified = false/.test(elseBody),
+    'Flaga autosaveFailureNotified zerowana po udanym autozapisie (FSA + IDB, count=' + resetCount + '), nie w galezi niepowodzenia',
   );
 
   // 2c. Komunikat quota wprost mowi o braku miejsca
