@@ -1,0 +1,28 @@
+
+[unit-replace-test] Running tests...
+
+1. Rzym / Zelazo -- zamienniki dla Hastati (Typ=Swordsman)
+  [OK] lista niepusta
+  [OK] Hastati nie zastepuje samej siebie
+  [OK] zawiera inny miecznik tego samego Typ (Wojownik, uniwersalny)
+  [OK] zawiera Evocati (Rzym, Typ=Swordsman, odblokowany w Zelazie)
+  [OK] NIE zawiera Hieros Lochos (Grecja != Rzym)
+  [OK] każda pozycja ma kind=jednostka i liczbowy koszt
+
+2. "Wojownik tyrreński" (Typ=Offensive) -> dochodzi "Evocati" (Typ=Swordsman)
+  [OK] Evocati obecny mimo innego Typ (pole "Zastąp specjalnie")
+  [OK] nie zastepuje samej siebie
+
+2b. Bez tech "Hutnictwo żelaza" -- Evocati NIE jest jeszcze "dostępny", znika z listy
+  [OK] Evocati zniknal (nieodblokowany w epoce Brazu)
+
+3. Nieznana nazwa jednostki -> []
+  [OK] zwraca pusta tablice dla nieznanej jednostki
+
+4. buildReplaceAvailabilityCtx (main.ts "Zastąp" -- pokrycie UNIT-REPLACE-EVOCATI-Q1)
+  [OK] empireResourceStock z parametrów trafia 1:1 do zwróconego AvailabilityContext
+  [OK] ctx z buildReplaceAvailabilityCtx (empireResourceStock={zelazo:5}) odblokowuje Evocati
+  [OK] ctx z pustym empireResourceStock NIE odblokowuje Evocati (regresja UNIT-REPLACE-EVOCATI-Q1)
+
+[unit-replace-test] WSZYSTKIE TESTY ZIELONE (13/13)
+EXIT=0

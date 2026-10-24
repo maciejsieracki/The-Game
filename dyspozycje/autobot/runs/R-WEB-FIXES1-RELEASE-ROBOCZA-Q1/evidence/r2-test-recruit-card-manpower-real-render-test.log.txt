@@ -1,0 +1,30 @@
+[zrzuty] katalog zrzutow tego przebiegu: /tmp/civ-recruit-card-manpower-shots-Obs1lK
+
+-- BRAK REKRUTÓW + BRAK DREWNA --
+PASS: B1: karta ma widoczny tekstowy status rekrutów
+PASS: B2: status pokazuje potrzebne na karcie, a dostępne/potrzebne/brak w tooltipie
+PASS: B3: status pokazuje widoczną, czerwoną brakującą pulę
+PASS: B4: data attributes przechowują available/required/missing
+PASS: B5: czerwony koszt Drewna pozostaje widoczny przy braku Drewna
+PASS: B6: brak rekrutów i brak Drewna są osobno w tooltipie
+PASS: B7: Rekrutuj jest disabled i klik nie kupuje
+
+-- CZĘŚCIOWA PULA REKRUTÓW --
+PASS: B8: częściowa pula: potrzebne na karcie, dostępne / potrzebne / brak w tooltipie
+PASS: B9: częściowa pula pokazuje widoczny, dokładny shortfall
+PASS: B10: brak rekrutów blokuje przy częściowym stanie i wskazuje przyczynę
+PASS: B11: wystarczające Drewno nie jest oznaczone jako brakujące
+
+-- PEŁNA PULA REKRUTÓW --
+PASS: B12: pełna pula: potrzebne na karcie, dostępne / potrzebne w tooltipie (bez „brakuje”)
+PASS: B13: pełna pula nie pokazuje fałszywego shortfallu
+PASS: B14: pełna pula odblokowuje Rekrutuj
+PASS: B15: karta czyta pulę imperium, nie lokalny City.manpower
+PASS: matrix: karta pokazuje koszt 750 zamiast limitowego 1500
+PASS: matrix: pula 750 odblokowuje zakup i callback
+PASS: matrix: pula 749 blokuje zakup i pokazuje brak 1
+PASS: B16: istniejąca rekrutacja nadal wywołuje callback
+PASS: B17: brak błędów pageerror/console.error
+
+recruit-card-manpower-real-render-test: 20 passed, 0 failed
+EXIT=0

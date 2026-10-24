@@ -1,0 +1,15 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.01s
+  Executable unittests src/lib.rs (/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/cargo-target-r2/debug/deps/civ_engine-a7fbbdbfb2ad6a28)
+  Executable tests/barbarians.rs (/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/cargo-target-r2/debug/deps/barbarians-0068e48318fd2980)
+  Executable tests/building_costs.rs (/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/cargo-target-r2/debug/deps/building_costs-ffcd741b2a9a3f4d)
+  Executable tests/combat.rs (/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/cargo-target-r2/debug/deps/combat-7cf923064dd11ca4)
+  Executable tests/hex_terrain.rs (/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/cargo-target-r2/debug/deps/hex_terrain-cec0edfbdd2e85bb)
+  Executable tests/improvements.rs (/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/cargo-target-r2/debug/deps/improvements-c1038c397c55d45c)
+  Executable tests/map_generator.rs (/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/cargo-target-r2/debug/deps/map_generator-2032e2eca55694ac)
+  Executable tests/recruitment.rs (/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/cargo-target-r2/debug/deps/recruitment-fa5ad7b6c42e8693)
+  Executable tests/resource_production.rs (/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/cargo-target-r2/debug/deps/resource_production-dcf5d0d783b626f9)
+  Executable tests/rng.rs (/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/cargo-target-r2/debug/deps/rng-5cef133d103b8a62)
+  Executable tests/smoke.rs (/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/cargo-target-r2/debug/deps/smoke-9fe2c0e4fd4f490d)
+  Executable tests/state_dto.rs (/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/cargo-target-r2/debug/deps/state_dto-e2c7b572623204aa)
+  Executable tests/unit_epoch.rs (/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/cargo-target-r2/debug/deps/unit_epoch-16f7188559b054ad)
+EXIT=0

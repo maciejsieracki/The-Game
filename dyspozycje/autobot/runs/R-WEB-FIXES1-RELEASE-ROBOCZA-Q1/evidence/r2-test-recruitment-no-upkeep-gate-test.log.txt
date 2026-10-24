@@ -1,0 +1,29 @@
+
+-- A0: dane kanoniczne zgodne ze zrzutem właściciela --
+FAIL: A0a: Wojownik koszt zakupu = 50 Drewna (got {"drewno":13}, want {"drewno":50})
+FAIL: A0b: Wojownik utrzymanie = 10 Drewna/turę (got {"drewno":3}, want {"drewno":10})
+
+-- A1: SCENARIUSZ WŁAŚCICIELA — pula 57 Drewna, koszt 50, utrzymanie 10/t --
+
+-- A2: ODWROTNIE — bramka kosztu NIE rozbraja się (pula 49 < koszt 50) --
+FAIL: A2: 49 Drewna, koszt 50 -> rekrutacja NADAL ZABLOKOWANA
+FAIL: A2b: komunikat odmowy = brak jednorazowego kosztu w magazynie
+FAIL: A2c: chip Drewna czerwony przy 49 Drewna (brak kosztu zakupu)
+FAIL: A2d: komunikat odmowy nie wspomina utrzymania
+
+-- A3: UTRZYMANIE DALEJ POBIERANE W NASTĘPNEJ TURZE (prawdziwy tick) --
+FAIL: A3a: po rekrutacji 57 - 50 = 7 Drewna w puli (got 44, want 7)
+FAIL: A3b: tick ekonomii NASTĘPNEJ tury nalicza utrzymanie 10 Drewna za zrekrutowaną jednostkę (got {"drewno":3}, want {"drewno":10})
+FAIL: A3d: NIEDOBÓR wykryty — brakuje 3 Drewna na utrzymanie (7 < 10) (got {}, want {"drewno":3})
+FAIL: A3e: pobór przy niedoborze zabiera wszystko i podłogowuje na 0 (bez ujemnej puli) (got 4, want 0)
+FAIL: A3g: UTRZYMANIE POBRANE w następnej turze: 27 - 10 = 17 (got 24, want 17)
+
+-- A4: PARYTET gracz / AI / MP — jedna bramka owner-agnostyczna --
+FAIL: A4c gracz: 49 Drewna -> zablokowana
+FAIL: A4c AI: 49 Drewna -> zablokowana
+FAIL: A4c MP (miasto-państwo): 49 Drewna -> zablokowana
+
+-- A5: kontrakt symboli po wycofaniu R-AI-RECRUIT-UPKEEP-GATE --
+
+recruitment-no-upkeep-gate-test: 22 passed, 14 failed
+EXIT=1
