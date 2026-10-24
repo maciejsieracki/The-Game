@@ -305,7 +305,13 @@ function showPreBattleSaveToast(overlay: HTMLElement, message: string, ok: boole
 }
 
 export function isPreBattleOpen(): boolean {
-  return overlayEl !== null;
+  // R-WEB-ENDTURN-BATTLE-DEADLOCK-Q1: overlay liczy się jako otwarty TYLKO gdy faktycznie
+  // siedzi w DOM. Osierocony `overlayEl` (odpięty od body bez hidePreBattle()) nie pokazuje
+  // już ekranu bitwy, a blokowałby koniec tury w nieskończoność (isPreBattleOpen() ===
+  // true => healStuck... nie sprząta, flush nie pokazuje kolejnego). / EN: the overlay only
+  // counts as open while it is actually attached to the DOM. An orphaned overlayEl (detached
+  // without hidePreBattle()) shows no battle screen but would block end-turn forever.
+  return overlayEl !== null && overlayEl.isConnected;
 }
 
 /**

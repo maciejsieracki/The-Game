@@ -31490,6 +31490,36 @@ async function boot(): Promise<void> {
     // If animation is running, snap unit to destination first.
     // -----------------------------------------------------------------------
 
+    let deferredPreBattleWatchdogTimer: number | null = null;
+
+    /** R-WEB-ENDTURN-BATTLE-DEADLOCK-Q1: jednorazowy timer (0 ms) wznawiający kolejkę odłożonych
+     *  bitew. Ponownie sprawdza wszystkie blokady przed flushem -- bezpieczny nawet, gdy modal
+     *  zdążył się otworzyć w międzyczasie. / EN: one-shot 0 ms timer that resumes the deferred
+     *  battle queue; re-checks every blocker before flushing, so it is safe if a modal reopened. */
+    function scheduleDeferredPreBattleQueueWatchdog(): void {
+      if (deferredPreBattleWatchdogTimer !== null) return;
+      deferredPreBattleWatchdogTimer = window.setTimeout(() => {
+        deferredPreBattleWatchdogTimer = null;
+        if (!hasPendingAutoPreBattle()) return;
+        if (endTurnInProgress) return;
+        if (isPreBattleOpen() || isDiplomacyAudienceOpen() || isArmyMergePanelOpen()) return;
+        console.warn('[PreBattle] watchdog: odłożona bitwa bez ekranu i bez blokady -- wznawiam kolejkę', {
+          ageMs: oldestPendingAutoPreBattleAgeMs(),
+        });
+        flushDeferredAutoPreBattle();
+      }, 0);
+    }
+
+    /** R-WEB-ENDTURN-BATTLE-DEADLOCK-Q1: planuje watchdog TYLKO gdy kolejka niepusta, brak
+     *  ekranu i brak blokującego modala. / EN: schedules the watchdog only when the queue is
+     *  non-empty, no screen is open and no blocking modal is open. */
+    function maybeScheduleDeferredPreBattleQueueWatchdog(): void {
+      const queued = hasPendingAutoPreBattle();
+      if (!queued) return;
+      if (isPreBattleOpen() || isDiplomacyAudienceOpen() || isArmyMergePanelOpen()) return;
+      scheduleDeferredPreBattleQueueWatchdog();
+    }
+
     /** Po anulowaniu bitwy / Nowa gra bez reload — flagi resume i overlay potrafią zostać. */
     function healStaleEndTurnBlockers(): void {
       const preBattle = isPreBattleOpen();
@@ -31581,6 +31611,13 @@ async function boot(): Promise<void> {
         aiCmdResume = null;
         endTurnTransition();
       }
+      // R-WEB-ENDTURN-BATTLE-DEADLOCK-Q1 (siatka bezpieczeństwa): odłożona bitwa w kolejce
+      // BEZ otwartego ekranu i BEZ blokującego modala = stan niespójny. Zamiast czekać na
+      // przypadkowy punkt flusha (którego może nie być), planujemy flush na najbliższy tick.
+      // / EN: safety net -- a deferred battle queued with no open screen and no blocking modal
+      // is an inconsistent state. Instead of waiting for an incidental flush point (which may
+      // never come), schedule a flush for the next tick.
+      maybeScheduleDeferredPreBattleQueueWatchdog();
     }
 
     function canPlayerInitiateEndTurn(): boolean {
@@ -31697,6 +31734,19 @@ async function boot(): Promise<void> {
       if (!hasPendingAutoPreBattle()) return;
       if (isPreBattleOpen()) return;
       if (isDiplomacyAudienceOpen() || isArmyMergePanelOpen()) return;
+      // R-WEB-ENDTURN-BATTLE-DEADLOCK-Q1: interaktywna próba zakończenia tury, a nic już
+      // nie blokuje -- najpierw POKAŻ odłożoną bitwę (gracz ją rozstrzygnie; blokada końca
+      // tury jest wtedy legalna, bo ekran jest widoczny). Dopiero gdy flush nie otworzył
+      // ekranu, sprawdzamy wiek i ewentualnie czyścimy. / EN: on an interactive attempt
+      // with nothing blocking, first SHOW the deferred battle (the player resolves it; the
+      // end-turn block is then legitimate because the screen is visible). Only if the flush
+      // did not open a screen do we check age and possibly clear.
+      // Nie w trakcie trwającej tury świata (endTurnInProgress): tam kolejkę wznawia flush
+      // w finally endActiveHumanTurn(), a pokazanie bitwy w środku przejścia byłoby błędne.
+      // / EN: not while a world turn is in progress (endTurnInProgress): the flush in the
+      // finally of endActiveHumanTurn() handles that, and showing mid-transition would be wrong.
+      if (!endTurnInProgress) flushDeferredAutoPreBattle();
+      if (isPreBattleOpen()) return;
       const ageMs = oldestPendingAutoPreBattleAgeMs();
       if (ageMs <= 8000) return;
       console.warn('[EndTurn] Deferred preBattle queue stuck >8000ms with no blocking modal — clearing (interactive end-turn attempt)', { ageMs });
@@ -36720,6 +36770,15 @@ async function boot(): Promise<void> {
     // call-site'y (HUD "Zakończ turę", __eraTestDebug.endTurn, skrót klawiszowy "N")
     // wołają TĘ funkcję, nie triggerPlayerEndTurn()/endActiveHumanTurn() bezpośrednio.
     function advanceSeat(): void {
+      // R-WEB-ENDTURN-BATTLE-DEADLOCK-Q1: sprzątanie kolejki odłożonych bitew PRZED bramką.
+      // Bramka poniżej odrzuca klik, gdy hasPendingAutoPreBattle(); a healStuck... żyje w
+      // endActiveHumanTurn() -- czyli ZA bramką i nigdy nie była osiągalna przy zablokowanej
+      // kolejce. Efekt: trwały deadlock "Zakończ ekran bitwy" bez widocznej bitwy.
+      // / EN: queue cleanup BEFORE the gate below. The gate rejects the click while
+      // hasPendingAutoPreBattle(), and the cleaner lived in endActiveHumanTurn() -- i.e. BEHIND
+      // the gate, so it was unreachable with a stuck queue: a permanent "close the battle
+      // screen" deadlock with no battle visible.
+      healStuckDeferredPreBattleQueueOnEndTurnAttempt();
       // R-HOTSEAT-DRUGI-FOTEL-NIE-DOSTAJE-TURY-Q1 (runda 2, Evaluator zarzut #1):
       // JEDEN wspólny strażnik dla OBIE gałęzie ("przełącz na następny fotel" i
       // "ostatni fotel -> świat"), zamiast dublować podzbiór warunków tylko dla
@@ -36774,7 +36833,18 @@ async function boot(): Promise<void> {
     // Zachowana jako cienki alias (decyzja stylu z recon §6.1 Krok 3) -- dziś bez wywołań z tego
     // pliku (wszystkie call-site'y podłączone na advanceSeat()), ale pozostaje spójna z
     // dziesiątkami komentarzy opisowych w main.ts, które wciąż odwołują się do tej nazwy.
+    // R-WEB-ENDTURN-BATTLE-DEADLOCK-Q1: sprzątanie kolejki PRZED bramką (ta sama kolejność co
+    // w advanceSeat()). Bez tego bramka odrzucała klik, zanim healStuck... mógł cokolwiek
+    // posprzątać -- to był korzeń deadlocka (endActiveHumanTurn() jest dopiero ZA bramką).
+    // / EN: queue cleanup runs BEFORE the gate (same order as advanceSeat()). Without this
+    // the gate rejected the click before the cleaner could run -- the root of the deadlock.
     function triggerPlayerEndTurn(): void {
+      healStuckDeferredPreBattleQueueOnEndTurnAttempt();
+      if (!canPlayerInitiateEndTurn()) {
+        console.warn('[EndTurn] triggerPlayerEndTurn: odrzucono (canPlayerInitiateEndTurn=false)');
+        hintEndTurnBlocked();
+        return;
+      }
       advanceSeat();
     }
 
