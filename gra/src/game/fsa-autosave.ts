@@ -447,6 +447,26 @@ export async function listFsaAutosaveFiles(): Promise<FsaSaveFileRef[]> {
 }
 
 /**
+ * R-WEB-LOAD-GAME-REGRESSION-Q1: czy katalog autozapisu FSA jest ZAPAMIĘTANY
+ * (uchwyt w IndexedDB albo żywy w tej sesji). Nie pyta o zgodę i nie wywołuje
+ * requestPermission -- tylko odczyt IDB, więc działa przy starcie strony bez
+ * kliknięcia. Używane przez "Wczytaj grę": po przeładowaniu strony lista plików
+ * jest pusta do czasu bootstrapu FSA (wymaga gestu), a przycisk nie może być
+ * wyszarzony tylko dlatego. Nigdy nie rzuca.
+ * / EN: whether the FSA autosave directory is remembered (IDB handle or live
+ * this session). No permission prompt, IDB read only, so it works at page
+ * start without a click. Never throws.
+ */
+export async function hasRememberedFsaDirectory(): Promise<boolean> {
+  if (liveDirHandle !== null) return true;
+  try {
+    return (await preloadedIdbHandlePromise) !== null;
+  } catch {
+    return false;
+  }
+}
+
+/**
  * Czyta surowy tekst pliku `fileName` z zapamiętanego katalogu FSA.
  * Zwraca null przy dowolnym niepowodzeniu (nigdy nie rzuca).
  */

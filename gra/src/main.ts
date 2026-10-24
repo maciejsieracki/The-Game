@@ -1100,9 +1100,9 @@ import { loadMapForSave } from './game/load-map-source';
 import {
   ensureFsaAutosaveReady, fsaRotatingAutosaveWrite, getFsaReadinessState,
   shouldUseFsaAutosave, fsaUnavailableMessage, autosaveFileName, loadFsaAutosaveFile,
-  listFsaAutosaveFiles,
+  listFsaAutosaveFiles, hasRememberedFsaDirectory,
 } from './game/fsa-autosave';
-import { anySavePresent } from './game/save-presence';
+import { createSavePresenceCache } from './game/save-presence';
 import { buildDefaultSaveLabel, type SaveLabelKind } from './game/save-label';
 import {
   diagInfo, diagWarn, diagError, installGlobalDiagHooks,
@@ -22161,18 +22161,21 @@ async function boot(): Promise<void> {
     // odświeżany na starcie gry (boot) i po każdym udanym zapisie (patrz
     // wywołania niżej), więc w praktyce jest aktualny w momencie, gdy gracz
     // faktycznie otwiera menu.
-    let cachedHasAnySaveSlot = false;
-    // R-WEB-LOAD-GAME-REGRESSION-Q1: "zapis istnieje" = slot IDB/localStorage
-    // LUB plik rotacji FSA na dysku (autozapis na dysk nie trafia do listSaves()).
-    async function anySaveAvailable(): Promise<boolean> {
-      return anySavePresent({ listSlots: listSaves, listFsaFiles: listFsaAutosaveFiles });
-    }
+    // R-WEB-LOAD-GAME-REGRESSION-Q1: "zapis istnieje" = slot IDB/localStorage,
+    // LUB plik rotacji FSA na dysku, LUB zapamiętany katalog FSA (po przeładowaniu
+    // strony lista plików jest pusta do kliknięcia -- patrz save-presence.ts).
+    const savePresence = createSavePresenceCache({
+      listSlots: listSaves,
+      listFsaFiles: listFsaAutosaveFiles,
+      hasRememberedFsaDir: hasRememberedFsaDirectory,
+      onSourceError: (source, err) => diagWarn('SAVE-PRESENCE', 'zrodlo=' + source + ' blad=' + String(err)),
+    });
     async function refreshHasAnySaveSlotCache(): Promise<void> {
-      cachedHasAnySaveSlot = await anySaveAvailable();
+      await savePresence.refresh();
     }
     function hasAnySaveSlot(): boolean {
       void refreshHasAnySaveSlotCache();
-      return cachedHasAnySaveSlot;
+      return savePresence.get();
     }
 
     function openSaveGameDialog(): void {
@@ -22210,7 +22213,7 @@ async function boot(): Promise<void> {
     // żeby ta konkretna decyzja (pokazać dialog czy hint "brak zapisów")
     // była tak świeża, jak to możliwe.
     async function openLoadGameDialog(fromInGamePause = false): Promise<void> {
-      const any = await anySaveAvailable();
+      const any = await savePresence.refresh();
       if (!any) {
         showHintMessage(
           fromInGamePause
@@ -31252,7 +31255,7 @@ async function boot(): Promise<void> {
         const result = await saveToLocal(slotId, buildSaveGameSnapshot(label));
         if (result.ok) {
           setLastPlayedSlotId(slotId);
-          cachedHasAnySaveSlot = true; // R-WEB-LOAD-GAME-REGRESSION-Q1: udany zapis = zapis istnieje
+          savePresence.markPresent(); // R-WEB-LOAD-GAME-REGRESSION-Q1: udany zapis = zapis istnieje
         }
         return result;
       } catch (eSave) {
@@ -31435,7 +31438,7 @@ async function boot(): Promise<void> {
             setLastPlayedSlotId(FSA_SLOT_PREFIX + autosaveFileName(idx));
             // R-WEB-LOAD-GAME-REGRESSION-Q1: udany autozapis na dysk = zapis istnieje
             // (przycisk „Wczytaj grę" nie może zostać "Brak zapisu" mimo pliku).
-            cachedHasAnySaveSlot = true;
+            savePresence.markPresent();
             try { localStorage.setItem(AUTOSAVE_ROT_IDX_KEY, String(idx)); } catch { /* ignore */ }
             console.log('[Autosave] rotacyjny (dysk) slot=' + (idx + 1) + ' tura=' + turn);
             return;
@@ -31462,7 +31465,7 @@ async function boot(): Promise<void> {
         }
         if (ok) {
           setLastPlayedSlotId(slot);
-          cachedHasAnySaveSlot = true; // R-WEB-LOAD-GAME-REGRESSION-Q1
+          savePresence.markPresent(); // R-WEB-LOAD-GAME-REGRESSION-Q1
           // Indeks rotacji przesuwamy WYŁĄCZNIE po udanym zapisie -- przy
           // niepowodzeniu kolejna próba celuje ponownie w ten sam slot
           // zamiast po cichu przeskoczyć dalej i zostawić go zamrożonym.
@@ -40019,7 +40022,7 @@ async function boot(): Promise<void> {
     // P-INDEXEDDB-MENU-KONTYNUUJ-MARTWE (Evaluator, 2026-08-12): menu startowe
     // buduje się PONIŻEJ w TYM SAMYM synchronicznym ticku (openStartupMainMenu()),
     // więc odczyt IndexedDB (async) nie zdążył się rozwiązać -- mainMenu.build()
-    // czyta hasSave() RAZ i zawsze widzi cachedHasAnySaveSlot === false: przyciski
+    // czyta hasSave() RAZ i zawsze widzi savePresence.get() === false: przyciski
     // "Kontynuuj"/"Wczytaj grę" wychodzą trwale wyszarzone (btn() w mainMenu.ts
     // w ogóle nie podpina handlera kliknięcia, gdy enabled=false przy budowie --
     // menu się samo nie naprawia). Naprawa: gdy cache się rozwiąże, przebuduj
@@ -40030,7 +40033,7 @@ async function boot(): Promise<void> {
     // startup menu builds BELOW in the SAME synchronous tick
     // (openStartupMainMenu()), so the async IndexedDB read hasn't resolved yet --
     // mainMenu.build() reads hasSave() ONCE and always sees
-    // cachedHasAnySaveSlot === false: the "Continue"/"Load game" buttons come
+    // savePresence.get() === false: the "Continue"/"Load game" buttons come
     // up permanently greyed out (btn() in mainMenu.ts doesn't even attach a
     // click handler when enabled=false at build time -- the menu doesn't
     // self-heal). Fix: once the cache resolves, rebuild the main menu (if the
