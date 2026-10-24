@@ -22,8 +22,10 @@
  *    PIERWSZĄ instrukcję, przed bramką) są na origin/main CZERWONE -- regresja po refaktorze
  *    R-HOTSEAT (triggerPlayerEndTurn stało się cienkim aliasem advanceSeat()).
  *  - Dodatkowo: kolejka może zostać „osierocona" (żądanie w kolejce, brak ekranu, brak blokującego
- *    modala), bo nic jej nie wznowiło (flush jest tylko w określonych punktach). Osierocony
- *    `overlayEl` odpięty od DOM zaś sprawiał, że isPreBattleOpen() === true przy niewidocznym ekranie.
+ *    modala), bo nic jej nie wznowiło (flush jest tylko w określonych punktach). Hipoteza
+ *    „overlayEl odpięty od DOM = isPreBattleOpen() true przy niewidocznym ekranie" została
+ *    ODRZUCONA w rundzie 2 (dowód: ui/preBattle.ts -- overlayEl przypisywany dopiero po
+ *    appendChild, zerowany po remove(); pin A6). Nie jest częścią naprawy.
  *
  * NAPRAWA (ZAŁOŻENIA: nie zmieniamy zachowania legalnej blokady, gdy ekran bitwy jest otwarty):
  *  1) advanceSeat() i triggerPlayerEndTurn() wołają sprzątacz PRZED bramką.
@@ -32,7 +34,7 @@
  *     Pomijane w trakcie trwającej tury świata (endTurnInProgress).
  *  3) siatka bezpieczeństwa: healStaleEndTurnBlockers() planuje (setTimeout 50 ms) flush, gdy kolejka
  *     jest niepusta, bez ekranu i bez blokującego modala. Timer ponownie sprawdza blokady.
- * *  4) (usunięte w rundzie 2: ui/preBattle.ts nie jest zmieniany -- zmiana spekulatywna poza allowlistą).
+ *  4) (usunięte w rundzie 2: ui/preBattle.ts nie jest zmieniany -- zmiana spekulatywna poza allowlistą).
  *
  * Części:
  *  A) PIN TEKSTOWY na main.ts i ui/preBattle.ts (kolejność wywołań, obecność siatki).
@@ -146,6 +148,14 @@ function bodyOf(src, header, indentNextFn) {
     '[A7] finishIncomingBattleUi(): flush kolejki w bloku finally, owinięty try/catch -- wyjątek w onResolved() nie pomija flushu');
   ok((fin.match(/^\s*flushDeferredAutoPreBattle\(\);/gm) || []).length === 1,
     '[A7b] finishIncomingBattleUi(): jeden flush (w finally), brak drugiego, gołego wywołania za try/finally');
+  // Runda 4 (zarzut Evaluatora #3, M4): ciało catch jest zduplikowane inline; mutacja „catch → throw"
+  // musi czerwienić test. Pin wymaga w catch ostrzeżenia z identyfikatorem ORAZ sprzątania ekranu.
+  // / EN: round 4 (Evaluator objection #3, M4): the catch body is inline; a "catch -> throw"
+  // mutant must fail. Pin requires the warn with identifier AND the screen cleanup in the catch.
+  const finCatch = /\} catch \(eFinishFlush\) \{([\s\S]*?)\n\s*\}\s*\n\s*\}/.exec(fin);
+  ok(finCatch !== null && /console\.warn\(\s*'\[PreBattle\][^']*'/.test(finCatch[1])
+    && /where:\s*'finishIncomingBattleUi'/.test(finCatch[1]) && /hidePreBattle\(\);/.test(finCatch[1]),
+    '[A7c] finishIncomingBattleUi(): catch(eFinishFlush) loguje console.warn z where:finishIncomingBattleUi i sprząta hidePreBattle() (mutant „throw" w catch czerwieni)');
 }
 
 {
