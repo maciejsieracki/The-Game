@@ -225,6 +225,16 @@ export function buildUnitRecruitCard(opts: UnitRecruitCardOpts): HTMLDivElement 
   row.dataset.recruitQuantity = '1';
   row.dataset.recruitQuantityMax = String(maxQuantity);
   if (!canBuy) row.classList.add('is-disabled');
+  // R-WEB-RECRUIT-LIST-REGRESSION-Q1: wiersz niedostępny ekonomicznie zostaje widoczny i
+  // wyszarzony; czytelna przyczyna (brak surowca / rekrutów / złota) także jako tooltip wiersza.
+  if (!canBuy) {
+    const reasons = [
+      manpowerMissingLabel,
+      stockMissingLabel,
+      skarb !== undefined && skarb < item.koszt ? `Za mało złota (${skarb}/${item.koszt})` : undefined,
+    ].filter((r): r is string => !!r);
+    if (reasons.length > 0) row.title = reasons.join('; ');
+  }
 
   const ic = el('div', 'bld-compact-ic');
   ic.innerHTML = unitInfographicSvg(udef, item.id, 22) || unitIconSvg(udef, item.id);

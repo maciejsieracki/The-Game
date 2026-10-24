@@ -8988,7 +8988,7 @@ function renderPurchasableUnits(
         }
         const techs = cfg.getUnlockedTechs?.(city.ownerId) ?? [];
         const units = sortByUnitPowerDescending(
-          purchasableUnits(city, data, techs, productionCtxForCity(city)),
+          purchasableUnits(city, data, techs, { ...productionCtxForCity(city), showStockGatedUnits: true }),
           unit => getUnitDef(data, unit.id) as unknown as UnitPowerInput,
         );
         return buildRecruitTabDetailCard(city, units.length, cfg.getTreasury?.(city.ownerId));
@@ -9007,7 +9007,7 @@ function renderPurchasableUnits(
   // (dynamicznie, patrz appendRecruitMilitaryResourceStrip).
   const techs = cfg.getUnlockedTechs?.(city.ownerId) ?? [];
   const units = sortByUnitPowerDescending(
-    purchasableUnits(city, data, techs, productionCtxForCity(city)),
+    purchasableUnits(city, data, techs, { ...productionCtxForCity(city), showStockGatedUnits: true }),
     unit => getUnitDef(data, unit.id) as unknown as UnitPowerInput,
   );
   appendRecruitMilitaryResourceStrip(mount, city, data, units);
