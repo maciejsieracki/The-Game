@@ -756,7 +756,7 @@ function firstStep(
 ): { q: number; r: number } | null {
   const path = computePath(unit, map, destQ, destR, occupied, costFn);
   if (path.length === 0) return null;
-  return farthestStepWithinBudget(path, unit.ruchLeft, map, costFn) ?? path[0] ?? null;
+  return farthestStepWithinBudget(path, unit.ruchLeft, map, costFn, occupied) ?? path[0] ?? null;
 }
 
 /**

@@ -50,19 +50,25 @@ export function truncatePathWithinBudget(
 }
 
 /**
- * Najdalszy heks trasy, na który jednostka dojdzie w tej turze, NIE wchodząc na
- * heks docelowy trasy (ostatni element `path`). Heks docelowy zostaje poza
- * wyborem: cel-miasto/cel-jednostka rozstrzyga osobna logika (atak, przejęcie),
- * a teleport na obcy zajęty heks byłby zmianą reguł. Zwraca null, gdy budżet
- * <= 0 albo trasa nie ma heksu pośredniego -- wołający wtedy używa path[0].
+ * Najdalszy heks trasy, na który jednostka dojdzie w tej turze. Heks docelowy
+ * (ostatni element `path`) jest krokiem TYLKO gdy mieści się w budżecie i nie jest
+ * zablokowany (`blockedKeys`, np. zajęty przez jednostkę / obce miasto): jak u
+ * gracza wchodzi się na cel w tej samej turze. Zajęty cel zostaje poza wyborem --
+ * wtedy wołający dochodzi do sąsiedniego heksu, a atak/przejęcie zostaje w
+ * istniejącej logice. Zwraca null, gdy budżet <= 0 albo trasa nie ma heksu
+ * wybieralnego (path.length < 2) -- wołający wtedy używa path[0] (zachowanie sprzed).
  */
 export function farthestStepWithinBudget(
   path: readonly { q: number; r: number }[],
   budget: number,
   map: GameMap,
   costFn: MoveCostFn = terrainMoveCost,
+  blockedKeys?: ReadonlySet<string>,
 ): { q: number; r: number } | null {
   if (!(budget > 0) || path.length < 2) return null;
-  const cut = truncatePathWithinBudget(path.slice(0, -1), budget, map, costFn);
-  return cut.length > 0 ? cut[cut.length - 1]! : null;
+  const cut = truncatePathWithinBudget(path, budget, map, costFn);
+  let end = cut.length;
+  while (end > 0 && blockedKeys !== undefined
+    && blockedKeys.has(keyOf(cut[end - 1]!.q, cut[end - 1]!.r))) end--;
+  return end > 0 ? cut[end - 1]! : null;
 }

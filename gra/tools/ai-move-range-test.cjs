@@ -25,12 +25,12 @@ const abs = (rel) => path.join(SRC, rel);
 
 const MUT_AI = {
   name: 'AI firstStep -> path[0]', rel: 'game/ai.ts',
-  from: 'return farthestStepWithinBudget(path, unit.ruchLeft, map) ?? path[0] ?? null;',
+  from: 'return farthestStepWithinBudget(path, unit.ruchLeft, map, undefined, occ) ?? path[0] ?? null;',
   to: 'return path[0] ?? null;',
 };
 const MUT_BARB = {
   name: 'barbarzynca firstStep -> path[0]', rel: 'game/barbarians.ts',
-  from: 'return farthestStepWithinBudget(path, unit.ruchLeft, map, costFn) ?? path[0] ?? null;',
+  from: 'return farthestStepWithinBudget(path, unit.ruchLeft, map, costFn, occupied) ?? path[0] ?? null;',
   to: 'return path[0] ?? null;',
 };
 const MUT_WAR = {
@@ -148,7 +148,9 @@ console.log('\n--- A: pomocnik truncatePathWithinBudget / farthestStepWithinBudg
   eq(far && far.q, 5, 'A6 farthest: budzet 5 -> heks (5,0)');
   const far1 = M.farthestStepWithinBudget(path10, 1, map);
   eq(far1 && far1.q, 1, 'A7 farthest: budzet 1 -> heks (1,0)');
-  eq(M.farthestStepWithinBudget(path10, 20, map).q, 9, 'A8 farthest: cel (10,0) nigdy nie jest krokiem; najdalej (9,0)');
+  eq(M.farthestStepWithinBudget(path10, 20, map).q, 10, 'A8 farthest: wolny cel (10,0) w budzecie jest krokiem (jak u gracza)');
+  eq(M.farthestStepWithinBudget(path10, 20, map, undefined, new Set([M.keyOf(10, 0)])).q, 9, 'A8b zajety cel (10,0) poza wyborem -> najdalej (9,0)');
+  eq(M.farthestStepWithinBudget(path10, 9, map).q, 9, 'A8c budzet 9 -> dochodzi do (9,0), cel (10,0) poza zasiegiem');
   eq(M.farthestStepWithinBudget(straight(1), 5, map), null, 'A9 trasa 1-heksowa (cel sasiedni) -> null (wolajacy bierze path[0])');
 }
 

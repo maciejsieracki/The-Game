@@ -29,10 +29,23 @@ const run = (name, flag, extra = {}) => {
 };
 
 // ---------------------------------------------------------------------------
+// Referencje (R-WEB-AI-MOVE-RANGE-Q1 r3, HEAD po zmianie zasiegu ruchu).
+const REF_AI_OFF_BATTLES = 3;
+const REF_OFF = {
+  aiVsAi: 'd7316c5be9bffe39', aiVsPlayer: '83f07f345643f6fb', barbarians: 'c07e60985cb8a2ab', noLandPath: '69d49bd592471e58',
+};
+// Baza origin/main fcd86933 = PRZED zmiana zasiegu ruchu (tylko wprowadzenie reguly wojny).
+// Na tej bazie sekcja 6 byla juz czerwona (6a, 6b x4, 6c) -- zob. dyspozycje/autobot/runs/R-WEB-AI-MOVE-RANGE-Q1/.
+const REF_BASE_PRE_RANGE = {
+  aiVsAi: '49f36d28989cf940', aiVsPlayer: '22a63c096e698720', barbarians: '65542d56510bcef9', noLandPath: '176b6b39e9773451',
+};
+
 console.log('\n--- 1: AI<->AI, PRZED (flaga OFF) vs PO (flaga ON) ---');
 const aiOff = run('aiVsAi', false);
 const aiOn = run('aiVsAi', true);
-eq(aiOff.stats.battles, 0, '1a PRZED: zero bitew (brak natarcia)');
+// R-WEB-AI-MOVE-RANGE-Q1 r3: AI idzie pelnym zasiegiem takze przy fladze OFF (zamierzona zmiana),
+// wiec PRZED ma bitwy. Referencja zmierzona na HEAD (nie 0 jak przy 1 heksie).
+eq(aiOff.stats.battles, REF_AI_OFF_BATTLES, `1a PRZED: bitwy = referencja ${REF_AI_OFF_BATTLES} (pelny zasieg AI, R-WEB-AI-MOVE-RANGE-Q1)`);
 eq(aiOff.stats.captures, 0, '1b PRZED: zero przejec miast');
 assert(aiOn.stats.battles > 0, `1c PO: dochodzi do bitew (${aiOn.stats.battles})`);
 assert(aiOn.stats.captures > 0, `1d PO: dochodzi do przejec stolic/miast (${aiOn.stats.captures})`);
@@ -219,7 +232,7 @@ let baseEngine = null;
 try {
   const dir = fs.mkdtempSync(path.join(path.resolve(__dirname, '..'), '.tmp-war-allin-base-'));
   const repoRoot = path.resolve(__dirname, '..', '..');
-  const ref = process.env.WAR_ALLIN_BASE_REF || 'origin/main';
+  const ref = process.env.WAR_ALLIN_BASE_REF || 'fcd86933';
   const tar = execFileSync('git', ['-C', repoRoot, 'archive', ref, 'gra/src', 'gra/data'], { maxBuffer: 1 << 30 });
   fs.writeFileSync(path.join(dir, 'b.tar'), tar);
   execFileSync('tar', ['-xf', path.join(dir, 'b.tar'), '-C', dir]);
@@ -229,12 +242,15 @@ try {
   console.log('  SKIP sekcji 6 (brak bazy):', String(e.message || e).slice(0, 120));
 }
 if (baseEngine) {
-  eq(baseEngine.hasModule, false, '6a baza nie zawiera modulu warAllInCapital');
+  // Baza fcd86933 zawiera modul (regula wojny 230fd53b); test 6a byl pisany dla bazy sprzed wojny.
+  eq(baseEngine.hasModule, true, '6a baza (fcd86933) zawiera modul warAllInCapital');
   for (const name of ['aiVsAi', 'aiVsPlayer', 'barbarians', 'noLandPath']) {
     const stB = S[name]();
     H.simulate(stB, { engine: baseEngine, flag: null, fog: true, turns: TURNS });
     const off = run(name, false);
-    eq(off.hash, H.stateHash(stB), `6b ${name}: flaga OFF == baza (hash ${off.hash})`);
+    console.log(`  [INFO] ${name}: baza pre-zasieg=${H.stateHash(stB)} OFF=${off.hash} (roznica = zamierzona zmiana zasiegu)`);
+    eq(off.hash, REF_OFF[name], `6b ${name}: flaga OFF == referencja ${REF_OFF[name]}`);
+    eq(H.stateHash(stB), REF_BASE_PRE_RANGE[name], `6b0 ${name}: baza fcd86933 == zapisana referencja bazy`);
   }
   const on = run('aiVsAi', true);
   assert(on.hash !== H.stateHash((() => { const s = S.aiVsAi(); H.simulate(s, { engine: baseEngine, flag: null, fog: true, turns: TURNS }); return s; })()),

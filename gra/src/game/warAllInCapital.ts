@@ -268,8 +268,10 @@ function isFreeFor(nav: WarAllInNav, g: Goal, st: StepState, nk: string): boolea
 /**
  * R-WEB-AI-MOVE-RANGE-Q1: od pierwszego kroku `first` jednostka idzie dalej po
  * polu odległości (wyłącznie krokami ZBLIŻAJĄCYMI, dn < poprzednie) tak długo, jak
- * mieści się w `budget` (koszt terenu jak w computeReachable). Nie wchodzi na heks
- * docelowy (cel rozstrzyga atak/przejęcie) ani na heksy zajęte/zarezerwowane.
+ * mieści się w `budget` (koszt terenu jak w computeReachable). Heks docelowy jest
+ * dopuszczalny jak u gracza (wejście w tej samej turze), o ile jest wolny i nie jest
+ * obcym miastem (`nav.blocked`); obcego miasta/zajętego celu nie wchodzi (atak/przejęcie
+ * zostaje w istniejącej logice). Nie wchodzi na heksy zajęte/zarezerwowane.
  * Zwraca pełną listę heksów trasy (pierwszy = `first`); ostatni = rozkaz `step`.
  */
 function extendWalk(
@@ -291,7 +293,7 @@ function extendWalk(
     let best: { q: number; r: number; dn: number; enter: number } | null = null;
     for (const n of hexNeighborCoords(cur.q, cur.r)) {
       const nk = keyOf(n.q, n.r);
-      if (nk === g.destKey) continue;
+      if (nk === g.destKey && nav.blocked.has(nk)) continue;
       const dn = g.field.get(nk);
       if (dn === undefined || dn >= (curDist as number)) continue;
       const hex = nav.map.hexes[nk];

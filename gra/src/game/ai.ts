@@ -844,7 +844,8 @@ function occupiedExcluding(units: RuntimeUnit[], excludeId: string): Set<string>
  * R-WEB-AI-MOVE-RANGE-Q1: krok = NAJDALSZY heks trasy w budżecie `ruchLeft` (jak
  * u gracza: truncatePathToBudget), nie sam path[0]. Dawniej AI schodziło o 1 heks
  * na turę niezależnie od zasięgu. Gdy budżet <= 0 albo trasa krótka -- path[0]
- * (stare zachowanie). Cel trasy nie jest wybierany jako krok (patrz farthestStepWithinBudget).
+ * (stare zachowanie). Heks docelowy jest krokiem, gdy mieści się w budżecie i jest wolny
+ * (patrz farthestStepWithinBudget); zajęty cel -- krok do sąsiada.
  */
 function firstStep(
   unit: RuntimeUnit,
@@ -856,7 +857,7 @@ function firstStep(
   const occ = occupiedExcluding(units, unit.id);
   const path = computePath(unit, map, destQ, destR, occ);
   if (path.length === 0) return null;
-  return farthestStepWithinBudget(path, unit.ruchLeft, map) ?? path[0] ?? null;
+  return farthestStepWithinBudget(path, unit.ruchLeft, map, undefined, occ) ?? path[0] ?? null;
 }
 
 // ---------------------------------------------------------------------------
