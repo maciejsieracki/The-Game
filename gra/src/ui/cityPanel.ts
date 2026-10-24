@@ -8184,7 +8184,9 @@ function unitStockCostChipsHtml(u: UnitDef, city: City): string {
     const need = cost[k]!;
     const missing = isUnitRecruitStockChipMissing(pool, u, k);
     const cls = missing ? 'bld-infocard-chip stock-missing' : 'bld-infocard-chip';
-    return `<span class="${cls}">${need} ${stockResourceLabel(k)}</span>`;
+    // R-WEB-RECRUIT-LIST-REGRESSION-Q1: brak surowca widoczny tekstem w chipie („13 Drewno (brak)").
+    const text = missing ? `${need} ${stockResourceLabel(k)} (brak)` : `${need} ${stockResourceLabel(k)}`;
+    return `<span class="${cls}">${text}</span>`;
   });
   return chips.join('');
 }
@@ -8197,6 +8199,21 @@ function unitResourceUpkeepChipsHtml(u: UnitDef): string {
   return keys
     .map(k => `<span class="bld-infocard-chip">−${upkeep[k]} ${stockResourceLabel(k)}/t</span>`)
     .join('');
+}
+
+/**
+ * Lista jednostek panelu rekrutacji (R-WEB-RECRUIT-LIST-REGRESSION-Q1, 2026-10-24).
+ * Jedyne miejsce, gdzie panel wywołuje `purchasableUnits` z `showStockGatedUnits: true`:
+ * jednostka bez zapasu surowca (Braz/Zelazo/Drewno) zostaje na liście jako wyszarzona
+ * z przyczyną (appendUnitRecruitCompactRow). Logika gry (AI, walidacja) używa flagi domyślnie false.
+ * Eksportowane pod test regresji tools/recruit-list-visibility-ui-test.cjs.
+ */
+export function recruitPanelPurchasableUnits(city: City, data: GameData) {
+  const techs = cfg.getUnlockedTechs?.(city.ownerId) ?? [];
+  return sortByUnitPowerDescending(
+    purchasableUnits(city, data, techs, { ...productionCtxForCity(city), showStockGatedUnits: true }),
+    unit => getUnitDef(data, unit.id) as unknown as UnitPowerInput,
+  );
 }
 
 /** Render one recruitment card; exported for the real DOM regression gate. */
@@ -8986,11 +9003,7 @@ function renderPurchasableUnits(
           c.appendChild(el('div', 'dc-note', 'Brak danych gry'));
           return c;
         }
-        const techs = cfg.getUnlockedTechs?.(city.ownerId) ?? [];
-        const units = sortByUnitPowerDescending(
-          purchasableUnits(city, data, techs, { ...productionCtxForCity(city), showStockGatedUnits: true }),
-          unit => getUnitDef(data, unit.id) as unknown as UnitPowerInput,
-        );
+        const units = recruitPanelPurchasableUnits(city, data);
         return buildRecruitTabDetailCard(city, units.length, cfg.getTreasury?.(city.ownerId));
       },
     );
@@ -9005,11 +9018,7 @@ function renderPurchasableUnits(
   // R-REKRUTACJA-PODGLAD-SUROWCOW-Q1: pasek surowców faktycznie uczestniczących
   // w koszcie/utrzymaniu jednostek dostępnych do rekrutacji w tym mieście/epoce
   // (dynamicznie, patrz appendRecruitMilitaryResourceStrip).
-  const techs = cfg.getUnlockedTechs?.(city.ownerId) ?? [];
-  const units = sortByUnitPowerDescending(
-    purchasableUnits(city, data, techs, { ...productionCtxForCity(city), showStockGatedUnits: true }),
-    unit => getUnitDef(data, unit.id) as unknown as UnitPowerInput,
-  );
+  const units = recruitPanelPurchasableUnits(city, data);
   appendRecruitMilitaryResourceStrip(mount, city, data, units);
   const skarb = cfg.getTreasury?.(city.ownerId);
   const rqLen = getProd(city.id).rekrutacja?.length ?? 0;

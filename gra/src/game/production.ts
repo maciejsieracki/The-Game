@@ -1119,13 +1119,10 @@ export function availableReplacementsFor(
     // -> bramka dostępu była MARTWA (jednostki brązowe/żelazne budowały się bez dostępu do surowca).
     // stripDiacritics() (NFD + lowercase) naprawia dopasowanie.
     const surowiec = stripDiacritics((u.Surowiec ?? '').toString().trim());
-    // R-WEB-RECRUIT-LIST-REGRESSION-Q1: patrz availableProduction (showStockGatedUnits = tylko widok).
-    if (!ctx.showStockGatedUnits) {
-      if (surowiec === 'braz' && !empireStockHas(ctx.empireResourceStock, 'braz')) return false;
-      if (surowiec === 'zelazo' && !empireStockHas(ctx.empireResourceStock, 'zelazo')) return false;
-      // BUG-BRAMKA-DREWNO-BRAK (Maciej, decyzja A): ta sama bramka drewna co w availableProduction.
-      if (surowiec === 'drewno' && !empireStockHas(ctx.empireResourceStock, 'drewno')) return false;
-    }
+    if (surowiec === 'braz' && !empireStockHas(ctx.empireResourceStock, 'braz')) return false;
+    if (surowiec === 'zelazo' && !empireStockHas(ctx.empireResourceStock, 'zelazo')) return false;
+    // BUG-BRAMKA-DREWNO-BRAK (Maciej, decyzja A): ta sama bramka drewna co w availableProduction.
+    if (surowiec === 'drewno' && !empireStockHas(ctx.empireResourceStock, 'drewno')) return false;
     // Super-jednostka (audyt #11, decyzja A3=A): "Zastąp" nie może dać drugiej żywej
     // sztuki -- ta sama bramka co availableProduction (aliveUnitTypeNames).
     if (u['Super-jednostka'] === 'TAK' && ctx.aliveUnitTypeNames?.has(u.Jednostka)) return false;
