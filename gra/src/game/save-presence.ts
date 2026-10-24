@@ -90,6 +90,13 @@ export function createSavePresenceCache(deps: SavePresenceDeps): SavePresenceCac
   let startedRefreshes = 0;
   let appliedRefresh = 0;
   let presenceEpoch = 0;
+  // R-WEB-LOAD-GAME-REGRESSION-Q1 (r4, zarzut 7): udany zapis = zapis istnieje. Flaga
+  // trzyma `true` także wtedy, gdy PÓŹNIEJSZE przeliczenie (wystartowane po markPresent)
+  // przeczyta jeszcze nie sfinalizowany listing i zwróci `false`. Brak ścieżki usuwania
+  // zapisów w grze (sprawdzone: brak deleteSave/removeSave poza czyszczeniem metadanych
+  // w save.ts), więc `false` nie ma tu prawa wyszarzyć przycisku w tej samej karcie.
+  // ZAŁOŻENIE: po przeładowaniu flaga zaczyna od false i wraca do stanu z dysku/IDB.
+  let pinnedByWrite = false;
   return {
     get: () => value,
     refresh: async () => {
@@ -98,12 +105,13 @@ export function createSavePresenceCache(deps: SavePresenceDeps): SavePresenceCac
       const result = await anySavePresent(deps);
       if (my > appliedRefresh && epochAtStart === presenceEpoch) {
         appliedRefresh = my;
-        value = result;
+        value = result || pinnedByWrite;
       }
       return result;
     },
     markPresent: () => {
       presenceEpoch++;
+      pinnedByWrite = true;
       value = true;
     },
   };

@@ -169,6 +169,28 @@ function deferred() {
     assert.strictEqual(r, false);
   });
 
+  // ---- 2e-2g. Zapamiętany uchwyt po przeładowaniu (gałąź perm !== 'granted' || !keys) ----
+  const remembered = (perm, names) => ({
+    queryPermission: async () => perm,
+    keys: names ? async function* () { for (const n of names) yield n; } : undefined,
+  });
+  await check('2e. zapamiętany uchwyt, zgody brak (prompt) -> true (ZAŁOŻENIE; regresja: przycisk po przeładowaniu)', async () => {
+    fsa._setFsaStateForTests({ dirHandle: null, permissionGranted: false });
+    fsa._setPreloadedIdbHandleForTests(remembered('prompt', ['civ-autosave-1.json']));
+    assert.strictEqual(await fsa.hasRememberedFsaDirectory(), true);
+  });
+  await check('2f. zapamiętany uchwyt z zgodą, ale katalog bez plików rotacji -> false (pusty katalog wyszarzony)', async () => {
+    fsa._setFsaStateForTests({ dirHandle: null, permissionGranted: false });
+    fsa._setPreloadedIdbHandleForTests(remembered('granted', ['notes.txt']));
+    assert.strictEqual(await fsa.hasRememberedFsaDirectory(), false);
+  });
+  await check('2g. zapamiętany uchwyt, queryPermission rzuca -> true (jak prompt, bez zgadywania zgody)', async () => {
+    fsa._setFsaStateForTests({ dirHandle: null, permissionGranted: false });
+    fsa._setPreloadedIdbHandleForTests({ queryPermission: async () => { throw new Error('x'); }, keys: async function* () {} });
+    assert.strictEqual(await fsa.hasRememberedFsaDirectory(), true);
+  });
+  fsa._setPreloadedIdbHandleForTests(null);
+
   // ---- 3. Cache (prawdziwy createSavePresenceCache) ----
   await check('3a. start: get() = false; po refresh z zapisem IDB = true', async () => {
     const c = createSavePresenceCache({ listSlots: idbSlots, listFsaFiles: none, hasRememberedFsaDir: noDir });
@@ -242,19 +264,56 @@ function deferred() {
     gateB.resolve();
     await b;
   });
-  await check('4c. mutacja: cache bez ochrony generacji -> przypadek 3b MUSI oblać', async () => {
-    const mutSrc = replaceOnce(presenceSrc, 'if (my > appliedRefresh && epochAtStart === presenceEpoch) {', 'if (true) {');
+  await check('3e. wyścig (zarzut 7): przeliczenie wystartowane PO markPresent czyta stary listing (false) -> cache nadal true', async () => {
+    const gate = deferred();
+    const c = createSavePresenceCache({
+      listSlots: async () => { await gate.promise; return []; },
+      listFsaFiles: none, hasRememberedFsaDir: noDir,
+    });
+    c.markPresent();
+    const late = c.refresh();          // startuje po zapisie, listing jeszcze nie sfinalizowany
+    gate.resolve();
+    assert.strictEqual(await late, false, 'przeliczenie samo widzi false');
+    assert.strictEqual(c.get(), true, 'zapis MUSI wygrać: false z przeliczenia nie wyszarza przycisku');
+  });
+  await check('4e. mutacja: markPresent nie jest trwały -> przypadek 3e MUSI oblać', async () => {
+    const presenceSrc = fs.readFileSync(SRC_PRESENCE, 'utf8');
+    const mutSrc = replaceOnce(presenceSrc, 'value = result || pinnedByWrite;', 'value = result;');
     const mut = bundleSource(mutSrc, SRC_PRESENCE);
     const gate = deferred();
     const c = mut.createSavePresenceCache({
       listSlots: async () => { await gate.promise; return []; },
       listFsaFiles: none, hasRememberedFsaDir: noDir,
     });
-    const slow = c.refresh();
     c.markPresent();
+    const late = c.refresh();
     gate.resolve();
-    await slow;
-    assert.strictEqual(c.get(), false, 'mutant nadpisuje markPresent() -- to jest blad lapany przez 3b');
+    await late;
+    assert.strictEqual(c.get(), false, 'mutant wyszarza przycisk -- blad lapany przez 3e');
+  });
+  await check('4f. mutacja: hasRememberedFsaDirectory bez zgody -> false (gałąź perm !== granted) -> przypadek 2e MUSI oblać', async () => {
+    const fsaSrc = fs.readFileSync(SRC_FSA, 'utf8');
+    const mutSrc = replaceOnce(fsaSrc, "if (perm !== 'granted' || typeof handle.keys !== 'function') return true;", "if (perm !== 'granted' || typeof handle.keys !== 'function') return false;");
+    const mut = bundleSource(mutSrc, SRC_FSA);
+    mut._setFsaStateForTests({ dirHandle: null, permissionGranted: false });
+    mut._setPreloadedIdbHandleForTests(remembered('prompt', ['civ-autosave-1.json']));
+    assert.notStrictEqual(await mut.hasRememberedFsaDirectory(), true, 'mutant -- blad lapany przez 2e');
+  });
+  await check('4c. mutacja: cache bez ochrony kolejności (starsze przeliczenie nadpisuje) -> przypadek 3c MUSI oblać', async () => {
+    const mutSrc = replaceOnce(presenceSrc, 'if (my > appliedRefresh && epochAtStart === presenceEpoch) {', 'if (true) {');
+    const mut = bundleSource(mutSrc, SRC_PRESENCE);
+    const gateA = deferred();
+    let call = 0;
+    const c = mut.createSavePresenceCache({
+      listSlots: async () => { call++; if (call === 1) { await gateA.promise; return ['x']; } return []; },
+      listFsaFiles: none, hasRememberedFsaDir: noDir,
+    });
+    const a = c.refresh();
+    const b = c.refresh();
+    await b;
+    gateA.resolve();
+    await a;
+    assert.notStrictEqual(c.get(), false, 'mutant pozwala staremu wynikowi nadpisac nowszy (prawdziwy kod daje false) -- blad lapany przez 3c');
   });
   await check('4d. mutacja: bootstrap-cache zamieniony na listSaves() -> wiring main.ts MUSI oblać', async () => {
     const mainSrc = fs.readFileSync(SRC_MAIN, 'utf8');

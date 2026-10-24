@@ -251,7 +251,7 @@ async function idbGetHandle(): Promise<FsaDirectoryHandleLike | null> {
  * ensureFsaAutosaveReady() is effectively instant. Safe under Node/without
  * indexedDB -- idbGetHandle() itself degrades to null.
  */
-const preloadedIdbHandlePromise: Promise<FsaDirectoryHandleLike | null> = idbGetHandle();
+let preloadedIdbHandlePromise: Promise<FsaDirectoryHandleLike | null> = idbGetHandle();
 
 async function idbPutHandle(handle: FsaDirectoryHandleLike): Promise<void> {
   try {
@@ -561,6 +561,11 @@ export function _resetFsaStateForTests(): void {
   liveDirHandle = null;
   liveAvailability = { available: false, reason: 'no-window' };
   livePermissionGranted = false;
+}
+
+/** Test-only (R-WEB-LOAD-GAME-REGRESSION-Q1 r4): zapamiętany uchwyt z IDB po przeładowaniu. */
+export function _setPreloadedIdbHandleForTests(handle: unknown): void {
+  preloadedIdbHandlePromise = Promise.resolve(handle as FsaDirectoryHandleLike | null);
 }
 
 /**
