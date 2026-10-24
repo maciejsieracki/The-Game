@@ -119,7 +119,8 @@ function __factory(deps: any) {
   const { isPreBattleOpen, hidePreBattle, hasPendingAutoPreBattle, oldestPendingAutoPreBattleAgeMs,
     clearDeferredAutoPreBattleQueue, flushDeferredAutoPreBattle, isDiplomacyAudienceOpen, isArmyMergePanelOpen,
     isAwaitingFirstPlayerCity, isTurnTransitionActive, endTurnTransition, showHintMessage,
-    switchActiveHuman, beginOnboardingFoundCity, endActiveHumanTurn, humanSeats, window, console } = deps;
+    switchActiveHuman, beginOnboardingFoundCity, endActiveHumanTurn, humanSeats, window, console,
+    isBattleSceneOpen, isPostBattleSummaryOpen } = deps;
   let seatsFinishedThisRound: Set<number> = new Set<number>();
   ${stateDecl}
   ${bodies.join('\n\n')}
@@ -230,7 +231,7 @@ function advanceFakeClock(ms) {
 function makeEnv(PB, mainSrc) {
   const { factory } = buildFactory(mainSrc);
   const env = {
-    audience: false, armyMerge: false, transition: false,
+    audience: false, armyMerge: false, transition: false, battleScene: false, postSummary: false,
     hints: [], warns: [], endTurnCalls: [],
   };
   const capConsole = {
@@ -249,6 +250,8 @@ function makeEnv(PB, mainSrc) {
     flushDeferredAutoPreBattle: PB.flushDeferredAutoPreBattle,
     isDiplomacyAudienceOpen: () => env.audience,
     isArmyMergePanelOpen: () => env.armyMerge,
+    isBattleSceneOpen: () => env.battleScene,
+    isPostBattleSummaryOpen: () => env.postSummary,
     isAwaitingFirstPlayerCity: () => false,
     isTurnTransitionActive: () => env.transition,
     endTurnTransition: () => {},
@@ -446,8 +449,51 @@ function scenarioE(PB, src) {
   return r;
 }
 
+// G (r6, zarzut 1): scena bitwy otwarta (preBattle zamknięty, battleUiResolving=false), bitwa
+// odłożona w kolejce. Ani watchdog, ani flush-first, ani 8 s czyszczenie NIE mogą ruszyć kolejki
+// na żywej scenie; po zamknięciu sceny kolejka wznawia się normalnie.
+function scenarioG(PB, src) {
+  resetPre(PB);
+  const env = makeEnv(PB, src);
+  env.battleScene = true;
+  env.audience = true;
+  PB.showPreBattle(battleInfo('WOJNA1'), cb(), { auto: true });   // odłożona (audiencja)
+  env.audience = false;                                            // audiencja zamknięta, BEZ flusha
+  const r = { queuedBefore: PB.hasPendingAutoPreBattle() };
+  env.api.healStaleEndTurnBlockers();                              // pasywna ścieżka HUD
+  advanceFakeClock(60);                                            // ewentualny watchdog odpala się
+  r.screenLive = PB.isPreBattleOpen();
+  r.queuedLive = PB.hasPendingAutoPreBattle();
+  r.c1 = click(env, 'advanceSeat');
+  advanceFakeClock(9000);                                          // > próg 8000 ms
+  r.c2 = click(env, 'advanceSeat');
+  r.screenAfterClicks = PB.isPreBattleOpen();
+  r.queuedAfterClicks = PB.hasPendingAutoPreBattle();
+  r.endTurn = env.endTurnCalls.length;
+  env.battleScene = false;                                         // scena bitwy zamknięta
+  r.c3 = click(env, 'advanceSeat');
+  r.screenAfterClose = screenLabel();
+  PB.hidePreBattle();                                              // gracz rozstrzyga
+  r.c4 = click(env, 'advanceSeat');
+  r.endAfterClose = env.endTurnCalls.length;
+  return r;
+}
+
+// H (r6, zarzut 5): gameOver -- klik NIE może sprzątać/otwierać kolejki (bramka niezwiązana z kolejką).
+function scenarioH(PB, src) {
+  resetPre(PB);
+  const env = makeEnv(PB, src);
+  orphanQueue(PB, env);
+  env.S.gameOver = true;
+  const r = { c1: click(env, 'advanceSeat') };
+  r.screen = PB.isPreBattleOpen();
+  r.queued = PB.hasPendingAutoPreBattle();
+  env.S.gameOver = false;
+  return r;
+}
+
 async function main() {
-  console.log('== endturn-battle-deadlock-exec-test (R-WEB-ENDTURN-BATTLE-DEADLOCK-Q1 r5) ==');
+  console.log('== endturn-battle-deadlock-exec-test (R-WEB-ENDTURN-BATTLE-DEADLOCK-Q1 r6) ==');
   const PB = await loadPreBattle();
 
   // ---- A: baza origin/main (fcd86933): deadlock trwały
@@ -510,6 +556,27 @@ async function main() {
   ok(e.e2Screen === false && e.e2Queued === true,
     '[E5] audiencja otwarta w chwili odpalenia -> watchdog NIE otwiera ekranu, kolejka zachowana');
 
+  // ---- G: scena bitwy otwarta (r6, zarzut 1)
+  console.log('\n[G] scena bitwy otwarta: kolejka nietknięta, brak flusha na żywej scenie');
+  const g = scenarioG(PB, MAIN_FIXED);
+  ok(g.queuedBefore === true, '[G0] bitwa odłożona przy otwartej scenie');
+  ok(g.screenLive === false && g.queuedLive === true,
+    '[G1] watchdog (50 ms) NIE pokazuje pre-bitwy na żywej scenie; kolejka zachowana');
+  ok(g.c1.ended === 0 && g.c2.ended === 0 && g.endTurn === 0,
+    '[G2] przy otwartej scenie klik NIE kończy tury (legalna blokada)');
+  ok(g.screenAfterClicks === false && g.queuedAfterClicks === true,
+    '[G3] flush-first i 8 s czyszczenie NIE ruszają kolejki przy otwartej scenie (po 9 s nadal czeka)');
+  ok(g.c3.ended === 0 && g.screenAfterClose === 'WOJNA1',
+    '[G4] po zamknięciu sceny kolejka wznawia się: pokazana WOJNA1');
+  ok(g.c4.ended === 1 && g.endAfterClose === 1,
+    '[G5] po rozstrzygnięciu bitwy koniec tury (endTurn=1)');
+
+  // ---- H: bramka niezwiązana z kolejką (r6, zarzut 5)
+  console.log('\n[H] gameOver: klik nie wywołuje flush-first');
+  const h = scenarioH(PB, MAIN_FIXED);
+  ok(h.c1.ended === 0 && h.screen === false && h.queued === true,
+    '[H1] przy gameOver klik NIE otwiera ani nie czyści kolejki (kolejność bramek zachowana)');
+
   // ---- F: mutacje
   console.log('\n[F] mutacje siatki (każda musi czerwienić swój scenariusz)');
   const M1 = replaceOnce(MAIN_FIXED,
@@ -540,6 +607,28 @@ async function main() {
   const m4c2 = scenarioC2(PB, M4);
   ok(!(m4c2.endTurn === 0 && m4c2.c1.ended === 0 && m4c2.c2.ended === 0),
     '[F-M4] osłabiona bramka (tylko isPreBattleOpen) CZERWIENI scenariusz C2 (koniec tury przy czekającej kolejce)');
+
+  const M5 = replaceOnce(MAIN_FIXED,
+    "      if (isBattleSceneOpen() || isPostBattleSummaryOpen()) return;\n      if (isPreBattleOpen()) return;",
+    '      if (isPreBattleOpen()) return;');
+  const m5g = scenarioG(PB, M5);
+  ok(!(m5g.screenAfterClicks === false && m5g.queuedAfterClicks === true),
+    '[F-M5] usunięcie bramki sceny w healStuck CZERWIENI scenariusz G (flush/clear na żywej scenie)');
+
+  const M6 = replaceOnce(replaceOnce(MAIN_FIXED,
+    '        if (isBattleSceneOpen() || isPostBattleSummaryOpen()) return;\n        if (isPreBattleOpen()',
+    '        if (isPreBattleOpen()'),
+    "      if (isBattleSceneOpen() || isPostBattleSummaryOpen()) return; // r6, zarzut 1 (patrz watchdog)\n", '');
+  const m6g = scenarioG(PB, M6);
+  ok(!(m6g.screenLive === false && m6g.queuedLive === true),
+    '[F-M6] usunięcie bramki sceny w watchdogu CZERWIENI scenariusz G (pre-bitwa na żywej scenie)');
+
+  const M7 = replaceOnce(MAIN_FIXED,
+    '      if (!playtestWalkaActive && !isAwaitingFirstPlayerCity() && !galleryOn && !gameOver) {',
+    '      if (true) {');
+  const m7h = scenarioH(PB, M7);
+  ok(!(m7h.screen === false && m7h.queued === true),
+    '[F-M7] heal bez bramek niezwiązanych z kolejką CZERWIENI scenariusz H (flush przy gameOver)');
 
   // sprzątanie
   resetPre(PB);

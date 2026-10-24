@@ -85,10 +85,10 @@ function bodyOf(src, header, indentNextFn) {
 
 {
   const tpet = bodyOf(mainSrc, 'function triggerPlayerEndTurn(): void {', '    ');
-  const healIdx = tpet.indexOf('healStuckDeferredPreBattleQueueOnEndTurnAttempt();');
-  const gateIdx = tpet.indexOf('if (!canPlayerInitiateEndTurn())');
-  ok(healIdx >= 0 && gateIdx > healIdx,
-    '[A2] triggerPlayerEndTurn(): sprzątacz PRZED bramką (ta sama kolejność co advanceSeat)');
+  // r6 (zarzut 5): triggerPlayerEndTurn deleguje do advanceSeat(), które ma sprzątacz PRZED bramką
+  // (pin A1). Duplikat bramki w triggerPlayerEndTurn dawał podwójny console.warn i podpowiedź.
+  ok(/^\s*advanceSeat\(\);\s*$/m.test(tpet) && !tpet.includes('canPlayerInitiateEndTurn()'),
+    '[A2] triggerPlayerEndTurn(): deleguje do advanceSeat() (sprzątacz+bramka tam, bez duplikatu)');
 }
 
 {

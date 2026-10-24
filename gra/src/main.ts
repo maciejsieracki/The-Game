@@ -31544,6 +31544,12 @@ async function boot(): Promise<void> {
         deferredPreBattleWatchdogTimer = null;
         if (!hasPendingAutoPreBattle()) return;
         if (endTurnInProgress || battleUiResolving) return;
+        // R-WEB-ENDTURN-BATTLE-DEADLOCK-Q1 (r6, zarzut 1): scena bitwy (BattleScene) i podsumowanie
+        // po bitwie są LEGALNIE otwarte bez preBattle i bez battleUiResolving -- flush tu
+        // pokazałby kolejną pre-bitwę NA ŻYWEJ scenie. Kolejkę drenuje finally finishIncomingBattleUi().
+        // / EN: the battle scene and post-battle summary are legitimately open with no preBattle
+        // and battleUiResolving false; flushing here would stack a preBattle over a live battle.
+        if (isBattleSceneOpen() || isPostBattleSummaryOpen()) return;
         if (isPreBattleOpen() || isDiplomacyAudienceOpen() || isArmyMergePanelOpen()) return;
         console.warn('[PreBattle] watchdog: odłożona bitwa bez ekranu i bez blokady -- wznawiam kolejkę', {
           ageMs: oldestPendingAutoPreBattleAgeMs(),
@@ -31558,6 +31564,7 @@ async function boot(): Promise<void> {
     function maybeScheduleDeferredPreBattleQueueWatchdog(): void {
       const queued = hasPendingAutoPreBattle();
       if (!queued) return;
+      if (isBattleSceneOpen() || isPostBattleSummaryOpen()) return; // r6, zarzut 1 (patrz watchdog)
       if (isPreBattleOpen() || isDiplomacyAudienceOpen() || isArmyMergePanelOpen()) return;
       scheduleDeferredPreBattleQueueWatchdog();
     }
@@ -31774,6 +31781,11 @@ async function boot(): Promise<void> {
      */
     function healStuckDeferredPreBattleQueueOnEndTurnAttempt(): void {
       if (!hasPendingAutoPreBattle()) return;
+      // R-WEB-ENDTURN-BATTLE-DEADLOCK-Q1 (r6, zarzut 1): przy otwartej scenie bitwy / podsumowaniu
+      // NIE flushujemy i NIE czyścimy kolejki (ani aiCmdResume) -- bitwa trwa legalnie, a jej
+      // finally wznowi kolejkę po rozstrzygnięciu. / EN: while a battle scene or post-battle summary
+      // is open, neither flush nor clear (the battle's finally resumes the queue later).
+      if (isBattleSceneOpen() || isPostBattleSummaryOpen()) return;
       if (isPreBattleOpen()) return;
       if (isDiplomacyAudienceOpen() || isArmyMergePanelOpen()) return;
       // R-WEB-ENDTURN-BATTLE-DEADLOCK-Q1: interaktywna próba zakończenia tury, a nic już
@@ -36824,7 +36836,12 @@ async function boot(): Promise<void> {
       // hasPendingAutoPreBattle(), and the cleaner lived in endActiveHumanTurn() -- i.e. BEHIND
       // the gate, so it was unreachable with a stuck queue: a permanent "close the battle
       // screen" deadlock with no battle visible.
-      healStuckDeferredPreBattleQueueOnEndTurnAttempt();
+      // R-WEB-ENDTURN-BATTLE-DEADLOCK-Q1 (r6, zarzut 5): sprzątanie kolejki tylko gdy bramki
+      // NIEZWIĄZANE z kolejką nie blokują -- inaczej klik przy playtest/galerii/gameOver mógłby
+      // pokazać bitwę na złym ekranie. / EN: cleanup only when the non-queue gates are open.
+      if (!playtestWalkaActive && !isAwaitingFirstPlayerCity() && !galleryOn && !gameOver) {
+        healStuckDeferredPreBattleQueueOnEndTurnAttempt();
+      }
       // R-HOTSEAT-DRUGI-FOTEL-NIE-DOSTAJE-TURY-Q1 (runda 2, Evaluator zarzut #1):
       // JEDEN wspólny strażnik dla OBIE gałęzie ("przełącz na następny fotel" i
       // "ostatni fotel -> świat"), zamiast dublować podzbiór warunków tylko dla
@@ -36885,12 +36902,9 @@ async function boot(): Promise<void> {
     // / EN: queue cleanup runs BEFORE the gate (same order as advanceSeat()). Without this
     // the gate rejected the click before the cleaner could run -- the root of the deadlock.
     function triggerPlayerEndTurn(): void {
-      healStuckDeferredPreBattleQueueOnEndTurnAttempt();
-      if (!canPlayerInitiateEndTurn()) {
-        console.warn('[EndTurn] triggerPlayerEndTurn: odrzucono (canPlayerInitiateEndTurn=false)');
-        hintEndTurnBlocked();
-        return;
-      }
+      // R-WEB-ENDTURN-BATTLE-DEADLOCK-Q1 (r6, zarzut 5): sprzątanie + bramka są w advanceSeat();
+      // duplikat tu dawał podwójny console.warn i podpowiedź. / EN: cleanup and gate live in
+      // advanceSeat(); a duplicate here doubled the warning and the hint.
       advanceSeat();
     }
 
