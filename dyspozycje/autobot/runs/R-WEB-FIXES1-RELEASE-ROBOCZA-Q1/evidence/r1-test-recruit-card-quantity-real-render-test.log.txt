@@ -1,0 +1,31 @@
+
+-- KARTA AKTYWNA: min=1, max=4, wybór bez poboru zasobów --
+PASS: kontrolki minus/liczba/plus są wyrenderowane
+PASS: wartość początkowa = 1
+PASS: min=1 i max=4 są jawne
+PASS: minus jest disabled na minimum, plus jest aktywny
+PASS: kontrolki mają etykiety dostępności
+PASS: kontrolki mają realny rozmiar w Chromium
+PASS: stan zasobów początkowy jest znany
+PASS: plus zwiększa liczbę z 1 do 2
+PASS: plus nie mutuje zasobów przed potwierdzeniem
+PASS: plus zatrzymuje się na max=4 i sam staje się disabled
+PASS: klawiatura ArrowDown zmniejsza liczbę
+PASS: klawiatura także nie mutuje zasobów
+PASS: ręczne wpisanie ponad max jest ograniczone do max
+PASS: minus zatrzymuje się na min=1 i staje się disabled
+PASS: wybór liczby >1 odblokowuje batchowe potwierdzenie
+PASS: batch wywołuje callback dokładnie raz z q=3 i dodaje 3 pozycje
+PASS: batch pobiera q-krotność kosztu dopiero po kliknięciu
+PASS: po potwierdzeniu batchu licznik resetuje się do 1
+PASS: legalne potwierdzenie 1 jednostki wywołuje callback dokładnie raz
+PASS: po potwierdzeniu q=1 pobierany jest koszt pojedynczy
+
+-- KARTA ZABLOKOWANA: wszystkie kontrolki disabled --
+PASS: minus/liczba/plus są disabled przy zablokowanej karcie
+PASS: zablokowana karta nadal pokazuje kontrolki w Chromium
+PASS: zablokowana karta zachowuje przyczynę w title
+PASS: klik disabled nie wywołuje zakupu
+PASS: brak pageerror/console.error w realnym Chromium
+
+recruit-card-quantity-real-render-test: 25 passed, 0 failed

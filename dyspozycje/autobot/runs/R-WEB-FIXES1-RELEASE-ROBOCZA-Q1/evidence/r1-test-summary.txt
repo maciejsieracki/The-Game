@@ -1,0 +1,31 @@
+logic-test EXIT=0 
+endturn-battle-deadlock-test EXIT=0 38 pass, 0 fail 
+endturn-battle-deadlock-exec-test EXIT=0 46 pass, 0 fail 
+recruit-list-visibility-test EXIT=0 9 passed, 0 failed 
+recruit-list-visibility-ui-test EXIT=0 15 passed, 0 failed 
+building-resource-visibility-test EXIT=0 15 passed, 0 failed 
+building-resource-visibility-ui-test EXIT=0 8 passed, 0 failed 
+building-stock-visibility-test EXIT=0 7 passed, 0 failed 
+unit-replace-test EXIT=0 
+recruitment-panel-compact-row-test EXIT=0 39 pass, 0 fail 
+recruitment-panel-height-real-render-test EXIT=0 13 pass, 0 fail 
+recruit-card-manpower-real-render-test EXIT=0 20 passed, 0 failed 
+recruit-card-quantity-real-render-test EXIT=0 25 passed, 0 failed 
+recruit-card-stock-chip-real-render-test EXIT=0 15 passed, 0 failed 
+barbarzyncy-krazenie-test EXIT=0 249 passed, 0 failed 
+barb-city-behavior-test EXIT=0 177 passed, 0 failed 
+war-allin-capital-test EXIT=0 91 passed, 0 failed 
+ai-test EXIT=1 276 passed, 18 failed 
+web-memory-leaks-test EXIT=0 30 passed, 0 failed 
+autosave-quota-fail-test EXIT=0 20 pass, 0 fail === 
+ai-prod-fallback-test EXIT=0 17 passed, 0 failed === 
+ai-city-recovery-test EXIT=0 7 passed, 0 failed === 
+city-badge-growth-percent-test EXIT=0 38 passed, 0 failed 
+city-badge-zoom-lod-test EXIT=0 67 passed, 0 failed 
+city-map-badge-test EXIT=0 62 passed, 0 failed 
+territory-border-test EXIT=0 9 pass, 0 fail 
+recruitment-no-upkeep-gate-test EXIT=1 22 passed, 14 failed 
+deposit-building-gate-test EXIT=1 46 pass, 1 fail 
+koniec-tury-f1-f4-runda3-test EXIT=1 37 pass, 2 fail 
+koniec-tury-g1-g2-runda4-test EXIT=1 36 pass, 2 fail 
+ALL_DONE
