@@ -260,6 +260,7 @@ import {
   canUnitOccupyCityHex, addForeignCityBlocks,
 } from './game/city-hex-movement';
 import { executeAiCityMove } from './game/ai-city-capture-executor';
+import { truncatePathWithinBudget } from './game/ai-move-range';
 import {
   evaluateFoundCityAffordance,
   foundCityCostLabel,
@@ -35536,6 +35537,11 @@ async function boot(): Promise<void> {
                     destinationKey: keyOf(cmd.toQ, cmd.toR),
                     computePath: (_moveUnit, toQ, toR, occupied) =>
                       computePath(u, map, toQ, toR, occupied, moveCostFnForUnit(u)),
+                    // R-WEB-AI-MOVE-RANGE-Q1: zasięg AI = budżet ruchu jak u gracza
+                    // (truncatePathToBudget). Budżet czytany PRZED zerowaniem ruchu.
+                    truncatePath: (fullPath) => u.ruchLeft > 0
+                      ? truncatePathWithinBudget(fullPath, u.ruchLeft, map, moveCostFnForUnit(u))
+                      : fullPath,
                     // TEMAT #15: AI z Żeglugą też się (dez)okrętowuje wg terenu.
                     onMoved: () => applyEmbarkStateAfterMove([u], map),
                     onCapture: (city) => tryAutoCaptureEmptyCityAt(

@@ -36,6 +36,7 @@ import { canCaptureCityWithoutBattle } from './siegeDefenders';
 import type { Hex } from '../types/hex';
 import type { RuntimeUnit } from '../units/setup';
 import { hexDistance, computePath, pathCost, keyOf, isWaterTerrain, embarkMoveCost, terrainMoveCost, isCivilianUnit } from '../units/setup';
+import { farthestStepWithinBudget } from './ai-move-range';
 import { isWarAllInCapitalEnabled, planWarAllInCapital, type WarAllInContext } from './warAllInCapital';
 
 // ---------------------------------------------------------------------------
@@ -741,7 +742,10 @@ function occupiedExcluding(units: RuntimeUnit[], excludeId: string): Set<string>
   return occ;
 }
 
-/** First hex along the least-cost path toward (destQ,destR), or null. */
+/**
+ * Krok w kierunku (destQ,destR) = najdalszy heks trasy w budżecie `ruchLeft`
+ * (R-WEB-AI-MOVE-RANGE-Q1; dawniej path[0], czyli 1 heks na turę), or null.
+ */
 function firstStep(
   unit: RuntimeUnit,
   map: GameMap,
@@ -752,7 +756,7 @@ function firstStep(
 ): { q: number; r: number } | null {
   const path = computePath(unit, map, destQ, destR, occupied, costFn);
   if (path.length === 0) return null;
-  return path[0] ?? null;
+  return farthestStepWithinBudget(path, unit.ruchLeft, map, costFn) ?? path[0] ?? null;
 }
 
 /**
