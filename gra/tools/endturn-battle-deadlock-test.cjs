@@ -136,6 +136,32 @@ function bodyOf(src, header, indentNextFn) {
 }
 
 {
+  // Runda 3: siatka wyjątku w finally finishIncomingBattleUi() -- flush kolejki NIE może być
+  // pominięty, gdy onResolved() rzuci (dawniej flush stał za try/finally, bez catch).
+  const fin = bodyOf(mainSrc, 'function finishIncomingBattleUi(): void {', '      ');
+  const finIdx = fin.indexOf('} finally {');
+  const finFlushIdx = fin.indexOf('flushDeferredAutoPreBattle();');
+  ok(fin.length > 0 && finIdx >= 0 && finFlushIdx > finIdx
+    && /try \{\s*\n\s*flushDeferredAutoPreBattle\(\);\s*\n\s*\} catch \(eFinishFlush\)/.test(fin),
+    '[A7] finishIncomingBattleUi(): flush kolejki w bloku finally, owinięty try/catch -- wyjątek w onResolved() nie pomija flushu');
+  ok((fin.match(/^\s*flushDeferredAutoPreBattle\(\);/gm) || []).length === 1,
+    '[A7b] finishIncomingBattleUi(): jeden flush (w finally), brak drugiego, gołego wywołania za try/finally');
+}
+
+{
+  // Runda 3: flush w finally endActiveHumanTurn() owinięty siatką; wyjątek w nim nie pomija
+  // flushPendingEraChangeToast() ani syncPlayerUnitSelectionOnMap() (kolejność zachowana).
+  const eat = bodyOf(mainSrc, 'function endActiveHumanTurn(humanOwnerId: number): void {', '    ');
+  const iSafe = eat.indexOf("flushDeferredPreBattleSafely('endActiveHumanTurn');");
+  const iEra = eat.indexOf('flushPendingEraChangeToast();', iSafe);
+  const iSync = eat.indexOf('syncPlayerUnitSelectionOnMap();', iSafe);
+  ok(eat.length > 0 && iSafe > 0 && iEra > iSafe && iSync > iEra,
+    '[A8] endActiveHumanTurn(): flushDeferredPreBattleSafely w finally PRZED flushPendingEraChangeToast i syncPlayerUnitSelectionOnMap');
+  ok(!/^\s*flushDeferredAutoPreBattle\(\);/m.test(eat),
+    '[A8b] endActiveHumanTurn(): brak gołego flushDeferredAutoPreBattle() (zastąpiony siatką)');
+}
+
+{
   // ui/preBattle.ts NIE jest zmieniany w tej rundzie (poza allowlistą, brak dowodu osieroconego overlaya).
   ok(!/overlayEl\.isConnected/.test(preSrc),
     '[A6] ui/preBattle.ts bez zmian: isPreBattleOpen() nie używa isConnected (zmiana spekulatywna usunięta)');
@@ -332,6 +358,84 @@ async function runUiPart() {
     '[B5c] kolejna bitwa (AFTER-THROW) pokazuje się po wyjątku -- element zła bitwa przepadł, kolejka nie wisi');
   hidePreBattle();
   ok(hasPendingAutoPreBattle() === false, '[B5d] kolejka pusta po wyjątku i rozstrzygnięciu');
+
+  // C) WRAPPER Z MAIN.TS WYKONANY NA PRAWDZIWYM KODZIE: funkcja flushDeferredPreBattleSafely jest
+  //    wyciągnięta ze ŹRÓDŁA main.ts (strip typów przez esbuild), wykonana na prawdziwej kolejce
+  //    z ui/preBattle.ts. Mutant (bez siatki = `flushDeferredAutoPreBattle()` bez try) MUSI czerwienić
+  //    ten sam scenariusz -- inaczej test nie chroni przed regresją.
+  const esb2 = esbuild;
+  const extractMainFn = (header) => {
+    const start = mainSrc.indexOf(header);
+    if (start < 0) throw new Error('[C-setup] brak ' + header);
+    const endMarker = '\n    }\n';
+    const end = mainSrc.indexOf(endMarker, start);
+    return mainSrc.slice(start, end + endMarker.length - 1);
+  };
+  const realTs = extractMainFn('function flushDeferredPreBattleSafely(where: string): void {');
+  const realJs = esb2.transformSync(realTs, { loader: 'ts' }).code;
+  const mutantJs = 'function flushDeferredPreBattleSafely(where) { flushDeferredAutoPreBattle(); }';
+  const makeWrapper = (src) => new Function('flushDeferredAutoPreBattle', 'hidePreBattle', 'console',
+    src + '\nreturn flushDeferredPreBattleSafely;')(flushDeferredAutoPreBattle, hidePreBattle, console);
+  const realWrapper = makeWrapper(realJs);
+  const mutantWrapper = makeWrapper(mutantJs);
+
+  const drainAll = () => {
+    let guard = 0;
+    while ((hasPendingAutoPreBattle() || isPreBattleOpen()) && guard++ < 20) {
+      hidePreBattle();
+      flushDeferredAutoPreBattle();
+    }
+    hidePreBattle();
+  };
+  const runScenario = (wrapper, tag) => {
+    audienceOpen = false;
+    drainAll();
+    audienceOpen = true;
+    let armedC = false;
+    const badAtkC = battleInfo('C-BAD').atakujacy;
+    const badC = battleInfo('C-BAD');
+    Object.defineProperty(badC, 'atakujacy', {
+      enumerable: true, configurable: true,
+      get() { if (armedC) { armedC = false; throw new Error('boom-C'); } return badAtkC; },
+    });
+    showPreBattle(badC, cb(), { auto: true });
+    showPreBattle(battleInfo('C-PRE'), cb(), { auto: true });
+    showPreBattle(battleInfo('C-AFTER'), cb(), { auto: true });
+    audienceOpen = false;
+    armedC = true;
+    let threw = false;
+    try { wrapper(tag); } catch (eC) { threw = true; }
+    const ghost = document.querySelectorAll('.pb-map-scrim').length;
+    const shown = [];
+    let steps = 0;
+    while (steps < 6) {
+      steps++;
+      if (isPreBattleOpen()) {
+        const m = /Bitwa (C-[A-Z]+)/.exec(shownTitle());
+        if (m) shown.push(m[1]);
+        hidePreBattle();
+      }
+      try { wrapper(tag + '-drain'); } catch (eD) { /* mutant: wyjątek w drenażu liczymy jako brak postępu */ }
+      if (!isPreBattleOpen() && !hasPendingAutoPreBattle()) break;
+    }
+    return {
+      threw, ghost, shown, steps,
+      drained: !isPreBattleOpen() && !hasPendingAutoPreBattle(),
+    };
+  };
+
+  const rReal = runScenario(realWrapper, 'C-real');
+  ok(rReal.threw === false,
+    '[C1] wrapper z main.ts: wyjątek w showPreBattle NIE wychodzi na zewnątrz (siatka działa)');
+  ok(rReal.ghost === 0,
+    '[C1b] wrapper z main.ts: po wyjątku brak ducha scrimu (.pb-map-scrim) -- hidePreBattle() posprzątał');
+  ok(JSON.stringify(rReal.shown) === JSON.stringify(['C-PRE', 'C-AFTER']) && rReal.drained,
+    '[C1c] wrapper z main.ts: po wyjątku pozostałe bitwy (C-PRE, C-AFTER) pokazane w FIFO i kolejka opróżniona w skończonej liczbie kroków; got ' + JSON.stringify(rReal) );
+
+  const rMut = runScenario(mutantWrapper, 'C-mut');
+  ok(rMut.threw === true,
+    '[C2] MUTACJA (usunięta siatka try/catch) CZERWIENI scenariusz: wyjątek wychodzi na zewnątrz z flusha (test chroni przed regresją)');
+  drainAll();
 
   try { fs.unlinkSync(ENTRY); } catch { /* ignore */ }
   try { fs.unlinkSync(OUT); } catch { /* ignore */ }

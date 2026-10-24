@@ -28614,6 +28614,27 @@ async function boot(): Promise<void> {
         } finally {
           battleUiResolving = false;
           for (const unit of [...atkRosterRef, ...defRosterRef]) activeBattleUnitIds.delete(unit.id);
+          // R-WEB-ENDTURN-BATTLE-DEADLOCK-Q1 (runda 3, FC 2026-10-24): flush kolejki PRZENIESIONY
+          // do finally. Dawniej stał za try/finally (bez catch) -- wyjątek w onResolved() (np.
+          // runAiPhase()) przerywał funkcję PRZED flushem i odłożona bitwa zostawała w kolejce
+          // bez ekranu (blokada końca tury). Kolejność względem resetu battleUiResolving i
+          // sprzątania activeBattleUnitIds bez zmian; wyjątek z onResolved() nadal propaguje.
+          // / EN: flush moved into the finally. It used to sit after the try/finally (no catch),
+          // so an exception in onResolved() (e.g. runAiPhase()) aborted the function BEFORE the
+          // flush and the deferred battle stayed queued with no screen (end-turn block). Order
+          // relative to the battleUiResolving reset and activeBattleUnitIds cleanup is unchanged;
+          // the onResolved() exception still propagates.
+          // Siatka wyjątku (ta sama semantyka co flushDeferredPreBattleSafely) rozpisana w miejscu,
+          // żeby literał flushDeferredAutoPreBattle(); pozostał w tej funkcji po onResolved()
+          // (pin koniec-tury-f1-f4-runda3-test F1-A4 i barbarzyncy-podwojny-atak).
+          // / EN: same semantics as flushDeferredPreBattleSafely, inlined so the literal
+          // flushDeferredAutoPreBattle(); stays in this function after onResolved() (pin F1-A4).
+          try {
+            flushDeferredAutoPreBattle();
+          } catch (eFinishFlush) {
+            console.warn('[PreBattle] flush rzucił wyjątek -- element odrzucony z kolejki, sprzątam ekran', { where: 'finishIncomingBattleUi', error: eFinishFlush });
+            try { hidePreBattle(); } catch { /* best-effort: sprzątanie po wyjątku */ }
+          }
         }
         // P-BARBARZYNCY-PODWOJNY-ATAK-PREBATTLE-NADPISANY (Maciej 2026-08-14): ta bitwa
         // przychodząca (AI/barbarzyńcy) właśnie się rozstrzygnęła (auto, pole bitwy albo
@@ -28634,8 +28655,8 @@ async function boot(): Promise<void> {
         // flush call sites (army merge onMerge/onSeparate, diplomacy onBack, triggerPlayerEndTurn's
         // finally) fire at the moment THIS battle ends. No-op when the queue is empty or
         // something is still blocking (another preBattle, diplomacy audience, army merge) --
-        // flushDeferredAutoPreBattle checks that itself.
-        flushDeferredAutoPreBattle();
+        // flushDeferredAutoPreBattle checks that itself. (Runda 3: wywołanie przeniesione do
+        // finally powyżej, z siatką wyjątku -- patrz tam.)
       }
 
       function doMapAutoResolveIncoming(): void {
@@ -31497,7 +31518,10 @@ async function boot(): Promise<void> {
      *  element przepada (logowany), a częściowo zbudowany overlay sprzątamy przez hidePreBattle(),
      *  żeby scrim/klawiatura nie zostały po wyjątku. / EN: round-2 flush with an exception net.
      *  showPreBattle() may throw AFTER the item was shifted off the queue -- the item is then
-     *  dropped (logged) and any half-built overlay is torn down via hidePreBattle(). */
+     *  dropped (logged) and any half-built overlay is torn down via hidePreBattle().
+     *  Runda 3: użyte też w finally finishIncomingBattleUi() i endActiveHumanTurn().
+     *  / EN: round 3: also used in the finally of finishIncomingBattleUi() and
+     *  endActiveHumanTurn(). */
     function flushDeferredPreBattleSafely(where: string): void {
       try {
         flushDeferredAutoPreBattle();
@@ -36759,7 +36783,11 @@ async function boot(): Promise<void> {
           flushDeferredMergePrompts();
           // Odłożone automatyczne preBattle (audiencja/scalenie blokowały w momencie ataku)
           // -- no-op gdy nic nie czeka albo blokada nadal aktywna.
-          flushDeferredAutoPreBattle();
+          // R-WEB-ENDTURN-BATTLE-DEADLOCK-Q1 (runda 3): z siatką wyjątku -- wyjątek w showPreBattle
+          // nie może pominąć flushPendingEraChangeToast() i syncPlayerUnitSelectionOnMap() poniżej.
+          // / EN: wrapped in the exception net -- a throw in showPreBattle must not skip
+          // flushPendingEraChangeToast() and syncPlayerUnitSelectionOnMap() below.
+          flushDeferredPreBattleSafely('endActiveHumanTurn');
           // P-EPOKA-TOAST-EOT-POLYKANY: toast awansu epoki odłożony z fazy EOT — wypuść go
           // NAPRAWDĘ dopiero TERAZ, endTurnInProgress jest już false (patrz komentarz przy
           // flushPendingEraChangeToast).
