@@ -873,7 +873,7 @@ import { advanceProduction, rushProduction, rushCost, populationCostOf, UNIT_POP
   buildingLevelForEpoch, buildingEffectAtLevel, frontItem, etaTurns, unitNacjaForCivKey, applyCompletedBuildingIds,
   buildingUnlockFlagFor, buildingTypeQueued, insertAtFront, filterQueue, sanitizeBuildQueue,
   unitRecruitmentCapacityPerTurn,
-  type CityProduction, type AvailabilityContext } from './game/production';
+  type CityProduction, type AvailabilityContext, unitStockShortfallLabel } from './game/production';
 import { buildReplaceAvailabilityCtx } from './game/unit-replace-context';
 import { daninaLabel as resolveDaninaLabel, mennicaWStolicy } from './game/danina-nazwa';
 import {
@@ -6577,11 +6577,20 @@ async function boot(): Promise<void> {
     /** Lista zamienników dostępnych TERAZ dla jednostki `u` (pusta gdy poza terytorium gracza).
      *  W garnizonie miasta -> bramka per to miasto; w polu (w granicach terytorium, bez miasta
      *  pod jednostką) -> bramka "OR po wszystkich miastach gracza". */
+    function unitReplaceCtx(u: RuntimeUnit): AvailabilityContext {
+      const city = unitReplaceGarrisonCity(u);
+      return city ? replaceAvailabilityCtxForCity(city) : replaceAvailabilityCtxEmpireWide();
+    }
+
+    /** Lista zamienników do WYŚWIETLENIA w modalu Zastąp (R-WEB-RECRUIT-LIST-REGRESSION-Q1 r3):
+     *  brak zapasu surowca NIE ukrywa pozycji — wyszarzona z przyczyną (blockedReason w modalu).
+     *  Wybór blokuje performUnitReplace (ta sama reguła zapasu, strict). */
     function computeUnitReplacements(u: RuntimeUnit): ProductionItem[] {
       if (!isUnitInPlayerTerritory(u)) return [];
-      const city = unitReplaceGarrisonCity(u);
-      const ctx = city ? replaceAvailabilityCtxForCity(city) : replaceAvailabilityCtxEmpireWide();
-      return availableReplacementsFor(u.typeId, data, Array.from(player.zbadane), ctx);
+      return availableReplacementsFor(u.typeId, data, Array.from(player.zbadane), {
+        ...unitReplaceCtx(u),
+        showStockGatedUnits: true,
+      });
     }
 
     /** Koszt rekrutacji Pieniądzem jednostki `typeId` (dla dopłaty = nowa - stara). */
@@ -6623,6 +6632,7 @@ async function boot(): Promise<void> {
             name: it.nazwa,
             icon: unitIconSvg(udef, it.id),
             surcharge: Math.max(0, it.koszt - oldCost),
+            blockedReason: unitStockShortfallLabel(udef, unitReplaceCtx(u).empireResourceStock) ?? undefined,
             atk: unitAtak(udef),
             def: unitObrona(udef),
             hpMax: effectiveMaxHp(
@@ -6644,6 +6654,11 @@ async function boot(): Promise<void> {
       if (u.replaceUsedThisTurn) return;
       const newDef = lookupUnitDef(newTypeId);
       if (!newDef) return;
+      // R-WEB-RECRUIT-LIST-REGRESSION-Q1 r3: pozycja bez zapasu surowca nie do wyboru (także tu).
+      if (unitStockShortfallLabel(newDef, unitReplaceCtx(u).empireResourceStock)) {
+        showHintMessage('Zastąp: brak surowca dla ' + newTypeId, 3000);
+        return;
+      }
 
       const surcharge = Math.max(0, replaceUnitMoneyCost(newTypeId) - replaceUnitMoneyCost(u.typeId));
       if (player.skarbiec < surcharge) {

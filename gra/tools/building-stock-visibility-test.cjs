@@ -101,16 +101,18 @@ console.log('1. Budynek z kosztem surowcowym bez bramki dostepu, PUSTY magazyn: 
   }
 }
 
-console.log('\n2. Kontrola: bramka DOSTEPU (surowiec aktywny/zloze) bez zmian -- nadal blokuje');
+console.log('\n2. Bramka surowca etykietowego (R-WEB-RECRUIT-LIST-REGRESSION-Q1 r3, D1): w widoku wyszarzony, domyslnie (AI) ukryty');
 {
   const gated = BUILDINGS.find(b => M.buildingRequiredActiveLabels(b).length > 0);
   if (!gated) {
     assert(false, 'znaleziono budynek z bramka dostepu w danych realnych');
   } else {
     assert(M.buildingResourceGateMet(gated, [], [], {}) === false,
-      `${gated.id}: bez dostepu do surowca (brak etykiety i zapasu) bramka dostepu nadal NIE przechodzi`);
+      `${gated.id}: bez dostepu do surowca (brak etykiety i zapasu) bramka surowca nie przechodzi`);
     const gatedList = names(M.buildableProduction(CITY, DATA, ALL_TECHS, CTX_EMPTY));
-    assert(!gatedList.includes(gated.id), `${gated.id}: budynek z bramka dostepu nadal ukryty z listy budowy (regula dostepu)`);
+    assert(!gatedList.includes(gated.id), `${gated.id}: domyslnie (AI/walidacja) nadal ukryty z listy budowy`);
+    const viewList = names(M.buildableProduction(CITY, DATA, ALL_TECHS, { ...CTX_EMPTY, showResourceGatedBuildings: true }));
+    assert(viewList.includes(gated.id), `${gated.id}: w widoku listy budowy widoczny (wyszarzony z przyczyna)`);
   }
 }
 

@@ -8638,6 +8638,7 @@ function formatBuildingCatalogLockHint(
   entry: BuildingCatalogEntry,
   data: GameData,
   unlockedTechs: readonly string[],
+  brakZasobow: readonly string[] = [],
 ): string {
   if (entry.status === 'built') return 'Już wybudowany w tym mieście';
   if (entry.status === 'queued') return '⏳ W kolejce produkcji';
@@ -8646,6 +8647,8 @@ function formatBuildingCatalogLockHint(
   if (entry.locationBlocked === 'region') return '🔒 Tylko poza stolicą';
 
   const parts: string[] = [];
+  // R-WEB-RECRUIT-LIST-REGRESSION-Q1 r3: brak surowca wprost (czego brakuje), nie tylko „Niedostępny”.
+  if (brakZasobow.length > 0) parts.push(`Brakuje: ${brakZasobow.join(' · ')}`);
   let techIc = '';
   if (entry.missingTech) {
     techIc = techIconHintSpan(entry.missingTech);
@@ -8826,7 +8829,9 @@ function appendCatalogBuildingRow(
   scroll.appendChild(row);
 }
 
-function renderBuildList(
+/** Lista „Dostępne do budowy” (R-WEB-RECRUIT-LIST-REGRESSION-Q1 r3: eksport pod test regresji
+ *  tools/building-resource-visibility-ui-test.cjs — ten sam kod co w panelu miasta). */
+export function renderBuildList(
   mount: HTMLElement,
   city: City,
   data: GameData | null,
@@ -8863,13 +8868,17 @@ function renderBuildList(
   const civBonusy = cfg.getCivBonusy?.(city.ownerId) ?? [];
   const prodState = getProd(city.id);
   const prodCtx = productionCtxForCity(city);
+  // R-WEB-RECRUIT-LIST-REGRESSION-Q1 r3 (2026-10-24): lista budowy pokazuje budynki możliwe do
+  // wybudowania, których brakuje surowca etykietowego (Glina/Drewno/…) — wyszarzone z chipem
+  // przyczyny. Tylko widok: AI i walidacja używają buildableProduction bez tej flagi.
   const items = sortProductionItemsByBuildability(
-    buildableProduction(city, data, techs, prodCtx),
+    buildableProduction(city, data, techs, { ...prodCtx, showResourceGatedBuildings: true }),
     city,
     data,
     prodCtx,
     techs,
   );
+  const itemIds = new Set(items.map(it => it.id));
 
   const skarb = cfg.getTreasury?.(city.ownerId);
 
@@ -8933,18 +8942,28 @@ function renderBuildList(
       appendBuildableItemRow(scroll, city, u, data, { praca, skarb, buildLabel: 'Ulepsz', upgrade: true });
     }
   }
-  if (previewEntries.length > 0) {
+  // Budynek już widoczny w liście budowy (wyszarzony z przyczyną) nie powtarza się w „Jeszcze
+  // zablokowane” — ten sam wiersz, jedna informacja (tryb pełnego podglądu epoki zostaje bez zmian).
+  const lockedPreview = fullEraPreview
+    ? previewEntries
+    : previewEntries.filter(e => !itemIds.has(e.id));
+  if (lockedPreview.length > 0) {
     const h = el('div', 'muted');
     h.style.cssText = 'font-size:0.72em;margin:0.35em 0 0.2em;padding-top:0.25em;border-top:1px solid var(--border);';
     h.textContent = fullEraPreview
       ? `Podgląd epoki ${eraName} (badania)`
       : `Jeszcze zablokowane (epoka ${eraName})`;
     scroll.appendChild(h);
-    for (const entry of previewEntries) {
+    for (const entry of lockedPreview) {
       const def = findBuildingDef(data, entry.id);
+      const brakZasobow = def
+        ? buildingRequirementChips(def, city, data, prodCtx, techs)
+          .filter(c => c.kind === 'stock' && !c.met)
+          .map(c => c.label)
+        : [];
       const lockHint = fullEraPreview && def
         ? formatBuildingPreviewHint(def, data, techs)
-        : formatBuildingCatalogLockHint(entry, data, techs);
+        : formatBuildingCatalogLockHint(entry, data, techs, brakZasobow);
       appendCatalogBuildingRow(scroll, entry, def, data, city, prodCtx, techs, lockHint, {
         forceLocked: fullEraPreview || entry.status === 'locked',
       });
