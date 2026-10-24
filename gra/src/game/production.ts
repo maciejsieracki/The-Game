@@ -464,6 +464,22 @@ export interface AvailabilityContext {
    *  nie tylko aktywnym źródłem (fix: budynek blokowany mimo posiadanego surowca w puli). */
   empireResourceStock?: Readonly<Record<string, number>>;
   /**
+   * R-WEB-RECRUIT-LIST-REGRESSION-Q1 (2026-10-24): TYLKO widok panelu rekrutacji. Gdy true,
+   * jednostki z bramką zapasu surowca (Braz/Żelazo/Drewno, Surowiec=typ) NIE są ukrywane,
+   * gdy magazyn państwa nie ma tego surowca — wiersz pozostaje widoczny, a brak jest
+   * pokazany jako wyszarzony z przyczyną (stockMissing w unitRecruitCard). Domyślnie false:
+   * reguła gry (AI, walidacja produkcji) jest niezmieniona.
+   */
+  showStockGatedUnits?: boolean;
+  /**
+   * R-WEB-RECRUIT-LIST-REGRESSION-Q1 r3 (2026-10-24): TYLKO widok listy budowy. Gdy true, budynek
+   * z bramką surowca etykietowego (buildingResourceGateMet: Glina/Drewno/Ruda/... w magazynie
+   * państwa) NIE jest ukrywany, gdy magazyn go nie ma — wiersz zostaje wyszarzony, a brak jest
+   * pokazany chipem („Glina w magazynie państwa (masz 0)”). Reguły ery/technologii/lokalizacji/
+   * prerekwizytów/wody NADAL ukrywają. Domyślnie false: AI (auto-manage, main.ts) bez zmian.
+   */
+  showResourceGatedBuildings?: boolean;
+  /**
    * TEMAT 8 Q2 (2026-07-24): czy TO miasto ma wybrzeże morskie LUB rzekę w zasięgu — bramka
    * Portu/Portu wielkiego (`WATER_ACCESS_BUILDING_IDS`, building-resource-gate.ts). Per-miasto
    * (nie imperium — lokalizacja portu jest stała), WYLICZONE przez wołającego (main.ts zna
@@ -628,6 +644,28 @@ function empireStockHas(
 
 function stripDiacritics(s: string): string {
   return s.normalize('NFD').replace(/[\u0300-\u036F]/g, '').toLowerCase();
+}
+
+const UNIT_STOCK_GATE_LABEL: Readonly<Record<string, string>> = {
+  braz: 'Brąz',
+  zelazo: 'Żelazo',
+  drewno: 'Drewno',
+};
+
+/**
+ * R-WEB-RECRUIT-LIST-REGRESSION-Q1 r3 (2026-10-24): przyczyna blokady jednostki przez brak
+ * zapasu surowca (Braz/Żelazo/Drewno, bramka DOSTEP-SUROWCE-Q1 / BUG-BRAMKA-DREWNO-BRAK), albo
+ * `null` gdy zapas jest. Tylko czytelnik — nie zmienia reguły (AI/walidacja nadal blokuje).
+ */
+export function unitStockShortfallLabel(
+  u: Pick<UnitDef, 'Surowiec'>,
+  stock: Readonly<Record<string, number>> | undefined,
+): string | null {
+  const key = stripDiacritics((u.Surowiec ?? '').toString().trim());
+  const label = UNIT_STOCK_GATE_LABEL[key];
+  if (!label) return null;
+  if (empireStockHas(stock, key)) return null;
+  return `Brak w magazynie państwa: ${label}`;
 }
 
 /** typCywilizacji / ikonaId → kolumna Nacja w units.json. */
@@ -920,7 +958,9 @@ export function availableProduction(
     if (WATER_ACCESS_BUILDING_IDS.has(b.id) && !ctx.cityHasCoastOrRiver) {
       continue;
     }
-    if (!buildingResourceGateMet(
+    // R-WEB-RECRUIT-LIST-REGRESSION-Q1 r3: brak surowca etykietowego nie ukrywa budynku w widoku
+    // listy budowy (showResourceGatedBuildings) — wiersz wyszarzony + chip z przyczyną.
+    if (!ctx.showResourceGatedBuildings && !buildingResourceGateMet(
       b,
       ctx.empireActiveResourceLabels,
       ctx.empireBuiltIds,
@@ -998,17 +1038,21 @@ export function availableProduction(
     // stripDiacritics() (NFD + lowercase) naprawia dopasowanie.
     const surowiec = stripDiacritics((u.Surowiec ?? '').toString().trim());
     // DOSTEP-SUROWCE-Q1 (2026-07-29): jednostki brązowe/żelazne — tylko zapas w magazynie państwa.
-    if (surowiec === 'braz' && !empireStockHas(ctx.empireResourceStock, 'braz')) {
-      continue;
-    }
-    if (surowiec === 'zelazo' && !empireStockHas(ctx.empireResourceStock, 'zelazo')) {
-      continue;
-    }
-    // BUG-BRAMKA-DREWNO-BRAK (Maciej, decyzja A): jednostki drewniane — analogiczna
-    // bramka do brązu/żelaza, tylko zapas w magazynie państwa. Bez progu startowego
-    // (odrzucona opcja C) — świadome ryzyko blokady startu gry bez Drewna w zapasie.
-    if (surowiec === 'drewno' && !empireStockHas(ctx.empireResourceStock, 'drewno')) {
-      continue;
+    // R-WEB-RECRUIT-LIST-REGRESSION-Q1: w widoku panelu (showStockGatedUnits) brak zapasu
+    // NIE ukrywa jednostki — wiersz jest wyszarzony z przyczyną (cityPanel/unitRecruitCard).
+    if (!ctx.showStockGatedUnits) {
+      if (surowiec === 'braz' && !empireStockHas(ctx.empireResourceStock, 'braz')) {
+        continue;
+      }
+      if (surowiec === 'zelazo' && !empireStockHas(ctx.empireResourceStock, 'zelazo')) {
+        continue;
+      }
+      // BUG-BRAMKA-DREWNO-BRAK (Maciej, decyzja A): jednostki drewniane — analogiczna
+      // bramka do brązu/żelaza, tylko zapas w magazynie państwa. Bez progu startowego
+      // (odrzucona opcja C) — świadome ryzyko blokady startu gry bez Drewna w zapasie.
+      if (surowiec === 'drewno' && !empireStockHas(ctx.empireResourceStock, 'drewno')) {
+        continue;
+      }
     }
     // Super-jednostka (audyt #11, decyzja A3=A): max 1 ŻYWA sztuka na cywilizację --
     // znika z listy produkcji dopóki egzemplarz danej nazwy żyje (respawn po śmierci
@@ -1107,10 +1151,14 @@ export function availableReplacementsFor(
     // -> bramka dostępu była MARTWA (jednostki brązowe/żelazne budowały się bez dostępu do surowca).
     // stripDiacritics() (NFD + lowercase) naprawia dopasowanie.
     const surowiec = stripDiacritics((u.Surowiec ?? '').toString().trim());
-    if (surowiec === 'braz' && !empireStockHas(ctx.empireResourceStock, 'braz')) return false;
-    if (surowiec === 'zelazo' && !empireStockHas(ctx.empireResourceStock, 'zelazo')) return false;
-    // BUG-BRAMKA-DREWNO-BRAK (Maciej, decyzja A): ta sama bramka drewna co w availableProduction.
-    if (surowiec === 'drewno' && !empireStockHas(ctx.empireResourceStock, 'drewno')) return false;
+    // R-WEB-RECRUIT-LIST-REGRESSION-Q1 r3: w widoku Zastąp (showStockGatedUnits) brak zapasu NIE
+    // ukrywa jednostki — wiersz wyszarzony z przyczyną (unitStockShortfallLabel, unitReplacePicker).
+    if (!ctx.showStockGatedUnits) {
+      if (surowiec === 'braz' && !empireStockHas(ctx.empireResourceStock, 'braz')) return false;
+      if (surowiec === 'zelazo' && !empireStockHas(ctx.empireResourceStock, 'zelazo')) return false;
+      // BUG-BRAMKA-DREWNO-BRAK (Maciej, decyzja A): ta sama bramka drewna co w availableProduction.
+      if (surowiec === 'drewno' && !empireStockHas(ctx.empireResourceStock, 'drewno')) return false;
+    }
     // Super-jednostka (audyt #11, decyzja A3=A): "Zastąp" nie może dać drugiej żywej
     // sztuki -- ta sama bramka co availableProduction (aliveUnitTypeNames).
     if (u['Super-jednostka'] === 'TAK' && ctx.aliveUnitTypeNames?.has(u.Jednostka)) return false;

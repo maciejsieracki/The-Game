@@ -8184,7 +8184,9 @@ function unitStockCostChipsHtml(u: UnitDef, city: City): string {
     const need = cost[k]!;
     const missing = isUnitRecruitStockChipMissing(pool, u, k);
     const cls = missing ? 'bld-infocard-chip stock-missing' : 'bld-infocard-chip';
-    return `<span class="${cls}">${need} ${stockResourceLabel(k)}</span>`;
+    // R-WEB-RECRUIT-LIST-REGRESSION-Q1: brak surowca widoczny tekstem w chipie („13 Drewno (brak)").
+    const text = missing ? `${need} ${stockResourceLabel(k)} (brak)` : `${need} ${stockResourceLabel(k)}`;
+    return `<span class="${cls}">${text}</span>`;
   });
   return chips.join('');
 }
@@ -8197,6 +8199,21 @@ function unitResourceUpkeepChipsHtml(u: UnitDef): string {
   return keys
     .map(k => `<span class="bld-infocard-chip">−${upkeep[k]} ${stockResourceLabel(k)}/t</span>`)
     .join('');
+}
+
+/**
+ * Lista jednostek panelu rekrutacji (R-WEB-RECRUIT-LIST-REGRESSION-Q1, 2026-10-24).
+ * Jedyne miejsce, gdzie panel wywołuje `purchasableUnits` z `showStockGatedUnits: true`:
+ * jednostka bez zapasu surowca (Braz/Zelazo/Drewno) zostaje na liście jako wyszarzona
+ * z przyczyną (appendUnitRecruitCompactRow). Logika gry (AI, walidacja) używa flagi domyślnie false.
+ * Eksportowane pod test regresji tools/recruit-list-visibility-ui-test.cjs.
+ */
+export function recruitPanelPurchasableUnits(city: City, data: GameData) {
+  const techs = cfg.getUnlockedTechs?.(city.ownerId) ?? [];
+  return sortByUnitPowerDescending(
+    purchasableUnits(city, data, techs, { ...productionCtxForCity(city), showStockGatedUnits: true }),
+    unit => getUnitDef(data, unit.id) as unknown as UnitPowerInput,
+  );
 }
 
 /** Render one recruitment card; exported for the real DOM regression gate. */
@@ -8621,6 +8638,7 @@ function formatBuildingCatalogLockHint(
   entry: BuildingCatalogEntry,
   data: GameData,
   unlockedTechs: readonly string[],
+  brakZasobow: readonly string[] = [],
 ): string {
   if (entry.status === 'built') return 'Już wybudowany w tym mieście';
   if (entry.status === 'queued') return '⏳ W kolejce produkcji';
@@ -8629,6 +8647,8 @@ function formatBuildingCatalogLockHint(
   if (entry.locationBlocked === 'region') return '🔒 Tylko poza stolicą';
 
   const parts: string[] = [];
+  // R-WEB-RECRUIT-LIST-REGRESSION-Q1 r3: brak surowca wprost (czego brakuje), nie tylko „Niedostępny”.
+  if (brakZasobow.length > 0) parts.push(`Brakuje: ${brakZasobow.join(' · ')}`);
   let techIc = '';
   if (entry.missingTech) {
     techIc = techIconHintSpan(entry.missingTech);
@@ -8809,7 +8829,9 @@ function appendCatalogBuildingRow(
   scroll.appendChild(row);
 }
 
-function renderBuildList(
+/** Lista „Dostępne do budowy” (R-WEB-RECRUIT-LIST-REGRESSION-Q1 r3: eksport pod test regresji
+ *  tools/building-resource-visibility-ui-test.cjs — ten sam kod co w panelu miasta). */
+export function renderBuildList(
   mount: HTMLElement,
   city: City,
   data: GameData | null,
@@ -8846,13 +8868,17 @@ function renderBuildList(
   const civBonusy = cfg.getCivBonusy?.(city.ownerId) ?? [];
   const prodState = getProd(city.id);
   const prodCtx = productionCtxForCity(city);
+  // R-WEB-RECRUIT-LIST-REGRESSION-Q1 r3 (2026-10-24): lista budowy pokazuje budynki możliwe do
+  // wybudowania, których brakuje surowca etykietowego (Glina/Drewno/…) — wyszarzone z chipem
+  // przyczyny. Tylko widok: AI i walidacja używają buildableProduction bez tej flagi.
   const items = sortProductionItemsByBuildability(
-    buildableProduction(city, data, techs, prodCtx),
+    buildableProduction(city, data, techs, { ...prodCtx, showResourceGatedBuildings: true }),
     city,
     data,
     prodCtx,
     techs,
   );
+  const itemIds = new Set(items.map(it => it.id));
 
   const skarb = cfg.getTreasury?.(city.ownerId);
 
@@ -8916,18 +8942,28 @@ function renderBuildList(
       appendBuildableItemRow(scroll, city, u, data, { praca, skarb, buildLabel: 'Ulepsz', upgrade: true });
     }
   }
-  if (previewEntries.length > 0) {
+  // Budynek już widoczny w liście budowy (wyszarzony z przyczyną) nie powtarza się w „Jeszcze
+  // zablokowane” — ten sam wiersz, jedna informacja (tryb pełnego podglądu epoki zostaje bez zmian).
+  const lockedPreview = fullEraPreview
+    ? previewEntries
+    : previewEntries.filter(e => !itemIds.has(e.id));
+  if (lockedPreview.length > 0) {
     const h = el('div', 'muted');
     h.style.cssText = 'font-size:0.72em;margin:0.35em 0 0.2em;padding-top:0.25em;border-top:1px solid var(--border);';
     h.textContent = fullEraPreview
       ? `Podgląd epoki ${eraName} (badania)`
       : `Jeszcze zablokowane (epoka ${eraName})`;
     scroll.appendChild(h);
-    for (const entry of previewEntries) {
+    for (const entry of lockedPreview) {
       const def = findBuildingDef(data, entry.id);
+      const brakZasobow = def
+        ? buildingRequirementChips(def, city, data, prodCtx, techs)
+          .filter(c => c.kind === 'stock' && !c.met)
+          .map(c => c.label)
+        : [];
       const lockHint = fullEraPreview && def
         ? formatBuildingPreviewHint(def, data, techs)
-        : formatBuildingCatalogLockHint(entry, data, techs);
+        : formatBuildingCatalogLockHint(entry, data, techs, brakZasobow);
       appendCatalogBuildingRow(scroll, entry, def, data, city, prodCtx, techs, lockHint, {
         forceLocked: fullEraPreview || entry.status === 'locked',
       });
@@ -8986,11 +9022,7 @@ function renderPurchasableUnits(
           c.appendChild(el('div', 'dc-note', 'Brak danych gry'));
           return c;
         }
-        const techs = cfg.getUnlockedTechs?.(city.ownerId) ?? [];
-        const units = sortByUnitPowerDescending(
-          purchasableUnits(city, data, techs, productionCtxForCity(city)),
-          unit => getUnitDef(data, unit.id) as unknown as UnitPowerInput,
-        );
+        const units = recruitPanelPurchasableUnits(city, data);
         return buildRecruitTabDetailCard(city, units.length, cfg.getTreasury?.(city.ownerId));
       },
     );
@@ -9005,11 +9037,7 @@ function renderPurchasableUnits(
   // R-REKRUTACJA-PODGLAD-SUROWCOW-Q1: pasek surowców faktycznie uczestniczących
   // w koszcie/utrzymaniu jednostek dostępnych do rekrutacji w tym mieście/epoce
   // (dynamicznie, patrz appendRecruitMilitaryResourceStrip).
-  const techs = cfg.getUnlockedTechs?.(city.ownerId) ?? [];
-  const units = sortByUnitPowerDescending(
-    purchasableUnits(city, data, techs, productionCtxForCity(city)),
-    unit => getUnitDef(data, unit.id) as unknown as UnitPowerInput,
-  );
+  const units = recruitPanelPurchasableUnits(city, data);
   appendRecruitMilitaryResourceStrip(mount, city, data, units);
   const skarb = cfg.getTreasury?.(city.ownerId);
   const rqLen = getProd(city.id).rekrutacja?.length ?? 0;
