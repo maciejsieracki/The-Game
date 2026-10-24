@@ -31450,6 +31450,7 @@ async function boot(): Promise<void> {
             // R-WEB-LOAD-GAME-REGRESSION-Q1: udany autozapis na dysk = zapis istnieje
             // (przycisk „Wczytaj grę" nie może zostać "Brak zapisu" mimo pliku).
             savePresence.markPresent();
+            autosaveFailureNotified = false; // R-WEB-LOAD-GAME-REGRESSION-Q1 (r6): sukces zeruje flage -- kolejna awaria znów sygnalizowana
             try { localStorage.setItem(AUTOSAVE_ROT_IDX_KEY, String(idx)); } catch { /* ignore */ }
             console.log('[Autosave] rotacyjny (dysk) slot=' + (idx + 1) + ' tura=' + turn);
             return;
@@ -31477,6 +31478,7 @@ async function boot(): Promise<void> {
         if (ok) {
           setLastPlayedSlotId(slot);
           savePresence.markPresent(); // R-WEB-LOAD-GAME-REGRESSION-Q1
+          autosaveFailureNotified = false; // R-WEB-LOAD-GAME-REGRESSION-Q1 (r6): sukces zeruje flage
           // Indeks rotacji przesuwamy WYŁĄCZNIE po udanym zapisie -- przy
           // niepowodzeniu kolejna próba celuje ponownie w ten sam slot
           // zamiast po cichu przeskoczyć dalej i zostawić go zamrożonym.
