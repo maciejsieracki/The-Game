@@ -359,6 +359,66 @@ function deferred() {
       'brak await triggerFsaAutosaveBootstrap() przed openLoadGameDialog(false)');
   });
 
+  // ---- 6. (r5) Mutacja hasAnySaveSlot / cache w PRAWDZIWYM main.ts (wiring + zachowanie) ----
+  function hasAnySaveSlotWiringOk(src) {
+    const start = src.indexOf('function hasAnySaveSlot(): boolean {');
+    if (start < 0) return false;
+    const body = src.slice(start, start + 200);
+    return /void refreshHasAnySaveSlotCache\(\);\s*return savePresence\.get\(\);/.test(body);
+  }
+  await check('6a. mutacja: hasAnySaveSlot zwraca stałe false zamiast cache -> wiring MUSI oblać', async () => {
+    const mainSrc = fs.readFileSync(SRC_MAIN, 'utf8');
+    assert.strictEqual(hasAnySaveSlotWiringOk(mainSrc), true, 'prawdziwy hasAnySaveSlot musi przejsc');
+    const mutMain = replaceOnce(mainSrc, 'function hasAnySaveSlot(): boolean {\n      void refreshHasAnySaveSlotCache();\n      return savePresence.get();',
+      'function hasAnySaveSlot(): boolean {\n      void refreshHasAnySaveSlotCache();\n      return false;');
+    assert.strictEqual(hasAnySaveSlotWiringOk(mutMain), false, 'wiring musi wykryc stale false');
+  });
+  await check('6b. mutacja: cache presence zawsze false (get) -> przypadek 3a MUSI oblać', async () => {
+    const mutSrc = replaceOnce(presenceSrc, 'get: () => value,', 'get: () => false,');
+    const mut = bundleSource(mutSrc, SRC_PRESENCE);
+    const c = mut.createSavePresenceCache({ listSlots: idbSlots, listFsaFiles: none, hasRememberedFsaDir: noDir });
+    await c.refresh();
+    assert.notStrictEqual(c.get(), true, 'mutant z get()=false -- blad lapany przez 3a');
+  });
+
+  // ---- 7. (r5) Jednorazowy komunikat o nieudanym autozapisie (notifyAutosaveFailureOnce) ----
+  function extractNotifyOnce(src) {
+    const start = src.indexOf('function notifyAutosaveFailureOnce(msg: string): void {');
+    if (start < 0) return null;
+    const end = src.indexOf('\n    }\n', start);
+    if (end < 0) return null;
+    return src.slice(start, end + '\n    }\n'.length - 1);
+  }
+  function runNotifyOnce(fnText) {
+    const decl = 'let autosaveFailureNotified = false;\n';
+    const prog = 'function __mk(showHintMessage: (m: string, ms: number) => void) {\n' + decl + fnText + '\n  return notifyAutosaveFailureOnce;\n}';
+    const js = esbuild.transformSync(prog, { loader: 'ts' }).code;
+    return new Function(js + '\nreturn __mk;')();
+  }
+  await check('7a. notifyAutosaveFailureOnce: prawdziwa funkcja z main.ts pokazuje komunikat RAZ na sesję', async () => {
+    const fnText = extractNotifyOnce(fs.readFileSync(SRC_MAIN, 'utf8'));
+    assert.ok(fnText, 'nie znaleziono notifyAutosaveFailureOnce w main.ts');
+    const calls = [];
+    const notify = runNotifyOnce(fnText)((m, ms) => calls.push([m, ms]));
+    notify('Autozapis nieudany (blad zapisu)'); notify('Autozapis nieudany — brak miejsca'); notify('x');
+    assert.strictEqual(calls.length, 1, 'komunikat musi pojawic sie dokladnie raz, jest ' + calls.length);
+    assert.strictEqual(calls[0][0], 'Autozapis nieudany (blad zapisu)', 'pierwszy komunikat zostaje');
+  });
+  await check('7b. mutacja: bez strażnika jednorazowości -> przypadek 7a MUSI oblać', async () => {
+    const fnText = extractNotifyOnce(fs.readFileSync(SRC_MAIN, 'utf8'));
+    const mutText = replaceOnce(fnText, 'if (autosaveFailureNotified) return;', '');
+    const calls = [];
+    const notify = runNotifyOnce(mutText)((m, ms) => calls.push([m, ms]));
+    notify('a'); notify('b');
+    assert.notStrictEqual(calls.length, 1, 'mutant pokazuje wielokrotnie -- blad lapany przez 7a');
+  });
+  await check('7c. main.ts: nieudany autozapis nie wywołuje już showHintMessage wprost (3 miejsca przez notifyAutosaveFailureOnce)', async () => {
+    const src = fs.readFileSync(SRC_MAIN, 'utf8');
+    assert.ok(!/showHintMessage\('Autozapis nieudany \(blad zapisu\)', 3000\)/.test(src), 'zostalo bezposrednie showHintMessage autozapisu');
+    const n = (src.match(/notifyAutosaveFailureOnce\(/g) || []).length;
+    assert.ok(n >= 4, 'oczekiwano >=4 wywolan (deklaracja + 4 miejsca), jest ' + n);
+  });
+
   console.log('\nload-game-regression: ' + passed + ' PASS / ' + failed + ' FAIL');
   process.exit(failed === 0 ? 0 : 1);
 })();

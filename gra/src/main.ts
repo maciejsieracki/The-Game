@@ -31313,6 +31313,17 @@ async function boot(): Promise<void> {
     /** N4: pokaż komunikat o degradacji FSA→localStorage tylko RAZ na sesję karty (nie co turę). */
     let fsaAutosaveDegradedNotified = false;
 
+    /** R-WEB-LOAD-GAME-REGRESSION-Q1 (r5): nieudany autozapis sygnalizowany graczowi RAZ na sesję
+     *  (zamiast cichej porażki, bez zalewania toastami co turę). Logi konsoli bez zmian.
+     *  / EN: a failed autosave is signalled to the player ONCE per session (no silent failure,
+     *  no per-turn toast spam). Console logs unchanged. */
+    let autosaveFailureNotified = false;
+    function notifyAutosaveFailureOnce(msg: string): void {
+      if (autosaveFailureNotified) return;
+      autosaveFailureNotified = true;
+      showHintMessage(msg, 4000);
+    }
+
     function getAutosaveFrequency(): number {
       try {
         const v = parseInt(localStorage.getItem(AUTOSAVE_FREQ_KEY) ?? '1', 10);
@@ -31402,7 +31413,7 @@ async function boot(): Promise<void> {
         snapshot = buildSaveGameSnapshot(currentSaveLabel('autosave'));
       } catch (eSnap) {
         console.error('[Autosave] blad budowy migawki zapisu:', eSnap);
-        showHintMessage('Autozapis nieudany (blad zapisu)', 3000);
+        notifyAutosaveFailureOnce('Autozapis nieudany (blad zapisu)');
         return;
       }
       if (PERF_DEBUG) {
@@ -31473,16 +31484,15 @@ async function boot(): Promise<void> {
           console.log('[Autosave] rotacyjny slot=' + slot + ' tura=' + turn);
         } else {
           console.warn('[Autosave] rotacyjny zapis nieudany slot=' + slot + ' tura=' + turn + ' powod=' + (reason ?? 'nieznany'));
-          showHintMessage(
+          notifyAutosaveFailureOnce(
             reason === 'quota'
               ? 'Autozapis nieudany — brak miejsca w zapisie przeglądarki'
               : 'Autozapis nieudany (blad zapisu)',
-            3000,
           );
         }
       } catch (eRot) {
         console.error('[Autosave] blad rotacyjnego zapisu:', eRot);
-        showHintMessage('Autozapis nieudany (blad zapisu)', 3000);
+        notifyAutosaveFailureOnce('Autozapis nieudany (blad zapisu)');
       }
       } finally {
         autosaveInFlight = false;
@@ -31799,7 +31809,7 @@ async function boot(): Promise<void> {
         if (turn % getAutosaveFrequency() === 0) {
           void doRotatingAutosave().catch((eAutosave) => {
             console.error('[Autosave] nieobsluzony wyjatek rotacyjnego autozapisu:', eAutosave);
-            showHintMessage('Autozapis nieudany (blad zapisu)', 3000);
+            notifyAutosaveFailureOnce('Autozapis nieudany (blad zapisu)');
           });
         }
 
