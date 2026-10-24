@@ -1,3 +1,12 @@
+## ROBOCZA 46401a99 -- 2026-10-24 -- widocznosc jednostek/budynkow bez surowca + blokada konca tury (R-WEB-FIXES1-RELEASE-ROBOCZA)
+
+- STATUS: PUBLISHED to `origin/main` at `71794751` (fast-forward z `fcd86933`), integration branch `integration/robocza-fixes1-20261024` na tym samym SHA. Readback `gra-robocza/Gra-ROBOCZA.html` z `origin/main`: MD5 `46401a9932fd92f47eed1848e772122b` (zgodny z manifestem).
+- Bundle: SHA-256 `5734348713663669fe6407fae9befc4d59fe233b58386105160c7ea093db2de2`, 69,966,015 bytes.
+- Zakres A (`R-WEB-RECRUIT-LIST-REGRESSION-Q1`): jednostki (lista rekrutacji), budynki z bramka surowca, „Zastap” — przy braku surowca sa WIDOCZNE, wyszarzone, z informacja czego brakuje (np. „13 Drewno (brak)”); reguly dostepnosci (era/tech/kultura) i zachowanie AI bez zmian.
+- Zakres B (`R-WEB-ENDTURN-BATTLE-DEADLOCK-Q1`): siatka bezpieczenstwa kolejki odlozonych bitew — „Zakoncz ekran bitwy, potem zakoncz ture” bez widocznego ekranu nie blokuje juz konca tury (flush-first + watchdog 50 ms; nie dziala przy otwartej scenie bitwy/podsumowaniu). Zrodlo osieroconej kolejki nieustalone (osobny temat).
+- Bramki: tsc, Vite, verify-robocza-bundle OK, logic 213/213, endturn 38/0 + exec 46/0, recruit-list 9/0 + ui 15/0, building-resource 15/0 + ui 8/0, building-stock 7/0, unit-replace 13/13, war-allin 91/0 (base 75f53d58), memory-leaks 30/0; smoke Chromium 46-50 tur (finalTurn 47/51, stalls 0). Czerwone jak na bazie: recruitment-no-upkeep 22/14, deposit-building 46/1, koniec-tury f1-f4 i g1-g2 (po 2; F2-A11 i A9 nieaktualne wobec poprawki).
+- Rollback: poprzedni bundle MD5 `23893f19cc904b61065b20e712fb6b35`, `git revert` trzech commitow wydania.
+
 ## ROBOCZA 23893f19 -- 2026-10-23 -- tymczasowa reguła wojny: cała armia na stolicę (R-WEB-WAR-ALLIN-CAPITAL / R-WEB-WAR-ALLIN-RELEASE-ROBOCZA)
 
 - STATUS: PUBLISHED to `origin/main` at `d783bfd6a266ae15d2216e0f1e1351a3344acd0a` (fast-forward z `75f53d58`), integration branch `integration/robocza-war-allin-20261023` na tym samym SHA. Readback `gra-robocza/Gra-ROBOCZA.html` z `origin/main`: MD5 `23893f19cc904b61065b20e712fb6b35` (zgodny z manifestem).
