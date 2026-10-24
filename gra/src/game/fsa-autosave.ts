@@ -458,11 +458,40 @@ export async function listFsaAutosaveFiles(): Promise<FsaSaveFileRef[]> {
  * start without a click. Never throws.
  */
 export async function hasRememberedFsaDirectory(): Promise<boolean> {
-  if (liveDirHandle !== null) return true;
+  // R-WEB-LOAD-GAME-REGRESSION-Q1 (r3, zarzut 3/8): gdy katalog jest już zgodnie
+  // odczytywalny (żywy uchwyt albo zgoda przetrwała: queryPermission === 'granted'),
+  // liczymy pliki rotacji -- przycisk ma być aktywny TYLKO przy zapisach na dysku.
+  // Bez zgody nie wolno pytać (brak gestu), więc liczba plików jest nieznana:
+  // ZAŁOŻENIE: zapamiętany katalog bez zgody = zapis prawdopodobnie istnieje
+  // (klik „Wczytaj" poprosi o zgodę i pokaże hint, gdy katalog jest pusty).
+  // / EN: with a readable directory we count rotation files (button enabled only
+  // with disk saves); without permission we must not prompt, so the presence is
+  // unknown: ASSUMPTION -- a remembered directory counts as present.
+  if (liveDirHandle !== null) {
+    if (!livePermissionGranted) return true; // zapamiętany, bez zgody w tej chwili: jak wyżej (ZAŁOŻENIE)
+    return (await listFsaAutosaveFiles()).length > 0;
+  }
+  let handle: FsaDirectoryHandleLike | null;
   try {
-    return (await preloadedIdbHandlePromise) !== null;
+    handle = await preloadedIdbHandlePromise;
   } catch {
     return false;
+  }
+  if (handle === null) return false;
+  let perm: string | undefined;
+  try {
+    perm = await handle.queryPermission?.({ mode: 'readwrite' });
+  } catch {
+    perm = undefined;
+  }
+  if (perm !== 'granted' || typeof handle.keys !== 'function') return true;
+  try {
+    for await (const name of handle.keys()) {
+      if (name.startsWith(FSA_AUTOSAVE_FILE_PREFIX) && name.endsWith(FSA_AUTOSAVE_FILE_SUFFIX)) return true;
+    }
+    return false;
+  } catch {
+    return true;
   }
 }
 

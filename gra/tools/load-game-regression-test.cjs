@@ -228,8 +228,22 @@ function deferred() {
     const r = await mut.anySavePresent({ listSlots: none, listFsaFiles: none, hasRememberedFsaDir: hasDir });
     assert.notStrictEqual(r, true, 'mutant bez kroku katalogu musi dac false w przypadku 1c');
   });
+  await check('3d. regresja S2 (Chromium): startowe przeliczenie (true) zastosowane, mimo że nowsze trwa', async () => {
+    const gateB = deferred();
+    let call = 0;
+    const c = createSavePresenceCache({
+      listSlots: async () => { call++; if (call === 2) { await gateB.promise; return []; } return ['x']; },
+      listFsaFiles: none, hasRememberedFsaDir: noDir,
+    });
+    const a = c.refresh();             // startowy, szybki (true)
+    const b = c.refresh();             // nowszy, wolny (wstrzymany)
+    assert.strictEqual(await a, true);
+    assert.strictEqual(c.get(), true, 'startowy wynik true MUSI być widoczny od razu (przebudowa menu czyta get())');
+    gateB.resolve();
+    await b;
+  });
   await check('4c. mutacja: cache bez ochrony generacji -> przypadek 3b MUSI oblać', async () => {
-    const mutSrc = replaceOnce(presenceSrc, 'if (my === generation) value = result;', 'value = result;');
+    const mutSrc = replaceOnce(presenceSrc, 'if (my > appliedRefresh && epochAtStart === presenceEpoch) {', 'if (true) {');
     const mut = bundleSource(mutSrc, SRC_PRESENCE);
     const gate = deferred();
     const c = mut.createSavePresenceCache({

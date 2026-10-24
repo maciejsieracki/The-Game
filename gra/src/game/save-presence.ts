@@ -68,25 +68,42 @@ export interface SavePresenceCache {
 }
 
 /**
- * Cache stale-while-revalidate z ochroną przed wyścigiem: każde przeliczenie
- * dostaje numer generacji; wynik starszego (wolniejszego) przeliczenia nie
- * nadpisuje cache, jeśli w międzyczasie wystartowało nowsze albo był markPresent().
- * / EN: generation counter -- a slower, older refresh never overwrites a newer
- * result or a markPresent() that happened after it started.
+ * Cache stale-while-revalidate z ochroną przed wyścigiem.
+ *
+ * R-WEB-LOAD-GAME-REGRESSION-Q1 (r3, zarzut 4/8, pomiar E2E w Chromium): poprzednia
+ * wersja odrzucała wynik KAŻDEGO przeliczenia, któremu w międzyczasie wystartowało
+ * inne (numer generacji). Skutek: pierwsze, startowe przeliczenie (poprawnie `true`
+ * po przeładowaniu) było porzucane, a jego `.then` (przebudowa menu głównego) czytał
+ * jeszcze `false` -- przycisk „Wczytaj grę" zostawał wyszarzony z „Brak zapisu" mimo
+ * zapisów na dysku. Teraz:
+ *  - przeliczenie stosuje wynik, jeśli jest NOWSZE niż ostatnio zastosowane (kolejność
+ *    startu) -- starszy, wolniejszy wynik nie nadpisuje nowszego;
+ *  - przeliczenie NIE stosuje wyniku, jeśli w międzyczasie był markPresent() (udany
+ *    zapis) -- zapis wygrywa z przeliczeniem, które mogło przeczytać stan sprzed zapisu.
+ * / EN: a refresh applies its result only if it is newer than the last applied one
+ * (start order), and never over a markPresent() that happened after it started. The
+ * previous generation-only guard dropped the startup refresh whenever another refresh
+ * had started, leaving the menu's "Load game" button stuck disabled after a reload.
  */
 export function createSavePresenceCache(deps: SavePresenceDeps): SavePresenceCache {
   let value = false;
-  let generation = 0;
+  let startedRefreshes = 0;
+  let appliedRefresh = 0;
+  let presenceEpoch = 0;
   return {
     get: () => value,
     refresh: async () => {
-      const my = ++generation;
+      const my = ++startedRefreshes;
+      const epochAtStart = presenceEpoch;
       const result = await anySavePresent(deps);
-      if (my === generation) value = result;
+      if (my > appliedRefresh && epochAtStart === presenceEpoch) {
+        appliedRefresh = my;
+        value = result;
+      }
       return result;
     },
     markPresent: () => {
-      generation++;
+      presenceEpoch++;
       value = true;
     },
   };
