@@ -1100,7 +1100,9 @@ import { loadMapForSave } from './game/load-map-source';
 import {
   ensureFsaAutosaveReady, fsaRotatingAutosaveWrite, getFsaReadinessState,
   shouldUseFsaAutosave, fsaUnavailableMessage, autosaveFileName, loadFsaAutosaveFile,
+  listFsaAutosaveFiles,
 } from './game/fsa-autosave';
+import { anySavePresent } from './game/save-presence';
 import { buildDefaultSaveLabel, type SaveLabelKind } from './game/save-label';
 import {
   diagInfo, diagWarn, diagError, installGlobalDiagHooks,
@@ -22160,12 +22162,13 @@ async function boot(): Promise<void> {
     // wywołania niżej), więc w praktyce jest aktualny w momencie, gdy gracz
     // faktycznie otwiera menu.
     let cachedHasAnySaveSlot = false;
+    // R-WEB-LOAD-GAME-REGRESSION-Q1: "zapis istnieje" = slot IDB/localStorage
+    // LUB plik rotacji FSA na dysku (autozapis na dysk nie trafia do listSaves()).
+    async function anySaveAvailable(): Promise<boolean> {
+      return anySavePresent({ listSlots: listSaves, listFsaFiles: listFsaAutosaveFiles });
+    }
     async function refreshHasAnySaveSlotCache(): Promise<void> {
-      try {
-        cachedHasAnySaveSlot = (await listSaves()).length > 0;
-      } catch {
-        cachedHasAnySaveSlot = false;
-      }
+      cachedHasAnySaveSlot = await anySaveAvailable();
     }
     function hasAnySaveSlot(): boolean {
       void refreshHasAnySaveSlotCache();
@@ -22207,12 +22210,7 @@ async function boot(): Promise<void> {
     // żeby ta konkretna decyzja (pokazać dialog czy hint "brak zapisów")
     // była tak świeża, jak to możliwe.
     async function openLoadGameDialog(fromInGamePause = false): Promise<void> {
-      let any: boolean;
-      try {
-        any = (await listSaves()).length > 0;
-      } catch {
-        any = false;
-      }
+      const any = await anySaveAvailable();
       if (!any) {
         showHintMessage(
           fromInGamePause
@@ -22288,7 +22286,14 @@ async function boot(): Promise<void> {
             }
           })();
         },
-        onLoad: () => { void triggerFsaAutosaveBootstrap(); void openLoadGameDialog(false); },
+        onLoad: () => {
+          // R-WEB-LOAD-GAME-REGRESSION-Q1: czekamy na bootstrap FSA przed
+          // listowaniem -- inaczej lista plików dysku jest jeszcze pusta.
+          void (async () => {
+            await triggerFsaAutosaveBootstrap();
+            await openLoadGameDialog(false);
+          })();
+        },
         onAbout: () => {
           showWikiHubHud({ tab: 'poradnik', layout: 'overlay' });
         },
@@ -31245,7 +31250,10 @@ async function boot(): Promise<void> {
     async function persistSaveToSlot(slotId: string, label: string): Promise<SaveToLocalResult> {
       try {
         const result = await saveToLocal(slotId, buildSaveGameSnapshot(label));
-        if (result.ok) setLastPlayedSlotId(slotId);
+        if (result.ok) {
+          setLastPlayedSlotId(slotId);
+          cachedHasAnySaveSlot = true; // R-WEB-LOAD-GAME-REGRESSION-Q1: udany zapis = zapis istnieje
+        }
         return result;
       } catch (eSave) {
         console.error('[Save] Blad:', eSave);
@@ -31329,8 +31337,14 @@ async function boot(): Promise<void> {
      * it with `void` (fire-and-forget).
      */
     function triggerFsaAutosaveBootstrap(): Promise<void> {
-      return ensureFsaAutosaveReady().then(({ ok, reason }) => {
-        if (ok) return;
+      return ensureFsaAutosaveReady().then(async ({ ok, reason }) => {
+        if (ok) {
+          // R-WEB-LOAD-GAME-REGRESSION-Q1: po gotowym katalogu FSA lista plików
+          // rotacji może mieć zapisy -- odśwież stan „Wczytaj grę" w menu pauzy.
+          await refreshHasAnySaveSlotCache();
+          refreshGamePauseMenuLoadState();
+          return;
+        }
         if (reason === 'permission-denied' || reason === 'picker-cancelled') return; // świadomy wybór gracza, bez komunikatu
         let alreadyShown = false;
         try { alreadyShown = localStorage.getItem(FSA_HINT_SHOWN_KEY) === '1'; } catch { /* brak localStorage -- pokaz i tak */ }
@@ -31419,6 +31433,9 @@ async function boot(): Promise<void> {
             // this save (see save.ts::getLastPlayedSlotId, saveLoadDialog.ts,
             // loadGameFromSlot).
             setLastPlayedSlotId(FSA_SLOT_PREFIX + autosaveFileName(idx));
+            // R-WEB-LOAD-GAME-REGRESSION-Q1: udany autozapis na dysk = zapis istnieje
+            // (przycisk „Wczytaj grę" nie może zostać "Brak zapisu" mimo pliku).
+            cachedHasAnySaveSlot = true;
             try { localStorage.setItem(AUTOSAVE_ROT_IDX_KEY, String(idx)); } catch { /* ignore */ }
             console.log('[Autosave] rotacyjny (dysk) slot=' + (idx + 1) + ' tura=' + turn);
             return;
@@ -31445,6 +31462,7 @@ async function boot(): Promise<void> {
         }
         if (ok) {
           setLastPlayedSlotId(slot);
+          cachedHasAnySaveSlot = true; // R-WEB-LOAD-GAME-REGRESSION-Q1
           // Indeks rotacji przesuwamy WYŁĄCZNIE po udanym zapisie -- przy
           // niepowodzeniu kolejna próba celuje ponownie w ten sam slot
           // zamiast po cichu przeskoczyć dalej i zostawić go zamrożonym.
