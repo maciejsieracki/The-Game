@@ -1,0 +1,24 @@
+
+-- NOWA GRA, PUSTA PULA DREWNA (0) --
+PASS: U1: lista panelu ma >=2 jednostki wojskowe przy braku Drewna
+PASS: U2: Zwiadowca widoczny
+PASS: U3: Wojownik widoczny jako wiersz
+PASS: U4: Wojownik wiersz wyszarzony (is-disabled)
+PASS: U5: Wojownik przycisk Rekrutuj nieaktywny
+PASS: U6: Wojownik chip braku ma tekst „N Drewno (brak)"
+PASS: U7: Wojownik tooltip przycisku podaje przyczyne
+PASS: U3: Oszczepnik widoczny jako wiersz
+PASS: U4: Oszczepnik wiersz wyszarzony (is-disabled)
+PASS: U5: Oszczepnik przycisk Rekrutuj nieaktywny
+PASS: U6: Oszczepnik chip braku ma tekst „N Drewno (brak)"
+PASS: U7: Oszczepnik tooltip przycisku podaje przyczyne
+PASS: U8: Zwiadowca nie jest wyszarzony (brak wymagan surowca)
+
+-- Z ZAPASEM DREWNA (50) --
+PASS: U9: z Drewnem Wojownik aktywny (bez is-disabled, przycisk wlaczony)
+PASS: U10: z Drewnem brak chipa braku
+
+Bledy strony: 0
+
+15 passed, 0 failed
+EXIT=0

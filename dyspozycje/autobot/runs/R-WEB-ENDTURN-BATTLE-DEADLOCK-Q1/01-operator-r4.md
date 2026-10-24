@@ -1,0 +1,24 @@
+STATUS: PASS-WITH-NOTES
+DOMAIN: GAME
+TEMAT: R-WEB-ENDTURN-BATTLE-DEADLOCK-Q1
+GOAL: Odpowiedź Operatora obrony na zarzuty Evaluatora do commita 349c8481 (runda 4). Każdy zarzut: PRZYJMUJĘ (poprawka/dowód/nota) albo ODRZUCAM (dowód).
+ZMIANY/COMMIT: baza odtworzona z 349c8481 (main.ts bez zmian w tej rundzie). Zmieniono tylko `gra/tools/endturn-battle-deadlock-test.cjs` (poprawka nagłówka i pin A7c) oraz ten plik. `ui/preBattle.ts`, `game/**`, `battle/**`: bez zmian.
+TESTY:
+- endturn-battle-deadlock-test: 38/0 (było 37/0; +A7c).
+- Mutacja M4 (catch w finishIncomingBattleUi -> `throw eFinishFlush`): test CZERWIENI (FAIL A7c, 37/1). Po przywróceniu main.ts: 38/0.
+- Stan z 349c8481 odtworzony niezależnie: `git status` czysty przed zmianą; `npm ci --ignore-scripts` w gra/ (wymagane przez esbuild/jsdom testu).
+BLOKADY: brak twardych. Zarzuty otwarte jako residual (patrz odpowiedzi).
+ODPOWIEDZI NA ZARZUTY:
+1. PRZYJMUJĘ (gap), ODRZUCAM (deadlock). Dowód: `finishMapBattleUi()` (main.ts:27949) i `clearBattleUiState()` (main.ts:30733) nie wołają flusha — prawda. Ale ścieżka kliknięcia odzyskuje stan: `advanceSeat()` -> `healStuckDeferredPreBattleQueueOnEndTurnAttempt()` (main.ts:~31696, pierwsza linia przed bramką) wywołuje flush, który pokazuje odłożoną bitwę. Skutek to opóźnienie do kliknięcia, nie trwały deadlock. Źródła osieroconej kolejki NIE zidentyfikowano (nie przyjmuję tego jako ustalonego). Flush w finishMapBattleUi odłożony jako osobny temat (ryzyko nakładania się na podsumowanie bitwy wymaga osobnej weryfikacji), zgodnie z rekomendacją Evaluatora.
+2. PRZYJMUJĘ (luka). Test nie jest e2e w Chromium na pełnym bundlu; część B (ui/preBattle.ts przez esbuild+jsdom) i część C (wrapper flush z main.ts) wykonują prawdziwy kod kolejki. Bramka `canPlayerInitiateEndTurn` i watchdog z main.ts są w teście tylko pinowane tekstowo — main.ts jest monolitem bootstrapu, bez hooka. NIE_ZMIERZONO: e2e w Chromium. Rekomendacja dla FC: nie traktować jako twardego bloka tej rundy; wciągnięcie harnessu A/B do tools/ nie jest wykonane w tej rundzie (poza zakresem zmiany tej rundy).
+3. PRZYJMUJĘ (poprawka). Dodany pin A7c: catch w finishIncomingBattleUi musi zawierać console.warn z where:'finishIncomingBattleUi' i hidePreBattle(). Mutant „throw w catch" czerwieni test (dowód powyżej). Ciało catch pozostaje inline (pin F1-A4 wymaga literału `flushDeferredAutoPreBattle();` w tej funkcji), więc to pokrycie tekstowe, nie wykonawcze.
+4. PRZYJMUJĘ jako residual. Watchdog 50 ms nie jest wykonywany w teście; pokryty pinami A5/A5c. NIE_ZMIERZONO zachowanie w przeglądarce.
+5. PRZYJMUJĘ jako residual. Przy wyjątku w showPreBattle element przepada (dowód: preBattle.ts shift z kolejki przed buildOverlay), `onResolved()` nie jest wołany, więc `activeBattleUnitIds` z `launchIncomingMapFieldBattle` nie są zwalniane. Skutek: wykluczenie tych jednostek z `collectBarbarianCooperationUnits`. NIE_ZMIERZONO liczbowo. Poprawka wymaga zmiany poza tą rundą.
+6. PRZYJMUJĘ jako residual, ryzyko realne. Flush-first w healStuck sprawia, że próg 8 s jest dla kliknięcia martwy; odłożona bitwa pokazuje się z rosterami sprzed tury bez weryfikacji istnienia jednostek. Ponieważ kolejka nie niesie rosterów w ui/preBattle.ts (poza allowlistą), nie naprawiam w tej rundzie. Rekomendacja: osobny temat (walidacja przy flushu).
+7. ODRZUCAM. Dowód: kolejka auto-bitew jest zasilana tylko gdy `defRoster.some(u => u.ownerId === 0)` (main.ts:35748 i 36426). Czyli bitwa dotyczy wojska gracza (atak AI/barbarzyńców na jego jednostki), nie bitwa AI↔AI. Pokazanie ekranu jest zgodne z wymaganiem (3) dispatchu: legalna blokada przy realnej bitwie gracza. Komunikat „Wrogowie atakują” nie zmienia faktu.
+8. PRZYJMUJĘ jako notę, bez zmiany. Podwójne wywołanie (triggerPlayerEndTurn + advanceSeat) jest wymuszone pinem F2-A11 (koniec-tury-f1-f4-runda3-test). Nieszkodliwe; usunięcie złamałoby pin.
+9. PRZYJMUJĘ (poprawka). Nagłówek testu: akapit o overlayEl odpięty od DOM oznaczony jako odrzucony (pin A6), naprawiono literówkę „* *  4)". Brak `01-operator-r1.md`: plik nigdy nie trafił do historii gita (`git log --all -- .../01-operator-r1.md` puste). NIE odtwarzam go z pamięci (zakaz fabrykacji); zostaje brak.
+10. ODRZUCAM. Dowód: `overlayEl` jest przypisywany dopiero po `document.body.appendChild(overlayEl)` (ui/preBattle.ts:252-253); jeśli `buildOverlay` rzuci, przypisanie się nie dokonuje (overlayEl pozostaje null). `hidePreBattle()` zeruje overlayEl po `remove()` (ui/preBattle.ts:266-276). Zatem `isPreBattleOpen()===true` oznacza overlay podpięty do DOM; wariant „niewidoczny overlay bez ekranu” nie wynika z kodu (ewentualna niewidoczność to CSS, NIE_ZMIERZONO w przeglądarce).
+NASTĘPNY KROK: Final Control: przyjąć deadlock jako naprawiony (A/B z 349c8481 potwierdzone: 37/0 reprodukcja, 38/0 po pinie). Zarzuty 1, 5, 6 jako osobne tematy. Brak twardych blokerów z mojej strony.
+RUNDY: 4/5 (ta odpowiedź).
+DEPLOY/PUSH: NIE WYKONANO

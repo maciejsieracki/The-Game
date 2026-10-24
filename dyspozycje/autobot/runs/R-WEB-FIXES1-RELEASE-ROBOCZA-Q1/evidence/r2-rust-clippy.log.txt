@@ -1,0 +1,16 @@
+    Updating crates.io index
+     Locking 11 packages to latest compatible versions
+   Compiling proc-macro2 v1.0.107
+   Compiling quote v1.0.47
+   Compiling unicode-ident v1.0.27
+   Compiling serde_core v1.0.229
+   Compiling serde v1.0.229
+   Compiling zmij v1.0.23
+   Compiling serde_json v1.0.154
+    Checking itoa v1.0.18
+    Checking memchr v2.8.3
+   Compiling syn v3.0.9
+   Compiling serde_derive v1.0.229
+    Checking civ-engine v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_bb44b7c1-9c5-3/rust-port/engine)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 31.51s
+EXIT=0

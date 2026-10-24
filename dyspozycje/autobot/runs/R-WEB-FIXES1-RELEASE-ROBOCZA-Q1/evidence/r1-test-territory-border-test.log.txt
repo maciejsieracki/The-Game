@@ -1,0 +1,11 @@
+  OK single hex → 1 loop
+  OK single hex loop has 6 vertices
+  OK two adjacent hexes → 1 loop
+  OK two hex loop has 10 vertices
+  OK two islands → 2 loops
+  OK each island loop has 6 vertices
+  OK triangle cluster has boundary edges
+  OK triangle cluster has at least 1 loop
+  OK loop vertices cover boundary
+
+territory-border-test: 9 pass, 0 fail

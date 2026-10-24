@@ -1,0 +1,52 @@
+city-badge-growth-percent-test (R-ETYKIETA-MIASTA-WZROST-PROCENT)
+
+
+[1] format etykiety WZROST%
+PASS: wzrost zerowy → „0%” (nie puste, nie „—”) (got="0%" want="0%")
+PASS: wzrost całkowity → „5%” bez zbędnego „,0” (got="5%" want="5%")
+PASS: wzrost ułamkowy → „5,5%” z przecinkiem (zapis polski) (got="5,5%" want="5,5%")
+PASS: dwucyfrowy ułamkowy → „12,5%” (got="12,5%" want="12,5%")
+PASS: wzrost ujemny → znak minus, wartość NIE ukryta (got="−2,1%" want="−2,1%")
+PASS: głęboko ujemny całkowity → „−10%” (got="−10%" want="−10%")
+PASS: wartość zaokrąglona do zera → „0%”, nigdy „−0%” (got="0%" want="0%")
+PASS: zaokrąglenie do 1 miejsca po przecinku (got="5,5%" want="5,5%")
+PASS: głód → „—”, jak wiersz WZROST% w panelu miasta (got="—" want="—")
+PASS: głód wygrywa nad wartością 0 (got="—" want="—")
+PASS: etykieta NIE zawiera już litery „W” (prośba właściciela: „a nie W5 bez litery W”)
+
+[2] klucz cache tekstury zawiera WZROST%
+PASS: brak WZROST% (miasto nie gracza) → segment „g-” jak dotąd
+PASS: klucz zawiera GOTOWĄ etykietę „5,5%”, nie surową liczbę
+PASS: 5% vs 5,5% → różne klucze (inaczej stara tekstura z cache)
+PASS: ta sama wartość, ale głód → inny klucz (napis „—” musi się przerysować)
+PASS: wzrost ujemny → własny klucz
+PASS: pojawienie się segmentu WZROST% zmienia klucz
+
+[3] napis faktycznie narysowany na kanwie
+PASS: plakietka rysuje „5,5%”
+PASS: plakietka NIE rysuje już skrótu „W<poziom>”
+PASS: plakietka rysuje wzrost ujemny ze znakiem minus
+PASS: plakietka przy głodzie rysuje „—”
+PASS: bez WZROST% (miasto obce) — żadnego procentu na plakietce
+
+[4] WZROST% to suma sześciu składników, nie sam składnik racji
+PASS: składnik racji odczytany bez zmian (kontrola spójności testu) (got=5.5 want=5.5)
+PASS: suma (12.5%) różni się od samego składnika racji (5.5%)
+PASS: etykieta z SUMY różni się od etykiety z samych racji — podpięcie racji = widoczny rozjazd z panelem
+PASS: suma 5,5+2+0+3+2+0 → etykieta „12,5%” (got="12,5%" want="12,5%")
+
+[5] CityRenderer pyta o WZROST% na żywo (nie migawka z końca tury)
+PASS: renderer pyta o WZROST% miasta gracza
+PASS: renderer NIE pyta o miasta obce (segment tylko dla gracza, jak dotąd)
+PASS: plakietka miasta gracza powstała
+PASS: plakietka gracza pokazuje 5,5% z żywego odczytu
+PASS: plakietka obcego miasta bez segmentu WZROST%
+PASS: każde odświeżenie plakietki pyta silnik od nowa (brak zamrożonej wartości)
+PASS: po zmianie racji plakietka pokazuje NOWĄ wartość (7%)
+PASS: stara tekstura z cache NIE jest reużyta (brak 5,5% na nowej plakietce)
+PASS: wzrost ujemny dociera na plakietkę ze znakiem minus
+PASS: głód → plakietka pokazuje „—” zamiast liczby (parytet z panelem)
+PASS: przy głodzie plakietka NIE obiecuje wzrostu
+PASS: sync bez getCityGrowth nie rzuca wyjątkiem (opcjonalny callback)
+
+38 passed, 0 failed
