@@ -72,3 +72,41 @@ export function farthestStepWithinBudget(
     && blockedKeys.has(keyOf(cut[end - 1]!.q, cut[end - 1]!.r))) end--;
   return end > 0 ? cut[end - 1]! : null;
 }
+
+/**
+ * Licznik zajetosci heksow (klucz `keyFn`) dla JEDNEJ tury wykonawczej (R-WEB-AI-MOVE-RANGE-Q1
+ * r5, kolizje barbarzyncow). Snapshot `occupied` z decideBarbarianMoves nie jest aktualizowany
+ * po komendach tej samej tury, wiec egzekutor sam go prowadzi (patrz claimHexForMove).
+ * / EN: per-tick hex occupancy counter. The decision snapshot goes stale after earlier
+ * commands of the same tick, so the executor keeps this counter current.
+ */
+export function buildHexOccupancy(
+  units: readonly { q: number; r: number }[],
+  keyFn: (q: number, r: number) => string,
+): Map<string, number> {
+  const occ = new Map<string, number>();
+  for (const u of units) {
+    const k = keyFn(u.q, u.r);
+    occ.set(k, (occ.get(k) ?? 0) + 1);
+  }
+  return occ;
+}
+
+/**
+ * Proba ruchu jednostki z `fromKey` na `toKey` w tej turze. Zwraca false (bez zmiany stanu),
+ * gdy heks docelowy jest juz zajety przez inna jednostke; przy sukcesie przenosi licznik z
+ * heksu zrodlowego na docelowy. / EN: returns false (no state change) when the target hex is
+ * already occupied; on success moves the count from source to target.
+ */
+export function claimHexForMove(
+  occ: Map<string, number>,
+  fromKey: string,
+  toKey: string,
+): boolean {
+  if ((occ.get(toKey) ?? 0) > 0) return false;
+  const n = occ.get(fromKey) ?? 0;
+  if (n > 1) occ.set(fromKey, n - 1);
+  else occ.delete(fromKey);
+  occ.set(toKey, (occ.get(toKey) ?? 0) + 1);
+  return true;
+}

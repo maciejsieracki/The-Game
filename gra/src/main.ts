@@ -260,7 +260,7 @@ import {
   canUnitOccupyCityHex, addForeignCityBlocks,
 } from './game/city-hex-movement';
 import { executeAiCityMove } from './game/ai-city-capture-executor';
-import { truncatePathWithinBudget } from './game/ai-move-range';
+import { truncatePathWithinBudget, buildHexOccupancy, claimHexForMove } from './game/ai-move-range';
 import {
   evaluateFoundCityAffordance,
   foundCityCostLabel,
@@ -36264,6 +36264,10 @@ async function boot(): Promise<void> {
             // decideBarbarianMoves, barbarians.ts). easy/normal: unchanged (an empty city
             // still blocks barbarian entry, exactly as today).
             const barbAllowCityCapture = shouldAllowBarbCityCapture(_menuDifficulty);
+            // R-WEB-AI-MOVE-RANGE-Q1 r5: zajetosc heksow prowadzona PER TURA. Snapshot `occupied`
+            // z decideBarbarianMoves nie widzi ruchow wykonanych wczesniej w tej samej turze, wiec
+            // dwa komendy `move`/`raid` mogly wejsc na ten sam heks. Guard: claimHexForMove.
+            const barbOcc = buildHexOccupancy(units, keyOf);
             for (const bcmd of barbCmds) {
               try {
                 const bu = units.find(u => u.id === bcmd.unitId);
@@ -36284,6 +36288,9 @@ async function boot(): Promise<void> {
                     canBarbarianWalkIntoEmptyCity(moveDestCity, units, _menuDifficulty);
                   if (!barbCanWalkIntoEmptyCity
                       && !canUnitOccupyCityHex(bu.ownerId, bcmd.toQ, bcmd.toR, cities)) continue;
+                  // R-WEB-AI-MOVE-RANGE-Q1 r5: nie wchodz na heks zajety przez inna jednostke
+                  // (w tym barbarzynce ruszajacego wczesniej w tej turze).
+                  if (!claimHexForMove(barbOcc, keyOf(bu.q, bu.r), keyOf(bcmd.toQ, bcmd.toR))) continue;
                   bu.q = bcmd.toQ;
                   bu.r = bcmd.toR;
                   bu.ruchLeft = 0;
@@ -36295,6 +36302,11 @@ async function boot(): Promise<void> {
                     // wołanie nawet gdy moveDestCity jest już barbarzyńska.
                     tryAutoCaptureEmptyCityAt(bcmd.toQ, bcmd.toR, [bu]);
                   }
+                  // R-WEB-AI-MOVE-RANGE-Q1 r5: bonusy odwiedzin miasta jak u AI (egzekutor AI wola
+                  // applyCityVisitBonusesAlongPath na trasie). Barbarzynca dostaje bonus TYLKO z
+                  // wlasnego miasta z budynkami (np. przejete miasto zachowuje cityBuilt). Komenda
+                  // niesie tylko koncowy krok, wiec sprawdzany jest heks docelowy (ZALOZENIE w logu r5).
+                  if (applyCityVisitBonusesAtHex(bu, bcmd.toQ, bcmd.toR, false)) syncUnitsRender();
                   if (sfxUnitsEnabled && (barbVisNow === null || barbVisNow.has(keyOf(bcmd.toQ, bcmd.toR)))) {
                     playMarchAccent(1);
                   }
@@ -36304,6 +36316,8 @@ async function boot(): Promise<void> {
                   const raidHex = map.hexes[raidKey];
                   if (!raidHex || raidHex.ulepszenie === Ulepszenie.Brak) continue;
                   if (!canUnitOccupyCityHex(bu.ownerId, bcmd.toQ, bcmd.toR, cities)) continue;
+                  // R-WEB-AI-MOVE-RANGE-Q1 r5: ten sam guard zajetosci co w `move`.
+                  if (!claimHexForMove(barbOcc, keyOf(bu.q, bu.r), raidKey)) continue;
                   const destroyed = raidHex.ulepszenie;
                   raidHex.ulepszenie = Ulepszenie.Brak;
                   spawnImprovementMesh(raidKey);
