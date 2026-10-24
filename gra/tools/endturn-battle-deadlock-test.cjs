@@ -30,10 +30,9 @@
  *  2) healStuck...: na interaktywnej próbie, gdy nic nie blokuje, NAJPIERW pokazuje odłożoną bitwę
  *     (flushDeferredAutoPreBattle), a dopiero potem (jeśli ekranu nadal brak) sprawdza wiek i czyści.
  *     Pomijane w trakcie trwającej tury świata (endTurnInProgress).
- *  3) siatka bezpieczeństwa: healStaleEndTurnBlockers() planuje (setTimeout 0) flush, gdy kolejka
+ *  3) siatka bezpieczeństwa: healStaleEndTurnBlockers() planuje (setTimeout 50 ms) flush, gdy kolejka
  *     jest niepusta, bez ekranu i bez blokującego modala. Timer ponownie sprawdza blokady.
- *  4) preBattle.ts: isPreBattleOpen() = overlayEl !== null && overlayEl.isConnected (osierocony
- *     overlay nie blokuje już końca tury).
+ * *  4) (usunięte w rundzie 2: ui/preBattle.ts nie jest zmieniany -- zmiana spekulatywna poza allowlistą).
  *
  * Części:
  *  A) PIN TEKSTOWY na main.ts i ui/preBattle.ts (kolejność wywołań, obecność siatki).
@@ -92,13 +91,13 @@ function bodyOf(src, header, indentNextFn) {
 
 {
   const heal = bodyOf(mainSrc, 'function healStuckDeferredPreBattleQueueOnEndTurnAttempt(): void {', '    ');
-  const flushIdx = heal.indexOf('flushDeferredAutoPreBattle();');
+  const flushIdx = heal.indexOf("flushDeferredPreBattleSafely('healStuck');");
   const ageIdx = heal.indexOf('oldestPendingAutoPreBattleAgeMs();');
-  const openAfterFlush = /flushDeferredAutoPreBattle\(\);\s*\n\s*(?:\/\/[^\n]*\n\s*)*if \(isPreBattleOpen\(\)\) return;/.test(heal);
+  const openAfterFlush = /flushDeferredPreBattleSafely\('healStuck'\);\s*\n\s*(?:\/\/[^\n]*\n\s*)*if \(isPreBattleOpen\(\)\) return;/.test(heal);
   ok(heal.length > 0, '[A3-setup] znaleziono function healStuckDeferredPreBattleQueueOnEndTurnAttempt(');
   ok(flushIdx >= 0 && ageIdx > flushIdx && openAfterFlush,
     '[A3] healStuck...: NAJPIERW flushDeferredAutoPreBattle() (pokaż odłożoną bitwę), POTEM `if (isPreBattleOpen()) return;`, DOPIERO potem wiek/czyszczenie');
-  ok(/if \(!endTurnInProgress\) flushDeferredAutoPreBattle\(\);/.test(heal),
+  ok(/if \(!endTurnInProgress\) flushDeferredPreBattleSafely\('healStuck'\);/.test(heal),
     '[A3b] flush w healStuck jest pominięty w trakcie trwającej tury świata (endTurnInProgress)');
   ok(/if \(ageMs <= 8000\) return;/.test(heal) && /clearDeferredAutoPreBattleQueue\(\);/.test(heal),
     '[A3c] próg 8000ms i czyszczenie zachowane (siatka na naprawdę martwą kolejkę)');
@@ -125,16 +124,21 @@ function bodyOf(src, header, indentNextFn) {
     && /scheduleDeferredPreBattleQueueWatchdog\(\);/.test(maybe),
     '[A5b] siatka planuje timer tylko gdy kolejka niepusta, brak ekranu, brak audiencji i brak scalenia armii');
   const sched = bodyOf(mainSrc, 'function scheduleDeferredPreBattleQueueWatchdog(): void {', '    ');
-  ok(/window\.setTimeout\(\(\) => \{/.test(sched) && /flushDeferredAutoPreBattle\(\);/.test(sched)
-    && /if \(endTurnInProgress\) return;/.test(sched) && /if \(isPreBattleOpen\(\) \|\| isDiplomacyAudienceOpen\(\) \|\| isArmyMergePanelOpen\(\)\) return;/.test(sched),
-    '[A5c] watchdog (setTimeout 0) ponownie sprawdza blokady (w tym endTurnInProgress) przed flushem');
+  ok(/window\.setTimeout\(\(\) => \{/.test(sched) && /\}, 50\);/.test(sched)
+    && /flushDeferredPreBattleSafely\('watchdog'\);/.test(sched)
+    && /if \(endTurnInProgress \|\| battleUiResolving\) return;/.test(sched)
+    && /if \(isPreBattleOpen\(\) \|\| isDiplomacyAudienceOpen\(\) \|\| isArmyMergePanelOpen\(\)\) return;/.test(sched),
+    '[A5c] watchdog (50 ms, ponad klatkę) ponownie sprawdza blokady (endTurnInProgress, battleUiResolving) przed flushem');
+  const safe = bodyOf(mainSrc, 'function flushDeferredPreBattleSafely(where: string): void {', '    ');
+  ok(/try \{\s*flushDeferredAutoPreBattle\(\);\s*\} catch/.test(safe)
+    && /console\.warn\(/.test(safe) && /hidePreBattle\(\);/.test(safe),
+    '[A5d] flushDeferredPreBattleSafely: try/catch + console.warn + hidePreBattle() (wyjątek w showPreBattle nie zostawia overlaya)');
 }
 
 {
-  // Osierocony overlay nie liczy się jako otwarty ekran bitwy.
-  const isOpen = bodyOf(preSrc, 'export function isPreBattleOpen(): boolean {', '');
-  ok(/return overlayEl !== null && overlayEl\.isConnected;/.test(isOpen),
-    '[A6] preBattle.ts: isPreBattleOpen() = overlayEl !== null && overlayEl.isConnected (osierocony overlay nie blokuje końca tury)');
+  // ui/preBattle.ts NIE jest zmieniany w tej rundzie (poza allowlistą, brak dowodu osieroconego overlaya).
+  ok(!/overlayEl\.isConnected/.test(preSrc),
+    '[A6] ui/preBattle.ts bez zmian: isPreBattleOpen() nie używa isConnected (zmiana spekulatywna usunięta)');
 }
 
 // ---------------------------------------------------------------------------
@@ -256,19 +260,6 @@ async function runUiPart() {
   ok(hasPendingAutoPreBattle() === false && isPreBattleOpen() === false,
     '[B1c] po rozstrzygnięciu WOJNA-2 kolejka pusta, brak ekranu -- koniec tury nie ma czym być zablokowany');
 
-  // B2) OSIEROCONY OVERLAY: overlay odpięty od DOM bez hidePreBattle() NIE może być „otwartym"
-  //     ekranem bitwy (przed naprawą isPreBattleOpen() zwracało true i blokowało sprzątanie).
-  showPreBattle(battleInfo('ORPHAN'), cb());                              // ręczna akcja
-  ok(isPreBattleOpen() === true, '[B2-setup] bitwa ORPHAN otwarta');
-  for (const el of Array.from(document.querySelectorAll('.pb-overlay'))) el.remove();
-  ok(isPreBattleOpen() === false,
-    '[B2] osierocony overlay (odpięty od DOM) NIE liczy się jako otwarty ekran bitwy -- isPreBattleOpen()===false');
-  // Po osieroceniu kolejna bitwa musi się pokazać (nie zostać zablokowana przez martwy overlay).
-  showPreBattle(battleInfo('AFTER-ORPHAN'), cb(), { auto: true });
-  ok(isPreBattleOpen() === true && /AFTER-ORPHAN/.test(shownTitle()),
-    '[B2b] po osieroceniu nowa bitwa (auto) pokazuje się natychmiast -- martwy overlay nie wiesza kolejki');
-  hidePreBattle();
-
   // B3) DRENAŻ KOLEJKI W SKOŃCZONEJ LICZBIE KROKÓW: N=4 bitwy wojenne w jednym ticku, rozstrzygane
   //     po kolei. Pętla siatki (flush + rozstrzygnięcie) musi opróżnić kolejkę w ≤ N+1 krokach
   //     i pokazać każdą dokładnie raz, w kolejności FIFO.
@@ -313,6 +304,34 @@ async function runUiPart() {
   hidePreBattle();
   flushDeferredAutoPreBattle();
   ok(hasPendingAutoPreBattle() === false, '[B4c] kolejka ostatecznie pusta po rozstrzygnięciu');
+
+  // B5) WYJĄTEK PODCZAS OTWIERANIA: showPreBattle rzuca po zdjęciu elementu z kolejki (shift()).
+  //     Dowód mechaniki, na której opiera się flushDeferredPreBattleSafely w main.ts: element
+  //     przepada (kolejka kurczy się o 1), a sprzątanie hidePreBattle() zostawia ekran czysty,
+  //     i kolejna bitwa z kolejki pokazuje się normalnie (nie wisi na martwym elemencie).
+  audienceOpen = true;
+  let armed = false;
+  const badAtk = battleInfo('BAD').atakujacy;
+  const bad = battleInfo('BAD');
+  Object.defineProperty(bad, 'atakujacy', {
+    enumerable: true, configurable: true,
+    get() { if (armed) { armed = false; throw new Error('boom-B5'); } return badAtk; },
+  });
+  showPreBattle(bad, cb(), { auto: true });
+  showPreBattle(battleInfo('AFTER-THROW'), cb(), { auto: true });
+  ok(hasPendingAutoPreBattle() === true, '[B5-setup] dwa żądania w kolejce (zła + poprawna)');
+  audienceOpen = false;
+  armed = true;
+  let thrown = false;
+  try { flushDeferredAutoPreBattle(); } catch (eB5) { thrown = /boom-B5/.test(String(eB5 && eB5.message)); }
+  ok(thrown, '[B5a] flush z wyjątkiem w showPreBattle rzuca (warunek, który łapie wrapper w main.ts)');
+  hidePreBattle();   // to, co robi wrapper po wyjątku
+  ok(isPreBattleOpen() === false, '[B5b] po wyjątku + sprzątaniu brak ducha ekranu (isPreBattleOpen()===false)');
+  flushDeferredAutoPreBattle();
+  ok(isPreBattleOpen() === true && /AFTER-THROW/.test(shownTitle()),
+    '[B5c] kolejna bitwa (AFTER-THROW) pokazuje się po wyjątku -- element zła bitwa przepadł, kolejka nie wisi');
+  hidePreBattle();
+  ok(hasPendingAutoPreBattle() === false, '[B5d] kolejka pusta po wyjątku i rozstrzygnięciu');
 
   try { fs.unlinkSync(ENTRY); } catch { /* ignore */ }
   try { fs.unlinkSync(OUT); } catch { /* ignore */ }

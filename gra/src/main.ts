@@ -31492,22 +31492,40 @@ async function boot(): Promise<void> {
 
     let deferredPreBattleWatchdogTimer: number | null = null;
 
-    /** R-WEB-ENDTURN-BATTLE-DEADLOCK-Q1: jednorazowy timer (0 ms) wznawiający kolejkę odłożonych
-     *  bitew. Ponownie sprawdza wszystkie blokady przed flushem -- bezpieczny nawet, gdy modal
-     *  zdążył się otworzyć w międzyczasie. / EN: one-shot 0 ms timer that resumes the deferred
-     *  battle queue; re-checks every blocker before flushing, so it is safe if a modal reopened. */
+    /** R-WEB-ENDTURN-BATTLE-DEADLOCK-Q1 (runda 2): flush kolejki odłożonych bitew z siatką na
+     *  wyjątek. showPreBattle() może rzucić PO zdjęciu elementu z kolejki (shift()) -- wtedy
+     *  element przepada (logowany), a częściowo zbudowany overlay sprzątamy przez hidePreBattle(),
+     *  żeby scrim/klawiatura nie zostały po wyjątku. / EN: round-2 flush with an exception net.
+     *  showPreBattle() may throw AFTER the item was shifted off the queue -- the item is then
+     *  dropped (logged) and any half-built overlay is torn down via hidePreBattle(). */
+    function flushDeferredPreBattleSafely(where: string): void {
+      try {
+        flushDeferredAutoPreBattle();
+      } catch (eFlush) {
+        console.warn('[PreBattle] flush rzucił wyjątek -- element odrzucony z kolejki, sprzątam ekran', { where, error: eFlush });
+        try { hidePreBattle(); } catch { /* best-effort: sprzątanie po wyjątku */ }
+      }
+    }
+
+    /** R-WEB-ENDTURN-BATTLE-DEADLOCK-Q1: jednorazowy timer (50 ms, czyli wyraźnie ponad jedną
+     *  klatkę) wznawiający kolejkę odłożonych bitew. Ponownie sprawdza wszystkie blokady przed
+     *  flushem -- bezpieczny nawet, gdy modal zdążył się otworzyć w międzyczasie. Stan przejściowy
+     *  w trakcie rozstrzygania bitwy (battleUiResolving) NIE jest uznawany za osierocony.
+     *  / EN: one-shot 50 ms timer (well over one frame) that resumes the deferred battle queue;
+     *  re-checks every blocker before flushing. A transient state while a battle is resolving
+     *  (battleUiResolving) is not treated as orphaned. */
     function scheduleDeferredPreBattleQueueWatchdog(): void {
       if (deferredPreBattleWatchdogTimer !== null) return;
       deferredPreBattleWatchdogTimer = window.setTimeout(() => {
         deferredPreBattleWatchdogTimer = null;
         if (!hasPendingAutoPreBattle()) return;
-        if (endTurnInProgress) return;
+        if (endTurnInProgress || battleUiResolving) return;
         if (isPreBattleOpen() || isDiplomacyAudienceOpen() || isArmyMergePanelOpen()) return;
         console.warn('[PreBattle] watchdog: odłożona bitwa bez ekranu i bez blokady -- wznawiam kolejkę', {
           ageMs: oldestPendingAutoPreBattleAgeMs(),
         });
-        flushDeferredAutoPreBattle();
-      }, 0);
+        flushDeferredPreBattleSafely('watchdog');
+      }, 50);
     }
 
     /** R-WEB-ENDTURN-BATTLE-DEADLOCK-Q1: planuje watchdog TYLKO gdy kolejka niepusta, brak
@@ -31745,7 +31763,7 @@ async function boot(): Promise<void> {
       // w finally endActiveHumanTurn(), a pokazanie bitwy w środku przejścia byłoby błędne.
       // / EN: not while a world turn is in progress (endTurnInProgress): the flush in the
       // finally of endActiveHumanTurn() handles that, and showing mid-transition would be wrong.
-      if (!endTurnInProgress) flushDeferredAutoPreBattle();
+      if (!endTurnInProgress) flushDeferredPreBattleSafely('healStuck');
       if (isPreBattleOpen()) return;
       const ageMs = oldestPendingAutoPreBattleAgeMs();
       if (ageMs <= 8000) return;
