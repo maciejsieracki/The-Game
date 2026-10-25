@@ -37,12 +37,12 @@ function runSuite(C) {
   const u = (id, q, r, ruchLeft = 2) => ({ id, q, r, ruchLeft });
 
   // --- kontrakt flagi i parametrow ---
-  ok(C.ARMY_CONSOLIDATION_ENABLED === false, 'flaga: domyslnie OFF');
-  ok(C.isArmyConsolidationEnabled() === false, 'flaga: isArmyConsolidationEnabled() = false domyslnie');
+  ok(C.ARMY_CONSOLIDATION_ENABLED === true, 'flaga: domyslnie ON (wydanie robocze nr 6)');
+  ok(C.isArmyConsolidationEnabled() === true, 'flaga: isArmyConsolidationEnabled() = true domyslnie');
   C.setArmyConsolidationOverride(true);
   ok(C.isArmyConsolidationEnabled() === true, 'flaga: override ON dziala');
   C.setArmyConsolidationOverride(null);
-  ok(C.isArmyConsolidationEnabled() === false, 'flaga: override null wraca do OFF');
+  ok(C.isArmyConsolidationEnabled() === true, 'flaga: override null wraca do ON (default)');
   ok(C.ARMY_CONSOLIDATION_MAX_PER_HEX === 12, 'params: max per hex = 12 (z JSON)');
   ok(C.ARMY_CONSOLIDATION_HOME_GROUP_SIZE === 2, 'params: home group = 2 (z JSON)');
   ok(C.ARMY_CONSOLIDATION_RALLY_SEARCH_HEX === 12, 'params: rally search = 12 (z JSON)');

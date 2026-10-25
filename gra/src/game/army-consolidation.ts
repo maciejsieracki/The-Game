@@ -1,7 +1,7 @@
 /**
  * R-WEB-ARMY-CONSOLIDATION-Q1 -- scalanie wojsk polowych AI w duze armie.
  *
- * Flaga `ARMY_CONSOLIDATION_ENABLED` (domyslnie OFF = zachowanie jak baza). Gdy OFF, zadna
+ * Flaga `ARMY_CONSOLIDATION_ENABLED` (wydanie robocze nr 6: DEFAULT=true; OFF = zachowanie jak baza). Gdy OFF, zadna
  * sciezka w ai.ts nie korzysta z tego modulu, wiec wynik gry jest identyczny z baza.
  *
  * Modul jest CZYSTY i deterministyczny: zero RNG, zero dostepu do stanu gry. Wszystkie
@@ -21,7 +21,7 @@ import consolidationParamsRaw from '../../data/army-consolidation-params.json';
 import { hexDistance, keyOf } from '../units/setup';
 
 /** GLOWNA FLAGA (tymczasowa zasada -- latwa do wylaczenia jedna zmiana). */
-export const ARMY_CONSOLIDATION_ENABLED = false;
+export const ARMY_CONSOLIDATION_ENABLED = true;
 
 let flagOverride: boolean | null = null;
 
