@@ -444,6 +444,7 @@ import {
   canInitiateSiege, classifyCityAttack, detectAutoSiegeOnCity,
   type MapSiegeContext,
 } from './game/mapSiegeDetect';
+import { installTestHook, type TestRawState } from './game/test-hook';
 import { resolveEnemyCityClick, type MapEnemyCityClickAction } from './map/map-attack-city';
 import { launchFieldBattleFromMap } from './battle/mapFieldBattle';
 import {
@@ -25490,6 +25491,97 @@ async function boot(): Promise<void> {
       countActiveDealsForTest: (a: number, b: number): number =>
         activeDeals.filter(d => (d.strony[0] === a && d.strony[1] === b) || (d.strony[0] === b && d.strony[1] === a)).length,
     };
+
+    // R-WEB-TEST-HOOK-HEADLESS-GAME-Q1 — `window.__test` istnieje WYŁĄCZNIE przy `?testhook=1`
+    // (gra/src/game/test-hook.ts). Wszystkie domknięcia wołają te same funkcje co UI.
+    installTestHook({
+      startGame: (o) => {
+        const mqTier = mapQualityTierFromQuery('high');
+        const mqBundle = bundledMapQualityPreset(mqTier);
+        const epochName: Record<string, string> = {
+          kamien: 'Epoka Kamienia', braz: 'Epoka Brązu', zelazo: 'Epoka Żelaza',
+        };
+        const advanced: NewGameAdvancedOptions = {
+          barbariansLevel: 'normalny',
+          battleAlwaysManual: false,
+          victoryMode: 'moc_i_dominacja',
+          buildingCostPace: 'niski',
+          kosztJednostekPace: 'niski',
+          wzrostLudnosciPace: 'wysoki',
+          ruchSwiataPace: 'krotki',
+          landFractionPercent: 30,
+          landFractionCustom: false,
+          cityStateDifficultyOverride: null,
+          cityLimitBase: 10,
+        };
+        return doStartGame({
+          civId: 'rzymianie',
+          civName: 'Rzymianie',
+          epoch: epochName[o.era] ?? 'Epoka Kamienia',
+          epochId: o.era,
+          difficulty: o.difficulty,
+          mapSize: 'Maly',
+          rivals: String(o.cityStates),
+          speed: 'Normalna',
+          worldType: 'Kontynenty',
+          typSwiata: 'kontynenty',
+          seed: o.seed,
+          mapQualityLabel: qualityTierToLabel(mqTier),
+          mapQuality: mqTier,
+          renderQualityLabel: qualityTierToLabel(mqBundle.renderQuality),
+          mapDetailQualityLabel: qualityTierToLabel(mqBundle.mapDetailQuality),
+          renderQuality: mqBundle.renderQuality,
+          mapDetailQuality: mqBundle.mapDetailQuality,
+          civTypesCount: o.aiCount,
+          cityStatesCount: clampMiastaPanstwaCount(o.cityStates),
+          worldDensity: { ...DEFAULT_WORLD_DENSITY },
+          worldDensityLabels: {
+            resources: 'Normalnie', rivers: 'Normalnie', desert: 'Normalnie',
+            forest: 'Normalnie', relief: 'Normalnie',
+          },
+          advanced,
+          villageRewardsEnabled: true,
+        } as NewGameParams);
+      },
+      endTurn: () => advanceSeat(),
+      getTurn: () => turn,
+      isEndTurnInProgress: () => endTurnInProgress,
+      isBattleBusy: () => isPreBattleOpen() || hasPendingAutoPreBattle(),
+      autoResolveOpenBattle: () => {
+        if (!isPreBattleOpen()) return false;
+        const btn = document.querySelector<HTMLButtonElement>('.pb-btn[data-act="auto"]');
+        if (!btn) return false;
+        btn.click();
+        return true;
+      },
+      flushDeferredBattles: () => flushDeferredAutoPreBattle(),
+      readRaw: (): TestRawState => {
+        const rel: TestRawState['relations'] = [];
+        for (const [k, r] of [...diplomacyRelations.entries()].sort(([x], [y]) => (x < y ? -1 : x > y ? 1 : 0))) {
+          const [a, b] = k.split('_').map(Number) as [number, number];
+          if (isBarbarian(a) || isBarbarian(b)) continue;
+          rel.push({ a, b, status: r.status, zaufanie: r.zaufanie });
+        }
+        return {
+          turn,
+          cities: cities.filter(c => !isBarbarian(c.ownerId))
+            .map(c => ({ owner: c.ownerId, q: c.q, r: c.r, pop: c.population })),
+          units: units.filter(u => !isBarbarian(u.ownerId))
+            .map(u => ({ owner: u.ownerId, typ: u.typeId, q: u.q, r: u.r })),
+          relations: rel,
+          deals: activeDeals.length,
+          offers: pendingDiplomacyInbox.map(p => ({
+            id: p.id, ownerId: p.ownerId, cmdType: p.cmdType, reason: p.reason, goldOnce: p.goldOnce ?? null,
+          })),
+        };
+      },
+      resolvePendingDiplomacy: (id, accept) => resolvePendingDiplomacy(id, accept),
+      isAwaitingFirstPlayerCity: () => isAwaitingFirstPlayerCity(),
+      foundPlayerStartCity: () => {
+        if (!playerStartHex) return false;
+        return tryFoundPlayerCityAt(playerStartHex.q, playerStartHex.r);
+      },
+    });
 
     // P-AI-NIE-STAWIA-BUDYNKOW-Q1 — hak testowy WYŁĄCZNIE dla
     // `tools/ai-buduje-budynki-test.cjs`. REGUŁA PRZECIW SAMOOSZUKIWANIU dispatchu
