@@ -34238,9 +34238,7 @@ async function boot(): Promise<void> {
             ) {
               triggeredSubjects.push({ ownerId: 0, q: playerCity.q, r: playerCity.r });
             }
-            // R-WEB-WAR-RULES-MULTIWAR-Q1 (R1, flaga ON): przed turą 40 pula podmiotów jest PUSTA
-            // (także gracz) -- parowanie nic nie przydziela i nie powtarza wpisów DECISION_REQUIRED
-            // co turę; pending wojen wymuszonych zostaje nienaruszony (wybuchną po turze 40).
+            // (R1, flaga ON): przed turą 40 pula podmiotów jest PUSTA (także gracz).
             if (isWarRulesMultiwarEnabled() && !isInterCivWarOpenAtTurn(turn)) triggeredSubjects.length = 0;
 
             // Krok D: pary już aktywne (dowolna epoka, AI<->AI, targetId!==0) -- pula do
@@ -39694,7 +39692,7 @@ async function boot(): Promise<void> {
       if (savedForcedEraDeclared?.length) {
         for (const [tag, n] of savedForcedEraDeclared) forcedEraWarDeclaredByTag.set(tag, n);
       }
-      const savedRegularWarCaptured =saved.meta?.regularWarCapturedByPairKey as
+      const savedRegularWarCaptured = saved.meta?.regularWarCapturedByPairKey as
         | Array<[string, { ownerA: number; ownerB: number; capturedByA: number; capturedByB: number }]>
         | undefined;
       if (savedRegularWarCaptured?.length) {
