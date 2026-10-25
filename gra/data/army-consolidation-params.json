@@ -1,0 +1,22 @@
+{
+  "rally_hex_max_units": {
+    "wartosc": 12,
+    "sekcja": "R-WEB-ARMY-CONSOLIDATION-Q1 (flaga ARMY_CONSOLIDATION_ENABLED)",
+    "opis": "Maksymalna liczba jednostek polowych w jednym heksie zbiorki (stolica lub miasto zapasowe). ZALOZENIE: gra nie ma twardego limitu stosu w armyMerge.ts; wartosc jest limitem armii tej funkcji."
+  },
+  "min_army_size": {
+    "wartosc": 2,
+    "sekcja": "R-WEB-ARMY-CONSOLIDATION-Q1",
+    "opis": "Minimalna liczba jednostek, od ktorej zgrupowanie uznawane jest za armie."
+  },
+  "home_defense_group_size": {
+    "wartosc": 2,
+    "sekcja": "R-WEB-ARMY-CONSOLIDATION-Q1",
+    "opis": "Ile jednostek wysyla obrona domu na jedno zagrozenie (kworum). Gdy wolna jest tylko jedna, zostaje minimalna gwarantowana obrona 1."
+  },
+  "rally_search_hex": {
+    "wartosc": 12,
+    "sekcja": "R-WEB-ARMY-CONSOLIDATION-Q1",
+    "opis": "Promien (w heksach) od stolicy, w ktorym szukamy miasta zapasowego zbiorki, gdy stolica jest pelna lub poza zasiegiem."
+  }
+}
