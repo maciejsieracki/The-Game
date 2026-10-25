@@ -1,0 +1,9 @@
+{
+  "_opis": "R-WEB-WAR-RULES-MULTIWAR-Q1 r3 (regula TYMCZASOWA, flaga WAR_RULES_MULTIWAR_ENABLED w src/game/war-rules-multiwar.ts). Progi wojen w JSON, nie w kodzie. R3 przywrocone: maxEraForcedWarsPerEra=1 (globalnie, na epoke).",
+  "delayInterCivWarsUntilTurn": 40,
+  "maxConcurrentWarsStone": 1,
+  "maxConcurrentWarsFromBronze": null,
+  "maxEraForcedWarsPerEra": 1,
+  "engageRadiusHexes": 10,
+  "splitArmyByWarCount": true
+}

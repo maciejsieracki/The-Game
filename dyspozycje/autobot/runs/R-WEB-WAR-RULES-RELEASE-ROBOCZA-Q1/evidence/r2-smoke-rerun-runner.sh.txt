@@ -1,0 +1,12 @@
+#!/bin/bash
+# Powtorka pomiaru peace (kandydat i baza naprzemiennie) do potwierdzenia ratio czasu tury
+S=/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/r1
+R=/home/user/The-Game/.claude/worktrees/wf_3a680124-f25-1
+cd "$R/gra" || exit 1
+for pair in "base:$S/base-a289d2c4.html" "new:$R/gra-robocza/Gra-ROBOCZA.html"; do
+  tag="${pair%%:*}"; html="${pair#*:}"
+  timeout 3000 node "$S/smoke.cjs" --html "$html" --mode peace --turns 46 --out "$S/smoke2-$tag-peace" > "$S/smoke2-$tag-peace.log" 2>&1
+  echo "EXIT=$?" >> "$S/smoke2-$tag-peace.log"
+  echo "DONE2 $tag peace"
+done
+echo SMOKE2DONE

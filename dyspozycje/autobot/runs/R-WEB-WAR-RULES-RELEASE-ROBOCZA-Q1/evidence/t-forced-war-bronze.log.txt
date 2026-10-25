@@ -1,0 +1,34 @@
+--- T8: nazwane stałe (parametry) ---
+
+--- T1 (a): awans do Brązu bez aktywnej wojny → eligibility TRUE (bez pól tury -- pomija próg) ---
+
+--- T2 (b): awans do Brązu gdy już w wojnie (obie role) → eligibility FALSE ---
+
+--- R-WOJNA-WYMUSZONA-REGULY-Q1 (Część A): próg 25 tur OD WEJŚCIA W BRĄZ ---
+
+--- R-WOJNA-WYMUSZONA-REGULY-Q1 (Część C): shouldEndBronzeForcedWarByDuration ---
+
+--- T9: pickBronzeForcedWarTargetId — najbliższy sąsiad terytorialny ---
+
+--- T3 (c): próg 2 miast zdobytych/straconych → automatyczny pokój ---
+
+--- T4 (d): odpoczynek po pokoju blokuje szukanie nowego celu ---
+
+--- T5 (e): po odpoczynku, cooldown NA TĘ SAMĄ cywilizację nadal blokuje wybór ---
+
+--- T6 (f): sojusz z trzecią, niepowiązaną cywilizacją PRZETRWA wojnę wymuszoną ---
+
+--- T7 (g): miasto-państwo NIE podlega regule wymuszonej wojny Brązu ---
+
+--- decideAIDiplomacy: bronzeForceWarTargetId (analogicznie clusterForceWarTargetId) ---
+
+--- T10 (B3, runda 2): sojusz z SAMYM CELEM blokuje decideAIDiplomacy ---
+
+--- T11 (B5, runda 2): roundtrip serialize→restore, w tym wojna z aktywnym licznikiem ---
+
+--- T12 (B5, runda 2): restore bez `saved` (stary zapis sprzed tej naprawy) ---
+
+============================================================
+PASSED: 56 / FAILED: 0 / TOTAL: 56
+ALL GREEN
+EXIT=0

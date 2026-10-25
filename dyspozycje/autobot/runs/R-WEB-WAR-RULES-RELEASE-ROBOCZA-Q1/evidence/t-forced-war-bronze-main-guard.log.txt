@@ -1,0 +1,50 @@
+========================================================================
+R-EPOKA-BRAZU-WYMUSZONA-WOJNA runda 2 -- bramka tekstowa main.ts + ai.ts
+========================================================================
+
+1. B1 -- maybeResolveBronzeForcedWarOnCityCapture wołany z OBU funnel-i przejęcia miasta
+  PASS: maybeResolveBronzeForcedWarOnCityCapture() zdefiniowana jako funkcja w main.ts
+  PASS: applyCityCaptureToMap: woła maybeResolveBronzeForcedWarOnCityCapture(oldOwner, atkOwner) PO applyCityCaptureAfterBattle
+  PASS: resolveSiegeSurrender (kapitulacja głodowa): woła maybeResolveBronzeForcedWarOnCityCapture(oldOwner, newOwner) PO city.ownerId = newOwner -- bez tego wojna wymuszona AI<->AI nigdy się nie kończy (negocjacje pokojowe obsługują wyłącznie targetId===0)
+
+2. B3 -- aktywny sojusz z celem wyklucza go z puli wymuszonej wojny Brązu
+  PASS: main.ts: sojusz (obok NAP i blokady pokoju) blokuje wybór pary WSZĘDZIE -- przez isForcedWarPairBlocked, wspólny predykat zastępujący dawne bronzeBlockedOwnerIds
+  PASS: main.ts: relacjeDip AI<->AI (pętla "for (const otherId of aiOwnerList)") zasila hasAllianceTreaty: allianceFormalKindBetween(activeDeals, ownerId, otherId) !== null
+  PASS: main.ts: diploInp przekazuje bronzeForceWarTargetId do DiplomacjaInputs
+  PASS: ai.ts: RelacjaWejscie deklaruje pole hasAllianceTreaty?: boolean
+  PASS: ai.ts: decideAIDiplomacy guard bronzeForceWarTargetId sprawdza !forcedRel.hasAllianceTreaty obok !forcedRel.stanWojny / !forcedRel.peaceLocked / !forcedRel.hasNapTreaty
+
+3. B4 -- pending konsumowany WYŁĄCZNIE przy udanym wypowiedzeniu wojny
+  PASS: REGRESJA B4: wzorzec "if (wasPending) bronzeForceWarPendingOwners.delete(ownerId);" (kasowanie NIEZALEŻNIE od wyniku próby) ma ZERO wystąpień w main.ts
+  PASS: main.ts: wasPending Brązu obliczany jako CZYSTY ODCZYT (bronzeForceWarPendingOwners.has(ownerId)) bez towarzyszącego .delete() w tej samej linii/bloku odczytu
+  PASS: main.ts: bronzeForceWarPendingOwners.delete(ownerId) występuje DOKŁADNIE 2x w całym pliku -- (1) blok sukcesu wypowiedz_wojne (konsumpcja B4), (2) eliminateOwner (sprzątanie po eliminacji cywilizacji). Jeśli >2, ktoś dołożył trzecie (podejrzane) miejsce kasujące; jeśli <2, jedno z tych dwóch zniknęło
+  PASS: main.ts: bronzeForceWarPendingOwners.delete(ownerId) leży w BLOKU SUKCESU -- bezpośrednio obok bronzeForceWarActiveByPairKey.set(...) i bronzeForceWarCycleOwners.add(ownerId), wewnątrz "if (bronzeForceWarTargetId != null && targetId === bronzeForceWarTargetId)". R-WOJNA-WYMUSZONA-REGULY-Q1 (Część C): budżet {0,200} (zamiast dawnego dokładnego dopasowania) wchłania nowe pole `startTurn: turn,` dołożone do literału stanu pary bez utraty czułości na usunięcie samego wywołania .set/.add/.delete w tym bloku.
+
+4. B5 -- 4 struktury stanu w snapshot ORAZ restore (save/load roundtrip wiązanie)
+  PASS: buildSaveGameSnapshot: woła serializeBronzeForcedWarState(pendingOwners, cycleOwners, restUntilByOwner, activeByPairKey) PRZED return
+  PASS: meta w buildSaveGameSnapshot zawiera pole #1: "bronzeForceWarPendingOwners"
+  PASS: meta w buildSaveGameSnapshot zawiera pole #2: "bronzeForceWarCycleOwners"
+  PASS: meta w buildSaveGameSnapshot zawiera pole #3: "bronzeForceWarRestUntilByOwner"
+  PASS: meta w buildSaveGameSnapshot zawiera pole #4: "bronzeForceWarActiveByPairKey"
+  PASS: restoreGameFromSave: woła restoreBronzeForcedWarState({...}) czytając saved.meta?.bronzeForceWar*
+  PASS: restoreGameFromSave: repopuluje WSZYSTKIE 4 struktury (.clear() + pętla .add()/.set()) z bronzeForceWarRestored. R-WOJNA-WYMUSZONA-REGULY-Q1 (Część C): pętla activeByPairKey teraz backfilluje `startTurn` (`{ ...st, startTurn: st.startTurn ?? turn }` zamiast gołego `st`) -- regex dopuszcza DOWOLNĄ treść ciała pętli activeByPairKey ({0,200}), o ile nadal realnie .set()-uje do mapy w pętli po bronzeForceWarRestored.activeByPairKey (czułość na usunięcie SAMEJ pętli/repopulacji zostaje, czułość na DOKŁADNY kształt wnętrza — nie)
+
+5. Baseline -- eligibility check obecny przed próbą, sprzątanie stanu przy eliminacji
+  PASS: main.ts: isEligibleForBronzeForcedWar({ isMainAiCiv: true, isAlreadyAtWarAnyRole: ..., currentTurn: turn, eraEnterTurn: ... }) wołane w gałęzi wasPending PRZED wyborem celu (shouldSearch). R-WOJNA-WYMUSZONA-REGULY-Q1 (Część A): shouldSearch teraz zaczyna się od `forcedWarDifficultyLevel !== 1 && (...)` (Część B, Łatwy) i isEligibleForBronzeForcedWar dostaje 2 nowe pola (próg 25 tur od wejścia w Brąz) -- regex dopuszcza to bez utraty czułości na usunięcie SAMEGO wywołania eligibility PRZED shouldSearch
+  PASS: main.ts: eliminateOwner() sprząta bronzeForceWarPendingOwners/CycleOwners/RestUntilByOwner oraz usuwa ownera z bronzeForceWarActiveByPairKey (jako attacker LUB target)
+
+6. RUNDA 3 (B6a) -- 4 nowe asercje łapiące M19/M7/M12/M16, które przeżyły rundę 2
+  PASS: maybeResolveBronzeForcedWarOnCityCapture(): woła finalizePeaceTreatyBetween(st.attackerId, st.targetId, WOJNA_WYMUSZONA_COOLDOWN_TA_SAMA_CYWILIZACJA_TUR) -- Z ARGUMENTEM COOLDOWNU. Łapie DWIE mutacje jedną asercją: M19 (usunięcie SAMEGO wywołania auto-pokoju z wnętrza haka -- licznik nadal liczy, wojna AI<->AI nigdy się nie kończy) ORAZ M16 (utrata TEGO argumentu -- finalizePeaceTreatyBetween spada na domyślny PEACE_TREATY_LOCK_TURNS=10 zamiast WOJNA_WYMUSZONA_COOLDOWN_TA_SAMA_CYWILIZACJA_TUR=20, cooldown cicho spada z 20 na 10)
+  PASS: maybeResolveBronzeForcedWarOnCityCapture(): wyszukuje stan pary przez diploPairKey(oldOwner, newOwner) -- NIE przez prostą interpolację stringów bez sortowania (M7: zamiana na np. `${oldOwner}-${newOwner}` sprawia, że licznik działa TYLKO gdy oldOwner<newOwner, po cichu gubiąc połowę zdobyczy -- para (5,3) szuka innego klucza niż zapisana przy wypowiedzeniu wojny jako (3,5))
+  FAIL: finalizePeaceTreatyBetween(): zawiera blok sprzątający stan wojny wymuszonej Brązu -- bronzeForceWarActiveByPairKey.delete(bronzePairKey) + uzbrojenie odpoczynku napastnika (bronzeForceWarRestUntilByOwner.set) -- WEWNĄTRZ CIAŁA TEJ FUNKCJI, nie tylko wywoływane przez nią. Łapie M12: pokój wynegocjowany NORMALNIE (nie przez próg miast wymuszonej wojny, np. zwykła oferta pokoju gracza/AI) zostawiałby martwy wpis w bronzeForceWarActiveByPairKey -- napastnik trwale i cicho wypadałby z cyklu (ta sama klasa błędu co B4 z rundy 1)
+  PASS: maybeResolveBronzeForcedWarOnCityCapture(): woła shouldEndBronzeForcedWarByCityCount(...) i wraca wcześnie (return) gdy próg NIE jest osiągnięty -- PRZED jakimkolwiek wywołaniem finalizePeaceTreatyBetween niżej w tej samej funkcji. Usunięcie tego warunku kończyłoby wojnę wymuszoną automatycznym pokojem po KAŻDYM pojedynczym przejęciu miasta między parą, nie dopiero po osiągnięciu progu WOJNA_WYMUSZONA_MAX_MIASTA_ZDOBYTE_LUB_STRACONE
+
+7. RUNDA 4 (Operator obrona) -- Część A/B/C: koordynacja Brązu, limit czasu, licznik wejścia w Brąz
+  PASS: main.ts: bronzeForceWarTargetId ustawiane z forcedWarAssignmentByOwner (nowy rdzeń parowania), nie z usuniętego pickBronzeForcedWarTargetIdCoordinated
+  PASS: main.ts: resolveForcedWarDurationLimits() faktycznie WOŁANE w pętli tury AI -- wewnątrz "if (!aiCmdResume) {" OBOK pruneInvalidNegotiations(), PRZED reconcileAllOwnerErasFromResearch() -- nie tylko zdefiniowane. Część C (limit trwania 25 tur, Kamień+Brąz) bez tego wywołania funkcja nigdy się nie uruchamia i żadna wojna wymuszona nie kończy się z powodu czasu. Zweryfikowano mutacyjnie: usunięcie SAMEJ linii wywołania (definicja funkcji nietknięta) czerwieni tę asercję.
+  PASS: main.ts: przy awansie Kamień(1)→Brąz(2) (obok bronzeForceWarPendingOwners.add(ownerId)) wołane JEST bronzeEraEnterTurnByOwner.set(ownerId, turn) -- Część A: bez tego zapisu próg „25 tur od wejścia w Brąz" (isEligibleForBronzeForcedWar eraEnterTurn) nie ma od czego liczyć dla nowo awansowanych cywilizacji. Zweryfikowano mutacyjnie: usunięcie SAMEJ linii .set() (pozostawiając .add(ownerId) i resztę bloku awansu) czerwieni tę asercję.
+
+========================================================================
+WYNIK: 27 PASS, 1 FAIL
+========================================================================
+EXIT=1

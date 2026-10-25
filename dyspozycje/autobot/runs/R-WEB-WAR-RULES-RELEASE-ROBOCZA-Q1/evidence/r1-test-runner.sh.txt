@@ -1,0 +1,40 @@
+#!/bin/bash
+# Runs dispatch test gates; each log ends with EXIT=<code>
+R=/home/user/The-Game/.claude/worktrees/wf_3a680124-f25-1
+S=/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/r1
+cd "$R" || exit 1
+run() {
+  name="$1"; shift
+  timeout 900 node "$@" > "$S/t-$name.log" 2>&1
+  echo "EXIT=$?" >> "$S/t-$name.log"
+  echo "$name: $(tail -1 "$S/t-$name.log") / $(grep -E '[0-9]+ *(PASS|FAIL|passed|failed|OK)|FAIL|ok:|fail' "$S/t-$name.log" | tail -1 | cut -c1-120)"
+}
+run war-rules-multiwar gra/tools/war-rules-multiwar-test.cjs
+run war-rules-multiwar-main-guard gra/tools/war-rules-multiwar-main-guard-test.cjs
+run war-allin-capital gra/tools/war-allin-capital-test.cjs
+run ai-move-range gra/tools/ai-move-range-test.cjs
+run ai-move-range-collision gra/tools/ai-move-range-collision-test.cjs
+run endturn-battle-deadlock gra/tools/endturn-battle-deadlock-test.cjs
+run endturn-battle-deadlock-exec gra/tools/endturn-battle-deadlock-exec-test.cjs
+run load-game-regression gra/tools/load-game-regression-test.cjs
+run load-game-blockers-exec gra/tools/load-game-blockers-exec-test.cjs
+run fsa-autosave gra/tools/fsa-autosave-test.cjs
+run logic gra/tools/logic-test.cjs
+run ai gra/tools/ai-test.cjs
+run barbarzyncy-krazenie gra/tools/barbarzyncy-krazenie-test.cjs
+run barb-city-behavior gra/tools/barb-city-behavior-test.cjs
+run forced-war-stone gra/tools/forced-war-stone-test.cjs
+run forced-war-stone-main-guard gra/tools/forced-war-stone-main-guard-test.cjs
+run forced-war-bronze gra/tools/forced-war-bronze-test.cjs
+run forced-war-bronze-main-guard gra/tools/forced-war-bronze-main-guard-test.cjs
+run forced-war-bronze-new-game-reset gra/tools/forced-war-bronze-new-game-reset-test.cjs
+run forced-war-iron gra/tools/forced-war-iron-test.cjs
+run forced-war-iron-main-guard gra/tools/forced-war-iron-main-guard-test.cjs
+run forced-war-waves gra/tools/forced-war-waves-test.cjs
+run forced-war-trojstronna gra/tools/forced-war-trojstronna-test.cjs
+run forced-war-trojstronna-main-guard gra/tools/forced-war-trojstronna-main-guard-test.cjs
+run diplomacy-war-gates gra/tools/diplomacy-war-gates-test.cjs
+run alliance-war-obligation gra/tools/alliance-war-obligation-test.cjs
+run ai-war-gate gra/tools/ai-war-gate-test.cjs
+run web-memory-leaks gra/tools/web-memory-leaks-test.cjs
+echo ALLDONE
