@@ -59,6 +59,15 @@ i kasowany po zakończeniu. Repo nie jest modyfikowane (zero `npm run build|dev`
   Wartości domyślne produkcji: wszystkie cztery flagi ON.
 - Per tura `runTurns` zwraca dodatkowo `trust` (Zaufanie par "a-b"), `offerDetail`
   (id, ownerId, cmdType, reason, goldOnce) i `endBlocked` (true = TIMEOUT końca tury).
+  R-WEB-MEASURE-ROBOCZA-Q1: `runTurns` najpierw wykonuje realną próbę końca tury; gdy bramka
+  (`dealsEndTurnGate`) ją odrzuci przy wiszącej ofercie handlowej AI->gracz (`negotiationTable`,
+  `isAiTradeOfferAwaitingPlayer`), oferta jest rozpatrywana wg polityki (`pass`/`reject-all-offers`
+  = odrzuć, `accept-all-offers` = akceptuj przez `handleNegotiationAccept/Reject`) i koniec tury
+  jest ponawiany. Per tura: `blockedByOffer`, `resolvedOnBlock`, `releasedAfterResolve`,
+  `tradeOffers` (id, typ, `reason`, `goldOnce`, `bilansPW`), `eras`, `crisis`, `tStart/tEnd`.
+  Bilans PW oferty = `aiProposalPlayerBenefitSurplus` (odczyt, bez zmiany logiki). Legacy
+  `pendingDiplomacyInbox` obsługiwane jak wcześniej. Flaga `dealsEndTurnGate` (bramka) NIE
+  jest przełączana przez `setFlag` (ustawiana przy starcie gry, domyślnie ON).
   `sim-metrics.cjs --json` wypisuje blok `summary.diplo` (wojny per tura, rozkład Zaufania,
   oferty z `reason`, tury zablokowane). Gracz = id 0 (ZAŁOŻENIE).
 
@@ -116,8 +125,11 @@ ani do determinizmu seed-to-seed, dopóki nie zostanie usunięte źródło z log
 
 - Podział metryk „wojny per epoka" nie jest wykonany: skrypt raportuje maksimum wojen
   w przebiegu; podział na epoki wymagałby odczytu epoki gracza per tura (poza zakresem).
-- „Bilans” ofert AI→gracz z `diplomacy-ai-offer-balance.ts` nie jest odczytywany —
-  skrypt liczy oferty z `goldOnce < 0` (NIE_ZMIERZONO pełny bilans).
+- Bilans ofert AI→gracz: od R-WEB-MEASURE-ROBOCZA-Q1 odczytywany jako `bilansPW`
+  (`aiProposalPlayerBenefitSurplus`) dla wpisów stołu negocjacji. Zdarzenia wojen AI-AI nie mają
+  agresora w stanie gry (NIE_ZMIERZONO); wojny AI->gracz i wymuszone wojny epoki -- z linii konsoli.
+- Blokada końca tury z przyczyną innej niż oferta handlowa (np. stan `endTurnInProgress`) jest
+  widoczna tylko jako `endBlockedTurns` i linie `endTurnLines` w JSON.
 - `playerPassive` jest zapisywane w opcjach, ale gracz i tak nie wykonuje akcji poza
   zamknięciem tury (założenie: brak akcji = pasywność).
 - Czas tury zależy od obciążenia maszyny; pomiary równoległe z innymi procesami są

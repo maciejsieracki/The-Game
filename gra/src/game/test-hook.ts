@@ -37,9 +37,38 @@ export interface TestRawState {
   deals: number;
   /** Oczekujące propozycje (pendingDiplomacyInbox) -- surowo, z polami z kolejki. */
   offers: Array<{ id: string; ownerId: number; cmdType: string; reason: string; goldOnce: number | null }>;
+  /** R-WEB-MEASURE-ROBOCZA-Q1: id gracza (ME()). */
+  playerId: number;
+  /** R-WEB-MEASURE-ROBOCZA-Q1: epoka (era) każdego właściciela major, klucz = id właściciela. */
+  eras: Record<string, number>;
+  /** R-WEB-MEASURE-ROBOCZA-Q1: liczniki kryzysu Zaufania per para (klucz diploPairKey). */
+  crisis: Record<string, number>;
+  /** R-WEB-MEASURE-ROBOCZA-Q1: id wpisów warEventLog gracza (`war-<tura>-<agresor>-<cel>`). */
+  playerWarEvents: string[];
+  /**
+   * R-WEB-MEASURE-ROBOCZA-Q1: WSZYSTKIE wpisy stołu negocjacyjnego (negotiationTable), nie tylko
+   * pendingDiplomacyInbox. `isTradeAwaitingPlayer` = oferta handlowa AI->gracz, która blokuje koniec tury.
+   * `bilansPW` = aiProposalPlayerBenefitSurplus dla oferty AI (dodatnia = korzyść gracza), null gdy nie AI.
+   */
+  negotiations: Array<{
+    id: string;
+    actionId: string;
+    proposerOwnerId: number;
+    responderOwnerId: number;
+    awaitingOwnerId: number;
+    authorOwnerId: number;
+    source: string;
+    round: number;
+    reason: string | null;
+    goldOnce: number | null;
+    isTradeAwaitingPlayer: boolean;
+    bilansPW: number | null;
+  }>;
 }
 
 export interface TestHookDeps {
+  /** R-WEB-MEASURE-ROBOCZA-Q1: rozstrzyga wpis stołu (accept=true -> handleNegotiationAccept, inaczej Reject). */
+  resolveNegotiation(id: string, accept: boolean): void;
   /** Start nowej gry przez REALNE doStartGame; zwraca obietnicę po wygenerowaniu świata. */
   startGame(opts: TestStartOpts): Promise<void>;
   /** Realny koniec tury (advanceSeat). */
@@ -80,6 +109,8 @@ export interface TestTurnMetric {
   turn: number;
   ms: number;
   wars: number;
+  /** R-WEB-MEASURE-ROBOCZA-Q1: pary w stanie wojny po turze ([a,b], a<b). */
+  warPairs: Array<[number, number]>;
   deals: number;
   offers: number;
   battlesAuto: number;
@@ -92,6 +123,31 @@ export interface TestTurnMetric {
   offerDetail: Array<{ id: string; ownerId: number; cmdType: string; reason: string; goldOnce: number | null }>;
   /** Zakończenie tury nie nastąpiło (TIMEOUT) -- sygnał zablokowanego końca. */
   endBlocked: boolean;
+  /** R-WEB-MEASURE-ROBOCZA-Q1: pierwsza próba końca tury odrzucona przez bramkę z wiszącą ofertą handlową AI. */
+  blockedByOffer: boolean;
+  /** Ile ofert handlowych AI->gracz rozpatrzono po blokadzie (wg polityki). */
+  resolvedOnBlock: number;
+  /** Po rozpatrzeniu ponowna próba końca tury się udała (true) / nie (false) / brak blokady (null). */
+  releasedAfterResolve: boolean | null;
+  /** Oferty handlowe AI->gracz widoczne przed końcem tury (bilans, reason, typ). */
+  tradeOffers: TradeOfferView[];
+  /** Epoki właścicieli w tej turze (po końcu tury). */
+  eras: Record<string, number>;
+  /** Liczniki kryzysu Zaufania po tej turze. */
+  crisis: Record<string, number>;
+  /** Znacznik czasu ściennego (ms) początku i końca iteracji (do mapowania logów konsoli na tury). */
+  tStart: number;
+  tEnd: number;
+}
+
+export interface TradeOfferView {
+  id: string;
+  actionId: string;
+  ownerId: number;
+  reason: string | null;
+  goldOnce: number | null;
+  bilansPW: number | null;
+  round: number;
 }
 
 export interface TestRunOpts {
@@ -113,6 +169,12 @@ export interface TestSnapshot {
   units: number;
   offers: Array<{ id: string; ownerId: number; cmdType: string; reason: string; goldOnce: number | null }>;
   hash: string;
+  /** R-WEB-MEASURE-ROBOCZA-Q1: id gracza, mapa "q,r" -> właściciel miasta (do liczenia zdobytych miast). */
+  playerId: number;
+  cityOwners: Record<string, number>;
+  eras: Record<string, number>;
+  crisis: Record<string, number>;
+  playerWarEvents: string[];
 }
 
 /** Nazwy flag -> settery `setXOverride` (ta sama funkcja, którą woła kod produkcyjny). */
@@ -201,7 +263,17 @@ export function summarizeRaw(raw: TestRawState): TestSnapshot {
     units: raw.units.length,
     offers: raw.offers,
     hash,
+    playerId: raw.playerId,
+    cityOwners: Object.fromEntries(raw.cities.map(c => [`${c.q},${c.r}`, c.owner])),
+    eras: raw.eras,
+    crisis: raw.crisis,
+    playerWarEvents: raw.playerWarEvents,
   };
+}
+
+/** Oferta handlowa AI->gracz widoczna w stole (do metryk i rozpatrywania). */
+function isTradeAwaitingPlayer(n: TestRawState['negotiations'][number]): boolean {
+  return n.isTradeAwaitingPlayer;
 }
 
 function sleep(ms: number): Promise<void> {
@@ -264,12 +336,13 @@ export function installTestHook(d: TestHookDeps): void {
       const out: TestTurnMetric[] = [];
       for (let i = 0; i < n; i++) {
         const t0 = performance.now();
+        const tStart = Date.now();
         const before = d.getTurn();
         let battlesAuto = 0;
-        // Oferty AI -> gracz: decyzja wg polityki (realna funkcja modala).
+        // Oferty pendingDiplomacyInbox (legacy) -> decyzja wg polityki (realna funkcja modala).
         if (policy !== 'pass') {
           const accept = policy === 'accept-all-offers';
-          for (const o of readOffers()) d.resolvePendingDiplomacy(o.id, accept);
+          for (const o of d.readRaw().offers) d.resolvePendingDiplomacy(o.id, accept);
         }
         // Bitwy: realny przycisk „Auto" w oknie pre-bitwy, dopóki kolejka nie jest pusta.
         const deadline = t0 + timeout;
@@ -279,26 +352,64 @@ export function installTestHook(d: TestHookDeps): void {
           else d.flushDeferredBattles();
           await sleep(30);
         }
-        d.endTurn();
-        while (performance.now() < deadline) {
-          if (d.getTurn() > before && !d.isEndTurnInProgress() && !d.isBattleBusy()) break;
-          if (autoBattles && d.autoResolveOpenBattle()) battlesAuto++;
-          await sleep(30);
+        // R-WEB-MEASURE-ROBOCZA-Q1: najpierw realna próba końca tury; oferta handlowa AI na stole
+        // (negotiationTable) jest rozpatrywana DOPIERO gdy bramka ją zablokowała (jak w grze:
+        // gracz widzi modal i decyduje). Odrzucenie przez bramkę jest synchroniczne.
+        const offersSeen = d.readRaw().negotiations.filter(isTradeAwaitingPlayer);
+        const tradeOffers: TradeOfferView[] = offersSeen.map(toView);
+        const tryEnd = async (): Promise<boolean> => {
+          d.endTurn();
+          // Odrzucone synchronicznie (bramka końca tury): nic nie wystartowało i nie czeka bitwa.
+          if (!d.isEndTurnInProgress() && d.getTurn() === before && !d.isBattleBusy()) return false;
+          while (performance.now() < deadline) {
+            if (d.getTurn() > before && !d.isEndTurnInProgress() && !d.isBattleBusy()) return true;
+            if (autoBattles && d.autoResolveOpenBattle()) battlesAuto++;
+            await sleep(30);
+          }
+          return d.getTurn() > before && !d.isEndTurnInProgress();
+        };
+        let progressed = await tryEnd();
+        let blockedByOffer = false;
+        let resolvedOnBlock = 0;
+        let releasedAfterResolve: boolean | null = null;
+        if (!progressed) {
+          const blocking = d.readRaw().negotiations.filter(isTradeAwaitingPlayer);
+          if (blocking.length > 0) {
+            blockedByOffer = true;
+            for (const ng of blocking) {
+              d.resolveNegotiation(ng.id, policy === 'accept-all-offers');
+              resolvedOnBlock++;
+            }
+            progressed = await tryEnd();
+            releasedAfterResolve = progressed;
+          }
         }
-        const ok = d.getTurn() > before && !d.isEndTurnInProgress();
-        const s = summarizeRaw(d.readRaw());
+        const ok = progressed;
+        const rawAfter = d.readRaw();
+        const s = summarizeRaw(rawAfter);
+        // Oferty handlowe, które pojawiły się w trakcie tury (widoczne po końcu) -- dopisane do listy.
+        for (const ng of rawAfter.negotiations.filter(isTradeAwaitingPlayer)) tradeOffers.push(toView(ng));
         out.push({
           turn: d.getTurn(),
           ms: Math.round(performance.now() - t0),
           wars: s.warCount,
+          warPairs: s.wars,
           deals: s.deals,
           offers: s.offers.length,
           battlesAuto,
           hash: s.hash,
-          offerIds: s.offers.map(o => o.id),
+          offerIds: [...s.offers.map(o => o.id), ...tradeOffers.map(o => o.id)],
           trust: s.trust,
           offerDetail: s.offers.map(o => ({ id: o.id, ownerId: o.ownerId, cmdType: o.cmdType, reason: o.reason, goldOnce: o.goldOnce })),
           endBlocked: !ok,
+          blockedByOffer,
+          resolvedOnBlock,
+          releasedAfterResolve,
+          tradeOffers,
+          eras: s.eras,
+          crisis: s.crisis,
+          tStart,
+          tEnd: Date.now(),
         });
         if (!ok) {
           out[out.length - 1]!.hash = 'TIMEOUT:' + s.hash;
@@ -308,8 +419,11 @@ export function installTestHook(d: TestHookDeps): void {
       return out;
     },
   };
-  function readOffers(): TestRawState['offers'] {
-    return deps!.readRaw().offers;
+  function toView(n: TestRawState['negotiations'][number]): TradeOfferView {
+    return {
+      id: n.id, actionId: n.actionId, ownerId: n.authorOwnerId, reason: n.reason,
+      goldOnce: n.goldOnce, bilansPW: n.bilansPW, round: n.round,
+    };
   }
   try {
     (window as unknown as { __test: typeof api }).__test = api;

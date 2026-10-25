@@ -25575,9 +25575,44 @@ async function boot(): Promise<void> {
           offers: pendingDiplomacyInbox.map(p => ({
             id: p.id, ownerId: p.ownerId, cmdType: p.cmdType, reason: p.reason, goldOnce: p.goldOnce ?? null,
           })),
+          // R-WEB-MEASURE-ROBOCZA-Q1 (odczyt surowy, zero logiki decyzyjnej): pełny stół negocjacji,
+          // epoki właścicieli, liczniki kryzysu i wpisy wojen gracza.
+          playerId: ME(),
+          eras: Object.fromEntries(
+            [...new Set([ME(), ...cities.filter(c => !isBarbarian(c.ownerId)).map(c => c.ownerId)])]
+              .map(o => [String(o), empireEpochForOwner(o)]),
+          ),
+          crisis: Object.fromEntries(diplomacyCrisisCounters.entries()),
+          playerWarEvents: warEventLog.map(e => e.id),
+          negotiations: negotiationTable.map(n => ({
+            id: n.id,
+            actionId: String(n.actionId),
+            proposerOwnerId: n.proposerOwnerId,
+            responderOwnerId: n.responderOwnerId,
+            awaitingOwnerId: n.awaitingOwnerId,
+            authorOwnerId: n.authorOwnerId,
+            source: n.source,
+            round: n.round,
+            reason: n.reason ?? null,
+            goldOnce: n.payload.goldOnce ?? null,
+            isTradeAwaitingPlayer: isAiTradeOfferAwaitingPlayer(n),
+            bilansPW: isMe(n.proposerOwnerId) ? null : aiProposalPlayerBenefitSurplus(
+              n.payload,
+              relationTotal(getDiploRelation(n.proposerOwnerId, ME())),
+              {
+                difficulty: effectiveGameDifficultyForOwner(n.proposerOwnerId),
+                proposerOwnerId: n.proposerOwnerId,
+                playerOwnerId: ME(),
+              },
+            ),
+          })),
         };
       },
       resolvePendingDiplomacy: (id, accept) => resolvePendingDiplomacy(id, accept),
+      resolveNegotiation: (id, accept) => {
+        if (accept) handleNegotiationAccept(id);
+        else handleNegotiationReject(id);
+      },
       isAwaitingFirstPlayerCity: () => isAwaitingFirstPlayerCity(),
       foundPlayerStartCity: () => {
         if (!playerStartHex) return false;

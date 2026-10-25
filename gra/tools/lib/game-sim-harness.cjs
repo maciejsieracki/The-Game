@@ -80,10 +80,19 @@ async function openSimPage(browser, { bundleDir, testhook = true }) {
   const context = await browser.newContext({ viewport: { width: 1280, height: 800 } });
   const page = await context.newPage();
   const pageErrors = [];
+  // R-WEB-MEASURE-ROBOCZA-Q1: logi konsoli o wojnach/bramce końca tury ze znacznikiem czasu ściennego
+  // (mapowane na tury przez tStart/tEnd z runTurns). Tylko linie diagnostyczne, ograniczony rozmiar.
+  const consoleLines = [];
+  page.on('console', (msg) => {
+    const text = msg.text();
+    if (consoleLines.length < 5000 && /wojn|wojen|wojna|wypowiad|kryzys|EndTurn|ultimatum|WYMUSZON|Dyplomacja/i.test(text)) {
+      consoleLines.push({ t: Date.now(), text: text.slice(0, 220) });
+    }
+  });
   page.on('pageerror', (err) => pageErrors.push(String(err && err.message || err).slice(0, 300)));
   const url = 'file://' + path.join(bundleDir, 'index.html') + (testhook ? '?testhook=1' : '');
   await page.goto(url, { waitUntil: 'load', timeout: 120000 });
-  return { page, context, pageErrors };
+  return { page, context, pageErrors, consoleLines };
 }
 
 /** Czeka aż hak będzie dostępny (tylko z ?testhook=1). */
