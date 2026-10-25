@@ -168,3 +168,49 @@ export function pickWarDeclarer(
   if (a.power !== b.power) return a.power > b.power ? a.ownerId : b.ownerId;
   return Math.min(a.ownerId, b.ownerId);
 }
+
+/**
+ * P6 (r3): krok histerezy z uwzglednieniem stanu wojny. Para juz w wojnie nie liczy kryzysu
+ * (licznik 0, brak wpisu w mapie) — inaczej w save zostawalby smiec `1` co ture.
+ */
+export function crisisStepForPair(
+  prevCounter: number,
+  zaufanie: number,
+  atWar: boolean,
+  p: WarBrakeP6Params,
+): CrisisStep {
+  if (atWar) return { counter: 0, warningActive: false, warTriggerReady: false };
+  return advanceCrisisCounter(prevCounter, zaufanie, p);
+}
+
+/**
+ * P4 (r3): krok dobrej woli na poczatku tury (flaga ON). Odliczanie przeniesione przed tick
+ * AI, wiec „aktywna w tej turze" = licznik > 0 PRZED odliczeniem. Dzieki temu +1 trwa dokladnie
+ * N tur (N = dobraWolaRemainingTur po darze), a nie N−1.
+ */
+export function dobraWolaTurnStep(remaining: number): { activeThisTurn: boolean; next: number } {
+  const r = Number.isFinite(remaining) && remaining > 0 ? Math.floor(remaining) : 0;
+  return { activeThisTurn: r > 0, next: Math.max(0, r - 1) };
+}
+
+export interface AiAiOwnerInfo {
+  isPlayer: boolean;
+  isBarbarian: boolean;
+  isCityCopy: boolean;
+  eliminated: boolean;
+  cityCount: number;
+}
+
+/** P3 (r3): czy owner wchodzi do przeliczania par AI↔AI (bez gracza, barbarzyncow, kopii, eliminowanych i bez miast = duchy). */
+export function isAiAiEligibleOwner(o: AiAiOwnerInfo): boolean {
+  return !o.isPlayer && !o.isBarbarian && !o.isCityCopy && !o.eliminated && o.cityCount > 0;
+}
+
+/** P3 (r3): wszystkie nieuporzadkowane pary (i<j) — kazda para tickuje raz na ture. */
+export function aiAiPairs(owners: readonly number[]): Array<[number, number]> {
+  const out: Array<[number, number]> = [];
+  for (let i = 0; i < owners.length; i++) {
+    for (let j = i + 1; j < owners.length; j++) out.push([owners[i]!, owners[j]!]);
+  }
+  return out;
+}
