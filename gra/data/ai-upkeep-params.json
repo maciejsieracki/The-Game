@@ -1,0 +1,10 @@
+{
+  "_opis": "R-WEB-AI-ARMY-UPKEEP-Q1 — parametry bramki rekrutacji AI świadomej utrzymania (ZAPAS, nie bilans). Używane TYLKO gdy flaga AI_UPKEEP_AWARE_RECRUITMENT_ENABLED=true (src/game/ai-upkeep-gate.ts). Gracz i jego rekrutacja NIE są objęte bramką.",
+  "runwayTurnsGold": 15,
+  "runwayTurnsFood": 15,
+  "marginFrac": 0.1,
+  "minReserveTurns": 1,
+  "_runwayTurns": "Ile tur utrzymania (armia + nowa jednostka, po uwzględnieniu netto przychodu) ma wystarczyć ZAPAS złota (Skarbiec) i żywności (Spichlerz) BEZ zejścia do zera. Ujemny bilans bieżący nie blokuje, jeśli runway >= wartość.",
+  "_marginFrac": "Dodatkowy narzut na utrzymanie nowej jednostki (ułamek), zanim porówna się z zapasem.",
+  "_minReserveTurns": "Minimalna rezerwa złota po zakupie, liczona w turach łącznego utrzymania złotem (0 wyłącza)."
+}

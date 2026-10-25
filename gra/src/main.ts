@@ -1010,7 +1010,7 @@ import {
   villageEventHex,
   type SidePanelEventLink,
 } from './game/side-panel-event-link';
-import { loadUpkeepParams, buildUnitFoodTable, loadOwnerStorageParams, ownerStorageParamsForEra, buildingUpkeepForBuiltIds, buildingResourceUpkeepForBuiltIds, previewOwnerTotalResourceUpkeep, previewOwnerBuildingResourceUpkeep, totalUnitResourceUpkeep, buildUnitUpkeepTable, totalUnitUpkeep, canAffordUnitRecruitFull, pickUnitRecruitHint, type UnitUpkeepLike } from './game/economy-upkeep';
+import { loadUpkeepParams, buildUnitFoodTable, loadOwnerStorageParams, ownerStorageParamsForEra, buildingUpkeepForBuiltIds, buildingResourceUpkeepForBuiltIds, previewOwnerTotalResourceUpkeep, previewOwnerBuildingResourceUpkeep, totalUnitResourceUpkeep, buildUnitUpkeepTable, totalUnitUpkeep, unitFoodPerTurn, canAffordUnitRecruitFull, pickUnitRecruitHint, type UnitUpkeepLike } from './game/economy-upkeep';
 import { computePowerContributionsCityEconomy, buildPowerSnapshots, type PowerOwnerSnapshot } from './game/power';
 import { citySightRadius, toggleTileWorker, cityRangeForPopulation, yieldOfMapHex, resolveWorkedTiles, seedReczneFromAuto, collectWorkedHexOwnerMap, hexKeysWithinRadius, reconcileAllWorkedTiles, isLandWorkableHex, computeLostToNearerSiblingByCity } from './game/okolica';
 import { getCityResourceAccessForCity } from './game/resource-access';
@@ -1027,6 +1027,7 @@ import {
 } from './game/culture-religion';
 import { loadWealthParams, type RawWealthParamsJson } from './game/wealth';
 import { applyArmyStarvationHpLoss } from './game/army-starvation';
+import { AI_UPKEEP_PARAMS, decideAiUpkeepRecruitment, isAiUpkeepAwareRecruitmentEnabled } from './game/ai-upkeep-gate';
 import {
   advanceGoldDeficit, freshGoldDeficitState, buildGoldDeficitParams,
   isGoldDeficit, isGoldDeficitStarving, getGoldDeficitCountdown,
@@ -8338,6 +8339,36 @@ async function boot(): Promise<void> {
     }
 
     /**
+     * R-WEB-AI-ARMY-UPKEEP-Q1: bramka rekrutacji AI świadoma ZAPASU utrzymania (Skarbiec
+     * złota + Spichlerz żywności). Tylko AI i tylko za flagą AI_UPKEEP_AWARE_RECRUITMENT_ENABLED;
+     * flaga OFF lub gracz -> true (zachowanie bazowe). Czysta decyzja: ai-upkeep-gate.ts.
+     */
+    let _aiUpkeepUnitTbl: ReturnType<typeof buildUnitUpkeepTable> | null = null;
+    let _aiUpkeepFoodTbl: ReturnType<typeof buildUnitFoodTable> | null = null;
+    function aiUpkeepRecruitGate(ownerId: number, typeId: string, category: string, goldCost: number): boolean {
+      if (!isAiUpkeepAwareRecruitmentEnabled() || isHuman(ownerId)) return true;
+      const upkeepParams = loadUpkeepParams(data.econParams, _menuDifficulty);
+      if (!_aiUpkeepUnitTbl) {
+        _aiUpkeepUnitTbl = buildUnitUpkeepTable(data.units as unknown as Parameters<typeof buildUnitUpkeepTable>[0]);
+      }
+      if (!_aiUpkeepFoodTbl) {
+        _aiUpkeepFoodTbl = buildUnitFoodTable(data.units as unknown as Parameters<typeof buildUnitFoodTable>[0]);
+      }
+      const newGold = totalUnitUpkeep([{ typeId, category }], _aiUpkeepUnitTbl, upkeepParams.jednostkaUtrzymanieStd);
+      const newFood = unitFoodPerTurn({ typeId, camping: false, onOwnTerritory: true }, upkeepParams, _aiUpkeepFoodTbl);
+      const tick = getLastEmpireFoodTick(ownerId);
+      return decideAiUpkeepRecruitment({
+        treasury: ownerTreasury(ownerId),
+        goldNetPerTurn: aiLastGoldNetByOwner.get(ownerId) ?? 0,
+        goldUnitCost: goldCost,
+        newUnitGoldUpkeep: newGold,
+        foodReserve: getEmpireFoodReserve(ownerId),
+        foodNetPerTurn: tick?.przyrostZapasow ?? 0,
+        newUnitFoodUpkeep: newFood,
+      }, AI_UPKEEP_PARAMS).allowed;
+    }
+
+    /**
      * SUROW-CIV-01 (Maciej 2026-07-24): magazyn surowcow = pula PANSTWA (civ-wide,
      * suma po WSZYSTKICH miastach ownera), nie tylko lokalne City.surowce -- patrz
      * game/building-stock-cost.ts. OWNERID-AGNOSTIC: dziala identycznie dla gracza
@@ -8563,6 +8594,9 @@ async function boot(): Promise<void> {
     let rejectedOfferCooldowns: RejectedOfferCooldown[] = [];
     /** v1.1: skarbiec AI do ticka trybutu (T1A). */
     const aiSkarbiecByOwner = new Map<number, number>();
+    // R-WEB-AI-ARMY-UPKEEP-Q1: saldo złota AI ostatniej tury (przychód − utrzymanie), ze znakiem.
+    // Zasila bramkę rekrutacji (ai-upkeep-gate.ts) TYLKO przy fladze AI_UPKEEP_AWARE_RECRUITMENT_ENABLED.
+    const aiLastGoldNetByOwner = new Map<number, number>();
     const aiTargetMemoryByOwner: AiTargetMemoryByOwner = new Map();
     /** R-AI-KUP-JEDN (Maciej 2026-07-24, parytet AI): licznik zakupów jednostek za złoto
      *  (rush) TEGO ownera W TEJ turze -- zerowany na wejściu w sekcję ownera w runAiPhase
@@ -33431,6 +33465,7 @@ async function boot(): Promise<void> {
               if (aiBalance && aiBalance.utrzymanieRazem > 0) {
                 aiSkarb -= aiBalance.utrzymanieRazem;
               }
+              aiLastGoldNetByOwner.set(oid, aiBalance?.saldo ?? 0);
               const aiResUpkeep = econ.resourceUpkeepByOwner.get(oid);
               if (aiResUpkeep && Object.keys(aiResUpkeep).length > 0) {
                 deductBuildingStockCostAcrossCities(cities, oid, aiResUpkeep);
@@ -36805,7 +36840,8 @@ async function boot(): Promise<void> {
                         return canAffordBuildingStock(ownerSurowcePoolFor(ownerId), cost);
                       }
                       const unitDef = data.units.find(u => u.Jednostka === item.id);
-                      return canAffordUnitRecruitFull(ownerSurowcePoolFor(ownerId), unitDef);
+                      return canAffordUnitRecruitFull(ownerSurowcePoolFor(ownerId), unitDef)
+                        && aiUpkeepRecruitGate(ownerId, item.id, String(lookupUnitDef(item.id)?.Kategoria ?? 'domyslny'), item.koszt);
                     },
                   };
 
@@ -36849,7 +36885,9 @@ async function boot(): Promise<void> {
                         UNIT_POPULATION_COST, civManpowerMultsForOwner(ownerId).maxMult, candId,
                         civManpowerMultsForOwner(ownerId).costMult,
                       ),
-                    });
+                    }) && aiUpkeepRecruitGate(
+                      ownerId, candId, String(lookupUnitDef(candId)?.Kategoria ?? 'domyslny'), item.koszt,
+                    );
                     if (wantsPurchase && purchaseRecruitmentUnit(cmd.cityId, candId, item.koszt, ownerId)) {
                       console.log(`[AI ${ownerId}] Zakup jednostki za Skarbiec: ${candId}`);
                     }
