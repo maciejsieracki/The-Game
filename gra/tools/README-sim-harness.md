@@ -35,46 +35,79 @@ i kasowany po zakończeniu. Repo nie jest modyfikowane (zero `npm run build|dev`
 ## API `window.__test` (tylko z `?testhook=1`)
 
 - `startGame({seed, aiCount (4–6), cityStates, difficulty, era, playerPassive})` —
-  ustawia `Math.random` na mulberry32(seed) i woła `doStartGame` (ta sama ścieżka co
-  kreator „Nowa Gra"). Następnie „klika" startowy heks gracza (`tryFoundPlayerCityAt`),
+  ustawia `Math.random` na mulberry32(seed) i woła `doStartGame` (ta sama
+  ścieżka co kreator „Nowa Gra"). `aiCount` przechodzi jako `civTypesCount = aiCount + 1`
+  (ZAŁOŻENIE: suwak cywilizacji liczy także gracza, por. `aiCivSelectionCap = count-1`
+  w `src/ui/aiCivPicker.ts`). Miasta-państwa to osobne kopie klastra: mapa ma
+  `civTypes × (1 + cityStates)` miast startowych, więc liczba właścicieli miast NIE jest
+  liczbą cywilizacji. Następnie „klika" startowy heks gracza (`tryFoundPlayerCityAt`),
   bo bez stolicy bramka `awaitingFirstPlayerCity` blokuje koniec tury.
   Trudność: `easy|normal|hard` albo etykiety `Łatwy|Normalny|Trudny`.
 - `runTurns(n, {autoResolveBattles=true, playerPolicy='pass'|'accept-all-offers'|'reject-all-offers', turnTimeoutMs=60000})`
   — dla każdej tury: wg polityki rozstrzyga oferty AI→gracz (`resolvePendingDiplomacy`),
   klika „Auto" w realnym oknie pre-bitwy (`.pb-btn[data-act="auto"]`) aż kolejka bitew jest
   pusta, kończy turę (`advanceSeat`) i czeka na przyrost tury. Zwraca tablicę
-  `{turn, ms, wars, deals, offers, battlesAuto, hash}`. Przy niedokończeniu tury wpis
+  `{turn, ms, wars, deals, offers, battlesAuto, hash, offerIds}` (`offerIds` = id ofert
+  widocznych w turze; metryka `offers` w sim-metrics liczy UNIKALNE id, nie sumę kolejki). Przy niedokończeniu tury wpis
   dostaje `hash` z prefiksem `TIMEOUT:` i pętla się kończy.
 - `snapshot()` — `{turn, wars: [[a,b]...], warCount, deals, trust: {"a-b": zaufanie},
   cities, owners, units, offers: [{id, ownerId, cmdType, reason, goldOnce}], hash}`.
 - `setFlag(name, value)` — nadpisanie flagi przez jej settera `setXOverride`.
-  Dostępne: `warRulesMultiwar`, `warAllInCapital`. Nieznana nazwa rzuca błąd.
+  Dostępne WYŁĄCZNIE settery istniejące na tej gałęzi: `warRulesMultiwar`
+  (`setWarRulesMultiwarOverride`), `warAllInCapital` (`setWarAllInCapitalOverride`).
+  Settery dyplomacji (tick AI↔AI, hamulec wojny, wygładzanie Respektu) NIE istnieją w
+  `gra/src` na tej gałęzi; ich dodanie należy do tematów zależnych (poza allowlistą tego
+  tematu). Nieznana nazwa rzuca błąd.
 
 ### Skrót stanu (`hash`)
 
 FNV-1a 32-bit po stabilnym JSON (klucze posortowane) z: tura, miasta (właściciel, q, r,
-populacja), jednostki (właściciel, typ, q, r), relacje par major (status, zaufanie),
+populacja), jednostki (właściciel, typ, q, r, HP `u.hp`, -1 = pełne), relacje par major (status, zaufanie),
 liczba umów, oferty (właściciel, typ, powód, goldOnce). **Pomija wszystkie identyfikatory**
 (`id` jednostek i `id` ofert nie wchodzą do hasha), bo identyfikatory jednostek zawierają
 `Math.random`/`Date.now`. Barbarzyńcy są wykluczeni.
 
 ## Determinizm — źródła niedeterminizmu
 
-Zbadane w `gra/src/`:
+### Wynik badania (R2) -- NIE_DETERMINISTYCZNE, przyczyna częściowo zidentyfikowana
+
+Zmierzone (komendy: `tools/lib/game-sim-harness.cjs`, dwa świeże strony, seed 101,
+5 AI, 2 miasta-państwa, 12 tur; hash po każdej turze):
+
+- Start (`eeca0aa5`) i tura 1 są identyczne w obu przebiegach.
+- Wariant BEZ podziału RNG: tury 2 i 3 identyczne (`a5ab770c`, `b86973e1`), tura 4
+  rozjeżdża się (`3948f099` vs `1e9212ab`).
+- Wariant Z PODZIAŁEM RNG (rAF -> strumień renderu): tura 2 już się rozjeżdża
+  (`a5ab770c` vs `a2527a00`). Podział został usunięty z kodu, bo nie pomaga (i wygląda
+  na gorszy): oznacza to, że część logiki gry wykonuje się wewnątrz klatek rAF, a więc
+  jej draws nie są oddzielone od renderu.
+
+Potwierdzone źródło (kod, nie hipoteza): three.js 0.169.0
+`MathUtils.generateUUID` (`node_modules/three/src/math/MathUtils.js:10-19`) wywołuje
+`Math.random()` 4 razy na każdy UUID. UUID tworzą konstruktory obiektów three.js
+(geometrie, materiały, obiekty), więc każde tworzenie obiektu w renderze konsumuje
+globalny strumień `Math.random`, którego używa też logika gry. Liczba tych obiektów
+zależy od czasu klatek. To jest mechanizm rozjazdu, ale nie jedyny: samo odizolowanie
+strumienia nie wystarczyło, więc drugim kandydatem jest czasowe sterowanie hakiem
+(`Auto` pre-bitwy klikane w pętli 30 ms, progi `healStaleEndTurnBlockers` i
+`oldestPendingAutoPreBattleAgeMs` oparte o czas ścienny). NIE_ZMIERZONO: który z nich
+dominuje.
+
+Wniosek dla tematów zależnych: hash z tego haka NIE nadaje się do porównań OFF=baza
+ani do determinizmu seed-to-seed, dopóki nie zostanie usunięte źródło z logiki gry
+(poza allowlistą tego tematu) albo nie zostanie zrobiony hak sterujący czasem.
+
+### Inne źródła (zbadane w `gra/src/`)
 
 - `Math.random` — 14 wystąpień w `main.ts`, 25 w `gra/src/game/*.ts`. Najważniejsze dla stanu:
-  `pickVillageReward(Math.random())` (nagrody z wiosek), losowanie w generatorze mapy.
-  **Pod hakiem** `startGame` reseeduje `Math.random` (mulberry32), więc sekwencja jest
-  powtarzalna dla tego samego seeda i tej samej kolejności wywołań.
+  `pickVillageReward(Math.random())` (nagrody z wiosek), losowanie w generatorze mapy,
+  AI, walka, barbarzyńcy.
 - `Date.now()` — w `armyMerge.ts` (identyfikator `sg…`), `cities.ts` (`budowa-lista-…`),
   `save.ts` (nazwy zapisów). Dotyczą identyfikatorów, nie decyzji; hash je pomija.
-  Do potwierdzenia NIE_ZMIERZONO: czy któryś identyfikator nie wpływa na kolejność
-  iteracji (`Map`/`sort` po id).
-- Kolejność asynchroniczna: generacja mapy w Web Workerze (`generujSwiatAsync`) — wynik
-  zależy od seeda, nie od czasu; czas ścienny nie wchodzi do hasha.
-
-Dowód determinizmu (kryterium c): patrz sekcja „Wyniki" w raporcie Operatora
-(dwa przebiegi `--seeds 101 --turns 5` i porównanie hashy per tura).
+  Nieprzebadane (NIE_ZMIERZONO): progi czasowe w `healStaleEndTurnBlockers` oraz
+  `oldestPendingAutoPreBattleAgeMs` (zależność od czasu ściennego). Jeśli determinizm
+  nie domknie się po podziale RNG, to jest pierwsza hipoteza do sprawdzenia.
+- Generacja mapy w Web Workerze (`generujSwiatAsync`) zależy od seeda, nie od czasu.
 
 ## Ograniczenia
 
@@ -86,3 +119,9 @@ Dowód determinizmu (kryterium c): patrz sekcja „Wyniki" w raporcie Operatora
   zamknięciem tury (założenie: brak akcji = pasywność).
 - Czas tury zależy od obciążenia maszyny; pomiary równoległe z innymi procesami są
   zawyżone.
+- `playerPassive` jest zapisywane, ale NIE egzekwowane: hak nie blokuje akcji gracza,
+  bo hak tylko kończy tury i rozstrzyga bitwy/oferty (NIE_ZMIERZONO w osobnym teście).
+- Hash obejmuje miasta (właściciel, q, r, pop), jednostki (właściciel, typ, q, r, HP),
+  relacje, liczbę umów i oferty. NIE obejmuje złota, technologii, budynków ani wartości
+  Respektu. Test „OFF = baza" w tematach zależnych musi porównywać także te pola.
+- Metryki „wojny przed T40" i „max wojen" bez podziału na epoki (patrz wyżej).
