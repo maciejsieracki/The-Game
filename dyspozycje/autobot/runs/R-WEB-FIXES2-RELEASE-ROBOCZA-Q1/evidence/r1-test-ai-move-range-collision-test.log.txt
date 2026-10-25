@@ -1,0 +1,21 @@
+== collision-test (R-WEB-AI-MOVE-RANGE-Q1 r5) ==
+A. dwa barbarzyncy, ten sam heks docelowy
+  [OK] pierwszy barbarzynca wchodzi na (2,0) (got true, want true)
+  [OK] drugi barbarzynca NIE wchodzi na (2,0) zajety w tej turze (got false, want false)
+  [OK] drugi barbarzynca stoi na swoim heksie (3,0) (got true, want true)
+B. heks zwolniony wczesniej w tej turze jest dostepny
+  [OK] A wchodzi na (2,0) (got true, want true)
+  [OK] B wchodzi na (1,0), ktore A zwolnil w tej turze (got true, want true)
+C. stos: heks zwalnia sie dopiero po wyjsciu obu jednostek
+  [OK] pierwszy z stosu wychodzi (got true, want true)
+  [OK] wejscie na heks wciaz zajety przez drugiego z stosu odrzucone (got false, want false)
+  [OK] drugi z stosu wychodzi (got true, want true)
+  [OK] po opuszczeniu heksu wejscie dozwolone (got true, want true)
+D. wiazanie w main.ts: guard w galeziach move i raid, licznik per tura
+  [OK] main.ts: claimHexForMove(barbOcc, ...) w galeziach move i raid (2 wywolania) (got 2, want 2)
+  [OK] main.ts: licznik barbOcc budowany raz per tura przed petla komend (got 1, want 1)
+E. mutacja: guard usuniety musi czerwienic test A
+  [OK] mutacja: drugi barbarzynca wchodzi na zajety heks (asercja A by tu czerwienila) (got true, want true)
+
+WYNIK: 12 passed, 0 failed
+EXIT=0
