@@ -1,0 +1,24 @@
+diplomacy-treaties-test
+  OK: legacy → pełny
+  OK: has defensywny
+  OK: def: sojusznik 2 vs 5
+  OK: pełny: 3 za 0 vs 7
+  OK: brak wojny → zryw
+  OK: expire NAP
+  OK: wojna zerwie NAP
+  OK: hydrate legacy → pełny
+  OK: war decl: def sojusznik 2 vs agresor 0
+
+--- D-WIAR-KASKADA-Q1=B: rozpoznanie obrony ofiary ---
+  OK: mustDeclareWarOn===attackerId → obrona ofiary (bez N2)
+  OK: mustDeclareWarOn===victimId → pełny sojusz agresora (N2 nadal)
+  OK: kaskada A→B: wszystkie obowiązki defensywne wskazują agresora 0
+
+--- Maciej 2026-07-31: wojskowy vs obronny — egzekwowanie ---
+  OK: wojskowy: sojusznik 2 musi wojna z 7 gdy 1 atakuje 7
+  OK: obronny: sojusznik 3 bez obowiązku gdy 1 atakuje 7
+  OK: obronny: sojusznik 4 musi wojna z 5 gdy 5 atakuje 1
+  OK: allianceFormalKind: pełny → wojskowy
+  OK: allianceFormalKind: defensywny → obronny
+
+17/17 PASS

@@ -1,0 +1,12 @@
+diplomacy-peace-lock-test
+  OK: lock = 10 tur
+  OK: peaceUntilTurn = turn + 10
+  OK: n3Window typ pokoj
+  OK: aktywna w turze zawarcia
+  OK: aktywna do peaceUntilTurn-1
+  OK: wygasła w peaceUntilTurn
+  OK: brak pola = brak blokady
+  OK: sojusz: pomija sojusznika z karencją pokoju wobec celu
+  OK: wszyscy zablokowani → brak obowiązków
+
+9 pass, 0 fail

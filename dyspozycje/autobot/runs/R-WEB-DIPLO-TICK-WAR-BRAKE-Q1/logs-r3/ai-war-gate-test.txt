@@ -1,0 +1,33 @@
+
+--- W1a: pokoj -> brak ataku (canEngageOwner symulacja) ---
+
+--- W1b: wojna -> atak dozwolony ---
+
+--- W1c: barbarzynca zawsze wrog ---
+
+--- W2: AI nie atakuje gdy canEngageOwner blokuje ---
+
+--- W3: AI atakuje gdy canEngageOwner=true (sasiedztwo) ---
+
+--- W4a: planCityFounding max 1 komenda w decideAITurn ---
+
+--- W4b: defensiveCopy blokuje founding ---
+
+--- W4c: clusterStateTargets blokuje founding ---
+
+--- W4d: za malo Pracy -> brak founding ---
+
+--- E6a: aiFoundingWorkReserve skalowanie ---
+
+--- E6b: rezerwa Pracy blokuje founding przy niskiej puli ---
+
+--- E6c: ekspansywnosc >= 4 omija blokade klastra ---
+
+--- E6d: aiPowerGoalFoundingInterval ---
+
+--- E6e: aiClusterOutsidePenalty ---
+
+--- W4e: surge 2/ture gdy brak wolnych MP (R-AI-KOLONIZACJA-Q2) ---
+
+========================================
+ai-war-gate-test: 24 passed, 0 failed

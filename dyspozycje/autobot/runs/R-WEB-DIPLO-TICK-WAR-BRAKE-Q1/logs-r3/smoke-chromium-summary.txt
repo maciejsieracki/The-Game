@@ -1,0 +1,15 @@
+Smoke Chromium r3 (seed 101), build singlefile: ON = DEFAULT true, OFF = DEFAULT false (ten sam kod).
+--- ON war 12 tur:
+SUMMARY {"mode":"war","turns":12,"finalTurn":13,"medianMs":6150,"meanMs":6459,"maxMs":8648,"stalls":0}
+BAD_RESPONSES []
+--- ON peace 40 tur (run 1):
+SUMMARY {"mode":"peace","turns":40,"finalTurn":41,"medianMs":6868,"meanMs":7013,"maxMs":9085,"stalls":0}
+BAD_RESPONSES []
+--- OFF peace 40 tur (run 1):
+SUMMARY {"mode":"peace","turns":40,"finalTurn":41,"medianMs":5980,"meanMs":5883,"maxMs":7603,"stalls":0}
+BAD_RESPONSES []
+--- ON peace 40 tur (run 2):
+SUMMARY {"mode":"peace","turns":40,"finalTurn":41,"medianMs":6402,"meanMs":6562,"maxMs":9433,"stalls":0}
+--- OFF peace 40 tur (run 2):
+SUMMARY {"mode":"peace","turns":40,"finalTurn":41,"medianMs":7305,"meanMs":7279,"maxMs":9756,"stalls":0}
+pageerror count ON/OFF: 0 / 0

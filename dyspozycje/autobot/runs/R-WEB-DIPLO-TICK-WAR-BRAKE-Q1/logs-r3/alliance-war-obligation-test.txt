@@ -1,0 +1,35 @@
+
+--- 1: gracz (allyId=0) zawsze honoruje ---
+  OK: gracz honoruje mimo słabej pozycji (got true, want true)
+  OK: aiHonors: gracz honoruje (got true, want true)
+
+--- 2: słabe AI odmawia (ratio 0.4) ---
+  OK: ratio 0.4 < 0.55 → odmowa (got false, want false)
+
+--- 3: silne AI honoruje (ratio 1.2) ---
+  OK: ratio 1.2 → honor (got true, want true)
+
+--- 4: archetyp pokojowy odmawia przy ratio 0.7 ---
+  OK: pokojowy 0.7 < 0.75 → odmowa (got false, want false)
+
+--- 5: archetyp pokojowy honoruje przy ratio 0.9 ---
+  OK: pokojowy 0.9 ≥ 0.75 → honor (got true, want true)
+
+--- 6: activeWarCount=1 odmawia ---
+  OK: już w wojnie → odmowa (got false, want false)
+
+--- 7: granica minRatio (0.55) → honor ---
+  OK: ratio == 0.55 (nie <) → honor (got true, want true)
+  OK: ratio 0.549 < 0.55 → odmowa (got false, want false)
+
+--- 8: niskie Zaufanie do proszącego sojusznika ---
+  OK: zaufanie 15 < 20 → odmowa mimo silnej armii (got false, want false)
+  OK: zaufanie 20 (nie <) → honor (got true, want true)
+
+--- 9: aiHonorsAllianceWarObligation (allyId=3) ---
+  OK: bez ctx → true (kompatybilność wsteczna) (got true, want true)
+  OK: aiHonors: słabe AI odmawia (got false, want false)
+  OK: aiHonors: silne AI honoruje (got true, want true)
+
+========================================
+alliance-war-obligation-test: 14 passed, 0 failed
