@@ -22,6 +22,7 @@
 
 import { setWarRulesMultiwarOverride } from './war-rules-multiwar';
 import { setWarAllInCapitalOverride } from './warAllInCapital';
+import { setArmyConsolidationOverride } from './army-consolidation';
 
 /** Dane surowe stanu czytane z closure main.ts (zero logiki decyzyjnej po stronie hooka). */
 export interface TestRawState {
@@ -111,6 +112,7 @@ export interface TestSnapshot {
 const FLAG_SETTERS: Record<string, (v: boolean | null) => void> = {
   warRulesMultiwar: setWarRulesMultiwarOverride,
   warAllInCapital: setWarAllInCapitalOverride,
+  armyConsolidation: setArmyConsolidationOverride,
 };
 
 const DIFFICULTY_PL: Record<string, string> = {

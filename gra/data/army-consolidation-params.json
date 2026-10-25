@@ -1,0 +1,6 @@
+{
+  "_opis": "R-WEB-ARMY-CONSOLIDATION-Q1 (runda 2). Parametry scalania armii AI w pokoju w stolicy. enabled=false -> zachowanie jak w bazie (bit-identyczne).",
+  "enabled": false,
+  "minArmyUnits": { "wartosc": 2, "opis": "Minimalna liczba kwalifikujacych sie jednostek polowych, by uruchomic zbiorke w stolicy (ponizej -> baza)." },
+  "fallbackToLargestCity": { "wartosc": true, "opis": "Gdy brak stolicy wlasciciela w danych, zbiorka w najludniejszym wlasnym miescie (ZALOZENIE)." }
+}

@@ -73,6 +73,9 @@ import {
   ARMY_CONCENTRATION_RADIUS,
 } from './army-concentration';
 import {
+  isArmyConsolidationEnabled, pickConsolidationHub, planCapitalConsolidation,
+} from './army-consolidation';
+import {
   planForcedWarWave,
   type ForcedWarWave,
   type ForcedWarWaveHistory,
@@ -453,6 +456,16 @@ export interface AITurnOpts {
    * jednostki bojowe tego AI ida na najblizsza stolice (patrz warAllInCapital.ts).
    */
   warAllIn?: WarAllInContext;
+  /**
+   * R-WEB-ARMY-CONSOLIDATION-Q1: AKTUALNA stolica tej cywilizacji (main.ts,
+   * capitalCityIdForOwner). Używana tylko przy fladze ARMY_CONSOLIDATION_ENABLED (pokój).
+   */
+  capitalCityId?: string | null;
+  /**
+   * R-WEB-ARMY-CONSOLIDATION-Q1: liczba cywilizacji (bez barbarzyńców), z którymi ta
+   * cywilizacja jest w wojnie. 0 = pokój. Używane tylko przy fladze ARMY_CONSOLIDATION_ENABLED.
+   */
+  warOpponentCount?: number;
   /**
    * C-AI-PAKIET (2026-07-26): profil z civ-ai.json per typ cywilizacji —
    * ekspansywnosc i sklonnoscDoPodboju sterują ekspansją i agresją wojskową.
@@ -3330,7 +3343,24 @@ export function decideAITurn(
     ...activeFlankingUnitIds,
     ...activeWaveUnitIds,
   ]);
-  const standardConcentration = canConcentrateArmy(opts)
+  // R-WEB-ARMY-CONSOLIDATION-Q1 (flaga ARMY_CONSOLIDATION_ENABLED, tylko POKOJ): cała wolna
+  // armia (poza obrońcami domu, zaangażowanymi w walkę i zwiadowcami) zbiera się w stolicy.
+  // Przy fladze ON zastępuje lokalne skupianie i front-merge (inaczej rozciągałyby armię
+  // z powrotem na pole). Flaga OFF / wojna -> plan = null -> dotychczasowa ścieżka bit-identyczna.
+  const consolidationPlan = (() => {
+    if (!isArmyConsolidationEnabled() || !canConcentrateArmy(opts)) return null;
+    if ((opts.warOpponentCount ?? 0) > 0) return null;
+    const hub = pickConsolidationHub(playerId, myCities, opts.capitalCityId);
+    if (hub === null) return null;
+    const engagedIds = myUnits
+      .filter(u => engageableEnemyUnits.some(eu => isWithinAttackRange(u, eu.q, eu.r, data)))
+      .map(u => u.id);
+    const scoutIds = myUnits.filter(u => isScoutUnit(u)).map(u => u.id);
+    return planCapitalConsolidation(playerId, myUnits, hub, {
+      excludedUnitIds: new Set([...concentrationExcludedUnitIds, ...engagedIds, ...scoutIds]),
+    });
+  })();
+  const standardConcentration = canConcentrateArmy(opts) && consolidationPlan === null
     ? planArmyConcentration(playerId, myUnits, {
       excludedUnitIds: concentrationExcludedUnitIds,
     })
@@ -3350,6 +3380,18 @@ export function decideAITurn(
     : null;
   const concentration = forcedWarNextWavePlan ?? standardConcentration;
   const concentrationDeferred = new Set(concentration?.deferredUnitIds ?? []);
+  if (consolidationPlan !== null) {
+    for (const unitId of consolidationPlan.moveUnitIds) {
+      const unit = myUnits.find(u => u.id === unitId);
+      if (unit === undefined) continue;
+      const step = firstStep(unit, map, consolidationPlan.hub.q, consolidationPlan.hub.r, units);
+      if (step !== null) {
+        commands.push({ type: 'move', unitId: unit.id, toQ: step.q, toR: step.r });
+      }
+    }
+    for (const unitId of consolidationPlan.moveUnitIds) concentrationDeferred.add(unitId);
+    for (const unitId of consolidationPlan.gatheredUnitIds) concentrationDeferred.add(unitId);
+  }
   let firstWaveMergeUnitIds: readonly string[] = [];
   if (concentration !== null) {
     for (const unitId of concentration.moveUnitIds) {
@@ -3379,7 +3421,7 @@ export function decideAITurn(
   // bezpośrednią walkę/obronę domu". Jednostki już przydzielone do
   // `concentration` (jeśli powstał) są wyłączone również — to ich lokalny
   // klaster już jest zbierany, front-merge decyduje wyłącznie o RESZCIE.
-  if (canConcentrateArmy(opts) && !(forcedWarAttack && (forcedWarActiveWaves.length > 0 || forcedWarWaveHistory.length > 0))) {
+  if (canConcentrateArmy(opts) && consolidationPlan === null && !(forcedWarAttack && (forcedWarActiveWaves.length > 0 || forcedWarWaveHistory.length > 0))) {
     const combatEngagedUnitIds = new Set(
       myUnits
         .filter(u => engageableEnemyUnits.some(eu => isWithinAttackRange(u, eu.q, eu.r, data)))

@@ -35203,6 +35203,13 @@ async function boot(): Promise<void> {
                   ownerId,
                   (o: number) => getDiploRelation(ownerId, o).status === 'wojna',
                 ),
+              // R-WEB-ARMY-CONSOLIDATION-Q1: stolica (AKTUALNA) i liczba wojen z cywilizacjami
+              // (bez barbarzyńców). Czytane tylko przez ai.ts przy fladze ARMY_CONSOLIDATION_ENABLED.
+              capitalCityId: capitalCityIdForOwner(ownerId),
+              warOpponentCount: [...new Set(cities.map(c => c.ownerId))]
+                .filter(o => o !== ownerId && !isBarbarian(o) && !eliminatedOwners.has(o))
+                .filter(o => getDiploRelation(ownerId, o).status === 'wojna')
+                .length,
               civAiProfile: civAiProf
                 ? {
                     ekspansywnosc: civAiProf.ekspansywnosc,
