@@ -1,0 +1,80 @@
+--- 1. detectFsaAvailability(env) ---
+  [OK] brak window -> {available:false, reason:'no-window'} (got {"available":false,"reason":"no-window"})
+  [OK] protokol file:// -> {available:false, reason:'file-protocol'} (got {"available":false,"reason":"file-protocol"}) -- FSA nie dziala pod file://, wymagany http://localhost
+  [OK] http: bez secure context -> {available:false, reason:'insecure-context'} (got {"available":false,"reason":"insecure-context"})
+  [OK] brak showDirectoryPicker (Firefox/Safari) -> {available:false, reason:'no-api'} (got {"available":false,"reason":"no-api"})
+  [OK] http://localhost + Chrome/Edge -> {available:true} (got {"available":true})
+  [OK] https: + Chrome/Edge -> {available:true} (got {"available":true})
+  [OK] file:// z isSecureContext=true nadal daje reason:'file-protocol' (got {"available":false,"reason":"file-protocol"})
+
+--- 2. autosaveFileName(idx) ---
+  [OK] idx=0 -> civ-autosave-1.json (got civ-autosave-1.json)
+  [OK] idx=9 -> civ-autosave-10.json (got civ-autosave-10.json)
+  [OK] idx=10 zawija sie do civ-autosave-1.json (got civ-autosave-1.json)
+  [OK] idx=-1 zawija sie do civ-autosave-10.json (got civ-autosave-10.json)
+  [OK] FSA_AUTOSAVE_ROT_COUNT === 10 (got 10)
+  [OK] idx=NaN degraduje do civ-autosave-1.json, NIE "civ-autosave-NaN.json" (got civ-autosave-1.json)
+  [OK] idx=Infinity degraduje do civ-autosave-1.json (got civ-autosave-1.json)
+  [OK] idx=-Infinity degraduje do civ-autosave-1.json (got civ-autosave-1.json)
+  [OK] 10 kolejnych idx daje 10 unikalnych nazw plikow (got 10)
+
+--- 3. shouldUseFsaAutosave(state) ---
+  [OK] dostepne + handle + zgoda -> true (uzyj FSA)
+  [OK] niedostepne srodowisko (mimo handle+zgoda z poprzedniej sesji) -> false (fallback)
+  [OK] brak wybranego katalogu -> false (fallback, gracz nie kliknal jeszcze startu sesji)
+  [OK] zgoda nieudzielona/wycofana -> false (fallback)
+  [OK] nic gotowe -> false (stan domyslny na starcie procesu)
+
+--- 4. fsaUnavailableMessage(reason) ---
+  [OK] reason="no-window" -> string niepusty (got "Autozapis na dysk niedostępny w tym środowisku — używam dotychczasowego zapisu w przeglądarce.")
+  [OK] reason="file-protocol" -> string niepusty (got "Autozapis na dysk wymaga uruchomienia gry przez http://localhost (nie działa z pliku otwartego bezpośrednio) — używam dotychczasowego zapisu w przeglądarce.")
+  [OK] reason="insecure-context" -> string niepusty (got "Autozapis na dysk wymaga bezpiecznego połączenia (localhost/HTTPS) — używam dotychczasowego zapisu w przeglądarce.")
+  [OK] reason="no-api" -> string niepusty (got "Ta przeglądarka nie wspiera zapisu na dysk (dostępne w Chrome/Edge) — używam dotychczasowego zapisu w przeglądarce.")
+  [OK] reason="permission-denied" -> string niepusty (got "Autozapis na dysk niedostępny — używam dotychczasowego zapisu w przeglądarce.")
+  [OK] reason="picker-cancelled" -> string niepusty (got "Autozapis na dysk niedostępny — używam dotychczasowego zapisu w przeglądarce.")
+  [OK] reason="error" -> string niepusty (got "Autozapis na dysk niedostępny — używam dotychczasowego zapisu w przeglądarce.")
+  [OK] reason=undefined -> string niepusty (got "Autozapis na dysk niedostępny — używam dotychczasowego zapisu w przeglądarce.")
+  [OK] reason='file-protocol' wspomina http://localhost (naprowadza gracza jak wlaczyc funkcje)
+  [OK] reason='no-api' wymienia wspierane przegladarki (Chrome/Edge)
+
+--- 5. Brak window (plain Node) -- bezpieczna degradacja ---
+  [OK] detectFsaAvailabilityFromWindow() bez window -> available:false
+  [OK] getFsaReadinessState() domyslnie: niedostepne, brak handle, brak zgody (got {"availability":{"available":false,"reason":"no-window"},"hasDirectoryHandle":false,"permissionGranted":false})
+  [OK] shouldUseFsaAutosave(stan domyslny) === false -- main.ts od razu idzie na localStorage
+  [OK] ensureFsaAutosaveReady() pod plain Node NIGDY nie rzuca
+  [OK] ensureFsaAutosaveReady() pod plain Node -> {ok:false, reason:'no-window'} (got {"ok":false,"reason":"no-window"})
+  [OK] fsaRotatingAutosaveWrite() bez gotowego katalogu NIGDY nie rzuca
+  [OK] fsaRotatingAutosaveWrite() bez gotowego katalogu -> {ok:false, reason:'not-ready'} (got {"ok":false,"reason":"not-ready"})
+
+--- 6. Zgodnosc FSA_AUTOSAVE_ROT_COUNT z main.ts::AUTOSAVE_ROT_COUNT ---
+  [OK] main.ts::AUTOSAVE_ROT_COUNT znaleziony zrodlowo
+  [OK] main.ts::AUTOSAVE_ROT_COUNT (10) === fsa-autosave.ts::FSA_AUTOSAVE_ROT_COUNT (10) -- zapis na dysk i do localStorage rotuja po tej samej liczbie slotow
+  [OK] main.ts importuje z './game/fsa-autosave'
+  [OK] main.ts::doRotatingAutosave uzywa shouldUseFsaAutosave(getFsaReadinessState()) do wyboru sciezki zapisu
+  [OK] main.ts wola triggerFsaAutosaveBootstrap() (co za kulisami woa ensureFsaAutosaveReady()) z klikniecia startu sesji
+
+--- 7. BLOKER B2: galaz FSA nie klamie w setLastPlayedSlotId ---
+  [OK] galaz FSA w doRotatingAutosave znaleziona (miedzy shouldUseFsaAutosave(...) a await saveToLocal(slot, snapshot))
+  [OK] B2: galaz FSA NIE woa juz (w wykonywalnym kodzie, poza komentarzami) setLastPlayedSlotId(slot) z kluczem-klamstwem localStorage (dysk nic nie zapisal do localStorage) -- kod bez komentarzy: "try {\n          const { ok, reason } = await fsaRotatingAutosaveWrite(idx, snapshot);\n          if (ok) {\n            \n            \n            \n            \n            \n            \n            \n            \n            \n            \n            \n            \n            \n            \n            \n            \n            \n            \n            setLastPlayedSlotId(FSA_SLOT_PREFIX + autosaveFileName(idx));\n            \n            \n            savePresence.markPresent();\n            autosaveFailureNotified = false; \n            try { localStorage.setItem(AUTOSAVE_ROT_IDX_KEY, String(idx)); } catch {  }\n            console.log('[Autosave] rotacyjny (dysk) slot=' + (idx + 1) + ' tura=' + turn);\n            return;\n          }\n          console.warn('[Autosave] zapis na dysk nieudany (' + (reason ?? 'nieznany') + ') — fallback na localStorage, tura=' + turn);\n          notifyFsaAutosaveDegraded();\n        } catch (eFsa) {\n          console.warn('[Autosave] wyjatek zapisu na dysk — fallback na localStorage:', eFsa);\n          notifyFsaAutosaveDegraded();\n        }\n      }\n\n      try {\n        \n        \n        \n        \n        \n        const _perfSaveLocalT0 = PERF_DEBUG ? performance.now() : 0;"
+  [OK] B2: galaz FSA woa setLastPlayedSlotId(FSA_SLOT_PREFIX + autosaveFileName(idx)) -- wskaznik prawdziwie odroznia plik na dysku od slotu localStorage
+--- 8. N2: .catch() na jedynym call site doRotatingAutosave() ---
+  [OK] N2: void doRotatingAutosave().catch(...) -- wyjatek, ktory mimo wewnetrznych try/catch/finally przecieklby, nie konczy sie unhandled rejection
+
+--- 9. BLOKER B1: mock odczytu katalogu FSA (plik -> lista zapisow) ---
+  [OK] listFsaAutosaveFiles() pomija plik spoza konwencji (notes.txt), zwraca 2 (got 2)
+  [OK] listFsaAutosaveFiles() zwraca civ-autosave-3.json z idx=2 (0-based, odwrotnosc autosaveFileName)
+  [OK] listFsaAutosaveFiles() zwraca civ-autosave-7.json z idx=6 (0-based)
+  [OK] readFsaAutosaveFile() zwraca surowa tresc pliku z dysku
+  [OK] loadFsaAutosaveFile() deserializuje SaveGame z pliku (tura=42) -- ten sam ksztalt, ktory saveLoadDialog.ts::summarizeFsaSaveSlots() wstawia do listy zapisow do wczytania (got {"wersja":3,"tura":42,"seed":7,"units":[],"cities":[],"exploredByHuman":[],"gracze":[],"humanOwnerIds":[0],"activeHumanOwnerId":0,"meta":{"label":"Test dysk","savedAt":"2026-08-10T10:00:00.000Z"}})
+  [OK] loadFsaAutosaveFile() zachowuje meta.label z pliku na dysku (etykieta widoczna w dialogu Wczytaj)
+[FSA] readFsaAutosaveFile blad: Error: brak pliku: civ-autosave-9.json
+    at Object.getFileHandle (/home/user/The-Game/.claude/worktrees/wf_ba89ebbf-458-1/gra/tools/fsa-autosave-test.cjs:338:37)
+    at readFsaAutosaveFile (/home/user/The-Game/.claude/worktrees/wf_ba89ebbf-458-1/gra/tools/.fsa-autosave-bundle.cjs:431:44)
+    at Object.loadFsaAutosaveFile (/home/user/The-Game/.claude/worktrees/wf_ba89ebbf-458-1/gra/tools/.fsa-autosave-bundle.cjs:441:22)
+    at /home/user/The-Game/.claude/worktrees/wf_ba89ebbf-458-1/gra/tools/fsa-autosave-test.cjs:368:31
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+  [OK] loadFsaAutosaveFile() dla nieistniejacego pliku -> null (nigdy nie rzuca, main.ts::loadGameFromSlot ma bezpieczny fallback)
+  [OK] po _resetFsaStateForTests() listFsaAutosaveFiles() znow zwraca [] (brak katalogu/zgody -- stan jak przed mockiem)
+
+=== fsa-autosave-test: 55 pass, 0 fail ===
+EXIT=0

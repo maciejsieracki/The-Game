@@ -1,0 +1,15 @@
+vite v5.4.21 building for production...
+
+(!) outDir /tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/dist-r1 is not inside project root and will not be emptied.
+Use --emptyOutDir to override.
+
+transforming...
+✓ 898 modules transformed.
+rendering chunks...
+[plugin vite:singlefile]
+
+[plugin vite:singlefile] Inlining: index--E_YskRM.js
+computing gzip size...
+../../../../../../../tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/dist-r1/index.html  69,874.23 kB │ gzip: 48,671.15 kB
+✓ built in 22.16s
+EXIT=0

@@ -1,0 +1,8 @@
+INFO ZASTOJ tury :: {"turn":2,"endAriaDisabled":"true","ostatnieLogi":["[NewGame] Mapa: 108x74 seed=778899 typ=kontynenty rywale=2 typy=3","[Autosave] rotacyjny (dysk) slot=1 tura=2"]}
+INFO rozegrane tury :: {"turn_koncowa":2,"czas_s":124}
+PASS B-PROMPT po reloadzie (prompt): „Wczytaj grę" AKTYWNY :: {"missing":false,"disabled":false,"title":null,"hint":"Wczytaj grę"}
+INFO LOAD komunikaty w 9 s po kliknieciu :: ["Brak wydarzeń w tej turze"]
+PASS B-PROMPT wczytanie po zgodzie (prompt->granted): tura/miasta/jednostki :: {"turn":2,"cities":9,"units":12,"awaiting":false}
+PASS B-PROMPT brak pageerror :: []
+load-game-regression-e2e-r5: OK (0 FAIL)
+EXIT=0

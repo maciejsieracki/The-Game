@@ -1,0 +1,13 @@
+FAIL wyjatek :: page.evaluate: Target page, context or browser has been closed |     at stateOf (/home/user/The-Game/.claude/worktrees/wf_ba89ebbf-458-3/gra/tools/load-game-regression-e2e-r5.cjs:68:32) |     at playNewGame (/home/user/The-Game/.claude/worktrees/wf_ba89ebbf-458-3/gra/tools/load-game-regression-e2e-r5.cjs:113:19)
+load-game-regression-e2e-r5: FAIL (1)
+led":false,"title":null,"hint":"Wczytaj grę"}
+INFO LOAD komunikaty w 9 s po kliknieciu :: ["Brak wydarzeń w tej turze"]
+PASS A-FSA lista zapisów w dialogu wczytywania :: {"listed":true,"rows":2}
+PASS A-FSA wczytanie: tura>1, miasta>=1, jednostki>=1 :: {"turn":3,"cities":9,"units":12,"awaiting":false}
+INFO A-FSA po wczytaniu :: {"turn":3,"cities":9,"units":12,"awaiting":false}
+PASS A-FSA po wczytaniu: „Zakończ turę" klikalny :: {"enabled":true}
+PASS A-FSA po wczytaniu: koniec tury podnosi turę o 1 :: {"before":3,"after":4}
+FAIL A-FSA brak pageerror / console.error :: ["console.error Failed to load resource: the server responded with a status of 404 (File not found)"]
+load-game-regression-e2e-r5: FAIL (1)
+EXIT=1
+EXIT=1

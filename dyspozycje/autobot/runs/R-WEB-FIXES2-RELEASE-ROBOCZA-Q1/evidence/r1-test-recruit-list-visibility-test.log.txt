@@ -1,0 +1,24 @@
+
+[recruit-list-visibility-test] Running tests...
+
+1. Nowa gra, brak Drewna, logika gry (domyslny kontekst): jednostki Drewna UKRYTE (bez zmian)
+  [OK] domyslnie Wojownik/Oszczepnik ukryte przy braku Drewna
+  [OK] Zwiadowca zawsze dostepny
+
+2. Nowa gra, brak Drewna, LISTA PANELU (showStockGatedUnits): >=2 jednostki wojskowe WIDOCZNE
+  [OK] na liscie panelu sa >=2 jednostki wojskowe przy braku Drewna
+  [OK] Zwiadowca widoczny w panelu
+
+3. Lista panelu: brak Brazu/Zelaza -> jednostka widoczna (wyszarzana w UI); logika gry ukrywa
+  [OK] Włócznik (Brąz) widoczna w panelu bez Brazu w magazynie
+  [OK] Włócznik nadal ukryta dla logiki gry (bez zmian)
+
+4. Lista panelu z zapasem Drewna (20) -> Wojownik dostepny
+  [OK] Wojownik dostepny z Drewnem w magazynie
+
+5. Dane: Wojownik/Oszczepnik maja koszt Drewna w units.json (potwierdzenie zalozenia)
+  [OK] Wojownik: Surowiec=Drewno, ilosc>0
+  [OK] Oszczepnik: Surowiec=Drewno, ilosc>0
+
+9 passed, 0 failed
+EXIT=0
