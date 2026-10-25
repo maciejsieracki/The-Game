@@ -274,8 +274,16 @@ function summarizeRun(res, turns) {
   // Oferty liczone UNIKALNIE po id (kolejka pending jest sumowana co turę -- nie sumujemy).
   const offerIds = new Set(m.flatMap(t => t.offerIds || []));
   const offers = offerIds.size;
-  const offersNeg = res.snapEnd.offers.filter(o => o.goldOnce !== null && o.goldOnce < 0).length;
+  // R3 (poprawka zarzutu 4): offersNegative = liczba UNIKALNYCH ofert AI->gracz z bilansPW<0
+  // (ta sama definicja co diplo.tradeBilansNegative). Stary wariant liczyl kolejke legacy
+  // (snapEnd.offers po goldOnce), ktora przy fladach ON/OFF zawsze dawala 0 -- zachowany jako
+  // offersNegativeLegacy wylacznie do audytu.
+  const bilansByOfferId = new Map();
+  for (const t of m) for (const o of (t.tradeOffers || [])) if (!bilansByOfferId.has(o.id)) bilansByOfferId.set(o.id, o.bilansPW);
+  const offersNeg = [...bilansByOfferId.values()].filter(v => typeof v === 'number' && v < 0).length;
+  const offersNegLegacy = res.snapEnd.offers.filter(o => o.goldOnce !== null && o.goldOnce < 0).length;
   return {
+    offersNegativeLegacy: offersNegLegacy,
     turnsRun: m.length,
     turnsRequested: turns,
     warsBefore40,
