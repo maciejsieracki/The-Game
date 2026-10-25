@@ -1,0 +1,36 @@
+PASS  1a. tylko slot IDB -> true
+PASS  1b. tylko plik FSA na dysku -> true (regresja: autozapis na dysk)
+PASS  1c. tylko zapamiętany katalog FSA (po przeładowaniu) -> true
+PASS  1d. nic nigdzie -> false
+PASS  1e. wszystkie źródła rzucają -> false, bez rzucania, każde zgłoszone
+PASS  1f. IDB rzuca, plik FSA jest -> true, błąd IDB zgłoszony (nie milczy)
+PASS  1g. onSourceError rzucający nie psuje wyniku
+PASS  2a. bez stanu FSA (brak IDB w Node) -> brak uchwytu, lista pusta
+PASS  2b. katalog żywy + zgoda -> listing widzi 2 pliki rotacji, pomija notes.txt
+PASS  2c. PO PRZELADOWANIU: uchwyt zapamiętany, zgody brak -> lista pusta, ale anySavePresent = true
+PASS  2d. brak uchwytu i brak zgody -> false
+PASS  2e. zapamiętany uchwyt, zgody brak (prompt) -> true (ZAŁOŻENIE; regresja: przycisk po przeładowaniu)
+PASS  2f. zapamiętany uchwyt z zgodą, ale katalog bez plików rotacji -> false (pusty katalog wyszarzony)
+PASS  2g. zapamiętany uchwyt, queryPermission rzuca -> true (jak prompt, bez zgadywania zgody)
+PASS  3a. start: get() = false; po refresh z zapisem IDB = true
+PASS  3b. wyścig: wolne przeliczenie (false) kończy się PO markPresent() -> cache nadal true
+PASS  3c. wyścig: starsze wolne przeliczenie (true) nie nadpisuje nowszego (false)
+PASS  4a. mutacja: usunięty krok plików FSA -> przypadek 1b MUSI oblać
+PASS  4b. mutacja: usunięty krok „zapamiętany katalog" -> przypadek 1c MUSI oblać
+PASS  3d. regresja S2 (Chromium): startowe przeliczenie (true) zastosowane, mimo że nowsze trwa
+PASS  3e. wyścig (zarzut 7): przeliczenie wystartowane PO markPresent czyta stary listing (false) -> cache nadal true
+PASS  4e. mutacja: markPresent nie jest trwały -> przypadek 3e MUSI oblać
+PASS  4f. mutacja: hasRememberedFsaDirectory bez zgody -> false (gałąź perm !== granted) -> przypadek 2e MUSI oblać
+PASS  4c. mutacja: cache bez ochrony kolejności (starsze przeliczenie nadpisuje) -> przypadek 3c MUSI oblać
+PASS  4d. mutacja: bootstrap-cache zamieniony na listSaves() -> wiring main.ts MUSI oblać
+PASS  5a. main.ts: cache zasilany listSlots + listFsaAutosaveFiles + hasRememberedFsaDirectory
+PASS  5b. main.ts: openLoadGameDialog liczy zapisy przez savePresence, nie samym listSaves()
+PASS  5c. main.ts: udane zapisy (ręczny, autozapis dysk, autozapis localStorage) -> savePresence.markPresent()
+PASS  5d. main.ts: onLoad czeka na bootstrap FSA przed listowaniem
+PASS  6a. mutacja: hasAnySaveSlot zwraca stałe false zamiast cache -> wiring MUSI oblać
+PASS  6b. mutacja: cache presence zawsze false (get) -> przypadek 3a MUSI oblać
+PASS  7a. notifyAutosaveFailureOnce: prawdziwa funkcja z main.ts pokazuje komunikat RAZ na sesję
+PASS  7b. mutacja: bez strażnika jednorazowości -> przypadek 7a MUSI oblać
+PASS  7c. main.ts: nieudany autozapis nie wywołuje już showHintMessage wprost (3 miejsca przez notifyAutosaveFailureOnce)
+
+load-game-regression: 34 PASS / 0 FAIL

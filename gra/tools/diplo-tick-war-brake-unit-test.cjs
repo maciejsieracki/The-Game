@@ -135,6 +135,39 @@ eq('kolejka: najdluzej na progu, remis -> nizsze ownerId', q.map(e => [e.ownerA,
 eq('strona silniejsza wypowiada', M.pickWarDeclarer({ ownerId: 1, power: 10 }, { ownerId: 2, power: 30 }), 2);
 eq('remis mocy -> nizsze ownerId', M.pickWarDeclarer({ ownerId: 8, power: 10 }, { ownerId: 3, power: 10 }), 3);
 
+// --- r3 P6: wojna w toku nie liczy kryzysu (brak smiecia `1` w save) ---
+eq('r3 P6: para w wojnie -> licznik 0 mimo Zaufania <= 0', M.crisisStepForPair(3, -5, true, p6).counter, 0);
+eq('r3 P6: para w wojnie -> brak ostrzezenia i gotowosci', M.crisisStepForPair(3, -5, true, p6).warTriggerReady, false);
+eq('r3 P6: pokoj (nie wojna) nadal liczy kryzys', M.crisisStepForPair(3, 0, false, p6).counter, 4);
+eq('r3 P6: pokoj, Zaufanie > prog -> reset', M.crisisStepForPair(3, 1, false, p6).counter, 0);
+// dokladnie N=5 tur kryzysu -> gotowosc dopiero w 5. turze, ostrzezenie od 3. (N-2)
+let cs = { counter: 0, warningActive: false, warTriggerReady: false };
+const seq = [];
+for (let t = 1; t <= 6; t++) { cs = M.crisisStepForPair(cs.counter, 0, false, p6); seq.push([cs.counter, cs.warningActive, cs.warTriggerReady]); }
+eq('r3 P6: sekwencja licznika/ostrzezenia/gotowosci', seq, [
+  [1, false, false], [2, false, false], [3, true, false], [4, true, false], [5, true, true], [6, true, true],
+]);
+
+// --- r3 P4: dobra wola +1 trwa DOKLADNIE N tur (N=3 po darze) ---
+let dw = 3;
+const dwActive = [];
+for (let t = 1; t <= 4; t++) { const st = M.dobraWolaTurnStep(dw); dwActive.push(st.activeThisTurn); dw = st.next; }
+eq('r3 P4: dobra wola aktywna w 3 kolejnych turach, potem nie', dwActive, [true, true, true, false]);
+eq('r3 P4: licznik 0 -> nieaktywna, bez ujemnych', M.dobraWolaTurnStep(0), { activeThisTurn: false, next: 0 });
+
+// --- r3 P3: pary AI↔AI ---
+const pairs = M.aiAiPairs([1, 2, 3, 4]);
+eq('r3 P3: 4 owners -> 6 unikalnych par (i<j)', pairs.length, 6);
+eq('r3 P3: kazda para raz, bez duplikatow', new Set(pairs.map(p => p.join('_'))).size, 6);
+eq('r3 P3: brak par z 1 ownerem', M.aiAiPairs([7]).length, 0);
+const okInfo = { isPlayer: false, isBarbarian: false, isCityCopy: false, eliminated: false, cityCount: 3 };
+eq('r3 P3: zwykly AI z miastami = kwalifikuje sie', M.isAiAiEligibleOwner(okInfo), true);
+eq('r3 P3: gracz wykluczony', M.isAiAiEligibleOwner({ ...okInfo, isPlayer: true }), false);
+eq('r3 P3: barbarzynca wykluczony', M.isAiAiEligibleOwner({ ...okInfo, isBarbarian: true }), false);
+eq('r3 P3: kopia miasta-panstwa wykluczona', M.isAiAiEligibleOwner({ ...okInfo, isCityCopy: true }), false);
+eq('r3 P3: eliminowany (duch) wykluczony', M.isAiAiEligibleOwner({ ...okInfo, eliminated: true }), false);
+eq('r3 P3: owner bez miast (duch) wykluczony', M.isAiAiEligibleOwner({ ...okInfo, cityCount: 0 }), false);
+
 try { fs.unlinkSync(BUNDLE); } catch (_) { /* ignore */ }
 console.log(`diplo-tick-war-brake-unit-test: ${pass} pass / ${fail} fail`);
 process.exit(fail === 0 ? 0 : 1);

@@ -1,0 +1,24 @@
+diplomacy-economy-test
+  OK: activeDeals → tribute
+  OK: tick OK
+  OK: bankrupt → broken
+  OK: expired deal pominięty
+  OK: one-shot handel T3A
+  OK: strict grant — pusty skarbiec AI → brak transferu
+  OK: strict grant — 8¤ w skarbcu, oferta 20 → odrzucone
+  OK: strict grant 20¤ pełny skarbiec
+  OK: capAiGoldOffer 5
+  OK: capAiGoldOffer 0
+  OK: cooldown: brak historii → OK
+  OK: cooldown normal: tura 10 po darze 5 → blok
+  OK: cooldown normal: tura 30 po darze 5 → OK
+  OK: cooldown hard 35 tur
+  OK: generosity mult easy 1.0
+  OK: generosity mult normal 0.5
+  OK: generosity mult hard 0.3
+  OK: scale 20¤ normal → 10¤
+  OK: scale 20¤ hard → 6¤
+  OK: AI_DIPLOMACY_GENEROSITY_GOLD_MULT tabela
+  OK: tributeBreakPairsFromDeals
+
+21/21 PASS
