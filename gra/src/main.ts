@@ -24990,7 +24990,9 @@ async function boot(): Promise<void> {
           mapDetailQualityLabel: qualityTierToLabel(mqBundle.mapDetailQuality),
           renderQuality: mqBundle.renderQuality,
           mapDetailQuality: mqBundle.mapDetailQuality,
-          civTypesCount: o.aiCount,
+          // ZAŁOŻENIE R2: suwak „Liczba cywilizacji” = typy łącznie z graczem (aiCivSelectionCap = count-1),
+          // więc AI-cywilizacje + gracz = aiCount + 1.
+          civTypesCount: o.aiCount + 1,
           cityStatesCount: clampMiastaPanstwaCount(o.cityStates),
           worldDensity: { ...DEFAULT_WORLD_DENSITY },
           worldDensityLabels: {
@@ -25025,7 +25027,7 @@ async function boot(): Promise<void> {
           cities: cities.filter(c => !isBarbarian(c.ownerId))
             .map(c => ({ owner: c.ownerId, q: c.q, r: c.r, pop: c.population })),
           units: units.filter(u => !isBarbarian(u.ownerId))
-            .map(u => ({ owner: u.ownerId, typ: u.typeId, q: u.q, r: u.r })),
+            .map(u => ({ owner: u.ownerId, typ: u.typeId, q: u.q, r: u.r, hp: u.hp ?? -1 })),
           relations: rel,
           deals: activeDeals.length,
           offers: pendingDiplomacyInbox.map(p => ({

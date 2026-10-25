@@ -28,7 +28,7 @@ export interface TestRawState {
   turn: number;
   /** Właściciele miast/jednostek (bez barbarzyńców). */
   cities: Array<{ owner: number; q: number; r: number; pop: number }>;
-  units: Array<{ owner: number; typ: string; q: number; r: number }>;
+  units: Array<{ owner: number; typ: string; q: number; r: number; hp: number }>;
   /** Relacje dyplomatyczne par major (bez barbarzyńców), posortowane po kluczu. */
   relations: Array<{ a: number; b: number; status: string; zaufanie: number }>;
   /** Liczba aktywnych umów (activeDeals). */
@@ -82,6 +82,8 @@ export interface TestTurnMetric {
   offers: number;
   battlesAuto: number;
   hash: string;
+  /** Identyfikatory ofert widocznych w tej turze (do liczenia unikalnych ofert w przebiegu). */
+  offerIds: string[];
 }
 
 export interface TestRunOpts {
@@ -282,6 +284,7 @@ export function installTestHook(d: TestHookDeps): void {
           offers: s.offers.length,
           battlesAuto,
           hash: s.hash,
+          offerIds: s.offers.map(o => o.id),
         });
         if (!ok) {
           out[out.length - 1]!.hash = 'TIMEOUT:' + s.hash;
