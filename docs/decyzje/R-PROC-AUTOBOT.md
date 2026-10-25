@@ -1051,3 +1051,7 @@ FALA 307 → 306 wykonany improwizacją pod presją, bez wcześniej przećwiczon
 
 Historyczne routingi, dawne modele i snapshoty zachowano w
 [`docs/archiwum-procesu/`](../archiwum-procesu/); nie są aktywną instrukcją.
+
+## §5b — Aktualna polityka modeli (właściciel, 2026-10-25; nadrzędna wobec §5a i wcześniejszych)
+
+Wszystkie tematy (web i port Rust): **Operator i Obrona → Haiku 5.5 medium; Evaluator → Sonnet 5.5 medium; Final Control → Sonnet 5.5 medium** (Haiku za słaby na Final Control). **Opus 5.5 medium wyłącznie dla jednostek i obiektów 3D** (modele, bitwa 3D, renderer 3D). Model ustawia pole `model` w wywołaniu `agent()`; opis `description` skryptu Workflow musi to odzwierciedlać (nie kopiować starego „Opus 5.5”).

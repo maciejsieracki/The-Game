@@ -27,7 +27,7 @@ dotykające tych samych plików — zawsze sekwencyjnie, nigdy w tej samej fali.
 
 > **WSTRZYMANIE NOWYCH DISPATCHY (właściciel, 2026-10-23):** limity się kończą — dokończ do Final Control i integracji wszystko, co już trwa (P6.7A, P6.7B, M05A, M12, P5.7, P4.36-Q2); NIE otwieraj nowych tematów ani nie wypełniaj zwolnionych slotów, dopóki właściciel nie wznowi w czacie.
 
-> **POLITYKA MODELI (właściciel, 2026-10-24, oszczędność limitów):** Haiku 5.5 (medium) dla Operatora/Obrony/Final Control, a EVALUATOR zawsze Sonnet 5.5 medium (decyzja 2026-10-24 po kłopotach Haiku-Evaluatora) we WSZYSTKICH tematach; WYŁĄCZNIE jednostki i obiekty 3D (modele, bitwa 3D, renderer 3D: np. P4.36 części 2–5, MOD-xx) — Opus 5.5 medium. Zastępuje wcześniejszą regułę „grafika/renderer/UI-wizualia → Opus” (UI/panele P5 i wizualia 2D → Haiku). Uwaga procesowa: Evaluator na Haiku bywał bez werdyktu — Final Control weryfikuje niezależnie.
+> **POLITYKA MODELI (właściciel, 2026-10-24, oszczędność limitów):** Haiku 5.5 (medium) dla Operatora/Obrony, a EVALUATOR i FINAL CONTROL zawsze Sonnet 5.5 medium (decyzje 2026-10-24 po kłopotach Haiku-Evaluatora i 2026-10-25 „Haiku za słaby na Final Control”) we WSZYSTKICH tematach; WYŁĄCZNIE jednostki i obiekty 3D (modele, bitwa 3D, renderer 3D: np. P4.36 części 2–5, MOD-xx) — Opus 5.5 medium. Zastępuje wcześniejszą regułę „grafika/renderer/UI-wizualia → Opus” (UI/panele P5 i wizualia 2D → Haiku). Uwaga procesowa: Evaluator na Haiku bywał bez werdyktu — Final Control weryfikuje niezależnie.
 
 | # | Temat | Faza | Runda | runId Workflow | Status | Ostatnia aktualizacja |
 |---|---|---|---|---|---|---|
