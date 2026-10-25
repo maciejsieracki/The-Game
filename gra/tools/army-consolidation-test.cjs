@@ -44,7 +44,6 @@ function runSuite(C) {
   C.setArmyConsolidationOverride(null);
   ok(C.isArmyConsolidationEnabled() === false, 'flaga: override null wraca do OFF');
   ok(C.ARMY_CONSOLIDATION_MAX_PER_HEX === 12, 'params: max per hex = 12 (z JSON)');
-  ok(C.ARMY_CONSOLIDATION_MIN_ARMY_SIZE === 2, 'params: min army = 2 (z JSON)');
   ok(C.ARMY_CONSOLIDATION_HOME_GROUP_SIZE === 2, 'params: home group = 2 (z JSON)');
   ok(C.ARMY_CONSOLIDATION_RALLY_SEARCH_HEX === 12, 'params: rally search = 12 (z JSON)');
 
@@ -88,10 +87,6 @@ function runSuite(C) {
   ok(C.assignRallyTargets([], [capHex], 12, new Map()).length === 0, 'assign: brak jednostek -> pusto');
 
   // --- obrona domu: kworum ---
-  ok(C.homeDefenseGroupCount(0, 2) === 0, 'home: brak wolnych -> 0');
-  ok(C.homeDefenseGroupCount(1, 2) === 1, 'home: jedna wolna -> 1 (gwarancja)');
-  ok(C.homeDefenseGroupCount(5, 2) === 2, 'home: kworum 2 z 5 wolnych');
-  ok(C.homeDefenseGroupCount(5, 0) === 1, 'home: groupSize 0 -> minimum 1');
 
   // --- liczba armii = liczba wojen ---
   ok(C.warArmyCount([]) === 1, 'wojna: brak wrogow -> min 1 armia');
@@ -125,10 +120,13 @@ function wiringChecks() {
   const ai = fs.readFileSync(path.join(GRA, 'src', 'game', 'ai.ts'), 'utf8');
   const main = fs.readFileSync(path.join(GRA, 'src', 'main.ts'), 'utf8');
   ok(ai.includes("from './army-consolidation'"), 'wiring: ai.ts importuje army-consolidation');
-  ok(ai.includes('isArmyConsolidationEnabled() && canConcentrateArmy(opts) && !forcedWarAttack'), 'wiring: blok pokoju za flaga');
-  ok(ai.includes('planWarArmiesByEnemy(planned, ctx, nav, warOpts)'), 'wiring: wojna dzielona na armie za flaga');
+  ok(ai.includes('const consolidationPeace = isArmyConsolidationEnabled() && canConcentrateArmy(opts)'), 'wiring: stan pokoju za flaga');
+  ok(ai.includes('if (consolidationPeace && !forcedWarAttack) {'), 'wiring: blok pokoju za stanem pokoju');
+  ok(ai.includes('const standardConcentration = canConcentrateArmy(opts) && !consolidationPeace'), 'wiring: lokalna koncentracja wylaczona w pokoju (jeden punkt zbiorki)');
+  ok(ai.includes('planWarArmiesByEnemy(planned, ctx, nav, warOpts, data)'), 'wiring: wojna dzielona na armie za flaga');
   ok(ai.includes('ARMY_CONSOLIDATION_HOME_GROUP_SIZE : 1'), 'wiring: obrona domu z kworum tylko za flaga (OFF -> 1)');
   ok(main.includes("capitalCityId: isArmyConsolidationEnabled() ? capitalCityIdForOwner(ownerId) : undefined"), 'wiring: main.ts podaje stolice tylko za flaga');
+  ok(main.includes("atWarWithCiv: isArmyConsolidationEnabled() ? atWarWithCivFor(ownerId) : undefined"), 'wiring: main.ts podaje stan wojny tylko za flaga');
   ok(main.includes("from './game/army-consolidation'"), 'wiring: main.ts importuje flage');
   ok(ai.includes('capitalCityId?: string | null;'), 'wiring: AITurnOpts ma pole capitalCityId');
   return res;
@@ -142,7 +140,6 @@ function mutationChecks(original) {
     ['brak podzialu na armie (zawsze 1 grupa)', 'const k = Math.min(Math.max(1, Math.floor(armyCount)), units.length);', 'const k = 1;'],
     ['brak zrownowazenia sila (round-robin zle)', 'groups[best]!.units.push(u);', 'groups[0]!.units.push(u);'],
     ['liczba armii bez minimum 1', 'return Math.max(1, new Set(enemyOwnerIds).size);', 'return new Set(enemyOwnerIds).size;'],
-    ['kworum obrony usuniete', 'return Math.min(Math.max(1, Math.floor(groupSize)), availableCount);', 'return Math.min(1, availableCount);'],
     ['brak miasta zapasowego', 'return [{ q: rally.q, r: rally.r }, ...others];', 'return [{ q: rally.q, r: rally.r }];'],
   ];
   const results = [];
@@ -195,7 +192,8 @@ function main() {
   const wiring = wiringChecks();
   const mut = mutationChecks(fs.readFileSync(SRC_MODULE, 'utf8'));
 
-  const killedAll = mut.every(m => m.killed || m.note);
+  // Mutacja, ktorej fragment nie istnieje, NIE jest zaliczona (dawniej przechodzila przez note).
+  const killedAll = mut.every(m => m.killed);
   const lines = [];
   lines.push(`army-consolidation pure: ${suite.passed} passed / ${suite.failed} failed`);
   for (const m of suite.msgs) lines.push(`  FAIL: ${m}`);

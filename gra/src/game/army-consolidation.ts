@@ -36,7 +36,6 @@ export function isArmyConsolidationEnabled(): boolean {
 
 /** Parametry z JSON (kazdy klucz ma pole `wartosc`). */
 export const ARMY_CONSOLIDATION_MAX_PER_HEX: number = consolidationParamsRaw.rally_hex_max_units.wartosc;
-export const ARMY_CONSOLIDATION_MIN_ARMY_SIZE: number = consolidationParamsRaw.min_army_size.wartosc;
 export const ARMY_CONSOLIDATION_HOME_GROUP_SIZE: number = consolidationParamsRaw.home_defense_group_size.wartosc;
 export const ARMY_CONSOLIDATION_RALLY_SEARCH_HEX: number = consolidationParamsRaw.rally_search_hex.wartosc;
 
@@ -142,18 +141,6 @@ export function assignRallyTargets<T extends ConsolidationUnit>(
     });
   }
   return out;
-}
-
-/**
- * Obrona domu: ile jednostek przydzielic jednemu zagrozeniu. `availableCount` = wolne
- * jednostki w zasiegu. Zwraca 0..groupSize; minimum 1 gdy jest choc jedna wolna (gwarancja).
- */
-export function homeDefenseGroupCount(
-  availableCount: number,
-  groupSize: number = ARMY_CONSOLIDATION_HOME_GROUP_SIZE,
-): number {
-  if (availableCount <= 0) return 0;
-  return Math.min(Math.max(1, Math.floor(groupSize)), availableCount);
 }
 
 /** Liczba armii wojennych = liczba roznych wrogich cywilizacji (min 1). */
