@@ -521,10 +521,17 @@ export function planWarAllInCapital(
   }
   // 2b) R-WEB-WAR-RULES-MULTIWAR-Q1, W1: grupa z wrogą armią w promieniu zaangażowania najpierw
   //     z nią walczy (marsz do niej, zatrzymanie przy kontakcie); bez takiej armii -> stolica.
+  // R-WEB-WAR-RULES-MULTIWAR-Q1 (r6, zarzut Evaluatora 4): przy W2 (enemyStrength podane) grupa
+  // walczy WYŁĄCZNIE z armiami swojego przydzielonego przeciwnika (c.target.ownerId); armie
+  // pozostałych wrogów nie wchodzą do puli zaangażowania.
   if (opts.enemyArmies !== undefined && opts.enemyArmies.length > 0) {
     const radius = opts.engageRadius ?? 0;
+    const w2Split = opts.enemyStrength !== undefined;
     for (const c of clusters) {
-      const hit = pickEngagementArmy(c.anchor, opts.enemyArmies, hexDistance, radius);
+      const pool = w2Split
+        ? opts.enemyArmies.filter(e => e.ownerId === c.target.ownerId)
+        : opts.enemyArmies;
+      const hit = pickEngagementArmy(c.anchor, pool, hexDistance, radius);
       if (hit !== null) c.engage = hit;
     }
   }
@@ -607,8 +614,10 @@ export function planWarAllInCapital(
     const rc = tryGoal(targetGoal(c.target));
     if (rc === 'step') return targetGoal(c.target);
     if (rc === 'stop') { plan.held.push(u.id); return undefined; }
+    // R-WEB-WAR-RULES-MULTIWAR-Q1 (r6, zarzut 4): przy W2 zapasowy cel tylko u przydzielonego wroga.
     const others = [...targets]
-      .filter(t => t.cityId !== c.target.cityId)
+      .filter(t => t.cityId !== c.target.cityId
+        && (opts.enemyStrength === undefined || t.ownerId === c.target.ownerId))
       .sort((a, b) => hexDistance(u.q, u.r, a.q, a.r) - hexDistance(u.q, u.r, b.q, b.r) || cmpTarget(a, b));
     for (const t of others) {
       const g = targetGoal(t);

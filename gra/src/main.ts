@@ -29300,6 +29300,11 @@ async function boot(): Promise<void> {
       engage: (targetOwnerId: number) => boolean,
     ): WarAllInContext | undefined {
       if (!isWarAllInCapitalEnabled()) return undefined;
+      // R-WEB-WAR-RULES-MULTIWAR-Q1 (r6, zarzut Evaluatora 5 / R1): flaga ON -> ruch all-in
+      // (marsz na stolicę, W1 zaangażowanie) cywilizacji AI NIE ma skutku przed turą
+      // `delayInterCivWarsUntilTurn`. Barbarzyńcy nie są cywilizacją -- ich kontekst bez zmian.
+      if (isWarRulesMultiwarEnabled() && !isBarbarian(selfOwnerId)
+        && !isInterCivWarOpenAtTurn(turn)) return undefined;
       const ownerIds = [...new Set(cities.map(c => c.ownerId))]
         .filter(o => o !== selfOwnerId && !isBarbarian(o) && !eliminatedOwners.has(o))
         .sort((a, b) => a - b);
@@ -29313,7 +29318,9 @@ async function boot(): Promise<void> {
       // R-WEB-WAR-RULES-MULTIWAR-Q1 (flaga ON): W1 -- armie wrogów w wojnie z `selfOwnerId`
       // (bez cywilów/zwiadowców/barbarzyńców); W2 -- siła militarna każdego wroga (liczba
       // jednostek bojowych). Flaga OFF = kontekst bez tych pól = dotychczasowe zachowanie.
-      if (!isWarRulesMultiwarEnabled()) return { targets };
+      // r6 (zarzut 8): barbarzyńcy nie czytają enemyArmies/enemyStrength (barbarians.ts ~1811
+      // używa wyłącznie `targets`) -- nie liczymy dla nich listy armii (koszt O(jednostki)).
+      if (!isWarRulesMultiwarEnabled() || isBarbarian(selfOwnerId)) return { targets };
       const warEnemyOwners = new Set(ownerIds.filter(o => engage(o)));
       const enemyArmies: EngageArmyHex[] = [];
       const strengthByOwner = new Map<number, number>();
@@ -31272,7 +31279,10 @@ async function boot(): Promise<void> {
           // zwykłych wojen AI↔AI zerowałby się po każdym save/load (mechanizm celowo NIE
           // przechodzi przez serializeForcedWarState, patrz komentarz przy deklaracji mapy).
           regularWarCapturedByPairKey: Array.from(regularWarCapturedByPairKey.entries()),
-          warRulesForcedEraDeclared: Array.from(forcedEraWarDeclaredByTag.entries()),
+          // r6 (zarzut 3): przy flagi OFF klucz NIE trafia do zapisu (zapis = baza bit w bit).
+          ...(isWarRulesMultiwarEnabled()
+            ? { warRulesForcedEraDeclared: Array.from(forcedEraWarDeclaredByTag.entries()) }
+            : {}),
           stoneForceWarPendingOwners: stoneForceWarSave.pendingOwners,
           stoneForceWarCycleOwners: stoneForceWarSave.cycleOwners,
           stoneForceWarRestUntilByOwner: stoneForceWarSave.restUntilByOwner,

@@ -158,7 +158,15 @@ check(
 );
 check(
   'W1/W2: flaga OFF zwraca kontekst bez pól (zachowanie bazowe)',
-  /if \(!isWarRulesMultiwarEnabled\(\)\) return \{ targets \};/.test(main),
+  /if \(!isWarRulesMultiwarEnabled\(\) \|\| isBarbarian\(selfOwnerId\)\) return \{ targets \};/.test(main),
+);
+check(
+  'R1 (r6): warAllInContextFor bramka tury delayInterCivWarsUntilTurn dla cywilizacji AI',
+  /isWarRulesMultiwarEnabled\(\) && !isBarbarian\(selfOwnerId\)\s*&& !isInterCivWarOpenAtTurn\(turn\)\) return undefined;/.test(main),
+);
+check(
+  'R3/zapis (r6): warRulesForcedEraDeclared w meta save tylko przy fladze ON',
+  /\.\.\.\(isWarRulesMultiwarEnabled\(\)\s*\?\s*\{ warRulesForcedEraDeclared:/.test(main),
 );
 
 console.log(`\n${passed} PASS / ${failed} FAIL`);

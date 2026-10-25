@@ -180,6 +180,27 @@ try {
     enemyStrength: [{ ownerId: 2, strength: 1 }, { ownerId: 3, strength: 3 }],
   });
   eq(JSON.stringify(plan4b), JSON.stringify(plan4), 'W2l determinizm: dwa przebiegi = ten sam plan');
+
+  // Scenariusz 5 (r6, zarzut Evaluatora 4): grupa przydzielona wrogowi 3 NIE walczy z armią
+  // wroga 2 leżącą w promieniu. Wróg 3 ma większą siłę -> grupa (2 jedn.) jest jego.
+  const capitals3 = [
+    { ownerId: 2, cityId: 'cap2', q: 20, r: 2 },
+    { ownerId: 3, cityId: 'cap3', q: 20, r: 10 },
+  ];
+  const strength5 = [{ ownerId: 2, strength: 1 }, { ownerId: 3, strength: 3 }];
+  const my5 = [unit('u1', 2, 5), unit('u2', 2, 6)];
+  const cross = M.planWarAllInCapital(my5, capitals3, nav(), {
+    enemyArmies: [{ q: 7, r: 5, ownerId: 2 }], engageRadius: 10, enemyStrength: strength5,
+  });
+  eq(cross.orders.length > 0, true, 'W2m: grupa wydaje rozkazy');
+  eq(cross.orders.every(o => o.targetOwnerId === 3), true, 'W2m: grupa celuje tylko w przydzielonego wroga 3');
+  eq(cross.orders.some(o => o.mode === 'engage'), false, 'W2m: brak walki z armią wroga 2 (poza przydziałem)');
+  // Ta sama konfiguracja z armią wroga 3 w promieniu -> walka z NIĄ (przydzielony wróg).
+  const own5 = M.planWarAllInCapital(my5, capitals3, nav(), {
+    enemyArmies: [{ q: 7, r: 5, ownerId: 2 }, { q: 7, r: 6, ownerId: 3 }], engageRadius: 10, enemyStrength: strength5,
+  });
+  eq(own5.orders.some(o => o.mode === 'engage' && o.targetOwnerId === 3), true, 'W2n: walka z armią przydzielonego wroga 3');
+  eq(own5.orders.some(o => o.targetOwnerId === 2), false, 'W2n: żaden rozkaz nie celuje w wroga 2');
 } catch (e) {
   failed++;
   console.error('EXCEPTION:', e && e.stack ? e.stack : e);
