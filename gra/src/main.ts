@@ -1411,6 +1411,7 @@ import {
   peaceOfferAiRequestPn,
   peaceOfferAiRequestBasket,
   aiProposalPlayerBenefitSurplus,
+  withZeroPwUndershoot,
 } from './game/diplomacy-ai-offer-balance';
 // R-WEB-DIPLO-DEALS-SENSIBLE-Q1: filtr sensownych ofert handlowych AI->gracz (flaga + progi JSON).
 import {
@@ -17223,6 +17224,9 @@ async function boot(): Promise<void> {
       const converted = aiCommandToPendingProposal(workingCmd, ownerId, ME(), turn);
       if (!converted) return;
 
+      // R-WEB-DIPLO-DEALS-SENSIBLE-Q1 (pkt 6): uzasadnienie (reason) dla umowy handlowej z koszyka
+      // surowców; wypełniane tylko gdy flaga ON i koszyk zawiera surowiec.
+      let sensibleUmowaReason = '';
       if (workingCmd.type === 'zaproponuj_umowe_handlowa') {
         const rel = getDiploRelation(ownerId, ME());
         const treasury = buildDiploTreasury();
@@ -17235,13 +17239,27 @@ async function boot(): Promise<void> {
           theirQuantityResourceOptions: quantityTradableGoodOptions(ME()),
           difficulty: effectiveGameDifficultyForOwner(ownerId),
         });
-        const tradeBasket = buildClampedAiTradeAgreementPayload(
+        const umowaBuildArgs = [
           quick,
           workingCmd.sweetenerGold,
           ownerBasketAffordCtx(ownerId, treasury),
           ownerBasketAffordCtx(ME(), treasury),
-        );
+        ] as const;
+        // Pkt 4 (flaga ON): zerowy undershoot także dla koszyka umowy (bilans PW gracza ~0).
+        const tradeBasket = isDiploSensibleDealsEnabled()
+          ? withZeroPwUndershoot(() => buildClampedAiTradeAgreementPayload(...umowaBuildArgs))
+          : buildClampedAiTradeAgreementPayload(...umowaBuildArgs);
         if (!tradeBasket) return;
+        // Pkt 6 (flaga ON): koszyk umowy NIE może zawierać surowca, którego AI nie ma w nadwyżce
+        // (oddaje) ani w niedoborze (bierze). Odrzucenie całej oferty — bez częściowej korekty.
+        if (isDiploSensibleDealsEnabled()) {
+          const check = sensibleUmowaBasketCheck(ownerId, tradeBasket);
+          if (!check.ok) {
+            console.log(`[Dyplomacja] AI${ownerId} ${workingCmd.type}: odrzucone (surowiec bez nadwyżki/niedoboru)`);
+            return;
+          }
+          sensibleUmowaReason = check.reasons.join(' ');
+        }
         converted.payload = {
           ...converted.payload,
           ...tradeBasket,
@@ -17348,6 +17366,7 @@ async function boot(): Promise<void> {
       if (workingCmd.type === 'zaproponuj_handel_surowiec' && workingCmd.reasonHandlu) {
         entry.reason = workingCmd.reasonHandlu;
       }
+      if (sensibleUmowaReason) entry.reason = sensibleUmowaReason;
       negotiationTable.push(entry);
       // P-DYPLO-KARTA-DUPLIKAT-KOMUNIKAT: BRAK showHintMessage tutaj celowo — ta funkcja biegnie
       // podczas endTurnInProgress (faza AI), więc toast trafiałby do deferredEotHints i po EOT
@@ -19934,6 +19953,43 @@ async function boot(): Promise<void> {
       return v;
     }
 
+    /**
+     * R-WEB-DIPLO-DEALS-SENSIBLE-Q1 (pkt 6): filtr potrzeby dla koszyka umowy handlowej (flaga ON).
+     * Surowiec oddawany przez AI (giveItems) wymaga nadwyżki AI i niedoboru gracza tego surowca;
+     * surowiec brany przez AI (receiveItems) wymaga niedoboru AI. Zwraca uzasadnienia (reason).
+     */
+    function sensibleUmowaBasketCheck(
+      ownerId: number,
+      basket: ProposalPayload,
+    ): { ok: boolean; reasons: string[] } {
+      const pakiet = diplomacyHandelSurowcePakietWielkosc();
+      const aiGoods = tradableGoodsForAiDiplo(ownerId);
+      const plGoods = tradableGoodsForAiDiplo(ME());
+      const aiRates = mergedResourceRatesForOwner(ownerId);
+      const plRates = mergedResourceRatesForOwner(ME());
+      const stockIn = (goods: readonly { key: string; ilosc?: number }[], key: string): number =>
+        goods.find(g => g.key === key)?.ilosc ?? 0;
+      const reasons: string[] = [];
+      for (const it of basket.giveItems ?? []) {
+        if (it.typ !== 'surowiec_ilosc') continue;
+        const key = it.id;
+        const aiStock = stockIn(aiGoods, key);
+        const aiNet = aiRates[key] ?? 0;
+        const partnerNeed = classifyTradeNeedNet(stockIn(plGoods, key), plRates[key] ?? 0, pakiet);
+        if (!isSellerSurplusJustified(aiStock, aiNet, pakiet, partnerNeed, true)) return { ok: false, reasons: [] };
+        reasons.push(tradeOfferReason('nadwyzka', aiStock, aiNet, true));
+      }
+      for (const it of basket.receiveItems ?? []) {
+        if (it.typ !== 'surowiec_ilosc') continue;
+        const key = it.id;
+        const aiStock = stockIn(aiGoods, key);
+        const aiNet = aiRates[key] ?? 0;
+        if (!isBuyerDeficitJustified(aiStock, aiNet, pakiet, true)) return { ok: false, reasons: [] };
+        reasons.push(tradeOfferReason('deficyt', aiStock, aiNet, true));
+      }
+      return { ok: true, reasons };
+    }
+
     function pickResourceTradeRelOffer(
       proposerOwnerId: number,
       partnerOwnerId: number,
@@ -20014,9 +20070,12 @@ async function boot(): Promise<void> {
       const sensibleOn = isDiploSensibleDealsEnabled();
       const sensiblePakiet = diplomacyHandelSurowcePakietWielkosc();
       const proposerStockForPick = goodsProposer.find(g => g.key === pick.surowiecKey)?.ilosc ?? 0;
-      const proposerNetForPick = mergedResourceRatesForOwner(proposerOwnerId)[pick.surowiecKey] ?? 0;
+      // Leniwie: przy fladze OFF stawki netto NIE są czytane (zachowanie bazowe, zero kosztu).
+      const proposerNetForPick = sensibleOn
+        ? (mergedResourceRatesForOwner(proposerOwnerId)[pick.surowiecKey] ?? 0) : 0;
       const partnerStockForPick = goodsPartner.find(g => g.key === pick.surowiecKey)?.ilosc ?? 0;
-      const partnerNetForPick = mergedResourceRatesForOwner(partnerOwnerId)[pick.surowiecKey] ?? 0;
+      const partnerNetForPick = sensibleOn
+        ? (mergedResourceRatesForOwner(partnerOwnerId)[pick.surowiecKey] ?? 0) : 0;
       const partnerNeedForPick: TradeNeed = classifyTradeNeedNet(
         partnerStockForPick, partnerNetForPick, sensiblePakiet,
       );
@@ -20067,14 +20126,14 @@ async function boot(): Promise<void> {
       const rel = getDiploRelation(proposerOwnerId, partnerOwnerId);
       const resourceGivePn = diplomacyPnSurowiecIlosc(pick.surowiecKey, pakietyPerTura) ?? 0;
       const difficulty = effectiveGameDifficultyForOwner(proposerOwnerId);
-      zaplataPerTura = adjustZaplataPerTuraForZeroBalance(
-        zaplataPerTura,
-        'zloto',
-        resourceGivePn,
-        relationTotal(rel),
-        difficulty,
-        kierunek,
-      );
+      // R-WEB-DIPLO-DEALS-SENSIBLE-Q1 (pkt 4): flaga ON -> zerowy undershoot (bilans PW gracza ~0,
+      // nie -3 PN na Trudnym), żeby oferta nie wpadała w filtr bilansu; OFF -> bazowe wyliczenie.
+      const adjustZaplataArgs = [
+        zaplataPerTura, 'zloto', resourceGivePn, relationTotal(rel), difficulty, kierunek,
+      ] as const;
+      zaplataPerTura = sensibleOn
+        ? withZeroPwUndershoot(() => adjustZaplataPerTuraForZeroBalance(...adjustZaplataArgs))
+        : adjustZaplataPerTuraForZeroBalance(...adjustZaplataArgs);
       return {
         surowiecKey: pick.surowiecKey,
         label: pick.label,
@@ -24134,6 +24193,26 @@ async function boot(): Promise<void> {
       setGate: (v: boolean) => { dealsEndTurnGateEnabled = v === true; },
       setFilter: (v: boolean) => setDiploSensibleDealsEnabled(v === true),
       endTurn: () => { triggerPlayerEndTurn(); },
+      /** Wstrzyknięcie oferty handlowej AI->gracz PRZEZ REALNĄ ścieżkę enqueueNegotiationFromAiCmd
+       *  (filtry bilansu/potrzeby, reason). Zwraca liczbę dodanych wpisów stołu (0 = odrzucona/brak). */
+      injectAiTradeOffer: (): number => {
+        const ai = aiStartHexes[0]?.ownerId;
+        if (ai == null) return 0;
+        // Sandbox startuje ze skarbcem AI = 0 -> klamp zasobów zerowałby dar złota; test potrzebuje
+        // wypłacalnego AI (ustawienie wyłącznie w haku testowym, nie w regułach gry).
+        setOwnerTreasury(ai, Math.max(ownerTreasury(ai), 300));
+        const before = negotiationTable.length;
+        // Sandbox startuje w stanie wojny (wojna blokuje handel); test wymaga pokoju z AI.
+        const relForInject = getDiploRelation(ai, ME());
+        if (relForInject.status === 'wojna') setDiploRelation(ai, ME(), { ...relForInject, status: 'pokoj' });
+        // Kolejne wstrzyknięcia w jednej sesji: czyść cooldown odrzuconej oferty (NO-NAG), inaczej
+        // test nie może ponownie wystawić tego samego typu oferty po odrzuceniu.
+        rejectedOfferCooldowns = [];
+        enqueueNegotiationFromAiCmd(ai, {
+          type: 'zaproponuj_handel', targetId: String(ME()), powod: 'test-injekcja', goldOnce: 40,
+        });
+        return negotiationTable.length - before;
+      },
       rejectAllAiTradeOffers: () => {
         const ids = negotiationTable.filter(isAiTradeOfferAwaitingPlayer).map(n => n.id);
         for (const id of ids) handleNegotiationReject(id);

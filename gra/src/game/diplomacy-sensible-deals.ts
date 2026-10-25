@@ -22,16 +22,21 @@
  */
 import config from './diplomacy-sensible-deals.config.json';
 
-let sensibleDealsEnabled = true;
+/**
+ * Flaga funkcjonalnosci R-WEB-DIPLO-DEALS-SENSIBLE-Q1 (nazwa stalej przywrocona z dispatchu).
+ * Zmienna modulowa (nie const), bo przelaczana w tescie (`setDiploSensibleDealsEnabled`);
+ * produkcja zostaje przy domyslnym ON.
+ */
+let DIPLO_SENSIBLE_DEALS_ENABLED = true;
 
 /** Odczyt flagi funkcjonalnosci. */
 export function isDiploSensibleDealsEnabled(): boolean {
-  return sensibleDealsEnabled;
+  return DIPLO_SENSIBLE_DEALS_ENABLED;
 }
 
 /** Przelaczenie flagi (uzywane przez testy; produkcja zostaje przy domyslnym ON). */
 export function setDiploSensibleDealsEnabled(enabled: boolean): void {
-  sensibleDealsEnabled = enabled === true;
+  DIPLO_SENSIBLE_DEALS_ENABLED = enabled === true;
 }
 
 export interface SensibleDealsThresholds {

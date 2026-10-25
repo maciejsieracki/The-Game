@@ -62,6 +62,15 @@ function guardResults(main) {
     ['zapis: meta.dealsEndTurnGate; odczyt: stary zapis = OFF',
       /dealsEndTurnGate: dealsEndTurnGateEnabled,/.test(main)
       && /dealsEndTurnGateEnabled = \(saved\.meta\?\.dealsEndTurnGate as boolean \| undefined\) === true;/.test(main)],
+    ['pkt 4: zerowy undershoot w zakresie flagi ON (pickResourceTradeRelOffer + koszyk umowy)',
+      /withZeroPwUndershoot\(\(\) => adjustZaplataPerTuraForZeroBalance/.test(main)
+      && /withZeroPwUndershoot\(\(\) => buildClampedAiTradeAgreementPayload/.test(main)],
+    ['pkt 6: filtr potrzeby koszyka umowy (sensibleUmowaBasketCheck) przed ofertą + reason',
+      /sensibleUmowaBasketCheck\(ownerId, tradeBasket\)/.test(main)
+      && /entry\.reason = sensibleUmowaReason;/.test(main)],
+    ['pkt 7: mergedResourceRatesForOwner w pickResourceTradeRelOffer czytany tylko przy fladze ON',
+      /const proposerNetForPick = sensibleOn\s*\?/.test(main)
+      && /const partnerNetForPick = sensibleOn\s*\?/.test(main)],
   ];
 }
 
