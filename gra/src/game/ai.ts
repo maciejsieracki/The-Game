@@ -3827,7 +3827,12 @@ function applyWarAllInCapitalToCommands(
   // (ograniczaja tylko wybor kroku, nie trase -- brak krokow wstecz).
   const blocked = new Set(enemyCityHex);
   const occupied = new Set(units.map(u => keyOf(u.q, u.r)));
-  const plan = planWarAllInCapital(planned, ctx.targets, { map, blocked, occupied });
+  // R-WEB-WAR-RULES-MULTIWAR-Q1: W1/W2 tylko gdy wołający przekazał dane (flaga ON w main.ts).
+  const plan = planWarAllInCapital(planned, ctx.targets, { map, blocked, occupied }, {
+    enemyArmies: ctx.enemyArmies,
+    engageRadius: ctx.engageRadius,
+    enemyStrength: ctx.enemyStrength,
+  });
   // Kolejnosc komend = kolejnosc planu (przod kolumny zwalnia heksy tylnym).
   for (const o of plan.orders) {
     commands.push({

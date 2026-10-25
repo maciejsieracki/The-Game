@@ -1240,6 +1240,17 @@ import {
 } from './game/barbarians';
 import type { BarbCamp, BarbUnit } from './game/barbarians';
 import { isWarAllInCapitalEnabled, type WarAllInContext, type WarCapitalTarget } from './game/warAllInCapital';
+// R-WEB-WAR-RULES-MULTIWAR-Q1: bramki wojen (R1 tura 40, R2 limit Kamienia, R3 wojna epoki) + W1/W2.
+import {
+  WAR_RULES_PARAMS,
+  canDeclareEraForcedWar,
+  evaluateInterCivWarGate,
+  forcedEraTagFromPowod,
+  isInterCivWarOpenAtTurn,
+  isWarRulesMultiwarEnabled,
+  type EngageArmyHex,
+  type ForcedEraTag,
+} from './game/war-rules-multiwar';
 // TEMAT #15 — embarkacja jednostek lądowych (gracz + AI + Ludy Morza).
 import {
   EMBARK_TECH, EMBARK_DEFENSE_MULT, moveCostFnFor, applyEmbarkStateAfterMove,
@@ -2051,6 +2062,9 @@ async function boot(): Promise<void> {
     const stoneForceWarCycleOwners = new Set<number>();
     const stoneForceWarRestUntilByOwner = new Map<number, number>();
     const stoneForceWarActiveByPairKey = new Map<string, StoneForcedWarPairState>();
+    // R-WEB-WAR-RULES-MULTIWAR-Q1 (R3): ile wojen epoki (wymuszonych) wypowiedziano per epoka
+    // w skali świata. Zapisywane w meta save (`warRulesForcedEraDeclared`).
+    const forcedEraWarDeclaredByTag = new Map<ForcedEraTag, number>();
     /**
      * R-EPOKA-ZELAZO-WYMUSZONA-WOJNA-Q1: osobny rejestr od Kamienia i Brązu (żadne pole nie
      * jest współdzielone — mechanizmy trzech epok nie mieszają stanu). Wyzwalacz to AWANS
@@ -29274,7 +29288,26 @@ async function boot(): Promise<void> {
         const cap = capId ? cities.find(c => c.id === capId && c.ownerId === o) : undefined;
         if (cap) targets.push({ ownerId: o, cityId: cap.id, q: cap.q, r: cap.r });
       }
-      return { targets };
+      // R-WEB-WAR-RULES-MULTIWAR-Q1 (flaga ON): W1 -- armie wrogów w wojnie z `selfOwnerId`
+      // (bez cywilów/zwiadowców/barbarzyńców); W2 -- siła militarna każdego wroga (liczba
+      // jednostek bojowych). Flaga OFF = kontekst bez tych pól = dotychczasowe zachowanie.
+      if (!isWarRulesMultiwarEnabled()) return { targets };
+      const warEnemyOwners = new Set(ownerIds.filter(o => engage(o)));
+      const enemyArmies: EngageArmyHex[] = [];
+      const strengthByOwner = new Map<number, number>();
+      for (const u of units) {
+        if (!warEnemyOwners.has(u.ownerId)) continue;
+        if (isCivilianUnit(u) || isScoutUnit(u)) continue;
+        enemyArmies.push({ q: u.q, r: u.r, ownerId: u.ownerId });
+        strengthByOwner.set(u.ownerId, (strengthByOwner.get(u.ownerId) ?? 0) + 1);
+      }
+      return {
+        targets,
+        enemyArmies,
+        engageRadius: WAR_RULES_PARAMS.engageRadiusHexes,
+        enemyStrength: [...warEnemyOwners].sort((a, b) => a - b)
+          .map(o => ({ ownerId: o, strength: strengthByOwner.get(o) ?? 0 })),
+      };
     }
 
     /** Domyślne miasto w HUD auto-ulepszeń (stolica gracza lub pierwsze miasto). */
@@ -31213,6 +31246,7 @@ async function boot(): Promise<void> {
           // zwykłych wojen AI↔AI zerowałby się po każdym save/load (mechanizm celowo NIE
           // przechodzi przez serializeForcedWarState, patrz komentarz przy deklaracji mapy).
           regularWarCapturedByPairKey: Array.from(regularWarCapturedByPairKey.entries()),
+          warRulesForcedEraDeclared: Array.from(forcedEraWarDeclaredByTag.entries()),
           stoneForceWarPendingOwners: stoneForceWarSave.pendingOwners,
           stoneForceWarCycleOwners: stoneForceWarSave.cycleOwners,
           stoneForceWarRestUntilByOwner: stoneForceWarSave.restUntilByOwner,
@@ -34162,6 +34196,9 @@ async function boot(): Promise<void> {
             // wojny wymuszonej ORAZ minął próg tury (R-WOJNA-WYMUSZONA-PROG-TURY-GRACZ-Q1 —
             // ta sama wartość liczbowa co próg AI, liczona od startu gry jak Kamień, nie od
             // wejścia gracza w epokę jak Brąz/Żelazo -- gracz nie ma odrębnego "wejścia w epokę").
+            // R-WEB-WAR-RULES-MULTIWAR-Q1 (R1): przed turą 40 (flaga ON) lista podmiotów jest
+            // PUSTA -- parowanie nic nie przydziela, nie powtarza wpisów DECISION_REQUIRED co turę,
+            // a pending wojen wymuszonych zostaje nienaruszony (wybuchną po turze 40).
             const triggeredSubjects: ForcedWarPairingSubject[] = [
               ...bronzeTriggeredSubjects, ...stoneTriggeredSubjects, ...ironTriggeredSubjects,
             ];
@@ -34173,6 +34210,10 @@ async function boot(): Promise<void> {
             ) {
               triggeredSubjects.push({ ownerId: 0, q: playerCity.q, r: playerCity.r });
             }
+            // R-WEB-WAR-RULES-MULTIWAR-Q1 (R1, flaga ON): przed turą 40 pula podmiotów jest PUSTA
+            // (także gracz) -- parowanie nic nie przydziela i nie powtarza wpisów DECISION_REQUIRED
+            // co turę; pending wojen wymuszonych zostaje nienaruszony (wybuchną po turze 40).
+            if (isWarRulesMultiwarEnabled() && !isInterCivWarOpenAtTurn(turn)) triggeredSubjects.length = 0;
 
             // Krok D: pary już aktywne (dowolna epoka, AI<->AI, targetId!==0) -- pula do
             // której leftover może dołączyć jako trzeci (krok 4 ECHO).
@@ -35188,6 +35229,24 @@ async function boot(): Promise<void> {
                   try {
                     const targetId = parseInt(cmd.targetId, 10);
                     if (Number.isNaN(targetId)) continue;
+                    // R-WEB-WAR-RULES-MULTIWAR-Q1 (flaga WAR_RULES_MULTIWAR_ENABLED): bramka
+                    // wypowiedzenia -- R1 (wojny między cywilizacjami dopiero od tury 40), R2
+                    // (Kamień: najwyżej 1 wojna na cywilizację, także gdy cel to AI), R3 (najwyżej
+                    // 1 wojna epoki na epokę w skali świata). Blokada = pominięcie komendy (pending
+                    // wojny wymuszonej NIE jest konsumowany -- próba ponowi się w kolejnej turze).
+                    if (cmd.type === 'wypowiedz_wojne' && isWarRulesMultiwarEnabled()) {
+                      const gateForcedTag = forcedEraTagFromPowod(cmd.powod);
+                      if (gateForcedTag !== null && !canDeclareEraForcedWar(gateForcedTag, forcedEraWarDeclaredByTag)) continue;
+                      const gateVerdict = evaluateInterCivWarGate({
+                        turn,
+                        attackerEra: empireEpochForOwner(ownerId),
+                        attackerWarCount: countActiveWarsForOwnerExcludingBarbarians(ownerId),
+                        targetIsPlayer: isHuman(targetId),
+                        targetEra: empireEpochForOwner(targetId),
+                        targetWarCount: countActiveWarsForOwnerExcludingBarbarians(targetId),
+                      });
+                      if (gateVerdict !== 'ok') continue;
+                    }
                     if (cmd.type === 'wypowiedz_wojne') {
                       if (
                         typCityCopyOwners.has(ownerId)
@@ -35222,6 +35281,14 @@ async function boot(): Promise<void> {
                         ownerId, targetId, getDiploRelation(ownerId, targetId), 'wojna_wypowiedziana',
                       );
                       setDiploRelation(ownerId, targetId, newRel);
+                      // R-WEB-WAR-RULES-MULTIWAR-Q1 (R3): licznik wojen epoki per epoka (świat).
+                      const declaredEraTag = forcedEraTagFromPowod(cmd.powod);
+                      if (declaredEraTag !== null) {
+                        forcedEraWarDeclaredByTag.set(
+                          declaredEraTag,
+                          (forcedEraWarDeclaredByTag.get(declaredEraTag) ?? 0) + 1,
+                        );
+                      }
                       // R-EPOKA-BRAZU-WYMUSZONA-WOJNA: ta konkretna wojna wypowiedziana =
                       // wymuszona (targetId dokładnie ten, który wybrał pickBronzeForcedWarTargetId
                       // dla ownerId w tej turze) — zapisz stan do liczników auto-pokoju i zapisz
@@ -38166,6 +38233,7 @@ async function boot(): Promise<void> {
       // R-AI-WOJNY-ZWYKLE-CAP-DWA-MIASTA-Q1: nowa gra bez przeładowania strony nie może
       // dziedziczyć liczników zwykłych wojen AI↔AI z poprzedniej rozgrywki (ownerId reużywane).
       regularWarCapturedByPairKey.clear();
+      forcedEraWarDeclaredByTag.clear();
       clearedBarbCampHexes.clear();
       // Audyt #43: cityRelig/autoManageCities przezywaly restart (id 'cityN'
       // koliduja miedzy rozgrywkami) -- nowe miasto dziedziczylo zombie stan
@@ -39590,7 +39658,15 @@ async function boot(): Promise<void> {
       // R-AI-WOJNY-ZWYKLE-CAP-DWA-MIASTA-Q1: brak wpisu (stary zapis sprzed tej naprawy) =
       // bezpieczny pusty stan (mechanizm po prostu nieaktywny dla tej gry), nie wyjątek.
       regularWarCapturedByPairKey.clear();
-      const savedRegularWarCaptured = saved.meta?.regularWarCapturedByPairKey as
+      // R-WEB-WAR-RULES-MULTIWAR-Q1 (R3): brak wpisu (stary zapis) = pusty licznik.
+      forcedEraWarDeclaredByTag.clear();
+      const savedForcedEraDeclared = saved.meta?.warRulesForcedEraDeclared as
+        | Array<[ForcedEraTag, number]>
+        | undefined;
+      if (savedForcedEraDeclared?.length) {
+        for (const [tag, n] of savedForcedEraDeclared) forcedEraWarDeclaredByTag.set(tag, n);
+      }
+      const savedRegularWarCaptured =saved.meta?.regularWarCapturedByPairKey as
         | Array<[string, { ownerA: number; ownerB: number; capturedByA: number; capturedByB: number }]>
         | undefined;
       if (savedRegularWarCaptured?.length) {

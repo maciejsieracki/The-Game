@@ -26,6 +26,12 @@
 import type { GameMap } from '../types/map';
 import warAllInParamsRaw from '../../data/war-allin-params.json';
 import { hexDistance, hexNeighborCoords, keyOf, terrainMoveCost } from '../units/setup';
+import {
+  allocateGroupsToEnemies,
+  pickEngagementArmy,
+  type EngageArmyHex,
+  type EnemyStrengthRef,
+} from './war-rules-multiwar';
 
 /** GLOWNA FLAGA (tymczasowa zasada -- latwa do wylaczenia jedna zmiana). */
 export const WAR_ALLIN_CAPITAL_ENABLED = true;
@@ -52,6 +58,13 @@ export interface WarCapitalTarget {
 /** Kontekst przekazywany z main.ts do ai.ts / barbarians.ts (tylko gdy flaga ON). */
 export interface WarAllInContext {
   targets: readonly WarCapitalTarget[];
+  /**
+   * R-WEB-WAR-RULES-MULTIWAR-Q1 (tylko gdy flaga WAR_RULES_MULTIWAR_ENABLED ON; brak = baza):
+   * armie wrogów w wojnie z wołającym (W1), promień zaangażowania (W1), siła przeciwników (W2).
+   */
+  enemyArmies?: readonly EngageArmyHex[];
+  engageRadius?: number;
+  enemyStrength?: readonly EnemyStrengthRef[];
 }
 
 /**
@@ -170,8 +183,24 @@ export interface WarAllInOrder {
   step: { q: number; r: number };
   targetCityId: string;
   targetOwnerId: number;
-  /** 'capital' -- marsz na stolice; 'rendezvous' -- dolaczanie do wiekszej grupy po drodze. */
-  mode: 'capital' | 'rendezvous';
+  /**
+   * 'capital' -- marsz na stolice; 'rendezvous' -- dolaczanie do wiekszej grupy po drodze;
+   * 'engage' -- (R-WEB-WAR-RULES-MULTIWAR-Q1, W1) marsz na najblizsza wroga armie w promieniu.
+   */
+  mode: 'capital' | 'rendezvous' | 'engage';
+}
+
+/**
+ * R-WEB-WAR-RULES-MULTIWAR-Q1: opcjonalne dane reguł wielu wojen. Brak pola / pusta tablica
+ * = dotychczasowe zachowanie (flaga OFF nie przekazuje nic). Patrz `war-rules-multiwar.ts`.
+ */
+export interface WarAllInPlanOpts {
+  /** W1: armie wrogich cywilizacji (w stanie wojny z wołającym), heksy + właściciel. */
+  enemyArmies?: ReadonlyArray<EngageArmyHex>;
+  /** W1: promień zaangażowania w heksach (od kotwicy grupy). */
+  engageRadius?: number;
+  /** W2: siła militarna przeciwników (do proporcjonalnego przydziału całych grup). */
+  enemyStrength?: ReadonlyArray<EnemyStrengthRef>;
 }
 
 export interface WarAllInPlan {
@@ -209,6 +238,8 @@ interface Cluster {
   minId: string;
   /** Wieksza grupa tego samego celu, do ktorej ta dolacza (undefined = glowa/maszeruje). */
   rendezvous?: Cluster;
+  /** W1: najbliższa wroga armia w promieniu zaangażowania (undefined = brak -> marsz na stolicę). */
+  engage?: EngageArmyHex;
 }
 
 /** Cel kroku: pole odleglosci + heks docelowy. */
@@ -373,6 +404,7 @@ export function planWarAllInCapital(
   units: readonly WarAllInUnit[],
   targets: readonly WarCapitalTarget[],
   nav: WarAllInNav,
+  opts: WarAllInPlanOpts = {},
 ): WarAllInPlan {
   const allStartKeys = new Set(units.map(u => keyOf(u.q, u.r)));
   const fieldCache = new Map<string, Map<string, number>>();
@@ -385,6 +417,14 @@ export function planWarAllInCapital(
     }
     return { field: f, destKey: dk, destQ: t.q, destR: t.r, target: t, mode: 'capital' };
   };
+  const engageGoal = (c: Cluster, hex: EngageArmyHex): Goal => ({
+    field: distanceField(nav, hex.q, hex.r, new Set(c.members.map(m => keyOf(m.q, m.r)))),
+    destKey: keyOf(hex.q, hex.r),
+    destQ: hex.q,
+    destR: hex.r,
+    target: c.target,
+    mode: 'engage',
+  });
   const clusterGoal = (from: Cluster, to: Cluster): Goal => ({
     field: distanceField(nav, to.anchor.q, to.anchor.r, new Set(from.members.map(m => keyOf(m.q, m.r)))),
     destKey: keyOf(to.anchor.q, to.anchor.r),
@@ -459,6 +499,35 @@ export function planWarAllInCapital(
     });
   }
 
+  // 2a) R-WEB-WAR-RULES-MULTIWAR-Q1, W2: przydział CAŁYCH grup do wrogów proporcjonalnie do
+  //     siły (przy k>1 wojnach). Grupy nie są dzielone; cel grupy = najbliższa stolica przydzielonego wroga.
+  if (opts.enemyStrength !== undefined && opts.enemyStrength.length > 0) {
+    const enemyOwners = new Set(targets.map(t => t.ownerId));
+    const enemies = opts.enemyStrength.filter(e => enemyOwners.has(e.ownerId));
+    if (enemies.length > 0) {
+      const alloc = allocateGroupsToEnemies(
+        clusters.map(c => ({ id: c.minId, size: c.members.length })),
+        enemies,
+      );
+      for (const c of clusters) {
+        const owner = alloc.get(c.minId);
+        if (owner === undefined) continue;
+        const own = targets.filter(t => t.ownerId === owner);
+        if (own.length === 0) continue;
+        c.target = nearestTarget(c.anchor.q, c.anchor.r, own)!;
+        c.distToTarget = hexDistance(c.anchor.q, c.anchor.r, c.target.q, c.target.r);
+      }
+    }
+  }
+  // 2b) R-WEB-WAR-RULES-MULTIWAR-Q1, W1: grupa z wrogą armią w promieniu zaangażowania najpierw
+  //     z nią walczy (marsz do niej, zatrzymanie przy kontakcie); bez takiej armii -> stolica.
+  if (opts.enemyArmies !== undefined && opts.enemyArmies.length > 0) {
+    const radius = opts.engageRadius ?? 0;
+    for (const c of clusters) {
+      const hit = pickEngagementArmy(c.anchor, opts.enemyArmies, hexDistance, radius);
+      if (hit !== null) c.engage = hit;
+    }
+  }
   // 3) Per cel: calkowity porzadek grup (rozmiar malejaco, blizej celu, id); kazda grupa poza
   //    pierwsza dolacza do najblizszej grupy stojacej WCZESNIEJ w porzadku (glowa maszeruje).
   const clustersByTarget = new Map<string, Cluster[]>();
@@ -480,9 +549,11 @@ export function planWarAllInCapital(
     for (let ci = 1; ci < list.length; ci++) {
       const c = list[ci]!;
       if (c.distToTarget <= WAR_ALLIN_NO_MERGE_NEAR_CAPITAL) continue;
+      if (c.engage !== undefined) continue;
       let bestD = Infinity;
       for (let pi = 0; pi < ci; pi++) {
         const p = list[pi]!;
+        if (p.engage !== undefined) continue;
         const d = hexDistance(c.anchor.q, c.anchor.r, p.anchor.q, p.anchor.r);
         if (d <= WAR_ALLIN_MERGE_RADIUS && d < bestD) {
           bestD = d;
@@ -523,7 +594,8 @@ export function planWarAllInCapital(
       }
       if (res.kind === 'hold') {
         sawHold = true;
-        return g.mode === 'capital' ? 'stop' : 'next';
+        // 'engage': zatrzymanie przy kontakcie z wrogą armią (walkę prowadzi logika ataku AI).
+        return g.mode === 'capital' || g.mode === 'engage' ? 'stop' : 'next';
       }
       return 'next';
     };
@@ -552,7 +624,9 @@ export function planWarAllInCapital(
   const runPass = (pass: Cluster[]): Set<Cluster> => {
     const entries: Array<{ u: WarAllInUnit; c: Cluster; first: Goal | undefined; key: number }> = [];
     for (const c of pass) {
-      const first = c.rendezvous !== undefined ? clusterGoal(c, c.rendezvous) : undefined;
+      const first = c.rendezvous !== undefined
+        ? clusterGoal(c, c.rendezvous)
+        : c.engage !== undefined ? engageGoal(c, c.engage) : undefined;
       const primary = first ?? targetGoal(c.target);
       for (const u of c.members) {
         entries.push({ u, c, first, key: primary.field.get(keyOf(u.q, u.r)) ?? Infinity });
