@@ -12,7 +12,8 @@
  *
  * Drukuje tabelę per seed:
  *   wojny przed T40      -- liczba par w stanie „wojna” na końcu tury 39 (lub ostatniej przed nią)
- *   wojny/cywilizację    -- wojny na koniec przebiegu / liczba właścicieli miast (proxy cywilizacji)
+ *   wojny/typ cyw.       -- wojny na koniec przebiegu / typy cywilizacji (AI + gracz = --ai + 1)
+*   oferty AI->gracz     -- liczba UNIKALNYCH ofert (po id) w przebiegu
  *   max wojen (przebieg) -- maksimum liczby wojen w przebiegu (podział na epoki: NIE_ZMIERZONO
  *                           w tym skrypcie -- wymaga odczytu epoki per tura, poza zakresem hooka)
  *   oferty AI->gracz     -- suma ofert zgłoszonych w przebiegu; „bilans<0” = liczba ofert z goldOnce<0
@@ -63,17 +64,20 @@ function summarizeRun(res, turns) {
   const m = res.metrics;
   const before40 = m.filter(t => t.turn < 40);
   const warsBefore40 = before40.length ? before40[before40.length - 1].wars : 0;
-  const ownersEnd = res.snapEnd.owners || 0;
+  // Typy cywilizacji na mapie = AI + gracz (ZAŁOŻENIE R2, patrz main.ts civTypesCount = aiCount+1).
+  const civTypes = (res.aiCount || 0) + 1;
   const warsEnd = res.snapEnd.warCount;
-  const offers = m.reduce((acc, t) => acc + t.offers, 0);
+  // Oferty liczone UNIKALNIE po id (kolejka pending jest sumowana co turę -- nie sumujemy).
+  const offerIds = new Set(m.flatMap(t => t.offerIds || []));
+  const offers = offerIds.size;
   const offersNeg = res.snapEnd.offers.filter(o => o.goldOnce !== null && o.goldOnce < 0).length;
   return {
     turnsRun: m.length,
     turnsRequested: turns,
     warsBefore40,
     warsEnd,
-    owners: ownersEnd,
-    warsPerCiv: ownersEnd ? +(warsEnd / ownersEnd).toFixed(2) : null,
+    civTypes,
+    warsPerCiv: civTypes ? +(warsEnd / civTypes).toFixed(2) : null,
     maxWars: Math.max(0, ...m.map(t => t.wars)),
     offersTotal: offers,
     offersNegative: offersNeg,
@@ -86,7 +90,7 @@ function summarizeRun(res, turns) {
 function printTable(rows) {
   const cols = [
     ['seed', 'seed'], ['wojnyT40', 'wojny przed T40'], ['warsEnd', 'wojny koniec'],
-    ['warsPerCiv', 'wojny/cyw.'], ['maxWars', 'max wojen'], ['offersTotal', 'oferty'],
+    ['warsPerCiv', 'wojny/typ cyw.'], ['maxWars', 'max wojen'], ['offersTotal', 'oferty'],
     ['offersNegative', 'oferty bilans<0'], ['turnMsMedian', 'czas tury med. ms'],
     ['turnsRun', 'tury'], ['hashEnd', 'hash'],
   ];
@@ -120,13 +124,13 @@ async function main() {
             difficulty: args.difficulty, era: args.era, policy: args.policy,
             flags: args.flags, autoResolveBattles: args.autoBattles,
           });
-          const summary = summarizeRun(res, args.turns);
+          const summary = summarizeRun({ ...res, aiCount: args.ai }, args.turns);
           const timedOut = res.metrics.some(t => String(t.hash).startsWith('TIMEOUT'));
           if (pageErrors.length || timedOut || summary.turnsRun < args.turns) failed = true;
           results.push({ seed, summary, pageErrors, timedOut, startSnapshot: res.snap0 });
         } catch (e) {
           failed = true;
-          results.push({ seed, summary: { turnsRun: 0, turnsRequested: args.turns, warsBefore40: 0, warsEnd: 0, owners: 0, warsPerCiv: null, maxWars: 0, offersTotal: 0, offersNegative: 0, turnMsMedian: null, hashEnd: 'ERROR', startMs: 0 }, pageErrors: [String(e && e.message || e).slice(0, 300)], timedOut: false });
+          results.push({ seed, summary: { turnsRun: 0, turnsRequested: args.turns, warsBefore40: 0, warsEnd: 0, civTypes: 0, warsPerCiv: null, maxWars: 0, offersTotal: 0, offersNegative: 0, turnMsMedian: null, hashEnd: 'ERROR', startMs: 0 }, pageErrors: [String(e && e.message || e).slice(0, 300)], timedOut: false });
         } finally {
           await context.close();
         }
