@@ -60,6 +60,34 @@ function median(xs) {
   return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2;
 }
 
+/** Agregat zapasów AI co 10 tur (R-WEB-AI-ARMY-UPKEEP-Q1): wojsko, skarbiec, żywność, głód, deficyt złota. */
+function aiEconByTurn(metrics) {
+  const out = [];
+  for (const t of metrics) {
+    if (t.turn % 10 !== 0 || !Array.isArray(t.ownerEcon)) continue;
+    const ai = t.ownerEcon.filter(o => !o.human);
+    if (!ai.length) continue;
+    const n = ai.length;
+    out.push({
+      turn: t.turn,
+      aiCount: n,
+      militaryPerAi: +(ai.reduce((a, o) => a + o.militaryUnits, 0) / n).toFixed(1),
+      militaryTotal: ai.reduce((a, o) => a + o.militaryUnits, 0),
+      treasuryMedian: median(ai.map(o => o.treasury)),
+      treasuryMin: Math.min(...ai.map(o => o.treasury)),
+      aiTreasuryNegative: ai.filter(o => o.treasury < 0).length,
+      foodReserveMedian: median(ai.map(o => o.foodReserve)),
+      foodNetMedian: median(ai.map(o => o.foodNet)),
+      aiHungry: ai.filter(o => o.hungry).length,
+      aiStarving: ai.filter(o => o.starving).length,
+      aiGoldDeficit: ai.filter(o => o.goldDeficit).length,
+      militaryInGoldDeficit: ai.filter(o => o.goldDeficit).reduce((a, o) => a + o.militaryUnits, 0),
+      militaryInHunger: ai.filter(o => o.hungry).reduce((a, o) => a + o.militaryUnits, 0),
+    });
+  }
+  return out;
+}
+
 function summarizeRun(res, turns) {
   const m = res.metrics;
   const before40 = m.filter(t => t.turn < 40);
@@ -84,6 +112,7 @@ function summarizeRun(res, turns) {
     turnMsMedian: median(m.map(t => t.ms)),
     hashEnd: m.length ? m[m.length - 1].hash : res.snapEnd.hash,
     startMs: res.startMs,
+    aiEcon: aiEconByTurn(m),
   };
 }
 
@@ -144,6 +173,9 @@ async function main() {
     printTable(results);
     for (const r of results) {
       if (r.pageErrors.length) console.log(`seed ${r.seed} pageerror(y): ${r.pageErrors.length} -> ${r.pageErrors[0]}`);
+      for (const e of r.summary.aiEcon || []) {
+        console.log(`seed ${r.seed} T${e.turn}: wojsko AI sr=${e.militaryPerAi} razem=${e.militaryTotal} | skarbiec med=${e.treasuryMedian} min=${e.treasuryMin} ujemny=${e.aiTreasuryNegative}/${e.aiCount} | zywnosc med=${e.foodReserveMedian} przyrost=${e.foodNetMedian} | glod=${e.aiHungry} (jedn.${e.militaryInHunger}) atrycja=${e.aiStarving} | deficyt zlota=${e.aiGoldDeficit} (jedn.${e.militaryInGoldDeficit})`);
+      }
     }
   }
   process.exitCode = failed ? 1 : 0;
@@ -153,4 +185,4 @@ if (require.main === module) {
   main().catch(e => { console.error('[sim-metrics] BŁĄD:', e && e.message || e); process.exitCode = 1; });
 }
 
-module.exports = { parseArgs, summarizeRun, median };
+module.exports = { parseArgs, summarizeRun, median, aiEconByTurn };

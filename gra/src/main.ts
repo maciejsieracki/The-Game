@@ -25575,6 +25575,25 @@ async function boot(): Promise<void> {
           offers: pendingDiplomacyInbox.map(p => ({
             id: p.id, ownerId: p.ownerId, cmdType: p.cmdType, reason: p.reason, goldOnce: p.goldOnce ?? null,
           })),
+          // R-WEB-AI-ARMY-UPKEEP-Q1 (diagnostyka, poza hashem): zapas per właściciel.
+          ownerEcon: [...new Set([...cities.map(c => c.ownerId), ...units.map(u => u.ownerId)])]
+            .filter(oid => !isBarbarian(oid))
+            .sort((x, y) => x - y)
+            .map(oid => {
+              const mil = units.filter(u => u.ownerId === oid && !isCivilianUnit(u)).length;
+              return {
+                owner: oid,
+                human: isHuman(oid),
+                treasury: ownerTreasury(oid),
+                foodReserve: getEmpireFoodReserve(oid),
+                foodNet: getLastEmpireFoodTick(oid)?.przyrostZapasow ?? 0,
+                goldDeficit: isGoldDeficit(oid),
+                hungry: isArmyHungry(oid),
+                starving: isArmyStarving(oid),
+                militaryUnits: mil,
+                cities: cities.filter(c => c.ownerId === oid).length,
+              };
+            }),
         };
       },
       resolvePendingDiplomacy: (id, accept) => resolvePendingDiplomacy(id, accept),

@@ -35,6 +35,29 @@ export interface TestRawState {
   deals: number;
   /** Oczekujące propozycje (pendingDiplomacyInbox) -- surowo, z polami z kolejki. */
   offers: Array<{ id: string; ownerId: number; cmdType: string; reason: string; goldOnce: number | null }>;
+  /** Zapas i wojsko per właściciel (diagnostyka R-WEB-AI-ARMY-UPKEEP-Q1; NIE wchodzi do hasha). */
+  ownerEcon?: OwnerEconSample[];
+}
+
+/** Próbka zapasu jednego właściciela w danej turze (diagnostyka, poza hashem). */
+export interface OwnerEconSample {
+  owner: number;
+  human: boolean;
+  /** Skarbiec złota (może być ujemny przy deficycie). */
+  treasury: number;
+  /** Spichlerz państwa (zapas żywności). */
+  foodReserve: number;
+  /** Przyrost zapasu żywności ostatniej tury (netto, ze znakiem). */
+  foodNet: number;
+  /** Ikona deficytu złota (isGoldDeficit). */
+  goldDeficit: boolean;
+  /** Głód wojska: zapas żywności < 0 (isArmyHungry). */
+  hungry: boolean;
+  /** Atrycja HP z głodu aktywna (isArmyStarving). */
+  starving: boolean;
+  /** Liczba jednostek wojskowych (bez cywilnych). */
+  militaryUnits: number;
+  cities: number;
 }
 
 export interface TestHookDeps {
@@ -84,6 +107,8 @@ export interface TestTurnMetric {
   hash: string;
   /** Identyfikatory ofert widocznych w tej turze (do liczenia unikalnych ofert w przebiegu). */
   offerIds: string[];
+  /** Zapas i wojsko per właściciel po tej turze (diagnostyka). */
+  ownerEcon?: OwnerEconSample[];
 }
 
 export interface TestRunOpts {
@@ -105,6 +130,8 @@ export interface TestSnapshot {
   units: number;
   offers: Array<{ id: string; ownerId: number; cmdType: string; reason: string; goldOnce: number | null }>;
   hash: string;
+  /** Zapas i wojsko per właściciel (diagnostyka; poza hashem). */
+  ownerEcon: OwnerEconSample[];
 }
 
 /** Nazwy flag -> settery `setXOverride` (ta sama funkcja, którą woła kod produkcyjny). */
@@ -190,6 +217,7 @@ export function summarizeRaw(raw: TestRawState): TestSnapshot {
     units: raw.units.length,
     offers: raw.offers,
     hash,
+    ownerEcon: raw.ownerEcon ?? [],
   };
 }
 
@@ -285,6 +313,7 @@ export function installTestHook(d: TestHookDeps): void {
           battlesAuto,
           hash: s.hash,
           offerIds: s.offers.map(o => o.id),
+          ownerEcon: s.ownerEcon,
         });
         if (!ok) {
           out[out.length - 1]!.hash = 'TIMEOUT:' + s.hash;
