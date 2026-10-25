@@ -1810,12 +1810,13 @@ export function formatAiDiplomacyPlayerMessage(cmd: AIDiplomacyCommand): string 
       return 'Wypowiadamy wojnę — nasze wojska są gotowe do walki.';
     case 'zaproponuj_handel_surowiec': {
       const zaplataLabel = cmd.zaplataTyp === 'praca' ? 'Praca' : '¤';
+      const reasonSuffix = cmd.reasonHandlu ? ` Uzasadnienie: ${cmd.reasonHandlu}` : '';
       if (cmd.kierunek === 'zakup') {
         return `Kupię od ciebie ${cmd.label} — ${cmd.pakietyPerTura} szt./turę`
-          + ` za ${cmd.zaplataPerTura} ${zaplataLabel}/turę przez ${cmd.turns} tur.`;
+          + ` za ${cmd.zaplataPerTura} ${zaplataLabel}/turę przez ${cmd.turns} tur.${reasonSuffix}`;
       }
       return `Mamy nadwyżkę surowca ${cmd.label} — oferujemy ${cmd.pakietyPerTura} szt./turę`
-        + ` za ${cmd.zaplataPerTura} ${zaplataLabel}/turę przez ${cmd.turns} tur.`;
+        + ` za ${cmd.zaplataPerTura} ${zaplataLabel}/turę przez ${cmd.turns} tur.${reasonSuffix}`;
     }
     default:
       return 'Propozycja dyplomatyczna od tego państwa.';
@@ -2259,6 +2260,8 @@ export interface PendingNegotiation {
   expiresTurn: number;
   /** Kto zainicjował rundę 1 — UI (własne/przychodzące) + parytet AI/gracz (ta sama droga). */
   source: 'player' | 'ai';
+  /** R-WEB-DIPLO-DEALS-SENSIBLE-Q1: uzasadnienie oferty handlowej AI (niedobór/nadwyżka). */
+  reason?: string;
 }
 
 function otherPartyOf(
