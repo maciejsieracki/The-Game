@@ -1,0 +1,324 @@
+=================== diplomacy-sensible-deals-test
+  OK: R3 nadwyzka: predykat wybiera jedyny przechodzący surowiec
+  OK: R3 nadwyzka: wszyscy odrzuceni -> null
+  OK: OFF (deficyt + nadwyżka): wybór identyczny z bazą na 200 scenariuszach
+  OK: ON: predykat potrzeby zmienia wybór w części scenariuszy (filtr działa)
+  OK: zestaw scenariuszy nie jest pusty (są wybory bazowe)
+  OK: pkt4: Trudny bez zakresu: cel = maxAccepted - 3 PN
+  OK: pkt4: w zakresie ON cel = maxAccepted (zerowy undershoot)
+  OK: pkt4: poza zakresem wartość wraca do bazowej
+  OK: pkt4: zmierzono skutek na 95 scenariuszach (bazowo ujemnych=0, z zerowym undershoot=0)
+  OK: pkt4: zerowy undershoot nie zwiększa liczby ofert z bilansem PW gracza < 0
+
+diplomacy-sensible-deals-test: 63 passed, 0 failed
+EXIT=0  (diplomacy-sensible-deals-test, 0s)
+=================== diplomacy-sensible-deals-main-guard-test
+PASS: realne main.ts: pkt 4: zerowy undershoot w zakresie flagi ON (pickResourceTradeRelOffer + koszyk umowy)
+PASS: realne main.ts: pkt 6: filtr potrzeby koszyka umowy (sensibleUmowaBasketCheck) przed ofertą + reason
+PASS: realne main.ts: pkt 7: mergedResourceRatesForOwner w pickResourceTradeRelOffer czytany tylko przy fladze ON
+PASS: mutacja "usunięcie wywołania filtru bilansu" -> czerwień (FAIL bramek: 1)
+PASS: mutacja "usunięcie bramki zakupu isBuyerDeficitJustified" -> czerwień (FAIL bramek: 1)
+PASS: mutacja "usunięcie bramki sprzedaży isSellerSurplusJustified" -> czerwień (FAIL bramek: 1)
+PASS: mutacja "usunięcie reason z pickResourceTradeRelOffer" -> czerwień (FAIL bramek: 1)
+PASS: mutacja "usunięcie blokady końca tury" -> czerwień (FAIL bramek: 1)
+PASS: mutacja "usunięcie filtru bilansu z kontrofert AI" -> czerwień (FAIL bramek: 1)
+PASS: mutacja "usunięcie siatki bezpieczeństwa w healStaleEndTurnBlockers" -> czerwień (FAIL bramek: 1)
+
+diplomacy-sensible-deals-main-guard-test: 22 passed, 0 failed
+EXIT=0  (diplomacy-sensible-deals-main-guard-test, 1s)
+=================== diplomacy-sensible-deals-live-test
+[deals-live] build vite -> /tmp/deals-sensible-live-dist
+  OK   start: brak ofert na stole, koniec tury dozwolony
+  OK   wstrzyknięcie: oferta AI->gracz trafia na stół (realna ścieżka enqueue)
+  OK   gate ON: wisząca oferta AI->gracz blokuje koniec tury
+  OK   oferta niesie uzasadnienie reason (pole widoczne w stanie)
+  OK   rozpatrzenie (odrzucenie) oferty: blokada zwolniona
+  OK   gate OFF: oferta wisi, ale NIE blokuje końca tury (zachowanie bazowe)
+  OK   zero console.error / pageerror
+
+diplomacy-sensible-deals-live-test: 7 pass, 0 fail
+EXIT=0  (diplomacy-sensible-deals-live-test, 119s)
+=================== diplo-tick-war-brake-unit-test
+diplo-tick-war-brake-unit-test: 69 pass / 0 fail
+EXIT=0  (diplo-tick-war-brake-unit-test, 1s)
+=================== diplo-tick-war-brake-test
+diplo-tick-war-brake-test: 51 pass / 0 fail
+EXIT=0  (diplo-tick-war-brake-test, 0s)
+=================== diplo-tick-war-brake-mutation-test
+diplo-tick-war-brake-mutation-test: 17 pass / 0 fail (baza + 16 mutantow)
+EXIT=0  (diplo-tick-war-brake-mutation-test, 0s)
+=================== war-rules-multiwar-test
+--- R1: opóźnienie wojen między cywilizacjami do tury 40 ---
+--- R2: Kamień -- najwyżej 1 równoczesna wojna na cywilizację ---
+--- R3: jedna wojna epoki na epokę w skali świata ---
+--- W1: wybór najbliższej wrogiej armii w promieniu ---
+--- W2: podział armii na grupy wg siły wrogów ---
+--- planner: W1 (engage) i W2 (podział) ---
+
+WYNIK: 55 OK / 0 FAIL
+EXIT=0  (war-rules-multiwar-test, 0s)
+=================== war-rules-multiwar-main-guard-test
+PASS: klaster państw-miast: interCivWarBlockedForAi(csOwnerId, ME()) -> continue PRZED wypowiedzeniem
+PASS: applyAllianceObligationsOnWar: sojusznik blokowany przez bramkę (nie gracz) -> continue
+PASS: applyAllianceObligationsOnWar: bramka sojusznika PRZED joinAllyToWar
+PASS: joinAllyToWar: istnieje i zapisuje wojnę przez setDiploRelation(... wojna_wypowiedziana)
+PASS: R1: reset triggeredSubjects przed turą 40 (isInterCivWarOpenAtTurn) w ścieżce wymuszeń
+PASS: W1: garnizon (jednostka na własnym mieście) NIE trafia do enemyArmies
+PASS: W1: cywile i zwiadowcy wyłączeni z puli armii (przed push)
+PASS: W1/W2: flaga OFF zwraca kontekst bez pól (zachowanie bazowe)
+PASS: R1 (r6): warAllInContextFor bramka tury delayInterCivWarsUntilTurn dla cywilizacji AI
+PASS: R3/zapis (r6): warRulesForcedEraDeclared w meta save tylko przy fladze ON
+
+21 PASS / 0 FAIL
+EXIT=0  (war-rules-multiwar-main-guard-test, 0s)
+=================== war-allin-capital-test
+  [INFO] barbarians: baza pre-zasieg=65542d56510bcef9 OFF=c07e60985cb8a2ab (roznica = zamierzona zmiana zasiegu)
+  [INFO] noLandPath: baza pre-zasieg=176b6b39e9773451 OFF=69d49bd592471e58 (roznica = zamierzona zmiana zasiegu)
+
+--- 7: determinizm przy fladze ON (2 przebiegi) ---
+
+--- 8: planWarAllInCapital -- grupowanie / rendezvous ---
+
+--- 10: realne scalanie grup, gesta grupa, brak krokow wstecz i dubli ---
+
+--- 9: okablowanie main.ts (testy statyczne) ---
+
+95 passed, 0 failed
+EXIT=0  (war-allin-capital-test, 6s)
+=================== ai-move-range-test
+  [OK] F-AVG8 PO: srednio 8 heksow na jednostke (budzet 8)
+
+--- E: koszt obliczen: PRZED (mutant = path[0]) vs PO, ten sam stan ---
+  [INFO] planer, budzet 5, mediana 9x20 wywolan: PRZED=36.8 ms, PO=35.6 ms, stosunek=0.97
+  [OK] E1 planer: PO nie wolniejszy niz PRZED x1,3 (stosunek 0.97, bez tolerancji addytywnej)
+  [INFO] ai firstStep, 300 wywolan, mediana 9x: PRZED=223.5 ms, PO=227.7 ms, stosunek=1.02
+  [OK] E2 ai firstStep: PO nie wolniejszy niz PRZED x1,3 (stosunek 1.02)
+
+--- G: okablowanie w main.ts (statyczne) ---
+  [OK] G1 main.ts: executeAiCityMove dostaje truncatePath (przycinanie do ruchLeft przed zerowaniem)
+
+ai-move-range: 46 passed, 0 failed
+EXIT=0  (ai-move-range-test, 7s)
+=================== endturn-battle-deadlock-test
+      at Object.get [as atakujacy] (/home/user/The-Game/.claude/worktrees/wf_1b2b9d00-72c-3/gra/tools/endturn-battle-deadlock-test.cjs:409:51)
+      at buildOverlay (/home/user/The-Game/.claude/worktrees/wf_1b2b9d00-72c-3/gra/tools/.endturn-deadlock-bundle.cjs:727:38)
+      at showPreBattle (/home/user/The-Game/.claude/worktrees/wf_1b2b9d00-72c-3/gra/tools/.endturn-deadlock-bundle.cjs:339:15)
+      at flushDeferredAutoPreBattle (/home/user/The-Game/.claude/worktrees/wf_1b2b9d00-72c-3/gra/tools/.endturn-deadlock-bundle.cjs:396:3)
+      at flushDeferredPreBattleSafely (eval at makeWrapper (/home/user/The-Game/.claude/worktrees/wf_1b2b9d00-72c-3/gra/tools/endturn-battle-deadlock-test.cjs:387:32), <anonymous>:5:5)
+      at runScenario (/home/user/The-Game/.claude/worktrees/wf_1b2b9d00-72c-3/gra/tools/endturn-battle-deadlock-test.cjs:417:11)
+      at runUiPart (/home/user/The-Game/.claude/worktrees/wf_1b2b9d00-72c-3/gra/tools/endturn-battle-deadlock-test.cjs:437:17)
+      at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+      at async main (/home/user/The-Game/.claude/worktrees/wf_1b2b9d00-72c-3/gra/tools/endturn-battle-deadlock-test.cjs:459:3)
+}
+
+endturn-battle-deadlock-test: 38 pass, 0 fail
+EXIT=0  (endturn-battle-deadlock-test, 2s)
+=================== endturn-battle-deadlock-exec-test
+[PreBattle] Clearing deferred auto preBattle queue (4 zaległych żądań)
+[PreBattle] Clearing deferred auto preBattle queue (1 zaległych żądań)
+  ok   [F-M2] usunięcie watchdoga CZERWIENI scenariusz E (brak timera / brak otwarcia bez kliknięcia)
+[PreBattle] Clearing deferred auto preBattle queue (1 zaległych żądań)
+  ok   [F-M3] usunięcie try/catch CZERWIENI scenariusz D (wyjątek wychodzi z kliknięcia)
+  ok   [F-M4] osłabiona bramka (tylko isPreBattleOpen) CZERWIENI scenariusz C2 (koniec tury przy czekającej kolejce)
+[PreBattle] Clearing deferred auto preBattle queue (1 zaległych żądań)
+  ok   [F-M5] usunięcie bramki sceny w healStuck CZERWIENI scenariusz G (flush/clear na żywej scenie)
+  ok   [F-M6] usunięcie bramki sceny w watchdogu CZERWIENI scenariusz G (pre-bitwa na żywej scenie)
+  ok   [F-M7] heal bez bramek niezwiązanych z kolejką CZERWIENI scenariusz H (flush przy gameOver)
+
+endturn-battle-deadlock-exec-test: 46 pass, 0 fail
+EXIT=0  (endturn-battle-deadlock-exec-test, 2s)
+=================== load-game-regression-test
+PASS  4d. mutacja: bootstrap-cache zamieniony na listSaves() -> wiring main.ts MUSI oblać
+PASS  5a. main.ts: cache zasilany listSlots + listFsaAutosaveFiles + hasRememberedFsaDirectory
+PASS  5b. main.ts: openLoadGameDialog liczy zapisy przez savePresence, nie samym listSaves()
+PASS  5c. main.ts: udane zapisy (ręczny, autozapis dysk, autozapis localStorage) -> savePresence.markPresent()
+PASS  5d. main.ts: onLoad czeka na bootstrap FSA przed listowaniem
+PASS  6a. mutacja: hasAnySaveSlot zwraca stałe false zamiast cache -> wiring MUSI oblać
+PASS  6b. mutacja: cache presence zawsze false (get) -> przypadek 3a MUSI oblać
+PASS  7a. notifyAutosaveFailureOnce: prawdziwa funkcja z main.ts pokazuje komunikat RAZ na sesję
+PASS  7b. mutacja: bez strażnika jednorazowości -> przypadek 7a MUSI oblać
+PASS  7c. main.ts: nieudany autozapis nie wywołuje już showHintMessage wprost (3 miejsca przez notifyAutosaveFailureOnce)
+
+load-game-regression: 34 PASS / 0 FAIL
+EXIT=0  (load-game-regression-test, 0s)
+=================== logic-test
+PASS  [204] cityfix: canFoundCity passes for first city (no territory restriction)
+PASS  [205] cityfix: foundCityAt returns non-null city
+PASS  [206] cityfix: city has correct q,r
+PASS  [207] cityfix: city has id=city0
+PASS  [208] cityfix: city ownerId=0
+PASS  [209] cityfix: city population=1
+PASS  [210] cityfix: cities array has 1 city after push
+PASS  [211] cityfix: city coords in map.hexes
+PASS  [212] cityfix: after 1st city, playerCityNodes has 1 node
+PASS  [213] cityfix: pop1 territory radius is 5 (B min start)
+
+LOGIC OK (213/213)
+EXIT=0  (logic-test, 23s)
+=================== ai-test
+
+--- T14-p1-1b: L1 majorEarly konczy sie tura 25, L2 tura 40 ---
+
+--- T14-p2: L3 majorEarly max turn 25 gdy startowe_miasta≥1 (P2-Q2=A) ---
+
+--- T14-p1-1c: majorEarly stolarnia score ×0.70 (ranking vs biblioteka) ---
+
+--- T14-p1-2a: scout repeat penalty constant = 80 ---
+
+--- T14-p1-2b: drugi scout score −80 vs pierwszy (ta sama economyScore) ---
+
+ai-test: 276 passed, 18 failed
+EXIT=1  (ai-test, 0s)
+=================== diplomacy-test
+
+[diplomacy-test] 148 passed, 0 failed (total 148).
+EXIT=0  (diplomacy-test, 1s)
+=================== alliance-war-obligation-test
+
+--- 8: niskie Zaufanie do proszącego sojusznika ---
+  OK: zaufanie 15 < 20 → odmowa mimo silnej armii (got false, want false)
+  OK: zaufanie 20 (nie <) → honor (got true, want true)
+
+--- 9: aiHonorsAllianceWarObligation (allyId=3) ---
+  OK: bez ctx → true (kompatybilność wsteczna) (got true, want true)
+  OK: aiHonors: słabe AI odmawia (got false, want false)
+  OK: aiHonors: silne AI honoruje (got true, want true)
+
+========================================
+alliance-war-obligation-test: 14 passed, 0 failed
+EXIT=0  (alliance-war-obligation-test, 0s)
+=================== forced-war-bronze-main-guard-test
+  PASS: maybeResolveBronzeForcedWarOnCityCapture(): wyszukuje stan pary przez diploPairKey(oldOwner, newOwner) -- NIE przez prostą interpolację stringów bez sortowania (M7: zamiana na np. `${oldOwner}-${newOwner}` sprawia, że licznik działa TYLKO gdy oldOwner<newOwner, po cichu gubiąc połowę zdobyczy -- para (5,3) szuka innego klucza niż zapisana przy wypowiedzeniu wojny jako (3,5))
+  FAIL: finalizePeaceTreatyBetween(): zawiera blok sprzątający stan wojny wymuszonej Brązu -- bronzeForceWarActiveByPairKey.delete(bronzePairKey) + uzbrojenie odpoczynku napastnika (bronzeForceWarRestUntilByOwner.set) -- WEWNĄTRZ CIAŁA TEJ FUNKCJI, nie tylko wywoływane przez nią. Łapie M12: pokój wynegocjowany NORMALNIE (nie przez próg miast wymuszonej wojny, np. zwykła oferta pokoju gracza/AI) zostawiałby martwy wpis w bronzeForceWarActiveByPairKey -- napastnik trwale i cicho wypadałby z cyklu (ta sama klasa błędu co B4 z rundy 1)
+  PASS: maybeResolveBronzeForcedWarOnCityCapture(): woła shouldEndBronzeForcedWarByCityCount(...) i wraca wcześnie (return) gdy próg NIE jest osiągnięty -- PRZED jakimkolwiek wywołaniem finalizePeaceTreatyBetween niżej w tej samej funkcji. Usunięcie tego warunku kończyłoby wojnę wymuszoną automatycznym pokojem po KAŻDYM pojedynczym przejęciu miasta między parą, nie dopiero po osiągnięciu progu WOJNA_WYMUSZONA_MAX_MIASTA_ZDOBYTE_LUB_STRACONE
+
+7. RUNDA 4 (Operator obrona) -- Część A/B/C: koordynacja Brązu, limit czasu, licznik wejścia w Brąz
+  PASS: main.ts: bronzeForceWarTargetId ustawiane z forcedWarAssignmentByOwner (nowy rdzeń parowania), nie z usuniętego pickBronzeForcedWarTargetIdCoordinated
+  PASS: main.ts: resolveForcedWarDurationLimits() faktycznie WOŁANE w pętli tury AI -- wewnątrz "if (!aiCmdResume) {" OBOK pruneInvalidNegotiations(), PRZED reconcileAllOwnerErasFromResearch() -- nie tylko zdefiniowane. Część C (limit trwania 25 tur, Kamień+Brąz) bez tego wywołania funkcja nigdy się nie uruchamia i żadna wojna wymuszona nie kończy się z powodu czasu. Zweryfikowano mutacyjnie: usunięcie SAMEJ linii wywołania (definicja funkcji nietknięta) czerwieni tę asercję.
+  PASS: main.ts: przy awansie Kamień(1)→Brąz(2) (obok bronzeForceWarPendingOwners.add(ownerId)) wołane JEST bronzeEraEnterTurnByOwner.set(ownerId, turn) -- Część A: bez tego zapisu próg „25 tur od wejścia w Brąz" (isEligibleForBronzeForcedWar eraEnterTurn) nie ma od czego liczyć dla nowo awansowanych cywilizacji. Zweryfikowano mutacyjnie: usunięcie SAMEJ linii .set() (pozostawiając .add(ownerId) i resztę bloku awansu) czerwieni tę asercję.
+
+========================================================================
+WYNIK: 27 PASS, 1 FAIL
+========================================================================
+EXIT=1  (forced-war-bronze-main-guard-test, 0s)
+=================== forced-war-bronze-new-game-reset-test
+    at eval (eval at runSlice (/home/user/The-Game/.claude/worktrees/wf_1b2b9d00-72c-3/gra/tools/forced-war-bronze-new-game-reset-test.cjs:115:14), <anonymous>:23:7)
+    at runSlice (/home/user/The-Game/.claude/worktrees/wf_1b2b9d00-72c-3/gra/tools/forced-war-bronze-new-game-reset-test.cjs:116:3)
+    at Object.<anonymous> (/home/user/The-Game/.claude/worktrees/wf_1b2b9d00-72c-3/gra/tools/forced-war-bronze-new-game-reset-test.cjs:128:1)
+    at Module._compile (node:internal/modules/cjs/loader:1706:14)
+    at Object..js (node:internal/modules/cjs/loader:1839:10)
+    at Module.load (node:internal/modules/cjs/loader:1441:32)
+    at Function._load (node:internal/modules/cjs/loader:1263:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:237:24)
+    at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:171:5)
+
+Node.js v22.22.0
+EXIT=1  (forced-war-bronze-new-game-reset-test, 0s)
+=================== recruitment-no-upkeep-gate-test
+FAIL: A3d: NIEDOBÓR wykryty — brakuje 3 Drewna na utrzymanie (7 < 10) (got {}, want {"drewno":3})
+FAIL: A3e: pobór przy niedoborze zabiera wszystko i podłogowuje na 0 (bez ujemnej puli) (got 4, want 0)
+FAIL: A3g: UTRZYMANIE POBRANE w następnej turze: 27 - 10 = 17 (got 24, want 17)
+
+-- A4: PARYTET gracz / AI / MP — jedna bramka owner-agnostyczna --
+FAIL: A4c gracz: 49 Drewna -> zablokowana
+FAIL: A4c AI: 49 Drewna -> zablokowana
+FAIL: A4c MP (miasto-państwo): 49 Drewna -> zablokowana
+
+-- A5: kontrakt symboli po wycofaniu R-AI-RECRUIT-UPKEEP-GATE --
+
+recruitment-no-upkeep-gate-test: 22 passed, 14 failed
+EXIT=1  (recruitment-no-upkeep-gate-test, 0s)
+=================== deposit-building-gate-test
+  PASS: stolarnia eraBuildingCatalog locked bez drewna w magazynie
+  FAIL: stolarnia eraBuildingCatalog ready z drewnem w magazynie (bez Tartaku)
+  PASS: runtime: stolarnia działa z drewnem w magazynie
+  PASS: runtime: stolarnia śpi bez zapasu drewna mimo activeLabels
+  PASS: runtime: spichlerz II działa z Solą w magazynie państwa
+  PASS: runtime: spichlerz II śpi bez Soli w magazynie
+  PASS: runtime: mennica śpi bez Złota w magazynie
+  PASS: runtime filter: garncarnia śpi bez gliny i bez dostępu
+  PASS: runtime filter: spichlerz I bez bramki Ceramiki (U-24) — zawsze aktywny
+  PASS: runtime filter: garncarnia+spichlerz przy zapasie Gliny w magazynie państwa
+
+deposit-building-gate: 46 pass, 1 fail
+EXIT=1  (deposit-building-gate-test, 1s)
+=================== koniec-tury-f1-f4-runda3-test
+FAIL: [F1-A3] finishIncomingBattleUi: battleUiResolving=true PRZED try{updateHud();refreshD1bHud();onResolved();}finally{battleUiResolving=false;} -- kolejność wywołań NIETKNIĘTA, tylko owinięta flagą
+FAIL: [F2-A11 runda 4] triggerPlayerEndTurn woła healStuckDeferredPreBattleQueueOnEndTurnAttempt() JAKO PIERWSZĄ instrukcję, PRZED sprawdzeniem canPlayerInitiateEndTurn() -- inaczej G2 (early return) omijałby sprzątanie
+[PreBattle] Clearing deferred auto preBattle queue (1 zaległych żądań)
+
+koniec-tury-f1-f4-runda3-test: 37 pass, 2 fail
+EXIT=1  (koniec-tury-f1-f4-runda3-test, 1s)
+=================== koniec-tury-g1-g2-runda4-test
+FAIL: [A8 kontrola G2] zaden warunek `if (...)` w tej funkcji nie odwoluje sie do aiTurnAwaitingBattle/aiCmdResume -- funkcja jest NIEZALEZNA od tych flag, w przeciwienstwie do starej galezi 1 (bramkowanej `aiTurnAwaitingBattle||aiCmdResume`), wiec pokrywa tez sciezke barbarzynska
+FAIL: [A9] triggerPlayerEndTurn: healStuckDeferredPreBattleQueueOnEndTurnAttempt() jest DOSLOWNIE pierwsza linia ciala funkcji, przed `if (!canPlayerInitiateEndTurn())` i jego early return -- zweryfikowane w kodzie, nie zalozone
+[PreBattle] Clearing deferred auto preBattle queue (1 zaległych żądań)
+[PreBattle] Clearing deferred auto preBattle queue (1 zaległych żądań)
+[PreBattle] Clearing deferred auto preBattle queue (1 zaległych żądań)
+
+koniec-tury-g1-g2-runda4-test: 36 pass, 2 fail
+EXIT=1  (koniec-tury-g1-g2-runda4-test, 1s)
+=================== diplomacy-audience-close-flush-test
+FAIL: [A4] main.ts ma DOKLADNIE 3 gole wywolania hideDiplomacyAudience() poza importem (wrapper + onBack + hak testowy __audienceRelTestDebug.closeAudience) -- got 4. Nowe miejsce zamkniecia audiencji MUSI isc przez closeDiplomacyAudienceAndFlush().
+FAIL: [A4f] kazde gole wywolanie hideDiplomacyAudience() jest w jednym z trzech NAZWANYCH miejsc -- rozpoznano 3 z 4. Nierozpoznane miejsce MUSI isc przez closeDiplomacyAudienceAndFlush().
+
+diplomacy-audience-close-flush-test: 49 pass, 2 fail
+EXIT=1  (diplomacy-audience-close-flush-test, 1s)
+=================== diplomacy-lista-podglad-przed-wizyta-test
+-- Część 6: BB3 showDiploPairSummary nie otwiera pustego pop-upu (diplomacyPanel.ts) --
+  OK: 8a) źródło: showDiploPairSummary znalezione (diplomacyPanel.ts)
+  OK: 8b) wywołuje renderPairSummary()
+  OK: 8c) BB3: zawiera strażnik if (!pairSummaryOpen) return;
+  OK: 8d) kontrola sanity: classList.add(open) i pushOverlay( nadal obecne
+  OK: 8e) BB3: strażnik stoi DOKŁADNIE między renderPairSummary() a classList.add(open)/pushOverlay( — getData()===null nie otwiera pustego pop-upu
+
+-- Część 7: N4 ensureDiplomacyUiClosed zamyka też pop-up pary (main.ts) --
+  OK: 9a) źródło: ensureDiplomacyUiClosed znaleziona
+  OK: 9b) N4: ensureDiplomacyUiClosed zamyka pop-up pary (isDiploPairSummaryOpen()/hideDiploPairSummary())
+
+diplomacy-lista-podglad-przed-wizyta-test: 45 pass, 1 fail
+EXIT=1  (diplomacy-lista-podglad-przed-wizyta-test, 1s)
+=================== diplomacy-negotiation-table-test
+  OK: pokój bez wojny: odrzucony
+  OK: pokój: propozycja ważna PODCZAS wojny (nie gasi się jak NAP)
+  OK: dedup: wykrywa własną propozycję gracza
+  OK: dedup: para 0↔2 ma umowa_szlakow
+  OK: dedup: inny typ akcji nie blokuje
+  OK: dedup: inny partner nie matchuje
+  OK: dedup: oba kierunki na stole
+  OK: NAP + koszyk 5 vs 10: odrzucony (nieuczciwy dla partnera)
+  OK: handel 105 vs 110 PW: odrzucony
+  OK: resolveNegotiationAsResponder: NAP nieuczciwy nie akceptuje
+
+57/58 PASS
+EXIT=1  (diplomacy-negotiation-table-test, 0s)
+=================== diplomacy-package-ai-counter-actionable-test
+    at eval (eval at makePredicate (/home/user/The-Game/.claude/worktrees/wf_1b2b9d00-72c-3/gra/tools/diplomacy-package-ai-counter-actionable-test.cjs:78:19), <anonymous>:3:38)
+    at /home/user/The-Game/.claude/worktrees/wf_1b2b9d00-72c-3/gra/tools/diplomacy-package-ai-counter-actionable-test.cjs:125:42
+    at Array.filter (<anonymous>)
+    at Object.<anonymous> (/home/user/The-Game/.claude/worktrees/wf_1b2b9d00-72c-3/gra/tools/diplomacy-package-ai-counter-actionable-test.cjs:125:30)
+    at Module._compile (node:internal/modules/cjs/loader:1706:14)
+    at Object..js (node:internal/modules/cjs/loader:1839:10)
+    at Module.load (node:internal/modules/cjs/loader:1441:32)
+    at Function._load (node:internal/modules/cjs/loader:1263:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:237:24)
+
+Node.js v22.22.0
+EXIT=1  (diplomacy-package-ai-counter-actionable-test, 1s)
+=================== diplomacy-proposal-test
+  OK: akcja 15: markup BEZ nagłówka koszyka "Oni oddają (opcjonalnie)"
+  OK: akcja 14: getTradeBasketMode → 'trade'
+  OK: akcja 14 (kontrola negatywna): box.className BEZ cdb-treaty-only-mode
+  OK: akcja 14 (kontrola negatywna): markup NADAL zawiera "cdb-add" (koszyk aktywny)
+  OK: akcja 14 (kontrola negatywna): markup NADAL zawiera "cdb-chip-typ"
+  OK: akcja 13 (kontrola negatywna, dar): box.className BEZ cdb-treaty-only-mode
+  OK: akcja 13 (kontrola negatywna, dar): markup NADAL zawiera "cdb-add"
+  OK: akcja 9 (kontrola negatywna, poza zakresem naprawy): getTradeBasketMode → 'treaty'
+  OK: akcja 9 (kontrola negatywna): box.className BEZ cdb-treaty-only-mode (poza zakresem tej naprawy)
+  OK: akcja 9 (kontrola negatywna): markup NADAL zawiera nagłówek koszyka "My oddajemy (opcjonalnie)"
+
+186/188 PASS
+EXIT=1  (diplomacy-proposal-test, 1s)
+ALL_DONE
