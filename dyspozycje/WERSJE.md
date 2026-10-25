@@ -1,3 +1,12 @@
+## ROBOCZA 763320d7 -- 2026-10-25 -- reguly wojen: armie najpierw z armiami, podzial armii, brak wojen przed tura 40 (R-WEB-WAR-RULES-RELEASE-ROBOCZA)
+
+- STATUS: PUBLISHED to `origin/main` at `b3ced8c3413dad39203b9dc6fb6e897e08706a70` (fast-forward z `00fe8dc4`), integration branch `integration/robocza-warrules-20261025` na tym samym SHA. Readback `gra-robocza/Gra-ROBOCZA.html` z `origin/main`: MD5 `763320d70c0ab4d665908d3d7f13522c` (zgodny z manifestem).
+- Bundle: SHA-256 `8f4b67a5e0a0e7ed63c03300549923a1378d6dbfc95927e6813ad8caadac037b`, 69,973,674 bytes.
+- Zakres (`R-WEB-WAR-RULES-MULTIWAR-Q1`, limit 5 rund wyczerpany — wydane z jawnym NIE ZMIERZONO): W1 armie najpierw biją najbliższą wrogą armię w promieniu, potem marsz na stolicę; W2 cywilizacja z k>1 wojnami dzieli armię (grupa walczy tylko z przydzielonym przeciwnikiem); R1 brak wojen między cywilizacjami przed turą 40 (także marsz all-in); R2 kamień: max 1 wojna na cywilizację; R3 max 1 wojna epoki na epokę globalnie. Parametry: `gra/data/war-rules-params.json`, flaga `WAR_RULES_MULTIWAR_ENABLED`.
+- Bramki: tsc, Vite, verify-robocza-bundle OK, war-rules-multiwar 55/0, main-guard 21/0, war-allin-capital 95/0, ai-move-range 46/0, endturn 38/0 + exec 46/0, load-game 34/0, logic 213/213, barbarzyncy 249/0, barb-city 178/0, forced-war stone 38/0 bronze 56/0 iron 55/0 waves 17/0 trojstronna 23/0; ai-test 276/18 (=baza); smoke Chromium 46 tur (pokoj/wojna, 0 pageerror). Czas tury kandydat/baza: pokoj 0,98, wojna 0,75–1,18 (rozrzut pomiaru przy obciazonym hoscie).
+- NIE ZMIERZONO: symulacja ≥60 tur × 5 seedow × 4–6 AI (brak haka headless), liczniki minien armii/zdobytych miast, hash flagi OFF vs baza i determinizm, diagnoza „dlaczego nikt nie wypowiada wojny graczowi” (tylko z kodu). Znane czerwone na bazie: forced-war-bronze-main-guard 27/1, forced-war-bronze-new-game-reset, recruitment-no-upkeep 22/14, deposit-building 46/1, koniec-tury f1-f4/g1-g2.
+- Rollback: poprzedni bundle MD5 `a289d2c4796333c97d1b46e3bdc69f33`, `git revert` commitow wydania.
+
 ## ROBOCZA a289d2c4 -- 2026-10-25 -- pelny zasieg ruchu AI + "Wczytaj gre" widzi autozapisy na dysku (R-WEB-FIXES2-RELEASE-ROBOCZA)
 
 - STATUS: PUBLISHED to `origin/main` at `dcc2819702d5a14f7858a7a9ee098842c29b5bfb` (fast-forward z `7e0e7c71`), integration branch `integration/robocza-fixes2-20261025` na tym samym SHA. Readback `gra-robocza/Gra-ROBOCZA.html` z `origin/main`: MD5 `a289d2c4796333c97d1b46e3bdc69f33` (zgodny z manifestem).
