@@ -1,5 +1,5 @@
 {
-  "_opis": "R-WEB-DIPLO-TICK-WAR-BRAKE-Q1 — parametry P6 (hamulec wojny) i P7 (bonus Zaufania za wymianę 'na plusie'). Flaga DIPLO_TICK_WAR_BRAKE_ENABLED w kodzie; OFF = zachowanie jak dziś.",
+  "_opis": "R-WEB-DIPLO-TICK-WAR-BRAKE-Q1 — parametry P6 (hamulec wojny) i P7 (bonus Zaufania za wymianę 'na plusie', wersja ostateczna). Flaga DIPLO_TICK_WAR_BRAKE_ENABLED w kodzie; OFF = zachowanie jak dziś. Klucz epoki = numer ery płacącego (1..10, jak empireEpochForOwner).",
   "flagaDomyslna": false,
   "p6": {
     "kryzysProgZaufania": 0,
@@ -8,11 +8,17 @@
   },
   "p7": {
     "wymianaKrokPktPerEpoka": {
-      "kamien": 100,
-      "braz": 200,
-      "zelazo": 400
+      "1": 100,
+      "2": 200,
+      "3": 400,
+      "4": 800,
+      "5": 1600,
+      "6": 3200,
+      "7": 6400,
+      "8": 12800,
+      "9": 25600,
+      "10": 51200
     },
-    "wymianaKrokPktDomyslny": 400,
     "wymianaZaufanieNaKrok": 0.5,
     "wymianaMaxPerTura": 5,
     "wymianaSufitZaufania": 60,

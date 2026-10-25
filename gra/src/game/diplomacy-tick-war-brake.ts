@@ -1,7 +1,17 @@
 // R-WEB-DIPLO-TICK-WAR-BRAKE-Q1 — czyste funkcje hamulca wojny (P6) i bonusu
-// Zaufania za wymianę „na plusie" (P7). Bez zależności od stanu gry — silnik
-// (main.ts / diplomacy.ts) podaje wejścia, dostaje wynik. Parametry z
-// gra/data/diplomacy-tick-params.json (sekcje p6 / p7).
+// Zaufania za wymianę „na plusie" (P7, wersja ostateczna: schodki). Bez zależności
+// od stanu gry — silnik (main.ts / diplomacy.ts) podaje wejścia, dostaje wynik.
+// Parametry z gra/data/diplomacy-tick-params.json (sekcje p6 / p7).
+//
+// STATUS INTEGRACJI (runda 2): funkcje i flaga są gotowe; PODPIĘCIE do tickDiplomacy /
+// save/load / UI jest NIEZROBIONE (patrz raport 01-operator-r2.md) — flaga nic dziś nie bramkuje.
+
+/** Nazwa flagi z dispatchu. Domyślnie OFF (flagaDomyslna w JSON). */
+export const DIPLO_TICK_WAR_BRAKE_FLAG = 'DIPLO_TICK_WAR_BRAKE_ENABLED';
+
+/** Najniższa i najwyższa era, dla której jest krok w tabeli (empireEpochForOwner: 1..10). */
+export const WYMIANA_EPOKA_MIN = 1;
+export const WYMIANA_EPOKA_MAX = 10;
 
 export interface WarBrakeP6Params {
   /** Próg krytyczny Zaufania (włącznie): Zaufanie ≤ próg liczy się jako kryzys. */
@@ -13,10 +23,8 @@ export interface WarBrakeP6Params {
 }
 
 export interface TradeBonusP7Params {
-  /** Krok nadwyżki (PN) per epoka płacącego: kamien/braz/zelazo. */
+  /** Krok nadwyżki (PN) per numer epoki płacącego: "1".."10" (kamień=1 … 100, 200, 400, ×2 dalej). */
   wymianaKrokPktPerEpoka: Record<string, number>;
-  /** Krok dla epok nieznanych w tabeli (ZAŁOŻENIE: ostatnia znana wartość). */
-  wymianaKrokPktDomyslny: number;
   /** Zaufanie za każdy PEŁNY krok nadwyżki w turze (brak interpolacji). */
   wymianaZaufanieNaKrok: number;
   /** Limit bonusu z wymiany na parę na turę. */
@@ -30,24 +38,32 @@ export interface TradeBonusP7Params {
 export interface TradeBonusInput {
   /** Wartość netto na plusie (PN) dostarczona przez stronę X stronie Y w tej turze. */
   nadwyzkaPn: number;
-  /** Epoka płacącego (dostawcy) — klucz z wymianaKrokPktPerEpoka. */
-  epoka: string;
+  /** Numer epoki płacącego (dostawcy), 1..10 — ZAŁOŻENIE: era z empireEpochForOwner(płacący). */
+  epoka: number;
   /** Aktualne Zaufanie odbiorcy (Y) wobec dostawcy (X). */
   zaufanie: number;
   /** Liczba kolejnych tur dostaw (1 = pierwsza tura cyklu). */
   kolejneTuryDostaw: number;
 }
 
-export function krokPktWymiany(epoka: string, p: TradeBonusP7Params): number {
-  const v = p.wymianaKrokPktPerEpoka[epoka];
-  return typeof v === 'number' && v > 0 ? v : p.wymianaKrokPktDomyslny;
+/**
+ * Krok PN dla epoki. Epoka spoza 1..10 jest przycinana do zakresu (ZAŁOŻENIE);
+ * brak wpisu w tabeli JSON → rzut wyjątku, żeby błąd konfiguracji nie przeszedł cicho.
+ */
+export function krokPktWymiany(epoka: number, p: TradeBonusP7Params): number {
+  const e = Math.min(WYMIANA_EPOKA_MAX, Math.max(WYMIANA_EPOKA_MIN, Math.floor(epoka)));
+  const v = p.wymianaKrokPktPerEpoka[String(e)];
+  if (typeof v !== 'number' || !(v > 0)) {
+    throw new Error(`diplomacy-tick-params: brak kroku PN dla epoki ${e}`);
+  }
+  return v;
 }
 
 /**
  * P7: bonus Zaufania (≥ 0) za wymianę „na plusie" w jednej turze.
- * Schodkowo: floor(nadwyżka / krok) × 0,5, limit wymianaMaxPerTura,
- * zero gdy za krótko trwa dostawa, Zaufanie ≥ sufitu, lub nadwyżka < krok.
- * Bonus jest przycięty tak, by nie przekroczyć sufitu.
+ * Schodkowo: floor(nadwyżka / krok) × wymianaZaufanieNaKrok, limit wymianaMaxPerTura,
+ * zero gdy dostawa trwa < wymianaMinTurDostaw tur, Zaufanie ≥ sufitu, lub nadwyżka < krok.
+ * Wynik przycięty tak, by nie przekroczyć sufitu (headroom).
  */
 export function tradeTrustBonusPerTura(input: TradeBonusInput, p: TradeBonusP7Params): number {
   if (!(input.nadwyzkaPn > 0)) return 0;
@@ -63,7 +79,10 @@ export function tradeTrustBonusPerTura(input: TradeBonusInput, p: TradeBonusP7Pa
 export interface CrisisStep {
   /** Nowa wartość licznika kryzysu (kolejne tury Zaufania ≤ progu). */
   counter: number;
-  /** true, gdy w tej turze licznik osiągnął próg ostrzeżenia (N − ostrzeżenieTurPrzed). */
+  /**
+   * true, gdy licznik jest w oknie ostrzeżenia: N − ostrzeżenieTurPrzed ≤ licznik < N.
+   * Okno (a nie pojedynczy moment) — ostrzeżenie widać także po load w trakcie kryzysu.
+   */
   warnNow: boolean;
   /** true, gdy licznik osiągnął N — strona silniejsza może wypowiedzieć wojnę (po sprawdzeniu R1–R3). */
   warTriggerReady: boolean;
@@ -82,7 +101,7 @@ export function advanceCrisisCounter(prevCounter: number, zaufanie: number, p: W
   const warnAt = p.kryzysTurDoWojny - p.kryzysOstrzezenieTurPrzed;
   return {
     counter,
-    warnNow: counter === warnAt,
+    warnNow: counter >= warnAt && counter < p.kryzysTurDoWojny,
     warTriggerReady: counter >= p.kryzysTurDoWojny,
   };
 }
