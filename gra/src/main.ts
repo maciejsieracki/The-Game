@@ -1408,14 +1408,16 @@ import {
 } from './game/diplomacy-ai-offer-balance';
 // R-WEB-DIPLO-DEALS-SENSIBLE-Q1: filtr sensownych ofert handlowych AI->gracz (flaga + progi JSON).
 import {
-  DIPLO_SENSIBLE_DEALS_ENABLED,
-  classifyTradeNeed,
-  fallbackUsePerTurn,
+  classifyTradeNeedNet,
   isBuyerDeficitJustified,
+  isDiploSensibleDealsEnabled,
+  setDiploSensibleDealsEnabled,
   isPlayerBalanceAcceptable,
   isSellerSurplusJustified,
+  isSensibleTradeActionId,
   sensibleBalanceFilterApplies,
   tradeOfferReason,
+  type TradeNeed,
 } from './game/diplomacy-sensible-deals';
 import {
   wiarygodnoscStartowa,
@@ -8531,6 +8533,14 @@ async function boot(): Promise<void> {
     let negotiationTable: PendingNegotiation[] = [];
     /** Licznik do unikalnego id wpisu w negotiationTable (save/load meta.negotiationSeq). */
     let negotiationSeq = 0;
+    /**
+     * R-WEB-DIPLO-DEALS-SENSIBLE-Q1 (B1): opcja nowej gry „Wymagaj rozpatrzenia ofert
+     * handlowych przed końcem tury". Włączona: dopóki na stole wisi oferta handlowa AI->gracz
+     * (awaiting = gracz, autor = AI), canPlayerInitiateEndTurn() zwraca false. Zapis: meta.
+     * dealsEndTurnGate; stary zapis (brak pola) = WYŁĄCZONA (zachowanie sprzed zmiany).
+     * / EN: new-game option; ON blocks end turn while an AI->player trade offer awaits the player.
+     */
+    let dealsEndTurnGateEnabled = false;
     /**
      * D-DYPLO-AI-NO-NAG (Maciej 2026-07-29): cooldown po odrzuceniu oferty AI przez gracza
      * (partner + actionId) — save/load meta.rejectedOfferCooldowns.
@@ -17074,7 +17084,7 @@ async function boot(): Promise<void> {
       // trimProposalForZeroBalance: dodatnia = korzyść gracza. Tylko typy handlowe (pokój/trybut
       // mają z natury jednostronne żądania i NIE są objęte).
       if (
-        sensibleBalanceFilterApplies(DIPLO_SENSIBLE_DEALS_ENABLED, workingCmd.type)
+        sensibleBalanceFilterApplies(isDiploSensibleDealsEnabled(), workingCmd.type)
         && !isPlayerBalanceAcceptable(
           aiProposalPlayerBenefitSurplus(balancedPayload, relationTotal(relForBalance), pnBalanceOpts),
         )
@@ -17092,6 +17102,10 @@ async function boot(): Promise<void> {
         { actionId: converted.actionId, proposerOwnerId: ownerId, responderOwnerId: ME(), payload: converted.payload },
         turn, 'ai', negotiationSeq,
       );
+      // R-WEB-DIPLO-DEALS-SENSIBLE-Q1 (B7): uzasadnienie oferty trafia na stół (pole reason).
+      if (workingCmd.type === 'zaproponuj_handel_surowiec' && workingCmd.reasonHandlu) {
+        entry.reason = workingCmd.reasonHandlu;
+      }
       negotiationTable.push(entry);
       // P-DYPLO-KARTA-DUPLIKAT-KOMUNIKAT: BRAK showHintMessage tutaj celowo — ta funkcja biegnie
       // podczas endTurnInProgress (faza AI), więc toast trafiałby do deferredEotHints i po EOT
@@ -17263,6 +17277,26 @@ async function boot(): Promise<void> {
         if (!clampedPayload) {
           negotiationTable.splice(ni, 1);
           showHintMessage(ownerDiploLabel(awaitingId) + ' odrzuca propozycję — brak zasobów na kontrofertę', 4000);
+          return;
+        }
+        // R-WEB-DIPLO-DEALS-SENSIBLE-Q1 (B9): kontroferta AI na handel NIE może mieć bilansu PW
+        // gracza < 0 (ta sama reguła co propozycja AI w enqueueNegotiationFromAiCmd).
+        if (
+          sensibleBalanceFilterApplies(isDiploSensibleDealsEnabled(), 'zaproponuj_handel')
+          && isSensibleTradeActionId(outcome.entry.actionId)
+          && !isMe(outcome.entry.authorOwnerId)
+          && !isPlayerBalanceAcceptable(aiProposalPlayerBenefitSurplus(
+            clampedPayload,
+            relationTotal(getDiploRelation(outcome.entry.proposerOwnerId, outcome.entry.responderOwnerId)),
+            {
+              difficulty: effectiveGameDifficultyForOwner(outcome.entry.authorOwnerId),
+              proposerOwnerId: outcome.entry.authorOwnerId,
+              playerOwnerId: ME(),
+            },
+          ))
+        ) {
+          negotiationTable.splice(ni, 1);
+          showHintMessage(ownerDiploLabel(awaitingId) + ' odrzuca propozycję — kontroferta byłaby dla Ciebie niekorzystna', 4000);
           return;
         }
         negotiationTable[ni] = { ...outcome.entry, payload: clampedPayload };
@@ -19698,19 +19732,34 @@ async function boot(): Promise<void> {
       // R-WEB-DIPLO-DEALS-SENSIBLE-Q1 (2026-10-25): AI oferuje wymianę tylko przy realnym
       // niedoborze (kupuje) albo realnej nadwyżce (sprzedaje). Stan zapasu proposera czytany
       // z tego samego indeksu co wybór (goodsProposer) — bez nowego źródła danych.
-      const proposerStockForPick = goodsProposer.find(g => g.key === pick.surowiecKey)?.ilosc ?? 0;
+      // R-WEB-DIPLO-DEALS-SENSIBLE-Q1 R2 (B6/B8): niedobór = przyrost netto < 0 i zapas < N tur
+      // zużycia; nadwyżka sprzedawana tylko gdy PARTNER ma niedobór tego samego surowca.
+      // Stany czytane z tych samych indeksów co wybór (goodsProposer/goodsPartner) i z
+      // mergedResourceRatesForOwner (przyrost netto) — bez nowego źródła danych.
+      const sensibleOn = isDiploSensibleDealsEnabled();
       const sensiblePakiet = diplomacyHandelSurowcePakietWielkosc();
+      const proposerStockForPick = goodsProposer.find(g => g.key === pick.surowiecKey)?.ilosc ?? 0;
+      const proposerNetForPick = mergedResourceRatesForOwner(proposerOwnerId)[pick.surowiecKey] ?? 0;
+      const partnerStockForPick = goodsPartner.find(g => g.key === pick.surowiecKey)?.ilosc ?? 0;
+      const partnerNetForPick = mergedResourceRatesForOwner(partnerOwnerId)[pick.surowiecKey] ?? 0;
+      const partnerNeedForPick: TradeNeed = classifyTradeNeedNet(
+        partnerStockForPick, partnerNetForPick, sensiblePakiet,
+      );
       if (pick.powod === 'nadwyzka'
-        && !isSellerSurplusJustified(proposerStockForPick, sensiblePakiet, DIPLO_SENSIBLE_DEALS_ENABLED)) {
+        && !isSellerSurplusJustified(
+          proposerStockForPick, proposerNetForPick, sensiblePakiet, partnerNeedForPick, sensibleOn,
+        )) {
         return null;
       }
       if (pick.powod === 'deficyt'
-        && !isBuyerDeficitJustified(proposerStockForPick, sensiblePakiet, DIPLO_SENSIBLE_DEALS_ENABLED)) {
+        && !isBuyerDeficitJustified(proposerStockForPick, proposerNetForPick, sensiblePakiet, sensibleOn)) {
         return null;
       }
       const sensibleReason = tradeOfferReason(
         pick.powod,
-        classifyTradeNeed(proposerStockForPick, fallbackUsePerTurn(sensiblePakiet)),
+        proposerStockForPick,
+        proposerNetForPick,
+        sensibleOn,
       );
       const kierunek = resourceTradeKierunekForProposer(proposerOwnerId, pick);
       const sellerOwnerId = pick.sellerOwnerId;
@@ -19841,6 +19890,7 @@ async function boot(): Promise<void> {
         turns: AI_RESOURCE_TRADE_DEFAULT_TURNS,
         kierunek: offer.kierunek,
         powodHandlu: offer.powod,
+        reasonHandlu: offer.reason,
       };
     }
 
@@ -23727,6 +23777,46 @@ async function boot(): Promise<void> {
     // `hexHasDepositReserve` — nie zgadywanie), (b) odblokowanie wszystkich technologii i
     // puli Pracy, żeby test mierzył WYŁĄCZNIE zachowanie `applyBuildRequest`, nie inne,
     // niezwiązane bramki (koszt/technologia) które i tak stoją PRZED nim w kodzie.
+    // R-WEB-DIPLO-DEALS-SENSIBLE-Q1 (B4): hak POMIAROWY dla tools/diplomacy-sensible-deals-live-test.cjs.
+    // Tylko odczyt stanu stołu + przełączniki flag + zakończenie tury. Nie zmienia reguł gry.
+    (window as any).__dealsLiveDebug = {
+      snapshot: () => {
+        const rel = (n: PendingNegotiation) => getDiploRelation(n.proposerOwnerId, ME());
+        const pending = negotiationTable.filter(isAiTradeOfferAwaitingPlayer).map(n => ({
+          id: n.id,
+          actionId: n.actionId,
+          reason: n.reason ?? '',
+          balancePn: aiProposalPlayerBenefitSurplus(n.payload, relationTotal(rel(n)), {
+            difficulty: effectiveGameDifficultyForOwner(n.authorOwnerId),
+            proposerOwnerId: n.authorOwnerId,
+            playerOwnerId: ME(),
+          }),
+        }));
+        return {
+          turn,
+          endTurnInProgress,
+          gate: dealsEndTurnGateEnabled,
+          filter: isDiploSensibleDealsEnabled(),
+          canEnd: canPlayerInitiateEndTurn(),
+          pending,
+          tableLen: negotiationTable.length,
+        };
+      },
+      /** Zakłada pierwsze miasto gracza na jego starcie (bramka awaitingFirstPlayerCity). */
+      foundFirstCity: (): boolean => {
+        if (!isAwaitingFirstPlayerCity()) return true;
+        if (!playerStartHex) return false;
+        return tryFoundPlayerCityAt(playerStartHex.q, playerStartHex.r);
+      },
+      setGate: (v: boolean) => { dealsEndTurnGateEnabled = v === true; },
+      setFilter: (v: boolean) => setDiploSensibleDealsEnabled(v === true),
+      endTurn: () => { triggerPlayerEndTurn(); },
+      rejectAllAiTradeOffers: () => {
+        const ids = negotiationTable.filter(isAiTradeOfferAwaitingPlayer).map(n => n.id);
+        for (const id of ids) handleNegotiationReject(id);
+        return ids.length;
+      },
+    };
     (window as any).__buildRequestTestDebug = {
       findTestHexes: (): {
         workedHex: { q: number; r: number } | null;
@@ -31263,6 +31353,8 @@ async function boot(): Promise<void> {
           // MUSI przetrwać zapis/odczyt (zlecenie właściciela pkt 1).
           negotiationTable: negotiationTable.slice(),
           negotiationSeq,
+          // R-WEB-DIPLO-DEALS-SENSIBLE-Q1 (B1): ustawienie opcji nowej gry trwa w zapisie.
+          dealsEndTurnGate: dealsEndTurnGateEnabled,
           rejectedOfferCooldowns: pruneExpiredRejectedOffers(rejectedOfferCooldowns, turn),
           diplomacyPairMeta: Array.from(diplomacyPairMeta.entries()),
           diplomacyFactorLog: Array.from(diplomacyFactorLog.entries()),
@@ -31831,6 +31923,44 @@ async function boot(): Promise<void> {
       // is an inconsistent state. Instead of waiting for an incidental flush point (which may
       // never come), schedule a flush for the next tick.
       maybeScheduleDeferredPreBattleQueueWatchdog();
+      // R-WEB-DIPLO-DEALS-SENSIBLE-Q1 (B2, siatka bezpieczeństwa): oferta handlowa AI->gracz
+      // blokuje koniec tury tylko dopóki jest ważna. Wpis, którego nie da się już rozstrzygnąć
+      // (strona wyeliminowana, wygasł, wojna znosi warunki) jest usuwany tutaj, zamiast
+      // zostawiać osieroconą blokadę (ten sam wzorzec co R-WEB-ENDTURN-BATTLE-DEADLOCK).
+      pruneStaleAiTradeOffersAwaitingPlayer();
+    }
+
+    /** R-WEB-DIPLO-DEALS-SENSIBLE-Q1: oferta handlowa AI, na którą odpowiada gracz (autor = AI). */
+    function isAiTradeOfferAwaitingPlayer(n: PendingNegotiation): boolean {
+      return isMe(n.awaitingOwnerId)
+        && !isMe(n.authorOwnerId)
+        && isSensibleTradeActionId(n.actionId);
+    }
+
+    /** R-WEB-DIPLO-DEALS-SENSIBLE-Q1 (B2): czy wisi oferta handlowa AI->gracz blokująca koniec tury. */
+    function hasBlockingAiTradeOfferForPlayer(): boolean {
+      if (!dealsEndTurnGateEnabled) return false;
+      return negotiationTable.some(isAiTradeOfferAwaitingPlayer);
+    }
+
+    /** R-WEB-DIPLO-DEALS-SENSIBLE-Q1 (B2): usuwa nieważne oferty handlowe AI->gracz (siatka). */
+    function pruneStaleAiTradeOffersAwaitingPlayer(): void {
+      if (!dealsEndTurnGateEnabled) return;
+      // Bez odświeżania HUD tutaj: funkcja jest wołana z pętli renderu (canEndTurn), więc
+      // wywołanie refreshD1bHud() stąd dałoby rekurencję przez canEndTurn().
+      for (let ni = negotiationTable.length - 1; ni >= 0; ni--) {
+        const entry = negotiationTable[ni]!;
+        if (!isAiTradeOfferAwaitingPlayer(entry)) continue;
+        const validity = negotiationStillValid(entry, buildNegotiationWorldCtx(
+          entry.proposerOwnerId,
+          entry.responderOwnerId,
+          getDiploRelation(entry.proposerOwnerId, entry.responderOwnerId).status === 'wojna',
+        ));
+        if (!validity.valid) {
+          negotiationTable.splice(ni, 1);
+          console.warn('[EndTurn] Usunięto nieważną ofertę handlową AI (blokada końca tury)', validity.reason);
+        }
+      }
     }
 
     function canPlayerInitiateEndTurn(): boolean {
@@ -31879,6 +32009,12 @@ async function boot(): Promise<void> {
         });
         return false;
       }
+      // R-WEB-DIPLO-DEALS-SENSIBLE-Q1 (B2): opcja „Wymagaj rozpatrzenia ofert handlowych" —
+      // oferta handlowa AI->gracz czeka na decyzję (przyjmij / modyfikuj / odrzuć).
+      if (hasBlockingAiTradeOfferForPlayer()) {
+        console.warn('[EndTurn] blocked: oferta handlowa AI czeka na decyzję gracza');
+        return false;
+      }
       return true;
     }
 
@@ -31897,6 +32033,11 @@ async function boot(): Promise<void> {
       // branch in this function, so the player got no message despite the button being blocked.
       if (isPreBattleOpen() || hasPendingAutoPreBattle()) {
         showHintMessage('Zakończ ekran bitwy, potem zakończ turę.', 3500);
+        return;
+      }
+      // R-WEB-DIPLO-DEALS-SENSIBLE-Q1 (B2): podpowiedź przy blokadzie ofertą handlową AI.
+      if (hasBlockingAiTradeOfferForPlayer()) {
+        showHintMessage('Rozpatrz ofertę handlową od innego państwa (przyjmij, zmodyfikuj lub odrzuć), potem zakończ turę.', 4000);
         return;
       }
       if (gameOver) {
@@ -38093,6 +38234,8 @@ async function boot(): Promise<void> {
     }
 
     async function doStartGame(params: NewGameParams): Promise<void> {
+      // R-WEB-DIPLO-DEALS-SENSIBLE-Q1 (B1): opcja z ekranu nowej gry (domyślnie ON).
+      dealsEndTurnGateEnabled = params.dealsEndTurnGate ?? true;
       resetEndTurnBlockers('doStartGame');
       playtestWalkaActive = false;
       bitwaDuzaActive = false;
@@ -40186,6 +40329,8 @@ async function boot(): Promise<void> {
         }
       }
       negotiationSeq = (saved.meta?.negotiationSeq as number | undefined) ?? negotiationTable.length;
+      // R-WEB-DIPLO-DEALS-SENSIBLE-Q1 (B1): stary zapis bez pola = opcja WYŁĄCZONA.
+      dealsEndTurnGateEnabled = (saved.meta?.dealsEndTurnGate as boolean | undefined) === true;
       rejectedOfferCooldowns = [];
       const savedRejectCooldowns = saved.meta?.rejectedOfferCooldowns as RejectedOfferCooldown[] | undefined;
       if (savedRejectCooldowns?.length) {

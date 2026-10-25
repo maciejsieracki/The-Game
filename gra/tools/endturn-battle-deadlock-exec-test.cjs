@@ -87,6 +87,10 @@ const FN_HEADERS = [
   'function healStuckDeferredPreBattleQueueOnEndTurnAttempt(): void {',
   'function advanceSeat(): void {',
   'function triggerPlayerEndTurn(): void {',
+  // R-WEB-DIPLO-DEALS-SENSIBLE-Q1 (R2): blokada końca tury ofertą handlową AI + siatka.
+  'function isAiTradeOfferAwaitingPlayer(n: PendingNegotiation): boolean {',
+  'function hasBlockingAiTradeOfferForPlayer(): boolean {',
+  'function pruneStaleAiTradeOffersAwaitingPlayer(): void {',
 ];
 // Zmienne `let` z main.ts, które ciała funkcji czytają/zapisują.
 const STATE = [
@@ -99,6 +103,9 @@ const STATE = [
   ['playtestWalkaActive', 'false'],
   ['gameOver', 'false'],
   ['galleryOn', 'false'],
+  // R-WEB-DIPLO-DEALS-SENSIBLE-Q1 (R2): stan stołu i opcja nowej gry (domyślnie OFF = baza).
+  ['negotiationTable', '[]'],
+  ['dealsEndTurnGateEnabled', 'false'],
 ];
 
 // Buduje fabrykę z ciał funkcji podanego źródła main.ts.
@@ -120,7 +127,8 @@ function __factory(deps: any) {
     clearDeferredAutoPreBattleQueue, flushDeferredAutoPreBattle, isDiplomacyAudienceOpen, isArmyMergePanelOpen,
     isAwaitingFirstPlayerCity, isTurnTransitionActive, endTurnTransition, showHintMessage,
     switchActiveHuman, beginOnboardingFoundCity, endActiveHumanTurn, humanSeats, window, console,
-    isBattleSceneOpen, isPostBattleSummaryOpen } = deps;
+    isBattleSceneOpen, isPostBattleSummaryOpen, isMe, isSensibleTradeActionId, negotiationStillValid,
+    buildNegotiationWorldCtx, getDiploRelation } = deps;
   let seatsFinishedThisRound: Set<number> = new Set<number>();
   ${stateDecl}
   ${bodies.join('\n\n')}
@@ -252,6 +260,11 @@ function makeEnv(PB, mainSrc) {
     isArmyMergePanelOpen: () => env.armyMerge,
     isBattleSceneOpen: () => env.battleScene,
     isPostBattleSummaryOpen: () => env.postSummary,
+    isMe: (id) => id === 0,
+    isSensibleTradeActionId: (a) => ['handel', 'umowa_handlowa', 'umowa_szlakow'].includes(a),
+    negotiationStillValid: () => ({ valid: true }),
+    buildNegotiationWorldCtx: () => ({}),
+    getDiploRelation: () => ({ status: 'pokoj' }),
     isAwaitingFirstPlayerCity: () => false,
     isTurnTransitionActive: () => env.transition,
     endTurnTransition: () => {},

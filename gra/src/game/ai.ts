@@ -5043,6 +5043,8 @@ export type AIDiplomacyCommand =
       zaplataTyp: 'zloto' | 'praca'; zaplataPerTura: number; turns: number;
       kierunek?: 'sprzedaz' | 'zakup';
       powodHandlu?: 'deficyt' | 'nadwyzka';
+      /** R-WEB-DIPLO-DEALS-SENSIBLE-Q1: uzasadnienie oferty widoczne dla gracza (niedobór / nadwyżka). */
+      reasonHandlu?: string;
     }
   | { type: 'zaproponuj_pakt'; targetId: string; powod: string; turns?: number }
   | {

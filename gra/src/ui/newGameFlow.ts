@@ -173,6 +173,9 @@ export interface NewGameParams {
   /** P-CHATKI-NAGRODY-TOGGLE-USTAWIENIA-Q1: czy chatki z nagrodami mają być generowane na mapie.
    * / EN: whether village treasure huts should be generated on the map. */
   villageRewardsEnabled: boolean;
+  /** R-WEB-DIPLO-DEALS-SENSIBLE-Q1: „Wymagaj rozpatrzenia ofert handlowych przed końcem tury"
+   * (domyślnie ON). / EN: block end turn while an AI trade offer awaits the player. */
+  dealsEndTurnGate?: boolean;
 }
 
 /**
@@ -656,6 +659,7 @@ const SETTING_GLYPHS: Record<string, string> = {
   map_size: 'Mx',
   world_type: 'Sw',
   city_states_count: 'MP',
+  deals_end_turn_gate: 'Ha',
   civ_types_count: 'Cy',
   game_speed: 'Tp',
   map_quality: 'Gf',
@@ -1922,6 +1926,7 @@ function renderSettStep(host: HTMLElement): void {
   const layout = el('div', 'sett-layout');
   renderSettingRows(layout, [
     'difficulty', 'map_size', 'world_type', 'game_speed', 'city_states_count', 'civ_types_count',
+    'deals_end_turn_gate',
   ]);
   renderAiCivPicker(layout);
   host.appendChild(layout);
@@ -2134,6 +2139,7 @@ function buildParams(): NewGameParams {
     startPreview,
     selectedAiCivIds: [...selAiCivIds],
     villageRewardsEnabled: settingValue('village_rewards_enabled') !== 'Wyłączone',
+    dealsEndTurnGate: settingValue('deals_end_turn_gate') !== 'Wyłączona',
   };
 }
 
