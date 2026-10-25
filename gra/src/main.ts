@@ -19960,6 +19960,30 @@ async function boot(): Promise<void> {
       const goodsPartner = tradableGoodsForAiDiplo(partnerOwnerId);
       const sellerOptsProposer = quantityOptionsForAiDiplo(proposerOwnerId);
       const sellerOptsPartner = quantityOptionsForAiDiplo(partnerOwnerId);
+      // R-WEB-DIPLO-DEALS-SENSIBLE-Q1 R3 (zarzut 3): bramka potrzeby działa PRZY SELEKCJI
+      // kandydata (nie dopiero po wyborze), więc gdy pierwszy surowiec odpada, picker
+      // próbuje kolejnych. Flaga OFF -> predykat zawsze true (zachowanie bazowe).
+      const sensibleOnPick = isDiploSensibleDealsEnabled();
+      const sensiblePakietPick = diplomacyHandelSurowcePakietWielkosc();
+      // Flaga OFF: stawki nie są czytane wcale (brak kosztu i brak zmiany wyniku).
+      const proposerRatesPick: Partial<Record<string, number>> = sensibleOnPick
+        ? mergedResourceRatesForOwner(proposerOwnerId) : {};
+      const partnerRatesPick: Partial<Record<string, number>> = sensibleOnPick
+        ? mergedResourceRatesForOwner(partnerOwnerId) : {};
+      const stockOf = (goods: readonly { key: string; ilosc?: number }[], key: string): number =>
+        goods.find(g => g.key === key)?.ilosc ?? 0;
+      const acceptDeficitKey = (key: string): boolean => isBuyerDeficitJustified(
+        stockOf(goodsProposer, key), proposerRatesPick[key] ?? 0, sensiblePakietPick, sensibleOnPick,
+      );
+      const acceptSurplusKey = (key: string): boolean => isSellerSurplusJustified(
+        stockOf(goodsProposer, key),
+        proposerRatesPick[key] ?? 0,
+        sensiblePakietPick,
+        classifyTradeNeedNet(
+          stockOf(goodsPartner, key), partnerRatesPick[key] ?? 0, sensiblePakietPick,
+        ),
+        sensibleOnPick,
+      );
 
       const pick = pickResourceDeficitForOwnerPair({
         ...base,
@@ -19968,6 +19992,7 @@ async function boot(): Promise<void> {
         goodsBuyer: goodsProposer,
         goodsSeller: goodsPartner,
         sellerOptions: sellerOptsPartner,
+        acceptKey: acceptDeficitKey,
       })
         ?? pickResourceSurplusTradePick({
           ...base,
@@ -19976,6 +20001,7 @@ async function boot(): Promise<void> {
           goodsSeller: goodsProposer,
           goodsBuyer: goodsPartner,
           sellerOptions: sellerOptsProposer,
+          acceptKey: acceptSurplusKey,
         });
       if (!pick) return null;
       // R-WEB-DIPLO-DEALS-SENSIBLE-Q1 (2026-10-25): AI oferuje wymianę tylko przy realnym

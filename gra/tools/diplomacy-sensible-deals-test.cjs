@@ -31,6 +31,7 @@ export {
   tradeOfferReason,
 } from '../src/game/diplomacy-sensible-deals.ts';
 export { aiProposalPlayerBenefitSurplus } from '../src/game/diplomacy-ai-offer-balance.ts';
+export { pickResourceDeficitForOwnerPair, pickResourceSurplusForOwnerPair } from '../src/game/diplomacy-resource-trade-pick.ts';
 `);
 
 esbuild.buildSync({
@@ -146,6 +147,31 @@ const onA = runAll(true);
 const onB = runAll(true);
 check('ON: wynik deterministyczny (dwa przebiegi równe)', JSON.stringify(onA) === JSON.stringify(onB));
 check('ON: bramki faktycznie filtrują (nie wszystkie true)', onA.some(row => row.some(v => v === false)));
+
+// R3 (zarzut 3): bramka potrzeby przy SELEKCJI kandydata - odrzucony pierwszy surowiec
+// nie blokuje kolejnych (picker wybiera pierwszy, który przechodzi predykat).
+{
+  const P = M.pickResourceDeficitForOwnerPair;
+  const S = M.pickResourceSurplusForOwnerPair;
+  const goods = [{ key: 'drewno', ilosc: 0 }, { key: 'kamien', ilosc: 0 }];
+  const opts = [{ id: 'drewno', label: 'Drewno', maxQty: 50 }, { id: 'kamien', label: 'Kamień', maxQty: 50 }];
+  const base = {
+    buyerOwnerId: 1, sellerOwnerId: 2, goodsBuyer: goods, goodsSeller: goods, sellerOptions: opts,
+    pricedKeys: ['drewno', 'kamien'], pakietWielkosc: 10, maxPakietyPerTura: 10,
+    pricePerPakiet: (k, n) => n * 10,
+  };
+  const noFilter = P({ ...base });
+  check('R3 deficyt: bez predykatu wybiera pierwszy kandydat', noFilter && noFilter.surowiecKey === 'drewno', noFilter);
+  const skipFirst = P({ ...base, acceptKey: k => k !== 'drewno' });
+  check('R3 deficyt: odrzucony pierwszy kandydat -> wybór kolejnego', skipFirst && skipFirst.surowiecKey === 'kamien', skipFirst);
+  const none = P({ ...base, acceptKey: () => false });
+  check('R3 deficyt: wszyscy odrzuceni -> null', none === null, none);
+  const sBase = { ...base, sellerOwnerId: 1, buyerOwnerId: 2, goodsSeller: goods, goodsBuyer: goods, sellerOptions: opts };
+  const sSkip = S({ ...sBase, acceptKey: k => k === 'kamien' });
+  check('R3 nadwyzka: predykat wybiera jedyny przechodzący surowiec', sSkip && sSkip.surowiecKey === 'kamien', sSkip);
+  const sNone = S({ ...sBase, acceptKey: () => false });
+  check('R3 nadwyzka: wszyscy odrzuceni -> null', sNone === null, sNone);
+}
 
 console.log(`\ndiplomacy-sensible-deals-test: ${pass} passed, ${fail} failed`);
 try { fs.unlinkSync(ENTRY); fs.unlinkSync(BUNDLE); } catch (_) { /* ignore */ }
