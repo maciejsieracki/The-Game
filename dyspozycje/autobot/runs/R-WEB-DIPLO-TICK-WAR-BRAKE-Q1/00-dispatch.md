@@ -14,3 +14,11 @@ ALLOWLISTA: `gra/src/game/diplomacy*.ts`, `gra/src/game/alliance-war-obligation.
 IZOLACJA: `isolation: worktree`, commit z jawnym `git add` (logi `git add -f`), PUSH NIE, DEPLOY NIE. Raport zapisz też w `dyspozycje/autobot/runs/R-WEB-DIPLO-TICK-WAR-BRAKE-Q1/01-operator-rN.md`. Raport max ok. 500 słów.
 FORMAT ODPOWIEDZI: STATUS / DOMAIN / TEMAT / GOAL / ZMIANY-COMMIT / TESTY / BLOKADY / RUNDY / NASTĘPNY KROK
 DEPLOY/PUSH: NIE WYKONANO
+
+KALIBRACJA P7 — WERSJA OSTATECZNA OD WŁAŚCICIELA (2026-10-25; ZASTĘPUJE wzór i parametry wariantu A z linii „KALIBRACJA P7” powyżej; zostają: sufit Zaufania 60, min. 2 kolejne tury dostaw, przy zawarciu umowy cyklicznej tylko pierwsza tura, dar bez zmian, dostawa musi być realna, AI↔AI też, jednorazowa przesyłka = 0):
+- PROSTY SCHODKOWY MECHANIZM, bez wzoru malejących zysków i bez płynnych przejść. Krok nadwyżki zależy od epoki: kamień = 100 pkt, brąz = 200, żelazo = 400, kolejne epoki dalej podwajanie (×2 na epokę; tabela kroków w JSON `diplomacy` jako parametr, nie w kodzie). „Pkt” = wartość netto na plusie danej umowy w danej turze (PN z katalogu wartości).
+- Za KAŻDY PEŁNY krok nadwyżki w turze: +0,5 Zaufania. Reszta niepełnego kroku = 0 (np. kamień: 99 → 0; 150 → +0,5; 200 → +1,0). Brak interpolacji.
+- Limit: maks. +5,0 Zaufania na turę z handlu (10 pełnych kroków: kamień 1000, brąz 2000, żelazo 4000 pkt).
+- Sufit Zaufania 60 (bonus nie podnosi powyżej 60), `wymianaMinTurDostaw` = 2.
+- Parametry: `wymianaKrokPkt` per epoka, `wymianaZaufanieNaKrok` = 0,5, `wymianaMaxPerTura` = 5, `wymianaSufitZaufania` = 60. Usunąć `zaufaniePerNadwyzkaPn`, `wymianaRefPn`, `wymianaOknoTur` (nieużywane).
+- Test: tabela kroków dla kamienia/brązu/żelaza (w tym 99/100/199/200/1000/5000), limit 5, sufit 60, brak bonusu przy jednorazowej przesyłce, brak bonusu w 1. turze cyklu przy zasadzie „tylko pierwsza tura”, zgodna epoka = epoka płacącego (ZAŁOŻENIE do potwierdzenia przez Evaluatora; opisać w raporcie).
