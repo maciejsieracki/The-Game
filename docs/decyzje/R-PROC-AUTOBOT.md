@@ -1055,3 +1055,8 @@ Historyczne routingi, dawne modele i snapshoty zachowano w
 ## §5b — Aktualna polityka modeli (właściciel, 2026-10-25; nadrzędna wobec §5a i wcześniejszych)
 
 Wszystkie tematy (web i port Rust): **Operator i Obrona → Haiku 5.5 medium; Evaluator → Sonnet 5.5 medium; Final Control → Sonnet 5.5 medium** (Haiku za słaby na Final Control). **Opus 5.5 medium wyłącznie dla jednostek i obiektów 3D** (modele, bitwa 3D, renderer 3D). Model ustawia pole `model` w wywołaniu `agent()`; opis `description` skryptu Workflow musi to odzwierciedlać (nie kopiować starego „Opus 5.5”).
+
+## §5c — Sprzątanie po zakończeniu workflow (właściciel, 2026-10-25; obowiązkowe)
+
+Po KAŻDYM zakończonym Workflow oraz po każdym `git push`/publikacji na ROBOCZĄ orkiestrator od razu: (1) upewnia się, że wynik jest zabezpieczony (commit na zdalnym albo `refs/keep/*`), (2) usuwa kopie robocze zakończonych workflow (`git worktree remove --force .claude/worktrees/wf_<id>-*` + `git worktree prune`), (3) czyści katalogi tymczasowe w scratchpadzie (buildy `dist-*`, klony baz, logi) i `/tmp` po własnych przebiegach, (4) NIE rusza kopii robocznych workflowów wciąż trwających. Powód: dysk (~25 GB) zapełniał się (ENOSPC) i przewracał kolejne workflowy. Sprawdzenie `df -h /` przed startem każdego nowego workflow; poniżej ~5 GB wolnego — najpierw sprzątanie.
+
