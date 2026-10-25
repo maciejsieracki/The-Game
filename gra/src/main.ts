@@ -836,6 +836,12 @@ import type { CombatUnit, TerrainEntry } from './game/combat';
 import terrainCombatData from '../data/terrain-combat.json';
 import miastoParams from '../data/miasto-params.json';
 import aiParamsRaw from '../data/ai-params.json';
+// R-WEB-DIPLO-TICK-WAR-BRAKE-Q1 r2: P3/P4/P6/P7 — wszystko za flagą isDiploTickWarBrakeEnabled().
+import diplomacyTickParams from '../data/diplomacy-tick-params.json';
+import {
+  advanceCrisisCounter, isDiploTickWarBrakeEnabled, parseCrisisCounters, pickWarDeclarer,
+  sortCrisisQueue, tradeTrustBonusPerTura,
+} from './game/diplomacy-tick-war-brake';
 import {
   resolveAutoBattleByPower,
   sumRosterFieldM,
@@ -1427,6 +1433,7 @@ import {
   diplomacyHandelSurowceCatalog,
   diplomacyPnSurowiecIlosc,
   diplomacyNormalizeSurowiecIlosc,
+  diplomacySumPn,
 } from './game/diplomacy-value-catalog';
 import {
   collectUnauthorizedBorderPairs,
@@ -8399,6 +8406,10 @@ async function boot(): Promise<void> {
     const diplomacyRelations = new Map<string, Relation>();
     /** D4-WYMIANA-PN: meta per para (limit PN/turę, dobra wola). */
     const diplomacyPairMeta = new Map<string, DiploPairMeta>();
+    /** R-WEB-DIPLO-TICK-WAR-BRAKE-Q1 r2 (P6): licznik kryzysu Zaufania per para (klucz diploPairKey). Save/load. */
+    const diplomacyCrisisCounters = new Map<string, number>();
+    /** R-WEB-DIPLO-TICK-WAR-BRAKE-Q1 r2 (P7): kolejne tury dostaw wymiany, klucz `${sprzedawca}>${kupujacy}`. Save/load. */
+    const diplomacyTradeStreak = new Map<string, number>();
     /**
      * FAZA 1 (Makieta DYPLOMACJA v1.1, KROK 3 pkt 6) — rejestr per-para jednorazowych
      * zdarzeń dyplomatycznych {eventKey,delta,tura}, klucz jak diplomacyPairMeta
@@ -9191,6 +9202,8 @@ async function boot(): Promise<void> {
       aiNaukaPoolByOwner.clear();
       aiBadanaByOwner.clear();
       diplomacyPairMeta.clear();
+      diplomacyCrisisCounters.clear();
+      diplomacyTradeStreak.clear();
       diplomacyFactorLog.clear();
       wiarygodnoscZdarzeniaByOwner.clear();
       wiarygodnoscStrumienByOwner.clear();
@@ -9657,6 +9670,209 @@ async function boot(): Promise<void> {
 
     function setDiploPairMeta(a: number, b: number, meta: DiploPairMeta): void {
       diplomacyPairMeta.set(diploPairKey(a, b), meta);
+    }
+
+    // ---- R-WEB-DIPLO-TICK-WAR-BRAKE-Q1 r2: P3 / P4 / P6 / P7 (wszystko za flagą) ----
+
+    /** Parametry P6/P7 z gra/data/diplomacy-tick-params.json (wersja ostateczna kalibracji P7). */
+    const diploTickP6 = diplomacyTickParams.p6;
+    const diploTickP7 = diplomacyTickParams.p7;
+
+    /** P6: jeden krok histerezy kryzysu dla pary; licznik 0 = wpis usunięty. */
+    function diploBrakeCrisisStep(a: number, b: number, zaufanie: number): ReturnType<typeof advanceCrisisCounter> {
+      const key = diploPairKey(a, b);
+      const step = advanceCrisisCounter(diplomacyCrisisCounters.get(key) ?? 0, zaufanie, diploTickP6);
+      if (step.counter > 0) diplomacyCrisisCounters.set(key, step.counter);
+      else diplomacyCrisisCounters.delete(key);
+      return step;
+    }
+
+    /** P4: wspólny wróg = obie strony w wojnie z tym samym NIE-barbarzyńcą LUB współpraca (WspolnaWalka) przeciw tym samym barbarzyńcom. */
+    function diploSharedEnemyOrBarbarianCoop(a: number, b: number): boolean {
+      const owners = allPowerOwnerIds();
+      for (const c of owners) {
+        if (c === a || c === b || isBarbarian(c)) continue;
+        if (getDiploRelation(a, c).status === 'wojna' && getDiploRelation(b, c).status === 'wojna') return true;
+      }
+      const isCoop = (d: ActiveDeal): boolean =>
+        normalizeTreatyKind(d.rodzaj) === RodzajTraktatu.WspolnaWalkaBarbarzyncy || d.wspolnaWalkaBarbarzyncy === true;
+      for (const barb of owners) {
+        if (!isBarbarian(barb)) continue;
+        if (activeDeals.some(d => isCoop(d) && dealInvolvesOwners(d, a, barb))
+          && activeDeals.some(d => isCoop(d) && dealInvolvesOwners(d, b, barb))) return true;
+      }
+      return false;
+    }
+
+    /** P4: flagi dobrej woli i wspólnego wroga do TickCtx pary (flaga OFF → false/false jak dotąd). */
+    function diploBrakeBonusFlags(a: number, b: number): { dobraWolaAktywna: boolean; wspolnyWrog: boolean } {
+      if (!isDiploTickWarBrakeEnabled()) return { dobraWolaAktywna: false, wspolnyWrog: false };
+      return {
+        dobraWolaAktywna: getDiploPairMeta(a, b).dobraWolaRemainingTur > 0,
+        wspolnyWrog: diploSharedEnemyOrBarbarianCoop(a, b),
+      };
+    }
+
+    /** P6: bramka R1 (tura ≥ 40) + R2 (Kamień: 1 wojna na cywilizację) dla wojny z progu, także gdy napastnik = gracz. */
+    function diploCrisisWarGateBlocked(declarer: number, victim: number): boolean {
+      if (!isWarRulesMultiwarEnabled()) return false;
+      return evaluateInterCivWarGate({
+        turn,
+        attackerEra: empireEpochForOwner(declarer),
+        attackerWarCount: countActiveWarsForOwnerExcludingBarbarians(declarer),
+        targetIsPlayer: isHuman(victim),
+        targetEra: empireEpochForOwner(victim),
+        targetWarCount: countActiveWarsForOwnerExcludingBarbarians(victim),
+      }) !== 'ok';
+    }
+
+    /**
+     * P6: wojny z progu. Po N kolejnych turach kryzysu wypowiada strona SILNIEJSZA, o ile
+     * R1/R2 (interCivWarBlockedForAi) na to pozwalają; w przeciwnym razie para zostaje w
+     * kolejce (licznik ≥ N). Gracz dostaje ostrzeżenie, gdy licznik ≥ N − ostrzeżenieTurPrzed.
+     * Kara Wiarygodności za wypowiedzenie NIE jest nakładana (casus belli — ZAŁOŻENIE r2).
+     */
+    function processDiploCrisisQueue(): void {
+      const n = diploTickP6.kryzysTurDoWojny;
+      const warnAt = n - diploTickP6.kryzysOstrzezenieTurPrzed;
+      const ready: Array<{ ownerA: number; ownerB: number; counter: number }> = [];
+      for (const [key, counter] of Array.from(diplomacyCrisisCounters.entries())) {
+        const parts = key.split('_').map(Number);
+        const sa = parts[0]!;
+        const sb = parts[1]!;
+        if (getDiploRelation(sa, sb).status === 'wojna') {
+          diplomacyCrisisCounters.delete(key);
+          continue;
+        }
+        if ((isMe(sa) || isMe(sb)) && counter >= warnAt && counter < n) {
+          const other = isMe(sa) ? sb : sa;
+          showHintMessage(
+            'Ryzyko wojny z ' + ownerDiploLabel(other) + ': ' + (n - counter) + ' tur do wypowiedzenia (Zaufanie ≤ ' + diploTickP6.kryzysProgZaufania + ')',
+            4000,
+          );
+        }
+        if (counter >= n) ready.push({ ownerA: sa, ownerB: sb, counter });
+      }
+      if (ready.length === 0) return;
+      refreshObjectivePowerCache();
+      for (const e of sortCrisisQueue(ready)) {
+        const key = diploPairKey(e.ownerA, e.ownerB);
+        if (getDiploRelation(e.ownerA, e.ownerB).status === 'wojna') {
+          diplomacyCrisisCounters.delete(key);
+          continue;
+        }
+        if (isPeaceLockedBetween(e.ownerA, e.ownerB)) continue;
+        const declarer = pickWarDeclarer(
+          { ownerId: e.ownerA, power: objectivePowerForOwner(e.ownerA) },
+          { ownerId: e.ownerB, power: objectivePowerForOwner(e.ownerB) },
+        );
+        const victim = declarer === e.ownerA ? e.ownerB : e.ownerA;
+        // R1/R2 dotyczą też gracza jako strony silniejszej (wojna z progu jest automatyczna,
+        // nie jego wyborem) — dlatego bez wyjątku isMe, w przeciwieństwie do interCivWarBlockedForAi.
+        if (diploCrisisWarGateBlocked(declarer, victim)) continue;
+        const metaD = getDiploPairMeta(declarer, victim);
+        setDiploPairMeta(declarer, victim, { ...metaD, wojnaOdTury: turn, n1Zastosowany: false });
+        breakTreatiesOnWar(declarer, victim, isMe(declarer));
+        setDiploRelation(
+          declarer,
+          victim,
+          applyDiploEventTracked(declarer, victim, getDiploRelation(declarer, victim), 'wojna_wypowiedziana'),
+        );
+        recordWarDeclarationEvent(declarer, victim);
+        diplomacyCrisisCounters.delete(key);
+        if (isMe(declarer) || isMe(victim)) {
+          showHintMessage('Wojna z ' + ownerDiploLabel(isMe(declarer) ? victim : declarer) + ': utrzymane Zaufanie spadło do progu krytycznego.', 4500);
+        }
+      }
+    }
+
+    /**
+     * P3: przeliczenie Zaufania par AI↔AI co turę (flaga ON). Pary głównych cywilizacji
+     * (bez barbarzyńców i kopii miast-państw); dryf Wiarygodności = średnia obu stron (Z2).
+     * Ten sam tickDiplomacy i ten sam TickCtx co para gracz↔AI (buildDiplomacyTickCtxForPair).
+     */
+    function tickDiploAiAiPairsWithBrake(): void {
+      const owners = allPowerOwnerIds().filter(o => !isMe(o) && !isBarbarian(o) && !typCityCopyOwners.has(o));
+      for (let i = 0; i < owners.length; i++) {
+        for (let j = i + 1; j < owners.length; j++) {
+          const a = owners[i]!;
+          const b = owners[j]!;
+          const cur = getDiploRelation(a, b);
+          const ticked = tickDiplomacy(cur as any, buildDiplomacyTickCtxForPair(a, b));
+          const next = ticked as unknown as Relation;
+          if (next.status !== cur.status) setDiploRelation(a, b, next);
+          else diplomacyRelations.set(diploPairKey(a, b), next);
+          diploBrakeCrisisStep(a, b, next.zaufanie ?? 0);
+        }
+      }
+    }
+
+    /** P7: wartość PN dostarczonych sztuk surowca (pakiet = sztuki/turę). */
+    function diploCyclicGoodsPn(item: HandelSurowiecCyklicznyItem): number {
+      return diplomacySumPn([{ typ: 'surowiec_ilosc', id: item.surowiecKey, ilosc: item.pakietyPerTura }]) ?? 0;
+    }
+
+    /** P7: wartość PN zapłaty za dostawę (złoto / praca); barter i brak zapłaty = 0. */
+    function diploCyclicPaymentPn(item: HandelSurowiecCyklicznyItem): number {
+      const z = item.zaplataPerTura ?? 0;
+      if (!(z > 0)) return 0;
+      if (item.zaplataTyp === 'zloto') return diplomacySumPn([{ typ: 'zloto', id: 'zloto', ilosc: z }]) ?? 0;
+      if (item.zaplataTyp === 'praca') return diplomacySumPn([{ typ: 'praca', id: 'praca', ilosc: z }]) ?? 0;
+      return 0;
+    }
+
+    /** P7: dolicza nadwyżkę netto (PN) dla kierunku sprzedawca→kupujący w tej turze. */
+    function diploP7AddSurplus(
+      acc: Map<string, { sellerId: number; buyerId: number; nadwyzkaPn: number }>,
+      sellerId: number,
+      buyerId: number,
+      nadwyzkaPn: number,
+    ): void {
+      const key = sellerId + '>' + buyerId;
+      const cur = acc.get(key);
+      if (cur) cur.nadwyzkaPn += nadwyzkaPn;
+      else acc.set(key, { sellerId, buyerId, nadwyzkaPn });
+    }
+
+    /**
+     * P7: bonus Zaufania za wymianę „na plusie" (schodki, limit +5/turę, sufit 60).
+     * Seria tur dostaw liczy się tylko z realnych dostaw; brak dostawy w turze kasuje serię,
+     * więc 1. tura cyklu daje 0 (wymianaMinTurDostaw = 2). Dar jednorazowy tu nie wchodzi.
+     */
+    function applyDiploP7Bonuses(
+      delivered: Map<string, { sellerId: number; buyerId: number; nadwyzkaPn: number }>,
+    ): void {
+      for (const key of Array.from(diplomacyTradeStreak.keys())) {
+        if (!delivered.has(key)) diplomacyTradeStreak.delete(key);
+      }
+      for (const [key, d] of Array.from(delivered.entries())) {
+        if (d.sellerId === d.buyerId) continue;
+        const streak = (diplomacyTradeStreak.get(key) ?? 0) + 1;
+        diplomacyTradeStreak.set(key, streak);
+        const rel = getDiploRelation(d.sellerId, d.buyerId);
+        const bonus = tradeTrustBonusPerTura({
+          nadwyzkaPn: d.nadwyzkaPn,
+          epoka: empireEpochForOwner(d.sellerId),
+          zaufanie: rel.zaufanie ?? 0,
+          kolejneTuryDostaw: streak,
+        }, diploTickP7);
+        if (bonus > 0) {
+          setDiploRelation(d.sellerId, d.buyerId, { ...rel, zaufanie: Math.min(100, (rel.zaufanie ?? 0) + bonus) });
+        }
+      }
+    }
+
+    /**
+     * P7 / DECYZJA 1: przy zawarciu umowy cyklicznej (per_turn) zaufanie z PN liczy się tylko
+     * za JEDNĄ turę (nie za cały cykl). Flaga OFF lub zwykła wymiana → bez zmian.
+     */
+    function diploAcceptanceTrustPn(
+      givePn: number,
+      receivePn: number,
+      turnsMult: number,
+    ): { givePn: number; receivePn: number } {
+      if (!isDiploTickWarBrakeEnabled() || !(turnsMult > 1)) return { givePn, receivePn };
+      return { givePn: givePn / turnsMult, receivePn: receivePn / turnsMult };
     }
 
     /** Karencja pokoju po akceptacji traktatu — blokuje DOW obu stron (w tym kaskadę sojuszu). */
@@ -19353,6 +19569,11 @@ async function boot(): Promise<void> {
       const religionA = ownerReligionForOwnerId(a);
       const religionB = ownerReligionForOwnerId(b);
       const playerInPair = isHuman(a) || isHuman(b);
+      const brakeFlags = diploBrakeBonusFlags(a, b);
+      // P3 (R-WEB-DIPLO-TICK-WAR-BRAKE-Q1 r2): para AI↔AI z flagą ON — dryf Wiarygodności = średnia obu stron (Z2).
+      const wiarygodnoscAiAi = isDiploTickWarBrakeEnabled() && !playerInPair && !atWar
+        ? (getWiarygodnosc(a) + getWiarygodnosc(b)) / 2
+        : undefined;
       return {
         turn,
         aktywnyHandel: hasSzlakowTreaty(activeDeals, a, b),
@@ -19361,14 +19582,16 @@ async function boot(): Promise<void> {
             : (isHuman(b) ? diplomaticContactEstablishedSet(b).has(a) : true),
           atWar,
         }),
-        dobraWolaAktywna: false,
-        wspolnyWrog: false,
+        dobraWolaAktywna: brakeFlags.dobraWolaAktywna,
+        wspolnyWrog: brakeFlags.wspolnyWrog,
         wspolnaReligia: sameCulture && !!religionA && !!religionB && religionA === religionB,
         odmiennaReligia: !!religionA && !!religionB && religionA !== religionB,
         karaWspolnaGranica:
           cities.filter(c => c.ownerId === a).length > 2 && cities.filter(c => c.ownerId === b).length > 2
           && ownersShareLandBorderLive(a, b),
-        wiarygodnoscSelf: atWar || !playerInPair ? undefined : getWiarygodnosc(isHuman(a) ? a : b),
+        wiarygodnoscSelf: atWar || !playerInPair
+          ? wiarygodnoscAiAi
+          : getWiarygodnosc(isHuman(a) ? a : b),
       };
     }
 
@@ -20377,8 +20600,15 @@ async function boot(): Promise<void> {
      */
     function tickCyclicResourceTradeDeals(): void {
       wiarygodnoscCyclicDeliveryOkThisTurn.clear();
-      if (!activeDeals.some(d => (d.handelSurowiecCykliczny?.length ?? 0) > 0)) return;
+      if (!activeDeals.some(d => (d.handelSurowiecCykliczny?.length ?? 0) > 0)) {
+        // P7: brak umów cyklicznych = brak dostaw = seria tur się kończy.
+        if (isDiploTickWarBrakeEnabled()) diplomacyTradeStreak.clear();
+        return;
+      }
       const treasury = buildDiploTreasury();
+      // P7 (R-WEB-DIPLO-TICK-WAR-BRAKE-Q1 r2): nadwyżki netto realnych dostaw tej tury (flaga ON).
+      const brakeOn = isDiploTickWarBrakeEnabled();
+      const p7Delivered = new Map<string, { sellerId: number; buyerId: number; nadwyzkaPn: number }>();
 
       for (const deal of activeDeals) {
         const items = deal.handelSurowiecCykliczny;
@@ -20429,6 +20659,13 @@ async function boot(): Promise<void> {
             const okB = applyCyclicDeliveryOutcome(deal, b, bothOk, !bOk, false, treasury);
             wiarygodnoscCyclicDeliveryOkThisTurn.set(`${deal.id}#${i}`, okA);
             wiarygodnoscCyclicDeliveryOkThisTurn.set(`${deal.id}#${bIdx}`, okB);
+            if (brakeOn && bothOk) {
+              // Barter: każda strona ma nadwyżkę = własne dobra − dobra drugiej strony.
+              const pnA = diploCyclicGoodsPn(a);
+              const pnB = diploCyclicGoodsPn(b);
+              diploP7AddSurplus(p7Delivered, a.sellerOwnerId, a.buyerOwnerId, pnA - pnB);
+              diploP7AddSurplus(p7Delivered, b.sellerOwnerId, b.buyerOwnerId, pnB - pnA);
+            }
             continue;
           }
 
@@ -20443,8 +20680,17 @@ async function boot(): Promise<void> {
           }
           const ok = applyCyclicDeliveryOutcome(deal, a, sellerOk && buyerOk, !sellerOk, sellerOk && !buyerOk, treasury);
           wiarygodnoscCyclicDeliveryOkThisTurn.set(`${deal.id}#${i}`, ok);
+          if (brakeOn && ok) {
+            diploP7AddSurplus(
+              p7Delivered,
+              a.sellerOwnerId,
+              a.buyerOwnerId,
+              diploCyclicGoodsPn(a) - diploCyclicPaymentPn(a),
+            );
+          }
         }
       }
+      if (brakeOn) applyDiploP7Bonuses(p7Delivered);
       if (isDiplomacyPanelOpen()) updateDiplomacyPanel();
     }
 
@@ -20574,16 +20820,27 @@ async function boot(): Promise<void> {
         }
       }
       for (const msg of messages) console.log('[Dyplomacja]', msg);
+      const brakeOn = isDiploTickWarBrakeEnabled();
       for (const oid of getDiplomaticContacts()) {
         if (isMe(oid)) continue;
         const meta = getDiploPairMeta(ME(), oid);
         if (meta.dobraWolaRemainingTur > 0) {
-          const rel = getDiploRelation(ME(), oid);
-          const ticked = tickDobraWolaOnRelation(rel, meta);
-          setDiploRelation(ME(), oid, ticked.rel);
-          setDiploPairMeta(ME(), oid, ticked.meta);
+          if (brakeOn) {
+            // P4: +1 dobrej woli liczy już tickDiplomacy (TickCtx.dobraWolaAktywna) — tu tylko odlicz.
+            setDiploPairMeta(ME(), oid, { ...meta, dobraWolaRemainingTur: meta.dobraWolaRemainingTur - 1 });
+          } else {
+            const rel = getDiploRelation(ME(), oid);
+            const ticked = tickDobraWolaOnRelation(rel, meta);
+            setDiploRelation(ME(), oid, ticked.rel);
+            setDiploPairMeta(ME(), oid, ticked.meta);
+          }
         }
         syncRelationFromDeals(ME(), oid);
+      }
+      if (brakeOn) {
+        // P3: pary AI↔AI tickują Zaufanie co turę; P6: kolejka wojen z progu (po N turach).
+        tickDiploAiAiPairsWithBrake();
+        processDiploCrisisQueue();
       }
       applyBorderMarchPenaltiesEndTurn();
     }
@@ -20851,7 +21108,8 @@ async function boot(): Promise<void> {
             const dealCovered = basketItemsAffordable(proposerId, items?.giveItems, dealTreasury, dealTurnsMult)
               && basketItemsAffordable(responderId, items?.receiveItems, dealTreasury, dealTurnsMult);
             if (dealCovered) {
-              applyPnTrustForPair(proposerId, responderId, givePn, receivePn, isGift);
+              const trustPn = diploAcceptanceTrustPn(givePn, receivePn, dealTurnsMult);
+              applyPnTrustForPair(proposerId, responderId, trustPn.givePn, trustPn.receivePn, isGift);
               const cur = getDiploRelation(proposerId, responderId);
               setDiploRelation(proposerId, responderId, applyDiploEventTracked(proposerId, responderId, cur, isGift ? 'dar' : 'handel'));
             } else {
@@ -20903,7 +21161,8 @@ async function boot(): Promise<void> {
             && basketItemsAffordable(proposerId, payload.giveItems, oneShotTreasury, oneShotTurnsMult)
             && basketItemsAffordable(responderId, payload.receiveItems, oneShotTreasury, oneShotTurnsMult);
           if (oneShotCovered) {
-            applyPnTrustForPair(proposerId, responderId, givePn, receivePn, isGift);
+            const trustPn = diploAcceptanceTrustPn(givePn, receivePn, oneShotTurnsMult);
+            applyPnTrustForPair(proposerId, responderId, trustPn.givePn, trustPn.receivePn, isGift);
             const cur = getDiploRelation(proposerId, responderId);
             setDiploRelation(proposerId, responderId, applyDiploEventTracked(proposerId, responderId, cur, isGift ? 'dar' : 'handel'));
           } else {
@@ -31213,6 +31472,12 @@ async function boot(): Promise<void> {
           negotiationSeq,
           rejectedOfferCooldowns: pruneExpiredRejectedOffers(rejectedOfferCooldowns, turn),
           diplomacyPairMeta: Array.from(diplomacyPairMeta.entries()),
+          // R-WEB-DIPLO-TICK-WAR-BRAKE-Q1 r2: pola opcjonalne, zapisywane TYLKO przy fladze ON
+          // (OFF = bajty zapisu identyczne z bazą); stary zapis = mapy puste.
+          ...(isDiploTickWarBrakeEnabled() ? {
+            diplomacyCrisisCounters: Object.fromEntries(diplomacyCrisisCounters.entries()),
+            diplomacyTradeStreak: Object.fromEntries(diplomacyTradeStreak.entries()),
+          } : {}),
           diplomacyFactorLog: Array.from(diplomacyFactorLog.entries()),
           // WIARYGODNOSC CYWILIZACJI (WIARYGODNOSC-SPECYFIKACJA.md §7 "Save/load") — rejestr
           // zdarzeń jednorazowych + wpisy STRUMIENIA + timing P4 ("bez wojny"), per właściciel.
@@ -34776,8 +35041,8 @@ async function boot(): Promise<void> {
                     contactEstablished: diplomaticContactEstablishedSet().has(ownerId),
                     atWar: relStatus === 'wojna',
                   }),
-                  dobraWolaAktywna: false,
-                  wspolnyWrog: false,
+                  dobraWolaAktywna: diploBrakeBonusFlags(ME(), ownerId).dobraWolaAktywna,
+                  wspolnyWrog: diploBrakeBonusFlags(ME(), ownerId).wspolnyWrog,
                   wspolnaReligia: (() => {
                     const sameCulture = sameCultureCircle(civKeyForOwnerId(ME()), civKeyForOwnerId(ownerId));
                     const pr = ownerReligionForOwnerId(ME());
@@ -34793,6 +35058,8 @@ async function boot(): Promise<void> {
                 };
                 const relTicked = tickDiplomacy(relWithRespekt as any, tickCtx);
                 setDiploRelation(ME(), ownerId, relTicked as unknown as Relation);
+                // P6 (R-WEB-DIPLO-TICK-WAR-BRAKE-Q1 r2): licznik kryzysu dla pary gracz↔AI (flaga ON).
+                if (isDiploTickWarBrakeEnabled()) diploBrakeCrisisStep(ME(), ownerId, relTicked.zaufanie ?? 0);
 
                 const respektWzglednyPlr = (potAI + potPlr) > 0 ? potAI / (potAI + potPlr) : 0.5;
                 const hasTradeConnectionToPlayer = citiesHaveTradeConnection(
@@ -40141,6 +40408,16 @@ async function boot(): Promise<void> {
       const savedPairMeta = saved.meta?.diplomacyPairMeta as Array<[string, DiploPairMeta]> | undefined;
       if (savedPairMeta?.length) {
         for (const [key, meta] of savedPairMeta) diplomacyPairMeta.set(key, meta);
+      }
+      // R-WEB-DIPLO-TICK-WAR-BRAKE-Q1 r2 (P6/P7): liczniki kryzysu i serie dostaw — stary save
+      // bez pól wczytuje się jako licznik 0 (parseCrisisCounters odrzuca nieliczbowe wartości).
+      diplomacyCrisisCounters.clear();
+      for (const [k, v] of Object.entries(parseCrisisCounters(saved.meta?.diplomacyCrisisCounters))) {
+        diplomacyCrisisCounters.set(k, v);
+      }
+      diplomacyTradeStreak.clear();
+      for (const [k, v] of Object.entries(parseCrisisCounters(saved.meta?.diplomacyTradeStreak))) {
+        diplomacyTradeStreak.set(k, v);
       }
       // FAZA 1 pkt 6: rejestr czynników — pole opcjonalne, stary save (bez pola) = pusty
       // rejestr, bez crasha (jak diplomacyPairMeta wyżej).
