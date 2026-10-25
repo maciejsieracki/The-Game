@@ -1,3 +1,13 @@
+## ROBOCZA a289d2c4 -- 2026-10-25 -- pelny zasieg ruchu AI + "Wczytaj gre" widzi autozapisy na dysku (R-WEB-FIXES2-RELEASE-ROBOCZA)
+
+- STATUS: PUBLISHED to `origin/main` at `dcc2819702d5a14f7858a7a9ee098842c29b5bfb` (fast-forward z `7e0e7c71`), integration branch `integration/robocza-fixes2-20261025` na tym samym SHA. Readback `gra-robocza/Gra-ROBOCZA.html` z `origin/main`: MD5 `a289d2c4796333c97d1b46e3bdc69f33` (zgodny z manifestem).
+- Bundle: SHA-256 `09f4a591f0790d10b8f6e4531295b2fc9c954ccff58b5f13462e2bfc1dd50751`, 69,969,032 bytes.
+- Zakres A (`R-WEB-AI-MOVE-RANGE-Q1`): AI, panstwa-miasta i barbarzyncy ida pelnym budzetem ruchu w turze (zamiast 1 heksa), takze regula wojny; strazniki zajetosci heksu barbarzyncow; czas fazy decyzji AI wyzszy, caly `endTurn` ~x0,94-0,99 (smoke 50 tur).
+- Zakres B (`R-WEB-LOAD-GAME-REGRESSION-Q1`, limit 5 rund wyczerpany — wydane rdzen naprawy): „Wczytaj gre" widzi autozapisy zapisane na dysk (File System Access) takze po przeladowaniu strony; nieudany autozapis sygnalizowany graczowi (jednorazowo, reset po sukcesie).
+- Bramki: tsc, verify-robocza-bundle OK, logic 213/213, ai-move-range 46/0, collision 12/0, endturn 38/0 + exec 46/0, load-game-regression 34/0, blockers-exec 15/0, fsa-autosave 55/0, autosave-quota 22/0, barbarzyncy 249/0, barb-city 178/0, ai-test 276/18 (=baza); smoke Chromium 50 tur (finalTurn 51, stalls 0) pokoj i wojna; E2E zapisu: A-FSA 8/8, A-IDB 6/6, B-PROMPT 3/3, D-EMPTY 2/2.
+- NIE ZMIERZONO / znane luki: wczytanie po >= 40 turach, stary zapis, kolizje/bonusy barbarzyncow w pelnej grze; E2E `--turns 5` zawiesza sie po turze 2 takze na poprzednim wydaniu (harness); test war-allin ma przypiete hashe zamiast niezmiennika „flaga OFF == baza" (zmiana zamierzona).
+- Rollback: poprzedni bundle MD5 `46401a9932fd92f47eed1848e772122b`, `git revert` commitow wydania.
+
 ## ROBOCZA 46401a99 -- 2026-10-24 -- widocznosc jednostek/budynkow bez surowca + blokada konca tury (R-WEB-FIXES1-RELEASE-ROBOCZA)
 
 - STATUS: PUBLISHED to `origin/main` at `71794751` (fast-forward z `fcd86933`), integration branch `integration/robocza-fixes1-20261024` na tym samym SHA. Readback `gra-robocza/Gra-ROBOCZA.html` z `origin/main`: MD5 `46401a9932fd92f47eed1848e772122b` (zgodny z manifestem).
