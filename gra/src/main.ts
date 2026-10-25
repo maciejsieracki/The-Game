@@ -24510,6 +24510,20 @@ async function boot(): Promise<void> {
         });
       },
       closePairSummary: (): void => { if (isDiploPairSummaryOpen()) hideDiploPairSummary(); },
+      /** R-WEB-DIPLO-UI-DIRECT-NEGOTIATION-Q1 (tylko test Playwright, live-test karty listy):
+       *  kontakty (odkrycie) 2..5 + wojna / sojusz wojskowy / umowa szlaków / pakt wyłącznie
+       *  z perspektywy GRACZA (ME()), tą samą strukturą co realne traktaty. Nic poza danymi
+       *  wejściowymi — karta listy liczy wiersze wyłącznie z `buildDiploPairSummaryData`. */
+      setupListRelationsFixture: (): { war: number; alliance: number; trade: number; pact: number } => {
+        const me = ME();
+        const known = diplomaticallyDiscoveredOwnersSet(me);
+        for (const id of [2, 3, 4, 5]) known.add(id);
+        setDiploRelation(me, 2, { zaufanie: 0, respekt: 0, status: 'wojna' });
+        activeDeals.push({ id: 'list-fixture-alliance-' + me + '-3', rodzaj: RodzajTraktatu.SojuszWojskowy, strony: [me, 3], wygasaTura: null });
+        activeDeals.push({ id: 'list-fixture-trade-' + me + '-5', rodzaj: RodzajTraktatu.UmowaSzlakow, strony: [me, 5], wygasaTura: null });
+        activeDeals.push({ id: 'list-fixture-pact-' + me + '-4', rodzaj: RodzajTraktatu.PaktNieagresji, strony: [me, 4], wygasaTura: null });
+        return { war: 2, alliance: 3, trade: 5, pact: 4 };
+      },
     };
 
     // Hak testowy (ten sam wzorzec i to samo uzasadnienie co `__eraTestDebug`/

@@ -441,6 +441,37 @@ async function main() {
   }
 
   // =========================================================================
+  // CZĘŚĆ 5b — R-WEB-DIPLO-UI-DIRECT-NEGOTIATION-Q1, zarzut 1 (dowód, że kliknięcie
+  // niedostępnej karty jest niemożliwe): karty listy i getState audiencji biorą kontakty
+  // z TEGO SAMEGO źródła (getDiplomaticContacts), więc brak stanu negocjacji dla karty
+  // z listy nie może wystąpić. Mutacja „lista czyta inne źródło" → czerwień.
+  // =========================================================================
+  console.log('\n-- Część 5b: DIRECT-NEG źródło kontaktów listy = źródło audiencji --');
+  {
+    const relBody = (() => {
+      const m = /function buildPlayerDiploRelations\(\)[^{]*\{/.exec(src);
+      if (!m) return null;
+      let depth = 0;
+      for (let i = m.index + m[0].length - 1; i < src.length; i++) {
+        if (src[i] === '{') depth++;
+        else if (src[i] === '}') { depth--; if (depth === 0) return src.slice(m.index, i + 1); }
+      }
+      return null;
+    })();
+    ok(relBody != null, '5b-1) źródło: buildPlayerDiploRelations znalezione');
+    if (relBody) {
+      ok(/const contacted = getDiplomaticContacts\(\);/.test(relBody)
+        && /for \(const otherId of contacted\)/.test(relBody),
+        '5b-2) buildPlayerDiploRelations iteruje getDiplomaticContacts() (karty tylko dla kontaktów, mgła wojny)');
+    }
+    const audIdx = src.indexOf('function openDiplomacyAudience(ownerId: number): void {');
+    const audSlice = audIdx >= 0 ? src.slice(audIdx, audIdx + 1200) : '';
+    ok(/if \(!contacted\.has\(ownerId\)\) return null;/.test(audSlice)
+      && /const contacted = getDiplomaticContacts\(\);/.test(audSlice),
+      '5b-3) getState audiencji zwraca null wyłącznie dla nie-kontaktu (ten sam zbiór) — kliknięcie karty zawsze ma stan');
+  }
+
+  // =========================================================================
   // CZĘŚĆ 6 — BB3 (Evaluator runda 2, realny problem UI): `getData()===null`
   // zostawiał nieusuwalny czarny overlay + zombie-wpis na stosie Escape, bo
   // `classList.add('open')`/`pushOverlay(...)` w `showDiploPairSummary` biegły

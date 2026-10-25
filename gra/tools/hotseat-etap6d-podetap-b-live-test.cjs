@@ -186,7 +186,9 @@ async function runScenario(page, outDir, label) {
   // (pośredni pop-up podsumowania wyłączony; wojny/sojusze/handel są na karcie listy) ---
   const relRowCount = await page.locator('.civ-diplo-list-hud .dl-item').first().locator('.dl-rel-row').count();
   assert(`(${label}.1b) karta listy zawiera wiersze relacji (Wojny/Sojusze/Handel)`, relRowCount === 3, relRowCount);
-  await page.locator('.civ-diplo-list-hud .dl-item').first().click();
+  // ZEPSUTY (ME()=>99) nie ma kontaktów → brak wierszy listy: klik pomijamy, asercje (.1/.1b/.3)
+  // nadal czerwienią, zamiast zrywać cały test wyjątkiem Playwright (dawniej: timeout 30 s).
+  if (rowCount >= 1) await page.locator('.civ-diplo-list-hud .dl-item').first().click();
   await page.waitForSelector('.civ-diplo-aud-box', { timeout: 10000 }).catch(() => {});
   await wait(200);
   const pairSummaryVisible = await page.locator('.civ-diplo-pair-summary').count();
