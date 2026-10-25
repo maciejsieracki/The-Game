@@ -24160,8 +24160,13 @@ async function boot(): Promise<void> {
     // puli Pracy, żeby test mierzył WYŁĄCZNIE zachowanie `applyBuildRequest`, nie inne,
     // niezwiązane bramki (koszt/technologia) które i tak stoją PRZED nim w kodzie.
     // R-WEB-DIPLO-DEALS-SENSIBLE-Q1 (B4): hak POMIAROWY dla tools/diplomacy-sensible-deals-live-test.cjs.
-    // Tylko odczyt stanu stołu + przełączniki flag + zakończenie tury. Nie zmienia reguł gry.
-    (window as any).__dealsLiveDebug = {
+    // Hak wystawiany WYŁĄCZNIE w trybie dev (import.meta.env.DEV) albo w sandboxie ?playtest=*
+    // (ten sam warunek URL co test live). `injectAiTradeOffer` ZMIENIA stan gry (skarbiec AI,
+    // stan wojny/pokoju, cooldown NO-NAG) -- dlatego nie może istnieć w zwykłej sesji produkcyjnej.
+    // Pozostałe funkcje: odczyt stanu stołu, przełączniki flag, zakończenie tury.
+    const dealsLiveHookAllowed = import.meta.env.DEV
+      || new URLSearchParams(typeof location !== 'undefined' ? location.search : '').has('playtest');
+    if (dealsLiveHookAllowed) (window as any).__dealsLiveDebug = {
       snapshot: () => {
         const rel = (n: PendingNegotiation) => getDiploRelation(n.proposerOwnerId, ME());
         const pending = negotiationTable.filter(isAiTradeOfferAwaitingPlayer).map(n => ({

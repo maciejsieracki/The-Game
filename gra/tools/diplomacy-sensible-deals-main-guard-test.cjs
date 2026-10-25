@@ -57,6 +57,8 @@ function guardResults(main) {
     ['kontroferta AI (resolveNegotiationEntryAt) podlega filtrowi bilansu PW gracza (B9)',
       resolveFn.includes("sensibleBalanceFilterApplies(isDiploSensibleDealsEnabled(), 'zaproponuj_handel')")
       && resolveFn.includes('!isPlayerBalanceAcceptable(')],
+    ['hak __dealsLiveDebug (injectAiTradeOffer zmienia stan gry) wystawiany warunkowo: DEV albo ?playtest',
+      /const dealsLiveHookAllowed = import\.meta\.env\.DEV\s*\n?\s*\|\|\s*new URLSearchParams\([^)]*\)\.has\('playtest'\);\s*\n\s*if \(dealsLiveHookAllowed\) \(window as any\)\.__dealsLiveDebug = \{/.test(main)],
     ['opcja nowej gry: doStartGame ustawia dealsEndTurnGateEnabled z params (domyślnie ON)',
       /dealsEndTurnGateEnabled = params\.dealsEndTurnGate \?\? true;/.test(main)],
     ['zapis: meta.dealsEndTurnGate; odczyt: stary zapis = OFF',
