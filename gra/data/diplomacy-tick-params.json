@@ -1,5 +1,5 @@
 {
-  "_opis": "R-WEB-DIPLO-TICK-WAR-BRAKE-Q1 — parametry P6 (hamulec wojny) i P7 (bonus Zaufania za wymianę 'na plusie'). Flaga DIPLO_TICK_WAR_BRAKE_ENABLED w kodzie; OFF = zachowanie jak dziś.",
+  "_opis": "R-WEB-DIPLO-TICK-WAR-BRAKE-Q1 r2 — parametry P6 (hamulec wojny) i P7 (bonus Zaufania za wymianę 'na plusie', kalibracja WERSJA OSTATECZNA 2026-10-25: schodki, bez wzoru). Flaga DIPLO_TICK_WAR_BRAKE_ENABLED w kodzie (diplomacy-tick-war-brake.ts); OFF = zachowanie jak baza.",
   "flagaDomyslna": false,
   "p6": {
     "kryzysProgZaufania": 0,
@@ -7,12 +7,13 @@
     "kryzysOstrzezenieTurPrzed": 2
   },
   "p7": {
+    "_epoka": "klucz = numer epoki gry (1 = Kamien, 2 = Braz, 3 = Zelazo; ZALOZENIE r2). Epoki powyzej najwiekszego klucza: krok = ostatni krok x wymianaMnoznikNaEpoke^(epoka - ostatnia epoka z tabeli).",
     "wymianaKrokPktPerEpoka": {
-      "kamien": 100,
-      "braz": 200,
-      "zelazo": 400
+      "1": 100,
+      "2": 200,
+      "3": 400
     },
-    "wymianaKrokPktDomyslny": 400,
+    "wymianaMnoznikNaEpoke": 2,
     "wymianaZaufanieNaKrok": 0.5,
     "wymianaMaxPerTura": 5,
     "wymianaSufitZaufania": 60,

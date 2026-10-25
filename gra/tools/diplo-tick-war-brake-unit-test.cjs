@@ -1,6 +1,6 @@
 'use strict';
 /**
- * diplo-tick-war-brake-unit-test.cjs — R-WEB-DIPLO-TICK-WAR-BRAKE-Q1 (P6 + P7, czyste funkcje).
+ * diplo-tick-war-brake-unit-test.cjs — R-WEB-DIPLO-TICK-WAR-BRAKE-Q1 r2 (P6 + P7, czyste funkcje).
  * Run: node tools/diplo-tick-war-brake-unit-test.cjs
  */
 const fs = require('fs');
@@ -30,43 +30,65 @@ function eq(name, got, want) {
 
 const p7 = PARAMS.p7;
 const p6 = PARAMS.p6;
-const bonus = (nadwyzkaPn, epoka = 'kamien', zaufanie = 10, kolejneTuryDostaw = 2) =>
+// epoka: 1 = kamien, 2 = braz, 3 = zelazo (ZALOZENIE r2)
+const bonus = (nadwyzkaPn, epoka = 1, zaufanie = 10, kolejneTuryDostaw = 2) =>
   M.tradeTrustBonusPerTura({ nadwyzkaPn, epoka, zaufanie, kolejneTuryDostaw }, p7);
 
-// --- P7: tabela schodkowa ---
+// --- flaga ---
+eq('flaga domyslnie OFF', M.isDiploTickWarBrakeEnabled(), false);
+M.setDiploTickWarBrakeOverride(true);
+eq('override ON', M.isDiploTickWarBrakeEnabled(), true);
+M.setDiploTickWarBrakeOverride(null);
+eq('override zdjety -> OFF', M.isDiploTickWarBrakeEnabled(), false);
+
+// --- P7: tabela schodkowa kamien (100) ---
 eq('kamien 0 -> 0', bonus(0), 0);
 eq('kamien 99 -> 0', bonus(99), 0);
 eq('kamien 100 -> 0.5', bonus(100), 0.5);
+eq('kamien 149 -> 0.5 (brak interpolacji)', bonus(149), 0.5);
+eq('kamien 150 -> 0.5', bonus(150), 0.5);
 eq('kamien 199 -> 0.5', bonus(199), 0.5);
 eq('kamien 200 -> 1.0', bonus(200), 1.0);
-eq('kamien 1000 -> 5 (limit)', bonus(1000), 5);
+eq('kamien 1000 -> 5 (limit = 10 krokow)', bonus(1000), 5);
 eq('kamien 5000 -> 5 (limit)', bonus(5000), 5);
-eq('braz 199 -> 0', bonus(199, 'braz'), 0);
-eq('braz 200 -> 0.5', bonus(200, 'braz'), 0.5);
-eq('braz 2000 -> 5', bonus(2000, 'braz'), 5);
-eq('zelazo 399 -> 0', bonus(399, 'zelazo'), 0);
-eq('zelazo 400 -> 0.5', bonus(400, 'zelazo'), 0.5);
-eq('zelazo 4000 -> 5', bonus(4000, 'zelazo'), 5);
-eq('epoka nieznana -> krok domyslny 400', bonus(399, 'nieznana'), 0);
-eq('epoka nieznana 400 -> 0.5', bonus(400, 'nieznana'), 0.5);
-eq('brak interpolacji 150 -> 0.5 (nie 0.75)', bonus(150), 0.5);
+
+// --- P7: brąz (200) i żelazo (400) ---
+eq('braz 199 -> 0', bonus(199, 2), 0);
+eq('braz 200 -> 0.5', bonus(200, 2), 0.5);
+eq('braz 399 -> 0.5', bonus(399, 2), 0.5);
+eq('braz 2000 -> 5', bonus(2000, 2), 5);
+eq('zelazo 399 -> 0', bonus(399, 3), 0);
+eq('zelazo 400 -> 0.5', bonus(400, 3), 0.5);
+eq('zelazo 4000 -> 5', bonus(4000, 3), 5);
+
+// --- P7: podwajanie na epoke ponad zelazo ---
+eq('epoka 4 krok 800: 799 -> 0', bonus(799, 4), 0);
+eq('epoka 4 krok 800: 800 -> 0.5', bonus(800, 4), 0.5);
+eq('epoka 5 krok 1600: 1600 -> 0.5', bonus(1600, 5), 0.5);
+eq('epoka 5 krok 1600: 8000 -> 2.5 (5 krokow)', bonus(8000, 5), 2.5);
+eq('epoka 5 krok 1600: 16000 -> 5 (limit)', bonus(16000, 5), 5);
+eq('krokPktWymiany(7) = 6400', M.krokPktWymiany(7, p7), 6400);
 
 // --- P7: minimum 2 tury dostaw, pierwsza tura cyklu = 0 ---
-eq('jednorazowa przesylka (1 tura) -> 0', bonus(1000, 'kamien', 10, 1), 0);
-eq('2 tury -> bonus', bonus(1000, 'kamien', 10, 2), 5);
+eq('jednorazowa przesylka (1 tura) -> 0', bonus(1000, 1, 10, 1), 0);
+eq('pierwsza tura cyklu (1) -> 0', bonus(5000, 3, 10, 1), 0);
+eq('2 tury -> bonus', bonus(1000, 1, 10, 2), 5);
 
 // --- P7: sufit 60 ---
-eq('sufit: zaufanie 59.8 + 0.5 -> przyciete do 0.2', +bonus(100, 'kamien', 59.8).toFixed(10), 0.2);
-eq('sufit: zaufanie 60 -> 0', bonus(1000, 'kamien', 60), 0);
-eq('sufit: zaufanie 75 -> 0', bonus(1000, 'kamien', 75), 0);
+eq('sufit: zaufanie 59.8 + 0.5 -> przyciete do 0.2', +bonus(100, 1, 59.8).toFixed(10), 0.2);
+eq('sufit: zaufanie 60 -> 0', bonus(1000, 1, 60), 0);
+eq('sufit: zaufanie 75 -> 0', bonus(1000, 1, 75), 0);
 
 // --- P7: ujemna/zerowa nadwyzka ---
 eq('nadwyzka ujemna -> 0', bonus(-500), 0);
 eq('NaN -> 0', bonus(NaN), 0);
 
-// --- P7: parametry z JSON ---
+// --- P7: parametry z JSON (wersja ostateczna) ---
 eq('max per tura z JSON = 5', p7.wymianaMaxPerTura, 5);
 eq('sufit z JSON = 60', p7.wymianaSufitZaufania, 60);
+eq('krok na zaufanie z JSON = 0.5', p7.wymianaZaufanieNaKrok, 0.5);
+eq('krok kamien/braz/zelazo z JSON', [p7.wymianaKrokPktPerEpoka['1'], p7.wymianaKrokPktPerEpoka['2'], p7.wymianaKrokPktPerEpoka['3']], [100, 200, 400]);
+eq('usuniete parametry wzoru nie istnieja', [p7.zaufaniePerNadwyzkaPn, p7.wymianaRefPn, p7.wymianaOknoTur], [undefined, undefined, undefined]);
 
 // --- P6: licznik kryzysu ---
 let c = 0;
@@ -77,8 +99,12 @@ for (const z of [0, 0, 0, 0, 0]) {
   c = s.counter;
 }
 eq('P6 licznik po 5 turach <=0 = 5', c, 5);
-eq('P6 ostrzezenie na turze 3 (2 tury przed)', trace.map(t => t.warnNow), [false, false, true, false, false]);
+eq('P6 ostrzezenie od tury 3 (2 tury przed wojna)', trace.map(t => t.warningActive), [false, false, true, true, true]);
 eq('P6 wojna gotowa dopiero na turze 5', trace.map(t => t.warTriggerReady), [false, false, false, false, true]);
+
+// ostrzezenie widoczne takze po load w trakcie kryzysu (licznik 4, nie tylko rownosc)
+const afterLoad = M.advanceCrisisCounter(4, 0, p6);
+eq('P6 po load licznik 4 -> ostrzezenie aktywne', afterLoad.warningActive, true);
 
 // powyzej progu licznik sie zeruje
 const up = M.advanceCrisisCounter(4, 1, p6);

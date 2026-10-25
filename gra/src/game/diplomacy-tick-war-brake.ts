@@ -1,53 +1,82 @@
-// R-WEB-DIPLO-TICK-WAR-BRAKE-Q1 — czyste funkcje hamulca wojny (P6) i bonusu
-// Zaufania za wymianę „na plusie" (P7). Bez zależności od stanu gry — silnik
-// (main.ts / diplomacy.ts) podaje wejścia, dostaje wynik. Parametry z
+// R-WEB-DIPLO-TICK-WAR-BRAKE-Q1 — czyste funkcje hamulca wojny (P6), bonusu Zaufania
+// za wymianę „na plusie" (P7, schodki) i flagi calego pakietu. Bez zaleznosci od stanu
+// gry — silnik (main.ts) podaje wejscia, dostaje wynik. Parametry z
 // gra/data/diplomacy-tick-params.json (sekcje p6 / p7).
 
+/** Domyslnie OFF: bez flagi zachowanie i hash stanu identyczne z baza. */
+export const DIPLO_TICK_WAR_BRAKE_ENABLED_DEFAULT = false;
+
+let flagOverride: boolean | null = null;
+
+/** Tylko testy/diagnostyka: wymusza ON/OFF; null = wroc do stalej. */
+export function setDiploTickWarBrakeOverride(value: boolean | null): void {
+  flagOverride = value;
+}
+
+export function isDiploTickWarBrakeEnabled(): boolean {
+  return flagOverride !== null ? flagOverride : DIPLO_TICK_WAR_BRAKE_ENABLED_DEFAULT;
+}
+
 export interface WarBrakeP6Params {
-  /** Próg krytyczny Zaufania (włącznie): Zaufanie ≤ próg liczy się jako kryzys. */
+  /** Prog krytyczny Zaufania (wlacznie): Zaufanie <= prog liczy sie jako kryzys. */
   kryzysProgZaufania: number;
-  /** Liczba kolejnych tur kryzysu, po których strona silniejsza wypowiada wojnę. */
+  /** Liczba kolejnych tur kryzysu, po ktorych strona silniejsza wypowiada wojne. */
   kryzysTurDoWojny: number;
-  /** Ile tur przed wojną gracz dostaje ostrzeżenie (gdy para dotyczy gracza). */
+  /** Ile tur przed wojna gracz dostaje ostrzezenie (gdy para dotyczy gracza). */
   kryzysOstrzezenieTurPrzed: number;
 }
 
 export interface TradeBonusP7Params {
-  /** Krok nadwyżki (PN) per epoka płacącego: kamien/braz/zelazo. */
+  /** Krok nadwyzki (PN) per numer epoki platacego (dostawcy). */
   wymianaKrokPktPerEpoka: Record<string, number>;
-  /** Krok dla epok nieznanych w tabeli (ZAŁOŻENIE: ostatnia znana wartość). */
-  wymianaKrokPktDomyslny: number;
-  /** Zaufanie za każdy PEŁNY krok nadwyżki w turze (brak interpolacji). */
+  /** Mnoznik kroku na kazda epoke ponad najwieksza epoke w tabeli (x2). */
+  wymianaMnoznikNaEpoke: number;
+  /** Zaufanie za kazdy PELNY krok nadwyzki w turze (brak interpolacji). */
   wymianaZaufanieNaKrok: number;
-  /** Limit bonusu z wymiany na parę na turę. */
+  /** Limit bonusu z wymiany na pare na ture (+5,0 = 10 pelnych krokow kamienia). */
   wymianaMaxPerTura: number;
-  /** Sufit Zaufania: bonus z wymiany nie podnosi Zaufania powyżej tej wartości. */
+  /** Sufit Zaufania: bonus z wymiany nie podnosi Zaufania powyzej tej wartosci. */
   wymianaSufitZaufania: number;
-  /** Minimalna liczba kolejnych tur dostaw, zanim bonus zacznie działać. */
+  /** Minimalna liczba kolejnych tur dostaw, zanim bonus zacznie dzialac (1. tura = 0). */
   wymianaMinTurDostaw: number;
 }
 
 export interface TradeBonusInput {
-  /** Wartość netto na plusie (PN) dostarczona przez stronę X stronie Y w tej turze. */
+  /** Wartosc netto na plusie (PN) dostarczona przez strone X stronie Y w tej turze. */
   nadwyzkaPn: number;
-  /** Epoka płacącego (dostawcy) — klucz z wymianaKrokPktPerEpoka. */
-  epoka: string;
+  /** Numer epoki platacego (dostawcy X). */
+  epoka: number;
   /** Aktualne Zaufanie odbiorcy (Y) wobec dostawcy (X). */
   zaufanie: number;
   /** Liczba kolejnych tur dostaw (1 = pierwsza tura cyklu). */
   kolejneTuryDostaw: number;
 }
 
-export function krokPktWymiany(epoka: string, p: TradeBonusP7Params): number {
-  const v = p.wymianaKrokPktPerEpoka[epoka];
-  return typeof v === 'number' && v > 0 ? v : p.wymianaKrokPktDomyslny;
+/** Krok nadwyzki (PN) dla epoki: tabela; powyzej jej najwiekszego klucza — mnoznik na epoke. */
+export function krokPktWymiany(epoka: number, p: TradeBonusP7Params): number {
+  const keys = Object.keys(p.wymianaKrokPktPerEpoka)
+    .map(Number)
+    .filter(n => Number.isFinite(n))
+    .sort((x, y) => x - y);
+  if (keys.length === 0) return Number.POSITIVE_INFINITY;
+  const e = Math.max(keys[0]!, Math.floor(epoka));
+  const top = keys[keys.length - 1]!;
+  if (e <= top) {
+    const v = p.wymianaKrokPktPerEpoka[String(e)];
+    if (typeof v === 'number' && v > 0) return v;
+    // luka w tabeli (epoka posrednia) — najblizszy nizszy klucz
+    const lower = keys.filter(k => k <= e).pop() ?? keys[0]!;
+    return p.wymianaKrokPktPerEpoka[String(lower)]!;
+  }
+  const base = p.wymianaKrokPktPerEpoka[String(top)]!;
+  return base * Math.pow(p.wymianaMnoznikNaEpoke, e - top);
 }
 
 /**
- * P7: bonus Zaufania (≥ 0) za wymianę „na plusie" w jednej turze.
- * Schodkowo: floor(nadwyżka / krok) × 0,5, limit wymianaMaxPerTura,
- * zero gdy za krótko trwa dostawa, Zaufanie ≥ sufitu, lub nadwyżka < krok.
- * Bonus jest przycięty tak, by nie przekroczyć sufitu.
+ * P7: bonus Zaufania (>= 0) za wymiane „na plusie" w jednej turze.
+ * Schodkowo, bez interpolacji: floor(nadwyzka / krok) x wymianaZaufanieNaKrok,
+ * limit wymianaMaxPerTura; zero gdy dostawa trwa krocej niz wymianaMinTurDostaw,
+ * nadwyzka < krok albo Zaufanie >= sufit. Przyciete do wolnego miejsca pod sufitem.
  */
 export function tradeTrustBonusPerTura(input: TradeBonusInput, p: TradeBonusP7Params): number {
   if (!(input.nadwyzkaPn > 0)) return 0;
@@ -61,33 +90,34 @@ export function tradeTrustBonusPerTura(input: TradeBonusInput, p: TradeBonusP7Pa
 }
 
 export interface CrisisStep {
-  /** Nowa wartość licznika kryzysu (kolejne tury Zaufania ≤ progu). */
+  /** Nowa wartosc licznika kryzysu (kolejne tury Zaufania <= progu). */
   counter: number;
-  /** true, gdy w tej turze licznik osiągnął próg ostrzeżenia (N − ostrzeżenieTurPrzed). */
-  warnNow: boolean;
-  /** true, gdy licznik osiągnął N — strona silniejsza może wypowiedzieć wojnę (po sprawdzeniu R1–R3). */
+  /** true, gdy licznik jest na poziomie ostrzezenia lub wyzej (N - ostrzezenieTurPrzed .. N). */
+  warningActive: boolean;
+  /** true, gdy licznik osiagnal N — strona silniejsza moze wypowiedziec wojne (po sprawdzeniu R1/R2). */
   warTriggerReady: boolean;
 }
 
 /**
- * P6: jeden krok histerezy dla pary. Licznik rośnie, gdy Zaufanie ≤ próg,
- * zeruje się natychmiast, gdy Zaufanie > próg (w tym po umowie współpracy).
+ * P6: jeden krok histerezy dla pary. Licznik rosnie, gdy Zaufanie <= prog,
+ * zeruje sie natychmiast, gdy Zaufanie > prog (takze po umowie wspolpracy).
+ * Ostrzezenie trwa od progu N - ostrzezenieTurPrzed takze po load w trakcie kryzysu.
  */
 export function advanceCrisisCounter(prevCounter: number, zaufanie: number, p: WarBrakeP6Params): CrisisStep {
   const prev = Number.isFinite(prevCounter) && prevCounter > 0 ? Math.floor(prevCounter) : 0;
   if (!(zaufanie <= p.kryzysProgZaufania)) {
-    return { counter: 0, warnNow: false, warTriggerReady: false };
+    return { counter: 0, warningActive: false, warTriggerReady: false };
   }
   const counter = prev + 1;
   const warnAt = p.kryzysTurDoWojny - p.kryzysOstrzezenieTurPrzed;
   return {
     counter,
-    warnNow: counter === warnAt,
+    warningActive: counter >= warnAt,
     warTriggerReady: counter >= p.kryzysTurDoWojny,
   };
 }
 
-/** Klucz pary niezależny od kolejności ownerów. */
+/** Klucz pary niezalezny od kolejnosci ownerow. */
 export function crisisPairKey(a: number, b: number): string {
   const lo = Math.min(a, b);
   const hi = Math.max(a, b);
@@ -95,8 +125,8 @@ export function crisisPairKey(a: number, b: number): string {
 }
 
 /**
- * Odczyt licznika z save: nieliczbowe / ujemne / brakujące wartości → 0.
- * Stare zapisy bez pola `kryzysLicznik` dają pustą mapę (każda para = 0).
+ * Odczyt mapy licznikow z save: nieliczbowe / ujemne / brakujace wartosci → pomijane.
+ * Stare zapisy bez pola daja pusta mape (kazda para = 0).
  */
 export function parseCrisisCounters(raw: unknown): Record<string, number> {
   const out: Record<string, number> = {};
@@ -114,8 +144,8 @@ export interface CrisisQueueEntry {
 }
 
 /**
- * Kolejka wojen z progu: najdłużej na progu pierwsze, przy remisie niższe
- * ownerId (min z pary) pierwsze. Nie modyfikuje wejścia.
+ * Kolejka wojen z progu: najdluzej na progu pierwsze, przy remisie nizsze
+ * min(ownerId) pary, potem nizsze max(ownerId). Nie modyfikuje wejscia.
  */
 export function sortCrisisQueue(entries: readonly CrisisQueueEntry[]): CrisisQueueEntry[] {
   return entries.slice().sort((x, y) => {
@@ -128,8 +158,8 @@ export function sortCrisisQueue(entries: readonly CrisisQueueEntry[]): CrisisQue
 }
 
 /**
- * Strona wypowiadająca wojnę po upływie N tur: silniejsza (większa potęga),
- * przy remisie niższe ownerId. ZAŁOŻENIE (dispatch nie precyzuje remisu).
+ * Strona wypowiadajaca wojne po upływie N tur: silniejsza (wieksza potega),
+ * przy remisie nizsze ownerId. ZALOZENIE (dispatch nie precyzuje remisu).
  */
 export function pickWarDeclarer(
   a: { ownerId: number; power: number },
