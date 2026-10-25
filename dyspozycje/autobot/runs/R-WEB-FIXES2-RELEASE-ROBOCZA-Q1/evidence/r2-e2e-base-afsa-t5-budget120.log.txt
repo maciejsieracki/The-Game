@@ -1,0 +1,13 @@
+INFO ZASTOJ tury :: {"turn":2,"endAriaDisabled":"true","ostatnieLogi":["[EndTurn] blocked: awaitingFirstPlayerCity","[EndTurn] blocked: awaitingFirstPlayerCity","[EndTurn] blocked: awaitingFirstPlayerCity","[EndTurn] blocked: awaitingFirstPlayerCity","[EndTurn] triggerPlayerEndTurn: START tura 1","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[Autosave] rotacyjny (dysk) slot=1 tura=2","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] triggerPlayerEndTurn: DONE tura 2"]}
+INFO rozegrane tury :: {"turn_koncowa":2,"czas_s":123}
+PASS A-FSA gra: rozegrano tury (>=2) :: {"turn":2}
+INFO A-FSA pliki autozapisu na dysku :: 1
+PASS A-FSA autozapis na dysk: pliki istnieja :: 1
+INFO A-FSA czas do aktywnego „Wczytaj grę" po reloadzie (ms) :: {"ms":30593,"disabled":true}
+INFO A-FSA logi p2 (presence/FSA/load) :: ["[The Game] Dane wczytane"]
+FAIL A-FSA po reloadzie: „Wczytaj grę" AKTYWNY :: {"missing":false,"disabled":true,"title":null,"hint":"Wczytaj grębrak zapisów"}
+FAIL A-FSA lista zapisów w dialogu wczytywania :: {"listed":false,"rows":0}
+FAIL A-FSA wczytanie: tura>1, miasta>=1, jednostki>=1
+PASS A-FSA brak pageerror / console.error :: []
+load-game-regression-e2e-r5: FAIL (3)
+EXIT=1

@@ -458,6 +458,10 @@ function simulateProd(nUndef, difficulty) {
         `BRONIONE miasto w budzecie ${TURNS} tur (got attackTurn=${r.attackTurn}) -- BASE: NIGDY`);
       eq(r.idle, 0,
         `10 (SCIEZKA PRODUKCYJNA, ${n} niebronionych, difficulty=${label}): zero tur bez komendy`);
+      // R-WEB-AI-MOVE-RANGE-Q1: prog 40 liczy PRZEBYTE HEKSY (suma odleglosci hex). W bazie
+      // kazdy krok = 1 heks, wiec hexesMoved == realMoves co do wartosci (prog bez zmiany
+      // znaczenia). Przy pelnym zasiegu ten sam dystans to mniej komend (29 zmian, 56 heksow),
+      // stad licznik heksow. Prog NIE jest lagodniejszy: mierzy ten sam dystans.
       assert(r.hexesMoved >= 40,
         `10 (SCIEZKA PRODUKCYJNA, ${n} niebronionych, difficulty=${label}): jednostka REALNIE ` +
         `przemieszcza sie w kierunku celu (got ${r.hexesMoved} heksow w ${r.realMoves} ruchach) -- to odroznia ruch ` +

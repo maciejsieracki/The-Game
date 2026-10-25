@@ -1,0 +1,32 @@
+
+--- 1: AI<->AI, PRZED (flaga OFF) vs PO (flaga ON) ---
+
+--- 2: AI -> GRACZ; gracz bez automatycznych rozkazow; zmiana stolicy ---
+
+--- 3: barbarzyncy -> NAJBLIZSZA stolica ---
+
+--- 4: brak sciezki ladowej (morze) -- bez zawieszenia, jednostki zostaja ---
+
+--- 5: przeciwnik wyeliminowany (brak miast) => dotychczasowe zachowanie ---
+
+--- 6: flaga OFF == baza origin/main (hash stanu po TURNS turach) ---
+  FAIL: 6a baza (fcd86933) zawiera modul warAllInCapital (got false, want true)
+  [INFO] aiVsAi: baza pre-zasieg=7fc4cb5399d10a2e OFF=d7316c5be9bffe39 (roznica = zamierzona zmiana zasiegu)
+  FAIL: 6b0 aiVsAi: baza fcd86933 == zapisana referencja bazy (got "7fc4cb5399d10a2e", want "49f36d28989cf940")
+  [INFO] aiVsPlayer: baza pre-zasieg=aa57ed77b8ca8270 OFF=83f07f345643f6fb (roznica = zamierzona zmiana zasiegu)
+  FAIL: 6b0 aiVsPlayer: baza fcd86933 == zapisana referencja bazy (got "aa57ed77b8ca8270", want "22a63c096e698720")
+  [INFO] barbarians: baza pre-zasieg=c07e60985cb8a2ab OFF=c07e60985cb8a2ab (roznica = zamierzona zmiana zasiegu)
+  FAIL: 6b0 barbarians: baza fcd86933 == zapisana referencja bazy (got "c07e60985cb8a2ab", want "65542d56510bcef9")
+  [INFO] noLandPath: baza pre-zasieg=7fc4cb5399d10a2e OFF=69d49bd592471e58 (roznica = zamierzona zmiana zasiegu)
+  FAIL: 6b0 noLandPath: baza fcd86933 == zapisana referencja bazy (got "7fc4cb5399d10a2e", want "176b6b39e9773451")
+
+--- 7: determinizm przy fladze ON (2 przebiegi) ---
+
+--- 8: planWarAllInCapital -- grupowanie / rendezvous ---
+
+--- 10: realne scalanie grup, gesta grupa, brak krokow wstecz i dubli ---
+
+--- 9: okablowanie main.ts (testy statyczne) ---
+
+90 passed, 5 failed
+EXIT=1
