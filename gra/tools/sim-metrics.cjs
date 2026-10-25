@@ -60,6 +60,52 @@ function median(xs) {
   return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2;
 }
 
+/** Rozkład liczb: min / mediana / max (null gdy pusto). */
+function spread(xs) {
+  if (!xs.length) return null;
+  const s = [...xs].sort((x, y) => x - y);
+  return { min: s[0], med: median(s), max: s[s.length - 1] };
+}
+
+/**
+ * R-WEB-MEASURE-ROBOCZA-Q1: metryki dyplomacji z danych per tura.
+ * Gracz = id 0 (ZAŁOŻENIE: hak nie eksponuje id gracza; kolejność civ jak w main.ts).
+ * Nieobsłużone (NIE_ZMIERZONO): podział wojen na epoki, agresor wojny, kolejka kryzysu.
+ */
+function diploSummary(m) {
+  const firstWarTurn = m.find(t => t.wars > 0);
+  const warStartTurns = [];
+  let prev = 0;
+  for (const t of m) { if (t.wars > prev) warStartTurns.push(t.turn); prev = t.wars; }
+  const trustByTurn = {};
+  for (const t of m) {
+    if (!t.trust) continue;
+    const vals = Object.values(t.trust);
+    trustByTurn[t.turn] = spread(vals);
+  }
+  const offerMap = new Map();
+  for (const t of m) for (const o of (t.offerDetail || [])) if (!offerMap.has(o.id)) offerMap.set(o.id, { ...o, turn: t.turn });
+  const reasons = {};
+  for (const o of offerMap.values()) reasons[o.reason] = (reasons[o.reason] || 0) + 1;
+  const offersPerTurn = m.map(t => (t.offerDetail || []).length);
+  const pendingTurns = m.filter(t => (t.offerDetail || []).length > 0);
+  const blockedTurns = m.filter(t => t.endBlocked);
+  return {
+    warStartTurns,
+    firstWarTurn: firstWarTurn ? firstWarTurn.turn : null,
+    warsBeforeT40: m.filter(t => t.turn < 40).length ? m.filter(t => t.turn < 40).slice(-1)[0].wars : 0,
+    warsAtTurn: Object.fromEntries(m.filter(t => [10, 20, 30, 40, 50, 60].includes(t.turn)).map(t => [t.turn, t.wars])),
+    trustSpreadAtTurn: Object.fromEntries(Object.entries(trustByTurn).filter(([k]) => [10, 20, 30, 40, 50, 60].includes(Number(k)))),
+    offersUnique: offerMap.size,
+    offersNegative: [...offerMap.values()].filter(o => o.goldOnce !== null && o.goldOnce < 0).length,
+    offersPerTurnSpread: spread(offersPerTurn),
+    reasons,
+    turnsWithOffer: pendingTurns.length,
+    endBlockedTurns: blockedTurns.map(t => t.turn),
+    endBlockedWithOffer: blockedTurns.filter(t => (t.offerDetail || []).length > 0).map(t => t.turn),
+  };
+}
+
 function summarizeRun(res, turns) {
   const m = res.metrics;
   const before40 = m.filter(t => t.turn < 40);
@@ -84,6 +130,7 @@ function summarizeRun(res, turns) {
     turnMsMedian: median(m.map(t => t.ms)),
     hashEnd: m.length ? m[m.length - 1].hash : res.snapEnd.hash,
     startMs: res.startMs,
+    diplo: diploSummary(m),
   };
 }
 
@@ -153,4 +200,4 @@ if (require.main === module) {
   main().catch(e => { console.error('[sim-metrics] BŁĄD:', e && e.message || e); process.exitCode = 1; });
 }
 
-module.exports = { parseArgs, summarizeRun, median };
+module.exports = { parseArgs, summarizeRun, diploSummary, spread, median };

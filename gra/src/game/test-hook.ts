@@ -22,6 +22,8 @@
 
 import { setWarRulesMultiwarOverride } from './war-rules-multiwar';
 import { setWarAllInCapitalOverride } from './warAllInCapital';
+import { setDiploTickWarBrakeOverride } from './diplomacy-tick-war-brake';
+import { setDiploSensibleDealsEnabled } from './diplomacy-sensible-deals';
 
 /** Dane surowe stanu czytane z closure main.ts (zero logiki decyzyjnej po stronie hooka). */
 export interface TestRawState {
@@ -84,6 +86,12 @@ export interface TestTurnMetric {
   hash: string;
   /** Identyfikatory ofert widocznych w tej turze (do liczenia unikalnych ofert w przebiegu). */
   offerIds: string[];
+  /** R-WEB-MEASURE-ROBOCZA-Q1: Zaufanie par po turze ("a-b" -> wartość). */
+  trust: Record<string, number>;
+  /** R-WEB-MEASURE-ROBOCZA-Q1: pełne dane ofert widocznych po turze (reason, goldOnce). */
+  offerDetail: Array<{ id: string; ownerId: number; cmdType: string; reason: string; goldOnce: number | null }>;
+  /** Zakończenie tury nie nastąpiło (TIMEOUT) -- sygnał zablokowanego końca. */
+  endBlocked: boolean;
 }
 
 export interface TestRunOpts {
@@ -111,6 +119,9 @@ export interface TestSnapshot {
 const FLAG_SETTERS: Record<string, (v: boolean | null) => void> = {
   warRulesMultiwar: setWarRulesMultiwarOverride,
   warAllInCapital: setWarAllInCapitalOverride,
+  // R-WEB-MEASURE-ROBOCZA-Q1: settery dyplomacji (null = wartość domyślna ON).
+  diploTickWarBrake: setDiploTickWarBrakeOverride,
+  diploSensibleDeals: (v: boolean | null) => setDiploSensibleDealsEnabled(v === null ? true : v),
 };
 
 const DIFFICULTY_PL: Record<string, string> = {
@@ -285,6 +296,9 @@ export function installTestHook(d: TestHookDeps): void {
           battlesAuto,
           hash: s.hash,
           offerIds: s.offers.map(o => o.id),
+          trust: s.trust,
+          offerDetail: s.offers.map(o => ({ id: o.id, ownerId: o.ownerId, cmdType: o.cmdType, reason: o.reason, goldOnce: o.goldOnce })),
+          endBlocked: !ok,
         });
         if (!ok) {
           out[out.length - 1]!.hash = 'TIMEOUT:' + s.hash;

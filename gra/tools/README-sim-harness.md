@@ -53,11 +53,14 @@ i kasowany po zakończeniu. Repo nie jest modyfikowane (zero `npm run build|dev`
 - `snapshot()` — `{turn, wars: [[a,b]...], warCount, deals, trust: {"a-b": zaufanie},
   cities, owners, units, offers: [{id, ownerId, cmdType, reason, goldOnce}], hash}`.
 - `setFlag(name, value)` — nadpisanie flagi przez jej settera `setXOverride`.
-  Dostępne WYŁĄCZNIE settery istniejące na tej gałęzi: `warRulesMultiwar`
-  (`setWarRulesMultiwarOverride`), `warAllInCapital` (`setWarAllInCapitalOverride`).
-  Settery dyplomacji (tick AI↔AI, hamulec wojny, wygładzanie Respektu) NIE istnieją w
-  `gra/src` na tej gałęzi; ich dodanie należy do tematów zależnych (poza allowlistą tego
-  tematu). Nieznana nazwa rzuca błąd.
+  Dostępne nazwy: `warRulesMultiwar` (`setWarRulesMultiwarOverride`), `warAllInCapital`
+  (`setWarAllInCapitalOverride`), `diploTickWarBrake` (`setDiploTickWarBrakeOverride`),
+  `diploSensibleDeals` (`setDiploSensibleDealsEnabled`; `null` = ON). Nieznana nazwa rzuca błąd.
+  Wartości domyślne produkcji: wszystkie cztery flagi ON.
+- Per tura `runTurns` zwraca dodatkowo `trust` (Zaufanie par "a-b"), `offerDetail`
+  (id, ownerId, cmdType, reason, goldOnce) i `endBlocked` (true = TIMEOUT końca tury).
+  `sim-metrics.cjs --json` wypisuje blok `summary.diplo` (wojny per tura, rozkład Zaufania,
+  oferty z `reason`, tury zablokowane). Gracz = id 0 (ZAŁOŻENIE).
 
 ### Skrót stanu (`hash`)
 
