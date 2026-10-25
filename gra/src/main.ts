@@ -8345,8 +8345,8 @@ async function boot(): Promise<void> {
      */
     let _aiUpkeepUnitTbl: ReturnType<typeof buildUnitUpkeepTable> | null = null;
     let _aiUpkeepFoodTbl: ReturnType<typeof buildUnitFoodTable> | null = null;
-    function aiUpkeepRecruitGate(ownerId: number, typeId: string, category: string, goldCost: number): boolean {
-      if (!isAiUpkeepAwareRecruitmentEnabled() || isHuman(ownerId)) return true;
+    /** Utrzymanie (złoto, żywność) JEDNEJ nowej jednostki na turę -- wspólne dla bramki i zapisu zakupu. */
+    function aiNewUnitUpkeep(typeId: string, category: string): { gold: number; food: number } {
       const upkeepParams = loadUpkeepParams(data.econParams, _menuDifficulty);
       if (!_aiUpkeepUnitTbl) {
         _aiUpkeepUnitTbl = buildUnitUpkeepTable(data.units as unknown as Parameters<typeof buildUnitUpkeepTable>[0]);
@@ -8354,18 +8354,40 @@ async function boot(): Promise<void> {
       if (!_aiUpkeepFoodTbl) {
         _aiUpkeepFoodTbl = buildUnitFoodTable(data.units as unknown as Parameters<typeof buildUnitFoodTable>[0]);
       }
-      const newGold = totalUnitUpkeep([{ typeId, category }], _aiUpkeepUnitTbl, upkeepParams.jednostkaUtrzymanieStd);
-      const newFood = unitFoodPerTurn({ typeId, camping: false, onOwnTerritory: true }, upkeepParams, _aiUpkeepFoodTbl);
+      return {
+        gold: totalUnitUpkeep([{ typeId, category }], _aiUpkeepUnitTbl, upkeepParams.jednostkaUtrzymanieStd),
+        food: unitFoodPerTurn({ typeId, camping: false, onOwnTerritory: true }, upkeepParams, _aiUpkeepFoodTbl),
+      };
+    }
+    function aiUpkeepRecruitGate(ownerId: number, typeId: string, category: string, goldCost: number): boolean {
+      if (!isAiUpkeepAwareRecruitmentEnabled() || isHuman(ownerId)) return true;
+      const up = aiNewUnitUpkeep(typeId, category);
+      const pend = aiTurnPendingUpkeepByOwner.get(ownerId);
       const tick = getLastEmpireFoodTick(ownerId);
+      let militaryUnits = 0;
+      for (const u of units) if (u.ownerId === ownerId && !isCivilianUnit(u)) militaryUnits++;
       return decideAiUpkeepRecruitment({
         treasury: ownerTreasury(ownerId),
         goldNetPerTurn: aiLastGoldNetByOwner.get(ownerId) ?? 0,
         goldUnitCost: goldCost,
-        newUnitGoldUpkeep: newGold,
+        newUnitGoldUpkeep: up.gold,
         foodReserve: getEmpireFoodReserve(ownerId),
         foodNetPerTurn: tick?.przyrostZapasow ?? 0,
-        newUnitFoodUpkeep: newFood,
+        newUnitFoodUpkeep: up.food,
+        pendingGoldUpkeep: pend?.gold ?? 0,
+        pendingFoodUpkeep: pend?.food ?? 0,
+        militaryUnits,
+        cityCount: cities.filter(c => c.ownerId === ownerId).length,
       }, AI_UPKEEP_PARAMS).allowed;
+    }
+    /** Po UDANYM zakupie: utrzymanie kupionej jednostki wchodzi do salda tej tury (same-turn). */
+    function aiRecordUpkeepPurchase(ownerId: number, typeId: string, category: string): void {
+      if (!isAiUpkeepAwareRecruitmentEnabled() || isHuman(ownerId)) return;
+      const up = aiNewUnitUpkeep(typeId, category);
+      const pend = aiTurnPendingUpkeepByOwner.get(ownerId) ?? { gold: 0, food: 0 };
+      pend.gold += up.gold;
+      pend.food += up.food;
+      aiTurnPendingUpkeepByOwner.set(ownerId, pend);
     }
 
     /**
@@ -8597,6 +8619,10 @@ async function boot(): Promise<void> {
     // R-WEB-AI-ARMY-UPKEEP-Q1: saldo złota AI ostatniej tury (przychód − utrzymanie), ze znakiem.
     // Zasila bramkę rekrutacji (ai-upkeep-gate.ts) TYLKO przy fladze AI_UPKEEP_AWARE_RECRUITMENT_ENABLED.
     const aiLastGoldNetByOwner = new Map<number, number>();
+    // R-WEB-AI-ARMY-UPKEEP-Q1: utrzymanie jednostek KUPIONYCH w bieżącej turze, per właściciel
+    // (czyszczone przy liczeniu salda tury, zasilane po udanym zakupie). Bez tego bramka widziałaby
+    // zamrożone saldo i mogła kupić wiele jednostek naraz.
+    const aiTurnPendingUpkeepByOwner = new Map<number, { gold: number; food: number }>();
     const aiTargetMemoryByOwner: AiTargetMemoryByOwner = new Map();
     /** R-AI-KUP-JEDN (Maciej 2026-07-24, parytet AI): licznik zakupów jednostek za złoto
      *  (rush) TEGO ownera W TEJ turze -- zerowany na wejściu w sekcję ownera w runAiPhase
@@ -25618,6 +25644,7 @@ async function boot(): Promise<void> {
               return {
                 owner: oid,
                 human: isHuman(oid),
+                cityState: isCityStateOwner(oid),
                 treasury: ownerTreasury(oid),
                 foodReserve: getEmpireFoodReserve(oid),
                 foodNet: getLastEmpireFoodTick(oid)?.przyrostZapasow ?? 0,
@@ -33466,6 +33493,7 @@ async function boot(): Promise<void> {
                 aiSkarb -= aiBalance.utrzymanieRazem;
               }
               aiLastGoldNetByOwner.set(oid, aiBalance?.saldo ?? 0);
+              aiTurnPendingUpkeepByOwner.delete(oid);
               const aiResUpkeep = econ.resourceUpkeepByOwner.get(oid);
               if (aiResUpkeep && Object.keys(aiResUpkeep).length > 0) {
                 deductBuildingStockCostAcrossCities(cities, oid, aiResUpkeep);
@@ -36890,6 +36918,7 @@ async function boot(): Promise<void> {
                     );
                     if (wantsPurchase && purchaseRecruitmentUnit(cmd.cityId, candId, item.koszt, ownerId)) {
                       console.log(`[AI ${ownerId}] Zakup jednostki za Skarbiec: ${candId}`);
+                      aiRecordUpkeepPurchase(ownerId, candId, String(lookupUnitDef(candId)?.Kategoria ?? 'domyslny'));
                     }
                   }
                   continue;

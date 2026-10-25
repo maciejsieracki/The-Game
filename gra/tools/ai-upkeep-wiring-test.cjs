@@ -5,7 +5,9 @@
  *   1) bramka jest wołana w OBU miejscach decyzji AI (canAfford jednostki + wantsPurchase),
  *   2) helper aiUpkeepRecruitGate zwraca true dla gracza i przy wyłączonej fladze,
  *   3) bank AI zapisuje saldo złota ostatniej tury (aiLastGoldNetByOwner),
- *   4) flaga domyślnie OFF w module bramki.
+ *   4) flaga domyślnie OFF w module bramki,
+ *   5) same-turn (pending utrzymania), podłoga garnizonu, cityState w ownerEcon.
+ *   UWAGA: to dopasowanie wzorców w tekście main.ts, NIE dowód zachowania (zachowanie: ai-upkeep-gate-test).
  * Mutacja: usunięcie wywołania z canAfford/wantsPurchase -> test czerwony.
  *
  * Run from gra/:  node tools/ai-upkeep-wiring-test.cjs
@@ -32,6 +34,16 @@ assert(/if \(!isAiUpkeepAwareRecruitmentEnabled\(\) \|\| isHuman\(ownerId\)\) re
   'helper: flaga OFF lub gracz -> true');
 assert(/aiLastGoldNetByOwner\.set\(oid, aiBalance\?\.saldo \?\? 0\)/.test(main),
   'bank AI zapisuje saldo złota ostatniej tury');
+assert(/purchaseRecruitmentUnit\(cmd\.cityId, candId, item\.koszt, ownerId\)\) \{[\s\S]{0,200}aiRecordUpkeepPurchase\(ownerId, candId,/.test(main),
+  'po UDANYM zakupie AI zapisywane jest utrzymanie kupionej jednostki (same-turn)');
+assert(/aiTurnPendingUpkeepByOwner\.delete\(oid\);/.test(main),
+  'saldo tury: utrzymanie kupionych w turze czyszczone przy liczeniu salda AI');
+assert(/pendingGoldUpkeep: pend\?\.gold \?\? 0,/.test(main) && /militaryUnits,\s*\n\s*cityCount:/.test(main),
+  'bramka dostaje pending utrzymania, militaryUnits i cityCount');
+assert(/cityState: isCityStateOwner\(oid\),/.test(main),
+  'ownerEcon niesie flagę cityState (metryka AI bez miast-państw)');
+assert(/garrisonPerCity/.test(gate) && /'garrison-floor'/.test(gate),
+  'podłoga garnizonu obecna w module bramki');
 assert(/export const AI_UPKEEP_AWARE_RECRUITMENT_ENABLED = false;/.test(gate),
   'flaga AI_UPKEEP_AWARE_RECRUITMENT_ENABLED domyślnie false');
 

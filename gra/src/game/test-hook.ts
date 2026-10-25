@@ -43,6 +43,7 @@ export interface TestRawState {
 /** Próbka zapasu jednego właściciela w danej turze (diagnostyka, poza hashem). */
 export interface OwnerEconSample {
   owner: number;
+  cityState: boolean;
   human: boolean;
   /** Skarbiec złota (może być ujemny przy deficycie). */
   treasury: number;

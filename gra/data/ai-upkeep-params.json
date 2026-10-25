@@ -6,5 +6,7 @@
   "minReserveTurns": 1,
   "_runwayTurns": "Ile tur utrzymania (armia + nowa jednostka, po uwzględnieniu netto przychodu) ma wystarczyć ZAPAS złota (Skarbiec) i żywności (Spichlerz) BEZ zejścia do zera. Ujemny bilans bieżący nie blokuje, jeśli runway >= wartość.",
   "_marginFrac": "Dodatkowy narzut na utrzymanie nowej jednostki (ułamek), zanim porówna się z zapasem.",
-  "_minReserveTurns": "Minimalna rezerwa złota po zakupie, liczona w turach łącznego utrzymania złotem (0 wyłącza)."
+  "_minReserveTurns": "Minimalna rezerwa złota po zakupie, liczona w turach łącznego utrzymania złotem (0 wyłącza).",
+  "garrisonPerCity": 1,
+  "_garrisonPerCity": "Podłoga garnizonu: jednostek wojskowych na miasto AI, które można kupić mimo braku runway (tylko gdy skarbiec po zakupie >= 0). 0 wyłącza."
 }

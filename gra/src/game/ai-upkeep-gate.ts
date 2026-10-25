@@ -37,6 +37,9 @@ export interface AiUpkeepParams {
   marginFrac: number;
   /** Minimalna rezerwa złota po zakupie w turach łącznego utrzymania złotem (0 = wyłączona). */
   minReserveTurns: number;
+  /** Podłoga garnizonu: tyle jednostek wojskowych na miasto AI może być kupione mimo braku runway
+   *  (wyłącznie gdy skarbiec po zakupie >= 0). 0 = wyłączona. */
+  garrisonPerCity: number;
 }
 
 function num(v: unknown, fallback: number): number {
@@ -50,6 +53,7 @@ export function loadAiUpkeepParams(raw: Record<string, unknown> = upkeepParamsRa
     runwayTurnsFood: Math.max(0, num(raw.runwayTurnsFood, 15)),
     marginFrac: Math.max(0, num(raw.marginFrac, 0.1)),
     minReserveTurns: Math.max(0, num(raw.minReserveTurns, 1)),
+    garrisonPerCity: Math.max(0, num(raw.garrisonPerCity, 1)),
   };
 }
 
@@ -71,6 +75,14 @@ export interface AiUpkeepGateInput {
   foodNetPerTurn: number;
   /** Utrzymanie żywności nowej jednostki na turę (0 gdy brak). */
   newUnitFoodUpkeep: number;
+  /** Utrzymanie złota jednostek KUPIONYCH już w TEJ turze (przed tą decyzją), na turę. Domyślnie 0. */
+  pendingGoldUpkeep?: number;
+  /** Utrzymanie żywności jednostek KUPIONYCH już w TEJ turze, na turę. Domyślnie 0. */
+  pendingFoodUpkeep?: number;
+  /** Liczba jednostek wojskowych właściciela (bez cywilnych), przed tą decyzją. */
+  militaryUnits?: number;
+  /** Liczba miast właściciela (podłoga garnizonu = garrisonPerCity × miasta). */
+  cityCount?: number;
 }
 
 export type AiUpkeepGateReason =
@@ -78,7 +90,8 @@ export type AiUpkeepGateReason =
   | 'gold-stock-short'
   | 'gold-reserve'
   | 'gold-runway'
-  | 'food-runway';
+  | 'food-runway'
+  | 'garrison-floor';
 
 export interface AiUpkeepGateDecision {
   allowed: boolean;
@@ -102,8 +115,9 @@ export function runwayTurns(stock: number, netPerTurn: number): number {
 /**
  * CZYSTA decyzja bramki: czy AI może zrekrutować jednostkę przy danym ZAPASIE.
  * Kolejność: (1) skarbiec po zakupie nie może być ujemny; (2) rezerwa złota po zakupie
- * (minReserveTurns × łączne utrzymanie złotem); (3) runway złota >= runwayTurnsGold;
- * (4) runway żywności >= runwayTurnsFood. Ujemny bilans bieżący sam w sobie NIE blokuje.
+ * (minReserveTurns × łączne utrzymanie złotem); (3) podłoga garnizonu (dopuszcza zakup mimo
+ * runway, tylko przy skarbcu >= 0); (4) runway złota >= runwayTurnsGold; (5) runway żywności
+ * >= runwayTurnsFood. Ujemny bilans bieżący sam w sobie NIE blokuje.
  */
 export function decideAiUpkeepRecruitment(
   inp: AiUpkeepGateInput,
@@ -112,13 +126,21 @@ export function decideAiUpkeepRecruitment(
   const goldUpkeepNew = Math.max(0, inp.newUnitGoldUpkeep) * (1 + p.marginFrac);
   const foodUpkeepNew = Math.max(0, inp.newUnitFoodUpkeep) * (1 + p.marginFrac);
   const stockAfter = inp.treasury - Math.max(0, inp.goldUnitCost);
-  const goldNetAfter = inp.goldNetPerTurn - goldUpkeepNew;
-  const foodNetAfter = inp.foodNetPerTurn - foodUpkeepNew;
+  // Saldo przychodu pomniejszamy o utrzymanie jednostek kupionych już w tej turze (ta sama tura,
+  // wiele zakupów): saldo ostatniej tury jest zamrożone, a skarbiec żyje.
+  const goldNetAfter = inp.goldNetPerTurn - Math.max(0, inp.pendingGoldUpkeep ?? 0) - goldUpkeepNew;
+  const foodNetAfter = inp.foodNetPerTurn - Math.max(0, inp.pendingFoodUpkeep ?? 0) - foodUpkeepNew;
   const goldRunway = runwayTurns(stockAfter, goldNetAfter);
   const foodRunway = runwayTurns(inp.foodReserve, foodNetAfter);
 
   if (stockAfter < 0) {
     return { allowed: false, reason: 'gold-stock-short', goldRunway, foodRunway };
+  }
+  // Podłoga garnizonu: poniżej progu miasta dopuszczamy zakup mimo braku runway, ale NIE
+  // ponad skarbiec (stockAfter >= 0 już sprawdzone wyżej).
+  const garrisonNeed = p.garrisonPerCity * Math.max(0, inp.cityCount ?? 0);
+  if (garrisonNeed > 0 && (inp.militaryUnits ?? 0) < garrisonNeed) {
+    return { allowed: true, reason: 'garrison-floor', goldRunway, foodRunway };
   }
   const deficitPerTurn = Math.max(0, -goldNetAfter);
   if (p.minReserveTurns > 0 && deficitPerTurn > 0 && stockAfter < p.minReserveTurns * deficitPerTurn) {

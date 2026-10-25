@@ -48,7 +48,7 @@ try {
   try { fs.unlinkSync(BUNDLE_FILE); } catch (_) { /* ignore */ }
 }
 
-const P = { runwayTurnsGold: 15, runwayTurnsFood: 15, marginFrac: 0.1, minReserveTurns: 1 };
+const P = { runwayTurnsGold: 15, runwayTurnsFood: 15, marginFrac: 0.1, minReserveTurns: 1, garrisonPerCity: 1 };
 
 let passed = 0, failed = 0;
 function assert(cond, msg) { if (cond) passed++; else { failed++; console.error('FAIL:', msg); } }
@@ -175,6 +175,43 @@ eq(M.runwayTurns(100, NaN), Infinity, 'runwayTurns: NaN netto -> Infinity');
   eq(lp2.marginFrac, 0.1, 'nieliczbowy narzut -> domyślny');
   eq(M.AI_UPKEEP_PARAMS.runwayTurnsGold, 15, 'AI_UPKEEP_PARAMS z data/ai-upkeep-params.json');
 }
+
+// --- marginFrac: narzut bezpieczeństwa realnie zmienia decyzję (mutacja marginFrac=0 MUSI być wykryta) ---
+// Utrzymanie 10 zł/tura, runway 15 => próg 150 bez narzutu, 165 z narzutem 0,1. Skarbiec 160:
+// z narzutem blokada (14,5 < 15), bez narzutu dozwolone (16 >= 15).
+{
+  const base = { treasury: 160, goldNetPerTurn: 0, goldUnitCost: 0, newUnitGoldUpkeep: 10, foodReserve: 1e6, foodNetPerTurn: 0, newUnitFoodUpkeep: 0 };
+  eq(M.decideAiUpkeepRecruitment(base, P).reason, 'gold-runway', 'marginFrac 0,1: skarbiec 160 < 165 -> blokada runway');
+  eq(M.decideAiUpkeepRecruitment(base, { ...P, marginFrac: 0 }).allowed, true, 'marginFrac 0: skarbiec 160 >= 150 -> dozwolone');
+}
+
+// --- same-turn: utrzymanie jednostek kupionych w TEJ turze wchodzi do salda (zamrożone saldo nie wystarcza) ---
+{
+  const base = inp({ treasury: 1000, goldNetPerTurn: 0, newUnitGoldUpkeep: 10 });
+  eq(M.decideAiUpkeepRecruitment(base, P).allowed, true, 'bez kupionych w turze: 1000/11 >= 15 -> dozwolone');
+  const after6 = inp({ treasury: 1000, goldNetPerTurn: 0, newUnitGoldUpkeep: 10, pendingGoldUpkeep: 60 });
+  eq(M.decideAiUpkeepRecruitment(after6, P).reason, 'gold-runway', 'po 6 zakupach w turze (60/tura): 1000/71 < 15 -> blokada');
+  const pendFood = inp({ foodReserve: 100, foodNetPerTurn: 0, newUnitFoodUpkeep: 1, pendingFoodUpkeep: 6 });
+  eq(M.decideAiUpkeepRecruitment(pendFood, P).reason, 'food-runway', 'kupione w turze żywność: 100/(6+1,1) < 15 -> blokada żywności');
+}
+
+// --- podłoga garnizonu: poniżej progu miasta zakup mimo runway, ale NIE ponad skarbiec ---
+{
+  const poor = inp({ treasury: 100, goldNetPerTurn: -500, newUnitGoldUpkeep: 10, cityCount: 2, militaryUnits: 0 });
+  const r1 = M.decideAiUpkeepRecruitment(poor, P);
+  eq(r1.allowed, true, 'podłoga: 0 wojska przy 2 miastach -> dozwolone mimo deficytu');
+  eq(r1.reason, 'garrison-floor', 'podłoga: powód garrison-floor');
+  // Skarbiec 1000, deficyt 111/tura: rezerwa OK (1000 >= 111), runway 9 < 15 -> gold-runway.
+  const deep = inp({ treasury: 1000, goldUnitCost: 0, goldNetPerTurn: -100, newUnitGoldUpkeep: 10, cityCount: 2, militaryUnits: 2 });
+  eq(M.decideAiUpkeepRecruitment(deep, P).reason, 'gold-runway', 'podłoga osiągnięta (2 >= 2) -> wraca do runway');
+  eq(M.decideAiUpkeepRecruitment({ ...deep, militaryUnits: 0 }, P).reason, 'garrison-floor', 'to samo przy 0 wojska -> podłoga');
+  eq(M.decideAiUpkeepRecruitment({ ...deep, militaryUnits: 0 }, { ...P, garrisonPerCity: 0 }).reason, 'gold-runway', 'garrisonPerCity=0 wyłącza podłogę');
+  eq(M.decideAiUpkeepRecruitment({ ...poor, treasury: 10, goldUnitCost: 50 }, P).reason, 'gold-stock-short', 'podłoga NIE omija skarbca ujemnego po zakupie');
+}
+
+// --- parametr podłogi z JSON ---
+eq(M.loadAiUpkeepParams({}).garrisonPerCity, 1, 'domyślna podłoga garnizonu = 1 na miasto');
+eq(M.AI_UPKEEP_PARAMS.garrisonPerCity, 1, 'AI_UPKEEP_PARAMS.garrisonPerCity z JSON');
 
 console.log(`ai-upkeep-gate-test: ${passed} passed, ${failed} failed`);
 process.exitCode = failed ? 1 : 0;

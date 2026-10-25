@@ -65,7 +65,8 @@ function aiEconByTurn(metrics) {
   const out = [];
   for (const t of metrics) {
     if (t.turn % 10 !== 0 || !Array.isArray(t.ownerEcon)) continue;
-    const ai = t.ownerEcon.filter(o => !o.human);
+    // Cywilizacje AI = bez gracza i bez miast-państw (cityState z haka; brak pola = stare dane -> traktuj jako cywilizację).
+    const ai = t.ownerEcon.filter(o => !o.human && !o.cityState);
     if (!ai.length) continue;
     const n = ai.length;
     out.push({
