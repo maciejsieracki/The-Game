@@ -1,0 +1,24 @@
+R-WEB-WAR-RULES-MULTIWAR-Q1 — okablowanie main.ts (main.ts)
+PASS: main.ts importuje bramki z war-rules-multiwar
+PASS: interCivWarBlockedForAi: flaga OFF -> false (zachowanie bazowe)
+PASS: interCivWarBlockedForAi: gracz jako napastnik nieograniczony
+PASS: interCivWarBlockedForAi: deleguje do evaluateInterCivWarGate (R1+R2) z liczbami wojen bez barbarzyńców
+PASS: wypowiedz_wojne: blok bramki R1/R2/R3 istnieje (flaga ON)
+PASS: wypowiedz_wojne: R3 -- blokada wojny epoki przez canDeclareEraForcedWar(tag, forcedEraWarDeclaredByTag) -> continue
+PASS: wypowiedz_wojne: R1/R2 -- evaluateInterCivWarGate z turn/era/liczbą wojen napastnika i celu
+PASS: wypowiedz_wojne: werdykt != ok -> continue (pominięcie komendy, pending nie konsumowany)
+PASS: wypowiedz_wojne: bramka wykonuje się PRZED chargeWarDeclarationCredibility(ownerId, targetId)
+PASS: R3: inkrementacja licznika jest w bloku if (declaredEraTag !== null) (nie bezwarunkowo)
+PASS: R3: licznik wojen epoki inkrementowany PO wypowiedzeniu (po applyAllianceObligationsOnWar)
+PASS: klaster państw-miast: interCivWarBlockedForAi(csOwnerId, ME()) -> continue PRZED wypowiedzeniem
+PASS: applyAllianceObligationsOnWar: sojusznik blokowany przez bramkę (nie gracz) -> continue
+PASS: applyAllianceObligationsOnWar: bramka sojusznika PRZED joinAllyToWar
+PASS: joinAllyToWar: istnieje i zapisuje wojnę przez setDiploRelation(... wojna_wypowiedziana)
+PASS: R1: reset triggeredSubjects przed turą 40 (isInterCivWarOpenAtTurn) w ścieżce wymuszeń
+PASS: W1: garnizon (jednostka na własnym mieście) NIE trafia do enemyArmies
+PASS: W1: cywile i zwiadowcy wyłączeni z puli armii (przed push)
+PASS: W1/W2: flaga OFF zwraca kontekst bez pól (zachowanie bazowe)
+PASS: R1 (r6): warAllInContextFor bramka tury delayInterCivWarsUntilTurn dla cywilizacji AI
+PASS: R3/zapis (r6): warRulesForcedEraDeclared w meta save tylko przy fladze ON
+
+21 PASS / 0 FAIL

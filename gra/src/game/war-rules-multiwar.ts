@@ -3,7 +3,7 @@
  *
  * Czysty moduł (zero DOM, zero RNG, zero dostępu do stanu gry). Zawiera:
  *  - bramki wypowiadania wojen (R1 opóźnienie do tury 40, R2 limit równoczesnych wojen
- *    w Kamieniu na cywilizację; R3 wycofane -- patrz `canDeclareEraForcedWar`),
+ *    w Kamieniu na cywilizację; R3 aktywne: max 1 wojna epoki na epokę globalnie -- patrz `canDeclareEraForcedWar`),
  *  - wybór celu zaangażowania (W1: armia najpierw walczy z najbliższą armią wroga),
  *  - przydział grup armii do wrogów (W2: podział armii przy k>1 wojnach, proporcjonalnie
  *    do siły przeciwników, całe zgrupowania, bez dzielenia).

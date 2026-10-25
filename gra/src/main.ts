@@ -1240,7 +1240,7 @@ import {
 } from './game/barbarians';
 import type { BarbCamp, BarbUnit } from './game/barbarians';
 import { isWarAllInCapitalEnabled, type WarAllInContext, type WarCapitalTarget } from './game/warAllInCapital';
-// R-WEB-WAR-RULES-MULTIWAR-Q1: bramki wojen (R1 tura 40, R2 limit Kamienia; R3 wycofane) + W1/W2.
+// R-WEB-WAR-RULES-MULTIWAR-Q1: bramki wojen (R1 tura 40, R2 limit Kamienia; R3 max 1 wojna epoki na epokę globalnie) + W1/W2.
 import {
   WAR_RULES_PARAMS,
   canDeclareEraForcedWar,
@@ -35267,8 +35267,8 @@ async function boot(): Promise<void> {
                     if (Number.isNaN(targetId)) continue;
                     // R-WEB-WAR-RULES-MULTIWAR-Q1 (flaga WAR_RULES_MULTIWAR_ENABLED): bramka
                     // wypowiedzenia -- R1 (wojny między cywilizacjami dopiero od tury 40), R2
-                    // (Kamień: najwyżej 1 wojna na cywilizację, także gdy cel to AI); R3 wycofane
-                    // (maxEraForcedWarsPerEra = null). Blokada = pominięcie komendy (pending
+                    // (Kamień: najwyżej 1 wojna na cywilizację, także gdy cel to AI); R3 aktywne
+                    // (maxEraForcedWarsPerEra = 1 w war-rules-params.json). Blokada = pominięcie komendy (pending
                     // wojny wymuszonej NIE jest konsumowany -- próba ponowi się w kolejnej turze).
                     if (cmd.type === 'wypowiedz_wojne' && isWarRulesMultiwarEnabled()) {
                       const gateForcedTag = forcedEraTagFromPowod(cmd.powod);
