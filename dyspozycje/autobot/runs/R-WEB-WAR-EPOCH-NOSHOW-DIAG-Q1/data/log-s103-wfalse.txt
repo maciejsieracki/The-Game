@@ -1,0 +1,1 @@
+DONE seed=103 flags={"warRulesMultiwar":false} turns=70 failed=false

@@ -444,7 +444,13 @@ import {
   canInitiateSiege, classifyCityAttack, detectAutoSiegeOnCity,
   type MapSiegeContext,
 } from './game/mapSiegeDetect';
-import { installTestHook, type TestRawState } from './game/test-hook';
+import { installTestHook, isTestHookRequested, type TestRawState } from './game/test-hook';
+// R-WEB-WAR-EPOCH-NOSHOW-DIAG-Q1: logi diagnostyczne wojen wymuszonych — WYŁĄCZNIE pod ?testhook=1
+// (zero wpływu na stan gry; tylko console.log, czytany przez harness).
+const DIAG_WAR_LOG_ON = isTestHookRequested();
+function diagWarLog(msg: string): void {
+  if (DIAG_WAR_LOG_ON) console.log('[DIAG-WAR] ' + msg);
+}
 import { resolveEnemyCityClick, type MapEnemyCityClickAction } from './map/map-attack-city';
 import { launchFieldBattleFromMap } from './battle/mapFieldBattle';
 import {
@@ -34881,6 +34887,9 @@ async function boot(): Promise<void> {
                     isAlreadyAtWarAnyRole: alreadyAtWarAnyRole,
                   })
                   : searchingAfterRest);
+                if (DIAG_WAR_LOG_ON && turn >= 24 && turn <= 60) {
+                  diagWarLog(`T${turn} STONE-SUBJ owner=${ownerId} epoch=${empireEpochForOwner(ownerId)} pending=${stoneForceWarPendingOwners.has(ownerId) ? 1 : 0} cycle=${stoneForceWarCycleOwners.has(ownerId) ? 1 : 0} atWarAny=${alreadyAtWarAnyRole ? 1 : 0} diff=${forcedWarDifficultyLevel} shouldSearch=${shouldSearch ? 1 : 0} wasPending=${wasPending ? 1 : 0}`);
+                }
                 if (shouldSearch) {
                   stoneTriggeredSubjects.push({ ownerId, q: refCity.q, r: refCity.r, era: 'stone' });
                 }
@@ -34991,6 +35000,9 @@ async function boot(): Promise<void> {
             const forcedWarAssignmentByOwner = new Map(
               forcedWarPairingResult.assignments.map(a => [a.ownerId, a] as const),
             );
+            if (DIAG_WAR_LOG_ON) {
+              diagWarLog(`T${turn} PAIRING subjects=${JSON.stringify(triggeredSubjects.map(s => [s.ownerId, s.era ?? 'player', totalActiveForcedWarsByOwner(s.ownerId)]))} assign=${JSON.stringify(forcedWarPairingResult.assignments.map(a => [a.ownerId, a.targetId, a.era]))} unresolved=${JSON.stringify(forcedWarPairingResult.unresolvedOwnerIds)} R3=${JSON.stringify([...forcedEraWarDeclaredByTag.entries()])} playerPairs=${JSON.stringify(aiOwnerList.filter(o => o > 0 && !eliminatedOwners.has(o)).map(o => [o, isForcedWarPairBlocked(0, o) ? 1 : 0, hasTreaty(activeDeals, 0, o, RodzajTraktatu.PaktNieagresji) ? 1 : 0, isPeaceLockedBetween(0, o) ? 1 : 0, allianceFormalKindBetween(activeDeals, 0, o) !== null ? 1 : 0, countActiveWarsForOwnerExcludingBarbarians(o)]))} contact=${JSON.stringify([...diplomaticContactEstablishedSet()])}`);
+            }
 
             ownerLoop: for (let oi = startOi; oi < aiOwnerList.length; oi++) {
               const ownerId = aiOwnerList[oi]!;
@@ -35946,6 +35958,12 @@ async function boot(): Promise<void> {
                   ],
                   isOwnerClusterCityState(ownerId, ownerCityStateOpts()),
                 );
+                if (DIAG_WAR_LOG_ON) {
+                  const rawWar = (Array.isArray(dipCmdsRaw) ? dipCmdsRaw : []).filter(c => c.type === 'wypowiedz_wojne');
+                  if (rawWar.length > 0 || (turn >= 39 && turn <= 42)) {
+                    diagWarLog(`T${turn} RAW-WAR owner=${ownerId} raw=${JSON.stringify(rawWar.map(c => [c.targetId, (c.powod ?? '').slice(0, 24)]))} afterLayer=${JSON.stringify(dipCmdsLayered.filter(c => c.type === 'wypowiedz_wojne').map(c => c.targetId))} layer=${dipLayer} layerNoFog=${dipLayerIgnoringPlayerFog} contact=${diplomaticContactEstablishedSet().has(ownerId) ? 1 : 0}`);
+                  }
+                }
                 for (const cmd of dipCmdsLayered) {
                   if (cmd.type === 'zaproponuj_audiencje' && cmd.targetId === '0') {
                     applyAiAudienceRequest(ownerId, cmd);
@@ -35959,6 +35977,18 @@ async function boot(): Promise<void> {
                   try {
                     const targetId = parseInt(cmd.targetId, 10);
                     if (Number.isNaN(targetId)) continue;
+                    if (DIAG_WAR_LOG_ON && cmd.type === 'wypowiedz_wojne') {
+                      const dgTag = forcedEraTagFromPowod(cmd.powod);
+                      const dgVerdict = evaluateInterCivWarGate({
+                        turn,
+                        attackerEra: empireEpochForOwner(ownerId),
+                        attackerWarCount: countActiveWarsForOwnerExcludingBarbarians(ownerId),
+                        targetIsPlayer: isHuman(targetId),
+                        targetEra: empireEpochForOwner(targetId),
+                        targetWarCount: countActiveWarsForOwnerExcludingBarbarians(targetId),
+                      });
+                      diagWarLog(`T${turn} GATE owner=${ownerId} target=${targetId} tag=${dgTag ?? 'normal'} R3ok=${dgTag === null ? 'n/a' : (canDeclareEraForcedWar(dgTag, forcedEraWarDeclaredByTag) ? 1 : 0)} R1R2=${dgVerdict} peaceLock=${isPeaceLockedBetween(ownerId, targetId) ? 1 : 0} pact=${hasTreaty(activeDeals, ownerId, targetId, RodzajTraktatu.PaktNieagresji) ? 1 : 0} alliance=${allianceFormalKindBetween(activeDeals, ownerId, targetId) !== null ? 1 : 0} stoneTarget=${stoneForceWarTargetId ?? 'null'} ironTarget=${ironForceWarTargetId ?? 'null'} R3=${JSON.stringify([...forcedEraWarDeclaredByTag.entries()])}`);
+                    }
                     // R-WEB-WAR-RULES-MULTIWAR-Q1 (flaga WAR_RULES_MULTIWAR_ENABLED): bramka
                     // wypowiedzenia -- R1 (wojny między cywilizacjami dopiero od tury 40), R2
                     // (Kamień: najwyżej 1 wojna na cywilizację, także gdy cel to AI); R3 aktywne

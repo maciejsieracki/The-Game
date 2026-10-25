@@ -1,0 +1,7 @@
+done s103 wtrue exit=0
+done s101 wtrue exit=0
+done s102 wtrue exit=0
+done s103 wfalse exit=0
+done s101 wfalse exit=0
+done s102 wfalse exit=0
+ALLDONE

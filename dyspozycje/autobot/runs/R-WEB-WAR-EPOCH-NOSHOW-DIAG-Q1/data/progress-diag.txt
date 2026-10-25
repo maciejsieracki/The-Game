@@ -1,0 +1,4 @@
+done diag s103 wtrue exit=0
+done diag s101 wtrue exit=0
+done diag s102 wtrue exit=0
+ALLDONE
