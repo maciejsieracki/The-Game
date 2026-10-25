@@ -13,9 +13,12 @@ export {
   clusterUnitsByProximity, planArmyFrontMerge,
 } from '../src/game/army-concentration';
 export { decideAITurn, countThreatFronts, AI_FRONT_DETECTION_VICINITY_HEX } from '../src/game/ai';
+export { setArmyConsolidationOverride } from '../src/game/army-consolidation';
 `);
 esbuild.buildSync({ entryPoints: [entry], bundle: true, platform: 'node', format: 'cjs', target: 'node18', outfile: bundle, logLevel: 'silent' });
 const C = require(bundle);
+// R-WEB-ARMY-CONSOLIDATION-Q1 (wydanie nr 6, DEFAULT=true): test koncentracji bazowej -> flaga OFF.
+C.setArmyConsolidationOverride(false);
 let passed = 0;
 let failed = 0;
 function ok(value, message) { if (value) passed++; else { failed++; console.error('FAIL:', message); } }

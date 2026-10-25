@@ -40,6 +40,8 @@ ${hasMod ? `export { setWarAllInCapitalOverride, isWarAllInCapitalEnabled, planW
     outfile: bundle, absWorkingDir: GRA_ROOT, logLevel: 'silent',
   });
   const eng = require(bundle);
+  // R-WEB-ARMY-CONSOLIDATION-Q1 (wydanie nr 6, DEFAULT=true): testy war-allin/baza pinuja flage OFF = zachowanie bazowe.
+  if (eng.setArmyConsolidationOverride) eng.setArmyConsolidationOverride(false);
   eng.hasModule = hasMod;
   eng._files = [entry, bundle];
   return eng;
