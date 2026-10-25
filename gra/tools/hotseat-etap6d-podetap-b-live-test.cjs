@@ -182,25 +182,21 @@ async function runScenario(page, outDir, label) {
   assert(`(${label}.1) lista dyplomacji: wiersz kontaktu .dl-item wyrenderowany (buildPlayerDiploRelations/buildPlayerDiploListEntries)`, rowCount >= 1, rowCount);
   const listDetailText = await readFirstDiploListItemDetail(page);
 
-  // --- Pop-up podsumowania pary: realny klik wiersza listy, buildDiploPairSummaryData ---
-  await page.locator('.civ-diplo-list-hud .dl-item').first().click();
-  await page.waitForSelector('.civ-diplo-pair-summary', { timeout: 10000 }).catch(() => {});
-  await wait(150);
+  // --- R-WEB-DIPLO-UI-DIRECT-NEGOTIATION-Q1: realny klik wiersza listy → OD RAZU audiencja
+  // (pośredni pop-up podsumowania wyłączony; wojny/sojusze/handel są na karcie listy) ---
+  const relRowCount = await page.locator('.civ-diplo-list-hud .dl-item').first().locator('.dl-rel-row').count();
+  assert(`(${label}.1b) karta listy zawiera wiersze relacji (Wojny/Sojusze/Handel)`, relRowCount === 3, relRowCount);
+  // ZEPSUTY (ME()=>99) nie ma kontaktów → brak wierszy listy: klik pomijamy, asercje (.1/.1b/.3)
+  // nadal czerwienią, zamiast zrywać cały test wyjątkiem Playwright (dawniej: timeout 30 s).
+  if (rowCount >= 1) await page.locator('.civ-diplo-list-hud .dl-item').first().click();
+  await page.waitForSelector('.civ-diplo-aud-box', { timeout: 10000 }).catch(() => {});
+  await wait(200);
   const pairSummaryVisible = await page.locator('.civ-diplo-pair-summary').count();
-  assert(`(${label}.2) pop-up podsumowania pary otwarty z REALNEGO kliku wiersza (buildDiploPairSummaryData)`, pairSummaryVisible > 0, pairSummaryVisible);
-
-  // --- Audiencja: realny klik "Zaproponuj spotkanie i negocjacje" w pop-upie (nie hak testowy) ---
-  const audBtn = page.locator('[data-act="dps-audience"]');
-  const audBtnCount = await audBtn.count();
-  let audienceActionCount = -1;
-  if (audBtnCount > 0) {
-    await audBtn.first().click();
-    await page.waitForSelector('.civ-diplo-aud-box', { timeout: 10000 }).catch(() => {});
-    await wait(200);
-    audienceActionCount = await page.locator('.civ-diplo-aud button[data-aid]').count();
-  }
-  assert(`(${label}.3) audiencja otwarta z REALNEGO przycisku pop-upu pokazuje >=1 akcję (buildAudienceActions/buildPendingNegotiationRows)`,
-    audBtnCount > 0 && audienceActionCount > 0, { audBtnCount, audienceActionCount });
+  assert(`(${label}.2) klik wiersza listy NIE otwiera pośredniego pop-upu (pair-summary)`, pairSummaryVisible === 0, pairSummaryVisible);
+  const audienceActionCount = await page.locator('.civ-diplo-aud button[data-aid]').count();
+  const audBoxCount = await page.locator('.civ-diplo-aud-box').count();
+  assert(`(${label}.3) klik wiersza listy od razu otwiera audiencję/negocjacje z >=1 akcją (buildAudienceActions/buildPendingNegotiationRows)`,
+    audBoxCount > 0 && audienceActionCount > 0, { audBoxCount, audienceActionCount });
   await page.evaluate(() => { window.__audienceRelTestDebug?.closeAudience?.(); });
   await wait(100);
 

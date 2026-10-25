@@ -423,25 +423,52 @@ async function main() {
     const onSelectEntryBody = arrowBody(`onSelectEntry:\\s*\\(ownerId\\)\\s*=>\\s*\\{`);
     ok(onSelectEntryBody != null, '7a) źródło: onSelectEntry(createDiploListHud) znalezione');
     if (onSelectEntryBody) {
+      // R-WEB-DIPLO-UI-DIRECT-NEGOTIATION-Q1 (zmiana kontraktu): pośredni dymek wyłączony.
+      // Kliknięcie cywilizacji MA od razu otwierać audiencję/negocjacje.
       ok(
-        onSelectEntryBody.includes('showDiploPairSummary('),
-        '7b) BB1: onSelectEntry woła showDiploPairSummary(...) — pop-up podsumowania, nie audiencja wprost',
+        !onSelectEntryBody.includes('showDiploPairSummary('),
+        '7b) DIRECT-NEG: onSelectEntry NIE woła showDiploPairSummary(...) — pośredni dymek wyłączony (mutacja „przywróć dymek” → czerwień)',
       );
       ok(
-        onSelectEntryBody.includes('getData: () => buildDiploPairSummaryData('),
-        '7c) BB1: showDiploPairSummary dostaje getData: () => buildDiploPairSummaryData(...)',
+        /openDiplomacyAudience\(\s*ownerId\s*\)/.test(onSelectEntryBody),
+        '7c) DIRECT-NEG: onSelectEntry woła openDiplomacyAudience(ownerId) bezpośrednio (kliknięcie → negocjacje)',
       );
       ok(
-        !/openDiplomacyAudience\(\s*ownerId\s*\)/.test(onSelectEntryBody),
-        '7d) BB1: BRAK bezpośredniego openDiplomacyAudience(ownerId) w ciele onSelectEntry — regres (stary skok wprost do audiencji) byłby wykryty',
-      );
-      // Kontrola sanity: przejście do audiencji WCIĄŻ istnieje, ale wyłącznie
-      // wewnątrz osobnej funkcji onOpenAudience (parametr przemianowany na `oid`).
-      ok(
-        onSelectEntryBody.includes('onOpenAudience:') && onSelectEntryBody.includes('openDiplomacyAudience(oid)'),
-        '7e) kontrola sanity: przejście do audiencji istnieje w onOpenAudience(oid), nie bezpośrednio w onSelectEntry',
+        !onSelectEntryBody.includes('onOpenAudience'),
+        '7d) DIRECT-NEG: brak pośredniego callbacka onOpenAudience w onSelectEntry',
       );
     }
+  }
+
+  // =========================================================================
+  // CZĘŚĆ 5b — R-WEB-DIPLO-UI-DIRECT-NEGOTIATION-Q1, zarzut 1 (dowód, że kliknięcie
+  // niedostępnej karty jest niemożliwe): karty listy i getState audiencji biorą kontakty
+  // z TEGO SAMEGO źródła (getDiplomaticContacts), więc brak stanu negocjacji dla karty
+  // z listy nie może wystąpić. Mutacja „lista czyta inne źródło" → czerwień.
+  // =========================================================================
+  console.log('\n-- Część 5b: DIRECT-NEG źródło kontaktów listy = źródło audiencji --');
+  {
+    const relBody = (() => {
+      const m = /function buildPlayerDiploRelations\(\)[^{]*\{/.exec(src);
+      if (!m) return null;
+      let depth = 0;
+      for (let i = m.index + m[0].length - 1; i < src.length; i++) {
+        if (src[i] === '{') depth++;
+        else if (src[i] === '}') { depth--; if (depth === 0) return src.slice(m.index, i + 1); }
+      }
+      return null;
+    })();
+    ok(relBody != null, '5b-1) źródło: buildPlayerDiploRelations znalezione');
+    if (relBody) {
+      ok(/const contacted = getDiplomaticContacts\(\);/.test(relBody)
+        && /for \(const otherId of contacted\)/.test(relBody),
+        '5b-2) buildPlayerDiploRelations iteruje getDiplomaticContacts() (karty tylko dla kontaktów, mgła wojny)');
+    }
+    const audIdx = src.indexOf('function openDiplomacyAudience(ownerId: number): void {');
+    const audSlice = audIdx >= 0 ? src.slice(audIdx, audIdx + 1200) : '';
+    ok(/if \(!contacted\.has\(ownerId\)\) return null;/.test(audSlice)
+      && /const contacted = getDiplomaticContacts\(\);/.test(audSlice),
+      '5b-3) getState audiencji zwraca null wyłącznie dla nie-kontaktu (ten sam zbiór) — kliknięcie karty zawsze ma stan');
   }
 
   // =========================================================================
@@ -504,6 +531,57 @@ async function main() {
         '9b) N4: ensureDiplomacyUiClosed zamyka pop-up pary (isDiploPairSummaryOpen()/hideDiploPairSummary())',
       );
     }
+  }
+
+  // =========================================================================
+  // CZĘŚĆ 8 — R-WEB-DIPLO-UI-DIRECT-NEGOTIATION-Q1: wiersze „Wojny / Sojusze / Handel"
+  // na karcie cywilizacji (dawniej w dymku). Skrót do 3 nazw + „+N”, „brak” gdy puste,
+  // pełna lista w tooltipie. Mutacja usuwająca relationRows w diploListEntryFromRelation
+  // albo renderowanie wierszy w diploListHud wywala tę część.
+  // =========================================================================
+  console.log('\n-- Część 8: DIRECT-NEG wiersze relacji na karcie listy (jsdom) --');
+  {
+    const dom = new JSDOM('<!DOCTYPE html><html><head></head><body></body></html>');
+    global.document = dom.window.document;
+    global.window = dom.window;
+    global.HTMLElement = dom.window.HTMLElement;
+    Object.defineProperty(global, 'navigator', { value: dom.window.navigator, configurable: true });
+
+    const withRel = diploListEntryFromRelation({
+      ownerId: 1, civ: 'Egipt', tier: 1,
+      warPartnerNames: ['Ty', 'Chiny', 'Rzym', 'Persja'],
+      alliancePartnerNames: [],
+      dealPartnerNames: ['Inkowie'],
+    });
+    const noRel = diploListEntryFromRelation({ ownerId: 2, civ: 'Rzym', tier: 2 });
+    ok(withRel !== null && Array.isArray(withRel.relationRows) && withRel.relationRows.length === 3,
+      '8a) diploListEntryFromRelation buduje 3 wiersze relacji (Wojny/Sojusze/Handel) z nazw partnerów');
+    ok(noRel !== null && noRel.relationRows === undefined,
+      '8b) bez nazw partnerów brak wierszy relacji (undefined), karta bez zmian');
+
+    const hud = createDiploListHud({
+      getEntries: () => [withRel, noRel].filter((e) => e !== null),
+      onSelectEntry: () => {},
+    });
+    showDiploListHud();
+    const cards = Array.from(hud.el.querySelectorAll('.dl-item'));
+    const egiptRows = cards[0] ? Array.from(cards[0].querySelectorAll('.dl-rel-row')).map(n => n.textContent) : [];
+    const egiptTitle = cards[0] ? (cards[0].querySelector('.dl-rel-row')?.getAttribute('title') ?? '') : '';
+    ok(
+      JSON.stringify(egiptRows) === JSON.stringify(['Wojny: Ty, Chiny, Rzym +1', 'Sojusze: brak', 'Handel: Inkowie']),
+      '8c) karta Egiptu: wiersze „Wojny: … +1”, „Sojusze: brak”, „Handel: …” — ' + JSON.stringify(egiptRows),
+    );
+    ok(egiptTitle === 'Wojny: Ty, Chiny, Rzym, Persja',
+      '8d) pełna lista wojen w tooltipie (title) — ' + JSON.stringify(egiptTitle));
+    const romeRows = cards[1] ? cards[1].querySelectorAll('.dl-rel-row').length : -1;
+    ok(romeRows === 0, '8e) karta bez danych relacji nie renderuje pustych wierszy');
+    hideDiploListHud();
+    destroyDiploListHud();
+
+    delete global.document;
+    delete global.window;
+    delete global.HTMLElement;
+    delete global.navigator;
   }
 
   console.log(`\ndiplomacy-lista-podglad-przed-wizyta-test: ${pass} pass, ${fail} fail`);

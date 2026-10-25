@@ -6901,9 +6901,28 @@ async function boot(): Promise<void> {
     }
 
     function buildPlayerDiploListEntries(): DiploListEntry[] {
+      // R-WEB-DIPLO-UI-DIRECT-NEGOTIATION-Q1: wojny/sojusze/handel wprost na karcie listy
+      // (dawniej w pośrednim dymku). Te same dane co `buildDiploPairSummaryData`, bez
+      // duplikowania logiki widoczności (mgła wojny / kontakt).
       return buildPlayerDiploRelations()
-        .map(diploListEntryFromRelation)
+        .map(rel => diploListEntryFromRelation({ ...rel, ...diploPairPartnerNames(rel.ownerId) }))
         .filter((e): e is DiploListEntry => e !== null);
+    }
+
+    function diploPairPartnerNames(ownerId: number | undefined): {
+      warPartnerNames?: string[];
+      alliancePartnerNames?: string[];
+      dealPartnerNames?: string[];
+    } {
+      if (ownerId === undefined) return {};
+      const data = buildDiploPairSummaryData(ownerId);
+      if (data === null) return {};
+      const nameOf = (p: DiploPairSummaryPartner): string => (p.isPlayer ? 'Ty' : p.name);
+      return {
+        warPartnerNames: data.wars.map(nameOf),
+        alliancePartnerNames: data.alliances.map(nameOf),
+        dealPartnerNames: data.deals.map(nameOf),
+      };
     }
 
     /**
@@ -23120,18 +23139,13 @@ async function boot(): Promise<void> {
         getEntries: buildPlayerDiploListEntries,
         getPlayerSummary: buildPlayerDiploSummary,
         onSelectEntry: (ownerId) => {
-          // R-DYPLOMACJA-LISTA-I-PODGLAD-PRZED-WIZYTA: krok pośredni — pop-up
+          // (historia: R-DYPLOMACJA-LISTA-I-PODGLAD-PRZED-WIZYTA krok pośredni — pop-up
           // podsumowania (wojny/sojusze/handel) PRZED pełną audiencją, nie audiencja
-          // wprost (Maciej 2026-08-09).
+          // wprost, Maciej 2026-08-09).
+          // R-WEB-DIPLO-UI-DIRECT-NEGOTIATION-Q1: pośredni dymek wyłączony — od razu audiencja;
+          // wojny/sojusze/handel są na karcie listy.
           hideDiploListHud();
-          showDiploPairSummary({
-            getData: () => buildDiploPairSummaryData(ownerId),
-            onOpenAudience: (oid) => {
-              openDiplomacyAudience(oid);
-              refreshD1bHud();
-            },
-            onClose: () => refreshD1bHud(),
-          });
+          openDiplomacyAudience(ownerId);
           refreshD1bHud();
         },
         onFocusCapital: handleDiploFocusCapital,
