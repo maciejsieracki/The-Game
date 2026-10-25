@@ -1404,7 +1404,19 @@ import {
   // (dotąd wyłącznie handel/traktaty handlowe) — patrz enqueueNegotiationFromAiCmd niżej.
   peaceOfferAiRequestPn,
   peaceOfferAiRequestBasket,
+  aiProposalPlayerBenefitSurplus,
 } from './game/diplomacy-ai-offer-balance';
+// R-WEB-DIPLO-DEALS-SENSIBLE-Q1: filtr sensownych ofert handlowych AI->gracz (flaga + progi JSON).
+import {
+  DIPLO_SENSIBLE_DEALS_ENABLED,
+  classifyTradeNeed,
+  fallbackUsePerTurn,
+  isBuyerDeficitJustified,
+  isPlayerBalanceAcceptable,
+  isSellerSurplusJustified,
+  sensibleBalanceFilterApplies,
+  tradeOfferReason,
+} from './game/diplomacy-sensible-deals';
 import {
   wiarygodnoscStartowa,
   sumaWiarygodnosciCalkowita,
@@ -17057,6 +17069,19 @@ async function boot(): Promise<void> {
       ) {
         return;
       }
+      // R-WEB-DIPLO-DEALS-SENSIBLE-Q1 (filtr 1): AI nie składa oferty handlowej, na której
+      // bilans PW gracza jest ujemny (gracz płaci więcej niż wycena AI). Konwencja jak w
+      // trimProposalForZeroBalance: dodatnia = korzyść gracza. Tylko typy handlowe (pokój/trybut
+      // mają z natury jednostronne żądania i NIE są objęte).
+      if (
+        sensibleBalanceFilterApplies(DIPLO_SENSIBLE_DEALS_ENABLED, workingCmd.type)
+        && !isPlayerBalanceAcceptable(
+          aiProposalPlayerBenefitSurplus(balancedPayload, relationTotal(relForBalance), pnBalanceOpts),
+        )
+      ) {
+        console.log(`[Dyplomacja] AI${ownerId} ${workingCmd.type}: odrzucone (bilans PW gracza < 0)`);
+        return;
+      }
       converted.payload = balancedPayload;
       // Dedup — nie stackuj drugiej propozycji TEGO SAMEGO typu, gdy jedna już czeka.
       if (hasPendingNegotiationForPair(negotiationTable, ME(), ownerId, converted.actionId)) return;
@@ -19637,6 +19662,8 @@ async function boot(): Promise<void> {
       zaplataPerTura: number;
       kierunek: 'sprzedaz' | 'zakup';
       powod: 'deficyt' | 'nadwyzka';
+      /** R-WEB-DIPLO-DEALS-SENSIBLE-Q1: uzasadnienie oferty (niedobór / nadwyżka). */
+      reason: string;
     } | null {
       const pricedKeys = Object.keys(diplomacyHandelSurowceCatalog());
       const pakiet = diplomacyHandelSurowcePakietWielkosc();
@@ -19668,6 +19695,23 @@ async function boot(): Promise<void> {
           sellerOptions: sellerOptsProposer,
         });
       if (!pick) return null;
+      // R-WEB-DIPLO-DEALS-SENSIBLE-Q1 (2026-10-25): AI oferuje wymianę tylko przy realnym
+      // niedoborze (kupuje) albo realnej nadwyżce (sprzedaje). Stan zapasu proposera czytany
+      // z tego samego indeksu co wybór (goodsProposer) — bez nowego źródła danych.
+      const proposerStockForPick = goodsProposer.find(g => g.key === pick.surowiecKey)?.ilosc ?? 0;
+      const sensiblePakiet = diplomacyHandelSurowcePakietWielkosc();
+      if (pick.powod === 'nadwyzka'
+        && !isSellerSurplusJustified(proposerStockForPick, sensiblePakiet, DIPLO_SENSIBLE_DEALS_ENABLED)) {
+        return null;
+      }
+      if (pick.powod === 'deficyt'
+        && !isBuyerDeficitJustified(proposerStockForPick, sensiblePakiet, DIPLO_SENSIBLE_DEALS_ENABLED)) {
+        return null;
+      }
+      const sensibleReason = tradeOfferReason(
+        pick.powod,
+        classifyTradeNeed(proposerStockForPick, fallbackUsePerTurn(sensiblePakiet)),
+      );
       const kierunek = resourceTradeKierunekForProposer(proposerOwnerId, pick);
       const sellerOwnerId = pick.sellerOwnerId;
       const sellerRates = mergedResourceRatesForOwner(sellerOwnerId);
@@ -19714,6 +19758,7 @@ async function boot(): Promise<void> {
         zaplataPerTura,
         kierunek,
         powod: pick.powod,
+        reason: sensibleReason,
       };
     }
 
