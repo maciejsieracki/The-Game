@@ -87,23 +87,32 @@ async function openSimPage(browser, { bundleDir, testhook = true }) {
 }
 
 /** Czeka aż hak będzie dostępny (tylko z ?testhook=1). */
+/**
+ * Czeka aż hak będzie dostępny (tylko z ?testhook=1). Odpytywanie z Node (page.evaluate),
+ * nie przez waitForFunction: jego pętla w stronie korzysta z timerów/rAF, a te w grze
+ * są wirtualne (idą tylko na żądanie haka).
+ */
 async function waitForHook(page, timeout = 120000) {
-  await page.waitForFunction(() => !!window.__test, undefined, { timeout });
+  const until = Date.now() + timeout;
+  while (Date.now() < until) {
+    if (await page.evaluate(() => !!window.__test)) return;
+    await wait(100);
+  }
+  throw new Error('waitForHook: brak window.__test po ' + timeout + ' ms');
 }
 
 /**
  * Startuje grę przez hak i czeka na świat (tura 1, miasta > 0).
  * opts: { seed, aiCount, cityStates, difficulty, era, playerPassive }.
+ * Hak zwraca po wygenerowaniu świata i ustaleniu stanu startowego (patrz test-hook.ts).
  */
 async function startSimGame(page, opts) {
   const t0 = Date.now();
   await page.evaluate((o) => window.__test.startGame(o), opts);
-  await page.waitForFunction(
-    () => !!window.__eraTestDebug && window.__eraTestDebug.getWorldState().citiesLen > 0
-      && window.__eraTestDebug.getWorldState().turn === 1,
-    undefined,
-    { timeout: 300000, polling: 250 },
-  );
+  const ready = await page.evaluate(() => !!window.__eraTestDebug
+    && window.__eraTestDebug.getWorldState().citiesLen > 0
+    && window.__eraTestDebug.getWorldState().turn === 1);
+  if (!ready) throw new Error('startSimGame: świat nie gotowy po startGame (tura 1, miasta > 0)');
   await wait(200);
   return Date.now() - t0;
 }

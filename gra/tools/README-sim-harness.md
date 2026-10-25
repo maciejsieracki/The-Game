@@ -69,6 +69,34 @@ liczba umów, oferty (właściciel, typ, powód, goldOnce). **Pomija wszystkie i
 
 ## Determinizm — źródła niedeterminizmu
 
+### R-WEB-TEST-HOOK-DETERMINISM-Q1 (runda 1) -- BLOCK, kryterium (c) NIESPEŁNIONE
+
+Zmierzone (Chromium headless, seed 101, 5 AI, 2 miasta-państwa; hash po każdej turze):
+
+- Źródło 1 (POTWIERDZONE pomiarem): 252 391 wywołań `Math.random` w 12 turach, prawie
+  wszystkie z generatora UUID three.js (`MathUtils.generateUUID`, w zminifikowanym buildzie
+  wołany z konstruktorów obiektów three.js). Usunięte przez licznik UUID pod hakiem.
+- Źródło 2 (POTWIERDZONE w kodzie, małe liczebnie): `Date.now` wołany 87 razy w 12 turach
+  (`endTurnStartedAt` i `oldestPendingAutoPreBattleAgeMs`, progi 8000 ms). Zastąpione zegarem
+  zależnym od numeru tury (1 ms na turę) pod hakiem.
+- Źródło 3 (POTWIERDZONE): potok końca tury oddaje sterowanie przez rAF + `setTimeout`
+  (`yieldTurnTransitionUi`), więc czas klatek wchodzi w logikę. Pod hakiem timery i rAF
+  działają na zegarze wirtualnym, który przesuwa się tylko na żądanie haka (`drive`).
+- Wynik pomiaru przed zegarem wirtualnym (tylko UUID + Date): tura 2 rozjeżdża się
+  między przebiegami; różnica = jedna jednostka `Zwiadowca` (owner 13) w jednym przebiegu.
+- Wyłączenie AudioContext nie usunęło rozjazdu (audio NIE jest jedynym źródłem).
+- Zegar wirtualny: w pojedynczej stronie 3 tury z rzędu identyczne w dwóch przebiegach
+  (`a5ab770c`, `e4f59a04`, `d70ada09`), ale przy dwóch stronach równolegle rozjazd wraca
+  (seed 101 tura 2, seed 102 już tura 1). NIE_ZMIERZONO, która natywna asynchroniczność
+  (ładowanie zasobów, obserwatory, worker/audio) jest przyczyną.
+- Koszt: po zakończeniu generacji mapy klatki wirtualne idą z prędkością ~4-60 fps,
+  więc pełne 60 tur × 2 przebiegi × 2 seedy nie mieści się w jednej rundzie.
+
+Stan kodu: `gra/src/game/test-hook.ts` (zegar wirtualny, licznik UUID, zegar tury),
+`gra/tools/lib/game-sim-harness.cjs` (czekanie na hak i świat odpytywane z Node, nie
+przez `waitForFunction`), `gra/tools/test-hook-determinism-test.cjs` (test kryterium c;
+aktualnie FAIL). Bez `?testhook=1` zachowanie gry nie zmienione (guard 23/23 PASS).
+
 ### Wynik badania (R2) -- NIE_DETERMINISTYCZNE, przyczyna częściowo zidentyfikowana
 
 Zmierzone (komendy: `tools/lib/game-sim-harness.cjs`, dwa świeże strony, seed 101,
