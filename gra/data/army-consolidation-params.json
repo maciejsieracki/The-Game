@@ -4,11 +4,6 @@
     "sekcja": "R-WEB-ARMY-CONSOLIDATION-Q1 (flaga ARMY_CONSOLIDATION_ENABLED)",
     "opis": "Maksymalna liczba jednostek polowych w jednym heksie zbiorki (stolica lub miasto zapasowe). ZALOZENIE: gra nie ma twardego limitu stosu w armyMerge.ts; wartosc jest limitem armii tej funkcji."
   },
-  "min_army_size": {
-    "wartosc": 2,
-    "sekcja": "R-WEB-ARMY-CONSOLIDATION-Q1",
-    "opis": "Minimalna liczba jednostek, od ktorej zgrupowanie uznawane jest za armie."
-  },
   "home_defense_group_size": {
     "wartosc": 2,
     "sekcja": "R-WEB-ARMY-CONSOLIDATION-Q1",

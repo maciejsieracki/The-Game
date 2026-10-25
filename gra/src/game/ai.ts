@@ -18,13 +18,13 @@ import type { GameData, BuildingDef } from '../data/loader';
 import aiParamsRaw from '../../data/ai-params.json';
 import type { RuntimeUnit } from '../units/setup';
 import { isWarAllInCapitalEnabled, planWarAllInCapital, type WarAllInContext } from './warAllInCapital';
+import { armyFieldPower, type UnitPowerInput } from './unit-power';
 import {
   ARMY_CONSOLIDATION_HOME_GROUP_SIZE,
   ARMY_CONSOLIDATION_MAX_PER_HEX,
   ARMY_CONSOLIDATION_RALLY_SEARCH_HEX,
   assignRallyTargets,
   buildRallyCandidates,
-  homeDefenseGroupCount,
   isArmyConsolidationEnabled,
   pickRallyCity,
   splitIntoWarArmies,
@@ -84,7 +84,7 @@ import {
   planArmyConcentration, planArmyFrontMerge, clusterUnitsByProximity,
   ARMY_CONCENTRATION_RADIUS, isEligibleForArmyConcentration,
 } from './army-concentration';
-import type { EngageArmyHex, EnemyStrengthRef } from './war-rules-multiwar';
+import { allocateGroupsToEnemies, type ArmyGroupRef, type EngageArmyHex, type EnemyStrengthRef } from './war-rules-multiwar';
 import {
   planForcedWarWave,
   type ForcedWarWave,
@@ -471,6 +471,12 @@ export interface AITurnOpts {
    * id aktualnej stolicy tej cywilizacji (main.ts: capitalCityIdForOwner). Punkt zbiorki w pokoju.
    */
   capitalCityId?: string | null;
+  /**
+   * R-WEB-ARMY-CONSOLIDATION-Q1 (tylko flaga ON): true = ta cywilizacja jest w wojnie z
+   * jakas inna cywilizacja (nie barbarzyncami). Stan pokoju = brak wojny; w pokoju wlacza
+   * sie zbiorka w stolicy (zamiast lokalnej planArmyConcentration), w wojnie zostaje baza + W1/W2.
+   */
+  atWarWithCiv?: boolean;
   /**
    * C-AI-PAKIET (2026-07-26): profil z civ-ai.json per typ cywilizacji —
    * ekspansywnosc i sklonnoscDoPodboju sterują ekspansją i agresją wojskową.
@@ -3358,7 +3364,12 @@ export function decideAITurn(
     ...activeFlankingUnitIds,
     ...activeWaveUnitIds,
   ]);
-  const standardConcentration = canConcentrateArmy(opts)
+  // R-WEB-ARMY-CONSOLIDATION-Q1: w POKOJU (flaga ON) jedyny mechanizm zbiorki to zbiorka w
+  // stolicy nizej; lokalna planArmyConcentration i front-merge nie dzialaja (jeden punkt
+  // zbiorki, brak konkurencji o te same jednostki). W wojnie zachowanie bazy.
+  const consolidationPeace = isArmyConsolidationEnabled() && canConcentrateArmy(opts)
+    && opts.atWarWithCiv !== true;
+  const standardConcentration = canConcentrateArmy(opts) && !consolidationPeace
     ? planArmyConcentration(playerId, myUnits, {
       excludedUnitIds: concentrationExcludedUnitIds,
     })
@@ -3407,7 +3418,7 @@ export function decideAITurn(
   // bezpośrednią walkę/obronę domu". Jednostki już przydzielone do
   // `concentration` (jeśli powstał) są wyłączone również — to ich lokalny
   // klaster już jest zbierany, front-merge decyduje wyłącznie o RESZCIE.
-  if (canConcentrateArmy(opts) && !(forcedWarAttack && (forcedWarActiveWaves.length > 0 || forcedWarWaveHistory.length > 0))) {
+  if (canConcentrateArmy(opts) && !consolidationPeace && !(forcedWarAttack && (forcedWarActiveWaves.length > 0 || forcedWarWaveHistory.length > 0))) {
     const combatEngagedUnitIds = new Set(
       myUnits
         .filter(u => engageableEnemyUnits.some(eu => isWithinAttackRange(u, eu.q, eu.r, data)))
@@ -3491,8 +3502,7 @@ export function decideAITurn(
   // jednostki polowe, ktore nie maja zadania (nie garnizon, nie misja, nie obrona domu, nie
   // walka), maszeruja do stolicy i scalaja sie tam (miasto zapasowe, gdy stolica pelna).
   // Wojna obslugiwana jest przez applyWarAllInCapitalToCommands (armia na wojne).
-  if (isArmyConsolidationEnabled() && canConcentrateArmy(opts) && !forcedWarAttack
-    && (opts.warAllIn?.targets.length ?? 0) === 0) {
+  if (consolidationPeace && !forcedWarAttack) {
     const rally = pickRallyCity(myCities, opts.capitalCityId);
     if (rally !== undefined) {
       const busyIds = new Set<string>(
@@ -3864,7 +3874,7 @@ export function decideAITurn(
   // armia idzie na stolice przeciwnika. Nadpisuje komendy RUCHU jednostek bojowych (zostawia
   // ataki oraz wejscie na heks wrogiego miasta); gracz nigdy tu nie trafia (decideAITurn = AI).
   if (isWarAllInCapitalEnabled() && opts.warAllIn !== undefined && opts.warAllIn.targets.length > 0) {
-    applyWarAllInCapitalToCommands(commands, myUnits, units, cities, playerId, map, opts.warAllIn);
+    applyWarAllInCapitalToCommands(commands, myUnits, units, cities, playerId, map, opts.warAllIn, data);
   }
 
   commands.push({ type: 'endTurn' });
@@ -3883,6 +3893,7 @@ function applyWarAllInCapitalToCommands(
   playerId: number,
   map: GameMap,
   ctx: WarAllInContext,
+  data: GameData,
 ): void {
   // Zaokretowane / morskie jednostki zostawiamy dotychczasowej logice (parytet ze sciezka barbarzyncow).
   const eligible = myUnits.filter(u =>
@@ -3922,7 +3933,7 @@ function applyWarAllInCapitalToCommands(
   // zrownowazona czesc wojsk marszu, idaca na stolice JEDNEGO wroga. OFF = jedna wspolna
   // procedura (dotychczasowe zachowanie).
   const plans = isArmyConsolidationEnabled()
-    ? planWarArmiesByEnemy(planned, ctx, nav, warOpts)
+    ? planWarArmiesByEnemy(planned, ctx, nav, warOpts, data)
     : [planWarAllInCapital(planned, ctx.targets, nav, warOpts)];
   // Kolejnosc komend = kolejnosc planu (przod kolumny zwalnia heksy tylnym).
   for (const plan of plans) {
@@ -3939,20 +3950,39 @@ function applyWarAllInCapitalToCommands(
 }
 
 /**
- * R-WEB-ARMY-CONSOLIDATION-Q1: jedna armia na wojne. Wojska dzielone na `warArmyCount` armii
- * (zrownowazone, `splitIntoWarArmies`); armia i-ta marszuje tylko na stolice i-tego wroga
- * (wrogowie posortowani po id). Nadwyzka wrogow ponad armie nie powstaje (min 1 armia).
+ * R-WEB-ARMY-CONSOLIDATION-Q1 (flaga ON): armia na wojne. Wojska dzielone na `warArmyCount`
+ * armii (liczba wrogich cywilizacji w `ctx.targets`, min 1), zrownowazone sila bojowa
+ * (`splitIntoWarArmies`, sila = armyFieldPower * udzial HP). Cala armia przydzielana do wroga
+ * wg W2 (`allocateGroupsToEnemies`, te same reguly co w warAllInCapital.ts); armia marszuje na
+ * stolice przydzielonego wroga (planWarAllInCapital -> W1/W2 bez zmian).
  */
 function planWarArmiesByEnemy(
   units: RuntimeUnit[],
   ctx: WarAllInContext,
   nav: { map: GameMap; blocked: ReadonlySet<string>; occupied: ReadonlySet<string> },
   warOpts: { enemyArmies?: ReadonlyArray<EngageArmyHex>; engageRadius?: number; enemyStrength?: ReadonlyArray<EnemyStrengthRef> },
+  data: GameData,
 ): ReturnType<typeof planWarAllInCapital>[] {
+  // Jeden cel na wroga (ctxFor w main.ts), wiec liczba wrogich cywilizacji = liczba wojen.
   const enemyOwners = [...new Set(ctx.targets.map(t => t.ownerId))].sort((a, b) => a - b);
-  const groups = splitIntoWarArmies(units, warArmyCount(enemyOwners), () => 1);
+  if (enemyOwners.length === 0) return [];
+  const strengthOf = (u: RuntimeUnit): number => {
+    const def = data.units.find(d => d.Jednostka === u.typeId);
+    const power = def !== undefined ? armyFieldPower(def as unknown as UnitPowerInput) : 0;
+    const maxHp = _unitMaxHealth(u, data);
+    const frac = maxHp > 0 ? Math.max(0, Math.min(1, (u.hp ?? maxHp) / maxHp)) : 1;
+    return (power > 0 ? power : 1) * frac;
+  };
+  const groups = splitIntoWarArmies(units, warArmyCount(enemyOwners), strengthOf);
+  const groupRefs: ArmyGroupRef[] = groups.map((g, i) => ({ id: `wojna-${i}`, size: g.length }));
+  // W2: przydzial CALYCH armii do wrogow (sila z warOpts.enemyStrength; brak = po rowno).
+  const enemies: EnemyStrengthRef[] = enemyOwners.map(o => ({
+    ownerId: o,
+    strength: warOpts.enemyStrength?.find(e => e.ownerId === o)?.strength ?? 1,
+  }));
+  const alloc = allocateGroupsToEnemies(groupRefs, enemies);
   return groups.map((group, i) => {
-    const owner = enemyOwners[i % enemyOwners.length];
+    const owner = alloc.get(groupRefs[i]!.id) ?? enemyOwners[i % enemyOwners.length]!;
     const groupTargets = ctx.targets.filter(t => t.ownerId === owner);
     return planWarAllInCapital(group, groupTargets, nav, warOpts);
   });

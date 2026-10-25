@@ -29932,6 +29932,12 @@ async function boot(): Promise<void> {
      * (wyeliminowany) nie daje celu. Zwraca undefined gdy flaga OFF -- wtedy ai.ts /
      * barbarians.ts dzialaja jak dotychczas (i nie czytamy diplomacyRelations).
      */
+    /** R-WEB-ARMY-CONSOLIDATION-Q1: czy `selfOwnerId` jest w wojnie z inna cywilizacja (nie barbarzyncy). */
+    function atWarWithCivFor(selfOwnerId: number): boolean {
+      return [...new Set(cities.map(c => c.ownerId))].some(o =>
+        o !== selfOwnerId && !isBarbarian(o) && !eliminatedOwners.has(o)
+        && getDiploRelation(selfOwnerId, o).status === 'wojna');
+    }
     function warAllInContextFor(
       selfOwnerId: number,
       engage: (targetOwnerId: number) => boolean,
@@ -35206,6 +35212,8 @@ async function boot(): Promise<void> {
                 ),
               // R-WEB-ARMY-CONSOLIDATION-Q1 (flaga OFF = brak pola): stolica = punkt zbiorki armii w pokoju.
               capitalCityId: isArmyConsolidationEnabled() ? capitalCityIdForOwner(ownerId) : undefined,
+              // R-WEB-ARMY-CONSOLIDATION-Q1 (flaga OFF = brak pola): wojna z inna cywilizacja (bez barbarzyncow).
+              atWarWithCiv: isArmyConsolidationEnabled() ? atWarWithCivFor(ownerId) : undefined,
               civAiProfile: civAiProf
                 ? {
                     ekspansywnosc: civAiProf.ekspansywnosc,
