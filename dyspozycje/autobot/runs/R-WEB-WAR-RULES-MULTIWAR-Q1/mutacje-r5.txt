@@ -1,0 +1,17 @@
+M1 R1/R2 werdykt bramki wypowiedzenia usuniety :: war-rules-multiwar-main-guard-test.cjs=RED(exit 1)
+M2 R3 blokada wojny epoki usunieta :: war-rules-multiwar-main-guard-test.cjs=RED(exit 1)
+M3 klaster panstw-miast bez bramki :: war-rules-multiwar-main-guard-test.cjs=RED(exit 1)
+M4 sojusznik dolaczajacy bez bramki :: war-rules-multiwar-main-guard-test.cjs=RED(exit 1)
+M5 interCivWarBlockedForAi ignoruje flage :: war-rules-multiwar-main-guard-test.cjs=RED(exit 1)
+M6 garnizony wlaczone do puli W1 :: war-rules-multiwar-main-guard-test.cjs=RED(exit 1)
+M7 reset opoznienia R1 usuniety :: war-rules-multiwar-main-guard-test.cjs=RED(exit 1)
+M8 licznik wojen epoki (R3) nie inkrementowany :: war-rules-multiwar-main-guard-test.cjs=RED(exit 1)
+M9 cywile/zwiadowcy w puli armii W1 :: war-rules-multiwar-main-guard-test.cjs=RED(exit 1)
+X1 R1 opoznienie usuniete (module) :: war-rules-multiwar-test.cjs=RED(exit 1) war-allin-capital-test.cjs=GREEN
+X2 R2 limit napastnika usuniety (module) :: war-rules-multiwar-test.cjs=RED(exit 1) war-allin-capital-test.cjs=GREEN
+X3 R2 limit celu usuniety (module) :: war-rules-multiwar-test.cjs=RED(exit 1) war-allin-capital-test.cjs=GREEN
+X4 R3 limit wojen epoki usuniety (module) :: war-rules-multiwar-test.cjs=RED(exit 1) war-allin-capital-test.cjs=GREEN
+X5 W1 promien zaangazowania ignorowany (module) :: war-rules-multiwar-test.cjs=RED(exit 1) war-allin-capital-test.cjs=GREEN
+X6 W2 podzial armii wylaczony (module) :: war-rules-multiwar-test.cjs=RED(exit 1) war-allin-capital-test.cjs=GREEN
+X7 W1 wybor celu wylaczony w warAllInCapital :: war-allin-capital-test.cjs=GREEN war-rules-multiwar-test.cjs=RED(exit 1)
+RESTORE_OK=true

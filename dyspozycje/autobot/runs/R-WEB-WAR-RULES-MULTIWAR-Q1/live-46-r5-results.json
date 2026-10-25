@@ -1,0 +1,1272 @@
+{
+  "on": {
+    "summary": {
+      "mode": "ON",
+      "warsAtStart": 1,
+      "startPairs": [
+        [
+          0,
+          1
+        ]
+      ],
+      "turnsRequested": 46,
+      "turnsSettled": 46,
+      "finalTurn": 47,
+      "newWarsBeforeTurn40Max": 0,
+      "warsBeforeTurn40Max": 1,
+      "warsAtEnd": 1,
+      "maxWarsPerOwnerOverRun": 1,
+      "avgTurnMs": 3003,
+      "consoleErrors": 8,
+      "pageErrors": 0,
+      "consoleErrorSample": [
+        "[Wojna wymuszona] DECISION_REQUIRED: brak niezablokowanej sojuszem pary/trójkąta dla ownerów [0] -- wszystkie istniejące pary zablokowane, lub brak jakiejkolwiek pary do dołączenia. Przydział pominięt"
+      ]
+    },
+    "perTurn": [
+      {
+        "turnBefore": 1,
+        "settled": true,
+        "ms": 2823,
+        "wars": 1,
+        "maxWarsPerOwner": 1,
+        "pairs": [
+          [
+            0,
+            1
+          ]
+        ]
+      },
+      {
+        "turnBefore": 2,
+        "settled": true,
+        "ms": 2991,
+        "wars": 1,
+        "maxWarsPerOwner": 1,
+        "pairs": [
+          [
+            0,
+            1
+          ]
+        ]
+      },
+      {
+        "turnBefore": 3,
+        "settled": true,
+        "ms": 3125,
+        "wars": 1,
+        "maxWarsPerOwner": 1,
+        "pairs": [
+          [
+            0,
+            1
+          ]
+        ]
+      },
+      {
+        "turnBefore": 4,
+        "settled": true,
+        "ms": 3011,
+        "wars": 1,
+        "maxWarsPerOwner": 1,
+        "pairs": [
+          [
+            0,
+            1
+          ]
+        ]
+      },
+      {
+        "turnBefore": 5,
+        "settled": true,
+        "ms": 3027,
+        "wars": 1,
+        "maxWarsPerOwner": 1,
+        "pairs": [
+          [
+            0,
+            1
+          ]
+        ]
+      },
+      {
+        "turnBefore": 6,
+        "settled": true,
+        "ms": 3198,
+        "wars": 1,
+        "maxWarsPerOwner": 1,
+        "pairs": [
+          [
+            0,
+            1
+          ]
+        ]
+      },
+      {
+        "turnBefore": 7,
+        "settled": true,
+        "ms": 3213,
+        "wars": 1,
+        "maxWarsPerOwner": 1,
+        "pairs": [
+          [
+            0,
+            1
+          ]
+        ]
+      },
+      {
+        "turnBefore": 8,
+        "settled": true,
+        "ms": 3069,
+        "wars": 1,
+        "maxWarsPerOwner": 1,
+        "pairs": [
+          [
+            0,
+            1
+          ]
+        ]
+      },
+      {
+        "turnBefore": 9,
+        "settled": true,
+        "ms": 3126,
+        "wars": 1,
+        "maxWarsPerOwner": 1,
+        "pairs": [
+          [
+            0,
+            1
+          ]
+        ]
+      },
+      {
+        "turnBefore": 10,
+        "settled": true,
+        "ms": 2904,
+        "wars": 1,
+        "maxWarsPerOwner": 1,
+        "pairs": [
+          [
+            0,
+            1
+          ]
+        ]
+      },
+      {
+        "turnBefore": 11,
+        "settled": true,
+        "ms": 2945,
+        "wars": 1,
+        "maxWarsPerOwner": 1,
+        "pairs": [
+          [
+            0,
+            1
+          ]
+        ]
+      },
+      {
+        "turnBefore": 12,
+        "settled": true,
+        "ms": 2948,
+        "wars": 1,
+        "maxWarsPerOwner": 1,
+        "pairs": [
+          [
+            0,
+            1
+          ]
+        ]
+      },
+      {
+        "turnBefore": 13,
+        "settled": true,
+        "ms": 2977,
+        "wars": 1,
+        "maxWarsPerOwner": 1,
+        "pairs": [
+          [
+            0,
+            1
+          ]
+        ]
+      },
+      {
+        "turnBefore": 14,
+        "settled": true,
+        "ms": 3015,
+        "wars": 1,
+        "maxWarsPerOwner": 1,
+        "pairs": [
+          [
+            0,
+            1
+          ]
+        ]
+      },
+      {
+        "turnBefore": 15,
+        "settled": true,
+        "ms": 3072,
+        "wars": 1,
+        "maxWarsPerOwner": 1,
+        "pairs": [
+          [
+            0,
+            1
+          ]
+        ]
+      },
+      {
+        "turnBefore": 16,
+        "settled": true,
+        "ms": 2772,
+        "wars": 1,
+        "maxWarsPerOwner": 1,
+        "pairs": [
+          [
+            0,
+            1
+          ]
+        ]
+      },
+      {
+        "turnBefore": 17,
+        "settled": true,
+        "ms": 2938,
+        "wars": 1,
+        "maxWarsPerOwner": 1,
+        "pairs": [
+          [
+            0,
+            1
+          ]
+        ]
+      },
+      {
+        "turnBefore": 18,
+        "settled": true,
+        "ms": 3027,
+        "wars": 1,
+        "maxWarsPerOwner": 1,
+        "pairs": [
+          [
+            0,
+            1
+          ]
+        ]
+      },
+      {
+        "turnBefore": 19,
+        "settled": true,
+        "ms": 2948,
+        "wars": 1,
+        "maxWarsPerOwner": 1,
+        "pairs": [
+          [
+            0,
+            1
+          ]
+        ]
+      },
+      {
+        "turnBefore": 20,
+        "settled": true,
+        "ms": 2856,
+        "wars": 1,
+        "maxWarsPerOwner": 1,
+        "pairs": [
+          [
+            0,
+            1
+          ]
+        ]
+      },
+      {
+        "turnBefore": 21,
+        "settled": true,
+        "ms": 2998,
+        "wars": 1,
+        "maxWarsPerOwner": 1,
+        "pairs": [
+          [
+            0,
+            1
+          ]
+        ]
+      },
+      {
+        "turnBefore": 22,
+        "settled": true,
+        "ms": 2987,
+        "wars": 1,
+        "maxWarsPerOwner": 1,
+        "pairs": [
+          [
+            0,
+            1
+          ]
+        ]
+      },
+      {
+        "turnBefore": 23,
+        "settled": true,
+        "ms": 3065,
+        "wars": 1,
+        "maxWarsPerOwner": 1,
+        "pairs": [
+          [
+            0,
+            1
+          ]
+        ]
+      },
+      {
+        "turnBefore": 24,
+        "settled": true,
+        "ms": 2934,
+        "wars": 1,
+        "maxWarsPerOwner": 1,
+        "pairs": [
+          [
+            0,
+            1
+          ]
+        ]
+      },
+      {
+        "turnBefore": 25,
+        "settled": true,
+        "ms": 2959,
+        "wars": 1,
+        "maxWarsPerOwner": 1,
+        "pairs": [
+          [
+            0,
+            1
+          ]
+        ]
+      },
+      {
+        "turnBefore": 26,
+        "settled": true,
+        "ms": 2988,
+        "wars": 1,
+        "maxWarsPerOwner": 1,
+        "pairs": [
+          [
+            0,
+            1
+          ]
+        ]
+      },
+      {
+        "turnBefore": 27,
+        "settled": true,
+        "ms": 3033,
+        "wars": 1,
+        "maxWarsPerOwner": 1,
+        "pairs": [
+          [
+            0,
+            1
+          ]
+        ]
+      },
+      {
+        "turnBefore": 28,
+        "settled": true,
+        "ms": 3049,
+        "wars": 1,
+        "maxWarsPerOwner": 1,
+        "pairs": [
+          [
+            0,
+            1
+          ]
+        ]
+      },
+      {
+        "turnBefore": 29,
+        "settled": true,
+        "ms": 2898,
+        "wars": 1,
+        "maxWarsPerOwner": 1,
+        "pairs": [
+          [
+            0,
+            1
+          ]
+        ]
+      },
+      {
+        "turnBefore": 30,
+        "settled": true,
+        "ms": 3046,
+        "wars": 1,
+        "maxWarsPerOwner": 1,
+        "pairs": [
+          [
+            0,
+            1
+          ]
+        ]
+      },
+      {
+        "turnBefore": 31,
+        "settled": true,
+        "ms": 2863,
+        "wars": 1,
+        "maxWarsPerOwner": 1,
+        "pairs": [
+          [
+            0,
+            1
+          ]
+        ]
+      },
+      {
+        "turnBefore": 32,
+        "settled": true,
+        "ms": 3117,
+        "wars": 1,
+        "maxWarsPerOwner": 1,
+        "pairs": [
+          [
+            0,
+            1
+          ]
+        ]
+      },
+      {
+        "turnBefore": 33,
+        "settled": true,
+        "ms": 2925,
+        "wars": 1,
+        "maxWarsPerOwner": 1,
+        "pairs": [
+          [
+            0,
+            1
+          ]
+        ]
+      },
+      {
+        "turnBefore": 34,
+        "settled": true,
+        "ms": 2894,
+        "wars": 1,
+        "maxWarsPerOwner": 1,
+        "pairs": [
+          [
+            0,
+            1
+          ]
+        ]
+      },
+      {
+        "turnBefore": 35,
+        "settled": true,
+        "ms": 3023,
+        "wars": 1,
+        "maxWarsPerOwner": 1,
+        "pairs": [
+          [
+            0,
+            1
+          ]
+        ]
+      },
+      {
+        "turnBefore": 36,
+        "settled": true,
+        "ms": 2873,
+        "wars": 1,
+        "maxWarsPerOwner": 1,
+        "pairs": [
+          [
+            0,
+            1
+          ]
+        ]
+      },
+      {
+        "turnBefore": 37,
+        "settled": true,
+        "ms": 3044,
+        "wars": 1,
+        "maxWarsPerOwner": 1,
+        "pairs": [
+          [
+            0,
+            1
+          ]
+        ]
+      },
+      {
+        "turnBefore": 38,
+        "settled": true,
+        "ms": 2953,
+        "wars": 1,
+        "maxWarsPerOwner": 1,
+        "pairs": [
+          [
+            0,
+            1
+          ]
+        ]
+      },
+      {
+        "turnBefore": 39,
+        "settled": true,
+        "ms": 2807,
+        "wars": 1,
+        "maxWarsPerOwner": 1,
+        "pairs": [
+          [
+            0,
+            1
+          ]
+        ]
+      },
+      {
+        "turnBefore": 40,
+        "settled": true,
+        "ms": 3074,
+        "wars": 1,
+        "maxWarsPerOwner": 1,
+        "pairs": [
+          [
+            0,
+            1
+          ]
+        ]
+      },
+      {
+        "turnBefore": 41,
+        "settled": true,
+        "ms": 2914,
+        "wars": 1,
+        "maxWarsPerOwner": 1,
+        "pairs": [
+          [
+            0,
+            1
+          ]
+        ]
+      },
+      {
+        "turnBefore": 42,
+        "settled": true,
+        "ms": 3011,
+        "wars": 1,
+        "maxWarsPerOwner": 1,
+        "pairs": [
+          [
+            0,
+            1
+          ]
+        ]
+      },
+      {
+        "turnBefore": 43,
+        "settled": true,
+        "ms": 3337,
+        "wars": 1,
+        "maxWarsPerOwner": 1,
+        "pairs": [
+          [
+            0,
+            1
+          ]
+        ]
+      },
+      {
+        "turnBefore": 44,
+        "settled": true,
+        "ms": 3233,
+        "wars": 1,
+        "maxWarsPerOwner": 1,
+        "pairs": [
+          [
+            0,
+            1
+          ]
+        ]
+      },
+      {
+        "turnBefore": 45,
+        "settled": true,
+        "ms": 3058,
+        "wars": 1,
+        "maxWarsPerOwner": 1,
+        "pairs": [
+          [
+            0,
+            1
+          ]
+        ]
+      },
+      {
+        "turnBefore": 46,
+        "settled": true,
+        "ms": 3088,
+        "wars": 1,
+        "maxWarsPerOwner": 1,
+        "pairs": [
+          [
+            0,
+            1
+          ]
+        ]
+      }
+    ],
+    "startSnap": {
+      "wars": 1,
+      "maxWarsPerOwner": 1,
+      "pairs": [
+        [
+          0,
+          1
+        ]
+      ]
+    }
+  },
+  "off": {
+    "summary": {
+      "mode": "OFF",
+      "warsAtStart": 1,
+      "startPairs": [
+        [
+          0,
+          1
+        ]
+      ],
+      "turnsRequested": 46,
+      "turnsSettled": 46,
+      "finalTurn": 47,
+      "newWarsBeforeTurn40Max": 0,
+      "warsBeforeTurn40Max": 1,
+      "warsAtEnd": 1,
+      "maxWarsPerOwnerOverRun": 1,
+      "avgTurnMs": 3068,
+      "consoleErrors": 23,
+      "pageErrors": 0,
+      "consoleErrorSample": [
+        "[Wojna wymuszona] DECISION_REQUIRED: brak niezablokowanej sojuszem pary/trójkąta dla ownerów [0] -- wszystkie istniejące pary zablokowane, lub brak jakiejkolwiek pary do dołączenia. Przydział pominięt"
+      ]
+    },
+    "perTurn": [
+      {
+        "turnBefore": 1,
+        "settled": true,
+        "ms": 2810,
+        "wars": 1,
+        "maxWarsPerOwner": 1,
+        "pairs": [
+          [
+            0,
+            1
+          ]
+        ]
+      },
+      {
+        "turnBefore": 2,
+        "settled": true,
+        "ms": 2990,
+        "wars": 1,
+        "maxWarsPerOwner": 1,
+        "pairs": [
+          [
+            0,
+            1
+          ]
+        ]
+      },
+      {
+        "turnBefore": 3,
+        "settled": true,
+        "ms": 3227,
+        "wars": 1,
+        "maxWarsPerOwner": 1,
+        "pairs": [
+          [
+            0,
+            1
+          ]
+        ]
+      },
+      {
+        "turnBefore": 4,
+        "settled": true,
+        "ms": 3559,
+        "wars": 1,
+        "maxWarsPerOwner": 1,
+        "pairs": [
+          [
+            0,
+            1
+          ]
+        ]
+      },
+      {
+        "turnBefore": 5,
+        "settled": true,
+        "ms": 3306,
+        "wars": 1,
+        "maxWarsPerOwner": 1,
+        "pairs": [
+          [
+            0,
+            1
+          ]
+        ]
+      },
+      {
+        "turnBefore": 6,
+        "settled": true,
+        "ms": 3122,
+        "wars": 1,
+        "maxWarsPerOwner": 1,
+        "pairs": [
+          [
+            0,
+            1
+          ]
+        ]
+      },
+      {
+        "turnBefore": 7,
+        "settled": true,
+        "ms": 2970,
+        "wars": 1,
+        "maxWarsPerOwner": 1,
+        "pairs": [
+          [
+            0,
+            1
+          ]
+        ]
+      },
+      {
+        "turnBefore": 8,
+        "settled": true,
+        "ms": 3076,
+        "wars": 1,
+        "maxWarsPerOwner": 1,
+        "pairs": [
+          [
+            0,
+            1
+          ]
+        ]
+      },
+      {
+        "turnBefore": 9,
+        "settled": true,
+        "ms": 3128,
+        "wars": 1,
+        "maxWarsPerOwner": 1,
+        "pairs": [
+          [
+            0,
+            1
+          ]
+        ]
+      },
+      {
+        "turnBefore": 10,
+        "settled": true,
+        "ms": 3048,
+        "wars": 1,
+        "maxWarsPerOwner": 1,
+        "pairs": [
+          [
+            0,
+            1
+          ]
+        ]
+      },
+      {
+        "turnBefore": 11,
+        "settled": true,
+        "ms": 3010,
+        "wars": 1,
+        "maxWarsPerOwner": 1,
+        "pairs": [
+          [
+            0,
+            1
+          ]
+        ]
+      },
+      {
+        "turnBefore": 12,
+        "settled": true,
+        "ms": 2982,
+        "wars": 1,
+        "maxWarsPerOwner": 1,
+        "pairs": [
+          [
+            0,
+            1
+          ]
+        ]
+      },
+      {
+        "turnBefore": 13,
+        "settled": true,
+        "ms": 3209,
+        "wars": 1,
+        "maxWarsPerOwner": 1,
+        "pairs": [
+          [
+            0,
+            1
+          ]
+        ]
+      },
+      {
+        "turnBefore": 14,
+        "settled": true,
+        "ms": 2963,
+        "wars": 1,
+        "maxWarsPerOwner": 1,
+        "pairs": [
+          [
+            0,
+            1
+          ]
+        ]
+      },
+      {
+        "turnBefore": 15,
+        "settled": true,
+        "ms": 3314,
+        "wars": 1,
+        "maxWarsPerOwner": 1,
+        "pairs": [
+          [
+            0,
+            1
+          ]
+        ]
+      },
+      {
+        "turnBefore": 16,
+        "settled": true,
+        "ms": 3288,
+        "wars": 1,
+        "maxWarsPerOwner": 1,
+        "pairs": [
+          [
+            0,
+            1
+          ]
+        ]
+      },
+      {
+        "turnBefore": 17,
+        "settled": true,
+        "ms": 2974,
+        "wars": 1,
+        "maxWarsPerOwner": 1,
+        "pairs": [
+          [
+            0,
+            1
+          ]
+        ]
+      },
+      {
+        "turnBefore": 18,
+        "settled": true,
+        "ms": 2975,
+        "wars": 1,
+        "maxWarsPerOwner": 1,
+        "pairs": [
+          [
+            0,
+            1
+          ]
+        ]
+      },
+      {
+        "turnBefore": 19,
+        "settled": true,
+        "ms": 3003,
+        "wars": 1,
+        "maxWarsPerOwner": 1,
+        "pairs": [
+          [
+            0,
+            1
+          ]
+        ]
+      },
+      {
+        "turnBefore": 20,
+        "settled": true,
+        "ms": 2924,
+        "wars": 1,
+        "maxWarsPerOwner": 1,
+        "pairs": [
+          [
+            0,
+            1
+          ]
+        ]
+      },
+      {
+        "turnBefore": 21,
+        "settled": true,
+        "ms": 3026,
+        "wars": 1,
+        "maxWarsPerOwner": 1,
+        "pairs": [
+          [
+            0,
+            1
+          ]
+        ]
+      },
+      {
+        "turnBefore": 22,
+        "settled": true,
+        "ms": 2987,
+        "wars": 1,
+        "maxWarsPerOwner": 1,
+        "pairs": [
+          [
+            0,
+            1
+          ]
+        ]
+      },
+      {
+        "turnBefore": 23,
+        "settled": true,
+        "ms": 3076,
+        "wars": 1,
+        "maxWarsPerOwner": 1,
+        "pairs": [
+          [
+            0,
+            1
+          ]
+        ]
+      },
+      {
+        "turnBefore": 24,
+        "settled": true,
+        "ms": 3015,
+        "wars": 1,
+        "maxWarsPerOwner": 1,
+        "pairs": [
+          [
+            0,
+            1
+          ]
+        ]
+      },
+      {
+        "turnBefore": 25,
+        "settled": true,
+        "ms": 2739,
+        "wars": 1,
+        "maxWarsPerOwner": 1,
+        "pairs": [
+          [
+            0,
+            1
+          ]
+        ]
+      },
+      {
+        "turnBefore": 26,
+        "settled": true,
+        "ms": 3044,
+        "wars": 1,
+        "maxWarsPerOwner": 1,
+        "pairs": [
+          [
+            0,
+            1
+          ]
+        ]
+      },
+      {
+        "turnBefore": 27,
+        "settled": true,
+        "ms": 3133,
+        "wars": 1,
+        "maxWarsPerOwner": 1,
+        "pairs": [
+          [
+            0,
+            1
+          ]
+        ]
+      },
+      {
+        "turnBefore": 28,
+        "settled": true,
+        "ms": 3156,
+        "wars": 1,
+        "maxWarsPerOwner": 1,
+        "pairs": [
+          [
+            0,
+            1
+          ]
+        ]
+      },
+      {
+        "turnBefore": 29,
+        "settled": true,
+        "ms": 3303,
+        "wars": 1,
+        "maxWarsPerOwner": 1,
+        "pairs": [
+          [
+            0,
+            1
+          ]
+        ]
+      },
+      {
+        "turnBefore": 30,
+        "settled": true,
+        "ms": 3041,
+        "wars": 1,
+        "maxWarsPerOwner": 1,
+        "pairs": [
+          [
+            0,
+            1
+          ]
+        ]
+      },
+      {
+        "turnBefore": 31,
+        "settled": true,
+        "ms": 3117,
+        "wars": 1,
+        "maxWarsPerOwner": 1,
+        "pairs": [
+          [
+            0,
+            1
+          ]
+        ]
+      },
+      {
+        "turnBefore": 32,
+        "settled": true,
+        "ms": 3127,
+        "wars": 1,
+        "maxWarsPerOwner": 1,
+        "pairs": [
+          [
+            0,
+            1
+          ]
+        ]
+      },
+      {
+        "turnBefore": 33,
+        "settled": true,
+        "ms": 3052,
+        "wars": 1,
+        "maxWarsPerOwner": 1,
+        "pairs": [
+          [
+            0,
+            1
+          ]
+        ]
+      },
+      {
+        "turnBefore": 34,
+        "settled": true,
+        "ms": 3075,
+        "wars": 1,
+        "maxWarsPerOwner": 1,
+        "pairs": [
+          [
+            0,
+            1
+          ]
+        ]
+      },
+      {
+        "turnBefore": 35,
+        "settled": true,
+        "ms": 2752,
+        "wars": 1,
+        "maxWarsPerOwner": 1,
+        "pairs": [
+          [
+            0,
+            1
+          ]
+        ]
+      },
+      {
+        "turnBefore": 36,
+        "settled": true,
+        "ms": 3081,
+        "wars": 1,
+        "maxWarsPerOwner": 1,
+        "pairs": [
+          [
+            0,
+            1
+          ]
+        ]
+      },
+      {
+        "turnBefore": 37,
+        "settled": true,
+        "ms": 3383,
+        "wars": 1,
+        "maxWarsPerOwner": 1,
+        "pairs": [
+          [
+            0,
+            1
+          ]
+        ]
+      },
+      {
+        "turnBefore": 38,
+        "settled": true,
+        "ms": 2953,
+        "wars": 1,
+        "maxWarsPerOwner": 1,
+        "pairs": [
+          [
+            0,
+            1
+          ]
+        ]
+      },
+      {
+        "turnBefore": 39,
+        "settled": true,
+        "ms": 3031,
+        "wars": 1,
+        "maxWarsPerOwner": 1,
+        "pairs": [
+          [
+            0,
+            1
+          ]
+        ]
+      },
+      {
+        "turnBefore": 40,
+        "settled": true,
+        "ms": 3266,
+        "wars": 1,
+        "maxWarsPerOwner": 1,
+        "pairs": [
+          [
+            0,
+            1
+          ]
+        ]
+      },
+      {
+        "turnBefore": 41,
+        "settled": true,
+        "ms": 2929,
+        "wars": 1,
+        "maxWarsPerOwner": 1,
+        "pairs": [
+          [
+            0,
+            1
+          ]
+        ]
+      },
+      {
+        "turnBefore": 42,
+        "settled": true,
+        "ms": 2902,
+        "wars": 1,
+        "maxWarsPerOwner": 1,
+        "pairs": [
+          [
+            0,
+            1
+          ]
+        ]
+      },
+      {
+        "turnBefore": 43,
+        "settled": true,
+        "ms": 2954,
+        "wars": 1,
+        "maxWarsPerOwner": 1,
+        "pairs": [
+          [
+            0,
+            1
+          ]
+        ]
+      },
+      {
+        "turnBefore": 44,
+        "settled": true,
+        "ms": 2915,
+        "wars": 1,
+        "maxWarsPerOwner": 1,
+        "pairs": [
+          [
+            0,
+            1
+          ]
+        ]
+      },
+      {
+        "turnBefore": 45,
+        "settled": true,
+        "ms": 3060,
+        "wars": 1,
+        "maxWarsPerOwner": 1,
+        "pairs": [
+          [
+            0,
+            1
+          ]
+        ]
+      },
+      {
+        "turnBefore": 46,
+        "settled": true,
+        "ms": 3114,
+        "wars": 1,
+        "maxWarsPerOwner": 1,
+        "pairs": [
+          [
+            0,
+            1
+          ]
+        ]
+      }
+    ],
+    "startSnap": {
+      "wars": 1,
+      "maxWarsPerOwner": 1,
+      "pairs": [
+        [
+          0,
+          1
+        ]
+      ]
+    }
+  }
+}
