@@ -64,12 +64,14 @@ try {
   eq(M.forcedEraTagFromPowod('R-EPOKA-ZELAZO-WYMUSZONA-WOJNA: x'), 'iron', 'R3c tag Żelaza z powodu');
   eq(M.forcedEraTagFromPowod('wrogie nastawienie'), null, 'R3d zwykła wojna nie jest wojną epoki');
   eq(M.forcedEraTagFromPowod(undefined), null, 'R3e brak powodu -> null');
-  eq(M.canDeclareEraForcedWar('stone', new Map()), true, 'R3f pierwsza wojna Kamienia dozwolona');
-  // R3 WYCOFANE (właściciel 2026-10-25): maxEraForcedWarsPerEra = null -> brak limitu wojen epoki.
-  eq(M.canDeclareEraForcedWar('stone', new Map([['stone', 1]])), true, 'R3g R3 wycofane: druga wojna Kamienia nie jest blokowana przez R3');
-  eq(M.canDeclareEraForcedWar('bronze', new Map([['stone', 1]])), true, 'R3h wojna Brązu niezależna od Kamienia');
-  eq(M.canDeclareEraForcedWar('iron', new Map([['bronze', 1], ['stone', 1]])), true, 'R3i wojna Żelaza dozwolona po Kamieniu i Brązie');
-  eq(M.WAR_RULES_PARAMS.maxEraForcedWarsPerEra, null, 'R3j parametr JSON maxEraForcedWarsPerEra = null (wycofany)');
+  const P1 = { ...M.WAR_RULES_PARAMS, maxEraForcedWarsPerEra: 1 };
+  eq(M.canDeclareEraForcedWar('stone', new Map(), P1), true, 'R3f pierwsza wojna Kamienia dozwolona');
+  eq(M.canDeclareEraForcedWar('stone', new Map([['stone', 1]]), P1), false, 'R3g druga wojna Kamienia w świecie blokowana (limit 1 na epokę)');
+  eq(M.canDeclareEraForcedWar('bronze', new Map([['stone', 1]]), P1), true, 'R3h wojna Brązu niezależna od Kamienia (inna epoka)');
+  eq(M.canDeclareEraForcedWar('iron', new Map([['bronze', 1], ['stone', 1]]), P1), true, 'R3i wojna Żelaza dozwolona po Kamieniu i Brązie');
+  eq(M.canDeclareEraForcedWar('bronze', new Map([['bronze', 1]]), P1), false, 'R3k druga wojna Brązu blokowana');
+  eq(M.canDeclareEraForcedWar('stone', new Map([['stone', 1]]), { ...P1, maxEraForcedWarsPerEra: null }), true, 'R3l null = brak limitu');
+  eq(M.WAR_RULES_PARAMS.maxEraForcedWarsPerEra, 1, 'R3j parametr JSON maxEraForcedWarsPerEra = 1 (r3)');
   eq(M.evaluateInterCivWarGate({ turn: 50, attackerEra: 1, attackerWarCount: 1, targetIsPlayer: true, targetEra: 1, targetWarCount: 0 }), 'stone_limit_attacker_r2', 'R2 nadal blokuje AI w Kamieniu z 1 wojną (także wobec gracza)');
   eq(M.evaluateInterCivWarGate({ turn: 50, attackerEra: 2, attackerWarCount: 5, targetIsPlayer: false, targetEra: 2, targetWarCount: 5 }), 'ok', 'R2 od Brązu bez limitu');
 

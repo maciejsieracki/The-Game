@@ -171,20 +171,20 @@ async function gotoPlaytestMapa(page) {
  *  scenariuszami przez świeży `gotoPlaytestMapa` (najprostszy sposób na czysty stan bez
  *  reimplementowania resetu domina). */
 async function playDominoScenario(page, consoleErrors, allianceSide) {
-  // A2. Fast-forward do tury 24 (próg gracza R-WOJNA-WYMUSZONA-PROG-TURY-GRACZ-Q1 = 25) --
+  // A2. Fast-forward do tury 39 (próg R1 = 40; gracz od tury 25) --
   // patrz komentarz nagłówkowy pliku i `advanceTurnBySettledEndTurn()`. Sandbox
   // `?playtest=mapa` (jeden realny AI) jest z natury niezrównoważony na 24 tury -- ten sam
   // zabezpieczający hak i to samo uzasadnienie co `perf-long-session-live-test.cjs`/
   // `rebel-protection-live-test.cjs`/`forced-war-player-target-live-test.cjs` (wyłącza
   // WYŁĄCZNIE checkVictory dla tej sesji testowej).
   await page.evaluate(() => window.__rebelProtectionTestDebug.disableVictoryCheckForTest());
-  for (let i = 0; i < 23; i++) {
+  for (let i = 0; i < 38; i++) {
     // eslint-disable-next-line no-await-in-loop
     const settled = await advanceTurnBySettledEndTurn(page);
     if (!settled) throw new Error(`fast-forward domina: endTurn #${i + 1} nie ustabilizował się`);
   }
   const worldFF = await page.evaluate(() => window.__eraTestDebug.getWorldState());
-  assert('fast-forward zakończony: turn===24 (próg gracza jeszcze NIE minął)', worldFF.turn === 24, worldFF);
+  assert('fast-forward zakończony: turn===39 (tuż przed progiem R1 = 40)', worldFF.turn === 39, worldFF);
 
   const forced = await page.evaluate(
     (side) => window.__eraTestDebug.forceBronzeForcedWarDominoOnPlayer(side ? { allianceSide: side } : undefined),

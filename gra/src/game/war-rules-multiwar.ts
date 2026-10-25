@@ -19,7 +19,7 @@ export interface WarRulesParams {
   delayInterCivWarsUntilTurn: number;
   maxConcurrentWarsStone: number | null;
   maxConcurrentWarsFromBronze: number | null;
-  /** R3 WYCOFANE (właściciel 2026-10-25): `null` = brak limitu wojen epoki w skali świata. */
+  /** R3 (r3, właściciel 2026-10-25): najwyżej N wojen epoki na epokę w skali świata (`null` = bez limitu). */
   maxEraForcedWarsPerEra: number | null;
   engageRadiusHexes: number;
   splitArmyByWarCount: boolean;
@@ -121,10 +121,10 @@ export function forcedEraTagFromPowod(powod: string | undefined): ForcedEraTag |
 }
 
 /**
- * R3 (WYCOFANE 2026-10-25 wg doprecyzowania właściciela: limit dotyczy wyłącznie Kamienia,
- * per cywilizacja, R2). Parametr `maxEraForcedWarsPerEra` = `null` -> brak limitu (domyślnie).
- * Gdy wartość jest liczbą, zachowana jest dawna semantyka: najwyżej N wojen epoki na epokę
- * w skali świata. `declaredByTag` = liczba już wypowiedzianych wojen epoki danej etykiety.
+ * R3 (r3, PRZYWRÓCONE wg decyzji orkiestratora 2026-10-25): w CAŁEJ grze (skala świata,
+ * nie na cywilizację) w każdej epoce wybucha najwyżej N wojen epoki (`maxEraForcedWarsPerEra`
+ * = 1 w `war-rules-params.json`). `declaredByTag` = liczba już wypowiedzianych wojen epoki
+ * danej etykiety. `null` = brak limitu.
  */
 export function canDeclareEraForcedWar(
   tag: ForcedEraTag,
