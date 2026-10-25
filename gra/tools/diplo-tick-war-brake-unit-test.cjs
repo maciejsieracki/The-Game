@@ -35,11 +35,11 @@ const bonus = (nadwyzkaPn, epoka = 1, zaufanie = 10, kolejneTuryDostaw = 2) =>
   M.tradeTrustBonusPerTura({ nadwyzkaPn, epoka, zaufanie, kolejneTuryDostaw }, p7);
 
 // --- flaga ---
-eq('flaga domyslnie OFF', M.isDiploTickWarBrakeEnabled(), false);
-M.setDiploTickWarBrakeOverride(true);
-eq('override ON', M.isDiploTickWarBrakeEnabled(), true);
+eq('flaga domyslnie ON (wydanie ROBOCZA)', M.isDiploTickWarBrakeEnabled(), true);
+M.setDiploTickWarBrakeOverride(false);
+eq('override OFF', M.isDiploTickWarBrakeEnabled(), false);
 M.setDiploTickWarBrakeOverride(null);
-eq('override zdjety -> OFF', M.isDiploTickWarBrakeEnabled(), false);
+eq('override zdjety -> default ON', M.isDiploTickWarBrakeEnabled(), true);
 
 // --- P7: tabela schodkowa kamien (100) ---
 eq('kamien 0 -> 0', bonus(0), 0);

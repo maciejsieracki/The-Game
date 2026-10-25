@@ -3,8 +3,8 @@
 // gry — silnik (main.ts) podaje wejscia, dostaje wynik. Parametry z
 // gra/data/diplomacy-tick-params.json (sekcje p6 / p7).
 
-/** Domyslnie OFF: bez flagi zachowanie i hash stanu identyczne z baza. */
-export const DIPLO_TICK_WAR_BRAKE_ENABLED_DEFAULT = false;
+/** Wydanie ROBOCZE (R-WEB-DIPLO-RELEASE-ROBOCZA-Q1): ON domyslnie, do testow wlasciciela. */
+export const DIPLO_TICK_WAR_BRAKE_ENABLED_DEFAULT = true;
 
 let flagOverride: boolean | null = null;
 

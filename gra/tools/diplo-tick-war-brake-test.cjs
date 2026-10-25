@@ -23,7 +23,7 @@ const has = (src, s) => src.includes(s);
 
 // Każdy check: nazwa + predykat na źródle main.ts (i module).
 const CHECKS = [
-  ['flaga domyslnie OFF', (m, mod) => /DIPLO_TICK_WAR_BRAKE_ENABLED_DEFAULT = false/.test(mod)],
+  ['flaga domyslnie ON (wydanie ROBOCZA)', (m, mod) => /DIPLO_TICK_WAR_BRAKE_ENABLED_DEFAULT = true/.test(mod)],
   ['P3: pary AI-AI tickowane za flaga', (m) => has(m, 'if (brakeOn) {\n        // P3: pary AI↔AI') && has(m, 'tickDiploAiAiPairsWithBrake();')],
   ['P3: AI-AI dostaje TickCtx z buildDiplomacyTickCtxForPair', (m) => has(m, 'tickDiplomacy(cur as any, buildDiplomacyTickCtxForPair(a, b))')],
   ['P3: Wiarygodnosc AI-AI = srednia (Z2)', (m) => has(m, '(getWiarygodnosc(a) + getWiarygodnosc(b)) / 2')],
