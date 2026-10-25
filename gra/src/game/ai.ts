@@ -18,6 +18,18 @@ import type { GameData, BuildingDef } from '../data/loader';
 import aiParamsRaw from '../../data/ai-params.json';
 import type { RuntimeUnit } from '../units/setup';
 import { isWarAllInCapitalEnabled, planWarAllInCapital, type WarAllInContext } from './warAllInCapital';
+import {
+  ARMY_CONSOLIDATION_HOME_GROUP_SIZE,
+  ARMY_CONSOLIDATION_MAX_PER_HEX,
+  ARMY_CONSOLIDATION_RALLY_SEARCH_HEX,
+  assignRallyTargets,
+  buildRallyCandidates,
+  homeDefenseGroupCount,
+  isArmyConsolidationEnabled,
+  pickRallyCity,
+  splitIntoWarArmies,
+  warArmyCount,
+} from './army-consolidation';
 import { hexDistance, computePath, computeReachable, keyOf, isCivilianUnit } from '../units/setup';
 import { farthestStepWithinBudget } from './ai-move-range';
 import {
@@ -70,8 +82,9 @@ import { unitRecruitUpkeepReserve } from './economy-upkeep';
 import type { AiTargetMemoryEntry } from './ai-fog';
 import {
   planArmyConcentration, planArmyFrontMerge, clusterUnitsByProximity,
-  ARMY_CONCENTRATION_RADIUS,
+  ARMY_CONCENTRATION_RADIUS, isEligibleForArmyConcentration,
 } from './army-concentration';
+import type { EngageArmyHex, EnemyStrengthRef } from './war-rules-multiwar';
 import {
   planForcedWarWave,
   type ForcedWarWave,
@@ -453,6 +466,11 @@ export interface AITurnOpts {
    * jednostki bojowe tego AI ida na najblizsza stolice (patrz warAllInCapital.ts).
    */
   warAllIn?: WarAllInContext;
+  /**
+   * R-WEB-ARMY-CONSOLIDATION-Q1 (tylko gdy flaga ARMY_CONSOLIDATION_ENABLED ON; brak = baza):
+   * id aktualnej stolicy tej cywilizacji (main.ts: capitalCityIdForOwner). Punkt zbiorki w pokoju.
+   */
+  capitalCityId?: string | null;
   /**
    * C-AI-PAKIET (2026-07-26): profil z civ-ai.json per typ cywilizacji —
    * ekspansywnosc i sklonnoscDoPodboju sterują ekspansją i agresją wojskową.
@@ -2968,6 +2986,7 @@ export function assignHomeDefenders(
   threats: RuntimeUnit[],
   myUnits: RuntimeUnit[],
   myCities: AICity[],
+  groupSize = 1,
 ): Map<string, RuntimeUnit> {
   const assignments = new Map<string, RuntimeUnit>();
   if (threats.length === 0 || myCities.length === 0) return assignments;
@@ -2980,11 +2999,15 @@ export function assignHomeDefenders(
 
   const used = new Set<string>();
   for (const threat of sortedThreats) {
-    const available = myUnits.filter(
-      u => u.ruchLeft > 0 && !isScoutUnit(u) && !used.has(u.id),
-    );
-    const defender = nearest(threat.q, threat.r, available, u => u.q, u => u.r);
-    if (defender !== undefined) {
+    // R-WEB-ARMY-CONSOLIDATION-Q1: groupSize > 1 (flaga ON) = kworum kilku obrońców na jedno
+    // zagrożenie. groupSize = 1 (domyslnie, flaga OFF) daje dokladnie dawny wynik 1:1.
+    const wanted = Math.max(1, Math.floor(groupSize));
+    for (let pick = 0; pick < wanted; pick++) {
+      const available = myUnits.filter(
+        u => u.ruchLeft > 0 && !isScoutUnit(u) && !used.has(u.id),
+      );
+      const defender = nearest(threat.q, threat.r, available, u => u.q, u => u.r);
+      if (defender === undefined) break;
       assignments.set(defender.id, threat);
       used.add(defender.id);
     }
@@ -3293,7 +3316,12 @@ export function decideAITurn(
   const homeThreats = knownEnemyUnitsForHomeDefense.filter(
     eu => myCities.some(city => isHomeDefenseThreatForCity(eu.q, eu.r, city)),
   );
-  const homeDefenderAssignments = assignHomeDefenders(homeThreats, myUnits, myCities);
+  const homeDefenderAssignments = assignHomeDefenders(
+    homeThreats,
+    myUnits,
+    myCities,
+    isArmyConsolidationEnabled() && canConcentrateArmy(opts) ? ARMY_CONSOLIDATION_HOME_GROUP_SIZE : 1,
+  );
   // Zagrożenia już zaatakowane w kroku 4b W TEJ SAMEJ turze (inna jednostka, adjacentEnemy) —
   // przeciw podwójnemu zaangażowaniu: przydzielony obrońca takiego zagrożenia NIE ma już
   // maszerować do celu, który ktoś inny właśnie obsługuje/zabija.
@@ -3456,6 +3484,62 @@ export function decideAITurn(
         }
       }
       for (const unitId of frontMerge.deferredUnitIds) concentrationDeferred.add(unitId);
+    }
+  }
+
+  // R-WEB-ARMY-CONSOLIDATION-Q1 (flaga ARMY_CONSOLIDATION_ENABLED, OFF = baza): w POKOJU
+  // jednostki polowe, ktore nie maja zadania (nie garnizon, nie misja, nie obrona domu, nie
+  // walka), maszeruja do stolicy i scalaja sie tam (miasto zapasowe, gdy stolica pelna).
+  // Wojna obslugiwana jest przez applyWarAllInCapitalToCommands (armia na wojne).
+  if (isArmyConsolidationEnabled() && canConcentrateArmy(opts) && !forcedWarAttack
+    && (opts.warAllIn?.targets.length ?? 0) === 0) {
+    const rally = pickRallyCity(myCities, opts.capitalCityId);
+    if (rally !== undefined) {
+      const busyIds = new Set<string>(
+        commands.map(c => (c as { unitId?: string }).unitId ?? ''),
+      );
+      const combatEngagedIds = new Set(
+        myUnits
+          .filter(u => engageableEnemyUnits.some(eu => isWithinAttackRange(u, eu.q, eu.r, data)))
+          .map(u => u.id),
+      );
+      const candidates = myUnits.filter(u =>
+        !busyIds.has(u.id)
+        && !concentrationDeferred.has(u.id)
+        && !homeDefenderAssignments.has(u.id)
+        && !activeFlankingUnitIds.has(u.id)
+        && !activeWaveUnitIds.has(u.id)
+        && !combatEngagedIds.has(u.id)
+        && isEligibleForArmyConcentration(u, playerId));
+      if (candidates.length > 0) {
+        const candidateIds = new Set(candidates.map(u => u.id));
+        // Zajetosc heksow zbiorki liczona tylko z jednostek STOJACYCH (garnizon, misje):
+        // kandydaci sa przydzielani od nowa.
+        const occupancy = new Map<string, number>();
+        for (const u of myUnits) {
+          if (candidateIds.has(u.id)) continue;
+          const k = keyOf(u.q, u.r);
+          occupancy.set(k, (occupancy.get(k) ?? 0) + 1);
+        }
+        const rallyHexes = buildRallyCandidates(myCities, rally, ARMY_CONSOLIDATION_RALLY_SEARCH_HEX);
+        const assignments = assignRallyTargets(
+          candidates,
+          rallyHexes,
+          ARMY_CONSOLIDATION_MAX_PER_HEX,
+          occupancy,
+        );
+        const byId = new Map(candidates.map(u => [u.id, u] as const));
+        for (const a of assignments) {
+          if (a.atRally) continue;
+          const unit = byId.get(a.unitId);
+          if (unit === undefined) continue;
+          const step = firstStep(unit, map, a.targetQ, a.targetR, units);
+          if (step !== null) {
+            commands.push({ type: 'move', unitId: unit.id, toQ: step.q, toR: step.r });
+            concentrationDeferred.add(unit.id);
+          }
+        }
+      }
     }
   }
 
@@ -3828,21 +3912,50 @@ function applyWarAllInCapitalToCommands(
   const blocked = new Set(enemyCityHex);
   const occupied = new Set(units.map(u => keyOf(u.q, u.r)));
   // R-WEB-WAR-RULES-MULTIWAR-Q1: W1/W2 tylko gdy wołający przekazał dane (flaga ON w main.ts).
-  const plan = planWarAllInCapital(planned, ctx.targets, { map, blocked, occupied }, {
+  const warOpts = {
     enemyArmies: ctx.enemyArmies,
     engageRadius: ctx.engageRadius,
     enemyStrength: ctx.enemyStrength,
-  });
+  };
+  const nav = { map, blocked, occupied };
+  // R-WEB-ARMY-CONSOLIDATION-Q1 (flaga ON): liczba armii = liczba wojen; kazda armia to
+  // zrownowazona czesc wojsk marszu, idaca na stolice JEDNEGO wroga. OFF = jedna wspolna
+  // procedura (dotychczasowe zachowanie).
+  const plans = isArmyConsolidationEnabled()
+    ? planWarArmiesByEnemy(planned, ctx, nav, warOpts)
+    : [planWarAllInCapital(planned, ctx.targets, nav, warOpts)];
   // Kolejnosc komend = kolejnosc planu (przod kolumny zwalnia heksy tylnym).
-  for (const o of plan.orders) {
-    commands.push({
-      type: 'move',
-      unitId: o.unitId,
-      toQ: o.step.q,
-      toR: o.step.r,
-      targetCityId: o.targetCityId,
-    });
+  for (const plan of plans) {
+    for (const o of plan.orders) {
+      commands.push({
+        type: 'move',
+        unitId: o.unitId,
+        toQ: o.step.q,
+        toR: o.step.r,
+        targetCityId: o.targetCityId,
+      });
+    }
   }
+}
+
+/**
+ * R-WEB-ARMY-CONSOLIDATION-Q1: jedna armia na wojne. Wojska dzielone na `warArmyCount` armii
+ * (zrownowazone, `splitIntoWarArmies`); armia i-ta marszuje tylko na stolice i-tego wroga
+ * (wrogowie posortowani po id). Nadwyzka wrogow ponad armie nie powstaje (min 1 armia).
+ */
+function planWarArmiesByEnemy(
+  units: RuntimeUnit[],
+  ctx: WarAllInContext,
+  nav: { map: GameMap; blocked: ReadonlySet<string>; occupied: ReadonlySet<string> },
+  warOpts: { enemyArmies?: ReadonlyArray<EngageArmyHex>; engageRadius?: number; enemyStrength?: ReadonlyArray<EnemyStrengthRef> },
+): ReturnType<typeof planWarAllInCapital>[] {
+  const enemyOwners = [...new Set(ctx.targets.map(t => t.ownerId))].sort((a, b) => a - b);
+  const groups = splitIntoWarArmies(units, warArmyCount(enemyOwners), () => 1);
+  return groups.map((group, i) => {
+    const owner = enemyOwners[i % enemyOwners.length];
+    const groupTargets = ctx.targets.filter(t => t.ownerId === owner);
+    return planWarAllInCapital(group, groupTargets, nav, warOpts);
+  });
 }
 
 /** Progi posiłków w klastrze per poziom „Wsparcie miast-państw" (setup nowej gry). */

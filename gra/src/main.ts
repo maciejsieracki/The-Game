@@ -1247,6 +1247,7 @@ import {
 } from './game/barbarians';
 import type { BarbCamp, BarbUnit } from './game/barbarians';
 import { isWarAllInCapitalEnabled, type WarAllInContext, type WarCapitalTarget } from './game/warAllInCapital';
+import { isArmyConsolidationEnabled } from './game/army-consolidation';
 // R-WEB-WAR-RULES-MULTIWAR-Q1: bramki wojen (R1 tura 40, R2 limit Kamienia; R3 max 1 wojna epoki na epokę globalnie) + W1/W2.
 import {
   WAR_RULES_PARAMS,
@@ -35203,6 +35204,8 @@ async function boot(): Promise<void> {
                   ownerId,
                   (o: number) => getDiploRelation(ownerId, o).status === 'wojna',
                 ),
+              // R-WEB-ARMY-CONSOLIDATION-Q1 (flaga OFF = brak pola): stolica = punkt zbiorki armii w pokoju.
+              capitalCityId: isArmyConsolidationEnabled() ? capitalCityIdForOwner(ownerId) : undefined,
               civAiProfile: civAiProf
                 ? {
                     ekspansywnosc: civAiProf.ekspansywnosc,
