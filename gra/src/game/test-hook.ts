@@ -245,6 +245,9 @@ export function installTestHook(d: TestHookDeps): void {
       setter(value);
     },
     snapshot: (): TestSnapshot => summarizeRaw(deps!.readRaw()),
+    // R-WEB-ARMY-CONSOLIDATION-Q1 (diagnostyka, tylko odczyt): surowe pozycje miast/jednostek
+    // do pomiaru rozproszenia grup polowych. Nie zmienia stanu gry.
+    rawPositions: (): TestRawState => deps!.readRaw(),
     runTurns: async (n: number, opts: TestRunOpts = {}): Promise<TestTurnMetric[]> => {
       const d = deps!;
       const policy: TestPolicy = opts.playerPolicy ?? 'pass';
