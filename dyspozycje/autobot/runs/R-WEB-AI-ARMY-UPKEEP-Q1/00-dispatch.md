@@ -8,3 +8,5 @@ BAZA: aktualny `origin/main` (po wydaniu nr 5) + do pomiarów cherry-pick haka `
 UWAGA PROCESOWA: pomiary uruchamiaj tak, by DOKOŃCZYĆ je w tej samej turze agenta (nohup w tle + pętla odpytująca plik wyników < 9 min na wywołanie); NIE kończ odpowiedzi z „batch działa w tle” (tak zawiódł Operator innego tematu).
 RUNDA: 1/5. MODEL+EFFORT: Operator Haiku 5.5 medium; Evaluator Sonnet 5.5 medium; Final Control Sonnet 5.5 medium. Wynik: kandydat do wydania ROBOCZEJ (zgoda właściciela na deploy/merge/push przy poprawkach webowych). Niepewne = NIE_ZMIERZONO.
 DEPLOY/PUSH: NIE WYKONANO
+
+DODATEK (orkiestrator): istniejące pliki do zbadania w pierwszej kolejności: `gra/src/game/economy-upkeep.ts`, `army-starvation.ts`, `citizen-resource-upkeep.ts`; testy `gra/tools/ai-recruit-upkeep-gate-test.cjs` (sprawdza bramkę utrzymania rekrutacji AI — uruchom, odnotuj wynik), `recruitment-no-upkeep-gate-test.cjs` (znane czerwone 22/14), `unit-resource-upkeep-test.cjs`, `upkeep-test.cjs`, `citizen-resource-upkeep-test.cjs`. Ikona „przekreślone kółko” przy jednostce: ustal w `gra/src/ui` (grep po ikonie statusu głodu/braku opłaty).
