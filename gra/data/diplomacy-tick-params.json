@@ -1,0 +1,21 @@
+{
+  "_opis": "R-WEB-DIPLO-TICK-WAR-BRAKE-Q1 — parametry P6 (hamulec wojny) i P7 (bonus Zaufania za wymianę 'na plusie'). Flaga DIPLO_TICK_WAR_BRAKE_ENABLED w kodzie; OFF = zachowanie jak dziś.",
+  "flagaDomyslna": false,
+  "p6": {
+    "kryzysProgZaufania": 0,
+    "kryzysTurDoWojny": 5,
+    "kryzysOstrzezenieTurPrzed": 2
+  },
+  "p7": {
+    "wymianaKrokPktPerEpoka": {
+      "kamien": 100,
+      "braz": 200,
+      "zelazo": 400
+    },
+    "wymianaKrokPktDomyslny": 400,
+    "wymianaZaufanieNaKrok": 0.5,
+    "wymianaMaxPerTura": 5,
+    "wymianaSufitZaufania": 60,
+    "wymianaMinTurDostaw": 2
+  }
+}
