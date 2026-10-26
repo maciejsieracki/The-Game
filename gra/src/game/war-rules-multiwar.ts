@@ -48,6 +48,25 @@ export function isWarRulesMultiwarEnabled(): boolean {
   return overrideValue !== null ? overrideValue : WAR_RULES_MULTIWAR_ENABLED;
 }
 
+/**
+ * R-WEB-WAR-EPOCH-PLAYER-FIRST-Q1 — GŁÓWNA FLAGA (OFF = baza, hash identyczny): gracz
+ * pierwszy w parowaniu wojny epoki (Z1/Z3/Z4), wojna z najbliższą cywilizacją mimo mgły
+ * (K1), jedna FALA na epokę zamiast jednej wojny na świat (Z5), bramka wojny gracza
+ * sterowana opcją nowej gry `playerEpochWarEnabled` (K2, tylko przy fladze ON).
+ */
+export const WAR_EPOCH_PLAYER_FIRST_ENABLED = true;
+
+let epochPlayerFirstOverride: boolean | null = null;
+
+/** Tylko testy/diagnostyka: wymusza ON/OFF; null = wróć do stałej. */
+export function setWarEpochPlayerFirstOverride(value: boolean | null): void {
+  epochPlayerFirstOverride = value;
+}
+
+export function isWarEpochPlayerFirstEnabled(): boolean {
+  return epochPlayerFirstOverride !== null ? epochPlayerFirstOverride : WAR_EPOCH_PLAYER_FIRST_ENABLED;
+}
+
 /** Epoka Kamienia (zgodnie z `empireEpochForOwner(...) === 1` w main.ts). */
 export const WAR_ERA_STONE = 1;
 /** Epoka Brązu i późniejsze: brak limitu równoczesnych wojen (parametr `null`). */
@@ -130,8 +149,13 @@ export function canDeclareEraForcedWar(
   tag: ForcedEraTag,
   declaredByTag: ReadonlyMap<ForcedEraTag, number>,
   params: WarRulesParams = WAR_RULES_PARAMS,
+  eraWaveInProgress: boolean = false,
 ): boolean {
   if (params.maxEraForcedWarsPerEra === null) return true;
+  // R-WEB-WAR-EPOCH-PLAYER-FIRST-Q1 (Z5, flaga ON): fala na epokę — dopóki w tej epoce
+  // są jeszcze oczekujący podmioty (`eraWaveInProgress`), cała fala (para gracza + pary
+  // AI↔AI) może wybuchać; limit liczy dopiero zakończoną falę.
+  if (eraWaveInProgress) return true;
   return (declaredByTag.get(tag) ?? 0) < params.maxEraForcedWarsPerEra;
 }
 

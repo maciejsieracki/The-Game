@@ -176,6 +176,9 @@ export interface NewGameParams {
   /** R-WEB-DIPLO-DEALS-SENSIBLE-Q1: „Wymagaj rozpatrzenia ofert handlowych przed końcem tury"
    * (domyślnie ON). / EN: block end turn while an AI trade offer awaits the player. */
   dealsEndTurnGate?: boolean;
+  /** R-WEB-WAR-EPOCH-PLAYER-FIRST-Q1 (K2): „Wojna epoki z udziałem gracza” (domyślnie ON).
+   * / EN: whether the player takes part in epoch forced wars (default ON). */
+  playerEpochWarEnabled?: boolean;
 }
 
 /**
@@ -660,6 +663,7 @@ const SETTING_GLYPHS: Record<string, string> = {
   world_type: 'Sw',
   city_states_count: 'MP',
   deals_end_turn_gate: 'Ha',
+  player_epoch_war: 'Wo',
   civ_types_count: 'Cy',
   game_speed: 'Tp',
   map_quality: 'Gf',
@@ -1926,7 +1930,7 @@ function renderSettStep(host: HTMLElement): void {
   const layout = el('div', 'sett-layout');
   renderSettingRows(layout, [
     'difficulty', 'map_size', 'world_type', 'game_speed', 'city_states_count', 'civ_types_count',
-    'deals_end_turn_gate',
+    'deals_end_turn_gate', 'player_epoch_war',
   ]);
   renderAiCivPicker(layout);
   host.appendChild(layout);
@@ -2140,6 +2144,7 @@ function buildParams(): NewGameParams {
     selectedAiCivIds: [...selAiCivIds],
     villageRewardsEnabled: settingValue('village_rewards_enabled') !== 'Wyłączone',
     dealsEndTurnGate: settingValue('deals_end_turn_gate') !== 'Wyłączona',
+    playerEpochWarEnabled: settingValue('player_epoch_war') !== 'Wyłączona',
   };
 }
 

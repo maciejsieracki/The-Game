@@ -174,6 +174,19 @@
         "domyslny": 0
       },
       {
+        "key": "player_epoch_war",
+        "label": "Wojna epoki z udziałem gracza",
+        "opts": [
+          "Włączona",
+          "Wyłączona"
+        ],
+        "descs": [
+          "Gracz bierze udział w wojnie epoki (najbliższa cywilizacja, także nieodkryta)",
+          "Gracz nie jest celem wojny epoki (wojny tylko między AI)"
+        ],
+        "domyslny": 0
+      },
+      {
         "key": "civ_types_count",
         "label": "Liczba cywilizacji",
         "opts": [

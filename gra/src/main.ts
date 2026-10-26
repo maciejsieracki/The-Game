@@ -1255,6 +1255,7 @@ import {
   forcedEraTagFromPowod,
   isInterCivWarOpenAtTurn,
   isWarRulesMultiwarEnabled,
+  isWarEpochPlayerFirstEnabled,
   type EngageArmyHex,
   type ForcedEraTag,
 } from './game/war-rules-multiwar';
@@ -8575,6 +8576,14 @@ async function boot(): Promise<void> {
      * / EN: new-game option; ON blocks end turn while an AI->player trade offer awaits the player.
      */
     let dealsEndTurnGateEnabled = false;
+    /**
+     * R-WEB-WAR-EPOCH-PLAYER-FIRST-Q1 (K2): opcja nowej gry „Wojna epoki z udziałem gracza”.
+     * Włączona (domyślnie): gracz jest pierwszą parą fali wojny epoki (tylko flaga
+     * WAR_EPOCH_PLAYER_FIRST_ENABLED ON). Zapis: meta.playerEpochWarEnabled (tylko przy fladze
+     * ON); stary zapis (brak pola) = WYŁĄCZONA — nie zaskakuj wojną w trwającej grze.
+     * / EN: new-game option; ON lets the player take part in epoch forced wars.
+     */
+    let playerEpochWarEnabled = false;
     /**
      * D-DYPLO-AI-NO-NAG (Maciej 2026-07-29): cooldown po odrzuceniu oferty AI przez gracza
      * (partner + actionId) — save/load meta.rejectedOfferCooldowns.
@@ -31783,6 +31792,8 @@ async function boot(): Promise<void> {
           negotiationSeq,
           // R-WEB-DIPLO-DEALS-SENSIBLE-Q1 (B1): ustawienie opcji nowej gry trwa w zapisie.
           dealsEndTurnGate: dealsEndTurnGateEnabled,
+          // R-WEB-WAR-EPOCH-PLAYER-FIRST-Q1 (K2): tylko przy fladze ON (OFF = bajty jak baza).
+          ...(isWarEpochPlayerFirstEnabled() ? { playerEpochWarEnabled } : {}),
           rejectedOfferCooldowns: pruneExpiredRejectedOffers(rejectedOfferCooldowns, turn),
           diplomacyPairMeta: Array.from(diplomacyPairMeta.entries()),
           // R-WEB-DIPLO-TICK-WAR-BRAKE-Q1 r2: pola opcjonalne, zapisywane TYLKO przy fladze ON
@@ -34870,6 +34881,13 @@ async function boot(): Promise<void> {
             }
             // (R1, flaga ON): przed turą 40 pula podmiotów jest PUSTA (także gracz).
             if (isWarRulesMultiwarEnabled() && !isInterCivWarOpenAtTurn(turn)) triggeredSubjects.length = 0;
+            // R-WEB-WAR-EPOCH-PLAYER-FIRST-Q1 (K2): opcja „Wojna epoki z udziałem gracza” — gdy
+            // OFF (tylko flaga ON), gracz wypada z puli (OFF = gracz jak dotąd, bez zmian).
+            if (isWarEpochPlayerFirstEnabled() && !playerEpochWarEnabled) {
+              for (let ti = triggeredSubjects.length - 1; ti >= 0; ti--) {
+                if (triggeredSubjects[ti]!.ownerId === 0) triggeredSubjects.splice(ti, 1);
+              }
+            }
 
             // Krok D: pary już aktywne (dowolna epoka, AI<->AI, targetId!==0) -- pula do
             // której leftover może dołączyć jako trzeci (krok 4 ECHO).
@@ -34894,6 +34912,22 @@ async function boot(): Promise<void> {
               || isPeaceLockedBetween(a, b)
               || allianceFormalKindBetween(activeDeals, a, b) !== null;
 
+            // R-WEB-WAR-EPOCH-PLAYER-FIRST-Q1 (Z1/Z4/K1): gracz pierwszy; bramka R1/R2 po stronie
+            // AI (targetIsPlayer=true). Pusty obiekt gdy flaga OFF = wywołanie jak dotąd.
+            const forcedWarPlayerFirstOpt = isWarEpochPlayerFirstEnabled() ? {
+              playerFirst: {
+                playerOwnerId: 0,
+                isPlayerPairGateOpen: (aiOwnerId: number): boolean =>
+                  evaluateInterCivWarGate({
+                    turn,
+                    attackerEra: empireEpochForOwner(aiOwnerId),
+                    attackerWarCount: countActiveWarsForOwnerExcludingBarbarians(aiOwnerId),
+                    targetIsPlayer: true,
+                    targetEra: 0,
+                    targetWarCount: 0,
+                  }, WAR_RULES_PARAMS) === 'ok',
+              },
+            } : {};
             const forcedWarPairingResult = assignForcedWarPairings(
               triggeredSubjects,
               existingActivePairsForJoin,
@@ -34901,6 +34935,7 @@ async function boot(): Promise<void> {
                 isPairBlocked: isForcedWarPairBlocked,
                 hexDistanceFn: hexDistance,
                 totalActiveForcedWarsByOwner,
+                ...forcedWarPlayerFirstOpt,
               },
             );
             if (forcedWarPairingResult.unresolvedOwnerIds.length > 0) {
@@ -34915,6 +34950,14 @@ async function boot(): Promise<void> {
                 + 'dołączenia. Przydział pominięty tej tury (ponowna próba w kolejnej).',
               );
             }
+            // R-WEB-WAR-EPOCH-PLAYER-FIRST-Q1 (Z5): liczba oczekujących podmiotów danej epoki
+            // (fala w toku = > 0). Czyta wyłącznie stan pending, nie zmienia go.
+            const forcedEraPendingCount = (tag: ForcedEraTag): number =>
+              tag === 'bronze'
+                ? bronzeForceWarPendingOwners.size
+                : tag === 'stone'
+                  ? stoneForceWarPendingOwners.size
+                  : ironForceWarPendingOwners.size;
             const forcedWarAssignmentByOwner = new Map(
               forcedWarPairingResult.assignments.map(a => [a.ownerId, a] as const),
             );
@@ -35376,6 +35419,27 @@ async function boot(): Promise<void> {
               const diffParamsDip = loadDifficultyParams(data, aiDiffLevel);
               const potAI = objectivePowerByOwner.get(ownerId)?.power ?? 0;
               const relacjeDip: DiplomacjaInputs['relacje'] = [];
+
+              // R-WEB-WAR-EPOCH-PLAYER-FIRST-Q1 (K1): mgła NIE blokuje wojny epoki, także gdy
+              // para to gracz. Bez tego wpisu AI→gracz (relacjeDip budowany dopiero po odkryciu,
+              // niżej) komenda wymuszona nie miała partnera w relacjach i nigdy nie padała.
+              // Wpis minimalny (stan wojny/pakty/sojusz), tylko dla pary wymuszonej z graczem.
+              if (
+                isWarEpochPlayerFirstEnabled()
+                && !diplomaticallyDiscoveredOwnersSet().has(ownerId)
+                && forcedWarAssignmentByOwner.get(ownerId)?.targetId === 0
+              ) {
+                const relFog = getDiploRelation(ME(), ownerId);
+                relacjeDip.push({
+                  partnerId: String(ME()),
+                  relation: relFog as unknown as Relation,
+                  respektWzgledny: 0.5,
+                  stanWojny: (relFog as any).status === 'wojna',
+                  peaceLocked: isPeaceLockedBetween(ownerId, ME()),
+                  hasNapTreaty: hasTreaty(activeDeals, ownerId, ME(), RodzajTraktatu.PaktNieagresji),
+                  hasAllianceTreaty: allianceFormalKindBetween(activeDeals, ownerId, ME()) !== null,
+                });
+              }
 
               if (diplomaticallyDiscoveredOwnersSet().has(ownerId)) {
                 const militaryRatio = militaryRatioFromArmyM(
@@ -35897,7 +35961,9 @@ async function boot(): Promise<void> {
                     // wojny wymuszonej NIE jest konsumowany -- próba ponowi się w kolejnej turze).
                     if (cmd.type === 'wypowiedz_wojne' && isWarRulesMultiwarEnabled()) {
                       const gateForcedTag = forcedEraTagFromPowod(cmd.powod);
-                      if (gateForcedTag !== null && !canDeclareEraForcedWar(gateForcedTag, forcedEraWarDeclaredByTag)) continue;
+                      if (!(gateForcedTag !== null && isWarEpochPlayerFirstEnabled() && forcedEraPendingCount(gateForcedTag) > 0)) {
+                        if (gateForcedTag !== null && !canDeclareEraForcedWar(gateForcedTag, forcedEraWarDeclaredByTag)) continue;
+                      }
                       const gateVerdict = evaluateInterCivWarGate({
                         turn,
                         attackerEra: empireEpochForOwner(ownerId),
@@ -38675,6 +38741,8 @@ async function boot(): Promise<void> {
     async function doStartGame(params: NewGameParams): Promise<void> {
       // R-WEB-DIPLO-DEALS-SENSIBLE-Q1 (B1): opcja z ekranu nowej gry (domyślnie ON).
       dealsEndTurnGateEnabled = params.dealsEndTurnGate ?? true;
+      // R-WEB-WAR-EPOCH-PLAYER-FIRST-Q1 (K2): opcja z ekranu nowej gry (domyślnie ON).
+      playerEpochWarEnabled = params.playerEpochWarEnabled ?? true;
       resetEndTurnBlockers('doStartGame');
       playtestWalkaActive = false;
       bitwaDuzaActive = false;
@@ -40770,6 +40838,8 @@ async function boot(): Promise<void> {
       negotiationSeq = (saved.meta?.negotiationSeq as number | undefined) ?? negotiationTable.length;
       // R-WEB-DIPLO-DEALS-SENSIBLE-Q1 (B1): stary zapis bez pola = opcja WYŁĄCZONA.
       dealsEndTurnGateEnabled = (saved.meta?.dealsEndTurnGate as boolean | undefined) === true;
+      // R-WEB-WAR-EPOCH-PLAYER-FIRST-Q1 (K2): stary zapis bez pola = WYŁĄCZONA.
+      playerEpochWarEnabled = (saved.meta?.playerEpochWarEnabled as boolean | undefined) === true;
       rejectedOfferCooldowns = [];
       const savedRejectCooldowns = saved.meta?.rejectedOfferCooldowns as RejectedOfferCooldown[] | undefined;
       if (savedRejectCooldowns?.length) {
