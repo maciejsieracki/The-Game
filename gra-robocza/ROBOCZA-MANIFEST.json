@@ -1,67 +1,67 @@
 {
-  "releaseState": "candidate R-WEB-UI-ARMY-RELEASE-ROBOCZA-Q1 (wydanie nr 6, lokalny commit, nie opublikowane; publish po Final Control przez orkiestratora)",
+  "releaseState": "candidate R-WEB-WAR-EPOCH-RELEASE-ROBOCZA-Q1 (wydanie nr 7, ROBOCZA testowa, lokalny commit, NIE opublikowane; push/deploy po Final Control i osobnej autoryzacji przez orkiestratora)",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "16d42d7a1d2dbaf790eab54c550df002",
-  "bundleSha256": "50c3b6a4a5e5fba39663722cd8ea90340862c645da5abdb98b4714f27ac5fc12",
-  "bundleBytes": 69990763,
+  "bundleMd5": "5a55bc07289655b71a178312db8cd42b",
+  "bundleSha256": "86d3a2b64f8eafcd3d6d3cb67fb264c2b6e81a25f82d66366a789217177ba1d4",
+  "bundleBytes": 69993033,
   "sourceSnapshot": {
-    "baseCommit": "origin/main d49c21c6 (ROBOCZA bfba14e3, wydanie nr 5)",
-    "productCommitSource": "R-WEB-DIPLO-UI-DIRECT-NEGOTIATION-Q1: cherry-pick 35b87fe0 888642ba (bez haka setupListRelationsFixture) -> 114f0ec9; R-WEB-ARMY-CONSOLIDATION-Q1: cherry-pick 692b4685 5b9849c7 -> 343509be f2100f9c; flaga ARMY_CONSOLIDATION_ENABLED=true -> 48c1ed2e; testy pinujace flage OFF -> 10200bc6"
+    "baseCommit": "origin/main b3349709 (ROBOCZA 16d42d7a, wydanie nr 6)",
+    "productCommitSource": "R-WEB-WAR-EPOCH-PLAYER-FIRST-Q1 runda 2: cherry-pick c69b9b90 d1e28913 7a2c3863 (bez haka testowego, bez dyspozycje/**) -> 545a8306 3b52d69a 70bbc00c; flaga WAR_EPOCH_PLAYER_FIRST_ENABLED=true (gra/data/ui-params.json)"
   },
   "scope": [
-    "origin/main d49c21c6 + (a) R-WEB-DIPLO-UI-DIRECT-NEGOTIATION-Q1: klik cywilizacji na liscie dyplomacji otwiera negocjacje wprost (bez posredniego dymka); karta cywilizacji ma wiersze Wojny/Sojusze/Handel (3 nazwy + '+N', pelna lista w tooltipie).",
-    "(b) R-WEB-ARMY-CONSOLIDATION-Q1: scalanie wojsk polowych AI za flaga ARMY_CONSOLIDATION_ENABLED = true (DEFAULT ON w tym wydaniu): pokoj = zbiorka w stolicy z limitem na heks; obrona domu z kworum 2; wojna = liczba armii = liczba wojen, marsz na stolice wrogow, reuse W1/W2."
+    "origin/main b3349709 + R-WEB-WAR-EPOCH-PLAYER-FIRST-Q1 runda 2 (kod 7a2c3863):",
+    "(1) gracz jest PIERWSZA para fali wojny epoki z NAJBLIZSZA cywilizacja AI (major); pary AI-AI dopiero potem wg R1/R2/R3;",
+    "(2) wojna epoki omija mgle wojny i odkrycie wszedzie, takze dla gracza (nieodkryta strona zostaje odkryta w chwili wypowiedzenia);",
+    "(3) opcja nowej gry \"Wojna epoki z udzialem gracza\" (domyslnie Wlaczona, zapis w save, stary zapis = Wylaczona), wiersz zawsze widoczny;",
+    "(4) kolejnosc: deklaracja pary gracza zapada pierwsza; flaga WAR_EPOCH_PLAYER_FIRST_ENABLED = true."
   ],
   "verification": [
     "npm ci --ignore-scripts EXIT=0; tsc --noEmit EXIT=0;",
-    "vite build do scratch EXIT=0 (904 modules); inject-build-stamp ROBOCZA OK md5=16d42d7a;",
-    "army-consolidation-test 32/0 + 3/0 + 10/0 + mutacje 6/6 KILLED; army-consolidation-e2e-test 6/0; army-concentration-test 55/0; war-allin-capital-test 95/0;",
-    "ai-move-range 46/0; war-rules-multiwar 55/0 + main-guard 21/0; diplo-tick-war-brake-unit 69/0 + brake 51/0; sensible-deals 63/0 + main-guard 22/0; diplomacy-test 148/0; barbarzyncy-krazenie 249/0; barb-city-behavior 178/0;",
-    "diplomacy-lista-podglad-przed-wizyta 52/1 (znana czerwona 6e, jak w nr 5); diplomacy-direct-negotiation-live-test: NIE_ZMIERZONO jako pelny test (wymaga haka setupListRelationsFixture, ktory swiadomie NIE wszedl do wydania); zastepstwo: skrypt scratch na bundlu 16d42d7a -- klik listy -> negocjacje (pair-summary 0, aud-box 1), wiersze Wojny: Ty / Sojusze: brak / Handel: brak, 0 bledow.",
-    "R2 (Operator runda 2): smoke Chromium /opt/pw-browsers/chromium-1194 na bundlu 16d42d7a vs baza bfba14e3, pokoj 46 tur seed 778899: 0 pageerror, 7 ostrzezen DECISION_REQUIRED (oba bundle); czas tury tury 2-46 mediana 7031 ms vs 6862 ms (x1,025), srednia 7336 vs 7153 ms (x1,026), max 8963 vs 8748 ms.",
-    "R2: smoke wojna (gracz vs AI 1, AI 1 vs 2, AI 2 vs 3 przez declareRegularWarBetween), 46 tur: kandydat 0 pageerror, 8 ostrzezen konsoli DECISION_REQUIRED, baza identycznie 0/8; mediana tury 199 ms vs 179 ms (x1,11, tury ~200 ms, szum rAF), srednia 202 vs 198 ms (x1,02), max 408 vs 371 ms.",
-    "R2: ai-test 276/18 (T4d przypiete do flagi OFF, bazowy kontrakt fallback idle); verify-robocza-bundle.cjs rozszerzony o kontrole bundles[] (md5+rozmiar).",
-    "R2: load-game-blockers-exec-test EXIT=1 (ReferenceError pruneStaleAiTradeOffersAwaitingPlayer / dealsEndTurnGateEnabled -- dlug harnessu, tak samo na bazie)."
+    "vite build do scratch EXIT=0 (904 modules); inject-build-stamp ROBOCZA OK md5=5a55bc07;",
+    "war-epoch-player-first-test 33/0 + main-guard 32/0; war-rules-multiwar 55/0 + main-guard 21/0; forced-war-stone 38/0 + main-guard 19/0; forced-war-bronze 56/0;",
+    "forced-war-iron 55/0 + main-guard 37/0; forced-war-trojstronna 23/0 + main-guard 14/0; war-allin-capital 95/0; army-consolidation 6/6 KILLED + e2e 6/0; ai-move-range 46/0;",
+    "diplo-tick-war-brake-unit 69/0; sensible-deals 63/0 + main-guard 22/0; diplomacy 148/0 + war-gates 19/0; logic 213/213; ai-test 276/18 (znane); endturn-battle-deadlock 38/0 + exec 46/0; load-game-regression 34/0; barbarzyncy-krazenie 249/0; barb-city-behavior 178/0;",
+    "znane czerwone nie gorzej: forced-war-waves 16/1, forced-war-bronze-main-guard 27/1, forced-war-bronze-new-game-reset (crash), recruitment-no-upkeep 22/14."
   ],
   "limits": [
-    "Wydanie ROBOCZE do testow wlasciciela; brak pelnej akceptacji rozgrywki.",
-    "NIE_ZMIERZONO: efekt scalania w pelnej grze (grupy polowe na cywilizacje w pokoju, % wojsk w stolicy, liczba armii vs wojny, zrzuty OFF/ON); czas tury ON vs OFF; scalanie glodujacych jednostek (ikona przekreslonego kolka); smoke Chromium >=46 tur pokoj i wojna; zrzut listy dyplomacji Wojny/Sojusze/Handel.",
-    "Hak testowy (test-hook.ts, ?testhook=1, setupListRelationsFixture) NIE jest w wydaniu.",
-    "Flaga ARMY_CONSOLIDATION_ENABLED = true w wydaniu roboczym (decyzja orkiestratora); kod bazowy mial false."
+    "Wydanie ROBOCZE testowe na wyrazne polecenie wlasciciela; brak pelnej akceptacji rozgrywki.",
+    "NIE_ZMIERZONO (do WERSJE.md): pelna seria pomiarow rundy 2 (>=5 seedow x 70 tur, partner = najblizsza cywilizacja, kolejnosc gracz-przed-AI, scenariusze nieodkrytych cywilizacji, zapis/odczyt opcji i stary zapis w przegladarce); smoke Chromium na tym bundlu - patrz raport Operatora."
   ],
   "previousRelease": {
-    "bundleMd5": "bfba14e3424cd4f944fb5c235382696f",
-    "bundleSha256": "1e48f16ca9af9ea4cf58b010d0dd63cae96ac2214c58edb7815355d91224c7d2",
-    "bundleBytes": 69986438,
-    "publicationCommit": "origin/main d49c21c6 (WERSJE bfba14e3; wydanie nr 5)"
+    "releaseState": "candidate R-WEB-UI-ARMY-RELEASE-ROBOCZA-Q1 (wydanie nr 6)",
+    "bundle": "Gra-ROBOCZA.html",
+    "bundleMd5": "16d42d7a1d2dbaf790eab54c550df002",
+    "bundleSha256": "50c3b6a4a5e5fba39663722cd8ea90340862c645da5abdb98b4714f27ac5fc12",
+    "bundleBytes": 69990763,
+    "publicationCommit": "origin/main b3349709 (ROBOCZA 16d42d7a, wydanie nr 6)"
   },
   "rollbackPlan": {
-    "method": "przywrocenie gra-robocza/Gra-ROBOCZA.html z wydania nr 5 (ROBOCZA bfba14e3) albo revert commitow wydania nr 6 (114f0ec9..10200bc6)",
-    "previousBundleMd5": "bfba14e3424cd4f944fb5c235382696f",
-    "previousBundleSha256": "1e48f16ca9af9ea4cf58b010d0dd63cae96ac2214c58edb7815355d91224c7d2",
-    "previousBundleBytes": 69986438
+    "method": "przywrocenie gra-robocza/Gra-ROBOCZA.html z wydania nr 6 (ROBOCZA 16d42d7a, commit 6aff28ff/b3349709) albo revert commitow wydania nr 7 (545a8306..70bbc00c)",
+    "previousBundleMd5": "16d42d7a1d2dbaf790eab54c550df002",
+    "previousBundleSha256": "50c3b6a4a5e5fba39663722cd8ea90340862c645da5abdb98b4714f27ac5fc12",
+    "previousBundleBytes": 69990763
   },
   "finalControl": {
     "status": "PENDING",
-    "reportPath": "dyspozycje/autobot/runs/R-WEB-UI-ARMY-RELEASE-ROBOCZA-Q1/"
+    "reportPath": "dyspozycje/autobot/runs/R-WEB-WAR-EPOCH-RELEASE-ROBOCZA-Q1/"
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-10-26T00:00:04",
-  "md5": "16d42d7a1d2dbaf790eab54c550df002",
+  "hubGeneratedAt": "2026-10-26T12:00:00",
+  "md5": "5a55bc07289655b71a178312db8cd42b",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "16d42d7a1d2dbaf790eab54c550df002",
-      "sizeBytes": 69990763
+      "md5": "5a55bc07289655b71a178312db8cd42b",
+      "sizeBytes": 69993033
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "16d42d7a1d2dbaf790eab54c550df002",
-      "sizeBytes": 69990763
+      "md5": "5a55bc07289655b71a178312db8cd42b",
+      "sizeBytes": 69993033
     }
   ],
   "previousReleaseManifest": {
