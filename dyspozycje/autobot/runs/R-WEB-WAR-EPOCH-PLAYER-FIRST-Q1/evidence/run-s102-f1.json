@@ -1,0 +1,790 @@
+{
+ "seed": 102,
+ "turns": 70,
+ "flagOn": true,
+ "ai": 5,
+ "cs": 2,
+ "perTurn": [
+  {
+   "turn": 2,
+   "wars": [],
+   "warCount": 0,
+   "ms": 9528,
+   "hash": "930c2537"
+  },
+  {
+   "turn": 3,
+   "wars": [],
+   "warCount": 0,
+   "ms": 8694,
+   "hash": "da52fda7"
+  },
+  {
+   "turn": 4,
+   "wars": [],
+   "warCount": 0,
+   "ms": 8772,
+   "hash": "2b92b6c1"
+  },
+  {
+   "turn": 5,
+   "wars": [],
+   "warCount": 0,
+   "ms": 8555,
+   "hash": "dc4be2b9"
+  },
+  {
+   "turn": 6,
+   "wars": [],
+   "warCount": 0,
+   "ms": 8814,
+   "hash": "ee0cf9fe"
+  },
+  {
+   "turn": 7,
+   "wars": [],
+   "warCount": 0,
+   "ms": 8534,
+   "hash": "024c3c90"
+  },
+  {
+   "turn": 8,
+   "wars": [],
+   "warCount": 0,
+   "ms": 8905,
+   "hash": "af7cdbba"
+  },
+  {
+   "turn": 9,
+   "wars": [],
+   "warCount": 0,
+   "ms": 8526,
+   "hash": "c085fec8"
+  },
+  {
+   "turn": 10,
+   "wars": [],
+   "warCount": 0,
+   "ms": 8599,
+   "hash": "31d14ba6"
+  },
+  {
+   "turn": 11,
+   "wars": [],
+   "warCount": 0,
+   "ms": 8648,
+   "hash": "e5c52ae2"
+  },
+  {
+   "turn": 12,
+   "wars": [],
+   "warCount": 0,
+   "ms": 9259,
+   "hash": "6b26484a"
+  },
+  {
+   "turn": 13,
+   "wars": [],
+   "warCount": 0,
+   "ms": 8852,
+   "hash": "4e2487cb"
+  },
+  {
+   "turn": 14,
+   "wars": [],
+   "warCount": 0,
+   "ms": 8910,
+   "hash": "0d391d55"
+  },
+  {
+   "turn": 15,
+   "wars": [],
+   "warCount": 0,
+   "ms": 9019,
+   "hash": "e80334b0"
+  },
+  {
+   "turn": 16,
+   "wars": [],
+   "warCount": 0,
+   "ms": 8719,
+   "hash": "f27b47aa"
+  },
+  {
+   "turn": 17,
+   "wars": [],
+   "warCount": 0,
+   "ms": 9078,
+   "hash": "211784b3"
+  },
+  {
+   "turn": 18,
+   "wars": [],
+   "warCount": 0,
+   "ms": 8759,
+   "hash": "0c96f6be"
+  },
+  {
+   "turn": 19,
+   "wars": [],
+   "warCount": 0,
+   "ms": 9344,
+   "hash": "7bc685f9"
+  },
+  {
+   "turn": 20,
+   "wars": [],
+   "warCount": 0,
+   "ms": 9240,
+   "hash": "15643852"
+  },
+  {
+   "turn": 21,
+   "wars": [],
+   "warCount": 0,
+   "ms": 8906,
+   "hash": "6946d73e"
+  },
+  {
+   "turn": 22,
+   "wars": [],
+   "warCount": 0,
+   "ms": 8281,
+   "hash": "6f8b5dfd"
+  },
+  {
+   "turn": 23,
+   "wars": [],
+   "warCount": 0,
+   "ms": 7698,
+   "hash": "2114adff"
+  },
+  {
+   "turn": 24,
+   "wars": [],
+   "warCount": 0,
+   "ms": 8132,
+   "hash": "768ac063"
+  },
+  {
+   "turn": 25,
+   "wars": [],
+   "warCount": 0,
+   "ms": 7748,
+   "hash": "0dcf85d8"
+  },
+  {
+   "turn": 26,
+   "wars": [],
+   "warCount": 0,
+   "ms": 8669,
+   "hash": "a2859f56"
+  },
+  {
+   "turn": 27,
+   "wars": [],
+   "warCount": 0,
+   "ms": 8834,
+   "hash": "f9452f01"
+  },
+  {
+   "turn": 28,
+   "wars": [],
+   "warCount": 0,
+   "ms": 7809,
+   "hash": "6c160e59"
+  },
+  {
+   "turn": 29,
+   "wars": [],
+   "warCount": 0,
+   "ms": 7738,
+   "hash": "9887e56a"
+  },
+  {
+   "turn": 30,
+   "wars": [],
+   "warCount": 0,
+   "ms": 8164,
+   "hash": "c0de2cfe"
+  },
+  {
+   "turn": 31,
+   "wars": [],
+   "warCount": 0,
+   "ms": 8376,
+   "hash": "9f3182f6"
+  },
+  {
+   "turn": 32,
+   "wars": [],
+   "warCount": 0,
+   "ms": 8533,
+   "hash": "52fda035"
+  },
+  {
+   "turn": 33,
+   "wars": [],
+   "warCount": 0,
+   "ms": 7786,
+   "hash": "7fa4c2b4"
+  },
+  {
+   "turn": 34,
+   "wars": [],
+   "warCount": 0,
+   "ms": 8553,
+   "hash": "c1ccf9b4"
+  },
+  {
+   "turn": 35,
+   "wars": [],
+   "warCount": 0,
+   "ms": 7789,
+   "hash": "b4d223c1"
+  },
+  {
+   "turn": 36,
+   "wars": [],
+   "warCount": 0,
+   "ms": 7804,
+   "hash": "a5bee471"
+  },
+  {
+   "turn": 37,
+   "wars": [],
+   "warCount": 0,
+   "ms": 7879,
+   "hash": "73e68a3c"
+  },
+  {
+   "turn": 38,
+   "wars": [],
+   "warCount": 0,
+   "ms": 8029,
+   "hash": "3b341d52"
+  },
+  {
+   "turn": 39,
+   "wars": [],
+   "warCount": 0,
+   "ms": 7875,
+   "hash": "777e23c3"
+  },
+  {
+   "turn": 40,
+   "wars": [
+    [
+     0,
+     10
+    ],
+    [
+     1,
+     5
+    ]
+   ],
+   "warCount": 2,
+   "ms": 7531,
+   "hash": "77411431"
+  },
+  {
+   "turn": 41,
+   "wars": [
+    [
+     0,
+     10
+    ],
+    [
+     1,
+     5
+    ]
+   ],
+   "warCount": 2,
+   "ms": 7782,
+   "hash": "cf75700f"
+  },
+  {
+   "turn": 42,
+   "wars": [
+    [
+     0,
+     10
+    ],
+    [
+     1,
+     5
+    ]
+   ],
+   "warCount": 2,
+   "ms": 8155,
+   "hash": "198e295b"
+  },
+  {
+   "turn": 43,
+   "wars": [
+    [
+     0,
+     10
+    ],
+    [
+     1,
+     5
+    ]
+   ],
+   "warCount": 2,
+   "ms": 8215,
+   "hash": "9313a116"
+  },
+  {
+   "turn": 44,
+   "wars": [
+    [
+     0,
+     10
+    ],
+    [
+     1,
+     5
+    ]
+   ],
+   "warCount": 2,
+   "ms": 8347,
+   "hash": "6777920d"
+  },
+  {
+   "turn": 45,
+   "wars": [
+    [
+     0,
+     10
+    ],
+    [
+     1,
+     5
+    ]
+   ],
+   "warCount": 2,
+   "ms": 7522,
+   "hash": "dbb83c90"
+  },
+  {
+   "turn": 46,
+   "wars": [
+    [
+     0,
+     10
+    ],
+    [
+     1,
+     5
+    ]
+   ],
+   "warCount": 2,
+   "ms": 7657,
+   "hash": "518d0ce0"
+  },
+  {
+   "turn": 47,
+   "wars": [
+    [
+     0,
+     10
+    ],
+    [
+     1,
+     5
+    ]
+   ],
+   "warCount": 2,
+   "ms": 7221,
+   "hash": "5a8c7e64"
+  },
+  {
+   "turn": 48,
+   "wars": [
+    [
+     0,
+     10
+    ],
+    [
+     1,
+     5
+    ]
+   ],
+   "warCount": 2,
+   "ms": 7487,
+   "hash": "b7d30b36"
+  },
+  {
+   "turn": 49,
+   "wars": [
+    [
+     0,
+     10
+    ],
+    [
+     1,
+     5
+    ]
+   ],
+   "warCount": 2,
+   "ms": 7359,
+   "hash": "446b7e60"
+  },
+  {
+   "turn": 50,
+   "wars": [
+    [
+     0,
+     10
+    ],
+    [
+     1,
+     5
+    ]
+   ],
+   "warCount": 2,
+   "ms": 7280,
+   "hash": "873bde96"
+  },
+  {
+   "turn": 51,
+   "wars": [
+    [
+     0,
+     10
+    ],
+    [
+     1,
+     5
+    ]
+   ],
+   "warCount": 2,
+   "ms": 8122,
+   "hash": "09592993"
+  },
+  {
+   "turn": 52,
+   "wars": [
+    [
+     0,
+     10
+    ],
+    [
+     1,
+     5
+    ]
+   ],
+   "warCount": 2,
+   "ms": 8303,
+   "hash": "5460f38f"
+  },
+  {
+   "turn": 53,
+   "wars": [
+    [
+     0,
+     10
+    ],
+    [
+     1,
+     5
+    ]
+   ],
+   "warCount": 2,
+   "ms": 8275,
+   "hash": "9cdd35a5"
+  },
+  {
+   "turn": 54,
+   "wars": [
+    [
+     0,
+     10
+    ],
+    [
+     1,
+     5
+    ]
+   ],
+   "warCount": 2,
+   "ms": 8391,
+   "hash": "0dc6746d"
+  },
+  {
+   "turn": 55,
+   "wars": [
+    [
+     0,
+     10
+    ],
+    [
+     1,
+     5
+    ]
+   ],
+   "warCount": 2,
+   "ms": 8258,
+   "hash": "40015010"
+  },
+  {
+   "turn": 56,
+   "wars": [
+    [
+     0,
+     10
+    ],
+    [
+     1,
+     5
+    ]
+   ],
+   "warCount": 2,
+   "ms": 7737,
+   "hash": "28fe9c76"
+  },
+  {
+   "turn": 57,
+   "wars": [
+    [
+     0,
+     10
+    ],
+    [
+     1,
+     5
+    ]
+   ],
+   "warCount": 2,
+   "ms": 8900,
+   "hash": "8cc96ac1"
+  },
+  {
+   "turn": 58,
+   "wars": [
+    [
+     0,
+     10
+    ],
+    [
+     1,
+     5
+    ]
+   ],
+   "warCount": 2,
+   "ms": 8383,
+   "hash": "f86aab35"
+  },
+  {
+   "turn": 59,
+   "wars": [
+    [
+     0,
+     10
+    ],
+    [
+     1,
+     5
+    ]
+   ],
+   "warCount": 2,
+   "ms": 8620,
+   "hash": "7cc6ff66"
+  },
+  {
+   "turn": 60,
+   "wars": [
+    [
+     0,
+     10
+    ],
+    [
+     1,
+     5
+    ]
+   ],
+   "warCount": 2,
+   "ms": 9040,
+   "hash": "8bc653af"
+  },
+  {
+   "turn": 61,
+   "wars": [
+    [
+     0,
+     10
+    ],
+    [
+     1,
+     5
+    ]
+   ],
+   "warCount": 2,
+   "ms": 9409,
+   "hash": "48afcfbf"
+  },
+  {
+   "turn": 62,
+   "wars": [
+    [
+     0,
+     10
+    ]
+   ],
+   "warCount": 1,
+   "ms": 9798,
+   "hash": "b74b1de9"
+  },
+  {
+   "turn": 63,
+   "wars": [
+    [
+     0,
+     10
+    ],
+    [
+     1,
+     13
+    ]
+   ],
+   "warCount": 2,
+   "ms": 9331,
+   "hash": "c6b3720b"
+  },
+  {
+   "turn": 64,
+   "wars": [
+    [
+     0,
+     10
+    ],
+    [
+     1,
+     13
+    ],
+    [
+     1,
+     7
+    ]
+   ],
+   "warCount": 3,
+   "ms": 9177,
+   "hash": "df223f4e"
+  },
+  {
+   "turn": 65,
+   "wars": [
+    [
+     1,
+     13
+    ],
+    [
+     1,
+     7
+    ]
+   ],
+   "warCount": 2,
+   "ms": 9643,
+   "hash": "b16a9af8"
+  },
+  {
+   "turn": 66,
+   "wars": [
+    [
+     1,
+     13
+    ],
+    [
+     1,
+     7
+    ]
+   ],
+   "warCount": 2,
+   "ms": 9846,
+   "hash": "e3e2de4e"
+  },
+  {
+   "turn": 67,
+   "wars": [
+    [
+     1,
+     13
+    ],
+    [
+     1,
+     7
+    ]
+   ],
+   "warCount": 2,
+   "ms": 10477,
+   "hash": "49b96167"
+  },
+  {
+   "turn": 68,
+   "wars": [
+    [
+     1,
+     13
+    ],
+    [
+     1,
+     7
+    ]
+   ],
+   "warCount": 2,
+   "ms": 10221,
+   "hash": "733aabc6"
+  },
+  {
+   "turn": 69,
+   "wars": [
+    [
+     1,
+     13
+    ],
+    [
+     1,
+     7
+    ]
+   ],
+   "warCount": 2,
+   "ms": 10554,
+   "hash": "e69df88f"
+  },
+  {
+   "turn": 70,
+   "wars": [
+    [
+     1,
+     13
+    ],
+    [
+     1,
+     7
+    ]
+   ],
+   "warCount": 2,
+   "ms": 11168,
+   "hash": "64fbc3ea"
+  },
+  {
+   "turn": 71,
+   "wars": [
+    [
+     1,
+     13
+    ],
+    [
+     1,
+     7
+    ]
+   ],
+   "warCount": 2,
+   "ms": 10506,
+   "hash": "00bb20c5"
+  }
+ ],
+ "errors": [],
+ "startMs": 74804,
+ "pageErrors": []
+}

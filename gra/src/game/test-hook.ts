@@ -20,7 +20,7 @@
  * nie do decyzji; skrót stanu (`hash`) pomija wszystkie ID.
  */
 
-import { setWarRulesMultiwarOverride } from './war-rules-multiwar';
+import { setWarRulesMultiwarOverride, setWarEpochPlayerFirstOverride } from './war-rules-multiwar';
 import { setWarAllInCapitalOverride } from './warAllInCapital';
 
 /** Dane surowe stanu czytane z closure main.ts (zero logiki decyzyjnej po stronie hooka). */
@@ -111,6 +111,7 @@ export interface TestSnapshot {
 const FLAG_SETTERS: Record<string, (v: boolean | null) => void> = {
   warRulesMultiwar: setWarRulesMultiwarOverride,
   warAllInCapital: setWarAllInCapitalOverride,
+  warEpochPlayerFirst: setWarEpochPlayerFirstOverride,
 };
 
 const DIFFICULTY_PL: Record<string, string> = {
