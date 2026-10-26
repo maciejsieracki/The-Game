@@ -35961,7 +35961,13 @@ async function boot(): Promise<void> {
                     // wojny wymuszonej NIE jest konsumowany -- próba ponowi się w kolejnej turze).
                     if (cmd.type === 'wypowiedz_wojne' && isWarRulesMultiwarEnabled()) {
                       const gateForcedTag = forcedEraTagFromPowod(cmd.powod);
-                      if (!(gateForcedTag !== null && isWarEpochPlayerFirstEnabled() && forcedEraPendingCount(gateForcedTag) > 0)) {
+                      // Z5 (R-WEB-WAR-EPOCH-PLAYER-FIRST-Q1): omijanie R3 TYLKO dla aktora, któremu
+                      // przydział fali zapadł w TEJ turze (nie dla lingerujących pending-obrońców).
+                      const waveActorBypassR3 = gateForcedTag !== null
+                        && isWarEpochPlayerFirstEnabled()
+                        && forcedEraPendingCount(gateForcedTag) > 0
+                        && forcedWarAssignmentByOwner.get(ownerId)?.era === gateForcedTag;
+                      if (!waveActorBypassR3) {
                         if (gateForcedTag !== null && !canDeclareEraForcedWar(gateForcedTag, forcedEraWarDeclaredByTag)) continue;
                       }
                       const gateVerdict = evaluateInterCivWarGate({

@@ -78,7 +78,7 @@ check(
 );
 
 // --- W3: główna pętla wypowiedzenia (R1 + R2 + R3) przed jakąkolwiek zmianą stanu ---
-const declGateBlock = windowAfter(main, "if (cmd.type === 'wypowiedz_wojne' && isWarRulesMultiwarEnabled()) {", 1000);
+const declGateBlock = windowAfter(main, "if (cmd.type === 'wypowiedz_wojne' && isWarRulesMultiwarEnabled()) {", 1600);
 const declRel = main.indexOf("chargeWarDeclarationCredibility(ownerId, targetId);");
 const declGateIdx = main.indexOf("if (cmd.type === 'wypowiedz_wojne' && isWarRulesMultiwarEnabled()) {");
 check(
