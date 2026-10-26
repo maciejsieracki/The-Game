@@ -1,12 +1,12 @@
 {
-  "releaseState": "candidate R-WEB-WAR-EPOCH-RELEASE-ROBOCZA-Q1 (wydanie nr 7, ROBOCZA testowa, lokalny commit, NIE opublikowane; push/deploy po Final Control i osobnej autoryzacji przez orkiestratora)",
+  "releaseState": "candidate R-WEB-WAR-EPOCH-RELEASE-ROBOCZA-Q1 (wydanie nr 7, ROBOCZA testowa, lokalny commit, NIE opublikowane; runda 2 Operatora: dopisane odkrycie strony przy wypowiedzeniu wojny epoki; push/deploy po Final Control i osobnej autoryzacji przez orkiestratora)",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "5a55bc07289655b71a178312db8cd42b",
-  "bundleSha256": "86d3a2b64f8eafcd3d6d3cb67fb264c2b6e81a25f82d66366a789217177ba1d4",
-  "bundleBytes": 69993033,
+  "bundleMd5": "f491c3a2188d0d5ccea9bc715927a070",
+  "bundleSha256": "f0f9f18429a0cc2e19b15165f6c0eaf9f214dd8bff9fdc7c9b4e9d06f369aaa7",
+  "bundleBytes": 69993111,
   "sourceSnapshot": {
     "baseCommit": "origin/main b3349709 (ROBOCZA 16d42d7a, wydanie nr 6)",
-    "productCommitSource": "R-WEB-WAR-EPOCH-PLAYER-FIRST-Q1 runda 2: cherry-pick c69b9b90 d1e28913 7a2c3863 (bez haka testowego, bez dyspozycje/**) -> 545a8306 3b52d69a 70bbc00c; flaga WAR_EPOCH_PLAYER_FIRST_ENABLED=true (gra/data/ui-params.json)"
+    "productCommitSource": "R-WEB-WAR-EPOCH-PLAYER-FIRST-Q1 runda 2: cherry-pick c69b9b90 d1e28913 7a2c3863 (bez haka testowego, bez dyspozycje/**) -> 545a8306 3b52d69a 70bbc00c; poprawka Operatora r2 (zarzut FC r1 nr 1): odkrycie nieodkrytej strony AI przy wypowiedzeniu wojny epoki z graczem (main.ts, wypowiedz_wojne) + bramka main-guard i mutacja; flaga WAR_EPOCH_PLAYER_FIRST_ENABLED=true (gra/data/ui-params.json)"
   },
   "scope": [
     "origin/main b3349709 + R-WEB-WAR-EPOCH-PLAYER-FIRST-Q1 runda 2 (kod 7a2c3863):",
@@ -16,19 +16,20 @@
     "(4) kolejnosc: deklaracja pary gracza zapada pierwsza; flaga WAR_EPOCH_PLAYER_FIRST_ENABLED = true."
   ],
   "verification": [
-    "npm ci --ignore-scripts EXIT=0; tsc --noEmit EXIT=0;",
-    "vite build do scratch EXIT=0 (904 modules); inject-build-stamp ROBOCZA OK md5=5a55bc07;",
-    "war-epoch-player-first-test 33/0 + main-guard 32/0; war-rules-multiwar 55/0 + main-guard 21/0; forced-war-stone 38/0 + main-guard 19/0; forced-war-bronze 56/0;",
-    "forced-war-iron 55/0 + main-guard 37/0; forced-war-trojstronna 23/0 + main-guard 14/0; war-allin-capital 95/0; army-consolidation 6/6 KILLED + e2e 6/0; ai-move-range 46/0;",
-    "diplo-tick-war-brake-unit 69/0; sensible-deals 63/0 + main-guard 22/0; diplomacy 148/0 + war-gates 19/0; logic 213/213; ai-test 276/18 (znane); endturn-battle-deadlock 38/0 + exec 46/0; load-game-regression 34/0; barbarzyncy-krazenie 249/0; barb-city-behavior 178/0;",
-    "znane czerwone nie gorzej: forced-war-waves 16/1, forced-war-bronze-main-guard 27/1, forced-war-bronze-new-game-reset (crash), recruitment-no-upkeep 22/14."
+    "npm ci --ignore-scripts EXIT=0; tsc --noEmit EXIT=0 (runda 2);",
+    "vite build do scratch EXIT=0 (runda 2, /tmp scratchpad, po posprzataniu); inject-build-stamp ROBOCZA OK md5=f491c3a2;",
+    "war-epoch-player-first-test 33/0 + main-guard 34/0 (runda 2: +odkrycie przy wypowiedzeniu, +mutacja);",
+    "pozostale bramki rundy 1 (war-rules-multiwar 55/0 + main-guard 21/0; forced-war-stone 38/0 + main-guard 19/0; forced-war-bronze 56/0; forced-war-iron 55/0 + main-guard 37/0; forced-war-trojstronna 23/0 + main-guard 14/0; war-allin-capital 95/0; army-consolidation 6/6 KILLED + e2e 6/0; ai-move-range 46/0; diplo-tick-war-brake 69/0 + 51/0 + 17/0; sensible-deals 63/0 + 22/0; diplomacy 148/0 + war-gates 19/0; logic 213/213; ai-test 276/18 (znane); endturn 38/0 + exec 46/0; load-game-regression 34/0; barbarzyncy 249/0; barb-city 178/0) - patrz raport Operatora r2 i wyniki w dyspozycje/autobot/runs/R-WEB-WAR-EPOCH-RELEASE-ROBOCZA-Q1/",
+    "znane czerwone nie gorzej: forced-war-waves 16/1, forced-war-bronze-main-guard 27/1, forced-war-bronze-new-game-reset (crash), recruitment-no-upkeep 22/14, deposit-building 46/1, load-game-blockers-exec (ReferenceError), diplomacy audience-close-flush/lista-podglad/negotiation-table/package-ai-counter-actionable/proposal, koniec-tury f1-f4/g1-g2."
   ],
   "limits": [
     "Wydanie ROBOCZE testowe na wyrazne polecenie wlasciciela; brak pelnej akceptacji rozgrywki.",
-    "NIE_ZMIERZONO (do WERSJE.md): pelna seria pomiarow rundy 2 (>=5 seedow x 70 tur, partner = najblizsza cywilizacja, kolejnosc gracz-przed-AI, scenariusze nieodkrytych cywilizacji, zapis/odczyt opcji i stary zapis w przegladarce); smoke Chromium na tym bundlu - patrz raport Operatora."
+    "NIE_ZMIERZONO (do WERSJE.md, decyzja orkiestratora): pelna seria pomiarow rundy 2 (>=5 seedow x 70 tur; partner = najblizsza cywilizacja; kolejnosc gracz-przed-AI; scenariusze nieodkrytych cywilizacji; zapis/odczyt opcji i stary zapis w przegladarce).",
+    "NIE_ZMIERZONO: smoke >=46 tur (pokoj i wojna) i pomiar czasu tury kandydat/baza (x1,10) na tym bundlu; pomiar wojny gracza w T40-T42 w >=3 seedach (flaga ON). Patrz raport Operatora r2 i Evaluator r2.",
+    "Zrzut wiersza opcji „Wojna epoki z udzialem gracza” w ekranie nowej gry: patrz wynik smoke Operatora r2 (raport); bez tego zrzutu wiersz uznaje sie za NIE_ZMIERZONO."
   ],
   "previousRelease": {
-    "releaseState": "candidate R-WEB-UI-ARMY-RELEASE-ROBOCZA-Q1 (wydanie nr 6)",
+    "releaseState": "candidate R-WEB-UI-ARMY-RELEASE-ROBOCZA-Q1 (wydanie nr 6, lokalny commit, nie opublikowane; publish po Final Control przez orkiestratora)",
     "bundle": "Gra-ROBOCZA.html",
     "bundleMd5": "16d42d7a1d2dbaf790eab54c550df002",
     "bundleSha256": "50c3b6a4a5e5fba39663722cd8ea90340862c645da5abdb98b4714f27ac5fc12",
@@ -36,7 +37,7 @@
     "publicationCommit": "origin/main b3349709 (ROBOCZA 16d42d7a, wydanie nr 6)"
   },
   "rollbackPlan": {
-    "method": "przywrocenie gra-robocza/Gra-ROBOCZA.html z wydania nr 6 (ROBOCZA 16d42d7a, commit 6aff28ff/b3349709) albo revert commitow wydania nr 7 (545a8306..70bbc00c)",
+    "method": "przywrocenie gra-robocza/Gra-ROBOCZA.html z wydania nr 6 (ROBOCZA 16d42d7a, commit 6aff28ff/b3349709; pelny manifest w previousReleaseManifest) albo revert commitow wydania nr 7 (545a8306..70bbc00c oraz commitow poprawki i wydania)",
     "previousBundleMd5": "16d42d7a1d2dbaf790eab54c550df002",
     "previousBundleSha256": "50c3b6a4a5e5fba39663722cd8ea90340862c645da5abdb98b4714f27ac5fc12",
     "previousBundleBytes": 69990763
@@ -46,139 +47,218 @@
     "reportPath": "dyspozycje/autobot/runs/R-WEB-WAR-EPOCH-RELEASE-ROBOCZA-Q1/"
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-10-26T12:00:00",
-  "md5": "5a55bc07289655b71a178312db8cd42b",
+  "hubGeneratedAt": "2026-10-26T13:00:00",
+  "md5": "f491c3a2188d0d5ccea9bc715927a070",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "5a55bc07289655b71a178312db8cd42b",
-      "sizeBytes": 69993033
+      "md5": "f491c3a2188d0d5ccea9bc715927a070",
+      "sizeBytes": 69993111
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "5a55bc07289655b71a178312db8cd42b",
-      "sizeBytes": 69993033
+      "md5": "f491c3a2188d0d5ccea9bc715927a070",
+      "sizeBytes": 69993111
     }
   ],
   "previousReleaseManifest": {
-    "releaseState": "candidate R-WEB-DIPLO-DEALS-RELEASE-ROBOCZA-Q1 (integration/robocza-deals-20261025, local commit, not published); publish by orchestrator after Final Control",
+    "releaseState": "candidate R-WEB-UI-ARMY-RELEASE-ROBOCZA-Q1 (wydanie nr 6, lokalny commit, nie opublikowane; publish po Final Control przez orkiestratora)",
     "bundle": "Gra-ROBOCZA.html",
-    "bundleMd5": "bfba14e3424cd4f944fb5c235382696f",
-    "bundleSha256": "1e48f16ca9af9ea4cf58b010d0dd63cae96ac2214c58edb7815355d91224c7d2",
-    "bundleBytes": 69986438,
+    "bundleMd5": "16d42d7a1d2dbaf790eab54c550df002",
+    "bundleSha256": "50c3b6a4a5e5fba39663722cd8ea90340862c645da5abdb98b4714f27ac5fc12",
+    "bundleBytes": 69990763,
     "sourceSnapshot": {
-      "baseCommit": "origin/main e02c497e (wydanie nr 4 R-WEB-DIPLO-RELEASE-ROBOCZA-Q1, ROBOCZA b3b8e92e)",
-      "productCommitSource": "R-WEB-DIPLO-DEALS-SENSIBLE-Q1: cherry-pick 32b7a825 3ccc0419 38457e42 61278021 52a7aca9 na origin/main e02c497e; integracja 09142bf4 1aa97f56 5aada5c6 0ad3f4ee 18f3e69c (tylko gra/src/**, gra/data/**, gra/tools/**; dyspozycje/** pominiete, evidence PNG pominiete)"
+      "baseCommit": "origin/main d49c21c6 (ROBOCZA bfba14e3, wydanie nr 5)",
+      "productCommitSource": "R-WEB-DIPLO-UI-DIRECT-NEGOTIATION-Q1: cherry-pick 35b87fe0 888642ba (bez haka setupListRelationsFixture) -> 114f0ec9; R-WEB-ARMY-CONSOLIDATION-Q1: cherry-pick 692b4685 5b9849c7 -> 343509be f2100f9c; flaga ARMY_CONSOLIDATION_ENABLED=true -> 48c1ed2e; testy pinujace flage OFF -> 10200bc6"
     },
     "scope": [
-      "origin/main e02c497e + R-WEB-DIPLO-DEALS-SENSIBLE-Q1: (a) filtr ofert AI->gracz o bilansie <0 (zerowy undershoot przy fladze ON); (b) oferty handlowe tylko przy niedoborze/nadwyzce z polem reason (progi w diplomacy-sensible-deals.config.json); (c) opcja nowej gry Wymagaj rozpatrzenia ofert handlowych przed koncem tury (domyslnie ON, zapis w save, stare zapisy OFF) z blokada canPlayerInitiateEndTurn i healStaleEndTurnBlockers; (d) flaga DIPLO_SENSIBLE_DEALS_ENABLED = true (jak w kodzie)."
+      "origin/main d49c21c6 + (a) R-WEB-DIPLO-UI-DIRECT-NEGOTIATION-Q1: klik cywilizacji na liscie dyplomacji otwiera negocjacje wprost (bez posredniego dymka); karta cywilizacji ma wiersze Wojny/Sojusze/Handel (3 nazwy + '+N', pelna lista w tooltipie).",
+      "(b) R-WEB-ARMY-CONSOLIDATION-Q1: scalanie wojsk polowych AI za flaga ARMY_CONSOLIDATION_ENABLED = true (DEFAULT ON w tym wydaniu): pokoj = zbiorka w stolicy z limitem na heks; obrona domu z kworum 2; wojna = liczba armii = liczba wojen, marsz na stolice wrogow, reuse W1/W2."
     ],
     "verification": [
-      "tsc --noEmit EXIT=0; direct Vite build EXIT=0 (scratch); inject-build-stamp ROBOCZA; verify-robocza-bundle.cjs; gate list - patrz dyspozycje/autobot/runs/R-WEB-DIPLO-DEALS-RELEASE-ROBOCZA-Q1/01-operator-r1.md"
+      "npm ci --ignore-scripts EXIT=0; tsc --noEmit EXIT=0;",
+      "vite build do scratch EXIT=0 (904 modules); inject-build-stamp ROBOCZA OK md5=16d42d7a;",
+      "army-consolidation-test 32/0 + 3/0 + 10/0 + mutacje 6/6 KILLED; army-consolidation-e2e-test 6/0; army-concentration-test 55/0; war-allin-capital-test 95/0;",
+      "ai-move-range 46/0; war-rules-multiwar 55/0 + main-guard 21/0; diplo-tick-war-brake-unit 69/0 + brake 51/0; sensible-deals 63/0 + main-guard 22/0; diplomacy-test 148/0; barbarzyncy-krazenie 249/0; barb-city-behavior 178/0;",
+      "diplomacy-lista-podglad-przed-wizyta 52/1 (znana czerwona 6e, jak w nr 5); diplomacy-direct-negotiation-live-test: NIE_ZMIERZONO jako pelny test (wymaga haka setupListRelationsFixture, ktory swiadomie NIE wszedl do wydania); zastepstwo: skrypt scratch na bundlu 16d42d7a -- klik listy -> negocjacje (pair-summary 0, aud-box 1), wiersze Wojny: Ty / Sojusze: brak / Handel: brak, 0 bledow.",
+      "R2 (Operator runda 2): smoke Chromium /opt/pw-browsers/chromium-1194 na bundlu 16d42d7a vs baza bfba14e3, pokoj 46 tur seed 778899: 0 pageerror, 7 ostrzezen DECISION_REQUIRED (oba bundle); czas tury tury 2-46 mediana 7031 ms vs 6862 ms (x1,025), srednia 7336 vs 7153 ms (x1,026), max 8963 vs 8748 ms.",
+      "R2: smoke wojna (gracz vs AI 1, AI 1 vs 2, AI 2 vs 3 przez declareRegularWarBetween), 46 tur: kandydat 0 pageerror, 8 ostrzezen konsoli DECISION_REQUIRED, baza identycznie 0/8; mediana tury 199 ms vs 179 ms (x1,11, tury ~200 ms, szum rAF), srednia 202 vs 198 ms (x1,02), max 408 vs 371 ms.",
+      "R2: ai-test 276/18 (T4d przypiete do flagi OFF, bazowy kontrakt fallback idle); verify-robocza-bundle.cjs rozszerzony o kontrole bundles[] (md5+rozmiar).",
+      "R2: load-game-blockers-exec-test EXIT=1 (ReferenceError pruneStaleAiTradeOffersAwaitingPlayer / dealsEndTurnGateEnabled -- dlug harnessu, tak samo na bazie)."
     ],
     "limits": [
       "Wydanie ROBOCZE do testow wlasciciela; brak pelnej akceptacji rozgrywki.",
-      "NIE_ZMIERZONO (odroczone do R-WEB-TEST-HOOK-HEADLESS-GAME-Q1, decyzja orkiestratora): liczba ofert AI->gracz na ture, liczba z bilansem<0, rozklad reason, tury z zablokowanym koncem przy wiszacej ofercie, pelna mediana czasu tury BASE vs SENS w pelnej grze, >=2 seedy x >=40 tur, zrzut wiersza opcji w ekranie nowej gry.",
-      "Wymiana w naturze surowiec za surowiec NIE zaimplementowana (zaplataTyp tylko zloto/praca) - czesciowe spelnienie (b) wg decyzji orkiestratora; osobny temat pozniej.",
-      "Sensowne oferty sa w tym wydaniu z flaga ON (stan kodu)."
+      "NIE_ZMIERZONO: efekt scalania w pelnej grze (grupy polowe na cywilizacje w pokoju, % wojsk w stolicy, liczba armii vs wojny, zrzuty OFF/ON); czas tury ON vs OFF; scalanie glodujacych jednostek (ikona przekreslonego kolka); smoke Chromium >=46 tur pokoj i wojna; zrzut listy dyplomacji Wojny/Sojusze/Handel.",
+      "Hak testowy (test-hook.ts, ?testhook=1, setupListRelationsFixture) NIE jest w wydaniu.",
+      "Flaga ARMY_CONSOLIDATION_ENABLED = true w wydaniu roboczym (decyzja orkiestratora); kod bazowy mial false."
     ],
     "previousRelease": {
-      "bundleMd5": "b3b8e92eda76779d37e06fab4d5fac56",
-      "bundleSha256": "5e16fde03a045b354089af7c8623954bc45b36ed3441e4769cf33bc50c465384",
-      "bundleBytes": 69980630,
-      "publicationCommit": "origin/main e02c497e (WERSJE b3b8e92e; wydanie nr 4)"
+      "bundleMd5": "bfba14e3424cd4f944fb5c235382696f",
+      "bundleSha256": "1e48f16ca9af9ea4cf58b010d0dd63cae96ac2214c58edb7815355d91224c7d2",
+      "bundleBytes": 69986438,
+      "publicationCommit": "origin/main d49c21c6 (WERSJE bfba14e3; wydanie nr 5)"
     },
     "rollbackPlan": {
-      "method": "przywrocenie gra-robocza/Gra-ROBOCZA.html z wydania nr 4 (ROBOCZA b3b8e92e) albo revert commitow wydania",
-      "previousBundleMd5": "b3b8e92eda76779d37e06fab4d5fac56",
-      "previousBundleSha256": "5e16fde03a045b354089af7c8623954bc45b36ed3441e4769cf33bc50c465384",
-      "previousBundleBytes": 69980630
+      "method": "przywrocenie gra-robocza/Gra-ROBOCZA.html z wydania nr 5 (ROBOCZA bfba14e3) albo revert commitow wydania nr 6 (114f0ec9..10200bc6)",
+      "previousBundleMd5": "bfba14e3424cd4f944fb5c235382696f",
+      "previousBundleSha256": "1e48f16ca9af9ea4cf58b010d0dd63cae96ac2214c58edb7815355d91224c7d2",
+      "previousBundleBytes": 69986438
     },
     "finalControl": {
       "status": "PENDING",
-      "reportPath": "dyspozycje/autobot/runs/R-WEB-DIPLO-DEALS-RELEASE-ROBOCZA-Q1/"
+      "reportPath": "dyspozycje/autobot/runs/R-WEB-UI-ARMY-RELEASE-ROBOCZA-Q1/"
     },
     "startHub": "START.html",
-    "hubGeneratedAt": "2026-10-25T14:20:00",
-    "md5": "bfba14e3424cd4f944fb5c235382696f",
+    "hubGeneratedAt": "2026-10-26T00:00:04",
+    "md5": "16d42d7a1d2dbaf790eab54c550df002",
     "bundles": [
       {
         "file": "Gra-ROBOCZA.html",
         "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
         "label": "Pełna gra ROBOCZA",
-        "md5": "bfba14e3424cd4f944fb5c235382696f",
-        "sizeBytes": 69986438
+        "md5": "16d42d7a1d2dbaf790eab54c550df002",
+        "sizeBytes": 69990763
       },
       {
         "file": "Gra-ROBOCZA.html",
         "href": "Gra-ROBOCZA.html",
         "label": "Pełna gra (z menu)",
-        "md5": "bfba14e3424cd4f944fb5c235382696f",
-        "sizeBytes": 69986438
+        "md5": "16d42d7a1d2dbaf790eab54c550df002",
+        "sizeBytes": 69990763
       }
     ],
     "previousReleaseManifest": {
-      "releaseState": "candidate R-WEB-DIPLO-RELEASE-ROBOCZA-Q1 (local commit, not published); publish by orchestrator after Final Control",
+      "releaseState": "candidate R-WEB-DIPLO-DEALS-RELEASE-ROBOCZA-Q1 (integration/robocza-deals-20261025, local commit, not published); publish by orchestrator after Final Control",
       "bundle": "Gra-ROBOCZA.html",
-      "bundleMd5": "b3b8e92eda76779d37e06fab4d5fac56",
-      "bundleSha256": "5e16fde03a045b354089af7c8623954bc45b36ed3441e4769cf33bc50c465384",
-      "bundleBytes": 69980630,
+      "bundleMd5": "bfba14e3424cd4f944fb5c235382696f",
+      "bundleSha256": "1e48f16ca9af9ea4cf58b010d0dd63cae96ac2214c58edb7815355d91224c7d2",
+      "bundleBytes": 69986438,
       "sourceSnapshot": {
-        "baseCommit": "origin/main 0ffe3c04 (wpis WERSJE 763320d7; wydanie nr 3 R-WEB-WAR-RULES-RELEASE-ROBOCZA-Q1)",
-        "productCommitSource": "R-WEB-DIPLO-TICK-WAR-BRAKE-Q1: cherry-pick ea736900 5ad1c9df b1d9f79f (tylko gra/src/**, gra/data/**, gra/tools/**; pliki dyspozycje/ pominiete, logs-r3 pominiete) + commit DEFAULT=true flagi dyplomacji z dostosowaniem testow"
+        "baseCommit": "origin/main e02c497e (wydanie nr 4 R-WEB-DIPLO-RELEASE-ROBOCZA-Q1, ROBOCZA b3b8e92e)",
+        "productCommitSource": "R-WEB-DIPLO-DEALS-SENSIBLE-Q1: cherry-pick 32b7a825 3ccc0419 38457e42 61278021 52a7aca9 na origin/main e02c497e; integracja 09142bf4 1aa97f56 5aada5c6 0ad3f4ee 18f3e69c (tylko gra/src/**, gra/data/**, gra/tools/**; dyspozycje/** pominiete, evidence PNG pominiete)"
       },
       "scope": [
-        "origin/main 0ffe3c04 + dyplomacja R-WEB-DIPLO-TICK-WAR-BRAKE-Q1 z flaga DIPLO_TICK_WAR_BRAKE_ENABLED_DEFAULT=true: P3 tick Zaufania par AI-AI; P4 bonusy dobrej woli i wspolnego wroga; P6 hamulec wojny (N=5 tur Zaufania <= progu, ostrzezenie 2 tury przed dla pary z graczem, wypowiada silniejsza strona, podlega R1/R2/R3); P7 schodkowy bonus za wymiane na plusie (kamien 100 / braz 200 / zelazo 400 / dalej x2; +0,5 za pelny krok; limit 5/ture; sufit Zaufania 60; min 2 tury dostaw; dar bez zmian)."
+        "origin/main e02c497e + R-WEB-DIPLO-DEALS-SENSIBLE-Q1: (a) filtr ofert AI->gracz o bilansie <0 (zerowy undershoot przy fladze ON); (b) oferty handlowe tylko przy niedoborze/nadwyzce z polem reason (progi w diplomacy-sensible-deals.config.json); (c) opcja nowej gry Wymagaj rozpatrzenia ofert handlowych przed koncem tury (domyslnie ON, zapis w save, stare zapisy OFF) z blokada canPlayerInitiateEndTurn i healStaleEndTurnBlockers; (d) flaga DIPLO_SENSIBLE_DEALS_ENABLED = true (jak w kodzie)."
       ],
       "verification": [
-        "tsc --noEmit EXIT=0; direct Vite build EXIT=0 (scratch); inject-build-stamp ROBOCZA; verify-robocza-bundle.cjs; testy wg dispatchu i smoke Chromium - patrz dyspozycje/autobot/runs/R-WEB-DIPLO-RELEASE-ROBOCZA-Q1/01-operator-r1.md"
+        "tsc --noEmit EXIT=0; direct Vite build EXIT=0 (scratch); inject-build-stamp ROBOCZA; verify-robocza-bundle.cjs; gate list - patrz dyspozycje/autobot/runs/R-WEB-DIPLO-DEALS-RELEASE-ROBOCZA-Q1/01-operator-r1.md"
       ],
       "limits": [
         "Wydanie ROBOCZE do testow wlasciciela; brak pelnej akceptacji rozgrywki.",
-        "NIE_ZMIERZONO: determinizm ON; hash OFF=baza; czas tury x1,10 na cichym hoscie; liczba wojen z progu >=5 seedow x 80 tur w pelnej grze.",
-        "Znane zalozenia do potwierdzenia przez wlasciciela: gracz jako strona silniejsza bywa agresorem z progu; fala wojen przy otwarciu R1 (tura 40); asymetria odmiennaReligia dla par AI-AI.",
-        "Stamp self-MD5 (title=md5=...) moze != md5 pliku: ograniczenie konstrukcyjne; wiazacy jest bundleMd5.",
-        "Zakres: tylko ROBOCZA; bez KANON/FINALNA. Sensowne oferty (R-WEB-DIPLO-DEALS-SENSIBLE-Q1) NIE wchodza do tego wydania."
+        "NIE_ZMIERZONO (odroczone do R-WEB-TEST-HOOK-HEADLESS-GAME-Q1, decyzja orkiestratora): liczba ofert AI->gracz na ture, liczba z bilansem<0, rozklad reason, tury z zablokowanym koncem przy wiszacej ofercie, pelna mediana czasu tury BASE vs SENS w pelnej grze, >=2 seedy x >=40 tur, zrzut wiersza opcji w ekranie nowej gry.",
+        "Wymiana w naturze surowiec za surowiec NIE zaimplementowana (zaplataTyp tylko zloto/praca) - czesciowe spelnienie (b) wg decyzji orkiestratora; osobny temat pozniej.",
+        "Sensowne oferty sa w tym wydaniu z flaga ON (stan kodu)."
       ],
       "previousRelease": {
-        "bundleMd5": "763320d70c0ab4d665908d3d7f13522c",
-        "bundleSha256": "8f4b67a5e0a0e7ed63c03300549923a1378d6dbfc95927e6813ad8caadac037b",
-        "bundleBytes": 69973674,
-        "publicationCommit": "origin/main 0ffe3c04 (WERSJE 763320d7; wydanie nr 3 R-WEB-WAR-RULES-RELEASE-ROBOCZA-Q1)"
+        "bundleMd5": "b3b8e92eda76779d37e06fab4d5fac56",
+        "bundleSha256": "5e16fde03a045b354089af7c8623954bc45b36ed3441e4769cf33bc50c465384",
+        "bundleBytes": 69980630,
+        "publicationCommit": "origin/main e02c497e (WERSJE b3b8e92e; wydanie nr 4)"
       },
       "rollbackPlan": {
-        "method": "przywrocenie gra-robocza/Gra-ROBOCZA.html z poprzedniego wydania (ROBOCZA 763320d7) albo revert commitow wydania",
-        "previousBundleMd5": "763320d70c0ab4d665908d3d7f13522c",
-        "previousBundleSha256": "8f4b67a5e0a0e7ed63c03300549923a1378d6dbfc95927e6813ad8caadac037b",
-        "previousBundleBytes": 69973674
+        "method": "przywrocenie gra-robocza/Gra-ROBOCZA.html z wydania nr 4 (ROBOCZA b3b8e92e) albo revert commitow wydania",
+        "previousBundleMd5": "b3b8e92eda76779d37e06fab4d5fac56",
+        "previousBundleSha256": "5e16fde03a045b354089af7c8623954bc45b36ed3441e4769cf33bc50c465384",
+        "previousBundleBytes": 69980630
       },
       "finalControl": {
         "status": "PENDING",
-        "reportPath": "dyspozycje/autobot/runs/R-WEB-DIPLO-RELEASE-ROBOCZA-Q1/"
+        "reportPath": "dyspozycje/autobot/runs/R-WEB-DIPLO-DEALS-RELEASE-ROBOCZA-Q1/"
       },
       "startHub": "START.html",
-      "hubGeneratedAt": "2026-10-25T11:47:06",
-      "md5": "b3b8e92eda76779d37e06fab4d5fac56",
+      "hubGeneratedAt": "2026-10-25T14:20:00",
+      "md5": "bfba14e3424cd4f944fb5c235382696f",
       "bundles": [
         {
           "file": "Gra-ROBOCZA.html",
           "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
           "label": "Pełna gra ROBOCZA",
-          "md5": "b3b8e92eda76779d37e06fab4d5fac56",
-          "sizeBytes": 69980630
+          "md5": "bfba14e3424cd4f944fb5c235382696f",
+          "sizeBytes": 69986438
         },
         {
           "file": "Gra-ROBOCZA.html",
           "href": "Gra-ROBOCZA.html",
           "label": "Pełna gra (z menu)",
-          "md5": "b3b8e92eda76779d37e06fab4d5fac56",
-          "sizeBytes": 69980630
+          "md5": "bfba14e3424cd4f944fb5c235382696f",
+          "sizeBytes": 69986438
         }
-      ]
+      ],
+      "previousReleaseManifest": {
+        "releaseState": "candidate R-WEB-DIPLO-RELEASE-ROBOCZA-Q1 (local commit, not published); publish by orchestrator after Final Control",
+        "bundle": "Gra-ROBOCZA.html",
+        "bundleMd5": "b3b8e92eda76779d37e06fab4d5fac56",
+        "bundleSha256": "5e16fde03a045b354089af7c8623954bc45b36ed3441e4769cf33bc50c465384",
+        "bundleBytes": 69980630,
+        "sourceSnapshot": {
+          "baseCommit": "origin/main 0ffe3c04 (wpis WERSJE 763320d7; wydanie nr 3 R-WEB-WAR-RULES-RELEASE-ROBOCZA-Q1)",
+          "productCommitSource": "R-WEB-DIPLO-TICK-WAR-BRAKE-Q1: cherry-pick ea736900 5ad1c9df b1d9f79f (tylko gra/src/**, gra/data/**, gra/tools/**; pliki dyspozycje/ pominiete, logs-r3 pominiete) + commit DEFAULT=true flagi dyplomacji z dostosowaniem testow"
+        },
+        "scope": [
+          "origin/main 0ffe3c04 + dyplomacja R-WEB-DIPLO-TICK-WAR-BRAKE-Q1 z flaga DIPLO_TICK_WAR_BRAKE_ENABLED_DEFAULT=true: P3 tick Zaufania par AI-AI; P4 bonusy dobrej woli i wspolnego wroga; P6 hamulec wojny (N=5 tur Zaufania <= progu, ostrzezenie 2 tury przed dla pary z graczem, wypowiada silniejsza strona, podlega R1/R2/R3); P7 schodkowy bonus za wymiane na plusie (kamien 100 / braz 200 / zelazo 400 / dalej x2; +0,5 za pelny krok; limit 5/ture; sufit Zaufania 60; min 2 tury dostaw; dar bez zmian)."
+        ],
+        "verification": [
+          "tsc --noEmit EXIT=0; direct Vite build EXIT=0 (scratch); inject-build-stamp ROBOCZA; verify-robocza-bundle.cjs; testy wg dispatchu i smoke Chromium - patrz dyspozycje/autobot/runs/R-WEB-DIPLO-RELEASE-ROBOCZA-Q1/01-operator-r1.md"
+        ],
+        "limits": [
+          "Wydanie ROBOCZE do testow wlasciciela; brak pelnej akceptacji rozgrywki.",
+          "NIE_ZMIERZONO: determinizm ON; hash OFF=baza; czas tury x1,10 na cichym hoscie; liczba wojen z progu >=5 seedow x 80 tur w pelnej grze.",
+          "Znane zalozenia do potwierdzenia przez wlasciciela: gracz jako strona silniejsza bywa agresorem z progu; fala wojen przy otwarciu R1 (tura 40); asymetria odmiennaReligia dla par AI-AI.",
+          "Stamp self-MD5 (title=md5=...) moze != md5 pliku: ograniczenie konstrukcyjne; wiazacy jest bundleMd5.",
+          "Zakres: tylko ROBOCZA; bez KANON/FINALNA. Sensowne oferty (R-WEB-DIPLO-DEALS-SENSIBLE-Q1) NIE wchodza do tego wydania."
+        ],
+        "previousRelease": {
+          "bundleMd5": "763320d70c0ab4d665908d3d7f13522c",
+          "bundleSha256": "8f4b67a5e0a0e7ed63c03300549923a1378d6dbfc95927e6813ad8caadac037b",
+          "bundleBytes": 69973674,
+          "publicationCommit": "origin/main 0ffe3c04 (WERSJE 763320d7; wydanie nr 3 R-WEB-WAR-RULES-RELEASE-ROBOCZA-Q1)"
+        },
+        "rollbackPlan": {
+          "method": "przywrocenie gra-robocza/Gra-ROBOCZA.html z poprzedniego wydania (ROBOCZA 763320d7) albo revert commitow wydania",
+          "previousBundleMd5": "763320d70c0ab4d665908d3d7f13522c",
+          "previousBundleSha256": "8f4b67a5e0a0e7ed63c03300549923a1378d6dbfc95927e6813ad8caadac037b",
+          "previousBundleBytes": 69973674
+        },
+        "finalControl": {
+          "status": "PENDING",
+          "reportPath": "dyspozycje/autobot/runs/R-WEB-DIPLO-RELEASE-ROBOCZA-Q1/"
+        },
+        "startHub": "START.html",
+        "hubGeneratedAt": "2026-10-25T11:47:06",
+        "md5": "b3b8e92eda76779d37e06fab4d5fac56",
+        "bundles": [
+          {
+            "file": "Gra-ROBOCZA.html",
+            "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
+            "label": "Pełna gra ROBOCZA",
+            "md5": "b3b8e92eda76779d37e06fab4d5fac56",
+            "sizeBytes": 69980630
+          },
+          {
+            "file": "Gra-ROBOCZA.html",
+            "href": "Gra-ROBOCZA.html",
+            "label": "Pełna gra (z menu)",
+            "md5": "b3b8e92eda76779d37e06fab4d5fac56",
+            "sizeBytes": 69980630
+          }
+        ]
+      }
     }
+  },
+  "publishPlan": {
+    "integrationBranch": "integration/robocza-war-epoch-20261026",
+    "status": "PLANNED - nic nie wykonano; kroki wykonuje wylacznie orkiestrator po Final Control i po READY_FOR_DEPLOY",
+    "steps": [
+      "1. Z origin/main (aktualnym; w tym momencie b3349709) utworzyc integration/robocza-war-epoch-20261026 i cherry-pick po SHA: 545a8306, 3b52d69a, 70bbc00c, commit poprawki Operatora r2 (odkrycie przy wypowiedzeniu), commit wydania nr 7 (gra-robocza/* i ten manifest); NIE dyspozycje/** poza evidence/.",
+      "2. Bramki na zintegrowanym drzewie: npm ci --ignore-scripts; tsc --noEmit; bezposredni vite build do scratch; verify-robocza-bundle.cjs (manifest i bundles[] musza sie zgadzac z bundleMd5).",
+      "3. Final Control (Sonnet 5.5) na zintegrowanym drzewie; po PASS orkiestrator wystawia READY_FOR_DEPLOY.",
+      "4. Publikacja do gra-robocza/ z bundla o md5 f491c3a2188d0d5ccea9bc715927a070 (nie przebudowywac ponownie; porownac sha256 f0f9f184...aaa7).",
+      "5. WERSJE.md aktualizowany wylacznie przy deployu (zakaz wczesniej), z wpisem NIE_ZMIERZONO z sekcji limits.",
+      "6. git push i merge do main dopiero po osobnej autoryzacji wlasciciela (zgoda z dispatchu obejmuje ROBOCZA, ale zapis w dispatchu nie zwalnia z kolejnosci bramek)."
+    ]
   }
 }

@@ -62,6 +62,10 @@ const GUARDS = {
     'main.ts: Z5/D2 bypass R3 ze SNAPSHOTU przydzialow (bez zywego pending)',
     s => /const waveActorBypassR3 = gateForcedTag !== null\s*&& isWarEpochPlayerFirstEnabled\(\)\s*&& forcedWarAssignmentByOwner\.get\(ownerId\)\?\.era === gateForcedTag;/.test(s.main),
   ],
+  discoveryOnDeclare: [
+    'main.ts: odkrycie nieodkrytej strony AI przy wypowiedzeniu wojny epoki z graczem (zarzut FC r1 nr 1)',
+    s => /if \(isWarEpochPlayerFirstEnabled\(\) && declaredEraTag !== null\) \{\s*if \(isHuman\(ownerId\) && !isHuman\(targetId\)\) diplomaticallyDiscoveredOwnersSet\(\)\.add\(targetId\);\s*else if \(isHuman\(targetId\) && !isHuman\(ownerId\)\) diplomaticallyDiscoveredOwnersSet\(\)\.add\(ownerId\);/.test(s.main),
+  ],
   saveMetaFlagged: [
     'main.ts: zapis meta.playerEpochWarEnabled tylko przy fladze ON',
     s => /\.\.\.\(isWarEpochPlayerFirstEnabled\(\) \? \{ playerEpochWarEnabled \} : \{\}\),/.test(s.main),
@@ -116,6 +120,7 @@ const MUTATIONS = [
   ['opcja K2 zignorowana w puli', 'main', 'if (isWarEpochPlayerFirstEnabled() && !playerEpochWarEnabled) {', 'if (false) {', 'playerInPoolOnlyWhenOption'],
   ['bypass mgly K1 usuniety', 'main', '&& !diplomaticallyDiscoveredOwnersSet().has(ownerId)\n                && forcedWarAssignmentByOwner', '&& forcedWarAssignmentByOwner', 'fogBypassK1'],
   ['bypass R3 z zywego licznika pending (mutacja D2)', 'main', '&& forcedWarAssignmentByOwner.get(ownerId)?.era === gateForcedTag;', '&& forcedWarAssignmentByOwner.get(ownerId)?.era === gateForcedTag && stoneForceWarPendingOwners.size > 0;', 'waveSnapshotR3'],
+  ['odkrycie przy wypowiedzeniu usuniete (mutacja FC r1)', 'main', 'if (isHuman(ownerId) && !isHuman(targetId)) diplomaticallyDiscoveredOwnersSet().add(targetId);', '', 'discoveryOnDeclare'],
   ['zapis opcji bez flagi', 'main', '...(isWarEpochPlayerFirstEnabled() ? { playerEpochWarEnabled } : {}),', '...{ playerEpochWarEnabled },', 'saveMetaFlagged'],
   ['nowa gra domyslnie OFF', 'main', 'playerEpochWarEnabled = params.playerEpochWarEnabled ?? true;', 'playerEpochWarEnabled = params.playerEpochWarEnabled ?? false;', 'startDefaultOn'],
   ['stary zapis = ON', 'main', 'playerEpochWarEnabled = (saved.meta?.playerEpochWarEnabled as boolean | undefined) === true;', 'playerEpochWarEnabled = (saved.meta?.playerEpochWarEnabled as boolean | undefined) !== false;', 'loadOldSaveOff'],

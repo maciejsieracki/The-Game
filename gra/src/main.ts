@@ -36042,6 +36042,12 @@ async function boot(): Promise<void> {
                           (forcedEraWarDeclaredByTag.get(declaredEraTag) ?? 0) + 1,
                         );
                       }
+                      // R-WEB-WAR-EPOCH-PLAYER-FIRST-Q1 (K1, zarzut FC r1 nr 1): wojna epoki z graczem
+                      // odkrywa nieodkrytą stronę AI w chwili wypowiedzenia (nie tylko omija mgłę).
+                      if (isWarEpochPlayerFirstEnabled() && declaredEraTag !== null) {
+                        if (isHuman(ownerId) && !isHuman(targetId)) diplomaticallyDiscoveredOwnersSet().add(targetId);
+                        else if (isHuman(targetId) && !isHuman(ownerId)) diplomaticallyDiscoveredOwnersSet().add(ownerId);
+                      }
                       // R-EPOKA-BRAZU-WYMUSZONA-WOJNA: ta konkretna wojna wypowiedziana =
                       // wymuszona (targetId dokładnie ten, który wybrał pickBronzeForcedWarTargetId
                       // dla ownerId w tej turze) — zapisz stan do liczników auto-pokoju i zapisz
