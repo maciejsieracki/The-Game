@@ -175,6 +175,21 @@ export interface ForcedWarPairingOpts {
   hexDistanceFn: (aq: number, ar: number, bq: number, br: number) => number;
   /** Krok 2 ECHO: CAŁKOWITA liczba aktywnych wojen wymuszonych (wszystkie epoki) tego ownera PRZED przydziałem tej tury. */
   totalActiveForcedWarsByOwner: (ownerId: number) => number;
+  /**
+   * R-WEB-WAR-EPOCH-PLAYER-FIRST-Q1 (Z1/Z3/Z4, K1) — TYLKO gdy flaga
+   * WAR_EPOCH_PLAYER_FIRST_ENABLED jest ON (main.ts); brak pola = zachowanie bazowe.
+   * Gracz (`playerOwnerId`) dostaje PIERWSZĄ parę fali: najbliższy (wg dystansu od
+   * stolicy gracza) podmiot AI z puli warless, który (a) nie jest zablokowany
+   * NAP/peaceLock/sojuszem z graczem i (b) przechodzi bramkę R1/R2 po stronie AI
+   * (`isPlayerPairGateOpen`). Widoczność/odkrycie gracza NIE jest tu brane pod uwagę
+   * (K1: mgła nie ogranicza wojny epoki). Remis dystansu → niższy ownerId.
+   * Gdy brak takiego AI — gracz nie dostaje pary w tej turze (bez pending, bez blokowania
+   * reszty: pozostałe pary AI↔AI są parowane normalnie).
+   */
+  playerFirst?: {
+    playerOwnerId: number;
+    isPlayerPairGateOpen: (aiOwnerId: number) => boolean;
+  };
 }
 
 export interface ForcedWarPairingAssignment {
@@ -234,13 +249,50 @@ export function assignForcedWarPairings(
   const unresolvedOwnerIds: number[] = [];
 
   // Krok 1-2: pula "warless", posortowana deterministycznie po ownerId.
-  const warless = triggeredSubjects
+  let warlessAll = triggeredSubjects
     .filter(s => opts.totalActiveForcedWarsByOwner(s.ownerId) === 0)
     .slice()
     .sort((a, b) => a.ownerId - b.ownerId);
+
+  // R-WEB-WAR-EPOCH-PLAYER-FIRST-Q1 (Z1/Z3/Z4, K1): gracz pierwszy. Najbliższy AI (wg
+  // dystansu od stolicy gracza) z puli warless, niezablokowany i z otwartą bramką R1/R2,
+  // dostaje parę z graczem PRZED parowaniem reszty; ten AI wypada z puli 1v1 poniżej.
+  let playerFirstPartnerId: number | null = null;
+  const playerFirst = opts.playerFirst;
+  if (playerFirst) {
+    const playerSubject = warlessAll.find(s => s.ownerId === playerFirst.playerOwnerId);
+    if (playerSubject) {
+      let bestDist = Infinity;
+      for (const cand of warlessAll) {
+        if (cand.ownerId === playerFirst.playerOwnerId || cand.era == null) continue;
+        if (opts.isPairBlocked(playerFirst.playerOwnerId, cand.ownerId)) continue;
+        if (!playerFirst.isPlayerPairGateOpen(cand.ownerId)) continue;
+        const dist = opts.hexDistanceFn(playerSubject.q, playerSubject.r, cand.q, cand.r);
+        if (
+          dist < bestDist
+          || (dist === bestDist && playerFirstPartnerId !== null && cand.ownerId < playerFirstPartnerId)
+        ) {
+          bestDist = dist;
+          playerFirstPartnerId = cand.ownerId;
+        }
+      }
+    }
+    warlessAll = warlessAll.filter(s => s.ownerId !== playerFirst.playerOwnerId);
+  }
+  const warless = warlessAll;
   const byId = new Map(warless.map(s => [s.ownerId, s] as const));
-  const remaining = warless.map(s => s.ownerId);
+  const remaining = warless
+    .filter(s => s.ownerId !== playerFirstPartnerId)
+    .map(s => s.ownerId);
   const leftovers: number[] = [];
+
+  if (playerFirst && playerFirstPartnerId !== null) {
+    // Gracz jest stroną-celem; wypowiada AI (era partnera). Wpis jak w kroku 3.
+    const partner = byId.get(playerFirstPartnerId);
+    if (partner?.era != null) {
+      assignments.push({ ownerId: playerFirstPartnerId, era: partner.era, targetId: playerFirst.playerOwnerId });
+    }
+  }
 
   const addAssignment = (actorId: number, targetId: number): void => {
     const actor = byId.get(actorId);
