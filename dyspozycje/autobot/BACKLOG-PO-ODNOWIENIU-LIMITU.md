@@ -1,0 +1,13 @@
+# Backlog webowy po odnowieniu limitu (stan 2026-10-26)
+
+Kolejność = priorytet właściciela (pierwszy = „jeden z pierwszych tematów do naprawy”).
+
+1. **R-WEB-ARMY-CONSOLIDATION-Q1 (runda kontynuacji, BŁĄD ZGŁOSZONY PO WYDANIU nr 6/7).** Właściciel (2026-10-26, zrzut `dyspozycje/autobot/runs/R-WEB-ARMY-CONSOLIDATION-Q1/evidence/owner-zrzut-4-rzymianie-po-wydaniu-6.webp`: Rzymianie — Herkulanum, Mediolan, Werona, Neapol, Padwa, Tarent, Akwileja, Ancjum, Pompeje, Brescia; ~60 pojedynczych jednostek rozsianych po polu, po jednej na heksie, fioletowe znaczniki): „Dalej wojska są rozwalone i nie są scalane przez inne cywilizacje.” Mimo wdrożonej flagi `ARMY_CONSOLIDATION_ENABLED` (ROBOCZA 16d42d7a, wydanie nr 6) AI nadal NIE scala wojsk. Do rozkminienia: (a) czy flaga w ogóle działa w pełnej grze (efekt NIE był zmierzony — tylko testy jednostkowe/e2e), może gałąź `consolidationPeace` nie jest wywoływana albo jednostki są kwalifikowane jako „nie w misji”/ruchLeft<=0/obrona domu (diagnoza r1: obrona domu 1:1 `ai.ts` ~2967–2993, wykluczenia `army-concentration.ts` 93–108, MIN_UNITS=3/RADIUS=4); (b) czy zrzut pochodzi z gry zapisanej/rozpoczętej przed wydaniem (flaga czytana w nowej grze?) albo z bundla bez flagi; (c) czy jednostki mają ikonę głodu/braku opłaty i są wykluczone; (d) zmierzyć w prawdziwej grze (hak `?testhook=1`, `refs/keep/hook-*`, branch `backup/final-5b9849c7`): grupy polowe na cywilizację w T40/T60 flaga ON vs OFF, % wojsk w stolicy; (e) ślad wykonania `decideAITurn` dla Rzymian. Pierwszy krok: odtworzyć w hooku seed zbliżony do zrzutu i sprawdzić dlaczego `planArmyConsolidation` nie generuje ruchów.
+2. R-WEB-AI-ARMY-UPKEEP-Q1 — runda 5 (branch `backup/final-4b3bc46f`; decyzja ownera o zwrocie manpower przy rozwiązaniu jednostek; flaga OFF).
+3. R-WEB-WAR-EPOCH-PLAYER-FIRST-Q1 — pomiary w pełnej grze (T40–T42 w ≥3 seedach, kolejność gracz-przed-AI, zapis/odczyt opcji, czas tury 10→45 s do T9 niewyjaśniony) — branch `backup/final-7a2c3863`.
+4. R-WEB-MEASURE-ROBOCZA-Q1 — wyniki w `backup/final-3af0ce9c` (PASS-WITH-NOTES); powtórzyć C1–C4 po wydaniach 6–7.
+5. R-WEB-DIPLO-DEALS — pomiary ofert w pełnej grze; wymiana „surowiec za surowiec”.
+6. Hak testowy: determinizm (`backup/hookdet-wip`, three.js UUID zużywa Math.random).
+7. Znane długi: load-game-blockers-exec (ReferenceError), forced-war-waves 16/1, forced-war-bronze-main-guard 27/1, forced-war-bronze-new-game-reset.
+
+Wydania na ROBOCZEJ: nr 3 `763320d7` (reguły wojen), 4 `b3b8e92e` (dyplomacja), 5 `bfba14e3` (oferty), 6 `16d42d7a` (dyplomacja UI + scalanie armii), 7 `f491c3a2` (wojna epoki, wersja testowa). Rollback: poprzedni bundle wg `dyspozycje/WERSJE.md`.
