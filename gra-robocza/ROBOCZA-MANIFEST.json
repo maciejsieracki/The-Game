@@ -17,8 +17,11 @@
     "vite build do scratch EXIT=0 (904 modules); inject-build-stamp ROBOCZA OK md5=16d42d7a;",
     "army-consolidation-test 32/0 + 3/0 + 10/0 + mutacje 6/6 KILLED; army-consolidation-e2e-test 6/0; army-concentration-test 55/0; war-allin-capital-test 95/0;",
     "ai-move-range 46/0; war-rules-multiwar 55/0 + main-guard 21/0; diplo-tick-war-brake-unit 69/0 + brake 51/0; sensible-deals 63/0 + main-guard 22/0; diplomacy-test 148/0; barbarzyncy-krazenie 249/0; barb-city-behavior 178/0;",
-    "diplomacy-lista-podglad-przed-wizyta 52/1 (znana czerwona 6e, jak w nr 5); diplomacy-direct-negotiation-live-test: NIE_ZMIERZONO (brak Chromium: cdn.playwright.dev zablokowany przez proxy; test wymaga haka setupListRelationsFixture, ktory swiadomie NIE wszedl do wydania).",
-    "smoke Chromium 46 tur, zrzut listy dyplomacji: NIE_ZMIERZONO (brak Chromium)."
+    "diplomacy-lista-podglad-przed-wizyta 52/1 (znana czerwona 6e, jak w nr 5); diplomacy-direct-negotiation-live-test: NIE_ZMIERZONO jako pelny test (wymaga haka setupListRelationsFixture, ktory swiadomie NIE wszedl do wydania); zastepstwo: skrypt scratch na bundlu 16d42d7a -- klik listy -> negocjacje (pair-summary 0, aud-box 1), wiersze Wojny: Ty / Sojusze: brak / Handel: brak, 0 bledow.",
+    "R2 (Operator runda 2): smoke Chromium /opt/pw-browsers/chromium-1194 na bundlu 16d42d7a vs baza bfba14e3, pokoj 46 tur seed 778899: 0 pageerror, 7 ostrzezen DECISION_REQUIRED (oba bundle); czas tury tury 2-46 mediana 7031 ms vs 6862 ms (x1,025), srednia 7336 vs 7153 ms (x1,026), max 8963 vs 8748 ms.",
+    "R2: smoke wojna (gracz vs AI 1, AI 1 vs 2, AI 2 vs 3 przez declareRegularWarBetween), 46 tur: kandydat 0 pageerror, 8 ostrzezen konsoli DECISION_REQUIRED, baza identycznie 0/8; mediana tury 199 ms vs 179 ms (x1,11, tury ~200 ms, szum rAF), srednia 202 vs 198 ms (x1,02), max 408 vs 371 ms.",
+    "R2: ai-test 276/18 (T4d przypiete do flagi OFF, bazowy kontrakt fallback idle); verify-robocza-bundle.cjs rozszerzony o kontrole bundles[] (md5+rozmiar).",
+    "R2: load-game-blockers-exec-test EXIT=1 (ReferenceError pruneStaleAiTradeOffersAwaitingPlayer / dealsEndTurnGateEnabled -- dlug harnessu, tak samo na bazie)."
   ],
   "limits": [
     "Wydanie ROBOCZE do testow wlasciciela; brak pelnej akceptacji rozgrywki.",
@@ -43,22 +46,22 @@
     "reportPath": "dyspozycje/autobot/runs/R-WEB-UI-ARMY-RELEASE-ROBOCZA-Q1/"
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-10-25T14:20:00",
+  "hubGeneratedAt": "2026-10-26T00:00:04",
   "md5": "16d42d7a1d2dbaf790eab54c550df002",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "bfba14e3424cd4f944fb5c235382696f",
-      "sizeBytes": 69986438
+      "md5": "16d42d7a1d2dbaf790eab54c550df002",
+      "sizeBytes": 69990763
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "bfba14e3424cd4f944fb5c235382696f",
-      "sizeBytes": 69986438
+      "md5": "16d42d7a1d2dbaf790eab54c550df002",
+      "sizeBytes": 69990763
     }
   ],
   "previousReleaseManifest": {

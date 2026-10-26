@@ -32,6 +32,18 @@ const okManifest = !manifestMd5 || manifestMd5 === md5;
 const okStamp = !stampMd5 || stampMd5 === md5;
 const okMarker = !marker || text.includes(marker);
 
+// R-WEB-UI-ARMY-RELEASE-ROBOCZA-Q1 (zarzut Evaluatora 2): wpisy bundles[] w manifescie
+// musza wskazywac ten sam md5 i rozmiar co plik (top-level md5 to za malo).
+let bundlesMismatch = [];
+try {
+  const mf = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+  for (const b of Array.isArray(mf.bundles) ? mf.bundles : []) {
+    if (b.file !== 'Gra-ROBOCZA.html') continue;
+    if (b.md5 !== md5 || b.sizeBytes !== buf.length) bundlesMismatch.push(b.href || b.file);
+  }
+} catch (_) { /* brak manifestu -- obsluzone przez okManifest */ }
+const okBundles = bundlesMismatch.length === 0;
+
 console.log('file:', htmlPath);
 console.log('lines:', lines);
 console.log('md5:', md5);
@@ -39,6 +51,7 @@ console.log('stamp md5:', stampMd5 ?? '(brak)');
 console.log('manifest md5:', manifestMd5 ?? '(brak)');
 console.log('manifest match:', okManifest ? 'OK' : 'MISMATCH');
 console.log('stamp match:', okStamp ? 'OK' : 'WARN (użyj manifest/certutil)');
+console.log('bundles[] match:', okBundles ? 'OK' : 'MISMATCH: ' + bundlesMismatch.join(', '));
 
-if (!okManifest || !okMarker) process.exit(1);
+if (!okManifest || !okMarker || !okBundles) process.exit(1);
 console.log('VERIFY OK');
