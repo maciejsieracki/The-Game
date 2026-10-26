@@ -125,12 +125,11 @@ const pf = (gate = gateOpen) => ({ playerFirst: { playerOwnerId: 0, isPlayerPair
   ok(res.assignments.every(a => a.ownerId !== 0), 'flaga OFF: brak wpisu z ownerId 0');
 }
 
-// Z5: fala na epokę -- cap liczy zakończoną falę, nie pojedynczą wojnę.
+// Z5: limit funkcji bez zmian (baza); omijanie R3 w main.ts tylko dla aktora z przydziałem tej tury.
 {
   const declared = new Map([['stone', 1]]);
-  ok(C.canDeclareEraForcedWar('stone', declared, C.WAR_RULES_PARAMS, false) === false, 'Z5: po jednej wojnie, bez fali -> blokada (baza)');
-  ok(C.canDeclareEraForcedWar('stone', declared, C.WAR_RULES_PARAMS, true) === true, 'Z5: fala w toku -> pozostałe pary AI↔AI wybuchają');
-  ok(C.canDeclareEraForcedWar('bronze', declared, C.WAR_RULES_PARAMS, false) === true, 'Z5: inna epoka ma własny licznik');
+  ok(C.canDeclareEraForcedWar('stone', declared, C.WAR_RULES_PARAMS) === false, 'Z5: po jednej wojnie -> blokada funkcji (baza)');
+  ok(C.canDeclareEraForcedWar('bronze', declared, C.WAR_RULES_PARAMS) === true, 'Z5: inna epoka ma własny licznik');
   ok(C.canDeclareEraForcedWar('stone', new Map(), C.WAR_RULES_PARAMS) === true, 'Z5: pierwsza wojna epoki zawsze dozwolona');
 }
 

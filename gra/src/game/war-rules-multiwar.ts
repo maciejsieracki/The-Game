@@ -149,13 +149,8 @@ export function canDeclareEraForcedWar(
   tag: ForcedEraTag,
   declaredByTag: ReadonlyMap<ForcedEraTag, number>,
   params: WarRulesParams = WAR_RULES_PARAMS,
-  eraWaveInProgress: boolean = false,
 ): boolean {
   if (params.maxEraForcedWarsPerEra === null) return true;
-  // R-WEB-WAR-EPOCH-PLAYER-FIRST-Q1 (Z5, flaga ON): fala na epokę — dopóki w tej epoce
-  // są jeszcze oczekujący podmioty (`eraWaveInProgress`), cała fala (para gracza + pary
-  // AI↔AI) może wybuchać; limit liczy dopiero zakończoną falę.
-  if (eraWaveInProgress) return true;
   return (declaredByTag.get(tag) ?? 0) < params.maxEraForcedWarsPerEra;
 }
 

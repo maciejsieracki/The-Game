@@ -44,7 +44,7 @@ const GUARDS = {
   ],
   waveZ5Gate: [
     'main.ts: Z5 fala na epokę w bramce deklaracji (pending > 0)',
-    s => /isWarEpochPlayerFirstEnabled\(\) && forcedEraPendingCount\(gateForcedTag\) > 0\)\) \{/.test(s.main),
+    s => /const waveActorBypassR3 = gateForcedTag !== null\s*&& isWarEpochPlayerFirstEnabled\(\)\s*&& forcedEraPendingCount\(gateForcedTag\) > 0\s*&& forcedWarAssignmentByOwner\.get\(ownerId\)\?\.era === gateForcedTag;/.test(s.main),
   ],
   saveMetaFlagged: [
     'main.ts: zapis meta.playerEpochWarEnabled tylko przy fladze ON',
@@ -64,7 +64,7 @@ const GUARDS = {
   ],
   newGameRow: [
     'newGameFlow.ts: wiersz player_epoch_war w ekranie nowej gry',
-    s => /'deals_end_turn_gate', 'player_epoch_war',/.test(s.newgame),
+    s => /isWarEpochPlayerFirstEnabled\(\) \? \['player_epoch_war'\] : \[\]/.test(s.newgame),
   ],
   uiParamsOption: [
     'ui-params.json: opcja player_epoch_war, domyślnie Włączona (domyslny 0)',
@@ -75,8 +75,8 @@ const GUARDS = {
     s => /if \(playerFirst && playerFirstPartnerId !== null\)/.test(s.common),
   ],
   multiwarFlagAndWave: [
-    'war-rules-multiwar.ts: flaga WAR_EPOCH_PLAYER_FIRST_ENABLED i fala (eraWaveInProgress)',
-    s => /export const WAR_EPOCH_PLAYER_FIRST_ENABLED = true;/.test(s.multiwar) && /if \(eraWaveInProgress\) return true;/.test(s.multiwar),
+    'war-rules-multiwar.ts: flaga WAR_EPOCH_PLAYER_FIRST_ENABLED, brak martwego parametru eraWaveInProgress',
+    s => /export const WAR_EPOCH_PLAYER_FIRST_ENABLED = true;/.test(s.multiwar) && !/eraWaveInProgress/.test(s.multiwar),
   ],
 };
 
@@ -94,14 +94,13 @@ const MUTATIONS = [
   ['bramka R1/R2 gracza zdjęta', 'main', 'targetIsPlayer: true,', 'targetIsPlayer: false,', 'aiGateForPlayerPair'],
   ['opcja K2 zignorowana w puli', 'main', 'if (isWarEpochPlayerFirstEnabled() && !playerEpochWarEnabled) {', 'if (false) {', 'playerInPoolOnlyWhenOption'],
   ['bypass mgły K1 usunięty', 'main', "&& !diplomaticallyDiscoveredOwnersSet().has(ownerId)\n                && forcedWarAssignmentByOwner", "&& forcedWarAssignmentByOwner", 'fogBypassK1'],
-  ['fala Z5 wyłączona w bramce', 'main', 'isWarEpochPlayerFirstEnabled() && forcedEraPendingCount(gateForcedTag) > 0)) {', 'false) {', 'waveZ5Gate'],
+  ['fala Z5 bez przydziału aktora', 'main', '&& forcedWarAssignmentByOwner.get(ownerId)?.era === gateForcedTag;', ';', 'waveZ5Gate'],
   ['zapis opcji bez flagi', 'main', '...(isWarEpochPlayerFirstEnabled() ? { playerEpochWarEnabled } : {}),', '...{ playerEpochWarEnabled },', 'saveMetaFlagged'],
   ['nowa gra domyślnie OFF', 'main', 'playerEpochWarEnabled = params.playerEpochWarEnabled ?? true;', 'playerEpochWarEnabled = params.playerEpochWarEnabled ?? false;', 'startDefaultOn'],
   ['stary zapis = ON', 'main', 'playerEpochWarEnabled = (saved.meta?.playerEpochWarEnabled as boolean | undefined) === true;', 'playerEpochWarEnabled = (saved.meta?.playerEpochWarEnabled as boolean | undefined) !== false;', 'loadOldSaveOff'],
   ['parametr nowej gry usunięty', 'newgame', "playerEpochWarEnabled: settingValue('player_epoch_war') !== 'Wyłączona',", '', 'newGameParam'],
-  ['wiersz ekranu usunięty', 'newgame', "'deals_end_turn_gate', 'player_epoch_war',", "'deals_end_turn_gate',", 'newGameRow'],
+  ['wiersz ekranu usunięty', 'newgame', "...(isWarEpochPlayerFirstEnabled() ? ['player_epoch_war'] : []),", '', 'newGameRow'],
   ['gracz nie-pierwszy w common', 'common', 'if (playerFirst && playerFirstPartnerId !== null)', 'if (false)', 'playerFirstInCommon'],
-  ['fala usunięta w multiwar', 'multiwar', 'if (eraWaveInProgress) return true;', '', 'multiwarFlagAndWave'],
 ];
 
 for (const [label, part, from, to, guardKey] of MUTATIONS) {
