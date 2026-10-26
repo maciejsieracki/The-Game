@@ -18,7 +18,6 @@
  */
 
 import { loadGameData, type GameData } from '../data/loader';
-import { isWarEpochPlayerFirstEnabled } from '../game/war-rules-multiwar';
 import {
   isCivAvailableAtGameEpoch,
   type CivEntryEpochRow,
@@ -1932,8 +1931,9 @@ function renderSettStep(host: HTMLElement): void {
   renderSettingRows(layout, [
     'difficulty', 'map_size', 'world_type', 'game_speed', 'city_states_count', 'civ_types_count',
     'deals_end_turn_gate',
-    // R-WEB-WAR-EPOCH-PLAYER-FIRST-Q1 (K2): wiersz tylko przy fladze ON (OFF = ekran jak baza).
-    ...(isWarEpochPlayerFirstEnabled() ? ['player_epoch_war'] : []),
+    // R-WEB-WAR-EPOCH-PLAYER-FIRST-Q1 (K2, D3 r2): wiersz ZAWSZE widoczny; przy fladze OFF opcja
+    // jest ignorowana w logice (main.ts), a zapis meta nie zmienia się względem bazy.
+    'player_epoch_war',
   ]);
   renderAiCivPicker(layout);
   host.appendChild(layout);

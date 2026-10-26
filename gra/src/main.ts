@@ -34649,7 +34649,9 @@ async function boot(): Promise<void> {
               try { resolveForcedWarDurationLimits(); } catch (eForcedWarDuration) { console.error('[Dyplomacja] Blad limitu czasu wojny wymuszonej:', eForcedWarDuration); }
             }
             reconcileAllOwnerErasFromResearch();
-            const aiOwnerList = aiCmdResume?.ownerList ?? (() => {
+            // R-WEB-WAR-EPOCH-PLAYER-FIRST-Q1 (D2): lista zapisana przy wznowieniu (null = świeża tura).
+            const aiOwnerListResumed: number[] | null = aiCmdResume?.ownerList ?? null;
+            const aiOwnerList = aiOwnerListResumed ?? (() => {
               const s = new Set<number>();
               for (const u of units) { if (isAiOwner(humanSeats, u.ownerId)) s.add(u.ownerId); }
               for (const c of cities) { if (isAiOwner(humanSeats, c.ownerId)) s.add(c.ownerId); }
@@ -34926,6 +34928,23 @@ async function boot(): Promise<void> {
                     targetEra: 0,
                     targetWarCount: 0,
                   }, WAR_RULES_PARAMS) === 'ok',
+                // D1 (r2): kandydaci na partnera = WSZYSTKIE major AI z erą (nie tylko pula warless).
+                candidates: aiOwnerList.flatMap((oid): ForcedWarPairingSubject[] => {
+                  if (
+                    oid <= 0
+                    || typCityCopyOwners.has(oid)
+                    || isBarbarian(oid)
+                    || eliminatedOwners.has(oid)
+                    || isOwnerClusterCityState(oid, ownerCityStateOpts())
+                  ) return [];
+                  const epochNow = empireEpochForOwner(oid);
+                  const eraTag: ForcedEraTag | null = epochNow === 1 ? 'stone' : epochNow === 2 ? 'bronze' : epochNow === 3 ? 'iron' : null;
+                  const capId = capitalCityIdForOwner(oid);
+                  const refCity = cities.find(c => c.id === capId && c.ownerId === oid)
+                    ?? cities.find(c => c.ownerId === oid);
+                  if (!refCity || eraTag === null) return [];
+                  return [{ ownerId: oid, q: refCity.q, r: refCity.r, era: eraTag }];
+                }),
               },
             } : {};
             const forcedWarPairingResult = assignForcedWarPairings(
@@ -34950,24 +34969,24 @@ async function boot(): Promise<void> {
                 + 'dołączenia. Przydział pominięty tej tury (ponowna próba w kolejnej).',
               );
             }
-            // R-WEB-WAR-EPOCH-PLAYER-FIRST-Q1 (Z5): liczba oczekujących podmiotów danej epoki
-            // (fala w toku = > 0). Czyta wyłącznie stan pending, nie zmienia go.
-            const forcedEraPendingCount = (tag: ForcedEraTag): number =>
-              tag === 'bronze'
-                ? bronzeForceWarPendingOwners.size
-                : tag === 'stone'
-                  ? stoneForceWarPendingOwners.size
-                  : ironForceWarPendingOwners.size;
             const forcedWarAssignmentByOwner = new Map(
               forcedWarPairingResult.assignments.map(a => [a.ownerId, a] as const),
             );
+            // R-WEB-WAR-EPOCH-PLAYER-FIRST-Q1 (D2): partner pary gracza wypowiada PIERWSZY w pętli AI
+            // (przed deklaracjami AI↔AI tej tury). Świeża tura: partner na czele; wznowienie po
+            // animacji bitwy: zapisana lista (`aiOwnerListResumed`), indeksy startOi zgodne.
+            const ownerLoopList: number[] = aiOwnerListResumed ?? (() => {
+              const lead = forcedWarPairingResult.playerFirstPartnerId;
+              if (lead === null || !aiOwnerList.includes(lead)) return aiOwnerList;
+              return [lead, ...aiOwnerList.filter(oid => oid !== lead)];
+            })();
 
-            ownerLoop: for (let oi = startOi; oi < aiOwnerList.length; oi++) {
-              const ownerId = aiOwnerList[oi]!;
+            ownerLoop: for (let oi = startOi; oi < ownerLoopList.length; oi++) {
+              const ownerId = ownerLoopList[oi]!;
               // Bezpiecznik: gdyby lista pochodziła z aiCmdResume sprzed eliminacji
               // (skasowanie w trakcie tej samej fazy AI) — pomiń bez przetwarzania.
               if (eliminatedOwners.has(ownerId)) continue;
-              const aiPct = 38 + Math.round((54 * (oi + 1)) / Math.max(1, aiOwnerList.length));
+              const aiPct = 38 + Math.round((54 * (oi + 1)) / Math.max(1, ownerLoopList.length));
               setTurnTransition(aiPct, 'Ruchy i decyzje…', ownerDiploLabel(ownerId), nextTurnNum);
               await yieldTurnTransitionUi();
               const isCommandResume = oi === startOi && !!resumeCommands && resumeCmdIdx > 0;
@@ -35963,9 +35982,10 @@ async function boot(): Promise<void> {
                       const gateForcedTag = forcedEraTagFromPowod(cmd.powod);
                       // Z5 (R-WEB-WAR-EPOCH-PLAYER-FIRST-Q1): omijanie R3 TYLKO dla aktora, któremu
                       // przydział fali zapadł w TEJ turze (nie dla lingerujących pending-obrońców).
+                      // D2 (r2): liczone ze SNAPSHOTU przydziałów sprzed ownerLoop (`forcedWarAssignmentByOwner`,
+                      // niemutowalny) -- nie z żywego stanu pending, który kasują wcześniejsi aktorzy.
                       const waveActorBypassR3 = gateForcedTag !== null
                         && isWarEpochPlayerFirstEnabled()
-                        && forcedEraPendingCount(gateForcedTag) > 0
                         && forcedWarAssignmentByOwner.get(ownerId)?.era === gateForcedTag;
                       if (!waveActorBypassR3) {
                         if (gateForcedTag !== null && !canDeclareEraForcedWar(gateForcedTag, forcedEraWarDeclaredByTag)) continue;
@@ -36613,7 +36633,7 @@ async function boot(): Promise<void> {
                   const structBonusAI = structureDefenseBonusFor(defender.q, defender.r);
                   if (defRoster.some(u => u.ownerId === 0)) {
                     aiCmdResume = {
-                      ownerList: aiOwnerList,
+                      ownerList: ownerLoopList,
                       ownerIdx: oi,
                       commands,
                       cmdIdx: ci + 1,

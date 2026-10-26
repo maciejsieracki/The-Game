@@ -189,6 +189,8 @@ export interface ForcedWarPairingOpts {
   playerFirst?: {
     playerOwnerId: number;
     isPlayerPairGateOpen: (aiOwnerId: number) => boolean;
+    /** D1 (r2): wszyscy major AI z erą = kandydaci na partnera gracza, także spoza puli. Brak = pula. */
+    candidates?: ForcedWarPairingSubject[];
   };
 }
 
@@ -210,6 +212,8 @@ export interface ForcedWarPairingResult {
    * `cycleOwners` nie są tu konsumowane).
    */
   unresolvedOwnerIds: number[];
+  /** R-WEB-WAR-EPOCH-PLAYER-FIRST-Q1 (D2): partner pary gracza (wypowiada PIERWSZY w pętli AI) albo null. */
+  playerFirstPartnerId: number | null;
 }
 
 /**
@@ -258,22 +262,27 @@ export function assignForcedWarPairings(
   // dystansu od stolicy gracza) z puli warless, niezablokowany i z otwartą bramką R1/R2,
   // dostaje parę z graczem PRZED parowaniem reszty; ten AI wypada z puli 1v1 poniżej.
   let playerFirstPartnerId: number | null = null;
+  let playerFirstPartner: ForcedWarPairingSubject | null = null;
   const playerFirst = opts.playerFirst;
   if (playerFirst) {
     const playerSubject = warlessAll.find(s => s.ownerId === playerFirst.playerOwnerId);
     if (playerSubject) {
+      // D1 (r2): kandydaci = wszystkie major AI (candidates), nie tylko pula warless. Iteracja po
+      // ownerId rosnąco -> przy remisie dystansu wygrywa niższy ownerId (strict `<`).
+      const pool = (playerFirst.candidates ?? warlessAll)
+        .slice()
+        .sort((a, b) => a.ownerId - b.ownerId);
       let bestDist = Infinity;
-      for (const cand of warlessAll) {
+      for (const cand of pool) {
         if (cand.ownerId === playerFirst.playerOwnerId || cand.era == null) continue;
+        if (opts.totalActiveForcedWarsByOwner(cand.ownerId) !== 0) continue;
         if (opts.isPairBlocked(playerFirst.playerOwnerId, cand.ownerId)) continue;
         if (!playerFirst.isPlayerPairGateOpen(cand.ownerId)) continue;
         const dist = opts.hexDistanceFn(playerSubject.q, playerSubject.r, cand.q, cand.r);
-        if (
-          dist < bestDist
-          || (dist === bestDist && playerFirstPartnerId !== null && cand.ownerId < playerFirstPartnerId)
-        ) {
+        if (dist < bestDist) {
           bestDist = dist;
           playerFirstPartnerId = cand.ownerId;
+          playerFirstPartner = cand;
         }
       }
     }
@@ -286,12 +295,11 @@ export function assignForcedWarPairings(
     .map(s => s.ownerId);
   const leftovers: number[] = [];
 
-  if (playerFirst && playerFirstPartnerId !== null) {
-    // Gracz jest stroną-celem; wypowiada AI (era partnera). Wpis jak w kroku 3.
-    const partner = byId.get(playerFirstPartnerId);
-    if (partner?.era != null) {
-      assignments.push({ ownerId: playerFirstPartnerId, era: partner.era, targetId: playerFirst.playerOwnerId });
-    }
+  if (playerFirst && playerFirstPartnerId !== null && playerFirstPartner !== null) {
+    // Gracz jest stroną-celem; wypowiada AI (era partnera, także gdy partner spoza puli --
+    // „uzbrojenie” na potrzeby tej pary). Wpis jak w kroku 3.
+    const partnerEra: ForcedWarEraTag = playerFirstPartner.era!;
+    assignments.push({ ownerId: playerFirstPartnerId, era: partnerEra, targetId: playerFirst.playerOwnerId });
   }
 
   const addAssignment = (actorId: number, targetId: number): void => {
@@ -445,7 +453,7 @@ export function assignForcedWarPairings(
     if (!joined) unresolvedOwnerIds.push(leftoverId);
   }
 
-  return { assignments, unresolvedOwnerIds };
+  return { assignments, unresolvedOwnerIds, playerFirstPartnerId };
 }
 
 export function restoreForcedWarState(

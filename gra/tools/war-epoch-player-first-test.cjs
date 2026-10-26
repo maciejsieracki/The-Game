@@ -44,6 +44,7 @@ function run(subjects, opts) {
   });
 }
 const pf = (gate = gateOpen) => ({ playerFirst: { playerOwnerId: 0, isPlayerPairGateOpen: gate } });
+const pfc = (candidates, extra = {}) => ({ ...extra, playerFirst: { playerOwnerId: 0, isPlayerPairGateOpen: gateOpen, candidates } });
 
 // Z1/Z3: gracz dostaje NAJBLIŻSZĄ cywilizację z puli.
 {
@@ -139,6 +140,55 @@ const pf = (gate = gateOpen) => ({ playerFirst: { playerOwnerId: 0, isPlayerPair
   C.setWarEpochPlayerFirstOverride(false);
   ok(C.isWarEpochPlayerFirstEnabled() === false, 'override OFF');
   C.setWarEpochPlayerFirstOverride(null);
+}
+
+// D1 (r2): partner = NAJBLIŻSZA cywilizacja z listy kandydatów (wszystkie major AI), także spoza puli warless.
+{
+  const candidates = [subj(2, 1, 0, 'stone'), subj(1, 6, 0, 'stone')]; // 2 spoza puli, 1 w puli
+  const subjects = [PLAYER, subj(1, 6, 0, 'stone')];
+  const res = run(subjects, pfc(candidates));
+  const pa = findAssign(res, 2);
+  ok(pa.length === 1 && pa[0].targetId === 0 && pa[0].era === 'stone', 'D1: partner spoza puli (2, dist 1) dostaje parę z graczem');
+  ok(res.playerFirstPartnerId === 2, 'D1: playerFirstPartnerId zwraca partnera 2');
+  ok(!findAssign(res, 1).some(a => a.targetId === 0), 'D1: dalszy AI (1, w puli) nie celuje w gracza');
+}
+
+// D1 mutacja „ograniczenie partnera do puli”: bez kandydatów (pula) partner spoza puli NIE jest wybrany.
+{
+  const subjects = [PLAYER, subj(1, 6, 0, 'stone')];
+  const res = run(subjects, pf());
+  ok(res.playerFirstPartnerId === 1, 'D1 mutacja-pula: bez candidates wybór ograniczony do puli (1)');
+  const resNone = run([PLAYER], pf());
+  ok(resNone.playerFirstPartnerId === null, 'D1: brak kandydatów -> playerFirstPartnerId null');
+}
+
+// D1: kandydat już w wojnie wymuszonej (totalActive>0) odpada -> następny najbliższy.
+{
+  const candidates = [subj(2, 1, 0, 'stone'), subj(3, 4, 0, 'stone')];
+  const res = run([PLAYER], pfc(candidates, { totalActiveForcedWarsByOwner: (id) => (id === 2 ? 1 : 0) }));
+  ok(res.playerFirstPartnerId === 3, 'D1: kandydat z aktywną wojną wymuszoną (2) odpada, wybór 3');
+}
+
+// D1: kandydat bez ery (poza epokami 1-3) nie jest partnerem.
+{
+  const candidates = [subj(2, 1, 0, undefined), subj(3, 4, 0, 'bronze')];
+  const res = run([PLAYER], pfc(candidates));
+  ok(res.playerFirstPartnerId === 3 && findAssign(res, 3)[0]?.era === 'bronze', 'D1: kandydat bez ery odpada, partner 3 (bronze)');
+}
+
+// D1: remis dystansu między kandydatami spoza puli -> niższy ownerId.
+{
+  const candidates = [subj(9, 0, 2, 'iron'), subj(4, 2, 0, 'iron')];
+  const res = run([PLAYER], pfc(candidates));
+  ok(res.playerFirstPartnerId === 4, 'D1: remis dystansu spoza puli -> niższy ownerId (4)');
+}
+
+// D2 (r2): partner zapisany w wyniku = pierwszy do wypowiedzenia w pętli AI (lead); bez gracza -> null.
+{
+  const res = run([PLAYER, subj(5, 2, 0, 'stone'), subj(6, 3, 0, 'stone')], pfc([subj(5, 2, 0, 'stone'), subj(6, 3, 0, 'stone')]));
+  ok(res.playerFirstPartnerId === 5, 'D2: lead pary gracza = najbliższy (5)');
+  const resOff = run([subj(5, 2, 0, 'stone'), subj(6, 3, 0, 'stone')], {});
+  ok(resOff.playerFirstPartnerId === null, 'D2: flaga OFF (bez playerFirst) -> lead null');
 }
 
 console.log(`war-epoch-player-first-test: ${passed} pass / ${failed} fail`);
