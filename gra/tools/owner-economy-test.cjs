@@ -11,6 +11,7 @@ const bundle = path.join(__dirname, '.owner-economy-bundle.cjs');
 
 fs.writeFileSync(entry, `
 export { advanceCityEconomy, sumEconomyForOwner, sumEconomyForPlayerCities } from '../src/game/turn-economy';
+export { executeManualWorkTaxConversion, ownerCanConvertWorkToTax, restorePendingWorkTax, serializePendingWorkTax } from '../src/game/work-tax';
 export { freshWealthState } from '../src/game/wealth';
 export { generateMap } from '../src/map/generator';
 export { foundCityAt, canFoundCity } from '../src/game/cities';
@@ -122,6 +123,63 @@ assert(
   playerSum.pieniadz !== econ.totalPieniadz || econ.totalPieniadz === 0,
   'gracz NIE dostaje calej mapy (chyba ze wszystko zero)',
 );
+
+// Manual Work conversion enters the ordinary city tax/tax-slider pipeline on the
+// next tick. Compare equivalent city states with and without the selected tax.
+const marketByCity = new Map([[playerCity.id, ['targowisko']]]);
+assert(M.ownerCanConvertWorkToTax(0, true, cities, marketByCity), 'human owner with an empire Market can convert');
+assert(!M.ownerCanConvertWorkToTax(1, false, cities, marketByCity), 'AI cannot use manual conversion');
+assert(!M.ownerCanConvertWorkToTax(0, true, cities, new Map()), 'conversion requires a Market somewhere in the owner empire');
+const ownerWorkPools = new Map([[0, 120]]);
+const pendingWorkTax = new Map();
+const selected = M.executeManualWorkTaxConversion(0, 40, 1,
+  M.ownerCanConvertWorkToTax(0, true, cities, marketByCity), {
+    getWorkPool: ownerId => ownerWorkPools.get(ownerId) ?? 0,
+    setWorkPool: (ownerId, value) => ownerWorkPools.set(ownerId, value),
+    queueTax: (ownerId, tax) => pendingWorkTax.set(ownerId, (pendingWorkTax.get(ownerId) ?? 0) + tax),
+  });
+assert(JSON.stringify(selected) === JSON.stringify({ workRemaining: 80, workSpent: 40, taxGained: 40 })
+  && ownerWorkPools.get(0) === 80 && pendingWorkTax.get(0) === 40,
+'selected Work decreases and tax aggregate is queued at 1:1');
+const normalCity = { ...playerCity, wealthState: { ...playerCity.wealthState } };
+const taxedCity = { ...playerCity, wealthState: { ...playerCity.wealthState } };
+const split = { procentNauka: 20, procentPieniadz: 30, procentLuksus: 50 };
+normalCity.podzialHandlu = split;
+taxedCity.podzialHandlu = split;
+normalCity.podzialHandluOverride = true;
+taxedCity.podzialHandluOverride = true;
+const taxTick = (city, manualTax, built = marketByCity, hasMint = false) => M.advanceCityEconomy(
+  [city], map, data, 'normal', [], new Map(), built, 1, new Set(hasMint ? ['Waluta'] : []), new Map(), new Map(),
+  undefined, undefined, 'wysoki', new Map(), new Map(), new Map(), new Map(), () => hasMint,
+  undefined, undefined, new Map([[0, split]]), undefined, new Map(), new Map(),
+  manualTax ? new Map([[city.id, manualTax]]) : new Map(),
+);
+const ordinary = taxTick(normalCity, 0).perCity[0];
+const persistedPendingTax = M.serializePendingWorkTax(pendingWorkTax);
+const restoredPendingTax = M.restorePendingWorkTax(JSON.parse(JSON.stringify(persistedPendingTax)));
+assert(restoredPendingTax.get(0) === 40, 'queued Work tax survives a save/load metadata round-trip');
+const converted = taxTick(taxedCity, restoredPendingTax.get(0)).perCity[0];
+const noMarketCity = { ...playerCity, wealthState: { ...playerCity.wealthState }, podzialHandlu: split, podzialHandluOverride: true };
+const noMarketTaxCity = { ...noMarketCity, wealthState: { ...noMarketCity.wealthState } };
+const noMarketBase = taxTick(noMarketCity, 0, new Map()).perCity[0];
+const noMarketTax = taxTick(noMarketTaxCity, restoredPendingTax.get(0), new Map()).perCity[0];
+assert(converted.pieniadz > ordinary.pieniadz, 'manual tax reaches the money share of normal city tax');
+assert(converted.nauka > ordinary.nauka, 'manual tax reaches the science share of normal city tax');
+assert(converted.luksus > ordinary.luksus, 'manual tax reaches the wealth share of normal city tax');
+assert(Math.abs((converted.pieniadz - ordinary.pieniadz) - (noMarketTax.pieniadz - noMarketBase.pieniadz)) <= 1,
+  'Market gross-trade bonus is not applied to converted Work tax');
+const mintBuilt = new Map([[playerCity.id, ['targowisko', 'mennica']]]);
+const noMintBaseCity = { ...playerCity, wealthState: { ...playerCity.wealthState }, podzialHandlu: split, podzialHandluOverride: true };
+const noMintTaxCity = { ...noMintBaseCity, wealthState: { ...noMintBaseCity.wealthState } };
+const mintBaseCity = { ...noMintBaseCity, wealthState: { ...noMintBaseCity.wealthState } };
+const mintTaxCity = { ...noMintBaseCity, wealthState: { ...noMintBaseCity.wealthState } };
+const noMintBase = taxTick(noMintBaseCity, 0, marketByCity).perCity[0];
+const noMintTax = taxTick(noMintTaxCity, restoredPendingTax.get(0), marketByCity).perCity[0];
+const mintBase = taxTick(mintBaseCity, 0, mintBuilt, true).perCity[0];
+const mintTax = taxTick(mintTaxCity, restoredPendingTax.get(0), mintBuilt, true).perCity[0];
+assert(mintTax.pieniadz - mintBase.pieniadz > noMintTax.pieniadz - noMintBase.pieniadz,
+  'manual tax passes through Currency and Mint modifier before allocation');
+assert(converted.pieniadzZTras === ordinary.pieniadzZTras, 'manual tax does not masquerade as route income');
 
 // Symulacja bledu HUD: total* przypisane graczowi
 const wrongPlayerIncome = econ.totalPieniadz;

@@ -64,6 +64,7 @@ const BUNDLE_FILE = path.resolve(__dirname, '.ai-improvements-test-bundle.cjs');
 
 const ENTRY_TS = `
 export { decideAITurn } from ${JSON.stringify(AI_SRC + '/game/ai')};
+export { AI_IMPROVEMENT_PRIORITY } from ${JSON.stringify(AI_SRC + '/game/auto-improvements')};
 export { planExpansionFortBuilding } from ${JSON.stringify(AI_SRC + '/game/ai')};
 export { getImprovementMeta, clearingTotalPraca } from ${JSON.stringify(AI_SRC + '/game/improvement-tech')};
 export { applyStolarniaDrewnoMapInflow, ownerResourceCap } from ${JSON.stringify(AI_SRC + '/game/turn-economy')};
@@ -90,6 +91,7 @@ try {
 
 const {
   decideAITurn,
+  AI_IMPROVEMENT_PRIORITY,
   planExpansionFortBuilding,
   getImprovementMeta,
   clearingTotalPraca,
@@ -176,6 +178,16 @@ const map = makeFlatMap(30, 30);
 const forestMap = makeForestMap(30, 30);
 const data = makeGameData();
 const PLAYER_ID = 3;
+
+// Strategic transition order: copper and tin supply bronze-era units before
+// the general iron supply chain takes priority.
+{
+  const copper = AI_IMPROVEMENT_PRIORITY.indexOf('kopalnia_miedzi');
+  const tin = AI_IMPROVEMENT_PRIORITY.indexOf('kopalnia_cyny');
+  const iron = AI_IMPROVEMENT_PRIORITY.indexOf('kopalnia_zelaza');
+  assert(copper >= 0 && tin >= 0 && iron >= 0 && copper < iron && tin < iron,
+    'copper and tin mines precede the iron mine in AI improvement priority');
+}
 
 /** Dane realne (nie fixture) -- test 11 potrzebuje ownerResourceCap() z prawdziwym econParams. */
 const DATA_FOR_CAP = { econParams: require('../data/econ-params.json') };
@@ -319,21 +331,21 @@ console.log('9. defensiveCopy -- ta sama intensywnosc co zwykle AI');
 
 // ===========================================================================
 // 10. P-PRACA-BUDYNKI-ULEPSZENIA-SPLIT-50-Q1: AI respektuje nadrzędny cap 50%
-// całej puli. Przy puli 40 budżet ulepszeń wynosi 20, więc farma (koszt 40
-// po stawkach ×2) nie może zostać wybrana; przy puli 80 budżet wynosi 40.
+// całej puli. Przy puli 20 budżet ulepszeń wynosi 10, więc farma (koszt 20
+// po stawkach FALA2 ×2 i koszcie Kamienia ×0.5) nie może zostać wybrana; przy puli 40 budżet wynosi 20.
 // ===========================================================================
-console.log('10. AI: cap 50% całej puli (40 -> 0, 80 -> 1)');
+console.log('10. AI: cap 50% całej puli (20 -> 0, 40 -> 1)');
 {
   const city = makeCity('city0', PLAYER_ID, 15, 15);
   const opts = baseOpts(city);
-  opts.pracaAvailable = 40;
+  opts.pracaAvailable = 20;
   opts.defensiveCopy = true;
   const cmds = buildImprovementCmds(decideAITurn(PLAYER_ID, [], [city], map, data, opts));
-  eq(cmds.length, 0, 'praca=40 -> 0 (budżet ulepszeń 20 < koszt farmy 40)');
-  opts.pracaAvailable = 80;
+  eq(cmds.length, 0, 'praca=20 -> 0 (budżet ulepszeń 10 < koszt farmy 20)');
+  opts.pracaAvailable = 40;
   const cmds80 = buildImprovementCmds(decideAITurn(PLAYER_ID, [], [city], map, data, opts));
-  eq(cmds80.length, 1, 'praca=80 -> 1 (budżet ulepszeń 40 = koszt farmy 40)');
-  eq(cmds80[0].key, 'farma', 'praca=80 -> farma');
+  eq(cmds80.length, 1, 'praca=40 -> 1 (budżet ulepszeń 20 = koszt farmy 20)');
+  eq(cmds80[0].key, 'farma', 'praca=40 -> farma');
 }
 
 // ===========================================================================

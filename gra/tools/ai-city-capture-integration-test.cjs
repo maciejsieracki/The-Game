@@ -165,6 +165,31 @@ const secondTurn = executeAiCityMove({
 });
 eq(secondTurn.moved, false, 'druga tura: własne miasto nie wywołuje oscylacji');
 
+// A planner may mark a destination for friendly stacking while that same hex
+// also contains an enemy. main.ts keeps such a key blocked; the executor must
+// preserve that decision instead of trusting the command flag and unblocking it.
+{
+  const unit = { id: 'stacking-unit', ownerId: 1, q: 0, r: 0, ruchLeft: 2 };
+  let blockedAtDestination = false;
+  const result = executeAiCityMove({
+    command: { unitId: unit.id, toQ: 1, toR: 0, allowFriendlyStack: true },
+    unit,
+    cities: [],
+    cityBuiltIds: [],
+    hasCityDefenders: false,
+    targetVisible: true,
+    canOccupyCityHex: true,
+    blockedKeys: new Set(['1,0']), // friendly + enemy occupy destination
+    destinationKey: '1,0',
+    computePath: (_unit, q, r, blockedKeys) => {
+      blockedAtDestination = blockedKeys.has('1,0');
+      return blockedAtDestination ? [] : [{ q, r }];
+    },
+  });
+  eq(blockedAtDestination, true, 'mixed friendly/enemy stack: destination remains blocked in pathfinding');
+  eq(result.moved, false, 'mixed friendly/enemy stack: allowFriendlyStack cannot bypass enemy occupancy');
+}
+
 // Mutacja produkcyjnego przepływu: usunięcie callbacku przejęcia musi zostać
 // wykryte przez ten sam happy-path, a nie przez kopię predykatu.
 const source = fs.readFileSync(EXECUTOR_SOURCE, 'utf8');

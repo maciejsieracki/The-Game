@@ -12,6 +12,7 @@ export interface AiCityMoveCommand {
   toQ: number;
   toR: number;
   targetCityId?: string;
+  allowFriendlyStack?: boolean;
 }
 
 export interface AiCityMoveUnit {
@@ -107,6 +108,8 @@ export function executeAiCityMove(
   }
 
   const blockedKeys = new Set(opts.blockedKeys);
+  // Occupancy is resolved by the caller. A destination can contain both a
+  // friendly stack and an enemy, so the command flag cannot safely clear it.
   if (canEnterEmptyCity) blockedKeys.delete(opts.destinationKey);
   let path: readonly AiCityMovePathHex[] = opts.computePath(
     unit,

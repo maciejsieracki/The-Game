@@ -48,9 +48,11 @@ Przy domyślnym udziale **20%** zamożności miasto dostaje na normalnej trudno�
 
 **Pieniądz z budynków** (np. Targowisko) oraz **Pieniądz z zamiany Pracy przez Targowisko** nie trafiają wprost do skarbca — wpadają do tej samej puli Daniny netto miasta i dzielą się identycznym suwakiem, zamiast omijać podział.
 
+Dochód z tras handlowych trafia w całości do skarbca i omija korupcję, suwak oraz Mennicę. Targowisko zwiększa dochód z tras o 62% (łatwy), 50% (normalny) lub 38% (trudny), a nie lokalną pulę Daniny/Podatku.
+
 ## Danina → Podatek, Mennica i Waluta
 
-Gdy cywilizacja odkryje **Walutę** i zbuduje **Mennicę w stolicy**, strumień zmienia nazwę z **Danina** na **Podatek** dla **całej** cywilizacji (nazwa, nie liczby) i cała Danina/Podatek netto cywilizacji dostaje **mnożnik Mennicy**: ×2,0 (łatwy) / ×1,5 (normalny) / ×1,0 (trudny). Mennica dodatkowo wymaga **dostępu do złota** (własna Kopalnia złota albo szlak handlowy z posiadaczem złota) — po utracie dostępu mnożnik znika i nazwa wraca na Daninę, choć budynek zostaje i budzi się sam po odzyskaniu dostępu. Pełny opis: Część VIII §49.3b.
+Gdy cywilizacja odkryje **Walutę** i zbuduje **Mennicę w stolicy**, strumień zmienia nazwę z **Danina** na **Podatek** dla całej cywilizacji. Mennica zwiększa podatek przed podziałem: ×1,62 (łatwy) / ×1,50 (normalny) / ×1,38 (trudny). Dochód ze szlaków handlowych jest rozliczany osobno i nie podlega Mennicy. Mennica wymaga dostępu do Złota; po utracie dostępu efekt usypia do czasu odzyskania dostępu. Pełny opis: Część VIII §49.3b.
 
 ## Korupcja dotyka tylko Daniny/Podatku
 

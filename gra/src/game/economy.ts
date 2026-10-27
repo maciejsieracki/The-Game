@@ -146,14 +146,10 @@ export interface EconParams {
    */
   budynekMennicaMnoznik:            number;
   /**
-   * JEDYNY mnożnik Handlu netto po scaleniu (Maciej 2026-07-25): mnoży CAŁY
-   * handelNetto miasta (Skarb + Nauka + Zamożność razem, PRZED podziałem
-   * suwakiem) TYLKO gdy technologia Waluta jest odkryta ORAZ Mennica jest
-   * zbudowana w tym mieście (bramka AND liczona przez wołającego -- ctx.maMennica
-   * && ctx.walutaOdkryta w cityYieldPerTurn). Wartości właściciela: easy x2,0 /
-   * normal x1,5 / hard x1,0 (brak efektu). Dawne DWA osobne mnożniki (waluta_mnoznik
-   * na cały Handel przy samym techu; mennica_mnoznik_po_walucie tylko na strumień
-   * Pieniądza) zostały scalone w ten jeden -- patrz CityYieldContext.walutaOdkryta.
+   * Tax-only Mint multiplier on handelNetto before the tax slider split.
+   * The caller gates it with the owner's currency tech, a built Mint and gold
+   * access. Rates: easy ×1.62, normal ×1.50, hard ×1.38. Route income bypasses
+   * this city tax calculation and is unaffected.
    */
   mennicaMnoznikPoWalucie:          number;
   /**
@@ -164,7 +160,6 @@ export interface EconParams {
    * już nigdzie nie konsumuje w formule Efektu 1.
    */
   walutaMnoznik:                    number;
-  targowiskoPracaMnoznik:           number;  // Efekt 2: doPuli x mnoznik -> Pieniadz gdy maTargowisko+waluta (domyslnie 2)
   suwaakHandelNaukaDefault:         number;
   suwaakHandelPieniadz:             number;
   suwaakHandelLuksus:               number;
@@ -240,7 +235,6 @@ export function loadEconParams(
     budynekMennicaMnoznik:          read(bu, 'budynek_mennica_mnoznik', 1),      // NIEUZYWANE 2026-07-25
     mennicaMnoznikPoWalucie:        read(gl, 'mennica_mnoznik_po_walucie', 1.5), // JEDYNY mnoznik Efektu 1
     walutaMnoznik:                  read(bu, 'waluta_mnoznik', 2),               // NIEUZYWANE 2026-07-25
-    targowiskoPracaMnoznik:         read(bu, 'targowisko_praca_na_pieniadz_mnoznik', 2),
     suwaakHandelNaukaDefault:       read(em, 'suwak_handel_nauka_domyslnie', 60),
     suwaakHandelPieniadz:           read(em, 'suwak_handel_pieniadz_domyslnie', 30),
     suwaakHandelLuksus:             read(em, 'suwak_handel_luksus_domyslnie', 10),
@@ -329,16 +323,16 @@ export interface CityYieldResult {
   handelBrutto:   number;
   pracaTerenu:    number;
   pracaBudynkow:  number;
-  pieniadzZPracy: number;  // Efekt 2: doPuli * targowiskoPracaMnoznik (0 gdy brak Targowiska/Waluty)
+  pieniadzZPracy: number;  // deprecated compatibility field; always 0 (Work is converted manually from the empire pool)
   /**
    * Decyzja 67B (Maciej 2026-07-25, cytat: "Budynki, jeżeli miały wcześniej handel...
    * powinny go dawać nie bezpośrednio do skarbca, tylko do puli, do podziału"). Suma
    * SUROWA (przed-mnoznikowa, przed podzialem suwakiem) Pieniadza z bazy budynkow
    * (Σ buildingValue(record, level, 'pieniadz')) -- WYLACZNIE pole informacyjne do
-   * UI/debug (panel miasta "ile Pieniadza z budynkow"), analogicznie do pieniadzZPracy
-   * powyzej. Ta wartosc NIE trafia juz bezposrednio do `pieniadz` (patrz Step 3/8
+   * UI/debug (panel miasta "ile Pieniadza z budynkow"). Ta wartosc NIE trafia
+   * bezposrednio do `pieniadz` (patrz Step 3/8
    * nizej) -- wchodzi do handelBazowy PRZED Targowiskiem/civHandelMult/trasami/
-   * korupcja/Waluta+Mennica, dokladnie jak pieniadzZPracy (D5), i dopiero POTEM jest
+   * korupcja/Waluta+Mennica i dopiero POTEM jest
    * dzielona suwakiem Nauka/Pieniadz/Luksus razem z reszta Daniny. Realny wplyw
    * mnoznikow/podzialu widac w polu `pieniadz` (i `nauka`/`luksus`), NIE tutaj.
    */
@@ -647,32 +641,19 @@ export interface CityYieldContext {
    * Mennica stoi WYŁĄCZNIE w stolicy). Wołający (turn-economy.ts, cityPanel.ts)
    * liczy to jako union budynków po WSZYSTKICH miastach tego ownera -- economy.ts
    * samo nie zna innych miast, dostaje gotowy boolean. Sam ten flag nic nie
-   * mnoży -- jest jednym z DWÓCH warunków (obok walutaOdkryta) bramki Efektu 1
-   * (patrz niżej). Dawne osobne pole `mennicaMnoznik` (mnożnik TYLKO na strumień
-   * Pieniądza) zostało USUNIĘTE 2026-07-25 (decyzja Maciej) -- efekt jest teraz
-   * jeden, scalony w Efekcie 1 poniżej, i wymaga Mennicy + Waluty razem.
+   * mnoży -- jest jednym z DWÓCH warunków (obok walutaOdkryta) bramki Mint
+   * tax multiplier below. The one built Mint activates its tax effect across
+   * every city owned by that civilization.
    */
   maMennica:      boolean;
   /**
-   * Waluta (currency tech) discovered by this player.
-   * Efekt 1 (SCALONY, decyzja Maciej 2026-07-25): handelNetto *= mennicaMnoznikPoWalucie
-   * (easy x2,0 / normal x1,5 / hard x1,0 -- BRAK efektu na hard) TYLKO gdy
-   * walutaOdkryta ORAZ maMennica są oba prawdziwe. Sam tech Waluty już NIE
-   * wystarcza -- to jest sedno zmiany; przedtem (do 2026-07-24) sam tech dawał
-   * już x2 niezależnie od trudności i budynku, a Mennica mnożyła osobno tylko
-   * strumień Pieniądza -- oba stare efekty są teraz jednym.
-   * Efekt 2 (bez zmian): doPuli (Praca surplus) -> Pieniadz x targowiskoPracaMnoznik gdy maTargowisko && walutaOdkryta.
+   * Waluta (currency tech) discovered by this player. Mint modifies only local
+   * tax when this and the empire-wide Mint flag are both true. Difficulty rate:
+   * easy ×1.62 / normal ×1.50 / hard ×1.38. Trade routes are not in this pool.
+   * Work-to-tax conversion is an explicit owner action from the remaining empire pool.
    * Optional; defaults to false so existing ctx literals remain valid.
    */
   walutaOdkryta?: boolean;
-  /**
-   * Per-cyw/religia override for Efekt 1 bazy (mnoznikHandelPieniadz z civs.json,
-   * 1.7-2.4, lub religionTradeWalutaOverride). Gdy ustawione, zastepuje
-   * params.mennicaMnoznikPoWalucie jako WARTOŚĆ mnożnika -- NIE omija bramki
-   * walutaOdkryta && maMennica powyżej (bramka decyduje CZY mnożyć, override
-   * decyduje O ILE).
-   */
-  walutaMnoznikOverride?: number;
   /** RDY-01: mnoznik na Handel z bonusu cyw (np. Grecy +15%). Domyslnie 1. */
   civHandelMult?: number;
   /** RDY-01: mnoznik na Nauke z bonusu cyw (np. Inkowie +15%). Domyslnie 1. */
@@ -690,22 +671,8 @@ export interface CityYieldContext {
    * (brak tras z budynkiem).
    */
   premiaHandluTrasHandlowych?: number;
-  /**
-   * R-HANDEL-DOCHOD-PRZEZ-PODZIAL-MIASTA-Q1 (ECHO wlasciciela, "Pelna integracja: przed
-   * mnoznikiem Wealth"): dochod DYSTANSOWY z tras handlowych tego miasta
-   * (computeTradeRouteIncomeByCity w trade-routes.ts, wolany w main.ts, przekazany przez
-   * advanceCityEconomy/previewCityEconomy jako tradeIncomeByCity.get(city.id)). PRZEDTEM
-   * dodawany OSOBNO do skarbca miasta PO mnozniku Wealth (pieniadzZTras w turn-economy.ts) --
-   * TERAZ wchodzi tu, do wspolnej puli handelBrutto, wiec przechodzi przez korupcje/Waluta+
-   * Mennica i podzial suwakami Handlu (nauka/zloto/luksus) DOKLADNIE tak jak reszta Daniny,
-   * a finalny pieniadz jest mnozony przez Wealth jak kazdy inny strumien miasta. Domyslnie 0
-   * (brak tras) tak, zeby istniejace literaly ctx zostaly wazne. NIE mylic z
-   * premiaHandluTrasHandlowych powyzej (osobny mechanizm -- premia budynkowa za SAM fakt
-   * posiadania trasy z budynkiem, nie dochod dystansowy).
-   */
-  dochodTrasHandlowych?: number;
-  /** Connected sea-route share of `dochodTrasHandlowych`, including the existing sea-route bonus. */
-  dochodTrasMorskich?: number;
+  /** Owner-selected Work converted to ordinary tax, already expressed at the configured rate. */
+  additionalTax?: number;
   /**
    * Zadanie 2 (2026-07-23): liczba Garncarni ZBUDOWANYCH W TYM MIESCIE (nie civ-wide).
    * Kazda dodaje +budynekGarncarniaBonusZywnosci (domyslnie 10%) do lokalnej Zywnosci
@@ -824,25 +791,16 @@ export function civEconomyYieldMultipliers(
  * Steps (Spec-ekonomia.md ss.1.2, 1.3, 1.4, 2.1, 3.1):
  *   1. Sum terrain yields from workedTiles.
  *   2. Apply Mlyn multiplier on tile Praca; Cegielnia bonus on gross tile Praca.
- *   3'. Sum building BASE outputs (praca, pieniadz, zywnosc, nauka, kultura, zadowolenie)
- *      -- PRZESUNIETE przed dawny Step 3 (D5, 2026-07-25): pracaBudynkow jest
- *      potrzebne juz tutaj, bo pracaNetto -> doPuli -> pieniadzZPracy (Efekt 2:
- *      Targowisko+Waluta, Praca "wystawiona na handel") musi wejsc do Handlu PRZED
- *      jego mnoznikami, nie po nich. Buildings are a direct source of Praca i Pieniadz.
- *   3. Apply Targowisko bonus, civHandelMult, trasy handlowe -- do (tile Handel +
- *      pieniadzZPracy + pieniadzBudynkow) RAZEM, D5/decyzja 67B (Maciej 2026-07-25,
- *      cytat D5: "Pieniądz z konwersji pracy wchodzi do daniny... i jest potem
- *      mnożony przez walutę i mennicę i wszystkie inne wskaźniki handlu"; cytat 67B:
+ *   3'. Sum building BASE outputs; Work stays in the empire pool unless manually converted.
+ *   3. Build the local tax pool from terrain and building cash, then apply local trade modifiers.
  *      "Budynki, jeżeli miały wcześniej handel... powinny go dawać nie bezpośrednio
- *      do skarbca, tylko do puli, do podziału"). Ani pieniadzZPracy, ani
- *      pieniadzBudynkow NIE sa juz osobnymi strumieniami doklejanymi po fakcie --
- *      oba sa czescia bazy Handlu/Daniny u zrodla.
+ *      do skarbca, tylko do puli, do podziału"). pieniadzBudynkow is part of the
+ *      trade/tax base; Work remains in the empire pool unless explicitly converted.
  *   5. Apply corruption/waste (strataFraction) do calego Handlu/Daniny (juz z
- *      pieniadzZPracy i pieniadzBudynkow w srodku) -- D1: Praca NIGDY nie jest tym
+ *      pieniadzBudynkow w srodku) -- D1: Praca NIGDY nie jest tym
  *      dotknieta.
  *   6. Split Handel via trade slider into Nauka / Pieniadz / Luksus.
- *   7. Apply Mennica multiplier to caly Handel (w tym pieniadzZPracy i
- *      pieniadzBudynkow); Biblioteka bonus to Nauka.
+ *   7. Apply Mennica multiplier to caly Handel (w tym pieniadzBudynkow); Biblioteka bonus to Nauka.
  *   8. Add specialist Poborca bonus do Pieniadza (jedyny strumien Pieniadza, ktory
  *      nadal omija podzial suwakiem -- poza zakresem decyzji 67B).
  *   9. Apply Garncarnia +Zywnosc% (lokalnie, per miasto, ctx.liczbaGarncarni) to
@@ -901,10 +859,9 @@ export function cityYieldPerTurn(
     pracaBruttoTerenu = pracaBruttoTerenu * (1 + params.budynekCegielniBonusPracy);
   }
 
-  // --- Step 3 (przesuniete PRZED dawny Step 3 -- patrz D5 nizej): Sum building
-  // BASE outputs. Musi powstac TERAZ (a nie po handlu, jak dawniej), bo pracaBudynkow
-  // jest potrzebne do pracaBruttoLacznie -> pracaNetto -> doPuli -> pieniadzZPracy,
-  // ktore z kolei musza wejsc do handelBrutto PRZED jego mnoznikami (patrz D5).
+  // --- Step 3: Sum building BASE outputs. Musi powstac TERAZ (a nie po handlu),
+  // because building Work is part of the city production split.
+  // is retained as a city yield component; the resulting empire pool is handled separately.
   let pracaBudynkow    = 0;
   let pieniadzBudynkow = 0;
   let zywnoscBudynkow  = 0;
@@ -945,35 +902,17 @@ export function cityYieldPerTurn(
     ? applyCivMatrixParam(pracaBruttoLacznie, city.civKey, 'eko_praca_proc')
     : pracaBruttoLacznie;
 
-  // D5 (Maciej 2026-07-25, PYTANIE 76=B, POPRAWKA tego samego dnia -- cytat wlasciciela:
-  // "Pieniądz z konwersji pracy wchodzi do daniny, później do podatku i jest potem
-  // mnożony przez walutę i mennicę i wszystkie inne wskaźniki handlu... zamieniamy to
-  // na równowartość podatku"). To NIE jest osobny strumien doklejany do gotowej puli --
-  // to Praca WYSTAWIONA NA HANDEL, wiec wchodzi do Daniny U ZRODLA, na tych samych
-  // prawach co Danina z terenu, i przechodzi przez WSZYSTKIE mnozniki Handlu ponizej
-  // (Targowisko, civHandelMult, trasy handlowe, korupcja, Waluta+Mennica) -- dokladnie
-  // tak samo jak reszta Daniny. Dlatego liczymy je TU, PRZED Step 3 (Targowisko itd.),
-  // a nie po nich jak w bledej wersji D5 sprzed poprawki.
+  // Work assigned to the empire pool remains there unless the owner explicitly
+  // converts some of the remaining balance. `additionalTax` enters the tax stream
+  // through its own context field, after the local Targowisko gross-trade bonus.
   const walutaOdkrytaOnly = ctx.walutaOdkryta === true;
-  const pctPracaBudynki = city.podziałPracy.procentBudynki / 100;
   const pracaInt = cityPracaInteger(pracaNetto);
-  const { doPuli } = splitPraca(pracaInt, pctPracaBudynki);
-  const pieniadzZPracy = (ctx.maTargowisko && walutaOdkrytaOnly)
-    ? Math.floor(doPuli * params.targowiskoPracaMnoznik)
-    : 0;
+  const pieniadzZPracy = 0;
 
-  // --- Step 3: Targowisko bonus na Handel (Spec ss.1.3) -- baza TERAZ zawiera
-  // pieniadzZPracy (D5) ORAZ pieniadzBudynkow (decyzja 67B, Maciej 2026-07-25: Pieniadz
-  // z budynkow NIE trafia wprost do skarbca, tylko do puli do podzialu), wiec premia
-  // Targowiska/civHandelMult/trasy handlowe dzialaja na Danine terenowa + budynkowa +
-  // konwersje Pracy RAZEM, jak jedna wartosc. ---
-  const handelBazowy = handelTerenu + pieniadzZPracy + pieniadzBudynkow;
-  let handelBrutto: number;
-  if (ctx.maTargowisko) {
-    handelBrutto = handelBazowy * (1 + params.budynekTargowiskoBonusHandlu);
-  } else {
-    handelBrutto = handelBazowy;
-  }
+  // City tax excludes route proceeds. Manual Work tax is added after route-only
+  // bonuses, then follows the ordinary corruption, Mint and slider stages.
+  const handelBazowy = handelTerenu + pieniadzBudynkow;
+  let handelBrutto = handelBazowy;
   // For a known matrix owner, the matrix is authoritative (including raw zero)
   // for this legacy-overlapping gross-trade effect. Unknown/missing owner keys
   // retain the existing legacy multiplier behavior.
@@ -989,37 +928,23 @@ export function cityYieldPerTurn(
   if (premiaTrasHandlowych > 0) {
     handelBrutto += premiaTrasHandlowych;
   }
-  // R-HANDEL-DOCHOD-PRZEZ-PODZIAL-MIASTA-Q1: dochod dystansowy z tras handlowych (patrz
-  // CityYieldContext.dochodTrasHandlowych) -- wpiety TU, wiec przechodzi przez korupcje/
-  // Waluta+Mennica (Step 5) i podzial suwakami Handlu (Step 6+7) razem z reszta Daniny.
-  const dochodTrasHandlowych = ctx.dochodTrasHandlowych ?? 0;
-  if (dochodTrasHandlowych > 0) {
-    const seaIncome = Math.min(dochodTrasHandlowych, Math.max(0, ctx.dochodTrasMorskich ?? 0));
-    const landAndOtherIncome = dochodTrasHandlowych - seaIncome;
-    handelBrutto += landAndOtherIncome + (city.civKey
-      ? applyCivMatrixParam(seaIncome, city.civKey, 'eko_pieniadz_port_proc')
-      : seaIncome);
-  }
-
   // F-04: replace the same-effect legacy multiplier above and apply the approved
   // general gross-trade coefficient once to the complete named gross stage.
   if (city.civKey) handelBrutto = applyCivMatrixParam(handelBrutto, city.civKey, 'eko_handel_brutto_proc');
+  // Manual Work tax joins after local and route-only gross modifiers, so it is
+  // never multiplied by the Market route bonus or route-building premiums.
+  handelBrutto += Math.max(0, ctx.additionalTax ?? 0);
 
-  // --- Step 5 (renumbered from 6): Apply corruption/waste -- dotyczy WYLACZNIE
-  // handelBrutto (ktory juz zawiera pieniadzZPracy, D5 powyzej), NIGDY Pracy (D1). ---
+  // --- Step 5: Apply corruption/waste to the complete tax base, including manual
+  // Work tax. Unconverted Work still in the empire pool is not affected. ---
   const strataRaw = city.civKey
     ? applyCivMatrixParam(ctx.strataFraction, city.civKey, 'eko_korupcja_proc')
     : ctx.strataFraction;
   const strata = Math.min(strataRaw, params.korupcjaCap);
   const handelNettoRaw    = handelBrutto       * (1 - strata);
-  // Efekt 1 SCALONY (Waluta + Mennica, decyzja Maciej 2026-07-25): caly handelNetto
-  // jest mnozony x mennicaMnoznikPoWalucie (easy x2,0 / normal x1,5 / hard x1,0) TYLKO
-  // gdy walutaOdkryta ORAZ maMennica sa oba prawdziwe -- sam tech Waluty juz NIE
-  // wystarcza. Dziala na cala pule PRZED podzialem na Nauka/Pieniadz/Luksus (wiec i na
-  // pieniadzZPracy juz wtopiony w handelBrutto, D5 powyzej) -- nauka i zamoznosc z
-  // handlu (oraz z konwersji Pracy) rosna razem ze Skarbem (decyzja: wariant A).
+  // Mint affects the local tax pool only. Separately settled route cash bypasses it.
   const walutaActive = walutaOdkrytaOnly && ctx.maMennica === true;
-  const walutaMnoznikBase = ctx.walutaMnoznikOverride ?? params.mennicaMnoznikPoWalucie;
+  const walutaMnoznikBase = params.mennicaMnoznikPoWalucie;
   const walutaMnoznikAktywny = walutaActive ? walutaMnoznikBase : 1;
   const handelNetto   = handelNettoRaw * walutaMnoznikAktywny;
 
@@ -1055,12 +980,9 @@ export function cityYieldPerTurn(
       ? Math.floor(naukaLokalnaRaw * ctx.civNaukaMult)
       : naukaLokalnaRaw);
 
-  // --- Step 8: Total Pieniadz = from trade (handelNetto juz zawiera pieniadzZPracy
-  // ORAZ pieniadzBudynkow, wtopione w Step 3, D5/67B powyzej -- przeszly przez
-  // WSZYSTKIE mnozniki Handlu: Targowisko, civHandelMult, trasy, korupcja, Waluta+
-  // Mennica -- i podzial suwakiem) + specialist Poborca. Decyzja 67B: pieniadzBudynkow
-  // NIE jest juz doliczany tu osobno -- inaczej liczylby sie PODWOJNIE (raz w
-  // pieniadzZHandlu przez handelBazowy, drugi raz tutaj).
+  // --- Step 8: Money from the tax allocation plus specialist Poborca. Building
+  // money, manual Work tax, and route-derived amounts are each added to their own
+  // appropriate stage above, preventing duplicate credit.
   let pieniadzTotal = city.civKey
     ? applyCivMatrixParam(pieniadzZHandlu, city.civKey, 'eko_pieniadz_proc')
     : pieniadzZHandlu;

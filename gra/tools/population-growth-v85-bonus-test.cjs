@@ -17,6 +17,7 @@ export {
   computeGrowthPercentV85,
   buildRationParams,
   computeCityRationCost,
+  rationEraFoodCostMultiplier,
 } from '../src/game/population-growth-v85';
 export {
   spichlerzGrowthBonusPercent,
@@ -167,8 +168,23 @@ console.log('--- P84 Spichlerz Zdrowie + racje ---');
       racje_wzrost_proc_3: { normal: 7 },
     },
   }, 'normal');
-  eq(M.computeCityRationCost(10, 3, rationParams, fullII), 15, 'pop 10 racje 3 ×0.5 = 15');
-  eq(M.computeCityRationCost(10, 3, rationParams), 30, 'bez Spichlerza = 30');
+  eq(M.computeCityRationCost(10, 3, rationParams, fullII), 30, 'pop 10 racje 3 ×0.5 = 30');
+  eq(M.computeCityRationCost(10, 3, rationParams), 60, 'bez Spichlerza = 60');
+
+  // Citizen upkeep follows owner era, then applies the existing local granary discount.
+  eq(M.rationEraFoodCostMultiplier(1), 1, 'Stone citizen multiplier = 1');
+  eq(M.rationEraFoodCostMultiplier(2), 2, 'Bronze citizen multiplier = 2');
+  eq(M.rationEraFoodCostMultiplier(3), 4, 'Iron citizen multiplier = 4');
+  eq(M.rationEraFoodCostMultiplier(undefined), 1, 'missing era defaults to Stone');
+  for (const level of [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6]) {
+    const base = M.computeCityRationCost(10, level, rationParams);
+    eq(M.computeCityRationCost(10, level, rationParams), base, `Stone level ${level}`);
+    eq(M.computeCityRationCost(10, level, rationParams, undefined, 2), base * 2, `Bronze level ${level}`);
+    eq(M.computeCityRationCost(10, level, rationParams, undefined, 3), base * 4, `Iron level ${level}`);
+  }
+  const fullI = { ceramikaActive: true, solActive: false, maSpichlerzPop: true, maSpichlerzIIPop: false };
+  eq(M.computeCityRationCost(10, 4, rationParams, fullI, 3), 240, 'Iron epoch scaling before Spichlerz I -25%');
+  eq(M.computeCityRationCost(10, 4, rationParams, fullII, 3), 160, 'Iron epoch scaling before Spichlerz II -50%');
 }
 
 console.log('\n--- wynik: ' + passed + ' pass, ' + failed + ' fail ---\n');

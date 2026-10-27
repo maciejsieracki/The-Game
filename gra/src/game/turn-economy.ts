@@ -53,7 +53,6 @@ import {
   cityYieldPerTurn,
   civBonusyForCivKey,
   civEconomyYieldMultipliers,
-  mnoznikHandelPieniadzForCivByDifficulty,
   tileYield,
   type EconParams,
   type EconomyCity,
@@ -72,7 +71,7 @@ import {
   terrainImprovementEraMultiplier,
   type TerritoryResourceKey,
 } from './terrain-improvements';
-import { civMatrixParam } from './civ-matrix';
+import { applyCivMatrixParam, civMatrixParam } from './civ-matrix';
 import { cityManpowerMax, refreshManpowerAfterPopChange, tickManpowerRegen, civManpowerMults, civManpowerMatrixMults, loadManpowerRegenParams, tickManpowerUnitReplenishment, type ManpowerHealUnit } from './manpower';
 import {
   loadStorageParams,
@@ -158,11 +157,7 @@ import {
 } from './okolica';
 import { buildTerritoryNodesFromCities } from '../map/territory-work';
 import { territoryOwnerAt, type TerritoryNode } from '../map/territory';
-import {
-  cityTradeMultiplier,
-  loadReligionParams,
-  type ReligionState,
-} from './culture-religion';
+import type { ReligionState } from './culture-religion';
 import type { OrderYieldMults } from './order';
 import {
   buildRationParams,
@@ -229,48 +224,10 @@ function applyWonderCityYields(
   // dopisywanie tu nic by nie zmieniło w rozgrywce.
 }
 
-/** Nazwa wyświetlana cywilizacji z klucza (grecy → Grecy) — pod cityTradeMultiplier. */
-function civDisplayNameForKey(
-  civKey: string | undefined,
-  civs: GameData['civs'],
-): string | null {
-  if (!civKey || !civs?.cywilizacje?.length) return null;
-  const key = civKey.toLowerCase();
-  for (const row of civs.cywilizacje) {
-    if (!row) continue;
-    const ids = [row.ikonaId, (row as { typCywilizacji?: string }).typCywilizacji, row.Cywilizacja]
-      .filter((s): s is string => typeof s === 'string' && s.length > 0)
-      .map(s => s.toLowerCase());
-    if (ids.includes(key)) return row.Cywilizacja ?? null;
-  }
-  return null;
-}
-
-/**
- * B-KULT-REL-Q3A — mnożnik handlu z religii (gate: Waluta + Mennica + dominująca
- * wiara). Maciej 2026-07-25 (pytanie 71/C): Mennica stoi wyłącznie w stolicy,
- * więc bramka "Mennica" tutaj musi być IMPERIUM-WIDE (czy właściciel ma Mennicę
- * GDZIEKOLWIEK), nie "w tym mieście" — spójnie z resztą Efektu 1 (patrz
- * economy.ts CityYieldContext.maMennica). Wołający liczy union po miastach raz
- * per tick i przekazuje gotowy boolean.
- */
-function religionTradeWalutaOverride(
-  cityReligion: ReligionState | undefined,
-  ownerCivKey: string | undefined,
-  maMennicaEmpireWide: boolean,
-  walutaOdkryta: boolean,
-  civs: GameData['civs'],
-  societyParams: GameData['societyParams'],
-  difficulty: Difficulty,
-): number | undefined {
-  if (!walutaOdkryta || !maMennicaEmpireWide || !cityReligion) return undefined;
-  const civName = civDisplayNameForKey(ownerCivKey, civs);
-  if (!civName) return undefined;
-  const rp = loadReligionParams(societyParams, difficulty);
-  const trade = cityTradeMultiplier(
-    cityReligion, civName, civs as unknown as import('./culture-religion').CivsDataLike, rp, true,
-  );
-  return trade.applied ? trade.multiplier : undefined;
+/** Route proceeds settle separately from tax; maritime income keeps its city coefficient. */
+function routeCashForCity(total: number, maritime: number, civKey: string | undefined): number {
+  const sea = Math.min(total, Math.max(0, maritime));
+  return total - sea + (civKey ? applyCivMatrixParam(sea, civKey, 'eko_pieniadz_port_proc') : sea);
 }
 
 /**
@@ -288,31 +245,6 @@ function ownersWithMennica(
     if ((builtByCity.get(c.id) ?? []).includes('mennica')) owners.add(c.ownerId);
   }
   return owners;
-}
-
-/**
- * Wartość Efektu 1 (mnożnik Handel netto) gdy bramka jest otwarta: override z
- * religii (dominująca wiara, patrz religionTradeWalutaOverride) ma pierwszeństwo;
- * w przeciwnym razie mnożnik CYWILIZACYJNY skalowany trudnością (Maciej
- * 2026-07-25, pytanie 69) -- ZASTĘPUJE dawną płaską regułę "2/1.5/1 dla
- * wszystkich", która żyje teraz tylko jako `fallbackScaled` dla cywilizacji bez
- * wpisu w civs.json.
- */
-function resolveWalutaMnoznikOverride(
-  cityReligion: ReligionState | undefined,
-  ownerCivKey: string | undefined,
-  maMennicaEmpireWide: boolean,
-  walutaOdkryta: boolean,
-  civs: GameData['civs'],
-  societyParams: GameData['societyParams'],
-  difficulty: Difficulty,
-  fallbackScaled: number,
-): number | undefined {
-  const religionOverride = religionTradeWalutaOverride(
-    cityReligion, ownerCivKey, maMennicaEmpireWide, walutaOdkryta, civs, societyParams, difficulty,
-  );
-  if (religionOverride !== undefined) return religionOverride;
-  return mnoznikHandelPieniadzForCivByDifficulty(ownerCivKey, civs, difficulty, fallbackScaled);
 }
 
 // ---------------------------------------------------------------------------
@@ -375,7 +307,6 @@ export function buildEconParams(data: GameData, difficulty: Difficulty = 'normal
     budynekMennicaMnoznik:          num(bu, 'budynek_mennica_mnoznik', 1),      // NIEUZYWANE 2026-07-25 (patrz economy.ts)
     mennicaMnoznikPoWalucie:        num(gl, 'mennica_mnoznik_po_walucie', 1.5), // JEDYNY mnoznik Efektu 1 (Waluta+Mennica scalone)
     walutaMnoznik:                  num(bu, 'waluta_mnoznik', 2),               // NIEUZYWANE 2026-07-25 (patrz economy.ts)
-    targowiskoPracaMnoznik:         num(bu, 'targowisko_praca_na_pieniadz_mnoznik', 2),
     suwaakHandelNaukaDefault:       num(em, 'suwak_handel_nauka_domyslnie', 60),
     suwaakHandelPieniadz:           num(em, 'suwak_handel_pieniadz_domyslnie', 30),
     suwaakHandelLuksus:             num(em, 'suwak_handel_luksus_domyslnie', 10),
@@ -1117,6 +1048,8 @@ export function getCityFood(city: City): number {
 export interface CityEconomyTick {
   cityId:         string;
   ownerId:        number;
+  /** Owner civilization era used for era-scaled citizen food upkeep. */
+  ownerEra?:      number;
   praca:          number;
   pieniadz:       number;  // po mnozniku Wealth (strumien do skarbca gracza)
   pieniadzBrutto: number;  // pieniadz przed mnoznikiem Wealth (z economy.ts)
@@ -1135,15 +1068,11 @@ export interface CityEconomyTick {
   wealthZadowolenie: number;       // WIRE 3: wklad do zadowolenia
   /** R7-C: nadwyżka Ceramiki po Spichlerzu → +Zadowolenie (miasto z Garncarnią). */
   garncarniaSurplusZadowolenie?: number;
-  pieniadzZPracy: number;          // Efekt 2: doPuli*targowiskoPracaMnoznik (0 bez Targowiska/Waluty)
+  pieniadzZPracy: number;          // deprecated compatibility field; always 0
   /**
-   * Handel E3: dochod dystansowy z tras handlowych dotykajacych to miasto
-   * (trade-routes.ts computeTradeRouteIncomeByCity) -- juz WLICZONY w `pieniadz`
-   * powyzej PRZED mnoznikiem Wealth (wpiety do handelBrutto w economy.ts przez
-   * ctx.dochodTrasHandlowych, wiec przechodzi przez korupcje, Waluta+Mennica i
-   * suwak podzialHandlu razem z reszta Daniny -- NIE "czysto" do skarbca), a tutaj
-   * wystawiony osobno wylacznie do rozbicia w UI (surowa kwota trasy). 0 gdy
-   * miasto nie ma tras.
+   * Handel E3: route proceeds credited separately from tax, corruption, sliders,
+   * Mint and Wealth. Included once in `pieniadz` and separately exposed here for
+   * the existing Handel breakdown. Includes the maritime city coefficient.
    */
   pieniadzZTras: number;
   // WIRE 4: oblezenie
@@ -1223,7 +1152,7 @@ export interface OwnerEconomySum {
   doPuli: number;
   praca: number;
   kultura: number;
-  /** Handel E3: podzbior `pieniadz` pochodzacy z dochodu dystansowego tras (rozbicie UI). */
+  /** Handel E3: route cash component of `pieniadz` (breakdown UI). */
   pieniadzZTras: number;
 }
 
@@ -1663,6 +1592,7 @@ export function computeCityFoodBalanceV85(
   city: Pick<City, 'poziomRacji' | 'procentRozwoj'>,
   rationParams: RationParams,
   spichlerzState?: SpichlerzCityBonusState,
+  ownerEra = 1,
 ): { kosztRacji: number; bilansLokalny: number; poziomRacji: number } {
   const poziomRacji = getCityRationLevel(city);
   const kosztRacji = computeCityRationCost(
@@ -1670,6 +1600,7 @@ export function computeCityFoodBalanceV85(
     poziomRacji,
     rationParams,
     spichlerzState,
+    ownerEra,
   );
   return {
     kosztRacji,
@@ -1703,6 +1634,7 @@ export function recomputeCityFoodBalancesInEcon(
       city,
       rationParams,
       spichlerz,
+      tick.ownerEra ?? 1,
     );
     tick.kosztRacji = foodBal.kosztRacji;
     tick.bilansLokalny = foodBal.bilansLokalny;
@@ -1922,6 +1854,8 @@ export function previewCityEconomy(
   ownerDefaultPodzialPracyByOwner: ReadonlyMap<number, CityPodzialPracy> = new Map(),
   /** F-04: connected sea-route income subset, including existing sea-route cash bonus. */
   maritimeTradeIncomeByCity: ReadonlyMap<string, number> = new Map(),
+  /** One-shot owner-selected Work tax. Distinct from route income. */
+  additionalTaxByCity: ReadonlyMap<string, number> = new Map(),
 ): Pick<EconomyTickResult, 'perCity'> {
   const params = buildEconParams(data, difficulty);
   const buildingCatalog = data.buildings as unknown as BuildingRecord[];
@@ -2033,7 +1967,6 @@ export function previewCityEconomy(
       ? resolveOwnerTech(city.ownerId)
       : playerZbadane;
     const walutaOdkryta = ownerTech.has('Waluta') || ownerTech.has('waluta');
-    const cityReligion = cityReligionByCityId.get(city.id);
     const maMennicaBuiltEmpireWide = mennicaOwners.has(city.ownerId);
     // PYTANIE 83=B (Maciej 2026-07-25): "Mennica przestaje działać po utracie dostępu
     // do złota. Mnożnik znika, Podatek wraca do Daniny." Budynek NIE jest burzony
@@ -2042,16 +1975,6 @@ export function previewCityEconomy(
     // resolveOwnerZlotoAccess to memoizowany resolver ownera (RAZ per owner per tick,
     // main.ts) -- patrz OwnerZlotoAccessResolver powyżej.
     const maMennicaEmpireWide = maMennicaBuiltEmpireWide && resolveOwnerZlotoAccess(city.ownerId);
-    const walutaMnoznikOverride = resolveWalutaMnoznikOverride(
-      cityReligion,
-      ownerCivKey,
-      maMennicaEmpireWide,
-      walutaOdkryta,
-      data.civs,
-      data.societyParams,
-      difficulty,
-      params.mennicaMnoznikPoWalucie,
-    );
     const ownerBonusy = ownerCivKey
       ? civBonusyForCivKey(ownerCivKey, data.civs)
       : [];
@@ -2078,25 +2001,17 @@ export function previewCityEconomy(
       maTargowisko: runtimeBuiltIds.includes('targowisko'),
       maBiblioteka: runtimeBuiltIds.includes('biblioteka'),
       maAkademia: runtimeBuiltIds.includes('akademia'),
-      // Efekt 1 SCALONY (decyzja Maciej 2026-07-25): Mennica jest jednym z dwoch
-      // warunkow bramki w cityYieldPerTurn (ctx.maMennica && ctx.walutaOdkryta) --
-      // gdy oba prawdziwe, CALY handelNetto (Skarb+Nauka+Zamoznosc) jest mnozony
-      // przez mnoznik cywilizacyjny skalowany trudnoscia (walutaMnoznikOverride,
-      // patrz resolveWalutaMnoznikOverride powyzej -- ZASTEPUJE plaska regule
-      // "2/1.5/1 dla wszystkich", pytanie 69). Mennica jest teraz IMPERIUM-WIDE
+      // Mint multiplies tax using the fixed difficulty rate when both gates are open.
+      // It is empire-wide because the building is placed in the capital.
       // (pytanie 71/C), bo stoi wylacznie w stolicy (pytanie 70/B). PYTANIE 83=B:
       // maMennicaEmpireWide juz zawiera bramke dostepu do zlota (patrz wyzej) --
       // gdy zlota brak, ta flaga jest false mimo ze budynek dalej stoi.
       maMennica: maMennicaEmpireWide,
       walutaOdkryta,
-      walutaMnoznikOverride,
       civHandelMult,
       civNaukaMult,
       premiaHandluTrasHandlowych: premiaTrasHandlowych,
-      // R-HANDEL-DOCHOD-PRZEZ-PODZIAL-MIASTA-Q1: HUD preview musi zgadzac sie z realnym
-      // tickiem (advanceCityEconomy) -- ten sam punkt wpiecia dochodu z tras (patrz tam).
-      dochodTrasHandlowych: tradeIncomeByCity.get(city.id) ?? 0,
-      dochodTrasMorskich: maritimeTradeIncomeByCity.get(city.id) ?? 0,
+      additionalTax: additionalTaxByCity.get(city.id) ?? 0,
       // Zadanie 2 (2026-07-23): Garncarnia +Zywnosc% LOKALNIE -- liczba sztuk w TYM miescie.
       liczbaGarncarni: runtimeBuiltIds.filter(id => id === 'garncarnia').length,
     };
@@ -2113,7 +2028,7 @@ export function previewCityEconomy(
     if (orderMult) applyOrderYieldMults(yld, orderMult);
     yld.praca = cityPracaInteger(yld.praca);
     const zywnoscBrutto = yld.zywnoscBrutto;
-    const foodBal = computeCityFoodBalanceV85(zywnoscBrutto, city.population, city, rationParams, spichlerzState);
+    const foodBal = computeCityFoodBalanceV85(zywnoscBrutto, city.population, city, rationParams, spichlerzState, ownerEra);
     yld.zywnosc = foodBal.bilansLokalny;
     // +wonder yields (CUDA-EKON-01) — patrz applyWonderCityYields, krok osobny od reszty.
     applyWonderCityYields(yld, wonderCityYieldsByOwner.get(city.ownerId));
@@ -2130,11 +2045,13 @@ export function previewCityEconomy(
       cityWealthParams,
       wealthImmunity ? { minPoziom: 1 } : undefined,
     );
-    // yld.pieniadz JUZ zawiera dochod z tras (ctx.dochodTrasHandlowych powyzej) -- patrz
-    // komentarz przy pieniadzPoWealth w advanceCityEconomy.
+    // Wealth applies to tax cash only; route proceeds settle separately.
     const pieniadzPoWealth = Math.floor(yld.pieniadz * wt.mnoznik);
-    // Wylacznie wartosc do raportu/UI (breakdown "dochod z tras") -- nie dodawac ponownie.
-    const pieniadzZTras = tradeIncomeByCity.get(city.id) ?? 0;
+    const pieniadzZTras = routeCashForCity(
+      tradeIncomeByCity.get(city.id) ?? 0,
+      maritimeTradeIncomeByCity.get(city.id) ?? 0,
+      ownerCivByOwnerId.get(city.ownerId),
+    );
 
     // NAPRAWA CACHE/LIVE (Maciej 2026-08-10, znalezisko B): PRZEDTEM czytano `city.podzialPracy`
     // wprost -- pole wypełnione WYŁĄCZNIE gdy miasto ma aktywny lokalny override
@@ -2161,8 +2078,9 @@ export function previewCityEconomy(
       perCity.push({
         cityId: city.id,
         ownerId: city.ownerId,
+        ownerEra,
         praca: yld.praca,
-        pieniadz: pieniadzPoWealth,
+        pieniadz: pieniadzPoWealth + pieniadzZTras,
         pieniadzBrutto: yld.pieniadz,
         zywnoscNetto: 0,
         nauka: yld.nauka,
@@ -2215,11 +2133,10 @@ export function previewCityEconomy(
     perCity.push({
       cityId: city.id,
       ownerId: city.ownerId,
+      ownerEra,
       praca: yld.praca,
-      // pieniadzPoWealth JUZ zawiera dochod z tras (ctx.dochodTrasHandlowych, wpiety w
-      // handelBrutto w economy.ts) -- NIE dodawac pieniadzZTras ponownie (podwojne liczenie,
-      // por. komentarz przy pieniadzPoWealth wyzej).
-      pieniadz: pieniadzPoWealth,
+      // Route proceeds are added after local tax modifiers and Wealth.
+      pieniadz: pieniadzPoWealth + pieniadzZTras,
       pieniadzBrutto: yld.pieniadz,
       zywnoscNetto: foodBal.bilansLokalny,
       nauka: yld.nauka,
@@ -2360,6 +2277,8 @@ export function advanceCityEconomy(
   ownerDefaultPodzialPracyByOwner: ReadonlyMap<number, CityPodzialPracy> = new Map(),
   /** F-04: connected sea-route income subset, including existing sea-route cash bonus. */
   maritimeTradeIncomeByCity: ReadonlyMap<string, number> = new Map(),
+  /** One-shot owner-directed Work tax, distinct from land/sea route income. */
+  manualWorkTaxByCity: ReadonlyMap<string, number> = new Map(),
 ): EconomyTickResult {
   const gameDifficulty = difficulty as GameDifficulty;
   const params = buildEconParams(data, difficulty);
@@ -2614,7 +2533,6 @@ export function advanceCityEconomy(
       ? resolveOwnerTech(city.ownerId)
       : playerZbadane;
     const walutaOdkryta = ownerTech.has('Waluta') || ownerTech.has('waluta');
-    const cityReligion = cityReligionByCityId.get(city.id);
     const maMennicaBuiltEmpireWide = mennicaOwners.has(city.ownerId);
     // PYTANIE 83=B (Maciej 2026-07-25): "Mennica przestaje działać po utracie dostępu
     // do złota. Mnożnik znika, Podatek wraca do Daniny." Budynek NIE jest burzony
@@ -2623,16 +2541,6 @@ export function advanceCityEconomy(
     // resolveOwnerZlotoAccess to memoizowany resolver ownera (RAZ per owner per tick,
     // main.ts) -- patrz OwnerZlotoAccessResolver powyżej.
     const maMennicaEmpireWide = maMennicaBuiltEmpireWide && resolveOwnerZlotoAccess(city.ownerId);
-    const walutaMnoznikOverride = resolveWalutaMnoznikOverride(
-      cityReligion,
-      ownerCivKey,
-      maMennicaEmpireWide,
-      walutaOdkryta,
-      data.civs,
-      data.societyParams,
-      difficulty,
-      params.mennicaMnoznikPoWalucie,
-    );
     const ownerBonusy = ownerCivKey
       ? civBonusyForCivKey(ownerCivKey, data.civs)
       : [];
@@ -2659,26 +2567,18 @@ export function advanceCityEconomy(
       maTargowisko:          runtimeBuiltIds.includes('targowisko'),
       maBiblioteka:          runtimeBuiltIds.includes('biblioteka'),
       maAkademia:            runtimeBuiltIds.includes('akademia'),
-      // Efekt 1 SCALONY (decyzja Maciej 2026-07-25): Mennica jest jednym z dwoch
-      // warunkow bramki w cityYieldPerTurn (ctx.maMennica && ctx.walutaOdkryta) --
-      // gdy oba prawdziwe, CALY handelNetto (Skarb+Nauka+Zamoznosc) jest mnozony
-      // przez mnoznik cywilizacyjny skalowany trudnoscia (walutaMnoznikOverride,
-      // patrz resolveWalutaMnoznikOverride powyzej -- ZASTEPUJE plaska regule
-      // "2/1.5/1 dla wszystkich", pytanie 69). Mennica jest teraz IMPERIUM-WIDE
+      // Mint multiplies tax using the fixed difficulty rate when both gates are open.
+      // It is empire-wide because the building is placed in the capital.
       // (pytanie 71/C), bo stoi wylacznie w stolicy (pytanie 70/B). PYTANIE 83=B:
       // maMennicaEmpireWide juz zawiera bramke dostepu do zlota -- gdy brak, false
       // mimo ze budynek dalej stoi (nie jest burzony).
       maMennica:             maMennicaEmpireWide,
       walutaOdkryta,         // P1b: bramka Efektu 1 (razem z maMennica) w cityYieldPerTurn
-      walutaMnoznikOverride, // per-cyw skalowany trudnoscia (lub override religii)
       civHandelMult,         // RDY-01: bonus_zloto handel (Grecy +15%)
       civNaukaMult,          // RDY-01: bonus_nauka (Inkowie +15%)
       premiaHandluTrasHandlowych: premiaTrasHandlowych, // T4: suma 0.05*dochod per trasa Z BUDYNKIEM
-      // R-HANDEL-DOCHOD-PRZEZ-PODZIAL-MIASTA-Q1 (ECHO wlasciciela): dochod dystansowy z tras
-      // handlowych -- TERAZ wpiety do puli handelBrutto (economy.ts) zamiast dodawany osobno
-      // po mnozniku Wealth (patrz pieniadzZTras nizej -- juz TYLKO wartosc do raportu/UI).
-      dochodTrasHandlowych:  tradeIncomeByCity.get(city.id) ?? 0,
-      dochodTrasMorskich:   maritimeTradeIncomeByCity.get(city.id) ?? 0,
+      // Owner-directed Work-to-tax amount for this city, distinct from route income.
+      additionalTax:        manualWorkTaxByCity.get(city.id) ?? 0,
       // Zadanie 2 (2026-07-23): Garncarnia +Zywnosc% LOKALNIE -- liczba sztuk w TYM miescie.
       liczbaGarncarni:       runtimeBuiltIds.filter(id => id === 'garncarnia').length,
     };
@@ -2695,7 +2595,7 @@ export function advanceCityEconomy(
     if (orderMult) applyOrderYieldMults(yld, orderMult);
     yld.praca = cityPracaInteger(yld.praca);
     const zywnoscBrutto = yld.zywnoscBrutto;
-    const foodBal = computeCityFoodBalanceV85(zywnoscBrutto, city.population, city, rationParams, spichlerzState);
+    const foodBal = computeCityFoodBalanceV85(zywnoscBrutto, city.population, city, rationParams, spichlerzState, ownerEra);
     yld.zywnosc = foodBal.bilansLokalny;
     // +wonder yields (CUDA-EKON-01) — patrz applyWonderCityYields, krok osobny od reszty
     // ekonomii/Pracy (nie dotyka economy.ts ani formul terenu/ulepszen powyzej).
@@ -2721,18 +2621,13 @@ export function advanceCityEconomy(
     // Zapisz nowy stan Wealth na obiekt City (dynamiczne pole)
     city.wealthState = { poziom: wt.poziom, pula: wt.pula };
 
-    // Pieniadz po mnozniku Wealth (KONTRAKT: mnozi strumien podatku, nie nauka/luksus).
-    // R-HANDEL-DOCHOD-PRZEZ-PODZIAL-MIASTA-Q1: yld.pieniadz JUZ zawiera dochod z tras
-    // (ctx.dochodTrasHandlowych powyzej, wpiety do handelBrutto w economy.ts) -- wiec ten
-    // mnoznik teraz obejmuje TAKZE dochod z tras, zgodnie z ECHO "Pelna integracja: przed
-    // mnoznikiem Wealth".
+    // Wealth modifies the local tax stream only; route cash is settled separately.
     const pieniadzPoWealth = Math.floor(yld.pieniadz * wt.mnoznik);
-    // Handel E3 (PRZEBUDOWANE): pieniadzZTras jest TERAZ wylacznie wartoscia do
-    // raportu/UI (breakdown "dochod z tras" w main.ts) -- SUROWY dochod dystansowy z tras
-    // PRZED przejsciem przez suwaki Handlu i mnoznik Wealth (juz wliczony do
-    // pieniadzPoWealth wyzej). NIE dodawac go ponownie do pieniadz nizej (podwojne
-    // liczenie) -- kredytowany OBU miastom trasy (Q8=B) w samym tradeIncomeByCity.
-    const pieniadzZTras = tradeIncomeByCity.get(city.id) ?? 0;
+    const pieniadzZTras = routeCashForCity(
+      tradeIncomeByCity.get(city.id) ?? 0,
+      maritimeTradeIncomeByCity.get(city.id) ?? 0,
+      ownerCivByOwnerId.get(city.ownerId),
+    );
 
     // WIRE 2: splitPraca
     // NAPRAWA CACHE/LIVE (Maciej 2026-08-10, znalezisko B) -- ten sam błąd co w
@@ -2745,11 +2640,8 @@ export function advanceCityEconomy(
     // resolves it correctly.
     const udzialBudynki = econCity.podziałPracy.procentBudynki / 100;
     const { doBudynkow, doPuli } = splitPraca(yld.praca, udzialBudynki);
-    if (ctx.maTargowisko && walutaOdkryta) {
-      const pieniadzZPracyPoSplit = Math.floor(doPuli * params.targowiskoPracaMnoznik);
-      yld.pieniadz = yld.pieniadz - yld.pieniadzZPracy + pieniadzZPracyPoSplit;
-      yld.pieniadzZPracy = pieniadzZPracyPoSplit;
-    }
+    // doPuli is credited to the empire pool below. Work-to-tax conversion is a
+    // separate, explicit owner action, so this city tick never monetizes it.
 
     // WIRE 4: oblezenie -- zegar glodu
     // Gdy city.oblegane === true: pomijamy dochod zywnosci z pol, odejmujemy zuzycie.
@@ -2774,10 +2666,10 @@ export function advanceCityEconomy(
       const tick: CityEconomyTick = {
         cityId:            city.id,
         ownerId:           city.ownerId,
+        ownerEra,
         praca:             yld.praca,
-        // pieniadzPoWealth JUZ zawiera dochod z tras (ctx.dochodTrasHandlowych, wpiety w
-        // yld.pieniadz powyzej) -- nie dodawac pieniadzZTras ponownie (podwojne liczenie).
-        pieniadz:          pieniadzPoWealth,
+        // Route proceeds are added after local tax modifiers and Wealth.
+        pieniadz:          pieniadzPoWealth + pieniadzZTras,
         pieniadzBrutto:    yld.pieniadz,
         zywnoscNetto:      0,           // brak dochodu podczas oblezenia
         nauka:             yld.nauka,
@@ -2860,14 +2752,14 @@ export function advanceCityEconomy(
 
     magazynPoTurze = city.wzrostUlamkowy ?? 0;
 
-    // pieniadzPoWealth JUZ zawiera dochod z tras -- patrz komentarz przy jego wyliczeniu wyzej.
-    incomeByOwner.set(city.ownerId, (incomeByOwner.get(city.ownerId) ?? 0) + pieniadzPoWealth);
+    incomeByOwner.set(city.ownerId, (incomeByOwner.get(city.ownerId) ?? 0) + pieniadzPoWealth + pieniadzZTras);
 
     const tick: CityEconomyTick = {
       cityId:            city.id,
       ownerId:           city.ownerId,
+      ownerEra,
       praca:             yld.praca,
-      pieniadz:          pieniadzPoWealth,
+      pieniadz:          pieniadzPoWealth + pieniadzZTras,
       pieniadzBrutto:    yld.pieniadz,
       zywnoscNetto:      foodBal.bilansLokalny,
       nauka:             yld.nauka,

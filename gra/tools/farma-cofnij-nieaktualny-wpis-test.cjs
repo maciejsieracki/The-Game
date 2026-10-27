@@ -195,7 +195,7 @@ async function main() {
 
       console.log('  -- pula Pracy = 0 (dokładna granica), klik „cofnij" na osieroconym wpisie „farma" --');
       await page.evaluate(() => window.__buildRequestTestDebug.setPlayerPracaPool(0));
-      await applyFarma(page, hexA, 40); // req.key='farma' + req.hexKey=hexA → pendingImprovementsTurn.has()===true → routing do undo
+      await applyFarma(page, hexA, 20); // req.key='farma' + req.hexKey=hexA → pendingImprovementsTurn.has()===true → routing do undo
       await wait(150);
       const toastStale = await page.evaluate(() => window.__buildRequestTestDebug.getToast());
       assert('toast po cofnięciu osieroconego wpisu: NIE twierdzi że Praca została zwrócona',
@@ -238,31 +238,31 @@ async function main() {
       const clean = await page.evaluate(({ q, r }) => window.__buildRequestTestDebug.getPlacedLayers(q, r), hexD);
       assert('hexD: heks wyczyszczony przed właściwym scenariuszem', clean.length === 0, clean);
 
-      await page.evaluate(() => window.__buildRequestTestDebug.setPlayerPracaPool(40));
-      await applyFarma(page, hexD, 40);
+      await page.evaluate(() => window.__buildRequestTestDebug.setPlayerPracaPool(20));
+      await applyFarma(page, hexD, 20);
       const placed = await page.evaluate(({ q, r }) => window.__buildRequestTestDebug.getPlacedLayers(q, r), hexD);
-      assert('hexD: farma postawiona kosztem dokładnie 40 (pula wyczerpana do 0)', placed.includes('farma'), placed);
+      assert('hexD: farma postawiona kosztem dokładnie 20 (pula wyczerpana do 0)', placed.includes('farma'), placed);
 
       console.log('  -- natychmiastowe cofnięcie W TEJ SAMEJ TURZE (ulepszenie nadal istnieje) --');
-      await applyFarma(page, hexD, 40);
+      await applyFarma(page, hexD, 20);
       await wait(150);
       const afterUndo = await page.evaluate(({ q, r }) => window.__buildRequestTestDebug.getPlacedLayers(q, r), hexD);
       const toastNormal = await page.evaluate(() => window.__buildRequestTestDebug.getToast());
       assert('hexD: farma zniknęła z heksa po cofnięciu (jak dziś)', !afterUndo.includes('farma'), afterUndo);
-      assert('hexD: toast standardowy „Praca zwrócona (40)" — ZERO REGRESU wobec dzisiejszego zachowania',
-        !!toastNormal && /Praca zwrócona \(40\)/.test(toastNormal.html), toastNormal);
+      assert('hexD: toast standardowy „Praca zwrócona (20)" — zwracana jest rzeczywista cena Kamienia',
+        !!toastNormal && /Praca zwrócona \(20\)/.test(toastNormal.html), toastNormal);
 
-      console.log('  -- DOWÓD LICZBOWY: pula wróciła DOKŁADNIE do 40 (nie mniej, nie więcej) --');
-      await applyFarma(page, hexD, 41); // koszt 41 > pula(40) → MUSI się nie udać
+      console.log('  -- DOWÓD LICZBOWY: pula wróciła DOKŁADNIE do 20 (nie mniej, nie więcej) --');
+      await applyFarma(page, hexD, 21); // koszt 21 > pula(20) → MUSI się nie udać
       const afterTooExpensive = await page.evaluate(({ q, r }) => window.__buildRequestTestDebug.getPlacedLayers(q, r), hexD);
-      assert('DOWÓD: pula NIE przekracza 40 — próba za 41 odrzucona', afterTooExpensive.length === 0, afterTooExpensive);
-      await applyFarma(page, hexD, 40); // koszt dokładnie 40 → MUSI się udać
+      assert('DOWÓD: pula NIE przekracza 20 — próba za 21 odrzucona', afterTooExpensive.length === 0, afterTooExpensive);
+      await applyFarma(page, hexD, 20); // koszt dokładnie 20 → MUSI się udać
       const afterExact = await page.evaluate(({ q, r }) => window.__buildRequestTestDebug.getPlacedLayers(q, r), hexD);
-      assert('DOWÓD: pula wynosi CO NAJMNIEJ 40 — próba za dokładnie 40 się udaje (pula = dokładnie 40, jak przed cofnięciem)',
+      assert('DOWÓD: pula wynosi CO NAJMNIEJ 20 — próba za dokładnie 20 się udaje (pula = dokładnie 20, jak przed cofnięciem)',
         afterExact.includes('farma'), afterExact);
 
       console.log('  -- KRYTERIUM 3 (przypadek normalny): wpis pending też usuwany, nie osiera się w kolejce --');
-      await applyFarma(page, hexD, 40); // to jest kolejny build z kroku wyżej → pending.has===true → to jest 'cofnij' (normalny, poprawny)
+      await applyFarma(page, hexD, 20); // to jest kolejny build z kroku wyżej → pending.has===true → to jest 'cofnij' (normalny, poprawny)
       const afterSecondUndo = await page.evaluate(({ q, r }) => window.__buildRequestTestDebug.getPlacedLayers(q, r), hexD);
       assert('KRYTERIUM 3: farma cofnięta ponownie bez problemu (kolejka konsekwentnie spójna)',
         !afterSecondUndo.includes('farma'), afterSecondUndo);

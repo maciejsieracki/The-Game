@@ -202,6 +202,26 @@ export function epochNumber(epoka: string | null | undefined): number {
   return typeof n === 'number' ? n : 1;
 }
 
+/** Deterministically pick the highest-era currently eligible unit in the same Typ line.
+ * Equal-era candidates keep units.json order, which is stable and product-data owned. */
+export function newestAvailableSameTypeUnit(
+  currentUnitName: string,
+  candidateNames: readonly string[],
+  units: readonly UnitDef[],
+): UnitDef | null {
+  const current = units.find(u => u.Jednostka === currentUnitName);
+  const currentTyp = (current?.Typ ?? '').trim();
+  if (!current || !currentTyp) return null;
+  const names = new Set(candidateNames);
+  let best: UnitDef | null = null;
+  for (const unit of units) {
+    if (!names.has(unit.Jednostka) || (unit.Typ ?? '').trim() !== currentTyp) continue;
+    if (epochNumber(unit.Epoka) <= epochNumber(current.Epoka)) continue;
+    if (!best || epochNumber(unit.Epoka) > epochNumber(best.Epoka)) best = unit;
+  }
+  return best;
+}
+
 // ---------------------------------------------------------------------------
 // Building level + linear scaling
 // ---------------------------------------------------------------------------

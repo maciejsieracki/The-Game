@@ -43,6 +43,12 @@ export const WYZYWIENIE_MAX = 6;
  */
 export const WYZYWIENIE_STEP = 0.5;
 
+/** Citizen food upkeep scales by the owning civilization's era: Stone 1×, Bronze 2×, Iron+ 4×. */
+export function rationEraFoodCostMultiplier(ownerEra = 1): number {
+  if (!Number.isFinite(ownerEra) || ownerEra <= 1) return 1;
+  return ownerEra === 2 ? 2 : 4;
+}
+
 /** Wszystkie dozwolone poziomy Wyżywienia (0, 0.5, …, 6). */
 export const WYZYWIENIE_LEVELS: readonly number[] = Array.from(
   { length: Math.round((WYZYWIENIE_MAX - WYZYWIENIE_MIN) / WYZYWIENIE_STEP) + 1 },
@@ -207,8 +213,10 @@ export function computeCityRationCost(
   level: PoziomRacji,
   params: RationParams,
   spichlerzState?: SpichlerzCityBonusState,
+  ownerEra = 1,
 ): number {
-  const base = Math.max(0, population) * rationFoodCostPerPop(level, params);
+  const base = Math.max(0, population) * rationFoodCostPerPop(level, params)
+    * rationEraFoodCostMultiplier(ownerEra);
   const mult = spichlerzState ? spichlerzRationFoodCostMultiplier(spichlerzState) : 1;
   return base * mult;
 }

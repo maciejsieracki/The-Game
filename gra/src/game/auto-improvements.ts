@@ -55,7 +55,9 @@ export interface AutoImprovementPick {
  */
 export const AI_IMPROVEMENT_PRIORITY: readonly ImprovementKey[] = [
   'farma', 'bydlo', 'owce', 'lama', 'tarasy', 'tartak', 'oboz_lowiecki', 'lodzie_rybackie',
-  'irygacja', 'kopalnia_miedzi', 'kopalnia_zelaza', 'kopalnia_cyny', 'kamieniolom', 'glinianka', 'stadnina',
+  // Strategic transition: build bronze inputs first (copper + tin), then iron.
+  // Recruitment stock deficits still move the exact mine/converter forward when needed.
+  'irygacja', 'kopalnia_miedzi', 'kopalnia_cyny', 'kopalnia_zelaza', 'kamieniolom', 'glinianka', 'stadnina',
   'warzelnia_soli', 'posterunek', 'droga', 'droga_brukowana', 'fort',
   'wyrab',
 ];

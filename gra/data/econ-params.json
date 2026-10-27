@@ -273,7 +273,7 @@
       "normal": 0.5,
       "hard": 0.38,
       "jednostka": "%",
-      "opis": "Premia Targowiska do Handlu brutto (+50%). [PT]"
+      "opis": "Premia Targowiska wyłącznie do dochodu z tras handlowych (+62% easy / +50% normal / +38% hard); nie mnoży lokalnego podatku miejskiego. [PT]"
     },
     "budynek_stolarnia_bonus_drewna_civ": {
       "easy": 0.10,
@@ -331,12 +331,12 @@
       "jednostka": "×",
       "opis": "NIEUŻYWANE (decyzja Maciej 2026-07-25): dawny Efekt 1 'sam tech Waluty odkryty → ×2 na cały Handel netto, bez wymogu Mennicy, jednakowo na wszystkich trudnościach' — ZASTĄPIONY przez globalne.mennica_mnoznik_po_walucie (wymaga Waluty ORAZ Mennicy zbudowanej w mieście; wartość różna per trudność: easy ×2 / normal ×1,5 / hard ×1 czyli brak efektu). Zostawione tylko dla zgodności starych zapisów/narzędzi — kod (economy.ts, turn-economy.ts) go już nie czyta w formule Efektu 1."
     },
-    "targowisko_praca_na_pieniadz_mnoznik": {
-      "easy": 2,
-      "normal": 2,
-      "hard": 2,
-      "jednostka": "×",
-      "opis": "Efekt 2 (Targowisko + Waluta): mnoznik konwersji puli-Pracy (doPuli) na Pieniadz. Aktywny per-miasto gdy maTargowisko=true i walutaOdkryta=true. pieniadzZPracy = floor(doPuli × mnoznik)."
+    "targowisko_praca_na_podatek_kurs": {
+      "easy": 1,
+      "normal": 1,
+      "hard": 1,
+      "jednostka": "Podatek / Praca",
+      "opis": "Kurs ręcznej, jednorazowej zamiany Pracy z puli imperium na Podatek. Wymaga co najmniej jednego Targowiska w imperium; domyślnie 1:1. Nie uruchamia się automatycznie."
     },
     "budynek_tartak_przepustowosc": {
       "easy": 3,
@@ -576,11 +576,11 @@
       "opis": "Kurs bazowy: 1 Pieniądz = 1 Praca (używany do wykupu budynków za Pieniądz)."
     },
     "mennica_mnoznik_po_walucie": {
-      "easy": 2,
+      "easy": 1.62,
       "normal": 1.5,
-      "hard": 1,
+      "hard": 1.38,
       "jednostka": "×",
-      "opis": "JEDYNY mnożnik Handlu netto (decyzja Maciej 2026-07-25, wątek 'scalenie mnożników'): mnoży CAŁY handelNetto miasta (Skarb + Nauka + Zamożność razem, PRZED podziałem suwakiem) aktywny TYLKO gdy technologia Waluta jest odkryta ORAZ Mennica jest zbudowana w tym mieście (bramka AND — sam tech Waluty już NIE wystarcza). Wartości właściciela: easy ×2,0 / normal ×1,5 / hard ×1,0 (hard = brak efektu, nie zeruje dochodu). Poprzednio (do 2026-07-24) istniały DWA osobne mnożniki: `budynki.waluta_mnoznik` (×2 na cały Handel przy samym techu, bez Mennicy) + ten parametr (mnożył TYLKO strumień Pieniądza). Oba zostały scalone w ten jeden efekt — `waluta_mnoznik` zostaje w pliku oznaczony jako nieużywany."
+      "opis": "Mennica mnoży wyłącznie podatek miejski przed jego podziałem suwakami: easy ×1,62 / normal ×1,50 / hard ×1,38. Jedna Mennica w stolicy aktywuje mnożnik we wszystkich miastach właściciela. Wymagania aktywacji: technologia Waluta oraz dostęp do Złota; brak Złota usypia efekt do czasu odzyskania dostępu. Dochód ze szlaków handlowych nie podlega mnożnikowi Mennicy."
     },
     "luksus_przelicznik_zadowolenie": {
       "easy": 4,

@@ -58,6 +58,7 @@ import {
 } from './hudLayout';
 import { showPowerOverlay, hidePowerOverlay, type PowerOverlayData } from './powerOverlayHud';
 import { mocLabel } from './power-labels';
+import { recruitHudLabel } from './recruitHudLabel';
 import { wikiBookIcon } from './icons/wikiBookIcon';
 import { iconHtml, type IconId } from './icons/iconRegistry';
 import { brandIconSvg, civIconSvg } from './icons/brandAssets';
@@ -1230,10 +1231,10 @@ export function renderBarD1B(s: HudState): string {
   html += '<div class="power-center" data-act="power" title="Moc imperium — siła absolutna państwa · Duża liczba: punkty Mocy (łączna siła imperium) · Kliknij po szczegóły.">'
     + '<div class="p-epoch' + eraGateCls + '"' + eraGateTitle + '>' + escHtml(s.epoka) + '</div>'
     + '<div class="p-row">'
-    + `<span class="p-side p-side-left" data-act="rekruci" title="Rekruci — pula rekrutacji (Manpower) · Liczba: aktualna pula werbu do szkolenia wojsk · Kliknij po szczegóły.">`
+    + `<span class="p-side p-side-left" data-act="rekruci" title="Rekruci — pula Manpower; w nawiasie pełne jednostki możliwe do zwerbowania według kosztu w bieżącej epoce · Kliknij po szczegóły.">`
     + '<span class="p-stack">'
     + recruitSideIconHtml()
-    + `<span class="p-recruit-val">${rekrLabel}</span>`
+    + `<span class="p-recruit-val">${recruitHudLabel(rekrLabel, s.rekrutEkw)}</span>`
     + '</span></span>'
     + `<span class="p-side p-side-center">${powerIconHtml}</span>`
     + `<span class="p-side p-side-right">`

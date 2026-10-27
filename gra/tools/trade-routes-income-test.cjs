@@ -50,7 +50,7 @@ export {
   refreshTradeRoutes, tradeRouteId, tradeRouteLimitForCity, TRADE_BUILDING_IDS,
   DEFAULT_TRADE_ROUTE_PARAMS, loadTradeRouteParams,
   tradeRouteIncomeByDistance, tradeRouteIncomeForRoute, DEFAULT_TRADE_ROUTE_INCOME_PARAMS, loadTradeRouteIncomeParams,
-  computeTradeRouteIncomeByCity, computeTradeRouteBuildingBonusByCity,
+  computeTradeRouteIncomeByCity, computeTradeRouteIncomeByCityBreakdown, computeTradeRouteBuildingBonusByCity,
   tradeRouteBuildingBonusForRoute, TRADE_ROUTE_BUILDING_BONUS_RATE,
 } from '../src/game/trade-routes';
 export { cityYieldPerTurn } from '../src/game/economy';
@@ -409,6 +409,9 @@ const routeF1 = { id: 'r1', fromCityId: 'A', toCityId: 'B', ownerId: 0, toOwnerI
 const routeF2 = { id: 'r2', fromCityId: 'A', toCityId: 'C', ownerId: 0, toOwnerId: 2, medium: 'morze', dystans: 10, status: 'polaczony', budynekOdblokowany: false };
 const routeF3suspended = { id: 'r3', fromCityId: 'A', toCityId: 'D', ownerId: 0, toOwnerId: 3, medium: 'lad', dystans: 1, status: 'brak_polaczenia', budynekOdblokowany: true };
 const incomeByCity = TR.computeTradeRouteIncomeByCity([routeF1, routeF2, routeF3suspended], incP);
+const marketBoostedIncome = TR.computeTradeRouteIncomeByCityBreakdown(
+  [routeF1], incP, () => 0, cityId => cityId === 'A' ? 0.5 : 0,
+);
 const inc5  = TR.tradeRouteIncomeByDistance(5, 'lad', incP);
 const inc10 = TR.tradeRouteIncomeByDistance(10, 'morze', incP);
 // R-HANDEL-SZLAKI-PRZEBUDOWA-Q1 T2 (ECHO Q2): computeTradeRouteIncomeByCity liczy teraz
@@ -420,6 +423,8 @@ const inc10 = TR.tradeRouteIncomeByDistance(10, 'morze', incP);
 // duplikowac ja jako osobna stala.
 const inc5Total  = TR.tradeRouteIncomeForRoute(routeF1, incP);
 const inc10Total = TR.tradeRouteIncomeForRoute(routeF2, incP);
+eq(marketBoostedIncome.totalByCity.get('A'), Math.floor(inc5Total * 1.5), 'F: Targowisko factor boosts only route income for its city endpoint');
+eq(marketBoostedIncome.totalByCity.get('B'), inc5Total, 'F: endpoint without Targowisko keeps base route income');
 eq(incomeByCity.get('A'), inc5Total + inc10Total, 'F: miasto A uczestniczy w 2 trasach (lad+morze x2, po ceil(stary/2)) -> suma obu dochodow finalnych');
 eq(incomeByCity.get('B'), inc5Total, 'F: miasto B (druga strona trasy 1, lad) dostaje PELNA kwote finalna (po ceil(stary/2))');
 eq(incomeByCity.get('C'), inc10Total, 'F: miasto C (druga strona trasy 2, morze) dostaje PELNA kwote FINALNA (x2 morza, po ceil(stary/2))');
@@ -521,6 +526,11 @@ const pParamsForG = { budynekTargowiskoBonusHandlu: 0.5, budynekBibliotekaBonusN
 const yld0 = TR.cityYieldPerTurn(makeEconCity(), gTiles, [], pParamsForG, makeCtx(0));
 const baseHandel = yld0.handelBrutto;
 assert(baseHandel > 0, 'G: (setup) baza Handlu > 0 bez tras');
+const yldWithMarketTaxOnly = TR.cityYieldPerTurn(
+  makeEconCity(), gTiles, [], pParamsForG, { ...makeCtx(0), maTargowisko: true },
+);
+eq(yldWithMarketTaxOnly.handelBrutto, yld0.handelBrutto, 'G: Targowisko does not multiply local tax');
+eq(yldWithMarketTaxOnly.pieniadz, yld0.pieniadz, 'G: Targowisko does not change local tax cash when route income is absent');
 
 for (const premia of [2, 5, 8.4, 12]) {
   const yldN = TR.cityYieldPerTurn(makeEconCity(), gTiles, [], pParamsForG, makeCtx(premia));
@@ -539,12 +549,10 @@ assert(yld2.handelBrutto > yld1.handelBrutto && yld3.handelBrutto > yld2.handelB
   'G: handelBrutto rosnie monotonicznie z rosnaca premia tras (2 < 5 < 8)');
 
 // ---------------------------------------------------------------------------
-// H. Integracja advanceCityEconomy: dochod z tras TERAZ przechodzi przez pelna sciezke
-//    Daniny (suwaki Handlu + mnoznik Wealth) -- R-HANDEL-DOCHOD-PRZEZ-PODZIAL-MIASTA-Q1,
-//    ECHO wlasciciela "Pelna integracja: przed mnoznikiem Wealth" -- obie strony
-//    (gracz + obca cyw) nadal zarabiaja z tej samej trasy (Q8=B, bez zmian).
+// H. Route proceeds settle separately from the city tax stream while both sides
+//    continue to receive their established route income.
 // ---------------------------------------------------------------------------
-console.log('\n-- H. advanceCityEconomy: dochod z tras przez suwaki Handlu + mnoznik Wealth --');
+console.log('\n-- H. advanceCityEconomy: route cash bypasses tax sliders, Mint and Wealth --');
 function makeRuntimeCity(id, ownerId, q) {
   const c = { id, ownerId, q, r: 0, name: id, population: 4 };
   TR.ensureCitySaveDefaults(c);
@@ -556,19 +564,21 @@ const fH = makeRuntimeCity('fH', 1, 205);
 const builtH = new Map([['pH', ['targowisko']], ['fH', ['targowisko']]]);
 const playerZbadaneH = new Set();
 
-function runTickH(tradeIncomeByCity, tradeRouteBuildingBonusByCity) {
+function runTickH(tradeIncomeByCity, tradeRouteBuildingBonusByCity, builtByCity = builtH, researched = playerZbadaneH, extraCities = []) {
   const cities = [
     { ...pH, wealthState: { ...pH.wealthState } },
     { ...fH, wealthState: { ...fH.wealthState } },
+    ...extraCities.map(c => ({ ...c, wealthState: { ...c.wealthState } })),
   ];
   const econ = TR.advanceCityEconomy(
-    cities, map, gameData, 'normal', [], new Map(), builtH,
-    1, playerZbadaneH, new Map(), new Map(), undefined, undefined, 'wysoki',
+    cities, map, gameData, 'normal', [], new Map(), builtByCity,
+    1, researched, new Map(), new Map(), undefined, undefined, 'wysoki',
     tradeRouteBuildingBonusByCity, tradeIncomeByCity,
   );
   return {
     pH: econ.perCity.find(t => t.cityId === 'pH'),
     fH: econ.perCity.find(t => t.cityId === 'fH'),
+    pH2: econ.perCity.find(t => t.cityId === 'pH2'),
   };
 }
 
@@ -577,27 +587,34 @@ const base = runTickH(new Map(), new Map());
 eq(base.pH.pieniadzZTras, 0, 'H1: brak tras -> pieniadzZTras=0 (gracz)');
 eq(base.fH.pieniadzZTras, 0, 'H1: brak tras -> pieniadzZTras=0 (obca cyw)');
 
-// H2: trasa daje dochod OBU miastom, dodany CZYSTO (nie mnozony przez Wealth).
-const TRADE_AMOUNT = 37; // wartosc dowolna, nieokragla wzgledem typowych mnoznikow Wealth
+// H2: route proceeds are credited separately from tax, sliders, Mint and Wealth.
+const TRADE_AMOUNT = 37;
 const withTrade = runTickH(
   new Map([['pH', TRADE_AMOUNT], ['fH', TRADE_AMOUNT]]),
   new Map(), // T4: premia z tras Z BUDYNKIEM=0 tutaj -- sprawdzana osobno w H3/H4
 );
-eq(withTrade.pH.pieniadzZTras, TRADE_AMOUNT, 'H2: pieniadzZTras gracza = kwota trasy (nadal RAPORTOWANY osobno, ale juz nie dodawany osobno)');
-eq(withTrade.fH.pieniadzZTras, TRADE_AMOUNT, 'H2: pieniadzZTras obcej cyw = kwota trasy (obie strony zarabiaja)');
-// R-HANDEL-DOCHOD-PRZEZ-PODZIAL-MIASTA-Q1 (ECHO wlasciciela, "Pelna integracja: przed
-// mnoznikiem Wealth"): dochod z tras NIE jest juz dodawany CZYSTO do skarbca -- wchodzi do
-// wspolnej puli handelBrutto (economy.ts), przechodzi przez Targowisko/korupcje/Waluta+
-// Mennica i jest DZIELONY suwakami Handlu (tu: domyslnie 60% Pieniadz / 20% Nauka / 20%
-// Luksus) razem z reszta Daniny, dopiero potem mnozony przez Wealth -- wiec przyrost
-// pieniadza NIE jest juz rowny surowej kwocie trasy (byl przed ta zmiana, patrz historia
-// gita). Trzy niezalezne dowody pelnej integracji zamiast starej rownosci 1:1:
-eq(withTrade.pH.pieniadzBrutto > base.pH.pieniadzBrutto, true,
-  'H2a: pieniadzBrutto (PRZED mnoznikiem Wealth) gracza WZROSL dzieki trasie -- dowod ze dochod z tras jest juz w puli PRZED Wealth (przedtem pieniadzBrutto = yld.pieniadz BEZ tras, niezmieniony)');
-eq(withTrade.pH.nauka > base.pH.nauka, true,
-  'H2b: Nauka gracza WZROSLA dzieki trasie -- dowod ze dochod z tras jest dzielony suwakiem Handlu (nauka/zloto/luksus), nie ladowany czysto do skarbca');
-assert(withTrade.pH.pieniadz - base.pH.pieniadz !== TRADE_AMOUNT,
-  `H2c: przyrost pieniadza gracza (${withTrade.pH.pieniadz - base.pH.pieniadz}) juz NIE rowna sie surowej kwocie trasy (${TRADE_AMOUNT}) -- czesc poszla do Nauki/Luksusu, reszta przeszla przez Targowisko/korupcje/Wealth`);
+eq(withTrade.pH.pieniadzZTras, TRADE_AMOUNT, 'H2: route amount remains separately reported for player city');
+eq(withTrade.fH.pieniadzZTras, TRADE_AMOUNT, 'H2: route amount remains separately reported for foreign city');
+eq(withTrade.pH.pieniadzBrutto, base.pH.pieniadzBrutto, 'H2a: route proceeds do not enter city tax gross');
+eq(withTrade.pH.nauka, base.pH.nauka, 'H2b: route proceeds bypass the tax sliders');
+eq(withTrade.pH.pieniadz, base.pH.pieniadz + TRADE_AMOUNT, 'H2c: full route amount is credited once after tax/Wealth settlement');
+
+// One capital Mint multiplies tax empire-wide without changing route cash.
+const builtWithMint = new Map([['pH', ['targowisko', 'mennica']], ['fH', ['targowisko']]]);
+const secondOwnerCity = makeRuntimeCity('pH2', 0, 205);
+builtWithMint.set('pH2', ['targowisko']);
+const withMintAndRoute = runTickH(
+  new Map([['pH', TRADE_AMOUNT], ['fH', TRADE_AMOUNT]]), new Map(),
+  builtWithMint, new Set(['Waluta']), [secondOwnerCity],
+);
+const mintWithoutRoute = runTickH(new Map(), new Map(), builtWithMint, new Set(['Waluta']), [secondOwnerCity]);
+const builtWithoutMint = new Map([...builtH, ['pH2', ['targowisko']]]);
+const withoutMintSecondCity = runTickH(new Map(), new Map(), builtWithoutMint, new Set(['Waluta']), [secondOwnerCity]);
+eq(withMintAndRoute.pH.pieniadzZTras, TRADE_AMOUNT, 'H2d: Mint does not multiply route income');
+eq(withMintAndRoute.pH.pieniadzZTras, withTrade.pH.pieniadzZTras, 'H2d: route proceeds are identical with/without Mint');
+assert(mintWithoutRoute.pH.pieniadzBrutto > base.pH.pieniadzBrutto, 'H2e: capital Mint raises local tax cash');
+assert(mintWithoutRoute.pH2.pieniadzBrutto > withoutMintSecondCity.pH2.pieniadzBrutto, `H2e: one capital Mint raises tax cash in another city of the owner (mint=${mintWithoutRoute.pH2.pieniadzBrutto}, noMint=${withoutMintSecondCity.pH2.pieniadzBrutto})`);
+eq(withMintAndRoute.pH.pieniadz - mintWithoutRoute.pH.pieniadz, TRADE_AMOUNT, 'H2f: route cash remains a separate additive credit despite Mint');
 
 // H3: premiaHandluTrasHandlowych>0 w tym samym wywolaniu podnosi tez Handel-z-pol
 // (osobny kanal) -- pieniadzBrutto (przed dochodem z tras) powinien byc >= baseline.

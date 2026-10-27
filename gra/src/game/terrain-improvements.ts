@@ -67,11 +67,9 @@ export const IMPROVEMENT_KEYS: readonly string[] = Object.keys(IMPROVEMENTS)
   .filter(k => !k.startsWith('_'));
 
 /**
- * Wspólna skala kosztów ulepszeń terenu względem bieżącej bazy Kamienia.
- * Epoka 4+ kontynuuje jawnie przyjęte podwajanie (1, 2, 4, 8, ...), a brak,
- * zero lub niepoprawna epoka bezpiecznie oznacza Kamień. Nie zmieniamy danych
- * źródłowych: `scaleImprovementWorkCost` zachowuje istniejącą korektę FALI2,
- * a ten mnożnik jest nakładany dokładnie raz na wynik bazowy.
+ * Era multiplier used for terrain-improvement upkeep. Construction Work costs
+ * use `scaleTerrainImprovementWorkCost` below; their Stone/Bronze/Iron rates
+ * are 0.5/1/2 after FALA2, while upkeep keeps its existing 1/2/4 progression.
  */
 export const TERRAIN_IMPROVEMENT_ERA_MULTIPLIERS: Readonly<Record<number, number>> = {
   1: 1,
@@ -89,6 +87,16 @@ export function terrainImprovementEraMultiplier(era: number | undefined): number
   return (TERRAIN_IMPROVEMENT_ERA_MULTIPLIERS[3] ?? 4) * Math.pow(2, normalized - 3);
 }
 
+/** Construction Work rates: Stone 0.5×, Bronze 1×, Iron 2×, then double. */
+export function terrainImprovementConstructionEraMultiplier(era: number | undefined): number {
+  const normalized = typeof era === 'number' && Number.isFinite(era)
+    ? Math.floor(era)
+    : 1;
+  if (normalized <= 1) return 0.5;
+  if (normalized === 2) return 1;
+  return 2 * Math.pow(2, normalized - 3);
+}
+
 /** Epoka technologiczna ulepszenia z terrain-improvements.json. */
 export function terrainImprovementEraForKey(key: string): number {
   const normalized = normalizeImprovementKey(key);
@@ -96,14 +104,14 @@ export function terrainImprovementEraForKey(key: string): number {
   return typeof era === 'number' && Number.isFinite(era) ? era : 1;
 }
 
-/** Koszt postawienia ulepszenia: bieżąca baza Kamienia × mnożnik epoki. */
+/** Koszt postawienia ulepszenia: FALA2-scaled Stone base × construction era rate. */
 export function scaleTerrainImprovementWorkCost(
   base: number,
   era: number | undefined = 1,
 ): number {
   const stoneBase = scaleImprovementWorkCost(base);
   if (stoneBase <= 0) return 0;
-  return stoneBase * terrainImprovementEraMultiplier(era);
+  return stoneBase * terrainImprovementConstructionEraMultiplier(era);
 }
 
 export function normalizeImprovementKey(raw: string | undefined | null): string | undefined {

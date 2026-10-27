@@ -265,7 +265,6 @@ import {
   cityPopulationCap,
   sumBuildingHappinessFromBuiltIds,
   cityBuildingEntriesFromBuiltIds,
-  mnoznikHandelPieniadzForCivByDifficulty,
   civEconomyYieldMultipliers,
   type CityYieldContext,
   type BuildingRecord,
@@ -1219,21 +1218,8 @@ function computeView(city: City, map: GameMap, data: GameData): CityView | null 
     // cityYieldPerTurn tak samo jak silnik, więc musi być tym samym warunkiem.
     const maMennica = ownerHasMennica(city.ownerId) && (cfg.getOwnerHasZlotoAccess?.(city.ownerId) ?? true);
     const civKey = cfg.getCivKey?.(city.ownerId);
-    // Efekt 1 SCALONY (2026-07-25) + pytanie 69 (2026-07-25): mnoznik cywilizacyjny
-    // (civs.json mnoznikHandelPieniadz) SKALOWANY TRUDNOSCIA (+0,5 easy / -0,5 hard).
-    // ZASTĘPUJE dawna plaska regule "2/1.5/1 dla wszystkich" -- ta zostaje TYLKO
-    // jako fallbackScaled (params.mennicaMnoznikPoWalucie, juz per-trudnosc) dla
-    // cywilizacji bez wpisu w civs.json. Musi być IDENTYCZNE ze silnikiem tury
-    // (resolveWalutaMnoznikOverride w turn-economy.ts) — inaczej panel znów
-    // rozjeżdża się z realnym dochodem (rozjazd wykryty i naprawiony 2026-07-25).
-    // bramka maMennica&&walutaOdkryta w cityYieldPerTurn i tak decyduje CZY ten
-    // mnoznik w ogole zadziala, wiec ustawienie go tutaj nie omija Mennicy.
-    const walutaMnoznikOverride = walutaOdkryta && civKey
-      ? mnoznikHandelPieniadzForCivByDifficulty(civKey, cfg.data?.civs, cfg.difficulty ?? 'normal', params.mennicaMnoznikPoWalucie)
-      : undefined;
     const { handel: civHandelMult, nauka: civNaukaMult } =
       civEconomyYieldMultipliers(cfg.getCivBonusy?.(city.ownerId) ?? []);
-    const tradeIncome = cfg.getTradeIncomeByCity?.(city.id);
     const base: CityYieldContext = {
       wojskoZuzycieZywnosci: 0, strataFraction: 0,
       maMlyn: built.includes('mlyn'),
@@ -1246,11 +1232,8 @@ function computeView(city: City, map: GameMap, data: GameData): CityView | null 
       // (mnoznik TYLKO na strumien Pieniadza) zostalo usuniete 2026-07-25.
       maMennica,
       walutaOdkryta,
-      walutaMnoznikOverride,
       civHandelMult,
       civNaukaMult,
-      dochodTrasHandlowych: tradeIncome?.total ?? 0,
-      dochodTrasMorskich: tradeIncome?.maritime ?? 0,
       // Zadanie 2 (2026-07-23): Garncarnia +Zywnosc% LOKALNIE -- liczba sztuk w TYM miescie.
       liczbaGarncarni: built.filter(id => id === 'garncarnia').length,
     };
@@ -1287,7 +1270,13 @@ function computeView(city: City, map: GameMap, data: GameData): CityView | null 
     const allCities = cfg.getCities?.() ?? [];
     const spichlerzDrain = paySpichlerzDrainForCity(allCities, city.ownerId, built, true);
     const spichlerzState = resolveSpichlerzCityBonusState(built, spichlerzDrain);
-    const kosztRacji = computeCityRationCost(city.population, poziomRacji, rationParams, spichlerzState);
+    const kosztRacji = computeCityRationCost(
+      city.population,
+      poziomRacji,
+      rationParams,
+      spichlerzState,
+      cfg.getEpoch?.(city.ownerId) ?? 1,
+    );
     const bilansLokalny = zywnoscBrutto - kosztRacji;
     const { state: ordState } = resolveOrderState(city, data);
     const ws = city.wealthState ?? freshWealthState();
@@ -10996,13 +10985,7 @@ function buildHandelDetailCard(
   const mennicaAktywna = maMennica && walutaOdkryta;
   // Mennica fizycznie stoi + Waluta odkryta, ale mnoznik SPI bo brak zlota TERAZ.
   const mennicaSpiZBrakuZlota = maMennicaBudynek && walutaOdkryta && !maDostepDoZlota;
-  // Pytanie 69 (2026-07-25): tekst pokazuje mnoznik CYWILIZACYJNY skalowany
-  // trudnoscia (ten sam co realnie liczy silnik), nie plaski params.mennicaMnoznikPoWalucie.
-  const civKeyForMennicaTxt = cfg.getCivKey?.(city.ownerId);
-  const mennicaMnoznikVal = params
-    ? mnoznikHandelPieniadzForCivByDifficulty(civKeyForMennicaTxt, cfg.data?.civs, cfg.difficulty ?? 'normal', params.mennicaMnoznikPoWalucie)
-    : undefined;
-  const mennicaMnoznikTxt = mennicaMnoznikVal !== undefined ? `×${mennicaMnoznikVal}` : '×?';
+  const mennicaMnoznikTxt = params ? `×${params.mennicaMnoznikPoWalucie}` : '×?';
   const est = estimateHandelChips(view, split);
   // Decyzje 65B/66B: etykieta widoczna dla gracza (Danina domyslnie, Podatek gdy
   // Waluta+Mennica W STOLICY -- scislejsze niz `mennicaAktywna` powyzej, ktore
@@ -11076,8 +11059,8 @@ function buildHandelDetailCard(
   }
 
   appendDetailFormula(card, `handelBrutto = Σ ${daninaLblGen} pól`
-    + (maTargowisko ? ' × (1 + bonus Targowiska)' : '')
     + (aktywneTrasyCount > 0 ? ' + premia tras handlowych (z budynkiem)' : ''));
+  if (maTargowisko) appendDetailFormula(card, 'Targowisko: premia procentowa zwiększa dochód ze szlaków; te wpływy trafiają do skarbca osobno, poza podatkiem miejskim.');
   appendDetailFormula(card, `strataKorupcji = handelBrutto × ${HANDEL_KORUPCJA_PCT_PLACEHOLDER}% (dziś: stały %)`);
   appendDetailFormula(card, 'handelNetto = handelBrutto − strataKorupcji' + (
     mennicaAktywna
@@ -11092,15 +11075,15 @@ function buildHandelDetailCard(
 
   appendDetailAlgo(card, `Algorytm podziału ${daninaLblGen} (cityYieldPerTurn)`, [
     `Zbierz ${daninaLblAcc} ze wszystkich obrabianych pól + centrum miasta.`,
-    maTargowisko ? 'Targowisko zwiększa handelBrutto o bonus procentowy.' : 'Bez Targowiska — tylko plony z terenu.',
+    maTargowisko ? 'Targowisko zwiększa dochód ze szlaków; przychód ten trafia w całości do skarbca poza podatkiem miejskim.' : 'Bez Targowiska — szlaki nie otrzymują premii Targowiska.',
     aktywneTrasyCount > 0
       ? `Trasy handlowe z budynkiem: +${Math.round(premiaTrasHandlowych)} do handelBrutto (${aktywneTrasyCount} aktywnych — szczegóły szlaków i partnerów w panelu Handel, żeton paska zasobów).`
       : 'Bez aktywnych tras handlowych z budynkiem — brak premii do handelBrutto.',
     `Odejmij korupcję (dziś: stały ${HANDEL_KORUPCJA_PCT_PLACEHOLDER}% brutto; docelowo: dystans, miasta, cap) → handelNetto.`,
-    'Waluta + Mennica RAZEM (decyzja 2026-07-25) mnożą całe handelNetto — Skarb, Naukę i ' + HANDEL_ZAMOZNOSC_LABEL + ' równocześnie. Sam tech Waluty już NIE wystarcza.',
+    `Jeśli bramka Mennica + Waluta + dostęp do Złota jest aktywna, po korupcji mnożnik ${mennicaMnoznikTxt} zwiększa lokalny podatek miejski przed podziałem suwakami; szlaki handlowe są rozliczane osobno i nie podlegają temu mnożnikowi.`,
     `Podziel handelNetto suwakami: Skarb / Nauka / ${HANDEL_ZAMOZNOSC_LABEL} (suma 100%).`,
     mennicaAktywna
-      ? `Mennica + Waluta razem mnożą całe ${daninaLbl} netto ${mennicaMnoznikTxt} (Skarb, Nauka i ${HANDEL_ZAMOZNOSC_LABEL} rosną razem).`
+      ? `Mennica + Waluta mnożą lokalny podatek ${daninaLbl} ${mennicaMnoznikTxt} przed podziałem suwakami; wpływy ze szlaków pozostają osobne.`
       : mennicaSpiZBrakuZlota
         ? `Mennica zbudowana i Waluta odkryta, ale mnożnik ŚPI: brak Złota w magazynie państwa — wraca sam po uzupełnieniu zapasu.`
         : maMennicaBudynek
@@ -11108,7 +11091,7 @@ function buildHandelDetailCard(
           : `Bez Mennicy — ${daninaLbl} netto bez mnożnika, niezależnie od tego czy Waluta jest odkryta.`,
     maBiblioteka ? `Biblioteka dodaje % bonusu do Nauki (łącznie z Nauką z ${daninaLblGen}).` : `Nauka = wyłącznie udział z ${daninaLblGen} + budynki.`,
     `${HANDEL_ZAMOZNOSC_LABEL} nie trafia do skarbca — idzie do puli zamożności miasta.`,
-    'Na końcu: mnożnik W mnoży cały pieniądz miasta (Skarb + budynki + Targowisko).',
+    'Wealth mnoży pieniądz z lokalnego podatku po podziale. Dochód ze szlaków trafia osobno do skarbca i omija Wealth.',
   ]);
 
   appendDetailAlgo(card, 'Suwak UI (adjustHandelSplit)', [

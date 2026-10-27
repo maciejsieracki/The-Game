@@ -111,7 +111,7 @@ export interface FilePlaylist {
    * ui-params.json). No-op, jeśli już gra albo brak plików (jak start()).
    */
   startWithFadeIn(fadeMs: number): void;
-  stop(): void;
+  stop(onStopped?: () => void): void;
   setVolume(v: number): void;
   isPlaying(): boolean;
 }
@@ -443,7 +443,7 @@ function createPlaylist(
    *  zwalnia zasoby OBU elementów A/B. Pozycja w playliście ZOSTAJE —
    *  kolejny start() wraca do tego samego utworu z zapamiętaną liczbą
    *  pozostałych powtórzeń. */
-  function stop(): void {
+  function stop(onStopped?: () => void): void {
     playing = false;
     clearMonitor();
     clearCrossfadeTimer();
@@ -452,7 +452,7 @@ function createPlaylist(
     clearStartFade();
     const a = els[0];
     const b = els[1];
-    if (!a && !b) return; // nigdy nie odtwarzano / już zwolnione
+    if (!a && !b) { onStopped?.(); return; } // nigdy nie odtwarzano / już zwolnione
     const startVolA = a ? a.volume : 0;
     const startVolB = b ? b.volume : 0;
     const t0 = performance.now();
@@ -465,6 +465,7 @@ function createPlaylist(
         clearStopFade();
         releaseEl(0);
         releaseEl(1);
+        onStopped?.();
       }
     }, RAMP_STEP_MS);
   }

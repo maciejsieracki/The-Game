@@ -257,6 +257,12 @@ import {
 } from './game/empire-city-defaults';
 import { applyCityFoundingToHex, cityKeepsImprovement } from './game/city-hex-clear';
 import {
+  executeManualWorkTaxConversion,
+  ownerCanConvertWorkToTax,
+  restorePendingWorkTax,
+  serializePendingWorkTax,
+} from './game/work-tax';
+import {
   canUnitOccupyCityHex, addForeignCityBlocks,
 } from './game/city-hex-movement';
 import { executeAiCityMove } from './game/ai-city-capture-executor';
@@ -880,7 +886,8 @@ import { advanceProduction, rushProduction, rushCost, populationCostOf, UNIT_POP
   buildingLevelForEpoch, buildingEffectAtLevel, frontItem, etaTurns, unitNacjaForCivKey, applyCompletedBuildingIds,
   buildingUnlockFlagFor, buildingTypeQueued, insertAtFront, filterQueue, sanitizeBuildQueue,
   unitRecruitmentCapacityPerTurn,
-  type CityProduction, type AvailabilityContext, unitStockShortfallLabel } from './game/production';
+  type CityProduction, type AvailabilityContext, unitStockShortfallLabel, epochNumber,
+  newestAvailableSameTypeUnit } from './game/production';
 import { buildReplaceAvailabilityCtx } from './game/unit-replace-context';
 import { daninaLabel as resolveDaninaLabel, mennicaWStolicy } from './game/danina-nazwa';
 import {
@@ -3295,26 +3302,26 @@ async function boot(): Promise<void> {
      */
     function empireTerritoryResourceRatesForOwner(ownerId: number): Partial<Record<string, number>> {
       const territoryNodes = buildAllTerritoryNodes();
+      const ownerCities = cities.filter(c => c.ownerId === ownerId);
       const byCity = computeTerritoryResourceYieldByCity(
-        cities, map, territoryNodes, empireEpochForOwner,
+        ownerCities, map, territoryNodes, empireEpochForOwner,
       );
       // R-WEB-TURN-SLOWDOWN-Q2 (P4): obrabiane pola liczone WYŁĄCZNIE dla miast tego
       // ownera — wcześniej dla WSZYSTKICH miast mapy (pętla niżej i tak bierze tylko
       // miasta `ownerId`), co rosło z liczbą miast AI i obciążało każde `updateHud`
       // (m.in. otwarcie/zamknięcie panelu miasta). Wynik per miasto zależy tylko od
-      // samego miasta, `territoryNodes` (nadal wszystkie miasta) i mapy sporów z
-      // rodzeństwem — tę liczymy jak dotąd z PEŁNEJ listy `cities` — więc wartości
-      // dla miast ownera są identyczne. / EN: compute worked-tile yields only for this
-      // owner's cities; per-city result unchanged (same nodes + full sibling map).
+      // samego miasta, pełnych `territoryNodes` i miast tego samego właściciela w mapie
+      // sporów — miasta innych właścicieli nie wpływają na żaden z tych wyników.
+      // / EN: results depend only on the city, full territory nodes, and same-owner
+      // sibling cities; cities of other owners cannot change these rows.
       const workedByCity = computeWorkedMagazynYieldsByCity(
-        cities.filter(c => c.ownerId === ownerId),
+        ownerCities,
         map,
         territoryNodes,
-        computeLostToNearerSiblingByCity(cities, map),
+        computeLostToNearerSiblingByCity(ownerCities, map),
       );
       const out: Record<string, number> = {};
-      for (const c of cities) {
-        if (c.ownerId !== ownerId) continue;
+      for (const c of ownerCities) {
         const rec = byCity.get(c.id);
         if (rec) {
           for (const [key, amount] of Object.entries(rec)) {
@@ -3858,6 +3865,13 @@ async function boot(): Promise<void> {
       return sumWonderTradeRouteBonusForOwner(
         wonderIdsOwnedBy(ownerId), empireEpochForOwner(ownerId), medium,
       );
+    }
+
+    /** Targowisko boosts this city's route proceeds; its former gross-tax bonus is gone. */
+    function targowiskoTradeRouteBonusForCity(cityId: string): number {
+      return cityBuilt.get(cityId)?.includes('targowisko')
+        ? buildEconParams(data, _menuDifficulty).budynekTargowiskoBonusHandlu
+        : 0;
     }
 
     /** Mapa ownerId -> suma bonusy.miasto, do previewCityEconomy/advanceCityEconomy. */
@@ -6584,34 +6598,27 @@ async function boot(): Promise<void> {
      *  unia builtBuildingIds ze wszystkich miast gracza -> built.has('koszary') /
      *  cityHasPiecHutniczy() zwraca true, gdy KTÓREKOLWIEK miasto spełnia warunek).
      *  Cienki wrapper nad buildReplaceAvailabilityCtx — patrz replaceAvailabilityCtxForCity. */
-    function replaceAvailabilityCtxEmpireWide(): AvailabilityContext {
+    function replaceAvailabilityCtxEmpireWide(ownerId = 0): AvailabilityContext {
       const builtUnion = new Set<string>();
       for (const c of cities) {
-        if (c.ownerId !== 0) continue;
+        if (c.ownerId !== ownerId) continue;
         for (const id of cityBuilt.get(c.id) ?? []) builtUnion.add(id);
       }
-      const ownImprovements = placedImprovementsForOwner(0);
+      const ownImprovements = placedImprovementsForOwner(ownerId);
       return buildReplaceAvailabilityCtx({
-        epoch: empireEpochForOwner(0),
+        epoch: empireEpochForOwner(ownerId),
         builtBuildingIds: Array.from(builtUnion),
-        civBonusy: civBonusyForOwnerId(0),
-        civKey: civKeyForOwnerId(0),
-        civUnitNacja: unitNacjaForCivKey(civKeyForOwnerId(0)),
-        placedImprovements: placedImprovementsWithTradeGrants(0, ownImprovements),
-        hasKopalniaNaZlozuZelaza: hasKopalniaNaZlozuZelazaOrTradeGrant(0, ownImprovements),
-        // ta funkcja jest empire-wide wyłącznie dla gracza (ownerId 0, patrz literały
-        // wyżej w tej samej funkcji), więc suma surowców też liczona dla ownerId 0.
-        empireResourceStock: citySurowceSumForOwner(0),
-        // audyt #11: jak wyżej (replaceAvailabilityCtxForCity) — całe terytorium gracza.
-        aliveUnitTypeNames: new Set(units.filter(x => x.ownerId === 0).map(x => x.typeId)),
+        civBonusy: civBonusyForOwnerId(ownerId),
+        civKey: civKeyForOwnerId(ownerId),
+        civUnitNacja: unitNacjaForCivKey(civKeyForOwnerId(ownerId)),
+        placedImprovements: placedImprovementsWithTradeGrants(ownerId, ownImprovements),
+        hasKopalniaNaZlozuZelaza: hasKopalniaNaZlozuZelazaOrTradeGrant(ownerId, ownImprovements),
+        empireResourceStock: citySurowceSumForOwner(ownerId),
+        aliveUnitTypeNames: new Set(units.filter(x => x.ownerId === ownerId).map(x => x.typeId)),
         kosztJednostekPace: player.kosztJednostekPace ?? 'niski',
-        ownerId: 0,
+        ownerId,
         difficulty: _menuDifficulty,
-        // R-BUDYNEK-PORTOWY-MIASTA-NADBRZEZNE (Maciej 2026-08-09): bramka Naval "OR po
-        // wszystkich miastach gracza" — jednostka w polu (bez konkretnego garnizonu) może
-        // zastąpić się jednostką morską, gdy KTÓREKOLWIEK miasto gracza ma dostęp do wody
-        // (ten sam wzorzec unii co builtBuildingIds wyżej).
-        cityHasCoastOrRiver: cities.some(c => c.ownerId === 0 && cityHasCoastOrRiverAccess(c)),
+        cityHasCoastOrRiver: cities.some(c => c.ownerId === ownerId && cityHasCoastOrRiverAccess(c)),
       });
     }
 
@@ -6620,7 +6627,7 @@ async function boot(): Promise<void> {
      *  pod jednostką) -> bramka "OR po wszystkich miastach gracza". */
     function unitReplaceCtx(u: RuntimeUnit): AvailabilityContext {
       const city = unitReplaceGarrisonCity(u);
-      return city ? replaceAvailabilityCtxForCity(city) : replaceAvailabilityCtxEmpireWide();
+      return city ? replaceAvailabilityCtxForCity(city) : replaceAvailabilityCtxEmpireWide(u.ownerId);
     }
 
     /** Lista zamienników do WYŚWIETLENIA w modalu Zastąp (R-WEB-RECRUIT-LIST-REGRESSION-Q1 r3):
@@ -6632,6 +6639,48 @@ async function boot(): Promise<void> {
         ...unitReplaceCtx(u),
         showStockGatedUnits: true,
       });
+    }
+
+    /** Upgrade AI units once per owner turn using the same current-availability gates and
+     * positive gold delta as the player's Replace action. Cross-Typ special substitutions
+     * are excluded because their role equivalence is not established. */
+    function upgradeAiUnitsForEra(ownerId: number): void {
+      const techs = Array.from(unlockedTechSetForOwner(ownerId));
+      for (const u of units) {
+        if (u.ownerId !== ownerId || u.replaceUsedThisTurn) continue;
+        const oldDef = lookupUnitDef(u.typeId);
+        const oldType = (oldDef?.Typ ?? '').toString().trim();
+        if (!oldDef || !oldType) continue;
+        const oldEra = epochNumber(oldDef.Epoka);
+        const candidates = availableReplacementsFor(u.typeId, data, techs, unitReplaceCtx(u));
+        const target = newestAvailableSameTypeUnit(u.typeId, candidates.map(it => it.id), data.units);
+        if (!target || epochNumber(target.Epoka) <= oldEra) continue;
+        const oldCost = unitProductionItem(
+          u.typeId, data, civBonusyForOwnerId(ownerId), player.kosztJednostekPace ?? 'niski',
+          ownerId, effectiveGameDifficultyForOwner(ownerId),
+        )?.koszt ?? 0;
+        const newCost = unitProductionItem(
+          target.Jednostka, data, civBonusyForOwnerId(ownerId), player.kosztJednostekPace ?? 'niski',
+          ownerId, effectiveGameDifficultyForOwner(ownerId),
+        )?.koszt ?? 0;
+        const surcharge = Math.max(0, newCost - oldCost);
+        const treasury = ownerTreasury(ownerId);
+        if (treasury < surcharge) continue;
+        const oldMaxHp = effectiveRuntimeUnitMaxHp(u, oldDef);
+        const newMaxHp = effectiveMaxHp(
+          unitHealth(target), unitParametryBonusFrac(u), veteranCombatBonusFrac(u),
+        );
+        const oldHp = u.hp ?? oldMaxHp;
+        u.typeId = target.Jednostka;
+        u.category = categoryOf(
+          target.Jednostka, target['Rola (linia)'] ?? '', target['Super-jednostka'] === 'TAK', target.Typ,
+        );
+        u.hp = Math.max(1, Math.round(newMaxHp * (oldMaxHp > 0 ? oldHp / oldMaxHp : 1)));
+        u.hpMax = newMaxHp;
+        u.ruchLeft = 0;
+        u.replaceUsedThisTurn = true;
+        if (surcharge > 0) setOwnerTreasury(ownerId, treasury - surcharge);
+      }
     }
 
     /** Koszt rekrutacji Pieniądzem jednostki `typeId` (dla dopłaty = nowa - stara). */
@@ -11894,7 +11943,14 @@ async function boot(): Promise<void> {
      *  AMBIENCE w audio/muzyka-antyczna.ts). Odgłosy jednostek (marsz) nie
      *  wymagają jawnego startu tutaj (reaktywne, patrz komentarz wyżej) — tylko
      *  reset przełącznika WŁ., jak dla muzyki/ambience. */
+    let introStartTimer: number | null = null;
+    let gameMusicStartGeneration = 0;
     function startGameMusic(mood: 'mapa' | 'bitwa' = 'mapa'): void {
+      const startGeneration = ++gameMusicStartGeneration;
+      if (introStartTimer !== null) {
+        window.clearTimeout(introStartTimer);
+        introStartTimer = null;
+      }
       // C-AUD-Q5=A: nowa rozgrywka zawsze startuje z muzyką WŁ. — wyciszenie
       // dokonane w POPRZEDNIEJ rozgrywce (przełącznik w menu pauzy) jest
       // ulotne i nie ma tu żadnego znaczenia (patrz audio/musicPrefs.ts).
@@ -11905,9 +11961,13 @@ async function boot(): Promise<void> {
       ambienceEnabled = true;
       // Ten sam wzorzec dla odgłosów jednostek (marsz) — patrz audio/sfxPrefs.ts.
       sfxUnitsEnabled = true;
-      stopIntroMusic();
-      setEra(player.era);
-      if (musicEnabled) startMusic(mood);
+      // The intro's stop has a short fade and only releases its <audio> elements
+      // when that fade completes. Wait for release before starting game music.
+      stopIntroMusic(() => {
+        if (startGeneration !== gameMusicStartGeneration) return;
+        setEra(player.era);
+        if (musicEnabled) startMusic(mood);
+      });
       if (ambienceEnabled) startAmbience();
     }
 
@@ -11954,7 +12014,10 @@ async function boot(): Promise<void> {
         };
         const delayMs = UI_PARAMS.menu.muzyka_opoznienie_startu_ms ?? 0;
         if (delayMs > 0) {
-          setTimeout(startFirst, delayMs);
+          introStartTimer = window.setTimeout(() => {
+            introStartTimer = null;
+            startFirst();
+          }, delayMs);
         } else {
           startFirst();
         }
@@ -11966,6 +12029,8 @@ async function boot(): Promise<void> {
     // P3a: Last-turn totals for HUD display (Praca, Kultura from economy; Porzadek from order)
     /** Pula Pracy gracza (suma doPuli z miast — plaster D2=A). */
     let playerPracaPool: number = 0;
+    /** One-shot Work tax credits waiting for the next ordinary city tax tick. */
+    const pendingManualWorkTaxByOwner = new Map<number, number>();
     let budowaListaBiblioteka: BudowaListaBiblioteka = [...EMPTY_BUDOWA_LISTA_BIBLIOTEKA];
     let _lastPraca: number = 0;
     /** ZADANIE 1 (Maciej 2026-07-23): Praca/turę odjęta z playerPracaPool za utrzymanie
@@ -16986,14 +17051,18 @@ async function boot(): Promise<void> {
           // generalizacji `r.ownerId` bywa cywilizacją obcą (gracz jako strona `to`).
           const bonus = wonderTradeRouteBonusForOwner(0, r.medium);
           const base = tradeRouteIncomeForRoute(r, incomeParams);
-          const perSide = bonus === 0 ? base : Math.floor(base * (1 + bonus));
+          const myRouteBonus = targowiskoTradeRouteBonusForCity(side.myCityId);
+          const perSideBase = bonus === 0 ? base : Math.floor(base * (1 + bonus));
+          const perSide = myRouteBonus === 0 ? perSideBase : Math.floor(perSideBase * (1 + myRouteBonus));
           // R2-2 / R2-K5: silnik (`computeTradeRouteIncomeByCity`, Q8=B „obie strony
           // zarabiają") kredytuje PEŁNĄ kwotę OBU miastom trasy. Dla trasy WEWNĘTRZNEJ
           // oba te miasta są gracza, więc do skarbca wpływa 2× kwota strony — jeden
           // wiersz musi więc pokazać 2×, inaczej suma panelu (`totalIncome`, hero i
           // wiersz SUMA) rozjechałaby się ze skarbcem i z chipem HUD. Ta sama, jedna
           // decyzja co przy `handelIncome` w chipie (patrz komentarz tam).
-          const income = bothPlayer ? perSide * 2 : perSide;
+          const partnerRouteBonus = bothPlayer ? targowiskoTradeRouteBonusForCity(side.partnerCityId) : 0;
+          const partnerPerSide = partnerRouteBonus === 0 ? perSideBase : Math.floor(perSideBase * (1 + partnerRouteBonus));
+          const income = bothPlayer ? perSide + partnerPerSide : perSide;
           // T6 (R-HANDEL-SZLAKI-PRZEBUDOWA-Q1): drugi składnik dochodu trasy — premia 5%
           // za budynek handlowy (T4, ECHO Q3 Wariant C). Liczona WYŁĄCZNIE przez
           // `tradeRouteBuildingBonusForRoute()` z trade-routes.ts, czyli tę SAMĄ funkcję,
@@ -18949,7 +19018,7 @@ async function boot(): Promise<void> {
         _menuDifficulty,
       );
       const routeIncomePreview = computeTradeRouteIncomeByCityBreakdown(
-        tradeRoutes, tradeIncomeParamsPreview, wonderTradeRouteBonusForOwner,
+        tradeRoutes, tradeIncomeParamsPreview, wonderTradeRouteBonusForOwner, targowiskoTradeRouteBonusForCity,
       );
       const maritimeTradeIncomeByCityPreview = routeIncomePreview.maritimeByCity;
       const seaTradeBonusIncomeByCityPreview = computeSeaTradeBonusIncomeByCity(
@@ -18964,6 +19033,14 @@ async function boot(): Promise<void> {
           cityIdSeaPreview,
           (maritimeTradeIncomeByCityPreview.get(cityIdSeaPreview) ?? 0) + bonusSeaPreview,
         );
+      }
+      const manualWorkTaxPreviewByCity = new Map<string, number>();
+      for (const [ownerId, tax] of pendingManualWorkTaxByOwner) {
+        const ownerCities = playerCities.filter(city => city.ownerId === ownerId);
+        if (ownerCities.length === 0 || tax <= 0) continue;
+        const capitalId = capitalCityIdForOwner(ownerId);
+        const target = ownerCities.find(city => city.id === capitalId) ?? ownerCities[0]!;
+        manualWorkTaxPreviewByCity.set(target.id, (manualWorkTaxPreviewByCity.get(target.id) ?? 0) + tax);
       }
       const preview = previewCityEconomy(
         playerCities,
@@ -18990,6 +19067,7 @@ async function boot(): Promise<void> {
         ownerDefaultPodzialHandlu,
         ownerDefaultPodzialPracy,
         maritimeTradeIncomeByCityPreview,
+        manualWorkTaxPreviewByCity,
       );
       const playerEcon = sumEconomyForPlayerCities(preview, cities);
       _lastPieniadzRate = playerEcon.pieniadz;
@@ -19237,7 +19315,16 @@ async function boot(): Promise<void> {
         const bonus = wonderTradeRouteBonusForOwner(0, r.medium);
         const base = tradeRouteIncomeForRoute(r, handelIncomeParams);
         const perSide = bonus === 0 ? base : Math.floor(base * (1 + bonus));
-        handelIncome += fromPlayer && toPlayer ? perSide * 2 : perSide;
+        const myCityId = fromPlayer ? r.fromCityId : r.toCityId;
+        const myTargowiskoBonus = targowiskoTradeRouteBonusForCity(myCityId);
+        const myPerSide = myTargowiskoBonus === 0 ? perSide : Math.floor(perSide * (1 + myTargowiskoBonus));
+        let routeIncome = myPerSide;
+        if (fromPlayer && toPlayer) {
+          const partnerId = myCityId === r.fromCityId ? r.toCityId : r.fromCityId;
+          const partnerBonus = targowiskoTradeRouteBonusForCity(partnerId);
+          routeIncome += partnerBonus === 0 ? perSide : Math.floor(perSide * (1 + partnerBonus));
+        }
+        handelIncome += routeIncome;
         handelRouteCount++;
       }
       const mpMults = civManpowerMultsForOwner(0);
@@ -23737,6 +23824,31 @@ async function boot(): Promise<void> {
       // wyżej. Broadcast dla Żywność bo poziomRacji jest architekturą "zawsze wypełnione +
       // sync", NIE resolver-przy-odczycie jak Praca/Handel -- patrz empire-city-defaults.ts.
       configureEmpireGlobalDefaults({
+        canConvertOwnerWorkToTax: (ownerId) => ownerCanConvertWorkToTax(ownerId,
+          isHuman(ownerId), cities, cityBuilt),
+        getOwnerWorkTaxRate: (_ownerId) => {
+          const rawParams = data.econParams as unknown as { budynki?: Record<string, Record<string, number>> };
+          const rate = rawParams.budynki?.targowisko_praca_na_podatek_kurs?.[_menuDifficulty];
+          return typeof rate === 'number' && Number.isFinite(rate) && rate >= 0 ? rate : 1;
+        },
+        onConvertOwnerWorkToTax: (ownerId, requested) => {
+          // The action is available only to a human owner with a Market. Clamp again
+          // against the live pool because the panel amount is only a preview.
+          const enabled = ownerCanConvertWorkToTax(ownerId, isHuman(ownerId), cities, cityBuilt);
+          const rawParams = data.econParams as unknown as { budynki?: Record<string, Record<string, number>> };
+          const configuredRate = rawParams.budynki?.targowisko_praca_na_podatek_kurs?.[_menuDifficulty];
+          const rate = typeof configuredRate === 'number' && Number.isFinite(configuredRate) && configuredRate >= 0
+            ? configuredRate : 1;
+          const conversion = executeManualWorkTaxConversion(ownerId, requested, rate, enabled, {
+            getWorkPool: ownerPracaPool,
+            setWorkPool: setOwnerPracaPool,
+            queueTax: (id, tax) => pendingManualWorkTaxByOwner.set(id,
+              (pendingManualWorkTaxByOwner.get(id) ?? 0) + tax),
+          });
+          if (conversion.workSpent < 1) return 0;
+          updateHud();
+          return conversion.workSpent;
+        },
         getOwnerDefaultPodzialPracy: (ownerId) => ownerDefaultPodzialPracy.get(ownerId) ?? null,
         onOwnerDefaultPodzialPracyChange: (ownerId, split) => {
           if (!isMe(ownerId)) return;
@@ -26034,7 +26146,7 @@ async function boot(): Promise<void> {
           _menuDifficulty,
         );
         const routeIncome = computeTradeRouteIncomeByCityBreakdown(
-          tradeRoutes, params, wonderTradeRouteBonusForOwner,
+          tradeRoutes, params, wonderTradeRouteBonusForOwner, targowiskoTradeRouteBonusForCity,
         );
         const seaBonus = computeSeaTradeBonusIncomeByCity(computeSeaTradeRouteCountByCity(tradeRoutes));
         for (const [id, amount] of seaBonus) {
@@ -31754,6 +31866,7 @@ async function boot(): Promise<void> {
           ulepszeniaEmpireByOwner: Array.from(ulepszeniaEmpireByOwner.entries()),
           mennicaZlotoGrace: serializeMennicaZlotoGrace(mennicaZlotoGraceState),
           playerPracaPool,
+          pendingManualWorkTaxByOwner: serializePendingWorkTax(pendingManualWorkTaxByOwner),
           budowaListaBiblioteka: budowaListaBiblioteka.map(s => ({
             id: s.id,
             nazwa: s.nazwa,
@@ -32741,7 +32854,7 @@ async function boot(): Promise<void> {
           // CUDA-HANDEL-01: 3. argument = bonus % "handel_procent" cudów, per owner/medium
           // trasy (0 gdy brak cudu) — ownerId-agnostyczny, patrz wonderTradeRouteBonusForOwner.
           const routeIncome = computeTradeRouteIncomeByCityBreakdown(
-            tradeRoutes, tradeIncomeParams, wonderTradeRouteBonusForOwner,
+            tradeRoutes, tradeIncomeParams, wonderTradeRouteBonusForOwner, targowiskoTradeRouteBonusForCity,
           );
           const tradeIncomeByCity = routeIncome.totalByCity;
           const maritimeTradeIncomeByCity = routeIncome.maritimeByCity;
@@ -32759,6 +32872,18 @@ async function boot(): Promise<void> {
               cityIdSea,
               (maritimeTradeIncomeByCity.get(cityIdSea) ?? 0) + bonusSea,
             );
+          }
+
+          // Manual Work-to-tax selections are injected into the normal city tax
+          // pipeline once, so Market/corruption/currency modifiers and each city's
+          // Skarb/Nauka/Zamożność allocation apply exactly as they do to trade.
+          const manualWorkTaxByCity = new Map<string, number>();
+          for (const [ownerId, tax] of pendingManualWorkTaxByOwner) {
+            const ownerCities = cities.filter(city => city.ownerId === ownerId);
+            if (ownerCities.length === 0 || tax <= 0) continue;
+            const capitalId = capitalCityIdForOwner(ownerId);
+            const target = ownerCities.find(city => city.id === capitalId) ?? ownerCities[0]!;
+            manualWorkTaxByCity.set(target.id, (manualWorkTaxByCity.get(target.id) ?? 0) + tax);
           }
 
           const mapOwnerIds = ownerIdsOnMap();
@@ -32802,7 +32927,9 @@ async function boot(): Promise<void> {
             },
             ownerDefaultPodzialPracy,
             maritimeTradeIncomeByCity,
+            manualWorkTaxByCity,
           );
+          pendingManualWorkTaxByOwner.clear();
           powerSnapshotsForTurn = buildPowerSnapshotsForTurn(econ);
           refreshObjectivePowerCache();
           lastCityKulturaTick.clear();
@@ -34991,6 +35118,7 @@ async function boot(): Promise<void> {
               await yieldTurnTransitionUi();
               const isCommandResume = oi === startOi && !!resumeCommands && resumeCmdIdx > 0;
               ensureAiOwnerStartEra(ownerId);
+              if (!isCommandResume) upgradeAiUnitsForEra(ownerId);
               // R-AI-KUP-JEDN: zeruj licznik zakupów-za-złoto TEGO ownera na starcie jego
               // tury -- NIE przy wznowieniu (isCommandResume) tej samej listy komend po
               // przerwie async (np. animacja bitwy), żeby nie odblokować drugiego zakupu
@@ -36496,6 +36624,12 @@ async function boot(): Promise<void> {
                   for (const ou of units) {
                     if (ou.id !== u.id) blockedKeys.add(keyOf(ou.q, ou.r));
                   }
+                  const friendlyStackDestination = cmd.allowFriendlyStack === true
+                    && units.some(ou => ou.id !== u.id && ou.ownerId === ownerId
+                      && ou.q === cmd.toQ && ou.r === cmd.toR)
+                    && !units.some(ou => ou.ownerId !== ownerId
+                      && ou.q === cmd.toQ && ou.r === cmd.toR);
+                  if (friendlyStackDestination) blockedKeys.delete(keyOf(cmd.toQ, cmd.toR));
                   const moveResult = executeAiCityMove({
                     command: cmd,
                     unit: u,
@@ -36531,6 +36665,11 @@ async function boot(): Promise<void> {
                   if (moveResult.moved) {
                     const path = moveResult.path;
                     const last = path[path.length - 1]!;
+                    if (friendlyStackDestination && last.q === cmd.toQ && last.r === cmd.toR) {
+                      const mergedStack = units.filter(x => x.ownerId === ownerId
+                        && x.q === last.q && x.r === last.r && x.inGarnizon !== true);
+                      if (mergedStack.length > 1) assignSharedStackGroupId(mergedStack);
+                    }
                     // P-BARBARZYNCY-USUWANIE-SEMANTYKA-Q1: symetria z ruchem gracza --
                     // `ownerId` tu to zawsze prawdziwa cywilizacja AI (1..N), nigdy
                     // barbarzyńcy (ci mają własną pętlę ruchu niżej, poza AICommand).
@@ -40765,6 +40904,10 @@ async function boot(): Promise<void> {
       );
       const savedPracaPool = saved.meta?.playerPracaPool as number | undefined;
       playerPracaPool = typeof savedPracaPool === 'number' ? savedPracaPool : 0;
+      pendingManualWorkTaxByOwner.clear();
+      for (const [ownerId, tax] of restorePendingWorkTax(saved.meta?.pendingManualWorkTaxByOwner)) {
+        pendingManualWorkTaxByOwner.set(ownerId, tax);
+      }
       budowaListaBiblioteka = loadBudowaListaBiblioteka(saved.meta);
       const playerCityCountOnLoad = cities.filter(c => c.ownerId === 0).length;
       const maxReasonablePracaPool = Math.max(50, playerCityCountOnLoad * 100);

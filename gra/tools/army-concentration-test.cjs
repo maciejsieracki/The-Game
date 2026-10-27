@@ -210,6 +210,7 @@ const testData = { units: [], buildings: [], terrainYields: { terrain_types: [] 
 
 function runTurns(myUnits, cities, map, nTurns) {
   const history = [];
+  history.friendlyStackMoves = 0;
   for (let t = 0; t < nTurns; t++) {
     for (const u of myUnits) u.ruchLeft = u.ruch;
     const allUnits = [...myUnits, ...(cities.enemyUnits ?? [])];
@@ -218,6 +219,9 @@ function runTurns(myUnits, cities, map, nTurns) {
       if (cmd.type !== 'move') continue;
       const u = myUnits.find(x => x.id === cmd.unitId);
       if (u === undefined) continue; // enemy/other-owner unit, not moved by this harness
+      const occupant = myUnits.find(x => x.id !== u.id && x.q === cmd.toQ && x.r === cmd.toR);
+      if (occupant && cmd.allowFriendlyStack !== true) continue;
+      if (occupant) history.friendlyStackMoves++;
       u.q = cmd.toQ;
       u.r = cmd.toR;
     }
@@ -250,6 +254,8 @@ function runTurns(myUnits, cities, map, nTurns) {
     `scenario 1, żywa symulacja 16 tur: max klaster ROSNĄCY od tury 1 (${history[0]}) do tury 16 (${history[history.length - 1]}) — jednostki realnie się zbliżają/łączą`);
   ok(history[history.length - 1] >= 6,
     `scenario 1: po 16 turach WSZYSTKIE 6 jednostek trafia do jednego klastra (dostano max=${history[history.length - 1]}) — trzy oddalone grupy łączą się w jedną dużą armię, zgodnie z GOAL pkt 1 ("brak zagrożenia -> dąż do JEDNEJ dużej armii")`);
+  ok(history.friendlyStackMoves > 0,
+    `scenario 1: occupancy-aware simulation accepts ${history.friendlyStackMoves} explicitly marked concentration moves onto friendly occupied rally hexes — the plan can reach its occupied rally point instead of stopping adjacent`);
   let monotonic = true;
   for (let i = 1; i < history.length; i++) if (history[i] < history[i - 1]) monotonic = false;
   ok(monotonic, `scenario 1: max klaster nigdy nie MALEJE między turami (przebieg: ${history.join(',')}) — koncentracja nie rozprasza już zebranych jednostek`);

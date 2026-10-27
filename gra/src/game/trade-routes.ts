@@ -1615,9 +1615,9 @@ export function loadTradeRouteIncomeParams(
  * zależności cyklicznej i zachowanie trade-routes.ts jako pure logic bez wiedzy
  * o cudach). Zwraca sumę % bonusu "handel_procent" (addytywna kumulacja, patrz
  * wonders-data.ts) dla danego ownera i medium tej KONKRETNEJ trasy — liczony
- * OSOBNO dla każdej strony (fromCityId wg route.ownerId, toCityId wg
- * route.toOwnerId), bo obaj właściciele mogą mieć różne cuda. Domyślnie 0 (brak
- * bonusu) — zachowuje dokładnie dawne zachowanie dla wywołań bez 3. argumentu.
+ * osobno dla każdej strony. `targowiskoBonusForCity` then applies the city's
+ * difficulty-scaled Targowisko bonus to that endpoint's route proceeds. Both
+ * callbacks default to 0, preserving existing call behavior when omitted.
  */
 export interface TradeRouteIncomeByCityBreakdown {
   totalByCity: Map<string, number>;
@@ -1629,16 +1629,25 @@ export function computeTradeRouteIncomeByCityBreakdown(
   routes: readonly TradeRoute[],
   params: TradeRouteIncomeParams = DEFAULT_TRADE_ROUTE_INCOME_PARAMS,
   wonderTradeBonusForOwner: (ownerId: number, medium: TradeRouteMedium) => number = () => 0,
+  targowiskoBonusForCity: (cityId: string) => number = () => 0,
 ): TradeRouteIncomeByCityBreakdown {
   const totalByCity = new Map<string, number>();
   const maritimeByCity = new Map<string, number>();
   for (const route of routes) {
     if (route.status !== 'polaczony') continue;
     const routeIncome = tradeRouteIncomeForRoute(route, params);
-    const fromMult = 1 + wonderTradeBonusForOwner(route.ownerId, route.medium);
-    const toMult   = 1 + wonderTradeBonusForOwner(route.toOwnerId, route.medium);
-    const fromIncome = fromMult === 1 ? routeIncome : Math.floor(routeIncome * fromMult);
-    const toIncome   = toMult === 1 ? routeIncome : Math.floor(routeIncome * toMult);
+    const fromWonder = wonderTradeBonusForOwner(route.ownerId, route.medium);
+    const toWonder = wonderTradeBonusForOwner(route.toOwnerId, route.medium);
+    const fromAfterWonder = fromWonder === 0 ? routeIncome : Math.floor(routeIncome * (1 + fromWonder));
+    const toAfterWonder = toWonder === 0 ? routeIncome : Math.floor(routeIncome * (1 + toWonder));
+    const fromTargowisko = targowiskoBonusForCity(route.fromCityId);
+    const toTargowisko = targowiskoBonusForCity(route.toCityId);
+    const fromIncome = fromTargowisko === 0
+      ? fromAfterWonder
+      : Math.floor(fromAfterWonder * (1 + fromTargowisko));
+    const toIncome = toTargowisko === 0
+      ? toAfterWonder
+      : Math.floor(toAfterWonder * (1 + toTargowisko));
     totalByCity.set(route.fromCityId, (totalByCity.get(route.fromCityId) ?? 0) + fromIncome);
     totalByCity.set(route.toCityId,   (totalByCity.get(route.toCityId)   ?? 0) + toIncome);
     if (route.medium === 'morze') {
@@ -1653,8 +1662,9 @@ export function computeTradeRouteIncomeByCity(
   routes: readonly TradeRoute[],
   params: TradeRouteIncomeParams = DEFAULT_TRADE_ROUTE_INCOME_PARAMS,
   wonderTradeBonusForOwner: (ownerId: number, medium: TradeRouteMedium) => number = () => 0,
+  targowiskoBonusForCity: (cityId: string) => number = () => 0,
 ): Map<string, number> {
-  return computeTradeRouteIncomeByCityBreakdown(routes, params, wonderTradeBonusForOwner).totalByCity;
+  return computeTradeRouteIncomeByCityBreakdown(routes, params, wonderTradeBonusForOwner, targowiskoBonusForCity).totalByCity;
 }
 
 /**

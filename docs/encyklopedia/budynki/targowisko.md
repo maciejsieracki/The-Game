@@ -15,7 +15,7 @@
 
 ## Wiki‑S
 
-**Targowisko (Rynek)** — budynek (Pieniądz), epoka Kamień. Koszt od **25** pracy, utrzymanie **1** ¤/t. Technologia **Wymiana**. **Maks. 3 poziomy** (nazwy: Targowisko → Rynek → Giełda). Daje **Pieniądz na turę** — **nie** mnożnik handlu ani Daniny.
+**Targowisko (Rynek)** — budynek (Pieniądz), epoka Kamień. Koszt od **25** pracy, utrzymanie **1** ¤/t. Technologia **Wymiana**. **Maks. 3 poziomy** (nazwy: Targowisko → Rynek → Giełda). Daje Pieniądz na turę i zwiększa dochód ze szlaków handlowych; nie mnoży lokalnego podatku miejskiego.
 
 ---
 
@@ -30,7 +30,7 @@ Targowisko generuje **Pieniądz (¤) na turę** w mieście:
 | 2 (Rynek) | **+8** (+3) |
 | 3 (Giełda) | **+11** (+3) |
 
-**Brak mnożnika %** — dawny wpis „mnożnik handlu/Daniny" nie był czytany przez silnik i został usunięty z efektu (naprawa 2026-07-26). Planuj ekonomię po **stałym przyroście ¤**, nie po procencie handlu.
+Targowisko zwiększa raportowany dochód ze szlaków handlowych o **62% (łatwy), 50% (normalny) lub 38% (trudny)**. Premia dotyczy dochodu z tras, nie lokalnych plonów podatkowych. Dochód z tras trafia bezpośrednio do skarbca, poza suwakiem Handlu miasta. Planuj ekonomię również po **stałym przyroście ¤** budynku.
 
 ### Koszty
 - **Budowa poz. 1:** 25 pracy + 6× drewno
@@ -42,7 +42,7 @@ Targowisko generuje **Pieniądz (¤) na turę** w mieście:
 Wczesne miasto: Targowisko finansuje utrzymanie wojska i rush budowy. Awansuj do Rynek/Giełda, gdy masz nadwyżkę pracy — netto **+4/+7/+10 ¤** po utrzymaniu na poz. 1–3.
 
 ### Typowe błędy
-- Szukanie „% handlu" lub „mnożnika Daniny" — efekt to **tylko ¤/turę**.
+- Oczekiwanie premii do lokalnego podatku — procent Targowiska zwiększa dochód z tras handlowych.
 - Porównywanie z Portem — Port to handel morski, Targowisko to lokalny przychód miejski.
 
 **Powiązane:** Pieniądz · Danina miasta · Port handlowy

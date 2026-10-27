@@ -77,7 +77,7 @@ import {
 import { workedHexCoordsForCity } from './turn-economy';
 import { buildingStockCost, unitStockCost } from './building-stock-cost';
 import { CITY_BUILDING_PREREQ, cityBuildingPrereqMet } from './building-resource-gate';
-import { isBuildingSupersededByUpgrade } from './production';
+import { isBuildingSupersededByUpgrade, newestAvailableSameTypeUnit } from './production';
 import { unitRecruitUpkeepReserve } from './economy-upkeep';
 import type { AiTargetMemoryEntry } from './ai-fog';
 import {
@@ -104,6 +104,8 @@ export interface AICmdMove {
   toR: number;
   /** Cel miasta, który musi zostać ponownie wykryty przed przejęciem. */
   targetCityId?: string;
+  /** Concentration movement may finish on an occupied friendly field stack. */
+  allowFriendlyStack?: boolean;
 }
 
 /** Found a city at (q, r) via panel budowy (foundCityAt — bez osadnika). */
@@ -877,8 +879,12 @@ function firstStep(
   destQ: number,
   destR: number,
   units: RuntimeUnit[],
+  allowFriendlyDestination = false,
 ): { q: number; r: number } | null {
   const occ = occupiedExcluding(units, unit.id);
+  if (allowFriendlyDestination && units.some(u =>
+    u.ownerId === unit.ownerId && u.id !== unit.id && u.q === destQ && u.r === destR,
+  )) occ.delete(keyOf(destQ, destR));
   const path = computePath(unit, map, destQ, destR, occ);
   if (path.length === 0) return null;
   return farthestStepWithinBudget(path, unit.ruchLeft, map, undefined, occ) ?? path[0] ?? null;
@@ -2100,6 +2106,30 @@ export function chooseCityProduction(
 
   if (opts.isProductionAllowed) {
     available = available.filter(c => opts.isProductionAllowed!(cityId, c.id));
+    // R-EPOCH-RECRUIT: when an existing military candidate has a newer eligible
+    // unit in the same data-defined Typ line, rank that era first while retaining
+    // the original as a same-score-band fallback if the newer unit is unaffordable.
+    const promoted: { id: string; score: number }[] = [];
+    for (const candidate of available) {
+      if (!isMilitaryProductionCandidate(candidate.id, buildingNames)) continue;
+      const source = data.units.find(u => u.Jednostka === candidate.id);
+      const sourceTyp = (source?.Typ ?? '').trim();
+      if (!source || !sourceTyp) continue;
+      const eligibleLine = data.units
+        .filter(unit => (unit.Typ ?? '').trim() === sourceTyp)
+        .filter(unit => opts.isProductionAllowed!(cityId, unit.Jednostka))
+        .map(unit => unit.Jednostka);
+      const newest = newestAvailableSameTypeUnit(candidate.id, eligibleLine, data.units);
+      if (newest) {
+        promoted.push({ id: newest.Jednostka, score: candidate.score + 0.001 });
+        candidate.score -= 0.001;
+      }
+    }
+    const present = new Set(available.map(c => c.id));
+    for (const candidate of promoted) {
+      if (!present.has(candidate.id)) available.push(candidate);
+      present.add(candidate.id);
+    }
   }
 
   if (available.length === 0) return null;
@@ -2485,7 +2515,7 @@ const AI_IMPROVEMENT_PRACA_SURPLUS = 30;
  *   farma:3, irygacja:5, bydlo:2, owce:1, lama:1, oboz_lowiecki:1, tarasy:3,
  *   lodzie_rybackie:2, warzelnia_soli:1.
  * Wszystkie pozostałe klucze `AI_IMPROVEMENT_PRIORITY` (tartak, kamieniolom, glinianka,
- * kopalnia_miedzi/zelaza/cyny, stadnina, posterunek, droga, droga_brukowana, fort) mają
+ * kopalnia_miedzi/cyny/zelaza, stadnina, posterunek, droga, droga_brukowana, fort) mają
  * `bonus.zywnosc` zerowy/nieobecny -- kategoria „surowce/infrastruktura", BEZ ograniczenia
  * do heksów obrabianych dla AI (zgodnie z regułą właściciela: „inne nie-żywnościowe […]
  * wszędzie"). `wyrab` ZOSTAJE przy kategorii żywnościowej (onlyWorked=true): to KROK
@@ -3400,9 +3430,11 @@ export function decideAITurn(
         concentration.rallyPoint.q,
         concentration.rallyPoint.r,
         units,
+        true,
       );
       if (step !== null) {
-        commands.push({ type: 'move', unitId: unit.id, toQ: step.q, toR: step.r });
+        commands.push({ type: 'move', unitId: unit.id, toQ: step.q, toR: step.r,
+          allowFriendlyStack: step.q === concentration.rallyPoint.q && step.r === concentration.rallyPoint.r });
       }
     }
   }
@@ -3489,9 +3521,10 @@ export function decideAITurn(
       for (const order of frontMerge.moveOrders) {
         const unit = myUnits.find(u => u.id === order.unitId);
         if (unit === undefined) continue;
-        const step = firstStep(unit, map, order.towardQ, order.towardR, units);
+        const step = firstStep(unit, map, order.towardQ, order.towardR, units, true);
         if (step !== null) {
-          commands.push({ type: 'move', unitId: unit.id, toQ: step.q, toR: step.r });
+          commands.push({ type: 'move', unitId: unit.id, toQ: step.q, toR: step.r,
+            allowFriendlyStack: step.q === order.towardQ && step.r === order.towardR });
         }
       }
       for (const unitId of frontMerge.deferredUnitIds) concentrationDeferred.add(unitId);
@@ -3543,9 +3576,10 @@ export function decideAITurn(
           if (a.atRally) continue;
           const unit = byId.get(a.unitId);
           if (unit === undefined) continue;
-          const step = firstStep(unit, map, a.targetQ, a.targetR, units);
+          const step = firstStep(unit, map, a.targetQ, a.targetR, units, true);
           if (step !== null) {
-            commands.push({ type: 'move', unitId: unit.id, toQ: step.q, toR: step.r });
+            commands.push({ type: 'move', unitId: unit.id, toQ: step.q, toR: step.r,
+              allowFriendlyStack: step.q === a.targetQ && step.r === a.targetR });
             concentrationDeferred.add(unit.id);
           }
         }

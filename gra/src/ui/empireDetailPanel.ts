@@ -14,6 +14,7 @@ import { formatObywateleLabel, formatManpower } from '../game/manpower';
 import { stockResourceLabel } from '../game/building-stock-cost';
 import { CITIZEN_UPKEEP_RATE_PER_CITIZEN } from '../game/citizen-resource-upkeep';
 import { resourceUsageTotal } from '../game/resource-usage-breakdown';
+import { taxForWorkAmount } from '../game/work-tax';
 import {
   MIASTA_TABLE_COLUMNS,
   visibleMiastaColumns,
@@ -148,6 +149,9 @@ function wireDefaultHandelSplitInputs(
 export interface EmpireGlobalDefaultsUiConfig {
   getOwnerDefaultPodzialPracy?: (ownerId: number) => CityPodzialPracy | null;
   onOwnerDefaultPodzialPracyChange?: (ownerId: number, split: CityPodzialPracy) => void;
+  canConvertOwnerWorkToTax?: (ownerId: number) => boolean;
+  getOwnerWorkTaxRate?: (ownerId: number) => number;
+  onConvertOwnerWorkToTax?: (ownerId: number, amount: number) => number;
   // R-PRACA-JEDEN-PODZIAL-Q1: `getOwnerDefaultPracaSplit`/`onOwnerDefaultPracaSplitChange`
   // USUNIETE — byly DRUGIM, niezaleznym suwakiem tej samej Pracy. Globalny podzial
   // czyta i zapisuje wylacznie `getOwnerDefaultPodzialPracy`/`onOwnerDefaultPodzialPracyChange`.
@@ -1402,6 +1406,36 @@ function renderPracaSection(
   }
 
   h += renderEmpirePracaBudgetSplitSection();
+  const ownerId = empireGlobalDefaultsUi.getActiveOwnerId?.() ?? 0;
+  if (empireGlobalDefaultsUi.canConvertOwnerWorkToTax?.(ownerId)) {
+    const max = Math.max(0, stock);
+    const taxRate = empireGlobalDefaultsUi.getOwnerWorkTaxRate?.(ownerId) ?? 1;
+    h += `<div class="civ-emp-box" style="margin-top:12px" data-work-tax-convert>`
+      + '<div class="k">ZAMIANA PRACY NA PODATEK</div>'
+      + `<div class="v">Pozostała pula: ${max} Pracy · 1 Praca → ${taxRate} Podatku</div>`
+      + `<div style="display:flex;gap:8px;align-items:center;margin-top:8px">`
+      + `<input type="number" min="0" max="${max}" step="1" value="0" data-work-tax-amount aria-label="Praca do zamiany na podatek" style="width:100px" />`
+      + `<button type="button" data-work-tax-submit${max < 1 ? ' disabled' : ''}>Zamień na podatek</button></div>`
+      + `<div class="civ-emp-foot" data-work-tax-preview>0 Pracy → 0 Podatku</div>`
+      + '<div class="civ-emp-foot">Zamiana trafia do zwykłego strumienia podatku w najbliższej turze. Niewykorzystana Praca zostaje w puli.</div></div>';
+    queueMicrotask(() => {
+      const host = document.querySelector<HTMLElement>('[data-work-tax-convert]');
+      const input = host?.querySelector<HTMLInputElement>('[data-work-tax-amount]');
+      const button = host?.querySelector<HTMLButtonElement>('[data-work-tax-submit]');
+      const preview = host?.querySelector<HTMLElement>('[data-work-tax-preview]');
+      input?.addEventListener('input', () => {
+        const work = Math.max(0, Math.min(max, Math.floor(Number(input.value) || 0)));
+        if (preview) preview.textContent = `${work} Pracy → ${taxForWorkAmount(work, taxRate)} Podatku`;
+      });
+      button?.addEventListener('click', () => {
+        if (!input) return;
+        const amount = Math.max(0, Math.min(max, Math.floor(Number(input.value) || 0)));
+        const tax = taxForWorkAmount(amount, taxRate);
+        if (amount < 1 || tax < 1 || !window.confirm(`Zamienić ${amount} Pracy na ${tax} Podatku?`)) return;
+        empireGlobalDefaultsUi.onConvertOwnerWorkToTax?.(ownerId, amount);
+      });
+    });
+  }
   h += '</div>';
   return h;
 }
