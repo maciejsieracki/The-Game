@@ -1,3 +1,12 @@
+## ROBOCZA 2f4d8717 -- 2026-10-27 -- poprawki AI, epok, ekonomii, muzyki i HUD (R-CIV-ALL-TOPICS-ROBOCZA) — WERSJA TESTOWA
+
+- STATUS: DEPLOYED to `origin/main` at `fc18c02efd5359844c2439217e8855d549417d0a`; remote raw readback bundle/manifest/START PASS.
+- Źródło produktu: `92d124b721dbd4405b4547301751499316b9ec4c`; bundle MD5 `2f4d87176ffcfc2aa6cdf44e3e562981`, SHA-256 `38526ae35906328b1e2a76c4158f28795c04c7ad945ad9d03a452993e023d692`, 69,998,033 bytes. `verify-robocza-bundle.cjs` → VERIFY OK.
+- Zakres: skupianie armii AI; kopalnie surowców i jednostki epokowe; koszty ulepszeń Kamień ×0.5/Brąz ×1/Żelazo ×2; zużycie żywności mieszkańców ×1/×2/×4; przejście muzyki menu→gra; pełne jednostki przy Manpower; oddzielenie handlu od podatku oraz ręczna konwersja Pracy na podatek. Optymalizacja wyliczeń zasobów jest w kodzie.
+- Testy: TypeScript, 5 bramek referencyjnych i testy tematyczne PASS; Vite 908 modułów; Chromium smoke pokazuje menu, HUD i dwa canvasy. Final Control PASS-WITH-NOTES.
+- NIE ZMIERZONO: test wydajności (wyłączony na polecenie właściciela), pełny gameplay 100 tur oraz zapis/odczyt. To wydanie testowe Robocza; brak promocji do KANON/FINALNA.
+- Dowody: `dyspozycje/autobot/runs/R-CIV-ALL-TOPICS-ROBOCZA-20261027/`; zewnętrzny host produkcyjny nie był weryfikowany.
+
 ## ROBOCZA f491c3a2 -- 2026-10-26 -- wojna epoki: gracz pierwszy, mgla nie blokuje, opcja nowej gry (R-WEB-WAR-EPOCH-RELEASE-ROBOCZA) — WERSJA TESTOWA
 
 - STATUS: PUBLISHED to `origin/main` at `78ef8682c3a469c0e0a2a170feac2d3915cc5068` (fast-forward z `b3349709`), integration branch `integration/robocza-war-epoch-20261026` na tym samym SHA. Readback `gra-robocza/Gra-ROBOCZA.html` z `origin/main`: MD5 `f491c3a2188d0d5ccea9bc715927a070` (zgodny z manifestem). Wydanie na wyrazne polecenie wlasciciela („wdrazamy wersje testowa, poprawimy pozniej jak sie odnowi limit”).

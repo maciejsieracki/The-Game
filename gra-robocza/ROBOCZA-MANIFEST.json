@@ -1,5 +1,5 @@
 {
-  "releaseState": "APPROVED_FOR_BOUNDED_PUBLICATION — testowa ROBOCZA, R-CIV-ALL-TOPICS-ROBOCZA-20261027; Final Control PASS-WITH-NOTES; test wydajnosci i pelny 100-turowy save/load poza zakresem.",
+  "releaseState": "DEPLOYED — testowa ROBOCZA; R-CIV-ALL-TOPICS-ROBOCZA-20261027; Final Control PASS-WITH-NOTES; performance test and full 100-turn save/load outside scope.",
   "bundle": "Gra-ROBOCZA.html",
   "bundleMd5": "2f4d87176ffcfc2aa6cdf44e3e562981",
   "bundleSha256": "38526ae35906328b1e2a76c4158f28795c04c7ad945ad9d03a452993e023d692",
@@ -114,7 +114,19 @@
     }
   ],
   "publishPlan": {
-    "status": "READY_FOR_BOUNDED_PUBLICATION after Final Control; owner requested Robocza rollout. Performance test excluded; no KANON/FINALNA promotion."
+    "status": "PUBLISHED to origin/main; pinned GitHub raw readback verified; ROBOCZA only; no KANON/FINALNA promotion."
   },
-  "md5": "2f4d87176ffcfc2aa6cdf44e3e562981"
+  "md5": "2f4d87176ffcfc2aa6cdf44e3e562981",
+  "publicationCommit": "fc18c02efd5359844c2439217e8855d549417d0a",
+  "remoteReadback": {
+    "status": "PASS",
+    "remote": "origin/main",
+    "commit": "fc18c02efd5359844c2439217e8855d549417d0a",
+    "bundleUrl": "https://raw.githubusercontent.com/maciejsieracki/The-Game/fc18c02e/gra-robocza/Gra-ROBOCZA.html",
+    "manifestUrl": "https://raw.githubusercontent.com/maciejsieracki/The-Game/fc18c02e/gra-robocza/ROBOCZA-MANIFEST.json",
+    "startUrl": "https://raw.githubusercontent.com/maciejsieracki/The-Game/fc18c02e/gra-robocza/START.html",
+    "bundleMd5": "2f4d87176ffcfc2aa6cdf44e3e562981",
+    "bundleSha256": "38526ae35906328b1e2a76c4158f28795c04c7ad945ad9d03a452993e023d692",
+    "bundleBytes": 69998033
+  }
 }

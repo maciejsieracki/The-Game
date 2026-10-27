@@ -1,4 +1,9 @@
-﻿## [2026-10-20] CODEX -> ROOT / PR141 FULL RELEASE CANDIDATE
+﻿## [2026-10-27 18:05 PL] ROOT → RELEASE — ALL-TOPICS ROBOCZA
+
+STATUS: DEPLOYED / REMOTE-READBACK-PASS. Source main `92d124b`; release commit `fc18c02e`; bundle MD5 `2f4d87176ffcfc2aa6cdf44e3e562981`, SHA-256 `38526ae35906328b1e2a76c4158f28795c04c7ad945ad9d03a452993e023d692`, 69,998,033 B. Zakres i limity w `dyspozycje/autobot/runs/R-CIV-ALL-TOPICS-ROBOCZA-20261027/` i `dyspozycje/WERSJE.md`. Pomiar wydajności i pełny test 100 tur/save-load poza zakresem.
+CZEKAM-NA: właściciel — Ctrl+F5 w Roboczej i playtest; zgłosić błędy osobno.
+
+## [2026-10-20] CODEX -> ROOT / PR141 FULL RELEASE CANDIDATE
 
 STATUS: APPROVED_FOR_BOUNDED_PUBLICATION by root after Final Control PASS-WITH-NOTES; no commit, push, or deployment yet.
 - External assembly: `/workspace/pr141-publish-20261020/release-r1-assembly`; source base `c799325c77bc11c24684c1b35077ae80913d6f8d`; release artifact is ROBOCZA only.

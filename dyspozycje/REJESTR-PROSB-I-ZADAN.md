@@ -1,5 +1,16 @@
 # REJESTR PRÓŚB I ZADAŃ — kanoniczny indeks + historia
 
+## `R-CIV-ALL-TOPICS-ROBOCZA-20261027` — DEPLOY-ROBOCZA / remote readback PASS
+
+- STATUS: DEPLOY-ROBOCZA — testowy, ograniczony release; nie jest odbiorem pełnej rozgrywki.
+- GOAL: opublikować tematy zatwierdzone poza testem wydajności; pomiar wydajności i pełny 100-turowy save/load nie wchodzą do tego wydania.
+- Source main `92d124b721dbd4405b4547301751499316b9ec4c`; release commit `fc18c02efd5359844c2439217e8855d549417d0a`.
+- Bundle MD5 `2f4d87176ffcfc2aa6cdf44e3e562981`, SHA-256 `38526ae35906328b1e2a76c4158f28795c04c7ad945ad9d03a452993e023d692`, 69,998,033 B; verifier PASS; raw GitHub readback zgodny dla bundle/manifest/START.
+- Zakres: AI armie/kopalnie/jednostki epokowe; koszty ulepszeń; żywność mieszkańców; przejście muzyki; liczba pełnych jednostek HUD; rozdział handlu/podatku; ręczne Praca→podatek. Optymalizacja zasobów wchodzi do bundle’a, jej test wydajności pozostaje odroczony.
+- Final Control: PASS-WITH-NOTES; brak 100-turowego gameplay/save-load w tym odbiorze. Szczegóły: `dyspozycje/autobot/runs/R-CIV-ALL-TOPICS-ROBOCZA-20261027/`.
+- DEPLOY/PUSH: wykonano; brak promocji do KANON/FINALNA, brak twierdzenia o wdrożeniu na zewnętrznym hostingu.
+
+
 ## `R-CYWILIZACJE-MACIERZ-EKO-WEALTH-MANPOWER-SPOL-PROD-REBASE-Q1-20260925` — bounded F-01/F-02/F-03 ROBOCZA DEPLOY (2026-10-17)
 
 - STATUS: DEPLOY-ROBOCZA / REMOTE-READBACK-PASS — tylko selektywnie zaakceptowane F-01, F-02 i F-03 r2 semantic-classification artifacts. Nie jest to akceptacja całego PR141 ani macierzy 93×15.
