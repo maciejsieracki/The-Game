@@ -1,5 +1,5 @@
 {
-  "releaseState": "ROBOCZA candidate — AI five-turn muster/attack and commander map markers; awaiting main push and remote readback.",
+  "releaseState": "DEPLOYED — testowa ROBOCZA; AI pięcioturowa zbiórka/atak oraz oznaczenia wodza; GitHub Raw readback PASS.",
   "bundle": "Gra-ROBOCZA.html",
   "bundleMd5": "e5eb21d82c2be611ab9c491327f696c3",
   "bundleSha256": "76078759e78f3cb466156cec296da925759dd685764dc42242d9a5f02ef40eb2",
@@ -8,7 +8,8 @@
     "baseCommit": "85f8c5f0e0aa6ff46aa8b85a03d0bc0c71d86268",
     "productCommit": "7fdc191ac8efa4e3e1c71a4c82b1772bb55ec145",
     "source": "origin/main + AI five-turn war campaign attack and commander map markers",
-    "build": "Vite 5.4.21 single-file ROBOCZA; 916 modules; stamped"
+    "build": "Vite 5.4.21 single-file ROBOCZA; 916 modules; stamped",
+    "publicationCommit": "c72cd08a2de33a0f4ff920e6b314503a50811cb0"
   },
   "scope": [
     "AI zbiera armię przez pięć pełnych tur po wybuchu wojny, a w kolejnej turze atakuje wybrany osiągalny lądem cel wspólnymi rozkazami całego składu.",
@@ -27,11 +28,8 @@
     "Dowód wizualny odznaki wykorzystuje osobny jawnie opisany harness produkcyjnego renderer; pełny gameplay screenshot z aktywną armią nie został wykonany."
   ],
   "finalControl": {
-    "status": "PASS AI; PASS-WITH-NOTES commander markers; integrated test pass; exact release artifact readback pending",
-    "reports": [
-      "dyspozycje/autobot/runs/R-AI-GENERAL-WAR-5TURN-ATTACK-Q1/04-final-control-runda5.md",
-      "dyspozycje/autobot/runs/R-ARMY-COMMANDER-UNIT-MARKERS-20261028/06-final-control-runda4.md"
-    ]
+    "status": "PASS-WITH-NOTES — integrated candidate and exact local Robocza artifact verified; remote readback PASS",
+    "notes": "AI live Chromium fixture: five complete muster EOTs and sixth attack EOT with 4/4 commands/executions. Commander map marker visual evidence is the production-renderer map harness; no full gameplay screenshot with active army. Naval AI and large-empire performance remain open."
   },
   "startHub": "START.html",
   "hubGeneratedAt": "2026-10-28T22:05",
@@ -257,5 +255,23 @@
     },
     "publishedAt": "2026-10-28",
     "publicationCommit": "f6f63dc839449d8e08a7e2509ec72796757867af"
-  }
+  },
+  "publishPlan": {
+    "status": "PUBLISHED to origin/main at c72cd08a2de33a0f4ff920e6b314503a50811cb0; Robocza only; no KANON/FINALNA promotion.",
+    "target": "origin/main"
+  },
+  "remoteReadback": {
+    "status": "PASS",
+    "remote": "origin/main",
+    "commit": "c72cd08a2de33a0f4ff920e6b314503a50811cb0",
+    "bundleUrl": "https://raw.githubusercontent.com/maciejsieracki/The-Game/c72cd08a2de33a0f4ff920e6b314503a50811cb0/gra-robocza/Gra-ROBOCZA.html",
+    "manifestUrl": "https://raw.githubusercontent.com/maciejsieracki/The-Game/c72cd08a2de33a0f4ff920e6b314503a50811cb0/gra-robocza/ROBOCZA-MANIFEST.json",
+    "startUrl": "https://raw.githubusercontent.com/maciejsieracki/The-Game/c72cd08a2de33a0f4ff920e6b314503a50811cb0/gra-robocza/START.html",
+    "httpStatus": 200,
+    "bundleMd5": "e5eb21d82c2be611ab9c491327f696c3",
+    "bundleSha256": "76078759e78f3cb466156cec296da925759dd685764dc42242d9a5f02ef40eb2",
+    "bundleBytes": 70021251,
+    "checks": "GitHub Raw bundle/manifest/START HTTP 200; fetched bundle bytes and hashes match manifest."
+  },
+  "publishedAt": "2026-10-28"
 }

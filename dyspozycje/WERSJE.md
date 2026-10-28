@@ -5502,7 +5502,7 @@ regres przeszedł przez Operator→Evaluator→Final Control niezauważony.
 - źródło `4f099cb18605e0cecac55a19218e539962e30fd7` · ROBOCZA md5 `5dba37a12900d8f9a03a2da592d2cd8c` · `VERIFY OK`.
   Zakres: zweryfikowane integracje FALI 299 oraz korekta parytetu rekrutacji AI — AI kupuje jednostki za Skarbiec, wspólną ścieżką z graczem, bez kosztu Pracy i niezależnie od produkcji budynków. Deploy wykonany z czystego commita; ręczny `START.html` zachowany.
 # ROBOCZA — AI zbiórka wojsk i oznaczenia wodza (2026-10-28)
-- Kandydat do publikacji z integracji `7fdc191ac8efa4e3e1c71a4c82b1772bb55ec145`, baza `85f8c5f0e0aa6ff46aa8b85a03d0bc0c71d86268`.
+- OPUBLIKOWANO w `origin/main` `c72cd08a2de33a0f4ff920e6b314503a50811cb0`; produkt z integracji `7fdc191ac8efa4e3e1c71a4c82b1772bb55ec145`, baza `85f8c5f0e0aa6ff46aa8b85a03d0bc0c71d86268`.
 - Zakres: kampania AI zbiera wojska przez pięć pełnych tur i w szóstej wykonuje atak wspólnym ruchem; dowódca otrzymuje osobną gwiazdę, a emblemat cywilizacji jednostki ma rozmiar 4×.
 - ROBOCZA bundle MD5 `e5eb21d82c2be611ab9c491327f696c3`, SHA-256 `76078759e78f3cb466156cec296da925759dd685764dc42242d9a5f02ef40eb2`, `70,021,251` B. TypeScript, 916-modułowy build i testy obu tematów oraz wspólne regresje PASS. Test pełnego imperium oraz kampania morska AI nie należą do tego wydania.
-- Stan: zbudowano i sprawdzono lokalnie; remote readback zostanie odnotowany po pushu.
+- Zdalny odczyt: pinned GitHub Raw bundle, manifest i START HTTP 200; bundle hash/rozmiar zgodne z manifestem. Receipt: `dyspozycje/autobot/runs/R-AI-GENERAL-WAR-5TURN-ATTACK-Q1/06-release-receipt.json`.
