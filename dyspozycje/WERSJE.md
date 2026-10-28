@@ -1,4 +1,25 @@
-## ROBOCZA 2f4d8717 -- 2026-10-27 -- poprawki AI, epok, ekonomii, muzyki i HUD (R-CIV-ALL-TOPICS-ROBOCZA) — WERSJA TESTOWA
+## ROBOCZA b897f519 -- 2026-10-28 -- poprawki armii, dowódców, bitew i wojen (R-CIV-ALL-TOPICS-ROBOCZA) — WERSJA TESTOWA
+
+- **STATUS: DEPLOYED** to `origin/main` at `e06ad53c`; fast-forward from `99bb834c`.
+  GitHub Raw readback of bundle, manifest and START returned HTTP 200 for all three.
+- Bundle MD5 `b897f519a377631081bd29b49c76fef2`, SHA-256
+  `accb2ee99c74ba7bbc70da060ed62fabf905cf2f021d6e37bacad4a9398ed798`,
+  70,011,909 bytes. Remote bundle bytes, manifest MD5/SHA/size and START link prefix agree.
+- Zakres: armie AI zbierają się przy Wodzu/Generale i prowadzą kampanię wojenną; gracze
+  mogą być celem AI, a kampania zachowuje stan w zapisie. Wódz i Generał mają wspólne
+  zasady morale, routu i bitwy. Formacje, zachowanie linii, panel łączenia przy skali 150%,
+  rekrutacja według epoki, pokój po wojnach epoki, ochrona pustych miast w czasie pokoju,
+  rozdzielenie handlu od podatku i pozostałe zatwierdzone poprawki zostały zweryfikowane.
+- Bramki: typecheck, Vite 914 modułów, smoke bundle i `verify-robocza-bundle.cjs` PASS;
+  Chromium: HTTP 200, dwa canvasy, bez pageerror ani błędów konsoli. AI war runtime 16/16,
+  test kampanii 25/25, walidacje operatorów i evaluatorów PASS. Final Control:
+  `READY_FOR_DEPLOY_WITH_NOTES`.
+- **Wydajność dużego imperium pozostaje otwarta na później zgodnie z poleceniem właściciela.**
+  Ostatni stress run zatrzymał się po 46 turach; Chromium zamknęło stronę w trakcie 47. tury.
+  Nie uznajemy testu 100 tur za zaliczony.
+- Szczegóły i dowody: `dyspozycje/autobot/runs/R-CIV-ALL-TOPICS-ROBOCZA-20261027/`.
+
+## ROBOCZA 2f4d8717 -- 2026-10-27 -- poprawki AI, epok, ekonomii, muzyki i HUD (R-CIV-ALL-TOPICS-ROBOCZA) — ZASTĄPIONA
 
 - STATUS: DEPLOYED to `origin/main` at `fc18c02efd5359844c2439217e8855d549417d0a`; remote raw readback bundle/manifest/START PASS.
 - Źródło produktu: `92d124b721dbd4405b4547301751499316b9ec4c`; bundle MD5 `2f4d87176ffcfc2aa6cdf44e3e562981`, SHA-256 `38526ae35906328b1e2a76c4158f28795c04c7ad945ad9d03a452993e023d692`, 69,998,033 bytes. `verify-robocza-bundle.cjs` → VERIFY OK.
