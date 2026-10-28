@@ -14,9 +14,16 @@
   Chromium: HTTP 200, dwa canvasy, bez pageerror ani błędów konsoli. AI war runtime 16/16,
   test kampanii 25/25, walidacje operatorów i evaluatorów PASS. Final Control:
   `READY_FOR_DEPLOY_WITH_NOTES`.
-- **Wydajność dużego imperium pozostaje otwarta na później zgodnie z poleceniem właściciela.**
-  Ostatni stress run zatrzymał się po 46 turach; Chromium zamknęło stronę w trakcie 47. tury.
-  Nie uznajemy testu 100 tur za zaliczony.
+- **Wydajność dużego imperium: test 100 tur PASS z zastrzeżeniem.** Scenariusz ukończył
+  100/100 tur, bez błędów i nieudanych budżetów tury; średnio 35,361 s, maksimum 58,139 s
+  przy progu 60 s (zapas 1,861 s). Szczyt pamięci sterty: 780,6 MiB; odnotowano 990
+  ostrzeżeń, w tym 4 ostrzeżenia WebGL. Poprzedni przebieg zakończony przy 47. turze
+  przerwał zewnętrzny limit 30 minut — nie był dowodem zawieszenia gry. Wynik zalicza bramkę,
+  ale niewielki zapas czasu, pamięć i koszt skanowania oblężeń/trasy/autozapisu wymagają
+  dalszego monitorowania i ewentualnej optymalizacji.
+- Raport Operatora: `dyspozycje/autobot/runs/R-CIV-ALL-TOPICS-ROBOCZA-20261027/65-operator-large-empire-perf-resume.md`;
+  niezależny przegląd: `.../66-evaluator-large-empire-perf-resume.md`; surowe logi i podsumowanie
+  w `.../evidence/perf-resume-20261028/`.
 - Szczegóły i dowody: `dyspozycje/autobot/runs/R-CIV-ALL-TOPICS-ROBOCZA-20261027/`.
 
 ## ROBOCZA 2f4d8717 -- 2026-10-27 -- poprawki AI, epok, ekonomii, muzyki i HUD (R-CIV-ALL-TOPICS-ROBOCZA) — ZASTĄPIONA
