@@ -150,6 +150,7 @@ import {
 } from './ui/turnTransitionOverlay';
 import { shouldYieldAiOwnerProgressFrame } from './ui/aiOwnerProgressFrame';
 import { createDirtyRenderSync } from './game/dirtyRenderSync';
+import { trimSidePanelEventLog } from './game/retained-side-panel-events';
 import { fogBrightnessForHex, applyFogDimToObject3D } from './render/fogDim';
 import { CameraController, DRAG_THRESHOLD_PX, type CameraControllerOptions } from './render/camera';
 import { HEX_R, axialToWorld, worldToAxial } from './render/hexutil';
@@ -9151,7 +9152,7 @@ async function boot(): Promise<void> {
         kind: 'diplo',
         negative: true,
       });
-      if (warEventLog.length > 8) warEventLog.length = 8;
+      trimWarEventLog();
       refreshD1bHud();
     }
 
@@ -9170,6 +9171,16 @@ async function boot(): Promise<void> {
     }>();
 
     const CITY_CAPTURE_EVENT_PREFIX = 'capture-';
+
+    const warEventDetailOwners = [
+      { idPrefix: CITY_CAPTURE_EVENT_PREFIX, details: cityCaptureEventDetails },
+      { idPrefix: 'elim-cs-', details: civElimEventDetails },
+    ] as const;
+
+    /** Keep the visible journal bounded and release modal payloads for evicted cards. */
+    function trimWarEventLog(): void {
+      trimSidePanelEventLog(warEventLog, 8, warEventDetailOwners);
+    }
 
     /**
      * R-MIASTA-ZDOBYCIE-RAPORT-TROFEA-Q1 (GOAL 3) — JEDYNY rejestrator trwałego wpisu
@@ -9251,7 +9262,7 @@ async function boot(): Promise<void> {
         kind: playerCaptured ? 'city' : 'enemy',
         negative: !playerCaptured,
       });
-      if (warEventLog.length > 8) warEventLog.length = 8;
+      trimWarEventLog();
       refreshD1bHud();
     }
 
@@ -9315,7 +9326,7 @@ async function boot(): Promise<void> {
         subtitle,
         kind: 'enemy',
       });
-      if (warEventLog.length > 8) warEventLog.length = 8;
+      trimWarEventLog();
       refreshD1bHud();
     }
 
@@ -11624,7 +11635,7 @@ async function boot(): Promise<void> {
           subtitle: veteranFirstEncounterJournalSubtitle(),
           kind: 'info',
         });
-        if (warEventLog.length > 8) warEventLog.length = 8;
+        trimWarEventLog();
         refreshD1bHud();
         return;
       }
@@ -12035,6 +12046,8 @@ async function boot(): Promise<void> {
       // RECON" §6 pkt 2/4). Wzorzec identyczny do `__sidePanelLinkTestDebug.seedEvents()`
       // (main.ts, `warEventLog.length = 0`).
       warEventLog.length = 0;
+      civElimEventDetails.clear();
+      cityCaptureEventDetails.clear();
       villageEventLog.length = 0;
       tradeRouteEventLog.length = 0;
       rationAutoEventLog.length = 0;
@@ -15044,7 +15057,7 @@ async function boot(): Promise<void> {
           subtitle: eraChangeJournalSubtitle(player.era),
           kind: 'science',
         });
-        if (warEventLog.length > 8) warEventLog.length = 8;
+        trimWarEventLog();
       }
       refreshD1bHud();
       const eraTechName = pendingEraDiscoveryTech;
@@ -24703,6 +24716,8 @@ async function boot(): Promise<void> {
     (window as any).__sidePanelLinkTestDebug = {
       seedEvents: (evs: SidePanelEvent[]): number => {
         warEventLog.length = 0;
+        civElimEventDetails.clear();
+        cityCaptureEventDetails.clear();
         for (let i = evs.length - 1; i >= 0; i--) warEventLog.unshift(evs[i]!);
         dismissedSidePanelEventIds.clear();
         refreshD1bHud();
@@ -33839,7 +33854,7 @@ async function boot(): Promise<void> {
                       + (done.pieniadz ? ' \xb7 Pieni\u0105dz \xd710' : ''),
                     kind: 'science',
                   });
-                  if (warEventLog.length > 8) warEventLog.length = 8;
+                  trimWarEventLog();
                 }
                 if (!shouldDeferEotEvents(endTurnInProgress)) showHintMessage(msg, 3500);
               }
@@ -37950,7 +37965,7 @@ async function boot(): Promise<void> {
           for (let hi = hintEvents.length - 1; hi >= 0; hi--) {
             warEventLog.unshift(hintEvents[hi]!);
           }
-          if (warEventLog.length > 8) warEventLog.length = 8;
+          trimWarEventLog();
           deferredEotHints.length = 0;
         }
         setTurnTransition(100, `Tura ${turn} — twoja kolej`, 'Gracz', turn);

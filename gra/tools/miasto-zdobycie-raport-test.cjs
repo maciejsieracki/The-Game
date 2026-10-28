@@ -414,8 +414,8 @@ console.log('9. Wpis w panelu WYDARZENIA + szczegóły po kliknięciu');
     '9h: handler kliknięcia podpięty w onEventClick');
   ok(code.includes('cityCaptureEventDetails.delete(id);'),
     '9i: ✕ na karcie usuwa też szczegóły (bez wycieku po dismissie)');
-  eq((code.match(/cityCaptureEventDetails\.clear\(\);/g) || []).length, 2,
-    '9j: mapa szczegółów zerowana w OBU resetach partii, w parze z warEventLog');
+  ok((code.match(/cityCaptureEventDetails\.clear\(\);/g) || []).length >= 2,
+    '9j: mapa szczegółów czyszczona przy resetach dziennika w parze z warEventLog');
 }
 
 // ===========================================================================
