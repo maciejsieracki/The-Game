@@ -1,5 +1,5 @@
 {
-  "releaseState": "CANDIDATE — testowa ROBOCZA; poprawki tartaku na wzgórzu z lasem i nawigacji kreatora nowej gry; niezależne testy PASS, wymagany remote readback.",
+  "releaseState": "DEPLOYED — testowa ROBOCZA; poprawki tartaku na wzgórzu z lasem i nawigacji kreatora nowej gry; remote readback HTTP 200 oraz hash/rozmiar zgodne.",
   "bundle": "Gra-ROBOCZA.html",
   "bundleMd5": "00f7666343c2247dfdb21ee1e6ed27aa",
   "bundleSha256": "5c10865a5e1b9b29c8dae6c2c09a73ca46d55cf7b3090a5566a029116bdc7d3e",
@@ -9,7 +9,7 @@
     "productCommit": "b3cc4c5d",
     "source": "origin/main + zachowanie reliefu/lasu pod tartakiem na wzgórzu + zwijany profil cywilizacji i widoczna nawigacja kreatora",
     "build": "Vite 5.4.21; 916 modules; single-file ROBOCZA bundle; stamped",
-    "publicationCommit": "PENDING"
+    "publicationCommit": "eb6e08245de0e15832f783f87dec76300c5f0601"
   },
   "scope": [
     "Tartak na zalesionym wzgórzu zachowuje las i relief; model ulepszenia jest osadzony na stoku.",

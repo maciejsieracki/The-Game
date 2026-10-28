@@ -1,6 +1,6 @@
 ## ROBOCZA 00f76663 -- 2026-10-28 -- tartak na zalesionym wzgórzu + nawigacja kreatora (testowa)
 
-- **STATUS: CANDIDATE** — source commit `b3cc4c5d`; po niezależnym przeglądzie PASS/PASS WITH NOTES. Publikacja remote i readback pending.
+- **STATUS: DEPLOYED** — product commit `b3cc4c5d`, release commit `eb6e0824`, fast-forward `origin/main`; GitHub Raw bundle/manifest/START HTTP 200, hash i rozmiar zgodne.
 - Bundle SHA-256 `5c10865a5e1b9b29c8dae6c2c09a73ca46d55cf7b3090a5566a029116bdc7d3e`, MD5 `00f7666343c2247dfdb21ee1e6ed27aa`, 70,015,515 bajtów.
 - Zakres: tartak na wzgórzu zachowuje relief i las oraz siada na stoku; profil cywilizacji w kreatorze można zwinąć, a „Dalej” pozostaje widoczne przy 150% zoom.
 - Testy: sawmill 8/8, relief 24/24, real render 3/3 dekoru, kreator 200/200 w 5 rozmiarach, TypeScript/build PASS.
