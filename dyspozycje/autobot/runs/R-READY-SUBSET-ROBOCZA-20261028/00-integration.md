@@ -34,4 +34,4 @@ BRANCH: `integration/robocza-ready-subset-20261028`
 
 Final Control initially carried forward `99bb834c` from an older report. Its addendum verified that the exact worktree and `origin/main` base were `0b28d67fe6fae0bfbf9be39bd0ec84130080fb4d`; it also recorded SHA-256 fingerprints for the six source files and five focused tests. The correction is recorded in `FINAL-CONTROL-READY-SUBSET-20261028/01-final-control.md`.
 
-The integrated code is ready for the separately authorized deploy/push gate. The maritime AI issue and fresh large-empire performance run remain outside this release.
+Source integration commit: `f48894231b7dfeb3d1726ac7a3deba11a8c7a3f0`. The local bundle and manifest are prepared and verified; remote publication/readback and final push remain.
