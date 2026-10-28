@@ -1,6 +1,6 @@
-## ROBOCZA 31c64f65 -- 2026-10-28 -- zwalnianie zasobów GPU podglądów budowy i znaczników wyrębu (R-PERF-GPU-GHOST-RESOURCE-DISPOSAL-Q1) — kandydat do pushu
+## ROBOCZA 31c64f65 -- 2026-10-28 -- zwalnianie zasobów GPU podglądów budowy i znaczników wyrębu (R-PERF-GPU-GHOST-RESOURCE-DISPOSAL-Q1) — WERSJA TESTOWA
 
-- **STATUS: READY_FOR_ROBOCZA_PUSH**; źródło `7637ab3e` na bazie `origin/main 54214e3a`; brak promocji do KANON/FINALNA.
+- **STATUS: DEPLOYED** to `origin/main` at `f2dbf853`; fast-forward from `54214e3a`. GitHub Raw readback of bundle, manifest and START returned HTTP 200; bundle hashes and size match. Source fix commit: `7637ab3e`; brak promocji do KANON/FINALNA.
 - Bundle MD5 `31c64f6545b9e30ab0171bc105143fbe`, SHA-256 `3b90ffbee14db98171494cf434f4e711fb2d325e27341d55bf54317e84c2d383`, 70,012,553 bajty.
 - Zakres: zwalnianie własnych geometrii i materiałów podglądów budowy oraz znaczników wyrębu przy usunięciu, podmianie, odbudowie stanu i resecie; współdzielone zasoby cache pozostają żywe.
 - Bramki: lifecycle 55/55; Chromium/WebGL 120 cykli, geometrie `1 → 1`; typecheck, build Vite 915 modułów, `verify-robocza-bundle.cjs` i `git diff --check` PASS. AutoBot Evaluator i Final Control PASS dla tego zakresu.

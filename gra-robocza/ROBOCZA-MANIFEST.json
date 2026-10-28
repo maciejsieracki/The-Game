@@ -1,5 +1,5 @@
 {
-  "releaseState": "READY_FOR_ROBOCZA_PUSH — testowa ROBOCZA; R-PERF-GPU-GHOST-RESOURCE-DISPOSAL-Q1; wąski zakres cyklu życia zasobów; pomiar długiej sesji pozostaje otwarty.",
+  "releaseState": "DEPLOYED — testowa ROBOCZA; R-PERF-GPU-GHOST-RESOURCE-DISPOSAL-Q1; Final Control PASS WITH NOTES; długosesyjna diagnoza pamięci i opóźnień pozostaje otwarta.",
   "bundle": "Gra-ROBOCZA.html",
   "bundleMd5": "31c64f6545b9e30ab0171bc105143fbe",
   "bundleSha256": "3b90ffbee14db98171494cf434f4e711fb2d325e27341d55bf54317e84c2d383",
@@ -8,7 +8,8 @@
     "baseCommit": "54214e3a32b48ec934de6aa04cbc4cb14a63d509",
     "productCommit": "7637ab3e",
     "source": "origin/main + poprawka R-PERF-GPU-GHOST-RESOURCE-DISPOSAL-Q1",
-    "build": "Vite 5.4.21; 915 modules; single-file ROBOCZA bundle; stamped"
+    "build": "Vite 5.4.21; 915 modules; single-file ROBOCZA bundle; stamped",
+    "publicationCommit": "f2dbf853"
   },
   "scope": [
     "Zwolenienie własnych geometrii i materiałów krótkotrwałych podglądów budowy i znaczników wyrębu przy ich usuwaniu, wymianie, przebudowie i resecie. Współdzielone geometrie/materiały cache pozostają żywe."
@@ -103,10 +104,10 @@
     }
   ],
   "publishPlan": {
-    "status": "READY_FOR_ROBOCZA_PUSH; after push verify pinned GitHub raw bundle/manifest/START; no KANON/FINALNA promotion."
+    "status": "PUBLISHED to origin/main at f2dbf853; pinned GitHub raw readback HTTP 200 and hashes verified; ROBOCZA only; no KANON/FINALNA promotion."
   },
   "md5": "31c64f6545b9e30ab0171bc105143fbe",
-  "publishedAt": "2026-10-28T18:00:48+02:00",
+  "publishedAt": "2026-10-28T18:03:00+02:00",
   "publisher": "Codex AutoBot — owner authorized ROBOCZA publish",
   "source": "gra/src; source commit 7637ab3e based on origin/main 54214e3a",
   "sizeBytes": 70012553,
@@ -116,5 +117,18 @@
     "bundleMd5": "b897f519a377631081bd29b49c76fef2",
     "bundleSha256": "accb2ee99c74ba7bbc70da060ed62fabf905cf2f021d6e37bacad4a9398ed798",
     "bundleBytes": 70011909
+  },
+  "publicationCommit": "f2dbf853",
+  "remoteReadback": {
+    "status": "PASS",
+    "remote": "origin/main",
+    "commit": "f2dbf853",
+    "bundleUrl": "https://raw.githubusercontent.com/maciejsieracki/The-Game/f2dbf853/gra-robocza/Gra-ROBOCZA.html",
+    "manifestUrl": "https://raw.githubusercontent.com/maciejsieracki/The-Game/f2dbf853/gra-robocza/ROBOCZA-MANIFEST.json",
+    "startUrl": "https://raw.githubusercontent.com/maciejsieracki/The-Game/f2dbf853/gra-robocza/START.html",
+    "httpStatus": 200,
+    "bundleMd5": "31c64f6545b9e30ab0171bc105143fbe",
+    "bundleSha256": "3b90ffbee14db98171494cf434f4e711fb2d325e27341d55bf54317e84c2d383",
+    "bundleBytes": 70012553
   }
 }
