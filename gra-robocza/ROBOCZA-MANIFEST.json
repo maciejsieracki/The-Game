@@ -1,5 +1,5 @@
 {
-  "releaseState": "CANDIDATE — testowa ROBOCZA; R-PERF-CAPTURE-EVENT-RETENTION-Q1 + R-PERF-UNIT-ICON-SYNC-CHURN-Q1; długosesyjna diagnoza pozostaje otwarta.",
+  "releaseState": "DEPLOYED — testowa ROBOCZA; R-PERF-CAPTURE-EVENT-RETENTION-Q1 + R-PERF-UNIT-ICON-SYNC-CHURN-Q1; Final Control PASS WITH NOTES; długosesyjna diagnoza pozostaje otwarta.",
   "bundle": "Gra-ROBOCZA.html",
   "bundleMd5": "e4c3643d35ba88f9823373ac9419477c",
   "bundleSha256": "d918fb1c5dfd221106c41aa6ec0c74450fbd5ddff1cdcad22c06ba8cf595fc9b",
@@ -9,7 +9,7 @@
     "productCommit": "a4d7bc30 + 782c9b34",
     "source": "origin/main + zwalnianie szczegółów usuniętych kart przejęć + ponowne użycie niezmienionych ikon jednostek",
     "build": "Vite 5.4.21; 916 modules; single-file ROBOCZA bundle; stamped",
-    "publicationCommit": "pending final release commit"
+    "publicationCommit": "17c1ba2a0314c63a67442acb2d2500d2e546b639"
   },
   "scope": [
     "Po usunięciu karty przejęcia z ograniczonego dziennika zwalniane są jej szczegóły; widoczne karty nadal zachowują dane raportu.",
@@ -121,9 +121,18 @@
     "bundleSha256": "3b90ffbee14db98171494cf434f4e711fb2d325e27341d55bf54317e84c2d383",
     "bundleBytes": 70012553
   },
-  "publicationCommit": "pending final release commit",
+  "publicationCommit": "17c1ba2a0314c63a67442acb2d2500d2e546b639",
   "remoteReadback": {
-    "status": "PENDING",
-    "remote": "origin/main"
+    "status": "PASS",
+    "remote": "origin/main",
+    "commit": "17c1ba2a0314c63a67442acb2d2500d2e546b639",
+    "bundleUrl": "https://raw.githubusercontent.com/maciejsieracki/The-Game/17c1ba2a0314c63a67442acb2d2500d2e546b639/gra-robocza/Gra-ROBOCZA.html",
+    "manifestUrl": "https://raw.githubusercontent.com/maciejsieracki/The-Game/17c1ba2a0314c63a67442acb2d2500d2e546b639/gra-robocza/ROBOCZA-MANIFEST.json",
+    "startUrl": "https://raw.githubusercontent.com/maciejsieracki/The-Game/17c1ba2a0314c63a67442acb2d2500d2e546b639/gra-robocza/START.html",
+    "httpStatus": 200,
+    "bundleMd5": "e4c3643d35ba88f9823373ac9419477c",
+    "bundleSha256": "d918fb1c5dfd221106c41aa6ec0c74450fbd5ddff1cdcad22c06ba8cf595fc9b",
+    "bundleBytes": 70013155,
+    "checks": "manifest SHA/MD5/size, bundles[] entries, START bundle links/hash prefix all match remote bundle"
   }
 }

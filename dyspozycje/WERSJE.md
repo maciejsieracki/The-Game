@@ -1,6 +1,6 @@
 ## ROBOCZA e4c3643d -- 2026-10-28 -- retencja kart wydarzeń i tekstur ikon jednostek (testowa)
 
-- **STATUS: CANDIDATE** — dwa wąskie zakresy z niezależnym Evaluatorem i Final Control PASS WITH NOTES; publikacja do `origin/main` po integracji i readbacku.
+- **STATUS: DEPLOYED** — fast-forward `origin/main` do `17c1ba2a`; odczyt GitHub Raw (bundle, manifest, START) HTTP 200, hash i rozmiar zgodne.
 - Źródło: baza ROBOCZA `a1d86212`, product commits `a4d7bc30` i `782c9b34`.
 - Bundle MD5 `e4c3643d35ba88f9823373ac9419477c`, SHA-256 `d918fb1c5dfd221106c41aa6ec0c74450fbd5ddff1cdcad22c06ba8cf595fc9b`, rozmiar 70,013,155 bajtów.
 - Zakres: zwalnianie szczegółów kart przejęć po wypadnięciu z ograniczonego dziennika oraz zachowanie niezmienionych badge/ikon jednostek między synchronizacjami.
