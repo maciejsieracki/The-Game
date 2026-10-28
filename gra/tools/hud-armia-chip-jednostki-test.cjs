@@ -172,16 +172,16 @@ check(
   !/function rekrutUnitEquivalents\(/.test(mainTsSrc),
 );
 
-const buildHudStateMatch = mainTsSrc.match(/function buildHudState\(\): HudState \{[\s\S]{0,20000}?\n {4}\}/);
-check('main.ts zawiera funkcje buildHudState(): HudState', buildHudStateMatch !== null);
+const buildHudStateMatch = mainTsSrc.match(/function buildHudState\(ownerId: number = ME\(\)\): HudState \{[\s\S]{0,20000}?\n {4}\}/);
+check('main.ts zawiera buildHudState(ownerId = ME()): HudState', buildHudStateMatch !== null);
 const buildHudStateBody = buildHudStateMatch ? buildHudStateMatch[0] : '';
 check(
-  'buildHudState zwraca rekrutEkw: rekrutUnitEquivalents(pobor.rekruci, player.era, mpMults.maxMult)',
-  /rekrutEkw: rekrutUnitEquivalents\(pobor\.rekruci, player\.era, mpMults\.maxMult\),/.test(buildHudStateBody),
+  'buildHudState zwraca rekrutEkw z epoki ps.era i mnożnika mpMults.costMult',
+  /rekrutEkw: rekrutUnitEquivalents\(pobor\.rekruci, ps\.era, mpMults\.costMult\),/.test(buildHudStateBody),
 );
 check(
-  'buildHudState zwraca kosztJednostki: unitManpowerCost(player.era, mpMults.maxMult)',
-  /kosztJednostki: unitManpowerCost\(player\.era, mpMults\.maxMult\),/.test(buildHudStateBody),
+  'buildHudState zwraca kosztJednostki z epoki ps.era i mnożnika mpMults.costMult',
+  /kosztJednostki: unitManpowerCost\(ps\.era, mpMults\.costMult\),/.test(buildHudStateBody),
 );
 
 // Okno rozszerzone 12000 -> 20000. N3 (RUNDA 2, Evaluator FAIL, sprostowanie 2026-08-16):
@@ -206,12 +206,12 @@ const buildEmpireSnapMatch = mainTsSrc.match(/function buildEmpireDetailSnap\(\)
 check('main.ts zawiera funkcje buildEmpireDetailSnap(): EmpireDetailSnap', buildEmpireSnapMatch !== null);
 const buildEmpireSnapBody = buildEmpireSnapMatch ? buildEmpireSnapMatch[0] : '';
 check(
-  'buildEmpireDetailSnap (power:{...}) zwraca rekrutEkw: rekrutUnitEquivalents(pobor.rekruci, epoka, maxMult)',
-  /rekrutEkw: rekrutUnitEquivalents\(pobor\.rekruci, epoka, maxMult\),/.test(buildEmpireSnapBody),
+  'buildEmpireDetailSnap (power:{...}) zwraca rekrutEkw: rekrutUnitEquivalents(pobor.rekruci, epoka, mpMults.costMult)',
+  /rekrutEkw: rekrutUnitEquivalents\(pobor\.rekruci, epoka, mpMults\.costMult\),/.test(buildEmpireSnapBody),
 );
 check(
-  'buildEmpireDetailSnap (power:{...}) zwraca kosztJednostki: unitManpowerCost(epoka, maxMult)',
-  /kosztJednostki: unitManpowerCost\(epoka, maxMult\),/.test(buildEmpireSnapBody),
+  'buildEmpireDetailSnap (power:{...}) zwraca kosztJednostki: unitManpowerCost(epoka, mpMults.costMult)',
+  /kosztJednostki: unitManpowerCost\(epoka, mpMults\.costMult\),/.test(buildEmpireSnapBody),
 );
 console.log('');
 
@@ -245,11 +245,22 @@ check(
   'chip "Armia" NIE uzywa juz s.rekruciRegenPerTurn jako "rate" (przeniesione do tooltipu)',
   !/rate: signed\(s\.rekruciRegenPerTurn/.test(armiaChipBody),
 );
+const recruitLabelSrc = fs.readFileSync(path.resolve(__dirname, '..', 'src', 'ui', 'recruitHudLabel.ts'), 'utf8');
+check(
+  'środkowy Manpower pokazuje samą liczbę pełnych jednostek w nawiasie',
+  /return `\$\{rekruciLabel\} \(\$\{fullUnits\}\)`;/.test(recruitLabelSrc)
+    && !/pełnych jedn\./.test(recruitLabelSrc),
+);
+check(
+  'tooltip Manpower wyjaśnia liczbę pełnych jednostek i koszt jednostki',
+  /Możesz zwerbować \$\{recruitCount\} pełnych jednostek\$\{recruitCostTitle\}/.test(hudTsSrc)
+    && /data-act="rekruci" title="\$\{escHtml\(recruitTitle\)\}"/.test(hudTsSrc),
+);
 
 check(
   'main.ts: buildHudState liczy rekrutEkw TA SAMA para funkcji co panel (rekrutUnitEquivalents + unitManpowerCost)',
-  /rekrutEkw: rekrutUnitEquivalents\(pobor\.rekruci, player\.era, mpMults\.maxMult\),/.test(mainTsSrc)
-    && /rekrutEkw: rekrutUnitEquivalents\(pobor\.rekruci, epoka, maxMult\),/.test(mainTsSrc),
+  /rekrutEkw: rekrutUnitEquivalents\(pobor\.rekruci, ps\.era, mpMults\.costMult\),/.test(mainTsSrc)
+    && /rekrutEkw: rekrutUnitEquivalents\(pobor\.rekruci, epoka, mpMults\.costMult\),/.test(mainTsSrc),
 );
 console.log('');
 

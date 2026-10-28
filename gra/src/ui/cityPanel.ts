@@ -546,6 +546,16 @@ export interface CityPanelConfig {
   onPodzialPracyOverrideToggle?: (cityId: string) => void;
   /** Kup jedną lub atomową partię jednostek za Pieniądz ze skarbca. */
   onPurchaseUnit?: (cityId: string, itemId: string, koszt: number, quantity?: number) => boolean | void;
+  /** Current capital-only General offer for the Army panel. */
+  getGeneralRecruitmentOffer?: (cityId: string) => {
+    item: ProductionItem | null;
+    alive: number;
+    queued: number;
+    limit: number;
+    title?: 'Wódz' | 'Generał';
+    disabledReason?: string;
+  } | null;
+  onPurchaseGeneral?: (cityId: string, itemId: string, koszt: number) => boolean | void;
   /** B11-A: anulowanie opłaconej pozycji w kolejce rekrutacji — pełny zwrot kosztu. */
   onCancelRecruitment?: (cityId: string, itemId: string, koszt: number) => void;
   /** Kup budynek za Pieniadz (koszt 1:1 z kosztem Pracy — natychmiastowa budowa). */
@@ -4973,7 +4983,8 @@ function buildWealthDetailCard(
   ]);
 
   appendDetailAlgo(card, 'Skąd bierze się wpływ do puli', [
-    `${daninaLbl} brutto z pól + bonus Targowiska → handelNetto (po korupcji, opcjonalnie ×Waluta).`,
+    `${daninaLbl} brutto z pól i budynków → lokalny podatek netto (po korupcji; ×Mennica, gdy aktywna).`,
+    'Dochód tras z premią Targowiska trafia osobno do skarbca i nie wchodzi do lokalnego podatku ani puli zamożności.',
     `Podział ${daninaLblGen}: %${HANDEL_ZAMOZNOSC_LABEL} × handelNetto → wpływ do puli zamożności.`,
     `Więcej % na Skarb = mniej ${HANDEL_ZAMOZNOSC_LABEL} = wolniejszy W, ale więcej 💰 od razu.`,
     `Więcej % na ${HANDEL_ZAMOZNOSC_LABEL} = szybszy W, ale mniej gotówki — ×Skarb rośnie z opóźnieniem.`,
@@ -5047,8 +5058,8 @@ function buildPracaDetailCard(
     'Kolejka pusta: cała Praca miasta (doBudynkow + doPuli) idzie do puli imperium.',
     'Kolejka zajęta: postęp += doBudynkow; gdy postęp ≥ koszt → budynek gotowy; reszta → doPuli.',
     maTargowisko
-      ? 'Część pracy (doPuli) + Waluta + Targowisko → dodatkowy pieniądz (osobny strumień).'
-      : 'Bez Targowiska doPuli nie konwertuje się na pieniądz.',
+      ? 'Targowisko odblokowuje ręczną konwersję wybranej części puli Pracy imperium na podatek; to nie jest stały dochód miasta.'
+      : 'Bez Targowiska ręczna konwersja puli Pracy imperium na podatek jest niedostępna.',
     'Brak pracy = brak postępu budowy i brak wpływu do puli — przypisz 👤 w okolicy.',
   ]);
 
@@ -8212,6 +8223,7 @@ export function appendUnitRecruitCompactRow(
   item: ProductionItem,
   data: GameData,
   skarb: number | undefined,
+  opts?: { unitLabel?: string; disabledReason?: string; onRecruit?: (quantity: number) => boolean | void },
 ): void {
   const udef = findUnitDef(data, item.id);
   if (!udef) return;
@@ -8226,10 +8238,11 @@ export function appendUnitRecruitCompactRow(
   const recruitOk = Object.keys(stockMissing).length === 0;
   const row = buildUnitRecruitCard({
     udef,
+    unitLabel: opts?.unitLabel,
     item,
     data,
     skarb,
-    canPurchase: !!cfg.onPurchaseUnit && canMp && recruitOk,
+    canPurchase: (opts?.onRecruit ? !opts.disabledReason : !!cfg.onPurchaseUnit) && canMp && recruitOk,
     treasuryIconHtml: cityPanelChipIconWrap('res-treasury', 14),
     mpCost,
     mpCostLabel: formatManpower(mpCost),
@@ -8243,13 +8256,66 @@ export function appendUnitRecruitCompactRow(
         .map(([k, v]) => `${v} ${stockResourceLabel(k)}`)
         .join(', ')
       : undefined,
+    disabledReason: opts?.disabledReason,
     manpowerMissingLabel: mpMissing != null && mpMissing > 0
       ? `Brakuje rekrutów: ${formatManpower(mpMissing)}`
       : undefined,
-    onRecruit: (quantity) => recruitUnit(city, item, quantity),
+    onRecruit: (quantity) => opts?.onRecruit
+      ? opts.onRecruit(quantity)
+      : recruitUnit(city, item, quantity),
   });
   attachHoverDetail(row, () => buildUnitDetailCard(udef, data), 220, 'left');
   scroll.appendChild(row);
+}
+
+/** Mount the exact city recruitment UI inside the map's Empire/Army panel. */
+export function mountCityRecruitmentCardsForArmy(cityId: string, host: HTMLElement): boolean {
+  const city = cfg.getCities?.().find(item => item.id === cityId);
+  const data = gameData();
+  if (!city || !data || !isMeCity(city.ownerId)) return false;
+  if (!document.getElementById(STYLE_ID)) ensureStyles();
+  host.classList.add('civ-cs', 'civ-emp-mass-city-recruit-list');
+  renderPurchasableUnits(host, city, data, { w4: true, visibleRows: LIST_SCROLL_VISIBLE_CATALOG });
+  const offer = cfg.getGeneralRecruitmentOffer?.(cityId);
+  if (offer?.item) {
+    const generalDef = findUnitDef(data, offer.item.id);
+    if (!generalDef) return true;
+    const generalMpCost = recruitManpowerCost(city, offer.item.id);
+    const generalMpAvailable = empireRekruciTotal(city);
+    const generalMpOk = empireRekruciAffordable(city, generalMpCost, generalMpAvailable);
+    const generalStockMissing = missingStockFor(ownerSurowcePoolFor(city), unitStockCost(generalDef));
+    const generalStockOk = Object.keys(generalStockMissing).length === 0;
+    const summary = el('div', 'unit-recruit-pool');
+    const leaderTitle = offer.title ?? 'Wódz';
+    summary.textContent = `${leaderTitle}: ${offer.alive} / ${offer.limit} · w kolejce ${offer.queued}`;
+    host.appendChild(summary);
+    const generalRow = buildUnitRecruitCard({
+      udef: generalDef,
+      unitLabel: `${leaderTitle} · ${offer.item.nazwa}`,
+      item: offer.item,
+      data,
+      skarb: cfg.getTreasury?.(city.ownerId),
+      canPurchase: !!cfg.onPurchaseGeneral && !offer.disabledReason && generalMpOk && generalStockOk,
+      treasuryIconHtml: cityPanelChipIconWrap('res-treasury', 14),
+      mpCost: generalMpCost,
+      mpCostLabel: formatManpower(generalMpCost),
+      manpowerAvailable: generalMpAvailable,
+      manpowerRequired: generalMpCost,
+      maxQuantity: 1,
+      stockChipsHtml: unitStockCostChipsHtml(generalDef, city),
+      resourceUpkeepChipsHtml: unitResourceUpkeepChipsHtml(generalDef),
+      stockMissingLabel: generalStockOk ? undefined : 'Brakuje w magazynie: ' + Object.entries(generalStockMissing)
+        .map(([key, amount]) => `${amount} ${stockResourceLabel(key)}`).join(', '),
+      manpowerMissingLabel: !generalMpOk && generalMpAvailable != null
+        ? `Brakuje rekrutów: ${formatManpower(Math.max(0, generalMpCost - generalMpAvailable))}`
+        : undefined,
+      disabledReason: offer.disabledReason,
+      onRecruit: () => cfg.onPurchaseGeneral?.(cityId, offer.item!.id, offer.item!.koszt),
+    });
+    generalRow.dataset.generalRecruit = 'true';
+    host.appendChild(generalRow);
+  }
+  return true;
 }
 
 function recruitUnit(city: City, item: ProductionItem, quantity = 1): boolean {

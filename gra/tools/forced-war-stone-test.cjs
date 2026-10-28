@@ -79,7 +79,7 @@ try {
   eq(cityLimit, 2, 'pokój po 2 miastach');
   eq(restTurns, 20, 'odpoczynek 20 tur');
   eq(cooldownTurns, 20, 'cooldown tej samej cywilizacji 20 tur');
-  eq(maxDurationTurns, 25, 'R-WOJNA-WYMUSZONA-REGULY-Q1 (Część C): limit czasu trwania pary = 25 tur');
+  eq(maxDurationTurns, 20, 'R-WOJNA-WYMUSZONA-REGULY-Q1 (Część C): limit czasu trwania pary = 20 tur');
 
   console.log('--- trigger po turn 25 i guardy ownera (R-WOJNA-WYMUSZONA-REGULY-Q1 Część A) ---');
   const eligibility = (currentTurn, overrides = {}) => isEligibleForStoneForcedWar({
@@ -97,9 +97,9 @@ try {
   assert(!eligibility(25, { isStoneEra: false }), 'brak dla ownera poza epoką Kamienia');
 
   console.log('--- R-WOJNA-WYMUSZONA-REGULY-Q1 (Część C): shouldEndStoneForcedWarByDuration ---');
-  assert(!shouldEndStoneForcedWarByDuration(24, 0), 'tura 24, start 0 -> wojna trwa (< 25 tur)');
-  assert(shouldEndStoneForcedWarByDuration(25, 0), 'tura 25, start 0 -> limit osiągnięty, koniec');
-  assert(shouldEndStoneForcedWarByDuration(55, 30), 'tura 55, start 30 -> 25 tur, limit osiągnięty (>= wystarczy)');
+  assert(!shouldEndStoneForcedWarByDuration(19, 0), 'tura 19, start 0 -> wojna trwa (< 20 tur)');
+  assert(shouldEndStoneForcedWarByDuration(20, 0), 'tura 20, start 0 -> limit osiągnięty, koniec');
+  assert(shouldEndStoneForcedWarByDuration(50, 30), 'tura 50, start 30 -> 20 tur, limit osiągnięty (>= wystarczy)');
   assert(!shouldEndStoneForcedWarByDuration(40, 30), 'tura 40, start 30 -> 10 tur, wojna trwa');
   assert(
     !shouldEndStoneForcedWarByDuration(500, undefined),

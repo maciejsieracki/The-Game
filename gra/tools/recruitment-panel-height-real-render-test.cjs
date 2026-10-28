@@ -15,7 +15,12 @@ const GRA = path.resolve(__dirname, '..');
 const CITY_TS = path.resolve(GRA, 'src/ui/cityPanel.ts');
 const TMP_RUN_ID = `${process.pid}-${Math.random().toString(36).slice(2, 8)}`;
 const TMP = path.join(os.tmpdir(), `civ-recruitment-panel-height-${TMP_RUN_ID}`);
-const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const FALLBACK_CHROMIUM_CANDIDATES = [
+  process.env.CHROME_PATH,
+  '/opt/pw-browsers/chromium-1194/chrome-linux/chrome',
+  '/usr/bin/chromium',
+  '/usr/bin/chromium-browser',
+].filter(Boolean);
 fs.mkdirSync(TMP, { recursive: true });
 
 const esbuild = require(path.resolve(GRA, 'node_modules', 'esbuild'));
@@ -119,8 +124,10 @@ async function launchBrowser() {
   try {
     return await chromium.launch({ headless: true });
   } catch (error) {
-    console.log(`[recruitment-panel-height] default Chromium unavailable; fallback ${FALLBACK_CHROME}`);
-    return chromium.launch({ headless: true, executablePath: FALLBACK_CHROME, args: ['--no-sandbox'] });
+    const fallback = FALLBACK_CHROMIUM_CANDIDATES.find(candidate => fs.existsSync(candidate));
+    if (!fallback) throw error;
+    console.log(`[recruitment-panel-height] default Chromium unavailable; fallback ${fallback}`);
+    return chromium.launch({ headless: true, executablePath: fallback, args: ['--no-sandbox'] });
   }
 }
 

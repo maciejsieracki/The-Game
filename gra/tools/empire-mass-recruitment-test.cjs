@@ -1,11 +1,10 @@
 'use strict';
 /**
- * Real-DOM/real-Chromium gate for the empire mass-recruitment table.
+ * Real-DOM/real-Chromium gate for city-grouped recruitment cards in Army.
  *
- * The production backend is intentionally tested through the existing source seam as well:
- * the UI test must not replace the atomic game mutation with a fake per-unit loop. The browser
- * part executes the actual exported panel renderer and control wiring, with a many-city fixture,
- * cost blockers, the water gate, and a one-unit click regression.
+ * Army must expose one city section per city and mount that city's shared CityPanel recruitment
+ * card list instead of a unit dropdown. Card behavior/gates are covered by cityPanel's own
+ * real-DOM recruitment tests.
  *
  * Usage (from gra/): node tools/empire-mass-recruitment-test.cjs
  */
@@ -20,7 +19,7 @@ const PANEL = path.resolve(GRA, 'src', 'ui', 'empireDetailPanel.ts');
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'civ-mass-recruitment-'));
 const ENTRY = path.join(tmp, 'entry.ts');
 const BUNDLE = path.join(tmp, 'bundle.js');
-const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const FALLBACK_CHROME = process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE || '/usr/bin/chromium';
 
 let passed = 0;
 let failed = 0;
@@ -42,10 +41,14 @@ function sourceGate() {
   const main = fs.readFileSync(path.resolve(GRA, 'src', 'main.ts'), 'utf8');
   check('backend function remains present', /function purchaseRecruitmentUnits\(/.test(main));
   check('single-unit path remains present', /purchaseRecruitmentUnit\(/.test(main));
-  check('UI action is configured from main', /configureEmpireMassRecruitment\(\{/.test(main));
+  check('Army mounts the shared CityPanel recruitment renderer',
+    /mountCityRecruitmentCardsForArmy\(cityId, host\)/.test(main)
+      && /mountCityRecruitmentCardsForArmy/.test(fs.readFileSync(path.resolve(GRA, 'src', 'ui', 'cityPanel.ts'), 'utf8')));
   check('UI is rendered in the Armia block', /renderMassRecruitmentSection\(cp, snap\.massRecruitment\)/.test(src));
   check('queue and completed counters have stable DOM markers',
     /data-mass-recruitment-queued/.test(src) && /data-mass-recruitment-completed/.test(src));
+  check('Army no longer renders a unit dropdown', !/data-mass-recruitment-unit/.test(src));
+  check('Army exposes per-city card mount points', /data-mass-recruitment-cards/.test(src));
 
   const fnStart = main.indexOf('function purchaseRecruitmentUnits(');
   const fnEnd = main.indexOf('\n    /** Anulowanie opłaconej rekrutacji', fnStart);
@@ -163,16 +166,10 @@ async function browserGate() {
   await page.addScriptTag({ path: BUNDLE });
 
   const manyCity = await page.evaluate(() => {
-    const normal = {
-      id: 'warrior', name: 'Wojownik', goldCost: 10, manpowerCost: 5,
-      stockCost: { Drewno: 2 }, requiresWater: false,
-    };
     const rows = Array.from({ length: 24 }, (_, i) => ({
       cityId: `city-${i + 1}`,
       name: `Miasto ${i + 1}`,
-      massRecruitment: {
-        options: [normal], queueCount: i % 3, waterAccess: true,
-      },
+      massRecruitment: { options: [], queueCount: i % 3, waterAccess: true },
     }));
     const mass = {
       ownerId: 0, treasury: 1000, manpower: 1000,
@@ -181,7 +178,15 @@ async function browserGate() {
     const body = document.getElementById('body');
     body.innerHTML = window.__massRecruitment.renderMassRecruitmentSection(rows, mass);
     const host = document.getElementById('host');
-    window.__massRecruitment.mountMassRecruitmentControls(host, { cityPobor: rows, massRecruitment: mass }, () => true);
+    const mounted = [];
+    window.__massRecruitment.mountMassRecruitmentControls(host, { cityPobor: rows, massRecruitment: mass }, (cityId, target) => {
+      mounted.push(cityId);
+      const row = document.createElement('div');
+      row.className = 'unit-recruit-compact-row';
+      row.innerHTML = '<button class="unit-recruit-submit">Rekrutuj</button>';
+      target.appendChild(row);
+      return true;
+    });
     const hostRect = host.getBoundingClientRect();
     const cityEls = Array.from(host.querySelectorAll('[data-mass-recruitment-city]'));
     const rects = cityEls.map(el => el.getBoundingClientRect());
@@ -190,98 +195,27 @@ async function browserGate() {
       cityCount: cityEls.length,
       hasCounters: body.querySelector('[data-mass-recruitment-queued]')?.textContent === '27'
         && body.querySelector('[data-mass-recruitment-completed]')?.textContent === '12',
-      formCount: body.querySelectorAll('[data-mass-recruitment-submit]').length,
+      cardCount: body.querySelectorAll('.unit-recruit-compact-row').length,
+      hasDropdown: body.querySelector('select') !== null,
+      mountedCities: mounted,
       maxCityWidth: Math.max(...rects.map(r => r.width)),
       hostWidth: hostRect.width,
       bodyScrollWidth: body.scrollWidth,
       bodyClientWidth: body.clientWidth,
-      visibleForm: (() => {
-        const rect = body.querySelector('[data-mass-recruitment-submit]').getBoundingClientRect();
+      visibleCard: (() => {
+        const rect = body.querySelector('.unit-recruit-compact-row').getBoundingClientRect();
         return rect.width > 0 && rect.height > 0;
       })(),
     };
   });
   eq(manyCity.cityCount, 24, 'real Chromium renders one mass-recruitment row per city');
   check('real Chromium shows both empire counters', manyCity.hasCounters);
-  eq(manyCity.formCount, 24, 'real Chromium renders selector/count/action for every city');
+  eq(manyCity.cardCount, 24, 'Army mounts a recruitment-card list under each city');
+  eq(manyCity.mountedCities.length, 24, 'each city id is passed to its shared CityPanel renderer');
+  check('Army does not show a unit dropdown', manyCity.hasDropdown === false);
   check('many-city rows fit the 404px panel', manyCity.maxCityWidth <= manyCity.hostWidth + 0.5, manyCity);
   check('many-city panel has no horizontal overflow', manyCity.bodyScrollWidth <= manyCity.bodyClientWidth + 1, manyCity);
-  check('mass-recruitment action has non-zero layout in Chromium', manyCity.visibleForm);
-
-  const gateResults = await page.evaluate(() => {
-    const host = document.getElementById('host');
-    const body = document.getElementById('body');
-    const opt = {
-      id: 'warrior', name: 'Wojownik', goldCost: 10, manpowerCost: 5,
-      stockCost: { Drewno: 2 }, requiresWater: false,
-    };
-    const renderCase = (rows, mass) => {
-      body.innerHTML = window.__massRecruitment.renderMassRecruitmentSection(rows, mass);
-      const calls = [];
-      window.__massRecruitment.mountMassRecruitmentControls(
-        host, { cityPobor: rows, massRecruitment: mass }, (cityId, itemId, count) => {
-          calls.push({ cityId, itemId, count });
-          return true;
-        },
-      );
-      const city = body.querySelector('[data-mass-recruitment-city]');
-      const button = city.querySelector('[data-mass-recruitment-submit]');
-      const status = city.querySelector('[data-mass-recruitment-status]');
-      return { disabled: button.disabled, status: status.textContent, button, calls };
-    };
-    const normalRow = (water = true, option = opt) => [{
-      cityId: 'test-city', name: 'Test',
-      massRecruitment: { options: [option], queueCount: 0, waterAccess: water },
-    }];
-    const gold = renderCase(normalRow(), {
-      ownerId: 0, treasury: 5, manpower: 100, stock: { Drewno: 100 }, queuedCount: 0, completedCount: 0,
-    });
-    const stock = renderCase(normalRow(), {
-      ownerId: 0, treasury: 100, manpower: 100, stock: { Drewno: 0 }, queuedCount: 0, completedCount: 0,
-    });
-    const manpower = renderCase(normalRow(), {
-      ownerId: 0, treasury: 100, manpower: 0, stock: { Drewno: 100 }, queuedCount: 0, completedCount: 0,
-    });
-    const naval = renderCase(normalRow(false, {
-      id: 'galley', name: 'Galera', goldCost: 10, manpowerCost: 5,
-      stockCost: { Drewno: 2 }, requiresWater: true,
-    }), {
-      ownerId: 0, treasury: 100, manpower: 100, stock: { Drewno: 100 }, queuedCount: 0, completedCount: 0,
-    });
-    const ready = renderCase(normalRow(), {
-      ownerId: 0, treasury: 100, manpower: 100, stock: { Drewno: 100 }, queuedCount: 0, completedCount: 0,
-    });
-    ready.button.click();
-    const batch = renderCase(normalRow(), {
-      ownerId: 0, treasury: 100, manpower: 100, stock: { Drewno: 100 }, queuedCount: 0, completedCount: 0,
-    });
-    const batchInput = batch.button.closest('[data-mass-recruitment-city]').querySelector('[data-mass-recruitment-count]');
-    batchInput.value = '3';
-    batchInput.dispatchEvent(new Event('input', { bubbles: true }));
-    batch.button.click();
-    return {
-      gold: { disabled: gold.disabled, status: gold.status },
-      stock: { disabled: stock.disabled, status: stock.status },
-      manpower: { disabled: manpower.disabled, status: manpower.status },
-      naval: { disabled: naval.disabled, status: naval.status },
-      ready: { disabled: ready.disabled, calls: ready.calls },
-      batch: { disabled: batch.disabled, calls: batch.calls },
-    };
-  });
-  check('insufficient gold disables the action with a reason',
-    gateResults.gold.disabled && /Za mało złota/.test(gateResults.gold.status), gateResults.gold);
-  check('insufficient stock disables the action with a reason',
-    gateResults.stock.disabled && /Za mało/.test(gateResults.stock.status), gateResults.stock);
-  check('insufficient Manpower disables the action with a reason',
-    gateResults.manpower.disabled && /Za mało Manpower/.test(gateResults.manpower.status), gateResults.manpower);
-  check('missing water disables a naval action with a reason',
-    gateResults.naval.disabled && /wody/.test(gateResults.naval.status), gateResults.naval);
-  check('one-unit regression calls the backend once with count=1',
-    !gateResults.ready.disabled && gateResults.ready.calls.length === 1
-      && gateResults.ready.calls[0].count === 1, gateResults.ready);
-  check('batch action calls the backend once with the requested count',
-    !gateResults.batch.disabled && gateResults.batch.calls.length === 1
-      && gateResults.batch.calls[0].count === 3, gateResults.batch);
+  check('real Chromium gives the mounted card a visible layout', manyCity.visibleCard);
 
   await browser.close();
 }

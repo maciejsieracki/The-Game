@@ -1606,7 +1606,7 @@ function buildNamedUnit(n: string, ownerColor_: number): THREE.Group | null {
   // („Włócznik sumeryjski", „Procarz (Huaracoc)", „Rydwan egipski"…) mają
   // własne wpisy wyżej i muszą zachować swoje modele. units.json: „Włócznik"/
   // „Spearman", „Wojownik z mieczem i tarczą"/„Swordsman", „Procarz"/„Slinger",
-  // „Rydwan (woły)"/„Ox Chariot" — wszystkie Epoka=Brąz.
+  // „Rydwan (woły)"/„Ox Chariot" — późny Kamień, odblokowany technologią Koło.
   if (n === 'wlocznik' || n === 'spearman') return buildWlocznikBrazOpus5(ownerColor_);
   if (n === 'wojownik z mieczem i tarcza' || n === 'swordsman') return buildMiecznikBrazOpus5(ownerColor_);
   if (n === 'procarz' || n === 'slinger') return buildProcarzBrazOpus5(ownerColor_);

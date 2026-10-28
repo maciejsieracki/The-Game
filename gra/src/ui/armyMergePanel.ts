@@ -48,7 +48,7 @@ function ensureStyles(): void {
   --gold:#e8d88a;--gold-dim:#c9a84c;--muted:#7a8498;--text:#e8ebf0;--sub:#b8c0cc;
   --merge:#50b070;--panel:linear-gradient(165deg,rgba(14,20,36,0.97),rgba(8,12,24,0.98));
   font:13px "Segoe UI",Tahoma,sans-serif;color:var(--text);
-  box-sizing:border-box;width:min(520px,100%);min-width:min(440px,100%);max-width:520px;
+  box-sizing:border-box;width:min(1080px,100%);min-width:min(720px,100%);max-width:1080px;
   max-height:calc(100vh - 32px);display:flex;flex-direction:column;
   background:var(--panel);border:1px solid rgba(232,216,138,0.38);border-radius:14px;
   box-shadow:0 20px 56px rgba(0,0,0,0.65);overflow:hidden;animation:amp-in .26s ease-out;
@@ -61,14 +61,14 @@ function ensureStyles(): void {
 .civ-amp-orn i.r{background:linear-gradient(270deg,transparent,var(--gold-dim));}
 .civ-amp-title{font:700 11px/1.2 Georgia,serif;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);}
 .civ-amp-sub{font-size:11px;color:var(--muted);margin-top:4px;}
-.civ-amp-body{flex:1 1 auto;min-height:0;overflow-y:auto;overflow-x:hidden;
-  padding:16px 18px 14px;display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:start;}
-.civ-amp-col{border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:10px;background:rgba(255,255,255,0.03);}
+.civ-amp-body{flex:1 1 auto;min-width:0;min-height:0;overflow-y:auto;overflow-x:hidden;
+  padding:12px 18px 14px;display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:10px;align-items:start;}
+.civ-amp-col{min-width:0;border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:10px;background:rgba(255,255,255,0.03);}
 .civ-amp-col-h{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:8px;}
+.civ-amp-units{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;}
 .civ-amp-row{display:flex;align-items:center;gap:8px;padding:6px 4px;border-radius:6px;
-  border:1px solid rgba(255,255,255,0.06);background:rgba(0,0,0,0.15);margin-bottom:5px;}
-.civ-amp-row:last-child{margin-bottom:0;}
-.civ-amp-row-ic{font-size:20px;line-height:1;width:28px;text-align:center;}
+  border:1px solid rgba(255,255,255,0.06);background:rgba(0,0,0,0.15);min-width:0;}
+.civ-amp-row-ic{font-size:18px;line-height:1;width:24px;flex:0 0 24px;text-align:center;}
 .civ-amp-row-meta{flex:1;min-width:0;}
 .civ-amp-row-name{font-size:12px;font-weight:700;color:#f0e8b8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .civ-amp-row-mv{font-size:10px;color:var(--muted);margin-top:2px;}
@@ -78,16 +78,20 @@ function ensureStyles(): void {
 .civ-amp-mid-lbl{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;text-align:center;}
 .civ-amp-result{flex:0 0 auto;margin:0 18px 12px;padding:8px 12px;border-radius:8px;text-align:center;
   font-size:12px;color:#c8ffd8;background:rgba(80,176,112,0.1);border:1px solid rgba(80,176,112,0.28);}
-.civ-amp-foot{flex:0 0 auto;padding:0 18px 16px;display:flex;gap:12px;justify-content:space-between;align-items:stretch;}
+.civ-amp-foot{flex:0 0 auto;padding:10px 18px;display:flex;gap:12px;justify-content:space-between;align-items:stretch;
+  background:rgba(7,11,20,0.96);border-bottom:1px solid rgba(232,216,138,0.14);}
 .civ-amp-btn{flex:1;font:inherit;font-size:12px;font-weight:700;cursor:pointer;border-radius:8px;padding:10px 14px;border:1px solid transparent;text-align:center;min-width:0;}
 .civ-amp-btn:hover{filter:brightness(1.08);}
 .civ-amp-btn-merge{background:linear-gradient(135deg,rgba(80,176,112,0.85),rgba(50,130,70,0.9));color:#0a120a;border-color:rgba(120,220,140,0.5);}
 .civ-amp-btn-sep{background:rgba(255,255,255,0.06);color:var(--sub);border-color:rgba(255,255,255,0.14);}
-@media(max-width:480px){
+@media(max-width:760px){
+  .civ-amp{min-width:0;width:100%;}
   .civ-amp-body{grid-template-columns:1fr;}
   .civ-amp-mid{padding:4px 0;flex-direction:row;}
   .civ-amp-arrow{transform:rotate(90deg);}
+  .civ-amp-units{grid-template-columns:repeat(2,minmax(0,1fr));}
 }
+@media(max-width:420px){.civ-amp-units{grid-template-columns:1fr;}}
 `;
   const s = document.createElement('style');
   s.id = STYLE_ID;
@@ -178,11 +182,16 @@ export function showArmyMergePanel(opts: ArmyMergePanelOpts): void {
       '<div class="civ-amp-title">Po\u0142\u0105czenie armii</div>' +
       '<div class="civ-amp-sub">Heks ' + esc(opts.hexLabel) + '</div>' +
     '</div>' +
+    '<div class="civ-amp-foot">' +
+      '<button type="button" class="civ-amp-btn civ-amp-btn-sep" data-act="sep">Zostaw osobno</button>' +
+      '<button type="button" class="civ-amp-btn civ-amp-btn-merge" data-act="merge">Po\u0142\u0105cz armie</button>' +
+    '</div>' +
+    '<div class="civ-amp-result">' + esc(resultLabel) + '</div>' +
     '<div class="civ-amp-body">' +
       '<div class="civ-amp-col">' +
         '<div class="civ-amp-col-h">Na polu (' + opts.existing.length + ')</div>' +
         (opts.existing.length > 0
-          ? opts.existing.map(u => unitRowHtml(u, false)).join('')
+          ? '<div class="civ-amp-units">' + opts.existing.map(u => unitRowHtml(u, false)).join('') + '</div>'
           : '<div class="civ-amp-row-mv" style="padding:4px">—</div>') +
       '</div>' +
       '<div class="civ-amp-mid">' +
@@ -193,11 +202,6 @@ export function showArmyMergePanel(opts: ArmyMergePanelOpts): void {
         '<div class="civ-amp-col-h">Przybywa</div>' +
         unitRowHtml(opts.arriving, true) +
       '</div>' +
-    '</div>' +
-    '<div class="civ-amp-result">' + esc(resultLabel) + '</div>' +
-    '<div class="civ-amp-foot">' +
-      '<button type="button" class="civ-amp-btn civ-amp-btn-sep" data-act="sep">Zostaw osobno</button>' +
-      '<button type="button" class="civ-amp-btn civ-amp-btn-merge" data-act="merge">Po\u0142\u0105cz armie</button>' +
     '</div>';
 
   box.querySelector('[data-act="merge"]')?.addEventListener('click', () => pick(opts.onMerge));

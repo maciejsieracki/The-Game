@@ -41,6 +41,8 @@ export interface RuntimeUnit {
   id: string;
   ownerId: number;
   typeId: string;
+  /** Special civilian command unit; fights with the stats/model of its current typeId. */
+  isGeneral?: boolean;
   /** Model category for this unit (weapon/class type). See categoryOf(). */
   category: string;
   q: number;

@@ -12,18 +12,9 @@ export interface ForcedWarPairState {
   capturedByAttacker: number;
   capturedByDefender: number;
   /**
-   * R-WOJNA-WYMUSZONA-REGULY-Q1 (Część C, Kamień + Brąz WYŁĄCZNIE): tura rozpoczęcia
-   * TEJ KONKRETNEJ pary — podstawa limitu czasu trwania 25 tur, niezależnego od progu
-   * miast. OPCJONALNE i CELOWO NIEwypełniane przez Żelazo (`forced-war-iron.ts`, poza
-   * zakresem tego dispatchu — Żelazo ma świadomie odrębny mechanizm wyzwalania,
-   * `R-EPOKA-ZELAZO-WYMUSZONA-WOJNA-Q1`, i NIE dostaje limitu czasu trwania w tej
-   * naprawie) — gdyby to pole było wymagane, literały `{ attackerId, targetId,
-   * capturedByAttacker: 0, capturedByDefender: 0 }` budowane w gałęzi Żelaza w main.ts
-   * (poza allowlistą tego dispatchu, NIETKNIĘTE) przestałyby się kompilować. Brak pola
-   * (stary zapis sprzed tej naprawy, LUB para Żelaza) czytany jako `st.startTurn ??
-   * <bieżąca tura>` przez Kamień/Brąz — main.ts backfilluje wartość PRZY WCZYTANIU
-   * zapisu tak, by limit czasu liczył od realnego (lub, dla starych zapisów, od
-   * momentu wczytania) startu, nie zerował się co turę.
+   * Tura rozpoczęcia tej konkretnej pary — podstawa wspólnego 20-turowego limitu
+   * wymuszonych wojen epokowych Kamienia, Brązu i Żelaza. Opcjonalne dla zgodności ze
+   * starymi zapisami; main.ts backfilluje brakujące pole przy wczytaniu.
    */
   startTurn?: number;
 }
@@ -147,6 +138,39 @@ export function countActiveForcedWarsForOwner(
 }
 
 export type ForcedWarEraTag = 'bronze' | 'stone' | 'iron';
+
+export interface ForcedEraPeaceLock {
+  ownerId: number;
+  era: number;
+}
+
+export type ForcedEraPeaceLocksSaveState = Array<[string, ForcedEraPeaceLock]>;
+
+/** Serialize the per-pair era peace lock exactly as stored in a game save. */
+export function serializeForcedEraPeaceLocks(
+  locks: ReadonlyMap<string, ForcedEraPeaceLock>,
+): ForcedEraPeaceLocksSaveState {
+  return Array.from(locks.entries());
+}
+
+/** Restore validated lock entries; missing or malformed fields are treated as old-save empties. */
+export function restoreForcedEraPeaceLocks(saved: unknown): Map<string, ForcedEraPeaceLock> {
+  const restored = new Map<string, ForcedEraPeaceLock>();
+  if (!Array.isArray(saved)) return restored;
+  for (const row of saved) {
+    if (!Array.isArray(row) || typeof row[0] !== 'string' || row[1] == null || typeof row[1] !== 'object') continue;
+    const lock = row[1] as Partial<ForcedEraPeaceLock>;
+    if (Number.isFinite(lock.ownerId) && Number.isFinite(lock.era)) {
+      restored.set(row[0], { ownerId: lock.ownerId!, era: lock.era! });
+    }
+  }
+  return restored;
+}
+
+/** A forced-era peace lock is released only after its declaring civilization advances. */
+export function isForcedEraPeaceLocked(currentEra: number, warEra: number): boolean {
+  return currentEra <= warEra;
+}
 
 /**
  * Podmiot "triggered" tej tury (shouldSearch===true per epoka main.ts, PLUS gracz gdy

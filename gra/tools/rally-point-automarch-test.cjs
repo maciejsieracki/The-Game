@@ -1,11 +1,10 @@
 'use strict';
 
 /**
- * Focused owner-contract 5B gate.
+ * Focused General-follow movement/recruitment gate.
  *
- * The test exercises the real rally-point, movement, city-hex, and save/load
- * modules. The launch model deliberately snapshots leaders before a recruit is
- * appended, which is the contract that prevents implicit automarching.
+ * The test exercises real movement, city-hex, march save/load modules and checks
+ * that the live General is the only Army destination control.
  *
  * Usage (from gra/): node tools/rally-point-automarch-test.cjs
  */
@@ -21,13 +20,6 @@ const MAIN_TS = path.resolve(__dirname, '..', 'src', 'main.ts');
 fs.writeFileSync(
   ENTRY,
   `export {
-  clearRallyPoint,
-  rallyLaunchLeaderIds,
-  rallyPointsFromSave,
-  rallyPointsToSave,
-  setRallyPoint,
-} from '../src/game/rally-point';
-export {
   executeMarchStep,
   planPathTurns,
   plannedMarchesFromSave,
@@ -35,7 +27,8 @@ export {
 } from '../src/game/planned-march';
 export { pathCost, terrainMoveCost } from '../src/units/setup';
 export { canUnitOccupyCityHex } from '../src/game/city-hex-movement';
-export { deserializeGame, serializeGame } from '../src/game/save';`,
+export { deserializeGame, serializeGame } from '../src/game/save';
+export { generalLimitForEra, generalSlotsUsed, canRecruitGeneral, attemptGeneralPurchase, generalFollowDestination } from '../src/game/generals';`,
   'utf8',
 );
 
@@ -98,53 +91,71 @@ try {
 
   const {
     canUnitOccupyCityHex,
-    clearRallyPoint,
+    canRecruitGeneral,
     deserializeGame,
     executeMarchStep,
     pathCost,
     planPathTurns,
     plannedMarchesFromSave,
     plannedMarchesToSave,
-    rallyLaunchLeaderIds,
-    rallyPointsFromSave,
-    rallyPointsToSave,
+    generalLimitForEra,
+    generalSlotsUsed,
     serializeGame,
-    setRallyPoint,
     terrainMoveCost,
+    attemptGeneralPurchase,
+    generalFollowDestination,
   } = require(BUNDLE);
 
-  // Create/replace one point per owner, without sharing mutable references.
-  const points = new Map();
-  const pointInput = { q: 3, r: 0 };
-  setRallyPoint(points, 0, pointInput);
-  setRallyPoint(points, 1, { q: 2, r: 0 });
-  pointInput.q = 99;
-  check('create point stores the selected owner point', points.get(0)?.q === 3);
-  check('one global point is isolated per empire', points.size === 2 && points.get(1)?.q === 2);
-  setRallyPoint(points, 0, { q: 3, r: 0 });
-  check('setting a point replaces the previous point for that empire', points.size === 2);
-  clearRallyPoint(points, 1);
-  check('clear removes only the requested empire point', !points.has(1) && points.has(0));
+  check('General cap grows by one at each era',
+    generalLimitForEra(1) === 1 && generalLimitForEra(2) === 2 && generalLimitForEra(3) === 3);
+  check('living and queued Generals both use the era total cap',
+    generalSlotsUsed({ alive: 1, queued: 1 }) === 2
+      && !canRecruitGeneral(2, { alive: 1, queued: 1 })
+      && canRecruitGeneral(3, { alive: 1, queued: 1 }));
 
-  // Assignment is per real stack, including separate co-located stack IDs.
+  let queuedGeneralPurchases = 0;
+  const validGeneralPurchase = {
+    cityId: 'capital', capitalCityId: 'capital', era: 2, alive: 0, queued: 0,
+    requestedQuantity: 1, requestedItemId: 'phalanx', requestedCost: 40,
+    offeredItemId: 'phalanx', offeredCost: 40,
+  };
+  check('successful capital General purchase runs the production continuation',
+    attemptGeneralPurchase(validGeneralPurchase, () => { queuedGeneralPurchases += 1; return true; })
+      && queuedGeneralPurchases === 1);
+  check('General purchase is rejected outside the capital without queueing',
+    !attemptGeneralPurchase({ ...validGeneralPurchase, cityId: 'colony' },
+      () => { queuedGeneralPurchases += 1; return true; })
+      && queuedGeneralPurchases === 1);
+  check('General purchase is rejected at era cap without queueing',
+    !attemptGeneralPurchase({ ...validGeneralPurchase, alive: 1, era: 1 },
+      () => { queuedGeneralPurchases += 1; return true; })
+      && queuedGeneralPurchases === 1);
+  check('General purchase rejects an offer whose item/cost no longer matches',
+    !attemptGeneralPurchase({ ...validGeneralPurchase, offeredCost: 41 },
+      () => { queuedGeneralPurchases += 1; return true; })
+      && queuedGeneralPurchases === 1);
+
+  // The General is a live moving destination; its march uses the existing path solver.
   const stackLead = makeUnit('u1', { stackGroupId: 'stack-a' });
-  const stackMate = makeUnit('u1b', { stackGroupId: 'stack-a' });
-  const coLocatedStackLead = makeUnit('u2', { stackGroupId: 'stack-b' });
-  const garrison = makeUnit('g1', { stackGroupId: 'garrison', inGarnizon: true });
-  const enemy = makeUnit('enemy', { ownerId: 1, q: 1, r: 0 });
-  const unitsAtLaunch = [stackLead, stackMate, coLocatedStackLead, garrison, enemy];
-  const leaders = rallyLaunchLeaderIds(unitsAtLaunch, 0);
-  check('assign unit/army returns one leader for each current stack',
-    leaders.length === 2 && leaders[0] === 'u1' && leaders[1] === 'u2');
-  check('garrison and other empires are excluded from world-map launch',
-    !leaders.includes('g1') && !leaders.includes('enemy'));
+  const general = makeUnit('general-1', { q: 3, r: 0, isGeneral: true });
+  const units = [stackLead, general];
+  const newRecruit = makeUnit('recruit-1', { q: 1, r: 0 });
+  const recruitFollow = generalFollowDestination(newRecruit, general);
+  check('newly purchased unit resolves destination from the live General at runtime',
+    recruitFollow?.point.q === 3 && recruitFollow.point.r === 0
+      && recruitFollow.generalTargetId === 'general-1');
+  general.q = 2;
+  const retargetedRecruitFollow = generalFollowDestination(newRecruit, general);
+  check('new recruit destination tracks General movement instead of a stale rally point',
+    retargetedRecruitFollow?.point.q === 2 && retargetedRecruitFollow.generalTargetId === 'general-1');
+  general.q = 3;
 
   // Normal pathfinding and road cost use the existing movement functions.
   const plainMap = makeLineMap();
   const roadMap = makeLineMap({ 1: 'droga', 2: 'droga' });
   const plainPlan = planPathTurns(stackLead, 3, 0, plainMap, new Set(), 1, 1, terrainMoveCost);
   const roadPlan = planPathTurns(stackLead, 3, 0, roadMap, new Set(), 1, 1, terrainMoveCost);
-  check('rally destination has a normal path',
+  check('General destination has a normal path',
     roadPlan.reachable && roadPlan.fullPath.length === 3);
   check('road movement cost is used by the planned march',
     terrainMoveCost(roadMap.hexes['1,0']) === 1 / 3
@@ -155,9 +166,9 @@ try {
 
   const ownCity = { q: 3, r: 0, ownerId: 0 };
   const foreignCity = { q: 3, r: 0, ownerId: 1 };
-  check('own city hex remains a valid rally destination',
+  check('own city hex remains a valid General destination',
     canUnitOccupyCityHex(0, ownCity.q, ownCity.r, [ownCity]));
-  check('foreign city hex is rejected as a rally destination',
+  check('foreign city hex is rejected as a General destination',
     !canUnitOccupyCityHex(0, foreignCity.q, foreignCity.r, [foreignCity]));
   const step = executeMarchStep(
     stackLead,
@@ -170,105 +181,108 @@ try {
     undefined,
     terrainMoveCost,
   );
-  check('explicit launch reuses executable normal march segments',
+  check('General-follow order reuses executable normal march segments',
     step.ok && step.movePath.length === 2 && step.cost === 2 / 3);
 
-  // Explicit launch snapshots existing leaders. A later recruit is not added.
-  const launchedMarches = new Map();
-  for (const id of leaders) {
-    launchedMarches.set(id, { destQ: 3, destR: 0 });
-  }
-  const launchUnitIds = new Set(unitsAtLaunch.map(unit => unit.id));
-  const obeysNoAutoMarchContract = (plans, currentUnits) => currentUnits
-    .filter(unit => !launchUnitIds.has(unit.id))
-    .every(unit => !plans.has(unit.id));
-  const recruit = makeUnit('new-recruit', { q: 0, r: 0, stackGroupId: 'stack-new' });
-  const unitsAfterRecruit = [...unitsAtLaunch, recruit];
-  check('explicit launch creates plans for current units',
-    launchedMarches.size === 2 && launchedMarches.has('u1') && launchedMarches.has('u2'));
-  check('recruit after point/launch exists without an automatic march',
-    obeysNoAutoMarchContract(launchedMarches, unitsAfterRecruit)
-      && recruit.q === 0 && recruit.r === 0);
-
-  // Mutation negative control: an implementation that appends every unit after
-  // launch must fail the same no-auto-march assertion.
-  const mutantMarches = new Map(launchedMarches);
-  for (const unit of unitsAfterRecruit.filter(u => u.ownerId === 0)) {
-    mutantMarches.set(unit.id, { destQ: 3, destR: 0 });
-  }
-  check('negative control detects automatic recruit enlistment',
-    !obeysNoAutoMarchContract(mutantMarches, unitsAfterRecruit));
-
-  // Planned marches and the rally point survive the real save serializer.
-  const marchSave = plannedMarchesToSave(launchedMarches);
+  // A General-follow order survives save/load with its live target identity.
+  const generalMarches = new Map([['u1', { destQ: 3, destR: 0, generalTargetId: general.id }]]);
+  const marchSave = plannedMarchesToSave(generalMarches);
   const roundMarches = plannedMarchesFromSave(
     marchSave.autoMarch,
     marchSave.plannedMarches,
-    unitsAtLaunch,
+    units,
     0,
   );
-  check('explicit launch plans serialize as planned marches',
-    roundMarches.size === 2 && roundMarches.get('u1')?.destQ === 3);
-  const rallySave = rallyPointsToSave(points);
+  check('General-follow plans serialize to save',
+    roundMarches.size === 1 && roundMarches.get('u1')?.destQ === 3
+      && roundMarches.get('u1')?.generalTargetId === general.id);
   const json = serializeGame({
     wersja: 3,
     tura: 4,
     seed: 42,
-    units: unitsAtLaunch,
+    units,
     cities: [],
     exploredByHuman: [],
     gracze: [],
     humanOwnerIds: [0],
     activeHumanOwnerId: 0,
-    rallyPoints: rallySave,
     plannedMarches: marchSave.plannedMarches,
     autoMarch: marchSave.autoMarch,
   });
   const loaded = deserializeGame(json);
-  const restoredPoints = rallyPointsFromSave(loaded.rallyPoints);
-  check('save/load preserves the rally point',
-    restoredPoints.get(0)?.q === 3 && restoredPoints.get(0)?.r === 0);
-  check('save/load preserves the planned launch',
-    loaded.plannedMarches?.u1?.destQ === 3 && loaded.autoMarch?.leaderId === 'u1');
-  const malformed = rallyPointsFromSave({
-    0: { q: 4.9, r: 2.1 },
-    bad: { q: 1, r: 1 },
-    2: { q: Infinity, r: 1 },
-  });
-  check('save loader ignores malformed points and normalizes coordinates',
-    malformed.get(0)?.q === 4 && malformed.get(0)?.r === 2
-      && !malformed.has(2) && !malformed.has(NaN));
-
+  check('save/load preserves the General-follow order',
+    loaded.plannedMarches?.u1?.destQ === 3 && loaded.autoMarch?.leaderId === 'u1'
+      && loaded.plannedMarches?.u1?.generalTargetId === 'general-1');
+  const followerAtStaleGeneralHex = makeUnit('following-unit', { q: 2, r: 0 });
+  const staleGeneralOrder = plannedMarchesFromSave(undefined, {
+    'following-unit': { destQ: 2, destR: 0, generalTargetId: 'general-1' },
+  }, [followerAtStaleGeneralHex], 0);
+  check('save loader preserves a live-General order when saved coordinates match follower',
+    staleGeneralOrder.get('following-unit')?.generalTargetId === 'general-1');
   // Verify the production integration exposes the explicit launch path.
   const mainSource = fs.readFileSync(MAIN_TS, 'utf8');
   const mapClickStart = mainSource.indexOf("canvas.addEventListener('mouseup'");
-  const planStart = mainSource.indexOf('function planRallyMarchForUnit');
-  const launchStart = mainSource.indexOf('function launchRallyPointForOwner');
-  const launchEnd = mainSource.indexOf('function setRallyPointFromMap', launchStart);
+  const planStart = mainSource.indexOf('function planGeneralFollowMarch');
   const mapClickBody = mapClickStart >= 0 ? mainSource.slice(mapClickStart) : '';
-  const planBody = planStart >= 0 && launchStart > planStart
-    ? mainSource.slice(planStart, launchStart)
-    : '';
-  const launchBody = launchStart >= 0 && launchEnd > launchStart
-    ? mainSource.slice(launchStart, launchEnd)
-    : '';
-  const rallyClickPos = mapClickBody.indexOf('setRallyPointFromMap(hit.q, hit.r)');
-  const ordinaryDismissPos = rallyClickPos >= 0
-    ? mapClickBody.indexOf('dismissMapOverlayModes();', rallyClickPos)
-    : -1;
-  check('main UI exposes one point, explicit launch, and clear actions',
-    mainSource.includes("id: 'rally-set'")
-      && mainSource.includes("id: 'rally-launch'")
-      && mainSource.includes("id: 'rally-clear'"));
-  check('main launch uses current leaders then the existing march queue',
-    launchBody.includes('rallyLaunchLeaderIds(units, ownerId)')
-      && planBody.includes('plannedMarches.set(u.id, dest)')
-      && launchBody.includes('enqueueMarchSegments(assigned)'));
-  check('rally picker returns before ordinary map interaction',
-    mainSource.indexOf('if (rallyPointMode) {') > mainSource.indexOf('const hit = pickMapTarget')
-      && mainSource.includes('setRallyPointFromMap(hit.q, hit.r)')
-      && rallyClickPos >= 0
-      && ordinaryDismissPos > rallyClickPos);
+  const planEnd = mainSource.indexOf('function syncGeneralMarchTargets', planStart);
+  const planBody = planStart >= 0 && planEnd > planStart ? mainSource.slice(planStart, planEnd) : '';
+  check('old manual rally controls are absent from map-unit action UI',
+    !mainSource.includes("id: 'rally-set'")
+      && !mainSource.includes("id: 'rally-launch'")
+      && !mainSource.includes("id: 'rally-clear'"));
+  const empirePanelSource = fs.readFileSync(path.resolve(__dirname, '../src/ui/empireDetailPanel.ts'), 'utf8');
+  const cityPanelSource = fs.readFileSync(path.resolve(__dirname, '../src/ui/cityPanel.ts'), 'utf8');
+  check('Army panel no longer exposes manual rally-point controls',
+    !empirePanelSource.includes('data-army-rally-set')
+      && !empirePanelSource.includes('data-army-rally-launch')
+      && !empirePanelSource.includes('data-army-rally-clear')
+      && !empirePanelSource.includes('renderRallyPointControls')
+      && !empirePanelSource.includes('wireRallyPointControls'));
+  check('Army runtime no longer wires manual point picking or launch callbacks',
+    !mainSource.includes('getRallyPoint:')
+      && !mainSource.includes('onLaunchRallyPoint:')
+      && !mainSource.includes('onToggleRallyPointPick:')
+      && !mainSource.includes('launchRallyPointForOwner'));
+  check('new city recruits automatically receive a live-General march plan',
+    mainSource.includes('generalFollowDestination(u, general)')
+      && mainSource.includes('planGeneralFollowMarch(\n        u, follow.point, follow.generalTargetId, false,')
+      && mainSource.includes('isGeneral: rec.isGeneral === true'));
+  check('General-following plans retarget and discard dead/missing Generals',
+    mainSource.includes('function syncGeneralMarchTargets()')
+      && mainSource.includes('destQ: general.q, destR: general.r')
+      && mainSource.includes('general.isGeneral !== true'));
+  check('General recruitment runtime uses the capital/era eligibility gate',
+    mainSource.includes('return attemptGeneralPurchase({')
+      && mainSource.includes('capitalCityId: capitalCityIdForOwner(ownerId)')
+      && mainSource.includes('era: empireEpochForOwner(ownerId)')
+      && mainSource.includes('sortByUnitPowerDescending')
+      && mainSource.includes('item.isGeneral === true'));
+  check('General recruitment card displays exactly one owner-building title prefix',
+    cityPanelSource.includes("const leaderTitle = offer.title ?? 'Wódz'")
+      && cityPanelSource.includes('unitLabel: `${leaderTitle} · ${offer.item.nazwa}`')
+      && mainSource.includes('item: best ? { ...best, isGeneral: true } : null')
+      && !mainSource.includes('item: best ? { ...best, isGeneral: true, nazwa: `${armyLeaderTitle'));
+  check('best-unit form refresh preserves wounded health fraction and unit identity',
+    mainSource.includes('syncGeneralFormsForOwner(0)')
+      && mainSource.includes('oldHp / oldHpMax')
+      && mainSource.includes('general.typeId = best.id'));
+  check('work-to-tax conversion retains behavior with themed accessible controls',
+    empirePanelSource.includes('civ-emp-work-tax-controls')
+      && empirePanelSource.includes('aria-label="Praca do zamiany na podatek"')
+      && empirePanelSource.includes('data-work-tax-submit')
+      && empirePanelSource.includes('.civ-emp-work-tax button:focus-visible'));
+  check('General is the march destination for new recruits; destination follows the live General',
+    mainSource.includes('generalFollowDestination(u, general)')
+      && mainSource.includes('planGeneralFollowMarch(\n        u, follow.point, follow.generalTargetId, false,')
+      && planBody.includes('generalTargetId ? { generalTargetId }')
+      && mainSource.includes('plannedMarches.set(unitId, { ...dest, destQ: general.q, destR: general.r })'));
+  check('arrival clears the General-following march at the General position',
+    mainSource.includes('follower.q === general.q && follower.r === general.r')
+      && planBody.includes('plannedMarches.set(u.id, dest)'));
+  check('map click has no manual rally picker interception',
+    !mainSource.includes('rallyPointMode')
+      && !mainSource.includes('setRallyPointFromMap')
+      && !mapClickBody.includes('id: \'rally-set\''));
 
   console.log(`\nrally-point-automarch-test: ${pass} pass, ${fail} fail`);
   process.exitCode = fail > 0 ? 1 : 0;

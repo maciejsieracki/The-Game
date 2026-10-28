@@ -51,6 +51,8 @@ export interface ExecuteAiCityMoveOptions {
   unitIsCivilian: boolean;
   targetVisible: boolean;
   canOccupyCityHex: boolean;
+  /** Stan wojny sprawdzany ponownie przy wykonaniu rozkazu, nie tylko przy jego planowaniu. */
+  canEngageOwner?: (targetOwnerId: number) => boolean;
   blockedKeys: Set<string>;
   destinationKey: string;
   computePath: (
@@ -91,6 +93,7 @@ export function executeAiCityMove(
       && city.ownerId !== unit.ownerId,
   );
   const canEnterEmptyCity = destinationCity !== undefined
+    && (opts.canEngageOwner?.(destinationCity.ownerId) ?? true)
     && command.targetCityId === destinationCity.id
     && opts.targetVisible
     && canAiEnterEmptyEnemyCity(

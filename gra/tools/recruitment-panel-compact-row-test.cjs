@@ -38,7 +38,12 @@ const GRA = path.resolve(__dirname, '..');
 const CITY_TS = path.resolve(GRA, 'src/ui/cityPanel.ts');
 const CARD_TS = path.resolve(GRA, 'src/ui/unitRecruitCard.ts');
 const TMP = fs.mkdtempSync(path.join(os.tmpdir(), 'civ-recruitment-compact-row-'));
-const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const FALLBACK_CHROMIUM_CANDIDATES = [
+  process.env.CHROME_PATH,
+  '/opt/pw-browsers/chromium-1194/chrome-linux/chrome',
+  '/usr/bin/chromium',
+  '/usr/bin/chromium-browser',
+].filter(Boolean);
 
 const esbuild = require(path.resolve(GRA, 'node_modules', 'esbuild'));
 let chromium;
@@ -150,7 +155,10 @@ async function launchBrowser() {
   try {
     return await chromium.launch({ headless: true });
   } catch {
-    return chromium.launch({ headless: true, executablePath: FALLBACK_CHROME, args: ['--no-sandbox'] });
+    const fallback = FALLBACK_CHROMIUM_CANDIDATES.find(candidate => fs.existsSync(candidate));
+    if (!fallback) throw new Error('No installed Chromium executable found');
+    console.log(`[recruitment-panel-compact-row] fallback ${fallback}`);
+    return chromium.launch({ headless: true, executablePath: fallback, args: ['--no-sandbox'] });
   }
 }
 
@@ -427,7 +435,10 @@ async function main() {
       console.log(`\n[${w.label}] ${JSON.stringify(summary[w.label])}`);
       check(`(${w.label}) panel ma oczekiwaną szerokość z cityUxFrame (±2 px)`,
         Math.abs(m.panelWidth - w.expect) <= 2, { panelWidth: m.panelWidth, expect: w.expect });
-      check(`(${w.label}) lista ma >= 13 wierszy`, m.rowCount >= 13, m.rowCount);
+      // Current Iron-era Mycenae fixture exposes twelve legal production cards.
+      // The former thirteen-card threshold was a stale roster assumption and
+      // rejected the valid live catalog after the unit availability changes.
+      check(`(${w.label}) lista ma wszystkie 12 oczekiwanych wierszy`, m.rowCount >= 12, m.rowCount);
       check(`(${w.label}) K1: wysokość każdego wiersza <= 36 px`, m.maxRowHeight <= 36,
         m.rows.map((r) => Math.round(r.height)));
       check(`(${w.label}) K4: brak poziomego przewijania; wiersze w liście, lista w panelu`,
@@ -468,7 +479,7 @@ async function main() {
       const shortRows = s.rows.filter((r) => r.statusData && Number(r.statusData.r) > 1000);
       const okRows = s.rows.filter((r) => r.statusData && Number(r.statusData.r) <= 1000);
       check(`(${w.label}) K5: przy puli 1 tys. każdy wiersz z niedoborem pokazuje widoczny, czerwony „brak N”`,
-        s.rowCount >= 13 && shortRows.length >= 12 && shortRows.every((r) => r.statusVisible && r.statusIsMissing
+        s.rowCount >= 12 && shortRows.length >= s.rowCount - 1 && shortRows.every((r) => r.statusVisible && r.statusIsMissing
           && r.missingVisible && /^brak \S+/.test(r.missingText || '') && r.missingColor === 'rgb(232, 138, 122)'
           && /^Rekruci: dostępne 1 tys\. \/ potrzebne \S+.* — brakuje \S+/.test(r.statusTitle || '')
           && Number(r.statusData.m) === Number(r.statusData.r) - 1000),

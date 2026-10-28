@@ -18,13 +18,14 @@ import type { GameData, BuildingDef } from '../data/loader';
 import aiParamsRaw from '../../data/ai-params.json';
 import type { RuntimeUnit } from '../units/setup';
 import { isWarAllInCapitalEnabled, planWarAllInCapital, type WarAllInContext } from './warAllInCapital';
+import {
+  recordAiGeneralGatherTurn,
+  type AiGeneralWarCampaign,
+} from './ai-general-war-campaign';
 import { armyFieldPower, type UnitPowerInput } from './unit-power';
 import {
   ARMY_CONSOLIDATION_HOME_GROUP_SIZE,
-  ARMY_CONSOLIDATION_MAX_PER_HEX,
-  ARMY_CONSOLIDATION_RALLY_SEARCH_HEX,
   assignRallyTargets,
-  buildRallyCandidates,
   isArmyConsolidationEnabled,
   pickRallyCity,
   splitIntoWarArmies,
@@ -468,6 +469,13 @@ export interface AITurnOpts {
    * jednostki bojowe tego AI ida na najblizsza stolice (patrz warAllInCapital.ts).
    */
   warAllIn?: WarAllInContext;
+  /** Active major-AI General-led war cycle; absent outside an eligible civilization war. */
+  aiGeneralWarCampaign?: AiGeneralWarCampaign & {
+    rallyQ: number;
+    rallyR: number;
+    target: { ownerId: number; cityId: string; q: number; r: number };
+    turn: number;
+  };
   /**
    * R-WEB-ARMY-CONSOLIDATION-Q1 (tylko gdy flaga ARMY_CONSOLIDATION_ENABLED ON; brak = baza):
    * id aktualnej stolicy tej cywilizacji (main.ts: capitalCityIdForOwner). Punkt zbiorki w pokoju.
@@ -3253,6 +3261,11 @@ export function decideAITurn(
   );
   if (expansionFortCmd !== null) commands.push(expansionFortCmd);
 
+  // Active leader campaign owns this turn's military orders.
+  if (appendAiGeneralCampaignOrders(playerId, myUnits, units, cities, map, data, opts, commands)) {
+    return commands;
+  }
+
   // -------------------------------------------------------------------------
   // Step 4: UNIT MOVEMENT AND ATTACK
   // Sort: super first, then military
@@ -3564,16 +3577,26 @@ export function decideAITurn(
           const k = keyOf(u.q, u.r);
           occupancy.set(k, (occupancy.get(k) ?? 0) + 1);
         }
-        const rallyHexes = buildRallyCandidates(myCities, rally, ARMY_CONSOLIDATION_RALLY_SEARCH_HEX);
+        // Peace-time consolidation forms one field army at the capital. Nearby
+        // cities are not overflow hubs: that split kept large rosters scattered
+        // across several smaller stacks instead of completing the rally.
+        const rallyHexes = [{ q: rally.q, r: rally.r }];
+        const rallyKey = keyOf(rally.q, rally.r);
+        const rallyCapacity = candidates.length + (occupancy.get(rallyKey) ?? 0);
         const assignments = assignRallyTargets(
           candidates,
           rallyHexes,
-          ARMY_CONSOLIDATION_MAX_PER_HEX,
+          rallyCapacity,
           occupancy,
         );
         const byId = new Map(candidates.map(u => [u.id, u] as const));
         for (const a of assignments) {
-          if (a.atRally) continue;
+          if (a.atRally) {
+            // Keep arrived troops in the assembled army for this turn; otherwise
+            // they fall through to ordinary exploration/patrol orders below.
+            concentrationDeferred.add(a.unitId);
+            continue;
+          }
           const unit = byId.get(a.unitId);
           if (unit === undefined) continue;
           const step = firstStep(unit, map, a.targetQ, a.targetR, units, true);
@@ -4214,6 +4237,53 @@ function planCityStateOffensiveMove(
  * przy zagrożeniu własnego miasta i posiłki wewnątrz klastra ku zagrożonej siostrze
  * (Maciej 2026-07-20 — miasta-siostry aktywnym graczem, nie biernym łupem).
  */
+function appendAiGeneralCampaignOrders(
+  playerId: number,
+  myUnits: RuntimeUnit[],
+  units: RuntimeUnit[],
+  cities: AICity[],
+  map: GameMap,
+  data: GameData,
+  opts: AITurnOpts,
+  commands: AICommand[],
+): boolean {
+  const campaign = opts.aiGeneralWarCampaign;
+  if (!campaign) return false;
+  const general = campaign.generalUnitId
+    ? myUnits.find(unit => unit.id === campaign.generalUnitId && unit.isGeneral === true)
+    : undefined;
+  if (campaign.stage === 'recruiting' || campaign.stage === 'gathering') {
+    const rallyQ = general?.q ?? campaign.rallyQ;
+    const rallyR = general?.r ?? campaign.rallyR;
+    for (const unit of myUnits) {
+      if (!isEligibleForArmyConcentration(unit, playerId)) continue;
+      if (unit.q === rallyQ && unit.r === rallyR) continue;
+      const step = firstStep(unit, map, rallyQ, rallyR, units, true);
+      if (step !== null) commands.push({
+        type: 'move', unitId: unit.id, toQ: step.q, toR: step.r,
+        allowFriendlyStack: step.q === rallyQ && step.r === rallyR,
+      });
+    }
+    if (general && campaign.stage === 'gathering') {
+      opts.aiGeneralWarCampaign = {
+        ...recordAiGeneralGatherTurn(campaign, campaign.turn),
+        rallyQ, rallyR, target: campaign.target, turn: campaign.turn,
+      };
+    }
+    commands.push({ type: 'endTurn' });
+    return true;
+  }
+  if (campaign.stage === 'attacking' && general) {
+    applyWarAllInCapitalToCommands(
+      commands, myUnits, units, cities, playerId, map,
+      { targets: [campaign.target] }, data,
+    );
+    commands.push({ type: 'endTurn' });
+    return true;
+  }
+  return false;
+}
+
 function decideDefensiveCopyTurn(
   playerId: number,
   units: RuntimeUnit[],
@@ -4272,6 +4342,10 @@ function decideDefensiveCopyTurn(
     { ...opts, plannedImprovementCost },
   );
   if (expansionFortCmd !== null) commands.push(expansionFortCmd);
+
+  if (appendAiGeneralCampaignOrders(playerId, myUnits, units, cities, map, data, opts, commands)) {
+    return commands;
+  }
 
   // ---------------------------------------------------------------------------
   // POSIŁKI W KLASTRZE (D-START pkt c/e; Maciej 2026-07-21 przeróbka ZMIANA 1 —

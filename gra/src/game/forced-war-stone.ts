@@ -26,7 +26,7 @@ export const WOJNA_KAMIEN_WYMUSZONA_COOLDOWN_TA_SAMA_CYWILIZACJA_TUR = 20;
  * ZDOBYTE_LUB_STRACONE`, który zostaje jako DODATKOWY, zwykle wcześniejszy warunek
  * zakończenia — który z dwóch warunków spełni się pierwszy, kończy wojnę).
  */
-export const WOJNA_KAMIEN_WYMUSZONA_MAX_CZAS_TRWANIA_TUR = 25;
+export const WOJNA_KAMIEN_WYMUSZONA_MAX_CZAS_TRWANIA_TUR = 20;
 
 export interface StoneForcedWarEligibilityInput {
   /** Wyłącznie główna cywilizacja AI; nie gracz, miasto-państwo ani barbarzyńca. */

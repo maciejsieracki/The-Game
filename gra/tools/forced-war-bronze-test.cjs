@@ -172,10 +172,10 @@ assert(
 );
 
 console.log('\n--- R-WOJNA-WYMUSZONA-REGULY-Q1 (Część C): shouldEndBronzeForcedWarByDuration ---');
-eq(WOJNA_WYMUSZONA_MAX_CZAS_TRWANIA_TUR, 25, 'stała limitu czasu trwania pary = 25 tur');
-assert(!shouldEndBronzeForcedWarByDuration(24, 0), 'tura 24, start 0 → wojna trwa (< 25 tur)');
-assert(shouldEndBronzeForcedWarByDuration(25, 0), 'tura 25, start 0 → limit osiągnięty');
-assert(shouldEndBronzeForcedWarByDuration(55, 30), 'tura 55, start 30 → 25 tur, limit osiągnięty');
+eq(WOJNA_WYMUSZONA_MAX_CZAS_TRWANIA_TUR, 20, 'stała limitu czasu trwania pary = 20 tur');
+assert(!shouldEndBronzeForcedWarByDuration(19, 0), 'tura 19, start 0 → wojna trwa (< 20 tur)');
+assert(shouldEndBronzeForcedWarByDuration(20, 0), 'tura 20, start 0 → limit osiągnięty');
+assert(shouldEndBronzeForcedWarByDuration(50, 30), 'tura 50, start 30 → 20 tur, limit osiągnięty');
 assert(!shouldEndBronzeForcedWarByDuration(40, 30), 'tura 40, start 30 → 10 tur, wojna trwa');
 assert(
   !shouldEndBronzeForcedWarByDuration(500, undefined),

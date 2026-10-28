@@ -7,7 +7,7 @@
 import type { DiploPairMeta } from './diplomacy-pn-engine';
 import type { AllianceObligation } from './diplomacy-treaties';
 
-/** Minimalna liczba tur pokoju po akceptacji traktatu pokoju / rozejmu. */
+/** Liczba tur pokoju po akceptacji traktatu pokoju / rozejmu. */
 export const PEACE_TREATY_LOCK_TURNS = 10;
 
 /** Czy aktywna jest blokada wypowiedzenia wojny (włącznie z turą zawarcia, do końca okna). */

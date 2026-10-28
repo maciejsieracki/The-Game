@@ -126,6 +126,8 @@ export type ProductionItem = {
   nazwa: string;
   koszt: number;
   postep?: number;
+  /** Purchased unit is a General, while retaining the selected combat unit's type/stats. */
+  isGeneral?: boolean;
 };
 
 /**
@@ -1039,12 +1041,12 @@ export function availableProduction(
     // pojawia w produkcji (szuka nieistniejacej technologii "—"). Uzgodnione
     // z isBlankReplacement(), ktora juz uznaje obie formy za puste.
     if (tech.length > 0 && tech !== '-' && tech !== '—' && !techs.has(tech)) continue;
-    // Koszary gate (decyzja Maciej 2026-06-25): jednostki epoki Brazu wymagaja
-    // wybudowanych Koszar (id='koszary') w miescie. Inne epoki bez zmian.
+    // Koszary gate: każda jednostka od epoki Brązu wzwyż wymaga wybudowanych
+    // Koszar (id='koszary') w tym mieście. Jednostki epok wcześniejszych bez zmian.
     // Ulepszenie Koszary->Akademia wojskowa usuwa 'koszary' z builtIds (fix #32) —
     // bramka akceptuje wiec tez budynek nadrzedny (ten sam wzorzec co przy
     // zelazo-access.ts dla odlewni), inaczej ulepszenie odbiera miastu Braz.
-    if (epochNumber(u.Epoka) === 2 && !built.has('koszary')
+    if (epochNumber(u.Epoka) >= 2 && !built.has('koszary')
       && !isBuildingSupersededByUpgrade('koszary', builtList, data.buildings)) continue;
     // R-BUDYNEK-PORTOWY-MIASTA-NADBRZEZNE (Maciej 2026-08-09): jednostki morskie (Typ='Naval',
     // np. Galera) wymagają, żeby TO miasto miało dostęp do wody (morze LUB rzeka) — ten sam
@@ -1159,9 +1161,9 @@ export function availableReplacementsFor(
     const tech = (u.Tech ?? '').toString().trim();
     // Blank-tech marker bywa '-' LUB '—' (em dash) -- patrz uwaga w availableProduction.
     if (tech.length > 0 && tech !== '-' && tech !== '—' && !techs.has(tech)) return false;
-    // Koszary gate (decyzja Maciej 2026-06-25): jednostki epoki Brazu wymagaja Koszar.
+    // Koszary gate: wszystkie jednostki od epoki Brązu wzwyż wymagają Koszar.
     // Ulepszenie do Akademii wojskowej tez sie liczy (fix #32) — patrz uwaga w availableProduction.
-    if (epochNumber(u.Epoka) === 2 && !built.has('koszary')
+    if (epochNumber(u.Epoka) >= 2 && !built.has('koszary')
       && !isBuildingSupersededByUpgrade('koszary', builtList, data.buildings)) return false;
     // R-BUDYNEK-PORTOWY-MIASTA-NADBRZEZNE (Maciej 2026-08-09): identyczna bramka jak w
     // availableProduction — jednostka morska (Typ='Naval') wymaga dostępu do wody w TYM mieście.

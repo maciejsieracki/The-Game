@@ -67,10 +67,9 @@ export interface EmpireHandelSplitUiConfig {
   getActiveOwnerId?: () => number;
 }
 
-/** Akcja zakupu z tabeli masowej rekrutacji w zakładce Armia. */
 export interface EmpireMassRecruitmentUiConfig {
-  /** Zwraca `true` wyłącznie gdy backend przyjął całą paczkę atomowo. */
-  onPurchase?: (cityId: string, itemId: string, count: number) => boolean;
+  /** Mount the shared city recruitment list in the matching Army city section. */
+  mountCityRecruitment?: (cityId: string, host: HTMLElement) => boolean;
 }
 
 let handelSplitUi: EmpireHandelSplitUiConfig = {};
@@ -349,6 +348,16 @@ function ensureStyles(): void {
 .civ-emp-box{border:1px solid #2b3543;border-radius:8px;padding:10px 12px;background:#171e2a;}
 .civ-emp-box .k{font-size:10px;letter-spacing:1px;color:#7d8798;font-weight:600;}
 .civ-emp-box .v{font-size:14px;font-weight:700;margin-top:5px;color:#e8ebf0;}
+.civ-emp-work-tax{margin-top:12px;}
+.civ-emp-work-tax-controls{display:flex;gap:8px;align-items:center;margin-top:8px;}
+.civ-emp-work-tax input[type=number]{width:100px;min-height:32px;padding:5px 8px;border:1px solid rgba(232,216,138,.3);
+  border-radius:6px;background:#101722;color:#e8ebf0;font:inherit;color-scheme:dark;}
+.civ-emp-work-tax input[type=number]:focus{outline:2px solid rgba(217,164,65,.55);outline-offset:1px;border-color:#d9a441;}
+.civ-emp-work-tax button{min-height:32px;padding:5px 10px;border:1px solid rgba(217,164,65,.6);border-radius:6px;
+  background:linear-gradient(180deg,#4a3b1c,#302817);color:#f0d57b;font:inherit;font-size:12px;font-weight:600;cursor:pointer;}
+.civ-emp-work-tax button:hover:not(:disabled){background:linear-gradient(180deg,#5a4822,#3a301b);border-color:#e8d88a;}
+.civ-emp-work-tax button:focus-visible{outline:2px solid #e8d88a;outline-offset:2px;}
+.civ-emp-work-tax button:disabled{opacity:.45;cursor:not-allowed;}
 .civ-emp-tbl{margin-top:14px;}
 .civ-emp-tbl-h,.civ-emp-tbl-r{display:grid;grid-template-columns:1.35fr 0.5fr 0.55fr 0.5fr 0.5fr;
   column-gap:6px;}
@@ -441,19 +450,16 @@ function ensureStyles(): void {
 .civ-emp-mass-city-hd{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:6px;}
 .civ-emp-mass-city-name{font-size:12px;font-weight:700;color:#e2e6ec;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .civ-emp-mass-queue{font-size:10px;color:#9aa4b2;white-space:nowrap;}
-.civ-emp-mass-form{display:grid;grid-template-columns:minmax(0,1fr) 56px 72px;gap:6px;align-items:center;}
-.civ-emp-mass-form select,.civ-emp-mass-form input{width:100%;min-width:0;height:30px;border:1px solid #3a4657;border-radius:5px;
-  background:#141a24;color:#e8ebf0;font:inherit;font-size:11px;padding:4px 6px;}
-.civ-emp-mass-form input{text-align:right;}
-.civ-emp-mass-form button{height:30px;border:1px solid #4e9a3f;border-radius:5px;background:rgba(78,154,63,.18);
-  color:#78c95a;font:inherit;font-size:11px;font-weight:700;cursor:pointer;padding:4px 7px;}
-.civ-emp-mass-form button:hover:not(:disabled){background:rgba(78,154,63,.3);}
-.civ-emp-mass-form button:disabled{border-color:#3a4657;background:#1a2230;color:#6f7889;cursor:not-allowed;}
-.civ-emp-mass-cost{font-size:10px;color:#b8c4d8;line-height:1.35;margin-top:5px;}
-.civ-emp-mass-status{font-size:10px;line-height:1.35;margin-top:3px;color:#e07a7a;min-height:14px;}
-.civ-emp-mass-status.ok{color:#78c95a;}
-.civ-emp-mass-status.neutral{color:#9aa4b2;}
 .civ-emp-mass-empty{font-size:11px;color:#8a93a4;padding:6px 0 2px;}
+.civ-emp-mass-city-recruit-list.civ-cs{position:relative;inset:auto;z-index:auto;display:block;pointer-events:auto;
+  width:auto;height:auto;max-width:none;min-width:0;font-size:13px;overflow:visible;}
+.civ-emp-mass-city-recruit-list .civ-cs-drawer{width:auto;max-width:none;min-width:0;height:auto;overflow:visible;}
+.civ-emp-mass-city-recruit-list .civ-cs-res-strip{font-size:.82em;}
+.civ-emp-mass-city-recruit-list .unit-recruit-compact-row{font-size:1em;}
+.civ-emp-mass-rally{margin:10px 0;padding:8px;border:1px solid #2b3543;border-radius:7px;background:rgba(20,26,36,.68);}
+.civ-emp-mass-rally button{border:1px solid #49566a;border-radius:5px;background:#1a2230;color:#e8ebf0;font:inherit;font-size:11px;padding:6px 9px;cursor:pointer;}
+.civ-emp-mass-rally button:hover:not(:disabled){background:#263246;}
+.civ-emp-mass-rally button:disabled{opacity:.5;cursor:not-allowed;}
 .civ-emp-backdrop{position:fixed;inset:0;z-index:449;background:rgba(0,0,0,0.35);
   opacity:0;pointer-events:none;transition:opacity .2s;}
 .civ-emp-backdrop.open{opacity:1;pointer-events:auto;}
@@ -1410,11 +1416,11 @@ function renderPracaSection(
   if (empireGlobalDefaultsUi.canConvertOwnerWorkToTax?.(ownerId)) {
     const max = Math.max(0, stock);
     const taxRate = empireGlobalDefaultsUi.getOwnerWorkTaxRate?.(ownerId) ?? 1;
-    h += `<div class="civ-emp-box" style="margin-top:12px" data-work-tax-convert>`
+    h += `<div class="civ-emp-box civ-emp-work-tax" data-work-tax-convert>`
       + '<div class="k">ZAMIANA PRACY NA PODATEK</div>'
       + `<div class="v">Pozostała pula: ${max} Pracy · 1 Praca → ${taxRate} Podatku</div>`
-      + `<div style="display:flex;gap:8px;align-items:center;margin-top:8px">`
-      + `<input type="number" min="0" max="${max}" step="1" value="0" data-work-tax-amount aria-label="Praca do zamiany na podatek" style="width:100px" />`
+      + `<div class="civ-emp-work-tax-controls">`
+      + `<input type="number" min="0" max="${max}" step="1" value="0" data-work-tax-amount aria-label="Praca do zamiany na podatek" />`
       + `<button type="button" data-work-tax-submit${max < 1 ? ' disabled' : ''}>Zamień na podatek</button></div>`
       + `<div class="civ-emp-foot" data-work-tax-preview>0 Pracy → 0 Podatku</div>`
       + '<div class="civ-emp-foot">Zamiana trafia do zwykłego strumienia podatku w najbliższej turze. Niewykorzystana Praca zostaje w puli.</div></div>';
@@ -2732,27 +2738,9 @@ export function renderArmiaProdukcjaMini(rows: EmpireDetailSnap['armiaProdukcja'
   return h;
 }
 
-function massRecruitmentCostText(
-  option: EmpireDetailSnap['cityPobor'][number]['massRecruitment']['options'][number],
-  count: number,
-): string {
-  const pieces = [
-    `${formatRawCount(option.goldCost * count)} złota`,
-    `${formatRawCount(option.manpowerCost * count)} rekr.`,
-  ];
-  for (const [key, amount] of Object.entries(option.stockCost)) {
-    if (amount <= 0) continue;
-    pieces.push(`${formatRawCount(amount * count)} ${stockResourceLabel(key)}`);
-  }
-  return pieces.join(' · ');
-}
-
 /**
- * Tabela masowej rekrutacji: jeden wiersz kontrolny na każde miasto gracza.
- *
- * Render jest celowo czysty — koszt i blokady są odświeżane przez
- * `wireMassRecruitmentControls()` po podmianie DOM. Dzięki temu ten sam HTML można
- * zmierzyć w realnym Chromium bez uruchamiania całego silnika gry.
+ * Render Army recruitment as city sections. The unit controls themselves are mounted by the
+ * shared CityPanel renderer after this HTML is attached to the DOM.
  */
 export function renderMassRecruitmentSection(
   rows: EmpireDetailSnap['cityPobor'],
@@ -2763,8 +2751,8 @@ export function renderMassRecruitmentSection(
     .map(([key, amount]) => `${formatRawCount(amount)} ${stockResourceLabel(key)}`)
     .join(' · ');
   let h = `<div class="civ-emp-mass" data-mass-recruitment>`
-    + `<div class="civ-emp-mass-hd"><span class="civ-emp-mass-title">Masowa rekrutacja</span>`
-    + `<span class="civ-emp-mass-sub">koszty z puli imperium</span></div>`
+    + `<div class="civ-emp-mass-hd"><span class="civ-emp-mass-title">Rekrutacja</span>`
+    + `<span class="civ-emp-mass-sub">jednostki pogrupowane według miasta</span></div>`
     + `<div class="civ-emp-mass-counters">`
     + `<div class="civ-emp-mass-counter"><div class="k">W KOLEJCE</div>`
     + `<div class="v" data-mass-recruitment-queued>${state.queuedCount}</div></div>`
@@ -2779,141 +2767,33 @@ export function renderMassRecruitmentSection(
   }
 
   for (const row of rows) {
-    const options = row.massRecruitment.options;
     h += `<div class="civ-emp-mass-city" data-mass-recruitment-city="${escAttr(row.cityId)}">`
       + `<div class="civ-emp-mass-city-hd"><span class="civ-emp-mass-city-name">${esc(row.name)}</span>`
       + `<span class="civ-emp-mass-queue">kolejka: <b>${row.massRecruitment.queueCount}</b></span></div>`;
-    if (options.length === 0) {
-      const waterNote = row.massRecruitment.waterAccess
-        ? ''
-        : ' Brak dostępu do wody dla jednostek morskich.';
-      h += `<div class="civ-emp-mass-empty">Brak dostępnych jednostek.${waterNote}</div></div>`;
-      continue;
-    }
-    h += `<div class="civ-emp-mass-form">`
-      + `<select data-mass-recruitment-unit aria-label="Jednostka — ${escAttr(row.name)}">`;
-    for (const option of options) {
-      const waterBlocked = option.requiresWater && !row.massRecruitment.waterAccess;
-      h += `<option value="${escAttr(option.id)}">`
-        + `${esc(option.name)}${waterBlocked ? ' (brak wody)' : ''}</option>`;
-    }
-    h += `</select>`
-      + `<input type="number" min="1" step="1" value="1" data-mass-recruitment-count `
-      + `aria-label="Liczba — ${escAttr(row.name)}" />`
-      + `<button type="button" data-mass-recruitment-submit>Rekrutuj</button></div>`
-      + `<div class="civ-emp-mass-cost" data-mass-recruitment-cost></div>`
-      + `<div class="civ-emp-mass-status neutral" data-mass-recruitment-status aria-live="polite"></div>`;
-    h += `</div>`;
+    h += `<div data-mass-recruitment-cards="${escAttr(row.cityId)}"></div></div>`;
   }
-  return h + `<div class="civ-emp-foot">Jedna akcja pobiera cały koszt paczki albo nie pobiera niczego. Jednostki morskie wymagają morza lub rzeki.</div></div>`;
+  return h + `<div class="civ-emp-foot">Każde miasto ma tę samą listę kart rekrutacji co jego panel. Kolejka i koszty są przypisane do wskazanego miasta.</div></div>`;
 }
 
-function wireMassRecruitmentControlsInto(
+function mountMassRecruitmentCitiesInto(
   host: ParentNode,
-  snap: EmpireDetailSnap,
-  onPurchase?: EmpireMassRecruitmentUiConfig['onPurchase'],
-  onAccepted?: () => void,
+  mountCityRecruitment?: EmpireMassRecruitmentUiConfig['mountCityRecruitment'],
 ): void {
-  const state = snap.massRecruitment;
-  for (const cityEl of Array.from(host.querySelectorAll<HTMLElement>('[data-mass-recruitment-city]'))) {
-    const cityId = cityEl.dataset.massRecruitmentCity;
-    if (!cityId) continue;
-    const city = snap.cityPobor.find(row => row.cityId === cityId);
-    const select = cityEl.querySelector<HTMLSelectElement>('[data-mass-recruitment-unit]');
-    const countInput = cityEl.querySelector<HTMLInputElement>('[data-mass-recruitment-count]');
-    const button = cityEl.querySelector<HTMLButtonElement>('[data-mass-recruitment-submit]');
-    const costEl = cityEl.querySelector<HTMLElement>('[data-mass-recruitment-cost]');
-    const statusEl = cityEl.querySelector<HTMLElement>('[data-mass-recruitment-status]');
-    if (!city || !select || !countInput || !button || !costEl || !statusEl) continue;
-
-    const update = (): void => {
-      const option = city.massRecruitment.options.find(item => item.id === select.value);
-      const count = Number(countInput.value);
-      const reasons: string[] = [];
-      let ready = !!onPurchase && state.ownerId === 0;
-      if (!onPurchase) reasons.push('Akcja rekrutacji jest niedostępna');
-      if (state.ownerId !== 0) reasons.push('Tylko imperium gracza może rekrutować');
-      if (!option) {
-        ready = false;
-        reasons.push('Brak wybranej jednostki');
-      } else {
-        costEl.textContent = `Koszt: ${massRecruitmentCostText(option, Number.isSafeInteger(count) && count > 0 ? count : 1)}`;
-        if (option.requiresWater && !city.massRecruitment.waterAccess) {
-          ready = false;
-          reasons.push('Jednostka morska wymaga dostępu do wody');
-        }
-        if (!Number.isSafeInteger(count) || count <= 0) {
-          ready = false;
-          reasons.push('Podaj liczbę całkowitą większą od zera');
-        } else {
-          const totalGold = option.goldCost * count;
-          const totalManpower = option.manpowerCost * count;
-          if (!Number.isSafeInteger(totalGold) || totalGold < 0) {
-            ready = false;
-            reasons.push('Nieprawidłowy koszt złota');
-          } else if (state.treasury < totalGold) {
-            ready = false;
-            reasons.push(`Za mało złota (potrzeba ${formatRawCount(totalGold)})`);
-          }
-          if (!Number.isSafeInteger(totalManpower) || totalManpower < 0) {
-            ready = false;
-            reasons.push('Nieprawidłowy koszt Manpower');
-          } else if (state.manpower < totalManpower) {
-            ready = false;
-            reasons.push(`Za mało Manpower (potrzeba ${formatRawCount(totalManpower)})`);
-          }
-          for (const [key, amount] of Object.entries(option.stockCost)) {
-            const total = amount * count;
-            const available = state.stock[key] ?? 0;
-            if (!Number.isSafeInteger(total) || total < 0) {
-              ready = false;
-              reasons.push(`Nieprawidłowy koszt ${stockResourceLabel(key)}`);
-            } else if (available < total) {
-              ready = false;
-              reasons.push(`Za mało ${stockResourceLabel(key)} (potrzeba ${formatRawCount(total)})`);
-            }
-          }
-        }
-      }
-      button.disabled = !ready;
-      button.setAttribute('aria-disabled', String(!ready));
-      statusEl.classList.toggle('ok', ready);
-      statusEl.classList.toggle('neutral', !ready && reasons.length === 0);
-      statusEl.textContent = ready ? 'Gotowe — kliknij Rekrutuj.' : reasons.join(' · ');
-    };
-
-    select.addEventListener('change', update);
-    countInput.addEventListener('input', update);
-    button.addEventListener('click', () => {
-      if (button.disabled || !onPurchase) return;
-      const option = city.massRecruitment.options.find(item => item.id === select.value);
-      const count = Number(countInput.value);
-      if (!option || !Number.isSafeInteger(count) || count <= 0) return;
-      if (onPurchase(cityId, option.id, count)) {
-        onAccepted?.();
-      }
-    });
-    update();
+  for (const target of Array.from(host.querySelectorAll<HTMLElement>('[data-mass-recruitment-cards]'))) {
+    const cityId = target.dataset.massRecruitmentCards;
+    if (!cityId || !mountCityRecruitment?.(cityId, target)) {
+      target.innerHTML = '<div class="civ-emp-mass-empty">Nie udało się załadować rekrutacji tego miasta.</div>';
+    }
   }
 }
 
-/** Montuje kontrolki tabeli na gotowym HTML — używane przez panel i test realnego DOM. */
+/** Mount the same per-city recruitment cards used by CityPanel. */
 export function mountMassRecruitmentControls(
   host: ParentNode,
-  snap: EmpireDetailSnap,
-  onPurchase: EmpireMassRecruitmentUiConfig['onPurchase'],
+  _snap: EmpireDetailSnap,
+  mountCityRecruitment: EmpireMassRecruitmentUiConfig['mountCityRecruitment'] = massRecruitmentUi.mountCityRecruitment,
 ): void {
-  wireMassRecruitmentControlsInto(host, snap, onPurchase);
-}
-
-function wireMassRecruitmentControls(): void {
-  if (!bodyEl || !getSnap) return;
-  wireMassRecruitmentControlsInto(
-    bodyEl,
-    getSnap(),
-    massRecruitmentUi.onPurchase,
-    () => queueMicrotask(() => { if (open) render(); }),
-  );
+  mountMassRecruitmentCitiesInto(host, mountCityRecruitment);
 }
 
 function signedTxt(n: number): string {
@@ -4285,7 +4165,7 @@ function render(): void {
   // to the very top.
   const prevScrollTop = bodyEl.scrollTop;
   bodyEl.innerHTML = body;
-  wireMassRecruitmentControls();
+  mountMassRecruitmentControls(bodyEl, snap);
   wireMocViewButtons();
   // N1 (Evaluator, notatka na 89c16ec1): JEDNO wywołanie na render() (przeniesione z wnętrza
   // cityMiastaMiniDetail — patrz komentarz tam) — filtr kolumn tabeli Miasta istnieje w DOM

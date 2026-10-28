@@ -142,6 +142,24 @@ async function main() {
   if (!noRetreat2) throw new Error('noRetreat bar expected when retreat disabled');
   hidePreBattle();
 
+  let autoCalled = false;
+  let manualCalled = false;
+  showPreBattle(
+    { ...baseInfo, defenderCanRetreat: false },
+    { onAuto: () => { autoCalled = true; }, onBattlefield: () => { manualCalled = true; }, onCancel: () => {} },
+    { manualControlAllowed: false },
+  );
+  const gatedButtons = [...document.querySelectorAll('button')];
+  const deployButton = gatedButtons.find(b => b.dataset.act === 'deploy');
+  const autoButton = gatedButtons.find(b => b.dataset.act === 'auto');
+  if (!deployButton?.disabled) throw new Error('manual battlefield button must be disabled without a commander');
+  if (!autoButton || autoButton.disabled) throw new Error('Auto must remain enabled without a commander');
+  deployButton.click();
+  if (manualCalled) throw new Error('disabled manual action must not start the battlefield');
+  autoButton.click();
+  if (!autoCalled) throw new Error('Auto action must still resolve without a commander');
+  hidePreBattle();
+
   console.log('pre-battle-defender-retreat-test: OK');
 }
 

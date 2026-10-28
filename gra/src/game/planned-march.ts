@@ -16,6 +16,8 @@ export interface PlannedMarchDest {
   destR: number;
   /** Id wrogiej jednostki — marsz do dojścia + atak (tylko gdy cel widoczny). */
   attackUnitId?: string;
+  /** Moving friendly General whose live position is the destination. */
+  generalTargetId?: string;
 }
 
 /** Pole save A3-P0-2 (backward compat — jeden marsz). */
@@ -447,10 +449,16 @@ export function plannedMarchesFromSave(
       if (!dest || !Number.isFinite(dest.destQ) || !Number.isFinite(dest.destR)) continue;
       const u = units.find(x => x.id === uid);
       if (!u || u.ownerId !== playerOwnerId) continue;
-      if (u.q === dest.destQ && u.r === dest.destR) continue;
+      // A General-follow order stores the leader's last coordinates as a fallback.
+      // Keep it even when the follower happens to match those stale coordinates;
+      // syncGeneralMarchTargets will resolve the leader's live position after load.
+      if (u.q === dest.destQ && u.r === dest.destR && !(typeof dest.generalTargetId === 'string' && dest.generalTargetId.length > 0)) continue;
       const entry: PlannedMarchDest = { destQ: dest.destQ, destR: dest.destR };
       if (typeof dest.attackUnitId === 'string' && dest.attackUnitId.length > 0) {
         entry.attackUnitId = dest.attackUnitId;
+      }
+      if (typeof dest.generalTargetId === 'string' && dest.generalTargetId.length > 0) {
+        entry.generalTargetId = dest.generalTargetId;
       }
       out.set(uid, entry);
     }
@@ -470,9 +478,12 @@ export function plannedMarchesToSave(
   const plannedMarches: PlannedMarchesSave = {};
   let first: AutoMarchSave | undefined;
   for (const [unitId, dest] of marches) {
-    plannedMarches[unitId] = dest.attackUnitId
-      ? { destQ: dest.destQ, destR: dest.destR, attackUnitId: dest.attackUnitId }
-      : { destQ: dest.destQ, destR: dest.destR };
+    plannedMarches[unitId] = {
+      destQ: dest.destQ,
+      destR: dest.destR,
+      ...(dest.attackUnitId ? { attackUnitId: dest.attackUnitId } : {}),
+      ...(dest.generalTargetId ? { generalTargetId: dest.generalTargetId } : {}),
+    };
     if (!first) first = { leaderId: unitId, destQ: dest.destQ, destR: dest.destR };
   }
   return { autoMarch: first, plannedMarches };

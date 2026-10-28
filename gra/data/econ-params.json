@@ -308,7 +308,7 @@
       "normal": 1,
       "hard": 0,
       "jednostka": "×",
-      "opis": "NIEUŻYWANE (decyzja Maciej 2026-07-25) — było już martwe wcześniej (żaden kod go nie konsumował). Efekt Mennicy jest teraz w całości opisany przez globalne.mennica_mnoznik_po_walucie (jeden mnożnik na cały Handel netto, aktywny gdy Waluta odkryta ORAZ Mennica zbudowana). Zostawione tylko dla zgodności starych zapisów/narzędzi — kod (economy.ts, turn-economy.ts) go już nie czyta."
+      "opis": "Parametr legacy, nieużywany przez bieżący kod. Obecny mnożnik Mennicy to globalne.mennica_mnoznik_po_walucie: lokalny podatek przed podziałem suwakami, aktywny w całym imperium przy Mennicy w stolicy, Walucie i dostępie do Złota. Zachowane wyłącznie dla zgodności starych zapisów/narzędzi."
     },
     "budynek_biblioteka_bonus_nauki": {
       "easy": 0.37,
@@ -329,7 +329,7 @@
       "normal": 2,
       "hard": 2,
       "jednostka": "×",
-      "opis": "NIEUŻYWANE (decyzja Maciej 2026-07-25): dawny Efekt 1 'sam tech Waluty odkryty → ×2 na cały Handel netto, bez wymogu Mennicy, jednakowo na wszystkich trudnościach' — ZASTĄPIONY przez globalne.mennica_mnoznik_po_walucie (wymaga Waluty ORAZ Mennicy zbudowanej w mieście; wartość różna per trudność: easy ×2 / normal ×1,5 / hard ×1 czyli brak efektu). Zostawione tylko dla zgodności starych zapisów/narzędzi — kod (economy.ts, turn-economy.ts) go już nie czyta w formule Efektu 1."
+      "opis": "Parametr legacy, nieużywany przez bieżący kod. Waluta sama nie mnoży dochodu. Obecny mnożnik Mennicy to globalne.mennica_mnoznik_po_walucie (easy ×1,62 / normal ×1,50 / hard ×1,38), stosowany do lokalnego podatku przed podziałem. Zachowane wyłącznie dla zgodności starych zapisów/narzędzi."
     },
     "targowisko_praca_na_podatek_kurs": {
       "easy": 1,

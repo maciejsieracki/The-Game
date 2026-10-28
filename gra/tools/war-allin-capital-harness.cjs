@@ -131,7 +131,10 @@ function simulate(state, o) {
       }
       if (u.ruchLeft <= 0) continue;
       if (E.hexDistance(u.q, u.r, c.toQ, c.toR) !== 1) {
-        if (!E.truncatePathWithinBudget || cityAt(c.toQ, c.toR)) continue;
+        const destinationCity = cityAt(c.toQ, c.toR);
+        if (!E.truncatePathWithinBudget
+          || (destinationCity !== undefined
+            && !(o.allowFriendlyCityDestinations && destinationCity.ownerId === u.ownerId))) continue;
         const blocked = new Set();
         for (const x of state.units) if (x !== u && x.hp > 0 && !(o.consolidation && x.ownerId === u.ownerId)) blocked.add(`${x.q},${x.r}`);
         for (const ct of state.cities) if (ct.ownerId !== u.ownerId) blocked.add(`${ct.q},${ct.r}`);

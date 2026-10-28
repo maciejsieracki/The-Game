@@ -97,6 +97,11 @@ import {
 import { applyArmyHungerStatMultToCombatUnit } from '../game/army-starvation';
 import { applyGoldDeficitStatMultToCombatUnit } from '../game/gold-deficit';
 import {
+  armyMoraleRatioWithoutCommander,
+  commandersToWithdrawAfterArmyBreak,
+  moraleWithArmyLeaderBonus,
+} from '../game/army-leadership';
+import {
   cityWallDefenseBonusPercent,
   cityGatedTerrainMultiplier,
   fieldFortifyDefenseBonus,
@@ -231,6 +236,7 @@ import { civIconSvg, brandIconSvg } from '../ui/icons/brandAssets';
 import { leaderPortraitUrl, leaderName, civIconIdFromCivLabel } from '../ui/leaderPortraits';
 import { showEndScreen1E } from './endScreen1E';
 import { markBattleSceneOpen, markBattleSceneClosed } from './battleSceneOpen';
+import { compactLineAllowsAdvance, initialBattleLineOrder } from './formationRules';
 import { startVictoryMusic, startDefeatMusic, startBattleMusic } from '../audio/muzyka-antyczna';
 import {
   showEndDetails1E,
@@ -388,6 +394,10 @@ export interface BattleUnit {
   stats: any;
   hp: number;
   maxHp: number;
+  /** Recruited Wódz/Generał: an ordinary combatant with commander-specific army effects. */
+  isArmyCommander?: boolean;
+  /** Starting morale bonus shared by this commander's assigned army; cleared on leader loss. */
+  armyLeaderMoraleBonusFrac?: number;
   /**
    * Sciezki ulepszen jednostek (2026-07-25, game/unit-building-bonuses.ts).
    * Ulamkowy bonus Pancerza (Sciezka A: Kuznia/Kuznia zelaza/Wielka Kuznia)
@@ -550,6 +560,8 @@ export interface BattleOpts {
   attackerDifficultyCombatMult?: number;
   /** P-AI-MOC-BONUS=A: bonus trudności walki broniącego (major AI). */
   defenderDifficultyCombatMult?: number;
+  /** When set, manual battle control is available only while the player's commander survives. */
+  manualControlAllowed?: boolean;
 }
 
 export interface BattleResult {
@@ -1476,41 +1488,6 @@ function isSiegeTower(bu: BattleUnit): boolean {
 }
 
 /**
- * Reorder one side's units so MOUNTED units (cavalry / chariots) deploy on the
- * WINGS -- the top and bottom rows at the two ends of the rank axis -- instead
- * of trailing in a partial rear rank. The placement loop fills the array rank by
- * rank, each rank a straight line of `perRank` rows from top (rowIdx 0) to bottom
- * (rowIdx perRank-1); so the flank slots are the LOW and HIGH rowIdx of the FRONT
- * rank. We split the mounted units half to the top wing, half to the bottom wing
- * of the front rank, with the foot units filling the centre and the rear ranks.
- * Returns a NEW array (input order otherwise preserved). No geometry here.
- */
-function arrangeFlankCavalry(units: BattleUnit[]): BattleUnit[] {
-  const mounted = units.filter(isMounted);
-  if (mounted.length === 0) return units.slice();
-  const foot = units.filter(u => !isMounted(u));
-
-  const perRank = Math.max(1, Math.min(RANK_WIDTH, BF_ROWS));
-  // Mounted units split evenly to the two wings of the FRONT rank. Cap to half
-  // the rank per wing so they never crowd out the whole front line.
-  const maxPerWing = Math.max(1, Math.floor(perRank / 2));
-  const topCount = Math.min(Math.ceil(mounted.length / 2), maxPerWing);
-  const botCount = Math.min(mounted.length - topCount, maxPerWing);
-  const topWing = mounted.slice(0, topCount);
-  const botWing = mounted.slice(topCount, topCount + botCount);
-  // Any mounted beyond the wing cap fall back to the centre with the foot.
-  const extraMounted = mounted.slice(topCount + botCount);
-
-  // Front rank = [topWing ... foot/extra centre ... botWing]; the remaining foot
-  // forms the rear ranks (appended after the full front rank).
-  const centreBudget = Math.max(0, perRank - topWing.length - botWing.length);
-  const centre = [...extraMounted, ...foot].slice(0, centreBudget);
-  const rear   = [...extraMounted, ...foot].slice(centreBudget);
-
-  return [...topWing, ...centre, ...botWing, ...rear];
-}
-
-/**
  * Spear/phalanx-type defenders brace and NEGATE the attacker's charge bonus
  * (Uderzenie) when the attacker moved in. Mirrors the private negatesCharge()
  * rule inside combat.ts so a single blow matches the canonical model.
@@ -1564,7 +1541,10 @@ function moraleBaseFor(bu: BattleUnit): number {
   // TRZECI SYSTEM (weterani, 2026-07-25 -- korekta wlasciciela wieczorem):
   // "Morale bazowe" idzie W GORE (wyzej = lepiej) -- +10%/+20%, Math.ceil
   // gwarantuje widoczny efekt nawet dla malych wartosci. Patrz game/veteran.ts.
-  return veteranMoraleBazoweUp(base, bu.veteranBonusFrac ?? 0);
+  return moraleWithArmyLeaderBonus(
+    veteranMoraleBazoweUp(base, bu.veteranBonusFrac ?? 0),
+    bu.armyLeaderMoraleBonusFrac ?? 0,
+  );
 }
 
 /** Per-unit ABSOLUTE morale level at which the unit breaks + flees ('Morale ucieczki'). */
@@ -1905,6 +1885,7 @@ function desiredHitForDirection(dir: AttackDirection): FacingHit | null {
 
 interface RuntimeBattleUnit {
   bu:           BattleUnit;
+  isArmyCommander: boolean;
   group:        THREE.Group;
   hpBarFg:      THREE.Mesh;
   hpBarBg:      THREE.Mesh;
@@ -1976,6 +1957,8 @@ interface RuntimeBattleUnit {
   groupId:      string | null;
   /** Wzgledny offset {dc, dr} od centroidu grupy w chwili grupowania (formacja pierwotna). */
   formationOffset: { dc: number; dr: number } | null;
+  /** Deployment rank measured from this side's front; used by Attack line pacing. */
+  formationRank?: number;
   /** Wlasna doktryna (null = dziedzicz z grupy, potem domyslnie Atak). */
   unitDoctrine: GroupDoctrine | null;
   /** C-FLANK: kierunek natarcia w auto-play (front/bok/tyl); domyslnie 'front'. */
@@ -2223,6 +2206,7 @@ export class BattleScene {
   // --- STEROWANIE RECZNIE (faza walki) ---
   /** Tryb recznego sterowania jednostkami gracza. Domyslnie true = RECZNE (C2-FLOW). */
   private _manualMode = true;
+  private _manualCommanderGate = false;
   /** Po Start walki: faza planowania (Spacja = rozpocznij turę). */
   private _battleAwaitingOrders = false;
   /**
@@ -2614,6 +2598,7 @@ export class BattleScene {
 
   // -------------------------------------------------------------------------
   constructor(opts: BattleOpts) {
+    this._manualCommanderGate = opts.manualControlAllowed !== undefined;
     this.onCancelCb  = opts.onCancel ?? null;
     this.terrain     = opts.teren;
     const d: any     = opts.data ?? {};
@@ -3457,8 +3442,11 @@ export class BattleScene {
     // strony -- RAZ, tutaj, zanim ruszy pierwsza tura. Nigdy co runde (spirala
     // smierci) i nigdy na mapie swiata.
     this._applyStartingMoralePowerPenalty();
-    this._manualMode = true;
-    this._battleAwaitingOrders = true;
+    const playerSide = this._deployPlayerSideOpt;
+    const hasCommander = (playerSide === 'atk' ? this.atk : this.def)
+      .some(u => u.isArmyCommander && !u.dead && !u.routed);
+    this._manualMode = !this._manualCommanderGate || (this._manualCommanderGate && hasCommander);
+    this._battleAwaitingOrders = this._manualMode;
     this._queuedOrderUnitIds.clear();
     this._disposeAllOrderLines();
     if (this._orderLinesGroup) this._orderLinesGroup.visible = true;
@@ -3478,6 +3466,7 @@ export class BattleScene {
     this._updateBattlePhaseBanner();
     this._syncMinimapPosition();
     this._syncBattleToolbarMode();
+    if (!this._manualMode) this._kickoffBattleTurn();
   }
 
   /** Wykonaj odłożone dyspozycje (Ctrl/Shift + SPACJA). */
@@ -3655,6 +3644,11 @@ export class BattleScene {
     for (const m of this.ownedMats) m.dispose();
     for (const g of this.ownedGeos) g.dispose();
     this.renderer.dispose();
+    // Map battles own a short-lived WebGL context alongside the persistent world-map
+    // renderer. `dispose()` releases Three.js resources but leaves the browser context
+    // alive until its canvas is collected; explicitly lose this battle-only context now
+    // so large battles cannot retain a GPU context/allocations after their overlay closes.
+    this.renderer.forceContextLoss();
 
     // The battle-log panel is a child of the overlay, so removing the overlay
     // detaches it too; drop the handle + buffer so nothing dangles after dispose.
@@ -4234,6 +4228,7 @@ export class BattleScene {
 
       const moraleBase = moraleBaseFor(bu) * 1.5; // obrońcy +50% morale na starcie
       const ru: RuntimeBattleUnit = {
+        isArmyCommander: bu.isArmyCommander === true,
         bu,
         group,
         hpBarFg:     bars.hpBarFg,
@@ -4401,6 +4396,7 @@ export class BattleScene {
 
       const moraleBase = moraleBaseFor(bu) * 1.5; // obrońcy +50% morale na starcie
       const ru: RuntimeBattleUnit = {
+        isArmyCommander: bu.isArmyCommander === true,
         bu, group,
         hpBarFg: bars.hpBarFg, hpBarBg: bars.hpBarBg, hpBarGroup: bars.hpBarGroup,
         moraleBarFg: bars.moraleBarFg, moraleBarBg: bars.moraleBarBg,
@@ -5001,25 +4997,16 @@ export class BattleScene {
       const freeOk = (c: number, r: number): boolean =>
         !this.occByKey.has(cellKey(c, r)) && this.terrainMap.passable(c, r);
 
-      // DEPLOYMENT BY ROLE (Naster): ONE continuous melee front line, then a rank
-      // of JAVELINEERS, then a rank of ARCHERS behind it; mounted on the wings.
-      //   rank 0 (front col) = ALL melee (non-shooter foot) in one wide line
-      //   rank 1 = javelineers (kategoria 'oszczep...')
-      //   rank 2 = archers/slingers (rest of the primary shooters)
-      // Each group is centred on the field; a group wider than the field wraps to
-      // an extra rank behind it. Mounted deploy on the wings of the widest line.
-      const meleeI:   number[] = [];
-      const javI:     number[] = [];
-      const arcI:     number[] = [];
-      const siegeI:   number[] = []; // maszyny oblężnicze (Taran/Katapulta/Wieża) -- grupowane NA KOŃCU formacji
-      const mountIdx: number[] = [];
-      units.forEach((u, i) => {
-        if (isMounted(u)) { mountIdx.push(i); return; }
-        if (isSiegeUnit(u)) { siegeI.push(i); return; } // siege PRZED isPrimaryRanged, bo nie są ranged
-        if (!isPrimaryRanged(u)) { meleeI.push(i); return; }
-        if (normName(String(u.kategoria ?? '')).includes('oszczep')) { javI.push(i); return; }
-        arcI.push(i);
-      });
+      // Default ranks: shooters and foot share the front rank, with shooters
+      // nearer its centre and cavalry/chariots occupying the outer wing slots.
+      // Explicit F1/F2/F3 deploy choices can still rearrange these positions.
+      const roleOf = (u: BattleUnit): 'commander' | 'mounted' | 'ranged' | 'melee' | 'siege' =>
+        u.isArmyCommander ? 'commander' : isMounted(u) ? 'mounted' : isSiegeUnit(u) ? 'siege'
+          : isPrimaryRanged(u) ? 'ranged' : 'melee';
+      const ordered = initialBattleLineOrder(units, roleOf, Math.max(1, Math.min(RANK_WIDTH, BF_ROWS)));
+      const unitIndex = new Map(units.map((unit, index) => [unit, index]));
+      const frontI = ordered.filter(u => roleOf(u) !== 'siege').map(u => unitIndex.get(u)!);
+      const siegeI = ordered.filter(u => roleOf(u) === 'siege').map(u => unitIndex.get(u)!);
 
       const idealRow = new Array<number>(units.length);
       const idealCol = new Array<number>(units.length);
@@ -5042,23 +5029,8 @@ export class BattleScene {
         return Math.ceil(list.length / per);
       };
       let rankBase = 0;
-      rankBase += layGroup(meleeI, rankBase); // FRONT: jedna ciagla linia wrecz
-      rankBase += layGroup(javI, rankBase);   // za nia: oszczepnicy
-      const arcRanks = layGroup(arcI, rankBase); // za nimi: lucznicy
-      rankBase += arcRanks;
-      const siegeRanks = layGroup(siegeI, rankBase); // NA KOŃCU: maszyny oblężnicze (katapulty/taran/wieże)
-      const totalFootRanks = rankBase + siegeRanks;
-
-      // Mounted: za piechotą — zwarty blok w centrum mapy (deploy i walka).
-      {
-        const mountColOff = totalFootRanks + (this._deployMode && side === this._playerControlSide() ? 2 : 5);
-        const mountPer    = Math.max(1, Math.min(mountIdx.length, MAX_LINE));
-        const mountR0     = midRow - Math.floor(mountPer / 2);
-        mountIdx.forEach((ui, k) => {
-          idealRow[ui] = clampRow(mountR0 + (k % mountPer));
-          idealCol[ui] = clampCol(frontCol + (mountColOff + Math.floor(k / mountPer)) * rankStep);
-        });
-      }
+      rankBase += layGroup(frontI, rankBase);
+      rankBase += layGroup(siegeI, rankBase); // siege engines stay behind the combat line
 
       return units.map((bu, idx) => {
         // Resolve collisions / impassable: prefer PLAINS (konnica nie startuje w lesie).
@@ -5148,6 +5120,7 @@ export class BattleScene {
         });
 
         const ru: RuntimeBattleUnit = {
+          isArmyCommander: bu.isArmyCommander === true,
           bu,
           group,
           hpBarFg:     bars.hpBarFg,
@@ -5160,6 +5133,7 @@ export class BattleScene {
           ammoBarShown: ammoShown,
           q:          col,
           r:          row,
+          formationRank: Math.abs(idealCol[idx]! - frontCol),
           side,
           dead:      false,
           fadingOut: false,
@@ -5217,8 +5191,8 @@ export class BattleScene {
     // FLANK CAVALRY: reorder each side so mounted units (konnica / rydwan) take
     // the front-rank WING rows (top & bottom ends of the rank axis) rather than
     // trailing in a partial rear rank, so horse/chariots sit on the wings.
-    const atkArr = arrangeFlankCavalry(attackers.slice(0, MAX_PER_SIDE));
-    const defArr = arrangeFlankCavalry(defenders.slice(0, MAX_PER_SIDE));
+    const atkArr = attackers.slice(0, MAX_PER_SIDE);
+    const defArr = defenders.slice(0, MAX_PER_SIDE);
     // Zapisz oryginalne sklady (Reset deploy + Rozegraj ponownie)
     this._savedAtkBUs = cloneBattleUnitsForReplay(atkArr);
     this._savedDefBUs = cloneBattleUnitsForReplay(defArr);
@@ -6512,7 +6486,7 @@ export class BattleScene {
    * front, keeping its current LANE. Each turn it picks the passable neighbour
    * that most reduces the advance-axis (column) distance to the NEAREST enemy,
    * breaking ties by the SMALLEST lateral (row) change so it never fans out. It
-   * STOPS the instant any enemy is within firing range (shoots on a later turn).
+   * STOPS and fires on the same activation when an enemy enters firing range.
    * Verified in a /tmp sim: column distance to the enemy line decreases
    * monotonically with ~zero lateral drift, and it halts once in range.
    */
@@ -6523,7 +6497,7 @@ export class BattleScene {
 
     const nearest = this._nearestEnemy(ru);
     if (!nearest) { done(); return; }
-    // Already in range? Stop -- it will shoot next turn (and won't over-close).
+    // Already in range? Stop -- the caller normally chooses the shoot branch first.
     if (manhattan(ru.q, ru.r, nearest.q, nearest.r) <= ru.range) { done(); return; }
 
     const stepKey = this._bestForwardStep(ru, nearest);
@@ -6531,13 +6505,15 @@ export class BattleScene {
     const parts = stepKey.split(',');
     const nc = Number(parts[0]);
     const nr = Number(parts[1]);
+    if (!this._compactAttackAllowsStep(ru, nc)) { done(); return; }
 
     this._doMove(ru, nc, nr, () => {
       if (this.finished) { done(); return; }
       const e = this._nearestEnemy(ru);
       if (!e) { done(); return; }
-      // The moment we are within range, STOP (don't walk on toward adjacency).
-      if (manhattan(ru.q, ru.r, e.q, e.r) <= ru.range) { done(); return; }
+      // The moment we enter range, shoot on this same activation. This removes
+      // the extra planning/Start-Turn cycle previously needed for the opening volley.
+      if (manhattan(ru.q, ru.r, e.q, e.r) <= ru.range) { this._rangedAction(ru, done); return; }
       if (ru.moveLeft > 0) this._schedule(STEP_GAP_MS, () => this._rangedForwardStep(ru, done));
       else done();
     });
@@ -7376,6 +7352,10 @@ export class BattleScene {
           // Katapulta obrońcy na wyburzonym kaflu — niszczymy ją
           u.dead = true;
           u.fadingOut = true;
+          if (u.isArmyCommander) {
+            this._removeCommanderMoraleBonus(u.side);
+            this._disableManualIfCommanderLost(u.side);
+          }
           u.fadeStart = performance.now();
           this.occByKey.delete(cellKey(u.q, u.r));
         } else {
@@ -7589,6 +7569,31 @@ export class BattleScene {
     this._doMove(ru, nc, nr, done);
   }
 
+  /** Attack doctrine advances each infantry rank as a line; Charge keeps its existing free wrap. */
+  private _compactAttackAllowsStep(ru: RuntimeBattleUnit, candidateCol: number): boolean {
+    if (this._effectiveMetaForUnit(ru).doctrine !== 'steady' || ru.mounted || isSiegeUnit(ru.bu)) return true;
+    const rank = Math.max(0, Math.floor(ru.formationRank ?? 0));
+    const allies = (ru.side === 'atk' ? this.atk : this.def)
+      .filter(u => !u.dead && !u.fadingOut && !u.removed && !u.routed && !u.mounted && !isSiegeUnit(u.bu));
+    const progress = (u: RuntimeBattleUnit): number => ru.side === 'atk' ? u.q : -u.q;
+    const currentProgress = progress(ru);
+    const nextProgress = ru.side === 'atk' ? candidateCol : -candidateCol;
+    // Sideways wrapping remains available. Only forward steps are line-paced.
+    if (nextProgress <= currentProgress) return true;
+    const line = allies.filter(u => Math.max(0, Math.floor(u.formationRank ?? 0)) === rank);
+    const lineMinimum = Math.min(...line.map(progress));
+    const previous = rank > 0
+      ? allies.filter(u => Math.max(0, Math.floor(u.formationRank ?? 0)) === rank - 1)
+      : [];
+    const previousMinimum = previous.length > 0 ? Math.min(...previous.map(progress)) : null;
+    return compactLineAllowsAdvance({
+      side: ru.side,
+      candidateCol,
+      lineMinimumProgress: lineMinimum,
+      previousLineMinimumProgress: previousMinimum,
+    });
+  }
+
   private _advanceStep(ru: RuntimeBattleUnit, done: () => void): void {
     if (this.finished) { done(); return; }
     if (ru.dead || ru.fadingOut) { done(); return; }
@@ -7649,6 +7654,8 @@ export class BattleScene {
     const parts = stepKey.split(',');
     const nc = Number(parts[0]);
     const nr = Number(parts[1]);
+
+    if (!this._compactAttackAllowsStep(ru, nc)) { done(); return; }
 
     this._doMove(ru, nc, nr, () => {
       if (this.finished) { done(); return; }
@@ -8970,6 +8977,10 @@ export class BattleScene {
     if (ru.routed || ru.dead || ru.fadingOut) return;
     if (!this._autoBatchPlanning) this._sfxRout(); // clone planning is silent
     ru.routed = true;
+    if (ru.isArmyCommander) {
+      this._removeCommanderMoraleBonus(ru.side);
+      this._disableManualIfCommanderLost(ru.side);
+    }
     ru.acted  = true; // never takes another offensive action
     if (!ru.primaryRanged) this._checkMeleeScreenLost(ru.side);
     this._boostEnemiesOnBreak(ru); // FACTOR 4: this unit broke -> nearby enemies gain morale
@@ -9092,6 +9103,10 @@ export class BattleScene {
 
   private _startFade(ru: RuntimeBattleUnit): void {
     if (ru.fadingOut || ru.dead) return;
+    if (ru.isArmyCommander) {
+      this._removeCommanderMoraleBonus(ru.side);
+      this._disableManualIfCommanderLost(ru.side);
+    }
     this._sfxDeath(); // AUDIO: a dull thud as the unit falls
     ru.fadingOut = true;
     ru.fadeStart = this._now();
@@ -9145,16 +9160,31 @@ export class BattleScene {
    */
   private _armyMoraleRatio(side: 'atk' | 'def'): number {
     const arr = side === 'atk' ? this.atk : this.def;
-    let cur = 0;
-    let start = 0;
+    return armyMoraleRatioWithoutCommander(arr);
+  }
+
+  private _removeCommanderMoraleBonus(side: 'atk' | 'def'): void {
+    const arr = side === 'atk' ? this.atk : this.def;
     for (const u of arr) {
-      start += u.moraleMax;
-      // Dead OR routed units contribute 0 current morale.
-      if (u.dead || u.fadingOut || u.routed) continue;
-      cur += Math.max(0, u.morale);
+      const frac = u.bu.armyLeaderMoraleBonusFrac ?? 0;
+      if (frac <= 0) continue;
+      const ratio = u.moraleMax > 0 ? Math.max(0, Math.min(1, u.morale / u.moraleMax)) : 0;
+      u.bu.armyLeaderMoraleBonusFrac = 0;
+      const base = moraleBaseFor(u.bu) * (side === 'def' ? 1.5 : 1);
+      u.moraleMax = base;
+      u.morale = Math.min(base, Math.ceil(base * ratio));
+      this._updateMoraleBar(u);
     }
-    if (start <= 0) return 1.0;
-    return cur / start;
+  }
+
+  private _disableManualIfCommanderLost(side: 'atk' | 'def'): void {
+    if (!this._manualCommanderGate || side !== this._deployPlayerSideOpt || this._autoBatchPlanning) return;
+    this._schedule(0, () => {
+      const roster = side === 'atk' ? this.atk : this.def;
+      if (this._manualMode && !roster.some(u => u.isArmyCommander && !u.dead && !u.fadingOut && !u.routed)) {
+        this._toggleManualMode();
+      }
+    });
   }
 
   /**
@@ -9310,6 +9340,8 @@ export class BattleScene {
     const ratioD = this._armyMoraleRatio('def');
     const brokenA = ratioA < ARMY_MORALE_LOSS_THRESHOLD;
     const brokenD = ratioD < ARMY_MORALE_LOSS_THRESHOLD;
+    if (brokenA) for (const u of commandersToWithdrawAfterArmyBreak(this.atk, ARMY_MORALE_LOSS_THRESHOLD)) this._startRout(u);
+    if (brokenD) for (const u of commandersToWithdrawAfterArmyBreak(this.def, ARMY_MORALE_LOSS_THRESHOLD)) this._startRout(u);
     if (this._stalled && aliveA && aliveD) {
       // Nie rozstrzygaj po stall gdy: (a) tryb oblezenia -- atakujacy maszeruje/
       // buduje machiny wiele tur bez starcia, (b) zerowe straty po obu stronach
@@ -16201,15 +16233,13 @@ export class BattleScene {
       !this.occByKey.has(cellKey(c, r)) && this.terrainMap.passable(c, r);
 
     const units = saved;
-    const meleeI: number[] = [], javI: number[] = [], arcI: number[] = [],
-          siegeI: number[] = [], mountIdx: number[] = [];
-    units.forEach((u, i) => {
-      if (isMounted(u)) { mountIdx.push(i); return; }
-      if (isSiegeUnit(u)) { siegeI.push(i); return; }
-      if (!isPrimaryRanged(u)) { meleeI.push(i); return; }
-      if (normName(String(u.kategoria ?? '')).includes('oszczep')) { javI.push(i); return; }
-      arcI.push(i);
-    });
+    const roleOf = (u: BattleUnit): 'commander' | 'mounted' | 'ranged' | 'melee' | 'siege' =>
+      u.isArmyCommander ? 'commander' : isMounted(u) ? 'mounted' : isSiegeUnit(u) ? 'siege'
+        : isPrimaryRanged(u) ? 'ranged' : 'melee';
+    const ordered = initialBattleLineOrder(units, roleOf, Math.max(1, Math.min(RANK_WIDTH, BF_ROWS)));
+    const unitIndex = new Map(units.map((unit, index) => [unit, index]));
+    const frontI = ordered.filter(u => roleOf(u) !== 'siege').map(u => unitIndex.get(u)!);
+    const siegeI = ordered.filter(u => roleOf(u) === 'siege').map(u => unitIndex.get(u)!);
 
     const MAX_LINE = 12;
     const midRow = PLAY_MID_ROW;
@@ -16228,21 +16258,8 @@ export class BattleScene {
       return Math.ceil(list.length / per);
     };
     let rankBase = 0;
-    rankBase += layGroup(meleeI, rankBase);
-    rankBase += layGroup(javI, rankBase);
-    const arcRanks = layGroup(arcI, rankBase);
-    rankBase += arcRanks;
-    const siegeRanks = layGroup(siegeI, rankBase);
-    const totalFootRanks = rankBase + siegeRanks;
-    {
-      const mountColOff = totalFootRanks + (this.deployPhase && side === playerSide ? 2 : 5);
-      const mountPer = Math.max(1, Math.min(mountIdx.length, MAX_LINE));
-      const mountR0 = midRow - Math.floor(mountPer / 2);
-      mountIdx.forEach((ui, k) => {
-        idealRow[ui] = clampRow(mountR0 + (k % mountPer));
-        idealCol[ui] = clampCol(frontCol + (mountColOff + Math.floor(k / mountPer)) * rankStep);
-      });
-    }
+    rankBase += layGroup(frontI, rankBase);
+    rankBase += layGroup(siegeI, rankBase);
 
     const placed: RuntimeBattleUnit[] = [];
     for (let idx = 0; idx < units.length; idx++) {
@@ -16303,6 +16320,7 @@ export class BattleScene {
 
       const moraleBase = moraleBaseFor(bu);
       const ru: RuntimeBattleUnit = {
+        isArmyCommander: bu.isArmyCommander === true,
         bu,
         group,
         hpBarFg:     bars.hpBarFg,
@@ -16315,6 +16333,7 @@ export class BattleScene {
         ammoBarShown: ammoShown,
         q:           col,
         r:           row,
+        formationRank: Math.abs(idealCol[idx]! - frontCol),
         side,
         dead:        false,
         fadingOut:   false,
@@ -16382,6 +16401,12 @@ export class BattleScene {
     // _replayBattle -> _initDeployUI mógł go odtworzyć zamiast auto-grupować.
     this._deployGroupSnapshot = new Map();
     this._deployAttackDirSnapshot = new Map();
+    for (const ru of [...this.atk, ...this.def]) {
+      const frontCol = this.siegeWallCol >= 0
+        ? (ru.side === 'atk' ? 2 : this.siegeWallCol)
+        : (ru.side === 'atk' ? DEPLOY_ATK_FRONT_COL : DEPLOY_DEF_FRONT_COL);
+      ru.formationRank = Math.abs(ru.q - frontCol);
+    }
     for (const ru of this._playerRoster()) {
       if (ru.groupId) this._deployGroupSnapshot.set(ru.bu.id, ru.groupId);
       this._deployAttackDirSnapshot.set(ru.bu.id, ru.attackDirection);
@@ -16424,6 +16449,10 @@ export class BattleScene {
 
   /** Przelacza miedzy trybem AUTO a RECZNYM. */
   private _toggleManualMode(): void {
+    const playerSide = this._deployPlayerSideOpt;
+    const playerRoster = playerSide === 'atk' ? this.atk : this.def;
+    if (this._manualCommanderGate && !this._manualMode
+      && !playerRoster.some(u => u.isArmyCommander && !u.dead && !u.fadingOut && !u.routed)) return;
     this._manualMode = !this._manualMode;
     if (this._manualBtn) {
       this._syncManualRailHighlight();
@@ -17336,6 +17365,7 @@ export class BattleScene {
           return true;
         }
       }
+      if (!this._compactAttackAllowsStep(ru, nc)) { done(); return true; }
       if (nc === tc && nr === tr) ru.playerOrder = { type: 'none' };
       if (!this._destAllowedByBlockade(ru, nc)) {
         done();
@@ -17370,6 +17400,7 @@ export class BattleScene {
           nc = ru.q; nr = ru.r + dr;
         }
       }
+      if (!this._compactAttackAllowsStep(ru, nc)) { done(); return true; }
       if (nc !== ru.q || nr !== ru.r) this._doMove(ru, nc, nr, done);
       else done();
       return true;

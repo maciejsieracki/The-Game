@@ -108,6 +108,8 @@ function unitCompactMeta(u: UnitDef, cat: string): string {
 
 export interface UnitRecruitCardOpts {
   udef: UnitDef;
+  /** Optional display name override for special units using a normal unit model. */
+  unitLabel?: string;
   item: ProductionItem;
   data: GameData;
   skarb: number | undefined;
@@ -137,6 +139,7 @@ export interface UnitRecruitCardOpts {
   stockMissingLabel?: string;
   /** Tekst przyczyny blokady, gdy puli rekrutów brakuje. */
   manpowerMissingLabel?: string;
+  disabledReason?: string;
   /**
    * Największa liczba jednostek możliwa według aktualnego snapshotu zasobów.
    * To wyłącznie sufit kontrolek UI — nie rezerwuje kosztu.
@@ -211,7 +214,7 @@ function buildManpowerStatus(opts: {
 /** Kompaktowy wiersz jednostki (jedna linia) — ikona, nazwa+meta, koszt, rekruci, stepper, Rekrutuj. */
 export function buildUnitRecruitCard(opts: UnitRecruitCardOpts): HTMLDivElement {
   const {
-    udef, item, skarb, canPurchase, treasuryIconHtml, mpCost, mpCostLabel,
+    udef, item, skarb, canPurchase, treasuryIconHtml, mpCost, mpCostLabel, unitLabel, disabledReason,
     manpowerAvailable, manpowerRequired: manpowerRequiredInput,
     stockChipsHtml, resourceUpkeepChipsHtml, stockMissingLabel, manpowerMissingLabel,
     onRecruit,
@@ -237,8 +240,8 @@ export function buildUnitRecruitCard(opts: UnitRecruitCardOpts): HTMLDivElement 
   const text = el('div', 'unit-compact-text');
   const head = el('div', 'unit-compact-head');
   const name = el('span', 'bld-compact-name');
-  name.textContent = item.nazwa;
-  name.title = item.nazwa;
+  name.textContent = unitLabel || item.nazwa;
+  name.title = unitLabel || item.nazwa;
   head.appendChild(name);
   text.appendChild(head);
   const sub = el('div', 'unit-compact-sub');
@@ -325,7 +328,7 @@ export function buildUnitRecruitCard(opts: UnitRecruitCardOpts): HTMLDivElement 
     quantityInput.disabled = !canBuy;
     plus.disabled = !canBuy || quantity >= maxQuantity;
     btn.disabled = !canBuy;
-    const blockedReasons = [manpowerMissingLabel, stockMissingLabel].filter(
+    const blockedReasons = [disabledReason, manpowerMissingLabel, stockMissingLabel].filter(
       (reason): reason is string => !!reason,
     );
     if (!canPurchase && blockedReasons.length > 0) btn.title = blockedReasons.join('; ');

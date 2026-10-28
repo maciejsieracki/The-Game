@@ -11,6 +11,7 @@ const MUTANT = path.resolve(__dirname, '..', 'src', 'game', '.ai-city-capture-mu
 const MUTANT_ENTRY = path.resolve(__dirname, '.ai-city-capture-mutant-entry.ts');
 const MUTANT_BUNDLE = path.resolve(__dirname, '.ai-city-capture-mutant-bundle.cjs');
 const EXECUTOR_SOURCE = path.resolve(__dirname, '..', 'src', 'game', 'ai-city-capture-executor.ts');
+const MAIN_SOURCE = path.resolve(__dirname, '..', 'src', 'main.ts');
 
 function bundle(entry, outfile) {
   esbuild.buildSync({
@@ -127,6 +128,7 @@ function rejectedCase(label, overrides = {}) {
     cityBuiltIds: overrides.cityBuiltIds ?? [],
     hasCityDefenders: overrides.hasCityDefenders ?? false,
     targetVisible: overrides.targetVisible ?? true,
+    canEngageOwner: overrides.canEngageOwner ?? (() => true),
     canOccupyCityHex: false,
     blockedKeys: new Set(['1,0']),
     destinationKey: '1,0',
@@ -145,6 +147,24 @@ rejectedCase('obrońcy', { hasCityDefenders: true });
 rejectedCase('brak adiacencji', { city: { q: 2, r: 0 } });
 rejectedCase('teleport do miasta', { city: { q: 3, r: 0 } });
 rejectedCase('błędny targetCityId', { targetCityId: 'other-city' });
+rejectedCase('automatyczny pokój po wydaniu komendy', { canEngageOwner: () => false });
+
+const mainSource = fs.readFileSync(MAIN_SOURCE, 'utf8');
+eq(
+  /canEngageOwner:\s*\(targetOwnerId\)\s*=>\s*areEnemyOwners\(ownerId, targetOwnerId\)/.test(mainSource),
+  true,
+  'silnik sprawdza aktualny stan wojny ponownie przy wykonaniu każdego rozkazu AI',
+);
+eq(
+  /if \(!areEnemyOwners\(anchor\.ownerId, city\.ownerId\)\)[\s\S]{0,260}return false;/.test(mainSource),
+  true,
+  'wspólna ścieżka przejęcia pustego miasta odrzuca przejęcie w pokoju',
+);
+eq(
+  /if \(!areEnemyOwners\(newOwner, oldOwner\)\)\s*\{\s*endMapSiege\(cityId\);\s*return;/.test(mainSource),
+  true,
+  'kapitulacja głodowa nie przekazuje miasta po zawarciu pokoju; oblężenie jest kończone',
+);
 
 const parity = happyPath(executeAiCityMove, 3, 2);
 eq(parity.captured, true, 'parytet: owner major i owner miasta-państwa');

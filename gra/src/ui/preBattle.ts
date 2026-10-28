@@ -152,6 +152,8 @@ export interface PreBattleCallbacks {
 
 export interface PreBattleOptions {
   defaultAction?: 'auto' | 'manual';
+  /** Manual battlefield controls require a Wódz/Generał in the player's roster. */
+  manualControlAllowed?: boolean;
   /** Nadpisanie hooka z configurePreBattle (np. jednorazowy test). */
   getCivBonusy?: (ownerId: number) => readonly CivBonusLite[];
   /**
@@ -626,7 +628,8 @@ function attachKeyboard(
   info: PreBattleInfo,
   opts?: PreBattleOptions,
 ): void {
-  const defaultManual = (opts?.defaultAction ?? 'manual') === 'manual';
+  const defaultManual = (opts?.defaultAction ?? 'manual') === 'manual'
+    && opts?.manualControlAllowed !== false;
   keyHandler = (e: KeyboardEvent) => {
     if (e.key === 'Enter') {
       e.preventDefault();
@@ -806,7 +809,13 @@ function metaHtml(info: PreBattleInfo): string {
   return '<div class="pb-meta">' + parts.join('<span>·</span>') + '</div>';
 }
 
-function buildDeployPanel(info: PreBattleInfo, canRetreat: boolean, defaultManual: boolean, hasSave: boolean): HTMLElement {
+function buildDeployPanel(
+  info: PreBattleInfo,
+  canRetreat: boolean,
+  defaultManual: boolean,
+  hasSave: boolean,
+  manualControlAllowed: boolean,
+): HTMLElement {
   const defenderCanRetreat = info.defenderCanRetreat === true;
   const showRetreat = canRetreat || defenderCanRetreat;
   // P-WYCOFANIE-JEDNORAZOWE-TURA (Maciej 2026-08-13): obrońca już wycofany w tej
@@ -832,7 +841,8 @@ function buildDeployPanel(info: PreBattleInfo, canRetreat: boolean, defaultManua
     btns.push('<button type="button" class="pb-btn pb-danger" data-act="cancel" disabled>' + PB_SVG.retreat + 'Wycofaj</button>');
   }
   btns.push('<button type="button" class="pb-btn" data-act="auto">' + PB_SVG.auto + 'Auto</button>');
-  btns.push('<button type="button" class="pb-btn pb-primary" data-act="deploy">' + deployIcon + esc(deployLabel) + '</button>');
+  const deployDisabled = manualControlAllowed ? '' : ' disabled aria-disabled="true" title="Ręczne sterowanie wymaga Wodza lub Generała w armii"';
+  btns.push('<button type="button" class="pb-btn pb-primary" data-act="deploy"' + deployDisabled + '>' + deployIcon + esc(deployLabel) + '</button>');
   if (hasSave) {
     btns.push('<button type="button" class="pb-btn" data-act="save">Zapisz</button>');
   }
@@ -856,6 +866,9 @@ function buildDeployPanel(info: PreBattleInfo, canRetreat: boolean, defaultManua
   const prognoza = info.prognoza
     ? '<div class="pb-note">' + esc(info.prognoza) + '</div>'
     : '';
+  const commanderNote = manualControlAllowed
+    ? ''
+    : '<div class="pb-note">Ręczna bitwa wymaga Wodza lub Generała w armii. Auto pozostaje dostępne.</div>';
 
   const panel = document.createElement('div');
   panel.className = 'pb-deploy';
@@ -869,6 +882,7 @@ function buildDeployPanel(info: PreBattleInfo, canRetreat: boolean, defaultManua
     oddsHtml(info, canRetreat) +
     modPillsHtml(allMods) +
     prognoza +
+    commanderNote +
     '<div class="pb-btns">' + btns.join('') + '</div>' +
     noRetreatBar +
     keys +
@@ -879,7 +893,8 @@ function buildDeployPanel(info: PreBattleInfo, canRetreat: boolean, defaultManua
 function buildOverlay(info: PreBattleInfo, cb: PreBattleCallbacks, opts?: PreBattleOptions): HTMLDivElement {
   ensureStyles();
   const canRetreat = info.canRetreat !== false;
-  const defaultManual = (opts?.defaultAction ?? 'manual') === 'manual';
+  const manualControlAllowed = opts?.manualControlAllowed !== false;
+  const defaultManual = (opts?.defaultAction ?? 'manual') === 'manual' && manualControlAllowed;
   const getBonusy = opts?.getCivBonusy ?? pbCfg.getCivBonusy;
 
   const isYouAtk = isPlayerSide(info.atakujacy, 'atk', canRetreat);
@@ -903,12 +918,16 @@ function buildOverlay(info: PreBattleInfo, cb: PreBattleCallbacks, opts?: PreBat
     rosterHtml(info.atakujacy, 'atk', isYouAtk) +
     rosterHtml(info.obronca, 'def', isYouDef);
 
-  overlay.appendChild(buildDeployPanel(info, canRetreat, defaultManual, !!cb.onSave));
+  overlay.appendChild(buildDeployPanel(info, canRetreat, defaultManual, !!cb.onSave, manualControlAllowed));
 
   const dismiss = (): void => hidePreBattle();
   overlay.querySelector('[data-act="cancel"]')?.addEventListener('click', () => { cb.onCancel(); dismiss(); });
   overlay.querySelector('[data-act="auto"]')?.addEventListener('click', () => { cb.onAuto(); dismiss(); });
-  overlay.querySelector('[data-act="deploy"]')?.addEventListener('click', () => { cb.onBattlefield(); dismiss(); });
+  overlay.querySelector('[data-act="deploy"]')?.addEventListener('click', () => {
+    if (!manualControlAllowed) return;
+    cb.onBattlefield();
+    dismiss();
+  });
   overlay.querySelector('[data-act="save"]')?.addEventListener('click', () => {
     if (!cb.onSave) return;
     void (async () => {

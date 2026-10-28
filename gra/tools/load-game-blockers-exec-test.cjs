@@ -79,6 +79,7 @@ const FN_HEADERS = [
 // Zmienne `let` z main.ts czytane/zapisywane przez wyciagniete ciala.
 const STATE = [
   ['deferredPreBattleWatchdogTimer', 'null'], ['endTurnInProgress', 'false'], ['endTurnStartedAt', '0'],
+  ['activeWorldEndTurnPipeline', 'false'],
   ['battleUiResolving', 'false'], ['aiCmdResume', 'null'], ['aiTurnAwaitingBattle', 'false'],
   ['playtestWalkaActive', 'false'], ['gameOver', 'false'], ['galleryOn', 'false'],
   ['bitwaDuzaActive', 'false'], ['playtestMiastoActive', 'false'], ['foundCityMode', 'false'],
@@ -89,6 +90,7 @@ const STATE = [
 const STUBS = [
   'resetStuckInteractiveState', 'popOverlay', 'hideSiegeMapPanel', 'hideCityAttackChoice',
   'clearSiegeHtmlLabels', 'resetMapOverlayToggleDefaults', 'clearBuildModeVisuals', 'diagInfo',
+  'pruneStaleAiTradeOffersAwaitingPlayer', 'hasBlockingAiTradeOfferForPlayer',
 ].map((n) => 'const ' + n + ' = (..._a: any[]): void => {};').join('\n  ');
 
 function buildFactory(mainSrc) {

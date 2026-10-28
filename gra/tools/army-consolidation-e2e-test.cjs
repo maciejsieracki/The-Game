@@ -32,18 +32,16 @@ function atHex(st, q, r, owner = 1) {
   return st.units.filter(u => u.ownerId === owner && u.hp > 0 && u.q === q && u.r === r).length;
 }
 
-// 1. POKOJ, flaga ON: zbiorka w stolicy. Po 15 turach wszyscy w stolicy albo w miescie zapasowym.
+// 1. POKOJ, flaga ON: rozproszona armia scala sie w jednym stosie w stolicy.
 {
   E.setArmyConsolidationOverride(true);
   const st = scenarioPeace();
-  H.simulate(st, { engine: E, flag: false, fog: false, turns: 15, consolidation: true });
+  H.simulate(st, { engine: E, flag: false, fog: false, turns: 15, consolidation: true, allowFriendlyCityDestinations: true });
   const alive = st.units.filter(u => u.ownerId === 1 && u.hp > 0);
-  const inRally = alive.filter(u => (u.q === 5 && u.r === 5) || (u.q === 10 && u.r === 5)).length;
   const atCap = atHex(st, 5, 5);
-  assert(inRally === alive.length, `E1 POKOJ ON: wszystkie jednostki w stolicy/miescie zapasowym (${inRally}/${alive.length})`);
-  assert(atCap === E.ARMY_CONSOLIDATION_MAX_PER_HEX, `E2 POKOJ ON: stolica pelna do limitu ${E.ARMY_CONSOLIDATION_MAX_PER_HEX} (${atCap})`);
+  assert(atCap === alive.length, `E1 POKOJ ON: wszystkie rozproszone jednostki w jednym stosie na stolicy (${atCap}/${alive.length})`);
   const heksy = new Set(alive.map(u => `${u.q},${u.r}`)).size;
-  assert(heksy <= 2, `E3 POKOJ ON: co najwyzej 2 niepuste heksy (${heksy})`);
+  assert(heksy === 1, `E2 POKOJ ON: jedna armia zajmuje jeden heks po 15 turach (${heksy} heksow)`);
   E.setArmyConsolidationOverride(null);
 }
 
@@ -51,9 +49,26 @@ function atHex(st, q, r, owner = 1) {
 {
   E.setArmyConsolidationOverride(false);
   const st = scenarioPeace();
-  H.simulate(st, { engine: E, flag: false, fog: false, turns: 15, consolidation: true });
+  H.simulate(st, { engine: E, flag: false, fog: false, turns: 15, consolidation: true, allowFriendlyCityDestinations: true });
   const atCap = atHex(st, 5, 5);
-  assert(atCap < E.ARMY_CONSOLIDATION_MAX_PER_HEX, `E4 POKOJ OFF: brak pelnej zbiorki w stolicy (${atCap}) -- kontrast`);
+  assert(atCap < st.units.length, `E3 POKOJ OFF: armia nie tworzy jednego duzego stosu (${atCap}/${st.units.length}) -- kontrast`);
+  E.setArmyConsolidationOverride(null);
+}
+
+// Arrived units are part of the assembled army for the rest of their turn.
+// A neutral village beside the capital would otherwise pull them back into
+// ordinary exploration after the rally assignment's `atRally` fast path.
+{
+  E.setArmyConsolidationOverride(true);
+  const map = H.makeMap(12, 12);
+  map.hexes['5,6'].wioska.istnieje = true;
+  const units = [H.mkUnit('keeper', 1, 5, 5), H.mkUnit('join-a', 1, 3, 5), H.mkUnit('join-b', 1, 4, 5)];
+  const city = H.mkCity('capital', 1, 5, 5, 8);
+  const cmds = E.decideAITurn(1, units, [city], map, H.DATA, {
+    currentTurn: 30, capitalCityId: 'capital', atWarWithCiv: false,
+  });
+  assert(!cmds.some(c => c.type === 'move' && c.unitId === 'keeper'),
+    'E4 peace rally: unit already at capital is deferred instead of exploring away that turn');
   E.setArmyConsolidationOverride(null);
 }
 

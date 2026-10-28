@@ -148,6 +148,8 @@ import {
   setTurnTransition,
   yieldTurnTransitionUi,
 } from './ui/turnTransitionOverlay';
+import { shouldYieldAiOwnerProgressFrame } from './ui/aiOwnerProgressFrame';
+import { createDirtyRenderSync } from './game/dirtyRenderSync';
 import { fogBrightnessForHex, applyFogDimToObject3D } from './render/fogDim';
 import { CameraController, DRAG_THRESHOLD_PX, type CameraControllerOptions } from './render/camera';
 import { HEX_R, axialToWorld, worldToAxial } from './render/hexutil';
@@ -661,7 +663,7 @@ import { visibleZloze, ensureDepositEraMeta } from './map/deposit-era';
 import { machinesByCampHex, campOwnerByHex, readyMachinesForCity } from './render/siegeCampSync';
 import { TerenBazowy, Nakladka, Ulepszenie } from './types/hex';
 import type { Hex } from './types/hex';
-import { showCityPanel, hideCityPanel, isCityPanelOpen, refreshCityPanelIfOpen, getOpenCityPanelCityId, closeCityPanelIfOpen, cityGrowthLive } from './ui/cityPanel';
+import { showCityPanel, hideCityPanel, isCityPanelOpen, refreshCityPanelIfOpen, getOpenCityPanelCityId, closeCityPanelIfOpen, cityGrowthLive, mountCityRecruitmentCardsForArmy } from './ui/cityPanel';
 import { syncCityOkolicaOverlay, disposeCityOkolicaOverlayGroup } from './render/cityOkolicaOverlay';
 import { syncWorkerFieldOverlay, syncWorkerFieldOverlayFog, disposeWorkerFieldOverlayGroup } from './render/workerFieldOverlay';
 import { isPointOverCityPanelUi } from './ui/cityUxFrame';
@@ -824,6 +826,7 @@ import { isBattleSceneOpen } from './battle/battleSceneOpen';
 import { buildTestArmies, ensureSiegeMachines as ensureSiegeMachinesPreset } from './battle/testBattle';
 import type { PresetName } from './battle/testBattle';
 import type { BattleResult, BattleUnit, BattleOpts } from './battle/battleScene';
+import { armyLeaderMoraleBonusFrac, armyLeaderTitle } from './game/army-leadership';
 import type { WorldTerrainInput } from './battle/battle-terrain';
 import {
   startMusic, stopMusic, setMood, setEra, setMusicVolume, getMood,
@@ -878,6 +881,15 @@ import {
 } from './game/capital-capture';
 import { cityPopulationCap, loadEconParams, resolvePopulationCapMatrixDelta, sumBuildingHappinessFromBuiltIds } from './game/economy';
 import { civMatrixBonusyForCivKey } from './game/civ-bonuses';
+import { attemptGeneralPurchase, canRecruitGeneral, generalFollowDestination, generalLimitForEra } from './game/generals';
+import { promoteAiUnitForEra } from './game/ai-era-unit-promotion';
+import {
+  aiGeneralCampaignToSave,
+  chooseAiGeneralWarTarget,
+  reconcileAiGeneralWarCampaign,
+  restoreAiGeneralCampaigns,
+  type AiGeneralWarCampaign,
+} from './game/ai-general-war-campaign';
 import { advanceProduction, rushProduction, rushCost, populationCostOf, UNIT_POPULATION_COST,
   enqueueRecruitment, advanceRecruitment, advanceRecruitmentGated, unitProductionItem,
   enqueue, buildingProductionItem, splitPraca, cityPracaInteger, pracaImperialPoolGain, previewPracaPoolBrutto, availableProduction, availableReplacementsFor,
@@ -1090,14 +1102,6 @@ import {
   type MarchFogContext,
   type PlannedMarchDest,
 } from './game/planned-march';
-import {
-  clearRallyPoint,
-  rallyLaunchLeaderIds,
-  rallyPointsFromSave,
-  rallyPointsToSave,
-  setRallyPoint,
-  type RallyPoint,
-} from './game/rally-point';
 import { TypCywilizacji, type Player } from './types/player';
 import {
   saveToLocal, loadFromLocal, listSaves,
@@ -1210,6 +1214,8 @@ import {
   WOJNA_ZELAZO_WYMUSZONA_ODPOCZYNEK_TUR,
   WOJNA_ZELAZO_WYMUSZONA_COOLDOWN_TA_SAMA_CYWILIZACJA_TUR,
   isEligibleForIronForcedWar,
+  shouldEndIronForcedWarByDuration,
+  WOJNA_ZELAZO_WYMUSZONA_MAX_CZAS_TRWANIA_TUR,
   isIronEraEntry,
   pickIronForcedWarTargetId,
   shouldEndIronForcedWarByCityCount,
@@ -1221,6 +1227,10 @@ import {
 import {
   countActiveWarsExcluding,
   countActiveForcedWarsForOwner,
+  isForcedEraPeaceLocked,
+  serializeForcedEraPeaceLocks,
+  restoreForcedEraPeaceLocks,
+  type ForcedEraPeaceLock,
   assignForcedWarPairings,
   shouldEndForcedWarByCityCount,
   type ForcedWarPairingSubject,
@@ -2063,6 +2073,8 @@ async function boot(): Promise<void> {
      * jednoznaczny, a stan jest zapisywany osobno od liczników zdobytych miast.
      */
     const forcedWarWavesByPairKey = new Map<string, ForcedWarWaveState>();
+    /** Per-major-AI physical leader campaign state; old saves restore as an empty map. */
+    const aiGeneralWarCampaignByOwner = new Map<number, AiGeneralWarCampaign>();
     /**
      * R-AI-WOJNY-ZWYKLE-CAP-DWA-MIASTA-Q1: liczniki zdobytych miast dla ZWYKŁYCH (nie
      * wymuszonych epoki) wojen AI↔AI, klucz = diploPairKey(a, b). Osobny od
@@ -2096,6 +2108,9 @@ async function boot(): Promise<void> {
     // R-WEB-WAR-RULES-MULTIWAR-Q1 (R3): ile wojen epoki (wymuszonych) wypowiedziano per epoka
     // w skali świata. Zapisywane w meta save (`warRulesForcedEraDeclared`).
     const forcedEraWarDeclaredByTag = new Map<ForcedEraTag, number>();
+    // Para po pokoju z wojny epoki nie może wrócić do wojny aż do awansu napastnika
+    // do następnej epoki. Jest osobne od zwykłej, 10-turowej blokady traktatowej.
+    const forcedEraPeaceUntilNextEraByPairKey = new Map<string, ForcedEraPeaceLock>();
     /**
      * R-EPOKA-ZELAZO-WYMUSZONA-WOJNA-Q1: osobny rejestr od Kamienia i Brązu (żadne pole nie
      * jest współdzielone — mechanizmy trzech epok nie mieszają stanu). Wyzwalacz to AWANS
@@ -2245,6 +2260,7 @@ async function boot(): Promise<void> {
         completedWorldWonders,
       );
       player.era = next;
+      syncGeneralFormsForOwner(0);
       return prev !== next;
     }
 
@@ -4017,6 +4033,7 @@ async function boot(): Promise<void> {
         id: newUnitId,
         ownerId: city.ownerId,
         typeId: completed.id,
+        isGeneral: completed.isGeneral === true,
         category: categoryOf(completed.id, role, isSuper, def['Typ']),
         q: city.q,
         r: city.r,
@@ -4052,9 +4069,29 @@ async function boot(): Promise<void> {
       koszt: number,
       ownerId = 0,
       quantity = 1,
+      opts: { isGeneral?: boolean; generalGateChecked?: boolean } = {},
     ): boolean {
       const requestedQuantity = Math.floor(quantity);
       if (!Number.isSafeInteger(requestedQuantity) || requestedQuantity < 1) return false;
+      if (opts.isGeneral === true && opts.generalGateChecked !== true) {
+        const offer = bestGeneralUnitForOwner(ownerId);
+        const alive = units.filter(u => u.ownerId === ownerId && u.isGeneral === true).length;
+        const queued = cities.filter(c => c.ownerId === ownerId)
+          .reduce((sum, c) => sum + (cityProd.get(c.id)?.rekrutacja ?? []).filter(item => item.isGeneral === true).length, 0);
+        return attemptGeneralPurchase({
+          cityId,
+          capitalCityId: capitalCityIdForOwner(ownerId) ?? '',
+          era: empireEpochForOwner(ownerId),
+          alive,
+          queued,
+          requestedQuantity,
+          requestedItemId: itemId,
+          requestedCost: koszt,
+          offeredItemId: offer?.id ?? null,
+          offeredCost: offer?.koszt ?? null,
+        }, () => purchaseRecruitmentUnit(cityId, itemId, koszt, ownerId, quantity,
+          { isGeneral: true, generalGateChecked: true }));
+      }
       const totalGoldCost = koszt * requestedQuantity;
       if (!Number.isFinite(totalGoldCost) || totalGoldCost < 0 || !Number.isSafeInteger(totalGoldCost)) return false;
       if (ownerTreasury(ownerId) < totalGoldCost) return false;
@@ -4154,7 +4191,11 @@ async function boot(): Promise<void> {
       markCityStateDirty();
       let nextProd = cityProd.get(cityId) ?? { kolejka: [], postep: 0 };
       for (let i = 0; i < requestedQuantity; i++) {
-        nextProd = enqueueRecruitment(nextProd, { ...item, koszt });
+        nextProd = enqueueRecruitment(nextProd, {
+          ...item,
+          koszt,
+          ...(opts.isGeneral === true ? { isGeneral: true, nazwa: `${armyLeaderTitle(empireBuiltIdsForOwner(city.ownerId))} · ${item.nazwa}` } : {}),
+        });
       }
       cityProd.set(cityId, nextProd);
       if (ownerId === 0) {
@@ -6312,7 +6353,6 @@ async function boot(): Promise<void> {
      * Granice państw (territoryBorderVisible) NIE są tu gaszone — trwały wybór użytkownika aż do toggle OFF. */
     function dismissMapOverlayModes(): void {
       dismissToolbarSidePanels();
-      rallyPointMode = false;
       if (buildModeOpen) exitBuildMode();
       if (cultureRangeVisible || religionRangeVisible) {
         cultureRangeVisible = false;
@@ -6647,40 +6687,179 @@ async function boot(): Promise<void> {
     function upgradeAiUnitsForEra(ownerId: number): void {
       const techs = Array.from(unlockedTechSetForOwner(ownerId));
       for (const u of units) {
-        if (u.ownerId !== ownerId || u.replaceUsedThisTurn) continue;
-        const oldDef = lookupUnitDef(u.typeId);
-        const oldType = (oldDef?.Typ ?? '').toString().trim();
-        if (!oldDef || !oldType) continue;
-        const oldEra = epochNumber(oldDef.Epoka);
-        const candidates = availableReplacementsFor(u.typeId, data, techs, unitReplaceCtx(u));
-        const target = newestAvailableSameTypeUnit(u.typeId, candidates.map(it => it.id), data.units);
-        if (!target || epochNumber(target.Epoka) <= oldEra) continue;
-        const oldCost = unitProductionItem(
-          u.typeId, data, civBonusyForOwnerId(ownerId), player.kosztJednostekPace ?? 'niski',
-          ownerId, effectiveGameDifficultyForOwner(ownerId),
-        )?.koszt ?? 0;
-        const newCost = unitProductionItem(
-          target.Jednostka, data, civBonusyForOwnerId(ownerId), player.kosztJednostekPace ?? 'niski',
-          ownerId, effectiveGameDifficultyForOwner(ownerId),
-        )?.koszt ?? 0;
-        const surcharge = Math.max(0, newCost - oldCost);
-        const treasury = ownerTreasury(ownerId);
-        if (treasury < surcharge) continue;
-        const oldMaxHp = effectiveRuntimeUnitMaxHp(u, oldDef);
-        const newMaxHp = effectiveMaxHp(
-          unitHealth(target), unitParametryBonusFrac(u), veteranCombatBonusFrac(u),
-        );
-        const oldHp = u.hp ?? oldMaxHp;
-        u.typeId = target.Jednostka;
-        u.category = categoryOf(
-          target.Jednostka, target['Rola (linia)'] ?? '', target['Super-jednostka'] === 'TAK', target.Typ,
-        );
-        u.hp = Math.max(1, Math.round(newMaxHp * (oldMaxHp > 0 ? oldHp / oldMaxHp : 1)));
-        u.hpMax = newMaxHp;
-        u.ruchLeft = 0;
-        u.replaceUsedThisTurn = true;
-        if (surcharge > 0) setOwnerTreasury(ownerId, treasury - surcharge);
+        if (u.ownerId !== ownerId) continue;
+        promoteAiUnitForEra(u, {
+          oldDefinition: unit => lookupUnitDef(unit.typeId),
+          candidates: unit => availableReplacementsFor(unit.typeId, data, techs, unitReplaceCtx(unit))
+            .map(item => data.units.find(def => def.Jednostka === item.id))
+            .filter((def): def is NonNullable<typeof def> => Boolean(def)),
+          newestSameRole: (unit, candidates) => newestAvailableSameTypeUnit(
+            unit.typeId, candidates.map(def => def.Jednostka), data.units,
+          ),
+          epochNumber,
+          unitCost: (unitId, unit) => unitProductionItem(
+            unitId, data, civBonusyForOwnerId(ownerId), player.kosztJednostekPace ?? 'niski',
+            ownerId, effectiveGameDifficultyForOwner(ownerId),
+          )?.koszt ?? 0,
+          currentTreasury: () => ownerTreasury(ownerId),
+          setTreasury: value => setOwnerTreasury(ownerId, value),
+          oldMaxHp: (unit, def) => effectiveRuntimeUnitMaxHp(unit, def),
+          newMaxHp: (target, unit) => effectiveMaxHp(
+            unitHealth(target), unitParametryBonusFrac(unit), veteranCombatBonusFrac(unit),
+          ),
+          category: target => categoryOf(
+            typeof target.Jednostka === 'string' ? target.Jednostka : '',
+            typeof target['Rola (linia)'] === 'string' ? target['Rola (linia)'] : '',
+            target['Super-jednostka'] === 'TAK',
+            typeof target.Typ === 'string' ? target.Typ : undefined,
+          ),
+        });
       }
+    }
+
+    function bestGeneralUnitForOwner(ownerId: number): ProductionItem | null {
+      const capitalId = capitalCityIdForOwner(ownerId);
+      const capital = capitalId ? cities.find(c => c.id === capitalId && c.ownerId === ownerId) : undefined;
+      if (!capital) return null;
+      const candidates = purchasableUnits(
+        capital,
+        data,
+        unlockedTechsForOwner(ownerId),
+        { ...productionAvailabilityCtxForCity(capital), showStockGatedUnits: true },
+      );
+      return sortByUnitPowerDescending(
+        candidates,
+        item => data.units.find(u => u.Jednostka === item.id) as unknown as UnitPowerInput,
+      )[0] ?? null;
+    }
+
+    function generalRecruitmentOfferForCity(cityId: string): {
+      item: ProductionItem | null;
+      alive: number;
+      queued: number;
+      limit: number;
+      title: ReturnType<typeof armyLeaderTitle>;
+      disabledReason?: string;
+    } | null {
+      const city = cities.find(c => c.id === cityId);
+      if (!city || city.id !== capitalCityIdForOwner(city.ownerId)) return null;
+      const alive = units.filter(u => u.ownerId === city.ownerId && u.isGeneral === true).length;
+      const queued = cities.filter(c => c.ownerId === city.ownerId)
+        .reduce((sum, c) => sum + (cityProd.get(c.id)?.rekrutacja ?? []).filter(item => item.isGeneral === true).length, 0);
+      const limit = generalLimitForEra(empireEpochForOwner(city.ownerId));
+      const best = bestGeneralUnitForOwner(city.ownerId);
+      return {
+        // Keep the offer's base unit name raw; cityPanel adds the visible General prefix once.
+        item: best ? { ...best, isGeneral: true } : null,
+        title: armyLeaderTitle(empireBuiltIdsForOwner(city.ownerId)),
+        alive,
+        queued,
+        limit,
+        disabledReason: canRecruitGeneral(empireEpochForOwner(city.ownerId), { alive, queued })
+          ? undefined
+          : `Limit generałów epoki osiągnięty (${alive + queued}/${limit})`,
+      };
+    }
+
+    /** Existing Generals keep the live combat/model type of their owner's strongest available unit. */
+    function syncGeneralFormsForOwner(ownerId: number): void {
+      const best = bestGeneralUnitForOwner(ownerId);
+      if (!best) return;
+      const def = lookupUnitDef(best.id);
+      if (!def) return;
+      const nextHpMaxBase = unitHealth(def);
+      for (const general of units) {
+        if (general.ownerId !== ownerId || general.isGeneral !== true || general.typeId === best.id) continue;
+        const oldDef = lookupUnitDef(general.typeId);
+        const oldHpMax = effectiveRuntimeUnitMaxHp(general, oldDef);
+        const nextHpMax = effectiveMaxHp(
+          nextHpMaxBase,
+          unitParametryBonusFrac(general),
+          veteranCombatBonusFrac(general),
+        );
+        const oldHp = general.hp ?? oldHpMax;
+        general.typeId = best.id;
+        general.category = categoryOf(
+          best.id, def['Rola (linia)'] ?? '', def['Super-jednostka'] === 'TAK', def.Typ,
+        );
+        general.hp = Math.max(1, Math.round(nextHpMax * (oldHpMax > 0 ? oldHp / oldHpMax : 1)));
+        general.hpMax = nextHpMax;
+        general.ruch = applyRuchSwiataPace(
+          normFieldVal(def['Ruch'], 2), player.ruchSwiataPace ?? 'krotki',
+        );
+        general.ruchLeft = Math.min(general.ruchLeft, general.ruch);
+      }
+    }
+
+    /** Choose one stable active civilization-war target and keep the leader cycle current. */
+    function prepareAiGeneralWarCampaign(ownerId: number): (AiGeneralWarCampaign & {
+      rallyQ: number; rallyR: number;
+      target: { ownerId: number; cityId: string; q: number; r: number };
+      turn: number;
+    }) | undefined {
+      const capitalId = capitalCityIdForOwner(ownerId);
+      const capital = cities.find(city => city.id === capitalId && city.ownerId === ownerId);
+      if (!capital) {
+        aiGeneralWarCampaignByOwner.delete(ownerId);
+        return undefined;
+      }
+      const targetOwners = [...new Set(cities.map(city => city.ownerId))]
+        .filter(targetId => targetId >= 0 && targetId !== ownerId && !isBarbarian(targetId)
+          && !eliminatedOwners.has(targetId)
+          && getDiploRelation(ownerId, targetId).status === 'wojna');
+      const candidates = targetOwners.flatMap(targetId => {
+        const targetCapitalId = capitalCityIdForOwner(targetId);
+        const target = cities.find(city => city.id === targetCapitalId && city.ownerId === targetId);
+        return target ? [{ ownerId: targetId, distance: capital
+          ? hexDistance(capital.q, capital.r, target.q, target.r) : 0, target }] : [];
+      });
+      const prior = aiGeneralWarCampaignByOwner.get(ownerId);
+      const targetOwnerId = chooseAiGeneralWarTarget(prior, candidates);
+      const target = targetOwnerId === null ? undefined : candidates.find(item => item.ownerId === targetOwnerId)?.target;
+      if (!target) {
+        aiGeneralWarCampaignByOwner.delete(ownerId);
+        return undefined;
+      }
+
+      const previousLeader = prior?.generalUnitId;
+      const aliveGenerals = units.filter(unit => unit.ownerId === ownerId && unit.isGeneral === true);
+      const livingGeneral = aliveGenerals
+        .filter(unit => {
+          if (!prior) return true;
+          if (prior.stage === 'recruiting') {
+            if (prior.blockedGeneralIds !== undefined) return !prior.blockedGeneralIds.includes(unit.id);
+            return !previousLeader || unit.id !== previousLeader;
+          }
+          return !previousLeader || unit.id === previousLeader;
+        })
+        .sort((a, b) => a.id.localeCompare(b.id))[0];
+      const queuedGeneralExists = cities.filter(city => city.ownerId === ownerId)
+        .some(city => (cityProd.get(city.id)?.rekrutacja ?? []).some(item => item.isGeneral === true));
+      let campaign = reconcileAiGeneralWarCampaign(
+        prior, targetOwnerId, livingGeneral, queuedGeneralExists, aliveGenerals.map(unit => unit.id),
+      );
+      if (!campaign) return undefined;
+
+      if (campaign.stage === 'recruiting' && !queuedGeneralExists) {
+        const offer = bestGeneralUnitForOwner(ownerId);
+        if (capital && offer && canRecruitGeneral(empireEpochForOwner(ownerId), {
+          alive: units.filter(unit => unit.ownerId === ownerId && unit.isGeneral === true).length,
+          queued: 0,
+        })) {
+          purchaseRecruitmentUnit(capital.id, offer.id, offer.koszt, ownerId, 1, { isGeneral: true });
+        }
+      }
+      aiGeneralWarCampaignByOwner.set(ownerId, campaign);
+      const leader = campaign.generalUnitId
+        ? units.find(unit => unit.ownerId === ownerId && unit.id === campaign.generalUnitId && unit.isGeneral === true)
+        : undefined;
+      return {
+        ...campaign,
+        rallyQ: leader?.q ?? capital?.q ?? target.q,
+        rallyR: leader?.r ?? capital?.r ?? target.r,
+        target: { ownerId: target.ownerId, cityId: target.id, q: target.q, r: target.r },
+        turn,
+      };
     }
 
     /** Koszt rekrutacji Pieniądzem jednostki `typeId` (dla dopłaty = nowa - stara). */
@@ -10004,7 +10183,11 @@ async function boot(): Promise<void> {
 
     /** Karencja pokoju po akceptacji traktatu — blokuje DOW obu stron (w tym kaskadę sojuszu). */
     function isPeaceLockedBetween(a: number, b: number): boolean {
-      return isPeaceTreatyLocked(getDiploPairMeta(a, b), turn);
+      const pairKey = diploPairKey(a, b);
+      const eraLock = forcedEraPeaceUntilNextEraByPairKey.get(pairKey);
+      const untilNextEra = eraLock != null
+        && isForcedEraPeaceLocked(empireEpochForOwner(eraLock.ownerId), eraLock.era);
+      return untilNextEra || isPeaceTreatyLocked(getDiploPairMeta(a, b), turn);
     }
 
     function cleanupStoneForcedWarOnPeace(proposerId: number, responderId: number): void {
@@ -10045,6 +10228,15 @@ async function boot(): Promise<void> {
       regularWarCapturedByPairKey.delete(diploPairKey(proposerId, responderId));
     }
 
+    /** Pokój kończy aktywne oblężenia między tą parą, zanim kolejny tick może je rozstrzygnąć. */
+    function cancelSiegesBetweenPeaceOwners(ownerA: number, ownerB: number): void {
+      for (const city of cities) {
+        if (!city.oblegane || (city.ownerId !== ownerA && city.ownerId !== ownerB)) continue;
+        const besiegerId = besiegerOwnerForCity(city);
+        if (besiegerId === ownerA || besiegerId === ownerB) endMapSiege(city.id);
+      }
+    }
+
     /**
      * Zawarcie pokoju + blokada DOW na PEACE_TREATY_LOCK_TURNS tur (lub `lockTurnsOverride`,
      * jeśli podane).
@@ -10062,6 +10254,16 @@ async function boot(): Promise<void> {
       responderId: number,
       lockTurnsOverride?: number,
     ): void {
+      const pairKey = diploPairKey(proposerId, responderId);
+      const forcedWar = stoneForceWarActiveByPairKey.get(pairKey)
+        ?? bronzeForceWarActiveByPairKey.get(pairKey)
+        ?? ironForceWarActiveByPairKey.get(pairKey);
+      if (forcedWar) {
+        forcedEraPeaceUntilNextEraByPairKey.set(pairKey, {
+          ownerId: forcedWar.attackerId,
+          era: empireEpochForOwner(forcedWar.attackerId),
+        });
+      }
       const cur = getDiploRelation(proposerId, responderId);
       setDiploRelation(
         proposerId,
@@ -10077,6 +10279,7 @@ async function boot(): Promise<void> {
           lockTurnsOverride,
         ),
       );
+      cancelSiegesBetweenPeaceOwners(proposerId, responderId);
       // R-EPOKA-KAMIEN-WYMUSZONA-WOJNA: pokój czyści osobny rejestr Kamienia
       // przed zachowaniem istniejącego cleanupu Brązu.
       cleanupStoneForcedWarOnPeace(proposerId, responderId);
@@ -10732,6 +10935,8 @@ async function boot(): Promise<void> {
     /** Flag: game ended (victory or defeat). Prevents repeated end-game messages. */
     let gameOver = false;
     let endTurnInProgress = false;
+    /** True only while endActiveHumanTurn's async world-EOT pipeline is alive. */
+    let activeWorldEndTurnPipeline = false;
     /** Timestamp (ms) — wykrywanie zawieszonego przejścia tury (>8 s → force heal). */
     let endTurnStartedAt = 0;
     /** Jednostki gracza ukończone w ticku end-turn — ukryte do końca tury AI. */
@@ -12693,7 +12898,12 @@ async function boot(): Promise<void> {
       if (!u || u.ownerId !== 0) return;
       const coLocated = coLocatedForMergePrompt(units, u.q, u.r, u.ownerId)
         .filter(x => x.id !== newUnitId);
-      if (coLocated.length > 0) {
+      const general = units.find(x => x.ownerId === u.ownerId && x.isGeneral === true);
+      const follow = generalFollowDestination(u, general);
+      const autoMarchingToGeneral = follow && planGeneralFollowMarch(
+        u, follow.point, follow.generalTargetId, false,
+      );
+      if (coLocated.length > 0 && !autoMarchingToGeneral) {
         // Świeżo wyprodukowana jednostka nie wykonała żadnego ruchu tej tury —
         // nie ma czego zwracać (deductedRuch=0).
         promptMergeIfCoLocated([newUnitId], u.q, u.r, 0, 0);
@@ -12706,6 +12916,7 @@ async function boot(): Promise<void> {
       const { x, z } = axialToWorld(u.q, u.r, HEX_R);
       const { dist } = camCtrl.getFocusState();
       camCtrl.focusAt(x, z, dist);
+      if (autoMarchingToGeneral) enqueueMarchSegments([newUnitId]);
     }
 
     /** Po fazie AI: pokaż jednostki ukończone w ticku end-turn (produkcja/rekrutacja). */
@@ -14812,6 +15023,9 @@ async function boot(): Promise<void> {
 
     function notifyPlayerEraChangeIfAdvanced(prevEra: number): void {
       if (!shouldNotifyPlayerEraChange(prevEra, player.era)) return;
+      // The city panel reads the owner's live era when rebuilding recruitment. Refresh it
+      // on the real transition so an already-open panel cannot keep showing stale availability.
+      refreshCityPanelIfOpen();
       const toastHtml = eraChangeNotifyToastHtml(player.era);
       // P-EPOKA-TOAST-EOT-POLYKANY: podczas endTurnInProgress showHintMessage() i tak
       // zdeferowałby ten toast do generycznej kolejki (znika jako toast, wraca jako bierna
@@ -15112,6 +15326,13 @@ async function boot(): Promise<void> {
       let citySiegeOwnerChanged = false;
       if (newOwner !== null && newOwner !== city.ownerId) {
         const oldOwner = city.ownerId;
+        // Pokój anuluje również skutki rozpoczętego wcześniej oblężenia. Bez
+        // ponownej kontroli głodowa kapitulacja mogłaby zmienić właściciela miasta
+        // już po auto-pokoju, mimo aktywnej 20-turwej blokady.
+        if (!areEnemyOwners(newOwner, oldOwner)) {
+          endMapSiege(cityId);
+          return;
+        }
         // R-MIASTA-LIMIT-PODBOJ-PROWENIENCJA-CYWILIZACJA-Q1: odczyt PRZED gaszeniem flagi (cities.ts).
         const wasIndependentCityState = wasIndependentCityStateBeforeCapture(city);
         // R-MIASTA-REBELIA-OCHRONA-20-TUR-Q1: odczyt PRZED applyPostCaptureLawOnCapture,
@@ -15970,6 +16191,17 @@ async function boot(): Promise<void> {
         tradeRouteEventLog.unshift(ev);
       };
 
+      const routeSettlementForCity = (routes: readonly TradeRoute[], cityId: string): number => {
+        const breakdown = computeTradeRouteIncomeByCityBreakdown(
+          routes, incomeParams, wonderTradeRouteBonusForOwner, targowiskoTradeRouteBonusForCity,
+        );
+        const seaBonus = computeSeaTradeBonusIncomeByCity(computeSeaTradeRouteCountByCity(routes));
+        return (breakdown.totalByCity.get(cityId) ?? 0) + (seaBonus.get(cityId) ?? 0);
+      };
+      // Treat new-route events as sequential additions so a second sea route
+      // reports the marginal +1 city bonus as well as its endpoint proceeds.
+      const routesBeforeAdded = [...prevRoutes];
+
       for (const route of added) {
         const from = cityById.get(route.fromCityId);
         const to = cityById.get(route.toCityId);
@@ -15979,7 +16211,14 @@ async function boot(): Promise<void> {
         // (obie strony to gracz) własna nazwa cywilizacji nic nie mówi — jawny opis.
         const wewnetrzna = route.ownerId === route.toOwnerId;
         const civLabel = wewnetrzna ? 'handel wewnętrzny' : ownerDiploLabel(route.ownerId === 0 ? route.toOwnerId : route.ownerId);
-        const income = tradeRouteIncomeForRoute(route, incomeParams);
+        // The event describes the player's credited proceeds for this route,
+        // including endpoint-specific Wonder and Targowisko bonuses. Reuse the
+        // settlement aggregator so labels cannot drift from turn income.
+        const playerCityId = playerCityIdOf(route);
+        const beforeIncome = routeSettlementForCity(routesBeforeAdded, playerCityId);
+        routesBeforeAdded.push(route);
+        const afterIncome = routeSettlementForCity(routesBeforeAdded, playerCityId);
+        const income = Math.max(0, afterIncome - beforeIncome);
         const summary = `${fromName} ↔ ${toName} (${civLabel}) \xb7 +${income} złota/turę`;
         showHintMessage('\u{1F9ED} Nowy szlak handlowy: ' + summary, 4500);
         // P-WYDARZENIA-AUDYT-PRZEKIEROWANIA-Q1: zapamiętaj miasto gracza pod tym samym id.
@@ -22438,23 +22677,6 @@ async function boot(): Promise<void> {
         };
       }
       const actions: ArmyStackHudState['actions'] = [];
-      const rallyPoint = rallyPoints.get(ME());
-      actions.push({
-        id: 'rally-set',
-        label: rallyPointMode
-          ? 'Kliknij heks punktu zbiórki'
-          : rallyPoint ? `Zmień punkt (${rallyPoint.q},${rallyPoint.r})` : 'Ustaw punkt zbiórki',
-        disabled: false,
-        active: rallyPointMode,
-      });
-      if (rallyPoint) {
-        actions.push({
-          id: 'rally-launch',
-          label: `Wyślij na punkt (${rallyPoint.q},${rallyPoint.r})`,
-          disabled: isAnimating,
-        });
-        actions.push({ id: 'rally-clear', label: 'Usuń punkt zbiórki', disabled: false });
-      }
       const hasPlan = plannedMarches.has(active.id);
       if (siegeCity) {
         actions.push({ id: 'siege-hold', label: 'Oblega', disabled: true });
@@ -22594,23 +22816,7 @@ async function boot(): Promise<void> {
       const u = selectedId !== null ? units.find(x => x.id === selectedId) : null;
       if (!u) return;
       const stack = playerStackAt(u);
-      if (actionId === 'rally-set') {
-        rallyPointMode = !rallyPointMode;
-        showHintMessage(
-          rallyPointMode
-            ? 'Kliknij przejezdny heks, aby ustawić punkt zbiórki.'
-            : 'Ustawianie punktu zbiórki anulowane.',
-          2800,
-        );
-        refreshD1bHud();
-      } else if (actionId === 'rally-launch') {
-        launchRallyPointForOwner(ME());
-      } else if (actionId === 'rally-clear') {
-        clearRallyPoint(rallyPoints, ME());
-        rallyPointMode = false;
-        showHintMessage('Usunięto punkt zbiórki.', 2200);
-        refreshD1bHud();
-      } else if (actionId === 'march-continue') {
+      if (actionId === 'march-continue') {
         continuePlannedMarchForSelected();
       } else if (actionId === 'march-stop') {
         stopPlannedMarchForSelected();
@@ -23792,7 +23998,7 @@ async function boot(): Promise<void> {
       ensurePerfReportChip();
       mountEmpireDetailPanel(() => buildEmpireDetailSnap());
       configureEmpireMassRecruitment({
-        onPurchase: (cityId, itemId, count) => purchaseRecruitmentUnits(cityId, itemId, count, ME()),
+        mountCityRecruitment: (cityId, host) => mountCityRecruitmentCardsForArmy(cityId, host),
       });
       configureEmpireHandelSplit({
         getOwnerDefault: (ownerId) => ownerDefaultPodzialHandlu.get(ownerId) ?? null,
@@ -26009,7 +26215,6 @@ async function boot(): Promise<void> {
         prodEmptyDismissFp: prodEmptyDismissFp.size,
         dismissedSidePanelEventIds: dismissedSidePanelEventIds.size,
         plannedMarches: plannedMarches.size,
-        rallyPoints: rallyPoints.size,
         movedByPlayerThisTurn: movedByPlayerThisTurn.size,
         marchAttackTargets: marchAttackTargets.size,
         units: units.length,
@@ -26314,6 +26519,13 @@ async function boot(): Promise<void> {
         if (!city) return false;
         return purchaseRecruitmentUnit(cityId, itemId, koszt, city.ownerId, quantity);
       },
+      getGeneralRecruitmentOffer: (cityId: string) => generalRecruitmentOfferForCity(cityId),
+      onPurchaseGeneral: (cityId: string, itemId: string, koszt: number) => {
+        const city = cities.find(c => c.id === cityId);
+        return city
+          ? purchaseRecruitmentUnit(cityId, itemId, koszt, city.ownerId, 1, { isGeneral: true })
+          : false;
+      },
       onCancelRecruitment: (cityId: string, itemId: string, koszt: number) => {
         const city = cities.find(c => c.id === cityId);
         if (!city) return;
@@ -26374,9 +26586,6 @@ async function boot(): Promise<void> {
 
     /** A3: zaplanowane marsze — cel bez natychmiastowego ruchu. */
     const plannedMarches = new Map<string, PlannedMarchDest>();
-    /** One saved rally point per empire; setting it does not issue a move order. */
-    const rallyPoints = new Map<number, RallyPoint>();
-    let rallyPointMode = false;
     /**
      * Jednostki gracza, które w bieżącej turze dostały nowy rozkaz ruchu / zmianę celu.
      * Czyścimy przy odnowieniu MP — EOT kontynuuje marsz tylko gdy jednostki tu NIE ma.
@@ -26653,13 +26862,22 @@ async function boot(): Promise<void> {
     }
 
     /** Assign a normal planned march to one currently existing stack. */
-    function planRallyMarchForUnit(u: RuntimeUnit, point: RallyPoint): boolean {
+    function planGeneralFollowMarch(
+      u: RuntimeUnit,
+      point: { q: number; r: number },
+      generalTargetId?: string,
+      markAsPlayerIssued = true,
+    ): boolean {
       if (u.ownerId !== ME() || u.inGarnizon === true || u.oblegaCityId) return false;
       if (!canOccupyHexForUnit(u, point.q, point.r)) return false;
       const stack = playerStackAt(u);
       const occ = occupiedForMove(u.ownerId, ...stack.map(s => s.id));
       const mover = unitWithPlanningStackRuch(u, stack);
-      const dest: PlannedMarchDest = { destQ: point.q, destR: point.r };
+      const dest: PlannedMarchDest = {
+        destQ: point.q,
+        destR: point.r,
+        ...(generalTargetId ? { generalTargetId } : {}),
+      };
       const plan = marchPathPlan(
         mover,
         point.q,
@@ -26672,51 +26890,31 @@ async function boot(): Promise<void> {
       );
       if (!plan.reachable || plan.fullPath.length === 0) return false;
       clearScoutAutoExplore(u);
-      markPlayerMovedUnit(u.id);
+      if (markAsPlayerIssued) markPlayerMovedUnit(u.id);
       plannedMarches.set(u.id, dest);
       syncMarchAttackTarget(u.id, dest);
       return true;
     }
 
-    /** Explicit rally launch: only stacks existing at click time are included. */
-    function launchRallyPointForOwner(ownerId: number): void {
-      if (isAnimating) return;
-      const point = rallyPoints.get(ownerId);
-      if (!point) {
-        showHintMessage('Najpierw ustaw punkt zbiórki.', 2600);
-        return;
+    /** Keep every queued General-following march aimed at that General's live position. */
+    function syncGeneralMarchTargets(): void {
+      for (const [unitId, dest] of [...plannedMarches]) {
+        if (!dest.generalTargetId) continue;
+        const follower = units.find(u => u.id === unitId);
+        const general = units.find(u => u.id === dest.generalTargetId);
+        if (!follower || !general || general.isGeneral !== true || follower.ownerId !== general.ownerId) {
+          plannedMarches.delete(unitId);
+          marchAttackTargets.delete(unitId);
+          continue;
+        }
+        if (follower.q === general.q && follower.r === general.r) {
+          plannedMarches.delete(unitId);
+          continue;
+        }
+        if (dest.destQ !== general.q || dest.destR !== general.r) {
+          plannedMarches.set(unitId, { ...dest, destQ: general.q, destR: general.r });
+        }
       }
-      const assigned: string[] = [];
-      for (const unitId of rallyLaunchLeaderIds(units, ownerId)) {
-        const unit = units.find(u => u.id === unitId);
-        if (unit && planRallyMarchForUnit(unit, point)) assigned.push(unitId);
-      }
-      rallyPointMode = false;
-      if (assigned.length === 0) {
-        showHintMessage('Brak dostępnej trasy do punktu zbiórki.', 3200);
-      } else {
-        enqueueMarchSegments(assigned);
-        showHintMessage(`Wysłano ${assigned.length} stosów na punkt (${point.q},${point.r}).`, 3000);
-      }
-      refreshPlannedMarchPreview(selectedId ?? undefined);
-      refreshD1bHud();
-    }
-
-    /** Handle a map click while the rally point picker is active. */
-    function setRallyPointFromMap(q: number, r: number): void {
-      const hex = map.hexes[keyOf(q, r)];
-      if (!hex || terrainMoveCost(hex) === Infinity) {
-        showHintMessage('Punkt zbiórki musi leżeć na przejezdnym lądzie.', 3000);
-        return;
-      }
-      if (!canUnitOccupyCityHex(ME(), q, r, cities)) {
-        showHintMessage('Nie można ustawić punktu na obcym mieście.', 3000);
-        return;
-      }
-      setRallyPoint(rallyPoints, ME(), { q, r });
-      rallyPointMode = false;
-      showHintMessage(`Punkt zbiórki ustawiony: (${q},${r}).`, 2800);
-      refreshD1bHud();
     }
 
     function startAnimatedMove(
@@ -26852,6 +27050,7 @@ async function boot(): Promise<void> {
     }
 
     function processMarchQueue(): void {
+      syncGeneralMarchTargets();
       while (marchExecQueue.length > 0 && !isAnimating) {
         const id = marchExecQueue.shift()!;
         if (!plannedMarches.has(id)) continue;
@@ -26867,6 +27066,7 @@ async function boot(): Promise<void> {
     }
 
     function executePlannedMarchesEndTurn(humanOwnerId: number): void {
+      syncGeneralMarchTargets();
       const ids = units
         .filter(u => u.ownerId === humanOwnerId && plannedMarches.has(u.id)
           && !movedByPlayerThisTurn.has(u.id)
@@ -27633,10 +27833,6 @@ async function boot(): Promise<void> {
       // Treat as a click at (e.clientX, e.clientY)
       const hit = pickMapTarget(e.clientX, e.clientY);
       if (!hit) {
-        if (rallyPointMode) {
-          showHintMessage('Kliknij przejezdny heks, aby ustawić punkt zbiórki.', 3000);
-          return;
-        }
         if (foundCityMode) {
           showHintMessage('Kliknij w heks lądu (podświetlony obszar startu)', 2500);
           return;
@@ -27646,12 +27842,6 @@ async function boot(): Promise<void> {
           clearPlayerUnitSelection();
           refreshD1bHud();
         }
-        return;
-      }
-
-      // Rally-point selection must not fall through to city, attack, or move handling.
-      if (rallyPointMode) {
-        setRallyPointFromMap(hit.q, hit.r);
         return;
       }
 
@@ -28416,6 +28606,7 @@ async function boot(): Promise<void> {
       const hp = u.hp != null ? Math.min(maxHp, Math.max(0, u.hp)) : maxHp;
       return {
         id: u.id,
+        isArmyCommander: u.isGeneral === true,
         nazwa: u.typeId,
         kategoria: u.category,
         ownerColor,
@@ -28681,7 +28872,12 @@ async function boot(): Promise<void> {
       }
 
       function rosterToBattleUnits(roster: RuntimeUnit[], color: number): BattleUnit[] {
-        return roster.map(u => runtimeToBattleUnit(u, lookupUnitDef(u.typeId), color));
+        const hasCommander = roster.some(u => u.isGeneral === true);
+        const bonus = armyLeaderMoraleBonusFrac(hasCommander, empireBuiltIdsForOwner(roster[0]?.ownerId ?? 0));
+        return roster.map(u => ({
+          ...runtimeToBattleUnit(u, lookupUnitDef(u.typeId), color),
+          armyLeaderMoraleBonusFrac: bonus,
+        }));
       }
 
       function finishMapBattleUi(): void {
@@ -28784,6 +28980,7 @@ async function boot(): Promise<void> {
             data,
             deploy: true,
             deployPlayerSide: 'atk',
+            manualControlAllowed: atkRosterRef.some(u => u.isGeneral === true),
             attackerCivBonusy: civBonusyForOwnerId(atkLead.ownerId),
             defenderCivBonusy: civBonusyForOwnerId(defLead.ownerId),
             defenderOwnTerritory: territoryOwnerAtLive(defUnit.q, defUnit.r) === defLead.ownerId,
@@ -28833,7 +29030,7 @@ async function boot(): Promise<void> {
           hidePreBattle();
         },
         onSave: () => doQuickSave(false),
-      }, { defaultAction: 'manual' });
+      }, { defaultAction: 'manual', manualControlAllowed: atkRosterRef.some(u => u.isGeneral === true) });
     }
 
     function snapshotRosterForSummary(roster: RuntimeUnit[]): BattleUnitBeforeSnap[] {
@@ -29288,7 +29485,12 @@ async function boot(): Promise<void> {
       const battleHex = { q: battleQ, r: battleR };
 
       function rosterToBattleUnits(roster: RuntimeUnit[], color: number): BattleUnit[] {
-        return roster.map(u => runtimeToBattleUnit(u, lookupUnitDef(u.typeId), color));
+        const hasCommander = roster.some(u => u.isGeneral === true);
+        const bonus = armyLeaderMoraleBonusFrac(hasCommander, empireBuiltIdsForOwner(roster[0]?.ownerId ?? 0));
+        return roster.map(u => ({
+          ...runtimeToBattleUnit(u, lookupUnitDef(u.typeId), color),
+          armyLeaderMoraleBonusFrac: bonus,
+        }));
       }
 
       function mapBattleSummaryMeta(mode: 'auto' | 'manual') {
@@ -29451,6 +29653,7 @@ async function boot(): Promise<void> {
             data,
             deploy: true,
             deployPlayerSide: 'def',
+            manualControlAllowed: defRosterRef.some(u => u.isGeneral === true),
             attackerCivBonusy: civBonusyForOwnerId(atkLead.ownerId),
             defenderCivBonusy: civBonusyForOwnerId(defLead.ownerId),
             attackerCivLabel: pbInfo.atakujacy.cywilizacja,
@@ -29537,6 +29740,7 @@ async function boot(): Promise<void> {
         onSave: () => doQuickSave(false),
       }, {
         defaultAction: 'manual',
+        manualControlAllowed: defRosterRef.some(u => u.isGeneral === true),
         // P-KONIEC-TURY-ZDARZENIA-NACHODZA-NA-SIEBIE (Maciej 2026-08-14): JEDYNE
         // automatyczne (nie-gracz-inicjowane) wywołanie showPreBattle w całym kodzie --
         // atak AI/barbarzyńców na gracza w trakcie fazy AI/barbarzyńców końca tury (wołane z
@@ -29587,6 +29791,9 @@ async function boot(): Promise<void> {
         /** Wołane gdy siegeContext===true i przejęcie się powiodło — patrz komentarz
          *  CityCaptureCallbackInfo powyżej. */
         onCityCaptured?: (info: CityCaptureCallbackInfo) => void;
+        /** Cichy szturm AI odświeża mapę synchronicznie w swoim callerze po przejęciu.
+         *  Pozwala pominąć jedynie niepotrzebny, wcześniejszy sync jednostek. */
+        deferUnitRenderSyncAfterSiegeCapture?: boolean;
       },
     ): BattleLoot | null {
       chargeCombatCredibilityPenalties(atkRoster, defRoster);
@@ -29600,6 +29807,7 @@ async function boot(): Promise<void> {
 
       const cityOnHex = findCityOnHex(cities, battleQ, battleR) ?? null;
       const cityOwnerBefore = cityOnHex?.ownerId;
+      let siegeCaptureSucceeded = false;
 
       if (mapWinner === 'atakujacy' || mapWinner === 'obronca') {
         const winOid = mapWinner === 'atakujacy' ? atkRoster[0]?.ownerId : defRoster[0]?.ownerId;
@@ -29730,11 +29938,14 @@ async function boot(): Promise<void> {
         && mapWinner === 'atakujacy'
         && cityOnHex
         && cityOnHex.ownerId !== atkRoster[0]?.ownerId
+        && atkRoster[0] !== undefined
+        && areEnemyOwners(atkRoster[0].ownerId, cityOnHex.ownerId)
         && !barbCaptureBlockedByRemainingDefenders
       ) {
         const atkOwner = atkRoster[0]!.ownerId;
         const captureResult = applyCityCaptureToMap(cityOnHex, atkRoster, atkOwner, atkRoster[0] ?? null);
         const captureSucceeded = cityOwnerBefore !== undefined && cityOnHex.ownerId === atkOwner;
+        siegeCaptureSucceeded = opts?.siegeContext === true && captureSucceeded;
         // R-BRAK-KOMUNIKATU-ELIMINACJA-CYWILIZACJI RUNDA 3, Defekt B (ścieżka 2): siegeContext
         // (szturm muru) pomija modal/refresh w gałęzi niżej — finishSiegeStormBattle.afterSiegeUi
         // robi je osobno. Bez tego callbacku eliminatedCivLabel/eliminatedDetails z
@@ -29769,7 +29980,14 @@ async function boot(): Promise<void> {
       if (mapWinner === 'obronca') selectedId = null;
 
       forceVisibleUnitId = null;
-      syncUnitsRender();
+      // Cichy szturm AI natychmiast wywołuje finishSiegeStormBattle.afterSiegeUi(),
+      // które po udanym przejęciu wykonuje pełne refreshMapAfterCityCapture(). Nie
+      // pokazujemy klatki pomiędzy tymi synchronicznymi wywołaniami, więc wcześniejszy
+      // sync jednostek był duplikatem. Pozostałe bitwy i nieudane przejęcia zachowują
+      // wspólny sync tutaj.
+      if (!(opts?.deferUnitRenderSyncAfterSiegeCapture && siegeCaptureSucceeded)) {
+        syncUnitsRender();
+      }
       // P-OBLEZENIE-IKONA-NIE-ZNIKA-PO-WYGRANEJ (Maciej 2026-08-14): applyMapBattleOutcome
       // to JEDYNY wspólny punkt, przez który przechodzi KAŻDA ścieżka rozstrzygnięcia bitwy
       // polowej na mapie — auto-resolve (doAutoPowerMapBattle/doMapAutoResolve),
@@ -30746,14 +30964,14 @@ async function boot(): Promise<void> {
      * R-WOJNA-WYMUSZONA-REGULY-Q1 (Część C, WYZWALACZ: "Wojna może trwać do 25 tur, potem
      * ustaje i cywilizacje pomiędzy sobą zawierają pokój, niezależnie od tego, czy zdobędą
      * jakieś tereny, czy nie"): limit czasu trwania KAŻDEJ aktywnej pary wojny wymuszonej
-     * Kamienia/Brązu — niezależny od progu miast (`maybeResolve{Stone,Bronze}ForcedWarOnCityCapture`
+     * Kamienia/Brązu/Żelaza — niezależny od progu miast (`maybeResolve*ForcedWarOnCityCapture`
      * wyżej, NIETKNIĘTE — który z dwóch warunków spełni się pierwszy, kończy wojnę). Wołane
      * RAZ na świeżą turę (main.ts, obok `pruneInvalidNegotiations`/
      * `reconcileAllOwnerErasFromResearch`, `if (!aiCmdResume)`) — NIE przy wznowieniu tej
      * samej tury po przerwie async (animacja bitwy), żeby nie liczyć dwa razy. Iteruje po
      * SNAPSHOCIE (`Array.from`), bo `finalizePeaceTreatyBetween` mutuje (usuwa z) samą mapę,
-     * po której inaczej iterowalibyśmy. Żelazo (`ironForceWarActiveByPairKey`) POZA
-     * ZAKRESEM — nietknięte, brak pola `startTurn` wypełnianego dla tych par.
+     * po której inaczej iterowalibyśmy. Po wymuszonym pokoju blokada pary obowiązuje do
+     * wejścia napastnika w następną epokę; zwykła blokada traktatowa nadal wynosi 10 tur.
      */
     function resolveForcedWarDurationLimits(): void {
       for (const st of Array.from(stoneForceWarActiveByPairKey.values())) {
@@ -30791,6 +31009,23 @@ async function boot(): Promise<void> {
         );
         finalizePeaceTreatyBetween(
           st.attackerId, st.targetId, WOJNA_WYMUSZONA_COOLDOWN_TA_SAMA_CYWILIZACJA_TUR,
+        );
+      }
+      for (const st of Array.from(ironForceWarActiveByPairKey.values())) {
+        if (!shouldEndIronForcedWarByDuration(turn, st.startTurn)) continue;
+        const pairKey = diploPairKey(st.attackerId, st.targetId);
+        if (getDiploRelation(st.attackerId, st.targetId).status !== 'wojna') {
+          ironForceWarActiveByPairKey.delete(pairKey);
+          forcedWarWavesByPairKey.delete(pairKey);
+          ironForceWarRestUntilByOwner.set(st.attackerId, turn + WOJNA_ZELAZO_WYMUSZONA_ODPOCZYNEK_TUR);
+          continue;
+        }
+        console.log(
+          `[Dyplomacja] Limit czasu (${WOJNA_ZELAZO_WYMUSZONA_MAX_CZAS_TRWANIA_TUR} tur) — auto-pokój Żelazo `
+          + `AI${st.attackerId}↔AI${isHuman(st.targetId) ? 'gracz' : st.targetId}`,
+        );
+        finalizePeaceTreatyBetween(
+          st.attackerId, st.targetId, WOJNA_ZELAZO_WYMUSZONA_COOLDOWN_TA_SAMA_CYWILIZACJA_TUR,
         );
       }
     }
@@ -31113,6 +31348,9 @@ async function boot(): Promise<void> {
       };
     }
 
+    let cityCaptureRenderSyncFramePending = false;
+    let cityCaptureRenderSyncPendingLeadId: string | null = null;
+
     function refreshMapAfterCityCapture(lead: RuntimeUnit | null): void {
       reachable = new Set<string>();
       unitRenderer.clearHighlight();
@@ -31123,7 +31361,10 @@ async function boot(): Promise<void> {
         forceVisibleUnitId = lead.id;
         unitRenderer.setSelectionHex(lead.q, lead.r, lead.ownerId);
       }
-      syncUnitsRender();
+      // refreshFog() below always syncs visible unit tokens in both fog modes.
+      // Keep the explicit sync only while the gallery suppresses refreshFog;
+      // otherwise this was a redundant full UnitRenderer projection per capture.
+      if (galleryOn) syncUnitsRender();
       cityRenderer.sync(cities, _cityRenderOpts());
       refreshFog();
       updateHud();
@@ -31133,11 +31374,20 @@ async function boot(): Promise<void> {
         const entryCity = cities.find(c => c.q === lead.q && c.r === lead.r);
         if (entryCity) finishUnitEnterCityHex(lead, entryCity);
       }
-      const leadId = lead?.id ?? null;
-      requestAnimationFrame(() => {
-        if (leadId && forceVisibleUnitId === leadId) forceVisibleUnitId = null;
-        syncUnitsRender();
-      });
+      // A synchronous AI siege scan can capture several cities before the browser
+      // paints. Keep one cleanup/projection callback for that frame, targeting the
+      // latest captured lead; later captures after the frame schedule a new callback.
+      if (lead?.id) cityCaptureRenderSyncPendingLeadId = lead.id;
+      if (!cityCaptureRenderSyncFramePending) {
+        cityCaptureRenderSyncFramePending = true;
+        requestAnimationFrame(() => {
+          cityCaptureRenderSyncFramePending = false;
+          const pendingLeadId = cityCaptureRenderSyncPendingLeadId;
+          cityCaptureRenderSyncPendingLeadId = null;
+          if (pendingLeadId && forceVisibleUnitId === pendingLeadId) forceVisibleUnitId = null;
+          syncUnitsRender();
+        });
+      }
     }
 
     /**
@@ -31160,6 +31410,16 @@ async function boot(): Promise<void> {
         if (anchor.ownerId === 0) {
           finishUnitEnterCityHex(anchor, city);
           refreshCityPanelIfOpen();
+        }
+        return false;
+      }
+
+      // Puste miasta wolno przejąć wyłącznie w stanie wojny. Rozkaz ruchu lub
+      // oblężenie mógł powstać przed automatycznym pokojem; sprawdzamy parę tuż
+      // przed zmianą właściciela.
+      if (!areEnemyOwners(anchor.ownerId, city.ownerId)) {
+        if (isMe(anchor.ownerId)) {
+          showHintMessage('Nie można przejąć miasta w czasie pokoju.', 3500);
         }
         return false;
       }
@@ -31280,6 +31540,7 @@ async function boot(): Promise<void> {
         // ikony (GOAL 2) nie gubily sie na pass-through `{ ...opts.summary }` nizej.
         summary?: MapBattleSummaryMeta;
         afterSummary?: () => void;
+        deferUnitRenderSyncAfterSuccessfulCapture?: boolean;
       },
     ): void {
       const oldOwner = city.ownerId;
@@ -31345,6 +31606,8 @@ async function boot(): Promise<void> {
         lossDefPct: opts?.lossDefPct,
         battleEventLog: res.eventLog ?? buildBattleEventLog(atkRoster, defRoster),
         siegeContext: true as const,
+        deferUnitRenderSyncAfterSiegeCapture: opts?.deferUnitRenderSyncAfterSuccessfulCapture === true
+          && atkOwner !== 0,
         onCityCaptured: (info: CityCaptureCallbackInfo) => {
           siegeCaptureInfo = info;
         },
@@ -31420,6 +31683,7 @@ async function boot(): Promise<void> {
             atkStart: atkStartSnap,
             lossAtkPct: powerRes.lossAtkPct,
             lossDefPct: powerRes.lossDefPct,
+            deferUnitRenderSyncAfterSuccessfulCapture: true,
           },
         );
         console.log('[Oblezenie AI] szturm auto', city.name, winner);
@@ -31522,7 +31786,12 @@ async function boot(): Promise<void> {
       hideSiegeMapPanel();
 
       function rosterToBattleUnits(roster: RuntimeUnit[], color: number): BattleUnit[] {
-        return roster.map(u => runtimeToBattleUnit(u, lookupUnitDef(u.typeId), color));
+        const hasCommander = roster.some(u => u.isGeneral === true);
+        const bonus = armyLeaderMoraleBonusFrac(hasCommander, empireBuiltIdsForOwner(roster[0]?.ownerId ?? 0));
+        return roster.map(u => ({
+          ...runtimeToBattleUnit(u, lookupUnitDef(u.typeId), color),
+          armyLeaderMoraleBonusFrac: bonus,
+        }));
       }
 
       function clearBattleUiState(): void {
@@ -31602,6 +31871,7 @@ async function boot(): Promise<void> {
             data,
             deploy: true,
             deployPlayerSide: 'atk',
+            manualControlAllowed: atkRosterRef.some(u => u.isGeneral === true),
             // Cytadela (budynek 'fort', upgrade Murow) -> +300% zamiast +200%
             // na koronie muru (battleScene wallDefenseMult). Patrz
             // structureDefenseBonusFor dla ten sam rozroznienie na mapie swiata.
@@ -31654,7 +31924,7 @@ async function boot(): Promise<void> {
           showSiegeMapPanel(ctx, siegePanelActions, siegeTurnByCity.get(city.id) ?? 1);
         },
         onSave: () => doQuickSave(false),
-      }, { defaultAction: 'manual' });
+      }, { defaultAction: 'manual', manualControlAllowed: atkRosterRef.some(u => u.isGeneral === true) });
 
       console.log('[Oblezenie] szturm preBattle', city.name, 'atk=', atkRoster.length, 'def=', defRoster.length);
     }
@@ -31833,7 +32103,6 @@ async function boot(): Promise<void> {
         activeHumanOwnerId: humanSeats.activeHumanOwnerId,
         autoMarch: marchSave.autoMarch,
         plannedMarches: marchSave.plannedMarches,
-        rallyPoints: rallyPointsToSave(rallyPoints),
         cityProd:       cityProdSave,
         cityBuilt:      cityBuiltSave,
         aiResearchDone: aiResSave,
@@ -31991,9 +32260,11 @@ async function boot(): Promise<void> {
           ironForceWarCycleOwners: ironForceWarSave.cycleOwners,
           ironForceWarRestUntilByOwner: ironForceWarSave.restUntilByOwner,
           ironForceWarActiveByPairKey: ironForceWarSave.activeByPairKey,
+          forcedEraPeaceUntilNextEraByPairKey: serializeForcedEraPeaceLocks(forcedEraPeaceUntilNextEraByPairKey),
           // R-AI-WOJNA-EPOKI-FALA-KOLEJNA-KIERUNEK: przypisania jednostek do
           // nierozwiązanych fal muszą przetrwać zapis tak samo jak aktywna para.
           forcedWarWavesByPairKey: serializeForcedWarWaves(forcedWarWavesByPairKey),
+          aiGeneralWarCampaignByOwner: aiGeneralCampaignToSave(aiGeneralWarCampaignByOwner),
           lootedVillageHexKeys: Array.from(lootedVillageHexKeys),
           eliminatedOwners: Array.from(eliminatedOwners),
           ownerEraByOwner: Array.from(ownerEraByOwner.entries()),
@@ -32451,22 +32722,25 @@ async function boot(): Promise<void> {
       // always wins the race against the timeout, because the player can't physically click
       // "End Turn" within a single animation frame. The branch below therefore reverts to the
       // pre-round-3 formula (N1/round 2): flags cleared ONLY once the queue is actually EMPTY.
-      if (!preBattle && !battleUiResolving && !hasPendingAutoPreBattle() && (aiTurnAwaitingBattle || aiCmdResume)) {
-        console.warn('[EndTurn] Clearing stale AI battle resume flags');
-        aiTurnAwaitingBattle = false;
-        aiCmdResume = null;
+      const hasStaleAiResume = aiTurnAwaitingBattle || aiCmdResume != null;
+      if (!preBattle && !battleUiResolving && !hasPendingAutoPreBattle() && hasStaleAiResume) {
+        if (!activeWorldEndTurnPipeline) {
+          console.warn('[EndTurn] Clearing stale AI battle resume flags');
+          aiTurnAwaitingBattle = false;
+          aiCmdResume = null;
+        }
       }
-      if (endTurnInProgress && !isTurnTransitionActive()) {
+      if (!activeWorldEndTurnPipeline && endTurnInProgress && !isTurnTransitionActive()) {
         console.warn('[EndTurn] Clearing stale endTurnInProgress (brak overlay)');
         endTurnInProgress = false;
         endTurnStartedAt = 0;
       }
-      if (isTurnTransitionActive() && !endTurnInProgress) {
+      if (!activeWorldEndTurnPipeline && isTurnTransitionActive() && !endTurnInProgress) {
         console.warn('[EndTurn] Clearing orphan turn transition overlay');
         endTurnTransition();
       }
       const stuckMs = endTurnStartedAt > 0 ? Date.now() - endTurnStartedAt : 0;
-      if (endTurnInProgress && isTurnTransitionActive() && stuckMs > 8000 && !preBattle) {
+      if (!activeWorldEndTurnPipeline && endTurnInProgress && isTurnTransitionActive() && stuckMs > 8000 && !preBattle) {
         console.warn('[EndTurn] Force-clearing stuck transition (>8s)');
         endTurnInProgress = false;
         endTurnStartedAt = 0;
@@ -34326,6 +34600,7 @@ async function boot(): Promise<void> {
                   id: newUnitId,
                   ownerId: city.ownerId,
                   typeId: rec.id,
+                  isGeneral: rec.isGeneral === true,
                   category: categoryOf(rec.id, role, isSuper, def['Typ']),
                   q: city.q,
                   r: city.r,
@@ -34764,6 +35039,20 @@ async function boot(): Promise<void> {
         // ===================================================================
         setTurnTransition(38, 'Tura przeciwników…', '—', nextTurnNum);
         await yieldTurnTransitionUi();
+        // AI may found several cities before the next visible progress frame.
+        // Keep game state immediate, but defer the expensive full-map model sync
+        // until a UI/battle boundary so those founding commands share one sync.
+        const aiCityRenderBatch = createDirtyRenderSync(
+          () => cityRenderer.sync(cities, _cityRenderOpts()),
+        );
+        const flushAiCityRenderBatch = (): void => {
+          if (!aiCityRenderBatch.isDirty()) return;
+          try {
+            aiCityRenderBatch.flush();
+          } catch (errAiCityRender) {
+            console.error('[AI] Błąd synchronizacji modeli miast:', errAiCityRender);
+          }
+        };
         try {
           const runAiPhase = async (): Promise<void> => {
             aiTurnAwaitingBattle = false;
@@ -35115,7 +35404,14 @@ async function boot(): Promise<void> {
               if (eliminatedOwners.has(ownerId)) continue;
               const aiPct = 38 + Math.round((54 * (oi + 1)) / Math.max(1, ownerLoopList.length));
               setTurnTransition(aiPct, 'Ruchy i decyzje…', ownerDiploLabel(ownerId), nextTurnNum);
-              await yieldTurnTransitionUi();
+              // A full map render can be expensive in late games. Keep updating the
+              // progress text for every owner, but let the browser paint only at the
+              // first owner, every third owner, and the last one. `startOi` preserves
+              // the cadence when an AI phase resumes after a battle.
+              if (shouldYieldAiOwnerProgressFrame(oi, ownerLoopList.length, startOi)) {
+                flushAiCityRenderBatch();
+                await yieldTurnTransitionUi();
+              }
               const isCommandResume = oi === startOi && !!resumeCommands && resumeCmdIdx > 0;
               ensureAiOwnerStartEra(ownerId);
               if (!isCommandResume) upgradeAiUnitsForEra(ownerId);
@@ -35295,7 +35591,9 @@ async function boot(): Promise<void> {
                 wavePlan: undefined,
               };
             })();
+            const aiGeneralWarCampaign = prepareAiGeneralWarCampaign(ownerId);
             const opts: AITurnOpts = {
+              aiGeneralWarCampaign,
               // P-AI-BRAK-POJECIA-MGLY-Q1: AI widzi wyłącznie własny snapshot.
               visibleHexes: aiVisibleHexes,
               rememberedTargets: rememberedAiTargets(aiTargetMemoryByOwner, ownerId),
@@ -36220,6 +36518,7 @@ async function boot(): Promise<void> {
                       if (ironForceWarTargetId != null && targetId === ironForceWarTargetId) {
                         ironForceWarActiveByPairKey.set(diploPairKey(ownerId, targetId), {
                           attackerId: ownerId, targetId, capturedByAttacker: 0, capturedByDefender: 0,
+                          startTurn: turn,
                         });
                         ironForceWarCycleOwners.add(ownerId);
                         ironForceWarPendingOwners.delete(ownerId);
@@ -36312,6 +36611,19 @@ async function boot(): Promise<void> {
               aiProdAllowedMemoLive = true;
               try {
                 commands = decideAITurn(ownerId, units, cities, map, data, opts);
+                if (opts.aiGeneralWarCampaign) {
+                  aiGeneralWarCampaignByOwner.set(ownerId, {
+                    targetOwnerId: opts.aiGeneralWarCampaign.targetOwnerId,
+                    stage: opts.aiGeneralWarCampaign.stage,
+                    ...(opts.aiGeneralWarCampaign.generalUnitId
+                      ? { generalUnitId: opts.aiGeneralWarCampaign.generalUnitId } : {}),
+                    ...(opts.aiGeneralWarCampaign.blockedGeneralIds
+                      ? { blockedGeneralIds: [...opts.aiGeneralWarCampaign.blockedGeneralIds] } : {}),
+                    gatherTurnsCompleted: opts.aiGeneralWarCampaign.gatherTurnsCompleted,
+                    ...(opts.aiGeneralWarCampaign.lastGatherTurn !== undefined
+                      ? { lastGatherTurn: opts.aiGeneralWarCampaign.lastGatherTurn } : {}),
+                  });
+                }
               } finally {
                 aiProdAllowedMemoLive = false;
                 aiProdAllowedMemo.clear();
@@ -36644,6 +36956,7 @@ async function boot(): Promise<void> {
                     // może też wejść na heks obcego miasta.
                     unitIsCivilian: isCivilianUnit(u),
                     targetVisible,
+                    canEngageOwner: (targetOwnerId) => areEnemyOwners(ownerId, targetOwnerId),
                     canOccupyCityHex: canUnitOccupyCityHex(u.ownerId, cmd.toQ, cmd.toR, cities),
                     blockedKeys,
                     destinationKey: keyOf(cmd.toQ, cmd.toR),
@@ -36748,7 +37061,7 @@ async function boot(): Promise<void> {
                     cities.push(c);
                     finalizeCityFounding(c, cmd.q, cmd.r);
                     seedCityOwnerDefaults(c);
-                    cityRenderer.sync(cities, _cityRenderOpts());
+                    aiCityRenderBatch.markDirty();
                     console.log(`[AI ${ownerId}] Zalozono miasto ${c.name} @ (${c.q},${c.r})`);
                   }
                   continue;
@@ -36784,6 +37097,9 @@ async function boot(): Promise<void> {
                       cmdIdx: ci + 1,
                     };
                     aiTurnAwaitingBattle = true;
+                    // The battle canvas may cover the map until the player returns;
+                    // synchronize founded cities before handing control to it.
+                    flushAiCityRenderBatch();
                     launchIncomingMapFieldBattle(
                       atkRoster,
                       defRoster,
@@ -37162,6 +37478,10 @@ async function boot(): Promise<void> {
         } catch (eAILoop) {
           console.error('[AI] Blad petli AI:', eAILoop);
         }
+        // Always leave the world map's city models current before the next
+        // transition can paint or the player regains control, including errors
+        // and resumed AI phases after a battle.
+        flushAiCityRenderBatch();
 
         // ===================================================================
         // BARBARIANS TICK: spawn camps + move barbarian units
@@ -37672,6 +37992,7 @@ async function boot(): Promise<void> {
       }
       endTurnInProgress = true;
       endTurnStartedAt = Date.now();
+      activeWorldEndTurnPipeline = true;
       void (async () => {
         try {
         const nextTurnNum = turn + 1;
@@ -37792,6 +38113,7 @@ async function boot(): Promise<void> {
         } catch (errEndTurn) {
           console.error('[EndTurn] Blad przejscia tury:', errEndTurn);
         } finally {
+          activeWorldEndTurnPipeline = false;
           endTurnTransition();
           endTurnInProgress = false;
           endTurnStartedAt = 0;
@@ -38673,6 +38995,13 @@ async function boot(): Promise<void> {
           if (!city) return false;
           return purchaseRecruitmentUnit(cityId, itemId, koszt, city.ownerId, quantity);
         },
+        getGeneralRecruitmentOffer: (cityId: string) => generalRecruitmentOfferForCity(cityId),
+        onPurchaseGeneral: (cityId: string, itemId: string, koszt: number) => {
+          const city = cities.find(c => c.id === cityId);
+          return city
+            ? purchaseRecruitmentUnit(cityId, itemId, koszt, city.ownerId, 1, { isGeneral: true })
+            : false;
+        },
         getCivBonusy: (ownerId: number) => civBonusyForOwnerId(ownerId),
         getCivKey: (ownerId: number) => civKeyForOwnerId(ownerId),
         getOrderState: (cityId: string) => cityOrderState.get(cityId) ?? null,
@@ -39050,8 +39379,6 @@ async function boot(): Promise<void> {
       aiAudienceLastRequestTurn.clear();
       units.length = 0;
       plannedMarches.clear();
-      rallyPoints.clear();
-      rallyPointMode = false;
       // P-BITWA-MARSZ-POTEM-ATAK-NIE-KOLEJKUJE: czyść razem z plannedMarches — inaczej wpis-widmo
       // (attackUnitId po jednostce z poprzedniej gry) mógłby przetrwać reset (force=false chroni
       // wpisy z attackUnitId). / EN: clear together with plannedMarches — otherwise a ghost entry
@@ -39122,6 +39449,7 @@ async function boot(): Promise<void> {
       ironForceWarCycleOwners.clear();
       ironForceWarRestUntilByOwner.clear();
       ironForceWarActiveByPairKey.clear();
+      forcedEraPeaceUntilNextEraByPairKey.clear();
       // R-WOJNA-BRAZ-CZYSZCZENIE-NOWA-GRA-Q1: nowa gra bez przeładowania strony nie może
       // dziedziczyć rejestrów Brązu z poprzedniej rozgrywki (ownerId są reużywane).
       bronzeForceWarPendingOwners.clear();
@@ -39131,6 +39459,7 @@ async function boot(): Promise<void> {
       bronzeForceWarRestUntilByOwner.clear();
       bronzeForceWarActiveByPairKey.clear();
       forcedWarWavesByPairKey.clear();
+      aiGeneralWarCampaignByOwner.clear();
       barbCamps = [];
       // R-AI-WOJNY-ZWYKLE-CAP-DWA-MIASTA-Q1: nowa gra bez przeładowania strony nie może
       // dziedziczyć liczników zwykłych wojen AI↔AI z poprzedniej rozgrywki (ownerId reużywane).
@@ -40241,11 +40570,6 @@ async function boot(): Promise<void> {
       // base max. Recompute from the current unit bonuses and clamp current HP
       // before any panel, battle or starvation consumer sees the loaded state.
       syncAllRuntimeUnitHpState();
-      rallyPoints.clear();
-      for (const [ownerId, point] of rallyPointsFromSave(saved.rallyPoints)) {
-        rallyPoints.set(ownerId, point);
-      }
-      rallyPointMode = false;
       plannedMarches.clear();
       // P-BITWA-MARSZ-POTEM-ATAK-NIE-KOLEJKUJE: czyść razem z plannedMarches — pętla niżej
       // odbudowuje oba TYLKO dla jednostek z wczytanego save'a (reszta zostałaby wisząca).
@@ -40623,11 +40947,22 @@ async function boot(): Promise<void> {
       }
       ironForceWarActiveByPairKey.clear();
       for (const [key, st] of ironForceWarRestored.activeByPairKey) {
-        ironForceWarActiveByPairKey.set(key, st);
+        ironForceWarActiveByPairKey.set(key, { ...st, startTurn: st.startTurn ?? turn });
+      }
+      forcedEraPeaceUntilNextEraByPairKey.clear();
+      const restoredForcedEraPeaceLocks = restoreForcedEraPeaceLocks(
+        saved.meta?.forcedEraPeaceUntilNextEraByPairKey,
+      );
+      for (const [key, lock] of restoredForcedEraPeaceLocks) {
+        forcedEraPeaceUntilNextEraByPairKey.set(key, lock);
       }
       forcedWarWavesByPairKey.clear();
+      aiGeneralWarCampaignByOwner.clear();
       const restoredForcedWarWaves = restoreForcedWarWaves(saved.meta?.forcedWarWavesByPairKey);
       for (const [key, state] of restoredForcedWarWaves) forcedWarWavesByPairKey.set(key, state);
+      for (const [ownerId, campaign] of restoreAiGeneralCampaigns(saved.meta?.aiGeneralWarCampaignByOwner)) {
+        aiGeneralWarCampaignByOwner.set(ownerId, campaign);
+      }
       // R-WOJNA-WYMUSZONA-ZELAZO-PROG-TURY-Q1: odtworzenie tury wejścia w Żelazo per-owner —
       // brak wpisu dla danego ownera (stary zapis) = `undefined`, `isEligibleForIronForcedWar`
       // wtedy pomija próg czasu (patrz komentarz przy `ironEraEnterTurnByOwner` wyżej).

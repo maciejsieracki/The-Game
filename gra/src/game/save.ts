@@ -418,7 +418,12 @@ export interface SaveGame {
   autoMarch?: { leaderId: string; destQ: number; destR: number };
 
   /** A3: wszystkie zaplanowane marsze gracza (unitId → cel). */
-  plannedMarches?: Record<string, { destQ: number; destR: number; attackUnitId?: string }>;
+  plannedMarches?: Record<string, {
+    destQ: number;
+    destR: number;
+    attackUnitId?: string;
+    generalTargetId?: string;
+  }>;
 
   /** R-RALLY-POINT-AUTOMARCH-Q1: one explicit rally point per empire. */
   rallyPoints?: Record<string, { q: number; r: number }>;

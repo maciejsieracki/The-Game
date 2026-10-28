@@ -97,6 +97,7 @@ const STATE = [
   ['deferredPreBattleWatchdogTimer', 'null'],
   ['endTurnInProgress', 'false'],
   ['endTurnStartedAt', '0'],
+  ['activeWorldEndTurnPipeline', 'false'],
   ['battleUiResolving', 'false'],
   ['aiCmdResume', 'null'],
   ['aiTurnAwaitingBattle', 'false'],
@@ -267,7 +268,7 @@ function makeEnv(PB, mainSrc) {
     getDiploRelation: () => ({ status: 'pokoj' }),
     isAwaitingFirstPlayerCity: () => false,
     isTurnTransitionActive: () => env.transition,
-    endTurnTransition: () => {},
+    endTurnTransition: () => { env.transition = false; },
     showHintMessage: (m) => { env.hints.push(m); },
     switchActiveHuman: (id) => { humanSeats.activeHumanOwnerId = id; },
     beginOnboardingFoundCity: () => {},
@@ -505,6 +506,38 @@ function scenarioH(PB, src) {
   return r;
 }
 
+// I: a real, active world-EOT lifecycle may exceed the passive healer's 8 s threshold.
+// The marker must protect its flags and overlay during repeated HUD probes; an inactive
+// orphan must still be healed after the marker is down.
+function scenarioI(PB, src) {
+  resetPre(PB);
+  const env = makeEnv(PB, src);
+  env.S.activeWorldEndTurnPipeline = true;
+  env.S.endTurnInProgress = true;
+  env.S.endTurnStartedAt = Date.now() - 9001;
+  env.S.aiTurnAwaitingBattle = true;
+  env.S.aiCmdResume = { pending: true };
+  env.transition = true;
+  env.api.healStaleEndTurnBlockers(); // HUD/canPlayerInitiateEndTurn passive poll
+  env.api.healStaleEndTurnBlockers(); // repeated render poll
+  const activeSurvives = env.S.endTurnInProgress && env.S.endTurnStartedAt > 0
+    && env.S.aiTurnAwaitingBattle && env.S.aiCmdResume != null && env.transition;
+
+  env.S.activeWorldEndTurnPipeline = false;
+  env.S.endTurnInProgress = true;
+  env.S.endTurnStartedAt = Date.now() - 9001;
+  env.transition = true;
+  env.api.healStaleEndTurnBlockers();
+  const staleCleared = !env.S.endTurnInProgress && env.S.endTurnStartedAt === 0
+    && !env.S.aiTurnAwaitingBattle && env.S.aiCmdResume == null && !env.transition;
+
+  // The no-progress-flag orphan overlay case remains healable too.
+  env.transition = true;
+  env.api.healStaleEndTurnBlockers();
+  const orphanOverlayCleared = !env.transition;
+  return { activeSurvives, staleCleared, orphanOverlayCleared };
+}
+
 async function main() {
   console.log('== endturn-battle-deadlock-exec-test (R-WEB-ENDTURN-BATTLE-DEADLOCK-Q1 r6) ==');
   const PB = await loadPreBattle();
@@ -589,6 +622,16 @@ async function main() {
   const h = scenarioH(PB, MAIN_FIXED);
   ok(h.c1.ended === 0 && h.screen === false && h.queued === true,
     '[H1] przy gameOver klik NIE otwiera ani nie czyści kolejki (kolejność bramek zachowana)');
+
+  // ---- I: passive HUD polling must not time out a live, long-running world EOT
+  console.log('\n[I] aktywny EOT >8 s przeżywa pasywne pollingi; nieaktywne sieroty nadal sprzątane');
+  const i = scenarioI(PB, MAIN_FIXED);
+  ok(i.activeSurvives,
+    '[I1] aktywny world-EOT >8 s zachowuje endTurnInProgress/timestamp/overlay i flagi bitew po powtarzanym healStale (HUD)');
+  ok(i.staleCleared,
+    '[I2] po ustaniu aktywnego EOT osierocone flagi >8 s nadal czyszczone');
+  ok(i.orphanOverlayCleared,
+    '[I3] nieaktywna osierocona nakładka przejścia nadal zdejmowana');
 
   // ---- F: mutacje
   console.log('\n[F] mutacje siatki (każda musi czerwienić swój scenariusz)');

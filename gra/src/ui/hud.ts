@@ -1222,6 +1222,11 @@ export function renderBarD1B(s: HudState): string {
   ];
 
   const rekrLabel = s.rekruciLabel ?? '—';
+  const recruitCount = Number.isSafeInteger(s.rekrutEkw) && (s.rekrutEkw ?? 0) > 0 ? s.rekrutEkw : 0;
+  const recruitCostTitle = s.kosztJednostki != null
+    ? ` · Koszt jednej jednostki: ${s.kosztJednostki} rekrutów`
+    : '';
+  const recruitTitle = `Manpower: ${rekrLabel} · Możesz zwerbować ${recruitCount} pełnych jednostek${recruitCostTitle} · Kliknij po szczegóły.`;
 
   let html = '<div class="civ-hud-banner-left"><div class="civ-hud-banner-shell"><div class="hud-chip-row">'
     + leftChipsHtml + '</div></div></div>';
@@ -1231,7 +1236,7 @@ export function renderBarD1B(s: HudState): string {
   html += '<div class="power-center" data-act="power" title="Moc imperium — siła absolutna państwa · Duża liczba: punkty Mocy (łączna siła imperium) · Kliknij po szczegóły.">'
     + '<div class="p-epoch' + eraGateCls + '"' + eraGateTitle + '>' + escHtml(s.epoka) + '</div>'
     + '<div class="p-row">'
-    + `<span class="p-side p-side-left" data-act="rekruci" title="Rekruci — pula Manpower; w nawiasie pełne jednostki możliwe do zwerbowania według kosztu w bieżącej epoce · Kliknij po szczegóły.">`
+    + `<span class="p-side p-side-left" data-act="rekruci" title="${escHtml(recruitTitle)}">`
     + '<span class="p-stack">'
     + recruitSideIconHtml()
     + `<span class="p-recruit-val">${recruitHudLabel(rekrLabel, s.rekrutEkw)}</span>`

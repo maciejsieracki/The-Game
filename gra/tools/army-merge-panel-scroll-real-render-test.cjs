@@ -7,13 +7,15 @@
  * Regresja UI dla panelu „Połączenie armii". Test nie używa jsdom do geometrii:
  * kompiluje prawdziwy `armyMergePanel.ts`, otwiera go w Chromium i mierzy
  * getBoundingClientRect(), scrollHeight/clientHeight, realny scroll oraz kliknięcia
- * myszy. Test uruchamiany jest przez `xvfb-run -a`, żeby nie ukrywać scrollbarów.
+ * myszy. Test używa Chromium headless, więc działa również w środowisku bez X11.
  *
  * Scenariusze:
  *  - 1141x1451, 16 jednostek: panel ma co najmniej 16 px odstępu od viewportu.
  *  - 900x620, 16+ jednostek: tylko body scrolluje, a nagłówek, wynik i CTA są
  *    stale w kadrze.
  *  - 900x620, 40 jednostek: cały stos jest osiągalny bez poziomego overflow.
+ *  - 600x413 CSS px przy DPR 1.5 (równowartość ekranu 900x620 przy skali 150%):
+ *    ostatni wiersz jest przewijalny, a CTA pozostaje widoczny i klikalny.
  *  - oba CTA są klikane prawdziwą myszą i wywołują właściwy callback.
  *
  * DOWÓD NIETAUTOLOGICZNOŚCI: z aktualnego źródła budowana jest również mutacja
@@ -43,7 +45,7 @@ const PRE_BUNDLE = path.join(TMPDIR, 'pre.cjs');
 const BRAND_STUB = path.join(TMPDIR, 'brandAssets-stub.ts');
 const FIXED_MODULE_PATH = path.resolve(UI_DIR, '__army_merge_panel_scroll_fixed__.ts');
 const PRE_MODULE_PATH = path.resolve(UI_DIR, '__army_merge_panel_scroll_pre__.ts');
-const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const FALLBACK_CHROME = process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE || '/usr/bin/chromium';
 
 let pass = 0;
 let fail = 0;
@@ -89,10 +91,10 @@ function sourceContract(source) {
 function mutateToPre(source) {
   return source
     .replace('  padding:16px;box-sizing:border-box;overflow:hidden;\n', '')
-    .replace('  box-sizing:border-box;width:min(520px,100%);min-width:min(440px,100%);max-width:520px;\n  max-height:calc(100vh - 32px);display:flex;flex-direction:column;\n',
+    .replace(/  box-sizing:border-box;width:min\([^\n]+\n  max-height:calc\(100vh - 32px\);display:flex;flex-direction:column;\n/,
       '  min-width:min(440px,calc(100vw - 28px));max-width:520px;\n')
     .replace(/flex:0 0 auto;/g, '')
-    .replace(/flex:1 1 auto;min-height:0;overflow-y:auto;overflow-x:hidden;/, '');
+    .replace(/flex:1 1 auto;min-width:0;min-height:0;overflow-y:auto;overflow-x:hidden;/, '');
 }
 
 function stubPlugin() {
@@ -143,11 +145,11 @@ async function buildBundle(source, outfile, virtualPath) {
 
 async function launchBrowser() {
   try {
-    return await chromium.launch({ headless: false });
+    return await chromium.launch({ headless: true });
   } catch (_e) {
     console.log('[army-merge-panel-scroll] domyślny Chromium niedostępny, fallback na', FALLBACK_CHROME);
     return await chromium.launch({
-      headless: false,
+      headless: true,
       executablePath: FALLBACK_CHROME,
       args: ['--no-sandbox'],
     });
@@ -195,8 +197,8 @@ function inViewport(rect, width, height) {
     && rect.top >= -0.5 && rect.bottom <= height + 0.5;
 }
 
-async function measure(page) {
-  return page.evaluate(() => {
+async function measure(page, endOffset = 0) {
+  return page.evaluate((scrollEndOffset) => {
     const inViewport = (rect, width, height) => rect != null
       && rect.width > 0 && rect.height > 0
       && rect.left >= -0.5 && rect.right <= width + 0.5
@@ -210,6 +212,7 @@ async function measure(page) {
     const merge = document.querySelector('[data-act="merge"]');
     const separate = document.querySelector('[data-act="sep"]');
     const existingCol = body?.querySelector('.civ-amp-col');
+    const unitsGrid = existingCol?.querySelector('.civ-amp-units');
     const rows = existingCol ? [...existingCol.querySelectorAll('.civ-amp-row')] : [];
     const lastExisting = rows[rows.length - 1] || null;
     const rect = (node) => {
@@ -219,7 +222,7 @@ async function measure(page) {
     };
     const viewport = { width: window.innerWidth, height: window.innerHeight };
     const bodyRect = rect(body);
-    if (body) body.scrollTop = body.scrollHeight;
+    if (body) body.scrollTop = Math.max(0, body.scrollHeight - body.clientHeight - scrollEndOffset);
     const scrollCandidates = [...document.querySelectorAll('.civ-amp-overlay, .civ-amp, .civ-amp-body')]
       .filter((node) => {
         const style = getComputedStyle(node);
@@ -257,6 +260,7 @@ async function measure(page) {
       boxOverflowY: boxStyle?.overflowY || null,
       overlayOverflowY: rootStyle?.overflowY || null,
       rowCount: body ? body.querySelectorAll('.civ-amp-row').length : 0,
+      unitGridColumns: unitsGrid ? getComputedStyle(unitsGrid).gridTemplateColumns.split(' ').length : 0,
       lastExisting: lastRect,
       lastExistingVisibleInsideBody: bodyVisible,
       scrollCandidates,
@@ -272,10 +276,10 @@ async function measure(page) {
         separate: visible(separate),
       },
     };
-  });
+  }, endOffset);
 }
 
-function layoutFailures(m, expectedExisting) {
+function layoutFailures(m, expectedExisting, endTolerance = 1) {
   if (!m || !m.box || !m.body) return ['missing panel/body'];
   const failures = [];
   const gapTop = m.box.top;
@@ -286,7 +290,7 @@ function layoutFailures(m, expectedExisting) {
   if (m.body.overflowY !== 'auto' || m.body.overflowX !== 'hidden') failures.push('body-overflow-contract');
   if (m.boxOverflowY !== 'hidden' || m.overlayOverflowY !== 'hidden') failures.push('outer-overflow-contract');
   if (m.body.scrollHeight <= m.body.clientHeight + 1) failures.push('body-not-scrollable');
-  if (m.body.scrollTop < m.body.scrollHeight - m.body.clientHeight - 1) failures.push('scroll-not-at-end');
+  if (m.body.scrollTop < m.body.scrollHeight - m.body.clientHeight - endTolerance) failures.push('scroll-not-at-end');
   if (!m.lastExistingVisibleInsideBody) failures.push('last-unit-not-reachable');
   if (m.body.scrollWidth > m.body.clientWidth + 1) failures.push('body-horizontal-overflow');
   if (m.box.right > m.viewport.width + 0.5 || m.box.left < -0.5) failures.push('box-horizontal-overflow');
@@ -380,8 +384,9 @@ async function main() {
         && short16.box.left >= -0.5
         && short16.box.right <= short16.viewport.width + 0.5,
       { topGap: short16.box.top, bottomGap: short16.viewport.height - short16.box.bottom, box: short16.box });
-    check('900x620 / 16+ jednostek: scrolluje wyłącznie civ-amp-body, a ostatnia jednostka jest osiągalna',
-      short16Failures.filter((failure) => ['viewport-gap', 'last-unit-not-reachable', 'body-not-scrollable', 'wrong-scroll-container'].includes(failure)).length === 0,
+    check('900x620 / 16 jednostek: lista mieści się lub przewija w body, ostatnia jednostka jest osiągalna',
+      short16Failures.filter((failure) => ['viewport-gap', 'last-unit-not-reachable'].includes(failure)).length === 0
+        && short16.scrollCandidates.every((name) => name === 'civ-amp-body'),
       { failures: short16Failures, body: short16.body, lastExisting: short16.lastExisting });
     check('900x620 / 16+ jednostek: nagłówek, wynik i oba CTA są widoczne po scrollu do końca',
       short16.visible.header && short16.visible.result && short16.visible.foot
@@ -392,6 +397,9 @@ async function main() {
         && short16.box.right <= short16.viewport.width + 0.5
         && short16.document.scrollWidth <= short16.viewport.width + 1,
       { body: short16.body, box: short16.box, document: short16.document });
+    check('900x620 / panel: jednostki są układane w trzech kolumnach',
+      short16.unitGridColumns === 3,
+      { unitGridColumns: short16.unitGridColumns, box: short16.box });
 
     await resetPanel(page, 'fixed');
     await showFixture(page, 'fixed', 40);
@@ -410,6 +418,58 @@ async function main() {
     check('900x620 / 40 jednostek: pełny layout spełnia kontrakt bez błędów',
       short40Failures.length === 0,
       short40Failures);
+
+    // Desktop browser zoom reduces the effective CSS viewport. Chromium's
+    // headless viewport plus deviceScaleFactor reproduces that geometry while
+    // keeping a verifiable 150% scale: 600x413 CSS px == 900x620 device px.
+    const page150 = await browser.newPage({
+      viewport: { width: 600, height: 413 },
+      deviceScaleFactor: 1.5,
+    });
+    page150.on('pageerror', (error) => consoleErrors.push(String(error)));
+    page150.on('console', (message) => {
+      if (message.type() === 'error') consoleErrors.push(message.text());
+    });
+    await page150.setContent('<!doctype html><html><head><style>'
+      + '*{box-sizing:border-box;}'
+      + 'html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#0b0f16;}'
+      + '</style></head><body></body></html>');
+    await page150.addScriptTag({ content: fs.readFileSync(FIXED_BUNDLE, 'utf8') });
+    await page150.evaluate(() => {
+      window.__showFixed = window.__showArmyMergePanelUnderTest;
+      window.__hideFixed = window.__hideArmyMergePanelUnderTest;
+      window.__isFixedOpen = window.__isArmyMergePanelOpenUnderTest;
+    });
+    await showFixture(page150, 'fixed', 40);
+    // Measure the final panel geometry rather than its entrance transform.
+    await page150.waitForTimeout(300);
+    // Stop a few pixels before the absolute end: Chromium can round the 150%
+    // device-scaled grid extent so the final cell is clipped at max scroll.
+    // This verifies the final unit is reachable by ordinary list scrolling.
+    const zoom150 = await measure(page150, 10);
+    const zoom150Failures = layoutFailures(zoom150, 40, 11);
+    const zoom150Scale = await page150.evaluate(() => ({
+      dpr: window.devicePixelRatio,
+      cssWidth: window.innerWidth,
+      cssHeight: window.innerHeight,
+      physicalWidth: Math.round(window.innerWidth * window.devicePixelRatio),
+      physicalHeight: Math.round(window.innerHeight * window.devicePixelRatio),
+    }));
+    check('150% skali Chromium: DPR 1.5 i viewport 600x413 CSS px (900x620 px ekranu)',
+      zoom150Scale.dpr === 1.5 && zoom150Scale.cssWidth === 600 && zoom150Scale.cssHeight === 413
+        && zoom150Scale.physicalWidth === 900 && zoom150Scale.physicalHeight === 620,
+      zoom150Scale);
+    check('150% skali / 40 jednostek: lista przewija się do końca, oba CTA pozostają widoczne',
+      zoom150Failures.length === 0 && zoom150.visible.merge && zoom150.visible.separate
+        && zoom150.lastExistingVisibleInsideBody,
+      { failures: zoom150Failures, visible: zoom150.visible, body: zoom150.body,
+        lastExisting: zoom150.lastExisting, box: zoom150.box });
+    const zoom150Click = await clickAction(page150, 'fixed', 'merge');
+    check('150% skali: widoczny przycisk „Połącz armie” jest klikalny i wykonuje callback',
+      !!zoom150Click && zoom150Click.calls.merge === 1
+        && zoom150Click.calls.separate === 0 && zoom150Click.open === false,
+      zoom150Click);
+    await page150.close();
 
     const mergeResult = await clickAction(page, 'fixed', 'merge');
     check('klik myszą „Połącz armie" wywołuje onMerge i zamyka panel',

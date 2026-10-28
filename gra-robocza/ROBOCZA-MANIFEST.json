@@ -2,7 +2,7 @@
   "releaseState": "DEPLOYED — testowa ROBOCZA; R-CIV-ALL-TOPICS-ROBOCZA-20261027; Final Control PASS-WITH-NOTES; performance test and full 100-turn save/load outside scope.",
   "bundle": "Gra-ROBOCZA.html",
   "bundleMd5": "2f4d87176ffcfc2aa6cdf44e3e562981",
-  "bundleSha256": "38526ae35906328b1e2a76c4158f28795c04c7ad945ad9d03a452993e023d692",
+  "bundleSha256": "accb2ee99c74ba7bbc70da060ed62fabf905cf2f021d6e37bacad4a9398ed798",
   "bundleBytes": 69998033,
   "sourceSnapshot": {
     "baseCommit": "a63565ee7481f5c6352574a112a1f2f93625da7d",
@@ -21,13 +21,14 @@
     "Optymalizacja kosztu obliczenia przyrostów zasobów właściciela jest obecna w main; pełny test wydajności wyłączony na polecenie właściciela i nie jest tu zatwierdzany."
   ],
   "verification": [
-    "Source readback: HEAD=origin/main=92d124b721dbd4405b4547301751499316b9ec4c; clean worktree before packaging.",
-    "TypeScript: node ./node_modules/typescript/bin/tsc --noEmit — PASS.",
-    "Reference gates: logic 213/213; tech tree 19/19; research 33/33; unit replace 15/15; combat 6/6.",
-    "Topic tests: city capture 16; army concentration 56; AI improvements 53; auto improvements 45; era cost/upkeep 52; citizen food 34; population 65; trade routes 131; currency 37; owner economy 20; work-tax conversion 10; menu music transition 7; Manpower label PASS.",
-    "Build: direct Vite 5.4.21, 908 modules, success.",
-    "Bundle smoke: jsdom SMOKE OK, canvas=1; HTTP/Chromium smoke: 200, title The Game — 4X, two canvases, Manpower HUD visible, no pageerror; follow-up found no HTTP 4xx.",
-    "Manifest verifier: VERIFY OK; manifest md5 and bundles[] match. Embedded self-md5 is a known stamp limitation; manifest/file digest is authoritative."
+    "Source candidate parent: origin/main 99bb834c; all product and release changes are uncommitted pending final control.",
+    "TypeScript: npm run typecheck — PASS.",
+    "Vite production build: 914 modules — PASS.",
+    "JS DOM smoke against exact dist bundle — PASS (canvas + rAF).",
+    "Focused AutoBot operator/evaluator suites: AI wars/capture, army leadership/formations, recruitment UI at 150% effective scale, era promotion/Barracks, trade/tax/work conversion, food/costs/music/HUD — PASS.",
+    "Bounded AI campaign browser replay: 16/16, including target owner 0, physical leader spawn, five gather turns, sixth-turn march and save metadata roundtrip — PASS.",
+    "Large-empire performance test is explicitly excluded from this release; latest full run ended at browser closure on turn 47 and remains unresolved.",
+    "Final Control 63: READY_FOR_DEPLOY_WITH_NOTES for this exact artifact. Large-empire performance is explicitly excluded at owner request."
   ],
   "limits": [
     "Performance test intentionally not run at owner request; source optimization remains included.",
@@ -84,39 +85,39 @@
     }
   },
   "rollbackPlan": {
-    "method": "git revert release commit or restore bundle+manifest+START from parent commit 92d124b721dbd4405b4547301751499316b9ec4c",
-    "previousBundleMd5": "f491c3a2188d0d5ccea9bc715927a070",
-    "previousBundleSha256": "f0f9f18429a0cc2e19b15165f6c0eaf9f214dd8bff9fdc7c9b4e9d06f369aaa7",
-    "previousBundleBytes": 69993111
+    "method": "restore gra-robocza/Gra-ROBOCZA.html, manifest, and START.html from parent commit 99bb834c (or revert the ROBOCZA release commit)",
+    "previousBundleMd5": "2f4d87176ffcfc2aa6cdf44e3e562981",
+    "previousBundleSha256": "38526ae35906328b1e2a76c4158f28795c04c7ad945ad9d03a452993e023d692",
+    "previousBundleBytes": 69998033
   },
   "finalControl": {
-    "status": "PASS-WITH-NOTES",
-    "reportPath": "dyspozycje/autobot/runs/R-CIV-ALL-TOPICS-ROBOCZA-20261027/03-final-control.md",
-    "reviewedArtifactMd5": "2f4d87176ffcfc2aa6cdf44e3e562981",
-    "reviewedArtifactSha256": "38526ae35906328b1e2a76c4158f28795c04c7ad945ad9d03a452993e023d692"
+    "status": "READY_FOR_DEPLOY_WITH_NOTES",
+    "reportPath": "dyspozycje/autobot/runs/R-CIV-ALL-TOPICS-ROBOCZA-20261027/63-final-control-current-candidate.md",
+    "reviewedArtifactMd5": "b897f519a377631081bd29b49c76fef2",
+    "reviewedArtifactSha256": "accb2ee99c74ba7bbc70da060ed62fabf905cf2f021d6e37bacad4a9398ed798"
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-10-27T17:02:10",
+  "hubGeneratedAt": "2026-10-28T10:17:47",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "2f4d87176ffcfc2aa6cdf44e3e562981",
-      "sizeBytes": 69998033
+      "md5": "b897f519a377631081bd29b49c76fef2",
+      "sizeBytes": 70011909
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "2f4d87176ffcfc2aa6cdf44e3e562981",
-      "sizeBytes": 69998033
+      "md5": "b897f519a377631081bd29b49c76fef2",
+      "sizeBytes": 70011909
     }
   ],
   "publishPlan": {
     "status": "PUBLISHED to origin/main; pinned GitHub raw readback verified; ROBOCZA only; no KANON/FINALNA promotion."
   },
-  "md5": "2f4d87176ffcfc2aa6cdf44e3e562981",
+  "md5": "b897f519a377631081bd29b49c76fef2",
   "publicationCommit": "fc18c02efd5359844c2439217e8855d549417d0a",
   "remoteReadback": {
     "status": "PASS",
@@ -128,5 +129,11 @@
     "bundleMd5": "2f4d87176ffcfc2aa6cdf44e3e562981",
     "bundleSha256": "38526ae35906328b1e2a76c4158f28795c04c7ad945ad9d03a452993e023d692",
     "bundleBytes": 69998033
-  }
+  },
+  "publishedAt": "2026-10-28T10:17:47.328Z",
+  "publisher": "Codex AutoBot — authorized ROBOCZA candidate",
+  "source": "gra/src; candidate parent HEAD 99bb834c, release commit pending",
+  "sizeBytes": 70011909,
+  "buildStamp": "b8c1e030 2026-10-28 10:17",
+  "releaseScope": "Non-performance fixes: battle leadership/formations, AI General-led war campaign, era recruitment and army UI, peace/capture rules, economy labels/conversion, costs/upkeep, and related regression tests. Large-empire performance remains explicitly open."
 }

@@ -1,11 +1,10 @@
 'use strict';
 /**
- * koszary-gate-test.cjs -- standalone Node test for Koszary gate in availableProduction.
+ * koszary-gate-test.cjs -- standalone Node test for the per-city Koszary unit gate.
  * Run from gra/:  node tools/koszary-gate-test.cjs
  *
- * Decyzja Maciej 2026-06-25: jednostki epoki Braz (epochNumber=2) wymagaja
- * wybudowanych Koszar (id='koszary') w miescie, by pojawic sie w availableProduction.
- * Jednostki epok Kamien i Zelazo bez zmian.
+ * Bronze and later units require Barracks in their city. Stone units remain
+ * unaffected, while production visibility keeps the current + previous era window.
  *
  * Bundles production.ts (+ deps) via esbuild, then runs assertions.
  * Pure logic only -- no DOM, no THREE.
@@ -30,6 +29,7 @@ const BUNDLE_FILE = path.resolve(__dirname, '.koszary-gate-bundle.cjs');
 const ENTRY_TS = `
 export {
   availableProduction,
+  availableReplacementsFor,
   purchasableUnits,
   epochNumber,
   EPOCH_BY_NAME,
@@ -55,7 +55,7 @@ try {
 }
 
 const M = require(BUNDLE_FILE);
-const { availableProduction, purchasableUnits, epochNumber } = M;
+const { availableProduction, availableReplacementsFor, purchasableUnits, epochNumber } = M;
 
 // --- test harness ----------------------------------------------------------
 let passed = 0;
@@ -97,6 +97,19 @@ const UNIT_KAMIEN = {
   'Pieniadz (koszt)': 5,
 };
 
+// Koło unlocks the Ox Chariot in late Stone; no barracks/bronze gate applies.
+const UNIT_OX_CHARIOT = {
+  Jednostka: 'Rydwan (woły)',
+  Epoka: 'Kamień',
+  Typ: 'Mount',
+  'Rola (linia)': 'Flanka',
+  'W zamian za': '-',
+  Tech: 'Koło',
+  'Pieniądz (koszt)': 15,
+  Surowiec: 'Drewno',
+  'Surowiec (ilość)': 25,
+};
+
 // Iron unit (epoka Zelazo)
 const UNIT_ZELAZO = {
   Jednostka: 'Legionista',
@@ -131,7 +144,7 @@ const KOSZARY_DEF = {
 // ProductionData stubs
 const DATA_WITH_KOSZARY = {
   buildings: [KOSZARY_DEF],
-  units: [UNIT_KAMIEN, UNIT_BRAZ, UNIT_ZELAZO, UNIT_CIV],
+  units: [UNIT_KAMIEN, UNIT_OX_CHARIOT, UNIT_BRAZ, UNIT_ZELAZO, UNIT_CIV],
 };
 
 const NO_TECHS = [];
@@ -149,16 +162,19 @@ assert(epochNumber('Zelazo') === 3, 'epochNumber Zelazo = 3');
 assert(epochNumber('Brąz') === 2, 'epochNumber Brąz (diacritic) = 2');
 assert(epochNumber('Żelazo') === 3, 'epochNumber Zelazo (diacritic) = 3');
 
-// --- Test A: Bronze unit NOT available without Koszary --------------------
-console.log('\n1. Bronze unit NIE dostepna bez Koszar (epoch=2, builtBuildingIds=[])');
+// --- Bronze transition: Stone remains available, Bronze requires Barracks ---
+console.log('\n1. Epoka Brazu: Kamien dostepny, Braz zablokowany bez Koszar');
 {
   const items = availableProduction(CITY, DATA_WITH_KOSZARY, NO_TECHS, {
     epoch: 2,
     builtBuildingIds: [],
   });
   const ids = items.map(i => i.id);
+  assert(ids.includes('Piesciarz'),
+    'Piesciarz (Kamien) pozostaje dostepny po awansie do Brazu bez Koszar',
+    'ids=' + JSON.stringify(ids));
   assert(!ids.includes('Wojownik Brazu'),
-    'Wojownik Brazu NIE pojawia sie bez Koszar',
+    'Wojownik Brazu jest zablokowany bez Koszar',
     'ids=' + JSON.stringify(ids));
 }
 
@@ -194,8 +210,25 @@ console.log('\n3. Jednostka Kamienia niezmieniina -- dostepna bez Koszar');
     'ids=' + JSON.stringify(itemsWithBuild.map(i => i.id)));
 }
 
-// --- Test D: Iron unit unaffected at epoch 3 (no Koszary gate for iron) ---
-console.log('\n4. Jednostka Zelaza niezmieniina -- dostepna bez/z Koszarami (epoch=3)');
+// --- Test C2: Ox Chariot is available after Koło in late Stone, without barracks --
+console.log('\n3b. Rydwan (woły) po Kole w epoce Kamienia nie wymaga Koszar');
+{
+  const noWheel = availableProduction(CITY, DATA_WITH_KOSZARY, [], {
+    epoch: 1,
+    builtBuildingIds: [],
+    empireResourceStock: { drewno: 25 },
+  }).map(item => item.id);
+  const withWheel = availableProduction(CITY, DATA_WITH_KOSZARY, ['Koło'], {
+    epoch: 1,
+    builtBuildingIds: [],
+    empireResourceStock: { drewno: 25 },
+  }).map(item => item.id);
+  assert(!noWheel.includes('Rydwan (woły)'), 'Rydwan (woły) jest zablokowany przed wynalezieniem Koła');
+  assert(withWheel.includes('Rydwan (woły)'), 'Rydwan (woły) jest dostępny po Kole w epoce Kamienia bez Koszar');
+}
+
+// --- Iron transition: Stone expires; Bronze and Iron both require Barracks --
+console.log('\n4. Epoka Zelaza: Kamien wygasa, Braz i Zelazo wymagaja Koszar');
 {
   const itemsNoBuild = availableProduction(CITY, DATA_WITH_KOSZARY, NO_TECHS, {
     epoch: 3,
@@ -205,12 +238,45 @@ console.log('\n4. Jednostka Zelaza niezmieniina -- dostepna bez/z Koszarami (epo
     epoch: 3,
     builtBuildingIds: ['koszary'],
   });
-  assert(itemsNoBuild.some(i => i.id === 'Legionista'),
-    'Legionista (Zelazo) JEST dostepny bez Koszar przy epoch=3',
+  assert(!itemsNoBuild.some(i => i.id === 'Piesciarz'),
+    'Piesciarz (Kamien) wygasa przy epoch=3',
     'ids=' + JSON.stringify(itemsNoBuild.map(i => i.id)));
+  assert(!itemsNoBuild.some(i => i.id === 'Wojownik Brazu'),
+    'Wojownik Brazu pozostaje zablokowany bez Koszar przy epoch=3',
+    'ids=' + JSON.stringify(itemsNoBuild.map(i => i.id)));
+  assert(!itemsNoBuild.some(i => i.id === 'Legionista'),
+    'Legionista (Zelazo) jest zablokowany bez Koszar przy epoch=3',
+    'ids=' + JSON.stringify(itemsNoBuild.map(i => i.id)));
+  assert(itemsWithBuild.some(i => i.id === 'Wojownik Brazu'),
+    'Wojownik Brazu jest dostepny z Koszarami przy epoch=3');
   assert(itemsWithBuild.some(i => i.id === 'Legionista'),
-    'Legionista (Zelazo) JEST dostepny z Koszarami przy epoch=3',
+    'Legionista (Zelazo) jest dostepny z Koszarami przy epoch=3',
     'ids=' + JSON.stringify(itemsWithBuild.map(i => i.id)));
+}
+
+// Replacement choices use the same per-city, Bronze+ gate as normal recruitment.
+console.log('\n4b. Zastap respektuje bramke Koszar w epoce Zelaza');
+{
+  const replacementData = {
+    buildings: [KOSZARY_DEF],
+    units: [
+      { ...UNIT_KAMIEN, Typ: 'Melee' },
+      { ...UNIT_BRAZ, Typ: 'Melee' },
+      { ...UNIT_ZELAZO, Typ: 'Melee' },
+    ],
+  };
+  const noBarracks = availableReplacementsFor('Piesciarz', replacementData, NO_TECHS, {
+    epoch: 3, builtBuildingIds: [],
+  }).map(item => item.id);
+  const withBarracks = availableReplacementsFor('Piesciarz', replacementData, NO_TECHS, {
+    epoch: 3, builtBuildingIds: ['koszary'],
+  }).map(item => item.id);
+  assert(!noBarracks.includes('Wojownik Brazu') && !noBarracks.includes('Legionista'),
+    'Zastap blokuje brazowe i zelazne jednostki bez Koszar',
+    'ids=' + JSON.stringify(noBarracks));
+  assert(withBarracks.includes('Wojownik Brazu') && withBarracks.includes('Legionista'),
+    'Zastap udostepnia brazowe i zelazne jednostki z Koszarami',
+    'ids=' + JSON.stringify(withBarracks));
 }
 
 // --- Test E: Civ-specific replacement never appears (independent of Koszary) --

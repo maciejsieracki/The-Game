@@ -29,7 +29,7 @@
  *        inny powód wojny (gracz sam wypowiada) działa normalnie.
  *   K5 — próg startu: Kamień od tury 25 (nie 20); Brąz 25 tur PO wejściu w epokę,
  *        zmierzone NIEZALEŻNIE dla dwóch cywilizacji wchodzących w Brąz w różnych turach.
- *   K6 — aktywna wojna bez zdobyczy terytorialnych -> auto-pokój dokładnie po 25 turach.
+ *   K6 — aktywna wojna bez zdobyczy terytorialnych -> auto-pokój dokładnie po 20 turach.
  *   K7 — próg miastowy kończy wojnę WCZEŚNIEJ niż limit czasu, gdy miasto zmienia
  *        właściciela (brak regresu istniejącego mechanizmu).
  *   K8 — wczytanie zapisu sprzed tej naprawy (brak `startTurn`) nie wywala się i nie
@@ -69,7 +69,10 @@ export {
   shouldEndBronzeForcedWarByCityCount,
   restoreBronzeForcedWarState,
 } from ${JSON.stringify(GRA_ROOT + '/src/game/forced-war-bronze')};
-export { countActiveWarsExcluding, assignForcedWarPairings } from ${JSON.stringify(GRA_ROOT + '/src/game/forced-war-common')};
+export {
+  countActiveWarsExcluding, assignForcedWarPairings, isForcedEraPeaceLocked,
+  serializeForcedEraPeaceLocks, restoreForcedEraPeaceLocks,
+} from ${JSON.stringify(GRA_ROOT + '/src/game/forced-war-common')};
 export { diploPairKey } from ${JSON.stringify(GRA_ROOT + '/src/game/diplomacy-pn-engine')};
 export { isBarbarian, BARBARIAN_OWNER_ID } from ${JSON.stringify(GRA_ROOT + '/src/game/barbarians')};
 `, 'utf8');
@@ -115,6 +118,9 @@ const {
   restoreBronzeForcedWarState,
   countActiveWarsExcluding,
   assignForcedWarPairings,
+  isForcedEraPeaceLocked,
+  serializeForcedEraPeaceLocks,
+  restoreForcedEraPeaceLocks,
   diploPairKey,
   isBarbarian,
 } = require(bundle);
@@ -451,10 +457,10 @@ console.log('\n--- K5: próg startu -- Kamień tura 25, Brąz 25 tur od WŁASNEG
 }
 
 // =============================================================================
-// K6: aktywna wojna bez zdobyczy terytorialnych -> auto-pokój dokładnie po 25 turach.
+// K6: aktywna wojna bez zdobyczy terytorialnych -> auto-pokój dokładnie po 20 turach.
 // K7: próg miastowy kończy wojnę WCZEŚNIEJ, gdy miasto zmienia właściciela (brak regresu).
 // =============================================================================
-console.log('\n--- K6: limit czasu trwania -- auto-pokój dokładnie po 25 turach bez zdobyczy ---');
+console.log('\n--- K6: limit czasu trwania -- auto-pokój dokładnie po 20 turach bez zdobyczy ---');
 {
   const world = makeWorld({ 1: { q: 0, r: 0 }, 2: { q: 0, r: 0 } });
   declareWar(world, 1, 2);
@@ -467,7 +473,7 @@ console.log('\n--- K6: limit czasu trwania -- auto-pokój dokładnie po 25 turac
     resolveDurationLimitsStep(world, turn, stoneActive, new Map());
     if (!isAtWar(world, 1, 2)) peaceAtTurn = turn;
   }
-  eq(peaceAtTurn, startTurn + WOJNA_KAMIEN_WYMUSZONA_MAX_CZAS_TRWANIA_TUR, 'K6: SEDNO -- auto-pokój dokładnie 25 tur po starcie TEJ pary, bez żadnej zdobyczy');
+  eq(peaceAtTurn, startTurn + WOJNA_KAMIEN_WYMUSZONA_MAX_CZAS_TRWANIA_TUR, 'K6: auto-pokój dokładnie po 20 turach od startu pary, bez zdobyczy');
   eq(stoneActive.size, 0, 'K6: stan pary posprzątany po auto-pokoju');
 }
 
@@ -503,7 +509,7 @@ console.log('--- K7: próg miastowy (regresja) -- kończy wojnę WCZEŚNIEJ niż
     }
   }
   eq(peaceReason, 'miasta', 'K7: SEDNO -- wojna kończy się przez PRÓG MIASTOWY, nie przez limit czasu');
-  eq(peaceAtTurn, startTurn + 3, 'K7: auto-pokój w turze zdobycia 2. miasta (startTurn+3), DALEKO przed limitem 25 tur');
+  eq(peaceAtTurn, startTurn + 3, 'K7: auto-pokój w turze zdobycia 2. miasta (startTurn+3), przed limitem 20 tur');
   assert(startTurn + 3 < startTurn + WOJNA_KAMIEN_WYMUSZONA_MAX_CZAS_TRWANIA_TUR, 'K7: sanity -- próg miastowy faktycznie zadziałał wcześniej niż limit czasu by zadziałał');
 }
 
@@ -535,7 +541,7 @@ console.log('\n--- K8: wczytanie starego zapisu (brak pola startTurn) -- bezpiec
   eq(backfilled.startTurn, loadTurn, 'K8: backfill main.ts nadaje startTurn = tura wczytania');
   assert(
     !shouldEndStoneForcedWarByDuration(loadTurn, backfilled.startTurn),
-    'K8: SEDNO -- TUŻ PO wczytaniu wojna NIE kończy się natychmiast przez limit czasu (0 tur < 25)',
+    'K8: SEDNO -- TUŻ PO wczytaniu wojna NIE kończy się natychmiast przez limit czasu (0 tur < 20)',
   );
   let peaceAtTurn = null;
   const stoneActive = new Map([['1_2', backfilled]]);
@@ -545,7 +551,7 @@ console.log('\n--- K8: wczytanie starego zapisu (brak pola startTurn) -- bezpiec
     resolveDurationLimitsStep(world, turn, stoneActive, new Map());
     if (!isAtWar(world, 1, 2)) peaceAtTurn = turn;
   }
-  eq(peaceAtTurn, loadTurn + 25, 'K8: po backfillu wojna dostaje PEŁNE nowe 25 tur liczone od tury wczytania, nie ucina się w pół');
+  eq(peaceAtTurn, loadTurn + 20, 'K8: po backfillu wojna dostaje pełne 20 tur liczone od tury wczytania');
 
   // Restore całkowicie bez `saved` (najstarszy możliwy zapis) -- bezpieczny pusty stan.
   const emptyRestored = restoreBronzeForcedWarState(undefined);
@@ -553,24 +559,37 @@ console.log('\n--- K8: wczytanie starego zapisu (brak pola startTurn) -- bezpiec
 }
 
 // =============================================================================
-// K9: Żelazo nietknięte -- dowód tekstowy uzupełniający (pełny dowód wykonawczy to
+// K9: limit Żelaza i zapis startu są podłączone w silniku.
 // forced-war-iron-test.cjs + forced-war-iron-main-guard-test.cjs + mutant-probe,
 // uruchomione osobno w tym samym raporcie -- 100% zielone, patrz 01-operator.md).
 // =============================================================================
-console.log('\n--- K9: Żelazo poza zakresem -- dowód tekstowy (main.ts, forced-war-iron.ts) ---');
+console.log('\n--- K9: limit wojny Żelaza jest podłączony do pętli tury i zapisów ---');
 {
+  assert(isForcedEraPeaceLocked(2, 2), 'K9: wymuszony pokój blokuje wojnę w epoce, w której go zawarto');
+  assert(!isForcedEraPeaceLocked(3, 2), 'K9: blokada wygasa po awansie napastnika do następnej epoki');
+  assert(isForcedEraPeaceLocked(3, 3), 'K9: w Żelazie blokada pozostaje, bo brak kolejnej epoki w tej wersji');
+  const lockBeforeSave = new Map([['2_5', { ownerId: 2, era: 2 }]]);
+  const savedLockPayload = JSON.parse(JSON.stringify(serializeForcedEraPeaceLocks(lockBeforeSave)));
+  const locksAfterLoad = restoreForcedEraPeaceLocks(savedLockPayload);
+  const restoredPairLock = locksAfterLoad.get('2_5');
+  assert(restoredPairLock != null, 'K9: serializer i restore przywracają wymuszony pokój po reloadzie');
+  assert(restoredPairLock?.ownerId === 2 && restoredPairLock.era === 2, 'K9: roundtrip zachowuje napastnika i epokę zawarcia pokoju');
+  const restoredEra = restoredPairLock ? restoredPairLock.era : -1;
+  assert(isForcedEraPeaceLocked(2, restoredEra), 'K9: po reloadzie para nadal zablokowana w tej samej epoce');
+  assert(!isForcedEraPeaceLocked(3, restoredEra), 'K9: po reloadzie awans napastnika zwalnia blokadę pary');
+  assert(restoreForcedEraPeaceLocks({ malformed: true }).size === 0, 'K9: uszkodzone dane w starym zapisie nie tworzą blokady');
   const ironSrc = fs.readFileSync(path.join(GRA_ROOT, 'src', 'game', 'forced-war-iron.ts'), 'utf8');
   assert(
-    !/R-WOJNA-WYMUSZONA-REGULY-Q1/.test(ironSrc),
-    'K9: forced-war-iron.ts nie zawiera ŻADNEGO śladu tego dispatchu (plik NIETKNIĘTY)',
+    /WOJNA_ZELAZO_WYMUSZONA_MAX_CZAS_TRWANIA_TUR = 20/.test(ironSrc)
+      && /shouldEndIronForcedWarByDuration/.test(ironSrc),
+    'K9: moduł Żelaza deklaruje 20 tur i czysty warunek zakończenia',
   );
   const mainSrc = fs.readFileSync(path.join(GRA_ROOT, 'src', 'main.ts'), 'utf8');
   // R-WOJNA-WYMUSZONA-PAROWANIE-ZAMIAST-DOMINA-Q1 przeniosła i uprościła gałąź selekcji
   // Żelaza (pre-pass triggeredSubjects, patrz forced-war-trojstronna-main-guard-test.cjs i
   // forced-war-iron-main-guard-test.cjs dla pełnego pokrycia OKABLOWANIA) -- stare kotwice
   // tekstowe tego testu (sprzed tamtej naprawy) nie istnieją już w main.ts. K9 SEDNO
-  // (Część C R-WOJNA-WYMUSZONA-REGULY-Q1: Żelazo NIE dostaje pola `startTurn`, w
-  // odróżnieniu od Kamienia/Brązu) zostaje zweryfikowane na AKTUALNEJ lokalizacji gałęzi.
+  // (Część C: Żelazo zapisuje startTurn tak jak Kamień i Brąz) jest sprawdzane niżej.
   const ironBranchStart = mainSrc.indexOf('// Żelazo.');
   const ironBranchEnd = mainSrc.indexOf(
     "ironTriggeredSubjects.push({ ownerId, q: refCity.q, r: refCity.r, era: 'iron' });",
@@ -583,8 +602,22 @@ console.log('\n--- K9: Żelazo poza zakresem -- dowód tekstowy (main.ts, forced
     'K9: SEDNO -- gałąź selekcji celu Żelaza w main.ts nie zawiera ŻADNEGO śladu tego dispatchu (nietknięta)',
   );
   assert(
-    !ironBranch.includes('startTurn'),
-    'K9: gałąź Żelaza NIE dostaje pola startTurn (Część C tego dispatchu jawnie poza zakresem Żelaza)',
+    /startTurn: turn/.test(mainSrc.slice(mainSrc.indexOf('if (ironForceWarTargetId != null'), mainSrc.indexOf('ironForceWarCycleOwners.add', mainSrc.indexOf('if (ironForceWarTargetId != null')))),
+    'K9: aktywna wojna Żelaza zapisuje turę startu',
+  );
+  assert(
+    /for \(const st of Array\.from\(ironForceWarActiveByPairKey\.values\(\)\)\) \{[\s\S]{0,200}?shouldEndIronForcedWarByDuration/.test(mainSrc),
+    'K9: main.ts sprawdza limit wojny Żelaza w pętli tury',
+  );
+  assert(
+    /forcedEraPeaceUntilNextEraByPairKey/.test(mainSrc)
+      && /isForcedEraPeaceLocked\(empireEpochForOwner\(eraLock\.ownerId\), eraLock\.era\)/.test(mainSrc),
+    'K9: pokój wojny epoki blokuje ponowny DOW do awansu napastnika',
+  );
+  assert(
+    /forcedEraPeaceUntilNextEraByPairKey: serializeForcedEraPeaceLocks\(forcedEraPeaceUntilNextEraByPairKey\)/.test(mainSrc)
+      && /restoreForcedEraPeaceLocks\(\s*\n\s*saved\.meta\?\.forcedEraPeaceUntilNextEraByPairKey\s*,\s*\n\s*\)/.test(mainSrc),
+    'K9: snapshot i restoreGameFromSave używają przetestowanych funkcji roundtrip',
   );
 }
 

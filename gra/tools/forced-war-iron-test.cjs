@@ -17,6 +17,7 @@ fs.writeFileSync(entry, `
 export {
   EPOKA_ZELAZO_NUMER,
   WOJNA_ZELAZO_WYMUSZONA_MAX_MIASTA_ZDOBYTE_LUB_STRACONE,
+  WOJNA_ZELAZO_WYMUSZONA_MAX_CZAS_TRWANIA_TUR,
   WOJNA_ZELAZO_WYMUSZONA_ODPOCZYNEK_TUR,
   WOJNA_ZELAZO_WYMUSZONA_COOLDOWN_TA_SAMA_CYWILIZACJA_TUR,
   WOJNA_ZELAZO_WYMUSZONA_START_TURY_OD_EPOKI,
@@ -24,6 +25,7 @@ export {
   isIronEraEntry,
   pickIronForcedWarTargetId,
   shouldEndIronForcedWarByCityCount,
+  shouldEndIronForcedWarByDuration,
   isRestingFromIronForcedWar,
   serializeIronForcedWarState,
   restoreIronForcedWarState,
@@ -73,6 +75,7 @@ try {
   const {
     EPOKA_ZELAZO_NUMER: ironEra,
     WOJNA_ZELAZO_WYMUSZONA_MAX_MIASTA_ZDOBYTE_LUB_STRACONE: cityLimit,
+    WOJNA_ZELAZO_WYMUSZONA_MAX_CZAS_TRWANIA_TUR: durationTurns,
     WOJNA_ZELAZO_WYMUSZONA_ODPOCZYNEK_TUR: restTurns,
     WOJNA_ZELAZO_WYMUSZONA_COOLDOWN_TA_SAMA_CYWILIZACJA_TUR: cooldownTurns,
     WOJNA_ZELAZO_WYMUSZONA_START_TURY_OD_EPOKI: startTuryOdEpoki,
@@ -80,6 +83,7 @@ try {
     isIronEraEntry,
     pickIronForcedWarTargetId,
     shouldEndIronForcedWarByCityCount,
+    shouldEndIronForcedWarByDuration,
     isRestingFromIronForcedWar,
     serializeIronForcedWarState,
     restoreIronForcedWarState,
@@ -89,6 +93,7 @@ try {
   console.log('--- kontrakt parametrów (dispatch §PARAMETR: wartości jak Brąz/Kamień) ---');
   eq(ironEra, 3, 'Żelazo to epoka numer 3 (KOLEJNOSC_EPOK = Kamien/Braz/Zelazo)');
   eq(cityLimit, 2, 'pokój po 2 miastach');
+  eq(durationTurns, 20, 'automatyczny pokój po maksymalnie 20 turach');
   eq(restTurns, 20, 'odpoczynek 20 tur');
   eq(cooldownTurns, 20, 'cooldown tej samej cywilizacji 20 tur');
 
@@ -222,6 +227,8 @@ try {
   assert(!shouldEndIronForcedWarByCityCount(1, 1), '1 zdobyte i 1 utracone nie kończy wojny');
   assert(shouldEndIronForcedWarByCityCount(2, 0), '2 zdobyte kończą wojnę pokojem');
   assert(shouldEndIronForcedWarByCityCount(0, 2), '2 utracone kończą wojnę pokojem');
+  assert(!shouldEndIronForcedWarByDuration(19, 0), 'wojna trwa przed upływem 20 tur');
+  assert(shouldEndIronForcedWarByDuration(20, 0), 'wojna bez zdobyczy kończy się po 20 turach');
   assert(isRestingFromIronForcedWar(100, 120), 'odpoczynek działa przed restUntil');
   assert(!isRestingFromIronForcedWar(120, 120), 'odpoczynek kończy się na restUntil');
   assert(!isRestingFromIronForcedWar(100, undefined), 'brak wpisu restUntil = brak odpoczynku');

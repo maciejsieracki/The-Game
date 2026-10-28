@@ -73,7 +73,7 @@ check(
   'resolveSiegeSurrender (kapitulacja głodowa): woła maybeResolveBronzeForcedWarOnCityCapture'
     + '(oldOwner, newOwner) PO city.ownerId = newOwner -- bez tego wojna wymuszona AI<->AI '
     + 'nigdy się nie kończy (negocjacje pokojowe obsługują wyłącznie targetId===0)',
-  /function resolveSiegeSurrender\(cityId: string\): void \{[\s\S]{0,2000}?city\.ownerId = newOwner;[\s\S]{0,5000}?maybeResolveBronzeForcedWarOnCityCapture\(oldOwner, newOwner\);/.test(mainSrc),
+  /function resolveSiegeSurrender\(cityId: string\): void \{[\s\S]{0,4000}?city\.ownerId = newOwner;[\s\S]{0,9000}?maybeResolveBronzeForcedWarOnCityCapture\(oldOwner, newOwner\);/.test(mainSrc),
 );
 
 console.log('');
@@ -263,7 +263,7 @@ check(
     + 'wojny, np. zwykła oferta pokoju gracza/AI) zostawiałby martwy wpis w '
     + 'bronzeForceWarActiveByPairKey -- napastnik trwale i cicho wypadałby z cyklu (ta sama klasa '
     + 'błędu co B4 z rundy 1)',
-  /function finalizePeaceTreatyBetween\([\s\S]{0,1600}?const bronzePairKey = diploPairKey\(proposerId, responderId\);\s*\n\s*const bronzeSt = bronzeForceWarActiveByPairKey\.get\(bronzePairKey\);\s*\n\s*if \(bronzeSt\) \{\s*\n\s*bronzeForceWarActiveByPairKey\.delete\(bronzePairKey\);\s*\n\s*bronzeForceWarRestUntilByOwner\.set\(bronzeSt\.attackerId, turn \+ WOJNA_WYMUSZONA_ODPOCZYNEK_TUR\);\s*\n\s*\}\s*\n\s*\}/.test(mainSrc),
+  /function finalizePeaceTreatyBetween\([\s\S]{0,3000}?const bronzePairKey = diploPairKey\(proposerId, responderId\);\s*\n\s*const bronzeSt = bronzeForceWarActiveByPairKey\.get\(bronzePairKey\);\s*\n\s*if \(bronzeSt\) \{\s*\n\s*bronzeForceWarActiveByPairKey\.delete\(bronzePairKey\);\s*\n\s*forcedWarWavesByPairKey\.delete\(bronzePairKey\);\s*\n\s*bronzeForceWarRestUntilByOwner\.set\(bronzeSt\.attackerId, turn \+ WOJNA_WYMUSZONA_ODPOCZYNEK_TUR\);\s*\n\s*\}\s*\n\s*\}/.test(mainSrc),
 );
 
 check(

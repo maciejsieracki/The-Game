@@ -229,6 +229,10 @@ ok(/import \{ markBattleSceneOpen, markBattleSceneClosed \} from '\.\/battleScen
   const cancelFrameIdx = battleSrc.indexOf('cancelAnimationFrame(this.animFrameId);');
   ok(closeIdx > 0 && cancelFrameIdx > closeIdx,
     '[C10] wyrejestrowanie leci PRZED resztą sprzątania dispose() (gdyby dalsza część rzuciła, mapa i tak wraca do życia)');
+  const rendererDisposeIdx = battleSrc.indexOf('this.renderer.dispose();', disposeIdx);
+  const forceContextLossIdx = battleSrc.indexOf('this.renderer.forceContextLoss();', rendererDisposeIdx);
+  ok(rendererDisposeIdx > disposeIdx && forceContextLossIdx > rendererDisposeIdx,
+    '[C11] krótkożyjący WebGLRenderer bitwy jawnie zwalnia kontekst po dispose(), zanim wróci mapa świata');
 }
 
 for (const f of [ENTRY_A, OUT_A, ENTRY_B, OUT_B]) { try { fs.unlinkSync(f); } catch { /* ignore */ } }

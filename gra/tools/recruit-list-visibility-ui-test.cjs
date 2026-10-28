@@ -27,7 +27,7 @@ const GRA = path.resolve(__dirname, '..');
 const BRAND_STUB = path.resolve(__dirname, '.stubs', 'recruit-list-visibility-ui-brandAssets-stub.ts');
 const ENTRY = path.resolve(__dirname, '.recruit-list-visibility-ui-entry.ts');
 const OUTFILE = path.resolve(__dirname, '.recruit-list-visibility-ui-bundle.js');
-const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const FALLBACK_CHROME = process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE || '/usr/bin/chromium';
 
 const cityPanelSrc = fs.readFileSync(path.join(GRA, 'src', 'ui', 'cityPanel.ts'), 'utf8');
 const chipCssLines = cityPanelSrc.split('\n').filter(l => l.startsWith('.civ-cs .bld-infocard-chip'));

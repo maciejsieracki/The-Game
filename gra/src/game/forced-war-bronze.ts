@@ -90,7 +90,7 @@ export const WOJNA_WYMUSZONA_START_TURY_OD_EPOKI = 25;
  * LUB_STRACONE` wyżej, który zostaje jako DODATKOWY, zwykle wcześniejszy warunek
  * zakończenia — który z dwóch warunków spełni się pierwszy, kończy wojnę).
  */
-export const WOJNA_WYMUSZONA_MAX_CZAS_TRWANIA_TUR = 25;
+export const WOJNA_WYMUSZONA_MAX_CZAS_TRWANIA_TUR = 20;
 
 export interface BronzeForcedWarEligibilityInput {
   /** Czy owner to główna cywilizacja AI (NIE miasto-państwo, NIE gracz, NIE barbarzyńca). */
