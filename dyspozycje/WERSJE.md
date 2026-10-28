@@ -1,3 +1,12 @@
+## ROBOCZA e4c3643d -- 2026-10-28 -- retencja kart wydarzeń i tekstur ikon jednostek (testowa)
+
+- **STATUS: CANDIDATE** — dwa wąskie zakresy z niezależnym Evaluatorem i Final Control PASS WITH NOTES; publikacja do `origin/main` po integracji i readbacku.
+- Źródło: baza ROBOCZA `a1d86212`, product commits `a4d7bc30` i `782c9b34`.
+- Bundle MD5 `e4c3643d35ba88f9823373ac9419477c`, SHA-256 `d918fb1c5dfd221106c41aa6ec0c74450fbd5ddff1cdcad22c06ba8cf595fc9b`, rozmiar 70,013,155 bajtów.
+- Zakres: zwalnianie szczegółów kart przejęć po wypadnięciu z ograniczonego dziennika oraz zachowanie niezmienionych badge/ikon jednostek między synchronizacjami.
+- Testy: capture-retention 20 asercji, overlay-sync 17/17, memory lifecycle 55/55, capture report 117/117, typecheck, build Vite 916 modułów i weryfikator bundle’a PASS. Legacy browser test miał blokadę `file://` w środowisku.
+- Ograniczenia: test dużego imperium ukończył 38/100 tur i zatrzymał się po turze 70.2 s; nie wykazano przyczyny całego wzrostu RSS do 2 GB ani poprawy długosesyjnej. Raporty: `R-PERF-LARGE-EMPIRE-STRESS-Q1`, `R-PERF-CITY-PANEL-DOM-RETENTION-Q1` i `R-PERF-MEMORY-IMPROVEMENTS-ROBOCZA-Q1`.
+
 ## ROBOCZA 31c64f65 -- 2026-10-28 -- zwalnianie zasobów GPU podglądów budowy i znaczników wyrębu (R-PERF-GPU-GHOST-RESOURCE-DISPOSAL-Q1) — WERSJA TESTOWA
 
 - **STATUS: DEPLOYED** to `origin/main` at `f2dbf853`; fast-forward from `54214e3a`. GitHub Raw readback of bundle, manifest and START returned HTTP 200; bundle hashes and size match. Source fix commit: `7637ab3e`; brak promocji do KANON/FINALNA.

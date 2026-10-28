@@ -1,30 +1,33 @@
 {
-  "releaseState": "DEPLOYED — testowa ROBOCZA; R-PERF-GPU-GHOST-RESOURCE-DISPOSAL-Q1; Final Control PASS WITH NOTES; długosesyjna diagnoza pamięci i opóźnień pozostaje otwarta.",
+  "releaseState": "CANDIDATE — testowa ROBOCZA; R-PERF-CAPTURE-EVENT-RETENTION-Q1 + R-PERF-UNIT-ICON-SYNC-CHURN-Q1; długosesyjna diagnoza pozostaje otwarta.",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "31c64f6545b9e30ab0171bc105143fbe",
-  "bundleSha256": "3b90ffbee14db98171494cf434f4e711fb2d325e27341d55bf54317e84c2d383",
-  "bundleBytes": 70012553,
+  "bundleMd5": "e4c3643d35ba88f9823373ac9419477c",
+  "bundleSha256": "d918fb1c5dfd221106c41aa6ec0c74450fbd5ddff1cdcad22c06ba8cf595fc9b",
+  "bundleBytes": 70013155,
   "sourceSnapshot": {
-    "baseCommit": "54214e3a32b48ec934de6aa04cbc4cb14a63d509",
-    "productCommit": "7637ab3e",
-    "source": "origin/main + poprawka R-PERF-GPU-GHOST-RESOURCE-DISPOSAL-Q1",
-    "build": "Vite 5.4.21; 915 modules; single-file ROBOCZA bundle; stamped",
-    "publicationCommit": "f2dbf853"
+    "baseCommit": "a1d8621290d107adc3ece82978d64aa6b7c4c0dc",
+    "productCommit": "a4d7bc30 + 782c9b34",
+    "source": "origin/main + zwalnianie szczegółów usuniętych kart przejęć + ponowne użycie niezmienionych ikon jednostek",
+    "build": "Vite 5.4.21; 916 modules; single-file ROBOCZA bundle; stamped",
+    "publicationCommit": "pending final release commit"
   },
   "scope": [
-    "Zwolenienie własnych geometrii i materiałów krótkotrwałych podglądów budowy i znaczników wyrębu przy ich usuwaniu, wymianie, przebudowie i resecie. Współdzielone geometrie/materiały cache pozostają żywe."
+    "Po usunięciu karty przejęcia z ograniczonego dziennika zwalniane są jej szczegóły; widoczne karty nadal zachowują dane raportu.",
+    "Niezmienione badge stosów i ikony głodu/deficytu jednostek zachowują swoje sprite’y i tekstury między synchronizacjami; przy zmianie stanu nakładki są aktualizowane i zwalniane."
   ],
   "verification": [
+    "node gra/tools/capture-event-retention-test.cjs — 20 asercji PASS;",
+    "node gra/tools/unit-renderer-overlay-sync-test.cjs — 17/17;",
     "node gra/tools/web-memory-leaks-test.cjs — 55/55;",
-    "node gra/tools/transient-webgl-resource-smoke.cjs — 120 cykli Chromium/WebGL, geometrie 1→1, współdzielona geometria nadal działa;",
-    "npm run typecheck --prefix gra — PASS;",
-    "npm run build --prefix gra — PASS, Vite 915 modules;",
-    "node gra/tools/verify-robocza-bundle.cjs — VERIFY OK;",
-    "AutoBot Evaluator PASS oraz Final Control PASS dla zakresu cyklu życia zasobów."
+    "powiązane testy raportów przejęcia/eliminacji i panelu wydarzeń — PASS wg niezależnego Evaluatora;",
+    "npm run typecheck --prefix gra — PASS wg niezależnych przebiegów kandydatów;",
+    "npm run build --prefix gra — PASS, Vite 916 modules;",
+    "niezależny Evaluator i Final Control PASS WITH NOTES dla wąskich zakresów obu zmian."
   ],
   "limits": [
-    "To wydanie naprawia potwierdzony brak zwalniania zasobów w podglądach i znacznikach wyrębu. Nie przypisuje mu całego wzrostu pamięci 100 MB→2 GB.",
-    "Pomiar długiej sesji, opóźnień ruchu mapy/otwierania miasta i pamięci późnej gry pozostaje otwarty; smoke headless zablokował się na generowaniu mapy przed probe."
+    "Te poprawki usuwają potwierdzoną retencję szczegółów zdarzeń i zbędne ponowne tworzenie ikon; nie dowodzą, że wyjaśniają wzrost pamięci do 2 GB ani wszystkie opóźnienia.",
+    "Próba 100 tur zakończyła się po 38 turach, gdy zakończenie tury przekroczyło limit 60 s (70,2 s). Dalszy pomiar mapy został przerwany po zamknięciu Chromium. Pełny test dużego imperium pozostaje otwarty.",
+    "W 20 cyklach panelu miasta po wymuszonym GC DOM i listenery ustabilizowały się; heap miał niewielki, nieliniowy przyrost 1,70 MB, którego pomiar nie przypisał do obiektu."
   ],
   "previousRelease": {
     "releaseState": "candidate R-WEB-WAR-EPOCH-RELEASE-ROBOCZA-Q1 (wydanie nr 7, ROBOCZA testowa, lokalny commit, NIE opublikowane; runda 2 Operatora: dopisane odkrycie strony przy wypowiedzeniu wojny epoki; push/deploy po Final Control i osobnej autoryzacji przez orkiestratora)",
@@ -76,14 +79,14 @@
     }
   },
   "rollbackPlan": {
-    "method": "revert the ROBOCZA resource-lifecycle release commit; prior bundle metadata is in immediatePreviousRelease.",
-    "previousBundleMd5": "b897f519a377631081bd29b49c76fef2",
-    "previousBundleSha256": "accb2ee99c74ba7bbc70da060ed62fabf905cf2f021d6e37bacad4a9398ed798",
-    "previousBundleBytes": 70011909
+    "method": "Revert source/release commits; prior Robocza bundle and checksums are recorded in immediatePreviousRelease.",
+    "previousBundleMd5": "31c64f6545b9e30ab0171bc105143fbe",
+    "previousBundleSha256": "3b90ffbee14db98171494cf434f4e711fb2d325e27341d55bf54317e84c2d383",
+    "previousBundleBytes": 70012553
   },
   "finalControl": {
-    "status": "PASS — narrow GPU resource lifecycle scope; long-session performance attribution remains open.",
-    "reportPath": "dyspozycje/autobot/runs/R-PERF-GPU-GHOST-RESOURCE-DISPOSAL-Q1/03-final-control.md"
+    "status": "PASS WITH NOTES — exact local Robocza bundle; long-session diagnosis remains open",
+    "reportPath": "dyspozycje/autobot/runs/R-PERF-MEMORY-IMPROVEMENTS-ROBOCZA-Q1/02-final-control.md"
   },
   "startHub": "START.html",
   "hubGeneratedAt": "2026-10-28T15:59:43",
@@ -92,43 +95,35 @@
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "31c64f6545b9e30ab0171bc105143fbe",
-      "sizeBytes": 70012553
+      "md5": "e4c3643d35ba88f9823373ac9419477c",
+      "sizeBytes": 70013155
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "31c64f6545b9e30ab0171bc105143fbe",
-      "sizeBytes": 70012553
+      "md5": "e4c3643d35ba88f9823373ac9419477c",
+      "sizeBytes": 70013155
     }
   ],
   "publishPlan": {
     "status": "PUBLISHED to origin/main at f2dbf853; pinned GitHub raw readback HTTP 200 and hashes verified; ROBOCZA only; no KANON/FINALNA promotion."
   },
-  "md5": "31c64f6545b9e30ab0171bc105143fbe",
-  "publishedAt": "2026-10-28T18:03:00+02:00",
-  "publisher": "Codex AutoBot — owner authorized ROBOCZA publish",
-  "source": "gra/src; source commit 7637ab3e based on origin/main 54214e3a",
-  "sizeBytes": 70012553,
-  "releaseScope": "Narrow GPU resource lifecycle fix for transient build previews and clearing markers. Full late-game memory/latency diagnosis remains open.",
+  "md5": "e4c3643d35ba88f9823373ac9419477c",
+  "publishedAt": "2026-10-28",
+  "publisher": "Codex AutoBot — owner authorized Robocza publish",
+  "source": "gra/src; source commits a4d7bc30 + 782c9b34 based on ROBOCZA a1d86212",
+  "sizeBytes": 70013155,
+  "releaseScope": "Capture-event detail eviction cleanup and stable unit-overlay sprite reuse; long-session memory/performance diagnosis remains open.",
   "immediatePreviousRelease": {
-    "publicationCommit": "fc18c02efd5359844c2439217e8855d549417d0a",
-    "bundleMd5": "b897f519a377631081bd29b49c76fef2",
-    "bundleSha256": "accb2ee99c74ba7bbc70da060ed62fabf905cf2f021d6e37bacad4a9398ed798",
-    "bundleBytes": 70011909
-  },
-  "publicationCommit": "f2dbf853",
-  "remoteReadback": {
-    "status": "PASS",
-    "remote": "origin/main",
-    "commit": "f2dbf853",
-    "bundleUrl": "https://raw.githubusercontent.com/maciejsieracki/The-Game/f2dbf853/gra-robocza/Gra-ROBOCZA.html",
-    "manifestUrl": "https://raw.githubusercontent.com/maciejsieracki/The-Game/f2dbf853/gra-robocza/ROBOCZA-MANIFEST.json",
-    "startUrl": "https://raw.githubusercontent.com/maciejsieracki/The-Game/f2dbf853/gra-robocza/START.html",
-    "httpStatus": 200,
+    "publicationCommit": "a1d8621290d107adc3ece82978d64aa6b7c4c0dc",
     "bundleMd5": "31c64f6545b9e30ab0171bc105143fbe",
     "bundleSha256": "3b90ffbee14db98171494cf434f4e711fb2d325e27341d55bf54317e84c2d383",
     "bundleBytes": 70012553
+  },
+  "publicationCommit": "pending final release commit",
+  "remoteReadback": {
+    "status": "PENDING",
+    "remote": "origin/main"
   }
 }

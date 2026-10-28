@@ -1,0 +1,664 @@
+{
+  "schema": "city-panel-dom-gc-probe/v1",
+  "baseCommit": "a1d8621290d107adc3ece82978d64aa6b7c4c0dc",
+  "scenario": {
+    "world": "real generated game, six rivals, seed 1412026",
+    "cycles": 20,
+    "gc": "HeapProfiler.collectGarbage after two RAFs at each open and close sample"
+  },
+  "url": "http://127.0.0.1:8731/index.html",
+  "rows": [
+    {
+      "phase": "baseline",
+      "cycle": 0,
+      "sample": {
+        "documents": 3,
+        "nodes": 1738,
+        "jsEventListeners": 247,
+        "heapUsedSize": 91438452,
+        "cityPanelOpen": false,
+        "cityUxFrames": 0,
+        "cityUxFrameNodes": 0,
+        "cityUxDims": 0,
+        "bodyChildren": 25,
+        "jsHeapUsed": 181167950
+      }
+    },
+    {
+      "phase": "cycle",
+      "cycle": 1,
+      "openSyncMs": 157.40000000596046,
+      "opened": true,
+      "closeSyncMs": 53.3999999910593,
+      "open": {
+        "documents": 3,
+        "nodes": 3080,
+        "jsEventListeners": 475,
+        "heapUsedSize": 91718700,
+        "cityPanelOpen": true,
+        "cityUxFrames": 1,
+        "cityUxFrameNodes": 981,
+        "cityUxDims": 1,
+        "bodyChildren": 28,
+        "jsHeapUsed": 182402843
+      },
+      "closed": {
+        "documents": 3,
+        "nodes": 1734,
+        "jsEventListeners": 245,
+        "heapUsedSize": 92276396,
+        "cityPanelOpen": false,
+        "cityUxFrames": 0,
+        "cityUxFrameNodes": 0,
+        "cityUxDims": 0,
+        "bodyChildren": 26,
+        "jsHeapUsed": 181927665
+      }
+    },
+    {
+      "phase": "cycle",
+      "cycle": 2,
+      "openSyncMs": 154.6000000089407,
+      "opened": true,
+      "closeSyncMs": 39.79999999701977,
+      "open": {
+        "documents": 3,
+        "nodes": 3080,
+        "jsEventListeners": 476,
+        "heapUsedSize": 92826064,
+        "cityPanelOpen": true,
+        "cityUxFrames": 1,
+        "cityUxFrameNodes": 981,
+        "cityUxDims": 1,
+        "bodyChildren": 28,
+        "jsHeapUsed": 182525506
+      },
+      "closed": {
+        "documents": 3,
+        "nodes": 1734,
+        "jsEventListeners": 245,
+        "heapUsedSize": 92503968,
+        "cityPanelOpen": false,
+        "cityUxFrames": 0,
+        "cityUxFrameNodes": 0,
+        "cityUxDims": 0,
+        "bodyChildren": 26,
+        "jsHeapUsed": 182145145
+      }
+    },
+    {
+      "phase": "cycle",
+      "cycle": 3,
+      "openSyncMs": 115.8999999910593,
+      "opened": true,
+      "closeSyncMs": 44.70000000298023,
+      "open": {
+        "documents": 3,
+        "nodes": 3080,
+        "jsEventListeners": 475,
+        "heapUsedSize": 93125740,
+        "cityPanelOpen": true,
+        "cityUxFrames": 1,
+        "cityUxFrameNodes": 981,
+        "cityUxDims": 1,
+        "bodyChildren": 28,
+        "jsHeapUsed": 182833578
+      },
+      "closed": {
+        "documents": 3,
+        "nodes": 1734,
+        "jsEventListeners": 245,
+        "heapUsedSize": 92709708,
+        "cityPanelOpen": false,
+        "cityUxFrames": 0,
+        "cityUxFrameNodes": 0,
+        "cityUxDims": 0,
+        "bodyChildren": 26,
+        "jsHeapUsed": 182348761
+      }
+    },
+    {
+      "phase": "cycle",
+      "cycle": 4,
+      "openSyncMs": 140.59999999403954,
+      "opened": true,
+      "closeSyncMs": 36,
+      "open": {
+        "documents": 3,
+        "nodes": 3080,
+        "jsEventListeners": 475,
+        "heapUsedSize": 93273356,
+        "cityPanelOpen": true,
+        "cityUxFrames": 1,
+        "cityUxFrameNodes": 981,
+        "cityUxDims": 1,
+        "bodyChildren": 28,
+        "jsHeapUsed": 182968374
+      },
+      "closed": {
+        "documents": 3,
+        "nodes": 1734,
+        "jsEventListeners": 246,
+        "heapUsedSize": 92834424,
+        "cityPanelOpen": false,
+        "cityUxFrames": 0,
+        "cityUxFrameNodes": 0,
+        "cityUxDims": 0,
+        "bodyChildren": 26,
+        "jsHeapUsed": 182468661
+      }
+    },
+    {
+      "phase": "cycle",
+      "cycle": 5,
+      "openSyncMs": 91.69999998807907,
+      "opened": true,
+      "closeSyncMs": 54.900000005960464,
+      "open": {
+        "documents": 3,
+        "nodes": 3080,
+        "jsEventListeners": 476,
+        "heapUsedSize": 93375760,
+        "cityPanelOpen": true,
+        "cityUxFrames": 1,
+        "cityUxFrameNodes": 981,
+        "cityUxDims": 1,
+        "bodyChildren": 28,
+        "jsHeapUsed": 183056470
+      },
+      "closed": {
+        "documents": 3,
+        "nodes": 1734,
+        "jsEventListeners": 246,
+        "heapUsedSize": 92957652,
+        "cityPanelOpen": false,
+        "cityUxFrames": 0,
+        "cityUxFrameNodes": 0,
+        "cityUxDims": 0,
+        "bodyChildren": 26,
+        "jsHeapUsed": 182595789
+      }
+    },
+    {
+      "phase": "cycle",
+      "cycle": 6,
+      "openSyncMs": 145.5,
+      "opened": true,
+      "closeSyncMs": 46.8999999910593,
+      "open": {
+        "documents": 3,
+        "nodes": 3082,
+        "jsEventListeners": 479,
+        "heapUsedSize": 93565440,
+        "cityPanelOpen": true,
+        "cityUxFrames": 1,
+        "cityUxFrameNodes": 981,
+        "cityUxDims": 1,
+        "bodyChildren": 28,
+        "jsHeapUsed": 183261702
+      },
+      "closed": {
+        "documents": 3,
+        "nodes": 1736,
+        "jsEventListeners": 248,
+        "heapUsedSize": 93069032,
+        "cityPanelOpen": false,
+        "cityUxFrames": 0,
+        "cityUxFrameNodes": 0,
+        "cityUxDims": 0,
+        "bodyChildren": 26,
+        "jsHeapUsed": 182703777
+      }
+    },
+    {
+      "phase": "cycle",
+      "cycle": 7,
+      "openSyncMs": 96.09999999403954,
+      "opened": true,
+      "closeSyncMs": 45.1000000089407,
+      "open": {
+        "documents": 3,
+        "nodes": 3082,
+        "jsEventListeners": 479,
+        "heapUsedSize": 93622248,
+        "cityPanelOpen": true,
+        "cityUxFrames": 1,
+        "cityUxFrameNodes": 981,
+        "cityUxDims": 1,
+        "bodyChildren": 28,
+        "jsHeapUsed": 183305862
+      },
+      "closed": {
+        "documents": 3,
+        "nodes": 1736,
+        "jsEventListeners": 249,
+        "heapUsedSize": 93197920,
+        "cityPanelOpen": false,
+        "cityUxFrames": 0,
+        "cityUxFrameNodes": 0,
+        "cityUxDims": 0,
+        "bodyChildren": 26,
+        "jsHeapUsed": 182825429
+      }
+    },
+    {
+      "phase": "cycle",
+      "cycle": 8,
+      "openSyncMs": 104.8999999910593,
+      "opened": true,
+      "closeSyncMs": 51.30000001192093,
+      "open": {
+        "documents": 3,
+        "nodes": 3082,
+        "jsEventListeners": 480,
+        "heapUsedSize": 93287324,
+        "cityPanelOpen": true,
+        "cityUxFrames": 1,
+        "cityUxFrameNodes": 981,
+        "cityUxDims": 1,
+        "bodyChildren": 28,
+        "jsHeapUsed": 184167410
+      },
+      "closed": {
+        "documents": 3,
+        "nodes": 1736,
+        "jsEventListeners": 250,
+        "heapUsedSize": 93279656,
+        "cityPanelOpen": false,
+        "cityUxFrames": 0,
+        "cityUxFrameNodes": 0,
+        "cityUxDims": 0,
+        "bodyChildren": 26,
+        "jsHeapUsed": 182908629
+      }
+    },
+    {
+      "phase": "cycle",
+      "cycle": 9,
+      "openSyncMs": 135.79999999701977,
+      "opened": true,
+      "closeSyncMs": 47.900000005960464,
+      "open": {
+        "documents": 3,
+        "nodes": 3082,
+        "jsEventListeners": 479,
+        "heapUsedSize": 93124416,
+        "cityPanelOpen": true,
+        "cityUxFrames": 1,
+        "cityUxFrameNodes": 981,
+        "cityUxDims": 1,
+        "bodyChildren": 28,
+        "jsHeapUsed": 183973366
+      },
+      "closed": {
+        "documents": 3,
+        "nodes": 1736,
+        "jsEventListeners": 249,
+        "heapUsedSize": 93500440,
+        "cityPanelOpen": false,
+        "cityUxFrames": 0,
+        "cityUxFrameNodes": 0,
+        "cityUxDims": 0,
+        "bodyChildren": 26,
+        "jsHeapUsed": 183127981
+      }
+    },
+    {
+      "phase": "cycle",
+      "cycle": 10,
+      "openSyncMs": 97.3999999910593,
+      "opened": true,
+      "closeSyncMs": 34.79999999701977,
+      "open": {
+        "documents": 3,
+        "nodes": 3082,
+        "jsEventListeners": 479,
+        "heapUsedSize": 93834264,
+        "cityPanelOpen": true,
+        "cityUxFrames": 1,
+        "cityUxFrameNodes": 981,
+        "cityUxDims": 1,
+        "bodyChildren": 28,
+        "jsHeapUsed": 184782454
+      },
+      "closed": {
+        "documents": 3,
+        "nodes": 1736,
+        "jsEventListeners": 249,
+        "heapUsedSize": 93531184,
+        "cityPanelOpen": false,
+        "cityUxFrames": 0,
+        "cityUxFrameNodes": 0,
+        "cityUxDims": 0,
+        "bodyChildren": 26,
+        "jsHeapUsed": 183127449
+      }
+    },
+    {
+      "phase": "cycle",
+      "cycle": 11,
+      "openSyncMs": 118.59999999403954,
+      "opened": true,
+      "closeSyncMs": 33.30000001192093,
+      "open": {
+        "documents": 3,
+        "nodes": 3082,
+        "jsEventListeners": 478,
+        "heapUsedSize": 94108360,
+        "cityPanelOpen": true,
+        "cityUxFrames": 1,
+        "cityUxFrameNodes": 981,
+        "cityUxDims": 1,
+        "bodyChildren": 28,
+        "jsHeapUsed": 183779610
+      },
+      "closed": {
+        "documents": 3,
+        "nodes": 1736,
+        "jsEventListeners": 249,
+        "heapUsedSize": 93260084,
+        "cityPanelOpen": false,
+        "cityUxFrames": 0,
+        "cityUxFrameNodes": 0,
+        "cityUxDims": 0,
+        "bodyChildren": 26,
+        "jsHeapUsed": 184124709
+      }
+    },
+    {
+      "phase": "cycle",
+      "cycle": 12,
+      "openSyncMs": 124,
+      "opened": true,
+      "closeSyncMs": 31.100000008940697,
+      "open": {
+        "documents": 3,
+        "nodes": 3082,
+        "jsEventListeners": 480,
+        "heapUsedSize": 94157200,
+        "cityPanelOpen": true,
+        "cityUxFrames": 1,
+        "cityUxFrameNodes": 981,
+        "cityUxDims": 1,
+        "bodyChildren": 28,
+        "jsHeapUsed": 183843010
+      },
+      "closed": {
+        "documents": 3,
+        "nodes": 1736,
+        "jsEventListeners": 249,
+        "heapUsedSize": 93685848,
+        "cityPanelOpen": false,
+        "cityUxFrames": 0,
+        "cityUxFrameNodes": 0,
+        "cityUxDims": 0,
+        "bodyChildren": 26,
+        "jsHeapUsed": 183316177
+      }
+    },
+    {
+      "phase": "cycle",
+      "cycle": 13,
+      "openSyncMs": 116.5,
+      "opened": true,
+      "closeSyncMs": 57.099999994039536,
+      "open": {
+        "documents": 3,
+        "nodes": 3082,
+        "jsEventListeners": 478,
+        "heapUsedSize": 94223304,
+        "cityPanelOpen": true,
+        "cityUxFrames": 1,
+        "cityUxFrameNodes": 981,
+        "cityUxDims": 1,
+        "bodyChildren": 28,
+        "jsHeapUsed": 183891830
+      },
+      "closed": {
+        "documents": 3,
+        "nodes": 1736,
+        "jsEventListeners": 248,
+        "heapUsedSize": 93760392,
+        "cityPanelOpen": false,
+        "cityUxFrames": 0,
+        "cityUxFrameNodes": 0,
+        "cityUxDims": 0,
+        "bodyChildren": 26,
+        "jsHeapUsed": 183389505
+      }
+    },
+    {
+      "phase": "cycle",
+      "cycle": 14,
+      "openSyncMs": 99.70000000298023,
+      "opened": true,
+      "closeSyncMs": 58.80000001192093,
+      "open": {
+        "documents": 3,
+        "nodes": 3082,
+        "jsEventListeners": 478,
+        "heapUsedSize": 93348000,
+        "cityPanelOpen": true,
+        "cityUxFrames": 1,
+        "cityUxFrameNodes": 981,
+        "cityUxDims": 1,
+        "bodyChildren": 28,
+        "jsHeapUsed": 184232570
+      },
+      "closed": {
+        "documents": 3,
+        "nodes": 1736,
+        "jsEventListeners": 249,
+        "heapUsedSize": 93760596,
+        "cityPanelOpen": false,
+        "cityUxFrames": 0,
+        "cityUxFrameNodes": 0,
+        "cityUxDims": 0,
+        "bodyChildren": 26,
+        "jsHeapUsed": 183386305
+      }
+    },
+    {
+      "phase": "cycle",
+      "cycle": 15,
+      "openSyncMs": 98.40000000596046,
+      "opened": true,
+      "closeSyncMs": 35.70000000298023,
+      "open": {
+        "documents": 3,
+        "nodes": 3082,
+        "jsEventListeners": 478,
+        "heapUsedSize": 94251000,
+        "cityPanelOpen": true,
+        "cityUxFrames": 1,
+        "cityUxFrameNodes": 981,
+        "cityUxDims": 1,
+        "bodyChildren": 28,
+        "jsHeapUsed": 183880590
+      },
+      "closed": {
+        "documents": 3,
+        "nodes": 1736,
+        "jsEventListeners": 248,
+        "heapUsedSize": 93774720,
+        "cityPanelOpen": false,
+        "cityUxFrames": 0,
+        "cityUxFrameNodes": 0,
+        "cityUxDims": 0,
+        "bodyChildren": 26,
+        "jsHeapUsed": 183377205
+      }
+    },
+    {
+      "phase": "cycle",
+      "cycle": 16,
+      "openSyncMs": 136.3999999910593,
+      "opened": true,
+      "closeSyncMs": 31.30000001192093,
+      "open": {
+        "documents": 3,
+        "nodes": 3082,
+        "jsEventListeners": 479,
+        "heapUsedSize": 94269848,
+        "cityPanelOpen": true,
+        "cityUxFrames": 1,
+        "cityUxFrameNodes": 981,
+        "cityUxDims": 1,
+        "bodyChildren": 28,
+        "jsHeapUsed": 183940934
+      },
+      "closed": {
+        "documents": 3,
+        "nodes": 1736,
+        "jsEventListeners": 249,
+        "heapUsedSize": 93832480,
+        "cityPanelOpen": false,
+        "cityUxFrames": 0,
+        "cityUxFrameNodes": 0,
+        "cityUxDims": 0,
+        "bodyChildren": 26,
+        "jsHeapUsed": 183421841
+      }
+    },
+    {
+      "phase": "cycle",
+      "cycle": 17,
+      "openSyncMs": 102.29999999701977,
+      "opened": true,
+      "closeSyncMs": 60,
+      "open": {
+        "documents": 3,
+        "nodes": 3082,
+        "jsEventListeners": 478,
+        "heapUsedSize": 94308008,
+        "cityPanelOpen": true,
+        "cityUxFrames": 1,
+        "cityUxFrameNodes": 981,
+        "cityUxDims": 1,
+        "bodyChildren": 28,
+        "jsHeapUsed": 184959929
+      },
+      "closed": {
+        "documents": 3,
+        "nodes": 1736,
+        "jsEventListeners": 248,
+        "heapUsedSize": 92831180,
+        "cityPanelOpen": false,
+        "cityUxFrames": 0,
+        "cityUxFrameNodes": 0,
+        "cityUxDims": 0,
+        "bodyChildren": 26,
+        "jsHeapUsed": 183451456
+      }
+    },
+    {
+      "phase": "cycle",
+      "cycle": 18,
+      "openSyncMs": 108.5,
+      "opened": true,
+      "closeSyncMs": 42.70000000298023,
+      "open": {
+        "documents": 3,
+        "nodes": 3082,
+        "jsEventListeners": 479,
+        "heapUsedSize": 93316096,
+        "cityPanelOpen": true,
+        "cityUxFrames": 1,
+        "cityUxFrameNodes": 981,
+        "cityUxDims": 1,
+        "bodyChildren": 28,
+        "jsHeapUsed": 183997037
+      },
+      "closed": {
+        "documents": 3,
+        "nodes": 1736,
+        "jsEventListeners": 249,
+        "heapUsedSize": 92848404,
+        "cityPanelOpen": false,
+        "cityUxFrames": 0,
+        "cityUxFrameNodes": 0,
+        "cityUxDims": 0,
+        "bodyChildren": 26,
+        "jsHeapUsed": 183469672
+      }
+    },
+    {
+      "phase": "cycle",
+      "cycle": 19,
+      "openSyncMs": 95.90000000596046,
+      "opened": true,
+      "closeSyncMs": 40.20000000298023,
+      "open": {
+        "documents": 3,
+        "nodes": 3082,
+        "jsEventListeners": 478,
+        "heapUsedSize": 93351520,
+        "cityPanelOpen": true,
+        "cityUxFrames": 1,
+        "cityUxFrameNodes": 981,
+        "cityUxDims": 1,
+        "bodyChildren": 28,
+        "jsHeapUsed": 184011573
+      },
+      "closed": {
+        "documents": 3,
+        "nodes": 1736,
+        "jsEventListeners": 248,
+        "heapUsedSize": 92967388,
+        "cityPanelOpen": false,
+        "cityUxFrames": 0,
+        "cityUxFrameNodes": 0,
+        "cityUxDims": 0,
+        "bodyChildren": 26,
+        "jsHeapUsed": 183586436
+      }
+    },
+    {
+      "phase": "cycle",
+      "cycle": 20,
+      "openSyncMs": 105.70000000298023,
+      "opened": true,
+      "closeSyncMs": 36.900000005960464,
+      "open": {
+        "documents": 3,
+        "nodes": 3082,
+        "jsEventListeners": 478,
+        "heapUsedSize": 93508840,
+        "cityPanelOpen": true,
+        "cityUxFrames": 1,
+        "cityUxFrameNodes": 981,
+        "cityUxDims": 1,
+        "bodyChildren": 28,
+        "jsHeapUsed": 184184417
+      },
+      "closed": {
+        "documents": 3,
+        "nodes": 1736,
+        "jsEventListeners": 249,
+        "heapUsedSize": 93139832,
+        "cityPanelOpen": false,
+        "cityUxFrames": 0,
+        "cityUxFrameNodes": 0,
+        "cityUxDims": 0,
+        "bodyChildren": 26,
+        "jsHeapUsed": 184020656
+      }
+    }
+  ],
+  "errors": [
+    "Failed to load resource: the server responded with a status of 404 (File not found)",
+    "Failed to load resource: the server responded with a status of 404 (File not found)"
+  ],
+  "final": {
+    "documents": 3,
+    "nodes": 1736,
+    "jsEventListeners": 249,
+    "heapUsedSize": 92957720,
+    "cityPanelOpen": false,
+    "cityUxFrames": 0,
+    "cityUxFrameNodes": 0,
+    "cityUxDims": 0,
+    "bodyChildren": 26,
+    "jsHeapUsed": 183573616
+  }
+}
