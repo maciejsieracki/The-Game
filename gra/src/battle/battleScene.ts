@@ -236,7 +236,7 @@ import { civIconSvg, brandIconSvg } from '../ui/icons/brandAssets';
 import { leaderPortraitUrl, leaderName, civIconIdFromCivLabel } from '../ui/leaderPortraits';
 import { showEndScreen1E } from './endScreen1E';
 import { markBattleSceneOpen, markBattleSceneClosed } from './battleSceneOpen';
-import { compactLineAllowsAdvance, initialBattleLineOrder } from './formationRules';
+import { classifyInitialBattleRole, compactLineAllowsAdvance, initialBattleFormation, initialBattleSlots, type InitialBattleRole } from './formationRules';
 import { startVictoryMusic, startDefeatMusic, startBattleMusic } from '../audio/muzyka-antyczna';
 import {
   showEndDetails1E,
@@ -1422,6 +1422,18 @@ function isPrimaryRanged(bu: BattleUnit): boolean {
       n.includes('procarz') || n.includes('sling') ||
       n.includes('oszczep') || n.includes('javelin') || n.includes('atlatl')) return true;
   return false;
+}
+
+/** Role bands used only for the default battle deployment and deploy reset. */
+function initialBattleRoleOf(bu: BattleUnit): InitialBattleRole {
+  const stats = (bu.stats as Record<string, unknown>) ?? {};
+  return classifyInitialBattleRole({
+    commander: bu.isArmyCommander,
+    category: bu.kategoria,
+    name: String(stats['Jednostka'] ?? bu.nazwa ?? ''),
+    type: String(stats['Typ'] ?? ''),
+    primaryRanged: isPrimaryRanged(bu),
+  });
 }
 
 /** True for a MOUNTED unit (cavalry or chariot) -- belongs on the wings. */
@@ -4997,40 +5009,20 @@ export class BattleScene {
       const freeOk = (c: number, r: number): boolean =>
         !this.occByKey.has(cellKey(c, r)) && this.terrainMap.passable(c, r);
 
-      // Default ranks: shooters and foot share the front rank, with shooters
-      // nearer its centre and cavalry/chariots occupying the outer wing slots.
-      // Explicit F1/F2/F3 deploy choices can still rearrange these positions.
-      const roleOf = (u: BattleUnit): 'commander' | 'mounted' | 'ranged' | 'melee' | 'siege' =>
-        u.isArmyCommander ? 'commander' : isMounted(u) ? 'mounted' : isSiegeUnit(u) ? 'siege'
-          : isPrimaryRanged(u) ? 'ranged' : 'melee';
-      const ordered = initialBattleLineOrder(units, roleOf, Math.max(1, Math.min(RANK_WIDTH, BF_ROWS)));
+      // Default role bands are physically separated along the front-to-rear
+      // axis. F1/F2/F3 manual deployment can still rearrange these positions.
+      const formation = initialBattleFormation(units, initialBattleRoleOf);
       const unitIndex = new Map(units.map((unit, index) => [unit, index]));
-      const frontI = ordered.filter(u => roleOf(u) !== 'siege').map(u => unitIndex.get(u)!);
-      const siegeI = ordered.filter(u => roleOf(u) === 'siege').map(u => unitIndex.get(u)!);
-
       const idealRow = new Array<number>(units.length);
       const idealCol = new Array<number>(units.length);
-
-      // MAX units per rank (row-axis). Each group is centred on midRow so all
-      // groups share the same centre column -- NO wing spreading.
-      const MAX_LINE = 12;
-      const midRow   = PLAY_MID_ROW;
-
-      const layGroup = (list: number[], rankBase: number): number => {
-        if (list.length === 0) return 0;
-        // Deploy gracza: ten sam zwarty szyk co w walce (max 12 w szeregu, centrum
-        // PLAY_MID_ROW) — NIE _deploySpreadRank (rozciągał całą wysokość strefy).
-        const per = Math.max(1, Math.min(list.length, MAX_LINE));
-        const r0g = midRow - Math.floor(per / 2);
-        list.forEach((ui, k) => {
-          idealRow[ui] = clampRow(r0g + (k % per));
-          idealCol[ui] = clampCol(frontCol + (rankBase + Math.floor(k / per)) * rankStep);
-        });
-        return Math.ceil(list.length / per);
-      };
-      let rankBase = 0;
-      rankBase += layGroup(frontI, rankBase);
-      rankBase += layGroup(siegeI, rankBase); // siege engines stay behind the combat line
+      const slots = initialBattleSlots(formation, {
+        rankWidth: RANK_WIDTH, midRow: PLAY_MID_ROW, playRow0: PLAY_ROW0, playRow1: PLAY_ROW1,
+      });
+      slots.forEach(slot => {
+        const index = unitIndex.get(slot.unit)!;
+        idealRow[index] = clampRow(slot.row);
+        idealCol[index] = clampCol(frontCol + slot.rank * rankStep);
+      });
 
       return units.map((bu, idx) => {
         // Resolve collisions / impassable: prefer PLAINS (konnica nie startuje w lesie).
@@ -5047,10 +5039,14 @@ export class BattleScene {
         };
         let bestScore = -1;
         const playerDeploy = this._deployMode && side === this._playerControlSide();
-        const rowLo = playerDeploy
+        const mountedWing = initialBattleRoleOf(bu) === 'mounted';
+        const topWing = idealRow[idx]! < PLAY_MID_ROW;
+        const wingRowLo = topWing ? PLAY_ROW0 + 1 : PLAY_MID_ROW + Math.ceil(RANK_WIDTH / 2) + 1;
+        const wingRowHi = topWing ? PLAY_MID_ROW - Math.ceil(RANK_WIDTH / 2) - 2 : PLAY_ROW1 - 1;
+        const rowLo = mountedWing ? wingRowLo : playerDeploy
           ? Math.max(DEPLOY_MIN_ROW, idealRow[idx]! - 8)
           : PLAY_ROW0;
-        const rowHi = playerDeploy
+        const rowHi = mountedWing ? wingRowHi : playerDeploy
           ? Math.min(DEPLOY_MAX_ROW, idealRow[idx]! + 8)
           : PLAY_ROW1;
         for (let extra = 0; extra < 10; extra++) {
@@ -16233,33 +16229,19 @@ export class BattleScene {
       !this.occByKey.has(cellKey(c, r)) && this.terrainMap.passable(c, r);
 
     const units = saved;
-    const roleOf = (u: BattleUnit): 'commander' | 'mounted' | 'ranged' | 'melee' | 'siege' =>
-      u.isArmyCommander ? 'commander' : isMounted(u) ? 'mounted' : isSiegeUnit(u) ? 'siege'
-        : isPrimaryRanged(u) ? 'ranged' : 'melee';
-    const ordered = initialBattleLineOrder(units, roleOf, Math.max(1, Math.min(RANK_WIDTH, BF_ROWS)));
+    const formation = initialBattleFormation(units, initialBattleRoleOf);
     const unitIndex = new Map(units.map((unit, index) => [unit, index]));
-    const frontI = ordered.filter(u => roleOf(u) !== 'siege').map(u => unitIndex.get(u)!);
-    const siegeI = ordered.filter(u => roleOf(u) === 'siege').map(u => unitIndex.get(u)!);
-
-    const MAX_LINE = 12;
-    const midRow = PLAY_MID_ROW;
     const idealRow = new Array<number>(units.length);
     const idealCol = new Array<number>(units.length);
     const playerSide = this._playerControlSide();
-
-    const layGroup = (list: number[], rankBase: number): number => {
-      if (list.length === 0) return 0;
-      const per = Math.max(1, Math.min(list.length, MAX_LINE));
-      const r0g = midRow - Math.floor(per / 2);
-      list.forEach((ui, k) => {
-        idealRow[ui] = clampRow(r0g + (k % per));
-        idealCol[ui] = clampCol(frontCol + (rankBase + Math.floor(k / per)) * rankStep);
-      });
-      return Math.ceil(list.length / per);
-    };
-    let rankBase = 0;
-    rankBase += layGroup(frontI, rankBase);
-    rankBase += layGroup(siegeI, rankBase);
+    const slots = initialBattleSlots(formation, {
+      rankWidth: RANK_WIDTH, midRow: PLAY_MID_ROW, playRow0: PLAY_ROW0, playRow1: PLAY_ROW1,
+    });
+    slots.forEach(slot => {
+      const index = unitIndex.get(slot.unit)!;
+      idealRow[index] = clampRow(slot.row);
+      idealCol[index] = clampCol(frontCol + slot.rank * rankStep);
+    });
 
     const placed: RuntimeBattleUnit[] = [];
     for (let idx = 0; idx < units.length; idx++) {
@@ -16270,10 +16252,14 @@ export class BattleScene {
       if (!freeOk(col, row)) {
         let found = false;
         const baseCol = col;
-        const rowLo = this.deployPhase && side === playerSide
+        const mountedWing = initialBattleRoleOf(bu) === 'mounted';
+        const topWing = idealRow[idx]! < PLAY_MID_ROW;
+        const wingRowLo = topWing ? PLAY_ROW0 + 1 : PLAY_MID_ROW + Math.ceil(RANK_WIDTH / 2) + 1;
+        const wingRowHi = topWing ? PLAY_MID_ROW - Math.ceil(RANK_WIDTH / 2) - 2 : PLAY_ROW1 - 1;
+        const rowLo = mountedWing ? wingRowLo : this.deployPhase && side === playerSide
           ? Math.max(DEPLOY_MIN_ROW, idealRow[idx]! - 8)
           : 0;
-        const rowHi = this.deployPhase && side === playerSide
+        const rowHi = mountedWing ? wingRowHi : this.deployPhase && side === playerSide
           ? Math.min(DEPLOY_MAX_ROW, idealRow[idx]! + 8)
           : BF_ROWS - 1;
         for (let rr = rowLo; rr <= rowHi && !found; rr++) {

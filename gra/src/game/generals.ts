@@ -17,6 +17,11 @@ export function canRecruitGeneral(era: number, count: GeneralRosterCount): boole
   return generalSlotsUsed(count) < generalLimitForEra(era);
 }
 
+/** Stone-era leader model: ordinary infantry before the Wheel, ox chariot after it. */
+export function stoneGeneralUnitId(hasWheel: boolean): 'Wojownik' | 'Rydwan (woły)' {
+  return hasWheel ? 'Rydwan (woły)' : 'Wojownik';
+}
+
 export interface GeneralPurchaseRequest extends GeneralRosterCount {
   cityId: string;
   capitalCityId: string;

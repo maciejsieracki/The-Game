@@ -8268,6 +8268,58 @@ export function appendUnitRecruitCompactRow(
   scroll.appendChild(row);
 }
 
+/** Mount the single capital-only commander offer, shared by both Army recruitment views. */
+export function mountGeneralRecruitmentCardForArmy(cityId: string, host: HTMLElement): boolean {
+  const city = cfg.getCities?.().find(item => item.id === cityId);
+  const data = gameData();
+  if (!city || !data || !isMeCity(city.ownerId)) return false;
+  if (!document.getElementById(STYLE_ID)) ensureStyles();
+  host.classList.add('civ-cs', 'civ-emp-mass-city-recruit-list');
+  const offer = cfg.getGeneralRecruitmentOffer?.(cityId);
+  if (!offer) return false;
+  if (!offer.item) {
+    host.textContent = 'Dowódca jest rekrutowany w stolicy, gdy dostępna jest jednostka do werbunku.';
+    return true;
+  }
+  const generalDef = findUnitDef(data, offer.item.id);
+  if (!generalDef) return false;
+  const generalMpCost = recruitManpowerCost(city, offer.item.id);
+  const generalMpAvailable = empireRekruciTotal(city);
+  const generalMpOk = empireRekruciAffordable(city, generalMpCost, generalMpAvailable);
+  const generalStockMissing = missingStockFor(ownerSurowcePoolFor(city), unitStockCost(generalDef));
+  const generalStockOk = Object.keys(generalStockMissing).length === 0;
+  const summary = el('div', 'unit-recruit-pool');
+  const leaderTitle = offer.title ?? 'Wódz';
+  summary.textContent = `${leaderTitle}: ${offer.alive} / ${offer.limit} · w kolejce ${offer.queued}`;
+  host.appendChild(summary);
+  const generalRow = buildUnitRecruitCard({
+    udef: generalDef,
+    unitLabel: leaderTitle,
+    item: offer.item,
+    data,
+    skarb: cfg.getTreasury?.(city.ownerId),
+    canPurchase: !!cfg.onPurchaseGeneral && !offer.disabledReason && generalMpOk && generalStockOk,
+    treasuryIconHtml: cityPanelChipIconWrap('res-treasury', 14),
+    mpCost: generalMpCost,
+    mpCostLabel: formatManpower(generalMpCost),
+    manpowerAvailable: generalMpAvailable,
+    manpowerRequired: generalMpCost,
+    maxQuantity: 1,
+    stockChipsHtml: unitStockCostChipsHtml(generalDef, city),
+    resourceUpkeepChipsHtml: unitResourceUpkeepChipsHtml(generalDef),
+    stockMissingLabel: generalStockOk ? undefined : 'Brakuje w magazynie: ' + Object.entries(generalStockMissing)
+      .map(([key, amount]) => `${amount} ${stockResourceLabel(key)}`).join(', '),
+    manpowerMissingLabel: !generalMpOk && generalMpAvailable != null
+      ? `Brakuje rekrutów: ${formatManpower(Math.max(0, generalMpCost - generalMpAvailable))}`
+      : undefined,
+    disabledReason: offer.disabledReason,
+    onRecruit: () => cfg.onPurchaseGeneral?.(cityId, offer.item!.id, offer.item!.koszt),
+  });
+  generalRow.dataset.generalRecruit = 'true';
+  host.appendChild(generalRow);
+  return true;
+}
+
 /** Mount the exact city recruitment UI inside the map's Empire/Army panel. */
 export function mountCityRecruitmentCardsForArmy(cityId: string, host: HTMLElement): boolean {
   const city = cfg.getCities?.().find(item => item.id === cityId);
@@ -8276,45 +8328,6 @@ export function mountCityRecruitmentCardsForArmy(cityId: string, host: HTMLEleme
   if (!document.getElementById(STYLE_ID)) ensureStyles();
   host.classList.add('civ-cs', 'civ-emp-mass-city-recruit-list');
   renderPurchasableUnits(host, city, data, { w4: true, visibleRows: LIST_SCROLL_VISIBLE_CATALOG });
-  const offer = cfg.getGeneralRecruitmentOffer?.(cityId);
-  if (offer?.item) {
-    const generalDef = findUnitDef(data, offer.item.id);
-    if (!generalDef) return true;
-    const generalMpCost = recruitManpowerCost(city, offer.item.id);
-    const generalMpAvailable = empireRekruciTotal(city);
-    const generalMpOk = empireRekruciAffordable(city, generalMpCost, generalMpAvailable);
-    const generalStockMissing = missingStockFor(ownerSurowcePoolFor(city), unitStockCost(generalDef));
-    const generalStockOk = Object.keys(generalStockMissing).length === 0;
-    const summary = el('div', 'unit-recruit-pool');
-    const leaderTitle = offer.title ?? 'Wódz';
-    summary.textContent = `${leaderTitle}: ${offer.alive} / ${offer.limit} · w kolejce ${offer.queued}`;
-    host.appendChild(summary);
-    const generalRow = buildUnitRecruitCard({
-      udef: generalDef,
-      unitLabel: `${leaderTitle} · ${offer.item.nazwa}`,
-      item: offer.item,
-      data,
-      skarb: cfg.getTreasury?.(city.ownerId),
-      canPurchase: !!cfg.onPurchaseGeneral && !offer.disabledReason && generalMpOk && generalStockOk,
-      treasuryIconHtml: cityPanelChipIconWrap('res-treasury', 14),
-      mpCost: generalMpCost,
-      mpCostLabel: formatManpower(generalMpCost),
-      manpowerAvailable: generalMpAvailable,
-      manpowerRequired: generalMpCost,
-      maxQuantity: 1,
-      stockChipsHtml: unitStockCostChipsHtml(generalDef, city),
-      resourceUpkeepChipsHtml: unitResourceUpkeepChipsHtml(generalDef),
-      stockMissingLabel: generalStockOk ? undefined : 'Brakuje w magazynie: ' + Object.entries(generalStockMissing)
-        .map(([key, amount]) => `${amount} ${stockResourceLabel(key)}`).join(', '),
-      manpowerMissingLabel: !generalMpOk && generalMpAvailable != null
-        ? `Brakuje rekrutów: ${formatManpower(Math.max(0, generalMpCost - generalMpAvailable))}`
-        : undefined,
-      disabledReason: offer.disabledReason,
-      onRecruit: () => cfg.onPurchaseGeneral?.(cityId, offer.item!.id, offer.item!.koszt),
-    });
-    generalRow.dataset.generalRecruit = 'true';
-    host.appendChild(generalRow);
-  }
   return true;
 }
 

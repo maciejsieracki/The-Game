@@ -70,6 +70,8 @@ export interface EmpireHandelSplitUiConfig {
 export interface EmpireMassRecruitmentUiConfig {
   /** Mount the shared city recruitment list in the matching Army city section. */
   mountCityRecruitment?: (cityId: string, host: HTMLElement) => boolean;
+  /** Mount the capital-only commander card above the per-city Army recruitment catalog. */
+  mountGeneralRecruitment?: (host: HTMLElement) => boolean;
 }
 
 let handelSplitUi: EmpireHandelSplitUiConfig = {};
@@ -2760,7 +2762,9 @@ export function renderMassRecruitmentSection(
     + `<div class="v" data-mass-recruitment-completed>${state.completedCount}</div></div></div>`
     + `<div class="civ-emp-mass-pool">Skarbiec: <b>${formatRawCount(state.treasury)} złota</b>`
     + ` · Manpower: <b>${formatRawCount(state.manpower)}</b>`
-    + `${stock ? ` · Magazyn: <b>${esc(stock)}</b>` : ''}</div>`;
+    + `${stock ? ` · Magazyn: <b>${esc(stock)}</b>` : ''}</div>`
+    + `<div class="civ-emp-mass-leader"><div class="civ-emp-mass-leader-title">Wódz / Generał — rekrutacja w stolicy</div>`
+    + `<div data-general-recruitment-card></div></div>`;
 
   if (rows.length === 0) {
     return h + '<div class="civ-emp-mass-empty">Brak miast gracza do rekrutacji.</div></div>';
@@ -2778,7 +2782,12 @@ export function renderMassRecruitmentSection(
 function mountMassRecruitmentCitiesInto(
   host: ParentNode,
   mountCityRecruitment?: EmpireMassRecruitmentUiConfig['mountCityRecruitment'],
+  mountGeneralRecruitment?: EmpireMassRecruitmentUiConfig['mountGeneralRecruitment'],
 ): void {
+  const generalTarget = host.querySelector<HTMLElement>('[data-general-recruitment-card]');
+  if (generalTarget && !mountGeneralRecruitment?.(generalTarget)) {
+    generalTarget.textContent = 'Brak stolicy do rekrutacji dowódcy.';
+  }
   for (const target of Array.from(host.querySelectorAll<HTMLElement>('[data-mass-recruitment-cards]'))) {
     const cityId = target.dataset.massRecruitmentCards;
     if (!cityId || !mountCityRecruitment?.(cityId, target)) {
@@ -2792,8 +2801,9 @@ export function mountMassRecruitmentControls(
   host: ParentNode,
   _snap: EmpireDetailSnap,
   mountCityRecruitment: EmpireMassRecruitmentUiConfig['mountCityRecruitment'] = massRecruitmentUi.mountCityRecruitment,
+  mountGeneralRecruitment: EmpireMassRecruitmentUiConfig['mountGeneralRecruitment'] = massRecruitmentUi.mountGeneralRecruitment,
 ): void {
-  mountMassRecruitmentCitiesInto(host, mountCityRecruitment);
+  mountMassRecruitmentCitiesInto(host, mountCityRecruitment, mountGeneralRecruitment);
 }
 
 function signedTxt(n: number): string {

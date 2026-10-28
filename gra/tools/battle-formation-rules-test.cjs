@@ -59,27 +59,61 @@ async function loadBattleScene() {
 }
 
 async function main() {
-  const { initialBattleLineOrder, compactLineAllowsAdvance } = await loadRules();
+  const { classifyInitialBattleRole, initialBattleFormation, initialBattleSlots, compactLineAllowsAdvance } = await loadRules();
   const roster = [
-    { id: 'infantry', role: 'melee' },
-    { id: 'catapult', role: 'siege' },
-    { id: 'horse', role: 'mounted' },
-    { id: 'archer', role: 'ranged' },
-    { id: 'general', role: 'commander' },
-    { id: 'chariot', role: 'mounted' },
+    { id: 'infantry', category: 'miecznik', name: 'Wojownik' },
+    { id: 'javelin', category: 'oszczepnik', name: 'Oszczepnik' },
+    { id: 'slinger', category: 'procarz', name: 'Procarz' },
+    { id: 'catapult', category: 'maszyna', name: 'Katapulta', type: 'Siege' },
+    { id: 'horse', category: 'konnica', name: 'Jeździec' },
+    { id: 'archer', category: 'lucznik', name: 'Łucznik' },
+    { id: 'general', category: 'dowodca', name: 'Wódz', commander: true },
+    { id: 'chariot', category: 'rydwan', name: 'Rydwan (woły)' },
   ];
-  const ordered = Array.from(initialBattleLineOrder(roster, unit => unit.role, 12), unit => unit.id);
-  assert.strictEqual(ordered.join(','), 'horse,general,archer,infantry,chariot,catapult');
-  assert(ordered.indexOf('general') < ordered.indexOf('catapult'), 'commander joins the fighting line instead of remaining in the rear');
-  assert(ordered.indexOf('horse') < ordered.indexOf('infantry'));
-  assert(ordered.indexOf('chariot') < ordered.indexOf('catapult'));
+  const roleOf = unit => classifyInitialBattleRole(unit);
+  assert.deepStrictEqual(roster.map(roleOf), [
+    'melee', 'javelin', 'slinger', 'siege', 'mounted', 'archer', 'commander', 'mounted',
+  ], 'the production role classifier recognizes BattleUnit-like categories, names, types, and commanders');
+  assert.strictEqual(classifyInitialBattleRole({ category: 'jednostka', name: 'Łucznik egipski' }), 'archer',
+    'name fallback normalizes Polish diacritics for an archer with a generic category');
+  assert.strictEqual(classifyInitialBattleRole({ category: 'jednostka', name: 'Jeździec konny' }), 'mounted',
+    'name fallback classifies mounted units even when the source category is generic');
+  assert.strictEqual(classifyInitialBattleRole({ category: 'jednostka', name: 'Wieża oblężnicza' }), 'siege',
+    'name fallback normalizes Polish diacritics for siege units with generic categories');
+  assert.strictEqual(classifyInitialBattleRole({ category: 'jednostka', name: 'Lekki strzelec', primaryRanged: true }), 'ranged',
+    'generic ranged units retain a ranged band when the production shooter predicate identifies them');
+  const formation = initialBattleFormation(roster, roleOf);
+  const slots = initialBattleSlots(formation, { rankWidth: 20, midRow: 78, playRow0: 23, playRow1: 132 });
+  const slotById = new Map(slots.map(slot => [slot.unit.id, slot]));
+  assert.strictEqual(slotById.get('infantry').rank, 0, 'infantry holds the forward rank');
+  assert.strictEqual(slotById.get('javelin').rank, 1, 'javelins form the second rank');
+  assert.strictEqual(slotById.get('archer').rank, 2, 'archers form the third rank');
+  assert.strictEqual(slotById.get('slinger').rank, 3, 'slingers form the fourth rank');
+  assert.strictEqual(slotById.get('catapult').rank, 4, 'siege sits behind ranged troops');
+  assert.strictEqual(slotById.get('general').rank, 5, 'commander remains behind siege');
+  assert.strictEqual(slotById.get('horse').rank, 0);
+  assert.strictEqual(slotById.get('chariot').rank, 0);
+  assert(slotById.get('horse').row < 68 && slotById.get('chariot').row > 88,
+    'mounted units occupy opposite outer wings');
+
   const crowded = [
-    { id: 'cav-north', role: 'mounted' }, { id: 'cav-south', role: 'mounted' },
-    ...Array.from({ length: 12 }, (_, i) => ({ id: `archer-${i}`, role: 'ranged' })),
+    ...Array.from({ length: 45 }, (_, i) => ({ id: `inf-${i}`, category: 'miecznik', name: `Wojownik ${i}` })),
+    { id: 'javelin-line', category: 'oszczepnik', name: 'Oszczepnik' },
+    { id: 'archer-line', category: 'lucznik', name: 'Łucznik' },
+    { id: 'slinger-line', category: 'procarz', name: 'Procarz' },
+    ...Array.from({ length: 500 }, (_, i) => ({ id: `cav-${i}`, category: 'konnica', name: `Jeździec ${i}` })),
   ];
-  const crowdedOrder = Array.from(initialBattleLineOrder(crowded, unit => unit.role, 12), unit => unit.id);
-  assert(crowdedOrder.indexOf('cav-north') < 12 && crowdedOrder.indexOf('cav-south') < 12,
-    'both cavalry wings stay in the front rank when archers fill the line');
+  const crowdedFormation = initialBattleFormation(crowded, roleOf);
+  const crowdedSlots = initialBattleSlots(crowdedFormation, { rankWidth: 20, midRow: 78, playRow0: 23, playRow1: 132 });
+  const crowdedById = new Map(crowdedSlots.map(slot => [slot.unit.id, slot]));
+  assert.strictEqual(crowdedById.get('inf-44').rank, 2, 'large infantry roster fills its own ranks first');
+  assert.strictEqual(crowdedById.get('javelin-line').rank, 3, 'next role begins behind infantry overflow');
+  const mounted = crowdedSlots.filter(slot => roleOf(slot.unit) === 'mounted');
+  assert.strictEqual(mounted.length, 500, 'large mounted roster is fully assigned');
+  assert(mounted.every(slot => slot.rank >= 0 && (slot.row < 68 || slot.row > 88)),
+    'large cavalry/chariot rosters remain on the wings and are not squeezed into the center ranks');
+  assert.strictEqual(new Set(crowdedSlots.map(slot => `${slot.rank}:${slot.row}`)).size, crowdedSlots.length,
+    'large deployment has no duplicate planned slots');
 
   assert.strictEqual(compactLineAllowsAdvance({
     side: 'atk', candidateCol: 11, lineMinimumProgress: 10, previousLineMinimumProgress: null,
@@ -98,12 +132,16 @@ async function main() {
   }), false, 'defender cannot run ahead of the aligned line');
 
   const scene = require('fs').readFileSync(path.join(__dirname, '..', 'src', 'battle', 'battleScene.ts'), 'utf8');
+  assert.match(scene, /function initialBattleRoleOf\(bu: BattleUnit\): InitialBattleRole \{\s*const stats = \(bu\.stats as Record<string, unknown>\) \?\? \{\};\s*return classifyInitialBattleRole\(\{/,
+    'production BattleUnit adapter delegates role selection to the tested classifier');
   assert.match(scene, /if \(manhattan\(ru\.q, ru\.r, e\.q, e\.r\) <= ru\.range\) \{ this\._rangedAction\(ru, done\); return; \}/,
     'ranged units fire on the same activation that puts them in range');
   assert.match(scene, /this\._effectiveMetaForUnit\(ru\)\.doctrine !== 'steady'/,
     'line pacing applies to Attack doctrine while Charge retains the prior movement path');
-  assert.strictEqual((scene.match(/initialBattleLineOrder\(units,/g) || []).length, 2,
-    'the same initial line layout is used for battle setup and deploy reset');
+  assert.strictEqual((scene.match(/initialBattleSlots\(formation,/g) || []).length, 2,
+    'the same role-based initial slot layout is used for battle setup and deploy reset');
+  assert.strictEqual((scene.match(/const mountedWing = initialBattleRoleOf\(bu\) === 'mounted';/g) || []).length, 2,
+    'terrain/collision fallback keeps mounted units inside wing bands in setup and deploy reset');
 
   const BattleScene = await loadBattleScene();
   const fakeScene = Object.create(BattleScene.prototype);

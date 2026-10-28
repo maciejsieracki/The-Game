@@ -664,7 +664,7 @@ import { visibleZloze, ensureDepositEraMeta } from './map/deposit-era';
 import { machinesByCampHex, campOwnerByHex, readyMachinesForCity } from './render/siegeCampSync';
 import { TerenBazowy, Nakladka, Ulepszenie } from './types/hex';
 import type { Hex } from './types/hex';
-import { showCityPanel, hideCityPanel, isCityPanelOpen, refreshCityPanelIfOpen, getOpenCityPanelCityId, closeCityPanelIfOpen, cityGrowthLive, mountCityRecruitmentCardsForArmy } from './ui/cityPanel';
+import { showCityPanel, hideCityPanel, isCityPanelOpen, refreshCityPanelIfOpen, getOpenCityPanelCityId, closeCityPanelIfOpen, cityGrowthLive, mountCityRecruitmentCardsForArmy, mountGeneralRecruitmentCardForArmy } from './ui/cityPanel';
 import { syncCityOkolicaOverlay, disposeCityOkolicaOverlayGroup } from './render/cityOkolicaOverlay';
 import { syncWorkerFieldOverlay, syncWorkerFieldOverlayFog, disposeWorkerFieldOverlayGroup } from './render/workerFieldOverlay';
 import { isPointOverCityPanelUi } from './ui/cityUxFrame';
@@ -883,7 +883,7 @@ import {
 } from './game/capital-capture';
 import { cityPopulationCap, loadEconParams, resolvePopulationCapMatrixDelta, sumBuildingHappinessFromBuiltIds } from './game/economy';
 import { civMatrixBonusyForCivKey } from './game/civ-bonuses';
-import { attemptGeneralPurchase, canRecruitGeneral, generalFollowDestination, generalLimitForEra } from './game/generals';
+import { attemptGeneralPurchase, canRecruitGeneral, generalFollowDestination, generalLimitForEra, stoneGeneralUnitId } from './game/generals';
 import { promoteAiUnitForEra } from './game/ai-era-unit-promotion';
 import {
   aiGeneralCampaignToSave,
@@ -4196,7 +4196,7 @@ async function boot(): Promise<void> {
         nextProd = enqueueRecruitment(nextProd, {
           ...item,
           koszt,
-          ...(opts.isGeneral === true ? { isGeneral: true, nazwa: `${armyLeaderTitle(empireBuiltIdsForOwner(city.ownerId))} · ${item.nazwa}` } : {}),
+          ...(opts.isGeneral === true ? { isGeneral: true, nazwa: armyLeaderTitle(empireBuiltIdsForOwner(city.ownerId)) } : {}),
         });
       }
       cityProd.set(cityId, nextProd);
@@ -6723,16 +6723,109 @@ async function boot(): Promise<void> {
       const capitalId = capitalCityIdForOwner(ownerId);
       const capital = capitalId ? cities.find(c => c.id === capitalId && c.ownerId === ownerId) : undefined;
       if (!capital) return null;
+      const techs = unlockedTechsForOwner(ownerId);
+      const availability = { ...productionAvailabilityCtxForCity(capital), showStockGatedUnits: true };
       const candidates = purchasableUnits(
         capital,
         data,
-        unlockedTechsForOwner(ownerId),
-        { ...productionAvailabilityCtxForCity(capital), showStockGatedUnits: true },
+        techs,
+        availability,
       );
-      return sortByUnitPowerDescending(
-        candidates,
+      const epoch = empireEpochForOwner(ownerId);
+      const civKey = civKeyForOwnerId(ownerId);
+      const civNation = unitNacjaForCivKey(civKey);
+      const leaderOnlyBaseItem = (unitId: string): ProductionItem | null => {
+        const definition = data.units.find(unit => unit.Jednostka === unitId);
+        if (!definition || (definition.Nacja ?? '').trim()) return null;
+        const unitEra = epochNumber(definition.Epoka);
+        if (unitEra > epoch || unitEra < epoch - 1) return null;
+        const requiredTech = String(definition.Tech ?? '').trim();
+        if (requiredTech && requiredTech !== '-' && requiredTech !== '—' && !techs.includes(requiredTech)) return null;
+        const builtIds = availability.builtBuildingIds ?? [];
+        if (unitEra >= 2 && !builtIds.includes('koszary')
+          && !data.buildings.some(building => building.upgradeFrom === 'koszary' && builtIds.includes(building.id))) {
+          return null;
+        }
+        // This narrow leader-only exception is solely for an explicitly approved base model
+        // suppressed by a later national replacement. Stock and payment are still checked
+        // by purchaseRecruitmentUnit, just as for ordinary production cards.
+        const suppressedByLaterReplacement = Boolean(civNation && data.units.some(unit => {
+          const replacement = String(unit['W zamian za'] ?? '').trim();
+          const nation = String(unit.Nacja ?? '').trim();
+          return replacement === unitId && nation && nation === civNation;
+        }));
+        return suppressedByLaterReplacement
+          ? unitProductionItem(unitId, data, availability.civBonusy, availability.kosztJednostekPace,
+            ownerId, availability.difficulty)
+          : null;
+      };
+      if (epoch === 1) {
+        const hasWheel = techs.includes('Koło');
+        const stoneLeaderId = stoneGeneralUnitId(hasWheel);
+        const selected = candidates.find(item => item.id === stoneLeaderId);
+        if (selected) return selected;
+        // Some civilization rosters suppress the generic Warrior in favor of a
+        // later-era national replacement. The Stone Wódz still uses the normal
+        // Warrior model before Wheel; build its ordinary item data for this
+        // leader-only offer without making Warrior a regular recruit option.
+        if (!hasWheel && stoneLeaderId === 'Wojownik') {
+          return leaderOnlyBaseItem(stoneLeaderId);
+        }
+        return null;
+      }
+
+      const definitionFor = (item: ProductionItem): (typeof data.units)[number] | undefined =>
+        data.units.find(unit => unit.Jednostka === item.id);
+      const eligibleCombatCandidates = candidates.filter(item => {
+        const definition = definitionFor(item);
+        if (!definition) return false;
+        const type = String(definition.Typ ?? '').trim();
+        const role = String(definition['Rola (linia)'] ?? '').trim();
+        return ['Mount', 'Offensive', 'Swordsman', 'Spearman', 'Falangite'].includes(type)
+          && role !== 'Dystans' && role !== 'Oblężnicza';
+      });
+      const ordered = (items: readonly ProductionItem[]): ProductionItem[] => sortByUnitPowerDescending(
+        items,
         item => data.units.find(u => u.Jednostka === item.id) as unknown as UnitPowerInput,
-      )[0] ?? null;
+      );
+
+      if (epoch === 2) {
+        const bronzeChariotByCiv: Record<string, string> = {
+          grecy: 'Rydwan mykeński',
+          chinczycy: 'Rydwan Shang',
+          egipt: 'Rydwan egipski',
+          sumer: 'Rydwan sumeryjski',
+          hetyci: 'Rydwan Kapadokijski',
+        };
+        const preferredChariot = bronzeChariotByCiv[civKey] ?? 'Rydwan konny';
+        const chariot = eligibleCombatCandidates.find(item => {
+          const definition = definitionFor(item);
+          return item.id === preferredChariot && definition?.Typ === 'Mount'
+            && /rydwan|chariot/i.test(item.id);
+        });
+        if (chariot) return chariot;
+        // The Celtic Iron Chariot replaces the generic horse chariot in normal unit
+        // recruitment even during Bronze. The approved Bronze Wódz remains the generic
+        // horse chariot; bypass only that replacement suppression and keep its real gates.
+        if (preferredChariot === 'Rydwan konny') {
+          const leaderOnlyChariot = leaderOnlyBaseItem(preferredChariot);
+          if (leaderOnlyChariot) return leaderOnlyChariot;
+        }
+        // Before its approved chariot is recruitable, preserve a leader offer by
+        // using the strongest currently available infantry/cavalry. The normal
+        // production list already applies technology, Barracks, era and stock gates.
+        const bronzeFallbackCandidates = eligibleCombatCandidates.filter(item =>
+          !/rydwan|chariot/i.test(item.id));
+        return ordered(bronzeFallbackCandidates)[0] ?? null;
+      }
+
+      // In Iron and later, use the strongest available cavalry/mounted equivalent;
+      // chariots remain Bronze models and siege/ranged roles are never considered.
+      const cavalryCandidates = eligibleCombatCandidates.filter(item => {
+        const definition = definitionFor(item);
+        return definition?.Typ === 'Mount' && !/rydwan|chariot/i.test(item.id);
+      });
+      return ordered(cavalryCandidates)[0] ?? null;
     }
 
     function generalRecruitmentOfferForCity(cityId: string): {
@@ -24008,6 +24101,10 @@ async function boot(): Promise<void> {
       mountEmpireDetailPanel(() => buildEmpireDetailSnap());
       configureEmpireMassRecruitment({
         mountCityRecruitment: (cityId, host) => mountCityRecruitmentCardsForArmy(cityId, host),
+        mountGeneralRecruitment: (host) => {
+          const capitalId = capitalCityIdForOwner(ME());
+          return !!capitalId && mountGeneralRecruitmentCardForArmy(capitalId, host);
+        },
       });
       configureEmpireHandelSplit({
         getOwnerDefault: (ownerId) => ownerDefaultPodzialHandlu.get(ownerId) ?? null,

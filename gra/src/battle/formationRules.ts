@@ -1,35 +1,115 @@
-export type InitialBattleRole = 'commander' | 'mounted' | 'ranged' | 'melee' | 'siege';
+export type InitialBattleRole = 'commander' | 'mounted' | 'melee' | 'javelin' | 'archer' | 'slinger' | 'ranged' | 'siege';
+
+export function classifyInitialBattleRole(input: {
+  commander?: boolean;
+  category?: string;
+  name?: string;
+  type?: string;
+  primaryRanged?: boolean;
+}): InitialBattleRole {
+  const normalize = (value: string | undefined): string => (value ?? '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[łŁ]/g, 'l')
+    .toLowerCase();
+  const category = normalize(input.category);
+  const name = normalize(input.name);
+  const type = normalize(input.type);
+  const haystack = `${category} ${name}`;
+
+  if (input.commander) return 'commander';
+  if (category === 'konnica' || category === 'rydwan' ||
+      /konnic|jazd|jezdz|kawaler|rydwan|chariot|cavalry|horse/.test(name)) return 'mounted';
+  if (type === 'siege' ||
+      /taran|katapult|wieza oblezn|battering|catapult|siege tower/.test(name)) return 'siege';
+  if (category === 'oszczepnik' || /oszczepnik|javelin|atlatl|estolic/.test(haystack)) return 'javelin';
+  if (category === 'lucznik' || /luczn|archer|kusznik|crossbow/.test(haystack)) return 'archer';
+  if (category === 'procarz' || /procarz|slinger/.test(haystack)) return 'slinger';
+  if (input.primaryRanged) return 'ranged';
+  return 'melee';
+}
+
+
+export interface InitialBattleFormation<T> {
+  infantry: T[];
+  javelins: T[];
+  archers: T[];
+  slingers: T[];
+  ranged: T[];
+  mounted: T[];
+  siege: T[];
+  commanders: T[];
+}
+
+export interface InitialBattleSlot<T> { unit: T; row: number; rank: number; }
+
+export function initialBattleSlots<T>(
+  formation: InitialBattleFormation<T>,
+  bounds: { rankWidth: number; midRow: number; playRow0: number; playRow1: number },
+): InitialBattleSlot<T>[] {
+  const width = Math.max(1, Math.floor(bounds.rankWidth));
+  const slots: InitialBattleSlot<T>[] = [];
+  let rankBase = 0;
+  const layBand = (units: readonly T[]): void => {
+    if (units.length === 0) return;
+    const per = Math.min(units.length, width);
+    const rowStart = bounds.midRow - Math.floor(per / 2);
+    units.forEach((unit, i) => slots.push({
+      unit, row: rowStart + i % per, rank: rankBase + Math.floor(i / per),
+    }));
+    rankBase += Math.ceil(units.length / per);
+  };
+  layBand(formation.infantry);
+  layBand(formation.javelins);
+  layBand(formation.archers);
+  layBand(formation.slingers);
+  layBand(formation.ranged);
+  layBand(formation.siege);
+  layBand(formation.commanders);
+
+  const halfLine = Math.ceil(width / 2);
+  const topRows = Array.from(
+    { length: Math.max(1, bounds.midRow - bounds.playRow0 - halfLine - 2) },
+    (_, i) => bounds.playRow0 + 1 + i,
+  );
+  const bottomRows = Array.from(
+    { length: Math.max(1, bounds.playRow1 - bounds.midRow - halfLine - 1) },
+    (_, i) => bounds.playRow1 - 1 - i,
+  );
+  formation.mounted.forEach((unit, i) => {
+    const rows = i % 2 === 0 ? topRows : bottomRows;
+    const wingIndex = Math.floor(i / 2);
+    slots.push({ unit, row: rows[wingIndex % rows.length]!, rank: Math.floor(wingIndex / rows.length) });
+  });
+  return slots;
+}
 
 /**
- * Build the default front-to-rear deployment order. Shooters and foot melee
- * share the first line; mounted units occupy its outer slots; siege engines
- * stay behind the fighting line. The role callback keeps this helper independent
- * of BattleScene's runtime representation so the ordering can be verified alone.
+ * Split a default deployment into distinct role bands. Keeping role bands
+ * separate lets the scene allocate a real depth rank to each, even when a band
+ * has fewer units than the normal line width.
  */
-export function initialBattleLineOrder<T>(
+export function initialBattleFormation<T>(
   units: readonly T[],
   roleOf: (unit: T) => InitialBattleRole,
-  rankWidth = 12,
-): T[] {
-  const mounted = units.filter(unit => roleOf(unit) === 'mounted');
-  const commanders = units.filter(unit => roleOf(unit) === 'commander');
-  const ranged = units.filter(unit => roleOf(unit) === 'ranged');
-  const melee = units.filter(unit => roleOf(unit) === 'melee');
-  const siege = units.filter(unit => roleOf(unit) === 'siege');
-  const width = Math.max(1, Math.floor(rankWidth));
-  const wingCapacity = Math.floor(width / 2);
-  const top = mounted.slice(0, Math.min(Math.ceil(mounted.length / 2), wingCapacity));
-  const bottom = mounted.slice(top.length, top.length + wingCapacity);
-  const extra = mounted.slice(top.length + bottom.length);
-  const centreBudget = Math.max(0, width - top.length - bottom.length);
-  const footOrder = [...commanders, ...ranged, ...melee, ...extra];
-  const frontCentre = footOrder.slice(0, centreBudget);
-  const front = [...top, ...frontCentre, ...bottom];
-  const frontSet = new Set(front);
-  const overflow = footOrder.filter(unit => !frontSet.has(unit));
-  // The first rank is filled to its width before any foot overflow, ensuring
-  // both wing mounts stay in rank zero even in shooter-heavy armies.
-  return [...front, ...overflow, ...siege];
+): InitialBattleFormation<T> {
+  const groups: InitialBattleFormation<T> = {
+    infantry: [], javelins: [], archers: [], slingers: [], ranged: [],
+    mounted: [], siege: [], commanders: [],
+  };
+  for (const unit of units) {
+    switch (roleOf(unit)) {
+      case 'commander': groups.commanders.push(unit); break;
+      case 'mounted': groups.mounted.push(unit); break;
+      case 'javelin': groups.javelins.push(unit); break;
+      case 'archer': groups.archers.push(unit); break;
+      case 'slinger': groups.slingers.push(unit); break;
+      case 'ranged': groups.ranged.push(unit); break;
+      case 'siege': groups.siege.push(unit); break;
+      default: groups.infantry.push(unit); break;
+    }
+  }
+  return groups;
 }
 
 export function compactLineAllowsAdvance(args: {
