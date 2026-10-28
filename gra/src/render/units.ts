@@ -6199,20 +6199,28 @@ export class UnitRenderer {
       obj.visible = show;
     }
 
+    // These small sprites own a CanvasTexture each. Keep them while their
+    // semantic state is unchanged; rebuilding them on every world sync caused
+    // needless canvas allocation and GPU upload churn.
     for (const [id, sprite] of this.stackBadgeSprites) {
+      const count = badges.get(id);
       const obj = this.tokens.get(id);
-      if (obj) obj.remove(sprite);
-      sprite.material.map?.dispose();
-      (sprite.material as THREE.SpriteMaterial).dispose();
+      if (count !== undefined && count > 1 && obj?.visible && sprite.parent === obj &&
+          sprite.userData['stackBadgeCount'] === count) continue;
+      this._disposeOverlaySprite(sprite);
+      this.stackBadgeSprites.delete(id);
     }
-    this.stackBadgeSprites.clear();
 
     for (const [repId, count] of badges) {
       if (count <= 1) continue;
       const obj = this.tokens.get(repId);
       if (!obj || !obj.visible) continue;
+      const current = this.stackBadgeSprites.get(repId);
+      if (current?.parent === obj && current.userData['stackBadgeCount'] === count) continue;
+      if (current) this._disposeOverlaySprite(current);
       const sprite = this._makeStackBadgeSprite(count);
       sprite.position.set(0.28 * HEX_R, 0.55 * HEX_R, 0.15 * HEX_R);
+      sprite.userData['stackBadgeCount'] = count;
       obj.add(sprite);
       this.stackBadgeSprites.set(repId, sprite);
     }
@@ -6234,47 +6242,61 @@ export class UnitRenderer {
     const starving = stackDisplay?.starvingRepIds;
     const goldDeficit = stackDisplay?.goldDeficitRepIds;
 
-    for (const map of [this.stackStarvingSprites, this.stackGoldDeficitSprites]) {
-      for (const [id, sprite] of map) {
-        const obj = this.tokens.get(id);
-        if (obj) obj.remove(sprite);
-        sprite.material.map?.dispose();
-        (sprite.material as THREE.SpriteMaterial).dispose();
-      }
-      map.clear();
+    this._syncSufferingIconMap(
+      this.stackStarvingSprites,
+      starving,
+      (scale) => this._makeStarvingChipSprite(scale),
+      (id) => goldDeficit?.has(id) === true,
+      true,
+    );
+    this._syncSufferingIconMap(
+      this.stackGoldDeficitSprites,
+      goldDeficit,
+      (scale) => this._makeGoldDeficitChipSprite(scale),
+      (id) => starving?.has(id) === true,
+      false,
+    );
+  }
+
+  /** Keep an unchanged suffering icon sprite/texture attached to its token. */
+  private _syncSufferingIconMap(
+    sprites: Map<string, THREE.Sprite>,
+    desiredIds: ReadonlySet<string> | undefined,
+    create: (scale: number) => THREE.Sprite,
+    hasOtherCause: (id: string) => boolean,
+    isStarving: boolean,
+  ): void {
+    for (const [id, sprite] of sprites) {
+      const obj = this.tokens.get(id);
+      if (desiredIds?.has(id) && obj?.visible && sprite.parent === obj &&
+          sprite.userData['sufferingIconPaired'] === hasOtherCause(id)) continue;
+      this._disposeOverlaySprite(sprite);
+      sprites.delete(id);
     }
 
-    if (!starving?.size && !goldDeficit?.size) return;
-
-    const repIds = new Set<string>();
-    if (starving) for (const id of starving) repIds.add(id);
-    if (goldDeficit) for (const id of goldDeficit) repIds.add(id);
-
-    for (const repId of repIds) {
-      const obj = this.tokens.get(repId);
+    if (!desiredIds?.size) return;
+    for (const id of desiredIds) {
+      const obj = this.tokens.get(id);
       if (!obj || !obj.visible) continue;
-      const hasHunger = starving?.has(repId) === true;
-      const hasGold = goldDeficit?.has(repId) === true;
-      const both = hasHunger && hasGold;
-      const scale = both ? SUFFER_ICON_SCALE_PAIR : SUFFER_ICON_SCALE_SINGLE;
-
-      if (hasHunger) {
-        const sprite = this._makeStarvingChipSprite(scale);
-        // Wyśrodkowana nad jednostką (x=0) gdy sama; przy dwóch przyczynach
-        // w lewo o SUFFER_ICON_PAIR_DX. Y — wysoko nad głową, Z — lekko ku
-        // kamerze, żeby ikona nie ginęła w geometrii tokena.
-        sprite.position.set(both ? -SUFFER_ICON_PAIR_DX : 0, SUFFER_ICON_Y, SUFFER_ICON_Z);
-        obj.add(sprite);
-        this.stackStarvingSprites.set(repId, sprite);
-      }
-
-      if (hasGold) {
-        const sprite = this._makeGoldDeficitChipSprite(scale);
-        sprite.position.set(both ? SUFFER_ICON_PAIR_DX : 0, SUFFER_ICON_Y, SUFFER_ICON_Z);
-        obj.add(sprite);
-        this.stackGoldDeficitSprites.set(repId, sprite);
-      }
+      const paired = hasOtherCause(id);
+      const existing = sprites.get(id);
+      if (existing?.parent === obj && existing.userData['sufferingIconPaired'] === paired) continue;
+      if (existing) this._disposeOverlaySprite(existing);
+      const scale = paired ? SUFFER_ICON_SCALE_PAIR : SUFFER_ICON_SCALE_SINGLE;
+      const sprite = create(scale);
+      const x = paired ? (isStarving ? -SUFFER_ICON_PAIR_DX : SUFFER_ICON_PAIR_DX) : 0;
+      sprite.position.set(x, SUFFER_ICON_Y, SUFFER_ICON_Z);
+      sprite.userData['sufferingIconPaired'] = paired;
+      obj.add(sprite);
+      sprites.set(id, sprite);
     }
+  }
+
+  private _disposeOverlaySprite(sprite: THREE.Sprite): void {
+    sprite.parent?.remove(sprite);
+    const material = sprite.material as THREE.SpriteMaterial;
+    material.map?.dispose();
+    material.dispose();
   }
 
   /**
