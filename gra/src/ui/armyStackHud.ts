@@ -172,17 +172,17 @@ const ASH_ACTION_ICONS: Partial<Record<string, string>> = {
     + '<path d="M4 21V10l3-2.5V6h2v1.5L12 5l3 2.5V6h2v1.5l3 2.5v11z"/>'
     + '<path d="M4 21h16M9.5 21v-5h5v5"/>'
     + '</svg>',
-  // Rozdziel — dwa groty skierowane na zewnątrz.
+  // Rozdziel — wyraźny rozwidlający się ruch z centrum na zewnątrz.
   split:
     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'
-    + '<path d="M12 12H4"/><path d="M8 8 4 12l4 4"/>'
-    + '<path d="M12 12H20"/><path d="M16 8 20 12l-4 4"/>'
+    + '<path d="M12 20V12L4 4"/><path d="M10 4H4v6"/>'
+    + '<path d="M12 12 20 4"/><path d="M14 4h6v6"/>'
     + '</svg>',
-  // Połącz — dwa groty skierowane do środka.
+  // Połącz — dwie strzałki zbiegają się do wspólnego środka i jednej kolumny.
   merge:
     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'
-    + '<path d="M4 12H12"/><path d="M8 8 12 12l-4 4"/>'
-    + '<path d="M20 12H12"/><path d="M16 8 12 12l4 4"/>'
+    + '<path d="M4 4 12 12"/><path d="M8 12h4V8"/>'
+    + '<path d="M20 4 12 12"/><path d="M12 8v4h4"/><path d="M12 12v8"/>'
     + '</svg>',
   // Zastąp -- strzałki góra/dół (swap).
   replace:

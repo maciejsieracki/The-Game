@@ -75,9 +75,10 @@ function sourceContract(source) {
     overlay,
     box,
     body,
-    overlayViewport: /padding:16px;box-sizing:border-box;overflow:hidden/.test(overlay),
+    overlayViewport: /padding:24px;box-sizing:border-box;overflow:hidden/.test(overlay),
     boxViewport: /box-sizing:border-box/.test(box)
-      && /max-height:calc\(100vh - 32px\)/.test(box),
+      && /max-height:calc\(100vh - 48px\)/.test(box)
+      && /max-height:calc\(100dvh - 48px\)/.test(box),
     boxFlex: /display:flex/.test(box) && /flex-direction:column/.test(box),
     bodyFlexScroll: /flex:1 1 auto/.test(body)
       && /min-height:0/.test(body)
@@ -90,8 +91,8 @@ function sourceContract(source) {
 /** Mutacja w pamięci dokładnie usuwa kontrakt dostarczony w tej bramce. */
 function mutateToPre(source) {
   return source
-    .replace('  padding:16px;box-sizing:border-box;overflow:hidden;\n', '')
-    .replace(/  box-sizing:border-box;width:min\([^\n]+\n  max-height:calc\(100vh - 32px\);display:flex;flex-direction:column;\n/,
+    .replace('  padding:24px;box-sizing:border-box;overflow:hidden;\n', '')
+    .replace(/  box-sizing:border-box;width:min\([^\n]+\n  max-height:calc\(100vh - 48px\);max-height:calc\(100dvh - 48px\);\n  min-height:0;display:flex;flex-direction:column;\n/,
       '  min-width:min(440px,calc(100vw - 28px));max-width:520px;\n')
     .replace(/flex:0 0 auto;/g, '')
     .replace(/flex:1 1 auto;min-width:0;min-height:0;overflow-y:auto;overflow-x:hidden;/, '');
@@ -160,8 +161,8 @@ function fixture(count) {
   return Array.from({ length: count }, (_v, i) => ({
     id: 'existing-' + String(i + 1).padStart(2, '0'),
     name: 'Jednostka ' + String(i + 1).padStart(2, '0'),
-    ruchLeft: i % 4,
-    ruchMax: 4,
+    ruchLeft: i === 0 ? 0.3333333333333304 : i % 4,
+    ruchMax: i === 0 ? 12 : 4,
   }));
 }
 
@@ -215,6 +216,8 @@ async function measure(page, endOffset = 0) {
     const unitsGrid = existingCol?.querySelector('.civ-amp-units');
     const rows = existingCol ? [...existingCol.querySelectorAll('.civ-amp-row')] : [];
     const lastExisting = rows[rows.length - 1] || null;
+    const allRows = body ? [...body.querySelectorAll('.civ-amp-row')] : [];
+    const lastUnit = allRows[allRows.length - 1] || null;
     const rect = (node) => {
       if (!node) return null;
       const r = node.getBoundingClientRect();
@@ -222,7 +225,9 @@ async function measure(page, endOffset = 0) {
     };
     const viewport = { width: window.innerWidth, height: window.innerHeight };
     const bodyRect = rect(body);
-    if (body) body.scrollTop = Math.max(0, body.scrollHeight - body.clientHeight - scrollEndOffset);
+    if (body && scrollEndOffset !== null) {
+      body.scrollTop = Math.max(0, body.scrollHeight - body.clientHeight - scrollEndOffset);
+    }
     const scrollCandidates = [...document.querySelectorAll('.civ-amp-overlay, .civ-amp, .civ-amp-body')]
       .filter((node) => {
         const style = getComputedStyle(node);
@@ -263,6 +268,11 @@ async function measure(page, endOffset = 0) {
       unitGridColumns: unitsGrid ? getComputedStyle(unitsGrid).gridTemplateColumns.split(' ').length : 0,
       lastExisting: lastRect,
       lastExistingVisibleInsideBody: bodyVisible,
+      lastUnit: rect(lastUnit),
+      lastUnitVisibleInsideBody: lastUnit != null && bodyRect != null
+        && rect(lastUnit).top >= bodyRect.top - 0.5
+        && rect(lastUnit).bottom <= bodyRect.bottom + 0.5
+        && visible(lastUnit),
       scrollCandidates,
       document: {
         scrollWidth: document.documentElement.scrollWidth,
@@ -284,14 +294,13 @@ function layoutFailures(m, expectedExisting, endTolerance = 1) {
   const failures = [];
   const gapTop = m.box.top;
   const gapBottom = m.viewport.height - m.box.bottom;
-  if (gapTop < 16 - 0.5 || gapBottom < 16 - 0.5) failures.push('viewport-gap');
+  if (gapTop < 24 - 0.5 || gapBottom < 24 - 0.5) failures.push('viewport-gap');
   if (!m.visible.header || !m.visible.result || !m.visible.foot
       || !m.visible.merge || !m.visible.separate) failures.push('fixed-slots-visible');
   if (m.body.overflowY !== 'auto' || m.body.overflowX !== 'hidden') failures.push('body-overflow-contract');
   if (m.boxOverflowY !== 'hidden' || m.overlayOverflowY !== 'hidden') failures.push('outer-overflow-contract');
   if (m.body.scrollHeight <= m.body.clientHeight + 1) failures.push('body-not-scrollable');
   if (m.body.scrollTop < m.body.scrollHeight - m.body.clientHeight - endTolerance) failures.push('scroll-not-at-end');
-  if (!m.lastExistingVisibleInsideBody) failures.push('last-unit-not-reachable');
   if (m.body.scrollWidth > m.body.clientWidth + 1) failures.push('body-horizontal-overflow');
   if (m.box.right > m.viewport.width + 0.5 || m.box.left < -0.5) failures.push('box-horizontal-overflow');
   if (m.document.scrollWidth > m.viewport.width + 1) failures.push('page-horizontal-overflow');
@@ -325,8 +334,8 @@ async function main() {
   const preContract = sourceContract(preSource);
 
   console.log('army-merge-panel-scroll-real-render-test (R-ARMIA-MERGE-PANEL-SCROLL-Q1)\n');
-  check('source: overlay ma padding 16 px, box-sizing i overflow hidden', fixedContract.overlayViewport);
-  check('source: box ma box-sizing border-box i max-height calc(100vh - 32px)', fixedContract.boxViewport);
+  check('source: overlay ma margines viewport 24 px, box-sizing i overflow hidden', fixedContract.overlayViewport);
+  check('source: box ma max-height dla viewportu vh/dvh z marginesem 24 px', fixedContract.boxViewport);
   check('source: box jest flex columnem', fixedContract.boxFlex);
   check('source: body jest flex itemem z pionowym scrollem i ukrytym overflow poziomym', fixedContract.bodyFlexScroll);
   check('source: header/result/footer są flex slotami niezależnymi od scrolla', fixedContract.fixedSlots);
@@ -364,10 +373,12 @@ async function main() {
 
     console.log('-- PO: prawdziwy render Chromium --');
     await showFixture(page, 'fixed', 16);
+    const movementLabel = await page.locator('.civ-amp-row-mv').first().textContent();
+    check('ułamkowy ruch jest wyświetlany zwięźle i po polsku', movementLabel === '0,33/12 ruch', movementLabel);
     const tall16 = await measure(page);
-    check('1141x1451 / 16 jednostek: panel ma stały odstęp ≥16 px od góry i dołu',
-      tall16.box.top >= 16 - 0.5
-        && tall16.viewport.height - tall16.box.bottom >= 16 - 0.5,
+    check('1141x1451 / 16 jednostek: panel ma stały odstęp ≥24 px od góry i dołu',
+      tall16.box.top >= 24 - 0.5
+        && tall16.viewport.height - tall16.box.bottom >= 24 - 0.5,
       { topGap: tall16.box.top, bottomGap: tall16.viewport.height - tall16.box.bottom, box: tall16.box });
     check('1141x1451 / 16 jednostek: panel nie wychodzi poziomo poza viewport',
       tall16.box.left >= -0.5 && tall16.box.right <= tall16.viewport.width + 0.5,
@@ -378,9 +389,9 @@ async function main() {
     await showFixture(page, 'fixed', 16);
     const short16 = await measure(page);
     const short16Failures = layoutFailures(short16, 16);
-    check('900x620 / 16+ jednostek: panel ma odstęp ≥16 px i mieści się w viewport',
-      short16.box.top >= 16 - 0.5
-        && short16.viewport.height - short16.box.bottom >= 16 - 0.5
+    check('900x620 / 16+ jednostek: panel ma odstęp ≥24 px i mieści się w viewport',
+      short16.box.top >= 24 - 0.5
+        && short16.viewport.height - short16.box.bottom >= 24 - 0.5
         && short16.box.left >= -0.5
         && short16.box.right <= short16.viewport.width + 0.5,
       { topGap: short16.box.top, bottomGap: short16.viewport.height - short16.box.bottom, box: short16.box });
@@ -443,10 +454,9 @@ async function main() {
     await showFixture(page150, 'fixed', 40);
     // Measure the final panel geometry rather than its entrance transform.
     await page150.waitForTimeout(300);
-    // Stop a few pixels before the absolute end: Chromium can round the 150%
-    // device-scaled grid extent so the final cell is clipped at max scroll.
-    // This verifies the final unit is reachable by ordinary list scrolling.
-    const zoom150 = await measure(page150, 10);
+    // Scroll exactly to the end: at the narrow 150% CSS viewport the responsive
+    // layout stacks the incoming column after the existing-unit grid.
+    const zoom150 = await measure(page150, 0);
     const zoom150Failures = layoutFailures(zoom150, 40, 11);
     const zoom150Scale = await page150.evaluate(() => ({
       dpr: window.devicePixelRatio,
@@ -461,9 +471,17 @@ async function main() {
       zoom150Scale);
     check('150% skali / 40 jednostek: lista przewija się do końca, oba CTA pozostają widoczne',
       zoom150Failures.length === 0 && zoom150.visible.merge && zoom150.visible.separate
-        && zoom150.lastExistingVisibleInsideBody,
+        && zoom150.lastUnitVisibleInsideBody,
       { failures: zoom150Failures, visible: zoom150.visible, body: zoom150.body,
-        lastExisting: zoom150.lastExisting, box: zoom150.box });
+        lastExisting: zoom150.lastExisting, lastUnit: zoom150.lastUnit, box: zoom150.box });
+    await page150.evaluate(() => {
+      const rows = [...document.querySelectorAll('.civ-amp-body .civ-amp-row')];
+      rows[rows.length - 2]?.scrollIntoView({ block: 'end' });
+    });
+    const zoom150ExistingEnd = await measure(page150, null);
+    check('150% skali: końcowy wiersz dużej listy istniejących jednostek jest osiągalny w scrollu',
+      zoom150ExistingEnd.lastExistingVisibleInsideBody,
+      { body: zoom150ExistingEnd.body, lastExisting: zoom150ExistingEnd.lastExisting });
     const zoom150Click = await clickAction(page150, 'fixed', 'merge');
     check('150% skali: widoczny przycisk „Połącz armie” jest klikalny i wykonuje callback',
       !!zoom150Click && zoom150Click.calls.merge === 1
@@ -498,8 +516,8 @@ async function main() {
       { failures: preFailures, box: pre16.box, body: pre16.body, visible: pre16.visible });
     check('MUTANT: stary layout nie ma scrolla body i/lub wypada poza viewport (negative control)',
       pre16.body.scrollHeight <= pre16.body.clientHeight + 1
-        || pre16.box.top < 16 - 0.5
-        || pre16.viewport.height - pre16.box.bottom < 16 - 0.5
+        || pre16.box.top < 24 - 0.5
+        || pre16.viewport.height - pre16.box.bottom < 24 - 0.5
         || !pre16.visible.merge || !pre16.visible.separate,
       { box: pre16.box, body: pre16.body, visible: pre16.visible });
 

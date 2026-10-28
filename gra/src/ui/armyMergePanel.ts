@@ -5,7 +5,7 @@
 
 import { pushOverlay, popOverlay } from './escapeOverlayStack';
 import { unitIconSvg } from './icons/brandAssets';
-import { formatArmiaLabel } from './formatPl';
+import { formatArmiaLabel, formatLiczbaPl } from './formatPl';
 
 export interface ArmyMergeUnitRow {
   id: string;
@@ -41,7 +41,7 @@ function ensureStyles(): void {
 @keyframes amp-in{from{opacity:0;transform:scale(.97) translateY(8px)}to{opacity:1;transform:none}}
 .civ-amp-overlay{
   position:fixed;inset:0;z-index:520;display:flex;align-items:center;justify-content:center;
-  padding:16px;box-sizing:border-box;overflow:hidden;
+  padding:24px;box-sizing:border-box;overflow:hidden;
   background:rgba(4,8,18,0.58);backdrop-filter:blur(3px);animation:amp-in .2s ease-out;
 }
 .civ-amp{
@@ -49,7 +49,8 @@ function ensureStyles(): void {
   --merge:#50b070;--panel:linear-gradient(165deg,rgba(14,20,36,0.97),rgba(8,12,24,0.98));
   font:13px "Segoe UI",Tahoma,sans-serif;color:var(--text);
   box-sizing:border-box;width:min(1080px,100%);min-width:min(720px,100%);max-width:1080px;
-  max-height:calc(100vh - 32px);display:flex;flex-direction:column;
+  max-height:calc(100vh - 48px);max-height:calc(100dvh - 48px);
+  min-height:0;display:flex;flex-direction:column;
   background:var(--panel);border:1px solid rgba(232,216,138,0.38);border-radius:14px;
   box-shadow:0 20px 56px rgba(0,0,0,0.65);overflow:hidden;animation:amp-in .26s ease-out;
 }
@@ -105,7 +106,7 @@ function esc(s: string): string {
 
 function unitRowHtml(u: ArmyMergeUnitRow, isNew: boolean): string {
   const mv = u.ruchMax !== undefined && u.ruchLeft !== undefined
-    ? u.ruchLeft + '/' + u.ruchMax + ' ruch'
+    ? formatLiczbaPl(u.ruchLeft, 2) + '/' + formatLiczbaPl(u.ruchMax, 2) + ' ruch'
     : '';
   return (
     '<div class="civ-amp-row' + (isNew ? ' new' : '') + '">' +
