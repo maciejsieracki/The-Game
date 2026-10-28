@@ -1,5 +1,5 @@
 {
-  "releaseState": "CANDIDATE — ready subset for Robocza; final-control PASS-WITH-NOTES; publication and GitHub readback pending.",
+  "releaseState": "DEPLOYED — testowa ROBOCZA; zatwierdzony subset wodza/rekrutacji i szyku/doktryn bitwy; GitHub Raw readback PASS.",
   "bundle": "Gra-ROBOCZA.html",
   "bundleMd5": "03d8d29e4714204bff62a27823e946ee",
   "bundleSha256": "f379b328b1f7c63f1e860a76f3310a98b189ebcb16ed5a444e3f7ebd4a41b452",
@@ -8,7 +8,8 @@
     "baseCommit": "0b28d67fe6fae0bfbf9be39bd0ec84130080fb4d",
     "productCommit": "f48894231b7dfeb3d1726ac7a3deba11a8c7a3f0",
     "source": "origin/main + approved leader roster and Army commander recruitment card + battle default formation and Atak/Obrona/Szturm doctrine fixes",
-    "build": "Vite 5.4.21; single-file ROBOCZA bundle; 916 modules; stamped"
+    "build": "Vite 5.4.21; single-file ROBOCZA bundle; 916 modules; stamped",
+    "publicationCommit": "f6f63dc839449d8e08a7e2509ec72796757867af"
   },
   "scope": [
     "Wódz/generał ma zatwierdzony model jednostki zależny od epoki i technologii: kamień Wojownik przed Kołem, Rydwan (woły) po Kole; brąz zatwierdzony rydwan lub najlepsza dostępna piechota/konnica; żelazo najlepsza dostępna konnica.",
@@ -140,7 +141,7 @@
     "notes": "Browser recruitment coverage is focused; no fresh full-game battle interaction or viewport matrix was run."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-10-28T21:18:56",
+  "hubGeneratedAt": "2026-10-28T21:20:26",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
@@ -158,12 +159,11 @@
     }
   ],
   "publishPlan": {
-    "status": "READY_FOR_DEPLOY — owner authorized Robocza publish and main push; GitHub readback pending.",
-    "target": "origin/main",
-    "scope": "ROBOCZA only; no KANON/FINALNA promotion."
+    "status": "PUBLISHED to origin/main at f6f63dc839449d8e08a7e2509ec72796757867af; Robocza only; no KANON/FINALNA promotion.",
+    "target": "origin/main"
   },
   "md5": "03d8d29e4714204bff62a27823e946ee",
-  "publisher": "Codex AutoBot — owner authorized Robocza publish",
+  "publisher": "Codex AutoBot — owner authorized Robocza publish and main push",
   "source": "gra/src; source integration commit f48894231b7dfeb3d1726ac7a3deba11a8c7a3f0 based on main 0b28d67f",
   "sizeBytes": 70013155,
   "releaseScope": "Wódz/generał roster and visible capital/Army recruitment card; battle default formation and Atak/Obrona/Szturm doctrine.",
@@ -174,8 +174,18 @@
     "bundleBytes": 70012553
   },
   "remoteReadback": {
-    "status": "PENDING",
+    "status": "PASS",
     "remote": "origin/main",
-    "checks": "Will fetch bundle, manifest and START at the published commit; compare raw bytes, manifest digests, bundle rows and START checksum."
-  }
+    "commit": "f6f63dc839449d8e08a7e2509ec72796757867af",
+    "bundleUrl": "https://raw.githubusercontent.com/maciejsieracki/The-Game/f6f63dc839449d8e08a7e2509ec72796757867af/gra-robocza/Gra-ROBOCZA.html",
+    "manifestUrl": "https://raw.githubusercontent.com/maciejsieracki/The-Game/f6f63dc839449d8e08a7e2509ec72796757867af/gra-robocza/ROBOCZA-MANIFEST.json",
+    "startUrl": "https://raw.githubusercontent.com/maciejsieracki/The-Game/f6f63dc839449d8e08a7e2509ec72796757867af/gra-robocza/START.html",
+    "httpStatus": 200,
+    "bundleMd5": "03d8d29e4714204bff62a27823e946ee",
+    "bundleSha256": "f379b328b1f7c63f1e860a76f3310a98b189ebcb16ed5a444e3f7ebd4a41b452",
+    "bundleBytes": 70019132,
+    "checks": "GitHub Raw bundle, manifest and START returned HTTP 200; fetched bundle MD5/SHA-256/size match manifest top-level fields and both bundles[] rows; START links display the current MD5 prefix."
+  },
+  "publishedAt": "2026-10-28",
+  "publicationCommit": "f6f63dc839449d8e08a7e2509ec72796757867af"
 }
