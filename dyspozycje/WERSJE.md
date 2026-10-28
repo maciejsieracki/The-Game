@@ -1,3 +1,12 @@
+## ROBOCZA 31c64f65 -- 2026-10-28 -- zwalnianie zasobów GPU podglądów budowy i znaczników wyrębu (R-PERF-GPU-GHOST-RESOURCE-DISPOSAL-Q1) — kandydat do pushu
+
+- **STATUS: READY_FOR_ROBOCZA_PUSH**; źródło `7637ab3e` na bazie `origin/main 54214e3a`; brak promocji do KANON/FINALNA.
+- Bundle MD5 `31c64f6545b9e30ab0171bc105143fbe`, SHA-256 `3b90ffbee14db98171494cf434f4e711fb2d325e27341d55bf54317e84c2d383`, 70,012,553 bajty.
+- Zakres: zwalnianie własnych geometrii i materiałów podglądów budowy oraz znaczników wyrębu przy usunięciu, podmianie, odbudowie stanu i resecie; współdzielone zasoby cache pozostają żywe.
+- Bramki: lifecycle 55/55; Chromium/WebGL 120 cykli, geometrie `1 → 1`; typecheck, build Vite 915 modułów, `verify-robocza-bundle.cjs` i `git diff --check` PASS. AutoBot Evaluator i Final Control PASS dla tego zakresu.
+- **Ograniczenie:** poprawka nie dowodzi, że sama wyjaśnia wzrost pamięci do 2 GB ani wszystkie późne przycięcia. Długosesyjny pomiar interakcji i RSS pozostaje otwarty.
+- Rollback: `git revert` wydania; poprzedni bundel MD5 `b897f519a377631081bd29b49c76fef2`, SHA-256 `accb2ee99c74ba7bbc70da060ed62fabf905cf2f021d6e37bacad4a9398ed798`, 70,011,909 bajtów.
+
 ## ROBOCZA b897f519 -- 2026-10-28 -- poprawki armii, dowódców, bitew i wojen (R-CIV-ALL-TOPICS-ROBOCZA) — WERSJA TESTOWA
 
 - **STATUS: DEPLOYED** to `origin/main` at `e06ad53c`; fast-forward from `99bb834c`.
