@@ -790,6 +790,7 @@ function resetSettingsFromParams(): void {
 let rootEl: HTMLDivElement | null = null;
 let curStep = 1;
 let selCiv: string | null = null;
+let civProfileCollapsed = false;
 /**
  * R-HOTSEAT-ETAP6F-PART2-DATA-Q1: drugi slot stanu modułu, analogiczny do
  * `selCiv`, dla cywilizacji DRUGIEGO fotela ludzkiego (hot-seat). `null` =
@@ -835,19 +836,19 @@ function ensureStyles(): void {
   document.getElementById('civ-newgame-css')?.remove();
   if (document.getElementById(STYLE_ID)) return;
   const css = `
-.civ-newgame{position:fixed;inset:0;z-index:500;overflow:auto;
+.civ-newgame{position:fixed;inset:0;z-index:500;overflow:hidden;
   ${CIV_BRAND_SCOPE_VARS}
   background:var(--bg-deep);color:var(--tx);font-family:var(--civ-font-title);
   display:flex;flex-direction:column;}
 .civ-newgame *{box-sizing:border-box;}
-.civ-newgame .hdr{text-align:center;padding:1.8rem 2rem 1rem;border-bottom:1px solid var(--bd-sub);position:relative;}
+.civ-newgame .hdr{text-align:center;padding:1.8rem 2rem 1rem;border-bottom:1px solid var(--bd-sub);position:relative;flex:0 0 auto;}
 .civ-newgame .hdr-menu-back{position:absolute;left:1.2rem;top:50%;transform:translateY(-50%);
   background:transparent;border:1px solid var(--bd-mid);color:var(--tx2);padding:7px 14px;border-radius:var(--radius);
   cursor:pointer;font-family:Arial,sans-serif;font-size:11px;letter-spacing:.12em;text-transform:uppercase;}
 .civ-newgame .hdr-menu-back:hover{border-color:var(--gold);color:var(--gold-light);background:rgba(201,168,76,.06);}
 .civ-newgame .hdr .lab{font-size:10px;letter-spacing:.5em;text-transform:uppercase;color:var(--tx2);font-family:Arial,sans-serif;}
 .civ-newgame .hdr h1{font-size:34px;font-weight:400;letter-spacing:.18em;color:var(--gold-light);text-shadow:0 0 50px rgba(201,168,76,.28);margin-top:4px;}
-.civ-newgame .stepbar{display:flex;align-items:center;justify-content:center;padding:1rem;background:#12121A;border-bottom:1px solid var(--bd-sub);flex-wrap:wrap;}
+.civ-newgame .stepbar{display:flex;align-items:center;justify-content:center;padding:1rem;background:#12121A;border-bottom:1px solid var(--bd-sub);flex-wrap:wrap;flex:0 0 auto;}
 .civ-newgame .si{display:flex;align-items:center;cursor:pointer;}
 .civ-newgame .si-b{display:flex;align-items:center;gap:8px;padding:5px 14px;border-radius:20px;border:1px solid transparent;}
 .civ-newgame .si-n{width:22px;height:22px;border-radius:50%;border:1.5px solid var(--tx-muted);display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--tx-muted);font-family:Arial,sans-serif;}
@@ -857,8 +858,8 @@ function ensureStyles(): void {
 .civ-newgame .si.active .si-l{color:var(--gold);}
 .civ-newgame .si.done .si-n{border-color:var(--gold-dim);color:var(--gold-dim);}
 .civ-newgame .si-c{width:26px;height:1px;background:var(--bd-sub);margin:0 3px;}
-.civ-newgame .flow-body{flex:0 0 auto;max-width:1000px;width:100%;margin:0 auto;padding:0 0 1.25rem;}
-.civ-newgame .content{flex:0 0 auto;padding:1.4rem 2rem 0.25rem;max-width:1000px;width:100%;margin:0 auto;}
+.civ-newgame .flow-body{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;overflow:hidden;max-width:1000px;width:100%;margin:0 auto;padding:0 0 env(safe-area-inset-bottom);}
+.civ-newgame .content{flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:1.4rem 2rem 1rem;max-width:1000px;width:100%;margin:0 auto;}
 .civ-newgame .sh{text-align:center;margin-bottom:1.6rem;}
 .civ-newgame .sh h2{font-size:24px;font-weight:400;letter-spacing:.1em;color:var(--gold-light);}
 .civ-newgame.hero-flow{background:transparent;}
@@ -911,7 +912,13 @@ function ensureStyles(): void {
 .civ-newgame .big{font-size:42px;letter-spacing:.2em;color:var(--gold-light);}
 .civ-newgame .sub{font-size:11px;letter-spacing:.4em;text-transform:uppercase;color:var(--tx2);font-family:Arial,sans-serif;}
 .civ-newgame .intro p{max-width:540px;font-size:14px;line-height:1.7;color:var(--tx2);font-style:italic;}
-.civ-newgame .civ-layout{display:grid;grid-template-columns:1fr min(360px,34vw);gap:1.5rem;align-items:stretch;}
+.civ-newgame .civ-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(260px,min(360px,34vw));gap:1.5rem;align-items:stretch;}
+.civ-newgame .civ-profile-toggle{grid-column:1/-1;width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 12px;border:1px solid var(--bd-mid);border-radius:var(--radius);background:rgba(18,18,26,.88);color:var(--gold-light);font:11px Arial,sans-serif;letter-spacing:.12em;text-transform:uppercase;text-align:left;cursor:pointer;}
+.civ-newgame .civ-profile-toggle:hover,.civ-newgame .civ-profile-toggle:focus-visible{border-color:var(--gold);outline-color:var(--gold);}
+.civ-newgame .civ-profile-toggle .chevron{font-size:16px;line-height:1;transition:transform .16s ease;}
+.civ-newgame .civ-layout.civ-profile-collapsed{grid-template-columns:minmax(0,1fr);}
+.civ-newgame .civ-layout.civ-profile-collapsed .detail{display:none;}
+.civ-newgame .civ-layout:not(.civ-profile-collapsed) .civ-profile-toggle .chevron{transform:rotate(180deg);}
 .civ-newgame .civ-grid-panel{background:var(--bg-card);border:1px solid var(--bd-sub);border-radius:var(--radius-lg);padding:14px;display:flex;flex-direction:column;height:100%;min-height:360px;}
 .civ-newgame .civ-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:10px;align-content:start;flex:1;}
 .civ-newgame .card{background:var(--bg-card);border:1.5px solid var(--bd-sub);border-radius:var(--radius-lg);padding:14px 8px;text-align:center;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:8px;transition:all .18s;}
@@ -1038,7 +1045,7 @@ function ensureStyles(): void {
 .civ-newgame .pr{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid rgba(201,168,76,.06);font-size:13px;}
 .civ-newgame .pr .k{color:var(--tx2);font-family:Arial,sans-serif;}
 .civ-newgame .pr .v{color:var(--gold);}
-.civ-newgame .nav{margin-top:1rem;padding:1rem 2rem 0;display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--bd-sub);background:transparent;max-width:1000px;width:100%;margin-left:auto;margin-right:auto;}
+.civ-newgame .nav{flex:0 0 auto;position:relative;z-index:3;box-sizing:border-box;margin:0;padding:.75rem 2rem calc(.75rem + env(safe-area-inset-bottom));display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--bd-sub);background:rgba(18,18,26,.94);backdrop-filter:blur(8px);max-width:1000px;width:100%;margin-left:auto;margin-right:auto;}
 .civ-newgame .nb{padding:10px 26px;border-radius:var(--radius);font-size:12px;letter-spacing:.2em;text-transform:uppercase;font-family:Arial,sans-serif;cursor:pointer;}
 .civ-newgame .nb.back{background:transparent;border:1px solid var(--bd-mid);color:var(--tx2);}
 .civ-newgame .nb.next{background:rgba(201,168,76,.1);border:1.5px solid var(--bd-strong);color:var(--gold-light);}
@@ -1080,6 +1087,20 @@ function ensureStyles(): void {
 .civ-newgame .ai-civ-grid .card{padding:10px 6px;}
 .civ-newgame .card.disabled{opacity:.35;cursor:not-allowed;}
 .civ-newgame .card.disabled:hover{border-color:var(--bd-sub);background:var(--bg-card);transform:none;}
+@media (max-width: 900px){
+  .civ-newgame .content{padding-left:1rem;padding-right:1rem;}
+  .civ-newgame .civ-layout{grid-template-columns:minmax(0,1fr);gap:.75rem;}
+  .civ-newgame .detail{height:auto;min-height:0;}
+  .civ-newgame .civ-grid-panel{height:auto;min-height:0;}
+  .civ-newgame .nav{padding-left:1rem;padding-right:1rem;}
+}
+@media (max-height: 760px){
+  .civ-newgame .hdr{padding:.55rem 1rem .45rem;}
+  .civ-newgame .hdr h1{font-size:24px;}
+  .civ-newgame .stepbar{padding:.4rem .6rem;}
+  .civ-newgame .si-b{padding:3px 8px;}
+  .civ-newgame .nav{padding-top:.45rem;padding-bottom:calc(.45rem + env(safe-area-inset-bottom));}
+}
 .civ-newgame .adv-overlay{position:fixed;inset:0;z-index:900;background:rgba(0,0,0,.72);display:none;align-items:flex-start;justify-content:flex-end;padding:1rem 2rem 1rem 1rem;overflow-y:auto;}
 .civ-newgame .adv-overlay.open{display:flex;}
 .civ-newgame .adv-modal{background:#12121A;border:1px solid var(--bd-mid);border-radius:var(--radius-lg);max-width:520px;width:100%;max-height:calc(100vh - 2rem);display:flex;flex-direction:column;overflow:hidden;margin-left:auto;flex-shrink:0;}
@@ -1368,6 +1389,7 @@ function renderCivStep(host: HTMLElement): void {
     grid.appendChild(el('div', 'cn', 'Brak cywilizacji dostępnych w tej epoce (epokaWejscia + kaskada).'));
   }
   const detail = el('div', 'detail');
+  detail.id = 'civ-profile-detail-panel';
   const c = selectedCiv();
   if (!c) {
     const empty = el('div', 'empty');
@@ -1404,6 +1426,25 @@ function renderCivStep(host: HTMLElement): void {
   }
   const gridPanel = el('div', 'civ-grid-panel');
   gridPanel.appendChild(grid);
+  const detailToggle = el('button', 'civ-profile-toggle') as HTMLButtonElement;
+  detailToggle.type = 'button';
+  detailToggle.setAttribute('aria-controls', detail.id);
+  const updateDetailToggle = (): void => {
+    detailToggle.setAttribute('aria-expanded', String(!civProfileCollapsed));
+    detailToggle.setAttribute('aria-label', civProfileCollapsed
+      ? 'Pokaż profil wybranej cywilizacji'
+      : 'Ukryj profil wybranej cywilizacji');
+    detailToggle.innerHTML = '<span>' + (civProfileCollapsed
+      ? 'Pokaż profil cywilizacji'
+      : 'Ukryj profil cywilizacji') + '</span><span class="chevron" aria-hidden="true">&#8964;</span>';
+    layout.classList.toggle('civ-profile-collapsed', civProfileCollapsed);
+  };
+  updateDetailToggle();
+  detailToggle.addEventListener('click', () => {
+    civProfileCollapsed = !civProfileCollapsed;
+    updateDetailToggle();
+  });
+  layout.appendChild(detailToggle);
   layout.appendChild(gridPanel);
   layout.appendChild(detail);
   host.appendChild(layout);
@@ -2433,6 +2474,7 @@ export function showNewGameFlow(config: NewGameFlowConfig): void {
   prefsDirty = false;
   curStep = 1;
   selCiv = DEFAULT_PLAYER_CIV_ID;
+  civProfileCollapsed = false;
   selCiv2 = null;
   hotSeatEnabled = false;
   humanDistanceMode = 'losowo';

@@ -14,13 +14,18 @@
 const path = require('path');
 const fs = require('fs');
 const os = require('os');
+const http = require('http');
 const { execSync } = require('child_process');
 
 const GRA_DIR = path.resolve(__dirname, '..');
 const OUT_DIR = path.join(GRA_DIR, 'dist-newgame-bottom-navigation-test');
-const OUT_HTML = 'file://' + path.join(OUT_DIR, 'index.html');
+let OUT_HTML = '';
 const EPS = 1;
 const VIEWPORTS = [
+  { label: 'desktop', width: 1770, height: 970 },
+  { label: 'mały ekran', width: 1365, height: 768 },
+  // Approximation of a 150% desktop-zoom CSS viewport on a 1770×970 display.
+  { label: '150% zoom — viewport CSS', width: 1180, height: 647 },
   { label: '2K DCI', width: 2048, height: 1080 },
   { label: '4K UHD', width: 3840, height: 2160 },
 ];
@@ -50,9 +55,33 @@ function buildBundle() {
   console.log('[newgame-bottom-navigation-test] build OK.');
 }
 
+async function serveBundleOverHttp() {
+  const htmlPath = path.join(OUT_DIR, 'index.html');
+  const server = http.createServer((request, response) => {
+    const pathname = new URL(request.url || '/', 'http://127.0.0.1').pathname;
+    if (pathname === '/favicon.ico') {
+      response.writeHead(204).end();
+      return;
+    }
+    if (pathname !== '/') {
+      response.writeHead(404).end();
+      return;
+    }
+    response.writeHead(200, { 'content-type': 'text/html; charset=utf-8' });
+    fs.createReadStream(htmlPath).pipe(response);
+  });
+  await new Promise((resolve, reject) => {
+    server.once('error', reject);
+    server.listen(0, '127.0.0.1', resolve);
+  });
+  OUT_HTML = `http://127.0.0.1:${server.address().port}/`;
+  return server;
+}
+
 function browserCandidates() {
   const explicit = process.env.CIV_CHROME_PATH || process.env.CHROME_PATH;
   const candidates = explicit ? [explicit] : [];
+  candidates.push('/usr/bin/chromium');
   const roots = [];
   const playwrightRoot = process.env.PLAYWRIGHT_BROWSERS_PATH;
   if (playwrightRoot && playwrightRoot !== '0') roots.push(playwrightRoot);
@@ -205,6 +234,20 @@ async function exerciseViewport(browser, viewport) {
     await assertUsable(page, '.civ-newgame .nav .nb.back', `${viewport.label}/cywilizacja Wstecz`);
     await assertUsable(page, '.civ-newgame .nav .nb.next', `${viewport.label}/cywilizacja Dalej`);
 
+    const profileToggle = page.locator('.civ-newgame .civ-profile-toggle');
+    assert(`${viewport.label}/cywilizacja: uchwyt zwijania profilu jest dostępny`, await profileToggle.count() === 1);
+    const detailPanel = page.locator('.civ-newgame #civ-profile-detail-panel');
+    assert(`${viewport.label}/cywilizacja: profil jest domyślnie widoczny`, await detailPanel.isVisible());
+    await profileToggle.click();
+    assert(`${viewport.label}/cywilizacja: uchwyt zwija szczegóły`,
+      await profileToggle.getAttribute('aria-expanded') === 'false' && !(await detailPanel.isVisible()));
+    const collapsedNext = await assertUsable(page, '.civ-newgame .nav .nb.next', `${viewport.label}/cywilizacja Dalej po zwinięciu`);
+    assert(`${viewport.label}/cywilizacja: Dalej mieści się w ekranie bez przewijania głównego kontenera`,
+      !!collapsedNext && collapsedNext.rootScrollTop === 0);
+    await profileToggle.click();
+    assert(`${viewport.label}/cywilizacja: uchwyt ponownie pokazuje profil`,
+      await profileToggle.getAttribute('aria-expanded') === 'true' && await detailPanel.isVisible());
+
     // Back on step 3 must return to the epoch without losing the route.
     await page.locator('.civ-newgame .nav .nb.back').click();
     await page.waitForSelector('.civ-newgame .epoch-grid', { timeout: 10000 });
@@ -233,13 +276,34 @@ async function exerciseViewport(browser, viewport) {
     assert(`${viewport.label}/ustawienia: scenariusz 5/5 faktycznie zaznaczył 5 cywilizacji`, selectedCount === 5);
 
     const navState = await assertUsable(page, '.civ-newgame .nav', `${viewport.label}/ustawienia dolna nawigacja`);
-    const startState = await assertUsable(page, '.civ-newgame .sett-actions .start', `${viewport.label}/ustawienia Start`);
-    await assertUsable(page, '.civ-newgame .sett-actions .btn-adv', `${viewport.label}/ustawienia Zaawansowane`);
+    const startState = await readState(page, '.civ-newgame .sett-actions .start');
+    printState(`${viewport.label}/ustawienia Start`, startState);
+    const advancedReachable = await page.evaluate(() => {
+      const content = document.querySelector('.civ-newgame .content');
+      const advanced = document.querySelector('.civ-newgame .sett-actions .btn-adv');
+      if (!(content instanceof HTMLElement) || !(advanced instanceof HTMLElement)) return false;
+      content.scrollTop = content.scrollHeight;
+      const rect = advanced.getBoundingClientRect();
+      return rect.width > 0 && rect.height > 0
+        && rect.top >= 0 && rect.bottom <= window.innerHeight;
+    });
+    assert(`${viewport.label}/ustawienia: Zaawansowane jest osiągalne w wewnętrznym przewijaniu treści`,
+      advancedReachable);
     printState(`${viewport.label}/ustawienia root overflow`, navState);
-    assert(`${viewport.label}/ustawienia: Start i dolna nawigacja są widoczne bez przewijania root`,
-      !!navState && !!startState && navState.rootScrollTop === 0
-        && navState.rootScrollHeight <= navState.rootClientHeight + EPS
-        && startState.rootScrollTop === 0);
+    assert(`${viewport.label}/ustawienia: dolna nawigacja jest stale widoczna bez przewijania root`,
+      !!navState && navState.rootScrollTop === 0
+        && navState.rootScrollHeight <= navState.rootClientHeight + EPS);
+    const startReachable = await page.evaluate(() => {
+      const content = document.querySelector('.civ-newgame .content');
+      const start = document.querySelector('.civ-newgame .sett-actions .start');
+      if (!(content instanceof HTMLElement) || !(start instanceof HTMLElement)) return false;
+      content.scrollTop = content.scrollHeight;
+      const rect = start.getBoundingClientRect();
+      return rect.width > 0 && rect.height > 0
+        && rect.top >= 0 && rect.bottom <= window.innerHeight;
+    });
+    assert(`${viewport.label}/ustawienia: Start jest osiągalny w wewnętrznym przewijaniu treści`,
+      !!startState && startState.rootScrollTop === 0 && startReachable);
 
     // Mutation proof: if the lower navigation is hidden, the same viewport
     // oracle must detect it. Restore the live DOM before continuing the flow.
@@ -294,11 +358,14 @@ async function main() {
   }
 
   buildBundle();
-  const browser = await launchBrowser(chromium);
+  const server = await serveBundleOverHttp();
+  let browser = null;
   try {
+    browser = await launchBrowser(chromium);
     for (const viewport of VIEWPORTS) await exerciseViewport(browser, viewport);
   } finally {
-    await browser.close();
+    if (browser) await browser.close();
+    await new Promise((resolve) => server.close(resolve));
     try { fs.rmSync(OUT_DIR, { recursive: true, force: true }); } catch (_) { /* cleanup best effort */ }
   }
 

@@ -14538,7 +14538,7 @@ async function boot(): Promise<void> {
     }
 
     // Ulepszenia, które NIE spłaszczają wzgórza/góry pod sobą (model wtapia się w relief
-    // zamiast siadać na wypłaszczonym heksie): hodowla solo, kamieniołom + KAŻDA kopalnia
+    // zamiast siadać na wypłaszczonym heksie): hodowla solo, kamieniołom, tartak + KAŻDA kopalnia
     // (prefiks "kopalnia"/"kopalnia_*", w tym przyszłe typy — decyzja właściciela
     // R-KAMIEN-FUTURE-Q1=C, 2026-08-06: "przyszłe kopalnie będą też [zachowywać relief]
     // automatycznie, bez pytania za każdym razem"). Predykat + uzasadnienie pełne:
@@ -14631,11 +14631,10 @@ async function boot(): Promise<void> {
       // tutaj strukturalnie nieosiągalna — niezależnie od tego, że generator i tak nie kładzie
       // nakładki Las na wodzie (`isForestEligibleTerrain`, map/gen-helpers.ts).
       //
-      // REALNIE osiągalne na lesie-na-wzgórzu są więc CZTERY: `bydlo`, `owce`, `lama`,
-      // `oboz_lowiecki`. Z nich `bydlo` nigdy tu nie dociera (łapie je `foodOnForest` wyżej —
-      // decyzja Macieja 2026-07-21 zostaje bez zmiany), a `owce`/`lama` już dziś wychodzą
-      // gałęzią reliefu wyżej. Efektywna zmiana zachowania dotyczy więc WYŁĄCZNIE obozu
-      // łowieckiego — zakres dokładnie tak szeroki jak przyczyna.
+      // REALNIE osiągalne dla tej gałęzi na lesie-na-wzgórzu są więc CZTERY: `bydlo`, `owce`,
+      // `lama`, `oboz_lowiecki`. Z nich `bydlo` łapie `foodOnForest` wyżej, a `owce`/`lama`
+      // wychodzą gałęzią reliefu. Zmiana tej gałęzi z 2026-09-02 dotyczyła obozu łowieckiego.
+      // Tartak zachowuje wzgórze i las przez osobną whitelistę `preservesHillRelief` wyżej.
       //
       // Świadomy wybór: NIE dodajemy tu jawnego warunku terenu dla `lodzie_rybackie`. Byłby
       // martwym kodem za istniejącym `elevated` (trzecia, redundantna bramka po `qualifies()`
@@ -14643,7 +14642,7 @@ async function boot(): Promise<void> {
       // zakazane wprost (§14 / reguła przeciw samooszukiwaniu). Gdyby kiedyś powstał wzniesiony
       // teren wodny, właściwą bramką pozostaje kanoniczny `qualifies()`, nie warstwa renderu.
       //
-      // Świadomie POZA zakresem: `droga`/`fort`/`posterunek`/`tartak`/`glinianka` nie są
+      // Świadomie POZA zakresem: `droga`/`fort`/`posterunek`/`glinianka` nie są
       // ulepszeniami żywnościowymi i spłaszczają wzgórze jak dotąd (poszerzanie tej listy
       // „na wszelki wypadek" jest zakazane — §14 / reguła przeciw samooszukiwaniu tematu).
       //

@@ -5,10 +5,9 @@
  * preservesHillRelief), żeby predykat dało się objąć testem regresji bez ładowania
  * całego main.ts (który ma zależności DOM/WebGL i nie nadaje się do bundlowania w Node).
  *
- * Jawne wyjątki BEZ wspólnego prefiksu: hodowla solo (bydło/owce/lama — stoją na kopcu)
- * + kamieniołom (Maciej 2026-07-24, R-KAMIEN-RELIEF: kamieniołom ma być wkomponowany w
- * istniejące wzgórze/górę, model siada na reliefie przy ściance heksa
- * (elevatedTerrainEdgeSurfaceY), a nie je spłaszczać).
+ * Jawne wyjątki BEZ wspólnego prefiksu: hodowla solo (bydło/owce/lama — stoją na kopcu),
+ * kamieniołom (R-KAMIEN-RELIEF) i tartak (R-TARTAK-WZGÓRZE-LAS: tartak na zalesionym
+ * wzgórzu zachowuje kopiec oraz nakładkę Las; sektor modelu trafia na powierzchnię stoku).
  *
  * PREFIKS "kopalnia" / "kopalnia_*" (decyzja właściciela R-KAMIEN-FUTURE-Q1=C, 2026-08-06,
  * doprecyzowanie decyzji nadrzędnej R-KAMIEN-RELIEF-FOLLOWUP-Q1):
@@ -21,8 +20,8 @@
  * wpisu w unii ImprovementKey, case'u bryły 3D i wpisu w SUROWIEC_KEYS (render/improvements.ts).
  */
 
-/** Jawne klucze BEZ prefiksu "kopalnia" — hodowla solo + kamieniołom (inny model niż kopalnie). */
-const PRESERVES_HILL_RELIEF_EXPLICIT_KEYS = new Set(['bydlo', 'owce', 'lama', 'kamieniolom']);
+/** Jawne klucze BEZ prefiksu "kopalnia" — hodowle solo, kamieniołom i tartak. */
+const PRESERVES_HILL_RELIEF_EXPLICIT_KEYS = new Set(['bydlo', 'owce', 'lama', 'kamieniolom', 'tartak']);
 
 const KOPALNIA_PREFIX = 'kopalnia_';
 /** Legacy uniwersalna "kopalnia" (stare zapisy/migracje, bez sufiksu surowca). */
