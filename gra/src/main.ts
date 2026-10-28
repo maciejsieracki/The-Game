@@ -821,6 +821,7 @@ import {
 import { isLivestockAllowed, isLamaDepositVisibleForCiv } from './game/livestock-unlock';
 import { ikonaIdToBronzeCiv, type BronzeCiv } from './render/bronzeCity';
 import { buildSettlementModel } from './render/settlementModel';
+import { cloneObject3DMaterialsForTransient, disposeTransientObject3D } from './render/transientObjectResources';
 import { BattleScene } from './battle/battleScene';
 import { isBattleSceneOpen } from './battle/battleSceneOpen';
 import { buildTestArmies, ensureSiegeMachines as ensureSiegeMachinesPreset } from './battle/testBattle';
@@ -13542,33 +13543,22 @@ async function boot(): Promise<void> {
     }
 
     function applyGhostMaterial(g: THREE.Group, valid: boolean): void {
+      cloneObject3DMaterialsForTransient(g, (c) => {
+        c.transparent = true;
+        c.opacity = valid ? 0.52 : 0.32;
+        c.depthWrite = false;
+        if ('emissive' in c) (c as THREE.MeshLambertMaterial).emissive.set(valid ? 0x224422 : 0x552222);
+      });
       g.traverse((obj) => {
         if ((obj as THREE.Mesh).isMesh) {
           const mesh = obj as THREE.Mesh;
-          const mats = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
-          const cloned = mats.map((m) => {
-            const c = (m as THREE.MeshLambertMaterial).clone();
-            c.transparent = true;
-            c.opacity = valid ? 0.52 : 0.32;
-            c.depthWrite = false;
-            if ('emissive' in c) c.emissive.set(valid ? 0x224422 : 0x552222);
-            return c;
-          });
-          mesh.material = cloned.length === 1 ? cloned[0]! : cloned;
           mesh.castShadow = false;
         }
       });
     }
 
     function disposeGhostObject3D(g: THREE.Object3D): void {
-      g.traverse((obj) => {
-        const mesh = obj as THREE.Mesh;
-        if (!mesh.isMesh) return;
-        const mats = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
-        for (const m of mats) {
-          if (m) (m as THREE.Material).dispose();
-        }
-      });
+      disposeTransientObject3D(g);
     }
 
     function removeBuildGhosts(): void {
@@ -14661,6 +14651,7 @@ async function boot(): Promise<void> {
       const old = clearingMeshes.get(hexKey);
       if (old) {
         scene.remove(old);
+        disposeTransientObject3D(old);
         clearingMeshes.delete(hexKey);
       }
     }
@@ -14685,14 +14676,20 @@ async function boot(): Promise<void> {
     }
 
     function syncClearingMeshesFromState(): void {
-      for (const mesh of clearingMeshes.values()) scene.remove(mesh);
+      for (const mesh of clearingMeshes.values()) {
+        scene.remove(mesh);
+        disposeTransientObject3D(mesh);
+      }
       clearingMeshes.clear();
       for (const hexKey of hexClearingStates.keys()) spawnClearingMesh(hexKey);
     }
 
     function clearAllHexClearing(): void {
       hexClearingStates.clear();
-      for (const mesh of clearingMeshes.values()) scene.remove(mesh);
+      for (const mesh of clearingMeshes.values()) {
+        scene.remove(mesh);
+        disposeTransientObject3D(mesh);
+      }
       clearingMeshes.clear();
     }
 

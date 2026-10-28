@@ -7,6 +7,7 @@ import * as THREE from 'three';
 import { type BronzeCiv } from './bronzeCity';
 import { type StoneCiv } from './stoneCity';
 import { HEX_R } from './hexutil';
+import { markSharedTransientGeometry } from './transientObjectResources';
 
 export type { StoneCiv } from './stoneCity';
 
@@ -122,7 +123,7 @@ function getHexWallRingGeo(outerR: number, innerR: number, height: number): THRE
   shape.holes.push(hole);
   const geo = new THREE.ExtrudeGeometry(shape, { depth: height, bevelEnabled: false });
   geo.rotateX(-Math.PI / 2);
-  hexWallRingCache.set(key, geo);
+  hexWallRingCache.set(key, markSharedTransientGeometry(geo));
   return geo;
 }
 

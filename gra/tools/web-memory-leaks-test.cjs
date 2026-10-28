@@ -18,6 +18,9 @@ import * as THREE from 'three';
 export { THREE };
 export { CityRenderer } from '../src/render/cities';
 export { isMemDebugEnabled, logRendererMemoryAtTurnEnd } from '../src/render/memDebug';
+export { disposeTransientObject3D, markSharedTransientGeometry, markSharedTransientMaterial, cloneTransientMaterial, cloneObject3DMaterialsForTransient } from '../src/render/transientObjectResources';
+export { buildSettlementModel } from '../src/render/settlementModel';
+export { buildImprovementSectored } from '../src/render/improvements';
 `, 'utf8');
 esbuild.buildSync({ entryPoints: [ENTRY], bundle: true, platform: 'node', format: 'cjs',
   target: 'node18', outfile: BUNDLE, absWorkingDir: GRA, logLevel: 'silent',
@@ -157,6 +160,109 @@ const reDoc = /document\.removeEventListener\('click', this\._deployToolbarDocCl
 assert(reDoc.test(bs), 'zdejmowanie _deployToolbarDocClick z document obecne');
 assert((bs.match(reDoc) || []).length >= 2, 'rebuild paska zdejmuje stary nasluchiwacz + dispose (>=2 miejsca)');
 assert(/window\.removeEventListener\('resize', this\._deployLayoutListener\)/.test(bs), 'dispose zdejmuje _deployLayoutListener z window');
+
+// --- [5] transient world-map previews and clearing markers ------------------------------
+console.log('\n[5] zasoby transient ghostów i znaczników wyrębu');
+const { disposeTransientObject3D, markSharedTransientGeometry, markSharedTransientMaterial, cloneTransientMaterial, cloneObject3DMaterialsForTransient, buildSettlementModel, buildImprovementSectored } = M;
+const transientRoot = new M.THREE.Group();
+const ownedGeometry = new M.THREE.BoxGeometry(1, 1, 1);
+const sharedGeometry = markSharedTransientGeometry(new M.THREE.BoxGeometry(2, 2, 2));
+const ownedMaterial = new M.THREE.MeshBasicMaterial();
+const sharedMaterial = markSharedTransientMaterial(new M.THREE.MeshBasicMaterial());
+const ownedMesh1 = new M.THREE.Mesh(ownedGeometry, ownedMaterial);
+const ownedMesh2 = new M.THREE.Mesh(ownedGeometry, ownedMaterial); // duplicate references dispose once
+transientRoot.add(ownedMesh1, ownedMesh2, new M.THREE.Mesh(sharedGeometry, sharedMaterial));
+let ownedGeoDispose = 0, sharedGeoDispose = 0, ownedMatDispose = 0, sharedMatDispose = 0;
+ownedGeometry.addEventListener('dispose', () => ownedGeoDispose++);
+sharedGeometry.addEventListener('dispose', () => sharedGeoDispose++);
+ownedMaterial.addEventListener('dispose', () => ownedMatDispose++);
+sharedMaterial.addEventListener('dispose', () => sharedMatDispose++);
+disposeTransientObject3D(transientRoot);
+eq(ownedGeoDispose, 1, 'własna geometria meshów transient dispose tylko raz');
+eq(sharedGeoDispose, 0, 'oznaczona współdzielona geometria pozostaje żywa');
+eq(ownedMatDispose, 1, 'współdzielony przez dzieci materiał transient dispose tylko raz');
+eq(sharedMatDispose, 0, 'oznaczony współdzielony materiał cache pozostaje żywy');
+const cachedSourceMat = markSharedTransientMaterial(new M.THREE.MeshBasicMaterial());
+const clonedGhostMat = cloneTransientMaterial(cachedSourceMat);
+let sourceMatStillLive = 0, ghostMatDisposed = 0;
+cachedSourceMat.addEventListener('dispose', () => sourceMatStillLive++);
+clonedGhostMat.addEventListener('dispose', () => ghostMatDisposed++);
+const materialGhost = new M.THREE.Group();
+materialGhost.add(new M.THREE.Mesh(new M.THREE.BoxGeometry(), clonedGhostMat));
+disposeTransientObject3D(materialGhost);
+eq(ghostMatDisposed, 1, 'klon materiału cache należy do ghosta i jest zwalniany');
+eq(sourceMatStillLive, 0, 'materiał źródłowy cache pozostaje żywy po zwolnieniu ghosta');
+
+const clearingMarker = buildImprovementSectored(['wyrab']);
+let clearingGeoCount = 0, clearingGeoDispose = 0;
+const clearingSourceMaterials = new Set();
+clearingMarker.traverse((obj) => {
+  const mesh = obj;
+  if (mesh.isMesh) {
+    clearingGeoCount++;
+    mesh.geometry.addEventListener('dispose', () => clearingGeoDispose++);
+    const mats = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+    mats.forEach((material) => clearingSourceMaterials.add(material));
+  }
+});
+assert(clearingGeoCount > 0, 'wyrąb ma geometrie modelu do zwolnienia');
+let clearingSourceMatDispose = 0;
+clearingSourceMaterials.forEach((material) => material.addEventListener('dispose', () => clearingSourceMatDispose++));
+cloneObject3DMaterialsForTransient(clearingMarker, (material) => { material.transparent = true; material.opacity = 0.52; });
+eq(clearingSourceMatDispose, clearingSourceMaterials.size, 'zastąpione, własne materiały ghosta zwolnione po sklonowaniu');
+const clearingCloneMaterials = new Set();
+clearingMarker.traverse((obj) => { if (obj.isMesh) (Array.isArray(obj.material) ? obj.material : [obj.material]).forEach((m) => clearingCloneMaterials.add(m)); });
+assert([...clearingCloneMaterials].every((material) => !clearingSourceMaterials.has(material)), 'ghost używa wyłącznie własnych klonów materiałów');
+let clearingCloneDispose = 0;
+clearingCloneMaterials.forEach((material) => material.addEventListener('dispose', () => clearingCloneDispose++));
+disposeTransientObject3D(clearingMarker);
+eq(clearingGeoDispose, clearingGeoCount, 'wszystkie geometrie świeżego znacznika wyrębu zwolnione');
+eq(clearingCloneDispose, clearingCloneMaterials.size, 'wszystkie klonowane materiały ghosta zwolnione po jego usunięciu');
+
+const cityGhost = buildSettlementModel(1, 'grecja', 1, 0xffd54a, true);
+const cachedCityGeometries = new Set();
+cityGhost.traverse((obj) => { if (obj.isMesh && obj.geometry.userData.sharedTransientGeometry) cachedCityGeometries.add(obj.geometry); });
+assert(cachedCityGeometries.size > 0, 'ghost miasta wskazuje cache geometrii muru oznaczony jako współdzielony');
+let cachedCityDisposed = 0;
+cachedCityGeometries.forEach((geo) => geo.addEventListener('dispose', () => cachedCityDisposed++));
+disposeTransientObject3D(cityGhost);
+eq(cachedCityDisposed, 0, 'usuwanie ghosta miasta nie zwalnia geometrii muru używanej też przez live miasta');
+const liveCityUsingCache = buildSettlementModel(1, 'grecja', 1, 0xffd54a, true);
+const liveCityHasCache = [];
+liveCityUsingCache.traverse((obj) => { if (obj.isMesh && cachedCityGeometries.has(obj.geometry)) liveCityHasCache.push(obj.geometry); });
+assert(liveCityHasCache.length > 0, 'kolejny live model miasta nadal korzysta ze współdzielonego cache');
+
+const improvementGhost = buildImprovementSectored(['kopalnia_cyny']);
+const cachedImprovementGeometries = new Set();
+const cachedImprovementMaterials = new Set();
+improvementGhost.traverse((obj) => {
+  if (!obj.isMesh) return;
+  if (obj.geometry.userData.sharedTransientGeometry) cachedImprovementGeometries.add(obj.geometry);
+  if (obj.material.userData.sharedTransientMaterial) cachedImprovementMaterials.add(obj.material);
+});
+assert(cachedImprovementGeometries.size > 0, 'ghost kopalni cyny wskazuje oznaczone geometrie cache');
+let cachedImprovementDisposed = 0;
+cachedImprovementGeometries.forEach((geo) => geo.addEventListener('dispose', () => cachedImprovementDisposed++));
+let cachedImprovementMaterialsDisposed = 0;
+cachedImprovementMaterials.forEach((mat) => mat.addEventListener('dispose', () => cachedImprovementMaterialsDisposed++));
+cloneObject3DMaterialsForTransient(improvementGhost, (material) => { material.transparent = true; material.opacity = 0.52; });
+eq(cachedImprovementMaterialsDisposed, 0, 'zastępowanie materiałów ghosta nie zwalnia oznaczonych źródeł cache');
+const cachedMineCloneMaterials = new Set();
+improvementGhost.traverse((obj) => { if (obj.isMesh) (Array.isArray(obj.material) ? obj.material : [obj.material]).forEach((m) => cachedMineCloneMaterials.add(m)); });
+assert([...cachedMineCloneMaterials].every((material) => !material.userData.sharedTransientMaterial), 'klony materiałów cache są oznaczone jako zasoby własne ghosta');
+let cachedMineCloneDisposals = 0;
+cachedMineCloneMaterials.forEach((material) => material.addEventListener('dispose', () => cachedMineCloneDisposals++));
+disposeTransientObject3D(improvementGhost);
+eq(cachedImprovementDisposed, 0, 'usuwanie ghosta kopalni nie zwalnia geometrii używanej przez live ulepszenie');
+assert(cachedImprovementMaterials.size > 0, 'ghost kopalni wskazuje oznaczone materiały cache');
+eq(cachedImprovementMaterialsDisposed, 0, 'usuwanie ghosta kopalni nie zwalnia materiałów używanych przez live ulepszenie');
+eq(cachedMineCloneDisposals, cachedMineCloneMaterials.size, 'klony materiałów cache są zwalniane wraz z ghostem');
+
+const mainSource = fs.readFileSync(path.join(GRA, 'src', 'main.ts'), 'utf8');
+assert(/function disposeGhostObject3D\(g: THREE\.Object3D\): void \{\s*disposeTransientObject3D\(g\);/.test(mainSource), 'ghost builderów deleguje disposal do helpera zasobów transient');
+assert(/function removeClearingMesh[\s\S]*?disposeTransientObject3D\(old\)/.test(mainSource), 'zastępowany znacznik wyrębu zwalnia zasoby');
+assert(/function syncClearingMeshesFromState[\s\S]*?disposeTransientObject3D\(mesh\)/.test(mainSource), 'reset stanu wyrębu zwalnia stare zasoby');
+assert(/function clearAllHexClearing[\s\S]*?disposeTransientObject3D\(mesh\)/.test(mainSource), 'czyszczenie wyrębu zwalnia zasoby');
 
 try { fs.unlinkSync(ENTRY); fs.unlinkSync(BUNDLE); } catch (_) { /* ignore */ }
 console.log(`\n${passed} passed, ${failed} failed`);
