@@ -1,3 +1,11 @@
+## ROBOCZA 00f76663 -- 2026-10-28 -- tartak na zalesionym wzgórzu + nawigacja kreatora (testowa)
+
+- **STATUS: CANDIDATE** — source commit `b3cc4c5d`; po niezależnym przeglądzie PASS/PASS WITH NOTES. Publikacja remote i readback pending.
+- Bundle SHA-256 `5c10865a5e1b9b29c8dae6c2c09a73ca46d55cf7b3090a5566a029116bdc7d3e`, MD5 `00f7666343c2247dfdb21ee1e6ed27aa`, 70,015,515 bajtów.
+- Zakres: tartak na wzgórzu zachowuje relief i las oraz siada na stoku; profil cywilizacji w kreatorze można zwinąć, a „Dalej” pozostaje widoczne przy 150% zoom.
+- Testy: sawmill 8/8, relief 24/24, real render 3/3 dekoru, kreator 200/200 w 5 rozmiarach, TypeScript/build PASS.
+- Uwagi: legacy test obozu łowieckiego 26 PASS / 4 FAIL z przestarzałymi asercjami niezwiązanymi z tartakiem. Niezależne raporty w `R-ULEPSZENIA-TARTAK-WZGÓRZE-LAS-Q1` i `R-NEWGAME-CIV-PROFILE-COLLAPSE-Q1`.
+
 ## ROBOCZA e4c3643d -- 2026-10-28 -- retencja kart wydarzeń i tekstur ikon jednostek (testowa)
 
 - **STATUS: DEPLOYED** — fast-forward `origin/main` do `17c1ba2a`; odczyt GitHub Raw (bundle, manifest, START) HTTP 200, hash i rozmiar zgodne.
