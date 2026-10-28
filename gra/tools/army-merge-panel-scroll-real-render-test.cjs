@@ -465,6 +465,14 @@ async function main() {
       physicalWidth: Math.round(window.innerWidth * window.devicePixelRatio),
       physicalHeight: Math.round(window.innerHeight * window.devicePixelRatio),
     }));
+    console.log('RAW 150% geometry:', JSON.stringify({
+      box: zoom150.box,
+      innerWidth: zoom150Scale.cssWidth,
+      innerHeight: zoom150Scale.cssHeight,
+      dpr: zoom150Scale.dpr,
+      topGap: zoom150.box.top,
+      bottomGap: zoom150Scale.cssHeight - zoom150.box.bottom,
+    }));
     check('150% skali Chromium: DPR 1.5 i viewport 600x413 CSS px (900x620 px ekranu)',
       zoom150Scale.dpr === 1.5 && zoom150Scale.cssWidth === 600 && zoom150Scale.cssHeight === 413
         && zoom150Scale.physicalWidth === 900 && zoom150Scale.physicalHeight === 620,

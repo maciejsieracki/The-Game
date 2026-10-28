@@ -93,6 +93,10 @@ function ensureStyles(): void {
   .civ-amp-units{grid-template-columns:repeat(2,minmax(0,1fr));}
 }
 @media(max-width:420px){.civ-amp-units{grid-template-columns:1fr;}}
+@media(max-height:500px){
+  .civ-amp-overlay{align-items:flex-start;padding:28px;}
+  .civ-amp{max-height:calc(100vh - 56px);max-height:calc(100dvh - 56px);}
+}
 `;
   const s = document.createElement('style');
   s.id = STYLE_ID;
