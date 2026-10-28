@@ -920,6 +920,8 @@ export interface StackVitals {
   veteranLevel: VeteranLevel;
   /** NAJWYŻSZA liczba gwiazdek w stosie (0–3) = najwięcej wygranych bitew. */
   veteranStars: number;
+  /** Czy skład zawiera wodza/generała; osobny znak na żetonie reprezentanta. */
+  hasCommander: boolean;
 }
 
 /** Zależności, których warstwa stosów nie zna sama (definicje jednostek żyją w main.ts). */
@@ -947,6 +949,7 @@ export function stackVitals(
     softBadgeLevel: stackSoftBadgeLevel(stack),
     veteranLevel: stackVeteranLevel(stack),
     veteranStars: stackVeteranStarCount(stack),
+    hasCommander: stack.some(unit => unit.isGeneral === true),
   };
 }
 

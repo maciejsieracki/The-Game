@@ -147,11 +147,11 @@ const PLATE_BG_Y = (PLATE_HP_BAR_Y + PLATE_MOVE_BAR_Y) / 2;           // 0,869·
 export const PLATE_BAR_LEFT_X = -PLATE_BAR_W / 2;                     // −0,275·HEX_R
 
 /**
- * Bok małej ikony właściciela. 0,20·HEX_R to nieco więcej niż wysokość całego
- * tła (0,194·HEX_R), więc medalion lekko wystaje ponad i pod tabliczkę i czyta
- * się jako „pieczęć” przypięta z lewej, a nie jako trzeci pasek.
+ * Bok ikony właściciela — 4× większy zgodnie z prośbą użytkownika. Kotwica
+ * PLATE_OWNER_X uwzględnia rozmiar, więc prawa krawędź emblematu pozostaje
+ * przypięta do lewej krawędzi tabliczki, a powiększenie idzie na zewnątrz.
  */
-export const PLATE_OWNER_ICON_SIZE = 0.20 * HEX_R;
+export const PLATE_OWNER_ICON_SIZE = 0.80 * HEX_R;
 /**
  * Odstęp między ikoną właściciela a lewą krawędzią tła tabliczki. CELOWO
  * MINIMALNY (0,006·HEX_R) — przy 0,018 medalion czytał się na zrzucie jako
@@ -159,7 +159,7 @@ export const PLATE_OWNER_ICON_SIZE = 0.20 * HEX_R;
  */
 const PLATE_OWNER_GAP = 0.006 * HEX_R;
 /** Środek ikony właściciela w osi X. */
-const PLATE_OWNER_X = -(PLATE_BG_W / 2 + PLATE_OWNER_GAP + PLATE_OWNER_ICON_SIZE / 2); // −0,401·HEX_R
+const PLATE_OWNER_X = -(PLATE_BG_W / 2 + PLATE_OWNER_GAP + PLATE_OWNER_ICON_SIZE / 2);
 /** Wysokość osi wypełnień względem środka tabliczki (± w lokalnym układzie grupy). */
 export const PLATE_BAR_DY = (PLATE_BAR_H + PLATE_BAR_GAP) / 2;         // 0,049·HEX_R
 

@@ -1,0 +1,22 @@
+# Final Control — R-ARMY-COMMANDER-UNIT-MARKERS-20261028, runda 4/5
+
+WERDYKT BINARNY: **PASS-WITH-NOTES**  
+BAZA: `85f8c5f0e0aa6ff46aa8b85a03d0bc0c71d86268`  
+WORKTREE: `/tmp/the-game-commander-markers-20261028`  
+NASTĘPNY ETAP: **orkiestrator — allowlist-only integracja / przegląd kandydata**. To nie jest zgoda na deploy; integracji ani operacji Git nie wykonuję.
+
+## Pięć bramek
+
+1. **SCOPE — PASS.** Niezależnie sprawdzony diff wobec bazy zawiera dokładnie cztery śledzone pliki produktu: `gra/src/game/armyMerge.ts`, `gra/src/render/unitStatPlate.ts`, `gra/src/render/unitVeteranBadges.ts` i `gra/src/render/units.ts`. Każdy należy do allowlisty r3. Nowy test CJS oraz pliki w katalogu runu (dispatch, raporty, harness i dwa zrzuty) są dozwolonymi artefaktami. `gra/src/main.ts` i `gra/src/game/generals.ts` są bez diffu; selektor Stone z bazy pozostaje nietknięty. `git diff --check` przechodzi.
+2. **NO-SIDE-EFFECT — PASS.** R4 nie zmienił kodu produktu. Nie ma zmian rekrutacji, bitwy, AI ani poza allowlistą. Nie wykonano git add/commit/push/checkout/reset/stash, merge ani deployu.
+3. **NO-REGRESSION — PASS.** Uruchomiłem te same sześć zestawów na archiwum czystej bazy i kandydacie. Oba wyniki: **11,226 passed, 0 failed**; delta **0/0**. Liczniki: merge bounce 4/4, colocated 4/4, stackGroupId 11,045/11,045, general-eligible roster 137/137, renderer overlay sync 17/17 oraz real-browser unit-info-card badges 19/19. Test browserowy uruchomiłem na kopii kodu ładowanej w pamięci, kierując fallback Chromium na `/usr/bin/chromium`; źródłowe pliki testu nie zostały zmienione. Celowany test produktu: **11/11**.
+4. **METRYKI KOMPLETNE — PASS.** `tsc --noEmit` w `gra/` kończy się kodem 0 bez diagnostyk. Produkcyjny Vite build kończy się kodem 0: 916 modułów, 17.55 s; artefakt single-file ma 69,924.84 kB (gzip 48,689.24 kB). Targeted test 11/11, sześć suite’ów bazowych i kandydata 11,226/0 oraz `git diff --check` są zielone. Chromium dotarł do tury 1 i wyświetlił mapę; log raportuje wyłącznie 404 `/favicon.ico`, bez innych błędów konsoli/pageerror.
+5. **JAKOŚĆ TESTÓW I DOWÓD WIZUALNY — PASS-WITH-NOTES.** Test produkcyjnych `stackVitals()` i `applyUnitCommanderStar()` pokrywa brak dowódcy, dowódcę jako innego członka stosu, usunięcie znaku po utracie dowódcy, osobną gwiazdę ponad trzema gwiazdkami XP, idempotencję, helper Stone i emblemat 4×. Obejrzałem oba obrazy: `09-game-full-map.png` to rzeczywisty klient z wygenerowaną mapą i pełnym UI, lecz w naturalnym stanie startowym bez jednostki wojskowej; `08-unitrenderer-map-scene.png` jest wyraźnie podpisanym harness’em mapowym, który pokazuje jednostkę modelu `Wojownik` przez produkcyjne `UnitRenderer.sync()` wraz z agregowanym stanem stosu i tabliczką. Oba mają viewport 1440×1000. To jest użyteczny dowód wizualny w skali mapy: jednostka ma odrębną gwiazdę dowódcy nad rzędem trzech XP, a emblemat jest czytelny przy tabliczce. Niezależny pomiar Evaluatora przy jego progu daje pierścień 71×71 px, gwiazdę dowódcy 18×17 px i XP po 11×10 px; Operator raportuje 72×71, 20×18 i około 11×11 px przy innym progu antyaliasingu. Oba pomiary potwierdzają kompozycję. Proporcję 4× potwierdzają kod `0.80 / 0.20` oraz test, nie porównanie pikseli do starego obrazu.
+
+## Korekta pomiaru kamery i zakres dowodu
+
+Harness ustawia `camera.position=(0,13,10)` i cel `(0,0.5,0)`. Rzeczywisty kąt elewacji wynosi więc `atan((13−0.5)/10) = 51.34°`, a nie 52.4° (`atan(13/10)`, które pomija wysokość celu) podane przez Operatora i Evaluatora. Odchylenie od nominalnych 52° jest około 0.66°; obraz zachowuje praktycznie tę samą mapową skalę i nie unieważnia dowodu. Pełny ekran gry i marker nie występują w tym samym zrzucie: gra osiągnęła ekran mapy bez oddziału, więc marker pokazuje osobny, jawnie opisany harness z produkcyjnym rendererem. Nie przedstawiam harnessu jako pełnego stanu gameplay ani pełnego `buildScene` terenu.
+
+Jedyna uwaga dla `PASS-WITH-NOTES` to udokumentowane 404 `/favicon.ico`, pre-existing brak zasobu serwera podglądu poza zakresem tematu i bez wpływu na uruchomienie gry. Pozostałe ograniczenie kontekstu jest jawne, a wymagane zachowanie odznaki jest widoczne w rzeczywistym rendererze przy rzeczywistej rozdzielczości i kamerze mapowej. Tym samym r3-owa luka dowodowa jest domknięta na poziomie renderowego proof; nie twierdzę, że wykonano playtest dowódcy na pełnej mapie klienta.
+
+Nie wykonano commit, push, merge, integracji ani deployu.

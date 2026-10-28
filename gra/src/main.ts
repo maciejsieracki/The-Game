@@ -887,7 +887,9 @@ import { attemptGeneralPurchase, canRecruitGeneral, generalFollowDestination, ge
 import { promoteAiUnitForEra } from './game/ai-era-unit-promotion';
 import {
   aiGeneralCampaignToSave,
+  aiWarTargetHasReachableLandNeighbor,
   chooseAiGeneralWarTarget,
+  findAiWarLandReachability,
   reconcileAiGeneralWarCampaign,
   restoreAiGeneralCampaigns,
   type AiGeneralWarCampaign,
@@ -1266,6 +1268,7 @@ import {
 import type { BarbCamp, BarbUnit } from './game/barbarians';
 import { isWarAllInCapitalEnabled, type WarAllInContext, type WarCapitalTarget } from './game/warAllInCapital';
 import { isArmyConsolidationEnabled } from './game/army-consolidation';
+import { isEligibleForArmyConcentration } from './game/army-concentration';
 // R-WEB-WAR-RULES-MULTIWAR-Q1: bramki wojen (R1 tura 40, R2 limit Kamienia; R3 max 1 wojna epoki na epokę globalnie) + W1/W2.
 import {
   WAR_RULES_PARAMS,
@@ -6902,11 +6905,39 @@ async function boot(): Promise<void> {
         .filter(targetId => targetId >= 0 && targetId !== ownerId && !isBarbarian(targetId)
           && !eliminatedOwners.has(targetId)
           && getDiploRelation(ownerId, targetId).status === 'wojna');
+      const routeProbes = units.filter(unit => unit.ownerId === ownerId
+        && isEligibleForArmyConcentration(unit, ownerId));
+      let routeProbe: RuntimeUnit | undefined = routeProbes[0] && capital
+        ? { ...routeProbes[0], q: capital.q, r: capital.r }
+        : undefined;
+      if (!routeProbe && capital) {
+        const offer = bestGeneralUnitForOwner(ownerId);
+        const definition = offer && data.units.find(unit => unit.Jednostka === offer.id);
+        if (offer && definition) routeProbe = {
+          id: 'ai-war-campaign-route-probe', ownerId, typeId: offer.id,
+          category: categoryOf(
+            offer.id,
+            String(definition['Rola (linia)'] ?? ''),
+            definition['Super-jednostka'] === 'TAK',
+            String(definition.Typ ?? ''),
+          ),
+          q: capital.q, r: capital.r,
+          ruch: normFieldVal(definition['Ruch'], 2), ruchLeft: 2, hp: 1,
+        } as RuntimeUnit;
+      }
+      const blockedRouteKeys = new Set(cities.filter(city => city.ownerId !== ownerId)
+        .map(city => keyOf(city.q, city.r)));
+      const routeReachability = routeProbe
+        ? findAiWarLandReachability(routeProbe, map, blockedRouteKeys)
+        : undefined;
       const candidates = targetOwners.flatMap(targetId => {
         const targetCapitalId = capitalCityIdForOwner(targetId);
         const target = cities.find(city => city.id === targetCapitalId && city.ownerId === targetId);
         return target ? [{ ownerId: targetId, distance: capital
-          ? hexDistance(capital.q, capital.r, target.q, target.r) : 0, target }] : [];
+          ? hexDistance(capital.q, capital.r, target.q, target.r) : 0,
+          reachable: routeReachability !== undefined
+            && aiWarTargetHasReachableLandNeighbor(routeReachability, target),
+          target }] : [];
       });
       const prior = aiGeneralWarCampaignByOwner.get(ownerId);
       const targetOwnerId = chooseAiGeneralWarTarget(prior, candidates);

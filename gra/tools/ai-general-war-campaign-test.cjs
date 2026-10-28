@@ -8,7 +8,8 @@ const bundle = path.resolve(__dirname, '.ai-general-war-campaign-bundle.cjs');
 fs.writeFileSync(entry, `
 export { decideAITurn } from '../src/game/ai';
 export { chooseAiGeneralWarTarget, reconcileAiGeneralWarCampaign, recordAiGeneralGatherTurn,
-  aiGeneralCampaignToSave, restoreAiGeneralCampaigns } from '../src/game/ai-general-war-campaign';
+  aiGeneralCampaignToSave, restoreAiGeneralCampaigns,
+  findAiWarLandReachability, aiWarTargetHasReachableLandNeighbor } from '../src/game/ai-general-war-campaign';
 `, 'utf8');
 try {
   esbuild.buildSync({ entryPoints: [entry], bundle: true, platform: 'node', format: 'cjs', target: 'node18', outfile: bundle, logLevel: 'silent' });
@@ -87,6 +88,12 @@ check('sixth owner turn starts the offensive after five complete gather turns',
 check('attack-stage target is exactly the selected enemy even with another war city present',
   attackCommands.filter(command => command.type === 'move').length > 0
     && attackCommands.filter(command => command.type === 'move').every(command => command.targetCityId === 'enemy-near'));
+const expectedAttackRoster = troops.map(u => u.id);
+const attackMovesByUnit = new Map(attackCommands.filter(command => command.type === 'move')
+  .map(command => [command.unitId, command]));
+check(`attack stage issues same-target movement for every stacked eligible unit (${expectedAttackRoster.length}/${expectedAttackRoster.length})`,
+  expectedAttackRoster.every(id => attackMovesByUnit.get(id)?.targetCityId === 'enemy-near'),
+  `ordered ${[...attackMovesByUnit.keys()].join(',')}`);
 
 const deadRestart = M.reconcileAiGeneralWarCampaign(campaign, 2, undefined, false, ['general-survivor']);
 check('leader death restarts recruiting and resets the muster counter',
@@ -105,6 +112,21 @@ check('current target stays selected while it remains an active war',
   M.chooseAiGeneralWarTarget({ ...campaign, targetOwnerId: 4 }, [
     { ownerId: 2, distance: 1 }, { ownerId: 4, distance: 8 },
   ]) === 4);
+const routeMap = makeMap();
+for (let r = 0; r < routeMap.wysokoscR; r++) routeMap.hexes[`6,${r}`].terenBazowy = 'morze';
+const routeProbe = unit('route-probe', 3, 4);
+const routeBlocked = new Set(['7,4', '3,9']);
+const reachability = M.findAiWarLandReachability(routeProbe, routeMap, routeBlocked);
+const nearBlockedReachable = M.aiWarTargetHasReachableLandNeighbor(reachability, { q: 7, r: 4 });
+const farLandReachable = M.aiWarTargetHasReachableLandNeighbor(reachability, { q: 3, r: 9 });
+check('one connected-component search covers the campaign target set', reachability.searchCount === 1 && reachability.visitedHexCount > 0);
+check('route search rejects the closer enemy capital behind a full-width sea barrier', !nearBlockedReachable);
+check('route search accepts the farther enemy capital on the same landmass', farLandReachable);
+check('campaign picks the nearest reachable land target when the closer enemy is noPath',
+  M.chooseAiGeneralWarTarget(undefined, [
+    { ownerId: 2, distance: 4, reachable: nearBlockedReachable },
+    { ownerId: 3, distance: 5, reachable: farLandReachable },
+  ]) === 3);
 
 const persistentCampaign = { targetOwnerId: campaign.targetOwnerId, stage: campaign.stage,
   generalUnitId: campaign.generalUnitId, gatherTurnsCompleted: campaign.gatherTurnsCompleted,
@@ -126,8 +148,14 @@ check('restore rejects malformed campaign records', M.restoreAiGeneralCampaigns(
 check('AI owner turn prepares the campaign and calls the shared General purchase transaction',
   main.includes('prepareAiGeneralWarCampaign(ownerId)')
     && main.includes('purchaseRecruitmentUnit(capital.id, offer.id, offer.koszt, ownerId, 1, { isGeneral: true })'));
-check('General offer keeps existing capital availability gates for era and barracks',
-  /purchasableUnits\(\s*capital,\s*data,\s*unlockedTechsForOwner\(ownerId\),\s*\{ \.\.\.productionAvailabilityCtxForCity\(capital\)/s.test(main));
+check('main filters campaign war targets by one land reachability component rooted at the AI capital',
+  main.includes('findAiWarLandReachability(routeProbe, map, blockedRouteKeys)')
+    && main.includes('aiWarTargetHasReachableLandNeighbor(routeReachability, target)'));
+check('General offer uses capital production availability, including era, barracks, tech, and stock gates',
+  main.includes('const availability = { ...productionAvailabilityCtxForCity(capital), showStockGatedUnits: true };')
+    && /purchasableUnits\(\s*capital,\s*data,\s*techs,\s*availability,\s*\)/s.test(main)
+    && main.includes('attemptGeneralPurchase({'),
+  `availability=${main.includes('const availability = { ...productionAvailabilityCtxForCity(capital), showStockGatedUnits: true };')}; offerCall=${/purchasableUnits\(\s*capital,\s*data,\s*techs,\s*availability,\s*\)/s.test(main)}; transaction=${main.includes('attemptGeneralPurchase({')}`);
 check('campaign state is written to and restored from save metadata',
   main.includes('aiGeneralWarCampaignByOwner: aiGeneralCampaignToSave(aiGeneralWarCampaignByOwner)')
     && main.includes('restoreAiGeneralCampaigns(saved.meta?.aiGeneralWarCampaignByOwner)'));

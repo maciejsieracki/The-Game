@@ -1,4 +1,6 @@
+import { hexNeighborCoords, keyOf, terrainMoveCost } from '../units/setup';
 import type { RuntimeUnit } from '../units/setup';
+import type { GameMap } from '../types/map';
 
 export type AiGeneralWarCampaignStage = 'recruiting' | 'gathering' | 'attacking';
 
@@ -14,15 +16,59 @@ export interface AiGeneralWarCampaign {
 
 export const AI_GENERAL_WAR_GATHER_TURNS = 5;
 
+export interface AiWarLandReachability {
+  hexKeys: ReadonlySet<string>;
+  visitedHexCount: number;
+  /** One breadth-first traversal builds the whole connected land component. */
+  searchCount: 1;
+}
+
+export function findAiWarLandReachability(
+  probe: RuntimeUnit,
+  map: GameMap,
+  blockedKeys: ReadonlySet<string>,
+): AiWarLandReachability {
+  const startKey = keyOf(probe.q, probe.r);
+  const hexKeys = new Set<string>();
+  if (!(startKey in map.hexes) || blockedKeys.has(startKey)
+      || terrainMoveCost(map.hexes[startKey]!) === Infinity) {
+    return { hexKeys, visitedHexCount: 0, searchCount: 1 };
+  }
+  const queue = [probe.q, probe.r];
+  hexKeys.add(startKey);
+  for (let offset = 0; offset < queue.length; offset += 2) {
+    const q = queue[offset]!;
+    const r = queue[offset + 1]!;
+    for (const neighbor of hexNeighborCoords(q, r)) {
+      const neighborKey = keyOf(neighbor.q, neighbor.r);
+      if (hexKeys.has(neighborKey) || blockedKeys.has(neighborKey)
+          || !(neighborKey in map.hexes)
+          || terrainMoveCost(map.hexes[neighborKey]!) === Infinity) continue;
+      hexKeys.add(neighborKey);
+      queue.push(neighbor.q, neighbor.r);
+    }
+  }
+  return { hexKeys, visitedHexCount: hexKeys.size, searchCount: 1 };
+}
+
+export function aiWarTargetHasReachableLandNeighbor(
+  reachability: AiWarLandReachability,
+  target: { q: number; r: number },
+): boolean {
+  return hexNeighborCoords(target.q, target.r)
+    .some(neighbor => reachability.hexKeys.has(keyOf(neighbor.q, neighbor.r)));
+}
+
 export function chooseAiGeneralWarTarget(
   current: AiGeneralWarCampaign | undefined,
-  candidates: readonly { ownerId: number; distance: number }[],
+  candidates: readonly { ownerId: number; distance: number; reachable?: boolean }[],
 ): number | null {
-  if (candidates.length === 0) return null;
-  if (current && candidates.some(candidate => candidate.ownerId === current.targetOwnerId)) {
+  const reachable = candidates.filter(candidate => candidate.reachable !== false);
+  if (reachable.length === 0) return null;
+  if (current && reachable.some(candidate => candidate.ownerId === current.targetOwnerId)) {
     return current.targetOwnerId;
   }
-  return [...candidates].sort((a, b) => a.distance - b.distance || a.ownerId - b.ownerId)[0]!.ownerId;
+  return [...reachable].sort((a, b) => a.distance - b.distance || a.ownerId - b.ownerId)[0]!.ownerId;
 }
 
 export function reconcileAiGeneralWarCampaign(

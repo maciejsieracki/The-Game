@@ -60,7 +60,6 @@ const probe = `
       },
       purchase: (cityId: string, itemId: string, cost: number) => purchaseRecruitmentUnit(cityId, itemId, cost, 0, 1, { isGeneral: true }),
       snapshot: __generalSnapshot,
-      finishRecruitmentByTurn: () => triggerPlayerEndTurn(),
       buyOrdinary: (cityId: string, itemId: string) => {
         const item = unitProductionItem(itemId, data, civBonusyForOwnerId(0), player.kosztJednostekPace ?? 'niski', 0, _menuDifficulty);
         if (!item) return { accepted: false, reason: 'no-unit-offer' };
@@ -101,6 +100,13 @@ const probe = `
       },
       ownerCities: (ownerId: number) => cities.filter(c => c.ownerId === ownerId).map(c => ({ id: c.id, q: c.q, r: c.r, capital: c.id === capitalCityIdForOwner(ownerId) })),
       beginWarCampaign: (ownerId: number, targetId: number) => {
+        // The production map can place the two capitals on separate continents.
+        // This bounded live fixture asks about a land campaign, so make its map
+        // explicitly land-connected before exercising the production turn path.
+        for (const hex of Object.values(map.hexes)) {
+          hex.terenBazowy = 'laka';
+          hex.nakladka = 'brak';
+        }
         const relation = getDiploRelation(ownerId, targetId);
         setDiploRelation(ownerId, targetId, { ...relation, status: 'wojna' });
         const capitalId = capitalCityIdForOwner(ownerId);
@@ -120,70 +126,90 @@ const probe = `
       },
       campaignState: (ownerId: number) => {
         const capitalId = capitalCityIdForOwner(ownerId);
-        return { turn, campaign: aiGeneralWarCampaignByOwner.get(ownerId) ?? null,
+        const campaign = aiGeneralWarCampaignByOwner.get(ownerId) ?? null;
+        return { turn, campaign,
           capitalId, queue: (cityProd.get(capitalId)?.rekrutacja ?? []).map(x => ({ id: x.id, isGeneral: x.isGeneral === true })),
           generals: units.filter(u => u.ownerId === ownerId && u.isGeneral === true).map(u => ({ id: u.id, q: u.q, r: u.r })),
+          targetCityId: campaign ? capitalCityIdForOwner(campaign.targetOwnerId) : null,
           troopCount: units.filter(u => u.ownerId === ownerId && u.isGeneral !== true).length };
       },
       refreshCampaign: (ownerId: number) => {
         const campaign = prepareAiGeneralWarCampaign(ownerId);
         return { campaign: campaign ?? null, state: (window as any).__generalRuntime.campaignState(ownerId) };
       },
-      addCampaignTroop: (ownerId: number) => {
-        const general = units.find(u => u.ownerId === ownerId && u.isGeneral === true);
+      addMusterStackBeforeSetup: (ownerId: number) => {
+        const campaign = aiGeneralWarCampaignByOwner.get(ownerId);
+        const capitalId = capitalCityIdForOwner(ownerId);
+        const capital = cities.find(c => c.id === capitalId && c.ownerId === ownerId);
         const def = data.units.find(u => u.Jednostka === 'Wojownik');
-        if (!general || !def) return { error: 'missing-general-or-warrior', general: !!general, def: !!def };
-        const pos = Object.values(map.hexes).map(h => h.coords)
-          .filter(p => hexDistance(general.q, general.r, p.q, p.r) >= 2
-            && hexDistance(general.q, general.r, p.q, p.r) <= 3)
-          .find(p => canOccupyHexForUnit(general, p.q, p.r));
-        if (!pos) return { error: 'no-passable-nearby-hex' };
-        const q = pos.q, r = pos.r;
-        const troop = { id: 'war-campaign-live-test-troop', ownerId, typeId: def.Jednostka,
+        if (!campaign || !capital || !def) return { error: 'missing-campaign-capital-or-unit' };
+        const probe = { id: 'war-campaign-live-stack-probe', ownerId, typeId: def.Jednostka,
           isGeneral: false,
-          category: categoryOf(def.Jednostka, String(def['Rola'] ?? def['Rola (linia)'] ?? ''), def['Super-jednostka'] === 'TAK', def['Typ']),
-          q, r, ruch: applyRuchSwiataPace(normFieldVal(def['Ruch'], 2), player.ruchSwiataPace ?? 'krotki'),
+          category: categoryOf(def.Jednostka, String(def['Rola'] ?? def['Rola (linia)'] ?? ''),
+            def['Super-jednostka'] === 'TAK', def['Typ']),
+          q: capital.q, r: capital.r,
+          ruch: applyRuchSwiataPace(normFieldVal(def['Ruch'], 2), player.ruchSwiataPace ?? 'krotki'),
           ruchLeft: 2, hp: 30, hpMax: 30 } as RuntimeUnit;
-        units.push(troop);
-        return { id: troop.id, q, r, general: { q: general.q, r: general.r }, typeId: troop.typeId };
+        const ids: string[] = [];
+        for (let index = 1; index <= 3; index++) {
+          const troop = { ...probe, id: 'war-campaign-live-stack-' + index };
+          units.push(troop);
+          ids.push(troop.id);
+        }
+        return { ids, start: { q: capital.q, r: capital.r } };
       },
-      positionCampaignTroopForAttack: (ownerId: number) => {
-        const troop = units.find(u => u.ownerId === ownerId && u.id === 'war-campaign-live-test-troop');
-        const targetId = aiGeneralWarCampaignByOwner.get(ownerId)?.targetOwnerId;
-        const city = cities.find(c => c.ownerId === targetId && c.id === capitalCityIdForOwner(targetId));
-        if (!troop || !city) return { error: 'missing-troop-or-target', troop: !!troop, target: !!city };
-        const pos = Object.values(map.hexes).map(h => h.coords)
-          .filter(p => hexDistance(city.q, city.r, p.q, p.r) === 1)
-          .find(p => canOccupyHexForUnit(troop, p.q, p.r));
-        if (!pos) return { error: 'no-passable-hex-adjacent-to-target', city: { q: city.q, r: city.r } };
-        troop.q = pos.q; troop.r = pos.r; troop.ruchLeft = troop.ruch;
-        return { troopId: troop.id, troop: { q: pos.q, r: pos.r }, city: { id: city.id, q: city.q, r: city.r } };
+      stackMusterUnitsAtGeneral: (ownerId: number, ids: string[]) => {
+        const campaign = aiGeneralWarCampaignByOwner.get(ownerId);
+        const general = campaign?.generalUnitId ? units.find(u => u.id === campaign.generalUnitId) : undefined;
+        if (!general) return { error: 'missing-physical-general' };
+        for (const id of ids) {
+          const unit = units.find(u => u.id === id);
+          if (!unit) return { error: 'missing-stack-unit', id };
+          unit.q = general.q; unit.r = general.r;
+        }
+        return { start: { q: general.q, r: general.r }, general: { id: general.id, q: general.q, r: general.r } };
       },
-      runCampaignPlannerTurn: (ownerId: number) => {
-        const campaign = prepareAiGeneralWarCampaign(ownerId);
-        if (!campaign) return { error: 'no-campaign', state: (window as any).__generalRuntime.campaignState(ownerId) };
-        for (const unit of units) if (unit.ownerId === ownerId && !unit.inGarnizon) unit.ruchLeft = unit.ruch;
-        const plannerOptions: any = { currentTurn: turn, aiGeneralWarCampaign: campaign,
-          canEngageOwner: (targetId: number) => getDiploRelation(ownerId, targetId).status === 'wojna',
-          warAllIn: { targets: [campaign.target] } };
-        const commands = decideAITurn(ownerId, units, cities, map, data, plannerOptions);
-        const next = plannerOptions.aiGeneralWarCampaign;
-        if (next) aiGeneralWarCampaignByOwner.set(ownerId, {
-          targetOwnerId: next.targetOwnerId, stage: next.stage,
-          ...(next.generalUnitId ? { generalUnitId: next.generalUnitId } : {}),
-          ...(next.blockedGeneralIds ? { blockedGeneralIds: [...next.blockedGeneralIds] } : {}),
-          gatherTurnsCompleted: next.gatherTurnsCompleted,
-          ...(next.lastGatherTurn !== undefined ? { lastGatherTurn: next.lastGatherTurn } : {}),
-        });
-        const result = { ownerId, targetId: campaign.target.ownerId, turn, stageBefore: campaign.stage,
-          stageAfter: next?.stage, gathered: next?.gatherTurnsCompleted,
-          generalUnitId: next?.generalUnitId, targetCityId: campaign.target.cityId,
-          movementTargets: commands.filter(c => c.type === 'move').map(c => ({ unitId: c.unitId, targetCityId: c.targetCityId, toQ: c.toQ, toR: c.toR })),
-          movementCount: commands.filter(c => c.type === 'move').length,
-          attackCount: commands.filter(c => c.type === 'attack').length };
-        turn += 1;
-        return result;
+      addCampaignStackForRealEndTurn: (ownerId: number) => {
+        const campaign = aiGeneralWarCampaignByOwner.get(ownerId);
+        const general = campaign?.generalUnitId
+          ? units.find(u => u.ownerId === ownerId && u.id === campaign.generalUnitId && u.isGeneral === true)
+          : undefined;
+        const target = campaign && cities.find(c => c.ownerId === campaign.targetOwnerId
+          && c.id === capitalCityIdForOwner(campaign.targetOwnerId));
+        const capitalId = capitalCityIdForOwner(ownerId);
+        const capital = cities.find(c => c.id === capitalId && c.ownerId === ownerId);
+        const def = data.units.find(u => u.Jednostka === 'Wojownik');
+        if (!campaign || !general || !target || !capital || !def) return { error: 'missing-campaign-target-or-unit' };
+        const probe = { id: 'war-campaign-live-stack-probe', ownerId, typeId: def.Jednostka,
+          isGeneral: false,
+          category: categoryOf(def.Jednostka, String(def['Rola'] ?? def['Rola (linia)'] ?? ''),
+            def['Super-jednostka'] === 'TAK', def['Typ']),
+          q: general.q, r: general.r,
+          ruch: applyRuchSwiataPace(normFieldVal(def['Ruch'], 2), player.ruchSwiataPace ?? 'krotki'),
+          ruchLeft: 2, hp: 30, hpMax: 30 } as RuntimeUnit;
+        const blocked = new Set(cities.filter(c => c.ownerId !== ownerId).map(c => String(c.q) + ',' + String(c.r)));
+        const reachability = findAiWarLandReachability({ ...probe, q: capital.q, r: capital.r }, map, blocked);
+        if (!aiWarTargetHasReachableLandNeighbor(reachability, target)) return { error: 'target-is-not-land-reachable' };
+        const start = { q: general.q, r: general.r };
+        const ids: string[] = [];
+        for (let index = 1; index <= 3; index++) {
+          const troop = { ...probe, id: 'war-campaign-live-stack-' + index, q: start.q, r: start.r };
+          units.push(troop);
+          ids.push(troop.id);
+        }
+        return {
+          ids, start, target: { id: target.id, q: target.q, r: target.r },
+          general: { id: general.id, q: general.q, r: general.r },
+        };
       },
+      runRealEndTurn: () => triggerPlayerEndTurn(),
+      currentTurn: () => turn,
+      endTurnInProgress: () => endTurnInProgress,
+      aiCommandHistory: () => (window as any).__generalAiCommandHistory ?? [],
+      positions: (ids: string[]) => ids.map(id => {
+        const u = units.find(candidate => candidate.id === id);
+        return u ? { id, q: u.q, r: u.r } : null;
+      }),
       campaignSaveRoundTrip: (ownerId: number) => {
         const before = aiGeneralWarCampaignByOwner.get(ownerId);
         const saved = aiGeneralCampaignToSave(aiGeneralWarCampaignByOwner);
@@ -206,6 +232,12 @@ const inject: Plugin = {
     if (id.endsWith('/src/main.ts')) {
       const anchor = '    (window as any).__civ_getResearchedTechs = () => Array.from(player.zbadane);';
       if (!code.includes(anchor)) throw new Error('General probe: main anchor missing');
+      const commandAnchor = '                commands = decideAITurn(ownerId, units, cities, map, data, opts);';
+      if (!code.includes(commandAnchor)) throw new Error('General probe: AI command anchor missing');
+      code = code.replace(commandAnchor, commandAnchor + "\n                const __campaignTurnEvidence = { ownerId, turn, commands: commands.map(command => ({ ...command })), moveResults: [] as unknown[] };\n                ((window as any).__generalAiCommandHistory ??= []).push(__campaignTurnEvidence);\n                (window as any).__generalCurrentAiTurnEvidence = __campaignTurnEvidence;");
+      const moveAnchor = '                  if (moveResult.moved) {';
+      if (!code.includes(moveAnchor)) throw new Error('General probe: AI movement result anchor missing');
+      code = code.replace(moveAnchor, "                  (window as any).__generalCurrentAiTurnEvidence?.moveResults.push({ ownerId, unitId: u.id, command: { ...cmd }, moved: moveResult.moved, path: moveResult.path });\n" + moveAnchor);
       return code.replace(anchor, anchor + '\n' + probe);
     }
     return null;

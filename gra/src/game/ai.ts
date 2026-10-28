@@ -4274,10 +4274,46 @@ function appendAiGeneralCampaignOrders(
     return true;
   }
   if (campaign.stage === 'attacking' && general) {
+    const campaignCommandStart = commands.length;
     applyWarAllInCapitalToCommands(
       commands, myUnits, units, cities, playerId, map,
       { targets: [campaign.target] }, data,
     );
+    // Campaign members can already be concentrated on one friendly hex after
+    // five muster turns. The shared war planner reserves each destination once,
+    // so without this expansion it emits an order for only part of that stack.
+    // Preserve one route for every eligible unit in each starting stack and let
+    // the real AI move executor admit its friendly-stack destination.
+    const campaignMoves = commands.slice(campaignCommandStart)
+      .filter((command): command is Extract<AICommand, { type: 'move' }> => command.type === 'move');
+    const stackGroups = new Map<string, RuntimeUnit[]>();
+    for (const unit of myUnits) {
+      if (!isEligibleForArmyConcentration(unit, playerId)) continue;
+      const key = keyOf(unit.q, unit.r);
+      const group = stackGroups.get(key) ?? [];
+      group.push(unit);
+      stackGroups.set(key, group);
+    }
+    const expandedStackIds = new Set<string>();
+    const stackOrders: Extract<AICommand, { type: 'move' }>[] = [];
+    for (const group of stackGroups.values()) {
+      if (group.length < 2) continue;
+      const ids = new Set(group.map(unit => unit.id));
+      const route = campaignMoves.find(command => ids.has(command.unitId));
+      if (!route) continue;
+      for (const unit of group) expandedStackIds.add(unit.id);
+      for (const unit of group) stackOrders.push({
+        ...route,
+        unitId: unit.id,
+        allowFriendlyStack: true,
+      });
+    }
+    if (expandedStackIds.size > 0) {
+      commands.splice(campaignCommandStart, commands.length - campaignCommandStart,
+        ...commands.slice(campaignCommandStart).filter(command =>
+          command.type !== 'move' || !expandedStackIds.has(command.unitId)));
+      commands.push(...stackOrders);
+    }
     commands.push({ type: 'endTurn' });
     return true;
   }

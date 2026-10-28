@@ -1,5 +1,14 @@
 # REJESTR PRÓŚB I ZADAŃ — kanoniczny indeks + historia
 
+## `R-AI-GENERAL-WAR-5TURN-ATTACK-Q1` + `R-ARMY-COMMANDER-UNIT-MARKERS-20261028` — wspólna integracja ROBOCZA
+
+- STATUS: integracja na czystej bazie `85f8c5f0e0aa6ff46aa8b85a03d0bc0c71d86268`; oba zakresy są niezależnie zaakceptowane do integracji (AI: PASS; oznaczenia: PASS-WITH-NOTES).
+- AI: po pięciu pełnych turach zbiórki kampania przechodzi do ataku; live Chromium przez produkcyjny end-turn wykonał w szóstej turze ruch 4/4 jednostek, łącznie z fizycznym wodzem. Test logiki 31/31; test live 24/24.
+- Oznaczenia: odrębna gwiazda wodza nad trzema gwiazdami doświadczenia, emblemat cywilizacji 4×; test 11/11. Final Control dopuszcza integrację na podstawie mapowego render proof; brak pełnego gameplay screenshot z wojskowym oddziałem pozostaje odnotowaną uwagą.
+- Wspólne testy integracyjne: army consolidation 6/6, era-war offense 7/7, TypeScript PASS, `git diff --check` PASS. AI morska kampania i test dużego imperium są poza tymi dwoma zakresami.
+- Raporty: `dyspozycje/autobot/runs/R-AI-GENERAL-WAR-5TURN-ATTACK-Q1/` oraz `dyspozycje/autobot/runs/R-ARMY-COMMANDER-UNIT-MARKERS-20261028/`.
+- Na etapie wpisu: build produkcyjny przeszedł (916 modułów), release Roboczej i zdalny readback są kolejnymi bramkami; brak deklaracji publikacji przed ich wykonaniem.
+
 ## `R-CIV-ALL-TOPICS-ROBOCZA-20261027` — DEPLOY-ROBOCZA / remote readback PASS
 
 - STATUS: DEPLOY-ROBOCZA — testowy, ograniczony release; nie jest odbiorem pełnej rozgrywki.

@@ -45,7 +45,7 @@ import { applyUnitUpgradeBadgeRow, syncUnitUpgradeBadges } from './unitUpgradeBa
 // VETERAN_BADGE_RESERVED_Y. Zasoby to singletony modułu, jak wyżej.
 // VETERAN_BADGE_HIT_UD: znacznik siatek gwiazdek dla raycastera — tooltip
 // poziomu weterana (C-OBCE-JEDN-Q3) rozpoznaje po nim trafienie w odznakę.
-import { applyUnitVeteranBadgeStarCount, syncUnitVeteranBadges, VETERAN_BADGE_HIT_UD } from './unitVeteranBadges';
+import { applyUnitCommanderStar, applyUnitVeteranBadgeStarCount, syncUnitVeteranBadges, VETERAN_BADGE_HIT_UD } from './unitVeteranBadges';
 // Znak właściciela przy lewej krawędzi żetonu (C-OBCE-JEDN-Q2): portret władcy /
 // sygnet kultury miasta-państwa / czaszka barbarzyńców. Kontekst właściciela
 // wstrzykuje main.ts przez setOwnerEmblemResolver — ten renderer nie sięga do
@@ -6141,6 +6141,7 @@ export class UnitRenderer {
       const tokenObj = this.tokens.get(unit.id);
       if (tokenObj) {
         const vitals = stackDisplay?.vitalsByRepId?.get(unit.id);
+        applyUnitCommanderStar(tokenObj, vitals ? vitals.hasCommander : unit.isGeneral === true);
         if (vitals) {
           // Odznaki ulepszeń budynkowych — poziom OSOBNO dla ścieżki A
           // (Pancerz → Kuźnia, prawo) i ścieżki B (Parametry → Koszary, lewo).
