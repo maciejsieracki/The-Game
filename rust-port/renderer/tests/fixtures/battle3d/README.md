@@ -230,4 +230,4 @@ The injected lookups (`_pickUnitAtScreen`, `_pickGroundTile`, `_moveDestinations
 |---|---|
 | `units.json` | the vectors above (645 438 B) |
 | `gen_units.ts`, `build_units.mjs` | generator and bundler (uses `dom_stub.ts`, `three_shim.ts` of part 2) |
-| `mutate_units.py` | mutation run (42 mutants of `src/battle/units.rs`; runs `--lib battle::units` and `--test battle3d_units`) |
+| `mutate_units.py` | mutation run (43 mutants of `src/battle/units.rs`; measured 43/43 killed, r1 pomiary; runs `--lib battle::units` and `--test battle3d_units`) |

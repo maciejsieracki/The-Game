@@ -39,6 +39,8 @@ MUTANTS = [
     ('ammo shown rule', 'let ammo_shown = s.ammo_max.is_finite() && s.ammo_max > 0.0;', 'let ammo_shown = s.ammo_max > 0.0;'),
     ('js_max NaN', 'if a.is_nan() || b.is_nan() {\n        return f64::NAN;\n    }\n    if a == b {\n        return if a.is_sign_negative() { b } else { a };',
      'if a.is_nan() {\n        return b;\n    }\n    if a == b {\n        return if a.is_sign_negative() { b } else { a };'),
+    ('js_min NaN', 'if a.is_nan() || b.is_nan() {\n        return f64::NAN;\n    }\n    if a == b {\n        return if a.is_sign_negative() { a } else { b };',
+     'if b.is_nan() {\n        return a;\n    }\n    if a == b {\n        return if a.is_sign_negative() { a } else { b };'),
     # fallback avatar / spawn
     ('fallback head y', 's.nodes[head].position.y = 0.35;', 's.nodes[head].position.y = 0.36;'),
     ('bars height', 'scene.set_pos(bars.group, x, top_y + HPBAR_Y, z);', 'scene.set_pos(bars.group, x, top_y, z);'),

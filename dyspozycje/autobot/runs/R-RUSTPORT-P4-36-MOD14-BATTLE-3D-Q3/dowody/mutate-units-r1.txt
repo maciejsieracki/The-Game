@@ -1,0 +1,63 @@
+## R-RUSTPORT-P4-36-MOD14-BATTLE-3D-Q3 Operator "pomiary" r1 - mutate_units.py on d2fecbb3
+## runner: MUTANTS[a:b] slices (foreground timeout), RUSTUP_TOOLCHAIN=1.87.0 CARGO_INCREMENTAL=0 CARGO_PROFILE_DEV_DEBUG=0
+## (a 2-mutant timing probe MUTANTS[0:2] ran before this log: HPBAR_W, HPBAR_Y KILLED 2/2)
+## batch MUTANTS[0:14] of 42
+KILLED   HPBAR_W (test failed)
+KILLED   HPBAR_Y (test failed)
+KILLED   WALL_WALK_Y (test failed)
+KILLED   dirYaw fallback (test failed)
+KILLED   sideColor own (test failed)
+KILLED   frame width pad (test failed)
+KILLED   frame y (test failed)
+KILLED   fg z offset (test failed)
+KILLED   flag x (test failed)
+KILLED   hp green threshold (test failed)
+KILLED   hp yellow threshold (test failed)
+KILLED   morale red channel (test failed)
+KILLED   ammo fg visibility (test failed)
+KILLED   ammo shown rule (test failed)
+KILLED 14/14
+## batch rc=0 elapsed=288s
+## batch MUTANTS[14:28] of 42
+SURVIVED js_max NaN
+KILLED   fallback head y (test failed)
+KILLED   bars height (test failed)
+KILLED   deploy scale reset (test failed)
+KILLED   wall yaw (test failed)
+KILLED   wall centre row (test failed)
+KILLED   remove hides group (test failed)
+KILLED   deploy move y (test failed)
+KILLED   climb bars height (test failed)
+KILLED   ring outer radius (test failed)
+KILLED   ring y (test failed)
+KILLED   ring group colour (test failed)
+KILLED   visuals scale reset (test failed)
+KILLED   visuals ring recentre (test failed)
+KILLED 13/14
+## batch rc=1 elapsed=302s
+## batch MUTANTS[28:42] of 42
+KILLED   arrow min length (test failed)
+KILLED   arrow head length (test failed)
+KILLED   arrow shaft length (test failed)
+KILLED   cone opacity cap (test failed)
+KILLED   formation offset default (test failed)
+KILLED   manual input guard (test failed)
+KILLED   tile occupant side (test failed)
+KILLED   group de-duplication (test failed)
+KILLED   battle ghost colour (test failed)
+KILLED   ghost skips own occupant (test failed)
+KILLED   drag disc opacity (test failed)
+KILLED   drag outline opacity (test failed)
+KILLED   anchor lift (test failed)
+KILLED   hover outline dashed (test failed)
+KILLED 14/14
+## batch rc=0 elapsed=318s
+## r1-pomiary: po wzmocnieniu testu js_min_max_follow_ecmascript (NaN jako pierwszy argument)
+## batch MUTANTS[14:15] of 42
+KILLED   js_max NaN (test failed)
+KILLED 1/1
+## batch rc=0 elapsed=7s
+## batch MUTANTS[15:16] of 43
+KILLED   js_min NaN (test failed)
+KILLED 1/1
+## batch rc=0 elapsed=8s

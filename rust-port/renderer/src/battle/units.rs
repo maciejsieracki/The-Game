@@ -1751,7 +1751,9 @@ mod tests {
     #[test]
     fn js_min_max_follow_ecmascript() {
         assert!(js_max(0.0, f64::NAN).is_nan());
+        assert!(js_max(f64::NAN, 0.0).is_nan());
         assert!(js_min(f64::NAN, 1.0).is_nan());
+        assert!(js_min(1.0, f64::NAN).is_nan());
         assert!(js_max(-0.0, 0.0).is_sign_positive());
         assert!(js_min(0.0, -0.0).is_sign_negative());
         assert_eq!(js_max(0.0001, 0.5), 0.5);
