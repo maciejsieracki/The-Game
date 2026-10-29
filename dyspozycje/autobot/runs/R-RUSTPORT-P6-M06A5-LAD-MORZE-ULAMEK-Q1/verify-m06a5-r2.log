@@ -1,0 +1,38 @@
+{
+ "apply": {
+  "clamp_at_min": 4,
+  "clamp_at_max": 9,
+  "clamp_inside_eps": 26,
+  "round_half": 55,
+  "score_eq_tol04": 3338,
+  "mask_score_eq_min": 201,
+  "mask_score_eq_min_pm": 66,
+  "border_dist_9_10_11": [
+   0,
+   0,
+   0
+  ],
+  "border_is_in_B": [
+   1734,
+   542,
+   87
+  ],
+  "apply_cases_dims_ok": 220
+ },
+ "sort": {
+  "ce_eq_tol015": 0,
+  "cases": 120
+ },
+ "rebalance": {
+  "cases": 90,
+  "clamp_at_min": 2,
+  "clamp_at_max": 4,
+  "round_half": 0
+ }
+}
+border dist histogram (apply, dims ok, all cells): [(0, 3798), (1, 1734), (2, 542), (3, 87), (4, 2)]
+sort center-dist diffs near 0.015 (+-5e-4): {'0.0149': 96, '0.015': 96, '0.0151': 96}
+apply score-diff pairs exactly 0.04 (count pairs): {'0.04': 2542}
+sort cases dims None: 10
+apply dims-ok count: 220
+exact f64 |ca-cb|==0.015 hits (w,h<=24): 0 []

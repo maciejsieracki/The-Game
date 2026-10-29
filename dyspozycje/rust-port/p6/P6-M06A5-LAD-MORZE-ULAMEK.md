@@ -73,6 +73,36 @@ Jadra `k_sin/k_cos/rem_pio2` i `masks::v8math` nie byly dotkniete.
 - NIE_ZMIERZONO w tej rundzie: pelna macierz N-1/N/N+1 dla kazdego porownania `<`/`<=`/`>=`, mutacje strukturalne,
   dowody rownowaznosci i pomiar trafien na granicach. To zakres Operator-pomiary (runda 2 tego tematu).
 
+## Pomiary Operatora-pomiary (runda 2, weryfikacja niezalezna)
+
+Dowody: `R-RUSTPORT-P6-M06A5-LAD-MORZE-ULAMEK-Q1/02-operator-pomiary-r2.md`, `mutations-r2.log`
+(46 mutacji + przywrocenie SHA), `verify-m06a5-r2.log` (granice, tie-search), skrypty `mut.py`, `measure*.py`, `tie015.py`.
+
+- Regeneracja wektorow z weba (pin `edb8fb56`, swiezy `git archive`): plik byte-identyczny z commitowanym (`cmp`, EXIT 0).
+- Bramki (surowe logi, EXIT=0): fmt, clippy `--all-targets -D warnings`, test 1270 passed / 0 failed.
+- Mutacje (46): 34 zabite, 12 przezytych. Klasyfikacja przezytych:
+  - EKWIWALENTNE z dowodem: `grow-lt-to-le` i `erode-gt-to-ge` (przy `land == target` petla konczy sie na pierwszej
+    iteracji; brak zmian), `interior-*` (5 mutacji; przebieg 2 `applyLandFractionByScore` jest martwy: kandydaci
+    `interiorOk` (dist>10) sa podzbiorem kandydatow `borderOk` (dist>=2) z tym samym filtrem morza i maski; przebieg 1
+    wyczerpuje kandydatow, gdy `land < target`), `rebal-caps-enforce-swap` (`applyMarginalLandZoneCaps` i
+    `keysAtBorderDistance`/`countLandNeighborsInSet`/`sortLandKeysForErosion` zaleza wylacznie od klasyfikacji woda/lad
+    dla pierscieni d>=2; cap(d<2)=0 i enforce daja ten sam koncowy stan pierscieni 0-1).
+  - EKWIWALENTNE EMPIRYCZNIE: `sort-center-tol-ge` (zero trafien f64 `|ca-cb|==0.015` dla siatek 1..24x1..24, `verify-m06a5-r2.log`).
+  - LUKI NIEEKWIWALENTNE (wymagaja wektora/testu): `nan-guard-off` (web: NaN -> brak zmian; bez straznika Rust:
+    `js_round(NaN)` -> 0 -> erozja calego ladu; Z-4 "nietestowane" jest faktycznie luka), `tol-score-ge` (`>=` zamiast `>`
+    przy dokladnym |sb-sa|==0.04 w f64; np. pary 0.0/0.04 nie ma w wektorach), `sort-default-score-1` (brak wektora z
+    brakujacym score; web `?? 0`).
+- Stale progi wzgledem wektorow: `json-clamp-max-0.8501/0.8499`, `json-clamp-min-0.1501`, `json-tol-score-0.0401`,
+  `json-tol-centrum-0.0151`, `json-pangea-min-*` zabite tylko przez test stalych `landfrac_data_matches_web_constants`
+  (wektory nie rozrozniaja N+1/N-1 dla tych stalych).
+- Max odleglosc od brzegu w wektorach apply = 4 (prog webu 10): wektory nie dotykaja strefy wewnetrznej.
+- `pangea_min_score_wypelnienia` wplywa tylko w trybie `Mask`; `rebalance` uzywa `Center`, wiec wartosc nie jest
+  obserwowalna w rebalance (pokryta testem stalej).
+
+Wymagane domkniecie przed PASS (runda 2 Operatora): (1) test NaN (apply i rebalance z `f64::NAN` -> 0 zmian, mapa bez
+zmian; semantyka webu: `Math.max/min` z NaN = NaN, porownania falszywe); (2) wektor z dokladnym remisem score 0.04 w f64;
+(3) wektor z brakujacym kluczem w `scores` (web `?? 0`).
+
 ## Dryf po pinie (zakres 3186-4374)
 
 `git diff edb8fb56 origin/main -- gra/src/map/gen-helpers.ts`: 1 plik, 24 wstawienia / 16 usuniec.
