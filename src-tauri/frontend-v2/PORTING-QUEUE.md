@@ -195,3 +195,7 @@ Grupy cykliczne (port razem, jedna paczka):
 - **C3** (3): `empireDetailPanel.ts`, `empireDetailTypes.ts`, `hud.ts`
 - **C4** (10): `entityCards/buildingAdapter.ts`, `entityCards/improvementAdapter.ts`, `entityCards/registry.ts`, `entityCards/renderer.ts`, `entityCards/technologyAdapter.ts`, `entityCards/unitAdapter.ts`, `entityCards/wonderAdapter.ts`, `scienceHubHud.ts`, `sciencePicker.ts`, `techDiscoveryNotice.ts`
 - **C5** (2): `sidePanelEventFilter.ts`, `sidePanelHud.ts`
+
+## Status P5-8 K01A (`R-RUSTPORT-P5-8-CITYPANEL-K01A-Q1`, runda 1/5)
+
+Część Fundamentu K01 `cityPanel.ts` (pin `edb8fb56`) bez DOM: **74 jednostki / 521 LOC** przeniesione do `src/ui/cityPanel/k01a-fundament.ts` (kopia 1:1 linii pinu, `export` na deklaracjach, importy tylko z `ui/`). Odroczone **54 jednostki** (importy logiki `game/`/`data/`/`map/`/`render/` albo zależność od nich; w tym `cpInlineIcons` → K01B). Szczegóły, lista i założenia K01A-Z1..Z3: `dyspozycje/rust-port/p5/P5-8-K01A.md`. Harness DOM i mutacje: NIE_ZMIERZONO (kolejna runda).
