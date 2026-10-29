@@ -7353,14 +7353,7 @@ export class BattleScene {
       if (u.onWallWalkway && u.r === wallRow && u.q === wallCol) {
         if (this._isCatapult(u.bu)) {
           // Katapulta obrońcy na wyburzonym kaflu — niszczymy ją
-          u.dead = true;
-          u.fadingOut = true;
-          if (u.isArmyCommander) {
-            this._removeCommanderMoraleBonus(u.side);
-            this._disableManualIfCommanderLost(u.side);
-          }
-          u.fadeStart = performance.now();
-          this.occByKey.delete(cellKey(u.q, u.r));
+          this._startFade(u);
         } else {
           // Piechota/łucznik — cofa się o 1 pole w głąb obrony (wallCol+1)
           const retreatCol = Math.min(BF_COLS - 1, wallCol + 1);
@@ -9146,16 +9139,16 @@ export class BattleScene {
   }
 
   private _startFade(ru: RuntimeBattleUnit): void {
-    if (ru.fadingOut || ru.dead) return;
+    if (ru.fadingOut || ru.dead || ru.removed) return;
     if (ru.isArmyCommander) {
       this._removeCommanderMoraleBonus(ru.side);
       this._disableManualIfCommanderLost(ru.side);
     }
     this._sfxDeath(); // AUDIO: a dull thud as the unit falls
-    ru.fadingOut = true;
-    ru.fadeStart = this._now();
-    this.fadingUnits.push(ru);
-    this.occByKey.delete(cellKey(ru.q, ru.r));
+    // A killed unit has no on-field corpse/death visual: detach it immediately.
+    // Routed units deliberately use _startRout/_fleeStep instead and remain
+    // visible while leaving the battlefield.
+    this._removeUnitFromScene(ru);
   }
 
   private _spawnDamageLabel(ru: RuntimeBattleUnit, dmg: number): void {

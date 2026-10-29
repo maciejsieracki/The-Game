@@ -45,8 +45,8 @@ async function main() {
   const wallCollapseStart = scene.indexOf('// ZMIANA 5: obrońca na wyburzonym kaflu');
   const wallCollapseEnd = scene.indexOf('\n    this._updateSiegeWallVisuals', wallCollapseStart);
   const wallCollapsePath = scene.slice(wallCollapseStart, wallCollapseEnd < 0 ? wallCollapseStart + 1800 : wallCollapseEnd);
-  assert.match(wallCollapsePath, /if \(u\.isArmyCommander\) \{[\s\S]*?_removeCommanderMoraleBonus\(u\.side\);[\s\S]*?_disableManualIfCommanderLost\(u\.side\);/,
-    'wall-collapse commander death removes the bonus and falls back from manual control');
+  assert.match(wallCollapsePath, /this\._startFade\(u\);/,
+    'wall-collapse death uses the shared immediate removal path, including commander cleanup');
   assert.match(scene, /commandersToWithdrawAfterArmyBreak\(this\.atk/,
     'aggregate defeat sends a surviving attacker commander into normal rout');
   assert.match(scene, /commandersToWithdrawAfterArmyBreak\(this\.def/,
