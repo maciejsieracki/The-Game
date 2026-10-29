@@ -1,0 +1,13 @@
+baza (bez mutacji): ZIELONA — WYNIK: ZIELONE (X,E,F,P,N,J)
+B1 [R-wartosc] k01b-r.ts: WYKRYTA (exit 1) — wyzwienie: znak wzrostu dla wartosci 0
+B2 [T-kolejka] k01b-t.ts: WYKRYTA (exit 1) — przesuwanie pozycji kolejki w odwrotna strone
+B3 [DOM-styl] k01b-dom.ts: WYKRYTA (exit 1) — usuniety styl notatki (DOM)
+B4 [DOM-kolejnosc] k01b-dom.ts: WYKRYTA (exit 1) — kolejnosc dzieci siatki (DOM)
+B5 [R-fallback] k01b-reguly.ts: WYKRYTA (exit 1) — cichy fallback zamiast jawnego bledu (zakazany, Z3)
+B6 [stala-tekst] k01b-dto.ts: WYKRYTA (exit 1) — tekst PODZIAL_PRACY_PULA_TIP
+B7 [stala-zbior] k01b-dto.ts: WYKRYTA (exit 1) — zbior CITY_PANEL_RANGE_DEPOSIT_LABELS
+B8 [R-pasmo] k01b-r.ts: WYKRYTA (exit 1) — tekst pasma porzadku
+B9 [DTO-odczyt] k01b-r.ts: WYKRYTA (exit 1) — odczyt pola DTO CityView.wzrostUlamkowy zamieniony na inne pole (czytane: wykrywalne behawioralnie)
+D1 [DTO-pole] k01b-dto.ts: NIEWYKRYTA (exit 0) — pole DTO CityWithSlidersK (nieczytane w K01B: wykrywa tylko tsc)
+przywrocenie plikow k01b: OK
+WYNIK MUTACJI: ZIELONE (wszystkie behawioralne wykryte) — wykryte 9/10

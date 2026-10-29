@@ -2,7 +2,7 @@
  * K01B partia F (P5-8, R-RUSTPORT-P5-8-CITYPANEL-K01B-Q1, runda 1): 6 jednostek pinu
  * gra/src/ui/cityPanel.ts (edb8fb56), odroczonych w K01A z powodu zaleznosci od odroczonych
  * jednostek (CityView, PULA_LBL_PELNA, formatResourceUpkeepText). Te zaleznosci sa teraz
- * w partiach T (k01b-t.ts) i R (k01b-r.ts); tresc funkcji 1:1 z pinem.
+ * w partiach T (k01b-t.ts) i R (k01b-r.ts); tresc funkcji = pin po normalizacji (tools/dom-harness/verify-k01b-copies.mjs).
  */
 import {
   cityPanelChipIcon,

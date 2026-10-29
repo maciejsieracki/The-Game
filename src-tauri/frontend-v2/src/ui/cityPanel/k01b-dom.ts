@@ -1,7 +1,7 @@
 /**
  * K01B partia DOM (P5-8, R-RUSTPORT-P5-8-CITYPANEL-K01B-Q1, runda 1): 10 jednostek pinu
  * gra/src/ui/cityPanel.ts (edb8fb56) operujacych na elementach DOM (`document`, `HTMLElement`).
- * Tresc 1:1 z pinem; import `attachInteractiveDetail` z ui/hoverDetailDock.ts (warstwa UI).
+ * Tresc = pin po normalizacji (verify-k01b-copies.mjs); import `attachInteractiveDetail` z ui/hoverDetailDock.ts (warstwa UI).
  */
 import type { BrandIconSize } from '../icons/brandAssets';
 import { attachInteractiveDetail } from '../hoverDetailDock';

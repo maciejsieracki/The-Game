@@ -1,0 +1,8 @@
+run-k01b: v2=/home/user/The-Game/.claude/worktrees/wf_4e66ea20-909-4/src-tauri/frontend-v2/src/ui/cityPanel
+X zakres 57 nazw: OK (jednostki 57, brak 0: )
+E bundle v2+pin: OK
+F wartosci+DOM: OK (nazwy 64, fn 49, stale 10, przypadki 1689, roznice 0, ADAPT-2 rozliczone 32, pomieta infrastruktura reguly,ustawRegulyKontrolera)
+N bez wyjatku: OK (tylko-wyjatki: brak)
+P port regul: OK (wywolania {"etaTurns":33,"buildingEffectAtLevel":103,"stockResourceLabel":448,"buildingUpkeep":36,"buildingResourceUpkeep":75,"addResourceCosts":41,"mnoznikRoleForBuildingId":8,"cumulativeMnoznikForBuildingId":4,"buildingStructuralDefenseBonusPercent":4,"rationGrowthPercent":65,"rationFoodCostPerPop":35,"growthGainPerTurnSlots":37,"turnsUntilNextCitizen":3}; nieuzyte: brak)
+J brak portu rzuca: OK (k01b: port reguł nie został wstrzyknięty (ustawRegulyKontrolera))
+WYNIK: ZIELONE (X,E,F,P,N,J)
