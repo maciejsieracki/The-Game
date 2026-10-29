@@ -4573,6 +4573,16 @@ zamiast cichego zaakceptowania złamania §5a.
   referencyjnych + 7 bramek związanych). Zintegrowane allowlist-only. Worktree
   i branch posprzątane.
 
+  UZUPEŁNIENIE 2026-10-29: deterministyczny test real-render w Chromium
+  `R-ULEPSZENIA-OBOZ-LOWIECKI-LAS-ZNIKA-I-TEREN-Q1` sprawdza także tartak na
+  leśnym wzgórzu. Potwierdzono `overlay=Las`, relief wzgórza, model na wysokości
+  powierzchni oraz dekor lasu 3→3 po budowie; kontrolna mutacja odtwarza regresję
+  3→1. Po późniejszym wyrębie tartak znika zgodnie z osobnym kontraktem
+  `R-ULEPSZENIA-TARTAK-LAS-ZALEZNOSC-Q1`. Operator 8/8, niezależny Evaluator
+  8/8, testy relief/qualify/typecheck zielone. Kod produktu bez zmian; dodano
+  regresyjny test i dowody. Raporty `06-operator-visual-closeout.md` oraz
+  `07-evaluator-visual-closeout.md` i screenshoty są w katalogu runu.
+
 Kolejna kontrola zaplanowana automatycznie; po zamknięciu wszystkich powyższych
 — integracja allowlist-only każdego PASS, potem pełny deploy ROBOCZA (build →
 stamp → manifest → weryfikacja → FALA w `WERSJE.md`) i raport końcowy dla
