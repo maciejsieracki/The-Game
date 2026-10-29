@@ -8545,7 +8545,7 @@ referencyjnych zielone, `entity-card-historia-section-test` 36/36,
 
 ## `R-WOJSKO-ARMIA-REKRUTACJA-DO-WODZA-Q1` — domyślny marsz nowych jednostek do wodza (2026-10-29)
 
-- **STATUS:** `ZINTEGROWANE / READY_FOR_DEPLOY` — po rebase na aktualny `origin/main`; Final Control PASS, testy post-rebase przechodzą, Robocza bundle gotowy do publikacji.
+- **STATUS:** `DEPLOY-ROBOCZA / REMOTE-READBACK-PASS` — release `fb2d613b68a3a32a370fb6a2d29121c312cac51f` pushed do `origin/main`; zdalny bundle/manifest/START zgodne.
 - **Oczekiwane działanie:** przełącznik włączony ustawia wodza jako cel nowo zrekrutowanych jednostek. Wyłączony stan nie wydaje im marszu do wodza. Stan widoczny przy jednostce musi odzwierciedlać wybór domyślny, a gracz nadal może ręcznie włączyć lub wyłączyć marsz dla pojedynczej jednostki. Część oddziałów może iść do wodza, pozostałe gdzie indziej.
 - **Zakres weryfikacji:** rekrutacja z panelu miasta i panelu budowania w armii, niezależne zmiany ustawienia globalnego oraz jednostkowego, zachowanie celu przy ruchomym wodzu, save/load oraz właściwy cel nowo zrekrutowanych jednostek.
-- **Run:** `dyspozycje/autobot/runs/R-WOJSKO-ARMIA-REKRUTACJA-DO-WODZA-Q1/`; Operator PASS, Evaluator PASS-WITH-NOTES, Final Control PASS. Post-rebase 20/20 follow test, UI/save checks, TypeScript/build and bundle smoke PASS; remote publish pending.
+- **Run:** `dyspozycje/autobot/runs/R-WOJSKO-ARMIA-REKRUTACJA-DO-WODZA-Q1/`; Operator PASS, Evaluator PASS-WITH-NOTES, Final Control PASS. Post-rebase 20/20 follow test, UI/save checks, TypeScript/build and bundle smoke PASS; raw remote hashes PASS.

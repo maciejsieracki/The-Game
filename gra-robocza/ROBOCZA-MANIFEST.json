@@ -9,7 +9,7 @@
     "source": "origin/main plus R-WOJSKO-ARMIA-REKRUTACJA-DO-WODZA-Q1",
     "build": "Vite 5.4.21 single-file; 917 modules; stamped",
     "buildCommit": "98e9f6ee + 869cde2a + 7738027f",
-    "publicationCommit": null
+    "publicationCommit": "fb2d613b68a3a32a370fb6a2d29121c312cac51f"
   },
   "scope": [
     "AI zbiera armię przez pięć pełnych tur po wybuchu wojny, a w kolejnej turze atakuje wybrany osiągalny lądem cel wspólnymi rozkazami całego składu.",
@@ -26,7 +26,9 @@
     "Trade duration: domain 53/53 and rendered UI 12/12; typecheck PASS; broader proposal test 186/188 with both failures reproduced at baseline.",
     "Vite single-file 917 modules, Robocza verifier and boot smoke PASS.",
     "Leader rally: follow regression 20/20, recruitment UI and save/legacy PASS; typecheck and production build PASS.",
-    "Robocza boot smoke PASS; bundle verifier VERIFY OK."
+    "Robocza boot smoke PASS; bundle verifier VERIFY OK.",
+    "Leader rally: tracked recruitment default and per-unit override; follow 20/20; recruitment UI/save legacy PASS; typecheck and Vite 917 modules PASS.",
+    "Robocza boot smoke PASS; GitHub Raw remote bundle hashes/size verified; manifest and START byte-identical."
   ],
   "limits": [
     "AI morska kampania/transport pozostaje poza zakresem.",
@@ -35,7 +37,7 @@
   ],
   "finalControl": {
     "status": "PASS",
-    "notes": "Leader rally passed independent Final Control. Its evaluator notes that the EOT regression exercises helpers and source-checks the production call rather than running a full end-turn game-runtime test."
+    "notes": "Leader rally passed independent Final Control; evaluator PASS-WITH-NOTES. End-turn test simulates helper/queue behavior and source-checks production hook rather than running a full end-turn game-runtime integration."
   },
   "startHub": "START.html",
   "hubGeneratedAt": "2026-10-29T19:36:11",
@@ -263,17 +265,21 @@
     "publicationCommit": "f6f63dc839449d8e08a7e2509ec72796757867af"
   },
   "publishPlan": {
-    "status": "READY_FOR_DEPLOY — local artifact prepared; Git push and remote readback pending",
+    "status": "PUBLISHED to origin/main at fb2d613b68a3a32a370fb6a2d29121c312cac51f; Robocza only; no KANON/FINALNA promotion.",
     "target": "origin/main"
   },
   "remoteReadback": {
-    "status": "PENDING",
+    "status": "PASS",
     "remote": "origin/main",
-    "httpStatus": null,
+    "commit": "fb2d613b68a3a32a370fb6a2d29121c312cac51f",
+    "bundleUrl": "https://raw.githubusercontent.com/maciejsieracki/The-Game/fb2d613b68a3a32a370fb6a2d29121c312cac51f/gra-robocza/Gra-ROBOCZA.html",
+    "manifestUrl": "https://raw.githubusercontent.com/maciejsieracki/The-Game/fb2d613b68a3a32a370fb6a2d29121c312cac51f/gra-robocza/ROBOCZA-MANIFEST.json",
+    "startUrl": "https://raw.githubusercontent.com/maciejsieracki/The-Game/fb2d613b68a3a32a370fb6a2d29121c312cac51f/gra-robocza/START.html",
+    "httpStatus": 200,
     "bundleMd5": "15eabd0ba132bde2454f74d47371a685",
     "bundleSha256": "80be74dbece3ae923efdeffee193aec1607ae6e0555a4f36973406891a31b508",
     "bundleBytes": 70033099,
-    "checks": "awaiting post-push raw artifact readback"
+    "checks": "GitHub Raw bundle/manifest/START returned HTTP 200; remote bundle hashes/size match; manifest and START byte-identical."
   },
   "publishedAt": "2026-10-29",
   "buildStamp": "2026-10-29 19:36 · 0384d9fe63d0737255e01902a26a2590"
