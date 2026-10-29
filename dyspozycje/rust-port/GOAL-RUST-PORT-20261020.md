@@ -52,6 +52,7 @@ dotykające tych samych plików — zawsze sekwencyjnie, nigdy w tej samej fali.
 | 22 | R-RUSTPORT-P5-8-CITYPANEL-K07B-Q1 | P5.8 | 3/5 | wf_aa434f47-3bf | **PASS-WITH-NOTES — zintegrowane** (`4a3aa850`, merge) | 2026-10-29 |
 | 23 | R-RUSTPORT-P5-8-CITYPANEL-K08A-Q1 | P5.8 | 3/5 | wf_b071e1ab-826 | **PASS-WITH-NOTES — zintegrowane** (`6daf5ed1`) | 2026-10-29 |
 | 20 | R-RUSTPORT-P4-36-MOD14-BATTLE-3D-Q4 (3D, Opus — zgoda właściciela) | P4.36 | 1/5 | (nowy) | etap 1 | 2026-10-29 |
+| 26 | R-RUSTPORT-P4-36-MOD14-BATTLE-3D-Q5 (3D, Opus — zgoda właściciela; Q4 **PASS-WITH-NOTES zintegrowane** `5d900606`, 416/0) | P4.36 | 1/5 | (nowy) | etap 1 | 2026-10-29 |
 | 24 | R-RUSTPORT-P6-M06A4-LAD-MORZE-RESZTA3-Q1 | P6 mapgen | 1/5 | (nowy) | etap 1 | 2026-10-29 |
 | 25 | R-RUSTPORT-P5-8-CITYPANEL-K08B-Q1 | P5.8 | 2/5 | wf_418829af-bb3 | partia 1/4 PASS-WITH-NOTES (`79c9c093`, backup); r2 etap 3 (partie 2–4) | 2026-10-29 |
 | 3 | R-RUSTPORT-P5-8-CITYPANEL-PODZIAL-Q1 | P5.8 | 3/5 | wf_5b094795-b4f | **PASS — zintegrowane** (docs, `a1246e48`); slot wolny | 2026-10-29 |

@@ -307,3 +307,4 @@ Cel końcowy i bieżący zapisane w `GOAL-RUST-PORT-20261020.md` (§"CEL PĘTLI 
 | 2026-10-29 | M06A4, K08B | 1 | nowe dispatche | w toku |
 | 2026-10-29 | R-RUSTPORT-P5-8-CITYPANEL-K07B-Q1 | 3 | r3 harness z pinem, wiring, smoke 45/45, 29/29 mutantów → FC PASS-WITH-NOTES | **ZINTEGROWANE** `4a3aa850` (check/typecheck/335 porównań 0 różnic) |
 | 2026-10-29 | R-RUSTPORT-P5-8-CITYPANEL-K08B-Q1 | 1→2 | partia 1 (rail 6/24) PASS-WITH-NOTES → r2 partie 2–4 (wf_418829af-bb3) | w toku |
+| 2026-10-29 | R-RUSTPORT-P4-36-MOD14-BATTLE-3D-Q4 | 1 | Opus op → Ev PASS-WITH-NOTES → FC PASS-WITH-NOTES (50/50 mutantów) | **ZINTEGROWANE** `5d900606` (renderer 416/0); otwarto Q5 (picking i kamera) |
