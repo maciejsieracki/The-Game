@@ -1,0 +1,81 @@
+$ git rev-parse --short origin/main
+cc2c6a50
+$ git diff --stat edb8fb56 origin/main -- gra/src/battle gra/src/render gra/src/input   (input/picker.ts: no change)
+ gra/src/battle/battleScene.ts              | 516 ++++++++++++++++++++---------
+ gra/src/battle/formationRules.ts           | 160 +++++++++
+ gra/src/render/braz-rydwan-woly-opus5.ts   |   4 +-
+ gra/src/render/bronzeCityRoblox.ts         |   3 +-
+ gra/src/render/cities.ts                   |  74 ++++-
+ gra/src/render/kopalnia-cyny-opus5.ts      |   7 +-
+ gra/src/render/kopalnia-zlota-opus5.ts     |   7 +-
+ gra/src/render/memDebug.ts                 |  59 ++++
+ gra/src/render/stoneCityRoblox.ts          |   3 +-
+ gra/src/render/transientObjectResources.ts |  68 ++++
+ gra/src/render/unitStatPlate.ts            |  10 +-
+ gra/src/render/unitVeteranBadges.ts        |  36 ++
+ gra/src/render/units.ts                    | 109 +++---
+ 13 files changed, 835 insertions(+), 221 deletions(-)
+$ python3 -I dowody/drift-q5.py <battleScene.ts @ edb8fb56> <battleScene.ts @ origin/main = cc2c6a50>   (EXIT=0)
+SAME     clampBattleTile (pin :1743, main :1735)
+SAME     battlePickMeshUpNormal (pin :1749, main :1741)
+SAME     pickBattleGroundTilePlane (pin :1761, main :1753)
+SAME     pickBattleGroundTileFromMeshes (pin :1786, main :1778)
+SAME     worldToScreen (pin :19419, main :19617)
+SAME     isEditableTarget (pin :19468, main :19666)
+SAME     _syncRendererSize (pin :8554, main :8616)
+SAME     _canvasNdc (pin :8567, main :8629)
+SAME     _raycastFromCanvas (pin :8575, main :8637)
+SAME     _applyCamera (pin :9872, main :9959)
+SAME     _setZoomTarget (pin :9883, main :9970)
+SAME     _tickZoom (pin :9888, main :9975)
+SAME     _onWheel (pin :9899, main :9986)
+SAME     _onKeyZoom (pin :9908, main :9995)
+SAME     _setPanKey (pin :9920, main :10007)
+SAME     _onKeyPanDown (pin :9933, main :10020)
+SAME     _onKeyPanUp (pin :9937, main :10024)
+SAME     _clampCamTarget (pin :9942, main :10029)
+SAME     _tickCameraPanKeys (pin :9953, main :10040)
+SAME     _pickGroundTile (pin :10437, main :10524)
+SAME     _computeMinimapViewport (pin :11049, main :11136)
+SAME     _pickUnitAtScreen (pin :11084, main :11171)
+SAME     _onPanDown (pin :11274, main :11361)
+SAME     _onPanMove (pin :11322, main :11409)
+SAME     _onPanUp (pin :11399, main :11486)
+SAME     _handleDeployUnitPick (pin :14369, main :14461)
+SAME     _onDeployClick (pin :15063, main :15155)
+SAME     _doBoxSelect (pin :16498, main :16582)
+SAME     _onBattleClick (pin :17510, main :17708)
+SAME     _startLoop (pin :8510, main :8572)
+SAME     _refreshDeploySelectionVisuals (pin :14967, main :15059)
+SAME     _primarySelectedUnit (pin :10417, main :10504)
+SAME     _getDeploySelectedUnits (pin :15224, main :15316)
+SAME     _isPlayerSide (pin :11526, main :11613)
+SAME     _playerRoster (pin :11530, main :11617)
+SAME     _findUnitById (pin :11498, main :11585)
+SAME     _findPlayerUnit (pin :11538, main :11625)
+CHANGED  dispose (pin :3597, main :3600)
+    --- pin
+    +++ main
+    @@ -61,2 +61,7 @@
+         this.renderer.dispose();
+    +    // Map battles own a short-lived WebGL context alongside the persistent world-map
+    +    // renderer. `dispose()` releases Three.js resources but leaves the browser context
+    +    // alive until its canvas is collected; explicitly lose this battle-only context now
+    +    // so large battles cannot retain a GPU context/allocations after their overlay closes.
+    +    this.renderer.forceContextLoss();
+
+    @@ -111,2 +116,13 @@
+         document.removeEventListener('click', this._onSettingsDocClick);
+    +    // R-WEB-MEMORY-LEAKS-FIX-Q1 (M3): oba domknięcia trzymały `this` (cała scena bitwy:
+    +    // renderer, graf sceny, DOM) przez `document`/`window` — po bitwie nigdy nie zdejmowane.
+    +    // / EN: both closures captured `this`; detach them so the finished scene can be GC'd.
+    +    if (this._deployToolbarDocClick) {
+    +      document.removeEventListener('click', this._deployToolbarDocClick);
+    +      this._deployToolbarDocClick = null;
+    +    }
+    +    if (this._deployLayoutListener) {
+    +      window.removeEventListener('resize', this._deployLayoutListener);
+    +      this._deployLayoutListener = null;
+    +    }
+         this._settingsGearWrap = null;
+symbols=38 changed_or_missing=1

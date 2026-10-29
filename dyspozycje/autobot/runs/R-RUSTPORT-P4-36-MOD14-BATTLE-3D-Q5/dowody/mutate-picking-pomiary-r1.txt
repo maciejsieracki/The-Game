@@ -1,0 +1,275 @@
+# Q5 Operator "pomiary" r1 — SUROWE logi mutacji z utraconego worktree wf_c65e3ba9-998-2 (ocalone w scratchpadzie).
+# Niezweryfikowane samodzielnie; ponowny pomiar na odtworzonym drzewie: mutate-picking-obrona-r1.txt
+## [przebieg 1] mut-0-6.txt
+# RANGE=0:6 toolchain=rustc 1.87.0 (17067e9ac 2025-05-09)
+KILLED   wheel rate (test failed)
+KILLED   key zoom in direction (test failed)
+KILLED   key Add ignored (test failed)
+KILLED   zoom ease (test failed)
+KILLED   zoom snap (test failed)
+KILLED   snap without apply (test failed)
+KILLED 6/6
+EXIT=0
+# seconds=119
+## [przebieg 1] mut-6-26.txt
+# RANGE=6:26 toolchain=rustc 1.87.0 (17067e9ac 2025-05-09)
+KILLED   zoom target unclamped (test failed)
+KILLED   lookAt not stale (test failed)
+SURVIVED sync height ignored
+KILLED   sync keeps renderer size (test failed)
+KILLED   clamp margin k (test failed)
+KILLED   clamp margin floor (test failed)
+KILLED   clamp rows (test failed)
+KILLED   pan key z sign (test failed)
+SURVIVED pan key W is down
+KILLED   pan key editable ignored (test failed)
+KILLED   pan key step (test failed)
+KILLED   drag pan z sign (test failed)
+KILLED   drag pan unclamped (test failed)
+KILLED   minimap floor (test failed)
+SURVIVED minimap height floor
+SURVIVED ray stale camera
+KILLED   ray unproject depth (test failed)
+KILLED   screen y flip (test failed)
+KILLED   client px left (test failed)
+KILLED   pan left button in deploy (test failed)
+KILLED 16/20
+EXIT=1
+# seconds=535
+## [przebieg 1] mut-26-38.txt
+# RANGE=26:38 toolchain=rustc 1.87.0 (17067e9ac 2025-05-09)
+KILLED   line threshold (test failed)
+KILLED   line sphere not grown (test failed)
+KILLED   segment extent (test failed)
+KILLED   line hit point on ray (test failed)
+KILLED   sprite second triangle (test failed)
+KILLED   sprite unscaled (test failed)
+KILLED   front faces double (test failed)
+KILLED   back side winding (test failed)
+KILLED   groups ignored (test failed)
+KILLED   sort descending (test failed)
+KILLED   not recursive (test failed)
+SURVIVED instanced last instance skipped
+KILLED 11/12
+EXIT=1
+# seconds=278
+## [przebieg 1] mut-38-50.txt
+# RANGE=38:50 toolchain=rustc 1.87.0 (17067e9ac 2025-05-09)
+KILLED   ground min up (test failed)
+KILLED   ground height weight (test failed)
+SURVIVED ground first max
+KILLED   plane iterations (test failed)
+KILLED   tile floor (test failed)
+KILLED   combine higher wins (test failed)
+KILLED   combine tie to plane (test failed)
+KILLED   clamp rows (test failed)
+KILLED   unit K2 check (test failed)
+KILLED   unit occupancy liveness (test failed)
+KILLED   battle click filters removed (test failed)
+SURVIVED battle enemy attack
+KILLED 10/12
+EXIT=1
+# seconds=349
+## [przebieg 1] mut-50-62.txt
+# RANGE=50:62 toolchain=rustc 1.87.0 (17067e9ac 2025-05-09)
+SURVIVED deploy occupancy side
+KILLED   deploy feedback order (test failed)
+KILLED   deploy K2 check (test failed)
+SURVIVED pick early return
+SURVIVED pick additive keeps deploySelected
+SURVIVED pick group ring color
+KILLED   primary = last (test failed)
+KILLED   box keeps routed (test failed)
+SURVIVED box stale camera
+KILLED   bars skip dead (test failed)
+KILLED   bars ignore modifier (test failed)
+KILLED   queue only round (test failed)
+KILLED 7/12
+EXIT=1
+# seconds=370
+## [przebieg 2 diagnostyczny] mut2-0-12.txt
+# RANGE=0:12 toolchain=rustc 1.87.0 (17067e9ac 2025-05-09)
+KILLED   wheel rate (test failed)
+KILLED   key zoom in direction (test failed)
+KILLED   key Add ignored (test failed)
+KILLED   zoom ease (test failed)
+KILLED   zoom snap (test failed)
+KILLED   snap without apply (test failed)
+KILLED   zoom target unclamped (test failed)
+KILLED   lookAt not stale (test failed)
+KILLED   sync height ignored (test failed)
+KILLED   sync keeps renderer size (test failed)
+KILLED   clamp margin k (test failed)
+KILLED   clamp margin floor (test failed)
+KILLED 12/12
+EXIT=0
+# seconds=255
+## [przebieg 2 diagnostyczny] mut2-12-24.txt
+# RANGE=12:24 toolchain=rustc 1.87.0 (17067e9ac 2025-05-09)
+KILLED   clamp rows (test failed)
+KILLED   pan key z sign (test failed)
+KILLED   pan key W is down (test failed)
+KILLED   pan key editable ignored (test failed)
+KILLED   pan key step (test failed)
+KILLED   drag pan z sign (test failed)
+KILLED   drag pan unclamped (test failed)
+KILLED   minimap floor (test failed)
+SURVIVED minimap height floor
+KILLED   ray stale camera (test failed)
+KILLED   ray unproject depth (test failed)
+KILLED   screen y flip (test failed)
+KILLED 11/12
+EXIT=1
+# seconds=342
+## [przebieg 2 diagnostyczny] mut2-20-21.txt
+# RANGE=20:21 toolchain=rustc 1.87.0 (17067e9ac 2025-05-09)
+KILLED   minimap height floor (test failed)
+KILLED 1/1
+EXIT=0
+# seconds=32
+## [przebieg 2 diagnostyczny] mut2-24-36.txt
+# RANGE=24:36 toolchain=rustc 1.87.0 (17067e9ac 2025-05-09)
+KILLED   client px left (test failed)
+KILLED   pan left button in deploy (test failed)
+KILLED   line threshold (test failed)
+KILLED   line sphere not grown (test failed)
+KILLED   segment extent (test failed)
+KILLED   line hit point on ray (test failed)
+KILLED   sprite second triangle (test failed)
+KILLED   sprite unscaled (test failed)
+KILLED   front faces double (test failed)
+KILLED   back side winding (test failed)
+KILLED   groups ignored (test failed)
+KILLED   sort descending (test failed)
+KILLED 12/12
+EXIT=0
+# seconds=254
+## [przebieg 2 diagnostyczny] mut2-36-49.txt
+# RANGE=36:49 toolchain=rustc 1.87.0 (17067e9ac 2025-05-09)
+KILLED   not recursive (test failed)
+KILLED   instanced last instance skipped (test failed)
+KILLED   ground min up (test failed)
+KILLED   ground height weight (test failed)
+SURVIVED ground first max
+KILLED   plane iterations (test failed)
+KILLED   tile floor (test failed)
+KILLED   combine higher wins (test failed)
+KILLED   combine tie to plane (test failed)
+KILLED   clamp rows (test failed)
+KILLED   unit K2 check (test failed)
+KILLED   unit occupancy liveness (test failed)
+KILLED   battle click filters removed (test failed)
+KILLED 12/13
+EXIT=1
+# seconds=398
+## [przebieg 2 diagnostyczny] mut2-40-41.txt
+# RANGE=40:41 toolchain=rustc 1.87.0 (17067e9ac 2025-05-09)
+KILLED   ground first max (test failed)
+KILLED 1/1
+EXIT=0
+# seconds=35
+## [przebieg 2 diagnostyczny] mut2-49-62.txt
+# RANGE=49:62 toolchain=rustc 1.87.0 (17067e9ac 2025-05-09)
+KILLED   battle enemy attack (test failed)
+KILLED   deploy occupancy side (test failed)
+KILLED   deploy feedback order (test failed)
+KILLED   deploy K2 check (test failed)
+KILLED   pick early return (test failed)
+SURVIVED pick additive keeps deploySelected
+KILLED   pick group ring color (test failed)
+KILLED   primary = last (test failed)
+KILLED   box keeps routed (test failed)
+KILLED   box stale camera (test failed)
+KILLED   bars skip dead (test failed)
+KILLED   bars ignore modifier (test failed)
+KILLED   queue only round (test failed)
+KILLED 12/13
+EXIT=1
+# seconds=384
+## [przebieg koncowy] mutF-0-12.txt
+# RANGE=0:12 toolchain=rustc 1.87.0 (17067e9ac 2025-05-09)
+KILLED   wheel rate (test failed)
+KILLED   key zoom in direction (test failed)
+KILLED   key Add ignored (test failed)
+KILLED   zoom ease (test failed)
+KILLED   zoom snap (test failed)
+KILLED   snap without apply (test failed)
+KILLED   zoom target unclamped (test failed)
+KILLED   lookAt not stale (test failed)
+KILLED   sync height ignored (test failed)
+KILLED   sync keeps renderer size (test failed)
+KILLED   clamp margin k (test failed)
+KILLED   clamp margin floor (test failed)
+KILLED 12/12 (+0 equivalent)
+EXIT=0
+# seconds=268
+## [przebieg koncowy] mutF-12-24.txt
+# RANGE=12:24 toolchain=rustc 1.87.0 (17067e9ac 2025-05-09)
+KILLED   clamp rows (test failed)
+KILLED   pan key z sign (test failed)
+KILLED   pan key W is down (test failed)
+KILLED   pan key editable ignored (test failed)
+KILLED   pan key step (test failed)
+KILLED   drag pan z sign (test failed)
+KILLED   drag pan unclamped (test failed)
+KILLED   minimap floor (test failed)
+KILLED   minimap height floor (test failed)
+KILLED   ray stale camera (test failed)
+KILLED   ray unproject depth (test failed)
+KILLED   screen y flip (test failed)
+KILLED 12/12 (+0 equivalent)
+EXIT=0
+# seconds=348
+## [przebieg koncowy] mutF-24-36.txt
+# RANGE=24:36 toolchain=rustc 1.87.0 (17067e9ac 2025-05-09)
+KILLED   client px left (test failed)
+KILLED   pan left button in deploy (test failed)
+KILLED   line threshold (test failed)
+KILLED   line sphere not grown (test failed)
+KILLED   segment extent (test failed)
+KILLED   line hit point on ray (test failed)
+KILLED   sprite second triangle (test failed)
+KILLED   sprite unscaled (test failed)
+KILLED   front faces double (test failed)
+KILLED   back side winding (test failed)
+KILLED   groups ignored (test failed)
+KILLED   sort descending (test failed)
+KILLED 12/12 (+0 equivalent)
+EXIT=0
+# seconds=250
+## [przebieg koncowy] mutF-36-49.txt
+# RANGE=36:49 toolchain=rustc 1.87.0 (17067e9ac 2025-05-09)
+KILLED   not recursive (test failed)
+KILLED   instanced last instance skipped (test failed)
+KILLED   ground min up (test failed)
+KILLED   ground height weight (test failed)
+KILLED   ground first max (test failed)
+KILLED   plane iterations (test failed)
+KILLED   tile floor (test failed)
+KILLED   combine higher wins (test failed)
+KILLED   combine tie to plane (test failed)
+KILLED   clamp rows (test failed)
+KILLED   unit K2 check (test failed)
+KILLED   unit occupancy liveness (test failed)
+KILLED   battle click filters removed (test failed)
+KILLED 13/13 (+0 equivalent)
+EXIT=0
+# seconds=373
+## [przebieg koncowy] mutF-49-62.txt
+# RANGE=49:62 toolchain=rustc 1.87.0 (17067e9ac 2025-05-09)
+KILLED   battle enemy attack (test failed)
+KILLED   deploy occupancy side (test failed)
+KILLED   deploy feedback order (test failed)
+KILLED   deploy K2 check (test failed)
+KILLED   pick early return (test failed)
+EQUIV    pick additive keeps deploySelected (handle_deploy_unit_pick always ends in refresh_visuals, which overwrites sel.deploy_selected with the first live selected id (web: _refreshDeploySelectionVisuals :14978-14980 after the same dead store at :14390); nothing reads it in between)
+KILLED   pick group ring color (test failed)
+KILLED   primary = last (test failed)
+KILLED   box keeps routed (test failed)
+KILLED   box stale camera (test failed)
+KILLED   bars skip dead (test failed)
+KILLED   bars ignore modifier (test failed)
+KILLED   queue only round (test failed)
+KILLED 12/12 (+1 equivalent)
+EXIT=0
+# seconds=366

@@ -1,0 +1,98 @@
+# rustc 1.97.0 (2d8144b78 2026-07-07); CARGO_INCREMENTAL=0, CARGO_PROFILE_DEV_DEBUG=0, CARGO_TARGET_DIR=/home/user/cargo-target-shared/wf_c65e3ba9-998-1
+$ cargo fmt --all -- --check
+EXIT=0
+$ cargo clippy --locked --lib --test battle3d_picking -- -D warnings
+    Finished `dev` profile [unoptimized] target(s) in 8.16s
+EXIT=0
+$ cargo test --locked --lib battle::
+test battle::dynamics::tests::rout_facing_is_home_edge ... ok
+test battle::dynamics::tests::parse_int_follows_ecma ... ok
+test battle::field::tests::carve_ignores_writes_past_a_short_grid ... ok
+test battle::picking::tests::clamp_battle_tile_bounds ... ok
+test battle::picking::tests::material_groups_and_back_side ... ok
+test battle::picking::tests::plane_pick_iterates_on_relief ... ok
+test battle::picking::tests::queue_only_rule ... ok
+test battle::field::tests::constants_follow_their_web_formulas ... ok
+test battle::picking::tests::segment_distance_branches ... ok
+test battle::siege_wall::tests::js_round_matches_ecmascript ... ok
+test battle::dynamics::tests::breach_gate_edges_follow_web_rule ... ok
+test battle::siege_wall::tests::shade_color_clamps_and_rounds ... ok
+test battle::field::tests::tile_jitter_is_in_unit_interval ... ok
+test battle::siege_wall::tests::map_helpers_follow_js_map_same_value_zero ... ok
+test battle::siege_wall::tests::style_dispatch_follows_the_web_switch ... ok
+test battle::units::tests::constants_follow_their_web_formulas ... ok
+test battle::units::tests::dir_yaw_falls_back_to_east ... ok
+test battle::units::tests::js_min_max_follow_ecmascript ... ok
+test battle::view::tests::constants_equal_web_literals ... ok
+test battle::view::tests::pan_buttons_follow_on_pan_down ... ok
+test result: ok. 20 passed; 0 failed; 0 ignored; 0 measured; 83 filtered out; finished in 0.00s
+EXIT=0
+$ cargo test --locked --test battle3d_picking -- --nocapture
+bars: 18 checks (33 attackers)
+camera: 176 ops, 902 numbers, 222 checks
+test bars_toggle_matches_web ... ok
+test helpers_and_constants_equal_web ... ok
+test camera_control_matches_web ... ok
+battle clicks: 76, 86 checks
+test battle_clicks_and_box_select_match_web ... ok
+pose default: 160 rays + 83 aimed
+pose deploy: 160 rays + 168 aimed
+pose wall: 160 rays + 83 aimed
+pose flags: 96 rays + 83 aimed
+pose markers: 160 rays + 168 aimed
+deploy: 656 numbers, 757 checks
+test deploy_picking_and_clicks_match_web ... ok
+pose far: 120 rays + 0 aimed
+siege picking: 460 numbers, 802 checks
+test siege_picking_matches_web ... ok
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 11.95s
+EXIT=0
+$ cargo test --locked --test battle3d_siege_wall --test battle3d_field --test battle3d_units --test battle3d_dynamics
+     Running tests/battle3d_dynamics.rs (/home/user/cargo-target-shared/wf_c65e3ba9-998-1/debug/deps/battle3d_dynamics-a485ecd6f534246f)
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.86s
+     Running tests/battle3d_field.rs (/home/user/cargo-target-shared/wf_c65e3ba9-998-1/debug/deps/battle3d_field-dac71aa026e50479)
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 6.32s
+     Running tests/battle3d_siege_wall.rs (/home/user/cargo-target-shared/wf_c65e3ba9-998-1/debug/deps/battle3d_siege_wall-981c0fea427e638e)
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.66s
+     Running tests/battle3d_units.rs (/home/user/cargo-target-shared/wf_c65e3ba9-998-1/debug/deps/battle3d_units-5c9acd32845fd9e3)
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 5.08s
+EXIT=0
+$ (cd tests/fixtures/battle3d && sha256sum -c MANIFEST.sha256) | grep -c ": OK"
+24
+$ du -sb tests/fixtures/battle3d
+11971697	tests/fixtures/battle3d
+# cargo 1.87.0 (99624be96 2025-05-06) (MSRV)
+$ cargo +1.87.0 test --locked --lib battle::
+test result: ok. 20 passed; 0 failed; 0 ignored; 0 measured; 83 filtered out; finished in 0.00s
+EXIT=0
+$ cargo +1.87.0 test --locked --test battle3d_picking
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 15.96s
+EXIT=0
+
+# mutate_picking.py — smoke only in this (impl) call; the full run of 62 mutants = Operator "pomiary"
+$ ONLY='<name>' python3 tests/fixtures/battle3d/mutate_picking.py   (stable, one mutant each, before bars/optimisation-neutral edits)
+KILLED   groups ignored (test failed)          # by lib test material_groups_and_back_side (added after a first SURVIVED: no material array in any battle model)
+KILLED   back side winding (test failed)       # same lib test (no BackSide material in battle / render @ edb8fb56)
+KILLED   line threshold (test failed)
+KILLED   lookAt not stale (test failed)
+KILLED   sprite second triangle (test failed)
+# pattern check: 62 mutants, every pattern found exactly once in the current view.rs / picking.rs
+# note: one earlier smoke command ran past the default 120 s tool limit and was moved to the background by the
+# harness; it was awaited in the foreground (`tail --pid`) and the sources were verified restored (sha256 below).
+
+# generator determinism (two scratch dirs: separate npm install three@0.169.0 esbuild@0.24.0, separate git archive edb8fb56)
+$ node build_picking.mjs && node gen_picking.mjs <out>      # both dirs: "battle3d picking poses=6"
+3a3b1f3847f6dd02103f008900284c9f694e99223bed23dcfcb3d8eadd30a029  dir1/out/picking.json
+3a3b1f3847f6dd02103f008900284c9f694e99223bed23dcfcb3d8eadd30a029  dir2/out/picking.json   (= committed, = MANIFEST, 81 669 B)
+83f1f89e191d6c0dc22b5f18b33c0b1b218c4c632762f1b91f88563303bfe919  dir1/refscript/gen_picking.mjs
+83f1f89e191d6c0dc22b5f18b33c0b1b218c4c632762f1b91f88563303bfe919  dir2/refscript/gen_picking.mjs   (2 783 652 B, not committed)
+# PICK_VERBOSE=1 geometry census per pose: meshes 18344 (siege) / 26620 (deploy); boundingBox !== null 0, material arrays 0, BackSide 0
+
+# recon-q5.py (2 runs, cmp identical)
+$ python3 -I dowody/recon-q5.py inwentarz-battleScene.md <battleScene.ts@edb8fb56> rust-port/renderer/src/battle rust-port/renderer/tests > dowody/recon-q5-table.md
+LICZNIK: wierszy = 34; NIE PORTOWANY = 1; ZPORTOWANY = 18; ZPORTOWANY częściowo = 10; ZPORTOWANY wcześniej = 5; bez statusu / niezgodnych = 0
+EXIT=0
+inputs: inwentarz 139b84eb…, battleScene.ts 38c97736… (the same as parts 2–4)
+11cb4d43271fd0f6bfa2179ccf2bd352c2b35a04b209356a636e4bac7405f3b1  /home/user/The-Game/.claude/worktrees/wf_c65e3ba9-998-1/rust-port/renderer/src/battle/view.rs
+7e825b74cfb2931a9794ad584a04c7bf18f770f6de1f2ea51b8bceccb3541277  /home/user/The-Game/.claude/worktrees/wf_c65e3ba9-998-1/rust-port/renderer/src/battle/picking.rs
+b1f9448cfbe212656b547ae0c438dd2dcc922b685860a5d5b7a5486f89bfbef9  /home/user/The-Game/.claude/worktrees/wf_c65e3ba9-998-1/rust-port/renderer/tests/battle3d_picking.rs

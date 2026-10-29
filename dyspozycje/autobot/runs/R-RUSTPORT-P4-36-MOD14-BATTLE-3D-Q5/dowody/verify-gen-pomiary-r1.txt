@@ -1,0 +1,42 @@
+# R-RUSTPORT-P4-36-MOD14-BATTLE-3D-Q5 r1 Operator "pomiary": niezalezny weryfikator generatora (node v22.22.0)
+# Kazdy katalog: wlasny `npm install --ignore-scripts three@0.169.0 esbuild@0.24.0`, wlasny
+# `git archive edb8fb56 gra/src gra/data | tar -x`, kopie gen_picking.ts / build_picking.mjs / dom_stub.ts / three_shim.ts.
+
+## Katalog A (scratch/refscript), generator r1 (commit 7f68dd50), BEZ zmian
+$ node build_picking.mjs && node gen_picking.mjs $S/out
+battle3d picking poses=6
+3a3b1f3847f6dd02103f008900284c9f694e99223bed23dcfcb3d8eadd30a029  out/picking.json       (= MANIFEST r1)
+83f1f89e191d6c0dc22b5f18b33c0b1b218c4c632762f1b91f88563303bfe919  gen_picking.mjs        (= README r1)
+-> r1 odtworzony w trzecim katalogu bajt w bajt.
+
+## Generator z kluczem `extra` (stan do commitu pomiarow)
+### Katalog A
+battle3d picking poses=6
+454daef225c710156b530b554786c8200d6dafb049d993e3bf06be8846ed867f  picking.json (92 307 B)
+797b102846ef05734b9be270a2f147927ebab5369cc6cb0819d5078e6d5c2ea2  gen_picking.mjs (2 792 670 B)
+### Katalog B (scratch/regen2: osobny npm install, osobny git archive)
+battle3d picking poses=6
+454daef225c710156b530b554786c8200d6dafb049d993e3bf06be8846ed867f  regen2/out/picking.json
+797b102846ef05734b9be270a2f147927ebab5369cc6cb0819d5078e6d5c2ea2  gen_picking.mjs
+-> identyczne.
+
+## Klucze r1 nietkniete (python3 json: picking.json r1 @ 62efd0f6 vs nowy)
+changed keys: []  new keys: ['extra']
+extra: staleBox{cam,box(4)}, staleRays 4, camOps 24, siegeInstanced 4, fieldBattleClicks 32,
+       deployClicks{ids, clicks 12}, groundTies{scanned 1050, ties 8, others 4}, deployInstanced 4
+
+## Generator: kontrole wewnetrzne (throw przy niezgodnosci; przebiegi bez bledu)
+- dtoSig swiezej sceny siege A/B == siege.dto; deploy C == deploy.dto (z grupami)
+- occByKey swiezej sceny deploy C == deploy.occ (Rust uzywa deploy.occ)
+
+## Stale z weba @ edb8fb56 (probka, `battleScene.ts`) vs `src/battle/{view,picking}.rs`
+:9903 Math.exp(e.deltaY * 0.0012)        WHEEL_ZOOM_RATE 0.0012
+:9911/:9914 * 0.88 / / 0.88              KEY_ZOOM_STEP 0.88
+:9890 < 0.01 ; :9894 * 0.18              ZOOM_SNAP 0.01 ; ZOOM_EASE 0.18
+:9943 max(2, camDist * 0.28)             CLAMP_MARGIN_MIN 2 ; CLAMP_MARGIN_K 0.28
+:9963-9964 camDist * 1.2 / h ; 14        WORLD_PER_PX_K 1.2 ; PAN_KEY_STEP_PX 14
+:11050-11052 max(1, clientHeight/Width)  minimap floors (view.rs:316-317)
+:1769 for (i < 4)                        PLANE_ITERATIONS 4
+:1798 < 0.3 ; :1803 heightMatch * 10     GROUND_MIN_UP 0.3 ; GROUND_HEIGHT_WEIGHT 10 ; :1804 `score > bestScore`
+three@0.169.0 src/core/Raycaster.js:21 Line: { threshold: 1 }   LINE_THRESHOLD 1
+-> zgodne.
