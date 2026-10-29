@@ -1,0 +1,336 @@
+{
+  "initial": {
+    "atk": [
+      {
+        "id": "atk0",
+        "key": "Hastati"
+      },
+      {
+        "id": "atk1",
+        "key": "Hastati"
+      },
+      {
+        "id": "atk40",
+        "key": "Oszczepnik"
+      },
+      {
+        "id": "atk60",
+        "key": "Łucznik"
+      },
+      {
+        "id": "atk61",
+        "key": "Łucznik"
+      },
+      {
+        "id": "atk62",
+        "key": "Łucznik"
+      },
+      {
+        "id": "atk80",
+        "key": "Konnica"
+      },
+      {
+        "id": "atk82",
+        "key": "Rydwan konny"
+      }
+    ],
+    "def": [
+      {
+        "id": "def0",
+        "key": "Falanga"
+      },
+      {
+        "id": "def1",
+        "key": "Falanga"
+      },
+      {
+        "id": "def40",
+        "key": "Oszczepnik"
+      },
+      {
+        "id": "def60",
+        "key": "Łucznik"
+      },
+      {
+        "id": "def61",
+        "key": "Łucznik"
+      },
+      {
+        "id": "def62",
+        "key": "Łucznik"
+      },
+      {
+        "id": "def80",
+        "key": "Konnica"
+      },
+      {
+        "id": "def82",
+        "key": "Rydwan konny"
+      }
+    ]
+  },
+  "replay": {
+    "trace": [
+      {
+        "type": "picker",
+        "id": "atk60",
+        "pos": [
+          31,
+          75
+        ],
+        "rank": 3,
+        "doctrine": "steady",
+        "canShoot": true,
+        "range": 3,
+        "ammo": 12,
+        "enemyDistances": [
+          {
+            "id": "def0",
+            "pos": [
+              34,
+              75
+            ],
+            "dist": 3,
+            "range": 3,
+            "rank": 0,
+            "alive": true
+          },
+          {
+            "id": "def1",
+            "pos": [
+              34,
+              78
+            ],
+            "dist": 6,
+            "range": 3,
+            "rank": 0,
+            "alive": true
+          },
+          {
+            "id": "def40",
+            "pos": [
+              35,
+              78
+            ],
+            "dist": 7,
+            "range": 3,
+            "rank": 1,
+            "alive": true
+          },
+          {
+            "id": "def60",
+            "pos": [
+              37,
+              74
+            ],
+            "dist": 7,
+            "range": 3,
+            "rank": 2,
+            "alive": true
+          },
+          {
+            "id": "def61",
+            "pos": [
+              37,
+              75
+            ],
+            "dist": 6,
+            "range": 3,
+            "rank": 2,
+            "alive": true
+          },
+          {
+            "id": "def62",
+            "pos": [
+              37,
+              79
+            ],
+            "dist": 10,
+            "range": 3,
+            "rank": 2,
+            "alive": true
+          },
+          {
+            "id": "def80",
+            "pos": [
+              35,
+              74
+            ],
+            "dist": 5,
+            "range": 3,
+            "rank": 0,
+            "alive": true
+          },
+          {
+            "id": "def82",
+            "pos": [
+              36,
+              75
+            ],
+            "dist": 5,
+            "range": 3,
+            "rank": 0,
+            "alive": true
+          }
+        ],
+        "target": "def0",
+        "atMs": 15954.5
+      },
+      {
+        "type": "doAttack",
+        "id": "atk60",
+        "target": "def0",
+        "dist": 3,
+        "range": 3,
+        "ammo": 12,
+        "hpBefore": 38,
+        "atMs": 15954.5
+      },
+      {
+        "type": "projectile-start",
+        "id": "atk60",
+        "target": "def0",
+        "dist": 3,
+        "range": 3,
+        "ammo": 12,
+        "hpBefore": 38,
+        "atMs": 15954.5
+      },
+      {
+        "type": "projectile-complete",
+        "id": "atk60",
+        "target": "def0",
+        "ammoAfter": 11,
+        "hpAfter": 38,
+        "atMs": 20086.90000000596
+      },
+      {
+        "type": "direct-callback",
+        "id": "atk60",
+        "ammo": 11,
+        "hp": 38,
+        "atMs": 20086.90000000596
+      }
+    ],
+    "before": {
+      "shooter": {
+        "id": "atk60",
+        "pos": [
+          31,
+          75
+        ],
+        "range": 3,
+        "rangeBase": 3,
+        "ammo": 12,
+        "rank": 3,
+        "formationOffset": {
+          "dc": -2,
+          "dr": -1
+        },
+        "groupId": "r6-atk",
+        "doctrine": "steady"
+      },
+      "target": {
+        "id": "def0",
+        "pos": [
+          34,
+          75
+        ],
+        "hp": 38
+      },
+      "nearestEnemyDistance": 3,
+      "forwardLaneBlockers": [
+        {
+          "id": "atk40",
+          "key": "Oszczepnik"
+        }
+      ],
+      "candidates": [
+        {
+          "q": 32,
+          "r": 75,
+          "passable": true,
+          "occupied": true,
+          "compactGate": true,
+          "previousRankCoordinates": [
+            {
+              "id": "atk40",
+              "q": 32,
+              "r": 75
+            }
+          ],
+          "staysBehindMelee": false
+        },
+        {
+          "q": 31,
+          "r": 76,
+          "passable": true,
+          "occupied": false,
+          "compactGate": true,
+          "previousRankCoordinates": [
+            {
+              "id": "atk40",
+              "q": 32,
+              "r": 75
+            }
+          ],
+          "staysBehindMelee": false
+        },
+        {
+          "q": 31,
+          "r": 74,
+          "passable": true,
+          "occupied": false,
+          "compactGate": true,
+          "previousRankCoordinates": [
+            {
+              "id": "atk40",
+              "q": 32,
+              "r": 75
+            }
+          ],
+          "staysBehindMelee": false
+        },
+        {
+          "q": 30,
+          "r": 75,
+          "passable": true,
+          "occupied": true,
+          "compactGate": false,
+          "previousRankCoordinates": [
+            {
+              "id": "atk40",
+              "q": 32,
+              "r": 75
+            }
+          ],
+          "staysBehindMelee": false
+        }
+      ],
+      "attackCentroid": {
+        "col": 34,
+        "row": 76
+      }
+    },
+    "final": {
+      "round": 4,
+      "shooter": {
+        "pos": [
+          31,
+          75
+        ],
+        "ammo": 11,
+        "range": 3
+      },
+      "target": {
+        "pos": [
+          34,
+          75
+        ],
+        "hp": 38
+      },
+      "busy": false
+    }
+  },
+  "errors": []
+}
