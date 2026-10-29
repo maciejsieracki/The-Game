@@ -1,0 +1,4 @@
+// P5.8 K02: wspolne typy kawalkow cityPanel (dispatch: tylko tu, prefiks k02- dla plikow K02).
+// ZALOZENIE P5.8-K02-Z3: BreakdownLine skopiowany 1:1 z gra/src/ui/cityPanel.ts (pin edb8fb56:4376).
+// Przy scaleniu z K01 (typy K01) ten duplikat zostaje usuniety, a import idzie z K01.
+export type BreakdownLine = { label: string; value: number; neg?: boolean };

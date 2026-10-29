@@ -1,7 +1,15 @@
-// P5.8 K02 (kawalek H): ensureStyles -> ensureCityPanelStyles. Kopia 1:1 CSS (string) z
-// gra/src/ui/cityPanel.ts @ edb8fb56, linie 1948-3009. Jedyna zmiana: eksport i nazwa funkcji.
+// P5.8 K02 (kawalek H): ensureStyles -> ensureCityPanelStyles. Kopia CSS (string) z
+// gra/src/ui/cityPanel.ts @ edb8fb56, linie 1948-3009. Zmiany wzgledem pinu (pelna lista):
+//  (a) eksport i nazwa funkcji ensureStyles -> ensureCityPanelStyles;
+//  (b) el('style') -> document.createElement('style') (ZAŁOŻENIE P5.8-K02-Z2; pin:863 bez cls/html = to samo);
+//  (c) stale ukladu pin:1755-1773 skopiowane lokalnie (ponizej) zamiast importu z K01;
+//      stalej LIST_SCROLL_VISIBLE_CATALOG (pin:1772) NIE kopiowano: nie jest uzywana przez ensureStyles,
+//      a jej jedyne uzycie (pin:8971) nalezy do kawalka poza K02 i zostanie tam przeniesione.
 // ZAŁOŻENIE P5.8-K02-Z1: stale ukladu uzyte w CSS (pin:1755-1773, kawalek G/K01) skopiowane
 // lokalnie 1:1 do scalenia z K01 (kolumna "Zalezy od" w P5-8 §4); wartosci nie zmieniane.
+// RYZYKO OTWARTE R1: dwa zrodla prawdy dla tych 8 stalych (K01 i ten plik). Harness CSS porownuje
+// wynik z pinem, nie z K01; rozjazd po scaleniu wykryje dopiero integracja K01/K02 (do zamkniecia
+// przy scalaniu: usunac kopie, importowac z K01).
 import { ensureBrandRootTokens, CIV_BRAND_SCOPE_VARS } from '../brandTokenVars';
 import { resourceColorClassCss } from '../resourceColors';
 import { UNIT_INFOGRAPHIC_CSS } from '../unitInfographic';
