@@ -436,6 +436,8 @@ export interface CityPanelDto {
 export interface CityPanelInputsDto {
   zdrowie: { posSum: number; negSum: number };
   surowce: { potential: string[]; active: string[]; legacy: boolean };
+  /** K04-Z1 (P5-8-K04): pula magazynu PAŃSTWA po kluczu surowca (civ-wide, pin `ownerResourceStockAll`); brak = pusta. */
+  stockPool?: Readonly<Record<string, number>>;
   /** Bezposrednie wymagania technologii (nazwa -> lista poprzednikow) — zamiast `getTechDef`/`parsePrerequisites` pina. */
   techPrereqs: Record<string, string[]>;
   growthTooltip: { osobNaObywatela: number; gainSlots: number };
