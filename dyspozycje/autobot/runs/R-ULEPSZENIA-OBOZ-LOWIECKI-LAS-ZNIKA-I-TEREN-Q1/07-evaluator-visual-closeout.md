@@ -1,7 +1,7 @@
 # AutoBot — niezależna ewaluacja wizualnego domknięcia tartaku
 
-**Zakres:** tartak zbudowany na leśnym wzgórzu zachowuje ukształtowanie terenu i las; wyrąb usuwa tartak.  
-**Baza:** `e4af7741`  
+**Zakres:** tartak zbudowany na leśnym wzgórzu zachowuje ukształtowanie terenu i las; wyrąb usuwa tartak.
+**Baza:** `e4af7741`
 **Werdykt:** **PASS-WITH-NOTES** dla wizualnego kontraktu tartaku. Nie jest to zatwierdzenie szerszych testów obozu łowieckiego ani wyścigu AI/gracza.
 
 ## Niezależna weryfikacja
