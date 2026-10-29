@@ -43,6 +43,7 @@ dotykające tych samych plików — zawsze sekwencyjnie, nigdy w tej samej fali.
 | 7 | R-RUSTPORT-REPIN-LOGIKA-CIV-Q1 (na gałęzi `rust-port/repin-wip`; DANE r2 zintegrowane tam, nie w `parity-v2`) | REPIN krok 2 | 1/5 | (nowy) | etap 1 | 2026-10-29 |
 | 8 | R-RUSTPORT-P6-M06A-LAD-MORZE-WYBRZEZE-A-Q1 | P6 mapgen | 2/5 | wf_06809315-5d2 | **ZAMKNIĘTE ADMINISTRACYJNIE (zakres 22/46) — zintegrowane**; resztę przejmuje M06A2 | 2026-10-29 |
 | 14 | R-RUSTPORT-P6-M06A2-LAD-MORZE-RESZTA-Q1 | P6 mapgen | 1/5 | (nowy) | etap 1 | 2026-10-29 |
+| 15 | R-RUSTPORT-P5-8-CITYPANEL-K05A-Q1 | P5.8 | 1/5 | (nowy) | etap 1 | 2026-10-29 |
 | 3 | R-RUSTPORT-P5-8-CITYPANEL-PODZIAL-Q1 | P5.8 | 3/5 | wf_5b094795-b4f | **PASS — zintegrowane** (docs, `a1246e48`); slot wolny | 2026-10-29 |
 | 4 | R-RUSTPORT-P4-36-MOD14-BATTLE-3D-Q3 | P4.36 | 1/5 | wf_2ef132a4-a0e | **PASS — zintegrowane** na `parity-v2`; slot wolny | 2026-10-29 |
 | 5 | R-RUSTPORT-P5-8-CITYPANEL-K01B-Q1 | P5.8 | 2/5 | wf_4e66ea20-909 | **PASS-WITH-NOTES — zintegrowane** (`d123d988`); slot wolny | 2026-10-29 |
