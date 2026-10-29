@@ -36,7 +36,11 @@ const fnBlock = (lines, name) => {
   return { from: s + 1, to: e + 1, text: lines.slice(s, e + 1).join('\n') };
 };
 
-const UNITS = ['ownerHasMennica', 'activeTradeRouteCountForCity', 'buildHandelDetailCard', 'renderHandelSlidersPanel'];
+/** Jednostki K08D: partie handel/slider (rundy 1-2) + religia (runda 3, K08D-Z12). Wealth: NIE_ZROBIONE (K08D §8). */
+const UNITS = [
+  'ownerHasMennica', 'activeTradeRouteCountForCity', 'buildHandelDetailCard', 'renderHandelSlidersPanel',
+  'appendCompositionBlock', 'buildTopBarReligiaDetailCard', 'renderReligia',
+];
 let changed = 0;
 for (const name of UNITS) {
   const p = fnBlock(pin, name);
@@ -50,5 +54,5 @@ for (const name of UNITS) {
   if (!same) changed++;
   console.log(`${same ? 'IDENTYCZNA' : 'ZMIENIONA '} ${name} | pin ${p.from}-${p.to} (${p.text.split('\n').length} l) | cur ${c.from}-${c.to} (${c.text.split('\n').length} l)`);
 }
-console.log(`\ndryf treści K08D (4 jednostki): zmienionych=${changed}/${UNITS.length}`);
+console.log(`\ndryf treści K08D (${UNITS.length} jednostek): zmienionych=${changed}/${UNITS.length}`);
 process.exit(changed === 0 ? 0 : 1);

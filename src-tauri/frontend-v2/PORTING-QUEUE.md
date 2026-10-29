@@ -314,3 +314,11 @@ Partia `rail`: 6 z 24 jednostek DOM bloku K08 (150 z 1 324 LOC) w `src/ui/cityPa
 - Pola `K05bCfg` (dopisek): `getCivKey`, `getOwnerHasZlotoAccess`, `getTradeRoutes`, `difficulty`, `data`; typ `TradeRouteK05bDto`.
 - Harnessy: `run-k08d-handel-pin.mjs` 32/32 (pin-exec 4 zakresów vs port, kotwice pinu, delegat `daninaLabelAccusative` względem pliku pinu); `mutate-k08d-handel.mjs` 6/6 ZABITE.
 - NIE_ZROBIONE (kolejne rundy): `renderWealth` (+ `loadWealthParams`, `wealthCap`, `buildWealthDetailCard`, `appendWealthCompactStrip`), `renderReligia` (+ `religiaSzPunkty`, `computeOrderStateLocal`, `appendCompositionBlock`, `buildTopBarReligiaDetailCard`). Produkcyjne podpięcie wiringu = K09. Szczegóły: `dyspozycje/rust-port/p5/P5-8-K08D.md`.
+
+## Status P5.8 K08D, runda 3/5 (Operator-impl, `R-RUSTPORT-P5-8-CITYPANEL-K08D-Q1`)
+
+- NAPRAW 5 (P5.13): bramka Mennicy (`maMennica`, `mennicaAktywna`, `mennicaSpiZBrakuZlota`) przeniesiona z UI do delegatu `mennicaGate` (`k08d-deps.ts`, wiring `k08dWiring.ts`). Commit `99b27104`. Mutacje: handel 6/6 + pól 12/12; wiring 15/15.
+- NAPRAW 3c: partia `religia` w `src/ui/cityPanel/k08d-religia.ts` (`renderReligia` pin 4112–4220, `buildTopBarReligiaDetailCard` pin 5992–6039, `appendCompositionBlock` pin 3814–3834). Reguły jako delegaty `religiaSzPunkty`, `religiaXRelTop`. Commit `0987c7d3`. Harness `run-k08d-religia-pin.mjs` 34/34; `mutate-k08d-religia.mjs` 10/10; `verify-k08d-copies --batch religia` OK.
+- Gate: `run-k08d-wiring` 23/23 (mutacje 15/15); `run-k08d-handel-pin` 36/36; `npm run check` i `typecheck` zielone; drift jednostek K08D 0/7.
+- NIE_ZROBIONE: `renderWealth` z zależnościami (partia `wealth`, runda 4). Decyzja kopia pinu vs DTO (`k03-cards.ts`, `k04c-zamoznosc.ts`) wymagana przed kodem.
+- Szczegóły i lista zmian API: `dyspozycje/rust-port/p5/P5-8-K08D.md` §9.
