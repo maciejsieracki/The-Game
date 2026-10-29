@@ -5506,3 +5506,8 @@ regres przeszedł przez Operator→Evaluator→Final Control niezauważony.
 - Zakres: kampania AI zbiera wojska przez pięć pełnych tur i w szóstej wykonuje atak wspólnym ruchem; dowódca otrzymuje osobną gwiazdę, a emblemat cywilizacji jednostki ma rozmiar 4×.
 - ROBOCZA bundle MD5 `e5eb21d82c2be611ab9c491327f696c3`, SHA-256 `76078759e78f3cb466156cec296da925759dd685764dc42242d9a5f02ef40eb2`, `70,021,251` B. TypeScript, 916-modułowy build i testy obu tematów oraz wspólne regresje PASS. Test pełnego imperium oraz kampania morska AI nie należą do tego wydania.
 - Zdalny odczyt: pinned GitHub Raw bundle, manifest i START HTTP 200; bundle hash/rozmiar zgodne z manifestem. Receipt: `dyspozycje/autobot/runs/R-AI-GENERAL-WAR-5TURN-ATTACK-Q1/06-release-receipt.json`.
+
+# ROBOCZA — kierunki ikon łączenia i rozdzielania armii (2026-10-29)
+- Zmiana produktu: `gra/src/ui/unitActionBarHtml.ts`; scalanie ma strzałki skierowane do środka, rozdzielanie na zewnątrz. Commit źródłowy `002a75815b067cf2cdbcae7eed5c488f8634ea34`; release/push do `origin/main`: `42b4dac831765176684a506d0be377232fef008a`.
+- Robocza bundle MD5 `c7c3e90d634feac44e63b9b69cbc3cad`, SHA-256 `93f846fffedd526eeda1d3b17e25a73e80729b6bb16d3d6e4c2f41224192b974`, `70,029,107` B. Verifier `VERIFY OK`; startowy smoke gry PASS (canvas i klatka renderu). Zmiana ikon: PASS; paska akcji 31/31; odfortyfikowanie 16/16; TypeScript PASS.
+- GitHub Raw: bundle, manifest i START HTTP 200; manifest i START byte-identical; bundle hash i rozmiar zgodne. Stempel self-referential: embedded iteration `60642361040b3ec93525f26595efa309`; verifier zgłasza WARN dla samego pola stempla, ale weryfikuje manifest i `bundles[]` jako zgodne. Receipt: `dyspozycje/autobot/runs/R-ARMY-MERGE-SPLIT-ICONS-Q2/06-release-receipt.json`.

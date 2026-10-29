@@ -8527,7 +8527,7 @@ referencyjnych zielone, `entity-card-historia-section-test` 36/36,
 
 ## `R-ARMY-MERGE-SPLIT-ICONS-Q2` — kierunki ikon łączenia i rozdzielania armii (2026-10-29)
 
-- **STATUS:** `ZINTEGROWANE / READY_FOR_DEPLOY` — Operator PASS, niezależny Evaluator PASS, Final Control PASS; Robocza bundle zbudowany i lokalnie zweryfikowany, publikacja do origin/main i remote readback jeszcze pending.
+- **STATUS:** `DEPLOY-ROBOCZA / REMOTE-READBACK-PASS` — Operator, niezależny Evaluator i Final Control PASS; fast-forward/publish `42b4dac831765176684a506d0be377232fef008a`; remote bundle, manifest i START zgodne.
 - **Zgłoszenie:** ikony „Połącz” i „Rozdziel” w karcie armii wyglądały identycznie mimo wcześniejszego ustalenia, że strzałki scalania mają kierować się do środka, a rozdzielania na zewnątrz.
 - **Przyczyna:** definicje SVG w `gra/src/ui/unitActionBarHtml.ts` używały dla obu akcji tych samych dwóch grotów skierowanych na zewnątrz.
 - **Zmiana:** rozdzielenie ma teraz dwa wyraźne trzony zakończone grotami odśrodkowymi; połączenie ma groty skierowane do wspólnego środka. Test sprawdza wyrenderowane HTML produkcyjnego renderera i geometrię kierunku obu strzałek.
