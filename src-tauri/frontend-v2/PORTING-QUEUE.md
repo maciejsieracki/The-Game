@@ -210,3 +210,7 @@ Przeniesione (pin `edb8fb56:gra/src/ui/cityPanel.ts`):
 - Bloki breakdown (4378-4516): `appendBreakdownLines`, `appendPctBreakdownBlock`, `appendSignedBreakdownSections`, `appendW4SignedBreakdownSections` w `src/ui/cityPanel/k02-breakdown.ts` oraz typ `BreakdownLine` w `src/ui/cityPanel/types.ts` (ZAŁOŻENIE P5.8-K02-Z3); lokalny `el` bez `html` (ZAŁOŻENIE P5.8-K02-Z4); harness `tools/dom-harness/run-k02-breakdown.mjs` (12 asercji, 0 różnic), mutacje `mutate-k02-breakdown.mjs` 9/9.
 
 Stan K02 po r3: 23 z 23 jednostek K02 wg pomiaru przeniesione. Plik `cityPanel.ts` (81) nadal nieprzeniesiony w całości (poza K02). Szczegóły: `dyspozycje/rust-port/p5/P5-8-K02.md`; runda 1: `dyspozycje/autobot/runs/R-RUSTPORT-P5-8-CITYPANEL-K02-Q1/01-operator-r1.md`.
+
+## Status P5-8 K01B (`R-RUSTPORT-P5-8-CITYPANEL-K01B-Q1`, runda 1/5)
+
+Druga część Fundamentu K01 (`cityPanel.ts`, pin `edb8fb56`): **57 odroczonych jednostek / 738 LOC** z K01A przeniesionych do `src/ui/cityPanel/k01b-{dto,reguly,t,r,f,dom}.ts` (T 26, R 15, F 6, DOM 10). Typy obiektowe z `game/`/`data/` zastąpione DTO `*K` (`k01b-dto.ts`), reguły gry wołane przez port `reguly()` (`k01b-reguly.ts`, wstrzykiwany przez kontroler; bez wstrzyknięcia rzucają błąd). Założenia K01B-Z1..Z7 i tabela zmian API: `dyspozycje/rust-port/p5/P5-8-K01B.md`. Bramki: `npm run typecheck` EXIT 0, `npm run check` EXIT 0. Harness DOM i mutacje: NIE_ZMIERZONO (kolejna runda). Podłączenie portu reguł w `src/controller/**`: NIE_ZROBIONE (poza tym tematem).
