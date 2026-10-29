@@ -8524,3 +8524,12 @@ referencyjnych zielone, `entity-card-historia-section-test` 36/36,
 - Ograniczenia: w R5 ustawienie Obrony nie utrzymało się w śladzie obrońcy, więc nie jest tu dowodem dla Obrony; osobny R3 28v28 potwierdza akcje obrony i ruch konnicy. Test 28v28 nie zawierał rydwanów, a naturalny R5/R6 obejmował mały skład na mapie presetowej; zachowanie na każdym terenie i pełnym dużym polu bitwy nie jest dowiedzione. Brak przypadku, który uzasadniałby zmianę kodu produktu.
 - Raporty i artefakty: `dyspozycje/autobot/runs/R-BITWA-ATAK-LUCZNICY-RYDWANY-Q1/`; testy: `gra/tools/battle-large-mixed-doctrine-matrix-test.cjs`, `gra/tools/battle-doctrine-live-r3-test.cjs`, `gra/tools/battle-doctrine-live-r4-test.cjs`, `gra/tools/battle-natural-chariot-r5-test.cjs`, `gra/tools/battle-natural-near-range-r6-test.cjs`.
 - Kod bitwy z dotychczasowych poprawek jest już w Roboczej z publikacji `682a6b9a`; ten follow-up dodaje wyłącznie testy i dokumentację, więc nie wymaga nowego bundla/deployu. Final Control: `PASS-WITH-NOTES`; ograniczenia zakresu potwierdzone. Raport niezależnego ewaluatora: `dyspozycje/autobot/runs/R-BITWA-ATAK-LUCZNICY-RYDWANY-Q1/18-evaluator-r6-closeout.md`; końcowy audyt: `dyspozycje/autobot/runs/R-BITWA-ATAK-LUCZNICY-RYDWANY-Q1/19-final-control.md`.
+
+## `R-ARMY-MERGE-SPLIT-ICONS-Q2` — kierunki ikon łączenia i rozdzielania armii (2026-10-29)
+
+- **STATUS:** poprawka Operatora zaimplementowana i przetestowana; czeka na niezależnego Ewaluatora i Final Control. Nie wdrożono jej jeszcze do Roboczej.
+- **Zgłoszenie:** ikony „Połącz” i „Rozdziel” w karcie armii wyglądały identycznie mimo wcześniejszego ustalenia, że strzałki scalania mają kierować się do środka, a rozdzielania na zewnątrz.
+- **Przyczyna:** definicje SVG w `gra/src/ui/unitActionBarHtml.ts` używały dla obu akcji tych samych dwóch grotów skierowanych na zewnątrz.
+- **Zmiana:** rozdzielenie ma teraz dwa wyraźne trzony zakończone grotami odśrodkowymi; połączenie ma groty skierowane do wspólnego środka. Test sprawdza wyrenderowane HTML produkcyjnego renderera i geometrię kierunku obu strzałek.
+- **Weryfikacja Operatora:** test ikon PASS; kompletność paska akcji 31/31; test „Odfortyfikuj całą armię” 16/16; TypeScript PASS; render Chromium zapisany w `dyspozycje/autobot/runs/R-ARMY-MERGE-SPLIT-ICONS-Q2/01-merge-split-icons.png`.
+- **Pliki:** `gra/src/ui/unitActionBarHtml.ts`, `gra/tools/army-merge-split-direction-icons-test.cjs`; raport: `dyspozycje/autobot/runs/R-ARMY-MERGE-SPLIT-ICONS-Q2/10-operator.md`.

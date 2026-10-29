@@ -30,12 +30,13 @@ const ACTION_ICONS: Partial<Record<string, string>> = {
     + '</svg>',
   split:
     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'
-    + '<path d="M12 3v18"/><path d="M8 7 4 11l4 4"/><path d="M16 7l4 4-4 4"/>'
+    + '<path d="M12 3v18"/>'
+    + '<path d="M12 12H4M7 9 4 12l3 3"/><path d="M12 12h8m-3-3 3 3-3 3"/>'
     + '</svg>',
   merge:
     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'
-    + '<path d="M8 7 4 11l4 4"/><path d="M16 7l4 4-4 4"/>'
     + '<path d="M12 3v18"/>'
+    + '<path d="M4 12h6M7 9l3 3-3 3"/><path d="M20 12h-6m3-3-3 3 3 3"/>'
     + '</svg>',
   sentry:
     '<svg viewBox="0 0 24 24" fill="currentColor" stroke="none">'
