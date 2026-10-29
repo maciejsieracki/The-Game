@@ -405,6 +405,7 @@ import {
   REBEL_FACTION_OWNER_ID,
 } from './game/society-breakdown';
 import { computeCitizenResourceDrain } from './game/citizen-resource-upkeep';
+import { BATTLE_MODE_SETTING_VERSION, isAutomaticOnlyBattleMode } from './game/battle-mode';
 import { resourceUsageBreakdownFor, resourceUsageHasAny } from './game/resource-usage-breakdown';
 import {
   applyPostCaptureLawOnCapture,
@@ -1810,6 +1811,8 @@ async function boot(): Promise<void> {
     let _menuWorldDensity: WorldGenerationPreset = { ...DEFAULT_WORLD_DENSITY };
     /** Ostatnie parametry kreatora — zapisywane w sejwie i używane przy wczytywaniu mapy. */
     let _lastNewGameParams: NewGameParams | null = null;
+    /** Version marker distinguishes the live battle-mode semantics from legacy inert flags. */
+    let _battleModeSettingVersion: number | undefined;
     /** Źródło sesji przy zapisie — odróżnia grę od playtestu w liście sejwów. */
     let _saveOrigin: 'normal' | 'playtest' = 'normal';
     let _currentRenderOptions: MapRenderOptions = { ...DEFAULT_MAP_RENDER_OPTIONS };
@@ -29022,9 +29025,12 @@ async function boot(): Promise<void> {
     /** Czy ustawienia nowej gry wymuszają auto dla bitwy z udziałem tego gracza. */
     function playerBattleAutomaticOnly(ownerId: number): boolean {
       if (!isMe(ownerId)) return false;
-      // Zachowaj stary wybór dla legacy save'ów bez pola; nowe gry zawsze zapisują
-      // jawne false/true w advanced.battleAlwaysManual.
-      return _lastNewGameParams?.advanced?.battleAlwaysManual === false;
+      // Old saves may contain the former inert false default. A save-version marker is
+      // required before that value can mean automatic-only.
+      return isAutomaticOnlyBattleMode(
+        _battleModeSettingVersion,
+        _lastNewGameParams?.advanced?.battleAlwaysManual,
+      );
     }
 
     /** MAP PLAYER ATTACK: jednostka → jednostka (sąsiad) → preBattle C-01 */
@@ -32343,6 +32349,7 @@ async function boot(): Promise<void> {
           label: label ?? currentSaveLabel('manual'),
           savedAt,
           saveOrigin: _saveOrigin,
+          battleModeSettingVersion: _battleModeSettingVersion,
           newGameParams: _lastNewGameParams
             ? { ..._lastNewGameParams, seed: _gameSeed }
             : undefined,
@@ -39487,6 +39494,7 @@ async function boot(): Promise<void> {
       galleryOn = false;
       _saveOrigin = 'normal';
       applyMenuParams(params);
+      _battleModeSettingVersion = BATTLE_MODE_SETTING_VERSION;
       hideMainMenu();
       hideNewGameFlow();
       hideGamePauseMenu();
@@ -40775,6 +40783,10 @@ async function boot(): Promise<void> {
     /** Wspólna ścieżka wczytywania zapisu — Ctrl+L i doLoadGame (Grupa F: migracja podziału). */
     function restoreGameFromSave(saved: SaveGame): void {
       applyRenderOptionsFromSave(saved);
+      const savedBattleModeVersion = saved.meta?.battleModeSettingVersion;
+      _battleModeSettingVersion = savedBattleModeVersion === BATTLE_MODE_SETTING_VERSION
+        ? BATTLE_MODE_SETTING_VERSION
+        : undefined;
       if (typeof saved.seed === 'number' && saved.seed > 0) {
         _gameSeed = saved.seed;
       }

@@ -23,8 +23,8 @@ assert.equal((main.match(/deploy: (?:atk|def)RosterRef\.some\(u => u\.isGeneral 
   'all three player-controlled map-battle entry paths skip manual deployment controls without a commander');
 assert.match(preBattle, /if \(opts\?\.automaticOnly === true\)\s*\{\s*cb\.onAuto\(\);\s*return;/,
   'automatic-only mode resolves directly and does not show the manual-vs-auto overlay');
-assert.match(main, /function playerBattleAutomaticOnly\(ownerId: number\): boolean[\s\S]*?_lastNewGameParams\?\.advanced\?\.battleAlwaysManual === false/,
-  'new-game mode is read from persisted session parameters and only applies to a human owner');
+assert.match(main, /function playerBattleAutomaticOnly\(ownerId: number\): boolean[\s\S]*?if \(!isMe\(ownerId\)\) return false;[\s\S]*?return isAutomaticOnlyBattleMode\(/,
+  'new-game mode is version-gated and only applies to a human owner');
 assert.equal((main.match(/automaticOnly: playerBattleAutomaticOnly\(/g) ?? []).length, 3,
   'field attacks, incoming attacks, and city sieges all honor the player mode');
 
