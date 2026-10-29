@@ -1,0 +1,52 @@
+R-RUSTPORT-REPIN-EKONOMIA-A-Q1 - Operator-pomiary R2 (niezalezny weryfikator), HEAD bazowy 6b67b256
+
+== 1. Regeneracja wektorow z URUCHOMIONEGO weba 91dc998a ==
+Web: git archive 91dc998a gra/src gra/data -> katalog roboczy _webpin91 (poza git, do usuniecia).
+Generatory (bez zmian w repo), Node v22.22.0:
+  node --experimental-transform-types --no-warnings --import ./p65b-loader-register.mjs ./gen-p65b-vectors.mjs <WEB> <OUT>   EXIT=0
+  node --experimental-transform-types --no-warnings --import ./p67a-loader-register.mjs ./gen-p67a-vectors.mjs <WEB> <OUT>   EXIT=0
+Porownanie bajt-w-bajt (cmp) z rust-port/engine/tests:
+  p6_5b_vectors/buildings.json   SAME
+  p6_5b_vectors/format.json      SAME
+  p6_5b_vectors/manpower.json    SAME
+  p6_5b_vectors/replenish.json   SAME
+  p6_7a_vectors/empire.json      SAME
+  p6_7a_vectors/growth.json      SAME
+  p6_7a_vectors/manpower.json    SAME (sha256 5380390a9ea799219eaa9707b5b6d1c78b44575dffe6fab239b919fa72dc7915 = SHA256SUMS.txt)
+  p6_7a_vectors/tempo_stawki.json SAME
+  p6_7a_vectors/edge.json        DIFF (oczekiwane: zmiany Czesci B i ekonomii, NIE regenerowane w tym temacie)
+  p6_7a_vectors/params.json      DIFF (j.w.)
+  p6_7a_vectors/post_central.json DIFF (j.w.)
+UWAGA: meta.pin w wygenerowanych wektorach p6_5b/p6_7a to nadal "edb8fb56" (etykieta na sztywno w
+gen-p65b-vectors.mjs:749; gen-p67a-vectors.mjs: komentarz). Dane pochodza z 91dc998a. Wymaga poprawki
+generatora w kolejnej partii (poza allowlista tego tematu).
+
+== 2. Bramki (pliki gate-*-r2.log w katalogu runu) ==
+cargo fmt --all -- --check                : EXIT=0
+cargo clippy --all-targets -- -D warnings : EXIT=0
+cargo test --no-fail-fast                 : EXIT=0, 170 binarek, passed=1266 failed=0 (log gate-test-r2.log)
+Uwaga: pierwsze wywolanie cargo test zostalo przeniesione w tlo przez harness (timeout 120 s); wynik pobrano z
+logu, komenda zakonczyla sie EXIT=0 (linia EXIT=0 w logu).
+
+== 3. Mutacje portu (mutate-repin-a.py, literalne podmiany jednego wystapienia, przywrocenie pliku) ==
+K01 skalowanie dolna granica 0.1 zamiast 0       : WYKRYTA   (p6_5b_manpower exit=101)
+K02 nieskonczony mnoznik -> 0 zamiast 1          : WYKRYTA   (p6_5b_manpower exit=101)
+K03 macierz bez klampy max(0,1+v)                : WYKRYTA   (p6_5b_manpower exit=101)
+K04 koszt typu liczony z maxMult (ignoruje costMult): NIEWYKRYTA (p6_5b_manpower exit=0)
+K05 koszt leczenia z maxMult (ignoruje costMult) : NIEWYKRYTA (p6_5b_replenish exit=0; p6_5b_manpower exit=0)
+K06 galaz unitCost===0 wylaczona (if false &&)   : NIEWYKRYTA (p6_5b_replenish exit=0) [pierwszy przebieg dal blad
+                                                   kompilacji/srodowiska - powtorzony, wynik wiarygodny]
+K07 galaz unitCost===0 leczy 0 HP                : NIEWYKRYTA (p6_5b_replenish exit=0)
+K08 przywrocony wczesny wyjscie empireMp<=0      : WYKRYTA   (p6_5b_replenish exit=101)
+K09 override macierzy ignorowany (if false &&)   : WYKRYTA   (p6_5b_manpower exit=101)
+Wynik: 6/9 WYKRYTA, 3/9 NIEWYKRYTA (K04, K05, K06/K07 = gałąź koszt 0 i costMult != maxMult).
+Przyczyna luki: generatory wektorow przekazuja costMult = maxMult (lub brak klucza), a resolveOwnerMatrix
+nie jest podawany (undefined) -> w wektorach replenish costMult = 1 zawsze, czyli unitCost > 0 zawsze.
+
+Dodatkowy pomiar: skrypt mutate-p65b.py (R1 P6.5B) w trybie check: M03 i M04 maja 0 dopasowan
+(wzorce nieaktualne po porcie 91dc998a) - skrypt nie jest zmieniany w tym temacie.
+
+== 4. Surowe wyniki pomocnicze ==
+git diff edb8fb56 91dc998a -- gra/src/game/manpower.ts: przeczytane recznie, zgodne z portem:
+  scaledManpower (max(0, isFinite?m:1)), matrixMultiplier (max(0,1+v)/1), costMult trailing param,
+  brak wczesnego wyjscia empireMp, unitCost===0 leczy bez zuzycia, kolejnosc: unitCost -> skaut -> desiredHeal -> galaz 0.

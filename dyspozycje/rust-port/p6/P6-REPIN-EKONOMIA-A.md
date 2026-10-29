@@ -50,3 +50,32 @@ Dane derived (`unit-gold-states`, `building-work-states`, `improvement-work`): N
 - `cargo clippy --all-targets -- -D warnings`: EXIT=0 (dodano `#[allow(clippy::too_many_arguments)]` na `can_afford_unit_manpower_empire` i `try_deduct_unit_spawn_costs_empire`, wzor jak przy `tick_manpower_unit_replenishment`)
 - `cargo test --no-fail-fast`: 1266 passed / 0 failed (baza 1265/0 + nowy test jednostkowy matrix)
 - `git diff --check`: czysty
+
+## Pomiary R2 (Operator-pomiary, niezalezny weryfikator)
+
+Log: `dyspozycje/autobot/runs/R-RUSTPORT-REPIN-EKONOMIA-A-Q1/pomiary-r2.log`.
+
+- Wektory regenerowane z weba `91dc998a` (generatory R1, bez zmian): `p6_5b` `buildings`, `format`, `manpower`, `replenish` oraz `p6_7a` `empire`, `growth`, `manpower`, `tempo_stawki` - BAJT-W-BAJT zgodne z repo (0 rozbieznosci). `p6_7a` `edge`, `params`, `post_central` - roznia sie (oczekiwane; nie regenerowane, patrz LUKI).
+- Etykieta `meta.pin` w wektorach `p6_5b`/`p6_7a` nadal `edb8fb56` (sztywno w `gen-p65b-vectors.mjs:749`). Dane z `91dc998a`. Poprawka generatora: osobna partia.
+- Mutacje (`mutate-repin-a.py`, K01-K09): 6/9 WYKRYTA, 3/9 NIEWYKRYTA.
+  - NIEWYKRYTA K04 (koszt typu z `maxMult` zamiast `costMult`) i K05 (koszt leczenia z `maxMult`): luka (a) z R1 potwierdzona pomiarem.
+  - NIEWYKRYTA K06/K07 (galaz `unitCost === 0`: wylaczona / leczy 0 HP): wektory `replenish` nie zawieraja przypadku `costMult = 0`, bo generator nie podaje `resolveOwnerMatrix` (costMult zawsze 1). Galaz kodu NIE jest pokryta zadnym testem. Luka WIEKSZA niz opisana w R1 (R1 zaklasyfikowala ja jako PORTOWANE na podstawie wektorow).
+- Bramki: fmt EXIT=0; clippy EXIT=0; test EXIT=0 (170 binarek, 1266 passed / 0 failed).
+
+### Tabela statusow po pomiarach (aktualizacja wiersza 4 i 5)
+
+| # | Zmiana | Status po R2 |
+|---|---|---|
+| 4 | `costMult` jako parametr | PORTOWANE (kod); LUKA TESTOWA: K04/K05 NIEWYKRYTA |
+| 5 | `unitCost === 0` leczy bez zuzycia | PORTOWANE (kod); LUKA TESTOWA: K06/K07 NIEWYKRYTA - brak wektora i brak testu jednostkowego |
+
+### NASTEPNA-PARTIA (wymagana przed Evaluatorem)
+
+- Test jednostkowy `costMult != maxMult` (np. `unit_manpower_cost_for_type(Some(..), epoka, 2.0, 0.5)` = `unit_manpower_cost(epoka, 0.5)`), zabija K04.
+- Test `tick_manpower_unit_replenishment` z `resolve_owner_matrix` zwracajacym `mp_koszt_jednostki_proc = -1` (costMult = 0): jednostka leczy sie bez zmiany puli Manpower; zabija K06/K07.
+- Poprawka `meta.pin` w generatorach (etykieta z parametru, nie na sztywno).
+
+## Zalozenia pomiarow
+
+- Z5: K06 pierwotnie dal blad srodowiska (zapis w trakcie braku miejsca na dysku); powtorzenie daje NIEWYKRYTA. Wynik z powtorzenia przyjmowany.
+- Z6: `mutate-p65b.py` (R1 P6.5B) nie jest uzywany do mutacji portu 91dc998a - dwa wzorce (M03, M04) nie pasuja; skrypt nie jest zmieniany (poza allowlista).
