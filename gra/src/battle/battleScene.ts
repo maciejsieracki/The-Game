@@ -1962,7 +1962,7 @@ interface RuntimeBattleUnit {
   // attackers who climbed via a siege tower (onWallWalkway too).
   // Attackers can also get this flag after mounting via a siege tower.
   onWallWalkway: boolean;
-  playerOrder:   { type: 'none' } | { type: 'hold' } | { type: 'move'; col: number; row: number } | { type: 'attack'; targetId: string };
+  playerOrder:   { type: 'none' } | { type: 'hold' } | { type: 'move'; col: number; row: number } | { type: 'attackMove'; col: number; row: number } | { type: 'attack'; targetId: string };
   // --- Tryby recz. sterowania ---
   rangedKite:       boolean; // true = kituje (domyslnie); false = stoi i bije bez cofania
   shootingEnabled:  boolean; // true = uzywa ataku dystansowego; false = idzie wrecz
@@ -2220,6 +2220,8 @@ export class BattleScene {
   // --- STEROWANIE RECZNIE (faza walki) ---
   /** Tryb recznego sterowania jednostkami gracza. Domyslnie true = RECZNE (C2-FLOW). */
   private _manualMode = true;
+  /** Ground-click mode armed by the Atakuj-marszem control. */
+  private _attackMoveMode = false;
   private _manualCommanderGate = false;
   /** Po Start walki: faza planowania (Spacja = rozpocznij turę). */
   private _battleAwaitingOrders = false;
@@ -10721,9 +10723,9 @@ export class BattleScene {
       if (ru.dead || ru.removed || ru.routed) continue;
       const ord = ru.playerOrder;
       const queued = this._queuedOrderUnitIds.has(ru.bu.id);
-      if (ord.type === 'move') {
+      if (ord.type === 'move' || ord.type === 'attackMove') {
         const to = this._worldAtTile(ord.col, ord.row);
-        const arrow = this._makeOrderArrow(this._unitWorldPos(ru), to, false, queued);
+        const arrow = this._makeOrderArrow(this._unitWorldPos(ru), to, ord.type === 'attackMove', queued);
         this._orderLinesGroup.add(arrow);
         this._queuedOrderArrows.push(arrow);
       } else if (ord.type === 'attack') {
@@ -16501,6 +16503,7 @@ export class BattleScene {
       this._syncManualRailHighlight();
     }
     if (!this._manualMode) {
+      this._attackMoveMode = false;
       this._clearAllSelection();
       for (const ru of this._playerRoster()) ru.playerOrder = { type: 'none' };
       this._queuedOrderUnitIds.clear();
@@ -16549,8 +16552,15 @@ export class BattleScene {
 
   /** Klawisz R — przełącz RECZNE / AUTO. */
   private readonly _onKeyManual = (e: KeyboardEvent): void => {
-    if (e.key !== 'r' && e.key !== 'R') return;
     if (isEditableTarget(e.target)) return;
+    if (e.key === 'Escape' && this._attackMoveMode) {
+      this._attackMoveMode = false;
+      this._cancelAttackMoveSelected();
+      this._updateBattleSelectionBar();
+      this._showOrderFeedback('Atakuj-marszem anulowane');
+      return;
+    }
+    if (e.key !== 'r' && e.key !== 'R') return;
     if (e.ctrlKey || e.metaKey || e.altKey) return;
     if (this.deployPhase || !this.started || this.finished) return;
     e.preventDefault();
@@ -17477,6 +17487,49 @@ export class BattleScene {
       });
       return true;
     }
+    if (ord.type === 'attackMove') {
+      const targetCol = ord.col;
+      const targetRow = ord.row;
+      const route = this._attackMovePath(ru, targetCol, targetRow, true);
+      const routeTiles = new Set(route ?? []);
+      const routeThreat = this._enemiesOf(ru)
+        .filter(enemy => !enemy.dead && !enemy.fadingOut && !enemy.removed && !enemy.routed)
+        .filter(enemy => routeTiles.has(cellKey(enemy.q, enemy.r))
+          || (route ?? []).some(tile => {
+            const [q, r] = tile.split(',').map(Number);
+            return this._canStrikeTargetFrom(ru, q!, r!, enemy);
+          }))
+        .sort((a, b) => this._priorityScore(ru, a) - this._priorityScore(ru, b)
+          || manhattan(ru.q, ru.r, a.q, a.r) - manhattan(ru.q, ru.r, b.q, b.r));
+      const target = routeThreat[0];
+      if (target) {
+        if (this._canStrikeTargetFrom(ru, ru.q, ru.r, target)) {
+          this._doAttack(ru, target, done);
+          return true;
+        }
+        // Advance toward a blocking threat while retaining the waypoint order.
+        const routeStep = this._firstStepAlongPathToAttack(ru, undefined, target);
+        if (routeStep) {
+          const [nc, nr] = routeStep.split(',').map(Number);
+          if (this._destAllowedByBlockade(ru, nc!)) {
+            this._doMove(ru, nc!, nr!, () => { this._refreshQueuedOrderVisuals(); done(); });
+            return true;
+          }
+        }
+      }
+      if (ru.q === targetCol && ru.r === targetRow) {
+        ru.playerOrder = { type: 'none' };
+        this._refreshQueuedOrderVisuals();
+        done();
+        return true;
+      }
+      const step = this._firstStepOnAttackMovePath(ru, targetCol, targetRow);
+      if (!step) { done(); return true; }
+      const [nc, nr] = step.split(',').map(Number);
+      if (!this._destAllowedByBlockade(ru, nc!)) { done(); return true; }
+      this._doMove(ru, nc!, nr!, () => { this._refreshQueuedOrderVisuals(); done(); });
+      return true;
+    }
     if (ord.type === 'attack') {
       const tgt = this._enemiesOf(ru).find(u => u.bu.id === ord.targetId && !u.dead && !u.fadingOut);
       if (!tgt) {
@@ -17564,6 +17617,51 @@ export class BattleScene {
       }
     }
     return null;
+  }
+
+  /** Shortest waypoint path. Enemy cells may be treated as provisional route
+   * cells when scouting threats; the issued movement path always keeps every
+   * occupied tile blocked. */
+  private _attackMovePath(
+    ru: RuntimeBattleUnit, targetCol: number, targetRow: number, allowEnemyCells: boolean,
+  ): string[] | null {
+    const start = cellKey(ru.q, ru.r);
+    const goal = cellKey(targetCol, targetRow);
+    const parent = new Map<string, string | null>([[start, null]]);
+    const queue = [start];
+    for (let head = 0; head < queue.length && queue.length < BF_COLS * BF_ROWS; head++) {
+      const current = queue[head]!;
+      if (current === goal) break;
+      const [q, r] = current.split(',').map(Number);
+      for (const [dq, dr] of DIRS4) {
+        const nq = q! + dq;
+        const nr = r! + dr;
+        if (nq < 0 || nq >= BF_COLS || nr < 0 || nr >= BF_ROWS) continue;
+        const next = cellKey(nq, nr);
+        if (parent.has(next) || !this._passableForUnit(ru, nq, nr)
+          || !this._destAllowedByBlockade(ru, nq)) continue;
+        const occupant = this.occByKey.get(next);
+        if (occupant && occupant !== ru
+          && (!allowEnemyCells || this._isPlayerSide(occupant.side))) continue;
+        parent.set(next, current);
+        queue.push(next);
+      }
+    }
+    if (!parent.has(goal)) return null;
+    const path: string[] = [];
+    let node: string | null = goal;
+    while (node && node !== start) {
+      path.push(node);
+      node = parent.get(node) ?? null;
+    }
+    return node === start ? [start, ...path.reverse()] : null;
+  }
+
+  private _firstStepOnAttackMovePath(
+    ru: RuntimeBattleUnit, targetCol: number, targetRow: number,
+  ): string | null {
+    const path = this._attackMovePath(ru, targetCol, targetRow, false);
+    return path && path.length > 1 ? path[1]! : null;
   }
 
   /** Natychmiastowe wykonanie rozkazow wybranych jednostek (po kolei). */
@@ -17671,6 +17769,38 @@ export class BattleScene {
     }
   }
 
+  private _issueBattleAttackMove(col: number, row: number, queueOnly: boolean): void {
+    const ids = this._collectOrderUnitIds();
+    if (ids.length === 0) return;
+    this._orderMoveForUnits(col, row, ids);
+    for (const id of ids) {
+      const u = this._findPlayerUnit(id);
+      if (!u || u.dead || u.removed || u.routed) continue;
+      // Preserve the ordinary move formation offsets. Activations remain
+      // serialized by _executeUnitsImmediate, so occupancy is refreshed between members.
+      const waypoint = u.playerOrder.type === 'move' ? u.playerOrder : { col, row };
+      u.playerOrder = { type: 'attackMove', col: waypoint.col, row: waypoint.row };
+      if (queueOnly) this._queuedOrderUnitIds.add(id);
+      else this._queuedOrderUnitIds.delete(id);
+    }
+    this._refreshQueuedOrderVisuals();
+    this._showOrderFeedback(queueOnly ? 'Dyspozycja ATAKUJ-MARSZEM' : 'ATAKUJ-MARSZEM');
+    if (!queueOnly) {
+      this._executeUnitsImmediate(ids);
+      this._advanceToNextBattleUnit(new Set(ids));
+    }
+  }
+
+  private _cancelAttackMoveSelected(): void {
+    for (const id of this._collectOrderUnitIds()) {
+      const unit = this._findPlayerUnit(id);
+      if (unit?.playerOrder.type !== 'attackMove') continue;
+      unit.playerOrder = { type: 'none' };
+      this._queuedOrderUnitIds.delete(id);
+    }
+    this._refreshQueuedOrderVisuals();
+  }
+
   /** Duchy docelowej formacji grupy (podglad w walce). */
   private _refreshBattleMoveGhosts(col: number, row: number): void {
     if (!this._deployGhostGroup || this._selectedUnits.size === 0) return;
@@ -17775,7 +17905,8 @@ export class BattleScene {
     }
 
     if (this._selectedUnits.size > 0) {
-      this._issueBattleMove(tile.col, tile.row, queueOnly);
+      if (this._attackMoveMode) this._issueBattleAttackMove(tile.col, tile.row, queueOnly);
+      else this._issueBattleMove(tile.col, tile.row, queueOnly);
     }
   }
 
@@ -17936,6 +18067,7 @@ export class BattleScene {
     if (!o || o.type === 'none') return this._manualMode ? 'Brak rozkazu' : 'Brak rozkazu (AI)';
     if (o.type === 'hold') return 'Stoj';
     if (o.type === 'move') return 'Ruch -> (' + o.col + ',' + o.row + ')';
+    if (o.type === 'attackMove') return 'Atakuj-marszem -> (' + o.col + ',' + o.row + ')';
     if (o.type === 'attack') return 'Atak -> ' + o.targetId;
     return '';
   }
@@ -18036,6 +18168,26 @@ export class BattleScene {
       b.addEventListener('click', (e) => { e.stopPropagation(); onClick(); });
       return b;
     };
+
+    if (!this.deployPhase) {
+      const attackMove = mkBtn(this._attackMoveMode ? '✓ Atakuj-marszem' : 'Atakuj-marszem', () => {
+        this._attackMoveMode = !this._attackMoveMode;
+        this._updateBattleSelectionBar();
+        this._showOrderFeedback(this._attackMoveMode
+          ? 'Atakuj-marszem aktywne — kliknij pusty heks · Esc anuluje'
+          : 'Atakuj-marszem wyłączone');
+      }, this._attackMoveMode);
+      attackMove.dataset.battleAttackMoveMode = this._attackMoveMode ? 'active' : 'off';
+      attackMove.title = 'Kliknij, potem wybierz pusty heks. Bezpośredni klik wroga nadal wskazuje dokładny cel.';
+      bar.appendChild(attackMove);
+      if (selUnits.some(unit => unit.playerOrder.type === 'attackMove')) {
+        bar.appendChild(mkBtn('Anuluj marsz', () => {
+          this._cancelAttackMoveSelected();
+          this._showOrderFeedback('Atakuj-marszem anulowane');
+          this._updateBattleSelectionBar();
+        }, true));
+      }
+    }
 
     const clearFn = () => this.deployPhase
       ? this._clearDeploySelectionState()

@@ -25,7 +25,7 @@
 - Final Control nie zmienił kodu produktu; brak commit, push, merge i deploy.
 ## `R-BITWA-ATAK-MARSZEM-HEX-Q1` — rozkaz Atakuj-marszem do wskazanego heksa
 
-- **STATUS:** `OPERATOR` — zarejestrowano po zgodzie właściciela; operator wdraża osobny rozkaz pola bitwy.
+- **STATUS:** `OPERATOR DEFENSE COMPLETE — FINAL CONTROL REQUIRED` — evaluator returned PASS-WITH-NOTES; operator defense addresses both notes and adds mixed 42-unit, two-activation regression. Owner override 2026-10-29 waives Kanban for this project. No Kanban card/graph was used.
 - **Wymaganie:** wskazanie pustego heksa rozkazem „Atakuj-marszem” kieruje jednostki do tego miejsca, atakuje napotkanych po drodze wrogów i po rozwiązaniu starcia wznawia marsz do punktu. Zwykły ruch i kliknięcie jednostki wroga zachowują dotychczasowe odmienne znaczenie.
 - **Zakres:** wyłącznie ręczna bitwa, z dotychczasowym warunkiem wodza/generała dla kontroli polowej. Rozkaz ma respektować legalny zasięg/wyczerpanie amunicji, trasowanie, odwołanie i postęp tury.
 - **Run:** `dyspozycje/autobot/runs/R-BITWA-ATAK-MARSZEM-HEX-Q1/`; podstawa `747ade419e9771f5a94eb1f82f174ceda100eaa1`; nie wdrożono.
