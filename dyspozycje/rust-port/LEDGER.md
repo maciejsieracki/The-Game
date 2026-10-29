@@ -323,3 +323,4 @@ Cel końcowy i bieżący zapisane w `GOAL-RUST-PORT-20261020.md` (§"CEL PĘTLI 
 | 2026-10-29 | R-RUSTPORT-REPIN-EKONOMIA-A-Q1 | 3 | manpower.ts port + testy costMult + meta.pin; FC FAIL (zakres 1/5 modułów) → zamknięcie adm. | **ZINTEGROWANE** `84136f57` (1272/0); dispatche EKONOMIA-B/C/D przygotowane (start po zwolnieniu slotu Rust) |
 | 2026-10-29 | R-RUSTPORT-REPIN-WOJNA-NOWE-A-Q1 | 4 | formation_rules, army_leadership, ai_era_unit_promotion; wektory z weba 0 rozbieżności; mutacje 14; FC PASS-WITH-NOTES | **ZINTEGROWANE** `ec981e3a` (1284/0); otwarte WOJNA-NOWE-B |
 | 2026-10-29 | SKRYPT | - | PORT.js skasowany przez pomyłkę orkiestratora (rm -rf z pustą substytucją), odtworzony z transkryptu sesji | zamknięte |
+| 2026-10-29 | R-RUSTPORT-P6-M06A5-LAD-MORZE-ULAMEK-Q1 | 2 | r1 Ev FAIL (luki NaN, remis 0.04, brak score) → obrona (+7 testów brzegowych) → FC PASS | **ZINTEGROWANE** `dcd3eadb` (1296/0); otwarte M06A6 |
