@@ -19,6 +19,20 @@ export interface K08eRuleHost {
   buildRationParams(econParams: unknown, difficulty: string): ReturnType<K08eDeps['buildRationParams']>;
   /** Pin `cityLudnoscAbsolutna(population, epoch)` (`game/manpower.ts`). */
   cityLudnoscAbsolutna(population: number, epoch: number): number;
+  /** Pin `resolveOrderState(city, data)` (`cityPanel.ts:3084`) — stan porządku z silnika (K08E-Z8). */
+  resolveOrderState: K08eDeps['resolveOrderState'];
+  /** Pin `switchCity(dir)` (`cityPanel.ts:10209`) — przełączenie miasta, cięcie K09 (K08E-Z9). */
+  switchCity: K08eDeps['switchCity'];
+  /** Pin `resolveCityHealth` (`cityPanel.ts:3281`) — K08E-Z13. */
+  resolveCityHealth: K08eDeps['resolveCityHealth'];
+  /** Pin `porPctBand` (`game/society-breakdown.ts`). */
+  porPctBand: K08eDeps['porPctBand'];
+  /** Pin `POR_BAND_LABELS[band]` (K08E-Z11). */
+  porBandLabel: K08eDeps['porBandLabel'];
+  /** Pin `ownerCities` / `cityPanelTitle` / `buildCityOnlyW3FlankChips` (K08E-Z12). */
+  ownerCities: K08eDeps['ownerCities'];
+  cityPanelTitle: K08eDeps['cityPanelTitle'];
+  buildCityOnlyW3FlankChips: K08eDeps['buildCityOnlyW3FlankChips'];
 }
 
 /** Podłącza delegaty K08E. Wywoływać raz przy starcie UI panelu miasta (po `ustawRegulyKontrolera`). */
@@ -26,5 +40,13 @@ export function installK08eWiring(rules: K08eRuleHost): void {
   setK08eDeps({
     buildRationParams: (econParams, difficulty) => rules.buildRationParams(econParams, difficulty),
     cityLudnoscAbsolutna: (population, epoch) => rules.cityLudnoscAbsolutna(population, epoch),
+    resolveOrderState: (city, data) => rules.resolveOrderState(city, data),
+    switchCity: (dir) => rules.switchCity(dir),
+    resolveCityHealth: (city, map, data) => rules.resolveCityHealth(city, map, data),
+    porPctBand: (por) => rules.porPctBand(por),
+    porBandLabel: (band) => rules.porBandLabel(band),
+    ownerCities: (city) => rules.ownerCities(city),
+    cityPanelTitle: (city) => rules.cityPanelTitle(city),
+    buildCityOnlyW3FlankChips: (city, view, data, map) => rules.buildCityOnlyW3FlankChips(city, view, data, map),
   });
 }

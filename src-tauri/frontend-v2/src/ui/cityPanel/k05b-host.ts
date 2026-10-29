@@ -28,6 +28,12 @@ export interface City {
   /** K08E-Z6 (runda 1, partia magazyn): pola `population` i `autoWyzywienie` (pin `City`, `game/cities.ts`). */
   readonly population: number;
   readonly autoWyzywienie?: boolean;
+  /** K08E-Z10 (partia topbar): pola `name` i `oblegane` (pin `City`), czytane przez pasek stolicy. */
+  readonly name?: string;
+  readonly oblegane?: boolean;
+  /** K08E-Z14: współrzędne heksowe miasta (pin `city.q`, `city.r`) — klucz garnizonu (`getUnitsAt`). */
+  readonly q?: number;
+  readonly r?: number;
   /** K08D-Z15 (runda 4, partia wealth): pola `poziom` i `pula` (pin `city.wealthState`, `game/wealth`). */
   readonly wealthState?: { readonly poziom: number; readonly pula: number };
 }
@@ -175,6 +181,33 @@ export interface K05bCfg {
   getPoziomRacjiOverride?: (cityId: number) => boolean | undefined;
   /** K08E-Z5: pin `cfg.onPoziomRacjiOverrideToggle?.(cityId)`. */
   onPoziomRacjiOverrideToggle?: (cityId: number) => void;
+  /** K08E-Z10 (partia topbar): pin `cfg.getCapitalCityId?.(ownerId) ?? null` (`cityPanel.ts:10720`). */
+  getCapitalCityId?: (ownerId: number) => number | null | undefined;
+  /** K08E-Z10: pin `cfg.onSetCapital?.(cityId)` — obecność = akcja „Ustaw jako stolicę" dostępna (`cityPanel.ts:10724`). */
+  onSetCapital?: (cityId: number) => void;
+  /** K08E-Z10: pin `cfg.getOrderState?.(cityId)` — stan porządku z silnika (`resolveOrderState`, `cityPanel.ts:3085`). */
+  getOrderState?: (cityId: number) => OrderStateK08e | undefined;
+  /** K08E-Z14 (partia karty-b): pin `cfg.getCultureState?.(cityId)` — stan kultury miasta (karta „Kultura"). */
+  getCultureState?: (cityId: number) => CultureStateK08e | undefined;
+  /** K08E-Z14: pin `cfg.getUnitsAt?.(q, r)` — jednostki na heksie miasta (garnizon). */
+  getUnitsAt?: (q: number, r: number) => readonly unknown[] | undefined;
+}
+
+/** K08E-Z14: stan kultury miasta (pin `cfg.getCultureState`, pola czytane przez kartę „Kultura" K08E). */
+export interface CultureStateK08e {
+  readonly thresholds: readonly unknown[];
+  readonly kulturaMix: readonly unknown[];
+  readonly zrodla?: readonly unknown[];
+  readonly kulturaSuma: number;
+  readonly [key: string]: unknown;
+}
+
+/** K08E-Z10: stan porządku z silnika (pin `OrderState`, pola czytane przez kartę porządku i pasek górny). */
+export interface OrderStateK08e {
+  readonly porPct?: number | null;
+  readonly szPct?: number;
+  readonly szLines?: readonly unknown[];
+  readonly [key: string]: unknown;
 }
 
 /** K08E-Z5: stan żywności imperium (pin `EmpireFoodTick`, pola czytane przez `buildRacjeWzrostDetailCard`). */
@@ -207,6 +240,11 @@ export interface ManpowerSnapshotK05b {
   readonly manpowerMax: number;
   readonly kosztJednostki: number;
   readonly epoka: number;
+  /** K08E-Z16 (partia karty-a): pola pinu `CityManpowerSnapshot` czytane przez kartę „Rekruci"/„Ludność" (`game/manpower`). */
+  readonly regenPerTurn: number;
+  readonly werbMaxPrzyPelnejPuli: number;
+  readonly ludnoscAbsolutna: number;
+  readonly ludki: number;
 }
 
 /**
