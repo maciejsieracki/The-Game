@@ -1,0 +1,2 @@
+cargo fmt --check (rust-port/engine) -- brak wyjscia = zgodne
+EXIT=0

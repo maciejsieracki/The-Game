@@ -1,0 +1,13 @@
+
+running 5 tests
+test remove_inland_sea_pools_matches_web ... ok
+test vectors_meta_pin_and_counts ... ok
+test remove_inland_water_pools_matches_web ... ok
+test fill_enclosed_water_matches_web_with_boundaries ... ok
+test remove_small_inland_water_pools_matches_web_with_size_boundaries ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.20s
+
+   Compiling civ-engine v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_806cd4d4-c64-2/rust-port/engine)
+    Finished `test` profile [unoptimized] target(s) in 33.75s
+     Running tests/p6_m06a2_landsea.rs (/home/user/cargo-target-shared/wf_806cd4d4-c64-2/debug/deps/p6_m06a2_landsea-c328e8d022047901)

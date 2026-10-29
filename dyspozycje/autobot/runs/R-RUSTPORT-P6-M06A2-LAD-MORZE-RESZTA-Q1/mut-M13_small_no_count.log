@@ -1,0 +1,47 @@
+
+running 5 tests
+test fill_enclosed_water_matches_web_with_boundaries ... ok
+test vectors_meta_pin_and_counts ... ok
+test remove_inland_sea_pools_matches_web ... ok
+test remove_inland_water_pools_matches_web ... ok
+test remove_small_inland_water_pools_matches_web_with_size_boundaries ... FAILED
+
+failures:
+
+---- remove_small_inland_water_pools_matches_web_with_size_boundaries stdout ----
+
+thread 'remove_small_inland_water_pools_matches_web_with_size_boundaries' (28665) panicked at tests/p6_m06a2_landsea.rs:134:9:
+assertion `left == right` failed: count "pool_size1_max1"
+  left: 0
+ right: 1
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+   1: core::panicking::panic_fmt
+   2: core::panicking::assert_failed_inner
+   3: core::panicking::assert_failed::<u64, u64>
+   4: p6_m06a2_landsea::remove_small_inland_water_pools_matches_web_with_size_boundaries
+   5: p6_m06a2_landsea::remove_small_inland_water_pools_matches_web_with_size_boundaries::{closure#0}
+   6: <p6_m06a2_landsea::remove_small_inland_water_pools_matches_web_with_size_boundaries::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+
+failures:
+    remove_small_inland_water_pools_matches_web_with_size_boundaries
+
+test result: FAILED. 4 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.22s
+
+   Compiling civ-engine v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_806cd4d4-c64-2/rust-port/engine)
+warning: variable does not need to be mutable
+   --> src/domain/mapgen/landsea.rs:407:9
+    |
+407 |     let mut converted = 0usize;
+    |         ----^^^^^^^^^
+    |         |
+    |         help: remove this `mut`
+    |
+    = note: `#[warn(unused_mut)]` (part of `#[warn(unused)]`) on by default
+
+warning: `civ-engine` (lib) generated 1 warning (run `cargo fix --lib -p civ-engine` to apply 1 suggestion)
+    Finished `test` profile [unoptimized] target(s) in 37.54s
+     Running tests/p6_m06a2_landsea.rs (/home/user/cargo-target-shared/wf_806cd4d4-c64-2/debug/deps/p6_m06a2_landsea-c328e8d022047901)
+error: test failed, to rerun pass `--test p6_m06a2_landsea`
