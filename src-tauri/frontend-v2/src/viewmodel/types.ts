@@ -428,6 +428,33 @@ export interface CityPanelDto {
   trade: { activeRoutes: number; buildingBonus: number; missingTreatyPartners: string[] };
   labels: { danina: DaninaLabelForms };
   autoManage: boolean;
+  /** K03 (P5-8, runda 3, ZALOZENIE K03-Z10): wejscia kart panelu miasta liczone przez silnik; UI ich nie wylicza. */
+  panelInputs?: CityPanelInputsDto;
+}
+
+/** K03-Z10: wejscia kart szczegolow (pin `cityPanel.ts`) — wartosci z silnika/Rust, nie z lokalnego przeliczenia. */
+export interface CityPanelInputsDto {
+  zdrowie: { posSum: number; negSum: number };
+  surowce: { potential: string[]; active: string[]; legacy: boolean };
+  /** Bezposrednie wymagania technologii (nazwa -> lista poprzednikow) — zamiast `getTechDef`/`parsePrerequisites` pina. */
+  techPrereqs: Record<string, string[]>;
+  growthTooltip: { osobNaObywatela: number; gainSlots: number };
+  happinessBuildingsSum: number;
+  ownerHasMennica: boolean;
+  territoryNodes?: readonly unknown[];
+  mennica: { budynek: boolean; dostepZlota: boolean; walutaOdkryta: boolean; aktywna: boolean; spiZBrakuZlota: boolean; mnoznikTxt: string };
+  handel: {
+    maTargowisko: boolean;
+    maBiblioteka: boolean;
+    korupcja: { wspolczynnikDystansu: number; wspolczynnikMiast: number; cap: number } | null;
+    aktywneTrasy: number;
+    premiaTrasHandlowych: number;
+  };
+  wealth: { atCap: boolean; epoch: number; szBonus: number; pula: number; etaW: number | null; zamIn: number };
+  recruitPool: {
+    manpowerBiezacy: number; manpowerMax: number; regenPerTurn: number; kosztJednostki: number;
+    werbMaxPrzyPelnejPuli: number; ludnoscAbsolutna: number; ludki: number; epoka: number;
+  };
 }
 
 // ─── §6.3 Opcje budowy / rekrutacji ──────────────────────────────────────────
