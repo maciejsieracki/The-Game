@@ -13,6 +13,8 @@ source file is restored after every mutant (also on error). Run from
 `RANGE=a:b` runs `MUTANTS[a:b]` (batches for the foreground time limit).
 Prints one line per mutant and `KILLED k/n`; exit code 1 if any survived,
 2 if a pattern is not found exactly once.
+A mutant listed in `EQUIVALENT` that survives is printed as `EQUIV` (with the reason) and is not a failure;
+if it is killed it counts as killed.
 """
 import os
 import subprocess
@@ -20,6 +22,14 @@ import sys
 
 VIEW = 'src/battle/view.rs'
 PICK = 'src/battle/picking.rs'
+
+# Mutants proven equivalent (P4-36 §49): no input can tell them apart.
+EQUIVALENT = {
+    'pick additive keeps deploySelected':
+        'handle_deploy_unit_pick always ends in refresh_visuals, which overwrites '
+        'sel.deploy_selected with the first live selected id (web: _refreshDeploySelectionVisuals '
+        ':14978-14980 after the same dead store at :14390); nothing reads it in between',
+}
 
 MUTANTS = [
     # ---- camera control (view.rs)
@@ -99,7 +109,7 @@ def main() -> int:
         a, b = rng.split(':')
         sel = MUTANTS[int(a or 0):int(b) if b else None]
     origs = {f: open(f, encoding='utf-8').read() for f in (VIEW, PICK)}
-    killed, survived = 0, []
+    killed, survived, equiv = 0, [], []
     try:
         for path, name, old, new in sel:
             if only and only not in name:
@@ -124,13 +134,16 @@ def main() -> int:
                 killed += 1
                 why = 'compile error' if 'error[' in r.stdout else 'test failed'
                 print(f'KILLED   {name} ({why})', flush=True)
+            elif name in EQUIVALENT:
+                equiv.append(name)
+                print(f'EQUIV    {name} ({EQUIVALENT[name]})', flush=True)
             else:
                 survived.append(name)
                 print(f'SURVIVED {name}', flush=True)
     finally:
         for f, s in origs.items():
             open(f, 'w', encoding='utf-8').write(s)
-    print(f'KILLED {killed}/{killed + len(survived)}')
+    print(f'KILLED {killed}/{killed + len(survived)} (+{len(equiv)} equivalent)')
     return 0 if not survived else 1
 
 

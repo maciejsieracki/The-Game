@@ -1661,3 +1661,89 @@ Po części 5 każdy wiersz inwentarza `battleScene.ts` ze statusem `RUNDA-2…5
 §32, §42). Poza tematem pozostają, zgodnie z §3.2: logika bitwy (PODZIAŁ / NIE-DOTYCZY → P6.13), UI DOM i audio
 (→ P5). NIE_ZMIERZONO: ocena wzrokowa 1:1 (§8, §16, §26, §36, §46 — wymaga GPU właściciela), wpływ dryfu po pinie na
 wektory (§37, §47).
+
+
+## 49. Pomiary części 5 (Operator „pomiary” r1; logi `runs/…-Q5/dowody/{gates-pomiary-r1,mutate-picking-pomiary-r1,verify-gen-pomiary-r1}.txt`)
+
+Na commicie Operatora-impl `7f68dd50` (+ raport `62efd0f6`), izolowany worktree, `CARGO_INCREMENTAL=0`,
+`CARGO_PROFILE_DEV_DEBUG=0`, rustc 1.87.0 (MSRV) i 1.97.0 (stable). Logika `view.rs` / `picking.rs` **bez zmian**;
+zmienione tylko testy, wektory i skrypt mutacji.
+
+1. **Mutacje, pierwszy przebieg** (`mutate_picking.py`, 1.87.0, partie `RANGE`): **50/62 zabite**, przeżyło 12.
+   Analiza każdego (źródło weba @ `edb8fb56`):
+   - **luki pokrycia (11):** `sync height ignored` (wektory nie zmieniały samej wysokości kanwy), `pan key W is down`
+     (`KeyW` był wciśnięty tylko z edytowalnym celem — ignorowany), `minimap height floor` (`max(1, clientHeight)`
+     `:11050` — brak kanwy niższej niż 1 px przy bliskiej kamerze; przy dużym `camDist` ramka i tak obejmuje całe pole),
+     `ray stale camera` / `box stale camera` (`_raycastFromCanvas` `:8578` i `_doBoxSelect` `:16501` same odświeżają
+     kamerę — wektory zawsze miały render przed kliknięciem, a kierunek kamery jest stały, więc nieaktualna macierz różni
+     się tylko na kamerze z konstruktora), `instanced last instance skipped` (żaden promień nie trafiał ostatniej instancji
+     kępek / wody), `ground first max` (`score > bestScore` `:1804` — remis wyniku między różnymi kaflami wymaga trafień
+     na tej samej wysokości, czyli poziomego promienia; z kamery nieosiągalne, ale funkcja jest portem 1:1),
+     `battle enemy attack` (w oblężeniu żaden wróg nie był trafiony promieniem na własnym kaflu przy zaznaczeniu),
+     `deploy occupancy side` (klik w kafel wroga bez trafienia własnej jednostki), `pick early return` (ponowny klik
+     w jedyną zaznaczoną jednostkę — r1: oba kliki `aim(r0)` nic nie wybrały), `pick group ring color` (kolor pierścienia
+     nie był rejestrowany; `_refreshUnitRingColor` `:14380` po `_addSelectionRing` `:17637`);
+   - **równoważny (1):** `pick additive keeps deploySelected` — `handle_deploy_unit_pick` zawsze kończy
+     `refresh_visuals`, które nadpisuje `deploy_selected` pierwszym żywym zaznaczonym (web: martwy zapis `:14390`, potem
+     `_refreshDeploySelectionVisuals` `:14978-14980`); nic nie czyta pola pomiędzy. Wpisany do `EQUIVALENT` w
+     `mutate_picking.py` (drukowany `EQUIV` z uzasadnieniem; zabicie liczyłoby się normalnie).
+2. **Poprawka (tylko testy i wektory):** generator → `picking.json` klucz `extra` (README „Part 5”, tabela `extra.*`);
+   każdy blok na ŚWIEŻEJ scenie części 4 (generator sprawdza `dtoSig` i `occByKey`), więc klucze r1 są bajt w bajt
+   nietknięte:
+   - `staleBox` / `staleRays` — `_doBoxSelect` i `_raycastFromCanvas` na kamerze z konstruktora (bez renderu);
+   - `camOps` (24) — zmiana samej wysokości, `KeyW` / `KeyS`, kanwy sub-pikselowe przy `camDist` 3;
+   - `siegeInstanced` / `deployInstanced` — pierwsza i OSTATNIA instancja każdej `InstancedMesh` podłoża, promień w jej
+     piksel, trafienia z `instanceId`;
+   - `fieldBattleClicks` (32) — `_onBattleClick` w bitwie polowej (wrogowie na otwartym polu), 1 i 0 zaznaczonych;
+   - `deployClicks` (12) — kafle wroga bez zaznaczenia, ponowny klik, Ctrl / Shift na członkach grup + kolor każdego
+     pierścienia (`material.color.getHex()`);
+   - `groundTies` — 8 poziomych promieni z remisem najlepszego wyniku na różnych kaflach (+4 bez remisu; 1 050 promieni
+     przeskanowanych w rzędach ze wzgórzami; wybór promieni liczy wynik jak web, zapisany kafel to wynik funkcji weba).
+   Testy `extra_siege_cases_match_web` (232 liczby bitowo, 39 sprawdzeń) i `extra_deploy_cases_match_web`
+   w `tests/battle3d_picking.rs`: 0 różnic. Pierwsza wersja `staleBox` zapisała kamerę PO pętli (już odświeżoną) —
+   wykryte przez test (12 różnic `matrixWorld`), poprawione w generatorze (zapis przed pętlą).
+3. **Mutacje, przebieg końcowy** (1.87.0, partie `[0:12]`, `[12:24]`, `[24:36]`, `[36:49]`, `[49:62]`, każda EXIT=0):
+   **61/61 zabite + 1 równoważny**. Wszystkie 11 luk zabijają nowe wektory weba (`--test battle3d_picking`).
+4. **Bramy** (stan przed commitem pomiarów): `cargo fmt --all -- --check` EXIT=0 (stable; dla 1.87.0 `rustfmt` nie jest
+   zainstalowany — jak Q2–Q4); `cargo clippy --locked --all-targets -- -D warnings` i z `--features gpu` EXIT=0 — na
+   **1.87.0** i na **1.97.0**; `cargo test --locked --all-targets` **431 passed, 0 failed, 55 binariów**, EXIT=0 — na
+   1.87.0 i na 1.97.0 (w tym `battle3d_picking` 8); `sha256sum -c MANIFEST.sha256` 24/24 EXIT=0; katalog fixtur
+   11 980 818 B (≤ 12 000 000 B, zapas 19 182 B), `picking.json` 92 307 B, największy plik `siege_wall.json`
+   7 228 812 B (≤ 8 MB). `cargo test --features gpu` nieuruchomione (jak Q2–Q4: z `gpu` tylko clippy).
+5. **Niezależny weryfikator generatora:** trzeci katalog poza repo — generator r1 → `picking.json` `3a3b1f38…` i bundel
+   `83f1f89e…` bajt w bajt jak r1; generator z `extra` w dwóch katalogach (osobne `npm install` / `git archive`) →
+   identyczne `picking.json` 92 307 B `454daef2…` (= repo / MANIFEST) i bundel 2 792 670 B `797b1028…`. Próbka stałych
+   weba (`:9903`, `:9911`, `:9890`, `:9894`, `:9943`, `:9963-9964`, `:11050-11052`, `:1769`, `:1798`, `:1803-1804`,
+   three `Raycaster.js:21`) — zgodna z `view.rs` / `picking.rs`.
+6. **ZAŁOŻENIE Z-36-23:** przypadki `extra` sterują webem poza zwykłym przepływem gry (kamera z konstruktora bez
+   renderu, kanwy < 1 px, poziome promienie z `new THREE.Raycaster` podane wprost do `pickBattleGroundTileFromMeshes`,
+   `_onBattleClick` w scenie w fazie rozstawienia). To wejścia, a nie stany gry — porównanie dotyczy semantyki funkcji
+   1:1; wyniki zawsze pochodzą z uruchomionego weba.
+7. NIE_ZMIERZONO nadal: ocena wzrokowa (§46), wpływ dryfu po pinie na wektory (§47).
+
+## 50. Odtworzenie pomiarów części 5 po utracie worktree (Obrona r1; logi `runs/…-Q5/dowody/{gates-obrona-r1,mutate-picking-obrona-r1}.txt`)
+
+Worktree Operatora „pomiary” (`wf_c65e3ba9-998-2`) został usunięty z zewnątrz przed commitem (raport INFRA). Obrona
+odtworzyła commit w świeżym worktree na `62efd0f6` z ocalonych plików (salvage: generator z kluczem `extra`,
+`picking.json`, dwa testy, §49, zmiany `mutate_picking.py` i README) i **zmierzyła wszystko ponownie** na tym drzewie —
+liczby z §49 dotyczą drzewa utraconego, liczby niżej są z drzewa zacommitowanego:
+
+- `git diff 7f68dd50 -- rust-port/renderer/src` — pusty (logika `view.rs` / `picking.rs` bez zmian; zmienione tylko
+  testy, wektory, skrypt mutacji, README, MANIFEST);
+- `cargo fmt --all -- --check` EXIT=0 (stable; 1.87.0 bez `rustfmt`); clippy `--all-targets` z i bez `--features gpu`
+  `-D warnings` EXIT=0 na 1.87.0 i 1.97.0; `cargo test --locked --all-targets` **431 passed, 0 failed, 55 binariów**,
+  EXIT=0 na obu (w tym `battle3d_picking` 8 passed);
+- `mutate_picking.py` na 1.87.0, partie `[0:6]`, `[6:18]`, `[18:30]`, `[30:42]`, `[42:54]`, `[54:]`, każda EXIT=0:
+  **61/61 zabite + 1 równoważny** (`pick additive keeps deploySelected`);
+- równoważność sprawdzona ponownie w źródle: web `battleScene.ts@edb8fb56:14390` (martwy zapis
+  `_deploySelected = null`), `:14409` `_refreshDeploySelectionVisuals()`, które na `:14978-14980` bezwarunkowo
+  nadpisuje `_deploySelected`; pomiędzy (`:14391-14408`, `_clearDeployGhosts` `:15230`, pętla `:14969-14977`) nikt
+  pola nie czyta. Rust: `picking.rs:1072-1073` → `refresh_visuals` `:1116`; `refresh_deploy_selection_visuals`
+  dostaje tylko `&sel.selected`;
+- `sha256sum -c MANIFEST.sha256` 24/24 EXIT=0; katalog fixtur 11 980 819 B (≤ 12 000 000 B; +1 B względem drzewa
+  utraconego — przyczyna NIE_ZMIERZONO: README i `mutate_picking.py` odtworzone ręcznie wg `APPLY.md`, drzewa
+  utraconego nie da się porównać; pliki danych `picking.json` / `gen_picking.ts` są kopiami 1:1), największy plik `siege_wall.json` 7 228 812 B;
+- regeneracja z zacommitowanego `gen_picking.ts` w nowym katalogu (`mktemp -d`, `git archive edb8fb56 gra/src gra/data`,
+  three@0.169.0, esbuild@0.24.0, node v22.22.0) → `picking.json` `454daef2…` 92 307 B, `cmp` identyczny z repo.
+  Bundel 2 792 673 B (`108ad331…`) różni się od `797b1028…` z §49 o 3 B — esbuild wpisuje ścieżki względne katalogu
+  roboczego do komentarzy; wynik (`picking.json`) identyczny.

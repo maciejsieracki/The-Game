@@ -339,6 +339,12 @@ debugging; not committed. Measured (r1): two runs in two different scratch direc
 `MANIFEST.sha256`) and `gen_picking.mjs` (2 783 652 B, SHA-256
 `83f1f89e191d6c0dc22b5f18b33c0b1b218c4c632762f1b91f88563303bfe919`; not committed — fixture budget).
 
+Measured again (r1, "pomiary", after `extra` was added): two runs in two different scratch directories
+give identical `picking.json` (92 307 B, `454daef2…` = `MANIFEST.sha256`) and `gen_picking.mjs`
+(2 792 670 B, SHA-256 `797b102846ef05734b9be270a2f147927ebab5369cc6cb0819d5078e6d5c2ea2`); every key
+other than `extra` is byte-identical to the 81 669 B file above (and that file reproduced as
+`3a3b1f38…` in a third directory before the change). The generator prints the same line.
+
 ## Cases (`picking.json`)
 
 | key | what |
@@ -353,9 +359,17 @@ debugging; not committed. Measured (r1): two runs in two different scratch direc
 | `*.box[]` | `_doBoxSelect` rectangles (battle manual / auto, deploy): `_clearAllSelection` + the units it rings |
 | `siege.bars` | `_onKeyToggleBars` × 6 (`h`, `H`, editable target, Ctrl, other key): `preventDefault`, `barsVisible`, visibility of every bar group (dead / removed skipped) |
 | `helpers` | `clampBattleTile` (incl. `-0`, fractional), `BF_COLS`, `BF_ROWS`, `TILE_S`, `ORDER_LINE_Y` |
+| `extra.*` | added by the Operator "pomiary" call for the 12 mutants the vectors above left alive (P4-36 §49); every block runs on a FRESH scene (DTO signature and `occByKey` re-checked by the generator): |
+| `extra.staleBox` | siege, constructor camera never refreshed: its 86 numbers, then `_doBoxSelect` × 4 (it must call `camera.updateMatrixWorld(true)` itself) |
+| `extra.staleRays` (4) | siege, constructor camera: `_raycastFromCanvas` origin + direction (it must refresh the camera itself) |
+| `extra.camOps` (24) | `camOp` records as above: height-only resize (`1280×720 → 1280×640`), `KeyW` / `KeyS` without an editable target, sub-pixel canvases (`1280×0.5`, `0.5×0.25`, `4×0.5`, `0.6×0.9`) with `camDist` 3 for the minimap's `max(1, clientHeight)` |
+| `extra.siegeInstanced`, `extra.deployInstanced` (4 + 4) | the first and the LAST instance of every ground-pick `InstancedMesh` (hill bumps, water): camera over the instance origin, one ray at its client pixel; `intersectObjects([mesh], false)` distance, point, `instanceId` |
+| `extra.fieldBattleClicks` (32) | deploy scene (field battle): `_onBattleClick` at 8 enemies (body / feet) with 1 and 0 selected units — enemy meshes hit on their own tile |
+| `extra.deployClicks` (12) | `_onDeployClick`: enemy tiles without a selection (occupancy of the other side), the sole selected unit clicked again, Ctrl / Shift on group members; logic log, selection, `_deploySelected`, every ring with its `material.color.getHex()` |
+| `extra.groundTies` | `pickBattleGroundTileFromMeshes` on 8 horizontal rays whose best score is shared by hits on different tiles (+ 4 without a tie; 1 050 rays scanned over the hill rows) — "first maximum wins" |
 
 | File (part 5) | Content |
 |---|---|
-| `picking.json` | the vectors above (81 669 B) |
+| `picking.json` | the vectors above (92 307 B) |
 | `gen_picking.ts`, `build_picking.mjs` | generator and bundler (uses `dom_stub.ts`, `three_shim.ts` of part 2) |
-| `mutate_picking.py` | mutation run (62 mutants of `src/battle/view.rs` / `src/battle/picking.rs`; runs `--lib battle::` and `--test battle3d_picking`; `RANGE=a:b` batches) — full run = Operator "pomiary" call |
+| `mutate_picking.py` | mutation run (62 mutants of `src/battle/view.rs` / `src/battle/picking.rs`; runs `--lib battle::` and `--test battle3d_picking`; `RANGE=a:b` batches; `EQUIVALENT` = 1 mutant proven equivalent, printed `EQUIV`) — full run = Operator "pomiary" call: 61/61 killed + 1 equivalent on 1.87.0 |

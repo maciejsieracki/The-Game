@@ -19,7 +19,11 @@
 //     `intersectObjects` over the live unit groups (meshes, group-marker `Line`s, `Sprite`s)
 //     on a grid of client pixels for several camera poses, plus one ray aimed at every unit;
 //   - clicks: `_onDeployClick` (+ `_handleDeployUnitPick`), `_onBattleClick`, `_doBoxSelect`
-//     (`worldToClientPx`) with the logic they call recorded (Z-36-19).
+//     (`worldToClientPx`) with the logic they call recorded (Z-36-19);
+//   - `extra` (Operator "pomiary", r1): cases for the mutants the r1 vectors left alive, on fresh
+//     scenes — `_doBoxSelect` / `_raycastFromCanvas` on the constructor camera, height-only resize,
+//     `KeyW` / `KeyS` pan, sub-pixel canvases for the minimap, the last instance of every ground
+//     `InstancedMesh`, `_onBattleClick` on enemies in a field battle, deploy clicks with ring colours.
 // The canvas is a fake element with a fixed client rect; `renderer.getSize/setSize` are added
 // to the inert renderer of `three_shim.ts` (initial size 300×150 = an HTML canvas without
 // attributes). A render is emulated as `scene.updateMatrixWorld(); camera.updateMatrixWorld()`
@@ -481,6 +485,183 @@ const RECT: Rect = { w: 1280, h: 720, left: 13, top: 7 };
   }
   const zone = [BS.DEPLOY_MIN_COL, BS.DEPLOY_MAX_COL, BS.DEPLOY_MIN_ROW, BS.DEPLOY_MAX_ROW];
   out.deploy = { dto: dtoSig(rec, groups), zone, occ: [...s.occByKey.entries()].map(([k, u]: [string, any]) => [k, u.bu.id]), poses, deployClicks, box };
+}
+
+// ========================================================== extra cases (Operator "pomiary", r1)
+// Cases added after the full mutation run on the r1 vectors left mutants alive (P4-36 §49): every
+// one runs on FRESH scenes (the part-4 ones again; DTO signature re-checked), so the vectors above
+// are unchanged.
+{
+  const extra: Record<string, unknown> = {};
+  const ringStub = (s: any, ringLog: string[]): void => {
+    s._clearAllSelection = () => ringLog.push('clear');
+    s._addSelectionRing = (ru: any) => ringLog.push(ru.bu.id);
+    for (const k of ['_updateRosterBar', '_updateSelectedPanel', '_showOrderFeedback', '_updateBattleQuickSelectBar', '_updateBattleSelectionBar', '_refreshDeploySelectionVisuals', '_showDeployFeedback']) s[k] = () => {};
+  };
+  /** Last (and first) instance of every InstancedMesh among the ground pick meshes: camera over it, one ray at its origin. */
+  const instancedCases = (s: any): unknown[] => {
+    const res: unknown[] = [];
+    for (const m of s._battleGroundPickMeshes as any[]) {
+      if (!m.isInstancedMesh) continue;
+      for (const i of [m.count - 1, 0]) {
+        m.updateMatrixWorld(true);
+        const im = new THREE.Matrix4();
+        m.getMatrixAt(i, im);
+        const p = new THREE.Vector3(0, 0, 0).applyMatrix4(im).applyMatrix4(m.matrixWorld);
+        s.camTarget.set(p.x, 0, p.z); s.camDist = 9; s.camDistTarget = 9; s._applyCamera(); render(s);
+        const idx = sceneIndex(s);
+        const px = worldToClientPx(p.x, p.y, p.z, s.camera, s.canvas)!;
+        const rc: THREE.Raycaster = s._raycastFromCanvas(px.x, px.y)!;
+        const hits = rc.intersectObjects([m], false).map((h: any) => [hx([h.distance, ...v3(h.point)]), h.instanceId]);
+        res.push([idx.get(m), m.count, i, hx([p.x, p.z]), hx([px.x, px.y]), hx([...v3(rc.ray.origin), ...v3(rc.ray.direction)]), hits]);
+      }
+    }
+    return res;
+  };
+
+  // --- siege A: _doBoxSelect on the constructor camera (matrixWorld never refreshed since the constructor's lookAt)
+  {
+    const { s, rec } = build('oblezenie', { civ: 'rzym' }, undefined);
+    if (dtoSig(rec, null) !== (out.siege as any).dto) throw new Error('siege A DTO');
+    installRenderer(s); setCanvas(s, RECT);
+    const ringLog: string[] = [];
+    ringStub(s, ringLog);
+    const cam = hx(camNums(s)); // the constructor camera the first _doBoxSelect starts from
+    const box: unknown[] = [];
+    for (const r of [[0, 0, 2000, 2000], [300, 200, 700, 500], [-1e4, -1e4, 1e4, 1e4], [0, 360, 1280, 727]]) {
+      ringLog.length = 0;
+      s._doBoxSelect(r[0], r[1], r[2], r[3]);
+      box.push([r, ringLog.slice()]);
+    }
+    extra.staleBox = { cam, box };
+  }
+  // --- siege B: _raycastFromCanvas on the constructor camera, then camera ops, then instanced picks
+  {
+    const { s, rec } = build('oblezenie', { civ: 'rzym' }, undefined);
+    if (dtoSig(rec, null) !== (out.siege as any).dto) throw new Error('siege B DTO');
+    installRenderer(s); setCanvas(s, RECT);
+    const rays = ([[640, 360], [13, 7], [1292.5, 726.75], [100.5, 650.25]] as [number, number][]).map(([x, y]) => {
+      const rc: THREE.Raycaster = s._raycastFromCanvas(x, y)!;
+      return [x, y, hx([...v3(rc.ray.origin), ...v3(rc.ray.direction)])];
+    });
+    extra.staleRays = rays;
+    const ops: unknown[][] = [
+      ['canvas', RECT.w, RECT.h, RECT.left, RECT.top], ['sync'], ['canvas', RECT.w, 640, RECT.left, RECT.top], ['sync'], ['render'],
+      ['panKey', 'KeyW', 1, 0], ['frame'], ['frame'], ['panKey', 'KeyW', 0, 0], ['panKey', 'KeyS', 1, 0], ['frame'], ['panKey', 'KeyS', 0, 0],
+      ['canvas', RECT.w, 0.5, RECT.left, RECT.top], ['canvas', 0.5, 0.25, 0, 0], ['canvas', 0.75, 900, 0, 0],
+      // sub-pixel canvases with a close camera: the minimap's max(1, clientHeight) floor decides the frame
+      ['setDist', 3], ['canvas', 0.5, 0.25, 0, 0], ['canvas', 4, 0.5, 0, 0], ['canvas', 0.6, 0.9, 0, 0], ['setDist', 30], ['apply'],
+      ['canvas', RECT.w, RECT.h, RECT.left, RECT.top], ['sync'], ['render'],
+    ];
+    extra.camOps = ops.map((op) => camOp(s, op));
+    extra.siegeInstanced = instancedCases(s);
+  }
+  // --- deploy C: _onBattleClick at the enemy side (field battle, enemies on open ground) + deploy clicks with ring colours
+  {
+    const { s, rec } = build('rzym_grecja', undefined, 'atk');
+    installRenderer(s);
+    const groups = s._playerRoster().map((u: any) => [u.bu.id, u.groupId ?? null, s._groupFrameMarkers?.has(u.bu.id) ? 1 : 0]);
+    if (dtoSig(rec, groups) !== (out.deploy as any).dto) throw new Error('deploy C DTO');
+    // the Rust test reuses `deploy.occ` (recorded after the deploy block, whose placements are recorded, not run)
+    if (JSON.stringify([...s.occByKey.entries()].map(([k, u]: [string, any]) => [k, u.bu.id])) !== JSON.stringify((out.deploy as any).occ)) throw new Error('deploy C occ');
+    setCanvas(s, RECT); s._syncRendererSize();
+    s.camTarget.set(33, 0, 77.5); s.camDist = 30; s.camDistTarget = 30; s._applyCamera(); render(s);
+    const enemy: any[] = s._playerControlSide() === 'atk' ? s.def : s.atk;
+    const roster: any[] = s._playerRoster();
+    // battle clicks (logic recorded, Z-36-19)
+    const blog: unknown[] = [];
+    s._handleBattleUnitPick = (ru: any, c: boolean, sh: boolean) => blog.push(['pick', ru.bu.id, c ? 1 : 0, sh ? 1 : 0]);
+    s._issueBattleAttack = (id: string, q: boolean) => blog.push(['attack', id, q ? 1 : 0]);
+    s._issueBattleMove = (c: number, r: number, q: boolean) => blog.push(['move', c, r, q ? 1 : 0]);
+    s.camera.updateMatrixWorld(true);
+    const battleClicks: unknown[] = [];
+    const bTargets: [number, number][] = [];
+    for (const ru of enemy.slice(0, 8)) {
+      for (const dy of [0.4, 0]) {
+        const q = worldToClientPx(ru.group.position.x, ru.group.position.y + dy, ru.group.position.z, s.camera, s.canvas);
+        if (q) bTargets.push([q.x, q.y]);
+      }
+    }
+    for (const nsel of [1, 0]) {
+      s._lastClickModifiers = { ctrl: false, shift: false }; s._battleAwaitingOrders = false; s.roundNo = 2;
+      s._selectedUnits = new Set(roster.slice(0, nsel).map((u: any) => u.bu.id));
+      for (const [x, y] of bTargets) {
+        blog.length = 0;
+        render(s);
+        s._onBattleClick(x, y);
+        battleClicks.push([hx([x, y]), nsel, blog.slice()]);
+      }
+    }
+    extra.fieldBattleClicks = battleClicks;
+    s._selectedUnits = new Set();
+    // deploy clicks (as in the deploy block above) + every ring's colour
+    const log: unknown[] = [];
+    s._applyDeployPlacement = (units: any[], a: number, b: number, c: number, d: number) => log.push(['place', units.map((u) => u.bu.id), a, b, c, d]);
+    s._clearDeployGhosts = function (this: any) { log.push(['ghosts']); };
+    s._showDeployFeedback = (m: string) => log.push(['feedback', m]);
+    s._clearDeploySelectionState = () => log.push(['clearSel']);
+    for (const k of ['_updateRosterBar', '_updateDeployToolbarSelection', '_syncDeployRosterGroupVisibility', '_updateSelectedPanel', '_renderDeployRoster', '_updateDeployToolbarStatus', '_syncGroupRegistry']) s[k] = () => {};
+    s.camera.updateMatrixWorld(true);
+    const tileAt = (c: number, r: number): [number, number] => { const q = worldToClientPx(c * BS.TILE_S, 0, r * BS.TILE_S, s.camera, s.canvas)!; return [q.x, q.y]; };
+    const inGroup = roster.filter((u: any) => u.groupId);
+    const plain = roster.filter((u: any) => !u.groupId);
+    // every roster unit of this scene is in a group (`dynamics.json` deploy.groups): p0 / p1 are group members too
+    const g0 = inGroup[0], g1 = inGroup[1], p0 = plain[3] ?? inGroup[5], p1 = plain[7] ?? inGroup[20];
+    const plan: [[number, number], number, boolean][] = [
+      [tileAt(enemy[0].q, enemy[0].r), 0, false], [tileAt(enemy[3].q, enemy[3].r), 0, false],
+      [tileAt(p0.q, p0.r), 0, false], [tileAt(p0.q, p0.r), 0, false],
+      [tileAt(g0.q, g0.r), 1, false], [tileAt(p1.q, p1.r), 1, false], [tileAt(g1.q, g1.r), 2, false],
+      [tileAt(p0.q, p0.r), 2, false], [tileAt(g0.q, g0.r), 1, false],
+      [tileAt(enemy[0].q, enemy[0].r), 0, false], [tileAt(g1.q, g1.r), 0, false], [tileAt(g1.q, g1.r), 0, false],
+    ];
+    const sel = (): unknown[] => [[...s._selectedUnits], s._deploySelected?.bu.id ?? null, [...s._selectionRings.entries()].map(([id, ring]: [string, any]) => [id, ring.material.color.getHex()])];
+    const deployClicks: unknown[] = [];
+    for (const [[x, y], mods, prefer] of plan) {
+      log.length = 0;
+      s._lastClickModifiers = { ctrl: (mods & 1) !== 0, shift: (mods & 2) !== 0 };
+      render(s);
+      s._onDeployClick(x, y, prefer);
+      deployClicks.push([hx([x, y]), mods, prefer ? 1 : 0, log.slice(), sel()]);
+    }
+    extra.deployClicks = { ids: [g0.bu.id, g1.bu.id, p0.bu.id, p1.bu.id, enemy[0].bu.id, enemy[3].bu.id], clicks: deployClicks };
+    // pickBattleGroundTileFromMeshes on score ties ("first maximum wins", `score > bestScore`):
+    // horizontal rays (direction.y = 0, so every hit has the same y) across the rows with hill
+    // tiles; a ray is kept when its best score is shared by hits on different tiles (selection
+    // only — the recorded tile is the web function's own result).
+    {
+      const tm = s.terrainMap;
+      const meshes = s._battleGroundPickMeshes;
+      const ties: unknown[] = [];
+      const others: unknown[] = [];
+      const rows = new Set<number>();
+      for (let r = 0; r < BS.BF_ROWS; r++) for (let c = 0; c < BS.BF_COLS; c++) if (BS.tileTopY(tm, c, r) === BS.HILL_SUMMIT_Y) rows.add(r);
+      let scanned = 0;
+      for (const r of [...rows].sort((a, b) => a - b)) {
+        for (const y of [0.02, 0.1, 0.18, 0.2, 0.26, 0.3, 0.34]) {
+          for (const dz of [0, 0.25, -0.31]) {
+            const rc = new THREE.Raycaster(new THREE.Vector3(-3, y, r * BS.TILE_S + dz), new THREE.Vector3(1, 0, 0));
+            scanned++;
+            const hits = rc.intersectObjects(meshes, false);
+            let best = -Infinity;
+            const at: number[] = [];
+            for (const h of hits) {
+              if (BS.battlePickMeshUpNormal(h) < 0.3) continue;
+              const t = BS.clampBattleTile(Math.round(h.point.x / BS.TILE_S), Math.round(h.point.z / BS.TILE_S));
+              if (!t) continue;
+              const sc = -Math.abs(h.point.y - BS.tileTopY(tm, t.col, t.row)) * 10 + h.point.y;
+              if (sc > best) { best = sc; at.length = 0; at.push(tcode(t)); } else if (sc === best) at.push(tcode(t));
+            }
+            const res = BS.pickBattleGroundTileFromMeshes(rc, tm, meshes);
+            const recd = [hx([...v3(rc.ray.origin), ...v3(rc.ray.direction)]), tcode(res), hits.length];
+            if (new Set(at).size > 1) { if (ties.length < 8) ties.push(recd); } else if (res && others.length < 4) others.push(recd);
+          }
+        }
+      }
+      extra.groundTies = { scanned, ties, others };
+    }
+    extra.deployInstanced = instancedCases(s);
+  }
+  out.extra = extra;
 }
 
 // ========================================================== pure helpers

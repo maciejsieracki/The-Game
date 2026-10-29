@@ -35,7 +35,7 @@ use civ_renderer::battle::units::{
     BattleUnitsOpts, SelectionRings, UnitSpawn, ORDER_LINE_Y,
 };
 use civ_renderer::battle::view::{BattleView, Canvas, DragPan};
-use civ_renderer::pick::three::Vec3;
+use civ_renderer::pick::three::{Mat4, Ray, Vec3};
 use civ_renderer::scene::Fnv;
 
 // Minimal JSON reader (no dependencies; fixtures are trusted files produced
@@ -1540,4 +1540,405 @@ fn helpers_and_constants_equal_web() {
         &h.get("consts").hx(),
     );
     c.finish("helpers");
+}
+
+// ---------------------------------------------------------------------------
+// `extra` (Operator "pomiary", r1): cases for the mutants the r1 vectors left
+// alive (P4-36 §49). Every block starts from a FRESH scene, like the generator.
+
+fn log_strings(w: &Json) -> Vec<String> {
+    w.arr()
+        .iter()
+        .map(|e| {
+            let e = e.arr();
+            match e[0].str() {
+                "place" => format!(
+                    "place {} {} {} {} {}",
+                    e[1].arr()
+                        .iter()
+                        .map(|x| x.str().to_owned())
+                        .collect::<Vec<_>>()
+                        .join(","),
+                    e[2].i64(),
+                    e[3].i64(),
+                    e[4].i64(),
+                    e[5].i64()
+                ),
+                "feedback" => format!("feedback {}", e[1].str()),
+                _ => e
+                    .iter()
+                    .map(|x| match x {
+                        Json::Str(s) => s.clone(),
+                        other => format!("{}", other.i64()),
+                    })
+                    .collect::<Vec<_>>()
+                    .join(" "),
+            }
+        })
+        .collect()
+}
+
+/// `instancedCases` of `gen_picking.ts`: the camera over one instance of a
+/// ground `InstancedMesh`, one ray at the web's client pixel of its origin.
+fn instanced_cases(c: &mut Cmp, w: &mut World, cases: &Json, name: &str) {
+    c.eq(&format!("{name} n"), cases.arr().len() >= 2, true);
+    for (k, rec) in cases.arr().iter().enumerate() {
+        let a = rec.arr();
+        let ctx = format!("{name} {k}");
+        let t = a[3].hx();
+        w.set_cam(t[0], t[1], 9.0);
+        w.view.render();
+        let fs = w.b.field.field.clone();
+        let ps = PickScene::new(&fs);
+        let idx = usize::try_from(a[0].i64()).expect("idx");
+        let Some(node) = fs
+            .ground_pick
+            .iter()
+            .copied()
+            .find(|&n| ps.traverse_index(n) == idx)
+        else {
+            c.err(format!(
+                "{ctx}: no ground pick node at traverse index {idx}"
+            ));
+            continue;
+        };
+        let m = fs.instanced_at(node).expect("instanced mesh");
+        c.eq(
+            &format!("{ctx} count"),
+            m.count,
+            usize::try_from(a[1].i64()).expect("n"),
+        );
+        let i = usize::try_from(a[2].i64()).expect("i");
+        let mut im = [0.0f32; 16];
+        im.copy_from_slice(&m.matrices[i * 16..i * 16 + 16]);
+        let p = Mat4::multiply(&ps.world(node), &Mat4::from_f32(&im)).position();
+        c.fs(&format!("{ctx} origin"), &[p.x, p.z], &t);
+        let px = a[4].hx();
+        let canvas = w.canvas;
+        let Some(ray) = w.view.ray_from_canvas(px[0], px[1], &canvas) else {
+            c.err(format!("{ctx}: rust no ray"));
+            continue;
+        };
+        c.fs(
+            &format!("{ctx} ray"),
+            &[
+                ray.origin.x,
+                ray.origin.y,
+                ray.origin.z,
+                ray.direction.x,
+                ray.direction.y,
+                ray.direction.z,
+            ],
+            &a[5].hx(),
+        );
+        let cam = RayCamera::of(&w.view);
+        let hits = intersect_objects(&ps, &ray, &cam, &[node], false);
+        let want = a[6].arr();
+        c.eq(&format!("{ctx} hits"), hits.len(), want.len());
+        for (j, (h, wh)) in hits.iter().zip(want).enumerate() {
+            let wh = wh.arr();
+            c.fs(
+                &format!("{ctx} hit {j}"),
+                &[h.distance, h.point.x, h.point.y, h.point.z],
+                &wh[0].hx(),
+            );
+            c.eq(
+                &format!("{ctx} hit {j} instance"),
+                h.instance.map(|x| i64::try_from(x).expect("i64")),
+                Some(wh[1].i64()),
+            );
+        }
+    }
+}
+
+#[test]
+fn extra_siege_cases_match_web() {
+    let mut c = Cmp::default();
+    let rect = Canvas::new(1280.0, 720.0, 13.0, 7.0);
+    // siege A: _doBoxSelect on the constructor camera (no render, no resize)
+    {
+        let (mut w, p) = siege_world();
+        let e = p.get("extra").get("staleBox");
+        w.canvas = rect;
+        c.fs("staleBox cam", &cam_nums(&w.view), &e.get("cam").hx());
+        let fs = w.b.field.field.clone();
+        let atk: Vec<usize> = (0..w.b.atk.len()).collect();
+        for (k, rec) in e.get("box").arr().iter().enumerate() {
+            let a = rec.arr();
+            let r: Vec<f64> = a[0].arr().iter().map(num).collect();
+            let all = w.units();
+            let mut view = w.view.clone();
+            let found = box_select(&mut view, &fs, &all, &atk, (r[0], r[1], r[2], r[3]), &rect);
+            drop(all);
+            w.view = view;
+            let mut got = vec!["clear".to_owned()];
+            got.extend(found.iter().map(|&i| w.ids[i].clone()));
+            let want: Vec<String> = a[1].arr().iter().map(|x| x.str().to_owned()).collect();
+            c.eq(&format!("staleBox {k}"), got, want);
+        }
+    }
+    // siege B: _raycastFromCanvas on the constructor camera, camera ops, instanced picks
+    {
+        let (mut w, p) = siege_world();
+        let e = p.get("extra");
+        w.canvas = rect;
+        for (k, rec) in e.get("staleRays").arr().iter().enumerate() {
+            let a = rec.arr();
+            let Some(ray) = w.view.ray_from_canvas(num(&a[0]), num(&a[1]), &rect) else {
+                c.err(format!("staleRay {k}: rust no ray"));
+                continue;
+            };
+            c.fs(
+                &format!("staleRay {k}"),
+                &[
+                    ray.origin.x,
+                    ray.origin.y,
+                    ray.origin.z,
+                    ray.direction.x,
+                    ray.direction.y,
+                    ray.direction.z,
+                ],
+                &a[2].hx(),
+            );
+        }
+        let s = p.get("siege");
+        let fl: Vec<bool> = s
+            .get("panFlags")
+            .arr()
+            .iter()
+            .map(|x| x.i64() == 1)
+            .collect();
+        let flags = (fl[0], fl[1], fl[2], fl[3]);
+        let mut pan = DragPan::default();
+        for (k, op) in e.get("camOps").arr().iter().enumerate() {
+            cam_op(&mut c, &mut w, &mut pan, flags, op, k);
+        }
+        instanced_cases(&mut c, &mut w, e.get("siegeInstanced"), "siegeInstanced");
+    }
+    println!("extra siege: {} numbers, {} checks", c.scalars, c.checks);
+    c.finish("extra siege");
+}
+
+#[test]
+#[allow(clippy::too_many_lines)]
+fn extra_deploy_cases_match_web() {
+    let (mut w, p) = deploy_world();
+    let e = p.get("extra");
+    let s = p.get("deploy");
+    let mut c = Cmp::default();
+    w.canvas = Canvas::new(1280.0, 720.0, 13.0, 7.0);
+    let canvas = w.canvas;
+    w.view.sync_renderer_size(&canvas);
+    w.set_cam(33.0, 77.5, 30.0);
+    w.view.render();
+    let player = w.player();
+    // _onBattleClick in a field battle (enemies on open ground; roundNo 2, no modifiers)
+    let q = battle_queue_only(false, false, false, 2.0);
+    {
+        let fs = w.b.field.field.clone();
+        let ps = PickScene::new(&fs);
+        for (k, rec) in e.get("fieldBattleClicks").arr().iter().enumerate() {
+            let a = rec.arr();
+            let xy = a[0].hx();
+            let nsel = usize::try_from(a[1].i64()).expect("n");
+            w.view.render();
+            let all = w.units();
+            let mut view = w.view.clone();
+            let got = battle_click(
+                &mut view,
+                &ps,
+                &w.grid,
+                &all,
+                &w.occ,
+                player,
+                nsel,
+                (xy[0], xy[1]),
+                &canvas,
+            );
+            drop(all);
+            w.view = view;
+            let log: Vec<String> = match got {
+                BattleClick::PickOwn(i) => vec![format!("pick {} 0 0", w.ids[i])],
+                BattleClick::Attack(i) => vec![format!("attack {} {}", w.ids[i], u8::from(q))],
+                BattleClick::Move(col, row) => vec![format!("move {col} {row} {}", u8::from(q))],
+                BattleClick::Nothing => vec![],
+            };
+            c.eq(&format!("field click {k}"), log, log_strings(&a[2]));
+        }
+    }
+    // deploy clicks with ring colours
+    let z: Vec<i32> = s.get("zone").arr().iter().map(Json::i32).collect();
+    let in_zone =
+        move |col: i32, row: i32| col >= z[0] && col <= z[1] && row >= z[2] && row <= z[3];
+    let groups: HashMap<String, Option<String>> = load("dynamics.json")
+        .get("deploy")
+        .get("groups")
+        .arr()
+        .iter()
+        .map(|g| {
+            let a = g.arr();
+            (
+                a[0].str().to_owned(),
+                if a[1].is_null() {
+                    None
+                } else {
+                    Some(a[1].str().to_owned())
+                },
+            )
+        })
+        .collect();
+    let mut sel = DeploySelection::default();
+    let mut rings = SelectionRings::default();
+    let roster_ix = w.roster();
+    for (k, rec) in e.get("deployClicks").get("clicks").arr().iter().enumerate() {
+        let a = rec.arr();
+        let xy = a[0].hx();
+        let mods = a[1].i64();
+        let (ctrl, shift) = (mods & 1 != 0, mods & 2 != 0);
+        let prefer = a[2].i64() == 1;
+        w.view.render();
+        let fs_now = w.b.field.field.clone();
+        let ps = PickScene::new(&fs_now);
+        let decision = {
+            let all = w.units();
+            let ctx = DeployCtx {
+                units: &all,
+                player,
+                occ: &w.occ,
+                in_zone: &in_zone,
+            };
+            let mut view = w.view.clone();
+            let d = deploy_click(
+                &mut view,
+                &ps,
+                &w.grid,
+                &ctx,
+                &sel,
+                prefer,
+                (xy[0], xy[1]),
+                &canvas,
+            );
+            w.view = view;
+            d
+        };
+        drop(ps);
+        let mut log: Vec<String> = Vec::new();
+        match decision {
+            DeployClick::Pick(i) => {
+                if let Some(ri) = roster_ix.iter().position(|&x| x == i) {
+                    let mut fs = w.b.field.field.clone();
+                    let refreshed = {
+                        let all = w.units();
+                        let roster: Vec<RosterPick<'_>> = roster_ix
+                            .iter()
+                            .map(|&x| RosterPick {
+                                pick: all[x],
+                                group_id: groups.get(&w.ids[x]).cloned().flatten(),
+                            })
+                            .collect();
+                        handle_deploy_unit_pick(
+                            &mut fs, &mut rings, &mut sel, &roster, &all, ri, ctrl, shift,
+                        )
+                    };
+                    w.b.field.field = fs;
+                    if refreshed {
+                        log.push("ghosts".into());
+                    }
+                } else {
+                    log.push(format!("pick of a non-roster unit {}", w.ids[i]));
+                }
+            }
+            DeployClick::Place { col, row } => {
+                let ids: Vec<String> = sel
+                    .selected
+                    .iter()
+                    .filter(|id| roster_ix.iter().any(|&x| &w.ids[x] == *id))
+                    .cloned()
+                    .collect();
+                log.push(format!("place {} {col} {row} {col} {row}", ids.join(",")));
+                clear_deploy_ghosts(&mut w.b.field.field);
+                log.push("ghosts".into());
+            }
+            DeployClick::Clear { feedback } => {
+                if let Some(m) = feedback {
+                    log.push(format!("feedback {m}"));
+                }
+                log.push("clearSel".into());
+            }
+            DeployClick::Nothing => {}
+        }
+        c.eq(
+            &format!("extra deploy click {k} log"),
+            log,
+            log_strings(&a[3]),
+        );
+        let st = a[4].arr();
+        let want_sel: Vec<String> = st[0].arr().iter().map(|x| x.str().to_owned()).collect();
+        c.eq(
+            &format!("extra deploy click {k} selected"),
+            sel.selected.clone(),
+            want_sel,
+        );
+        let want_ds = if st[1].is_null() {
+            None
+        } else {
+            Some(st[1].str().to_owned())
+        };
+        c.eq(
+            &format!("extra deploy click {k} deploySelected"),
+            sel.deploy_selected.clone(),
+            want_ds,
+        );
+        let sc = &w.b.field.field.scene;
+        let got_rings: Vec<(String, u32)> = rings
+            .rings
+            .iter()
+            .map(|(id, ring)| {
+                let m = sc.nodes[*ring].mesh().expect("ring mesh").material();
+                (id.clone(), sc.materials[m].hex())
+            })
+            .collect();
+        let want_rings: Vec<(String, u32)> = st[2]
+            .arr()
+            .iter()
+            .map(|x| {
+                let x = x.arr();
+                (x[0].str().to_owned(), x[1].u32())
+            })
+            .collect();
+        c.eq(
+            &format!("extra deploy click {k} rings"),
+            got_rings,
+            want_rings,
+        );
+    }
+    // pickBattleGroundTileFromMeshes on score ties (horizontal rays, `score > bestScore`)
+    {
+        let gt = e.get("groundTies");
+        c.eq("groundTies n", gt.get("ties").arr().is_empty(), false);
+        let fs = w.b.field.field.clone();
+        let ps = PickScene::new(&fs);
+        let cam = RayCamera::of(&w.view);
+        for key in ["ties", "others"] {
+            for (k, rec) in gt.get(key).arr().iter().enumerate() {
+                let a = rec.arr();
+                let r = a[0].hx();
+                let ray = Ray {
+                    origin: Vec3::new(r[0], r[1], r[2]),
+                    direction: Vec3::new(r[3], r[4], r[5]),
+                };
+                let got = pick_ground_tile_from_meshes(&ps, &ray, &cam, &w.grid, &fs.ground_pick);
+                c.eq(&format!("groundTies {key} {k}"), tcode(got), a[1].i64());
+                let n = intersect_objects(&ps, &ray, &cam, &fs.ground_pick, false).len();
+                c.eq(
+                    &format!("groundTies {key} {k} hits"),
+                    i64::try_from(n).expect("n"),
+                    a[2].i64(),
+                );
+            }
+        }
+    }
+    instanced_cases(&mut c, &mut w, e.get("deployInstanced"), "deployInstanced");
+    println!("extra deploy: {} numbers, {} checks", c.scalars, c.checks);
+    c.finish("extra deploy");
 }
