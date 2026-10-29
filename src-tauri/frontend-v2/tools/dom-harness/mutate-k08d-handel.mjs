@@ -45,6 +45,23 @@ const MUTATIONS = [
   ['deps', "=> 'podatek';", "=> 'podatki';", 'daninaLabelAccusative: stała (kotwica pinu)'],
 ];
 
+/**
+ * DTO / cfg (K08D-Z2, K08D-Z3) — mutacje POLA, tryb 'harness': bramka tekstu (verify) pominięta celowo, bo każda zmiana
+ * linii kopii łapie ją już na poziomie TEXT. Zabicie = wyłącznie harness wykonawczy (pin vs port, scenariusze z
+ * argumentowo-czułymi atrapami). Każda mutacja zmienia JEDNO odczytywane pole/klucz.
+ */
+const FIELD_MUTATIONS = [
+  ['handel', 'cfg.getCivKey?.(city.ownerId)', 'cfg.getCivKey?.(city.id)', 'cfg.getCivKey: zły klucz (ownerId -> id miasta)'],
+  ['handel', "cfgK08dRequired(cfg, 'getOwnerHasZlotoAccess')(city.ownerId)", "cfgK08dRequired(cfg, 'getOwnerHasZlotoAccess')(city.id)", 'cfg.getOwnerHasZlotoAccess: zły klucz'],
+  ['handel', 'cfg.data?.civs, cfg.difficulty', 'undefined, cfg.difficulty', 'cfg.data.civs: pole pominięte'],
+  ['handel', "buildEconParams(data, cfg.difficulty ?? 'normal')", "buildEconParams(data, 'easy')", 'cfg.difficulty: pole zastąpione stałą'],
+  ['handel', 'if (route.fromCityId === city.id || route.toCityId === city.id) n++;', 'if (route.fromCityId === city.id) n++;', 'TradeRouteK05bDto.toCityId: pominięte w liczniku'],
+  ['handel', 'computeTradeRouteBuildingBonusByCity(cfg.getTradeRoutes?.() ?? []).get(city.id)', 'computeTradeRouteBuildingBonusByCity(cfg.getTradeRoutes?.() ?? []).get(city.ownerId)', 'premia: zły klucz mapy'],
+  ['handel', 'computeTradeRouteBuildingBonusByCity(cfg.getTradeRoutes?.() ?? [])', 'computeTradeRouteBuildingBonusByCity([])', 'cfg.getTradeRoutes: pole pominięte w premii'],
+  ['handel', 'const built = cfg.getBuiltBuildingIds?.(city.id) ?? [];', 'const built = cfg.getBuiltBuildingIds?.(city.ownerId) ?? [];', 'cfg.getBuiltBuildingIds: zły klucz'],
+  ['handel', 'const techs = cfg.getUnlockedTechs?.(city.ownerId) ?? [];', 'const techs = cfg.getUnlockedTechs?.(city.id) ?? [];', 'cfg.getUnlockedTechs: zły klucz'],
+];
+
 const runCheck = (cmd, argv) => {
   try {
     execFileSync(cmd, argv, { cwd: V2, stdio: 'pipe' });
@@ -91,5 +108,30 @@ for (const [key, from, to, desc] of MUTATIONS) {
   if (isKilled) killed++;
   console.log(`${isKilled ? 'ZABITA' : 'PRZEZYTA'} ${desc} | verify=${rc.verify} harness=${rc.harness}`);
 }
+let fieldKilled = 0;
+for (const [key, from, to, desc] of FIELD_MUTATIONS) {
+  const file = FILES[key];
+  const orig = readFileSync(file, 'utf8');
+  const count = orig.split(from).length - 1;
+  if (count !== 1) {
+    console.log(`BLAD-MUTANTA ${desc}: literał wystąpił ${count} razy`);
+    process.exit(2);
+  }
+  let h;
+  try {
+    writeFileSync(file, orig.split(from).join(to));
+    h = harness();
+  } finally {
+    writeFileSync(file, orig);
+  }
+  if (readFileSync(file, 'utf8') !== orig) {
+    console.error(`PRZYWRACANIE NIEUDANE: ${file}`);
+    process.exit(2);
+  }
+  const isKilled = h !== 0;
+  if (isKilled) fieldKilled++;
+  console.log(`${isKilled ? 'ZABITA' : 'PRZEZYTA'} [pole, harness-only] ${desc} | harness=${h}`);
+}
 console.log(`\nmutacje k08d: ZABITE ${killed}/${MUTATIONS.length}`);
-process.exit(killed === MUTATIONS.length ? 0 : 1);
+console.log(`mutacje pól DTO/cfg k08d: ZABITE ${fieldKilled}/${FIELD_MUTATIONS.length}`);
+process.exit(killed === MUTATIONS.length && fieldKilled === FIELD_MUTATIONS.length ? 0 : 1);

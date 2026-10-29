@@ -123,7 +123,7 @@ try {
       `import * as portSlider from ${JSON.stringify(join(V2_ROOT, 'src/ui/cityPanel/k08d-slider.ts'))};`,
       `import * as k08dDepsMod from ${JSON.stringify(join(V2_ROOT, 'src/ui/cityPanel/k08d-deps.ts'))};`,
       '// Hosty TEST: wartości reguł = JAWNE wzory testowe (nie reguły gry; P5.13). Cfg K05B podłącza wiring K08C.',
-      'export const cfgObj: Record<string, any> = { getBuiltBuildingIds: () => [], getCities: () => [] };',
+      'export const cfgObj: Record<string, any> = { getBuiltBuildingIds: () => [], getCities: () => [], getOwnerHasZlotoAccess: (o: number) => o === 0 };',
       'export const k08c = installK08cWiring({',
       '  rerender: () => undefined,',
       '  cfg: cfgObj as any,',
@@ -138,10 +138,10 @@ try {
       '  rules: {} as any,',
       '} as any);',
       'export const k08d = installK08dWiring({',
-      '  buildEconParams: () => ({ korupcjaWspolczynnikDystansu: 0.1, korupcjaWspolczynnikMiast: 0.05, korupcjaCap: 0.3, mennicaMnoznikPoWalucie: 2 }),',
+      '  buildEconParams: (_d: unknown, diff: string) => ({ korupcjaWspolczynnikDystansu: 0.1, korupcjaWspolczynnikMiast: 0.05, korupcjaCap: diff === "normal" ? 0.3 : 0.5, mennicaMnoznikPoWalucie: 2 }),',
       "  cityHasBibliotekaLine: (b: readonly string[]) => b.includes('biblioteka'),",
-      '  mnoznikHandelPieniadzForCivByDifficulty: (_k: unknown, _c: unknown, _d: string, fb: number) => fb + 1,',
-      '  computeTradeRouteBuildingBonusByCity: () => new Map<number, number>([[7, 12]]),',
+      '  mnoznikHandelPieniadzForCivByDifficulty: (k: unknown, c: unknown, d: string, fb: number) => (k === "rz" && c && d === "normal" ? fb + 1 : fb),',
+      '  computeTradeRouteBuildingBonusByCity: (routes: readonly unknown[]) => (routes.length > 0 ? new Map<number, number>([[7, 12]]) : new Map<number, number>()),',
       '});',
       'export const pin = pinMod;',
       'export const port = { ownerHasMennica: portHandel.ownerHasMennica, activeTradeRouteCountForCity: portHandel.activeTradeRouteCountForCity, buildHandelDetailCard: portHandel.buildHandelDetailCard, renderHandelSlidersPanel: portSlider.renderHandelSlidersPanel };',
@@ -216,10 +216,10 @@ try {
     ['handel.mennicaAktywna', (f) => f.card(city, view, data), () => {
       mod.cfgObj.getBuiltBuildingIds = (id) => (id === 7 ? ['targowisko', 'biblioteka'] : ['mennica']);
       mod.cfgObj.getCities = () => [city, capital];
-      mod.cfgObj.getOwnerHasZlotoAccess = () => true;
-      mod.cfgObj.getUnlockedTechs = () => ['Waluta'];
+      mod.cfgObj.getOwnerHasZlotoAccess = (o) => o === 0;
+      mod.cfgObj.getUnlockedTechs = (o) => (o === 0 ? ['Waluta'] : []);
       mod.cfgObj.getTradeRoutes = () => [route];
-      mod.cfgObj.getCivKey = () => 'rz';
+      mod.cfgObj.getCivKey = (o) => (o === 0 ? 'rz' : undefined);
       mod.cfgObj.difficulty = 'normal';
       mod.cfgObj.data = { civs: {} };
     }],
@@ -227,8 +227,15 @@ try {
       mod.cfgObj.getBuiltBuildingIds = (id) => (id === 9 ? ['mennica'] : []);
       mod.cfgObj.getCities = () => [city, capital];
       mod.cfgObj.getOwnerHasZlotoAccess = () => false;
-      mod.cfgObj.getUnlockedTechs = () => ['Waluta'];
+      mod.cfgObj.getUnlockedTechs = (o) => (o === 0 ? ['Waluta'] : []);
       mod.cfgObj.getTradeRoutes = () => [];
+    }],
+    ['handel.trasy.toCity', (f) => f.card(city, view, data), () => {
+      // Trasa z budynkiem, w której miasto jest TYLKO celem (toCityId): licznik i premia muszą ją zliczyć.
+      mod.cfgObj.getBuiltBuildingIds = () => [];
+      mod.cfgObj.getCities = () => [city];
+      mod.cfgObj.getTradeRoutes = () => [{ status: 'polaczony', budynekOdblokowany: true, fromCityId: 8, toCityId: 7 }];
+      mod.cfgObj.getUnlockedTechs = () => [];
     }],
     ['slider.view', (f) => f.slider(city, view, data), () => {
       mod.cfgObj.getBuiltBuildingIds = () => ['targowisko'];

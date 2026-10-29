@@ -11,7 +11,7 @@
  * `appendWealthCompactStrip`), `renderReligia` (+ `religiaSzPunkty`, `computeOrderStateLocal`, `appendCompositionBlock`,
  * `buildTopBarReligiaDetailCard`; `resolveEmpireSnap` już jest delegatem K08C).
  *
- * Podstawienia LINE_SUBS_K08D: brak (ciała kopii bajt w bajt z pinem; reguły idą przez `k08d-deps.ts`).
+ * Podstawienia LINE_SUBS_K08D: jedno (K08D-Z9, bramka dostępu do złota: wymagane pole cfg zamiast `?? true`); reszta bajt w bajt z pinem.
  */
 export { codeEndLine } from './k08b-subs.mjs';
 
@@ -35,7 +35,7 @@ import type { CityView } from './k01b-t';
 import { HANDEL_KORUPCJA_PCT_PLACEHOLDER, HANDEL_ZAMOZNOSC_LABEL } from './k01a-fundament';
 import { cfg, daninaLabelForCity, daninaLabelGenitive, readPodzialHandlu, type City, type GameData } from './k05b-host';
 import {
-  buildEconParams, cityHasBibliotekaLine, computeTradeRouteBuildingBonusByCity, daninaLabelAccusative,
+  buildEconParams, cityHasBibliotekaLine, cfgK08dRequired, computeTradeRouteBuildingBonusByCity, daninaLabelAccusative,
   mnoznikHandelPieniadzForCivByDifficulty,
 } from './k08d-deps';`,
   units: [
@@ -80,7 +80,15 @@ export const batchByNameK08d = (name) => {
 };
 
 /** Brak podstawień (K08D-Z4, jak K08C-Z4). Pusta lista zachowana dla jednolitej bramki. */
-export const LINE_SUBS_K08D = [];
+export const LINE_SUBS_K08D = [
+  // K08D-Z9: brak cichej wartości domyślnej dla bramki dostępu do złota (pin: `?? true`); port: wymagane pole cfg.
+  {
+    a: 10845,
+    b: 11005,
+    from: 'const maDostepDoZlota = cfg.getOwnerHasZlotoAccess?.(city.ownerId) ?? true;',
+    to: "const maDostepDoZlota = cfgK08dRequired(cfg, 'getOwnerHasZlotoAccess')(city.ownerId);",
+  },
+];
 
 /** Zastosowanie podstawień K08D do linii pinu (pusta lista = bez zmian). */
 export function applySubsK08d(unit, lines) {

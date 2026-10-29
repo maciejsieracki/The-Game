@@ -12,7 +12,21 @@
  *   computeTradeRouteBuildingBonusByCity    — `game/trade-routes.ts:1683`;
  *   daninaLabelAccusative      — `game/danina-nazwa.ts:21` (stała `'podatek'`, bez reguł: tu jako stała pinu).
  */
-import type { GameData, TradeRouteK05bDto } from './k05b-host';
+import type { GameData, K05bCfg, TradeRouteK05bDto } from './k05b-host';
+
+/**
+ * K08D-Z9 (odpowiedź na zarzut Evaluatora, runda 2): wymagane pole `cfg` (K08D-Z2). Pin używa `cfg.X?.(…) ?? wartość`
+ * (cicha wartość domyślna, np. dostęp do złota = `true`); port NIE podstawia wartości domyślnej — brak pola = wyjątek
+ * `K08D: brak pola cfg …`. Reguła gry (bramka Mennicy) nie może zależeć od cichej atrapy.
+ */
+export function cfgK08dRequired<K extends 'getOwnerHasZlotoAccess'>(
+  c: K05bCfg,
+  name: K,
+): NonNullable<K05bCfg[K]> {
+  const f = c[name];
+  if (f === undefined) throw new Error(`K08D: brak pola cfg ${name} (K08D-Z2)`);
+  return f as NonNullable<K05bCfg[K]>;
+}
 
 /** Pola czytane przez kopię `buildHandelDetailCard` z wyniku pinowego `buildEconParams` (P5.13: wartości, nie reguły). */
 export interface HandelEconParamsK08d {
@@ -65,7 +79,13 @@ export const mnoznikHandelPieniadzForCivByDifficulty = (
   fallbackScaled: number,
 ): number => depK08d('mnoznikHandelPieniadzForCivByDifficulty')(civKey, civs, difficulty, fallbackScaled);
 
-/** Pin `computeTradeRouteBuildingBonusByCity(routes)` — premia handlowa per miasto (trasy z budynkiem). */
+/**
+ * Pin `computeTradeRouteBuildingBonusByCity(routes)` — premia handlowa per miasto (trasy z budynkiem).
+ * KONTRAKT ID (K08D-Z10, pomiar runda 2): pin zwraca `Map<string, number>` (`game/trade-routes.ts:1683-1686`, klucze =
+ * `fromCityId`/`toCityId: string`, `game/trade-routes.ts:102-103`; `City.id: string`, `game/cities.ts:835`), a port K05B
+ * trzyma `City.id: number` (`k05b-host.ts:7`). Delegat zwraca `ReadonlyMap<number, number>` w modelu portu. Host (K09)
+ * MUSI przemapować id silnika na id portu. Rozbieżność NIE_ZROBIONE w tej rundzie (zmiana modelu K05B poza allowlistą).
+ */
 export const computeTradeRouteBuildingBonusByCity = (
   routes: readonly TradeRouteK05bDto[],
 ): ReadonlyMap<number, number> => depK08d('computeTradeRouteBuildingBonusByCity')(routes);
