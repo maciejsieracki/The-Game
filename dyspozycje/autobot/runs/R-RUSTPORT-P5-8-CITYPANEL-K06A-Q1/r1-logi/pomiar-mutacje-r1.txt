@@ -1,0 +1,153 @@
+{
+ "mutantow": 29,
+ "zabite": 29,
+ "przezyte": 0,
+ "nieZmierzone": 0,
+ "results": [
+  {
+   "id": "okolica-worker-dist",
+   "desc": "próg dystansu pracownika <= 1 → < 1",
+   "status": "ZABITA"
+  },
+  {
+   "id": "okolica-worker-default",
+   "desc": "domyślny dystans 1 → 2",
+   "status": "ZABITA"
+  },
+  {
+   "id": "okolica-reczne-gt",
+   "desc": "warunek ręczny > 0 → >= 0",
+   "status": "ZABITA"
+  },
+  {
+   "id": "okolica-hex-angle",
+   "desc": "kąt startowy -30 → -60",
+   "status": "ZABITA"
+  },
+  {
+   "id": "okolica-hex-fixed",
+   "desc": "zaokrąglenie 1 → 2 miejsca",
+   "status": "ZABITA"
+  },
+  {
+   "id": "fire-toggle-delta",
+   "desc": "delta klik 0 → 1",
+   "status": "ZABITA"
+  },
+  {
+   "id": "fire-toggle-id",
+   "desc": "id miasta → \"x\"",
+   "status": "ZABITA"
+  },
+  {
+   "id": "yield-short-plus",
+   "desc": "znak + usunięty dla dodatniej żywności",
+   "status": "ZABITA"
+  },
+  {
+   "id": "yield-short-zero",
+   "desc": "pusty wynik \"0\" → \"\"",
+   "status": "ZABITA"
+  },
+  {
+   "id": "yield-short-handel",
+   "desc": "pominięty składnik handlu",
+   "status": "ZABITA"
+  },
+  {
+   "id": "label-nakladka",
+   "desc": "domyślna nakładka brak → las",
+   "status": "ZABITA"
+  },
+  {
+   "id": "label-rzeka",
+   "desc": "rzeka: obecna ignorowana",
+   "status": "ZABITA"
+  },
+  {
+   "id": "label-first-key",
+   "desc": "klucz ulepszenia: pierwszy → ostatni",
+   "status": "ZABITA"
+  },
+  {
+   "id": "label-keys-undef",
+   "desc": "pusta lista kluczy → [] zamiast undefined",
+   "status": "ZABITA"
+  },
+  {
+   "id": "impr-skip-underscore",
+   "desc": "pominięcie kluczy \"_\" wyłączone",
+   "status": "ZABITA"
+  },
+  {
+   "id": "impr-empty-name",
+   "desc": "puste nazwy akceptowane",
+   "status": "ZABITA"
+  },
+  {
+   "id": "badge-null-check",
+   "desc": "warunek braku szPct: == null → === undefined",
+   "status": "ZABITA"
+  },
+  {
+   "id": "badge-thr-60",
+   "desc": "próg zielony 60 → 50",
+   "status": "ZABITA"
+  },
+  {
+   "id": "badge-warn",
+   "desc": "ostrzeżenie rewolty usunięte",
+   "status": "ZABITA"
+  },
+  {
+   "id": "tabs-on-class",
+   "desc": "klasa aktywnej zakładki pominięta",
+   "status": "ZABITA"
+  },
+  {
+   "id": "tabs-aria",
+   "desc": "aria-selected zawsze false",
+   "status": "ZABITA"
+  },
+  {
+   "id": "owner-filter",
+   "desc": "filtr właściciela negowany",
+   "status": "ZABITA"
+  },
+  {
+   "id": "owner-fallback",
+   "desc": "brak listy → [] zamiast [city]",
+   "status": "ZABITA"
+  },
+  {
+   "id": "nav-tie-name",
+   "desc": "remis nazwy: sortowanie odwrotne",
+   "status": "ZABITA"
+  },
+  {
+   "id": "nav-z-axis",
+   "desc": "oś Z pominięta w sortowaniu",
+   "status": "ZABITA"
+  },
+  {
+   "id": "nav-hexr",
+   "desc": "HEX_R 1.0 → 2.0",
+   "status": "ZABITA"
+  },
+  {
+   "id": "title-format",
+   "desc": "tytuł bez formatowania",
+   "status": "ZABITA"
+  },
+  {
+   "id": "nav-dir",
+   "desc": "kierunek nawigacji odwrócony",
+   "status": "ZABITA"
+  },
+  {
+   "id": "state-pinned",
+   "desc": "setter przypięcia ignorowany",
+   "status": "ZABITA"
+  }
+ ]
+}

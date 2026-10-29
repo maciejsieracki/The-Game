@@ -1,0 +1,6 @@
+{
+ "comparisons": 1323,
+ "diffs": 0,
+ "units": 12,
+ "pinFile": "gra/src/ui/cityPanel.ts (edb8fb56)"
+}

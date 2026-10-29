@@ -1,0 +1,112 @@
+{
+ "pin": "edb8fb56",
+ "port": "ui/cityPanel/k06a-fundament.ts",
+ "blocks": 16,
+ "wybraneUnits": 15,
+ "lineSubs": 9,
+ "comparisons": [
+  {
+   "block": "gra/src/ui/cityPanel.ts:10159-10159",
+   "lines": 1,
+   "subs": 0,
+   "status": "OK"
+  },
+  {
+   "block": "gra/src/ui/cityPanel.ts:10160-10160",
+   "lines": 1,
+   "subs": 0,
+   "status": "OK"
+  },
+  {
+   "block": "gra/src/ui/cityPanel.ts:10161-10161",
+   "lines": 1,
+   "subs": 0,
+   "status": "OK"
+  },
+  {
+   "block": "gra/src/ui/cityPanel.ts:10162-10163",
+   "lines": 2,
+   "subs": 0,
+   "status": "OK"
+  },
+  {
+   "block": "gra/src/ui/cityPanel.ts:9729-9736",
+   "lines": 8,
+   "subs": 0,
+   "status": "OK"
+  },
+  {
+   "block": "gra/src/ui/cityPanel.ts:9738-9750",
+   "lines": 13,
+   "subs": 0,
+   "status": "OK"
+  },
+  {
+   "block": "gra/src/ui/cityPanel.ts:9752-9755",
+   "lines": 4,
+   "subs": 0,
+   "status": "OK"
+  },
+  {
+   "block": "gra/src/ui/cityPanel.ts:9757-9763",
+   "lines": 7,
+   "subs": 1,
+   "status": "OK"
+  },
+  {
+   "block": "gra/src/ui/cityPanel.ts:9556-9569",
+   "lines": 14,
+   "subs": 3,
+   "status": "OK"
+  },
+  {
+   "block": "gra/src/ui/cityPanel.ts:9765-9783",
+   "lines": 19,
+   "subs": 2,
+   "status": "OK"
+  },
+  {
+   "block": "gra/src/ui/cityPanel.ts:10228-10237",
+   "lines": 10,
+   "subs": 0,
+   "status": "OK"
+  },
+  {
+   "block": "gra/src/ui/cityPanel.ts:10239-10245",
+   "lines": 7,
+   "subs": 3,
+   "status": "OK"
+  },
+  {
+   "block": "gra/src/ui/cityPanel.ts:10183-10189",
+   "lines": 7,
+   "subs": 0,
+   "status": "OK"
+  },
+  {
+   "block": "gra/src/ui/cityPanel.ts:10191-10202",
+   "lines": 12,
+   "subs": 0,
+   "status": "OK"
+  },
+  {
+   "block": "gra/src/ui/cityPanel.ts:10204-10207",
+   "lines": 4,
+   "subs": 0,
+   "status": "OK"
+  },
+  {
+   "block": "gra/src/ui/cityPanel.ts:10223-10226",
+   "lines": 4,
+   "subs": 0,
+   "status": "OK"
+  }
+ ],
+ "findings": {
+  "text": [],
+  "orphan": [],
+  "cover": [],
+  "local": []
+ },
+ "status": "OK"
+}

@@ -1,0 +1,250 @@
+[
+ {
+  "name": "appendPodzialPracyInfo",
+  "a": 5028,
+  "b": 5111,
+  "loc": 84,
+  "reason": "DOM",
+  "firstBlocker": {
+   "kind": "T",
+   "id": "City",
+   "from": "game/cities.ts"
+  }
+ },
+ {
+  "name": "buildOwnedBuildingsDetailCard",
+  "a": 7806,
+  "b": 7860,
+  "loc": 55,
+  "reason": "DOM",
+  "firstBlocker": {
+   "kind": "T",
+   "id": "City",
+   "from": "game/cities.ts"
+  }
+ },
+ {
+  "name": "buildUnitDetailCardViaEntityCard",
+  "a": 7861,
+  "b": 7884,
+  "loc": 24,
+  "reason": "DOM",
+  "firstBlocker": {
+   "kind": "T",
+   "id": "UnitDef",
+   "from": "data/loader.ts"
+  }
+ },
+ {
+  "name": "buildUnitDetailCard",
+  "a": 7885,
+  "b": 7896,
+  "loc": 12,
+  "reason": "DOM",
+  "firstBlocker": {
+   "kind": "T",
+   "id": "UnitDef",
+   "from": "data/loader.ts"
+  }
+ },
+ {
+  "name": "attachUnitRowThumb",
+  "a": 7976,
+  "b": 7996,
+  "loc": 21,
+  "reason": "DOM",
+  "firstBlocker": {
+   "kind": "T",
+   "id": "UnitDef",
+   "from": "data/loader.ts"
+  }
+ },
+ {
+  "name": "appendBuildableItemRow",
+  "a": 7997,
+  "b": 8049,
+  "loc": 53,
+  "reason": "DOM",
+  "firstBlocker": {
+   "kind": "T",
+   "id": "City",
+   "from": "game/cities.ts"
+  }
+ },
+ {
+  "name": "appendUnitRecruitCompactRow",
+  "a": 8137,
+  "b": 8182,
+  "loc": 46,
+  "reason": "DOM",
+  "firstBlocker": {
+   "kind": "T",
+   "id": "City",
+   "from": "game/cities.ts"
+  }
+ },
+ {
+  "name": "appendRecruitmentQueue",
+  "a": 8210,
+  "b": 8299,
+  "loc": 90,
+  "reason": "DOM",
+  "firstBlocker": {
+   "kind": "T",
+   "id": "City",
+   "from": "game/cities.ts"
+  }
+ },
+ {
+  "name": "appendBuildQueueSection",
+  "a": 8300,
+  "b": 8428,
+  "loc": 129,
+  "reason": "DOM",
+  "firstBlocker": {
+   "kind": "T",
+   "id": "City",
+   "from": "game/cities.ts"
+  }
+ },
+ {
+  "name": "appendCatalogBuildingRow",
+  "a": 8682,
+  "b": 8733,
+  "loc": 52,
+  "reason": "DOM",
+  "firstBlocker": {
+   "kind": "T",
+   "id": "BuildingCatalogEntry",
+   "from": "game/production.ts"
+  }
+ },
+ {
+  "name": "renderBuildList",
+  "a": 8734,
+  "b": 8860,
+  "loc": 127,
+  "reason": "DOM",
+  "firstBlocker": {
+   "kind": "T",
+   "id": "City",
+   "from": "game/cities.ts"
+  }
+ },
+ {
+  "name": "appendOwnedBuildingRow",
+  "a": 9033,
+  "b": 9183,
+  "loc": 151,
+  "reason": "DOM",
+  "firstBlocker": {
+   "kind": "T",
+   "id": "GameData",
+   "from": "data/loader.ts"
+  }
+ },
+ {
+  "name": "renderTopBarGarrison",
+  "a": 9392,
+  "b": 9427,
+  "loc": 36,
+  "reason": "DOM",
+  "firstBlocker": {
+   "kind": "T",
+   "id": "City",
+   "from": "game/cities.ts"
+  }
+ },
+ {
+  "name": "buildGarnizonDetailCard",
+  "a": 9428,
+  "b": 9494,
+  "loc": 67,
+  "reason": "DOM",
+  "firstBlocker": {
+   "kind": "P",
+   "id": "GarrisonUnit",
+   "block": 1
+  }
+ },
+ {
+  "name": "IMPROVEMENT_KEY_TO_NAME",
+  "a": 9562,
+  "b": 9578,
+  "loc": 17,
+  "reason": "R: import logiki terrainImprovementsData z /terrain-improvements.json",
+  "firstBlocker": {
+   "kind": "R",
+   "id": "terrainImprovementsData",
+   "from": "/terrain-improvements.json"
+  }
+ },
+ {
+  "name": "buildOkolicaDetailCard",
+  "a": 9617,
+  "b": 9728,
+  "loc": 112,
+  "reason": "DOM",
+  "firstBlocker": {
+   "kind": "T",
+   "id": "City",
+   "from": "game/cities.ts"
+  }
+ },
+ {
+  "name": "appendOkolicaYieldLabel",
+  "a": 9785,
+  "b": 9820,
+  "loc": 36,
+  "reason": "DOM",
+  "firstBlocker": {
+   "kind": "T",
+   "id": "Hex",
+   "from": "types/hex.ts"
+  }
+ },
+ {
+  "name": "renderWorkedPreview",
+  "a": 9821,
+  "b": 10017,
+  "loc": 197,
+  "reason": "DOM",
+  "firstBlocker": {
+   "kind": "T",
+   "id": "City",
+   "from": "game/cities.ts"
+  }
+ },
+ {
+  "name": "rootEl",
+  "a": 10158,
+  "b": 10158,
+  "loc": 1,
+  "reason": "DOM",
+  "firstBlocker": null
+ },
+ {
+  "name": "setGarrisonLabelPinned",
+  "a": 10165,
+  "b": 10169,
+  "loc": 5,
+  "reason": "DOM",
+  "firstBlocker": null
+ },
+ {
+  "name": "pinGarrisonPanel",
+  "a": 10170,
+  "b": 10174,
+  "loc": 5,
+  "reason": "DOM",
+  "firstBlocker": null
+ },
+ {
+  "name": "clearGarrisonPanel",
+  "a": 10175,
+  "b": 10183,
+  "loc": 9,
+  "reason": "DOM",
+  "firstBlocker": null
+ }
+]

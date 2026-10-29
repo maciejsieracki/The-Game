@@ -1,0 +1,23 @@
+[
+ {
+  "name": "okolicaHexPoints",
+  "a": 9729,
+  "b": 9737,
+  "loc": 9,
+  "kind": "function"
+ },
+ {
+  "name": "activeOnClose",
+  "a": 10161,
+  "b": 10162,
+  "loc": 2,
+  "kind": "let"
+ },
+ {
+  "name": "pinnedGarrisonCityId",
+  "a": 10163,
+  "b": 10164,
+  "loc": 2,
+  "kind": "let"
+ }
+]

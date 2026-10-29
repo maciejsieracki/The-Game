@@ -1,0 +1,34 @@
+L183 pin 9729-9736: linie=8 brak_w_kopii=1
+   - function okolicaHexPoints(cx: number, cy: number, size: number): string {
+L193 pin 9738-9750: linie=13 brak_w_kopii=2
+   - function okolicaTileHasWorkerAt(
+   - city: City,
+L208 pin 9752-9755: linie=4 brak_w_kopii=1
+   - function fireOkolicaTileToggle(city: City, q: number, r: number): void {
+L214 pin 9757-9763: linie=7 brak_w_kopii=1
+   - function formatTileYieldShort(y: { zywnosc: number; praca: number; handel: number }): string {
+L223 pin 9556-9569: linie=14 brak_w_kopii=9
+   - /** Mapa `ImprovementKey` (klucz obiektu w `terrain-improvements.json`) → nazwa gracza
+   - * (`row.nazwa`) — T7b (KARTA-ULEPSZENIA-TERENU), call-site 3/3, sekcja „Ulepszenia
+   - * w zasięgu". Ten sam wzorzec odwrotny co `IMPROVEMENT_NAME_TO_KEY` w
+   - * `techDiscoveryNotice.ts`/`technologyAdapter.ts` (Bug B, R-TECH-ULEPSZENIA-TERENU-SYNC-Q1),
+L234 pin 9772-9783: linie=12 brak_w_kopii=3
+   - function tileYieldLabel(hex: Hex): string {
+   - const ulepszeniaKeys = improvementKeysForHex(hex);
+   - nakladka: hex.nakladka ?? Nakladka.Brak,
+L255 pin 10228-10237: linie=10 brak_w_kopii=2
+   - function headerOrderBadge(city: City): string {
+   - const warn = st.revoltWarning ? ' \u26a0\ufe0f' : '';
+L267 pin 10239-10245: linie=7 brak_w_kopii=4
+   - function drawerTabButtons(): string {
+   - return CITY_TABS.map(t => {
+   - const on = activeDrawerTab === t.id;
+   - + `<span class="civ-cs-tab-inner">${cityTabIconHtml(t.id)}<span class="civ-cs-tab-lbl">${t.short}</span></span
+L276 pin 10183-10189: linie=7 brak_w_kopii=1
+   - function ownerCities(city: City): City[] {
+L285 pin 10191-10202: linie=12 brak_w_kopii=1
+   - function ownerCitiesForNav(city: City): City[] {
+L299 pin 10204-10207: linie=4 brak_w_kopii=1
+   - function cityPanelTitle(city: City): string {
+L305 pin 10223-10226: linie=4 brak_w_kopii=0
+RAZEM linie pinu=102 brakujace=26
