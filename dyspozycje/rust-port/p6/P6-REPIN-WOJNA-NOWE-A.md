@@ -45,7 +45,7 @@ Liczby zapisane jako tekst (`String(x)`, `-0`, `NaN`, `Infinity`), zgodnie z kon
 
 ## 4. Zalozenia (luki rozstrzygniete zalozeniem)
 
-- Normalizacja diakrytykow: Latin-1 + Latin Extended-A (zakres danych PL). Pelna przestrzen Unicode: **NIE_ZMIERZONO**.
+- Normalizacja diakrytykow (korekta r3, zarzut 1): zakres = wszystkie rozkladalne litery Latin-1 + polskie litery (ą ć ę ł ń ś ź ż) + č š ž. Litery Latin Extended-A spoza tego zbioru (ě ř ů ť ď ň ľ ő ű ā ē ī ō ū ğ ş) NIE sa w tabeli `strip_base` (web robi NFD, Rust nie - wynik rozni sie). Dane jednostek `gra/data/units.json` nie zawieraja tych liter (sprawdzone: 0 wystapien), wiec wektory ich nie testuja. Pelna przestrzen Unicode i te litery: **NIE_ZMIERZONO**.
 - Wspolrzedne siatki i progi calkowite (wektory weba tak je generuja); NaN w wejsciach ukladu: **NIE_ZMIERZONO**.
 - `null` i `undefined` w polach `hp`/`ruchLeft` traktowane tak samo (`None`) - web uzywa tylko `??`.
 - Deps awansu (katalog, koszt, skarbiec) sa po stronie adaptera gry; w tescie adapter zbudowany z katalogu w wektorze, ta sama logika co w webie.

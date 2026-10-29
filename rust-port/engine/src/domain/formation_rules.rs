@@ -5,7 +5,11 @@
 //! (`compactLineAllowsAdvance`). Slowa kluczowe: `data/derived/formation-role-keywords.json`.
 //!
 //! Zalozenia (ZALOZENIE, nie zmierzone na pelnej przestrzeni Unicode):
-//! - normalizacja diakrytyków obejmuje Latin-1 i Latin Extended-A (zakres dla danych PL);
+//! - normalizacja diakrytyków (web: NFD + usuniecie U+0300-036F) obejmuje TYLKO: wszystkie
+//!   rozkladalne litery Latin-1 oraz polskie litery (ą ć ę ł ń ś ź ż) i č š ž z Latin Extended-A.
+//!   Pozostale litery Latin Extended-A (ě ř ů ť ď ň ľ ő ű ā ē ī ō ū ğ ş) NIE sa obslugiwane:
+//!   Rust zwroci inny wynik niz web. Dane jednostek (`gra/data/units.json`) ich nie zawieraja
+//!   (sprawdzone: 0 wystapien); wektory tego nie testuja - dla tych liter **NIE_ZMIERZONO**;
 //! - wspolrzedne siatki sa wartosciami calkowitymi (wektory weba tak je generuja).
 
 use serde_json::Value;
@@ -91,7 +95,8 @@ fn keywords() -> &'static Keywords {
 }
 
 /// Usuwa znaki diakrytyczne tak, jak `normalize('NFD').replace(/[̀-ͯ]/g, '')`
-/// plus `replace(/[łŁ]/g, 'l')` z weba, dla liter Latin-1 i Latin Extended-A.
+/// plus `replace(/[łŁ]/g, 'l')` z weba, dla liter Latin-1 i polskich liter Latin Extended-A
+/// oraz č š ž (zakres w nagłówku modułu; reszta Latin Extended-A poza zakresem).
 fn strip_base(c: char) -> char {
     match c {
         'à' | 'á' | 'â' | 'ã' | 'ä' | 'å' | 'ą' => 'a',
