@@ -144,6 +144,22 @@ try {
     detail.appendDetailFormula(card, 'a = b');
     check('D1 appendDetailFormula: .dc-formula', card.querySelector('.dc-formula')?.textContent === 'a = b');
   }
+
+  // R6 — helpery 1:1 z pinu (runda 2): playerFacingNote, unitExtraField, cityFoodSplit
+  {
+    check('R6 playerFacingNote pusty -> null', model.playerFacingNote('   ') === null && model.playerFacingNote(null) === null);
+    check('R6 playerFacingNote zwraca tekst przycieta', model.playerFacingNote('  Ok  ') === 'Ok');
+    check('R6 unitExtraField brak pola -> null', model.unitExtraField({ a: 1 }, 'b') === null);
+    check('R6 unitExtraField zwraca wartosc', model.unitExtraField({ a: 7 }, 'a') === 7);
+    const dto = mkDto();
+    const v = model.cityViewFromDto(dto);
+    const f0 = model.cityFoodSplit(v);
+    check('R6 cityFoodSplit bez przyciecia: total=bilans', f0.total === 1 && f0.produkcja === 6 && f0.racje === 2 && f0.clamped === false);
+    const f1 = model.cityFoodSplit(v, 1);
+    check('R6 cityFoodSplit przyciety do maxSafe=1', f1.clamped === true && f1.racje === 1 && f1.total === 5);
+    dto.yields.zywnoscBrutto = 9;
+    check('R6 mutacja yields.zywnoscBrutto wykryta', model.cityFoodSplit(model.cityViewFromDto(dto)).produkcja === 9);
+  }
 } catch (e) {
   console.error('run-k03: blad harnessu:', e?.stack ?? e);
   exitCode = 2;
