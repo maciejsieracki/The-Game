@@ -23,6 +23,12 @@
 - 59 istniejących jednostek + wiersz przybywającej jednostki, 600×413 CSS px / DPR 1.5: widoczny i przeciągalny thumb przewija do ostatniego wiersza; oba CTA są widoczne w stopce; marginesy zmierzone 28.59 px u góry / 27.88 px u dołu.
 - Granica: callback testowy jest licznikiem fixture; pełna transakcja scalania w grze nie została wykonana. Raport: `dyspozycje/autobot/runs/R-ARMY-MERGE-PANEL-INNER-SCROLL-Q1/05-final-control.md`.
 - Final Control nie zmienił kodu produktu; brak commit, push, merge i deploy.
+## `R-BITWA-ATAK-MARSZEM-HEX-Q1` — rozkaz Atakuj-marszem do wskazanego heksa
+
+- **STATUS:** `OPERATOR` — zarejestrowano po zgodzie właściciela; operator wdraża osobny rozkaz pola bitwy.
+- **Wymaganie:** wskazanie pustego heksa rozkazem „Atakuj-marszem” kieruje jednostki do tego miejsca, atakuje napotkanych po drodze wrogów i po rozwiązaniu starcia wznawia marsz do punktu. Zwykły ruch i kliknięcie jednostki wroga zachowują dotychczasowe odmienne znaczenie.
+- **Zakres:** wyłącznie ręczna bitwa, z dotychczasowym warunkiem wodza/generała dla kontroli polowej. Rozkaz ma respektować legalny zasięg/wyczerpanie amunicji, trasowanie, odwołanie i postęp tury.
+- **Run:** `dyspozycje/autobot/runs/R-BITWA-ATAK-MARSZEM-HEX-Q1/`; podstawa `747ade419e9771f5a94eb1f82f174ceda100eaa1`; nie wdrożono.
 
 ## `R-AI-GENERAL-WAR-5TURN-ATTACK-Q1` + `R-ARMY-COMMANDER-UNIT-MARKERS-20261028` — wspólna integracja ROBOCZA
 
