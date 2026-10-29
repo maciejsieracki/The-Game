@@ -135,6 +135,24 @@ export interface K05bCfg {
   getPodzialPracyOverride?: (cityId: number) => boolean | undefined;
   /** K08C-Z8: pin `cfg.onPodzialPracyOverrideToggle?.(cityId)`. */
   onPodzialPracyOverrideToggle?: (cityId: number) => void;
+  /** K08D-Z2 (runda 1): pin `cfg.getCivKey?.(ownerId)` — klucz cywilizacji (mnożnik Waluty+Mennicy, `buildHandelDetailCard`). */
+  getCivKey?: (ownerId: number) => string | undefined;
+  /** K08D-Z2: pin `cfg.getOwnerHasZlotoAccess?.(ownerId)` — dostęp imperium do złota (bramka Mennicy). */
+  getOwnerHasZlotoAccess?: (ownerId: number) => boolean | undefined;
+  /** K08D-Z2: pin `cfg.getTradeRoutes?.() ?? []` — trasy handlowe (`activeTradeRouteCountForCity`). */
+  getTradeRoutes?: () => readonly TradeRouteK05bDto[];
+  /** K08D-Z2: pin `cfg.difficulty` (właściwość, nie metoda) — poziom trudności dla parametrów ekonomii. */
+  difficulty?: string;
+  /** K08D-Z2: pin `cfg.data` — dane gry; czytane tylko pole `civs` (mnożnik Waluty+Mennicy). */
+  data?: { readonly civs?: unknown };
+}
+
+/** K08D-Z3: wiersz trasy handlowej — pola czytane przez `activeTradeRouteCountForCity` i premię tras (pin `game/trade-routes.ts`). */
+export interface TradeRouteK05bDto {
+  readonly status: string;
+  readonly budynekOdblokowany?: boolean;
+  readonly fromCityId: number;
+  readonly toCityId: number;
 }
 
 /** K05B-Z5: migawka rekrutów miasta (pin: `getManpowerSnapshot`) — pola czytane przez `buildRecruitTabDetailCard`. */
