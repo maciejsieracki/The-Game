@@ -28,9 +28,13 @@
 use std::collections::HashSet;
 
 use crate::data::derived::mapgen_landsea;
-use crate::domain::map_generator::{Terrain, WorldType};
-use crate::domain::mapgen::prims::{hex_key, HEX_DIRECTIONS};
-use crate::domain::mapgen::terrain_class::{set_hex_to_laka, set_hex_to_morze, HexRecord};
+use crate::domain::map_generator::{ClimateBand, Terrain, WorldType};
+use crate::domain::mapgen::prims::{
+    climate_band_at, earth_template_land_at, hex_key, latitudinal_ocean_buffer_rows, HEX_DIRECTIONS,
+};
+use crate::domain::mapgen::terrain_class::{
+    hash_int3, set_hex_to_laka, set_hex_to_morze, HexRecord, Nakladka,
+};
 
 /// Web `isWaterTerrainLocal` (gen-helpers.ts:152): Morze lub Plytkie Morze (Wybrzeze).
 #[inline]
@@ -444,4 +448,134 @@ pub fn remove_small_inland_water_pools(
 /// Web `removeInlandSeaPools` (:4320): alias `removeInlandWaterPools` (Morze + Wybrzeze).
 pub fn remove_inland_sea_pools(hexes: &mut HexRecord, width: i64, height: i64) -> usize {
     remove_inland_water_pools(hexes, width, height)
+}
+
+// ---------------------------------------------------------------------------
+// P6.M06A3 (runda 1, partia 1). Symbole: `enforceLatitudinalOceanBuffer` (web :3339),
+// `climateBandBaseTerrain` (:3360, prywatna), `applyClimateBandsToHexes` (:3380),
+// `enforceEarthTemplateOnHexes` (:3418). Wektory: tests/p6_m06a3_vectors (generator
+// `gen-m06a3-vectors.mjs`, pin edb8fb56). Progi 0.5/0.7/0.85 sa literalami galezi z kodu webu.
+// ---------------------------------------------------------------------------
+
+/// Web `enforceLatitudinalOceanBuffer` (:3339): wiersze poza buforem `[buf, height-buf)` -> Morze
+/// (`setHexToMorze`). Pomija Morze i brakujace klucze. Zwraca liczbe zmienionych heksow.
+pub fn enforce_latitudinal_ocean_buffer(
+    hexes: &mut HexRecord,
+    width: u32,
+    height: u32,
+    is_earth: bool,
+) -> usize {
+    let buf = i64::from(latitudinal_ocean_buffer_rows(height, is_earth));
+    let h = i64::from(height);
+    let mut converted = 0usize;
+    for r in 0..h {
+        if r >= buf && r < h - buf {
+            continue;
+        }
+        for q in 0..i64::from(width) {
+            let key = hex_key(q, r);
+            if let Some(hex) = hexes.get_mut(&key) {
+                if hex.terrain == Terrain::Sea {
+                    continue;
+                }
+                set_hex_to_morze(hex);
+                converted += 1;
+            }
+        }
+    }
+    converted
+}
+
+/// Web `climateBandBaseTerrain(band, q, r, seed)` (:3360, prywatna): teren bazowy pasma,
+/// losowany przez `hashInt3(q, r, seed)`. Pasma polarne -> `Polarny` bez hashowania.
+pub fn climate_band_base_terrain(band: ClimateBand, q: i64, r: i64, seed: f64) -> Terrain {
+    if band.is_polar() {
+        return Terrain::Polar;
+    }
+    climate_base_from_hash(band, hash_int3(q as f64, r as f64, seed))
+}
+
+/// Galaz wyboru terenu z `climateBandBaseTerrain` dla gotowego hasha `h` (web :3360-3378).
+/// Wydzielone, zeby progi (`h < 0.5 / 0.7 / 0.85`) dalo sie testowac na N-1/N/N+1 bez hashowania.
+pub fn climate_base_from_hash(band: ClimateBand, h: f64) -> Terrain {
+    match band {
+        ClimateBand::PolarNorth | ClimateBand::PolarSouth => Terrain::Polar,
+        ClimateBand::Desert => {
+            if h < 0.5 {
+                Terrain::Desert
+            } else {
+                Terrain::Plains
+            }
+        }
+        ClimateBand::PlainsNorth | ClimateBand::PlainsSouth => {
+            if h < 0.7 {
+                Terrain::Plains
+            } else {
+                Terrain::Grassland
+            }
+        }
+        ClimateBand::TemperateNorth | ClimateBand::TemperateSouth => {
+            if h < 0.85 {
+                Terrain::Grassland
+            } else {
+                Terrain::Plains
+            }
+        }
+    }
+}
+
+/// Web `applyClimateBandsToHexes(hexes, height, seed, isEarth)` (:3380): na ladzie (bez wody,
+/// Gor i Wzgorz) ustawia teren pasma. Zmiana na Polarny/Pustynie czysci nakladke i zloze;
+/// heks juz Polarny z nakladka jest czyszczony w tej samej galezi. Zwraca liczbe zmian.
+pub fn apply_climate_bands_to_hexes(
+    hexes: &mut HexRecord,
+    height: u32,
+    seed: f64,
+    is_earth: bool,
+) -> usize {
+    let mut n = 0usize;
+    for (key, hex) in hexes.iter_mut() {
+        let Some((q, r)) = key_qr(key) else {
+            continue;
+        };
+        let tb = hex.terrain;
+        if tb.is_water() || tb == Terrain::Mountains || tb == Terrain::Hills {
+            continue;
+        }
+        let band = climate_band_at(r, height, is_earth);
+        let want = climate_band_base_terrain(band, q, r, seed);
+        if tb != want {
+            hex.terrain = want;
+            if want == Terrain::Polar || want == Terrain::Desert {
+                hex.overlay = Nakladka::Brak;
+                hex.has_deposit = false;
+            }
+            n += 1;
+        } else if want == Terrain::Polar && hex.overlay != Nakladka::Brak {
+            hex.overlay = Nakladka::Brak;
+            hex.has_deposit = false;
+            n += 1;
+        }
+    }
+    n
+}
+
+/// Web `enforceEarthTemplateOnHexes(hexes, width, height)` (:3418): poza maska szablonu Ziemi
+/// (`earthTemplateLandAt == 0`) kazdy nie-Morze heks -> Morze (`setHexToMorze`). Zwraca liczbe zmian.
+pub fn enforce_earth_template_on_hexes(hexes: &mut HexRecord, width: u32, height: u32) -> usize {
+    let mut fixed = 0usize;
+    for (key, hex) in hexes.iter_mut() {
+        let Some((q, r)) = key_qr(key) else {
+            continue;
+        };
+        if earth_template_land_at(q, r, width, height) > 0.0 {
+            continue;
+        }
+        if hex.terrain == Terrain::Sea {
+            continue;
+        }
+        set_hex_to_morze(hex);
+        fixed += 1;
+    }
+    fixed
 }
