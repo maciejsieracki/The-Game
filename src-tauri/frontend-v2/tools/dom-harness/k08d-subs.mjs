@@ -104,8 +104,67 @@ import { religiaSzPunkty, religiaXRelTop, resolveEmpireSnap } from './k08d-deps'
   ],
 };
 
+/**
+ * Partia `wealth-pasek` (runda 4, NAPRAW 3a, cz. 1): pasek zamożności i jego tooltip (pin :4247-4305, :4307-4351).
+ * Czysto prezentacyjne (DOM + tekst, bez reguł gry; wartości przychodzą w `opts`) => kopie pinu bez podstawień.
+ */
+export const BATCH_WEALTH_PASEK = {
+  file: 'k08d-wealth-pasek.ts',
+  header: `/**
+ * K08D-4a (P5-8, R-RUSTPORT-P5-8-CITYPANEL-K08D-Q1, runda 4, partia \`wealth-pasek\`): pasek zamożności „W" i jego tooltip
+ * z pinu \`edb8fb56\` (\`gra/src/ui/cityPanel.ts\`) — \`appendWealthCompactStrip\` (:4247-4304) i \`buildWealthCompactTooltipCard\`
+ * (:4307-4350). Czysto prezentacyjne: wszystkie liczby wchodzą w \`opts\` (liczy je karta/renderer z delegatów K08D).
+ *
+ * PLIK GENEROWANY przez \`tools/dom-harness/gen-k08d-port.mjs --batch wealth-pasek\` (bloki = pin, \`k08d-subs.mjs\`).
+ * Edycja ręczna bloku \`// pin edb8fb56 …\` … \`// pin-end\` = FAIL bramki \`verify-k08d-copies.mjs\`.
+ */`,
+  imports: `import { el, gridDetailRow } from './k01b-dom';
+import { appendDetailGrid } from './k03-detail';
+import { cityPanelChipIconWrap, tury } from './k01a-fundament';
+import { attachHoverDetail } from '../hoverDetailDock';`,
+  units: [
+    { name: 'appendWealthCompactStrip', a: 4247, b: 4305 },
+    { name: 'buildWealthCompactTooltipCard', a: 4307, b: 4351 },
+  ],
+};
+
+/**
+ * Partia `wealth` (runda 4, NAPRAW 3a, cz. 2): `renderWealth` (pin :4775-4823) i `buildWealthDetailCard` (pin :4824-4945).
+ * Reguły zamożności (`loadWealthParams`, `wealthCap`, `wealthProg`, `wealthMnoznik`, `wealthZadowolenie`, `wealthRownowaga`)
+ * = delegaty `k08d-deps.ts` (P5.13, K08D-Z13); `gameData()` pinu -> parametr `data` (K08D-Z14, podstawienia LINE_SUBS_K08D).
+ * `freshWealthState` / `daninaLabel*` / `readPodzialHandlu` / `cfg` = host K05B (`k05b-host.ts`, bez reguł w UI).
+ */
+export const BATCH_WEALTH = {
+  file: 'k08d-wealth.ts',
+  header: `/**
+ * K08D-4b (P5-8, R-RUSTPORT-P5-8-CITYPANEL-K08D-Q1, runda 4, partia \`wealth\`): karta „Zamożność" i panel z pinu
+ * \`edb8fb56\` (\`gra/src/ui/cityPanel.ts\`) — \`renderWealth\` (:4775-4823) i \`buildWealthDetailCard\` (:4824-4945).
+ *
+ * PLIK GENEROWANY przez \`tools/dom-harness/gen-k08d-port.mjs --batch wealth\` (bloki = pin, \`k08d-subs.mjs\`).
+ * Edycja ręczna bloku \`// pin edb8fb56 …\` … \`// pin-end\` = FAIL bramki \`verify-k08d-copies.mjs\`.
+ * Reguły zamożności = delegaty \`k08d-deps.ts\` (P5.13); pasek = \`k08d-wealth-pasek.ts\`.
+ */`,
+  imports: `import { el, appendDetailAlgo, appendDetailSection, gridDetailRow } from './k01b-dom';
+import { appendDetailFormula, appendDetailGrid } from './k03-detail';
+import { estimateHandelChips } from './k01b-f';
+import type { CityView } from './k01b-t';
+import { HANDEL_ZAMOZNOSC_LABEL, signed, tury } from './k01a-fundament';
+import { appendSectionTitleWithDetails } from './k08b-title';
+import {
+  cfg, daninaLabelForCity, daninaLabelGenitive, freshWealthState, readPodzialHandlu, type City, type GameData,
+} from './k05b-host';
+import { appendWealthCompactStrip } from './k08d-wealth-pasek';
+import {
+  loadWealthParams, wealthCap, wealthMnoznik, wealthProg, wealthRownowaga, wealthZadowolenie, type WealthParams,
+} from './k08d-deps';`,
+  units: [
+    { name: 'renderWealth', a: 4775, b: 4823 },
+    { name: 'buildWealthDetailCard', a: 4824, b: 4945 },
+  ],
+};
+
 /** Wszystkie partie K08D (kolejność stała). */
-export const BATCHES_K08D = [BATCH_HANDEL, BATCH_SLIDER, BATCH_RELIGIA];
+export const BATCHES_K08D = [BATCH_HANDEL, BATCH_SLIDER, BATCH_RELIGIA, BATCH_WEALTH_PASEK, BATCH_WEALTH];
 
 /** Partia po nazwie (`handel` | `slider`). */
 export const batchByNameK08d = (name) => {
@@ -136,6 +195,13 @@ export const LINE_SUBS_K08D = [
   { a: 4112, b: 4220, from: 'function renderReligia(mount: HTMLElement, city: City, view: CityView | null): void {', to: 'export function renderReligia(mount: HTMLElement, city: City, view: CityView | null, data: GameData | null): void {' },
   { a: 4112, b: 4220, from: '  const data = gameData();\n', to: '' },
   { a: 4112, b: 4220, from: 'resolveEmpireSnap(city, activeMap, data)', to: 'resolveEmpireSnap(city, null, data)' },
+  // K08D-Z13/Z14 (runda 4, partia wealth): reguły zamożności -> delegaty; `loadWealthParams` dostaje econParams (bez rzutowania typu pinu).
+  { a: 4775, b: 4823, from: "    ? loadWealthParams(data.econParams as unknown as RawWealthParamsJson, cfg.difficulty ?? 'normal')", to: "    ? loadWealthParams(data.econParams, cfg.difficulty ?? 'normal')" },
+  { a: 4775, b: 4823, from: '    return buildWealthDetailCard(city, ws, epoch, wealthParams, view);', to: '    return buildWealthDetailCard(city, ws, epoch, wealthParams, view, data);' },
+  // K08D-Z14: `gameData()` pinu -> parametr `data` (port nie czyta globalnego stanu gry; dane podaje wywołujący).
+  { a: 4824, b: 4945, from: '  p: WealthParams,\n  view: CityView | null,\n): HTMLDivElement {', to: '  p: WealthParams,\n  view: CityView | null,\n  data: GameData | null,\n): HTMLDivElement {' },
+  { a: 4824, b: 4945, from: '  const data = gameData();\n', to: '' },
+  { a: 4824, b: 4945, from: 'const podzial = readPodzialHandlu(city, gameData());', to: 'const podzial = readPodzialHandlu(city, data);' },
 ];
 
 /**
