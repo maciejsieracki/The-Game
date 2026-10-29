@@ -1,0 +1,77 @@
+   Compiling civ-engine v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_028d6130-ada-4/rust-port/engine)
+warning: unused variable: `typ`
+   --> src/domain/formation_rules.rs:149:9
+    |
+149 |     let typ = normalize(input.typ);
+    |         ^^^ help: if this is intentional, prefix it with an underscore: `_typ`
+    |
+    = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: field `siege_type` is never read
+  --> src/domain/formation_rules.rs:46:5
+   |
+43 | struct Keywords {
+   |        -------- field in this struct
+...
+46 |     siege_type: String,
+   |     ^^^^^^^^^^
+   |
+   = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `civ-engine` (lib) generated 2 warnings (run `cargo fix --lib -p civ-engine` to apply 1 suggestion)
+    Finished `test` profile [unoptimized] target(s) in 33.35s
+     Running tests/p6_repin_wojna_a_formation.rs (/home/user/cargo-target-shared/wf_028d6130-ada-4/debug/deps/p6_repin_wojna_a_formation-8a087d52216ce94c)
+
+running 5 tests
+test commander_wins_over_mounted_and_mounted_wins_over_siege ... ok
+test diacritics_are_folded_like_web ... ok
+test compact_line_matches_web_on_grid ... ok
+test formation_groups_and_slots_match_web ... ok
+test classify_matches_web_on_all_vectors ... FAILED
+
+failures:
+
+---- classify_matches_web_on_all_vectors stdout ----
+
+thread 'classify_matches_web_on_all_vectors' (7920) panicked at tests/p6_repin_wojna_a_formation.rs:62:9:
+assertion `left == right` failed: przypadek 539: {"category":"Żołnierz","commander":false,"name":"Archer","primaryRanged":false,"type":"Siege"}
+  left: Archer
+ right: Siege
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+   1: core::panicking::panic_fmt
+   2: core::panicking::assert_failed_inner
+   3: core::panicking::assert_failed::<civ_engine::domain::formation_rules::InitialBattleRole, civ_engine::domain::formation_rules::InitialBattleRole>
+   4: p6_repin_wojna_a_formation::classify_matches_web_on_all_vectors
+   5: p6_repin_wojna_a_formation::classify_matches_web_on_all_vectors::{closure#0}
+   6: <p6_repin_wojna_a_formation::classify_matches_web_on_all_vectors::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+
+failures:
+    classify_matches_web_on_all_vectors
+
+test result: FAILED. 4 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.20s
+
+error: test failed, to rerun pass `--test p6_repin_wojna_a_formation`
+     Running tests/p6_repin_wojna_a_leadership.rs (/home/user/cargo-target-shared/wf_028d6130-ada-4/debug/deps/p6_repin_wojna_a_leadership-c42b6e832cddb483)
+
+running 5 tests
+test empty_army_ratio_edge_cases ... ok
+test academy_title_and_bonus_match_web ... ok
+test withdraw_commanders_matches_web ... ok
+test morale_with_bonus_matches_web ... ok
+test morale_ratio_matches_web ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.14s
+
+     Running tests/p6_repin_wojna_a_promotion.rs (/home/user/cargo-target-shared/wf_028d6130-ada-4/debug/deps/p6_repin_wojna_a_promotion-4e0291a4495d9388)
+
+running 2 tests
+test empty_typ_blocks_promotion ... ok
+test promotion_matches_web_on_all_vectors ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+error: 1 target failed:
+    `--test p6_repin_wojna_a_formation`

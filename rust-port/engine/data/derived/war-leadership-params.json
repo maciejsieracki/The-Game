@@ -1,0 +1,19 @@
+{
+  "meta": {
+    "zrodlo_web": {
+      "plik": "gra/src/game/army-leadership.ts",
+      "pin": "91dc998a",
+      "funkcje": "hasMilitaryAcademy (l.13-16), armyLeaderTitle (l.18-20), armyLeaderMoraleBonusFrac (l.23-29), moraleWithArmyLeaderBonus (l.32-36)"
+    },
+    "opis": "Stale dowodzenia armii: id budynku akademii, tytuly wlasciciela i premie morale. Wartosci liczbowe zapisane jako tekst (parsowane w Rust), zeby uniknac bledu ostatniego bitu serde_json bez float_roundtrip."
+  },
+  "akademia_wojskowa_id": "akademia_wojskowa",
+  "tytul": {
+    "bez_akademii": "Wódz",
+    "z_akademia": "Generał"
+  },
+  "premia_morale_frac": {
+    "bez_akademii": "0.1",
+    "z_akademia": "0.2"
+  }
+}

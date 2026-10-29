@@ -1,0 +1,57 @@
+   Compiling civ-engine v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_028d6130-ada-4/rust-port/engine)
+    Finished `test` profile [unoptimized] target(s) in 31.14s
+     Running tests/p6_repin_wojna_a_formation.rs (/home/user/cargo-target-shared/wf_028d6130-ada-4/debug/deps/p6_repin_wojna_a_formation-8a087d52216ce94c)
+
+running 5 tests
+test diacritics_are_folded_like_web ... ok
+test commander_wins_over_mounted_and_mounted_wins_over_siege ... ok
+test compact_line_matches_web_on_grid ... ok
+test formation_groups_and_slots_match_web ... ok
+test classify_matches_web_on_all_vectors ... FAILED
+
+failures:
+
+---- classify_matches_web_on_all_vectors stdout ----
+
+thread 'classify_matches_web_on_all_vectors' (3912) panicked at tests/p6_repin_wojna_a_formation.rs:62:9:
+assertion `left == right` failed: przypadek 529: {"category":null,"commander":false,"name":"Wódz","primaryRanged":true,"type":null}
+  left: Melee
+ right: Ranged
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+   1: core::panicking::panic_fmt
+   2: core::panicking::assert_failed_inner
+   3: core::panicking::assert_failed::<civ_engine::domain::formation_rules::InitialBattleRole, civ_engine::domain::formation_rules::InitialBattleRole>
+   4: p6_repin_wojna_a_formation::classify_matches_web_on_all_vectors
+   5: p6_repin_wojna_a_formation::classify_matches_web_on_all_vectors::{closure#0}
+   6: <p6_repin_wojna_a_formation::classify_matches_web_on_all_vectors::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+
+failures:
+    classify_matches_web_on_all_vectors
+
+test result: FAILED. 4 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.17s
+
+error: test failed, to rerun pass `--test p6_repin_wojna_a_formation`
+     Running tests/p6_repin_wojna_a_leadership.rs (/home/user/cargo-target-shared/wf_028d6130-ada-4/debug/deps/p6_repin_wojna_a_leadership-c42b6e832cddb483)
+
+running 5 tests
+test empty_army_ratio_edge_cases ... ok
+test withdraw_commanders_matches_web ... ok
+test academy_title_and_bonus_match_web ... ok
+test morale_with_bonus_matches_web ... ok
+test morale_ratio_matches_web ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.11s
+
+     Running tests/p6_repin_wojna_a_promotion.rs (/home/user/cargo-target-shared/wf_028d6130-ada-4/debug/deps/p6_repin_wojna_a_promotion-4e0291a4495d9388)
+
+running 2 tests
+test empty_typ_blocks_promotion ... ok
+test promotion_matches_web_on_all_vectors ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+error: 1 target failed:
+    `--test p6_repin_wojna_a_formation`
