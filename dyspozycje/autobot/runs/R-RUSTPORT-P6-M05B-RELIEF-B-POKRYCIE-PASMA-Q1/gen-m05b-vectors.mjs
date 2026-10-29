@@ -242,6 +242,8 @@ const VARIANTS = [
   { name: 'obrzeze-poza-zakresem', edit: (g) => { g.gestosc.pasma_gorskie.high.obrzeze_szansa = 1.5; g.gestosc.pasma_gorskie.low.obrzeze_szansa = -0.1; } },
   { name: 'zera-i-tekst', edit: (g) => { g.gestosc.pasma_gorskie.low.hexy_na_pasmo = 0; g.gestosc.pasma_gorskie.high.max_pasm_na_mase = 'x'; g.gestosc.pasma_gorskie.medium.min_masa_hexow = -1; } },
   { name: 'brak-sekcji', edit: (g) => { delete g.gestosc.pasma_gorskie; } },
+  // r4 (zarzut 4): dlugosc_min wieksza niz fallback dlugosc_max, dlugosc_max brak -> max(fb, min)
+  { name: 'min-ponad-fallback-max', edit: (g) => { delete g.gestosc.pasma_gorskie.medium.dlugosc_max; g.gestosc.pasma_gorskie.medium.dlugosc_min = 30; } },
 ];
 const realJson = JSON.parse(readFileSync(`${root}/gra/data/map-gen-params.json`, 'utf8'));
 const variantOut = [];
@@ -261,7 +263,140 @@ for (let vi = 0; vi < VARIANTS.length; vi++) {
   rmSync(vr, { recursive: true, force: true });
 }
 
+// ---------- r4: przypadki GRANIC ROWNOSCI (dopisane NA KONCU; stare przypadki bez zmian) ----------
+// Blob = N heksow ladu ulozonych wierszami (szerokosc bw) w prostokacie W x H, reszta morze.
+// Celem jest dokladna masa (7/8/9, 149/150/151) i dokladne skupisko (9/10/11/12) oraz maxSize = N-1 / N.
+function blobMap(W, H, N, bw, x0, y0, terrOf, depP) {
+  const landIdx = new Map();
+  for (let i = 0; i < N; i++) landIdx.set(`${x0 + (i % bw)},${y0 + Math.floor(i / bw)}`, i);
+  const hexes = []; const scratch = [];
+  for (let q = 0; q < W; q++) for (let r = 0; r < H; r++) {
+    const k = `${q},${r}`;
+    const isLand = landIdx.has(k);
+    let terr; let zl = false;
+    if (isLand) {
+      terr = terrOf(landIdx.get(k));
+      zl = rnd() < depP;
+    } else {
+      terr = TerenBazowy.Morze;
+    }
+    const n = rnd();
+    const h = { coords: { q, r }, terenBazowy: terr, nakladka: rnd() < 0.1 ? Nakladka.Las : Nakladka.Brak };
+    if (zl) h.zloze = 'rudy';
+    hexes.push([k, h]);
+    scratch.push([k, f(n)]);
+  }
+  return { width: W, height: H, hexes, scratch };
+}
+
+// (a) masa ladu: ensure (min_masa_do_domykania=8, min_masa_mop_up=150) przy granicach 7/8/9 i 149/150/151
+const EDGE_MASS = [7, 8, 9, 149, 150, 151];
+let edgeMassN = 0;
+for (const N of EDGE_MASS) for (let v = 0; v < 3; v++) {
+  const big = N > 20;
+  const W = big ? 20 : 12; const H = big ? 18 : 10; const bw = big ? 12 : 4;
+  const mtnP = [0.0, 0.15, 0.3][v];
+  const terrOf = () => { const x = rnd(); if (x < mtnP) return TerenBazowy.Gory; if (x < mtnP + 0.1) return TerenBazowy.Wzgorza; return [TerenBazowy.Laka, TerenBazowy.Rownina][ri(0, 1)]; };
+  const m = blobMap(W, H, N, bw, 2, 2, terrOf, 0.1);
+  const tier = TIERS[(N + v) % 3];
+  const seed = ri(1, 4294967295) >>> 0;
+  const sp = { W, H, N, v, tier, seed, edge: 'mass' };
+  cases.ensure.push(runFull('ensure', `ensure-edge-${N}-${v}`, sp, m, tier, seed));
+  edgeMassN++;
+}
+
+// (b) skupisko gor/wzgorz: bezpiecznik 10 (safety-net) przy N = 9..12, oba terminy
+let edgeSafetyN = 0;
+for (const N of [9, 10, 11, 12]) for (const ter of [TerenBazowy.Gory, TerenBazowy.Wzgorza]) for (let v = 0; v < 2; v++) {
+  const m = blobMap(12, 10, N, 4, 2, 2, () => ter, 0);
+  const tier = TIERS[(N + v) % 3];
+  const seed = ri(1, 4294967295) >>> 0;
+  const sp = { W: 12, H: 10, N, ter, v, tier, seed, edge: 'safety' };
+  cases.safety.push(runFull('safety', `safety-edge-${N}-${ter}-${v}`, sp, m, tier, seed));
+  edgeSafetyN++;
+}
+
+// (c) cap skupiska (helper): maxSize = N-1 (przycina 1) i N (nie przycina) przy N = 9..11
+let edgeCapN = 0;
+for (const N of [9, 10, 11]) for (const ter of [TerenBazowy.Gory, TerenBazowy.Wzgorza]) for (const maxSize of [N - 1, N]) {
+  const m = blobMap(12, 10, N, 4, 2, 2, () => ter, 0);
+  const hexes = buildHexes(m);
+  const scratch = buildScratch(m);
+  const h = {
+    id: `helpers-edge-${N}-${ter}-${maxSize}`, tier: 'medium', width: m.width, height: m.height, seed: 0,
+    map: { hexes: dumpHexesArr(m.hexes), scratch: m.scratch }, input: dumpState(hexes),
+  };
+  const rev = G.capMountainRangeClusterSize(hexes, scratch, ter, TerenBazowy.Rownina, maxSize);
+  h.fn = 'capCluster'; h.args = { terrain: ter, maxSize };
+  h.output = { ret: f(rev), state: dumpState(hexes) };
+  cases.helpers.push(h);
+  edgeCapN++;
+}
+
+// (d) granica mop-up (masa == 150, `mass.length < 150` w TS:~2419): kandydaci = spacer 150 heksow
+// (losowy, spojny). Zachowujemy TYLKO kandydatow, dla ktorych kopia web z warunkiem `<= 150`
+// daje inny wynik niz web (rozstrzyga granice). Kopia powstaje tu, obok exports; web nie jest zmieniany.
+const MOP_ANCHOR = 'if (mass.length < 150) continue;';
+if (original.split(MOP_ANCHOR).length !== 2) throw new Error('kotwica mop-up nie jest unikalna');
+writeFileSync(`${mapDir}/gen-helpers.m05b-mopLE.ts`, copyText.replace(MOP_ANCHOR, 'if (mass.length <= 150) continue;'));
+const GLE = await import(pathToFileURL(`${mapDir}/gen-helpers.m05b-mopLE.ts`).href);
+function walkCells(W, H, N) {
+  const set = new Set(); const cells = [];
+  const sq = 2 + ri(0, W - 6); const sr = 2 + ri(0, H - 6);
+  cells.push([sq, sr]); set.add(`${sq},${sr}`);
+  const DIRS = [[1, 0], [1, -1], [0, -1], [-1, 0], [-1, 1], [0, 1]];
+  let guard = 0;
+  while (cells.length < N && guard++ < N * 200) {
+    const [q, r] = cells[ri(0, cells.length - 1)];
+    const [dq, dr] = DIRS[ri(0, 5)];
+    const nq = q + dq; const nr = r + dr;
+    if (nq < 1 || nr < 1 || nq > W - 2 || nr > H - 2) continue;
+    const k = `${nq},${nr}`;
+    if (set.has(k)) continue;
+    set.add(k); cells.push([nq, nr]);
+  }
+  return cells.length === N ? cells : null;
+}
+function cellsMap(W, H, cells, terrOf, depP) {
+  const landIdx = new Map(cells.map(([q, r], i) => [`${q},${r}`, i]));
+  const hexes = []; const scratch = [];
+  for (let q = 0; q < W; q++) for (let r = 0; r < H; r++) {
+    const k = `${q},${r}`;
+    let terr = TerenBazowy.Morze; let zl = false;
+    if (landIdx.has(k)) { terr = terrOf(landIdx.get(k)); zl = rnd() < depP; }
+    const n = rnd();
+    const h = { coords: { q, r }, terenBazowy: terr, nakladka: rnd() < 0.1 ? Nakladka.Las : Nakladka.Brak };
+    if (zl) h.zloze = 'rudy';
+    hexes.push([k, h]);
+    scratch.push([k, f(n)]);
+  }
+  return { width: W, height: H, hexes, scratch };
+}
+const ensureDump = (GG, m, tier, seed) => {
+  const hexes = buildHexes(m); const scratch = buildScratch(m); const rand = GG.mulberry32(seed);
+  const ret = GG.ensureReliefGridCoverage(hexes, scratch, tier, m.width, m.height, 'pangea', null, 0, rand);
+  return JSON.stringify([dumpState(hexes), f(ret), f(rand())]);
+};
+let edgeMopTried = 0; let edgeMopN = 0;
+while (edgeMopN < 6 && edgeMopTried < 400) {
+  edgeMopTried++;
+  const W = ri(20, 30); const H = ri(18, 26);
+  const cells = walkCells(W, H, 150);
+  const mtnP = [0.0, 0.1, 0.25, 0.4, 0.6][ri(0, 4)];
+  const depP = [0, 0.1, 0.3][ri(0, 2)];
+  const tier = TIERS[ri(0, 2)];
+  const seed = ri(1, 4294967295) >>> 0;
+  if (!cells) continue;
+  const terrOf = () => { const x = rnd(); if (x < mtnP) return TerenBazowy.Gory; if (x < mtnP + 0.08) return TerenBazowy.Wzgorza; return [TerenBazowy.Laka, TerenBazowy.Rownina][ri(0, 1)]; };
+  const m = cellsMap(W, H, cells, terrOf, depP);
+  if (ensureDump(G, m, tier, seed) === ensureDump(GLE, m, tier, seed)) continue;
+  const sp = { W, H, N: 150, tier, seed, edge: 'mop150' };
+  cases.ensure.push(runFull('ensure', `ensure-edge-mop150-${edgeMopN}`, sp, m, tier, seed));
+  edgeMopN++;
+}
+
 const stats = {
+  edge: { mass: edgeMassN, safety: edgeSafetyN, cap: edgeCapN, mop150Kept: edgeMopN, mop150Tried: edgeMopTried },
   ensure: cases.ensure.length, grow: cases.grow.length, safety: cases.safety.length,
   regrow: cases.regrow.length, helpers: cases.helpers.length, params: cases.params.length,
   growChanged: cases.grow.filter((c) => c.output.ret !== '0').length,

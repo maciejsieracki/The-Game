@@ -75,7 +75,7 @@ fn damaged_json_variants_match_web_fallbacks() {
     }
     assert_eq!(
         variants.len(),
-        5,
+        6,
         "warianty uszkodzonego JSON: {variants:?}"
     );
 }
