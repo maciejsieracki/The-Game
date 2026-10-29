@@ -35,7 +35,8 @@ Zaleznosci przeniesione z innych modułow (bez zmian w nich): `apply_marginal_la
 - Z-2: `Object.keys` = kolejnosc wstawiania (`HexRecord`). Wynik `assign_continent_indices` = `Vec` w tej
   kolejnosci (web `Map`); konsumenci wymagajacy lookupu buduja mape sami.
 - Z-3: `width ?? 1` w sortowaniu: `dims = None` -> `(1,1)`; `Some((0,h))` -> szerokosc 0 (jak web, `??` nie lapie 0).
-- Z-4: `targetLandFraction = NaN` -> brak zmian (web: porownania z NaN falszywe). Nie testowane wektorem (JSON bez NaN).
+- Z-4: `targetLandFraction = NaN` -> brak zmian (web: porownania z NaN falszywe). Testowane wektorami NaN (runda 2:
+  `apply_nan_target_changes_nothing`, `rebalance_nan_target_matches_web`; NaN zapisany w JSON jako string).
 - Z-5: Mapy wartosci balansowych (0.15/0.85, 0.11, 0.04, 0.015) sa w JSON; kod nie zawiera tych literalow.
   Literal `0.0`/`1` (domyslne score i wymiary) pozostaje jako semantyka `?? 0`/`?? 1` z webu.
 
@@ -63,45 +64,74 @@ Jadra `k_sin/k_cos/rem_pio2` i `masks::v8math` nie byly dotkniete.
 
 ## Wektory i testy
 
-- Generator: `dyspozycje/autobot/runs/R-RUSTPORT-P6-M06A5-LAD-MORZE-ULAMEK-Q1/gen-m06a5-landfrac-vectors.mjs`
-  (loader: `m06a-loader-register.mjs`; seed `20261031`).
-- Plik: `rust-port/engine/tests/p6_m06a5_vectors/landfrac-vectors.json` (~0.8 MB; limit 10 MB).
-- Liczba przypadkow: apply 260, sort 120, rebalance 90, assign 40.
-- Granice zawarte w wektorach: cel `0.149999/0.15` i `0.850001/0.85` (clamp), remisy `Math.round`
-  (`(k+0.5)/total`), score rowne progom (siatka 0.01, w tym 0.11 i roznice 0.04), zgodnosc `dims` (brak / `[w,0]` / `[w,h]`).
-- Wynik: 510/510 przypadkow zgodnych z webem, 0 rozbieznosci.
-- NIE_ZMIERZONO w tej rundzie: pelna macierz N-1/N/N+1 dla kazdego porownania `<`/`<=`/`>=`, mutacje strukturalne,
-  dowody rownowaznosci i pomiar trafien na granicach. To zakres Operator-pomiary (runda 2 tego tematu).
+- Bazowy generator: `dyspozycje/autobot/runs/R-RUSTPORT-P6-M06A5-LAD-MORZE-ULAMEK-Q1/gen-m06a5-landfrac-vectors.mjs`
+  (seed `20261031`) -> `rust-port/engine/tests/p6_m06a5_vectors/landfrac-vectors.json` (~0.8 MB), testy
+  `tests/p6_m06a5_landfrac.rs` (5 testow, 510 przypadkow; nietkniete w rundzie 2).
+- Generator rundy 2 (domkniecie zarzutow): `gen-m06a5-landfrac-edge-vectors.mjs` (seed `20261101`, oczekiwania
+  z uruchomionego weba, pin `edb8fb56`, instrumentacja tylko w kopii archiwum repo w katalogu tymczasowym poza repo)
+  -> `rust-port/engine/tests/p6_m06a5_vectors/landfrac-edge-vectors.json` (~1.0 MB), testy
+  `tests/p6_m06a5_landfrac_edge.rs` (7 testow).
+- Przypadki brzegowe rundy 2:
+  - NaN: `apply_nan` 8, `rebalance_nan` 8.
+  - Granica `tolerancja_score_sortowanie` (web `Math.abs(sb-sa) > 0.04`): jawne pary bez RNG (`apt_x_*`, 4 przypadki):
+    `0.0/0.04` i `0.04/0.0` (roznica f64 == 0.04 dokladnie, remis -> kolejnosc wstawiania), `0.0/0.0399` (remis),
+    `0.0/0.0401` (galaz score). Wynik zalezy od galezi, wiec `>` vs `>=` i progi 0.0399/0.0401 daja inna mape.
+    Dodatkowo 60 losowych przypadkow z `TIE_VALUES` (0.0/0.0399/0.04/0.0401/0.11/0.15/0.5).
+  - Brakujacy klucz w `landScores` (web `?? 0`): `apply_missing` 40, `sort_missing` 30.
+  - Progi clamp 0.15/0.85 i sasiedzi 0.1499/0.1501/0.8499/0.8501 (`apply_clamp`, 60; mapy dobrane tak, ze
+    `Math.round(t*clamp)` rozni sie miedzy wartosciami progowymi).
+  - Okno `tolerancja_odleglosci_centrum` (0.015): `sort_tol_centrum`, 12 par o tym samym brzegu, |ca-cb| w (0.015, 0.0151]
+    i (0.0149, 0.015].
+- Stale progi JSON maja mutacje zabijane wektorami (patrz pomiary), z wyjatkiem `pangea_min_score_wypelnienia` (ponizej).
+- Limity: oba pliki wektorow < 10 MB (cel 8 MB).
+- Wynik: wszystkie przypadki zgodne z webem, 0 rozbieznosci; testy bazowe 5/5, edge 7/7.
 
-## Pomiary Operatora-pomiary (runda 2, weryfikacja niezalezna)
+## Pomiary i domkniecie zarzutow (runda 2, Operator-obrona)
 
-Dowody: `R-RUSTPORT-P6-M06A5-LAD-MORZE-ULAMEK-Q1/02-operator-pomiary-r2.md`, `mutations-r2.log`
-(46 mutacji + przywrocenie SHA), `verify-m06a5-r2.log` (granice, tie-search), skrypty `mut.py`, `measure*.py`, `tie015.py`.
+Dowody w run dir `R-RUSTPORT-P6-M06A5-LAD-MORZE-ULAMEK-Q1/`: `mutations-r2-obrona.log` (46 mutacji, `RESTORE-OK`),
+`gate-fmt-r2obrona.log`, `gate-clippy-r2obrona.log`, `gate-test-r2obrona.log`, `mut-r2.py`,
+`gen-m06a5-landfrac-edge-vectors.mjs`. Pomiary r2 (`mutations-r2.log`, `02-operator-pomiary-r2.md`) sa historia.
 
-- Regeneracja wektorow z weba (pin `edb8fb56`, swiezy `git archive`): plik byte-identyczny z commitowanym (`cmp`, EXIT 0).
-- Bramki (surowe logi, EXIT=0): fmt, clippy `--all-targets -D warnings`, test 1270 passed / 0 failed.
-- Mutacje (46): 34 zabite, 12 przezytych. Klasyfikacja przezytych:
-  - EKWIWALENTNE z dowodem: `grow-lt-to-le` i `erode-gt-to-ge` (przy `land == target` petla konczy sie na pierwszej
-    iteracji; brak zmian), `interior-*` (5 mutacji; przebieg 2 `applyLandFractionByScore` jest martwy: kandydaci
-    `interiorOk` (dist>10) sa podzbiorem kandydatow `borderOk` (dist>=2) z tym samym filtrem morza i maski; przebieg 1
-    wyczerpuje kandydatow, gdy `land < target`), `rebal-caps-enforce-swap` (`applyMarginalLandZoneCaps` i
-    `keysAtBorderDistance`/`countLandNeighborsInSet`/`sortLandKeysForErosion` zaleza wylacznie od klasyfikacji woda/lad
-    dla pierscieni d>=2; cap(d<2)=0 i enforce daja ten sam koncowy stan pierscieni 0-1).
-  - EKWIWALENTNE EMPIRYCZNIE: `sort-center-tol-ge` (zero trafien f64 `|ca-cb|==0.015` dla siatek 1..24x1..24, `verify-m06a5-r2.log`).
-  - LUKI NIEEKWIWALENTNE (wymagaja wektora/testu): `nan-guard-off` (web: NaN -> brak zmian; bez straznika Rust:
-    `js_round(NaN)` -> 0 -> erozja calego ladu; Z-4 "nietestowane" jest faktycznie luka), `tol-score-ge` (`>=` zamiast `>`
-    przy dokladnym |sb-sa|==0.04 w f64; np. pary 0.0/0.04 nie ma w wektorach), `sort-default-score-1` (brak wektora z
-    brakujacym score; web `?? 0`).
-- Stale progi wzgledem wektorow: `json-clamp-max-0.8501/0.8499`, `json-clamp-min-0.1501`, `json-tol-score-0.0401`,
-  `json-tol-centrum-0.0151`, `json-pangea-min-*` zabite tylko przez test stalych `landfrac_data_matches_web_constants`
-  (wektory nie rozrozniaja N+1/N-1 dla tych stalych).
-- Max odleglosc od brzegu w wektorach apply = 4 (prog webu 10): wektory nie dotykaja strefy wewnetrznej.
-- `pangea_min_score_wypelnienia` wplywa tylko w trybie `Mask`; `rebalance` uzywa `Center`, wiec wartosc nie jest
-  obserwowalna w rebalance (pokryta testem stalej).
+- Bramki (surowe logi, `EXIT=0`): fmt; clippy `--all-targets -D warnings`; test `--no-fail-fast`: 1277 passed / 0 failed
+  (baza 1270 + 7 testow edge).
+- Mutacje (46): 37 zabitych, 9 przezytych.
+- Zarzuty z pomiaru Evaluatora (r1):
+  - Z-1 (NaN): PRZYJETY. `nan-guard-off` KILLED przez `apply_nan_target_changes_nothing`, `rebalance_nan_target_matches_web`.
+  - Z-2 (remis 0.04): PRZYJETY. `tol-score-ge` KILLED przez `apply_score_tolerance_boundary_matches_web` (wczesniej
+    tylko przez clamp; jawne pary `0.0/0.04` daja roznice f64 dokladnie 0.04). Mutanty `json-tol-score-0.0399` / `0.0401`
+    tez KILLED przez ten sam test.
+  - Z-3 (brak score): PRZYJETY. `sort-default-score-1` KILLED przez `sort_missing_score_defaults_to_zero_like_web`.
+  - Z-4 (progi): PRZYJETY w czesci. `json-clamp-*`, `json-tol-score-*`, `json-tol-centrum-*` KILLED przez wektory
+    (`apply_clamp_thresholds_match_web`, `apply_score_tolerance_boundary_matches_web`, `sort_center_tolerance_window_matches_web`)
+    oraz test stalych. `json-pangea-min-*` KILLED tylko przez `landfrac_data_matches_web_constants` (patrz nizej).
+  - Z-5 (strefa wewnetrzna): ODRZUCONY jako luka wektorowa; dowod martwosci (ponizej). Wektory 23x23 nie zmieniaja wyniku.
+  - Z-6 (przestarzala sekcja): PRZYJETY. Sekcja NIE_ZMIERZONO zastapiona pomiarami tej rundy.
 
-Wymagane domkniecie przed PASS (runda 2 Operatora): (1) test NaN (apply i rebalance z `f64::NAN` -> 0 zmian, mapa bez
-zmian; semantyka webu: `Math.max/min` z NaN = NaN, porownania falszywe); (2) wektor z dokladnym remisem score 0.04 w f64;
-(3) wektor z brakujacym kluczem w `scores` (web `?? 0`).
+### Klasyfikacja 9 przezytych mutacji
+
+- EKWIWALENTNE z dowodem z kodu:
+  - `grow-lt-to-le`, `erode-gt-to-ge`: przy `land == target_land` petla wzrostu/erozji konczy sie na pierwszym
+    `break` (`if land >= target_land` / `if land <= target_land`) przed jakakolwiek zmiana; komparatory sortowania nie maja efektow ubocznych.
+  - `interior-pass-off`, `interior-no-border-gate`, `interior-threshold-ge`, `interior-threshold-minus1`,
+    `interior-sort-reversed` (5): przebieg 2 `applyLandFractionByScore` jest martwy. Szerokosc pasa oceanu
+    `map_border_ocean_hexes` = 2 (`mapgen-terrain-class.json` `twardy_ocean_hex`), a `is_in_map_border` = `dist < 2`.
+    `interiorOk` = `hex_border_distance > 10`; odleglosc jest calkowita, wiec `interiorOk` => dist >= 11 => `borderOk`.
+    Przebieg 1 konczy sie dopiero przy `land >= target_land`, wiec gdy wchodzi przebieg 2 (`land < target_land`), wszystkie
+    morza z `borderOk && maskOk` zostaly zamienione na lad, a kandydatow przebiegu 2 nie ma. Zadna mutacja w tej galezi nie zmienia wyniku.
+  - `rebal-caps-enforce-swap`: `applyMarginalLandZoneCaps` i sortowanie zalezy tylko od klasyfikacji woda/lad dla pierscieni
+    d >= 2; cap(d < 2) = 0, wiec kolejnosc enforce/caps nie zmienia koncowego stanu pierscieni 0-1 (ocena z r1, nie kwestionowana przez zarzuty).
+- EKWIWALENTNE EMPIRYCZNIE: `sort-center-tol-ge` (zero trafien f64 `|ca-cb| == 0.015` dla siatek 1..24 x 1..24,
+  `verify-m06a5-r2.log`). Brak dowodu z kodu; zarzuty go nie wskazuja.
+
+### Stale progi i pangea_min
+
+- `pangea_min_score_wypelnienia` (0.11) jest konsumowany tylko przez `rebalance_land_fraction_with_margins`, ktore
+  wywoluje `apply_land_fraction_by_score` z `LandFractionFillBias::Center`. Galaz `mask_ok` sprawdza prog wylacznie w trybie `Mask`,
+  wiec wartosc nie wplywa na wynik w partii 1. Jedyne zabezpieczenie to test stalej `landfrac_data_matches_web_constants`
+  (`json-pangea-min-0.1101/0.1099` KILLED).
+
+Zalozenia (bez pytan): luki wykryte przez Evaluatora zamkniete wektorami i testami (bez zmiany kodu `landsea.rs`).
+Pliki `landsea.rs` i `mapgen-landsea-fill.json` nietkniete (`RESTORE-OK` po kazdej serii mutacji).
 
 ## Dryf po pinie (zakres 3186-4374)
 

@@ -1,0 +1,50 @@
+json-clamp-max-0.8501	KILLED (4 failed: landfrac_data_matches_web_constants; result:; apply_clamp_thresholds_match_web; result:)	34s
+json-clamp-max-0.8499	KILLED (4 failed: landfrac_data_matches_web_constants; result:; apply_clamp_thresholds_match_web; result:)	31s
+json-clamp-min-0.1501	KILLED (4 failed: landfrac_data_matches_web_constants; result:; apply_clamp_thresholds_match_web; result:)	32s
+json-clamp-min-0.1499	KILLED (5 failed: landfrac_data_matches_web_constants; apply_land_fraction_by_score_matches_web; result:; apply_clamp_thresholds_match_web)	32s
+json-tol-score-0.0401	KILLED (5 failed: landfrac_data_matches_web_constants; result:; apply_score_tolerance_boundary_matches_web; apply_clamp_thresholds_match_web)	30s
+json-tol-score-0.0399	KILLED (6 failed: landfrac_data_matches_web_constants; apply_land_fraction_by_score_matches_web; result:; apply_clamp_thresholds_match_web)	34s
+json-tol-centrum-0.0151	KILLED (4 failed: landfrac_data_matches_web_constants; result:; sort_center_tolerance_window_matches_web; result:)	33s
+json-tol-centrum-0.0149	KILLED (6 failed: landfrac_data_matches_web_constants; sort_land_keys_for_erosion_matches_web; result:; sort_center_tolerance_window_matches_web)	31s
+json-pangea-min-0.1101	KILLED (2 failed: landfrac_data_matches_web_constants; result:)	33s
+json-pangea-min-0.1099	KILLED (2 failed: landfrac_data_matches_web_constants; result:)	34s
+clamp-off	KILLED (5 failed: apply_land_fraction_by_score_matches_web; rebalance_land_fraction_with_margins_matches_web; result:; apply_clamp_thresholds_match_web)	33s
+nan-guard-off	KILLED (3 failed: apply_nan_target_changes_nothing; rebalance_nan_target_matches_web; result:)	30s
+RESTORE-OK sha256 landsea.rs + mapgen-landsea-fill.json identical to start
+round-floor	KILLED (7 failed: apply_land_fraction_by_score_matches_web; rebalance_land_fraction_with_margins_matches_web; result:; apply_clamp_thresholds_match_web)	30s
+grow-lt-to-le	SURVIVED	30s
+erode-gt-to-ge	SURVIVED	31s
+erode-break-lt	KILLED (6 failed: apply_land_fraction_by_score_matches_web; result:; apply_score_tolerance_boundary_matches_web; apply_missing_score_defaults_to_zero_like_web)	32s
+grow-break-gt	KILLED (7 failed: apply_land_fraction_by_score_matches_web; rebalance_land_fraction_with_margins_matches_web; result:; apply_clamp_thresholds_match_web)	33s
+grow-no-border-filter	KILLED (6 failed: apply_land_fraction_by_score_matches_web; rebalance_land_fraction_with_margins_matches_web; result:; apply_score_tolerance_boundary_matches_web)	36s
+interior-pass-off	SURVIVED	37s
+interior-no-border-gate	SURVIVED	36s
+interior-threshold-ge	SURVIVED	37s
+interior-threshold-minus1	SURVIVED	36s
+interior-sort-reversed	SURVIVED	39s
+border-ok-invert	KILLED (6 failed: apply_land_fraction_by_score_matches_web; rebalance_land_fraction_with_margins_matches_web; result:; apply_score_tolerance_boundary_matches_web)	36s
+RESTORE-OK sha256 landsea.rs + mapgen-landsea-fill.json identical to start
+border-buffer-3	KILLED (5 failed: apply_land_fraction_by_score_matches_web; rebalance_land_fraction_with_margins_matches_web; result:; apply_missing_score_defaults_to_zero_like_web)	37s
+border-buffer-1	KILLED (5 failed: apply_land_fraction_by_score_matches_web; rebalance_land_fraction_with_margins_matches_web; result:; apply_missing_score_defaults_to_zero_like_web)	34s
+mask-ge-to-gt	KILLED (5 failed: apply_land_fraction_by_score_matches_web; result:; apply_score_tolerance_boundary_matches_web; apply_missing_score_defaults_to_zero_like_web)	35s
+tol-score-ge	KILLED (3 failed: apply_clamp_thresholds_match_web; apply_score_tolerance_boundary_matches_web; result:)	34s
+tol-score-off	KILLED (7 failed: rebalance_land_fraction_with_margins_matches_web; apply_land_fraction_by_score_matches_web; result:; apply_score_tolerance_boundary_matches_web)	34s
+mask-tie-reversed	KILLED (5 failed: apply_land_fraction_by_score_matches_web; result:; apply_score_tolerance_boundary_matches_web; apply_missing_score_defaults_to_zero_like_web)	33s
+center-tiebreak-reversed	KILLED (2 failed: rebalance_land_fraction_with_margins_matches_web; result:)	34s
+rebal-bias-mask	KILLED (2 failed: rebalance_land_fraction_with_margins_matches_web; result:)	33s
+rebal-one-pass	KILLED (2 failed: rebalance_land_fraction_with_margins_matches_web; result:)	33s
+rebal-no-ring	KILLED (4 failed: rebalance_land_fraction_with_margins_matches_web; result:; rebalance_nan_target_matches_web; result:)	32s
+rebal-caps-enforce-swap	SURVIVED	32s
+sort-ba-reversed	KILLED (8 failed: sort_land_keys_for_erosion_matches_web; apply_land_fraction_by_score_matches_web; rebalance_land_fraction_with_margins_matches_web; result:)	31s
+RESTORE-OK sha256 landsea.rs + mapgen-landsea-fill.json identical to start
+sort-center-reversed	KILLED (10 failed: sort_land_keys_for_erosion_matches_web; apply_land_fraction_by_score_matches_web; rebalance_land_fraction_with_margins_matches_web; result:)	30s
+sort-center-tol-ge	SURVIVED	38s
+sort-center-tol-off	KILLED (10 failed: sort_land_keys_for_erosion_matches_web; apply_land_fraction_by_score_matches_web; rebalance_land_fraction_with_margins_matches_web; result:)	38s
+sort-na-reversed	KILLED (8 failed: sort_land_keys_for_erosion_matches_web; apply_land_fraction_by_score_matches_web; rebalance_land_fraction_with_margins_matches_web; result:)	41s
+sort-rank-reversed	KILLED (7 failed: apply_land_fraction_by_score_matches_web; sort_land_keys_for_erosion_matches_web; rebalance_land_fraction_with_margins_matches_web; result:)	33s
+sort-input-reversed	KILLED (5 failed: sort_land_keys_for_erosion_matches_web; result:; apply_missing_score_defaults_to_zero_like_web; sort_missing_score_defaults_to_zero_like_web)	33s
+sort-default-score-1	KILLED (2 failed: sort_missing_score_defaults_to_zero_like_web; result:)	37s
+sort-dims-zero-default	KILLED (4 failed: apply_land_fraction_by_score_matches_web; result:; apply_missing_score_defaults_to_zero_like_web; result:)	36s
+assign-dw-no-minus1	KILLED (2 failed: assign_continent_indices_matches_web; result:)	37s
+assign-dh-no-minus1	KILLED (2 failed: assign_continent_indices_matches_web; result:)	32s
+RESTORE-OK sha256 landsea.rs + mapgen-landsea-fill.json identical to start
