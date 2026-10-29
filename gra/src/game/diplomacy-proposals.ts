@@ -144,6 +144,8 @@ export interface ProposalPayload {
    * działa identycznie gdy proponentem jest gracz LUB AI.
    */
   resourceTradeMode?: 'once' | 'per_turn';
+  /** Jawny czas cyklicznej wymiany: brak = historyczny fallback do `turns`, null = bezterminowo. */
+  exchangeDurationTurns?: number | null;
   /**
    * R-DYPLO-TRAKTAT-HANDLOWY-WYBOR-CZASU-Q1 (Obrona runda 1, zarzut 1 Evaluatora
    * PRZYJĘTY): czas TRWANIA TRAKTATU wybrany jawnie w formularzu „Warunki traktatu"
@@ -422,6 +424,26 @@ export function stripWithdrawnResourceAccessItems(items: readonly BasketItem[]):
 /** Czas trwałej umowy handlowej: 1–20 tur (Maciej 2026-07-21). */
 export function clampDealTurns(turns: number | undefined, defaultTurns = 15): number {
   return clamp(turns ?? defaultTurns, 1, 20);
+}
+
+/** Cyclic quantity-exchange duration is distinct from treaty duration (1–30). */
+export function clampExchangeDurationTurns(turns: number | undefined, defaultTurns = 15): number {
+  return clamp(turns ?? defaultTurns, 1, 30);
+}
+
+function exchangeValuationTurns(payload: Pick<ProposalPayload, 'turns' | 'exchangeDurationTurns'>): number {
+  // Only new, explicitly versioned UI offers can use the new 21–30 valuation horizon.
+  // Legacy and AI payloads retain their historical 1–20 clamp.
+  return payload.exchangeDurationTurns !== undefined
+    ? clampExchangeDurationTurns(payload.turns)
+    : clampDealTurns(payload.turns);
+}
+
+/** Resolve active cyclic exchange expiry while preserving legacy finite payload behavior. */
+export function resolveExchangeExpiry(turn: number, payload: Pick<ProposalPayload, 'turns' | 'exchangeDurationTurns'>): number | null {
+  if (payload.exchangeDurationTurns === null) return null;
+  if (payload.exchangeDurationTurns !== undefined) return turn + clampExchangeDurationTurns(payload.exchangeDurationTurns);
+  return turn + clampDealTurns(payload.turns);
 }
 
 /**
@@ -1424,7 +1446,7 @@ export function evaluateProposal(
         const cyklFairnessReject = handelFairnessGate(givePn, receivePn, relTotal, handelMultiplier);
         if (cyklFairnessReject) return cyklFairnessReject;
         const cyklPwBalance = givePn - handelRequiredPn(receivePn, relTotal, handelMultiplier);
-        const turns = clampDealTurns(payload.turns);
+        const turns = exchangeValuationTurns(payload);
         const cyklicznyItems = buildHandelSurowiecCykliczny(
           proposerOwnerId, responderOwnerId, payload.giveItems, payload.receiveItems,
         );
@@ -1436,7 +1458,7 @@ export function evaluateProposal(
           proposerOwnerId,
           responderOwnerId,
           ctx.turn,
-          ctx.turn + turns,
+          resolveExchangeExpiry(ctx.turn, payload),
           undefined,
           false,
           undefined,
@@ -1444,7 +1466,9 @@ export function evaluateProposal(
         );
         return {
           accepted: true,
-          reason: `Umowa handlowa (surowiec co turę) na ${turns} tur`,
+          reason: payload.exchangeDurationTurns === null
+            ? 'Umowa handlowa (surowiec co turę) bezterminowa'
+            : `Umowa handlowa (surowiec co turę) na ${turns} tur`,
           deal,
           pwBalance: cyklPwBalance,
         };
@@ -2111,7 +2135,7 @@ export function resolvePlayerAcceptsAiPending(
         (payload.giveItems?.some(i => i.typ === 'surowiec_ilosc') ?? false)
         || (payload.receiveItems?.some(i => i.typ === 'surowiec_ilosc') ?? false);
       if (payload.resourceTradeMode === 'per_turn' && hasQuantityResourceItems) {
-        const turns = clampDealTurns(payload.turns);
+        const turns = exchangeValuationTurns(payload);
         const cyklicznyItems = buildHandelSurowiecCykliczny(
           fromOwnerId, toOwnerId, payload.giveItems, payload.receiveItems,
         );
@@ -2123,13 +2147,19 @@ export function resolvePlayerAcceptsAiPending(
           fromOwnerId,
           toOwnerId,
           turn,
-          turn + turns,
+          resolveExchangeExpiry(turn, payload),
           undefined,
           false,
           undefined,
           cyklicznyItems,
         );
-        return { accepted: true, reason: `Umowa handlowa (surowiec co turę) na ${turns} tur`, deal };
+        return {
+          accepted: true,
+          reason: payload.exchangeDurationTurns === null
+            ? 'Umowa handlowa (surowiec co turę) bezterminowa'
+            : `Umowa handlowa (surowiec co turę) na ${turns} tur`,
+          deal,
+        };
       }
       if (payload.goldOnce != null && payload.goldOnce > 0) {
         return { accepted: true, reason: 'Wymiana jednorazowa (T3A)', oneShotTrade: true };

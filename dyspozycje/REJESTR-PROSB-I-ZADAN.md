@@ -1,5 +1,14 @@
 # REJESTR PRÓŚB I ZADAŃ — kanoniczny indeks + historia
 
+## `R-HANDLOWA-WYMIANA-CZAS-BEZTERMINOWY-30T-Q1` — aktywna naprawa
+
+- ZGŁOSZENIE: cykliczna wymiana handlowa kończyła się maksymalnie po 20 turach, mimo że stepper pokazywał `+100`; brakowało trybu bezterminowego.
+- ZAKRES: limit 30 tur, opcja „Bezterminowo”, jawne pole `exchangeDurationTurns` (`null` = bez końca; brak = historyczny fallback do `turns`). `turns` pozostaje skończonym horyzontem wyceny.
+- STATUS: implementacja operatora gotowa; independent Evaluator/Final Control pending; bez merge, deploy ani push.
+- TESTY: TypeScript PASS, domena 53/53, render UI 9/9; szerszy `diplomacy-proposal-test` 186/188 z dwoma niezwiązanymi błędami asercji pokoju w wojnie (opis w raporcie runu).
+- OPERATOR: `autobot/trade-duration-indefinite-q1`; ślad: `dyspozycje/autobot/runs/R-HANDLOWA-WYMIANA-CZAS-BEZTERMINOWY-30T-Q1/`.
+- ZGODNOŚĆ: istniejące aktywne umowy zapisują liczbowe `wygasaTura` i pozostają bez zmian; nowe umowy bezterminowe korzystają z już obsługiwanego `wygasaTura: null`.
+
 ## `R-AI-GENERAL-WAR-5TURN-ATTACK-Q1` + `R-ARMY-COMMANDER-UNIT-MARKERS-20261028` — wspólna integracja ROBOCZA
 
 - STATUS: DEPLOY-ROBOCZA / REMOTE-READBACK-PASS; baza `85f8c5f0e0aa6ff46aa8b85a03d0bc0c71d86268`; oba zakresy niezależnie zaakceptowane (AI: PASS; oznaczenia: PASS-WITH-NOTES).

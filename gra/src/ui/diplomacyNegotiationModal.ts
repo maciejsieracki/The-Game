@@ -20,6 +20,8 @@ export interface NegotiationPayload {
    * runda 1, zarzut 1 Evaluatora).
    */
   turns?: number;
+  /** Czas obowiązywania cyklicznej wymiany surowców. Brak pola zachowuje stare `turns`; null = bezterminowo. */
+  exchangeDurationTurns?: number | null;
   /**
    * R-DYPLO-TRAKTAT-HANDLOWY-WYBOR-CZASU-Q1 (Obrona runda 1, zarzut 1 Evaluatora
    * PRZYJĘTY): czas TRWANIA TRAKTATU wybrany JAWNIE w formularzu „Warunki traktatu"

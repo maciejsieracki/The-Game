@@ -18627,6 +18627,7 @@ async function boot(): Promise<void> {
                     : undefined,
                 receiveItems: p.receiveItems?.length ? [...p.receiveItems] : undefined,
                 resourceTradeMode: p.resourceTradeMode,
+                exchangeDurationTurns: p.exchangeDurationTurns,
                 turns: p.turns,
                 allianceKind: entry.actionId === 'sojusz_defensywny' ? 'defensywny' : 'pelny',
                 borderMilitary: p.borderMilitary,
@@ -18646,6 +18647,7 @@ async function boot(): Promise<void> {
                   : undefined,
               turns: p.turns,
               resourceTradeMode: p.resourceTradeMode,
+              exchangeDurationTurns: p.exchangeDurationTurns,
             };
           } else if (uiActionId === '13') {
             counterInitial = {
@@ -18656,6 +18658,7 @@ async function boot(): Promise<void> {
               giveItems: p.receiveItems?.length ? [...p.receiveItems] : undefined,
               receiveItems: p.giveItems?.length ? [...p.giveItems] : undefined,
               resourceTradeMode: p.resourceTradeMode,
+              exchangeDurationTurns: p.exchangeDurationTurns,
               // '5': `turns` = czas/częstotliwość WYMIANY z koszyka (prefill sekcji „Co ile
               // tur trwa wymiana"), `treatyTurns` = czas TRWANIA traktatu (prefill „Czas
               // traktatu handlowego", 0 = Bezterminowy). Dla '2' pole `treatyTurns` zostaje
@@ -22205,6 +22208,7 @@ async function boot(): Promise<void> {
         receiveItems: (payload as NegotiationPayload & { receiveItems?: BasketItem[] }).receiveItems,
         isGift: (payload as NegotiationPayload & { isGift?: boolean }).isGift,
         resourceTradeMode: payload.resourceTradeMode,
+        exchangeDurationTurns: payload.exchangeDurationTurns,
         warThreat: payload.warThreat,
       };
       const proposal = {

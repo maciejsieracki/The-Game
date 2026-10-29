@@ -162,6 +162,7 @@ function qtyStepperHtml(
   min = 1,
   max?: number,
   step = 1,
+  thirdButton?: { label: string; action: string },
 ): string {
   const maxAttr = max != null ? ' max="' + max + '"' : '';
   const stepAttr = step > 1 ? ' step="' + step + '"' : '';
@@ -174,8 +175,11 @@ function qtyStepperHtml(
     + '" data-target="' + inputClass + '" data-delta="' + d1 + '">+' + d1 + '</button>'
     + '<button type="button" class="cdb-qty-step dip-muted-btn" data-side="' + side
     + '" data-target="' + inputClass + '" data-delta="' + d2 + '">+' + d2 + '</button>'
-    + '<button type="button" class="cdb-qty-step dip-muted-btn" data-side="' + side
-    + '" data-target="' + inputClass + '" data-delta="' + d3 + '">+' + d3 + '</button>'
+    + (thirdButton
+      ? '<button type="button" class="cdb-duration-indefinite dip-muted-btn" data-action="' + thirdButton.action
+        + '" aria-pressed="false">' + esc(thirdButton.label) + '</button>'
+      : '<button type="button" class="cdb-qty-step dip-muted-btn" data-side="' + side
+        + '" data-target="' + inputClass + '" data-delta="' + d3 + '">+' + d3 + '</button>')
     + '<input type="number" class="' + inputClass + '" data-side="' + side
     + '" value="' + value + '" min="' + min + '"' + maxAttr + stepAttr + ' />'
     + '</div>'
@@ -341,6 +345,8 @@ ${DIPLO_1E_SHARED_CSS}
 .civ-diplo-basket .cdb-chip.cdb-chip-turn{min-width:36px;padding:6px 10px;font-size:0.78em;font-weight:600;}
 .civ-diplo-basket .cdb-qty-stepper{display:flex;flex-wrap:wrap;align-items:center;gap:5px;margin:4px 0;}
 .civ-diplo-basket .cdb-qty-step{padding:5px 9px;font-size:0.72em;min-width:42px;}
+.civ-diplo-basket .cdb-duration-indefinite{padding:5px 9px;font-size:0.72em;min-width:42px;}
+.civ-diplo-basket .cdb-duration-indefinite.selected{border-color:#d4b658;color:#f2df9b;background:rgba(212,182,88,.15);}
 .civ-diplo-basket .cdb-qty-stepper input[type=number]{flex:1;min-width:72px;max-width:110px;}
 .civ-diplo-basket .cdb-add-section{margin:6px 0 4px;}
 .civ-diplo-basket .cdb-add-section-title{font-size:0.7em;color:#a8a090;margin:0 0 4px;text-transform:uppercase;letter-spacing:.05em;}
@@ -1288,8 +1294,8 @@ function validateBasketForm(
     const hasResourceAccess = basketHasResourceAccess(giveItems, receiveItems);
     const hasQtyRes = !hasResourceAccess && basketHasQuantityResource(giveItems, receiveItems);
     const needsTurns = hasResourceAccess || (hasQtyRes && resourceTradeMode === 'per_turn');
-    if (needsTurns && (dealTurns < 1 || dealTurns > 20)) {
-      return { valid: false, reason: 'Wybierz czas umowy od 1 do 20 tur' };
+    if (needsTurns && (dealTurns < 1 || dealTurns > 30)) {
+      return { valid: false, reason: 'Wybierz czas umowy od 1 do 30 tur' };
     }
     return { valid: true };
   }
@@ -1315,15 +1321,15 @@ function validateBasketForm(
   const hasResourceAccess = basketHasResourceAccess(giveItems, receiveItems);
   const hasQtyRes = mode === 'trade' && !hasResourceAccess && basketHasQuantityResource(giveItems, receiveItems);
   const needsTurns = mode === 'trade' && (hasResourceAccess || (hasQtyRes && resourceTradeMode === 'per_turn'));
-  if (needsTurns && (dealTurns < 1 || dealTurns > 20)) {
-    return { valid: false, reason: 'Wybierz czas umowy od 1 do 20 tur' };
+  if (needsTurns && (dealTurns < 1 || dealTurns > 30)) {
+    return { valid: false, reason: 'Wybierz czas umowy od 1 do 30 tur' };
   }
   return { valid: true };
 }
 
-function dealDurationHtml(turns: number, visible: boolean, label = 'Czas umowy (tur, max 20)', sub = 'Dostęp do surowców trwa przez wybrany czas. Po wygaśnięciu umowa wymaga odnowienia (re-negocjacji).'): string {
+function dealDurationHtml(turns: number, visible: boolean, label = 'Czas umowy (tur, max 30)', sub = 'Dostęp do surowców trwa przez wybrany czas. Po wygaśnięciu umowa wymaga odnowienia (re-negocjacji).'): string {
   if (!visible) return '';
-  const turnChips = [5, 10, 15].map(t =>
+  const turnChips = [5, 10, 15, 20, 30].map(t =>
     '<button type="button" class="cdb-chip cdb-chip-turn' + (turns === t ? ' selected' : '')
     + '" data-turns="' + t + '">' + t + '</button>',
   ).join('');
@@ -1331,7 +1337,7 @@ function dealDurationHtml(turns: number, visible: boolean, label = 'Czas umowy (
     '<div class="cdb-duration">'
       + '<label for="cdb-deal-turns">' + esc(label) + '</label>'
       + '<div class="cdb-chip-row cdb-turn-presets">' + turnChips + '</div>'
-      + qtyStepperHtml('cdb-deal-turns', 'deal', turns, 1, 20)
+      + qtyStepperHtml('cdb-deal-turns', 'deal', turns, 1, 30, 1, { label: 'Bezterminowo', action: 'indefinite-exchange' })
       + '<p class="cdb-sub">' + esc(sub) + '</p>'
     + '</div>'
   );
@@ -2242,8 +2248,8 @@ function renderBasket(
     && (hasResourceAccess || (hasQtyRes && resourceTradeMode === 'per_turn')
       || (showResModeSelector && resourceTradeMode === 'per_turn'));
   const dealDurationLabel = hasResourceAccess
-    ? 'Czas umowy (tur, max 20)'
-    : 'Co ile tur trwa wymiana (tur, max 20)';
+    ? 'Czas umowy (tur, max 30)'
+    : 'Co ile tur trwa wymiana (tur, max 30)';
   const dealDurationSub = hasResourceAccess
     ? 'Dostęp do surowców trwa przez wybrany czas. Po wygaśnięciu umowa wymaga odnowienia (re-negocjacji).'
     : 'Surowiec i zapłata płyną CO TURĘ przez wybrany czas. Deal znika po wygaśnięciu, zerwaniu traktatu lub wojnie.';
@@ -2329,6 +2335,8 @@ export interface TradeBasketInitial {
    * dokładnie jak przed R-DYPLO-TRAKTAT-HANDLOWY-WYBOR-CZASU-Q1.
    */
   turns?: number;
+  /** Czas cyklicznej wymiany: null = bezterminowo, brak = starsza oferta/czas z `turns`. */
+  exchangeDurationTurns?: number | null;
   /**
    * R-DYPLO-TRAKTAT-HANDLOWY-WYBOR-CZASU-Q1 (Evaluator R3, zarzut 3): czas TRWANIA traktatu
    * (0 = bezterminowy) jako prefill formularza „Warunki traktatu", ODDZIELNY od `turns`.
@@ -2370,7 +2378,8 @@ export function showTradeBasketModal(
   // (computeQuickDealBasket), użytkownik dalej może edytować/usuwać pozycje normalnie.
   let giveItems: BasketItem[] = stripWithdrawnResourceAccessItems(initial?.giveItems ?? []);
   let receiveItems: BasketItem[] = stripWithdrawnResourceAccessItems(initial?.receiveItems ?? []);
-  let dealTurns = initial?.turns != null ? Math.max(1, Math.min(20, initial.turns)) : 15;
+  let dealTurns = initial?.turns != null ? Math.max(1, Math.min(30, initial.turns)) : 15;
+  let exchangeDurationTurns: number | null | undefined = initial?.exchangeDurationTurns;
   let resourceTradeMode: 'once' | 'per_turn' = initial?.resourceTradeMode ?? 'once';
   let warThreat = action.id === '9';
   let treatyState = defaultTreatyState(action.id, initial, ctx);
@@ -2388,7 +2397,7 @@ export function showTradeBasketModal(
 
   const readDealTurnsFromDom = (): void => {
     const inp = box.querySelector('.cdb-deal-turns') as HTMLInputElement | null;
-    if (inp) dealTurns = Math.max(1, Math.min(20, parseInt(inp.value, 10) || 15));
+    if (inp) dealTurns = Math.max(1, Math.min(30, parseInt(inp.value, 10) || 15));
   };
 
   const readResourceTradeModeFromDom = (): void => {
@@ -2401,6 +2410,18 @@ export function showTradeBasketModal(
     readResourceTradeModeFromDom();
     if (mode === 'treaty') treatyState = readTreatyStateFromDom(action.id, treatyState, ctx);
     renderBasket(box, mode, action, ctx, giveItems, receiveItems, dealTurns, resourceTradeMode, treatyState, warThreat, editingItem, modalOpts);
+    const indefiniteBtn = box.querySelector('.cdb-duration-indefinite') as HTMLButtonElement | null;
+    if (indefiniteBtn) {
+      const selected = exchangeDurationTurns === null;
+      indefiniteBtn.classList.toggle('selected', selected);
+      indefiniteBtn.setAttribute('aria-pressed', String(selected));
+    }
+    const schedule = box.querySelector('.da-deal-sched-foot');
+    if (schedule && resourceTradeMode === 'per_turn' && basketHasQuantityResource(giveItems, receiveItems)) {
+      schedule.textContent = exchangeDurationTurns === null
+        ? 'Wymiana co turę bezterminowo'
+        : 'Wymiana co turę przez ' + dealTurns + ' tur';
+    }
     bindEvents();
   };
 
@@ -2522,7 +2543,8 @@ export function showTradeBasketModal(
           return;
         }
         const durationRoot = btn.closest('.cdb-duration');
-        dealTurns = Math.max(1, Math.min(20, turns));
+        dealTurns = Math.max(1, Math.min(30, turns));
+        exchangeDurationTurns = dealTurns;
         const inp = (durationRoot ?? box).querySelector('.cdb-deal-turns') as HTMLInputElement | null;
         if (inp) inp.value = String(dealTurns);
         (durationRoot ?? box).querySelectorAll('.cdb-chip-turn').forEach(c => {
@@ -2570,7 +2592,20 @@ export function showTradeBasketModal(
         const max = inp.max ? parseInt(inp.max, 10) : Infinity;
         const next = Math.min(max, Math.max(min, (parseInt(inp.value, 10) || 0) + delta));
         inp.value = String(next);
+        if (target === 'cdb-deal-turns') {
+          exchangeDurationTurns = next;
+          const indefiniteBtn = box.querySelector('.cdb-duration-indefinite');
+          indefiniteBtn?.classList.remove('selected');
+          indefiniteBtn?.setAttribute('aria-pressed', 'false');
+          const schedule = box.querySelector('.da-deal-sched-foot');
+          if (schedule && resourceTradeMode === 'per_turn') schedule.textContent = 'Wymiana co turę przez ' + next + ' tur';
+        }
       });
+    });
+
+    box.querySelector('.cdb-duration-indefinite')?.addEventListener('click', () => {
+      exchangeDurationTurns = null;
+      refresh();
     });
 
     for (const side of ['give', 'recv'] as const) {
@@ -2578,7 +2613,11 @@ export function showTradeBasketModal(
       updateTypFields(box, uiSide);
     }
 
-    box.querySelector('.cdb-deal-turns')?.addEventListener('input', () => refresh());
+    box.querySelector('.cdb-deal-turns')?.addEventListener('input', () => {
+      const inp = box.querySelector('.cdb-deal-turns') as HTMLInputElement | null;
+      exchangeDurationTurns = inp ? Math.max(1, Math.min(30, parseInt(inp.value, 10) || 15)) : undefined;
+      refresh();
+    });
 
     box.querySelectorAll(
       '.cdb-treaty-turns, .cdb-treaty-alliance, .cdb-treaty-trib-mode, .cdb-treaty-gpt, .cdb-treaty-trib-turns, .cdb-treaty-wasal-gpt, .cdb-treaty-wchlon-gold',
@@ -2763,6 +2802,13 @@ export function showTradeBasketModal(
           payload.resourceTradeMode = 'per_turn';
           payload.turns = dealTurns;
         }
+      }
+      if (
+        (mode === 'trade' || mode === 'treaty')
+        && resourceTradeMode === 'per_turn'
+        && basketHasQuantityResource(giveItems, receiveItems)
+      ) {
+        payload.exchangeDurationTurns = exchangeDurationTurns === null ? null : dealTurns;
       }
       closeModal();
       onSubmit(payload);

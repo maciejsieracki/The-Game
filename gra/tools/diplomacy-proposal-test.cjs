@@ -434,7 +434,7 @@ r = evaluateProposal(prop('handel', 0, 1, {
   turns: 7,
 }), ctx({ relation: rel(60, 50), turn: 10 }));
 ok(!r.accepted && r.reason.includes('SUROW-TERYT'), 'handel zloze odrzucony po wycofaniu dostepu');
-ok(clampDealTurns(25) === 20 && clampDealTurns(0) === 1, 'clampDealTurns 1-20');
+ok(clampDealTurns(25) === 20 && clampDealTurns(0) === 1, 'clampDealTurns treaty cap remains 1-20');
 ok(proposalHasResourceAccess({ giveItems: [{ typ: 'zloze', id: 'zelazo' }] }), 'proposalHasResourceAccess zloze');
 
 // 10c resolvePokojTrustTier — sojusz > NAP > pokoj
