@@ -1,0 +1,31 @@
+{
+  "taskId": "R-INTEGRATION-SETTINGS-BATTLE-FOOD-20261029",
+  "status": "LOCAL_ROBOCZA_DEPLOY_COMPLETE_PUSH_PENDING",
+  "stage": "10/11",
+  "source": {
+    "branch": "main",
+    "commit": "6f9ef3ceef3e78421b89b0a4feec0d0606746fc6",
+    "base": "origin/main @ 2a2180bb"
+  },
+  "bundle": {
+    "path": "gra-robocza/Gra-ROBOCZA.html",
+    "md5": "703bdf789fb23f37cacacc9aac405402",
+    "sha256": "e1df7844da72cd5d03332f70ecba0f6e650b6344f563c183b866f54829fdeba7",
+    "sizeBytes": 70040409
+  },
+  "checks": [
+    "npm run typecheck: PASS",
+    "npm run build: PASS; Vite 919 modules",
+    "newgame-settings-layout-reposition-test: PASS Chromium",
+    "ai-food-improvement-priority-stages-test: 11/11 PASS",
+    "army-stack-commander-identity-test: 5/5 PASS",
+    "improvement-build-highlight-lifecycle-test: 39/39 PASS",
+    "army-merge-panel-production-mount-test: 9/9 PASS; Robocza at 150%, 88 units",
+    "node gra/tools/verify-robocza-bundle.cjs: VERIFY OK (embedded self-referential stamp WARN; manifest and bundles[] match)",
+    "node gra/tools/smoke.cjs: SMOKE OK; canvas=1, rAF=1"
+  ],
+  "remoteReadback": {
+    "status": "PENDING_PUSH"
+  },
+  "publicationCommit": "PENDING"
+}

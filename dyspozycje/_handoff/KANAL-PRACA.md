@@ -7914,3 +7914,10 @@ CZEKAM-NA: właściciel — Ctrl+F5 + bounded playtest ROBOCZA `0e3ad637`; nowy 
 ## [2026-10-21 UTC] ROOT -> RELEASE — PR141 bounded ROBOCZA publication/readback
 
 `R-PR141-CODEX-FULL-RELEASE-20261020` opublikowano na `origin/main` w commicie `b4d37d9f81686b5b21bb256087a55e3a592721f0`. Pinned GitHub raw readback bundle/manifest/START: HTTP 200, zgodne SHA-256 i bajty. Osobny ograniczony menu/canvas check dokładnie pobranego bundla: PASS (tytuł, start, dwa canvasy, zero błędów strony/konsoli). Obie wcześniejsze próby pełnego predeploy flow pozostają FAIL; brak twierdzenia o pełnej akceptacji gameplay/runtime/save-load/93x15 albo F-05. Zewnętrzny host produkcyjny nie został wskazany ani zweryfikowany. Szczegóły i hashe: `dyspozycje/autobot/runs/R-PR141-CODEX-FULL-RELEASE-20261020/07-publication-receipt.md` oraz zachowany raw readback. Bundel bez zmian.
+
+
+## [2026-10-29 UTC] Gotowy lokalny pakiet Robocza — ustawienia/żywność/armia/podświetlenia
+
+Zintegrowany main 6f9ef3ce jest 24 commitów przed origin/main. Utworzyłem z niego Robocza bundle: MD5 703bdf789fb23f37cacacc9aac405402, SHA-256 e1df7844da72cd5d03332f70ecba0f6e650b6344f563c183b866f54829fdeba7, rozmiar 70,040,409 B. TypeScript/build, testy domenowe/UI i boot smoke PASS; release verifier PASS. Zakres: ustawienie udziału lądu i dyplomacji, wybór/semantyka trybu bitwy ze zgodnością starych zapisów, priorytety żywności, scroll łączenia armii, tożsamość wodza i znikanie highlightu po budowie.
+
+Stan: etap 10/11 — bundle zapisany do gra-robocza/, gotowy do publikacji/push i pinned readback. Nie twierdzę jeszcze, że GitHub zawiera tę paczkę. Równoległy test dużej mieszanej bitwy znalazł nowy przypadek łucznika podchodzącego w złym kierunku; jego osobny operator działa.

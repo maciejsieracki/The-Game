@@ -1,39 +1,38 @@
 {
-  "releaseState": "DEPLOYED — ROBOCZA; push do main i zdalny readback PASS (2026-10-29).",
+  "releaseState": "STAGED — lokalna Robocza po integracji 2026-10-29; push i zdalny readback do wykonania.",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "15eabd0ba132bde2454f74d47371a685",
-  "bundleSha256": "80be74dbece3ae923efdeffee193aec1607ae6e0555a4f36973406891a31b508",
-  "bundleBytes": 70033099,
+  "bundleMd5": "703bdf789fb23f37cacacc9aac405402",
+  "bundleSha256": "e1df7844da72cd5d03332f70ecba0f6e650b6344f563c183b866f54829fdeba7",
+  "bundleBytes": 70040409,
   "sourceSnapshot": {
-    "baseCommit": "2a6df3f36da3f404a7afd1c869cfec4a7fd606a2",
-    "source": "origin/main plus R-WOJSKO-ARMIA-REKRUTACJA-DO-WODZA-Q1",
-    "build": "Vite 5.4.21 single-file; 917 modules; stamped",
-    "buildCommit": "98e9f6ee + 869cde2a + 7738027f",
-    "publicationCommit": "fb2d613b68a3a32a370fb6a2d29121c312cac51f"
+    "baseCommit": "origin/main @ 2a2180bb",
+    "source": "origin/main + main integration @ 6f9ef3ce",
+    "build": "Vite 5.4.21 single-file; 919 modules; stamped",
+    "buildCommit": "6f9ef3ce",
+    "publicationCommit": "PENDING"
   },
   "scope": [
-    "AI zbiera armię przez pięć pełnych tur po wybuchu wojny, a w kolejnej turze atakuje wybrany osiągalny lądem cel wspólnymi rozkazami całego składu.",
-    "Wódz/generał ma odrębną gwiazdę nad gwiazdami doświadczenia; emblemat cywilizacji jednostki jest 4× większy.",
-    "R-ARMY-MERGE-SPLIT-ICONS-Q2: merge arrows inward, split arrows outward.",
-    "R-HANDLOWA-WYMIANA-CZAS-BEZTERMINOWY-30T-Q1: cyclic quantity exchange supports 1–30 turns or indefinite; resource access and treaty caps remain 20.",
-    "R-WOJSKO-ARMIA-REKRUTACJA-DO-WODZA-Q1: global default directs new player recruits to a tracked leader; per-unit overrides allow partial rally; save/load preserves defaults and unit choice."
+    "R-NEWGAME-SETTINGS-LAND-DIPLO-REPOSITION-Q1: udział lądu i rozpatrzenie dyplomatyczne w uzgodnionych polach nowej gry.",
+    "R-BATTLE-MODE-CHOICE-LABELS-Q1 + R-BATTLE-MODE-SETTING-WIRING-Q1: czytelne wybory trybu bitwy i poprawna semantyka auto-only, w tym zgodność starszych zapisów.",
+    "R-AI-FOOD-IMPROVEMENT-PRIORITY-Q1: przygotowanie lasów nadrzecznych, potem farmy, bydło, następnie irygacja/tarasy.",
+    "R-ARMY-MERGE-PANEL-INNER-SCROLL-Q1: modal połączenia armii z wewnętrznym przewijaniem i bezpiecznym marginesem przy 150% zoom.",
+    "R-ARMY-STACK-COMMANDER-IDENTITY-Q1: wyróżniona nazwa i identyfikacja konkretnej jednostki wodza/generała.",
+    "R-IMPROVEMENT-BUILD-HIGHLIGHT-LIFECYCLE-Q1: jaśniejsze podświetlenie dostępnego pola, znikające po budowie i wracające po odznaczeniu."
   ],
   "verification": [
     "TypeScript PASS",
-    "Vite build PASS (917 modules)",
-    "Chromium tests: AI campaign 68/68; newgame navigation 230/230; battle/recruitment/commander focused tests PASS",
-    "GitHub Raw readback at 682a6b9a: bundle/manifest/START HTTP 200; bundle SHA-256, MD5 and bytes match manifest.",
-    "Trade duration: domain 53/53 and rendered UI 12/12; typecheck PASS; broader proposal test 186/188 with both failures reproduced at baseline.",
-    "Vite single-file 917 modules, Robocza verifier and boot smoke PASS.",
-    "Leader rally: follow regression 20/20, recruitment UI and save/legacy PASS; typecheck and production build PASS.",
-    "Robocza boot smoke PASS; bundle verifier VERIFY OK.",
-    "Leader rally: tracked recruitment default and per-unit override; follow 20/20; recruitment UI/save legacy PASS; typecheck and Vite 917 modules PASS.",
-    "Robocza boot smoke PASS; GitHub Raw remote bundle hashes/size verified; manifest and START byte-identical."
+    "Vite build PASS: 919 modules",
+    "newgame-settings-layout-reposition-test: PASS (Chromium)",
+    "ai-food-improvement-priority-stages-test: 11/11 PASS",
+    "army-stack-commander-identity-test: 5/5 PASS",
+    "improvement-build-highlight-lifecycle-test: 39/39 PASS",
+    "army-merge-panel-production-mount-test: 9/9 PASS (Robocza, 150%, 88 oddziałów)",
+    "git diff --check PASS"
   ],
   "limits": [
-    "AI morska kampania/transport pozostaje poza zakresem.",
-    "Pełna gra wojenna na mapie oraz test wydajności dużego imperium nie są objęte tym odbiorem.",
-    "Dowód wizualny odznaki wykorzystuje osobny jawnie opisany harness produkcyjnego renderer; pełny gameplay screenshot z aktywną armią nie został wykonany."
+    "To jest testowe wydanie Robocza dla podanego zakresu; oczekuje na test właściciela.",
+    "Rozległy test dużej bitwy jest osobnym, aktywnym tematem i nie wchodzi do tego pakietu.",
+    "Test dużego imperium pozostaje odłożony."
   ],
   "finalControl": {
     "status": "PASS",
@@ -46,26 +45,26 @@
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "15eabd0ba132bde2454f74d47371a685",
-      "sizeBytes": 70033099
+      "md5": "703bdf789fb23f37cacacc9aac405402",
+      "sizeBytes": 70040409
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "15eabd0ba132bde2454f74d47371a685",
-      "sizeBytes": 70033099
+      "md5": "703bdf789fb23f37cacacc9aac405402",
+      "sizeBytes": 70040409
     }
   ],
-  "md5": "15eabd0ba132bde2454f74d47371a685",
-  "sizeBytes": 70033099,
-  "publisher": "Codex AutoBot — owner authorized main merge, Robocza publish and git push",
-  "source": "gra/src; merge/split icon fix 002a75815b067cf2cdbcae7eed5c488f8634ea34",
+  "md5": "703bdf789fb23f37cacacc9aac405402",
+  "sizeBytes": 70040409,
+  "publisher": "Codex AutoBot — właściciel wcześniej zlecił scalanie do main, deploy do Robocza i git push",
+  "source": "gra/src; local main integration 6f9ef3ce",
   "immediatePreviousRelease": {
-    "publicationCommit": "f6f63dc839449d8e08a7e2509ec72796757867af",
-    "bundleMd5": "03d8d29e4714204bff62a27823e946ee",
-    "bundleSha256": "f379b328b1f7c63f1e860a76f3310a98b189ebcb16ed5a444e3f7ebd4a41b452",
-    "bundleBytes": 70019132
+    "publicationCommit": "fb2d613b68a3a32a370fb6a2d29121c312cac51f",
+    "bundleMd5": "15eabd0ba132bde2454f74d47371a685",
+    "bundleSha256": "80be74dbece3ae923efdeffee193aec1607ae6e0555a4f36973406891a31b508",
+    "bundleBytes": 70033099
   },
   "rollbackPlan": {
     "method": "Revert source/release commits; restore prior bundle whose checksums are recorded here.",
@@ -265,22 +264,12 @@
     "publicationCommit": "f6f63dc839449d8e08a7e2509ec72796757867af"
   },
   "publishPlan": {
-    "status": "PUBLISHED to origin/main at fb2d613b68a3a32a370fb6a2d29121c312cac51f; Robocza only; no KANON/FINALNA promotion.",
+    "status": "LOCAL ROBocza bundle staged; source/release commit and origin push pending",
     "target": "origin/main"
   },
   "remoteReadback": {
-    "status": "PASS",
-    "remote": "origin/main",
-    "commit": "fb2d613b68a3a32a370fb6a2d29121c312cac51f",
-    "bundleUrl": "https://raw.githubusercontent.com/maciejsieracki/The-Game/fb2d613b68a3a32a370fb6a2d29121c312cac51f/gra-robocza/Gra-ROBOCZA.html",
-    "manifestUrl": "https://raw.githubusercontent.com/maciejsieracki/The-Game/fb2d613b68a3a32a370fb6a2d29121c312cac51f/gra-robocza/ROBOCZA-MANIFEST.json",
-    "startUrl": "https://raw.githubusercontent.com/maciejsieracki/The-Game/fb2d613b68a3a32a370fb6a2d29121c312cac51f/gra-robocza/START.html",
-    "httpStatus": 200,
-    "bundleMd5": "15eabd0ba132bde2454f74d47371a685",
-    "bundleSha256": "80be74dbece3ae923efdeffee193aec1607ae6e0555a4f36973406891a31b508",
-    "bundleBytes": 70033099,
-    "checks": "GitHub Raw bundle/manifest/START returned HTTP 200; remote bundle hashes/size match; manifest and START byte-identical."
+    "status": "PENDING — run after push"
   },
-  "publishedAt": "2026-10-29",
-  "buildStamp": "2026-10-29 19:36 · 0384d9fe63d0737255e01902a26a2590"
+  "publishedAt": "2026-10-29T23:05:50.745Z",
+  "buildStamp": "2026-10-29 23:05"
 }

@@ -5523,3 +5523,10 @@ regres przeszedł przez Operator→Evaluator→Final Control niezauważony.
 - Operator trzy rundy: początkowa implementacja `98e9f6ee`, opt-in na wspólnym polu `869cde2a`, synchronizacja po ruchu końca tury `7738027f`. Evaluator PASS-WITH-NOTES; Final Control PASS. Test podążania 20/20, UI/save i legacy PASS, TypeScript/build PASS.
 - Robocza bundle MD5 `15eabd0ba132bde2454f74d47371a685`, SHA-256 `80be74dbece3ae923efdeffee193aec1607ae6e0555a4f36973406891a31b508`, `70,033,099` B; Vite 917 modułów, verifier `VERIFY OK`, boot smoke PASS. Release `fb2d613b68a3a32a370fb6a2d29121c312cac51f` pushed do `origin/main`.
 - GitHub Raw bundle/manifest/START HTTP 200; bundle hash i rozmiar zgodne, manifest i START byte-identical. Uwaga odbioru: test EOT wywołuje helpers i sprawdza produkcyjny hook, nie pełną rzeczywistą sekwencję końca tury. Receipt: `dyspozycje/autobot/runs/R-WOJSKO-ARMIA-REKRUTACJA-DO-WODZA-Q1/06-release-receipt.json`.
+
+
+# ROBOCZA — pakiet ustawień, bitwy, żywności, armii i budowy (2026-10-29)
+- Zakres zintegrowany do lokalnego main @ 6f9ef3ce: R-NEWGAME-SETTINGS-LAND-DIPLO-REPOSITION-Q1, R-BATTLE-MODE-CHOICE-LABELS-Q1 + R-BATTLE-MODE-SETTING-WIRING-Q1, R-AI-FOOD-IMPROVEMENT-PRIORITY-Q1, R-ARMY-MERGE-PANEL-INNER-SCROLL-Q1, R-ARMY-STACK-COMMANDER-IDENTITY-Q1, R-IMPROVEMENT-BUILD-HIGHLIGHT-LIFECYCLE-Q1.
+- Build Vite 5.4.21 single-file: 919 modules, PASS; TypeScript PASS. Testy zintegrowanego main: układ nowej gry Chromium PASS; żywność 11/11; wódz 5/5; cykl podświetlenia 39/39; panel łączenia Robocza 9/9 przy 150% i 88 oddziałach; boot smoke PASS; verifier VERIFY OK.
+- Robocza bundle: MD5 703bdf789fb23f37cacacc9aac405402, SHA-256 e1df7844da72cd5d03332f70ecba0f6e650b6344f563c183b866f54829fdeba7, 70,040,409 B. Źródło: gra/src; stempel samo-odwołujący może pokazać WARN, manifest i bundles[] są zgodne.
+- Status: lokalny artefakt ROBOCZEJ gotowy i zweryfikowany; publikacyjny commit/push oraz przypięty odczyt GitHub Raw są następnym krokiem. Rozległe testy bitwy pozostają osobnym aktywnym pakietem, a test dużego imperium nadal jest odłożony.
