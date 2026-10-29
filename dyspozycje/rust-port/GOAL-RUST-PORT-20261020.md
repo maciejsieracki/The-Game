@@ -23,6 +23,11 @@ dotykające tych samych plików — zawsze sekwencyjnie, nigdy w tej samej fali.
 (limit `agent()` wewnątrz jednego Workflow = 2), ale pipeline per temat jest sekwencyjny, więc 6 tematów
 = najwyżej 6 jednoczesnych `agent()` w całej sesji.
 
+## CEL PĘTLI AUTONOMICZNEJ (właściciel, 2026-10-29: "pracuj w pętli, ustal cel, leć samodzielnie jak długo możesz")
+**Cel końcowy:** ukończyć wszystkie fazy planu P0→P11 portu Rust/Tauri z pełnym parytetem względem aktualnego weba (po re-pinie z T0), każdy temat ścieżką 11 etapów (`R-PROC-AUTOBOT.md` §5d).
+**Cel bieżący (do wtorku 2026-11-03):** (1) zamknąć pierwszą falę (REPIN-DELTA, M05B, P5.8 podział, P4.36 Q3); (2) z każdym zwolnionym slotem otwierać następny gotowy, bezkolizyjny kawałek wg `PLAN-PO-WZNOWIENIU-20261029.md` §1 (T1 mapgen M06A→…→M18; T2 P6.8; T3 porty sekcji `cityPanel.ts`; T4–T8) — tylko lekkie tematy na Haiku/Sonnet; (3) ciężkie 3D (Opus) wyłącznie: dokończenie P4.36 Q3→Q4→Q5 oraz dalsze według planu §2 przy zapasie limitu przed odnowieniem; (4) po raporcie REPIN-DELTA dodać tematy odświeżenia pinu wg jego kolejności.
+**Zasady pętli:** max 2 równoległe worktree kodu Rust; tematy na tych samych plikach sekwencyjnie; `df -h /` przed startem i sprzątanie po każdym workflow (§5c); FAIL → ten sam ID; DECISION_REQUIRED tylko dla genuine decyzji produktowej (AskUserQuestion); brak deploy/push produkcyjnego i zmian w `gra/`; raportowanie postępu numerami etapów 1–11. Każdy cykl: ReadNotifications → przegląd wyników Workflow → integracja PASS (scoped diff na `rust-port/parity-v2`) → LEDGER + tabela → dispatch następnego tematu.
+
 ## Status bieżący — aktywne tematy (max 6)
 
 > **WSTRZYMANIE NOWYCH DISPATCHY (właściciel, 2026-10-23):** limity się kończą — dokończ do Final Control i integracji wszystko, co już trwa (P6.7A, P6.7B, M05A, M12, P5.7, P4.36-Q2); NIE otwieraj nowych tematów ani nie wypełniaj zwolnionych slotów, dopóki właściciel nie wznowi w czacie.
@@ -33,6 +38,10 @@ dotykające tych samych plików — zawsze sekwencyjnie, nigdy w tej samej fali.
 
 | # | Temat | Faza | Runda | runId Workflow | Status | Ostatnia aktualizacja |
 |---|---|---|---|---|---|---|
+| 1 | R-RUSTPORT-REPIN-DELTA-Q1 | P1-delta | 1/5 | wf_b78ba3d8-189 | etap 1 (Operator) | 2026-10-29 |
+| 2 | R-RUSTPORT-P6-M05B-RELIEF-B-POKRYCIE-PASMA-Q1 | P6 mapgen | 2/5 | wf_9fa60ee3-244 | etap 1 (Operator-impl); r1 DEFERRED→FAIL | 2026-10-29 |
+| 3 | R-RUSTPORT-P5-8-CITYPANEL-PODZIAL-Q1 | P5.8 | 1/5 | wf_ca9e8547-45b | etap 1 (Operator) | 2026-10-29 |
+| 4 | R-RUSTPORT-P4-36-MOD14-BATTLE-3D-Q3 (3D, Opus — zgoda właściciela) | P4.36 | 1/5 | wf_2ef132a4-a0e | etap 1 (Operator-impl) | 2026-10-29 |
 
 
 

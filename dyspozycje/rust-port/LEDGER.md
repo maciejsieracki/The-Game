@@ -246,3 +246,6 @@ Nic nie utracono: wszystkie MOD i P4.30–35 zintegrowane, P4.36 Q1+Q2 zintegrow
 
 ## 2026-10-29 — Kalendarz limitu (właściciel)
 Odnowienie limitu: wtorek 2026-11-03. Ciężkie prace przed zużyciem limitu przy zapasie; lekkie tematy w pierwszej kolejności. Zapisane w `PLAN-PO-WZNOWIENIU-20261029.md` §1c.
+
+## 2026-10-29 — Pętla autonomiczna: cel zapisany (polecenie właściciela)
+Cel końcowy i bieżący zapisane w `GOAL-RUST-PORT-20261020.md` (§"CEL PĘTLI AUTONOMICZNEJ"); tabela aktywnych tematów wypełniona (4 tematy, etap 1). Pętlę napędzają: powiadomienia o zakończeniu Workflow oraz cogodzinny trigger.
