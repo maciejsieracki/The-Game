@@ -829,7 +829,7 @@ import { buildTestArmies, ensureSiegeMachines as ensureSiegeMachinesPreset } fro
 import type { PresetName } from './battle/testBattle';
 import type { BattleResult, BattleUnit, BattleOpts } from './battle/battleScene';
 import { armyLeaderMoraleBonusFrac, armyLeaderTitle } from './game/army-leadership';
-import { generalQuickFollowActionLabel, issueGeneralQuickFollow, planTrackedGeneralFollowMarch, syncTrackedGeneralFollowMarches } from './game/generalQuickFollow';
+import { issueGeneralQuickFollow, planTrackedGeneralFollowMarch, syncTrackedGeneralFollowMarches } from './game/generalQuickFollow';
 import type { WorldTerrainInput } from './battle/battle-terrain';
 import {
   startMusic, stopMusic, setMood, setEra, setMusicVolume, getMood,
@@ -2007,6 +2007,8 @@ async function boot(): Promise<void> {
 
     const startPlacements = computeStartPlacements(map, data);
     const units: RuntimeUnit[] = [];
+    // Retain the historical automatic rally behavior until the player changes this default.
+    let recruitFollowGeneralDefault = true;
     let unitRenderer = new UnitRenderer(scene, map);
 
     // -----------------------------------------------------------------------
@@ -4041,6 +4043,7 @@ async function boot(): Promise<void> {
         ownerId: city.ownerId,
         typeId: completed.id,
         isGeneral: completed.isGeneral === true,
+        ...(city.ownerId === 0 ? { followGeneral: recruitFollowGeneralDefault } : {}),
         category: categoryOf(completed.id, role, isSuper, def['Typ']),
         q: city.q,
         r: city.r,
@@ -13067,9 +13070,9 @@ async function boot(): Promise<void> {
       if (!u || u.ownerId !== 0) return;
       const coLocated = coLocatedForMergePrompt(units, u.q, u.r, u.ownerId)
         .filter(x => x.id !== newUnitId);
-      const autoMarchingToGeneral = generalMarchPreplanned
+      const autoMarchingToGeneral = u.followGeneral === true && (generalMarchPreplanned
         ? plannedMarches.get(newUnitId)?.generalTargetId != null
-        : planSpawnedUnitFollowGeneral(newUnitId);
+        : planSpawnedUnitFollowGeneral(newUnitId));
       if (coLocated.length > 0 && !autoMarchingToGeneral) {
         // Świeżo wyprodukowana jednostka nie wykonała żadnego ruchu tej tury —
         // nie ma czego zwracać (deductedRuch=0).
@@ -13095,7 +13098,7 @@ async function boot(): Promise<void> {
       const lastId = ids[ids.length - 1];
       const marchingIds = planDeferredGeneralMarchBatch(
         ids,
-        planSpawnedUnitFollowGeneral,
+        id => units.find(u => u.id === id)?.followGeneral === true && planSpawnedUnitFollowGeneral(id),
         enqueueMarchSegments,
       );
       if (lastId) afterPlayerUnitSpawned(lastId, marchingIds.includes(lastId));
@@ -22966,13 +22969,14 @@ async function boot(): Promise<void> {
       }
       actions.push({ id: 'skip', label: 'Pomi\u0144', disabled: siegeCity !== null });
       const nearestCommander = nearestLivingGeneral(active, units);
-      if (nearestCommander && hexDistance(active.q, active.r, nearestCommander.q, nearestCommander.r) > 0
+      if (nearestCommander && (hexDistance(active.q, active.r, nearestCommander.q, nearestCommander.r) > 0
+        || active.followGeneral === true)
         && active.inGarnizon !== true && !active.oblegaCityId) {
-        const alreadyFollowing = plannedMarches.get(active.id)?.generalTargetId === nearestCommander.id;
+        const alreadyFollowing = active.followGeneral === true;
         const leaderTitle = armyLeaderTitle(empireBuiltIdsForOwner(active.ownerId));
         actions.push({
           id: 'general-follow',
-          label: generalQuickFollowActionLabel(leaderTitle, alreadyFollowing),
+          label: alreadyFollowing ? 'Idź do wodza: włączone' : 'Idź do wodza',
           disabled: isAnimating,
           active: alreadyFollowing,
         });
@@ -23004,6 +23008,13 @@ async function boot(): Promise<void> {
       } else if (actionId === 'march-stop') {
         stopPlannedMarchForSelected();
       } else if (actionId === 'general-follow') {
+        if (u.followGeneral === true) {
+          u.followGeneral = false;
+          if (plannedMarches.get(u.id)?.generalTargetId) clearPlannedMarch(u.id, true);
+          refreshD1bHud();
+          return;
+        }
+        u.followGeneral = true;
         const leaderTitle = armyLeaderTitle(empireBuiltIdsForOwner(u.ownerId));
         issueGeneralQuickFollow(u, units, leaderTitle, {
           planMarch: (unit, point, targetId) => planGeneralFollowMarch(unit, point, targetId),
@@ -24195,6 +24206,8 @@ async function boot(): Promise<void> {
           const capitalId = capitalCityIdForOwner(ME());
           return !!capitalId && mountGeneralRecruitmentCardForArmy(capitalId, host);
         },
+        getRecruitFollowGeneralDefault: () => recruitFollowGeneralDefault,
+        onRecruitFollowGeneralDefaultChange: enabled => { recruitFollowGeneralDefault = enabled; },
       });
       configureEmpireHandelSplit({
         getOwnerDefault: (ownerId) => ownerDefaultPodzialHandlu.get(ownerId) ?? null,
@@ -32283,6 +32296,7 @@ async function boot(): Promise<void> {
         activeHumanOwnerId: humanSeats.activeHumanOwnerId,
         autoMarch: marchSave.autoMarch,
         plannedMarches: marchSave.plannedMarches,
+        recruitFollowGeneralDefault,
         cityProd:       cityProdSave,
         cityBuilt:      cityBuiltSave,
         aiResearchDone: aiResSave,
@@ -34781,6 +34795,7 @@ async function boot(): Promise<void> {
                   ownerId: city.ownerId,
                   typeId: rec.id,
                   isGeneral: rec.isGeneral === true,
+                  ...(city.ownerId === 0 ? { followGeneral: recruitFollowGeneralDefault } : {}),
                   category: categoryOf(rec.id, role, isSuper, def['Typ']),
                   q: city.q,
                   r: city.r,
@@ -40746,6 +40761,7 @@ async function boot(): Promise<void> {
       unitResourceUpkeepByOwner.clear();
       units.length = 0;
       for (const u of saved.units) units.push(u);
+      recruitFollowGeneralDefault = saved.recruitFollowGeneralDefault !== false;
       // Old saves may omit hpMax, while intermediate saves may contain the raw
       // base max. Recompute from the current unit bonuses and clamp current HP
       // before any panel, battle or starvation consumer sees the loaded state.

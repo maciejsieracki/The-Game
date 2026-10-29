@@ -180,7 +180,8 @@ async function main() {
   check(mainSource.includes("id: 'general-follow'")
     && mainSource.includes("actionId === 'general-follow'")
     && mainSource.includes('issueGeneralQuickFollow(u, units, leaderTitle')
-    && mainSource.includes('generalQuickFollowActionLabel(leaderTitle, alreadyFollowing)')
+    && mainSource.includes("alreadyFollowing ? 'Idź do wodza: włączone' : 'Idź do wodza'")
+    && mainSource.includes('u.followGeneral = true')
     && mainSource.includes('planGeneralFollowMarch(unit, point, targetId)')
     && mainSource.includes('enqueue: unitIds => enqueueMarchSegments(unitIds)'),
   'production HUD handler delegates to the executed follow service and live title resolver');

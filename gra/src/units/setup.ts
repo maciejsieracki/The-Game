@@ -83,6 +83,8 @@ export interface RuntimeUnit {
   /** P-SCOUT-EXPLORE-Q1=A: auto-zwiedzanie mapy — domyślnie wyłączone (undefined/false).
    *  Po włączeniu zużywa ruch od razu + kontynuuje na EOT (Q2=A założenie). */
   autoExplore?: boolean;
+  /** Whether this unit should automatically rally to its owner's commander. */
+  followGeneral?: boolean;
   /** DYSPOZYCJA Macieja 2026-07-26 ("fortyfikacja w polu"): jednostka ufortyfikowana
    *  POZA hexem własnego miasta (akcja „Ufortyfikuj" gdy cityAtUnit(u) nie zwraca
    *  własnego miasta -- w tym KAŻDA jednostka oblegająca, bo oblegający stoją przy

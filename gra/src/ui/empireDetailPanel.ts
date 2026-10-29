@@ -72,6 +72,8 @@ export interface EmpireMassRecruitmentUiConfig {
   mountCityRecruitment?: (cityId: string, host: HTMLElement) => boolean;
   /** Mount the capital-only commander card above the per-city Army recruitment catalog. */
   mountGeneralRecruitment?: (host: HTMLElement) => boolean;
+  getRecruitFollowGeneralDefault?: () => boolean;
+  onRecruitFollowGeneralDefaultChange?: (enabled: boolean) => void;
 }
 
 let handelSplitUi: EmpireHandelSplitUiConfig = {};
@@ -2760,6 +2762,9 @@ export function renderMassRecruitmentSection(
     + `<div class="v" data-mass-recruitment-queued>${state.queuedCount}</div></div>`
     + `<div class="civ-emp-mass-counter"><div class="k">UKOŃCZONE</div>`
     + `<div class="v" data-mass-recruitment-completed>${state.completedCount}</div></div></div>`
+    + `<label class="civ-emp-rally-default" style="display:flex;align-items:center;gap:8px;margin:10px 0;padding:9px 11px;border:1px solid #927c4f;border-radius:6px;background:rgba(139,107,46,.18);font-weight:700">`
+    + `<input type="checkbox" data-recruit-follow-general ${massRecruitmentUi.getRecruitFollowGeneralDefault?.() !== false ? 'checked' : ''} />`
+    + `<span>Idź do wodza</span><small style="font-weight:400;opacity:.8"> · nowe jednostki będą maszerować i śledzić jego pozycję</small></label>`
     + `<div class="civ-emp-mass-pool">Skarbiec: <b>${formatRawCount(state.treasury)} złota</b>`
     + ` · Manpower: <b>${formatRawCount(state.manpower)}</b>`
     + `${stock ? ` · Magazyn: <b>${esc(stock)}</b>` : ''}</div>`
@@ -2803,6 +2808,10 @@ export function mountMassRecruitmentControls(
   mountCityRecruitment: EmpireMassRecruitmentUiConfig['mountCityRecruitment'] = massRecruitmentUi.mountCityRecruitment,
   mountGeneralRecruitment: EmpireMassRecruitmentUiConfig['mountGeneralRecruitment'] = massRecruitmentUi.mountGeneralRecruitment,
 ): void {
+  const rallyToggle = host.querySelector<HTMLInputElement>('input[data-recruit-follow-general]');
+  if (rallyToggle) rallyToggle.addEventListener('change', () => {
+    massRecruitmentUi.onRecruitFollowGeneralDefaultChange?.(rallyToggle.checked);
+  });
   mountMassRecruitmentCitiesInto(host, mountCityRecruitment, mountGeneralRecruitment);
 }
 
