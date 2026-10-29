@@ -1,0 +1,111 @@
+{
+ "part": "0/2",
+ "mutantow": 17,
+ "zabite": 17,
+ "przezyte": 0,
+ "nieZmierzone": 0,
+ "results": [
+  {
+   "id": "w3-stat-zloto",
+   "grupa": "pole",
+   "desc": "klucz zloto → skarbiec zamieniony na zloto",
+   "status": "ZABITA"
+  },
+  {
+   "id": "w3-title-quote",
+   "grupa": "tekst",
+   "desc": "escape cudzysłowu w title pominięty",
+   "status": "ZABITA"
+  },
+  {
+   "id": "w3-aria-label",
+   "grupa": "tekst",
+   "desc": "aria-label = etykieta zamiast podpowiedzi",
+   "status": "ZABITA"
+  },
+  {
+   "id": "w3-res-key-default",
+   "grupa": "pole",
+   "desc": "nieznany statId dostaje klucz praca",
+   "status": "ZABITA"
+  },
+  {
+   "id": "w3-data-stat",
+   "grupa": "pole",
+   "desc": "data-res-stat = etykieta",
+   "status": "ZABITA"
+  },
+  {
+   "id": "w3-delta-omit",
+   "grupa": "pole",
+   "desc": "fragment tempo/zapas pominięty",
+   "status": "ZABITA"
+  },
+  {
+   "id": "w3-delta-undef",
+   "grupa": "brzeg",
+   "desc": "brak tempa (undefined) zamieniony na 0",
+   "status": "ZABITA"
+  },
+  {
+   "id": "w3-stock-nonfinite",
+   "grupa": "brzeg",
+   "desc": "NaN/Infinity zapasu zamienione na undefined",
+   "status": "ZABITA"
+  },
+  {
+   "id": "res-no-assign",
+   "grupa": "pole",
+   "desc": "odświeżony obiekt nie zapisywany",
+   "status": "ZABITA"
+  },
+  {
+   "id": "res-null-branch",
+   "grupa": "pole",
+   "desc": "gałąź null zwraca pusty obiekt",
+   "status": "ZABITA"
+  },
+  {
+   "id": "cap-besieged",
+   "grupa": "pole",
+   "desc": "oblężenie ignorowane",
+   "status": "ZABITA"
+  },
+  {
+   "id": "cap-perm-isme",
+   "grupa": "pole",
+   "desc": "brak sprawdzenia isMe",
+   "status": "ZABITA"
+  },
+  {
+   "id": "cap-perm-invert",
+   "grupa": "pole",
+   "desc": "isMe odwrócone",
+   "status": "ZABITA"
+  },
+  {
+   "id": "cap-btn-id",
+   "grupa": "tekst",
+   "desc": "id przycisku zmienione",
+   "status": "ZABITA"
+  },
+  {
+   "id": "cap-owner-cities",
+   "grupa": "pole",
+   "desc": "lista miast zawsze pusta (brak stanu oblężenia)",
+   "status": "ZABITA"
+  },
+  {
+   "id": "ux-getter",
+   "grupa": "pole",
+   "desc": "odczyt rejestracji zawsze null",
+   "status": "ZABITA"
+  },
+  {
+   "id": "active-setter",
+   "grupa": "pole",
+   "desc": "activeCity nie zapisywane",
+   "status": "ZABITA"
+  }
+ ]
+}
