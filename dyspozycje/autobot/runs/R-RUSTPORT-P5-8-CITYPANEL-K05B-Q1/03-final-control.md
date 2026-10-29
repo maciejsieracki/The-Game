@@ -1,0 +1,12 @@
+STATUS: PASS-WITH-NOTES
+DOMAIN: GAME
+TEMAT: R-RUSTPORT-P5-8-CITYPANEL-K05B-Q1
+GOAL: Port 19/19 jednostek K05B z DOM (pin edb8fb56) + zadania dodatkowe (producent DTO, parytet chipow, komentarze pinu).
+ZMIANY/COMMIT: oceniony bdd8e01e (r2: f6d51ddf, 97c53c57, bdd8e01e; r1: 348e159e, dd7b0882); baza a2920ce3. Diff do allowlisty K05B: czysty (tylko cityPanel/k05b-*, controller/cityPanelK05a.ts, tools/dom-harness/*, PORTING-QUEUE.md dopisek, P5-8-K05B.md, runs/...K05B-Q1/**); zero zmian w gra/, package.json, WERSJE.md, viewmodel/. git diff --check czysty.
+TESTY (samodzielnie, pierwszy plan, pin edb8fb56 w scratchpadzie poza repo): verify-k05b-copies OK (23 bloki bajtowo = pin, ORPHAN 0, CONST 10/60, DANINA-Z6 OK, NEG FAIL); run-k05b-units 384 porownan, 0 roznic, 0 trywialnych; mutate-k05b-units 92/92 zabitych; run-k05b-dto 16/16; mutate-k05b-dto 8/8; npm run check EXIT 0 (181 plikow, verify-pin-copies 435/0); npm run typecheck EXIT 0; git status czysty.
+WERDYKTY ZARZUTOW (Evaluator r1): Z1 ODDAL (19/19, COVER 19); Z2 ODDAL (mapper+atrapa+16/16+8/8; wpiecie w widok NIE_ZMIERZONO, poza dispatchem); Z3 ODDAL (kopia buildingRequirementChips/buildingStockCostChipsHtml, porownanie z pinem, mutanty chip-*); Z4 ODDAL (23 bloki z JSDoc bajtowo); Z5 ODDAL jako wymog: dispatch nie zada wiringu z kontrolera, brak uczciwie zapisany jako NIE_ZMIERZONO (P5-8-K05B.md par.6); Z6 ODDAL (cytat :17-19 + bramka DANINA-Z6, zweryfikowane); Z7 ODDAL: zalozenie ZAL-ALLOW zatwierdzam (dispatch/GOAL wskazuja K05B, allowlista K05A to oczywista pomylka). NAPRAW: brak. DO DECYZJI CZLOWIEKA: brak.
+BLOKADY: brak blokujacych. NIE_ZMIERZONO (jawne): wiring setK05bHost/setK05aFromDto z kontrolera; wpiecie DTO w widok; tresc tabel CITY_BUILDING_PREREQ/WATER_ACCESS_BUILDING_IDS i ciala pomocnikow game/* (delegatory Z8/Z9); wyglad kart (jsdom, atrapa renderera). Zalozenia K05B-Z8..Z12 zatwierdzone.
+UWAGA INTEGRACYJNA: origin/rust-port/parity-v2 przesunal sie do 364a5356; merge-tree z bdd8e01e daje konflikt TYLKO w src-tauri/frontend-v2/PORTING-QUEUE.md (dopiski na koncu pliku po obu stronach; rozwiazac zachowujac oba wpisy). Po merge ponowic npm run check + typecheck.
+RUNDY: 2/5 (Final Control po r2)
+NASTEPNY KROK: integracja orkiestratora: merge/cherry-pick commitow 348e159e..bdd8e01e + commit FC na parity-v2 (po 364a5356), rozwiazanie konfliktu PORTING-QUEUE.md, bramki po merge. Potem READY_FOR_DEPLOY wystawia orkiestrator.
+DEPLOY/PUSH: NIE WYKONANO
