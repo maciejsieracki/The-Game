@@ -4583,6 +4583,16 @@ zamiast cichego zaakceptowania złamania §5a.
   regresyjny test i dowody. Raporty `06-operator-visual-closeout.md` oraz
   `07-evaluator-visual-closeout.md` i screenshoty są w katalogu runu.
 
+  Final Control r2 wykrył dwie końcowe spacje w raporcie Evaluatora; Operator
+  usunął je i `git diff --check cc2c6a50..995de7b5` przeszedł. Final Control
+  retry: PASS-WITH-NOTES. Integracja zawiera wyłącznie regresyjny test, dowody
+  i raporty — nie zmienia kodu produktu. Aktualna Robocza z publikacji
+  `682a6b9a` została zbudowana z kodu źródłowego zawierającego tę naprawę;
+  ponowny deploy bundla nie jest potrzebny. Integracyjne bramki: Chromium
+  8/8, relief 8/8, kwalifikacja budowy 133/133, relief kopalni 24/24,
+  TypeScript PASS, `git diff --check` PASS. Raport Final Control retry:
+  `09-final-control-retry.md`.
+
 Kolejna kontrola zaplanowana automatycznie; po zamknięciu wszystkich powyższych
 — integracja allowlist-only każdego PASS, potem pełny deploy ROBOCZA (build →
 stamp → manifest → weryfikacja → FALA w `WERSJE.md`) i raport końcowy dla
