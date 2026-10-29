@@ -2,7 +2,7 @@ STATUS: FAIL (zakres niepełny: 17/36 jednostek K03; powrót do Operatora r2 z t
 DOMAIN: GAME
 TEMAT: R-RUSTPORT-P5-8-CITYPANEL-K03-Q1
 GOAL: Port K03 (Model miasta, 36 jednostek, pin `edb8fb56:gra/src/ui/cityPanel.ts`) do `src-tauri/frontend-v2/src/ui/cityPanel/k03-*.ts`; reguły zastąpione DTO (`CityPanelDto`), bez lokalnego przeliczenia porządku.
-ZMIANY/COMMIT: allowlista — nowe: `src/ui/cityPanel/k03-model.ts`, `src/ui/cityPanel/k03-detail.ts`, `tools/dom-harness/run-k03.mjs`, `dyspozycje/rust-port/p5/P5-8-K03.md`; dopisek: `src-tauri/frontend-v2/PORTING-QUEUE.md`; run: `dyspozycje/autobot/runs/R-RUSTPORT-P5-8-CITYPANEL-K03-Q1/`. Brak zmian w `gra/**`, rust-port, `WERSJE.md`. Commit: SHA w sekcji niżej (git add jawny, bez push).
+ZMIANY/COMMIT: allowlista — nowe: `src/ui/cityPanel/k03-model.ts`, `src/ui/cityPanel/k03-detail.ts`, `tools/dom-harness/run-k03.mjs`, `dyspozycje/rust-port/p5/P5-8-K03.md`; dopisek: `src-tauri/frontend-v2/PORTING-QUEUE.md`; run: `dyspozycje/autobot/runs/R-RUSTPORT-P5-8-CITYPANEL-K03-Q1/`. Brak zmian w `gra/**`, rust-port, `WERSJE.md`. Commit kodu: `abab2d96` (git add jawny, bez push).
 TESTY:
 - `npm run typecheck` — exit 0.
 - `npm run check` — self-test 33/15 OK; check-no-logic-imports 159 plików, 0 trafień; verify-pin-copies pin edb8fb56 435 plików, 0 niezgodności.
