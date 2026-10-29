@@ -463,6 +463,8 @@ export interface CityPanelInputsDto {
   };
   /** K04C (P5-8-K04C, batch 4a): wejscia kart Porzadek / Kultura i Religia / Zamoznosc / Wyzywienie. Dopisek, brak = karta w trybie „brak danych”. */
   k04c?: CityPanelK04CDto;
+  /** K04D (P5-8-K04D, batch TopBar): wejscia kart paska gornego (Zywnosc, Ludnosc, Praca, Zloto, Nauka, Kultura, Religia). Dopisek, brak = karta bez danych silnika. */
+  k04d?: CityPanelK04DDto;
 }
 
 // ─── K04C (P5-8-K04C, R-RUSTPORT-P5-8-CITYPANEL-K04C-Q1, runda 1): wejscia kart szczegolow batch 4a ──────────
@@ -568,6 +570,55 @@ export interface CityPanelK04CDto {
     /** Pin `st?.zapasyPanstwa` (aktualny zapas magazynu panstwa); `null` = brak. */
     zapasyPanstwa: number | null;
   };
+}
+
+// ─── K04D (P5-8-K04D, R-RUSTPORT-P5-8-CITYPANEL-K04D-Q1, runda 1): karty paska gornego (TopBar) ──────────
+// ZALOZENIA K04D-Z1..Z5 (pelny opis w dyspozycje/rust-port/p5/P5-8-K04D.md): podzial pracy i handlu, snapshot
+// pieniadza miasta, parametry zamoznosci i sumy miast liczy silnik; UI tylko prezentuje.
+
+/** K04D-Z1: podzial handlu miasta (pin `readPodzialHandlu(city, data)`, ustawienia suwakow). */
+export interface PodzialHandluDto {
+  procentPieniadz: number;
+  procentNauka: number;
+  procentLuksus: number;
+}
+
+/** K04D-Z2: podzial pracy miasta (pin `cityPracaSplit(city, view, data)`); K04B nie jest jeszcze zintegrowany — pola z silnika. */
+export interface PracaSplitDto {
+  total: number;
+  doBudynkow: number;
+  doPuli: number;
+  pctBudynki: number;
+  pctPuli: number;
+  /** Pin `Σ computeView(c).praca` po miastach właściciela; `null` = brak danych (pin: brak mapy/data). */
+  sumaMiast: number | null;
+}
+
+/** K04D-Z3: snapshot pieniądza miasta (pin `CityMoneySnap`, `cfg.getCityMoneySnap`); `null` = brak snapshotu. Nazwa różna od placeholdera `CityMoneySnapDto` (NieZmierzonoDto). */
+export interface CityMoneySnapK04D {
+  doSkarbca: number;
+  pieniadzBrutto: number;
+  wealthMnoznik: number;
+  handelZeSzlakow: number;
+  utrzymanieBudynkow: number;
+  utrzymanieSurowcowBudynkow?: Readonly<Record<string, number>>;
+  utrzymanieGarnizonu: number;
+  nauka: number;
+}
+
+/** K04D — wejscia kart paska gornego (pola pinu `buildTopBar*DetailCard`, bez Rekruci — ta karta jest w K03). */
+export interface CityPanelK04DDto {
+  /** Pin `cfg.getEpoch?.(ownerId) ?? 1` (K04D-Z4). */
+  epoka: number;
+  praca: PracaSplitDto;
+  podzialHandlu: PodzialHandluDto;
+  /** Pin `cfg.getCityMoneySnap?.(city.id)`. */
+  moneySnap: CityMoneySnapK04D | null;
+  /** Pin `city.wealthState.poziom` (fallback: `freshWealthState()` = W0) z silnika. */
+  wealthPoziom: number;
+  /** Pin `daninaLabelForCity(city)` i `daninaLabelGenitive(...)` (stała „Podatek” / forma dopełniacza z katalogu). */
+  daninaLbl: string;
+  daninaLblGen: string;
 }
 
 // ─── §6.3 Opcje budowy / rekrutacji ──────────────────────────────────────────
