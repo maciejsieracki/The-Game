@@ -7,8 +7,8 @@ TESTY:
 - npm ci (src-tauri/frontend-v2) EXIT 0
 - npm run typecheck EXIT 0 (02-logi/typecheck.txt)
 - npm run check EXIT 0 (self-test 33/15; 0 trafien importow logiki, plikow 166; pin copies 435, niezgodnych 0) (02-logi/check.txt)
-- npm run harness:k04c EXIT 0: wektory=84 zielone=84 bledne=0 jsdomErrors=0 (02-logi/run-k04c-units.txt)
-- npm run harness:k04c:mutate EXIT 0: mutacje=37 wykryte=37 niewykryte=0 (02-logi/mutate-k04c-units.txt)
+- node tools/dom-harness/run-k04c-units.mjs EXIT 0: wektory=84 zielone=84 bledne=0 jsdomErrors=0 (02-logi/run-k04c-units.txt) — skrypt npm usunięty z allowlisty (package.json cofnięte do bazy)
+- node tools/dom-harness/mutate-k04c-units.mjs EXIT 0: mutacje=37 wykryte=37 niewykryte=0 (02-logi/mutate-k04c-units.txt)
 - Pomiar przed domknieciem luk (przebieg pierwszy, 37 mutacji): wykryte 29, niewykryte 8: skladnik Prawa value=0 (Porzadek), prog kultury `>` vs `>=` (granica), relSzPkt=0 (znak), dominujaca vs stateReligion (Kultura), wiersz „Pula zamożności” (Zamożność), drugi wiersz „Wyżywienie” (WZROST), wiersz „Wojsko” (tick), linie resolveCityHealthK. Kazda luka domknieta wektorem z numerem linii pinu (3892, 3963, 3966, 3497-3498, 4883, 5521, 5569); przeżytych mutacji nie uznano za równoważne.
 - git diff --check EXIT 0
 BLOKADY: brak techniczna.

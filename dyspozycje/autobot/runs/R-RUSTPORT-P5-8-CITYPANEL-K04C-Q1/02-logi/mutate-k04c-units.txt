@@ -1,7 +1,3 @@
-
-> civ-frontend-v2@0.0.0 harness:k04c:mutate
-> node tools/dom-harness/mutate-k04c-units.mjs
-
 WYKRYTA  exit=1 [Porzadek] SzPct czytany z PrawPct
 WYKRYTA  exit=1 [Porzadek] Szczescie pkt +1
 WYKRYTA  exit=1 [Porzadek] warunek wiersza Prawo (prawMax)
