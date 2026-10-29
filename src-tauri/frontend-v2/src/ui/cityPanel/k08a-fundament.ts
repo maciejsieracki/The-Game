@@ -47,7 +47,7 @@ export function setK08aDeps(next: K08aDeps | null): void {
 }
 
 /** K08A-Z2: brak `setK08aDeps` = wyjątek (pin zawsze wywołuje te funkcje; cicha utrata efektu byłaby błędem). */
-function requireK08aDeps(): K08aDeps {
+export function requireK08aDeps(): K08aDeps {
   if (deps === null) throw new Error('K08A: brak setK08aDeps (rerender/DOM — pin zawsze je wywołuje)');
   return deps;
 }

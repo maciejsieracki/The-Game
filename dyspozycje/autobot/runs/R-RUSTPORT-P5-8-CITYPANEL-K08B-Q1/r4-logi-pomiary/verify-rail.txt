@@ -1,0 +1,10 @@
+{
+ "TEXT": 6,
+ "SUBS": 7,
+ "COVER": 6,
+ "EXPORT": 6,
+ "blocks": 6,
+ "ORPHAN": 0,
+ "fails": 0
+}
+verify-k08b-copies: OK

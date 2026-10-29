@@ -1,0 +1,11 @@
+{
+ "TEXT": 0,
+ "SUBS": 7,
+ "COVER": 1,
+ "EXPORT": 1,
+ "blocks": 1,
+ "ORPHAN": 0,
+ "fails": 1
+}
+FAIL TEXT: renderPurchasableUnits różni się od pinu od linii 28 (port: "    mount.appendChild(el('div', 'ptitle', '<span>Rekrutuj jednostkę</span>'));", pin: "    mount.appendChild(el('div', 'ptitle', '<span>Rekrutuj jednostkę (za Pieniądz)</span>'));")
+verify-k08b-copies: 1 różnic

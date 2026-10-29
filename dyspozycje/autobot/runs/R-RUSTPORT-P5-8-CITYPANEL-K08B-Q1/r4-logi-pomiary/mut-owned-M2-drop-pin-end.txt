@@ -1,0 +1,12 @@
+{
+ "TEXT": 0,
+ "SUBS": 7,
+ "COVER": 1,
+ "EXPORT": 2,
+ "blocks": 1,
+ "ORPHAN": 0,
+ "fails": 2
+}
+FAIL TEXT: renderBuildingsOwned różni się od pinu od linii 73 (port: "", pin: undefined)
+FAIL COVER: brak markera dla renderBuildingsOwnedRightPanel (9341)
+verify-k08b-copies: 2 różnic

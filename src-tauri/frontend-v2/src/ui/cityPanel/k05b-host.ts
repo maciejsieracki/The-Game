@@ -125,6 +125,8 @@ export interface K05bCfg {
   getEpoch?: (ownerId: number) => number | undefined;
   getCivBonusy?: (ownerId: number) => readonly unknown[] | undefined;
   getManpowerSnapshot?: (cityId: number) => ManpowerSnapshotK05b | undefined;
+  /** K08B-Z2 (runda 1): pin `cfg.getBuiltBuildingIds?.(city.id)` — używane przez `renderOwnedBuildingsBar` (K08B). */
+  getBuiltBuildingIds?: (cityId: number) => readonly string[] | undefined;
 }
 
 /** K05B-Z5: migawka rekrutów miasta (pin: `getManpowerSnapshot`) — pola czytane przez `buildRecruitTabDetailCard`. */

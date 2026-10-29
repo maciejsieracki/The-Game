@@ -1,0 +1,11 @@
+{
+ "TEXT": 2,
+ "SUBS": 7,
+ "COVER": 1,
+ "EXPORT": 2,
+ "blocks": 2,
+ "ORPHAN": 0,
+ "fails": 1
+}
+FAIL COVER: renderBuildingsOwned zakres portu 9184-9256 != pin 9184-9255
+verify-k08b-copies: 1 różnic

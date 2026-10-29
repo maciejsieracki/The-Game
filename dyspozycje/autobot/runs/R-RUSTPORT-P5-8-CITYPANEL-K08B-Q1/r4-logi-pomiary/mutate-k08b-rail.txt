@@ -1,0 +1,24 @@
+ZABITA       on-class-inverted — klasa "on" odwrócona
+ZABITA       pressed-inverted — aria-pressed odwrócone
+ZABITA       click-no-rerender — klik bez rerender
+ZABITA       click-no-clear — klik bez clearGarrisonPanel
+ZABITA       click-set-const — klik ustawia stałą zakładkę
+ZABITA       click-guard-dropped — brak strażnika aktywnej zakładki
+ZABITA       footer-hint — tekst podpowiedzi stopki
+ZABITA       footer-no-close — stopka bez closeCityView
+ZABITA       chrome-not-hidden — okolica-aux bez hidden
+ZABITA       w4-scroll-swap — klasy karty W4 zamienione
+ZABITA       w4-id-dropped — id karty W4 pominięte
+ZABITA       owned-count-default — liczba budynków domyślnie 1
+ZABITA       owned-label — etykieta paska zmieniona
+ZABITA       rail-vert-w3-swap — klasa w3 przy vertical zamieniona
+EQUIV (przeżyła; równoważna wg pinu) scale-const — scalePx zastąpione zerem (gałąź iconPx martwa w pinie: pin :11616 + :11629 else-if)
+ZABITA       owned-no-stop — klik bez stopPropagation
+ZABITA       owned-click-side — klik: dok prawy zamiast lewego
+ZABITA       owned-click-data — klik: data→null (karta bez danych)
+ZABITA       owned-no-click-show — klik bez showHoverDetailNow
+ZABITA       owned-hover-side — hover: dok prawy zamiast lewego
+ZABITA       owned-hover-delay — hover: opóźnienie 100 ms zamiast 280
+ZABITA       owned-hover-data — hover: data→null (karta bez danych)
+ZABITA       owned-no-hover — brak attachHoverDetail
+mutate-k08b-rail: 23 mutacji, 22 zabitych, 1 równoważnych, 0 nieoczekiwanych

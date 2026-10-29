@@ -1,0 +1,12 @@
+ZABITA       delay-220-200 (exit=1)
+ZABITA       side-left-right (exit=1)
+ZABITA       side-auto-left (exit=1)
+ZABITA       btn-type-missing (exit=1)
+ZABITA       class-ptitle (exit=1)
+ZABITA       btn-aria (exit=1)
+ZABITA       title-text (exit=1)
+ZABITA       title-html-as-text (exit=1)
+ZABITA       attach-build-dropped (exit=1)
+ZABITA       head-no-append (exit=2)
+ZABITA       side-hint-fixed-right (exit=1)
+mutate-k08b-title: 11/11 ZABITA, nieoczekiwane=0

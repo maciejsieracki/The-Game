@@ -1,0 +1,11 @@
+{
+ "TEXT": 1,
+ "SUBS": 7,
+ "COVER": 2,
+ "EXPORT": 2,
+ "blocks": 2,
+ "ORPHAN": 0,
+ "fails": 1
+}
+FAIL TEXT: renderBuildingsOwned różni się od pinu od linii 10 (port: "  // P-PRODUKCJA, znalezisko Evaluatora (2026-08-12): mount", pin: "  // P-PRODUKCJA-BUDYNKI-WYBUDOWANE-PRAWA-KOLUMNA, znalezisko Evaluatora (2026-08-12): mount")
+verify-k08b-copies: 1 różnic

@@ -1,0 +1,12 @@
+{
+ "TEXT": 0,
+ "SUBS": 7,
+ "COVER": 0,
+ "EXPORT": 1,
+ "blocks": 1,
+ "ORPHAN": 1,
+ "fails": 2
+}
+FAIL COVER: brak markera dla renderPurchasableUnits (8891)
+FAIL ORPHAN: marker 8890-8977 poza partią
+verify-k08b-copies: 2 różnic

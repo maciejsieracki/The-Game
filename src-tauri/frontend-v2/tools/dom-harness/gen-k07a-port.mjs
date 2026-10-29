@@ -185,6 +185,11 @@ export function setK07aScalePx(px: number): void {
   scalePx = px;
 }
 
+/** K08B-Z3 (runda 1): odczyt \`scalePx\` pinu dla jednostek K08B (kopie \`k08b-rail.ts\`); pin ma jedną zmienną. */
+export function getK07aScalePx(): number {
+  return scalePx;
+}
+
 // ─── K07A-Z4: adaptery zewnętrzne (r3) — \`cfg\` (akcesory pinu) i \`ext\` (wyniki reguł/DTO) ─────────────────────────────
 
 /** K07A-Z4: akcesory \`cfg.*\` pinu używane przez jednostki K07A (kształt jak w pinie; brak = \`undefined\`). */
