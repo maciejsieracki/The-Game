@@ -10,7 +10,7 @@
  *   `viewmodel/types.ts` robi kontroler (nie ten modul).
  * - K01B-Z2: stale etykiet (PODZIAL_PRACY_*, CITY_PANEL_RANGE_DEPOSIT_LABELS, 'Podatek') sa
  *   kopia wartosci z pinu (gra/src/game/cities.ts:535-539, gra/src/game/resource-access.ts:243-247,
- *   gra/src/game/danina-nazwa.ts:15). Gate zgodnosci wartosci: NIE_ZMIERZONO w tej rundzie.
+ *   gra/src/game/danina-nazwa.ts:15). Zgodnosc wartosci: harness run-k01b.mjs (bramka F; stale i DOM).
  * - K01B-Z3: REGULY (R) nie sa liczone w UI. Wywolania reguł (etaTurns, buildingEffectAtLevel,
  *   stockResourceLabel, rationy, bonusy mnoznikow, growthGainPerTurnSlots, ...) ida przez port
  *   `CityPanelRulesPort` w `k01b-reguly.ts`, wstrzykiwany przez kontroler.

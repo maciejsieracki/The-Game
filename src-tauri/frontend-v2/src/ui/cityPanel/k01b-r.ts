@@ -2,9 +2,11 @@
  * K01B partia R (P5-8, R-RUSTPORT-P5-8-CITYPANEL-K01B-Q1, runda 1): 15 jednostek pinu
  * gra/src/ui/cityPanel.ts (edb8fb56), ktore w pinie wolaly reguly gry. W porcie reguly ida
  * przez `reguly()` (port wstrzykiwany przez kontroler, k01b-reguly.ts) — UI nie liczy regul.
- * Tresc funkcji zachowana 1:1 z pinem; zmiana: wywolanie `reguly().X` zamiast importu z game/.
+ * Tresc funkcji = linie pinu po normalizacji (`tools/dom-harness/verify-k01b-copies.mjs`): zmiany to wywolania
+ * `reguly().X` zamiast importu z game/ (K01B-Z3), typy DTO `*K` (K01B-Z1) i pozycje ALLOWED w tym skrypcie.
  */
 import { fmtDecPl, pluralTur, yieldBrandIconHtml, formatConverterAmount } from './k01a-fundament';
+import type { BrandIconSize } from '../icons/brandAssets';
 import { reguly } from './k01b-reguly';
 import type {
   BuildingDefK,
@@ -15,7 +17,7 @@ import type {
   ProductionItemK,
   RationParamsK,
 } from './k01b-dto';
-import { YIELD_BRAND as YIELD_BRAND_R, frontItemK } from './k01b-t';
+import { YIELD_BRAND, frontItemK } from './k01b-t';
 import type { CityView } from './k01b-t';
 
 // pin edb8fb56 gra/src/ui/cityPanel.ts:913-915 (import logiki etaTurns -> port)
@@ -115,7 +117,8 @@ export function orderBandEffectShort(band: OrderBandK | string): string {
   }
 }
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:6484-6495
+// pin edb8fb56 gra/src/ui/cityPanel.ts:6483-6493
+/** Przychód budynku na turę — wartość z buildingEffectAtLevel (C-PRZYROST=A). */
 export function formatBuildingYieldDetailValue(baza: number, przyrost: number, level: number): string {
   const effect = reguly().buildingEffectAtLevel(baza, przyrost, level);
   if (effect === 0 && baza === 0 && przyrost === 0) return '—';
@@ -127,7 +130,8 @@ export function formatBuildingYieldDetailValue(baza: number, przyrost: number, l
   return main;
 }
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:6496-6502
+// pin edb8fb56 gra/src/ui/cityPanel.ts:6495-6502
+/** Skrót przychodu na chipie infokarty budynku — realna wartość na poziomie miasta. */
 export function formatBuildingYieldChipText(baza: number, przyrost: number, label: string, level: number): string {
   const effect = reguly().buildingEffectAtLevel(baza, przyrost, level);
   const sign = effect >= 0 ? '+' : '';
@@ -147,7 +151,7 @@ export function formatBuildingYieldScaleRow(def: BuildingDefK, baza: number, prz
   return parts.join(' · ');
 }
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:6516-6554
+// pin edb8fb56 gra/src/ui/cityPanel.ts:6515-6554
 /** Chipy bonusów (max 3) — mockup Poziom B budynków 1E. */
 export function buildingBonusChipsHtml(
   def: BuildingDefK,
@@ -155,9 +159,8 @@ export function buildingBonusChipsHtml(
   max = 3,
   level = 1,
 ): string {
-  const rules = reguly();
   const chips: string[] = [];
-  for (const y of YIELD_BRAND_R) {
+  for (const y of YIELD_BRAND) {
     if (chips.length >= max) break;
     const base = def.baza[y.key] ?? 0;
     const inc = def.przyrost[y.key] ?? 0;
@@ -170,16 +173,18 @@ export function buildingBonusChipsHtml(
   // Sciezki ulepszen jednostek (2026-07-25, druga tura -- suma lancucha
   // upgradeFrom): mnoznik nie idzie juz do Pracy -- pokaz PRAWDZIWY,
   // SKUMULOWANY efekt (Pancerz / Parametry, wlasny % + cala sciezka
-  // poprzednikow) tylko dla 6 rozpoznanych budynkow.
-  const role = rules.mnoznikRoleForBuildingId(def.id);
+  // poprzednikow) tylko dla 6 rozpoznanych budynkow; dla reszty
+  // (Targowisko/Akademia/Pretorium) mnoznik jest odtad calkowicie martwy,
+  // wiec chip znika (nie obiecujemy nieistniejacego).
+  const role = reguly().mnoznikRoleForBuildingId(def.id);
   if (role) {
-    const cumulative = rules.cumulativeMnoznikForBuildingId(def.id, buildings);
+    const cumulative = reguly().cumulativeMnoznikForBuildingId(def.id, buildings);
     if (cumulative !== 0 && chips.length < max) {
       const label = role === 'pancerz' ? 'Pancerz' : 'Parametry';
       chips.push(`<span class="bld-infocard-chip">+${cumulative}% ${label}</span>`);
     }
   }
-  const defenseProc = rules.buildingStructuralDefenseBonusPercent(def.id);
+  const defenseProc = reguly().buildingStructuralDefenseBonusPercent(def.id);
   if (defenseProc != null && chips.length < max) {
     chips.push(
       `<span class="bld-infocard-chip">${yieldBrandIconHtml('chip-garrison', 13)}+${defenseProc}% Obrona</span>`,
@@ -193,23 +198,22 @@ export function buildingOwnedBonusCompactHtml(
   def: BuildingDefK,
   level: number,
   buildings: readonly BuildingDefK[],
-  opts?: { max?: number; iconSize?: 8 | 10 | 13 | number; compact?: boolean },
+  opts?: { max?: number; iconSize?: BrandIconSize; compact?: boolean },
 ): string {
-  const rules = reguly();
   const max = opts?.max ?? (opts?.compact ? 3 : 5);
   const iconSize = opts?.iconSize ?? (opts?.compact ? 8 : 10);
   const chips: string[] = [];
-  for (const y of YIELD_BRAND_R) {
+  for (const y of YIELD_BRAND) {
     if (chips.length >= max) break;
-    const val = rules.buildingEffectAtLevel(def.baza[y.key] ?? 0, def.przyrost[y.key] ?? 0, level);
+    const val = reguly().buildingEffectAtLevel(def.baza[y.key] ?? 0, def.przyrost[y.key] ?? 0, level);
     if (val === 0) continue;
     chips.push(
       `<span class="bld-owned-chip">${val > 0 ? '+' : ''}${val}${yieldBrandIconHtml(y.brandId, iconSize)}</span>`,
     );
   }
-  const role = rules.mnoznikRoleForBuildingId(def.id);
+  const role = reguly().mnoznikRoleForBuildingId(def.id);
   if (role && chips.length < max) {
-    const cumulative = rules.cumulativeMnoznikForBuildingId(def.id, buildings);
+    const cumulative = reguly().cumulativeMnoznikForBuildingId(def.id, buildings);
     if (cumulative !== 0) {
       chips.push(`<span class="bld-owned-chip">+${cumulative}%</span>`);
     }
@@ -227,11 +231,10 @@ export function formatResourceUpkeepText(
 ): string {
   const keys = Object.keys(resources);
   if (keys.length === 0) return '';
-  const label = (k: string): string => reguly().stockResourceLabel(k);
   return keys
     .map(k => (compact
-      ? `−${resources[k]} ${label(k)}`
-      : `−${resources[k]} ${label(k)}/t`))
+      ? `−${resources[k]} ${reguly().stockResourceLabel(k)}`
+      : `−${resources[k]} ${reguly().stockResourceLabel(k)}/t`))
     .join(' · ');
 }
 
@@ -240,10 +243,9 @@ export function buildingUpkeepDisplay(
   def: BuildingDefK,
   level: number,
 ): { gold: number; resources: Record<string, number> } {
-  const rules = reguly();
   return {
-    gold: rules.buildingUpkeep(def, level),
-    resources: rules.buildingResourceUpkeep(def),
+    gold: reguly().buildingUpkeep(def, level),
+    resources: reguly().buildingResourceUpkeep(def),
   };
 }
 
@@ -252,12 +254,11 @@ export function sumOwnedBuildingsResourceUpkeep(
   built: readonly string[],
   data: GameDataK,
 ): Record<string, number> {
-  const rules = reguly();
   const out: Record<string, number> = {};
   for (const id of built) {
     const def = data.buildings.find(b => b.id === id);
     if (!def) continue;
-    rules.addResourceCosts(out, rules.buildingResourceUpkeep(def));
+    reguly().addResourceCosts(out, reguly().buildingResourceUpkeep(def));
   }
   return out;
 }
@@ -267,20 +268,19 @@ export function formatConverterProductionRowHtml(
   display: { consumed: Record<string, number>; produced: Record<string, number> },
   compact: boolean,
 ): string {
-  const label = (k: string): string => reguly().stockResourceLabel(k);
   const parts: string[] = [];
   for (const [k, v] of Object.entries(display.consumed)) {
     const r1 = Math.round(v * 10) / 10;
     if (r1 <= 0) continue;
     const amtTxt = formatConverterAmount(v);
-    const txt = compact ? `−${amtTxt} ${label(k)}` : `−${amtTxt} ${label(k)}/t`;
+    const txt = compact ? `−${amtTxt} ${reguly().stockResourceLabel(k)}` : `−${amtTxt} ${reguly().stockResourceLabel(k)}/t`;
     parts.push(`<span class="bld-owned-conv-in">${txt}</span>`);
   }
   for (const [k, v] of Object.entries(display.produced)) {
     const r1 = Math.round(v * 10) / 10;
     if (r1 <= 0) continue;
     const amtTxt = formatConverterAmount(v);
-    const txt = compact ? `+${amtTxt} ${label(k)}` : `+${amtTxt} ${label(k)}/t`;
+    const txt = compact ? `+${amtTxt} ${reguly().stockResourceLabel(k)}` : `+${amtTxt} ${reguly().stockResourceLabel(k)}/t`;
     parts.push(`<span class="bld-owned-conv-out">${txt}</span>`);
   }
   if (parts.length === 0) return '';

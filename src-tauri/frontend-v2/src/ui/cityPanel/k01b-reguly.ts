@@ -32,8 +32,6 @@ export interface CityPanelRulesPort {
   cumulativeMnoznikForBuildingId(id: string, buildings: readonly BuildingDefK[]): number;
   /** Pin: `buildingStructuralDefenseBonusPercent`. */
   buildingStructuralDefenseBonusPercent(id: string): number | null;
-  /** Pin: `buildRationParams` (population-growth-v85.ts). */
-  buildRationParams(): RationParamsK;
   /** Pin: `rationGrowthPercent`. */
   rationGrowthPercent(level: PoziomRacjiK, params?: RationParamsK): number;
   /** Pin: `rationFoodCostPerPop`. */

@@ -1,0 +1,5 @@
+verify-k01b-copies: bloki 58, linie pinu (niepuste) 648, roznice po normalizacji 24 (dozwolone 24, niedozwolone 0)
+COVER jednostki z deklaracja w bloku: OK (odroczone 57, bez bloku 0: )
+TEXT roznice poza ALLOWED: OK (0)
+MARK nieznane markery: OK (brak)
+WYNIK: ZIELONE (COVER,TEXT,MARK)

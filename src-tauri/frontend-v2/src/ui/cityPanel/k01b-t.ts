@@ -1,7 +1,7 @@
 /**
  * K01B partia T (P5-8, R-RUSTPORT-P5-8-CITYPANEL-K01B-Q1, runda 1): 26 jednostek pinu
  * gra/src/ui/cityPanel.ts (edb8fb56) zaleznych wylacznie od typow obiektowych (DTO w k01b-dto.ts)
- * albo od stalych. Kopia tresci 1:1; zmienione tylko typy (`*K`) i importy (ui/ zamiast game/data).
+ * albo od stalych. Tresc = pin po normalizacji (tools/dom-harness/verify-k01b-copies.mjs): typy `*K`, importy ui/ zamiast game/data, pozycje ALLOWED z powodem.
  * Numer linii pinu przy kazdej jednostce.
  */
 import { buildingIconSvg, unitIconSvg } from '../icons/brandAssets';
@@ -59,7 +59,7 @@ export function moveQueueItem(prod: CityProductionK, index: number, dir: -1 | 1)
   };
 }
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:667-676
+// pin edb8fb56 gra/src/ui/cityPanel.ts:667-674
 export function copyCityProduction(prod: CityProductionK): CityProductionK {
   return {
     kolejka: [...prod.kolejka],
@@ -69,7 +69,7 @@ export function copyCityProduction(prod: CityProductionK): CityProductionK {
   };
 }
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:677-693
+// pin edb8fb56 gra/src/ui/cityPanel.ts:676-693
 /** Przesuń pozycję kolejki rekrutacji w górę/dół. */
 export function moveRecruitQueueItem(prod: CityProductionK, index: number, dir: -1 | 1): CityProductionK {
   const rq = prod.rekrutacja ?? [];
@@ -89,7 +89,7 @@ export function moveRecruitQueueItem(prod: CityProductionK, index: number, dir: 
   };
 }
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:696-712
+// pin edb8fb56 gra/src/ui/cityPanel.ts:695-712
 /** Przenieś pozycję kolejki rekrutacji na inny indeks. */
 export function reorderRecruitQueueItem(prod: CityProductionK, fromIndex: number, toIndex: number): CityProductionK {
   const rq = prod.rekrutacja ?? [];
@@ -109,7 +109,7 @@ export function reorderRecruitQueueItem(prod: CityProductionK, fromIndex: number
   };
 }
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:715-731
+// pin edb8fb56 gra/src/ui/cityPanel.ts:714-731
 /** Przenieś pozycję kolejki (indeks ≥ 1) na inny indeks w tej samej kolejce. */
 export function reorderQueueItem(prod: CityProductionK, fromIndex: number, toIndex: number): CityProductionK {
   const len = prod.kolejka.length;
@@ -168,8 +168,8 @@ export interface CityView {
   citizenUpkeep: CitizenUpkeepK;
 }
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:1108-1125 (pola; wealthMnoznik jest polem DTO, nie importem)
-/** Snapshot imperium do paska zasobów w widoku miasta (spójny z HudState). */
+// pin edb8fb56 gra/src/ui/cityPanel.ts:1107-1125 (pola; wealthMnoznik jest polem DTO, nie importem)
+/** Bilans pieniędzy jednego miasta — tylko przychody/koszty tego grodu. */
 export interface CityMoneySnap {
   /** Wpływ do skarbca imperium z tego miasta / turę. */
   doSkarbca: number;
@@ -194,12 +194,21 @@ export function daninaLabelForCity(_city: CityRefK): DaninaLabelK {
   return 'Podatek';
 }
 
-// pin edb8fb56 gra/src/ui/cityPanel.ts:1348
+// pin edb8fb56 gra/src/ui/cityPanel.ts:1348-1348
 export const PULA_LBL = PODZIAL_PRACY_PULA_LBL;
-// pin edb8fb56 gra/src/ui/cityPanel.ts:1349
+// pin edb8fb56 gra/src/ui/cityPanel.ts:1349-1349
 export const PULA_LBL_PELNA = PODZIAL_PRACY_PULA_LBL_PELNA;
 // pin edb8fb56 gra/src/ui/cityPanel.ts:1350-1360
 export const PULA_TIP = PODZIAL_PRACY_PULA_TIP;
+/**
+ * R-PRACA-JEDEN-PODZIAL-Q1 — ROOT CAUSE osmiu nawrotow tego tematu byl TUTAJ:
+ * pole nazywalo sie `doUlepszen`, a nioslo `doPuli` (cala pula imperium, ktora
+ * finansuje TAKZE cuda na mapie, zakladanie miast i wycinke). Ta sama liczba
+ * miala w tym pliku cztery rozne nazwy. Pole `doUlepszen` zostalo USUNIETE;
+ * jedyna nazwa tej liczby to `doPuli` — identyczna jak w silniku
+ * (`production.ts::splitPraca`). Nie wolno przywracac nazwy `doUlepszen` dla
+ * czegokolwiek, co nie jest wprost budzetem ulepszen terenu.
+ */
 
 // pin edb8fb56 gra/src/ui/cityPanel.ts:1470-1479
 export function resolveCityFedForUi(
@@ -240,6 +249,11 @@ export function normalizeResourceAccess(
     active: (raw.active ?? []).filter(l => CITY_PANEL_RANGE_DEPOSIT_LABELS.has(l)),
     legacy: false,
   };
+  // DYSPOZYCJA 85 (Maciej 2026-07-26): `raw.tradeSources` (którego szlak handlowy
+  // przyznał dostęp do tego surowca) już NIE jest odczytywany tutaj -- to jest
+  // informacja o handlu międzynarodowym, a ta należy WYŁĄCZNIE do panelu Handel
+  // (empireDetailPanel.ts), nie do panelu miasta. main.ts nadal może zwracać to
+  // pole (getResourceAccess) -- po prostu nie jest tu już konsumowane.
 }
 
 // pin edb8fb56 gra/src/ui/cityPanel.ts:6368-6371
