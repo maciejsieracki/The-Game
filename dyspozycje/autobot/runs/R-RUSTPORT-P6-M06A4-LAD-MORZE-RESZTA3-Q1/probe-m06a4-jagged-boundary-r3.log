@@ -1,0 +1,67 @@
+{
+ "thresholds": {
+  "erode": 0.68,
+  "fill": 0.32
+ },
+ "near_values": {
+  "erode": [
+   0.6799999999999999,
+   0.68,
+   0.6800000000000002
+  ],
+  "fill": [
+   0.31999999999999995,
+   0.32,
+   0.32000000000000006
+  ]
+ },
+ "evaluated": 12660,
+ "exact_erode": 0,
+ "exact_fill": 0,
+ "ulp_erode_minus": 0,
+ "ulp_erode_plus": 0,
+ "ulp_fill_minus": 0,
+ "ulp_fill_plus": 0,
+ "per_size": {
+  "9x9": {
+   "evaluated": 375,
+   "exact": 0,
+   "ulp": 0
+  },
+  "12x14": {
+   "evaluated": 1200,
+   "exact": 0,
+   "ulp": 0
+  },
+  "16x25": {
+   "evaluated": 3780,
+   "exact": 0,
+   "ulp": 0
+  },
+  "20x30": {
+   "evaluated": 6240,
+   "exact": 0,
+   "ulp": 0
+  },
+  "7x5": {
+   "evaluated": 45,
+   "exact": 0,
+   "ulp": 0
+  },
+  "6x6": {
+   "evaluated": 60,
+   "exact": 0,
+   "ulp": 0
+  },
+  "12x12": {
+   "evaluated": 960,
+   "exact": 0,
+   "ulp": 0
+  },
+  "8x1": {
+   "evaluated": 0,
+   "exact": 0,
+   "ulp": 0
+  }
+ }
+}

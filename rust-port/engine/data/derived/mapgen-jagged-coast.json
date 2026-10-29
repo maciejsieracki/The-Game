@@ -1,0 +1,17 @@
+{
+  "meta": {
+    "temat": "R-RUSTPORT-P6-M06A4-LAD-MORZE-RESZTA3-Q1",
+    "zrodlo_web": "gra/src/map/gen-helpers.ts (pin edb8fb56), :4232 applyJaggedCoastNoise (noiseScale 0.28; fine = fbm(...,3)*0.35 z mnoznikiem 2.1 i przesunieciem 200; progi erozji 0.68 i wypelnienia 0.32; przesuniecie przebiegu 17/31)",
+    "uwaga": "Parametry szumu i progi edytowalne. Kod nie zawiera ich literalow (runda 3, partia 3b). Liczba przebiegow jest argumentem wywolania (web: 2, 1, 5)."
+  },
+  "skala_szumu": 0.28,
+  "mnoznik_drobnej_skali": 2.1,
+  "przesuniecie_drobnej_skali": 200.0,
+  "waga_drobnej_skali": 0.35,
+  "oktawy_grubej_skali": 4,
+  "oktawy_drobnej_skali": 3,
+  "przesuniecie_przebiegu_x": 17.0,
+  "przesuniecie_przebiegu_y": 31.0,
+  "prog_erozji_lad": 0.68,
+  "prog_wypelnienia_morze": 0.32
+}

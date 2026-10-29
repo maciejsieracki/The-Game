@@ -4,13 +4,31 @@ Temat: R-RUSTPORT-P6-M06A4-LAD-MORZE-RESZTA3-Q1. Runda 1 (Operator-impl, `5ed29a
 Pin webu: `edb8fb56` (`gra/src/map/gen-helpers.ts`). Zakres: wiersze RUNDA-2 z tabeli M06A (linie 3186-4374).
 Poprzednie partie: `P6-M06A.md` (r1), `P6-M06A2-LAD-MORZE-RESZTA.md`, `P6-M06A3-LAD-MORZE-RESZTA.md` (partia 1).
 
+## Runda 3 (Operator-impl, partie 3a i 3b)
+
+Baza: `origin/rust-port/parity-v2` = `ea68697d` (wczesniej `364a5356` w dispatchu - ta wersja jest ancestorem). Kolejnosc wg dispatchu: `morseDepthFromMapBorder` -> `trimEnclosedOceanOnly` -> `purgeInlandWaterForMultiLandTyp` (partia 3a, commit `0c1c708a`), potem `applyJaggedCoastNoise` (partia 3b, commit: patrz `git log`).
+
+- Wektory: `tests/p6_m06a4_vectors/trim-vectors.json` (2.2 MB; generator `gen-m06a4-trim-vectors.mjs`, seed 20261030) i `tests/p6_m06a4_vectors/jagged-vectors.json` (0.8 MB; generator `gen-m06a4-jagged-vectors.mjs`, seed 20261031). Oba z `git archive edb8fb56 gra/src gra/data` w katalogu POZA repo; sha256 `gen-helpers.ts` = `ab934703...`. `web-vectors.json` (rundy 2) bez zmian.
+- Zaleznosci juz w Rust: `fillEnclosedWaterByLandNeighbors`, `removeInlandWaterPools` (`landsea.rs`); `fbm`, `PERM_TABLE_LEN` (`prims.rs`); `isInMapBorder` (`terrain_class.rs`).
+- Konwencje rozdzielone: literaly galezi (progi 0.68 / 0.32, argumenty 5 i 4) w kodzie jako stale galezi; parametry szumu (skala 0.28, mnoznik 2.1, przesuniecie 200, waga 0.35, oktawy 4/3, przesuniecia przebiegu 17/31) i progi w `mapgen-jagged-coast.json`.
+- Zalozenie Z-9 (partia 3a): `trimEnclosedOceanOnly` iteruje po wszystkich wpisach mapy (takze niekanonicznych), tak jak `Object.entries` w webie. Dla klucza niekanonicznego web i port zgadzaja sie (wektor `edge_noncanonical_key`). Rozbieznosc Z-1 dotyczy wyłącznie `fillEnclosedWaterByLandNeighbors` (web `parseHexKey` bierze dwie pierwsze skladowe, port pomija klucz) - dlatego wektory `purgeInlandWaterForMultiLandTyp` nie zawieraja kluczy niekanonicznych.
+- Zalozenie Z-10 (partia 3b): `applyJaggedCoastNoise` z `passes` jako argumentem (web: 2 domyslnie, 1 w `generator.ts:389`, 5 w `gen-helpers.ts:3690`). Wektory: 1, 2, 5 przebiegow.
+- Pomiar granic (raport generatora, nie dowod portu): `jagged-vectors.json` `stats.near_threshold` = 1049 ocen szumu z `|coast - prog| < 0.01` z 17662 ocen. Liczba trafien dokladnie na progu (`coast == prog`) NIE_ZMIERZONO; granice sprawdzone testami 1-ulp na funkcjach decyzji (`erode_threshold_n_minus_1_n_n_plus_1`, `fill_threshold_n_minus_1_n_n_plus_1`).
+- Pokrycie `purgeInland`: rodzina "brzeg" (srodek Morze, d = 0..6 sasiadow Laka, pozycje in/near/border, wariant Morze i Plytkie Morze); klucze `fill_d<d>_<pos>_<f5|later|nop>`. Pozycja `border` ma tylko 4 istniejace sasiedztwa (brak sasiadow poza mapa), wiec d >= 5 tam nie wystepuje - NIE_ZMIERZONO dla progu 5 na krawedzi.
+- NIE_ZMIERZONO (runda 3, zgodnie z dispatchem "bez dlugich pomiarow"): mutacje dla 3a i 3b; `FILL_ENCLOSED_MAX_PASSES` = 8 (limit przebiegow) - brak wektora, ktory go dosiega (cascade dluzszy niz 8 przebiegow nie zostal zbudowany).
+- Testy: `p6_m06a4_trim.rs` (5 testow), `p6_m06a4_jagged.rs` (4 testy). Wszystkie zielone. Bramki: fmt EXIT=0, clippy `-D warnings` EXIT=0, test 1263 passed / 0 failed (baseline 1254 z ea68697d + 9 nowych). Logi: `gate-*-partia3-r3.log` (3a), `gate-*-partia3b-r3.log` (3b).
+- Dryf po pinie i zakres: bez zmian wzgledem sekcji "Dryf po pinie" ponizej (zaden hunk w 3186-4374).
+- Pozostale symbole zakresu RUNDA-2 po rundzie 3: `applyLandFractionByScore`, `rebalanceLandFractionWithMargins`, `erodePangeaBboxLowScoreRim`, `carvePangeaLongSideGulfs`, `rebalanceLandFractionPangea`, `applyLandFractionByContinent`, `rebalanceLandSeaRatio`, `assignContinentIndices`, `sortLandKeysForErosion`, `pangeaAnnularMaxCorridorWidth`, `groupDryLandMassKeys`, `isPangeaBridgeWater`, `LandFractionFillBias` (dane).
+
 ## Stan symboli (binarne kryterium)
 
 | Symbol (web) | Stan | Dowod |
 |---|---|---|
 | `purgeDesertEnclaveWater` :4156 | PORTOWANY (partia 2) | `landsea.rs::purge_desert_enclave_water`; progi z `data/derived/mapgen-desert-purge.json` (`derived.rs::mapgen_desert_purge`); test `purge_desert_enclave_water_matches_web` (4991 przypadkow z weba, 0 rozbieznosci mapy i liczby zmian); test `coverage_matches_threshold_rule_on_both_sides` |
-| `purgeInlandWaterForMultiLandTyp` :4215 | RUNDA-2 (partia 3) | wywoluje `trimEnclosedOceanOnly` (web :4701, poza zakresem M06A4); najpierw port `trimEnclosedOceanOnly` - decyzja w sekcji Zalozenia Z-3 |
-| `applyJaggedCoastNoise` :4232 | RUNDA-2 (partia 3+) | szum (`mulberry32`/`fbm`/perm) |
+| `morseDepthFromMapBorder` :4659 | PORTOWANY (r3, partia 3a) | `landsea.rs::morse_depth_from_map_border`; test `morse_depth_from_map_border_matches_web` (101 przypadkow, pelny zbior `(klucz, odleglosc)`); wektory `trim-vectors.json` |
+| `trimEnclosedOceanOnly` :4701 | PORTOWANY (r3, partia 3a) | `landsea.rs::trim_enclosed_ocean_only`; test `trim_enclosed_ocean_only_matches_web` (101 przypadkow, liczba zmian + pelna mapa; w tym klucz niekanoniczny `1,2,5`, ktory web tez zamienia) |
+| `purgeInlandWaterForMultiLandTyp` :4215 | PORTOWANY (r3, partia 3a) | `landsea.rs::purge_inland_water_for_multi_land_typ` (progi wywolan 5 i 4 jako stale `PURGE_INLAND_FILL_MIN_LAND_*`); test `purge_inland_water_for_multi_land_typ_matches_web` (100 przypadkow); granice `fill(5)` / `fill(4)`: rodzina "brzeg" w `trim-vectors.json` + `coverage_has_both_sides_of_fill_thresholds` |
+| `applyJaggedCoastNoise` :4232 | PORTOWANY (r3, partia 3b) | `landsea.rs::apply_jagged_coast_noise` (+ `jagged_coast_value`, `jagged_erode_decision`, `jagged_fill_decision`); parametry szumu i progi w `data/derived/mapgen-jagged-coast.json` (`derived.rs::mapgen_jagged_coast`); test `apply_jagged_coast_noise_matches_web` (55 przypadkow, perm z weba, passes 1/2/5); granice `coast > 0.68` i `coast < 0.32`: testy N-1/N/N+1 na 1 ulp (`erode_threshold_n_minus_1_n_n_plus_1`, `fill_threshold_n_minus_1_n_n_plus_1`) |
 | `LandFractionFillBias` / `PANGEA_LAND_FILL_MIN_SCORE` :3435-3438 | RUNDA-2 (dane) | do `data/derived/*.json` |
 | `applyLandFractionByScore` :3444 | RUNDA-2 | - |
 | `rebalanceLandFractionWithMargins` :3532 | RUNDA-2 | - |
@@ -170,3 +188,102 @@ Nowe pomiary (obrona r3):
 - M15: nowy test Rust-only `non_canonical_key_is_skipped_not_processed` (plik `tests/p6_m06a4_landsea.rs`, dodany; zaden istniejacy test nie zmieniony w tej rundzie). Mutant M15 (`key_qr(key).unwrap_or((0, 0))`) zabity: test FAILED, pozostale 3 testy OK. Uwaga: web przetworzylby klucz niekanoniczny (Z-1), wiec test pina zachowanie portu, nie weba.
 
 Stan partii 3 (`trimEnclosedOceanOnly`, `purgeInlandWaterForMultiLandTyp`, `applyJaggedCoastNoise`): NIE wykonana w tej rundzie. Zaleznosci zmierzone: `purgeInlandWaterForMultiLandTyp` (web :4215) wola `trimEnclosedOceanOnly` (:4701), ktory wola `morseDepthFromMapBorder` (:4659). W `rust-port/engine/src` brak odpowiednika (grep morse_depth na a91d6fcb: pusto). `fillEnclosedWaterByLandNeighbors` i `removeInlandWaterPools` sa juz w `landsea.rs` (:367, :353).
+
+## Obrona r3: pomiary partii 3a/3b (odpowiedzi na zarzuty Evaluatora r3)
+
+Stan wejsciowy: commity `0c1c708a` (3a) i `21a1eb7e` (3b). Worktree Operatora zniknal w trakcie pracy; ta obrona odtwarza pomiary od zera na `21a1eb7e` (`git checkout --detach 21a1eb7e`). Sekcja niniejsza zastepuje wpisy "NIE_ZMIERZONO" dla mutacji 3a/3b w sekcji "Runda 3" powyzej.
+
+Zmiany kodu w tej obronie: tylko nowy test `tests/p6_m06a4_chan.rs` i wektor `tests/p6_m06a4_vectors/chan-vectors.json` (zabija mutant PM04). Kod `landsea.rs`, `derived.rs`, JSON parametrow: bez zmian (potwierdzone po mutacjach: `git diff --stat` pusty dla tych plikow).
+
+### Zabicie PM04 (przezyta mutacja z obrony rundy 3)
+
+- Mutant PM04 = usuniety OSTATNI `removeInlandWaterPools` w `purge_inland_water_for_multi_land_typ`. Wynik roznic sie od weba wtedy i tylko wtedy, gdy po `fill(4)` istnieje woda inlandowa (`removeInlandWaterPools` cos zamienia).
+- Mechanizm: kanal morza z dokladnie 4 sasiadami Laka jest zamieniany przez `fill(4)` (nie przez `fill(5)`), odcinajac pule morza od oceanu; ta pule zamienia dopiero drugi `removeInland`.
+- Przypadki: `gen-m06a4-chan-vectors.mjs` (seed 20261034, web pin `edb8fb56`) przeszukal 3540 losowych map 9x9 i zachowal 12 przypadkow, w ktorych `inland_after_fill4 > 0` (liczone na kodzie weba krok po kroku). Wektor: `tests/p6_m06a4_vectors/chan-vectors.json` (53997 B).
+- Test: `purge_channel_cut_matches_web_including_last_remove_inland` (12/12 przypadkow z weba) oraz `chan_vectors_meta_pin_and_counts` (kazdy przypadek ma `inland_after_fill4 > 0`).
+- Wynik: PM04 ZABITA (`FAILED` w `purge_channel_cut_matches_web_including_last_remove_inland`). Przypadek przeszedl z "PRZEZYTA" do "ZABITA"; wpis PM04 z zarzutu jest zamkniety pomiarem, nie uzasadnieniem.
+
+### Mutacje partii 3 (49 planowanych, 49 wykonanych)
+
+Runner: `mut-runner-m06a4-r3.py` (ten sam schemat co r2: jeden `old` wystepujacy dokladnie raz, zapis, `cargo test --test p6_m06a4_trim --test p6_m06a4_chan --test p6_m06a4_jagged --no-fail-fast`, przywrocenie pliku w `finally`). Wyniki: `mut-results-partia3-r3.jsonl` (49 wpisow, jeden na ID, 0 BUILD_ERROR w wyniku koncowym, 0 PATTERN_ERROR). Plan ID: MM01-MM10 (indeksy 0-9), TM01-TM09 (10-18), PM01-PM08 (19-26), JD01 (27), JF01 (28), JF02 (29), JV01-JV06 (30-35), JL01-JL08 (36-43), JS01-JS05 (44-48). Plan zostal odtworzony na nowo (oryginalna lista z raportu Operatora r3 nie zostala zapisana), dlatego ID i mutacje sa opisane w tabeli ponizej i w naglowku runnera.
+
+Uwaga o TM01: pierwsza wersja uzywala `Terrain::PlytkieMorze`, co nie kompiluje sie (wariant nazywa sie `Terrain::ShallowSea`); wpis BUILD_ERROR zostal usuniety z jsonl i mutant uruchomiony ponownie (wynik ZABITA). Wpis TM08 wzorca poprawiony (wzorzec wystepowal dwa razy).
+
+| ID | Mutacja | Wynik (obrona r3) |
+|----|---------|-------|
+| MM01 | granica: usun warunek q == 0 | ZABITA |
+| MM02 | granica: usun warunek r == 0 | ZABITA |
+| MM03 | granica: usun warunek q == width-1 | ZABITA |
+| MM04 | granica: usun warunek r == height-1 | ZABITA |
+| MM05 | ziarno: kazda woda (is_water_terrain_local) zamiast Morze | ZABITA |
+| MM06 | sasiad: kazda woda zamiast Morze | ZABITA |
+| MM07 | odleglosc: d+1 -> d | ZABITA |
+| MM08 | kolejka: odczyt od konca (nie FIFO) | ZABITA |
+| MM09 | ziarno: odleglosc 0 -> 1 | ZABITA |
+| MM10 | granica: r == height-1 -> r == height-2 | ZABITA |
+| TM02 | warunek: odwrocone contains_key | ZABITA |
+| TM03 | cel: Grassland -> Plains | ZABITA |
+| TM04 | usun overlay = Brak | ZABITA |
+| TM05 | usun river_present = false | ZABITA |
+| TM06 | usun river_edges.clear() | ZABITA |
+| TM07 | usun has_deposit = false | ZABITA |
+| TM08 | licznik: += 1 -> += 2 | ZABITA |
+| TM09 | usun warunek pomijania heksow z wynikiem BFS | ZABITA |
+| TM01 | zakres: przetwarzaj takze PlytkieMorze | ZABITA |
+| PM01 | usun pierwszy fill(5) | ZABITA |
+| PM02 | prog fill A: 5 -> 4 | ZABITA |
+| PM03 | prog fill B: 4 -> 5 | ZABITA |
+| PM04 | usun OSTATNI removeInland (po fill(B)) | ZABITA |
+| PM05 | usun trim | ZABITA |
+| PM06 | usun PIERWSZY removeInland (po fill(A)) | ZABITA |
+| PM07 | licznik: ostatni krok n = zamiast n += | ZABITA |
+| PM08 | kolejnosc: fill(B) przed trim | ZABITA |
+| JD01 | erozja: coast > prog -> coast >= prog | ZABITA |
+| JF01 | wypelnienie: coast < prog -> coast <= prog | ZABITA |
+| JF02 | wypelnienie: odwrocony kierunek (coast > prog) | ZABITA |
+| JV01 | gruby szum x: usun przesuniecie przebiegu x | ZABITA |
+| JV02 | gruby szum y: usun przesuniecie przebiegu y | ZABITA |
+| JV03 | drobny szum x: usun mnoznik | ZABITA |
+| JV04 | drobny szum: usun wage | ZABITA |
+| JV05 | suma: coarse - fine | ZABITA |
+| JV06 | gruby szum: oktawy drobnej skali | ZABITA |
+| JL01 | petla przebiegow: tylko pierwszy | ZABITA |
+| JL02 | bufor krawedzi: usun pominiecie | ZABITA |
+| JL03 | przebieg: szum zawsze z przebiegu 0 | ZABITA |
+| JL04 | erozja: usun warunek is_coastal_land_hex | ZABITA |
+| JL05 | wypelnienie: usun warunek is_coastal_morse_hex | ZABITA |
+| JL06 | licznik erozji: usun changed += 1 | ZABITA |
+| JL07 | licznik wypelnienia: usun changed += 1 | ZABITA |
+| JL08 | zbieranie: pominiecie zastosowania erozji | ZABITA |
+| JS01 | skala_szumu 0.28 -> 0.29 | ZABITA |
+| JS02 | mnoznik_drobnej_skali 2.1 -> 2.2 | ZABITA |
+| JS03 | przesuniecie_drobnej_skali 200 -> 201 | ZABITA |
+| JS04 | waga_drobnej_skali 0.35 -> 0.36 | ZABITA |
+| JS05 | prog_wypelnienia_morze 0.32 -> 0.33 | ZABITA |
+
+Wynik: 49/49 ZABITA. Zadna mutacja strukturalna (MM/TM/PM/JL/JV) nie przezyla, wiec dowody rownowaznosci nie sa potrzebne.
+
+### Granice (N-1 / N / N+1)
+
+- Progi calkowite `fill(5)` i `fill(4)` (`count_land_neighbors >= min_land`): pokrycie w `trim-vectors.json` (`coverage`, klucze `fill_d<d>_<in|near|border>_<f5|later|nop>`), d = 0..6 dla pozycji in/near/border, obie strony progu. Test `coverage_has_both_sides_of_fill_thresholds` zielony.
+- Progi zmiennoprzecinkowe `coast > 0.68` i `coast < 0.32` (`applyJaggedCoastNoise`): pomiar `probe-m06a4-jagged-boundary-r3.mjs` (log `probe-m06a4-jagged-boundary-r3.log`, prawdziwy kod weba, pin edb8fb56): 12660 ocen szumu w tych samych rozmiarach map, perm (seed 20261031-33) i przebiegach 0-4. Wynik: `coast === 0.68` 0 razy, `coast === 0.32` 0 razy, sasiedztwo 1 ulp (0.6799999999999999 / 0.6800000000000002, 0.31999999999999995 / 0.32000000000000006) 0 razy.
+- Wniosek: wektory z szumu NIE trafiaja na prog zmiennoprzecinkowy (szum jest ciagly; trafienie wymagaloby przypadkowej rownosci z dokladnoscia do bitu). Granice N-1/N/N+1 sa wiec pokryte testami jednostkowymi decyzji (`erode_threshold_n_minus_1_n_n_plus_1`, `fill_threshold_n_minus_1_n_n_plus_1`, 1 ulp), ktore zabijaja JD01, JF01, JF02 i JS05. ODRZUCAM zarzut, ze wektory musza trafiac dokladnie w prog floatowy: nie da sie tego osiagnac przez generator z perm (to pomiar, nie luka testu).
+
+### Dryf po pinie (zakres 3186-4374)
+
+- `git diff -U0 edb8fb56 origin/main -- gra/src/map/gen-helpers.ts` (origin/main = `9f6f7771`): 8 hunkow w liniach edb8fb56: 5995, 8469, 10355, 10395, 10544, 10696, 10779, 10807. Zaden nie wpada w 3186-4374. Plik: `drift-gen-helpers-edb8fb56-origin-main-r3.diff`. Pin pozostaje `edb8fb56`.
+
+### Weryfikator wektorow i bramki (obrona r3)
+
+- Weryfikator: `verifier-pomiary-r3.log`. Wektory `trim-vectors.json`, `jagged-vectors.json` i `chan-vectors.json` przegenerowane z `git archive edb8fb56 gra/src gra/data` (katalog poza repo), `cmp` IDENTICAL, sha256 `gen-helpers.ts` = `ab934703...`.
+- Zgodnosc z uruchomionym webem: testy `*_matches_web` (porownanie kazdego przypadku wektora z wynikiem portu) przechodza: 101 BFS, 101 trim, 100 purge, 55 jagged, 12 chan. Wektory sa wyjsciem uruchomionego weba, wiec 0 rozbieznosci = 0 niezgodnosci test/port w tych przypadkach.
+- fmt: `gate-fmt-pomiary-r3.log` EXIT=0 (po `rustfmt` nowego pliku testowego).
+- clippy `--all-targets -D warnings`: `gate-clippy-pomiary-r3.log` EXIT=0.
+- test (pelny, `--no-fail-fast`): `gate-test-pomiary-r3.log` 1265 passed, 0 failed, EXIT=0 (baseline 1263 z `21a1eb7e` + 2 nowe testy `p6_m06a4_chan`).
+- Mutacje: `mut-results-partia3-r3.jsonl`, 49/49 ZABITA.
+
+### Stan symboli po obronie
+
+- `morseDepthFromMapBorder`, `trimEnclosedOceanOnly`, `purgeInlandWaterForMultiLandTyp`, `applyJaggedCoastNoise`: PORTOWANE (bez zmian kodu w obronie); mutacje 49/49 ZABITA; wektory 0 rozbieznosci.
+- Otwarte (poza ta obrona): `FILL_ENCLOSED_MAX_PASSES` = 8 bez wektora dosiegajacego limitu (Z-13, NIE_ZMIERZONO); reszta symboli RUNDA-2 jak w tabeli powyzej.
+- Zakres RUNDA-2 pozostaje do decyzji orkiestratora (Z-8).
