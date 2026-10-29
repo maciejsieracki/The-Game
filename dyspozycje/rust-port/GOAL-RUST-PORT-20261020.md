@@ -59,7 +59,7 @@ dotykające tych samych plików — zawsze sekwencyjnie, nigdy w tej samej fali.
 | 30 | R-RUSTPORT-P5-8-CITYPANEL-K09A-Q1 | P5.8 | 2/5 | wf_22d071fc-4d1 | **PASS — zintegrowane** (`fb55afe2`, 9/9 jedn.) |
 | 31 | R-RUSTPORT-P6-M06A5-LAD-MORZE-ULAMEK-Q1 | P6 mapgen | 1/5 | (nowy) | etap 1 | 2026-10-29 |
 | 32 | R-RUSTPORT-P5-8-CITYPANEL-K09B-Q1 | P5.8 | 2/5 | wf_1c7c1a7f-0f6 | **PASS-WITH-NOTES — zintegrowane** (`4160cd9b`, wiring 36/36, mutacje 28/28); dług → K09C/K09D | 2026-10-29 |
-| 33 | R-RUSTPORT-REPIN-EKONOMIA-A-Q1 | REPIN 4b | 1/5 | wf_18412929-da2 | etap 1 | 2026-10-29 |
+| 33 | R-RUSTPORT-REPIN-EKONOMIA-A-Q1 | REPIN 4b | 3/5 | wf_18412929-da2 | **ZAMKNIĘTE ADM. (manpower.ts zrobione) — zintegrowane** (`84136f57`, 1272/0); reszta → B (production/turn-economy), C (terrain-improvements + M16), D (economy/work-tax) | 2026-10-29 |
 | 34 | R-RUSTPORT-REPIN-MAPA-Q1 | REPIN 4d | 3/5 | wf_e1ae1e19-d3b | **PASS-WITH-NOTES — zintegrowane** (docs, `ba28008c`): 8 hunków gen-helpers = zamiana FIFO (bez portu), M04/M05A/M05B 0 rozbieżności; M16 (11551+40) → REPIN-EKONOMIA-C (`terrain-improvements`) | 2026-10-29 |
 | 35 | R-RUSTPORT-REPIN-WOJNA-NOWE-A-Q1 | REPIN 2a | 1/5 | wf_028d6130-ada | etap 1 | 2026-10-29 |
 | 24 | R-RUSTPORT-P6-M06A4-LAD-MORZE-RESZTA3-Q1 | P6 mapgen | 3/5 | wf_206786d8-1fa | **PASS-WITH-NOTES (partie 2–3) — zintegrowane** (`5a1fbb33`, 1265/0); zamknięte adm.; reszta → M06A5 |
