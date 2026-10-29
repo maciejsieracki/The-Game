@@ -1420,10 +1420,12 @@ pub mod manpower {
     use std::sync::OnceLock;
 
     use super::army_merge::{js_max, js_min, js_round};
+    use crate::data::civilizations::CivMatrixFile;
     use crate::data::derived::{locale_compare_ascii, manpower_params};
     use crate::data::economy_society::{
         parse_epoka_ludnosc_manpower, parse_miasto_params, MiastoParams,
     };
+    use crate::domain::civ_matrix::civ_matrix_param;
 
     // -----------------------------------------------------------------------
     // Semantyka JS: Number#toString, localeCompare, stabilne sortowanie
@@ -1760,6 +1762,21 @@ pub mod manpower {
         pub wartosc: Option<f64>,
     }
 
+    /// Web `civManpowerRegenMult` (`manpower.ts:396`, pin 91dc998a): bonusy z civs.json bez wplywu (zawsze 1.0).
+    pub fn civ_manpower_regen_mult(_bonusy: Option<&[CivBonusPoborLite]>) -> f64 {
+        1.0
+    }
+
+    /// Web `civManpowerMaxMult` (`manpower.ts:415`, pin 91dc998a): zawsze 1.0.
+    pub fn civ_manpower_max_mult(_bonusy: Option<&[CivBonusPoborLite]>) -> f64 {
+        1.0
+    }
+
+    /// Web `civManpowerMults` (`manpower.ts:431`, pin 91dc998a): zawsze neutralne (regen, max).
+    pub fn civ_manpower_mults(_bonusy: Option<&[CivBonusPoborLite]>) -> (f64, f64) {
+        (1.0, 1.0)
+    }
+
     fn bonus_is(bonus: &CivBonusPoborLite, typ: &str) -> Option<f64> {
         match (&bonus.typ, bonus.wartosc) {
             (Some(t), Some(w)) if t == typ => Some(w),
@@ -1767,46 +1784,78 @@ pub mod manpower {
         }
     }
 
-    /// Web `civManpowerRegenMult` (`manpower.ts:396`).
-    pub fn civ_manpower_regen_mult(bonusy: Option<&[CivBonusPoborLite]>) -> f64 {
+    /// KOMPATYBILNOSC (pin edb8fb56, `manpower.ts` sprzed 91dc998a): mnozniki z bonusow civs.json.
+    /// Uzywane WYLACZNIE przez `city_growth` (P6.7A), dopoki `population-growth-v85.ts` nie zostanie
+    /// przeportowany (Czesc B REPIN). Nowy web tych bonusow nie czyta.
+    pub fn civ_manpower_mults_legacy_edb8fb56(bonusy: Option<&[CivBonusPoborLite]>) -> (f64, f64) {
         let table = &manpower_params().mnozniki_cywilizacji;
-        let mut mult = 1.0;
-        let Some(list) = bonusy.filter(|list| !list.is_empty()) else {
-            return mult;
-        };
-        for bonus in list {
-            if let Some(w) = bonus_is(bonus, &table.typ_regen_bonus) {
-                mult *= 1.0 + w;
-            } else if let Some(w) = bonus_is(bonus, &table.typ_regen_mnoznik) {
-                mult *= w;
+        let (mut regen, mut max) = (1.0, 1.0);
+        if let Some(list) = bonusy.filter(|list| !list.is_empty()) {
+            for bonus in list {
+                if let Some(w) = bonus_is(bonus, &table.typ_regen_bonus) {
+                    regen *= 1.0 + w;
+                } else if let Some(w) = bonus_is(bonus, &table.typ_regen_mnoznik) {
+                    regen *= w;
+                }
+                if let Some(w) = bonus_is(bonus, &table.typ_pula_bonus) {
+                    max *= 1.0 + w;
+                } else if let Some(w) = bonus_is(bonus, &table.typ_pula_mnoznik) {
+                    max *= w;
+                }
             }
         }
-        js_max(table.regen_min, mult)
+        (js_max(table.regen_min, regen), js_max(table.max_min, max))
     }
 
-    /// Web `civManpowerMaxMult` (`manpower.ts:415`).
-    pub fn civ_manpower_max_mult(bonusy: Option<&[CivBonusPoborLite]>) -> f64 {
-        let table = &manpower_params().mnozniki_cywilizacji;
-        let mut mult = 1.0;
-        let Some(list) = bonusy.filter(|list| !list.is_empty()) else {
-            return mult;
-        };
-        for bonus in list {
-            if let Some(w) = bonus_is(bonus, &table.typ_pula_bonus) {
-                mult *= 1.0 + w;
-            } else if let Some(w) = bonus_is(bonus, &table.typ_pula_mnoznik) {
-                mult *= w;
-            }
+    /// Web `ManpowerMatrixOverrides` (`manpower.ts`, pin 91dc998a). `None` = pole `undefined`.
+    #[derive(Debug, Clone, Copy, PartialEq, Default)]
+    pub struct ManpowerMatrixOverrides {
+        pub mp_regen_proc: Option<f64>,
+        pub mp_max_proc: Option<f64>,
+        pub mp_koszt_jednostki_proc: Option<f64>,
+    }
+
+    /// Web `CivManpowerMultipliers` (`manpower.ts`, pin 91dc998a).
+    #[derive(Debug, Clone, Copy, PartialEq)]
+    pub struct CivManpowerMultipliers {
+        pub regen_mult: f64,
+        pub max_mult: f64,
+        pub cost_mult: f64,
+    }
+
+    /// Web `matrixMultiplier` (`manpower.ts`): skonczona wartosc => `max(0, 1 + v)`, inaczej 1.
+    fn matrix_multiplier(value: Option<f64>) -> f64 {
+        match value {
+            Some(v) if v.is_finite() => js_max(0.0, 1.0 + v),
+            _ => 1.0,
         }
-        js_max(table.max_min, mult)
     }
 
-    /// Web `civManpowerMults` (`manpower.ts:431`).
-    pub fn civ_manpower_mults(bonusy: Option<&[CivBonusPoborLite]>) -> (f64, f64) {
-        (
-            civ_manpower_regen_mult(bonusy),
-            civ_manpower_max_mult(bonusy),
-        )
+    /// Web `civManpowerMatrixMults` (`manpower.ts`, pin 91dc998a). `civ_matrix` = (macierz, klucz
+    /// cywilizacji) zastepuje web `civMatrixParam(civKey, ...)`; `None` = web `civKey` `undefined`.
+    /// Override ma pierwszenstwo; brak pola = neutralne 1.0 (ZALOZENIE: Rust nie ma globalnego
+    /// `civ-matrix.ts`, wiec macierz podaje wywolujacy jawnie).
+    pub fn civ_manpower_matrix_mults(
+        overrides: Option<&ManpowerMatrixOverrides>,
+        civ_matrix: Option<(&CivMatrixFile, &str)>,
+    ) -> CivManpowerMultipliers {
+        let read = |from_override: Option<f64>, param_id: &str| -> Option<f64> {
+            if from_override.is_some() {
+                return from_override;
+            }
+            civ_matrix.map(|(matrix, key)| civ_matrix_param(matrix, key, param_id))
+        };
+        CivManpowerMultipliers {
+            regen_mult: matrix_multiplier(read(
+                overrides.and_then(|o| o.mp_regen_proc),
+                "mp_regen_proc",
+            )),
+            max_mult: matrix_multiplier(read(overrides.and_then(|o| o.mp_max_proc), "mp_max_proc")),
+            cost_mult: matrix_multiplier(read(
+                overrides.and_then(|o| o.mp_koszt_jednostki_proc),
+                "mp_koszt_jednostki_proc",
+            )),
+        }
     }
 
     // -----------------------------------------------------------------------
@@ -2084,14 +2133,11 @@ pub mod manpower {
         format!("{} {word}", js_number_to_string(n))
     }
 
-    /// Web `scaledManpower` (`manpower.ts:440`).
+    /// Web `scaledManpower` (`manpower.ts:440`, pin 91dc998a): `Math.max(0, isFinite(m) ? m : 1)`.
+    /// Pole `skalowanie_min` z danych (0.1, pin edb8fb56) nie jest juz czytane przez web.
     fn scaled_manpower(base: f64, max_mult: f64) -> f64 {
-        (base
-            * js_max(
-                manpower_params().mnozniki_cywilizacji.skalowanie_min,
-                max_mult,
-            ))
-        .floor()
+        let factor = if max_mult.is_finite() { max_mult } else { 1.0 };
+        (base * js_max(0.0, factor)).floor()
     }
 
     /// Web `cityManpowerMax` (`manpower.ts:502`).
@@ -2111,11 +2157,16 @@ pub mod manpower {
     }
 
     /// Web `unitManpowerCostForType` (`manpower.ts:520`).
-    pub fn unit_manpower_cost_for_type(type_id: Option<&str>, epoka: f64, max_mult: f64) -> f64 {
+    pub fn unit_manpower_cost_for_type(
+        type_id: Option<&str>,
+        epoka: f64,
+        _max_mult: f64,
+        cost_mult: f64,
+    ) -> f64 {
         if is_scout_type_id(type_id) {
             return 0.0;
         }
-        unit_manpower_cost(epoka, max_mult)
+        unit_manpower_cost(epoka, cost_mult)
     }
 
     /// Web `cityManpowerCurrent` (`manpower.ts:530`).
@@ -2206,12 +2257,13 @@ pub mod manpower {
         epoka: f64,
         regen_mult: f64,
         max_mult: f64,
+        cost_mult: f64,
     ) -> CityManpowerSnapshot {
         let ludki = clamp_ludki(city.population);
         let row = epoka_manpower_row(epoka);
         let ludnosc_absolutna = ludki * row.ludek_na_ludka;
         let manpower_max = scaled_manpower(ludki * row.manpower_na_ludka, max_mult);
-        let koszt_jednostki = scaled_manpower(row.manpower_na_jednostke, max_mult);
+        let koszt_jednostki = scaled_manpower(row.manpower_na_jednostke, cost_mult);
         let manpower_biezacy = city_manpower_current(city, epoka, max_mult);
         let regen_params = load_manpower_regen_params(None);
         CityManpowerSnapshot {
@@ -2276,8 +2328,9 @@ pub mod manpower {
         epoka: f64,
         max_mult: f64,
         type_id: Option<&str>,
+        cost_mult: f64,
     ) -> bool {
-        let cost = unit_manpower_cost_for_type(type_id, epoka, max_mult);
+        let cost = unit_manpower_cost_for_type(type_id, epoka, max_mult, cost_mult);
         if cost <= 0.0 {
             return true;
         }
@@ -2391,6 +2444,7 @@ pub mod manpower {
 
     /// Web `canAffordUnitManpowerEmpire` (`manpower.ts:698`); `_recruiting_city`, `_pop_cost` jak w
     /// webie nieuzywane.
+    #[allow(clippy::too_many_arguments)]
     pub fn can_afford_unit_manpower_empire(
         cities: &[ManpowerCity],
         owner_id: i64,
@@ -2399,8 +2453,9 @@ pub mod manpower {
         _pop_cost: f64,
         max_mult: f64,
         type_id: Option<&str>,
+        cost_mult: f64,
     ) -> bool {
-        let koszt_manpower = unit_manpower_cost_for_type(type_id, epoka, max_mult);
+        let koszt_manpower = unit_manpower_cost_for_type(type_id, epoka, max_mult, cost_mult);
         if koszt_manpower <= 0.0 {
             return true;
         }
@@ -2435,6 +2490,7 @@ pub mod manpower {
     }
 
     /// Web `tryDeductUnitSpawnCostsEmpire` (`manpower.ts:713`). Mutuje `cities`.
+    #[allow(clippy::too_many_arguments)]
     pub fn try_deduct_unit_spawn_costs_empire(
         cities: &mut [ManpowerCity],
         recruiting_city_id: &str,
@@ -2443,11 +2499,12 @@ pub mod manpower {
         _pop_cost: f64,
         max_mult: f64,
         type_id: Option<&str>,
+        cost_mult: f64,
     ) -> UnitSpawnDeduction {
         let recruiting = cities
             .iter()
             .position(|c| c.id == recruiting_city_id && c.owner_id == owner_id);
-        let koszt_manpower = unit_manpower_cost_for_type(type_id, epoka, max_mult);
+        let koszt_manpower = unit_manpower_cost_for_type(type_id, epoka, max_mult, cost_mult);
         let recruiting_mp = recruiting
             .map(|i| city_manpower_current(&cities[i], epoka, max_mult))
             .unwrap_or(0.0);
@@ -2489,8 +2546,9 @@ pub mod manpower {
         pop_cost: f64,
         max_mult: f64,
         type_id: Option<&str>,
+        cost_mult: f64,
     ) -> UnitSpawnDeduction {
-        let koszt_manpower = unit_manpower_cost_for_type(type_id, epoka, max_mult);
+        let koszt_manpower = unit_manpower_cost_for_type(type_id, epoka, max_mult, cost_mult);
         let cur = city_manpower_current(city, epoka, max_mult);
         if cur < koszt_manpower {
             return UnitSpawnDeduction {
@@ -2532,8 +2590,9 @@ pub mod manpower {
         pop_cap: Option<f64>,
         max_mult: f64,
         type_id: Option<&str>,
+        cost_mult: f64,
     ) -> (f64, f64) {
-        let mp_refund = unit_manpower_cost_for_type(type_id, epoka, max_mult);
+        let mp_refund = unit_manpower_cost_for_type(type_id, epoka, max_mult, cost_mult);
         let raw_pop = city.population + pop_cost;
         let population = match pop_cap {
             Some(cap) => js_min(cap, raw_pop),
@@ -2574,8 +2633,9 @@ pub mod manpower {
         epoka: f64,
         amount: Option<f64>,
         max_mult: f64,
+        cost_mult: f64,
     ) -> f64 {
-        let cost = amount.unwrap_or_else(|| unit_manpower_cost(epoka, max_mult));
+        let cost = amount.unwrap_or_else(|| unit_manpower_cost(epoka, cost_mult));
         let cur = city_manpower_current(city, epoka, max_mult);
         js_max(0.0, cur - cost)
     }
@@ -2597,6 +2657,7 @@ pub mod manpower {
         difficulty: ManpowerDifficulty,
         resolve_owner_era: &dyn Fn(i64) -> f64,
         resolve_owner_bonusy: &dyn Fn(i64) -> Option<Vec<CivBonusPoborLite>>,
+        resolve_owner_matrix: Option<&dyn Fn(i64) -> Option<ManpowerMatrixOverrides>>,
         get_max_hp: &dyn Fn(&str, &ManpowerHealUnit) -> f64,
         raw_miasto_params: Option<&MiastoManpowerRaw>,
         mut on_unit_hp_changed: Option<&mut HpChangedFn<'_>>,
@@ -2626,12 +2687,12 @@ pub mod manpower {
 
         for (owner_id, owner_units) in by_owner {
             let epoka = resolve_owner_era(owner_id);
-            let bonusy = resolve_owner_bonusy(owner_id);
-            let max_mult = civ_manpower_max_mult(bonusy.as_deref());
+            let _bonusy = resolve_owner_bonusy(owner_id);
+            let overrides = resolve_owner_matrix.and_then(|resolve| resolve(owner_id));
+            let mults = civ_manpower_matrix_mults(overrides.as_ref(), None);
+            let max_mult = mults.max_mult;
+            let cost_mult = mults.cost_mult;
             let mut empire_mp = empire_manpower_current(cities, owner_id, epoka, max_mult);
-            if empire_mp <= 0.0 {
-                continue;
-            }
 
             let mut candidates: Vec<ReplenishmentCandidate> = Vec::new();
             for &index in &owner_units {
@@ -2671,13 +2732,24 @@ pub mod manpower {
                     Some(units[index].type_id.as_str()),
                     epoka,
                     max_mult,
+                    cost_mult,
                 );
-                if unit_cost <= 0.0 || is_scout_type_id(Some(units[index].type_id.as_str())) {
+                if is_scout_type_id(Some(units[index].type_id.as_str())) {
                     continue;
                 }
 
                 let desired_heal = manpower_heal_cap_for_turn(max_hp, cur_hp, &params);
                 if desired_heal <= 0.0 {
+                    continue;
+                }
+                if unit_cost == 0.0 {
+                    // Web: koszt 0 (costMult = -1) => leczenie bez zuzycia Manpower.
+                    let new_hp = js_min(max_hp, cur_hp + desired_heal);
+                    units[index].hp = Some(new_hp);
+                    if let Some(callback) = on_unit_hp_changed.as_mut() {
+                        callback(&units[index].id, new_hp, max_hp);
+                    }
+                    healed_count += 1;
                     continue;
                 }
 

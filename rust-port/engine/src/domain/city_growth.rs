@@ -549,7 +549,8 @@ pub mod p6_7a {
     use crate::domain::ids::LEGACY_BARBARIAN_OWNER_ID;
     use crate::domain::recruitment::army_merge::{js_max, js_min};
     use crate::domain::recruitment::manpower::{
-        civ_manpower_mults, refresh_manpower_after_pop_change, CivBonusPoborLite, ManpowerCity,
+        civ_manpower_mults_legacy_edb8fb56, refresh_manpower_after_pop_change, CivBonusPoborLite,
+        ManpowerCity,
     };
     use crate::domain::terrain::city_founding::p6_6b::cities::City;
 
@@ -1603,7 +1604,8 @@ pub mod p6_7a {
                             .and_then(|m| m.get(&owner_id))
                             .copied()
                             .unwrap_or(1.0);
-                        let (_regen, max_mult) = civ_manpower_mults(
+                        // KOMPATYBILNOSC P6.7A (pin edb8fb56) do portu population-growth-v85 (Czesc B).
+                        let (_regen, max_mult) = civ_manpower_mults_legacy_edb8fb56(
                             opts.civ_bonusy_by_owner
                                 .and_then(|m| m.get(&owner_id))
                                 .map(Vec::as_slice),
