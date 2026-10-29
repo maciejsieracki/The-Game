@@ -1,0 +1,12 @@
+switchCity                 pin=10209-10221  loc=13   hunki_kopii=4   head=10401-10413  pin_head=SAME
+rerender                   pin=11855-11941  loc=87   hunki_kopii=17  head=12041-12127  pin_head=SAME
+renderCityIconRightRail    pin=10793-10809  loc=17   hunki_kopii=0   head=10985-11001  pin_head=SAME
+renderOkolicaPanel         pin=11595-11603  loc=9    hunki_kopii=1   head=11781-11789  pin_head=SAME
+renderLeftPanelTab         pin=11668-11696  loc=29   hunki_kopii=1   head=11854-11882  pin_head=SAME
+renderRightPanelTab        pin=11698-11750  loc=53   hunki_kopii=4   head=11884-11936  pin_head=SAME
+paintCityPanelSections     pin=11756-11853  loc=98   hunki_kopii=11  head=11942-12039  pin_head=SAME
+showCityPanel              pin=11948-11961  loc=14   hunki_kopii=3   head=12134-12147  pin_head=SAME
+hideCityPanel              pin=11964-11968  loc=5    hunki_kopii=1   head=12150-12154  pin_head=SAME
+
+measure-k09a-drift: jednostek=9, hunki_kopii=42
+EXIT=0
