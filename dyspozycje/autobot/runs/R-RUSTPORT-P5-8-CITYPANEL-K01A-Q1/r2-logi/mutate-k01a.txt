@@ -1,0 +1,9 @@
+OK          linia (bez mutacji) :: EXIT=0 ZIELONE (A,B,C,E,F)
+WYKRYTA     M1 stała liczbowa w bloku :: oczekiwano A,F; CZERWONE: A,F
+WYKRYTA     M2 zmiana wartości zwracanej :: oczekiwano A,F; CZERWONE: A,F
+WYKRYTA     M3 token DOM w bloku :: oczekiwano A,C; CZERWONE: A,C,F
+WYKRYTA     M4 usunięty export :: oczekiwano B; CZERWONE: B,F
+WYKRYTA     M5 import z warstwy logiki :: oczekiwano C; CZERWONE: C
+WYKRYTA     M6 zły zakres linii pinu :: oczekiwano A; CZERWONE: A
+WYKRYTA     M7 dryf wartości zależności ui/uiParams (bez zmiany tekstu bloków) :: oczekiwano F; CZERWONE: F
+mutacje wykryte: 7/7; linia zielona: true

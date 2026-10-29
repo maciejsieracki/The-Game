@@ -1,0 +1,8 @@
+run-k01a: pin=edb8fb56 v2=ui/cityPanel/k01a-fundament.ts
+A tekst blokow: OK (bloki 74/74, rozbieznosci 0, nachodzace 0, zle markery 0, linie pinu 521)
+B eksporty: OK (deklaracje 74, brak export 0, dopisane export 70)
+C granice: OK (trafienia DOM 0, importy logiki 0, importy pakietow 0)
+D zaleznosci ui/ vs pin (raport): ../formatPl=SAME, ../icons/brandAssets=DIFF, ../icons/scienceOwlIcon=SAME, ../uiParams=DIFF
+E bundle: OK
+F wartosci: OK {"exportNames":64,"functions":36,"constants":28,"argSets":28,"cases":1036,"diffCount":0,"notMeasuredAllThrow":0}
+WYNIK: ZIELONE (A,B,C,E,F)
