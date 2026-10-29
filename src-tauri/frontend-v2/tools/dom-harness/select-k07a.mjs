@@ -55,9 +55,12 @@ const POMIAR = resolve(
 const R3 = args.includes('--r3');
 /** K07B (P5-8, R-RUSTPORT-P5-8-CITYPANEL-K07B-Q1): jednostki DOM bloku K07 = odroczone klasą DOM (15 jednostek, 1 074 LOC). */
 const K07B = args.includes('--k07b');
+/** K07B-Z6 (obrona r2, zarzut 8): tryb --k07b zapisuje WYŁĄCZNIE do katalogu runu K07B, nigdy do katalogu K07A. */
 const OUT = resolve(
   argOf('--out-dir') ??
-    fileURLToPath(new URL('../../../../dyspozycje/autobot/runs/R-RUSTPORT-P5-8-CITYPANEL-K07A-Q1/r1-logi', import.meta.url)),
+    (K07B
+      ? fileURLToPath(new URL('../../../../dyspozycje/autobot/runs/R-RUSTPORT-P5-8-CITYPANEL-K07B-Q1', import.meta.url))
+      : fileURLToPath(new URL('../../../../dyspozycje/autobot/runs/R-RUSTPORT-P5-8-CITYPANEL-K07A-Q1/r1-logi', import.meta.url))),
 );
 
 const r = selectK01a({ pinDir: resolve(PIN_DIR), pomiar: loadPomiar(POMIAR), block: K07_BLOCK, localTypes: K07A_LOCAL_COPIES, dtoSubst: K07A_DTO_SUBST });
