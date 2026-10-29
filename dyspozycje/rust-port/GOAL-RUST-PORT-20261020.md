@@ -38,10 +38,12 @@ dotykające tych samych plików — zawsze sekwencyjnie, nigdy w tej samej fali.
 
 | # | Temat | Faza | Runda | runId Workflow | Status | Ostatnia aktualizacja |
 |---|---|---|---|---|---|---|
-| 1 | R-RUSTPORT-REPIN-DELTA-Q1 | P1-delta | 1/5 | wf_b78ba3d8-189 | etap 1 (Operator) | 2026-10-29 |
+| 1 | R-RUSTPORT-REPIN-DELTA-Q1 | P1-delta | 3/5 | wf_b78ba3d8-189 | **PASS — zintegrowane** (docs, `da7a92f6`); slot wolny | 2026-10-29 |
 | 2 | R-RUSTPORT-P6-M05B-RELIEF-B-POKRYCIE-PASMA-Q1 | P6 mapgen | 2/5 | wf_9fa60ee3-244 | etap 1 (Operator-impl); r1 DEFERRED→FAIL | 2026-10-29 |
 | 3 | R-RUSTPORT-P5-8-CITYPANEL-PODZIAL-Q1 | P5.8 | 3/5 | wf_5b094795-b4f | **PASS — zintegrowane** (docs, `a1246e48`); slot wolny | 2026-10-29 |
 | 4 | R-RUSTPORT-P4-36-MOD14-BATTLE-3D-Q3 (3D, Opus — zgoda właściciela) | P4.36 | 1/5 | wf_2ef132a4-a0e | etap 1 (Operator-impl) | 2026-10-29 |
+| 5 | R-RUSTPORT-P5-8-CITYPANEL-K01-Q1 | P5.8 | 1/5 | wf_ba9d9b0f-72c | etap 1 (Operator-impl) | 2026-10-29 |
+| 6 | R-RUSTPORT-P5-8-CITYPANEL-K02-Q1 | P5.8 | 1/5 | wf_189a45df-f91 | etap 1 (Operator-impl) | 2026-10-29 |
 
 
 
