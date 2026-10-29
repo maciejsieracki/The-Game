@@ -27,6 +27,8 @@ dotykające tych samych plików — zawsze sekwencyjnie, nigdy w tej samej fali.
 
 > **WSTRZYMANIE NOWYCH DISPATCHY (właściciel, 2026-10-23):** limity się kończą — dokończ do Final Control i integracji wszystko, co już trwa (P6.7A, P6.7B, M05A, M12, P5.7, P4.36-Q2); NIE otwieraj nowych tematów ani nie wypełniaj zwolnionych slotów, dopóki właściciel nie wznowi w czacie.
 
+> **WZNOWIENIE (właściciel, 2026-10-29):** wstrzymanie dispatchy zdjęte dla wszystkiego, co NIE jest ciężką grafiką/3D — plan w `PLAN-PO-WZNOWIENIU-20261029.md`. Ciężkie prace 3D (Opus) odłożone na sam koniec, tylko przy zapasie limitu. Brak Opusa w pozostałych tematach.
+
 > **POLITYKA MODELI (właściciel, 2026-10-24, oszczędność limitów):** Haiku 5.5 (medium) dla Operatora/Obrony, a EVALUATOR i FINAL CONTROL zawsze Sonnet 5.5 medium (decyzje 2026-10-24 po kłopotach Haiku-Evaluatora i 2026-10-25 „Haiku za słaby na Final Control”) we WSZYSTKICH tematach; WYŁĄCZNIE jednostki i obiekty 3D (modele, bitwa 3D, renderer 3D: np. P4.36 części 2–5, MOD-xx) — Opus 5.5 medium. Zastępuje wcześniejszą regułę „grafika/renderer/UI-wizualia → Opus” (UI/panele P5 i wizualia 2D → Haiku). Uwaga procesowa: Evaluator na Haiku bywał bez werdyktu — Final Control weryfikuje niezależnie.
 
 | # | Temat | Faza | Runda | runId Workflow | Status | Ostatnia aktualizacja |

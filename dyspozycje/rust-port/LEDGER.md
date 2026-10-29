@@ -237,3 +237,6 @@ zaraz po zajściu zdarzenia (nie rekonstruowany później z pamięci — §2a pl
 
 ## 2026-10-29 — Zasada ścieżki 11 etapów i raportowania postępu (właściciel)
 Dopisano `R-PROC-AUTOBOT.md` §5d: stała ścieżka poprawki 1–11 (z obroną operatora jako etap 7, warunkowy) oraz reguła: na pytanie o postęp podaję numer etapu 1–11 per temat. Obowiązuje web i, gdzie stosowne, port Rust/Tauri. Bez zmian w `gra/`.
+
+## 2026-10-29 — WZNOWIENIE portu bez ciężkiej grafiki (decyzja właściciela, czat)
+Zdjęto wstrzymanie dispatchy dla tematów nie-graficznych; plan: `PLAN-PO-WZNOWIENIU-20261029.md` (T0 delta weba względem pinu, T1 mapgen M05B→…, T2 P6.8, T3 podział `cityPanel.ts`, T4–T8). Ciężkie 3D (Opus) na sam koniec. Sprawdzony stan GitHub: `origin/main` = ROBOCZA `00f76663`, `origin/rust-port/parity-v2` = `2c2f58f8`.
