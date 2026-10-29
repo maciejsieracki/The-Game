@@ -60,15 +60,27 @@ function extractLine(re) {
   return l;
 }
 
-const FNS = ['fillIconElement', 'makeMiniThumb', 'createScrollList', 'appendTabIndicators', 'appendSurowceGrid', 'appendIndywidualneToggle'];
+const FNS = [
+  'fillIconElement', 'makeMiniThumb', 'createScrollList', 'appendTabIndicators', 'appendSurowceGrid', 'appendIndywidualneToggle',
+  'appendBreakdownLines', 'appendW4PctMetricBlock', 'appendCitizenUpkeepBlock', 'makeBuildingThumb',
+  'appendBuildingInlineIcon', 'appendProductionPicon', 'productionQueueIconSpan',
+];
+// Stuby zaleznosci w gore pinu (partia 2): ikony budynku/produkcji oraz wiersze i podpis zaopatrzenia obywateli.
+// Strona v2 dostaje to samo jako argumenty (Z4/Z5) — harness odtwarza wywolujacego po stronie pinu i v2.
 const probeSrc = [
   'const CP_EMOJI_DETECT = /(?!)/u;',
   'function cpInlineIcons(h: string): string { return h; }',
   'function resourceBrandIconHtml(n: string): string { return \'<i class="rb">\' + n + \'</i>\'; }',
+  'function buildingIconHtml(def: any): string { return def == null ? \'\' : String(def); }',
+  'function productionItemIconHtml(_data: any, item: any): string { return item == null ? \'\' : String(item); }',
+  'function citizenUpkeepDisplayLines(u: any, _pop: number): any[] { return u.lines; }',
+  'function stockResourceLabel(k: string): string { return \'L:\' + k; }',
+  'function pctSubheadHtml(brandId: string, text: string): string { return \'<b>\' + brandId + \'</b><span>\' + text + \'</span>\'; }',
   'let __rrLog: string[] = [];',
   'function rerender(): void { __rrLog.push(\'rerender\'); }',
   'export function __setRerenderLog(a: string[]): void { __rrLog = a; }',
   extractLine(/^type TabIndicatorChip = /),
+  extractLine(/^type BreakdownLine = /),
   extractLine(/^const LIST_ROW_HEIGHT_EM = /),
   extractFn('el'),
   extractFn('statChip'),
@@ -125,6 +137,31 @@ try {
     ['appendSurowceGrid: pusta lista', 'appendSurowceGrid', (d, m) => [m, [], 'active', brand], 'mount'],
     ['appendIndywidualneToggle: WL, klik', 'appendIndywidualneToggle', (d, m, log) => [m, true, () => log.push('toggle'), 'row-x', () => log.push('rerender')], 'mount', true],
     ['appendIndywidualneToggle: WYL, klik', 'appendIndywidualneToggle', (d, m, log) => [m, false, () => log.push('toggle'), 'row-y', () => log.push('rerender')], 'mount', true],
+    ['appendW4PctMetricBlock: pct 42.6, linie mieszane', 'appendW4PctMetricBlock', (d, m) => [m, '<b>T</b>', 42.6, 'linear-gradient(red,blue)', [{ label: 'a', value: 1 }, { label: 'b', value: -2, neg: true }], 'pusto'], 'mount'],
+    ['appendW4PctMetricBlock: bez pct, tytul tekstowy, pusta podpowiedz', 'appendW4PctMetricBlock', (d, m) => [m, 'Tytul', undefined, 'g', undefined, 'brak'], 'mount'],
+    ['appendW4PctMetricBlock: pct 150, punkty, afterBar, bez linii i podpowiedzi', 'appendW4PctMetricBlock', (d, m) => [m, 'T', 150, 'g', [], '', (b) => { const s = b.ownerDocument.createElement('i'); s.textContent = 'AB'; b.appendChild(s); }, '(30/30 pkt)'], 'mount'],
+    ['appendW4PctMetricBlock: pct -5, tytul HTML, pusta lista z podpowiedzia', 'appendW4PctMetricBlock', (d, m) => [m, '<i>X</i>', -5, 'g', [], 'h'], 'mount'],
+    ['appendCitizenUpkeepBlock: wymagane, dwa wiersze (ok + brak)', 'appendCitizenUpkeepBlock', (d, m, log, pin) => {
+      const upkeep = { required: [1], lines: [{ key: 'zywnosc', value: 2, available: true }, { key: 'drewno', value: -1, available: false }] };
+      const sub = '<b>chip-crate</b><span>Zaopatrzenie obywateli</span>';
+      return pin ? [m, upkeep, 7] : [m, true, upkeep.lines.map(l => ({ label: 'L:' + l.key, value: l.value, neg: !l.available })), sub];
+    }, 'mount'],
+    ['appendCitizenUpkeepBlock: brak wymagan -> nic', 'appendCitizenUpkeepBlock', (d, m, log, pin) => {
+      const sub = '<b>chip-crate</b><span>Zaopatrzenie obywateli</span>';
+      return pin ? [m, { required: [], lines: [] }, 7] : [m, false, [], sub];
+    }, 'mount'],
+    ['appendCitizenUpkeepBlock: upkeep undefined -> nic', 'appendCitizenUpkeepBlock', (d, m, log, pin) => {
+      const sub = '<b>chip-crate</b><span>Zaopatrzenie obywateli</span>';
+      return pin ? [m, undefined, 7] : [m, false, [], sub];
+    }, 'mount'],
+    ['makeBuildingThumb: svg', 'makeBuildingThumb', (d, m, log, pin) => [SVG], 'ret'],
+    ['makeBuildingThumb: tekst', 'makeBuildingThumb', (d, m, log, pin) => ['🏠'], 'ret'],
+    ['appendBuildingInlineIcon: tekst', 'appendBuildingInlineIcon', (d, m) => [m, '🏠'], 'mount'],
+    ['appendBuildingInlineIcon: svg', 'appendBuildingInlineIcon', (d, m) => [m, SVG], 'mount'],
+    ['appendProductionPicon: svg', 'appendProductionPicon', (d, m, log, pin) => (pin ? [m, null, SVG] : [m, SVG]), 'mount'],
+    ['appendProductionPicon: pusta ikona', 'appendProductionPicon', (d, m, log, pin) => (pin ? [m, null, ''] : [m, '']), 'mount'],
+    ['productionQueueIconSpan: svg', 'productionQueueIconSpan', (d, m, log, pin) => (pin ? [null, SVG] : [SVG]), 'ret'],
+    ['productionQueueIconSpan: tekst', 'productionQueueIconSpan', (d, m, log, pin) => (pin ? [null, '⚙'] : ['⚙']), 'ret'],
   ];
 
   const run = (mod, fnName, buildArgs, out, click, isPin) => {
@@ -141,7 +178,7 @@ try {
     const prevDoc = globalThis.document;
     globalThis.document = doc;
     try {
-      const ret = mod[fnName](...buildArgs(doc, mount, log));
+      const ret = mod[fnName](...buildArgs(doc, mount, log, !!isPin));
       if (click) {
         const btn = mount.querySelector('button');
         if (btn) btn.click();
