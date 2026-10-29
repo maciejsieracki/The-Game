@@ -105,6 +105,24 @@ MUTATIONS = [
      "is_water_terrain_local(h.terrain) && !ocean.contains(k.as_str())", 1),
     # --- parsowanie klucza ---
     ("key-qr-sep", LIB, "let (a, b) = key.split_once(',')?;", "let (a, b) = key.split_once(';')?;", 1),
+    # --- runda 2 (odpowiedz na zarzut r1): galezie czyszczenia nakladki/zloza, seedy krawedzi, JSON, sieroty ---
+    ("double-no-overlay-clear", LIB, "            h.overlay = crate::domain::mapgen::terrain_class::Nakladka::Brak;\n            h.has_deposit = false;\n        }\n    }\n    n + to_coast.len()",
+     "            h.has_deposit = false;\n        }\n    }\n    n + to_coast.len()", 1),
+    ("double-no-deposit-clear", LIB, "            h.has_deposit = false;\n        }\n    }\n    n + to_coast.len()",
+     "        }\n    }\n    n + to_coast.len()", 1),
+    ("sanitize-orphan-no-overlay-clear", LIB, "            set_hex_to_morze(h);",
+     "            h.terrain = Terrain::Sea;\n            h.has_deposit = false;\n            h.river_present = false;\n            h.river_edges.clear();", 1),
+    ("sanitize-orphan-no-deposit-clear", LIB, "            set_hex_to_morze(h);",
+     "            h.terrain = Terrain::Sea;\n            h.overlay = crate::domain::mapgen::terrain_class::Nakladka::Brak;\n            h.river_present = false;\n            h.river_edges.clear();", 1),
+    ("ocean-edge-no-top", LIB, "if q != 0 && r != 0 && q != width - 1 && r != height - 1 {",
+     "if q != 0 && q != width - 1 && r != height - 1 {", 1),
+    ("ocean-edge-no-left", LIB, "if q != 0 && r != 0 && q != width - 1 && r != height - 1 {",
+     "if r != 0 && q != width - 1 && r != height - 1 {", 1),
+    ("double-src-shallow", LIB, "        if hex.terrain != Terrain::Sea {\n            continue;\n        }\n        let Some((q, r)) = key_qr(key) else { continue };\n        let touches_coast",
+     "        if hex.terrain != Terrain::ShallowSea {\n            continue;\n        }\n        let Some((q, r)) = key_qr(key) else { continue };\n        let touches_coast", 1),
+    ("json-wyspy-0.51", TBL, '"wyspy": 0.50,', '"wyspy": 0.51,', 1),
+    ("json-ziemia-0.22", TBL, '"ziemia": 0.21', '"ziemia": 0.22', 1),
+    ("json-erode-gory-wzgorza", TBL, '"Wzgorza",\n    "Gory"', '"Gory",\n    "Wzgorza"', 1),
 ]
 
 

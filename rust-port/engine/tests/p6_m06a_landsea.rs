@@ -295,3 +295,97 @@ fn find_inland_water_and_sea_match_web() {
         );
     }
 }
+
+// --- P6-M06A runda 2: asercje galezi czyszczenia nakladki i zloza (odpowiedz na zarzut r1) ---
+
+/// Wejscie mapy po nazwie przypadku (kazda mapa niesie `hexes` w przypadku `count_land_sea`).
+fn named_input(name: &str) -> HexRecord {
+    let c = cases("count_land_sea")
+        .iter()
+        .find(|c| c["name"] == name)
+        .unwrap_or_else(|| panic!("brak mapy {name}"));
+    load_map(&c["hexes"])
+}
+
+/// Wyjscie przypadku mutujacego po nazwie.
+fn named_out(family: &str, name: &str) -> Value {
+    cases(family)
+        .iter()
+        .find(|c| c["name"] == name)
+        .unwrap_or_else(|| panic!("brak przypadku {family}/{name}"))["out"]
+        .clone()
+}
+
+/// Wiersz `[klucz, terrain, nakladka, zloze, rzeka]` z zrzutu mapy.
+fn row(dump: &Value, key: &str) -> Value {
+    dump.as_array()
+        .unwrap()
+        .iter()
+        .find(|e| e[0] == key)
+        .unwrap_or_else(|| panic!("brak heksa {key}"))
+        .clone()
+}
+
+#[test]
+fn coast_ring_clears_overlay_and_deposit_only_on_converted_sea() {
+    let sea = serde_json::to_value(Terrain::Sea).unwrap();
+    let shallow = serde_json::to_value(Terrain::ShallowSea).unwrap();
+
+    // Pierwszy pierscien: (1,0) przy lądzie -> Wybrzeze, nakladka i zloze wyczyszczone;
+    // (2,0) i (3,0) nie dotykaja lądu -> bez zmian.
+    let mut h = named_input("coast_overlay_deposit");
+    assert_eq!(apply_coast_ring(&mut h), 1);
+    let out = dump_map(&h);
+    assert_eq!(out, named_out("apply_coast_ring", "coast_overlay_deposit"));
+    assert_eq!(row(&out, "1,0"), json!(["1,0", shallow, "brak", 0, 0]));
+    assert_eq!(row(&out, "2,0"), json!(["2,0", sea, "zloze_rudy", 1, 0]));
+    assert_eq!(row(&out, "3,0"), json!(["3,0", sea, "las", 1, 0]));
+
+    // Drugi pierscien: (2,0) dotyka nowego Wybrzeza -> czysci oba pola; (3,0) nadal bez zmian.
+    let mut h = named_input("coast_overlay_deposit");
+    assert_eq!(apply_double_coast_ring(&mut h), 2);
+    let out = dump_map(&h);
+    assert_eq!(
+        out,
+        named_out("apply_double_coast_ring", "coast_overlay_deposit")
+    );
+    assert_eq!(row(&out, "1,0"), json!(["1,0", shallow, "brak", 0, 0]));
+    assert_eq!(row(&out, "2,0"), json!(["2,0", shallow, "brak", 0, 0]));
+    assert_eq!(row(&out, "3,0"), json!(["3,0", sea, "las", 1, 0]));
+}
+
+#[test]
+fn sanitize_clears_overlay_and_deposit_on_orphan_coast() {
+    let sea = serde_json::to_value(Terrain::Sea).unwrap();
+    let mut h = named_input("coast_overlay_orphan");
+    assert_eq!(sanitize_coast_hexes(&mut h), 1);
+    let out = dump_map(&h);
+    assert_eq!(
+        out,
+        named_out("sanitize_coast_hexes", "coast_overlay_orphan")
+    );
+    assert_eq!(row(&out, "0,0"), json!(["0,0", sea, "brak", 0, 0]));
+}
+
+#[test]
+fn ocean_edge_seeds_cover_top_and_left_rows() {
+    // Pojedyncze Morze na gornej (1,0) lub lewej (0,1) krawedzi 3x3 jest oceaniczne:
+    // nie ma go wsrod wodnych wewnetrznych (findInlandSea) i laczy sie z krawedzia.
+    for name in ["edge_top_sea", "edge_left_sea"] {
+        let h = named_input(name);
+        let c = cases("find_inland_sea")
+            .iter()
+            .find(|c| c["name"] == name)
+            .expect("przypadek find_inland_sea");
+        assert_eq!(
+            find_inland_sea_hexes(&h, 3, 3),
+            str_vec(&c["out"]),
+            "{name}"
+        );
+        assert!(
+            find_inland_sea_hexes(&h, 3, 3).is_empty(),
+            "{name}: morze krawedziowe to ocean"
+        );
+        assert_eq!(ocean_connected_water_keys(&h, 3, 3).len(), 1, "{name}");
+    }
+}

@@ -63,7 +63,46 @@ na granicach) - osobne wywolanie Operatora-pomiarow.
 | `isPangeaBridgeWater` :4371 | RUNDA-2 | - |
 | `ensurePangeaSingleContinent` :4375 | RUNDA-2 | (poza zakresem linii 4374; patrz lista P6-25) |
 
-Podsumowanie wierszy tabeli (wiersze, nie symbole 1:1): PORTOWANY funkcji 18; DANE (ERODE_TERRAIN_ORDER -> JSON) 1; DANE-JUZ-W-RUST 3 (`parseHexKey`, `setHexToMorze`, `setHexToLaka`); RUNDA-2 25 wierszy (w tym stale/typy `LandFractionFillBias`, `PANGEA_LAND_FILL_MIN_SCORE`). Liczbe 29 z dispatchu potwierdza weryfikator w rundzie pomiarowej.
+Podsumowanie wierszy tabeli (wiersze, nie symbole 1:1): PORTOWANY 19 wierszy (w tym ERODE_TERRAIN_ORDER jako dane JSON); DANE-JUZ-W-RUST 3 (`parseHexKey`, `setHexToMorze`, `setHexToLaka`); RUNDA-2 25 wierszy (24 w zakresie + `ensurePangeaSingleContinent` :4375 poza zakresem). Razem 47 wierszy.
+
+Rozstrzygniecie liczby symboli (runda 2, zmierzone grep-em w `gen-helpers.ts` @ edb8fb56): w zakresie 3186-4374 sa **47 deklaracji** top-level: 44 funkcje + `ERODE_TERRAIN_ORDER` + `PANGEA_LAND_FILL_MIN_SCORE` + typ `LandFractionFillBias`. Liczba **29** = dokladnie liczba deklaracji z `export` w tym zakresie (28 `export function` + 1 `export type`). Tabela ma 46 wierszy w zakresie, bo wiersz `LandFractionFillBias / PANGEA_LAND_FILL_MIN_SCORE` laczy dwie deklaracje. ZALOZENIE: "29 symboli" z dispatchu = eksporty; kanoniczny zbior do domkniecia to 47 deklaracji (tabela).
+
+## Runda 2 (obrona po FAIL r1, Operator-impl)
+
+Pelna odpowiedz na zarzuty: `dyspozycje/autobot/runs/R-RUSTPORT-P6-M06A-LAD-MORZE-WYBRZEZE-A-Q1/03-operator-obrona-r2.md`.
+
+- Luka pierscienia (nakladka/zloze na Morzu): **domknieta**. Nowe mapy specjalne `coast_overlay_deposit`, `coast_overlay_orphan`, `edge_top_sea`, `edge_left_sea` (gen-m06a-vectors.mjs); wektory z weba @ edb8fb56 (176 map); asercje `coast_ring_clears_overlay_and_deposit_only_on_converted_sea`, `sanitize_clears_overlay_and_deposit_on_orphan_coast`, `ocean_edge_seeds_cover_top_and_left_rows`.
+- Mutanty: `ring-no-overlay-clear` i `ring-no-deposit-clear` teraz KILLED (3 testy). Dodane i KILLED: `double-no-overlay-clear`, `double-no-deposit-clear`, `double-src-shallow`, `sanitize-orphan-no-overlay-clear`, `sanitize-orphan-no-deposit-clear`, `ocean-edge-no-top`, `ocean-edge-no-left`, `json-wyspy-0.51`, `json-ziemia-0.22`, `json-erode-gory-wzgorza`.
+- Stare kategorie wektorow: prefiks zachowany (porownanie po nazwie i po `map`: identyczne); regeneracja bajtowo zgodna (sha256 `2c64719d...`).
+- Zakres 25 wierszy RUNDA-2: **nadal niezamkniety** (przyjety zarzut). Wykaz Math.* i zaleznosci: ponizej.
+
+### Wykaz Math.* w zakresie 3186-4374 (zmierzone, `awk` na pinie edb8fb56)
+
+- 43 wystapienia: `Math.max` 16, `Math.min` 11, `Math.abs` 5, `Math.round` 5, `Math.sqrt` 2, `Math.hypot` 2, `Math.floor` 1, `Math.ceil` 1.
+- Linie: 3194-3195 (assignContinentIndices, RUNDA-2), 3222 (sortLandKeysForErosion, RUNDA-2), 3453-3456 (applyLandFractionByScore), 3484, 3563-3568, 3583-3587, 3619-3653 (erodePangeaBboxLowScoreRim / carvePangeaLongSideGulfs), 3710-3748 (applyLandFractionByContinent), 3797-3801 (rebalanceLandSeaRatio), 4330-4332 (pangeaAnnularMaxCorridorWidth) - wszystkie w symbolach RUNDA-2.
+- **Zero wystapien Math.* w cialach symboli PORTOWANYCH** (potwierdza zalozenie "brak Math.* w podzbiorze rundy 1").
+- Uwaga semantyczna dla rundy 2: JS `Math.round` zaokragla .5 w strone +inf, Rust `f64::round` - od zera. Argumenty `Math.round` w zakresie (3456, 3712, 3736, 3799, 4332) sa nieujemne, wiec rozbieznosc nie wystapi, ale port ma to zachowac swiadomie (przy nieujemnych argumentach `round` Rust i JS daja to samo).
+
+### Zaleznosci RUNDA-2 (sprawdzone, plik:linia)
+
+- Szum/RNG: `mulberry32` - web :57, Rust `prims.rs:40`; `buildPermTable` - web :72 (brak portu, do zrobienia); `fbm` - web :109, Rust `prims.rs:300`; `hashInt3` - web :899 (uzywane przez `climateBandBaseTerrain` :3360), Rust `terrain_class.rs:529` (`hash_int3`, do porownania z weba w rundzie 2).
+- Bloki uzywajace szumu w zakresie: `climateBandBaseTerrain` :3362, `carvePangeaLongSideGulfs` :3643, `applyJaggedCoastNoise` :4250-4251.
+- Zaleznosci miedzy symbolami: `applyLandFractionByScore`/`rebalance*` wolaja `applyJaggedCoastNoise` (:3690) i `pangeaAnnularMaxCorridorWidth` - kolejnosc portu: najpierw szum i predykaty, potem wysoki poziom.
+
+### Mutanty po rundzie 2 (`mut-runner-m06a.py`, log `mutations-r2.log`)
+
+- Pelny zbior 58 mutantow: KILLED 55 (45 z r1 + 10 nowych), TIMEOUT 1 (`ocean-bfs-no-visited`, nie ponawiano - dodane asercje nie moga cofnac zabicia), SURVIVED 2 (ekwiwalentne z dowodem: `erode-rank-rposition-EQUIV`, `neighbor-negate-both-EQUIV`).
+- Dwa mutanty r1 z luka (`ring-no-*-clear`) ponowione: KILLED.
+
+### Zalozenia (runda 2)
+
+- ZAL-R2-1: zakres PORTOWANY 19 wierszy, stan bez zmian wzgledem r1 w kodzie symboli; zmiany tylko w testach i danych testowych.
+- ZAL-R2-2: test-level watchdog nie jest dodawany (harness pomiarowy ma limit 240 s; zalecenie CI poza tematem).
+- ZAL-R2-3: `set_hex_to_morze` (M04, `terrain_class.rs`) jest poza allowlista - jej testy nalezą do M04.
+
+### Zalecenie (nie zmieniane w tym temacie)
+
+- Regresja typu `ocean-bfs-no-visited` zawiesi test zamiast dac asercje. Zalecenie: krok CI z limitem czasu na `cargo test` (np. `timeout`). Nie wdrazane tutaj (poza allowlista).
 
 ## Wektory
 
