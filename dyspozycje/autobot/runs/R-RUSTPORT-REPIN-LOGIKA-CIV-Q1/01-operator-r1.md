@@ -2,7 +2,7 @@ STATUS: BLOCK (techniczny: 2 asercje testowe kodyfikują stan edb8fb56; 7 wektor
 DOMAIN: GAME
 TEMAT: R-RUSTPORT-REPIN-LOGIKA-CIV-Q1
 GOAL: Port logiki cywilizacji z weba 91dc998a (civ-bonuses.ts, civ-ai-data.ts, civ-matrix-semantic.ts) do Rust; 12 czerwonych REPIN-DANE r2 zielonych bez osłabiania testów.
-ZMIANY-COMMIT: commit SHA w sekcji „Commit" poniżej (detached na `origin/rust-port/repin-wip` 829a8c0f, PUSH NIE). Pliki: rust-port/engine/src/domain/civ_bonuses.rs, src/domain/civ_matrix.rs, data/derived/{civ-bonus-matrix-specs,civ-matrix-params,civ-matrix-semantic}.json, dyspozycje/rust-port/p6/P6-REPIN-LOGIKA-CIV.md (nowy), run folder. POZA ALLOWLISTĄ (ZAŁOŻENIE, do potwierdzenia przez FC): src/data/derived.rs (pola schematu tabel; bez nich JSON nie parsuje się).
+ZMIANY-COMMIT: commit a7590add (detached na `origin/rust-port/repin-wip` 829a8c0f, PUSH NIE). Pliki: rust-port/engine/src/domain/civ_bonuses.rs, src/domain/civ_matrix.rs, data/derived/{civ-bonus-matrix-specs,civ-matrix-params,civ-matrix-semantic}.json, dyspozycje/rust-port/p6/P6-REPIN-LOGIKA-CIV.md (nowy), run folder. POZA ALLOWLISTĄ (ZAŁOŻENIE, do potwierdzenia przez FC): src/data/derived.rs (pola schematu tabel; bez nich JSON nie parsuje się).
 TESTY:
 - fmt: EXIT=0 (po cargo fmt --all) — logi/fmt-r1.log
 - clippy --all-targets -D warnings: EXIT=0 — clippy-r1.log
@@ -19,4 +19,4 @@ NASTĘPNY KROK: Final Control: zatwierdzić wyjątek allowlisty (derived.rs) i w
 DEPLOY/PUSH: NIE WYKONANO
 
 Szczegóły mapowania web→Rust, założeń i listy poza zakresem: dyspozycje/rust-port/p6/P6-REPIN-LOGIKA-CIV.md.
-Commit: (wpisany w commicie poniżej)
+Commit: a7590add (kod + tabele + dokumenty; raport dopisany osobnym commitem)
