@@ -1,0 +1,86 @@
+{
+ "appendPodzialPracyInfo": {
+  "a": 5028,
+  "b": 5111
+ },
+ "buildOwnedBuildingsDetailCard": {
+  "a": 7806,
+  "b": 7860
+ },
+ "buildUnitDetailCardViaEntityCard": {
+  "a": 7861,
+  "b": 7884
+ },
+ "buildUnitDetailCard": {
+  "a": 7885,
+  "b": 7896
+ },
+ "attachUnitRowThumb": {
+  "a": 7976,
+  "b": 7996
+ },
+ "appendBuildableItemRow": {
+  "a": 7997,
+  "b": 8049
+ },
+ "appendUnitRecruitCompactRow": {
+  "a": 8137,
+  "b": 8182
+ },
+ "appendRecruitmentQueue": {
+  "a": 8210,
+  "b": 8299
+ },
+ "appendBuildQueueSection": {
+  "a": 8300,
+  "b": 8428
+ },
+ "appendCatalogBuildingRow": {
+  "a": 8682,
+  "b": 8733
+ },
+ "renderBuildList": {
+  "a": 8734,
+  "b": 8860
+ },
+ "appendOwnedBuildingRow": {
+  "a": 9033,
+  "b": 9183
+ },
+ "renderTopBarGarrison": {
+  "a": 9392,
+  "b": 9427
+ },
+ "buildGarnizonDetailCard": {
+  "a": 9428,
+  "b": 9494
+ },
+ "buildOkolicaDetailCard": {
+  "a": 9617,
+  "b": 9728
+ },
+ "appendOkolicaYieldLabel": {
+  "a": 9785,
+  "b": 9820
+ },
+ "renderWorkedPreview": {
+  "a": 9821,
+  "b": 10017
+ },
+ "rootEl": {
+  "a": 10158,
+  "b": 10158
+ },
+ "setGarrisonLabelPinned": {
+  "a": 10165,
+  "b": 10169
+ },
+ "pinGarrisonPanel": {
+  "a": 10170,
+  "b": 10174
+ },
+ "clearGarrisonPanel": {
+  "a": 10175,
+  "b": 10183
+ }
+}
