@@ -4482,3 +4482,73 @@ pub fn mapgen_cluster_compute() -> &'static MapgenClusterComputeFile {
         parse_mapgen_cluster_compute().expect("mapgen-cluster-compute.json must parse")
     })
 }
+
+// ---------------------------------------------------------------------------------------------
+// P6.M05B (R-RUSTPORT-P6-M05B-RELIEF-B-POKRYCIE-PASMA-Q1): pokrycie reliefu, bezpiecznik skupisk
+// i pasma gorskie - tabela balansu `data/derived/mapgen-relief-b.json` (pin web `edb8fb56`).
+// ---------------------------------------------------------------------------------------------
+
+/// Plik `mapgen-relief-b.json`.
+pub const MAPGEN_RELIEF_B_JSON: &str = include_str!("../../data/derived/mapgen-relief-b.json");
+
+/// Sekcja `siatka_domykanie` (web `ensureReliefGridCoverage`, gen-helpers.ts:2371).
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct ReliefBGridParams {
+    pub min_masa_do_domykania: StartValue<f64>,
+    pub przebiegi_zewnetrzne: StartValue<f64>,
+    pub przebiegi_przywracania: StartValue<f64>,
+    pub przebiegi_mop_up: StartValue<f64>,
+    pub min_masa_mop_up: StartValue<f64>,
+}
+
+/// Sekcja `pasma` (web `growMountainRanges`, `capMountainRangeClusterSize`, `regrowLostMountainClusters`).
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct ReliefBRangeParams {
+    pub udzial_gor_wzgorz_w_ladzie_sufit: StartValue<f64>,
+    pub maks_skupisko_gor_wzgorz: StartValue<f64>,
+    pub regrow_odstep_od_reliefu: StartValue<f64>,
+    pub regrow_mnoznik_celu: StartValue<f64>,
+    pub regrow_dlugosc_min: StartValue<f64>,
+    pub regrow_dlugosc_max: StartValue<f64>,
+    pub rozrzut_seedow_min_odleglosc: StartValue<f64>,
+    pub szum_seed_pasma: StartValue<f64>,
+    pub szum_seed_regrow: StartValue<f64>,
+    pub szum_kroku_pasma: StartValue<f64>,
+    pub szum_kroku_regrow: StartValue<f64>,
+    pub regrow_proby_na_mase: StartValue<f64>,
+    pub regrow_proby_bazowe: StartValue<f64>,
+}
+
+/// Fallback jednego tieru parametrow pasm (web `FALLBACK_MOUNTAIN_RANGE`, loader :63-65).
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct ReliefBPasmaFallback {
+    pub hexy_na_pasmo: StartValue<f64>,
+    pub max_pasm_na_mase: StartValue<f64>,
+    pub dlugosc_min: StartValue<f64>,
+    pub dlugosc_max: StartValue<f64>,
+    pub min_masa_hexow: StartValue<f64>,
+    pub obrzeze_szansa: StartValue<f64>,
+}
+
+/// Plik `mapgen-relief-b.json`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct MapgenReliefBFile {
+    pub meta: serde_json::Value,
+    pub siatka_domykanie: ReliefBGridParams,
+    pub pasma: ReliefBRangeParams,
+    pub pasma_fallback: TierTriple<ReliefBPasmaFallback>,
+}
+
+pub fn parse_mapgen_relief_b() -> Result<MapgenReliefBFile, serde_json::Error> {
+    serde_json::from_str(MAPGEN_RELIEF_B_JSON)
+}
+
+/// Tabela reliefu B (jednorazowy odczyt; blad danych = panika z komunikatem).
+pub fn mapgen_relief_b() -> &'static MapgenReliefBFile {
+    static TABLE: std::sync::OnceLock<MapgenReliefBFile> = std::sync::OnceLock::new();
+    TABLE.get_or_init(|| parse_mapgen_relief_b().expect("mapgen-relief-b.json must parse"))
+}

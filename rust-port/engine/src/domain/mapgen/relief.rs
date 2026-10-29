@@ -29,11 +29,13 @@
 use std::collections::{HashMap, HashSet};
 use std::sync::OnceLock;
 
-use crate::data::derived::{mapgen_relief_a, StartValue, TierTriple};
+use crate::data::derived::{mapgen_relief_a, mapgen_relief_b, StartValue, TierTriple};
 use crate::data::terrain_map::{parse_map_gen_params, MapGenParamsFile};
 use crate::domain::map_generator::{Terrain, WorldType};
 use crate::domain::mapgen::cluster_mass::js_array_sort_by;
-use crate::domain::mapgen::params::DensityTier;
+use crate::domain::mapgen::params::{
+    highland_noise_threshold_from_tier, mountain_noise_threshold_from_tier, DensityTier,
+};
 use crate::domain::mapgen::prims::{hex_key, is_water_terrain_local, HEX_DIRECTIONS};
 use crate::domain::mapgen::terrain_class::{
     hex_border_distance, is_relief_candidate_hex, parse_hex_key, relief_land_fractions, HexRecord,
@@ -1542,4 +1544,1006 @@ pub fn ensure_mass_copper_grid_coverage(
         skip_cap,
         ReliefWant::Highland,
     )
+}
+
+// ---------------------------------------------------------------------------------------------
+// P6.M05B (gen-helpers.ts:2363-3185): pokrycie siatki reliefu, bezpiecznik rozmiaru skupiska,
+// pasma gorskie (seed-and-grow) i odzysk utraconego ladu (regrow).
+// Balans: `data/derived/mapgen-relief-b.json` (`mapgen_relief_b()`); progi szumu: M02 (`params`).
+// ---------------------------------------------------------------------------------------------
+
+/// Parametry pasma gorskiego jednego tieru (web `MountainRangeTierParams`, loader :43).
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct MountainRangeTierParams {
+    pub hexy_na_pasmo: f64,
+    pub max_pasm_na_mase: f64,
+    pub dlugosc_min: f64,
+    pub dlugosc_max: f64,
+    pub min_masa_hexow: f64,
+    pub obrzeze_szansa: f64,
+}
+
+fn tier_key(tier: DensityTier) -> &'static str {
+    match tier {
+        DensityTier::Low => "low",
+        DensityTier::Medium => "medium",
+        DensityTier::High => "high",
+    }
+}
+
+/// Web `FALLBACK_MOUNTAIN_RANGE[tier]` (loader :62-66) - z `mapgen-relief-b.json`.
+fn mountain_range_fallback(tier: DensityTier) -> MountainRangeTierParams {
+    let t = &mapgen_relief_b().pasma_fallback;
+    let row = match tier {
+        DensityTier::Low => &t.low,
+        DensityTier::Medium => &t.medium,
+        DensityTier::High => &t.high,
+    };
+    MountainRangeTierParams {
+        hexy_na_pasmo: row.hexy_na_pasmo.wartosc,
+        max_pasm_na_mase: row.max_pasm_na_mase.wartosc,
+        dlugosc_min: row.dlugosc_min.wartosc,
+        dlugosc_max: row.dlugosc_max.wartosc,
+        min_masa_hexow: row.min_masa_hexow.wartosc,
+        obrzeze_szansa: row.obrzeze_szansa.wartosc,
+    }
+}
+
+/// Web `mapGenMountainRangeParams` (map-gen-params-loader.ts:167) z surowym wierszem
+/// `gestosc.pasma_gorskie[tier]` (`None` = brak sekcji/wiersza). Kazde pole: `typeof number` +
+/// zakres, inaczej fallback; `dlugosc_max` musi byc `>= dlugosc_min` (inaczej `max(fb, min)`).
+pub fn resolve_mountain_range_params(
+    tier: DensityTier,
+    row: Option<&serde_json::Value>,
+) -> MountainRangeTierParams {
+    let fb = mountain_range_fallback(tier);
+    let get = |key: &str| {
+        row.and_then(|r| r.get(key))
+            .and_then(serde_json::Value::as_f64)
+    };
+    let dlugosc_min = get("dlugosc_min")
+        .filter(|v| *v > 0.0)
+        .unwrap_or(fb.dlugosc_min);
+    MountainRangeTierParams {
+        hexy_na_pasmo: get("hexy_na_pasmo")
+            .filter(|v| *v > 0.0)
+            .unwrap_or(fb.hexy_na_pasmo),
+        max_pasm_na_mase: get("max_pasm_na_mase")
+            .filter(|v| *v >= 0.0)
+            .unwrap_or(fb.max_pasm_na_mase),
+        dlugosc_min,
+        dlugosc_max: get("dlugosc_max")
+            .filter(|v| *v >= dlugosc_min)
+            .unwrap_or_else(|| js_max(fb.dlugosc_max, dlugosc_min)),
+        min_masa_hexow: get("min_masa_hexow")
+            .filter(|v| *v >= 0.0)
+            .unwrap_or(fb.min_masa_hexow),
+        obrzeze_szansa: get("obrzeze_szansa")
+            .filter(|v| *v >= 0.0 && *v <= 1.0)
+            .unwrap_or(fb.obrzeze_szansa),
+    }
+}
+
+fn pasma_gorskie_json() -> &'static serde_json::Value {
+    static ROOT: OnceLock<serde_json::Value> = OnceLock::new();
+    ROOT.get_or_init(|| {
+        serde_json::from_str(crate::data::terrain_map::MAP_GEN_PARAMS_JSON)
+            .expect("map-gen-params.json must parse as JSON")
+    })
+}
+
+/// Web `mapGenMountainRangeParams(tier)` na wbudowanym `map-gen-params.json`.
+pub fn map_gen_mountain_range_params(tier: DensityTier) -> MountainRangeTierParams {
+    let row = pasma_gorskie_json()
+        .get("gestosc")
+        .and_then(|g| g.get("pasma_gorskie"))
+        .and_then(|p| p.get(tier_key(tier)));
+    resolve_mountain_range_params(tier, row)
+}
+
+/// Sortowane klucze (web `Object.keys(hexes).sort()`; klucze ASCII - porzadek bajtowy = UTF-16).
+fn sorted_keys(hexes: &HexRecord) -> Vec<String> {
+    let mut keys: Vec<String> = hexes.keys().cloned().collect();
+    keys.sort();
+    keys
+}
+
+fn key_qr(k: &str) -> (i64, i64) {
+    let (q, r) = parse_hex_key(k);
+    (q as i64, r as i64)
+}
+
+fn neighbor_key(q: i64, r: i64, d: (i32, i32)) -> String {
+    hex_key(q + i64::from(d.0), r + i64::from(d.1))
+}
+
+/// Web `Math.floor` (IEEE, bez roznic wzgledem `f64::floor`).
+fn js_floor(x: f64) -> f64 {
+    x.floor()
+}
+
+fn is_mountain_or_highland(t: Terrain) -> bool {
+    matches!(t, Terrain::Mountains | Terrain::Hills)
+}
+
+/// Web: `Laka`/`Rownina`/`Pustynia` (konwertowalne na relief w tej czesci pipeline'u).
+fn is_plain_like(t: Terrain) -> bool {
+    matches!(t, Terrain::Grassland | Terrain::Plains | Terrain::Desert)
+}
+
+/// Web: `hex.terenBazowy = t; hex.nakladka = Brak; delete hex.zloze`.
+fn reset_relief_hex(hex: &mut TerrainHex, t: Terrain) {
+    hex.terrain = t;
+    hex.overlay = Nakladka::Brak;
+    hex.has_deposit = false;
+}
+
+/// Web `countLandSeaHexes(hexes).land` (gen-helpers.ts:3268): heksy niebedace woda.
+pub fn count_land_hexes(hexes: &HexRecord) -> f64 {
+    hexes
+        .iter()
+        .filter(|(_, h)| !is_water_terrain_local(h.terrain))
+        .count() as f64
+}
+
+/// Web `findSameTerrainClusters` (:2556): spojne skupiska JEDNEGO typu terenu (flood fill,
+/// deterministyczna kolejność startów = klucze posortowane; kolejność DFS jak w webie).
+pub fn find_same_terrain_clusters(hexes: &HexRecord, terrain: Terrain) -> Vec<Vec<String>> {
+    let mut visited: HashSet<String> = HashSet::new();
+    let mut clusters: Vec<Vec<String>> = Vec::new();
+    for key in sorted_keys(hexes) {
+        if visited.contains(&key) {
+            continue;
+        }
+        match hexes.get(&key) {
+            Some(h) if h.terrain == terrain => {}
+            _ => continue,
+        }
+        let mut cluster: Vec<String> = Vec::new();
+        let mut stack: Vec<String> = vec![key.clone()];
+        visited.insert(key);
+        while let Some(k) = stack.pop() {
+            let (q, r) = key_qr(&k);
+            cluster.push(k);
+            for d in HEX_DIRECTIONS {
+                let nk = neighbor_key(q, r, d);
+                if visited.contains(&nk) {
+                    continue;
+                }
+                match hexes.get(&nk) {
+                    Some(nh) if nh.terrain == terrain => {}
+                    _ => continue,
+                }
+                visited.insert(nk.clone());
+                stack.push(nk);
+            }
+        }
+        clusters.push(cluster);
+    }
+    clusters
+}
+
+/// Web `connectedComponentsWithin` (:2585): składowe spójne WEWNĄTRZ zbioru `remaining`.
+pub fn connected_components_within(remaining: &HashSet<String>) -> Vec<Vec<String>> {
+    let mut visited: HashSet<String> = HashSet::new();
+    let mut comps: Vec<Vec<String>> = Vec::new();
+    let mut keys: Vec<String> = remaining.iter().cloned().collect();
+    keys.sort();
+    for key in keys {
+        if visited.contains(&key) {
+            continue;
+        }
+        let mut comp: Vec<String> = Vec::new();
+        let mut stack: Vec<String> = vec![key.clone()];
+        visited.insert(key);
+        while let Some(k) = stack.pop() {
+            let (q, r) = key_qr(&k);
+            comp.push(k);
+            for d in HEX_DIRECTIONS {
+                let nk = neighbor_key(q, r, d);
+                if visited.contains(&nk) || !remaining.contains(&nk) {
+                    continue;
+                }
+                visited.insert(nk.clone());
+                stack.push(nk);
+            }
+        }
+        comps.push(comp);
+    }
+    comps
+}
+
+/// Web `capMountainRangeClusterSize` (:2652): twardy limit `max_size` na spójne skupisko jednego
+/// typu; zdejmuje najslabszy szum (remis: klucz), pomija heksy ze zlozem. Zwraca liczbe cofnieta.
+pub fn cap_mountain_range_cluster_size(
+    hexes: &mut HexRecord,
+    scratch: &HashMap<String, TerrainScratch>,
+    terrain: Terrain,
+    fallback_terrain: Terrain,
+    max_size: f64,
+) -> f64 {
+    let mut reverted = 0.0_f64;
+    let clusters = find_same_terrain_clusters(hexes, terrain);
+    for cluster in clusters {
+        if cluster.len() as f64 <= max_size {
+            continue;
+        }
+        let mut remaining: HashSet<String> = cluster.into_iter().collect();
+        loop {
+            let mut comps = connected_components_within(&remaining);
+            js_array_sort_by(&mut comps, |a, b| b.len() as f64 - a.len() as f64);
+            let Some(biggest) = comps.first() else { break };
+            if biggest.len() as f64 <= max_size {
+                break;
+            }
+            let mut sorted: Vec<String> = biggest.clone();
+            js_array_sort_by(&mut sorted, |a, b| {
+                let na = mtn_noise(scratch, a);
+                let nb = mtn_noise(scratch, b);
+                if na != nb {
+                    return na - nb;
+                }
+                if a < b {
+                    -1.0
+                } else if a > b {
+                    1.0
+                } else {
+                    0.0
+                }
+            });
+            let victim = sorted
+                .iter()
+                .find(|k| !is_deposit_protected_from_overflow_cap(hexes.get(k.as_str())))
+                .cloned();
+            let Some(victim) = victim else { break };
+            remaining.remove(&victim);
+            if let Some(hex) = hexes.get_mut(&victim) {
+                reset_relief_hex(hex, fallback_terrain);
+            }
+            reverted += 1.0;
+        }
+    }
+    reverted
+}
+
+/// Web `capReliefClusterSizeSafetyNet` (:2618): limit 10 osobno dla Gor i Wzgorz (-> Rownina).
+pub fn cap_relief_cluster_size_safety_net(
+    hexes: &mut HexRecord,
+    scratch: &HashMap<String, TerrainScratch>,
+) {
+    let max = mapgen_relief_b().pasma.maks_skupisko_gor_wzgorz.wartosc;
+    cap_mountain_range_cluster_size(hexes, scratch, Terrain::Mountains, Terrain::Plains, max);
+    cap_mountain_range_cluster_size(hexes, scratch, Terrain::Hills, Terrain::Plains, max);
+}
+
+/// Web `mountainRangeSeedCandidates` (:2631): kandydaci na seed (filtr, potem `rand()` w tej
+/// kolejności), sortowani malejaco po `n`.
+pub fn mountain_range_seed_candidates(
+    mass: &[String],
+    hexes: &HexRecord,
+    scratch: &HashMap<String, TerrainScratch>,
+    width: f64,
+    height: f64,
+    rand: Rand<'_>,
+) -> Vec<(String, f64)> {
+    let szum = mapgen_relief_b().pasma.szum_seed_pasma.wartosc;
+    let filtered: Vec<String> = mass
+        .iter()
+        .filter(|k| {
+            let Some(hex) = hexes.get(k.as_str()) else {
+                return false;
+            };
+            let (q, r) = parse_hex_key(k);
+            is_relief_candidate_hex(hex, q, r, width, height)
+        })
+        .cloned()
+        .collect();
+    let mut out: Vec<(String, f64)> = Vec::with_capacity(filtered.len());
+    for k in filtered {
+        let n = mtn_noise(scratch, &k) + rand() * szum;
+        out.push((k, n));
+    }
+    js_array_sort_by(&mut out, |a, b| b.1 - a.1);
+    out
+}
+
+/// Web `walkMountainRange` (:2663): spacer „grzbiet" (najwyzszy szum + `rand()*szum`), bez
+/// wracania i bez wejscia na nie-kandydatow. Zwraca klucze PO seedzie.
+pub fn walk_mountain_range(
+    hexes: &HexRecord,
+    scratch: &HashMap<String, TerrainScratch>,
+    width: f64,
+    height: f64,
+    rand: Rand<'_>,
+    start: &str,
+    steps: usize,
+) -> Vec<String> {
+    let szum = mapgen_relief_b().pasma.szum_kroku_pasma.wartosc;
+    let mut path: Vec<String> = Vec::new();
+    let mut visited: HashSet<String> = HashSet::from([start.to_string()]);
+    let mut cur = start.to_string();
+    for _ in 0..steps {
+        let (q, r) = key_qr(&cur);
+        let mut filtered: Vec<String> = Vec::new();
+        for d in HEX_DIRECTIONS {
+            let k = neighbor_key(q, r, d);
+            if visited.contains(&k) {
+                continue;
+            }
+            let Some(hex) = hexes.get(&k) else { continue };
+            let (nq, nr) = key_qr(&k);
+            if !is_relief_candidate_hex(hex, nq as f64, nr as f64, width, height) {
+                continue;
+            }
+            filtered.push(k);
+        }
+        let mut cands: Vec<(String, f64)> = Vec::with_capacity(filtered.len());
+        for k in filtered {
+            let n = mtn_noise(scratch, &k) + rand() * szum;
+            cands.push((k, n));
+        }
+        js_array_sort_by(&mut cands, |a, b| b.1 - a.1);
+        let Some(next) = cands.first() else { break };
+        cur = next.0.clone();
+        visited.insert(cur.clone());
+        path.push(cur.clone());
+    }
+    path
+}
+
+/// Web `bfsExpandExclusion` (:2701): BFS po sasiedztwie heksowym, dodaje do `excluded` wszystko
+/// w promieniu `< min_dist` od `sources` (istniejace heksy mapy).
+pub fn bfs_expand_exclusion(
+    hexes: &HexRecord,
+    excluded: &mut HashSet<String>,
+    sources: &[String],
+    min_dist: f64,
+) {
+    let mut queue: Vec<(String, f64)> = Vec::new();
+    for k in sources {
+        excluded.insert(k.clone());
+        queue.push((k.clone(), 0.0));
+    }
+    let mut head = 0_usize;
+    while head < queue.len() {
+        let (k, d) = queue[head].clone();
+        head += 1;
+        if d >= min_dist {
+            continue;
+        }
+        let (q, r) = key_qr(&k);
+        for dir in HEX_DIRECTIONS {
+            let nk = neighbor_key(q, r, dir);
+            if excluded.contains(&nk) {
+                continue;
+            }
+            if hexes.get(&nk).is_none() {
+                continue;
+            }
+            excluded.insert(nk.clone());
+            queue.push((nk, d + 1.0));
+        }
+    }
+}
+
+/// Web `isExcludedForRegrow` (:2727): wykluczenie wedlug PROSPEKTYWNEGO typu (Gory vs Wzgorza).
+pub fn is_excluded_for_regrow(
+    k: &str,
+    n: f64,
+    mtn_th: f64,
+    hi_th: f64,
+    excluded_gory: &HashSet<String>,
+    excluded_wzgorza: &HashSet<String>,
+) -> bool {
+    if n > mtn_th {
+        return excluded_gory.contains(k);
+    }
+    if n > hi_th {
+        return excluded_wzgorza.contains(k);
+    }
+    false
+}
+
+/// Web `walkMountainRangeAvoiding` (:2746): jak walkMountainRange, ale nigdy nie wchodzi na
+/// heks wykluczony przez `isExcludedForRegrow`.
+#[allow(clippy::too_many_arguments)]
+pub fn walk_mountain_range_avoiding(
+    hexes: &HexRecord,
+    scratch: &HashMap<String, TerrainScratch>,
+    width: f64,
+    height: f64,
+    rand: Rand<'_>,
+    start: &str,
+    steps: usize,
+    mtn_th: f64,
+    hi_th: f64,
+    excluded_gory: &HashSet<String>,
+    excluded_wzgorza: &HashSet<String>,
+) -> Vec<String> {
+    let szum = mapgen_relief_b().pasma.szum_kroku_regrow.wartosc;
+    let mut path: Vec<String> = Vec::new();
+    let mut visited: HashSet<String> = HashSet::from([start.to_string()]);
+    let mut cur = start.to_string();
+    for _ in 0..steps {
+        let (q, r) = key_qr(&cur);
+        let mut filtered: Vec<String> = Vec::new();
+        for d in HEX_DIRECTIONS {
+            let k = neighbor_key(q, r, d);
+            if visited.contains(&k) {
+                continue;
+            }
+            let Some(hex) = hexes.get(&k) else { continue };
+            let (nq, nr) = key_qr(&k);
+            if !is_relief_candidate_hex(hex, nq as f64, nr as f64, width, height) {
+                continue;
+            }
+            let n = mtn_noise(scratch, &k);
+            if is_excluded_for_regrow(&k, n, mtn_th, hi_th, excluded_gory, excluded_wzgorza) {
+                continue;
+            }
+            filtered.push(k);
+        }
+        let mut cands: Vec<(String, f64)> = Vec::with_capacity(filtered.len());
+        for k in filtered {
+            let n = mtn_noise(scratch, &k) + rand() * szum;
+            cands.push((k, n));
+        }
+        js_array_sort_by(&mut cands, |a, b| b.1 - a.1);
+        let Some(next) = cands.first() else { break };
+        cur = next.0.clone();
+        visited.insert(cur.clone());
+        path.push(cur.clone());
+    }
+    path
+}
+
+/// Web `regrowLostMountainClusters` (:2793): odzysk deficytu mini-skupiskami z dala od reliefu
+/// (strefa zakazana PER TYP). Zwraca liczbe odzyskanych heksow.
+#[allow(clippy::too_many_arguments)]
+pub fn regrow_lost_mountain_clusters(
+    hexes: &mut HexRecord,
+    scratch: &HashMap<String, TerrainScratch>,
+    width: f64,
+    height: f64,
+    rand: Rand<'_>,
+    masses: &[Vec<String>],
+    mtn_th: f64,
+    hi_th: f64,
+    deficit: f64,
+) -> f64 {
+    let p = &mapgen_relief_b().pasma;
+    let odstep = p.regrow_odstep_od_reliefu.wartosc;
+    let len_min = p.regrow_dlugosc_min.wartosc;
+    let len_max = p.regrow_dlugosc_max.wartosc;
+    let szum_seed = p.szum_seed_regrow.wartosc;
+    let proby_na_mase = p.regrow_proby_na_mase.wartosc;
+    let proby_bazowe = p.regrow_proby_bazowe.wartosc;
+    if deficit <= 0.0 || masses.is_empty() {
+        return 0.0;
+    }
+
+    let mut excluded_gory: HashSet<String> = HashSet::new();
+    let mut excluded_wzgorza: HashSet<String> = HashSet::new();
+    let mut initial_gory: Vec<String> = Vec::new();
+    let mut initial_wzgorza: Vec<String> = Vec::new();
+    for key in sorted_keys(hexes) {
+        let Some(hex) = hexes.get(&key) else { continue };
+        if hex.terrain == Terrain::Mountains {
+            initial_gory.push(key);
+        } else if hex.terrain == Terrain::Hills {
+            initial_wzgorza.push(key);
+        }
+    }
+    bfs_expand_exclusion(hexes, &mut excluded_gory, &initial_gory, odstep);
+    bfs_expand_exclusion(hexes, &mut excluded_wzgorza, &initial_wzgorza, odstep);
+
+    let mut recovered = 0.0_f64;
+    let mut mass_idx = 0_usize;
+    let mut attempts = 0.0_f64;
+    let max_attempts = masses.len() as f64 * proby_na_mase + proby_bazowe;
+
+    while recovered < deficit && attempts < max_attempts {
+        let mass = &masses[mass_idx % masses.len()];
+        mass_idx += 1;
+
+        let mut filtered: Vec<String> = Vec::new();
+        for k in mass {
+            let Some(hex) = hexes.get(k) else { continue };
+            if !is_plain_like(hex.terrain) {
+                continue;
+            }
+            let (q, r) = parse_hex_key(k);
+            if !is_relief_candidate_hex(hex, q, r, width, height) {
+                continue;
+            }
+            let n = mtn_noise(scratch, k);
+            if is_excluded_for_regrow(k, n, mtn_th, hi_th, &excluded_gory, &excluded_wzgorza) {
+                continue;
+            }
+            filtered.push(k.clone());
+        }
+        let mut seeds: Vec<(String, f64)> = Vec::with_capacity(filtered.len());
+        for k in filtered {
+            let n = mtn_noise(scratch, &k) + rand() * szum_seed;
+            seeds.push((k, n));
+        }
+        js_array_sort_by(&mut seeds, |a, b| b.1 - a.1);
+
+        let Some(seed) = seeds.first().map(|s| s.0.clone()) else {
+            attempts += 1.0;
+            continue;
+        };
+        let len = len_min + js_floor(rand() * (len_max - len_min + 1.0));
+        let mut path: Vec<String> = vec![seed.clone()];
+        path.extend(walk_mountain_range_avoiding(
+            hexes,
+            scratch,
+            width,
+            height,
+            &mut *rand,
+            &seed,
+            len as usize,
+            mtn_th,
+            hi_th,
+            &excluded_gory,
+            &excluded_wzgorza,
+        ));
+
+        let mut placed_gory: Vec<String> = Vec::new();
+        let mut placed_wzgorza: Vec<String> = Vec::new();
+        for k in &path {
+            if !hexes.get(k).is_some_and(|h| is_plain_like(h.terrain)) {
+                continue;
+            }
+            let n = mtn_noise(scratch, k);
+            if is_excluded_for_regrow(k, n, mtn_th, hi_th, &excluded_gory, &excluded_wzgorza) {
+                continue;
+            }
+            if n > mtn_th {
+                if let Some(h) = hexes.get_mut(k) {
+                    reset_relief_hex(h, Terrain::Mountains);
+                }
+                placed_gory.push(k.clone());
+                recovered += 1.0;
+            } else if n > hi_th {
+                if let Some(h) = hexes.get_mut(k) {
+                    reset_relief_hex(h, Terrain::Hills);
+                }
+                placed_wzgorza.push(k.clone());
+                recovered += 1.0;
+            }
+        }
+
+        if placed_gory.is_empty() && placed_wzgorza.is_empty() {
+            attempts += 1.0;
+            continue;
+        }
+        attempts = 0.0;
+        if !placed_gory.is_empty() {
+            bfs_expand_exclusion(hexes, &mut excluded_gory, &placed_gory, odstep);
+        }
+        if !placed_wzgorza.is_empty() {
+            bfs_expand_exclusion(hexes, &mut excluded_wzgorza, &placed_wzgorza, odstep);
+        }
+        if recovered >= deficit {
+            break;
+        }
+    }
+    recovered
+}
+
+/// Pozycja dolozona przez `growMountainRanges` (web `addedByThisRun`).
+#[derive(Debug, Clone)]
+struct AddedRelief {
+    k: String,
+    n: f64,
+    was_highland: bool,
+    prev: Terrain,
+}
+
+/// Porownanie pierwszych kluczy mas (web `a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0`).
+fn first_key_cmp(a: &[String], b: &[String]) -> f64 {
+    match (a.first(), b.first()) {
+        (Some(x), Some(y)) => {
+            if x < y {
+                -1.0
+            } else if x > y {
+                1.0
+            } else {
+                0.0
+            }
+        }
+        _ => 0.0,
+    }
+}
+
+/// Web `ensureReliefGridCoverage` (:2371): domyka pokrycie siatki Gor (zelazo) i Wzgorz (miedz)
+/// per masa lądu; zwraca liczbe napraw. (Argumenty web `_typ`, `_continentOf`, `_nContinents`
+/// nie sa czytane w ciele funkcji - nie sa przenoszone.)
+pub fn ensure_relief_grid_coverage(
+    hexes: &mut HexRecord,
+    scratch: &HashMap<String, TerrainScratch>,
+    tier: ReliefDensityTier,
+    width: f64,
+    height: f64,
+    rand: Rand<'_>,
+) -> f64 {
+    let g = &mapgen_relief_b().siatka_domykanie;
+    let min_masa = g.min_masa_do_domykania.wartosc;
+    let outer_n = g.przebiegi_zewnetrzne.wartosc as usize;
+    let restore_n = g.przebiegi_przywracania.wartosc as usize;
+    let mop_n = g.przebiegi_mop_up.wartosc as usize;
+    let min_masa_mop = g.min_masa_mop_up.wartosc;
+
+    let mut masses: Vec<Vec<String>> = group_land_mass_keys(hexes)
+        .into_iter()
+        .filter(|m| m.len() as f64 >= min_masa)
+        .collect();
+    js_array_sort_by(&mut masses, |a, b| b.len() as f64 - a.len() as f64);
+    let mut fixed = 0.0_f64;
+
+    for _ in 0..outer_n {
+        let mut pass_fixed = 0.0_f64;
+        for mass in &masses {
+            pass_fixed += ensure_mass_iron_grid_coverage(
+                hexes, scratch, tier, width, height, mass, &mut *rand, false,
+            );
+            pass_fixed += ensure_mass_copper_grid_coverage(
+                hexes, scratch, tier, width, height, mass, &mut *rand, false,
+            );
+        }
+        fixed += pass_fixed;
+        if pass_fixed == 0.0 {
+            break;
+        }
+    }
+
+    for mass in &masses {
+        cap_iron_cell_relief_spread(hexes, scratch, tier, mass);
+    }
+
+    for _ in 0..restore_n {
+        let mut pass_fixed = 0.0_f64;
+        for mass in &masses {
+            pass_fixed += ensure_mass_iron_grid_coverage(
+                hexes, scratch, tier, width, height, mass, &mut *rand, true,
+            );
+            pass_fixed += ensure_mass_copper_grid_coverage(
+                hexes, scratch, tier, width, height, mass, &mut *rand, true,
+            );
+        }
+        fixed += pass_fixed;
+        if pass_fixed == 0.0 {
+            break;
+        }
+    }
+
+    // Mop-up po spread-cap: duze mapy (Ogromny) - komorki bez pakietu zelaza/miedzi.
+    let iron_size = iron_coverage_cell_size(tier);
+    let copper_size = copper_coverage_cell_size(tier);
+    let min_iron = min_land_hexes_for_relief_cell(iron_size);
+    let min_copper = min_land_hexes_for_relief_cell(copper_size);
+    for _ in 0..mop_n {
+        let mut pass_fixed = 0.0_f64;
+        for mass in &masses {
+            if (mass.len() as f64) < min_masa_mop {
+                continue;
+            }
+            for (_, land) in land_hexes_by_coverage_cell(mass, iron_size) {
+                if eligible_relief_land_count(&land, hexes) < min_iron {
+                    continue;
+                }
+                if cell_has_iron_package(&land, hexes, tier) {
+                    continue;
+                }
+                if force_iron_mountains_in_cell(
+                    &land, hexes, scratch, width, height, &mut *rand, tier,
+                ) {
+                    pass_fixed += 1.0;
+                }
+            }
+            for (_, land) in land_hexes_by_coverage_cell(mass, copper_size) {
+                if eligible_relief_land_count(&land, hexes) < min_copper {
+                    continue;
+                }
+                if cell_has_copper_package(&land, hexes, tier) {
+                    continue;
+                }
+                if force_copper_highlands_in_cell(
+                    &land, hexes, scratch, width, height, &mut *rand, tier,
+                ) {
+                    pass_fixed += 1.0;
+                }
+            }
+        }
+        fixed += pass_fixed;
+        if pass_fixed == 0.0 {
+            break;
+        }
+    }
+    fixed
+}
+
+/// Web `growMountainRanges` (:2965): dorzuca pasma seed-and-grow, cofa nadmiar (sufit ~40%
+/// lądu), przycina skupiska do 10 i odzyskuje ląd (regrow). Zwraca liczbe dolozonych heksow.
+pub fn grow_mountain_ranges(
+    hexes: &mut HexRecord,
+    scratch: &HashMap<String, TerrainScratch>,
+    tier: ReliefDensityTier,
+    width: f64,
+    height: f64,
+    rand: Rand<'_>,
+) -> f64 {
+    let p = &mapgen_relief_b().pasma;
+    let sufit_udzialu = p.udzial_gor_wzgorz_w_ladzie_sufit.wartosc;
+    let max_skupisko = p.maks_skupisko_gor_wzgorz.wartosc;
+    let mnoznik_celu = p.regrow_mnoznik_celu.wartosc;
+    let rozrzut = p.rozrzut_seedow_min_odleglosc.wartosc;
+    let params = map_gen_mountain_range_params(tier);
+    let mtn_th = mountain_noise_threshold_from_tier(tier);
+    let hi_th = highland_noise_threshold_from_tier(tier);
+
+    let mut masses: Vec<Vec<String>> = group_land_mass_keys(hexes)
+        .into_iter()
+        .filter(|m| m.len() as f64 >= params.min_masa_hexow)
+        .collect();
+    js_array_sort_by(&mut masses, |a, b| {
+        let d = b.len() as f64 - a.len() as f64;
+        if d != 0.0 {
+            d
+        } else {
+            first_key_cmp(a, b)
+        }
+    });
+
+    let mut added: Vec<AddedRelief> = Vec::new();
+
+    for mass in &masses {
+        let n_ranges = js_min(
+            params.max_pasm_na_mase,
+            js_max(1.0, js_round(mass.len() as f64 / params.hexy_na_pasmo)),
+        );
+        let seed_candidates =
+            mountain_range_seed_candidates(mass, hexes, scratch, width, height, &mut *rand);
+        if seed_candidates.is_empty() {
+            continue;
+        }
+        let seeds = pick_spread_relief_keys(&seed_candidates, n_ranges, rozrzut);
+
+        for seed in seeds {
+            let len = params.dlugosc_min
+                + js_floor(rand() * (params.dlugosc_max - params.dlugosc_min + 1.0));
+            let mut path: Vec<String> = vec![seed.clone()];
+            path.extend(walk_mountain_range(
+                hexes,
+                scratch,
+                width,
+                height,
+                &mut *rand,
+                &seed,
+                len as usize,
+            ));
+
+            let mut placed_this_range: Vec<String> = Vec::new();
+            for k in &path {
+                let t = match hexes.get(k) {
+                    Some(h) => h.terrain,
+                    None => continue,
+                };
+                if is_mountain_or_highland(t) {
+                    placed_this_range.push(k.clone());
+                    continue;
+                }
+                if !is_plain_like(t) {
+                    continue;
+                }
+                let n = mtn_noise(scratch, k);
+                if n > mtn_th {
+                    added.push(AddedRelief {
+                        k: k.clone(),
+                        n,
+                        was_highland: false,
+                        prev: t,
+                    });
+                    if let Some(h) = hexes.get_mut(k) {
+                        reset_relief_hex(h, Terrain::Mountains);
+                    }
+                    placed_this_range.push(k.clone());
+                } else if n > hi_th {
+                    added.push(AddedRelief {
+                        k: k.clone(),
+                        n,
+                        was_highland: true,
+                        prev: t,
+                    });
+                    if let Some(h) = hexes.get_mut(k) {
+                        reset_relief_hex(h, Terrain::Hills);
+                    }
+                    placed_this_range.push(k.clone());
+                }
+            }
+
+            // Obrzeze pasma (foothills): sasiedzi rdzenia/wzgorz -> Wzgorza z szansa obrzeze_szansa.
+            for k in &placed_this_range {
+                let (q, r) = key_qr(k);
+                for d in HEX_DIRECTIONS {
+                    let nq = q + i64::from(d.0);
+                    let nr = r + i64::from(d.1);
+                    let nk = hex_key(nq, nr);
+                    let nt = match hexes.get(&nk) {
+                        Some(nhex) => {
+                            if is_mountain_or_highland(nhex.terrain) || !is_plain_like(nhex.terrain)
+                            {
+                                continue;
+                            }
+                            if !is_relief_candidate_hex(nhex, nq as f64, nr as f64, width, height) {
+                                continue;
+                            }
+                            nhex.terrain
+                        }
+                        None => continue,
+                    };
+                    if rand() >= params.obrzeze_szansa {
+                        continue;
+                    }
+                    let n = mtn_noise(scratch, &nk);
+                    added.push(AddedRelief {
+                        k: nk.clone(),
+                        n,
+                        was_highland: true,
+                        prev: nt,
+                    });
+                    if let Some(h) = hexes.get_mut(&nk) {
+                        reset_relief_hex(h, Terrain::Hills);
+                    }
+                }
+            }
+        }
+    }
+
+    // Sufit ~40% gorzystosci lądu. Krok 1: cofamy to, co dolozyla ta funkcja.
+    let land = count_land_hexes(hexes);
+    let cap_count = js_floor(land * sufit_udzialu);
+    let mut mountainous = hexes
+        .iter()
+        .filter(|(_, h)| is_mountain_or_highland(h.terrain))
+        .count() as f64;
+    if mountainous > cap_count && !added.is_empty() {
+        let mut revert_order: Vec<AddedRelief> = added.clone();
+        js_array_sort_by(&mut revert_order, |a, b| {
+            if a.was_highland != b.was_highland {
+                return if a.was_highland { -1.0 } else { 1.0 };
+            }
+            a.n - b.n
+        });
+        for item in &revert_order {
+            if mountainous <= cap_count {
+                break;
+            }
+            let Some(hex) = hexes.get_mut(&item.k) else {
+                continue;
+            };
+            if !is_mountain_or_highland(hex.terrain) {
+                continue;
+            }
+            hex.terrain = item.prev;
+            mountainous -= 1.0;
+        }
+    }
+
+    // Krok 2 (rzadki fallback): globalne przyciecie najslabszego szumu, nigdy ponizej floor.
+    if mountainous > cap_count {
+        let iron_size = iron_coverage_cell_size(tier);
+        let copper_size = copper_coverage_cell_size(tier);
+        let cell_of = |q: i64, r: i64, size: f64| -> (i64, i64) {
+            (
+                js_floor(q as f64 / size) as i64,
+                js_floor(r as f64 / size) as i64,
+            )
+        };
+        let mut iron_cell_count: HashMap<(i64, i64), f64> = HashMap::new();
+        let mut copper_cell_count: HashMap<(i64, i64), f64> = HashMap::new();
+        // (klucz, q, r, szum, wzgorze?) - kolejnosc = Object.entries (kolejnosc wstawiania).
+        let mut all_relief: Vec<(String, i64, i64, f64, bool)> = Vec::new();
+        for (k, hex) in hexes.iter() {
+            if !is_mountain_or_highland(hex.terrain) {
+                continue;
+            }
+            let (q, r) = key_qr(k);
+            let is_highland = hex.terrain == Terrain::Hills;
+            if is_highland {
+                *copper_cell_count
+                    .entry(cell_of(q, r, copper_size))
+                    .or_insert(0.0) += 1.0;
+            } else {
+                *iron_cell_count
+                    .entry(cell_of(q, r, iron_size))
+                    .or_insert(0.0) += 1.0;
+            }
+            all_relief.push((k.clone(), q, r, mtn_noise(scratch, k), is_highland));
+        }
+        js_array_sort_by(&mut all_relief, |a, b| {
+            if a.4 != b.4 {
+                return if a.4 { -1.0 } else { 1.0 };
+            }
+            a.3 - b.3
+        });
+        for item in &all_relief {
+            if mountainous <= cap_count {
+                break;
+            }
+            if hexes.get(&item.0).is_none() {
+                continue;
+            }
+            if item.4 {
+                let ck = cell_of(item.1, item.2, copper_size);
+                let cnt = copper_cell_count.get(&ck).copied().unwrap_or(0.0);
+                if cnt <= min_highlands_copper_cell(tier) {
+                    continue;
+                }
+                if let Some(h) = hexes.get_mut(&item.0) {
+                    reset_relief_hex(h, Terrain::Plains);
+                }
+                copper_cell_count.insert(ck, cnt - 1.0);
+            } else {
+                let ck = cell_of(item.1, item.2, iron_size);
+                let cnt = iron_cell_count.get(&ck).copied().unwrap_or(0.0);
+                if cnt <= min_mountains_iron_cell(tier) {
+                    continue;
+                }
+                if let Some(h) = hexes.get_mut(&item.0) {
+                    reset_relief_hex(h, Terrain::Plains);
+                }
+                iron_cell_count.insert(ck, cnt - 1.0);
+            }
+            mountainous -= 1.0;
+        }
+    }
+
+    // Twardy limit skupiska 10 (PYTANIE 63), na finalnym stanie reliefu.
+    let mtn_reverted = cap_mountain_range_cluster_size(
+        hexes,
+        scratch,
+        Terrain::Mountains,
+        Terrain::Plains,
+        max_skupisko,
+    );
+    let hi_reverted = cap_mountain_range_cluster_size(
+        hexes,
+        scratch,
+        Terrain::Hills,
+        Terrain::Plains,
+        max_skupisko,
+    );
+
+    // Odzysk lądu utraconego w przycinaniu (PYTANIE 80) - mini-skupiska z dala od reliefu.
+    regrow_lost_mountain_clusters(
+        hexes,
+        scratch,
+        width,
+        height,
+        &mut *rand,
+        &masses,
+        mtn_th,
+        hi_th,
+        js_round((mtn_reverted + hi_reverted) * mnoznik_celu),
+    );
+
+    // Siatka bezpieczenstwa: ponowne przyciecie (limit jest twardy).
+    cap_mountain_range_cluster_size(
+        hexes,
+        scratch,
+        Terrain::Mountains,
+        Terrain::Plains,
+        max_skupisko,
+    );
+    cap_mountain_range_cluster_size(
+        hexes,
+        scratch,
+        Terrain::Hills,
+        Terrain::Plains,
+        max_skupisko,
+    );
+
+    added.len() as f64
 }
