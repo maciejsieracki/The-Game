@@ -1,0 +1,57 @@
+   Compiling civ-engine v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_097e36df-577-4/rust-port/engine)
+warning: unused variable: `b`
+   --> src/domain/civ_bonuses.rs:562:18
+    |
+562 |         .filter(|b| {
+    |                  ^ help: if this is intentional, prefix it with an underscore: `_b`
+    |
+    = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: constant `EGIPT_POMIJANE` is never used
+   --> src/domain/civ_bonuses.rs:554:11
+    |
+554 |     const EGIPT_POMIJANE: [&str; 4] = [
+    |           ^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `civ-engine` (lib) generated 2 warnings (run `cargo fix --lib -p civ-engine` to apply 1 suggestion)
+    Finished `test` profile [unoptimized] target(s) in 34.74s
+     Running tests/p6_1e_civ_gaps.rs (/home/user/cargo-target-shared/wf_097e36df-577-4/debug/deps/p6_1e_civ_gaps-0759360e77f120ce)
+
+running 9 tests
+test gap_combat_modifier_requires_realizuje_walka ... ok
+test gap_combat_modifier_requires_finite_value ... ok
+test gap_galera_role_is_naval_category ... ok
+test gap_baseline_skips_parameter_with_nonfinite_value ... ok
+test gap_invariant_extra_cel_exceptions_only_for_skipped_civs ... ok
+test gap_resolve_row_matches_ikona_id_for_every_row ... ok
+test gap_invariant_excluded_param_is_zero_everywhere ... ok
+test gap_semantic_profile_resolves_ikona_id_for_every_row ... ok
+test gap_egipt_skips_strategic_movement_params_only_for_egipt ... FAILED
+
+failures:
+
+---- gap_egipt_skips_strategic_movement_params_only_for_egipt stdout ----
+
+thread 'gap_egipt_skips_strategic_movement_params_only_for_egipt' (1669) panicked at tests/p6_1e_civ_gaps.rs:104:5:
+assertion `left == right` failed: Egipt pomija walka_ruch_rydwany
+  left: 1.5
+ right: 1.0
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+   1: core::panicking::panic_fmt
+   2: core::panicking::assert_failed_inner
+   3: core::panicking::assert_failed::<f64, f64>
+   4: p6_1e_civ_gaps::gap_egipt_skips_strategic_movement_params_only_for_egipt
+   5: p6_1e_civ_gaps::gap_egipt_skips_strategic_movement_params_only_for_egipt::{closure#0}
+   6: <p6_1e_civ_gaps::gap_egipt_skips_strategic_movement_params_only_for_egipt::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+
+failures:
+    gap_egipt_skips_strategic_movement_params_only_for_egipt
+
+test result: FAILED. 8 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.10s
+
+error: test failed, to rerun pass `--test p6_1e_civ_gaps`

@@ -1,0 +1,38 @@
+   Compiling civ-engine v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_097e36df-577-4/rust-port/engine)
+    Finished `test` profile [unoptimized] target(s) in 32.55s
+     Running tests/p6_1e_civ_gaps.rs (/home/user/cargo-target-shared/wf_097e36df-577-4/debug/deps/p6_1e_civ_gaps-0759360e77f120ce)
+
+running 9 tests
+test gap_combat_modifier_requires_finite_value ... ok
+test gap_baseline_skips_parameter_with_nonfinite_value ... ok
+test gap_galera_role_is_naval_category ... ok
+test gap_egipt_skips_strategic_movement_params_only_for_egipt ... ok
+test gap_invariant_extra_cel_exceptions_only_for_skipped_civs ... ok
+test gap_resolve_row_matches_ikona_id_for_every_row ... ok
+test gap_invariant_excluded_param_is_zero_everywhere ... ok
+test gap_semantic_profile_resolves_ikona_id_for_every_row ... ok
+test gap_combat_modifier_requires_realizuje_walka ... FAILED
+
+failures:
+
+---- gap_combat_modifier_requires_realizuje_walka stdout ----
+
+thread 'gap_combat_modifier_requires_realizuje_walka' (32636) panicked at tests/p6_1e_civ_gaps.rs:60:5:
+assertion failed: !is_combat_modifier_bonus(&walka_entry(Some("ekonomia"),
+                BonusValue::Number(0.5)))
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+   1: core::panicking::panic_fmt
+   2: core::panicking::panic
+   3: p6_1e_civ_gaps::gap_combat_modifier_requires_realizuje_walka
+   4: p6_1e_civ_gaps::gap_combat_modifier_requires_realizuje_walka::{closure#0}
+   5: <p6_1e_civ_gaps::gap_combat_modifier_requires_realizuje_walka::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+
+failures:
+    gap_combat_modifier_requires_realizuje_walka
+
+test result: FAILED. 8 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.08s
+
+error: test failed, to rerun pass `--test p6_1e_civ_gaps`

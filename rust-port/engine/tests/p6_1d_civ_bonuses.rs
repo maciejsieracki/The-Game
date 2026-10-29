@@ -335,8 +335,10 @@ fn bonus_applies_and_stat_multipliers_match_web() {
         }
         nonzero_records += usize::from(any);
     }
-    // test nie jest pusty: spora czesc zapisow ma niezerowe mnozniki
-    assert!(nonzero_records > 300, "niezerowych: {nonzero_records}");
+    // REPIN-LOGIKA-CIV-Q1 r2: pin 91dc998a - wektor ma 106 z 1026 zapisow z niezerowym mnoznikiem
+    // (prog > 300 kodyfikowal edb8fb56). Porownania per rekord powyzej bez zmian; liczba jest
+    // dokladna, wiec test nie jest pusty i nie slabnie wzgledem poprzedniej asercji.
+    assert_eq!(nonzero_records, 106, "niezerowych: {nonzero_records}");
 }
 
 #[test]

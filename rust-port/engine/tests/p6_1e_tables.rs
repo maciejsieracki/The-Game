@@ -110,6 +110,12 @@ fn semantic_table_sets_reference_existing_parameters_and_are_disjoint() {
         ("szkodliwe", &t.zbiory.szkodliwe),
     ];
     for (name, set) in sets {
+        // REPIN-LOGIKA-CIV-Q1 r2: web 91dc998a ma puste zbiory DECISION_REQUIRED (ts:257)
+        // i BLOCKED_COMBAT_MULTIPLIER (ts:268); pusty zbior jest tu pinem, nie brakiem danych.
+        if name == "decision_required" || name == "walka_zablokowana" {
+            assert!(set.is_empty(), "{name} ma byc pusty wg weba 91dc998a");
+            continue;
+        }
         assert!(!set.is_empty(), "{name}");
         for id in set {
             assert!(defined(id), "{name}: nieznany parametr {id}");
@@ -168,16 +174,21 @@ fn semantic_table_has_text_for_every_status_and_placeholder() {
         .blokada_wejscia
         .nieznana_cywilizacja
         .contains("{cywilizacja}"));
-    for key in t
-        .powody
-        .unwired
-        .wyjatki
-        .keys()
-        .chain(t.powody.decision_required.wyjatki.keys())
-    {
+    // REPIN-LOGIKA-CIV-Q1 r2: web 91dc998a ma zbior DECISION_REQUIRED pusty (civ-matrix-semantic.ts:257),
+    // a wyjatki `dip_*` maja wlasne galezie tekstu statusu (ts:402, 416-417) zamiast czlonkostwa w zbiorze.
+    const WEB_TEXT_EXCEPTIONS: [&str; 2] = ["dip_nastawienie_bazowe", "dip_agresja_archetyp"];
+    for key in t.powody.unwired.wyjatki.keys() {
         assert!(
-            t.zbiory.decision_required.contains(key) || !t.dowody_konsumentow.contains_key(key),
+            t.zbiory.decision_required.contains(key)
+                || WEB_TEXT_EXCEPTIONS.contains(&key.as_str())
+                || !t.dowody_konsumentow.contains_key(key),
             "{key}"
+        );
+    }
+    for key in t.powody.decision_required.wyjatki.keys() {
+        assert!(
+            WEB_TEXT_EXCEPTIONS.contains(&key.as_str()),
+            "nieoczekiwany wyjatek DECISION_REQUIRED {key}"
         );
     }
     // statusy bez roznic trudnosci to znane statusy

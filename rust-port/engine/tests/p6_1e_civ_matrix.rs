@@ -1287,16 +1287,18 @@ fn ai_fallback_branches_are_actually_exercised() {
         .expect("fallback");
     let variants = data_variants(fallback);
     let data = game_data(&variants[0], &params);
-    let legacy_only = civ_ai_profile_for(
-        &fallback.sources(),
-        &data,
-        "Zulusi",
-        CivMatrixDifficulty::Normal,
-    )
-    .expect("zulusi");
-    assert_eq!(
-        legacy_only.profil_mapy, "  kopia_typu_obronna \t",
-        "wiersz zwracany wprost, bez trim"
+    // REPIN-LOGIKA-CIV-Q1 r2: pin 91dc998a - web civAiProfileFor / civAiProfilMapy wymagaja wiersza
+    // macierzy (civ-ai-data.ts:76-82, 60-70); galaz legacy-only nie istnieje, wiec bez wiersza wynik
+    // to undefined (None). Scenariusz `fallback` nadal wymusza te galaz.
+    assert!(
+        civ_ai_profile_for(
+            &fallback.sources(),
+            &data,
+            "Zulusi",
+            CivMatrixDifficulty::Normal
+        )
+        .is_none(),
+        "legacy-only => undefined"
     );
     assert_eq!(
         civ_ai_profil_mapy(
@@ -1304,10 +1306,9 @@ fn ai_fallback_branches_are_actually_exercised() {
             &data,
             "Zulusi",
             CivMatrixDifficulty::Normal
-        )
-        .as_deref(),
-        Some("kopia_typu_obronna"),
-        "trim w galezi legacy"
+        ),
+        None,
+        "bez wiersza macierzy => undefined"
     );
     assert_eq!(
         civ_ai_profil_mapy(
@@ -1317,7 +1318,7 @@ fn ai_fallback_branches_are_actually_exercised() {
             CivMatrixDifficulty::Normal
         ),
         None,
-        "pusty profilMapy po trim => undefined"
+        "bez wiersza macierzy => undefined"
     );
     let variants = data_variants(base);
     let data = game_data(&variants[0], &params);
@@ -1328,5 +1329,15 @@ fn ai_fallback_branches_are_actually_exercised() {
         CivMatrixDifficulty::Normal,
     )
     .expect("zulusi");
-    assert_ne!(from_matrix.profil_mapy, legacy_only.profil_mapy);
+    assert_eq!(
+        Some(from_matrix.profil_mapy.as_str()),
+        civ_ai_profil_mapy(
+            &base.sources(),
+            &data,
+            "Zulusi",
+            CivMatrixDifficulty::Normal
+        )
+        .as_deref(),
+        "profil z wiersza macierzy zgodny z civAiProfilMapy"
+    );
 }
