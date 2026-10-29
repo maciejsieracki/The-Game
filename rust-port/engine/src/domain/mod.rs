@@ -1,6 +1,7 @@
 //! Domain building blocks shared by future engine systems.
 
 pub mod ai_era_unit_promotion;
+pub mod ai_general_war_campaign;
 pub mod army_consolidation;
 pub mod army_leadership;
 pub mod barbarians;
