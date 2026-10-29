@@ -8514,3 +8514,13 @@ referencyjnych zielone, `entity-card-historia-section-test` 36/36,
 - Test dużego imperium wykonano po publikacji: 39/100; tura 39→40 przekroczyła bramkę 60 s o 611 ms. Wydajność pozostaje otwarta do profilowania i optymalizacji. C-064 jest zablokowany brakiem natywnego konektora Kanban i nie jest częścią release.
 - Dokładne dowody integracji i ograniczenia: `dyspozycje/autobot/runs/R-CIV-ALL-TOPICS-ROBOCZA-20261027/70-integrated-release-20261029.md`.
 - Raport nieudanego testu dużego imperium i raw JSON: `dyspozycje/autobot/runs/R-CIV-ALL-TOPICS-ROBOCZA-20261027/72-large-empire-performance-20261029.md`.
+
+## Kontrola walki — łucznicy, szyk i rydwany (2026-10-29)
+
+- **STATUS:** `PASS-WITH-NOTES — diagnostyka/testy zintegrowane; brak reprodukcji błędu produktu; logika produktu bez zmian`.
+- Naturalny szyk jednej linii łuczników w Chromium: po aktywacji rozpoczynającej 1 pole poza zasięgiem łucznik przeszedł do legalnego zasięgu; w następnej aktywacji produkcyjny picker wybrał cel, a produkcyjne `_doAttack` → `_doRangedAttack` zużyły amunicję. Niezależny rerun potwierdził trafienie HP 38→37.
+- Test naturalny 8v8 potwierdził ruch rydwanu konnego w Ataku oraz ruch i atak wręcz w Szarży (HP celu 56→32). Test naturalny ustawił jedną linię łuczników przez UI rozstawienia.
+- Macierz doktryn: 36/36, a cztery scenariusze z wydłużonym horyzontem 4/4; wcześniejsze cztery alarmy wynikały z końca testu w tej samej aktywacji, w której jednostka dopiero weszła w zasięg.
+- Ograniczenia: w R5 ustawienie Obrony nie utrzymało się w śladzie obrońcy, więc nie jest tu dowodem dla Obrony; osobny R3 28v28 potwierdza akcje obrony i ruch konnicy. Test 28v28 nie zawierał rydwanów, a naturalny R5/R6 obejmował mały skład na mapie presetowej; zachowanie na każdym terenie i pełnym dużym polu bitwy nie jest dowiedzione. Brak przypadku, który uzasadniałby zmianę kodu produktu.
+- Raporty i artefakty: `dyspozycje/autobot/runs/R-BITWA-ATAK-LUCZNICY-RYDWANY-Q1/`; testy: `gra/tools/battle-large-mixed-doctrine-matrix-test.cjs`, `gra/tools/battle-doctrine-live-r3-test.cjs`, `gra/tools/battle-doctrine-live-r4-test.cjs`, `gra/tools/battle-natural-chariot-r5-test.cjs`, `gra/tools/battle-natural-near-range-r6-test.cjs`.
+- Kod bitwy z dotychczasowych poprawek jest już w Roboczej z publikacji `682a6b9a`; ten follow-up dodaje wyłącznie testy i dokumentację, więc nie wymaga nowego bundla/deployu. Final Control: `PASS-WITH-NOTES`; ograniczenia zakresu potwierdzone. Raport niezależnego ewaluatora: `dyspozycje/autobot/runs/R-BITWA-ATAK-LUCZNICY-RYDWANY-Q1/18-evaluator-r6-closeout.md`; końcowy audyt: `dyspozycje/autobot/runs/R-BITWA-ATAK-LUCZNICY-RYDWANY-Q1/19-final-control.md`.
