@@ -1,6 +1,6 @@
 # R-BITWA-ATAK-MARSZEM-HEX-Q1 — Evaluator r2
 
-**Reviewed commit:** `efe9ab1ea6dadc917185c372a958c82ed21a7dda`  
+**Reviewed commit:** `efe9ab1ea6dadc917185c372a958c82ed21a7dda`
 **Verdict: PASS-WITH-NOTES.** Operator Defense resolves the two prior evidence notes within the agreed scope. No blocking correctness issue was found in the added 42-unit mixed-group progression regression or the save/load boundary. Ready for Final Control; no product files were edited by this evaluator.
 
 ## Independent review of Defense
