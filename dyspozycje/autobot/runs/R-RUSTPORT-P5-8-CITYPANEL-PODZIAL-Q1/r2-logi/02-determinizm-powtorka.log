@@ -107,6 +107,6 @@ IMPORTS, liczba per kawałek:
   K05 najczesciej eksportowane: productionCtxForCity->K06,K07,K08, buildBuildingBuildTabDetailCard->K06,K07, rangeName->K06,K07, ringsTiles->K06,K07, TEREN_COL->K06, TEREN_LETTER->K06, _legacyBuildBuildingDetailCard->K06, _legacyBuildUnitDetailCard->K06
   K06 najczesciej eksportowane: activeCity->K07,K08, activeMap->K07,K08, cityPanelTitle->K07,K08, ownerCities->K07,K08, activeOnClose->K08, appendBuildQueueSection->K07, appendOwnedBuildingRow->K08, appendPodzialPracyInfo->K08
   K07 najczesciej eksportowane: CityPanelUxMounts->K08, appendPanel->K08, appendSectionTitleWithDetails->K08, buildCityOnlyW3FlankChips->K08, capitalBadgeOrButtonHtml->K08, renderBuildSplitPanel->K08, renderKultura->K08, renderOkolica->K08
-  K08 najczesciej eksportowane: 
-  K09 najczesciej eksportowane: 
+  K08 najczesciej eksportowane:
+  K09 najczesciej eksportowane:
 WROTE dyspozycje/autobot/runs/R-RUSTPORT-P5-8-CITYPANEL-PODZIAL-Q1/r2-logi/pomiar-r2.json

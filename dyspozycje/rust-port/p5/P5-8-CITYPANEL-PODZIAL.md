@@ -1,6 +1,6 @@
 # P5.8 — Podział `cityPanel.ts` na kawałki portowalne (plan, bez portu)
 
-**Temat:** `R-RUSTPORT-P5-8-CITYPANEL-PODZIAL-Q1` · **Runda:** 2/5 (Operator, poprawka po zarzutach Evaluatora r1) · **Pin web:** `edb8fb56` · **Plik:** `gra/src/ui/cityPanel.ts`
+**Temat:** `R-RUSTPORT-P5-8-CITYPANEL-PODZIAL-Q1` · **Runda:** 3/5 (Operator, poprawka po zarzutach Evaluatora r1 i Final Control r2: skrypt bez końcowych spacji, punkty wejścia i kryteria K04–K08) · **Pin web:** `edb8fb56` · **Plik:** `gra/src/ui/cityPanel.ts`
 **Charakter:** wyłącznie dokument + pomiar. Zero zmian w `gra/**`, zero portu kodu do `frontend-v2`.
 **Źródła (odczyt przez `git show`):** `origin/claude/sprawdzenie-funkcjonalnosci-ek4ra0` — `00-dispatch.md`, `dyspozycje/rust-port/p5/P5-0-VIEWMODEL-CATALOG.md`; `origin/rust-port/parity-v2` — `src-tauri/frontend-v2/PORTING-QUEUE.md`, `P5-7-PORT-HUD-CITYPANEL.md`, `cityPanelUxBridge.ts`.
 **Pomiar (odtwarzalny):** `dyspozycje/autobot/runs/R-RUSTPORT-P5-8-CITYPANEL-PODZIAL-Q1/r2-logi/p5-8-pomiar.py` (czyta pin przez `git show`, bez `/tmp`) z konfiguracją `konfig-r2.json`. Log: `r2-logi/01-pomiar-r2.log`; powtórka: `r2-logi/02-determinizm-powtorka.log` (identyczna, `cmp`); dane: `r2-logi/pomiar-r2.json`.
@@ -93,7 +93,7 @@ Każdy kawałek: LOC z pomiaru (włącznie z jednostkami odłożonymi, których 
 | **K01 Fundament** | 1 360 | 139 | 285–7390 | G, Q, C, P, E, R, B, F, J, L, D, A2, I | typy, stan `ctx`, formatery, ikony, `el`, prymitywy kart | — |
 | **K02 CSS i wspólne bloki** | 1 499 | 23 | 1948–7294 | L, P, R, H | `ensureStyles` (CSS, 1 067 LOC), `appendBreakdownLines`, `appendSignedBreakdownSections` | K01 |
 | **K03 Model miasta** | 1 466 | 36 | 314–11055 | B, R, D, E, I, J, AA, C, L | `CityPanelConfig` (→ usuwany), `computeView`, `buildHandelDetailCard`, `computeOrderStateLocal` (→ usuwany), `cfg` | K01, K02 |
-| **K04 Zdrowie, kultura, wzrost** | 1 388 | 32 | 794–6756 | P, O, Q, I | `buildKulturaDetailCard`, `buildPorzadekDetailCard`, `buildWealthDetailCard`, `buildRacjeWzrostDetailCard` | K01–K03 |
+| **K04 Karty szczegółów (porządek, bogactwo, wzrost, pasek górny)** | 1 388 | 32 | 794–6756 | P, O, Q, I | `buildKulturaDetailCard`, `buildPorzadekDetailCard`, `buildWealthDetailCard`, `buildRacjeWzrostDetailCard` | K01–K03 |
 | **K05 Budynki i karty** | 1 500 | 45 | 4638–9616 | W, Q, S, T, U, M | `_legacyBuildBuildingDetailCard`, `buildBuildingInfocard`, `buildingRequirementChips`, `recruitManpowerCost`, `productionCtxForCity` | K01–K04 |
 | **K06 Kolejki i lista produkcji (3D/MAPA odłożone)** | 1 439 | 37 | 5028–10246 | X, W, S, T, U, V | `renderWorkedPreview` (MAPA), `buildUnitDetailCardViaEntityCard` (slot 3D), `appendBuildQueueSection`, `renderBuildList`, `appendOwnedBuildingRow` | K01–K05 |
 | **K07 Pasek W3 i okolica** | 1 493 | 23 | 3295–11539 | AC, X, Y, AB, Z | `appendBudowaListaBar`, `buildCityOnlyW3FlankChips`, `renderOkolica`, `renderSpoleczenstwo`, `renderKultura` | K01–K06 |
@@ -109,9 +109,23 @@ Suma: 1360 + 1499 + 1466 + 1388 + 1500 + 1439 + 1493 + 1430 + 127 = **11 702** +
 - **K01:** typy skompilowane osobno; `ctx` ma wszystkie 13 pól `let`; zero importów z K02–K09.
 - **K02:** harness CSS: `ensureStyles` wstrzyknięte raz, identyczny `<style>` jak w pinie.
 - **K03:** DTO `CityPanelDto`/`CityGrowthDto` zastępują `computeView`, `cityGrowthLive`, `resolveOrderState`; test: wartości `order` z silnika, nie z lokalnego przeliczenia.
-- **K04–K08:** harness DOM dla punktów wejścia z §5 (`renderKultura`, `renderZdrowie`, `renderProd`, `renderOkolica`, `renderPurchasableUnits`, …).
+- **K04–K08:** harness DOM dla punktów wejścia wymienionych per kawałek w tabeli §4a (kryterium wspólne (b)), plus kryterium specyficzne z §4a.
 - **K06:** 3D/MAPA odłożone: slot 3D zostaje jako placeholder bez `mountUnitMiniPreview`; `renderWorkedPreview` nie portowane do czasu tematu mapy.
 - **K09:** `rerender`/`switchCity` wywoływane wyłącznie przez `ctx`; test rejestracji w `cityPanelUxBridge.ts` (ZAŁOŻENIE P5.8-Z7).
+
+### 4a. Punkty wejścia, DTO/komendy i kryteria wyjścia dla K04–K08 (r3)
+
+Punkty wejścia: lista `WEJSCIA` z `01-pomiar-r2.log` (linie 70, 73, 76, 79, 82; heurystyka po prefiksie nazwy, podzbiór, nie pełna lista eksportów — NIE_ZMIERZONO co do kompletności). Każda nazwa należy do wskazanego kawałka wg pomiaru. DTO/komendy: przypisanie z §5 (dla K06 — ZAŁOŻENIE P5.8-Z9, bo §5 nie wylicza jednostek K06). Kryterium specyficzne dopełnia kryteria wspólne (a)–(d) z §4.
+
+| Kawałek | Punkty wejścia (pomiar) | DTO / komendy (§5) | Kryterium wyjścia specyficzne |
+|---|---|---|---|
+| **K04** | `renderSurowce`, `buildKulturaDetailCard`, `buildPorzadekDetailCard`, `buildWealthDetailCard`, `buildRacjeWzrostDetailCard`, `buildTopBarZywnoscDetailCard`, `buildTopBarLudnoscDetailCard`, `buildTopBarNaukaDetailCard`, `buildTopBarKulturaDetailCard`, `buildTopBarReligiaDetailCard`, `bindBuildQueueDragReorder`, `cancelQueueItem` | `EmpireHudDto` (`ownerHasSpichlerz`, `cityPracaSplit`, `resolveEmpireSnap`, `resolveCityHealth`); `BuildOptionDto.stock_cost` (`buildingStockCostForItem`, `stockCostForQueueItem`, `buildingUiDisplayLevel`); komenda `cancel` (B3) | karty szczegółów i pasek górny renderują się z pól DTO; `cancelQueueItem` wysyła komendę `cancel`, a nie przelicza stanu kolejki lokalnie; harness DOM kart wymienionych obok identyczny z pinem |
+| **K05** | `renderEkonomiaStrip`, `appendPodzialHandlu`, `appendCitySkarbiecBalance`, `renderPodzialHandlu`, `buildBuildingInfocard`, `buildBuildingDetailCardViaEntityCard`, `appendBuildingRequirementsBlock`, `appendTechDetailBlock`, `buildTopBarZlotoDetailCard` | `BuildOptionDto` / `RecruitOptionDto` (`affordable`, `missing`, `eta`); zasięg z silnika (`okolicaPreviewRadius`, `improvementsInCityRange`); `buildingRequirementChips`, `recruitManpowerCost`, `maxAffordableRecruitQuantity`, `missingTechSteps`, `productionCtxForCity` (reguły → pola DTO) | `buildingRequirementChips` i `missingTechSteps` nie liczą reguł w UI: wartości z `BuildOptionDto.missing`; `maxAffordableRecruitQuantity` z `RecruitOptionDto`; harness DOM kart budynku identyczny z pinem |
+| **K06** (3D/MAPA odłożone) | `renderBuildList`, `appendBuildQueueSection`, `appendRecruitmentQueue`, `appendOwnedBuildingRow`, `appendCatalogBuildingRow`, `appendBuildableItemRow`, `appendUnitRecruitCompactRow`, `appendPodzialPracyInfo`, `buildOwnedBuildingsDetailCard`, `buildUnitDetailCardViaEntityCard`, `renderTopBarGarrison`, `buildGarnizonDetailCard` | ZAŁOŻENIE P5.8-Z9: kolejki i listy z `CityPanelDto` (produkcja, rekrutacja, garnizon); komendy `enqueue_build`, `cancel`/`reorder`/`promote` (B3), `recruit_cancel`; brak nowych reguł (§5) | lista kolejek: kolejność i stan wyłącznie z DTO; slot 3D w `buildUnitDetailCardViaEntityCard` pusty (placeholder), `renderWorkedPreview` i `okolicaHexPoints` nieportowane (§6); harness DOM listy identyczny z pinem poza slotem 3D |
+| **K07** | `renderSpoleczenstwo`, `renderZdrowie`, `renderKultura`, `renderOkolica`, `renderBuildSplitPanel`, `renderTopStatsBar`, `appendBudowaListaBar`, `appendBudowaToolbarProfiles`, `appendOkolicaToolbarProfiles`, `appendPanel`, `appendSectionTitleWithDetails`, `renderCityHeaderCompact` | `EmpireHudDto` (przepływy W3, P5-0 §6.4) dla `renderProd`, `w3CityChip`, `buildCityOnlyW3FlankChips`, `buildCityResourceStatItems`; `CityGrowthDto` i `CityPanelDto` dla pozostałych punktów | przepływy W3 (`buildCityOnlyW3FlankChips`) pochodzą z DTO, nie z lokalnej sumy; `renderOkolica` nie liczy zasięgu lokalnie (zasięg z silnika); harness DOM trzech sekcji `renderSpoleczenstwo`, `renderKultura`, `renderOkolica` identyczny z pinem |
+| **K08** | `renderReligia`, `renderMagazyn`, `renderWealth`, `renderPodzialPracy`, `buildPracaDetailCard`, `renderOwnedBuildingsBar`, `renderBuildingsOwnedRightPanel`, `renderCityExitFooter`, `closeCityView`, `wireTopBarStatDetails`, `refreshCityPanelIfOpen`, `paintCityPanelSections` | `RecruitOptionDto` (`renderPurchasableUnits`); `CityPanelDto.budowa` (`renderBuildingsOwned`); komendy `set_trade_split`, `set_labor_split` (`renderHandelSlidersPanel`); `paintCityPanelSections` dostaje wynik `ctx.render*` z K09 | `renderPurchasableUnits` nie liczy maksymalnej ilości rekrutacji (z `RecruitOptionDto`); suwaki handlu wysyłają `set_trade_split`/`set_labor_split` i odświeżają się z DTO; harness DOM `renderReligia`, `renderMagazyn`, `paintCityPanelSections` identyczny z pinem |
+
+Uwaga do §5 (zachowana bez zmian, do decyzji przy portowaniu): `renderProd` (K07, R wg konfiguracji) ma w §5 przypisane `EmpireHudDto`; docelowo może to być `CityPanelDto.produkcja`. Przypisanie nie jest zmierzone (NIE_ZMIERZONO).
 
 ## 5. Eksporty i importy między kawałkami (zmierzone) i DTO
 
@@ -166,7 +180,8 @@ Canvas: jedno trafienie `:2629` to reguła CSS `.unit-mini-canvas` bez kodu rysu
 
 ## 8. Plan rund
 
-- **r2 (ten dokument):** zwinięcie SCC, kawałki K01–K09 z pomiarem acykliczności, eksporty/importy, DTO per kawałek, kryteria wyjścia. → Evaluator/Final Control.
+- **r2:** zwinięcie SCC, kawałki K01–K09 z pomiarem acykliczności, eksporty/importy, DTO per kawałek, kryteria wyjścia. → Evaluator/Final Control (FAIL: 2 x NAPRAW).
+- **r3 (ten dokument):** skrypt pomiaru bez końcowych spacji (logi r2 przeliczone, `cmp` identyczne), punkty wejścia i kryteria wyjścia K04–K08 w §4a. → Evaluator/Final Control.
 - **r3+:** port kawałków wg §4 (osobne tematy, każdy z harnessem); K09 ostatni.
 - **Na koniec (po limicie, wg decyzji właściciela):** 3D `unitMiniPreview` (§6) i mapa kafli `renderWorkedPreview`/`okolicaHexPoints`.
 
@@ -180,6 +195,8 @@ Canvas: jedno trafienie `:2629` to reguła CSS `.unit-mini-canvas` bez kodu rysu
 - **P5.8-Z6:** wszystkie 13 `let` na poziomie pliku → `ctx` w K01; typy → K01; `CityPanelConfig` nie jest portowany.
 - **P5.8-Z7:** rejestracja implementacji w `cityPanelUxBridge.ts` dopiero po K01–K08 (K09).
 - **P5.8-Z8:** regex-owe krawędzie są nadmiarowe (komentarze, nazwy właściwości) — błąd kierunkowo bezpieczny: może tylko zwiększyć zwijane SCC, nie ukryć cyklu.
+- **P5.8-Z9 (r3):** przypisanie DTO/komend dla K06 (kolejki, listy, garnizon) nie jest w §5; przyjęto nazwowo z P5-0 §7 (`enqueue_build`, B3, `recruit_cancel`). Nieweryfikowane względem `viewmodel/types.ts` (NIE_ZMIERZONO).
+- **P5.8-Z10 (r3):** nazwa K04 w §4 poprawiona na zgodną z zawartością pomiaru (K04 nie zawiera `renderZdrowie`/`renderKultura`, te są w K07); treść kawałków bez zmian.
 
 ## 10. Zakres i ograniczenia
 

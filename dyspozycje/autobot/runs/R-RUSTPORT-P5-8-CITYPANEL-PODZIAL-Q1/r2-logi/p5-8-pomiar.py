@@ -243,7 +243,7 @@ for bi in sorted(imports):
 
 for bi in sorted(cg):
     ex = sorted(exports.get(bi, {}).items(), key=lambda kv: (-len(kv[1]), kv[0]))[:8]
-    print(f"  K{bi:02d} najczesciej eksportowane: " + ', '.join(f"{u}->{','.join('K%02d' % c for c in sorted(cs))}" for u, cs in ex))
+    print((f"  K{bi:02d} najczesciej eksportowane: " + ', '.join(f"{u}->{','.join('K%02d' % c for c in sorted(cs))}" for u, cs in ex)).rstrip())
 out = {'pin': PIN, 'lines': N, 'units': len(units), 'cut': sorted(CUT),
        'scc_after_cut': [c for c in nontriv], 'blocks': {str(bi): sorted(x for j in blk for x in sccs[j]) for bi, blk in enumerate(blocks, 1)},
        'block_info': {str(k): v for k, v in blk_info.items()},
