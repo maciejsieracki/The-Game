@@ -1,0 +1,23 @@
+OK   pin.range.renderBuildingsOwned | cityPanel.ts:9184-9255
+OK   pin.range.renderBuildingsOwnedRightPanel | cityPanel.ts:9341-9357
+OK   pin.range.renderPurchasableUnits | cityPanel.ts:8891-8977
+OK   pin.anchor.1 | cityPanel.ts:9198 const built = cfg.getBuiltBuildingIds?.(city.id);
+OK   pin.anchor.2 | cityPanel.ts:8898 const w4 = opts?.w4 === true;
+OK   pin.anchor.3 | cityPanel.ts:8966 'list-scroll',
+OK   pin.anchor.4 | cityPanel.ts:8961 '(brak jednostek do kupienia — zbadaj technologie / Koszary)'
+OK   wiring.stubbed | installK08cWiring: atrapy regułowe (K08C-Z5)
+OK   wiring.depsCallable | sześć delegatów K06B (k08b-deps) wywoływalnych po wiringu
+OK   exec.owned.empty | pin-exec vs port (renderBuildingsOwned): outerHTML 91 znaków, wyjątek pin=null port=null
+OK   exec.owned.empty.nonEmpty | owned.empty: montaż niepusty
+OK   exec.owned.compact | pin-exec vs port (renderBuildingsOwned): outerHTML 81 znaków, wyjątek pin=null port=null
+OK   exec.owned.compact.nonEmpty | owned.compact: montaż niepusty
+OK   exec.ownedRight.empty | pin-exec vs port (renderBuildingsOwnedRightPanel): outerHTML 229 znaków, wyjątek pin=null port=null
+OK   exec.ownedRight.empty.nonEmpty | ownedRight.empty: montaż niepusty
+OK   exec.purchase.empty | pin-exec vs port (renderPurchasableUnits): outerHTML 155 znaków, wyjątek pin=null port=null
+OK   exec.purchase.empty.nonEmpty | purchase.empty: montaż niepusty
+OK   exec.purchase.w4 | pin-exec vs port (renderPurchasableUnits): outerHTML 626 znaków, wyjątek pin=null port=null
+OK   exec.purchase.w4.nonEmpty | purchase.w4: montaż niepusty
+OK   exec.anchor.ownedEmpty | pusta lista budynków: tekst pinu obecny w montażu
+OK   exec.anchor.purchaseEmpty | pusty stan rekrutacji (pin: "brak jednostek do kupienia")
+
+k08c-owned-purchase-pin: 21/21 zgodnych

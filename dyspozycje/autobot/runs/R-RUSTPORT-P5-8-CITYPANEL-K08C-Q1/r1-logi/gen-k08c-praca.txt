@@ -1,0 +1,1 @@
+gen-k08c-port: 2 bloków -> /home/user/The-Game/.claude/worktrees/wf_6995f21c-9dd-1/src-tauri/frontend-v2/src/ui/cityPanel/k08c-praca.ts

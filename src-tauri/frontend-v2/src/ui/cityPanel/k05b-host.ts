@@ -127,6 +127,8 @@ export interface K05bCfg {
   getManpowerSnapshot?: (cityId: number) => ManpowerSnapshotK05b | undefined;
   /** K08B-Z2 (runda 1): pin `cfg.getBuiltBuildingIds?.(city.id)` — używane przez `renderOwnedBuildingsBar` (K08B). */
   getBuiltBuildingIds?: (cityId: number) => readonly string[] | undefined;
+  /** K08C-Z3 (runda 1): pin `cfg.getCities?.() ?? []` — używane przez `buildTopBarPracaDetailCard` (K08C). */
+  getCities?: () => readonly City[];
 }
 
 /** K05B-Z5: migawka rekrutów miasta (pin: `getManpowerSnapshot`) — pola czytane przez `buildRecruitTabDetailCard`. */
