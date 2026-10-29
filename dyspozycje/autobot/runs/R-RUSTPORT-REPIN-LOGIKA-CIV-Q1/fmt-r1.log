@@ -1,0 +1,2 @@
+cargo fmt --all -- --check (po cargo fmt --all)
+EXIT=0

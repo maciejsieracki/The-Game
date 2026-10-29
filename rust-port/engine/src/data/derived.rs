@@ -876,7 +876,13 @@ pub struct CivBonusMatrixSpecsFile {
     pub meta: serde_json::Value,
     pub etykiety: CivBonusLabels,
     pub spec_walka: Vec<CivBonusMatrixSpec>,
+    /// Identyfikatory pominiete przy generowaniu wpisow (web `MATRIX_ADAPTER_EXCLUDED_IDS`,
+    /// R-RUSTPORT-REPIN-LOGIKA-CIV-Q1: od 91dc998a tylko `walka_atak_lukownicy`).
     pub wykluczone_g1: Vec<String>,
+    /// Identyfikatory, dla ktorych wpis o wartosci 0 jest emitowany, gdy cywilizacja ma wiersz
+    /// w macierzy (web `MATRIX_ZERO_MARKER_IDS`).
+    #[serde(default)]
+    pub zerowe_markery: Vec<String>,
     pub parametry_dodatkowe: Vec<CivBonusExtraParam>,
     pub koszt_rekrutacji: CivBonusRecruitmentSpec,
 }
@@ -904,6 +910,9 @@ pub struct CivBonusExtraParam {
     pub id: String,
     pub cel_domyslne: String,
     pub wyjatki_civ: Vec<CivBonusCelException>,
+    /// Klucze cywilizacji, dla ktorych parametr jest calkowicie pomijany (web: Egipt, `walka_ruch_bitwa_proc`).
+    #[serde(default)]
+    pub pomin_civ: Vec<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -919,6 +928,9 @@ pub struct CivBonusRecruitmentSpec {
     pub id: String,
     pub typ: String,
     pub cel: String,
+    /// Wyjatki celu per cywilizacja (web: `zulusi` -> `Impi`).
+    #[serde(default)]
+    pub wyjatki_civ: Vec<CivBonusCelException>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -1442,6 +1454,8 @@ pub struct CivUnitRange {
 #[serde(deny_unknown_fields)]
 pub struct CivDiplomacyParams {
     pub parametr_handel: String,
+    /// Parametr bazy agresji archetypu (web `dip_agresja_archetyp`, REPIN-LOGIKA-CIV-Q1).
+    pub parametr_agresja_archetyp: String,
     pub dzielnik_otwartosc_handel: f64,
     pub parametr_nastawienie: String,
     pub nastawienie_baza_domyslna: f64,
@@ -1596,6 +1610,9 @@ pub struct CivSemanticReasonWithExceptions {
 pub struct CivSemanticBlockedReasons {
     pub domyslny: String,
     pub grupa_walka_zablokowana: String,
+    /// Web `statusReason` (BLOCKED, Egipt + `walka_ruch_bitwa_proc`, decyzja 1B).
+    #[serde(default)]
+    pub egipt_ruch_bitwa: String,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]

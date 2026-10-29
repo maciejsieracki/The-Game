@@ -430,7 +430,7 @@ pub fn civ_matrix_apply_proc(
 pub mod ai_data {
     use std::sync::OnceLock;
 
-    use super::js_compat::{js_clamp, js_trim};
+    use super::js_compat::js_clamp;
     use super::{
         civ_matrix_param_at_difficulty, civ_matrix_params_at_difficulty, load_civ_matrix,
         CivMatrixData, CivMatrixDifficulty,
@@ -545,7 +545,7 @@ pub mod ai_data {
     /// Web `civAiAggressionNorm`: agresja 0..1 z macierzy (fallback: `civ-ai.json`).
     pub fn civ_ai_aggression_norm(
         src: &CivAiSources<'_>,
-        data: &CivGameData<'_>,
+        _data: &CivGameData<'_>,
         civ_name: &str,
         difficulty: CivMatrixDifficulty,
     ) -> Option<f64> {
@@ -559,8 +559,7 @@ pub mod ai_data {
             );
             return Some(unit_range(value / ai.dzielnik_skali));
         }
-        let row = legacy_ai_row(data, civ_name)?;
-        Some(unit_range(row.agresywnosc as f64 / ai.dzielnik_skali))
+        None
     }
 
     fn profile_name(is_defensive: bool) -> String {
@@ -575,7 +574,7 @@ pub mod ai_data {
     /// Web `civAiProfilMapy`: `kopia_typu_obronna` / `standardowa` z macierzy, inaczej `profilMapy` z `civ-ai.json`.
     pub fn civ_ai_profil_mapy(
         src: &CivAiSources<'_>,
-        data: &CivGameData<'_>,
+        _data: &CivGameData<'_>,
         civ_name: &str,
         difficulty: CivMatrixDifficulty,
     ) -> Option<String> {
@@ -589,13 +588,7 @@ pub mod ai_data {
             );
             return Some(profile_name(flag == ai.profil_obronna_wartosc));
         }
-        let legacy = legacy_ai_row(data, civ_name)?;
-        let trimmed = js_trim(&legacy.profil_mapy);
-        if trimmed.is_empty() {
-            None
-        } else {
-            Some(trimmed.to_owned())
-        }
+        None
     }
 
     /// Web `civAiProfileFor`: pelny profil AI z macierzy; `civ-ai.json` zostaje adapterem pol opisowych.
@@ -607,9 +600,8 @@ pub mod ai_data {
     ) -> Option<CivAiProfile> {
         let legacy = legacy_ai_row(data, civ_name);
         let matrix_row = matrix_row_by_name(src.matrix, civ_name);
-        let Some(matrix_row) = matrix_row else {
-            return legacy.map(CivAiProfile::from);
-        };
+        // Web 91dc998a: profil AI wymaga wiersza macierzy (legacy-only => undefined).
+        let matrix_row = matrix_row?;
         let ai = &civ_matrix_params().ai;
         let values = civ_matrix_params_at_difficulty(src.matrix, &matrix_row.ikona_id, difficulty);
         let value = |id: &str| {
@@ -700,42 +692,50 @@ pub mod ai_data {
         diplomacy_per_nacja_row(src, &name)
     }
 
-    /// Web `resolveArchetypeAggression`: agresja 0..1 (macierz, potem `civ-ai.json`, potem `fallback`).
-    /// `data = None` => odczyt z `civ-ai.json` zaimportowanego wprost (`civAiRaw`).
+    /// Web `resolveArchetypeAggression` (91dc998a): baza archetypu `dip_agresja_archetyp` +
+    /// przesuniecie trudnosci `(agresja[trudnosc] - agresja[normal]) / 10`, obciete do 0..1;
+    /// brak wiersza macierzy => neutralne 0.5 (`fallback` i `data` nieuzywane).
     pub fn resolve_archetype_aggression(
         src: &CivAiSources<'_>,
         typ: &str,
-        fallback: f64,
-        data: Option<&CivGameData<'_>>,
+        _fallback: f64,
+        _data: Option<&CivGameData<'_>>,
         difficulty: CivMatrixDifficulty,
     ) -> f64 {
-        let Some(civ_name) = civ_excel_name_from_typ(src, typ) else {
-            return fallback;
-        };
+        if civ_excel_name_from_typ(src, typ).is_none() {
+            return 0.5;
+        }
         let ai = &civ_matrix_params().ai;
-        let matrix_row =
-            src.matrix.file.cywilizacje.iter().find(|c| {
-                c.cywilizacja == civ_name || c.ikona_id == typ || c.typ_cywilizacji == typ
-            });
+        let dip = &civ_matrix_params().dyplomacja;
+        let matrix_row = src
+            .matrix
+            .file
+            .cywilizacje
+            .iter()
+            .find(|c| c.ikona_id == typ || c.typ_cywilizacji == typ);
         if matrix_row.is_some() {
-            let value = civ_matrix_param_at_difficulty(
+            let base = civ_matrix_param_at_difficulty(
+                &src.matrix.file,
+                typ,
+                &dip.parametr_agresja_archetyp,
+                CivMatrixDifficulty::Normal,
+            );
+            let normal = civ_matrix_param_at_difficulty(
+                &src.matrix.file,
+                typ,
+                &ai.parametry.agresywnosc,
+                CivMatrixDifficulty::Normal,
+            );
+            let at_difficulty = civ_matrix_param_at_difficulty(
                 &src.matrix.file,
                 typ,
                 &ai.parametry.agresywnosc,
                 difficulty,
             );
-            return unit_range(value / ai.dzielnik_skali);
+            let offset = (at_difficulty - normal) / ai.dzielnik_skali;
+            return unit_range(base + offset);
         }
-        let from_data = match data {
-            Some(data) => civ_ai_aggression_norm(src, data, &civ_name, difficulty),
-            None => src
-                .civ_ai_raw
-                .cywilizacje
-                .iter()
-                .find(|c| c.cywilizacja == civ_name)
-                .map(|row| unit_range(row.agresywnosc as f64 / ai.dzielnik_skali)),
-        };
-        from_data.unwrap_or(fallback)
+        0.5
     }
 
     /// Web `resolveArchetypeTrade`: sklonnosc do handlu 0..1 (macierz `dip_handlowosc_archetyp`,
@@ -743,7 +743,7 @@ pub mod ai_data {
     pub fn resolve_archetype_trade(
         src: &CivAiSources<'_>,
         typ: &str,
-        fallback: f64,
+        _fallback: f64,
         difficulty: CivMatrixDifficulty,
     ) -> f64 {
         let dip = &civ_matrix_params().dyplomacja;
@@ -761,10 +761,7 @@ pub mod ai_data {
                 difficulty,
             ));
         }
-        match diplomacy_per_nacja_for_typ(src, typ) {
-            Some(row) => unit_range(row.otwartosc_handel as f64 / dip.dzielnik_otwartosc_handel),
-            None => fallback,
-        }
+        0.5
     }
 
     /// Web `nastawienieBazoweZaufanieDelta`: polowa delty `nastawienieBazowe` wzgledem `base_total`
@@ -792,10 +789,7 @@ pub mod ai_data {
             );
             return (value - base_total) / dip.nastawienie_podzial;
         }
-        match diplomacy_per_nacja_for_typ(src, typ) {
-            Some(row) => (row.nastawienie_bazowe as f64 - base_total) / dip.nastawienie_podzial,
-            None => 0.0,
-        }
+        0.0
     }
 }
 
@@ -1173,8 +1167,16 @@ pub mod semantic {
             .unwrap_or_default()
     }
 
+    const EGIPT_ID: &str = "egipt";
+    const EGIPT_RUCH_BITWA_ID: &str = "walka_ruch_bitwa_proc";
+
     /// Web `statusReason`.
-    fn status_reason(status: ConsumerStatus, parameter_id: &str, polarity: Polarity) -> String {
+    fn status_reason(
+        status: ConsumerStatus,
+        parameter_id: &str,
+        polarity: Polarity,
+        civilization_id: &str,
+    ) -> String {
         let table = civ_matrix_semantic();
         let reasons = &table.powody;
         let with_param = |template: &str| fill(template, &[("{parametr}", parameter_id)]);
@@ -1195,7 +1197,9 @@ pub mod semantic {
             ConsumerStatus::Proposal => reasons.proposal.clone(),
             ConsumerStatus::ReferenceNeedsReview => reasons.reference_needs_review.clone(),
             ConsumerStatus::Blocked => {
-                if in_list(&table.zbiory.walka_zablokowana, parameter_id) {
+                if parameter_id == EGIPT_RUCH_BITWA_ID && civilization_id == EGIPT_ID {
+                    reasons.blocked.egipt_ruch_bitwa.clone()
+                } else if in_list(&table.zbiory.walka_zablokowana, parameter_id) {
                     with_param(&reasons.blocked.grupa_walka_zablokowana)
                 } else {
                     with_param(&reasons.blocked.domyslny)
@@ -1236,7 +1240,7 @@ pub mod semantic {
     ) -> String {
         match civ_matrix_semantic().dowody_konsumentow.get(parameter_id) {
             Some(evidence) => evidence.clone(),
-            None => status_reason(status, parameter_id, polarity),
+            None => status_reason(status, parameter_id, polarity, ""),
         }
     }
 
@@ -1351,7 +1355,12 @@ pub mod semantic {
                 max_distance: None,
             },
         };
-        let effective_status = if blocked {
+        // Web 91dc998a: decyzja 1B - ogolne pole ruchu w bitwie jest wylaczone dla Egiptu
+        // (cell-level invariant: nie zalezy od statusu podanego przez wywolujacego).
+        let egypt_general_movement_excluded = input.parameter_id == EGIPT_RUCH_BITWA_ID
+            && input.civilization_id == EGIPT_ID
+            && !blocked;
+        let effective_status = if blocked || egypt_general_movement_excluded {
             ConsumerStatus::Blocked
         } else {
             status
@@ -1370,14 +1379,24 @@ pub mod semantic {
                 ],
             )
         } else {
-            status_reason(effective_status, &input.parameter_id, polarity)
+            status_reason(
+                effective_status,
+                &input.parameter_id,
+                polarity,
+                &input.civilization_id,
+            )
         };
         let status_reason_pl = if blocked {
             blocked_reason.clone()
         } else {
-            status_reason(effective_status, &input.parameter_id, polarity)
+            status_reason(
+                effective_status,
+                &input.parameter_id,
+                polarity,
+                &input.civilization_id,
+            )
         };
-        let explanation_pl = if blocked {
+        let explanation_pl = if blocked || egypt_general_movement_excluded {
             blocked_reason
         } else {
             consumer_explanation(&input.parameter_id, effective_status, polarity)
