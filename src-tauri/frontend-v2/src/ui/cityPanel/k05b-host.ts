@@ -18,6 +18,7 @@ import type { PodzialHandluSplit } from './k01a-fundament';
 import { appendIndywidualneToggle as appendIndywidualneToggleK02 } from './k02-units';
 import { formatResourceUpkeepSummary as formatResourceUpkeepSummaryK04 } from './k04-stock';
 import type { AvailabilityContext, BuildingReqChip } from './k05a-fundament';
+import type { SocietyLineDto } from '../../viewmodel/types';
 
 export type { AvailabilityContext, BuildingReqChip, CityView };
 
@@ -32,8 +33,8 @@ export interface City {
   readonly name?: string;
   readonly oblegane?: boolean;
   /** K08E-Z14: współrzędne heksowe miasta (pin `city.q`, `city.r`) — klucz garnizonu (`getUnitsAt`). */
-  readonly q?: number;
-  readonly r?: number;
+  readonly q: number;
+  readonly r: number;
   /** K08D-Z15 (runda 4, partia wealth): pola `poziom` i `pula` (pin `city.wealthState`, `game/wealth`). */
   readonly wealthState?: { readonly poziom: number; readonly pula: number };
 }
@@ -202,12 +203,27 @@ export interface CultureStateK08e {
   readonly [key: string]: unknown;
 }
 
-/** K08E-Z10: stan porządku z silnika (pin `OrderState`, pola czytane przez kartę porządku i pasek górny). */
+/**
+ * K08E-Z10 (runda 2, K08E-R2-Z1): stan porządku z silnika — pola pinu `OrderState` (`gra/src/ui/orderPanel.ts:15`)
+ * czytane przez karty K08E (`buildPorzadekDetailCard`, `wireTopBarStatDetails`). Typ zastępuje zawężony `OrderStateK`
+ * z `k03-model` (K08E-Z10 r1 był blokerem partii karty-b/topbar). Pola opcjonalne = brak w DTO silnika (K03-Z3);
+ * host zasila je z `cfg.getOrderState`; brak pola = `undefined` (kopia pinu obsługuje to `??`/`!= null`).
+ */
 export interface OrderStateK08e {
+  readonly szczescie: number;
+  /** Pin `state.porzadek` — LEGACY netto pkt PRAWA (`orderPanel.ts:18`), nie „Porządek łącznie". */
+  readonly porzadek: number;
   readonly porPct?: number | null;
   readonly szPct?: number;
-  readonly szLines?: readonly unknown[];
-  readonly [key: string]: unknown;
+  readonly prawPct?: number;
+  readonly szMax?: number | null;
+  readonly prawMax?: number | null;
+  readonly bandLabel?: string;
+  readonly szLines?: SocietyLineDto[];
+  readonly prawLines?: SocietyLineDto[];
+  readonly revoltWarning?: boolean;
+  readonly revoltGraceRemaining?: number | null;
+  readonly rebelState?: boolean;
 }
 
 /** K08E-Z5: stan żywności imperium (pin `EmpireFoodTick`, pola czytane przez `buildRacjeWzrostDetailCard`). */

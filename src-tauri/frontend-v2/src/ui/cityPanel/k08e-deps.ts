@@ -13,10 +13,9 @@
  *   turnsUntilNextCitizen    — pin import `game/population-growth-v85` (port K01B: `reguly().turnsUntilNextCitizen`);
  *   cityLudnoscAbsolutna     — `game/manpower.ts` (pin import; liczba osób z obywateli wg epoki).
  */
-import type { OrderStateK } from './k03-model';
 import type { PoziomRacjiK, RationParamsK } from './k01b-dto';
 import { reguly } from './k01b-reguly';
-import type { City, GameData } from './k05b-host';
+import type { City, GameData, OrderStateK08e } from './k05b-host';
 import type { CityView } from './k01b-t';
 import type { GameMap } from './k05a-fundament';
 
@@ -36,7 +35,7 @@ export interface K08eDeps {
    * a przy jego braku wynik lokalny. Port nie ma `computeOrderStateLocal` (K03-Z3: porządek wyłącznie z silnika);
    * host musi zwrócić `fromEngine` zgodnie z tym, skąd dane.
    */
-  resolveOrderState(city: City, data: GameData): { state: OrderStateK; fromEngine: boolean };
+  resolveOrderState(city: City, data: GameData): { state: OrderStateK08e; fromEngine: boolean };
   /** Pin `switchCity(dir)` (`cityPanel.ts:10209`) — przełączenie miasta; cięcie K09 (K08E-Z9): delegat hosta. */
   switchCity(dir: -1 | 1): void;
   /** Pin `resolveCityHealth(city, map, data)` (`cityPanel.ts:3281`) — zdrowie miasta (reguła; wynik z silnika/hosta). */
@@ -97,7 +96,7 @@ export const turnsUntilNextCitizen = (wzrostUlamkowy: number, gainPerTurn: numbe
   reguly().turnsUntilNextCitizen(wzrostUlamkowy, gainPerTurn);
 
 /** Delegat K08E: stan porządku miasta (K08E-Z8, pin `resolveOrderState`). */
-export const resolveOrderState = (city: City, data: GameData): { state: OrderStateK; fromEngine: boolean } =>
+export const resolveOrderState = (city: City, data: GameData): { state: OrderStateK08e; fromEngine: boolean } =>
   depK08e('resolveOrderState')(city, data);
 
 /** Delegat K08E: przełączenie miasta (K08E-Z9, cięcie K09; pin `switchCity`). */

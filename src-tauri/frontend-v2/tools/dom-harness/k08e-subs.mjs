@@ -113,7 +113,7 @@ import { szLinesDoWyswietlenia, type CityView } from './k01b-t';
 import { appendSectionTitleWithDetails } from './k08b-title';
 import { cfg, daninaLabelForCity, readPodzialHandlu, type City, type GameData } from './k05b-host';
 import { gameData } from './k05a-fundament';
-import type { OrderStateK as OrderState } from './k03-model';
+import type { OrderStateK08e as OrderState } from './k05b-host';
 import { cityHasBibliotekaLine } from './k08d-deps';
 import { porBandLabel, porPctBand } from './k08e-deps';`,
   units: [
@@ -160,14 +160,14 @@ import { buildTopBarReligiaDetailCard } from './k08d-religia';`,
 };
 
 /** Partie K08E aktywne w tym commicie (kolejność stała): zielone w typecheck i w bramce kopii. */
-export const BATCHES_K08E = [BATCH_MAGAZYN, BATCH_KARTY_A];
+export const BATCHES_K08E = [BATCH_MAGAZYN, BATCH_KARTY_A, BATCH_KARTY_B, BATCH_TOPBAR];
 
 /**
  * WIP (NIE_ZROBIONE w rundzie 1, poza commitem): `karty-b` i `topbar` — kopie generowane, ale nie kompilują się
  * (`OrderStateK` z `k03-model` to zawężony DTO bez pól porządku pinu; `ManpowerSnapshot`/`GameData` k05a vs k05b).
  * Decyzja typu porządku (pełny `OrderState` z silnika) = K09; patrz dossier K08E §6.
  */
-export const BATCHES_K08E_WIP = [BATCH_KARTY_B, BATCH_TOPBAR];
+export const BATCHES_K08E_WIP = [];
 
 /** Partia po nazwie (`magazyn`). */
 export const batchByNameK08e = (name) => {
@@ -189,6 +189,8 @@ export const LINE_SUBS_K08E = [
   { a: 5684, b: 5768, from: 'resolveCityFedForUi(city.id, foodSplit.total, tick)', to: 'resolveCityFedForUi(String(city.id), foodSplit.total, tick)' },
   // K08E-Z11 (partia karty-b): etykieta pasma porządku z delegatu (pin: tabela `POR_BAND_LABELS` z danych gry).
   { a: 3427, b: 3549, from: 'POR_BAND_LABELS[band]', to: 'porBandLabel(band)' },
+  // K08E-Z17 (r2, partia karty-b): pin `gameData()` zwraca typ k05a (`GameData` bez `units`); `readPodzialHandlu` (k05b) przyjmuje typ k05b. Rzutowanie w JEDNYM miejscu (czyta econParams/buildings); NIE_ZMIERZONO, czy host czyta `units`.
+  { a: 3427, b: 3549, from: 'readPodzialHandlu(city, gameData())', to: 'readPodzialHandlu(city, gameData() as GameData | null)' },
   { a: 5474, b: 5579, from: 'tick?.perCityRows?.find(r => r.cityId === city.id)', to: 'tick?.perCityRows?.find(r => r.cityId === String(city.id))' },
   { a: 5474, b: 5579, from: 'resolveCityFedForUi(city.id, foodSplit.total, tick)', to: 'resolveCityFedForUi(String(city.id), foodSplit.total, tick)' },
 ];
