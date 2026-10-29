@@ -11,7 +11,7 @@ Artefakty runu: `dyspozycje/autobot/runs/R-RUSTPORT-P6-M05B-RELIEF-B-POKRYCIE-PA
 - Wektory z URUCHOMIONEGO weba: `tests/p6_m05b_vectors/web-vectors.json` (7 205 052 B, SHA-256 `4072347ab48f17c46c5f79d00baf580ce6c247f01fd637981e4920481bd106d9`), generator `gen-m05b-vectors.mjs` (kopia w runie). **Przypadki:** `ensure` 40 (27 z naprawa), `grow` 40 (36 z dolozeniem/zmiana), `safety` 16, `regrow` 24 (20 z odzyskiem), `helpers` 60 (10 na kazda z 6 funkcji), `params` 18 (3 realne + 15 z 5 wariantow uszkodzonego JSON).
 - Wejscie mapy jest w wektorze (nie regenerowane w Rust); strumien `rand` = `mulberry32(seed)`; kazdy przypadek sprawdza stan calej mapy (kolejnosc wstawiania), zwrot i NASTEPNA wartosc `rand()`.
 - Bramki: fmt `EXIT=0`, `clippy --all-targets -D warnings` `EXIT=0`, test `EXIT=0`, `git diff --check` `EXIT=0` (logi w runie).
-- Mutacje i niezalezny weryfikator Python: **NIE WYKONANO** (dispatch: to Operator-pomiary, drugie wywolanie).
+- Mutacje (18) i niezalezny weryfikator Python: **WYKONANE w r3 (Operator-pomiary)**, wyniki w sekcji 7. Wynik: 13 wykrytych, 5 przezytych (kazdy z analiza w sekcji 7).
 
 ## 1. Symbole zakresu - status
 
@@ -71,5 +71,65 @@ Uzyte z M05A bez zmian (juz PORTOWANE): `ensureMassIronGridCoverage`, `ensureMas
 ## 6. Ryzyka / do Evaluatora
 
 - Wektor 7.2 MB w repo (jak M05A 7.2 MB); rozmiar akceptowalny, ale rosnie przy kolejnych zakresach.
-- Mutacje i niezalezny weryfikator Python (`verify-*.py`) NIE wykonane - wymagane w Operator-pomiary.
+- Przezyte mutacje (5, sekcja 7) to LUKI W WEKTORACH: granice rownosci (rozmiar masy 8 i 150, skupisko 10, dlugosc_max < dlugosc_min przy min > fallback) i jedna petla bez przerwania. Domkniecie wymaga nowych przypadkow granicznych w generatorze i przegenerowania wektorow (osobny krok, RUNDA-3, jesli Evaluator tak zdecyduje).
 - `cargo fmt` zmienil tylko nowe pliki (baza fmt-clean; sprawdzone `git status`).
+
+## 7. Pomiary r3 (Operator-pomiary, Haiku 5.5 medium)
+
+Kod i wektory bez zmian wzgledem r2 (`8d11f2ef`). Pomiary na drzewie `16a4a7b6`.
+
+### 7.1 Bramki (ponowne, surowe logi w runie)
+
+| Bramka | Wynik | Log |
+|---|---|---|
+| `cargo fmt --check` | EXIT=0 | `gate-fmt-r3.log` |
+| `cargo clippy --offline --all-targets -- -D warnings` | EXIT=0 | `gate-clippy-r3.log` |
+| `cargo test --offline --no-fail-fast` | 162 binarek, **1214 passed, 0 failed**, EXIT=0 | `gate-test-r3.log` |
+| `git diff --check 2c2f58f8 HEAD -- <pliki M05B>` | EXIT=0 | `gate-diffcheck-r3.log` |
+
+Uwaga: `git diff --check` na calym zakresie `91dc998a..HEAD` zglasza bialne znaki w plikach spoza tematu (P3, epoka-ludnosc); nie dotyczy M05B.
+
+### 7.2 Niezalezny weryfikator Python (`verify-m05b-vectors.py`, log `verify-m05b-r3.log`)
+
+Nie wykonuje TS ani Rust. Sprawdza: (A) SHA-256 `gen-helpers.ts` z `git show edb8fb56:...` = `gen_helpers_sha256` w meta (`ab934703...`) i SHA pliku wektorow = skrot z sekcji 0; (B) 36 lisci tabeli: wartosc jest liczba w linii TS/loadera z `zrodlo_web`; (C) fallback loadera (linie 63-65) = tabela; (D) niezalezna reimplementacja `mapGenMountainRangeParams` na 18 przypadkach; (E) niezmienniki wyjscia: zbior kluczy bez zmian, `ret` calkowity >= 0, w `safety` najwieksze skupisko gor/wzgorz = 10 (limit 10).
+Wynik: **366 sprawdzen, 0 rozbieznosci, EXIT=0**.
+Ograniczenie: weryfikator NIE reimplementuje algorytmow `ensure`/`grow`/`regrow`/`helpers` (wymagaloby TimSort V8 i mulberry32 w Pythonie); ich zgodnosc bit-w-bit opiera sie na wektorach z uruchomionego weba (generator `gen-m05b-vectors.mjs`) i testach Rust.
+
+### 7.3 Mutacje (`mut-runner-m05b.py`, log `mutations-r3.log`)
+
+Kazda mutacja: jedna zmiana w `relief.rs` albo jedna liczba w `mapgen-relief-b.json`; uruchomione trzy binarki `p6_m05b_*`; po kazdej mutacji przywrocenie bajtow i porownanie SHA (wszystkie `przywrocono=OK`, koncowe SHA = poczatkowe).
+
+| Id | Mutacja | Wynik | Testy czerwone |
+|---|---|---|---|
+| ens-filter-gt | masa `>=` -> `>` (min_masa do domykania) | SURVIVED | - |
+| ens-mop-min-le | mop-up: masa `<` -> `<=` (min_masa_mop) | SURVIVED | - |
+| ens-outer-once | zewnetrzne przebiegi: 1 zamiast 8 | KILLED | ensure |
+| ens-restore-off | przebiegi przywracania wylaczone | KILLED | ensure |
+| ens-mop-off | mop-up wylaczony | KILLED | ensure |
+| ens-outer-no-break | usuniety `break` przy zerowym przebiegu (zewnetrzne) | SURVIVED | - |
+| cap-size-lt | skupisko: `<=` -> `<` (wczesny wyjscie) | SURVIVED | - |
+| cap-biggest-lt | najwieksza skladowa: `<=` -> `<` | KILLED | 3 binarki |
+| cap-noise-reverse | sortowanie szumu odwrocone (ofiary) | KILLED | 3 |
+| cap-ret-zero | licznik zwrotu `+= 1` -> `+= 0` | KILLED | 2 |
+| safety-hills-off | bezpiecznik bez skupisk wzgorz | KILLED | safety |
+| grow-cap-plus1 | sufit udzialu +1 | KILLED | grow |
+| regrow-mult-x2 | mnoznik celu regrow x2 | KILLED | grow |
+| walk-seed-noise-zero | szum seeda pasma = 0 | KILLED | 2 |
+| json-sufit-0.45 | JSON: sufit 0.4 -> 0.45 | KILLED | 2 |
+| json-kroku-pasma-0.31 | JSON: szum kroku 0.3 -> 0.31 | KILLED | grow |
+| json-regrow-min-5 | JSON: regrow dlugosc min 4 -> 5 | KILLED | 2 |
+| params-dlugosc-max-fb | fallback `dlugosc_max` z `max(fb, min)` -> `max(fb, 0)` | SURVIVED | - |
+
+Wynik: **13 KILLED, 5 SURVIVED** (z 18).
+
+### 7.4 Analiza przezytych mutacji (ZALOZENIE, bez dowodu z weba poza wektorami)
+
+- `ens-filter-gt`, `ens-mop-min-le`, `cap-size-lt`: mutanty zmieniaja zachowanie tylko przy rownosci granicznej (masa = 8, masa = 150, skupisko = 10). Web i mutant roznia sie na tej granicy, wiec nie sa rownowazne. Wektory nie wykryly roznicy; czy taki przypadek wystepuje w wektorach, NIE_ZMIERZONO (nie sprawdzono osobno).
+- `ens-outer-no-break`: przyczyna przezycia NIE_ZMIERZONO. Mozliwe, ze kolejne przebiegi przy zerowym wyniku nie zmieniaja stanu i nie konsumuja `rand()`; nie udowodniono.
+- `params-dlugosc-max-fb`: ZMIERZONE w `params` (`verify-m05b-vectors.py`, D): `dlugosc_min` w przypadkach wynosi co najwyzej 13, a fallback `dlugosc_max` to 15/18/22, wiec `max(fb, min)` i `max(fb, 0)` daja ten sam wynik. Mutant rozni sie tylko przy `dlugosc_min > fb.dlugosc_max`, czego wektory nie maja. Luka pokrycia, nie blad kodu.
+
+### 7.5 Status
+
+- Zakres: PORTOWANY (bez zmian wzgledem r2). Testy: 1214/0, bramki EXIT=0.
+- Mutacje: 13/18 wykryte; 5 przezytych to luki granic (sekcja 7.4), nie bledy zgodnosci na wektorach.
+- Weryfikator niezalezny: 0 rozbieznosci (366 sprawdzen; bez reimplementacji algorytmow glownych).

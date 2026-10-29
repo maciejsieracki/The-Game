@@ -1,0 +1,24 @@
+SHA poczatkowe: src/domain/mapgen/relief.rs=07e15c015bc0fe1c303c3916608ff702636b7f859180ea3d30bf7ae7ccdccb05 data/derived/mapgen-relief-b.json=5efd7f9174a32c033bb03fa5fdee58d7c296f7a76828cf5cf43097c676efdc1c
+SURVIVED         ens-filter-gt (43 s) przywrocono=OK wszystkie testy zielone
+SURVIVED         ens-mop-min-le (34 s) przywrocono=OK wszystkie testy zielone
+KILLED           ens-outer-once (35 s) przywrocono=OK 1 testow FAILED: ensure_relief_grid_coverage_matches_web
+KILLED           ens-restore-off (36 s) przywrocono=OK 1 testow FAILED: ensure_relief_grid_coverage_matches_web
+KILLED           ens-mop-off (38 s) przywrocono=OK 1 testow FAILED: ensure_relief_grid_coverage_matches_web
+SHA koncowe: src/domain/mapgen/relief.rs=07e15c015bc0fe1c303c3916608ff702636b7f859180ea3d30bf7ae7ccdccb05 data/derived/mapgen-relief-b.json=5efd7f9174a32c033bb03fa5fdee58d7c296f7a76828cf5cf43097c676efdc1c zgodne=True
+SHA poczatkowe: src/domain/mapgen/relief.rs=07e15c015bc0fe1c303c3916608ff702636b7f859180ea3d30bf7ae7ccdccb05 data/derived/mapgen-relief-b.json=5efd7f9174a32c033bb03fa5fdee58d7c296f7a76828cf5cf43097c676efdc1c
+SURVIVED         ens-outer-no-break (36 s) przywrocono=OK wszystkie testy zielone
+SURVIVED         cap-size-lt (34 s) przywrocono=OK wszystkie testy zielone
+KILLED           cap-biggest-lt (35 s) przywrocono=OK 3 testow FAILED: cap_relief_cluster_size_safety_net_matches_web, grow_mountain_ranges_matches_web, helper_functions_match_web
+KILLED           cap-noise-reverse (34 s) przywrocono=OK 3 testow FAILED: cap_relief_cluster_size_safety_net_matches_web, grow_mountain_ranges_matches_web, helper_functions_match_web
+KILLED           cap-ret-zero (36 s) przywrocono=OK 2 testow FAILED: grow_mountain_ranges_matches_web, helper_functions_match_web
+KILLED           safety-hills-off (36 s) przywrocono=OK 1 testow FAILED: cap_relief_cluster_size_safety_net_matches_web
+KILLED           grow-cap-plus1 (35 s) przywrocono=OK 1 testow FAILED: grow_mountain_ranges_matches_web
+KILLED           regrow-mult-x2 (36 s) przywrocono=OK 1 testow FAILED: grow_mountain_ranges_matches_web
+SHA koncowe: src/domain/mapgen/relief.rs=07e15c015bc0fe1c303c3916608ff702636b7f859180ea3d30bf7ae7ccdccb05 data/derived/mapgen-relief-b.json=5efd7f9174a32c033bb03fa5fdee58d7c296f7a76828cf5cf43097c676efdc1c zgodne=True
+SHA poczatkowe: src/domain/mapgen/relief.rs=07e15c015bc0fe1c303c3916608ff702636b7f859180ea3d30bf7ae7ccdccb05 data/derived/mapgen-relief-b.json=5efd7f9174a32c033bb03fa5fdee58d7c296f7a76828cf5cf43097c676efdc1c
+SURVIVED         params-dlugosc-max-fb (41 s) przywrocono=OK wszystkie testy zielone
+KILLED           walk-seed-noise-zero (41 s) przywrocono=OK 2 testow FAILED: grow_mountain_ranges_matches_web, helper_functions_match_web
+KILLED           json-sufit-0.45 (37 s) przywrocono=OK 2 testow FAILED: grow_mountain_ranges_matches_web, relief_b_table_parses_with_deny_unknown_fields
+KILLED           json-kroku-pasma-0.31 (35 s) przywrocono=OK 1 testow FAILED: grow_mountain_ranges_matches_web
+KILLED           json-regrow-min-5 (35 s) przywrocono=OK 2 testow FAILED: grow_mountain_ranges_matches_web, regrow_lost_mountain_clusters_matches_web
+SHA koncowe: src/domain/mapgen/relief.rs=07e15c015bc0fe1c303c3916608ff702636b7f859180ea3d30bf7ae7ccdccb05 data/derived/mapgen-relief-b.json=5efd7f9174a32c033bb03fa5fdee58d7c296f7a76828cf5cf43097c676efdc1c zgodne=True
