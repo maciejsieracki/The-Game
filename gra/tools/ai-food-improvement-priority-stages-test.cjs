@@ -44,14 +44,14 @@ function makeMap(width = 22, height = 14) {
   return { szerokoscQ: width, wysokoscR: height, hexes, seed: 11, riverPaths: [] };
 }
 
-function runPicker({ map, cities, worked, placed = new Map(), unlockedTechs = techs, maxItemsPerCity = Infinity, skipWyrab = false, getSkipWyrab }) {
+function runPicker({ map, cities, worked, placed = new Map(), unlockedTechs = techs, maxItemsPerCity = Infinity, skipWyrab = false, getSkipWyrab, foodImprovementStages = true, priorityOverride }) {
   const territoryNodes = cities.map(c => ({ q: c.q, r: c.r, ownerId: c.ownerId, cityId: c.id, pop: c.population, level: 1 }));
   return pickAutoImprovements({
     cities, ownerId: cities[0]?.ownerId ?? 0, map, territoryNodes, placedImprovements: placed,
     pracaAvailable: 100000, unlockedTechs, getFocus: () => 'zywnosc', getOnlyWorked: () => true,
     getWorkedHexKeys: c => worked.get(c.id) ?? new Set(), pracaBudgetPercent: 100,
     maxItemsPerCity, pracaSurplusThreshold: 0, skipWyrab, getSkipWyrab,
-    foodImprovementStages: true,
+    foodImprovementStages, priorityOverride,
     civArchetype: 'grecy', playerEra: 3,
   });
 }
@@ -84,7 +84,7 @@ try {
     { id: 'a', ownerId: 0, q: 4, r: 4, population: 6 },
     { id: 'b', ownerId: 0, q: 14, r: 4, population: 6 },
   ];
-  const workA = new Set(['4,3', '5,3', '4,5', '5,5']);
+  const workA = new Set(['4,3', '5,3', '4,5', '5,5', '5,4']);
   const workB = new Set(['14,3']);
   const worked = new Map([['a', workA], ['b', workB]]);
   map.riverPaths = [[{ q: 4, r: 3 }, { q: 5, r: 3 }, { q: 6, r: 3 }, { q: 5, r: 4 }]];
@@ -93,6 +93,7 @@ try {
     map.hexes[`${q},${r}`].rzeka = { obecna: true, krawedzie: [] };
   }
   map.hexes['5,4'].rzeka = { obecna: true, krawedzie: [] };
+  map.hexes['5,4'].zloze = 'sol';
   map.hexes['14,3'].nakladka = 'zloze_bydla';
   const placed = new Map();
 
@@ -130,7 +131,7 @@ try {
   let lateFood = [];
   for (let turn = 0; turn < 20; turn++) {
     const picks = runPicker({ map, cities, worked, placed, maxItemsPerCity: 1 });
-    if (picks.length > 0 && picks.every(p => ['bydlo', 'owce', 'lama', 'oboz_lowiecki', 'lodzie_rybackie', 'warzelnia_soli'].includes(p.key))) {
+    if (picks.length > 0 && picks.every(p => ['bydlo', 'owce', 'lama'].includes(p.key))) {
       if (turn === 0) {
         assert.ok(picks.some(p => p.key === 'bydlo'), 'the first available livestock action should be Trzoda');
         check('2. livestock stage follows all eligible farms', () => {});
@@ -145,7 +146,13 @@ try {
   assert.ok(livestockPasses > 0, 'livestock stage should run after farms');
   assert.ok(lateFood.length > 0 && lateFood.every(p => ['irygacja', 'tarasy'].includes(p.key)),
     `irrigation/terraces should be next only after farms and livestock (got ${lateFood.map(p => p.key).join(',')})`);
-  check('3. irrigation/terraces wait for all eligible farms and livestock', () => {});
+  const saltStillAvailable = runPicker({
+    map, cities, worked, placed, maxItemsPerCity: 1, foodImprovementStages: false,
+    priorityOverride: ['warzelnia_soli'],
+  });
+  assert.ok(saltStillAvailable.some(p => p.key === 'warzelnia_soli'),
+    'salt works remain eligible after livestock, so they must not block the irrigation phase');
+  check('3. irrigation/terraces precede remaining salt food improvements after livestock', () => {});
   place(lateFood, map, placed);
 
   const noLivestockTech = runPicker({
@@ -156,7 +163,10 @@ try {
   check('edge. locked earlier stage blocks later food actions until it becomes available', () => {});
 
   // Explicit negative: when there are no eligible citizen plots, the planner is a no-op.
-  const empty = runPicker({ map, cities, worked: new Map([['a', new Set()], ['b', new Set()]]), placed });
+  const empty = runPicker({
+    map: makeMap(), cities, worked: new Map([['a', new Set()], ['b', new Set()]]),
+    placed: new Map(),
+  });
   assert.equal(empty.length, 0);
   check('negative. no worked/eligible fields means no food improvement', () => {});
 

@@ -421,7 +421,10 @@ export interface PickAutoImprovementsOpts {
  * Determinizm: miasta po id, heksy po (q,r), typy wg profilu.
  */
 const FOOD_LIVESTOCK_STAGE_KEYS: readonly ImprovementKey[] = [
-  'bydlo', 'owce', 'lama', 'oboz_lowiecki', 'lodzie_rybackie', 'warzelnia_soli',
+  'bydlo', 'owce', 'lama',
+];
+const FOOD_OTHER_STAGE_KEYS: readonly ImprovementKey[] = [
+  'oboz_lowiecki', 'lodzie_rybackie', 'warzelnia_soli',
 ];
 
 function isFoodStageCity(opts: PickAutoImprovementsOpts, city: AutoImprovementCity): boolean {
@@ -432,7 +435,7 @@ function isFoodStageCity(opts: PickAutoImprovementsOpts, city: AutoImprovementCi
 /**
  * Food automation is a civilization-wide sequence, not a per-hex stack order:
  * prepare river forests first, then fill all eligible worked plots with farms,
- * then livestock/other food, and finally irrigation/terraces. A stage that emits
+ * then livestock, irrigation/terraces, and other food improvements. A stage that emits
  * any orders owns the whole call; later stages wait for the next turn. This keeps
  * the AI per-city throttle intact while ensuring one city cannot start livestock
  * while another still has an eligible farm plot.
@@ -448,6 +451,7 @@ export function pickAutoImprovements(opts: PickAutoImprovementsOpts): AutoImprov
     ['farma'],
     [...FOOD_LIVESTOCK_STAGE_KEYS],
     ['irygacja', 'tarasy'],
+    [...FOOD_OTHER_STAGE_KEYS],
   ];
   let stagedPicks: AutoImprovementPick[] = [];
   let earlierStageIsPending = false;

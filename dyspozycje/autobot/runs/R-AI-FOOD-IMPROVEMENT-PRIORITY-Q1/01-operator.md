@@ -21,13 +21,13 @@ Known baseline results recorded before implementation:
 
 ## Change
 
-`pickAutoImprovements` now gates selected food-mode cities through empire-wide stages: river-forest preparation, farms, livestock/other food improvements, then irrigation/terraces. Farms and livestock therefore finish their eligible worked-field phase across those cities before later phases are selected. An earlier phase with an eligible target that is blocked by technology or Work budget holds the sequence; a mutation probe verifies this gate is meaningful. Stage-0 forestry is limited to river fields and overrides the general forest-cut toggle only for that preparation step. If no food-stage target exists, the picker falls back to the ordinary food-profile ordering, preserving the existing general forestry path.
+`pickAutoImprovements` now gates selected food-mode cities through empire-wide stages: river-forest preparation, farms, livestock (`bydlo`, `owce`, `lama` only), irrigation/terraces, then remaining hunting/fishing/salt improvements. Farms and livestock therefore finish their eligible worked-field phase across those cities before later phases are selected. An earlier phase with an eligible target that is blocked by technology or Work budget holds the sequence; a mutation probe verifies this gate is meaningful. Stage-0 forestry is limited to river fields and overrides the general forest-cut toggle only for that preparation step. If no food-stage target exists, the picker falls back to the ordinary food-profile ordering, preserving the existing general forestry path.
 
 AI civilization planning opts into the shared stages. Player auto-building opts in only when the city's effective focus is Food, or Balanced with no non-food resource deficit; other player profiles keep their prior route. Existing city/turn throttles, worked-citizen filter, deposits, and shared Work-budget envelope are retained.
 
 ## Verification
 
-- `ai-food-improvement-priority-stages-test.cjs`: **11 passed / 0 failed**, including stage ordering, persistence across turns, locked-stage blocking, no-worked-fields negative, live `decideAITurn` river-cut-before-farm trace, player/AI route wiring, and a mutation that disables stage selection and makes the behavior gate fail.
+- `ai-food-improvement-priority-stages-test.cjs`: **11 passed / 0 failed**, including stage ordering, persistence across turns, locked-stage blocking, a salt-work candidate that remains while irrigation is selected, no-worked-fields negative, live `decideAITurn` river-cut-before-farm trace, player/AI route wiring, and a mutation that disables stage selection and makes the behavior gate fail.
 - `tsc --noEmit`: PASS.
 - Production Vite build to an external temporary output directory: PASS (`917` modules; single-file bundle about `69.9 MB`). Temporary output was removed.
 - Regression suite, run serially to avoid test-bundle filename collisions:
