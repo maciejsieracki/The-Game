@@ -1,0 +1,19 @@
+baseline: verify wealth-pasek=0, verify wealth=0, harness=0
+ZABITA appendWealthCompactStrip: tekst ETA | verify=1 harness=1
+ZABITA buildWealthCompactTooltipCard: tekst pełnej puli | verify=1 harness=1
+ZABITA renderWealth: tekst braku parametrów | verify=1 harness=1
+ZABITA renderWealth: tytuł sekcji | verify=1 harness=1
+ZABITA buildWealthDetailCard: tekst wstępu | verify=1 harness=1
+ZABITA buildWealthDetailCard: etykieta wiersza „Saldo" | verify=1 harness=1
+ZABITA [pole, harness-only] renderWealth: cap z epoki przesuniętej o 1 | harness=1
+ZABITA [pole, harness-only] renderWealth: szBonus z epoki przesuniętej | harness=1
+ZABITA [pole, harness-only] renderWealth: mnożnik z poziomu przesuniętego | harness=1
+ZABITA [pole, harness-only] buildWealthDetailCard: równowaga z poziomu przesuniętego | harness=1
+ZABITA [pole, harness-only] buildWealthDetailCard: szczęście z epoki przesuniętej | harness=1
+ZABITA [pole, harness-only] buildWealthDetailCard: próg z epoki przesuniętej | harness=1
+ZABITA [pole, harness-only] buildWealthDetailCard: podział bez danych (data nie przekazane) | harness=1
+ZABITA [pole, harness-only] wealthCap (k08d-deps): epoka przesunięta | harness=1
+ZABITA [pole, harness-only] wealthMnoznik (k08d-deps): poziom przesunięty | harness=1
+ZABITA [pole, harness-only] loadWealthParams (k08d-deps): trudność zafiksowana | harness=1
+
+mutacje wealth: ZABITE 16/16 (pola/delegaty harness-only: 10/10)

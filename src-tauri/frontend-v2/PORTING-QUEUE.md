@@ -322,3 +322,11 @@ Partia `rail`: 6 z 24 jednostek DOM bloku K08 (150 z 1 324 LOC) w `src/ui/cityPa
 - Gate: `run-k08d-wiring` 23/23 (mutacje 15/15); `run-k08d-handel-pin` 36/36; `npm run check` i `typecheck` zielone; drift jednostek K08D 0/7.
 - NIE_ZROBIONE: `renderWealth` z zależnościami (partia `wealth`, runda 4). Decyzja kopia pinu vs DTO (`k03-cards.ts`, `k04c-zamoznosc.ts`) wymagana przed kodem.
 - Szczegóły i lista zmian API: `dyspozycje/rust-port/p5/P5-8-K08D.md` §9.
+
+## Status P5.8 K08D, runda 4/5 (Operator-impl, `R-RUSTPORT-P5-8-CITYPANEL-K08D-Q1`)
+
+- NAPRAW 3a: partia `wealth-pasek` w `src/ui/cityPanel/k08d-wealth-pasek.ts` (`appendWealthCompactStrip` pin 4247–4304, `buildWealthCompactTooltipCard` pin 4307–4350; kopie prezentacyjne). Commit `225937d1`.
+- NAPRAW 3a: partia `wealth` w `src/ui/cityPanel/k08d-wealth.ts` (`renderWealth` pin 4775–4822, `buildWealthDetailCard` pin 4824–4944). Reguły zamożności jako delegaty `loadWealthParams`, `wealthCap`, `wealthProg`, `wealthMnoznik`, `wealthZadowolenie`, `wealthRownowaga` (`k08d-deps.ts`, wiring `k08dWiring.ts`, K08D-Z13). `gameData()` pinu zastąpione parametrem `data` (K08D-Z14). `City.wealthState` i `freshWealthState` w `k05b-host.ts` dostały pole `pula` (K08D-Z15).
+- Gate: `verify-k08d-copies` (handel, slider, religia, wealth-pasek, wealth) OK; `run-k08d-wealth-pin` 53/53; `run-k08d-wiring` 35/35; `mutate-k08d-wealth` 16/16 (pola/delegaty 10/10); `mutate-k08d-wiring` 21/21; `mutate-k08d-religia` 10/10; `mutate-k08d-handel` 6/6 + 12/12; `measure-k08d-drift` 0/11; `npm run check` i `typecheck` zielone.
+- NIE_ZROBIONE: `computeOrderStateLocal` nie należy do domknięcia `renderWealth` ani `renderReligia` (sprawdzone przez `tsc` na kopiach); przypisane do K09 (porządek miasta). Produkcyjne podpięcie wiringu = K09. K08D-Z10 (id number vs string) = K09.
+- Szczegóły: `dyspozycje/rust-port/p5/P5-8-K08D.md` §11.
