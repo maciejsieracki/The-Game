@@ -64,11 +64,29 @@ const FNS = [
   'fillIconElement', 'makeMiniThumb', 'createScrollList', 'appendTabIndicators', 'appendSurowceGrid', 'appendIndywidualneToggle',
   'appendBreakdownLines', 'appendW4PctMetricBlock', 'appendCitizenUpkeepBlock', 'makeBuildingThumb',
   'appendBuildingInlineIcon', 'appendProductionPicon', 'productionQueueIconSpan',
+  'renderBilans', 'applyBuildButtonVisualState', 'appendDisabledBuildActionButtons', 'appendBuildingRequirementChipSections',
+  'techIconHintSpan', 'bindTechHintLinkDelegation',
 ];
-// Stuby zaleznosci w gore pinu (partia 2): ikony budynku/produkcji oraz wiersze i podpis zaopatrzenia obywateli.
-// Strona v2 dostaje to samo jako argumenty (Z4/Z5) — harness odtwarza wywolujacego po stronie pinu i v2.
+/** Blok stalej `const NAZWA = {...};` z pina (do linii `};` w kolumnie 0). */
+function extractBlock(re) {
+  const i = pinLines.findIndex((l) => re.test(l));
+  if (i < 0) throw new Error(`pin: brak bloku ${re}`);
+  let j = i;
+  while (pinLines[j] !== '};') j++;
+  return pinLines.slice(i, j + 1).join('\n');
+}
+// Stuby zaleznosci w gore pinu (partie 2–3): ikony, zaopatrzenie, bilans, wymagania budynku, powiadomienie o technologii.
+// Strona v2 dostaje to samo jako argumenty (Z4–Z10) — harness odtwarza wywolujacego po stronie pinu i v2.
 const probeSrc = [
+  "import { techIconSvg } from './techIcons';",
   'const CP_EMOJI_DETECT = /(?!)/u;',
+  'function plonyChipRowHtml(v: any): string { return \'<i>\' + v.k + \'</i>\'; }',
+  'function buildingRequirementChipsHtml(chips: any[]): string { return chips.map((c: any) => \'<s>\' + c.label + \'</s>\').join(\'\'); }',
+  'let __nlog: string[] = [];',
+  'export function __setNoticeLog(a: string[]): void { __nlog = a; }',
+  'function showTechDiscoveryNotice(o: any): void { __nlog.push(\'open:\' + o.techName + \':\' + o.kind + \':\' + o.eraIndex); }',
+  extractBlock(/^const BUILDING_REQ_SECTION_LABELS/),
+  extractLine(/^let techHintLinkDelegationBound = /),
   'function cpInlineIcons(h: string): string { return h; }',
   'function resourceBrandIconHtml(n: string): string { return \'<i class="rb">\' + n + \'</i>\'; }',
   'function buildingIconHtml(def: any): string { return def == null ? \'\' : String(def); }',
@@ -162,7 +180,67 @@ try {
     ['appendProductionPicon: pusta ikona', 'appendProductionPicon', (d, m, log, pin) => (pin ? [m, null, ''] : [m, '']), 'mount'],
     ['productionQueueIconSpan: svg', 'productionQueueIconSpan', (d, m, log, pin) => (pin ? [null, SVG] : [SVG]), 'ret'],
     ['productionQueueIconSpan: tekst', 'productionQueueIconSpan', (d, m, log, pin) => (pin ? [null, '⚙'] : ['⚙']), 'ret'],
+    ['renderBilans: brak widoku', 'renderBilans', (d, m) => [m, null], 'mount'],
+    ['renderBilans: widok z wierszami', 'renderBilans', (d, m, log, pin) => [m, pin ? { k: 'X' } : '<i>X</i>'], 'mount'],
+    ['appendDisabledBuildActionButtons: Kup + Buduj', 'appendDisabledBuildActionButtons', (d, m) => [m, 'Buduj', 'Brak zasobów'], 'mount'],
+    ['appendDisabledBuildActionButtons: bez Kup, Ulepsz', 'appendDisabledBuildActionButtons', (d, m) => [m, 'Ulepsz', 'Za mało Pracy', { showPurchase: false }], 'mount'],
+    ['appendBuildingRequirementChipSections: wszystkie rodzaje', 'appendBuildingRequirementChipSections', (d, m) => [m, [
+      { label: 'Żelazo', met: true, kind: 'stock' },
+      { label: 'Kopalnie', met: false, kind: 'tech' },
+      { label: 'Mur', met: true, kind: 'other' },
+    ], (g) => g.map(c => `<s>${c.label}</s>`).join('')], 'mount'],
+    ['appendBuildingRequirementChipSections: tylko surowce', 'appendBuildingRequirementChipSections', (d, m) => [m, [
+      { label: 'Złoto', met: false, kind: 'stock' },
+    ], (g) => g.map(c => `<s>${c.label}</s>`).join('')], 'mount'],
+    ['appendBuildingRequirementChipSections: pusta lista -> false', 'appendBuildingRequirementChipSections', (d, m) => [m, [], (g) => ''], 'ret'],
+    ['techIconHintSpan: znana technologia', 'techIconHintSpan', () => ['Rolnictwo'], 'ret'],
+    ['techIconHintSpan: inheritColor, 20px', 'techIconHintSpan', () => ['Rolnictwo', 20, { inheritColor: true }], 'ret'],
+    ['techIconHintSpan: pusta nazwa', 'techIconHintSpan', () => [null], 'ret'],
+    ['techIconHintSpan: nieznana technologia', 'techIconHintSpan', () => ['Nie ma takiej technologii XYZ'], 'ret'],
   ];
+
+  // Delegacja zdarzen (bindTechHintLinkDelegation, pin:7268): swiezy modul na przypadek (flaga per instancja),
+  // swiezy dokument; pin wola showTechDiscoveryNotice (stub zapisuje do logu), v2 dostaje openPreview.
+  const bindCases = [
+    ['bind: klik w ikone-link', [['click', '.cp-tech-hint-link']]],
+    ['bind: klik poza linkiem', [['click', '.other']]],
+    ['bind: Enter na linku', [['key', '.cp-tech-hint-link', 'Enter']]],
+    ['bind: spacja na linku', [['key', '.cp-tech-hint-link', ' ']]],
+    ['bind: inny klawisz', [['key', '.cp-tech-hint-link', 'a']]],
+    ['bind: dwukrotne bindowanie + klik', [['click', '.cp-tech-hint-link']], true],
+  ];
+  const bindRun = async (modPath, isPin, idx, events, twice) => {
+    const mod = await import(pathToFileURL(modPath).href + `?case=${idx}`);
+    const dom = new JSDOM('<!doctype html><html><head></head><body><div id="root"><span class="cp-tech-hint-link" data-tech-hint-name="Rolnictwo">R</span><span class="other">o</span></div></body></html>', {
+      url: 'http://localhost/',
+      pretendToBeVisual: true,
+      virtualConsole: vc,
+    });
+    const doc = dom.window.document;
+    const log = [];
+    if (isPin) mod.__setNoticeLog(log);
+    const prevDoc = globalThis.document;
+    globalThis.document = doc;
+    try {
+      const open = (n) => log.push(`open:${n}:preview:1`);
+      if (isPin) mod.bindTechHintLinkDelegation();
+      else mod.bindTechHintLinkDelegation(open);
+      if (twice) {
+        if (isPin) mod.bindTechHintLinkDelegation();
+        else mod.bindTechHintLinkDelegation(open);
+      }
+      for (const ev of events) {
+        const target = doc.querySelector(ev[1]);
+        if (ev[0] === 'click') target.dispatchEvent(new dom.window.MouseEvent('click', { bubbles: true }));
+        else target.dispatchEvent(new dom.window.KeyboardEvent('keydown', { key: ev[2], bubbles: true }));
+      }
+      return log.join(',') || '(brak)';
+    } catch (e) {
+      return `THROW: ${String(e?.message ?? e)}`;
+    } finally {
+      globalThis.document = prevDoc;
+    }
+  };
 
   const run = (mod, fnName, buildArgs, out, click, isPin) => {
     const dom = new JSDOM('<!doctype html><html><head></head><body></body></html>', {
@@ -200,6 +278,12 @@ try {
     const b = run(v2Mod, fn, buildArgs, out, !!click, false);
     return { name, ok: a === b, pin: a, v2: b };
   });
+  for (let k = 0; k < bindCases.length; k++) {
+    const [name, events, twice] = bindCases[k];
+    const a = await bindRun(pinJs, true, k, events, !!twice);
+    const b = await bindRun(v2Js, false, k, events, !!twice);
+    results.push({ name, ok: a === b, pin: a, v2: b });
+  }
   const diffs = results.filter((r) => !r.ok).length;
   console.log(`run-k02-units: asercji=${results.length} roznic=${diffs} jsdomErrors=${errors.length}`);
   for (const r of results.filter((x) => !x.ok)) {

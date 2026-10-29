@@ -196,10 +196,12 @@ Grupy cykliczne (port razem, jedna paczka):
 - **C4** (10): `entityCards/buildingAdapter.ts`, `entityCards/improvementAdapter.ts`, `entityCards/registry.ts`, `entityCards/renderer.ts`, `entityCards/technologyAdapter.ts`, `entityCards/unitAdapter.ts`, `entityCards/wonderAdapter.ts`, `scienceHubHud.ts`, `sciencePicker.ts`, `techDiscoveryNotice.ts`
 - **C5** (2): `sidePanelEventFilter.ts`, `sidePanelHud.ts`
 
-## Status P5.8 K02 (`R-RUSTPORT-P5-8-CITYPANEL-K02-Q1`, runda 2/5 — CZĘŚCIOWO)
+## Status P5.8 K02 (`R-RUSTPORT-P5-8-CITYPANEL-K02-Q1`, runda 3/5 — CZĘŚCIOWO)
+
+Runda 3 (partie 1–3, `src/ui/cityPanel/k02-units.ts`, harness `tools/dom-harness/run-k02-units.mjs` 49/0, mutacje `mutate-k02-units.mjs` 28/28): wszystkie 18 pozostałych jednostek K02 ma port i harness DOM; zależności w górę (ikony, zaopatrzenie, `plonyChipRowHtml`, `buildingRequirementChipsHtml`, `openPreview` delegacji) przekazane jako argumenty (ZAŁOŻENIA P5.8-K02-R3-Z1..Z10). Niezrobione: scalenie z K01 (R1, stałe układu i `BreakdownLine`), zakres pinu `cityPanel.ts` poza K02 i domknięcie zależności K01/K03+ po stronie wywołującego. Szczegóły: `dyspozycje/rust-port/p5/P5-8-K02.md` §Runda 3.
 
 Przeniesione (pin `edb8fb56:gra/src/ui/cityPanel.ts`):
 - Kawałek H: `ensureStyles` -> `ensureCityPanelStyles` (1948-3009) w `src/ui/cityPanel/k02-styles.ts`; harness `tools/dom-harness/run-k02-styles.mjs` (14 asercji, 0 różnic), mutacje `mutate-k02-styles.mjs` 8/8.
 - Bloki breakdown (4378-4516): `appendBreakdownLines`, `appendPctBreakdownBlock`, `appendSignedBreakdownSections`, `appendW4SignedBreakdownSections` w `src/ui/cityPanel/k02-breakdown.ts` oraz typ `BreakdownLine` w `src/ui/cityPanel/types.ts` (ZAŁOŻENIE P5.8-K02-Z3); lokalny `el` bez `html` (ZAŁOŻENIE P5.8-K02-Z4); harness `tools/dom-harness/run-k02-breakdown.mjs` (12 asercji, 0 różnic), mutacje `mutate-k02-breakdown.mjs` 9/9.
 
-Niezrobione w K02: 18 z 23 jednostek K02 wg pomiaru (`P5-8-K02.md` §Zakres). Plik `cityPanel.ts` (81) nadal nieprzeniesiony. Szczegóły: `dyspozycje/rust-port/p5/P5-8-K02.md`; runda 1: `dyspozycje/autobot/runs/R-RUSTPORT-P5-8-CITYPANEL-K02-Q1/01-operator-r1.md`.
+Stan K02 po r3: 23 z 23 jednostek K02 wg pomiaru przeniesione. Plik `cityPanel.ts` (81) nadal nieprzeniesiony w całości (poza K02). Szczegóły: `dyspozycje/rust-port/p5/P5-8-K02.md`; runda 1: `dyspozycje/autobot/runs/R-RUSTPORT-P5-8-CITYPANEL-K02-Q1/01-operator-r1.md`.

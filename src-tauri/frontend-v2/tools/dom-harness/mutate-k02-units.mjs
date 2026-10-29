@@ -41,6 +41,17 @@ const MUTS = [
   ['M15 appendProductionPicon: klasa picon', "const iconEl = el('div', 'picon');", "const iconEl = el('div', 'picon2');"],
   ['M16 productionQueueIconSpan: dodatkowa klasa span', "const s = el('span');", "const s = el('span', 'x');"],
   ['M17 appendBuildingInlineIcon: klasa bi', "const bi = el('span', 'bi');", "const bi = el('span', 'bi2');"],
+  ['M18 renderBilans: tekst pustego bilansu', "none.innerHTML = 'Brak danych gry';", "none.innerHTML = 'Brak danych';"],
+  ['M19 renderBilans: klasa tytulu', "const title = el('div', 'ptitle');", "const title = el('div', 'ptitle2');"],
+  ['M20 appendDisabledBuildActionButtons: Kup tylko przy showPurchase===true', 'if (opts?.showPurchase !== false) {', 'if (opts?.showPurchase === true) {'],
+  ['M21 applyBuildButtonVisualState: zla klasa stanu', "btn.classList.add(canAct ? 'can-build' : 'cannot-build');", "btn.classList.add(canAct ? 'can-build' : 'cannot-build2');"],
+  ['M22 appendBuildingRequirementChipSections: brak pominiecia pustych grup', 'if (group.length === 0) continue;', 'if (false) continue;'],
+  ['M23 appendBuildingRequirementChipSections: etykieta surowcow', "stock: 'Wymagane surowce',", "stock: 'Wymagane surowce!',"],
+  ['M24 techIconHintSpan: brak klasy bld-req-tech-ic', "' bld-req-tech-ic' : '')", "'' : '')"],
+  ['M25 techIconHintSpan: kolor inheritColor', "opts?.inheritColor ? 'currentColor' : 'var(--gold)'", "opts?.inheritColor ? 'red' : 'var(--gold)'"],
+  ['M26 bindTechHintLinkDelegation: brak flagi (podwojne bindowanie)', 'if (techHintLinkDelegationBound) return;', 'if (false) return;'],
+  ['M27 bindTechHintLinkDelegation: spacja nie aktywuje', "if (e.key !== 'Enter' && e.key !== ' ') return;", "if (e.key !== 'Enter') return;"],
+  ['M28 bindTechHintLinkDelegation: klik przekazuje inna nazwe', "e.stopPropagation();\n    openPreview(name);\n  });\n  document.addEventListener('keydown'", "e.stopPropagation();\n    openPreview(name + '!');\n  });\n  document.addEventListener('keydown'"],
 ];
 
 let failed = 0;
