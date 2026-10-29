@@ -64,3 +64,23 @@ Brak (`.rs` nietknięte). Kandydaci do minimalnej zmiany schematu (runda 2, po d
 - Kryterium C (każda grupa zielona po regeneracji, 0 rozbieżności): NIESPEŁNIONE — runda 2.
 - Kryterium D (derived przeliczone vs pozostawione): opisane, przeliczone 0/5.
 - Gate: fmt EXIT=0, clippy EXIT=0, test 1207 = baza (0 usuniętych), 56 czerwonych.
+
+## 7. Pomiar niezależny (wywołanie Operatora-pomiarów, ten sam temat, runda 1/5)
+
+Baza pracy: `7bd0bbad` (raport Operatora-impl) na `44a24509` (podmiana 4 kopii) na `bb74ff9d`. Pliki danych nie były zmieniane w tym wywołaniu (po testach kontrolnych przywrócone do `7bd0bbad`; `git status` czysty poza lokalnym `Cargo.lock`).
+
+**Kryterium A (bajtowo):** sha256 4 plików w `rust-port/engine/data/` = `91dc998a:gra/data/*.json` — zgodne (civs `eea384b7…30e3`, units `0e031b60…7d3c56`, econ-params `7806a53b…89e3`, ui-params `e2dfbd2a…58e`). SPEŁNIONE.
+
+**Lokalny `Cargo.lock`:** w worktree go nie było (plik nieśledzony, poprzedni wygenerowany lokalnie u Operatora); wygenerowany ponownie `cargo generate-lockfile` (17 pakietów, log `genlock-pomiar.log`). Nie commitowany.
+
+**Bramki (surowe logi, EXIT):**
+- `cargo fmt --all -- --check`: EXIT=0 (`fmt-pomiar.log`).
+- `cargo clippy --locked --all-targets -- -D warnings`: EXIT=0 (`clippy-pomiar.log`).
+- `cargo test --locked --all-targets --no-fail-fast` na danych z 91dc998a: EXIT=101, sumarycznie passed 1151, failed 56 (`test-pomiar.log`; 159 binariów/sekcji `Running`, 56 linii `FAILED`). Zgodne z raportem Operatora.
+- Kontrola negatywna (dane z bazy `bb74ff9d` przywrócone, reszta identyczna): EXIT=0, passed 1207, failed 0 (`test-control-base-pomiar.log`). Dowodzi, że 56 czerwonych wynika wyłącznie z podmiany 4 plików danych, a nie z lokalnego środowiska.
+
+**Weryfikacja grup z §2a:** lista 56 czerwonych testów zgodna z grupami A–E (A: `civs_*`, `*_match_web`, `build_cluster_*`, `compute_clusters_*`, `rt_civs`, `real_civs_bonuses_convert_without_loss` i pokrewne; B: `rt_econ_params`, `parse_econ_params_*`, `population_cap_matches_web`, `loads_all_29_files_from_data_dir`; C: `units_parses_and_spot_checks`, `unit_table_*`, `unit_stock_cost_matches_flattened_p3_19_table`; D: 3 testy `*byte_identical*`; E: `strip_diacritics_matches_web_function_cut_verbatim`). Przyczyna techniczna nie została ponownie rozbita per test; źródła błędów w §2a są zgodne z treścią logów na poziomie nazw testów. Nie zmierzono ponownie każdego komunikatu błędu.
+
+**Derived / wektory (bez zmian w tym wywołaniu):** przeliczone 0/5 derived i 0 wektorów. Regeneracja wymaga generatora z uruchomionego weba `91dc998a` — NIE_ZMIERZONO w tym wywołaniu; przeniesione do rundy 2.
+
+**Wniosek:** Kryteria B i D (dokument, lista czerwonych) spełnione; kryterium C (zielone po regeneracji) NIESPEŁNIONE — runda 2 wymagana. Status tematu: BLOCK (techniczny, runda 1/5), bez zmiany względem raportu Operatora-impl. DEPLOY/PUSH: NIE WYKONANO.
