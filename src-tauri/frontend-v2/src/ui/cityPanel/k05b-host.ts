@@ -25,6 +25,9 @@ export type { AvailabilityContext, BuildingReqChip, CityView };
 export interface City {
   readonly id: number;
   readonly ownerId: number;
+  /** K08E-Z6 (runda 1, partia magazyn): pola `population` i `autoWyzywienie` (pin `City`, `game/cities.ts`). */
+  readonly population: number;
+  readonly autoWyzywienie?: boolean;
   /** K08D-Z15 (runda 4, partia wealth): pola `poziom` i `pula` (pin `city.wealthState`, `game/wealth`). */
   readonly wealthState?: { readonly poziom: number; readonly pula: number };
 }
@@ -158,6 +161,36 @@ export interface K05bCfg {
   difficulty?: string;
   /** K08D-Z2: pin `cfg.data` — dane gry; czytane tylko pole `civs` (mnożnik Waluty+Mennicy). */
   data?: { readonly civs?: unknown };
+  /** K08E-Z5 (runda 1, partia magazyn): pin `cfg.getEmpireFoodTick?.(ownerId)` — stan żywności imperium (tura). */
+  getEmpireFoodTick?: (ownerId: number) => EmpireFoodTickK08e | undefined;
+  /** K08E-Z5: pin `cfg.getEmpireFoodState?.(ownerId)` — magazyn centralny (`zapasyPanstwa`). */
+  getEmpireFoodState?: (ownerId: number) => EmpireFoodStateK08e | undefined;
+  /** K08E-Z5: pin `cfg.getMaxSafePoziomRacji?.(cityId)` — maksymalny bezpieczny poziom Wyżywienia (limit Spichlerza). */
+  getMaxSafePoziomRacji?: (cityId: number) => number | undefined;
+  /** K08E-Z5: pin `cfg.onCityRationChange?.(cityId, level)` — zmiana suwaka Wyżywienia. */
+  onCityRationChange?: (cityId: number, level: number) => void;
+  /** K08E-Z5: pin `cfg.onCityAutoWyzywienieChange?.(cityId, on)` — przełącznik Auto Wyżywienie. */
+  onCityAutoWyzywienieChange?: (cityId: number, on: boolean) => void;
+  /** K08E-Z5: pin `cfg.getPoziomRacjiOverride?.(cityId)` — przełącznik „Indywidualne" (Wyżywienie). */
+  getPoziomRacjiOverride?: (cityId: number) => boolean | undefined;
+  /** K08E-Z5: pin `cfg.onPoziomRacjiOverrideToggle?.(cityId)`. */
+  onPoziomRacjiOverrideToggle?: (cityId: number) => void;
+}
+
+/** K08E-Z5: stan żywności imperium (pin `EmpireFoodTick`, pola czytane przez `buildRacjeWzrostDetailCard`). */
+export interface EmpireFoodTickK08e {
+  readonly perCityRows?: readonly { readonly cityId: string; readonly nakarmione?: boolean }[];
+  readonly uprawaHodowla: number;
+  readonly wyzwienieLudnosci: number;
+  readonly pomocMiastom: number;
+  readonly wojsko: number;
+  readonly zapasyPo: number;
+  readonly maxCap: number;
+}
+
+/** K08E-Z5: magazyn centralny (pin `EmpireFoodState`, pole `zapasyPanstwa`). */
+export interface EmpireFoodStateK08e {
+  readonly zapasyPanstwa?: number;
 }
 
 /** K08D-Z3: wiersz trasy handlowej — pola czytane przez `activeTradeRouteCountForCity` i premię tras (pin `game/trade-routes.ts`). */
