@@ -226,3 +226,8 @@ Runda 3 (Operator r3, odpowiedź na FAIL zakresu 20/36): **36 z 36 jednostek K03
 Stan runda 1 (historyczny):
 
 Model miasta (pin `edb8fb56:gra/src/ui/cityPanel.ts`): **17 z 36 jednostek K03** obsłużone — adaptery DTO w `src/ui/cityPanel/k03-model.ts` (`computeView`→`cityViewFromDto`, `cityGrowthLive`→`cityGrowthLiveFromDto`, `resolveOrderState`→`resolveOrderStateFromDto`, `readPodzialHandlu`, `isCapital`, `isMeCity`, `activeTradeRouteCountForCity`, `getProd`/`setProd`), prymitywy kart w `src/ui/cityPanel/k03-detail.ts`; usunięte `CityPanelConfig`, `cfg`, `computeOrderStateLocal`. Harness kontraktu `tools/dom-harness/run-k03.mjs` 24/0. Pozostałe 19 jednostek: NIE PORTOWANE (lista i powody w `dyspozycje/rust-port/p5/P5-8-K03.md`). Porównanie z pinem i mutacje: NIE_ZMIERZONO w r1.
+
+
+## Status P5.8 K04 (`R-RUSTPORT-P5-8-CITYPANEL-K04-Q1`, runda 1/5, batch 1)
+
+Zrobione 7 z 32 jednostek K04 (koszty surowcowe kolejki, pula magazynu, anulowanie jako komenda `dequeue_build`, formatery surowców): `src/ui/cityPanel/k04-stock.ts`; pole DTO `CityPanelInputsDto.stockPool` (K04-Z1). Pozostałe 25 jednostek: NIE PORTOWANE w r1 (lista w `dyspozycje/rust-port/p5/P5-8-K04.md`). Harness z pinem i mutacje: NIE_ZMIERZONO w r1.
