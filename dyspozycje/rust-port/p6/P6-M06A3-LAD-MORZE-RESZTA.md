@@ -9,7 +9,7 @@ Baza kodu: `origin/rust-port/parity-v2` @ `364a5356`.
 | Symbol (web, pin edb8fb56) | Status | Dowod |
 |---|---|---|
 | `enforceLatitudinalOceanBuffer` :3339 | PORTOWANY (partia 1) | `landsea.rs::enforce_latitudinal_ocean_buffer`; test `enforce_latitudinal_ocean_buffer_matches_web_with_boundaries`; 158 wektorow |
-| `climateBandBaseTerrain` :3360 (prywatna) | PORTOWANY (partia 1) | `landsea.rs::climate_band_base_terrain` + `climate_base_from_hash` (galaz progow); testy `climate_band_base_terrain_matches_web` (846 punktow, hash po u/2^32) i `climate_base_from_hash_threshold_boundaries` |
+| `climateBandBaseTerrain` :3360 (prywatna) | PORTOWANY (partia 1) | `landsea.rs::climate_band_base_terrain` + `climate_base_from_hash` (galaz progow); testy `climate_band_base_terrain_matches_web` (861 punktow z weba, hash po u/2^32), `climate_threshold_web_vectors_cover_n_minus_1_n_plus_1` (N-1/N/N+1 z uruchomionego weba) oraz `climate_base_from_hash_threshold_boundaries` (oracle galezi) |
 | `applyClimateBandsToHexes` :3380 | PORTOWANY (partia 1) | `landsea.rs::apply_climate_bands_to_hexes`; test `apply_climate_bands_to_hexes_matches_web`; 100 map wektorow |
 | `enforceEarthTemplateOnHexes` :3418 | PORTOWANY (partia 1) | `landsea.rs::enforce_earth_template_on_hexes`; test `enforce_earth_template_on_hexes_matches_web`; 11 map wektorow |
 | `findInlandWaterHexes` / `findInlandSeaHexes` :4109/:4123 | PORTOWANY (M06A r1) | bez zmian |
@@ -33,7 +33,7 @@ Po partii 1 tej rundy: 4 symbole PORTOWANE (+ 4 z M06A2/M06A). Pozostale wiersze
 
 ## Dryf po pinie (zakres 3186-4374)
 
-`git diff --stat edb8fb56 origin/main -- gra/src/map/gen-helpers.ts`: 24 dodane / 16 usuniete linie, 8 hunkow na liniach 5992, 8466, 10352, 10392, 10541, 10693, 10776, 10804 pliku. **Zadne z nich nie wpada w zakres 3186-4374.** Pin pozostaje `edb8fb56`; odswiezenie wektorow robi osobny temat po R-RUSTPORT-REPIN-DELTA-Q1.
+`git diff --stat edb8fb56 origin/main -- gra/src/map/gen-helpers.ts`: 24 dodane / 16 usuniete linie, 8 hunkow (`git diff -U0 edb8fb56 origin/main`; linie w edb8fb56 / origin/main): 5995 / 5995 (`estimateLandCentroidFromSeed`), 8469 / 8470 (`buildOceanReachableRiverHexKeys`), 10355 / 10357 (`bfsNearestRiverHexOnLowland`), 10395 / 10398 (`bfsLowlandRiverPath`), 10544 / 10548 (`maxDryLowlandPatchSize`), 10696 / 10701 (`fillDryLowlandPatches`), 10779 / 10785 (`findAllOversizedDryLandPatches`), 10807 / 10814 (`findLargestDryLowlandPatch`). **Zadne z nich nie wpada w zakres 3186-4374.** Pin pozostaje `edb8fb56`; odswiezenie wektorow robi osobny temat po R-RUSTPORT-REPIN-DELTA-Q1.
 
 ## Zalozenia (rozstrzygniete bez pytan)
 
@@ -42,7 +42,7 @@ Po partii 1 tej rundy: 4 symbole PORTOWANE (+ 4 z M06A2/M06A). Pozostale wiersze
 - Z-3: `setHexToMorze` = `terrain_class::set_hex_to_morze` (DANE-JUZ-W-RUST, M04). Czysci rzeke i zloze, jak web :3325.
 - Z-4: Progi galezi `climateBandBaseTerrain` (0.5 / 0.7 / 0.85) i `Math.round` w buforze sa w kodzie webu jako literaly galezi, nie jako dane. Port trzyma je w kodzie 1:1; nie sa to mnozniki danych. Dane progow pasm (`CLIMATE_POLAR_FRAC` itd.) sa juz w `derived` (`prims.rs`, `mapgen_core_params().klimat`).
 - Z-5: `climateBandBaseTerrain` jest prywatna w pinie. Generator tworzy kopie `gen-helpers-m06a3-instr.ts` (w drzewie `git archive` POZA repo) z jedna linia `export { climateBandBaseTerrain, setHexToMorze, hashInt3 }` na koncu. Logika jest identyczna; sha oryginalu `ab934703...` (= M06A/M06A2), sha kopii zapisane w meta wektorow.
-- Z-6: Progi N-1 / N / N+1 dla `h < prog` nie maja wartosci hasza w wektorach: `hashInt3` daje u/2^32, a zaden punkt nie trafia dokladnie w 0.5/0.7/0.85 (pomiar: `hash_near_threshold` w `boundary_hits`, |hash-prog| < 0.01: 0.5 -> 24, 0.7 -> 20, 0.85 -> 25 punktow). Granice N-1/N/N+1 sprawdza wiec `climate_base_from_hash` z floatami prog - eps*prog, prog, prog + eps*prog; oracle to galaz kodu webu :3368-3378 (zrodlo, nie uruchomienie). Calosc pilnuja wektory punktowe uruchomionego weba (blad progu o 1% zmienia kilkanascie przypadkow).
+- Z-6 (zaktualizowane w rundzie 2, Q1): progi `h < prog` (0.5 / 0.7 / 0.85) maja teraz wektory z URUCHOMIONEGO weba dla N-1 / N / N+1 dokladnie. `hashInt3` daje u/2^32 (u calkowite), wiec granica to u = ceil(prog*2^32): 0.5 -> 2147483648 (dokladnie), 0.7 -> 3006477108, 0.85 -> 3650722202. Wejscia (q,r,seed=0) dla u-1/u/u+1 znalezione przez odwrotnosc miksowania hashInt3 (`find-hash.mjs` w runie, weryfikacja forward po kopii funkcji) i zapisane w generatorze jako 9 punktow; generator uruchamia na nich prawdziwa `climateBandBaseTerrain` weba (15 przypadkow, po jednym na pasmo progu) i rzuca wyjatek, jesli hasz weba != u/2^32. Test `climate_threshold_web_vectors_cover_n_minus_1_n_plus_1` pilnuje obecnosci wszystkich 9 wartosci. Oracle `climate_base_from_hash_threshold_boundaries` zostaje jako dodatkowe sprawdzenie galezi.
 - Z-7: Wartosci hasza w JSON (serde): JSON z weba jest parsowany przez `serde_json` bez `float_roundtrip`, wiec wartosc hasza mogla byc oddana z bledem 1 ULP (zaobserwowane dla (6,10,0)). Test porownuje wiec calkowite `u = hash * 2^32` (blad << 0.5). Port hasza jest zgodny bit w bit (`node` lokalnie: 4205694887/2^32).
 - Z-8: Zakres wektorow `enforceLatitudinalOceanBuffer`: wiersze `buf-1, buf, buf+1` oraz `H-buf-1, H-buf, H-buf+1` sa obecne w wektorach dla kazdego z 6 wariantow gorna/dolna granica (test asertuje >0 trafien kazdego z 3 wierszy na obu granicach).
 - Z-9: `enforceLatitudinalOceanBuffer` i `enforceEarthTemplateOnHexes` iteruja po prostokacie wspolrzednych (jak web); wynik nie zalezy od kolejnosci. `applyClimateBandsToHexes` i `enforceEarthTemplateOnHexes` iteruja po `HexRecord` w kolejnosci wstawiania (jak `Object.entries`).
@@ -50,7 +50,7 @@ Po partii 1 tej rundy: 4 symbole PORTOWANE (+ 4 z M06A2/M06A). Pozostale wiersze
 ## Wektory i testy
 
 - Generator: `dyspozycje/autobot/runs/R-RUSTPORT-P6-M06A3-LAD-MORZE-RESZTA2-Q1/gen-m06a3-vectors.mjs` (loader: `m06a-loader-register.mjs` + `m06a-loader-hooks.mjs`, skopiowane z runu M06A2 - Z-7 z P6-M06A2).
-- Wektory: `rust-port/engine/tests/p6_m06a3_vectors/web-vectors.json` (liczby: buffer 158, climate point 846, climate map 100, earth 11).
+- Wektory: `rust-port/engine/tests/p6_m06a3_vectors/web-vectors.json` (liczby: buffer 158, climate band base 861 = 840 punktow pasm + 6 `hash_only` + 15 granicznych, climate map 100, earth 11).
 - Testy: `rust-port/engine/tests/p6_m06a3_climate.rs` (6 testow, zielone).
 - Zadnych zmian w istniejacych testach, `relief.rs`, `bridge.rs`, `Cargo.toml`, `gra/**`, `domain/mod.rs`, `map_generator.rs`.
 
@@ -67,7 +67,7 @@ Po partii 1 tej rundy: 4 symbole PORTOWANE (+ 4 z M06A2/M06A). Pozostale wiersze
 
 - Kod vs web (pin `edb8fb56`, `gra/src/map/gen-helpers.ts:3339-3427`): cztery funkcje zgodne co do galezi, warunkow (`r >= buf && r < h-buf`, pominiecie Morze, `earthTemplateLandAt > 0`, pominiecie wody/Gor/Wzgorz), progow (`h < 0.5 / 0.7 / 0.85`) i czyszczenia nakladki/zloza. Rozbieznosci: brak.
 - Wektory (`tests/p6_m06a3_vectors/web-vectors.json`): `counts` buffer 158, climate point 846, map 100, earth 11 - zgodne z raportem. `boundary_hits.hash_near_threshold` = 24/20/25 zgodne z Z-6; `buffer_rel` zawiera offsety -1/0/+1 wzgledem `buf` i `H-buf`.
-- NOTA: `stats.climate_point_cases` = 840, a `counts.climate_band_base_terrain` = 846 (roznica 6). Meta jej nie wyjasnia. Nie blokuje (testy uzywaja `cases`), do wyjasnienia w generatorze przy odswiezeniu wektorow.
+- Rozbieznosc 840 vs 846 (runda 1) WYJASNIONA: `stats.climate_point_cases` liczy wylacznie 7 pasm x 120 punktow = 840; 6 wpisow `hash_only` (sprawdzenie hashInt3) dolaczano bez licznika. Runda 2: generator ma osobne liczniki `climate_hash_only_cases` (6) i `climate_boundary_cases` (15), wiec 840 + 6 + 15 = 861 = `counts.climate_band_base_terrain`.
 
 ### Gate'y (surowe logi: `R-RUSTPORT-P6-M06A3-LAD-MORZE-RESZTA2-Q1/*-pomiary-r1.log`)
 

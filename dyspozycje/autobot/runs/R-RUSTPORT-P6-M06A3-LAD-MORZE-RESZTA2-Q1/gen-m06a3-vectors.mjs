@@ -104,10 +104,10 @@ const cases = {
   apply_climate_bands_to_hexes: [],
   enforce_earth_template_on_hexes: [],
 };
-const stats = { buffer_cases: 0, climate_map_cases: 0, climate_point_cases: 0, earth_cases: 0 };
+const stats = { buffer_cases: 0, climate_map_cases: 0, climate_point_cases: 0, climate_hash_only_cases: 0, climate_boundary_cases: 0, earth_cases: 0 };
 // Trafienia wzgledem granic: buffer (r - buf dla rzedow buf-1..buf i H-buf-1..H-buf), pasma (r wzgledem krawedzi pasma),
 // progi hashInt3 (|hash - prog| < 0.01 dla 0.5/0.7/0.85).
-const boundary = { buffer_rel: {}, band_edge_rel: {}, hash_near_threshold: {} };
+const boundary = { buffer_rel: {}, band_edge_rel: {}, hash_near_threshold: {}, hash_threshold_u: {} };
 const bump = (table, key) => {
   const k = String(key);
   table[k] = (table[k] ?? 0) + 1;
@@ -160,6 +160,29 @@ for (const [q, r, seed] of [[0, 0, 0], [1, 0, 0], [0, 1, 0], [3, 7, 42], [-1, -1
   cases.climate_band_base_terrain.push({
     band: 'hash_only', q, r, seed, hash: G.hashInt3(q, r, seed), out: '-',
   });
+  stats.climate_hash_only_cases++;
+}
+
+// Punkty graniczne progow hashInt3 (runda 2, Q1): u = h*2^32 dla N-1/N/N+1 kazdego progu.
+// Progi `h < t` (web :3360-3378): t*2^32 = 2^31 (0.5, dokladnie), 3006477108 (0.7), 3650722202 (0.85).
+// Wejscia (q,r) dla seed=0 znalezione przez szukanie odwrotnego hashInt3 (skrypt pomocniczy find-hash.mjs,
+// weryfikacja przez prawdziwy modul weba ponizej: hash z weba MUSI rownac sie u/2^32, inaczej wyjatek).
+const THRESH_HITS = [
+  { t: 0.5, bands: ['desert'], pts: [[317, 3586426, 2147483647], [122, -4552950, 2147483648], [53, 6387577, 2147483649]] },
+  { t: 0.7, bands: ['plains_north', 'plains_south'], pts: [[265, 6912371, 3006477107], [581, -7483898, 3006477108], [56, -976208, 3006477109]] },
+  { t: 0.85, bands: ['temperate_north', 'temperate_south'], pts: [[34, 7379509, 3650722201], [31, -5867222, 3650722202], [136, 2087751, 3650722203]] },
+];
+for (const { t, bands, pts } of THRESH_HITS) {
+  for (const [q, r, u] of pts) {
+    const hash = G.hashInt3(q, r, 0);
+    if (Math.round(hash * 4294967296) !== u) throw new Error(`hashInt3(${q},${r},0) != ${u}/2^32 dla progu ${t}`);
+    for (const band of bands) {
+      const out = G.climateBandBaseTerrain(band, q, r, 0);
+      stats.climate_boundary_cases++;
+      bump(boundary.hash_threshold_u, `${t}:${u - Math.ceil(t * 4294967296)}`);
+      cases.climate_band_base_terrain.push({ band, q, r, seed: 0, hash, out: TB_TO_RUST[out] ?? `??${out}`, threshold: t, u });
+    }
+  }
 }
 
 // ---------- 3. applyClimateBandsToHexes (:3380) ----------

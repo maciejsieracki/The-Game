@@ -242,3 +242,48 @@ fn enforce_earth_template_on_hexes_matches_web() {
         assert_eq!(hexes, expected, "mapa {}", case["name"]);
     }
 }
+
+#[test]
+fn climate_threshold_web_vectors_cover_n_minus_1_n_plus_1() {
+    // Runda 2 (Q1): punkty z URUCHOMIONEGO weba, ktorych hasz to dokladnie u = ceil(prog*2^32) + d, d in {-1, 0, +1}.
+    // Dla kazdego progu (0.5 / 0.7 / 0.85) musza istniec wszystkie trzy wartosci; hasz z weba i z Rust
+    // musi byc rowny calkowitemu u (bez tolerancji), a galaz wyboru z weba == Rust.
+    let mut seen: std::collections::BTreeSet<(u64, i64)> = std::collections::BTreeSet::new();
+    for case in cases("climate_band_base_terrain") {
+        let Some(u) = case.get("u").and_then(Value::as_u64) else {
+            continue;
+        };
+        let t = case["threshold"].as_f64().expect("threshold");
+        let ceil = (t * 4_294_967_296.0).ceil() as u64;
+        let d = u as i64 - ceil as i64;
+        let q = case["q"].as_i64().expect("q");
+        let r = case["r"].as_i64().expect("r");
+        let seed = case["seed"].as_i64().expect("seed") as f64;
+        let u_web = (case["hash"].as_f64().expect("hash") * 4_294_967_296.0).round() as u64;
+        assert_eq!(u_web, u, "hasz weba != u dla progu {t} ({q},{r})");
+        let u_rust = (hash_int3(q as f64, r as f64, seed) * 4_294_967_296.0).round() as u64;
+        assert_eq!(u_rust, u, "hasz Rust != u dla progu {t} ({q},{r})");
+        let band: ClimateBand =
+            serde_json::from_value(Value::String(case["band"].as_str().unwrap().to_string()))
+                .expect("climate band");
+        let want: Terrain = serde_json::from_value(Value::String(web_terrain_name(
+            case["out"].as_str().expect("out"),
+        )))
+        .expect("terrain");
+        assert_eq!(
+            climate_band_base_terrain(band, q, r, seed),
+            want,
+            "galaz d={d} progu {t} {}",
+            case["band"]
+        );
+        seen.insert((t.to_bits(), d));
+    }
+    for t in [0.5f64, 0.7, 0.85] {
+        for d in [-1i64, 0, 1] {
+            assert!(
+                seen.contains(&(t.to_bits(), d)),
+                "brak wektora weba dla progu {t} d={d}"
+            );
+        }
+    }
+}

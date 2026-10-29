@@ -1,0 +1,15 @@
+    Finished `test` profile [unoptimized] target(s) in 0.03s
+     Running tests/p6_m06a3_climate.rs (/home/user/cargo-target-shared/wf_768b56ee-a38-4/debug/deps/p6_m06a3_climate-d17653ee2b63f44c)
+
+running 7 tests
+test climate_base_from_hash_threshold_boundaries ... ok
+test climate_threshold_web_vectors_cover_n_minus_1_n_plus_1 ... ok
+test climate_band_base_terrain_matches_web ... ok
+test vectors_meta_pin_and_counts ... ok
+test enforce_latitudinal_ocean_buffer_matches_web_with_boundaries ... ok
+test enforce_earth_template_on_hexes_matches_web ... ok
+test apply_climate_bands_to_hexes_matches_web ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.19s
+
+EXIT=0
