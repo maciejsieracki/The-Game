@@ -309,3 +309,4 @@ Cel końcowy i bieżący zapisane w `GOAL-RUST-PORT-20261020.md` (§"CEL PĘTLI 
 | 2026-10-29 | R-RUSTPORT-P5-8-CITYPANEL-K08B-Q1 | 1→2 | partia 1 (rail 6/24) PASS-WITH-NOTES → r2 partie 2–4 (wf_418829af-bb3) | w toku |
 | 2026-10-29 | R-RUSTPORT-P4-36-MOD14-BATTLE-3D-Q4 | 1 | Opus op → Ev PASS-WITH-NOTES → FC PASS-WITH-NOTES (50/50 mutantów) | **ZINTEGROWANE** `5d900606` (renderer 416/0); otwarto Q5 (picking i kamera) |
 | 2026-10-29 | R-RUSTPORT-P5-8-CITYPANEL-K08B-Q1 | 4 | r3: 9/24 jedn.; Ev FAIL (zakres, wiring), Obrona DECISION_REQUIRED (limit rund) → orkiestrator: zamknięcie adm. | **ZINTEGROWANE** `b19311e2` (check/typecheck/harnessy OK); K08C otwarte (wiring+6 jedn.) |
+| 2026-10-29 | R-RUSTPORT-P5-8-CITYPANEL-K08C-Q1 | 2 | r1 Ev FAIL (zakres, getUnitDef, wiring) → Obrona r2 (wiring 28/28, mutacje 24/24) → FC PASS-WITH-NOTES | **ZINTEGROWANE** `f5d34b52` (check/typecheck/harnessy OK); K08D otwarte (handel/wealth/religia) |
