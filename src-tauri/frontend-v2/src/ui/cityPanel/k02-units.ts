@@ -6,8 +6,9 @@
 //   Z2: module-level rerender() (pin) przekazywane jako argument `rerender` (appendIndywidualneToggle).
 //   Z3: statChip (pin:4222) i stala LIST_ROW_HEIGHT_EM (pin:1773) skopiowane lokalnie (prywatne w pinie i w K01).
 // Lokalny `el` bez parametru `html`: wszystkie wywolania w tych jednostkach maja tag i klase (jak w k02-breakdown.ts).
-import type { BreakdownLine, TabIndicatorChip } from './types';
+import type { BreakdownLine, BuildingReqChip, BuildingReqChipKind, TabIndicatorChip } from './types';
 import { appendBreakdownLines } from './k02-breakdown';
+import { techIconSvg } from '../techIcons';
 
 const LIST_ROW_HEIGHT_EM = 2.75;
 
@@ -193,4 +194,129 @@ export function productionQueueIconSpan(iconHtml: string): HTMLElement {
   const s = el('span');
   fillIconElement(s, iconHtml);
   return s;
+}
+
+// --- P5.8 K02 r3, partia 3 (pin:5194, 6288, 6348, 6974-6993, 7246-7294) ---
+// Z6: renderBilans dostaje gotowy HTML wierszy (plonyChipRowHtml, pin:1863, zalezny od CityView); null = brak danych.
+// Z7: applyBuildButtonVisualState (pin:6288, czysta funkcja DOM) skopiowana lokalnie.
+// Z8: BUILDING_REQ_SECTION_LABELS (pin:6974) skopiowane 1:1 (stala tekstow).
+// Z9: buildingRequirementChipsHtml (pin:6970, zalezy od buildingReqChipSpan) przekazywane jako argument `chipsHtml`.
+// Z10: bindTechHintLinkDelegation przyjmuje `openPreview(techName)`; wywolujacy mapuje na
+//      showTechDiscoveryNotice({ techName, eraIndex: 1, kind: 'preview' }) (pin:7268).
+// Literaly tekstowe uzyte przez el(..., html) w tych jednostkach nie zawieraja emoji ani dc-h,
+// wiec ustawienie innerHTML wprost daje ten sam DOM co pinowe el(tag, cls, html) (pin:863).
+
+/** Bilans plonow (pin:5194). */
+export function renderBilans(mount: HTMLElement, chipRowHtml: string | null): void {
+  mount.innerHTML = '';
+  const title = el('div', 'ptitle');
+  title.innerHTML = '<span>Bilans plonów</span>';
+  mount.appendChild(title);
+  if (chipRowHtml == null) {
+    const none = el('div', 'muted');
+    none.innerHTML = 'Brak danych gry';
+    mount.appendChild(none);
+    return;
+  }
+  const row = el('div', 'chip-row');
+  row.innerHTML = chipRowHtml;
+  mount.appendChild(row);
+}
+
+function applyBuildButtonVisualState(btn: HTMLButtonElement, canAct: boolean, title: string): void {
+  btn.disabled = !canAct;
+  btn.title = title;
+  btn.classList.remove('can-build', 'cannot-build');
+  btn.classList.add(canAct ? 'can-build' : 'cannot-build');
+}
+
+/** Wylaczone przyciski Kup / Buduj|Ulepsz (pin:6348). */
+export function appendDisabledBuildActionButtons(
+  btnWrap: HTMLElement,
+  buildLabel: 'Buduj' | 'Ulepsz',
+  lockHint: string,
+  opts?: { showPurchase?: boolean },
+): void {
+  if (opts?.showPurchase !== false) {
+    const bBuy = el('button', 'btn btn-sm btn-g');
+    bBuy.innerHTML = 'Kup';
+    applyBuildButtonVisualState(bBuy, false, lockHint);
+    btnWrap.appendChild(bBuy);
+  }
+  const bBuild = el('button', 'btn btn-sm btn-b');
+  bBuild.innerHTML = buildLabel;
+  applyBuildButtonVisualState(bBuild, false, lockHint);
+  btnWrap.appendChild(bBuild);
+}
+
+const BUILDING_REQ_SECTION_LABELS: Record<BuildingReqChipKind, string> = {
+  tech: 'Wymagane badania',
+  stock: 'Wymagane surowce',
+  other: 'Wymagane warunki',
+};
+
+/** Sekcje wymagan budynku (pin:6980). */
+export function appendBuildingRequirementChipSections(
+  parent: HTMLElement,
+  chips: BuildingReqChip[],
+  chipsHtml: (group: BuildingReqChip[]) => string,
+): boolean {
+  if (chips.length === 0) return false;
+  const groups: BuildingReqChipKind[] = ['tech', 'stock', 'other'];
+  for (const kind of groups) {
+    const group = chips.filter(c => c.kind === kind);
+    if (group.length === 0) continue;
+    const eyebrow = el('div', 'bld-infocard-eyebrow req');
+    eyebrow.innerHTML = BUILDING_REQ_SECTION_LABELS[kind];
+    parent.appendChild(eyebrow);
+    const wrap = el('div', 'bld-infocard-chips');
+    wrap.innerHTML = chipsHtml(group);
+    parent.appendChild(wrap);
+  }
+  return true;
+}
+
+/** Ikona-link technologii w tekscie (pin:7246). */
+export function techIconHintSpan(
+  techName: string | null | undefined,
+  sizePx = 14,
+  opts?: { inheritColor?: boolean },
+): string {
+  if (!techName) return '';
+  const svg = techIconSvg(techName, sizePx);
+  if (!svg) return '';
+  const icCls = 'cp-tech-hint-link' + (opts?.inheritColor ? ' bld-req-tech-ic' : '');
+  const color = opts?.inheritColor ? 'currentColor' : 'var(--gold)';
+  return `<span class="${icCls}" data-tech-hint-name="${techName}" role="button" tabindex="0" `
+    + `title="Podgląd karty technologii" aria-label="Podgląd karty: ${techName}" `
+    + `style="display:inline-flex;width:${sizePx}px;height:${sizePx}px;vertical-align:-3px;margin-right:4px;color:${color};cursor:pointer;">${svg}</span>`;
+}
+
+let techHintLinkDelegationBound = false;
+
+/**
+ * Jednorazowa delegacja klikniecia/klawiatury na `document` dla ikon-linkow z `techIconHintSpan()` (pin:7268).
+ * `openPreview` = Z10. Bezpieczne wolanie wielokrotne (flaga).
+ */
+export function bindTechHintLinkDelegation(openPreview: (techName: string) => void): void {
+  if (techHintLinkDelegationBound) return;
+  techHintLinkDelegationBound = true;
+  document.addEventListener('click', (e: MouseEvent) => {
+    const link = (e.target as Element | null)?.closest('.cp-tech-hint-link');
+    if (!link) return;
+    const name = link.getAttribute('data-tech-hint-name');
+    if (!name) return;
+    e.stopPropagation();
+    openPreview(name);
+  });
+  document.addEventListener('keydown', (e: KeyboardEvent) => {
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    const link = (e.target as Element | null)?.closest('.cp-tech-hint-link');
+    if (!link) return;
+    const name = link.getAttribute('data-tech-hint-name');
+    if (!name) return;
+    e.preventDefault();
+    e.stopPropagation();
+    openPreview(name);
+  });
 }
