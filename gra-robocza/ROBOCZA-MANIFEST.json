@@ -1,33 +1,28 @@
 {
-  "releaseState": "DEPLOYED — ROBOCZA; push do origin/main i pinned GitHub Raw readback PASS (2026-10-29).",
+  "releaseState": "CANDIDATE — cztery poprawki bitewne zintegrowane na main; lokalny build i smoke PASS; publikacja/push/readback w toku.",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "703bdf789fb23f37cacacc9aac405402",
-  "bundleSha256": "e1df7844da72cd5d03332f70ecba0f6e650b6344f563c183b866f54829fdeba7",
-  "bundleBytes": 70040409,
+  "bundleMd5": "b3d82220c7a8820f5a5e89c9aa209431",
+  "bundleSha256": "7632cbf4c91f4cc67d76c240308dd9cf04d5f860160dd16469d1564b9be6eb1d",
+  "bundleBytes": 70045045,
   "sourceSnapshot": {
-    "baseCommit": "origin/main @ 2a2180bb",
-    "source": "origin/main + main integration @ 6f9ef3ce",
-    "build": "Vite 5.4.21 single-file; 919 modules; stamped",
-    "buildCommit": "6f9ef3ce",
-    "publicationCommit": "f66fcc2924617eae1810823d55d358ad0d5445ad"
+    "baseCommit": "origin/main @ 973e24ce",
+    "source": "main @ a9c555e44c968e1d7d037d4c34a02a57691ece66",
+    "build": "Vite 5.4.21 single-file; 919 modules; stamped ROBOCZA",
+    "buildCommit": "a9c555e4",
+    "publicationCommit": "PENDING"
   },
   "scope": [
-    "R-NEWGAME-SETTINGS-LAND-DIPLO-REPOSITION-Q1: udział lądu i rozpatrzenie dyplomatyczne w uzgodnionych polach nowej gry.",
-    "R-BATTLE-MODE-CHOICE-LABELS-Q1 + R-BATTLE-MODE-SETTING-WIRING-Q1: czytelne wybory trybu bitwy i poprawna semantyka auto-only, w tym zgodność starszych zapisów.",
-    "R-AI-FOOD-IMPROVEMENT-PRIORITY-Q1: przygotowanie lasów nadrzecznych, potem farmy, bydło, następnie irygacja/tarasy.",
-    "R-ARMY-MERGE-PANEL-INNER-SCROLL-Q1: modal połączenia armii z wewnętrznym przewijaniem i bezpiecznym marginesem przy 150% zoom.",
-    "R-ARMY-STACK-COMMANDER-IDENTITY-Q1: wyróżniona nazwa i identyfikacja konkretnej jednostki wodza/generała.",
-    "R-IMPROVEMENT-BUILD-HIGHLIGHT-LIFECYCLE-Q1: jaśniejsze podświetlenie dostępnego pola, znikające po budowie i wracające po odznaczeniu."
+    "R-BITWA-DEAD-UNIT-DISAPPEARS-Q1: rozbita jednostka znika z pola bitwy.",
+    "R-BITWA-MANUAL-MELEE-ATTACK-STUCK-Q1: walka wręcz atakuje przy doktrynie Atak.",
+    "R-BITWA-ATAK-MARSZEM-HEX-Q1: atak-marszem do wskazanego pustego heksa.",
+    "R-BITWA-ATAK-LUCZNICY-POZA-ZASIEGIEM-Q1: łucznicy podchodzą do zasięgu bez niepotrzebnego kitingu; korekta regresji Skirmish."
   ],
   "verification": [
     "TypeScript PASS",
     "Vite build PASS: 919 modules",
-    "newgame-settings-layout-reposition-test: PASS (Chromium)",
-    "ai-food-improvement-priority-stages-test: 11/11 PASS",
-    "army-stack-commander-identity-test: 5/5 PASS",
-    "improvement-build-highlight-lifecycle-test: 39/39 PASS",
-    "army-merge-panel-production-mount-test: 9/9 PASS (Robocza, 150%, 88 oddziałów)",
-    "git diff --check PASS"
+    "verify-robocza-bundle.cjs VERIFY OK (manifest and bundles[] match; known iterative stamp warning)",
+    "Local HTTP + Chromium smoke PASS: HTTP 200, title The Game — 4X, 2 canvases, zero page/console errors (favicon handled as 204)",
+    "Focused logic/behavior tests and Final Control: see per-topic AutoBot run receipts"
   ],
   "limits": [
     "To jest testowe wydanie Robocza dla podanego zakresu; oczekuje na test właściciela.",
@@ -39,25 +34,25 @@
     "notes": "Leader rally passed independent Final Control; evaluator PASS-WITH-NOTES. End-turn test simulates helper/queue behavior and source-checks production hook rather than running a full end-turn game-runtime integration."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-10-29T19:36:11",
+  "hubGeneratedAt": "2026-10-29T23:52:25",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "703bdf789fb23f37cacacc9aac405402",
-      "sizeBytes": 70040409
+      "md5": "b3d82220c7a8820f5a5e89c9aa209431",
+      "sizeBytes": 70045045
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "703bdf789fb23f37cacacc9aac405402",
-      "sizeBytes": 70040409
+      "md5": "b3d82220c7a8820f5a5e89c9aa209431",
+      "sizeBytes": 70045045
     }
   ],
-  "md5": "703bdf789fb23f37cacacc9aac405402",
-  "sizeBytes": 70040409,
+  "md5": "b3d82220c7a8820f5a5e89c9aa209431",
+  "sizeBytes": 70045045,
   "publisher": "Codex AutoBot — właściciel wcześniej zlecił scalanie do main, deploy do Robocza i git push",
   "source": "gra/src; local main integration 6f9ef3ce",
   "immediatePreviousRelease": {
@@ -281,6 +276,6 @@
     "bundleBytes": 70040409,
     "checks": "Pinned GitHub Raw bundle, manifest and START fetched successfully; all three files byte-identical to local release artifacts; bundle MD5/SHA-256/size agree with manifest top-level and bundles[] rows."
   },
-  "publishedAt": "2026-10-29T23:05:50.745Z",
-  "buildStamp": "2026-10-29 23:05"
+  "publishedAt": "PENDING",
+  "buildStamp": "2026-10-29 23:53"
 }
