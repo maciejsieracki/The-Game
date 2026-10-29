@@ -21,7 +21,7 @@ fs.writeFileSync(BRAND_STUB, [
   'menuIconSvg', 'brandMenuEmblemSvg', 'newGameIntroEmblemSvg', 'brandMotionCss',
   'brandMenuBackgroundCss', 'svgThumbHtml',
 ].map(f => `export function ${f}() { return ''; }`).join('\n'));
-fs.writeFileSync(ENTRY, "export { showTradeBasketModal } from '../src/ui/diplomacyTradeBasket.ts';\n");
+fs.writeFileSync(ENTRY, "export { showTradeBasketModal, dealDurationHtml, dealDurationControlOptions } from '../src/ui/diplomacyTradeBasket.ts';\n");
 const dom = new JSDOM('<!doctype html><html><body></body></html>', { pretendToBeVisual: true });
 global.window = dom.window; global.document = dom.window.document; global.HTMLElement = dom.window.HTMLElement;
 global.HTMLInputElement = dom.window.HTMLInputElement; global.Element = dom.window.Element; global.Node = dom.window.Node;
@@ -54,7 +54,7 @@ async function main() {
       b.onResolve({ filter: /icons\/brandAssets$/ }, () => ({ path: BRAND_STUB }));
     } }],
   });
-  const { showTradeBasketModal } = require(BUNDLE);
+  const { showTradeBasketModal, dealDurationHtml, dealDurationControlOptions } = require(BUNDLE);
   let submitted;
   showTradeBasketModal('trade', action, ctx, p => { submitted = p; }, () => {});
   chooseAndAdd('give', 'surowiec_ilosc', 'drewno', 10);
@@ -65,6 +65,9 @@ async function main() {
   ok(duration?.max === '30', 'cyclic exchange duration input caps at 30');
   ok(deltas.includes('1') && deltas.includes('10') && !deltas.includes('100'), '+1/+10 remain; misleading +100 is removed');
   ok(q('.cdb-duration-indefinite').some(b => b.textContent.trim() === 'Bezterminowo'), 'duration control exposes Bezterminowo');
+  const cyclicOptions = dealDurationControlOptions(false, 'per_turn', true, true);
+  ok(cyclicOptions.maxTurns === 30 && cyclicOptions.allowIndefinite,
+    'per-turn quantity exchange selects max-30 indefinite controls');
   click(q('.cdb-duration-indefinite')[0]);
   ok(q('.cdb-duration-indefinite')[0].getAttribute('aria-pressed') === 'true', 'indefinite option becomes selected');
   click(q('.cdb-submit')[0]);
@@ -84,6 +87,17 @@ async function main() {
   click(q('.cdb-submit')[0]);
   ok(counterofferPayload?.exchangeDurationTurns === 30,
     'switching to finite duration submits numeric 30 for counteroffer');
+
+  const accessOptions = dealDurationControlOptions(true, 'per_turn', true, true);
+  const accessHost = document.createElement('div');
+  accessHost.innerHTML = dealDurationHtml(15, true, 'Czas umowy (tur, max 20)', 'Dostęp trwa przez wybrany czas.',
+    accessOptions.maxTurns, accessOptions.allowIndefinite);
+  const accessInput = accessHost.querySelector('.cdb-deal-turns');
+  ok(accessOptions.maxTurns === 20 && !accessOptions.allowIndefinite && accessInput?.max === '20',
+    'resource-access mode retains its prior 20-turn cap');
+  ok(!accessHost.querySelector('.cdb-duration-indefinite')
+    && accessHost.querySelector('.cdb-qty-step[data-delta="100"]') != null,
+  'resource-access mode does not show the cyclic-only Bezterminowo control');
   for (const f of [ENTRY, BUNDLE, LEADER_STUB, BRAND_STUB]) { try { fs.unlinkSync(f); } catch {} }
   console.log(`\n${pass}/${pass + fail} PASS`);
   process.exit(fail ? 1 : 0);

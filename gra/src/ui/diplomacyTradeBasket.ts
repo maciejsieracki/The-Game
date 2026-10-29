@@ -1294,8 +1294,9 @@ function validateBasketForm(
     const hasResourceAccess = basketHasResourceAccess(giveItems, receiveItems);
     const hasQtyRes = !hasResourceAccess && basketHasQuantityResource(giveItems, receiveItems);
     const needsTurns = hasResourceAccess || (hasQtyRes && resourceTradeMode === 'per_turn');
-    if (needsTurns && (dealTurns < 1 || dealTurns > 30)) {
-      return { valid: false, reason: 'Wybierz czas umowy od 1 do 30 tur' };
+    const maxTurns = hasResourceAccess ? 20 : 30;
+    if (needsTurns && (dealTurns < 1 || dealTurns > maxTurns)) {
+      return { valid: false, reason: `Wybierz czas umowy od 1 do ${maxTurns} tur` };
     }
     return { valid: true };
   }
@@ -1321,15 +1322,23 @@ function validateBasketForm(
   const hasResourceAccess = basketHasResourceAccess(giveItems, receiveItems);
   const hasQtyRes = mode === 'trade' && !hasResourceAccess && basketHasQuantityResource(giveItems, receiveItems);
   const needsTurns = mode === 'trade' && (hasResourceAccess || (hasQtyRes && resourceTradeMode === 'per_turn'));
-  if (needsTurns && (dealTurns < 1 || dealTurns > 30)) {
-    return { valid: false, reason: 'Wybierz czas umowy od 1 do 30 tur' };
+  const maxTurns = hasResourceAccess ? 20 : 30;
+  if (needsTurns && (dealTurns < 1 || dealTurns > maxTurns)) {
+    return { valid: false, reason: `Wybierz czas umowy od 1 do ${maxTurns} tur` };
   }
   return { valid: true };
 }
 
-function dealDurationHtml(turns: number, visible: boolean, label = 'Czas umowy (tur, max 30)', sub = 'Dostęp do surowców trwa przez wybrany czas. Po wygaśnięciu umowa wymaga odnowienia (re-negocjacji).'): string {
+export function dealDurationHtml(
+  turns: number,
+  visible: boolean,
+  label = 'Czas umowy (tur, max 20)',
+  sub = 'Dostęp do surowców trwa przez wybrany czas. Po wygaśnięciu umowa wymaga odnowienia (re-negocjacji).',
+  maxTurns = 20,
+  allowIndefinite = false,
+): string {
   if (!visible) return '';
-  const turnChips = [5, 10, 15, 20, 30].map(t =>
+  const turnChips = (maxTurns > 20 ? [5, 10, 15, 20, 30] : [5, 10, 15, 20]).map(t =>
     '<button type="button" class="cdb-chip cdb-chip-turn' + (turns === t ? ' selected' : '')
     + '" data-turns="' + t + '">' + t + '</button>',
   ).join('');
@@ -1337,10 +1346,24 @@ function dealDurationHtml(turns: number, visible: boolean, label = 'Czas umowy (
     '<div class="cdb-duration">'
       + '<label for="cdb-deal-turns">' + esc(label) + '</label>'
       + '<div class="cdb-chip-row cdb-turn-presets">' + turnChips + '</div>'
-      + qtyStepperHtml('cdb-deal-turns', 'deal', turns, 1, 30, 1, { label: 'Bezterminowo', action: 'indefinite-exchange' })
+      + (allowIndefinite
+        ? qtyStepperHtml('cdb-deal-turns', 'deal', turns, 1, maxTurns, 1, { label: 'Bezterminowo', action: 'indefinite-exchange' })
+        : qtyStepperHtml('cdb-deal-turns', 'deal', turns, 1, maxTurns))
       + '<p class="cdb-sub">' + esc(sub) + '</p>'
     + '</div>'
   );
+}
+
+export function dealDurationControlOptions(
+  hasResourceAccess: boolean,
+  resourceTradeMode: 'once' | 'per_turn',
+  hasQtyRes: boolean,
+  showResModeSelector: boolean,
+): { maxTurns: number; allowIndefinite: boolean } {
+  const cyclicExchange = !hasResourceAccess
+    && resourceTradeMode === 'per_turn'
+    && (hasQtyRes || showResModeSelector);
+  return { maxTurns: cyclicExchange ? 30 : 20, allowIndefinite: cyclicExchange };
 }
 
 /**
@@ -1374,6 +1397,8 @@ function dealSettingsBlockHtml(
   dealDurationLabel: string,
   dealDurationSub: string,
   hintWhenIdle?: string,
+  maxTurns = 20,
+  allowIndefinite = false,
 ): string {
   let html = '<div class="cdb-deal-settings">';
   html += '<div class="cdb-deal-settings-title">Czas umowy</div>';
@@ -1381,7 +1406,7 @@ function dealSettingsBlockHtml(
     html += '<p class="cdb-sub">' + esc(hintWhenIdle) + '</p>';
   }
   html += resourceTradeModeHtml(resourceTradeMode, showMode);
-  html += dealDurationHtml(dealTurns, showDuration, dealDurationLabel, dealDurationSub);
+  html += dealDurationHtml(dealTurns, showDuration, dealDurationLabel, dealDurationSub, maxTurns, allowIndefinite);
   html += '</div>';
   return html;
 }
@@ -2247,8 +2272,12 @@ function renderBasket(
   const showDealDuration = showReceiveCol
     && (hasResourceAccess || (hasQtyRes && resourceTradeMode === 'per_turn')
       || (showResModeSelector && resourceTradeMode === 'per_turn'));
+  const durationOptions = dealDurationControlOptions(
+    hasResourceAccess, resourceTradeMode, hasQtyRes, showResModeSelector,
+  );
+  const durationMaxTurns = durationOptions.maxTurns;
   const dealDurationLabel = hasResourceAccess
-    ? 'Czas umowy (tur, max 30)'
+    ? 'Czas umowy (tur, max 20)'
     : 'Co ile tur trwa wymiana (tur, max 30)';
   const dealDurationSub = hasResourceAccess
     ? 'Dostęp do surowców trwa przez wybrany czas. Po wygaśnięciu umowa wymaga odnowienia (re-negocjacji).'
@@ -2267,6 +2296,8 @@ function renderBasket(
       dealDurationLabel,
       dealDurationSub,
       dealSettingsHint,
+      durationMaxTurns,
+      durationOptions.allowIndefinite,
     );
 
   const treatyHtmlRest = mode === 'treaty' ? treatySectionHtml(action.id, ctx, treatyState) : '';
