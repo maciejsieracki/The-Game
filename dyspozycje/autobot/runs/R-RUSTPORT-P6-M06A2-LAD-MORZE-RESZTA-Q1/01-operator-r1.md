@@ -1,0 +1,13 @@
+STATUS: PASS-WITH-NOTES
+DOMAIN: GAME
+TEMAT: R-RUSTPORT-P6-M06A2-LAD-MORZE-RESZTA-Q1
+GOAL: Port RUNDA-2 M06A (web gen-helpers.ts:3186-4374, pin edb8fb56) do landsea.rs. Ten etap = partia 1 (Operator-impl): 4 symbole z wektorami z uruchomionego weba, testy, gate. Pozostale wiersze RUNDA-2 otwarte (patrz dokument).
+ZMIANY/COMMIT: allowlista. Nowe: dyspozycje/rust-port/p6/P6-M06A2-LAD-MORZE-RESZTA.md; dyspozycje/autobot/runs/R-RUSTPORT-P6-M06A2-LAD-MORZE-RESZTA-Q1/** (generator gen-m06a2-vectors.mjs, loadery m06a-loader-*.mjs, logi gate). Kod: rust-port/engine/src/domain/mapgen/landsea.rs (+4 funkcje, +1 import), rust-port/engine/tests/p6_m06a2_landsea.rs, rust-port/engine/tests/p6_m06a2_vectors/web-vectors.json. Brak zmian w derived.rs, relief.rs, bridge.rs, Cargo.toml, gra/, renderer/, src-tauri/, domain/mod.rs, p6_m00_skeleton.rs. Baza: origin/rust-port/parity-v2 (2270712b). SHA: patrz sekcja NASTEPNY KROK (commit po zapisie raportu).
+PORTOWANE w partii 1: removeInlandWaterPools :4137 (89 wektorow), fillEnclosedWaterByLandNeighbors :4189 (117), removeSmallInlandWaterPools :4276 (90), removeInlandSeaPools :4320 (71, alias). Zaleznosci spelnione przez M06A (find_inland_water_hexes, count_land_neighbors, set_hex_to_laka).
+TESTY: cargo fmt --check EXIT=0 (gate-fmt-r1.log); clippy --all-targets -D warnings EXIT=0 (gate-clippy-r1.log); cargo test EXIT=0, 1232 passed / 0 failed (baza 1227 + 5 nowych; gate-test-r1.log). git diff --check EXIT=0. Wektory: gen_helpers_sha256 identyczny jak w M06A (ab934703...). Trafienia progow: fill rel -1/0/+1 = 6/7/6 (wiele k), pool rel -1/0/+1 = 8/8/8.
+BLOKADY: RUNDA-2 nadal 21 wierszy (lista w dokumencie). purgeInlandWaterForMultiLandTyp zalezy od trimEnclosedOceanOnly (web :4701, poza zakresem) - zaloznie: do decyzji w partii 2. Mutacje i dowody rownowaznosci NIE ZMIERZONO (rola Operator-impl). Dopisek do dokumentu M06A pominiety (poza allowlista) - tylko odsylacz do nowego dokumentu, do zrobienia przez orkiestratora.
+DRYF PO PINIE: git diff --stat edb8fb56 origin/main -- gra/src/map/gen-helpers.ts = 24+/16-, 8 hunkow (linie 5992-10804). ZADEN nie wpada w 3186-4374. Pin nie przepinany.
+ZALOZENIA: Z-1 klucze niekanoniczne pomijane; Z-2 domyslny prog 5 u wolajacego (brak literalu); Z-3 fill czysci flage rzeki (web :4199), odkryte wektorami; Z-4 remove* nie dotykaja rzeki; Z-5 kolejnosc skladowych nie wplywa na wynik.
+RUNDY: 1/5
+NASTEPNY KROK: Operator-pomiary (mutacje strukturalne gałęzi fill/small, dowody rownowaznosci, pomiar trafien) -> Evaluator -> Final Control; partia 2: purgeDesertEnclaveWater, purgeInlandWaterForMultiLandTyp (po rozstrzygnieciu trimEnclosedOceanOnly), applyJaggedCoastNoise.
+DEPLOY/PUSH: NIE WYKONANO
