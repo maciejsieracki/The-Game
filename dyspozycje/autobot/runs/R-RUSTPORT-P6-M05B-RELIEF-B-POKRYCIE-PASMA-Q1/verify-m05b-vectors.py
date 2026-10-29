@@ -54,7 +54,7 @@ ts_bytes = open(ts_path, "rb").read()
 ts_sha = hashlib.sha256(ts_bytes).hexdigest()
 check(ts_sha == V["meta"]["gen_helpers_sha256"], f"SHA TS {ts_sha} != meta")
 vec_sha = hashlib.sha256(raw).hexdigest()
-check(vec_sha == "4072347ab48f17c46c5f79d00baf580ce6c247f01fd637981e4920481bd106d9",
+check(vec_sha == "fc6afe31ed7f1051f5df2e3434fa78443d5a52d6559974fc9ac5efefee327a82",
       "SHA pliku wektorow != skrot z dokumentu")
 print(f"A: ts_sha={ts_sha[:16]} ts_lines={len(TS)} vec_sha={vec_sha[:16]}")
 

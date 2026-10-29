@@ -1,0 +1,48 @@
+{
+ "ensure": {
+  "skupiskogory=9": 3,
+  "skupiskogory=11": 7,
+  "skupiskowzgorza=11": 1,
+  "masa=7": 3,
+  "masa=8": 3,
+  "masa=9": 3,
+  "masa=149": 3,
+  "skupiskogory=10": 2,
+  "masa=150": 9,
+  "masa=151": 3
+ },
+ "grow": {
+  "skupiskogory=9": 3,
+  "skupiskogory=11": 5,
+  "skupiskowzgorza=11": 1
+ },
+ "regrow": {
+  "skupiskogory=10": 5,
+  "skupiskogory=9": 6,
+  "skupiskogory=11": 4,
+  "skupiskowzgorza=11": 6,
+  "skupiskowzgorza=9": 3,
+  "skupiskowzgorza=10": 1
+ },
+ "safety": {
+  "skupiskogory=9": 8,
+  "skupiskogory=11": 10,
+  "skupiskowzgorza=9": 9,
+  "skupiskogory=10": 9,
+  "skupiskowzgorza=11": 5,
+  "skupiskowzgorza=10": 3,
+  "masa=9": 4
+ },
+ "helpers": {
+  "skupiskogory=10": 8,
+  "skupiskogory=11": 14,
+  "skupiskowzgorza=10": 8,
+  "skupiskowzgorza=9": 12,
+  "skupiskogory=9": 7,
+  "skupiskowzgorza=11": 8,
+  "masa=149": 1,
+  "masa=150": 1,
+  "masa=151": 2,
+  "masa=9": 4
+ }
+}
