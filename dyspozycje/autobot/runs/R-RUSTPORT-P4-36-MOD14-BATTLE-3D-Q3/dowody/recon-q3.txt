@@ -1,0 +1,2 @@
+LICZNIK: wierszy = 172; NIE PORTOWANY = 3; NIE-DOTYCZY sceny = 3; PODZIAŁ = 56; PRZENIESIONY → cz. 4 = 5; WSPÓLNA = 51; ZPORTOWANY = 42; ZPORTOWANY częściowo = 6; ZPORTOWANY wcześniej = 6; bez statusu / niezgodnych = 0
+EXIT=0

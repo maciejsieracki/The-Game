@@ -149,3 +149,85 @@ mirrored in `battle3d_field.rs` (`View::record`, `View::mat_sig`).
 | `field.json` | the vectors above (3.17 MB, 3 165 207 B) |
 | `gen_field.ts`, `build_field.mjs`, `dom_stub.ts`, `three_shim.ts` | generator, bundler and the two documented stubs |
 | `mutate_field.py` | mutation run (mutants of `src/battle/field.rs`; runs `--lib battle::field` and `--test battle3d_field`) |
+
+---
+
+# Part 3: units and overlays (R-RUSTPORT-P4-36-MOD14-BATTLE-3D-Q3)
+
+Reference vectors for `tests/battle3d_units.rs` (`battle::units`), produced by **running
+`battle/battleScene.ts` of `edb8fb56`** with the part-2 toolchain (three@0.169.0, esbuild@0.24.0,
+node v22.22.0, the same `dom_stub.ts` / `three_shim.ts`): `new BattleScene(opts)` **with armies**,
+operations on the constructed scene, and the overlay methods called directly on
+`Object.create(BattleScene.prototype)` with injected lookups.
+
+## What differs from part 2 (bundle-time / observation only; nothing is written to `gra/**`)
+
+| file / step | why |
+|---|---|
+| `build_units.mjs` | `build_field.mjs` with a longer appended `export { … }` line (adds `makeUnitBars`, `makeFallbackAvatar`, `dirYaw`, `sideColor`, the bar / order constants, `DIR_DELTA`, `ammoCount`, `moraleBaseFor`) and the default entry `gen_units` |
+| prototype wrappers in `gen_units.ts` | `_placeUnits` / `_placeUnitsOneSide` are wrapped to **snapshot** the runtime units right after placement (the spawn DTO), `_moveDeployUnit` to **log** its calls (deploy-layout moves); the wrapped methods run unchanged |
+| `groupFrame` exclusion | group-frame markers (`_updateGroupFrameMarker`: Line + number Sprite under a grouped unit; created by the deploy UI) are part 4 (P4-36 §4) — `walk()` skips those sub-trees in every dump and counts them (`scene.markers`) |
+| NaN in hashes | NaN is hashed as one canonical pattern (`0x7ff8…` / `0x7fc0…`) on both sides: V8 returns `0xfff8…` for `0/0` and for NaN through `Math.min/max`, which ECMA-262 leaves implementation-defined (P4-36 §3a); NaN-ness stays compared |
+
+`gen_units.mjs` (the bundle, 2.80 MB) is **not committed** (budget); it is byte-reproducible:
+SHA-256 `f59b98427e40d8b01838a1ea981386d42a7437c21a50d791b9224835b70d4bc3`.
+
+## Regeneration (outside the repository only)
+
+```bash
+S=<scratch dir>        # as for part 2: $S/{ref,websrc,refscript,out}, npm install three@0.169.0 esbuild@0.24.0
+git archive edb8fb56 gra/src gra/data | tar -x -C $S/websrc
+cp rust-port/renderer/tests/fixtures/battle3d/{gen_units.ts,build_units.mjs,dom_stub.ts,three_shim.ts} $S/refscript/
+ln -s $S/ref/node_modules $S/refscript/node_modules
+node $S/refscript/build_units.mjs           # -> $S/refscript/gen_units.mjs
+node $S/refscript/gen_units.mjs $S/out      # prints: battle3d units ctor=11 units=1230 bars=10 arrows=12 preview=11 ghosts=16
+sha256sum $S/out/units.json $S/refscript/gen_units.mjs   # units.json = MANIFEST.sha256, gen_units.mjs = f59b9842… (above)
+```
+
+Measured: two runs in two different scratch directories (separate `npm install`, separate
+`git archive`) give identical `units.json` (`6fb3b65a…12b171`, = MANIFEST) and `gen_units.mjs` (`f59b9842…4bc3`).
+No `Math.random` is reached: placement is deterministic, unit models are procedural.
+
+## Cases
+
+| group | n | what |
+|---|---|---|
+| `ctor` | 11 | `new BattleScene(opts)` with armies: presets of `testBattle.ts` (`maly`, `rzym_grecja`, `konnica` on `Las`, `maciej_playtest` on `Góry`), sieges (`oblezenie` + `rzym`; `oblezenie_duze` + `defCiv: 'egipt'`; synthetic + `zulu`), two synthetic rosters (every `units.json` row once per side, model category cycled through 16 keys, owner colour through 8, HP fraction 0…1, veteran 0/0.1/0.2), deploy `atk` / `def` / siege + `def`. 1 230 units, 75 unit names, 16 categories, 160 deploy moves. Input: `tilesRle` (terrain DTO = `generateBattleTerrain` + `_carveBattleBox` + `_fencePlayableZone`; asserted equal, after the web `_carveWallTiles` for sieges, to the constructor's grid), `spawn` (DTO rows), `moves`. Posts: `resetAtk` / `resetDef` (`_resetDeploySide` → `_placeUnitsOneSide`), `removeOne` (`_removeUnitFromScene`, incl. a second call on the same unit), `removeAll` (`_removeAllUnitsFromField`), `climb` (`_activateUnit` reaching the siege-tower climb with the logic hooks before it neutralised). |
+| `bars`, `fallback`, `barUpdates` | 10 / 3 / 18 | `makeUnitBars` (5 colours × ammo shown/hidden), `makeFallbackAvatar`, `_updateHpBar` / `_updateMoraleBar` / `_updateAmmoBar` incl. band edges 0.6 / 0.3, 0, negative, `Infinity`, NaN, `maxHp` 0 |
+| `dirYaw`, `sideColor` | 6 / 4 | facing 0…3 and two out-of-range indices (fallback `Dir.E`) |
+| `rings` | 3 stages | `_addSelectionRing` (incl. a duplicate), `_refreshUnitRingColor`, `_removeSelectionRing` (twice), `_refreshDeploySelectionVisuals` (scale reset, ring re-centring, dead unit skipped) |
+| `arrows` | 12 | `_makeOrderArrow`: move / attack × preview, below / just above the 0.08 minimum, zero length, long, backwards, sloped `from.y ≠ to.y` |
+| `queued` | 4 | `_refreshQueuedOrderVisuals` for player `atk` / `def`, not started, finished; a stale arrow removed first; dead / removed / routed units and targets |
+| `preview` | 11 | `_updateOrderPreview`: enemy under the cursor, dead enemy + enemy on the tile, own unit + free tile, group members with formation offsets, no tile, not manual, empty selection, no ghost layer, own occupant, deploy phase hover / drag |
+| `ghosts` | 16 | `_refreshBattleMoveGhosts`, `_refreshDeployGhosts` (incl. a repeated call, partial layout, no drag, dead-only selection), `_refreshDeployGhostsAt`, `_updateDeployPlacementPreview` (in / out of the zone, no tile, drag, not deploy phase) |
+| `consts` | — | `HPBAR_*`, `BAR_*`, `MORALEBAR_Y`, `AMMOBAR_*`, `ORDER_*`, `DIR_DELTA` |
+
+The injected lookups (`_pickUnitAtScreen`, `_pickGroundTile`, `_moveDestinationsForSelection`,
+`_liveGroupMemberIds`, `_computeDeploy*Layout`, `_isDeployCellOk`, `_inDeployPlayerZone`,
+`_passableForUnit`) are small closures in `gen_units.ts` §7–§8, mirrored one to one by the
+`BattleQueries` implementation `Q` of `battle3d_units.rs`.
+
+## Record format (`units.json`)
+
+- unit row (`units.rows[]`): `[id, ammoBarShown, root index of the model group, root index of the bar
+  group, model [nodes, meshes, triangles, sig, all], bars [nodes, sig]]`; `model.sig` = the unit-core
+  signature (`tests/fixtures/unit_core/gen.ts::signature`: geometry hash, `getHex`, metalness,
+  roughness, transparent, opacity, flatShading, `matrixWorld` of every mesh), `model.all` = FNV of
+  every node's kind / visibility / `matrixWorld`; `bars.sig` = the node-record stream below;
+- spawn row (`spawn[]`): `[id, side, q, r, facing, onWallWalkway, kategoria, Jednostka-or-nazwa,
+  ownerColor, [hp, maxHp, morale, moraleMax, ammoLeft, ammoMax], …]` (non-finite numbers as
+  binary64 hex);
+- `scene`: root children, node count, FNV over (kind, sub-tree size, visible) of every root child,
+  `markers`; `wall`: root index, model record, `p` / `r` / `q`, `rowWallMeshes` / `rowBreachPanels`
+  sizes;
+- `dumpTree` (bars, arrows, rings, overlay scenes): `{ n, sig, nodes? }`, node record = the part-2
+  `nodeRecord` stream (kind, name, parent, position, Euler + order, quaternion, scale,
+  `matrixWorld`, shadows, visible, `renderOrder`, material identity, geometry type / hash /
+  parameters, `lineDistance`) **plus the material signature** (`matSig`) of meshes and lines.
+  Mirrored in `battle3d_units.rs` (`dump_tree`, `mat_sig`, `model_record`).
+
+| File (part 3) | Content |
+|---|---|
+| `units.json` | the vectors above (645 438 B) |
+| `gen_units.ts`, `build_units.mjs` | generator and bundler (uses `dom_stub.ts`, `three_shim.ts` of part 2) |
+| `mutate_units.py` | mutation run (42 mutants of `src/battle/units.rs`; runs `--lib battle::units` and `--test battle3d_units`) |
