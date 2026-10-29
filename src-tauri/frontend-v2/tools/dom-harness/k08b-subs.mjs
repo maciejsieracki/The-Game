@@ -23,8 +23,28 @@ export const BATCH_RAIL = {
   ],
 };
 
-/** Wszystkie partie (kolejność stała; partia `rail` jako pierwsza). */
-export const BATCHES = [BATCH_RAIL];
+/**
+ * Partia `title` (runda 2, P5-8 K08B-Z6): helper `resolveDetailSideHint` (pin :11512-11516, bez DOM, wymagany przez
+ * `appendSectionTitleWithDetails`) + jednostka DOM `appendSectionTitleWithDetails` (pin :11518-11537, blok 7 w
+ * `P5-8-K08B.md` §3). Wywołanie `attachInteractiveDetail` z `ui/hoverDetailDock` (warstwa UI, jak w `k01b-dom.ts`).
+ */
+export const BATCH_TITLE = {
+  file: 'k08b-title.ts',
+  units: [
+    { name: 'resolveDetailSideHint', a: 11512, b: 11516 },
+    { name: 'appendSectionTitleWithDetails', a: 11518, b: 11537 },
+  ],
+};
+
+/** Wszystkie partie (kolejność stała). */
+export const BATCHES = [BATCH_RAIL, BATCH_TITLE];
+
+/** Partia po nazwie pliku-partii (`rail`, `title`). */
+export const batchByName = (name) => {
+  const b = BATCHES.find((x) => x.file === `k08b-${name}.ts`);
+  if (!b) throw new Error(`nieznana partia K08B: ${name}`);
+  return b;
+};
 
 /**
  * K08B-Z2/Z3 (runda 1): podstawienia podciągów w jednostkach. Stan pinu (`activeCityPanelTab`, `scalePx`) i efekty

@@ -13,12 +13,12 @@
  *   EXPORT  deklaracje najwyższego poziomu w pliku = jednostki partii (żadnej osieroconej kopii).
  *
  * Użycie (z katalogu `src-tauri/frontend-v2/`):
- *   node tools/dom-harness/verify-k08b-copies.mjs --pin-dir <PIN_DIR> [--port <plik>] [--json <plik>]
+ *   node tools/dom-harness/verify-k08b-copies.mjs --pin-dir <PIN_DIR> [--batch rail|title] [--port <plik>] [--json <plik>]
  */
 import { readFileSync, writeFileSync } from 'node:fs';
 import { join, resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { BATCH_RAIL, LINE_SUBS, applySubs, codeEndLine } from './k08b-subs.mjs';
+import { LINE_SUBS, applySubs, batchByName, codeEndLine } from './k08b-subs.mjs';
 
 const args = process.argv.slice(2);
 const argOf = (k) => {
@@ -28,10 +28,11 @@ const argOf = (k) => {
 const HERE = dirname(fileURLToPath(import.meta.url));
 const PIN_DIR = argOf('--pin-dir');
 if (!PIN_DIR) {
-  console.error('Użycie: node tools/dom-harness/verify-k08b-copies.mjs --pin-dir <PIN_DIR> [--port <plik>] [--json <plik>]');
+  console.error('Użycie: node tools/dom-harness/verify-k08b-copies.mjs --pin-dir <PIN_DIR> [--batch rail|title] [--port <plik>] [--json <plik>]');
   process.exit(2);
 }
-const PORT = resolve(argOf('--port') ?? join(HERE, '../../src/ui/cityPanel', BATCH_RAIL.file));
+const BATCH = batchByName(argOf('--batch') ?? 'rail');
+const PORT = resolve(argOf('--port') ?? join(HERE, '../../src/ui/cityPanel', BATCH.file));
 const JSON_OUT = argOf('--json');
 const pin = readFileSync(join(resolve(PIN_DIR), 'gra/src/ui/cityPanel.ts'), 'utf8').split(/\r?\n/);
 const port = readFileSync(PORT, 'utf8').split(/\r?\n/);
@@ -66,7 +67,7 @@ for (let i = 0; i < port.length; i++) {
 report.blocks = blocks.length;
 
 // COVER / ORPHAN: markery = jednostki partii (A-B = zakres po codeEndLine).
-const expected = BATCH_RAIL.units.map((u) => ({ name: u.name, a: u.a, b: codeEndLine(pin, u.a, u.b) }));
+const expected = BATCH.units.map((u) => ({ name: u.name, a: u.a, b: codeEndLine(pin, u.a, u.b) }));
 for (const e of expected) {
   const blk = blocks.find((x) => x.a === e.a);
   if (!blk) {
@@ -76,7 +77,7 @@ for (const e of expected) {
   if (blk.b !== e.b) fails.push(`COVER: ${e.name} zakres portu ${blk.a}-${blk.b} != pin ${e.a}-${e.b}`);
   else report.COVER++;
   // TEXT: pin A..B po podstawieniach, normalizacja `export ` na pierwszej linii deklaracji.
-  const want = applySubs({ a: e.a, b: BATCH_RAIL.units.find((u) => u.name === e.name).b }, pin.slice(e.a - 1, e.b));
+  const want = applySubs({ a: e.a, b: BATCH.units.find((u) => u.name === e.name).b }, pin.slice(e.a - 1, e.b));
   if (/^(function|const|type) /.test(want[0])) want[0] = `export ${want[0]}`;
   const got = blk.body;
   const diff = got.length !== want.length || got.some((l, k) => l !== want[k]);
@@ -93,7 +94,7 @@ report.ORPHAN = blocks.filter((blk) => !expected.some((e) => e.a === blk.a)).len
 // EXPORT: deklaracje najwyższego poziomu (poza importami i nagłówkiem) = jednostki partii.
 const declRe = /^(?:export\s+)?(?:async\s+)?(?:function|const|let|type|interface|class)\s+([A-Za-z_$][\w$]*)/;
 const declared = port.map((l) => declRe.exec(l)?.[1]).filter(Boolean);
-const want = BATCH_RAIL.units.map((u) => u.name);
+const want = BATCH.units.map((u) => u.name);
 const extra = declared.filter((n) => !want.includes(n));
 const missing = want.filter((n) => !declared.includes(n));
 if (extra.length) fails.push(`EXPORT: deklaracje spoza partii: ${extra.join(', ')}`);

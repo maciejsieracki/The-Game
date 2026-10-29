@@ -6,13 +6,13 @@
  * Bramka `verify-k08b-copies.mjs` sprawdza wynik względem pinu (ten sam `k08b-subs.mjs`).
  *
  * Użycie (z katalogu `src-tauri/frontend-v2/`):
- *   node tools/dom-harness/gen-k08b-port.mjs --pin-dir <PIN_DIR> [--out <plik.ts>]
- * Domyślny `--out`: `src/ui/cityPanel/k08b-rail.ts` (partia `rail`).
+ *   node tools/dom-harness/gen-k08b-port.mjs --pin-dir <PIN_DIR> [--batch rail|title] [--out <plik.ts>]
+ * Domyślny `--out`: `src/ui/cityPanel/k08b-rail.ts` (partia `rail`); `--batch title` -> `k08b-title.ts`.
  */
 import { readFileSync, writeFileSync } from 'node:fs';
 import { join, resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { BATCH_RAIL, LINE_SUBS, applySubs, codeEndLine } from './k08b-subs.mjs';
+import { BATCH_RAIL, LINE_SUBS, applySubs, batchByName, codeEndLine } from './k08b-subs.mjs';
 
 const args = process.argv.slice(2);
 const argOf = (k) => {
@@ -25,7 +25,7 @@ if (!PIN_DIR) {
   console.error('Użycie: node tools/dom-harness/gen-k08b-port.mjs --pin-dir <PIN_DIR> [--out <plik>]');
   process.exit(2);
 }
-const BATCH = BATCH_RAIL;
+const BATCH = batchByName(argOf('--batch') ?? 'rail');
 const OUT = resolve(argOf('--out') ?? join(HERE, '../../src/ui/cityPanel', BATCH.file));
 const pin = readFileSync(join(resolve(PIN_DIR), 'gra/src/ui/cityPanel.ts'), 'utf8').split(/\r?\n/);
 const units = BATCH.units.slice().sort((x, y) => x.a - y.a);
@@ -65,7 +65,20 @@ import {
   requireK08aDeps, setK08aActiveCityPanelTab,
 } from './k08a-fundament';`;
 
-const parts = [HEADER, '', IMPORTS, '', '// ─── Jednostki K08B, partia rail (kopie pinu wygenerowane; markery = bramka verify-k08b-copies.mjs) ─────────────', ''];
+const HEADER_TITLE = `/**
+ * K08B-2 (P5-8, R-RUSTPORT-P5-8-CITYPANEL-K08B-Q1, runda 2, partia \`title\`): nagłówek sekcji z przyciskiem
+ * „i szczegóły" (pin \`edb8fb56\`, \`gra/src/ui/cityPanel.ts\`): helper \`resolveDetailSideHint\` + \`appendSectionTitleWithDetails\`.
+ * Jednostki DOM: 1 (\`appendSectionTitleWithDetails\`, blok 7 w \`dyspozycje/rust-port/p5/P5-8-K08B.md\` §3).
+ *
+ * PLIK GENEROWANY przez \`tools/dom-harness/gen-k08b-port.mjs --batch title\` (bloki = pin + \`k08b-subs.mjs\`).
+ * Edycja ręczna bloku \`// pin edb8fb56 …\` … \`// pin-end\` = FAIL bramki \`verify-k08b-copies.mjs --batch title\`.
+ * Zależności: \`attachInteractiveDetail\` z \`ui/hoverDetailDock\` (warstwa UI); \`el\` z \`k01b-dom\`.
+ */`;
+const IMPORTS_TITLE = `import { attachInteractiveDetail } from '../hoverDetailDock';
+import { el } from './k01b-dom';`;
+const HEAD = BATCH.file === 'k08b-title.ts' ? HEADER_TITLE : HEADER;
+const IMP = BATCH.file === 'k08b-title.ts' ? IMPORTS_TITLE : IMPORTS;
+const parts = [HEAD, '', IMP, '', `// ─── Jednostki K08B, partia ${BATCH.file} (kopie pinu wygenerowane; markery = bramka verify-k08b-copies.mjs) ─────────────`, ''];
 for (const u of units) {
   parts.push(blockText(u), '');
 }
