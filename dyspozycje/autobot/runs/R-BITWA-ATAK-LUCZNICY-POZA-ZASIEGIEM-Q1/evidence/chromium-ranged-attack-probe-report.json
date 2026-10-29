@@ -1,0 +1,584 @@
+{
+  "title": "Production BattleScene Chromium mixed-army probe",
+  "timestamp": "2026-10-29T23:22:13.076Z",
+  "environment": {
+    "browser": "Chromium headless",
+    "viewport": "1280x800",
+    "testRosterPerSide": 42,
+    "runnerDoesNotInvokeFullAutoTurn": true
+  },
+  "cases": [
+    {
+      "doctrine": "steady",
+      "archerLines": 2,
+      "terrain": "Las",
+      "roster": {
+        "atk": 42,
+        "def": 42,
+        "roleCounts": {
+          "atk": [
+            [
+              "Wojownik",
+              "miecznik",
+              12
+            ],
+            [
+              "Oszczepnik",
+              "oszczepnik",
+              8
+            ],
+            [
+              "Łucznik",
+              "lucznik",
+              8
+            ],
+            [
+              "Procarz",
+              "procarz",
+              4
+            ],
+            [
+              "Konnica",
+              "konnica",
+              6
+            ],
+            [
+              "Rydwan konny",
+              "rydwan",
+              4
+            ]
+          ],
+          "def": [
+            [
+              "Falanga",
+              "falanga",
+              12
+            ],
+            [
+              "Oszczepnik",
+              "oszczepnik",
+              8
+            ],
+            [
+              "Łucznik",
+              "lucznik",
+              8
+            ],
+            [
+              "Procarz",
+              "procarz",
+              4
+            ],
+            [
+              "Konnica",
+              "konnica",
+              6
+            ],
+            [
+              "Rydwan konny",
+              "rydwan",
+              4
+            ]
+          ]
+        },
+        "occupancyValid": true
+      },
+      "deployment": {
+        "battlefield": {
+          "playableRows": [
+            23,
+            132
+          ],
+          "midRow": 77
+        },
+        "mountedWingSummary": {
+          "atk-upper": {
+            "units": 5,
+            "meanDistanceFromMidRow": 7.8,
+            "maxDistanceFromMidRow": 9,
+            "meanNearestCoreDistance": 2.2,
+            "maxNearestCoreDistance": 3
+          },
+          "atk-lower": {
+            "units": 5,
+            "meanDistanceFromMidRow": 6.8,
+            "maxDistanceFromMidRow": 8,
+            "meanNearestCoreDistance": 2.2,
+            "maxNearestCoreDistance": 3
+          },
+          "def-upper": {
+            "units": 5,
+            "meanDistanceFromMidRow": 7.8,
+            "maxDistanceFromMidRow": 9,
+            "meanNearestCoreDistance": 2.2,
+            "maxNearestCoreDistance": 3
+          },
+          "def-lower": {
+            "units": 5,
+            "meanDistanceFromMidRow": 6.8,
+            "maxDistanceFromMidRow": 8,
+            "meanNearestCoreDistance": 2.2,
+            "maxNearestCoreDistance": 3
+          }
+        },
+        "mountedDistances": [
+          {
+            "side": "atk",
+            "wing": "upper",
+            "name": "Konnica",
+            "row": 70,
+            "distanceFromMidRow": 7,
+            "nearestCoreDistance": 1
+          },
+          {
+            "side": "atk",
+            "wing": "lower",
+            "name": "Konnica",
+            "row": 83,
+            "distanceFromMidRow": 6,
+            "nearestCoreDistance": 1
+          },
+          {
+            "side": "atk",
+            "wing": "upper",
+            "name": "Konnica",
+            "row": 69,
+            "distanceFromMidRow": 8,
+            "nearestCoreDistance": 2
+          },
+          {
+            "side": "atk",
+            "wing": "lower",
+            "name": "Konnica",
+            "row": 84,
+            "distanceFromMidRow": 7,
+            "nearestCoreDistance": 2
+          },
+          {
+            "side": "atk",
+            "wing": "upper",
+            "name": "Konnica",
+            "row": 68,
+            "distanceFromMidRow": 9,
+            "nearestCoreDistance": 3
+          },
+          {
+            "side": "atk",
+            "wing": "lower",
+            "name": "Konnica",
+            "row": 85,
+            "distanceFromMidRow": 8,
+            "nearestCoreDistance": 3
+          },
+          {
+            "side": "atk",
+            "wing": "upper",
+            "name": "Rydwan konny",
+            "row": 70,
+            "distanceFromMidRow": 7,
+            "nearestCoreDistance": 2
+          },
+          {
+            "side": "atk",
+            "wing": "lower",
+            "name": "Rydwan konny",
+            "row": 83,
+            "distanceFromMidRow": 6,
+            "nearestCoreDistance": 2
+          },
+          {
+            "side": "atk",
+            "wing": "upper",
+            "name": "Rydwan konny",
+            "row": 69,
+            "distanceFromMidRow": 8,
+            "nearestCoreDistance": 3
+          },
+          {
+            "side": "atk",
+            "wing": "lower",
+            "name": "Rydwan konny",
+            "row": 84,
+            "distanceFromMidRow": 7,
+            "nearestCoreDistance": 3
+          },
+          {
+            "side": "def",
+            "wing": "upper",
+            "name": "Konnica",
+            "row": 70,
+            "distanceFromMidRow": 7,
+            "nearestCoreDistance": 1
+          },
+          {
+            "side": "def",
+            "wing": "lower",
+            "name": "Konnica",
+            "row": 83,
+            "distanceFromMidRow": 6,
+            "nearestCoreDistance": 1
+          },
+          {
+            "side": "def",
+            "wing": "upper",
+            "name": "Konnica",
+            "row": 69,
+            "distanceFromMidRow": 8,
+            "nearestCoreDistance": 2
+          },
+          {
+            "side": "def",
+            "wing": "lower",
+            "name": "Konnica",
+            "row": 84,
+            "distanceFromMidRow": 7,
+            "nearestCoreDistance": 2
+          },
+          {
+            "side": "def",
+            "wing": "upper",
+            "name": "Konnica",
+            "row": 68,
+            "distanceFromMidRow": 9,
+            "nearestCoreDistance": 3
+          },
+          {
+            "side": "def",
+            "wing": "lower",
+            "name": "Konnica",
+            "row": 85,
+            "distanceFromMidRow": 8,
+            "nearestCoreDistance": 3
+          },
+          {
+            "side": "def",
+            "wing": "upper",
+            "name": "Rydwan konny",
+            "row": 70,
+            "distanceFromMidRow": 7,
+            "nearestCoreDistance": 2
+          },
+          {
+            "side": "def",
+            "wing": "lower",
+            "name": "Rydwan konny",
+            "row": 83,
+            "distanceFromMidRow": 6,
+            "nearestCoreDistance": 2
+          },
+          {
+            "side": "def",
+            "wing": "upper",
+            "name": "Rydwan konny",
+            "row": 69,
+            "distanceFromMidRow": 8,
+            "nearestCoreDistance": 3
+          },
+          {
+            "side": "def",
+            "wing": "lower",
+            "name": "Rydwan konny",
+            "row": 84,
+            "distanceFromMidRow": 7,
+            "nearestCoreDistance": 3
+          }
+        ],
+        "archerPositions": [
+          {
+            "side": "atk",
+            "id": "atk-mixed-20",
+            "q": 21,
+            "r": 75
+          },
+          {
+            "side": "atk",
+            "id": "atk-mixed-21",
+            "q": 21,
+            "r": 76
+          },
+          {
+            "side": "atk",
+            "id": "atk-mixed-22",
+            "q": 21,
+            "r": 77
+          },
+          {
+            "side": "atk",
+            "id": "atk-mixed-23",
+            "q": 21,
+            "r": 78
+          },
+          {
+            "side": "atk",
+            "id": "atk-mixed-24",
+            "q": 20,
+            "r": 75
+          },
+          {
+            "side": "atk",
+            "id": "atk-mixed-25",
+            "q": 20,
+            "r": 76
+          },
+          {
+            "side": "atk",
+            "id": "atk-mixed-26",
+            "q": 20,
+            "r": 77
+          },
+          {
+            "side": "atk",
+            "id": "atk-mixed-27",
+            "q": 20,
+            "r": 78
+          },
+          {
+            "side": "def",
+            "id": "def-mixed-20",
+            "q": 28,
+            "r": 75
+          },
+          {
+            "side": "def",
+            "id": "def-mixed-21",
+            "q": 28,
+            "r": 76
+          },
+          {
+            "side": "def",
+            "id": "def-mixed-22",
+            "q": 28,
+            "r": 77
+          },
+          {
+            "side": "def",
+            "id": "def-mixed-23",
+            "q": 28,
+            "r": 78
+          },
+          {
+            "side": "def",
+            "id": "def-mixed-24",
+            "q": 29,
+            "r": 75
+          },
+          {
+            "side": "def",
+            "id": "def-mixed-25",
+            "q": 29,
+            "r": 76
+          },
+          {
+            "side": "def",
+            "id": "def-mixed-26",
+            "q": 29,
+            "r": 77
+          },
+          {
+            "side": "def",
+            "id": "def-mixed-27",
+            "q": 29,
+            "r": 78
+          }
+        ],
+        "archerDepthColumns": [
+          20,
+          21,
+          28,
+          29
+        ],
+        "mountedPositions": [
+          [
+            "atk",
+            23,
+            70
+          ],
+          [
+            "atk",
+            23,
+            83
+          ],
+          [
+            "atk",
+            23,
+            69
+          ],
+          [
+            "atk",
+            23,
+            84
+          ],
+          [
+            "atk",
+            23,
+            68
+          ],
+          [
+            "atk",
+            23,
+            85
+          ],
+          [
+            "atk",
+            22,
+            70
+          ],
+          [
+            "atk",
+            22,
+            83
+          ],
+          [
+            "atk",
+            22,
+            69
+          ],
+          [
+            "atk",
+            22,
+            84
+          ],
+          [
+            "def",
+            26,
+            70
+          ],
+          [
+            "def",
+            26,
+            83
+          ],
+          [
+            "def",
+            26,
+            69
+          ],
+          [
+            "def",
+            26,
+            84
+          ],
+          [
+            "def",
+            26,
+            68
+          ],
+          [
+            "def",
+            26,
+            85
+          ],
+          [
+            "def",
+            27,
+            70
+          ],
+          [
+            "def",
+            27,
+            83
+          ],
+          [
+            "def",
+            27,
+            69
+          ],
+          [
+            "def",
+            27,
+            84
+          ]
+        ]
+      },
+      "actions": {
+        "movement": 0,
+        "meleeAttacks": 0,
+        "rangedAttacks": 1,
+        "rangedAmmoSpent": 1,
+        "hpLossEvents": 1,
+        "mountedActions": 0,
+        "rangedByRole": {
+          "oszczepnik": 0,
+          "lucznik": 1,
+          "procarz": 0
+        }
+      },
+      "activationTrace": [
+        {
+          "start": true,
+          "activation": 1,
+          "side": "atk",
+          "role": "archer",
+          "id": "atk-mixed-20",
+          "at": [
+            24,
+            75
+          ],
+          "target": "def-mixed-4",
+          "distance": 2,
+          "range": 3,
+          "ammo": 12,
+          "canAttack": true
+        },
+        {
+          "end": true,
+          "activation": 1,
+          "side": "atk",
+          "role": "archer",
+          "id": "atk-mixed-20",
+          "at": [
+            24,
+            75
+          ],
+          "distance": 2,
+          "range": 3,
+          "ammo": 11
+        }
+      ],
+      "forcedShotSetup": {
+        "from": [
+          21,
+          75
+        ],
+        "to": [
+          24,
+          75
+        ],
+        "nearestEnemy": "def-mixed-4",
+        "legalAttack": true,
+        "fixtureNote": "Only the shooter starting tile is positioned in-range; the production attack, projectile, ammo, damage, and callbacks are unmodified."
+      },
+      "events": [
+        {
+          "type": "attack",
+          "doctrine": "steady",
+          "id": "atk-mixed-20",
+          "role": "lucznik",
+          "targetId": "def-mixed-14",
+          "distance": 3,
+          "range": 3,
+          "ranged": true,
+          "ammoBefore": 12,
+          "hpBefore": 1000,
+          "ammoAfter": 11,
+          "hpAfter": 997
+        }
+      ]
+    }
+  ],
+  "browserErrors": [
+    {
+      "kind": "console",
+      "text": "Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "location": {
+        "url": "http://127.0.0.1:5173/favicon.ico",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    }
+  ],
+  "httpErrors": [],
+  "limitation": "Each case constructs the real BattleScene, production terrain/deployment, and executes one production activation per role per side through actual movement/attack/projectile/HP paths. It does not simulate a complete battle or every unit activation; one/two archer-line preference is captured from actual production deployment."
+}

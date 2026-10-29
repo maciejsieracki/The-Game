@@ -6510,7 +6510,13 @@ export class BattleScene {
     const parts = stepKey.split(',');
     const nc = Number(parts[0]);
     const nr = Number(parts[1]);
-    if (!this._compactAttackAllowsStep(ru, nc)) { done(); return; }
+    const meleeLine = (ru.side === 'atk' ? this.atk : this.def)
+      .some(u => !u.dead && !u.fadingOut && !u.removed && !u.routed
+        && !u.mounted && !u.rangedBase && !isSiegeUnit(u.bu));
+    const lineAllowsRangedStep = meleeLine
+      ? this._rangedFiringStepStaysBehindMelee(ru, nc)
+      : this._compactAttackAllowsStep(ru, nc);
+    if (!lineAllowsRangedStep) { done(); return; }
 
     this._doMove(ru, nc, nr, () => {
       if (this.finished) { done(); return; }
@@ -6569,6 +6575,40 @@ export class BattleScene {
         bestColDist = colDist;
         bestLateral = lateral;
         best = nk;
+      }
+    }
+    if (best) return best;
+
+    // A shooter can be behind a solid friendly rank with its straight-ahead
+    // tile occupied. In that case, do not route around the entire formation
+    // (which can make it walk away from the enemy). Look for the nearest open
+    // forward lane within the non-mounted army's row envelope, and take only
+    // the first lateral step when that lane immediately opens forward progress.
+    // The next activation reevaluates and advances through the newly open lane.
+    const allies = (ru.side === 'atk' ? this.atk : this.def)
+      .filter(u => !u.dead && !u.fadingOut && !u.removed && !u.routed
+        && !u.mounted && !isSiegeUnit(u.bu));
+    const minRow = allies.length ? Math.min(...allies.map(u => u.r)) : ru.r;
+    const maxRow = allies.length ? Math.max(...allies.map(u => u.r)) : ru.r;
+    const firstByRow = new Map<number, number | null>([[ru.r, null]]);
+    const queue = [ru.r];
+    for (let i = 0; i < queue.length; i++) {
+      const row = queue[i]!;
+      for (const nr of [row - 1, row + 1]) {
+        if (nr < minRow || nr > maxRow || firstByRow.has(nr)) continue;
+        if (this.occByKey.has(cellKey(ru.q, nr)) || !this._passableForUnit(ru, ru.q, nr)) continue;
+        const first = firstByRow.get(row) ?? nr;
+        firstByRow.set(nr, first);
+        const nextCol = ru.q + this._advanceDir(ru.side);
+        const nextKey = cellKey(nextCol, nr);
+        const nextDistance = Math.abs(nearest.q - nextCol);
+        if (nextCol >= 0 && nextCol < BF_COLS
+            && !this.occByKey.has(nextKey)
+            && this._passableForUnit(ru, nextCol, nr)
+            && nextDistance < colDistNow) {
+          return cellKey(ru.q, first);
+        }
+        queue.push(nr);
       }
     }
     return best;
@@ -17152,6 +17192,16 @@ export class BattleScene {
         this._doAttack(ru, ranged, done);
         return true;
       }
+    }
+    // An out-of-range shooter must use the ranged lane-advance planner, not the
+    // infantry's shortest-path-to-contact planner. The latter treats the melee
+    // line as arbitrary obstacles and can send a rear-rank archer around the
+    // formation's edge, increasing its distance from the enemy for several
+    // activations. The ranged planner advances toward firing range and respects
+    // the melee line; it also fires immediately if a step enters range.
+    if (meta.doctrine === 'steady' && canShoot(ru) && ru.shootingEnabled !== false) {
+      this._rangedAction(ru, done);
+      return true;
     }
     // In a compact attack, solve the next legally reachable attack tile with
     // the line and anti-backtrack constraints inside the path search itself.

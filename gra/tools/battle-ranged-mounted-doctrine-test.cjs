@@ -68,8 +68,8 @@ async function main() {
   check(defender.q === 4 && defender.r === 4,
     'defensive ranged attack preserves the unit position');
 
-  // Attack has separate roles: a shooter fires when in range instead of
-  // kiting; while out of range it advances through the bounded attack-line path.
+  // Attack has separate roles: a shooter fires when in range; while out of
+  // range it uses the ranged lane advance, not the infantry contact path.
   const attackArcher = makeUnit({ id: 'attack-archer', ranged: true, q: 4, r: 4 });
   const attackTarget = makeUnit({ id: 'attack-target', side: 'def', q: 7, r: 4 });
   const rangedAttack = Object.create(BattleScene.prototype);
@@ -93,13 +93,15 @@ async function main() {
   Object.assign(approach, { finished: false, atk: [approachingArcher], def: [distant] });
   let approachAdvanced = false;
   approach._advanceStep = (_unit, done) => { approachAdvanced = true; done(); };
+  let rangedApproachCalled = false;
+  approach._rangedAction = (_unit, done) => { rangedApproachCalled = true; done(); };
   approach._pickRangedTargetByPriority = () => null;
   approach._pickAdjacentTargetByPriority = () => null;
   BattleScene.prototype._executeGroupDoctrineStep.call(
     approach, approachingArcher, { doctrine: 'steady', autoPlay: true, rallyCol: 5, rallyRow: 5 }, () => {},
   );
-  check(approachAdvanced,
-    'Out-of-range Atak archer advances through the bounded attack-line path');
+  check(rangedApproachCalled && !approachAdvanced,
+    'Out-of-range Atak archer uses ranged approach and does not route around the infantry line');
 
   // Attack keeps infantry-line movement, but mounted units use the established
   // cavalry/chariot target and flank planner instead of generic rally movement.

@@ -8555,6 +8555,13 @@ referencyjnych zielone, `entity-card-historia-section-test` 36/36,
 - Raporty i artefakty: `dyspozycje/autobot/runs/R-BITWA-ATAK-LUCZNICY-RYDWANY-Q1/`; testy: `gra/tools/battle-large-mixed-doctrine-matrix-test.cjs`, `gra/tools/battle-doctrine-live-r3-test.cjs`, `gra/tools/battle-doctrine-live-r4-test.cjs`, `gra/tools/battle-natural-chariot-r5-test.cjs`, `gra/tools/battle-natural-near-range-r6-test.cjs`.
 - Kod bitwy z dotychczasowych poprawek jest już w Roboczej z publikacji `682a6b9a`; ten follow-up dodaje wyłącznie testy i dokumentację, więc nie wymaga nowego bundla/deployu. Final Control: `PASS-WITH-NOTES`; ograniczenia zakresu potwierdzone. Raport niezależnego ewaluatora: `dyspozycje/autobot/runs/R-BITWA-ATAK-LUCZNICY-RYDWANY-Q1/18-evaluator-r6-closeout.md`; końcowy audyt: `dyspozycje/autobot/runs/R-BITWA-ATAK-LUCZNICY-RYDWANY-Q1/19-final-control.md`.
 
+## `R-BITWA-ATAK-LUCZNICY-POZA-ZASIEGIEM-Q1` — łucznicy w Ataku oddalają się od wroga
+
+- **STATUS:** NOWE — błąd potwierdzony w Chromium na produkcyjnym `BattleScene`; przypisany niezależnemu Operatorowi AutoBot.
+- **DOWÓD:** przy celu poza zasięgiem (odległość 5), po sześciu rzeczywistych aktywacjach łucznik przeszedł 18 pól, nie wystrzelił (amunicja pozostała 12), a odległość do najbliższego przeciwnika wzrosła kolejno 5, 5, 5, 8, 11, 14. Kontrola celu w zasięgu zadziałała: oddano strzał, zużyto amunicję i spadło HP celu.
+- **OCZEKIWANIE:** w doktrynie Atak łucznicy podążają do legalnego zasięgu strzału, utrzymując się za linią piechoty; po wejściu w zasięg strzelają. Bez zmiany zachowania Obrony i Szturmu.
+- **FOLLOW-UP:** `/workspace/battle-large-mixed-operator` początkowo wskazał dalekie skrzydła konnicy, lecz korekta pomiaru wykazała odległość 1–3 heksy od rdzenia; fałszywe podejrzenie wycofano, bez zgłoszenia produktowego.
+
 ## `R-ARMY-MERGE-SPLIT-ICONS-Q2` — kierunki ikon łączenia i rozdzielania armii (2026-10-29)
 
 - **STATUS:** `DEPLOY-ROBOCZA / REMOTE-READBACK-PASS` — Operator, niezależny Evaluator i Final Control PASS; fast-forward/publish `42b4dac831765176684a506d0be377232fef008a`; remote bundle, manifest i START zgodne.
