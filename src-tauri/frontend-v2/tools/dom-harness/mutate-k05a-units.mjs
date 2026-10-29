@@ -49,8 +49,8 @@ const MUTANTS = [
   ['TEREN-LETTER-znak', "[TerenBazowy.Laka]: 'Ł'", "[TerenBazowy.Laka]: 'L'"],
   ['enum-wartosc-gory', "Gory     = 'gory',", "Gory     = 'gora',"],
   // r2: okolicaPreviewRadius: pola DTO (city.q / city.r, K05A-Z2), parametry UI, galezie tryb/reczne/worked.
-  ['okolica-dto-q', 'hexDist(city.q, city.r, q, r)', 'hexDist(city.q, city.q, q, r)'],
-  ['okolica-dto-r', 'hexDist(city.q, city.r, q, r)', 'hexDist(city.r, city.r, q, r)'],
+  ['okolica-dto-q', 'const d = hexDist(city.q, city.r, q, r);', 'const d = hexDist(city.q, city.q, q, r);'],
+  ['okolica-dto-r', 'const d = hexDist(city.q, city.r, q, r);', 'const d = hexDist(city.r, city.r, q, r);'],
   ['okolica-fallback-ui', 'okolica_promien, 3)', 'okolica_promien, 4)'],
   ['okolica-cap', 'const cap = Rwork ?? fallback;', 'const cap = Rwork ?? fallback + 1;'],
   ['okolica-tryb-galaz', "if (tryb === 'reczny') {", "if (tryb === 'auto') {"],
@@ -95,6 +95,19 @@ const MUTANTS = [
   ['era-full', 'if (fullEraPreview) return true;', 'if (fullEraPreview) return false;'],
   ['era-locblocked', 'if (e.locationBlocked) return false;', 'if (e.locationBlocked && !fullEraPreview) return false;'],
   ['getprod-fallback', 'return cfg.getProd?.(cityId) ?? { kolejka: [] };', "return cfg.getProd?.(cityId) ?? { kolejka: [{ id: 'z', koszt: 0, kind: 'unit' }] };"],
+  // r3 (batch 3): recruitUnit (skarb, zakup, odświeżenie, pula państwa, DTO) i improvementsInCityRange.
+  ['recruit-qty-floor', 'Math.max(1, Math.floor(quantity))', 'Math.max(0, Math.floor(quantity))'],
+  ['recruit-treasury-le', 'if (skarb !== undefined && skarb < item.koszt * requestedQuantity) return false;', 'if (skarb !== undefined && skarb <= item.koszt * requestedQuantity) return false;'],
+  ['recruit-empire-qty', 'if (!empireRekruciAffordable(city, mpCost * requestedQuantity)) return false;', 'if (!empireRekruciAffordable(city, mpCost)) return false;'],
+  ['recruit-batch-stock', 'if (Object.keys(missingStockFor(pool, batchStockCost)).length > 0) return false;', 'if (Object.keys(missingStockFor(pool, unitStockCost(udef))).length > 0) return false;'],
+  ['recruit-accept', 'if (accepted === false) return false;', 'if (accepted !== true) return false;'],
+  ['recruit-rerender', '  rerender();\n  return true;', '  return true;'],
+  ['recruit-udef-id', 'const udef = data ? findUnitDef(data, item.id) : undefined;', "const udef = data ? findUnitDef(data, 'zz') : undefined;"],
+  ['recruit-canafford-neg', 'if (!canAffordUnitRecruitStock(pool, udef)) return false;', 'if (canAffordUnitRecruitStock(pool, udef)) return false;'],
+  ['recruit-gamedata', 'const data = gameData();', 'const data = undefined;'],
+  ['improv-threshold', 'if (hexDist(city.q, city.r, q, r) > Rwork) continue;', 'if (hexDist(city.q, city.r, q, r) >= Rwork) continue;'],
+  ['improv-count', 'counts.set(key, (counts.get(key) ?? 0) + 1);', 'counts.set(key, 1);'],
+  ['improv-keys-source', 'for (const key of improvementKeysForHex(hex)) {', 'for (const key of Object.keys(hex)) {'],
 ];
 
 /**

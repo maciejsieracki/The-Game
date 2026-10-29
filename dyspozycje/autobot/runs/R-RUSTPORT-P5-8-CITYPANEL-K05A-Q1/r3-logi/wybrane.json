@@ -22,5 +22,7 @@
  { "name": "formatBuildingCatalogLockHint", "a": 8542, "b": 8576, "loc": 35, "kind": "function" },
  { "name": "formatBuildingPreviewHint", "a": 8578, "b": 8609, "loc": 32, "kind": "function" },
  { "name": "productionCtxForCity", "a": 8611, "b": 8643, "loc": 33, "kind": "function" },
- { "name": "collectEraPreviewEntries", "a": 8645, "b": 8679, "loc": 35, "kind": "function" }
+ { "name": "collectEraPreviewEntries", "a": 8645, "b": 8679, "loc": 35, "kind": "function" },
+ { "name": "recruitUnit", "a": 8183, "b": 8208, "loc": 26, "kind": "function" },
+ { "name": "improvementsInCityRange", "a": 9571, "b": 9599, "loc": 29, "kind": "function" }
 ]

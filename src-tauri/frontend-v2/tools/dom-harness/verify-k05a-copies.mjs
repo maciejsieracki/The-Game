@@ -57,6 +57,9 @@ const LOCAL_NAMES = new Set([
   'RawConverterParamsJson', 'CivBonusLite', 'K05aCfgExt', 'K05aRulesExt', 'regulExt', 'converterProductionDisplayForBuilding',
   'findBuildingDef', 'techIconHintSpan', 'getTechDef', 'isEmptyDataVal', 'naukaCostSuffix', 'eraBuildingCatalog',
   'unitNacjaForCivKey', 'getProd',
+  // K05A-Z4/Z5 (r3, partia 3): typy hexa/mapy, rozszerzenia wejść recruit/ulepszeń i delegatory.
+  'HexLike', 'GameMap', 'K05aCfgRecruit', 'K05aRulesRecruit', 'gameData', 'findUnitDef', 'canAffordUnitRecruitStock',
+  'missingStockFor', 'improvementKeysForHex', 'rerender',
 ]);
 
 const isCommentLine = (t) => /^\/\*\*|^\/\*|^\*|^\/\//.test(t.trim()) || /\*\/\s*$/.test(t.trim());

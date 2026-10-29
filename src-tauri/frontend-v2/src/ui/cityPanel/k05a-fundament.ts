@@ -25,6 +25,8 @@ export type CityHexRef = { readonly q: number; readonly r: number };
 export interface City {
   readonly id: number;
   readonly ownerId: number;
+  readonly q: number;
+  readonly r: number;
 }
 
 /** K05A-Z5: lokalna kopia typu `UnitDef` (pin: data/loader.ts) — tylko `id`. */
@@ -59,26 +61,28 @@ export interface K05aRules {
   unitManpowerCostForType(typeId: string, epoch: number, maxMult: number): number;
   ownerSurowcePoolFor(city: City): Readonly<Record<string, number>>;
   stockResourceLabel(key: string): string;
-  unitStockCost(u: UnitDef): Record<string, number>;
+  unitStockCost(u: UnitDef | undefined): Record<string, number>;
+  canAffordUnitRecruitStock(pool: Readonly<Record<string, number>>, u: UnitDef | undefined): boolean;
+  missingStockFor(pool: Readonly<Record<string, number>>, cost: Record<string, number>): Record<string, number>;
   unitResourceUpkeep(u: UnitDef): Record<string, number>;
   isUnitRecruitStockChipMissing(pool: Readonly<Record<string, number>>, u: UnitDef, key: string): boolean;
   techPrereqChain(data: GameData, techName: string): string[];
 }
 
-let cfg: K05aCfg & K05aCfgExt = {};
-let rules: (K05aRules & K05aRulesExt) | null = null;
+let cfg: K05aCfg & K05aCfgExt & K05aCfgRecruit = {};
+let rules: (K05aRules & K05aRulesExt & K05aRulesRecruit) | null = null;
 
 /** Wejście z DTO `panelInputs.k05a` (wiring w kontrolerze poza zakresem K05A, NIE_ZMIERZONO). */
-export function setK05aCfg(next: K05aCfg & K05aCfgExt): void {
+export function setK05aCfg(next: K05aCfg & K05aCfgExt & K05aCfgRecruit): void {
   cfg = next;
 }
 
 /** Wejście reguł z DTO `panelInputs.k05a` (wiring w kontrolerze poza zakresem K05A, NIE_ZMIERZONO). */
-export function setK05aRules(next: K05aRules & K05aRulesExt): void {
+export function setK05aRules(next: K05aRules & K05aRulesExt & K05aRulesRecruit): void {
   rules = next;
 }
 
-function regul(): K05aRules & K05aRulesExt {
+function regul(): K05aRules & K05aRulesExt & K05aRulesRecruit {
   if (rules === null) throw new Error('K05A: brak wejść reguł (setK05aRules)');
   return rules;
 }
@@ -96,7 +100,7 @@ export function ownerSurowcePoolFor(city: City): Readonly<Record<string, number>
 export function stockResourceLabel(key: string): string {
   return regul().stockResourceLabel(key);
 }
-export function unitStockCost(u: UnitDef): Record<string, number> {
+export function unitStockCost(u: UnitDef | undefined): Record<string, number> {
   return regul().unitStockCost(u);
 }
 export function unitResourceUpkeep(u: UnitDef): Record<string, number> {
@@ -267,6 +271,49 @@ export function unitNacjaForCivKey(key: string | undefined): unknown {
 /** Stan produkcji miasta (pin: `getProd`, ui/cityPanel.ts) — wartość z DTO; brak = pusta kolejka. */
 export function getProd(cityId: number): { readonly kolejka: readonly ProductionItem[] } {
   return cfg.getProd?.(cityId) ?? { kolejka: [] };
+}
+
+/** K05A-Z5: lokalna kopia typu hexa mapy (pin: types/hex.ts) — w K05A tylko przekazywany do reguły ulepszeń. */
+export type HexLike = object;
+
+/** K05A-Z5: lokalna kopia typu `GameMap` (pin: types/map.ts) — pole `hexes` po kluczu "q,r". */
+export interface GameMap {
+  readonly hexes: Readonly<Record<string, HexLike>>;
+}
+
+/** K05A-Z4: rozszerzenie `K05aCfg` dla recruitUnit i improvementsInCityRange (wartości z DTO `panelInputs.k05a`). */
+export interface K05aCfgRecruit {
+  getTreasury?: (ownerId: number) => number | undefined;
+  onPurchaseUnit?: (cityId: number, typeId: string, koszt: number, quantity: number) => boolean | void;
+  rerender?: () => void;
+  getGameData?: () => GameData | undefined;
+}
+
+/** K05A-Z4: reguły dla recruitUnit i improvementsInCityRange (pin: data/loader, game/economy-upkeep, game/terrain-improvements). */
+export interface K05aRulesRecruit {
+  findUnitDef(data: GameData, id: string): UnitDef | undefined;
+  improvementKeysForHex(hex: HexLike): readonly string[];
+}
+
+/** Dane gry (pin: `gameData()`, ui/cityPanel.ts) — wartość z DTO; brak = undefined. */
+export function gameData(): GameData | undefined {
+  return cfg.getGameData?.();
+}
+export function findUnitDef(data: GameData, id: string): UnitDef | undefined {
+  return regul().findUnitDef(data, id);
+}
+export function canAffordUnitRecruitStock(pool: Readonly<Record<string, number>>, u: UnitDef | undefined): boolean {
+  return regul().canAffordUnitRecruitStock(pool, u);
+}
+export function missingStockFor(pool: Readonly<Record<string, number>>, cost: Record<string, number>): Record<string, number> {
+  return regul().missingStockFor(pool, cost);
+}
+export function improvementKeysForHex(hex: HexLike): readonly string[] {
+  return regul().improvementKeysForHex(hex);
+}
+/** Odświeżenie panelu (pin: `rerender`, ui/cityPanel.ts) — wiring w kontrolerze poza zakresem K05A (NIE_ZMIERZONO). */
+export function rerender(): void {
+  cfg.rerender?.();
 }
 
 // pin edb8fb56 gra/src/types/hex.ts:12-24
@@ -701,4 +748,62 @@ export function collectEraPreviewEntries(
     if (fullEraPreview) return true;
     return e.status === 'locked';
   });
+}
+// pin edb8fb56 gra/src/ui/cityPanel.ts:8183-8208
+export function recruitUnit(city: City, item: ProductionItem, quantity = 1): boolean {
+  const requestedQuantity = Number.isFinite(quantity)
+    ? Math.max(1, Math.floor(quantity))
+    : 1;
+  const skarb = cfg.getTreasury?.(city.ownerId);
+  if (skarb !== undefined && skarb < item.koszt * requestedQuantity) return false;
+  const mpCost = recruitManpowerCost(city, item.id);
+  if (!empireRekruciAffordable(city, mpCost * requestedQuantity)) return false;
+  const data = gameData();
+  const udef = data ? findUnitDef(data, item.id) : undefined;
+  const pool = ownerSurowcePoolFor(city);
+  if (requestedQuantity === 1) {
+    if (!canAffordUnitRecruitStock(pool, udef)) return false;
+  } else {
+    const batchStockCost = Object.fromEntries(
+      Object.entries(unitStockCost(udef)).map(([key, cost]) => [key, cost * requestedQuantity]),
+    );
+    if (Object.keys(missingStockFor(pool, batchStockCost)).length > 0) return false;
+  }
+  if (cfg.onPurchaseUnit) {
+    const accepted = cfg.onPurchaseUnit(city.id, item.id, item.koszt, requestedQuantity);
+    if (accepted === false) return false;
+  }
+  rerender();
+  return true;
+}
+
+// pin edb8fb56 gra/src/ui/cityPanel.ts:9571-9599
+/**
+ * Zbiera unikalne typy ulepszeń terenu (i liczbę heksów każdego typu) w zasięgu
+ * roboczym miasta (`Rwork`) — T7b, call-site 3/3. Recon (T7a) potwierdził: dziś w
+ * `cityPanel.ts` nie istnieje żadna lista ulepszeń terenu z nazwami w zakładce
+ * „Okolica" (tylko zagregowane plony per-hex) — to jest pierwsza taka lista.
+ * Czyta WSZYSTKIE warstwy ulepszeń przez `improvementKeysForHex` (nie legacy
+ * `hex.ulepszenie`), tak jak `tileYieldLabel`/`appendOkolicaYieldLabel` niżej w pliku.
+ */
+export function improvementsInCityRange(
+  city: City,
+  map: GameMap | undefined,
+  Rwork: number | undefined,
+): Map<string, number> {
+  const counts = new Map<string, number>();
+  if (!map || Rwork === undefined) return counts;
+  for (let dq = -Rwork; dq <= Rwork; dq++) {
+    for (let dr = -Rwork; dr <= Rwork; dr++) {
+      const q = city.q + dq;
+      const r = city.r + dr;
+      if (hexDist(city.q, city.r, q, r) > Rwork) continue;
+      const hex = map.hexes[`${q},${r}`];
+      if (!hex) continue;
+      for (const key of improvementKeysForHex(hex)) {
+        counts.set(key, (counts.get(key) ?? 0) + 1);
+      }
+    }
+  }
+  return counts;
 }

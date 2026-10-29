@@ -61,6 +61,7 @@ const PIN_NAMES = [
   // K05A r3 (batch 1): jednostki z pinu wołające reguły przez wejścia z fixture (K05A-Z4).
   'buildingLocationRequirementMet', 'recruitManpowerCost', 'empireRekruciTotal', 'empireRekruciAffordable',
   'maxAffordableRecruitQuantity', 'unitStockCostChipsHtml', 'unitResourceUpkeepChipsHtml', 'missingTechSteps',
+  'recruitUnit', 'improvementsInCityRange',
   // K05A r3 (batch 2): kopie z pinu; `buildingRequirementChips` to ADAPTER (K05A-Z4) — nie jest tu porównywany z pinem.
   'buildingCanBuildNow', 'sortProductionItemsByBuildability', 'buildingConverterProductionDisplay', 'productionCtxForCity',
   'formatBuildingCatalogLockHint', 'formatBuildingPreviewHint', 'collectEraPreviewEntries',
@@ -87,6 +88,12 @@ const naukaCostSuffix = () => globalThis.__K05A_FIX.rulesExt.naukaCostSuffix();
 const eraBuildingCatalog = (d, t, p) => globalThis.__K05A_FIX.rulesExt.eraBuildingCatalog(d, t, p);
 const unitNacjaForCivKey = (k) => globalThis.__K05A_FIX.rulesExt.unitNacjaForCivKey(k);
 const getProd = (id) => globalThis.__K05A_FIX.cfg.getProd?.(id) ?? { kolejka: [] };
+const gameData = () => globalThis.__K05A_FIX.cfg.getGameData?.();
+const findUnitDef = (d, id) => globalThis.__K05A_FIX.rulesExt.findUnitDef(d, id);
+const canAffordUnitRecruitStock = (p, u) => globalThis.__K05A_FIX.rules.canAffordUnitRecruitStock(p, u);
+const missingStockFor = (p, c) => globalThis.__K05A_FIX.rules.missingStockFor(p, c);
+const rerender = () => globalThis.__K05A_FIX.cfg.rerender?.();
+const improvementKeysForHex = (h) => globalThis.__K05A_FIX.rulesExt.improvementKeysForHex(h);
 `;
 const probeSrc = [
   `export const UI_PARAMS = ${JSON.stringify(PIN_UI_PARAMS)};`,
@@ -121,15 +128,30 @@ function mkFix(v) {
       getCityHasCoastOrRiver: (c) => (c + v) % 2 === 0,
       getCapitalCityId: (o) => ((o + v) % 3 === 0 ? null : o * 2 + v),
       getProd: (c) => ((c + v) % 4 === 0 ? undefined : { kolejka: [{ id: 'a', koszt: c, kind: 'budynek' }, { id: 'b', koszt: 1, kind: 'unit' }] }),
+      // K05A r3 (batch 3): recruitUnit — skarb, zakup (log wywołań), odświeżenie panelu (log).
+      getTreasury: (o) => ((o + v) % 3 === 0 ? undefined : (o + v) % 3 === 1 ? 100 : 5),
+      onPurchaseUnit: (c, t, k, q) => {
+        globalThis.__K05A_LOG.push(['buy', c, t, k, q]);
+        return v === 1 ? false : v === 2 ? undefined : true;
+      },
+      rerender: () => globalThis.__K05A_LOG.push(['rr']),
+      getGameData: () => ({ units: `g${v}` }),
     },
     rules: {
       civManpowerMaxMult: (b) => (Array.isArray(b) ? b.length + 1 : 1),
       unitManpowerCostForType: (t, ep, m) => t.length * ep * m + v,
       ownerSurowcePoolFor: (city) => ({ drewno: city.id * 2 + v, kamien: v === 1 ? 0 : 3, zloto: v + 2 }),
       stockResourceLabel: (k) => `L${v}:${k}`,
-      unitStockCost: (u) => (u.id === 'a' ? { drewno: 3, kamien: 1 + v } : u.id === 'b' ? { zloto: 2 } : {}),
+      unitStockCost: (u) => (!u ? {} : u.id === 'a' ? { drewno: 3, kamien: 1 + v } : u.id === 'b' ? { zloto: 2 } : {}),
       unitResourceUpkeep: (u) => (u.id === 'b' ? { zywnosc: 2 + v } : u.id === 'c' ? { drewno: 1, kamien: 0 } : {}),
       isUnitRecruitStockChipMissing: (pool, u, k) => (pool[k] ?? 0) < 2 + v,
+      canAffordUnitRecruitStock: (pool, u) => u !== undefined && (pool.drewno ?? 0) >= 2 + v,
+      missingStockFor: (pool, cost) =>
+        Object.fromEntries(
+          Object.entries(cost)
+            .filter(([k, n]) => (pool[k] ?? 0) < n + v)
+            .map(([k, n]) => [k, n + v - (pool[k] ?? 0)]),
+        ),
       techPrereqChain: (d, t) => (t === 'x' ? ['a', 'b', 'x'] : t === 'y' ? ['b', 'y'] : [t]),
     },
     rulesExt: {
@@ -164,6 +186,8 @@ function mkFix(v) {
         { id: 'b8', status: 'locked', missingTech: 'z', wymagania: 'W8' },
       ],
       unitNacjaForCivKey: (k) => (k === undefined ? null : `N:${k}`),
+      findUnitDef: (d, id) => (id === 'zz' ? undefined : { id }),
+      improvementKeysForHex: (h) => (h && h.keys ? h.keys : []),
     },
   };
 }
@@ -306,6 +330,21 @@ try {
     for (const techs of [[], ['x']])
       for (const full of [true, false])
         cmp(`collectEraPreviewEntries(${techs.length},${full};${tag})`, () => P.collectEraPreviewEntries({}, techs, prodCtx, full), () => V.collectEraPreviewEntries({}, techs, prodCtx, full));
+    // K05A r3 (batch 3): recruitUnit (log wywołań cfg/rerender w wyniku) i improvementsInCityRange (Map → wpisy).
+    const items3r = [{ id: 'a', koszt: 5, kind: 'unit' }, { id: 'zz', koszt: 1, kind: 'unit' }, { id: 'b', koszt: 200, kind: 'unit' }];
+    for (const c of cities3)
+      for (const it of items3r)
+        for (const qty of [undefined, 1, 3, 0, Number.NaN])
+          cmp(`recruitUnit(${c.id},${it.id},${qty};${tag})`,
+            () => { globalThis.__K05A_LOG = []; const r = P.recruitUnit(c, it, qty); return [r, globalThis.__K05A_LOG]; },
+            () => { globalThis.__K05A_LOG = []; const r = V.recruitUnit(c, it, qty); return [r, globalThis.__K05A_LOG]; });
+    const hexes3 = { '0,0': { keys: ['mine'] }, '1,0': { keys: ['road', 'farm'] }, '-1,1': { keys: [] }, '2,-2': { keys: ['road'] }, '1,-1': {} };
+    for (const city of [{ id: 1, ownerId: 0, q: 0, r: 0 }, { id: 2, ownerId: 2, q: 1, r: -1 }])
+      for (const Rw of [undefined, 0, 1, 2])
+        for (const mp of [undefined, { hexes: hexes3 }, { hexes: {} }])
+          cmp(`improvementsInCityRange(${city.id},${Rw},${mp ? Object.keys(mp.hexes).length : 'u'};${tag})`,
+            () => [...P.improvementsInCityRange(city, mp, Rw).entries()],
+            () => [...V.improvementsInCityRange(city, mp, Rw).entries()]);
     // Adapter buildingRequirementChips: kontrakt (wynik = wejście reguł z DTO); równoważność z pinem = silnik (NIE_ZMIERZONO).
     for (const d of defs2)
       for (const c of cities3)
