@@ -45,7 +45,7 @@ dotykające tych samych plików — zawsze sekwencyjnie, nigdy w tej samej fali.
 | 3 | R-RUSTPORT-P5-8-CITYPANEL-PODZIAL-Q1 | P5.8 | 3/5 | wf_5b094795-b4f | **PASS — zintegrowane** (docs, `a1246e48`); slot wolny | 2026-10-29 |
 | 4 | R-RUSTPORT-P4-36-MOD14-BATTLE-3D-Q3 | P4.36 | 1/5 | wf_2ef132a4-a0e | **PASS — zintegrowane** na `parity-v2`; slot wolny | 2026-10-29 |
 | 5 | R-RUSTPORT-P5-8-CITYPANEL-K01B-Q1 | P5.8 | 2/5 | wf_4e66ea20-909 | **PASS-WITH-NOTES — zintegrowane** (`d123d988`); slot wolny | 2026-10-29 |
-| 9 | R-RUSTPORT-P5-8-CITYPANEL-K03-Q1 | P5.8 | 1/5 | (nowy) | etap 1 | 2026-10-29 |
+| 9 | R-RUSTPORT-P5-8-CITYPANEL-K03-Q1 | P5.8 | 3/5 | wf_3158711a-6d9 | **PASS-WITH-NOTES — zintegrowane** na `parity-v2`; slot wolny | 2026-10-29 |
 | 10 | R-RUSTPORT-P5-8-CITYPANEL-SCAL-K01K02-Q1 | P5.8 | 1/5 | wf_19fd2604-c69 | **PASS-WITH-NOTES — zintegrowane** (`ce8f4d45`); slot wolny | 2026-10-29 |
 | 6 | R-RUSTPORT-P5-8-CITYPANEL-K02-Q1 | P5.8 | 3/5 | wf_febbb236-243 | **PASS-WITH-NOTES — zintegrowane** na `parity-v2` (po K01A); slot wolny | 2026-10-29 |
 
