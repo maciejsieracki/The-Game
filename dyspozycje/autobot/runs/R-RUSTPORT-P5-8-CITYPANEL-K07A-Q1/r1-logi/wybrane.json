@@ -1,0 +1,16 @@
+[
+ {
+  "name": "uxSectionRefresh",
+  "a": 10365,
+  "b": 10366,
+  "loc": 2,
+  "kind": "let"
+ },
+ {
+  "name": "W3_STAT_RES_KEY",
+  "a": 10384,
+  "b": 10392,
+  "loc": 9,
+  "kind": "const"
+ }
+]
