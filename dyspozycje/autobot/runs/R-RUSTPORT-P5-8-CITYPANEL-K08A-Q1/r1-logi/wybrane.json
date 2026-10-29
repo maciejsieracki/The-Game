@@ -1,0 +1,122 @@
+[
+ {
+  "name": "refreshCityPanelIfOpen",
+  "port": "refreshCityPanelIfOpen",
+  "a": 10337,
+  "b": 10346,
+  "loc": 10,
+  "kind": "function"
+ },
+ {
+  "name": "clearCityPanelUxMode",
+  "port": "clearCityPanelUxMode",
+  "a": 10367,
+  "b": 10374,
+  "loc": 8,
+  "kind": "function"
+ },
+ {
+  "name": "closeCityView",
+  "port": "closeCityView",
+  "a": 10694,
+  "b": 10698,
+  "loc": 5,
+  "kind": "function"
+ },
+ {
+  "name": "CityPanelIconTab",
+  "port": "CityPanelIconTab",
+  "a": 11540,
+  "b": 11549,
+  "loc": 10,
+  "kind": "type"
+ },
+ {
+  "name": "CityPanelProductionTab",
+  "port": "CityPanelProductionTab",
+  "a": 11551,
+  "b": 11551,
+  "loc": 1,
+  "kind": "type"
+ },
+ {
+  "name": "CityPanelCityParamTab",
+  "port": "CityPanelCityParamTab",
+  "a": 11552,
+  "b": 11552,
+  "loc": 1,
+  "kind": "type"
+ },
+ {
+  "name": "CITY_PANEL_ICONS_LEFT",
+  "port": "CITY_PANEL_ICONS_LEFT",
+  "a": 11554,
+  "b": 11557,
+  "loc": 4,
+  "kind": "const"
+ },
+ {
+  "name": "CITY_PANEL_ICONS_RIGHT",
+  "port": "CITY_PANEL_ICONS_RIGHT",
+  "a": 11559,
+  "b": 11571,
+  "loc": 13,
+  "kind": "const"
+ },
+ {
+  "name": "isProductionPanelTab",
+  "port": "isProductionPanelTab",
+  "a": 11573,
+  "b": 11575,
+  "loc": 3,
+  "kind": "function"
+ },
+ {
+  "name": "CADUCEUS_SVG",
+  "port": "CADUCEUS_SVG",
+  "a": 11577,
+  "b": 11585,
+  "loc": 9,
+  "kind": "const"
+ },
+ {
+  "name": "cityRailIconHtml",
+  "port": "cityRailIconHtml",
+  "a": 11587,
+  "b": 11591,
+  "loc": 5,
+  "kind": "function"
+ },
+ {
+  "name": "activeCityPanelTab",
+  "port": "activeCityPanelTab",
+  "a": 11593,
+  "b": 11593,
+  "loc": 1,
+  "kind": "let"
+ },
+ {
+  "name": "closeCityPanelIfOpen",
+  "port": "closeCityPanelIfOpen",
+  "a": 11971,
+  "b": 11976,
+  "loc": 6,
+  "kind": "function"
+ },
+ {
+  "name": "isCityPanelOpen",
+  "port": "isCityPanelOpen",
+  "a": 11979,
+  "b": 11981,
+  "loc": 3,
+  "kind": "function"
+ },
+ {
+  "name": "getOpenCityPanelCityId",
+  "port": "getOpenCityPanelCityId",
+  "a": 11984,
+  "b": 11986,
+  "loc": 3,
+  "kind": "function"
+ }
+]

@@ -1,0 +1,290 @@
+[
+ {
+  "name": "renderReligia",
+  "a": 4112,
+  "b": 4221,
+  "loc": 110,
+  "reason": "DOM",
+  "firstBlocker": {
+   "kind": "T",
+   "id": "City",
+   "from": "game/cities.ts"
+  }
+ },
+ {
+  "name": "renderWealth",
+  "a": 4775,
+  "b": 4823,
+  "loc": 49,
+  "reason": "DOM",
+  "firstBlocker": {
+   "kind": "T",
+   "id": "City",
+   "from": "game/cities.ts"
+  }
+ },
+ {
+  "name": "buildPracaDetailCard",
+  "a": 4946,
+  "b": 5027,
+  "loc": 82,
+  "reason": "DOM",
+  "firstBlocker": {
+   "kind": "T",
+   "id": "City",
+   "from": "game/cities.ts"
+  }
+ },
+ {
+  "name": "renderPodzialPracy",
+  "a": 5112,
+  "b": 5193,
+  "loc": 82,
+  "reason": "DOM",
+  "firstBlocker": {
+   "kind": "T",
+   "id": "City",
+   "from": "game/cities.ts"
+  }
+ },
+ {
+  "name": "renderMagazyn",
+  "a": 5203,
+  "b": 5473,
+  "loc": 271,
+  "reason": "DOM",
+  "firstBlocker": {
+   "kind": "T",
+   "id": "City",
+   "from": "game/cities.ts"
+  }
+ },
+ {
+  "name": "buildTopBarPracaDetailCard",
+  "a": 5770,
+  "b": 5823,
+  "loc": 54,
+  "reason": "DOM",
+  "firstBlocker": {
+   "kind": "T",
+   "id": "City",
+   "from": "game/cities.ts"
+  }
+ },
+ {
+  "name": "wireTopBarStatDetails",
+  "a": 6051,
+  "b": 6092,
+  "loc": 42,
+  "reason": "DOM",
+  "firstBlocker": {
+   "kind": "T",
+   "id": "City",
+   "from": "game/cities.ts"
+  }
+ },
+ {
+  "name": "renderPurchasableUnits",
+  "a": 8891,
+  "b": 8978,
+  "loc": 88,
+  "reason": "DOM",
+  "firstBlocker": {
+   "kind": "T",
+   "id": "City",
+   "from": "game/cities.ts"
+  }
+ },
+ {
+  "name": "renderBuildingsOwned",
+  "a": 9184,
+  "b": 9256,
+  "loc": 73,
+  "reason": "DOM",
+  "firstBlocker": {
+   "kind": "T",
+   "id": "City",
+   "from": "game/cities.ts"
+  }
+ },
+ {
+  "name": "renderOwnedBuildingsBar",
+  "a": 9273,
+  "b": 9305,
+  "loc": 33,
+  "reason": "DOM",
+  "firstBlocker": {
+   "kind": "T",
+   "id": "City",
+   "from": "game/cities.ts"
+  }
+ },
+ {
+  "name": "renderBuildingsOwnedRightPanel",
+  "a": 9341,
+  "b": 9358,
+  "loc": 18,
+  "reason": "DOM",
+  "firstBlocker": {
+   "kind": "T",
+   "id": "City",
+   "from": "game/cities.ts"
+  }
+ },
+ {
+  "name": "renderCityExitFooter",
+  "a": 10700,
+  "b": 10718,
+  "loc": 19,
+  "reason": "DOM",
+  "firstBlocker": {
+   "kind": "P",
+   "id": "el",
+   "block": 1
+  }
+ },
+ {
+  "name": "renderCivResourceTopBar",
+  "a": 10736,
+  "b": 10782,
+  "loc": 47,
+  "reason": "DOM",
+  "firstBlocker": {
+   "kind": "T",
+   "id": "City",
+   "from": "game/cities.ts"
+  }
+ },
+ {
+  "name": "renderCityIconLeftRail",
+  "a": 10783,
+  "b": 10792,
+  "loc": 10,
+  "reason": "DOM",
+  "firstBlocker": {
+   "kind": "P",
+   "id": "el",
+   "block": 1
+  }
+ },
+ {
+  "name": "renderHandelSlidersPanel",
+  "a": 11007,
+  "b": 11044,
+  "loc": 38,
+  "reason": "DOM",
+  "firstBlocker": {
+   "kind": "T",
+   "id": "City",
+   "from": "game/cities.ts"
+  }
+ },
+ {
+  "name": "renderCivMapChrome",
+  "a": 11056,
+  "b": 11080,
+  "loc": 25,
+  "reason": "DOM",
+  "firstBlocker": {
+   "kind": "T",
+   "id": "City",
+   "from": "game/cities.ts"
+  }
+ },
+ {
+  "name": "renderOkolicaPanel",
+  "a": 11595,
+  "b": 11604,
+  "loc": 10,
+  "reason": "DOM",
+  "firstBlocker": {
+   "kind": "T",
+   "id": "City",
+   "from": "game/cities.ts"
+  }
+ },
+ {
+  "name": "renderCityIconRail",
+  "a": 11605,
+  "b": 11650,
+  "loc": 46,
+  "reason": "DOM",
+  "firstBlocker": {
+   "kind": "P",
+   "id": "el",
+   "block": 1
+  }
+ },
+ {
+  "name": "withW4TabCard",
+  "a": 11651,
+  "b": 11667,
+  "loc": 17,
+  "reason": "DOM",
+  "firstBlocker": {
+   "kind": "T",
+   "id": "City",
+   "from": "game/cities.ts"
+  }
+ },
+ {
+  "name": "renderLeftPanelTab",
+  "a": 11668,
+  "b": 11697,
+  "loc": 30,
+  "reason": "DOM",
+  "firstBlocker": {
+   "kind": "T",
+   "id": "City",
+   "from": "game/cities.ts"
+  }
+ },
+ {
+  "name": "renderRightPanelTab",
+  "a": 11698,
+  "b": 11755,
+  "loc": 58,
+  "reason": "DOM",
+  "firstBlocker": {
+   "kind": "T",
+   "id": "City",
+   "from": "game/cities.ts"
+  }
+ },
+ {
+  "name": "paintCityPanelSections",
+  "a": 11756,
+  "b": 11854,
+  "loc": 99,
+  "reason": "DOM",
+  "firstBlocker": {
+   "kind": "P",
+   "id": "CityPanelUxMounts",
+   "block": 7
+  }
+ },
+ {
+  "name": "showCityPanel",
+  "a": 11948,
+  "b": 11963,
+  "loc": 16,
+  "reason": "DOM",
+  "firstBlocker": {
+   "kind": "T",
+   "id": "City",
+   "from": "game/cities.ts"
+  }
+ },
+ {
+  "name": "hideCityPanel",
+  "a": 11964,
+  "b": 11970,
+  "loc": 7,
+  "reason": "DOM",
+  "firstBlocker": {
+   "kind": "P",
+   "id": "rootEl",
+   "block": 6
+  }
+ }
+]

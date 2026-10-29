@@ -1,0 +1,20 @@
+{
+ "mode": "r3",
+ "pin": "edb8fb56",
+ "block": 8,
+ "pinUnits": 377,
+ "k08Units": 39,
+ "k08Loc": 1430,
+ "domUnits": 24,
+ "domLoc": 1324,
+ "selectedUnits": 15,
+ "selectedLoc": 82,
+ "deferredUnits": 24,
+ "deferredLoc": 1324,
+ "deferredByClass": {
+  "DOM": 24
+ },
+ "missingInPin": [
+  "<HEADER>"
+ ]
+}
