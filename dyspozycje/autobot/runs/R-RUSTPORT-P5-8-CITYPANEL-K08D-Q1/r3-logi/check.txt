@@ -1,0 +1,8 @@
+
+> civ-frontend-v2@0.0.0 check
+> node tools/check-no-logic-imports.mjs --self-test && node tools/check-no-logic-imports.mjs src index.html vite.config.ts && node tools/verify-pin-copies.mjs
+
+self-test: 33 pozytywnych, 15 negatywnych, 1 test numeru linii, błędów: 0
+check-no-logic-imports: cele=src,index.html,vite.config.ts plików=207 plików_z_trafieniami=0 trafień=0
+verify-pin-copies: pin=edb8fb56 plików=435 niezgodnych=0
+EXIT 0
