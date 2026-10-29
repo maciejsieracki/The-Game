@@ -1,0 +1,12 @@
+{
+ "TEXT": 3,
+ "SUBS": 8,
+ "COVER": 3,
+ "EXPORT": 0,
+ "blocks": 3,
+ "ORPHAN": 0,
+ "fails": 1
+}
+FAIL EXPORT: deklaracje spoza partii: zbednyK08eMut
+verify-k08e-copies: 1 różnic
+EXIT 1

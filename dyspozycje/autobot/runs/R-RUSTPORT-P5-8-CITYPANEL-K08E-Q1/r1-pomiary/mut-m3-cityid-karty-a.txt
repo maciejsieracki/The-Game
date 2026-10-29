@@ -1,0 +1,12 @@
+{
+ "TEXT": 2,
+ "SUBS": 8,
+ "COVER": 3,
+ "EXPORT": 3,
+ "blocks": 3,
+ "ORPHAN": 0,
+ "fails": 1
+}
+FAIL TEXT: buildTopBarLudnoscDetailCard różni się od pinu od linii 40 (port: "    const tickRow = tick?.perCityRows?.find(r => r.cityId === city.id);", pin: "    const tickRow = tick?.perCityRows?.find(r => r.cityId === String(city.id));")
+verify-k08e-copies: 1 różnic
+EXIT 1

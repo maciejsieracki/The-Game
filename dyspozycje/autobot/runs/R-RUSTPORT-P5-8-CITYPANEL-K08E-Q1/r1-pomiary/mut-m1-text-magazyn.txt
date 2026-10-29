@@ -1,0 +1,12 @@
+{
+ "TEXT": 2,
+ "SUBS": 8,
+ "COVER": 3,
+ "EXPORT": 3,
+ "blocks": 3,
+ "ORPHAN": 0,
+ "fails": 1
+}
+FAIL TEXT: renderMagazyn różni się od pinu od linii 10 (port: "  if (!view) { mount.appendChild(el('div', 'muted', '—')); return; }", pin: "  if (!view || !data) { mount.appendChild(el('div', 'muted', '—')); return; }")
+verify-k08e-copies: 1 różnic
+EXIT 1
