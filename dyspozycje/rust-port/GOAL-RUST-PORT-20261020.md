@@ -62,10 +62,11 @@ dotykające tych samych plików — zawsze sekwencyjnie, nigdy w tej samej fali.
 | 33 | R-RUSTPORT-REPIN-EKONOMIA-A-Q1 | REPIN 4b | 3/5 | wf_18412929-da2 | **ZAMKNIĘTE ADM. (manpower.ts zrobione) — zintegrowane** (`84136f57`, 1272/0); reszta → B (production/turn-economy), C (terrain-improvements + M16), D (economy/work-tax) | 2026-10-29 |
 | 34 | R-RUSTPORT-REPIN-MAPA-Q1 | REPIN 4d | 3/5 | wf_e1ae1e19-d3b | **PASS-WITH-NOTES — zintegrowane** (docs, `ba28008c`): 8 hunków gen-helpers = zamiana FIFO (bez portu), M04/M05A/M05B 0 rozbieżności; M16 (11551+40) → REPIN-EKONOMIA-C (`terrain-improvements`) | 2026-10-29 |
 | 35 | R-RUSTPORT-REPIN-WOJNA-NOWE-A-Q1 | REPIN 2a | 4/5 | wf_028d6130-ada | **PASS-WITH-NOTES — zintegrowane** (`ec981e3a`, 1284/0; 3 nowe moduły, mutacje R1–R10 + M1–M4) | 2026-10-29 |
-| 36 | R-RUSTPORT-REPIN-WOJNA-NOWE-B-Q1 | REPIN 2a | 1/5 | (nowy) | etap 1 | 2026-10-29 |
+| 36 | R-RUSTPORT-REPIN-WOJNA-NOWE-B-Q1 | REPIN 2a | 1/5 | wf_921c9171-66d | **PASS-WITH-NOTES — zintegrowane** (1313/0; army_consolidation, ai_general_war_campaign; mutacje 38/39 + 1 equiv) | 2026-10-29 |
 | 37 | R-RUSTPORT-REPIN-EKONOMIA-C-Q1 | REPIN 4b | 2/5 | wf_29db1dc6-fdf | **PASS-WITH-NOTES — zintegrowane** (1300/0; mnożnik budowy 0.5/1/2, wektory M16/P6.23 z weba, M16 domknięte); C5 relief-preserving i C6 population-growth-v85 → nowe ID | 2026-10-29 |
 | 38 | R-RUSTPORT-P6-M06A6-LAD-MORZE-PANGEA-Q1 | P6 mapgen | 1/5 | (nowy) | etap 1 | 2026-10-29 |
 | 39 | R-RUSTPORT-REPIN-EKONOMIA-B-Q1 | REPIN 4b | 1/5 | (nowy) | etap 1 | 2026-10-29 |
+| 40 | R-RUSTPORT-REPIN-WOJNA-NOWE-C-Q1 | REPIN 2a | 1/5 | (nowy) | etap 1 | 2026-10-29 |
 | 24 | R-RUSTPORT-P6-M06A4-LAD-MORZE-RESZTA3-Q1 | P6 mapgen | 3/5 | wf_206786d8-1fa | **PASS-WITH-NOTES (partie 2–3) — zintegrowane** (`5a1fbb33`, 1265/0); zamknięte adm.; reszta → M06A5 |
 | 25 | R-RUSTPORT-P5-8-CITYPANEL-K08B-Q1 | P5.8 | 4/5 | wf_5b437a20-313 | **ZAMKNIĘTE ADMINISTRACYJNIE (9/24 jedn.) — zintegrowane** (`b19311e2`); reszta → K08C/K08D |
 | 3 | R-RUSTPORT-P5-8-CITYPANEL-PODZIAL-Q1 | P5.8 | 3/5 | wf_5b094795-b4f | **PASS — zintegrowane** (docs, `a1246e48`); slot wolny | 2026-10-29 |

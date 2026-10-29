@@ -325,3 +325,4 @@ Cel końcowy i bieżący zapisane w `GOAL-RUST-PORT-20261020.md` (§"CEL PĘTLI 
 | 2026-10-29 | SKRYPT | - | PORT.js skasowany przez pomyłkę orkiestratora (rm -rf z pustą substytucją), odtworzony z transkryptu sesji | zamknięte |
 | 2026-10-29 | R-RUSTPORT-P6-M06A5-LAD-MORZE-ULAMEK-Q1 | 2 | r1 Ev FAIL (luki NaN, remis 0.04, brak score) → obrona (+7 testów brzegowych) → FC PASS | **ZINTEGROWANE** `dcd3eadb` (1296/0); otwarte M06A6 |
 | 2026-10-29 | R-RUSTPORT-REPIN-EKONOMIA-C-Q1 | 2 | C1/C2 mnożnik budowy ulepszeń; wektory M16/P6.23 zregenerowane (qualifier 7,7 MB); mutacje; FC PASS-WITH-NOTES | **ZINTEGROWANE** (1300/0); dług: weryfikatory Python p6_23/m16 (formuła 1/2/4), literał pin_web w generatorze; C5/C6 → EKONOMIA-E; REPIN-MAPA/M16 zamknięte |
+| 2026-10-29 | R-RUSTPORT-REPIN-WOJNA-NOWE-B-Q1 | 1 | army_consolidation + ai_general_war_campaign; wektory 0 rozbieżności; FC PASS-WITH-NOTES | **ZINTEGROWANE** (1313/0); otwarte WOJNA-NOWE-C |
