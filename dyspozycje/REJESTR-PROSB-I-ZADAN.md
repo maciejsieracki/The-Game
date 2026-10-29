@@ -8549,3 +8549,20 @@ referencyjnych zielone, `entity-card-historia-section-test` 36/36,
 - **Oczekiwane działanie:** przełącznik włączony ustawia wodza jako cel nowo zrekrutowanych jednostek. Wyłączony stan nie wydaje im marszu do wodza. Stan widoczny przy jednostce musi odzwierciedlać wybór domyślny, a gracz nadal może ręcznie włączyć lub wyłączyć marsz dla pojedynczej jednostki. Część oddziałów może iść do wodza, pozostałe gdzie indziej.
 - **Zakres weryfikacji:** rekrutacja z panelu miasta i panelu budowania w armii, niezależne zmiany ustawienia globalnego oraz jednostkowego, zachowanie celu przy ruchomym wodzu, save/load oraz właściwy cel nowo zrekrutowanych jednostek.
 - **Run:** `dyspozycje/autobot/runs/R-WOJSKO-ARMIA-REKRUTACJA-DO-WODZA-Q1/`; Operator PASS, Evaluator PASS-WITH-NOTES, Final Control PASS. Post-rebase 20/20 follow test, UI/save checks, TypeScript/build and bundle smoke PASS; raw remote hashes PASS.
+
+## Otwarte zgłoszenia AutoBot — 2026-10-29
+
+### `R-AI-FOOD-IMPROVEMENT-PRIORITY-Q1` — kolejność automatycznego budowania żywności
+
+- **STATUS:** Etap 1/11 DONE — zarejestrowane i dispatch gotowy; Operator `/root/food_priority_operator` przypisany. Kanban `the-game-real24` niedostępny w tej sesji, więc brak natywnej karty został jawnie odnotowany w dispatchu.
+- **Zgłoszenie:** AI cywilizacji i auto-budowanie gracza powinny: (0) najpierw wycinać lasy na kwalifikujących się polach przy rzekach, (1) budować farmy na wszystkich kwalifikujących się pustych polach, gdzie pracują obywatele, (2) dopiero potem trzodę/hodowlę, (3) dopiero po farmach i hodowli irygację lub właściwe cywilizacji tarasy.
+- **Powiązane historyczne prace:** `R-AI-WYRAB-PRZY-RZECE-FARMY-Q1` jest częściowo zintegrowane, ale temat nie został zamknięty i wykorzystał limit pięciu rund; nowy ticket obejmuje dokładnie nową, zatwierdzoną kolejność i parytet AI/gracz, bez nadpisania starego runu. Istniejący kanon obywateli/wycinki należy zachować.
+- **Pipeline:** Operator → niezależny Evaluator → warunkowa Obrona → Final Control → integracja main → ROBOCZA → push i receipt (graf 1–11 w `dyspozycje/autobot/runs/R-AI-FOOD-IMPROVEMENT-PRIORITY-Q1/00-dispatch.md`).
+
+### `R-IMPROVEMENT-BUILD-HIGHLIGHT-LIFECYCLE-Q1` — jaśniejsze podświetlenie i znikanie po budowie
+
+- **STATUS:** Etap 1/11 DONE — zarejestrowane i dispatch gotowy; Operator `/root/improvement_highlight_operator` przypisany. Kanban `the-game-real24` niedostępny w tej sesji, więc brak natywnej karty został jawnie odnotowany w dispatchu.
+- **Zgłoszenie:** Dla wszystkich ulepszeń zwiększyć jasność kwalifikujących się pól o 20%; po udanej budowie podświetlenie pola ma zniknąć natychmiast, a po odznaczeniu/odświeżeniu ma ponownie pokazywać tylko aktualne pola możliwe do zbudowania. Szczególny przykład: kopalnia na górze.
+- **Powiązane historyczne prace:** `P-KOPALNIA-PODSWIETLENIE-KOSMETYKA-Q1` i `R-KOPALNIA-PODSWIETLENIE-HEKSOW-Q1` są wcześniejszym, węższym kontekstem renderowania kopalni; nowy ticket obejmuje każdą klasę ulepszeń oraz aktualizację eligibility po budowie.
+- **Pipeline:** Operator → niezależny Evaluator → warunkowa Obrona → Final Control → integracja main → ROBOCZA → push i receipt (graf 1–11 w `dyspozycje/autobot/runs/R-IMPROVEMENT-BUILD-HIGHLIGHT-LIFECYCLE-Q1/00-dispatch.md`).
+
