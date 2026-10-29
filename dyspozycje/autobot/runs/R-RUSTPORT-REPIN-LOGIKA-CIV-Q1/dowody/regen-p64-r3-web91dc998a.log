@@ -1,0 +1,58 @@
+{
+ "core": {
+  "terrainMoveCost": 10,
+  "terrainCombos": 384,
+  "embarkMoveCost": 10,
+  "hexDistance": 60,
+  "computePath": 480,
+  "computeReachable": 400,
+  "pathCost": 250,
+  "computeVisibleAt": 180,
+  "addExplored": 30,
+  "stackGroupIdOf": 7,
+  "constants": "object",
+  "applyRoad": 120
+ },
+ "embark": {
+  "canUnitEmbark": 36,
+  "moveCostFnFor": 130,
+  "applyEmbarkStateAfterMove": 60,
+  "isWaterHexAt": 200,
+  "nearestFreeWaterHex": 300
+ },
+ "march": {
+  "truncatePathAtFogFrontier": 60,
+  "applyFogToPathPlan": 116,
+  "truncatePathToBudget": 587,
+  "planPathTurns": 587,
+  "shouldStopAtObstacle": 587,
+  "executeMarchStep": 580,
+  "validateAutoMarchFromSave": 161,
+  "plannedMarchesFromSave": 160,
+  "plannedMarchesToSave": 60,
+  "stopReasonCounts": "object"
+ },
+ "rally": {
+  "sequences": 80,
+  "leaders": 12,
+  "fromSave": 63,
+  "toSave": 20,
+  "numberQuirks": 19
+ },
+ "scout": {
+  "isScoutUnit": 16,
+  "clearScoutAutoExplore": 9,
+  "scoreMarginalReveal": 120,
+  "scoreHexForExplore": 120,
+  "pickScoutExploreTarget": 174,
+  "advanceScoutAutoExplore": 174,
+  "runScoutsAutoExplore": 70
+ },
+ "stopCounts": {
+  "none": 268,
+  "no_movement": 89,
+  "no_path": 117,
+  "blocked_city": 106
+ }
+}
+EXIT=0 (generator R-RUSTPORT-P6-4 bez zmian, WEB_ROOT=git archive 91dc998a)

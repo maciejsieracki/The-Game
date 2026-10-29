@@ -54,3 +54,12 @@ Wszystkie powyższe to asercje kodyfikujące stan edb8fb56 lub sanity-progi. Ich
 - `civCombatUnitShapeFromCategory`, `civCombatBonusProjection`, `effectiveCombatBonusChipTexts` (adaptery UI/PreBattle) — NIE PORTOWANE, brak konsumenta testowego w Rust.
 - Regeneracja wektorów p6_4 i derived zależnych od `civ-bonuses`/`civ-matrix-semantic` — NIE WYKONANO.
 - Przesunięcie pinu w `manifest`/`pin-manifest` — poza tematem (zgodnie z DELTA §6).
+
+## 6. Pomiary r3 (Operator-pomiary, baza `aa0efc5b`)
+
+- Bramki na `aa0efc5b` (surowe logi z `EXIT=`): `cargo fmt --all -- --check` EXIT=0; `cargo clippy --all-targets -- -D warnings` EXIT=0; `cargo test --all-targets --no-fail-fast` 1227 passed / 0 failed, EXIT=0. Logi: `gate-*-pom-r3.log` w folderze runu.
+- Wektory p6_4 (`core`, `embark`, `march`): po ponownym uruchomieniu generatora `gen-p64-vectors.mjs` na `git archive 91dc998a` wszystkie 6 plików JSON (core, embark, march, rally, scout, maps) są bajt-w-bajt zgodne z repo. Log: `dowody/regen-p64-r3-web91dc998a.log`.
+- Zakres zmian wektorów (`dowody/cmp-p64-old-vs-new-r3.log`): tylko kategorie ruchu (`computePath` 5, `computeReachable` 4, `moveCostFnFor` 15, `applyFogToPathPlan` 3, `truncatePathToBudget` 9, `planPathTurns` 12, `shouldStopAtObstacle` 8, `executeMarchStep` 8 pozycji). Pozostałe kategorie bez zmian.
+- Źródło przyczyny: `civ-bonuses.ts` spec `walka_ruch_piechota_teren_plytkie_morze` → cel `piechota` (tablica MATRIX_COMBAT_SPECS, ok. :279-281; sprawdzone `git show 91dc998a`).
+- NIE ZAMKNIĘTE: niezależny weryfikator w Pythonie (`dowody/verify-p64-r3-stale-python-model.log`) nadal nieaktualny. Regeneracja Node to ten sam generator, więc daje powtarzalność, nie niezależność.
+- Mutacje na aktualnym `src/` (20 ważnych wyników, `mutants-pom-r3.log`; zestaw: `--lib` + 11 binarek p6_1d/p6_1e/p6_4): zabite 15, przeżyte 5. Przeżyte: M8, M9 (filtr `wykluczone_g1`, równoważne przy danych, bo wartość 0 we wszystkich wierszach i brak w `zerowe_markery`; zależne od danych); M15 (filtr EGIPT_POMIJANE `|| false`, równoważność NIE_ZMIERZONO); M17 (`wyjatki_civ` nadpisanie celu, LUKA TESTOWA); M19 (`x == 0.0` w `civ_matrix.rs:60`, równoważne co do znaku zera).
