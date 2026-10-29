@@ -23,6 +23,9 @@
 ## 1b. Dokończenie rozpoczętej grafiki (decyzja właściciela, 2026-10-29, po audycie odzysku)
 Audyt: żadna praca graficzna nie została utracona — MOD-01/03/04/05/06/07/09/10/11/12/13, P4.30–P4.35, P4.15 (spike GPU, instrukcja dla właściciela) i P4.36 Q1 (mury oblężnicze) oraz Q2 (pole statyczne bitwy, `parity-v2` `7817ef0c`) są ZINTEGROWANE. Nieukończona jest tylko reszta P4.36 / MOD-14 (scena bitwy 3D: rozmieszczenie jednostek, efekty, oświetlenie/mgła, kamera, picking) = **Q3 → Q4 → Q5** (sekwencyjnie, osobne ID wg Z-36-1). To jedyna rozpoczęta, odzyskiwalna grafika. Start Q3 (Opus 5.5 medium, wyjątek 3D z §5b) po zamknięciu pierwszej fali T0/T1/T3a, w slocie kodu Rust #2, z pilnowaniem limitu.
 
+## 1c. Kalendarz limitu (właściciel, 2026-10-29)
+Limit odnawia się we **wtorek 2026-11-03**. Reguła: ciężkie prace (3D/Opus oraz duże tematy web) zawsze podejmujemy PRZED zużyciem limitu, czyli zostawiony zapas przed odnowieniem przeznaczamy na nie; przed tym terminem w pierwszej kolejności lekkie tematy wg planu. Rozpoczęte ciężkie P4.36 Q3→Q5 trwają zgodnie ze zgodą z 2026-10-29.
+
 ## 2. ODŁOŻONE na sam koniec (ciężka grafika/3D — Opus 5.5, tylko przy zapasie limitu)
 P4.36 części 3–5 (bitwa 3D), MOD-06/07/09/13 i inne obiekty/jednostki 3D, ujednolicenie typu drzewa sceny 3D, renderer mapy 3D (P4.6–P4.10 w części GPU), RR-T1 spike GPU (wymaga maszyny właściciela), P8 porównania wizualne/screenshotowe, P10 wydajność, P11 packaging (osobna zgoda).
 
