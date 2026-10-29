@@ -1,0 +1,48 @@
+BASE OK   pin | k09a-pin: 69/69 zgodnych
+BASE OK   wiring | k09a-wiring: 10/10 zgodnych
+BASE OK   deps | k09a-deps: 5/5 zgodnych
+KILLED   paint.noRefresh (pin) | FAIL exec.paint.argRefresh | pin-exec vs port: paint.argRefresh | k09a-pin: 68/69 zgodnych
+KILLED   paint.mapNull (pin) | FAIL exec.paint.k07Null | pin-exec vs port: paint.k07Null | k09a-pin: 58/69 zgodnych
+KILLED   paint.onCloseNoNew (pin) | FAIL exec.paint.k07Null | pin-exec vs port: paint.k07Null | k09a-pin: 59/69 zgodnych
+KILLED   paint.scaleConst (pin) | FAIL exec.paint.scale18 | pin-exec vs port: paint.scale18 | k09a-pin: 68/69 zgodnych
+KILLED   paint.noTopClear (pin) | FAIL exec.paint.prefilled | pin-exec vs port: paint.prefilled | k09a-pin: 68/69 zgodnych
+KILLED   paint.noHoverDocks (pin) | FAIL exec.paint.k07Null | pin-exec vs port: paint.k07Null | k09a-pin: 58/69 zgodnych
+KILLED   paint.noGarrisonClear (pin) | FAIL exec.paint.pinnedOther | pin-exec vs port: paint.pinnedOther | k09a-pin: 68/69 zgodnych
+KILLED   paint.noRightRail (pin) | FAIL exec.paint.prefilled | pin-exec vs port: paint.prefilled | k09a-pin: 62/69 zgodnych
+KILLED   paint.noK07Mirror (pin) | FAIL exec.paint.k07Null | pin-exec vs port: paint.k07Null | k09a-pin: 68/69 zgodnych
+KILLED   show.noHud (pin) | FAIL exec.show.refreshNoMap | pin-exec vs port: show.refreshNoMap | k09a-pin: 66/69 zgodnych
+KILLED   show.noActiveCity (pin) | FAIL exec.show.refreshCb | pin-exec vs port: show.refreshCb | k09a-pin: 68/69 zgodnych
+KILLED   show.refreshNoMapCheck (pin) | FAIL exec.show.refreshNoMap | pin-exec vs port: show.refreshNoMap | k09a-pin: 68/69 zgodnych
+KILLED   hide.noFrameHide (pin) | FAIL exec.hide.basic | pin-exec vs port: hide.basic | k09a-pin: 66/69 zgodnych
+KILLED   hide.noHudRestore (pin) | FAIL exec.hide.basic | pin-exec vs port: hide.basic | k09a-pin: 66/69 zgodnych
+KILLED   rerender.noHoverNull (pin) | FAIL exec.rerender.fsbtn | pin-exec vs port: rerender.fsbtn | k09a-pin: 55/69 zgodnych
+KILLED   rerender.scaleConst (pin) | FAIL exec.rerender.fsbtn | pin-exec vs port: rerender.fsbtn | k09a-pin: 67/69 zgodnych
+KILLED   rerender.refreshNoReturn (pin) | FAIL exec.rerender.refresh | pin-exec vs port: rerender.refresh | k09a-pin: 68/69 zgodnych
+KILLED   rerender.mapNull (pin) | FAIL exec.rerender.fsbtn | pin-exec vs port: rerender.fsbtn | k09a-pin: 57/69 zgodnych
+KILLED   rerender.noMapGuard (pin) | FAIL exec.rerender.noMap | pin-exec vs port: rerender.noMap | k09a-pin: 68/69 zgodnych
+KILLED   rerender.magazynNoView (pin) | FAIL exec.rerender.fsbtn | pin-exec vs port: rerender.fsbtn | k09a-pin: 57/69 zgodnych
+KILLED   rerender.closeNoHide (pin) | FAIL exec.rerender.close | pin-exec vs port: rerender.close | k09a-pin: 68/69 zgodnych
+KILLED   rerender.mapbtnNoHook (pin) | FAIL exec.rerender.mapbtn.hook | pin-exec vs port: rerender.mapbtn.hook | k09a-pin: 68/69 zgodnych
+KILLED   rerender.managerNoState (pin) | FAIL exec.rerender.manager | pin-exec vs port: rerender.manager | k09a-pin: 68/69 zgodnych
+KILLED   rerender.scaleNoRerender (pin) | FAIL exec.rerender.fsbtn | pin-exec vs port: rerender.fsbtn | k09a-pin: 68/69 zgodnych
+KILLED   switch.noHook (pin) | FAIL exec.rerender.next | pin-exec vs port: rerender.next | k09a-pin: 65/69 zgodnych
+KILLED   switch.noGarrisonClear (pin) | FAIL exec.switch.pinnedClear | pin-exec vs port: switch.pinnedClear | k09a-pin: 68/69 zgodnych
+KILLED   switch.noWrite (pin) | FAIL exec.rerender.next | pin-exec vs port: rerender.next | k09a-pin: 65/69 zgodnych
+KILLED   switch.wrapDir (pin) | FAIL exec.rerender.next | pin-exec vs port: rerender.next | k09a-pin: 65/69 zgodnych
+KILLED   write.noK07 (pin) | FAIL exec.rerender.next | pin-exec vs port: rerender.next | k09a-pin: 65/69 zgodnych
+KILLED   write.noK06 (pin) | FAIL exec.rerender.next | pin-exec vs port: rerender.next | k09a-pin: 65/69 zgodnych
+KILLED   rail.titleNoDanina (pin) | FAIL exec.paint.prefilled | pin-exec vs port: paint.prefilled | k09a-pin: 60/69 zgodnych
+KILLED   tabs.praca.noGuard (pin) | FAIL exec.right.praca.noHook | pin-exec vs port: right.praca.noHook | k09a-pin: 68/69 zgodnych
+KILLED   tabs.left.split (pin) | FAIL exec.paint.rekrutacja | pin-exec vs port: paint.rekrutacja | k09a-pin: 67/69 zgodnych
+KILLED   tabs.right.magazynNoView (pin) | FAIL exec.paint.spichlerz | pin-exec vs port: paint.spichlerz | k09a-pin: 67/69 zgodnych
+EXCLUDED tabs.okolica.noMap (pin) — NIE_ZMIERZONO: mapa bez kafelków silnika (K07B renderOkolica)
+KILLED   wiring.rerender (wiring) | FAIL W4 | requireK08aDeps().rerender() wywołuje jednostkę K09A rerender (refresh-spy) | k09a-wiring: 9/10 zgodnych
+KILLED   wiring.hooks (wiring) | FAIL W9 | getK09aHooks().onSwitchCity(5) trafia do host.onSwitchCity z id 5 | k09a-wiring: 8/10 zgodnych
+KILLED   wiring.clearGarrison (wiring) | FAIL W5 | requireK08aDeps().clearGarrisonPanel() zeruje pinnedGarrisonCityId | k09a-wiring: 9/10 zgodnych
+KILLED   wiring.hideCityPanel (wiring) | FAIL W7 | requireK09aDeps().hideCityPanel() ukrywa korzeń K06B (display none) | k09a-wiring: 9/10 zgodnych
+KILLED   wiring.hideFrame (wiring) | FAIL W8 | showCityUxFrame otwiera ramkę (K08A: isCityUxFrameOpen), hideCityUxFrame ją zamyka | k09a-wiring: 9/10 zgodnych
+KILLED   wiring.frameOpen (wiring) | FAIL W8 | showCityUxFrame otwiera ramkę (K08A: isCityUxFrameOpen), hideCityUxFrame ją zamyka | k09a-wiring: 9/10 zgodnych
+KILLED   deps.noThrow (deps) | FAIL reset.throws | setK09aDeps(null) cofa instalację (ponowny wyjątek) | k09a-deps: 3/5 zgodnych
+KILLED   deps.hooksEmpty (deps) | FAIL hooks.identity | setK09aHooks/getK09aHooks: ta sama referencja | k09a-deps: 4/5 zgodnych
+
+k09a-mutate: zabitych 42/42 (wykluczone NIE_ZMIERZONO: 1)

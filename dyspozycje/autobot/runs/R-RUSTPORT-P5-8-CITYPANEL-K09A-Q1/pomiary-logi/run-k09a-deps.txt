@@ -1,0 +1,8 @@
+OK   pre.throws | przed setK09aDeps: requireK09aDeps rzuca „K09A: brak setK09aDeps”
+OK   post.identity | po setK09aDeps: requireK09aDeps zwraca ten sam obiekt
+OK   reset.throws | setK09aDeps(null) cofa instalację (ponowny wyjątek)
+OK   hooks.default | domyślnie getK09aHooks() zwraca pusty obiekt
+OK   hooks.identity | setK09aHooks/getK09aHooks: ta sama referencja
+
+k09a-deps: 5/5 zgodnych
+EXIT=0

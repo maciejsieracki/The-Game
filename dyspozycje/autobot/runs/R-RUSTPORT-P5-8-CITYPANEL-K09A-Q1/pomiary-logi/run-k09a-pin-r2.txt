@@ -1,0 +1,71 @@
+OK   units.count | jednostki K09A z markerów portu: 9 (oczekiwane 9)
+OK   pin.range.switchCity | zakres pinu 10209-10221 (switchCity) zaczyna się i kończy poprawnie
+OK   pin.range.rerender | zakres pinu 11855-11941 (rerender) zaczyna się i kończy poprawnie
+OK   pin.range.renderCityIconRightRail | zakres pinu 10793-10809 (renderCityIconRightRail) zaczyna się i kończy poprawnie
+OK   pin.range.renderOkolicaPanel | zakres pinu 11595-11603 (renderOkolicaPanel) zaczyna się i kończy poprawnie
+OK   pin.range.renderLeftPanelTab | zakres pinu 11668-11696 (renderLeftPanelTab) zaczyna się i kończy poprawnie
+OK   pin.range.renderRightPanelTab | zakres pinu 11698-11750 (renderRightPanelTab) zaczyna się i kończy poprawnie
+OK   pin.range.paintCityPanelSections | zakres pinu 11756-11853 (paintCityPanelSections) zaczyna się i kończy poprawnie
+OK   pin.range.showCityPanel | zakres pinu 11948-11961 (showCityPanel) zaczyna się i kończy poprawnie
+OK   pin.range.hideCityPanel | zakres pinu 11964-11968 (hideCityPanel) zaczyna się i kończy poprawnie
+OK   k06b.wired | K06B: 87 delegatów z portu, 20 neutralnych wejść testowych (appendCityResourceStockStrip bindBuildQueueDragReorder bindRecruitQueueDragReorder buildableProduction buildingLevelForEpoch buildingOwnedLevel buildingProductionItem buildingTypeQueued cancelQueueItem cityPracaSplit dequeueRecruitment filterRuntimeActiveBuiltIds frontItem getShowEraBuildingPreview groupBuiltBuildingIds promoteToFront resolveEmpireSnap resolveOwnedBuildingInactiveStatus sumOwnedBuildingsUpkeep tileYield)
+OK   exec.switch.next | pin-exec vs port: switch.next
+OK   exec.switch.prevWrap | pin-exec vs port: switch.prevWrap
+OK   exec.switch.single | pin-exec vs port: switch.single
+OK   exec.switch.noActive | pin-exec vs port: switch.noActive
+OK   exec.switch.pinnedClear | pin-exec vs port: switch.pinnedClear
+OK   cover.switchCity | switchCity: >=1 scenariusz bez wyjątku po stronie pinu (5/5)
+OK   exec.rerender.full | pin-exec vs port: rerender.full
+OK   exec.rerender.refresh | pin-exec vs port: rerender.refresh
+OK   exec.rerender.noRoot | pin-exec vs port: rerender.noRoot
+OK   exec.rerender.noMap | pin-exec vs port: rerender.noMap
+OK   exec.rerender.noCity | pin-exec vs port: rerender.noCity
+OK   exec.rerender.scale20 | pin-exec vs port: rerender.scale20
+OK   exec.rerender.praca | pin-exec vs port: rerender.praca
+OK   exec.rerender.manager | pin-exec vs port: rerender.manager
+OK   exec.rerender.close | pin-exec vs port: rerender.close
+OK   exec.rerender.mapbtn.hook | pin-exec vs port: rerender.mapbtn.hook
+OK   exec.rerender.mapbtn.noHook | pin-exec vs port: rerender.mapbtn.noHook
+OK   exec.rerender.next | pin-exec vs port: rerender.next
+OK   exec.rerender.fsbtn | pin-exec vs port: rerender.fsbtn
+OK   cover.rerender | rerender: >=1 scenariusz bez wyjątku po stronie pinu (13/13)
+OK   exec.rail.right.A | pin-exec vs port: rail.right.A
+OK   exec.rail.right.C | pin-exec vs port: rail.right.C
+OK   cover.renderCityIconRightRail | renderCityIconRightRail: >=1 scenariusz bez wyjątku po stronie pinu (2/2)
+OK   exec.okolica.A | pin-exec vs port: okolica.A
+OK   cover.renderOkolicaPanel | renderOkolicaPanel: >=1 scenariusz bez wyjątku po stronie pinu (1/1)
+OK   exec.left.budowa | pin-exec vs port: left.budowa
+OK   exec.left.rekrutacja | pin-exec vs port: left.rekrutacja
+OK   exec.left.default | pin-exec vs port: left.default
+OK   cover.renderLeftPanelTab | renderLeftPanelTab: >=1 scenariusz bez wyjątku po stronie pinu (3/3)
+OK   exec.right.spichlerz | pin-exec vs port: right.spichlerz
+OK   exec.right.handel | pin-exec vs port: right.handel
+OK   exec.right.porzadek | pin-exec vs port: right.porzadek
+OK   exec.right.zdrowie | pin-exec vs port: right.zdrowie
+OK   exec.right.kultura | pin-exec vs port: right.kultura
+OK   exec.right.religia | pin-exec vs port: right.religia
+OK   exec.right.xyz | pin-exec vs port: right.xyz
+OK   exec.right.praca.hook | pin-exec vs port: right.praca.hook
+OK   exec.right.praca.noHook | pin-exec vs port: right.praca.noHook
+OK   exec.right.porzadek.noData | pin-exec vs port: right.porzadek.noData
+OK   cover.renderRightPanelTab | renderRightPanelTab: >=1 scenariusz bez wyjątku po stronie pinu (10/10)
+OK   exec.paint.budowa | pin-exec vs port: paint.budowa
+OK   exec.paint.rekrutacja | pin-exec vs port: paint.rekrutacja
+OK   exec.paint.spichlerz | pin-exec vs port: paint.spichlerz
+OK   exec.paint.scale18 | pin-exec vs port: paint.scale18
+OK   exec.paint.pinnedOther | pin-exec vs port: paint.pinnedOther
+OK   exec.paint.noDocks | pin-exec vs port: paint.noDocks
+OK   exec.paint.prefilled | pin-exec vs port: paint.prefilled
+OK   exec.paint.newOnClose | pin-exec vs port: paint.newOnClose
+OK   exec.paint.keepOnClose | pin-exec vs port: paint.keepOnClose
+OK   exec.paint.argRefresh | pin-exec vs port: paint.argRefresh
+OK   exec.paint.k07Null | pin-exec vs port: paint.k07Null
+OK   cover.paintCityPanelSections | paintCityPanelSections: >=1 scenariusz bez wyjątku po stronie pinu (11/11)
+OK   exec.show.basic | pin-exec vs port: show.basic
+OK   exec.show.refreshCb | pin-exec vs port: show.refreshCb
+OK   exec.show.refreshNoMap | pin-exec vs port: show.refreshNoMap
+OK   cover.showCityPanel | showCityPanel: >=1 scenariusz bez wyjątku po stronie pinu (3/3)
+OK   exec.hide.basic | pin-exec vs port: hide.basic
+OK   cover.hideCityPanel | hideCityPanel: >=1 scenariusz bez wyjątku po stronie pinu (1/1)
+
+k09a-pin: 69/69 zgodnych

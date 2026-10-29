@@ -339,3 +339,15 @@ Partia `rail`: 6 z 24 jednostek DOM bloku K08 (150 z 1 324 LOC) w `src/ui/cityPa
 - RUNDA 2 gate: 12/12 jednostek w `verify-k08e-copies` (magazyn, karty-a, karty-b, topbar) OK, ORPHAN 0; `run-k08e-wiring` 50/50; `mutate-k08e-wiring` 15/15; `run-k08e-pin` 54/54 (pin-exec 12/12 jednostek, pokrycie każdej); `mutate-k08e-units` 12/12 (zachowanie + pola DTO/cfg, w tym `getMaxSafePoziomRacji`); `measure-k08e-drift` kopie 0/12 rozjechane, pin head vs edb8fb56 SAME 12/12 (tekst; 2 jednostki przesunięte o −42 linie); `typecheck` i `check` zielone; regresja `run-k08d-handel-pin`, `run-k08d-wiring`, `run-k05b-units` zielone.
 - NIE_ZROBIONE (r2): produkcyjne podpięcie `installK08eWiring` (K09), `switchCity` (cięcie K09, delegat), zachowanie w przeglądarce/CSS (NIE_ZMIERZONO).
 - Szczegóły: `dyspozycje/rust-port/p5/P5-8-K08E.md` (§7 runda 2).
+
+## P5-8 K09A (R-RUSTPORT-P5-8-CITYPANEL-K09A-Q1, runda 1, Operator-impl)
+
+- ZROBIONE: 9 jednostek orkiestracji panelu miasta (pin `edb8fb56`): `switchCity`, `rerender`, `renderCityIconRightRail` (K09) oraz `renderOkolicaPanel`, `renderLeftPanelTab`, `renderRightPanelTab`, `paintCityPanelSections`, `showCityPanel`, `hideCityPanel` (K08B §3). Pliki: `src/ui/cityPanel/k09a-{deps,rerender,tabs,paint}.ts`; wiring `src/controller/k09aWiring.ts` (`installK09aWiring`, po `installK08cWiring`).
+- Gate: `typecheck` 0 błędów; `npm run check` exit 0; `verify-k09a-copies.mjs` exit 0 (9 bloków, 42 hunki wobec pinu, 0 problemów); `run-k09a-deps.mjs` 5/5.
+- Założenia i zmiany API (cięcie cyklu rerender↔paint, haki `cfg`, ramka bez `map`, `renderReligia` +`data`, dwa typy `GameData`): `dyspozycje/rust-port/p5/P5-8-K09A.md` §2–§3.
+- NIE_ZROBIONE (kolejne kroki): pin-exec harness i mutacje behawioralne (Operator-pomiary); test wykonania wiringu z jsdom; drift per jednostka (`measure-k09a-drift.mjs`); `computeOrderStateLocal`; produkcyjne podpięcie i rejestracja w `cityPanelUxBridge.ts`, mapowanie id number→string (K09B).
+
+## P5-8 K09A (R-RUSTPORT-P5-8-CITYPANEL-K09A-Q1, runda 2, Operator-obrona)
+
+- ZROBIONE (r2): pin-exec 9 jednostek `tools/dom-harness/run-k09a-pin.mjs` 69/69 (surowy tekst pinu vs port, DOM + log efektów + stan); test wykonania wiringu `run-k09a-wiring.mjs` 10/10; mutacje wykonaniowe `mutate-k09a-units.mjs` 42/42 zabitych + 1 wykluczona (NIE_ZMIERZONO). Kod portu bez zmian. Szczegóły: `dyspozycje/rust-port/p5/P5-8-K09A.md` §7–§8.
+- NIE_ZROBIONE (r2, świadome): `computeOrderStateLocal`; produkcyjne podpięcie i rejestracja w `cityPanelUxBridge.ts` (K09B); mapowanie id number→string (K08D-Z10); delegaty K06B bez portu (16) i reguły K05A — wejścia testowe w harnessie (NIE_ZMIERZONO); wiring delegatów bez obserwowalnego efektu w jsdom (NIE_ZMIERZONO).
