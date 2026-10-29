@@ -2,8 +2,9 @@
 // URUCHAMIA prawdziwy kod TS weba (pin edb8fb56, gra/src/map/gen-helpers.ts) - zadnej logiki
 // nie przepisujemy. Symbole partii 1: removeInlandWaterPools (:4137), fillEnclosedWaterByLandNeighbors
 // (:4189), removeSmallInlandWaterPools (:4276), removeInlandSeaPools (:4320).
-// Uzycie (z katalogu wektorow, poza repo nie trzeba):
-//   node --experimental-transform-types --no-warnings --import ./m06a2-loader-register.mjs \
+// Uzycie (z katalogu zawierajacego ten plik i loader; loader to m06a-loader-register.mjs z runu M06A,
+// skopiowany obok razem z m06a-loader-hooks.mjs - ZALOZENIE Z-7 w dokumencie P6-M06A2):
+//   node --experimental-transform-types --no-warnings --import ./m06a-loader-register.mjs \
 //        ./gen-m06a2-vectors.mjs <WEB_ROOT> <WYJSCIE.json>
 // WEB_ROOT = katalog z `git archive edb8fb56 gra/src gra/data` rozpakowany POZA repo.
 // Format mapy: [klucz, terrainRust, nakladkaRaw, zloze0/1, rzekaObecna0/1, rzekaKrawedzieN].
@@ -121,9 +122,10 @@ const cases = {
   fill_enclosed_water: [],
   remove_small_inland_water_pools: [],
   remove_inland_sea_pools: [],
+  fill_enclosed_water_chain: [],
 };
 const stats = { fill_ladder: 0, pool_size_boundary: 0, random: 0 };
-const boundary = { fill_rel: {}, pool_rel: {} };
+const boundary = { fill_rel: {}, pool_rel: {}, chain_passes_rel: {} };
 const bumpRel = (table, rel) => {
   const k = String(rel);
   table[k] = (table[k] ?? 0) + 1;
@@ -244,6 +246,46 @@ for (let i = 0; i < 60; i++) {
   const maxPool = 1 + Math.floor(rnd() * 8);
   runSmall(`rand${i}_max${maxPool}`, hexes, W, H, maxPool, null);
 }
+
+// ---- 2b. Lancuchy konwersji fillEnclosedWaterByLandNeighbors: limit przebiegow (web :4194, pass < 8) ----
+// Woda c_1..c_L na wierszu r=0 (q=1..L), sasiad (0,0)=Laka. Kolejnosc wstawiania:
+//  'rev' = c_L..c_1: propagacja jeden heks na przebieg -> potrzeba L przebiegow (cap 8 ucina L>8);
+//  'fwd' = c_1..c_L: odczyt na zywo - caly lancuch w JEDNYM przebiegu (snapshot dalby L przebiegow).
+// withP=false -> min=1 (kazdy c_i ma 1 lad po konwersji poprzednika).
+// withP=true  -> min=2: lady prywatne P_i=(i,1) dla i nieparzystych; c_1 ma (0,0)+P_1 = 2 lady,
+//                c_i (i>=2) ma 1 lad poczatkowo (P_{i-1} lub P_i) + 1 po konwersji c_{i-1}.
+//                Kolejnosc 'rev' daje dokladnie jeden heks na przebieg, takze dla min=2.
+// boundary_passes_rel = L - 8 dla 'rev' (N-1/N/N+1 wzgledem limitu przebiegow).
+const CHAIN_LENGTHS = [2, 7, 8, 9, 12];
+function chainEntries(L, order, withP) {
+  const entries = [[0, 0, TerenBazowy.Laka, Nakladka.Brak, 0, 0]];
+  const water = [];
+  for (let i = 1; i <= L; i++) water.push([i, 0, TerenBazowy.Morze, Nakladka.Brak, 0, 0]);
+  if (order === 'rev') water.reverse();
+  if (withP) {
+    for (let i = 1; i <= L; i += 2) entries.push([i, 1, TerenBazowy.Laka, Nakladka.Brak, 0, 0]);
+  }
+  return [...entries, ...water];
+}
+for (const L of CHAIN_LENGTHS) {
+  for (const withP of [false, true]) {
+    for (const order of ['rev', 'fwd']) {
+      const hexes = buildMap(chainEntries(L, order, withP));
+      const min = withP ? 2 : 1;
+      const rel = order === 'rev' ? L - 8 : null;
+      const name = `fill_chain_L${L}_${order}_min${min}`;
+      const hx = structuredClone(hexes);
+      const before = dumpMap(hexes);
+      const n = G.fillEnclosedWaterByLandNeighbors(hx, min);
+      cases.fill_enclosed_water_chain.push({
+        name, min_land: min, order, length: L, boundary_passes_rel: rel,
+        input: before, out: n, output: dumpMap(hx),
+      });
+      if (rel !== null && rel >= -1 && rel <= 1) bumpRel(boundary.chain_passes_rel, rel);
+    }
+  }
+}
+stats.fill_chain = cases.fill_enclosed_water_chain.length;
 
 const webSha = sha(gen);
 const doc = {

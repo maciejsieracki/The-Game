@@ -1,0 +1,38 @@
+   Compiling civ-engine v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_806cd4d4-c64-4/rust-port/engine)
+    Finished `test` profile [unoptimized] target(s) in 37.47s
+     Running tests/p6_m06a2_landsea.rs (/home/user/cargo-target-shared/wf_806cd4d4-c64-4/debug/deps/p6_m06a2_landsea-c328e8d022047901)
+
+running 6 tests
+test remove_inland_sea_pools_matches_web ... ok
+test fill_enclosed_water_matches_web_with_boundaries ... ok
+test vectors_meta_pin_and_counts ... ok
+test remove_small_inland_water_pools_matches_web_with_size_boundaries ... ok
+test remove_inland_water_pools_matches_web ... ok
+test fill_enclosed_water_pass_cap_chains_match_web ... FAILED
+
+failures:
+
+---- fill_enclosed_water_pass_cap_chains_match_web stdout ----
+
+thread 'fill_enclosed_water_pass_cap_chains_match_web' (2906) panicked at tests/p6_m06a2_landsea.rs:205:9:
+assertion `left == right` failed: count "fill_chain_L9_fwd_min1"
+  left: 8
+ right: 9
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+   1: core::panicking::panic_fmt
+   2: core::panicking::assert_failed_inner
+   3: core::panicking::assert_failed::<u64, u64>
+   4: p6_m06a2_landsea::fill_chain_body
+   5: <p6_m06a2_landsea::fill_chain_body as core::ops::function::FnOnce<()>>::call_once
+   6: p6_m06a2_landsea::with_watchdog::<p6_m06a2_landsea::fill_chain_body>::{closure#0}
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+
+failures:
+    fill_enclosed_water_pass_cap_chains_match_web
+
+test result: FAILED. 5 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.25s
+
+error: test failed, to rerun pass `--test p6_m06a2_landsea`
+EXIT=101
