@@ -4605,3 +4605,29 @@ pub fn mapgen_landsea() -> &'static MapgenLandseaFile {
     static TABLE: std::sync::OnceLock<MapgenLandseaFile> = std::sync::OnceLock::new();
     TABLE.get_or_init(|| parse_mapgen_landsea().expect("mapgen-landsea.json must parse"))
 }
+
+/// Plik `mapgen-desert-purge.json` (P6.M06A4, web `purgeDesertEnclaveWater` :4156): progi galezi
+/// zamiany wody enklawy na pustynie. Wartosci edytowalne; kod nie zawiera ich literalow.
+pub const MAPGEN_DESERT_PURGE_JSON: &str =
+    include_str!("../../data/derived/mapgen-desert-purge.json");
+
+/// Tabela progow `purgeDesertEnclaveWater` (P6.M06A4).
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct MapgenDesertPurgeFile {
+    pub meta: serde_json::Value,
+    /// Web: `pustN >= 2` (bezwzgledny prog liczby pustynnych sasiadow).
+    pub prog_pustyni_min_liczba: u64,
+    /// Web: `pustN >= dryN * 0.4` (ulamek suchych sasiadow).
+    pub prog_pustyni_min_ulamek_suchych: f64,
+}
+
+pub fn parse_mapgen_desert_purge() -> Result<MapgenDesertPurgeFile, serde_json::Error> {
+    serde_json::from_str(MAPGEN_DESERT_PURGE_JSON)
+}
+
+/// Tabela progow pustyni (jednorazowy odczyt; blad danych = panika).
+pub fn mapgen_desert_purge() -> &'static MapgenDesertPurgeFile {
+    static TABLE: std::sync::OnceLock<MapgenDesertPurgeFile> = std::sync::OnceLock::new();
+    TABLE.get_or_init(|| parse_mapgen_desert_purge().expect("mapgen-desert-purge.json must parse"))
+}

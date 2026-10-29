@@ -1,0 +1,9 @@
+{
+  "meta": {
+    "temat": "R-RUSTPORT-P6-M06A4-LAD-MORZE-RESZTA3-Q1",
+    "zrodlo_web": "gra/src/map/gen-helpers.ts (pin edb8fb56), :4156 purgeDesertEnclaveWater (progi galezi: pustN >= 2 oraz dryN > 0 && pustN >= dryN * 0.4)",
+    "uwaga": "Progi edytowalne. Kod nie zawiera ich literalow (runda 1, partia 2)."
+  },
+  "prog_pustyni_min_liczba": 2,
+  "prog_pustyni_min_ulamek_suchych": 0.4
+}

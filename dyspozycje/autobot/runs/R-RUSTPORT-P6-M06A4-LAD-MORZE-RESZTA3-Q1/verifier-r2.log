@@ -1,0 +1,2 @@
+{"counts":{"purge_desert_enclave_water":4991},"stats":{"cases":4991,"neighborhood_cases":4956,"random_cases":30,"edge_cases":5,"changed_cases":4540},"coverage_keys":71,"sha":"ab934703990ba00e71a801eb0b6fcefeb0906c6bd4ded477c7162361307842de"}
+cmp verify-vectors.json vs tests/p6_m06a4_vectors/web-vectors.json: IDENTICAL

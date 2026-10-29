@@ -27,7 +27,7 @@
 
 use std::collections::HashSet;
 
-use crate::data::derived::mapgen_landsea;
+use crate::data::derived::{mapgen_desert_purge, mapgen_landsea};
 use crate::domain::map_generator::{ClimateBand, Terrain, WorldType};
 use crate::domain::mapgen::prims::{
     climate_band_at, earth_template_land_at, hex_key, latitudinal_ocean_buffer_rows, HEX_DIRECTIONS,
@@ -578,4 +578,60 @@ pub fn enforce_earth_template_on_hexes(hexes: &mut HexRecord, width: u32, height
         fixed += 1;
     }
     fixed
+}
+
+// ---------------------------------------------------------------------------
+// P6.M06A4 (runda 1, partia 2). Symbol: `purgeDesertEnclaveWater` (web :4156). Progi:
+// `mapgen-desert-purge.json` (`prog_pustyni_min_liczba` = 2, `prog_pustyni_min_ulamek_suchych` = 0.4).
+// Wektory: tests/p6_m06a4_vectors (generator `gen-m06a4-vectors.mjs`, pin edb8fb56).
+// ---------------------------------------------------------------------------
+
+/// Web `purgeDesertEnclaveWater(hexes, width, height)` (:4156): kazdy heks inlandowej wody
+/// (`findInlandWaterHexes`) staje sie Pustynia, gdy srodek lezy w pasmie `desert`
+/// (`climateBandAt(q, r, height)`, isEarth=false) i `pustN >= prog_liczba` albo
+/// `dryN > 0 && pustN >= dryN * prog_ulamek`; w pozostalych przypadkach Laka. Zawsze czysci
+/// nakladke, rzeke i zloze (jak web). Liczniki sasiadow czytane na biezaco. Zwraca liczbe heksow
+/// przetworzonych (= wykrytych inlandowych).
+/// Klucz niekanoniczny (bez `q,r`) jest pomijany przy iteracji (Z-1 jak w M06A/M06A2/M06A3).
+pub fn purge_desert_enclave_water(hexes: &mut HexRecord, width: i64, height: u32) -> usize {
+    let progi = mapgen_desert_purge();
+    let inland = find_inland_water_hexes(hexes, width, i64::from(height));
+    let mut converted = 0usize;
+    for key in &inland {
+        let Some((q, r)) = key_qr(key) else {
+            continue;
+        };
+        let mut pust_n: u64 = 0;
+        let mut dry_n: u64 = 0;
+        for &(dq, dr) in HEX_DIRECTIONS.iter() {
+            let Some(nh) = neighbor(hexes, q, r, dq, dr) else {
+                continue;
+            };
+            if is_water_terrain_local(nh.terrain) {
+                continue;
+            }
+            dry_n += 1;
+            if nh.terrain == Terrain::Desert {
+                pust_n += 1;
+            }
+        }
+        let in_desert = climate_band_at(r, height, false) == ClimateBand::Desert;
+        let progowo = pust_n >= progi.prog_pustyni_min_liczba
+            || (dry_n > 0
+                && (pust_n as f64) >= (dry_n as f64) * progi.prog_pustyni_min_ulamek_suchych);
+        let nowy = if in_desert && progowo {
+            Terrain::Desert
+        } else {
+            Terrain::Grassland
+        };
+        if let Some(h) = hexes.get_mut(key) {
+            h.terrain = nowy;
+            h.overlay = Nakladka::Brak;
+            h.river_present = false;
+            h.river_edges.clear();
+            h.has_deposit = false;
+        }
+        converted += 1;
+    }
+    converted
 }

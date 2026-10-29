@@ -1,0 +1,19 @@
+MEASUREMENT r3 obrona: pokrycie 71 kluczy, siatka H={9,12,20,30} (repo) vs H={9,12,20,30,45,61} (generator z tym samym pinem edb8fb56)
+repo: cases=707 coverage_keys=71
+large: cases=1043 coverage_keys=71
+same key set (incl. outcome des/lak/nop): True
+keys with count >= repo count in large: True
+large sha256 gen-helpers: ab934703990ba00e71a801eb0b6fcefeb0906c6bd4ded477c7162361307842de
+threshold flips (repo file): d1 p0->p1, d2 p0->p1, d3 p1->p2, d4 p1->p2, d5 p1->p2, d6 p1->p2 (D band des vs lak)
+  d1 p0 D_des=0 D_lak=12 D_nop=0
+  d1 p1 D_des=12 D_lak=0 D_nop=0
+  d2 p0 D_des=0 D_lak=12 D_nop=0
+  d2 p1 D_des=12 D_lak=0 D_nop=0
+  d3 p1 D_des=0 D_lak=12 D_nop=0
+  d3 p2 D_des=12 D_lak=0 D_nop=0
+  d4 p1 D_des=0 D_lak=12 D_nop=0
+  d4 p2 D_des=12 D_lak=0 D_nop=0
+  d5 p1 D_des=0 D_lak=12 D_nop=0
+  d5 p2 D_des=12 D_lak=0 D_nop=0
+  d6 p1 D_des=0 D_lak=12 D_nop=0
+  d6 p2 D_des=12 D_lak=0 D_nop=0

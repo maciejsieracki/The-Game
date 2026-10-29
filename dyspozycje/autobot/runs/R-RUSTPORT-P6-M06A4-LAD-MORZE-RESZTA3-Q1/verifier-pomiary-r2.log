@@ -1,0 +1,5 @@
+Weryfikator niezalezny (Operator-pomiary r2): generator uruchomiony na git archive edb8fb56 gra/src gra/data (katalog tymczasowy POZA repo)
+{"counts":{"purge_desert_enclave_water":707},"stats":{"cases":707,"neighborhood_cases":672,"random_cases":30,"edge_cases":5,"changed_cases":477},"coverage_keys":71,"sha":"ab934703990ba00e71a801eb0b6fcefeb0906c6bd4ded477c7162361307842de"}
+GEN_EXIT=0
+cmp verify-vectors.json vs rust-port/engine/tests/p6_m06a4_vectors/web-vectors.json: IDENTICAL (6790798 B)
+sha256 gen-helpers.ts (edb8fb56) = ab934703990ba00e71a801eb0b6fcefeb0906c6bd4ded477c7162361307842de
