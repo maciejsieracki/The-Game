@@ -1,0 +1,230 @@
+[
+ {
+  "name": "renderEkonomiaStrip",
+  "a": 4638,
+  "b": 4653,
+  "loc": 16,
+  "reason": "DOM",
+  "firstBlocker": {
+   "kind": "T",
+   "id": "City",
+   "from": "game/cities.ts"
+  }
+ },
+ {
+  "name": "appendPodzialHandlu",
+  "a": 4654,
+  "b": 4734,
+  "loc": 81,
+  "reason": "DOM",
+  "firstBlocker": {
+   "kind": "T",
+   "id": "City",
+   "from": "game/cities.ts"
+  }
+ },
+ {
+  "name": "appendCitySkarbiecBalance",
+  "a": 4735,
+  "b": 4768,
+  "loc": 34,
+  "reason": "DOM",
+  "firstBlocker": {
+   "kind": "T",
+   "id": "City",
+   "from": "game/cities.ts"
+  }
+ },
+ {
+  "name": "renderPodzialHandlu",
+  "a": 4769,
+  "b": 4774,
+  "loc": 6,
+  "reason": "DOM",
+  "firstBlocker": {
+   "kind": "T",
+   "id": "City",
+   "from": "game/cities.ts"
+  }
+ },
+ {
+  "name": "buildTopBarZlotoDetailCard",
+  "a": 5824,
+  "b": 5903,
+  "loc": 80,
+  "reason": "DOM",
+  "firstBlocker": {
+   "kind": "T",
+   "id": "City",
+   "from": "game/cities.ts"
+  }
+ },
+ {
+  "name": "appendBuildingRequirementsBlock",
+  "a": 6994,
+  "b": 7005,
+  "loc": 12,
+  "reason": "DOM",
+  "firstBlocker": {
+   "kind": "T",
+   "id": "BuildingDef",
+   "from": "data/loader.ts"
+  }
+ },
+ {
+  "name": "buildBuildingInfocard",
+  "a": 7013,
+  "b": 7135,
+  "loc": 123,
+  "reason": "DOM",
+  "firstBlocker": {
+   "kind": "T",
+   "id": "BuildingDef",
+   "from": "data/loader.ts"
+  }
+ },
+ {
+  "name": "appendTechDetailBlock",
+  "a": 7397,
+  "b": 7464,
+  "loc": 68,
+  "reason": "DOM",
+  "firstBlocker": {
+   "kind": "T",
+   "id": "GameData",
+   "from": "data/loader.ts"
+  }
+ },
+ {
+  "name": "ensureEntityCardBuildingStyles",
+  "a": 7476,
+  "b": 7536,
+  "loc": 61,
+  "reason": "DOM",
+  "firstBlocker": {
+   "kind": "P",
+   "id": "beginBuildingDetailTile",
+   "block": 3
+  }
+ },
+ {
+  "name": "buildBuildingDetailCardViaEntityCard",
+  "a": 7537,
+  "b": 7560,
+  "loc": 24,
+  "reason": "DOM",
+  "firstBlocker": {
+   "kind": "T",
+   "id": "BuildingDef",
+   "from": "data/loader.ts"
+  }
+ },
+ {
+  "name": "buildBuildingDetailCard",
+  "a": 7561,
+  "b": 7572,
+  "loc": 12,
+  "reason": "DOM",
+  "firstBlocker": {
+   "kind": "T",
+   "id": "BuildingDef",
+   "from": "data/loader.ts"
+  }
+ },
+ {
+  "name": "_legacyBuildBuildingDetailCard",
+  "a": 7573,
+  "b": 7703,
+  "loc": 131,
+  "reason": "DOM",
+  "firstBlocker": {
+   "kind": "T",
+   "id": "BuildingDef",
+   "from": "data/loader.ts"
+  }
+ },
+ {
+  "name": "buildBuildingBuildTabDetailCard",
+  "a": 7704,
+  "b": 7805,
+  "loc": 102,
+  "reason": "DOM",
+  "firstBlocker": {
+   "kind": "T",
+   "id": "BuildingDef",
+   "from": "data/loader.ts"
+  }
+ },
+ {
+  "name": "_legacyBuildUnitDetailCard",
+  "a": 7897,
+  "b": 7975,
+  "loc": 79,
+  "reason": "DOM",
+  "firstBlocker": {
+   "kind": "T",
+   "id": "UnitDef",
+   "from": "data/loader.ts"
+  }
+ },
+ {
+  "name": "buildRecruitTabDetailCard",
+  "a": 8861,
+  "b": 8890,
+  "loc": 30,
+  "reason": "DOM",
+  "firstBlocker": {
+   "kind": "T",
+   "id": "City",
+   "from": "game/cities.ts"
+  }
+ },
+ {
+  "name": "buildUpgradeBonusDetailCard",
+  "a": 8979,
+  "b": 9032,
+  "loc": 54,
+  "reason": "DOM",
+  "firstBlocker": {
+   "kind": "T",
+   "id": "BuildingDef",
+   "from": "data/loader.ts"
+  }
+ },
+ {
+  "name": "renderSplitPane",
+  "a": 9257,
+  "b": 9272,
+  "loc": 16,
+  "reason": "DOM",
+  "firstBlocker": {
+   "kind": "P",
+   "id": "el",
+   "block": 1
+  }
+ },
+ {
+  "name": "appendGarrisonUnitChip",
+  "a": 9359,
+  "b": 9391,
+  "loc": 33,
+  "reason": "DOM",
+  "firstBlocker": {
+   "kind": "P",
+   "id": "GarrisonUnit",
+   "block": 1
+  }
+ },
+ {
+  "name": "improvementRangeRow",
+  "a": 9604,
+  "b": 9616,
+  "loc": 13,
+  "reason": "DOM",
+  "firstBlocker": {
+   "kind": "P",
+   "id": "el",
+   "block": 1
+  }
+ }
+]

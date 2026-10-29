@@ -1,28 +1,184 @@
 [
- { "name": "ENTITY_CARD_BUILDING_STYLE_ID", "a": 7465, "b": 7475, "loc": 11, "kind": "const" },
- { "name": "TEREN_COL", "a": 9495, "b": 9500, "loc": 6, "kind": "const" },
- { "name": "TEREN_LETTER", "a": 9501, "b": 9506, "loc": 6, "kind": "const" },
- { "name": "hexDist", "a": 9507, "b": 9512, "loc": 6, "kind": "function" },
- { "name": "okolicaPreviewRadius", "a": 9513, "b": 9540, "loc": 28, "kind": "function" },
- { "name": "rangeName", "a": 9541, "b": 9546, "loc": 6, "kind": "function" },
- { "name": "ringsTiles", "a": 9547, "b": 9551, "loc": 5, "kind": "function" },
- { "name": "okStat", "a": 9552, "b": 9561, "loc": 10, "kind": "function" },
- { "name": "buildingLocationRequirementMet", "a": 6821, "b": 6828, "loc": 8, "kind": "function" },
- { "name": "recruitManpowerCost", "a": 8050, "b": 8054, "loc": 5, "kind": "function" },
- { "name": "empireRekruciTotal", "a": 8056, "b": 8061, "loc": 6, "kind": "function" },
- { "name": "empireRekruciAffordable", "a": 8063, "b": 8071, "loc": 9, "kind": "function" },
- { "name": "maxAffordableRecruitQuantity", "a": 8073, "b": 8100, "loc": 28, "kind": "function" },
- { "name": "unitStockCostChipsHtml", "a": 8102, "b": 8124, "loc": 23, "kind": "function" },
- { "name": "unitResourceUpkeepChipsHtml", "a": 8126, "b": 8134, "loc": 9, "kind": "function" },
- { "name": "missingTechSteps", "a": 8537, "b": 8540, "loc": 4, "kind": "function" },
- { "name": "buildingConverterProductionDisplay", "a": 6726, "b": 6766, "loc": 41, "kind": "function" },
- { "name": "buildingRequirementChips", "a": 6830, "b": 6929, "loc": 100, "kind": "function", "variant": "adapter" },
- { "name": "buildingCanBuildNow", "a": 6931, "b": 6941, "loc": 11, "kind": "function" },
- { "name": "sortProductionItemsByBuildability", "a": 6943, "b": 6963, "loc": 21, "kind": "function" },
- { "name": "formatBuildingCatalogLockHint", "a": 8542, "b": 8576, "loc": 35, "kind": "function" },
- { "name": "formatBuildingPreviewHint", "a": 8578, "b": 8609, "loc": 32, "kind": "function" },
- { "name": "productionCtxForCity", "a": 8611, "b": 8643, "loc": 33, "kind": "function" },
- { "name": "collectEraPreviewEntries", "a": 8645, "b": 8679, "loc": 35, "kind": "function" },
- { "name": "recruitUnit", "a": 8183, "b": 8208, "loc": 26, "kind": "function" },
- { "name": "improvementsInCityRange", "a": 9571, "b": 9599, "loc": 29, "kind": "function" }
+ {
+  "name": "ENTITY_CARD_BUILDING_STYLE_ID",
+  "a": 7465,
+  "b": 7475,
+  "loc": 11,
+  "kind": "const"
+ },
+ {
+  "name": "TEREN_COL",
+  "a": 9495,
+  "b": 9500,
+  "loc": 6,
+  "kind": "const"
+ },
+ {
+  "name": "TEREN_LETTER",
+  "a": 9501,
+  "b": 9506,
+  "loc": 6,
+  "kind": "const"
+ },
+ {
+  "name": "hexDist",
+  "a": 9507,
+  "b": 9512,
+  "loc": 6,
+  "kind": "function"
+ },
+ {
+  "name": "okolicaPreviewRadius",
+  "a": 9513,
+  "b": 9540,
+  "loc": 28,
+  "kind": "function"
+ },
+ {
+  "name": "rangeName",
+  "a": 9541,
+  "b": 9546,
+  "loc": 6,
+  "kind": "function"
+ },
+ {
+  "name": "ringsTiles",
+  "a": 9547,
+  "b": 9551,
+  "loc": 5,
+  "kind": "function"
+ },
+ {
+  "name": "okStat",
+  "a": 9552,
+  "b": 9561,
+  "loc": 10,
+  "kind": "function"
+ },
+ {
+  "name": "buildingConverterProductionDisplay",
+  "a": 6757,
+  "b": 6775,
+  "loc": 19,
+  "kind": "function"
+ },
+ {
+  "name": "buildingLocationRequirementMet",
+  "a": 6821,
+  "b": 6830,
+  "loc": 10,
+  "kind": "function"
+ },
+ {
+  "name": "buildingRequirementChips",
+  "a": 6831,
+  "b": 6931,
+  "loc": 101,
+  "kind": "function"
+ },
+ {
+  "name": "buildingCanBuildNow",
+  "a": 6932,
+  "b": 6947,
+  "loc": 16,
+  "kind": "function"
+ },
+ {
+  "name": "sortProductionItemsByBuildability",
+  "a": 6948,
+  "b": 6964,
+  "loc": 17,
+  "kind": "function"
+ },
+ {
+  "name": "recruitManpowerCost",
+  "a": 8050,
+  "b": 8056,
+  "loc": 7,
+  "kind": "function"
+ },
+ {
+  "name": "empireRekruciTotal",
+  "a": 8057,
+  "b": 8063,
+  "loc": 7,
+  "kind": "function"
+ },
+ {
+  "name": "empireRekruciAffordable",
+  "a": 8064,
+  "b": 8077,
+  "loc": 14,
+  "kind": "function"
+ },
+ {
+  "name": "maxAffordableRecruitQuantity",
+  "a": 8078,
+  "b": 8111,
+  "loc": 34,
+  "kind": "function"
+ },
+ {
+  "name": "unitStockCostChipsHtml",
+  "a": 8112,
+  "b": 8126,
+  "loc": 15,
+  "kind": "function"
+ },
+ {
+  "name": "unitResourceUpkeepChipsHtml",
+  "a": 8127,
+  "b": 8136,
+  "loc": 10,
+  "kind": "function"
+ },
+ {
+  "name": "recruitUnit",
+  "a": 8183,
+  "b": 8209,
+  "loc": 27,
+  "kind": "function"
+ },
+ {
+  "name": "missingTechSteps",
+  "a": 8537,
+  "b": 8541,
+  "loc": 5,
+  "kind": "function"
+ },
+ {
+  "name": "formatBuildingCatalogLockHint",
+  "a": 8542,
+  "b": 8578,
+  "loc": 37,
+  "kind": "function"
+ },
+ {
+  "name": "formatBuildingPreviewHint",
+  "a": 8579,
+  "b": 8610,
+  "loc": 32,
+  "kind": "function"
+ },
+ {
+  "name": "productionCtxForCity",
+  "a": 8611,
+  "b": 8644,
+  "loc": 34,
+  "kind": "function"
+ },
+ {
+  "name": "collectEraPreviewEntries",
+  "a": 8645,
+  "b": 8681,
+  "loc": 37,
+  "kind": "function"
+ },
+ {
+  "name": "improvementsInCityRange",
+  "a": 9579,
+  "b": 9603,
+  "loc": 25,
+  "kind": "function"
+ }
 ]
