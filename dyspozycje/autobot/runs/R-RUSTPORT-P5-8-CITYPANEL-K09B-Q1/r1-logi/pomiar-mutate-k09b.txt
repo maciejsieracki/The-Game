@@ -1,0 +1,24 @@
+BAZA: harness przechodzi bez mutacji
+OK   M1 | pominięta rejestracja mostu cityPanelUxBridge | ZABITY(kod 1) | FAIL W4 | most zarejestrowany: malowanie wypełnia pas górny ramki (top innerHTML niepusty) | FAIL W9 | po ukryciu most wykonał sprzątanie trybu: K06A activeCity = null (clearCityPanelUxMode)
+OK   M2 | pominięty installK09aWiring (DOM ramki/HUD, haki) | ZABITY(kod 2) | BLAD-HARNESU: Error: K09A: brak setK09aDeps (DOM ramki/HUD — pin zawsze je wywołuje)
+OK   M3 | pominięty installK07bWiring (K07A/K07B deps) | ZABITY(kod 1) | FAIL O1 | requireK08aDeps().rerender() NIE woła rerender z hosta K08C (nadpisany przez K09A) | FAIL W1 | showCityPanel(city, map, onClose) po instalacji bez wyjątku (brak „brak delegatu”)
+OK   M4 | pominięty setK07aExt (adaptery K07A-Z4) | ZABITY(kod 1) | FAIL O1 | requireK08aDeps().rerender() NIE woła rerender z hosta K08C (nadpisany przez K09A)
+OK   M5 | pominięty installK08dWiring | ZABITY(kod 1) | FAIL D1 | K08D: delegat reguł zainstalowany (religiaSzPunkty nie rzuca „brak delegatu”)
+OK   M6 | pominięty installK08eWiring | ZABITY(kod 1) | FAIL W1 | showCityPanel(city, map, onClose) po instalacji bez wyjątku (brak „brak delegatu”) | FAIL W8 | ponowny pokaz po ukryciu działa (ramka wraca)
+OK   M7 | pominięty installK06aWiring | ZABITY(kod 2) | BLAD-HARNESU: Error: K06A: brak zależności (setK06aDeps)
+OK   M8 | pominięty delegat K06B clearPinnedDetail | ZABITY(kod 2) | BLAD-HARNESU: Error: K06B: brak delegatu clearPinnedDetail (setK06bDeps)
+OK   M9 | pominięty ręczny delegat getShowEraBuildingPreview | ZABITY(kod 1) | FAIL O1 | requireK08aDeps().rerender() NIE woła rerender z hosta K08C (nadpisany przez K09A)
+OK   M10 | pominięte delegaty K06B z kopii portu | ZABITY(kod 1) | FAIL W1 | showCityPanel(city, map, onClose) po instalacji bez wyjątku (brak „brak delegatu”) | FAIL W8 | ponowny pokaz po ukryciu działa (ramka wraca)
+OK   M11 | kolejność: K08C po K09A (rerender K08C nadpisuje K09A) | ZABITY(kod 1) | FAIL O1 | requireK08aDeps().rerender() NIE woła rerender z hosta K08C (nadpisany przez K09A)
+OK   M12 | brak zapamiętania mapy przed ramką (K09B-Z1) | ZABITY(kod 1) | FAIL W1 | showCityPanel(city, map, onClose) po instalacji bez wyjątku (brak „brak delegatu”) | FAIL W3 | K06A zapamiętuje miasto (id 7) i mapę (activeMap ≠ null)
+OK   M13 | malowanie czyta mapę już po wyczyszczeniu przez hide | ZABITY(kod 1) | FAIL W1 | showCityPanel(city, map, onClose) po instalacji bez wyjątku (brak „brak delegatu”) | FAIL W3 | K06A zapamiętuje miasto (id 7) i mapę (activeMap ≠ null)
+OK   M14 | brak mapy = cichy powrót zamiast wyjątku (zakaz P5.13/brak delegatu) | ZABITY(kod 1) | FAIL R1 | cityPanelUxImpl.paintCityPanelSections bez activeMap rzuca „brak mapy”
+OK   M15 | most: sprzątanie trybu panelu pominięte | ZABITY(kod 1) | FAIL W9 | po ukryciu most wykonał sprzątanie trybu: K06A activeCity = null (clearCityPanelUxMode)
+OK   M16 | most: nawigacja odwrócona | ZABITY(kod 1) | FAIL N1 | BR.navigateCityPanel(1) i (-1) trafiają do ui.switchCity w tej kolejności
+OK   M17 | adapter: ciąg engine nie jest walidowany | ZABITY(kod 1) | FAIL A6 | toEngineCityId(„01”) rzuca (ciąg niekanoniczny) | FAIL A9 | engineIdHook przepuszcza tylko kanoniczne id (’01’ rzuca, nie trafia do silnika)
+OK   M18 | adapter: ujemne id przechodzi do silnika | ZABITY(kod 1) | FAIL A2 | cityIdToEngine odrzuca -1, 1.5, NaN, Infinity, 2^53 i ciąg „7” (wyjątek, nie cicha konwersja)
+OK   M19 | adapter: hook bez walidacji (String zamiast toEngineCityId) | ZABITY(kod 1) | FAIL A9 | engineIdHook przepuszcza tylko kanoniczne id (’01’ rzuca, nie trafia do silnika)
+OK   M20 | adapter: id silnika poza zakresem przechodzi | ZABITY(kod 1) | FAIL A4 | cityIdFromEngine odrzuca ciągi niekanoniczne i poza zakresem (9 przypadków)
+
+mutanty: 20/20 zabitych
+mutate-k09b EXIT 0
