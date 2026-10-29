@@ -1,5 +1,5 @@
 {
-  "releaseState": "DEPLOYED — ROBOCZA; push do main i zdalny readback PASS.",
+  "releaseState": "DEPLOYED — ROBOCZA; push do main i zdalny readback PASS (2026-10-29).",
   "bundle": "Gra-ROBOCZA.html",
   "bundleMd5": "29022be80b95e838a861a8ea70e8a915",
   "bundleSha256": "f0177a6469973e498389fa9b264f0287e9db5dff01f06487dac0d16a7bff2b97",
@@ -9,17 +9,21 @@
     "source": "origin/main plus R-HANDLOWA-WYMIANA-CZAS-BEZTERMINOWY-30T-Q1",
     "build": "Vite 5.4.21 single-file; 917 modules; stamped",
     "buildCommit": "5c65b20a + f216263d",
-    "publicationCommit": null
+    "publicationCommit": "401893417f2a47545c44ef5bba168dc10d0fcf31"
   },
   "scope": [
     "AI zbiera armię przez pięć pełnych tur po wybuchu wojny, a w kolejnej turze atakuje wybrany osiągalny lądem cel wspólnymi rozkazami całego składu.",
-    "Wódz/generał ma odrębną gwiazdę nad gwiazdami doświadczenia; emblemat cywilizacji jednostki jest 4× większy."
+    "Wódz/generał ma odrębną gwiazdę nad gwiazdami doświadczenia; emblemat cywilizacji jednostki jest 4× większy.",
+    "R-ARMY-MERGE-SPLIT-ICONS-Q2: merge arrows inward, split arrows outward.",
+    "R-HANDLOWA-WYMIANA-CZAS-BEZTERMINOWY-30T-Q1: cyclic quantity exchange supports 1–30 turns or indefinite; resource access and treaty caps remain 20."
   ],
   "verification": [
     "TypeScript PASS",
     "Vite build PASS (917 modules)",
     "Chromium tests: AI campaign 68/68; newgame navigation 230/230; battle/recruitment/commander focused tests PASS",
-    "GitHub Raw readback at 682a6b9a: bundle/manifest/START HTTP 200; bundle SHA-256, MD5 and bytes match manifest."
+    "GitHub Raw readback at 682a6b9a: bundle/manifest/START HTTP 200; bundle SHA-256, MD5 and bytes match manifest.",
+    "Trade duration: domain 53/53 and rendered UI 12/12; typecheck PASS; broader proposal test 186/188 with both failures reproduced at baseline.",
+    "Vite single-file 917 modules, Robocza verifier and boot smoke PASS."
   ],
   "limits": [
     "AI morska kampania/transport pozostaje poza zakresem.",
@@ -27,8 +31,8 @@
     "Dowód wizualny odznaki wykorzystuje osobny jawnie opisany harness produkcyjnego renderer; pełny gameplay screenshot z aktywną armią nie został wykonany."
   ],
   "finalControl": {
-    "status": "PASS-WITH-NOTES — integrated candidate and exact local Robocza artifact verified; remote readback PASS",
-    "notes": "AI live Chromium fixture: five complete muster EOTs and sixth attack EOT with 4/4 commands/executions. Commander map marker visual evidence is the production-renderer map harness; no full gameplay screenshot with active army. Naval AI and large-empire performance remain open."
+    "status": "PASS-WITH-NOTES",
+    "notes": "Trade duration Final Control PASS-WITH-NOTES. Two broader proposal peace-in-war assertions are reproduced at baseline and unrelated. Existing AI naval and large-empire limits remain as recorded."
   },
   "startHub": "START.html",
   "hubGeneratedAt": "2026-10-29T19:21:14",
@@ -256,18 +260,22 @@
     "publicationCommit": "f6f63dc839449d8e08a7e2509ec72796757867af"
   },
   "publishPlan": {
-    "status": "READY_FOR_DEPLOY — local artifact prepared; Git push and remote readback pending",
+    "status": "PUBLISHED to origin/main at 401893417f2a47545c44ef5bba168dc10d0fcf31; Robocza only; no KANON/FINALNA promotion.",
     "target": "origin/main"
   },
   "remoteReadback": {
-    "status": "PENDING",
+    "status": "PASS",
     "remote": "origin/main",
-    "httpStatus": null,
+    "commit": "401893417f2a47545c44ef5bba168dc10d0fcf31",
+    "bundleUrl": "https://raw.githubusercontent.com/maciejsieracki/The-Game/401893417f2a47545c44ef5bba168dc10d0fcf31/gra-robocza/Gra-ROBOCZA.html",
+    "manifestUrl": "https://raw.githubusercontent.com/maciejsieracki/The-Game/401893417f2a47545c44ef5bba168dc10d0fcf31/gra-robocza/ROBOCZA-MANIFEST.json",
+    "startUrl": "https://raw.githubusercontent.com/maciejsieracki/The-Game/401893417f2a47545c44ef5bba168dc10d0fcf31/gra-robocza/START.html",
+    "httpStatus": 200,
     "bundleMd5": "29022be80b95e838a861a8ea70e8a915",
     "bundleSha256": "f0177a6469973e498389fa9b264f0287e9db5dff01f06487dac0d16a7bff2b97",
     "bundleBytes": 70031368,
-    "checks": "awaiting post-push raw artifact readback"
+    "checks": "GitHub Raw bundle/manifest/START returned HTTP 200; remote bundle hashes/size match; manifest and START byte-identical."
   },
-  "publishedAt": "2026-10-28",
+  "publishedAt": "2026-10-29",
   "buildStamp": "2026-10-29 19:21 · f6f0597203a1b5b8e001ac58ea2e5c1d"
 }

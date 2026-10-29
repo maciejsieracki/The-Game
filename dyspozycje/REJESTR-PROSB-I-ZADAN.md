@@ -4,7 +4,7 @@
 
 - ZGŁOSZENIE: cykliczna wymiana handlowa kończyła się maksymalnie po 20 turach, mimo że stepper pokazywał `+100`; brakowało trybu bezterminowego.
 - ZAKRES: limit 30 tur, opcja „Bezterminowo”, jawne pole `exchangeDurationTurns` (`null` = bez końca; brak = historyczny fallback do `turns`). `turns` pozostaje skończonym horyzontem wyceny.
-- STATUS: Final Control `PASS-WITH-NOTES`; zintegrowana po rebase na `origin/main@aeecff71`; Robocza bundle zbudowany i lokalnie zweryfikowany, push/readback pending.
+- STATUS: `DEPLOY-ROBOCZA / REMOTE-READBACK-PASS`; release `401893417f2a47545c44ef5bba168dc10d0fcf31` pushed to `origin/main`; bundle/manifest/START remote readback zgodny.
 - TESTY: TypeScript PASS, domena 53/53, render UI 12/12; access mode zachowuje cap 20 bez przycisku bezterminowego; szerszy `diplomacy-proposal-test` 186/188 z dwoma błędami asercji pokoju w wojnie potwierdzonymi jako identyczne na bazie. Final Control: `dyspozycje/autobot/runs/R-HANDLOWA-WYMIANA-CZAS-BEZTERMINOWY-30T-Q1/30-final-control.md`.
 - OPERATOR: `autobot/trade-duration-indefinite-q1`; ślad: `dyspozycje/autobot/runs/R-HANDLOWA-WYMIANA-CZAS-BEZTERMINOWY-30T-Q1/`.
 - ZGODNOŚĆ: istniejące aktywne umowy zapisują liczbowe `wygasaTura` i pozostają bez zmian; nowe umowy bezterminowe korzystają z już obsługiwanego `wygasaTura: null`.
