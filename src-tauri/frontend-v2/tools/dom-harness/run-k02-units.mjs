@@ -164,6 +164,11 @@ try {
       const sub = '<b>chip-crate</b><span>Zaopatrzenie obywateli</span>';
       return pin ? [m, upkeep, 7] : [m, true, upkeep.lines.map(l => ({ label: 'L:' + l.key, value: l.value, neg: !l.available })), sub];
     }, 'mount'],
+    ['appendCitizenUpkeepBlock: wymagane, pusta lista -> podpowiedz (emptyHint)', 'appendCitizenUpkeepBlock', (d, m, log, pin) => {
+      const upkeep = { required: [1], lines: [] };
+      const sub = '<b>chip-crate</b><span>Zaopatrzenie obywateli</span>';
+      return pin ? [m, upkeep, 7] : [m, true, [], sub];
+    }, 'mount'],
     ['appendCitizenUpkeepBlock: brak wymagan -> nic', 'appendCitizenUpkeepBlock', (d, m, log, pin) => {
       const sub = '<b>chip-crate</b><span>Zaopatrzenie obywateli</span>';
       return pin ? [m, { required: [], lines: [] }, 7] : [m, false, [], sub];
@@ -232,7 +237,11 @@ try {
       for (const ev of events) {
         const target = doc.querySelector(ev[1]);
         if (ev[0] === 'click') target.dispatchEvent(new dom.window.MouseEvent('click', { bubbles: true }));
-        else target.dispatchEvent(new dom.window.KeyboardEvent('keydown', { key: ev[2], bubbles: true }));
+        else {
+          const ke = new dom.window.KeyboardEvent('keydown', { key: ev[2], bubbles: true, cancelable: true });
+          target.dispatchEvent(ke);
+          log.push(`prevented:${ke.defaultPrevented}`);
+        }
       }
       return log.join(',') || '(brak)';
     } catch (e) {

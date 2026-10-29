@@ -297,6 +297,9 @@ let techHintLinkDelegationBound = false;
 /**
  * Jednorazowa delegacja klikniecia/klawiatury na `document` dla ikon-linkow z `techIconHintSpan()` (pin:7268).
  * `openPreview` = Z10. Bezpieczne wolanie wielokrotne (flaga).
+ * ZMIANA ZACHOWANIA wzgledem pinu: pin wola te funkcje automatycznie przy zaladowaniu modulu (pin:7293);
+ * port NIE binduje sam — wywolujacy (K01/K03+ przy starcie) musi zawolac ja raz z openPreview, inaczej
+ * klik/Enter na `.cp-tech-hint-link` nie dziala (ZALOZENIE P5.8-K02-R3-Z10a, BLOKADA integracji).
  */
 export function bindTechHintLinkDelegation(openPreview: (techName: string) => void): void {
   if (techHintLinkDelegationBound) return;

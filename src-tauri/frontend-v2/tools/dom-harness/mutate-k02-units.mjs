@@ -52,6 +52,13 @@ const MUTS = [
   ['M26 bindTechHintLinkDelegation: brak flagi (podwojne bindowanie)', 'if (techHintLinkDelegationBound) return;', 'if (false) return;'],
   ['M27 bindTechHintLinkDelegation: spacja nie aktywuje', "if (e.key !== 'Enter' && e.key !== ' ') return;", "if (e.key !== 'Enter') return;"],
   ['M28 bindTechHintLinkDelegation: klik przekazuje inna nazwe', "e.stopPropagation();\n    openPreview(name);\n  });\n  document.addEventListener('keydown'", "e.stopPropagation();\n    openPreview(name + '!');\n  });\n  document.addEventListener('keydown'"],
+  // r3 uzupelnienie (Evaluator r3, zarzut 4): pola nieobjete M1–M28
+  ['M29 appendW4PctMetricBlock: gradient paska procentowego (sciezka pct != null)', 'fill.style.background = barGradient;', "fill.style.background = 'none';"],
+  ['M30 appendCitizenUpkeepBlock: tekst emptyHint', 'Brak surowców wymaganych przez obywateli w tej epoce.', 'Brak surowców wymaganych przez obywateli.'],
+  ['M31 appendDisabledBuildActionButtons: tekst przycisku Kup', "bBuy.innerHTML = 'Kup';", "bBuy.innerHTML = 'Kup!';"],
+  ['M32 appendSurowceGrid: klasa active/potential zamieniona', 'civ-w4-surowce-item ${mode}', "civ-w4-surowce-item ${mode === 'active' ? 'potential' : 'active'}"],
+  ['M33 appendBuildingRequirementChipSections: etykieta Wymagane badania', "tech: 'Wymagane badania',", "tech: 'Wymagane badania ',"],
+  ['M34 bindTechHintLinkDelegation: keydown bez preventDefault', 'e.preventDefault();', ''],
 ];
 
 let failed = 0;
