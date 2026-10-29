@@ -26,6 +26,8 @@ import { unitIconSvg } from './icons/brandAssets';
 export interface ArmyStackCard {
   id: string;
   name: string;
+  /** Leader role shown in the map roster; `name` remains its real unit type. */
+  commanderTitle?: 'Wódz' | 'Generał';
   icon: string;
   hp: number;
   hpMax: number;
@@ -114,11 +116,20 @@ ${MAP_UNIT_1E_SHARED_CSS}
 .civ-army-stack .ash-card{flex:0 0 auto;width:92px;padding:8px 6px 6px;border-radius:8px;cursor:pointer;
   border:1px solid rgba(232,216,138,.18);background:linear-gradient(180deg,rgba(24,30,42,.92),rgba(12,16,24,.88));
   transition:border-color .15s,box-shadow .15s,background .15s;}
+.civ-army-stack .ash-card.commander{position:relative;border-color:rgba(232,216,138,.88);
+  background:linear-gradient(180deg,rgba(61,48,20,.96),rgba(24,20,12,.94));
+  box-shadow:0 0 0 1px rgba(232,216,138,.22),0 0 14px rgba(232,216,138,.18);}
+.civ-army-stack .ash-card-commander-mark{position:absolute;right:4px;top:2px;color:#ffe27a;
+  font-size:15px;line-height:1;text-shadow:0 1px 4px #000,0 0 5px rgba(255,226,122,.7);}
 .civ-army-stack .ash-card:hover{border-color:rgba(232,216,138,.38);}
 .civ-army-stack .ash-card.on{border-color:rgba(232,216,138,.62);background:linear-gradient(180deg,rgba(36,32,18,.95),rgba(18,16,10,.92));
   box-shadow:0 0 18px rgba(232,216,138,.12);}
 .civ-army-stack .ash-card-ic{font-size:22px;line-height:1;text-align:center;min-height:24px;}
 .civ-army-stack .ash-card-name{font-size:0.68em;font-weight:700;color:var(--civ-text-primary,#e8e0c8);margin-top:5px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:center;}
+.civ-army-stack .ash-card-role{font-size:0.68em;color:#ffe27a;font-weight:800;margin-top:5px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:center;}
+.civ-army-stack .ash-card-commander-type{font-size:0.54em;color:var(--civ-text-muted,#a59a82);margin-top:2px;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:center;}
 .civ-army-stack .ash-card-hp{height:4px;background:rgba(0,0,0,.35);border-radius:2px;margin-top:5px;overflow:hidden;}
 .civ-army-stack .ash-card-hp i{display:block;height:100%;background:linear-gradient(90deg,#1a6020,#50b070);}
@@ -276,9 +287,17 @@ export function createArmyStackHud(config: ArmyStackHudConfig): ArmyStackHudApi 
     html += '<div class="ash-cards">';
     for (const c of st.cards) {
       const hpPct = c.hpMax > 0 ? Math.round((c.hp / c.hpMax) * 100) : 0;
-      html += '<div class="ash-card' + (c.active ? ' on' : '') + '" data-unit="' + esc(c.id) + '" role="button" tabindex="0">'
+      const isCommander = c.commanderTitle === 'Wódz' || c.commanderTitle === 'Generał';
+      const classes = 'ash-card' + (c.active ? ' on' : '') + (isCommander ? ' commander' : '');
+      const cardLabel = isCommander ? c.commanderTitle + ' — ' + c.name : c.name;
+      html += '<div class="' + classes + '" data-unit="' + esc(c.id) + '"'
+        + (isCommander ? ' data-commander="true" aria-label="' + esc(cardLabel) + '" title="' + esc(cardLabel) + '"' : '')
+        + ' role="button" tabindex="0">'
+        + (isCommander ? '<span class="ash-card-commander-mark" aria-hidden="true">★</span>' : '')
         + '<div class="ash-card-ic">' + (c.icon || unitIconSvg(undefined)) + '</div>'
-        + '<div class="ash-card-name">' + esc(c.name) + '</div>'
+        + (isCommander
+          ? '<div class="ash-card-role">' + esc(c.commanderTitle!) + '</div><div class="ash-card-commander-type">' + esc(c.name) + '</div>'
+          : '<div class="ash-card-name">' + esc(c.name) + '</div>')
         + '<div class="ash-card-hp"><i style="width:' + hpPct + '%"></i></div>'
         + '<div class="ash-card-mv">' + c.ruchLeft + '/' + c.ruchMax + ' ruch</div>'
         + '</div>';

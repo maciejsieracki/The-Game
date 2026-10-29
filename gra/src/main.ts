@@ -22820,6 +22820,9 @@ async function boot(): Promise<void> {
         return {
           id: u.id,
           name: String(udef?.nazwa ?? udef?.Nazwa ?? u.typeId),
+          ...(u.isGeneral === true
+            ? { commanderTitle: armyLeaderTitle(empireBuiltIdsForOwner(u.ownerId)) }
+            : {}),
           icon: unitIconSvg(udef, u.typeId),
           hp: u.hp ?? hpMax,
           hpMax,
