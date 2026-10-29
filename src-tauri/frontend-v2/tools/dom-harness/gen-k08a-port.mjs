@@ -47,7 +47,7 @@ const blockText = (u) => {
 };
 
 const HEADER = `/**
- * K08A (P5-8, R-RUSTPORT-P5-8-CITYPANEL-K08A-Q1, runda 1): jednostki K08 (Handel, magazyn, panel prawy) bez DOM —
+ * K08A (P5-8, R-RUSTPORT-P5-8-CITYPANEL-K08A-Q1, runda 3): jednostki K08 (Handel, magazyn, panel prawy) bez DOM —
  * 15 z 39 jednostek bloku K08 (pin \`edb8fb56\`, \`gra/src/ui/cityPanel.ts\`): 10 nie-DOM (r2) + 5 o zależnościach
  * stanu modułu/kontrolera (r3, adaptery K08A-Z2/Z3).
  *
@@ -68,9 +68,10 @@ const HEADER = `/**
  */`;
 
 const IMPORTS = `import { brandIconSvg } from '../icons/brandAssets';
-import { getK06aState, setK06aActive } from './k06a-fundament';
+import { getK06aState, setK06aActive, type CityK06 } from './k06a-fundament';
 import {
   getK07aActiveCity, getK07aUxSectionRefresh, resolveK07aActiveCity, setK07aActiveCity, setK07aUxSectionRefresh,
+  type CityK07,
 } from './k07a-fundament';`;
 
 const MANUAL_TYPES = `
@@ -119,6 +120,23 @@ export function setK08aActiveCityPanelTab(tab: CityPanelIconTab): void {
 function clearActiveCityMirrors(): void {
   setK07aActiveCity(null);
   setK06aActive(null, null, getK06aState().activeOnClose);
+}
+
+/**
+ * K08A-Z4 (r3, zarzut FC r2 #1): pin \`resolveActiveCity()\` odświeża JEDEN \`activeCity\`. Port trzyma dwa lustra
+ * (K07A i K06A), a samo \`resolveK07aActiveCity()\` odświeżało tylko K07A. Tu: odświeżenie K07A + synchronizacja lustra
+ * K06A do świeżego obiektu o tym samym \`id\` (\`activeMap\`/\`activeOnClose\` bez zmian). Brak miasta = lustro K06A \`null\`.
+ * Rzutowanie: \`getCities\` (adapter kontrolera) zwraca pełny obiekt miasta ze store; \`CityK07\` jest jego podzbiorem.
+ */
+export function resolveK08aActiveCity(): CityK07 | null {
+  const fresh = resolveK07aActiveCity();
+  const k06 = getK06aState();
+  if (fresh === null) {
+    if (k06.activeCity !== null) setK06aActive(null, k06.activeMap, k06.activeOnClose);
+  } else if (k06.activeCity !== null && k06.activeCity.id === fresh.id) {
+    setK06aActive(fresh as unknown as CityK06, k06.activeMap, k06.activeOnClose);
+  }
+  return fresh;
 }
 `;
 

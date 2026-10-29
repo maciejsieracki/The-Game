@@ -6,15 +6,17 @@
 
 /**
  * Zmiana nazw (port → pin), stosowana po obu stronach przed porównaniem (bramka).
- * K08A-Z3: `resolveActiveCity` (pin) = `resolveK07aActiveCity` (port, K07A) — jedyna zmiana nazwy w K08A.
+ * K08A-Z3/Z4 (r3): `resolveActiveCity` (pin) = `resolveK08aActiveCity` (port, K08A: K07A + sync lustra K06A).
+ * `resolveK07aActiveCity` (port) też mapowane na nazwę pinu — dla wywołań spoza bloków (bramka TOKENS).
  */
 export const TOKENS = [
+  [/\bresolveK08aActiveCity\b/g, 'resolveActiveCity'],
   [/\bresolveK07aActiveCity\b/g, 'resolveActiveCity'],
 ];
 
 /** Odwrotność TOKENS dla generatora (nazwa pinu → nazwa portu). */
 export const PIN_TO_PORT_NAMES = [
-  [/\bresolveActiveCity\b/g, 'resolveK07aActiveCity'],
+  [/\bresolveActiveCity\b/g, 'resolveK08aActiveCity'],
 ];
 
 /**
@@ -61,4 +63,6 @@ export const LOCAL_NAMES = [
   'K08aDeps', 'deps', 'setK08aDeps', 'requireK08aDeps',
   // K08A-Z3 lustra stanu i akcesory własnego stanu
   'clearActiveCityMirrors', 'getK08aActiveCityPanelTab', 'setK08aActiveCityPanelTab',
+  // K08A-Z3/Z4 (r3, zarzut FC r2 #1): odświeżenie K07A + synchronizacja lustra K06A (pin ma jedno `activeCity`)
+  'resolveK08aActiveCity',
 ];
