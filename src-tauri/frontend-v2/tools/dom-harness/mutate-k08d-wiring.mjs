@@ -36,6 +36,13 @@ const MUTANTS = [
   ['religiaSzPunkty-args-swapped', 'rules.religiaSzPunkty(wskaznik, ownerId)', 'rules.religiaSzPunkty(ownerId, wskaznik)'],
   ['religiaXRelTop-owner-shifted', 'religiaXRelTop: (ownerId, data) => rules.religiaXRelTop(ownerId, data),', 'religiaXRelTop: (ownerId, data) => rules.religiaXRelTop(ownerId + 1, data),'],
   ['religiaXRelTop-data-dropped', 'rules.religiaXRelTop(ownerId, data)', 'rules.religiaXRelTop(ownerId, null)'],
+  // Partia wealth (runda 4, K08D-Z13): delegaty zamożności.
+  ['wealthLoad-difficulty-fixed', 'loadWealthParams: (econParams, difficulty) => rules.loadWealthParams(econParams, difficulty),', "loadWealthParams: (econParams, difficulty) => rules.loadWealthParams(econParams, 'normal'),"],
+  ['wealthCap-epoch-shifted', 'wealthCap: (epoch, p) => rules.wealthCap(epoch, p),', 'wealthCap: (epoch, p) => rules.wealthCap(epoch + 1, p),'],
+  ['wealthProg-args-swapped', 'rules.wealthProg(poziom, epoch, p)', 'rules.wealthProg(epoch, poziom, p)'],
+  ['wealthMnoznik-delegate-dropped', '    wealthMnoznik: (poziom, p) => rules.wealthMnoznik(poziom, p),\n', ''],
+  ['wealthZadowolenie-epoch-dropped', 'rules.wealthZadowolenie(poziom, p, epoch)', 'rules.wealthZadowolenie(poziom, p, 1)'],
+  ['wealthRownowaga-args-swapped', 'rules.wealthRownowaga(poziom, epoch, p)', 'rules.wealthRownowaga(poziom, p as never, epoch as never)'],
 ];
 
 const rows = [];

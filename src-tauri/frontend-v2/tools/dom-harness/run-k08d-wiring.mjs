@@ -75,6 +75,12 @@ try {
     cityHasBibliotekaLine: () => D.cityHasBibliotekaLine([]),
     mnoznikHandelPieniadzForCivByDifficulty: () => D.mnoznikHandelPieniadzForCivByDifficulty('rz', {}, 'hard', 1),
     computeTradeRouteBuildingBonusByCity: () => D.computeTradeRouteBuildingBonusByCity([]),
+    loadWealthParams: () => D.loadWealthParams({}, 'hard'),
+    wealthCap: () => D.wealthCap(1, {}),
+    wealthProg: () => D.wealthProg(1, 1, {}),
+    wealthMnoznik: () => D.wealthMnoznik(1, {}),
+    wealthZadowolenie: () => D.wealthZadowolenie(1, {}, 1),
+    wealthRownowaga: () => D.wealthRownowaga(1, 1, {}),
   };
   for (const [name, f] of Object.entries(calls)) {
     check(`W1.missing.${name}`, `przed instalacją ${name} rzuca „K08D: brak delegatu ${name}”`,
@@ -91,6 +97,12 @@ try {
     cityHasBibliotekaLine: (ids) => { seen.push(['bib', ids.length]); return ids.length === 3; },
     mnoznikHandelPieniadzForCivByDifficulty: (k, c, d, fb) => { seen.push(['mno', k, c, d, fb]); return fb * 100 + (k === 'rz' ? 1 : 0); },
     computeTradeRouteBuildingBonusByCity: (routes) => { seen.push(['trs', routes.length]); return new Map([[routes.length, 77]]); },
+    loadWealthParams: (ec, diff) => { seen.push(['lwp', ec, diff]); return { tag: 'W', karaZero: -9, zadowolenieMax: 1, progNaPoziom: 1, mnoznikNaPoziom: 1, utrzymanieBaza: 0, utrzymaniePrzyCap: 1, zachowaniePoAwansie: 0.5 }; },
+    wealthCap: (epoch, p) => { seen.push(['wcap', epoch, p]); return epoch + 100; },
+    wealthProg: (poziom, epoch, p) => { seen.push(['wprog', poziom, epoch, p]); return poziom * 1000 + epoch; },
+    wealthMnoznik: (poziom, p) => { seen.push(['wmno', poziom, p]); return poziom + 0.5; },
+    wealthZadowolenie: (poziom, p, epoch) => { seen.push(['wzad', poziom, p, epoch]); return poziom * epoch; },
+    wealthRownowaga: (poziom, epoch, p) => { seen.push(['wrow', poziom, epoch, p]); return epoch + poziom / 10; },
   };
   W.installK08dWiring(rules1);
 
@@ -112,6 +124,22 @@ try {
   const trs = safe(() => D.computeTradeRouteBuildingBonusByCity([{ a: 1 }, { a: 2 }])) ?? new Map();
   check('W2.trasy', 'computeTradeRouteBuildingBonusByCity(2 trasy) => Map: klucz 2 -> 77', trs.get(2) === 77 && trs.size === 1);
 
+  // W2 (runda 4, partia wealth) — argumenty i wynik każdego delegatu zamożności (K08D-Z13).
+  const wp = { p: 'P' };
+  const lwp = safe(() => D.loadWealthParams({ ec: 1 }, 'hard'));
+  check('W2.wealth.load', 'loadWealthParams(econ, "hard") => reguła dostaje (econ, "hard") i zwraca jej obiekt',
+    lwp?.tag === 'W' && seen.some((s) => s[0] === 'lwp' && s[1].ec === 1 && s[2] === 'hard'));
+  check('W2.wealth.cap', 'wealthCap(3, p) => reguła dostaje (3, p) i zwraca 103',
+    safe(() => D.wealthCap(3, wp)) === 103 && seen.some((s) => s[0] === 'wcap' && s[1] === 3 && s[2] === wp));
+  check('W2.wealth.prog', 'wealthProg(2, 3, p) => (2, 3, p) przekazane; wynik 2003',
+    safe(() => D.wealthProg(2, 3, wp)) === 2003 && seen.some((s) => s[0] === 'wprog' && s[1] === 2 && s[2] === 3 && s[3] === wp));
+  check('W2.wealth.mnoznik', 'wealthMnoznik(2, p) => 2.5 (argumenty przekazane)',
+    safe(() => D.wealthMnoznik(2, wp)) === 2.5 && seen.some((s) => s[0] === 'wmno' && s[1] === 2 && s[2] === wp));
+  check('W2.wealth.zad', 'wealthZadowolenie(2, p, 3) => 6 (kolejność: poziom, p, epoka)',
+    safe(() => D.wealthZadowolenie(2, wp, 3)) === 6 && seen.some((s) => s[0] === 'wzad' && s[1] === 2 && s[2] === wp && s[3] === 3));
+  check('W2.wealth.row', 'wealthRownowaga(2, 3, p) => 3.2 (kolejność: poziom, epoka, p)',
+    Math.abs((safe(() => D.wealthRownowaga(2, 3, wp)) ?? 0) - 3.2) < 1e-9 && seen.some((s) => s[0] === 'wrow' && s[1] === 2 && s[2] === 3 && s[3] === wp));
+
   // W3 — błąd reguł propaguje się (nie jest połykany ani zamieniany na wartość).
   const rulesThrow = { ...rules1, cityHasBibliotekaLine: () => { throw new Error('REGULA-X'); } };
   W.installK08dWiring(rulesThrow);
@@ -127,7 +155,7 @@ try {
     safe(() => D.religiaSzPunkty(0.5, 3)) === 8 && seen.some((s) => s[0] === 'rsp' && s[1] === 0.5 && s[2] === 3));
   check('W2.religia.xrel', 'religiaXRelTop(7, data) => reguła dostaje (7, data) i zwraca 1007',
     safe(() => D.religiaXRelTop(7, { d: 1 })) === 1007 && seen.some((s) => s[0] === 'rxt' && s[1] === 7 && s[2] !== null && s[2].d === 1));
-  check('W5.names', 'K08D_FN_NAMES = 7 delegatów (K08D-Z11/Z12)', D.K08D_FN_NAMES.length === 7);
+  check('W5.names', 'K08D_FN_NAMES = 13 delegatów (K08D-Z11/Z12 + 6 zamożności K08D-Z13)', D.K08D_FN_NAMES.length === 13);
   const allCallable = D.K08D_FN_NAMES.every((n) => {
     try {
       return calls[n] !== undefined && typeof calls[n] === 'function' && (calls[n](), true);

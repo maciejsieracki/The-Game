@@ -40,6 +40,7 @@ const fnBlock = (lines, name) => {
 const UNITS = [
   'ownerHasMennica', 'activeTradeRouteCountForCity', 'buildHandelDetailCard', 'renderHandelSlidersPanel',
   'appendCompositionBlock', 'buildTopBarReligiaDetailCard', 'renderReligia',
+  'appendWealthCompactStrip', 'buildWealthCompactTooltipCard', 'renderWealth', 'buildWealthDetailCard',
 ];
 let changed = 0;
 for (const name of UNITS) {

@@ -129,7 +129,7 @@ import { attachHoverDetail } from '../hoverDetailDock';`,
 };
 
 /**
- * Partia `wealth` (runda 4, NAPRAW 3a, cz. 2): `renderWealth` (pin :4775-4823) i `buildWealthDetailCard` (pin :4824-4945).
+ * Partia `wealth` (runda 4, NAPRAW 3a, cz. 2): `renderWealth` (pin :4775-4822) i `buildWealthDetailCard` (pin :4824-4944).
  * Reguły zamożności (`loadWealthParams`, `wealthCap`, `wealthProg`, `wealthMnoznik`, `wealthZadowolenie`, `wealthRownowaga`)
  * = delegaty `k08d-deps.ts` (P5.13, K08D-Z13); `gameData()` pinu -> parametr `data` (K08D-Z14, podstawienia LINE_SUBS_K08D).
  * `freshWealthState` / `daninaLabel*` / `readPodzialHandlu` / `cfg` = host K05B (`k05b-host.ts`, bez reguł w UI).
@@ -158,7 +158,7 @@ import {
   loadWealthParams, wealthCap, wealthMnoznik, wealthProg, wealthRownowaga, wealthZadowolenie, type WealthParams,
 } from './k08d-deps';`,
   units: [
-    { name: 'renderWealth', a: 4775, b: 4823 },
+    { name: 'renderWealth', a: 4775, b: 4822 },
     { name: 'buildWealthDetailCard', a: 4824, b: 4945 },
   ],
 };
@@ -196,8 +196,8 @@ export const LINE_SUBS_K08D = [
   { a: 4112, b: 4220, from: '  const data = gameData();\n', to: '' },
   { a: 4112, b: 4220, from: 'resolveEmpireSnap(city, activeMap, data)', to: 'resolveEmpireSnap(city, null, data)' },
   // K08D-Z13/Z14 (runda 4, partia wealth): reguły zamożności -> delegaty; `loadWealthParams` dostaje econParams (bez rzutowania typu pinu).
-  { a: 4775, b: 4823, from: "    ? loadWealthParams(data.econParams as unknown as RawWealthParamsJson, cfg.difficulty ?? 'normal')", to: "    ? loadWealthParams(data.econParams, cfg.difficulty ?? 'normal')" },
-  { a: 4775, b: 4823, from: '    return buildWealthDetailCard(city, ws, epoch, wealthParams, view);', to: '    return buildWealthDetailCard(city, ws, epoch, wealthParams, view, data);' },
+  { a: 4775, b: 4822, from: "    ? loadWealthParams(data.econParams as unknown as RawWealthParamsJson, cfg.difficulty ?? 'normal')", to: "    ? loadWealthParams(data.econParams, cfg.difficulty ?? 'normal')" },
+  { a: 4775, b: 4822, from: '    return buildWealthDetailCard(city, ws, epoch, wealthParams, view);', to: '    return buildWealthDetailCard(city, ws, epoch, wealthParams, view, data);' },
   // K08D-Z14: `gameData()` pinu -> parametr `data` (port nie czyta globalnego stanu gry; dane podaje wywołujący).
   { a: 4824, b: 4945, from: '  p: WealthParams,\n  view: CityView | null,\n): HTMLDivElement {', to: '  p: WealthParams,\n  view: CityView | null,\n  data: GameData | null,\n): HTMLDivElement {' },
   { a: 4824, b: 4945, from: '  const data = gameData();\n', to: '' },

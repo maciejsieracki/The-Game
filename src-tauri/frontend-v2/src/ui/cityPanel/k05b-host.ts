@@ -25,7 +25,8 @@ export type { AvailabilityContext, BuildingReqChip, CityView };
 export interface City {
   readonly id: number;
   readonly ownerId: number;
-  readonly wealthState?: { readonly poziom: number };
+  /** K08D-Z15 (runda 4, partia wealth): pola `poziom` i `pula` (pin `city.wealthState`, `game/wealth`). */
+  readonly wealthState?: { readonly poziom: number; readonly pula: number };
 }
 
 /** K05B-Z5: lokalna kopia typu `BuildingDef` (pin: data/loader.ts) — pola czytane przez jednostki K05B. */
@@ -236,7 +237,7 @@ export interface K05bHost {
   readPodzialHandlu(city: City, data: GameData | null): PodzialHandluSplit;
   isMeCity(ownerId: number): boolean;
   adjustHandelSplit(split: PodzialHandluSplit, key: keyof PodzialHandluSplit, value: number): PodzialHandluSplit;
-  freshWealthState(): { readonly poziom: number };
+  freshWealthState(): { readonly poziom: number; readonly pula: number };
   stockResourceLabel(key: string): string;
   rerender(): void;
   readonly rules: K05bRules;
@@ -280,7 +281,7 @@ export function adjustHandelSplit(split: PodzialHandluSplit, key: keyof PodzialH
 }
 
 /** K05B-Z1: pin `freshWealthState` (game/wealth) — przez host. */
-export function freshWealthState(): { readonly poziom: number } {
+export function freshWealthState(): { readonly poziom: number; readonly pula: number } {
   return h().freshWealthState();
 }
 
