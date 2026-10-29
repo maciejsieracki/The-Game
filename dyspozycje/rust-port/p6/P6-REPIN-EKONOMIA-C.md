@@ -42,3 +42,14 @@ Stara ścieżka 1/2/4 w `scale_terrain_improvement_work_cost` → FAILED w 3 tes
 - `cargo clippy --all-targets -- -D warnings`: EXIT=0
 - `cargo test --no-fail-fast` (`rust-port/engine`): 1276 passed / 0 failed (baseline 1272 + 4 nowe testy)
 - `git diff --check`: czysty
+
+## Weryfikacja niezależna (runda 1, R-RUSTPORT-REPIN-EKONOMIA-C-Q1-verifier)
+
+- Bramki powtórzone na `bfc79e73` (logi w `dyspozycje/autobot/runs/R-RUSTPORT-REPIN-EKONOMIA-C-Q1/`): `cargo fmt --all -- --check` EXIT=0; `cargo clippy --all-targets -- -D warnings` EXIT=0; `cargo test --no-fail-fast` EXIT=0, suma 1276 passed / 0 failed.
+- Wektory: porównanie z przed-zmianą (`84136f57`) dla `qualifier.json`, `rules.json`, `improvements.json`. Wszystkie zmienione wartości numeryczne mają stosunek stare/nowe dokładnie 2.0 (0.5×). Zmiany typu int→float: 433 (qualifier), razem 11118 + 433 = 11551 liści. Zgodne z opisem operatora. Strukturalnie bez zmian kluczy poza `kosztPraca`, `work_cost_scale`, `era` (listy wartości) i `meta.pin_web`.
+- Zgodność formuły web vs Rust (ręczne porównanie `terrain-improvements.ts:91–114` @91dc998a z `improvements.rs:789–826`): ta sama normalizacja (`floor`, nie-skończona/brak → 1), ta sama gałąź ≤1→0.5, ==2→1, reszta 2·2^(e−3). Consumenci Rust (`improvement_build.rs:883`, `:922`) używają `scale_terrain_improvement_work_cost`, web consumenci (`improvement-tech.ts:105`, `map/improvement-build.ts:902`, `ui/entityCards/improvementAdapter.ts:163`) używają `scaleTerrainImprovementWorkCost`.
+- Mutacja A (granica brązu: `return 1.0` → `return 2.0` w `terrain_improvement_construction_era_multiplier`): FAILED w 5 testach (m.in. `construction_multiplier_stone_bronze_iron_boundaries`, `era_and_cost_scaling_match_web`, `improvement_meta_and_tech_gate_match_web`, `work_cost_scale_matches_web`). Log: `mutation-verifier-A-bronze.log`.
+- Mutacja B (usunięcie `floor()`): `sed` trafił w OBIE funkcje (`terrain_improvement_era_multiplier` :759 i nowa :791). FAILED w 2 testach (`construction_multiplier_stone_bronze_iron_boundaries`, `era_and_cost_scaling_match_web`). Log: `mutation-verifier-B-floor.log`. Kod przywrócony (`git checkout --`), drzewo czyste.
+- Obserwacja: `terrain_improvement_era_multiplier` (1/2/4) nie ma konsumenta produkcyjnego w `rust-port/engine/src` (tylko definicja i testy). Upkeep web `turn-economy.ts:937` nie jest portowany w Rust. To stan sprzed tej zmiany, poza zakresem C; ZAŁOŻENIE: nie wymaga działania w tym temacie.
+- Pozostaje jak u operatora: C5 (`relief-preserving-improvements.ts`) i C6 (`population-growth-v85.ts`) to NASTĘPNA-PARTIA; weryfikatory Python poza allowlistą (280 / 11037 rozbieżności, przyczyna: stara formuła w modelu).
+- NIE_ZMIERZONO: ponowna regeneracja wektorów z uruchomionego weba `91dc998a` nie była wykonywana w tej rundzie. Zgodność wektorów z webem opiera się na raporcie operatora oraz na tym, że zmiany są dokładnie ×0.5 zgodnie z formułą web.
