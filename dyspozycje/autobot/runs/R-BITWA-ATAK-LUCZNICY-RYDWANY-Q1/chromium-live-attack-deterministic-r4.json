@@ -1,0 +1,422 @@
+{
+  "setup": {
+    "attackers": [
+      {
+        "id": "atk10",
+        "canShoot": true,
+        "range": 3,
+        "rangeBase": 3,
+        "ammo": 12,
+        "distance": 2,
+        "pos": [
+          35,
+          72
+        ]
+      },
+      {
+        "id": "atk11",
+        "canShoot": true,
+        "range": 3,
+        "rangeBase": 3,
+        "ammo": 12,
+        "distance": 2,
+        "pos": [
+          36,
+          71
+        ]
+      },
+      {
+        "id": "atk12",
+        "canShoot": true,
+        "range": 3,
+        "rangeBase": 3,
+        "ammo": 12,
+        "distance": 2,
+        "pos": [
+          36,
+          73
+        ]
+      }
+    ],
+    "defender": "def10",
+    "defenderAt": [
+      37,
+      72
+    ],
+    "origRoster": {
+      "atk": 56
+    }
+  },
+  "final": {
+    "round": 1,
+    "finished": false,
+    "actions": [
+      {
+        "type": "ranged-pick",
+        "id": "atk10",
+        "round": 1,
+        "doctrine": "steady",
+        "canShoot": true,
+        "ammo": 12,
+        "at": [
+          35,
+          72
+        ],
+        "rangeBase": 3,
+        "range": 3,
+        "acted": false,
+        "moveLeft": 3,
+        "enemies": [
+          {
+            "id": "def10",
+            "at": [
+              37,
+              72
+            ],
+            "distance": 2
+          }
+        ],
+        "targetId": "def10",
+        "targetDistance": 2,
+        "candidateMove": {
+          "col": 37,
+          "row": 71
+        }
+      },
+      {
+        "type": "ranged-pick",
+        "id": "atk11",
+        "round": 1,
+        "doctrine": "steady",
+        "canShoot": true,
+        "ammo": 12,
+        "at": [
+          36,
+          71
+        ],
+        "rangeBase": 3,
+        "range": 3,
+        "acted": false,
+        "moveLeft": 3,
+        "enemies": [
+          {
+            "id": "def10",
+            "at": [
+              37,
+              72
+            ],
+            "distance": 2
+          }
+        ],
+        "targetId": "def10",
+        "targetDistance": 2,
+        "candidateMove": {
+          "col": 37,
+          "row": 72
+        }
+      },
+      {
+        "type": "ranged-pick",
+        "id": "atk12",
+        "round": 1,
+        "doctrine": "steady",
+        "canShoot": true,
+        "ammo": 12,
+        "at": [
+          36,
+          73
+        ],
+        "rangeBase": 3,
+        "range": 3,
+        "acted": false,
+        "moveLeft": 3,
+        "enemies": [
+          {
+            "id": "def10",
+            "at": [
+              37,
+              72
+            ],
+            "distance": 2
+          }
+        ],
+        "targetId": "def10",
+        "targetDistance": 2,
+        "candidateMove": {
+          "col": 37,
+          "row": 73
+        }
+      },
+      {
+        "type": "attack-call",
+        "id": "atk10",
+        "targetId": "def10",
+        "range": 3,
+        "ammo": 12,
+        "round": 1
+      },
+      {
+        "type": "shot-start",
+        "id": "atk10",
+        "targetId": "def10",
+        "ammo": 12,
+        "hp": 16,
+        "range": 3,
+        "at": [
+          35,
+          72
+        ],
+        "targetAt": [
+          37,
+          72
+        ],
+        "round": 1,
+        "doctrine": "steady"
+      },
+      {
+        "type": "attack-call",
+        "id": "atk11",
+        "targetId": "def10",
+        "range": 3,
+        "ammo": 12,
+        "round": 1
+      },
+      {
+        "type": "shot-start",
+        "id": "atk11",
+        "targetId": "def10",
+        "ammo": 12,
+        "hp": 16,
+        "range": 3,
+        "at": [
+          36,
+          71
+        ],
+        "targetAt": [
+          37,
+          72
+        ],
+        "round": 1,
+        "doctrine": "steady"
+      },
+      {
+        "type": "attack-call",
+        "id": "atk12",
+        "targetId": "def10",
+        "range": 3,
+        "ammo": 12,
+        "round": 1
+      },
+      {
+        "type": "shot-start",
+        "id": "atk12",
+        "targetId": "def10",
+        "ammo": 12,
+        "hp": 16,
+        "range": 3,
+        "at": [
+          36,
+          73
+        ],
+        "targetAt": [
+          37,
+          72
+        ],
+        "round": 1,
+        "doctrine": "steady"
+      },
+      {
+        "type": "shot-complete",
+        "id": "atk10",
+        "targetId": "def10",
+        "ammo": 12,
+        "hp": 16,
+        "range": 3,
+        "at": [
+          35,
+          72
+        ],
+        "targetAt": [
+          37,
+          72
+        ],
+        "round": 1,
+        "doctrine": "steady",
+        "ammoAfter": 11,
+        "hpAfter": 12
+      },
+      {
+        "type": "shot-complete",
+        "id": "atk11",
+        "targetId": "def10",
+        "ammo": 12,
+        "hp": 16,
+        "range": 3,
+        "at": [
+          36,
+          71
+        ],
+        "targetAt": [
+          37,
+          72
+        ],
+        "round": 1,
+        "doctrine": "steady",
+        "ammoAfter": 11,
+        "hpAfter": 12
+      },
+      {
+        "type": "shot-complete",
+        "id": "atk12",
+        "targetId": "def10",
+        "ammo": 12,
+        "hp": 16,
+        "range": 3,
+        "at": [
+          36,
+          73
+        ],
+        "targetAt": [
+          37,
+          72
+        ],
+        "round": 1,
+        "doctrine": "steady",
+        "ammoAfter": 11,
+        "hpAfter": 12
+      }
+    ],
+    "attackers": [
+      {
+        "id": "atk10",
+        "hp": 16,
+        "ammo": 11,
+        "pos": [
+          35,
+          72
+        ],
+        "range": 3,
+        "rangeBase": 3,
+        "acted": true
+      },
+      {
+        "id": "atk11",
+        "hp": 16,
+        "ammo": 11,
+        "pos": [
+          36,
+          71
+        ],
+        "range": 3,
+        "rangeBase": 3,
+        "acted": true
+      },
+      {
+        "id": "atk12",
+        "hp": 16,
+        "ammo": 11,
+        "pos": [
+          36,
+          73
+        ],
+        "range": 3,
+        "rangeBase": 3,
+        "acted": true
+      }
+    ],
+    "defender": {
+      "id": "def10",
+      "hp": 12,
+      "pos": [
+        37,
+        72
+      ],
+      "acted": true
+    }
+  },
+  "completedShots": [
+    {
+      "type": "shot-complete",
+      "id": "atk10",
+      "targetId": "def10",
+      "ammo": 12,
+      "hp": 16,
+      "range": 3,
+      "at": [
+        35,
+        72
+      ],
+      "targetAt": [
+        37,
+        72
+      ],
+      "round": 1,
+      "doctrine": "steady",
+      "ammoAfter": 11,
+      "hpAfter": 12
+    },
+    {
+      "type": "shot-complete",
+      "id": "atk11",
+      "targetId": "def10",
+      "ammo": 12,
+      "hp": 16,
+      "range": 3,
+      "at": [
+        36,
+        71
+      ],
+      "targetAt": [
+        37,
+        72
+      ],
+      "round": 1,
+      "doctrine": "steady",
+      "ammoAfter": 11,
+      "hpAfter": 12
+    },
+    {
+      "type": "shot-complete",
+      "id": "atk12",
+      "targetId": "def10",
+      "ammo": 12,
+      "hp": 16,
+      "range": 3,
+      "at": [
+        36,
+        73
+      ],
+      "targetAt": [
+        37,
+        72
+      ],
+      "round": 1,
+      "doctrine": "steady",
+      "ammoAfter": 11,
+      "hpAfter": 12
+    }
+  ],
+  "checks": [
+    [
+      "live production actor is a ranged unit with legal ammo and range",
+      true
+    ],
+    [
+      "production ranged picker selected a legal target",
+      true
+    ],
+    [
+      "production _doRangedAttack completed with HP loss and ammo spent",
+      true
+    ],
+    [
+      "production doctrine remains Attack",
+      true
+    ],
+    [
+      "no browser page or console errors",
+      true
+    ]
+  ],
+  "errors": []
+}

@@ -3,9 +3,10 @@
  * R-BITWA-BTF-MIXED-ARMY-DOCTRINES-Q1
  * Headless BattleScene production-logic matrix. This executes the production
  * `_activateUnit`, doctrine dispatch, production target selection, production
- * BFS/cavalry movement planners, and production formation slot planner. It
- * deliberately stubs renderer/animation callbacks and does NOT claim a WebGL,
- * visual-collision, or full Chromium battle test.
+ * BFS/cavalry movement planners, and production formation slot planner. Its
+ * `_doMove` and `_doAttack` adapters record fixture actions (they do not animate,
+ * apply damage, or prove the full runtime attack loop). It does NOT claim a
+ * WebGL, visual-collision, or full Chromium battle test.
  */
 const assert = require('assert');
 const path = require('path');
@@ -156,6 +157,7 @@ function makeScenario(BattleScene, { doctrine, rangedLines, priorityVariant, ter
   const scene = Object.create(BattleScene.prototype);
   const occByKey = new Map([...atk, ...def].map(ru => [key(ru.q, ru.r), ru]));
   const events = [];
+  const traceIds = new Set(active.filter(ru => ru.rangedBase).map(ru => ru.bu.id));
   Object.assign(scene, {
     atk, def, occByKey,
     finished: false, siegeWallCol: -1, _manualMode: false,
@@ -194,11 +196,12 @@ function makeScenario(BattleScene, { doctrine, rangedLines, priorityVariant, ter
         events.push({ type: 'blocked-move', unitId: ru.bu.id, role: roleForId(ru.bu.id), q, r });
         done(); return;
       }
+      const moveLeftBefore = ru.moveLeft;
       occByKey.delete(oldKey);
       occByKey.set(targetKey, ru);
       ru.q = q; ru.r = r;
       ru.moveLeft = Math.max(0, ru.moveLeft - 1);
-      events.push({ type: 'move', unitId: ru.bu.id, role: roleForId(ru.bu.id), q, r });
+      events.push({ type: 'move', unitId: ru.bu.id, role: roleForId(ru.bu.id), from: oldKey, q, r, moveLeftBefore, moveLeftAfter: ru.moveLeft, turn: this._traceTurn });
       done();
     },
     _doAttack(ru, target, done) {
@@ -209,12 +212,25 @@ function makeScenario(BattleScene, { doctrine, rangedLines, priorityVariant, ter
         events.push({ type: 'illegal-attack', unitId: ru.bu.id, role: roleForId(ru.bu.id), distance });
         done(); return;
       }
+      const ammoBefore = ru.ammoLeft;
       if (ranged) ru.ammoLeft--;
-      events.push({ type: ranged ? 'shot' : 'melee-attack', unitId: ru.bu.id, role: roleForId(ru.bu.id), targetId: target.bu.id, distance });
+      events.push({ type: ranged ? 'shot' : 'melee-attack', unitId: ru.bu.id, role: roleForId(ru.bu.id), targetId: target.bu.id, distance, range: ru.range, ammoBefore, ammoAfter: ru.ammoLeft, targetHp: target.bu.hp, turn: this._traceTurn });
       done();
     },
     _schedule(_delay, cb) { cb(); },
   });
+  const originalRangedPick = BattleScene.prototype._pickRangedTargetByPriority;
+  scene._pickRangedTargetByPriority = function(ru, ...args) {
+    const selected = originalRangedPick.call(this, ru, ...args);
+    if (traceIds.has(ru.bu.id)) events.push({ type: 'ranged-pick', unitId: ru.bu.id, targetId: selected?.bu.id ?? null, at: [ru.q, ru.r], targetAt: selected ? [selected.q, selected.r] : null, distance: selected ? Math.abs(ru.q-selected.q)+Math.abs(ru.r-selected.r) : null, range: ru.range, ammo: ru.ammoLeft, rank: ru.formationRank, moveLeft: ru.moveLeft, acted: ru.acted, turn: this._traceTurn, enemies: this._enemiesOf(ru).map(e=>({id:e.bu.id,at:[e.q,e.r],distance:Math.abs(ru.q-e.q)+Math.abs(ru.r-e.r),class:this._unitBattleClass(e),priority:this._priorityScore(ru,e)})).filter(e=>e.distance<=ru.range+2).sort((a,b)=>a.distance-b.distance).slice(0,8) });
+    return selected;
+  };
+  const originalCompactGate = BattleScene.prototype._compactAttackAllowsStep;
+  scene._compactAttackAllowsStep = function(ru, candidateCol) {
+    const allowed = originalCompactGate.call(this, ru, candidateCol);
+    if (traceIds.has(ru.bu.id)) events.push({ type: 'line-gate', unitId: ru.bu.id, from: [ru.q, ru.r], candidateCol, allowed, rank: ru.formationRank, moveLeft: ru.moveLeft, acted: ru.acted });
+    return allowed;
+  };
   const routeSearchMetrics = { calls: 0, passabilityChecks: 0, maxChecksPerCall: 0 };
   const originalPassable = BattleScene.prototype._passableForUnit;
   const originalRoute = BattleScene.prototype._firstStepTowardMoveDestination;
@@ -287,48 +303,50 @@ async function main() {
               ru.acted = false;
               ru.moveLeft = 2;
               ru.playerOrder = { type: 'none' };
+              const traced = ru.rangedBase;
+              const before = traced ? { q: ru.q, r: ru.r, moveLeft: ru.moveLeft, acted: ru.acted, ammoLeft: ru.ammoLeft } : null;
+              s.scene._traceTurn = turn;
               BattleScene.prototype._activateUnit.call(s.scene, ru, () => {});
+              if (traced) s.events.push({ type: 'activation', unitId: ru.bu.id, doctrine: s.doctrine, turn, before, after: { q: ru.q, r: ru.r, moveLeft: ru.moveLeft, acted: ru.acted, ammoLeft: ru.ammoLeft } });
             }
           }
           const summary = summarize(s);
           const idleReason = doctrine === 'defensive' ? 'expected-hold-if-no-target-in-range' : 'no-path/line-block/no-improving-move';
-          reports.push({ doctrine, rangedLines, priorityVariant, terrainVariant, activeUnits: s.active.length, turns: turnCount, summary, idleReason, routeSearch: s.routeSearchMetrics });
+          const traceUnitIds = new Set(['atk-archer-26', 'atk-slinger-30', 'atk-slinger-28']);
+          const trace = s.events.filter(event => traceUnitIds.has(event.unitId));
+          reports.push({ doctrine, rangedLines, priorityVariant, terrainVariant, activeUnits: s.active.length, turns: turnCount, summary, idleReason, routeSearch: s.routeSearchMetrics, trace });
           if (s.events.some(e => e.type === 'illegal-attack')) {
             errors.push(`${doctrine}/lines${rangedLines}/priority${priorityVariant}/${terrainVariant}: illegal attack emitted`);
           }
           if (terrainVariant === 'engaged' && !s.events.some(e => e.type === 'shot' && (e.role === 'archer' || e.role === 'slinger' || e.role === 'javelin'))) {
-            errors.push(`${doctrine}/lines${rangedLines}/priority${priorityVariant}/${terrainVariant}: no ranged shot across five turns`);
+            errors.push(`${doctrine}/lines${rangedLines}/priority${priorityVariant}/${terrainVariant}: no ranged shot across ${turnCount} activations`);
           }
           if (doctrine !== 'defensive' && !s.events.some(e => e.type === 'move' && (e.role === 'cavalry' || e.role === 'chariot'))) {
             errors.push(`${doctrine}/lines${rangedLines}/priority${priorityVariant}/${terrainVariant}: mounted roster made no move`);
           }
           if (doctrine === 'steady' && terrainVariant === 'engaged') {
             for (const role of ['javelin', 'archer', 'slinger']) {
-              const idleOutOfRange = s.active.filter(ru => roleForId(ru.bu.id) === role &&
-                !s.events.some(e => e.unitId === ru.bu.id && e.type === 'shot') &&
-                Math.min(...s.enemies.map(e => Math.abs(ru.q - e.q) + Math.abs(ru.r - e.r))) > roleDetails[role].reach);
-              const idleInRange = s.active.filter(ru => roleForId(ru.bu.id) === role &&
-                !s.events.some(e => e.unitId === ru.bu.id && e.type === 'shot') &&
-                Math.min(...s.enemies.map(e => Math.abs(ru.q - e.q) + Math.abs(ru.r - e.r))) <= roleDetails[role].reach);
-              if (idleInRange.length) {
-                errors.push(`${doctrine}/lines${rangedLines}/priority${priorityVariant}/${terrainVariant}: ${idleInRange.length} ${role} units ended in range without firing (${idleInRange.map(u => u.bu.id).join(', ')})`);
-              }
-              if (idleOutOfRange.length) {
-                const details = idleOutOfRange.map(ru => {
-                  const meta = s.scene._effectiveMetaForUnit(ru);
-                  const dest = s.scene._doctrineMoveDest(ru, meta);
-                  const route = dest ? s.scene._firstStepTowardMoveDestination(ru, dest.col, dest.row) : null;
-                  const dc = dest ? Math.sign(dest.col - ru.q) : 0;
-                  const dr = dest ? Math.sign(dest.row - ru.r) : 0;
-                  const blockedAt = (q, r) => !s.scene._passableForUnit(ru, q, r) ? 'terrain' :
-                    s.scene.occByKey.has(key(q, r)) ? `occupied:${s.scene.occByKey.get(key(q, r)).bu.id}` : 'free';
-                  const routeCoords = route?.split(',').map(Number);
-                  const actions = s.events.filter(e => e.unitId === ru.bu.id);
-                  const start = s.initialPositions[ru.bu.id];
-                  const path = actions.filter(e=>e.type==='move').map(e=>`${e.q},${e.r}`).join('>');
-                  return `${ru.bu.id}@${ru.q},${ru.r} start=${start.q},${start.r} dist=${Math.min(...s.enemies.map(e => Math.abs(ru.q-e.q)+Math.abs(ru.r-e.r)))} mv=${actions.filter(e=>e.type==='move').length}/shot=${actions.filter(e=>e.type==='shot').length} path=${path} dest=${dest ? `${dest.col},${dest.row}` : 'none'} step=${blockedAt(ru.q+dc,ru.r+dr)} h=${blockedAt(ru.q+dc,ru.r)} v=${blockedAt(ru.q,ru.r+dr)} route=${route ?? 'none'} routeCompact=${routeCoords ? s.scene._compactAttackAllowsStep(ru,routeCoords[0]) : 'n/a'}`;
-                }).join(';');
-                errors.push(`${doctrine}/lines${rangedLines}/priority${priorityVariant}/${terrainVariant}: ${idleOutOfRange.length} ${role} units did not fire and ended outside range (${details})`);
+              const units = s.active.filter(ru => roleForId(ru.bu.id) === role);
+              for (const ru of units) {
+                const unitEvents = s.events.filter(event => event.unitId === ru.bu.id);
+                const fired = unitEvents.some(event => event.type === 'shot');
+                const finalDistance = Math.min(...s.enemies.map(enemy => Math.abs(ru.q-enemy.q)+Math.abs(ru.r-enemy.r)));
+                const activationEvents = unitEvents.filter(event => event.type === 'activation');
+                const lastActivation = activationEvents.at(-1);
+                const startDistance = lastActivation
+                  ? Math.min(...s.enemies.map(enemy => Math.abs(lastActivation.before.q-enemy.q)+Math.abs(lastActivation.before.r-enemy.r)))
+                  : finalDistance;
+                const movedInLastActivation = unitEvents.some(event => event.type==='move' && event.turn===turnCount-1);
+                const enteredRangeAtHorizon = lastActivation?.turn===turnCount-1
+                  && startDistance>roleDetails[role].reach && finalDistance<=roleDetails[role].reach && movedInLastActivation;
+                if (!fired && finalDistance<=roleDetails[role].reach && !enteredRangeAtHorizon) {
+                  errors.push(`${doctrine}/lines${rangedLines}/priority${priorityVariant}/${terrainVariant}: ${ru.bu.id} started an activation in range but never fired`);
+                }
+                const initial = s.initialPositions[ru.bu.id];
+                const initialDistance = Math.min(...s.enemies.map(enemy => Math.abs(initial.q-enemy.q)+Math.abs(initial.r-enemy.r)));
+                if (!fired && finalDistance>roleDetails[role].reach && finalDistance>=initialDistance) {
+                  errors.push(`${doctrine}/lines${rangedLines}/priority${priorityVariant}/${terrainVariant}: ${ru.bu.id} remained outside range without reducing distance (${initialDistance}->${finalDistance})`);
+                }
               }
             }
           }
