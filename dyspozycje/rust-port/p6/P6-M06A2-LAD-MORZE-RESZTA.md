@@ -51,8 +51,47 @@ Pin pozostaje `edb8fb56`; odswiezenie wektorow robi osobny temat po R-RUSTPORT-R
 - Generator: `dyspozycje/autobot/runs/R-RUSTPORT-P6-M06A2-LAD-MORZE-RESZTA-Q1/gen-m06a2-vectors.mjs` (uruchomiony na `git archive edb8fb56` rozpakowanym poza repo; `gen_helpers_sha256` = ten sam co M06A).
 - Wektory: `rust-port/engine/tests/p6_m06a2_vectors/web-vectors.json`.
 - Testy: `rust-port/engine/tests/p6_m06a2_landsea.rs` (5 testow, wszystkie zielone; trafienia na progach N-1/N/N+1 asertowane).
-- Mutacje i dowody rownowaznosci: NIE ZMIERZONO (poza zakresem roli Operator-impl; wykonuje Operator-pomiary).
+- Mutacje i dowody rownowaznosci: ZMIERZONE w Operator-pomiary r1 (sekcja "Pomiary r1" nizej).
+- Weryfikator niezalezny: generator uruchomiony ponownie z `git archive edb8fb56` (wlasny katalog poza repo) -
+  wynik BAJT-W-BAJT zgodny z `web-vectors.json` (cmp). Logi: `runs/.../gate-*-r1v.log`.
 
 ## Math.*
 
 Partia 1 nie uzywa `Math.*` (sama arytmetyka calkowita i porownania). Wykaz pelny - w kolejnych partiach.
+
+## Pomiary r1 (Operator-pomiary)
+
+Trafienia progow (plik `web-vectors.json`, pole `boundary_rel` per przypadek; poprawka wzgledem raportu Operator-impl):
+- fill (rel wzgledem `min_land`): -1: 7, 0: 8, +1: 6 (raport Operator-impl podawal 6/7/6 - niezgodne z plikiem).
+- pool (rel wzgledem rozmiaru bloba `max - s`): -1: 8, 0: 8, +1: 8 (zgodne).
+
+Mutacje strukturalne (`mut-M*.log` w runs/, runner: podmiana jednego zakotwiczenia w `landsea.rs`, `cargo test --test p6_m06a2_landsea`, przywrocenie pliku):
+
+| ID | Mutacja | Wynik | Dowod |
+|---|---|---|---|
+| M01 | fill: `<` -> `<=` (prog N) | KILLED | test `fill_enclosed_water_matches_web_with_boundaries` |
+| M02 | fill: limit przebiegow 8 -> 7 | SURVIVED | NIE-RÓWNOWAZNE w ogole; wektory nie wymagaja 8. przebiegu - LUKA POKRYCIA (patrz nizej) |
+| M03 | fill: limit przebiegow 8 -> 9 | SURVIVED | NIE-RÓWNOWAZNE w ogole; j.w. - LUKA POKRYCIA |
+| M04 | fill: usuniecie `if n == 0 { break }` | SURVIVED | RÓWNOWAZNE: pass z n=0 nie zmienia stanu, wiec kolejny pass tez daje n=0 (iteracja deterministyczna po stanie); total += 0 |
+| M05 | fill: brak `river_present = false` | KILLED | test fill z wektorami rzeki |
+| M06 | fill: brak `river_edges.clear()` | KILLED | test fill z krawedziami |
+| M07 | fill: odwrocony predykat wody | KILLED | test fill |
+| M08 | small: `>` -> `>=` (rozmiar) | KILLED | test `..._with_size_boundaries` |
+| M09 | small: brak sprawdzenia `visited` w BFS | HANG (TIMEOUT 150 s) | BFS nie konczy sie; test NIE MA watchdoga - wykrycie tylko przez zawieszenie (slabe) |
+| M10 | small: brak `visited.insert` | KILLED | test size boundaries |
+| M11 | small: brak rozszerzenia stosu (`stack.push`) | KILLED | test size boundaries |
+| M12 | small: pominiety kierunek 0 w `HEX_DIRECTIONS` | KILLED | test size boundaries |
+| M13 | small: brak licznika `converted` | KILLED | test size boundaries |
+| M14 | alias `removeInlandSeaPools` -> wersja tylko Morze | KILLED | test `remove_inland_sea_pools_matches_web` |
+| M15 | water: brak `set_hex_to_laka` | KILLED | test `remove_inland_water_pools_matches_web` |
+| M16 | `count_land_neighbors`: odwrocony predykat | KILLED | test fill |
+
+Wynik: 16 mutacji; 12 KILLED asercja, 1 KILLED przez zawieszenie (M09), 1 SURVIVED rownowazne (M04), 2 SURVIVED nierownowazne (M02, M03) - LUKA.
+
+**Luka (otwarta, BLOCK dla zamkniecia tematu wg zasady "przeżyta mutacja = dowod rownowaznosci"):** limit przebiegow `FILL_ENCLOSED_MAX_PASSES = 8` (web :4191) nie jest osiagany przez zadne wektory (M02 i M03 przezywaja). Wymagany przypadek: mapa, w ktorej lancuch konwersji wymaga >= 8 przebiegow (kolejnosc wstawiania odwrotna do propagacji), wygenerowany z uruchomionego weba, z trafieniem N-1/N/N+1 dla liczby przebiegow. Do dodania w partii 2 / rundzie 2.
+
+**Rozstrzygniecie ZALOZENIEM (bez pytania):** Z-6: luka limitu przebiegow nie blokuje partii 1 (4 symbole sa poprawne dla wszystkich przypadkow, w ktorych zmiana nastepuje w <= 7 przebiegach); dodanie wektora jest wymagane przed zamknieciem `fillEnclosedWaterByLandNeighbors` w tabeli M06A2.
+
+**Weryfikacja niezalezna:** ponowne uruchomienie generatora (`node --experimental-transform-types`, `m06a-loader-register.mjs`) z `git archive edb8fb56` -> `web-vectors.json` zgodny bajt-w-bajt (cmp, sha `ab934703...` z meta).
+
+**Dryf po pinie:** bez zmian (sekcja wyzej).
