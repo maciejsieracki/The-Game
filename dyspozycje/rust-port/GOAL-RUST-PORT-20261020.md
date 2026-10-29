@@ -40,9 +40,9 @@ dotykające tych samych plików — zawsze sekwencyjnie, nigdy w tej samej fali.
 |---|---|---|---|---|---|---|
 | 1 | R-RUSTPORT-REPIN-DELTA-Q1 | P1-delta | 3/5 | wf_b78ba3d8-189 | **PASS — zintegrowane** (docs, `da7a92f6`); slot wolny | 2026-10-29 |
 | 2 | R-RUSTPORT-P6-M05B-RELIEF-B-POKRYCIE-PASMA-Q1 | P6 mapgen | 4/5 | wf_9fa60ee3-244 | **PASS — zintegrowane** na `parity-v2` (`ec1a8552`); slot wolny | 2026-10-29 |
-| 7 | R-RUSTPORT-REPIN-LOGIKA-CIV-Q1 (na gałęzi `rust-port/repin-wip`; DANE r2 zintegrowane tam, nie w `parity-v2`) | REPIN krok 2 | 1/5 | (nowy) | etap 1 | 2026-10-29 |
+| 7 | R-RUSTPORT-REPIN-LOGIKA-CIV-Q1 | REPIN krok 2 | 4/5 | wf_eefb36b6-1a8 | **PASS-WITH-NOTES — zintegrowane**; `repin-wip` scalone do `parity-v2` (1243/0); slot wolny | 2026-10-29 |
 | 8 | R-RUSTPORT-P6-M06A-LAD-MORZE-WYBRZEZE-A-Q1 | P6 mapgen | 2/5 | wf_06809315-5d2 | **ZAMKNIĘTE ADMINISTRACYJNIE (zakres 22/46) — zintegrowane**; resztę przejmuje M06A2 | 2026-10-29 |
-| 14 | R-RUSTPORT-P6-M06A2-LAD-MORZE-RESZTA-Q1 | P6 mapgen | 1/5 | (nowy) | etap 1 | 2026-10-29 |
+| 14 | R-RUSTPORT-P6-M06A2-LAD-MORZE-RESZTA-Q1 | P6 mapgen | 4/5 | wf_806cd4d4-c64 | **PASS (partia 1: 4 symbole) — zintegrowane**; reszta 17 symboli → M06A3 | 2026-10-29 |
 | 15 | R-RUSTPORT-P5-8-CITYPANEL-K05A-Q1 | P5.8 | 3/5 | wf_0bfa71b4-d3c | **PASS-WITH-NOTES — zintegrowane** (`a2920ce3`); slot wolny | 2026-10-29 |
 | 16 | R-RUSTPORT-P5-8-CITYPANEL-K05B-Q1 | P5.8 | 1/5 | (nowy) | etap 1 | 2026-10-29 |
 | 17 | R-RUSTPORT-P5-8-CITYPANEL-K06A-Q1 | P5.8 | 2/5 | wf_9411516f-c63 | **PASS (po poprawce N1/N2) — zintegrowane**; slot wolny | 2026-10-29 |
