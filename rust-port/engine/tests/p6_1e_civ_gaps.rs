@@ -184,3 +184,39 @@ fn gap_invariant_extra_cel_exceptions_only_for_skipped_civs() {
         }
     }
 }
+
+/// R3 (r4 Operator, odpowiedz na zarzut Evaluatora 1): mutant 15 - filtr Egiptu w
+/// `civ_embarkation_movement_multiplier` (`|| !EGIPT_POMIJANE.contains(..)` -> `|| false`) odrzuca
+/// WSZYSTKIE wpisy dla Egiptu. Web (`civEmbarkationMovementMultiplier`, decyzja 4B): plytkie morze
+/// zostaje. Wpis `walka_ruch_piechota_teren_plytkie_morze` (cel piechota, shallow_sea=true,
+/// jednostka piechota) musi nadal podnosic mnoznik dla Egiptu tak jak dla innych cywilizacji.
+#[test]
+fn gap_egipt_keeps_shallow_sea_infantry_movement_entry() {
+    let piechur = unit("Piechur", "");
+    let spec = civ_bonus_matrix_specs()
+        .spec_walka
+        .iter()
+        .find(|s| s.id == "walka_ruch_piechota_teren_plytkie_morze")
+        .expect("spec walka_ruch_piechota_teren_plytkie_morze");
+    let plytkie = CivBonusEntry {
+        typ: spec.typ.clone(),
+        cel: spec.cel.clone(),
+        wartosc: BonusValue::Number(0.5),
+        opis: None,
+        realizuje: Some("walka".to_owned()),
+        matrix_param_id: Some(spec.id.clone()),
+    };
+    let entries = std::slice::from_ref(&plytkie);
+    let base = civ_embarkation_movement_multiplier(&[], &piechur, "egipt");
+    assert_eq!(base, 1.0);
+    assert_eq!(
+        civ_embarkation_movement_multiplier(entries, &piechur, "egipt"),
+        1.5,
+        "Egipt zachowuje plytkie morze dla piechoty"
+    );
+    assert_eq!(
+        civ_embarkation_movement_multiplier(entries, &piechur, "polska"),
+        1.5,
+        "inna cywilizacja: plytkie morze jak wyzej"
+    );
+}
