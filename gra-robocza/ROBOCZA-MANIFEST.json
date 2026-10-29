@@ -1,21 +1,22 @@
 {
   "releaseState": "DEPLOYED — ROBOCZA; push do main i zdalny readback PASS (2026-10-29).",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "29022be80b95e838a861a8ea70e8a915",
-  "bundleSha256": "f0177a6469973e498389fa9b264f0287e9db5dff01f06487dac0d16a7bff2b97",
-  "bundleBytes": 70031368,
+  "bundleMd5": "15eabd0ba132bde2454f74d47371a685",
+  "bundleSha256": "80be74dbece3ae923efdeffee193aec1607ae6e0555a4f36973406891a31b508",
+  "bundleBytes": 70033099,
   "sourceSnapshot": {
-    "baseCommit": "aeecff7194c3a6490cc42fded6b918b7e4b23df5",
-    "source": "origin/main plus R-HANDLOWA-WYMIANA-CZAS-BEZTERMINOWY-30T-Q1",
+    "baseCommit": "2a6df3f36da3f404a7afd1c869cfec4a7fd606a2",
+    "source": "origin/main plus R-WOJSKO-ARMIA-REKRUTACJA-DO-WODZA-Q1",
     "build": "Vite 5.4.21 single-file; 917 modules; stamped",
-    "buildCommit": "5c65b20a + f216263d",
-    "publicationCommit": "401893417f2a47545c44ef5bba168dc10d0fcf31"
+    "buildCommit": "98e9f6ee + 869cde2a + 7738027f",
+    "publicationCommit": null
   },
   "scope": [
     "AI zbiera armię przez pięć pełnych tur po wybuchu wojny, a w kolejnej turze atakuje wybrany osiągalny lądem cel wspólnymi rozkazami całego składu.",
     "Wódz/generał ma odrębną gwiazdę nad gwiazdami doświadczenia; emblemat cywilizacji jednostki jest 4× większy.",
     "R-ARMY-MERGE-SPLIT-ICONS-Q2: merge arrows inward, split arrows outward.",
-    "R-HANDLOWA-WYMIANA-CZAS-BEZTERMINOWY-30T-Q1: cyclic quantity exchange supports 1–30 turns or indefinite; resource access and treaty caps remain 20."
+    "R-HANDLOWA-WYMIANA-CZAS-BEZTERMINOWY-30T-Q1: cyclic quantity exchange supports 1–30 turns or indefinite; resource access and treaty caps remain 20.",
+    "R-WOJSKO-ARMIA-REKRUTACJA-DO-WODZA-Q1: global default directs new player recruits to a tracked leader; per-unit overrides allow partial rally; save/load preserves defaults and unit choice."
   ],
   "verification": [
     "TypeScript PASS",
@@ -23,7 +24,9 @@
     "Chromium tests: AI campaign 68/68; newgame navigation 230/230; battle/recruitment/commander focused tests PASS",
     "GitHub Raw readback at 682a6b9a: bundle/manifest/START HTTP 200; bundle SHA-256, MD5 and bytes match manifest.",
     "Trade duration: domain 53/53 and rendered UI 12/12; typecheck PASS; broader proposal test 186/188 with both failures reproduced at baseline.",
-    "Vite single-file 917 modules, Robocza verifier and boot smoke PASS."
+    "Vite single-file 917 modules, Robocza verifier and boot smoke PASS.",
+    "Leader rally: follow regression 20/20, recruitment UI and save/legacy PASS; typecheck and production build PASS.",
+    "Robocza boot smoke PASS; bundle verifier VERIFY OK."
   ],
   "limits": [
     "AI morska kampania/transport pozostaje poza zakresem.",
@@ -31,29 +34,29 @@
     "Dowód wizualny odznaki wykorzystuje osobny jawnie opisany harness produkcyjnego renderer; pełny gameplay screenshot z aktywną armią nie został wykonany."
   ],
   "finalControl": {
-    "status": "PASS-WITH-NOTES",
-    "notes": "Trade duration Final Control PASS-WITH-NOTES. Two broader proposal peace-in-war assertions are reproduced at baseline and unrelated. Existing AI naval and large-empire limits remain as recorded."
+    "status": "PASS",
+    "notes": "Leader rally passed independent Final Control. Its evaluator notes that the EOT regression exercises helpers and source-checks the production call rather than running a full end-turn game-runtime test."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-10-29T19:21:14",
+  "hubGeneratedAt": "2026-10-29T19:36:11",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "29022be80b95e838a861a8ea70e8a915",
-      "sizeBytes": 70031368
+      "md5": "15eabd0ba132bde2454f74d47371a685",
+      "sizeBytes": 70033099
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "29022be80b95e838a861a8ea70e8a915",
-      "sizeBytes": 70031368
+      "md5": "15eabd0ba132bde2454f74d47371a685",
+      "sizeBytes": 70033099
     }
   ],
-  "md5": "29022be80b95e838a861a8ea70e8a915",
-  "sizeBytes": 70031368,
+  "md5": "15eabd0ba132bde2454f74d47371a685",
+  "sizeBytes": 70033099,
   "publisher": "Codex AutoBot — owner authorized main merge, Robocza publish and git push",
   "source": "gra/src; merge/split icon fix 002a75815b067cf2cdbcae7eed5c488f8634ea34",
   "immediatePreviousRelease": {
@@ -260,22 +263,18 @@
     "publicationCommit": "f6f63dc839449d8e08a7e2509ec72796757867af"
   },
   "publishPlan": {
-    "status": "PUBLISHED to origin/main at 401893417f2a47545c44ef5bba168dc10d0fcf31; Robocza only; no KANON/FINALNA promotion.",
+    "status": "READY_FOR_DEPLOY — local artifact prepared; Git push and remote readback pending",
     "target": "origin/main"
   },
   "remoteReadback": {
-    "status": "PASS",
+    "status": "PENDING",
     "remote": "origin/main",
-    "commit": "401893417f2a47545c44ef5bba168dc10d0fcf31",
-    "bundleUrl": "https://raw.githubusercontent.com/maciejsieracki/The-Game/401893417f2a47545c44ef5bba168dc10d0fcf31/gra-robocza/Gra-ROBOCZA.html",
-    "manifestUrl": "https://raw.githubusercontent.com/maciejsieracki/The-Game/401893417f2a47545c44ef5bba168dc10d0fcf31/gra-robocza/ROBOCZA-MANIFEST.json",
-    "startUrl": "https://raw.githubusercontent.com/maciejsieracki/The-Game/401893417f2a47545c44ef5bba168dc10d0fcf31/gra-robocza/START.html",
-    "httpStatus": 200,
-    "bundleMd5": "29022be80b95e838a861a8ea70e8a915",
-    "bundleSha256": "f0177a6469973e498389fa9b264f0287e9db5dff01f06487dac0d16a7bff2b97",
-    "bundleBytes": 70031368,
-    "checks": "GitHub Raw bundle/manifest/START returned HTTP 200; remote bundle hashes/size match; manifest and START byte-identical."
+    "httpStatus": null,
+    "bundleMd5": "15eabd0ba132bde2454f74d47371a685",
+    "bundleSha256": "80be74dbece3ae923efdeffee193aec1607ae6e0555a4f36973406891a31b508",
+    "bundleBytes": 70033099,
+    "checks": "awaiting post-push raw artifact readback"
   },
   "publishedAt": "2026-10-29",
-  "buildStamp": "2026-10-29 19:21 · f6f0597203a1b5b8e001ac58ea2e5c1d"
+  "buildStamp": "2026-10-29 19:36 · 0384d9fe63d0737255e01902a26a2590"
 }
