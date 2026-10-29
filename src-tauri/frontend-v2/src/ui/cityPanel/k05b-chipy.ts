@@ -167,4 +167,3 @@ export function buildingStockCostChipsHtml(def: BuildingDef, city: City | undefi
   });
   return buildingRequirementChipsHtml(chips);
 }
-

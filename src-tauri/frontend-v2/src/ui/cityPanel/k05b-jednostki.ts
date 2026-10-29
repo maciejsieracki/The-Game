@@ -193,4 +193,3 @@ export function buildRecruitTabDetailCard(city: City, unitCount: number, skarb: 
   gridDetailRow(g, 'W kolejce', String(rq));
   return card;
 }
-

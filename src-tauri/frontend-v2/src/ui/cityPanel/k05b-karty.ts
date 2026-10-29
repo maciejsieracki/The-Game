@@ -620,4 +620,3 @@ export function buildBuildingBuildTabDetailCard(
 
   return card;
 }
-
