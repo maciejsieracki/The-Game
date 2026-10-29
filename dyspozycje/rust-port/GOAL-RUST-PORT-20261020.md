@@ -43,7 +43,7 @@ dotykające tych samych plików — zawsze sekwencyjnie, nigdy w tej samej fali.
 | 3 | R-RUSTPORT-P5-8-CITYPANEL-PODZIAL-Q1 | P5.8 | 3/5 | wf_5b094795-b4f | **PASS — zintegrowane** (docs, `a1246e48`); slot wolny | 2026-10-29 |
 | 4 | R-RUSTPORT-P4-36-MOD14-BATTLE-3D-Q3 (3D, Opus — zgoda właściciela) | P4.36 | 1/5 | wf_2ef132a4-a0e | etap 1 (Operator-impl) | 2026-10-29 |
 | 5 | R-RUSTPORT-P5-8-CITYPANEL-K01A-Q1 | P5.8 | 3/5 | wf_024dd721-963 | **PASS-WITH-NOTES — zintegrowane** na `parity-v2` (`b31cd50c`); slot wolny | 2026-10-29 |
-| 6 | R-RUSTPORT-P5-8-CITYPANEL-K02-Q1 | P5.8 | 3/5 | wf_febbb236-243 | etap 4 (r3: 18 jednostek partiami) | 2026-10-29 |
+| 6 | R-RUSTPORT-P5-8-CITYPANEL-K02-Q1 | P5.8 | 3/5 | wf_febbb236-243 | **PASS-WITH-NOTES — zintegrowane** na `parity-v2` (po K01A); slot wolny | 2026-10-29 |
 
 
 
