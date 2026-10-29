@@ -1,0 +1,111 @@
+{
+ "part": "1/4",
+ "mutantow": 17,
+ "zabite": 17,
+ "przezyte": 0,
+ "nieZmierzone": 0,
+ "results": [
+  {
+   "id": "w3-stat-praca",
+   "grupa": "pole",
+   "desc": "klucz praca → zywnosc",
+   "status": "ZABITA"
+  },
+  {
+   "id": "w3-res-scope",
+   "grupa": "pole",
+   "desc": "klasa zakresu surowca pominięta",
+   "status": "ZABITA"
+  },
+  {
+   "id": "w3-val-cls",
+   "grupa": "tekst",
+   "desc": "klasa wartości pominięta",
+   "status": "ZABITA"
+  },
+  {
+   "id": "w3-delta-nonfinite",
+   "grupa": "brzeg",
+   "desc": "Infinity/NaN tempa zamienione na undefined",
+   "status": "ZABITA"
+  },
+  {
+   "id": "sk-owner-label",
+   "grupa": "pole",
+   "desc": "etykieta właściciela odwrócona",
+   "status": "ZABITA"
+  },
+  {
+   "id": "sk-tab-hidden",
+   "grupa": "pole",
+   "desc": "ukrywanie zakładek odwrócone",
+   "status": "ZABITA"
+  },
+  {
+   "id": "ow-praca-big",
+   "grupa": "pole",
+   "desc": "tempo miasta (big) pracy z puli zamiast całości",
+   "status": "ZABITA"
+  },
+  {
+   "id": "ow-civ-zloto",
+   "grupa": "pole",
+   "desc": "civ.zloto wejściowe zerowane (wejście adaptera DTO)",
+   "status": "ZABITA"
+  },
+  {
+   "id": "ow-skarb-handel",
+   "grupa": "pole",
+   "desc": "podpowiedź skarbca: skarb → zamożność",
+   "status": "ZABITA"
+  },
+  {
+   "id": "rs-w3-flag",
+   "grupa": "pole",
+   "desc": "tryb w3 odwrócony",
+   "status": "ZABITA"
+  },
+  {
+   "id": "ad-ismeCity-neg",
+   "grupa": "pole",
+   "desc": "adapter isMeCity zanegowany",
+   "status": "ZABITA"
+  },
+  {
+   "id": "ad-drawer-setter",
+   "grupa": "pole",
+   "desc": "zakładka nie zapisywana",
+   "status": "ZABITA"
+  },
+  {
+   "id": "res-no-assign",
+   "grupa": "pole",
+   "desc": "odświeżony obiekt nie zapisywany",
+   "status": "ZABITA"
+  },
+  {
+   "id": "cap-besieged",
+   "grupa": "pole",
+   "desc": "oblężenie ignorowane",
+   "status": "ZABITA"
+  },
+  {
+   "id": "cap-perm-invert",
+   "grupa": "pole",
+   "desc": "isMe odwrócone",
+   "status": "ZABITA"
+  },
+  {
+   "id": "cap-owner-cities",
+   "grupa": "pole",
+   "desc": "lista miast zawsze pusta (brak stanu oblężenia)",
+   "status": "ZABITA"
+  },
+  {
+   "id": "active-setter",
+   "grupa": "pole",
+   "desc": "activeCity nie zapisywane",
+   "status": "ZABITA"
+  }
+ ]
+}

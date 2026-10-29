@@ -1,0 +1,111 @@
+{
+ "part": "0/4",
+ "mutantow": 17,
+ "zabite": 17,
+ "przezyte": 0,
+ "nieZmierzone": 0,
+ "results": [
+  {
+   "id": "w3-stat-zloto",
+   "grupa": "pole",
+   "desc": "klucz zloto → skarbiec zamieniony na zloto",
+   "status": "ZABITA"
+  },
+  {
+   "id": "w3-aria-label",
+   "grupa": "tekst",
+   "desc": "aria-label = etykieta zamiast podpowiedzi",
+   "status": "ZABITA"
+  },
+  {
+   "id": "w3-data-stat",
+   "grupa": "pole",
+   "desc": "data-res-stat = etykieta",
+   "status": "ZABITA"
+  },
+  {
+   "id": "w3-delta-undef",
+   "grupa": "brzeg",
+   "desc": "brak tempa (undefined) zamieniony na 0",
+   "status": "ZABITA"
+  },
+  {
+   "id": "sk-epoch",
+   "grupa": "pole",
+   "desc": "epoka domyślna 1 → 0",
+   "status": "ZABITA"
+  },
+  {
+   "id": "sk-scale-active",
+   "grupa": "pole",
+   "desc": "aktywna skala odwrócona",
+   "status": "ZABITA"
+  },
+  {
+   "id": "sk-drawer-title",
+   "grupa": "pole",
+   "desc": "tytuł zamiast tabów z wejścia drawerTabButtons",
+   "status": "ZABITA"
+  },
+  {
+   "id": "ow-civ-swap",
+   "grupa": "pole",
+   "desc": "tempo cywilizacji żywności z pracy",
+   "status": "ZABITA"
+  },
+  {
+   "id": "ow-food-racje",
+   "grupa": "pole",
+   "desc": "podpowiedź żywności: racje → produkcja",
+   "status": "ZABITA"
+  },
+  {
+   "id": "rs-nauka-branch",
+   "grupa": "pole",
+   "desc": "gałąź nauki imperium odwrócona",
+   "status": "ZABITA"
+  },
+  {
+   "id": "rs-food-zero",
+   "grupa": "brzeg",
+   "desc": "żywność netto: zero zielone",
+   "status": "ZABITA"
+  },
+  {
+   "id": "ad-format-mp",
+   "grupa": "pole",
+   "desc": "adapter formatManpower pominięty",
+   "status": "ZABITA"
+  },
+  {
+   "id": "res-id-owner",
+   "grupa": "pole",
+   "desc": "odświeżenie po ownerId zamiast id",
+   "status": "ZABITA"
+  },
+  {
+   "id": "cap-equal",
+   "grupa": "pole",
+   "desc": "warunek stolicy odwrócony",
+   "status": "ZABITA"
+  },
+  {
+   "id": "cap-perm-canset",
+   "grupa": "pole",
+   "desc": "brak sprawdzenia canSetCapital",
+   "status": "ZABITA"
+  },
+  {
+   "id": "cap-btn-title",
+   "grupa": "tekst",
+   "desc": "tytuł przycisku zmieniony",
+   "status": "ZABITA"
+  },
+  {
+   "id": "deps-setter",
+   "grupa": "pole",
+   "desc": "zależności nie zapisywane",
+   "status": "ZABITA"
+  }
+ ]
+}

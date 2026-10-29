@@ -1,24 +1,42 @@
 #!/usr/bin/env node
 /**
- * select-k06a.mjs — deterministyczny wybór jednostek K07A (P5-8, R-RUSTPORT-P5-8-CITYPANEL-K07A-Q1; r2 = tryb --r3, zob. dossier §7).
- * Logika: `k01a-select-lib.mjs` z parametrem `block` = 5 (K05 wg pomiaru r2, 45 jednostek), lokalne kopie i DTO-podstawienia K05A-Z1/Z2.
+ * select-k07a.mjs — deterministyczny wybór jednostek K07A (P5-8, R-RUSTPORT-P5-8-CITYPANEL-K07A-Q1).
+ * Logika: `k01a-select-lib.mjs` z parametrem `block` = 7 (K07 wg pomiaru r2: 23 jednostki, 15 DOM).
  *
- * Tryb `--r3` (obrona zarzutu 4): wybór rundy 3 = wybór r2 (8) ∪ odroczone klasy T i P (18) = 26 jednostek bez DOM.
- * Zapis do `r1-logi/` (domyślnie); `kind` (const/function) wyprowadzany z linii deklaracji w pinie; LOC wg tego skryptu.
+ * Tryby:
+ *   r2 (domyślnie) — wynik lib (jednostki bez DOM i bez blokerów logiki).
+ *   --r3          — wynik r2 ∪ jednostki odroczone klasą R, których zależności rozstrzyga adapter K07A-Z2/Z4
+ *                   (`K07A_RESOLVED_BY_ADAPTER`). Klasy T/P: brak w pomiarze K07 (sprawdzane, puste).
+ * Lokalna kopia typu pinu `City` (K07A-Z1 → `CityK07`) i nazwy portu (`PORT_NAME_OF`) są jawnymi stałymi tego skryptu.
+ * Zakresy: koniec bloku = ostatnia linia kończąca się `}`/`};`/`;`/`)` (bez komentarzy następnej deklaracji).
  *
  * Użycie (z katalogu `src-tauri/frontend-v2/`):
- *   node tools/dom-harness/select-k07a.mjs --pin-dir <PIN_DIR> [--pomiar <pomiar-r2.json>] [--out-dir <katalog>] [--r3]
+ *   node tools/dom-harness/select-k07a.mjs --pin-dir <PIN_DIR> [--pomiar <pomiar.json>] [--out-dir <katalog>] [--r3]
  */
 import { writeFileSync, mkdirSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { selectK01a, loadPomiar } from './k01a-select-lib.mjs';
+import { codeEndLine } from './k07a-subs.mjs';
 
 const K07_BLOCK = 7;
-/** K05A-Z1: lokalne kopie typów/enum z pinu (zweryfikowane bajtowo przez verify-k05a-copies.mjs). */
-/** K05A-Z2: parametr `City` w danej jednostce zastąpiony DTO `CityHexRef` (weryfikuje verify-k05a-copies.mjs). */
+/**
+ * K07A-Z1: lokalna kopia typu pinu `City` → `CityK07` w porcie. PUSTA: lib dopuszcza lokalne kopie tylko dla importów typów
+ * z logiki; `CityK07` nie jest importem. Zmierzone r3: wynik lib identyczny dla `[]` i `[{name:'City'}]` (3 i 3 jednostki przy wariancie R3 „tylko klasa R”).
+ * Nazwy kopii są w `k07a-subs.mjs` (LOCAL_NAMES).
+ */
 const K07A_LOCAL_COPIES = [];
+/** K07A-Z2/Z4: jednostki klasy R (import logiki), których zależności wchodzą przez adaptery portu (nie przez import z pinu). */
+const K07A_RESOLVED_BY_ADAPTER = new Set(['w3CityChip']);
+/** Nazwa w porcie dla jednostek przenoszonych z pinem o innej nazwie (K07A-Z1/Z3). */
+const PORT_NAME_OF = {
+  W3_STAT_RES_KEY: 'W3_STAT_RES_KEY_K07',
+  resolveActiveCity: 'resolveK07aActiveCity',
+  w3CityChip: 'w3CityChipK07',
+  capitalBadgeOrButtonHtml: 'capitalBadgeOrButtonHtmlK07',
+};
 const K07A_DTO_SUBST = {};
+
 const args = process.argv.slice(2);
 const argOf = (k) => {
   const i = args.indexOf(k);
@@ -40,20 +58,23 @@ const OUT = resolve(
 );
 
 const r = selectK01a({ pinDir: resolve(PIN_DIR), pomiar: loadPomiar(POMIAR), block: K07_BLOCK, localTypes: K07A_LOCAL_COPIES, dtoSubst: K07A_DTO_SUBST });
-let selected = r.selected;
+const pinLines = readFileSync(resolve(PIN_DIR, 'gra/src/ui/cityPanel.ts'), 'utf8').split('\n');
+
+/** Koniec bloku: ostatnia linia kończąca się `}`/`};`/`;`/`)` w zakresie lib (bez komentarza następnej deklaracji). */
+const trimEnd = (a, b) => codeEndLine(pinLines, a, b);
+const kindOf = (a) => (/^(export )?let /.test(pinLines[a - 1]) ? 'let' : /^(export )?const /.test(pinLines[a - 1]) ? 'const' : 'function');
+const toUnit = (d) => {
+  const b = trimEnd(d.a, d.b);
+  return { name: d.name, port: PORT_NAME_OF[d.name] ?? d.name, a: d.a, b, loc: b - d.a + 1, kind: kindOf(d.a) };
+};
+
+let selected = r.selected.map(toUnit);
 let deferred = r.deferred;
 if (R3) {
-  const isTP = (d) => /^(T|P):/.test(d.reason);
-  const pinSrc = readFileSync(resolve(PIN_DIR, 'gra/src/ui/cityPanel.ts'), 'utf8').split('\n');
-  const extra = r.deferred.filter(isTP).map((d) => ({
-    name: d.name,
-    a: d.a,
-    b: d.b,
-    loc: d.loc,
-    kind: /^(export )?let /.test(pinSrc[d.a - 1]) ? 'let' : /^(export )?const /.test(pinSrc[d.a - 1]) ? 'const' : 'function',
-  }));
-  selected = [...r.selected, ...extra];
-  deferred = r.deferred.filter((d) => !isTP(d));
+  // Klasy T/P = zależność od nazwy pinu spoza K07 (cfg, activeCity, CityView): rozstrzyga adapter K07A-Z1..Z4.
+  const takenByAdapter = (d) => /^(T|P):/.test(d.reason) || K07A_RESOLVED_BY_ADAPTER.has(d.name);
+  selected = [...selected, ...r.deferred.filter(takenByAdapter).map(toUnit)].sort((x, y) => x.a - y.a);
+  deferred = r.deferred.filter((d) => !takenByAdapter(d));
 }
 const sumLoc = (xs) => xs.reduce((acc, x) => acc + x.loc, 0);
 mkdirSync(OUT, { recursive: true });

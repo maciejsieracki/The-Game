@@ -1,12 +1,14 @@
 #!/usr/bin/env node
 /**
  * run-k07a-units.mjs — harness porównania wartości/tekstu: jednostki K07A (P5-8, R-RUSTPORT-P5-8-CITYPANEL-K07A-Q1,
- * runda 2) — port (`src/ui/cityPanel/k07a-fundament.ts`) vs pin web `edb8fb56` (`gra/src/ui/cityPanel.ts`).
+ * runda 3) — port (`src/ui/cityPanel/k07a-fundament.ts`) vs pin web `edb8fb56` (`gra/src/ui/cityPanel.ts`).
  *
- * Jednostki pinu wyciągane PO NAZWIE (od `function NAME`/`const NAME` w kolumnie 0 do końca bloku). Zależności
- * zewnętrzne pinu (`cfg`, `buildChipDeltaStockHtml`) są po obu stronach tym samym fixture (`globalThis.__K07_FIX`).
- * `resourceScopeClass` idzie PRAWDZIWYM kodem pinu (`gra/src/ui/resourceColors.ts`) po obu stronach.
- * Port dostaje zależności przez adapter testowy (kontrakt K07A-Z2: `isMe` z fallbackiem, `getCities` z `[]`).
+ * Zasada: po obu stronach TE SAME zależności zewnętrzne (fixture `globalThis.__K07_FIX`: `cfg`, `ext` = adaptery K07A-Z4,
+ * `chipDeltaStockHtml`) oraz te same czyste formatery v2 (importowane do sondy pinu: signed, cityPanelChipIcon,
+ * resLocalOnly, resGlobalLocal, resPracaSplitBar, estimateHandelChips, cityFoodSplit, clampedGrowthBreakdown,
+ * scienceOwlIconHtml, SCALES, PH, cityPanelBrandIcon, loafIconHtml). Porównanie dotyczy ciał jednostek K07A, nie
+ * parytetu formaterów (ten jest w ich własnych harnessach). Parytet ADAPTERÓW z pinem (fallbacki `cfg.*`) jest
+ * w `installDeps`/`installExt` (kontrakt K07A-Z2/Z4) i NIE jest mierzony tu poza tym, co wynika z fixture.
  *
  * Użycie (z katalogu `src-tauri/frontend-v2/`):
  *   node tools/dom-harness/run-k07a-units.mjs --pin-dir <PIN_DIR> [--v2 <plik-portu>]
@@ -31,6 +33,7 @@ if (!PIN_DIR) {
 }
 const V2_ROOT = resolve(fileURLToPath(new URL('../../', import.meta.url)));
 const V2_FILE = resolve(argOf('--v2') ?? join(V2_ROOT, 'src/ui/cityPanel/k07a-fundament.ts'));
+const V2_SRC = join(V2_ROOT, 'src');
 const PIN_ROOT = resolve(PIN_DIR);
 const PIN_FILE = join(PIN_ROOT, 'gra/src/ui/cityPanel.ts');
 const PIN_RC = join(PIN_ROOT, 'gra/src/ui/resourceColors.ts');
@@ -52,24 +55,51 @@ function extractTop(name) {
   return pinLines.slice(i, j + 1).join('\n').replace(/^(export )?(function|const) /m, (_m, _e, kw) => `export ${kw} `);
 }
 
-/** Jednostki pinu używane w harnessie (`isMeCity` tylko jako zależność pinu, `W3_STAT_RES_KEY` itd. jako jednostki K07A). */
-const UNIT_NAMES = ['isMeCity', 'W3_STAT_RES_KEY', 'resolveActiveCity', 'w3CityChip', 'capitalBadgeOrButtonHtml'];
+/** Jednostki pinu wykonywane po obu stronach. `isMeCity` = zależność pinu (fallback `cfg.isMe ?? ownerId===0`). */
+const UNIT_NAMES = [
+  'isMeCity', 'W3_STAT_RES_KEY', 'resolveActiveCity', 'w3CityChip', 'capitalBadgeOrButtonHtml',
+  'skeleton', 'buildCityOnlyW3FlankChips', 'buildCityResourceStatItems',
+];
 /** Stan modułu pinu: `let activeCity` (:10159) i `let uxSectionRefresh` (:10365). */
 const pinStateActive = pinLines.slice(10158, 10159).join('\n');
 const pinStateUx = pinLines.slice(10364, 10365).join('\n');
 
 const PIN_PRELUDE = `
 import { resourceScopeClass as __pinRSC } from ${JSON.stringify(PIN_RC)};
+import { UI_PARAMS as __UI } from ${JSON.stringify(join(V2_SRC, 'ui/uiParams.ts'))};
+import { SCALES, PH, cityPanelBrandIcon, cityPanelChipIcon, loafIconHtml, resLocalOnly, resGlobalLocal, signed } from ${JSON.stringify(join(V2_SRC, 'ui/cityPanel/k01a-fundament.ts'))};
+import { estimateHandelChips, resPracaSplitBar } from ${JSON.stringify(join(V2_SRC, 'ui/cityPanel/k01b-f.ts'))};
+import { clampedGrowthBreakdown } from ${JSON.stringify(join(V2_SRC, 'ui/cityPanel/k01b-r.ts'))};
+import { cityFoodSplit } from ${JSON.stringify(join(V2_SRC, 'ui/cityPanel/k03-model.ts'))};
+import { scienceOwlIconHtml } from ${JSON.stringify(join(V2_SRC, 'ui/icons/scienceOwlIcon.ts'))};
 const resourceScopeClass = __pinRSC;
 const cfg = new Proxy({}, { get: (_t, k) => globalThis.__K07_FIX.cfg[k] });
 const buildChipDeltaStockHtml = (r, s) => globalThis.__K07_FIX.chipDeltaStockHtml(r, s);
+const WYZYWIENIE_MAX = 6;
+let activeDrawerTab = 'plony';
+let scalePx = __UI.panel_miasta.font_scale_domyslna_px;
+const __x = () => globalThis.__K07_FIX.ext;
+const ownerCities = (c) => __x().ownerCities(c);
+const cityPanelTitle = (c) => __x().cityPanelTitle(c);
+const headerOrderBadge = (c) => __x().headerOrderBadge(c);
+const drawerTabButtons = () => __x().drawerTabButtons(activeDrawerTab);
+const formatManpower = (n) => __x().formatManpower(n);
+const daninaLabelForCity = (c) => __x().daninaLabelForCity(c);
+const resolveEmpireSnap = (c, m, d) => __x().resolveEmpireSnap(c, m, d);
+const cityPracaSplit = (c, v, d) => __x().cityPracaSplit(c, v, d);
+const readPodzialHandlu = (c, d) => __x().readPodzialHandlu(c, d);
+const civWideSixStatsFromEmpireSnap = (e, s) => __x().civWideSixStatsFromEmpireSnap(e, s);
+const resolveOrderState = (c, d) => __x().resolveOrderState(c, d);
 export const __setCity = (c) => { activeCity = c; };
 export const __getCity = () => activeCity;
 export const __setUx = (f) => { uxSectionRefresh = f; };
 export const __getUx = () => uxSectionRefresh;
+export const __setDrawer = (t) => { activeDrawerTab = t; };
+export const __setScale = (p) => { scalePx = p; };
+export const __SCALES = SCALES;
 `;
 
-/** Fixture: cztery miasta (dwóch właścicieli, stolice, oblężenie), warianty `v` (brak pól cfg, stany). */
+/** Fixture: miasta (dwóch właścicieli, stolice, oblężenie), widok miasta i adaptery K07A-Z4 — warianty `v`. */
 function makeFixture(v) {
   const cities = [
     { id: 'c1', ownerId: 0, name: 'Alfa', population: 3, oblegane: false },
@@ -78,15 +108,69 @@ function makeFixture(v) {
     { id: 'c4', ownerId: 1, name: 'Delta "x"', population: 2, oblegane: true },
   ];
   const capitals = [{ 0: 'c2', 1: 'c3' }, { 0: 'c1', 1: null }, { 0: 'zz', 1: 'c4' }, { 0: undefined, 1: 'c3' }][v % 4];
-  return {
-    cfg: {
-      isMe: v % 5 === 0 ? undefined : (o) => (o + v) % 2 === 0,
-      getCapitalCityId: v % 3 === 0 ? undefined : (o) => capitals[o],
-      getCities: v % 4 === 3 ? undefined : () => cities,
-      onSetCapital: v % 2 === 0 ? () => {} : undefined,
+  const cfg = {
+    isMe: v % 5 === 0 ? undefined : (o) => (o + v) % 2 === 0,
+    getCapitalCityId: v % 3 === 0 ? undefined : (o) => capitals[o],
+    getCities: v % 4 === 3 ? undefined : () => cities,
+    onSetCapital: v % 2 === 0 ? () => {} : undefined,
+    getEpoch: v % 3 === 2 ? undefined : (o) => 2 + (o % 2) + v,
+    getMaxSafePoziomRacji: v % 3 === 0 ? undefined : () => (v % 2 ? 2 : 5),
+    getReligionState: v % 4 === 1 ? undefined : () => ({ przyrostWiernych: v - 2, dominujaca: 'Wiara', udzialPct: 33 }),
+    getManpowerSnapshot: v % 2 ? () => ({ manpowerBiezacy: 12.5 * v, manpowerMax: 100, regenPerTurn: 1.5 }) : () => undefined,
+    getTreasury: v % 3 ? (o) => 50 + v + o : () => undefined,
+    getOrderState: v % 4 === 2 ? () => ({ porPct: 60 }) : v % 2 ? () => ({ porPct: 61 + v }) : () => undefined,
+  };
+  const ext = {
+    cfg,
+    isMeCity: (o) => cfg.isMe?.(o) ?? (o === 0),
+    ownerCities: (c) => {
+      const all = cities.filter((x) => x.ownerId === c.ownerId);
+      return all.length > 0 ? all : [c];
     },
+    cityPanelTitle: (c) => `T[${c.name}|${c.population}|${v}]`,
+    headerOrderBadge: (c) => `H[${c.id}|${c.oblegane ? 1 : 0}]`,
+    drawerTabButtons: (t) => `D[${t}|${v}]`,
+    formatManpower: (n) => `M${n}`,
+    daninaLabelForCity: () => (v % 2 ? 'Podatek' : 'Danina'),
+    resolveEmpireSnap: () => ({
+      pracaPool: v % 3 ? v * 10 : undefined,
+      pracaRate: v + 1,
+      pracaUpkeep: v % 2 ? 2 : undefined,
+      zloto: v % 4 === 3 ? undefined : 100 + v,
+      nauka: 7 + v,
+      naukaRate: v % 2 ? 3 : undefined,
+      zywnoscReserve: 5,
+      kultura: 2,
+      kulturaRate: 9,
+      religionStock: v % 5 ? 4 : undefined,
+      stateReligion: v % 3 ? 'Katolicyzm' : null,
+      religionSharePct: 12,
+    }),
+    cityPracaSplit: (c, view) => ({ total: (view?.praca ?? 0) + v, doBudynkow: 3 - v, doPuli: -2 + v, pctBudynki: 50, pctPuli: 50 }),
+    readPodzialHandlu: () => (v % 3 === 0
+      ? { procentPieniadz: 40 + v, procentNauka: 0, procentLuksus: 30 - v }
+      : { procentPieniadz: 40 + v, procentNauka: 30, procentLuksus: 30 - v }),
+    civWideSixStatsFromEmpireSnap: (e, s) => ({
+      praca: s.praca * 2 + (e.pracaRate ?? 0),
+      zywnosc: s.zywnosc - 1,
+      zloto: s.zloto,
+      nauka: s.nauka + 3,
+      kultura: s.kultura,
+      religia: v === 7 ? Infinity : s.religia,
+    }),
+    resolveOrderState: () => ({ state: { porPct: v % 2 ? 55 + v : 40 } }),
+  };
+  const view = {
+    praca: v * 3 - 4, pieniadz: 10 - v, nauka: 2 * v, kultura: v % 2 ? NaN : 3,
+    zywnoscNetto: v - 3, zywnoscBrutto: 8 + v, kosztRacji: 4, bilansLokalny: v, poziomRacji: v % 3,
+    growthBreakdown: { total: 5 + v, racje: 1, produkcja: 6 },
+  };
+  return {
+    cfg,
+    ext,
     chipDeltaStockHtml: (r, s) => `<d ${String(r)}|${String(s)}|v${v}>`,
     cities,
+    view,
   };
 }
 
@@ -100,12 +184,50 @@ function canon(x) {
   });
 }
 
+/** Wtyczka esbuild: importy `*.svg?raw` (ikony v2) jako tekst — tak jak w buildzie Vite. */
+const rawPlugin = {
+  name: 'raw-text',
+  setup(build) {
+    build.onResolve({ filter: /\?raw$/ }, (a) => ({ path: resolve(a.resolveDir, a.path.replace(/\?raw$/, '')), namespace: 'raw-text' }));
+    build.onLoad({ filter: /.*/, namespace: 'raw-text' }, (a) => ({ contents: readFileSync(a.path, 'utf8'), loader: 'text' }));
+  },
+};
+
+/**
+ * Atrapa `icons/brandAssets` (ikony SVG): zawiera `import.meta.glob` (konstrukcja Vite). Atrapa jest IDENTYCZNA po obu
+ * stronach (ten sam moduł w obu paczkach), więc nie wpływa na porównanie ciał jednostek K07A; treść ikon = NIE_ZMIERZONO.
+ */
+const brandStub = {
+  name: 'brand-stub',
+  setup(b) {
+    b.onResolve({ filter: /icons\/brandAssets$/ }, (a) => ({ path: a.path, namespace: 'bstub' }));
+    b.onLoad({ filter: /.*/, namespace: 'bstub' }, () => ({
+      contents: [
+        `export function brandIconSvg(id, size) { return '<svg data-brand="' + id + '" data-size="' + size + '"></svg>'; }`,
+        `export function mapResourceIconSvg(key, size) { return '<svg data-map="' + key + '" data-size="' + size + '"></svg>'; }`,
+        `export function buildingIconSvg(def, id) { return '<svg data-building="' + id + '"></svg>'; }`,
+        `export function unitIconSvg(u, id) { return '<svg data-unit="' + id + '"></svg>'; }`,
+        '',
+      ].join('\n'),
+      loader: 'js',
+    }));
+  },
+};
+
 const tmp = mkdtempSync(join(tmpdir(), 'p58k07a-harness-'));
 let exitCode = 0;
 let comparisons = 0;
 let diffs = 0;
 const report = [];
 const perUnit = {};
+/** Wywołanie strony portu: wyjątek = wartość `{threw}` (porównywalna z pinem; nie kończy harnessu EXIT 2). */
+const tv = (f) => {
+  try {
+    return f();
+  } catch (e) {
+    return { threw: String(e && e.message) };
+  }
+};
 const cmp = (unit, pinOut, v2Out) => {
   comparisons++;
   perUnit[unit] = (perUnit[unit] ?? 0) + 1;
@@ -118,7 +240,19 @@ const cmp = (unit, pinOut, v2Out) => {
 };
 
 try {
+  // Katalog statyczny v2 (ZAŁOŻENIE P5.2-Z1) instalowany PIERWSZYM modułem, zanim załadują się moduły z `staticCatalog()`.
+  const setup = join(tmp, 'setup.ts');
+  writeFileSync(
+    setup,
+    [
+      `import { installStaticCatalog } from ${JSON.stringify(join(V2_SRC, 'controller/staticCatalog.ts'))};`,
+      `import { MOCK_STATIC_CATALOG } from ${JSON.stringify(join(V2_SRC, 'controller/mockCatalog.ts'))};`,
+      'installStaticCatalog(MOCK_STATIC_CATALOG);',
+      '',
+    ].join('\n'),
+  );
   const pinSrc = [
+    `import ${JSON.stringify(setup)};`,
     PIN_PRELUDE,
     pinStateActive,
     pinStateUx,
@@ -128,9 +262,11 @@ try {
   const probe = join(tmp, 'pin-probe.ts');
   writeFileSync(probe, pinSrc);
   const pinBundle = join(tmp, 'pin.mjs');
-  await esbuild.build({ entryPoints: [probe], outfile: pinBundle, bundle: true, format: 'esm', platform: 'node', target: 'es2022', logLevel: 'error' });
+  await esbuild.build({ entryPoints: [probe], outfile: pinBundle, bundle: true, format: 'esm', platform: 'node', target: 'es2022', logLevel: 'error', plugins: [rawPlugin, brandStub] });
+  const v2Entry = join(tmp, 'v2-entry.ts');
+  writeFileSync(v2Entry, `import ${JSON.stringify(setup)};\nexport * from ${JSON.stringify(V2_FILE)};\n`);
   const v2Bundle = join(tmp, 'v2.mjs');
-  await esbuild.build({ entryPoints: [V2_FILE], outfile: v2Bundle, bundle: true, format: 'esm', platform: 'node', target: 'es2022', logLevel: 'error' });
+  await esbuild.build({ entryPoints: [v2Entry], outfile: v2Bundle, bundle: true, format: 'esm', platform: 'node', target: 'es2022', logLevel: 'error', plugins: [rawPlugin, brandStub] });
 
   globalThis.__K07_FIX = makeFixture(0);
   const P = await import(pathToFileURL(pinBundle).href);
@@ -144,6 +280,8 @@ try {
     canSetCapital: !!G().cfg.onSetCapital,
     chipDeltaStockHtml: (r, s) => G().chipDeltaStockHtml(r, s),
   });
+  /** Adaptery K07A-Z4: ten sam obiekt fixture co u pinu (`cfg` i `ext`). */
+  const installExt = () => V.setK07aExt(G().ext);
 
   const fnA = () => {};
   const fnB = () => {};
@@ -158,11 +296,15 @@ try {
   const CIV_RATES = [undefined, 0, 3, -2, Infinity, NaN];
   const CIV_STOCKS = [undefined, 12, NaN, -Infinity];
   const HINTS = ['Tempo "x" & <y>', 'zwykły'];
+  const TABS = ['plony', 'produkcja', 'miasto', 'okolica'];
+  const PX = [...P.__SCALES.map((s) => s.px), 99];
+  const DATAS = [null, { marker: 1 }];
 
   for (let v = 0; v < 8; v++) {
     const fix = makeFixture(v);
     globalThis.__K07_FIX = fix;
     installDeps();
+    installExt();
 
     // Stan modułu uxSectionRefresh (K07A-Z3): rejestracja, nadpisanie, wyrejestrowanie.
     for (const f of [fnA, fnB, null]) {
@@ -208,11 +350,23 @@ try {
             cmp(
               'w3CityChip',
               P.w3CityChip('<i>', 'Lbl', '12', 'pos', sid, hint, cr, cs),
-              V.w3CityChipK07('<i>', 'Lbl', '12', 'pos', sid, hint, cr, cs),
+              tv(() => V.w3CityChipK07('<i>', 'Lbl', '12', 'pos', sid, hint, cr, cs)),
             );
           }
         }
       }
+    }
+    // w3CityChip bez setK07aDeps: port MUSI rzucić (K07A-Z2, r3); pin zawsze dokleja tempo/zapas.
+    {
+      V.setK07aDeps(null);
+      let threw = false;
+      try {
+        V.w3CityChipK07('<i>', 'Lbl', '12', 'pos', 'praca', 'h', 1, 2);
+      } catch {
+        threw = true;
+      }
+      cmp('w3CityChip', { threw: true }, { threw });
+      installDeps();
     }
 
     // capitalBadgeOrButtonHtml: każde miasto z fixture + miasta spoza listy stolic (właściciel 2, duplikat id).
@@ -221,7 +375,40 @@ try {
       { id: 'c3', ownerId: 1, name: 'Gamma-dup', population: 1, oblegane: true },
     ];
     for (const city of [...fix.cities, ...extras]) {
-      cmp('capitalBadgeOrButtonHtml', P.capitalBadgeOrButtonHtml(city), V.capitalBadgeOrButtonHtmlK07(city));
+      cmp('capitalBadgeOrButtonHtml', P.capitalBadgeOrButtonHtml(city), tv(() => V.capitalBadgeOrButtonHtmlK07(city)));
+    }
+
+    // skeleton (K07 DOM-free szkielet panelu): każde miasto × zakładka × skala × widok (null/obiekt).
+    for (const city of [...fix.cities, ...extras]) {
+      for (const tab of TABS) {
+        for (const px of PX) {
+          for (const view of [null, fix.view]) {
+            P.__setDrawer(tab);
+            P.__setScale(px);
+            V.setK07aDrawerTab(tab);
+            V.setK07aScalePx(px);
+            cmp('skeleton', P.skeleton(copy(city), view), tv(() => V.skeleton(copy(city), view)));
+          }
+        }
+      }
+    }
+
+    // buildCityOnlyW3FlankChips: miasto × widok × dane (null/obiekt) — mapa zawsze null (wejście z pinu).
+    for (const city of [...fix.cities, ...extras]) {
+      for (const data of DATAS) {
+        cmp('buildCityOnlyW3FlankChips', P.buildCityOnlyW3FlankChips(copy(city), fix.view, data, null), tv(() => V.buildCityOnlyW3FlankChips(copy(city), fix.view, data, null)));
+      }
+    }
+
+    // buildCityResourceStatItems: miasto × widok (null/obiekt) × w3 × dane.
+    for (const city of [...fix.cities, ...extras]) {
+      for (const view of [null, fix.view]) {
+        for (const w3 of [false, true]) {
+          for (const data of DATAS) {
+            cmp('buildCityResourceStatItems', P.buildCityResourceStatItems(copy(city), view, null, data, w3), tv(() => V.buildCityResourceStatItems(copy(city), view, null, data, w3)));
+          }
+        }
+      }
     }
   }
 

@@ -1,0 +1,105 @@
+{
+ "part": "3/4",
+ "mutantow": 16,
+ "zabite": 16,
+ "przezyte": 0,
+ "nieZmierzone": 0,
+ "results": [
+  {
+   "id": "w3-aria-quote",
+   "grupa": "tekst",
+   "desc": "escape cudzysłowu w aria-label pominięty",
+   "status": "ZABITA"
+  },
+  {
+   "id": "w3-interactive",
+   "grupa": "pole",
+   "desc": "klasa civ-v-res-interactive pominięta",
+   "status": "ZABITA"
+  },
+  {
+   "id": "w3-delta-swap",
+   "grupa": "pole",
+   "desc": "argumenty tempo/zapas zamienione",
+   "status": "ZABITA"
+  },
+  {
+   "id": "w3-delta-require",
+   "grupa": "pole",
+   "desc": "brak wyjątku bez deps (cicha utrata tempa)",
+   "status": "ZABITA"
+  },
+  {
+   "id": "sk-multi-len",
+   "grupa": "brzeg",
+   "desc": "nawigacja przy 1 mieście (próg >1 → >0)",
+   "status": "ZABITA"
+  },
+  {
+   "id": "sk-prev-nav",
+   "grupa": "tekst",
+   "desc": "przycisk poprzedni bez blokady",
+   "status": "ZABITA"
+  },
+  {
+   "id": "ow-zloto-stock",
+   "grupa": "pole",
+   "desc": "zapas skarbca z kultury",
+   "status": "ZABITA"
+  },
+  {
+   "id": "ow-food-zero",
+   "grupa": "brzeg",
+   "desc": "klasa żywności: zero zielone",
+   "status": "ZABITA"
+  },
+  {
+   "id": "rs-zloto-src",
+   "grupa": "pole",
+   "desc": "skarbiec: pierwszeństwo cfg.getTreasury",
+   "status": "ZABITA"
+  },
+  {
+   "id": "rs-order-threshold",
+   "grupa": "brzeg",
+   "desc": "porządek: próg 60 → >60",
+   "status": "ZABITA"
+  },
+  {
+   "id": "ad-civwide-zloto",
+   "grupa": "pole",
+   "desc": "adapter civWide dostaje zerowe zloto",
+   "status": "ZABITA"
+  },
+  {
+   "id": "ad-ext-setter",
+   "grupa": "pole",
+   "desc": "adaptery nie zapisywane",
+   "status": "ZABITA"
+  },
+  {
+   "id": "res-null-branch",
+   "grupa": "pole",
+   "desc": "gałąź null zwraca pusty obiekt",
+   "status": "ZABITA"
+  },
+  {
+   "id": "cap-perm-isme",
+   "grupa": "pole",
+   "desc": "brak sprawdzenia isMe",
+   "status": "ZABITA"
+  },
+  {
+   "id": "cap-btn-id",
+   "grupa": "tekst",
+   "desc": "id przycisku zmienione",
+   "status": "ZABITA"
+  },
+  {
+   "id": "ux-getter",
+   "grupa": "pole",
+   "desc": "odczyt rejestracji zawsze null",
+   "status": "ZABITA"
+  }
+ ]
+}

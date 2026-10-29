@@ -1,0 +1,111 @@
+{
+ "part": "2/4",
+ "mutantow": 17,
+ "zabite": 16,
+ "przezyte": 1,
+ "nieZmierzone": 0,
+ "results": [
+  {
+   "id": "w3-title-quote",
+   "grupa": "tekst",
+   "desc": "escape cudzysłowu w title pominięty",
+   "status": "ZABITA"
+  },
+  {
+   "id": "w3-res-key-default",
+   "grupa": "pole",
+   "desc": "nieznany statId dostaje klucz praca",
+   "status": "ZABITA"
+  },
+  {
+   "id": "w3-delta-omit",
+   "grupa": "pole",
+   "desc": "fragment tempo/zapas pominięty",
+   "status": "ZABITA"
+  },
+  {
+   "id": "w3-stock-nonfinite",
+   "grupa": "brzeg",
+   "desc": "NaN/Infinity zapasu zamienione na undefined",
+   "status": "ZABITA"
+  },
+  {
+   "id": "sk-multi",
+   "grupa": "pole",
+   "desc": "nawigacja odwrócona",
+   "status": "ZABITA"
+  },
+  {
+   "id": "sk-footer-ph",
+   "grupa": "tekst",
+   "desc": "stopka bez znacznika podglądu",
+   "status": "ZABITA"
+  },
+  {
+   "id": "ow-praca-stock",
+   "grupa": "pole",
+   "desc": "zapas pracy z pracaRate zamiast pracaPool",
+   "status": "ZABITA"
+  },
+  {
+   "id": "ow-religion-cls",
+   "grupa": "pole",
+   "desc": "klasa religii dla dodatniego tempa",
+   "status": "ZABITA"
+  },
+  {
+   "id": "rs-pool",
+   "grupa": "pole",
+   "desc": "pula pracy: kolejność fallbacków",
+   "status": "ZABITA"
+  },
+  {
+   "id": "rs-manpower-order",
+   "grupa": "pole",
+   "desc": "rekruci: bieżący/maks zamienione",
+   "status": "ZABITA"
+  },
+  {
+   "id": "ad-owner-cities",
+   "grupa": "pole",
+   "desc": "adapter ownerCities pominięty (zawsze jedno miasto)",
+   "status": "ZABITA"
+  },
+  {
+   "id": "ad-scale-setter",
+   "grupa": "pole",
+   "desc": "skala nie zapisywana",
+   "status": "ZABITA"
+  },
+  {
+   "id": "res-always-replace",
+   "grupa": "brzeg",
+   "desc": "brak miasta w liście czyści stan",
+   "status": "ZABITA"
+  },
+  {
+   "id": "cap-besieged-name",
+   "grupa": "tekst",
+   "desc": "nazwa w tytule: nazwa zamiast id stolicy",
+   "status": "ZABITA"
+  },
+  {
+   "id": "cap-find-id",
+   "grupa": "pole",
+   "desc": "wyszukiwanie stolicy po id miasta",
+   "status": "ZABITA"
+  },
+  {
+   "id": "ux-setter",
+   "grupa": "pole",
+   "desc": "rejestracja odświeżania ignorowana",
+   "status": "ZABITA"
+  },
+  {
+   "id": "eq-null-return",
+   "grupa": "równoważna",
+   "desc": "null zwrócony przez activeCity zamiast literału null (ta sama wartość)",
+   "status": "PRZEZYLA"
+  }
+ ]
+}

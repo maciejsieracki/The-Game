@@ -1,0 +1,174 @@
+[
+ {
+  "name": "renderSpoleczenstwo",
+  "a": 3295,
+  "b": 3426,
+  "loc": 132,
+  "reason": "DOM",
+  "firstBlocker": {
+   "kind": "T",
+   "id": "City",
+   "from": "game/cities.ts"
+  }
+ },
+ {
+  "name": "renderZdrowie",
+  "a": 3551,
+  "b": 3581,
+  "loc": 31,
+  "reason": "DOM",
+  "firstBlocker": {
+   "kind": "T",
+   "id": "City",
+   "from": "game/cities.ts"
+  }
+ },
+ {
+  "name": "renderKultura",
+  "a": 3992,
+  "b": 4111,
+  "loc": 120,
+  "reason": "DOM",
+  "firstBlocker": {
+   "kind": "T",
+   "id": "City",
+   "from": "game/cities.ts"
+  }
+ },
+ {
+  "name": "renderProd",
+  "a": 8429,
+  "b": 8536,
+  "loc": 108,
+  "reason": "DOM",
+  "firstBlocker": {
+   "kind": "T",
+   "id": "City",
+   "from": "game/cities.ts"
+  }
+ },
+ {
+  "name": "renderBuildSplitPanel",
+  "a": 9306,
+  "b": 9340,
+  "loc": 35,
+  "reason": "DOM",
+  "firstBlocker": {
+   "kind": "T",
+   "id": "City",
+   "from": "game/cities.ts"
+  }
+ },
+ {
+  "name": "renderOkolica",
+  "a": 10018,
+  "b": 10157,
+  "loc": 140,
+  "reason": "DOM",
+  "firstBlocker": {
+   "kind": "T",
+   "id": "City",
+   "from": "game/cities.ts"
+  }
+ },
+ {
+  "name": "CityPanelUxMounts",
+  "a": 10349,
+  "b": 10364,
+  "loc": 16,
+  "reason": "DOM",
+  "firstBlocker": null
+ },
+ {
+  "name": "renderCityHeaderCompact",
+  "a": 10812,
+  "b": 10844,
+  "loc": 33,
+  "reason": "DOM",
+  "firstBlocker": {
+   "kind": "T",
+   "id": "City",
+   "from": "game/cities.ts"
+  }
+ },
+ {
+  "name": "appendOkolicaToolbarProfiles",
+  "a": 11081,
+  "b": 11122,
+  "loc": 42,
+  "reason": "DOM",
+  "firstBlocker": {
+   "kind": "T",
+   "id": "City",
+   "from": "game/cities.ts"
+  }
+ },
+ {
+  "name": "appendBudowaToolbarProfiles",
+  "a": 11123,
+  "b": 11237,
+  "loc": 115,
+  "reason": "DOM",
+  "firstBlocker": {
+   "kind": "T",
+   "id": "City",
+   "from": "game/cities.ts"
+  }
+ },
+ {
+  "name": "appendBudowaListaBar",
+  "a": 11238,
+  "b": 11474,
+  "loc": 237,
+  "reason": "DOM",
+  "firstBlocker": {
+   "kind": "T",
+   "id": "City",
+   "from": "game/cities.ts"
+  }
+ },
+ {
+  "name": "renderTopStatsBar",
+  "a": 11475,
+  "b": 11504,
+  "loc": 30,
+  "reason": "DOM",
+  "firstBlocker": {
+   "kind": "T",
+   "id": "City",
+   "from": "game/cities.ts"
+  }
+ },
+ {
+  "name": "appendPanel",
+  "a": 11505,
+  "b": 11511,
+  "loc": 7,
+  "reason": "DOM",
+  "firstBlocker": {
+   "kind": "P",
+   "id": "el",
+   "block": 1
+  }
+ },
+ {
+  "name": "resolveDetailSideHint",
+  "a": 11512,
+  "b": 11517,
+  "loc": 6,
+  "reason": "DOM",
+  "firstBlocker": null
+ },
+ {
+  "name": "appendSectionTitleWithDetails",
+  "a": 11518,
+  "b": 11539,
+  "loc": 22,
+  "reason": "DOM",
+  "firstBlocker": {
+   "kind": "P",
+   "id": "el",
+   "block": 1
+  }
+ }
+]

@@ -1,0 +1,64 @@
+{
+ "pin": "edb8fb56",
+ "port": "ui/cityPanel/k07a-fundament.ts",
+ "blocks": 8,
+ "units": 8,
+ "lineSubs": 5,
+ "comparisons": [
+  {
+   "block": "gra/src/ui/cityPanel.ts:10247-10327",
+   "lines": 81,
+   "subs": 0,
+   "status": "OK"
+  },
+  {
+   "block": "gra/src/ui/cityPanel.ts:10329-10334",
+   "lines": 6,
+   "subs": 1,
+   "status": "OK"
+  },
+  {
+   "block": "gra/src/ui/cityPanel.ts:10365-10365",
+   "lines": 1,
+   "subs": 0,
+   "status": "OK"
+  },
+  {
+   "block": "gra/src/ui/cityPanel.ts:10384-10391",
+   "lines": 8,
+   "subs": 0,
+   "status": "OK"
+  },
+  {
+   "block": "gra/src/ui/cityPanel.ts:10393-10419",
+   "lines": 27,
+   "subs": 1,
+   "status": "OK"
+  },
+  {
+   "block": "gra/src/ui/cityPanel.ts:10432-10579",
+   "lines": 148,
+   "subs": 0,
+   "status": "OK"
+  },
+  {
+   "block": "gra/src/ui/cityPanel.ts:10581-10692",
+   "lines": 112,
+   "subs": 0,
+   "status": "OK"
+  },
+  {
+   "block": "gra/src/ui/cityPanel.ts:10719-10734",
+   "lines": 16,
+   "subs": 3,
+   "status": "OK"
+  }
+ ],
+ "findings": {
+  "text": [],
+  "orphan": [],
+  "cover": [],
+  "local": []
+ },
+ "status": "OK"
+}

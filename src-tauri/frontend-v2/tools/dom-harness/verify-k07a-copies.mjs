@@ -1,10 +1,11 @@
 #!/usr/bin/env node
 /**
- * verify-k07a-copies.mjs — bramka wierności KOPII tekstowych K07A (P5-8, R-RUSTPORT-P5-8-CITYPANEL-K07A-Q1, runda 2).
+ * verify-k07a-copies.mjs — bramka wierności KOPII tekstowych K07A (P5-8, R-RUSTPORT-P5-8-CITYPANEL-K07A-Q1, runda 3).
  *
- * Wzorzec: `verify-k06a-copies.mjs`. Każdy blok w `src/ui/cityPanel/k07a-fundament.ts` jest poprzedzony markerem
+ * Każdy blok w `src/ui/cityPanel/k07a-fundament.ts` jest poprzedzony markerem
  * `// pin edb8fb56 gra/src/<plik>:A-B` i zamknięty linią `// pin-end`; treść bloku musi odpowiadać liniom A..B pinu
  * po normalizacji: `export ` (po obu stronach), tokeny nazw K07A (TOKENS) i LINE_SUBS (jawne podstawienia linii).
+ * TOKENS, LINE_SUBS i LOCAL_NAMES są we wspólnym module `k07a-subs.mjs` (ten sam, którego używa generator).
  *
  * Bramka (EXIT 0 <=> wszystkie poniższe):
  *   TEXT    każdy blok = pin A..B po normalizacji i LINE_SUBS (puste linie końcowe pomijane);
@@ -18,6 +19,7 @@
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { join, resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { TOKENS, LINE_SUBS, LOCAL_NAMES } from './k07a-subs.mjs';
 
 const args = process.argv.slice(2);
 const argOf = (k) => {
@@ -31,39 +33,12 @@ const JSON_OUT = argOf('--json');
 const PORT = resolve(argOf('--port') ?? join(FRONT, 'src/ui/cityPanel/k07a-fundament.ts'));
 const WYBRANE = resolve(
   argOf('--wybrane') ??
-    join(FRONT, '../../dyspozycje/autobot/runs/R-RUSTPORT-P5-8-CITYPANEL-K07A-Q1/r2-logi/wybrane-r2.json'),
+    join(FRONT, '../../dyspozycje/autobot/runs/R-RUSTPORT-P5-8-CITYPANEL-K07A-Q1/r3-logi/wybrane.json'),
 );
 if (!PIN_DIR || !existsSync(join(PIN_DIR, 'gra/src'))) {
   console.error('Użycie: node tools/dom-harness/verify-k07a-copies.mjs --pin-dir <PIN_DIR> [--wybrane <plik>] [--json <plik>]');
   process.exit(2);
 }
-
-/** Tokeny nazw portu → nazwy pinu (stosowane po obu stronach przed porównaniem). */
-const TOKENS = [
-  [/\bCityK07\b/g, 'City'],
-  [/\bW3_STAT_RES_KEY_K07\b/g, 'W3_STAT_RES_KEY'],
-  [/\bw3CityChipK07\b/g, 'w3CityChip'],
-  [/\bcapitalBadgeOrButtonHtmlK07\b/g, 'capitalBadgeOrButtonHtml'],
-  [/\bresolveK07aActiveCity\b/g, 'resolveActiveCity'],
-];
-
-/**
- * Jawne podstawienia linii (K07A-Z2): pojedyncza linia pinu w zakresie `a..b` zastąpiona linią portu `to`.
- * `from` musi wystąpić w pinie w zakresie dokładnie raz; `to` musi wystąpić w porcie w bloku dokładnie raz.
- */
-const LINE_SUBS = [
-  { a: 10329, b: 10334, from: '  const fresh = cfg.getCities?.().find(c => c.id === activeCity!.id);', to: '  const fresh = deps?.getCities().find(c => c.id === activeCity!.id);', why: 'K07A-Z2 cfg.getCities -> deps' },
-  { a: 10393, b: 10419, from: '    buildChipDeltaStockHtml(civRate, civStock) +', to: "    (deps ? deps.chipDeltaStockHtml(civRate, civStock) : '') +", why: 'K07A-Z2 buildChipDeltaStockHtml -> deps' },
-  { a: 10719, b: 10734, from: '  const capitalId = cfg.getCapitalCityId?.(city.ownerId) ?? null;', to: '  const capitalId = deps?.getCapitalCityId(city.ownerId) ?? null;', why: 'K07A-Z2 cfg.getCapitalCityId -> deps' },
-  { a: 10719, b: 10734, from: "  if (!isMeCity(city.ownerId) || !cfg.onSetCapital) return '';", to: "  if (!deps || !deps.isMe(city.ownerId) || !deps.canSetCapital) return '';", why: 'K07A-Z2 isMeCity/onSetCapital -> deps' },
-  { a: 10719, b: 10734, from: '  const allCitiesForCapital = cfg.getCities?.() ?? [];', to: '  const allCitiesForCapital = deps?.getCities() ?? [];', why: 'K07A-Z2 cfg.getCities -> deps' },
-];
-
-/** Nazwy deklaracji portu spoza jednostek: lokalne typy, deps, akcesory stanu (K07A-Z1..Z3). */
-const LOCAL_NAMES = new Set([
-  'CityK07', 'K07aDeps', 'deps', 'setK07aDeps', 'activeCity', 'setK07aActiveCity', 'getK07aActiveCity',
-  'setK07aUxSectionRefresh', 'getK07aUxSectionRefresh',
-]);
 
 const isCommentLine = (t) => /^\/\*\*|^\/\*|^\*|^\/\//.test(t.trim()) || /\*\/\s*$/.test(t.trim());
 const isDecl = (t) => /^(export\s+)?(const|let|function|type|interface|enum|class|import)\b/.test(t);
@@ -182,7 +157,7 @@ for (const t of port) {
 const units = JSON.parse(readFileSync(WYBRANE, 'utf8'));
 const portNames = units.map((u) => u.port ?? u.name);
 const expectedNames = new Set([...portNames, ...LOCAL_NAMES]);
-for (const n of portNames) if (!declared.has(n)) findings.cover.push(`brak jednostki z wybrane-r2.json w porcie: ${n}`);
+for (const n of portNames) if (!declared.has(n)) findings.cover.push(`brak jednostki z wybrane w porcie: ${n}`);
 for (const n of declared) if (!expectedNames.has(n) && n !== '__MARKER__') findings.cover.push(`deklaracja spoza jednostek i LOCAL_NAMES: ${n}`);
 for (const n of LOCAL_NAMES) if (!declared.has(n)) findings.local.push(`brak lokalnej deklaracji ${n}`);
 for (const u of units) {
