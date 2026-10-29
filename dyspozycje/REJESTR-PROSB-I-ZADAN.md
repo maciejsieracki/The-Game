@@ -8527,9 +8527,16 @@ referencyjnych zielone, `entity-card-historia-section-test` 36/36,
 
 ## `R-ARMY-MERGE-SPLIT-ICONS-Q2` — kierunki ikon łączenia i rozdzielania armii (2026-10-29)
 
-- **STATUS:** `DO-INTEGRACJI` — Operator PASS, niezależny Evaluator PASS, Final Control PASS; nie wdrożono jej jeszcze do Roboczej.
+- **STATUS:** `ZINTEGROWANE / READY_FOR_DEPLOY` — Operator PASS, niezależny Evaluator PASS, Final Control PASS; Robocza bundle zbudowany i lokalnie zweryfikowany, publikacja do origin/main i remote readback jeszcze pending.
 - **Zgłoszenie:** ikony „Połącz” i „Rozdziel” w karcie armii wyglądały identycznie mimo wcześniejszego ustalenia, że strzałki scalania mają kierować się do środka, a rozdzielania na zewnątrz.
 - **Przyczyna:** definicje SVG w `gra/src/ui/unitActionBarHtml.ts` używały dla obu akcji tych samych dwóch grotów skierowanych na zewnątrz.
 - **Zmiana:** rozdzielenie ma teraz dwa wyraźne trzony zakończone grotami odśrodkowymi; połączenie ma groty skierowane do wspólnego środka. Test sprawdza wyrenderowane HTML produkcyjnego renderera i geometrię kierunku obu strzałek.
 - **Weryfikacja Operatora:** test ikon PASS; kompletność paska akcji 31/31; test „Odfortyfikuj całą armię” 16/16; TypeScript PASS; render Chromium zapisany w `dyspozycje/autobot/runs/R-ARMY-MERGE-SPLIT-ICONS-Q2/01-merge-split-icons.png`.
 - **Pliki:** `gra/src/ui/unitActionBarHtml.ts`, `gra/tools/army-merge-split-direction-icons-test.cjs`; raporty: `10-operator.md`, `20-evaluator.md`, `30-final-control.md` w `dyspozycje/autobot/runs/R-ARMY-MERGE-SPLIT-ICONS-Q2/`.
+
+## `R-WOJSKO-ARMIA-REKRUTACJA-DO-WODZA-Q1` — domyślny marsz nowych jednostek do wodza (2026-10-29)
+
+- **STATUS:** `OPERATOR` — zarejestrowano, operator ma sprawdzić menu armii na mapie głównej i dodać przełącznik „Idź do wodza” obok „Przygotuj”.
+- **Oczekiwane działanie:** przełącznik włączony ustawia wodza jako cel nowo zrekrutowanych jednostek. Wyłączony stan nie wydaje im marszu do wodza. Stan widoczny przy jednostce musi odzwierciedlać wybór domyślny, a gracz nadal może ręcznie włączyć lub wyłączyć marsz dla pojedynczej jednostki. Część oddziałów może iść do wodza, pozostałe gdzie indziej.
+- **Zakres weryfikacji:** rekrutacja z panelu miasta i panelu budowania w armii, niezależne zmiany ustawienia globalnego oraz jednostkowego, zachowanie celu przy ruchomym wodzu, save/load oraz właściwy cel nowo zrekrutowanych jednostek.
+- **Run:** `dyspozycje/autobot/runs/R-WOJSKO-ARMIA-REKRUTACJA-DO-WODZA-Q1/`; dispatch zapisany; operator w toku. Nie wdrożono.

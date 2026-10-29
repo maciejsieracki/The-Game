@@ -31,27 +31,27 @@
     "notes": "AI live Chromium fixture: five complete muster EOTs and sixth attack EOT with 4/4 commands/executions. Commander map marker visual evidence is the production-renderer map harness; no full gameplay screenshot with active army. Naval AI and large-empire performance remain open."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-10-29T12:57:55",
+  "hubGeneratedAt": "2026-10-29T19:06:23",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "eab188a2df6c2399f8431d58167211bc",
-      "sizeBytes": 70028627
+      "md5": "c7c3e90d634feac44e63b9b69cbc3cad",
+      "sizeBytes": 70029107
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "eab188a2df6c2399f8431d58167211bc",
-      "sizeBytes": 70028627
+      "md5": "c7c3e90d634feac44e63b9b69cbc3cad",
+      "sizeBytes": 70029107
     }
   ],
-  "md5": "eab188a2df6c2399f8431d58167211bc",
-  "sizeBytes": 70028627,
+  "md5": "c7c3e90d634feac44e63b9b69cbc3cad",
+  "sizeBytes": 70029107,
   "publisher": "Codex AutoBot — owner authorized main merge, Robocza publish and git push",
-  "source": "gra/src; source integration commit 7fdc191ac8efa4e3e1c71a4c82b1772bb55ec145",
+  "source": "gra/src; merge/split icon fix 002a75815b067cf2cdbcae7eed5c488f8634ea34",
   "immediatePreviousRelease": {
     "publicationCommit": "f6f63dc839449d8e08a7e2509ec72796757867af",
     "bundleMd5": "03d8d29e4714204bff62a27823e946ee",
@@ -273,5 +273,5 @@
     "checks": "GitHub Raw bundle/manifest/START HTTP 200; fetched bundle bytes and hashes match manifest."
   },
   "publishedAt": "2026-10-28",
-  "buildStamp": "2026-10-29 12:57 · aa7fbff4f816"
+  "buildStamp": "2026-10-29 19:06 · 60642361040b3ec93525f26595efa309"
 }
