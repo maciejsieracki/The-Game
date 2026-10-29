@@ -305,3 +305,5 @@ Cel końcowy i bieżący zapisane w `GOAL-RUST-PORT-20261020.md` (§"CEL PĘTLI 
 | 2026-10-29 | R-RUSTPORT-P5-8-CITYPANEL-K08A-Q1 | 3 | r3 naprawa lustra K06A → FC PASS-WITH-NOTES | **ZINTEGROWANE** `6daf5ed1` (check/typecheck/48 wektorów/50 mutantów) |
 | 2026-10-29 | R-RUSTPORT-P5-8-CITYPANEL-K07B-Q1 | 3 | r2 FC FAIL → r3 uruchomiona (wf_aa434f47-3bf) | w toku |
 | 2026-10-29 | M06A4, K08B | 1 | nowe dispatche | w toku |
+| 2026-10-29 | R-RUSTPORT-P5-8-CITYPANEL-K07B-Q1 | 3 | r3 harness z pinem, wiring, smoke 45/45, 29/29 mutantów → FC PASS-WITH-NOTES | **ZINTEGROWANE** `4a3aa850` (check/typecheck/335 porównań 0 różnic) |
+| 2026-10-29 | R-RUSTPORT-P5-8-CITYPANEL-K08B-Q1 | 1→2 | partia 1 (rail 6/24) PASS-WITH-NOTES → r2 partie 2–4 (wf_418829af-bb3) | w toku |
