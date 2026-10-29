@@ -31,6 +31,9 @@ import type { GameMap } from '../types/map';
 import type { Hex } from '../types/hex';
 import { TerenBazowy } from '../types/hex';
 import { axialToWorld, HEX_R } from './hexutil';
+import {
+  MAP_HEX_HIGHLIGHT_BASE_OPACITY,
+} from './buildHighlight';
 import { buildHorse } from './kon-nowy-model';
 import { GAME_MAP_RENDER_STYLE, terrainVisualForStyle } from './mapRenderStyle';
 import type { RuntimeUnit } from '../units/setup';
@@ -404,7 +407,7 @@ const HIGHLIGHT_RADIUS  = HEX_R * 0.88;
 const HIGHLIGHT_HEIGHT  = 0.015 * HEX_R;
 const HIGHLIGHT_LIFT    = 0.005 * HEX_R;
 const HIGHLIGHT_COLOR   = 0x66ccff;
-const HIGHLIGHT_OPACITY = 0.35;
+const HIGHLIGHT_OPACITY = MAP_HEX_HIGHLIGHT_BASE_OPACITY;
 
 // Route
 const ROUTE_Y_LIFT  = 0.06 * HEX_R;
@@ -6438,7 +6441,7 @@ export class UnitRenderer {
    * Draw translucent hex discs over the given set of hexes.
    * Replaces any previously drawn highlights.
    */
-  setHighlight(hexes: Set<string>): void {
+  setHighlight(hexes: Set<string>, opacity = HIGHLIGHT_OPACITY): void {
     this.clearHighlight();
 
     if (hexes.size === 0) return;
@@ -6447,7 +6450,7 @@ export class UnitRenderer {
     const mat = new THREE.MeshBasicMaterial({
       color: HIGHLIGHT_COLOR,
       transparent: true,
-      opacity: HIGHLIGHT_OPACITY,
+      opacity,
       depthWrite: false,
     });
     this.highlightMaterials.push(mat);

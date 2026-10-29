@@ -2,7 +2,7 @@
 
 TEMAT: `R-IMPROVEMENT-BUILD-HIGHLIGHT-LIFECYCLE-Q1`
 RUNDA: 1/5 · DATA: 2026-10-29 · DOMAIN: GAME · ŚCIEŻKA: A (Workflow)
-STATUS: Operator active after owner instruction. Native Kanban card unavailable in this session; recorded as tooling limitation, not a product blocker.
+STATUS: ACTIVE — właściciel jednoznacznie uchylił bramkę Kanban dla tej pracy 2026-10-29; Kanban nie jest używany.
 ROLE ROUTING: Operator `/root/improvement_highlight_operator`; independent Evaluator after operator commit; Defense returns to Operator only if objections; independent Final Control after review; orchestrator integrates/releases/deploys/pushes.
 
 ## WYZWALACZ
@@ -45,8 +45,8 @@ Evaluator zgłasza każdy defekt z reprodukcją i minimalną poprawką; wraca za
 
 ## GRAF 1–11
 
-1. Rejestracja, zakres i dispatch — DONE (Kanban API unavailable; ograniczenie jawnie zapisane).
-2. Rekonesans źródeł overlay, cyklu budowy i baseline — Operator.
+1. Rejestracja, zakres i dispatch — DONE (owner override; Kanban waived).
+2. Rekonesans źródeł overlay, cyklu budowy i baseline — ACTIVE; baseline test kopalni 76/76.
 3. Implementacja jasności i cyklu życia overlay — Operator.
 4. Testy wszystkich ulepszeń, stanów budowy i mutacji — Operator.
 5. Chromium before/after, typecheck, build i regresje — Operator.

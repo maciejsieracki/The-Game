@@ -761,6 +761,11 @@ import {
   TERRITORY_BORDER_OPACITY,
 } from './render/rangeOverlay';
 import {
+  IMPROVEMENT_BUILD_HIGHLIGHT_OPACITY,
+  filterBuildHighlightHexes,
+  MINE_BUILD_HIGHLIGHT_OPACITY,
+} from './render/buildHighlight';
+import {
   buildTradeRoutesOverlayGroup,
   disposeTradeRoutesOverlayGroup,
   type TradeRouteOverlayInput,
@@ -13573,7 +13578,10 @@ async function boot(): Promise<void> {
       clearMineEligibleOverlay();
       if (hexes.length === 0) return;
       const keys = new Set(hexes.map(h => keyOf(h.q, h.r)));
-      mineEligibleGroup = buildRangeOverlayGroup(map, keys, MINE_ELIGIBLE_STYLE);
+      mineEligibleGroup = buildRangeOverlayGroup(map, keys, {
+        ...MINE_ELIGIBLE_STYLE,
+        tintOpacity: MINE_BUILD_HIGHLIGHT_OPACITY,
+      });
       scene.add(mineEligibleGroup);
     }
 
@@ -13830,7 +13838,11 @@ async function boot(): Promise<void> {
       const newKey = q + ',' + r + '|' + activeImprovementKey;
       if (newKey === lastGhostKey) return;
       removeGhostImprovement();
-      const hexes = buildApi.getQualifyingHexes(activeImprovementKey);
+      const hexes = filterBuildHighlightHexes(
+        activeImprovementKey,
+        buildApi.getQualifyingHexes(activeImprovementKey),
+        pendingImprovementsTurn.getUndoKeySet(),
+      );
       const ok = hexes.some(h => h.q === q && h.r === r);
       if (!ok) return;
       const hk = keyOf(q, r);
@@ -14278,7 +14290,11 @@ async function boot(): Promise<void> {
         unitRenderer.clearHighlight();
         return;
       }
-      const hexes = buildApi.getQualifyingHexes(activeImprovementKey);
+      const hexes = filterBuildHighlightHexes(
+        activeImprovementKey,
+        buildApi.getQualifyingHexes(activeImprovementKey),
+        pendingImprovementsTurn.getUndoKeySet(),
+      );
       // R-KOPALNIA-PODSWIETLENIE-HEKSOW-Q1: dla czterech kopalń złoża warstwa jasnoniebieska
       // ZASTĘPUJE ogólny krążek setHighlight, a nie nakłada się na niego — dwie półprzezroczyste
       // płachty na tym samym heksie zsumowałyby się do ok. 0,55 krycia zamiast żądanych 0,30,
@@ -14292,7 +14308,10 @@ async function boot(): Promise<void> {
         return;
       }
       clearMineEligibleOverlay();
-      unitRenderer.setHighlight(new Set(hexes.map(h => keyOf(h.q, h.r))));
+      unitRenderer.setHighlight(
+        new Set(hexes.map(h => keyOf(h.q, h.r))),
+        IMPROVEMENT_BUILD_HIGHLIGHT_OPACITY,
+      );
     }
 
     /** Usuwa tymczasowe warstwy 3D trybu budowy (ghost + highlight kandydatów + warstwa kopalni). */
