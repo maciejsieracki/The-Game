@@ -1,15 +1,15 @@
 /**
- * K06A (P5-8, R-RUSTPORT-P5-8-CITYPANEL-K06A-Q1, runda 1): jednostki K06 (kolejki i lista produkcji) bez DOM.
+ * K06A (P5-8, R-RUSTPORT-P5-8-CITYPANEL-K06A-Q1, runda 2): jednostki K06 (kolejki i lista produkcji) bez DOM.
  *
  * Zakres: 16 jednostek nie-DOM bloku K06 wg `pomiar-r2.json` (blok 6, 37 jednostek, 1 439 LOC; DOM 21 → K06B).
- * Wybór: `tools/dom-harness/select-k06a.mjs` (wynik `dyspozycje/autobot/runs/R-RUSTPORT-P5-8-CITYPANEL-K06A-Q1/r1-logi/`).
+ * Wybór: `tools/dom-harness/select-k06a.mjs` (wynik `dyspozycje/autobot/runs/R-RUSTPORT-P5-8-CITYPANEL-K06A-Q1/r2-logi/`).
  *
  * Konwencja (jak K05A r3, ZAŁOŻENIE K06A-Z4): ciało jednostki jest kopią pinu (`// pin edb8fb56 gra/src/...:A-B`),
  * a wywołania reguł/zależności z innych kawałków (cityPanelChipIconWrap, tileYield, axialToWorld, formatCityMapLabel,
  * CITY_TABS, switchCity, cfg) idą przez delegatory do `K06aDeps` / `K06aCfg`, których wartości przychodzą z DTO
  * (P5.13: UI nie liczy reguł gry). Importy wartości z K05A (`k05a-fundament.ts`) — bez duplikacji.
  *
- * Wyjątki udokumentowane w P5-8-K06A.md §4:
+ * Wyjątki udokumentowane w P5-8-K06A.md §3:
  *   K06A-Z5 — lokalne typy `CityK06` (pola pinu `City` używane przez jednostki K06), `HexK06`.
  *   K06A-Z6 — `IMPROVEMENT_KEY_TO_NAME` (const IIFE na danych JSON) → `buildImprovementKeyToName(rows)`; dane wstrzykiwane.
  *   K06A-Z7 — stan modułu pinu (`let activeCity`, `activeMap`, `activeOnClose`, `pinnedGarrisonCityId`) → zmienne
