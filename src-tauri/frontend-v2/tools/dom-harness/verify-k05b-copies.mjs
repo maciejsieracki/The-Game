@@ -46,7 +46,30 @@ export const BATCHES = {
     ['appendGarrisonUnitChip', 9359, 9391],
     ['improvementRangeRow', 9604, 9616],
   ],
+  2: [
+    ['appendBuildingRequirementsBlock', 6994, 7004],
+    ['buildBuildingInfocard', 7012, 7134],
+    ['appendTechDetailBlock', 7397, 7463],
+    ['ensureEntityCardBuildingStyles', 7467, 7528],
+    ['buildBuildingDetailCardViaEntityCard', 7530, 7556],
+    ['buildBuildingDetailCard', 7558, 7569],
+    ['_legacyBuildBuildingDetailCard', 7571, 7697],
+    ['buildBuildingBuildTabDetailCard', 7699, 7804],
+  ],
+  3: [
+    ['_legacyBuildUnitDetailCard', 7895, 7974],
+    ['buildRecruitTabDetailCard', 8861, 8889],
+    ['buildUpgradeBonusDetailCard', 8979, 9030],
+  ],
 };
+
+/** Bloki wsparcia (poza 19 jednostkami DOM): wymagania budynku (ZADANIE 2) i sprawdzenie stacji stock; TEXT dla każdego. */
+export const SUPPORT = [
+  ['buildingLocationRequirementMet', 6821, 6828],
+  ['buildingRequirementChips', 6830, 6929],
+  ['missingTechSteps', 8537, 8540],
+  ['buildingStockCostChipsHtml', 6609, 6633],
+];
 
 const MARK = /^\/\/ pin edb8fb56 gra\/src\/ui\/cityPanel\.ts:(\d+)-(\d+)$/;
 
@@ -127,6 +150,33 @@ for (const [bn, units] of Object.entries(batches)) {
     const errs = compareBlock(blk, pinLines);
     report(errs.length === 0, `TEXT partia ${bn} ${name} ${a}-${b} (${blk.file}): ${errs.length ? errs.join('; ') : 'bajtowo = pin'}`);
   }
+}
+
+// SUPPORT + ORPHAN: bloki wsparcia (ZADANIE 2) muszą być kopiami; każdy blok markera to jednostka partii lub wsparcie.
+if (!ONLY_BATCH) {
+  for (const [name, a, b] of SUPPORT) {
+    const hits = allBlocks.filter((x) => x.a === a && x.b === b);
+    if (hits.length !== 1) {
+      report(false, `COVER wsparcie ${name} ${a}-${b}: bloków ${hits.length} (oczekiwano 1)`);
+      continue;
+    }
+    const dn = hits[0].lines.map(declName).find((x) => x) ?? null;
+    if (dn !== name) {
+      report(false, `COVER wsparcie ${name}: deklaracja w bloku to ${dn}`);
+      continue;
+    }
+    const errs = compareBlock(hits[0], pinLines);
+    report(errs.length === 0, `TEXT wsparcie ${name} ${a}-${b} (${hits[0].file}): ${errs.length ? errs.join('; ') : 'bajtowo = pin'}`);
+  }
+  const known = new Set([...Object.values(BATCHES).flat(), ...SUPPORT].map(([, a, b]) => `${a}-${b}`));
+  const orphans = allBlocks.filter((x) => !known.has(`${x.a}-${x.b}`));
+  report(orphans.length === 0, `ORPHAN: bloki markera bez wpisu partii/wsparcia: ${orphans.length}`);
+  report(allBlocks.length === 19 + SUPPORT.length, `LICZBA bloków markera: ${allBlocks.length} (oczekiwano ${19 + SUPPORT.length})`);
+  // Zakotwiczenie Z6: pin game/danina-nazwa.ts:17 = deklaracja daninaLabelGenitive, zwraca 'podatku' (port: k05b-host.ts).
+  const daninaPin = readFileSync(join(resolve(PIN_DIR), 'gra/src/game/danina-nazwa.ts'), 'utf8').split('\n');
+  const daninaOk = /^export function daninaLabelGenitive\(/.test(daninaPin[16] ?? '') && daninaPin[17]?.trim() === "return 'podatku';";
+  const hostSrc = readFileSync(join(CITY, 'k05b-host.ts'), 'utf8');
+  report(daninaOk && /export function daninaLabelGenitive\(_label\?: string\): 'podatku' \{\n  return 'podatku';\n\}/.test(hostSrc),'DANINA-Z6 daninaLabelGenitive: pin danina-nazwa.ts:17-19 = port k05b-host.ts (zwraca \'podatku\')');
 }
 
 // CONST: K05B-Z2 — wartości stałych w k05b-host.ts = wartości pinu game/cities.ts.

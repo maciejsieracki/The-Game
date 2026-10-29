@@ -16,7 +16,7 @@ import {
 } from './k01a-fundament';
 import type { EmpireHudSnap, PodzialHandluSplit } from './k01a-fundament';
 import { resourceTextClass } from '../resourceColors';
-import type { GameData } from './k05a-fundament';
+import type { GameData } from './k05b-host';
 import {
   type City,
 
