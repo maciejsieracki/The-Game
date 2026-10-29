@@ -1,0 +1,18 @@
+ZABITY  jedn-upg-miasto-poziom
+ZABITY  jedn-legacy-nazwa-linii
+ZABITY  jedn-legacy-walka-prog
+ZABITY  jedn-legacy-zywnosc
+ZABITY  chip-w-miescie-tekst
+ZABITY  chip-stolica-tekst
+ZABITY  chip-woda-tekst
+ZABITY  chip-masz-tekst
+ZABITY  chip-rozbudowa-met
+ZABITY  chip-stock-met
+ZABITY  chip-stock-klasa
+ZABITY  chip-tech-separator
+ZABITY  chip-lokalizacja-met
+ZABITY  chip-brak-tech-steps
+ZABITY  chip-pula-miasta
+ZABITY  chip-stock-chips-html-met
+ZABITY  chip-stock-chips-html-etykieta
+mutantów 17, zabitych 17, przeżytych 0, błędów 0

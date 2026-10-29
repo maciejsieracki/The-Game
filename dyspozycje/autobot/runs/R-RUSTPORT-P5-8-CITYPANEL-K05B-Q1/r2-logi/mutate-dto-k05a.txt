@@ -1,0 +1,9 @@
+ZABITY  dto-zamiana-owner-city
+ZABITY  dto-zamiana-city-owner
+ZABITY  dto-koszt-jednostek-pusty
+ZABITY  dto-lancuch-odwrocony
+ZABITY  dto-etykiety-pusty
+ZABITY  dto-koszt-surowcowy-pole
+ZABITY  dto-atrapa-wartosc
+ZABITY  dto-atrapa-koszt
+mutantów 8, zabitych 8, przeżytych 0, błędów 0
