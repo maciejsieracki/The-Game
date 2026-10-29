@@ -1,0 +1,14 @@
+buildGrowthProgressTooltipCard   k08e-magazyn.ts    pin=1598-1635    kopia_diff=0 head=1598-1635    pin_head=SAME
+renderMagazyn                    k08e-magazyn.ts    pin=5203-5472    kopia_diff=0 head=5203-5472    pin_head=SAME
+buildRacjeWzrostDetailCard       k08e-magazyn.ts    pin=5474-5579    kopia_diff=0 head=5474-5579    pin_head=SAME
+buildTopBarZywnoscDetailCard     k08e-karty-a.ts    pin=5582-5650    kopia_diff=0 head=5582-5650    pin_head=SAME
+buildTopBarRekruciDetailCard     k08e-karty-a.ts    pin=5652-5682    kopia_diff=0 head=5652-5682    pin_head=SAME
+buildTopBarLudnoscDetailCard     k08e-karty-a.ts    pin=5684-5768    kopia_diff=0 head=5684-5768    pin_head=SAME
+buildTopBarNaukaDetailCard       k08e-karty-b.ts    pin=5904-5947    kopia_diff=0 head=5904-5947    pin_head=SAME
+buildTopBarKulturaDetailCard     k08e-karty-b.ts    pin=5949-5990    kopia_diff=0 head=5949-5990    pin_head=SAME
+buildPorzadekDetailCard          k08e-karty-b.ts    pin=3427-3549    kopia_diff=0 head=3427-3549    pin_head=SAME
+capitalBadgeOrButtonHtml         k08e-topbar.ts     pin=10719-10734  kopia_diff=0 head=10677-10692  pin_head=SAME
+renderCivResourceTopBar          k08e-topbar.ts     pin=10736-10781  kopia_diff=0 head=10694-10739  pin_head=SAME
+wireTopBarStatDetails            k08e-topbar.ts     pin=6051-6085    kopia_diff=0 head=6051-6085    pin_head=SAME
+
+measure-k08e-drift: jednostek=12, kopie rozjechane=0

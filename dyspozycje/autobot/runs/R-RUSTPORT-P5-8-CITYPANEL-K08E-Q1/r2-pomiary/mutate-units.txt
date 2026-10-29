@@ -1,0 +1,15 @@
+baseline                       ZIELONY
+magazyn-data-null              ZABITA (wystąpień=1)
+magazyn-frac-zero              ZABITA (wystąpień=1)
+magazyn-food-owner-shift       ZABITA (wystąpień=2)
+karty-a-cityid-number          ZABITA (wystąpień=2)
+karty-a-food-owner-shift       ZABITA (wystąpień=2)
+magazyn-maxsafe-shift          ZABITA (wystąpień=2)
+karty-a-maxsafe-shift          ZABITA (wystąpień=2)
+karty-a-regen-field            ZABITA (wystąpień=1)
+karty-b-porzadek-field         ZABITA (wystąpień=2)
+karty-b-porpct-band            ZABITA (wystąpień=1)
+topbar-capital-inverted        ZABITA (wystąpień=1)
+topbar-setcapital-gate-off     ZABITA (wystąpień=1)
+
+mutate-k08e-units: zabite 12/12, przeżyły 0, błędy 0, baseline OK

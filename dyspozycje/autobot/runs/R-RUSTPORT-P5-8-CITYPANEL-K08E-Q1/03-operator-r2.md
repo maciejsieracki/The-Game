@@ -1,0 +1,11 @@
+STATUS: PASS-WITH-NOTES
+DOMAIN: GAME
+TEMAT: R-RUSTPORT-P5-8-CITYPANEL-K08E-Q1
+GOAL: K08E: 12 z 12 jednostek zakresu w kopiach pinu edb8fb56 + pin-exec, mutacje, test wiringu i pomiar dryfu (odpowiedź Operatora r2 na zarzuty Evaluatora r1).
+ZMIANY/COMMIT: 714c6417 (partie karty-b i topbar, typ OrderStateK08e, City.q/r wymagane); 4272db14 (test wykonania wiringu, mutacje wiringu 15/15); commit końcowy r2 (run-k08e-pin, mutate-k08e-units, measure-k08e-drift, dossier §7, PORTING-QUEUE, logi r2-pomiary). Baza: 0d15a5e8. Allowlista zachowana; zero zmian w gra/**, .rs, WERSJE.md, rust-port.
+TESTY: npm ci EXIT 0; typecheck EXIT 0; check EXIT 0 (pin-copies 435, niezgodnych 0); verify-k08e-copies magazyn/karty-a/karty-b/topbar OK (ORPHAN 0); run-k08e-wiring 50/50; mutate-k08e-wiring 15/15; run-k08e-pin 54/54; mutate-k08e-units 12/12; measure-k08e-drift kopie 0/12 rozjechane, pin head SAME 12/12; regresja run-k08d-handel-pin, run-k08d-wiring, run-k05b-units (384/0), run-k07b-units (335/0) zielone; git diff --check EXIT 0. Logi: runs/R-RUSTPORT-P5-8-CITYPANEL-K08E-Q1/r2-pomiary/.
+ODPOWIEDZI NA ZARZUTY: 1 PRZYJMUJĘ (714c6417); 2 PRZYJMUJĘ (run-k08e-pin); 3 PRZYJMUJĘ (mutate-k08e-units); 4 PRZYJMUJĘ (wiring test i mutacje), ODRZUCAM zarzut „martwy wiring" jako defekt K08E (produkcyjne podpięcie = K09 wg dispatchu); 5 PRZYJMUJĘ (measure-k08e-drift); 6 PRZYJMUJĘ (status skorygowany); 7 PRZYJMUJĘ (opis WIP był nieprawdziwy, poprawiony); 8 PRZYJMUJĘ z dowodem regresji K05B/K07B/K08D; 9 PRZYJMUJĘ (git diff --check uruchomiony, EXIT 0). Szczegóły: dossier §7.1.
+BLOKADY: (1) produkcyjne podpięcie installK08eWiring i switchCity = K09 (NIE_ZROBIONE, zakres K09); (2) NIE_ZMIERZONO: zachowanie w przeglądarce i CSS (harness jsdom); cargo fmt/clippy/test nie dotyczą (zero .rs); (3) NIE_ZMIERZONO: czy host K05B czyta `units` w readPodzialHandlu (rzutowanie gameData w jednym miejscu, K08E-R2-Z3); (4) dryf mierzony tekstowo na poziomie jednostek, nie semantycznie całego pinu head.
+RUNDY: 2/5 (runda 1: 940264e6 + pomiary 0d15a5e8; runda 2: 714c6417, 4272db14, commit końcowy r2).
+NASTĘPNY KROK: Evaluator r2 na tym samym ID: weryfikacja 12/12, bramek pin-exec/mutacji/wiringu/dryfu; następnie Final Control. Integracja i READY_FOR_DEPLOY wyłącznie orkiestrator.
+DEPLOY/PUSH: NIE WYKONANO

@@ -1,0 +1,36 @@
+{
+ "comparisons": 335,
+ "diffs": 0,
+ "wiringFails": 0,
+ "przypadkiZBledem": 0,
+ "bledy": [],
+ "wpisyDziennika": 453,
+ "przypadkiZHtml": 44,
+ "units": 15,
+ "blocks": 23,
+ "pinFile": "gra/src/ui/cityPanel.ts (edb8fb56)",
+ "portDir": "src/ui/cityPanel",
+ "perUnit": {
+  "renderSpoleczenstwo": "6 przyp., 0 różn.",
+  "renderZdrowie": "4 przyp., 0 różn.",
+  "renderKultura": "7 przyp., 0 różn.",
+  "renderProd": "2 przyp., 0 różn.",
+  "renderBuildSplitPanel": "2 przyp., 0 różn.",
+  "renderOkolica": "2 przyp., 0 różn.",
+  "renderCityHeaderCompact": "5 przyp., 0 różn.",
+  "appendOkolicaToolbarProfiles": "2 przyp., 0 różn.",
+  "appendBudowaToolbarProfiles": "2 przyp., 0 różn.",
+  "appendBudowaListaBar": "2 przyp., 0 różn.",
+  "renderTopStatsBar": "2 przyp., 0 różn.",
+  "appendPanel": "2 przyp., 0 różn.",
+  "resolveDetailSideHint": "3 przyp., 0 różn.",
+  "appendSectionTitleWithDetails": "1 przyp., 0 różn.",
+  "okolicaProfileIconHtml": "1 przyp., 0 różn.",
+  "setOkolicaProfileButtonContent": "1 przyp., 0 różn.",
+  "setOkolicaProfileButtonIconOnly": "1 przyp., 0 różn."
+ },
+ "notes": [
+  "CityPanelUxMounts: interfejs (brak runtime) — sprawdzany przez tsc",
+  "smoke-defaults: przypadków=45, z wyjątkiem=0"
+ ]
+}

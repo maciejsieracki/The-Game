@@ -1,0 +1,52 @@
+OK   pre.buildRationParams | przed install: buildRationParams rzuca „K08E: brak delegatu”
+OK   pre.cityLudnoscAbsolutna | przed install: cityLudnoscAbsolutna rzuca „K08E: brak delegatu”
+OK   pre.resolveOrderState | przed install: resolveOrderState rzuca „K08E: brak delegatu”
+OK   pre.switchCity | przed install: switchCity rzuca „K08E: brak delegatu”
+OK   pre.resolveCityHealth | przed install: resolveCityHealth rzuca „K08E: brak delegatu”
+OK   pre.porPctBand | przed install: porPctBand rzuca „K08E: brak delegatu”
+OK   pre.porBandLabel | przed install: porBandLabel rzuca „K08E: brak delegatu”
+OK   pre.ownerCities | przed install: ownerCities rzuca „K08E: brak delegatu”
+OK   pre.cityPanelTitle | przed install: cityPanelTitle rzuca „K08E: brak delegatu”
+OK   pre.buildCityOnlyW3FlankChips | przed install: buildCityOnlyW3FlankChips rzuca „K08E: brak delegatu”
+OK   fwd.buildRationParams.calledOnce | buildRationParams: host wywołany dokładnie raz
+OK   fwd.buildRationParams.args | buildRationParams: argumenty przekazane 1:1
+OK   fwd.buildRationParams.name | buildRationParams: trafia do hosta o tej samej nazwie
+OK   fwd.buildRationParams.ret | buildRationParams: wynik hosta zwrócony bez zmian
+OK   fwd.cityLudnoscAbsolutna.calledOnce | cityLudnoscAbsolutna: host wywołany dokładnie raz
+OK   fwd.cityLudnoscAbsolutna.args | cityLudnoscAbsolutna: argumenty przekazane 1:1
+OK   fwd.cityLudnoscAbsolutna.name | cityLudnoscAbsolutna: trafia do hosta o tej samej nazwie
+OK   fwd.cityLudnoscAbsolutna.ret | cityLudnoscAbsolutna: wynik hosta zwrócony bez zmian
+OK   fwd.resolveOrderState.calledOnce | resolveOrderState: host wywołany dokładnie raz
+OK   fwd.resolveOrderState.args | resolveOrderState: argumenty przekazane 1:1
+OK   fwd.resolveOrderState.name | resolveOrderState: trafia do hosta o tej samej nazwie
+OK   fwd.resolveOrderState.ret | resolveOrderState: wynik hosta zwrócony bez zmian
+OK   fwd.switchCity.calledOnce | switchCity: host wywołany dokładnie raz
+OK   fwd.switchCity.args | switchCity: argumenty przekazane 1:1
+OK   fwd.switchCity.name | switchCity: trafia do hosta o tej samej nazwie
+OK   fwd.switchCity.ret | switchCity: wynik hosta zwrócony bez zmian
+OK   fwd.resolveCityHealth.calledOnce | resolveCityHealth: host wywołany dokładnie raz
+OK   fwd.resolveCityHealth.args | resolveCityHealth: argumenty przekazane 1:1
+OK   fwd.resolveCityHealth.name | resolveCityHealth: trafia do hosta o tej samej nazwie
+OK   fwd.resolveCityHealth.ret | resolveCityHealth: wynik hosta zwrócony bez zmian
+OK   fwd.porPctBand.calledOnce | porPctBand: host wywołany dokładnie raz
+OK   fwd.porPctBand.args | porPctBand: argumenty przekazane 1:1
+OK   fwd.porPctBand.name | porPctBand: trafia do hosta o tej samej nazwie
+OK   fwd.porPctBand.ret | porPctBand: wynik hosta zwrócony bez zmian
+OK   fwd.porBandLabel.calledOnce | porBandLabel: host wywołany dokładnie raz
+OK   fwd.porBandLabel.args | porBandLabel: argumenty przekazane 1:1
+OK   fwd.porBandLabel.name | porBandLabel: trafia do hosta o tej samej nazwie
+OK   fwd.porBandLabel.ret | porBandLabel: wynik hosta zwrócony bez zmian
+OK   fwd.ownerCities.calledOnce | ownerCities: host wywołany dokładnie raz
+OK   fwd.ownerCities.args | ownerCities: argumenty przekazane 1:1
+OK   fwd.ownerCities.name | ownerCities: trafia do hosta o tej samej nazwie
+OK   fwd.ownerCities.ret | ownerCities: wynik hosta zwrócony bez zmian
+OK   fwd.cityPanelTitle.calledOnce | cityPanelTitle: host wywołany dokładnie raz
+OK   fwd.cityPanelTitle.args | cityPanelTitle: argumenty przekazane 1:1
+OK   fwd.cityPanelTitle.name | cityPanelTitle: trafia do hosta o tej samej nazwie
+OK   fwd.cityPanelTitle.ret | cityPanelTitle: wynik hosta zwrócony bez zmian
+OK   fwd.buildCityOnlyW3FlankChips.calledOnce | buildCityOnlyW3FlankChips: host wywołany dokładnie raz
+OK   fwd.buildCityOnlyW3FlankChips.args | buildCityOnlyW3FlankChips: argumenty przekazane 1:1
+OK   fwd.buildCityOnlyW3FlankChips.name | buildCityOnlyW3FlankChips: trafia do hosta o tej samej nazwie
+OK   fwd.buildCityOnlyW3FlankChips.ret | buildCityOnlyW3FlankChips: wynik hosta zwrócony bez zmian
+
+k08e-wiring: 50/50 zgodnych

@@ -1,0 +1,18 @@
+baseline                         ZIELONY
+rationParams-args-swapped        ZABITA
+rationParams-difficulty-fixed    ZABITA
+ludnosc-epoch-shifted            ZABITA
+ludnosc-population-dropped       ZABITA
+orderState-data-dropped          ZABITA
+orderState-delegate-dropped      ZABITA
+switchCity-dir-inverted          ZABITA
+cityHealth-map-dropped           ZABITA
+cityHealth-data-dropped          ZABITA
+porPctBand-delegate-dropped      ZABITA
+porBandLabel-band-shifted        ZABITA
+ownerCities-delegate-dropped     ZABITA
+cityPanelTitle-city-dropped      ZABITA
+flankChips-view-dropped          ZABITA
+flankChips-map-dropped           ZABITA
+
+mutate-k08e-wiring: zabite 15/15, przeżyły 0, błędy 0, baseline OK
