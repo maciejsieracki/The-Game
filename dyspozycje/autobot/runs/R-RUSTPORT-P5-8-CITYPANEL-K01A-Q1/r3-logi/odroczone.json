@@ -1,0 +1,626 @@
+[
+ {
+  "name": "cachedData",
+  "a": 625,
+  "b": 625,
+  "loc": 1,
+  "reason": "T: typ GameData z data/loader.ts (wymaga lokalnej kopii typu)",
+  "firstBlocker": {
+   "kind": "T",
+   "id": "GameData",
+   "from": "data/loader.ts"
+  }
+ },
+ {
+  "name": "localProd",
+  "a": 633,
+  "b": 633,
+  "loc": 1,
+  "reason": "T: typ CityProduction z game/production.ts (wymaga lokalnej kopii typu)",
+  "firstBlocker": {
+   "kind": "T",
+   "id": "CityProduction",
+   "from": "game/production.ts"
+  }
+ },
+ {
+  "name": "moveQueueItem",
+  "a": 645,
+  "b": 666,
+  "loc": 22,
+  "reason": "T: typ CityProduction z game/production.ts (wymaga lokalnej kopii typu)",
+  "firstBlocker": {
+   "kind": "T",
+   "id": "CityProduction",
+   "from": "game/production.ts"
+  }
+ },
+ {
+  "name": "copyCityProduction",
+  "a": 667,
+  "b": 676,
+  "loc": 10,
+  "reason": "T: typ CityProduction z game/production.ts (wymaga lokalnej kopii typu)",
+  "firstBlocker": {
+   "kind": "T",
+   "id": "CityProduction",
+   "from": "game/production.ts"
+  }
+ },
+ {
+  "name": "moveRecruitQueueItem",
+  "a": 677,
+  "b": 695,
+  "loc": 19,
+  "reason": "T: typ CityProduction z game/production.ts (wymaga lokalnej kopii typu)",
+  "firstBlocker": {
+   "kind": "T",
+   "id": "CityProduction",
+   "from": "game/production.ts"
+  }
+ },
+ {
+  "name": "reorderRecruitQueueItem",
+  "a": 696,
+  "b": 714,
+  "loc": 19,
+  "reason": "T: typ CityProduction z game/production.ts (wymaga lokalnej kopii typu)",
+  "firstBlocker": {
+   "kind": "T",
+   "id": "CityProduction",
+   "from": "game/production.ts"
+  }
+ },
+ {
+  "name": "reorderQueueItem",
+  "a": 715,
+  "b": 731,
+  "loc": 17,
+  "reason": "T: typ CityProduction z game/production.ts (wymaga lokalnej kopii typu)",
+  "firstBlocker": {
+   "kind": "T",
+   "id": "CityProduction",
+   "from": "game/production.ts"
+  }
+ },
+ {
+  "name": "el",
+  "a": 863,
+  "b": 870,
+  "loc": 8,
+  "reason": "DOM",
+  "firstBlocker": null
+ },
+ {
+  "name": "queueItemCumulativeEta",
+  "a": 889,
+  "b": 912,
+  "loc": 24,
+  "reason": "T: typ CityProduction z game/production.ts (wymaga lokalnej kopii typu)",
+  "firstBlocker": {
+   "kind": "T",
+   "id": "CityProduction",
+   "from": "game/production.ts"
+  }
+ },
+ {
+  "name": "queueItemOwnEta",
+  "a": 913,
+  "b": 917,
+  "loc": 5,
+  "reason": "R: import logiki etaTurns z game/production.ts",
+  "firstBlocker": {
+   "kind": "R",
+   "id": "etaTurns",
+   "from": "game/production.ts"
+  }
+ },
+ {
+  "name": "estimateHandelChips",
+  "a": 968,
+  "b": 993,
+  "loc": 26,
+  "reason": "F: zależność wewnętrzna CityView (odroczona)",
+  "firstBlocker": null
+ },
+ {
+  "name": "CityWithSliders",
+  "a": 994,
+  "b": 1000,
+  "loc": 7,
+  "reason": "T: typ City z game/cities.ts (wymaga lokalnej kopii typu)",
+  "firstBlocker": {
+   "kind": "T",
+   "id": "City",
+   "from": "game/cities.ts"
+  }
+ },
+ {
+  "name": "CityView",
+  "a": 1039,
+  "b": 1074,
+  "loc": 36,
+  "reason": "T: typ PoziomRacji z game/population-growth-v85.ts (wymaga lokalnej kopii typu)",
+  "firstBlocker": {
+   "kind": "T",
+   "id": "PoziomRacji",
+   "from": "game/population-growth-v85.ts"
+  }
+ },
+ {
+  "name": "CityMoneySnap",
+  "a": 1108,
+  "b": 1125,
+  "loc": 18,
+  "reason": "R: import logiki wealthMnoznik z game/wealth.ts",
+  "firstBlocker": {
+   "kind": "R",
+   "id": "wealthMnoznik",
+   "from": "game/wealth.ts"
+  }
+ },
+ {
+  "name": "daninaLabelForCity",
+  "a": 1335,
+  "b": 1347,
+  "loc": 13,
+  "reason": "T: typ City z game/cities.ts (wymaga lokalnej kopii typu)",
+  "firstBlocker": {
+   "kind": "T",
+   "id": "City",
+   "from": "game/cities.ts"
+  }
+ },
+ {
+  "name": "PULA_LBL",
+  "a": 1348,
+  "b": 1348,
+  "loc": 1,
+  "reason": "R: import logiki PODZIAL_PRACY_PULA_LBL z game/cities.ts",
+  "firstBlocker": {
+   "kind": "R",
+   "id": "PODZIAL_PRACY_PULA_LBL",
+   "from": "game/cities.ts"
+  }
+ },
+ {
+  "name": "PULA_LBL_PELNA",
+  "a": 1349,
+  "b": 1349,
+  "loc": 1,
+  "reason": "R: import logiki PODZIAL_PRACY_PULA_LBL_PELNA z game/cities.ts",
+  "firstBlocker": {
+   "kind": "R",
+   "id": "PODZIAL_PRACY_PULA_LBL_PELNA",
+   "from": "game/cities.ts"
+  }
+ },
+ {
+  "name": "PULA_TIP",
+  "a": 1350,
+  "b": 1360,
+  "loc": 11,
+  "reason": "R: import logiki PODZIAL_PRACY_PULA_TIP z game/cities.ts",
+  "firstBlocker": {
+   "kind": "R",
+   "id": "PODZIAL_PRACY_PULA_TIP",
+   "from": "game/cities.ts"
+  }
+ },
+ {
+  "name": "clampedGrowthBreakdown",
+  "a": 1434,
+  "b": 1443,
+  "loc": 10,
+  "reason": "T: typ GrowthPercentBreakdown z game/population-growth-v85.ts (wymaga lokalnej kopii typu)",
+  "firstBlocker": {
+   "kind": "T",
+   "id": "GrowthPercentBreakdown",
+   "from": "game/population-growth-v85.ts"
+  }
+ },
+ {
+  "name": "wyzwienieSummaryLabel",
+  "a": 1444,
+  "b": 1450,
+  "loc": 7,
+  "reason": "T: typ PoziomRacji z game/population-growth-v85.ts (wymaga lokalnej kopii typu)",
+  "firstBlocker": {
+   "kind": "T",
+   "id": "PoziomRacji",
+   "from": "game/population-growth-v85.ts"
+  }
+ },
+ {
+  "name": "resolveCityFedForUi",
+  "a": 1470,
+  "b": 1480,
+  "loc": 11,
+  "reason": "T: typ EmpireFoodTick z game/empire-food.ts (wymaga lokalnej kopii typu)",
+  "firstBlocker": {
+   "kind": "T",
+   "id": "EmpireFoodTick",
+   "from": "game/empire-food.ts"
+  }
+ },
+ {
+  "name": "buildGrowthProgressUi",
+  "a": 1563,
+  "b": 1597,
+  "loc": 35,
+  "reason": "R: import logiki growthGainPerTurnSlots z game/population-growth-v85.ts",
+  "firstBlocker": {
+   "kind": "R",
+   "id": "growthGainPerTurnSlots",
+   "from": "game/population-growth-v85.ts"
+  }
+ },
+ {
+  "name": "resPracaSplitBar",
+  "a": 1723,
+  "b": 1743,
+  "loc": 21,
+  "reason": "F: zależność wewnętrzna PULA_LBL_PELNA (odroczona)",
+  "firstBlocker": null
+ },
+ {
+  "name": "setNoteHtml",
+  "a": 1851,
+  "b": 1855,
+  "loc": 5,
+  "reason": "DOM",
+  "firstBlocker": null
+ },
+ {
+  "name": "plonyChipRowHtml",
+  "a": 1863,
+  "b": 1878,
+  "loc": 16,
+  "reason": "F: zależność wewnętrzna CityView (odroczona)",
+  "firstBlocker": null
+ },
+ {
+  "name": "setOkolicaProfileButtonContent",
+  "a": 1934,
+  "b": 1941,
+  "loc": 8,
+  "reason": "DOM",
+  "firstBlocker": null
+ },
+ {
+  "name": "setOkolicaProfileButtonIconOnly",
+  "a": 1942,
+  "b": 1947,
+  "loc": 6,
+  "reason": "DOM",
+  "firstBlocker": null
+ },
+ {
+  "name": "szLinesDoWyswietlenia",
+  "a": 3039,
+  "b": 3049,
+  "loc": 11,
+  "reason": "T: typ SocietyLine z game/society-breakdown.ts (wymaga lokalnej kopii typu)",
+  "firstBlocker": {
+   "kind": "T",
+   "id": "SocietyLine",
+   "from": "game/society-breakdown.ts"
+  }
+ },
+ {
+  "name": "normalizeResourceAccess",
+  "a": 3618,
+  "b": 3644,
+  "loc": 27,
+  "reason": "R: import logiki CITY_PANEL_RANGE_DEPOSIT_LABELS z game/resource-access.ts",
+  "firstBlocker": {
+   "kind": "R",
+   "id": "CITY_PANEL_RANGE_DEPOSIT_LABELS",
+   "from": "game/resource-access.ts"
+  }
+ },
+ {
+  "name": "renderImperiumZywnosc",
+  "a": 3808,
+  "b": 3813,
+  "loc": 6,
+  "reason": "DOM",
+  "firstBlocker": {
+   "kind": "T",
+   "id": "City",
+   "from": "game/cities.ts"
+  }
+ },
+ {
+  "name": "orderBandEffectShort",
+  "a": 4357,
+  "b": 4375,
+  "loc": 19,
+  "reason": "R: import logiki porPctBand z game/society-breakdown.ts",
+  "firstBlocker": {
+   "kind": "R",
+   "id": "porPctBand",
+   "from": "game/society-breakdown.ts"
+  }
+ },
+ {
+  "name": "attachTopBarStat",
+  "a": 6041,
+  "b": 6050,
+  "loc": 10,
+  "reason": "DOM",
+  "firstBlocker": null
+ },
+ {
+  "name": "applyBuildButtonVisualState",
+  "a": 6288,
+  "b": 6295,
+  "loc": 8,
+  "reason": "DOM",
+  "firstBlocker": null
+ },
+ {
+  "name": "findBuildingDef",
+  "a": 6368,
+  "b": 6371,
+  "loc": 4,
+  "reason": "T: typ GameData z data/loader.ts (wymaga lokalnej kopii typu)",
+  "firstBlocker": {
+   "kind": "T",
+   "id": "GameData",
+   "from": "data/loader.ts"
+  }
+ },
+ {
+  "name": "findUnitDef",
+  "a": 6372,
+  "b": 6375,
+  "loc": 4,
+  "reason": "T: typ GameData z data/loader.ts (wymaga lokalnej kopii typu)",
+  "firstBlocker": {
+   "kind": "T",
+   "id": "GameData",
+   "from": "data/loader.ts"
+  }
+ },
+ {
+  "name": "customBuildingIconClass",
+  "a": 6376,
+  "b": 6379,
+  "loc": 4,
+  "reason": "T: typ BuildingDef z data/loader.ts (wymaga lokalnej kopii typu)",
+  "firstBlocker": {
+   "kind": "T",
+   "id": "BuildingDef",
+   "from": "data/loader.ts"
+  }
+ },
+ {
+  "name": "buildingIconHtml",
+  "a": 6380,
+  "b": 6383,
+  "loc": 4,
+  "reason": "T: typ BuildingDef z data/loader.ts (wymaga lokalnej kopii typu)",
+  "firstBlocker": {
+   "kind": "T",
+   "id": "BuildingDef",
+   "from": "data/loader.ts"
+  }
+ },
+ {
+  "name": "unitIconHtml",
+  "a": 6384,
+  "b": 6390,
+  "loc": 7,
+  "reason": "T: typ UnitDef z data/loader.ts (wymaga lokalnej kopii typu)",
+  "firstBlocker": {
+   "kind": "T",
+   "id": "UnitDef",
+   "from": "data/loader.ts"
+  }
+ },
+ {
+  "name": "unitMedallionHtml",
+  "a": 6391,
+  "b": 6398,
+  "loc": 8,
+  "reason": "T: typ UnitDef z data/loader.ts (wymaga lokalnej kopii typu)",
+  "firstBlocker": {
+   "kind": "T",
+   "id": "UnitDef",
+   "from": "data/loader.ts"
+  }
+ },
+ {
+  "name": "productionItemIconHtml",
+  "a": 6399,
+  "b": 6409,
+  "loc": 11,
+  "reason": "T: typ GameData z data/loader.ts (wymaga lokalnej kopii typu)",
+  "firstBlocker": {
+   "kind": "T",
+   "id": "GameData",
+   "from": "data/loader.ts"
+  }
+ },
+ {
+  "name": "YIELD_BRAND",
+  "a": 6461,
+  "b": 6470,
+  "loc": 10,
+  "reason": "T: typ BuildingDef z data/loader.ts (wymaga lokalnej kopii typu)",
+  "firstBlocker": {
+   "kind": "T",
+   "id": "BuildingDef",
+   "from": "data/loader.ts"
+  }
+ },
+ {
+  "name": "formatBuildingYieldDetailValue",
+  "a": 6484,
+  "b": 6495,
+  "loc": 12,
+  "reason": "R: import logiki buildingEffectAtLevel z game/production.ts",
+  "firstBlocker": {
+   "kind": "R",
+   "id": "buildingEffectAtLevel",
+   "from": "game/production.ts"
+  }
+ },
+ {
+  "name": "formatBuildingYieldChipText",
+  "a": 6496,
+  "b": 6504,
+  "loc": 9,
+  "reason": "R: import logiki buildingEffectAtLevel z game/production.ts",
+  "firstBlocker": {
+   "kind": "R",
+   "id": "buildingEffectAtLevel",
+   "from": "game/production.ts"
+  }
+ },
+ {
+  "name": "formatBuildingYieldScaleRow",
+  "a": 6505,
+  "b": 6515,
+  "loc": 11,
+  "reason": "T: typ BuildingDef z data/loader.ts (wymaga lokalnej kopii typu)",
+  "firstBlocker": {
+   "kind": "T",
+   "id": "BuildingDef",
+   "from": "data/loader.ts"
+  }
+ },
+ {
+  "name": "buildingBonusChipsHtml",
+  "a": 6516,
+  "b": 6555,
+  "loc": 40,
+  "reason": "T: typ BuildingDef z data/loader.ts (wymaga lokalnej kopii typu)",
+  "firstBlocker": {
+   "kind": "T",
+   "id": "BuildingDef",
+   "from": "data/loader.ts"
+  }
+ },
+ {
+  "name": "buildingOwnedBonusCompactHtml",
+  "a": 6579,
+  "b": 6614,
+  "loc": 36,
+  "reason": "T: typ BuildingDef z data/loader.ts (wymaga lokalnej kopii typu)",
+  "firstBlocker": {
+   "kind": "T",
+   "id": "BuildingDef",
+   "from": "data/loader.ts"
+  }
+ },
+ {
+  "name": "formatResourceUpkeepText",
+  "a": 6637,
+  "b": 6649,
+  "loc": 13,
+  "reason": "R: import logiki stockResourceLabel z game/building-stock-cost.ts",
+  "firstBlocker": {
+   "kind": "R",
+   "id": "stockResourceLabel",
+   "from": "game/building-stock-cost.ts"
+  }
+ },
+ {
+  "name": "buildingUpkeepDisplay",
+  "a": 6650,
+  "b": 6659,
+  "loc": 10,
+  "reason": "T: typ BuildingDef z data/loader.ts (wymaga lokalnej kopii typu)",
+  "firstBlocker": {
+   "kind": "T",
+   "id": "BuildingDef",
+   "from": "data/loader.ts"
+  }
+ },
+ {
+  "name": "sumOwnedBuildingsResourceUpkeep",
+  "a": 6660,
+  "b": 6672,
+  "loc": 13,
+  "reason": "T: typ GameData z data/loader.ts (wymaga lokalnej kopii typu)",
+  "firstBlocker": {
+   "kind": "T",
+   "id": "GameData",
+   "from": "data/loader.ts"
+  }
+ },
+ {
+  "name": "formatBuildingUpkeepGridValue",
+  "a": 6673,
+  "b": 6685,
+  "loc": 13,
+  "reason": "F: zależność wewnętrzna formatResourceUpkeepText (odroczona)",
+  "firstBlocker": null
+ },
+ {
+  "name": "formatBuildingUpkeepRowHtml",
+  "a": 6686,
+  "b": 6703,
+  "loc": 18,
+  "reason": "F: zależność wewnętrzna formatResourceUpkeepText (odroczona)",
+  "firstBlocker": null
+ },
+ {
+  "name": "formatBuildingUpkeepTotalHtml",
+  "a": 6704,
+  "b": 6719,
+  "loc": 16,
+  "reason": "F: zależność wewnętrzna formatResourceUpkeepText (odroczona)",
+  "firstBlocker": null
+ },
+ {
+  "name": "formatConverterProductionRowHtml",
+  "a": 6789,
+  "b": 6811,
+  "loc": 23,
+  "reason": "R: import logiki stockResourceLabel z game/building-stock-cost.ts",
+  "firstBlocker": {
+   "kind": "R",
+   "id": "stockResourceLabel",
+   "from": "game/building-stock-cost.ts"
+  }
+ },
+ {
+  "name": "parentBuildingName",
+  "a": 7006,
+  "b": 7012,
+  "loc": 7,
+  "reason": "T: typ GameData z data/loader.ts (wymaga lokalnej kopii typu)",
+  "firstBlocker": {
+   "kind": "T",
+   "id": "GameData",
+   "from": "data/loader.ts"
+  }
+ },
+ {
+  "name": "appendDetailSection",
+  "a": 7342,
+  "b": 7348,
+  "loc": 7,
+  "reason": "DOM",
+  "firstBlocker": null
+ },
+ {
+  "name": "gridDetailRow",
+  "a": 7372,
+  "b": 7381,
+  "loc": 10,
+  "reason": "DOM",
+  "firstBlocker": null
+ },
+ {
+  "name": "appendDetailAlgo",
+  "a": 7382,
+  "b": 7390,
+  "loc": 9,
+  "reason": "DOM",
+  "firstBlocker": null
+ }
+]

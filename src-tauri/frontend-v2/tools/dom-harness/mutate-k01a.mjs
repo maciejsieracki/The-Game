@@ -36,7 +36,9 @@ const MUTANTS = [
   ['M4 usunięty export', REL, 'export const STYLE_ID =', 'const STYLE_ID =', ['B']],
   ['M5 import z warstwy logiki', REL, '', "import { UNIT_DEFS } from '../../data/loader';\n", ['C']],
   ['M6 zły zakres linii pinu', REL, 'cityPanel.ts:285-291', 'cityPanel.ts:285-290', ['A']],
-  ['M7 dryf wartości zależności ui/uiParams (bez zmiany tekstu bloków)', 'ui/uiParams.ts', 'const raw = staticCatalog().uiParams;', 'const raw = JSON.parse(JSON.stringify(staticCatalog().uiParams)); (raw as any).panel_miasta.font_scale_domyslna_px = 999;', ['F']],
+  ['M7 dryf wartości zależności ui/uiParams (bez zmiany tekstu bloków)', 'ui/uiParams.ts', 'const raw = staticCatalog().uiParams;', 'const raw = JSON.parse(JSON.stringify(staticCatalog().uiParams)); (raw as any).panel_miasta.font_scale_domyslna_px = 999;', ['V']],
+  ['M8 usunięty marker bloku wybranego (zbiór wyboru ≠ plik)', REL, '// pin edb8fb56 gra/src/ui/cityPanel.ts:1889-1895\n', '', ['A', 'S']],
+  ['M9 dryf lokalnej kopii typu względem pinu (ZAŁOŻENIE K01A-Z5)', REL, "export type OkolicaFocus = 'zrownowazone' | 'zywnosc' | 'produkcja' | 'podatki';", "export type OkolicaFocus = 'zrownowazone' | 'zywnosc' | 'produkcja' | 'podatek';", ['T']],
 ];
 
 function runHarness(v2File) {

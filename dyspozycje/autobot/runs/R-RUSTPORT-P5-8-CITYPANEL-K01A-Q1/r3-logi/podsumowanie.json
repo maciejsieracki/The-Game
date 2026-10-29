@@ -1,0 +1,22 @@
+{
+ "pin": "edb8fb56",
+ "pomiar": "runs/R-RUSTPORT-P5-8-CITYPANEL-K01A-Q1/r3-logi/pomiar-r2.json",
+ "pinUnits": 377,
+ "k01Units": 139,
+ "k01Loc": 1360,
+ "domUnits": 10,
+ "domLoc": 77,
+ "selectedUnits": 82,
+ "selectedLoc": 622,
+ "deferredUnits": 57,
+ "deferredLoc": 738,
+ "deferredByClass": {
+  "T": 29,
+  "DOM": 10,
+  "R": 12,
+  "F": 6
+ },
+ "missingInPin": [
+  "<HEADER>"
+ ]
+}

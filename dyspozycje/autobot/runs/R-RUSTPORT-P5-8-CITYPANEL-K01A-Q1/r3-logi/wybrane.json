@@ -1,0 +1,576 @@
+[
+ {
+  "name": "PodzialHandluSplit",
+  "a": 285,
+  "b": 291,
+  "loc": 7,
+  "kind": "interface"
+ },
+ {
+  "name": "PodzialPracySplit",
+  "a": 292,
+  "b": 296,
+  "loc": 5,
+  "kind": "interface"
+ },
+ {
+  "name": "GarrisonUnit",
+  "a": 297,
+  "b": 313,
+  "loc": 17,
+  "kind": "interface"
+ },
+ {
+  "name": "CP_EMOJI_DETECT",
+  "a": 860,
+  "b": 862,
+  "loc": 3,
+  "kind": "const"
+ },
+ {
+  "name": "signed",
+  "a": 871,
+  "b": 871,
+  "loc": 1,
+  "kind": "function"
+ },
+ {
+  "name": "tury",
+  "a": 872,
+  "b": 878,
+  "loc": 7,
+  "kind": "function"
+ },
+ {
+  "name": "formatBuildEtaLabel",
+  "a": 879,
+  "b": 888,
+  "loc": 10,
+  "kind": "function"
+ },
+ {
+  "name": "SCALES",
+  "a": 918,
+  "b": 918,
+  "loc": 1,
+  "kind": "const"
+ },
+ {
+  "name": "scalePx",
+  "a": 919,
+  "b": 921,
+  "loc": 3,
+  "kind": "let"
+ },
+ {
+  "name": "showEraBuildingPreview",
+  "a": 922,
+  "b": 926,
+  "loc": 5,
+  "kind": "let"
+ },
+ {
+  "name": "setShowEraBuildingPreview",
+  "a": 927,
+  "b": 939,
+  "loc": 13,
+  "kind": "function"
+ },
+ {
+  "name": "DEFAULT_PODZIAL_HANDLU",
+  "a": 940,
+  "b": 946,
+  "loc": 7,
+  "kind": "const"
+ },
+ {
+  "name": "DEFAULT_PODZIAL_PRACY",
+  "a": 947,
+  "b": 949,
+  "loc": 3,
+  "kind": "const"
+ },
+ {
+  "name": "HANDEL_ZAMOZNOSC_LABEL",
+  "a": 950,
+  "b": 955,
+  "loc": 6,
+  "kind": "const"
+ },
+ {
+  "name": "HANDEL_KORUPCJA_PCT_PLACEHOLDER",
+  "a": 956,
+  "b": 957,
+  "loc": 2,
+  "kind": "const"
+ },
+ {
+  "name": "HandelChipEstimates",
+  "a": 958,
+  "b": 967,
+  "loc": 10,
+  "kind": "interface"
+ },
+ {
+  "name": "EmpireHudSnap",
+  "a": 1075,
+  "b": 1107,
+  "loc": 33,
+  "kind": "interface"
+ },
+ {
+  "name": "growthBreakdownRow",
+  "a": 1451,
+  "b": 1456,
+  "loc": 6,
+  "kind": "function"
+ },
+ {
+  "name": "fmtDecPl",
+  "a": 1457,
+  "b": 1460,
+  "loc": 4,
+  "kind": "function"
+ },
+ {
+  "name": "pluralTur",
+  "a": 1461,
+  "b": 1469,
+  "loc": 9,
+  "kind": "function"
+ },
+ {
+  "name": "effectiveGrowthPctForUi",
+  "a": 1481,
+  "b": 1485,
+  "loc": 5,
+  "kind": "function"
+ },
+ {
+  "name": "fmtResDelta",
+  "a": 1678,
+  "b": 1684,
+  "loc": 7,
+  "kind": "function"
+ },
+ {
+  "name": "resInteractiveAttrs",
+  "a": 1685,
+  "b": 1693,
+  "loc": 9,
+  "kind": "function"
+ },
+ {
+  "name": "LOAF_SVG",
+  "a": 1694,
+  "b": 1698,
+  "loc": 5,
+  "kind": "const"
+ },
+ {
+  "name": "loafIconHtml",
+  "a": 1699,
+  "b": 1703,
+  "loc": 5,
+  "kind": "function"
+ },
+ {
+  "name": "resGlobalLocal",
+  "a": 1704,
+  "b": 1722,
+  "loc": 19,
+  "kind": "function"
+ },
+ {
+  "name": "resLocalOnly",
+  "a": 1744,
+  "b": 1754,
+  "loc": 11,
+  "kind": "function"
+ },
+ {
+  "name": "STYLE_ID",
+  "a": 1755,
+  "b": 1757,
+  "loc": 3,
+  "kind": "const"
+ },
+ {
+  "name": "CITY_PANEL_ICON_GLYPH_EM",
+  "a": 1758,
+  "b": 1759,
+  "loc": 2,
+  "kind": "const"
+ },
+ {
+  "name": "CITY_PANEL_ICON_RAIL_VERT_EM",
+  "a": 1760,
+  "b": 1761,
+  "loc": 2,
+  "kind": "const"
+ },
+ {
+  "name": "LIST_SCROLL_VISIBLE",
+  "a": 1762,
+  "b": 1763,
+  "loc": 2,
+  "kind": "const"
+ },
+ {
+  "name": "LIST_ROW_HEIGHT_COMPACT",
+  "a": 1764,
+  "b": 1765,
+  "loc": 2,
+  "kind": "const"
+ },
+ {
+  "name": "RECRUIT_QUEUE_VISIBLE",
+  "a": 1766,
+  "b": 1767,
+  "loc": 2,
+  "kind": "const"
+ },
+ {
+  "name": "BUILD_QUEUE_VISIBLE",
+  "a": 1768,
+  "b": 1769,
+  "loc": 2,
+  "kind": "const"
+ },
+ {
+  "name": "QUEUE_ROW_EM",
+  "a": 1770,
+  "b": 1771,
+  "loc": 2,
+  "kind": "const"
+ },
+ {
+  "name": "LIST_SCROLL_VISIBLE_CATALOG",
+  "a": 1772,
+  "b": 1772,
+  "loc": 1,
+  "kind": "const"
+ },
+ {
+  "name": "LIST_ROW_HEIGHT_EM",
+  "a": 1773,
+  "b": 1774,
+  "loc": 2,
+  "kind": "const"
+ },
+ {
+  "name": "CityDrawerTab",
+  "a": 1775,
+  "b": 1776,
+  "loc": 2,
+  "kind": "type"
+ },
+ {
+  "name": "CITY_TABS",
+  "a": 1777,
+  "b": 1783,
+  "loc": 7,
+  "kind": "const"
+ },
+ {
+  "name": "CITY_TAB_BRAND_ICONS",
+  "a": 1784,
+  "b": 1790,
+  "loc": 7,
+  "kind": "const"
+ },
+ {
+  "name": "activeDrawerTab",
+  "a": 1791,
+  "b": 1792,
+  "loc": 2,
+  "kind": "let"
+ },
+ {
+  "name": "cityPanelBrandIcon",
+  "a": 1793,
+  "b": 1799,
+  "loc": 7,
+  "kind": "function"
+ },
+ {
+  "name": "cityPanelChipIcon",
+  "a": 1800,
+  "b": 1803,
+  "loc": 4,
+  "kind": "function"
+ },
+ {
+  "name": "cityPanelChipIconWrap",
+  "a": 1804,
+  "b": 1809,
+  "loc": 6,
+  "kind": "function"
+ },
+ {
+  "name": "CP_INLINE_EMOJI_BRAND",
+  "a": 1810,
+  "b": 1839,
+  "loc": 30,
+  "kind": "const"
+ },
+ {
+  "name": "cpInlineIcons",
+  "a": 1840,
+  "b": 1850,
+  "loc": 11,
+  "kind": "function"
+ },
+ {
+  "name": "statChipBrand",
+  "a": 1856,
+  "b": 1862,
+  "loc": 7,
+  "kind": "function"
+ },
+ {
+  "name": "psiRowLabel",
+  "a": 1879,
+  "b": 1883,
+  "loc": 5,
+  "kind": "function"
+ },
+ {
+  "name": "cityTabIconHtml",
+  "a": 1884,
+  "b": 1888,
+  "loc": 5,
+  "kind": "function"
+ },
+ {
+  "name": "OKOLICA_FOCUS_BRAND",
+  "a": 1889,
+  "b": 1895,
+  "loc": 7,
+  "kind": "const"
+ },
+ {
+  "name": "OKOLICA_FOCUS_SHORT",
+  "a": 1896,
+  "b": 1902,
+  "loc": 7,
+  "kind": "const"
+ },
+ {
+  "name": "BUDOWA_FOCUS_BRAND",
+  "a": 1903,
+  "b": 1911,
+  "loc": 9,
+  "kind": "const"
+ },
+ {
+  "name": "BUDOWA_FOCUS_SHORT",
+  "a": 1912,
+  "b": 1920,
+  "loc": 9,
+  "kind": "const"
+ },
+ {
+  "name": "BUDOWA_FOCUS_TITLE",
+  "a": 1921,
+  "b": 1929,
+  "loc": 9,
+  "kind": "const"
+ },
+ {
+  "name": "okolicaProfileIconHtml",
+  "a": 1930,
+  "b": 1933,
+  "loc": 4,
+  "kind": "function"
+ },
+ {
+  "name": "PH",
+  "a": 3015,
+  "b": 3033,
+  "loc": 19,
+  "kind": "function"
+ },
+ {
+  "name": "szPktDisplay",
+  "a": 3034,
+  "b": 3038,
+  "loc": 5,
+  "kind": "function"
+ },
+ {
+  "name": "isMapResourceLabel",
+  "a": 3760,
+  "b": 3774,
+  "loc": 15,
+  "kind": "function"
+ },
+ {
+  "name": "resourceBrandKey",
+  "a": 3775,
+  "b": 3787,
+  "loc": 13,
+  "kind": "function"
+ },
+ {
+  "name": "resourceBrandIconHtml",
+  "a": 3788,
+  "b": 3803,
+  "loc": 16,
+  "kind": "function"
+ },
+ {
+  "name": "resourceIcon",
+  "a": 3804,
+  "b": 3807,
+  "loc": 4,
+  "kind": "function"
+ },
+ {
+  "name": "statChip",
+  "a": 4222,
+  "b": 4229,
+  "loc": 8,
+  "kind": "function"
+ },
+ {
+  "name": "pctSubheadHtml",
+  "a": 4230,
+  "b": 4233,
+  "loc": 4,
+  "kind": "function"
+ },
+ {
+  "name": "TabIndicatorChip",
+  "a": 4234,
+  "b": 4235,
+  "loc": 2,
+  "kind": "type"
+ },
+ {
+  "name": "shortIndLabel",
+  "a": 4352,
+  "b": 4356,
+  "loc": 5,
+  "kind": "function"
+ },
+ {
+  "name": "BreakdownLine",
+  "a": 4376,
+  "b": 4377,
+  "loc": 2,
+  "kind": "type"
+ },
+ {
+  "name": "CS_RES_STRIP_ORDER",
+  "a": 6155,
+  "b": 6160,
+  "loc": 6,
+  "kind": "const"
+ },
+ {
+  "name": "CS_RES_STRIP_CORE",
+  "a": 6161,
+  "b": 6163,
+  "loc": 3,
+  "kind": "const"
+ },
+ {
+  "name": "CS_RES_STRIP_ICON_PX",
+  "a": 6164,
+  "b": 6172,
+  "loc": 9,
+  "kind": "const"
+ },
+ {
+  "name": "yieldBrandIconHtml",
+  "a": 6471,
+  "b": 6477,
+  "loc": 7,
+  "kind": "function"
+ },
+ {
+  "name": "BUILDING_UPKEEP_ZERO_LABEL",
+  "a": 6635,
+  "b": 6636,
+  "loc": 2,
+  "kind": "const"
+ },
+ {
+  "name": "formatConverterAmount",
+  "a": 6776,
+  "b": 6788,
+  "loc": 13,
+  "kind": "function"
+ },
+ {
+  "name": "BuildingReqChipKind",
+  "a": 6812,
+  "b": 6813,
+  "loc": 2,
+  "kind": "type"
+ },
+ {
+  "name": "BuildingReqChip",
+  "a": 6814,
+  "b": 6820,
+  "loc": 7,
+  "kind": "interface"
+ },
+ {
+  "name": "buildingReqChipSpan",
+  "a": 6965,
+  "b": 6969,
+  "loc": 5,
+  "kind": "function"
+ },
+ {
+  "name": "buildingRequirementChipsHtml",
+  "a": 6970,
+  "b": 6973,
+  "loc": 4,
+  "kind": "function"
+ },
+ {
+  "name": "BUILDING_REQ_SECTION_LABELS",
+  "a": 6974,
+  "b": 6979,
+  "loc": 6,
+  "kind": "const"
+ },
+ {
+  "name": "EPOCH_LABEL",
+  "a": 7136,
+  "b": 7137,
+  "loc": 2,
+  "kind": "const"
+ },
+ {
+  "name": "epochLabelNum",
+  "a": 7138,
+  "b": 7142,
+  "loc": 5,
+  "kind": "function"
+ },
+ {
+  "name": "isEmptyDataVal",
+  "a": 7143,
+  "b": 7153,
+  "loc": 11,
+  "kind": "function"
+ },
+ {
+  "name": "isDevOnlyPlayerText",
+  "a": 7154,
+  "b": 7191,
+  "loc": 38,
+  "kind": "function"
+ },
+ {
+  "name": "stripInlineDevAnnotations",
+  "a": 7192,
+  "b": 7229,
+  "loc": 38,
+  "kind": "function"
+ }
+]

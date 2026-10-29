@@ -1,16 +1,31 @@
 /**
- * K01A (P5-8, R-RUSTPORT-P5-8-CITYPANEL-K01A-Q1): jednostki kawalka K01 (Fundament) pinu
- * gra/src/ui/cityPanel.ts (edb8fb56) BEZ odwolan do DOM i BEZ importow logiki gry.
+ * K01A (P5-8, R-RUSTPORT-P5-8-CITYPANEL-K01A-Q1, runda 3): 82 jednostki kawalka K01 (Fundament) pinu
+ * gra/src/ui/cityPanel.ts (edb8fb56) BEZ odwolan do DOM i BEZ importow wartosci logiki gry.
  * Kopia 1:1 linii pinu (numer linii w komentarzu przy kazdej jednostce); dodano wylacznie `export`
  * na deklaracjach najwyzszego poziomu. Importy: tylko ui/ (formatery, ikony, parametry UI).
- * Jednostki z importami logiki (game/data/map/render) oraz odwolaniami do nich -> ODROCZONE (K01A r1,
- * lista w dyspozycje/autobot/runs/R-RUSTPORT-P5-8-CITYPANEL-K01A-Q1/01-operator-r1.md).
+ * Wybor jednostek: deterministyczny skrypt `tools/dom-harness/k01a-select-lib.mjs` (gate S w run-k01a.mjs).
+ * Jednostki z blokadami (R: import wartosci logiki; T: typ obiektowy z logiki; F: zaleznosc od odroczonej;
+ * DOM) -> ODROCZONE, lista z powodami w dyspozycje/autobot/runs/R-RUSTPORT-P5-8-CITYPANEL-K01A-Q1/r3-logi/.
+ * ZAŁOŻENIE K01A-Z5: lokalne kopie dwoch aliasow unii literalow (OkolicaFocus, BudowaFocus) z
+ * gra/src/game/cities.ts; gate T porownuje je bajtowo z pinem. Typy obiektowe NIE sa kopiowane.
  */
 import { signedPl } from '../formatPl';
 import { brandIconSvg, mapResourceIconSvg } from '../icons/brandAssets';
 import type { BrandIconSize } from '../icons/brandAssets';
 import { scienceOwlIconHtml } from '../icons/scienceOwlIcon';
 import { UI_PARAMS } from '../uiParams';
+
+// kopia typu (ZAŁOŻENIE K01A-Z5) pin edb8fb56 gra/src/game/cities.ts:45-45
+export type OkolicaFocus = 'zrownowazone' | 'zywnosc' | 'produkcja' | 'podatki';
+
+// kopia typu (ZAŁOŻENIE K01A-Z5) pin edb8fb56 gra/src/game/cities.ts:60-66
+export type BudowaFocus =
+  | 'zrownowazone'
+  | 'wzrost'
+  | 'wojsko'
+  | 'kultura'
+  | 'prawo'
+  | 'produkcja';
 
 // pin edb8fb56 gra/src/ui/cityPanel.ts:285-291
 export interface PodzialHandluSplit {
@@ -368,6 +383,51 @@ export function cityPanelChipIconWrap(id: string, size: BrandIconSize = 18): str
 
 /** Emoji → brand SVG wraps in detail cards, notes, formulas (C1b). */
 
+// pin edb8fb56 gra/src/ui/cityPanel.ts:1810-1839
+export const CP_INLINE_EMOJI_BRAND: Record<string, string> = {
+  '🔨': 'res-work',
+  '💰': 'res-treasury',
+  '🎭': 'res-culture',
+  '🛕': 'res-religion',
+  '👥': 'res-population',
+  '👤': 'chip-manpower',
+  '⚔': 'tb-army',
+  '🏛': 'cp-buildings',
+  // P-PRACA-PANEL-EMOJI-ZAMIAST-IKON-Q1: skrzynka „Ulepszenia" — TA SAMA ikona `chip-crate`,
+  // która została zatwierdzona dla tego pojęcia w P-PRACA-PANEL-IKONY-NIESPOJNE-Q1 (żadnego
+  // nowego assetu). Bez tego wpisu `cpInlineIcons()` przepuszczało 📦 nietknięte przez CAŁĄ
+  // ścieżkę helperów (`gridDetailRow`, `appendDetailAlgo`, `el()`), więc „ściąga" panelu
+  // Pracy i karta paska górnego pokazywały goły glif mimo poprawnie działającego reskinu.
+  '📦': 'chip-crate',
+  '🛠': 'tb-build',
+  '📈': 'cp-trade',
+  '😊': 'chip-happiness',
+  '⏱': 'chip-map',
+  '🌾': 'chip-grain',
+  '✓': 'chip-star',
+  '⚠': 'chip-warning',
+  '🔥': 'chip-rebellion',
+  '💀': 'chip-death',
+  '⚖': 'cp-order',
+  '★': 'chip-star',
+  '🔒': 'ui-lock',
+  '🛡': 'chip-garrison',
+};
+
+
+// pin edb8fb56 gra/src/ui/cityPanel.ts:1840-1850
+export function cpInlineIcons(text: string): string {
+  if (!text || (!CP_EMOJI_DETECT.test(text) && !text.includes('🍞'))) return text;
+  let out = text;
+  out = out.replace(/🍞/g, `<span class="civ-cs-inline-loaf">${loafIconHtml('civ-v-loaf-chip')}</span>`);
+  for (const [emoji, brandId] of Object.entries(CP_INLINE_EMOJI_BRAND)) {
+    const wrap = cityPanelChipIconWrap(brandId, 14);
+    if (wrap) out = out.split(emoji).join(wrap);
+  }
+  return out;
+}
+
+
 // pin edb8fb56 gra/src/ui/cityPanel.ts:1856-1862
 export function statChipBrand(iconId: string, label: string, value: string, cls: string): string {
   const ic = cityPanelChipIconWrap(iconId);
@@ -391,11 +451,83 @@ export function cityTabIconHtml(tab: CityDrawerTab): string {
 }
 
 
+// pin edb8fb56 gra/src/ui/cityPanel.ts:1889-1895
+export const OKOLICA_FOCUS_BRAND: Record<OkolicaFocus, string> = {
+  zywnosc: 'field-food',
+  produkcja: 'field-production',
+  podatki: 'field-tax',
+  zrownowazone: 'field-balanced',
+};
+
+
+// pin edb8fb56 gra/src/ui/cityPanel.ts:1896-1902
+export const OKOLICA_FOCUS_SHORT: Record<OkolicaFocus, string> = {
+  zywnosc: 'Żyw.',
+  produkcja: 'Prod.',
+  podatki: 'Podat.',
+  zrownowazone: 'Zrówn.',
+};
+
+
+// pin edb8fb56 gra/src/ui/cityPanel.ts:1903-1911
+export const BUDOWA_FOCUS_BRAND: Record<BudowaFocus, string> = {
+  wzrost: 'field-food',
+  wojsko: 'tb-army',
+  kultura: 'res-culture',
+  prawo: 'cp-order',
+  produkcja: 'res-work',
+  zrownowazone: 'field-balanced',
+};
+
+
+// pin edb8fb56 gra/src/ui/cityPanel.ts:1912-1920
+export const BUDOWA_FOCUS_SHORT: Record<BudowaFocus, string> = {
+  wzrost: 'Wzrost',
+  wojsko: 'Wojsko',
+  kultura: 'Kultura',
+  prawo: 'Prawo',
+  produkcja: 'Prod.',
+  zrownowazone: 'Zrówn.',
+};
+
+
+// pin edb8fb56 gra/src/ui/cityPanel.ts:1921-1929
+export const BUDOWA_FOCUS_TITLE: Record<BudowaFocus, string> = {
+  wzrost: 'Wzrost — żywność i zdrowie',
+  wojsko: 'Wojsko — koszary, obrona',
+  kultura: 'Kultura — pomniki i kultura',
+  prawo: 'Prawo — administracja i porządek',
+  produkcja: 'Produkcja — Praca i warsztaty',
+  zrownowazone: 'Zrównoważony rozwój',
+};
+
+
 // pin edb8fb56 gra/src/ui/cityPanel.ts:1930-1933
 export function okolicaProfileIconHtml(iconId: string, size: BrandIconSize = 24): string {
   return cityPanelBrandIcon(iconId, size, 'okolica-profile-ic');
 }
 
+
+// pin edb8fb56 gra/src/ui/cityPanel.ts:3015-3033
+export function PH(): string {
+  return '<span class="muted" style="font-size:0.66em;border:1px solid var(--border);border-radius:3px;padding:0 0.3em;">podgląd</span>';
+}
+
+// ---------------------------------------------------------------------------
+// Lewa kolumna — społeczeństwo (B2: Mieszkańcy, Porządek, Zdrowie)
+// ---------------------------------------------------------------------------
+
+/**
+ * G15 (Evaluator runda 1, zarzut 6) — JEDNO zaokrąglenie PREZENTACYJNE punktów Szczęścia.
+ *
+ * `proporcjonalneSzczescie` celowo NIE zaokrągla (zaokrąglenie w modelu byłoby strojeniem
+ * liczby właściciela — `society-breakdown.ts:487`), więc przy nieparzystym `x` linia
+ * Kultury/Religii niesie ułamek (x=23, udział 1/3 → −7,666666666666666). Karta Religii
+ * pokazywała ten sam wkład zaokrąglony do −7,7, a wiersz rozpiski surowy — dwie różne
+ * liczby dla tej samej rzeczy w JEDNYM panelu. Od teraz obie strony przechodzą przez tę
+ * funkcję. Wartość w modelu (`netto`, `szPct`) zostaje dokładna — zaokrąglamy wyłącznie
+ * to, co widzi gracz.
+ */
 
 // pin edb8fb56 gra/src/ui/cityPanel.ts:3034-3038
 export function szPktDisplay(v: number): number {
