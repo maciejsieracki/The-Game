@@ -1,0 +1,36 @@
+OK   pin.anchor.1 [cityPanel.ts:11513 ".closest('.civ-ux-left')"] got=true want=true
+OK   pin.anchor.2 [cityPanel.ts:11514 ".closest('.civ-ux-right')"] got=true want=true
+OK   pin.anchor.3 [cityPanel.ts:11523 "el('div', 'ptitle')"] got=true want=true
+OK   pin.anchor.4 [cityPanel.ts:11524 "el('span', '')"] got=true want=true
+OK   pin.anchor.5 [cityPanel.ts:11527 "'okolica-info-link civ-w4-panel-detail gold'"] got=true want=true
+OK   pin.anchor.6 [cityPanel.ts:11528 "infoLink.type = 'button'"] got=true want=true
+OK   pin.anchor.7 [cityPanel.ts:11529 "'i szczegóły'"] got=true want=true
+OK   pin.anchor.8 [cityPanel.ts:11530 "'Pokaż szczegóły sekcji'"] got=true want=true
+OK   pin.anchor.9 [cityPanel.ts:11531 "head.appendChild(infoLink)"] got=true want=true
+OK   pin.anchor.10 [cityPanel.ts:11532 "mount.appendChild(head)"] got=true want=true
+OK   pin.anchor.11 [cityPanel.ts:11534 "delayMs: 220"] got=true want=true
+OK   pin.anchor.12 [cityPanel.ts:11535 "sideHint: resolveDetailSideHint(mount)"] got=true want=true
+OK   side.left [cityPanel.ts:11513 .civ-ux-left -> left] got="left" want="left"
+OK   side.right [cityPanel.ts:11514 .civ-ux-right -> right] got="right" want="right"
+OK   side.auto [cityPanel.ts:11515 brak klasy -> auto] got="auto" want="auto"
+OK   dom.head.count [cityPanel.ts:11532 mount.appendChild(head) (1 dziecko)] got=1 want=1
+OK   dom.head.tag [cityPanel.ts:11523 el("div","ptitle")] got="DIV" want="DIV"
+OK   dom.head.class [cityPanel.ts:11523 klasa "ptitle"] got="ptitle" want="ptitle"
+OK   dom.title.html [cityPanel.ts:11525 left.innerHTML = titleHtml] got="<b>Tytuł</b> <i>x</i>" want="<b>Tytuł</b> <i>x</i>"
+OK   dom.title.tag [cityPanel.ts:11524 el("span","")] got="SPAN" want="SPAN"
+OK   dom.head.children [cityPanel.ts:11531 head: span, button] got=2 want=2
+OK   dom.btn.tag [cityPanel.ts:11527 el("button", ...)] got="BUTTON" want="BUTTON"
+OK   dom.btn.class [cityPanel.ts:11527 klasy okolica-info-link civ-w4-panel-detail gold] got="okolica-info-link civ-w4-panel-detail gold" want="okolica-info-link civ-w4-panel-detail gold"
+OK   dom.btn.type [cityPanel.ts:11528 infoLink.type = "button"] got="button" want="button"
+OK   dom.btn.text [cityPanel.ts:11529 textContent "i szczegóły"] got="i szczegóły" want="i szczegóły"
+OK   dom.btn.aria [cityPanel.ts:11530 aria-label] got="Pokaż szczegóły sekcji" want="Pokaż szczegóły sekcji"
+OK   attach.calls [cityPanel.ts:11533 jedno wywołanie attachInteractiveDetail] got=1 want=1
+OK   attach.target [cityPanel.ts:11533 pierwszy argument = infoLink] got=true want=true
+OK   attach.build [cityPanel.ts:11533 drugi argument = buildDetail] got=true want=true
+OK   attach.delay [cityPanel.ts:11534 delayMs 220] got=220 want=220
+OK   attach.side.right [cityPanel.ts:11535 sideHint z mount (.civ-ux-right) = right] got="right" want="right"
+OK   attach.side.left [cityPanel.ts:11535 sideHint = left] got="left" want="left"
+OK   attach.side.auto [cityPanel.ts:11535 sideHint = auto] got="auto" want="auto"
+OK   dom.append.order [cityPanel.ts:11532 appendChild na końcu] got=["P","ptitle"] want=["P","ptitle"]
+run-k08b-title: 34/34 porównań zgodnych
+EXIT=0

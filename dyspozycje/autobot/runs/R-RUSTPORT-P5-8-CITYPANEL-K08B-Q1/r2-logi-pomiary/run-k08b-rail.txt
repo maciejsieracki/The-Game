@@ -1,0 +1,2 @@
+run-k08b-rail: 87 porównań, 0 różnic
+EXIT=0
