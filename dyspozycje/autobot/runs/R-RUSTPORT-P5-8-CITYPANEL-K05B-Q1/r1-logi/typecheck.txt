@@ -1,0 +1,1 @@
+tsc --noEmit: bez komunikatów, EXIT 0

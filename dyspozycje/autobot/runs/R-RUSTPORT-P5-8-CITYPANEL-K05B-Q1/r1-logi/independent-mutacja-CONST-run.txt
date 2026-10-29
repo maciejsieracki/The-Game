@@ -1,0 +1,75 @@
+ROZNICA renderEkonomiaStrip v=0
+     pin={"html":"<div class=\"ptitle\"><span>Plony i podatek</span></div><div class=\"chip-row\"><span class=\"chip\"><span class=\"cl\"><span class=\"civ-cs-chip-ic-wrap\"><svg class=\"civ-cs-chip-ic\" xmlns=\"http://www.w3.org/2000/svg\" width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" strok
+     v2 ={"html":"<div class=\"ptitle\"><span>Plony i podatek</span></div><div class=\"chip-row\"><span class=\"chip\"><span class=\"cl\"><span class=\"civ-cs-chip-ic-wrap\"><svg class=\"civ-cs-chip-ic\" xmlns=\"http://www.w3.org/2000/svg\" width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" strok
+ROZNICA appendPodzialHandlu v=0
+     pin={"html":"<div class=\"subhd\">Podział podatku</div><div class=\"handel-chip-grid\"><span class=\"chip handel-card-skarb\"><span class=\"cl\"><span class=\"civ-cs-chip-ic-wrap\"><svg class=\"civ-cs-chip-ic\" xmlns=\"http://www.w3.org/2000/svg\" width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"
+     v2 ={"html":"<div class=\"subhd\">Podział podatku</div><div class=\"handel-chip-grid\"><span class=\"chip handel-card-skarb\"><span class=\"cl\"><span class=\"civ-cs-chip-ic-wrap\"><svg class=\"civ-cs-chip-ic\" xmlns=\"http://www.w3.org/2000/svg\" width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"
+OK  appendCitySkarbiecBalance v=0
+ROZNICA renderPodzialHandlu v=0
+     pin={"html":"<div class=\"ptitle\"><span>Podział Handlu</span></div><div class=\"subhd\">Podział podatku</div><div class=\"handel-chip-grid\"><span class=\"chip handel-card-skarb\"><span class=\"cl\"><span class=\"civ-cs-chip-ic-wrap\"><svg class=\"civ-cs-chip-ic\" xmlns=\"http://www.w3.org/2000/svg\" w
+     v2 ={"html":"<div class=\"ptitle\"><span>Podział Handlu</span></div><div class=\"subhd\">Podział podatku</div><div class=\"handel-chip-grid\"><span class=\"chip handel-card-skarb\"><span class=\"cl\"><span class=\"civ-cs-chip-ic-wrap\"><svg class=\"civ-cs-chip-ic\" xmlns=\"http://www.w3.org/2000/svg\" w
+OK  buildTopBarZlotoDetailCard v=0
+OK  renderSplitPane v=0
+OK  appendGarrisonUnitChip:u1 v=0
+OK  appendGarrisonUnitChip:u2 v=0
+OK  appendGarrisonUnitChip:u3 v=0
+OK  improvementRangeRow v=0
+ROZNICA renderEkonomiaStrip v=1
+     pin={"html":"<div class=\"ptitle\"><span>Plony i podatek</span></div><div class=\"chip-row\"><span class=\"chip\"><span class=\"cl\"><span class=\"civ-cs-chip-ic-wrap\"><svg class=\"civ-cs-chip-ic\" xmlns=\"http://www.w3.org/2000/svg\" width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" strok
+     v2 ={"html":"<div class=\"ptitle\"><span>Plony i podatek</span></div><div class=\"chip-row\"><span class=\"chip\"><span class=\"cl\"><span class=\"civ-cs-chip-ic-wrap\"><svg class=\"civ-cs-chip-ic\" xmlns=\"http://www.w3.org/2000/svg\" width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" strok
+ROZNICA appendPodzialHandlu v=1
+     pin={"html":"<div class=\"subhd\">Podział podatku</div><div class=\"handel-chip-grid\"><span class=\"chip handel-card-skarb\"><span class=\"cl\"><span class=\"civ-cs-chip-ic-wrap\"><svg class=\"civ-cs-chip-ic\" xmlns=\"http://www.w3.org/2000/svg\" width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"
+     v2 ={"html":"<div class=\"subhd\">Podział podatku</div><div class=\"handel-chip-grid\"><span class=\"chip handel-card-skarb\"><span class=\"cl\"><span class=\"civ-cs-chip-ic-wrap\"><svg class=\"civ-cs-chip-ic\" xmlns=\"http://www.w3.org/2000/svg\" width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"
+OK  appendCitySkarbiecBalance v=1
+ROZNICA renderPodzialHandlu v=1
+     pin={"html":"<div class=\"ptitle\"><span>Podział Handlu</span></div><div class=\"subhd\">Podział podatku</div><div class=\"handel-chip-grid\"><span class=\"chip handel-card-skarb\"><span class=\"cl\"><span class=\"civ-cs-chip-ic-wrap\"><svg class=\"civ-cs-chip-ic\" xmlns=\"http://www.w3.org/2000/svg\" w
+     v2 ={"html":"<div class=\"ptitle\"><span>Podział Handlu</span></div><div class=\"subhd\">Podział podatku</div><div class=\"handel-chip-grid\"><span class=\"chip handel-card-skarb\"><span class=\"cl\"><span class=\"civ-cs-chip-ic-wrap\"><svg class=\"civ-cs-chip-ic\" xmlns=\"http://www.w3.org/2000/svg\" w
+OK  buildTopBarZlotoDetailCard v=1
+OK  renderSplitPane v=1
+OK  appendGarrisonUnitChip:u1 v=1
+OK  appendGarrisonUnitChip:u2 v=1
+OK  appendGarrisonUnitChip:u3 v=1
+OK  improvementRangeRow v=1
+OK  renderEkonomiaStrip v=2
+ROZNICA appendPodzialHandlu v=2
+     pin={"html":"<div class=\"handel-chip-grid\"><span class=\"chip handel-card-skarb\"><span class=\"cl\"><span class=\"civ-cs-chip-ic-wrap\"><svg class=\"civ-cs-chip-ic\" xmlns=\"http://www.w3.org/2000/svg\" width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-widt
+     v2 ={"html":"<div class=\"handel-chip-grid\"><span class=\"chip handel-card-skarb\"><span class=\"cl\"><span class=\"civ-cs-chip-ic-wrap\"><svg class=\"civ-cs-chip-ic\" xmlns=\"http://www.w3.org/2000/svg\" width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-widt
+OK  appendCitySkarbiecBalance v=2
+ROZNICA renderPodzialHandlu v=2
+     pin={"html":"<div class=\"ptitle\"><span>Podział Handlu</span></div><div class=\"subhd\">Podział podatku</div><div class=\"handel-chip-grid\"><span class=\"chip handel-card-skarb\"><span class=\"cl\"><span class=\"civ-cs-chip-ic-wrap\"><svg class=\"civ-cs-chip-ic\" xmlns=\"http://www.w3.org/2000/svg\" w
+     v2 ={"html":"<div class=\"ptitle\"><span>Podział Handlu</span></div><div class=\"subhd\">Podział podatku</div><div class=\"handel-chip-grid\"><span class=\"chip handel-card-skarb\"><span class=\"cl\"><span class=\"civ-cs-chip-ic-wrap\"><svg class=\"civ-cs-chip-ic\" xmlns=\"http://www.w3.org/2000/svg\" w
+OK  buildTopBarZlotoDetailCard v=2
+OK  renderSplitPane v=2
+OK  appendGarrisonUnitChip:u1 v=2
+OK  appendGarrisonUnitChip:u2 v=2
+OK  appendGarrisonUnitChip:u3 v=2
+OK  improvementRangeRow v=2
+ROZNICA renderEkonomiaStrip v=3
+     pin={"html":"<div class=\"ptitle\"><span>Plony i podatek</span></div><div class=\"chip-row\"><span class=\"chip\"><span class=\"cl\"><span class=\"civ-cs-chip-ic-wrap\"><svg class=\"civ-cs-chip-ic\" xmlns=\"http://www.w3.org/2000/svg\" width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" strok
+     v2 ={"html":"<div class=\"ptitle\"><span>Plony i podatek</span></div><div class=\"chip-row\"><span class=\"chip\"><span class=\"cl\"><span class=\"civ-cs-chip-ic-wrap\"><svg class=\"civ-cs-chip-ic\" xmlns=\"http://www.w3.org/2000/svg\" width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" strok
+ROZNICA appendPodzialHandlu v=3
+     pin={"html":"<div class=\"subhd\">Podział podatku</div><div class=\"handel-chip-grid\"><span class=\"chip handel-card-skarb\"><span class=\"cl\"><span class=\"civ-cs-chip-ic-wrap\"><svg class=\"civ-cs-chip-ic\" xmlns=\"http://www.w3.org/2000/svg\" width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"
+     v2 ={"html":"<div class=\"subhd\">Podział podatku</div><div class=\"handel-chip-grid\"><span class=\"chip handel-card-skarb\"><span class=\"cl\"><span class=\"civ-cs-chip-ic-wrap\"><svg class=\"civ-cs-chip-ic\" xmlns=\"http://www.w3.org/2000/svg\" width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"
+OK  appendCitySkarbiecBalance v=3
+ROZNICA renderPodzialHandlu v=3
+     pin={"html":"<div class=\"ptitle\"><span>Podział Handlu</span></div><div class=\"subhd\">Podział podatku</div><div class=\"handel-chip-grid\"><span class=\"chip handel-card-skarb\"><span class=\"cl\"><span class=\"civ-cs-chip-ic-wrap\"><svg class=\"civ-cs-chip-ic\" xmlns=\"http://www.w3.org/2000/svg\" w
+     v2 ={"html":"<div class=\"ptitle\"><span>Podział Handlu</span></div><div class=\"subhd\">Podział podatku</div><div class=\"handel-chip-grid\"><span class=\"chip handel-card-skarb\"><span class=\"cl\"><span class=\"civ-cs-chip-ic-wrap\"><svg class=\"civ-cs-chip-ic\" xmlns=\"http://www.w3.org/2000/svg\" w
+OK  buildTopBarZlotoDetailCard v=3
+OK  renderSplitPane v=3
+OK  appendGarrisonUnitChip:u1 v=3
+OK  appendGarrisonUnitChip:u2 v=3
+OK  appendGarrisonUnitChip:u3 v=3
+OK  improvementRangeRow v=3
+OK  adapter:formatResourceUpkeepSummary v=0
+OK  adapter:daninaLabelForCity v=0
+OK  adapter:appendIndywidualneToggle v=0
+OK  adapter:formatResourceUpkeepSummary v=1
+OK  adapter:daninaLabelForCity v=1
+OK  adapter:appendIndywidualneToggle v=1
+OK  adapter:formatResourceUpkeepSummary v=2
+OK  adapter:daninaLabelForCity v=2
+OK  adapter:appendIndywidualneToggle v=2
+OK  adapter:formatResourceUpkeepSummary v=3
+OK  adapter:daninaLabelForCity v=3
+OK  adapter:appendIndywidualneToggle v=3
+porównań 52, różnic 11, bez treści (trywialnych) 0

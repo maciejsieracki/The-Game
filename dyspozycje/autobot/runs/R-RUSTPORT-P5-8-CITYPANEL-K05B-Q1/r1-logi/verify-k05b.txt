@@ -1,0 +1,14 @@
+OK   TEXT partia 1 renderEkonomiaStrip 4638-4653 (k05b-podzial.ts): bajtowo = pin
+OK   TEXT partia 1 appendPodzialHandlu 4654-4734 (k05b-podzial.ts): bajtowo = pin
+OK   TEXT partia 1 appendCitySkarbiecBalance 4735-4768 (k05b-podzial.ts): bajtowo = pin
+OK   TEXT partia 1 renderPodzialHandlu 4769-4774 (k05b-podzial.ts): bajtowo = pin
+OK   TEXT partia 1 buildTopBarZlotoDetailCard 5824-5903 (k05b-podzial.ts): bajtowo = pin
+OK   TEXT partia 1 renderSplitPane 9257-9272 (k05b-widgety.ts): bajtowo = pin
+OK   TEXT partia 1 appendGarrisonUnitChip 9359-9391 (k05b-widgety.ts): bajtowo = pin
+OK   TEXT partia 1 improvementRangeRow 9604-9616 (k05b-widgety.ts): bajtowo = pin
+OK   CONST HANDEL_PCT_STEP: pin game/cities.ts:578=10 port=10
+OK   CONST MAX_PROCENT_NAUKA: pin game/cities.ts:581=60 port=60
+OK   NEG zmiana znaku w treści -> FAIL
+OK   NEG usunięty komentarz -> FAIL
+OK   NEG podwójny `export` na deklaracji -> FAIL, pojedynczy -> OK
+VERIFY K05B: OK
