@@ -1,0 +1,66 @@
+STATE vars: ['activeCity', 'activeCityPanelTab', 'activeDrawerTab', 'activeMap', 'activeOnClose', 'cachedData', 'cfg', 'pinnedGarrisonCityId', 'rootEl', 'scalePx', 'showEraBuildingPreview', 'techHintLinkDelegationBound', 'uxSectionRefresh']
+K0-CSS                       LOC=1067
+K1-Fundament                 LOC=1276
+K2-Model-DTO-adapter         LOC=1252
+K3-Zdrowie-kultura-wspolne   LOC=1367
+K4-Ekonomia-topbar           LOC=1175
+K5-Budynki-karty             LOC=1243
+K6-Kolejki-rekrutacja        LOC=764
+K7-Lista-produkcji           LOC=1485
+K8-Okolica                   LOC=663
+K9-Pasek-W3-handel           LOC=737
+K10-Stan-nawigacja-API       LOC=673
+K-NIE-PORTOWANE-importy      LOC=284
+total 11986
+chunk cycles: [['K7-Lista-produkcji', 'K5-Budynki-karty', 'K6-Kolejki-rekrutacja', 'K7-Lista-produkcji'], ['K2-Model-DTO-adapter', 'K9-Pasek-W3-handel', 'K2-Model-DTO-adapter'], ['K5-Budynki-karty', 'K6-Kolejki-rekrutacja', 'K2-Model-DTO-adapter', 'K9-Pasek-W3-handel', 'K4-Ekonomia-topbar', 'K5-Budynki-karty'], ['K2-Model-DTO-adapter', 'K9-Pasek-W3-handel', 'K4-Ekonomia-topbar', 'K2-Model-DTO-adapter'], ['K9-Pasek-W3-handel', 'K4-Ekonomia-topbar', 'K9-Pasek-W3-handel']]
+chunk edges:
+  K0-CSS -> K1-Fundament e.g. ('ensureStyles', 'el')
+  K1-Fundament -> K2-Model-DTO-adapter e.g. ('cpInlineIcons', 'loafIconHtml')
+  K1-Fundament -> K8-Okolica e.g. ('appendTechDetailBlock', 'improvementRangeRow')
+  K2-Model-DTO-adapter -> K1-Fundament e.g. ('computeView', 'readOwnerDefaultPodzialHandlu')
+  K2-Model-DTO-adapter -> K3-Zdrowie-kultura-wspolne e.g. ('renderSpoleczenstwo', 'pctSubheadHtml')
+  K2-Model-DTO-adapter -> K9-Pasek-W3-handel e.g. ('computeView', 'buildHandelDetailCard')
+  K3-Zdrowie-kultura-wspolne -> K1-Fundament e.g. ('renderZdrowie', 'signed')
+  K3-Zdrowie-kultura-wspolne -> K2-Model-DTO-adapter e.g. ('renderZdrowie', 'PH')
+  K3-Zdrowie-kultura-wspolne -> K4-Ekonomia-topbar e.g. ('renderKultura', 'buildTopBarKulturaDetailCard')
+  K3-Zdrowie-kultura-wspolne -> K9-Pasek-W3-handel e.g. ('renderZdrowie', 'appendSectionTitleWithDetails')
+  K4-Ekonomia-topbar -> K1-Fundament e.g. ('renderEkonomiaStrip', 'el')
+  K4-Ekonomia-topbar -> K2-Model-DTO-adapter e.g. ('renderEkonomiaStrip', 'daninaLabelForCity')
+  K4-Ekonomia-topbar -> K3-Zdrowie-kultura-wspolne e.g. ('appendPodzialHandlu', 'appendIndywidualneToggle')
+  K4-Ekonomia-topbar -> K5-Budynki-karty e.g. ('appendCitySkarbiecBalance', 'formatResourceUpkeepSummary')
+  K4-Ekonomia-topbar -> K9-Pasek-W3-handel e.g. ('renderWealth', 'appendSectionTitleWithDetails')
+  K5-Budynki-karty -> K0-CSS e.g. ('ENTITY_CARD_BUILDING_STYLE_ID', 'ensureStyles')
+  K5-Budynki-karty -> K1-Fundament e.g. ('formatBuildingUpkeepGridValue', 'cityPanelChipIconWrap')
+  K5-Budynki-karty -> K2-Model-DTO-adapter e.g. ('formatConverterAmount', 'fmtDecPl')
+  K5-Budynki-karty -> K6-Kolejki-rekrutacja e.g. ('buildingBonusChipsHtml', 'yieldBrandIconHtml')
+  K5-Budynki-karty -> K7-Lista-produkcji e.g. ('buildingRequirementChips', 'missingTechSteps')
+  K6-Kolejki-rekrutacja -> K1-Fundament e.g. ('buildingStockCostForItem', 'gameData')
+  K6-Kolejki-rekrutacja -> K2-Model-DTO-adapter e.g. ('yieldBrandIconHtml', 'loafIconHtml')
+  K6-Kolejki-rekrutacja -> K5-Budynki-karty e.g. ('maxAffordableRecruitQuantity', 'buildingStockCostChipsHtml')
+  K6-Kolejki-rekrutacja -> K7-Lista-produkcji e.g. ('appendBuildQueueSection', 'productionCtxForCity')
+  K7-Lista-produkcji -> K1-Fundament e.g. ('renderProd', 'el')
+  K7-Lista-produkcji -> K10-Stan-nawigacja-API e.g. ('renderBuildingsOwned', 'withW4TabCard')
+  K7-Lista-produkcji -> K2-Model-DTO-adapter e.g. ('renderProd', 'cityPracaSplit')
+  K7-Lista-produkcji -> K3-Zdrowie-kultura-wspolne e.g. ('renderPurchasableUnits', 'appendTabIndicators')
+  K7-Lista-produkcji -> K5-Budynki-karty e.g. ('renderProd', 'buildBuildingBuildTabDetailCard')
+  K7-Lista-produkcji -> K6-Kolejki-rekrutacja e.g. ('renderProd', 'cancelQueueItem')
+  K7-Lista-produkcji -> K9-Pasek-W3-handel e.g. ('renderPurchasableUnits', 'appendSectionTitleWithDetails')
+  K8-Okolica -> K1-Fundament e.g. ('improvementRangeRow', 'el')
+  K8-Okolica -> K2-Model-DTO-adapter e.g. ('buildOkolicaDetailCard', 'daninaLabelForCity')
+  K8-Okolica -> K3-Zdrowie-kultura-wspolne e.g. ('renderOkolica', 'renderSurowce')
+  K8-Okolica -> K7-Lista-produkcji e.g. ('renderOkolica', 'appendOkolicaToolbarProfiles')
+  K9-Pasek-W3-handel -> K1-Fundament e.g. ('buildCityOnlyW3FlankChips', 'signed')
+  K9-Pasek-W3-handel -> K10-Stan-nawigacja-API e.g. ('closeCityView', 'clearCityPanelUxMode')
+  K9-Pasek-W3-handel -> K2-Model-DTO-adapter e.g. ('w3CityChip', 'resolveEmpireSnap')
+  K9-Pasek-W3-handel -> K3-Zdrowie-kultura-wspolne e.g. ('renderHandelSlidersPanel', 'appendTabIndicators')
+  K9-Pasek-W3-handel -> K4-Ekonomia-topbar e.g. ('renderCivResourceTopBar', 'wireTopBarStatDetails')
+  K9-Pasek-W3-handel -> K7-Lista-produkcji e.g. ('renderCivResourceTopBar', 'renderTopBarGarrison')
+  K10-Stan-nawigacja-API -> K0-CSS e.g. ('paintCityPanelSections', 'ensureStyles')
+  K10-Stan-nawigacja-API -> K1-Fundament e.g. ('drawerTabButtons', 'CITY_TABS')
+  K10-Stan-nawigacja-API -> K2-Model-DTO-adapter e.g. ('skeleton', 'PH')
+  K10-Stan-nawigacja-API -> K3-Zdrowie-kultura-wspolne e.g. ('renderRightPanelTab', 'renderReligia')
+  K10-Stan-nawigacja-API -> K4-Ekonomia-topbar e.g. ('renderRightPanelTab', 'renderPodzialPracy')
+  K10-Stan-nawigacja-API -> K7-Lista-produkcji e.g. ('renderLeftPanelTab', 'renderPurchasableUnits')
+  K10-Stan-nawigacja-API -> K8-Okolica e.g. ('renderOkolicaPanel', 'renderOkolica')
+  K10-Stan-nawigacja-API -> K9-Pasek-W3-handel e.g. ('clearCityPanelUxMode', 'w3CityChip')
+EXIT=0
