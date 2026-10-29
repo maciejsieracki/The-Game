@@ -1,5 +1,5 @@
 /**
- * K07B partia 2 (P5-8, R-RUSTPORT-P5-8-CITYPANEL-K07B-Q1, runda 2): jednostki DOM bloku K07 (pin `edb8fb56`,
+ * K07B partia 2 (P5-8, R-RUSTPORT-P5-8-CITYPANEL-K07B-Q1, runda 3): jednostki DOM bloku K07 (pin `edb8fb56`,
  * `gra/src/ui/cityPanel.ts`) — appendOkolicaToolbarProfiles, appendBudowaToolbarProfiles, appendBudowaListaBar,
  * renderTopStatsBar, appendPanel, resolveDetailSideHint, appendSectionTitleWithDetails (7 z 15).
  * Pomocnicze stałe i funkcje pinu tego samego obszaru (ścieżki `// pin …` poniżej) są kopiowane z pinu jako bloki

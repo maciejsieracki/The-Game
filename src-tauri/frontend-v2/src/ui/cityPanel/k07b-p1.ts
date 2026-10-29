@@ -1,5 +1,5 @@
 /**
- * K07B partia 1 (P5-8, R-RUSTPORT-P5-8-CITYPANEL-K07B-Q1, runda 2): jednostki DOM bloku K07 (pin `edb8fb56`,
+ * K07B partia 1 (P5-8, R-RUSTPORT-P5-8-CITYPANEL-K07B-Q1, runda 3): jednostki DOM bloku K07 (pin `edb8fb56`,
  * `gra/src/ui/cityPanel.ts`) — renderSpoleczenstwo, renderZdrowie, renderKultura, renderProd, renderBuildSplitPanel,
  * renderOkolica, CityPanelUxMounts, renderCityHeaderCompact (8 z 15).
  *
