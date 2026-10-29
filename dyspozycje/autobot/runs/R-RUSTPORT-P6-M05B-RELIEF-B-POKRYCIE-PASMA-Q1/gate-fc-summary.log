@@ -1,0 +1,1 @@
+EXIT=0 (fmt, clippy -D warnings, test: 162 binarek, 1214 passed, 0 failed; odtworzone przez Final Control na fe8a1cb8)
