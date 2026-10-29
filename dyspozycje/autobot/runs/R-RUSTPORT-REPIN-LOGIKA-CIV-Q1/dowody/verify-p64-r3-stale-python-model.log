@@ -1,0 +1,62 @@
+addExplored: 30
+advanceScoutAutoExplore: 174
+applyEmbarkStateAfterMove.changed: 60
+applyEmbarkStateAfterMove.units: 60
+applyFogToPathPlan: 116
+applyRoad: 120
+canUnitEmbark: 36
+clearScoutAutoExplore.out: 9
+clearScoutAutoExplore.unit: 9
+computePath: 480
+computeReachable: 400
+computeVisibleAt: 180
+constants: 6
+embarkMoveCost: 10
+executeMarchStep: 580
+hexDistance: 60
+isScoutUnit: 16
+isWaterHexAt: 200
+moveCostFnFor: 130
+nearestFreeWaterHex: 300
+pathCost: 250
+pickScoutExploreTarget: 174
+pickScoutExploreTarget.rngCalls: 174
+planPathTurns: 587
+plannedMarchesFromSave: 160
+plannedMarchesToSave: 60
+rally.Number: 19
+rally.fromSave: 63
+rally.leaders: 12
+rally.state: 80
+rally.toSave: 80
+rally.toSaveDirect: 20
+runScoutsAutoExplore: 70
+scoreHexForExplore: 120
+scoreMarginalReveal: 120
+shouldStopAtObstacle: 587
+stackGroupIdOf: 7
+tabela_vs_TS: 34
+terrainCombos.embark: 384
+terrainCombos.terrain: 384
+terrainMoveCost: 10
+terrain_movement_json: 1
+truncatePathAtFogFrontier: 60
+truncatePathToBudget: 587
+validateAutoMarchFromSave: 161
+PRZYPADKOW: 7180
+ROZBIEZNOSCI: 47
+ROZBIEZNOSC computePath {'map': 3, 'unit': {'id': 'u1', 'ownerId': 0, 'typeId': 'Galera', 'category': 'galera', 'q': 2, 'r': -6, 'ruch': 3, 'ruchLeft': 3, 'embarked': True}, 'dest': [-1, 1], 'occupied': [], 'costFn': {'kind': 'unit', 'seafaring': True, 'bonusy': [{'typ': 'bonus_walka', 'cel': 'piechota', 'wartosc': {'$f':  got= [[1, -5], [1, -4], [1, -3], [0, -2], [-1, -1], [-1, 0], [-1, 1]] want= [[1, -5], [1, -4], [0, -3], [0, -2], [-1, -1], [-1, 0], [-1, 1]]
+ROZBIEZNOSC computePath {'map': 3, 'unit': {'id': 'u1', 'ownerId': 0, 'typeId': 'Zwiadowca', 'category': 'zwiadowca', 'q': -1, 'r': 6, 'ruch': 3, 'ruchLeft': 3, 'embarked': True}, 'dest': [5, 1], 'occupied': [[2, 2], [3, 2], [-5, 0], [5, 1]], 'costFn': {'kind': 'unit', 'seafaring': False, 'bonusy': [{'typ': 'bonus_walka',  got= [[0, 6], [1, 5], [1, 4], [2, 3], [3, 3], [4, 2], [5, 1]] want= [[0, 6], [1, 5], [2, 4], [3, 3], [4, 2], [5, 1]]
+ROZBIEZNOSC computePath {'map': 4, 'unit': {'id': 'u1', 'ownerId': 0, 'category': 'piechota', 'q': 2, 'r': 5, 'ruch': 3, 'ruchLeft': 3}, 'dest': [-7, 3], 'occupied': [[6, -3], [7, 0], [-2, -3], [-7, 5], [1, -5], [-4, 4], [7, -4], [-2, -2]], 'costFn': {'kind': 'unit', 'seafaring': True, 'bonusy': [{'typ': 'bonus_walka', 'ce got= [[2, 4], [1, 4], [0, 4], [0, 3], [0, 2], [-1, 2], [-1, 1], [-2, 1], [-3, 1], [-4, 1], [-5, 2], [-6, 3], [-7, 3]] want= [[2, 4], [1, 4], [0, 4], [0, 3], [0, 2], [-1, 2], [-1, 1], [-2, 1], [-3, 1], [-4, 1], [-5, 1], [-6, 2], [-7, 3]]
+ROZBIEZNOSC computePath {'map': 4, 'unit': {'id': 'u1', 'ownerId': 0, 'typeId': 'Rydwan bojowy', 'category': 'rydwany', 'q': -5, 'r': 4, 'ruch': 3, 'ruchLeft': 3}, 'dest': [5, -3], 'occupied': [[5, -3], [5, -3]], 'costFn': {'kind': 'unit', 'seafaring': True, 'bonusy': [{'typ': 'bonus_walka', 'cel': 'wszystko', 'wartosc': 2 got= [[-4, 4], [-3, 3], [-2, 2], [-1, 1], [0, 0], [1, 0], [2, -1], [3, -2], [4, -2], [5, -3]] want= [[-4, 3], [-3, 2], [-2, 1], [-1, 0], [0, -1], [1, -1], [2, -1], [3, -2], [4, -2], [5, -3]]
+ROZBIEZNOSC computePath {'map': 5, 'unit': {'id': 'u1', 'ownerId': 0, 'typeId': 'Rydwan bojowy', 'category': 'rydwany', 'q': 1, 'r': 1, 'ruch': 3, 'ruchLeft': 3, 'embarked': True}, 'dest': [-4, 5], 'occupied': [[-1, -3], [-4, 1], [3, -3]], 'costFn': {'kind': 'unit', 'seafaring': False, 'bonusy': [{'typ': 'bonus_walka', 'ce got= [[0, 1], [-1, 1], [-2, 2], [-3, 3], [-4, 4], [-4, 5]] want= [[0, 1], [-1, 2], [-2, 3], [-3, 4], [-4, 5]]
+ROZBIEZNOSC computeReachable {'map': 3, 'unit': {'id': 'u1', 'ownerId': 0, 'typeId': 'Łucznik', 'category': 'lucznik', 'q': -1, 'r': 0, 'ruch': 3, 'ruchLeft': {'$f': '2.5'}}, 'occupied': [[-6, 2], [3, -4], [6, -2], [-2, -3], [6, 0], [3, 0], [-3, 6], [2, -4]], 'costFn': {'kind': 'unit', 'seafaring': True, 'bonusy': [{'typ': 'bon got= [[0, 0], [-1, 1], [-1, -1], [0, -1], [-2, 1], [1, 0], [1, -1], [-3, 1], [-2, 2], [-3, 2], [-2, -1], [-4, 2], [-3, 3], [-4, 3], [-4, 1], [-2, 0]] want= [[0, 0], [-1, 1], [-1, -1], [0, -1], [-2, 1], [-3, 1], [-2, 2], [-3, 2], [-2, -1], [-4, 1], [-2, 0]]
+ROZBIEZNOSC computeReachable {'map': 5, 'unit': {'id': 'u1', 'ownerId': 0, 'typeId': 'Łucznik', 'category': 'lucznik', 'q': 1, 'r': -1, 'ruch': 3, 'ruchLeft': {'$f': '1.5'}}, 'occupied': [[-2, 0]], 'costFn': {'kind': 'unit', 'seafaring': True, 'bonusy': [{'typ': 'bonus_walka', 'cel': 'wszystko', 'wartosc': 2, 'opis': 'Matrix:y' got= [[2, -1], [0, -1], [1, 0], [1, -2], [2, -2], [0, 0], [3, -1], [0, -2], [1, -3], [0, 1], [-1, 1], [3, -3]] want= [[2, -1], [0, -1], [1, 0], [1, -2], [2, -2], [0, 0]]
+ROZBIEZNOSC computeReachable {'map': 6, 'unit': {'id': 'u1', 'ownerId': 0, 'typeId': 'Jazda', 'category': 'kawaleria', 'q': -2, 'r': -4, 'ruch': 3, 'ruchLeft': {'$f': '5.3'}}, 'occupied': [[-6, 0], [-1, 4], [0, 6], [4, -6]], 'costFn': {'kind': 'unit', 'seafaring': True, 'bonusy': [{'typ': 'bonus_walka', 'cel': 'wszystko', 'wart got= [[-1, -4], [-2, -3], [-1, -5], [-3, -3], [0, -4], [-1, -3], [0, -5], [-3, -2], [-4, -2], [-2, -2], [0, -6], [-1, -2], [-2, -1], [-3, -1], [1, -4], [0, -3], [1, -5], [-4, -1], [-5, -1], [2, -5], [1, -6 want= [[-1, -4], [-2, -3], [-1, -5], [-3, -3], [0, -4], [-1, -3], [0, -5], [-3, -2], [-4, -2], [-2, -2], [0, -6], [-1, -2], [-2, -1], [-3, -1], [1, -4], [0, -3], [1, -5], [-4, -1], [-5, -1], [1, -6], [2, -5
+ROZBIEZNOSC computeReachable {'map': 6, 'unit': {'id': 'u1', 'ownerId': 0, 'typeId': 'Rydwan bojowy', 'category': 'rydwany', 'q': -4, 'r': 6, 'ruch': 3, 'ruchLeft': {'$f': '5.3'}}, 'occupied': [[-6, 4], [-5, 1]], 'costFn': {'kind': 'unit', 'seafaring': True, 'bonusy': [{'typ': 'bonus_walka', 'cel': 'wszystko', 'wartosc': 2, 'op got= [[-3, 6], [-5, 6], [-4, 5], [-3, 5], [-6, 6], [-5, 5], [-2, 5], [-3, 4], [-2, 4], [-2, 6], [-1, 4], [-2, 3], [-1, 3], [-6, 5], [-5, 4], [-4, 4], [-1, 5], [-3, 3], [0, 3], [-1, 2], [0, 2], [-4, 3], [1, want= [[-3, 6], [-5, 6], [-4, 5], [-3, 5], [-2, 6], [-2, 5], [-3, 4], [-2, 4], [-6, 6], [-5, 5], [-1, 4], [-2, 3], [-1, 3], [-6, 5], [-5, 4], [-4, 4], [-1, 5], [-3, 3], [-5, 3], [-4, 3], [-1, 6], [0, 3], [-
+ROZBIEZNOSC moveCostFnFor {'map': 2, 'unit': {'id': 'u1', 'ownerId': 0, 'typeId': 'Rydwan bojowy', 'category': 'rydwany', 'q': 3, 'r': -2, 'ruch': 3, 'ruchLeft': 3}, 'seafaring': True, 'bonusy': [{'typ': 'bonus_walka', 'cel': 'rydwany', 'wartosc': 1, 'opis': 'Matrix:r', 'realizuje': 'walka', 'matrixParamId': 'walka_ruch_rydw got= [0.6666666666666666, 0.6666666666666666, 1.0, 2.0, 2.0, 1.0, 1.0, 1.0, 1.0, 2.0, 1.0, inf, 0.6666666666666666, 2.0, 1.0, 0.4, 2.0, 2.0, 1.0, inf, inf, inf, 1.0, 2.0, 0.6666666666666666, 1.0, 2.0, 0.33 want= [0.5, 0.6666666666666666, 1, 2, 2, 1, 1, 1, 1, 2, 1, inf, 0.5, 2, 1, 0.4, 2, 2, 1, inf, inf, inf, 1, 2, 0.5, 1, 2, 0.3333333333333333, inf, 1, 1, 2, 0.5, 1, 1, 2, 1, 1, 0.5, 1, 1, 1, inf, 0.3333333333
+ROZBIEZNOSC moveCostFnFor {'map': 2, 'unit': {'id': 'u1', 'ownerId': 0, 'typeId': 'Zwiadowca', 'category': 'zwiadowca', 'q': 3, 'r': -4, 'ruch': 3, 'ruchLeft': 3, 'embarked': False}, 'seafaring': True, 'bonusy': [{'typ': 'bonus_walka', 'cel': 'wszystko', 'wartosc': 2, 'opis': 'Matrix:y', 'realizuje': 'walka', 'matrixParamId' got= [0.3076923076923077, 0.6666666666666666, 1.0, 2.0, 2.0, 1.0, 1.0, 1.0, 1.0, 2.0, 1.0, inf, 0.3076923076923077, 2.0, 1.0, 0.4, 2.0, 2.0, 1.0, inf, inf, inf, 1.0, 2.0, 0.3076923076923077, 1.0, 2.0, 0.33 want= [0.8, 0.6666666666666666, 1, 2, 2, 1, 1, 1, 1, 2, 1, inf, 0.8, 2, 1, 0.4, 2, 2, 1, inf, inf, inf, 1, 2, 0.8, 1, 2, 0.3333333333333333, inf, 1, 1, 2, 0.8, 1, 1, 2, 1, 1, 0.8, 1, 1, 1, inf, 0.3333333333
+ROZBIEZNOSC moveCostFnFor {'map': 2, 'unit': {'id': 'u1', 'ownerId': 0, 'typeId': 'Hoplita', 'category': 'piechota', 'q': 4, 'r': -4, 'ruch': 3, 'ruchLeft': 3, 'embarked': True}, 'seafaring': True, 'bonusy': [{'typ': 'bonus_walka', 'cel': 'wszystko', 'wartosc': 2, 'opis': 'Matrix:y', 'realizuje': 'walka', 'matrixParamId': 'w got= [0.3076923076923077, 0.6666666666666666, 1.0, 2.0, 2.0, 1.0, 1.0, 1.0, 1.0, 2.0, 1.0, inf, 0.3076923076923077, 2.0, 1.0, 0.4, 2.0, 2.0, 1.0, inf, inf, inf, 1.0, 2.0, 0.3076923076923077, 1.0, 2.0, 0.33 want= [0.8, 0.6666666666666666, 1, 2, 2, 1, 1, 1, 1, 2, 1, inf, 0.8, 2, 1, 0.4, 2, 2, 1, inf, inf, inf, 1, 2, 0.8, 1, 2, 0.3333333333333333, inf, 1, 1, 2, 0.8, 1, 1, 2, 1, 1, 0.8, 1, 1, 1, inf, 0.3333333333
+ROZBIEZNOSC moveCostFnFor {'map': 3, 'unit': {'id': 'u1', 'ownerId': 0, 'typeId': 'Jazda', 'category': 'kawaleria', 'q': 3, 'r': 2, 'ruch': 3, 'ruchLeft': 3, 'embarked': True}, 'seafaring': True, 'bonusy': [{'typ': 'bonus_walka', 'cel': 'wszystko', 'wartosc': 2, 'opis': 'Matrix:y', 'realizuje': 'walka', 'matrixParamId': 'wal got= [inf, 2.0, 1.0, 1.0, 2.0, 1.0, 1.0, 2.0, 0.3333333333333333, 2.0, 1.0, 1.0, inf, 2.0, 2.0, 1.0, 1.0, 1.0, 0.4, 1.0, 1.0, 1.0, 1.0, 2.0, 1.0, 1.0, inf, 1.0, 1.0, 0.3076923076923077, 1.0, inf, 1.0, inf, want= [inf, 2, 1, 1, 2, 1, 1, 2, 0.3333333333333333, 2, 1, 1, inf, 2, 2, 1, 1, 1, 0.4, 1, 1, 1, 1, 2, 1, 1, inf, 1, 1, 0.8, 1, inf, 1, inf, 0.2, 1, 1, 1, 3, 1, 1, 2, 0.4, inf, 1, 1, 2, inf, 0.2, 2, 1, 1, 1,
+ROZBIEZNOSC moveCostFnFor {'map': 3, 'unit': {'id': 'u1', 'ownerId': 0, 'typeId': 'Jazda', 'category': 'kawaleria', 'q': -2, 'r': 1, 'ruch': 3, 'ruchLeft': 3, 'embarked': False}, 'seafaring': True, 'bonusy': [{'typ': 'bonus_walka', 'cel': 'wszystko', 'wartosc': 2, 'opis': 'Matrix:y', 'realizuje': 'walka', 'matrixParamId': 'w got= [inf, 2.0, 1.0, 1.0, 2.0, 1.0, 1.0, 2.0, 0.3333333333333333, 2.0, 1.0, 1.0, inf, 2.0, 2.0, 1.0, 1.0, 1.0, 0.4, 1.0, 1.0, 1.0, 1.0, 2.0, 1.0, 1.0, inf, 1.0, 1.0, 0.3076923076923077, 1.0, inf, 1.0, inf, want= [inf, 2, 1, 1, 2, 1, 1, 2, 0.3333333333333333, 2, 1, 1, inf, 2, 2, 1, 1, 1, 0.4, 1, 1, 1, 1, 2, 1, 1, inf, 1, 1, 0.8, 1, inf, 1, inf, 0.2, 1, 1, 1, 3, 1, 1, 2, 0.4, inf, 1, 1, 2, inf, 0.2, 2, 1, 1, 1,
+ROZBIEZNOSC moveCostFnFor {'map': 3, 'unit': {'id': 'u1', 'ownerId': 0, 'typeId': 'Jazda', 'category': 'kawaleria', 'q': 2, 'r': 2, 'ruch': 3, 'ruchLeft': 3, 'embarked': True}, 'seafaring': True, 'bonusy': [{'typ': 'bonus_walka', 'cel': 'wszystko', 'wartosc': 2, 'opis': 'Matrix:y', 'realizuje': 'walka', 'matrixParamId': 'wal got= [inf, 2.0, 1.0, 1.0, 2.0, 1.0, 1.0, 2.0, 0.3333333333333333, 2.0, 1.0, 1.0, inf, 2.0, 2.0, 1.0, 1.0, 1.0, 0.4, 1.0, 1.0, 1.0, 1.0, 2.0, 1.0, 1.0, inf, 1.0, 1.0, 0.3076923076923077, 1.0, inf, 1.0, inf, want= [inf, 2, 1, 1, 2, 1, 1, 2, 0.3333333333333333, 2, 1, 1, inf, 2, 2, 1, 1, 1, 0.4, 1, 1, 1, 1, 2, 1, 1, inf, 1, 1, 0.8, 1, inf, 1, inf, 0.2, 1, 1, 1, 3, 1, 1, 2, 0.4, inf, 1, 1, 2, inf, 0.2, 2, 1, 1, 1,
