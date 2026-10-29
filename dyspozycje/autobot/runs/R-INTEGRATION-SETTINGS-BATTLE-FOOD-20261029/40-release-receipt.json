@@ -1,7 +1,7 @@
 {
   "taskId": "R-INTEGRATION-SETTINGS-BATTLE-FOOD-20261029",
-  "status": "LOCAL_ROBOCZA_DEPLOY_COMPLETE_PUSH_PENDING",
-  "stage": "10/11",
+  "status": "PUBLISHED_ROBOCZA_AND_PUSHED",
+  "stage": "11/11",
   "source": {
     "branch": "main",
     "commit": "6f9ef3ceef3e78421b89b0a4feec0d0606746fc6",
@@ -22,10 +22,21 @@
     "improvement-build-highlight-lifecycle-test: 39/39 PASS",
     "army-merge-panel-production-mount-test: 9/9 PASS; Robocza at 150%, 88 units",
     "node gra/tools/verify-robocza-bundle.cjs: VERIFY OK (embedded self-referential stamp WARN; manifest and bundles[] match)",
-    "node gra/tools/smoke.cjs: SMOKE OK; canvas=1, rAF=1"
+    "node gra/tools/smoke.cjs: SMOKE OK; canvas=1, rAF=1",
+    "Pinned GitHub Raw readback at f66fcc2924617eae1810823d55d358ad0d5445ad: bundle, manifest, START byte-identical; HTTP 200; bundle hashes/size match manifest."
   ],
   "remoteReadback": {
-    "status": "PENDING_PUSH"
+    "status": "PASS",
+    "remote": "origin/main",
+    "commit": "f66fcc2924617eae1810823d55d358ad0d5445ad",
+    "bundleUrl": "https://raw.githubusercontent.com/maciejsieracki/The-Game/f66fcc2924617eae1810823d55d358ad0d5445ad/gra-robocza/Gra-ROBOCZA.html",
+    "manifestUrl": "https://raw.githubusercontent.com/maciejsieracki/The-Game/f66fcc2924617eae1810823d55d358ad0d5445ad/gra-robocza/ROBOCZA-MANIFEST.json",
+    "startUrl": "https://raw.githubusercontent.com/maciejsieracki/The-Game/f66fcc2924617eae1810823d55d358ad0d5445ad/gra-robocza/START.html",
+    "httpStatus": 200,
+    "bundleMd5": "703bdf789fb23f37cacacc9aac405402",
+    "bundleSha256": "e1df7844da72cd5d03332f70ecba0f6e650b6344f563c183b866f54829fdeba7",
+    "bundleBytes": 70040409,
+    "checks": "Pinned GitHub Raw bundle, manifest and START fetched successfully; all three files byte-identical to local release artifacts; bundle MD5/SHA-256/size agree with manifest top-level and bundles[] rows."
   },
-  "publicationCommit": "PENDING"
+  "publicationCommit": "f66fcc2924617eae1810823d55d358ad0d5445ad"
 }

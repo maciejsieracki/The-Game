@@ -1,5 +1,5 @@
 {
-  "releaseState": "STAGED — lokalna Robocza po integracji 2026-10-29; push i zdalny readback do wykonania.",
+  "releaseState": "DEPLOYED — ROBOCZA; push do origin/main i pinned GitHub Raw readback PASS (2026-10-29).",
   "bundle": "Gra-ROBOCZA.html",
   "bundleMd5": "703bdf789fb23f37cacacc9aac405402",
   "bundleSha256": "e1df7844da72cd5d03332f70ecba0f6e650b6344f563c183b866f54829fdeba7",
@@ -9,7 +9,7 @@
     "source": "origin/main + main integration @ 6f9ef3ce",
     "build": "Vite 5.4.21 single-file; 919 modules; stamped",
     "buildCommit": "6f9ef3ce",
-    "publicationCommit": "PENDING"
+    "publicationCommit": "f66fcc2924617eae1810823d55d358ad0d5445ad"
   },
   "scope": [
     "R-NEWGAME-SETTINGS-LAND-DIPLO-REPOSITION-Q1: udział lądu i rozpatrzenie dyplomatyczne w uzgodnionych polach nowej gry.",
@@ -264,11 +264,22 @@
     "publicationCommit": "f6f63dc839449d8e08a7e2509ec72796757867af"
   },
   "publishPlan": {
-    "status": "LOCAL ROBocza bundle staged; source/release commit and origin push pending",
-    "target": "origin/main"
+    "status": "PUBLISHED to origin/main at f66fcc2924617eae1810823d55d358ad0d5445ad; Robocza only; no KANON/FINALNA promotion.",
+    "target": "origin/main",
+    "publicationCommit": "f66fcc2924617eae1810823d55d358ad0d5445ad"
   },
   "remoteReadback": {
-    "status": "PENDING — run after push"
+    "status": "PASS",
+    "remote": "origin/main",
+    "commit": "f66fcc2924617eae1810823d55d358ad0d5445ad",
+    "bundleUrl": "https://raw.githubusercontent.com/maciejsieracki/The-Game/f66fcc2924617eae1810823d55d358ad0d5445ad/gra-robocza/Gra-ROBOCZA.html",
+    "manifestUrl": "https://raw.githubusercontent.com/maciejsieracki/The-Game/f66fcc2924617eae1810823d55d358ad0d5445ad/gra-robocza/ROBOCZA-MANIFEST.json",
+    "startUrl": "https://raw.githubusercontent.com/maciejsieracki/The-Game/f66fcc2924617eae1810823d55d358ad0d5445ad/gra-robocza/START.html",
+    "httpStatus": 200,
+    "bundleMd5": "703bdf789fb23f37cacacc9aac405402",
+    "bundleSha256": "e1df7844da72cd5d03332f70ecba0f6e650b6344f563c183b866f54829fdeba7",
+    "bundleBytes": 70040409,
+    "checks": "Pinned GitHub Raw bundle, manifest and START fetched successfully; all three files byte-identical to local release artifacts; bundle MD5/SHA-256/size agree with manifest top-level and bundles[] rows."
   },
   "publishedAt": "2026-10-29T23:05:50.745Z",
   "buildStamp": "2026-10-29 23:05"
