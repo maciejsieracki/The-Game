@@ -1758,8 +1758,8 @@ function advancedSettingRows(): AdvSettingRow[] {
     {
       key: 'battleAlwaysManual',
       lbl: 'Bitwy',
-      hint: 'Automatyczne — wynik na mapie. Ręczna — wejście w scenę bitwy.',
-      opts: ['Automatyczne', 'Ręczna'],
+      hint: 'Bitwa automatyczna — wynik bez wchodzenia na pole bitwy. Bitwa ręczna i automatyczna — przed każdą bitwą wybierasz, czy wejść na pole bitwy, czy rozstrzygnąć ją automatycznie.',
+      opts: ['Bitwa automatyczna', 'Bitwa ręczna i automatyczna'],
       getIdx: () => (advOpts.battleAlwaysManual ? 1 : 0),
       setIdx: (i) => { advOpts.battleAlwaysManual = i === 1; },
     },
@@ -2223,7 +2223,7 @@ function renderGenStep(host: HTMLElement): void {
         : '10 miast';
     rows.push(
       ['Barbarzyncy', bLabel],
-      ['Bitwy', p.advanced.battleAlwaysManual ? 'Ręczna' : 'Automatyczne'],
+      ['Bitwy', p.advanced.battleAlwaysManual ? 'Bitwa ręczna i automatyczna' : 'Bitwa automatyczna'],
       ['Zwyciestwo', vLabel],
       ['Koszty budynkow', costLabel],
       ['Koszty jednostek', unitCostLabel],
