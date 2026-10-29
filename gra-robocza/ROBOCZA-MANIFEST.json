@@ -1,5 +1,5 @@
 {
-  "releaseState": "DEPLOYED — oczekuje publikacji: poprawki bitew, dowódcy, rekrutacji, AI i kreatora; duże imperium pozostaje osobnym testem.",
+  "releaseState": "DEPLOYED — ROBOCZA; push do main i zdalny readback PASS.",
   "bundle": "Gra-ROBOCZA.html",
   "bundleMd5": "eab188a2df6c2399f8431d58167211bc",
   "bundleSha256": "d0eba5e51a1d896f12171347e6c6e337263f8d599afa7eb24bd45e8441409e33",
@@ -8,7 +8,8 @@
     "baseCommit": "91dc998a",
     "source": "origin/main + zaakceptowane tematy AutoBot poza testem wydajności dużego imperium",
     "build": "Vite 5.4.21 single-file; 917 modules; stamped",
-    "buildCommit": "pending"
+    "buildCommit": "682a6b9a0cd7c4e5d35b8e1cf68a76a9a508c510",
+    "publicationCommit": "682a6b9a0cd7c4e5d35b8e1cf68a76a9a508c510"
   },
   "scope": [
     "AI zbiera armię przez pięć pełnych tur po wybuchu wojny, a w kolejnej turze atakuje wybrany osiągalny lądem cel wspólnymi rozkazami całego składu.",
@@ -17,7 +18,8 @@
   "verification": [
     "TypeScript PASS",
     "Vite build PASS (917 modules)",
-    "Chromium tests: AI campaign 68/68; newgame navigation 230/230; battle/recruitment/commander focused tests PASS"
+    "Chromium tests: AI campaign 68/68; newgame navigation 230/230; battle/recruitment/commander focused tests PASS",
+    "GitHub Raw readback at 682a6b9a: bundle/manifest/START HTTP 200; bundle SHA-256, MD5 and bytes match manifest."
   ],
   "limits": [
     "AI morska kampania/transport pozostaje poza zakresem.",

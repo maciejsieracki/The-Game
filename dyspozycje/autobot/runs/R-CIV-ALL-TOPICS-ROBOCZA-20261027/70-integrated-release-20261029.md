@@ -28,4 +28,11 @@ Pozostałe wcześniej wdrożone tematy (łączenie armii, skrolowanie panelu, ta
 - C-064 (wymóg raportowania i przejść kart Kanban) pozostaje poza wydaniem, bo w tym środowisku nie ma natywnego konektora ani potwierdzenia przejść. Nie oznaczam tego tematu jako zakończonego.
 - Walidacja walki obejmuje automatyzowalne scenariusze testowe; nie zastępuje długiego playtestu terenów i każdej kombinacji jednostek.
 
-Status przed publikacją: gotowe do commit/push i odczytu zdalnego.
+## Publikacja
+
+- `origin/main`: commit `682a6b9a0cd7c4e5d35b8e1cf68a76a9a508c510`.
+- GitHub Raw readback przypięty do tego commita: bundle, manifest i START zwróciły HTTP 200.
+- Bundle: MD5 `eab188a2df6c2399f8431d58167211bc`, SHA-256 `d0eba5e51a1d896f12171347e6c6e337263f8d599afa7eb24bd45e8441409e33`, `70028627` B; manifest zgadza się w trzech polach i START pokazuje ten sam prefiks MD5.
+- GitHub zaakceptował push fast-forward; wyświetlił standardowe ostrzeżenie, że plik 66.78 MiB przekracza rekomendowane 50 MiB.
+
+Status: DEPLOYED TO ROBOCZA / GIT PUSH PASS.

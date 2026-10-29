@@ -1,0 +1,24 @@
+{
+  "status": "DEPLOYED_ROBOCZA_REMOTE_READBACK_PASS",
+  "repository": "maciejsieracki/The-Game",
+  "branch": "main",
+  "commit": "682a6b9a0cd7c4e5d35b8e1cf68a76a9a508c510",
+  "artifacts": {
+    "bundle": {
+      "path": "gra-robocza/Gra-ROBOCZA.html",
+      "http": 200,
+      "md5": "eab188a2df6c2399f8431d58167211bc",
+      "sha256": "d0eba5e51a1d896f12171347e6c6e337263f8d599afa7eb24bd45e8441409e33",
+      "bytes": 70028627
+    },
+    "manifest": { "path": "gra-robocza/ROBOCZA-MANIFEST.json", "http": 200 },
+    "start": { "path": "gra-robocza/START.html", "http": 200 }
+  },
+  "manifest_matches_bundle": true,
+  "start_displays_bundle_hash_prefix": true,
+  "notes": [
+    "Push był fast-forward. GitHub zgłosił wyłącznie ostrzeżenie o rozmiarze bundla powyżej rekomendowanych 50 MiB.",
+    "Test wydajności dużego imperium jest uruchamiany po publikacji, zgodnie z kolejnością wskazaną przez właściciela.",
+    "C-064 pozostaje zablokowane brakiem natywnego konektora Kanban."
+  ]
+}
