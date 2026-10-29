@@ -23,7 +23,8 @@
     "harness:newgame": "node tools/dom-harness/run-newgame.mjs",
     "harness:newgame:mutate": "node tools/dom-harness/mutate-newgame.mjs",
     "harness:cityux": "node tools/dom-harness/run-cityux.mjs",
-    "harness:cityux:mutate": "node tools/dom-harness/mutate-cityux.mjs"
+    "harness:cityux:mutate": "node tools/dom-harness/mutate-cityux.mjs",
+    "harness:k04c": "node tools/dom-harness/run-k04c-units.mjs"
   },
   "devDependencies": {
     "esbuild": "0.21.5",

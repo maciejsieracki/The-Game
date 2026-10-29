@@ -461,6 +461,113 @@ export interface CityPanelInputsDto {
     manpowerBiezacy: number; manpowerMax: number; regenPerTurn: number; kosztJednostki: number;
     werbMaxPrzyPelnejPuli: number; ludnoscAbsolutna: number; ludki: number; epoka: number;
   };
+  /** K04C (P5-8-K04C, batch 4a): wejscia kart Porzadek / Kultura i Religia / Zamoznosc / Wyzywienie. Dopisek, brak = karta w trybie „brak danych”. */
+  k04c?: CityPanelK04CDto;
+}
+
+// ─── K04C (P5-8-K04C, R-RUSTPORT-P5-8-CITYPANEL-K04C-Q1, runda 1): wejscia kart szczegolow batch 4a ──────────
+// ZALOZENIA K04C-Z1..Z6 (pelny opis w dyspozycje/rust-port/p5/P5-8-K04C.md): kazda wartosc reguly gry
+// (pasmo porzadku, skala religii, parametry zamoznosci i wyzywienia, stan magazynu) przychodzi z silnika.
+
+/** K04C-Z1: pasmo porzadku z silnika (pin `porPctBand(por)`, `society-breakdown.ts`). */
+export type OrderBandKeyDto = 'lad' | 'spokoj' | 'napiecie' | 'niepokoj' | 'bunt' | 'bunt_skrajny';
+
+/** K04C-Z1 — karta Porzadek (pin `buildPorzadekDetailCard`, cityPanel.ts:3427). Pola spoza `order` (SzPct, PrawPct, maksima). */
+export interface PorzadekDetailDto {
+  bandKey: OrderBandKeyDto;
+  szPct: number;
+  prawPct: number;
+  /** Maksimum punktow Szczescia tej epoki; `null` = brak (pin: `state.szMax != null`). */
+  szMax: number | null;
+  prawMax: number | null;
+  /** Legacy pole pinu `state.porzadek` = netto punkty Prawa (orderPanel.ts:18). */
+  prawPkt: number;
+  prawLines: SocietyLineDto[];
+}
+
+/** K04C-Z2 — dane kultury miasta (pin `CultureState`, `cfg.getCultureState`). */
+export interface CultureDetailDto {
+  ownerCultureLabel?: string;
+  kulturaMix?: { label: string; pct: number; isOwner: boolean }[];
+  cultureConverting?: boolean;
+  ownCultureSharePct?: number | null;
+  kulturaSuma: number;
+  przyrost: number;
+  borderRadius: number;
+  thresholds: number[];
+  zrodla?: { nazwa: string; wartosc: number }[];
+}
+
+/** K04C-Z3 — dane religii miasta (pin `ReligionState`, `cfg.getReligionState`); `wplywSzczescieSzPkt` = surowe punkty silnika (przed `szPktDisplay`). */
+export interface ReligionDetailDto {
+  stateReligion?: string | null;
+  sklad?: { name: string; pct: number }[];
+  dominujaca: string;
+  udzialPct: number;
+  wplywSzczescieSzPkt: number;
+  przyrostWiernych?: number;
+  zrodla?: { nazwa: string; wartosc: number }[];
+}
+
+/** K04C-Z3 — parametry religii (pin `loadReligionParams` / `FALLBACK_RELIGION_PARAMS`, z silnika). */
+export interface ReligionParamsDto {
+  progDominacjiPct: number;
+  szybkoscSzerzeniaBazowa: number;
+  swiatyniaBonusSzerzenia: number;
+  szerzenieMaxDystans: number;
+  konwersjaBazaPct: number;
+  konwersjaSwiatyniaPct: number;
+}
+
+/** K04C-Z4 — parametry zamoznosci (pin `WealthParams`, `loadWealthParams`). */
+export interface WealthParamsDto {
+  zachowaniePoAwansie: number;
+  mnoznikNaPoziom: number;
+  progNaPoziom: number;
+  utrzymanieBaza: number;
+  utrzymaniePrzyCap: number;
+  karaZero: number;
+  zadowolenieMax: number;
+}
+
+/** K04C-Z5 — magazyn centralny z ostatniej tury (pin `EmpireFoodTick`, pola czytane przez kartę Wyzywienia). */
+export interface EmpireFoodTickDetailDto {
+  uprawaHodowla: number;
+  wyzwienieLudnosci: number;
+  pomocMiastom: number;
+  wojsko: number;
+  maxCap: number;
+  zapasyPo: number;
+}
+
+/** K04C — wejscia kart szczegolow batch 4a (pola pinu `buildKulturaDetailCard`, `buildWealthDetailCard`, `buildRacjeWzrostDetailCard`). */
+export interface CityPanelK04CDto {
+  porzadek: PorzadekDetailDto;
+  kultura: {
+    /** Pin `kultReligScaleForEra(epoka, loadSocietyScaleParams(...))` — skala Szczescia tej epoki (K04C-Z3). */
+    skalaSzEpoki: number;
+    relParams: ReligionParamsDto;
+    culture: CultureDetailDto | null;
+    religion: ReligionDetailDto | null;
+    /** Pin `view.kultura` (estymata „Przyrost z plonów” gdy brak stanu kultury); `null` = brak widoku miasta. */
+    kulturaZPlonow: number | null;
+  };
+  zamoznosc: {
+    params: WealthParamsDto;
+    /** Pin `view.pieniadz` (`null` = brak podgladu tury). */
+    pieniadzMiasta: number | null;
+  };
+  wyzywienie: {
+    /** Ludnosc absolutna miasta i jednego obywatela (pin `cityLudnoscAbsolutna(pop, epoka)` i `(1, epoka)`). */
+    ludnoscAbsolutna: number;
+    ludnoscNaObywatela: number;
+    /** Pin `wyzwienieSummaryLabel(poziomRacji, rationParams)`; `null` = brak parametrow racji. */
+    wyzwienieSummary: string | null;
+    /** Pin `tick` (magazyn centralny ostatniej tury); `null` = brak sekcji „Magazyn”. */
+    tick: EmpireFoodTickDetailDto | null;
+    /** Pin `st?.zapasyPanstwa` (aktualny zapas magazynu panstwa); `null` = brak. */
+    zapasyPanstwa: number | null;
+  };
 }
 
 // ─── §6.3 Opcje budowy / rekrutacji ──────────────────────────────────────────

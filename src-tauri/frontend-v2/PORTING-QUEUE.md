@@ -231,3 +231,7 @@ Model miasta (pin `edb8fb56:gra/src/ui/cityPanel.ts`): **17 z 36 jednostek K03**
 ## Status P5.8 K04 (`R-RUSTPORT-P5-8-CITYPANEL-K04-Q1`, runda 1/5, batch 1)
 
 Zrobione 7 z 32 jednostek K04 (koszty surowcowe kolejki, pula magazynu, anulowanie jako komenda `dequeue_build`, formatery surowców): `src/ui/cityPanel/k04-stock.ts`; pole DTO `CityPanelInputsDto.stockPool` (K04-Z1). Batch 2 (runda 3): 4 jednostki poziomów i utrzymania budynków (`src/ui/cityPanel/k04-buildings.ts`), pola DTO `ownedLevels`, `upkeepById` (K04-Z3). Łącznie **11 z 32**. Pozostałe 21 jednostek: NIE PORTOWANE (batch 3–4, lista w `dyspozycje/rust-port/p5/P5-8-K04.md`). Harness: `run-k04-units.mjs` (batch 1, 22 przyp.) i `run-k04-units-b2.mjs` (batch 2, 17 przyp.), mutacje: `mutate-k04-units.mjs` (15/15), `mutate-k04-units-b2.mjs` (10/10).
+
+## Status P5.8 K04C (`R-RUSTPORT-P5-8-CITYPANEL-K04C-Q1`, runda 1/5, batch 4a)
+
+Zrobione 8 jednostek batch 4a (karty Porządek, Kultura i Religia, Zamożność, Wyżywienie i wzrost; religiaSzPunkty, resolveEmpireSnap, resolveCityHealth, hook `__cityPanelOrderStateLocalForTest`): `src/ui/cityPanel/k04c-*.ts`; dopiski DTO `CityPanelInputsDto.k04c` (K04C-Z1..Z7, `dyspozycje/rust-port/p5/P5-8-K04C.md`). Wektory: `npm run harness:k04c` 76/76 (wartości z linii pinu, NIE porównanie na żywo). Mutacje i harness 1:1 z pinem: NIE_ZMIERZONO w r1. Pozostałe jednostki K04 (poza batch 1–2 i 4a) oraz karty TopBar (K04D): NIE PORTOWANE.
