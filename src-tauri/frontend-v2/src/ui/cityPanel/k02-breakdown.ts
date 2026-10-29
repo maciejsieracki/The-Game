@@ -5,13 +5,9 @@
 // (ZALOZENIE P5.8-K02-Z3) oraz lokalny `el` bez parametru `html` (ZALOZENIE P5.8-K02-Z4).
 // Wszystkie wywolania el() w tych blokach maja tag i klase, bez html, wiec pin:863 i
 // wersja lokalna daja identyczny DOM. Pin przy `html` uzywa cpInlineIcons z K01 (nieuzywane tu).
-import type { BreakdownLine } from './types';
-
-function el<K extends keyof HTMLElementTagNameMap>(tag: K, cls?: string): HTMLElementTagNameMap[K] {
-  const n = document.createElement(tag);
-  if (cls) n.className = cls;
-  return n;
-}
+// P5.8 SCAL: typ BreakdownLine i `el` z kawalkow K01 (./k01a-fundament, ./k01b-dom) zamiast lokalnych kopii.
+import type { BreakdownLine } from './k01a-fundament';
+import { el } from './k01b-dom';
 
 export function appendBreakdownLines(
   mount: HTMLElement,

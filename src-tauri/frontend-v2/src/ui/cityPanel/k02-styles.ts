@@ -2,28 +2,24 @@
 // gra/src/ui/cityPanel.ts @ edb8fb56, linie 1948-3009. Zmiany wzgledem pinu (pelna lista):
 //  (a) eksport i nazwa funkcji ensureStyles -> ensureCityPanelStyles;
 //  (b) el('style') -> document.createElement('style') (ZAŁOŻENIE P5.8-K02-Z2; pin:863 bez cls/html = to samo);
-//  (c) stale ukladu pin:1755-1773 skopiowane lokalnie (ponizej) zamiast importu z K01;
-//      stalej LIST_SCROLL_VISIBLE_CATALOG (pin:1772) NIE kopiowano: nie jest uzywana przez ensureStyles,
-//      a jej jedyne uzycie (pin:8971) nalezy do kawalka poza K02 i zostanie tam przeniesione.
-// ZAŁOŻENIE P5.8-K02-Z1: stale ukladu uzyte w CSS (pin:1755-1773, kawalek G/K01) skopiowane
-// lokalnie 1:1 do scalenia z K01 (kolumna "Zalezy od" w P5-8 §4); wartosci nie zmieniane.
-// RYZYKO OTWARTE R1: dwa zrodla prawdy dla tych 8 stalych (K01 i ten plik). Harness CSS porownuje
-// wynik z pinem, nie z K01; rozjazd po scaleniu wykryje dopiero integracja K01/K02 (do zamkniecia
-// przy scalaniu: usunac kopie, importowac z K01).
+//  (c) stale ukladu pin:1755-1773 IMPORTOWANE z ./k01a-fundament (P5.8 SCAL, zamkniecie R1;
+//      wczesniej lokalne kopie, wartosci bez zmian). Stalej LIST_SCROLL_VISIBLE_CATALOG nie uzywa ensureStyles.
 import { ensureBrandRootTokens, CIV_BRAND_SCOPE_VARS } from '../brandTokenVars';
 import { resourceColorClassCss } from '../resourceColors';
 import { UNIT_INFOGRAPHIC_CSS } from '../unitInfographic';
 import { UNIT_RECRUIT_CARD_CSS } from '../unitRecruitCard';
-
-const STYLE_ID = 'civ-city-screen-css-w3-hudfix';
-const CITY_PANEL_ICON_GLYPH_EM = 4.5;
-const CITY_PANEL_ICON_RAIL_VERT_EM = CITY_PANEL_ICON_GLYPH_EM * 0.5;
-const LIST_SCROLL_VISIBLE = 3;
-const LIST_ROW_HEIGHT_COMPACT = 2.35;
-const RECRUIT_QUEUE_VISIBLE = 5;
-const BUILD_QUEUE_VISIBLE = 4;
-const QUEUE_ROW_EM = 2.75;
-const LIST_ROW_HEIGHT_EM = 2.75;
+// P5.8 SCAL: stale ukladu z K01 (zamiast lokalnych kopii; wartosci bez zmian).
+import {
+  BUILD_QUEUE_VISIBLE,
+  CITY_PANEL_ICON_GLYPH_EM,
+  CITY_PANEL_ICON_RAIL_VERT_EM,
+  LIST_ROW_HEIGHT_COMPACT,
+  LIST_ROW_HEIGHT_EM,
+  LIST_SCROLL_VISIBLE,
+  QUEUE_ROW_EM,
+  RECRUIT_QUEUE_VISIBLE,
+  STYLE_ID,
+} from './k01a-fundament';
 
 export function ensureCityPanelStyles(): void {
   ensureBrandRootTokens();

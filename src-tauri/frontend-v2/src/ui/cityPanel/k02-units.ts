@@ -4,27 +4,22 @@
 // Kopie 1:1 tresci; zmiany wymuszone zaleznosciami w gore (ZALOZENIE P5.8-K02-R3-Z1..Z3):
 //   Z1: resourceBrandIconHtml (pin:3788, K01/brand) przekazywane jako argument `brandIconHtml` (appendSurowceGrid).
 //   Z2: module-level rerender() (pin) przekazywane jako argument `rerender` (appendIndywidualneToggle).
-//   Z3: statChip (pin:4222) i stala LIST_ROW_HEIGHT_EM (pin:1773) skopiowane lokalnie (prywatne w pinie i w K01).
-// Lokalny `el` bez parametru `html`: wszystkie wywolania w tych jednostkach maja tag i klase (jak w k02-breakdown.ts).
-import type { BreakdownLine, BuildingReqChip, BuildingReqChipKind, TabIndicatorChip } from './types';
+// P5.8 SCAL (R-RUSTPORT-P5-8-CITYPANEL-SCAL-K01K02-Q1): duplikaty z K01 usuniete, importy z kawalkow K01:
+//   statChip, LIST_ROW_HEIGHT_EM, BUILDING_REQ_SECTION_LABELS, typy -> ./k01a-fundament;
+//   el -> ./k01b-dom (wywolania bez `html`, DOM identyczny); applyBuildButtonVisualState -> ./k01b-dom.
+// Lokalna kopia `statChip` i `LIST_ROW_HEIGHT_EM` z pierwszej partii (Z3) zostala scalona.
+import {
+  BUILDING_REQ_SECTION_LABELS,
+  LIST_ROW_HEIGHT_EM,
+  statChip,
+  type BreakdownLine,
+  type BuildingReqChip,
+  type BuildingReqChipKind,
+  type TabIndicatorChip,
+} from './k01a-fundament';
+import { applyBuildButtonVisualState, el } from './k01b-dom';
 import { appendBreakdownLines } from './k02-breakdown';
 import { techIconSvg } from '../techIcons';
-
-const LIST_ROW_HEIGHT_EM = 2.75;
-
-function el<K extends keyof HTMLElementTagNameMap>(tag: K, cls?: string): HTMLElementTagNameMap[K] {
-  const n = document.createElement(tag);
-  if (cls) n.className = cls;
-  return n;
-}
-
-function statChip(icon: string, label: string, value: string, cls: string): string {
-  const iconPart = icon.startsWith('<')
-    ? `<span class="civ-cs-chip-ic-wrap">${icon}</span>`
-    : icon;
-  const head = iconPart ? `${iconPart}<span>${label}</span>` : label;
-  return `<span class="chip"><span class="cl">${head}</span><span class="cv ${cls}">${value}</span></span>`;
-}
 
 export function fillIconElement(el: HTMLElement, iconHtml: string): void {
   if (iconHtml.startsWith('<svg')) el.innerHTML = iconHtml;
@@ -198,8 +193,8 @@ export function productionQueueIconSpan(iconHtml: string): HTMLElement {
 
 // --- P5.8 K02 r3, partia 3 (pin:5194, 6288, 6348, 6974-6993, 7246-7294) ---
 // Z6: renderBilans dostaje gotowy HTML wierszy (plonyChipRowHtml, pin:1863, zalezny od CityView); null = brak danych.
-// Z7: applyBuildButtonVisualState (pin:6288, czysta funkcja DOM) skopiowana lokalnie.
-// Z8: BUILDING_REQ_SECTION_LABELS (pin:6974) skopiowane 1:1 (stala tekstow).
+// Z7: applyBuildButtonVisualState (pin:6288) — import z ./k01b-dom (scalenie SCAL).
+// Z8: BUILDING_REQ_SECTION_LABELS (pin:6974) — import z ./k01a-fundament (scalenie SCAL).
 // Z9: buildingRequirementChipsHtml (pin:6970, zalezy od buildingReqChipSpan) przekazywane jako argument `chipsHtml`.
 // Z10: bindTechHintLinkDelegation przyjmuje `openPreview(techName)`; wywolujacy mapuje na
 //      showTechDiscoveryNotice({ techName, eraIndex: 1, kind: 'preview' }) (pin:7268).
@@ -223,13 +218,6 @@ export function renderBilans(mount: HTMLElement, chipRowHtml: string | null): vo
   mount.appendChild(row);
 }
 
-function applyBuildButtonVisualState(btn: HTMLButtonElement, canAct: boolean, title: string): void {
-  btn.disabled = !canAct;
-  btn.title = title;
-  btn.classList.remove('can-build', 'cannot-build');
-  btn.classList.add(canAct ? 'can-build' : 'cannot-build');
-}
-
 /** Wylaczone przyciski Kup / Buduj|Ulepsz (pin:6348). */
 export function appendDisabledBuildActionButtons(
   btnWrap: HTMLElement,
@@ -248,12 +236,6 @@ export function appendDisabledBuildActionButtons(
   applyBuildButtonVisualState(bBuild, false, lockHint);
   btnWrap.appendChild(bBuild);
 }
-
-const BUILDING_REQ_SECTION_LABELS: Record<BuildingReqChipKind, string> = {
-  tech: 'Wymagane badania',
-  stock: 'Wymagane surowce',
-  other: 'Wymagane warunki',
-};
 
 /** Sekcje wymagan budynku (pin:6980). */
 export function appendBuildingRequirementChipSections(
@@ -300,6 +282,10 @@ let techHintLinkDelegationBound = false;
  * ZMIANA ZACHOWANIA wzgledem pinu: pin wola te funkcje automatycznie przy zaladowaniu modulu (pin:7293);
  * port NIE binduje sam — wywolujacy (K01/K03+ przy starcie) musi zawolac ja raz z openPreview, inaczej
  * klik/Enter na `.cp-tech-hint-link` nie dziala (ZALOZENIE P5.8-K02-R3-Z10a, BLOKADA integracji).
+ *
+ * PUNKT WEJSCIA ORKIESTRACJI (K09, P5.8 SCAL — dokumentacja, bez zmiany kodu):
+ *   bindTechHintLinkDelegation((techName) => showTechDiscoveryNotice({ techName, eraIndex: 1, kind: 'preview' }));
+ * wywolac DOKLADNIE RAZ przy starcie UI (kolejne wywolania sa no-op). Szczegoly: dyspozycje/rust-port/p5/P5-8-SCAL.md.
  */
 export function bindTechHintLinkDelegation(openPreview: (techName: string) => void): void {
   if (techHintLinkDelegationBound) return;
