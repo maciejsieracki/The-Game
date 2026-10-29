@@ -1,6 +1,6 @@
 {
-  "version": 44,
-  "updatedAtIso": "2026-09-12T22:24:59.250Z",
+  "version": 45,
+  "updatedAtIso": "2026-10-29T23:23:13.142Z",
   "min_confidence_threshold": 0.6,
   "thresholds": {
     "promoteMinWinRate": 0.6,
@@ -672,9 +672,9 @@
     },
     {
       "id": "rule_167",
-      "rule_text": "**PLAN-FIRST KANBAN, GRAF I LEGALNY SUKCESOR (decyzja właściciela, 2026-09-12):** każde nowe lub odnowione zadanie The-Game najpierw trafia do karty Kanban, a przed pierwszym workerem karta zawiera pełny graf, nie płaską listę: GOAL, binarne kryteria, minimalną allowlistę, zależności, wszystkie wymagane fazy, przyszłe bramki blocked oraz OWNER_HOLD/DECISION_REQUIRED. Wszystkie nowe i odnowione karty używają jednego profilu wykonawczego game; process_phase i transition receipt opisują rolę oraz przejście, nie tworzy się profili game-operator/game-evaluator. native_status jest stanem dostawcy i nie wyznacza roli ani następcy. Graf ma krawędzie Operator → Evaluator → Obrona tylko przy niepustych, konkretnych zarzutach → Final Control → integracja orkiestratora → READY_FOR_DEPLOY → osobna zgoda push/deploy oraz wspólną krawędź terminalnych FAIL/NAPRAW/BLOCK/TIMEOUT/INFRA/ZWIS do retry guarda: runda <5 wraca do tego samego ID, runda 5 prowadzi do LIMIT-5-EXCEEDED, a jawna decyzja wznawia ten sam ID bez resetu licznika. OWNER_HOLD/DECISION_REQUIRED prowadzi do jawnie zablokowanego przyszłego sukcesora, a decyzja lub przywrócenie zależności odblokowuje kwalifikowany węzeł. Po każdym terminalnym przejściu Kanbana (np. kanban_complete, kanban_block, review_requested lub changes_requested, gdy kończy bieżącą fazę) z obserwowalnym eventem orkiestrator robi technical/context readback karty, eventu, grafu, kontraktu i artefaktów, a potem idempotentnie tworzy i dispatchuje wyłącznie legalnego sukcesora z receipt, event_id, idempotency_key oraz wynikami notify i wake dla aktywnej karty. Nie wolno twierdzić, że nic nie może ruszyć, gdy readback wskazuje kwalifikowany następny etap. [C-063]",
+      "rule_text": "**RUN PLIKOWY, RAPORT 1–11 I PRAWDZIWY STATUS (decyzja właściciela, 2026-10-29):** Kanban nie jest używany w tym repozytorium. Każdy temat ma pełne ID i run w dyspozycje/autobot/runs/<ID>/; etap 1–11 jest ostatnim potwierdzonym artefaktem zgodnie z runs/README.md. Każdy temat ma Operatora; raport odczytuje run, aktywność procesu, commit i testy, a potem uruchamia kwalifikowany następny etap. Brak procesu/artefaktu oznacza WSTRZYMANY/BLOCKED wraz z przyczyną, nigdy „w trakcie”. Obrona tylko dla konkretnych zarzutów Evaluatora. Etap 11 wymaga integracji main, deployu Roboczej, git push i odczytu potwierdzającego. Historyczne karty Kanban pozostają wyłącznie archiwum. [C-063]",
       "status": "ACTIVE",
-      "protected": true,
+      "protected": false,
       "win_count": 0,
       "fail_count": 0,
       "win_rate": 0,
