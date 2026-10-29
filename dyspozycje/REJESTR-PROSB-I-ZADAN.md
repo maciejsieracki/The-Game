@@ -8527,9 +8527,9 @@ referencyjnych zielone, `entity-card-historia-section-test` 36/36,
 
 ## `R-ARMY-MERGE-SPLIT-ICONS-Q2` — kierunki ikon łączenia i rozdzielania armii (2026-10-29)
 
-- **STATUS:** poprawka Operatora zaimplementowana i przetestowana; czeka na niezależnego Ewaluatora i Final Control. Nie wdrożono jej jeszcze do Roboczej.
+- **STATUS:** `DO-INTEGRACJI` — Operator PASS, niezależny Evaluator PASS, Final Control PASS; nie wdrożono jej jeszcze do Roboczej.
 - **Zgłoszenie:** ikony „Połącz” i „Rozdziel” w karcie armii wyglądały identycznie mimo wcześniejszego ustalenia, że strzałki scalania mają kierować się do środka, a rozdzielania na zewnątrz.
 - **Przyczyna:** definicje SVG w `gra/src/ui/unitActionBarHtml.ts` używały dla obu akcji tych samych dwóch grotów skierowanych na zewnątrz.
 - **Zmiana:** rozdzielenie ma teraz dwa wyraźne trzony zakończone grotami odśrodkowymi; połączenie ma groty skierowane do wspólnego środka. Test sprawdza wyrenderowane HTML produkcyjnego renderera i geometrię kierunku obu strzałek.
 - **Weryfikacja Operatora:** test ikon PASS; kompletność paska akcji 31/31; test „Odfortyfikuj całą armię” 16/16; TypeScript PASS; render Chromium zapisany w `dyspozycje/autobot/runs/R-ARMY-MERGE-SPLIT-ICONS-Q2/01-merge-split-icons.png`.
-- **Pliki:** `gra/src/ui/unitActionBarHtml.ts`, `gra/tools/army-merge-split-direction-icons-test.cjs`; raport: `dyspozycje/autobot/runs/R-ARMY-MERGE-SPLIT-ICONS-Q2/10-operator.md`.
+- **Pliki:** `gra/src/ui/unitActionBarHtml.ts`, `gra/tools/army-merge-split-direction-icons-test.cjs`; raporty: `10-operator.md`, `20-evaluator.md`, `30-final-control.md` w `dyspozycje/autobot/runs/R-ARMY-MERGE-SPLIT-ICONS-Q2/`.
