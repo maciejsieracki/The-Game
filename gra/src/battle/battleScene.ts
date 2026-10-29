@@ -7660,9 +7660,16 @@ export class BattleScene {
       }
     }
 
-    // Already standing where it could attack -> stop moving (it will strike
-    // next turn).
-    if (this._canAttackFrom(ru, ru.q, ru.r)) { done(); return; }
+    // The Attack doctrine routes melee through this line-advance path. Once a
+    // warrior reaches adjacency, it must switch from formation movement to a
+    // real melee action; merely ending the activation here leaves it idle on
+    // every later turn (Szturm has a separate adjacent-target dispatch).
+    if (this._canAttackFrom(ru, ru.q, ru.r)) {
+      const adjacent = this._pickAdjacentTargetByPriority(ru);
+      if (adjacent) this._doAttack(ru, adjacent, done);
+      else done();
+      return;
+    }
 
     const target = this._nearestEnemy(ru);
     if (!target) { done(); return; }
