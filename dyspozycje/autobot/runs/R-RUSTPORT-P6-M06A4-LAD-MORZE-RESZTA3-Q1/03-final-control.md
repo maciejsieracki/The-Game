@@ -1,29 +1,33 @@
 STATUS: PASS-WITH-NOTES
 DOMAIN: GAME
 TEMAT: R-RUSTPORT-P6-M06A4-LAD-MORZE-RESZTA3-Q1
-GOAL: Final Control rundy 2 na 08a47fd6 (obrona r3 po a91d6fcb). Zadanie 1 rundy (wektory <= 10 MB) zamkniete; partia 3 przechodzi do rundy 3.
+GOAL: Final Control rundy 3 (partie 3a/3b) na commicie obrony 9beaf2c598b63b0faea61507723a0e3c8c1f6e7e (baza 21a1eb7e, 3a 0c1c708a).
+ZMIANY/COMMIT: oceniany 9beaf2c5; ten plik dopisany w commicie FC (SHA w raporcie orkiestratora). Allowlista: `git diff --name-only 0c1c708a~1 9beaf2c5` poza allowlista = 0 plikow; `git diff --check` czysty.
 
-WERDYKT ZARZUTOW
-- Z1 (partia 3 niewykonana): ODDAL do rundy 3/5. Binarne kryterium dispatchu dopuszcza status RUNDA-2 z lista; r2 wykonala Zadanie 1 (blokada integracji usunieta), a lista otwartych symboli jest w dokumencie. Zaleznosc zmierzona przez Operatora: purgeInlandWaterForMultiLandTyp -> trimEnclosedOceanOnly -> morseDepthFromMapBorder (brak w Rust). Runda 3 MUSI zaczac od morseDepthFromMapBorder/trimEnclosedOceanOnly. Brak budzetu nie jest blokada techniczna; nie bedzie akceptowany drugi raz.
-- Z2 (luka M15): NAPRAWIONE w obronie (test non_canonical_key_is_skipped_not_processed, mutant M15 zabity). Zamkniete.
-- Z3 (zmniejszenie wektorow): ODDAL. Obrona zmierzyla: te same 71 kluczy, H={9,12,20,30,45,61} z tym samym pinem; trafienia progowe zachowane. Zarzut o prefiksie odrzucony (podzbior wybrany regula, nie prefiks).
-- Z4 (>=4000 -> ==707): AKCEPTUJE. Zmiana wymuszona redukcja, asercja scislejsza, nie oslabia testu.
-- Z5 (pliki -r4 vs -pomiary-r2): ODDAL. Mapowanie opisane w dokumencie; kosmetyka dowodowa.
-- Z6 (M05 dla H>4000): ODDAL. Zmierzone H in [3,4000]; H>4000 NIE_ZMIERZONO (jawnie), generator uzywa H<=61. Do ewentualnego dopisku w rundzie 3.
-Brak otwartego NAPRAW -> PASS-WITH-NOTES.
+WERDYKTY ZARZUTOW EVALUATORA
+1. BLOCK / kryteria: ODDAL. Pomiary wykonane w obronie na 21a1eb7e, status obrony PASS-WITH-NOTES.
+2. 29/49 mutacji: ODDAL. `mut-results-partia3-r3.jsonl` = 49 wpisow, 49 ZABITA, 0 PRZEZYTA (sprawdzone parserem).
+3. PM04: ODDAL. Dodany `chan-vectors.json` (12 przypadkow z uruchomionego weba) + test `purge_channel_cut_matches_web_including_last_remove_inland`; w jsonl PM04 = ZABITA (padl wlasnie ten test).
+4. Utracone artefakty: ODDAL. Runner, jsonl, logi gate-*-pomiary-r3.log, weryfikator, probe, diff dryfu po pinie i sekcja "Obrona r3" w dokumencie M06A4 sa w repo.
+5. Weryfikator/granice: ODDAL. verifier-pomiary-r3.log: trim/jagged/chan przegenerowane z `git archive edb8fb56`, cmp IDENTICAL; testy *_matches_web na 101/101/100/55/12 przypadkach (zgodnosc z webem = 0 rozbieznosci). Zadanie trafien "dokladnie na progu" zmiennoprzecinkowym szumu: pomiar 0 trafien na 12660 ocenach, pokryte testami 1-ulp; progi calkowite w `coverage`. Uznane jako ograniczenie naturalne, nie luka.
+6. Bramki: ODDAL. Niezaleznie powtorzone (nizej).
+7. Allowlista: bez zarzutu.
+NAPRAW: brak. DO DECYZJI CZLOWIEKA: brak.
 
-WLASNE POMIARY FC (08a47fd6, worktree detached)
-- cargo fmt -- --check: EXIT=0
+BRAMKI (wlasne, worktree na 9beaf2c5, CARGO_TARGET_DIR osobny)
+- cargo fmt --check: EXIT=0
 - cargo clippy --all-targets -- -D warnings: EXIT=0
-- cargo test --no-fail-fast: EXIT=0, 1254 passed / 0 failed
-- git diff --check a91d6fcb..08a47fd6: czysty
-- web-vectors.json: 6 790 798 B (<10 MB)
-- Allowlista: wzgledem 1fe728c7 zmieniono tylko P6-M06A4-LAD-MORZE-RESZTA.md, tests/p6_m06a4_landsea.rs, tests/p6_m06a4_vectors/web-vectors.json oraz runs/<ID>/**. landsea.rs, Cargo.toml, gra/**, relief.rs, bridge.rs bez zmian.
-- Nie powtarzano: generatora wektorow (cmp IDENTICAL wg Evaluatora i Operatora), mutantow (14/18 zabitych + M15 zabity w obronie; M02/M05/M13 rownowazne z dowodem).
+- cargo test: EXIT=0, 1265 passed / 0 failed (suma linii `test result`)
+- Wektory: chan 53997 B, jagged 843576 B, trim 2245855 B, web 6790798 B (kazdy < 10 MB).
 
-INTEGRACJA
-SHA koncowy do integracji: commit z tym plikiem (git log -1 na tym lancuchu), nad 08a47fd6. Baza 1fe728c7, merge-base z origin/rust-port/parity-v2 = 6daf5ed1; parity-v2 (f5d34b52) jest 39 commitow do przodu. Kolejnosc: najpierw zintegrowac lancuch od 1fe728c7 (lokalny refs/keep/m06a4-p2, teraz pushowalny bo wektory 6,8 MB) na parity-v2 przez rebase/cherry-pick; landsea.rs nietkniety w r2, konflikty mozliwe tylko w dokumencie/testach. Po integracji gate'y na wyniku (fmt/clippy/test >= 1254). Dopiero potem runda 3.
+UWAGI (nieblokujace)
+- Z-13: `FILL_ENCLOSED_MAX_PASSES`=8 bez wektora dosiegajacego limitu (NIE_ZMIERZONO) - zapisane w dokumencie.
+- Z-8: pozostale symbole RUNDA-2 (16 wierszy tabel) poza partia 3; ZALOZENIE: ta integracja zamyka tylko symbole partii 3 (morseDepthFromMapBorder, trimEnclosedOceanOnly, purgeInlandWaterForMultiLandTyp, applyJaggedCoastNoise); reszta wymaga osobnego tematu (decyzja podzialu u orkiestratora).
+- Dryf po pinie edb8fb56 vs origin/main: diff w `drift-gen-helpers-edb8fb56-origin-main-r3.diff`; odswiezenie wektorow w R-RUSTPORT-REPIN-DELTA-Q1.
+- Logi surowe w repo zawieraja ostrzezenie sciezki worktree -4 (obrona pracowala tam) - bez wplywu.
 
-RUNDY: 2/5 (po FC)
-NASTEPNY KROK: integracja orkiestratora, potem runda 3: morseDepthFromMapBorder -> trimEnclosedOceanOnly -> purgeInlandWaterForMultiLandTyp -> applyJaggedCoastNoise + reszta RUNDA-2.
+INTEGRACJA: SHA do integracji = 9beaf2c598b63b0faea61507723a0e3c8c1f6e7e (plus commit FC z tym plikiem). Kolejnosc: origin/rust-port/parity-v2 (f18a18c3) ma za baze ea68697d; `git merge-tree --write-tree` parity-v2 + 9beaf2c5 = czysty (bez konfliktow), landsea.rs na parity-v2 niezmieniony od ea68697d. Zintegrowac: merge/cherry-pick 0c1c708a, 21a1eb7e, 9beaf2c5 NA parity-v2, potem ponowic fmt/clippy/test na wyniku (oczekiwane >= 1265 + przyrost parity-v2).
+BLOKADY: brak
+RUNDY: 3/5
+NASTEPNY KROK: integracja orkiestratora, bramki na wyniku integracji, READY_FOR_DEPLOY po nich.
 DEPLOY/PUSH: NIE WYKONANO
