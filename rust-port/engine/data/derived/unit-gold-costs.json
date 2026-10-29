@@ -1,7 +1,7 @@
 {
   "meta": {
     "status": "BOOTSTRAP: wartosci startowe rozwiniete z regul weba. Zrodlem prawdy do recznego balansu jest TA tabela (edytuj liczby, nie mnozniki). Tabela NIE jest porownywana ze wzorem przy buildzie.",
-    "zrodlo": "gra/data/units.json @ edb8fb56 + gra/data/miasto-params.json (domyslne koszty roli)",
+    "zrodlo": "gra/data/units.json @ 91dc998a (REPIN-DANE-Q1 r2) + gra/data/miasto-params.json (domyslne koszty roli); logika unitCostFromDef (production.ts:255-289), unitUpkeep (economy-upkeep.ts), categoryOf (units/setup.ts) bez zmian edb8fb56->91dc998a (zweryfikowane); kontrola: generator na danych edb8fb56 odtwarza poprzedni plik bajt-w-bajt",
     "regula_weba": "production.ts unitCostFromDef (l.255-289) + scaleCostByEpoch(Epoka); economy-upkeep.ts unitUpkeep (l.962-977) x4 po scaleCostByEpoch (buildUnitUpkeepTable l.1000-1023); kategoria: units/setup.ts categoryOf (l.239-250, port gałęzi super/zwiadowca), reguła byCat===0 -> 0 (economy-upkeep.ts:967-968) WLICZONA w wartość (runda 4)",
     "wygenerowano": "R-RUSTPORT-P3-19-FLATTEN-MULTIPLIERS-Q1 runda 3, generator: gen-work-gold.mjs",
     "uwaga_stan": "Wartosci dotycza stanu bazowego web: pace niski (x1), trudnosc normal (x1), bez ulgi cywilizacji. Stany (b) NIE sa rozwiniete w tej tabeli (P3-19 sek. 9)."
@@ -100,9 +100,9 @@
     },
     {
       "jednostka": "Rydwan (woły)",
-      "epoka": "Brąz",
-      "pieniadz_koszt": 30,
-      "utrzymanie_pieniadz_ture": 24,
+      "epoka": "Kamień",
+      "pieniadz_koszt": 15,
+      "utrzymanie_pieniadz_ture": 12,
       "kategoria_utrzymania": "inna",
       "baza": {
         "pieniadz_koszt_zrodlo": 15,

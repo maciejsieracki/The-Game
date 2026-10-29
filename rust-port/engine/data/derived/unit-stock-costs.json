@@ -1,7 +1,7 @@
 {
   "meta": {
     "status": "BOOTSTRAP: wartosci startowe rozwiniete z regul weba. Zrodlem prawdy do recznego balansu jest TA tabela (edytuj liczby, nie mnozniki). Tabela NIE jest porownywana ze wzorem przy buildzie.",
-    "zrodlo": "gra/data/units.json @ edb8fb56 (identyczny z rust-port/engine/data/units.json)",
+    "zrodlo": "gra/data/units.json @ 91dc998a (identyczny z rust-port/engine/data/units.json po REPIN-DANE-Q1 r2); logika generatora = edb8fb56, zweryfikowana: building-stock-cost.ts, r-stawki-strojenie.ts, economy-upkeep.ts bez zmian miedzy edb8fb56 a 91dc998a; kontrola: generator na units.json z edb8fb56 odtwarza poprzedni plik bajt-w-bajt",
     "regula_weba": "building-stock-cost.ts unitStockCost (l.402-420; scaleCostByEpoch l.60-67; epochCostMultiplier l.28-57; MOUNT kon 25 l.368-369, 415-417); economy-upkeep.ts unitResourceUpkeep (l.784-797)",
     "wygenerowano": "R-RUSTPORT-P3-19-FLATTEN-MULTIPLIERS-Q1 (2026-10-21), generator: P3-19 sekcja 5",
     "uwaga_epoka": "Mnoznik epoki wynika z pola Epoka (jednostka) / epokaWejscia (budynek) danego wiersza, NIE z aktualnej epoki gry (web nie ma kosztow zaleznych od czasu)."
@@ -124,17 +124,17 @@
     },
     {
       "jednostka": "Rydwan (woły)",
-      "epoka": "Brąz",
+      "epoka": "Kamień",
       "surowiec": {
-        "braz": 50
+        "drewno": 25
       },
       "utrzymanie_surowiec": {
-        "braz": 10
+        "drewno": 5
       },
       "baza": {
-        "surowiec": "Brąz",
+        "surowiec": "Drewno",
         "surowiec_ilosc": 25,
-        "utrzymanie_surowiec": "Brąz",
+        "utrzymanie_surowiec": "Drewno",
         "utrzymanie_surowiec_ilosc": 5,
         "dodatek_kon_baza": 0
       }

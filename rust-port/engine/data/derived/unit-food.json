@@ -1,7 +1,7 @@
 {
   "meta": {
     "status": "BOOTSTRAP: wartości startowe rozwinięte z reguł weba. Źródłem prawdy do ręcznego balansu jest TA tabela (edytuj liczby, nie mnożniki). Tabela NIE jest porównywana ze wzorem przy buildzie.",
-    "zrodlo": "gra/data/units.json, econ-params.json",
+    "zrodlo": "gra/data/units.json, econ-params.json @ 91dc998a (REPIN-DANE-Q1 r2); logika economy-upkeep.ts/r-stawki-strojenie.ts bez zmian edb8fb56->91dc998a (zweryfikowane diff: 0 hunkow); kontrola: generator na danych edb8fb56 odtwarza poprzedni plik bajt-w-bajt",
     "regula_weba": "economy-upkeep.ts:1038-1066 unitFoodPerTurn, :1051-1066 buildUnitFoodTable, :608-611 readNum, r-stawki-strojenie.ts:12 (x4)",
     "pin_web": "edb8fb56",
     "wygenerowano": "R-RUSTPORT-P3-19-FLATTEN-MULTIPLIERS-Q1 runda 4, generator: gen-round4.mjs",
@@ -662,92 +662,92 @@
     },
     {
       "jednostka": "Rydwan (woły)",
-      "epoka": "Brąz",
-      "zywnosc_baza_tabela": 2,
+      "epoka": "Kamień",
+      "zywnosc_baza_tabela": 1,
       "wartosci": [
         {
           "stan": "ruch",
           "terytorium": "wlasne",
           "poziom_trudnosci": "easy",
-          "zywnosc_setne": 800,
-          "zywnosc_dokladnie": 8
+          "zywnosc_setne": 400,
+          "zywnosc_dokladnie": 4
         },
         {
           "stan": "ruch",
           "terytorium": "poza",
           "poziom_trudnosci": "easy",
-          "zywnosc_setne": 1600,
-          "zywnosc_dokladnie": 16
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
         },
         {
           "stan": "oboz",
           "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 152,
+          "zywnosc_dokladnie": 1.52
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
           "poziom_trudnosci": "easy",
           "zywnosc_setne": 304,
           "zywnosc_dokladnie": 3.04
         },
         {
-          "stan": "oboz",
-          "terytorium": "poza",
-          "poziom_trudnosci": "easy",
-          "zywnosc_setne": 608,
-          "zywnosc_dokladnie": 6.08
-        },
-        {
           "stan": "ruch",
-          "terytorium": "wlasne",
-          "poziom_trudnosci": "normal",
-          "zywnosc_setne": 800,
-          "zywnosc_dokladnie": 8
-        },
-        {
-          "stan": "ruch",
-          "terytorium": "poza",
-          "poziom_trudnosci": "normal",
-          "zywnosc_setne": 1600,
-          "zywnosc_dokladnie": 16
-        },
-        {
-          "stan": "oboz",
           "terytorium": "wlasne",
           "poziom_trudnosci": "normal",
           "zywnosc_setne": 400,
           "zywnosc_dokladnie": 4
         },
         {
-          "stan": "oboz",
+          "stan": "ruch",
           "terytorium": "poza",
           "poziom_trudnosci": "normal",
           "zywnosc_setne": 800,
           "zywnosc_dokladnie": 8
         },
         {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 200,
+          "zywnosc_dokladnie": 2
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 400,
+          "zywnosc_dokladnie": 4
+        },
+        {
           "stan": "ruch",
           "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 400,
+          "zywnosc_dokladnie": 4
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
           "poziom_trudnosci": "hard",
           "zywnosc_setne": 800,
           "zywnosc_dokladnie": 8
         },
         {
-          "stan": "ruch",
-          "terytorium": "poza",
-          "poziom_trudnosci": "hard",
-          "zywnosc_setne": 1600,
-          "zywnosc_dokladnie": 16
-        },
-        {
           "stan": "oboz",
           "terytorium": "wlasne",
           "poziom_trudnosci": "hard",
-          "zywnosc_setne": 248,
-          "zywnosc_dokladnie": 2.48
+          "zywnosc_setne": 124,
+          "zywnosc_dokladnie": 1.24
         },
         {
           "stan": "oboz",
           "terytorium": "poza",
           "poziom_trudnosci": "hard",
-          "zywnosc_setne": 496,
-          "zywnosc_dokladnie": 4.96
+          "zywnosc_setne": 248,
+          "zywnosc_dokladnie": 2.48
         }
       ]
     },

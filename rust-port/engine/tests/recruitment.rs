@@ -34,8 +34,10 @@ fn canonical_unit_record_keeps_purchase_and_upkeep_separate() {
     assert_eq!(cavalry.resource_upkeep("braz"), Some(10));
 
     // Rydwan (woły) is the only Mount exempt from the horse surcharge (building-stock-cost.ts:371).
+    // REPIN-DANE-Q1 r2: web 91dc998a - Rydwan (woły) Epoka Kamien, Surowiec Drewno 25 (units.json);
+    // stara wartosc Braz 50 dotyczyla pinu edb8fb56. Kon nadal None (wyjatek Mount).
     let ox_chariot = recruitment_for("Rydwan (woły)").expect("canonical ox chariot");
-    assert_eq!(ox_chariot.stock_cost("braz"), Some(50));
+    assert_eq!(ox_chariot.stock_cost("drewno"), Some(25));
     assert_eq!(ox_chariot.stock_cost("kon"), None);
 }
 

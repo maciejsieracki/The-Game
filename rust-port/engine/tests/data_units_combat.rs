@@ -41,8 +41,9 @@ fn units_parses_and_spot_checks() {
         epoki_braz,
         epoki_zelazo
     );
-    assert_eq!(epoki_kamien, 10);
-    assert_eq!(epoki_braz, 40);
+    // Web 91dc998a: Rydwan (woly) przeniesiony Braz -> Kamien (units.json, zmierzone: 11/39/25; pin edb8fb56: 10/40/25).
+    assert_eq!(epoki_kamien, 11);
+    assert_eq!(epoki_braz, 39);
     assert_eq!(epoki_zelazo, 25);
 
     let w = &units[0];
