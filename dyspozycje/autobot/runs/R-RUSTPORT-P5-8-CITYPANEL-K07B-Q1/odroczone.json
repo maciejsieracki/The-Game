@@ -1,0 +1,74 @@
+[
+ {
+  "name": "skeleton",
+  "a": 10247,
+  "b": 10328,
+  "loc": 82,
+  "reason": "T: typ City z game/cities.ts (wymaga lokalnej kopii typu)",
+  "firstBlocker": {
+   "kind": "T",
+   "id": "City",
+   "from": "game/cities.ts"
+  }
+ },
+ {
+  "name": "resolveActiveCity",
+  "a": 10329,
+  "b": 10336,
+  "loc": 8,
+  "reason": "T: typ City z game/cities.ts (wymaga lokalnej kopii typu)",
+  "firstBlocker": {
+   "kind": "T",
+   "id": "City",
+   "from": "game/cities.ts"
+  }
+ },
+ {
+  "name": "w3CityChip",
+  "a": 10393,
+  "b": 10431,
+  "loc": 39,
+  "reason": "R: import logiki buildChipDeltaStockHtml z game/empire-hud-totals.ts",
+  "firstBlocker": {
+   "kind": "R",
+   "id": "buildChipDeltaStockHtml",
+   "from": "game/empire-hud-totals.ts"
+  }
+ },
+ {
+  "name": "buildCityOnlyW3FlankChips",
+  "a": 10432,
+  "b": 10580,
+  "loc": 149,
+  "reason": "T: typ City z game/cities.ts (wymaga lokalnej kopii typu)",
+  "firstBlocker": {
+   "kind": "T",
+   "id": "City",
+   "from": "game/cities.ts"
+  }
+ },
+ {
+  "name": "buildCityResourceStatItems",
+  "a": 10581,
+  "b": 10693,
+  "loc": 113,
+  "reason": "T: typ City z game/cities.ts (wymaga lokalnej kopii typu)",
+  "firstBlocker": {
+   "kind": "T",
+   "id": "City",
+   "from": "game/cities.ts"
+  }
+ },
+ {
+  "name": "capitalBadgeOrButtonHtml",
+  "a": 10719,
+  "b": 10735,
+  "loc": 17,
+  "reason": "T: typ City z game/cities.ts (wymaga lokalnej kopii typu)",
+  "firstBlocker": {
+   "kind": "T",
+   "id": "City",
+   "from": "game/cities.ts"
+  }
+ }
+]

@@ -1,0 +1,122 @@
+[
+ {
+  "name": "renderSpoleczenstwo",
+  "port": "renderSpoleczenstwo",
+  "a": 3295,
+  "b": 3425,
+  "loc": 131,
+  "kind": "function"
+ },
+ {
+  "name": "renderZdrowie",
+  "port": "renderZdrowie",
+  "a": 3551,
+  "b": 3580,
+  "loc": 30,
+  "kind": "function"
+ },
+ {
+  "name": "renderKultura",
+  "port": "renderKultura",
+  "a": 3992,
+  "b": 4110,
+  "loc": 119,
+  "kind": "function"
+ },
+ {
+  "name": "renderProd",
+  "port": "renderProd",
+  "a": 8429,
+  "b": 8535,
+  "loc": 107,
+  "kind": "function"
+ },
+ {
+  "name": "renderBuildSplitPanel",
+  "port": "renderBuildSplitPanel",
+  "a": 9306,
+  "b": 9324,
+  "loc": 19,
+  "kind": "function"
+ },
+ {
+  "name": "renderOkolica",
+  "port": "renderOkolica",
+  "a": 10018,
+  "b": 10152,
+  "loc": 135,
+  "kind": "function"
+ },
+ {
+  "name": "CityPanelUxMounts",
+  "port": "CityPanelUxMounts",
+  "a": 10349,
+  "b": 10363,
+  "loc": 15,
+  "kind": "function"
+ },
+ {
+  "name": "renderCityHeaderCompact",
+  "port": "renderCityHeaderCompact",
+  "a": 10812,
+  "b": 10843,
+  "loc": 32,
+  "kind": "function"
+ },
+ {
+  "name": "appendOkolicaToolbarProfiles",
+  "port": "appendOkolicaToolbarProfiles",
+  "a": 11081,
+  "b": 11121,
+  "loc": 41,
+  "kind": "function"
+ },
+ {
+  "name": "appendBudowaToolbarProfiles",
+  "port": "appendBudowaToolbarProfiles",
+  "a": 11123,
+  "b": 11236,
+  "loc": 114,
+  "kind": "function"
+ },
+ {
+  "name": "appendBudowaListaBar",
+  "port": "appendBudowaListaBar",
+  "a": 11238,
+  "b": 11473,
+  "loc": 236,
+  "kind": "function"
+ },
+ {
+  "name": "renderTopStatsBar",
+  "port": "renderTopStatsBar",
+  "a": 11475,
+  "b": 11503,
+  "loc": 29,
+  "kind": "function"
+ },
+ {
+  "name": "appendPanel",
+  "port": "appendPanel",
+  "a": 11505,
+  "b": 11510,
+  "loc": 6,
+  "kind": "function"
+ },
+ {
+  "name": "resolveDetailSideHint",
+  "port": "resolveDetailSideHint",
+  "a": 11512,
+  "b": 11516,
+  "loc": 5,
+  "kind": "function"
+ },
+ {
+  "name": "appendSectionTitleWithDetails",
+  "port": "appendSectionTitleWithDetails",
+  "a": 11518,
+  "b": 11537,
+  "loc": 20,
+  "kind": "function"
+ }
+]

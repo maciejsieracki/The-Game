@@ -5,6 +5,7 @@
  *
  * Tryby:
  *   r2 (domyślnie) — wynik lib (jednostki bez DOM i bez blokerów logiki).
+ *   --k07b        — jednostki klasy DOM bloku K07 (P5-8 K07B; rozłączne z K07A).
  *   --r3          — wynik r2 ∪ jednostki odroczone klasą R, których zależności rozstrzyga adapter K07A-Z2/Z4
  *                   (`K07A_RESOLVED_BY_ADAPTER`). Klasy T/P: brak w pomiarze K07 (sprawdzane, puste).
  * Lokalna kopia typu pinu `City` (K07A-Z1 → `CityK07`) i nazwy portu (`PORT_NAME_OF`) są jawnymi stałymi tego skryptu.
@@ -52,9 +53,14 @@ const POMIAR = resolve(
     fileURLToPath(new URL('../../../../dyspozycje/autobot/runs/R-RUSTPORT-P5-8-CITYPANEL-K07A-Q1/r1-logi/pomiar-r2.json', import.meta.url)),
 );
 const R3 = args.includes('--r3');
+/** K07B (P5-8, R-RUSTPORT-P5-8-CITYPANEL-K07B-Q1): jednostki DOM bloku K07 = odroczone klasą DOM (15 jednostek, 1 074 LOC). */
+const K07B = args.includes('--k07b');
+/** K07B-Z6 (obrona r2, zarzut 8): tryb --k07b zapisuje WYŁĄCZNIE do katalogu runu K07B, nigdy do katalogu K07A. */
 const OUT = resolve(
   argOf('--out-dir') ??
-    fileURLToPath(new URL('../../../../dyspozycje/autobot/runs/R-RUSTPORT-P5-8-CITYPANEL-K07A-Q1/r1-logi', import.meta.url)),
+    (K07B
+      ? fileURLToPath(new URL('../../../../dyspozycje/autobot/runs/R-RUSTPORT-P5-8-CITYPANEL-K07B-Q1', import.meta.url))
+      : fileURLToPath(new URL('../../../../dyspozycje/autobot/runs/R-RUSTPORT-P5-8-CITYPANEL-K07A-Q1/r1-logi', import.meta.url))),
 );
 
 const r = selectK01a({ pinDir: resolve(PIN_DIR), pomiar: loadPomiar(POMIAR), block: K07_BLOCK, localTypes: K07A_LOCAL_COPIES, dtoSubst: K07A_DTO_SUBST });
@@ -70,7 +76,11 @@ const toUnit = (d) => {
 
 let selected = r.selected.map(toUnit);
 let deferred = r.deferred;
-if (R3) {
+if (K07B) {
+  // Tryb K07B: rozłączny z K07A (8 jednostek nie-DOM) — wybór = wszystkie jednostki klasy DOM bloku K07.
+  selected = r.deferred.filter((d) => d.reason === 'DOM').map(toUnit).sort((x, y) => x.a - y.a);
+  deferred = r.deferred.filter((d) => d.reason !== 'DOM');
+} else if (R3) {
   // Klasy T/P = zależność od nazwy pinu spoza K07 (cfg, activeCity, CityView): rozstrzyga adapter K07A-Z1..Z4.
   const takenByAdapter = (d) => /^(T|P):/.test(d.reason) || K07A_RESOLVED_BY_ADAPTER.has(d.name);
   selected = [...selected, ...r.deferred.filter(takenByAdapter).map(toUnit)].sort((x, y) => x.a - y.a);
@@ -86,7 +96,7 @@ for (const d of deferred) {
   reasons[k] = (reasons[k] ?? 0) + 1;
 }
 const summary = {
-  mode: R3 ? 'r3' : 'r2',
+  mode: K07B ? 'k07b' : R3 ? 'r3' : 'r2',
   pin: r.pin,
   block: K07_BLOCK,
   pinUnits: r.pinUnits,
