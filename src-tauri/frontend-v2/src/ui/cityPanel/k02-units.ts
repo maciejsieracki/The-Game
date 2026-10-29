@@ -6,7 +6,8 @@
 //   Z2: module-level rerender() (pin) przekazywane jako argument `rerender` (appendIndywidualneToggle).
 //   Z3: statChip (pin:4222) i stala LIST_ROW_HEIGHT_EM (pin:1773) skopiowane lokalnie (prywatne w pinie i w K01).
 // Lokalny `el` bez parametru `html`: wszystkie wywolania w tych jednostkach maja tag i klase (jak w k02-breakdown.ts).
-import type { TabIndicatorChip } from './types';
+import type { BreakdownLine, TabIndicatorChip } from './types';
+import { appendBreakdownLines } from './k02-breakdown';
 
 const LIST_ROW_HEIGHT_EM = 2.75;
 
@@ -107,4 +108,89 @@ export function appendIndywidualneToggle(
     rerender();
   });
   mount.appendChild(row);
+}
+
+// --- P5.8 K02 r3, partia 2 (pin:4560, 4538, 6415-6442) ---
+// Z4: funkcje ikon (buildingIconHtml / productionItemIconHtml, pin:6400+) przyjmuja gotowy iconHtml
+//     zamiast definicji/danych (wywolujacy liczy ikone; zaleznosc w gore jako dana, ZALOZENIE P5.8-K02-R3-Z4).
+// Z5: appendCitizenUpkeepBlock przyjmuje wyliczone wiersze i podpis (citizenUpkeepDisplayLines,
+//     stockResourceLabel, pctSubheadHtml sa zalezne od K01/brand); `hasRequired` = !!upkeep && required.length>0.
+
+/** Pasek procentowy W4 v2 (pin:4560) — kopia 1:1; appendBreakdownLines z ./k02-breakdown. */
+export function appendW4PctMetricBlock(
+  mount: HTMLElement,
+  titleHtml: string,
+  pct: number | undefined,
+  barGradient: string,
+  lines: BreakdownLine[] | undefined,
+  emptyHint: string,
+  afterBar?: (block: HTMLElement) => void,
+  pointsLabel?: string,
+): void {
+  const block = el('div', 'civ-breakdown-block civ-w4-metric');
+  const sub = el('div', 'civ-w4-subhd');
+  if (pct != null) {
+    const ptsHtml = pointsLabel
+      ? `<span class="civ-w4-subhd-pts">${pointsLabel}</span>`
+      : '';
+    sub.innerHTML = `${titleHtml}<span class="civ-w4-subhd-pct">${Math.round(pct)}%${ptsHtml}</span>`;
+  } else if (titleHtml.includes('<')) {
+    sub.innerHTML = titleHtml;
+  } else {
+    sub.textContent = titleHtml;
+  }
+  block.appendChild(sub);
+  if (pct != null) {
+    const barWrap = el('div', 'civ-w4-pct-bar');
+    const fill = el('div', 'civ-w4-pct-fill');
+    fill.style.width = `${Math.max(0, Math.min(100, pct))}%`;
+    fill.style.background = barGradient;
+    barWrap.appendChild(fill);
+    block.appendChild(barWrap);
+  }
+  if ((lines && lines.length > 0) || emptyHint) {
+    appendBreakdownLines(block, lines, emptyHint);
+  }
+  if (afterBar) afterBar(block);
+  mount.appendChild(block);
+}
+
+/** Blok „Zaopatrzenie obywateli" (pin:4538) — wiersze i podpis policzone przez wywolujacego (Z5). */
+export function appendCitizenUpkeepBlock(
+  mount: HTMLElement,
+  hasRequired: boolean,
+  lines: BreakdownLine[],
+  subheadHtml: string,
+): void {
+  if (!hasRequired) return;
+  appendW4PctMetricBlock(
+    mount,
+    subheadHtml,
+    undefined,
+    'linear-gradient(90deg,#3a8a5a,#7ad0a0)',
+    lines,
+    'Brak surowców wymaganych przez obywateli w tej epoce.',
+  );
+}
+
+export function makeBuildingThumb(iconHtml: string): HTMLDivElement {
+  return makeMiniThumb(iconHtml);
+}
+
+export function appendBuildingInlineIcon(parent: HTMLElement, iconHtml: string): void {
+  const bi = el('span', 'bi');
+  fillIconElement(bi, iconHtml);
+  parent.appendChild(bi);
+}
+
+export function appendProductionPicon(parent: HTMLElement, iconHtml: string): void {
+  const iconEl = el('div', 'picon');
+  fillIconElement(iconEl, iconHtml);
+  parent.appendChild(iconEl);
+}
+
+export function productionQueueIconSpan(iconHtml: string): HTMLElement {
+  const s = el('span');
+  fillIconElement(s, iconHtml);
+  return s;
 }

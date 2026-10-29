@@ -33,6 +33,14 @@ const MUTS = [
   ['M7 appendSurowceGrid: tytul aktywnego bez polskiego znaku', 'dostęp aktywny (ulepszenie', 'dostep aktywny (ulepszenie'],
   ['M8 appendIndywidualneToggle: zamiana stanu data-stan', "btn.dataset.stan = overrideOn ? 'wl' : 'wyl';", "btn.dataset.stan = overrideOn ? 'wyl' : 'wl';"],
   ['M9 appendIndywidualneToggle: brak rerender po kliknieciu', '    rerender();', '    void 0;'],
+  ['M10 appendW4PctMetricBlock: klamra szerokosci paska 100→99', 'fill.style.width = `${Math.max(0, Math.min(100, pct))}%`;', 'fill.style.width = `${Math.max(0, Math.min(99, pct))}%`;'],
+  ['M11 appendW4PctMetricBlock: klasa paska', "const barWrap = el('div', 'civ-w4-pct-bar');", "const barWrap = el('div', 'civ-w4-pct-bar2');"],
+  ['M12 appendW4PctMetricBlock: klasa punktow', 'class="civ-w4-subhd-pts"', 'class="civ-w4-subhd-pt"'],
+  ['M13 appendCitizenUpkeepBlock: ignoruje brak wymagan', 'if (!hasRequired) return;', 'if (false) return;'],
+  ['M14 makeBuildingThumb: zla ikona (pusta)', 'return makeMiniThumb(iconHtml);', "return makeMiniThumb('');"],
+  ['M15 appendProductionPicon: klasa picon', "const iconEl = el('div', 'picon');", "const iconEl = el('div', 'picon2');"],
+  ['M16 productionQueueIconSpan: dodatkowa klasa span', "const s = el('span');", "const s = el('span', 'x');"],
+  ['M17 appendBuildingInlineIcon: klasa bi', "const bi = el('span', 'bi');", "const bi = el('span', 'bi2');"],
 ];
 
 let failed = 0;
