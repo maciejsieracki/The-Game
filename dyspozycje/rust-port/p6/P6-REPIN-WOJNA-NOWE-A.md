@@ -63,3 +63,16 @@ Liczby zapisane jako tekst (`String(x)`, `-0`, `NaN`, `Infinity`), zgodnie z kon
 - Zmiana pinu w manifestach (`pin-manifest.json`, `MANIFEST.tsv`, `derived/*.json` z polem `pin`): osobny temat po krokach 1-5 (REPIN-DELTA §6).
 - Kolejne czesci: `army-consolidation.ts`, `ai-general-war-campaign.ts`, `ai-move-range.ts`, `diplomacy-tick-war-brake.ts`, `forced-war-*`.
 - Brak zmian w `gra/**`, `rust-port/renderer/**`, `src-tauri/**`, `Cargo.toml`, `WERSJE.md`.
+
+## 7. Weryfikacja niezalezna (runda 2, Operator-pomiary)
+
+- Regeneracja wektorow z URUCHOMIONEGO weba `91dc998a` (`gen-repin-wojna-a-web-vectors.mjs`, poza repo): wszystkie 3 pliki **bajt-w-bajt identyczne** z committed `tests/p6_repin_wojna_a_vectors/*.json` (0 rozbieznosci). Liczniki: classify 2031, slots 406, compact 1872, academy 207, morale 460, ratio 1204, withdraw 1204, promo 613.
+- Numery linii web z tabeli sekcji 2 sprawdzone przez `git show 91dc998a:<plik>` (exporty: formationRules.ts:3/46/92/115; army-leadership.ts:13/18/23/32/39/57; ai-era-unit-promotion.ts:38; Math.round :57) - zgodne.
+- Numery linii Rust sprawdzone grepem (formation_rules.rs:95/123/140/202/232/274/306; army_leadership.rs:69/78/84/95/110/123/146; ai_era_unit_promotion.rs:34/51/62) - zgodne.
+- Mutacje niezalezne (kazda zabita, kod przywrocony, `git diff` czysty):
+  - M2 `army_leadership.rs` `moraleWithArmyLeaderBonus`: `.ceil()` -> `.floor()` -> FAILED `morale_with_bonus_matches_web`.
+  - M3 `ai_era_unit_promotion.rs`: `target.epoka <= old.epoka` -> `<` -> FAILED `promotion_matches_web_on_all_vectors`.
+  - M4 `formation_rules.rs` `compact_line_allows_advance`: `own_line_limit.min(previous)` -> `.max(previous)` -> FAILED `compact_line_matches_web_on_grid`.
+  - (M1 `+1.0` -> `+2.0` z Operatora-impl r1 - zabita; nie powtarzana.)
+- Bramki r2 (surowe logi w runie): fmt EXIT=0; clippy `-D warnings` EXIT=0; `cargo test --no-fail-fast` EXIT=0, **1277 passed / 0 failed / 0 ignored**; trzy cele `p6_repin_wojna_a_*` 5+5+2 = **12/12 ok**.
+- Incydent srodowiskowy: pierwsze `cargo test` zakonczylo sie EXIT=101 z bledem linkera (`rust-lld` Bus error, sygnal 7) przy zapelnionym dysku (93%, 3.1 GB wolne). Ponowienie z `-j 2` przeszlo bez zmian w kodzie (log `test-r2.log` = ponowienie).
