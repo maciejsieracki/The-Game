@@ -1,0 +1,1 @@
+src/ui/cityPanel/k01b-t.ts(211,37): error TS2551: Property 'nakarmione' does not exist on type '{ readonly cityId: string; readonly nakarmioneM?: boolean | undefined; }'. Did you mean 'nakarmioneM'?
