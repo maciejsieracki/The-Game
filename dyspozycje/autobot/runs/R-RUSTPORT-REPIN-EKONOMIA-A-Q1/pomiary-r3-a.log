@@ -1,0 +1,4 @@
+MUTACJA K01-skalowanie-dolna-0.1: WYKRYTA (p6_5b_manpower:exit=101; fail=test city_pool_functions_match_web ... FAILED | test empire_totals_match_web ... FAILED; p6_7a_growth:exit=0; p6_repin_a_costmult:exit=101; fail=test zero_cost_branch_heals_without_spending_manpower ... FAILED | test replenish_cost_uses_cost_mult_not_max_mult ... FAILED)
+MUTACJA K02-nieskonczony-mnoznik-0: WYKRYTA (p6_5b_manpower:exit=101; fail=test empire_deduct_refund_and_spawn_mutate_like_web ... FAILED | test city_pool_functions_match_web ... FAILED; p6_repin_a_costmult:exit=0)
+MUTACJA K03-macierz-bez-klampy-0: WYKRYTA (p6_5b_manpower:exit=101; fail=test civ_matrix_manpower_mults_match_web_formula ... FAILED | test result: FAILED. 13 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.56s; p6_repin_a_costmult:exit=0)
+KONIEC
