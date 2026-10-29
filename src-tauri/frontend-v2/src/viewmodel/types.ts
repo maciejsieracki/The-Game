@@ -438,6 +438,10 @@ export interface CityPanelInputsDto {
   surowce: { potential: string[]; active: string[]; legacy: boolean };
   /** K04-Z1 (P5-8-K04): pula magazynu PAŃSTWA po kluczu surowca (civ-wide, pin `ownerResourceStockAll`); brak = pusta. */
   stockPool?: Readonly<Record<string, number>>;
+  /** K04-Z3 (P5-8-K04 batch 2): poziom budynku w mieście po id definicji (silnik: buildingLevelForEpoch); brak = 1. */
+  ownedLevels?: Readonly<Record<string, number>>;
+  /** K04-Z3 (P5-8-K04 batch 2): utrzymanie budynku na poziomie właściciela po id definicji (silnik: buildingUpkeep). */
+  upkeepById?: Readonly<Record<string, number>>;
   /** Bezposrednie wymagania technologii (nazwa -> lista poprzednikow) — zamiast `getTechDef`/`parsePrerequisites` pina. */
   techPrereqs: Record<string, string[]>;
   growthTooltip: { osobNaObywatela: number; gainSlots: number };

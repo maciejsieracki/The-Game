@@ -230,4 +230,4 @@ Model miasta (pin `edb8fb56:gra/src/ui/cityPanel.ts`): **17 z 36 jednostek K03**
 
 ## Status P5.8 K04 (`R-RUSTPORT-P5-8-CITYPANEL-K04-Q1`, runda 1/5, batch 1)
 
-Zrobione 7 z 32 jednostek K04 (koszty surowcowe kolejki, pula magazynu, anulowanie jako komenda `dequeue_build`, formatery surowców): `src/ui/cityPanel/k04-stock.ts`; pole DTO `CityPanelInputsDto.stockPool` (K04-Z1). Pozostałe 25 jednostek: NIE PORTOWANE w r1 (lista w `dyspozycje/rust-port/p5/P5-8-K04.md`). Harness z pinem i mutacje: NIE_ZMIERZONO w r1.
+Zrobione 7 z 32 jednostek K04 (koszty surowcowe kolejki, pula magazynu, anulowanie jako komenda `dequeue_build`, formatery surowców): `src/ui/cityPanel/k04-stock.ts`; pole DTO `CityPanelInputsDto.stockPool` (K04-Z1). Batch 2 (runda 3): 4 jednostki poziomów i utrzymania budynków (`src/ui/cityPanel/k04-buildings.ts`), pola DTO `ownedLevels`, `upkeepById` (K04-Z3). Łącznie **11 z 32**. Pozostałe 21 jednostek: NIE PORTOWANE (batch 3–4, lista w `dyspozycje/rust-port/p5/P5-8-K04.md`). Harness: `run-k04-units.mjs` (batch 1, 22 przyp.) i `run-k04-units-b2.mjs` (batch 2, 17 przyp.), mutacje: `mutate-k04-units.mjs` (15/15), `mutate-k04-units-b2.mjs` (10/10).
