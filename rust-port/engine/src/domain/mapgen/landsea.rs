@@ -29,11 +29,12 @@ use std::collections::{HashMap, HashSet};
 
 use crate::data::derived::{
     mapgen_desert_purge, mapgen_jagged_coast, mapgen_landsea, mapgen_landsea_fill,
-    MapgenJaggedCoastFile,
+    mapgen_landsea_pangea, MapgenJaggedCoastFile,
 };
 use crate::domain::improvements::js_round;
 use crate::domain::map_generator::{ClimateBand, Terrain, WorldType};
 use crate::domain::mapgen::cluster_mass::js_array_sort_by;
+use crate::domain::mapgen::masks::v8math::{js_hypot, js_max, js_min};
 use crate::domain::mapgen::masks::{nearest_continent_zone_index, ContinentCenter};
 use crate::domain::mapgen::prims::{
     climate_band_at, earth_template_land_at, fbm, hex_key, latitudinal_ocean_buffer_rows,
@@ -41,8 +42,8 @@ use crate::domain::mapgen::prims::{
 };
 use crate::domain::mapgen::terrain_class::{
     apply_marginal_land_zone_caps, enforce_map_border_ocean, hash_int3, hex_border_distance,
-    is_in_map_border, map_center_distance_norm, map_margin_land_zone_hexes, set_hex_to_laka,
-    set_hex_to_morze, HexRecord, MarginZoneHooks, Nakladka,
+    is_in_map_border, map_center_distance_norm, map_margin_land_zone_hexes, parse_hex_key,
+    set_hex_to_laka, set_hex_to_morze, HexRecord, MarginZoneHooks, Nakladka,
 };
 use crate::domain::recruitment::manpower::locale_compare;
 
@@ -1099,4 +1100,326 @@ pub fn rebalance_land_fraction_with_margins(
         enforce_map_border_ocean(hexes, width, height, None);
     }
     apply_double_coast_ring(hexes);
+}
+
+// ---------------------------------------------------------------------------------------------
+// P6.M06A6 (R-RUSTPORT-P6-M06A6-LAD-MORZE-PANGEA-Q1), partia 1: rodzina Pangei i kontynentow.
+// Progi i szum z `data/derived/mapgen-landsea-pangea.json` (`mapgen_landsea_pangea()`).
+// ---------------------------------------------------------------------------------------------
+
+/// Suche heksy lądu (web `Object.keys(hexes).filter(isDryLandTerrain)`), w kolejnosci wstawiania.
+fn dry_land_keys(hexes: &HexRecord) -> Vec<String> {
+    hexes
+        .iter()
+        .filter(|(_, h)| is_dry_land_terrain(h.terrain))
+        .map(|(k, _)| k.clone())
+        .collect()
+}
+
+/// Web `erodePangeaBboxLowScoreRim(hexes, landScores, targetBboxFill, maxErode)` (:3551, prywatna).
+/// Domyslne wartosci webu (0.74, 1200) podaje wywolujacy; `mapgen-landsea-pangea.json` ma je jako dane.
+/// Zwraca liczbe zerodowanych heksow.
+pub fn erode_pangea_bbox_low_score_rim(
+    hexes: &mut HexRecord,
+    land_scores: &HashMap<String, f64>,
+    target_bbox_fill: f64,
+    max_erode: usize,
+) -> usize {
+    let p = mapgen_landsea_pangea();
+    let land_keys = dry_land_keys(hexes);
+    if land_keys.is_empty() {
+        return 0;
+    }
+
+    let (mut q_min, mut q_max) = (f64::INFINITY, f64::NEG_INFINITY);
+    let (mut r_min, mut r_max) = (f64::INFINITY, f64::NEG_INFINITY);
+    for k in &land_keys {
+        let (q, r) = parse_hex_key(k);
+        q_min = js_min(q_min, q);
+        q_max = js_max(q_max, q);
+        r_min = js_min(r_min, r);
+        r_max = js_max(r_max, r);
+    }
+    let bbox_area = js_max(1.0, (q_max - q_min + 1.0) * (r_max - r_min + 1.0));
+    let mut land_count = land_keys.len() as f64;
+    let mut bbox_fill = land_count / bbox_area;
+    if bbox_fill <= target_bbox_fill {
+        return 0;
+    }
+
+    let mid_q = (q_min + q_max) / 2.0;
+    let mid_r = (r_min + r_max) / 2.0;
+    let band = p.erode_pas_brzegu;
+    let tol = p.erode_tolerancja_score;
+    let mut rim: Vec<String> = land_keys
+        .iter()
+        .filter(|k| {
+            let (q, r) = parse_hex_key(k);
+            q <= q_min + band || q >= q_max - band || r <= r_min + band || r >= r_max - band
+        })
+        .cloned()
+        .collect();
+    js_array_sort_by(&mut rim, |a, b| {
+        let sa = land_scores.get(a).copied().unwrap_or(0.0);
+        let sb = land_scores.get(b).copied().unwrap_or(0.0);
+        if (sa - sb).abs() > tol {
+            return sa - sb;
+        }
+        let (qa, ra) = parse_hex_key(a);
+        let (qb, rb) = parse_hex_key(b);
+        let da = js_hypot(qa - mid_q, ra - mid_r);
+        let db = js_hypot(qb - mid_q, rb - mid_r);
+        db - da
+    });
+
+    let mut eroded = 0usize;
+    for k in &rim {
+        if bbox_fill <= target_bbox_fill || eroded >= max_erode {
+            break;
+        }
+        if let Some(h) = hexes.get_mut(k) {
+            set_hex_to_morze(h);
+        }
+        land_count -= 1.0;
+        bbox_fill = land_count / bbox_area;
+        eroded += 1;
+    }
+    eroded
+}
+
+/// Web `carvePangeaLongSideGulfs(hexes, landScores, perm, maxAspect, maxCarve)` (:3606, prywatna).
+/// Zwraca liczbe wyciętych heksów (morze).
+pub fn carve_pangea_long_side_gulfs(
+    hexes: &mut HexRecord,
+    land_scores: &HashMap<String, f64>,
+    perm: &[u8; PERM_TABLE_LEN],
+    max_aspect: f64,
+    max_carve: usize,
+) -> usize {
+    let p = mapgen_landsea_pangea();
+    let land_keys = dry_land_keys(hexes);
+    if land_keys.len() < p.carve_min_liczba_ladu {
+        return 0;
+    }
+
+    let (mut q_min, mut q_max) = (f64::INFINITY, f64::NEG_INFINITY);
+    let (mut r_min, mut r_max) = (f64::INFINITY, f64::NEG_INFINITY);
+    for k in &land_keys {
+        let (q, r) = parse_hex_key(k);
+        q_min = js_min(q_min, q);
+        q_max = js_max(q_max, q);
+        r_min = js_min(r_min, r);
+        r_max = js_max(r_max, r);
+    }
+    let span_q = q_max - q_min + 1.0;
+    let span_r = r_max - r_min + 1.0;
+    let long_span = js_max(span_q, span_r);
+    let aspect = long_span / js_max(1.0, js_min(span_q, span_r));
+    if aspect <= max_aspect {
+        return 0;
+    }
+
+    let long_is_q = span_q >= span_r;
+    let mid_long = if long_is_q {
+        (q_min + q_max) / 2.0
+    } else {
+        (r_min + r_max) / 2.0
+    };
+    let short_min = if long_is_q { r_min } else { q_min };
+    let short_max = if long_is_q { r_max } else { q_max };
+    let short_span = short_max - short_min + 1.0;
+    let carve_depth = js_max(
+        p.carve_glebokosc_min,
+        (short_span * p.carve_glebokosc_udzial).floor(),
+    );
+
+    struct GulfCandidate {
+        key: String,
+        score: f64,
+        across: f64,
+    }
+    let mut scored: Vec<GulfCandidate> = land_keys
+        .iter()
+        .filter_map(|k| {
+            let (q, r) = parse_hex_key(k);
+            let along = if long_is_q { q } else { r };
+            let across = if long_is_q { r } else { q };
+            let on_long_side =
+                across <= short_min + carve_depth || across >= short_max - carve_depth;
+            let near_mid = (along - mid_long).abs() < long_span * p.carve_blisko_srodka_udzial;
+            if !(on_long_side && near_mid) {
+                return None;
+            }
+            let noise = fbm(
+                perm,
+                q * p.carve_szum_skala + p.carve_szum_przesuniecie,
+                r * p.carve_szum_skala + p.carve_szum_przesuniecie,
+                p.carve_szum_oktawy,
+            );
+            let base = land_scores.get(k).copied().unwrap_or(0.0);
+            Some(GulfCandidate {
+                key: k.clone(),
+                score: base + noise * p.carve_szum_waga,
+                across,
+            })
+        })
+        .collect();
+    js_array_sort_by(&mut scored, |a, b| a.score - b.score);
+
+    let mut carved = 0usize;
+    for x in &scored {
+        if carved >= max_carve {
+            break;
+        }
+        let dist_edge = js_min(x.across - short_min, short_max - x.across);
+        if dist_edge > carve_depth {
+            continue;
+        }
+        if let Some(h) = hexes.get_mut(&x.key) {
+            set_hex_to_morze(h);
+        }
+        carved += 1;
+    }
+    carved
+}
+
+/// Web `applyLandFractionByContinent(hexes, landScores, continentOf, nContinents, target, width?, height?)`
+/// (:3701). `continent_of` = web `Map` (brak wpisu = 0); `dims` = `Some((w, h))` gdy web podaje
+/// oba wymiary (`!= null`), granica aktywna gdy oba > 0. Zwraca liczbe zmian.
+/// ZALOZENIE Z-N0: `n_continents == 0` -> brak zmian (web rzuca TypeError przy niepustej mapie).
+pub fn apply_land_fraction_by_continent(
+    hexes: &mut HexRecord,
+    land_scores: &HashMap<String, f64>,
+    continent_of: &HashMap<String, i64>,
+    n_continents: usize,
+    target_land_fraction: f64,
+    dims: Option<(i64, i64)>,
+) -> usize {
+    if n_continents == 0 {
+        return 0;
+    }
+    let fill = mapgen_landsea_fill();
+    let clamped = js_max(
+        fill.clamp_udzialu_min,
+        js_min(fill.clamp_udzialu_max, target_land_fraction),
+    );
+    let total = hexes.len();
+    let target_land = js_round(total as f64 * clamped);
+    let last = n_continents - 1;
+
+    let mut zone_keys: Vec<Vec<String>> = vec![Vec::new(); n_continents];
+    for (k, _) in hexes.iter() {
+        let raw = continent_of.get(k).copied().unwrap_or(0);
+        let ci = (last as i64).min(raw.max(0)) as usize;
+        zone_keys[ci].push(k.clone());
+    }
+    let score = |k: &str| land_scores.get(k).copied().unwrap_or(0.0);
+    let score_sums: Vec<f64> = zone_keys
+        .iter()
+        .map(|keys| keys.iter().fold(0.0_f64, |s, k| s + score(k)))
+        .collect();
+    let sum_all = score_sums.iter().fold(0.0_f64, |a, b| a + b);
+    // web: `reduce(...) || 1` (0 i NaN -> 1)
+    let total_score = if sum_all == 0.0 || sum_all.is_nan() {
+        1.0
+    } else {
+        sum_all
+    };
+
+    let mut assigned = 0.0_f64;
+    let mut adjusted = 0usize;
+    let has_border = dims.is_some_and(|(w, h)| w > 0 && h > 0);
+    let (wf, hf) = dims.map_or((0.0, 0.0), |(w, h)| (w as f64, h as f64));
+    // web: `width ?? 1` w sortowaniu
+    let (sort_w, sort_h) = dims.unwrap_or((1, 1));
+    let border_ok = |k: &str| {
+        if !has_border {
+            return true;
+        }
+        let (q, r) = parse_hex_key(k);
+        !is_in_map_border(q, r, wf, hf, None)
+    };
+    let center_norm = |k: &str| {
+        if !has_border {
+            return 0.0;
+        }
+        let (q, r) = parse_hex_key(k);
+        map_center_distance_norm(q, r, wf, hf)
+    };
+    let is_dry =
+        |hexes: &HexRecord, k: &str| hexes.get(k).is_some_and(|h| is_dry_land_terrain(h.terrain));
+
+    for ci in 0..n_continents {
+        let keys = &zone_keys[ci];
+        let quota = if ci == last {
+            target_land - assigned
+        } else {
+            js_round(target_land * (score_sums[ci] / total_score))
+        };
+        assigned += quota;
+        let mut land = keys.iter().filter(|k| is_dry(hexes, k)).count() as f64;
+
+        if land < quota {
+            // Wzrost lądu wylacznie z czystego Morza (nie z PlytkieMorze), jak web.
+            let mut morse: Vec<String> = keys
+                .iter()
+                .filter(|k| {
+                    hexes
+                        .get(k.as_str())
+                        .is_some_and(|h| h.terrain == Terrain::Sea)
+                        && border_ok(k)
+                })
+                .cloned()
+                .collect();
+            js_array_sort_by(&mut morse, |a, b| {
+                let sa = score(a);
+                let sb = score(b);
+                if (sb - sa).abs() > fill.tolerancja_score_sortowanie {
+                    return sb - sa;
+                }
+                center_norm(a) - center_norm(b)
+            });
+            for k in &morse {
+                if land >= quota {
+                    break;
+                }
+                if let Some(h) = hexes.get_mut(k) {
+                    set_hex_to_laka(h);
+                }
+                land += 1.0;
+                adjusted += 1;
+            }
+        } else if land > quota {
+            let dry: Vec<String> = keys.iter().filter(|k| is_dry(hexes, k)).cloned().collect();
+            let cands = sort_land_keys_for_erosion(&dry, hexes, land_scores, sort_w, sort_h);
+            for k in &cands {
+                if land <= quota {
+                    break;
+                }
+                if let Some(h) = hexes.get_mut(k) {
+                    set_hex_to_morze(h);
+                }
+                land -= 1.0;
+                adjusted += 1;
+            }
+        }
+    }
+
+    let final_land = count_land_sea_hexes(hexes).land as f64;
+    if final_land != target_land {
+        if let Some((w, h)) = dims {
+            adjusted += apply_land_fraction_by_score(
+                hexes,
+                land_scores,
+                target_land_fraction,
+                Some((w, h)),
+                LandFractionFillBias::Center,
+                fill.pangea_min_score_wypelnienia,
+            );
+            adjusted += apply_marginal_land_zone_caps(hexes, land_scores, w, h, &LandseaMarginHooks)
+                as usize;
+            enforce_map_border_ocean(hexes, w, h, None);
+        }
+    }
+    adjusted
 }

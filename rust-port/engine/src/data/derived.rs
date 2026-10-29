@@ -4704,3 +4704,44 @@ pub fn mapgen_landsea_fill() -> &'static MapgenLandseaFillFile {
     static TABLE: std::sync::OnceLock<MapgenLandseaFillFile> = std::sync::OnceLock::new();
     TABLE.get_or_init(|| parse_mapgen_landsea_fill().expect("mapgen-landsea-fill.json must parse"))
 }
+
+// ---------------------------------------------------------------------------------------------
+// P6.M06A6 (R-RUSTPORT-P6-M06A6-LAD-MORZE-PANGEA-Q1) - rodzina Pangei i kontynentow, partia 1:
+// progi i szum z web `erodePangeaBboxLowScoreRim` (:3551), `carvePangeaLongSideGulfs` (:3606).
+// ---------------------------------------------------------------------------------------------
+
+pub const MAPGEN_LANDSEA_PANGEA_JSON: &str =
+    include_str!("../../data/derived/mapgen-landsea-pangea.json");
+
+/// Plik `mapgen-landsea-pangea.json` (web: erozja obwodu bbox :3551, zatoki na dlugich bokach :3606).
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct MapgenLandseaPangeaFile {
+    pub meta: serde_json::Value,
+    pub erode_docelowe_wypelnienie_bbox: f64,
+    pub erode_max: usize,
+    pub erode_pas_brzegu: f64,
+    pub erode_tolerancja_score: f64,
+    pub carve_min_liczba_ladu: usize,
+    pub carve_max_aspect: f64,
+    pub carve_max_wyciec: usize,
+    pub carve_glebokosc_udzial: f64,
+    pub carve_glebokosc_min: f64,
+    pub carve_blisko_srodka_udzial: f64,
+    pub carve_szum_skala: f64,
+    pub carve_szum_przesuniecie: f64,
+    pub carve_szum_oktawy: u32,
+    pub carve_szum_waga: f64,
+}
+
+pub fn parse_mapgen_landsea_pangea() -> Result<MapgenLandseaPangeaFile, serde_json::Error> {
+    serde_json::from_str(MAPGEN_LANDSEA_PANGEA_JSON)
+}
+
+/// Tabela progow Pangei (jednorazowy odczyt; blad danych = panika).
+pub fn mapgen_landsea_pangea() -> &'static MapgenLandseaPangeaFile {
+    static TABLE: std::sync::OnceLock<MapgenLandseaPangeaFile> = std::sync::OnceLock::new();
+    TABLE.get_or_init(|| {
+        parse_mapgen_landsea_pangea().expect("mapgen-landsea-pangea.json must parse")
+    })
+}

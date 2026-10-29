@@ -1,0 +1,21 @@
+{
+  "meta": {
+    "temat": "R-RUSTPORT-P6-M06A6-LAD-MORZE-PANGEA-Q1",
+    "zrodlo_web": "gra/src/map/gen-helpers.ts (pin edb8fb56): erodePangeaBboxLowScoreRim :3551 (domyslne 0.74 i 1200), carvePangeaLongSideGulfs :3606 (domyslne 1.85 i 900; progi 80, 0.28, min 3, 0.42, szum 0.08/40/3/0.15), tolerancja score sortu obrzeza 0.02 (:3583)",
+    "uwaga": "Wartosci balansowe edytowalne. Kod nie zawiera ich literalow (partia 1 M06A6). Pas obrzeza (2) i przesuniecia szumu sa danymi, nie skladnia."
+  },
+  "erode_docelowe_wypelnienie_bbox": 0.74,
+  "erode_max": 1200,
+  "erode_pas_brzegu": 2,
+  "erode_tolerancja_score": 0.02,
+  "carve_min_liczba_ladu": 80,
+  "carve_max_aspect": 1.85,
+  "carve_max_wyciec": 900,
+  "carve_glebokosc_udzial": 0.28,
+  "carve_glebokosc_min": 3,
+  "carve_blisko_srodka_udzial": 0.42,
+  "carve_szum_skala": 0.08,
+  "carve_szum_przesuniecie": 40,
+  "carve_szum_oktawy": 3,
+  "carve_szum_waga": 0.15
+}
