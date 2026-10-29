@@ -169,8 +169,8 @@ pub struct EconParamsBudynki {
     pub budynek_akademia_bonus_nauki: EconParamsEkonomiaMiastaSpichlerzZachowaniePoWzroscie,
     #[serde(rename = "waluta_mnoznik")]
     pub waluta_mnoznik: EconParamsEkonomiaMiastaProgWzrostuWspolczynnik,
-    #[serde(rename = "targowisko_praca_na_pieniadz_mnoznik")]
-    pub targowisko_praca_na_pieniadz_mnoznik: EconParamsEkonomiaMiastaProgWzrostuWspolczynnik,
+    #[serde(rename = "targowisko_praca_na_podatek_kurs")]
+    pub targowisko_praca_na_podatek_kurs: EconParamsEkonomiaMiastaProgWzrostuWspolczynnik,
     #[serde(rename = "budynek_tartak_przepustowosc")]
     pub budynek_tartak_przepustowosc: EconParamsEkonomiaMiastaProgWzrostuWspolczynnik,
     #[serde(rename = "budynek_cegielnia_przepustowosc")]
@@ -250,12 +250,14 @@ pub struct EconParamsWealth {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct EconParamsGlobalneMennicaMnoznikPoWalucie {
+    // Web 91dc998a: easy 1.62 / normal 1.5 / hard 1.38 (ulamkowe; wczesniej 2/1.5/1).
+    // Tylko typ liczbowy - brak konsumenta w src/ (zmierzone grep, zob. REPIN-DANE sekcja 8).
     #[serde(rename = "easy")]
-    pub easy: i64,
+    pub easy: f64,
     #[serde(rename = "normal")]
     pub normal: f64,
     #[serde(rename = "hard")]
-    pub hard: i64,
+    pub hard: f64,
     #[serde(rename = "jednostka")]
     pub jednostka: String,
     #[serde(rename = "opis")]

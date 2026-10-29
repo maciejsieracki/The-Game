@@ -29,23 +29,32 @@ fn civs_json_parses_and_spot_checks() {
     assert_eq!(f.cywilizacje[0].cywilizacja, "Grecy");
     assert_eq!(f.cywilizacje[12].cywilizacja, "Babilonia");
     assert_eq!(f.cywilizacje[0].nazwy_miast.len(), 110);
-    let bonusy: usize = f.cywilizacje.iter().map(|c| c.bonusy.len()).sum();
-    assert_eq!(bonusy, 48);
-    let listy = f
+    // Web 91dc998a usunal z civs.json klucze: Bonus startowy, Bonusy/minusy, bonusy,
+    // mnoznikHandelPieniadz (15/15 obiektow; zmierzone: scratch civs-old/civs-web, cmp.js).
+    // Stara asercja (48 wpisow bonusow, 15 list, mnoznik 2.3) dotyczyla pinu edb8fb56.
+    // Nowa: brak kluczy we wszystkich 15 obiektach = None (mirror web `?` w loader.ts).
+    let brak_bonusow = f.cywilizacje.iter().all(|c| {
+        c.bonusy.is_none()
+            && c.bonus_startowy.is_none()
+            && c.bonusy_minusy_do_dopracowania.is_none()
+            && c.mnoznik_handel_pieniadz.is_none()
+    });
+    assert!(
+        brak_bonusow,
+        "civs.json 91dc998a: klucze bonusow powinny byc nieobecne"
+    );
+    let listy_wartosc = f
         .cywilizacje
         .iter()
-        .flat_map(|c| c.bonusy.iter())
+        .flat_map(|c| c.bonusy.iter().flatten())
         .filter(|b| matches!(b.wartosc, WartoscValue::List(_)))
         .count();
-    assert_eq!(listy, 15);
-    assert_eq!(f.cywilizacje[0].mnoznik_handel_pieniadz, 2.3);
+    assert_eq!(listy_wartosc, 0);
     println!(
-        "SPOT civs cywilizacje={} start_gry={} bonusy={} grecy.mnoznik={} listy_wartosc={}",
+        "SPOT civs cywilizacje={} start_gry={} bez_bonusow={}",
         f.cywilizacje.len(),
         f.start_gry.len(),
-        bonusy,
-        f.cywilizacje[0].mnoznik_handel_pieniadz,
-        listy
+        brak_bonusow
     );
     assert_roundtrip("civs.json", CIVS_JSON, &f);
 }
