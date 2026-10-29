@@ -13,6 +13,25 @@ export function generalQuickFollowActionLabel(title: FollowCommanderTitle, activ
 export interface GeneralQuickFollowUnit extends GeneralFollowCandidate {
   inGarnizon?: boolean;
   oblegaCityId?: string;
+  followGeneral?: boolean;
+}
+
+/** Start tracked orders for opt-in units once they are separated from their commander. */
+export function planEnabledGeneralFollowMarches<T extends GeneralQuickFollowUnit>(
+  roster: readonly T[],
+  hasMarch: (unitId: string) => boolean,
+  planMarch: (unit: T, point: { q: number; r: number }, targetId: string) => boolean,
+): string[] {
+  const planned: string[] = [];
+  for (const unit of roster) {
+    if (unit.followGeneral !== true || hasMarch(unit.id) || unit.isGeneral === true
+        || unit.inGarnizon === true || unit.oblegaCityId) continue;
+    const commander = nearestLivingGeneral(unit, roster);
+    const follow = commander ? generalFollowDestination(unit, commander) : null;
+    if (!follow || hexDistance(unit.q, unit.r, follow.point.q, follow.point.r) === 0) continue;
+    if (planMarch(unit, follow.point, follow.generalTargetId)) planned.push(unit.id);
+  }
+  return planned;
 }
 
 export interface GeneralQuickFollowEffects<T extends GeneralQuickFollowUnit = GeneralQuickFollowUnit> {

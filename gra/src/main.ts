@@ -829,7 +829,7 @@ import { buildTestArmies, ensureSiegeMachines as ensureSiegeMachinesPreset } fro
 import type { PresetName } from './battle/testBattle';
 import type { BattleResult, BattleUnit, BattleOpts } from './battle/battleScene';
 import { armyLeaderMoraleBonusFrac, armyLeaderTitle } from './game/army-leadership';
-import { issueGeneralQuickFollow, planTrackedGeneralFollowMarch, syncTrackedGeneralFollowMarches } from './game/generalQuickFollow';
+import { issueGeneralQuickFollow, planEnabledGeneralFollowMarches, planTrackedGeneralFollowMarch, syncTrackedGeneralFollowMarches } from './game/generalQuickFollow';
 import type { WorldTerrainInput } from './battle/battle-terrain';
 import {
   startMusic, stopMusic, setMood, setEra, setMusicVolume, getMood,
@@ -22969,9 +22969,7 @@ async function boot(): Promise<void> {
       }
       actions.push({ id: 'skip', label: 'Pomi\u0144', disabled: siegeCity !== null });
       const nearestCommander = nearestLivingGeneral(active, units);
-      if (nearestCommander && (hexDistance(active.q, active.r, nearestCommander.q, nearestCommander.r) > 0
-        || active.followGeneral === true)
-        && active.inGarnizon !== true && !active.oblegaCityId) {
+      if (nearestCommander && active.inGarnizon !== true && !active.oblegaCityId) {
         const alreadyFollowing = active.followGeneral === true;
         const leaderTitle = armyLeaderTitle(empireBuiltIdsForOwner(active.ownerId));
         actions.push({
@@ -23015,6 +23013,12 @@ async function boot(): Promise<void> {
           return;
         }
         u.followGeneral = true;
+        const commander = nearestLivingGeneral(u, units);
+        if (commander && hexDistance(u.q, u.r, commander.q, commander.r) === 0) {
+          showHintMessage('Idź do wodza włączone — jednostka dołączy do ruchu, gdy wódz wyruszy.', 3200);
+          refreshD1bHud();
+          return;
+        }
         const leaderTitle = armyLeaderTitle(empireBuiltIdsForOwner(u.ownerId));
         issueGeneralQuickFollow(u, units, leaderTitle, {
           planMarch: (unit, point, targetId) => planGeneralFollowMarch(unit, point, targetId),
@@ -27104,6 +27108,17 @@ async function boot(): Promise<void> {
     /** Keep every queued General-following march aimed at that General's live position. */
     function syncGeneralMarchTargets(): void {
       syncTrackedGeneralFollowMarches(units, plannedMarches, unitId => marchAttackTargets.delete(unitId));
+      const newlyPlanned = planEnabledGeneralFollowMarches(
+        units,
+        unitId => plannedMarches.has(unitId),
+        (unit, point, targetId) => planGeneralFollowMarch(unit, point, targetId, false),
+      );
+      for (const unitId of newlyPlanned) {
+        const unit = units.find(candidate => candidate.id === unitId);
+        if (unit && planningStackRuchLeft(playerStackAt(unit)) > 0 && !marchExecQueue.includes(unitId)) {
+          marchExecQueue.push(unitId);
+        }
+      }
     }
 
     function startAnimatedMove(
@@ -38660,6 +38675,11 @@ async function boot(): Promise<void> {
           isAnimating = false;
           stopMarch(); // SFX marsz: animacja dobiegła końca — krótki fade-out (patrz stopMarch())
           forceVisibleUnitId = null;
+
+          // Opt-in units sharing the commander's hex become followers as soon as that
+          // commander moves, then use the normal tracked-march queue.
+          syncGeneralMarchTargets();
+          processMarchQueue();
 
           validateActiveSieges();
 

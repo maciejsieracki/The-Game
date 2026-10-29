@@ -9,7 +9,7 @@ async function main() {
   const root = path.resolve(__dirname, '..');
   const built = await esbuild.build({
     stdin: {
-      contents: "export { nearestLivingGeneral, generalFollowDestination } from './src/game/generals.ts'; export { buildUnitActionBarHtml } from './src/ui/unitActionBarHtml.ts'; export { armyLeaderTitle } from './src/game/army-leadership.ts'; export { issueGeneralQuickFollow, generalQuickFollowActionLabel, planTrackedGeneralFollowMarch, syncTrackedGeneralFollowMarches } from './src/game/generalQuickFollow.ts'; export { planPathTurns } from './src/game/planned-march.ts';",
+      contents: "export { nearestLivingGeneral, generalFollowDestination } from './src/game/generals.ts'; export { buildUnitActionBarHtml } from './src/ui/unitActionBarHtml.ts'; export { armyLeaderTitle } from './src/game/army-leadership.ts'; export { issueGeneralQuickFollow, generalQuickFollowActionLabel, planTrackedGeneralFollowMarch, planEnabledGeneralFollowMarches, syncTrackedGeneralFollowMarches } from './src/game/generalQuickFollow.ts'; export { planPathTurns } from './src/game/planned-march.ts';",
       resolveDir: root,
       sourcefile: 'general-quick-follow-entry.ts',
     },
@@ -24,7 +24,7 @@ async function main() {
   new Function('module', 'exports', built.outputFiles[0].text)(module, module.exports);
   const { nearestLivingGeneral, generalFollowDestination, buildUnitActionBarHtml, armyLeaderTitle,
     issueGeneralQuickFollow, generalQuickFollowActionLabel, planTrackedGeneralFollowMarch,
-    syncTrackedGeneralFollowMarches, planPathTurns } = module.exports;
+    planEnabledGeneralFollowMarches, syncTrackedGeneralFollowMarches, planPathTurns } = module.exports;
   let pass = 0;
   const check = (condition, label) => {
     assert.ok(condition, label);
@@ -97,6 +97,27 @@ async function main() {
   syncTrackedGeneralFollowMarches(liveUnits, trackedMarches, unitId => attackTargets.delete(unitId));
   check(!trackedMarches.has(movingUnit.id) && !attackTargets.has(movingUnit.id),
     'zero-HP commander loss removes the tracked march and stale attack-target entry');
+
+  const coLocatedFollower = { id: 'same-hex-follower', ownerId: 2, q: 4, r: 0, followGeneral: true };
+  const coLocatedCommander = { id: 'same-hex-chief', ownerId: 2, q: 4, r: 0, isGeneral: true };
+  const coLocatedRoster = [coLocatedFollower, coLocatedCommander];
+  const coLocatedMarches = new Map();
+  const planEnabled = () => planEnabledGeneralFollowMarches(coLocatedRoster,
+    id => coLocatedMarches.has(id), (unit, point, targetId) => {
+      coLocatedMarches.set(unit.id, { destQ: point.q, destR: point.r, generalTargetId: targetId });
+      return true;
+    });
+  check(planEnabled().length === 0 && coLocatedFollower.followGeneral === true,
+    'same-hex unit can remain opted in while its commander has not moved');
+  coLocatedCommander.q = 5;
+  const sameHexMarchIds = planEnabled();
+  check(sameHexMarchIds[0] === coLocatedFollower.id
+    && coLocatedMarches.get(coLocatedFollower.id)?.destQ === 5,
+  'same-hex opt-in starts a tracked march after the commander moves');
+  coLocatedCommander.q = 6;
+  syncTrackedGeneralFollowMarches(coLocatedRoster, coLocatedMarches, () => {});
+  check(coLocatedMarches.get(coLocatedFollower.id)?.destQ === 6,
+    'same-hex opt-in continues tracking the commander after activation');
 
   check(generalQuickFollowActionLabel(armyLeaderTitle([])) === 'Idź do najbliższego wodza'
     && generalQuickFollowActionLabel(armyLeaderTitle(['akademia_wojskowa'])) === 'Idź do najbliższego generała'
@@ -182,10 +203,12 @@ async function main() {
     && mainSource.includes('issueGeneralQuickFollow(u, units, leaderTitle')
     && mainSource.includes("alreadyFollowing ? 'Idź do wodza: włączone' : 'Idź do wodza'")
     && mainSource.includes('u.followGeneral = true')
+    && mainSource.includes('planEnabledGeneralFollowMarches')
+    && mainSource.includes('active.inGarnizon !== true && !active.oblegaCityId')
     && mainSource.includes('planGeneralFollowMarch(unit, point, targetId)')
     && mainSource.includes('enqueue: unitIds => enqueueMarchSegments(unitIds)'),
   'production HUD handler delegates to the executed follow service and live title resolver');
-  console.log(`\n${pass}/15 PASS`);
+  console.log(`\n${pass}/18 PASS`);
 }
 
 main().catch(error => {
