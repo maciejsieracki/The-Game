@@ -32,6 +32,7 @@ export interface ArmyMergePanelOpts {
 
 let root: HTMLDivElement | null = null;
 let keyHandler: ((e: KeyboardEvent) => void) | null = null;
+let rosterResizeObserver: ResizeObserver | null = null;
 
 const STYLE_ID = 'civ-army-merge-css-v1';
 
@@ -62,8 +63,22 @@ function ensureStyles(): void {
 .civ-amp-orn i.r{background:linear-gradient(270deg,transparent,var(--gold-dim));}
 .civ-amp-title{font:700 11px/1.2 Georgia,serif;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);}
 .civ-amp-sub{font-size:11px;color:var(--muted);margin-top:4px;}
+.civ-amp-roster-shell{position:relative;display:flex;flex:1 1 auto;min-width:0;min-height:0;overflow:hidden;}
 .civ-amp-body{flex:1 1 auto;min-width:0;min-height:0;overflow-y:auto;overflow-x:hidden;
-  padding:12px 18px 14px;display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:10px;align-items:start;}
+  padding:12px 34px 14px 18px;display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:10px;align-items:start;
+  scrollbar-width:none;}
+.civ-amp-body::-webkit-scrollbar{display:none;}
+.civ-amp-scrollbar{--amp-thumb-size:28px;appearance:none;-webkit-appearance:none;writing-mode:vertical-lr;direction:ltr;
+  position:absolute;z-index:2;top:10px;right:8px;bottom:10px;width:12px;height:auto;margin:0;padding:0;
+  border:0;border-radius:8px;background:rgba(232,216,138,0.12);cursor:pointer;touch-action:none;}
+.civ-amp-scrollbar::-webkit-slider-runnable-track{width:12px;background:rgba(232,216,138,0.12);border-radius:8px;}
+.civ-amp-scrollbar::-webkit-slider-thumb{-webkit-appearance:none;width:12px;height:var(--amp-thumb-size);border:3px solid #101729;
+  border-radius:8px;background:#c9a84c;box-shadow:0 0 0 1px rgba(232,216,138,0.5);}
+.civ-amp-scrollbar::-moz-range-track{width:12px;background:rgba(232,216,138,0.12);border-radius:8px;}
+.civ-amp-scrollbar::-moz-range-thumb{width:6px;height:var(--amp-thumb-size);border:3px solid #101729;
+  border-radius:8px;background:#c9a84c;box-shadow:0 0 0 1px rgba(232,216,138,0.5);}
+.civ-amp-scrollbar:hover::-webkit-slider-thumb{background:#e8d88a;}
+.civ-amp-scrollbar:hover::-moz-range-thumb{background:#e8d88a;}
 .civ-amp-col{min-width:0;border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:10px;background:rgba(255,255,255,0.03);}
 .civ-amp-col-h{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:8px;}
 .civ-amp-units{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;}
@@ -133,6 +148,8 @@ function detachKeyboard(): void {
 function closePanel(): void {
   popOverlay('army-merge');
   detachKeyboard();
+  rosterResizeObserver?.disconnect();
+  rosterResizeObserver = null;
   if (root) {
     root.remove();
     root = null;
@@ -192,7 +209,8 @@ export function showArmyMergePanel(opts: ArmyMergePanelOpts): void {
       '<button type="button" class="civ-amp-btn civ-amp-btn-merge" data-act="merge">Po\u0142\u0105cz armie</button>' +
     '</div>' +
     '<div class="civ-amp-result">' + esc(resultLabel) + '</div>' +
-    '<div class="civ-amp-body">' +
+    '<div class="civ-amp-roster-shell">' +
+    '<div class="civ-amp-body" id="civ-amp-roster">' +
       '<div class="civ-amp-col">' +
         '<div class="civ-amp-col-h">Na polu (' + opts.existing.length + ')</div>' +
         (opts.existing.length > 0
@@ -207,6 +225,9 @@ export function showArmyMergePanel(opts: ArmyMergePanelOpts): void {
         '<div class="civ-amp-col-h">Przybywa</div>' +
         unitRowHtml(opts.arriving, true) +
       '</div>' +
+    '</div>' +
+    '<input class="civ-amp-scrollbar" type="range" min="0" max="1000" step="1" value="0"' +
+      ' aria-label="Przewijanie listy jednostek" aria-controls="civ-amp-roster">' +
     '</div>';
 
   box.querySelector('[data-act="merge"]')?.addEventListener('click', () => pick(opts.onMerge));
@@ -214,7 +235,56 @@ export function showArmyMergePanel(opts: ArmyMergePanelOpts): void {
   box.addEventListener('click', (e) => e.stopPropagation());
 
   root.appendChild(box);
-  document.body.appendChild(root);
+  // UI zoom in hud.ts applies transform:scale() to <body>. A fixed-position
+  // descendant of that transformed body is fixed to its transformed bounds,
+  // not the browser viewport, which can push the modal/CTA outside the screen
+  // at 150%. Mount the modal as a sibling of body so fixed/inset/max-height use
+  // the real viewport while the game canvas and HUD remain scaled below it.
+  document.documentElement.appendChild(root);
+
+  const roster = box.querySelector<HTMLDivElement>('.civ-amp-body');
+  const scrollbar = box.querySelector<HTMLInputElement>('.civ-amp-scrollbar');
+  if (roster && scrollbar) {
+    let draggingScrollbar = false;
+    const syncScrollbar = () => {
+      const maxScroll = Math.max(0, roster.scrollHeight - roster.clientHeight);
+      scrollbar.disabled = maxScroll <= 0;
+      scrollbar.value = maxScroll > 0 ? String(Math.round(roster.scrollTop / maxScroll * 1000)) : '0';
+      const thumbSize = Math.min(roster.clientHeight, Math.max(24,
+        roster.clientHeight * roster.clientHeight / Math.max(roster.clientHeight, roster.scrollHeight)));
+      scrollbar.style.setProperty('--amp-thumb-size', thumbSize + 'px');
+    };
+    roster.addEventListener('scroll', syncScrollbar, { passive: true });
+    scrollbar.addEventListener('input', () => {
+      const maxScroll = Math.max(0, roster.scrollHeight - roster.clientHeight);
+      roster.scrollTop = Number(scrollbar.value) / 1000 * maxScroll;
+    });
+    const setScrollbarFromPointer = (clientY: number) => {
+      const rect = scrollbar.getBoundingClientRect();
+      const thumbSize = parseFloat(scrollbar.style.getPropertyValue('--amp-thumb-size')) || 24;
+      const start = rect.top + thumbSize / 2;
+      const end = rect.bottom - thumbSize / 2;
+      const fraction = end > start ? Math.max(0, Math.min(1, (clientY - start) / (end - start))) : 0;
+      scrollbar.value = String(Math.round(fraction * 1000));
+      scrollbar.dispatchEvent(new Event('input', { bubbles: true }));
+    };
+    scrollbar.addEventListener('pointerdown', (event) => {
+      if (scrollbar.disabled) return;
+      event.preventDefault();
+      draggingScrollbar = true;
+      scrollbar.setPointerCapture(event.pointerId);
+      setScrollbarFromPointer(event.clientY);
+    });
+    scrollbar.addEventListener('pointermove', (event) => {
+      if (draggingScrollbar) setScrollbarFromPointer(event.clientY);
+    });
+    const endScrollbarDrag = () => { draggingScrollbar = false; };
+    scrollbar.addEventListener('pointerup', endScrollbarDrag);
+    scrollbar.addEventListener('pointercancel', endScrollbarDrag);
+    rosterResizeObserver = new ResizeObserver(syncScrollbar);
+    rosterResizeObserver.observe(roster);
+    requestAnimationFrame(syncScrollbar);
+  }
 
   // R-MERGE-DISMISS: patrz komentarz przy click-outside powyzej -- Escape to
   // dismiss, nie "Zostaw osobno" (ktore bouncowaloby jednostke).

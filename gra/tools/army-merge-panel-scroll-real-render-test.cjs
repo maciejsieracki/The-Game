@@ -2,7 +2,7 @@
 /**
  * army-merge-panel-scroll-real-render-test.cjs
  *
- * TEMAT: R-ARMIA-MERGE-PANEL-SCROLL-Q1
+ * TEMAT: R-ARMY-MERGE-PANEL-INNER-SCROLL-Q1
  *
  * Regresja UI dla panelu „Połączenie armii". Test nie używa jsdom do geometrii:
  * kompiluje prawdziwy `armyMergePanel.ts`, otwiera go w Chromium i mierzy
@@ -13,8 +13,10 @@
  *  - 1141x1451, 16 jednostek: panel ma co najmniej 16 px odstępu od viewportu.
  *  - 900x620, 16+ jednostek: tylko body scrolluje, a nagłówek, wynik i CTA są
  *    stale w kadrze.
- *  - 900x620, 40 jednostek: cały stos jest osiągalny bez poziomego overflow.
- *  - 600x413 CSS px przy DPR 1.5 (równowartość ekranu 900x620 przy skali 150%):
+ *  - 900x620, 59 jednostek (60 wierszy ze stosem przybywającym): cały stos
+ *    jest osiągalny bez poziomego overflow.
+ *  - 600x413 CSS px przy DPR 1.5 (równowartość ekranu 900x620 przy skali 150%),
+ *    59 jednostek:
  *    ostatni wiersz jest przewijalny, a CTA pozostaje widoczny i klikalny.
  *  - oba CTA są klikane prawdziwą myszą i wywołują właściwy callback.
  *
@@ -26,6 +28,7 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const esbuild = require(path.resolve(__dirname, '..', 'node_modules', 'esbuild'));
+const { PNG } = require(path.resolve(__dirname, '..', 'node_modules', 'pngjs'));
 
 let chromium;
 try {
@@ -42,6 +45,7 @@ const TMPDIR = fs.mkdtempSync(path.join(os.tmpdir(), 'army-merge-panel-scroll-')
 const ENTRY = path.join(TMPDIR, 'entry.ts');
 const FIXED_BUNDLE = path.join(TMPDIR, 'fixed.cjs');
 const PRE_BUNDLE = path.join(TMPDIR, 'pre.cjs');
+const BODY_MOUNT_BUNDLE = path.join(TMPDIR, 'body-mount.cjs');
 const BRAND_STUB = path.join(TMPDIR, 'brandAssets-stub.ts');
 const FIXED_MODULE_PATH = path.resolve(UI_DIR, '__army_merge_panel_scroll_fixed__.ts');
 const PRE_MODULE_PATH = path.resolve(UI_DIR, '__army_merge_panel_scroll_pre__.ts');
@@ -68,22 +72,31 @@ function cssRule(source, selector) {
 function sourceContract(source) {
   const overlay = cssRule(source, '.civ-amp-overlay');
   const box = cssRule(source, '.civ-amp');
+  const shell = cssRule(source, '.civ-amp-roster-shell');
   const body = cssRule(source, '.civ-amp-body');
   const slotRules = ['.civ-amp-hdr', '.civ-amp-result', '.civ-amp-foot']
     .map((selector) => cssRule(source, selector));
   return {
     overlay,
     box,
+    shell,
     body,
     overlayViewport: /padding:24px;box-sizing:border-box;overflow:hidden/.test(overlay),
     boxViewport: /box-sizing:border-box/.test(box)
       && /max-height:calc\(100vh - 48px\)/.test(box)
       && /max-height:calc\(100dvh - 48px\)/.test(box),
     boxFlex: /display:flex/.test(box) && /flex-direction:column/.test(box),
-    bodyFlexScroll: /flex:1 1 auto/.test(body)
-      && /min-height:0/.test(body)
+    bodyFlexScroll: /display:flex/.test(shell)
+      && /flex:1 1 auto/.test(shell)
+      && /min-height:0/.test(shell)
+      && /flex:1 1 auto/.test(body)
       && /overflow-y:auto/.test(body)
       && /overflow-x:hidden/.test(body),
+    visibleScrollbar: /\.civ-amp-scrollbar\{[^}]*position:absolute/.test(source)
+      && /\.civ-amp-scrollbar::-webkit-slider-runnable-track/.test(source)
+      && /\.civ-amp-scrollbar::-webkit-slider-thumb/.test(source)
+      && /\.civ-amp-scrollbar::-moz-range-track/.test(source)
+      && /\.civ-amp-scrollbar::-moz-range-thumb/.test(source),
     fixedSlots: slotRules.every((rule) => /flex:0 0 auto/.test(rule)),
   };
 }
@@ -95,7 +108,13 @@ function mutateToPre(source) {
     .replace(/  box-sizing:border-box;width:min\([^\n]+\n  max-height:calc\(100vh - 48px\);max-height:calc\(100dvh - 48px\);\n  min-height:0;display:flex;flex-direction:column;\n/,
       '  min-width:min(440px,calc(100vw - 28px));max-width:520px;\n')
     .replace(/flex:0 0 auto;/g, '')
-    .replace(/flex:1 1 auto;min-width:0;min-height:0;overflow-y:auto;overflow-x:hidden;/, '');
+    .replace(/flex:1 1 auto;min-width:0;min-height:0;overflow-y:auto;overflow-x:hidden;/, '')
+    .replace(cssRule(source, '.civ-amp-roster-shell'), '')
+    .replace(cssRule(source, '.civ-amp-body'), '');
+}
+
+function mutateToBodyMount(source) {
+  return source.replace('document.documentElement.appendChild(root);', 'document.body.appendChild(root);');
 }
 
 function stubPlugin() {
@@ -171,7 +190,7 @@ async function resetPanel(page, prefix) {
     window[name]?.();
     document.getElementById('civ-army-merge-css-v1')?.remove();
     document.querySelectorAll('.civ-amp-overlay').forEach((node) => node.remove());
-  }, prefix === 'fixed' ? '__hideFixed' : '__hidePre');
+  }, prefix === 'bodyMount' ? '__hideBodyMount' : prefix === 'fixed' ? '__hideFixed' : '__hidePre');
 }
 
 async function showFixture(page, prefix, count) {
@@ -186,7 +205,7 @@ async function showFixture(page, prefix, count) {
       onSeparate: () => { window.__mergeCalls.separate++; },
     });
   }, {
-    name: prefix === 'fixed' ? '__showFixed' : '__showPre',
+    name: prefix === 'bodyMount' ? '__showBodyMount' : prefix === 'fixed' ? '__showFixed' : '__showPre',
     units: fixture(count),
   });
 }
@@ -207,6 +226,7 @@ async function measure(page, endOffset = 0) {
     const overlay = document.querySelector('.civ-amp-overlay');
     const box = document.querySelector('.civ-amp');
     const body = document.querySelector('.civ-amp-body');
+    const scrollbar = document.querySelector('.civ-amp-scrollbar');
     const header = document.querySelector('.civ-amp-hdr');
     const result = document.querySelector('.civ-amp-result');
     const foot = document.querySelector('.civ-amp-foot');
@@ -236,6 +256,8 @@ async function measure(page, endOffset = 0) {
       })
       .map((node) => node.className);
     const bodyStyle = body ? getComputedStyle(body) : null;
+    const scrollbarStyle = scrollbar ? getComputedStyle(scrollbar) : null;
+    const scrollbarTrackStyle = scrollbar ? getComputedStyle(scrollbar, '::-webkit-slider-runnable-track') : null;
     const boxStyle = box ? getComputedStyle(box) : null;
     const rootStyle = overlay ? getComputedStyle(overlay) : null;
     const lastRect = rect(lastExisting);
@@ -261,6 +283,11 @@ async function measure(page, endOffset = 0) {
         clientWidth: body.clientWidth,
         overflowY: bodyStyle?.overflowY || null,
         overflowX: bodyStyle?.overflowX || null,
+        scrollbarWidth: bodyStyle?.scrollbarWidth || null,
+        scrollbarControlRect: rect(scrollbar),
+        scrollbarControlWidth: scrollbarStyle?.width || null,
+        scrollbarTrackColor: scrollbarTrackStyle?.backgroundColor || null,
+        scrollbarDisabled: scrollbar?.disabled ?? true,
       } : null,
       boxOverflowY: boxStyle?.overflowY || null,
       overlayOverflowY: rootStyle?.overflowY || null,
@@ -284,6 +311,7 @@ async function measure(page, endOffset = 0) {
         foot: visible(foot),
         merge: visible(merge),
         separate: visible(separate),
+        scrollbar: visible(scrollbar),
       },
     };
   }, endOffset);
@@ -298,6 +326,8 @@ function layoutFailures(m, expectedExisting, endTolerance = 1) {
   if (!m.visible.header || !m.visible.result || !m.visible.foot
       || !m.visible.merge || !m.visible.separate) failures.push('fixed-slots-visible');
   if (m.body.overflowY !== 'auto' || m.body.overflowX !== 'hidden') failures.push('body-overflow-contract');
+  if (!m.visible.scrollbar || m.body.scrollbarControlWidth !== '12px'
+      || m.body.scrollbarTrackColor === 'rgba(0, 0, 0, 0)' || m.body.scrollbarDisabled) failures.push('visible-scrollbar-contract');
   if (m.boxOverflowY !== 'hidden' || m.overlayOverflowY !== 'hidden') failures.push('outer-overflow-contract');
   if (m.body.scrollHeight <= m.body.clientHeight + 1) failures.push('body-not-scrollable');
   if (m.body.scrollTop < m.body.scrollHeight - m.body.clientHeight - endTolerance) failures.push('scroll-not-at-end');
@@ -309,9 +339,9 @@ function layoutFailures(m, expectedExisting, endTolerance = 1) {
   return failures;
 }
 
-async function clickAction(page, prefix, action) {
+async function clickAction(page, prefix, action, count = 16) {
   await resetPanel(page, prefix);
-  await showFixture(page, prefix, 16);
+  await showFixture(page, prefix, count);
   const point = await page.evaluate((selector) => {
     const button = document.querySelector(selector);
     if (!button) return null;
@@ -327,17 +357,82 @@ async function clickAction(page, prefix, action) {
   }));
 }
 
+async function dragScrollbarToEnd(page) {
+  await page.evaluate(() => { document.querySelector('.civ-amp-body')?.scrollTo(0, 0); });
+  const geometry = await page.evaluate(() => {
+    const body = document.querySelector('.civ-amp-body');
+    const scrollbar = document.querySelector('.civ-amp-scrollbar');
+    if (!body || !scrollbar) return null;
+    const r = scrollbar.getBoundingClientRect();
+    const maxScroll = body.scrollHeight - body.clientHeight;
+    const thumbHeight = parseFloat(getComputedStyle(scrollbar).getPropertyValue('--amp-thumb-size'));
+    const thumbRange = Math.max(0, r.height - thumbHeight);
+    return {
+      start: { x: r.left + r.width / 2, y: r.top + thumbHeight / 2 },
+      end: { x: r.left + r.width / 2, y: r.top + thumbRange + thumbHeight / 2 },
+      rect: { left: r.left, right: r.right, top: r.top, bottom: r.bottom, width: r.width, height: r.height },
+      clientHeight: body.clientHeight,
+      scrollHeight: body.scrollHeight,
+      thumbHeight,
+      maxScroll,
+    };
+  });
+  if (!geometry || geometry.maxScroll <= 0) return null;
+  await page.mouse.move(geometry.start.x, geometry.start.y);
+  await page.mouse.down();
+  await page.mouse.move(geometry.end.x, geometry.end.y, { steps: 12 });
+  await page.mouse.up();
+  const result = await page.evaluate(() => {
+    const body = document.querySelector('.civ-amp-body');
+      const scrollbar = document.querySelector('.civ-amp-scrollbar');
+      return body && scrollbar ? { scrollTop: body.scrollTop, maxScroll: body.scrollHeight - body.clientHeight,
+        controlValue: scrollbar.value } : null;
+  });
+  return { ...geometry, ...result };
+}
+
+async function visibleGoldThumbPixels(page) {
+  const shot = await page.screenshot({ scale: 'device' });
+  const png = PNG.sync.read(shot);
+  const bounds = await page.locator('.civ-amp-scrollbar').boundingBox();
+  if (!bounds) return { count: 0, centroid: null };
+  const viewport = await page.evaluate(() => ({ width: innerWidth, height: innerHeight }));
+  const scaleX = png.width / viewport.width;
+  const scaleY = png.height / viewport.height;
+  let goldPixels = 0;
+  let goldPixelY = 0;
+  const left = Math.max(0, Math.floor(bounds.x * scaleX));
+  const right = Math.min(png.width, Math.ceil((bounds.x + bounds.width) * scaleX));
+  const top = Math.max(0, Math.floor(bounds.y * scaleY));
+  const bottom = Math.min(png.height, Math.ceil((bounds.y + bounds.height) * scaleY));
+  for (let y = top; y < bottom; y++) {
+    for (let x = left; x < right; x++) {
+      const i = (y * png.width + x) * 4;
+      if (png.data[i] > 170 && png.data[i] < 225
+          && png.data[i + 1] > 105 && png.data[i + 1] < 190
+          && png.data[i + 2] > 35 && png.data[i + 2] < 125) {
+        goldPixels++;
+        goldPixelY += y;
+      }
+    }
+  }
+  return { count: goldPixels, centroid: goldPixels ? goldPixelY / goldPixels : null };
+}
+
 async function main() {
   const fixedSource = fs.readFileSync(PANEL_TS, 'utf8');
   const preSource = mutateToPre(fixedSource);
+  const bodyMountSource = mutateToBodyMount(fixedSource);
   const fixedContract = sourceContract(fixedSource);
   const preContract = sourceContract(preSource);
 
-  console.log('army-merge-panel-scroll-real-render-test (R-ARMIA-MERGE-PANEL-SCROLL-Q1)\n');
+  console.log('army-merge-panel-scroll-real-render-test (R-ARMY-MERGE-PANEL-INNER-SCROLL-Q1)\n');
   check('source: overlay ma margines viewport 24 px, box-sizing i overflow hidden', fixedContract.overlayViewport);
+  check('source: panel jest montowany poza transformowanym body', /document\.documentElement\.appendChild\(root\)/.test(fixedSource));
   check('source: box ma max-height dla viewportu vh/dvh z marginesem 24 px', fixedContract.boxViewport);
   check('source: box jest flex columnem', fixedContract.boxFlex);
   check('source: body jest flex itemem z pionowym scrollem i ukrytym overflow poziomym', fixedContract.bodyFlexScroll);
+  check('source: roster scrollbar ma kontrastowy kolor i widoczny 12px Chromium thumb', fixedContract.visibleScrollbar);
   check('source: header/result/footer są flex slotami niezależnymi od scrolla', fixedContract.fixedSlots);
   check('mutant PRZED faktycznie usuwa viewport/flex/scroll contract',
     preSource !== fixedSource
@@ -350,6 +445,7 @@ async function main() {
   fs.writeFileSync(BRAND_STUB, 'export function unitIconSvg() { return ""; }\n', 'utf8');
   await buildBundle(fixedSource, FIXED_BUNDLE, FIXED_MODULE_PATH);
   await buildBundle(preSource, PRE_BUNDLE, PRE_MODULE_PATH);
+  await buildBundle(bodyMountSource, BODY_MOUNT_BUNDLE, PRE_MODULE_PATH);
 
   const browser = await launchBrowser();
   const page = await browser.newPage({ viewport: { width: 1141, height: 1451 } });
@@ -413,22 +509,22 @@ async function main() {
       { unitGridColumns: short16.unitGridColumns, box: short16.box });
 
     await resetPanel(page, 'fixed');
-    await showFixture(page, 'fixed', 40);
-    const short40 = await measure(page);
-    const short40Failures = layoutFailures(short40, 40);
-    check('900x620 / 40 jednostek: wszystkie 41 wierszy są wyrenderowane i ostatni jest osiągalny',
-      short40.rowCount === 41 && short40.lastExistingVisibleInsideBody
-        && short40.body.scrollTop >= short40.body.scrollHeight - short40.body.clientHeight - 1,
-      { rowCount: short40.rowCount, lastExistingVisibleInsideBody: short40.lastExistingVisibleInsideBody, body: short40.body });
-    check('900x620 / 40 jednostek: dokładnie jeden zamierzony scroll container i zero horizontal overflow',
-      short40.scrollCandidates.length === 1
-        && short40.scrollCandidates[0] === 'civ-amp-body'
-        && short40.body.scrollWidth <= short40.body.clientWidth + 1
-        && short40.document.scrollWidth <= short40.viewport.width + 1,
-      { scrollCandidates: short40.scrollCandidates, body: short40.body, document: short40.document });
-    check('900x620 / 40 jednostek: pełny layout spełnia kontrakt bez błędów',
-      short40Failures.length === 0,
-      short40Failures);
+    await showFixture(page, 'fixed', 59);
+    const short59 = await measure(page);
+    const short59Failures = layoutFailures(short59, 59);
+    check('900x620 / 59 jednostek: wszystkie 60 wierszy są wyrenderowane i ostatni jest osiągalny',
+      short59.rowCount === 60 && short59.lastExistingVisibleInsideBody
+        && short59.body.scrollTop >= short59.body.scrollHeight - short59.body.clientHeight - 1,
+      { rowCount: short59.rowCount, lastExistingVisibleInsideBody: short59.lastExistingVisibleInsideBody, body: short59.body });
+    check('900x620 / 59 jednostek: dokładnie jeden zamierzony scroll container i zero horizontal overflow',
+      short59.scrollCandidates.length === 1
+        && short59.scrollCandidates[0] === 'civ-amp-body'
+        && short59.body.scrollWidth <= short59.body.clientWidth + 1
+        && short59.document.scrollWidth <= short59.viewport.width + 1,
+      { scrollCandidates: short59.scrollCandidates, body: short59.body, document: short59.document });
+    check('900x620 / 59 jednostek: pełny layout spełnia kontrakt bez błędów',
+      short59Failures.length === 0,
+      short59Failures);
 
     // Desktop browser zoom reduces the effective CSS viewport. Chromium's
     // headless viewport plus deviceScaleFactor reproduces that geometry while
@@ -445,19 +541,31 @@ async function main() {
       + '*{box-sizing:border-box;}'
       + 'html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#0b0f16;}'
       + '</style></head><body></body></html>');
+    // Mirror hud.ts applyUiZoom() exactly: transform/scale is applied to body,
+    // whose layout dimensions shrink inversely so the scaled game fits viewport.
+    await page150.evaluate(() => {
+      document.documentElement.classList.add('civ-ui-zoom-active');
+      document.documentElement.style.setProperty('--civ-ui-zoom', '1.5');
+      document.body.style.width = `${100 / 1.5}vw`;
+      document.body.style.height = `${100 / 1.5}vh`;
+      document.body.style.transform = 'scale(1.5)';
+      document.body.style.transformOrigin = 'top left';
+      document.body.style.overflow = 'hidden';
+    });
     await page150.addScriptTag({ content: fs.readFileSync(FIXED_BUNDLE, 'utf8') });
     await page150.evaluate(() => {
       window.__showFixed = window.__showArmyMergePanelUnderTest;
       window.__hideFixed = window.__hideArmyMergePanelUnderTest;
       window.__isFixedOpen = window.__isArmyMergePanelOpenUnderTest;
     });
-    await showFixture(page150, 'fixed', 40);
+    await showFixture(page150, 'fixed', 59);
     // Measure the final panel geometry rather than its entrance transform.
     await page150.waitForTimeout(300);
     // Scroll exactly to the end: at the narrow 150% CSS viewport the responsive
     // layout stacks the incoming column after the existing-unit grid.
     const zoom150 = await measure(page150, 0);
-    const zoom150Failures = layoutFailures(zoom150, 40, 11);
+    await page150.screenshot({ path: '/tmp/army-merge-custom-scrollbar.png', scale: 'device' });
+    const zoom150Failures = layoutFailures(zoom150, 59, 11);
     const zoom150Scale = await page150.evaluate(() => ({
       dpr: window.devicePixelRatio,
       cssWidth: window.innerWidth,
@@ -477,24 +585,99 @@ async function main() {
       zoom150Scale.dpr === 1.5 && zoom150Scale.cssWidth === 600 && zoom150Scale.cssHeight === 413
         && zoom150Scale.physicalWidth === 900 && zoom150Scale.physicalHeight === 620,
       zoom150Scale);
-    check('150% skali / 40 jednostek: lista przewija się do końca, oba CTA pozostają widoczne',
+    const zoomBody = await page150.evaluate(() => ({
+      transform: getComputedStyle(document.body).transform,
+      width: document.body.getBoundingClientRect().width,
+      viewportWidth: innerWidth,
+      overlayParent: document.querySelector('.civ-amp-overlay')?.parentElement?.tagName,
+      pageScrollWidth: document.documentElement.scrollWidth,
+      pageScrollHeight: document.documentElement.scrollHeight,
+    }));
+    check('150% rzeczywistego zoomu gry: body jest skalowane, modal jest portalem do html i nie tworzy overflow strony',
+      zoomBody.transform === 'matrix(1.5, 0, 0, 1.5, 0, 0)'
+        && zoomBody.overlayParent === 'HTML'
+        && zoomBody.pageScrollWidth <= zoom150Scale.cssWidth
+        && zoomBody.pageScrollHeight <= zoom150Scale.cssHeight,
+      zoomBody);
+    check('150% skali / 59 jednostek: lista przewija się do końca, oba CTA pozostają widoczne',
       zoom150Failures.length === 0 && zoom150.visible.merge && zoom150.visible.separate
         && zoom150.lastUnitVisibleInsideBody,
       { failures: zoom150Failures, visible: zoom150.visible, body: zoom150.body,
         lastExisting: zoom150.lastExisting, lastUnit: zoom150.lastUnit, box: zoom150.box });
+    check('150% skali / 59 jednostek: CTA mieszczą się w stopce poniżej rosteru',
+      zoom150.foot.bottom <= zoom150.body.rect.top + 0.5
+        && zoom150.foot.top >= zoom150.box.top - 0.5
+        && zoom150.merge.top >= zoom150.foot.top && zoom150.merge.bottom <= zoom150.foot.bottom
+        && zoom150.separate.top >= zoom150.foot.top && zoom150.separate.bottom <= zoom150.foot.bottom,
+      { foot: zoom150.foot, body: zoom150.body.rect, merge: zoom150.merge,
+        separate: zoom150.separate, box: zoom150.box });
+    check('150% skali / 59 jednostek: scrollbar ma widoczny, nie-systemowy thumb i track',
+      zoom150.visible.scrollbar && zoom150.body.scrollbarControlWidth === '12px'
+        && zoom150.body.scrollbarTrackColor !== 'rgba(0, 0, 0, 0)' && !zoom150.body.scrollbarDisabled,
+      { scrollbar: zoom150.body.scrollbarControlRect, width: zoom150.body.scrollbarControlWidth,
+        track: zoom150.body.scrollbarTrackColor,
+        disabled: zoom150.body.scrollbarDisabled });
+    const thumbPixelsAtEnd = await visibleGoldThumbPixels(page150);
+    if (process.env.ARMY_MERGE_SCROLL_EVIDENCE_PATH) {
+      fs.writeFileSync(process.env.ARMY_MERGE_SCROLL_EVIDENCE_PATH,
+        await page150.screenshot({ scale: 'device' }));
+    }
+    await page150.evaluate(() => { document.querySelector('.civ-amp-body')?.scrollTo(0, 0); });
+    await page150.waitForTimeout(30);
+    const thumbValueAtTop = await page150.locator('.civ-amp-scrollbar').inputValue();
+    const thumbPixelsAtTop = await visibleGoldThumbPixels(page150);
+    await page150.evaluate(() => {
+      const body = document.querySelector('.civ-amp-body');
+      if (body) body.scrollTop = body.scrollHeight;
+    });
+    await page150.waitForTimeout(30);
+    const thumbValueAtEnd = await page150.locator('.civ-amp-scrollbar').inputValue();
+    const thumbPixelsAtEndAfterScroll = await visibleGoldThumbPixels(page150);
+    check('150% skali: widoczny złoty thumb przesuwa się od góry ku dołowi wraz z rosterem',
+      thumbPixelsAtEnd.count >= 20 && Number(thumbValueAtTop) < Number(thumbValueAtEnd)
+        && thumbPixelsAtEndAfterScroll.centroid > thumbPixelsAtTop.centroid
+        && Number(thumbValueAtEnd) >= 990,
+      { thumbPixelsAtEnd, thumbPixelsAtTop, thumbPixelsAtEndAfterScroll,
+        thumbValueAtTop, thumbValueAtEnd });
+    const thumbDrag = await dragScrollbarToEnd(page150);
+    check('150% skali / 59 jednostek: przeciągnięcie widocznego thumbu osiąga ostatni wiersz',
+      !!thumbDrag && thumbDrag.scrollTop >= thumbDrag.maxScroll - 2,
+      thumbDrag);
     await page150.evaluate(() => {
       const rows = [...document.querySelectorAll('.civ-amp-body .civ-amp-row')];
       rows[rows.length - 2]?.scrollIntoView({ block: 'end' });
     });
     const zoom150ExistingEnd = await measure(page150, null);
-    check('150% skali: końcowy wiersz dużej listy istniejących jednostek jest osiągalny w scrollu',
+    check('150% skali / 59 jednostek: końcowy wiersz listy istniejących jednostek jest osiągalny w scrollu',
       zoom150ExistingEnd.lastExistingVisibleInsideBody,
       { body: zoom150ExistingEnd.body, lastExisting: zoom150ExistingEnd.lastExisting });
-    const zoom150Click = await clickAction(page150, 'fixed', 'merge');
+    const zoom150Click = await clickAction(page150, 'fixed', 'merge', 59);
     check('150% skali: widoczny przycisk „Połącz armie” jest klikalny i wykonuje callback',
       !!zoom150Click && zoom150Click.calls.merge === 1
         && zoom150Click.calls.separate === 0 && zoom150Click.open === false,
       zoom150Click);
+    // Negative control: keep the corrected CSS and long roster, but mount the
+    // overlay as a fixed descendant of the transformed body as the shipped
+    // implementation did. The panel must then violate the viewport margins;
+    // this proves the application zoom/mount regression is covered.
+    await page150.addScriptTag({ content: fs.readFileSync(BODY_MOUNT_BUNDLE, 'utf8') });
+    await page150.evaluate(() => {
+      window.__showBodyMount = window.__showArmyMergePanelUnderTest;
+      window.__hideBodyMount = window.__hideArmyMergePanelUnderTest;
+    });
+    await resetPanel(page150, 'bodyMount');
+    await showFixture(page150, 'bodyMount', 88);
+    const bodyMountedPanel = await page150.evaluate(() => {
+      const box = document.querySelector('.civ-amp')?.getBoundingClientRect();
+      return box ? { top: box.top, bottom: box.bottom, height: box.height,
+        viewportHeight: innerHeight,
+        parent: document.querySelector('.civ-amp-overlay')?.parentElement?.tagName } : null;
+    });
+    check('negatywna kontrola: mount pod transformowanym body przy 150% traci wymagane marginesy viewportu',
+      !!bodyMountedPanel && bodyMountedPanel.parent === 'BODY'
+        && (bodyMountedPanel.top < 24 || bodyMountedPanel.viewportHeight - bodyMountedPanel.bottom < 24),
+      bodyMountedPanel);
+    await page150.evaluate(() => window.__hideBodyMount?.());
     await page150.close();
 
     const mergeResult = await clickAction(page, 'fixed', 'merge');

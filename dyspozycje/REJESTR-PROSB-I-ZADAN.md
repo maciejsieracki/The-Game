@@ -8,6 +8,21 @@
 - TESTY: TypeScript PASS, domena 53/53, render UI 12/12; access mode zachowuje cap 20 bez przycisku bezterminowego; szerszy `diplomacy-proposal-test` 186/188 z dwoma błędami asercji pokoju w wojnie potwierdzonymi jako identyczne na bazie. Final Control: `dyspozycje/autobot/runs/R-HANDLOWA-WYMIANA-CZAS-BEZTERMINOWY-30T-Q1/30-final-control.md`.
 - OPERATOR: `autobot/trade-duration-indefinite-q1`; ślad: `dyspozycje/autobot/runs/R-HANDLOWA-WYMIANA-CZAS-BEZTERMINOWY-30T-Q1/`.
 - ZGODNOŚĆ: istniejące aktywne umowy zapisują liczbowe `wygasaTura` i pozostają bez zmian; nowe umowy bezterminowe korzystają z już obsługiwanego `wygasaTura: null`.
+## `R-ARMY-MERGE-PANEL-INNER-SCROLL-Q1` — Operator r3
+
+- STATUS: **OPERATOR r3 PASS — niezależna kontrola oczekuje; brak publikacji.**
+- Przyczyna r2→r3: test izolowanego panelu nie odtwarzał `transform:scale()` na `body`, którego używa zoom UI gry. Panel `position:fixed` montowany wewnątrz transformowanego `body` tracił geometrię viewportu.
+- Naprawa: modal jest montowany na `document.documentElement`, poza transformowanym `body`; roster pozostaje jedynym scroll regionem, a CTA poza nim.
+- Weryfikacja r3: komponent Chromium 34/34; produkcyjny `Gra-ROBOCZA.html` z rzeczywistym zoomem 150% i stosem 88+1 — 9/9; TypeScript i `git diff --check` PASS. Raport: `dyspozycje/autobot/runs/R-ARMY-MERGE-PANEL-INNER-SCROLL-Q1/07-operator-runda3.md`.
+- Granica: harness wstrzykuje kandydacki komponent na prawdziwą stronę Roboczej; nie dowodzi, że poprawka jest w aktualnie opublikowanym bundlu. Nie wykonywano merge, push ani deploy.
+
+## `R-ARMY-MERGE-PANEL-INNER-SCROLL-Q1` — Final Control r2
+
+- STATUS: **PASS — zakres kontraktu UI**, bez READY_FOR_DEPLOY i bez publikacji.
+- Final Control niezależnie uruchomił Chromium regression: 31/31 PASS, TypeScript PASS, `git diff --check` PASS.
+- 59 istniejących jednostek + wiersz przybywającej jednostki, 600×413 CSS px / DPR 1.5: widoczny i przeciągalny thumb przewija do ostatniego wiersza; oba CTA są widoczne w stopce; marginesy zmierzone 28.59 px u góry / 27.88 px u dołu.
+- Granica: callback testowy jest licznikiem fixture; pełna transakcja scalania w grze nie została wykonana. Raport: `dyspozycje/autobot/runs/R-ARMY-MERGE-PANEL-INNER-SCROLL-Q1/05-final-control.md`.
+- Final Control nie zmienił kodu produktu; brak commit, push, merge i deploy.
 
 ## `R-AI-GENERAL-WAR-5TURN-ATTACK-Q1` + `R-ARMY-COMMANDER-UNIT-MARKERS-20261028` — wspólna integracja ROBOCZA
 
