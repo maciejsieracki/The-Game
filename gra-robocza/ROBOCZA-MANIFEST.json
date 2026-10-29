@@ -1,5 +1,5 @@
 {
-  "releaseState": "CANDIDATE — cztery poprawki bitewne zintegrowane na main; lokalny build i smoke PASS; publikacja/push/readback w toku.",
+  "releaseState": "DEPLOYED — cztery poprawki bitewne w Roboczej i origin/main; pinned GitHub Raw readback PASS.",
   "bundle": "Gra-ROBOCZA.html",
   "bundleMd5": "b3d82220c7a8820f5a5e89c9aa209431",
   "bundleSha256": "7632cbf4c91f4cc67d76c240308dd9cf04d5f860160dd16469d1564b9be6eb1d",
@@ -9,7 +9,7 @@
     "source": "main @ a9c555e44c968e1d7d037d4c34a02a57691ece66",
     "build": "Vite 5.4.21 single-file; 919 modules; stamped ROBOCZA",
     "buildCommit": "a9c555e4",
-    "publicationCommit": "PENDING"
+    "publicationCommit": "6b7f40b412ec5f9d931f054684746fa9c820baef"
   },
   "scope": [
     "R-BITWA-DEAD-UNIT-DISAPPEARS-Q1: rozbita jednostka znika z pola bitwy.",
@@ -259,23 +259,23 @@
     "publicationCommit": "f6f63dc839449d8e08a7e2509ec72796757867af"
   },
   "publishPlan": {
-    "status": "PUBLISHED to origin/main at f66fcc2924617eae1810823d55d358ad0d5445ad; Robocza only; no KANON/FINALNA promotion.",
+    "status": "PUBLISHED to origin/main at 6b7f40b412ec5f9d931f054684746fa9c820baef; Robocza only; no KANON/FINALNA promotion.",
     "target": "origin/main",
-    "publicationCommit": "f66fcc2924617eae1810823d55d358ad0d5445ad"
+    "publicationCommit": "6b7f40b412ec5f9d931f054684746fa9c820baef"
   },
   "remoteReadback": {
     "status": "PASS",
     "remote": "origin/main",
-    "commit": "f66fcc2924617eae1810823d55d358ad0d5445ad",
-    "bundleUrl": "https://raw.githubusercontent.com/maciejsieracki/The-Game/f66fcc2924617eae1810823d55d358ad0d5445ad/gra-robocza/Gra-ROBOCZA.html",
-    "manifestUrl": "https://raw.githubusercontent.com/maciejsieracki/The-Game/f66fcc2924617eae1810823d55d358ad0d5445ad/gra-robocza/ROBOCZA-MANIFEST.json",
-    "startUrl": "https://raw.githubusercontent.com/maciejsieracki/The-Game/f66fcc2924617eae1810823d55d358ad0d5445ad/gra-robocza/START.html",
+    "commit": "6b7f40b412ec5f9d931f054684746fa9c820baef",
+    "bundleUrl": "https://raw.githubusercontent.com/maciejsieracki/The-Game/6b7f40b412ec5f9d931f054684746fa9c820baef/gra-robocza/Gra-ROBOCZA.html",
+    "manifestUrl": "https://raw.githubusercontent.com/maciejsieracki/The-Game/6b7f40b412ec5f9d931f054684746fa9c820baef/gra-robocza/ROBOCZA-MANIFEST.json",
+    "startUrl": "https://raw.githubusercontent.com/maciejsieracki/The-Game/6b7f40b412ec5f9d931f054684746fa9c820baef/gra-robocza/START.html",
     "httpStatus": 200,
-    "bundleMd5": "703bdf789fb23f37cacacc9aac405402",
-    "bundleSha256": "e1df7844da72cd5d03332f70ecba0f6e650b6344f563c183b866f54829fdeba7",
-    "bundleBytes": 70040409,
-    "checks": "Pinned GitHub Raw bundle, manifest and START fetched successfully; all three files byte-identical to local release artifacts; bundle MD5/SHA-256/size agree with manifest top-level and bundles[] rows."
+    "bundleMd5": "b3d82220c7a8820f5a5e89c9aa209431",
+    "bundleSha256": "7632cbf4c91f4cc67d76c240308dd9cf04d5f860160dd16469d1564b9be6eb1d",
+    "bundleBytes": 70045045,
+    "checks": "Pinned GitHub Raw readback: bundle, manifest and START HTTP 200; fetched bundle hashes and bytes match local files and manifest top-level plus both bundles[] rows; START lists current bundle MD5 prefix."
   },
-  "publishedAt": "PENDING",
-  "buildStamp": "2026-10-29 23:53"
+  "publishedAt": "2026-10-29T23:56:54.637Z",
+  "buildStamp": "2026-10-30 00:52"
 }
