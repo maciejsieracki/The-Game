@@ -22,6 +22,7 @@ async function main() {
     const plateSource = fs.readFileSync(path.join(ROOT, 'src/render/unitStatPlate.ts'), 'utf8');
     const mergeSource = fs.readFileSync(path.join(ROOT, 'src/game/armyMerge.ts'), 'utf8');
     const unitsSource = fs.readFileSync(path.join(ROOT, 'src/render/units.ts'), 'utf8');
+    const mainSource = fs.readFileSync(path.join(ROOT, 'src/main.ts'), 'utf8');
     check('emblemat cywilizacji ma dokładnie czterokrotny bok względem poprzedniego rozmiaru',
       /PLATE_OWNER_ICON_SIZE\s*=\s*0\.80\s*\*\s*HEX_R/.test(plateSource));
     check('środek emblematu wylicza położenie z nowego rozmiaru, zachowując przypięcie do tabliczki',
@@ -30,6 +31,8 @@ async function main() {
       /hasCommander:\s*stack\.some\(unit\s*=>\s*unit\.isGeneral\s*===\s*true\)/.test(mergeSource));
     check('renderer uwzględnia zarówno dowódcę w reprezentancie, jak i w reszcie stosu',
       /applyUnitCommanderStar\(tokenObj,\s*vitals\s*\?\s*vitals\.hasCommander\s*:\s*unit\.isGeneral\s*===\s*true\)/.test(unitsSource));
+    check('w epoce Kamienia wybór modelu dowódcy zależy od wynalezienia Koła',
+      /const epoch = empireEpochForOwner\(ownerId\)[\s\S]*?if \(epoch === 1\)[\s\S]*?const hasWheel = techs\.includes\('Koło'\)[\s\S]*?stoneGeneralUnitId\(hasWheel\)/.test(mainSource));
 
     fs.writeFileSync(ENTRY,
       `export { applyUnitCommanderStar, applyUnitVeteranBadgeStarCount, COMMANDER_STAR_HIT_UD } from ${JSON.stringify(path.join(ROOT, 'src/render/unitVeteranBadges.ts'))};\n`

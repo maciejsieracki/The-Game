@@ -93,8 +93,12 @@ async function main() {
   assert.strictEqual(slotById.get('general').rank, 5, 'commander remains behind siege');
   assert.strictEqual(slotById.get('horse').rank, 0);
   assert.strictEqual(slotById.get('chariot').rank, 0);
-  assert(slotById.get('horse').row < 68 && slotById.get('chariot').row > 88,
-    'mounted units occupy opposite outer wings');
+  assert(slotById.get('horse').row < slotById.get('infantry').row
+      && slotById.get('chariot').row > slotById.get('infantry').row,
+    'mounted units occupy opposite flanks beside the main formation');
+  assert(Math.abs(slotById.get('horse').row - slotById.get('infantry').row) <= 3
+      && Math.abs(slotById.get('chariot').row - slotById.get('infantry').row) <= 3,
+    'mounted units remain close to the main formation rather than near battlefield edges');
 
   const crowded = [
     ...Array.from({ length: 45 }, (_, i) => ({ id: `inf-${i}`, category: 'miecznik', name: `Wojownik ${i}` })),
@@ -110,26 +114,30 @@ async function main() {
   assert.strictEqual(crowdedById.get('javelin-line').rank, 3, 'next role begins behind infantry overflow');
   const mounted = crowdedSlots.filter(slot => roleOf(slot.unit) === 'mounted');
   assert.strictEqual(mounted.length, 500, 'large mounted roster is fully assigned');
-  assert(mounted.every(slot => slot.rank >= 0 && (slot.row < 68 || slot.row > 88)),
-    'large cavalry/chariot rosters remain on the wings and are not squeezed into the center ranks');
+  assert(mounted.every(slot => slot.rank >= 0 && (slot.row >= 68 && slot.row <= 70 || slot.row >= 86 && slot.row <= 88)),
+    'large cavalry/chariot rosters remain on close, bounded wings and are not squeezed into the center ranks');
   assert.strictEqual(new Set(crowdedSlots.map(slot => `${slot.rank}:${slot.row}`)).size, crowdedSlots.length,
     'large deployment has no duplicate planned slots');
 
   assert.strictEqual(compactLineAllowsAdvance({
-    side: 'atk', candidateCol: 11, lineMinimumProgress: 10, previousLineMinimumProgress: null,
-  }), true, 'Attack lets a rank advance one step with its lagging unit');
+    side: 'atk', candidateCol: 11, lineReferenceProgress: 10, previousLineReferenceProgress: null,
+  }), true, 'Attack lets a rank advance one step beyond its typical alignment');
   assert.strictEqual(compactLineAllowsAdvance({
-    side: 'atk', candidateCol: 12, lineMinimumProgress: 10, previousLineMinimumProgress: null,
-  }), false, 'Attack prevents one unit from running ahead of its rank');
+    side: 'atk', candidateCol: 12, lineReferenceProgress: 10, previousLineReferenceProgress: null,
+  }), false, 'Attack prevents one unit from running too far ahead of its rank');
   assert.strictEqual(compactLineAllowsAdvance({
-    side: 'atk', candidateCol: 10, lineMinimumProgress: 10, previousLineMinimumProgress: 9,
+    side: 'atk', candidateCol: 10, lineReferenceProgress: 10, previousLineReferenceProgress: 9,
   }), false, 'a rear rank cannot overtake the preceding rank');
   assert.strictEqual(compactLineAllowsAdvance({
-    side: 'def', candidateCol: 10, lineMinimumProgress: -10, previousLineMinimumProgress: null,
+    side: 'def', candidateCol: 10, lineReferenceProgress: -10, previousLineReferenceProgress: null,
   }), true, 'defender progress is mirrored toward decreasing columns');
   assert.strictEqual(compactLineAllowsAdvance({
-    side: 'def', candidateCol: 8, lineMinimumProgress: -10, previousLineMinimumProgress: null,
+    side: 'def', candidateCol: 8, lineReferenceProgress: -10, previousLineReferenceProgress: null,
   }), false, 'defender cannot run ahead of the aligned line');
+
+  assert.strictEqual(compactLineAllowsAdvance({
+    side: 'atk', candidateCol: 13, lineReferenceProgress: 12, previousLineReferenceProgress: null,
+  }), true, 'one blocked straggler does not freeze the majority of the attacking rank');
 
   const scene = require('fs').readFileSync(path.join(__dirname, '..', 'src', 'battle', 'battleScene.ts'), 'utf8');
   assert.match(scene, /function initialBattleRoleOf\(bu: BattleUnit\): InitialBattleRole \{\s*const stats = \(bu\.stats as Record<string, unknown>\) \?\? \{\};\s*return classifyInitialBattleRole\(\{/,

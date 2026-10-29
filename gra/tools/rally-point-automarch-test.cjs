@@ -28,7 +28,8 @@ fs.writeFileSync(
 export { pathCost, terrainMoveCost } from '../src/units/setup';
 export { canUnitOccupyCityHex } from '../src/game/city-hex-movement';
 export { deserializeGame, serializeGame } from '../src/game/save';
-export { generalLimitForEra, generalSlotsUsed, canRecruitGeneral, attemptGeneralPurchase, generalFollowDestination } from '../src/game/generals';`,
+export { generalLimitForEra, generalSlotsUsed, canRecruitGeneral, attemptGeneralPurchase, generalFollowDestination } from '../src/game/generals';
+export { planTrackedGeneralFollowMarch, syncTrackedGeneralFollowMarches } from '../src/game/generalQuickFollow';`,
   'utf8',
 );
 
@@ -104,6 +105,8 @@ try {
     terrainMoveCost,
     attemptGeneralPurchase,
     generalFollowDestination,
+    planTrackedGeneralFollowMarch,
+    syncTrackedGeneralFollowMarches,
   } = require(BUNDLE);
 
   check('General cap grows by one at each era',
@@ -244,13 +247,24 @@ try {
       && !mainSource.includes('onToggleRallyPointPick:')
       && !mainSource.includes('launchRallyPointForOwner'));
   check('new city recruits automatically receive a live-General march plan',
-    mainSource.includes('generalFollowDestination(u, general)')
-      && mainSource.includes('planGeneralFollowMarch(\n        u, follow.point, follow.generalTargetId, false,')
+    mainSource.includes('function planSpawnedUnitFollowGeneral(newUnitId: string): boolean')
+      && mainSource.includes('generalFollowDestination(u, general)')
+      && mainSource.includes('planGeneralFollowMarch(u, follow.point, follow.generalTargetId, false)')
       && mainSource.includes('isGeneral: rec.isGeneral === true'));
-  check('General-following plans retarget and discard dead/missing Generals',
-    mainSource.includes('function syncGeneralMarchTargets()')
-      && mainSource.includes('destQ: general.q, destR: general.r')
-      && mainSource.includes('general.isGeneral !== true'));
+  const trackedMarches = new Map([['following-unit', {
+    destQ: 1, destR: 0, generalTargetId: 'general-1', attackUnitId: 'stale-target',
+  }]]);
+  const clearedTargets = [];
+  const trackedFollower = { ...newRecruit, id: 'following-unit' };
+  const movedCommander = { ...general, q: 4, r: 0 };
+  syncTrackedGeneralFollowMarches([trackedFollower, movedCommander], trackedMarches, id => clearedTargets.push(id));
+  check('General-following production helper retargets a live moving General',
+    trackedMarches.get('following-unit')?.destQ === 4
+      && trackedMarches.get('following-unit')?.destR === 0
+      && trackedMarches.get('following-unit')?.generalTargetId === 'general-1');
+  syncTrackedGeneralFollowMarches([trackedFollower, { ...movedCommander, hp: 0 }], trackedMarches, id => clearedTargets.push(id));
+  check('General-following production helper discards a dead/missing General and stale attack target',
+    !trackedMarches.has('following-unit') && clearedTargets.includes('following-unit'));
   check('General recruitment runtime uses the capital/era eligibility gate',
     mainSource.includes('return attemptGeneralPurchase({')
       && mainSource.includes('capitalCityId: capitalCityIdForOwner(ownerId)')
@@ -259,7 +273,7 @@ try {
       && mainSource.includes('item.isGeneral === true'));
   check('General recruitment card displays exactly one owner-building title prefix',
     cityPanelSource.includes("const leaderTitle = offer.title ?? 'Wódz'")
-      && cityPanelSource.includes('unitLabel: `${leaderTitle} · ${offer.item.nazwa}`')
+      && cityPanelSource.includes('unitLabel: leaderTitle')
       && mainSource.includes('item: best ? { ...best, isGeneral: true } : null')
       && !mainSource.includes('item: best ? { ...best, isGeneral: true, nazwa: `${armyLeaderTitle'));
   check('best-unit form refresh preserves wounded health fraction and unit identity',
@@ -271,14 +285,29 @@ try {
       && empirePanelSource.includes('aria-label="Praca do zamiany na podatek"')
       && empirePanelSource.includes('data-work-tax-submit')
       && empirePanelSource.includes('.civ-emp-work-tax button:focus-visible'));
-  check('General is the march destination for new recruits; destination follows the live General',
-    mainSource.includes('generalFollowDestination(u, general)')
-      && mainSource.includes('planGeneralFollowMarch(\n        u, follow.point, follow.generalTargetId, false,')
-      && planBody.includes('generalTargetId ? { generalTargetId }')
-      && mainSource.includes('plannedMarches.set(unitId, { ...dest, destQ: general.q, destR: general.r })'));
+  let plannedMarch = null;
+  let clearedAutoExplore = false;
+  let markedMoved = false;
+  let syncedAttackTarget = false;
+  const testTrackedMarches = new Map();
+  const planAccepted = planTrackedGeneralFollowMarch(newRecruit, { q: 3, r: 0 }, general.id, {
+    playerOwnerId: 0,
+    canOccupy: () => true,
+    movementContext: unit => ({ mover: unit, occupied: new Set(), perTurn: 2 }),
+    pathPlan: () => ({ reachable: true, fullPath: [{ q: 2, r: 0 }, { q: 3, r: 0 }] }),
+    clearAutoExplore: () => { clearedAutoExplore = true; },
+    markPlayerMoved: id => { markedMoved = id === newRecruit.id; },
+    marches: testTrackedMarches,
+    syncAttackTarget: (id, destination) => { syncedAttackTarget = id === newRecruit.id && destination.generalTargetId === general.id; },
+  }, false);
+  plannedMarch = testTrackedMarches.get(newRecruit.id);
+  check('tracked production helper stores a reachable recruit march to the live General',
+    planAccepted && clearedAutoExplore && !markedMoved && syncedAttackTarget
+      && plannedMarch?.generalTargetId === general.id && plannedMarch.destQ === 3);
+  const arrivalMarches = new Map([['following-unit', { destQ: 3, destR: 0, generalTargetId: general.id }]]);
+  syncTrackedGeneralFollowMarches([{ ...newRecruit, q: 3, r: 0 }, general], arrivalMarches, () => {});
   check('arrival clears the General-following march at the General position',
-    mainSource.includes('follower.q === general.q && follower.r === general.r')
-      && planBody.includes('plannedMarches.set(u.id, dest)'));
+    !arrivalMarches.has('following-unit'));
   check('map click has no manual rally picker interception',
     !mainSource.includes('rallyPointMode')
       && !mainSource.includes('setRallyPointFromMap')

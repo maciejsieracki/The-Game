@@ -628,8 +628,7 @@ function attachKeyboard(
   info: PreBattleInfo,
   opts?: PreBattleOptions,
 ): void {
-  const defaultManual = (opts?.defaultAction ?? 'manual') === 'manual'
-    && opts?.manualControlAllowed !== false;
+  const defaultManual = (opts?.defaultAction ?? 'manual') === 'manual';
   keyHandler = (e: KeyboardEvent) => {
     if (e.key === 'Enter') {
       e.preventDefault();
@@ -841,8 +840,9 @@ function buildDeployPanel(
     btns.push('<button type="button" class="pb-btn pb-danger" data-act="cancel" disabled>' + PB_SVG.retreat + 'Wycofaj</button>');
   }
   btns.push('<button type="button" class="pb-btn" data-act="auto">' + PB_SVG.auto + 'Auto</button>');
-  const deployDisabled = manualControlAllowed ? '' : ' disabled aria-disabled="true" title="Ręczne sterowanie wymaga Wodza lub Generała w armii"';
-  btns.push('<button type="button" class="pb-btn pb-primary" data-act="deploy"' + deployDisabled + '>' + deployIcon + esc(deployLabel) + '</button>');
+  // Wybór trybu bitwy należy do pre-battle prompt i zawsze pozostaje dostępny.
+  // manualControlAllowed ogranicza dopiero sterowanie na polu bitwy (BattleScene).
+  btns.push('<button type="button" class="pb-btn pb-primary" data-act="deploy">' + deployIcon + esc(deployLabel) + '</button>');
   if (hasSave) {
     btns.push('<button type="button" class="pb-btn" data-act="save">Zapisz</button>');
   }
@@ -868,7 +868,7 @@ function buildDeployPanel(
     : '';
   const commanderNote = manualControlAllowed
     ? ''
-    : '<div class="pb-note">Ręczna bitwa wymaga Wodza lub Generała w armii. Auto pozostaje dostępne.</div>';
+    : '<div class="pb-note">Bez Wodza lub Generała możesz wejść na pole bitwy, ale walka rozegra się automatycznie bez indywidualnego sterowania.</div>';
 
   const panel = document.createElement('div');
   panel.className = 'pb-deploy';
@@ -894,7 +894,7 @@ function buildOverlay(info: PreBattleInfo, cb: PreBattleCallbacks, opts?: PreBat
   ensureStyles();
   const canRetreat = info.canRetreat !== false;
   const manualControlAllowed = opts?.manualControlAllowed !== false;
-  const defaultManual = (opts?.defaultAction ?? 'manual') === 'manual' && manualControlAllowed;
+  const defaultManual = (opts?.defaultAction ?? 'manual') === 'manual';
   const getBonusy = opts?.getCivBonusy ?? pbCfg.getCivBonusy;
 
   const isYouAtk = isPlayerSide(info.atakujacy, 'atk', canRetreat);
@@ -924,7 +924,6 @@ function buildOverlay(info: PreBattleInfo, cb: PreBattleCallbacks, opts?: PreBat
   overlay.querySelector('[data-act="cancel"]')?.addEventListener('click', () => { cb.onCancel(); dismiss(); });
   overlay.querySelector('[data-act="auto"]')?.addEventListener('click', () => { cb.onAuto(); dismiss(); });
   overlay.querySelector('[data-act="deploy"]')?.addEventListener('click', () => {
-    if (!manualControlAllowed) return;
     cb.onBattlefield();
     dismiss();
   });

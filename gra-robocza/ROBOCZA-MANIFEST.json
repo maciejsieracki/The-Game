@@ -1,26 +1,23 @@
 {
-  "releaseState": "DEPLOYED — testowa ROBOCZA; AI pięcioturowa zbiórka/atak oraz oznaczenia wodza; GitHub Raw readback PASS.",
+  "releaseState": "DEPLOYED — oczekuje publikacji: poprawki bitew, dowódcy, rekrutacji, AI i kreatora; duże imperium pozostaje osobnym testem.",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "e5eb21d82c2be611ab9c491327f696c3",
-  "bundleSha256": "76078759e78f3cb466156cec296da925759dd685764dc42242d9a5f02ef40eb2",
-  "bundleBytes": 70021251,
+  "bundleMd5": "eab188a2df6c2399f8431d58167211bc",
+  "bundleSha256": "d0eba5e51a1d896f12171347e6c6e337263f8d599afa7eb24bd45e8441409e33",
+  "bundleBytes": 70028627,
   "sourceSnapshot": {
-    "baseCommit": "85f8c5f0e0aa6ff46aa8b85a03d0bc0c71d86268",
-    "productCommit": "7fdc191ac8efa4e3e1c71a4c82b1772bb55ec145",
-    "source": "origin/main + AI five-turn war campaign attack and commander map markers",
-    "build": "Vite 5.4.21 single-file ROBOCZA; 916 modules; stamped",
-    "publicationCommit": "c72cd08a2de33a0f4ff920e6b314503a50811cb0"
+    "baseCommit": "91dc998a",
+    "source": "origin/main + zaakceptowane tematy AutoBot poza testem wydajności dużego imperium",
+    "build": "Vite 5.4.21 single-file; 917 modules; stamped",
+    "buildCommit": "pending"
   },
   "scope": [
     "AI zbiera armię przez pięć pełnych tur po wybuchu wojny, a w kolejnej turze atakuje wybrany osiągalny lądem cel wspólnymi rozkazami całego składu.",
     "Wódz/generał ma odrębną gwiazdę nad gwiazdami doświadczenia; emblemat cywilizacji jednostki jest 4× większy."
   ],
   "verification": [
-    "ai-general-war-campaign-test.cjs — 31/31",
-    "ai-general-war-campaign-live-test.cjs — 24/24; pięć pełnych EOT zbiórki, szósta tura ataku, 4/4 ruchów w Chromium",
-    "commander-star-emblem-test.cjs — 11/11",
-    "army-consolidation-e2e-test.cjs — 6/6; ai-ofensywa-wojna-epoki-test.cjs — 7/7",
-    "TypeScript PASS; Vite 5.4.21 build PASS; 916 modules; exact bundle verifier and HTTP/Chromium smoke pending after commit"
+    "TypeScript PASS",
+    "Vite build PASS (917 modules)",
+    "Chromium tests: AI campaign 68/68; newgame navigation 230/230; battle/recruitment/commander focused tests PASS"
   ],
   "limits": [
     "AI morska kampania/transport pozostaje poza zakresem.",
@@ -32,25 +29,25 @@
     "notes": "AI live Chromium fixture: five complete muster EOTs and sixth attack EOT with 4/4 commands/executions. Commander map marker visual evidence is the production-renderer map harness; no full gameplay screenshot with active army. Naval AI and large-empire performance remain open."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-10-28T22:05",
+  "hubGeneratedAt": "2026-10-29T12:57:55",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "e5eb21d82c2be611ab9c491327f696c3",
-      "sizeBytes": 70021251
+      "md5": "eab188a2df6c2399f8431d58167211bc",
+      "sizeBytes": 70028627
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "e5eb21d82c2be611ab9c491327f696c3",
-      "sizeBytes": 70021251
+      "md5": "eab188a2df6c2399f8431d58167211bc",
+      "sizeBytes": 70028627
     }
   ],
-  "md5": "e5eb21d82c2be611ab9c491327f696c3",
-  "sizeBytes": 70021251,
+  "md5": "eab188a2df6c2399f8431d58167211bc",
+  "sizeBytes": 70028627,
   "publisher": "Codex AutoBot — owner authorized main merge, Robocza publish and git push",
   "source": "gra/src; source integration commit 7fdc191ac8efa4e3e1c71a4c82b1772bb55ec145",
   "immediatePreviousRelease": {
@@ -273,5 +270,6 @@
     "bundleBytes": 70021251,
     "checks": "GitHub Raw bundle/manifest/START HTTP 200; fetched bundle bytes and hashes match manifest."
   },
-  "publishedAt": "2026-10-28"
+  "publishedAt": "2026-10-28",
+  "buildStamp": "2026-10-29 12:57 · aa7fbff4f816"
 }

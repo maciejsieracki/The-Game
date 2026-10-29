@@ -475,6 +475,7 @@ export interface AITurnOpts {
     rallyR: number;
     target: { ownerId: number; cityId: string; q: number; r: number };
     turn: number;
+    seaTravelAllowed?: boolean;
   };
   /**
    * R-WEB-ARMY-CONSOLIDATION-Q1 (tylko gdy flaga ARMY_CONSOLIDATION_ENABLED ON; brak = baza):
@@ -3952,9 +3953,12 @@ function applyWarAllInCapitalToCommands(
   ctx: WarAllInContext,
   data: GameData,
 ): void {
-  // Zaokretowane / morskie jednostki zostawiamy dotychczasowej logice (parytet ze sciezka barbarzyncow).
+  // Zaokretowane jednostki zostaja poza zwyklym marszem ladowym. Kampania
+  // wodna wodza jest wyjatkiem: jej planner musi kontynuowac ruch na wodzie i
+  // wskazac pierwsze pole ladu, zeby silnik zdjal stan embarked po desancie.
   const eligible = myUnits.filter(u =>
-    !isCivilianUnit(u) && !isScoutUnit(u) && u.ruchLeft > 0 && u.embarked !== true && u.seaRaider !== true);
+    !isCivilianUnit(u) && !isScoutUnit(u) && u.ruchLeft > 0
+      && (ctx.allowSea === true || u.embarked !== true) && u.seaRaider !== true);
   if (eligible.length === 0) return;
   const enemyCityHex = new Set(
     cities.filter(c => c.ownerId !== playerId).map(c => keyOf(c.q, c.r)),
@@ -3963,7 +3967,10 @@ function applyWarAllInCapitalToCommands(
   // Jednostki ktore juz atakuja lub wchodza na wrogie miasto zachowuja swoj rozkaz.
   const keep = new Set<string>();
   for (const cmd of commands) {
-    if (cmd.type === 'attack' && eligibleIds.has(cmd.unitId)) keep.add(cmd.unitId);
+    if (cmd.type === 'attack' && eligibleIds.has(cmd.unitId)) {
+      const attacker = eligible.find(unit => unit.id === cmd.unitId);
+      if (attacker?.embarked !== true) keep.add(cmd.unitId);
+    }
     else if (cmd.type === 'move' && eligibleIds.has(cmd.unitId) && enemyCityHex.has(keyOf(cmd.toQ, cmd.toR))) {
       keep.add(cmd.unitId);
     }
@@ -3985,23 +3992,63 @@ function applyWarAllInCapitalToCommands(
     engageRadius: ctx.engageRadius,
     enemyStrength: ctx.enemyStrength,
   };
-  const nav = { map, blocked, occupied };
+  const nav = { map, blocked, occupied, allowSea: ctx.allowSea === true };
   // R-WEB-ARMY-CONSOLIDATION-Q1 (flaga ON): liczba armii = liczba wojen; kazda armia to
   // zrownowazona czesc wojsk marszu, idaca na stolice JEDNEGO wroga. OFF = jedna wspolna
   // procedura (dotychczasowe zachowanie).
   const plans = isArmyConsolidationEnabled()
     ? planWarArmiesByEnemy(planned, ctx, nav, warOpts, data)
     : [planWarAllInCapital(planned, ctx.targets, nav, warOpts)];
-  // Kolejnosc komend = kolejnosc planu (przod kolumny zwalnia heksy tylnym).
+  // Jednostki zebrane na tym samym heksie nie mogą dostać od planera różnych kroków:
+  // rezerwacja pierwszego kroku oznaczała wcześniej `held` dla reszty stosu. W marszu
+  // kampanii wszystkie jednostki stosu podążają tym samym krokiem i legalnie współdzielą
+  // heks docelowy; main.ts przepuszcza takie komendy przez allowFriendlyStack.
   for (const plan of plans) {
+    const orderByUnit = new Map(plan.orders.map(order => [order.unitId, order] as const));
+    const heldIds = new Set(plan.held);
+    const unitsByStart = new Map<string, RuntimeUnit[]>();
+    const startByUnit = new Map<string, string>();
+    for (const unit of planned) {
+      const start = keyOf(unit.q, unit.r);
+      startByUnit.set(unit.id, start);
+      let group = unitsByStart.get(start);
+      if (group === undefined) unitsByStart.set(start, group = []);
+      group.push(unit);
+    }
+    const emitted = new Map<string, typeof plan.orders[number]>();
+    for (const group of unitsByStart.values()) {
+      if (group.length < 2) continue;
+      const representatives = group
+        .map(unit => orderByUnit.get(unit.id))
+        .filter((order): order is typeof plan.orders[number] => order !== undefined);
+      if (representatives.length === 0) continue;
+      const first = representatives[0]!;
+      // Jednostki z jednego heksu należą do tego samego klastra i celu. Zachowujemy
+      // ostrożność dla planów wielowojennych: nie łączymy różnych celów.
+      if (representatives.some(order => order.targetCityId !== first.targetCityId)) continue;
+      for (const unit of group) {
+        if (!orderByUnit.has(unit.id) && !heldIds.has(unit.id)) continue;
+        emitted.set(unit.id, { ...first, unitId: unit.id });
+      }
+    }
+    // Zachowaj pozostałe rozkazy planera; dla współdzielonego kroku zaznacz legalny stos.
     for (const o of plan.orders) {
+      const replacement = emitted.get(o.unitId);
+      const step = replacement ?? o;
+      const stack = (unitsByStart.get(startByUnit.get(o.unitId) ?? '')?.length ?? 0) > 1;
       commands.push({
         type: 'move',
-        unitId: o.unitId,
-        toQ: o.step.q,
-        toR: o.step.r,
-        targetCityId: o.targetCityId,
+        unitId: step.unitId,
+        toQ: step.step.q,
+        toR: step.step.r,
+        targetCityId: step.targetCityId,
+        ...(stack ? { allowFriendlyStack: true } : {}),
       });
+    }
+    for (const [unitId, order] of emitted) {
+      if (orderByUnit.has(unitId)) continue;
+      commands.push({ type: 'move', unitId, toQ: order.step.q, toR: order.step.r,
+        targetCityId: order.targetCityId, allowFriendlyStack: true });
     }
   }
 }
@@ -4277,7 +4324,7 @@ function appendAiGeneralCampaignOrders(
     const campaignCommandStart = commands.length;
     applyWarAllInCapitalToCommands(
       commands, myUnits, units, cities, playerId, map,
-      { targets: [campaign.target] }, data,
+      { targets: [campaign.target], allowSea: campaign.seaTravelAllowed === true }, data,
     );
     // Campaign members can already be concentrated on one friendly hex after
     // five muster turns. The shared war planner reserves each destination once,

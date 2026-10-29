@@ -10,6 +10,7 @@ export { decideAITurn } from '../src/game/ai';
 export { chooseAiGeneralWarTarget, reconcileAiGeneralWarCampaign, recordAiGeneralGatherTurn,
   aiGeneralCampaignToSave, restoreAiGeneralCampaigns,
   findAiWarLandReachability, aiWarTargetHasReachableLandNeighbor } from '../src/game/ai-general-war-campaign';
+export { planWarAllInCapital, classifyWarTargetRoutes, preferSeaReachableWarTargets } from '../src/game/warAllInCapital';
 `, 'utf8');
 try {
   esbuild.buildSync({ entryPoints: [entry], bundle: true, platform: 'node', format: 'cjs', target: 'node18', outfile: bundle, logLevel: 'silent' });
@@ -94,6 +95,44 @@ const attackMovesByUnit = new Map(attackCommands.filter(command => command.type 
 check(`attack stage issues same-target movement for every stacked eligible unit (${expectedAttackRoster.length}/${expectedAttackRoster.length})`,
   expectedAttackRoster.every(id => attackMovesByUnit.get(id)?.targetCityId === 'enemy-near'),
   `ordered ${[...attackMovesByUnit.keys()].join(',')}`);
+const gatheredIds = troops.map(t => t.id);
+const gatheredMoves = attackCommands.filter(command => command.type === 'move' && gatheredIds.includes(command.unitId));
+check('all four units gathered on one hex receive the same attack-march step',
+  gatheredMoves.length === gatheredIds.length
+    && new Set(gatheredMoves.map(command => `${command.toQ},${command.toR},${command.targetCityId}`)).size === 1,
+  { expected: gatheredIds, actual: gatheredMoves });
+check('shared first step explicitly permits friendly stacking in the production executor',
+  gatheredMoves.length === gatheredIds.length && gatheredMoves.every(command => command.allowFriendlyStack === true),
+  gatheredMoves);
+
+// No-path regression: disconnect both enemy capitals from the field army with a full missing
+// column. The production planner must preserve an explicit noPath diagnostic for every unit,
+// and the AI command adapter must not leave behind ordinary movement orders that mask it.
+const noPathMap = makeMap();
+for (let r = 0; r < noPathMap.wysokoscR; r++) delete noPathMap.hexes[`10,${r}`];
+const noPathUnits = [leader, unit('infantry-no-path-1', 3, 4), unit('infantry-no-path-2', 3, 4)];
+const noPathTargets = [
+  { ownerId: 2, cityId: 'enemy-near', q: 18, r: 4 },
+  { ownerId: 3, cityId: 'enemy-far', q: 20, r: 8 },
+];
+const noPathIds = noPathUnits.map(u => u.id).sort();
+const noPathPlan = M.planWarAllInCapital(noPathUnits, noPathTargets, {
+  map: noPathMap,
+  blocked: new Set(noPathTargets.map(t => `${t.q},${t.r}`)),
+  occupied: new Set(noPathUnits.map(u => `${u.q},${u.r}`)),
+});
+check('production war planner reports every disconnected unit in noPath and emits no march orders',
+  JSON.stringify([...noPathPlan.noPath].sort()) === JSON.stringify(noPathIds)
+    && noPathPlan.orders.length === 0,
+  { expectedNoPath: noPathIds, actualNoPath: noPathPlan.noPath, orders: noPathPlan.orders });
+const noPathAiCommands = M.decideAITurn(1, noPathUnits, cities, noPathMap, data, {
+  currentTurn: 6,
+  warAllIn: { targets: noPathTargets },
+});
+const noPathAiMoves = noPathAiCommands.filter(command =>
+  command.type === 'move' && noPathIds.includes(command.unitId));
+check('AI command adapter does not mask noPath with a false movement order', noPathAiMoves.length === 0,
+  { noPathIds, moves: noPathAiMoves });
 
 const deadRestart = M.reconcileAiGeneralWarCampaign(campaign, 2, undefined, false, ['general-survivor']);
 check('leader death restarts recruiting and resets the muster counter',
@@ -156,9 +195,157 @@ check('General offer uses capital production availability, including era, barrac
     && /purchasableUnits\(\s*capital,\s*data,\s*techs,\s*availability,\s*\)/s.test(main)
     && main.includes('attemptGeneralPurchase({'),
   `availability=${main.includes('const availability = { ...productionAvailabilityCtxForCity(capital), showStockGatedUnits: true };')}; offerCall=${/purchasableUnits\(\s*capital,\s*data,\s*techs,\s*availability,\s*\)/s.test(main)}; transaction=${main.includes('attemptGeneralPurchase({')}`);
+check('General offer keeps existing capital availability gates for era and barracks',
+  /const techs = unlockedTechsForOwner\(ownerId\)/.test(main)
+    && /const availability = \{ \.\.\.productionAvailabilityCtxForCity\(capital\), showStockGatedUnits: true \}/.test(main)
+    && /purchasableUnits\(\s*capital,\s*data,\s*techs,\s*availability\s*,?\s*\)/s.test(main)
+    && /unitEra > epoch \|\| unitEra < epoch - 1/.test(main)
+    && /requiredTech && requiredTech !== '-' && requiredTech !== '—' && !techs\.includes\(requiredTech\)/.test(main)
+    && /unitEra >= 2 && !builtIds\.includes\('koszary'\)/.test(main));
 check('campaign state is written to and restored from save metadata',
   main.includes('aiGeneralWarCampaignByOwner: aiGeneralCampaignToSave(aiGeneralWarCampaignByOwner)')
     && main.includes('restoreAiGeneralCampaigns(saved.meta?.aiGeneralWarCampaignByOwner)'));
+
+// A closer land target must not eclipse a wartime target separated by a sea barrier when
+// existing Seafaring/embarkation makes that sea corridor feasible.
+const seaRouteMap = makeMap(6, 5);
+for (let r = 0; r < seaRouteMap.wysokoscR; r++) seaRouteMap.hexes[`2,${r}`].terenBazowy = 'plytkie_morze';
+const seaRouteTargets = [
+  { ownerId: 2, cityId: 'near-land', q: 1, r: 2, distance: 1 },
+  { ownerId: 3, cityId: 'far-sea', q: 4, r: 2, distance: 4 },
+];
+const seaRouteBlocked = new Set(seaRouteTargets.map(target => `${target.q},${target.r}`));
+const noSeaRoutes = M.classifyWarTargetRoutes(seaRouteMap, { q: 0, r: 2 }, seaRouteTargets, seaRouteBlocked, false);
+const withSeaRoutes = M.classifyWarTargetRoutes(seaRouteMap, { q: 0, r: 2 }, seaRouteTargets, seaRouteBlocked, true);
+check('without Seafaring the near land capital is reachable and far sea target is not',
+  noSeaRoutes.get('near-land')?.land === true && noSeaRoutes.get('far-sea')?.land === false);
+check('existing embarkation identifies the far capital as sea-reachable only across the barrier',
+  withSeaRoutes.get('far-sea')?.sea === true && withSeaRoutes.get('far-sea')?.land === false);
+const seaFirst = M.preferSeaReachableWarTargets(seaRouteTargets.map(target => ({
+  ...target,
+  landReachable: withSeaRoutes.get(target.cityId)?.land === true,
+  seaReachable: withSeaRoutes.get(target.cityId)?.sea === true,
+})));
+check('sea-only wartime target is preferred over the closer land target',
+  M.chooseAiGeneralWarTarget(undefined, seaFirst) === 3);
+check('existing land target cannot be retained ahead of a feasible sea-only target',
+  M.chooseAiGeneralWarTarget({ targetOwnerId: 2 }, seaFirst) === 3);
+
+// A distant target may have both an overland route (through the gap at row 0) and a
+// maritime corridor. The accepted sea-first rule prioritizes any executable sea route,
+// not only a destination whose land route is impossible.
+const dualRouteMap = makeMap(6, 5);
+for (let r = 0; r < dualRouteMap.wysokoscR; r++) {
+  if (r !== 0) dualRouteMap.hexes[`2,${r}`].terenBazowy = 'plytkie_morze';
+}
+const dualRouteTargets = [
+  { ownerId: 2, cityId: 'near-land-dual', q: 1, r: 2, distance: 1 },
+  { ownerId: 3, cityId: 'far-dual', q: 4, r: 2, distance: 4 },
+];
+const dualBlocked = new Set(dualRouteTargets.map(target => `${target.q},${target.r}`));
+const dualWithSeaRoutes = M.classifyWarTargetRoutes(
+  dualRouteMap, { q: 0, r: 2 }, dualRouteTargets, dualBlocked, true,
+);
+const dualCandidates = dualRouteTargets.map(target => ({
+  ...target,
+  landReachable: dualWithSeaRoutes.get(target.cityId)?.land === true,
+  seaReachable: dualWithSeaRoutes.get(target.cityId)?.sea === true,
+}));
+check('route classifier reports both land and sea routes to the distant target',
+  dualCandidates.find(target => target.ownerId === 3)?.landReachable === true
+    && dualCandidates.find(target => target.ownerId === 3)?.seaReachable === true);
+const dualSeaFirst = M.preferSeaReachableWarTargets(dualCandidates);
+check('a distant target with both routes outranks a nearer land-only target',
+  dualSeaFirst.length === 1 && dualSeaFirst[0]?.ownerId === 3
+    && M.chooseAiGeneralWarTarget(undefined, dualSeaFirst) === 3,
+  JSON.stringify({ dualCandidates, dualSeaFirst, selected: M.chooseAiGeneralWarTarget(undefined, dualSeaFirst) }));
+const dualNoSeaRoutes = M.classifyWarTargetRoutes(
+  dualRouteMap, { q: 0, r: 2 }, dualRouteTargets, dualBlocked, false,
+);
+const dualLandOnly = dualRouteTargets.map(target => ({
+  ...target,
+  landReachable: dualNoSeaRoutes.get(target.cityId)?.land === true,
+  seaReachable: dualNoSeaRoutes.get(target.cityId)?.sea === true,
+}));
+check('without Seafaring the distant sea route loses priority and nearest land target wins',
+  dualLandOnly.find(target => target.ownerId === 3)?.seaReachable === false
+    && M.chooseAiGeneralWarTarget(undefined, M.preferSeaReachableWarTargets(dualLandOnly)) === 2);
+
+// The classifier must agree with the production planner when route length in hexes differs
+// from weighted movement cost: the direct land corridor is hills, while the longer corridor
+// is shallow water. The shortest weighted route goes by sea, so the production planner's first
+// movement order must enter water and the classifier must mark the target sea-preferred.
+const weightedRouteMap = makeMap(7, 4);
+for (const hex of Object.values(weightedRouteMap.hexes)) hex.terenBazowy = 'gory';
+for (let q = 2; q <= 5; q++) weightedRouteMap.hexes[`${q},2`].terenBazowy = 'wzgorza';
+for (let q = 1; q <= 5; q++) weightedRouteMap.hexes[`${q},1`].terenBazowy = 'plytkie_morze';
+weightedRouteMap.hexes['1,2'].terenBazowy = 'laka';
+weightedRouteMap.hexes['6,2'].terenBazowy = 'laka';
+const weightedTarget = { ownerId: 4, cityId: 'weighted-dual', q: 6, r: 2 };
+const weightedBlocked = new Set(['6,2']);
+const weightedRoutes = M.classifyWarTargetRoutes(
+  weightedRouteMap, { q: 1, r: 2 }, [weightedTarget], weightedBlocked, true,
+);
+const weightedPlan = M.planWarAllInCapital([unit('weighted-marcher', 1, 2)], [weightedTarget], {
+  map: weightedRouteMap, allowSea: true, blocked: weightedBlocked, occupied: new Set(['1,2']),
+});
+const weightedStep = weightedPlan.orders[0]?.step;
+check('weighted classifier identifies the same sea route chosen by the production planner',
+  weightedRoutes.get('weighted-dual')?.land === true
+    && weightedRoutes.get('weighted-dual')?.sea === true
+    && weightedStep !== undefined
+    && ['plytkie_morze', 'morze'].includes(weightedRouteMap.hexes[`${weightedStep.q},${weightedStep.r}`]?.terenBazowy),
+  JSON.stringify({ route: weightedRoutes.get('weighted-dual'), step: weightedStep }));
+
+// Exact equal-cost tie from independent evaluator R7. Both land and sea paths cost seven
+// movement points before the shared goal entry; chooseStep's coordinate tie-break picks water.
+const tiedRouteMap = makeMap(9, 8);
+for (const hex of Object.values(tiedRouteMap.hexes)) hex.terenBazowy = 'gory';
+for (const [key, terrain] of [
+  [1, 3, 'laka'], [2, 3, 'laka'], [3, 3, 'wzgorza'], [4, 3, 'laka'],
+  [5, 3, 'laka'], [6, 3, 'wzgorza'], [7, 3, 'laka'],
+  [1, 4, 'plytkie_morze'], [2, 4, 'plytkie_morze'], [3, 4, 'laka'],
+].map(([q, r, terrain]) => [`${q},${r}`, terrain])) {
+  tiedRouteMap.hexes[key].terenBazowy = terrain;
+}
+const tiedTarget = { ownerId: 5, cityId: 'equal-cost-dual', q: 7, r: 3 };
+const tiedBlocked = new Set(['7,3']);
+const tiedWithSea = M.classifyWarTargetRoutes(
+  tiedRouteMap, { q: 1, r: 3 }, [tiedTarget], tiedBlocked, true,
+).get('equal-cost-dual');
+const tiedPlan = M.planWarAllInCapital([unit('tie-marcher', 1, 3)], [tiedTarget], {
+  map: tiedRouteMap, allowSea: true, blocked: tiedBlocked, occupied: new Set(['1,3']),
+});
+check('equal-cost route classifier follows the planner coordinate tie-break onto water',
+  tiedWithSea?.land === true && tiedWithSea.sea === true
+    && tiedPlan.orders[0]?.step.q === 2 && tiedPlan.orders[0]?.step.r === 4,
+  JSON.stringify({ route: tiedWithSea, step: tiedPlan.orders[0]?.step }));
+const tiedWithoutSea = M.classifyWarTargetRoutes(
+  tiedRouteMap, { q: 1, r: 3 }, [tiedTarget], tiedBlocked, false,
+).get('equal-cost-dual');
+const tiedLandPlan = M.planWarAllInCapital([unit('tie-land-marcher', 1, 3)], [tiedTarget], {
+  map: tiedRouteMap, allowSea: false, blocked: tiedBlocked, occupied: new Set(['1,3']),
+});
+check('without Seafaring the equal-cost sea tie is unavailable and the planner uses land',
+  tiedWithoutSea?.land === true && tiedWithoutSea.sea === false
+    && tiedLandPlan.orders[0]?.step.q === 2 && tiedLandPlan.orders[0]?.step.r === 3,
+  JSON.stringify({ route: tiedWithoutSea, step: tiedLandPlan.orders[0]?.step }));
+const seaMarch = M.planWarAllInCapital([unit('sea-marcher', 0, 2)], [seaRouteTargets[1]], {
+  map: seaRouteMap, allowSea: true, blocked: seaRouteBlocked, occupied: new Set(['0,2']),
+});
+check('production planner marches toward the same selected sea capital',
+  seaMarch.orders.length === 1 && seaMarch.orders[0]?.targetCityId === 'far-sea');
+const deniedSeaMarch = M.planWarAllInCapital([unit('land-only-marcher', 0, 2)], [seaRouteTargets[1]], {
+  map: seaRouteMap, allowSea: false, blocked: seaRouteBlocked, occupied: new Set(['0,2']),
+});
+check('without Seafaring production planner reports noPath rather than a false water move',
+  deniedSeaMarch.orders.length === 0 && deniedSeaMarch.noPath.includes('land-only-marcher'));
+check('main campaign wiring filters unreachable targets and gates sea movement on owner technology',
+  main.includes('classifyWarTargetRoutes(')
+    && main.includes('preferSeaReachableWarTargets(reachable)')
+    && main.includes('const seaTravelAllowed = ownerHasSeafaring(ownerId)')
+    && fs.readFileSync(path.resolve(ROOT, 'src/game/ai.ts'), 'utf8')
+      .includes('allowSea: campaign.seaTravelAllowed === true'));
 
 console.log(`\nai-general-war-campaign-test: ${passed} passed, ${failed} failed`);
 try { fs.unlinkSync(entry); } catch {}

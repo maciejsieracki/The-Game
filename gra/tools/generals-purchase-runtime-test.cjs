@@ -98,6 +98,45 @@ async function main() {
         && recruitFollow.dest.destQ === recruitFollow.general.q
         && recruitFollow.dest.destR === recruitFollow.general.r,
       { recruitFollow, errors });
+
+    const batchSetup = await page.evaluate(id => window.__generalRuntime.prepareRoutableRecruitmentCities(id, 'Taran', 3), capitalId);
+    check('real map has three separated recruitment cities with routable multi-turn paths to the General',
+      batchSetup.cityIds?.length === 3 && batchSetup.routes?.length === 3
+        && batchSetup.routes.every(route => route.length > 0), batchSetup);
+    const batchPurchases = await page.evaluate(args => window.__generalRuntime.queueArmyPanelBatchAcrossCities(
+      args.cityIds, args.unit,
+    ), { cityIds: batchSetup.cityIds ?? [], unit: 'Taran' });
+    check('Army-panel purchase callback queues one paid unit at each of three cities',
+      batchPurchases.length === 3 && batchPurchases.every(x => x.accepted && x.queued === 1), batchPurchases);
+    await page.evaluate(() => window.__generalRuntime.completeProductionTurn());
+    await page.waitForFunction(cityIds => {
+      const state = window.__generalRuntime.spawnedBatchSnapshot(cityIds);
+      return state.spawned.length === 3 && !state.endTurnInProgress
+        && state.spawned.every(unit => unit.march?.generalTargetId === state.spawned[0]?.march?.generalTargetId);
+    }, batchSetup.cityIds, { timeout: 180000, polling: 250 });
+    const batchAfterTurn = await page.evaluate(ids => window.__generalRuntime.spawnedBatchSnapshot(ids), batchSetup.cityIds);
+    check('real end-turn recruitment completed all three queues and deferred flush assigned every march',
+      batchAfterTurn.spawned.length === 3
+        && batchAfterTurn.spawned.every(unit => unit.march?.generalTargetId === batchSetup.general.id),
+      { batchSetup, batchPurchases, batchAfterTurn });
+    await page.waitForFunction(({ cityIds, initial }) => {
+      const state = window.__generalRuntime.spawnedBatchSnapshot(cityIds);
+      const initialById = new Map(initial.map(city => [city.id, city]));
+      return state.spawned.length === 3 && state.spawned.every(unit => {
+        const cityId = cityIds.find(id => unit.id.includes('_' + id + '_'));
+        const city = initialById.get(cityId);
+        return city && (unit.q !== city.q || unit.r !== city.r);
+      });
+    }, { cityIds: batchSetup.cityIds, initial: batchAfterTurn.cities }, { timeout: 60000, polling: 250 });
+    const afterMovement = await page.evaluate(ids => window.__generalRuntime.spawnedBatchSnapshot(ids), batchSetup.cityIds);
+    check('all three recruits actually begin moving from their cities without teleporting',
+      afterMovement.spawned.length === 3 && afterMovement.spawned.every(unit => {
+        const cityId = batchSetup.cityIds.find(id => unit.id.includes('_' + id + '_'));
+        const origin = afterMovement.cities.find(city => city.id === cityId);
+        return origin && (unit.q !== origin.q || unit.r !== origin.r)
+          && unit.march?.generalTargetId === batchSetup.general.id;
+      }), { afterMovement, cities: afterMovement.cities });
+
     check('browser completed the real purchase/spawn scenario without page errors', errors.length === 0, errors);
   } finally {
     server.kill('SIGTERM');

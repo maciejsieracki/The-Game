@@ -409,7 +409,9 @@ console.log('\n--- 9: okablowanie main.ts (testy statyczne) ---');
   const mod = fs.readFileSync(path.resolve(__dirname, '..', 'src', 'game', 'warAllInCapital.ts'), 'utf8');
   assert(!/Math\.random/.test(mod), '9e modul bez Math.random');
   const aiSrc = fs.readFileSync(path.resolve(__dirname, '..', 'src', 'game', 'ai.ts'), 'utf8');
-  assert(/u\.embarked !== true && u\.seaRaider !== true\);/.test(aiSrc), '9g AI: zaokretowane/seaRaider poza regula (parytet z barbarzyncami)');
+  assert(/ctx\.allowSea === true \|\| u\.embarked !== true/.test(aiSrc)
+    && /u\.seaRaider !== true/.test(aiSrc),
+  '9g AI: embarked do kampanii morskiej tylko przy allowSea, seaRaider wykluczone');
   assert(/WAR_ALLIN_CAPITAL_ENABLED = true/.test(mod), '9f flaga jawna w module');
   // 9h: stale balansowe w gra/data/war-allin-params.json, nie jako literaly w kodzie.
   assert(!/export const WAR_ALLIN_(LINK_RADIUS|MERGE_RADIUS|NO_MERGE_NEAR_CAPITAL)[^=]*=\s*\d/.test(mod), '9h stale WAR_ALLIN_* bez literalow liczbowych w kodzie');

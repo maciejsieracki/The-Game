@@ -25,7 +25,7 @@
 
 import type { GameMap } from '../types/map';
 import warAllInParamsRaw from '../../data/war-allin-params.json';
-import { hexDistance, hexNeighborCoords, keyOf, terrainMoveCost } from '../units/setup';
+import { hexDistance, hexNeighborCoords, keyOf, terrainMoveCost, embarkMoveCost, isWaterTerrain } from '../units/setup';
 import {
   allocateGroupsToEnemies,
   pickEngagementArmy,
@@ -58,6 +58,8 @@ export interface WarCapitalTarget {
 /** Kontekst przekazywany z main.ts do ai.ts / barbarians.ts (tylko gdy flaga ON). */
 export interface WarAllInContext {
   targets: readonly WarCapitalTarget[];
+  /** Owner has existing Seafaring/embarkation access; used by the General-led campaign only. */
+  allowSea?: boolean;
   /**
    * R-WEB-WAR-RULES-MULTIWAR-Q1 (tylko gdy flaga WAR_RULES_MULTIWAR_ENABLED ON; brak = baza):
    * armie wrogów w wojnie z wołającym (W1), promień zaangażowania (W1), siła przeciwników (W2).
@@ -65,6 +67,132 @@ export interface WarAllInContext {
   enemyArmies?: readonly EngageArmyHex[];
   engageRadius?: number;
   enemyStrength?: readonly EnemyStrengthRef[];
+}
+
+export interface WarTargetRouteAvailability {
+  land: boolean;
+  sea: boolean;
+}
+
+export interface RoutedWarTargetCandidate {
+  landReachable: boolean;
+  seaReachable: boolean;
+}
+
+/** Prefer every target with an executable sea route; otherwise fall back to reachable land targets. */
+export function preferSeaReachableWarTargets<T extends RoutedWarTargetCandidate>(
+  candidates: readonly T[],
+): T[] {
+  const seaTargets = candidates.filter(candidate => candidate.seaReachable);
+  return seaTargets.length > 0 ? seaTargets : candidates.filter(candidate => candidate.landReachable);
+}
+
+/**
+ * Classify enemy-capital routes from a rendezvous point using the same weighted entry cost as
+ * `distanceField`/`navMoveCost`. `land` records any land-only path. `sea` follows the exact
+ * deterministic path that `chooseStep()` would select from this start, including coordinate
+ * tie-breaks between equally costly land and sea routes. Enemy city hexes are terminal goals.
+ */
+export function classifyWarTargetRoutes(
+  map: GameMap,
+  start: { q: number; r: number },
+  targets: readonly WarCapitalTarget[],
+  blocked: ReadonlySet<string>,
+  allowSea: boolean,
+): Map<string, WarTargetRouteAvailability> {
+  const result = new Map<string, WarTargetRouteAvailability>();
+  if (targets.length === 0 || !(keyOf(start.q, start.r) in map.hexes)) return result;
+  const targetByHex = new Map<string, WarCapitalTarget[]>();
+  for (const target of targets) {
+    const key = keyOf(target.q, target.r);
+    let at = targetByHex.get(key);
+    if (at === undefined) targetByHex.set(key, at = []);
+    at.push(target);
+    result.set(target.cityId, { land: false, sea: false });
+  }
+  type RouteEntry = [number, number, number, boolean];
+  const heap: RouteEntry[] = [[0, start.q, start.r, false]];
+  const push = (entry: RouteEntry): void => {
+    heap.push(entry);
+    let i = heap.length - 1;
+    while (i > 0) {
+      const parent = (i - 1) >> 1;
+      if (heap[parent]![0] <= heap[i]![0]) break;
+      [heap[parent], heap[i]] = [heap[i]!, heap[parent]!];
+      i = parent;
+    }
+  };
+  const pop = (): RouteEntry | undefined => {
+    if (heap.length === 0) return undefined;
+    const first = heap[0]!;
+    const last = heap.pop()!;
+    if (heap.length > 0) {
+      heap[0] = last;
+      let i = 0;
+      for (;;) {
+        const left = i * 2 + 1;
+        const right = left + 1;
+        let smallest = i;
+        if (left < heap.length && heap[left]![0] < heap[smallest]![0]) smallest = left;
+        if (right < heap.length && heap[right]![0] < heap[smallest]![0]) smallest = right;
+        if (smallest === i) break;
+        [heap[i], heap[smallest]] = [heap[smallest]!, heap[i]!];
+        i = smallest;
+      }
+    }
+    return first;
+  };
+  const stateKey = (q: number, r: number, usedSea: boolean): string =>
+    `${keyOf(q, r)}|${usedSea ? 1 : 0}`;
+  const distanceByState = new Map<string, number>([[stateKey(start.q, start.r, false), 0]]);
+  const routeSteps = new Map<string, { land: number; sea: number }>();
+  for (const target of targets) {
+    routeSteps.set(target.cityId, {
+      land: keyOf(start.q, start.r) === keyOf(target.q, target.r) ? 0 : Number.POSITIVE_INFINITY,
+      sea: Number.POSITIVE_INFINITY,
+    });
+  }
+  while (heap.length > 0) {
+    const [currentDistance, q, r, usedSea] = pop()!;
+    const currentState = stateKey(q, r, usedSea);
+    if (currentDistance !== distanceByState.get(currentState)) continue;
+    for (const next of hexNeighborCoords(q, r)) {
+      const nextKey = keyOf(next.q, next.r);
+      const hex = map.hexes[nextKey];
+      if (hex === undefined) continue;
+      const isWater = isWaterTerrain(hex.terenBazowy);
+      if (isWater && !allowSea) continue;
+      const enterCost = isWater ? embarkMoveCost(hex) : terrainMoveCost(hex);
+      if (enterCost === Infinity) continue;
+      const nextUsedSea = usedSea || isWater;
+      const goals = targetByHex.get(nextKey);
+      if (goals !== undefined) {
+        for (const goal of goals) {
+          const prior = routeSteps.get(goal.cityId)!;
+          // The goal is initialized to zero in distanceField, so its own entry cost is omitted.
+          const cost = currentDistance;
+          routeSteps.set(goal.cityId, nextUsedSea
+            ? { ...prior, sea: Math.min(prior.sea, cost) }
+            : { ...prior, land: Math.min(prior.land, cost) });
+        }
+        continue;
+      }
+      if (blocked.has(nextKey)) continue;
+      const nextState = stateKey(next.q, next.r, nextUsedSea);
+      const nextDistance = currentDistance + enterCost;
+      if (nextDistance >= (distanceByState.get(nextState) ?? Infinity)) continue;
+      distanceByState.set(nextState, nextDistance);
+      push([nextDistance, next.q, next.r, nextUsedSea]);
+    }
+  }
+  for (const target of targets) {
+    const route = routeSteps.get(target.cityId)!;
+    result.set(target.cityId, {
+      land: Number.isFinite(route.land),
+      sea: Number.isFinite(route.sea) && plannerRouteUsesSea(map, start, target, blocked, allowSea),
+    });
+  }
+  return result;
 }
 
 /**
@@ -77,6 +205,8 @@ export interface WarAllInContext {
  */
 export interface WarAllInNav {
   map: GameMap;
+  /** Optional sea access, only supplied to major-AI General campaigns with Seafaring. */
+  allowSea?: boolean;
   /** Heksy STATYCZNIE nietranzytowe (pole odleglosci je omija): obce miasta. */
   blocked: ReadonlySet<string>;
   /**
@@ -86,6 +216,11 @@ export interface WarAllInNav {
    * wczesniej w kolejnosci rozkazow (`plan.orders` sa wykonywane w tej kolejnosci).
    */
   occupied?: ReadonlySet<string>;
+}
+
+function navMoveCost(nav: WarAllInNav, hex: NonNullable<GameMap['hexes'][string]>): number {
+  const landCost = terrainMoveCost(hex);
+  return landCost !== Infinity ? landCost : nav.allowSea === true ? embarkMoveCost(hex) : Infinity;
 }
 
 function distanceField(
@@ -144,12 +279,12 @@ function distanceField(
     // Heks zablokowany / nieprzechodni (poza celem) nie jest tranzytem dla innych.
     const hex = nav.map.hexes[ck];
     if (ck !== destKey) {
-      if (hex === undefined || terrainMoveCost(hex) === Infinity) continue;
+      if (hex === undefined || navMoveCost(nav, hex) === Infinity) continue;
       if (nav.blocked.has(ck)) continue;
     }
     const enter = ck === destKey
-      ? (terrainMoveCost(hex!) === Infinity ? 1 : terrainMoveCost(hex!))
-      : terrainMoveCost(hex!);
+      ? (navMoveCost(nav, hex!) === Infinity ? 1 : navMoveCost(nav, hex!))
+      : navMoveCost(nav, hex!);
     for (const n of hexNeighborCoords(cq, cr)) {
       const nk = keyOf(n.q, n.r);
       if (!(nk in nav.map.hexes) || settled.has(nk)) continue;
@@ -315,7 +450,7 @@ function extendWalk(
   const walk: Array<{ q: number; r: number }> = [first];
   const firstHex = nav.map.hexes[keyOf(first.q, first.r)];
   if (firstHex === undefined) return walk;
-  let spent = terrainMoveCost(firstHex);
+  let spent = navMoveCost(nav, firstHex);
   const firstKey = keyOf(first.q, first.r);
   let curDist = g.field.get(firstKey);
   if (!(budget > 1) || firstKey === g.destKey || spent === Infinity || curDist === undefined) return walk;
@@ -329,7 +464,7 @@ function extendWalk(
       if (dn === undefined || dn >= (curDist as number)) continue;
       const hex = nav.map.hexes[nk];
       if (hex === undefined) continue;
-      const enter = terrainMoveCost(hex);
+      const enter = navMoveCost(nav, hex);
       if (enter === Infinity || spent + enter > budget) continue;
       if (!isFreeFor(nav, g, st, nk)) continue;
       if (best === null || dn < best.dn
@@ -370,9 +505,9 @@ function chooseStep(
     if (hex === undefined) continue;
     let enter: number;
     if (nk === g.destKey) {
-      enter = terrainMoveCost(hex) === Infinity ? 1 : terrainMoveCost(hex);
+      enter = navMoveCost(nav, hex) === Infinity ? 1 : navMoveCost(nav, hex);
     } else {
-      enter = terrainMoveCost(hex);
+      enter = navMoveCost(nav, hex);
       if (enter === Infinity) continue;
     }
     if (!isFree(nk)) continue;
@@ -392,6 +527,58 @@ function chooseStep(
   }
   const pick = prog ?? side;
   return pick !== null ? { kind: 'step', q: pick.q, r: pick.r } : { kind: 'hold' };
+}
+
+/**
+ * Replay the planner's unoccupied first-step choice until the destination to determine whether
+ * its selected weighted route uses water. This intentionally delegates the weighted field to
+ * `distanceField()` and mirrors `chooseStep()`'s movement-cost and coordinate tie-breaks, so
+ * route classification cannot drift on equal-cost paths.
+ */
+function plannerRouteUsesSea(
+  map: GameMap,
+  start: { q: number; r: number },
+  target: WarCapitalTarget,
+  blocked: ReadonlySet<string>,
+  allowSea: boolean,
+): boolean {
+  const destKey = keyOf(target.q, target.r);
+  let current = { ...start };
+  if (keyOf(current.q, current.r) === destKey) return false;
+  const nav: WarAllInNav = { map, allowSea, blocked };
+  const field = distanceField(nav, target.q, target.r, new Set([keyOf(start.q, start.r)]));
+  let usedSea = false;
+  const maxSteps = Object.keys(map.hexes).length;
+  for (let step = 0; step < maxSteps; step++) {
+    const currentKey = keyOf(current.q, current.r);
+    const currentDistance = field.get(currentKey);
+    if (currentDistance === undefined) return false;
+    let best: { q: number; r: number; cost: number } | null = null;
+    for (const next of hexNeighborCoords(current.q, current.r)) {
+      const nextKey = keyOf(next.q, next.r);
+      const nextDistance = field.get(nextKey);
+      const hex = map.hexes[nextKey];
+      if (nextDistance === undefined || hex === undefined) continue;
+      let enter = navMoveCost(nav, hex);
+      if (nextKey === destKey) {
+        if (enter === Infinity) enter = 1;
+      } else if (enter === Infinity || blocked.has(nextKey)) {
+        continue;
+      }
+      if (nextDistance >= currentDistance) continue;
+      const total = enter + nextDistance;
+      if (best === null || total < best.cost
+        || (total === best.cost && (next.q < best.q || (next.q === best.q && next.r < best.r)))) {
+        best = { q: next.q, r: next.r, cost: total };
+      }
+    }
+    if (best === null) return false;
+    const nextKey = keyOf(best.q, best.r);
+    if (nextKey === destKey) return usedSea;
+    usedSea ||= isWaterTerrain(map.hexes[nextKey]!.terenBazowy);
+    current = { q: best.q, r: best.r };
+  }
+  return false;
 }
 
 /**

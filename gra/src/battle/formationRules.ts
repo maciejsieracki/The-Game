@@ -45,37 +45,70 @@ export interface InitialBattleSlot<T> { unit: T; row: number; rank: number; }
 
 export function initialBattleSlots<T>(
   formation: InitialBattleFormation<T>,
-  bounds: { rankWidth: number; midRow: number; playRow0: number; playRow1: number },
+  bounds: {
+    rankWidth: number;
+    midRow: number;
+    playRow0: number;
+    playRow1: number;
+    meleeLines?: 1 | 2 | 3;
+    archerLines?: 1 | 2 | 3;
+  },
 ): InitialBattleSlot<T>[] {
   const width = Math.max(1, Math.floor(bounds.rankWidth));
   const slots: InitialBattleSlot<T>[] = [];
   let rankBase = 0;
-  const layBand = (units: readonly T[]): void => {
-    if (units.length === 0) return;
-    const per = Math.min(units.length, width);
-    const rowStart = bounds.midRow - Math.floor(per / 2);
-    units.forEach((unit, i) => slots.push({
-      unit, row: rowStart + i % per, rank: rankBase + Math.floor(i / per),
-    }));
-    rankBase += Math.ceil(units.length / per);
+  const linesForBand = (count: number, configuredLines?: 1 | 2 | 3): { per: number; count: number } => {
+    if (count === 0) return { per: 0, count: 0 };
+    const playableRows = Math.max(1, bounds.playRow1 - bounds.playRow0 - 1);
+    const requestedLines = configuredLines ?? Math.ceil(count / width);
+    const lineCount = Math.min(count, Math.max(requestedLines, Math.ceil(count / playableRows)));
+    const per = Math.ceil(count / lineCount);
+    return { per, count: Math.ceil(count / per) };
   };
-  layBand(formation.infantry);
-  layBand(formation.javelins);
-  layBand(formation.archers);
-  layBand(formation.slingers);
-  layBand(formation.ranged);
+  const layBand = (units: readonly T[], configuredLines?: 1 | 2 | 3): void => {
+    if (units.length === 0) return;
+    // The 1/2/3 line option controls depth ranks; width is constrained only by
+    // the legal battlefield rows. Do not silently turn a requested single
+    // line into two ranks just because the default formation width is smaller.
+    const { per, count: actualLineCount } = linesForBand(units.length, configuredLines);
+    units.forEach((unit, i) => {
+      const rankWithinBand = Math.floor(i / per);
+      const indexWithinRank = i % per;
+      const rankSize = Math.min(per, units.length - rankWithinBand * per);
+      const rowStart = bounds.midRow - Math.floor(rankSize / 2);
+      slots.push({ unit, row: rowStart + indexWithinRank, rank: rankBase + rankWithinBand });
+    });
+    rankBase += actualLineCount;
+  };
+  layBand(formation.infantry, bounds.meleeLines);
+  layBand(formation.javelins, bounds.meleeLines);
+  layBand(formation.archers, bounds.archerLines);
+  layBand(formation.slingers, bounds.archerLines);
+  layBand(formation.ranged, bounds.archerLines);
   layBand(formation.siege);
   layBand(formation.commanders);
 
-  const halfLine = Math.ceil(width / 2);
-  const topRows = Array.from(
-    { length: Math.max(1, bounds.midRow - bounds.playRow0 - halfLine - 2) },
-    (_, i) => bounds.playRow0 + 1 + i,
+  // Keep mounted units on the flanks of the actual main formation. Using the
+  // entire free half of the battlefield here spread even a single chariot to
+  // the outer map edge. The main band is the widest non-mounted role band;
+  // reserve only a few adjacent rows on either side for the wings.
+  const mainBandWidth = Math.max(
+    linesForBand(formation.infantry.length, bounds.meleeLines).per,
+    linesForBand(formation.javelins.length, bounds.meleeLines).per,
+    linesForBand(formation.archers.length, bounds.archerLines).per,
+    linesForBand(formation.slingers.length, bounds.archerLines).per,
+    linesForBand(formation.ranged.length, bounds.archerLines).per,
+    linesForBand(formation.siege.length).per,
+    linesForBand(formation.commanders.length).per,
   );
-  const bottomRows = Array.from(
-    { length: Math.max(1, bounds.playRow1 - bounds.midRow - halfLine - 1) },
-    (_, i) => bounds.playRow1 - 1 - i,
-  );
+  const bandWidth = Math.max(1, mainBandWidth);
+  const mainRowStart = bounds.midRow - Math.floor(bandWidth / 2);
+  const mainRowEnd = mainRowStart + bandWidth - 1;
+  const topWingRowsAvailable = Math.max(0, mainRowStart - (bounds.playRow0 + 1));
+  const bottomWingRowsAvailable = Math.max(0, (bounds.playRow1 - 1) - mainRowEnd);
+  const wingRowCount = Math.max(1, Math.min(3, topWingRowsAvailable, bottomWingRowsAvailable));
+  const topRows = Array.from({ length: wingRowCount }, (_, i) => mainRowStart - 1 - i);
+  const bottomRows = Array.from({ length: wingRowCount }, (_, i) => mainRowEnd + 1 + i);
   formation.mounted.forEach((unit, i) => {
     const rows = i % 2 === 0 ? topRows : bottomRows;
     const wingIndex = Math.floor(i / 2);
@@ -115,13 +148,13 @@ export function initialBattleFormation<T>(
 export function compactLineAllowsAdvance(args: {
   side: 'atk' | 'def';
   candidateCol: number;
-  lineMinimumProgress: number;
-  previousLineMinimumProgress: number | null;
+  lineReferenceProgress: number;
+  previousLineReferenceProgress: number | null;
 }): boolean {
   const candidateProgress = args.side === 'atk' ? args.candidateCol : -args.candidateCol;
-  const ownLineLimit = args.lineMinimumProgress + 1;
-  const limit = args.previousLineMinimumProgress === null
+  const ownLineLimit = args.lineReferenceProgress + 1;
+  const limit = args.previousLineReferenceProgress === null
     ? ownLineLimit
-    : Math.min(ownLineLimit, args.previousLineMinimumProgress);
+    : Math.min(ownLineLimit, args.previousLineReferenceProgress);
   return candidateProgress <= limit;
 }

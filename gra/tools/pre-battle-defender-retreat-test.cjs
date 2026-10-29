@@ -152,11 +152,61 @@ async function main() {
   const gatedButtons = [...document.querySelectorAll('button')];
   const deployButton = gatedButtons.find(b => b.dataset.act === 'deploy');
   const autoButton = gatedButtons.find(b => b.dataset.act === 'auto');
-  if (!deployButton?.disabled) throw new Error('manual battlefield button must be disabled without a commander');
+  if (!deployButton || deployButton.disabled) throw new Error('manual battle choice must remain available without a commander');
   if (!autoButton || autoButton.disabled) throw new Error('Auto must remain enabled without a commander');
+  const commanderNote = document.body.lastElementChild?.querySelector('.pb-note')?.textContent ?? '';
+  if (!commanderNote.includes('walka rozegra się automatycznie')) {
+    throw new Error('without a commander, the note must explain that the selected battlefield fight resolves automatically');
+  }
   deployButton.click();
-  if (manualCalled) throw new Error('disabled manual action must not start the battlefield');
-  autoButton.click();
+  if (!manualCalled) throw new Error('manual battlefield choice must enter the field even without a commander');
+  if (isPreBattleOpen()) throw new Error('manual battlefield choice must dismiss pre-battle prompt');
+  hidePreBattle();
+
+  autoCalled = false;
+  manualCalled = false;
+  showPreBattle(
+    { ...baseInfo, defenderCanRetreat: false },
+    { onAuto: () => { autoCalled = true; }, onBattlefield: () => { manualCalled = true; }, onCancel: () => {} },
+    { defaultAction: 'manual', manualControlAllowed: false },
+  );
+  document.dispatchEvent(new dom.window.KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true }));
+  if (!manualCalled || autoCalled) throw new Error('Enter should preserve the manual-vs-auto choice and default to battlefield even without a commander');
+  hidePreBattle();
+
+  showPreBattle(
+    { ...baseInfo, defenderCanRetreat: false },
+    { onAuto: () => { autoCalled = true; }, onBattlefield: () => { manualCalled = true; }, onCancel: () => {} },
+    { defaultAction: 'auto', manualControlAllowed: false },
+  );
+  document.dispatchEvent(new dom.window.KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true }));
+  if (!autoCalled) throw new Error('explicit defaultAction=auto must still choose Auto without a commander');
+  hidePreBattle();
+
+  autoCalled = false;
+  manualCalled = false;
+  showPreBattle(
+    { ...baseInfo, defenderCanRetreat: false },
+    { onAuto: () => { autoCalled = true; }, onBattlefield: () => { manualCalled = true; }, onCancel: () => {} },
+    { manualControlAllowed: true },
+  );
+  const commanderButtons = [...document.querySelectorAll('button')];
+  const commanderDeploy = commanderButtons.find(b => b.dataset.act === 'deploy');
+  if (!commanderDeploy || commanderDeploy.disabled) throw new Error('manual battle choice remains enabled with a commander');
+  commanderDeploy.click();
+  if (!manualCalled) throw new Error('manual battlefield choice remains functional with a commander');
+  hidePreBattle();
+
+  autoCalled = false;
+  manualCalled = false;
+  showPreBattle(
+    { ...baseInfo, defenderCanRetreat: false },
+    { onAuto: () => { autoCalled = true; }, onBattlefield: () => { manualCalled = true; }, onCancel: () => {} },
+    { manualControlAllowed: false },
+  );
+  const autoButton2 = [...document.querySelectorAll('button')].find(b => b.dataset.act === 'auto');
+  if (!autoButton2 || autoButton2.disabled) throw new Error('Auto must remain enabled without a commander');
+  autoButton2.click();
   if (!autoCalled) throw new Error('Auto action must still resolve without a commander');
   hidePreBattle();
 

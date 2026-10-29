@@ -237,16 +237,19 @@ async function exerciseViewport(browser, viewport) {
     const profileToggle = page.locator('.civ-newgame .civ-profile-toggle');
     assert(`${viewport.label}/cywilizacja: uchwyt zwijania profilu jest dostępny`, await profileToggle.count() === 1);
     const detailPanel = page.locator('.civ-newgame #civ-profile-detail-panel');
-    assert(`${viewport.label}/cywilizacja: profil jest domyślnie widoczny`, await detailPanel.isVisible());
+    assert(`${viewport.label}/cywilizacja: parametry są domyślnie zwinięte`,
+      await profileToggle.getAttribute('aria-expanded') === 'false' && !(await detailPanel.isVisible()));
+    assert(`${viewport.label}/cywilizacja: sekcja ma nazwę Parametry cywilizacji`,
+      (await detailPanel.locator('.dlbl').textContent())?.trim() === 'Parametry cywilizacji');
     await profileToggle.click();
-    assert(`${viewport.label}/cywilizacja: uchwyt zwija szczegóły`,
+    assert(`${viewport.label}/cywilizacja: uchwyt rozwija szczegóły`,
+      await profileToggle.getAttribute('aria-expanded') === 'true' && await detailPanel.isVisible());
+    await profileToggle.click();
+    assert(`${viewport.label}/cywilizacja: uchwyt ponownie zwija profil`,
       await profileToggle.getAttribute('aria-expanded') === 'false' && !(await detailPanel.isVisible()));
     const collapsedNext = await assertUsable(page, '.civ-newgame .nav .nb.next', `${viewport.label}/cywilizacja Dalej po zwinięciu`);
     assert(`${viewport.label}/cywilizacja: Dalej mieści się w ekranie bez przewijania głównego kontenera`,
       !!collapsedNext && collapsedNext.rootScrollTop === 0);
-    await profileToggle.click();
-    assert(`${viewport.label}/cywilizacja: uchwyt ponownie pokazuje profil`,
-      await profileToggle.getAttribute('aria-expanded') === 'true' && await detailPanel.isVisible());
 
     // Back on step 3 must return to the epoch without losing the route.
     await page.locator('.civ-newgame .nav .nb.back').click();
@@ -261,8 +264,11 @@ async function exerciseViewport(browser, viewport) {
 
     await assertStepLabel(page, 'Ustawienia', `${viewport.label}/ustawienia`);
     await assertUsable(page, '.civ-newgame .nav .nb.back', `${viewport.label}/ustawienia Wstecz`);
-    assert(`${viewport.label}/ustawienia: brak Dalej na ostatnim kroku konfiguracji`,
-      await page.locator('.civ-newgame .nav .nb.next').count() === 0);
+    assert(`${viewport.label}/ustawienia: końcowa akcja znajduje się w stałej nawigacji`,
+      await page.locator('.civ-newgame .nav .nb.next').count() === 1
+        && (await page.locator('.civ-newgame .nav .nb.next').textContent()).includes('Rozpocznij grę'));
+    assert(`${viewport.label}/ustawienia: nie ma duplikatu Start w przewijanej treści`,
+      await page.locator('.civ-newgame .content .sett-actions .start').count() === 0);
 
     const aiCards = page.locator('.civ-newgame .ai-civ-grid .card');
     const candidateCount = await aiCards.count();
@@ -276,7 +282,7 @@ async function exerciseViewport(browser, viewport) {
     assert(`${viewport.label}/ustawienia: scenariusz 5/5 faktycznie zaznaczył 5 cywilizacji`, selectedCount === 5);
 
     const navState = await assertUsable(page, '.civ-newgame .nav', `${viewport.label}/ustawienia dolna nawigacja`);
-    const startState = await readState(page, '.civ-newgame .sett-actions .start');
+    const startState = await readState(page, '.civ-newgame .nav .nb.next');
     printState(`${viewport.label}/ustawienia Start`, startState);
     const advancedReachable = await page.evaluate(() => {
       const content = document.querySelector('.civ-newgame .content');
@@ -295,15 +301,15 @@ async function exerciseViewport(browser, viewport) {
         && navState.rootScrollHeight <= navState.rootClientHeight + EPS);
     const startReachable = await page.evaluate(() => {
       const content = document.querySelector('.civ-newgame .content');
-      const start = document.querySelector('.civ-newgame .sett-actions .start');
+      const start = document.querySelector('.civ-newgame .nav .nb.next');
       if (!(content instanceof HTMLElement) || !(start instanceof HTMLElement)) return false;
       content.scrollTop = content.scrollHeight;
       const rect = start.getBoundingClientRect();
       return rect.width > 0 && rect.height > 0
         && rect.top >= 0 && rect.bottom <= window.innerHeight;
     });
-    assert(`${viewport.label}/ustawienia: Start jest osiągalny w wewnętrznym przewijaniu treści`,
-      !!startState && startState.rootScrollTop === 0 && startReachable);
+    assert(`${viewport.label}/ustawienia: Start pozostaje widoczny bez przewijania treści`,
+      !!startState && startState.fullyInViewport && startState.rootScrollTop === 0 && startReachable);
 
     // Mutation proof: if the lower navigation is hidden, the same viewport
     // oracle must detect it. Restore the live DOM before continuing the flow.
@@ -333,7 +339,22 @@ async function exerciseViewport(browser, viewport) {
     // synchronously, so this checks the active click path without waiting for map generation.
     await page.locator('.civ-newgame .nav .nb.next').click();
     await page.waitForSelector('.civ-newgame .sett-layout', { timeout: 10000 });
-    await page.locator('.civ-newgame .sett-actions .start').click();
+    await page.locator('.civ-newgame .seat2-toggle-btn').click();
+    assert(`${viewport.label}/ustawienia hot-seat: akcja stopki zmienia się na Dalej`,
+      (await page.locator('.civ-newgame .nav .nb.next').textContent()).includes('Dalej'));
+    await page.locator('.civ-newgame .nav .nb.next').click();
+    await page.waitForSelector('.civ-newgame .seat2-dist', { timeout: 10000 });
+    assert(`${viewport.label}/fotel 2: Start znajduje się w prawej nawigacji`,
+      (await page.locator('.civ-newgame .nav .nb.next').textContent()).includes('Rozpocznij grę')
+        && await page.locator('.civ-newgame .content .sett-actions .start').count() === 0);
+    const seat2Toggle = page.locator('.civ-newgame .civ-profile-toggle');
+    const seat2Detail = page.locator('.civ-newgame .detail');
+    assert(`${viewport.label}/fotel 2: parametry domyślnie zwinięte`,
+      await seat2Toggle.getAttribute('aria-expanded') === 'false' && !(await seat2Detail.isVisible()));
+    await seat2Toggle.click();
+    assert(`${viewport.label}/fotel 2: parametry można rozwinąć`,
+      await seat2Toggle.getAttribute('aria-expanded') === 'true' && await seat2Detail.isVisible());
+    await page.locator('.civ-newgame .nav .nb.next').click();
     await wait(120);
     const rootAfterStart = await page.evaluate(() => {
       const root = document.querySelector('.civ-newgame');

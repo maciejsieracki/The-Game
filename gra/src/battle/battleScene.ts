@@ -1912,6 +1912,8 @@ interface RuntimeBattleUnit {
   ammoBarShown: boolean;  // true only when this unit ever shows an ammo bar (ranged + finite ammo)
   q:            number;   // COLUMN (grid x); kept as `q` to minimise churn
   r:            number;   // ROW (grid z); kept as `r` to minimise churn
+  /** Last tile left by an automatic move; prevents replanning loops into the prior tile. */
+  lastAutoMoveFrom?: { q: number; r: number };
   side:         'atk' | 'def';
   dead:         boolean;
   fadingOut:    boolean;
@@ -5017,6 +5019,7 @@ export class BattleScene {
       const idealCol = new Array<number>(units.length);
       const slots = initialBattleSlots(formation, {
         rankWidth: RANK_WIDTH, midRow: PLAY_MID_ROW, playRow0: PLAY_ROW0, playRow1: PLAY_ROW1,
+        meleeLines: this._deployMeleeLines, archerLines: this._deployArcherLines,
       });
       slots.forEach(slot => {
         const index = unitIndex.get(slot.unit)!;
@@ -5041,8 +5044,12 @@ export class BattleScene {
         const playerDeploy = this._deployMode && side === this._playerControlSide();
         const mountedWing = initialBattleRoleOf(bu) === 'mounted';
         const topWing = idealRow[idx]! < PLAY_MID_ROW;
-        const wingRowLo = topWing ? PLAY_ROW0 + 1 : PLAY_MID_ROW + Math.ceil(RANK_WIDTH / 2) + 1;
-        const wingRowHi = topWing ? PLAY_MID_ROW - Math.ceil(RANK_WIDTH / 2) - 2 : PLAY_ROW1 - 1;
+        const wingRowLo = topWing
+          ? Math.max(PLAY_ROW0 + 1, idealRow[idx]! - 3)
+          : Math.max(PLAY_MID_ROW + 1, idealRow[idx]! - 3);
+        const wingRowHi = topWing
+          ? Math.min(PLAY_MID_ROW - 1, idealRow[idx]! + 3)
+          : Math.min(PLAY_ROW1 - 1, idealRow[idx]! + 3);
         const rowLo = mountedWing ? wingRowLo : playerDeploy
           ? Math.max(DEPLOY_MIN_ROW, idealRow[idx]! - 8)
           : PLAY_ROW0;
@@ -7574,20 +7581,51 @@ export class BattleScene {
     const progress = (u: RuntimeBattleUnit): number => ru.side === 'atk' ? u.q : -u.q;
     const currentProgress = progress(ru);
     const nextProgress = ru.side === 'atk' ? candidateCol : -candidateCol;
-    // Sideways wrapping remains available. Only forward steps are line-paced.
-    if (nextProgress <= currentProgress) return true;
-    const line = allies.filter(u => Math.max(0, Math.floor(u.formationRank ?? 0)) === rank);
-    const lineMinimum = Math.min(...line.map(progress));
+    // Sideways alignment remains available, but an Attack formation must never
+    // step backwards: that lets a blocked rear-rank unit oscillate between two
+    // tiles while repeatedly replanning around its own line.
+    if (nextProgress < currentProgress) return false;
+    if (nextProgress === currentProgress) return true;
     const previous = rank > 0
       ? allies.filter(u => Math.max(0, Math.floor(u.formationRank ?? 0)) === rank - 1)
       : [];
-    const previousMinimum = previous.length > 0 ? Math.min(...previous.map(progress)) : null;
+    const nearestPreviousRowGap = previous.length > 0
+      ? Math.min(...previous.map(u => Math.abs(u.r - ru.r)))
+      : Number.POSITIVE_INFINITY;
+    const previousLane = previous.filter(u => Math.abs(u.r - ru.r) === nearestPreviousRowGap);
+    const previousReference = previousLane.length > 0
+      ? Math.min(...previousLane.map(progress))
+      : null;
     return compactLineAllowsAdvance({
       side: ru.side,
       candidateCol,
-      lineMinimumProgress: lineMinimum,
-      previousLineMinimumProgress: previousMinimum,
+      lineReferenceProgress: currentProgress,
+      previousLineReferenceProgress: previousReference,
     });
+  }
+
+  /** A shooter may close to a firing tile while staying behind the melee line. */
+  private _rangedFiringStepStaysBehindMelee(ru: RuntimeBattleUnit, candidateCol: number): boolean {
+    if (this._effectiveMetaForUnit(ru).doctrine !== 'steady' || !ru.rangedBase || ru.mounted) return false;
+    const allies = (ru.side === 'atk' ? this.atk : this.def)
+      .filter(u => !u.dead && !u.fadingOut && !u.removed && !u.routed
+        && !u.mounted && !u.rangedBase && !isSiegeUnit(u.bu));
+    if (allies.length === 0) return false;
+    const progress = (col: number): number => ru.side === 'atk' ? col : -col;
+    const nearestMeleeRowGap = Math.min(...allies.map(u => Math.abs(u.r - ru.r)));
+    const meleeLane = allies.filter(u => Math.abs(u.r - ru.r) === nearestMeleeRowGap);
+    // Let shooters follow the advancing edge of their nearest melee lane. Using
+    // its rearmost unit deadlocks ranged ranks at choke points and sends them
+    // around the map looking for a route that never opens.
+    const meleeLaneProgress = Math.min(...meleeLane.map(u => progress(u.q)));
+    return progress(candidateCol) <= meleeLaneProgress;
+  }
+
+  private _shouldAvoidAutoBacktrack(ru: RuntimeBattleUnit): boolean {
+    const meta = ru.groupId ? this._groupMeta?.get(ru.groupId) : undefined;
+    const doctrine = ru.unitDoctrine ?? meta?.doctrine ?? 'steady';
+    const auto = doctrine !== 'manual' && (ru.unitDoctrine != null || !ru.groupId || (meta?.autoPlay ?? true));
+    return auto && doctrine === 'steady';
   }
 
   private _advanceStep(ru: RuntimeBattleUnit, done: () => void): void {
@@ -7641,7 +7679,11 @@ export class BattleScene {
     // take only its FIRST step. This routes around occupied allied tiles
     // instead of stalling like a greedy step would. If BFS finds nothing
     // reachable (fully walled in), fall back to a greedy nudge closer.
-    const stepKey = this._firstStepAlongPathToAttack(ru) ?? this._stepToward(ru, target);
+    const avoidAutoBacktrack = this._shouldAvoidAutoBacktrack(ru);
+    const stepKey = this._firstStepAlongPathToAttack(ru, (q, r) =>
+      this._compactAttackAllowsStep(ru, q)
+      && !(avoidAutoBacktrack && ru.lastAutoMoveFrom?.q === q && ru.lastAutoMoveFrom?.r === r),
+    ) ?? this._stepToward(ru, target);
     if (!stepKey) {
       // Blocked / cannot get closer this turn.
       done();
@@ -7653,7 +7695,9 @@ export class BattleScene {
 
     if (!this._compactAttackAllowsStep(ru, nc)) { done(); return; }
 
+    const previousPosition = avoidAutoBacktrack ? { q: ru.q, r: ru.r } : undefined;
     this._doMove(ru, nc, nr, () => {
+      if (previousPosition) ru.lastAutoMoveFrom = previousPosition;
       if (this.finished) { done(); return; }
       // Reached an attack position? Stop -- the blow happens on a later turn.
       if (this._canAttackFrom(ru, ru.q, ru.r)) { done(); return; }
@@ -7888,7 +7932,10 @@ export class BattleScene {
    * real grid path lengths, so the unit reliably routes around its own front
    * line instead of deadlocking behind it the way a greedy step would.
    */
-  private _firstStepAlongPathToAttack(ru: RuntimeBattleUnit): string | null {
+  private _firstStepAlongPathToAttack(
+    ru: RuntimeBattleUnit,
+    allowFirstStep?: (q: number, r: number) => boolean,
+  ): string | null {
     const startKey = cellKey(ru.q, ru.r);
 
     // Already standing on an attack position -> handled by the caller, but be safe.
@@ -7909,6 +7956,7 @@ export class BattleScene {
         if (nc < 0 || nc >= BF_COLS || nr < 0 || nr >= BF_ROWS) continue;
         const nk = cellKey(nc, nr);
         if (parent.has(nk)) continue;          // already seen
+        if (cur.c === ru.q && cur.r === ru.r && allowFirstStep && !allowFirstStep(nc, nr)) continue;
         if (this.occByKey.has(nk)) continue;   // occupied -> wall (cannot stand here)
         // SIEGE v2: wall tiles (BTerrain.Wall) are normally impassable but an
         // attacker approaching the base of the siege wall should be able to
@@ -16236,6 +16284,7 @@ export class BattleScene {
     const playerSide = this._playerControlSide();
     const slots = initialBattleSlots(formation, {
       rankWidth: RANK_WIDTH, midRow: PLAY_MID_ROW, playRow0: PLAY_ROW0, playRow1: PLAY_ROW1,
+      meleeLines: this._deployMeleeLines, archerLines: this._deployArcherLines,
     });
     slots.forEach(slot => {
       const index = unitIndex.get(slot.unit)!;
@@ -16254,8 +16303,12 @@ export class BattleScene {
         const baseCol = col;
         const mountedWing = initialBattleRoleOf(bu) === 'mounted';
         const topWing = idealRow[idx]! < PLAY_MID_ROW;
-        const wingRowLo = topWing ? PLAY_ROW0 + 1 : PLAY_MID_ROW + Math.ceil(RANK_WIDTH / 2) + 1;
-        const wingRowHi = topWing ? PLAY_MID_ROW - Math.ceil(RANK_WIDTH / 2) - 2 : PLAY_ROW1 - 1;
+        const wingRowLo = topWing
+          ? Math.max(PLAY_ROW0 + 1, idealRow[idx]! - 3)
+          : Math.max(PLAY_MID_ROW + 1, idealRow[idx]! - 3);
+        const wingRowHi = topWing
+          ? Math.min(PLAY_MID_ROW - 1, idealRow[idx]! + 3)
+          : Math.min(PLAY_ROW1 - 1, idealRow[idx]! + 3);
         const rowLo = mountedWing ? wingRowLo : this.deployPhase && side === playerSide
           ? Math.max(DEPLOY_MIN_ROW, idealRow[idx]! - 8)
           : 0;
@@ -17046,6 +17099,16 @@ export class BattleScene {
   /** Jeden krok auto-gra wg doktryny grupy. */
   private _executeGroupDoctrineStep(ru: RuntimeBattleUnit, meta: GroupMeta, done: () => void): boolean {
     if (meta.doctrine === 'defensive') {
+      // Defensive doctrine fixes POSITION, not weapon usage. Ranged units must
+      // still fire from their line when a target is already in range; the old
+      // adjacent-only picker made archers/slingers wait without participating.
+      if (canShoot(ru) && ru.shootingEnabled !== false) {
+        const ranged = this._pickRangedTargetByPriority(ru);
+        if (ranged) {
+          this._doAttack(ru, ranged, done);
+          return true;
+        }
+      }
       const adj = this._pickAdjacentTargetByPriority(ru);
       if (adj) {
         this._doAttack(ru, adj, done);
@@ -17056,6 +17119,33 @@ export class BattleScene {
     }
     if (meta.doctrine === 'skirmish') {
       return this._executeSkirmishDoctrineStep(ru, meta, done);
+    }
+    // Atak paces infantry and ranged ranks as a line, but mounted units keep
+    // their flank/target-selection behavior. Sending them to the infantry's
+    // formation rally point can leave chariots idle behind a blocked lane.
+    if (meta.doctrine === 'steady' && ru.mounted) {
+      this._cavalryAction(ru, done);
+      return true;
+    }
+    // A compact line still shoots as soon as a legal target is in range.
+    // This must precede the line-advance branch below: delegating every
+    // steady unit directly to _advanceStep otherwise bypasses the ranged
+    // attack selection entirely, so archers walk into firing distance but
+    // never spend ammunition.
+    if (meta.doctrine === 'steady' && canShoot(ru) && ru.shootingEnabled !== false) {
+      const ranged = this._pickRangedTargetByPriority(ru);
+      if (ranged) {
+        this._doAttack(ru, ranged, done);
+        return true;
+      }
+    }
+    // In a compact attack, solve the next legally reachable attack tile with
+    // the line and anti-backtrack constraints inside the path search itself.
+    // Selecting an unconstrained path and rejecting its first step afterward
+    // made units oscillate around allied blockers at narrow fronts.
+    if (meta.doctrine === 'steady') {
+      this._advanceStep(ru, done);
+      return true;
     }
     // Szturm: konnica = pelna logika jazdy; reszta = BFS do wroga (omija wlasna linie)
     if (meta.doctrine === 'aggressive') {
@@ -17095,7 +17185,11 @@ export class BattleScene {
       return true;
     }
     const dest = this._doctrineMoveDest(ru, meta);
-    if (!dest || (dest.col === ru.q && dest.row === ru.r)) {
+    if (!dest) {
+      done();
+      return true;
+    }
+    if (dest.col === ru.q && dest.row === ru.r) {
       done();
       return true;
     }
@@ -17341,14 +17435,28 @@ export class BattleScene {
       const dr = Math.sign(tr - ru.r);
       let nc = ru.q + dc;
       let nr = ru.r + dr;
-      if (!this._passableForUnit(ru, nc, nr) || this.occByKey.has(cellKey(nc, nr))) {
-        if (dc !== 0 && this._passableForUnit(ru, ru.q + dc, ru.r) && !this.occByKey.has(cellKey(ru.q + dc, ru.r))) {
+      const avoidAutoBacktrack = this._shouldAvoidAutoBacktrack(ru);
+      const isImmediateBacktrack = (q: number, r: number): boolean =>
+        avoidAutoBacktrack && ru.lastAutoMoveFrom?.q === q && ru.lastAutoMoveFrom?.r === r;
+      if (!this._passableForUnit(ru, nc, nr) || this.occByKey.has(cellKey(nc, nr)) || isImmediateBacktrack(nc, nr)) {
+        if (dc !== 0 && this._passableForUnit(ru, ru.q + dc, ru.r) && !this.occByKey.has(cellKey(ru.q + dc, ru.r)) && !isImmediateBacktrack(ru.q + dc, ru.r)) {
           nc = ru.q + dc; nr = ru.r;
-        } else if (dr !== 0 && this._passableForUnit(ru, ru.q, ru.r + dr) && !this.occByKey.has(cellKey(ru.q, ru.r + dr))) {
+        } else if (dr !== 0 && this._passableForUnit(ru, ru.q, ru.r + dr) && !this.occByKey.has(cellKey(ru.q, ru.r + dr)) && !isImmediateBacktrack(ru.q, ru.r + dr)) {
           nc = ru.q; nr = ru.r + dr;
         } else {
-          done();
-          return true;
+          // Group members often occupy all three greedy neighbors while they
+          // are converging on their formation-offset destinations. Do not let
+          // the rear ranks stall forever behind their own line: route around
+          // the formation through free passable cells, then resume the exact
+          // move order on the next activation.
+          const routeStep = this._firstStepTowardMoveDestination(
+            ru, tc, tr, 1024,
+            this._shouldAvoidAutoBacktrack(ru) ? (col) => this._compactAttackAllowsStep(ru, col) : undefined,
+          );
+          if (!routeStep) { done(); return true; }
+          const [routeCol, routeRow] = routeStep.split(',').map(Number);
+          nc = routeCol!;
+          nr = routeRow!;
         }
       }
       if (!this._compactAttackAllowsStep(ru, nc)) { done(); return true; }
@@ -17357,7 +17465,9 @@ export class BattleScene {
         done();
         return true;
       }
+      const previousPosition = avoidAutoBacktrack ? { q: ru.q, r: ru.r } : undefined;
       this._doMove(ru, nc, nr, () => {
+        if (previousPosition) ru.lastAutoMoveFrom = previousPosition;
         this._refreshQueuedOrderVisuals();
         done();
       });
@@ -17393,6 +17503,61 @@ export class BattleScene {
     }
     done();
     return true;
+  }
+
+  /** Find a first free step around allied blockers for a move order. */
+  private _firstStepTowardMoveDestination(
+    ru: RuntimeBattleUnit, targetCol: number, targetRow: number, maxVisited = 1024,
+    allowFirstStep?: (col: number, row: number) => boolean,
+  ): string | null {
+    const startKey = cellKey(ru.q, ru.r);
+    const targetKey = cellKey(targetCol, targetRow);
+    const firingTiles = new Set<string>();
+    if (ru.rangedBase && canShoot(ru) && ru.shootingEnabled !== false) {
+      for (const enemy of this._enemiesOf(ru)) {
+        if (enemy.dead || enemy.fadingOut || enemy.routed) continue;
+        for (let dc = -ru.range; dc <= ru.range; dc++) {
+          const remaining = ru.range - Math.abs(dc);
+          for (let dr = -remaining; dr <= remaining; dr++) {
+            if (dc === 0 && dr === 0) continue;
+            const col = enemy.q + dc;
+            const row = enemy.r + dr;
+            if (col >= 0 && col < BF_COLS && row >= 0 && row < BF_ROWS) firingTiles.add(cellKey(col, row));
+          }
+        }
+      }
+    }
+    const canFireFrom = (col: number, row: number): boolean => firingTiles.has(cellKey(col, row));
+    const parent = new Map<string, string | null>([[startKey, null]]);
+    const firstStepByKey = new Map<string, string>();
+    const frontier: Array<{ col: number; row: number }> = [{ col: ru.q, row: ru.r }];
+    let head = 0;
+    while (head < frontier.length && head < maxVisited) {
+      const current = frontier[head++]!;
+      for (const [dc, dr] of DIRS4) {
+        const col = current.col + dc;
+        const row = current.row + dr;
+        if (col < 0 || col >= BF_COLS || row < 0 || row >= BF_ROWS) continue;
+        const nextKey = cellKey(col, row);
+        if (this._isUnitDoctrineAuto(ru) && this._effectiveMetaForUnit(ru).doctrine === 'steady'
+          && ru.lastAutoMoveFrom?.q === col && ru.lastAutoMoveFrom?.r === row) continue;
+        if (current.col === ru.q && current.row === ru.r && allowFirstStep && !allowFirstStep(col, row)) continue;
+        if (this.occByKey.has(nextKey) || !this._passableForUnit(ru, col, row)) continue;
+        if (parent.has(nextKey)) continue;
+        parent.set(nextKey, cellKey(current.col, current.row));
+        firstStepByKey.set(nextKey, current.col === ru.q && current.row === ru.r
+          ? nextKey
+          : firstStepByKey.get(cellKey(current.col, current.row)) ?? nextKey);
+        // A ranged unit's exact formation tile may remain occupied by its
+        // firing front rank. Let it route to the nearest reachable legal
+        // firing tile without crossing that rank, rather than idling forever.
+        if (nextKey === targetKey || canFireFrom(col, row)) {
+          return firstStepByKey.get(nextKey) ?? null;
+        }
+        frontier.push({ col, row });
+      }
+    }
+    return null;
   }
 
   /** Natychmiastowe wykonanie rozkazow wybranych jednostek (po kolei). */

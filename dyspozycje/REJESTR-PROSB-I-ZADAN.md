@@ -8487,3 +8487,9 @@ referencyjnych zielone, `entity-card-historia-section-test` 36/36,
 
 - **STATUS:** `ROUTING ANOMALY — NO WORKER / CLOSED`
 - **KARTA/EVENT:** `t_9009f348`; process-only no-op gate `created → promoted → completed run 356`; assignee `null`, brak claimu/worker runu. Produkt był już obecny w `origin/main`/ROBOCZA; nie wykonano fake commit/push.
+## `R-CIV-ALL-TOPICS-ROBOCZA-20261027` — integracja poprawek gotowych do ROBOCZEJ (2026-10-29)
+
+- STATUS: READY FOR RELEASE — integracja, typecheck, testy Chromium i build lokalny PASS; publikacja Roboczej oraz push są następnymi krokami.
+- Włączono zatwierdzone poprawki dowódcy/rekrutacji, AI wojennej (5 tur zbiórki, cel morski, odtworzenie kampanii), zachowania i formacji bitwy, oraz kreatora cywilizacji.
+- Test dużego imperium pozostaje odłożony na koniec. C-064 jest zablokowany brakiem natywnego konektora Kanban i nie jest częścią release.
+- Dokładne dowody integracji i ograniczenia: `dyspozycje/autobot/runs/R-CIV-ALL-TOPICS-ROBOCZA-20261027/70-integrated-release-20261029.md`.

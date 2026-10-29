@@ -131,6 +131,14 @@ export function buildUnitActionBarHtml(actions: readonly UnitPanelAction[]): str
       + `>${esc(marchStop.label)}</button>`;
   }
 
+  const generalFollow = byId.get('general-follow');
+  if (generalFollow) {
+    html += `<button type="button" class="uc-act-btn uc-act-text${generalFollow.active ? ' uc-act-btn--on' : ''}" data-act="general-follow"`
+      + ` title="${esc(generalFollow.label)}" aria-label="${esc(generalFollow.label)}"`
+      + (generalFollow.disabled ? ' disabled' : '')
+      + `>${esc(generalFollow.label)}</button>`;
+  }
+
   const disband = byId.get('disband');
   if (disband) {
     html += `<button type="button" class="uc-act-btn uc-act-disband" data-act="disband"`

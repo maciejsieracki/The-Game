@@ -51,3 +51,53 @@ export function generalFollowDestination(
       || unit.inGarnizon === true || unit.oblegaCityId) return null;
   return { point: { q: general.q, r: general.r }, generalTargetId: general.id };
 }
+
+export interface GeneralFollowCandidate {
+  id: string;
+  ownerId: number;
+  q: number;
+  r: number;
+  isGeneral?: boolean;
+  hp?: number;
+  dead?: boolean;
+  removed?: boolean;
+  routed?: boolean;
+}
+
+/** Select the nearest living commander belonging to a non-commander unit's owner. */
+export function nearestLivingGeneral<T extends GeneralFollowCandidate>(
+  unit: GeneralFollowCandidate,
+  roster: readonly T[],
+): T | undefined {
+  if (unit.isGeneral === true || unit.dead === true || unit.removed === true || unit.routed === true) return undefined;
+  return roster
+    .filter(candidate => candidate.id !== unit.id
+      && candidate.ownerId === unit.ownerId
+      && candidate.isGeneral === true
+      && candidate.dead !== true
+      && candidate.removed !== true
+      && candidate.routed !== true
+      && (candidate.hp == null || candidate.hp > 0))
+    .sort((a, b) => hexDistance(unit.q, unit.r, a.q, a.r) - hexDistance(unit.q, unit.r, b.q, b.r)
+      || a.id.localeCompare(b.id))[0];
+}
+
+function hexDistance(aq: number, ar: number, bq: number, br: number): number {
+  const dq = aq - bq;
+  const dr = ar - br;
+  return (Math.abs(dq) + Math.abs(dr) + Math.abs(dq + dr)) / 2;
+}
+
+/** Plan and enqueue every deferred newborn that can follow its owner's live General. */
+export function planDeferredGeneralMarchBatch(
+  unitIds: readonly string[],
+  planUnit: (unitId: string) => boolean,
+  enqueue: (unitIds: string[]) => void,
+): string[] {
+  const marchingIds: string[] = [];
+  for (const unitId of unitIds) {
+    if (planUnit(unitId)) marchingIds.push(unitId);
+  }
+  if (marchingIds.length > 0) enqueue(marchingIds);
+  return marchingIds;
+}

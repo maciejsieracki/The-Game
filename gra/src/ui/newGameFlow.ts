@@ -790,7 +790,7 @@ function resetSettingsFromParams(): void {
 let rootEl: HTMLDivElement | null = null;
 let curStep = 1;
 let selCiv: string | null = null;
-let civProfileCollapsed = false;
+let civProfileCollapsed = true;
 /**
  * R-HOTSEAT-ETAP6F-PART2-DATA-Q1: drugi slot stanu modułu, analogiczny do
  * `selCiv`, dla cywilizacji DRUGIEGO fotela ludzkiego (hot-seat). `null` =
@@ -815,8 +815,6 @@ let hotSeatEnabled = false;
 let humanDistanceMode: HumanDistanceMode = 'losowo';
 /** Czy krok 4 pokazuje ekran fotela 2 (podekran, NIE osobna pozycja `curStep`/`STEP_LABELS`). */
 let showSeat2Screen = false;
-/** Opcjonalny seed wpisany w kroku ustawień. Puste pole zachowuje losowy seed. */
-let seedInputValue = '';
 let selEpoch = 'kamien';
 /**
  * R-KONFIGURATOR-WYBOR-CYWILIZACJI-PRZECIWNIKA: typy AI wybrane w kreatorze (krok
@@ -978,14 +976,6 @@ function ensureStyles(): void {
 .civ-newgame .klaster .km{font-size:12px;color:var(--tx2);line-height:1.55;font-style:italic;}
 .civ-newgame .start-preview{background:rgba(201,168,76,.05);border:1px solid var(--bd-mid);border-radius:var(--radius-lg);padding:14px 16px;max-width:700px;margin:1rem auto 0;text-align:left;}
 .civ-newgame .start-preview .kh{font-size:10px;letter-spacing:.3em;text-transform:uppercase;color:var(--gold-dim);font-family:Arial,sans-serif;margin-bottom:.5rem;}
-.civ-newgame .seed-override{max-width:420px;}
-.civ-newgame .seed-override label{display:block;color:var(--tx2);font:11px Arial,sans-serif;margin-bottom:7px;}
-.civ-newgame .seed-override input{width:100%;padding:9px 11px;border:1px solid var(--bd-mid);border-radius:6px;background:rgba(8,9,14,.8);color:var(--tx);font:14px Arial,sans-serif;}
-.civ-newgame .seed-override input:focus{outline:2px solid var(--gold-dim);outline-offset:1px;}
-.civ-newgame .seed-override input[aria-invalid="true"]{border-color:#e08a8a;}
-.civ-newgame .seed-help,.civ-newgame .seed-error{font:11px Arial,sans-serif;line-height:1.4;margin-top:6px;}
-.civ-newgame .seed-help{color:var(--tx-muted);}
-.civ-newgame .seed-error{color:#ffaaaa;}
 .civ-newgame .epoch-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;max-width:760px;margin:0 auto;align-items:stretch;}
 .civ-newgame .epoch-foot{max-width:760px;margin:.85rem auto 0;display:flex;flex-direction:column;gap:10px;}
 .civ-newgame .epoch-info{background:rgba(201,168,76,.06);border:1px solid var(--bd-mid);border-radius:var(--radius-lg);padding:12px 16px;font-size:13px;line-height:1.55;color:var(--tx2);}
@@ -1267,10 +1257,10 @@ function appendCivMatrixProfile(parent: HTMLElement, civKey: string): void {
   const profile = buildCivMatrixSemanticProfile(civKey);
   const box = el('section', 'civ-matrix-profile');
   box.dataset.civMatrixProfile = profile.civilizationId;
-  box.setAttribute('aria-label', `Pełny profil macierzy Normal: ${profile.civilizationName}`);
+  box.setAttribute('aria-label', `Parametry cywilizacji Normal: ${profile.civilizationName}`);
 
   const head = el('div', 'civ-matrix-profile-head');
-  head.appendChild(el('div', 'civ-matrix-profile-title', 'Profil macierzy — Normal'));
+  head.appendChild(el('div', 'civ-matrix-profile-title', 'Parametry cywilizacji — Normal'));
   head.appendChild(el(
     'div',
     'civ-matrix-profile-note',
@@ -1292,11 +1282,11 @@ function appendCivMatrixProfile(parent: HTMLElement, civKey: string): void {
   search.dataset.civMatrixSearch = 'true';
   search.className = 'civ-matrix-profile-search';
   search.placeholder = 'Szukaj parametru, domeny lub statusu…';
-  search.setAttribute('aria-label', 'Szukaj w pełnym profilu macierzy');
+  search.setAttribute('aria-label', 'Szukaj w parametrach cywilizacji');
   const filter = document.createElement('select');
   filter.dataset.civMatrixFilter = 'true';
   filter.className = 'civ-matrix-profile-filter';
-  filter.setAttribute('aria-label', 'Filtruj profil macierzy');
+  filter.setAttribute('aria-label', 'Filtruj parametry cywilizacji');
   const filterOptions: Array<[string, string]> = [
     ['all', 'Wszystkie'],
     ['active', 'Aktywne'],
@@ -1393,14 +1383,14 @@ function renderCivStep(host: HTMLElement): void {
   const c = selectedCiv();
   if (!c) {
     const empty = el('div', 'empty');
-    empty.innerHTML = '<div class="arr">&#8592;</div><div>Wybierz cywilizację z siatki,<br>aby zobaczyć jej profil macierzy i jednostkę specjalną.</div>';
+    empty.innerHTML = '<div class="arr">&#8592;</div><div>Wybierz cywilizację z siatki,<br>aby zobaczyć jej parametry i jednostkę specjalną.</div>';
     detail.appendChild(empty);
   } else {
     const head = el('div', 'civ-dh');
     head.innerHTML = civMedallionHtml(c.id, true, 'detail', c.kolorHex) + '<div><div class="dn">' + c.name + '</div><div class="civ-dmeta">Cywilizacja</div></div>';
     detail.appendChild(head);
     const ds = el('div', 'civ-ds');
-    ds.appendChild(el('div', 'dlbl', 'Profil cywilizacji'));
+    ds.appendChild(el('div', 'dlbl', 'Parametry cywilizacji'));
     if (c.styl) {
       const styl = el('div', 'meta-row');
       styl.textContent = 'Styl: ' + c.styl;
@@ -1432,11 +1422,11 @@ function renderCivStep(host: HTMLElement): void {
   const updateDetailToggle = (): void => {
     detailToggle.setAttribute('aria-expanded', String(!civProfileCollapsed));
     detailToggle.setAttribute('aria-label', civProfileCollapsed
-      ? 'Pokaż profil wybranej cywilizacji'
-      : 'Ukryj profil wybranej cywilizacji');
+      ? 'Pokaż parametry cywilizacji'
+      : 'Ukryj parametry cywilizacji');
     detailToggle.innerHTML = '<span>' + (civProfileCollapsed
-      ? 'Pokaż profil cywilizacji'
-      : 'Ukryj profil cywilizacji') + '</span><span class="chevron" aria-hidden="true">&#8964;</span>';
+      ? 'Pokaż parametry cywilizacji'
+      : 'Ukryj parametry cywilizacji') + '</span><span class="chevron" aria-hidden="true">&#8964;</span>';
     layout.classList.toggle('civ-profile-collapsed', civProfileCollapsed);
   };
   updateDetailToggle();
@@ -1521,7 +1511,7 @@ function renderSeat2Step(host: HTMLElement): void {
     head.innerHTML = civMedallionHtml(c2.id, true, 'detail', c2.kolorHex) + '<div><div class="dn">' + c2.name + '</div><div class="civ-dmeta">Cywilizacja fotela 2</div></div>';
     detail.appendChild(head);
     const ds = el('div', 'civ-ds');
-    ds.appendChild(el('div', 'dlbl', 'Profil cywilizacji'));
+    ds.appendChild(el('div', 'dlbl', 'Parametry cywilizacji'));
     if (c2.styl) {
       const styl = el('div', 'meta-row');
       styl.textContent = 'Styl: ' + c2.styl;
@@ -1535,6 +1525,18 @@ function renderSeat2Step(host: HTMLElement): void {
   }
   const gridPanel = el('div', 'civ-grid-panel');
   gridPanel.appendChild(grid);
+  const detailToggle = el('button', 'civ-profile-toggle') as HTMLButtonElement;
+  detailToggle.type = 'button';
+  detailToggle.setAttribute('aria-controls', detail.id);
+  const updateDetailToggle = (): void => {
+    detailToggle.setAttribute('aria-expanded', String(!civProfileCollapsed));
+    detailToggle.setAttribute('aria-label', civProfileCollapsed ? 'Pokaż parametry cywilizacji' : 'Ukryj parametry cywilizacji');
+    detailToggle.innerHTML = '<span>' + (civProfileCollapsed ? 'Pokaż parametry cywilizacji' : 'Ukryj parametry cywilizacji') + '</span><span class="chevron" aria-hidden="true">&#8964;</span>';
+    layout.classList.toggle('civ-profile-collapsed', civProfileCollapsed);
+  };
+  updateDetailToggle();
+  detailToggle.addEventListener('click', () => { civProfileCollapsed = !civProfileCollapsed; updateDetailToggle(); });
+  layout.appendChild(detailToggle);
   layout.appendChild(gridPanel);
   layout.appendChild(detail);
   host.appendChild(layout);
@@ -1553,28 +1555,8 @@ function renderSeat2Step(host: HTMLElement): void {
   });
   distBox.appendChild(distRow);
   host.appendChild(distBox);
-  renderSeedControl(host);
 
-  const actions = el('div', 'sett-actions');
-  const back = el('button', 'btn-adv', '&#8592; Wstecz (ustawienia)');
-  back.addEventListener('click', () => { showSeat2Screen = false; render(); });
-  actions.appendChild(back);
-  const start = el('button', 'start', '&#9670; ROZPOCZNIJ GRE &#9670;') as HTMLButtonElement;
-  const canStart = !!selCiv2 && selCiv2 !== selCiv && civsForEpoch(selEpoch).some(c => c.id === selCiv2);
-  start.classList.add('seed-gated-start');
-  start.dataset.seatReady = String(canStart);
-  start.disabled = !canStart || !seedInputIsValid();
-  start.addEventListener('click', () => {
-    if (!canStart) return;
-    if (!seedInputIsValid()) {
-      updateSeedInputFeedback();
-      return;
-    }
-    curStep = 5;
-    render();
-  });
-  actions.appendChild(start);
-  host.appendChild(actions);
+
 }
 
 function epochTechSummary(epochId: string): string {
@@ -1978,7 +1960,6 @@ function renderSettStep(host: HTMLElement): void {
   ]);
   renderAiCivPicker(layout);
   host.appendChild(layout);
-  renderSeedControl(host);
 
   const preview = currentStartPreview();
   if (preview) {
@@ -2016,19 +1997,6 @@ function renderSettStep(host: HTMLElement): void {
   const advBtn = el('button', 'btn-adv', '&#9881;&nbsp; Zaawansowane opcje');
   advBtn.addEventListener('click', showAdvancedModal);
   actions.appendChild(advBtn);
-  const start = el('button', 'start', '&#9670; ROZPOCZNIJ GRE &#9670;') as HTMLButtonElement;
-  start.classList.add('seed-gated-start');
-  start.dataset.seatReady = 'true';
-  start.disabled = !seedInputIsValid();
-  start.addEventListener('click', () => {
-    if (!seedInputIsValid()) {
-      updateSeedInputFeedback();
-      return;
-    }
-    if (hotSeatEnabled) { showSeat2Screen = true; render(); }
-    else { curStep = 5; render(); }
-  });
-  actions.appendChild(start);
   host.appendChild(actions);
   host.appendChild(el(
     'div',
@@ -2040,66 +2008,6 @@ function renderSettStep(host: HTMLElement): void {
 function settingValue(key: string): string {
   const s = SETT.find(x => x.key === key);
   return s ? (s.opts[s.idx] ?? '') : '';
-}
-
-function seedValidationMessage(value = seedInputValue): string | null {
-  const trimmed = value.trim();
-  if (!trimmed) return null;
-  if (!/^\d+$/.test(trimmed)) return 'Wpisz liczbę całkowitą od 1 do 999999.';
-  const seed = Number(trimmed);
-  if (!Number.isSafeInteger(seed) || seed < 1 || seed > 999999) {
-    return 'Liczba musi mieścić się w zakresie 1–999999.';
-  }
-  return null;
-}
-
-function seedInputIsValid(): boolean {
-  return seedValidationMessage() === null;
-}
-
-function updateSeedInputFeedback(): void {
-  const message = seedValidationMessage();
-  rootEl?.querySelectorAll<HTMLInputElement>('input[name="seed"]').forEach(input => {
-    input.setAttribute('aria-invalid', message ? 'true' : 'false');
-  });
-  rootEl?.querySelectorAll<HTMLElement>('.seed-error').forEach(error => {
-    error.textContent = message ?? '';
-    error.hidden = message === null;
-  });
-  rootEl?.querySelectorAll<HTMLButtonElement>('.seed-gated-start').forEach(button => {
-    button.disabled = message !== null || button.dataset.seatReady === 'false';
-  });
-}
-
-function renderSeedControl(host: HTMLElement): void {
-  const box = el('div', 'start-preview seed-override');
-  box.appendChild(el('div', 'kh', 'Ziarno mapy (opcjonalne)'));
-  const label = document.createElement('label');
-  label.htmlFor = 'ng-seed';
-  label.textContent = 'Wartość (1–999999)';
-  const input = document.createElement('input');
-  input.type = 'text';
-  input.name = 'seed';
-  input.id = 'ng-seed';
-  input.dataset.runtimeSeed = 'true';
-  input.inputMode = 'numeric';
-  input.autocomplete = 'off';
-  input.placeholder = 'Puste = losowy seed';
-  input.value = seedInputValue;
-  input.setAttribute('aria-label', 'Ziarno mapy, liczba całkowita od 1 do 999999');
-  const help = el('div', 'seed-help', 'Wpisz tę samą liczbę 1–999999, aby uzyskać ten sam układ mapy. Puste pole wybiera ziarno losowo.');
-  const error = el('div', 'seed-error');
-  error.setAttribute('role', 'alert');
-  box.appendChild(label);
-  box.appendChild(input);
-  box.appendChild(help);
-  box.appendChild(error);
-  input.addEventListener('input', () => {
-    seedInputValue = input.value;
-    updateSeedInputFeedback();
-  });
-  host.appendChild(box);
-  updateSeedInputFeedback();
 }
 
 function buildParams(): NewGameParams {
@@ -2141,8 +2049,9 @@ function buildParams(): NewGameParams {
         activeTypesCount: Number.isFinite(civTypesCount) ? civTypesCount : undefined,
       })
     : undefined;
-  const seedText = seedInputValue.trim();
-  const seed = seedText ? Number(seedText) : Math.floor(Math.random() * 1_000_000);
+  // Keep per-game reproducibility internally; only the manual menu override
+  // was removed. Persisted saves still carry this generated seed as before.
+  const seed = Math.floor(Math.random() * 1_000_000);
   // R-HOTSEAT-ETAP6F-PART2-DATA-Q1: `selCiv2` nie jest dziś zapisywany przez
   // żaden ekran kreatora (zero UI w tym pod-temacie) — w praktyce zawsze
   // `null`, więc `civId2`/`civName2` są zawsze `undefined` na dzisiejszej
@@ -2414,24 +2323,32 @@ function render(): void {
       const canNext = curStep === 2
         ? epochHasCivs(selEpoch)
         : !!selCiv && civsForEpoch(selEpoch).some(c => c.id === selCiv);
-    if (curStep === 4) {
-      next.classList.add('seed-gated-start');
-      next.dataset.seatReady = 'true';
-    }
       next.disabled = !canNext;
-    if (curStep === 4 && !seedInputIsValid()) next.disabled = true;
       next.addEventListener('click', () => {
         if (curStep === 2 && !epochHasCivs(selEpoch)) return;
         if (curStep === 3 && (!selCiv || !civsForEpoch(selEpoch).some(c => c.id === selCiv))) return;
-      if (curStep === 4 && !seedInputIsValid()) {
-        updateSeedInputFeedback();
-        return;
-      }
         if (curStep === 2) ensureSelCivForEpoch();
         curStep += 1;
         render();
       });
       nav.appendChild(next);
+    } else if (curStep === 4) {
+      const action = el('button', 'nb next', showSeat2Screen || !hotSeatEnabled ? 'Rozpocznij grę' : 'Dalej &#8594;') as HTMLButtonElement;
+      const seatReady = !showSeat2Screen || (!!selCiv2 && selCiv2 !== selCiv && civsForEpoch(selEpoch).some(c => c.id === selCiv2));
+      action.dataset.seatReady = String(seatReady);
+      action.disabled = !seatReady;
+      action.addEventListener('click', () => {
+        if (showSeat2Screen) {
+          if (!selCiv2 || selCiv2 === selCiv || !civsForEpoch(selEpoch).some(c => c.id === selCiv2)) return;
+          curStep = 5;
+        } else if (hotSeatEnabled) {
+          showSeat2Screen = true;
+        } else {
+          curStep = 5;
+        }
+        render();
+      });
+      nav.appendChild(action);
     } else {
       nav.appendChild(el('div'));
     }
@@ -2474,12 +2391,11 @@ export function showNewGameFlow(config: NewGameFlowConfig): void {
   prefsDirty = false;
   curStep = 1;
   selCiv = DEFAULT_PLAYER_CIV_ID;
-  civProfileCollapsed = false;
+  civProfileCollapsed = true;
   selCiv2 = null;
   hotSeatEnabled = false;
   humanDistanceMode = 'losowo';
   showSeat2Screen = false;
-  seedInputValue = '';
   selEpoch = DEFAULT_START_EPOCH_ID;
   selAiCivIds = [];
   ensureSelCivForEpoch();

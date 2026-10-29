@@ -829,6 +829,7 @@ import { buildTestArmies, ensureSiegeMachines as ensureSiegeMachinesPreset } fro
 import type { PresetName } from './battle/testBattle';
 import type { BattleResult, BattleUnit, BattleOpts } from './battle/battleScene';
 import { armyLeaderMoraleBonusFrac, armyLeaderTitle } from './game/army-leadership';
+import { generalQuickFollowActionLabel, issueGeneralQuickFollow, planTrackedGeneralFollowMarch, syncTrackedGeneralFollowMarches } from './game/generalQuickFollow';
 import type { WorldTerrainInput } from './battle/battle-terrain';
 import {
   startMusic, stopMusic, setMood, setEra, setMusicVolume, getMood,
@@ -883,7 +884,7 @@ import {
 } from './game/capital-capture';
 import { cityPopulationCap, loadEconParams, resolvePopulationCapMatrixDelta, sumBuildingHappinessFromBuiltIds } from './game/economy';
 import { civMatrixBonusyForCivKey } from './game/civ-bonuses';
-import { attemptGeneralPurchase, canRecruitGeneral, generalFollowDestination, generalLimitForEra, stoneGeneralUnitId } from './game/generals';
+import { attemptGeneralPurchase, canRecruitGeneral, generalFollowDestination, generalLimitForEra, nearestLivingGeneral, planDeferredGeneralMarchBatch, stoneGeneralUnitId } from './game/generals';
 import { promoteAiUnitForEra } from './game/ai-era-unit-promotion';
 import {
   aiGeneralCampaignToSave,
@@ -1266,7 +1267,8 @@ import {
   canBarbarianWalkIntoEmptyCity, splitCampMoveCost, splitMoveCost,
 } from './game/barbarians';
 import type { BarbCamp, BarbUnit } from './game/barbarians';
-import { isWarAllInCapitalEnabled, type WarAllInContext, type WarCapitalTarget } from './game/warAllInCapital';
+import { isWarAllInCapitalEnabled, classifyWarTargetRoutes, preferSeaReachableWarTargets,
+  type WarAllInContext, type WarCapitalTarget } from './game/warAllInCapital';
 import { isArmyConsolidationEnabled } from './game/army-consolidation';
 import { isEligibleForArmyConcentration } from './game/army-concentration';
 // R-WEB-WAR-RULES-MULTIWAR-Q1: bramki wojen (R1 tura 40, R2 limit Kamienia; R3 max 1 wojna epoki na epokę globalnie) + W1/W2.
@@ -6894,6 +6896,7 @@ async function boot(): Promise<void> {
       rallyQ: number; rallyR: number;
       target: { ownerId: number; cityId: string; q: number; r: number };
       turn: number;
+      seaTravelAllowed: boolean;
     }) | undefined {
       const capitalId = capitalCityIdForOwner(ownerId);
       const capital = cities.find(city => city.id === capitalId && city.ownerId === ownerId);
@@ -6940,7 +6943,26 @@ async function boot(): Promise<void> {
           target }] : [];
       });
       const prior = aiGeneralWarCampaignByOwner.get(ownerId);
-      const targetOwnerId = chooseAiGeneralWarTarget(prior, candidates);
+      const seaTravelAllowed = ownerHasSeafaring(ownerId);
+      const enemyCityHexes = new Set(cities
+        .filter(city => city.ownerId !== ownerId)
+        .map(city => keyOf(city.q, city.r)));
+      const routeAvailability = classifyWarTargetRoutes(
+        map,
+        { q: capital.q, r: capital.r },
+        candidates.map(candidate => ({ ownerId: candidate.ownerId, cityId: candidate.target.id,
+          q: candidate.target.q, r: candidate.target.r })),
+        enemyCityHexes,
+        seaTravelAllowed,
+      );
+      const reachable = candidates.flatMap(candidate => {
+        const route = routeAvailability.get(candidate.target.id);
+        return route !== undefined && (route.land || route.sea)
+          ? [{ ...candidate, landReachable: route.land, seaReachable: route.sea }]
+          : [];
+      });
+      const prioritized = preferSeaReachableWarTargets(reachable);
+      const targetOwnerId = chooseAiGeneralWarTarget(prior, prioritized);
       const target = targetOwnerId === null ? undefined : candidates.find(item => item.ownerId === targetOwnerId)?.target;
       if (!target) {
         aiGeneralWarCampaignByOwner.delete(ownerId);
@@ -6985,6 +7007,7 @@ async function boot(): Promise<void> {
         rallyR: leader?.r ?? capital?.r ?? target.r,
         target: { ownerId: target.ownerId, cityId: target.id, q: target.q, r: target.r },
         turn,
+        seaTravelAllowed,
       };
     }
 
@@ -13030,17 +13053,23 @@ async function boot(): Promise<void> {
       promptMergeIfCoLocated(next.movedUnitIds, next.fromQ, next.fromR, next.moveCost, next.deductedRuch);
     }
 
-    function afterPlayerUnitSpawned(newUnitId: string): void {
+    function planSpawnedUnitFollowGeneral(newUnitId: string): boolean {
+      const u = units.find(x => x.id === newUnitId);
+      if (!u || u.ownerId !== 0) return false;
+      const general = units.find(x => x.ownerId === u.ownerId && x.isGeneral === true);
+      const follow = generalFollowDestination(u, general);
+      return !!follow && planGeneralFollowMarch(u, follow.point, follow.generalTargetId, false);
+    }
+
+    function afterPlayerUnitSpawned(newUnitId: string, generalMarchPreplanned = false): void {
       syncUnitsRender();
       const u = units.find(x => x.id === newUnitId);
       if (!u || u.ownerId !== 0) return;
       const coLocated = coLocatedForMergePrompt(units, u.q, u.r, u.ownerId)
         .filter(x => x.id !== newUnitId);
-      const general = units.find(x => x.ownerId === u.ownerId && x.isGeneral === true);
-      const follow = generalFollowDestination(u, general);
-      const autoMarchingToGeneral = follow && planGeneralFollowMarch(
-        u, follow.point, follow.generalTargetId, false,
-      );
+      const autoMarchingToGeneral = generalMarchPreplanned
+        ? plannedMarches.get(newUnitId)?.generalTargetId != null
+        : planSpawnedUnitFollowGeneral(newUnitId);
       if (coLocated.length > 0 && !autoMarchingToGeneral) {
         // Świeżo wyprodukowana jednostka nie wykonała żadnego ruchu tej tury —
         // nie ma czego zwracać (deductedRuch=0).
@@ -13054,7 +13083,7 @@ async function boot(): Promise<void> {
       const { x, z } = axialToWorld(u.q, u.r, HEX_R);
       const { dist } = camCtrl.getFocusState();
       camCtrl.focusAt(x, z, dist);
-      if (autoMarchingToGeneral) enqueueMarchSegments([newUnitId]);
+      if (autoMarchingToGeneral && !generalMarchPreplanned) enqueueMarchSegments([newUnitId]);
     }
 
     /** Po fazie AI: pokaż jednostki ukończone w ticku end-turn (produkcja/rekrutacja). */
@@ -13064,7 +13093,12 @@ async function boot(): Promise<void> {
       deferredPlayerUnitRevealIds.clear();
       syncUnitsRender();
       const lastId = ids[ids.length - 1];
-      if (lastId) afterPlayerUnitSpawned(lastId);
+      const marchingIds = planDeferredGeneralMarchBatch(
+        ids,
+        planSpawnedUnitFollowGeneral,
+        enqueueMarchSegments,
+      );
+      if (lastId) afterPlayerUnitSpawned(lastId, marchingIds.includes(lastId));
     }
 
     function openSplitPanelForSelected(): void {
@@ -22927,6 +22961,18 @@ async function boot(): Promise<void> {
         actions.push(a);
       }
       actions.push({ id: 'skip', label: 'Pomi\u0144', disabled: siegeCity !== null });
+      const nearestCommander = nearestLivingGeneral(active, units);
+      if (nearestCommander && hexDistance(active.q, active.r, nearestCommander.q, nearestCommander.r) > 0
+        && active.inGarnizon !== true && !active.oblegaCityId) {
+        const alreadyFollowing = plannedMarches.get(active.id)?.generalTargetId === nearestCommander.id;
+        const leaderTitle = armyLeaderTitle(empireBuiltIdsForOwner(active.ownerId));
+        actions.push({
+          id: 'general-follow',
+          label: generalQuickFollowActionLabel(leaderTitle, alreadyFollowing),
+          disabled: isAnimating,
+          active: alreadyFollowing,
+        });
+      }
       actions.push({ id: 'disband', label: 'ROZWI\u0104\u017d', danger: true });
       return {
         hexLabel: siegeCity
@@ -22953,6 +22999,15 @@ async function boot(): Promise<void> {
         continuePlannedMarchForSelected();
       } else if (actionId === 'march-stop') {
         stopPlannedMarchForSelected();
+      } else if (actionId === 'general-follow') {
+        const leaderTitle = armyLeaderTitle(empireBuiltIdsForOwner(u.ownerId));
+        issueGeneralQuickFollow(u, units, leaderTitle, {
+          planMarch: (unit, point, targetId) => planGeneralFollowMarch(unit, point, targetId),
+          movementLeft: unit => planningStackRuchLeft(playerStackAt(unit)),
+          enqueue: unitIds => enqueueMarchSegments(unitIds),
+          notify: (message, durationMs) => showHintMessage(message, durationMs),
+          refresh: () => refreshD1bHud(),
+        });
       } else if (actionId === 'skip') {
         // force=true: "Pomiń" to jawny rozkaz gracza kasujący plan tej jednostki (razem z
         // zerowaniem ruchu poniżej) — nie zwykłe odznaczenie UI. / EN: force=true — "Skip" is an
@@ -27007,53 +27062,31 @@ async function boot(): Promise<void> {
       generalTargetId?: string,
       markAsPlayerIssued = true,
     ): boolean {
-      if (u.ownerId !== ME() || u.inGarnizon === true || u.oblegaCityId) return false;
-      if (!canOccupyHexForUnit(u, point.q, point.r)) return false;
-      const stack = playerStackAt(u);
-      const occ = occupiedForMove(u.ownerId, ...stack.map(s => s.id));
-      const mover = unitWithPlanningStackRuch(u, stack);
-      const dest: PlannedMarchDest = {
-        destQ: point.q,
-        destR: point.r,
-        ...(generalTargetId ? { generalTargetId } : {}),
-      };
-      const plan = marchPathPlan(
-        mover,
-        point.q,
-        point.r,
-        occ,
-        perTurnMoveForUnit(u),
-        undefined,
-        buildMarchFogContext(dest),
-        moveCostFnForUnit(u),
-      );
-      if (!plan.reachable || plan.fullPath.length === 0) return false;
-      clearScoutAutoExplore(u);
-      if (markAsPlayerIssued) markPlayerMovedUnit(u.id);
-      plannedMarches.set(u.id, dest);
-      syncMarchAttackTarget(u.id, dest);
-      return true;
+      return planTrackedGeneralFollowMarch(u, point, generalTargetId, {
+        playerOwnerId: ME(),
+        canOccupy: (unit, q, r) => canOccupyHexForUnit(unit, q, r),
+        movementContext: unit => {
+          const stack = playerStackAt(unit);
+          return {
+            mover: unitWithPlanningStackRuch(unit, stack),
+            occupied: occupiedForMove(unit.ownerId, ...stack.map(s => s.id)),
+            perTurn: perTurnMoveForUnit(unit),
+          };
+        },
+        pathPlan: (mover, q, r, occupied, perTurn) => {
+          const dest: PlannedMarchDest = { destQ: q, destR: r, ...(generalTargetId ? { generalTargetId } : {}) };
+          return marchPathPlan(mover, q, r, occupied, perTurn, undefined, buildMarchFogContext(dest), moveCostFnForUnit(u));
+        },
+        clearAutoExplore: clearScoutAutoExplore,
+        markPlayerMoved: markPlayerMovedUnit,
+        marches: plannedMarches,
+        syncAttackTarget: syncMarchAttackTarget,
+      }, markAsPlayerIssued);
     }
 
     /** Keep every queued General-following march aimed at that General's live position. */
     function syncGeneralMarchTargets(): void {
-      for (const [unitId, dest] of [...plannedMarches]) {
-        if (!dest.generalTargetId) continue;
-        const follower = units.find(u => u.id === unitId);
-        const general = units.find(u => u.id === dest.generalTargetId);
-        if (!follower || !general || general.isGeneral !== true || follower.ownerId !== general.ownerId) {
-          plannedMarches.delete(unitId);
-          marchAttackTargets.delete(unitId);
-          continue;
-        }
-        if (follower.q === general.q && follower.r === general.r) {
-          plannedMarches.delete(unitId);
-          continue;
-        }
-        if (dest.destQ !== general.q || dest.destR !== general.r) {
-          plannedMarches.set(unitId, { ...dest, destQ: general.q, destR: general.r });
-        }
-      }
+      syncTrackedGeneralFollowMarches(units, plannedMarches, unitId => marchAttackTargets.delete(unitId));
     }
 
     function startAnimatedMove(
@@ -28746,7 +28779,11 @@ async function boot(): Promise<void> {
       return {
         id: u.id,
         isArmyCommander: u.isGeneral === true,
-        nazwa: u.typeId,
+        // Keep the leader's visual identity distinct from its body/combat type.
+        // `kategoria` and `stats.Jednostka` still carry the selected unit model.
+        nazwa: u.isGeneral === true
+          ? armyLeaderTitle(empireBuiltIdsForOwner(u.ownerId))
+          : u.typeId,
         kategoria: u.category,
         ownerColor,
         // battleScene/manualBattle receive only BattleUnit.stats when they
@@ -29117,7 +29154,7 @@ async function boot(): Promise<void> {
             teren: dTeren4,
             worldTerrain: worldTerrainFromHex(dHex4),
             data,
-            deploy: true,
+            deploy: atkRosterRef.some(u => u.isGeneral === true),
             deployPlayerSide: 'atk',
             manualControlAllowed: atkRosterRef.some(u => u.isGeneral === true),
             attackerCivBonusy: civBonusyForOwnerId(atkLead.ownerId),
@@ -29790,7 +29827,7 @@ async function boot(): Promise<void> {
             teren: terrain,
             worldTerrain,
             data,
-            deploy: true,
+            deploy: defRosterRef.some(u => u.isGeneral === true),
             deployPlayerSide: 'def',
             manualControlAllowed: defRosterRef.some(u => u.isGeneral === true),
             attackerCivBonusy: civBonusyForOwnerId(atkLead.ownerId),
@@ -32008,7 +32045,7 @@ async function boot(): Promise<void> {
             teren: dTeren,
             worldTerrain: worldTerrainFromHex(dHex),
             data,
-            deploy: true,
+            deploy: atkRosterRef.some(u => u.isGeneral === true),
             deployPlayerSide: 'atk',
             manualControlAllowed: atkRosterRef.some(u => u.isGeneral === true),
             // Cytadela (budynek 'fort', upgrade Murow) -> +300% zamiast +200%

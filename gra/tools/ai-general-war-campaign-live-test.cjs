@@ -58,8 +58,15 @@ async function main() {
     const owners = await page.evaluate(() => [1, 2, 3, 4, 5].map(id => ({ id, cities: window.__generalRuntime.ownerCities(id) })).filter(x => x.cities.length));
     if (!owners.length) throw new Error('No AI owner capital in generated fixture: ' + JSON.stringify(owners));
     const aiOwner = owners[0].id;
+    const topology = await page.evaluate(ownerId => window.__generalRuntime.prepareSeaCorridor(ownerId, 0), aiOwner);
+    check('live fixture provides a sea-only capital route with an embarkation and landing hex',
+      !topology.error && topology.hasSeafaring && topology.water.length >= 2, topology);
+    if (topology.error || !topology.hasSeafaring) throw new Error('Could not prepare production sea corridor: ' + JSON.stringify(topology));
     const onset = await page.evaluate(ownerId => window.__generalRuntime.beginWarCampaign(ownerId, 0), aiOwner);
     check('war onset selects player owner 0 as the active enemy target', onset.campaign?.target?.ownerId === 0, onset);
+    check('campaign uses the same selected capital for its enabled Seafaring route',
+      onset.campaign?.target?.q === topology.goal.q && onset.campaign?.target?.r === topology.goal.r
+        && onset.campaign?.seaTravelAllowed === true, { campaign: onset.campaign, topology });
     check('war onset transaction queues one physical General in the AI capital',
       !onset.error && onset.queue?.filter(x => x.isGeneral).length === 1,
       { error: onset.error, queue: onset.queue, capitalId: onset.capitalId, offer: onset.offer });
@@ -148,6 +155,224 @@ async function main() {
       { before: rosterStart, after: positionsAfterAttack, targetCityId: expectedTarget });
     const persisted = await page.evaluate(ownerId => window.__generalRuntime.campaignSaveRoundTrip(ownerId), aiOwner);
     check('active attack-stage campaign survives production save metadata roundtrip', persisted.ok === true, persisted);
+
+    const realSetup = await page.evaluate(ownerId => window.__generalRuntime.prepareRealMarchFromCapital(ownerId), aiOwner);
+    check('real-execution fixture starts the whole field army stacked on its General city',
+      !realSetup.error && realSetup.armyIds.length >= 3
+        && realSetup.targetCapital?.id, realSetup);
+    if (realSetup.error || realSetup.armyIds.length < 3 || !realSetup.targetCapital?.id) {
+      throw new Error('Could not prepare actual march fixture: ' + JSON.stringify(realSetup));
+    }
+    const expectedArmyIds = [...realSetup.armyIds].sort();
+    const actualTurns = [];
+    for (let i = 1; i <= 6; i++) {
+      if (Date.now() - startedAt > TOTAL_TIMEOUT_MS) throw new Error('Actual six-turn march exceeded six-minute limit');
+      const step = await page.evaluate(ownerId => window.__generalRuntime.runRealWorldEndTurn(ownerId), aiOwner);
+      actualTurns.push(step);
+      if (step.timedOut) throw new Error('Real world end-turn pipeline timed out: ' + JSON.stringify(step));
+      const observedArmyIds = step.army.map(unit => unit.id).sort();
+      check(`actual world turn ${i}: trace includes every field-army member`,
+        JSON.stringify(observedArmyIds) === JSON.stringify(expectedArmyIds),
+        { expectedArmyIds, observedArmyIds, army: step.army });
+      if (i <= 4) {
+        check(`actual world turn ${i}: AI army remains mustered at the city`,
+          step.campaign?.stage === 'gathering' && step.campaign.gatherTurnsCompleted === i
+            && step.army.every(unit => unit.q === realSetup.capital.q && unit.r === realSetup.capital.r),
+          { campaign: step.campaign, perUnit: step.army });
+      } else if (i === 5) {
+        check('fifth actual world turn completes muster and arms attack for the next AI turn',
+          step.campaign?.stage === 'attacking' && step.campaign.gatherTurnsCompleted === 5
+            && step.army.every(unit => unit.q === realSetup.capital.q && unit.r === realSetup.capital.r),
+          { campaign: step.campaign, perUnit: step.army });
+      } else {
+        const departed = step.army.filter(unit => unit.q !== realSetup.capital.q || unit.r !== realSetup.capital.r);
+        const ordersById = new Map(step.attackOrders.map(order => [order.unitId, order]));
+        const allHaveOrders = expectedArmyIds.every(id => ordersById.has(id));
+        check('actual sixth world turn: campaign issues attack orders from the city toward enemy capital',
+          step.campaign?.stage === 'attacking' && allHaveOrders
+            && step.attackOrders.filter(order => expectedArmyIds.includes(order.unitId))
+              .every(order => order.targetCityId === realSetup.targetCapital.id),
+          { expectedArmyIds, orders: step.attackOrders, campaign: step.campaign, departed: departed.length, armySize: step.army.length,
+            aiDecision: step.aiDecision, warPlanDiagnostic: step.warPlanDiagnostic });
+        check('actual command executor moves units out of the General city toward the enemy capital',
+          departed.length === expectedArmyIds.length, { departed, armySize: step.army.length, capital: step.capital,
+            targetCapital: step.targetCapital, orders: step.attackOrders });
+      }
+    }
+    let landingTurn = null;
+    for (let i = 0; i < 4; i++) {
+      landingTurn = await page.evaluate(ownerId => window.__generalRuntime.runRealWorldEndTurn(ownerId), aiOwner);
+      if (landingTurn.timedOut) throw new Error('Sea landing end-turn timed out: ' + JSON.stringify(landingTurn));
+      if (landingTurn.army.some(unit => !unit.embarked && !unit.onWater
+        && (unit.q !== realSetup.capital.q || unit.r !== realSetup.capital.r))) break;
+    }
+    const embarkedMembers = landingTurn.army.filter(unit => unit.embarked && unit.onWater);
+    const landedMembers = landingTurn.army.filter(unit => !unit.embarked && !unit.onWater
+      && (unit.q !== realSetup.capital.q || unit.r !== realSetup.capital.r));
+    check('production executor disembarks the campaign army onto land before reaching the enemy city',
+      embarkedMembers.length === 0 && landedMembers.length > 0,
+      { army: landingTurn.army, capital: realSetup.capital, target: realSetup.targetCapital,
+        aiDecision: landingTurn.aiDecision, warPlanDiagnostic: landingTurn.warPlanDiagnostic });
+    check('production executor emits no direct attack command from a water-embarked unit',
+      landingTurn.attackCommands.length === 0, { attackCommands: landingTurn.attackCommands, army: landingTurn.army });
+
+    // Fresh game: exercise the full owner-turn executor without teleporting units into the
+    // rendezvous city. This verifies the two field reports about natural mustering, a full
+    // legal movement budget on turn six, and a fresh muster after the physical leader falls.
+    await page.reload({ waitUntil: 'load', timeout: 60000 });
+    await page.waitForFunction(() => window.__generalRuntime?.ready, undefined, { timeout: 20000 });
+    await page.evaluate(() => window.__generalRuntime.start(981043));
+    await page.waitForFunction(() => window.__generalRuntime && document.querySelector('canvas'), undefined, { timeout: 180000 });
+    check('organic campaign fixture founds the human capital',
+      await page.evaluate(() => window.__generalRuntime.foundCity()) === 'ok');
+    const organicOwners = await page.evaluate(() => [1, 2, 3, 4, 5]
+      .map(id => ({ id, cities: window.__generalRuntime.ownerCities(id) })).filter(x => x.cities.length));
+    const organicOwner = organicOwners[0]?.id;
+    check('organic campaign fixture has an AI capital', organicOwner !== undefined, organicOwners);
+    if (organicOwner === undefined) throw new Error('No AI owner for organic campaign fixture');
+    const organicSetup = await page.evaluate(ownerId => window.__generalRuntime.prepareOrganicLandCampaign(ownerId), organicOwner);
+    check('organic land fixture has an executable nearest capital route and leaves troops in place',
+      !organicSetup.error && organicSetup.noSeafaring && organicSetup.army.length > 0
+        && organicSetup.army.every(unit => unit.q !== undefined && unit.r !== undefined), organicSetup);
+    if (organicSetup.error) throw new Error('Could not prepare organic land fixture: ' + JSON.stringify(organicSetup));
+    const organicWar = await page.evaluate(ownerId => window.__generalRuntime.beginWarCampaign(ownerId, 0), organicOwner);
+    check('organic war starts a physical General campaign against the reachable human capital',
+      !organicWar.error && organicWar.campaign?.target?.ownerId === 0
+        && organicWar.campaign?.seaTravelAllowed === false, organicWar);
+    await page.evaluate(() => window.__generalRuntime.finishRecruitmentByTurn());
+    await page.waitForFunction(ownerId => window.__generalRuntime.campaignState(ownerId).generals.length > 0,
+      organicOwner, { timeout: Math.max(120000, TOTAL_TIMEOUT_MS - (Date.now() - startedAt)), polling: 500 });
+    const organicBound = await page.evaluate(ownerId => window.__generalRuntime.refreshCampaign(ownerId), organicOwner);
+    const organicInitial = await page.evaluate(ownerId => window.__generalRuntime.organicArmySnapshot(ownerId), organicOwner);
+    check('organic live campaign binds the spawned General without repositioning troops',
+      !!organicBound.campaign?.generalUnitId
+        && organicInitial.some(unit => unit.id === organicBound.campaign.generalUnitId)
+        && organicInitial.filter(unit => !unit.general).every(unit => {
+          const before = organicSetup.army.find(x => x.id === unit.id);
+          return !before || (before.q === unit.q && before.r === unit.r);
+        }), { campaign: organicBound.campaign, initial: organicInitial, setup: organicSetup.army });
+
+    let organicTurns = 0;
+    let organicCampaign = organicBound.campaign;
+    while ((organicCampaign?.gatherTurnsCompleted ?? 0) < 5 && organicTurns < 6) {
+      const beforeGather = organicCampaign?.gatherTurnsCompleted ?? 0;
+      const step = await page.evaluate(ownerId => window.__generalRuntime.runRealWorldEndTurn(ownerId), organicOwner);
+      organicTurns++;
+      const observed = await page.evaluate(ownerId => window.__generalRuntime.campaignState(ownerId), organicOwner);
+      const expectedStage = beforeGather + 1 >= 5 ? 'attacking' : 'gathering';
+      check(`organic production turn ${organicTurns}: real troops muster without attack`,
+        !step.timedOut && observed.campaign?.stage === expectedStage
+          && observed.campaign.gatherTurnsCompleted === beforeGather + 1
+          && step.attackCommands.length === 0,
+        { beforeGather, expectedStage, step, observed });
+      organicCampaign = observed.campaign;
+    }
+    check('organic production pipeline completes five full gather turns',
+      organicCampaign?.stage === 'attacking' && organicCampaign.gatherTurnsCompleted === 5,
+      { organicTurns, campaign: organicCampaign });
+    const organicAttack = await page.evaluate(ownerId => window.__generalRuntime.runRealWorldEndTurn(ownerId), organicOwner);
+    const organicIds = organicInitial.map(unit => unit.id).sort();
+    const organicOrders = organicAttack.attackOrders.filter(order => organicIds.includes(order.unitId));
+    const startById = new Map((organicAttack.aiDecision?.units ?? []).map(unit => [unit.id, unit]));
+    const endById = new Map(organicAttack.army.map(unit => [unit.id, unit]));
+    const fullyMoved = organicOrders.map(order => {
+      const start = startById.get(order.unitId), end = endById.get(order.unitId);
+      return { id: order.unitId, start, end,
+        moved: !!start && !!end && (start.q !== end.q || start.r !== end.r),
+        spentAllMovement: !!start && !!end && start.movement > 0 && end.movement === 0 };
+    });
+    check('sixth organic attack turn completed instead of timing out on a stale snapshot',
+      organicAttack.timedOut === false && organicAttack.turn > organicAttack.beforeTurn
+        && organicAttack.aiDecision?.stage === 'attacking'
+        && organicAttack.aiDecision?.campaign?.gatherTurnsCompleted === 5,
+      { beforeTurn: organicAttack.beforeTurn, turn: organicAttack.turn, timedOut: organicAttack.timedOut,
+        aiDecision: organicAttack.aiDecision });
+    check('sixth organic production turn orders every field unit to the nearest reachable capital',
+      organicAttack.campaign?.stage === 'attacking' && organicOrders.length === organicIds.length
+        && organicOrders.every(order => order.targetCityId === organicSetup.target.id),
+      { expected: organicIds, orders: organicOrders, campaign: organicAttack.campaign, target: organicSetup.target });
+    check('sixth organic production turn executes movement and spends each legal full movement budget',
+      fullyMoved.length === organicIds.length && fullyMoved.every(unit => unit.moved && unit.spentAllMovement),
+      fullyMoved);
+
+    const fallen = await page.evaluate(ownerId => window.__generalRuntime.removeCampaignGeneralAfterBattle(ownerId), organicOwner);
+    check('battle-casualty fixture removes the active physical General',
+      !fallen.error && fallen.removedId === organicAttack.campaign?.generalUnitId, fallen);
+    const afterDeathDiagnostics = await page.evaluate(ownerId => window.__generalRuntime.campaignRecruitDiagnostics(ownerId), organicOwner);
+    check('unfunded casualty case begins below the replacement General Manpower cost',
+      afterDeathDiagnostics.offer?.id && Number.isFinite(afterDeathDiagnostics.manpowerCost)
+        && afterDeathDiagnostics.empireManpower < afterDeathDiagnostics.manpowerCost,
+      afterDeathDiagnostics);
+    const unaffordableTurn = await page.evaluate(ownerId => window.__generalRuntime.runRealWorldEndTurn(ownerId), organicOwner);
+    const unaffordableState = await page.evaluate(ownerId => window.__generalRuntime.campaignState(ownerId), organicOwner);
+    check('AI waits in recruiting without issuing attacks while a replacement is unaffordable',
+      unaffordableTurn.timedOut === false && unaffordableTurn.turn > unaffordableTurn.beforeTurn
+        && unaffordableState.campaign?.stage === 'recruiting'
+        && !unaffordableState.queue.some(item => item.isGeneral)
+        && !(unaffordableTurn.aiDecision?.commands ?? []).some(command => command.type === 'attack'),
+      { unaffordableTurn, unaffordableState,
+        diagnostics: await page.evaluate(ownerId => window.__generalRuntime.campaignRecruitDiagnostics(ownerId), organicOwner) });
+    const replacementBudget = await page.evaluate(ownerId => window.__generalRuntime.fundCampaignRecruitment(ownerId), organicOwner);
+    check('funded casualty case provides ordinary replacement recruitment costs',
+      !replacementBudget.error && replacementBudget.offer?.id && replacementBudget.manpower > 0,
+      replacementBudget);
+    const recoveryTurn = await page.evaluate(ownerId => window.__generalRuntime.runRealWorldEndTurn(ownerId), organicOwner);
+    const recovery = await page.evaluate(ownerId => window.__generalRuntime.campaignState(ownerId), organicOwner);
+    check('real owner turn after General loss restarts recruitment before another attack',
+      recoveryTurn.timedOut === false && recoveryTurn.turn > recoveryTurn.beforeTurn
+        && recovery.campaign?.stage === 'recruiting'
+        && recovery.campaign.gatherTurnsCompleted === 0
+        && recovery.queue.some(item => item.isGeneral)
+        && !(recoveryTurn.aiDecision?.commands ?? []).some(command => command.type === 'attack'),
+      { recoveryTurn, recovery, fallen, afterDeathDiagnostics,
+        postTurnDiagnostics: await page.evaluate(ownerId => window.__generalRuntime.campaignRecruitDiagnostics(ownerId), organicOwner) });
+    let replacement = null;
+    for (let i = 0; i < 6 && !replacement; i++) {
+      await page.evaluate(ownerId => window.__generalRuntime.runRealWorldEndTurn(ownerId), organicOwner);
+      const restored = await page.evaluate(ownerId => window.__generalRuntime.campaignState(ownerId), organicOwner);
+      replacement = restored.generals.find(unit => unit.id !== fallen.removedId) ?? null;
+    }
+    const replacementCampaign = await page.evaluate(ownerId => window.__generalRuntime.refreshCampaign(ownerId), organicOwner);
+    check('replacement physical General binds to a fresh gathering campaign after the casualty',
+      !!replacement && replacementCampaign.campaign?.stage === 'gathering'
+        && replacementCampaign.campaign.generalUnitId === replacement.id
+        && replacementCampaign.campaign.gatherTurnsCompleted <= 1,
+      { replacement, campaign: replacementCampaign.campaign });
+    let replacementCampaignState = replacementCampaign.state;
+    let replacementGatherTurns = 0;
+    while ((replacementCampaignState.campaign?.gatherTurnsCompleted ?? 0) < 5 && replacementGatherTurns < 6) {
+      const previousGather = replacementCampaignState.campaign?.gatherTurnsCompleted ?? 0;
+      const step = await page.evaluate(ownerId => window.__generalRuntime.runRealWorldEndTurn(ownerId), organicOwner);
+      replacementGatherTurns++;
+      replacementCampaignState = await page.evaluate(ownerId => window.__generalRuntime.campaignState(ownerId), organicOwner);
+      const expectedStage = previousGather + 1 >= 5 ? 'attacking' : 'gathering';
+      check(`replacement General real turn ${replacementGatherTurns}: fresh gathering without attack`,
+        step.turn > step.beforeTurn && replacementCampaignState.campaign?.stage === expectedStage
+          && replacementCampaignState.campaign.gatherTurnsCompleted === previousGather + 1
+          && !(step.aiDecision?.commands ?? []).some(command => command.type === 'attack'),
+        { previousGather, expectedStage, step, state: replacementCampaignState });
+    }
+    check('replacement General completes a new five-turn muster',
+      replacementCampaignState.campaign?.stage === 'attacking'
+        && replacementCampaignState.campaign.gatherTurnsCompleted === 5,
+      { replacementGatherTurns, campaign: replacementCampaignState.campaign });
+    const replacementAttack = await page.evaluate(ownerId => window.__generalRuntime.runRealWorldEndTurn(ownerId), organicOwner);
+    check('replacement attack turn completed on a fresh world turn without timeout',
+      replacementAttack.timedOut === false && replacementAttack.turn > replacementAttack.beforeTurn
+        && replacementAttack.aiDecision?.stage === 'attacking'
+        && replacementAttack.aiDecision?.campaign?.generalUnitId === replacement?.id,
+      { beforeTurn: replacementAttack.beforeTurn, turn: replacementAttack.turn,
+        timedOut: replacementAttack.timedOut, aiDecision: replacementAttack.aiDecision });
+    check('replacement General leads the renewed attack after five fresh muster turns',
+      replacementAttack.campaign?.stage === 'attacking'
+        && replacementAttack.campaign.generalUnitId === replacement?.id
+        && replacementAttack.attackOrders.some(order => order.targetCityId === organicSetup.target.id),
+      { replacementAttack: replacementAttack.campaign, orders: replacementAttack.attackOrders, replacement });
+
+    console.log('Actual six-turn execution trace:', JSON.stringify(actualTurns.map((step, index) => ({
+      turn: index + 1, campaign: step.campaign, perUnit: step.army, orders: step.attackOrders,
+      aiDecision: step.aiDecision, warPlanDiagnostic: step.warPlanDiagnostic,
+    }))));
     check('browser scenario completed without page errors', errors.length === 0, errors);
   } finally {
     server.kill('SIGTERM');
