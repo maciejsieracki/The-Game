@@ -1,0 +1,37 @@
+OK   pin.range.ownerHasMennica | cityPanel.ts:1322-1330
+OK   pin.range.activeTradeRouteCountForCity | cityPanel.ts:11045-11054
+OK   pin.range.buildHandelDetailCard | cityPanel.ts:10845-11005
+OK   pin.range.renderHandelSlidersPanel | cityPanel.ts:11007-11033
+OK   pin.anchor.1 | cityPanel.ts:1327 if (ids.includes('mennica')) return true
+OK   pin.anchor.2 | cityPanel.ts:11049 if (route.status !== 'polaczony') contin
+OK   pin.anchor.3 | cityPanel.ts:10861 const maMennicaBudynek = ownerHasMennica
+OK   pin.anchor.4 | cityPanel.ts:10897 const aktywneTrasyCount = activeTradeRou
+OK   pin.anchor.5 | cityPanel.ts:10914 dziś to stały procent
+OK   pin.anchor.6 | cityPanel.ts:11010 appendSectionTitleWithDetails(mount, `<s
+OK   wiring.k08c.stubbed | installK08cWiring: atrapy K08C-Z5 (bez zmian)
+OK   exec.handel.noView | pin-exec vs port: HTML (3697 znaków)
+OK   exec.handel.noView.nonEmpty | wynik niepusty
+OK   exec.handel.view.plain | pin-exec vs port: HTML (4134 znaków)
+OK   exec.handel.view.plain.nonEmpty | wynik niepusty
+OK   exec.handel.mennicaAktywna | pin-exec vs port: HTML (4303 znaków)
+OK   exec.handel.mennicaAktywna.nonEmpty | wynik niepusty
+OK   exec.handel.mennicaSpi | pin-exec vs port: HTML (4536 znaków)
+OK   exec.handel.mennicaSpi.nonEmpty | wynik niepusty
+OK   exec.handel.trasy.toCity | pin-exec vs port: HTML (4250 znaków)
+OK   exec.handel.trasy.toCity.nonEmpty | wynik niepusty
+OK   exec.slider.view | pin-exec vs port: HTML (1911 znaków)
+OK   exec.slider.view.nonEmpty | wynik niepusty
+OK   exec.slider.noView | pin-exec vs port: HTML (1442 znaków)
+OK   exec.slider.noView.nonEmpty | wynik niepusty
+OK   deps.accusative.pinText | game/danina-nazwa.ts zawiera return 'podatek' w daninaLabelAccusative
+OK   deps.accusative.value | daninaLabelAccusative() === pin 'podatek'
+OK   exec.helper.routes.pin | activeTradeRouteCountForCity: 1 trasa z budynkiem
+OK   exec.helper.routes.port | port = pin
+OK   exec.helper.mennica.pin | ownerHasMennica: stolica ma mennicę
+OK   exec.helper.mennica.port | port = pin
+OK   exec.anchor.mennicaMnoznik | mnożnik Waluty+Mennicy ×3 (fallback 2 z atrapy buildEconParams + 1 z atrapy mnożnika)
+OK   exec.anchor.premia | premia tras +12 (1 z budynkiem)
+OK   exec.anchor.mennicaSpi | ostrzeżenie „Mennica nieaktywna" bez złota
+
+k08d-handel-pin: 34/34 zgodnych
+EXIT 0

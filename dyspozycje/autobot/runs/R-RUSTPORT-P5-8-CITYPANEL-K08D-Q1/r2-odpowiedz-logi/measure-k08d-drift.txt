@@ -1,0 +1,7 @@
+IDENTYCZNA ownerHasMennica | pin 1322-1330 (9 l) | cur 1322-1330 (9 l)
+IDENTYCZNA activeTradeRouteCountForCity | pin 11045-11054 (10 l) | cur 11003-11012 (10 l)
+IDENTYCZNA buildHandelDetailCard | pin 10845-11005 (161 l) | cur 10803-10963 (161 l)
+IDENTYCZNA renderHandelSlidersPanel | pin 11007-11033 (27 l) | cur 10965-10991 (27 l)
+
+dryf treści K08D (4 jednostki): zmienionych=0/4
+EXIT 0
