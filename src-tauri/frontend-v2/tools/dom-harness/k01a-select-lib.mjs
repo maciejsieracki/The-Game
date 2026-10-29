@@ -172,7 +172,7 @@ function isTypeOnlyInSource(file, name) {
 /**
  * Główna funkcja. `pinDir` = katalog zawierający gra/src i gra/data; `pomiar` = sparsowany pomiar-r2.json.
  */
-export function selectK01a({ pinDir, pomiar, localTypes = LOCAL_TYPE_COPIES }) {
+export function selectK01a({ pinDir, pomiar, localTypes = LOCAL_TYPE_COPIES, block = K01_BLOCK }) {
   const localSet = new Set(localTypes.map((t) => t.name));
   const pinCp = join(pinDir, 'gra/src/ui/cityPanel.ts');
   const uiDir = join(pinDir, 'gra/src/ui');
@@ -184,7 +184,7 @@ export function selectK01a({ pinDir, pomiar, localTypes = LOCAL_TYPE_COPIES }) {
 
   const unitBlock = pomiar.unit_block;
   const byName = new Map(units.map((u) => [u.name, u]));
-  const k01 = units.filter((u) => unitBlock[u.name] === Number(K01_BLOCK));
+  const k01 = units.filter((u) => unitBlock[u.name] === Number(block));
   const k01Names = new Set(k01.map((u) => u.name));
   const missingInPin = Object.keys(unitBlock).filter((n) => !byName.has(n));
 
