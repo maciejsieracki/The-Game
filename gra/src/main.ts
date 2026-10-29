@@ -724,7 +724,7 @@ import {
   type DiploListEntry,
   type DiploPlayerSummary,
 } from './ui/diploListHud';
-import type { ArmyStackHudState } from './ui/armyStackHud';
+import { armyStackCardIdentity, type ArmyStackHudState } from './ui/armyStackHud';
 import { formatArmiaLabel, formatJednostkiCount } from './ui/formatPl';
 import type {
   HudState, WarWithPlayer, SidePanelEvent,
@@ -22817,12 +22817,15 @@ async function boot(): Promise<void> {
         // RUCH-SWIATA-TEMPO: u.ruch (juz przemnozone przy spawnie), nie surowy
         // normFieldVal(udef['Ruch'], 2) — patrz uzasadnienie przy mergeUnitRow.
         const movMax = u.ruch;
+        const unitTypeName = String(udef?.nazwa ?? udef?.Nazwa ?? u.typeId);
+        const cardIdentity = armyStackCardIdentity(
+          u,
+          unitTypeName,
+          u.isGeneral === true ? armyLeaderTitle(empireBuiltIdsForOwner(u.ownerId)) : undefined,
+        );
         return {
           id: u.id,
-          name: String(udef?.nazwa ?? udef?.Nazwa ?? u.typeId),
-          ...(u.isGeneral === true
-            ? { commanderTitle: armyLeaderTitle(empireBuiltIdsForOwner(u.ownerId)) }
-            : {}),
+          ...cardIdentity,
           icon: unitIconSvg(udef, u.typeId),
           hp: u.hp ?? hpMax,
           hpMax,

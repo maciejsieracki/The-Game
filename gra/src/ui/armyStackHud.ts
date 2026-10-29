@@ -36,6 +36,22 @@ export interface ArmyStackCard {
   active: boolean;
 }
 
+/**
+ * Map the runtime leader role onto the roster's display identity. Keep the
+ * concrete unit type as the primary name so the leader keeps its combat body.
+ * This pure helper is shared by the main map-stack builder and its regression.
+ */
+export function armyStackCardIdentity(
+  unit: { isGeneral?: boolean },
+  unitTypeName: string,
+  leaderTitle?: 'Wódz' | 'Generał',
+): Pick<ArmyStackCard, 'name' | 'commanderTitle'> {
+  return {
+    name: unitTypeName,
+    ...(unit.isGeneral === true && leaderTitle ? { commanderTitle: leaderTitle } : {}),
+  };
+}
+
 export interface ArmyStackHudState extends UnitSufferingStatusFields {
   hexLabel: string;
   unitCount: number;
