@@ -1,15 +1,18 @@
-STATUS: FAIL
+STATUS: PASS-WITH-NOTES
 DOMAIN: GAME
 TEMAT: R-RUSTPORT-P5-8-CITYPANEL-K08A-Q1
-GOAL: Port 15 jednostek nie-DOM bloku K08 (k08a-fundament.ts), pin edb8fb56.
-ZMIANY/COMMIT: oceniany 922ce71f (baza e21ef9a9, 52d2b385); merge-base z origin/rust-port/parity-v2 = 12574ab8 (parity-v2 nie przesunięte). Brak commita naprawczego (Obrona: BLOCK, worktree/dysk).
-TESTY: werdykt na dowodzie Evaluatora (verify-copies, 40 wektorów, mutacje 47/47, check, typecheck zielone) + własna weryfikacja kodu: k08a-fundament.ts:78-87 refreshCityPanelIfOpen woła tylko resolveK07aActiveCity(); lustro K06A (setK06aActive/getK06aActiveCity) nie jest synchronizowane; wektory harnessu tego nie pokrywają. Bramek nie uruchamiałem ponownie.
-WERDYKTY ZARZUTÓW:
-1. NAPRAW. Luka lustra K06A w refreshCityPanelIfOpen; dispatch zakazuje odraczania na K09. Plan: resolveK08aActiveCity = K07A + sync setK06aActive po id, wektor harnessu, mutant "bez sync K06A", regeneracja logów r3.
-2. ODDAL. Orkiestrator zapisuje 02-operator-pomiary-r2.md z raportu Operatora (kwestia procesowa).
-3. ODDAL. Literówka allowlisty K05A -> K08A; zmiany wyłącznie w ścieżkach K08A; do świadomej akceptacji orkiestratora.
-4. ODDAL. NIE_ZMIERZONO (przeglądarka, wiązanie K09, viewmodel/types.ts) uczciwie zadeklarowane.
-BLOKADY: Obrona nie wykonała poprawki (worktree wf_1aa4c71b-18b-4 brudny po nieudanym checkout; dysk). Użyć świeżego worktree.
-RUNDY: 2/5 zużyte; następna r3 (Operator).
-NASTĘPNY KROK: Operator r3 naprawia zarzut 1 na nowym commicie nad 922ce71f -> Evaluator -> Final Control. Po PASS: integracja nad origin/rust-port/parity-v2 (>= 12574ab8); kolejność: parity-v2 -> 52d2b385, e21ef9a9, 922ce71f, commit r3 (K07B k07b-* bez konfliktu plikowego).
+GOAL: Port K08A (jednostki K08 bez DOM) do `src-tauri/frontend-v2/src/ui/cityPanel/k08a-fundament.ts`; FC r3 po naprawie zarzutu 1 FC r2 (sync lustra K06A).
+ZMIANY/COMMIT: kod a42bab1b, pomiary f4d622dc (baza e145d022 / 249bca66). Wszystkie zmienione pliki w allowliście; zero zmian w gra/**, package.json, WERSJE.md, *.rs.
+TESTY (odtworzone samodzielnie na f4d622dc, własny pin edb8fb56 w katalogu poza repo):
+- verify-k08a-copies: EXIT 0, 15 bloków, 13 podstawień, OK
+- run-k08a-units: EXIT 0, 48 wektorów, 0 różnic
+- mutate-k08a-units: 50/50 ZABITA
+- npm run check: EXIT 0 (pin-copies 435, niezgodnych 0); npm run typecheck: EXIT 0
+- git diff --check 249bca66 f4d622dc: czysto
+- cargo: nie dotyczy (brak .rs w diffie)
+ZARZUTY: brak (zarzuty = []). Zarzut 1 FC r2 naprawiony: resolveK08aActiveCity = resolveK07aActiveCity + sync K06A (ten sam id; null zeruje lustro), zgodnie z pinem cityPanel.ts:10329-10346.
+NOTATKI (ODDAL, nie blokują): N1 rozjazd lustr K07A/K06A (inne id / K06A null) nie naprawiany, dotyczy wiązania K09, NIE_ZMIERZONO; N2 rzutowanie `as unknown as CityK06` = założenie K08A-Z4; N3 wiązanie setK08aDeps/lustr w kontrolerze/K09 i zachowanie w przeglądarce NIE_ZMIERZONO.
+BLOKADY: brak
+RUNDY: 3/5
+NASTĘPNY KROK: integracja orkiestratora na origin/rust-port/parity-v2 (12574ab8). K08A zależy tylko od zintegrowanych K01A..K07A; K07B (pliki k07b-*) niezależne, dopiski w viewmodel/types.ts tylko dopisując; kolejność K08A vs K07B dowolna, przy konflikcie w PORTING-QUEUE.md/types.ts scalić dopisując.
 DEPLOY/PUSH: NIE WYKONANO
