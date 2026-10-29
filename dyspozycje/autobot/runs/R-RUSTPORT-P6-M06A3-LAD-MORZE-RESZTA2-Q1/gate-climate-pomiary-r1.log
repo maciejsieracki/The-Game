@@ -1,0 +1,34 @@
+    Updating crates.io index
+     Locking 17 packages to latest compatible versions
+   Compiling proc-macro2 v1.0.107
+   Compiling quote v1.0.47
+   Compiling unicode-ident v1.0.27
+   Compiling serde_core v1.0.229
+   Compiling zmij v1.0.23
+   Compiling serde v1.0.229
+   Compiling once_cell v1.21.4
+   Compiling serde_json v1.0.154
+   Compiling tracing-core v0.1.36
+   Compiling syn v3.0.9
+   Compiling syn v2.0.119
+   Compiling itoa v1.0.18
+   Compiling memchr v2.8.3
+   Compiling pin-project-lite v0.2.17
+   Compiling serde_derive v1.0.229
+   Compiling tracing-attributes v0.1.31
+   Compiling tracing v0.1.44
+   Compiling civ-engine v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_768b56ee-a38-2/rust-port/engine)
+    Finished `test` profile [unoptimized] target(s) in 42.75s
+     Running tests/p6_m06a3_climate.rs (/home/user/cargo-target-shared/wf_768b56ee-a38-2/debug/deps/p6_m06a3_climate-d17653ee2b63f44c)
+
+running 6 tests
+test climate_base_from_hash_threshold_boundaries ... ok
+test climate_band_base_terrain_matches_web ... ok
+test vectors_meta_pin_and_counts ... ok
+test enforce_earth_template_on_hexes_matches_web ... ok
+test enforce_latitudinal_ocean_buffer_matches_web_with_boundaries ... ok
+test apply_climate_bands_to_hexes_matches_web ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.16s
+
+EXIT=0

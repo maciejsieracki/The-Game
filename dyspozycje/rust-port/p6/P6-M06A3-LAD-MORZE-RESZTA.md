@@ -61,6 +61,46 @@ Po partii 1 tej rundy: 4 symbole PORTOWANE (+ 4 z M06A2/M06A). Pozostale wiersze
 - Brak `Math.sin/cos/pow/atan2/hypot` w tej partii.
 - Jadra `k_sin/k_cos/rem_pio2` nie zmienione.
 
-## Pomiary (do wykonania w Operator-pomiary)
+## Pomiary (Operator-pomiary, runda 1, commit 56005127)
 
-Mutacje i dowody rownowaznosci nie sa jeszcze wykonane (rola Operator-impl). Plan: mutacje progow pasm (0.5/0.7/0.85 o +-1%), `<` -> `<=` w galezi klimatu, usuniecie czyszczenia nakladki przy Polarny/Pustynia, usuniecie `has_deposit = false`, zamiana kolejnosci `h < 0.7` / `h >= 0.7`, `r < h - buf` -> `r <= h - buf`, usuniecie skoku dolnej granicy bufora.
+### Weryfikacja niezalezna
+
+- Kod vs web (pin `edb8fb56`, `gra/src/map/gen-helpers.ts:3339-3427`): cztery funkcje zgodne co do galezi, warunkow (`r >= buf && r < h-buf`, pominiecie Morze, `earthTemplateLandAt > 0`, pominiecie wody/Gor/Wzgorz), progow (`h < 0.5 / 0.7 / 0.85`) i czyszczenia nakladki/zloza. Rozbieznosci: brak.
+- Wektory (`tests/p6_m06a3_vectors/web-vectors.json`): `counts` buffer 158, climate point 846, map 100, earth 11 - zgodne z raportem. `boundary_hits.hash_near_threshold` = 24/20/25 zgodne z Z-6; `buffer_rel` zawiera offsety -1/0/+1 wzgledem `buf` i `H-buf`.
+- NOTA: `stats.climate_point_cases` = 840, a `counts.climate_band_base_terrain` = 846 (roznica 6). Meta jej nie wyjasnia. Nie blokuje (testy uzywaja `cases`), do wyjasnienia w generatorze przy odswiezeniu wektorow.
+
+### Gate'y (surowe logi: `R-RUSTPORT-P6-M06A3-LAD-MORZE-RESZTA2-Q1/*-pomiary-r1.log`)
+
+- `cargo fmt --check` EXIT=0.
+- `cargo clippy --all-targets -- -D warnings` EXIT=0.
+- `cargo test --test p6_m06a3_climate`: 6 passed, EXIT=0.
+- `cargo test` (pelny): 1249 passed, 0 failed, EXIT=0 (baseline 1243 -> +6).
+
+### Mutacje (kazda: jedna zmiana w `landsea.rs`, `cargo test --test p6_m06a3_climate`, przywrocenie pliku)
+
+| ID | Mutacja | Wynik |
+|---|---|---|
+| A | buf: `r >= buf` -> `r > buf` | ZABITA (enforce_latitudinal_ocean_buffer_matches_web_with_boundaries) |
+| B | dolna granica: `r < h - buf` -> `r <= h - buf` | ZABITA (j.w.) |
+| C | prog pustyni `h < 0.5` -> `h <= 0.5` | ZABITA (climate_base_from_hash_threshold_boundaries) |
+| D | prog plaskich `h < 0.7` -> `h <= 0.7` | ZABITA (j.w.) |
+| E | prog umiarkowanych `h < 0.85` -> `h <= 0.85` | ZABITA (j.w.) |
+| F | pominiecie Morze w buforze (`if hex.terrain == Sea`) | ZABITA (enforce_latitudinal_ocean_buffer_matches_web_with_boundaries) |
+| G | usuniecie `tb == Hills` z filtra pominiec | ZABITA (apply_climate_bands_to_hexes_matches_web) |
+| H | earth: `> 0.0` -> `>= 0.0` | ZABITA (enforce_earth_template_on_hexes_matches_web) |
+| I | usuniecie czyszczenia nakladki w galezi `else if want == Polarny` (linia 555) | ZABITA (apply_climate_bands_to_hexes_matches_web) |
+| J | usuniecie `overlay = Brak` przy zmianie na Polarny/Pustynie | ZABITA (apply_climate_bands_to_hexes_matches_web) |
+| K | usuniecie `has_deposit = false` przy zmianie na Polarny/Pustynie | ZABITA (apply_climate_bands_to_hexes_matches_web) |
+| L | earth: pominiecie Morze (`if hex.terrain == Sea`) | ZABITA (enforce_earth_template_on_hexes_matches_web) |
+| M | pustynia -> rownina w galezi `h < 0.5` (zamiana wyniku) | ZABITA (3 testy) |
+| O | usuniecie `has_deposit = false` w galezi `else if want == Polarny` (linia 556) | ZABITA (apply_climate_bands_to_hexes_matches_web) |
+| P | filtr wody: `if false && tb.is_water()` | ZABITA (apply_climate_bands_to_hexes_matches_web) |
+| Q1 | prog pustyni 0.5 -> 0.505 (+1%) | ZABITA (3 testy) |
+| Q2 | prog umiarkowanych 0.85 -> 0.8585 (+1%) | ZABITA (3 testy) |
+| Q3 | prog plaskich 0.7 -> 0.693 (-1%) | ZABITA (3 testy) |
+
+Wynik: 18/18 mutantow zabitych, 0 przezytych. Dowody rownowaznosci dla przezytych mutacji: nie dotyczy. Plik `landsea.rs` po kazdej mutacji przywrocony bajt-w-bajt (`cmp` OK).
+
+### Status
+
+- Temat NIE zamkniety: dokument obejmuje cztery symbole partii 1. Symbole RUNDA-2 (partie 2+, 16 wierszy) sa otwarte.
