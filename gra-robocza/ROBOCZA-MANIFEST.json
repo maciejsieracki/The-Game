@@ -1,15 +1,15 @@
 {
   "releaseState": "DEPLOYED — ROBOCZA; push do main i zdalny readback PASS.",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "eab188a2df6c2399f8431d58167211bc",
-  "bundleSha256": "d0eba5e51a1d896f12171347e6c6e337263f8d599afa7eb24bd45e8441409e33",
-  "bundleBytes": 70028627,
+  "bundleMd5": "29022be80b95e838a861a8ea70e8a915",
+  "bundleSha256": "f0177a6469973e498389fa9b264f0287e9db5dff01f06487dac0d16a7bff2b97",
+  "bundleBytes": 70031368,
   "sourceSnapshot": {
-    "baseCommit": "91dc998a",
-    "source": "origin/main + zaakceptowane tematy AutoBot poza testem wydajności dużego imperium",
+    "baseCommit": "aeecff7194c3a6490cc42fded6b918b7e4b23df5",
+    "source": "origin/main plus R-HANDLOWA-WYMIANA-CZAS-BEZTERMINOWY-30T-Q1",
     "build": "Vite 5.4.21 single-file; 917 modules; stamped",
-    "buildCommit": "682a6b9a0cd7c4e5d35b8e1cf68a76a9a508c510",
-    "publicationCommit": "682a6b9a0cd7c4e5d35b8e1cf68a76a9a508c510"
+    "buildCommit": "5c65b20a + f216263d",
+    "publicationCommit": null
   },
   "scope": [
     "AI zbiera armię przez pięć pełnych tur po wybuchu wojny, a w kolejnej turze atakuje wybrany osiągalny lądem cel wspólnymi rozkazami całego składu.",
@@ -31,25 +31,25 @@
     "notes": "AI live Chromium fixture: five complete muster EOTs and sixth attack EOT with 4/4 commands/executions. Commander map marker visual evidence is the production-renderer map harness; no full gameplay screenshot with active army. Naval AI and large-empire performance remain open."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-10-29T19:06:23",
+  "hubGeneratedAt": "2026-10-29T19:21:14",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "c7c3e90d634feac44e63b9b69cbc3cad",
-      "sizeBytes": 70029107
+      "md5": "29022be80b95e838a861a8ea70e8a915",
+      "sizeBytes": 70031368
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "c7c3e90d634feac44e63b9b69cbc3cad",
-      "sizeBytes": 70029107
+      "md5": "29022be80b95e838a861a8ea70e8a915",
+      "sizeBytes": 70031368
     }
   ],
-  "md5": "c7c3e90d634feac44e63b9b69cbc3cad",
-  "sizeBytes": 70029107,
+  "md5": "29022be80b95e838a861a8ea70e8a915",
+  "sizeBytes": 70031368,
   "publisher": "Codex AutoBot — owner authorized main merge, Robocza publish and git push",
   "source": "gra/src; merge/split icon fix 002a75815b067cf2cdbcae7eed5c488f8634ea34",
   "immediatePreviousRelease": {
@@ -256,22 +256,18 @@
     "publicationCommit": "f6f63dc839449d8e08a7e2509ec72796757867af"
   },
   "publishPlan": {
-    "status": "PUBLISHED to origin/main at c72cd08a2de33a0f4ff920e6b314503a50811cb0; Robocza only; no KANON/FINALNA promotion.",
+    "status": "READY_FOR_DEPLOY — local artifact prepared; Git push and remote readback pending",
     "target": "origin/main"
   },
   "remoteReadback": {
-    "status": "PASS",
+    "status": "PENDING",
     "remote": "origin/main",
-    "commit": "c72cd08a2de33a0f4ff920e6b314503a50811cb0",
-    "bundleUrl": "https://raw.githubusercontent.com/maciejsieracki/The-Game/c72cd08a2de33a0f4ff920e6b314503a50811cb0/gra-robocza/Gra-ROBOCZA.html",
-    "manifestUrl": "https://raw.githubusercontent.com/maciejsieracki/The-Game/c72cd08a2de33a0f4ff920e6b314503a50811cb0/gra-robocza/ROBOCZA-MANIFEST.json",
-    "startUrl": "https://raw.githubusercontent.com/maciejsieracki/The-Game/c72cd08a2de33a0f4ff920e6b314503a50811cb0/gra-robocza/START.html",
-    "httpStatus": 200,
-    "bundleMd5": "e5eb21d82c2be611ab9c491327f696c3",
-    "bundleSha256": "76078759e78f3cb466156cec296da925759dd685764dc42242d9a5f02ef40eb2",
-    "bundleBytes": 70021251,
-    "checks": "GitHub Raw bundle/manifest/START HTTP 200; fetched bundle bytes and hashes match manifest."
+    "httpStatus": null,
+    "bundleMd5": "29022be80b95e838a861a8ea70e8a915",
+    "bundleSha256": "f0177a6469973e498389fa9b264f0287e9db5dff01f06487dac0d16a7bff2b97",
+    "bundleBytes": 70031368,
+    "checks": "awaiting post-push raw artifact readback"
   },
   "publishedAt": "2026-10-28",
-  "buildStamp": "2026-10-29 19:06 · 60642361040b3ec93525f26595efa309"
+  "buildStamp": "2026-10-29 19:21 · f6f0597203a1b5b8e001ac58ea2e5c1d"
 }
