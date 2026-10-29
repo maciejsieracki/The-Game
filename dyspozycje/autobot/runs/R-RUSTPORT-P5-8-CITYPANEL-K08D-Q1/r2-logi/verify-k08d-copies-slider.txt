@@ -1,0 +1,11 @@
+{
+ "TEXT": 1,
+ "SUBS": 0,
+ "COVER": 1,
+ "EXPORT": 1,
+ "blocks": 1,
+ "ORPHAN": 0,
+ "fails": 0
+}
+verify-k08d-copies: OK
+EXIT 0
