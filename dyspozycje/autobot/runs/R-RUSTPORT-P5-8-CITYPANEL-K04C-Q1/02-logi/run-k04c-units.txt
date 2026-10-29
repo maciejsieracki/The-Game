@@ -1,0 +1,5 @@
+
+> civ-frontend-v2@0.0.0 harness:k04c
+> node tools/dom-harness/run-k04c-units.mjs
+
+run-k04c-units: wektory=84 zielone=84 bledne=0 jsdomErrors=0

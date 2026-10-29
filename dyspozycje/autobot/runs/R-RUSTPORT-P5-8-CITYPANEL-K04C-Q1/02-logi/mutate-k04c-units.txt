@@ -1,0 +1,42 @@
+
+> civ-frontend-v2@0.0.0 harness:k04c:mutate
+> node tools/dom-harness/mutate-k04c-units.mjs
+
+WYKRYTA  exit=1 [Porzadek] SzPct czytany z PrawPct
+WYKRYTA  exit=1 [Porzadek] Szczescie pkt +1
+WYKRYTA  exit=1 [Porzadek] warunek wiersza Prawo (prawMax)
+WYKRYTA  exit=1 [Porzadek] wiersz Rebelia pominiety
+WYKRYTA  exit=1 [Porzadek] sekcja Skladniki Prawa: prog dlugosci
+WYKRYTA  exit=1 [Porzadek] znak wartosci skladnika Prawa (0)
+WYKRYTA  exit=1 [Porzadek] PorPct wiersz +1
+WYKRYTA  exit=1 [Porzadek] skladniki Szczescia pominiete
+WYKRYTA  exit=1 [Porzadek] opis pasma z etykiety zamiast bandKey
+WYKRYTA  exit=1 [Kultura] przyrost kultury +1
+WYKRYTA  exit=1 [Kultura] suma kultury +1
+WYKRYTA  exit=1 [Kultura] prog kultury: > zamiast >=
+WYKRYTA  exit=1 [Kultura] skala Sz epoki +1
+WYKRYTA  exit=1 [Kultura] znak wplywu religii (0)
+WYKRYTA  exit=1 [Kultura] dominujaca z religii panstwa
+WYKRYTA  exit=1 [Kultura] udzial wyznawcow +1
+WYKRYTA  exit=1 [Kultura] parametr religii konwersjaBazaPct +1
+WYKRYTA  exit=1 [Zamoznosc] szacunek spolEst (dzielnik)
+WYKRYTA  exit=1 [Zamoznosc] szacunek utrzymEst (x2)
+WYKRYTA  exit=1 [Zamoznosc] mnoznik skarbca: 1 miejsce po przecinku
+WYKRYTA  exit=1 [Zamoznosc] wplyw na szczescie +1
+WYKRYTA  exit=1 [Zamoznosc] saldo puli: kierunek dla 0
+WYKRYTA  exit=1 [Zamoznosc] prog puli +1
+WYKRYTA  exit=1 [Zamoznosc] znak kosztu utrzymania
+WYKRYTA  exit=1 [Wyzywienie] liczba obywateli +1
+WYKRYTA  exit=1 [Wyzywienie] stan glodu z DTO ignorowany
+WYKRYTA  exit=1 [Wyzywienie] etykieta glodu
+WYKRYTA  exit=1 [Wyzywienie] wiersz racji WZROST +1
+WYKRYTA  exit=1 [Wyzywienie] mianownik postepu wzrostu
+WYKRYTA  exit=1 [Wyzywienie] podsumowanie wyzywienia z silnika pominiete
+WYKRYTA  exit=1 [Wyzywienie] tick: wojsko +1
+WYKRYTA  exit=1 [religiaSzPunkty] zaokraglenie prezentacyjne pominiete
+WYKRYTA  exit=1 [resolveEmpireSnap] snapshot silnika ignorowany (tylko skarbiec)
+WYKRYTA  exit=1 [resolveCityHealth] zdrowie total +1
+WYKRYTA  exit=1 [resolveCityHealth] linie zdrowia pominiete
+WYKRYTA  exit=1 [formatWyzwienieLabel] zacisk gornej granicy skali
+WYKRYTA  exit=1 [formatWyzwienieLabel] separator dziesietny (przecinek)
+mutate-k04c-units: mutacje=37 wykryte=37 niewykryte=0

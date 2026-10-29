@@ -279,6 +279,22 @@ try {
 
   // Model — pin :3050, :1637, :3281, :170
   const M = K.model;
+
+  // Wektory domykajace przezyte mutacje (mutate-k04c-units.mjs, runda 2 / Operator-pomiary): granice i brzegi wejsc.
+  const pzZero = build(() => K.porz.buildPorzadekDetailCardK({ ...PORZADEK_BASE, porzadek: { ...PORZADEK_BASE.porzadek, prawLines: [{ id: 'z', label: 'Zero', value: 0 }] } }));
+  expectRow('porz:skladnik-zero', pzZero, 'Zero', '+0'); // pin :3497-3498 (`value >= 0`)
+  const klProg = build(() => K.kult.buildKulturaDetailCardK({ ...KULTURA_BASE, culture: { ...CULTURE_BASE, kulturaSuma: 50 } }));
+  expectRow('kult:prog-granica', klProg, 'Następny próg', '120 pkt kultury'); // pin :3892 (`t > suma`, suma == próg 50)
+  const klSzZero = build(() => K.kult.buildKulturaDetailCardK({ ...KULTURA_BASE, religion: { ...RELIGION_BASE, wplywSzczescieSzPkt: 0 } }));
+  expectRow('kult:wplyw-zero', klSzZero, 'Wpływ na Szczęście', '+0 pkt'); // pin :3966 (`>= 0`)
+  const klDom = build(() => K.kult.buildKulturaDetailCardK({ ...KULTURA_BASE, religion: { ...RELIGION_BASE, dominujaca: 'Animizm' } }));
+  expectRow('kult:dominujaca-z-dto', klDom, 'Dominująca', 'Animizm'); // pin :3963 (`relState.dominujaca`, nie stateReligion)
+  expectRow('zam:pula-do-W', zm, 'Pula zamożności', '40 / 100 do W3'); // pin :4883
+  const wyzRacje = rows(wyzFed).filter(([l]) => l === 'Wyżywienie')[1];
+  results.push({ name: 'wyz:racje-wzrost', ok: wyzRacje !== undefined && wyzRacje[1] === '−1%', detail: `Wyżywienie (WZROST, 2. wiersz) => "${wyzRacje?.[1]}" (oczekiwano "−1%"); pin :5521` });
+  expectRow('wyz:wojsko', wyzFed, 'Wojsko', '−1 🍞'); // pin :5569
+  const healthLines = M.resolveCityHealthK({ total: 2, lines: [{ label: 'x', value: 2 }, { label: 'y', value: -1 }] });
+  results.push({ name: 'model:health-lines', ok: healthLines.lines.length === 2 && healthLines.lines[1].value === -1, detail: 'resolveCityHealthK: linie przepisane z DTO (pin :3282-3283)' });
   results.push({ name: 'model:szPkt-round1', ok: M.religiaSzPunktyK(-7.666666666666666) === -7.7, detail: 'religiaSzPunktyK(-7.6666) === -7.7 (pin szPktDisplay)' });
   results.push({ name: 'model:szPkt-plus', ok: M.religiaSzPunktyK(23) === 23, detail: 'religiaSzPunktyK(23) === 23' });
   const snap = { pracaRate: 3 };

@@ -1,0 +1,4 @@
+
+> civ-frontend-v2@0.0.0 typecheck
+> tsc --noEmit
+
