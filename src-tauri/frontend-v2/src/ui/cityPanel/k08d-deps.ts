@@ -36,8 +36,20 @@ export interface HandelEconParamsK08d {
   readonly mennicaMnoznikPoWalucie: number;
 }
 
+/**
+ * K08D-Z11 (runda 3, NAPRAW 5, P5.13): wynik bramki Mennicy liczony PO STRONIE DELEGATU `mennicaGate` (host / K09), nie w UI.
+ * Pola = koniunkcje pinu `buildHandelDetailCard` (`cityPanel.ts:10861-10874`): budynek Mennicy w imperium
+ * (`maMennicaBudynek`), mnożnik aktywny (budynek && dostęp do złota && Waluta) i „śpi" (budynek && Waluta && brak złota).
+ */
+export interface MennicaGateK08d {
+  readonly maMennicaBudynek: boolean;
+  readonly mennicaAktywna: boolean;
+  readonly mennicaSpiZBrakuZlota: boolean;
+}
+
 /** Kontrakt delegatów reguł K08D (dostarcza wiring/host; UI ich nie implementuje). */
 export interface K08dDeps {
+  mennicaGate(ownerId: number): MennicaGateK08d;
   buildEconParams(data: GameData, difficulty: string): HandelEconParamsK08d;
   cityHasBibliotekaLine(builtIds: readonly string[]): boolean;
   mnoznikHandelPieniadzForCivByDifficulty(
@@ -62,6 +74,9 @@ function depK08d<K extends keyof K08dDeps>(name: K): K08dDeps[K] {
   if (f === undefined) throw new Error(`K08D: brak delegatu ${String(name)} (setK08dDeps)`);
   return f as K08dDeps[K];
 }
+
+/** Delegat bramki Mennicy (K08D-Z11): UI czyta gotowe pola, nie składa koniunkcji. */
+export const mennicaGate = (ownerId: number): MennicaGateK08d => depK08d('mennicaGate')(ownerId);
 
 /** Pin `buildEconParams(data, difficulty)` — parametry korupcji i mnożnika Mennicy (wartości silnika). */
 export const buildEconParams = (data: GameData, difficulty: string): HandelEconParamsK08d =>
@@ -95,6 +110,7 @@ export const daninaLabelAccusative = (_label?: string): 'podatek' => 'podatek';
 
 /** Nazwy delegatów K08D (do raportu brakujących w `k08dWiring`). */
 export const K08D_FN_NAMES = [
+  'mennicaGate',
   'buildEconParams',
   'cityHasBibliotekaLine',
   'mnoznikHandelPieniadzForCivByDifficulty',

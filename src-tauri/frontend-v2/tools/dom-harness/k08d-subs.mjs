@@ -35,8 +35,8 @@ import type { CityView } from './k01b-t';
 import { HANDEL_KORUPCJA_PCT_PLACEHOLDER, HANDEL_ZAMOZNOSC_LABEL } from './k01a-fundament';
 import { cfg, daninaLabelForCity, daninaLabelGenitive, readPodzialHandlu, type City, type GameData } from './k05b-host';
 import {
-  buildEconParams, cityHasBibliotekaLine, cfgK08dRequired, computeTradeRouteBuildingBonusByCity, daninaLabelAccusative,
-  mnoznikHandelPieniadzForCivByDifficulty,
+  buildEconParams, cityHasBibliotekaLine, computeTradeRouteBuildingBonusByCity, daninaLabelAccusative,
+  mennicaGate, mnoznikHandelPieniadzForCivByDifficulty,
 } from './k08d-deps';`,
   units: [
     { name: 'ownerHasMennica', a: 1322, b: 1330 },
@@ -79,15 +79,20 @@ export const batchByNameK08d = (name) => {
   return b;
 };
 
-/** Brak podstawień (K08D-Z4, jak K08C-Z4). Pusta lista zachowana dla jednolitej bramki. */
+/**
+ * Podstawienia LINE_SUBS_K08D (K08D-Z11, runda 3, NAPRAW 5 / P5.13): bramka Mennicy (koniunkcje pinu w
+ * `buildHandelDetailCard`, `cityPanel.ts:10861-10874`) przeniesiona do delegatu `mennicaGate` (`k08d-deps.ts`).
+ * Każde podstawienie = JEDNA linia pinu -> JEDNA linia portu (bramka `verify-k08d-copies.mjs` liczy wystąpienia = 1).
+ * Zastąpiło K08D-Z9 (`?? true` w linii `maDostepDoZlota`): czytanie pola cfg przeniesione do implementacji delegatu (host).
+ */
 export const LINE_SUBS_K08D = [
-  // K08D-Z9: brak cichej wartości domyślnej dla bramki dostępu do złota (pin: `?? true`); port: wymagane pole cfg.
-  {
-    a: 10845,
-    b: 11005,
-    from: 'const maDostepDoZlota = cfg.getOwnerHasZlotoAccess?.(city.ownerId) ?? true;',
-    to: "const maDostepDoZlota = cfgK08dRequired(cfg, 'getOwnerHasZlotoAccess')(city.ownerId);",
-  },
+  { a: 10845, b: 11005, from: 'const maMennicaBudynek = ownerHasMennica(city.ownerId);', to: 'const gateMennica = mennicaGate(city.ownerId);' },
+  { a: 10845, b: 11005, from: 'const maDostepDoZlota = cfg.getOwnerHasZlotoAccess?.(city.ownerId) ?? true;', to: 'const maMennicaBudynek = gateMennica.maMennicaBudynek;' },
+  { a: 10845, b: 11005, from: 'const techs = cfg.getUnlockedTechs?.(city.ownerId) ?? [];', to: '// K08D-Z11 (P5.13): Waluta odkryta i dostęp do złota czyta delegat mennicaGate (bez koniunkcji w UI).' },
+  { a: 10845, b: 11005, from: "const walutaOdkryta = techs.includes('Waluta') || techs.includes('waluta');", to: '// (walutaOdkryta: wewnątrz delegatu mennicaGate, K08D-Z11)' },
+  { a: 10845, b: 11005, from: 'const maMennica = maMennicaBudynek && maDostepDoZlota;', to: '// (maMennica: koniunkcja wyłącznie w delegacie mennicaGate, K08D-Z11)' },
+  { a: 10845, b: 11005, from: 'const mennicaAktywna = maMennica && walutaOdkryta;', to: 'const mennicaAktywna = gateMennica.mennicaAktywna;' },
+  { a: 10845, b: 11005, from: 'const mennicaSpiZBrakuZlota = maMennicaBudynek && walutaOdkryta && !maDostepDoZlota;', to: 'const mennicaSpiZBrakuZlota = gateMennica.mennicaSpiZBrakuZlota;' },
 ];
 
 /** Zastosowanie podstawień K08D do linii pinu (pusta lista = bez zmian). */

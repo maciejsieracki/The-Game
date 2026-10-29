@@ -138,6 +138,15 @@ try {
       '  rules: {} as any,',
       '} as any);',
       'export const k08d = installK08dWiring({',
+      '  // K08D-Z11 (atrapa TESTOWA, wzór = koniunkcje pinu buildHandelDetailCard 10861-10874; nie reguła produkcyjna, P5.13).',
+      '  mennicaGate: (ownerId: number) => {',
+      '    const cities: any[] = cfgObj.getCities?.() ?? [];',
+      "    const maB = cities.some((c: any) => c.ownerId === ownerId && (cfgObj.getBuiltBuildingIds?.(c.id) ?? []).includes('mennica'));",
+      '    const dostep: boolean = cfgObj.getOwnerHasZlotoAccess(ownerId);',
+      '    const techs: string[] = cfgObj.getUnlockedTechs?.(ownerId) ?? [];',
+      "    const waluta = techs.includes('Waluta') || techs.includes('waluta');",
+      '    return { maMennicaBudynek: maB, mennicaAktywna: maB && dostep && waluta, mennicaSpiZBrakuZlota: maB && waluta && !dostep };',
+      '  },',
       '  buildEconParams: (_d: unknown, diff: string) => ({ korupcjaWspolczynnikDystansu: 0.1, korupcjaWspolczynnikMiast: 0.05, korupcjaCap: diff === "normal" ? 0.3 : 0.5, mennicaMnoznikPoWalucie: 2 }),',
       "  cityHasBibliotekaLine: (b: readonly string[]) => b.includes('biblioteka'),",
       '  mnoznikHandelPieniadzForCivByDifficulty: (k: unknown, c: unknown, d: string, fb: number) => (k === "rz" && c && d === "normal" ? fb + 1 : fb),',
@@ -228,6 +237,14 @@ try {
       mod.cfgObj.getCities = () => [city, capital];
       mod.cfgObj.getOwnerHasZlotoAccess = () => false;
       mod.cfgObj.getUnlockedTechs = (o) => (o === 0 ? ['Waluta'] : []);
+      mod.cfgObj.getTradeRoutes = () => [];
+    }],
+    // K08D-Z11: Mennica zbudowana (gdziekolwiek w imperium), ale BEZ Waluty -> gałąź tekstu „bez Waluty" (maMennicaBudynek).
+    ['handel.mennicaBezWaluty', (f) => f.card(city, view, data), () => {
+      mod.cfgObj.getBuiltBuildingIds = (id) => (id === 9 ? ['mennica'] : []);
+      mod.cfgObj.getCities = () => [city, capital];
+      mod.cfgObj.getOwnerHasZlotoAccess = () => true;
+      mod.cfgObj.getUnlockedTechs = () => [];
       mod.cfgObj.getTradeRoutes = () => [];
     }],
     ['handel.trasy.toCity', (f) => f.card(city, view, data), () => {

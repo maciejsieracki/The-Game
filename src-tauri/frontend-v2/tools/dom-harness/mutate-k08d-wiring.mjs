@@ -30,6 +30,8 @@ const MUTANTS = [
   ['trasy-empty-list', 'rules.computeTradeRouteBuildingBonusByCity(routes)', 'rules.computeTradeRouteBuildingBonusByCity([])'],
   ['trasy-delegate-dropped', '    computeTradeRouteBuildingBonusByCity: (routes) => rules.computeTradeRouteBuildingBonusByCity(routes),\n', ''],
   ['biblioteka-delegate-dropped', '    cityHasBibliotekaLine: (builtIds) => rules.cityHasBibliotekaLine(builtIds),\n', ''],
+  ['mennicaGate-delegate-dropped', '    mennicaGate: (ownerId) => rules.mennicaGate(ownerId),\n', ''],
+  ['mennicaGate-owner-shifted', 'mennicaGate: (ownerId) => rules.mennicaGate(ownerId),', 'mennicaGate: (ownerId) => rules.mennicaGate(ownerId + 1),'],
 ];
 
 const rows = [];

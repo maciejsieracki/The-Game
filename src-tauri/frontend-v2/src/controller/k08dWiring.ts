@@ -1,7 +1,7 @@
 /**
  * controller/k08dWiring.ts — wiring K08D (P5-8, R-RUSTPORT-P5-8-CITYPANEL-K08D-Q1, runda 1).
  *
- * Podłącza cztery delegaty reguł gry używane przez kopie K08D (`k08d-handel.ts`, `k08d-slider.ts`) przez
+ * Podłącza pięć delegatów reguł gry (K08D-Z11: + `mennicaGate`) używane przez kopie K08D (`k08d-handel.ts`, `k08d-slider.ts`) przez
  * `setK08dDeps` (`ui/cityPanel/k08d-deps.ts`). Wartości przychodzą od wywołującego (silnik / kontroler / harness);
  * wiring NIE liczy reguł gry i NIE wstawia atrap (P5.13). Brak któregokolwiek delegatu = wyjątek przy pierwszym
  * wywołaniu (`K08D: brak delegatu …`), nie cicha wartość domyślna.
@@ -11,11 +11,13 @@
  *
  * Granice: produkcyjny wywołujący (panel miasta, blok 9) NIE istnieje — podpięcie = K09 (NIE_ZROBIONE).
  */
-import { setK08dDeps, type HandelEconParamsK08d } from '../ui/cityPanel/k08d-deps';
+import { setK08dDeps, type HandelEconParamsK08d, type MennicaGateK08d } from '../ui/cityPanel/k08d-deps';
 import type { GameData, TradeRouteK05bDto } from '../ui/cityPanel/k05b-host';
 
 /** Reguły gry dostarczane przez wywołującego (silnik / kontroler). */
 export interface K08dRuleHost {
+  /** K08D-Z11 (NAPRAW 5): bramka Mennicy (koniunkcje pinu `buildHandelDetailCard`, `cityPanel.ts:10861-10874`). */
+  mennicaGate(ownerId: number): MennicaGateK08d;
   /** Pin `buildEconParams(data, difficulty)` (`game/turn-economy.ts:317`). */
   buildEconParams(data: GameData, difficulty: string): HandelEconParamsK08d;
   /** Pin `cityHasBibliotekaLine(built)` (`game/building-upgrades.ts:129`). */
@@ -34,6 +36,7 @@ export interface K08dRuleHost {
 /** Podłącza delegaty K08D. Wywoływać raz przy starcie UI panelu miasta (po `installK08cWiring`). */
 export function installK08dWiring(rules: K08dRuleHost): void {
   setK08dDeps({
+    mennicaGate: (ownerId) => rules.mennicaGate(ownerId),
     buildEconParams: (data, difficulty) => rules.buildEconParams(data, difficulty),
     cityHasBibliotekaLine: (builtIds) => rules.cityHasBibliotekaLine(builtIds),
     mnoznikHandelPieniadzForCivByDifficulty: (civKey, civs, difficulty, fallbackScaled) =>

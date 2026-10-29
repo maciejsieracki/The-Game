@@ -16,8 +16,8 @@ import type { CityView } from './k01b-t';
 import { HANDEL_KORUPCJA_PCT_PLACEHOLDER, HANDEL_ZAMOZNOSC_LABEL } from './k01a-fundament';
 import { cfg, daninaLabelForCity, daninaLabelGenitive, readPodzialHandlu, type City, type GameData } from './k05b-host';
 import {
-  buildEconParams, cityHasBibliotekaLine, cfgK08dRequired, computeTradeRouteBuildingBonusByCity, daninaLabelAccusative,
-  mnoznikHandelPieniadzForCivByDifficulty,
+  buildEconParams, cityHasBibliotekaLine, computeTradeRouteBuildingBonusByCity, daninaLabelAccusative,
+  mennicaGate, mnoznikHandelPieniadzForCivByDifficulty,
 } from './k08d-deps';
 
 // ─── Jednostki K08D, partia k08d-handel.ts (kopie pinu wygenerowane; markery = bramka verify-k08d-copies.mjs) ─────────────
@@ -64,20 +64,20 @@ export function buildHandelDetailCard(
   // maMennicaBuiltEmpireWide w turn-economy.ts). Rozdzielone od maDostepDoZlota
   // (PYTANIE 83=B), zeby ponizej dalo sie rozroznic w tekscie DLACZEGO mnoznik
   // nie dziala: brak Mennicy vs brak Waluty vs Mennica usnieta bez zlota.
-  const maMennicaBudynek = ownerHasMennica(city.ownerId);
-  const maDostepDoZlota = cfgK08dRequired(cfg, 'getOwnerHasZlotoAccess')(city.ownerId);
+  const gateMennica = mennicaGate(city.ownerId);
+  const maMennicaBudynek = gateMennica.maMennicaBudynek;
   const maBiblioteka = cityHasBibliotekaLine(built);
-  const techs = cfg.getUnlockedTechs?.(city.ownerId) ?? [];
-  const walutaOdkryta = techs.includes('Waluta') || techs.includes('waluta');
+  // K08D-Z11 (P5.13): Waluta odkryta i dostęp do złota czyta delegat mennicaGate (bez koniunkcji w UI).
+  // (walutaOdkryta: wewnątrz delegatu mennicaGate, K08D-Z11)
   // Zadanie 1 (E1) + PYTANIE 83=B: Mennica dziala TYLKO gdy zbudowana
   // (gdziekolwiek w imperium) ORAZ Waluta odkryta ORAZ cywilizacja MA TERAZ
   // dostep do zlota (turn-economy.ts maMennicaEmpireWide && walutaOdkryta) --
   // identyczna bramka jak silnik, zeby panel nigdy nie pokazywal aktywnego
   // mnoznika, ktorego silnik juz nie liczy.
-  const maMennica = maMennicaBudynek && maDostepDoZlota;
-  const mennicaAktywna = maMennica && walutaOdkryta;
+  // (maMennica: koniunkcja wyłącznie w delegacie mennicaGate, K08D-Z11)
+  const mennicaAktywna = gateMennica.mennicaAktywna;
   // Mennica fizycznie stoi + Waluta odkryta, ale mnoznik SPI bo brak zlota TERAZ.
-  const mennicaSpiZBrakuZlota = maMennicaBudynek && walutaOdkryta && !maDostepDoZlota;
+  const mennicaSpiZBrakuZlota = gateMennica.mennicaSpiZBrakuZlota;
   // Pytanie 69 (2026-07-25): tekst pokazuje mnoznik CYWILIZACYJNY skalowany
   // trudnoscia (ten sam co realnie liczy silnik), nie plaski params.mennicaMnoznikPoWalucie.
   const civKeyForMennicaTxt = cfg.getCivKey?.(city.ownerId);

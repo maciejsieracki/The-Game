@@ -52,14 +52,17 @@ const MUTATIONS = [
  */
 const FIELD_MUTATIONS = [
   ['handel', 'cfg.getCivKey?.(city.ownerId)', 'cfg.getCivKey?.(city.id)', 'cfg.getCivKey: zły klucz (ownerId -> id miasta)'],
-  ['handel', "cfgK08dRequired(cfg, 'getOwnerHasZlotoAccess')(city.ownerId)", "cfgK08dRequired(cfg, 'getOwnerHasZlotoAccess')(city.id)", 'cfg.getOwnerHasZlotoAccess: zły klucz'],
+  ['handel', 'const gateMennica = mennicaGate(city.ownerId);', 'const gateMennica = mennicaGate(city.id);', 'mennicaGate: zły klucz (ownerId -> id miasta), K08D-Z11'],
+  ['handel', 'const mennicaAktywna = gateMennica.mennicaAktywna;', 'const mennicaAktywna = gateMennica.mennicaSpiZBrakuZlota;', 'mennicaGate: pole mennicaAktywna zamienione na mennicaSpiZBrakuZlota'],
+  ['handel', 'const mennicaSpiZBrakuZlota = gateMennica.mennicaSpiZBrakuZlota;', 'const mennicaSpiZBrakuZlota = gateMennica.mennicaAktywna;', 'mennicaGate: pole mennicaSpiZBrakuZlota zamienione na mennicaAktywna'],
+  ['handel', 'const maMennicaBudynek = gateMennica.maMennicaBudynek;', 'const maMennicaBudynek = false;', 'mennicaGate: pole maMennicaBudynek pominięte (stała false)'],
+  ['deps', "depK08d('mennicaGate')(ownerId)", "depK08d('mennicaGate')(ownerId + 1)", 'mennicaGate (k08d-deps): przesunięty ownerId w delegacie'],
   ['handel', 'cfg.data?.civs, cfg.difficulty', 'undefined, cfg.difficulty', 'cfg.data.civs: pole pominięte'],
   ['handel', "buildEconParams(data, cfg.difficulty ?? 'normal')", "buildEconParams(data, 'easy')", 'cfg.difficulty: pole zastąpione stałą'],
   ['handel', 'if (route.fromCityId === city.id || route.toCityId === city.id) n++;', 'if (route.fromCityId === city.id) n++;', 'TradeRouteK05bDto.toCityId: pominięte w liczniku'],
   ['handel', 'computeTradeRouteBuildingBonusByCity(cfg.getTradeRoutes?.() ?? []).get(city.id)', 'computeTradeRouteBuildingBonusByCity(cfg.getTradeRoutes?.() ?? []).get(city.ownerId)', 'premia: zły klucz mapy'],
   ['handel', 'computeTradeRouteBuildingBonusByCity(cfg.getTradeRoutes?.() ?? [])', 'computeTradeRouteBuildingBonusByCity([])', 'cfg.getTradeRoutes: pole pominięte w premii'],
   ['handel', 'const built = cfg.getBuiltBuildingIds?.(city.id) ?? [];', 'const built = cfg.getBuiltBuildingIds?.(city.ownerId) ?? [];', 'cfg.getBuiltBuildingIds: zły klucz'],
-  ['handel', 'const techs = cfg.getUnlockedTechs?.(city.ownerId) ?? [];', 'const techs = cfg.getUnlockedTechs?.(city.id) ?? [];', 'cfg.getUnlockedTechs: zły klucz'],
 ];
 
 const runCheck = (cmd, argv) => {

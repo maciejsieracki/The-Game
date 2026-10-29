@@ -68,6 +68,7 @@ try {
 
   // W1 — przed instalacją: wyjątek jawny, nie cicha wartość.
   const calls = {
+    mennicaGate: () => D.mennicaGate(0),
     buildEconParams: () => D.buildEconParams({}, 'hard'),
     cityHasBibliotekaLine: () => D.cityHasBibliotekaLine([]),
     mnoznikHandelPieniadzForCivByDifficulty: () => D.mnoznikHandelPieniadzForCivByDifficulty('rz', {}, 'hard', 1),
@@ -81,6 +82,7 @@ try {
   // Sentinele: każda metoda reguł zwraca wartość rozpoznawalną po kształcie/treści.
   const seen = [];
   const rules1 = {
+    mennicaGate: (o) => { seen.push(['mgt', o]); return { maMennicaBudynek: o === 4, mennicaAktywna: true, mennicaSpiZBrakuZlota: false }; },
     buildEconParams: (d, diff) => { seen.push(['bep', d, diff]); return { tag: 'E', korupcjaWspolczynnikDystansu: 1, korupcjaWspolczynnikMiast: 2, korupcjaCap: 3, mennicaMnoznikPoWalucie: 4 }; },
     cityHasBibliotekaLine: (ids) => { seen.push(['bib', ids.length]); return ids.length === 3; },
     mnoznikHandelPieniadzForCivByDifficulty: (k, c, d, fb) => { seen.push(['mno', k, c, d, fb]); return fb * 100 + (k === 'rz' ? 1 : 0); },
@@ -90,6 +92,9 @@ try {
 
   // W2 — kolejność i wynik każdego delegatu.
   const civs = { x: 1 };
+  const gate = safe(() => D.mennicaGate(4));
+  check('W2.mennicaGate.args', 'mennicaGate(4) => reguła dostaje ownerId 4 i zwraca jej obiekt bez zmian',
+    seen.some((s) => s[0] === 'mgt' && s[1] === 4) && gate?.maMennicaBudynek === true && gate?.mennicaAktywna === true && gate?.mennicaSpiZBrakuZlota === false);
   const bep = safe(() => D.buildEconParams({ data: 1 }, 'hard')) ?? {};
   check('W2.buildEconParams.args', 'buildEconParams(data, "hard") => reguła dostaje (data, "hard")',
     seen.some((s) => s[0] === 'bep' && s[2] === 'hard' && s[1].data === 1));
@@ -114,7 +119,7 @@ try {
 
   // W5 — zestaw nazw i wywoływalność po instalacji.
   W.installK08dWiring(rules1);
-  check('W5.names', 'K08D_FN_NAMES = 4 delegaty', D.K08D_FN_NAMES.length === 4);
+  check('W5.names', 'K08D_FN_NAMES = 5 delegatów (K08D-Z11: + mennicaGate)', D.K08D_FN_NAMES.length === 5);
   const allCallable = D.K08D_FN_NAMES.every((n) => {
     try {
       return calls[n] !== undefined && typeof calls[n] === 'function' && (calls[n](), true);
