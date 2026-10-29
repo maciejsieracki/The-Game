@@ -52,11 +52,20 @@ for (const [id, from, to] of MUTANTS) {
   const mutantPath = join(dirname(SRC), `.mut-title-${id}.ts`);
   writeFileSync(mutantPath, base.replace(from, to));
   try {
-    const r = spawnSync(process.execPath, [join(HERE, 'run-k08b-title.mjs'), '--pin-dir', resolve(PIN_DIR), '--v2', mutantPath], {
-      encoding: 'utf8',
-      cwd: V2_ROOT,
-    });
-    rows.push({ id, status: r.status === 0 ? 'PRZETRWANA' : 'ZABITA', detail: `exit=${r.status}` });
+    // Dwa harnessy: `run-k08b-title.mjs` (oczekiwania z pinu) i `run-k08b-title-pin.mjs` (pin WYKONYWANY, różnicowo).
+    // ZABITA = >=1 harness EXIT 1 (niezgodność) i żaden EXIT 2. EXIT 2 (błąd harnessu) NIE liczy się jako zabicie.
+    const exits = {};
+    for (const h of ['run-k08b-title.mjs', 'run-k08b-title-pin.mjs']) {
+      const r = spawnSync(process.execPath, [join(HERE, h), '--pin-dir', resolve(PIN_DIR), '--v2', mutantPath], {
+        encoding: 'utf8',
+        cwd: V2_ROOT,
+      });
+      exits[h] = r.status;
+    }
+    const vals = Object.values(exits);
+    const status = vals.includes(2) ? 'BLAD-HARNESU' : vals.includes(1) ? 'ZABITA' : 'PRZETRWANA';
+    const detail = Object.entries(exits).map(([h, s]) => `${h.replace('.mjs', '')}=exit${s}`).join(' ');
+    rows.push({ id, status, detail });
   } finally {
     rmSync(mutantPath, { force: true });
   }

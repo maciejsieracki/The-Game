@@ -186,7 +186,8 @@ try {
   const { mount: m4 } = mkMount(null);
   m4.appendChild(doc.createElement('p'));
   appendSectionTitleWithDetails(m4, 'T', buildDetail);
-  check('dom.append.order', 'cityPanel.ts:11532 appendChild na końcu', [m4.children[0].tagName, m4.children[1].className], ['P', 'ptitle']);
+  // `?.` : brak dziecka (np. mutant bez appendChild) = FAIL asercji (EXIT 1), nie TypeError harnessu (EXIT 2)
+  check('dom.append.order', 'cityPanel.ts:11532 appendChild na końcu', [m4.children[0]?.tagName, m4.children[1]?.className], ['P', 'ptitle']);
 } catch (e) {
   console.error('run-k08b-title: błąd harnessu:', e);
   exitCode = 2;

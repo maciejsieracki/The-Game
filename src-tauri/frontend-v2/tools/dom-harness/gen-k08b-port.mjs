@@ -68,7 +68,8 @@ import {
 const HEADER_TITLE = `/**
  * K08B-2 (P5-8, R-RUSTPORT-P5-8-CITYPANEL-K08B-Q1, runda 2, partia \`title\`): nagłówek sekcji z przyciskiem
  * „i szczegóły" (pin \`edb8fb56\`, \`gra/src/ui/cityPanel.ts\`): helper \`resolveDetailSideHint\` + \`appendSectionTitleWithDetails\`.
- * Jednostki DOM: 1 (\`appendSectionTitleWithDetails\`, blok 7 w \`dyspozycje/rust-port/p5/P5-8-K08B.md\` §3).
+ * Jednostki DOM: 1 (\`appendSectionTitleWithDetails\`) — DODATEK blokera spoza zbioru 24 jednostek K08B (blok 7 w
+ * \`dyspozycje/rust-port/p5/P5-8-K08B.md\` §3; rozstrzygnięcie K08B-Z6 w §2). Zbiór 24 i liczba pozostałych 18 bez zmian.
  *
  * PLIK GENEROWANY przez \`tools/dom-harness/gen-k08b-port.mjs --batch title\` (bloki = pin + \`k08b-subs.mjs\`).
  * Edycja ręczna bloku \`// pin edb8fb56 …\` … \`// pin-end\` = FAIL bramki \`verify-k08b-copies.mjs --batch title\`.
