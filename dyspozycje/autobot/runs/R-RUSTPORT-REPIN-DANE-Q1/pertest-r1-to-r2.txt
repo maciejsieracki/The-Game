@@ -1,0 +1,56 @@
+civs_json_parses_and_spot_checks|A|civs.json: brak pol Bonus startowy/bonusy/mnoznikHandelPieniadz (missing field)|ZIELONY
+all_29_data_files_parse_with_rust_modules|A|civs.json: brak pol Bonus startowy/bonusy/mnoznikHandelPieniadz (missing field)|ZIELONY
+civs_count_and_ids_match_web_pin|A|civs.json: brak pol Bonus startowy/bonusy/mnoznikHandelPieniadz (missing field)|ZIELONY
+rt_civs|A|civs.json: brak pol Bonus startowy/bonusy/mnoznikHandelPieniadz (missing field)|ZIELONY
+rt_econ_params|B|econ-params.json: targowisko_praca_na_pieniadz_mnoznik -> targowisko_praca_na_podatek_kurs (unknown field)|ZIELONY
+parse_econ_params_parses_and_spot_checks|B|econ-params.json: targowisko_praca_na_pieniadz_mnoznik -> targowisko_praca_na_podatek_kurs (unknown field)|ZIELONY
+loads_all_29_files_from_data_dir|A|civs.json: brak pol Bonus startowy/bonusy/mnoznikHandelPieniadz (missing field)|ZIELONY
+neg_missing_file_is_file_missing|A|civs.json: brak pol Bonus startowy/bonusy/mnoznikHandelPieniadz (missing field)|ZIELONY
+neg_every_listed_file_is_required_by_load_all|A|civs.json: brak pol Bonus startowy/bonusy/mnoznikHandelPieniadz (missing field)|ZIELONY
+units_parses_and_spot_checks|C|units.json/derived: Rydwan (woly) Braz->Kamien, Surowiec Braz->Drewno; liczniki epok|ZIELONY
+unit_table_epoch_field_matches_units_json|C|units.json/derived: Rydwan (woly) Braz->Kamien, Surowiec Braz->Drewno; liczniki epok|ZIELONY
+unit_table_keeps_the_units_json_base_as_provenance|C|units.json/derived: Rydwan (woly) Braz->Kamien, Surowiec Braz->Drewno; liczniki epok|ZIELONY
+unit_table_key_shape_and_positive_integer_values|C|units.json/derived: Rydwan (woly) Braz->Kamien, Surowiec Braz->Drewno; liczniki epok|ZIELONY
+embedded_pool_data_is_byte_identical_to_data_used_for_vectors|D|hash pinu danych w wektorach (edb8fb56) != sha 91dc998a|ZIELONY
+validate_city_names_pools_matches_web|A|civs.json: brak pol Bonus startowy/bonusy/mnoznikHandelPieniadz (missing field)|ZIELONY
+embedded_data_is_byte_identical_to_data_used_for_vectors|D|hash pinu danych w wektorach (edb8fb56) != sha 91dc998a|ZIELONY
+real_civs_bonuses_convert_without_loss|A|civs.json: brak pol Bonus startowy/bonusy/mnoznikHandelPieniadz (missing field)|ZIELONY
+strip_diacritics_matches_web_function_cut_verbatim|E|strip_diacritics: liczba znakow 4033 vs wektor 4303 (dataStringCount/xor wektora edb8fb56)|ZIELONY
+ai_profiles_and_norms_match_web|A|civs.json: brak pol Bonus startowy/bonusy/mnoznikHandelPieniadz (missing field)|CZERWONY (logika, runda 2)
+ai_params_and_diplomacy_rows_match_web|A|civs.json: brak pol Bonus startowy/bonusy/mnoznikHandelPieniadz (missing field)|ZIELONY
+ai_fallback_branches_are_actually_exercised|A|civs.json: brak pol Bonus startowy/bonusy/mnoznikHandelPieniadz (missing field)|ZIELONY
+ai_by_typ_resolvers_match_web|A|civs.json: brak pol Bonus startowy/bonusy/mnoznikHandelPieniadz (missing field)|CZERWONY (logika, runda 2)
+apply_civ_matrix_param_matches_web|A|civs.json: brak pol Bonus startowy/bonusy/mnoznikHandelPieniadz (missing field)|ZIELONY
+civ_matrix_param_at_difficulty_matches_web|A|civs.json: brak pol Bonus startowy/bonusy/mnoznikHandelPieniadz (missing field)|ZIELONY
+civ_matrix_param_def_matches_web|A|civs.json: brak pol Bonus startowy/bonusy/mnoznikHandelPieniadz (missing field)|ZIELONY
+data_files_are_byte_identical_to_web_pin|D|hash pinu danych w wektorach (edb8fb56) != sha 91dc998a|ZIELONY
+civ_matrix_params_at_difficulty_matches_web_order_and_values|A|civs.json: brak pol Bonus startowy/bonusy/mnoznikHandelPieniadz (missing field)|ZIELONY
+consumer_status_polarity_band_baseline_match_web_per_parameter|A|civs.json: brak pol Bonus startowy/bonusy/mnoznikHandelPieniadz (missing field)|CZERWONY (logika, runda 2)
+civ_matrix_param_matches_web|A|civs.json: brak pol Bonus startowy/bonusy/mnoznikHandelPieniadz (missing field)|ZIELONY
+every_status_for_every_parameter_matches_web_texts|A|civs.json: brak pol Bonus startowy/bonusy/mnoznikHandelPieniadz (missing field)|CZERWONY (logika, runda 2)
+every_matrix_cell_parses_exactly_like_js|A|civs.json: brak pol Bonus startowy/bonusy/mnoznikHandelPieniadz (missing field)|ZIELONY
+param_order_and_rows_match_web_for_every_scenario|A|civs.json: brak pol Bonus startowy/bonusy/mnoznikHandelPieniadz (missing field)|ZIELONY
+scale_parameters_are_clamped_and_shifted_only_for_skala|A|civs.json: brak pol Bonus startowy/bonusy/mnoznikHandelPieniadz (missing field)|ZIELONY
+proc_sum_and_apply_proc_match_web|A|civs.json: brak pol Bonus startowy/bonusy/mnoznikHandelPieniadz (missing field)|ZIELONY
+snapshot_and_profiles_match_web|A|civs.json: brak pol Bonus startowy/bonusy/mnoznikHandelPieniadz (missing field)|CZERWONY (logika, runda 2)
+synthetic_cell_grid_matches_web|A|civs.json: brak pol Bonus startowy/bonusy/mnoznikHandelPieniadz (missing field)|CZERWONY (logika, runda 2)
+profile_by_key_resolution_matches_web|A|civs.json: brak pol Bonus startowy/bonusy/mnoznikHandelPieniadz (missing field)|CZERWONY (logika, runda 2)
+assign_invariants_hold_on_real_roster|A|civs.json: brak pol Bonus startowy/bonusy/mnoznikHandelPieniadz (missing field)|ZIELONY
+civ_ids_from_roster_matches_web|A|civs.json: brak pol Bonus startowy/bonusy/mnoznikHandelPieniadz (missing field)|ZIELONY
+params_table_is_consistent_with_matrix_and_civs|A|civs.json: brak pol Bonus startowy/bonusy/mnoznikHandelPieniadz (missing field)|ZIELONY
+population_cap_matches_web|B|econ-params.json: targowisko_praca_na_pieniadz_mnoznik -> targowisko_praca_na_podatek_kurs (unknown field)|ZIELONY
+unit_stock_cost_matches_flattened_p3_19_table|C|units.json/derived: Rydwan (woly) Braz->Kamien, Surowiec Braz->Drewno; liczniki epok|ZIELONY
+rival_slots_degenerate_inputs_do_not_panic|A|civs.json: brak pol Bonus startowy/bonusy/mnoznikHandelPieniadz (missing field)|ZIELONY
+rival_slots_match_web_on_real_maps|A|civs.json: brak pol Bonus startowy/bonusy/mnoznikHandelPieniadz (missing field)|ZIELONY
+compute_clusters_matches_web_maps_1101_to_2500_hexes|A|civs.json: brak pol Bonus startowy/bonusy/mnoznikHandelPieniadz (missing field)|ZIELONY
+compute_clusters_matches_web_maps_2501_to_5000_hexes|A|civs.json: brak pol Bonus startowy/bonusy/mnoznikHandelPieniadz (missing field)|ZIELONY
+compute_clusters_matches_web_maps_501_to_1100_hexes|A|civs.json: brak pol Bonus startowy/bonusy/mnoznikHandelPieniadz (missing field)|ZIELONY
+compute_clusters_matches_web_maps_over_5000_hexes|A|civs.json: brak pol Bonus startowy/bonusy/mnoznikHandelPieniadz (missing field)|ZIELONY
+compute_clusters_matches_web_maps_up_to_500_hexes|A|civs.json: brak pol Bonus startowy/bonusy/mnoznikHandelPieniadz (missing field)|ZIELONY
+build_cluster_spawn_plan_matches_web_maps_1101_to_2500_hexes|A|civs.json: brak pol Bonus startowy/bonusy/mnoznikHandelPieniadz (missing field)|ZIELONY
+build_cluster_spawn_plan_matches_web_maps_over_2500_hexes|A|civs.json: brak pol Bonus startowy/bonusy/mnoznikHandelPieniadz (missing field)|ZIELONY
+build_cluster_spawn_plan_matches_web_maps_501_to_1100_hexes|A|civs.json: brak pol Bonus startowy/bonusy/mnoznikHandelPieniadz (missing field)|ZIELONY
+build_cluster_spawn_plan_matches_web_maps_up_to_500_hexes|A|civs.json: brak pol Bonus startowy/bonusy/mnoznikHandelPieniadz (missing field)|ZIELONY
+spawn_plan_without_land_falls_back_to_origin_and_player_name|A|civs.json: brak pol Bonus startowy/bonusy/mnoznikHandelPieniadz (missing field)|ZIELONY
+to_start_plan_keeps_every_field_and_drops_only_placement|A|civs.json: brak pol Bonus startowy/bonusy/mnoznikHandelPieniadz (missing field)|ZIELONY
+rust_spawn_plan_reproduces_p6_1c_web_spawn_plans|A|civs.json: brak pol Bonus startowy/bonusy/mnoznikHandelPieniadz (missing field)|ZIELONY
