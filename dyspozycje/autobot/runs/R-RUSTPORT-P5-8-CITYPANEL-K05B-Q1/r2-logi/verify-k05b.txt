@@ -1,0 +1,32 @@
+OK   TEXT partia 1 renderEkonomiaStrip 4638-4653 (k05b-podzial.ts): bajtowo = pin
+OK   TEXT partia 1 appendPodzialHandlu 4654-4734 (k05b-podzial.ts): bajtowo = pin
+OK   TEXT partia 1 appendCitySkarbiecBalance 4735-4768 (k05b-podzial.ts): bajtowo = pin
+OK   TEXT partia 1 renderPodzialHandlu 4769-4774 (k05b-podzial.ts): bajtowo = pin
+OK   TEXT partia 1 buildTopBarZlotoDetailCard 5824-5903 (k05b-podzial.ts): bajtowo = pin
+OK   TEXT partia 1 renderSplitPane 9257-9272 (k05b-widgety.ts): bajtowo = pin
+OK   TEXT partia 1 appendGarrisonUnitChip 9359-9391 (k05b-widgety.ts): bajtowo = pin
+OK   TEXT partia 1 improvementRangeRow 9604-9616 (k05b-widgety.ts): bajtowo = pin
+OK   TEXT partia 2 appendBuildingRequirementsBlock 6994-7004 (k05b-karty.ts): bajtowo = pin
+OK   TEXT partia 2 buildBuildingInfocard 7012-7134 (k05b-karty.ts): bajtowo = pin
+OK   TEXT partia 2 appendTechDetailBlock 7397-7463 (k05b-karty.ts): bajtowo = pin
+OK   TEXT partia 2 ensureEntityCardBuildingStyles 7467-7528 (k05b-karty.ts): bajtowo = pin
+OK   TEXT partia 2 buildBuildingDetailCardViaEntityCard 7530-7556 (k05b-karty.ts): bajtowo = pin
+OK   TEXT partia 2 buildBuildingDetailCard 7558-7569 (k05b-karty.ts): bajtowo = pin
+OK   TEXT partia 2 _legacyBuildBuildingDetailCard 7571-7697 (k05b-karty.ts): bajtowo = pin
+OK   TEXT partia 2 buildBuildingBuildTabDetailCard 7699-7804 (k05b-karty.ts): bajtowo = pin
+OK   TEXT partia 3 _legacyBuildUnitDetailCard 7895-7974 (k05b-jednostki.ts): bajtowo = pin
+OK   TEXT partia 3 buildRecruitTabDetailCard 8861-8889 (k05b-jednostki.ts): bajtowo = pin
+OK   TEXT partia 3 buildUpgradeBonusDetailCard 8979-9030 (k05b-jednostki.ts): bajtowo = pin
+OK   TEXT wsparcie buildingLocationRequirementMet 6821-6828 (k05b-chipy.ts): bajtowo = pin
+OK   TEXT wsparcie buildingRequirementChips 6830-6929 (k05b-chipy.ts): bajtowo = pin
+OK   TEXT wsparcie missingTechSteps 8537-8540 (k05b-chipy.ts): bajtowo = pin
+OK   TEXT wsparcie buildingStockCostChipsHtml 6609-6633 (k05b-chipy.ts): bajtowo = pin
+OK   ORPHAN: bloki markera bez wpisu partii/wsparcia: 0
+OK   LICZBA bloków markera: 23 (oczekiwano 23)
+OK   DANINA-Z6 daninaLabelGenitive: pin danina-nazwa.ts:17-19 = port k05b-host.ts (zwraca 'podatku')
+OK   CONST HANDEL_PCT_STEP: pin game/cities.ts:578=10 port=10
+OK   CONST MAX_PROCENT_NAUKA: pin game/cities.ts:581=60 port=60
+OK   NEG zmiana znaku w treści -> FAIL
+OK   NEG usunięty komentarz -> FAIL
+OK   NEG podwójny `export` na deklaracji -> FAIL, pojedynczy -> OK
+VERIFY K05B: OK

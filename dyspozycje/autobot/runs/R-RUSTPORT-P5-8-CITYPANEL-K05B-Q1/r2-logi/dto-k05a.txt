@@ -1,0 +1,17 @@
+OK   mapper(MOCK) = oczekiwane DTO
+OK   mockCityPanelK05aInputs() = oczekiwane DTO
+OK   mapper nie współdzieli obiektów z wejściem
+OK   brak pola w wejściu = brak pola w DTO
+OK   empireRekruciTotal: właściciel z DTO = 14
+OK   empireRekruciTotal: właściciel spoza DTO = silnik 999
+OK   recruitManpowerCost: typ z DTO = 6
+OK   recruitManpowerCost: typ spoza DTO = silnik 777
+OK   unitStockCost: typ z DTO = {drewno:2}
+OK   unitStockCost: typ spoza DTO = silnik
+OK   stockResourceLabel: klucz z DTO = Drewno
+OK   stockResourceLabel: klucz spoza DTO = silnik
+OK   techPrereqChain: technologia z DTO
+OK   techPrereqChain: technologia spoza DTO = silnik
+OK   empireRekruciTotal: brak puli imperium -> pula miasta z DTO = 30
+OK   empireRekruciTotal: miasto spoza DTO -> migawka silnika 111
+DTO K05A: sprawdzeń 16, błędów 0
