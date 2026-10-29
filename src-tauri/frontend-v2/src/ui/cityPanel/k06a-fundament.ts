@@ -224,3 +224,96 @@ export function formatTileYieldShort(y: TileYieldK06): string {
   if (y.handel !== 0) parts.push(`${y.handel > 0 ? '+' : ''}${y.handel} ${cityPanelChipIconWrap('res-treasury', 12)}`);
   return parts.length ? parts.join(' ') : '0';
 }
+
+// pin edb8fb56 gra/src/ui/cityPanel.ts:9556-9569
+/** Mapa `ImprovementKey` (klucz obiektu w `terrain-improvements.json`) → nazwa gracza
+ * (`row.nazwa`) — T7b (KARTA-ULEPSZENIA-TERENU), call-site 3/3, sekcja „Ulepszenia
+ * w zasięgu". Ten sam wzorzec odwrotny co `IMPROVEMENT_NAME_TO_KEY` w
+ * `techDiscoveryNotice.ts`/`technologyAdapter.ts` (Bug B, R-TECH-ULEPSZENIA-TERENU-SYNC-Q1),
+ * tylko w drugą stronę (tu KLUCZ jest już znany — z `improvementKeysForHex` — brakuje
+ * tylko etykiety do wyświetlenia w wierszu). */
+export function buildImprovementKeyToName(rows: Record<string, { nazwa?: string }>): Record<string, string> {
+  const map: Record<string, string> = {};
+  for (const [key, row] of Object.entries(rows)) {
+    if (key.startsWith('_')) continue;
+    if (typeof row?.nazwa === 'string' && row.nazwa) map[key] = row.nazwa;
+  }
+  return map;
+}
+
+// pin edb8fb56 gra/src/ui/cityPanel.ts:9765-9783
+/**
+ * P-HEKS-PANEL-TOOLTIP-WARSTWA-OSTATNIA (2026-08-09): musi czytać WSZYSTKIE warstwy
+ * ulepszeń (`hex.ulepszenia`) przez `improvementKeysForHex`, tak jak silnik
+ * (`hexToWorkedTile` w turn-economy.ts) i naprawione już `yieldOfMapHex` /
+ * `foodPotentialOfMapHex` w okolica.ts — nie tylko legacy pojedyncze pole
+ * `hex.ulepszenie` (ostatnia postawiona warstwa).
+ */
+export function tileYieldLabel(hex: HexK06): string {
+  const ulepszeniaKeys = improvementKeysForHex(hex as HexLike);
+  const y = tileYield({
+    terenBazowy: hex.terenBazowy,
+    nakladka: hex.nakladka ?? NAKLADKA_BRAK,
+    maRzeke: !!(hex.rzeka && hex.rzeka.obecna),
+    zloze: (hex as { zloze?: string }).zloze,
+    ulepszenieKey: ulepszeniaKeys[0],
+    ulepszeniaKeys: ulepszeniaKeys.length ? ulepszeniaKeys : undefined,
+  });
+  return formatTileYieldShort(y);
+}
+
+// pin edb8fb56 gra/src/ui/cityPanel.ts:10228-10237
+export function headerOrderBadge(city: CityK06): string {
+  const st = cfg.getOrderState?.(city.id);
+  if (!st || st.szPct == null) {
+    return `<div class="mbadge muted" style="font-size:0.78em;">Porządek — szczegóły poniżej</div>`;
+  }
+  const por = st.porPct ?? 0;
+  const cls = por >= 60 ? 'green' : por >= 30 ? 'gold' : 'red';
+  const warn = st.revoltWarning ? ' \u26a0\ufe0f' : '';
+  return `<div class="mbadge"><span class="muted">Porządek:</span> <b class="${cls}">${por.toFixed(0)}%</b>${warn}</div>`;
+}
+
+// pin edb8fb56 gra/src/ui/cityPanel.ts:10239-10245
+export function drawerTabButtons(): string {
+  return dep().cityTabs().map(t => {
+    const on = dep().activeDrawerTab() === t.id;
+    return `<button type="button" class="civ-cs-tab${on ? ' on' : ''}" data-tab="${t.id}" role="tab" aria-selected="${on}">`
+      + `<span class="civ-cs-tab-inner">${dep().cityTabIconHtml(t.id)}<span class="civ-cs-tab-lbl">${t.short}</span></span></button>`;
+  }).join('');
+}
+
+// pin edb8fb56 gra/src/ui/cityPanel.ts:10183-10189
+/** Cities of the active city's owner (for prev/next navigation). */
+export function ownerCities(city: CityK06): CityK06[] {
+  const all = cfg.getCities?.();
+  if (!all) return [city];
+  const list = all.filter(c => c.ownerId === city.ownerId);
+  return list.length > 0 ? list : [city];
+}
+
+// pin edb8fb56 gra/src/ui/cityPanel.ts:10191-10202
+/** Kolejność nawigacji między miastami — od lewej do prawej na mapie (świat X, potem Z). */
+export function ownerCitiesForNav(city: CityK06): CityK06[] {
+  const list = ownerCities(city);
+  if (list.length < 2) return list;
+  return [...list].sort((a, b) => {
+    const aw = axialToWorld(a.q, a.r, HEX_R);
+    const bw = axialToWorld(b.q, b.r, HEX_R);
+    if (Math.abs(aw.x - bw.x) > 0.01) return aw.x - bw.x;
+    if (Math.abs(aw.z - bw.z) > 0.01) return aw.z - bw.z;
+    return a.name.localeCompare(b.name, 'pl');
+  });
+}
+
+// pin edb8fb56 gra/src/ui/cityPanel.ts:10204-10207
+/** Tytuł miasta w panelu — dopisek miasto-państwo dla obcych klastrowych (Maciej 2026-07-07). */
+export function cityPanelTitle(city: CityK06): string {
+  return formatCityMapLabel(city);
+}
+
+// pin edb8fb56 gra/src/ui/cityPanel.ts:10223-10226
+/** Nawigacja ← → — eksport dla skrótów klawiszowych w cityUxFrame. */
+export function navigateCityPanel(dir: -1 | 1): void {
+  switchCity(dir);
+}
