@@ -1,0 +1,22 @@
+baseline: verify handel=0 slider=0, pin-exec=0
+ZABITA ownerHasMennica: inny id budynku | verify=1 harness=1
+ZABITA activeTradeRouteCountForCity: status trasy | verify=1 harness=1
+ZABITA activeTradeRouteCountForCity: pomija warunek budynku | verify=1 harness=1
+ZABITA buildHandelDetailCard: tekst algorytmu | verify=1 harness=1
+ZABITA renderHandelSlidersPanel: etykieta chipu | verify=1 harness=1
+ZABITA daninaLabelAccusative: stała (kotwica pinu) | verify=0 harness=1
+ZABITA [pole, harness-only] cfg.getCivKey: zły klucz (ownerId -> id miasta) | harness=1
+ZABITA [pole, harness-only] mennicaGate: zły klucz (ownerId -> id miasta), K08D-Z11 | harness=1
+ZABITA [pole, harness-only] mennicaGate: pole mennicaAktywna zamienione na mennicaSpiZBrakuZlota | harness=1
+ZABITA [pole, harness-only] mennicaGate: pole mennicaSpiZBrakuZlota zamienione na mennicaAktywna | harness=1
+ZABITA [pole, harness-only] mennicaGate: pole maMennicaBudynek pominięte (stała false) | harness=1
+ZABITA [pole, harness-only] mennicaGate (k08d-deps): przesunięty ownerId w delegacie | harness=1
+ZABITA [pole, harness-only] cfg.data.civs: pole pominięte | harness=1
+ZABITA [pole, harness-only] cfg.difficulty: pole zastąpione stałą | harness=1
+ZABITA [pole, harness-only] TradeRouteK05bDto.toCityId: pominięte w liczniku | harness=1
+ZABITA [pole, harness-only] premia: zły klucz mapy | harness=1
+ZABITA [pole, harness-only] cfg.getTradeRoutes: pole pominięte w premii | harness=1
+ZABITA [pole, harness-only] cfg.getBuiltBuildingIds: zły klucz | harness=1
+
+mutacje k08d: ZABITE 6/6
+mutacje pól DTO/cfg k08d: ZABITE 12/12

@@ -1,0 +1,10 @@
+IDENTYCZNA ownerHasMennica | pin 1322-1330 (9 l) | cur 1322-1330 (9 l)
+IDENTYCZNA activeTradeRouteCountForCity | pin 11045-11054 (10 l) | cur 11003-11012 (10 l)
+IDENTYCZNA buildHandelDetailCard | pin 10845-11005 (161 l) | cur 10803-10963 (161 l)
+IDENTYCZNA renderHandelSlidersPanel | pin 11007-11033 (27 l) | cur 10965-10991 (27 l)
+IDENTYCZNA appendCompositionBlock | pin 3814-3834 (21 l) | cur 3814-3834 (21 l)
+IDENTYCZNA buildTopBarReligiaDetailCard | pin 5992-6039 (48 l) | cur 5992-6039 (48 l)
+IDENTYCZNA renderReligia | pin 4112-4220 (109 l) | cur 4112-4220 (109 l)
+
+dryf treści K08D (7 jednostek): zmienionych=0/7
+EXIT 0

@@ -305,3 +305,28 @@ Partia `rail`: 6 z 24 jednostek DOM bloku K08 (150 z 1 324 LOC) w `src/ui/cityPa
 - Rozmiar: 2 z 6 jednostek dispatchu zrobione (praca); `renderWealth`, `renderReligia`, `renderHandelSlidersPanel` NIE_ZROBIONE (blokery w `P5-8-K08C.md` §3). `renderPodzialPracy` odłożona (blokery: `appendPodzialPracyInfo` i inne, nie w tabeli K08B §3). Szczegóły: `dyspozycje/rust-port/p5/P5-8-K08C.md`.
 
 - P5.8 K08C r2 (Operator-impl, R-RUSTPORT-P5-8-CITYPANEL-K08C-Q1, runda 2/5): (a) `getUnitDef` po polu `Jednostka` (pin `data/loader.ts:430`), wcześniej po `id` (błąd: dane gry nie mają `id`); (b) `resolveEmpireSnap` = `resolveEmpireSnapK` z silnika (K04C-Z6); (c) atrapy K08C-Z5 rzucają dla wejścia niepustego (pusta lista = poprawna odpowiedź); (d) partia `podzial`: `renderPodzialPracy` (pin 5112-5188) w `src/ui/cityPanel/k08c-podzial.ts`; (e) `K05bCfg` +3 pola opcjonalne (`onPodzialPracyChange`, `getPodzialPracyOverride`, `onPodzialPracyOverrideToggle`). Harnessy: `run-k08c-wiring.mjs` 28/28 + `mutate-k08c-wiring.mjs` 14/14; `run-k08c-podzial-pin.mjs` 20/20 + `mutate-k08c-podzial.mjs` 10/10. Rozmiar: 3 z 6 jednostek zrobione (`buildPracaDetailCard`, `buildTopBarPracaDetailCard`, `renderPodzialPracy`); `renderHandelSlidersPanel`, `renderWealth`, `renderReligia` NIE_ZROBIONE (blokery: `P5-8-K08C.md` §8.3). Szczegóły: `dyspozycje/rust-port/p5/P5-8-K08C.md` §8.
+
+## Status P5.8 K08D (`R-RUSTPORT-P5-8-CITYPANEL-K08D-Q1`, runda 1/5 — Operator-impl)
+
+- Partia `handel` (3 jednostki): `ownerHasMennica` (pin 1322-1330), `activeTradeRouteCountForCity` (pin 11045-11054), `buildHandelDetailCard` (pin 10845-11005) w `src/ui/cityPanel/k08d-handel.ts` (kopie pinu, bramka `verify-k08d-copies.mjs --batch handel`).
+- Partia `slider` (1 jednostka): `renderHandelSlidersPanel` (pin 11007-11033) w `src/ui/cityPanel/k08d-slider.ts`.
+- Delegaty reguł K08D: `src/ui/cityPanel/k08d-deps.ts` (rejestr `setK08dDeps`, osobny od `k06b-deps`); wiring `src/controller/k08dWiring.ts` (`installK08dWiring`, wartości od wywołującego, bez atrap).
+- Pola `K05bCfg` (dopisek): `getCivKey`, `getOwnerHasZlotoAccess`, `getTradeRoutes`, `difficulty`, `data`; typ `TradeRouteK05bDto`.
+- Harnessy: `run-k08d-handel-pin.mjs` 32/32 (pin-exec 4 zakresów vs port, kotwice pinu, delegat `daninaLabelAccusative` względem pliku pinu); `mutate-k08d-handel.mjs` 6/6 ZABITE.
+- NIE_ZROBIONE (kolejne rundy): `renderWealth` (+ `loadWealthParams`, `wealthCap`, `buildWealthDetailCard`, `appendWealthCompactStrip`), `renderReligia` (+ `religiaSzPunkty`, `computeOrderStateLocal`, `appendCompositionBlock`, `buildTopBarReligiaDetailCard`). Produkcyjne podpięcie wiringu = K09. Szczegóły: `dyspozycje/rust-port/p5/P5-8-K08D.md`.
+
+## Status P5.8 K08D, runda 3/5 (Operator-impl, `R-RUSTPORT-P5-8-CITYPANEL-K08D-Q1`)
+
+- NAPRAW 5 (P5.13): bramka Mennicy (`maMennica`, `mennicaAktywna`, `mennicaSpiZBrakuZlota`) przeniesiona z UI do delegatu `mennicaGate` (`k08d-deps.ts`, wiring `k08dWiring.ts`). Commit `99b27104`. Mutacje: handel 6/6 + pól 12/12; wiring 15/15.
+- NAPRAW 3c: partia `religia` w `src/ui/cityPanel/k08d-religia.ts` (`renderReligia` pin 4112–4220, `buildTopBarReligiaDetailCard` pin 5992–6039, `appendCompositionBlock` pin 3814–3834). Reguły jako delegaty `religiaSzPunkty`, `religiaXRelTop`. Commit `0987c7d3`. Harness `run-k08d-religia-pin.mjs` 34/34; `mutate-k08d-religia.mjs` 10/10; `verify-k08d-copies --batch religia` OK.
+- Gate: `run-k08d-wiring` 23/23 (mutacje 15/15); `run-k08d-handel-pin` 36/36; `npm run check` i `typecheck` zielone; drift jednostek K08D 0/7.
+- NIE_ZROBIONE: `renderWealth` z zależnościami (partia `wealth`, runda 4). Decyzja kopia pinu vs DTO (`k03-cards.ts`, `k04c-zamoznosc.ts`) wymagana przed kodem.
+- Szczegóły i lista zmian API: `dyspozycje/rust-port/p5/P5-8-K08D.md` §9.
+
+## Status P5.8 K08D, runda 4/5 (Operator-impl, `R-RUSTPORT-P5-8-CITYPANEL-K08D-Q1`)
+
+- NAPRAW 3a: partia `wealth-pasek` w `src/ui/cityPanel/k08d-wealth-pasek.ts` (`appendWealthCompactStrip` pin 4247–4304, `buildWealthCompactTooltipCard` pin 4307–4350; kopie prezentacyjne). Commit `225937d1`.
+- NAPRAW 3a: partia `wealth` w `src/ui/cityPanel/k08d-wealth.ts` (`renderWealth` pin 4775–4822, `buildWealthDetailCard` pin 4824–4944). Reguły zamożności jako delegaty `loadWealthParams`, `wealthCap`, `wealthProg`, `wealthMnoznik`, `wealthZadowolenie`, `wealthRownowaga` (`k08d-deps.ts`, wiring `k08dWiring.ts`, K08D-Z13). `gameData()` pinu zastąpione parametrem `data` (K08D-Z14). `City.wealthState` i `freshWealthState` w `k05b-host.ts` dostały pole `pula` (K08D-Z15).
+- Gate: `verify-k08d-copies` (handel, slider, religia, wealth-pasek, wealth) OK; `run-k08d-wealth-pin` 53/53; `run-k08d-wiring` 35/35; `mutate-k08d-wealth` 16/16 (pola/delegaty 10/10); `mutate-k08d-wiring` 21/21; `mutate-k08d-religia` 10/10; `mutate-k08d-handel` 6/6 + 12/12; `measure-k08d-drift` 0/11; `npm run check` i `typecheck` zielone.
+- NIE_ZROBIONE: `computeOrderStateLocal` nie należy do domknięcia `renderWealth` ani `renderReligia` (sprawdzone przez `tsc` na kopiach); przypisane do K09 (porządek miasta). Produkcyjne podpięcie wiringu = K09. K08D-Z10 (id number vs string) = K09.
+- Szczegóły: `dyspozycje/rust-port/p5/P5-8-K08D.md` §11.

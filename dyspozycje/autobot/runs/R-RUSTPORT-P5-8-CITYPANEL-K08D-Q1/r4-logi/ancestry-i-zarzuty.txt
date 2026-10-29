@@ -1,0 +1,5 @@
+zarzut 4: merge-base --is-ancestor origin/rust-port/parity-v2 HEAD -> prawda (parity-v2 f5d34b52 jest przodkiem linii)
+merge-base --is-ancestor HEAD origin/rust-port/parity-v2 -> falsz
+merge-base origin/rust-port/parity-v2 HEAD -> f5d34b5207983e137b314f3fbd10b59cb8b678d6 (fast-forward, rebase niepotrzebny)
+zarzut 3: grep computeOrderStateLocal w src/ui/cityPanel/k08d-*.ts -> 0 trafien; zakresy renderWealth, buildWealthDetailCard, appendWealthCompactStrip, buildWealthCompactTooltipCard: tsc EXIT 0 (identyfikatory zadeklarowane w porcie)
+grep any / as any w src/ui/cityPanel/k08d-*.ts i src/controller/k08dWiring.ts -> 0 trafien

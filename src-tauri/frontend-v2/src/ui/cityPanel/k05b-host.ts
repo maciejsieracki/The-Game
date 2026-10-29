@@ -25,7 +25,8 @@ export type { AvailabilityContext, BuildingReqChip, CityView };
 export interface City {
   readonly id: number;
   readonly ownerId: number;
-  readonly wealthState?: { readonly poziom: number };
+  /** K08D-Z15 (runda 4, partia wealth): pola `poziom` i `pula` (pin `city.wealthState`, `game/wealth`). */
+  readonly wealthState?: { readonly poziom: number; readonly pula: number };
 }
 
 /** K05B-Z5: lokalna kopia typu `BuildingDef` (pin: data/loader.ts) — pola czytane przez jednostki K05B. */
@@ -111,8 +112,20 @@ export interface GameData {
   readonly econParams?: unknown;
 }
 
+/** K08D-Z13 (runda 3, partia religia): stan religii miasta (pin `ReligionState`, `cfg.getReligionState`); pola czytane przez kopie. */
+export interface ReligionStateK08d {
+  readonly dominujaca: string;
+  readonly udzialPct: number;
+  readonly wplywSzczescie: number;
+  readonly przyrostWiernych?: number | null;
+  readonly stateReligion?: string | null;
+  readonly sklad?: readonly { readonly name: string; readonly pct: number }[];
+  readonly zrodla?: readonly { readonly nazwa: string; readonly wartosc: number }[];
+}
+
 /** K05B-Z1: metody `cfg` pinu używane przez jednostki K05B; wartości z DTO/silnika (wiring poza zakresem). */
 export interface K05bCfg {
+  getReligionState?: (cityId: number) => ReligionStateK08d | undefined;
   getTreasury?: (ownerId: number) => number | undefined;
   getCityMoneySnap?: (cityId: number) => CityMoneySnap | undefined;
   getPodzialHandluOverride?: (cityId: number) => boolean | undefined;
@@ -135,6 +148,24 @@ export interface K05bCfg {
   getPodzialPracyOverride?: (cityId: number) => boolean | undefined;
   /** K08C-Z8: pin `cfg.onPodzialPracyOverrideToggle?.(cityId)`. */
   onPodzialPracyOverrideToggle?: (cityId: number) => void;
+  /** K08D-Z2 (runda 1): pin `cfg.getCivKey?.(ownerId)` — klucz cywilizacji (mnożnik Waluty+Mennicy, `buildHandelDetailCard`). */
+  getCivKey?: (ownerId: number) => string | undefined;
+  /** K08D-Z2: pin `cfg.getOwnerHasZlotoAccess?.(ownerId)` — dostęp imperium do złota (bramka Mennicy). */
+  getOwnerHasZlotoAccess?: (ownerId: number) => boolean | undefined;
+  /** K08D-Z2: pin `cfg.getTradeRoutes?.() ?? []` — trasy handlowe (`activeTradeRouteCountForCity`). */
+  getTradeRoutes?: () => readonly TradeRouteK05bDto[];
+  /** K08D-Z2: pin `cfg.difficulty` (właściwość, nie metoda) — poziom trudności dla parametrów ekonomii. */
+  difficulty?: string;
+  /** K08D-Z2: pin `cfg.data` — dane gry; czytane tylko pole `civs` (mnożnik Waluty+Mennicy). */
+  data?: { readonly civs?: unknown };
+}
+
+/** K08D-Z3: wiersz trasy handlowej — pola czytane przez `activeTradeRouteCountForCity` i premię tras (pin `game/trade-routes.ts`). */
+export interface TradeRouteK05bDto {
+  readonly status: string;
+  readonly budynekOdblokowany?: boolean;
+  readonly fromCityId: number;
+  readonly toCityId: number;
 }
 
 /** K05B-Z5: migawka rekrutów miasta (pin: `getManpowerSnapshot`) — pola czytane przez `buildRecruitTabDetailCard`. */
@@ -206,7 +237,7 @@ export interface K05bHost {
   readPodzialHandlu(city: City, data: GameData | null): PodzialHandluSplit;
   isMeCity(ownerId: number): boolean;
   adjustHandelSplit(split: PodzialHandluSplit, key: keyof PodzialHandluSplit, value: number): PodzialHandluSplit;
-  freshWealthState(): { readonly poziom: number };
+  freshWealthState(): { readonly poziom: number; readonly pula: number };
   stockResourceLabel(key: string): string;
   rerender(): void;
   readonly rules: K05bRules;
@@ -250,7 +281,7 @@ export function adjustHandelSplit(split: PodzialHandluSplit, key: keyof PodzialH
 }
 
 /** K05B-Z1: pin `freshWealthState` (game/wealth) — przez host. */
-export function freshWealthState(): { readonly poziom: number } {
+export function freshWealthState(): { readonly poziom: number; readonly pula: number } {
   return h().freshWealthState();
 }
 

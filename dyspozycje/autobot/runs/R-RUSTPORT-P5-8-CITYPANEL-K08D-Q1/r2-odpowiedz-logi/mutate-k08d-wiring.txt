@@ -1,0 +1,13 @@
+baseline run-k08d-wiring: EXIT 0
+ZABITA         buildEconParams-args-swapped | FAIL checków=1
+ZABITA         buildEconParams-difficulty-fixed | FAIL checków=1
+ZABITA         biblioteka-empty-list | FAIL checków=1
+ZABITA         biblioteka-shifted-ids | FAIL checków=1
+ZABITA         mnoznik-fallback-zeroed | FAIL checków=1
+ZABITA         mnoznik-civKey-dropped | FAIL checków=1
+ZABITA         trasy-empty-list | FAIL checków=1
+ZABITA         trasy-delegate-dropped | FAIL checków=2
+ZABITA         biblioteka-delegate-dropped | FAIL checków=4
+
+mutacje k08d-wiring: 9/9 ZABITA, przeżyło=0, błędy=0
+EXIT 0

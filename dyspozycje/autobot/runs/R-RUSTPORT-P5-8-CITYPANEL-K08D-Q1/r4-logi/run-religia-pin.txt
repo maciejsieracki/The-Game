@@ -1,0 +1,36 @@
+OK   pin.range.appendCompositionBlock | cityPanel.ts:3814-3834
+OK   pin.range.buildTopBarReligiaDetailCard | cityPanel.ts:5992-6039
+OK   pin.range.renderReligia | cityPanel.ts:4112-4220
+OK   pin.anchor.1 | cityPanel.ts:4141 const relSzPkt = relState ? religiaSzPun
+OK   pin.anchor.2 | cityPanel.ts:4168 label: 'Państwo',
+OK   pin.anchor.3 | cityPanel.ts:4208 'Brak rozpisanych składników religii w t
+OK   pin.anchor.4 | cityPanel.ts:6026 const xRelTop = kultReligScaleForEra(
+OK   pin.anchor.5 | cityPanel.ts:6005 const relParams = data
+OK   pin.anchor.6 | cityPanel.ts:4132 'Brak danych silnika (hak getReligionSta
+OK   exec.rel.view.state | pin-exec vs port: renderReligia innerHTML (1572 znaków)
+OK   exec.rel.view.state.nonEmpty | wynik niepusty
+OK   exec.rel.view.noState | pin-exec vs port: renderReligia innerHTML (715 znaków)
+OK   exec.rel.view.noState.nonEmpty | wynik niepusty
+OK   exec.rel.noView.state | pin-exec vs port: renderReligia innerHTML (1572 znaków)
+OK   exec.rel.noView.state.nonEmpty | wynik niepusty
+OK   exec.rel.noView.noState | pin-exec vs port: renderReligia innerHTML (715 znaków)
+OK   exec.rel.noView.noState.nonEmpty | wynik niepusty
+OK   exec.rel.view.stateNoSklad | pin-exec vs port: renderReligia innerHTML (1131 znaków)
+OK   exec.rel.view.stateNoSklad.nonEmpty | wynik niepusty
+OK   exec.card.state | pin-exec vs port: buildTopBarReligiaDetailCard outerHTML (1283 znaków)
+OK   exec.card.state.nonEmpty | wynik niepusty
+OK   exec.card.noState | pin-exec vs port: buildTopBarReligiaDetailCard outerHTML (1282 znaków)
+OK   exec.card.noState.nonEmpty | wynik niepusty
+OK   exec.comp.full | appendCompositionBlock: sekcja + przypis, pin = port
+OK   exec.comp.full.nonEmpty | appendCompositionBlock: treść niepusta
+OK   exec.comp.empty | appendCompositionBlock: pusta lista => brak wyjścia (pin = port)
+OK   exec.closure.state | karta „i szczegóły” (bez widoku, stan religii): pin = port (347 znaków)
+OK   exec.closure.state.nonEmpty | karta „i szczegóły” niepusta i zawiera „Wpływ na Sz”
+OK   exec.closure.neg | karta „i szczegóły” z ujemnym wpływem: pin = port
+OK   deps.religiaSzPunkty | religiaSzPunkty(0.4, 0) = 4
+OK   deps.religiaXRelTop | religiaXRelTop(0) przy epoce 3 = 307
+OK   exec.anchor.panstwo | chip „Państwo” gdy brak stanu religii, a imperium ma religię państwa
+OK   exec.anchor.sz | chip Sz = +4 (wskaźnik 0.4 -> 4 przez atrapę)
+OK   exec.anchor.skladObca | skład: „obca” dla składnika innego niż religia państwa
+
+k08d-religia-pin: 34/34 zgodnych

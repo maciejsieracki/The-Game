@@ -1,0 +1,13 @@
+baseline: verify religia=0, harness=0
+ZABITA renderReligia: etykieta chipu Państwo | verify=1 harness=1
+ZABITA buildTopBarReligiaDetailCard: tekst karty (Szerzenie) | verify=1 harness=1
+ZABITA appendCompositionBlock: separator wiersza | verify=1 harness=1
+ZABITA renderReligia: tekst pustego składu | verify=1 harness=1
+ZABITA [pole, harness-only] religiaXRelTop: klucz miasta zamiast właściciela | harness=1
+ZABITA [pole, harness-only] renderReligia: relSzPkt z id miasta zamiast właściciela | harness=1
+ZABITA [pole, harness-only] renderReligia: szPkt karty z id miasta | harness=1
+ZABITA [pole, harness-only] renderReligia: szPkt z przyrostu zamiast wpływu | harness=1
+ZABITA [pole, harness-only] religiaSzPunkty (k08d-deps): przesunięty ownerId | harness=1
+ZABITA [pole, harness-only] religiaXRelTop (k08d-deps): przesunięty ownerId | harness=1
+
+mutacje religia: ZABITE 10/10 (pola/delegaty harness-only: 6/6)

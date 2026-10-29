@@ -1,0 +1,26 @@
+OK   W1.missing.mennicaGate | przed instalacją mennicaGate rzuca „K08D: brak delegatu mennicaGate”
+OK   W1.missing.religiaSzPunkty | przed instalacją religiaSzPunkty rzuca „K08D: brak delegatu religiaSzPunkty”
+OK   W1.missing.religiaXRelTop | przed instalacją religiaXRelTop rzuca „K08D: brak delegatu religiaXRelTop”
+OK   W1.missing.buildEconParams | przed instalacją buildEconParams rzuca „K08D: brak delegatu buildEconParams”
+OK   W1.missing.cityHasBibliotekaLine | przed instalacją cityHasBibliotekaLine rzuca „K08D: brak delegatu cityHasBibliotekaLine”
+OK   W1.missing.mnoznikHandelPieniadzForCivByDifficulty | przed instalacją mnoznikHandelPieniadzForCivByDifficulty rzuca „K08D: brak delegatu mnoznikHandelPieniadzForCivByDifficulty”
+OK   W1.missing.computeTradeRouteBuildingBonusByCity | przed instalacją computeTradeRouteBuildingBonusByCity rzuca „K08D: brak delegatu computeTradeRouteBuildingBonusByCity”
+OK   W2.mennicaGate.args | mennicaGate(4) => reguła dostaje ownerId 4 i zwraca jej obiekt bez zmian
+OK   W2.buildEconParams.args | buildEconParams(data, "hard") => reguła dostaje (data, "hard")
+OK   W2.buildEconParams.value | buildEconParams zwraca wynik reguły (tag E, cap 3)
+OK   W2.cityHasBibliotekaLine | cityHasBibliotekaLine(3 ids) => true z reguły (przekazana długość 3)
+OK   W2.mnoznik.args | mnoznik("rz", civs, "hard", 5) => 501 (fb 5 + civKey rz)
+OK   W2.mnoznik.civs | mnoznik przekazuje obiekt civs (ta sama referencja)
+OK   W2.trasy | computeTradeRouteBuildingBonusByCity(2 trasy) => Map: klucz 2 -> 77
+OK   W3.propagate | wyjątek reguły „REGULA-X” dociera do wywołującego
+OK   W4.reinstall | ponowna instalacja: cityHasBibliotekaLine => false (nowa reguła)
+OK   W2.religia.args | religiaSzPunkty(0.5, 3) => (5, 3) przekazane i zwrócone (wynik reguły = 8)
+OK   W2.religia.xrel | religiaXRelTop(7, data) => reguła dostaje (7, data) i zwraca 1007
+OK   W5.names | K08D_FN_NAMES = 7 delegatów (K08D-Z11/Z12)
+OK   W5.callable | po instalacji wszystkie 4 delegaty wywoływalne bez wyjątku
+OK   W6.missing | cfgK08dRequired({}, getOwnerHasZlotoAccess) rzuca „K08D: brak pola cfg”
+OK   W6.falseKept | cfgK08dRequired z polem zwracającym false => false (nie domyślne true)
+OK   W6.trueKept | cfgK08dRequired z polem zwracającym true => true
+
+k08d-wiring: 23/23 zgodnych
+EXIT 0

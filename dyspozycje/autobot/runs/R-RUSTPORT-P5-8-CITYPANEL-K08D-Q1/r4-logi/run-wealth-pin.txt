@@ -1,0 +1,55 @@
+OK   pin.range.appendWealthCompactStrip | cityPanel.ts:4247-4304
+OK   pin.range.buildWealthCompactTooltipCard | cityPanel.ts:4307-4350
+OK   pin.range.renderWealth | cityPanel.ts:4775-4822
+OK   pin.range.buildWealthDetailCard | cityPanel.ts:4824-4944
+OK   pin.anchor.1 | cityPanel.ts:4780 ? loadWealthParams(data.econParams as un
+OK   pin.anchor.2 | cityPanel.ts:4783 appendSectionTitleWithDetails(mount, '<s
+OK   pin.anchor.3 | cityPanel.ts:4786 'Brak danych parametrów zamożności.'
+OK   pin.anchor.4 | cityPanel.ts:4794 const cap = wealthCap(epoch, wealthParam
+OK   pin.anchor.5 | cityPanel.ts:4838 const podzial = readPodzialHandlu(city,
+OK   pin.anchor.6 | cityPanel.ts:4837 const rown = wealthRownowaga(ws.poziom,
+OK   pin.anchor.7 | cityPanel.ts:4865 'Pasek w panelu pokazuje tylko postęp pu
+OK   exec.wealth.view.mid | pin-exec vs port: renderWealth innerHTML (763 znaków)
+OK   exec.wealth.view.mid.nonEmpty | wynik niepusty
+OK   exec.wealth.view.mid.closure | karta „i szczegóły” (4413 znaków): pin = port
+OK   exec.wealth.noView.mid | pin-exec vs port: renderWealth innerHTML (697 znaków)
+OK   exec.wealth.noView.mid.nonEmpty | wynik niepusty
+OK   exec.wealth.noView.mid.closure | karta „i szczegóły” (4197 znaków): pin = port
+OK   exec.wealth.noData | pin-exec vs port: renderWealth innerHTML (232 znaków)
+OK   exec.wealth.noData.nonEmpty | wynik niepusty
+OK   exec.wealth.noData.closure | karta „i szczegóły” (128 znaków): pin = port
+OK   exec.wealth.cap | pin-exec vs port: renderWealth innerHTML (700 znaków)
+OK   exec.wealth.cap.nonEmpty | wynik niepusty
+OK   exec.wealth.cap.closure | karta „i szczegóły” (4349 znaków): pin = port
+OK   exec.wealth.fresh | pin-exec vs port: renderWealth innerHTML (762 znaków)
+OK   exec.wealth.fresh.nonEmpty | wynik niepusty
+OK   exec.wealth.fresh.closure | karta „i szczegóły” (4410 znaków): pin = port
+OK   exec.wealth.zeroZam | pin-exec vs port: renderWealth innerHTML (696 znaków)
+OK   exec.wealth.zeroZam.nonEmpty | wynik niepusty
+OK   exec.wealth.zeroZam.closure | karta „i szczegóły” (4403 znaków): pin = port
+OK   exec.card.mid | pin-exec vs port: buildWealthDetailCard outerHTML (4369 znaków)
+OK   exec.card.mid.nonEmpty | karta niepusta i zawiera „Zamożność — ściąga”
+OK   exec.card.cap | pin-exec vs port: buildWealthDetailCard outerHTML (4310 znaków)
+OK   exec.card.cap.nonEmpty | karta niepusta i zawiera „Zamożność — ściąga”
+OK   exec.card.noView | pin-exec vs port: buildWealthDetailCard outerHTML (4160 znaków)
+OK   exec.card.noView.nonEmpty | karta niepusta i zawiera „Zamożność — ściąga”
+OK   exec.strip.0 | appendWealthCompactStrip wariant 0: innerHTML pin = port (530 znaków)
+OK   exec.strip.0.nonEmpty | pasek niepusty
+OK   exec.tooltip.0 | buildWealthCompactTooltipCard wariant 0: outerHTML pin = port
+OK   exec.strip.1 | appendWealthCompactStrip wariant 1: innerHTML pin = port (468 znaków)
+OK   exec.strip.1.nonEmpty | pasek niepusty
+OK   exec.tooltip.1 | buildWealthCompactTooltipCard wariant 1: outerHTML pin = port
+OK   exec.strip.2 | appendWealthCompactStrip wariant 2: innerHTML pin = port (464 znaków)
+OK   exec.strip.2.nonEmpty | pasek niepusty
+OK   exec.tooltip.2 | buildWealthCompactTooltipCard wariant 2: outerHTML pin = port
+OK   deps.loadWealthParams.hard | loadWealthParams(x, "hard") => karaZero -5 (difficulty przekazane)
+OK   deps.loadWealthParams.normal | loadWealthParams(x, "normal") => karaZero -2 (difficulty przekazane, nie zafiksowane)
+OK   deps.wealthCap | wealthCap(1, p) = 6 (wzór testowy)
+OK   deps.wealthProg | wealthProg(2, 1, p) = 30 (wzór testowy)
+OK   deps.wealthMnoznik | wealthMnoznik(2, p) = 1.2 (wzór testowy)
+OK   deps.wealthZadowolenie | wealthZadowolenie(6, p, 1) = 3 (wzór testowy)
+OK   deps.wealthRownowaga | wealthRownowaga(6, 1, p) = 0.4 (wzór testowy)
+OK   exec.anchor.w2 | pasek pokazuje W2 i mnożnik ×1,20 (wzór testowy)
+OK   exec.anchor.noData | brak danych parametrów => komunikat, bez paska
+
+k08d-wealth-pin: 53/53 zgodnych

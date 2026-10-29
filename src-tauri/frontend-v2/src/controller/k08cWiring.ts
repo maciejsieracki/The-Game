@@ -63,7 +63,7 @@ export interface K08cHostInputs {
   readPodzialHandlu(city: City, data: GameData | null): PodzialHandluSplit;
   isMeCity(ownerId: number): boolean;
   adjustHandelSplit(split: PodzialHandluSplit, key: keyof PodzialHandluSplit, value: number): PodzialHandluSplit;
-  freshWealthState(): { readonly poziom: number };
+  freshWealthState(): { readonly poziom: number; readonly pula: number };
   stockResourceLabel(key: string): string;
   /** Pin `cfg.getEmpireHud?.(ownerId)` — snapshot imperium z silnika (`resolveEmpireSnap`, K04C-Z6). */
   getEmpireHud?(ownerId: number): EmpireHudSnap | undefined;
