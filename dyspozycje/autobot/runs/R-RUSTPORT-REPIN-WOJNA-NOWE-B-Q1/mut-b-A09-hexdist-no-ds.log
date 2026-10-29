@@ -1,0 +1,45 @@
+MUTATION A09-hexdist-no-ds
+OLD: 'dq.max(dr).max(ds)'
+NEW: 'dq.max(dr)'
+RESULT: KILLED failed_tests=2
+
+
+---- build_rally_candidates_matches_web stdout ----
+
+thread 'build_rally_candidates_matches_web' (11430) panicked at tests/p6_repin_wojna_b_army_consolidation.rs:128:9:
+assertion `left == right` failed: przypadek 3
+  left: [RallyHexRef { q: 2, r: -1 }, RallyHexRef { q: -1, r: -4 }, RallyHexRef { q: -4, r: 4 }, RallyHexRef { q: -6, r: 2 }]
+ right: [RallyHexRef { q: 2, r: -1 }, RallyHexRef { q: -4, r: 4 }, RallyHexRef { q: -1, r: -4 }, RallyHexRef { q: -6, r: 2 }]
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+   1: core::panicking::panic_fmt
+   2: core::panicking::assert_failed_inner
+   3: core::panicking::assert_failed::<alloc::vec::Vec<civ_engine::domain::army_consolidation::RallyHexRef>, alloc::vec::Vec<civ_engine::domain::army_consolidation::RallyHexRef>>
+   4: p6_repin_wojna_b_army_consolidation::build_rally_candidates_matches_web
+   5: p6_repin_wojna_b_army_consolidation::build_rally_candidates_matches_web::{closure#0}
+   6: <p6_repin_wojna_b_army_consolidation::build_rally_candidates_matches_web::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+
+failures:
+    assign_rally_targets_matches_web
+    build_rally_candidates_matches_web
+
+test result: FAILED. 4 passed; 2 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.27s
+
+   Compiling civ-engine v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_921c9171-66d-1/rust-port/engine)
+warning: unused variable: `ds`
+   --> src/domain/army_consolidation.rs:116:9
+    |
+116 |     let ds = ((-aq - ar) - (-bq - br)).abs();
+    |         ^^ help: if this is intentional, prefix it with an underscore: `_ds`
+    |
+    = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: `civ-engine` (lib) generated 1 warning (run `cargo fix --lib -p civ-engine` to apply 1 suggestion)
+    Finished `test` profile [unoptimized] target(s) in 32.38s
+     Running tests/p6_repin_wojna_b_ai_general.rs (/home/user/cargo-target-shared/wf_921c9171-66d-1/debug/deps/p6_repin_wojna_b_ai_general-a0a5b02045b60bb5)
+     Running tests/p6_repin_wojna_b_army_consolidation.rs (/home/user/cargo-target-shared/wf_921c9171-66d-1/debug/deps/p6_repin_wojna_b_army_consolidation-a44e2e953451603c)
+error: test failed, to rerun pass `--test p6_repin_wojna_b_army_consolidation`
+error: 1 target failed:
+    `--test p6_repin_wojna_b_army_consolidation`

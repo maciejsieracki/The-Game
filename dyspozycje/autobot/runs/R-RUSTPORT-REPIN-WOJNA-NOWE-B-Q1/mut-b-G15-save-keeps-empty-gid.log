@@ -1,0 +1,45 @@
+MUTATION G15-save-keeps-empty-gid
+OLD: 'if !truthy_id(&saved.general_unit_id) {\n                saved.general_unit_id = None;\n            }'
+NEW: ''
+RESULT: KILLED failed_tests=1
+
+   4: p6_repin_wojna_b_ai_general::save_matches_web
+   5: p6_repin_wojna_b_ai_general::save_matches_web::{closure#0}
+   6: <p6_repin_wojna_b_ai_general::save_matches_web::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+
+failures:
+    save_matches_web
+
+test result: FAILED. 6 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.60s
+
+
+running 6 tests
+test build_rally_candidates_matches_web ... ok
+test constants_and_flag_match_web ... ok
+test assign_rally_targets_matches_web ... ok
+test pick_rally_city_matches_web ... ok
+test split_into_war_armies_matches_web ... ok
+test war_army_count_matches_web ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.38s
+
+   Compiling civ-engine v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_921c9171-66d-1/rust-port/engine)
+warning: variable does not need to be mutable
+   --> src/domain/ai_general_war_campaign.rs:282:17
+    |
+282 |             let mut saved = c.clone();
+    |                 ----^^^^^
+    |                 |
+    |                 help: remove this `mut`
+    |
+    = note: `#[warn(unused_mut)]` (part of `#[warn(unused)]`) on by default
+
+warning: `civ-engine` (lib) generated 1 warning (run `cargo fix --lib -p civ-engine` to apply 1 suggestion)
+    Finished `test` profile [unoptimized] target(s) in 35.44s
+     Running tests/p6_repin_wojna_b_ai_general.rs (/home/user/cargo-target-shared/wf_921c9171-66d-1/debug/deps/p6_repin_wojna_b_ai_general-a0a5b02045b60bb5)
+error: test failed, to rerun pass `--test p6_repin_wojna_b_ai_general`
+     Running tests/p6_repin_wojna_b_army_consolidation.rs (/home/user/cargo-target-shared/wf_921c9171-66d-1/debug/deps/p6_repin_wojna_b_army_consolidation-a44e2e953451603c)
+error: 1 target failed:
+    `--test p6_repin_wojna_b_ai_general`

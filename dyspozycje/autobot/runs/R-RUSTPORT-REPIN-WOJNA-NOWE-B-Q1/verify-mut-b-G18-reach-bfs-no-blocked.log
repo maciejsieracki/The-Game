@@ -1,0 +1,45 @@
+MUTATION G18-reach-bfs-no-blocked
+OLD: 'if hex_keys.contains(&neighbor) || !walkable(neighbor) {'
+NEW: 'if hex_keys.contains(&neighbor) || hex_costs.get(&neighbor).is_none() {'
+RESULT: KILLED failed_tests=1
+
+---- reachability_matches_web stdout ----
+
+thread 'reachability_matches_web' (25900) panicked at tests/p6_repin_wojna_b_ai_general.rs:142:9:
+assertion `left == right` failed: przypadek 0: hexKeys
+  left: ["-1,-1", "-1,-2", "-1,-3", "-1,-4", "-1,0", "-1,1", "-1,2", "-1,3", "-1,4", "-2,-1", "-2,-2", "-2,-3", "-2,-4", "-2,0", "-2,1", "-2,2", "-2,3", "-2,4", "-3,-1", "-3,-2", "-3,-3", "-3,-4", "-3,0", "-3,1", "-3,2", "-3,3", "-3,4", "-4,-1", "-4,-2", "-4,-3", "-4,-4", "-4,0", "-4,1", "-4,2", "-4,3", "-4,4", "0,-1", "0,-2", "0,-4", "0,0", "0,1", "0,2", "0,3", "0,4", "1,-1", "1,-3", "1,-4", "1,0", "1,2", "1,3", "1,4", "2,-2", "2,-3", "2,-4", "2,0", "2,1", "2,3", "3,-1", "3,-2", "3,-3", "3,-4", "3,0", "3,1", "3,2", "3,3", "3,4", "4,-2", "4,-3", "4,-4", "4,0", "4,2", "4,4"]
+ right: ["-1,-4", "-2,-3", "-3,-2", "-3,1", "-4,-1", "-4,-2", "-4,0", "-4,1", "-4,2", "0,-4", "1,-3", "1,-4", "2,-3", "2,-4"]
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+   1: core::panicking::panic_fmt
+   2: core::panicking::assert_failed_inner
+   3: core::panicking::assert_failed::<alloc::vec::Vec<alloc::string::String>, alloc::vec::Vec<alloc::string::String>>
+   4: p6_repin_wojna_b_ai_general::reachability_matches_web
+   5: p6_repin_wojna_b_ai_general::reachability_matches_web::{closure#0}
+   6: <p6_repin_wojna_b_ai_general::reachability_matches_web::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+
+failures:
+    reachability_matches_web
+
+test result: FAILED. 6 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.47s
+
+
+running 6 tests
+test assign_rally_targets_matches_web ... ok
+test build_rally_candidates_matches_web ... ok
+test pick_rally_city_matches_web ... ok
+test split_into_war_armies_matches_web ... ok
+test constants_and_flag_match_web ... ok
+test war_army_count_matches_web ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.44s
+
+   Compiling civ-engine v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_921c9171-66d-2/rust-port/engine)
+    Finished `test` profile [unoptimized] target(s) in 34.61s
+     Running tests/p6_repin_wojna_b_ai_general.rs (/home/user/cargo-target-shared/wf_921c9171-66d-2/debug/deps/p6_repin_wojna_b_ai_general-a0a5b02045b60bb5)
+error: test failed, to rerun pass `--test p6_repin_wojna_b_ai_general`
+     Running tests/p6_repin_wojna_b_army_consolidation.rs (/home/user/cargo-target-shared/wf_921c9171-66d-2/debug/deps/p6_repin_wojna_b_army_consolidation-a44e2e953451603c)
+error: 1 target failed:
+    `--test p6_repin_wojna_b_ai_general`
