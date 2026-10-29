@@ -109,7 +109,7 @@ const vitePlugin = {
 /** Pakuje `entries` (ścieżki .ts) do `outdir` jako ESM ze wspólnymi chunkami (jedna instancja stanu modułów). */
 let urlAsHash = false;
 let aliases = [];
-export async function bundle(entries, outdir, { external = [], urlAsHash: hashUrls = false, alias = [] } = {}) {
+export async function bundle(entries, outdir, { external = [], urlAsHash: hashUrls = false, alias = [], extraPlugins = [] } = {}) {
   urlAsHash = hashUrls;
   aliases = alias;
   await build({
@@ -124,7 +124,7 @@ export async function bundle(entries, outdir, { external = [], urlAsHash: hashUr
     logLevel: 'error',
     external,
     define: { 'import.meta.env': '{"DEV":false,"PROD":true,"MODE":"production","BASE_URL":"./"}' },
-    plugins: [vitePlugin],
+    plugins: [vitePlugin, ...extraPlugins],
     entryNames: '[dir]/[name]',
     outbase: commonBase(entries),
   });

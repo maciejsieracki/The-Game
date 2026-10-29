@@ -15,7 +15,8 @@
  * - K03-Z6: `isMeCity` / `isCapital` / `activeTradeRouteCountForCity` czytaja pola `city`/`trade` z DTO.
  * - K03-Z7: `localProd` (K01B) zostaje jako lokalny cache przestawiania kolejki; `getProd`/`setProd` bez hookow cfg.
  */
-import type { CityGrowthDto, CityPanelDto, CitizenUpkeepCoverageDto, CityRevoltDto, SocietyLineDto } from '../../viewmodel/types';
+import type { CityGrowthDto, CityPanelDto, CityPanelInputsDto, CitizenUpkeepCoverageDto, CityRevoltDto, SocietyLineDto } from '../../viewmodel/types';
+import type { HandelDetailInputK, WealthCompactOptsK } from './k03-cards';
 import type { CityProductionK, GrowthPercentBreakdownK } from './k01b-dto';
 import { localProd } from './k01b-t';
 import type { CityView } from './k01b-t';
@@ -163,4 +164,90 @@ export function cityFoodSplit(view: CityView, maxSafe?: number): { total: number
   const racje = Math.round(view.kosztRacji * effectiveLevel / view.poziomRacji);
   const total = produkcja - racje;
   return { total, produkcja, racje, clamped };
+}
+
+/** K03-Z10 (pin :1008): domyslny podzial handlu wlasciciela z DTO (`sliders.handelDefault`); brak -> K01A. */
+export function readOwnerDefaultPodzialHandluFromDto(dto: CityPanelDto): PodzialHandluSplit {
+  const h = dto.sliders.handelDefault;
+  return {
+    procentPieniadz: h.procentPieniadz ?? DEFAULT_PODZIAL_HANDLU.procentPieniadz,
+    procentNauka: h.procentNauka ?? DEFAULT_PODZIAL_HANDLU.procentNauka,
+    procentLuksus: h.procentLuksus ?? DEFAULT_PODZIAL_HANDLU.procentLuksus,
+  };
+}
+
+/** K03-Z10 (pin :1132): wezly terytorium z DTO (`panelInputs.territoryNodes`); brak -> undefined jak w pinie. */
+export function territoryNodesFromDto(dto: CityPanelDto): readonly unknown[] | undefined {
+  return dto.panelInputs?.territoryNodes;
+}
+
+/** K03-Z10 (pin :1322): czy wlasciciel ma Mennice — flaga silnika (`panelInputs.ownerHasMennica`). */
+export function ownerHasMennicaFromDto(dto: CityPanelDto): boolean {
+  return dto.panelInputs?.ownerHasMennica ?? false;
+}
+
+/** K03-Z10 (pin :3061): suma szczescia z budynkow — wartosc silnika (`panelInputs.happinessBuildingsSum`). */
+export function buildingHappinessSumFromDto(dto: CityPanelDto): number {
+  return dto.panelInputs?.happinessBuildingsSum ?? 0;
+}
+
+/** K03-Z10: prerekwizyty technologii (pin `getTechDef`/`parsePrerequisites`) z `panelInputs.techPrereqs`. */
+export function techPrereqsFromDto(dto: CityPanelDto): Readonly<Record<string, readonly string[]>> {
+  return dto.panelInputs?.techPrereqs ?? {};
+}
+
+/** K03-Z10: karta handlu (pin :10845) — wejscia z `panelInputs.mennica`/`handel`, etykiety z `labels.danina`. */
+export function handelDetailInputFromDto(dto: CityPanelDto, split: PodzialHandluSplit): HandelDetailInputK {
+  const p = dto.panelInputs;
+  const m = p?.mennica;
+  const h = p?.handel;
+  const forms = dto.labels.danina;
+  return {
+    daninaLbl: forms.mianownik,
+    daninaLblGen: forms.dopelniacz,
+    daninaLblAcc: forms.biernik,
+    split,
+    korupcja: h?.korupcja ?? null,
+    maTargowisko: h?.maTargowisko ?? false,
+    maBiblioteka: h?.maBiblioteka ?? false,
+    maMennicaBudynek: m?.budynek ?? false,
+    mennicaAktywna: m?.aktywna ?? false,
+    mennicaSpiZBrakuZlota: m?.spiZBrakuZlota ?? false,
+    mennicaMnoznikTxt: m?.mnoznikTxt ?? '×?',
+    aktywneTrasyCount: h?.aktywneTrasy ?? dto.trade.activeRoutes,
+    premiaTrasHandlowych: h?.premiaTrasHandlowych ?? dto.trade.buildingBonus,
+  };
+}
+
+/** K03-Z10: opcje zamoznosci (pin :4247/:4307) z `wealth` DTO + `panelInputs.wealth`. */
+export function wealthOptsFromDto(dto: CityPanelDto, daninaLblGen: string): WealthCompactOptsK & { pct: number } {
+  const w = dto.wealth;
+  const p = dto.panelInputs?.wealth;
+  return {
+    poziom: w.poziom,
+    atCap: p?.atCap ?? false,
+    cap: w.cap,
+    epoch: p?.epoch ?? 0,
+    mnoz: w.mnoznik,
+    szBonus: p?.szBonus ?? 0,
+    pula: p?.pula ?? 0,
+    prog: w.prog,
+    etaW: p?.etaW ?? null,
+    zamIn: p?.zamIn ?? 0,
+    daninaLblGen,
+    pct: w.prog > 0 ? Math.min(100, (100 * (p?.pula ?? 0)) / w.prog) : 0,
+  };
+}
+
+/** K03-Z10: pula rekrutow (pin :5652) z `panelInputs.recruitPool`. */
+export function recruitPoolFromDto(dto: CityPanelDto): CityPanelInputsDto['recruitPool'] {
+  return dto.panelInputs?.recruitPool ?? {
+    manpowerBiezacy: 0, manpowerMax: 0, regenPerTurn: 0, kosztJednostki: 0,
+    werbMaxPrzyPelnejPuli: 0, ludnoscAbsolutna: 0, ludki: 0, epoka: 0,
+  };
+}
+
+/** K03-Z10: zdrowie (pin :3582) — suma z `health.total`, plus/minus z `panelInputs.zdrowie`. */
+export function zdrowieSumsFromDto(dto: CityPanelDto): { total: number; posSum: number; negSum: number } {
+  return { total: dto.health.total, posSum: dto.panelInputs?.zdrowie.posSum ?? 0, negSum: dto.panelInputs?.zdrowie.negSum ?? 0 };
 }
