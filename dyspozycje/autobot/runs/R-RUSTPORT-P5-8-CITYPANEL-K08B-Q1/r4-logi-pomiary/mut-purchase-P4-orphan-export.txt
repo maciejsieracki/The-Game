@@ -1,0 +1,11 @@
+{
+ "TEXT": 1,
+ "SUBS": 7,
+ "COVER": 1,
+ "EXPORT": 0,
+ "blocks": 1,
+ "ORPHAN": 0,
+ "fails": 1
+}
+FAIL EXPORT: deklaracje spoza partii: orphanPurchase
+verify-k08b-copies: 1 różnic

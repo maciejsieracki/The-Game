@@ -1,0 +1,11 @@
+{
+ "TEXT": 1,
+ "SUBS": 7,
+ "COVER": 2,
+ "EXPORT": 2,
+ "blocks": 2,
+ "ORPHAN": 0,
+ "fails": 1
+}
+FAIL TEXT: renderBuildingsOwned różni się od pinu od linii 69 (port: "    ['Spichlerz', 'Cegielnia2', 'Targowisko', 'Świątynia'].forEach(n =>", pin: "    ['Spichlerz', 'Cegielnia', 'Targowisko', 'Świątynia'].forEach(n =>")
+verify-k08b-copies: 1 różnic

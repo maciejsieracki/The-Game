@@ -1,0 +1,11 @@
+{
+ "TEXT": 1,
+ "SUBS": 7,
+ "COVER": 2,
+ "EXPORT": 2,
+ "blocks": 2,
+ "ORPHAN": 0,
+ "fails": 1
+}
+FAIL TEXT: renderBuildingsOwnedRightPanel różni się od pinu od linii 1 (port: "export  function renderBuildingsOwnedRightPanel(", pin: "export function renderBuildingsOwnedRightPanel(")
+verify-k08b-copies: 1 różnic

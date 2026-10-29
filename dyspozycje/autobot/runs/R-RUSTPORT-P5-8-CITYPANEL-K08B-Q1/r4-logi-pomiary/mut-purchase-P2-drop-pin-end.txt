@@ -1,0 +1,12 @@
+{
+ "TEXT": 0,
+ "SUBS": 7,
+ "COVER": 0,
+ "EXPORT": 1,
+ "blocks": 0,
+ "ORPHAN": 0,
+ "fails": 2
+}
+FAIL TEXT: marker 8891-8977 bez // pin-end
+FAIL COVER: brak markera dla renderPurchasableUnits (8891)
+verify-k08b-copies: 2 różnic
