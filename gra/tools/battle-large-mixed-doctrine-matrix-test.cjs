@@ -46,13 +46,17 @@ async function loadBattleScene() {
   return module.exports.BattleScene;
 }
 
+// The base matrix is the agreed 42-per-side gameplay case. Scale 2 is a
+// crowded static-occupancy stress fixture (84 per side), kept below the
+// production MAX_PER_SIDE=120 cap; avoid synthetic rosters beyond that.
+const rosterScale = Math.max(1, Math.min(2, Number.parseInt(process.env.BTF_ROSTER_SCALE || '1', 10) || 1));
 const roles = [
-  ...Array.from({ length: 14 }, () => 'infantry'),
-  ...Array.from({ length: 6 }, () => 'javelin'),
-  ...Array.from({ length: 8 }, () => 'archer'),
-  ...Array.from({ length: 4 }, () => 'slinger'),
-  ...Array.from({ length: 7 }, () => 'cavalry'),
-  ...Array.from({ length: 3 }, () => 'chariot'),
+  ...Array.from({ length: 14 * rosterScale }, () => 'infantry'),
+  ...Array.from({ length: 6 * rosterScale }, () => 'javelin'),
+  ...Array.from({ length: 8 * rosterScale }, () => 'archer'),
+  ...Array.from({ length: 4 * rosterScale }, () => 'slinger'),
+  ...Array.from({ length: 7 * rosterScale }, () => 'cavalry'),
+  ...Array.from({ length: 3 * rosterScale }, () => 'chariot'),
 ];
 const roleDetails = {
   infantry: { category: 'miecznik', name: 'Wojownik', ranged: false, mounted: false, reach: 0 },
@@ -231,6 +235,18 @@ function makeScenario(BattleScene, { doctrine, rangedLines, priorityVariant, ter
     if (traceIds.has(ru.bu.id)) events.push({ type: 'line-gate', unitId: ru.bu.id, from: [ru.q, ru.r], candidateCol, allowed, rank: ru.formationRank, moveLeft: ru.moveLeft, acted: ru.acted });
     return allowed;
   };
+  const originalAttackRoute = BattleScene.prototype._firstStepAlongPathToAttack;
+  scene._firstStepAlongPathToAttack = function(ru, ...args) {
+    const step = originalAttackRoute.call(this, ru, ...args);
+    if (traceIds.has(ru.bu.id)) events.push({ type: 'attack-route', unitId: ru.bu.id, from: [ru.q, ru.r], args: args.map(x => x == null ? null : (typeof x === 'function' ? 'fn' : [x.q, x.r])), step, turn: this._traceTurn });
+    return step;
+  };
+  const originalCanAttackFrom = BattleScene.prototype._canAttackFrom;
+  scene._canAttackFrom = function(ru, q, r) {
+    const result = originalCanAttackFrom.call(this, ru, q, r);
+    if (traceIds.has(ru.bu.id)) events.push({ type: 'can-attack-from', unitId: ru.bu.id, at: [q, r], result, range: ru.range, ammo: ru.ammoLeft, enemies: this._enemiesOf(ru).map(e => ({ id: e.bu.id, d: Math.abs(q-e.q)+Math.abs(r-e.r) })).filter(e => e.d <= 4), turn: this._traceTurn });
+    return result;
+  };
   const routeSearchMetrics = { calls: 0, passabilityChecks: 0, maxChecksPerCall: 0 };
   const originalPassable = BattleScene.prototype._passableForUnit;
   const originalRoute = BattleScene.prototype._firstStepTowardMoveDestination;
@@ -307,12 +323,13 @@ async function main() {
               const before = traced ? { q: ru.q, r: ru.r, moveLeft: ru.moveLeft, acted: ru.acted, ammoLeft: ru.ammoLeft } : null;
               s.scene._traceTurn = turn;
               BattleScene.prototype._activateUnit.call(s.scene, ru, () => {});
-              if (traced) s.events.push({ type: 'activation', unitId: ru.bu.id, doctrine: s.doctrine, turn, before, after: { q: ru.q, r: ru.r, moveLeft: ru.moveLeft, acted: ru.acted, ammoLeft: ru.ammoLeft } });
+              if (traced) s.events.push({ type: 'activation', unitId: ru.bu.id, doctrine: s.doctrine, turn, before, after: { q: ru.q, r: ru.r, moveLeft: ru.moveLeft, acted: ru.acted, ammoLeft: ru.ammoLeft }, neighbors: [[1,0],[-1,0],[0,1],[0,-1]].map(([dc,dr]) => ({ q: ru.q + dc, r: ru.r + dr, occupiedBy: s.scene.occByKey.get(key(ru.q + dc, ru.r + dr))?.bu.id ?? null, passable: s.scene.terrainMap.passable(ru.q + dc, ru.r + dr) })) });
             }
           }
           const summary = summarize(s);
           const idleReason = doctrine === 'defensive' ? 'expected-hold-if-no-target-in-range' : 'no-path/line-block/no-improving-move';
-          const traceUnitIds = new Set(['atk-archer-26', 'atk-slinger-30', 'atk-slinger-28']);
+          const traceUnitIds = new Set(['atk-archer-26', 'atk-slinger-30', 'atk-slinger-28',
+            'atk-archer-49', 'atk-archer-50', 'atk-archer-51', 'atk-archer-52', 'atk-archer-53']);
           const trace = s.events.filter(event => traceUnitIds.has(event.unitId));
           reports.push({ doctrine, rangedLines, priorityVariant, terrainVariant, activeUnits: s.active.length, turns: turnCount, summary, idleReason, routeSearch: s.routeSearchMetrics, trace });
           if (s.events.some(e => e.type === 'illegal-attack')) {
@@ -393,6 +410,7 @@ async function main() {
     label: 'headless production BattleScene action matrix; animation/renderer stubbed',
     seed: 20261028,
     unitsPerSide: roles.length,
+    rosterScale,
     scenarios: reports,
     errors,
   }, null, 2) + '\n');

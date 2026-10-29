@@ -7928,11 +7928,15 @@ export class BattleScene {
   private _firstStepAlongPathToAttack(
     ru: RuntimeBattleUnit,
     allowFirstStep?: (q: number, r: number) => boolean,
+    target?: RuntimeBattleUnit,
   ): string | null {
     const startKey = cellKey(ru.q, ru.r);
+    const isGoal = (q: number, r: number): boolean => target
+      ? this._canStrikeTargetFrom(ru, q, r, target)
+      : this._canAttackFrom(ru, q, r);
 
     // Already standing on an attack position -> handled by the caller, but be safe.
-    if (this._canAttackFrom(ru, ru.q, ru.r)) return null;
+    if (isGoal(ru.q, ru.r)) return null;
 
     // BFS with parent links so we can reconstruct the first step.
     const parent = new Map<string, string | null>();
@@ -7963,7 +7967,7 @@ export class BattleScene {
         // from being TARGETED.
         if (!this._passableForUnit(ru, nc, nr)) continue; // river / wall body -> cannot stand
         parent.set(nk, cellKey(cur.c, cur.r));
-        if (this._canAttackFrom(ru, nc, nr)) { goalKey = nk; frontier.length = 0; break; }
+        if (isGoal(nc, nr)) { goalKey = nk; frontier.length = 0; break; }
         frontier.push({ c: nc, r: nr });
       }
     }
@@ -17474,24 +17478,26 @@ export class BattleScene {
         done();
         return true;
       }
-      const dist = manhattan(ru.q, ru.r, tgt.q, tgt.r);
-      if (dist <= Math.max(1, ru.range)) {
+      if (this._canStrikeTargetFrom(ru, ru.q, ru.r, tgt)) {
         this._doAttack(ru, tgt, done);
         return true;
       }
-      const dc = Math.sign(tgt.q - ru.q);
-      const dr = Math.sign(tgt.r - ru.r);
-      let nc = ru.q + dc;
-      let nr = ru.r + dr;
-      if (!this._passableForUnit(ru, nc, nr) || this.occByKey.has(cellKey(nc, nr))) {
-        nc = ru.q + dc; nr = ru.r;
-        if (!this._passableForUnit(ru, nc, nr) || this.occByKey.has(cellKey(nc, nr))) {
-          nc = ru.q; nr = ru.r + dr;
-        }
-      }
-      if (!this._compactAttackAllowsStep(ru, nc)) { done(); return true; }
-      if (nc !== ru.q || nr !== ru.r) this._doMove(ru, nc, nr, done);
-      else done();
+      const avoidAutoBacktrack = this._shouldAvoidAutoBacktrack(ru);
+      const routeStep = this._firstStepAlongPathToAttack(
+        ru,
+        (q, r) => this._compactAttackAllowsStep(ru, q)
+          && !(avoidAutoBacktrack && ru.lastAutoMoveFrom?.q === q && ru.lastAutoMoveFrom?.r === r),
+        tgt,
+      );
+      if (!routeStep) { done(); return true; }
+      const [nc, nr] = routeStep.split(',').map(Number);
+      if (!this._destAllowedByBlockade(ru, nc!)) { done(); return true; }
+      const previousPosition = avoidAutoBacktrack ? { q: ru.q, r: ru.r } : undefined;
+      this._doMove(ru, nc!, nr!, () => {
+        if (previousPosition) ru.lastAutoMoveFrom = previousPosition;
+        this._refreshQueuedOrderVisuals();
+        done();
+      });
       return true;
     }
     done();
