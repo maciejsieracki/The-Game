@@ -1,0 +1,12 @@
+{
+  "meta": {
+    "temat": "R-RUSTPORT-P6-M06A5-LAD-MORZE-ULAMEK-Q1",
+    "zrodlo_web": "gra/src/map/gen-helpers.ts (pin edb8fb56): :3438 PANGEA_LAND_FILL_MIN_SCORE, :3453 clamp udzialu (0.15/0.85), :3484 tolerancja score 0.04, :3222 tolerancja odleglosci centrum 0.015",
+    "uwaga": "Wartosci balansowe edytowalne. Kod nie zawiera ich literalow (partia 1 M06A5)."
+  },
+  "clamp_udzialu_min": 0.15,
+  "clamp_udzialu_max": 0.85,
+  "pangea_min_score_wypelnienia": 0.11,
+  "tolerancja_score_sortowanie": 0.04,
+  "tolerancja_odleglosci_centrum": 0.015
+}

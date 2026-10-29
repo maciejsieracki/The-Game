@@ -1,0 +1,100 @@
+diff --git a/gra/src/map/gen-helpers.ts b/gra/src/map/gen-helpers.ts
+index 9d86be02..fa4bde12 100644
+--- a/gra/src/map/gen-helpers.ts
++++ b/gra/src/map/gen-helpers.ts
+@@ -5992,8 +5992,9 @@ function estimateLandCentroidFromSeed(
+   let count = 0;
+   const queue: string[] = [mouthKey];
+   const seen = new Set<string>([mouthKey]);
+-  while (queue.length > 0 && seen.size < visitCap) {
+-    const k = queue.shift()!;
++  let queueHead = 0;
++  while (queueHead < queue.length && seen.size < visitCap) {
++    const k = queue[queueHead++]!;
+     const { q, r } = parseHexKey(k);
+     const h = hexes[k];
+     if (h && isRiverLandTerrain(h.terenBazowy)) {
+@@ -8466,8 +8467,9 @@ export function buildOceanReachableRiverHexKeys(
+     for (const p of path) seed(hexKey(p.q, p.r));
+   }
+ 
+-  while (queue.length > 0) {
+-    const k = queue.shift()!;
++  let queueHead = 0;
++  while (queueHead < queue.length) {
++    const k = queue[queueHead++]!;
+     const { q, r } = parseHexKey(k);
+     const h = hexes[k];
+     if (!h?.rzeka?.krawedzie?.length) continue;
+@@ -10352,8 +10354,9 @@ function bfsNearestRiverHexOnLowland(
+   const startK = hexKey(sq, sr);
+   const queue: Array<[number, number, number]> = [[sq, sr, 0]];
+   const visited = new Set<string>([startK]);
+-  while (queue.length > 0) {
+-    const [q, r, d] = queue.shift()!;
++  let queueHead = 0;
++  while (queueHead < queue.length) {
++    const [q, r, d] = queue[queueHead++]!;
+     const k = hexKey(q, r);
+     if (riverKeys.has(k) && d > 0) return { q, r, dist: d };
+     if (d >= maxDist) continue;
+@@ -10392,8 +10395,9 @@ function bfsLowlandRiverPath(
+   const cameFrom = new Map<string, string>();
+   const queue: string[] = [startK];
+   const visited = new Set<string>([startK]);
+-  while (queue.length > 0) {
+-    const current = queue.shift()!;
++  let queueHead = 0;
++  while (queueHead < queue.length) {
++    const current = queue[queueHead++]!;
+     if (current === targetK) {
+       const path: RiverCoord[] = [];
+       let cur: string | undefined = current;
+@@ -10541,8 +10545,9 @@ export function maxDryLowlandPatchSize(
+     const queue = [k];
+     visited.add(k);
+     let size = 0;
+-    while (queue.length > 0) {
+-      const cur = queue.shift()!;
++    let queueHead = 0;
++    while (queueHead < queue.length) {
++      const cur = queue[queueHead++]!;
+       size++;
+       const { q, r } = parseHexKey(cur);
+       for (const [dq, dr] of HEX_DIRECTIONS) {
+@@ -10693,8 +10698,9 @@ function fillDryLowlandPatches(
+       const component: Array<[number, number]> = [];
+       const queue = [k];
+       visited.add(k);
+-      while (queue.length > 0) {
+-        const cur = queue.shift()!;
++      let queueHead = 0;
++      while (queueHead < queue.length) {
++        const cur = queue[queueHead++]!;
+         const { q, r } = parseHexKey(cur);
+         component.push([q, r]);
+         for (const [dq, dr] of HEX_DIRECTIONS) {
+@@ -10776,8 +10782,9 @@ function findAllOversizedDryLandPatches(
+     const component: Array<[number, number]> = [];
+     const queue = [k];
+     visited.add(k);
+-    while (queue.length > 0) {
+-      const cur = queue.shift()!;
++    let queueHead = 0;
++    while (queueHead < queue.length) {
++      const cur = queue[queueHead++]!;
+       const { q, r } = parseHexKey(cur);
+       component.push([q, r]);
+       for (const [dq, dr] of HEX_DIRECTIONS) {
+@@ -10804,8 +10811,9 @@ function findLargestDryLowlandPatch(
+     const component: Array<[number, number]> = [];
+     const queue = [k];
+     visited.add(k);
+-    while (queue.length > 0) {
+-      const cur = queue.shift()!;
++    let queueHead = 0;
++    while (queueHead < queue.length) {
++      const cur = queue[queueHead++]!;
+       const { q, r } = parseHexKey(cur);
+       component.push([q, r]);
+       for (const [dq, dr] of HEX_DIRECTIONS) {

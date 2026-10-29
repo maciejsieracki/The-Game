@@ -4673,3 +4673,34 @@ pub fn mapgen_jagged_coast() -> &'static MapgenJaggedCoastFile {
     static TABLE: std::sync::OnceLock<MapgenJaggedCoastFile> = std::sync::OnceLock::new();
     TABLE.get_or_init(|| parse_mapgen_jagged_coast().expect("mapgen-jagged-coast.json must parse"))
 }
+
+// ---------------------------------------------------------------------------------------------
+// P6.M06A5 (R-RUSTPORT-P6-M06A5-LAD-MORZE-ULAMEK-Q1) - rodzina ulamka lądu, partia 1: progi
+// i tolerancje z web `applyLandFractionByScore` (:3444) / `sortLandKeysForErosion` (:3207).
+// ---------------------------------------------------------------------------------------------
+
+pub const MAPGEN_LANDSEA_FILL_JSON: &str =
+    include_str!("../../data/derived/mapgen-landsea-fill.json");
+
+/// Plik `mapgen-landsea-fill.json` (web: PANGEA_LAND_FILL_MIN_SCORE :3438, clamp :3453,
+/// tolerancje sortowania :3222 i :3484).
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct MapgenLandseaFillFile {
+    pub meta: serde_json::Value,
+    pub clamp_udzialu_min: f64,
+    pub clamp_udzialu_max: f64,
+    pub pangea_min_score_wypelnienia: f64,
+    pub tolerancja_score_sortowanie: f64,
+    pub tolerancja_odleglosci_centrum: f64,
+}
+
+pub fn parse_mapgen_landsea_fill() -> Result<MapgenLandseaFillFile, serde_json::Error> {
+    serde_json::from_str(MAPGEN_LANDSEA_FILL_JSON)
+}
+
+/// Tabela ulamka lądu (jednorazowy odczyt; blad danych = panika).
+pub fn mapgen_landsea_fill() -> &'static MapgenLandseaFillFile {
+    static TABLE: std::sync::OnceLock<MapgenLandseaFillFile> = std::sync::OnceLock::new();
+    TABLE.get_or_init(|| parse_mapgen_landsea_fill().expect("mapgen-landsea-fill.json must parse"))
+}

@@ -28,16 +28,23 @@
 use std::collections::{HashMap, HashSet};
 
 use crate::data::derived::{
-    mapgen_desert_purge, mapgen_jagged_coast, mapgen_landsea, MapgenJaggedCoastFile,
+    mapgen_desert_purge, mapgen_jagged_coast, mapgen_landsea, mapgen_landsea_fill,
+    MapgenJaggedCoastFile,
 };
+use crate::domain::improvements::js_round;
 use crate::domain::map_generator::{ClimateBand, Terrain, WorldType};
+use crate::domain::mapgen::cluster_mass::js_array_sort_by;
+use crate::domain::mapgen::masks::{nearest_continent_zone_index, ContinentCenter};
 use crate::domain::mapgen::prims::{
     climate_band_at, earth_template_land_at, fbm, hex_key, latitudinal_ocean_buffer_rows,
     HEX_DIRECTIONS, PERM_TABLE_LEN,
 };
 use crate::domain::mapgen::terrain_class::{
-    hash_int3, is_in_map_border, set_hex_to_laka, set_hex_to_morze, HexRecord, Nakladka,
+    apply_marginal_land_zone_caps, enforce_map_border_ocean, hash_int3, hex_border_distance,
+    is_in_map_border, map_center_distance_norm, map_margin_land_zone_hexes, set_hex_to_laka,
+    set_hex_to_morze, HexRecord, MarginZoneHooks, Nakladka,
 };
+use crate::domain::recruitment::manpower::locale_compare;
 
 /// Web `isWaterTerrainLocal` (gen-helpers.ts:152): Morze lub Plytkie Morze (Wybrzeze).
 #[inline]
@@ -838,4 +845,258 @@ pub fn apply_jagged_coast_noise(
         }
     }
     changed
+}
+
+// ---------------------------------------------------------------------------------------------
+// P6.M06A5 (R-RUSTPORT-P6-M06A5-LAD-MORZE-ULAMEK-Q1), partia 1: rodzina ulamka lądu.
+// Progi i tolerancje z `data/derived/mapgen-landsea-fill.json`; sortowanie przez `js_array_sort_by`
+// (TimSort V8), bo komparatory webu sa niekoherentne (tolerancje 0.015 / 0.04).
+// ---------------------------------------------------------------------------------------------
+
+/// Web `LandFractionFillBias` (:3435): `Center` = wypelnij od srodka; `Mask` = ranking maski.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum LandFractionFillBias {
+    Center,
+    Mask,
+}
+
+/// Web `assignContinentIndices(width, height, centers)` (:3186). Pary `(klucz, indeks)` w kolejnosci
+/// wstawiania (jak `Map` w webie).
+pub fn assign_continent_indices(
+    width: u32,
+    height: u32,
+    centers: &[ContinentCenter],
+) -> Vec<(String, usize)> {
+    let mut out = Vec::with_capacity(width as usize * height as usize);
+    let dw = f64::from(width.saturating_sub(1).max(1));
+    let dh = f64::from(height.saturating_sub(1).max(1));
+    for r in 0..height {
+        for q in 0..width {
+            let nq = f64::from(q) / dw;
+            let nr = f64::from(r) / dh;
+            out.push((
+                hex_key(i64::from(q), i64::from(r)),
+                nearest_continent_zone_index(nq, nr, centers),
+            ));
+        }
+    }
+    out
+}
+
+/// Klucz "q,r" -> (q, r); niekanoniczny klucz = (0,0) (ZALOZENIA: klucze generatora sa kanoniczne).
+fn key_qr_or_origin(key: &str) -> (i64, i64) {
+    key_qr(key).unwrap_or((0, 0))
+}
+
+/// Web `sortLandKeysForErosion(keys, hexes, landScores, width, height)` (:3207, prywatna).
+/// Zwraca nowy wektor (web `[...keys].sort`).
+pub fn sort_land_keys_for_erosion(
+    keys: &[String],
+    hexes: &HexRecord,
+    land_scores: &HashMap<String, f64>,
+    width: i64,
+    height: i64,
+) -> Vec<String> {
+    let tol = mapgen_landsea_fill().tolerancja_odleglosci_centrum;
+    let (wf, hf) = (width as f64, height as f64);
+    let mut items: Vec<String> = keys.to_vec();
+    js_array_sort_by(&mut items, |a, b| {
+        let (qa, ra) = key_qr_or_origin(a);
+        let (qb, rb) = key_qr_or_origin(b);
+        let ba = hex_border_distance(qa as f64, ra as f64, wf, hf);
+        let bb = hex_border_distance(qb as f64, rb as f64, wf, hf);
+        if ba != bb {
+            return ba - bb;
+        }
+        let ca = map_center_distance_norm(qa as f64, ra as f64, wf, hf);
+        let cb = map_center_distance_norm(qb as f64, rb as f64, wf, hf);
+        if (ca - cb).abs() > tol {
+            return cb - ca;
+        }
+        let na = count_morse_neighbors(hexes, qa, ra) as f64;
+        let nb = count_morse_neighbors(hexes, qb, rb) as f64;
+        if na != nb {
+            return nb - na;
+        }
+        let rka = hexes
+            .get(a)
+            .map_or(erode_order().len(), |h| erode_terrain_rank(h.terrain));
+        let rkb = hexes
+            .get(b)
+            .map_or(erode_order().len(), |h| erode_terrain_rank(h.terrain));
+        if rka != rkb {
+            return rka as f64 - rkb as f64;
+        }
+        land_scores.get(a).copied().unwrap_or(0.0) - land_scores.get(b).copied().unwrap_or(0.0)
+    });
+    items
+}
+
+/// Hooki `applyMarginalLandZoneCaps` (terrain_class) -> `sort_land_keys_for_erosion` z tego modulu.
+struct LandseaMarginHooks;
+
+impl MarginZoneHooks for LandseaMarginHooks {
+    fn sort_land_keys_for_erosion(
+        &self,
+        keys: &[String],
+        hexes: &HexRecord,
+        land_scores: &HashMap<String, f64>,
+        width: i64,
+        height: i64,
+    ) -> Vec<String> {
+        sort_land_keys_for_erosion(keys, hexes, land_scores, width, height)
+    }
+}
+
+/// Web `applyLandFractionByScore(hexes, landScores, target, width?, height?, fillBias, minMaskFillScore)`
+/// (:3444). `dims` = `(width, height)` albo `None` (web `undefined`); granica aktywna gdy oba > 0.
+/// Zwraca liczbe zmian.
+pub fn apply_land_fraction_by_score(
+    hexes: &mut HexRecord,
+    land_scores: &HashMap<String, f64>,
+    target_land_fraction: f64,
+    dims: Option<(i64, i64)>,
+    fill_bias: LandFractionFillBias,
+    min_mask_fill_score: f64,
+) -> usize {
+    let fill = mapgen_landsea_fill();
+    let clamped = target_land_fraction.clamp(fill.clamp_udzialu_min, fill.clamp_udzialu_max);
+    if clamped.is_nan() {
+        return 0; // web: porownania z NaN sa falszywe, brak zmian
+    }
+    let keys: Vec<String> = hexes.keys().cloned().collect();
+    let total = keys.len();
+    let target_land = js_round(total as f64 * clamped) as i64;
+    let mut land = count_land_sea_hexes(hexes).land as i64;
+    let mut adjusted = 0usize;
+
+    let has_border = dims.is_some_and(|(w, h)| w > 0 && h > 0);
+    let (wf, hf) = dims.map_or((0.0, 0.0), |(w, h)| (w as f64, h as f64));
+    // web: `width ?? 1` przy sortowaniu, takze gdy brak granicy
+    let (sort_w, sort_h) = dims.unwrap_or((1, 1));
+    let border_ok = |k: &str| {
+        if !has_border {
+            return true;
+        }
+        let (q, r) = key_qr_or_origin(k);
+        !is_in_map_border(q as f64, r as f64, wf, hf, None)
+    };
+    let interior_ok = |k: &str| {
+        if !has_border {
+            return true;
+        }
+        let (q, r) = key_qr_or_origin(k);
+        hex_border_distance(q as f64, r as f64, wf, hf) > map_margin_land_zone_hexes()
+    };
+    let score = |k: &str| land_scores.get(k).copied().unwrap_or(0.0);
+    let is_sea =
+        |hexes: &HexRecord, k: &str| hexes.get(k).is_some_and(|h| h.terrain == Terrain::Sea);
+    let mask_ok =
+        |k: &str| fill_bias != LandFractionFillBias::Mask || score(k) >= min_mask_fill_score;
+
+    if land < target_land {
+        // Wzrost lądu bierze WYLACZNIE z czystego Morza (nie z PlytkieMorze), jak web.
+        let mut candidates: Vec<String> = keys
+            .iter()
+            .filter(|k| is_sea(hexes, k) && border_ok(k) && mask_ok(k))
+            .cloned()
+            .collect();
+        js_array_sort_by(&mut candidates, |a, b| {
+            let sa = score(a);
+            let sb = score(b);
+            if (sb - sa).abs() > fill.tolerancja_score_sortowanie {
+                return sb - sa;
+            }
+            if fill_bias == LandFractionFillBias::Mask {
+                return f64::from(locale_compare(a, b));
+            }
+            let (qa, ra) = key_qr_or_origin(a);
+            let (qb, rb) = key_qr_or_origin(b);
+            let da = if has_border {
+                map_center_distance_norm(qa as f64, ra as f64, wf, hf)
+            } else {
+                0.0
+            };
+            let db = if has_border {
+                map_center_distance_norm(qb as f64, rb as f64, wf, hf)
+            } else {
+                0.0
+            };
+            da - db
+        });
+        for k in &candidates {
+            if land >= target_land {
+                break;
+            }
+            if let Some(h) = hexes.get_mut(k) {
+                set_hex_to_laka(h);
+            }
+            land += 1;
+            adjusted += 1;
+        }
+        if land < target_land && has_border {
+            // Drugi przebieg: morze wewnetrzne (poza strefa brzegowa), stan po pierwszym przebiegu.
+            let mut interior: Vec<String> = keys
+                .iter()
+                .filter(|k| is_sea(hexes, k) && interior_ok(k) && mask_ok(k))
+                .cloned()
+                .collect();
+            js_array_sort_by(&mut interior, |a, b| score(b) - score(a));
+            for k in &interior {
+                if land >= target_land {
+                    break;
+                }
+                if let Some(h) = hexes.get_mut(k) {
+                    set_hex_to_laka(h);
+                }
+                land += 1;
+                adjusted += 1;
+            }
+        }
+    } else if land > target_land {
+        let dry: Vec<String> = keys
+            .iter()
+            .filter(|k| hexes.get(k).is_some_and(|h| is_dry_land_terrain(h.terrain)))
+            .cloned()
+            .collect();
+        let cands = sort_land_keys_for_erosion(&dry, hexes, land_scores, sort_w, sort_h);
+        for k in &cands {
+            if land <= target_land {
+                break;
+            }
+            if let Some(h) = hexes.get_mut(k) {
+                set_hex_to_morze(h);
+            }
+            land -= 1;
+            adjusted += 1;
+        }
+    }
+    adjusted
+}
+
+/// Web `rebalanceLandFractionWithMargins(hexes, landScores, target, width, height)` (:3532):
+/// dwa przebiegi: ulamek -> limity strefy brzegowej -> ocean przy krawedzi; na koncu
+/// `applyDoubleCoastRing` (:3923, port M06A).
+pub fn rebalance_land_fraction_with_margins(
+    hexes: &mut HexRecord,
+    land_scores: &HashMap<String, f64>,
+    target_land_fraction: f64,
+    width: i64,
+    height: i64,
+) {
+    let fill_min = mapgen_landsea_fill().pangea_min_score_wypelnienia;
+    let hooks = LandseaMarginHooks;
+    for _ in 0..2 {
+        apply_land_fraction_by_score(
+            hexes,
+            land_scores,
+            target_land_fraction,
+            Some((width, height)),
+            LandFractionFillBias::Center,
+            fill_min,
+        );
+        apply_marginal_land_zone_caps(hexes, land_scores, width, height, &hooks);
+        enforce_map_border_ocean(hexes, width, height, None);
+    }
+    apply_double_coast_ring(hexes);
 }
