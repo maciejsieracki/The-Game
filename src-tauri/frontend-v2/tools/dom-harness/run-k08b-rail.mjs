@@ -8,8 +8,13 @@
  * Zależności: `setK08aDeps` z rejestratorem (clearGarrisonPanel, rerender, disposeHoverDetailDock, isCityUxFrameOpen),
  * `setK05bHost` z `cfg.getBuiltBuildingIds`, stan `activeCityPanelTab`/`scalePx` przez akcesory K08A/K07A.
  *
+ * PIN (r2): `--pin-dir <PIN_DIR>` jest WYMAGANE. Harness czyta `<PIN_DIR>/gra/src/ui/cityPanel.ts` i sprawdza
+ * kotwice (sekcja PIN-ANCHOR): każdy literał, na którym opiera się oczekiwana wartość wektora, MUSI występować
+ * w linii pinu, którą wektor cytuje. Zmiana pinu lub zły numer linii = różnica (nie cicha rozbieżność).
+ * Domknięcie „harness wykonuje pin” (uruchomienie funkcji pinu) wymaga wiringu zależności pinu — NIE_ZROBIONE, §7.
+ *
  * Użycie (z katalogu `src-tauri/frontend-v2/`):
- *   node tools/dom-harness/run-k08b-rail.mjs [--v2 <plik-partii>] [--tmp-dir <katalog poza repo>]
+ *   node tools/dom-harness/run-k08b-rail.mjs --pin-dir <PIN_DIR> [--v2 <plik-partii>] [--tmp-dir <katalog poza repo>]
  * EXIT 0 <=> wszystkie wektory zgodne; 1 <=> >=1 niezgodność; 2 <=> błąd harnessu.
  */
 import { mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
@@ -26,6 +31,12 @@ const argOf = (k) => {
 };
 const V2_ROOT = resolve(fileURLToPath(new URL('../../', import.meta.url)));
 const V2_FILE = resolve(argOf('--v2') ?? join(V2_ROOT, 'src/ui/cityPanel/k08b-rail.ts'));
+const PIN_DIR = argOf('--pin-dir');
+if (!PIN_DIR) {
+  console.error('Użycie: node tools/dom-harness/run-k08b-rail.mjs --pin-dir <PIN_DIR> [--v2 <plik>] [--tmp-dir <katalog>]');
+  process.exit(2);
+}
+const PIN_LINES = readFileSync(join(resolve(PIN_DIR), 'gra/src/ui/cityPanel.ts'), 'utf8').split(/\r?\n/);
 const TMP = mkdtempSync(join(argOf('--tmp-dir') ?? tmpdir(), 'k08b-rail-'));
 
 const results = [];
@@ -33,6 +44,21 @@ const check = (id, pin, got, want) => {
   const ok = JSON.stringify(got) === JSON.stringify(want);
   results.push({ id, pin, ok, got, want });
 };
+
+/** PIN-ANCHOR: [linia pinu (1-indeksowana), literał]. Literał musi być w tej linii pinu (sprawdzane na każdym runie). */
+const PIN_ANCHORS = [
+  [9279, 'pokaż szczegóły'], [9281, 'Budynki w mieście ('], [9282, 'gap:0.4em'], [9285, 'ℹ szczegóły'],
+  [9288, 'e.stopPropagation()'], [9289, "'left'"], [9291, "280, 'left'"],
+  [10703, 'Wróć na mapę świata (Esc)'], [10705, 'Wróć na mapę'], [10707, 'Esc — szybkie zamknięcie'],
+  [10785, 'civ-cs civ-ux-panel-scope'], [10787, 'civ-v-icon-rail-mount'], [10788, 'cs-icon-rail-left'],
+  [11060, 'Wróć na mapę świata (Esc)'], [11064, 'Esc — szybkie wyjście'], [11072, 'hidden aria-hidden="true"'], [11075, 'okstats is-collapsed'],
+  [11613, "'civ-v-icon-rail civ-v-icon-rail-vert civ-v-icon-rail-w3'"], [11614, "'civ-v-icon-rail'"],
+  [11616, 'Math.round(scalePx * CITY_PANEL_ICON_RAIL_VERT_EM)'], [11618, "activeCityPanelTab === item.id ? ' on'"],
+  [11622, "activeCityPanelTab === item.id ? 'true' : 'false'"], [11626, "'26px'"], [11630, "'24px'"],
+  [11640, 'activeCityPanelTab !== item.id'], [11641, 'clearGarrisonPanel();'], [11643, 'rerender();'],
+  [11658, "'civ-w4-tab-card civ-w4-tab-card--scroll'"], [11660, 'if (id) card.id = id;'], [11661, "'civ-w4-tab-body civ-w4-tab-body--scroll'"],
+];
+PIN_ANCHORS.forEach(([line, lit], i) => check(`pin.anchor.${i + 1}`, `cityPanel.ts:${line} "${lit}"`, PIN_LINES[line - 1]?.includes(lit) ?? false, true));
 
 let exitCode = 0;
 try {
@@ -56,7 +82,10 @@ try {
       `export * from ${JSON.stringify(V2_FILE)};`,
       `export { setK08aDeps, setK08aActiveCityPanelTab, getK08aActiveCityPanelTab, CITY_PANEL_ICONS_LEFT, cityRailIconHtml } from ${JSON.stringify(join(dir, 'k08a-fundament.ts'))};`,
       `export { setK05bHost } from ${JSON.stringify(join(dir, 'k05b-host.ts'))};`,
-      `export { setK07aScalePx, setK07aActiveCity } from ${JSON.stringify(join(dir, 'k07a-fundament.ts'))};`,
+      `export { setK07aScalePx, getK07aScalePx, setK07aActiveCity } from ${JSON.stringify(join(dir, 'k07a-fundament.ts'))};`,
+      `export { setHoverDetailDocks } from ${JSON.stringify(join(dir, '../hoverDetailDock.ts'))};`,
+      `export { setK06bDeps } from ${JSON.stringify(join(dir, 'k06b-deps.ts'))};`,
+      `export { el } from ${JSON.stringify(join(dir, 'k01b-dom.ts'))};`,
       `export { setK06aActive } from ${JSON.stringify(join(dir, 'k06a-fundament.ts'))};`,
       '',
     ].join('\n'),
@@ -269,9 +298,46 @@ try {
     host.cfg.getBuiltBuildingIds = undefined;
   }
 
+  // ─── renderOwnedBuildingsBar: ścieżka KLIK i HOVER (pin :9287-9291 -> ui/hoverDetailDock) ───────────────────────
+  // Wektory używają liczby budynków 0 i data={} (karta: „(brak — zbuduj pierwszy)”), data=null daje „Brak danych gry”.
+  // Delegaty K06B: `el` (k01b-dom) i wartość `cfg` (ten sam obiekt co host.cfg) — ścieżka built=[] nie woła innych
+  // delegatów K06B. Ścieżka built≠[] (sumowanie utrzymania, grupy budynków) = NIE_ZMIERZONO (K08B §7).
+  m.setK06bDeps({ el: m.el, cfg: host.cfg });
+  {
+    host.cfg.getBuiltBuildingIds = () => [];
+    const mount = fresh();
+    const dockL = document.createElement('div');
+    const dockR = document.createElement('div');
+    document.body.appendChild(dockL);
+    document.body.appendChild(dockR);
+    m.setHoverDetailDocks({ left: dockL, right: dockR });
+    let parentClicks = 0;
+    mount.addEventListener('click', () => parentClicks++);
+    m.renderOwnedBuildingsBar(mount, city, {});
+    const bar = q(mount, 'button.bld-owned-bar');
+    bar.click();
+    check('owned.click.stop', 'cityPanel.ts:9288 e.stopPropagation() (klik nie bąbelkuje do rodzica)', parentClicks, 0);
+    check('owned.click.header', 'cityPanel.ts:9289 karta w docku: nagłówek', dockL.querySelector('.dc-h')?.textContent ?? null, 'Budynki w mieście (0)');
+    check('owned.click.side', 'cityPanel.ts:9289 showHoverDetailNow(..., "left") -> dok lewy, nie prawy', [dockL.querySelector('.detail-card') !== null, dockR.querySelector('.detail-card') !== null], [true, false]);
+    check('owned.click.data', 'cityPanel.ts:9289 buildOwnedBuildingsDetailCard(city, data) dostaje data (nie null)', dockL.querySelector('.dc-note')?.textContent ?? null, '(brak — zbuduj pierwszy)');
+
+    // hover: attachHoverDetail(bar, …, 280, 'left') — karta dopiero po ~280 ms, strona lewa.
+    m.setHoverDetailDocks(null);
+    m.setHoverDetailDocks({ left: dockL, right: dockR });
+    bar.dispatchEvent(new window.MouseEvent('mouseenter'));
+    await new Promise((r) => setTimeout(r, 150));
+    check('owned.hover.early', 'cityPanel.ts:9291 brak karty przed opóźnieniem 280 ms (sprawdzone po 150 ms)', dockL.querySelector('.detail-card') !== null, false);
+    await new Promise((r) => setTimeout(r, 400));
+    check('owned.hover.late', 'cityPanel.ts:9291 po 280 ms karta w docku lewym z danymi (data != null)', [dockL.querySelector('.dc-note')?.textContent ?? null, dockR.querySelector('.detail-card') !== null], ['(brak — zbuduj pierwszy)', false]);
+    bar.dispatchEvent(new window.MouseEvent('mouseleave'));
+    m.setHoverDetailDocks(null);
+    host.cfg.getBuiltBuildingIds = undefined;
+  }
+
   // ─── Adnotacje pomocnicze: scalePx (K08B-Z3) ────────────────────────────────────────────────────────────────────
   {
     m.setK07aScalePx(20);
+    check('scale.accessor', 'K08B-Z3 getK07aScalePx() zwraca wartość z setK07aScalePx (round-trip akcesora)', m.getK07aScalePx(), 20);
     const mount = fresh();
     m.renderCityIconRail(mount, items, true, false);
     check('scale.vertical.unchanged', 'cityPanel.ts:11634 gałąź vertical (24px) ma pierwszeństwo przed iconPx', q(mount, '.civ-v-icon-glyph').style.width, '24px');

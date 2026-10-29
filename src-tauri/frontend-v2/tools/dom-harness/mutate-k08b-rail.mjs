@@ -7,11 +7,12 @@
  * NIE liczy się jako zabicie. Kopia jest usuwana po każdej mutacji.
  *
  * Użycie (z katalogu `src-tauri/frontend-v2/`):
- *   node tools/dom-harness/mutate-k08b-rail.mjs [--tmp-dir <katalog poza repo>]
+ *   node tools/dom-harness/mutate-k08b-rail.mjs --pin-dir <PIN_DIR> [--tmp-dir <katalog poza repo>]
  * EXIT 0 <=> wszystkie mutacje zabite lub równoważne (oznaczone EQUIV); 1 <=> przeżyła nierównoważna mutacja.
  */
 import { readFileSync, writeFileSync, rmSync, existsSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
+import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -23,7 +24,12 @@ const argOf = (k) => {
 const HERE = dirname(fileURLToPath(import.meta.url));
 const SRC = resolve(HERE, '../../src/ui/cityPanel/k08b-rail.ts');
 const MUT = resolve(dirname(SRC), '__mut_k08b_rail.ts');
-const TMP = argOf('--tmp-dir') ?? '/tmp';
+const TMP = argOf('--tmp-dir') ?? tmpdir();
+const PIN_DIR = argOf('--pin-dir');
+if (!PIN_DIR) {
+  console.error('Użycie: node tools/dom-harness/mutate-k08b-rail.mjs --pin-dir <PIN_DIR> [--tmp-dir <katalog>]');
+  process.exit(2);
+}
 const original = readFileSync(SRC, 'utf8');
 
 /** [id, opis, stary, nowy, równoważna?] */
@@ -42,7 +48,16 @@ const MUTANTS = [
   ['owned-count-default', 'liczba budynków domyślnie 1', 'built?.length ?? 0', 'built?.length ?? 1', false],
   ['owned-label', 'etykieta paska zmieniona', 'Budynki w mieście (${count}) — pokaż szczegóły', 'Budynki (${count}) — pokaż szczegóły', false],
   ['rail-vert-w3-swap', 'klasa w3 przy vertical zamieniona', "'civ-v-icon-rail civ-v-icon-rail-vert civ-v-icon-rail-w3' : 'civ-v-icon-rail civ-v-icon-rail-vert'", "'civ-v-icon-rail civ-v-icon-rail-vert' : 'civ-v-icon-rail civ-v-icon-rail-vert civ-v-icon-rail-w3'", false],
-  ['scale-const', 'scalePx zastąpione zerem (gałąź iconPx martwa w pinie)', 'Math.round(getK07aScalePx() * ', 'Math.round(0 * ', true],
+  ['scale-const', 'scalePx zastąpione zerem (gałąź iconPx martwa w pinie: pin :11616 + :11629 else-if)', 'Math.round(getK07aScalePx() * ', 'Math.round(0 * ', true],
+  // r2: ścieżka klik/hover paska „Budynki” (pin :9287-9291) i jej argumenty
+  ['owned-no-stop', 'klik bez stopPropagation', '    e.stopPropagation();\n', '', false],
+  ['owned-click-side', 'klik: dok prawy zamiast lewego', "data), 'left');", "data), 'right');", false],
+  ['owned-click-data', 'klik: data→null (karta bez danych)', 'showHoverDetailNow(bar, () => buildOwnedBuildingsDetailCard(city, data),', 'showHoverDetailNow(bar, () => buildOwnedBuildingsDetailCard(city, null),', false],
+  ['owned-no-click-show', 'klik bez showHoverDetailNow', "    showHoverDetailNow(bar, () => buildOwnedBuildingsDetailCard(city, data), 'left');\n", '', false],
+  ['owned-hover-side', 'hover: dok prawy zamiast lewego', "280, 'left');", "280, 'right');", false],
+  ['owned-hover-delay', 'hover: opóźnienie 100 ms zamiast 280', "280, 'left');", "100, 'left');", false],
+  ['owned-hover-data', 'hover: data→null (karta bez danych)', 'attachHoverDetail(bar, () => buildOwnedBuildingsDetailCard(city, data),', 'attachHoverDetail(bar, () => buildOwnedBuildingsDetailCard(city, null),', false],
+  ['owned-no-hover', 'brak attachHoverDetail', "  attachHoverDetail(bar, () => buildOwnedBuildingsDetailCard(city, data), 280, 'left');\n", '', false],
 ];
 
 const rows = [];
@@ -58,7 +73,7 @@ try {
     writeFileSync(MUT, original.replace(from, to));
     let status;
     try {
-      execFileSync(process.execPath, [join(HERE, 'run-k08b-rail.mjs'), '--v2', MUT, '--tmp-dir', TMP], { stdio: 'pipe' });
+      execFileSync(process.execPath, [join(HERE, 'run-k08b-rail.mjs'), '--pin-dir', PIN_DIR, '--v2', MUT, '--tmp-dir', TMP], { stdio: 'pipe' });
       status = 'PRZEŻYŁA';
     } catch (e) {
       status = e.status === 1 ? 'ZABITA' : `HARNESS-EXIT-${e.status}`;
