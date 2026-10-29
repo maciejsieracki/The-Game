@@ -1,0 +1,1 @@
+npx tsc --noEmit: EXIT 0, 0 błędów (brak wyjścia)

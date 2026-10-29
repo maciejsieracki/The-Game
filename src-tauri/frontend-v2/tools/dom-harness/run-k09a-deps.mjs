@@ -19,7 +19,8 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import * as esbuild from 'esbuild';
 
 const V2_ROOT = resolve(fileURLToPath(new URL('../../', import.meta.url)));
-const DEPS = join(V2_ROOT, 'src/ui/cityPanel/k09a-deps.ts');
+const SRC_ARG = process.argv.indexOf('--src') >= 0 ? process.argv[process.argv.indexOf('--src') + 1] : null;
+const DEPS = join(SRC_ARG ? resolve(SRC_ARG) : join(V2_ROOT, 'src'), 'ui/cityPanel/k09a-deps.ts');
 const TMP = mkdtempSync(join(tmpdir(), 'k09a-deps-'));
 const results = [];
 const check = (id, what, ok) => results.push({ id, what, ok: ok === true });

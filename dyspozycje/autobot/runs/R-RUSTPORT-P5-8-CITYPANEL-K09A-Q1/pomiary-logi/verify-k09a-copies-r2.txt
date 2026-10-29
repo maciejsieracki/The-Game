@@ -1,0 +1,1 @@
+verify-k09a-copies: pin=edb8fb56 bloków=9 jednostek=9 hunków=42 problemów=0
