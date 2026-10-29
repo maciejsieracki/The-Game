@@ -300,3 +300,62 @@ binary64 hex (`hx`). Mirrored in `battle3d_dynamics.rs`.
 | `dynamics.json` | the vectors above (149 178 B) |
 | `gen_dynamics.ts`, `build_dynamics.mjs` | generator and bundler (uses `dom_stub.ts`, `three_shim.ts` of part 2) |
 | `mutate_dynamics.py` | mutation run (50 mutants of `src/battle/dynamics.rs`; runs `--lib battle::dynamics` and `--test battle3d_dynamics`). Operator "pomiary" r1 on 1.87.0: first pass 45/48 (survivors `gate band`, `gate height rule`, `rout west`); after `pomiary` vectors + two lib tests and 2 new mutants (`rout east`, `gate centre band`): **50/50 killed**. `gate height rule` is equivalent on every reachable wall (killed only by the lib probe test, P4-36 §38) |
+
+# Part 5: picking and camera (R-RUSTPORT-P4-36-MOD14-BATTLE-3D-Q5)
+
+Reference states for `tests/battle3d_picking.rs` (`battle::view`, `battle::picking`), produced by
+**running `battle/battleScene.ts` and `input/picker.ts` of `edb8fb56`** with the part-2/4 toolchain
+(three@0.169.0, esbuild@0.24.0, node v22.22.0, `dom_stub.ts`, `three_shim.ts`). Bundler
+`build_picking.mjs` = `build_dynamics.mjs` with a longer appended `export { … }` line (+ `clampBattleTile`,
+`battlePickMeshUpNormal`, `pickBattleGroundTilePlane`, `pickBattleGroundTileFromMeshes`, `worldToScreen`,
+`DEPLOY_MIN/MAX_COL/ROW`).
+
+**Set-up.** The scenes are the part-4 ones (`siege` = `oblezenie`/`rzym`, `deploy` = `rzym_grecja`,
+deploy `atk`); `picking.json` stores only an FNV of their DTO (`dto`), the Rust test builds them from
+`dynamics.json` and checks the signature. The canvas is a fake element (client size + bounding rect),
+`renderer.getSize/setSize` are added to the inert renderer (initial size 300×150 — a canvas without
+attributes), and a render is emulated as `scene.updateMatrixWorld(); camera.updateMatrixWorld()` (all
+`WebGLRenderer.render` changes on the graph; one render precedes every click). Logic the clicks reach is
+recorded, not run.
+
+## Regeneration (outside the repository only)
+
+```bash
+S=<scratch dir>
+mkdir -p $S/ref $S/websrc $S/refscript $S/out
+(cd $S/ref && npm init -y && npm install --ignore-scripts three@0.169.0 esbuild@0.24.0)
+git archive edb8fb56 gra/src gra/data | tar -x -C $S/websrc
+cp rust-port/renderer/tests/fixtures/battle3d/{gen_picking.ts,build_picking.mjs,dom_stub.ts,three_shim.ts} $S/refscript/
+ln -s $S/ref/node_modules $S/refscript/node_modules
+node $S/refscript/build_picking.mjs        # -> $S/refscript/gen_picking.mjs
+node $S/refscript/gen_picking.mjs $S/out   # prints: battle3d picking poses=6
+sha256sum $S/out/picking.json $S/refscript/gen_picking.mjs
+```
+
+`PICK_VERBOSE=1` also writes `picking-verbose.json` (every ray with its first hits, every camera state as
+hex, per pose the count of meshes with `geometry.boundingBox`, material arrays and `BackSide` — all 0) for
+debugging; not committed. Measured (r1): two runs in two different scratch directories (separate
+`npm install`, separate `git archive`) give identical `picking.json` (81 669 B, `3a3b1f38…` =
+`MANIFEST.sha256`) and `gen_picking.mjs` (2 783 652 B, SHA-256
+`83f1f89e191d6c0dc22b5f18b33c0b1b218c4c632762f1b91f88563303bfe919`; not committed — fixture budget).
+
+## Cases (`picking.json`)
+
+| key | what |
+|---|---|
+| `siege.cam0` | the 86 camera numbers after the constructor (`camNums`: target, distances, position, quaternion, rotation, aspect, `matrixWorld`, `matrixWorldInverse`, `projectionMatrix(Inverse)`) |
+| `siege.camOps[]` (176) | camera steps replayed in order: canvas changes, `_syncRendererSize`, wheel (incl. ±1e4 / −1e5 → clamps), keys `+ = Add - _ Subtract x`, `_setZoomTarget`, 70+ frames (`_syncRendererSize` + `_tickZoom` + `_tickCameraPanKeys`), pan keys (WASD / arrows, editable target, unknown code), drag pan (buttons 0/1/2/3), `_clampCamTarget`, `_applyCamera`; each: result (`preventDefault`, pan keys, `panning`, renderer size), FNV of the 86 numbers, minimap viewport |
+| `siege.toScreen`, `siege.clientPx` | `worldToScreen` on a stale camera (after `_applyCamera`, before a render — `Object3D.lookAt` leaves `matrixWorld` with the previous quaternion), after a render, on an empty canvas; `worldToClientPx` |
+| `siege.poses[]`, `deploy.poses[]` | 6 poses (default; wall close-up; flagged units + relief tiles under the camera; far zoom with another aspect and an offset rect; deploy default; group-marker close-up): a grid of client pixels + one ray aimed at every unit; per ray `[ground, fromMeshes, fromPlane, unit, nGroundHits, nUnitHits]`, and per pose one FNV over every ray and every intersection with the ground meshes (non-recursive) and the live unit groups (recursive: meshes, marker `Line`s, `Sprite`s) — distance, point, up normal, object `traverse` index, instance |
+| `siege.flagged`, `siege.relief`, `siege.occ`, `deploy.occ` | unit flags the pickers filter on, tile kinds changed without rebuilding the meshes (plane and meshes disagree), `occByKey` |
+| `siege.battleClicks[]` (76) | `_onBattleClick` × 19 targets × 4 modifier / selection states; the logic call it reaches (`_handleBattleUnitPick`, `_issueBattleAttack`, `_issueBattleMove`) |
+| `deploy.deployClicks[]` (18) | `_onDeployClick` sequence with the real `_handleDeployUnitPick` / `_refreshDeploySelectionVisuals`: logic log, selection, `_deploySelected`, rings, FNV of every roster unit's scale / ring; one click on a tile made a river |
+| `*.box[]` | `_doBoxSelect` rectangles (battle manual / auto, deploy): `_clearAllSelection` + the units it rings |
+| `siege.bars` | `_onKeyToggleBars` × 6 (`h`, `H`, editable target, Ctrl, other key): `preventDefault`, `barsVisible`, visibility of every bar group (dead / removed skipped) |
+| `helpers` | `clampBattleTile` (incl. `-0`, fractional), `BF_COLS`, `BF_ROWS`, `TILE_S`, `ORDER_LINE_Y` |
+
+| File (part 5) | Content |
+|---|---|
+| `picking.json` | the vectors above (81 669 B) |
+| `gen_picking.ts`, `build_picking.mjs` | generator and bundler (uses `dom_stub.ts`, `three_shim.ts` of part 2) |
+| `mutate_picking.py` | mutation run (62 mutants of `src/battle/view.rs` / `src/battle/picking.rs`; runs `--lib battle::` and `--test battle3d_picking`; `RANGE=a:b` batches) — full run = Operator "pomiary" call |

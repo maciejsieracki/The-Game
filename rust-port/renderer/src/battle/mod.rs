@@ -23,8 +23,10 @@
 
 pub mod dynamics;
 pub mod field;
+pub mod picking;
 pub mod siege_wall;
 pub mod units;
+pub mod view;
 
 pub use siege_wall::{
     attach_row_breach_panels, build_siege_wall, build_siege_wall_web_id, SiegeWall, SiegeWallOpts,

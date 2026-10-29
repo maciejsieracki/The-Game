@@ -1424,3 +1424,240 @@ Na commicie Operatora-impl `d22fb721` (+ raport `773fc8b1`), izolowany worktree,
    testem jednostkowym wyprowadzonym ze źródła weba (plik:linia w teście) — nie wektorem z uruchomionego weba, bo żaden
    osiągalny mur nie ma meshu w tym przedziale.
 8. NIE_ZMIERZONO nadal: ocena wzrokowa (§36), wpływ dryfu po pinie na wektory (§37, p. 6).
+
+## 39. Streszczenie części 5 (R-RUSTPORT-P4-36-MOD14-BATTLE-3D-Q5, Operator-impl r1)
+
+1. **Zakres §4 „5 — picking i kamera” zportowany** → dwa nowe moduły w `rust-port/renderer/src/battle/`
+   (dwie linie `pub mod picking;` / `pub mod view;` w `battle/mod.rs`; `field.rs`, `units.rs`, `dynamics.rs`,
+   `siege_wall.rs`, `lib.rs`, `Cargo.*` bez zmian):
+   - `view.rs` — sterowanie kamerą: `BattleView` (kamera części 2 + macierze trzymane przez obiekt kamery three
+     r169: `matrixWorld(Inverse)`, `projectionMatrix(Inverse)`, rozmiar renderera), dolly-zoom (kółko, klawisze,
+     wygładzanie), panorama (klawisze, przeciąganie), ograniczenie celu, `_syncRendererSize`, rzuty `worldToScreen` /
+     `worldToClientPx`, promień z kursora (`_raycastFromCanvas`), widok minimapy;
+   - `picking.rs` — raycasting sceny bitwy wg three r169 (`Mesh` z grupami materiałów i `side`, `InstancedMesh`,
+     `Line` z progiem 1, `Sprite`, sortowanie stabilne), picking terenu (siatki + płaszczyzna z reliefem), jednostki
+     pod kursorem (K2), decyzje kliknięć (rozstawienie, bitwa), zaznaczenie z rozstawienia (`_handleDeployUnitPick`),
+     test trafienia ramki zaznaczenia, przełącznik pasków `H`.
+   Wejście: scena części 2–4 + zdarzenia jako dane (piksele klienta, `deltaY`, klawisze, przyciski) + stan bitwy jako
+   DTO (Z-36-19); wyjście deterministyczne (stan kamery, trafienia, decyzje).
+2. **Parytet bit w bit z webem — kod weba URUCHOMIONY** (`gen_picking.ts`, scena = sceny części 4 odbudowane z
+   DTO `dynamics.json`, podpis DTO sprawdzany): 176 kroków kamery (86 liczb kamery + widok minimapy po każdym),
+   6 póz × siatka pikseli + promień w każdą jednostkę = **1 441 promieni** (kafel: siatki / płaszczyzna / wynik;
+   jednostka; FNV każdego trafienia: odległość, punkt, normalna-Y, indeks `traverse` obiektu, instancja),
+   76 kliknięć bitwy, 18 kliknięć rozstawienia (log logiki, zaznaczenie, `_deploySelected`, pierścienie, skale),
+   13 prostokątów zaznaczenia, 6 naciśnięć `H`, `worldToScreen` (nieaktualna / świeża kamera / pusty canvas),
+   `worldToClientPx`, `clampBattleTile` — **0 różnic** (`tests/battle3d_picking.rs`, 6 testów; §44).
+3. Determinizm generatora: 2 katalogi (osobny `npm install`, osobny `git archive`) → identyczne `picking.json`
+   (`3a3b1f38…`, 81 669 B) i bundel `gen_picking.mjs` (`83f1f89e…`, nie commitowany).
+4. Uzgodnienie z inwentarzem: **34 wiersze** (28 `RUNDA-5` + 3 odłożone przez części 2/4 + 3 dołączone), 0 bez
+   statusu — §42.
+5. **Mutacje:** przygotowane 62 mutanty (`mutate_picking.py`, każdy wzorzec dokładnie raz — sprawdzone); w tym
+   wywołaniu tylko próba 5 (wszystkie zabite, §45); **pełne uruchomienie = wywołanie „pomiary”** (NIE_ZMIERZONO tu).
+6. Ocena wizualna 1:1: **NIE_ZMIERZONO** (brak GPU) — §46. To ostatnia część MOD-14 (§48).
+
+## 40. Mapa symboli → Rust (`battle::view`, `battle::picking`)
+
+| web (`battleScene.ts` @ `edb8fb56`, chyba że podano) | linie | Rust | uwagi |
+|---|---|---|---|
+| pola kamery `camTarget/camDir/camDist*` (cz. 2), `_camPanKeys`, `panning`, `panLastX/Y` | 2080–2092, 2087–2089 | `BattleView.camera` (`BattleCamera`, cz. 2), `PanKeys`, `DragPan` | `camDir` stałe — brak orbity (W-22) |
+| `_applyCamera` | 9872–9880 | `BattleView::apply_camera` | `matrixWorld` = nowa pozycja × poprzedni kwaternion (three r169 `Object3D.lookAt` → `Camera.updateWorldMatrix`; W-23) |
+| `_setZoomTarget`, `_tickZoom`, `_onWheel`, `_onKeyZoom` | 9883–9917 | `set_zoom_target`, `tick_zoom`, `on_wheel`, `on_key_zoom` | `Math.exp` = `jsmath::js_exp`; zwracają `preventDefault` |
+| `_setPanKey`, `_onKeyPanDown/Up`, `_clampCamTarget`, `_tickCameraPanKeys` | 9920–9969 | `set_pan_key`, `clamp_cam_target`, `tick_camera_pan_keys` | `isEditableTarget` (DOM) = flaga `editable` |
+| `_onKeyToggleBars` | 9993–10004 | `picking::on_key_toggle_bars` | widoczność grup pasków; wywołanie ustawień (UI) → P5 |
+| `_startLoop` (kamera klatki) | 8518–8520, 8537–8539, 8549 | `BattleView::frame`, `BattleView::render` | reszta klatki: cz. 4 / P6.13 / P5 |
+| `_syncRendererSize` (+ `_onResize`) | 8554–8564, 11492 | `sync_renderer_size` | `WebGLRenderer.getSize` = `renderer_size` (start: rozmiar bitmapy canvasu, Z-36-20) |
+| `_canvasNdc`, `_raycastFromCanvas` (+ `input/picker.ts:87-98` `clientRectToNdc`) | 8567–8582 | `BattleView::ray_from_canvas` | `pick::hex::client_rect_to_ndc`; `Raycaster.setFromCamera` (`unproject` z.5) |
+| `worldToScreen`; `worldToClientPx` (`input/picker.ts:101-117`) | 19419–19432 | `world_to_screen`, `world_to_client_px`, `project` | rzut bieżącymi (być może nieaktualnymi) macierzami |
+| `_computeMinimapViewport` | 11049–11065 | `minimap_viewport` → `MinimapViewport` | rysowanie → P5 |
+| przeciąganie kamery w `_onPanDown` / `_onPanMove` / `_onPanUp` | 11311–11319, 11384–11396, 11464 | `DragPan::{pointer_down_pans, down, move_to, up}`, `BattleView::drag_pan` | routing LPM (zaznaczanie, formacje, box-select) → P5 / P6.13 |
+| `Raycaster.intersectObjects` (three r169 `Raycaster.js`, `Mesh.js`, `InstancedMesh.js`, `Line.js`, `Sprite.js`, `Ray.distanceSqToSegment`) | — | `PickScene`, `intersect_objects`, `Hit`, `RayCamera`, `distance_sq_to_segment` | widoczność nie jest sprawdzana (jak three); sfera całego `InstancedMesh` z `refreshInstancedPickBounds` (cz. 2) |
+| `clampBattleTile`, `battlePickMeshUpNormal`, `pickBattleGroundTilePlane`, `pickBattleGroundTileFromMeshes` | 1743–1812 | `clamp_battle_tile`, `battle_pick_mesh_up_normal`, `pick_ground_tile_plane`, `pick_ground_tile_from_meshes` | `Math.round` = `siege_wall::js_round`; normalna × `matrixWorld` obiektu (W-24) |
+| `_pickGroundTile` | 10437–10454 | `pick_ground_tile`, `pick_ground_tile_at` | wyższy `tileTopY` wygrywa, remis → siatki |
+| `_pickUnitAtScreen` | 11084–11108 | `pick_unit_at_screen` | `occByKey` = `Occupancy` (DTO) |
+| `_onDeployClick` (+ `_getDeploySelectedUnits` 15224) | 15063–15150 | `deploy_click` → `DeployClick`, `DeployCtx` | `_inDeployPlayerZone` = predykat wejścia (P6.13) |
+| `_handleDeployUnitPick` (+ `_refreshDeploySelectionVisuals` 3D, `_primarySelectedUnit` 10417) | 14369–14410 | `handle_deploy_unit_pick`, `DeploySelection`, `RosterPick` | pierścienie / skale przez funkcje części 3 |
+| `_onBattleClick` | 17510–17576 | `battle_click` → `BattleClick`, `battle_queue_only` | `removed` nie jest filtrowany (W-26) |
+| `_doBoxSelect` (test trafienia) | 16498–16508 | `box_select` | zaznaczenie / UI → P6.13 / P5 |
+
+Używane tylko publiczne API: `battle::{field, units, siege_wall}`, `pick::three` (`Vec3`, `Mat4`, `Quat`, `Ray`,
+`Sphere`, `triangle_normal`), `pick::raycast::TriGeometry` (sfera geometrii), `pick::hex` (`ClientRect`,
+`client_rect_to_ndc`), `scene`, `geom::Group`, `jsmath::js_exp`. Brak nowych typów geometrii.
+
+## 41. Założenia części 5
+
+- **ZAŁOŻENIE Z-36-19 (wejście DTO):** to, co pickery filtrują, a czego scena nie przechowuje, przychodzi z logiki
+  (P6.13): flagi jednostek (`dead`, `fadingOut`, `removed`, `routed`), `occByKey`, zaznaczenie (`_selectedUnits`,
+  `_deploySelected`), `groupId`, `_playerControlSide()`, predykat strefy rozstawienia, `queueOnly`, liczba
+  zaznaczonych. Skutek decyzji kliknięcia (`_applyDeployPlacement`, rozkazy, komunikaty, czyszczenie zaznaczenia,
+  odświeżenia UI) wykonuje logika / P5 — generator je rejestruje, test odtwarza log z decyzji Rust.
+- **ZAŁOŻENIE Z-36-20 (rozmiar renderera):** `WebGLRenderer` startuje z rozmiarem bitmapy canvasu (`_width =
+  canvas.width`, three r169 `WebGLRenderer.js`); canvas bitwy powstaje bez atrybutów → 300×150 (parametr
+  `BattleView::new`). Rozmiar klienta i prostokąt canvasu (`Canvas`) są wejściem (DOM → P5).
+- **ZAŁOŻENIE Z-36-21 (geometrie):** `geometry.boundingBox` jest `null` dla każdej geometrii sceny bitwy, żaden
+  mesh nie ma tablicy materiałów ani `BackSide` — zmierzone w uruchomionym webie (`PICK_VERBOSE=1`, każda poza:
+  18 344 / 26 620 meshy, `withBox` 0, `matArrays` 0, `backSide` 0; `Box3.setFromObject` w `gra/src` tylko w
+  `main.ts:2713` i `render/improvements.ts:497,509` — mapa świata). Test pudełka z `Mesh.raycast` nie jest więc
+  portowany; reguły grup i `BackSide` są zaimplementowane wg three r169 i przypięte testem jednostkowym
+  `material_groups_and_back_side` (jak Z-36-18).
+- **ZAŁOŻENIE Z-36-22 (render między zdarzeniami):** każdy klik / pozycja kursora jest obsługiwana po co najmniej
+  jednym renderze (`scene.updateMatrixWorld()`), więc `PickScene::new` liczy świeże `matrixWorld` wszystkich węzłów.
+  Generator emuluje render przed każdą pozą i każdym kliknięciem (bez tego np. pierścień dodany kliknięciem miałby
+  w webie macierz jednostkową do następnej klatki).
+
+## 42. Uzgodnienie z inwentarzem (zakres części 5)
+
+Objęte wiersze: każdy wiersz inwentarza Q1 ze statusem zawierającym `RUNDA-5` (**28**), wiersze odłożone do części 5
+przez wcześniejsze części (#220 — Q2 §12a, #330 i #354 — Q4 §32; #324 jest też `RUNDA-5`) i **3** dołączone z
+powodem (#439: zakres linii `_showHoverTooltip` obejmuje pola-strzałki przeciągania kamery; #407
+`_primarySelectedUnit`, #583 `_getDeploySelectedUnits` — część decyzji kliknięcia). Tabelę wygenerował
+`runs/R-RUSTPORT-P4-36-MOD14-BATTLE-3D-Q5/dowody/recon-q5.py` (statusy w skrypcie; `ZPORTOWANY*` musi wskazywać
+identyfikatory obecne w `src/battle/*.rs` / `tests/battle3d_*.rs`; kolumna `ciało` = SHA-256 ciała z inwentarzowego
+zakresu linii `battleScene.ts` @ `edb8fb56`; 2 przebiegi → `cmp` identyczne):
+
+```text
+LICZNIK: wierszy = 34; NIE PORTOWANY = 1; ZPORTOWANY = 18; ZPORTOWANY częściowo = 10; ZPORTOWANY wcześniej = 5; bez statusu / niezgodnych = 0
+```
+
+Kontrola: 1 + 18 + 10 + 5 = **34** = 28 + 3 + 3. Wejścia (SHA-256): inwentarz `139b84eb…`, `battleScene.ts`
+`38c97736…` — te same co w częściach 2–4.
+
+| # | linie | symbol | źródło | ciało (sha256/12) | status cz. 5 | Rust / powód |
+|---|---|---|---|---|---|---|
+| 40 | 667–667 | `ORDER_LINE_Y` | RUNDA-5 | `8518d8e9bb32` | ZPORTOWANY wcześniej | `ORDER_LINE_Y` (cz. 3, `units.rs`); równość z webem: test `helpers_and_constants_equal_web` |
+| 196 | 1628–1723 | `makeProjectileMesh` | RUNDA-5 | `ad3b3a20d2cc` | ZPORTOWANY wcześniej | `make_projectile_mesh` (cz. 4, `dynamics.rs`, test `projectiles_match_web`) |
+| 200 | 1743–1748 | `clampBattleTile` | RUNDA-5 | `cef81012d71e` | ZPORTOWANY (cz. 5) | `clamp_battle_tile`; testy `helpers_and_constants_equal_web`, `clamp_battle_tile_bounds` |
+| 201 | 1749–1760 | `battlePickMeshUpNormal` | RUNDA-5 | `e4f40ca6bb67` | ZPORTOWANY (cz. 5) | `battle_pick_mesh_up_normal` (normalna ściany × `matrixWorld` OBIEKTU, W-24); hash trafień w `*_picking_*` |
+| 202 | 1761–1785 | `pickBattleGroundTilePlane` | RUNDA-5 | `8cb5cbdb6169` | ZPORTOWANY (cz. 5) | `pick_ground_tile_plane`; kolumna `fromPlane` każdego promienia |
+| 203 | 1786–1830 | `pickBattleGroundTileFromMeshes` | RUNDA-5 | `59d1e8b93895` | ZPORTOWANY (cz. 5) | `pick_ground_tile_from_meshes` (`intersect_objects` nierekurencyjnie); kolumna `fromMeshes` |
+| 220 | 2046–2615 | `BattleScene` | odłożony → cz. 5 | `2255079e3f1e` | ZPORTOWANY częściowo (cz. 5: część sceny / pickingu) | `BattleView` (`renderer_size`, macierze kamery), `PanKeys` (`_camPanKeys`), `DragPan` (`panning`, `panLastX/Y`) — pozostałe pola: cz. 3–4 / P6.13 / P5 — Q2 §12a: pola kamery → `BattleCamera` (cz. 2), reszta → cz. 3–5 |
+| 231 | 3597–3739 | `BattleScene.dispose` | RUNDA-5 | `ea577aa6d91e` | NIE PORTOWANY | `dispose()` = zwolnienie zasobów GPU i słuchaczy DOM: w Rust własność / `Drop` (Z-36-15), słuchacze → P5; dryf po pinie dotyczy tylko tego (`forceContextLoss`, słuchacze — `web-drift-q5.txt`) |
+| 324 | 8510–8553 | `BattleScene._startLoop` | RUNDA-5 | `3a968d682b01` | ZPORTOWANY częściowo (cz. 5: część sceny / pickingu) | `BattleView::frame` + `BattleView::render` (kamera klatki) — reszta: cz. 4 (`billboard_all`, `deploy_phase_frame`), zegar / timery → P6.13, minimapa / morale / roster → P5 — Q4 §32: kamera (`_tickZoom`, `_tickCameraPanKeys`) → cz. 5 |
+| 325 | 8554–8566 | `BattleScene._syncRendererSize` | RUNDA-5 | `4cca20d4e306` | ZPORTOWANY (cz. 5) | `BattleView::sync_renderer_size` (`renderer_size`, `aspect`, rzut); ops `sync` / `frame` w `camera_control_matches_web` |
+| 326 | 8567–8574 | `BattleScene._canvasNdc` | RUNDA-5 | `3800a5b0a99b` | ZPORTOWANY (cz. 5) | `BattleView::ray_from_canvas` (`client_rect_to_ndc` z `pick::hex`, prostokąt pusty → `None`) |
+| 327 | 8575–8583 | `BattleScene._raycastFromCanvas` | RUNDA-5 | `1026af118400` | ZPORTOWANY (cz. 5) | `BattleView::ray_from_canvas` (`updateMatrixWorld` + `setFromCamera`), `RayCamera` |
+| 328 | 8584–8601 | `BattleScene._tickProjectiles` | RUNDA-5 | `9f99bb168093` | ZPORTOWANY wcześniej | `tick_projectiles` (cz. 4, `dynamics.rs`) |
+| 330 | 8624–8660 | `BattleScene._tickFloatLabels` | odłożony → cz. 5 | `05f5f84ab3ec` | ZPORTOWANY częściowo (cz. 5: część sceny / pickingu) | `BattleView::world_to_screen` (rzut napisu) — cz. 4 `FloatLabel::sample`; element DOM → P5 — Q4 §32: `worldToScreen` → cz. 5 |
+| 354 | 9091–9134 | `BattleScene._spawnDamageLabel` | odłożony → cz. 5 | `ccfc234a4fc6` | ZPORTOWANY częściowo (cz. 5: część sceny / pickingu) | `BattleView::world_to_screen` (rzut napisu) — cz. 4 `FloatLabel::damage`; element DOM → P5 — Q4 §32: rzut na ekran → cz. 5 |
+| 382 | 9872–9882 | `BattleScene._applyCamera` | RUNDA-5 | `6de141b10204` | ZPORTOWANY (cz. 5) | `BattleView::apply_camera` (cz. 2 `BattleCamera::apply` + nieaktualny `matrixWorld` po `lookAt`, W-23) |
+| 383 | 9883–9887 | `BattleScene._setZoomTarget` | RUNDA-5 | `9c1272c35576` | ZPORTOWANY (cz. 5) | `BattleView::set_zoom_target` |
+| 384 | 9888–9919 | `BattleScene._tickZoom` | RUNDA-5 | `27d643c48e38` | ZPORTOWANY (cz. 5) | `BattleView::tick_zoom`, `BattleView::on_wheel`, `BattleView::on_key_zoom` (pola `_onWheel`, `_onKeyZoom` w zakresie linii wiersza) |
+| 385 | 9920–9941 | `BattleScene._setPanKey` | RUNDA-5 | `bc37603de485` | ZPORTOWANY (cz. 5) | `BattleView::set_pan_key`, `PanKeys` (pola `_onKeyPanDown` / `_onKeyPanUp` w zakresie linii); `isEditableTarget` = flaga wejścia (DOM → P5) |
+| 386 | 9942–9952 | `BattleScene._clampCamTarget` | RUNDA-5 | `d0adbe4fd148` | ZPORTOWANY (cz. 5) | `BattleView::clamp_cam_target` |
+| 387 | 9953–10027 | `BattleScene._tickCameraPanKeys` | RUNDA-5 | `8c98b3ec5a1b` | ZPORTOWANY (cz. 5) | `BattleView::tick_camera_pan_keys`, `on_key_toggle_bars` (pole `_onKeyToggleBars` w zakresie linii; test `bars_toggle_matches_web`) — pola `_onKeySpeed`, `_onKeyBattleStats`, `_onKeyPause` z tego zakresu → P6.13 / P5 |
+| 407 | 10417–10424 | `BattleScene._primarySelectedUnit` | dołączony | `f95823bbea9d` | ZPORTOWANY częściowo (cz. 5: część sceny / pickingu) | `handle_deploy_unit_pick` (prywatne `refresh_visuals`: pierwszy wybrany żywy, nie rozbity) — reszta → P6.13 — inwentarz Q1: P6.13 — `_deploySelected` po `_refreshDeploySelectionVisuals` (wołane z `_handleDeployUnitPick`, RUNDA-5) |
+| 409 | 10437–10455 | `BattleScene._pickGroundTile` | RUNDA-5 | `be1e3f834d0c` | ZPORTOWANY (cz. 5) | `pick_ground_tile`, `pick_ground_tile_at`; kolumna `ground` każdego promienia |
+| 410 | 10456–10461 | `BattleScene._worldAtTile` | RUNDA-5 | `b6f728d6f556` | ZPORTOWANY wcześniej | `world_at_tile` (cz. 3, `units.rs`) |
+| 411 | 10462–10467 | `BattleScene._unitWorldPos` | RUNDA-5 | `07d3b91e0fb3` | ZPORTOWANY wcześniej | `unit_world_pos` (cz. 3, `units.rs`) |
+| 432 | 11049–11066 | `BattleScene._computeMinimapViewport` | RUNDA-5 | `11fa19a0ddab` | ZPORTOWANY (cz. 5) | `BattleView::minimap_viewport`, `MinimapViewport` (rysowanie minimapy → P5) |
+| 435 | 11084–11109 | `BattleScene._pickUnitAtScreen` | RUNDA-5 | `be30e74df714` | ZPORTOWANY (cz. 5) | `pick_unit_at_screen` (`PickUnit`, `Occupancy`); kolumna `unit` każdego promienia |
+| 439 | 11217–11497 | `BattleScene._showHoverTooltip` | dołączony | `0257138ec733` | ZPORTOWANY częściowo (cz. 5: część sceny / pickingu) | `DragPan` (`pointer_down_pans`, `down`, `move_to`, `up`), `BattleView::drag_pan` — dymek, kursor, podgląd, routing LPM (zaznaczanie / przeciąganie formacji) → P5 / P6.13 — inwentarz Q1: P5 (zakres linii obejmuje pola-strzałki `_onCanvasHoverMove`, `_onPanDown`, `_onPanMove`, `_onPanUp`, `_onResize` `:11236-11492`) — przeciąganie kamery (§4 „kamera: pan”) |
+| 548 | 14369–14412 | `BattleScene._handleDeployUnitPick` | RUNDA-5 | `940c7d30b24b` | ZPORTOWANY (cz. 5) | `handle_deploy_unit_pick`, `DeploySelection`, `RosterPick` (pierścienie i `refresh_deploy_selection_visuals` z cz. 3); `deploy_picking_and_clicks_match_web` |
+| 580 | 15063–15152 | `BattleScene._onDeployClick` | RUNDA-5 | `df9b72d3f9b5` | ZPORTOWANY częściowo (cz. 5: część sceny / pickingu) | `deploy_click` → `DeployClick` (Pick / Place / Clear / Nothing) — `_applyDeployPlacement`, komunikaty, czyszczenie zaznaczenia → P6.13 / P5 |
+| 583 | 15224–15229 | `BattleScene._getDeploySelectedUnits` | dołączony | `a81574bd784e` | ZPORTOWANY częściowo (cz. 5: część sceny / pickingu) | `deploy_click` (wybrane żywe, nieusunięte jednostki gracza) — reszta → P6.13 — inwentarz Q1: PODZIAŁ — warunek przeniesienia w `_onDeployClick` (RUNDA-5) |
+| 629 | 16498–16530 | `BattleScene._doBoxSelect` | RUNDA-5 | `9d41e2e2668b` | ZPORTOWANY częściowo (cz. 5: część sceny / pickingu) | `box_select` (test trafienia `worldToClientPx`) — zaznaczenie, pierścienie (cz. 3), UI → P6.13 / P5 |
+| 674 | 17510–17578 | `BattleScene._onBattleClick` | RUNDA-5 | `86898e38978c` | ZPORTOWANY częściowo (cz. 5: część sceny / pickingu) | `battle_click` → `BattleClick`, `battle_queue_only` — rozkazy (`_issueBattle*`), `_handleBattleUnitPick` → P6.13 / P5 |
+| 722 | 19419–19437 | `worldToScreen` | RUNDA-5 | `61eb184e9e4d` | ZPORTOWANY (cz. 5) | `BattleView::world_to_screen` (+ `BattleView::world_to_client_px` = `input/picker.ts:101`, `BattleView::project`) — styl / element DOM → P5 |
+
+## 43. Generator i dane referencyjne (`tests/fixtures/battle3d/`, README tamże, „Part 5”)
+
+- `gen_picking.ts` + `build_picking.mjs` (= bundler części 4 z dłuższą listą dopisanego `export { … }`),
+  `dom_stub.ts`, `three_shim.ts` z części 2; `gra/**` bez zmian. Canvas = fałszywy element (rozmiar klienta +
+  `getBoundingClientRect`), `renderer.getSize/setSize` dopisane do bezczynnego renderera, render =
+  `scene.updateMatrixWorld(); camera.updateMatrixWorld()`.
+- `picking.json` 81 669 B (podpis DTO scen zamiast samego DTO — budżet); katalog fixtur **11 971 697 B** (≤ 12 MB),
+  największy plik bez zmian (`siege_wall.json` 7 228 812 B ≤ 8 MB); `MANIFEST.sha256` 24 pliki. Bundel 2 783 652 B
+  nie jest commitowany. `PICK_VERBOSE=1` daje lokalny zrzut każdego promienia (debug, nie commitowany).
+
+## 44. Testy (`tests/battle3d_picking.rs`) i testy jednostkowe
+
+| test | co porównuje |
+|---|---|
+| `camera_control_matches_web` | 86 liczb kamery po konstruktorze (bitowo), 176 kroków (wynik kroku, FNV 86 liczb, widok minimapy), `worldToScreen` (nieaktualna / świeża / pusty canvas), `worldToClientPx` |
+| `siege_picking_matches_web` | 4 pozy oblężenia (domyślna, mur z bliska, flagi + relief, daleko z innym aspektem): 536 pikseli + 249 promieni w jednostki; pusty prostokąt |
+| `deploy_picking_and_clicks_match_web` | 2 pozy rozstawienia (z ramkami grup `Line` + `Sprite`): 320 pikseli + 336 promieni w jednostki; 18 kliknięć `_onDeployClick` (+ `_handleDeployUnitPick`); 3 prostokąty |
+| `battle_clicks_and_box_select_match_web` | 76 kliknięć `_onBattleClick`, 10 prostokątów `_doBoxSelect` |
+| `bars_toggle_matches_web` | 6 naciśnięć `H` (widoczność grup pasków) |
+| `helpers_and_constants_equal_web` | `clampBattleTile` (8 przypadków, w tym `-0`, ułamek), `BF_COLS`, `BF_ROWS`, `TILE_S`, `ORDER_LINE_Y` bitowo |
+| `battle::view::tests::{pan_buttons_follow_on_pan_down, constants_equal_web_literals}` | reguła przycisków `_onPanDown` (`:11276`, `:11306`, `:11312`), literały z plik:linia |
+| `battle::picking::tests::{clamp_battle_tile_bounds, segment_distance_branches, material_groups_and_back_side, queue_only_rule, plane_pick_iterates_on_relief}` | gałęzie `Ray.distanceSqToSegment`, grupy materiałów / `BackSide` (Z-36-21), `queueOnly` (`:17511`), picking płaszczyzny |
+
+## 45. Bramy tego wywołania (`runs/…-Q5/dowody/tests-impl-r1.txt`) i plan „pomiarów”
+
+```text
+# rustc 1.97.0 (stable); CARGO_INCREMENTAL=0, CARGO_PROFILE_DEV_DEBUG=0, CARGO_TARGET_DIR=/home/user/cargo-target-shared/<worktree>
+$ cargo fmt --all -- --check                                                     EXIT=0
+$ cargo clippy --locked --lib --test battle3d_picking -- -D warnings              EXIT=0
+$ cargo test --locked --lib battle::                                             20 passed  EXIT=0
+$ cargo test --locked --test battle3d_picking -- --nocapture                      6 passed  EXIT=0
+$ cargo test --locked --test battle3d_siege_wall --test battle3d_field --test battle3d_units --test battle3d_dynamics   3 + 5 + 8 + 5 passed  EXIT=0
+$ sha256sum -c MANIFEST.sha256 (24)                                              24 OK
+$ du -sb tests/fixtures/battle3d                                                 11971697
+# rustc 1.87.0 (MSRV)
+$ cargo +1.87.0 test --locked --lib battle::                                     20 passed  EXIT=0
+$ cargo +1.87.0 test --locked --test battle3d_picking                             6 passed  EXIT=0
+$ mutate_picking.py: 62 mutantów, wzorce dokładnie raz; próba 5 (groups ignored, back side winding, line threshold, lookAt not stale, sprite second triangle): 5/5 KILLED
+$ determinizm generatora (2 katalogi)                                            identyczne
+$ recon-q5.py (2 przebiegi, cmp)                                                 EXIT=0, identyczne
+```
+
+Próba mutacji ujawniła lukę: `groups ignored` przeżył pierwszy przebieg (żaden model bitwy nie ma tablicy
+materiałów) → dodany test jednostkowy `material_groups_and_back_side` (Z-36-21), potem zabity.
+**Do wywołania „pomiary” (NIE_ZMIERZONO tutaj):** `mutate_picking.py` (62 mutanty, partie `RANGE=a:b`, 1.87.0),
+pełne bramy `cargo clippy --locked --all-targets [--features gpu] -- -D warnings` i `cargo test --locked --all-targets`
+(1.87.0 i stable), niezależne odtworzenie generatora w trzecim katalogu. Kandydaci na mutanty równoważne do
+sprawdzenia: `ground first max` (`>` → `>=` — remisy wyniku są rzadkie), `instanced last instance skipped` (ostatnia
+instancja kępek / wody poza promieniami?), `minimap height floor`, `back side winding` (tylko test jednostkowy).
+
+## 46. Co ocenić wzrokiem po RR-T5 (NIE_ZMIERZONO — wymaga GPU)
+
+1. Kamera startowa: strefa gry w kadrze, patrzy na środek pola pod kątem 45° (`camDir` (0; 0,92; 0,92)); brak obrotu.
+2. Zoom kółkiem / `+` `-`: płynne dojście (0,18 na klatkę), granice bliska / daleka (całe pole), zoom wokół celu.
+3. Panorama WASD / strzałki (14 px na klatkę) i przeciąganie PPM / ŚPM: kierunki (W = północ = −Z), zatrzymanie na
+   krawędzi pola (margines rośnie z oddaleniem).
+4. Kursor nad wzgórzem / rzeką: podświetlany kafel = ten pod kursorem (relief, nie sąsiad przed wzgórzem).
+5. Klik w model jednostki stojącej ciasno w grupie: wybór tylko gdy kursor wskazuje jej kafel (K2); ramka grupy
+   (złoty kwadrat) „łapie” kliknięcia w pasie ~1 kafla wokół linii (W-25) — ocenić, czy to nie przeszkadza.
+6. Ramka zaznaczenia (box-select) obejmuje jednostki, których środek podstawy jest w prostokącie.
+7. Napisy obrażeń / ramka minimapy podążają za kamerą (rzut `worldToScreen`, minimapa = widok kamery).
+8. `H` chowa / pokazuje paski żywych jednostek.
+
+## 47. Obserwacje o webie (część 5; port 1:1, bez zmian w `gra/**`)
+
+- **W-22** Brak orbity: kamera bitwy ma tylko dolly-zoom i panoramę; `camDir` jest stałe (`:2081`), nie ma
+  obrotu klawiszem ani myszą (`grep camDir` — tylko `:2081`, `:9875-9877`). GOAL dispatchu wymienia „orbit” —
+  w webie nie istnieje, nic nie portuję.
+- **W-23** `_applyCamera` zostawia `camera.matrixWorld` z NOWĄ pozycją i POPRZEDNIM kwaternionem
+  (`Object3D.lookAt` woła `updateWorldMatrix` przed obliczeniem orientacji); `worldToScreen` w `_tickFloatLabels`
+  (przed renderem tej samej klatki) rzutuje tą macierzą. Zmierzone (`toScreen`): różnica nieaktualna vs świeża
+  ≤ 1,3·10⁻¹² px (kierunek kamery stały → kwaternion różni się zaokrągleniem) — niewidoczna, ale port ją odtwarza.
+- **W-24** `battlePickMeshUpNormal` mnoży normalną ściany przez `matrixWorld` OBIEKTU trafienia (`:1752-1753`); dla
+  `InstancedMesh` (wzgórza, woda) to macierz siatki, nie instancji — obrót / skala instancji nie wpływa na test
+  „ściana skierowana w górę”.
+- **W-25** Ramka grupy jednostki (`THREE.Line` w grupie modelu, cz. 4) trafia promień w odległości ≤ 1 (domyślny
+  `raycaster.params.Line.threshold`) od linii — zmierzone (`PICK_VERBOSE`): pierwszym trafieniem jednostki było `Line`
+  w 184 z 609 promieni z trafieniem, `Sprite` (numer grupy) w 12.
+- **W-26** `_onBattleClick` nie filtruje `removed` (`:17522`, `:17531`), w odróżnieniu od `_pickUnitAtScreen`
+  (`:11093`) — zmierzone: jednostka `atk9` oznaczona `removed` (nieodłączona) jest wybierana kliknięciem we wszystkich
+  4 stanach. W grze `removed` = odłączona od sceny przez `_removeUnitFromScene`, ale `intersectObjects` działa także na
+  grupach poza sceną (ostatni `matrixWorld`) — NIE_ZMIERZONO w grze.
+- **W-27** Przeciąganie na minimapie (`:10951-10962`, panel minimapy — P5) przesuwa `camTarget` bez
+  `_clampCamTarget` (klawisze i przeciąganie na polu ograniczają cel). Nie portuję (UI P5); odnotowane.
+- **Dryf weba po pinie** (`dowody/web-drift-q5.txt`; `origin/main` = `cc2c6a50`): `gra/src/battle` + `render` +
+  `input` — 13 plików, **+835 / −221** (jak §37; `input/picker.ts` bez zmian). Porównanie ciał 38 symboli części 5 @
+  `edb8fb56` vs `cc2c6a50` (`dowody/drift-q5.py`): **37 bez zmian**, zmieniony tylko `dispose` (`forceContextLoss()`
+  i zdjęcie dwóch słuchaczy DOM — zasoby / DOM, poza portem, Z-36-15). Nie przepinam (dispatch).
+
+## 48. Zamknięcie MOD-14 (po integracji części 5)
+
+| część | zakres | moduł | temat |
+|---|---|---|---|
+| 1 | mur oblężniczy (`siegeWall.ts`) | `battle::siege_wall` | …-Q1 |
+| 2 | pole statyczne, światła, mgła, kamera jako dane | `battle::field` | …-Q2 |
+| 3 | jednostki, paski, mur w scenie, pierścienie, rozkazy, duchy | `battle::units` | …-Q3 |
+| 4 | dynamika i efekty | `battle::dynamics` | …-Q4 |
+| 5 | picking i kamera | `battle::view`, `battle::picking` | …-Q5 (ta) |
+
+Po części 5 każdy wiersz inwentarza `battleScene.ts` ze statusem `RUNDA-2…5` ma status części (tabele §12a, §22,
+§32, §42). Poza tematem pozostają, zgodnie z §3.2: logika bitwy (PODZIAŁ / NIE-DOTYCZY → P6.13), UI DOM i audio
+(→ P5). NIE_ZMIERZONO: ocena wzrokowa 1:1 (§8, §16, §26, §36, §46 — wymaga GPU właściciela), wpływ dryfu po pinie na
+wektory (§37, §47).
