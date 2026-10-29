@@ -1,0 +1,9 @@
+{
+ "max_loc": 1500,
+ "cut": ["rerender", "switchCity", "renderCityIconRightRail"],
+ "debug_scc": false,
+ "strip_comments": false,
+ "rule_units": ["computeView", "cityFoodSplit", "cityGrowthLive", "cityPracaSplit", "clampedGrowthBreakdown", "resolveEmpireSnap", "resGlobalLocal", "resolveOrderState", "computeOrderStateLocal", "resolveCityHealth", "buildingHappinessSum", "daninaLabelForCity", "ownerHasSpichlerz", "ownerHasMennica", "isCapital", "territoryNodesForPanel", "readPodzialHandlu", "readOwnerDefaultPodzialHandlu", "activeTradeRouteCountForCity", "buildHandelDetailCard", "buildingUiDisplayLevel", "buildingRequirementChips", "buildingStockCostForItem", "stockCostForQueueItem", "maxAffordableRecruitQuantity", "recruitManpowerCost", "missingTechSteps", "productionCtxForCity", "renderPurchasableUnits", "improvementsInCityRange", "okolicaPreviewRadius", "buildCityResourceStatItems", "w3CityChip", "buildCityOnlyW3FlankChips", "renderHandelSlidersPanel", "renderProd", "renderBuildingsOwned"],
+ "deferred_units": ["attachUnitRowThumb", "buildUnitDetailCard", "okolicaHexPoints", "renderWorkedPreview"],
+ "out_json": "dyspozycje/autobot/runs/R-RUSTPORT-P5-8-CITYPANEL-PODZIAL-Q1/r2-logi/pomiar-r2.json"
+}

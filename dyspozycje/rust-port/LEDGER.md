@@ -249,3 +249,5 @@ Odnowienie limitu: wtorek 2026-11-03. Ciężkie prace przed zużyciem limitu prz
 
 ## 2026-10-29 — Pętla autonomiczna: cel zapisany (polecenie właściciela)
 Cel końcowy i bieżący zapisane w `GOAL-RUST-PORT-20261020.md` (§"CEL PĘTLI AUTONOMICZNEJ"); tabela aktywnych tematów wypełniona (4 tematy, etap 1). Pętlę napędzają: powiadomienia o zakończeniu Workflow oraz cogodzinny trigger.
+
+| 2026-10-29 | R-RUSTPORT-P5-8-CITYPANEL-PODZIAL-Q1 | 3 | r1 Operator→Evaluator FAIL (kryterium cykli) → r2 FC FAIL (spacje w logach, kryteria K04–K08) → r3 Operator→Evaluator PASS-WITH-NOTES→Final Control PASS (`a1246e48`) | **PASS — ZINTEGROWANE (docs)** | Podział `cityPanel.ts` (11 986 LOC) na 32 sekcje / 11 kawałków K00–K10, kolejność acykliczna (SCC=0), `p5/P5-8-CITYPANEL-PODZIAL.md`; port wg pinu `edb8fb56` (dryf 332 linie opisany). Następne: porty kawałków kolejno wg §4/§4a. Ref lokalny `refs/keep/p58-r3-a1246e48`. |
