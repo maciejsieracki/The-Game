@@ -1,0 +1,7 @@
+# Weryfikator niezalezny: regeneracja wektorow z pinu edb8fb56 (git archive gra/src gra/data do katalogu w scratchpad, poza repo)
+# Komenda: node --experimental-transform-types --no-warnings --import file://<run>/m06a-loader-register.mjs <run>/gen-m06a-vectors.mjs <web> <out>
+{"out":"/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/m06a-verify/regen.json","counts":{"terrain_predicates":8,"default_land_fraction":4,"neighborhood":6526,"count_land_sea":172,"coast_predicates":6526,"apply_coast_ring":172,"apply_double_coast_ring":172,"sanitize_coast_hexes":172,"find_dry_land_touching_sea":172,"ocean_connected_water":172,"find_inland_water":172,"find_inland_sea":172},"maps":172}
+EXIT=0 (generator)
+sha256 regenerowanego:                      07dfd5dca7e9db6c4d4016e78aa1a7f57f01df48daa0af8834b7e93bc040ccfa
+sha256 web-vectors.json w commicie 3621f07c: 07dfd5dca7e9db6c4d4016e78aa1a7f57f01df48daa0af8834b7e93bc040ccfa
+cmp: IDENTICAL_BYTES
