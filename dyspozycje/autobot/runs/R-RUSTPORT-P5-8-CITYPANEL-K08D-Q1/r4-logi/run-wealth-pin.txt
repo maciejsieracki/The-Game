@@ -6,8 +6,8 @@ OK   pin.anchor.1 | cityPanel.ts:4780 ? loadWealthParams(data.econParams as un
 OK   pin.anchor.2 | cityPanel.ts:4783 appendSectionTitleWithDetails(mount, '<s
 OK   pin.anchor.3 | cityPanel.ts:4786 'Brak danych parametrów zamożności.'
 OK   pin.anchor.4 | cityPanel.ts:4794 const cap = wealthCap(epoch, wealthParam
-OK   pin.anchor.5 | cityPanel.ts:4838 const podzial = readPodzialHandlu(city, 
-OK   pin.anchor.6 | cityPanel.ts:4837 const rown = wealthRownowaga(ws.poziom, 
+OK   pin.anchor.5 | cityPanel.ts:4838 const podzial = readPodzialHandlu(city,
+OK   pin.anchor.6 | cityPanel.ts:4837 const rown = wealthRownowaga(ws.poziom,
 OK   pin.anchor.7 | cityPanel.ts:4865 'Pasek w panelu pokazuje tylko postęp pu
 OK   exec.wealth.view.mid | pin-exec vs port: renderWealth innerHTML (763 znaków)
 OK   exec.wealth.view.mid.nonEmpty | wynik niepusty
