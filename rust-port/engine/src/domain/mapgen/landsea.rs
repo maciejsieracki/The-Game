@@ -30,7 +30,7 @@ use std::collections::HashSet;
 use crate::data::derived::mapgen_landsea;
 use crate::domain::map_generator::{Terrain, WorldType};
 use crate::domain::mapgen::prims::{hex_key, HEX_DIRECTIONS};
-use crate::domain::mapgen::terrain_class::{set_hex_to_morze, HexRecord};
+use crate::domain::mapgen::terrain_class::{set_hex_to_laka, set_hex_to_morze, HexRecord};
 
 /// Web `isWaterTerrainLocal` (gen-helpers.ts:152): Morze lub Plytkie Morze (Wybrzeze).
 #[inline]
@@ -342,4 +342,106 @@ pub fn find_inland_sea_hexes(hexes: &HexRecord, width: i64, height: i64) -> Vec<
         .filter(|(k, h)| h.terrain == Terrain::Sea && !ocean.contains(k.as_str()))
         .map(|(k, _)| k.clone())
         .collect()
+}
+
+/// Web `removeInlandWaterPools` (:4137): woda bez polaczenia z oceanem -> Laka (`setHexToLaka`).
+/// Zwraca liczbe zamienionych heksow (= liczba wykrytych heksow inlandowych).
+pub fn remove_inland_water_pools(hexes: &mut HexRecord, width: i64, height: i64) -> usize {
+    let inland = find_inland_water_hexes(hexes, width, height);
+    for key in &inland {
+        if let Some(h) = hexes.get_mut(key) {
+            set_hex_to_laka(h);
+        }
+    }
+    inland.len()
+}
+
+/// Web `fillEnclosedWaterByLandNeighbors` (:4189): woda z >= `min_land` suchymi sasiadami -> Laka.
+/// Do 8 przebiegow po kluczach w kolejnosci wstawiania; kazdy odczyt sasiadow widzi zmiany
+/// poprzednich heksow (jak w JS, gdzie `hexes[key]` jest czytany na biezaco).
+/// Web `minLandNeighbors = 5` jest domyslnym argumentem wywolujacego (brak literalu tutaj).
+pub fn fill_enclosed_water_by_land_neighbors(hexes: &mut HexRecord, min_land: usize) -> usize {
+    let mut total = 0usize;
+    for _pass in 0..FILL_ENCLOSED_MAX_PASSES {
+        let keys: Vec<String> = hexes.iter().map(|(k, _)| k.clone()).collect();
+        let mut n = 0usize;
+        for key in &keys {
+            let Some(hex) = hexes.get(key) else { continue };
+            if !is_water_terrain_local(hex.terrain) {
+                continue;
+            }
+            let Some((q, r)) = key_qr(key) else { continue };
+            if count_land_neighbors(hexes, q, r) < min_land {
+                continue;
+            }
+            // Web: `rzeka = { obecna: false, krawedzie: [] }` (:4199) - w odroznieniu od setHexToLaka.
+            if let Some(h) = hexes.get_mut(key) {
+                set_hex_to_laka(h);
+                h.river_present = false;
+                h.river_edges.clear();
+            }
+            n += 1;
+        }
+        total += n;
+        if n == 0 {
+            break;
+        }
+    }
+    total
+}
+
+/// Web `fill...` pętla `for (let pass = 0; pass < 8; pass++)` (:4191): limit przebiegów.
+const FILL_ENCLOSED_MAX_PASSES: usize = 8;
+
+/// Web `removeSmallInlandWaterPools` (:4276): spojne skladowe wody inlandowej o rozmiarze
+/// `> max_pool_size` zostaja; mniejsze (`<= max_pool_size`) -> Laka. Laczenie 6-kierunkowe.
+pub fn remove_small_inland_water_pools(
+    hexes: &mut HexRecord,
+    width: i64,
+    height: i64,
+    max_pool_size: usize,
+) -> usize {
+    let inland: Vec<String> = find_inland_water_hexes(hexes, width, height);
+    let inland_set: HashSet<String> = inland.iter().cloned().collect();
+    let mut visited: HashSet<String> = HashSet::new();
+    let mut converted = 0usize;
+
+    for start in &inland {
+        if visited.contains(start) {
+            continue;
+        }
+        let mut comp: Vec<String> = Vec::new();
+        let mut stack: Vec<String> = vec![start.clone()];
+        visited.insert(start.clone());
+        while let Some(key) = stack.pop() {
+            let Some((q, r)) = key_qr(&key) else {
+                comp.push(key);
+                continue;
+            };
+            comp.push(key);
+            for &(dq, dr) in HEX_DIRECTIONS.iter() {
+                let nk = hex_key(q + i64::from(dq), r + i64::from(dr));
+                if !inland_set.contains(&nk) || visited.contains(&nk) {
+                    continue;
+                }
+                visited.insert(nk.clone());
+                stack.push(nk);
+            }
+        }
+        if comp.len() > max_pool_size {
+            continue;
+        }
+        for key in &comp {
+            if let Some(h) = hexes.get_mut(key) {
+                set_hex_to_laka(h);
+                converted += 1;
+            }
+        }
+    }
+    converted
+}
+
+/// Web `removeInlandSeaPools` (:4320): alias `removeInlandWaterPools` (Morze + Wybrzeze).
+pub fn remove_inland_sea_pools(hexes: &mut HexRecord, width: i64, height: i64) -> usize {
+    remove_inland_water_pools(hexes, width, height)
 }
