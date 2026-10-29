@@ -11,17 +11,26 @@
  * `canAffordBuildingStock(pool, cost)`. Przeciąganie zwraca `(from, to)` do kontrolera (komenda `reorder_build`).
  */
 import type { CityId, PlayerId, ProductionItemDto } from '../../viewmodel/types';
+import type { ProposedCommand } from '../../controller/commands';
 import { applyBuildButtonVisualState, el } from './k01b-dom';
 import type { StockCostMap } from './k04-stock';
 
-/** Komenda dodania budynku/pozycji do kolejki (wykonanie po stronie Rust: pobór surowców, wpis, postęp). */
-export interface EnqueueBuildCommand {
-  readonly kind: 'enqueue_build';
-  readonly owner: PlayerId;
-  readonly city: CityId;
-  readonly itemKind: ProductionItemDto['kind'];
-  readonly itemId: string;
-  readonly upgrade: boolean;
+/**
+ * Komenda dodania budynku/pozycji do kolejki (wykonanie po stronie Rust: pobór surowców, wpis, postęp).
+ * K04B-Z5: typ WYCIĄGNIĘTY z `ProposedCommand` (`controller/commands.ts`) — zmiana kontraktu w kontrolerze
+ * łamie typecheck tutaj, a nie po cichu.
+ */
+export type EnqueueBuildCommand = Extract<ProposedCommand, { kind: 'enqueue_build_item' }>;
+
+/**
+ * Komenda przesunięcia pozycji kolejki (K04B-Z6). Zamiast duplikatu `reorder_build` używany jest istniejący
+ * wariant katalogu `move_build` (`controller/commands.ts`, pola `from`/`to`) — ZAŁOŻENIE K04B-Z6.
+ */
+export type ReorderBuildCommand = Extract<ProposedCommand, { kind: 'move_build' }>;
+
+/** Buduje `move_build` dla `bindBuildQueueDragReorderK04b` (kontroler podaje wynik `onReorder`). */
+export function reorderBuildCommandK04b(owner: PlayerId, city: CityId, from: number, to: number): ReorderBuildCommand {
+  return { kind: 'move_build', owner, city, from, to };
 }
 
 /** Stan potrzebny bramkom `addItem`: kolejka miasta (DTO) i id już zbudowanych budynków (DTO). */
@@ -52,7 +61,7 @@ export function addItemCommandK04b(
     return null;
   }
   return {
-    kind: 'enqueue_build',
+    kind: 'enqueue_build_item',
     owner,
     city,
     itemKind: item.kind,

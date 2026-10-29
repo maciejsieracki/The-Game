@@ -11,7 +11,7 @@
  *     Forma (osobne komendy Tauri vs warianty jednej) = D-CMD-1 (P2-5 §1), nierozstrzygnięta —
  *     ZAŁOŻENIE P5.1-Z4: na razie warianty z `kind`, jak w `bridge.rs`.
  */
-import type { CityId, HexCoord, PlayerId, SlotId, UnitId, ViewKey } from '../viewmodel/types';
+import type { CityId, HexCoord, PlayerId, ProductionItemKind, SlotId, UnitId, ViewKey } from '../viewmodel/types';
 
 export const CONTRACT_VERSION = 1 as const;
 export const TAURI_ENGINE_COMMAND = 'engine_command' as const;
@@ -40,6 +40,8 @@ export type EngineCommand =
 
 export type ProposedCommand =
   | { kind: 'enqueue_build'; owner: PlayerId; city: CityId; item: string }
+  /** K04B-Z5 (P5-8-K04B batch 3, dopisek): wariant strukturalny używany przez `addItemCommandK04b` (`ui/cityPanel/k04b-queue.ts`); pole `item: string` powyżej nie koduje rodzaju ani ulepszenia. Ujednolicenie z `enqueue_build` = batch 4 / podpinanie kontrolera. */
+  | { kind: 'enqueue_build_item'; owner: PlayerId; city: CityId; itemKind: ProductionItemKind; itemId: string; upgrade: boolean }
   | { kind: 'dequeue_build'; owner: PlayerId; city: CityId; index: number }
   | { kind: 'promote_build'; owner: PlayerId; city: CityId; index: number }
   | { kind: 'move_build'; owner: PlayerId; city: CityId; from: number; to: number }
