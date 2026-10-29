@@ -20,6 +20,11 @@ import { appendW4SignedBreakdownSections } from './k02-breakdown';
 import { cityFoodSplit } from './k03-model';
 import { okStat, ringsTiles, findBuildingDef } from './k05a-fundament';
 import { dep, valueProxy } from './k07b-deps';
+// K07B partia 2 (ten sam blok pinu; import zamiast delegatów — brak cyklu: p2 nie importuje p1).
+import {
+  appendBudowaListaBar, appendBudowaToolbarProfiles, appendOkolicaToolbarProfiles, appendPanel,
+  appendSectionTitleWithDetails, renderTopStatsBar, resolveDetailSideHint,
+} from './k07b-p2';
 
 // ─── K07B-Z5: typy pinu (alias any; zgodność z viewmodel/types.ts — NIE_ZMIERZONO) ───────────────────────────────
 type CityK07 = any;
@@ -81,13 +86,6 @@ const appendProductionPicon = (...args: any[]): any => dep('appendProductionPico
 const appendCompositionBlock = (...args: any[]): any => dep('appendCompositionBlock')(...args);
 const appendCitizenUpkeepBlock = (...args: any[]): any => dep('appendCitizenUpkeepBlock')(...args);
 const appendBuildQueueSection = (...args: any[]): any => dep('appendBuildQueueSection')(...args);
-const appendSectionTitleWithDetails = (...args: any[]): any => dep('appendSectionTitleWithDetails')(...args);
-const appendPanel = (...args: any[]): any => dep('appendPanel')(...args);
-const appendBudowaListaBar = (...args: any[]): any => dep('appendBudowaListaBar')(...args);
-const appendBudowaToolbarProfiles = (...args: any[]): any => dep('appendBudowaToolbarProfiles')(...args);
-const appendOkolicaToolbarProfiles = (...args: any[]): any => dep('appendOkolicaToolbarProfiles')(...args);
-const renderTopStatsBar = (...args: any[]): any => dep('renderTopStatsBar')(...args);
-const resolveDetailSideHint = (...args: any[]): any => dep('resolveDetailSideHint')(...args);
 const renderWorkedPreview = (...args: any[]): any => dep('renderWorkedPreview')(...args);
 const renderSurowce = (...args: any[]): any => dep('renderSurowce')(...args);
 const renderBuildList = (...args: any[]): any => dep('renderBuildList')(...args);
