@@ -1,0 +1,21 @@
+{
+ "mode": "k07b",
+ "pin": "edb8fb56",
+ "block": 7,
+ "pinUnits": 377,
+ "k07Units": 23,
+ "k07Loc": 1493,
+ "domUnits": 15,
+ "domLoc": 1074,
+ "selectedUnits": 15,
+ "selectedLoc": 1039,
+ "deferredUnits": 6,
+ "deferredLoc": 408,
+ "deferredByClass": {
+  "T": 5,
+  "R": 1
+ },
+ "missingInPin": [
+  "<HEADER>"
+ ]
+}
