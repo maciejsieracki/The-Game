@@ -179,3 +179,18 @@ Metoda: zliczanie trafien geometrii z danych wejsciowych wektorow (nie wynik fun
 - Binarne kryterium "mutacje na kazdej galezi sterujacej + dowody rownowaznosci": **niespelnione** - K08 i K09 to galezie bez zabojcy i nie-rownowazne. Potrzebne dwa przypadki wektorow z weba (K08: NaN w landScores; K09: tie 0.04 w sorcie morse), ponowne mutacje K08/K09 jako zabite, bez oslabiania istniejacych testow.
 - Pozostale mutacje: zabite lub rownowazne z dowodem.
 - Bez zmian kodu w tej rundzie (Operator-pomiary).
+
+## Runda 3 - obrona (Operator-impl, ten sam ID)
+
+Odpowiedz na zarzuty Evaluatora (runda 2). Kod `landsea.rs` bez zmian; zmienione: generator i wektory `contfrac` (prefiks rundy 2 zachowany, 205 pierwszych przypadkow JSON-owo identycznych; `erode`/`carve` bajtowo identyczne), testy `p6_m06a6_pangea.rs` (tylko dopisane; jedyna zmiana w istniejacym kodzie to `build_scores` przyjmuje napis `"NaN"` przez `num()`), `mut-runner-m06a6.py` (dopisana K11).
+
+- **K08 (NaN sumy wynikow) - ZABITA.** Wektory `cn_*` (48 przypadkow, 48 z NaN w `landScores`, 42 ze zmianami przez web). Test `apply_land_fraction_by_continent_nan_score_sum_matches_web`. Mutacja: `KILLED` (2 FAILED).
+- **K09 (tolerancja sortu morse `>` vs `>=`) - ZABITA.** Wektory `ct_*` (48 przypadkow, Morze 15x15): kandydaci morza o wynikach `0.0`/`0.04` (oraz `0.04`/`0.08`) z wyzszym wynikiem dalej od centrum, 12+12 przypadkow na dokladnym progu, 12 na N-1 ulp (`0.04-2^-57`), 12 na N+1 ulp (`0.04+2^-57`). Web (tolerancja `>`, remis -> odleglosc od centrum) zamienia komorke centralna we wszystkich 24 przypadkach progowych; `>=` zamienia dalsza. Test `apply_land_fraction_by_continent_sort_tolerance_boundary_matches_web`. Mutacja: `KILLED` (2 FAILED).
+- **K11 (galaz zerowa `sum_all == 0.0`) - ZABITA (nowa mutacja).** Wektory `cz_*` (12 przypadkow, wszystkie wyniki 0; web zmienia 12/12). Test `apply_land_fraction_by_continent_zero_score_sum_matches_web`. Mutacja: `KILLED`.
+- **Zarzut 4 (dane `erode_docelowe_wypelnienie_bbox`, `erode_max`, `carve_max_aspect`, `carve_max_wyciec` nie wiazane z kodem) - PRZYJETY.** Test `pangea_data_defaults_drive_erode_and_carve_vectors` karmi funkcje produkcyjne wartosciami z `mapgen-landsea-pangea.json` i porownuje z wektorami weba dla przypadkow o tych wartosciach (erozja 0.74/1200: >= 10; zatoki 1.85/900: >= 10). Rozjazd danych z wektorami = czerwony test.
+- **Zarzut 3 (etap niekompletny) - odpowiedz:** K08/K09 zabite; `rebalanceLandFractionPangea` nadal RUNDA-2 (zaleznosci `fillPangeaAnnularSeaCorridors` :4595 i `ensurePangeaSingleContinent` :4375 niezportowane), wpisane w tabeli zakresu.
+- Dowody rownowaznosci (E01, E02, E13, C03, C06, C12, K04) ponownie uruchomione na nowych wektorach: nadal `SURVIVED`, zgodnie z dowodami D1-D6 (log `mutations-r3.log`).
+
+Bramki rundy 3 (surowe logi w katalogu runu, `gate-*-r3.log`): fmt EXIT=0; clippy `--all-targets -D warnings` EXIT=0; test: 1309 passed, 0 failed (baza 1296 + 13 testow w `p6_m06a6_pangea`: 9 z rundy 1 + 4 nowe w rundzie 3).
+
+Pomiar trafien na granicach: `measure-boundaries-r3.log`.

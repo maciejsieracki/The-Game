@@ -63,10 +63,7 @@ fn build_scores(pairs: &Value) -> HashMap<String, f64> {
         .iter()
         .map(|p| {
             let a = p.as_array().expect("para");
-            (
-                a[0].as_str().expect("klucz").to_owned(),
-                a[1].as_f64().expect("score"),
-            )
+            (a[0].as_str().expect("klucz").to_owned(), num(&a[1]))
         })
         .collect()
 }
@@ -399,4 +396,183 @@ fn apply_land_fraction_by_continent_zero_continents_is_noop() {
     );
     assert_eq!(adjusted, 0);
     assert_eq!(dump_terrains(&hexes), before);
+}
+
+/// Uruchamia `apply_land_fraction_by_continent` na przypadku wektora i porownuje z webem.
+fn run_contfrac_case(c: &Value) {
+    let mut hexes = build_map(&c["map"]);
+    let scores = build_scores(&c["scores"]);
+    let mut cont: HashMap<String, i64> = HashMap::new();
+    for p in c["continentOf"].as_array().expect("continentOf") {
+        let a = p.as_array().expect("para");
+        cont.insert(a[0].as_str().unwrap().to_owned(), a[1].as_i64().unwrap());
+    }
+    let n = c["nContinents"].as_u64().unwrap() as usize;
+    let target = num(&c["target"]);
+    let dims = match &c["dims"] {
+        Value::Null => None,
+        d => Some((d[0].as_i64().unwrap(), d[1].as_i64().unwrap())),
+    };
+    let adjusted = apply_land_fraction_by_continent(&mut hexes, &scores, &cont, n, target, dims);
+    assert_eq!(
+        adjusted,
+        c["expect"]["adjusted"].as_u64().unwrap() as usize,
+        "zmiany, przypadek {}",
+        c["id"]
+    );
+    assert_eq!(
+        dump_terrains(&hexes),
+        expected_terrains(&c["expect"]["terrains"]),
+        "mapa, przypadek {}",
+        c["id"]
+    );
+}
+
+fn contfrac_cases_with_prefix(prefix: &str) -> Vec<&'static Value> {
+    load(CONTFRAC_VECTORS, "contfrac")
+        .iter()
+        .filter(|c| c["id"].as_str().is_some_and(|id| id.starts_with(prefix)))
+        .collect()
+}
+
+#[test]
+fn apply_land_fraction_by_continent_nan_score_sum_matches_web() {
+    // K08: suma wynikow NaN -> web `reduce(...) || 1` (NaN jest falsy) -> dzielnik 1.
+    // Wektory `cn_*`: NaN w landScores (`?? 0` nie lapie NaN) -> galąz `is_nan()` jest wykonana.
+    let cs = contfrac_cases_with_prefix("cn_");
+    assert!(
+        cs.len() >= 40,
+        "za malo przypadkow NaN w wynikach: {}",
+        cs.len()
+    );
+    let with_changes = cs
+        .iter()
+        .filter(|c| c["expect"]["adjusted"].as_u64().unwrap() > 0)
+        .count();
+    assert!(
+        with_changes >= 20,
+        "przypadki NaN bez zmian: {with_changes}"
+    );
+    for c in cs {
+        run_contfrac_case(c);
+    }
+}
+
+#[test]
+fn apply_land_fraction_by_continent_zero_score_sum_matches_web() {
+    // Galąz `sum_all == 0.0` (web `|| 1`): bez niej dzielnik 0 -> NaN -> brak zmian.
+    // Wektory `cz_*`: wszystkie wyniki 0.
+    let cs = contfrac_cases_with_prefix("cz_");
+    assert!(
+        cs.len() >= 10,
+        "za malo przypadkow sumy zerowej: {}",
+        cs.len()
+    );
+    let with_changes = cs
+        .iter()
+        .filter(|c| c["expect"]["adjusted"].as_u64().unwrap() > 0)
+        .count();
+    assert!(
+        with_changes >= 8,
+        "przypadki sumy zerowej bez zmian: {with_changes}"
+    );
+    for c in cs {
+        run_contfrac_case(c);
+    }
+}
+
+#[test]
+fn apply_land_fraction_by_continent_sort_tolerance_boundary_matches_web() {
+    // K09: |Δscore| == 0.04 DOKLADNIE (IEEE). Web: `> tol` -> remis -> odleglosc od centrum,
+    // wiec zawsze zamieniana jest komorka blizsza centrum (ct_*). Gdyby zamiast `>` byl `>=`,
+    // wygralby wyzszy wynik, czyli dalsza komorka: rozjazd z wektorem.
+    let cs = contfrac_cases_with_prefix("ct_");
+    assert_eq!(cs.len(), 48, "przypadki granicy tolerancji: {}", cs.len());
+    for c in cs {
+        run_contfrac_case(c);
+    }
+}
+
+#[test]
+fn pangea_data_defaults_drive_erode_and_carve_vectors() {
+    // Pola `erode_docelowe_wypelnienie_bbox`, `erode_max`, `carve_max_aspect`, `carve_max_wyciec`
+    // sa parametrami wywolujacego. Test karmi nimi funkcje produkcyjne na przypadkach wektorow
+    // z wartosciami domyslnymi weba i porownuje z webem: rozjazd danych z kodem = czerwony test.
+    let p = data();
+    let mut erode_n = 0usize;
+    for c in load(ERODE_VECTORS, "erode") {
+        if num(&c["target"]) != p.erode_docelowe_wypelnienie_bbox
+            || c["max"].as_u64() != Some(p.erode_max as u64)
+        {
+            continue;
+        }
+        let mut hexes = build_map(&c["map"]);
+        let scores = build_scores(&c["scores"]);
+        let eroded = erode_pangea_bbox_low_score_rim(
+            &mut hexes,
+            &scores,
+            p.erode_docelowe_wypelnienie_bbox,
+            p.erode_max,
+        );
+        assert_eq!(
+            eroded,
+            c["expect"]["eroded"].as_u64().unwrap() as usize,
+            "erozja {}",
+            c["id"]
+        );
+        assert_eq!(
+            dump_terrains(&hexes),
+            expected_terrains(&c["expect"]["terrains"]),
+            "mapa {}",
+            c["id"]
+        );
+        erode_n += 1;
+    }
+    assert!(
+        erode_n >= 10,
+        "za malo przypadkow erozji z domyslnymi danymi: {erode_n}"
+    );
+
+    let mut carve_n = 0usize;
+    for c in load(CARVE_VECTORS, "carve") {
+        if num(&c["maxAspect"]) != p.carve_max_aspect
+            || c["maxCarve"].as_u64() != Some(p.carve_max_wyciec as u64)
+        {
+            continue;
+        }
+        let mut hexes = build_map(&c["map"]);
+        let scores = build_scores(&c["scores"]);
+        let perm: [u8; 256] = {
+            let arr = c["perm"].as_array().expect("perm");
+            let mut out = [0u8; 256];
+            for (i, v) in arr.iter().enumerate() {
+                out[i] = v.as_u64().expect("bajt") as u8;
+            }
+            out
+        };
+        let carved = carve_pangea_long_side_gulfs(
+            &mut hexes,
+            &scores,
+            &perm,
+            p.carve_max_aspect,
+            p.carve_max_wyciec,
+        );
+        assert_eq!(
+            carved,
+            c["expect"]["carved"].as_u64().unwrap() as usize,
+            "wyciecia {}",
+            c["id"]
+        );
+        assert_eq!(
+            dump_terrains(&hexes),
+            expected_terrains(&c["expect"]["terrains"]),
+            "mapa {}",
+            c["id"]
+        );
+        carve_n += 1;
+    }
+    assert!(
+        carve_n >= 10,
+        "za malo przypadkow zatok z domyslnymi danymi: {carve_n}"
+    );
 }

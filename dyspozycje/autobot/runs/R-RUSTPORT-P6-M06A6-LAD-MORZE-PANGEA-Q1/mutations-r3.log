@@ -1,0 +1,17 @@
+SHA poczatkowe: src/domain/mapgen/landsea.rs=5928f313c761f71356cbc2f87958d784e590dc89deaa7ac6513043a6cf4b4ab6
+KILLED           K08-nan-guard-off (33 s) przywrocono=OK 2 FAILED: apply_land_fraction_by_continent_nan_score_sum_matches_web, apply_land_fraction_by_continent_matches_web
+KILLED           K09-sort-tol-ge (34 s) przywrocono=OK 2 FAILED: apply_land_fraction_by_continent_sort_tolerance_boundary_matches_web, apply_land_fraction_by_continent_matches_web
+KILLED           K11-zero-guard-off (38 s) przywrocono=OK 2 FAILED: apply_land_fraction_by_continent_zero_score_sum_matches_web, apply_land_fraction_by_continent_matches_web
+SHA koncowe: src/domain/mapgen/landsea.rs=5928f313c761f71356cbc2f87958d784e590dc89deaa7ac6513043a6cf4b4ab6 zgodne=True
+SHA poczatkowe: src/domain/mapgen/landsea.rs=5928f313c761f71356cbc2f87958d784e590dc89deaa7ac6513043a6cf4b4ab6
+SURVIVED         E01-bbox-stop-lt (39 s) przywrocono=OK wszystkie testy zielone
+SURVIVED         E02-early-guard-off (36 s) przywrocono=OK wszystkie testy zielone
+SURVIVED         E13-area-noclamp (35 s) przywrocono=OK wszystkie testy zielone
+SURVIVED         C03-longisq-gt (32 s) przywrocono=OK wszystkie testy zielone
+SURVIVED         C06-nearmid-le (34 s) przywrocono=OK wszystkie testy zielone
+SURVIVED         C12-depth-nofloor (31 s) przywrocono=OK wszystkie testy zielone
+SURVIVED         K04-deficit-le (32 s) przywrocono=OK wszystkie testy zielone
+KILLED           K08-nan-guard-off (32 s) przywrocono=OK 2 FAILED: apply_land_fraction_by_continent_nan_score_sum_matches_web, apply_land_fraction_by_continent_matches_web
+KILLED           K09-sort-tol-ge (32 s) przywrocono=OK 2 FAILED: apply_land_fraction_by_continent_sort_tolerance_boundary_matches_web, apply_land_fraction_by_continent_matches_web
+KILLED           K11-zero-guard-off (36 s) przywrocono=OK 2 FAILED: apply_land_fraction_by_continent_zero_score_sum_matches_web, apply_land_fraction_by_continent_matches_web
+SHA koncowe: src/domain/mapgen/landsea.rs=5928f313c761f71356cbc2f87958d784e590dc89deaa7ac6513043a6cf4b4ab6 zgodne=True

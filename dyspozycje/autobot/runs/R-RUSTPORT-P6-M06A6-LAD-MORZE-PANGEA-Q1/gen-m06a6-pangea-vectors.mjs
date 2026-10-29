@@ -173,7 +173,7 @@ function contCase(id, hexes, scores, continentEntries, nContinents, target, dims
     nContinents,
     dims,
     map: before,
-    scores: Object.entries(scores),
+    scores: Object.entries(scores).map(([k, v]) => [k, numOut(v)]),
     continentOf: continentEntries,
     expect: { adjusted, terrains: dumpMap(ws) },
   };
@@ -310,10 +310,82 @@ for (const [i, target, nc] of [[0, NaN, 2], [1, 0.5, 1], [3, 0.15, 3], [4, 0.85,
   contRand.push(contCase(`coe_${i}`, hexes, scores, entries, nc, target, [6, 6]));
 }
 
+// --- RUNDA 3 (dopisane NA KONCU; poprzednie przypadki i ich RNG bez zmian, prefiks zachowany) ---
+// K08: wynik NaN w landScores (web: `reduce(...) || 1` -> NaN traktowany jak 0 -> dzielnik 1).
+// Wartosc NaN trafia do sumy kontynentu (`?? 0` nie lapie NaN), wiec sumaAll = NaN.
+const nanCases = [];
+for (let i = 0; i < 48; i++) {
+  const w = 3 + rint(8);
+  const h = 3 + rint(8);
+  const hexes = randomMap(w, h, TERRAIN_WEIGHTS_LAND);
+  const scores = randomScores(hexes);
+  const keys = Object.keys(hexes);
+  const nNan = 1 + rint(3);
+  for (let j = 0; j < nNan; j++) scores[keys[rint(keys.length)]] = NaN;
+  const nContinents = 2 + rint(3);
+  const entries = keys.map((k) => [k, rint(nContinents)]);
+  const target = 0.15 + rnd() * 0.7;
+  const dims = i % 3 === 0 ? null : [w, h];
+  nanCases.push(contCase(`cn_${i}`, hexes, scores, entries, nContinents, target, dims));
+}
+// K11: suma wynikow = 0 (web: `|| 1`), bez NaN; bez gałęzi zerowej dzielnik 0 -> NaN.
+for (let i = 0; i < 12; i++) {
+  const w = 3 + rint(8);
+  const h = 3 + rint(8);
+  const hexes = randomMap(w, h, TERRAIN_WEIGHTS_LAND);
+  const scores = {};
+  for (const k of Object.keys(hexes)) scores[k] = 0;
+  const keys = Object.keys(hexes);
+  const nContinents = 2 + rint(2);
+  const entries = keys.map((k) => [k, rint(nContinents)]);
+  const target = 0.15 + rnd() * 0.7;
+  nanCases.push(contCase(`cz_${i}`, hexes, scores, entries, nContinents, target, [w, h]));
+}
+// K09: |Δscore| == 0.04 DOKLADNIE (IEEE: 0.04-0.0 = 0.04; 0.08-0.04 = 0.04, bo 0.08 = 2*0.04).
+// Mapa 15x15: dwa kandydaty morza (Sea) w srodku, reszta PlytkieMorze (nie-kandydat) i Laka
+// (112 suchych, cel 113 -> dokladnie jeden przydział morza). Dla `>` remis rozstrzyga odległość
+// od centrum; dla `>=` decyduje wynik. Kontrola: wysoki wynik bliżej centrum (zgodne obie gałęzie).
+const tolCases = [];
+{
+  const W = 15;
+  const H = 15;
+  // dokladnie na progu (N) oraz N-1 / N+1 ulp (2^-57 w przedziale [2^-5, 2^-4)) dla `>` i `>=`
+  const ULP = 2 ** -57;
+  const pairs = [[0.0, 0.04], [0.04, 0.08], [0.0, 0.04 - ULP], [0.0, 0.04 + ULP]];
+  const positions = [[4, 7, 7, 7], [10, 7, 7, 7], [7, 4, 7, 7], [7, 10, 7, 7], [5, 5, 7, 7], [2, 7, 7, 7]];
+  let tid = 0;
+  for (const [lo, hi] of pairs) {
+    for (const [fq, fr, nq, nr] of positions) {
+      for (const farHi of [true, false]) {
+        const hexes = {};
+        for (let r = 0; r < H; r++) for (let q = 0; q < W; q++) hexes[`${q},${r}`] = mkHex('PlytkieMorze');
+        const fk = `${fq},${fr}`;
+        const nk = `${nq},${nr}`;
+        hexes[fk] = mkHex('Morze');
+        hexes[nk] = mkHex('Morze');
+        let placed = 0;
+        for (let r = 0; r < H && placed < 112; r++) {
+          for (let q = 0; q < W && placed < 112; q++) {
+            const k = `${q},${r}`;
+            if (k === fk || k === nk) continue;
+            hexes[k] = mkHex('Laka');
+            placed++;
+          }
+        }
+        const scores = {};
+        for (const k of Object.keys(hexes)) scores[k] = 0.0;
+        scores[fk] = farHi ? hi : lo;
+        scores[nk] = farHi ? lo : hi;
+        tolCases.push(contCase(`ct_${tid++}`, hexes, scores, [], 1, 0.5, [W, H]));
+      }
+    }
+  }
+}
+
 const cases = {
   erode: [...erodeRand, ...edgeErode],
   carve: [...carveRand, ...edgeCarve],
-  contfrac: contRand,
+  contfrac: [...contRand, ...nanCases, ...tolCases],
 };
 const counts = Object.fromEntries(Object.entries(cases).map(([k, v]) => [k, v.length]));
 const meta = {

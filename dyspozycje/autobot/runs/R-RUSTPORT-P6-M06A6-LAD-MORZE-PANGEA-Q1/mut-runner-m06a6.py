@@ -73,6 +73,7 @@ MUTATIONS = [
     ("K09-sort-tol-ge", "                let sb = score(b);\n                if (sb - sa).abs() > fill.tolerancja_score_sortowanie {",
      "                let sb = score(b);\n                if (sb - sa).abs() >= fill.tolerancja_score_sortowanie {", 1),
     ("K10-ci-noclamp-hi", "let ci = (last as i64).min(raw.max(0)) as usize;", "let ci = raw.max(0) as usize;", 1),
+    ("K11-zero-guard-off", "    let total_score = if sum_all == 0.0 || sum_all.is_nan() {", "    let total_score = if sum_all.is_nan() {", 1),
 ]
 
 
