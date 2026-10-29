@@ -53,7 +53,7 @@ try {
       `import ${JSON.stringify(setup)};`,
       `export * from ${JSON.stringify(V2_FILE)};`,
       `export { setK06aActive, getK06aState } from ${JSON.stringify(join(dir, 'k06a-fundament.ts'))};`,
-      `export { setK07aActiveCity, getK07aActiveCity, setK07aUxSectionRefresh, getK07aUxSectionRefresh } from ${JSON.stringify(join(dir, 'k07a-fundament.ts'))};`,
+      `export { setK07aActiveCity, getK07aActiveCity, setK07aUxSectionRefresh, getK07aUxSectionRefresh, setK07aDeps } from ${JSON.stringify(join(dir, 'k07a-fundament.ts'))};`,
       '',
     ].join('\n'),
   );
@@ -191,11 +191,66 @@ try {
   check('CADUCEUS_SVG.prefix', 'cityPanel.ts:11577-11578', m.CADUCEUS_SVG.startsWith('<svg viewBox="0 0 24 24"'), true);
   check('cityRailIconHtml.empty-unknown', 'cityPanel.ts:11588-11589 brandIconSvg null -> ""', m.cityRailIconHtml('__brak_ikony__'), '');
 
+  // --- Akcesor zakładki K08A-Z3 (pin `let activeCityPanelTab`, :11593) ---
+  reset();
+  m.setK08aActiveCityPanelTab('spichlerz');
+  check('accessor.tab-roundtrip', 'K08A-Z3 set/get activeCityPanelTab', m.getK08aActiveCityPanelTab(), 'spichlerz');
+  m.setK08aActiveCityPanelTab('religia');
+  check('accessor.tab-roundtrip-2', 'K08A-Z3 set/get activeCityPanelTab (ostatnia zakładka)', m.getK08aActiveCityPanelTab(), 'religia');
+
+  // --- isProductionPanelTab: gałąź rekrutacji (pin :11574) ---
+  check('isProductionPanelTab.rekrutacja', 'cityPanel.ts:11574 tab === rekrutacja', m.isProductionPanelTab('rekrutacja'), true);
+  check('isProductionPanelTab.religia', 'cityPanel.ts:11574', m.isProductionPanelTab('religia'), false);
+
+  // --- Ikony i tytuły paneli (pin :11554-11571, wartości dokładne) ---
+  check('CITY_PANEL_ICONS_LEFT.iconIds', 'cityPanel.ts:11554-11557 iconId', m.CITY_PANEL_ICONS_LEFT.map((x) => x.iconId), ['cp-buildings', 'cp-recruit']);
+  check('CITY_PANEL_ICONS_LEFT.titles', 'cityPanel.ts:11554-11557 title', m.CITY_PANEL_ICONS_LEFT.map((x) => x.title), ['Budowa — dostępne i w mieście', 'Jednostki do rekrutacji']);
+  check('CITY_PANEL_ICONS_RIGHT.iconIds', 'cityPanel.ts:11559-11571 iconId', m.CITY_PANEL_ICONS_RIGHT.map((x) => x.iconId), ['cp-granary', 'cp-trade', 'cp-labor', 'cp-order', 'cp-health', 'cp-culture', 'cp-religion']);
+  check('CITY_PANEL_ICONS_RIGHT.titles', 'cityPanel.ts:11559-11571 title', m.CITY_PANEL_ICONS_RIGHT.map((x) => x.title), [
+    'Wyżywienie i wzrost — suwak 0–6',
+    'Podział daniny/podatku i zamożność — suwaki Skarb / Nauka / Zamożność',
+    'Podział pracy — budynki i pula imperium',
+    'Społeczeństwo i porządek',
+    'Zdrowie miasta',
+    'Kultura — granice i progi',
+    'Religia — wiara i szerzenie',
+  ]);
+
+  // --- CADUCEUS_SVG: pełny łańcuch (pin :11577-11585) ---
+  check('CADUCEUS_SVG.full', 'cityPanel.ts:11577-11585 łańcuch znaków', m.CADUCEUS_SVG, '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.35" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="9.2" x2="12" y2="21.5"/><circle cx="12" cy="7.4" r="1.35" fill="currentColor" stroke="none"/><path d="M12 8.6 C8.2 6.2 5.2 7.1 4 9.2"/><path d="M12 8.6 C15.8 6.2 18.8 7.1 20 9.2"/><path d="M9.6 10.8 C7.2 13.2 7.8 16.8 12 19.2"/><path d="M14.4 10.8 C16.8 13.2 16.2 16.8 12 19.2"/></svg>');
+
+  // --- cityRailIconHtml: gałąź znanej ikony (pin :11590 podmiana klasy) ---
+  const railHtml = m.cityRailIconHtml('cp-trade');
+  check('cityRailIconHtml.known-class', 'cityPanel.ts:11590 svg.replace("<svg ", class=civ-cp-rail-ic)', railHtml.startsWith('<svg class="civ-cp-rail-ic" '), true);
+
+  // --- clearCityPanelUxMode: lustra K06A (activeCity, activeMap) czyszczone razem (K08A-Z3) ---
+  reset();
+  m.setK07aActiveCity(cityA);
+  m.setK06aActive(cityA, { __mapa: 'k08a' }, () => {});
+  m.clearCityPanelUxMode();
+  check('clearCityPanelUxMode.mirror-map', 'cityPanel.ts:10372 activeMap = null (lustro K06A)', m.getK06aState().activeMap, null);
+  check('clearCityPanelUxMode.mirror-k06a-city', 'cityPanel.ts:10371 activeCity = null (lustro K06A)', m.getK06aState().activeCity, null);
+
+  // --- resolveActiveCity w refreshCityPanelIfOpen (pin :10339/:10345; v2 = resolveK07aActiveCity, K08A-Z4) ---
+  reset();
+  m.setK07aDeps({ isMe: () => true, getCapitalCityId: () => null, getCities: () => [{ ...cityA, name: 'Odswiezona' }], canSetCapital: false, chipDeltaStockHtml: () => '' });
+  m.setK07aActiveCity(cityA);
+  fx.open = true;
+  m.refreshCityPanelIfOpen();
+  check('refreshCityPanelIfOpen.resolve-fresh', 'cityPanel.ts:10345 resolveActiveCity -> odświeżony obiekt z listy miast', m.getK07aActiveCity()?.name, 'Odswiezona');
+  m.setK07aActiveCity(cityA);
+  m.setK07aUxSectionRefresh(() => {});
+  m.refreshCityPanelIfOpen();
+  check('refreshCityPanelIfOpen.resolve-fresh-ux', 'cityPanel.ts:10340 resolveActiveCity przed uxSectionRefresh', m.getK07aActiveCity()?.name, 'Odswiezona');
+  m.setK07aDeps(null);
+
   // --- Dziedziny brzegowe: brak deps = wyjątek (nie cicha utrata efektu) ---
   m.setK08aDeps(null);
   let threw = false;
-  try { m.isCityPanelOpen(); } catch { threw = true; }
+  let threwMsg = '';
+  try { m.isCityPanelOpen(); } catch (e) { threw = true; threwMsg = String(e && e.message); }
   check('deps.null-throws', 'K08A-Z2 brak setK08aDeps = wyjątek', threw, true);
+  check('deps.null-message', 'K08A-Z2 komunikat wyjątku wskazuje setK08aDeps', threwMsg.includes('setK08aDeps'), true);
 } catch (err) {
   console.error('run-k08a-units: błąd harnessu:', err);
   rmSync(TMP, { recursive: true, force: true });

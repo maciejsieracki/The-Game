@@ -1,0 +1,339 @@
+{
+ "part": "all",
+ "mutantow": 47,
+ "zabite": 47,
+ "przezyte": 0,
+ "nieZmierzone": 0,
+ "results": [
+  {
+   "id": "refresh-ux-gate",
+   "grupa": "pole",
+   "desc": "gałąź uxSectionRefresh pominięta",
+   "status": "ZABITA",
+   "zabitaPrzez": "harness"
+  },
+  {
+   "id": "refresh-ux-call",
+   "grupa": "pole",
+   "desc": "uxSectionRefresh nie wywołane",
+   "status": "ZABITA",
+   "zabitaPrzez": "harness"
+  },
+  {
+   "id": "refresh-ux-return",
+   "grupa": "pole",
+   "desc": "brak return po uxRefresh (dodatkowy rerender)",
+   "status": "ZABITA",
+   "zabitaPrzez": "harness"
+  },
+  {
+   "id": "refresh-closed-guard",
+   "grupa": "pole",
+   "desc": "guard zamkniętego panelu odwrócony",
+   "status": "ZABITA",
+   "zabitaPrzez": "harness"
+  },
+  {
+   "id": "refresh-rerender-target",
+   "grupa": "pole",
+   "desc": "rerender zastąpiony disposeHoverDetailDock",
+   "status": "ZABITA",
+   "zabitaPrzez": "harness"
+  },
+  {
+   "id": "refresh-resolve-open",
+   "grupa": "pole",
+   "desc": "resolve pominięte na ścieżce otwartej",
+   "status": "ZABITA",
+   "zabitaPrzez": "harness"
+  },
+  {
+   "id": "refresh-resolve-ux",
+   "grupa": "pole",
+   "desc": "resolve pominięte na ścieżce UX",
+   "status": "ZABITA",
+   "zabitaPrzez": "harness"
+  },
+  {
+   "id": "clear-garrison",
+   "grupa": "pole",
+   "desc": "clearGarrisonPanel pominięte",
+   "status": "ZABITA",
+   "zabitaPrzez": "harness"
+  },
+  {
+   "id": "clear-dispose",
+   "grupa": "pole",
+   "desc": "disposeHoverDetailDock pominięte",
+   "status": "ZABITA",
+   "zabitaPrzez": "harness"
+  },
+  {
+   "id": "clear-ux-null",
+   "grupa": "pole",
+   "desc": "uxSectionRefresh nie zerowane",
+   "status": "ZABITA",
+   "zabitaPrzez": "harness"
+  },
+  {
+   "id": "clear-tab-omit",
+   "grupa": "pole",
+   "desc": "zakładka nie resetowana",
+   "status": "ZABITA",
+   "zabitaPrzez": "harness"
+  },
+  {
+   "id": "clear-tab-value",
+   "grupa": "pole",
+   "desc": "zakładka resetowana do rekrutacja",
+   "status": "ZABITA",
+   "zabitaPrzez": "harness"
+  },
+  {
+   "id": "clear-mirrors",
+   "grupa": "pole",
+   "desc": "clearActiveCityMirrors pominięte",
+   "status": "ZABITA",
+   "zabitaPrzez": "harness"
+  },
+  {
+   "id": "mirror-k07-omit",
+   "grupa": "pole",
+   "desc": "lustro K07A (activeCity) nie czyszczone",
+   "status": "ZABITA",
+   "zabitaPrzez": "harness"
+  },
+  {
+   "id": "mirror-k06-omit",
+   "grupa": "pole",
+   "desc": "lustra K06A (activeCity/activeMap) nie czyszczone",
+   "status": "ZABITA",
+   "zabitaPrzez": "harness"
+  },
+  {
+   "id": "mirror-onclose",
+   "grupa": "pole",
+   "desc": "activeOnClose zerowany (pin go nie zeruje)",
+   "status": "ZABITA",
+   "zabitaPrzez": "harness"
+  },
+  {
+   "id": "close-clear",
+   "grupa": "pole",
+   "desc": "closeCityView bez clearCityPanelUxMode",
+   "status": "ZABITA",
+   "zabitaPrzez": "harness"
+  },
+  {
+   "id": "close-custom",
+   "grupa": "pole",
+   "desc": "custom onClose pominięte",
+   "status": "ZABITA",
+   "zabitaPrzez": "harness"
+  },
+  {
+   "id": "close-default",
+   "grupa": "pole",
+   "desc": "domyślny onClose pominięty",
+   "status": "ZABITA",
+   "zabitaPrzez": "harness"
+  },
+  {
+   "id": "close-custom-plus-default",
+   "grupa": "pole",
+   "desc": "custom onClose wywołuje także domyślny",
+   "status": "ZABITA",
+   "zabitaPrzez": "harness"
+  },
+  {
+   "id": "cpi-guard",
+   "grupa": "pole",
+   "desc": "guard odwrócony",
+   "status": "ZABITA",
+   "zabitaPrzez": "harness"
+  },
+  {
+   "id": "cpi-garrison",
+   "grupa": "pole",
+   "desc": "clearGarrisonPanel pominięte w zamykaniu",
+   "status": "ZABITA",
+   "zabitaPrzez": "harness"
+  },
+  {
+   "id": "cpi-onclose",
+   "grupa": "pole",
+   "desc": "activeOnClose pominięte",
+   "status": "ZABITA",
+   "zabitaPrzez": "harness"
+  },
+  {
+   "id": "cpi-return",
+   "grupa": "pole",
+   "desc": "zwracana wartość false po zamknięciu",
+   "status": "ZABITA",
+   "zabitaPrzez": "harness"
+  },
+  {
+   "id": "open-negate",
+   "grupa": "pole",
+   "desc": "isCityPanelOpen zanegowany",
+   "status": "ZABITA",
+   "zabitaPrzez": "harness"
+  },
+  {
+   "id": "open-const",
+   "grupa": "pole",
+   "desc": "isCityPanelOpen zawsze true",
+   "status": "ZABITA",
+   "zabitaPrzez": "harness"
+  },
+  {
+   "id": "getid-fallback",
+   "grupa": "brzeg",
+   "desc": "brak miasta zwraca pusty string zamiast null",
+   "status": "ZABITA",
+   "zabitaPrzez": "harness"
+  },
+  {
+   "id": "getid-field",
+   "grupa": "pole",
+   "desc": "zwracane pole: nazwa zamiast id",
+   "status": "ZABITA",
+   "zabitaPrzez": "harness"
+  },
+  {
+   "id": "getid-source",
+   "grupa": "pole",
+   "desc": "źródło: lustro K06A zamiast K07A",
+   "status": "ZABITA",
+   "zabitaPrzez": "harness"
+  },
+  {
+   "id": "icons-left-iconid",
+   "grupa": "pole",
+   "desc": "iconId budowa zamieniony",
+   "status": "ZABITA",
+   "zabitaPrzez": "harness"
+  },
+  {
+   "id": "icons-left-title",
+   "grupa": "tekst",
+   "desc": "tytuł rekrutacji zmieniony",
+   "status": "ZABITA",
+   "zabitaPrzez": "harness"
+  },
+  {
+   "id": "icons-right-iconid",
+   "grupa": "pole",
+   "desc": "iconId handlu zamieniony",
+   "status": "ZABITA",
+   "zabitaPrzez": "harness"
+  },
+  {
+   "id": "icons-right-title",
+   "grupa": "tekst",
+   "desc": "tytuł kultury zmieniony",
+   "status": "ZABITA",
+   "zabitaPrzez": "harness"
+  },
+  {
+   "id": "icons-right-id",
+   "grupa": "pole",
+   "desc": "id zakładki religia zamienione",
+   "status": "ZABITA",
+   "zabitaPrzez": "harness"
+  },
+  {
+   "id": "prod-rekrutacja",
+   "grupa": "pole",
+   "desc": "rekrutacja nie jest panelem produkcji",
+   "status": "ZABITA",
+   "zabitaPrzez": "harness"
+  },
+  {
+   "id": "prod-budowa",
+   "grupa": "pole",
+   "desc": "budowa nie jest panelem produkcji",
+   "status": "ZABITA",
+   "zabitaPrzez": "harness"
+  },
+  {
+   "id": "cad-stroke",
+   "grupa": "tekst",
+   "desc": "grubość obrysu zmieniona",
+   "status": "ZABITA",
+   "zabitaPrzez": "harness"
+  },
+  {
+   "id": "cad-path",
+   "grupa": "tekst",
+   "desc": "ścieżka lewej gałęzi zmieniona",
+   "status": "ZABITA",
+   "zabitaPrzez": "harness"
+  },
+  {
+   "id": "cad-aria",
+   "grupa": "tekst",
+   "desc": "aria-hidden usunięte",
+   "status": "ZABITA",
+   "zabitaPrzez": "harness"
+  },
+  {
+   "id": "rail-empty",
+   "grupa": "brzeg",
+   "desc": "brak ikony zwraca placeholder zamiast pustego",
+   "status": "ZABITA",
+   "zabitaPrzez": "harness"
+  },
+  {
+   "id": "rail-class",
+   "grupa": "tekst",
+   "desc": "klasa civ-cp-rail-ic pominięta",
+   "status": "ZABITA",
+   "zabitaPrzez": "harness"
+  },
+  {
+   "id": "rail-size",
+   "grupa": "pole",
+   "desc": "rozmiar ikony 24 → 16",
+   "status": "ZABITA",
+   "zabitaPrzez": "bramka-kopii"
+  },
+  {
+   "id": "tab-setter",
+   "grupa": "pole",
+   "desc": "setter zakładki nie zapisuje",
+   "status": "ZABITA",
+   "zabitaPrzez": "harness"
+  },
+  {
+   "id": "tab-getter",
+   "grupa": "pole",
+   "desc": "getter zakładki zwraca stałe budowa",
+   "status": "ZABITA",
+   "zabitaPrzez": "harness"
+  },
+  {
+   "id": "deps-setter",
+   "grupa": "pole",
+   "desc": "setK08aDeps nie zapisuje",
+   "status": "ZABITA",
+   "zabitaPrzez": "harness-wyjątek",
+   "blad": "run-k08a-units: błąd harnessu: Error: K08A: brak setK08aDeps (rerender/DOM — pin zawsze je wywołuje)"
+  },
+  {
+   "id": "deps-require-silent",
+   "grupa": "pole",
+   "desc": "brak deps = cicha wartość zamiast wyjątku (K08A-Z2)",
+   "status": "ZABITA",
+   "zabitaPrzez": "harness"
+  },
+  {
+   "id": "deps-message",
+   "grupa": "tekst",
+   "desc": "komunikat wyjątku bez nazwy funkcji",
+   "status": "ZABITA",
+   "zabitaPrzez": "harness"
+  }
+ ]
+}
