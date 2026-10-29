@@ -58,6 +58,8 @@ const MUTANTS = [
   { id: 'M14-gamedata-null', kind: 'pole', file: W, from: 'gameData: () => data.gameData(),', to: 'gameData: () => null,' },
   { id: 'M15-activemap-null', kind: 'pole', file: W, from: 'activeMap: () => data.activeMap(),', to: 'activeMap: () => null,' },
   { id: 'M16-v2-tury-przesuniete', kind: 'pole', file: W, from: 'tury: (n: number) => tury(n),', to: 'tury: (n: number) => tury(n + 1),' },
+  { id: 'M17-atrapa-order-state-undefined', kind: 'pole', file: W, from: 'MOCK_K07B_FNS.resolveOrderState = () => ({ state: {}, fromEngine: false });', to: 'MOCK_K07B_FNS.resolveOrderState = () => undefined;' },
+  { id: 'M18-atrapa-getprod-undefined', kind: 'pole', file: W, from: 'MOCK_K07B_FNS.getProd = () => ({ kolejka: [], wstrzymana: false });', to: 'MOCK_K07B_FNS.getProd = () => undefined;' },
   // ── zachowanie: ciała jednostek portu (progi i dziedziny brzegowe) ────────────────────────────────────────────────
   { id: 'Z01-porzadek-prog-70', kind: 'zachowanie', file: P1, from: "const porCls = por >= 70 ? 'green'", to: "const porCls = por > 70 ? 'green'" },
   { id: 'Z02-garnizon-prog-3', kind: 'zachowanie', file: P1, from: "cls: gCount >= 3 ? 'green'", to: "cls: gCount > 3 ? 'green'" },

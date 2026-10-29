@@ -569,6 +569,28 @@ try {
   check('installK07bWiring-v2-real-tury', V.dep('tury')(1) === V.__tury(1));
   check('installK07bWiring-v2-real-el', V.dep('el')('span', 'x').tagName === 'SPAN');
 
+  // ── D. Smoke produkcyjnego wiringu: każda jednostka po installK07bWiring z DOMYŚLNYMI atrapami (bez usług) ──────────
+  // Cel: wywołanie jednostki na atrapach nie rzuca (brak `TypeError` z wartości `undefined` atrapy). Argumenty = te same
+  // przypadki co w sekcji A; delegaty = wyłącznie `installK07bWiring(base)` (bez `wirePort`).
+  {
+    V.installK07bWiring({ getCities: () => [], getCapitalCityId: () => null, canSetCapital: false, cfg: {}, gameData: () => null, activeMap: () => null });
+    const smokeErr = [];
+    for (const c of buildCases()) {
+      const F = makeFixture(c.variant);
+      globalThis.__K07B_FIX = F;
+      let err = null;
+      try {
+        V[c.unit](...c.make());
+      } catch (e) {
+        err = String(e && e.message ? e.message : e);
+      }
+      comparisons++;
+      if (err) smokeErr.push(`${c.unit} [${c.label}]: ${err}`.slice(0, 200));
+    }
+    check('smoke-defaults-bez-wyjatku', smokeErr.length === 0, smokeErr.slice(0, 8).join(' | '));
+    notes.push(`smoke-defaults: przypadków=${buildCases().length}, z wyjątkiem=${smokeErr.length}`);
+  }
+
   // ── C. Pokrycie delegatów: statyczne `dep('…')` w kodzie portu == K07B_FN_NAMES ─────────────────────────────────────
   const depUsed = new Set();
   const valueUsed = new Set();

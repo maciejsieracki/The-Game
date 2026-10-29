@@ -110,6 +110,11 @@ export const MOCK_K07B_FNS: Record<K07bDepName, K07bFn> = Object.fromEntries(
 MOCK_K07B_FNS.activeMap = () => null;
 MOCK_K07B_FNS.gameData = () => null;
 MOCK_K07B_FNS.resolveCityHealth = () => ({ total: 0, lines: [], fromEngine: false });
+// K07B-Z8 (obrona r3): neutralne KSZTAŁTY zwrotów, bez liczenia reguł — jednostki destrukturyzują/czytają pola.
+// Bez tego `renderSpoleczenstwo` (`const { state, fromEngine } = resolveOrderState(…)`) i `renderProd` (`getProd(…).kolejka`)
+// rzucają TypeError na domyślnych atrapach (smoke sekcja D run-k07b-units.mjs). Pusty stan = „brak danych”, badge PH.
+MOCK_K07B_FNS.resolveOrderState = () => ({ state: {}, fromEngine: false });
+MOCK_K07B_FNS.getProd = () => ({ kolejka: [], wstrzymana: false });
 MOCK_K07B_FNS.buildableProduction = () => [];
 MOCK_K07B_FNS.renderBuildList = () => undefined;
 MOCK_K07B_FNS.el = (tag: string, cls?: string) => {
