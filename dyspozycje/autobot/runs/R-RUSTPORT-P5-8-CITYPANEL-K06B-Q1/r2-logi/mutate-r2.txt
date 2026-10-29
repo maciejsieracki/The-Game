@@ -1,0 +1,56 @@
+{
+ "mutants": 8,
+ "run": 8,
+ "killed": 8,
+ "survived": [],
+ "details": [
+  {
+   "id": "M1-pinned-garnizon",
+   "file": "k06b-garnizon.ts",
+   "status": 1,
+   "killed": true
+  },
+  {
+   "id": "M2-active-map",
+   "file": "k06b-jednostki.ts",
+   "status": 1,
+   "killed": true
+  },
+  {
+   "id": "M3-era-preview",
+   "file": "k06b-kolejki.ts",
+   "status": 1,
+   "killed": true
+  },
+  {
+   "id": "M4-const-pula-tip",
+   "file": "k06b-jednostki.ts",
+   "status": 1,
+   "killed": true
+  },
+  {
+   "id": "M5-pin-label-pinned",
+   "file": "k06b-garnizon.ts",
+   "status": 1,
+   "killed": true
+  },
+  {
+   "id": "M6-clear-pinned-id",
+   "file": "k06b-garnizon.ts",
+   "status": 1,
+   "killed": true
+  },
+  {
+   "id": "M7-owned-card-class",
+   "file": "k06b-jednostki.ts",
+   "status": 1,
+   "killed": true
+  },
+  {
+   "id": "M8-queue-city-id",
+   "file": "k06b-kolejki.ts",
+   "status": 1,
+   "killed": true
+  }
+ ]
+}

@@ -7,7 +7,8 @@
  * Zapis do `r3-logi/` (domyślnie); `kind` (const/function) wyprowadzany z linii deklaracji w pinie; LOC wg tego skryptu.
  *
  * Użycie (z katalogu `src-tauri/frontend-v2/`):
- *   node tools/dom-harness/select-k05a.mjs --pin-dir <PIN_DIR> [--pomiar <pomiar-r2.json>] [--out-dir <katalog>] [--r3]
+ *   node tools/dom-harness/select-k06a.mjs --pin-dir <PIN_DIR> [--pomiar <pomiar-r2.json>] [--out-dir <katalog>] [--r3 | --k06b]
+ * Tryb `--k06b` (K06B r2): wybór = jednostki DOM bloku K06 (`reason = DOM`), zapis do `R-RUSTPORT-P5-8-CITYPANEL-K06B-Q1/r2-logi/`.
  */
 import { writeFileSync, mkdirSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
@@ -34,9 +35,18 @@ const POMIAR = resolve(
     fileURLToPath(new URL('../../../../dyspozycje/autobot/runs/R-RUSTPORT-P5-8-CITYPANEL-K06A-Q1/r1-logi/pomiar-r2.json', import.meta.url)),
 );
 const R3 = args.includes('--r3');
+/** Tryb `--k06b` (zarzut 4 Evaluatora, R-RUSTPORT-P5-8-CITYPANEL-K06B-Q1 r2): wybór = jednostki DOM bloku K06 (`reason = DOM`), czyli dopełnienie K06A. */
+const K06B = args.includes('--k06b');
 const OUT = resolve(
   argOf('--out-dir') ??
-    fileURLToPath(new URL('../../../../dyspozycje/autobot/runs/R-RUSTPORT-P5-8-CITYPANEL-K06A-Q1/r1-logi', import.meta.url)),
+    fileURLToPath(
+      new URL(
+        K06B
+          ? '../../../../dyspozycje/autobot/runs/R-RUSTPORT-P5-8-CITYPANEL-K06B-Q1/r2-logi'
+          : '../../../../dyspozycje/autobot/runs/R-RUSTPORT-P5-8-CITYPANEL-K06A-Q1/r1-logi',
+        import.meta.url,
+      ),
+    ),
 );
 
 const r = selectK01a({ pinDir: resolve(PIN_DIR), pomiar: loadPomiar(POMIAR), block: K06_BLOCK, localTypes: K06A_LOCAL_COPIES, dtoSubst: K06A_DTO_SUBST });
@@ -55,6 +65,18 @@ if (R3) {
   selected = [...r.selected, ...extra];
   deferred = r.deferred.filter((d) => !isTP(d));
 }
+if (K06B) {
+  const pinSrc = readFileSync(resolve(PIN_DIR, 'gra/src/ui/cityPanel.ts'), 'utf8').split('\n');
+  const isDom = (d) => d.reason === 'DOM';
+  selected = r.deferred.filter(isDom).map((d) => ({
+    name: d.name,
+    a: d.a,
+    b: d.b,
+    loc: d.loc,
+    kind: /^(export )?let /.test(pinSrc[d.a - 1]) ? 'let' : /^(export )?const /.test(pinSrc[d.a - 1]) ? 'const' : 'function',
+  }));
+  deferred = r.deferred.filter((d) => !isDom(d));
+}
 const sumLoc = (xs) => xs.reduce((acc, x) => acc + x.loc, 0);
 mkdirSync(OUT, { recursive: true });
 writeFileSync(resolve(OUT, 'wybrane.json'), JSON.stringify(selected, null, 1) + '\n');
@@ -65,7 +87,7 @@ for (const d of deferred) {
   reasons[k] = (reasons[k] ?? 0) + 1;
 }
 const summary = {
-  mode: R3 ? 'r3' : 'r2',
+  mode: K06B ? 'k06b' : R3 ? 'r3' : 'r2',
   pin: r.pin,
   block: K06_BLOCK,
   pinUnits: r.pinUnits,

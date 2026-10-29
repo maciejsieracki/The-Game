@@ -135,6 +135,8 @@ export function appendBuildableItemRow(
 
 
 // pin edb8fb56 gra/src/ui/cityPanel.ts:8300-8428
+
+/** Kolejka budynków (pozycje 2+ w kolejce produkcji). */
 export function appendBuildQueueSection(
   mount: HTMLElement,
   city: City,
@@ -590,15 +592,5 @@ export function appendOwnedBuildingRow(
 
   target.appendChild(row);
 }
-
-/**
- * Panel „Budynki w mieście" — GRUPY-BUDYNKOW (Maciej 2026-07-25): zamiast
- * płaskiej listy do 38 budynków, osiem grup dziedzinowych (`<details>`,
- * kliknięcie rozwija). Przypisanie budynek→grupa czyta się z danych
- * (BuildingDef.grupa, patrz data/loader.ts) — grupowanie samo w sobie jest
- * WYŁĄCZNIE prezentacją, nie zmienia żadnej wartości silnika. Grupa bez
- * zbudowanych budynków zostaje widoczna (wymóg #3 zadania), ale w stanie
- * odróżnionym (`bld-group-empty`, zwinięta, „— brak —").
- */
 
 // pin-end

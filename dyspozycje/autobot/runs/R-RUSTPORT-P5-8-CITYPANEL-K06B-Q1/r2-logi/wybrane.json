@@ -1,0 +1,149 @@
+[
+ {
+  "name": "appendPodzialPracyInfo",
+  "a": 5028,
+  "b": 5111,
+  "loc": 84,
+  "kind": "function"
+ },
+ {
+  "name": "buildOwnedBuildingsDetailCard",
+  "a": 7806,
+  "b": 7860,
+  "loc": 55,
+  "kind": "function"
+ },
+ {
+  "name": "buildUnitDetailCardViaEntityCard",
+  "a": 7861,
+  "b": 7884,
+  "loc": 24,
+  "kind": "function"
+ },
+ {
+  "name": "buildUnitDetailCard",
+  "a": 7885,
+  "b": 7896,
+  "loc": 12,
+  "kind": "function"
+ },
+ {
+  "name": "attachUnitRowThumb",
+  "a": 7976,
+  "b": 7996,
+  "loc": 21,
+  "kind": "function"
+ },
+ {
+  "name": "appendBuildableItemRow",
+  "a": 7997,
+  "b": 8049,
+  "loc": 53,
+  "kind": "function"
+ },
+ {
+  "name": "appendUnitRecruitCompactRow",
+  "a": 8137,
+  "b": 8182,
+  "loc": 46,
+  "kind": "function"
+ },
+ {
+  "name": "appendRecruitmentQueue",
+  "a": 8210,
+  "b": 8299,
+  "loc": 90,
+  "kind": "function"
+ },
+ {
+  "name": "appendBuildQueueSection",
+  "a": 8300,
+  "b": 8428,
+  "loc": 129,
+  "kind": "function"
+ },
+ {
+  "name": "appendCatalogBuildingRow",
+  "a": 8682,
+  "b": 8733,
+  "loc": 52,
+  "kind": "function"
+ },
+ {
+  "name": "renderBuildList",
+  "a": 8734,
+  "b": 8860,
+  "loc": 127,
+  "kind": "function"
+ },
+ {
+  "name": "appendOwnedBuildingRow",
+  "a": 9033,
+  "b": 9183,
+  "loc": 151,
+  "kind": "function"
+ },
+ {
+  "name": "renderTopBarGarrison",
+  "a": 9392,
+  "b": 9427,
+  "loc": 36,
+  "kind": "function"
+ },
+ {
+  "name": "buildGarnizonDetailCard",
+  "a": 9428,
+  "b": 9494,
+  "loc": 67,
+  "kind": "function"
+ },
+ {
+  "name": "buildOkolicaDetailCard",
+  "a": 9617,
+  "b": 9728,
+  "loc": 112,
+  "kind": "function"
+ },
+ {
+  "name": "appendOkolicaYieldLabel",
+  "a": 9785,
+  "b": 9820,
+  "loc": 36,
+  "kind": "function"
+ },
+ {
+  "name": "renderWorkedPreview",
+  "a": 9821,
+  "b": 10017,
+  "loc": 197,
+  "kind": "function"
+ },
+ {
+  "name": "rootEl",
+  "a": 10158,
+  "b": 10158,
+  "loc": 1,
+  "kind": "let"
+ },
+ {
+  "name": "setGarrisonLabelPinned",
+  "a": 10165,
+  "b": 10169,
+  "loc": 5,
+  "kind": "function"
+ },
+ {
+  "name": "pinGarrisonPanel",
+  "a": 10170,
+  "b": 10174,
+  "loc": 5,
+  "kind": "function"
+ },
+ {
+  "name": "clearGarrisonPanel",
+  "a": 10175,
+  "b": 10183,
+  "loc": 9,
+  "kind": "function"
+ }
+]

@@ -1,0 +1,158 @@
+[
+ {
+  "name": "IMPROVEMENT_KEY_TO_NAME",
+  "a": 9562,
+  "b": 9578,
+  "loc": 17,
+  "reason": "R: import logiki terrainImprovementsData z /terrain-improvements.json",
+  "firstBlocker": {
+   "kind": "R",
+   "id": "terrainImprovementsData",
+   "from": "/terrain-improvements.json"
+  }
+ },
+ {
+  "name": "okolicaTileHasWorkerAt",
+  "a": 9738,
+  "b": 9751,
+  "loc": 14,
+  "reason": "T: typ City z game/cities.ts (wymaga lokalnej kopii typu)",
+  "firstBlocker": {
+   "kind": "T",
+   "id": "City",
+   "from": "game/cities.ts"
+  }
+ },
+ {
+  "name": "fireOkolicaTileToggle",
+  "a": 9752,
+  "b": 9756,
+  "loc": 5,
+  "reason": "T: typ City z game/cities.ts (wymaga lokalnej kopii typu)",
+  "firstBlocker": {
+   "kind": "T",
+   "id": "City",
+   "from": "game/cities.ts"
+  }
+ },
+ {
+  "name": "formatTileYieldShort",
+  "a": 9757,
+  "b": 9771,
+  "loc": 15,
+  "reason": "P: zależność cityPanelChipIconWrap (blok 1, poza K01)",
+  "firstBlocker": {
+   "kind": "P",
+   "id": "cityPanelChipIconWrap",
+   "block": 1
+  }
+ },
+ {
+  "name": "tileYieldLabel",
+  "a": 9772,
+  "b": 9784,
+  "loc": 13,
+  "reason": "T: typ Hex z types/hex.ts (wymaga lokalnej kopii typu)",
+  "firstBlocker": {
+   "kind": "T",
+   "id": "Hex",
+   "from": "types/hex.ts"
+  }
+ },
+ {
+  "name": "activeCity",
+  "a": 10159,
+  "b": 10159,
+  "loc": 1,
+  "reason": "T: typ City z game/cities.ts (wymaga lokalnej kopii typu)",
+  "firstBlocker": {
+   "kind": "T",
+   "id": "City",
+   "from": "game/cities.ts"
+  }
+ },
+ {
+  "name": "activeMap",
+  "a": 10160,
+  "b": 10160,
+  "loc": 1,
+  "reason": "T: typ GameMap z types/map.ts (wymaga lokalnej kopii typu)",
+  "firstBlocker": {
+   "kind": "T",
+   "id": "GameMap",
+   "from": "types/map.ts"
+  }
+ },
+ {
+  "name": "ownerCities",
+  "a": 10184,
+  "b": 10191,
+  "loc": 8,
+  "reason": "T: typ City z game/cities.ts (wymaga lokalnej kopii typu)",
+  "firstBlocker": {
+   "kind": "T",
+   "id": "City",
+   "from": "game/cities.ts"
+  }
+ },
+ {
+  "name": "ownerCitiesForNav",
+  "a": 10192,
+  "b": 10204,
+  "loc": 13,
+  "reason": "T: typ City z game/cities.ts (wymaga lokalnej kopii typu)",
+  "firstBlocker": {
+   "kind": "T",
+   "id": "City",
+   "from": "game/cities.ts"
+  }
+ },
+ {
+  "name": "cityPanelTitle",
+  "a": 10205,
+  "b": 10208,
+  "loc": 4,
+  "reason": "T: typ City z game/cities.ts (wymaga lokalnej kopii typu)",
+  "firstBlocker": {
+   "kind": "T",
+   "id": "City",
+   "from": "game/cities.ts"
+  }
+ },
+ {
+  "name": "navigateCityPanel",
+  "a": 10224,
+  "b": 10227,
+  "loc": 4,
+  "reason": "P: zależność switchCity (blok 9, poza K01)",
+  "firstBlocker": {
+   "kind": "P",
+   "id": "switchCity",
+   "block": 9
+  }
+ },
+ {
+  "name": "headerOrderBadge",
+  "a": 10228,
+  "b": 10238,
+  "loc": 11,
+  "reason": "T: typ City z game/cities.ts (wymaga lokalnej kopii typu)",
+  "firstBlocker": {
+   "kind": "T",
+   "id": "City",
+   "from": "game/cities.ts"
+  }
+ },
+ {
+  "name": "drawerTabButtons",
+  "a": 10239,
+  "b": 10246,
+  "loc": 8,
+  "reason": "P: zależność CITY_TABS (blok 1, poza K01)",
+  "firstBlocker": {
+   "kind": "P",
+   "id": "CITY_TABS",
+   "block": 1
+  }
+ }
+]

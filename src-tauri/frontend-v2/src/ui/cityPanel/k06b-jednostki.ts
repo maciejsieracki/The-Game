@@ -150,19 +150,6 @@ export function appendPodzialPracyInfo(
   mount.appendChild(info);
 }
 
-/**
- * R-PRACA-SUWAKI-DUPLIKAT-I-CAP-MIASTO-Q1 (Wątek F, przeprojektowanie prezentacji — Maciej
- * 2026-08-21): czysto wizualna zmiana, ŻADNEJ zmiany logiki procentów poza tym, co wymusza
- * Wątek C gdzie indziej (ten konkretny suwak, kontrolka #4, MIN=50/MAX=100 na Budynki, JUŻ miał
- * cap 50% na Ulepszenia — nietknięty tu).
- * - Sygnał „Ulepszenia" na samej górze panelu (przed suwakiem), zamiast dopiero w wierszu info.
- * - Budynki po lewej / Ulepszenia po prawej, w dwóch wyraźnie oddzielonych kolumnach (ikona +
- *   etykieta + wartość), zamiast jednego zdania tekstowego powtarzającego to, co mówi ikona.
- * - Nazewnictwo: „Pula Pracy" (myliło z realną, akumulowaną PULA IMPERIUM) → „Ulepszenia",
- *   zgodnie z tym, co Wątek B ustalił już dla suwaka #1/#2 w `empireDetailPanel.ts` — tu ta sama
- *   zmiana zastosowana w kontrolce #4 (nie była dotąd zrobiona, sprawdzone przed zmianą).
- */
-
 // pin edb8fb56 gra/src/ui/cityPanel.ts:7806-7860
 export function buildOwnedBuildingsDetailCard(city: City, data: GameData | null): HTMLDivElement {
   const card = el('div', 'detail-card');
@@ -196,6 +183,8 @@ export function buildOwnedBuildingsDetailCard(city: City, data: GameData | null)
   return card;
 }
 
+// pin edb8fb56 gra/src/ui/cityPanel.ts:7861-7884
+
 /**
  * Karta szczegółów jednostki w panelu miasta/rekrutacji (T6 MIGRACJA-KARTA-JEDNOSTKI-
  * PANEL-MIASTA). Buduje treść przez WSPÓLNY `unitAdapter` (`entityCards/unitAdapter.ts`)
@@ -219,8 +208,6 @@ export function buildOwnedBuildingsDetailCard(city: City, data: GameData | null)
  * zaczyna je też pokazywać. To świadoma decyzja Operatora T6 (bez ABC): czysto
  * addytywne wzbogacenie, zero utraconej treści po żadnej stronie.
  */
-
-// pin edb8fb56 gra/src/ui/cityPanel.ts:7861-7884
 export function buildUnitDetailCardViaEntityCard(u: UnitDef, data: GameData): HTMLDivElement {
   ensureEntityCardBuildingStyles();
   const built = unitAdapter(u, {});
@@ -243,10 +230,10 @@ export function buildUnitDetailCardViaEntityCard(u: UnitDef, data: GameData): HT
   return card;
 }
 
+// pin edb8fb56 gra/src/ui/cityPanel.ts:7885-7896
+
 /** Publiczna sygnatura BEZ ZMIAN. Próbuje ścieżkę entityCards (T6), fallback do starej
  * implementacji (`_legacyBuildUnitDetailCard`) w razie wyjątku — wzorem T3/T4/T5. */
-
-// pin edb8fb56 gra/src/ui/cityPanel.ts:7885-7896
 export function buildUnitDetailCard(u: UnitDef, data: GameData): HTMLDivElement {
   try {
     return buildUnitDetailCardViaEntityCard(u, data);
@@ -256,9 +243,6 @@ export function buildUnitDetailCard(u: UnitDef, data: GameData): HTMLDivElement 
     return _legacyBuildUnitDetailCard(u, data);
   }
 }
-
-/** Stara implementacja (DOM-builder własny) — zachowana pod prywatną nazwą jako fallback
- * (wzorem `_legacyBuildBuildingDetailCard`/`_legacyBuildUnitInfoCard`). ZERO zmian treści. */
 
 // pin edb8fb56 gra/src/ui/cityPanel.ts:7976-7996
 export function attachUnitRowThumb(
@@ -420,7 +404,5 @@ export function appendRecruitmentQueue(mount: HTMLElement, city: City, player: b
   }
   mount.appendChild(wrap);
 }
-
-/** Kolejka budynków (pozycje 2+ w kolejce produkcji). */
 
 // pin-end

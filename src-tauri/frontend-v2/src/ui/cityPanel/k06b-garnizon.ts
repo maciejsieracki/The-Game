@@ -49,6 +49,7 @@ const cfg: any = valueProxy('cfg');
 // ─── K06B-Z6: stan rootEl (pin: ui/cityPanel.ts:10158) ─────────────────────────────────────────────────────────
 // pin edb8fb56 gra/src/ui/cityPanel.ts:10158-10158
 let rootEl: HTMLDivElement | null = null;
+// pin-end
 export function setK06bRootEl(next: HTMLDivElement | null): void {
   rootEl = next;
 }
@@ -159,11 +160,6 @@ export function buildGarnizonDetailCard(
   ]);
   return card;
 }
-
-// ---------------------------------------------------------------------------
-// Okolica hex grid (real, drawn from the map around the city)
-// ---------------------------------------------------------------------------
-
 
 // pin edb8fb56 gra/src/ui/cityPanel.ts:9617-9728
 export function buildOkolicaDetailCard(
@@ -311,13 +307,13 @@ export function appendOkolicaYieldLabel(
   svg.appendChild(ytxt);
 }
 
+// pin edb8fb56 gra/src/ui/cityPanel.ts:9821-10017
+
 /**
  * Kompaktowy podgląd pól obrabianych wokół miasta (ograniczone okno DISPLAY_R).
  * Pełna okolica (do r15) i granice kultury renderuje MAPA na świecie — tu tylko zerknięcie.
  * worked = realny zbiór z getWorkedTiles; brak haka -> fallback (pierścień d<=1).
  */
-
-// pin edb8fb56 gra/src/ui/cityPanel.ts:9821-10017
 export function renderWorkedPreview(gridEl: HTMLElement, city: City, map: GameMap, worked: { q: number; r: number }[] | undefined, reczne?: Record<string, number>, tryb: OkolicaTryb = 'auto', illegalReczneKeys?: Set<string>): void {
   void gridEl; void city; void map; void worked; void reczne; void tryb; void illegalReczneKeys; // K06B-Z7: placeholder MAPA (P5-8 §6)
 }
@@ -344,7 +340,5 @@ export function clearGarrisonPanel(): void {
     setGarrisonLabelPinned(label, false);
   });
 }
-
-/** Cities of the active city's owner (for prev/next navigation). */
 
 // pin-end
