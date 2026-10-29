@@ -21,4 +21,8 @@ Werdykt: **PASS-WITH-NOTES**, etap 8/11. Kandydat: `autobot/integration-settings
 - Nie wykonano jednego pełnego live gameplay save→load→battle w Chromium dla obu ustawień; serializację/odtworzenie ustawień pokrywa produkcyjny contract roundtrip.
 - Test tooltipów przez `file://` pozostaje zablokowany przez Chromium `ERR_BLOCKED_BY_ADMINISTRATOR`; nie dotyczy zmienionych kontrolek, a właściwy test UI używa HTTP.
 
-Decyzja: gotowe do merge do lokalnego `main`. Deploy i push wstrzymane do zakończenia pozostałych zarejestrowanych poprawek, zgodnie z celem wspólnego wydania.
+## Integracja
+
+- Kandydat zintegrowany fast-forward do lokalnej gałęzi `main` w `88cc8081fd9fa7868e9855d0cc388487018d5107`.
+- Wspólny build i testy wykonano przed integracją na tym samym drzewie źródeł; lokalny `main` jest 11 commitów przed `origin/main`.
+- Etap tych zakresów: **9/11**. Deploy do Roboczej i push pozostają celowo na końcu wspólnej fali, po finalnej walidacji pozostałych poprawek.
