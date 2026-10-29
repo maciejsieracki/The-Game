@@ -25,7 +25,7 @@ dotykające tych samych plików — zawsze sekwencyjnie, nigdy w tej samej fali.
 
 ## CEL PĘTLI AUTONOMICZNEJ (właściciel, 2026-10-29: "pracuj w pętli, ustal cel, leć samodzielnie jak długo możesz")
 **Cel końcowy:** ukończyć wszystkie fazy planu P0→P11 portu Rust/Tauri z pełnym parytetem względem aktualnego weba (po re-pinie z T0), każdy temat ścieżką 11 etapów (`R-PROC-AUTOBOT.md` §5d).
-**Cel bieżący (do wtorku 2026-11-03):** (1) zamknąć pierwszą falę (REPIN-DELTA, M05B, P5.8 podział, P4.36 Q3); (2) z każdym zwolnionym slotem otwierać następny gotowy, bezkolizyjny kawałek wg `PLAN-PO-WZNOWIENIU-20261029.md` §1 (T1 mapgen M06A→…→M18; T2 P6.8; T3 porty sekcji `cityPanel.ts`; T4–T8) — tylko lekkie tematy na Haiku/Sonnet; (3) ciężkie 3D (Opus) wyłącznie: dokończenie P4.36 Q3→Q4→Q5 oraz dalsze według planu §2 przy zapasie limitu przed odnowieniem; (4) po raporcie REPIN-DELTA dodać tematy odświeżenia pinu wg jego kolejności.
+**Cel bieżący (aktualizacja 2026-10-29 wieczór, do wtorku 2026-11-03):** wg `PLAN-AKTUALIZACJA-20261029-B.md` §2 — stale utrzymywać do 5 jednoczesnych bezkolizyjnych tematów (REPIN-EKONOMIA/MAPA/WOJNA, mapgen M06A5→M06B→M07*, następnie P6.8 miasta, REPIN-DYPLO/AI, K09C po komendach/DTO); zamknięte: REPIN-DELTA/DANE/LOGIKA-CIV, M05B…M06A4, P5.8 K01–K09B, P4.36 Q1–Q5. Ciężkie 3D poza P4.36 — na koniec, przy zapasie limitu (wtorek 3.11).
 **Zasady pętli:** max 2 równoległe worktree kodu Rust; tematy na tych samych plikach sekwencyjnie; `df -h /` przed startem i sprzątanie po każdym workflow (§5c); FAIL → ten sam ID; DECISION_REQUIRED tylko dla genuine decyzji produktowej (AskUserQuestion); brak deploy/push produkcyjnego i zmian w `gra/`; raportowanie postępu numerami etapów 1–11. Każdy cykl: ReadNotifications → przegląd wyników Workflow → integracja PASS (scoped diff na `rust-port/parity-v2`) → LEDGER + tabela → dispatch następnego tematu.
 
 ## Status bieżący — aktywne tematy (max 6)
@@ -58,7 +58,10 @@ dotykające tych samych plików — zawsze sekwencyjnie, nigdy w tej samej fali.
 | 29 | R-RUSTPORT-P5-8-CITYPANEL-K08E-Q1 | P5.8 | 2/5 | wf_ee6a00b8-17f | **PASS-WITH-NOTES — zintegrowane** (`f18a18c3`, 12/12 jedn.) |
 | 30 | R-RUSTPORT-P5-8-CITYPANEL-K09A-Q1 | P5.8 | 2/5 | wf_22d071fc-4d1 | **PASS — zintegrowane** (`fb55afe2`, 9/9 jedn.) |
 | 31 | R-RUSTPORT-P6-M06A5-LAD-MORZE-ULAMEK-Q1 | P6 mapgen | 1/5 | (nowy) | etap 1 | 2026-10-29 |
-| 32 | R-RUSTPORT-P5-8-CITYPANEL-K09B-Q1 | P5.8 | 1/5 | (nowy) | etap 1 | 2026-10-29 |
+| 32 | R-RUSTPORT-P5-8-CITYPANEL-K09B-Q1 | P5.8 | 2/5 | wf_1c7c1a7f-0f6 | **PASS-WITH-NOTES — zintegrowane** (`4160cd9b`, wiring 36/36, mutacje 28/28); dług → K09C/K09D | 2026-10-29 |
+| 33 | R-RUSTPORT-REPIN-EKONOMIA-A-Q1 | REPIN 4b | 1/5 | wf_18412929-da2 | etap 1 | 2026-10-29 |
+| 34 | R-RUSTPORT-REPIN-MAPA-Q1 | REPIN 4d | 1/5 | wf_e1ae1e19-d3b | etap 1 | 2026-10-29 |
+| 35 | R-RUSTPORT-REPIN-WOJNA-NOWE-A-Q1 | REPIN 2a | 1/5 | wf_028d6130-ada | etap 1 | 2026-10-29 |
 | 24 | R-RUSTPORT-P6-M06A4-LAD-MORZE-RESZTA3-Q1 | P6 mapgen | 3/5 | wf_206786d8-1fa | **PASS-WITH-NOTES (partie 2–3) — zintegrowane** (`5a1fbb33`, 1265/0); zamknięte adm.; reszta → M06A5 |
 | 25 | R-RUSTPORT-P5-8-CITYPANEL-K08B-Q1 | P5.8 | 4/5 | wf_5b437a20-313 | **ZAMKNIĘTE ADMINISTRACYJNIE (9/24 jedn.) — zintegrowane** (`b19311e2`); reszta → K08C/K08D |
 | 3 | R-RUSTPORT-P5-8-CITYPANEL-PODZIAL-Q1 | P5.8 | 3/5 | wf_5b094795-b4f | **PASS — zintegrowane** (docs, `a1246e48`); slot wolny | 2026-10-29 |

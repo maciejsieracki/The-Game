@@ -316,3 +316,5 @@ Cel końcowy i bieżący zapisane w `GOAL-RUST-PORT-20261020.md` (§"CEL PĘTLI 
 | 2026-10-29 | R-RUSTPORT-P4-36-MOD14-BATTLE-3D-Q5 | 1 | Opus op INFRA (worktree zniknął) → obrona odtworzyła salvage → FC PASS (61/61 mutantów + 1 equiv, 431/0) | **ZINTEGROWANE** `6f25c98f`; P4.36 komplet |
 | 2026-10-29 | R-RUSTPORT-P6-M06A4-LAD-MORZE-RESZTA3-Q1 | 3 | r3 partia 3 (morse/trim/purgeMultiLand/jagged) → FC PASS-WITH-NOTES, 49/49 | **ZINTEGROWANE** (squash) `5a1fbb33` (1265/0); zamknięte adm.; M06A5 otwarte |
 | 2026-10-29 | R-RUSTPORT-P5-8-CITYPANEL-K09A-Q1 | 2 | r1 pomiary FAIL (brak pin-exec) → r2 pin-exec 69/69, mutacje 42/42, wiring 10/10 → FC PASS | **ZINTEGROWANE** `fb55afe2`; K09B otwarte (podpięcie produkcyjne) |
+| 2026-10-29 | R-RUSTPORT-P5-8-CITYPANEL-K09B-Q1 | 2 | r1 Ev FAIL (mutacje pól DTO, fikstura, dług) → obrona (cityRefToPanelCity, 28 mutantów) → FC PASS-WITH-NOTES | **ZINTEGROWANE** `4160cd9b`; K09C/K09D = dług (po komendach/DTO) |
+| 2026-10-29 | PLAN | - | aktualizacja planu i celu: `PLAN-AKTUALIZACJA-20261029-B.md`; otwarte REPIN-EKONOMIA-A, REPIN-MAPA, REPIN-WOJNA-NOWE-A (wf_18412929-da2, wf_e1ae1e19-d3b, wf_028d6130-ada) | w toku |
