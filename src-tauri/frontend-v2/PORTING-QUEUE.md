@@ -196,6 +196,10 @@ Grupy cykliczne (port razem, jedna paczka):
 - **C4** (10): `entityCards/buildingAdapter.ts`, `entityCards/improvementAdapter.ts`, `entityCards/registry.ts`, `entityCards/renderer.ts`, `entityCards/technologyAdapter.ts`, `entityCards/unitAdapter.ts`, `entityCards/wonderAdapter.ts`, `scienceHubHud.ts`, `sciencePicker.ts`, `techDiscoveryNotice.ts`
 - **C5** (2): `sidePanelEventFilter.ts`, `sidePanelHud.ts`
 
-## Status P5.8 K02 (`R-RUSTPORT-P5-8-CITYPANEL-K02-Q1`, runda 1/5 — CZĘŚCIOWO)
+## Status P5.8 K02 (`R-RUSTPORT-P5-8-CITYPANEL-K02-Q1`, runda 2/5 — CZĘŚCIOWO)
 
-Kawałek H (`ensureStyles` -> `ensureCityPanelStyles`, pin `edb8fb56:gra/src/ui/cityPanel.ts:1948-3009`) przeniesiony do `src/ui/cityPanel/k02-styles.ts` (diff vs pin: tylko nazwa/eksport i `el(style)` -> `document.createElement(style)`, ZAŁOŻENIE P5.8-K02-Z2). Niezrobione: `appendBreakdownLines`, `appendPctBreakdownBlock`, `appendSignedBreakdownSections`, `appendW4SignedBreakdownSections` (wymagają `el`, K01), harness DOM i mutacje K02. Plik `cityPanel.ts` (81) nadal nieprzeniesiony. Szczegóły: `dyspozycje/autobot/runs/R-RUSTPORT-P5-8-CITYPANEL-K02-Q1/01-operator-r1.md`.
+Przeniesione (pin `edb8fb56:gra/src/ui/cityPanel.ts`):
+- Kawałek H: `ensureStyles` -> `ensureCityPanelStyles` (1948-3009) w `src/ui/cityPanel/k02-styles.ts`; harness `tools/dom-harness/run-k02-styles.mjs` (14 asercji, 0 różnic), mutacje `mutate-k02-styles.mjs` 8/8.
+- Bloki breakdown (4378-4516): `appendBreakdownLines`, `appendPctBreakdownBlock`, `appendSignedBreakdownSections`, `appendW4SignedBreakdownSections` w `src/ui/cityPanel/k02-breakdown.ts` oraz typ `BreakdownLine` w `src/ui/cityPanel/types.ts` (ZAŁOŻENIE P5.8-K02-Z3); lokalny `el` bez `html` (ZAŁOŻENIE P5.8-K02-Z4); harness `tools/dom-harness/run-k02-breakdown.mjs` (12 asercji, 0 różnic), mutacje `mutate-k02-breakdown.mjs` 9/9.
+
+Niezrobione w K02: 18 z 23 jednostek K02 wg pomiaru (`P5-8-K02.md` §Zakres). Plik `cityPanel.ts` (81) nadal nieprzeniesiony. Szczegóły: `dyspozycje/rust-port/p5/P5-8-K02.md`; runda 1: `dyspozycje/autobot/runs/R-RUSTPORT-P5-8-CITYPANEL-K02-Q1/01-operator-r1.md`.
