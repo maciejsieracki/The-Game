@@ -58,8 +58,29 @@ Decyzja dla wektorów w repo: **nie nadpisano** plików `web-vectors.json`/`*.js
 | Zmiana | Plik:linia weba (`91dc998a`) | Plik:linia Rust | Test/wektor | Status |
 |---|---|---|---|---|
 | H1–H8 (BFS queue, równoważne) | `gen-helpers.ts` hunki 5992–10804 (pin `edb8fb56`) | brak (szkielety `rivers_*.rs`) | M04/M05A/M05B: 0 rozbieżności danych | NIE-DOTYCZY (równoważność FIFO; brak portu) |
-| terrain-improvements: `terrainImprovementConstructionEraMultiplier` | `gra/src/game/terrain-improvements.ts:90–99` | `domain/improvements.rs` (NIE w allowliście) | M16 qualifier/rules: 11613 rozbieżności | NASTĘPNA-PARTIA |
+| terrain-improvements: `terrainImprovementConstructionEraMultiplier` | `gra/src/game/terrain-improvements.ts:90–99` | `domain/improvements.rs` (NIE w allowliście) | M16 qualifier: 11551 rozbieżności, rules: 40 liści (62 wg rundy 1, metoda liczenia NIE_ZMIERZONO) | NASTĘPNA-PARTIA |
 | `units.json` Rydwan (woły) Epoka/Surowiec | `gra/data/units.json:523–576` | `engine/data/units.json` (kopia bajtowa) | M16 rules (część) | NASTĘPNA-PARTIA |
+
+## 5a. Weryfikacja niezależna (runda 2, Operator-pomiary)
+
+Baza: `52fb5b4e` (kod Rust i web bez zmian względem `fb55afe2`: `git diff --stat fb55afe2 HEAD -- rust-port gra src-tauri Cargo.toml WERSJE.md` = pusty).
+
+- **H1–H8**: `git show 91dc998a:gra/src/map/gen-helpers.ts` (eksport do scratchpadu) potwierdza, że 8 hunków to wyłącznie `queue.shift()` → `queue[queueHead++]`; w każdej z 8 funkcji `queue` jest czytana tylko przez warunek pętli i indeks głowy, `push` dopisuje na koniec, brak odczytu `queue.length` poza warunkiem pętli. Równoważność FIFO z kodu (dowód, nie mutacja).
+- **Szkielety Rust**: `rivers_a.rs`, `rivers_d.rs`, `rivers_e1.rs`, `rivers_e2.rs` mają po 3 linie (nagłówek „Szkielet P6.M00 (pusty)"), zero kodu. Potwierdzone.
+- **Dane wektorów (niezależny skrypt, porównanie liści JSON z pominięciem `meta`, skrypt w scratchpadzie)**:
+
+| Wektor | stored vs gen@edb8fb56 | gen@edb8fb56 vs gen@91dc998a (liście danych) |
+|---|---|---|
+| M04 web-vectors.json | 0 | 0 danych (3 liście meta: `gen_helpers_lines`, `sha256/gen-helpers.ts`, `+export`) |
+| M05A web-vectors.json | 0 | 0 |
+| M05B web-vectors.json | 0 | 0 |
+| M16 gallery.json | 0 | 0 |
+| M16 qualifier.json | 0 | 11551 (`cases[*]/api/requests[*]/req/kosztPraca`) |
+| M16 rules.json | 0 | 40 liści (`work_cost_scale[*]/era[*]`) |
+
+- **Sprzeczność w rundzie 1 (korygowana)**: §5 podawał „11613", §3 podaje 11551 — poprawna wartość to 11551 (zmierzona niezależnie). Liczba 62 dla rules (§3) różni się od 40 liści; metoda liczenia nieustalona — NIE_ZMIERZONO, bez wpływu na decyzję (wszystkie różnice w `kosztPraca`/`work_cost`).
+- **Bramki (runda 2, surowe logi w `dyspozycje/autobot/runs/R-RUSTPORT-REPIN-MAPA-Q1/`)**: `cargo fmt --all -- --check` EXIT=0; `cargo clippy --all-targets -- -D warnings` EXIT=0; `cargo test --no-fail-fast` EXIT=0, suma 1265 passed / 0 failed.
+- **Mutacje**: nie wykonano na kodzie Rust (brak portu H1–H8, zmiana niebehawioralna); podstawą jest dowód równoważności z kodu (wyżej).
 
 ## 6. Otwarte (ZAŁOŻENIA)
 
