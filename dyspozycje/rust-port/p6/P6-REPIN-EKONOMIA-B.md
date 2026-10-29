@@ -53,3 +53,41 @@ Krok 6 pinu (`meta.pin`, manifesty) NIE wykonany. Zgodnie z REPIN-DELTA §6 pin 
 ## 5. Lista hunkow
 
 Pelna tabela 67 wierszy generuje `classify-hunks.py` (uruchomienie: `python3 dyspozycje/autobot/runs/R-RUSTPORT-REPIN-EKONOMIA-B-Q1/classify-hunks.py <patch>`). Wyjatki od NASTEPNA-PARTIA: hunki 1, 32, 33, 43 (NIE-DOTYCZY) oraz 44, 45, 46 (PORTOWANE).
+
+## 6. Runda 2 - Operator-pomiary (niezalezna weryfikacja partii 1)
+
+Commit bazowy: `60a90a1d` (kod partii 1: `9a0f97cd`). Weryfikacja w tym samym worktree, bez zmian kodu produkcyjnego.
+
+**Wektor z weba.** Regeneracja `tests/p6_repin_b_vectors/ration_era.json` z `git archive 91dc998a gra/src gra/data` (Node v22.22.0, loader `repin-b-loader-*.mjs`, generator `gen-repin-b-ration-era.mjs`): `cmp` = IDENTYCZNY (1296 przypadkow + 12 mnoznikow).
+
+**Zgodnosc logiki z webem.** `population-growth-v85.ts:46-50` (`rationEraFoodCostMultiplier`: `!isFinite || <=1` -> 1; `===2` -> 2; inaczej 4) oraz `:213-222` (`computeCityRationCost` z mnoznikiem ery przed `spichlerz`) - zgodne z `city_growth.rs` (`ration_era_food_cost_multiplier`, `compute_city_ration_cost`).
+
+**Gate'y (runda 2, surowe logi w katalogu runu):**
+
+| Bramka | Wynik | Log |
+|---|---|---|
+| `cargo fmt --all -- --check` | EXIT=0 | `gate-fmt-r2.log` |
+| `cargo clippy --all-targets -- -D warnings` | EXIT=0 | `gate-clippy-r2.log` |
+| `cargo test --no-fail-fast` | 1303 passed / 0 failed, EXIT=0 | `gate-test-r2.log` |
+| `git diff --check 9a0f97cd 60a90a1d` oraz worktree | EXIT=0 | `gate-diffcheck-r2.log` |
+
+**Mutacje (niezalezne, jedna naraz, plik przywracany `git checkout --`):**
+
+| Mutant | Miejsce | Wynik |
+|---|---|---|
+| M1 brak progu Braz 2x (zawsze 4x) | `city_growth.rs` `ration_era_food_cost_multiplier` | ZABITA: 3/3 FAILED (`p6_repin_b_ration_era`) |
+| M2 era 1 nieneutralna (`< 1.0` zamiast `<= 1.0`) | j.w. | ZABITA: 3/3 FAILED |
+| M3 mnoznik ery usuniety z kosztu | `compute_city_ration_cost` | ZABITA: `ration_cost_with_era_matches_web_bits` FAILED |
+| M4 recompute ignoruje ownerEra (`tick.owner_era.unwrap_or(1.0)` -> `1.0`) | `recompute_city_food_balances_in_econ` | **PRZEZYLA**: 0 FAILED w `p6_7a_empire`, `p6_7a_growth`, `p6_7a_post_central`, `p6_7a_tempo`, `p6_7a_tables`, `p6_repin_b_ration_era` |
+
+**M4 - luka testowa (NIE-ZABITA, nie jest mutantem równoważnym).** Zmiana zachowania przy `ownerEra > 1` nie jest pokryta: żaden wektor w `tests/` nie niesie `ownerEra` różnego od domyślnego, a `p6_repin_b_ration_era` testuje tylko funkcje czyste, nie `recompute_city_food_balances_in_econ`. Wymagany test w kolejnej partii: tick z `ownerEra = 4` (lub 2) i weryfikacja `koszt_racji` względem wartości z webu dla tego samego `GrowthCity`. Do czasu domknięcia partia 1 jest oceniana jako PASS-WITH-NOTES, nie jako w pełni zabezpieczona.
+
+**Wektory P6.7A (kontrola ustaleń rundy 1).** Regeneracja `gen-p67a-vectors.mjs` z `git archive 91dc998a` (loader `p67a-loader-*.mjs`), porównanie przez `cmp-p67a-vectors.py` (porównanie ścieżka-po-ścieżce, liczba różnic = liczba ścieżek liści/kluczy):
+- `growth`, `empire`, `manpower`, `tempo_stawki`: 0 różnic.
+- `edge`: 78 różnic, wszystkie w `postCentral[].out.cities[].manpower`, `postCentral[].out.manpowerCheck[]`, `postCentralSiege[]...` (ta sama struktura).
+- `post_central`: 72 różnice, wszystkie w `scenarios[].out.cities[].manpower` i `manpowerCheck[]`.
+- `params`: 8 różnic w `econParamsRawForBuild` (`budynki.budynek_targowisko_bonus_handlu.opis`, `budynki.targowisko_praca_na_pieniadz_mnoznik` i `targowisko_praca_na_podatek_kurs` brakujące, `budynki.waluta_mnoznik.opis`, `globalne.mennica_mnoznik_po_walucie.{easy,hard}` typ, `.opis`).
+
+Ustalenie rundy 1 (`edge`/`post_central` różnią się tylko w `manpower`) jest potwierdzone. Ustalenie dla `params` jest potwierdzone co do lokalizacji (dotyczy `econParamsRawForBuild`, nie partii 1). Regeneracja `edge`/`post_central` pozostaje po partii 4 (manpower).
+
+Pin nie zmieniony (`meta.pin` i manifesty bez zmian). DEPLOY/PUSH: NIE WYKONANO.
