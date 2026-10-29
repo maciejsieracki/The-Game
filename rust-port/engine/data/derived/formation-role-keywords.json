@@ -1,0 +1,34 @@
+{
+  "meta": {
+    "zrodlo_web": {
+      "plik": "gra/src/battle/formationRules.ts",
+      "pin": "91dc998a",
+      "funkcje": "classifyInitialBattleRole (l.3-30): normalize (l.10-14), galezie l.20-29"
+    },
+    "opis": "Slowa kluczowe klasyfikacji roli poczatkowej w bitwie. Dopasowanie wzorcow regex z weba jest podstringowe (/a|b/.test(x) == zawiera a lub b), wiec kazde slowo tu jest podciagiem. Normalizacja: NFD, usuniecie znakow diakrytycznych, l/L z kreska -> l, toLowerCase."
+  },
+  "normalizacja": {
+    "usun_diakrytyki": true,
+    "mapa_liter": { "ł": "l", "Ł": "l" }
+  },
+  "konnica": {
+    "kategorie": ["konnica", "rydwan"],
+    "nazwa_podciagi": ["konnic", "jazd", "jezdz", "kawaler", "rydwan", "chariot", "cavalry", "horse"]
+  },
+  "oblezanie": {
+    "typ": "siege",
+    "nazwa_podciagi": ["taran", "katapult", "wieza oblezn", "battering", "catapult", "siege tower"]
+  },
+  "oszczepnik": {
+    "kategoria": "oszczepnik",
+    "haystack_podciagi": ["oszczepnik", "javelin", "atlatl", "estolic"]
+  },
+  "lucznik": {
+    "kategoria": "lucznik",
+    "haystack_podciagi": ["luczn", "archer", "kusznik", "crossbow"]
+  },
+  "procarz": {
+    "kategoria": "procarz",
+    "haystack_podciagi": ["procarz", "slinger"]
+  }
+}
