@@ -29,13 +29,18 @@ kwalifikowany następny etap bez czekania na kolejne ponaglenie.
 
 | ID | Temat | Etap | Operator / stan | Następny krok |
 |---|---|---:|---|---|
-| `R-BITWA-ATAK-LUCZNICY-RYDWANY-Q1` | Ranged/atak: łucznicy nie podchodzą do zasięgu lub błądzą za blokującą linią | 5/11 FAIL→korekta | Evaluator potwierdził poprawę Ataku 42v42, ale wykrył regresję: Skirmish może zamrażać łuczników za żywą piechotą | Operator ogranicza zmianę doktryną i dodaje regresję Skirmish; następnie ponowny evaluator |
-| `R-BITWA-MANUAL-CONTROL-LARGE-ARMY-Q1` | Ręczne rozkazy dla dużej armii, w tym kolejne cykle rozkazów | 8/11 PASS-WITH-NOTES, BLOKADA na regresji | Niezależny test 28/28 rozkazów/aktywacji przeszedł, ale ujawnił stale queued-order membership | Domknąć osobną poprawkę kolejki, potem ponownie FC/integracja |
-| `R-BITWA-KOLEJKA-ROZKAZOW-STALE-Q1` | Usunąć stare ID z kolejki po aktywacji, by kolejne rozkazy podzbioru działały | 4/11 | Operator aktywny; naprawa/test dwóch cykli w Chromium | Zakończyć test; niezależny Evaluator, obrona tylko gdy zarzuty |
-| `R-AI-KAMPANIA-MARSZ-REKRUTACJA-Q1` | AI ma po pięciu turach zbiórki ruszyć na cel; priorytet ataku morskiego po technologii | 6/11 PASS-WITH-NOTES, BLOCKED reprodukcją | Niezależny Evaluator potwierdził testy 49/49 i Chromium 68/68 (145 s); exact symptom nieodtworzony, brakuje zapisu/współrzędnych | Wznowić dokładną reprodukcję z danymi mapy; nie wdrażać niepotwierdzonej zmiany |
-| `R-BITWA-LARGE-MIXED-ARMY-SCENARIOS-Q1` | Macierz dużych, mieszanych bitew dla doktryn i ustawień | 8/11 | Niezależny Final Control PASS-WITH-NOTES; ograniczenia zakresu zapisane | Dołączyć kolejną rundę live po poprawkach łuczników i ręcznego sterowania; potem integracja raportów/testów |
-| `R-PROC-AUTOBOT-KANBAN-RETIRED-Q1` | Usunąć obowiązek Kanbanu z aktywnych zasad AutoBot zgodnie z decyzją właściciela | 11/11 PASS | Commit `dac5bcc4` jest na main, etap 10=N/A z uzasadnieniem, `git ls-remote` potwierdził push | Zamknięte; późniejsze poprawki reguły tworzą nowy temat, jeśli wymagane |
-| `R-LARGE-EMPIRE-PERF-Q1` | Narastający koszt CPU/pamięci w dużej cywilizacji | 1/11 | WSTRZYMANY z priorytetu na życzenie właściciela; uruchomić po zamknięciu pozostałych tematów | Ostatni: posprzątanie środowiska, baseline pamięci/tury/UI i profilowanie narastania |
+| `R-BITWA-ATAK-LUCZNICY-POZA-ZASIEGIEM-Q1` | Atak: łucznicy omijają szyk zamiast podejść do zasięgu i strzelać | 5/11 PASS-WITH-NOTES | Operator `/root/archer_approach_operator`; Evaluator r2 PASS-WITH-NOTES (`f42317c9`), niezależny Final Control `/root/battle_mixed_browser` aktywny | Zakończyć Final Control, potem integracja/deploy/push |
+| `R-BITWA-MANUAL-CONTROL-LARGE-ARMY-Q1` | Ręczne rozkazy dla dużej armii i kolejne cykle rozkazów | 5/11 PASS-WITH-NOTES, BLOCKED regresją | Operator `/root/manual_large_browser`; Evaluator `/root/manual_large_eval` potwierdził pierwsze 28/28, ale drugi cykl ujawnił stale queued-order membership | Operator domyka poprawkę i przeprowadza drugi cykl; niezależny Evaluator/FC po poprawce |
+| `R-BITWA-KOLEJKA-ROZKAZOW-STALE-Q1` | Usunąć stare ID z kolejki po aktywacji, by kolejne rozkazy podzbioru działały | 3/11 | Operator `/root/manual_large_browser` aktywny na izolowanej gałęzi; poprawka lokalna, Chromium test trwa, wynik jeszcze niepotwierdzony | Odebrać wynik pełnego Chromium; dopiero po przejściu raportować etap 4 |
+| `R-AI-KAMPANIA-MARSZ-REKRUTACJA-Q1` | AI ma po pięciu turach zbiórki ruszyć na cel; priorytet ataku morskiego | 5/11 PASS-WITH-NOTES, BLOCKED reprodukcją | Operator `/root/ai_campaign_assault_operator` i niezależny Evaluator `/root/battle_mixed_browser` zakończyli testy: logika 49/49, Chromium 68/68; objaw na konkretnej mapie nieodtworzony, brak zapisu/współrzędnych | Wznowić reprodukcję z dokładnymi danymi mapy; nie wdrażać niepotwierdzonego fixu |
+| `R-BITWA-LARGE-MIXED-ARMY-SCENARIOS-Q1` | Macierz dużych, mieszanych bitew dla doktryn i ustawień | 8/11 PASS-WITH-NOTES | Niezależny Final Control `/root/highlight_final` zakończony; ograniczenia zakresu zapisane; oczekuje na zależne poprawki łuczników i ręcznego sterowania | Po poprawkach ponowić macierz live i zintegrować dowody |
+| `R-PERF-LARGE-EMPIRE-STRESS-Q1` | Narastający koszt CPU/pamięci w dużej cywilizacji | 3/11 WSTRZYMANY | Istniejący test zakończył się niekompletnie na 38/100 tur; tura 39 zajęła 70,205 ms, RSS około 1.99 GiB. Właściciel ustalił, że testy dużej cywilizacji idą na sam koniec; nie ma aktualnie aktywnego Operatora | Po zamknięciu pozostałych tematów wznowić po sprzątaniu środowiska i uruchomić diagnostykę seryjnie |
+
+## Tematy zamknięte na etapie 11
+
+| ID | Wynik |
+|---|---|
+| `R-PROC-AUTOBOT-KANBAN-RETIRED-Q1` | PASS 11/11. Commit `dac5bcc4` na `main`; deploy gry jawnie N/A dla dokumentacji; `git ls-remote` potwierdził push. |
 
 ## Wydania już potwierdzone na etapie 11
 
