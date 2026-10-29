@@ -195,3 +195,7 @@ Grupy cykliczne (port razem, jedna paczka):
 - **C3** (3): `empireDetailPanel.ts`, `empireDetailTypes.ts`, `hud.ts`
 - **C4** (10): `entityCards/buildingAdapter.ts`, `entityCards/improvementAdapter.ts`, `entityCards/registry.ts`, `entityCards/renderer.ts`, `entityCards/technologyAdapter.ts`, `entityCards/unitAdapter.ts`, `entityCards/wonderAdapter.ts`, `scienceHubHud.ts`, `sciencePicker.ts`, `techDiscoveryNotice.ts`
 - **C5** (2): `sidePanelEventFilter.ts`, `sidePanelHud.ts`
+
+## Status P5.8 K02 (`R-RUSTPORT-P5-8-CITYPANEL-K02-Q1`, runda 1/5 — CZĘŚCIOWO)
+
+Kawałek H (`ensureStyles` -> `ensureCityPanelStyles`, pin `edb8fb56:gra/src/ui/cityPanel.ts:1948-3009`) przeniesiony do `src/ui/cityPanel/k02-styles.ts` (diff vs pin: tylko nazwa/eksport i `el(style)` -> `document.createElement(style)`, ZAŁOŻENIE P5.8-K02-Z2). Niezrobione: `appendBreakdownLines`, `appendPctBreakdownBlock`, `appendSignedBreakdownSections`, `appendW4SignedBreakdownSections` (wymagają `el`, K01), harness DOM i mutacje K02. Plik `cityPanel.ts` (81) nadal nieprzeniesiony. Szczegóły: `dyspozycje/autobot/runs/R-RUSTPORT-P5-8-CITYPANEL-K02-Q1/01-operator-r1.md`.
