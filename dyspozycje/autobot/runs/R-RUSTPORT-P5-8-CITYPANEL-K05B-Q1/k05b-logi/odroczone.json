@@ -1,0 +1,218 @@
+[
+ {
+  "name": "buildingConverterProductionDisplay",
+  "a": 6757,
+  "b": 6775,
+  "loc": 19,
+  "reason": "T: typ BuildingDef z data/loader.ts (wymaga lokalnej kopii typu)",
+  "firstBlocker": {
+   "kind": "T",
+   "id": "BuildingDef",
+   "from": "data/loader.ts"
+  }
+ },
+ {
+  "name": "buildingLocationRequirementMet",
+  "a": 6821,
+  "b": 6830,
+  "loc": 10,
+  "reason": "P: zależność isCapital (blok 3, poza K01)",
+  "firstBlocker": {
+   "kind": "P",
+   "id": "isCapital",
+   "block": 3
+  }
+ },
+ {
+  "name": "buildingRequirementChips",
+  "a": 6831,
+  "b": 6931,
+  "loc": 101,
+  "reason": "T: typ BuildingDef z data/loader.ts (wymaga lokalnej kopii typu)",
+  "firstBlocker": {
+   "kind": "T",
+   "id": "BuildingDef",
+   "from": "data/loader.ts"
+  }
+ },
+ {
+  "name": "buildingCanBuildNow",
+  "a": 6932,
+  "b": 6947,
+  "loc": 16,
+  "reason": "T: typ BuildingDef z data/loader.ts (wymaga lokalnej kopii typu)",
+  "firstBlocker": {
+   "kind": "T",
+   "id": "BuildingDef",
+   "from": "data/loader.ts"
+  }
+ },
+ {
+  "name": "sortProductionItemsByBuildability",
+  "a": 6948,
+  "b": 6964,
+  "loc": 17,
+  "reason": "T: typ ProductionItem z game/production.ts (wymaga lokalnej kopii typu)",
+  "firstBlocker": {
+   "kind": "T",
+   "id": "ProductionItem",
+   "from": "game/production.ts"
+  }
+ },
+ {
+  "name": "recruitManpowerCost",
+  "a": 8050,
+  "b": 8056,
+  "loc": 7,
+  "reason": "T: typ City z game/cities.ts (wymaga lokalnej kopii typu)",
+  "firstBlocker": {
+   "kind": "T",
+   "id": "City",
+   "from": "game/cities.ts"
+  }
+ },
+ {
+  "name": "empireRekruciTotal",
+  "a": 8057,
+  "b": 8063,
+  "loc": 7,
+  "reason": "T: typ City z game/cities.ts (wymaga lokalnej kopii typu)",
+  "firstBlocker": {
+   "kind": "T",
+   "id": "City",
+   "from": "game/cities.ts"
+  }
+ },
+ {
+  "name": "empireRekruciAffordable",
+  "a": 8064,
+  "b": 8077,
+  "loc": 14,
+  "reason": "T: typ City z game/cities.ts (wymaga lokalnej kopii typu)",
+  "firstBlocker": {
+   "kind": "T",
+   "id": "City",
+   "from": "game/cities.ts"
+  }
+ },
+ {
+  "name": "maxAffordableRecruitQuantity",
+  "a": 8078,
+  "b": 8111,
+  "loc": 34,
+  "reason": "T: typ City z game/cities.ts (wymaga lokalnej kopii typu)",
+  "firstBlocker": {
+   "kind": "T",
+   "id": "City",
+   "from": "game/cities.ts"
+  }
+ },
+ {
+  "name": "unitStockCostChipsHtml",
+  "a": 8112,
+  "b": 8126,
+  "loc": 15,
+  "reason": "T: typ UnitDef z data/loader.ts (wymaga lokalnej kopii typu)",
+  "firstBlocker": {
+   "kind": "T",
+   "id": "UnitDef",
+   "from": "data/loader.ts"
+  }
+ },
+ {
+  "name": "unitResourceUpkeepChipsHtml",
+  "a": 8127,
+  "b": 8136,
+  "loc": 10,
+  "reason": "T: typ UnitDef z data/loader.ts (wymaga lokalnej kopii typu)",
+  "firstBlocker": {
+   "kind": "T",
+   "id": "UnitDef",
+   "from": "data/loader.ts"
+  }
+ },
+ {
+  "name": "recruitUnit",
+  "a": 8183,
+  "b": 8209,
+  "loc": 27,
+  "reason": "T: typ City z game/cities.ts (wymaga lokalnej kopii typu)",
+  "firstBlocker": {
+   "kind": "T",
+   "id": "City",
+   "from": "game/cities.ts"
+  }
+ },
+ {
+  "name": "missingTechSteps",
+  "a": 8537,
+  "b": 8541,
+  "loc": 5,
+  "reason": "T: typ GameData z data/loader.ts (wymaga lokalnej kopii typu)",
+  "firstBlocker": {
+   "kind": "T",
+   "id": "GameData",
+   "from": "data/loader.ts"
+  }
+ },
+ {
+  "name": "formatBuildingCatalogLockHint",
+  "a": 8542,
+  "b": 8578,
+  "loc": 37,
+  "reason": "T: typ BuildingCatalogEntry z game/production.ts (wymaga lokalnej kopii typu)",
+  "firstBlocker": {
+   "kind": "T",
+   "id": "BuildingCatalogEntry",
+   "from": "game/production.ts"
+  }
+ },
+ {
+  "name": "formatBuildingPreviewHint",
+  "a": 8579,
+  "b": 8610,
+  "loc": 32,
+  "reason": "T: typ BuildingDef z data/loader.ts (wymaga lokalnej kopii typu)",
+  "firstBlocker": {
+   "kind": "T",
+   "id": "BuildingDef",
+   "from": "data/loader.ts"
+  }
+ },
+ {
+  "name": "productionCtxForCity",
+  "a": 8611,
+  "b": 8644,
+  "loc": 34,
+  "reason": "T: typ City z game/cities.ts (wymaga lokalnej kopii typu)",
+  "firstBlocker": {
+   "kind": "T",
+   "id": "City",
+   "from": "game/cities.ts"
+  }
+ },
+ {
+  "name": "collectEraPreviewEntries",
+  "a": 8645,
+  "b": 8681,
+  "loc": 37,
+  "reason": "T: typ GameData z data/loader.ts (wymaga lokalnej kopii typu)",
+  "firstBlocker": {
+   "kind": "T",
+   "id": "GameData",
+   "from": "data/loader.ts"
+  }
+ },
+ {
+  "name": "improvementsInCityRange",
+  "a": 9579,
+  "b": 9603,
+  "loc": 25,
+  "reason": "T: typ City z game/cities.ts (wymaga lokalnej kopii typu)",
+  "firstBlocker": {
+   "kind": "T",
+   "id": "City",
+   "from": "game/cities.ts"
+  }
+ }
+]

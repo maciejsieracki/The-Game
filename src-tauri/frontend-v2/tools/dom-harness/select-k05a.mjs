@@ -37,15 +37,31 @@ const POMIAR = resolve(
     fileURLToPath(new URL('../../../../dyspozycje/autobot/runs/R-RUSTPORT-P5-8-CITYPANEL-K01A-Q1/r3-logi/pomiar-r2.json', import.meta.url)),
 );
 const R3 = args.includes('--r3');
+/** Tryb `--k05b` (P5-8 K05B, R-RUSTPORT-P5-8-CITYPANEL-K05B-Q1): wybór = 19 jednostek z DOM (odroczone klasy DOM z K05A). */
+const K05B = args.includes('--k05b');
 const OUT = resolve(
   argOf('--out-dir') ??
-    fileURLToPath(new URL(`../../../../dyspozycje/autobot/runs/R-RUSTPORT-P5-8-CITYPANEL-K05A-Q1/${R3 ? 'r3' : 'r2'}-logi`, import.meta.url)),
+    fileURLToPath(
+      new URL(
+        K05B
+          ? '../../../../dyspozycje/autobot/runs/R-RUSTPORT-P5-8-CITYPANEL-K05B-Q1/k05b-logi'
+          : `../../../../dyspozycje/autobot/runs/R-RUSTPORT-P5-8-CITYPANEL-K05A-Q1/${R3 ? 'r3' : 'r2'}-logi`,
+        import.meta.url,
+      ),
+    ),
 );
 
 const r = selectK01a({ pinDir: resolve(PIN_DIR), pomiar: loadPomiar(POMIAR), block: K05_BLOCK, localTypes: K05A_LOCAL_COPIES, dtoSubst: K05A_DTO_SUBST });
 let selected = r.selected;
 let deferred = r.deferred;
-if (R3) {
+if (K05B) {
+  // K05B: wybór = odroczone jednostki klasy DOM; reszta (T/P) zostaje w K05A r3 (bez zmian).
+  const pinSrc = readFileSync(resolve(PIN_DIR, 'gra/src/ui/cityPanel.ts'), 'utf8').split('\n');
+  selected = r.deferred
+    .filter((d) => d.reason === 'DOM')
+    .map((d) => ({ name: d.name, a: d.a, b: d.b, loc: d.loc, kind: /^(export )?const /.test(pinSrc[d.a - 1]) ? 'const' : 'function' }));
+  deferred = r.deferred.filter((d) => d.reason !== 'DOM');
+} else if (R3) {
   const isTP = (d) => /^(T|P):/.test(d.reason);
   const pinSrc = readFileSync(resolve(PIN_DIR, 'gra/src/ui/cityPanel.ts'), 'utf8').split('\n');
   const extra = r.deferred.filter(isTP).map((d) => ({
@@ -68,7 +84,7 @@ for (const d of deferred) {
   reasons[k] = (reasons[k] ?? 0) + 1;
 }
 const summary = {
-  mode: R3 ? 'r3' : 'r2',
+  mode: K05B ? 'k05b' : R3 ? 'r3' : 'r2',
   pin: r.pin,
   block: K05_BLOCK,
   pinUnits: r.pinUnits,
