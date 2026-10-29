@@ -11,6 +11,7 @@
  * `procentPuliImperiumZBudynkow`, `computeView`), żeby ciała kopii pinu były bajt w bajt z pinem.
  */
 import { dep } from './k06b-deps';
+import { clampPodzialPracyBudynkiPercentK04b, type PodzialPracyBounds } from './k04b-podzial';
 import type { PodzialPracySplit } from './k01a-fundament';
 import type { City, GameData } from './k05b-host';
 import type { CityView } from './k01b-t';
@@ -40,6 +41,20 @@ export const procentPuliImperiumZBudynkow = (procentBudynki: number | undefined 
 /** Pin `computeView(city, map, data)` (widok miasta z silnika); delegat z kontrolera (K08C-Z2: nie liczony w UI). */
 export const computeView = (city: City, map: GameMap, data: GameData): CityView | null =>
   dep('computeView')(city, map, data) as CityView | null;
+
+/** K08C-Z5: granice suwaka podziału pracy (pin `game/cities.ts:456-457`: MIN 50, MAX 100) — stała wartość DTO. */
+export const K08C_PODZIAL_PRACY_BOUNDS: PodzialPracyBounds = { min: 50, max: 100 };
+
+/** Pin `game/cities.ts:456` `MIN_PODZIAL_PRACY_BUDYNKI_PERCENT`. */
+export const MIN_PODZIAL_PRACY_BUDYNKI_PERCENT = K08C_PODZIAL_PRACY_BOUNDS.min;
+/** Pin `game/cities.ts:457` `MAX_PODZIAL_PRACY_BUDYNKI_PERCENT`. */
+export const MAX_PODZIAL_PRACY_BUDYNKI_PERCENT = K08C_PODZIAL_PRACY_BOUNDS.max;
+/** Pin `game/cities.ts:478` `MAX_PROCENT_PULI_IMPERIUM = 100 - MIN_PODZIAL_PRACY_BUDYNKI_PERCENT`. */
+export const MAX_PROCENT_PULI_IMPERIUM = 100 - MIN_PODZIAL_PRACY_BUDYNKI_PERCENT;
+
+/** Pin `game/cities.ts:545-551` `clampPodzialPracyBudynkiPercent` — ta sama reguła co K04B z granicami K08C. */
+export const clampPodzialPracyBudynkiPercent = (n: number | undefined | null): number =>
+  clampPodzialPracyBudynkiPercentK04b(n, K08C_PODZIAL_PRACY_BOUNDS);
 
 /** Nazwy delegatów K08C (do raportu brakujących w `k08cWiring`). */
 export const K08C_FN_NAMES = ['readPodzialPracy', 'cityPracaSplit', 'procentPuliImperiumZBudynkow', 'computeView'] as const;

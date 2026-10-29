@@ -129,6 +129,12 @@ export interface K05bCfg {
   getBuiltBuildingIds?: (cityId: number) => readonly string[] | undefined;
   /** K08C-Z3 (runda 1): pin `cfg.getCities?.() ?? []` — używane przez `buildTopBarPracaDetailCard` (K08C). */
   getCities?: () => readonly City[];
+  /** K08C-Z8 (runda 2): pin `cfg.onPodzialPracyChange?.(cityId, {procentBudynki})` — zapis suwaka (`renderPodzialPracy`). */
+  onPodzialPracyChange?: (cityId: number, split: { readonly procentBudynki: number }) => void;
+  /** K08C-Z8: pin `cfg.getPodzialPracyOverride?.(cityId) === true` — przełącznik „Indywidualne". */
+  getPodzialPracyOverride?: (cityId: number) => boolean | undefined;
+  /** K08C-Z8: pin `cfg.onPodzialPracyOverrideToggle?.(cityId)`. */
+  onPodzialPracyOverrideToggle?: (cityId: number) => void;
 }
 
 /** K05B-Z5: migawka rekrutów miasta (pin: `getManpowerSnapshot`) — pola czytane przez `buildRecruitTabDetailCard`. */

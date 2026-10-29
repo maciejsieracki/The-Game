@@ -43,8 +43,38 @@ import {
   ],
 };
 
+
+/** Partia `podzial` (runda 2, zarzut „zakres 6 jednostek"): `renderPodzialPracy` (pin :5112-5188). Ciało kopiuje pin; `appendPodzialPracyInfo`
+ * (pin :5028-5111) jest już portem K06B (`k06b-jednostki.ts`) — import, nie kopia w tej partii. */
+export const BATCH_PODZIAL = {
+  file: 'k08c-podzial.ts',
+  header: `/**
+ * K08C-2 (P5-8, R-RUSTPORT-P5-8-CITYPANEL-K08C-Q1, runda 2, partia \`podzial\`): karta „Podział pracy" (pin \`edb8fb56\`,
+ * \`gra/src/ui/cityPanel.ts\`) — \`renderPodzialPracy\` (suwak Budynki/Pula + \`appendPodzialPracyInfo\` z K06B).
+ *
+ * PLIK GENEROWANY przez \`tools/dom-harness/gen-k08c-port.mjs --batch podzial\` (bloki = pin, \`k08c-subs.mjs\`).
+ * Edycja ręczna bloku \`// pin edb8fb56 …\` … \`// pin-end\` = FAIL bramki \`verify-k08c-copies.mjs\`.
+ * Stałe i pomocnicze z \`k08c-deps.ts\` (granice 50..100 z pinu \`game/cities.ts:456-457\`).
+ */`,
+  imports: `import { cityPanelChipIconWrap, cpInlineIcons } from './k01a-fundament';
+import { el } from './k01b-dom';
+import { appendIndywidualneToggle, cfg, isMeCity, rerender, HANDEL_PCT_STEP, type City, type GameData } from './k05b-host';
+import type { CityView } from './k01b-t';
+import { PULA_LBL, PULA_LBL_PELNA } from './k01b-t';
+import { appendSectionTitleWithDetails } from './k08b-title';
+import { appendPodzialPracyInfo } from './k06b-jednostki';
+import { buildPracaDetailCard } from './k08c-praca';
+import {
+  MAX_PODZIAL_PRACY_BUDYNKI_PERCENT, MAX_PROCENT_PULI_IMPERIUM, MIN_PODZIAL_PRACY_BUDYNKI_PERCENT,
+  cityPracaSplit, clampPodzialPracyBudynkiPercent, procentPuliImperiumZBudynkow, readPodzialPracy,
+} from './k08c-deps';`,
+  units: [
+    { name: 'renderPodzialPracy', a: 5112, b: 5188 },
+  ],
+};
+
 /** Wszystkie partie K08C (kolejność stała). */
-export const BATCHES_K08C = [BATCH_PRACA];
+export const BATCHES_K08C = [BATCH_PRACA, BATCH_PODZIAL];
 
 /** Partia po nazwie (`praca`). */
 export const batchByNameK08c = (name) => {

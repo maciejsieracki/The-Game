@@ -1,0 +1,10 @@
+OK   W1-brak-deps-rzuca
+OK   W2-deps-chip-wrap
+OK   W3-deps-zakladki
+OK   W4-cfg-order-state
+OK   W4b-brak-stanu-tekst
+OK   W5-cfg-miasta-wlasciciela
+OK   W6-akcesory-stanu
+OK   W7-atrapa-stale
+OK   W7b-fabryka-atrapy
+{"checks":9,"ok":9,"fail":0}

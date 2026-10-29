@@ -1,0 +1,30 @@
+OK   pin.bounds.cities | pin game/cities.ts:456-457 = MIN 50 / MAX 100 (cytowane w K08C-Z5)
+FAIL C1.getUnitDef.byJednostka | getUnitDef(data, "Włócznik") zwraca jednostkę o tym Jednostka
+OK   C1.getUnitDef.unknown | getUnitDef dla nieznanej nazwy = undefined
+OK   C1.getUnitDef.nullData | getUnitDef(null, id) = undefined (bez rzutu)
+OK   C2.hookWins | hook (70) wygrywa z zapisem (90) i silnikiem (60)
+OK   C3.storedWins | zapis (90) wygrywa z silnikiem (60) bez hooka
+OK   C4.engine | brak hooka i zapisu => parametr silnika (60)
+OK   C5.nullDataDefault | dane null => domyślny podział 70
+OK   C6.clampHigh | silnik 120 => 100
+OK   C6.clampLow | silnik 10 => 50
+OK   C6.round | silnik 75.4 => 75
+OK   C7.fraction | splitPraca(200, 0.8) (pct/100)
+OK   C7.pct | pctBudynki=80, pctPuli=20, total=200
+OK   C8.serviceUsed | service sumOwnedBuildingsUpkeep wywołany (wynik 42)
+OK   C8.notStubbed | przesłonięta usługa nie jest w stubbed
+FAIL C9.sumEmpty | sumOwnedBuildingsUpkeep([]) = 0 (bez reguł)
+FAIL C9.sumNonEmptyThrows | sumOwnedBuildingsUpkeep(["x"]) rzuca K08C-Z5 (nie cicha wartość)
+OK   C9.groupEmpty | groupBuiltBuildingIds([]) = []
+FAIL C9.groupNonEmptyThrows | groupBuiltBuildingIds(["x"]) rzuca K08C-Z5
+OK   C9.sortEmpty | sortByUnitPowerDescending([], k) = []
+FAIL C9.sortNonEmptyThrows | sortByUnitPowerDescending([1], k) rzuca K08C-Z5
+OK   C9.stripEmpty | appendRecruitMilitaryResourceStrip(...,[]) = no-op
+FAIL C9.stripNonEmptyThrows | appendRecruitMilitaryResourceStrip(...,[1]) rzuca K08C-Z5
+OK   C9.purchasableEmpty | purchasableUnits(...) = [] (cicha atrapa, tabela długu)
+OK   C10.stubbed | stubbed = 5 atrap regułowych
+FAIL C11.engineSnap | resolveEmpireSnap => snapshot silnika (pracaRate 9)
+FAIL C11.noEngine | bez silnika => {zloto: skarb 123}
+OK   C12.depsCallable | wszystkie 6 delegaty K06B wywoływalne
+
+k08c-wiring: 20/28 zgodnych

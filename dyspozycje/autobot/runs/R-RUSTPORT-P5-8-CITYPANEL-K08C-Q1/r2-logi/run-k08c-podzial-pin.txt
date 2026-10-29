@@ -1,0 +1,22 @@
+OK   pin.range.renderPodzialPracy | cityPanel.ts:5112-5188
+OK   pin.anchor.1 | cityPanel.ts:5118 if (!cfg.onPodzialPracyChange) return;
+OK   pin.anchor.2 | cityPanel.ts:5163 inp.setAttribute('aria-label', 'Podział przyrostu Pracy tego miasta: budynki versus ulepszenia (pula imperium)');
+OK   pin.anchor.3 | cityPanel.ts:5187 appendPodzialPracyInfo(mount, city, view, data);
+OK   exec.noCallback | renderPodzialPracy noCallback: outerHTML 0 znaków, wyjątek pin=null port=null
+OK   exec.player.noView | renderPodzialPracy player.noView: outerHTML 2247 znaków, wyjątek pin=null port=null
+OK   exec.player.noView.nonEmpty | player.noView: montaż niepusty
+OK   exec.player.noView.callback | player.noView: zdarzenie input suwaka => zapis procentBudynki=70 (pin=port)
+OK   exec.player.view | renderPodzialPracy player.view: outerHTML 2351 znaków, wyjątek pin=null port=null
+OK   exec.player.view.nonEmpty | player.view: montaż niepusty
+OK   exec.player.view.callback | player.view: zdarzenie input suwaka => zapis procentBudynki=70 (pin=port)
+OK   exec.player.hook80 | renderPodzialPracy player.hook80: outerHTML 2347 znaków, wyjątek pin=null port=null
+OK   exec.player.hook80.nonEmpty | player.hook80: montaż niepusty
+OK   exec.player.hook80.callback | player.hook80: zdarzenie input suwaka => zapis procentBudynki=70 (pin=port)
+OK   exec.player.override | renderPodzialPracy player.override: outerHTML 2625 znaków, wyjątek pin=null port=null
+OK   exec.player.override.nonEmpty | player.override: montaż niepusty
+OK   exec.player.override.callback | player.override: zdarzenie input suwaka => zapis procentBudynki=70 (pin=port)
+OK   exec.rival.view | renderPodzialPracy rival.view: outerHTML 2090 znaków, wyjątek pin=null port=null
+OK   exec.rival.view.nonEmpty | rival.view: montaż niepusty
+OK   exec.anchor.sliderOnlyPlayer | suwak <input type=range> tylko w montażu gracza
+
+k08c-podzial-pin: 20/20 zgodnych

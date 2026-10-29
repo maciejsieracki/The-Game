@@ -13,15 +13,20 @@
  *
  * Reguła (P5.13, K08C-Z5): wiring NIE liczy reguł gry. Pięć delegatów regułowych (`sumOwnedBuildingsUpkeep`,
  * `groupBuiltBuildingIds`, `appendRecruitMilitaryResourceStrip`, `purchasableUnits`, `sortByUnitPowerDescending`)
- * dostaje wartość z `services` (silnik) albo NEUTRALNĄ ATRAPĘ bez obliczeń (zwraca `undefined`/`[]`/no-op). Każda
- * atrapa jest w zwracanym `stubbed` — caller (K09) musi ją zastąpić przed produkcją (NIE_ZROBIONE, K09).
- * `getUnitDef` (odczyt z danych statycznych) ma realną implementację: `data.units.find(id)`.
+ * dostaje wartość z `services` (silnik) albo ATRAPĘ. Atrapa jest w zwracanym `stubbed` — caller (K09) musi ją
+ * zastąpić przed produkcją (NIE_ZROBIONE, K09). Atrapy są GŁOŚNE dla wejścia niepustego: gdy lista wejściowa ma
+ * elementy, a brak usługi silnika, atrapa rzuca `K08C-Z5` (zamiast cicho zwracać zły wynik). Wyjątek bez
+ * alternatywy: `purchasableUnits` zwraca `[]` (cicha atrapa, udokumentowana w tabeli długu K08C).
+ * `getUnitDef` odczytuje po polu `Jednostka` (pin `data/loader.ts:430`): `data.units.find(u => u.Jednostka === id)`.
+ * `resolveEmpireSnap` (pin :1637) = `resolveEmpireSnapK(engineSnap, zloto)` (K04C-Z6): snapshot z silnika, bez
+ * sumowania miast po stronie UI (P5.13). Różnica względem pina: gałąź „sumuj miasta z computeView" pomijana (tabela długu).
  *
  * Granice: produkcyjny wywołujący (panel miasta, blok 9) NIE istnieje — podpięcie = K09 (NIE_ZROBIONE).
  */
 import { setK08aDeps } from '../ui/cityPanel/k08a-fundament';
 import { setK05bHost, type City, type GameData, type K05bCfg, type K05bRules } from '../ui/cityPanel/k05b-host';
 import { setK06bDeps } from '../ui/cityPanel/k06b-deps';
+import { K08C_PODZIAL_PRACY_BOUNDS } from '../ui/cityPanel/k08c-deps';
 import {
   cityPracaSplitK04b, procentPuliImperiumZBudynkowK04b, readPodzialPracyK04b,
   type PodzialPracaSplitDto, type PodzialPracyBounds, type PodzialPracySources,
@@ -31,10 +36,15 @@ import { disposeHoverDetailDock } from '../ui/hoverDetailDock';
 import { isCityUxFrameOpen } from '../ui/cityUxFrame';
 import type { CityView } from '../ui/cityPanel/k01b-t';
 import type { GameMap } from '../ui/cityPanel/k05a-fundament';
-import type { PodzialHandluSplit } from '../ui/cityPanel/k01a-fundament';
+import type { PodzialHandluSplit, EmpireHudSnap } from '../ui/cityPanel/k01a-fundament';
+import { cityPanelChipIconWrap, psiRowLabel, signed, statChipBrand, tury } from '../ui/cityPanel/k01a-fundament';
+import { PULA_LBL_PELNA, PULA_TIP } from '../ui/cityPanel/k01b-t';
+import { el } from '../ui/cityPanel/k01b-dom';
+import { resourceTextClass } from '../ui/resourceColors';
+import { resolveEmpireSnapK } from '../ui/cityPanel/k04c-model';
 
-/** K08C-Z5: granice suwaka podziału pracy (pin `game/cities.ts:456-457`: MIN 50, MAX 100) — stała wartość DTO. */
-export const K08C_PODZIAL_PRACY_BOUNDS: PodzialPracyBounds = { min: 50, max: 100 };
+/** K08C-Z5: granice suwaka podziału pracy — definiowane w `k08c-deps.ts` (jedno źródło), tu tylko re-eksport. */
+export { K08C_PODZIAL_PRACY_BOUNDS } from '../ui/cityPanel/k08c-deps';
 
 /** Wejścia hosta K08C (kontroler / DTO / silnik). Wszystko wstrzykiwane; wiring nie wymyśla reguł. */
 export interface K08cHostInputs {
@@ -55,33 +65,47 @@ export interface K08cHostInputs {
   adjustHandelSplit(split: PodzialHandluSplit, key: keyof PodzialHandluSplit, value: number): PodzialHandluSplit;
   freshWealthState(): { readonly poziom: number };
   stockResourceLabel(key: string): string;
+  /** Pin `cfg.getEmpireHud?.(ownerId)` — snapshot imperium z silnika (`resolveEmpireSnap`, K04C-Z6). */
+  getEmpireHud?(ownerId: number): EmpireHudSnap | undefined;
   /** Reguły gry K05B-Z8 — dostarcza silnik/kontroler (wiring ich nie implementuje). */
   rules: K05bRules;
 }
 
-/** Usługi regułowe K06B (silnik); brakujące = neutralna atrapa (zob. `stubbed`). */
+/** Sygnatura delegatu regułowego (typ lokalny; bez `any`). */
+type RuleFn = (...args: unknown[]) => unknown;
+
+/** Usługi regułowe K06B (silnik); brakujące = atrapa (zob. `stubbed`). */
 export interface K08cRuleServices {
-  sumOwnedBuildingsUpkeep?: (...args: unknown[]) => unknown;
-  groupBuiltBuildingIds?: (...args: unknown[]) => unknown;
-  appendRecruitMilitaryResourceStrip?: (...args: unknown[]) => unknown;
-  purchasableUnits?: (...args: unknown[]) => unknown;
-  sortByUnitPowerDescending?: (units: unknown, key: (u: unknown) => unknown) => unknown;
+  sumOwnedBuildingsUpkeep?: RuleFn;
+  groupBuiltBuildingIds?: RuleFn;
+  appendRecruitMilitaryResourceStrip?: RuleFn;
+  purchasableUnits?: RuleFn;
+  sortByUnitPowerDescending?: RuleFn;
 }
+
+/** K08C-Z5: atrapa dla wejścia niepustego rzuca wyjątek (głośna granica, nie cicha zła wartość). */
+const atrapaNiepusta = (name: string, _wejscie: unknown): never => {
+  throw new Error(`K08C-Z5: atrapa '${name}' wywołana dla wejścia niepustego — brak usługi silnika (K09)`);
+};
+const dlugosc = (x: unknown): number => (Array.isArray(x) ? x.length : 0);
+
+/** Atrapy K08C-Z5 (bez liczenia reguł). Pusta lista wejściowa ma jedyną poprawną odpowiedź bez reguł. */
+const NEUTRAL: Required<K08cRuleServices> = {
+  // Suma utrzymania budynków: dla pustej listy = 0 (bez reguł); dla niepustej — brak silnika => rzut.
+  sumOwnedBuildingsUpkeep: (built) => (dlugosc(built) === 0 ? 0 : atrapaNiepusta('sumOwnedBuildingsUpkeep', built)),
+  groupBuiltBuildingIds: (built) => (dlugosc(built) === 0 ? [] : atrapaNiepusta('groupBuiltBuildingIds', built)),
+  appendRecruitMilitaryResourceStrip: (_mount, _city, _data, units) =>
+    (dlugosc(units) === 0 ? undefined : atrapaNiepusta('appendRecruitMilitaryResourceStrip', units)),
+  // Cicha atrapa (brak alternatywy bez reguł gry): zawsze pusta lista = „nic do kupienia" (tabela długu K08C).
+  purchasableUnits: () => [],
+  sortByUnitPowerDescending: (units) => (dlugosc(units) === 0 ? [] : atrapaNiepusta('sortByUnitPowerDescending', units)),
+};
 
 /** Nazwy delegatów K06B, które wiring K08C dostarcza (szóstka `k08b-deps.ts`). */
 export const K08C_K06B_NAMES = [
   'sumOwnedBuildingsUpkeep', 'groupBuiltBuildingIds', 'appendRecruitMilitaryResourceStrip',
   'purchasableUnits', 'sortByUnitPowerDescending', 'getUnitDef',
 ] as const;
-
-/** Neutralne atrapy (K08C-Z5): wartości bez obliczeń reguł. */
-const NEUTRAL: Record<Exclude<keyof K08cRuleServices, never>, (...args: any[]) => unknown> = {
-  sumOwnedBuildingsUpkeep: () => undefined,
-  groupBuiltBuildingIds: () => [],
-  appendRecruitMilitaryResourceStrip: () => undefined,
-  purchasableUnits: () => [],
-  sortByUnitPowerDescending: (units: unknown) => (Array.isArray(units) ? [...units] : []),
-};
 
 /** Źródła podziału pracy miasta (pin :1022-1030 kolejność: hook → zapis → parametr silnika). */
 function podzialSources(h: K08cHostInputs, city: City, data: GameData | null): PodzialPracySources {
@@ -119,9 +143,9 @@ export function installK08cWiring(h: K08cHostInputs, services: K08cRuleServices 
   });
 
   const stubbed: string[] = [];
-  const rule = (name: keyof K08cRuleServices): ((...args: any[]) => unknown) => {
+  const rule = (name: keyof K08cRuleServices): RuleFn => {
     const svc = services[name];
-    if (typeof svc === 'function') return svc as (...args: any[]) => unknown;
+    if (typeof svc === 'function') return svc;
     stubbed.push(name);
     return NEUTRAL[name];
   };
@@ -142,8 +166,28 @@ export function installK08cWiring(h: K08cHostInputs, services: K08cRuleServices 
     appendRecruitMilitaryResourceStrip: rule('appendRecruitMilitaryResourceStrip'),
     purchasableUnits: rule('purchasableUnits'),
     sortByUnitPowerDescending: rule('sortByUnitPowerDescending'),
-    // Odczyt z danych statycznych (bez reguł): `data.units` po id.
-    getUnitDef: (data: GameData | null, id: string) => data?.units.find((u) => (u as { id: string }).id === id),
+    // Odczyt z danych statycznych (bez reguł): pin `data/loader.ts:430` — dopasowanie po polu `Jednostka`.
+    getUnitDef: (data: GameData | null, id: string) => data?.units.find((u) => u.Jednostka === id),
+    // K04C-Z6: snapshot imperium z silnika (pin :1637 gałąź `engineSnap`); bez sumowania po stronie UI.
+    resolveEmpireSnap: (city: City, _map: GameMap | null, _data: GameData | null) =>
+      resolveEmpireSnapK(h.getEmpireHud?.(city.ownerId), h.cfg.getTreasury?.(city.ownerId) ?? undefined) as EmpireHudSnap,
+    // K08C-Z8 (runda 2): zależności K06B `appendPodzialPracyInfo`, wołanej przez `renderPodzialPracy` (K08C).
+    // Wartości: `cfg` pinu i stałe tekstowe z portu (`k01b-t`, pin `game/cities.ts:535-539`).
+    cfg: h.cfg,
+    PODZIAL_PRACY_PULA_TIP: PULA_TIP,
+    PODZIAL_PRACY_PULA_LBL_PELNA: PULA_LBL_PELNA,
+    // Odczyty z hosta/silnika (`rules`) i proste funkcje UI z portu — bez kopii reguł.
+    etaTurns: (koszt: number, postep: number, praca: number) => h.rules.etaTurns(koszt, postep, praca),
+    getProd: (cityId: number) => h.rules.getProd(cityId),
+    // Odczyt kolejki (pin `game/production.ts:1118` `frontItem`): pierwsza pozycja lub null; bez reguł.
+    frontItem: (prod: { readonly kolejka?: readonly unknown[] }) => (prod.kolejka && prod.kolejka.length > 0 ? prod.kolejka[0] : null),
+    psiRowLabel,
+    statChipBrand,
+    resourceTextClass,
+    signed,
+    tury,
+    cityPanelChipIconWrap,
+    el,
   });
 
   return { stubbed };

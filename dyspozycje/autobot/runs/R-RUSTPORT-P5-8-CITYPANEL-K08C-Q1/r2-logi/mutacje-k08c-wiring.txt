@@ -1,0 +1,16 @@
+ZABITA         getUnitDef-by-id | FAIL checków=1
+ZABITA         getUnitDef-first-unit | FAIL checków=2
+ZABITA         order-hook-dropped | FAIL checków=3
+ZABITA         order-stored-dropped | FAIL checków=1
+ZABITA         order-engine-constant | FAIL checków=4
+ZABITA         split-pct-not-divided | FAIL checków=1
+ZABITA         split-host-zeroed | FAIL checków=2
+ZABITA         bounds-max-90 | FAIL checków=1
+ZABITA         bounds-min-0 | FAIL checków=1
+ZABITA         service-ignored | FAIL checków=2
+ZABITA         stubbed-not-reported | FAIL checków=1
+ZABITA         atrapa-silent-sum | FAIL checków=1
+ZABITA         atrapa-empty-wrong | FAIL checków=1
+ZABITA         engine-snap-ignored | FAIL checków=1
+
+mutacje k08c-wiring: 14/14 ZABITA, przeżyło=0, błędy=0

@@ -1,0 +1,12 @@
+ZABITA         slider-min-0 | FAIL checków=4
+ZABITA         slider-step-5 | FAIL checków=4
+ZABITA         slider-max-90 | FAIL checków=4
+ZABITA         override-inverted | FAIL checków=1
+ZABITA         rival-gets-slider | FAIL checków=2
+ZABITA         pula-label-short | FAIL checków=5
+ZABITA         callback-dropped | FAIL checków=4
+ZABITA         callback-complement | FAIL checków=4
+ZABITA         info-dropped | FAIL checków=5
+ZABITA         no-early-return | FAIL checków=1
+
+mutacje k08c-podzial: 10/10 ZABITA, przeżyło=0, błędy=0
