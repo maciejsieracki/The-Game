@@ -19,8 +19,15 @@ if (!pinDir) {
   process.exit(2);
 }
 const ROOT = resolve(fileURLToPath(new URL('../../', import.meta.url)));
-const path = resolve(ROOT, 'src/ui/cityPanel/k02-units.ts');
-const original = readFileSync(path, 'utf8');
+// P5.8 SCAL: po scaleniu z K01 czesc jednostek (statChip, LIST_ROW_HEIGHT_EM, etykiety wymagan, applyBuildButtonVisualState)
+// zyje w kawalkach K01, ktore run-k02-units bundluje razem z k02-units. Mutacja trafia w plik, w ktorym wzorzec
+// wystepuje dokladnie raz (sprawdzane po wszystkich kandydatach); harness mierzy ja przez import K02.
+const FILES = [
+  'src/ui/cityPanel/k02-units.ts',
+  'src/ui/cityPanel/k01a-fundament.ts',
+  'src/ui/cityPanel/k01b-dom.ts',
+];
+const originals = Object.fromEntries(FILES.map((f) => [f, readFileSync(resolve(ROOT, f), 'utf8')]));
 
 /** [nazwa, przed, po] — „przed” musi wystapic w pliku dokladnie raz. */
 const MUTS = [
@@ -29,7 +36,8 @@ const MUTS = [
   ['M3 createScrollList: klasa fill', "sc.classList.add('list-scroll-fill');", "sc.classList.add('list-scroll-fil');"],
   ['M4 createScrollList: domyslna wysokosc wiersza 2.75→2.7', 'const rowH = opts.rowEm ?? LIST_ROW_HEIGHT_EM;', 'const rowH = opts.rowEm ?? 2.7;'],
   ['M5 appendTabIndicators: brak escapowania cudzyslowu w title', "c.title.replace(/\"/g, '&quot;')", 'c.title'],
-  ['M6 statChip: brak klasy wartosci', 'cv ${cls}', 'cv'],
+  // P5.8 SCAL: statChip zyje w k01a-fundament; kotwica „pctSubheadHtml” jednoznacznie wskazuje definicje statChip (nie statChipBrand).
+  ['M6 statChip: brak klasy wartosci', '<span class="cv ${cls}">${value}</span></span>`;\n}\n\n\n// pin edb8fb56 gra/src/ui/cityPanel.ts:4230-4233', '<span class="cv">${value}</span></span>`;\n}\n\n\n// pin edb8fb56 gra/src/ui/cityPanel.ts:4230-4233'],
   ['M7 appendSurowceGrid: tytul aktywnego bez polskiego znaku', 'dostęp aktywny (ulepszenie', 'dostep aktywny (ulepszenie'],
   ['M8 appendIndywidualneToggle: zamiana stanu data-stan', "btn.dataset.stan = overrideOn ? 'wl' : 'wyl';", "btn.dataset.stan = overrideOn ? 'wyl' : 'wl';"],
   ['M9 appendIndywidualneToggle: brak rerender po kliknieciu', '    rerender();', '    void 0;'],
@@ -64,22 +72,25 @@ const MUTS = [
 let failed = 0;
 try {
   for (const [name, before, after] of MUTS) {
-    const n = original.split(before).length - 1;
+    const hits = FILES.filter((f) => originals[f].split(before).length - 1 > 0);
+    const n = FILES.reduce((acc, f) => acc + (originals[f].split(before).length - 1), 0);
     if (n !== 1) {
       console.log(`${name}: POMINIETA — wzorzec wystapil ${n}x (oczekiwano 1)`);
       failed++;
       continue;
     }
-    writeFileSync(path, original.replace(before, after));
+    const f = hits[0];
+    writeFileSync(resolve(ROOT, f), originals[f].replace(before, after));
     const r = spawnSync(process.execPath, [resolve(ROOT, 'tools/dom-harness/run-k02-units.mjs'), '--pin-dir', pinDir], { cwd: ROOT, encoding: 'utf8' });
     const detected = r.status === 1;
-    console.log(`${name}: ${detected ? 'WYKRYTA' : 'NIEWYKRYTA'} (EXIT harnessu=${r.status}) ${(r.stdout || '').split('\n')[0]}`);
+    console.log(`${name} [${f.split('/').pop()}]: ${detected ? 'WYKRYTA' : 'NIEWYKRYTA'} (EXIT harnessu=${r.status}) ${(r.stdout || '').split('\n')[0]}`);
+    writeFileSync(resolve(ROOT, f), originals[f]);
     if (!detected) failed++;
   }
 } finally {
-  writeFileSync(path, original);
+  for (const f of FILES) writeFileSync(resolve(ROOT, f), originals[f]);
 }
-const restored = readFileSync(path, 'utf8') === original;
+const restored = FILES.every((f) => readFileSync(resolve(ROOT, f), 'utf8') === originals[f]);
 console.log(`przywrocenie bajtowe: ${restored ? 'OK' : 'BLAD'}`);
 console.log(`mutacje: ${MUTS.length}, niewykryte lub pominiete: ${failed}`);
 process.exit(failed === 0 && restored ? 0 : 1);

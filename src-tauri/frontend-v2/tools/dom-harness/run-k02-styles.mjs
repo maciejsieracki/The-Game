@@ -55,6 +55,20 @@ const V2_ROOT = resolve(fileURLToPath(new URL('../../', import.meta.url)));
 const PIN_SRC = resolve(PIN_DIR, 'gra/src');
 const PIN_FILE = join(PIN_SRC, 'ui/cityPanel.ts');
 const V2_FILE = join(V2_ROOT, 'src/ui/cityPanel/k02-styles.ts');
+// P5.8 SCAL: k02-styles importuje stale z k01a-fundament (-> uiParams -> katalog statyczny): katalog
+// zainstalowac przed ewaluacja v2 (ZAŁOŻENIE P5.2-Z1, jak run-k01a.mjs); parametry UI z pina.
+const SC_SRC = join(V2_ROOT, 'src/controller/staticCatalog.ts');
+/** Plik wyjsciowy bundla po nazwie bazowej (przy wielu wejsciach esbuild zachowuje podkatalogi). */
+function findFile(dir, base) {
+  for (const name of readdirSync(dir)) {
+    const p = join(dir, name);
+    if (statSync(p).isDirectory()) {
+      const r = findFile(p, base);
+      if (r) return r;
+    } else if (name === base) return p;
+  }
+  return null;
+}
 const PROBE_NAME = '__k02_pin_probe.ts';
 
 // ─── wycinek pinu → moduł probe (po stronie pinu, w drzewie tymczasowym) ─────
@@ -90,10 +104,12 @@ try {
   const pinOut = join(tmp, 'pin');
   const v2Out = join(tmp, 'v2');
   await bundle([probePath], pinOut);
-  await bundle([V2_FILE], v2Out);
+  await bundle([V2_FILE, SC_SRC], v2Out);
   const pinJs = entryJs(pinOut);
-  const v2Js = entryJs(v2Out);
+  const v2Js = findFile(v2Out, 'k02-styles.js');
   if (!pinJs || !v2Js) throw new Error('brak wygenerowanego bundla: ' + pinJs + ' ' + v2Js);
+  const SC = await import(pathToFileURL(findFile(v2Out, 'staticCatalog.js')).href);
+  SC.installStaticCatalog({ uiParams: JSON.parse(readFileSync(join(PIN_DIR, 'gra/data/ui-params.json'), 'utf8')) });
   const pinMod = await import(pathToFileURL(pinJs).href);
   const v2Mod = await import(pathToFileURL(v2Js).href);
 

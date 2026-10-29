@@ -18,9 +18,10 @@ if (!pinDir) {
   process.exit(2);
 }
 const ROOT = resolve(fileURLToPath(new URL('../../', import.meta.url)));
-const F = 'src/ui/cityPanel/k02-styles.ts';
-const path = resolve(ROOT, F);
-const original = readFileSync(path, 'utf8');
+// P5.8 SCAL: stale ukladu (STYLE_ID, LIST_*, CITY_PANEL_ICON_*, QUEUE_ROW_EM, ...) zyja po scaleniu w k01a-fundament;
+// mutacja trafia w plik, w ktorym wzorzec wystepuje dokladnie raz (run-k02-styles bundluje oba pliki).
+const FILES = ['src/ui/cityPanel/k02-styles.ts', 'src/ui/cityPanel/k01a-fundament.ts'];
+const originals = Object.fromEntries(FILES.map((f) => [f, readFileSync(resolve(ROOT, f), 'utf8')]));
 
 /** [nazwa, przed, po] — „przed” musi wystąpić w pliku dokładnie raz. */
 const MUTS = [
@@ -37,22 +38,25 @@ const MUTS = [
 let failed = 0;
 try {
   for (const [name, before, after] of MUTS) {
-    const n = original.split(before).length - 1;
+    const hits = FILES.filter((f) => originals[f].split(before).length - 1 > 0);
+    const n = FILES.reduce((acc, f) => acc + (originals[f].split(before).length - 1), 0);
     if (n !== 1) {
       console.log(`${name}: POMINIĘTA — wzorzec wystąpił ${n}× (oczekiwano 1)`);
       failed++;
       continue;
     }
-    writeFileSync(path, original.replace(before, after));
+    const f = hits[0];
+    writeFileSync(resolve(ROOT, f), originals[f].replace(before, after));
     const r = spawnSync(process.execPath, [resolve(ROOT, 'tools/dom-harness/run-k02-styles.mjs'), '--pin-dir', pinDir], { cwd: ROOT, encoding: 'utf8' });
     const detected = r.status === 1;
-    console.log(`${name}: ${detected ? 'WYKRYTA' : 'NIEWYKRYTA'} (EXIT harnessu=${r.status}) ${(r.stdout || '').split('\n').find((l) => l.includes('różnic=')) ?? ''}`);
+    console.log(`${name} [${f.split('/').pop()}]: ${detected ? 'WYKRYTA' : 'NIEWYKRYTA'} (EXIT harnessu=${r.status}) ${(r.stdout || '').split('\n').find((l) => l.includes('różnic=')) ?? ''}`);
+    writeFileSync(resolve(ROOT, f), originals[f]);
     if (!detected) failed++;
   }
 } finally {
-  writeFileSync(path, original);
+  for (const f of FILES) writeFileSync(resolve(ROOT, f), originals[f]);
 }
-const restored = readFileSync(path, 'utf8') === original;
+const restored = FILES.every((f) => readFileSync(resolve(ROOT, f), 'utf8') === originals[f]);
 console.log(`przywrócenie bajtowe: ${restored ? 'OK' : 'BŁĄD'}`);
 console.log(`mutacje: ${MUTS.length}, nie wykryte lub pominięte: ${failed}`);
 process.exit(failed === 0 && restored ? 0 : 1);
