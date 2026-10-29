@@ -42,6 +42,16 @@ const MUTANTS = [
   ['M18', ADAPTER, '  if (typeof id !== \'number\' || !Number.isSafeInteger(id) || id < 0) {', '  if (typeof id !== \'number\' || !Number.isSafeInteger(id)) {', 'adapter: ujemne id przechodzi do silnika'],
   ['M19', ADAPTER, '  if (fn === undefined) return undefined;\n  return (cityId, ...rest) => fn(toEngineCityId(cityId), ...rest);', '  if (fn === undefined) return undefined;\n  return (cityId, ...rest) => fn(String(cityId), ...rest);', 'adapter: hook bez walidacji (String zamiast toEngineCityId)'],
   ['M20', ADAPTER, '  if (!Number.isSafeInteger(n)) {', '  if (false) {', 'adapter: id silnika poza zakresem przechodzi'],
+  // Runda 2 (zarzut 1): mutacje POLA DTO w mapowaniu `cityRefToPanelCity` (granica DTO → pin City).
+  ['M21', WIRING, '  return { id: dto.id, ownerId: dto.owner, population: dto.population, name: dto.name, q: dto.q, r: dto.r };', '  return { id: dto.id, ownerId: 0, population: dto.population, name: dto.name, q: dto.q, r: dto.r };', 'DTO: właściciel (owner→ownerId) zerowany'],
+  ['M22', WIRING, '  return { id: dto.id, ownerId: dto.owner, population: dto.population, name: dto.name, q: dto.q, r: dto.r };', '  return { id: dto.id, ownerId: dto.owner, population: 0, name: dto.name, q: dto.q, r: dto.r };', 'DTO: populacja zerowana'],
+  ['M23', WIRING, '  return { id: dto.id, ownerId: dto.owner, population: dto.population, name: dto.name, q: dto.q, r: dto.r };', "  return { id: dto.id, ownerId: dto.owner, population: dto.population, name: '', q: dto.q, r: dto.r };", 'DTO: nazwa miasta pusta'],
+  ['M24', WIRING, '  return { id: dto.id, ownerId: dto.owner, population: dto.population, name: dto.name, q: dto.q, r: dto.r };', '  return { id: 0, ownerId: dto.owner, population: dto.population, name: dto.name, q: dto.q, r: dto.r };', 'DTO: id miasta zerowane'],
+  ['M25', WIRING, '  return { id: dto.id, ownerId: dto.owner, population: dto.population, name: dto.name, q: dto.q, r: dto.r };', '  return { id: dto.id, ownerId: dto.owner, population: dto.population, name: dto.name, q: dto.r, r: dto.q };', 'DTO: współrzędne q/r zamienione'],
+  // Runda 2 (zarzut 4): ścieżka przypiętego garnizonu i delegaty K06B.
+  ['M26', 'ui/cityPanel/k06b-garnizon.ts', '  setK06aPinnedGarrisonCityId(cityId);', '  setK06aPinnedGarrisonCityId(null);', 'pin garnizonu nie zapisuje id (P0)'],
+  ['M27', 'ui/cityPanel/k09a-paint.ts', 'st.pinnedGarrisonCityId !== city.id) {', 'st.pinnedGarrisonCityId !== -1) {', 'malowanie zawsze czyści pin (P1)'],
+  ['M28', WIRING, '    getShowEraBuildingPreview: () => showEraBuildingPreview,', '    getShowEraBuildingPreview: () => false,', 'delegat getShowEraBuildingPreview zamrożony (E2)'],
 ];
 
 function runHarness(srcDir, tmpDir) {

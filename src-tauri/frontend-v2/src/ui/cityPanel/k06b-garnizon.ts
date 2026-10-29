@@ -326,7 +326,7 @@ export function setGarrisonLabelPinned(label: HTMLElement, pinned: boolean): voi
 
 
 // pin edb8fb56 gra/src/ui/cityPanel.ts:10170-10174
-export function pinGarrisonPanel(cityId: string, label: HTMLElement): void {
+export function pinGarrisonPanel(cityId: number, label: HTMLElement): void {
   setK06aPinnedGarrisonCityId(cityId);
   setGarrisonLabelPinned(label, true);
 }

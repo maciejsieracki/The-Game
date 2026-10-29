@@ -31,6 +31,7 @@ const argOf = (k) => {
   return i >= 0 ? args[i + 1] : undefined;
 };
 const V2_ROOT = resolve(fileURLToPath(new URL('../../', import.meta.url)));
+const HARNESS_DIR = dirname(fileURLToPath(import.meta.url));
 const SRC = resolve(argOf('--src') ?? join(V2_ROOT, 'src'));
 const CITY = join(SRC, 'ui/cityPanel');
 const TMP = mkdtempSync(join(argOf('--tmp-dir') ?? tmpdir(), 'k09b-wiring-'));
@@ -53,7 +54,11 @@ writeFileSync(
     `import { requireK09aDeps } from ${P('k09a-deps.ts')};`,
     `import { requireK08aDeps } from ${P('k08a-fundament.ts')};`,
     `import { getK06aState, setK06aActive, setK06aPinnedGarrisonCityId } from ${P("k06a-fundament.ts")};`,
-    `import { getK06bRootEl, setK06bRootEl } from ${P('k06b-garnizon.ts')};`,
+    `import { getK06bRootEl, setK06bRootEl, pinGarrisonPanel } from ${P('k06b-garnizon.ts')};`,
+    `import { dep as depK06b } from ${P('k06b-deps.ts')};`,
+    `import * as K01A from ${P('k01a-fundament.ts')};`,
+    `import * as K07A from ${P('k07a-fundament.ts')};`,
+    `import { CITY_FIXTURE } from ${JSON.stringify(join(HARNESS_DIR, 'k09b-fixture.ts'))};`,
     `import { setK06bDeps } from ${P('k06b-deps.ts')};`,
     `import * as HOVER from ${JSON.stringify(join(SRC, 'ui/hoverDetailDock.ts'))};`,
     `import { isCityUxFrameOpen } from ${JSON.stringify(join(SRC, 'ui/cityUxFrame.ts'))};`,
@@ -62,7 +67,7 @@ writeFileSync(
     `import * as K08E from ${P('k08e-deps.ts')};`,
     `import { dep as depK07b } from ${P('k07b-deps.ts')};`,
     '// Wejścia testowe: stan modułów K06A/K06B/K07A i pomocnicze DOM (bez reguł gry).',
-    'export { ADAPTER, WIRING, BR, PAINT, requireK09aDeps, requireK08aDeps, getK06aState, setK06aActive, setK06aPinnedGarrisonCityId, getK06bRootEl, setK06bRootEl, setK06bDeps, HOVER, isCityUxFrameOpen, K05B, K08D, K08E, depK07b };',
+    'export { ADAPTER, WIRING, BR, PAINT, requireK09aDeps, requireK08aDeps, getK06aState, setK06aActive, setK06aPinnedGarrisonCityId, getK06bRootEl, setK06bRootEl, setK06bDeps, HOVER, isCityUxFrameOpen, K05B, K08D, K08E, depK07b, pinGarrisonPanel, depK06b, K01A, K07A, CITY_FIXTURE };',
     '',
   ].join('\n'),
 );
@@ -138,7 +143,9 @@ try {
   check('A9', 'engineIdHook przepuszcza tylko kanoniczne id (’01’ rzuca, nie trafia do silnika)', typeof hookBad === 'string' && hookBad.includes('cityIdAdapter') && hookStr(12) === 'got:12');
 
   // ── Dane wejściowe (fikstury hosta) ─────────────────────────────────────────────────────────────────────────────
-  const city = { id: 7, owner: 0, ownerId: 0, q: 0, r: 0, name: 'Alfa', mapLabel: 'Alfa', population: 6, isCapital: true, isMine: true };
+  // Fikstura typowana (`CityRefDto`, k09b-fixture.ts); pin-kształt miasta powstaje WYŁĄCZNIE przez mapowanie produkcyjne.
+  const dto = W.CITY_FIXTURE;
+  const city = W.WIRING.cityRefToPanelCity(dto);
   const map = { tiles: [], width: 1, height: 1 };
   const ruleCalls = {};
   // Reguły: fikstura zwracająca wartość neutralną; każde wywołanie liczone po nazwie.
@@ -209,7 +216,7 @@ try {
     porPctBand: neutral('porPctBand', 'srodek'),
     porBandLabel: neutral('porBandLabel', 'Srodek'),
     ownerCities: neutral('ownerCities', () => [city]),
-    cityPanelTitle: neutral('cityPanelTitle', 'Alfa'),
+    cityPanelTitle: neutral('cityPanelTitle', (c) => c.name),
     buildCityOnlyW3FlankChips: neutral('buildCityOnlyW3FlankChips', () => []),
   };
   const switched = [];
@@ -249,33 +256,79 @@ try {
   check('I2', 'wynik zawiera listy atrap (k08cStubbed = 5 nazw K08C-Z5, k07bMissing tablica)',
     instErr === null && Array.isArray(inst.k08cStubbed) && inst.k08cStubbed.length === 5 && Array.isArray(inst.k07bMissing),
     JSON.stringify(inst));
-  check('I3', 'sześć delegatów K09A jest funkcjami po instalacji', instErr === null && ['hideCityPanel', 'setHoverDetailDocks', 'setMapHudChromeSuppressed', 'showCityUxFrame', 'hideCityUxFrame', 'refreshCityUxFrame'].every((f) => typeof W.requireK09aDeps()[f] === 'function'));
+  const k09aDeps = (() => { try { return W.requireK09aDeps(); } catch (e) { return {}; } })();
+  check('I3', 'sześć delegatów K09A jest funkcjami po instalacji', instErr === null && ['hideCityPanel', 'setHoverDetailDocks', 'setMapHudChromeSuppressed', 'showCityUxFrame', 'hideCityUxFrame', 'refreshCityUxFrame'].every((f) => typeof k09aDeps[f] === 'function'));
 
   // ── O: kolejność — K09A nadpisuje rerender K08C ─────────────────────────────────────────────────────────────────
   const orderErr = errOf(() => W.requireK08aDeps().rerender());
   check('O1', 'requireK08aDeps().rerender() NIE woła rerender z hosta K08C (nadpisany przez K09A)', orderErr === null && (ruleCalls['k08c.rerender'] ?? 0) === 0, `err=${orderErr} k08cCalls=${ruleCalls['k08c.rerender'] ?? 0}`);
 
   // ── W: pełna ścieżka pokazu → malowanie przez most → ukrycie ────────────────────────────────────────────────────
-  const showErr = errOf(() => W.PAINT.showCityPanel(city, map, () => undefined));
-  check('W1', 'showCityPanel(city, map, onClose) po instalacji bez wyjątku (brak „brak delegatu”)', showErr === null, String(showErr));
+  const showErr = errOf(() => W.WIRING.showCityPanelFromDto(dto, map, () => undefined));
+  check('W1', 'showCityPanelFromDto(CITY_FIXTURE, map, onClose) po instalacji bez wyjątku (brak „brak delegatu”)', showErr === null, String(showErr));
   const frameOpen = isOpenSafe(W.isCityUxFrameOpen);
   check('W2', 'po pokazie ramka jest otwarta (isCityUxFrameOpen)', frameOpen === true, String(frameOpen));
-  const st = W.getK06aState();
-  check('W3', 'K06A zapamiętuje miasto (id 7) i mapę (activeMap ≠ null)', st.activeCity !== null && st.activeCity.id === 7 && st.activeMap === map, JSON.stringify({ id: st.activeCity && st.activeCity.id, mapOk: st.activeMap === map }));
+  const st = getSt();
+  check('W3', 'K06A zapamiętuje miasto (id z DTO) i mapę (activeMap ≠ null)', st.activeCity !== null && st.activeCity.id === dto.id && st.activeMap === map, JSON.stringify({ id: st.activeCity && st.activeCity.id, mapOk: st.activeMap === map }));
+  const ac = st.activeCity ?? {};
+  check('W3b', 'mapowanie DTO→City: ownerId = owner, population, name, q, r z DTO (pola nie zerowane)', ac.ownerId === dto.owner && ac.population === dto.population && ac.name === dto.name && ac.q === dto.q && ac.r === dto.r, JSON.stringify(ac));
   const topEl = document.querySelector('.civ-ux-top');
   const frameHtml = document.querySelector('.civ-ux-frame')?.innerHTML ?? '';
-  check('W4', 'most zarejestrowany: malowanie wypełnia pas górny ramki (top innerHTML niepusty)', !!topEl && topEl.innerHTML.length > 0, `len=${topEl ? topEl.innerHTML.length : 'brak'}`);
+  check('W4', 'most zarejestrowany: pas górny ramki zawiera nazwę miasta z DTO', !!topEl && topEl.textContent.includes(dto.name), `top=${topEl ? JSON.stringify(topEl.textContent.slice(0, 120)) : 'brak'}`);
   check('W5', 'w DOM ramki nie ma tekstu „undefined” ani „[object Object]”', !frameHtml.includes('undefined') && !frameHtml.includes('[object Object]'));
+  const skel = errOf(() => {
+    const h = W.K07A.skeleton(city, null);
+    if (!h.includes(dto.name) || !h.includes('Gracz')) throw new Error(`skeleton bez nazwy/właściciela: ${h.slice(0, 120)}`);
+  });
+  check('K1', 'K07A ext (setK07aExt) zainstalowany: skeleton(miasto DTO) bez wyjątku, zawiera nazwę i właściciela', skel === null, String(skel));
   const hideErr = errOf(() => W.PAINT.hideCityPanel());
   check('W6', 'hideCityPanel() bez wyjątku i ramka zamknięta', hideErr === null && isOpenSafe(W.isCityUxFrameOpen) === false, String(hideErr));
   check('W7', 'hideCityPanel ukrywa korzeń K06B (display none)', W.getK06bRootEl()?.style.display === 'none');
-  check('W8', 'ponowny pokaz po ukryciu działa (ramka wraca)', errOf(() => W.PAINT.showCityPanel(city, map, () => undefined)) === null && isOpenSafe(W.isCityUxFrameOpen) === true);
-  W.PAINT.hideCityPanel();
-  check('W9', 'po ukryciu most wykonał sprzątanie trybu: K06A activeCity = null (clearCityPanelUxMode)', W.getK06aState().activeCity === null, JSON.stringify(W.getK06aState().activeCity && W.getK06aState().activeCity.id));
+  check('W8', 'ponowny pokaz po ukryciu działa (ramka wraca)', errOf(() => W.WIRING.showCityPanelFromDto(dto, map, () => undefined)) === null && isOpenSafe(W.isCityUxFrameOpen) === true);
+  errOf(() => W.PAINT.hideCityPanel());
+  check('W9', 'po ukryciu most wykonał sprzątanie trybu: K06A activeCity = null (clearCityPanelUxMode)', getSt().activeCity === null, JSON.stringify(getSt().activeCity && getSt().activeCity.id));
+
+  // ── P: przypięty garnizon (K06B) przez malowanie — zarzut 4 rundy 1 (typ id number↔number, zachowanie w runtime) ─────
+  // Pin zapisuje `city.id` (number) przez `pinGarrisonPanel`; malowanie (`k09a-paint`) czyści pin tylko przy innym mieście.
+  // Malowanie bez kroku „hide” (wejście mostu `paintCityPanelSections` na żywych kontenerach ramki) = ścieżka k09a-paint.
+  const frameMounts = () => ({ top: document.querySelector('.civ-ux-top'), left: document.querySelector('.civ-ux-left'), right: document.querySelector('.civ-ux-right') });
+  const paintDirect = (c) => W.WIRING.cityPanelUxImpl.paintCityPanelSections(frameMounts(), c, () => undefined, undefined);
+  const pinBtn = document.createElement('button');
+  const pinErr = errOf(() => {
+    W.setK06aPinnedGarrisonCityId(null);
+    W.WIRING.showCityPanelFromDto(dto, map, () => undefined);
+    W.pinGarrisonPanel(dto.id, pinBtn);
+  });
+  check('P0', 'pin garnizonu zapisuje id miasta jako number (pinnedGarrisonCityId === dto.id)', pinErr === null && getSt().pinnedGarrisonCityId === dto.id, `err=${pinErr} pinned=${JSON.stringify(getSt().pinnedGarrisonCityId)}`);
+  const pinSame = errOf(() => paintDirect(city));
+  check('P1', 'malowanie tego samego miasta (k09a-paint, number === number) utrzymuje pin', pinSame === null && getSt().pinnedGarrisonCityId === dto.id, `err=${pinSame} pinned=${JSON.stringify(getSt().pinnedGarrisonCityId)}`);
+  const pinOther = errOf(() => paintDirect(W.WIRING.cityRefToPanelCity({ ...dto, id: dto.id + 1 })));
+  check('P2', 'malowanie innego miasta czyści pin (k09a-paint, !== city.id)', pinOther === null && getSt().pinnedGarrisonCityId === null, `err=${pinOther} pinned=${JSON.stringify(getSt().pinnedGarrisonCityId)}`);
+  // Zgodność z pinem (cityUxFrame: showCityUxFrame → hideCityUxFrame → clearGarrisonPanel): ponowny pokaz czyści pin.
+  const pinReshow = errOf(() => { W.pinGarrisonPanel(dto.id, pinBtn); W.WIRING.showCityPanelFromDto({ ...dto }, map, () => undefined); });
+  check('P3', 'ponowny pokaz miasta czyści pin (hide-first jak w pinie, clearGarrisonPanel)', pinReshow === null && getSt().pinnedGarrisonCityId === null, `err=${pinReshow} pinned=${JSON.stringify(getSt().pinnedGarrisonCityId)}`);
+  errOf(() => W.PAINT.hideCityPanel());
+  errOf(() => W.setK06aPinnedGarrisonCityId(null));
+
+  // ── E: delegaty K06B z wiringu (zadanie (1) krok 2, K09B-Z3) ───────────────────────────────────────────────────
+  const clearOk = errOf(() => W.depK06b('clearPinnedDetail')()) === null;
+  check('E1', 'K06B clearPinnedDetail podpięty (nie rzuca „brak delegatu”)', clearOk);
+  const eraOk = (() => {
+    try {
+      W.K01A.setShowEraBuildingPreview(true);
+      const a = W.depK06b('getShowEraBuildingPreview')() === true;
+      W.K01A.setShowEraBuildingPreview(false);
+      const b = W.depK06b('getShowEraBuildingPreview')() === false;
+      return a && b;
+    } catch (e) {
+      return false;
+    }
+  })();
+  check('E2', 'K06B getShowEraBuildingPreview czyta żywą zmienną k01a (true → true, false → false)', eraOk);
 
   // ── N: nawigacja ←/→ przez most (cityPanelUxBridge → K06A → ui.switchCity) ─────────────────────────────────────────
-  W.BR.navigateCityPanel(1);
-  W.BR.navigateCityPanel(-1);
+  errOf(() => W.BR.navigateCityPanel(1));
+  errOf(() => W.BR.navigateCityPanel(-1));
   check('N1', 'BR.navigateCityPanel(1) i (-1) trafiają do ui.switchCity w tej kolejności', JSON.stringify(switchedDirs) === '[1,-1]', JSON.stringify(switchedDirs));
 
   // ── D: delegaty reguł i K07B są zainstalowane (wrappery bez wyjątku „brak delegatu”) ───────────────────────────────
@@ -287,19 +340,28 @@ try {
   check('D3', 'K07B: delegat gameData zainstalowany (dep nie rzuca „brak delegatu”)', d07 === null, String(d07));
 
   // ── R: most — brak mapy = głośny wyjątek ─────────────────────────────────────────────────────────────────────────
-  W.setK06aActive(null, null, () => undefined);
+  errOf(() => W.setK06aActive(null, null, () => undefined));
   const noMap = errOf(() => W.WIRING.cityPanelUxImpl.paintCityPanelSections({ top: document.createElement('div'), left: document.createElement('div'), right: document.createElement('div') }, city, () => undefined));
   check('R1', 'cityPanelUxImpl.paintCityPanelSections bez activeMap rzuca „brak mapy”', typeof noMap === 'string' && noMap.includes('brak mapy'), String(noMap));
 
   // ── Ścieżka reguł: wykonane reguły (informacyjnie, bez kryterium) ──────────────────────────────────────────────
   // Informacyjnie (bez kryterium): liczby wywołań fikstur reguł K08C/K08D/K08E podczas pokazu, malowania i ukrycia.
-  console.log(`INFO ruleCalls=${JSON.stringify(ruleCalls)} k08cStubbed=${JSON.stringify(inst.k08cStubbed)} k07bMissing=${JSON.stringify(inst.k07bMissing)}`);
+  console.log(`INFO ruleCalls=${JSON.stringify(ruleCalls)} k08cStubbed=${JSON.stringify(inst?.k08cStubbed ?? null)} k07bMissing=${JSON.stringify(inst?.k07bMissing ?? null)}`);
 } catch (e) {
   console.error('BLAD-HARNESU:', e && e.stack ? e.stack : e);
   rmSync(TMP, { recursive: true, force: true });
   process.exit(2);
 }
 rmSync(TMP, { recursive: true, force: true });
+
+/** Odczyt stanu K06A bez wyjątku: brak zależności (mutant bez wiringu) = pusty stan, a porażkę zgłasza check. */
+function getSt() {
+  try {
+    return W.getK06aState();
+  } catch (e) {
+    return { activeCity: null, activeMap: null, pinnedGarrisonCityId: undefined };
+  }
+}
 
 function isOpenSafe(fn) {
   try {

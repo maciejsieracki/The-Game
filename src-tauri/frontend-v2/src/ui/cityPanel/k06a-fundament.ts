@@ -153,7 +153,7 @@ let activeMap: GameMap | null = null;
 let activeOnClose: () => void = () => {};
 // pin edb8fb56 gra/src/ui/cityPanel.ts:10162-10163
 /** City id whose garrison detail is explicitly selected by click/keyboard. */
-let pinnedGarrisonCityId: string | null = null;
+let pinnedGarrisonCityId: number | null = null;
 // pin-end
 
 /** K06A-Z7: ustawienie stanu panelu (wiring w kontrolerze NIE_ZMIERZONO). */
@@ -168,13 +168,13 @@ export function getK06aState(): {
   activeCity: CityK06 | null;
   activeMap: GameMap | null;
   activeOnClose: () => void;
-  pinnedGarrisonCityId: string | null;
+  pinnedGarrisonCityId: number | null;
 } {
   return { activeCity, activeMap, activeOnClose, pinnedGarrisonCityId };
 }
 
 /** K06A-Z7: ustawienie przypiętego garnizonu (pin: `pinnedGarrisonCityId`). */
-export function setK06aPinnedGarrisonCityId(id: string | null): void {
+export function setK06aPinnedGarrisonCityId(id: number | null): void {
   pinnedGarrisonCityId = id;
 }
 

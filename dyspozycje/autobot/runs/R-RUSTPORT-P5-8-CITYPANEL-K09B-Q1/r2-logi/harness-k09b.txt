@@ -1,0 +1,39 @@
+INFO ruleCalls={"ownerCities":8,"cityPanelTitle":8,"religiaSzPunkty":1,"buildRationParams":1} k08cStubbed=["sumOwnedBuildingsUpkeep","groupBuiltBuildingIds","appendRecruitMilitaryResourceStrip","purchasableUnits","sortByUnitPowerDescending"] k07bMissing=[]
+OK   A1 | toEngineCityId: liczby kanoniczne (0, 1, 7, 1234567) → ciągi
+OK   A2 | cityIdToEngine odrzuca -1, 1.5, NaN, Infinity, 2^53 i ciąg „7” (wyjątek, nie cicha konwersja)
+OK   A3 | cityIdFromEngine(„123”) = 123
+OK   A4 | cityIdFromEngine odrzuca ciągi niekanoniczne i poza zakresem (9 przypadków)
+OK   A5 | toEngineCityId(„0”) = „0” (zero kanoniczne) i toEngineCityId(„42”) = „42”
+OK   A6 | toEngineCityId(„01”) rzuca (ciąg niekanoniczny)
+OK   A7 | engineIdHook: port number 9 → silnik „9”, argumenty dalej bez zmian, wynik zachowany
+OK   A8 | engineIdHook(undefined) = undefined (brak haku zostaje brakiem)
+OK   A9 | engineIdHook przepuszcza tylko kanoniczne id (’01’ rzuca, nie trafia do silnika)
+OK   W0 | przed installCityPanelWiring showCityPanel rzuca „K09A: brak setK09aDeps”
+OK   I1 | installCityPanelWiring(host) wykonuje się bez wyjątku
+OK   I2 | wynik zawiera listy atrap (k08cStubbed = 5 nazw K08C-Z5, k07bMissing tablica)
+OK   I3 | sześć delegatów K09A jest funkcjami po instalacji
+OK   O1 | requireK08aDeps().rerender() NIE woła rerender z hosta K08C (nadpisany przez K09A)
+OK   W1 | showCityPanelFromDto(CITY_FIXTURE, map, onClose) po instalacji bez wyjątku (brak „brak delegatu”)
+OK   W2 | po pokazie ramka jest otwarta (isCityUxFrameOpen)
+OK   W3 | K06A zapamiętuje miasto (id z DTO) i mapę (activeMap ≠ null)
+OK   W3b | mapowanie DTO→City: ownerId = owner, population, name, q, r z DTO (pola nie zerowane)
+OK   W4 | most zarejestrowany: pas górny ramki zawiera nazwę miasta z DTO
+OK   W5 | w DOM ramki nie ma tekstu „undefined” ani „[object Object]”
+OK   K1 | K07A ext (setK07aExt) zainstalowany: skeleton(miasto DTO) bez wyjątku, zawiera nazwę i właściciela
+OK   W6 | hideCityPanel() bez wyjątku i ramka zamknięta
+OK   W7 | hideCityPanel ukrywa korzeń K06B (display none)
+OK   W8 | ponowny pokaz po ukryciu działa (ramka wraca)
+OK   W9 | po ukryciu most wykonał sprzątanie trybu: K06A activeCity = null (clearCityPanelUxMode)
+OK   P0 | pin garnizonu zapisuje id miasta jako number (pinnedGarrisonCityId === dto.id)
+OK   P1 | malowanie tego samego miasta (k09a-paint, number === number) utrzymuje pin
+OK   P2 | malowanie innego miasta czyści pin (k09a-paint, !== city.id)
+OK   P3 | ponowny pokaz miasta czyści pin (hide-first jak w pinie, clearGarrisonPanel)
+OK   E1 | K06B clearPinnedDetail podpięty (nie rzuca „brak delegatu”)
+OK   E2 | K06B getShowEraBuildingPreview czyta żywą zmienną k01a (true → true, false → false)
+OK   N1 | BR.navigateCityPanel(1) i (-1) trafiają do ui.switchCity w tej kolejności
+OK   D1 | K08D: delegat reguł zainstalowany (religiaSzPunkty nie rzuca „brak delegatu”)
+OK   D2 | K08E: delegat reguł zainstalowany (buildRationParams nie rzuca „brak delegatu”)
+OK   D3 | K07B: delegat gameData zainstalowany (dep nie rzuca „brak delegatu”)
+OK   R1 | cityPanelUxImpl.paintCityPanelSections bez activeMap rzuca „brak mapy”
+
+k09b-wiring: 36/36 zgodnych

@@ -42,6 +42,22 @@ import { resolveEmpireSnapK } from '../ui/cityPanel/k04c-model';
 import type { City } from '../ui/cityPanel/k05b-host';
 import type { GameMap } from '../ui/cityPanel/k05a-fundament';
 import { registerCityPanelUx, type CityPanelUxImpl } from '../ui/cityPanelUxBridge';
+import { showCityPanel as showK09aCity } from '../ui/cityPanel/k09a-paint';
+import type { CityRefDto } from '../viewmodel/types';
+
+/**
+ * Mapowanie DTO miasta (`CityRefDto`, `viewmodel/types.ts`) → kształt pinu `City` (K05B-Z5), jedyne w v2.
+ * K09B-Z5 (poprawka zarzutu 2 rundy 1): DTO nazywa właściciela `owner`, pin/K05B czytają `ownerId` (77 odwołań
+ * w `ui/cityPanel/**`). Bez tego mapowania `city.ownerId` byłby `undefined` w całym panelu.
+ */
+export function cityRefToPanelCity(dto: CityRefDto): City {
+  return { id: dto.id, ownerId: dto.owner, population: dto.population, name: dto.name, q: dto.q, r: dto.r };
+}
+
+/** Jedyne wejście pokazu panelu z danych v2: DTO → `City` (granica), potem pin `showCityPanel` (K09A). */
+export function showCityPanelFromDto(dto: CityRefDto, map: GameMap, onClose: () => void): void {
+  showK09aCity(cityRefToPanelCity(dto), map, onClose);
+}
 
 /** Wejścia całego panelu miasta (kontroler / DTO / silnik). Każde pole jest wymagane; brak = błąd typu. */
 export interface CityPanelWiringHost {
@@ -82,6 +98,8 @@ let mapForPaintDuringShow: GameMap | null = null;
  * Implementacja mostu `cityPanelUxBridge.ts`. Mapa: najpierw zapamiętana na czas pokazu (K09B-Z1), w pozostałych
  * przypadkach stan K06A. Brak mapy = wyjątek (pin zawsze ma mapę w tym miejscu; cicha wartość byłaby błędem).
  * Identyczność `CityRefDto` ↔ `City`: w v2 oba mają `id: number` (K08D-Z10 dotyczy wyłącznie id silnika, nie portu).
+ * K09B-D11 (zapis rundy 2): sygnatura mostu deklaruje `CityRefDto`, ale w ścieżce pokazu ramka przekazuje obiekt już
+ * zmapowany przez `cityRefToPanelCity` (`showCityPanelFromDto`), więc tu jest `City`. Rozjazd typu = dług, nie cicha naprawa.
  */
 export const cityPanelUxImpl: CityPanelUxImpl = {
   paintCityPanelSections(mounts, city, refresh, onClose) {

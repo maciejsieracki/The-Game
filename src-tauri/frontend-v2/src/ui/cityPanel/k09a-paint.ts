@@ -43,7 +43,7 @@ export function paintCityPanelSections(
 ): void {
   const st = getK06aState();
   // pin: `pinnedGarrisonCityId` (string) vs `city.id` (number w v2, K08D-Z10): porównanie tożsame z K06B.
-  if (st.pinnedGarrisonCityId !== null && st.pinnedGarrisonCityId !== (city.id as unknown as string)) {
+  if (st.pinnedGarrisonCityId !== null && st.pinnedGarrisonCityId !== city.id) {
     clearGarrisonPanel();
   }
   setK07aUxSectionRefresh(refresh);

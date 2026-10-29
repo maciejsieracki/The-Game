@@ -1,0 +1,31 @@
+BAZA: harness przechodzi bez mutacji
+OK   M1 | pominięta rejestracja mostu cityPanelUxBridge | ZABITY(kod 1) | FAIL W4 | most zarejestrowany: pas górny ramki zawiera nazwę miasta z DTO | FAIL W9 | po ukryciu most wykonał sprzątanie trybu: K06A activeCity = null (clearCityPanelUxMode)
+OK   M2 | pominięty installK09aWiring (DOM ramki/HUD, haki) | ZABITY(kod 1) | FAIL I1 | installCityPanelWiring(host) wykonuje się bez wyjątku | FAIL I2 | wynik zawiera listy atrap (k08cStubbed = 5 nazw K08C-Z5, k07bMissing tablica)
+OK   M3 | pominięty installK07bWiring (K07A/K07B deps) | ZABITY(kod 1) | FAIL O1 | requireK08aDeps().rerender() NIE woła rerender z hosta K08C (nadpisany przez K09A) | FAIL W1 | showCityPanelFromDto(CITY_FIXTURE, map, onClose) po instalacji bez wyjątku (brak „brak delegatu”)
+OK   M4 | pominięty setK07aExt (adaptery K07A-Z4) | ZABITY(kod 1) | FAIL O1 | requireK08aDeps().rerender() NIE woła rerender z hosta K08C (nadpisany przez K09A) | FAIL K1 | K07A ext (setK07aExt) zainstalowany: skeleton(miasto DTO) bez wyjątku, zawiera nazwę i właściciela
+OK   M5 | pominięty installK08dWiring | ZABITY(kod 1) | FAIL D1 | K08D: delegat reguł zainstalowany (religiaSzPunkty nie rzuca „brak delegatu”)
+OK   M6 | pominięty installK08eWiring | ZABITY(kod 1) | FAIL W1 | showCityPanelFromDto(CITY_FIXTURE, map, onClose) po instalacji bez wyjątku (brak „brak delegatu”) | FAIL W4 | most zarejestrowany: pas górny ramki zawiera nazwę miasta z DTO
+OK   M7 | pominięty installK06aWiring | ZABITY(kod 1) | FAIL O1 | requireK08aDeps().rerender() NIE woła rerender z hosta K08C (nadpisany przez K09A) | FAIL K1 | K07A ext (setK07aExt) zainstalowany: skeleton(miasto DTO) bez wyjątku, zawiera nazwę i właściciela
+OK   M8 | pominięty delegat K06B clearPinnedDetail | ZABITY(kod 1) | FAIL W1 | showCityPanelFromDto(CITY_FIXTURE, map, onClose) po instalacji bez wyjątku (brak „brak delegatu”) | FAIL W2 | po pokazie ramka jest otwarta (isCityUxFrameOpen)
+OK   M9 | pominięty ręczny delegat getShowEraBuildingPreview | ZABITY(kod 1) | FAIL O1 | requireK08aDeps().rerender() NIE woła rerender z hosta K08C (nadpisany przez K09A) | FAIL E2 | K06B getShowEraBuildingPreview czyta żywą zmienną k01a (true → true, false → false)
+OK   M10 | pominięte delegaty K06B z kopii portu | ZABITY(kod 1) | FAIL W1 | showCityPanelFromDto(CITY_FIXTURE, map, onClose) po instalacji bez wyjątku (brak „brak delegatu”) | FAIL W8 | ponowny pokaz po ukryciu działa (ramka wraca)
+OK   M11 | kolejność: K08C po K09A (rerender K08C nadpisuje K09A) | ZABITY(kod 1) | FAIL O1 | requireK08aDeps().rerender() NIE woła rerender z hosta K08C (nadpisany przez K09A)
+OK   M12 | brak zapamiętania mapy przed ramką (K09B-Z1) | ZABITY(kod 1) | FAIL W1 | showCityPanelFromDto(CITY_FIXTURE, map, onClose) po instalacji bez wyjątku (brak „brak delegatu”) | FAIL W3 | K06A zapamiętuje miasto (id z DTO) i mapę (activeMap ≠ null)
+OK   M13 | malowanie czyta mapę już po wyczyszczeniu przez hide | ZABITY(kod 1) | FAIL W1 | showCityPanelFromDto(CITY_FIXTURE, map, onClose) po instalacji bez wyjątku (brak „brak delegatu”) | FAIL W3 | K06A zapamiętuje miasto (id z DTO) i mapę (activeMap ≠ null)
+OK   M14 | brak mapy = cichy powrót zamiast wyjątku (zakaz P5.13/brak delegatu) | ZABITY(kod 1) | FAIL R1 | cityPanelUxImpl.paintCityPanelSections bez activeMap rzuca „brak mapy”
+OK   M15 | most: sprzątanie trybu panelu pominięte | ZABITY(kod 1) | FAIL W9 | po ukryciu most wykonał sprzątanie trybu: K06A activeCity = null (clearCityPanelUxMode) | FAIL P3 | ponowny pokaz miasta czyści pin (hide-first jak w pinie, clearGarrisonPanel)
+OK   M16 | most: nawigacja odwrócona | ZABITY(kod 1) | FAIL N1 | BR.navigateCityPanel(1) i (-1) trafiają do ui.switchCity w tej kolejności
+OK   M17 | adapter: ciąg engine nie jest walidowany | ZABITY(kod 1) | FAIL A6 | toEngineCityId(„01”) rzuca (ciąg niekanoniczny) | FAIL A9 | engineIdHook przepuszcza tylko kanoniczne id (’01’ rzuca, nie trafia do silnika)
+OK   M18 | adapter: ujemne id przechodzi do silnika | ZABITY(kod 1) | FAIL A2 | cityIdToEngine odrzuca -1, 1.5, NaN, Infinity, 2^53 i ciąg „7” (wyjątek, nie cicha konwersja)
+OK   M19 | adapter: hook bez walidacji (String zamiast toEngineCityId) | ZABITY(kod 1) | FAIL A9 | engineIdHook przepuszcza tylko kanoniczne id (’01’ rzuca, nie trafia do silnika)
+OK   M20 | adapter: id silnika poza zakresem przechodzi | ZABITY(kod 1) | FAIL A4 | cityIdFromEngine odrzuca ciągi niekanoniczne i poza zakresem (9 przypadków)
+OK   M21 | DTO: właściciel (owner→ownerId) zerowany | ZABITY(kod 1) | FAIL W3b | mapowanie DTO→City: ownerId = owner, population, name, q, r z DTO (pola nie zerowane)
+OK   M22 | DTO: populacja zerowana | ZABITY(kod 1) | FAIL W3b | mapowanie DTO→City: ownerId = owner, population, name, q, r z DTO (pola nie zerowane)
+OK   M23 | DTO: nazwa miasta pusta | ZABITY(kod 1) | FAIL W3b | mapowanie DTO→City: ownerId = owner, population, name, q, r z DTO (pola nie zerowane) | FAIL W4 | most zarejestrowany: pas górny ramki zawiera nazwę miasta z DTO
+OK   M24 | DTO: id miasta zerowane | ZABITY(kod 1) | FAIL W3 | K06A zapamiętuje miasto (id z DTO) i mapę (activeMap ≠ null) | FAIL P1 | malowanie tego samego miasta (k09a-paint, number === number) utrzymuje pin
+OK   M25 | DTO: współrzędne q/r zamienione | ZABITY(kod 1) | FAIL W3b | mapowanie DTO→City: ownerId = owner, population, name, q, r z DTO (pola nie zerowane)
+OK   M26 | pin garnizonu nie zapisuje id (P0) | ZABITY(kod 1) | FAIL P0 | pin garnizonu zapisuje id miasta jako number (pinnedGarrisonCityId === dto.id) | FAIL P1 | malowanie tego samego miasta (k09a-paint, number === number) utrzymuje pin
+OK   M27 | malowanie zawsze czyści pin (P1) | ZABITY(kod 1) | FAIL P1 | malowanie tego samego miasta (k09a-paint, number === number) utrzymuje pin
+OK   M28 | delegat getShowEraBuildingPreview zamrożony (E2) | ZABITY(kod 1) | FAIL E2 | K06B getShowEraBuildingPreview czyta żywą zmienną k01a (true → true, false → false)
+
+mutanty: 28/28 zabitych
