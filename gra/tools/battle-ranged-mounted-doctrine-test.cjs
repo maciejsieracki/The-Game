@@ -103,6 +103,29 @@ async function main() {
   check(rangedApproachCalled && !approachAdvanced,
     'Out-of-range Atak archer uses ranged approach and does not route around the infantry line');
 
+  // The Atak-only behind-melee gate must not immobilize an out-of-range
+  // skirmisher; it retains the pre-existing free skirmish advance rule.
+  const skirmishArcher = makeUnit({ id: 'skirmish-archer', ranged: true, q: 4, r: 4 });
+  skirmishArcher.unitDoctrine = 'skirmish';
+  const skirmishTarget = makeUnit({ id: 'skirmish-target', side: 'def', q: 11, r: 4 });
+  const skirmishFront = makeUnit({ id: 'skirmish-front', q: 4, r: 3 });
+  const skirmishApproach = Object.create(BattleScene.prototype);
+  Object.assign(skirmishApproach, {
+    finished: false, atk: [skirmishArcher, skirmishFront], def: [skirmishTarget], occByKey: new Map(),
+  });
+  skirmishApproach._nearestEnemy = () => skirmishTarget;
+  skirmishApproach._bestForwardStep = () => '5,4';
+  skirmishApproach._effectiveMetaForUnit = unit => ({ doctrine: unit.unitDoctrine ?? 'steady' });
+  skirmishApproach._compactAttackAllowsStep = () => true;
+  skirmishApproach._passableForUnit = () => true;
+  skirmishApproach._advanceDir = () => 1;
+  skirmishApproach._doMove = (unit, q, r, done) => { unit.q = q; unit.r = r; unit.moveLeft = 0; done(); };
+  let skirmishApproachDone = false;
+  BattleScene.prototype._rangedForwardStep.call(skirmishApproach, skirmishArcher,
+    () => { skirmishApproachDone = true; });
+  check(skirmishArcher.q === 5 && skirmishApproachDone,
+    'Out-of-range Skirmish archer advances despite a melee line');
+
   // Attack keeps infantry-line movement, but mounted units use the established
   // cavalry/chariot target and flank planner instead of generic rally movement.
   const chariot = makeUnit({ id: 'attack-chariot', mounted: true, q: 4, r: 2 });

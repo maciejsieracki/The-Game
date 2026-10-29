@@ -6513,7 +6513,7 @@ export class BattleScene {
     const meleeLine = (ru.side === 'atk' ? this.atk : this.def)
       .some(u => !u.dead && !u.fadingOut && !u.removed && !u.routed
         && !u.mounted && !u.rangedBase && !isSiegeUnit(u.bu));
-    const lineAllowsRangedStep = meleeLine
+    const lineAllowsRangedStep = meleeLine && this._effectiveMetaForUnit(ru).doctrine === 'steady'
       ? this._rangedFiringStepStaysBehindMelee(ru, nc)
       : this._compactAttackAllowsStep(ru, nc);
     if (!lineAllowsRangedStep) { done(); return; }

@@ -1,6 +1,6 @@
 # Operator report — `R-BITWA-ATAK-LUCZNICY-POZA-ZASIEGIEM-Q1`
 
-**Status:** IMPLEMENTED — oczekuje na niezależnego Evaluatora.
+**Status:** runda 2 Operatora zakończona po zarzucie Evaluatora r1; oczekuje na niezależną ewaluację r2.
 
 **Zakres:** wyłącznie zachowanie łuczników w doktrynie Atak; Obrona i Szturm pozostają bez zmian.
 
@@ -19,6 +19,9 @@ ruchu bez strzału w sześciu aktywacjach, przy dystansie rosnącym 5, 5, 5, 8, 
 - Gdy własny front blokuje prosty krok naprzód, planer może zrobić ograniczony krok
   w bok tylko wewnątrz zakresu wierszy piechoty i tylko jeśli w następnym kroku otwiera
   to legalny postęp ku wrogowi. Ruch nadal nie wyprzedza linii walczącej wręcz.
+- Ograniczenie kroku do tyłu linii jest stosowane wyłącznie w doktrynie Atak (`steady`);
+  Skirmish zachowuje istniejącą walidację kroku i może zbliżać się przy żywej własnej
+  piechocie.
 - Nie zmieniono wyboru akcji w Obronie ani w Szturmie; testy regresyjne potwierdzają
   dotychczasowe zatrzymanie/strzelanie w Obronie oraz aktywne ataki w Szturmie.
 
@@ -31,7 +34,8 @@ ruchu bez strzału w sześciu aktywacjach, przy dystansie rosnącym 5, 5, 5, 8, 
   konnicę i rydwany. Wynik: `evidence/chromium-ranged-approach-probe-report.json`.
 - Kontrola łucznika już będącego w zasięgu: rzeczywisty strzał, zużycie amunicji i spadek
   HP celu: `evidence/chromium-ranged-attack-probe-report.json`.
-- `node tools/battle-ranged-mounted-doctrine-test.cjs`: 9/9 PASS.
+- `node tools/battle-ranged-mounted-doctrine-test.cjs`: 10/10 PASS. Obejmuje Atak poza
+  zasięgiem oraz Skirmish poza zasięgiem przy żywej piechocie przed łucznikiem.
 - `node tools/battle-melee-attack-doctrine-test.cjs`: PASS; Atak i Szturm zachowują
   walkę wręcz 24v24 (72 ataki, 720 HP utracone).
 - `node tools/battle-manual-choice-contract-test.cjs`: 12/12 PASS.
@@ -39,10 +43,8 @@ ruchu bez strzału w sześciu aktywacjach, przy dystansie rosnącym 5, 5, 5, 8, 
 - Szersza deterministyczna macierz produkcyjnego BattleScene dla 42v42 i pięciu tur
   zapisana w `../R-BITWA-BTF-MIXED-ARMY-DOCTRINES-Q1/01-matrix.json`; nie jest ona
   samodzielnym dowodem pełnej symulacji Chromium.
-- Ponowne uruchomienie browser harness w tej rundzie nie zakończyło się w limicie
-  roboczej sesji; raport Chromium powyżej pochodzi z ukończonego uruchomienia z bieżącym
-  kodem. Ten problem powtórnego uruchomienia przekazuję Evaluatorowi do niezależnego
-  odczytu, bez oznaczania go jako PASS.
+- Ponowny test Chromium po korekcie: PASS; raport został odświeżony w
+  `evidence/chromium-ranged-approach-probe-report.json`.
 
 ## Dowody i kolejny krok
 
@@ -51,6 +53,6 @@ zdarzenie strzału i błędy konsoli/sieci. W próbie mixed target po przyjęciu
 pozostało przy testowym HP 999; potwierdzeniem obrażeń celu służy osobna kontrola
 in-range, gdzie HP spada.
 
-Następny krok: niezależny Evaluator sprawdza minimalność zmiany, dowód produkcyjny,
-edge cases i regresje; przy uwagach uruchomić Obrona. Nie scalono, nie wdrożono i nie
-wypchnięto.
+Następny krok: niezależny Evaluator sprawdza poprawkę do zarzutu NOT PASS, nową regresję
+Skirmish i powtórne dowody produkcyjne; przy uwagach uruchomić Obrona. Nie scalono, nie
+wdrożono i nie wypchnięto.

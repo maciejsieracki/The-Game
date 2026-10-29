@@ -1,6 +1,6 @@
 {
   "title": "Production BattleScene Chromium mixed-army probe",
-  "timestamp": "2026-10-29T23:28:56.024Z",
+  "timestamp": "2026-10-29T23:31:03.006Z",
   "environment": {
     "browser": "Chromium headless",
     "viewport": "1280x800",
@@ -495,7 +495,7 @@
         "meleeAttacks": 1,
         "rangedAttacks": 1,
         "rangedAmmoSpent": 1,
-        "hpLossEvents": 0,
+        "hpLossEvents": 1,
         "mountedActions": 0,
         "rangedByRole": {
           "oszczepnik": 0,
@@ -818,7 +818,7 @@
           "ammoBefore": 12,
           "hpBefore": 1000,
           "ammoAfter": 11,
-          "hpAfter": 1000
+          "hpAfter": 999
         }
       ]
     }
