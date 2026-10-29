@@ -351,3 +351,10 @@ Partia `rail`: 6 z 24 jednostek DOM bloku K08 (150 z 1 324 LOC) w `src/ui/cityPa
 
 - ZROBIONE (r2): pin-exec 9 jednostek `tools/dom-harness/run-k09a-pin.mjs` 69/69 (surowy tekst pinu vs port, DOM + log efektów + stan); test wykonania wiringu `run-k09a-wiring.mjs` 10/10; mutacje wykonaniowe `mutate-k09a-units.mjs` 42/42 zabitych + 1 wykluczona (NIE_ZMIERZONO). Kod portu bez zmian. Szczegóły: `dyspozycje/rust-port/p5/P5-8-K09A.md` §7–§8.
 - NIE_ZROBIONE (r2, świadome): `computeOrderStateLocal`; produkcyjne podpięcie i rejestracja w `cityPanelUxBridge.ts` (K09B); mapowanie id number→string (K08D-Z10); delegaty K06B bez portu (16) i reguły K05A — wejścia testowe w harnessie (NIE_ZMIERZONO); wiring delegatów bez obserwowalnego efektu w jsdom (NIE_ZMIERZONO).
+
+## P5-8 K09B (R-RUSTPORT-P5-8-CITYPANEL-K09B-Q1, runda 1, Operator-impl)
+
+- ZROBIONE: jeden punkt instalacji `src/controller/cityPanelWiring.ts` (`installCityPanelWiring`: K08C, K06B, K06A, K07B + K07A ext, K08D, K08E, K09A, rejestracja mostu `cityPanelUxBridge` przez `cityPanelUxImpl`); adapter id `src/controller/cityIdAdapter.ts` (number<->string, granice); delegaty K06B z portu wygenerowane `src/controller/cityPanelK06bDelegates.ts` (74 z portu, 14 głośnych).
+- Gate: `typecheck` 0 błędów; `npm run check` exit 0; `run-k09b-wiring.mjs` 28/28 (pokaz, malowanie przez most, ukrycie w jsdom; bez `brak delegatu` i bez `undefined`); `mutate-k09b.mjs` 20/20 zabitych; regresja `run-k09a-wiring` i `run-k08d-wiring` exit 0.
+- Założenia i tabela długu (K09B-Z1..Z4, D2..D10, w tym defekt D6: `pinnedGarrisonCityId` string vs `city.id` number w `k06b-garnizon.ts:68` i `k09a-paint.ts:45`): `dyspozycje/rust-port/p5/P5-8-K09B.md` §4–§5.
+- NIE_ZROBIONE: wywołanie `installCityPanelWiring` z kodu startu aplikacji; most bez `map` (D3); porty 14 delegatów K06B (D4); 44 atrapy K07B (D7); pin-exec względem `edb8fb56` i zachowanie w przeglądarce (NIE_ZMIERZONO).

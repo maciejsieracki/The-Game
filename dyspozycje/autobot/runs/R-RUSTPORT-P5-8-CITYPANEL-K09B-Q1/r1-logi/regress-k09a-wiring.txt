@@ -1,0 +1,12 @@
+OK   W0 | przed instalacją requireK09aDeps() rzuca „brak setK09aDeps”
+OK   W1 | installK09aWiring(host) wykonuje się bez wyjątku
+OK   W2 | getK09aHooks() === host (identyczność referencji)
+OK   W3 | sześć delegatów K09A jest funkcjami (6/6)
+OK   W4 | requireK08aDeps().rerender() wywołuje jednostkę K09A rerender (refresh-spy)
+OK   W5 | requireK08aDeps().clearGarrisonPanel() zeruje pinnedGarrisonCityId
+OK   W6 | requireK08aDeps().isCityUxFrameOpen() = false bez ramki
+OK   W7 | requireK09aDeps().hideCityPanel() ukrywa korzeń K06B (display none)
+OK   W8 | showCityUxFrame otwiera ramkę (K08A: isCityUxFrameOpen), hideCityUxFrame ją zamyka
+OK   W9 | getK09aHooks().onSwitchCity(5) trafia do host.onSwitchCity z id 5
+
+k09a-wiring: 10/10 zgodnych

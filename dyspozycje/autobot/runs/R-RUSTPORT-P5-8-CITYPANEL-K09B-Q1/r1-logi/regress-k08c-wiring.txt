@@ -1,0 +1,1 @@
+Użycie: node tools/dom-harness/run-k08c-wiring.mjs --pin-dir <PIN_DIR> [--wiring <plik.ts>] [--tmp-dir <katalog>]
