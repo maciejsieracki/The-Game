@@ -1,0 +1,7 @@
+A: ts_sha=ab934703990ba00e ts_lines=12562 vec_sha=4072347ab48f17c4
+B: lisci tabeli=36
+C: fallback sprawdzony
+D: parametry sprawdzone: 18
+E: niezmienniki sprawdzone; maks. skupisko gor/wzgorz: safety=10 grow=10 (limit 10)
+checks=366 rozbieznosci=0
+EXIT=0
