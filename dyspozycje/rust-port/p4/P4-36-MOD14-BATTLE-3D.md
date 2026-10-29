@@ -1109,3 +1109,260 @@ Na commicie Operatora-impl `d2fecbb3` (+ raport `1b73d2e1`), worktree izolowany,
    (:17500), pierścień `RingGeometry(0.45, 0.58, 24)` (:17633) — zgodne z `units.rs`.
 4. **Dryf weba** odmierzony ponownie: `origin/main` = `91dc998a`, 13 plików +629 / −213 — bez zmian względem §27.
 5. NIE_ZMIERZONO nadal: ocena wzrokowa (§26), wpływ dryfu po pinie na wektory (§27).
+
+---
+
+# CZĘŚĆ 4 — dynamika i efekty (R-RUSTPORT-P4-36-MOD14-BATTLE-3D-Q4)
+
+**TEMAT:** R-RUSTPORT-P4-36-MOD14-BATTLE-3D-Q4 · **DOMAIN:** GAME · **RUNDA:** 1/5 · **ROLA:** Operator (wywołanie
+„impl”: kod + wektory + testy; mutacje i pełne bramy = wywołanie „pomiary”) ·
+**Baza:** `rust-port/parity-v2` @ `364a5356` (części 1–3 zintegrowane) · **Pin weba:** `edb8fb56` (three@0.169.0).
+Sekcje §0–§28 (części 1–3) — bez zmian. Część 4 = §29–§37. Część 5 (picking, kamera) — poza zakresem.
+
+## 29. Streszczenie części 4
+
+1. **Zakres §4 „4 — dynamika i efekty” zportowany** → nowy moduł `rust-port/renderer/src/battle/dynamics.rs`
+   (jedna linia `pub mod dynamics;` w `battle/mod.rs`; `field.rs`, `units.rs`, `siege_wall.rs`, `lib.rs`, `Cargo.*` bez
+   zmian). Wejście: stan sceny z części 3 (`BattleScene3`) + zdarzenia bitwy jako DTO (cel ruchu, atak, strzał, śmierć,
+   wyłom, ucieczka, grupa, kamera) + czas wirtualny `t` (zegar zegarowy dla napisów); wyjście: transformacje (pozycja,
+   obrót, skala), krycie materiałów i flagi widoczności w funkcji (stan, t), deterministycznie. Mapa §30.
+2. **Parytet bit w bit z webem — kod weba URUCHOMIONY:** generator podmienia `requestAnimationFrame` na rejestrator i
+   steruje zegarem wirtualnym (`vNow = t`, potem kolejka klatek), tickery woła wprost. Jedna scena oblężenia (`oblezenie`,
+   `rzym`, 83 jednostki) i **23 zdarzenia** odtwarzane po kolei: 6 ruchów (wzgórze, rzeka, bród), 3 ciosy wręcz (z kontrą,
+   z zabitym napastnikiem), 4 pociski (strzała, kamień z procy, oszczep, pilum), 2 zanikania, 2 przebiegi taranu (pełny,
+   przerwany `finished`), lot kamienia katapulty z trafieniem i wyłomem, 4 wyłomy muru, wyłom bramy, ucieczka z usunięciem,
+   znaczniki grup (10 kroków + synchronizacja), billboard pasków (2 kamery × 83), 10 napisów × 10 chwil — **0 różnic**
+   (`dynamics_match_web`: 696 liczb bitowo + 1 417 sprawdzeń sygnatur/flag); rozstawienie `rzym_grecja`: 84 znaczniki
+   grup interfejsu, klatka fazy rozstawienia, `_endDeployPhase` — **0 różnic**; `projectileKind` 306 par +
+   `makeProjectileMesh` 4 rodzaje — **0 różnic**; stałe i easing — **0 różnic** (`tests/battle3d_dynamics.rs`, 4 testy).
+3. Stałe `MOVE_STEP_MS`, `STEP_GAP_MS`, `RANGED_FLY_MS`, `RANGED_GAP_MS`, `DEATH_FADE_MS`, `BLOW_LUNGE_MS`, `BLOW_HIT_T`,
+   `BLOW_SETTLE_MS`, `MORALE_GATE_BREACH`, `MORALE_WALL_BREACH` — kopie z testem równości z wartościami modułu weba.
+4. **Mutacje:** przygotowane 48 mutantów (`tests/fixtures/battle3d/mutate_dynamics.py`, każdy wzorzec dokładnie raz —
+   sprawdzone); **uruchomienie = wywołanie „pomiary”** (NIE_ZMIERZONO w tym wywołaniu).
+5. Determinizm: generator w 2 różnych katalogach (osobny `npm install`, osobny `git archive`) → identyczny
+   `dynamics.json` (`4c7bcc21…ae89e0`) i bundel `gen_dynamics.mjs` (`9d5071a4…b834a`, nie commitowany).
+6. Uzgodnienie z inwentarzem: **67 wierszy** (31 `RUNDA-4` + 24 odłożone przez część 2 + 5 przez część 3 + 7 dołączonych),
+   0 bez statusu — §32.
+7. Ocena wizualna 1:1: **NIE_ZMIERZONO** (brak GPU) — §36.
+
+## 30. Mapa symboli → Rust (`battle::dynamics`)
+
+| web (`battleScene.ts` @ `edb8fb56`) | linie | Rust | uwagi |
+|---|---|---|---|
+| `MOVE_STEP_MS`, `STEP_GAP_MS`, `RANGED_FLY_MS`, `RANGED_GAP_MS`, `DEATH_FADE_MS`, `BLOW_LUNGE_MS`, `BLOW_HIT_T`, `BLOW_SETTLE_MS`, `MORALE_GATE_BREACH`, `MORALE_WALL_BREACH` | 945–957, 1073–1074 | `pub const` | test równości bitowej; stałe harmonogramu (`STEP_GAP_MS`, `RANGED_GAP_MS`, `BLOW_SETTLE_MS`) konsumuje logika |
+| literały animacji (taran 320 ms / 0,25; kamień 700 ms / łuk 3,5; łuk pocisku 0,6; skok kroku 0,12; napis 2000 ms / 0,00012) | 7032–7033, 7244–7245, 8589, 8059, 7489–7491, 9114–9116 | `RAM_MS`, `RAM_REACH`, `BOULDER_MS`, `BOULDER_ARC`, `PROJECTILE_ARC`, `MOVE_HOP`, `FLOAT_LABEL_MS`, `FLOAT_LABEL_RISE` | sprawdzane zachowaniem (pozycje w klatkach) |
+| `lerp`, `easeOut`, `easeIn` | 19438–19441 | `lerp`, `ease_out`, `ease_in` | |
+| `projectileKind` | 1605–1615 | `projectile_kind`, `ProjectileKind` | `normName` = `models::unit_core::routing::norm_name` (ten sam algorytm NFD + `ł→l`); wołający rozwiązuje `stats.Jednostka ?? nazwa` |
+| `makeProjectileMesh` | 1628–1717 | `make_projectile_mesh` → `Scene` | kolejność dzieci: trzon, grot, (trzpień pilum / lotka strzały); materiały drewno / żelazo / kamień |
+| `_doRangedAttack` (3D) | 8447–8489 | `ranged_shot_endpoints`, `launch_projectile`, `set_facing` (+ `update_ammo_bar`, cz. 3) | `setFromUnitVectors((1,0,0), dir)` przy `|dir|² > 1e-6`; `quaternion.copy` przepisuje też `rotation` (`Euler.setFromQuaternion`) |
+| `_tickProjectiles` | 8584–8600 | `tick_projectiles`, `Projectile::sample` | `scene.remove` = odłączenie od korzenia |
+| `_doMove` (3D) | 8011–8072 | `MoveAnim` (`start`, `sample`, `step`) | wysokości kafli czytane przed zmianą komórki; ostatnia klatka = dokładnie cel |
+| `_doMeleeAttack` (3D) | 8361–8440 | `MeleeLunge` (`start`, `pose`, `hit_due`, `step`), `set_facing` | moment ciosu `localT ≥ 150` raz; martwy / zanikający napastnik nie jest przesuwany |
+| `_startFade` (3D) / `_tickFades` | 9082–9089, 8602–8622 | `Fade`, `tick_fades` | materiały z `userData.mats` modelu (część 3 przenosi je przez `Scene::graft`) |
+| `_attackGate` (3D) / `_animateRam` | 7007–7013, 7029–7053 | `RamAnim` | kierunek z bieżącej pozycji taranu; `finished` → powrót do startu |
+| `_attackWallTile` (3D) / `_spawnCatapultBoulder` | 7212–7216, 7235–7269 | `wall_shot_endpoints`, `Boulder` | kula `SphereGeometry(0.32, 7, 7)`; usunięcie po `t ≥ 1` lub `finished` |
+| `_breachWallTile` | 7302–7416 | `breach_wall_tile`, `retreat_from_wall` | kafel → Plains, segmenty `rowWallMeshes.get(row)` (SameValueZero) ukryte, 7 brył gruzu (`tileJitter`, sól `200 + 11 i`); pole odwrotu = DTO |
+| `_breachGate` | 7421–7474 | `breach_gate` | kafle bramy `Gate → Plains`, grupa bramy i meshe przy bramie (reguła `:7451-7465`) ukryte; morale = DTO → `update_morale_bar` |
+| `_spawnWallLabel` / `_spawnDamageLabel` (3D) / `_tickFloatLabels` (przed rzutem) | 7477–7493, 9091–9118, 8624–8643 | `FloatLabel::wall`, `FloatLabel::damage`, `FloatLabel::sample` | element DOM → P5, `worldToScreen` → cz. 5 |
+| `_startRout` (3D) | 8971–8972 | `rout_facing`, `set_facing` | |
+| `_makeGroupNumberTexture` | 18647–18665 | `GroupNumberTexture` (`SIZE`, `ops`), `CanvasOp` | canvas jako dane (jak `GlyphTexture`) |
+| `_removeGroupFrameMarker` / `_updateGroupFrameMarker` / `_syncAllGroupFrameMarkers`, `_groupDisplayNum` | 18668–18739, 14413–14417 | `GroupMarkers` (`remove`, `update`, `sync_all`), `GroupMarker`, `group_display_num`, `js_parse_int10` | `Line` jako `OutlineLine` (`FieldScene::lines`, cz. 2), `Sprite` 0,55 z `depthTest: false`; `String(n)` = `models::cities::model::js_number_to_string` |
+| pętla klatki: `hpBarGroup.lookAt(camera.position)` | 8522–8524, 8546–8548 | `billboard`, `billboard_all` | `Object3D.lookAt` nie-kamery (three r169 `Object3D.js:271-311`): `Matrix4.lookAt(target, pozycja świata, up)`, korekta obrotem rodzica (`extractRotation`, `invert`, `premultiply`) |
+| gałąź rozstawienia pętli klatki (3D) | 8515–8526 | `deploy_phase_frame` | |
+| `_setDeployZoneVisible` (3D), `_endDeployPhase` (3D) | 11695–11699, 16364–16389 | `set_deploy_zone_visible`, `end_deploy_phase` | |
+
+Typ minimalny: brak nowego typu geometrii (pociski, kamień i gruz to `Prim` sceny; ramka znacznika to `FieldGeo::Polyline`
+z części 2). Używane tylko publiczne API: `scene`, `geom`, `pick::three` (`Mat4::look_at`, `Quat::from_rotation_matrix`),
+`battle::{field, units}`, `jsmath::js_sin`, `models::unit_core::routing::norm_name`, `models::cities::model::js_number_to_string`.
+
+## 31. Założenia części 4
+
+- **ZAŁOŻENIE Z-36-13 (wejście DTO zdarzeń):** CO się dzieje decyduje logika bitwy (P6.13): cel i kolejne kroki ruchu
+  (zajętość, koszt, `moveLeft`), nowy kierunek po `_updateFacing` / ataku (`facingFromTo`), trafienie / obrażenia / kontra
+  (`_singleBlow`, `_defenderCounters`), śmierć, rozbicie (`_checkRout`), pole odwrotu obrońcy z wyburzonego kafla,
+  zniszczenie katapulty obrońcy, morale, HP bramy / kafla, harmonogram (`_schedule`). Scena dostaje wynik i liczy
+  transformacje. Generator testu wstrzykuje proste zaślepki (`_singleBlow` = stałe obrażenia, `_defenderCounters` =
+  przełącznik przypadku, `_schedule` = rejestr) i zapisuje decyzje weba; test je odtwarza.
+- **ZAŁOŻENIE Z-36-14 (czas):** animacje są funkcjami czasu wirtualnego `vNow` (`_now()`, `:8661`), napisy — czasu
+  zegarowego (`vLastWall` / `t` pętli, `:7489`, `:9113`, `:8542`); oba są wejściem. Przerwanie przez `finished` /
+  `_autoBattleSuspended` w krokach ruchu i ciosu (`:8051`, `:8383`) = wołający przestaje krokować (bez zmiany sceny,
+  jak w webie); taran i kamień mają jawny parametr `finished` (web zmienia scenę: powrót / usunięcie).
+- **ZAŁOŻENIE Z-36-15 (zasoby):** `ownedGeos` / `ownedMats` / `dispose()` = czas życia zasobów GPU — w Rust własność;
+  znaczniki grup trzyma tablica `GroupMarkers` (web: `_groupFrameMarkers`), tekstura numeru jest daną
+  (`GroupNumberTexture`), rasteryzacja → rasteryzator tekstu (NIE_ZMIERZONO wzrokowo).
+- **ZAŁOŻENIE Z-36-16 (zakres dołączony):** 7 wierszy, które inwentarz Q1 przypisał gdzie indziej, a które mają część
+  sceny z §4 (pociski, zanikanie, aktualizacja pasków, napisy, strefa rozstawienia, numer grupy) — dołączone z powodem
+  w tabeli §32. W szczególności `makeProjectileMesh` (inwentarz: RUNDA-5) jest wymieniony wprost w GOAL dispatchu.
+- **ZAŁOŻENIE Z-36-17 (macierze świata w generatorze):** dumpy weba robią `updateWorldMatrix(true, true)` (przodkowie
+  też), bo bez renderu `matrixWorld` rodzica bywa nieaktualny (zmierzone w r1: 2 znaczniki grup jednostek, których
+  `matrixWorld` nie liczono od konstruktora, różniły się tylko macierzą świata) — test Rust składa macierze przodków
+  z bieżących transformacji, więc porównuje rzeczywistą macierz świata.
+
+## 32. Uzgodnienie z inwentarzem (zakres części 4)
+
+Objęte wiersze: każdy wiersz inwentarza Q1 ze statusem zawierającym `RUNDA-4` (**31**), **24** wiersze odłożone do
+części 4 przez uzgodnienie części 2 (§12a: `PRZENIESIONY → cz. 4` 22, `WSPÓLNA … odłożona do cz. 4` 2), **5** przez
+uzgodnienie części 3 (§22) i **7** dołączonych (Z-36-16). Tabelę wygenerował
+`runs/R-RUSTPORT-P4-36-MOD14-BATTLE-3D-Q4/dowody/recon-q4.py` (statusy w skrypcie; kolumna `woła` liczona z
+`battleScene.ts` @ `edb8fb56` — wywołania `this.<metoda>(` funkcji zportowanych w części 4, wprost i przez graf
+wywołań klasy; `ZPORTOWANY*` musi wskazywać identyfikatory obecne w `dynamics.rs` / `units.rs`):
+
+```text
+LICZNIK: wierszy = 67; PODZIAŁ = 21; WSPÓLNA = 7; ZPORTOWANY = 24; ZPORTOWANY częściowo = 15; bez statusu / niezgodnych = 0
+```
+
+Kontrola: 21 + 7 + 24 + 15 = **67** = 31 + 24 + 5 + 7. Każdy wiersz `PODZIAŁ` woła co najmniej jedną funkcję zportowaną (żaden nie spadł do `NIE-DOTYCZY sceny`). Wejścia (SHA-256): inwentarz `139b84eb…`, `battleScene.ts` `38c97736…` — te same co w częściach 2–3.
+
+| # | linie | symbol | źródło | woła (zportowane; bezpośrednio / pośrednio) | status cz. 4 | Rust / powód |
+|---|---|---|---|---|---|---|
+| 5 | 324–335 | `facingToward` | cz. 2 → cz. 4 | — | WSPÓLNA (domena P6.13) — scena dostaje wynik w DTO (Z-36-13) | kierunek do celu = decyzja logiki; scena: `set_facing` z kierunkiem z DTO |
+| 6 | 336–346 | `facingFromTo` | cz. 2 → cz. 4 | — | WSPÓLNA (domena P6.13) — scena dostaje wynik w DTO (Z-36-13) | kierunek ataku / zwrot = decyzja logiki; scena: `set_facing` z kierunkiem z DTO |
+| 92 | 893–902 | `RANGED_MIN_GAP` | RUNDA-4 | — | WSPÓLNA (domena P6.13) — scena dostaje wynik w DTO (Z-36-13) | odstęp strzelców (wybór kroku) — logika |
+| 93 | 903–904 | `MELEE_SAFE_GAP` | RUNDA-4 | — | WSPÓLNA (domena P6.13) — scena dostaje wynik w DTO (Z-36-13) | odstęp od walczących wręcz (wybór kroku) — logika |
+| 97 | 918–918 | `BROD_RUCH_MULT` | RUNDA-4 | — | WSPÓLNA (domena P6.13) — scena dostaje wynik w DTO (Z-36-13) | bród: koszt kroku `moveLeft` w `_doMove` — logika (animacja kroku bez zmian) |
+| 102 | 933–944 | `FORD_AI_AVOID_PENALTY` | RUNDA-4 | — | WSPÓLNA (domena P6.13) — scena dostaje wynik w DTO (Z-36-13) | kara AI za bród (punktacja pola) — logika |
+| 103 | 945–945 | `MOVE_STEP_MS` | RUNDA-4 | — | ZPORTOWANY (cz. 4) | `MOVE_STEP_MS`; test `constants_and_easing_equal_web`; konsument `MoveAnim::sample` |
+| 104 | 946–946 | `STEP_GAP_MS` | RUNDA-4 | — | ZPORTOWANY (cz. 4) | `STEP_GAP_MS`; test `constants_and_easing_equal_web` — odstęp kroków planuje harmonogram (P6.13) |
+| 105 | 947–947 | `RANGED_FLY_MS` | cz. 2 → cz. 4 | — | ZPORTOWANY (cz. 4) | `RANGED_FLY_MS`; test `constants_and_easing_equal_web`; `Projectile::dur` |
+| 106 | 948–948 | `RANGED_GAP_MS` | cz. 2 → cz. 4 | — | ZPORTOWANY (cz. 4) | `RANGED_GAP_MS`; test `constants_and_easing_equal_web` (harmonogram → P6.13) |
+| 108 | 950–954 | `DEATH_FADE_MS` | RUNDA-4 | — | ZPORTOWANY (cz. 4) | `DEATH_FADE_MS`; test `constants_and_easing_equal_web`; konsument `Fade::progress` |
+| 109 | 955–955 | `BLOW_LUNGE_MS` | cz. 2 → cz. 4 | — | ZPORTOWANY (cz. 4) | `BLOW_LUNGE_MS`; `MeleeLunge::pose` |
+| 110 | 956–956 | `BLOW_HIT_T` | cz. 2 → cz. 4 | — | ZPORTOWANY (cz. 4) | `BLOW_HIT_T`; `MeleeLunge::hit_due` |
+| 111 | 957–957 | `BLOW_SETTLE_MS` | cz. 2 → cz. 4 | — | ZPORTOWANY (cz. 4) | `BLOW_SETTLE_MS`; test `constants_and_easing_equal_web` (harmonogram → P6.13) |
+| 140 | 1073–1073 | `MORALE_GATE_BREACH` | RUNDA-4 | — | ZPORTOWANY (cz. 4) | `MORALE_GATE_BREACH`; test `constants_and_easing_equal_web` — odjęcie morale robi logika, scena: `update_morale_bar` |
+| 141 | 1074–1082 | `MORALE_WALL_BREACH` | cz. 2 → cz. 4 | — | ZPORTOWANY (cz. 4) | `MORALE_WALL_BREACH`; test `constants_and_easing_equal_web` (= 0) |
+| 195 | 1605–1627 | `projectileKind` | cz. 2 → cz. 4 | — | ZPORTOWANY (cz. 4) | `projectile_kind` / `ProjectileKind`; test `projectiles_match_web` (306 par kategoria × nazwa) |
+| 196 | 1628–1723 | `makeProjectileMesh` | dołączony | — | ZPORTOWANY (cz. 4) | `make_projectile_mesh`; test `projectiles_match_web` (4 rodzaje, pełne rekordy węzłów) — inwentarz Q1: RUNDA-5 (przypisanie słownikowe) — GOAL dispatchu wymienia `makeProjectileMesh` w części 4 |
+| 212 | 1900–1905 | `desiredHitForDirection` | RUNDA-4 | — | WSPÓLNA (domena P6.13) — scena dostaje wynik w DTO (Z-36-13) | kierunek natarcia → wybór celu / trafienia — logika |
+| 251 | 5561–5602 | `BattleScene._launchAutoBatchResolution` | RUNDA-4 | _fleeStep, (_animateRam), (_attackGate), (_attackWallTile), (_breachGate), (_breachWallTile), (_doMeleeAttack), (_doMove), (_doRangedAttack), (_removeGroupFrameMarker), (_removeUnitFromScene), (_setDeployZoneVisible), (_spawnCatapultBoulder), (_spawnDamageLabel), (_spawnWallLabel), (_startFade), (_startRout), (_syncAllGroupFrameMarkers), (_updateAmmoBar), (_updateGroupFrameMarker), (_updateHpBar), (_updateMoraleBar) | PODZIAŁ: logika → P6.13; część sceny = wywołania funkcji zportowanych (kolumna `woła`) | decyzja (cel, krok, ucieczka, rozbicie) → P6.13; skutek w scenie przez funkcje z kolumny `woła` |
+| 252 | 5603–5619 | `BattleScene._resolveAutoBatchAttack` | cz. 2 → cz. 4 | (_doMeleeAttack), (_doRangedAttack), (_spawnDamageLabel), (_startFade), (_startRout), (_updateAmmoBar), (_updateHpBar), (_updateMoraleBar) | PODZIAŁ: logika → P6.13; część sceny = wywołania funkcji zportowanych (kolumna `woła`) | decyzja (cel, krok, ucieczka, rozbicie) → P6.13; skutek w scenie przez funkcje z kolumny `woła` |
+| 253 | 5620–5656 | `BattleScene._resolveAutoBatchMovement` | RUNDA-4 | _doMove, _removeUnitFromScene, (_doMeleeAttack), (_doRangedAttack), (_spawnDamageLabel), (_startFade), (_startRout), (_updateAmmoBar), (_updateHpBar), (_updateMoraleBar) | PODZIAŁ: logika → P6.13; część sceny = wywołania funkcji zportowanych (kolumna `woła`) | decyzja (cel, krok, ucieczka, rozbicie) → P6.13; skutek w scenie przez funkcje z kolumny `woła` |
+| 260 | 6104–6157 | `BattleScene._cavalryAction` | RUNDA-4 | _doMove, (_doMeleeAttack), (_doRangedAttack), (_spawnDamageLabel), (_startFade), (_startRout), (_updateAmmoBar), (_updateHpBar), (_updateMoraleBar) | PODZIAŁ: logika → P6.13; część sceny = wywołania funkcji zportowanych (kolumna `woła`) | decyzja (cel, krok, ucieczka, rozbicie) → P6.13; skutek w scenie przez funkcje z kolumny `woła` |
+| 261 | 6158–6188 | `BattleScene._cavDirectedManeuverStep` | RUNDA-4 | _doMove | PODZIAŁ: logika → P6.13; część sceny = wywołania funkcji zportowanych (kolumna `woła`) | decyzja (cel, krok, ucieczka, rozbicie) → P6.13; skutek w scenie przez funkcje z kolumny `woła` |
+| 262 | 6189–6250 | `BattleScene._cavManeuverStep` | RUNDA-4 | _doMove | PODZIAŁ: logika → P6.13; część sceny = wywołania funkcji zportowanych (kolumna `woła`) | decyzja (cel, krok, ucieczka, rozbicie) → P6.13; skutek w scenie przez funkcje z kolumny `woła` |
+| 266 | 6278–6319 | `BattleScene._phalanxAction` | cz. 2 → cz. 4 | (_doMeleeAttack), (_doMove), (_doRangedAttack), (_spawnDamageLabel), (_startFade), (_startRout), (_updateAmmoBar), (_updateHpBar), (_updateMoraleBar) | PODZIAŁ: logika → P6.13; część sceny = wywołania funkcji zportowanych (kolumna `woła`) | decyzja (cel, krok, ucieczka, rozbicie) → P6.13; skutek w scenie przez funkcje z kolumny `woła` |
+| 267 | 6320–6387 | `BattleScene._phalanxStep` | RUNDA-4 | _doMove | PODZIAŁ: logika → P6.13; część sceny = wywołania funkcji zportowanych (kolumna `woła`) | decyzja (cel, krok, ucieczka, rozbicie) → P6.13; skutek w scenie przez funkcje z kolumny `woła` |
+| 268 | 6388–6474 | `BattleScene._rangedAction` | RUNDA-4 | _doMove, (_doMeleeAttack), (_doRangedAttack), (_spawnDamageLabel), (_startFade), (_startRout), (_updateAmmoBar), (_updateHpBar), (_updateMoraleBar) | PODZIAŁ: logika → P6.13; część sceny = wywołania funkcji zportowanych (kolumna `woła`) | decyzja (cel, krok, ucieczka, rozbicie) → P6.13; skutek w scenie przez funkcje z kolumny `woła` |
+| 273 | 6508–6545 | `BattleScene._rangedForwardStep` | RUNDA-4 | _doMove | PODZIAŁ: logika → P6.13; część sceny = wywołania funkcji zportowanych (kolumna `woła`) | decyzja (cel, krok, ucieczka, rozbicie) → P6.13; skutek w scenie przez funkcje z kolumny `woła` |
+| 277 | 6700–6730 | `BattleScene._rangedBackStep` | RUNDA-4 | _doMove | PODZIAŁ: logika → P6.13; część sceny = wywołania funkcji zportowanych (kolumna `woła`) | decyzja (cel, krok, ucieczka, rozbicie) → P6.13; skutek w scenie przez funkcje z kolumny `woła` |
+| 279 | 6755–6802 | `BattleScene._kiteStep` | RUNDA-4 | _doMove | PODZIAŁ: logika → P6.13; część sceny = wywołania funkcji zportowanych (kolumna `woła`) | decyzja (cel, krok, ucieczka, rozbicie) → P6.13; skutek w scenie przez funkcje z kolumny `woła` |
+| 283 | 6918–6946 | `BattleScene._fallBackStep` | RUNDA-4 | _doMove | PODZIAŁ: logika → P6.13; część sceny = wywołania funkcji zportowanych (kolumna `woła`) | decyzja (cel, krok, ucieczka, rozbicie) → P6.13; skutek w scenie przez funkcje z kolumny `woła` |
+| 284 | 6947–6999 | `BattleScene._rangedApproachStep` | RUNDA-4 | _doMove | PODZIAŁ: logika → P6.13; część sceny = wywołania funkcji zportowanych (kolumna `woła`) | decyzja (cel, krok, ucieczka, rozbicie) → P6.13; skutek w scenie przez funkcje z kolumny `woła` |
+| 285 | 7000–7028 | `BattleScene._attackGate` | RUNDA-4 | _animateRam, _breachGate, (_startRout), (_updateMoraleBar) | ZPORTOWANY częściowo (cz. 4: część sceny) | `RamAnim::start` (kierunek do bramy z bieżącej pozycji) — obrażenia bramy / `gateHp` / HUD → P6.13 / P5 |
+| 286 | 7029–7055 | `BattleScene._animateRam` | RUNDA-4 | — | ZPORTOWANY (cz. 4) | `RamAnim` (`start`, `sample`, `step`); test `dynamics_match_web` (2 przebiegi, w tym przerwany `finished`) |
+| 297 | 7204–7234 | `BattleScene._attackWallTile` | cz. 2 → cz. 4 | _breachWallTile, _spawnCatapultBoulder, _spawnWallLabel, (_startRout), (_updateMoraleBar) | ZPORTOWANY częściowo (cz. 4: część sceny) | `wall_shot_endpoints` + `Boulder` — obrażenia kafla / `wallTileHp` / harmonogram 700 ms → P6.13 |
+| 298 | 7235–7271 | `BattleScene._spawnCatapultBoulder` | cz. 2 → cz. 4 | — | ZPORTOWANY (cz. 4) | `Boulder` (`spawn`, `sample`, `step`); test `dynamics_match_web` |
+| 300 | 7302–7420 | `BattleScene._breachWallTile` | cz. 2 → cz. 4 | _spawnWallLabel, _updateMoraleBar, (_startRout) | ZPORTOWANY częściowo (cz. 4: część sceny) | `breach_wall_tile` (kafel → Plains, segmenty ukryte, 7 brył gruzu), `retreat_from_wall` — wybór pola odwrotu, zniszczenie katapulty obrońcy, morale → P6.13 (DTO) |
+| 301 | 7421–7476 | `BattleScene._breachGate` | RUNDA-4 | _updateMoraleBar, (_startRout) | ZPORTOWANY częściowo (cz. 4: część sceny) | `breach_gate` (kafle bramy, brama + elementy przy bramie ukryte) — morale −5 → DTO, paski `update_morale_bar` (cz. 3) |
+| 302 | 7477–7495 | `BattleScene._spawnWallLabel` | cz. 2 → cz. 4 | — | ZPORTOWANY częściowo (cz. 4: część sceny) | `FloatLabel::wall` — element DOM, tekst, kolor → P5 |
+| 305 | 7555–7580 | `BattleScene._advanceToward` | RUNDA-4 | _doMove | PODZIAŁ: logika → P6.13; część sceny = wywołania funkcji zportowanych (kolumna `woła`) | decyzja (cel, krok, ucieczka, rozbicie) → P6.13; skutek w scenie przez funkcje z kolumny `woła` |
+| 306 | 7581–7658 | `BattleScene._advanceStep` | RUNDA-4 | _doMove | PODZIAŁ: logika → P6.13; część sceny = wywołania funkcji zportowanych (kolumna `woła`) | decyzja (cel, krok, ucieczka, rozbicie) → P6.13; skutek w scenie przez funkcje z kolumny `woła` |
+| 318 | 7989–8082 | `BattleScene._doMove` | RUNDA-4 | — | ZPORTOWANY częściowo (cz. 4: część sceny) | `MoveAnim` (`start`, `sample`, `step`) — zajętość, koszt ruchu, `_autoBatchPlanning` → P6.13; nowy kierunek → DTO (`set_facing`) |
+| 319 | 8083–8104 | `BattleScene._doAttack` | cz. 2 → cz. 4 | _doMeleeAttack, _doRangedAttack, (_spawnDamageLabel), (_startFade), (_startRout), (_updateAmmoBar), (_updateHpBar), (_updateMoraleBar) | PODZIAŁ: logika → P6.13; część sceny = wywołania funkcji zportowanych (kolumna `woła`) | decyzja (cel, krok, ucieczka, rozbicie) → P6.13; skutek w scenie przez funkcje z kolumny `woła` |
+| 322 | 8361–8443 | `BattleScene._doMeleeAttack` | cz. 2 → cz. 4 | _spawnDamageLabel, (_startFade), (_startRout), (_updateHpBar), (_updateMoraleBar) | ZPORTOWANY częściowo (cz. 4: część sceny) | `MeleeLunge` (`start`, `pose`, `hit_due`, `step`) + `set_facing` — cios / kontra / etykiety decyduje logika |
+| 323 | 8444–8509 | `BattleScene._doRangedAttack` | cz. 2 → cz. 4 | _spawnDamageLabel, _updateAmmoBar, (_startFade), (_startRout), (_updateHpBar), (_updateMoraleBar) | ZPORTOWANY częściowo (cz. 4: część sceny) | `ranged_shot_endpoints`, `launch_projectile`, `set_facing` (+ `update_ammo_bar`, cz. 3) — cios po locie → P6.13 |
+| 324 | 8510–8553 | `BattleScene._startLoop` | dołączony | _tickFades, _tickProjectiles, (_doMeleeAttack), (_doMove), (_doRangedAttack), (_removeGroupFrameMarker), (_removeUnitFromScene), (_setDeployZoneVisible), (_spawnDamageLabel), (_startFade), (_startRout), (_syncAllGroupFrameMarkers), (_updateAmmoBar), (_updateGroupFrameMarker), (_updateHpBar), (_updateMoraleBar) | ZPORTOWANY częściowo (cz. 4: część sceny) | `billboard`, `billboard_all`, `deploy_phase_frame` — zegar wirtualny / timery → P6.13, kamera (`_tickZoom`, `_tickCameraPanKeys`) → cz. 5, minimapa / morale armii / roster → P5 — inwentarz Q1: RUNDA-5 — pętla klatki: billboard pasków i gałąź rozstawienia (§4 „aktualizacja pasków”) |
+| 328 | 8584–8601 | `BattleScene._tickProjectiles` | dołączony | — | ZPORTOWANY (cz. 4) | `tick_projectiles`, `Projectile::sample`; test `dynamics_match_web` (4 pociski × 10 chwil) — inwentarz Q1: RUNDA-5 — ruch pocisków co klatkę (§4 „pociski”) |
+| 329 | 8602–8623 | `BattleScene._tickFades` | RUNDA-4 | — | ZPORTOWANY (cz. 4) | `tick_fades`, `Fade::step`; test `dynamics_match_web` |
+| 330 | 8624–8660 | `BattleScene._tickFloatLabels` | dołączony | — | ZPORTOWANY częściowo (cz. 4: część sceny) | `FloatLabel::sample` (wzniesienie, krycie `1 − p²`, wygaśnięcie) — `worldToScreen` → cz. 5, styl DOM → P5 — inwentarz Q1: P5 — pozycja świata etykiety i krycie przed rzutem na ekran (napisy obrażeń/muru) |
+| 349 | 8942–8957 | `BattleScene._checkRout` | cz. 2 → cz. 4 | _startRout, (_updateMoraleBar) | PODZIAŁ: logika → P6.13; część sceny = wywołania funkcji zportowanych (kolumna `woła`) | decyzja (cel, krok, ucieczka, rozbicie) → P6.13; skutek w scenie przez funkcje z kolumny `woła` |
+| 350 | 8958–8999 | `BattleScene._startRout` | cz. 2 → cz. 4 | (_startRout), (_updateMoraleBar) | ZPORTOWANY częściowo (cz. 4: część sceny) | `rout_facing` + `set_facing` — `routed`/`acted`/rejestr ucieczek/efekty morale → P6.13 |
+| 351 | 9000–9064 | `BattleScene._fleeStep` | RUNDA-4 | _doMove, _removeUnitFromScene, (_startRout), (_updateMoraleBar) | PODZIAŁ: logika → P6.13; część sceny = wywołania funkcji zportowanych (kolumna `woła`) | decyzja (cel, krok, ucieczka, rozbicie) → P6.13; skutek w scenie przez funkcje z kolumny `woła` |
+| 353 | 9082–9090 | `BattleScene._startFade` | dołączony | — | ZPORTOWANY częściowo (cz. 4: część sceny) | `Fade` (`start`) — SFX → P5, zajętość → P6.13 — inwentarz Q1: PODZIAŁ … UI → P5 — start zanikania (§4 „zanikanie”) |
+| 354 | 9091–9134 | `BattleScene._spawnDamageLabel` | cz. 3 → cz. 4 | — | ZPORTOWANY częściowo (cz. 4: część sceny) | `FloatLabel::damage` — element DOM, tekst, kolor → P5; rzut na ekran → cz. 5 |
+| 455 | 11695–11704 | `BattleScene._setDeployZoneVisible` | dołączony | — | ZPORTOWANY częściowo (cz. 4: część sceny) | `set_deploy_zone_visible` — etykiety połówek (DOM) → P5 — inwentarz Q1: P5 — widoczność strefy rozstawienia = węzły sceny (`_endDeployPhase`, cz. 3 → cz. 4) |
+| 549 | 14413–14419 | `BattleScene._groupDisplayNum` | dołączony | — | ZPORTOWANY (cz. 4) | `group_display_num`, `js_parse_int10` — inwentarz Q1: P6.13 — numer na znaczniku grupy (§4 „znaczniki grup”) |
+| 626 | 16364–16394 | `BattleScene._endDeployPhase` | cz. 3 → cz. 4 | _setDeployZoneVisible, (_doMeleeAttack), (_doMove), (_doRangedAttack), (_removeGroupFrameMarker), (_removeUnitFromScene), (_spawnDamageLabel), (_startFade), (_startRout), (_syncAllGroupFrameMarkers), (_updateAmmoBar), (_updateGroupFrameMarker), (_updateHpBar), (_updateMoraleBar) | ZPORTOWANY częściowo (cz. 4: część sceny) | `end_deploy_phase` (+ `clear_deploy_ghosts`, `clear_order_preview`, `dispose_all_order_lines` z cz. 3) — migawki grup, zaznaczenie, UI, start bitwy → P6.13 / P5 |
+| 658 | 17016–17085 | `BattleScene._executeGroupDoctrineStep` | RUNDA-4 | (_doMeleeAttack), (_doMove), (_doRangedAttack), (_spawnDamageLabel), (_startFade), (_startRout), (_updateAmmoBar), (_updateHpBar), (_updateMoraleBar) | PODZIAŁ: logika → P6.13; część sceny = wywołania funkcji zportowanych (kolumna `woła`) | decyzja (cel, krok, ucieczka, rozbicie) → P6.13; skutek w scenie przez funkcje z kolumny `woła` |
+| 659 | 17086–17124 | `BattleScene._executeSkirmishDoctrineStep` | RUNDA-4 | (_doMeleeAttack), (_doMove), (_doRangedAttack), (_spawnDamageLabel), (_startFade), (_startRout), (_updateAmmoBar), (_updateHpBar), (_updateMoraleBar) | PODZIAŁ: logika → P6.13; część sceny = wywołania funkcji zportowanych (kolumna `woła`) | decyzja (cel, krok, ucieczka, rozbicie) → P6.13; skutek w scenie przez funkcje z kolumny `woła` |
+| 700 | 18647–18667 | `BattleScene._makeGroupNumberTexture` | cz. 2 → cz. 4 | — | ZPORTOWANY (cz. 4) | `GroupNumberTexture` (`ops`, `SIZE`) — rasteryzacja canvas → rasteryzator tekstu (NIE_ZMIERZONO wzrokowo) |
+| 701 | 18668–18683 | `BattleScene._removeGroupFrameMarker` | cz. 3 → cz. 4 | — | ZPORTOWANY (cz. 4) | `GroupMarkers::remove` |
+| 702 | 18684–18730 | `BattleScene._updateGroupFrameMarker` | cz. 3 → cz. 4 | _removeGroupFrameMarker | ZPORTOWANY (cz. 4) | `GroupMarkers::update` (`Line` w `FieldScene::lines`, `Sprite`) |
+| 703 | 18731–18741 | `BattleScene._syncAllGroupFrameMarkers` | cz. 3 → cz. 4 | _removeGroupFrameMarker, _updateGroupFrameMarker | ZPORTOWANY (cz. 4) | `GroupMarkers::sync_all` |
+| 723 | 19438–19438 | `lerp` | cz. 2 → cz. 4 | — | ZPORTOWANY (cz. 4) | `lerp`; test `constants_and_easing_equal_web` |
+| 724 | 19439–19439 | `easeOut` | cz. 2 → cz. 4 | — | ZPORTOWANY (cz. 4) | `ease_out`; test `constants_and_easing_equal_web` |
+| 725 | 19440–19441 | `easeIn` | cz. 2 → cz. 4 | — | ZPORTOWANY (cz. 4) | `ease_in`; test `constants_and_easing_equal_web` |
+
+## 33. Generator i dane referencyjne (`tests/fixtures/battle3d/`, README tamże, „Part 4”)
+
+- `gen_dynamics.ts` + `build_dynamics.mjs` (= bundler części 3 z dłuższą listą dopisanego `export { … }`), `dom_stub.ts`,
+  `three_shim.ts` z części 2; `gra/**` bez zmian. `requestAnimationFrame` = rejestrator kolejki; `frame(t)` ustawia
+  `vNow = t` i wykonuje kolejkę raz (to, co pętla robi po `_advanceVClock`).
+- `dynamics.json` 136 900 B; katalog fixtur 11 813 305 B (≤ 12 MB), największy plik bez zmian (`siege_wall.json`
+  7 228 812 B ≤ 8 MB); `MANIFEST.sha256` 20 plików. Bundel 2 792 288 B nie jest commitowany (budżet), SHA w README.
+- Scena wejściowa = DTO części 3 (`tilesRle`, `spawn`, `moves`); `tilesNow` = siatka po zamianie kilku kafli przy
+  chodzących jednostkach na wzgórze / rzekę / bród (zmienia tylko odczyty `tileTopY`).
+
+## 34. Testy (`tests/battle3d_dynamics.rs`) i testy jednostkowe
+
+| test | co porównuje |
+|---|---|
+| `dynamics_match_web` | 23 zdarzenia na jednej scenie (§29 p. 2): pozycje modelu i pasków w każdej próbkowanej klatce (bitowo), `done` / `hit` / liczba ciosów, sygnatury modelu jednostki (`modelRecord`: geometria, kolor, krycie, macierz świata każdego mesha + rodzaj / widoczność / macierz każdego węzła), pasków, pocisków (pełne rekordy przy starcie), gruzu (pełne rekordy pierwszej bryły), muru, znaczników, siatki kafli (RLE), podsumowanie sceny, napisy (pozycja świata, start, czas, wzniesienie; punkty przed rzutem i krycie jako napis JS) |
+| `deploy_phase_matches_web` | 84 znaczniki grup interfejsu rozstawienia (model każdej jednostki gracza), klatka fazy rozstawienia (podsumowanie, `orderLines`, paski), `_endDeployPhase` (podsumowanie, `orderLines`, grupa strefy, warstwa duchów, widoczność 2 529 meshy strefy: 0 widocznych) |
+| `projectiles_match_web` | `projectileKind` 306 par (kategoria × nazwa, przez `nazwa` i `stats.Jednostka`), `makeProjectileMesh` × 4 (pełne rekordy węzłów) |
+| `constants_and_easing_equal_web` | 10 stałych bitowo, `lerp` / `easeOut` / `easeIn` dla 11 wejść (NaN, ±0, ∞) |
+| `battle::dynamics::tests::parse_int_follows_ecma` (jednostkowy) | `parseInt(·, 10)` (spacje, znak, część ułamkowa, brak cyfr, BOM) i `_groupDisplayNum` |
+
+## 35. Bramy tego wywołania (`runs/…-Q4/dowody/tests-impl-r1.txt`) i plan „pomiarów”
+
+```text
+# rustc 1.97.0; CARGO_INCREMENTAL=0, CARGO_PROFILE_DEV_DEBUG=0, CARGO_TARGET_DIR=/home/user/cargo-target-shared/<worktree>
+$ cargo fmt --all -- --check                                              EXIT=0
+$ cargo clippy --locked --lib --test battle3d_dynamics -- -D warnings      EXIT=0
+$ cargo test --locked --test battle3d_dynamics -- --nocapture             4 passed  EXIT=0
+$ cargo test --locked --test battle3d_siege_wall --test battle3d_field --test battle3d_units   5 + 3 + 8 passed  EXIT=0
+$ cargo test --locked --lib battle::                                      11 passed  EXIT=0
+$ sha256sum -c MANIFEST.sha256 (20)                                       EXIT=0
+$ du -sb tests/fixtures/battle3d                                          11813305
+$ mutate_dynamics.py: 48 mutantów, wzorce dokładnie raz                   EXIT=0
+$ determinizm generatora (2 katalogi)                                     identyczne (dowody/determinism-r1.txt)
+$ recon-q4.py (2 przebiegi, cmp)                                          EXIT=0, identyczne (dowody/recon-q4.txt)
+```
+
+**Do wywołania „pomiary” (NIE_ZMIERZONO tutaj):** `mutate_dynamics.py` (48 mutantów, MSRV 1.87.0), pełne bramy
+`cargo clippy --locked --all-targets [--features gpu] -- -D warnings` i `cargo test --locked --all-targets` (1.87.0 i
+1.97.0), niezależne odtworzenie generatora w trzecim katalogu. Kandydaci na mutanty równoważne do sprawdzenia:
+`gate height rule` (zależy, czy przy bramie jest mesh z `0,9·h ≤ y < h`), `fade hides bars`.
+
+## 36. Co ocenić wzrokiem po RR-T5 (NIE_ZMIERZONO — wymaga GPU)
+
+1. Krok jednostki: `easeOut`, podskok 0,12, płynne wejście na wzgórze / zejście do rzeki (wysokość interpolowana),
+   paski płyną razem (bez podskoku).
+2. Cios wręcz: wypad na 60 % drogi do połowy odległości (`easeOut`), powrót `easeIn`, łącznie 260 ms; obrót atakującego
+   i — przy kontrze — obrońcy.
+3. Pociski: strzała (cienka, krótka, z lotką), oszczep (dłuższy, grubszy), pilum (z żelaznym trzpieniem), kamień z procy;
+   lot 380 ms po łuku 0,6; **orientacja ustalona przy starcie** (nie podąża za styczną łuku — W-19).
+4. Zanikanie: przezroczystość 1 → 0 i skurcz do 40 % w 500 ms, potem model i paski znikają.
+5. Taran: ruch 0,25 w stronę bramy i powrót (320 ms); kamień katapulty: szara kula 0,32 po łuku 3,5 (700 ms).
+6. Wyłom muru: znika segment(y) rzędu, 7 brył gruzu (kamień / glina, cieniowanie płaskie, cienie); wyłom bramy: znika
+   brona i elementy przy bramie (reguła odległości / wysokości — sprawdzić, czy nie zostają dziury ani nie znika za dużo).
+7. Znaczniki grup: złoty kwadrat 0,88 kafla pod jednostką (krycie 0,92), numer w złotym polu 0,55 w lewym górnym rogu,
+   zawsze na wierzchu (`depthTest: false`); rasteryzacja tekstury canvas (czcionka `bold 16px sans-serif`).
+8. Paski zwrócone do kamery (billboard) w bitwie i w rozstawieniu; po zakończeniu rozstawienia linie rozkazów widoczne,
+   strefa rozstawienia ukryta.
+9. Napisy obrażeń / muru (DOM, P5) — wznoszenie 0,12 j./s, zanik `1 − p²` przez 2 s.
+
+## 37. Obserwacje o webie (część 4; port 1:1, bez zmian w `gra/**`)
+
+- **W-17** Katapulta obrońcy na wyburzonym kaflu (`_breachWallTile`, `:7364-7369`) dostaje `dead = true`,
+  `fadingOut = true`, `fadeStart = performance.now()` (zegar ZEGAROWY, nie `_now()`), ale **nie trafia do
+  `fadingUnits`** — `_tickFades` jej nie animuje: model zostaje w scenie w pełnym kryciu (zmierzone: `def40`, `def47` po
+  wyłomie rzędu 73 — sygnatura modelu bez zmian, test przechodzi bez żadnej operacji sceny), tylko billboard pasków
+  ustaje (`dead`).
+- **W-18** Uciekająca jednostka: `_startRout` zwraca ją ku własnej krawędzi (`:8971-8972`), ale każdy krok `_doMove`
+  woła `_updateFacing` (`:8047`) i odwraca ją z powrotem do najbliższego wroga — ucieka tyłem (zmierzone: `atk32`
+  kierunek 3 (W) po rozbiciu → 1 (E) po pierwszym kroku).
+- **W-19** Pocisk jest celowany raz przy starcie (`:8478-8483`); `_tickProjectiles` zmienia tylko pozycję (`:8591`),
+  więc grot nie podąża za łukiem (wznosi się i opada w tej samej orientacji).
+- **W-20** `_groupDisplayNum` = `parseInt(gid, 10)` (`:14415`): `' 12x'` → 12, `'2.9'` → 2; `'0'`, `'-2'`, `'abc'`
+  → ramka bez numeru (zmierzone, `markers`).
+- **W-21** Napisy obrażeń dostają `startTime = vLastWall` (`:9113`); przed pierwszą klatką bitwy (`vLastWall = 0`, także
+  po `_endDeployPhase`, `:16385`) napis ma start 0 i znika przy pierwszym ticku z `t ≥ 2000` (zmierzone: 4 napisy ciosów
+  w `labels` usunięte przy `t = 2000`).
+- **Dryf weba po pinie** (`dowody/web-drift-r1.txt`; `git diff --stat edb8fb56 origin/main -- gra/src/battle
+  gra/src/render`, `origin/main` = `cc2c6a50`): 13 plików, **+835 / −221** (część 3: +629 / −213 przy `91dc998a`);
+  `battleScene.ts` +357 / −159, 49 hunków. W symbolach części 4: **3 hunki** — `_breachWallTile` (`:7367`), `_startRout`
+  (`:8961`), `_startFade` (`:9083`) dostają blok dowódcy armii (`isArmyCommander` → `_removeCommanderMoraleBonus`,
+  `_disableManualIfCommanderLost`): logika morale / trybu ręcznego (P6.13), skutek w scenie = `_updateMoraleBar`
+  (część 3, przez DTO morale). Kod transformacji części 4 bez zmian w tych hunkach. Nie przepinam (dispatch); wpływ na
+  wektory części 4 NIE_ZMIERZONO.

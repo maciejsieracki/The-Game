@@ -1,0 +1,12 @@
+dir 2: q4b.1du7, node v22.22.0, three 0.169.0, esbuild 0.24.0
+battle3d dynamics events=23
+--- dir 1 (q4.88Xs) / dir 2 (q4b.1du7):
+4c7bcc214cec485d15cd9d29053b82661c177caedd90be6b7e361ca845ae89e0  q4.88Xs/out/dynamics.json
+4c7bcc214cec485d15cd9d29053b82661c177caedd90be6b7e361ca845ae89e0  q4b.1du7/out/dynamics.json
+4c7bcc214cec485d15cd9d29053b82661c177caedd90be6b7e361ca845ae89e0  rust-port/renderer/tests/fixtures/battle3d/dynamics.json
+9d5071a451e21b4429e470ed09169b6cbef8ef0b80f1237c984cddf37acb96c2  q4.88Xs/refscript/gen_dynamics.mjs
+9d5071a451e21b4429e470ed09169b6cbef8ef0b80f1237c984cddf37acb96c2  q4b.1du7/refscript/gen_dynamics.mjs
+dynamics.json identical
+gen_dynamics.mjs identical
+bundle bytes: 2792288
+EXIT=0

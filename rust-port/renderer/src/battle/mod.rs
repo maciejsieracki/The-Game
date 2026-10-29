@@ -21,6 +21,7 @@
 //! (`tests/battle3d_siege_wall.rs`, `tests/battle3d_field.rs`,
 //! `tests/fixtures/battle3d/`).
 
+pub mod dynamics;
 pub mod field;
 pub mod siege_wall;
 pub mod units;

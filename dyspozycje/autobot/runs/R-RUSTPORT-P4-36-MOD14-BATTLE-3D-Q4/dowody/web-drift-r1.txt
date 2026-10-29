@@ -1,0 +1,27 @@
+$ git rev-parse origin/main
+cc2c6a5091201ea045dc761e6862b7348502bd09
+$ git diff --stat edb8fb56 origin/main -- gra/src/battle gra/src/render
+ gra/src/battle/battleScene.ts              | 516 ++++++++++++++++++++---------
+ gra/src/battle/formationRules.ts           | 160 +++++++++
+ gra/src/render/braz-rydwan-woly-opus5.ts   |   4 +-
+ gra/src/render/bronzeCityRoblox.ts         |   3 +-
+ gra/src/render/cities.ts                   |  74 ++++-
+ gra/src/render/kopalnia-cyny-opus5.ts      |   7 +-
+ gra/src/render/kopalnia-zlota-opus5.ts     |   7 +-
+ gra/src/render/memDebug.ts                 |  59 ++++
+ gra/src/render/stoneCityRoblox.ts          |   3 +-
+ gra/src/render/transientObjectResources.ts |  68 ++++
+ gra/src/render/unitStatPlate.ts            |  10 +-
+ gra/src/render/unitVeteranBadges.ts        |  36 ++
+ gra/src/render/units.ts                    | 109 +++---
+ 13 files changed, 835 insertions(+), 221 deletions(-)
+$ git diff edb8fb56 origin/main -- gra/src/battle/battleScene.ts | grep -c '^@@'
+49
+$ hunks (-U0) whose OLD start line lies inside a part-4 symbol at the pin
+  (makeProjectileMesh 1628-1717, _attackGate/_animateRam 7000-7055, _attackWallTile/_spawnCatapultBoulder 7204-7269,
+   _breachWallTile 7302-7416, _breachGate/_spawnWallLabel 7421-7495, _doMove 7989-8072, _doMelee/_doRangedAttack 8361-8509,
+   _startLoop/_tickProjectiles/_tickFades 8510-8622, _tickFloatLabels 8624-8643, _startRout 8958-8989, _fleeStep.._spawnDamageLabel 9000-9118,
+   group markers 18647-18739, lerp/ease 19438-19441)
+@@ -7367,0 +7358,4 @@ export class BattleScene {
+@@ -8961,0 +9024,4 @@ export class BattleScene {
+@@ -9083,0 +9150,4 @@ export class BattleScene {

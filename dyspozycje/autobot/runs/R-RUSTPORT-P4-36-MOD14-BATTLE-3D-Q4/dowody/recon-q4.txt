@@ -1,0 +1,11 @@
+$ sha256sum (wejścia)
+139b84eb4cc956a2b5d4f71cf4838a583d1e45bc10aa11c6c223c60817159dcd  dyspozycje/autobot/runs/R-RUSTPORT-P4-36-MOD14-BATTLE-3D-Q1/inwentarz-battleScene.md
+38c9773691a29f4d2dad43c08436bc21a3cfcc356ed1be80c8052f43153fbd95  battleScene.ts@edb8fb56
+82d583f4075d6b030f799b785b0bc83f4b923afdf30d25d923587075bf122dcf  rust-port/renderer/src/battle/dynamics.rs
+40c541830406507befb0ca949fd04bc4948ba001eb7daab6e903fafea12fc13f  rust-port/renderer/src/battle/units.rs
+$ python3 -I recon-q4.py <inwentarz> <battleScene.ts> dynamics.rs units.rs > recon-q4-table.md
+EXIT=0
+LICZNIK: wierszy = 67; PODZIAŁ = 21; WSPÓLNA = 7; ZPORTOWANY = 24; ZPORTOWANY częściowo = 15; bez statusu / niezgodnych = 0
+$ drugi przebieg | cmp - recon-q4-table.md
+identyczne
+wierszy tabeli: 67

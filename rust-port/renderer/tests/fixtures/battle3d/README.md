@@ -231,3 +231,64 @@ The injected lookups (`_pickUnitAtScreen`, `_pickGroundTile`, `_moveDestinations
 | `units.json` | the vectors above (645 438 B) |
 | `gen_units.ts`, `build_units.mjs` | generator and bundler (uses `dom_stub.ts`, `three_shim.ts` of part 2) |
 | `mutate_units.py` | mutation run (43 mutants of `src/battle/units.rs`; measured 43/43 killed, r1 pomiary; runs `--lib battle::units` and `--test battle3d_units`) |
+
+---
+
+# Part 4: dynamics and effects (R-RUSTPORT-P4-36-MOD14-BATTLE-3D-Q4)
+
+Reference states for `tests/battle3d_dynamics.rs` (`battle::dynamics`), produced by **running
+`battle/battleScene.ts` of `edb8fb56`** with the part-2/3 toolchain (three@0.169.0, esbuild@0.24.0,
+node v22.22.0, `dom_stub.ts`, `three_shim.ts`). Bundler `build_dynamics.mjs` = `build_units.mjs` with a
+longer appended `export { … }` line (+ `makeProjectileMesh`, `projectileKind`, `lerp`, `easeOut`,
+`easeIn`, `MOVE_STEP_MS` … `MORALE_WALL_BREACH`); `battleScene.ts` text otherwise unchanged.
+
+**How the animations are driven.** `requestAnimationFrame` is replaced by a recorder (callbacks are
+queued); `frame(t)` sets the virtual clock `vNow = t` and runs the queued callbacks once — what the
+frame loop does after `_advanceVClock`. The per-frame tickers (`_tickProjectiles`, `_tickFades`,
+`_tickFloatLabels`) are called with chosen times. Logic the animated methods call is stubbed or only
+observed (P4-36 Z-36-13): `_singleBlow` (fixed damage), `_defenderCounters`, `_schedule` (records the
+delay; the generator runs a scheduled callback where the scene depends on it), SFX, siege HUD,
+`_boostEnemiesOnBreak` / `_checkMeleeScreenLost` / `_shakeAlliesOnLoss`. What the logic decided
+(facing after `_updateFacing` / an attack, routs, retreat cells, morale, flee steps) is dumped as the
+DTO the Rust test replays.
+
+## Regeneration (outside the repository only)
+
+```bash
+S=<scratch dir>
+mkdir -p $S/ref $S/websrc $S/refscript $S/out
+(cd $S/ref && npm init -y && npm install --ignore-scripts three@0.169.0 esbuild@0.24.0)
+git archive edb8fb56 gra/src gra/data | tar -x -C $S/websrc
+cp rust-port/renderer/tests/fixtures/battle3d/{gen_dynamics.ts,build_dynamics.mjs,dom_stub.ts,three_shim.ts} $S/refscript/
+ln -s $S/ref/node_modules $S/refscript/node_modules
+node $S/refscript/build_dynamics.mjs        # -> $S/refscript/gen_dynamics.mjs
+node $S/refscript/gen_dynamics.mjs $S/out   # prints: battle3d dynamics events=23
+sha256sum $S/out/dynamics.json $S/refscript/gen_dynamics.mjs
+```
+
+Measured (r1): two runs in two different scratch directories (separate `npm install`, separate
+`git archive`) give identical `dynamics.json` (= `MANIFEST.sha256`) and `gen_dynamics.mjs`
+(2 792 288 B, SHA-256 `9d5071a451e21b4429e470ed09169b6cbef8ef0b80f1237c984cddf37acb96c2`; not
+committed — fixture budget, not in `MANIFEST.sha256`). No `Math.random` is reached (rubble uses
+`tileJitter`).
+
+## Cases (`dynamics.json`)
+
+| key | what |
+|---|---|
+| `siege` | the `oblezenie` preset (civ `rzym`): DTO `tilesRle` / `desert` / `spawn` / `moves` as in part 3; `tilesNow` = the grid after a few tiles next to the walking units were turned into hills / river / ford (only `tileTopY` reads change) |
+| `events[]` (23, replayed in order on ONE scene) | `move` ×6 (onto a hill, into a river and a ford, back; fractional sample times, `p = 1`, past the end), `melee` ×3 (plain; with a counter that turns the defender; attacker killed by the counter → frozen), `shots` (4 projectiles: a real wall archer → `arrow`, the same archers with category `procarz` / `oszczepnik` / `legionista` → `sling` / `javelin` / `pilum`; full tree at launch, positions at 10 times until all landed), `fade` (two staggered deaths), `ram` ×2 (full run; interrupted by `finished`), `boulder` (flight, removal, the scheduled hit with tile HP 1 → `_breachWallTile`), `breachWall` ×4 (three defenders stacked on the tile retreat; two defender catapults destroyed; a row without wall mesh / outside the grid; the same row again), `breachGate`, `flee` (rout + flee steps to the fenced margin, stuck twice → removed), `markers` (group ids `'3'`, `'abc'`, `'0'`, `' 12x'`, `'7'`, `null`, `'-2'`, `'2.9'`, `'9'`, `'9'` on a dead unit, then `_syncAllGroupFrameMarkers`; number textures as recorded canvas calls), `billboard` (two camera poses, every live unit), `labels` (every float label spawned above; `_tickFloatLabels` at 10 times with `Vector3.project` intercepted: the point before the projection and the CSS opacity) |
+| `deploy` | the `rzym_grecja` preset in deploy `atk`: the deploy UI's 84 group markers, the deploy-phase frame (stale preview cleared, order lines hidden, billboards), `_endDeployPhase` (3D part; UI / logic stubbed) |
+| `projectileKinds`, `projectileMeshes` | `projectileKind` over 9 categories × 17 names (via `nazwa` and via `stats.Jednostka`); `makeProjectileMesh` for the 4 kinds |
+| `consts`, `easing` | the 10 constants; `lerp` / `easeOut` / `easeIn` incl. NaN, `±0`, `Infinity` |
+
+Record format: `dumpTree` / `modelRecord` / `sceneSummary` as in part 3, plus kind `Sprite` (9: material
+identity + `matSig`), Sphere / Icosahedron parameters, `modelRecord` WITHOUT skipping `groupFrame`,
+and `updateWorldMatrix(true, true)` before every dump (no stale ancestor `matrixWorld`). Positions are
+binary64 hex (`hx`). Mirrored in `battle3d_dynamics.rs`.
+
+| File (part 4) | Content |
+|---|---|
+| `dynamics.json` | the vectors above (136 900 B) |
+| `gen_dynamics.ts`, `build_dynamics.mjs` | generator and bundler (uses `dom_stub.ts`, `three_shim.ts` of part 2) |
+| `mutate_dynamics.py` | mutation run (48 mutants of `src/battle/dynamics.rs`; runs `--lib battle::dynamics` and `--test battle3d_dynamics`; execution = Operator "pomiary") |
