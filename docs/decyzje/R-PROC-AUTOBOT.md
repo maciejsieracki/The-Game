@@ -1060,3 +1060,24 @@ Wszystkie tematy (web i port Rust): **Operator i Obrona → Haiku 5.5 medium; Ev
 
 Po KAŻDYM zakończonym Workflow oraz po każdym `git push`/publikacji na ROBOCZĄ orkiestrator od razu: (1) upewnia się, że wynik jest zabezpieczony (commit na zdalnym albo `refs/keep/*`), (2) usuwa kopie robocze zakończonych workflow (`git worktree remove --force .claude/worktrees/wf_<id>-*` + `git worktree prune`), (3) czyści katalogi tymczasowe w scratchpadzie (buildy `dist-*`, klony baz, logi) i `/tmp` po własnych przebiegach, (4) NIE rusza kopii robocznych workflowów wciąż trwających. Powód: dysk (~25 GB) zapełniał się (ENOSPC) i przewracał kolejne workflowy. Sprawdzenie `df -h /` przed startem każdego nowego workflow; poniżej ~5 GB wolnego — najpierw sprzątanie.
 
+
+## §5d — Ścieżka poprawki w 11 etapach i raportowanie postępu (właściciel, 2026-10-29; obowiązkowe)
+
+Dotyczy poprawek i zmian w wersji webowej oraz — tam, gdzie ma to zastosowanie — w porcie Rust/Tauri.
+
+**Ścieżka każdej poprawki (numeracja stała, 1–11):**
+1. Operator — osobny temat, sprawdza wcześniejsze zgłoszenia i kod.
+2. Rozpoznanie — odtwarza błąd i ustala przyczynę.
+3. Rejestracja — zapis tematu, kryteriów naprawy i planu testów.
+4. Implementacja — operator wprowadza zmianę.
+5. Testy operatora — regresja oraz odpowiednie testy gry/interfejsu.
+6. Evaluator — niezależnie sprawdza poprawkę, testy i ryzyko pominiętych przypadków.
+7. Obrona operatora — operator odpowiada na uwagi Evaluatora i przedstawia dowody, że zmiana spełnia kryteria. Etap warunkowy: gdy Evaluator nie zgłosi zarzutów, przechodzi się z 6 do 8. Gdy obrona nie przejdzie, poprawka wraca do operatora.
+8. Final Control — kontrola zatwierdzonego zakresu i kompletu wyników.
+9. Scalenie do `main`.
+10. Deploy do Roboczej.
+11. Kontrola po wdrożeniu — sprawdzenie wydania w Roboczej i zapis wyniku.
+
+Wynik Evaluatora (nawet z adnotacjami) nie zalicza całego procesu: potrzebna jest też obrona (gdy były zarzuty), potem Final Control. Starsze wdrożenia Roboczej są osobnymi wydaniami i nie zaliczają etapów 9–11 dla nowych poprawek.
+
+**Zasada raportowania:** gdy właściciel pyta o postępy / etap danej zmiany lub poprawki błędu, orkiestrator podaje dla KAŻDEGO tematu **numer aktualnego etapu (1–11)** z tej ścieżki, jego nazwę i jednozdaniowy powód (co zrobione, czego brakuje). Tematy odłożone przed etapem 1 oznacza jako „odłożone przed etapem 1”.
