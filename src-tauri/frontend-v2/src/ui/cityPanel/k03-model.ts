@@ -19,7 +19,7 @@ import type { CityGrowthDto, CityPanelDto, CitizenUpkeepCoverageDto, CityRevoltD
 import type { CityProductionK, GrowthPercentBreakdownK } from './k01b-dto';
 import { localProd } from './k01b-t';
 import type { CityView } from './k01b-t';
-import { DEFAULT_PODZIAL_HANDLU, DEFAULT_PODZIAL_PRACY, type PodzialHandluSplit, type PodzialPracySplit } from './k01a-fundament';
+import { DEFAULT_PODZIAL_HANDLU, DEFAULT_PODZIAL_PRACY, isDevOnlyPlayerText, isEmptyDataVal, stripInlineDevAnnotations, type PodzialHandluSplit, type PodzialPracySplit } from './k01a-fundament';
 
 /** Pin: `CityGrowthLive` (cityGrowthLive, pin :1527) — wynik dla plakietki wzrostu. */
 export interface CityGrowthLiveK {
@@ -132,4 +132,35 @@ export function getProd(cityId: string): CityProductionK {
 /** K03-Z7: pin `setProd` (:638) — zapis lokalnego cache. */
 export function setProd(cityId: string, prod: CityProductionK): void {
   localProd.set(cityId, prod);
+}
+
+/** Pin :7230-7236 `playerFacingNote` (czysta funkcja tekstu, bez stanu gry). Runda 2: 1:1. */
+export function playerFacingNote(text: string | null | undefined): string | null {
+  if (!text || isEmptyDataVal(text)) return null;
+  const raw = String(text).trim();
+  if (isDevOnlyPlayerText(raw)) return null;
+  const cleaned = stripInlineDevAnnotations(raw);
+  return cleaned || null;
+}
+
+/** Pin :7295-7299 `unitExtraField` (odczyt pola jednostki; pusta wartosc -> null). Runda 2: 1:1. */
+export function unitExtraField(u: Readonly<Record<string, unknown>>, key: string): string | number | null {
+  const v = u[key];
+  if (isEmptyDataVal(v)) return null;
+  return v as string | number;
+}
+
+/** Pin :1402-1414 `cityFoodSplit` (podzial zywnosci na produkcje/racje, przyciety do maxSafe). Runda 2: 1:1. */
+export function cityFoodSplit(view: CityView, maxSafe?: number): { total: number; produkcja: number; racje: number; clamped: boolean } {
+  const produkcja = Math.round(view.zywnoscBrutto);
+  const effectiveLevel = maxSafe !== undefined ? Math.min(view.poziomRacji, maxSafe) : view.poziomRacji;
+  const clamped = effectiveLevel < view.poziomRacji && view.poziomRacji > 0;
+  if (!clamped) {
+    const racje = Math.round(view.kosztRacji);
+    const total = Math.round(view.bilansLokalny);
+    return { total, produkcja, racje, clamped };
+  }
+  const racje = Math.round(view.kosztRacji * effectiveLevel / view.poziomRacji);
+  const total = produkcja - racje;
+  return { total, produkcja, racje, clamped };
 }
