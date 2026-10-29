@@ -39,3 +39,34 @@ BLOKADY: brak decyzji ludzkich; Rust clippy/test INFRA (środowisko).
 RUNDY: 2/5; następna 3/5.
 NASTĘPNY KROK: Operator-impl r3.
 DEPLOY/PUSH: NIE WYKONANO
+
+---
+
+# Final Control, runda 3/5 (commit oceniany 238eb5e4, baza kodu 12574ab8)
+
+STATUS: PASS-WITH-NOTES
+DOMAIN: GAME
+TEMAT: R-RUSTPORT-P5-8-CITYPANEL-K07B-Q1
+
+## Orzeczenia wobec zarzutow Evaluatora r3 i obrony
+1. Dossier: 63 vs 53 nazw. ODDAL (naprawione w 238eb5e4; dossier §3 K07B-Z2 i linia 41 podaja 53, zgodne z dep() w kodzie).
+2. PORTING-QUEUE: sprzeczny NIE_ZMIERZONO. ODDAL (usuniety; grep "r2 nie zdazyl" pusty).
+3. Wykonalnosc jednostek na domyslnym wiringu. ODDAL (K07B-Z8: neutralne atrapy resolveOrderState/getProd; smoke sekcja D 45/45 bez wyjatku; mutanty M17/M18 zabite). Ograniczenie: smoke sprawdza brak wyjatku, nie tresc; produkcyjny wywolujacy = K09.
+4. Kopia chipDeltaStockHtmlK07 poza bramka tekstu. ODDAL (zgodnosc behawioralna z prawdziwym buildChipDeltaStockHtml, siatka 225 par, 0 niezgodnosci; mutanty M05-M07 zabite). Uwaga drobna: ryzyko dryfu po pinie.
+Zero NAPRAW, zero DO DECYZJI CZLOWIEKA.
+
+## Weryfikacja wlasna (pin edb8fb56 w scratchpadzie, 238eb5e4)
+- npm ci EXIT 0
+- run-k07b-units.mjs --pin-dir: EXIT 0; comparisons=335, diffs=0, wiringFails=0, przypadkiZBledem=0, smoke 45/45
+- verify-k07b-copies.mjs: EXIT 0; bloki=23, niezgodne=0, ORPHAN=0
+- mutate-k07b-units.mjs 1-16 EXIT 0, 17-31 EXIT 0 (wszystkie zabite, w tym Z13)
+- npm run check EXIT 0; npm run typecheck EXIT 0
+- git diff --check 12574ab8..238eb5e4 czysty
+- Allowlista: tylko k07b-*, controller/k07bWiring.ts, tools/dom-harness, PORTING-QUEUE.md, P5-8-K07B.md, run K07B. Brak gra/, rust-port, WERSJE.md, package.json.
+- Rust/cargo: nie dotyczy (brak plikow Rust w diffie; clippy INFRA GTK).
+
+## Integracja
+SHA do integracji: 238eb5e4 (+ commit tego raportu). origin/rust-port/parity-v2 = 6daf5ed1 (K08A zintegrowane); baza K07B 12574ab8 nie jest przodkiem. Merge-tree: jedyny konflikt = src-tauri/frontend-v2/PORTING-QUEUE.md (rozwiazac recznie, zachowac wpisy K08A i K07B). Kolejnosc: K07B po K08A; po rebase powtorzyc check, typecheck, run-k07b-units.
+NIE_ZMIERZONO: przegladarka, produkcyjny wywolujacy (K09), rebase.
+RUNDY: 3/5
+DEPLOY-PUSH: NIE WYKONANO
