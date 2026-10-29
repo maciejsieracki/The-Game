@@ -727,6 +727,8 @@ braku miejsca na dysku współdzielonym przez agentów — pierwszy przebieg na 
    wartościami modułu weba (`constants_equal_web`).
 4. **Mutacje:** przygotowane 42 mutanty (`tests/fixtures/battle3d/mutate_units.py`, każdy wzorzec występuje
    dokładnie raz — sprawdzone); **uruchomienie = wywołanie „pomiary”** (NIE_ZMIERZONO w tym wywołaniu).
+   *Dopisek „pomiary” r1:* uruchomione — 41/42 zabite, 1 przeżył (`js_max NaN`), test wzmocniony, dodany
+   43. mutant (`js_min NaN`) → **43/43 zabite**; pełne bramy i MSRV 1.87.0 zielone — §28.
 5. Determinizm: generator w 2 różnych katalogach (osobny `npm install`, osobny `git archive`) → identyczny
    `units.json` (`6fb3b65a…12b171`) i bundel `gen_units.mjs` (`f59b9842…4bc3`, nie commitowany).
 6. Uzgodnienie z inwentarzem: **172 wiersze** (147 `RUNDA-3` + 24 odłożone przez część 2 + 1 dopisany), 0 bez
@@ -1079,3 +1081,31 @@ deduplikacja grup, kolory / krycie duchów, obrysy).
   `91dc998a`): 13 plików, +629 / −213; `battleScene.ts` ±335 (m.in. `_placeUnits` / `_placeUnitsOneSide` — nowe
   `formationRules.ts`, pola `isArmyCommander` / `formationRank`, sprzątanie pamięci po bitwie), `render/units.ts` 109 linii
   (modele MOD-04…07). Nie przepinam (dispatch); wpływ na wektory części 3 NIE_ZMIERZONO.
+
+## 28. Pomiary części 3 (Operator „pomiary” r1; logi `runs/…-Q3/dowody/{gates-pomiary-r1,mutate-units-r1,verify-gen-r1}.txt`)
+
+Na commicie Operatora-impl `d2fecbb3` (+ raport `1b73d2e1`), worktree izolowany, `CARGO_INCREMENTAL=0`,
+`CARGO_PROFILE_DEV_DEBUG=0`, rustc 1.87.0 (MSRV) i 1.97.0 (stable).
+
+1. **Mutacje** (`mutate_units.py`, 1.87.0, w trzech partiach przez `MUTANTS[a:b]`): pierwszy przebieg **41/42 zabite**,
+   przeżył `js_max NaN` (`if a.is_nan() { return b; }`). Przyczyna: test jednostkowy sprawdzał tylko `js_max(0.0, NaN)`,
+   a ten przypadek mutant obsługuje poprawnie (`a > b` fałsz → `b` = NaN). Wszystkie wywołania produkcyjne
+   (`units.rs` :432, :451, :456, :477, :482, :1148) mają stały, nie-NaN pierwszy argument, więc mutant jest
+   **równoważny na osiągalnych wejściach** (stąd 0 różnic w wektorach). Poprawka testowa (bez zmian logiki):
+   `js_min_max_follow_ecmascript` dostał `js_max(NaN, 0.0)` i `js_min(1.0, NaN)`; dodany mutant lustrzany
+   `js_min NaN`. Wynik końcowy: **43/43 zabite** (`js_max NaN` i `js_min NaN` uruchomione na poprawionym teście;
+   pozostałe 41 zabite przy teście słabszym, a poprawka tylko dodaje asercje).
+2. **Bramy po poprawce:** `cargo fmt --all -- --check` EXIT=0; `cargo clippy --locked --all-targets -- -D warnings`
+   EXIT=0 i z `--features gpu` EXIT=0 — oba na 1.87.0 i na 1.97.0; `cargo test --locked --all-targets` (1.87.0)
+   **408 passed, 0 failed, 53 binaria**, EXIT=0; `battle3d_units` 8 + `battle3d_field` 5 + `battle3d_siege_wall` 3
+   (16 passed) EXIT=0; `--lib battle::units` 3/3 EXIT=0; `sha256sum -c MANIFEST.sha256` 16/16 EXIT=0; katalog fixtur
+   11 623 280 B (≤ 12 MB), największy plik `siege_wall.json` 7 228 812 B (≤ 8 MB); `git diff --check` EXIT=0.
+3. **Niezależny weryfikator generatora:** trzeci, osobny katalog poza repo (nowy `npm install --ignore-scripts
+   three@0.169.0 esbuild@0.24.0`, nowy `git archive edb8fb56 gra/src gra/data`, node v22.22.0) — `build_units.mjs` +
+   `gen_units.mjs` → `battle3d units ctor=11 units=1230 bars=10 arrows=12 preview=11 ghosts=16`; `units.json`
+   `6fb3b65a…12b171` = commit/MANIFEST, bundel `f59b9842…4bc3` = README. Próbka stałych w źródle weba @ `edb8fb56`:
+   `HPBAR_W = 0.32` (`battleScene.ts:967`), `HPBAR_Y = 0.72` (:978), korona muru 2,5 (:4361, :5887), progi HP `> 0.60` /
+   `> 0.30` (:8800–8801), strzałka `len < 0.08` (:10485), `Math.min(0.48, len * 0.24)` (:10492), duch `0x44aaff`
+   (:17500), pierścień `RingGeometry(0.45, 0.58, 24)` (:17633) — zgodne z `units.rs`.
+4. **Dryf weba** odmierzony ponownie: `origin/main` = `91dc998a`, 13 plików +629 / −213 — bez zmian względem §27.
+5. NIE_ZMIERZONO nadal: ocena wzrokowa (§26), wpływ dryfu po pinie na wektory (§27).

@@ -1,0 +1,38 @@
+## R-RUSTPORT-P4-36-MOD14-BATTLE-3D-Q3 Operator "pomiary" r1 - independent generator reproduction (3rd directory)
+## S = session scratchpad .../scratchpad/ver (outside the repository); node v22.22.0
+## $ (cd $S/ref && npm init -y && npm install --ignore-scripts three@0.169.0 esbuild@0.24.0)   EXIT=0; three version 0.169.0
+## $ git archive edb8fb56 gra/src gra/data -o $S/web.tar && tar -x -C $S/websrc -f $S/web.tar
+## $ cp tests/fixtures/battle3d/{gen_units.ts,build_units.mjs,dom_stub.ts,three_shim.ts} $S/refscript/ ; ln -s $S/ref/node_modules $S/refscript/node_modules
+## $ node $S/refscript/build_units.mjs
+## $ node $S/refscript/gen_units.mjs $S/out
+battle3d units ctor=11 units=1230 bars=10 arrows=12 preview=11 ghosts=16
+## $ sha256sum $S/out/units.json $S/refscript/gen_units.mjs rust-port/renderer/tests/fixtures/battle3d/units.json
+6fb3b65a970716a25b46f86bd394db78e32fad1e51463f56ff5b839f4112b171  $S/out/units.json
+f59b98427e40d8b01838a1ea981386d42a7437c21a50d791b9224835b70d4bc3  $S/refscript/gen_units.mjs
+6fb3b65a970716a25b46f86bd394db78e32fad1e51463f56ff5b839f4112b171  rust-port/renderer/tests/fixtures/battle3d/units.json
+## => units.json identical to committed / MANIFEST; bundle identical to README (f59b9842...4bc3)
+
+## constant spot-check in web source @ edb8fb56 ($S/websrc/gra/src)
+## $ grep -rnE 'HPBAR_W\s*=|HPBAR_Y\s*=|len < 0\.08|0\.48, len \* 0\.24|0x44aaff|RingGeometry\(0\.[0-9]+, 0\.58' battle render
+battle/battleScene.ts:967:const HPBAR_W = 0.32;          // 40% of the previous 0.80 length
+battle/battleScene.ts:978:const HPBAR_Y = 0.72;
+battle/battleScene.ts:10485:    if (len < 0.08) return g;
+battle/battleScene.ts:10492:    const headLen = Math.min(0.48, len * 0.24);
+battle/battleScene.ts:17500:      color: ok ? 0x44aaff : 0xff5555,
+battle/battleScene.ts:17633:    const geo = new THREE.RingGeometry(0.45, 0.58, 24);
+battle/manualBattle.ts:115:const HPBAR_W = 0.80;   (other module, not part of the port)
+battle/manualBattle.ts:117:const HPBAR_Y = 1.05;   (other module, not part of the port)
+## $ grep -nE 'ratio > 0\.6|ratio > 0\.3' battle/battleScene.ts ; grep wall walk 2.5
+battle/battleScene.ts:8800:    if (ratio > 0.60) color = 0x30c030;
+battle/battleScene.ts:8801:    else if (ratio > 0.30) color = 0xd0a020;
+battle/battleScene.ts:4361:      const topY = 2.5; // stand on top of wall (walkY from siegeWall opts.height)
+battle/battleScene.ts:5887:          const walkY = 2.5; // wall walk height
+
+## web drift after pin
+## $ git fetch origin main ; git rev-parse --short origin/main  -> 91dc998a
+## $ git diff --stat edb8fb56 origin/main -- gra/src/battle gra/src/render
+ 13 files changed, 629 insertions(+), 213 deletions(-)   (render/units.ts 109 lines; same as 01-operator-r1 / P4-36 §27)
+
+## fixtures
+## $ sha256sum -c MANIFEST.sha256   -> 16/16 OK, EXIT=0 (after MANIFEST update for README.md and mutate_units.py)
+## $ du -sb tests/fixtures/battle3d -> 11623280 ; largest siege_wall.json 7228812
