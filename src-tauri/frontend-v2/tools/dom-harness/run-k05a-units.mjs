@@ -104,6 +104,40 @@ const probeSrc = [
 ].join('\n');
 
 /** Fixture wejść reguł (K05A-Z4): deterministyczny, zależny od wariantu `v`; ten sam obiekt po obu stronach. */
+/** r3 (zarzut 1): DTO `panelInputs.k05a` dla wariantu v; wartości celowo różne od silnika (`mkFix`). */
+function mkDto(v) {
+  return {
+    // Celowo BEZ właściciela 0/3 w puli imperium: silnik daje undefined w obu źródłach (v=3), co testuje fallback;
+    // miasto 1 (właściciel 0) ma snapshot w DTO, więc ścieżka snapshotu jest osiągalna.
+    empireRekruciTotalByOwner: { 2: 5, 5: 7 + v },
+    manpowerBiezacyByCity: { 1: 1000 + v, 4: 0 },
+    manpowerCostByUnit: { a: 2 + v },
+    techPrereqChainByTech: { x: ['dto-x'], y: [] },
+    unitStockCostById: { a: { drewno: 1 } },
+    stockResourceLabelByKey: { drewno: `DTO${v}:drewno` },
+  };
+}
+
+/** r3 (zarzut 1): strona pinu = silnik nałożony przez kontrakt DTO-first (pole DTO z wpisem wygrywa, brak = silnik). */
+function overlayFix(e, d) {
+  const hit = (rec, k) => (rec !== undefined && Object.prototype.hasOwnProperty.call(rec, k) ? rec[k] : undefined);
+  return {
+    cfg: {
+      ...e.cfg,
+      getEmpireRekruciTotal: (o) => hit(d.empireRekruciTotalByOwner, o) ?? e.cfg.getEmpireRekruciTotal(o),
+      getManpowerSnapshot: (c) => (hit(d.manpowerBiezacyByCity, c) !== undefined ? { manpowerBiezacy: hit(d.manpowerBiezacyByCity, c) } : e.cfg.getManpowerSnapshot(c)),
+    },
+    rules: {
+      ...e.rules,
+      unitManpowerCostForType: (t, ep, m) => hit(d.manpowerCostByUnit, t) ?? e.rules.unitManpowerCostForType(t, ep, m),
+      techPrereqChain: (dt, n) => (hit(d.techPrereqChainByTech, n) !== undefined ? [...hit(d.techPrereqChainByTech, n)] : e.rules.techPrereqChain(dt, n)),
+      unitStockCost: (u) => (u !== undefined && hit(d.unitStockCostById, u.id) !== undefined ? { ...hit(d.unitStockCostById, u.id) } : e.rules.unitStockCost(u)),
+      stockResourceLabel: (k) => hit(d.stockResourceLabelByKey, k) ?? e.rules.stockResourceLabel(k),
+    },
+    rulesExt: e.rulesExt,
+  };
+}
+
 function mkFix(v) {
   return {
     cfg: {
@@ -250,9 +284,10 @@ try {
 
   // okolicaPreviewRadius: DTO pozycji miasta (q, r), Rwork, worked, reczne, tryb (K05A-Z2).
   const cities = [{ q: 0, r: 0 }, { q: 2, r: -1 }, { q: -3, r: 4 }];
-  const rworks = [undefined, 0, 1, 2, 3, 5, 8];
+  // r3 (obrona zarzutu 2): Infinity w Rwork i w kluczach `reczne` (wektor zabija mutant okolica-reczne-finite).
+  const rworks = [undefined, 0, 1, 2, 3, 5, 8, Number.POSITIVE_INFINITY];
   const workeds = [undefined, [], [{ q: 1, r: 0 }], [{ q: 4, r: -2 }, { q: -6, r: 1 }]];
-  const recznes = [undefined, {}, { '1,0': 2 }, { '3,-3': 0, 'x,1': 4, '2,2': -1 }, { '5,5': 1 }, { '7,x': 3, '1,1': 1 }];
+  const recznes = [undefined, {}, { '1,0': 2 }, { '3,-3': 0, 'x,1': 4, '2,2': -1 }, { '5,5': 1 }, { '7,x': 3, '1,1': 1 }, { '1,Infinity': 2, 'Infinity,0': 1 }];
   const trybs = ['auto', 'reczny', 'x'];
   for (const c of cities)
     for (const Rw of rworks)
@@ -275,17 +310,20 @@ try {
   const stocks3 = [{}, { drewno: 3 }, { kamien: 0, zloto: 2 }, { drewno: 1, kamien: 9 }, { ruda: 1 }];
   const unlocked3 = [new Set(), new Set(['a']), new Set(['a', 'b', 'x'])];
   for (let v = 0; v <= 3; v++) {
-    const fix = mkFix(v);
+    // r3 (obrona zarzutu 1): port dostaje wejścia WYŁĄCZNIE przez mapper DTO; strona pinu = kontrakt DTO-first
+    // (overlayFix) nałożony na ten sam silnik. Wartości DTO różnią się od silnika, więc mutant ignorujący DTO wypada.
+    const engineFix = mkFix(v);
+    const dto = mkDto(v);
+    const fix = overlayFix(engineFix, dto);
     globalThis.__K05A_FIX = fix;
-    V.setK05aCfg(fix.cfg);
-    V.setK05aRules({ ...fix.rules, ...fix.rulesExt });
+    V.setK05aFromDto(dto, { cfg: engineFix.cfg, rules: { ...engineFix.rules, ...engineFix.rulesExt } });
     const tag = `v${v}`;
     for (const c of cities3) {
       for (const t of ['a', 'bb', '']) cmp(`recruitManpowerCost(${c.id},${t};${tag})`, () => P.recruitManpowerCost(c, t), () => V.recruitManpowerCost(c, t));
       cmp(`empireRekruciTotal(${c.id};${tag})`, () => P.empireRekruciTotal(c), () => V.empireRekruciTotal(c));
       for (const mp of [-1, 0, 3, 10]) {
         cmp(`empireRekruciAffordable(${c.id},${mp};${tag})`, () => P.empireRekruciAffordable(c, mp), () => V.empireRekruciAffordable(c, mp));
-        for (const av of [undefined, null, -5, 0, 5, 100])
+        for (const av of [undefined, null, -5, 0, 3, 5, 10, 100])
           cmp(`empireRekruciAffordable(${c.id},${mp},${av};${tag})`, () => P.empireRekruciAffordable(c, mp, av), () => V.empireRekruciAffordable(c, mp, av));
       }
       for (const it of items3)

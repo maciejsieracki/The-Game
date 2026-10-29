@@ -108,16 +108,27 @@ const MUTANTS = [
   ['improv-threshold', 'if (hexDist(city.q, city.r, q, r) > Rwork) continue;', 'if (hexDist(city.q, city.r, q, r) >= Rwork) continue;'],
   ['improv-count', 'counts.set(key, (counts.get(key) ?? 0) + 1);', 'counts.set(key, 1);'],
   ['improv-keys-source', 'for (const key of improvementKeysForHex(hex)) {', 'for (const key of Object.keys(hex)) {'],
+  // r3 (obrona zarzutu 1): mutacje pól DTO `panelInputs.k05a` w mapperze setK05aFromDto (wynik z DTO, brak = silnik).
+  ['dto-rekruci-ignore', 'dtoOwn<number>(dto?.empireRekruciTotalByOwner, ownerId) ??', 'undefined ??'],
+  ['dto-rekruci-key', 'dtoOwn<number>(dto?.empireRekruciTotalByOwner, ownerId)', 'dtoOwn<number>(dto?.empireRekruciTotalByOwner, ownerId + 1)'],
+  ['dto-snapshot-key', 'dtoOwn<number>(dto?.manpowerBiezacyByCity, cityId)', 'dtoOwn<number>(dto?.manpowerBiezacyByCity, cityId + 1)'],
+  ['dto-snapshot-ignore', 'const v = dtoOwn<number>(dto?.manpowerBiezacyByCity, cityId);', 'const v = undefined as number | undefined;'],
+  ['dto-cost-ignore', 'dtoOwn<number>(dto?.manpowerCostByUnit, typeId) ??', 'undefined ??'],
+  ['dto-chain-slice', 'return v !== undefined ? [...v] : engRules.techPrereqChain', 'return v !== undefined ? [...v].slice(1) : engRules.techPrereqChain'],
+  ['dto-chain-ignore', 'const v = dtoOwn<readonly string[]>(dto?.techPrereqChainByTech, techName);', 'const v = undefined as readonly string[] | undefined;'],
+  ['dto-stock-shape', 'return v !== undefined ? { ...v } : engRules.unitStockCost(u);', 'return v !== undefined ? { ...v, drewno: 0 } : engRules.unitStockCost(u);'],
+  ['dto-stock-ignore', 'const v = u !== undefined ? dtoOwn<Readonly<Record<string, number>>>(dto?.unitStockCostById, u.id) : undefined;', 'const v = undefined;'],
+  ['dto-label-ignore', 'dtoOwn<string>(dto?.stockResourceLabelByKey, key) ??', 'undefined ??'],
+  ['dto-label-key', 'dtoOwn<string>(dto?.stockResourceLabelByKey, key)', "dtoOwn<string>(dto?.stockResourceLabelByKey, 'x' + key)"],
 ];
 
 /**
  * Mutanty udowodnione jako równoważne (przeżycie oczekiwane). Każdy wpis wymaga dowodu w P5-8-K05A.md §7.
- * okolica-reczne-finite: `Number.isFinite(q)` zamiast `(q) && (r)`. Gdy r = NaN (klucz "7,x"), hexDist daje NaN,
- * a `NaN <= cap` jest false, więc bump jest no-op — identyczne zachowanie. Gdy q = NaN, d też NaN (no-op).
+ * r3 (obrona zarzutu 2): okolica-reczne-finite NIE jest już równoważny. Dowód z NaN (klucz "7,x") nie obejmuje Infinity:
+ * przy Rwork = Infinity i kluczu "1,Infinity" pin pomija wpis, a mutant liczy d = Infinity <= cap, więc displayR = Infinity.
+ * Mutant jest zabijany przez wektor Infinity w run-k05a-units.mjs (rworks i reczne z Infinity). Zbiór równoważnych: pusty.
  */
-const EQUIVALENT = {
-  'okolica-reczne-finite': 'NaN w hexDist -> d=NaN -> (d <= cap) === false -> bump no-op; wejście {"7,x":3} w harnessie',
-};
+const EQUIVALENT = {};
 const equivalent = [];
 const tmp = mkdtempSync(join(tmpdir(), 'p58k05a-mutate-'));
 const survived = [];

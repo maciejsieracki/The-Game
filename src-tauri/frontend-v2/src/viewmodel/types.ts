@@ -478,7 +478,7 @@ export interface CityPanelInputsDto {
 // `setK05aCfg` / `setK05aRules` (src/ui/cityPanel/k05a-fundament.ts). Pola są dopiskiem; brak = wartość domyślna pinu.
 
 export interface CityPanelK05ADto {
-  /** Pula rekrutów imperium po id właściciela (pin `cfg.getEmpireRekruciTotal`); brak = fallback na pulę miasta. */
+  /** Pula rekrutów imperium po id właściciela (pin `cfg.getEmpireRekruciTotal`); brak = wynik silnika (setK05aFromDto). */
   empireRekruciTotalByOwner?: Readonly<Record<number, number>>;
   /** Bieżąca pula rekrutów miasta po id miasta (pin `cfg.getManpowerSnapshot(city.id).manpowerBiezacy`). */
   manpowerBiezacyByCity?: Readonly<Record<number, number>>;
@@ -486,9 +486,9 @@ export interface CityPanelK05ADto {
   manpowerCostByUnit?: Readonly<Record<string, number>>;
   /** Łańcuch badań prowadzący do technologii (pin `techPrereqChain`), po nazwie technologii. */
   techPrereqChainByTech?: Readonly<Record<string, readonly string[]>>;
-  /** Koszt surowcowy jednorazowego zakupu jednostki (pin `unitStockCost`), po id typu; brak = {}. */
+  /** Koszt surowcowy jednorazowego zakupu jednostki (pin `unitStockCost`), po id typu; brak = wynik silnika (setK05aFromDto). */
   unitStockCostById?: Readonly<Record<string, Readonly<Record<string, number>>>>;
-  /** Etykieta surowca do chipów (pin `stockResourceLabel`), po kluczu surowca; brak = klucz. */
+  /** Etykieta surowca do chipów (pin `stockResourceLabel`), po kluczu surowca; brak = wynik silnika (setK05aFromDto). */
   stockResourceLabelByKey?: Readonly<Record<string, string>>;
 }
 

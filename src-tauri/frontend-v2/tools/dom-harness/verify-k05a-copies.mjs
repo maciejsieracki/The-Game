@@ -57,6 +57,8 @@ const LOCAL_NAMES = new Set([
   'RawConverterParamsJson', 'CivBonusLite', 'K05aCfgExt', 'K05aRulesExt', 'regulExt', 'converterProductionDisplayForBuilding',
   'findBuildingDef', 'techIconHintSpan', 'getTechDef', 'isEmptyDataVal', 'naukaCostSuffix', 'eraBuildingCatalog',
   'unitNacjaForCivKey', 'getProd',
+  // K05A-Z4 (r3, obrona zarzutu 1): mapper DTO `panelInputs.k05a` -> wejścia reguł (nie jest kopią pinu).
+  'setK05aFromDto', 'dtoOwn',
   // K05A-Z4/Z5 (r3, partia 3): typy hexa/mapy, rozszerzenia wejść recruit/ulepszeń i delegatory.
   'HexLike', 'GameMap', 'K05aCfgRecruit', 'K05aRulesRecruit', 'gameData', 'findUnitDef', 'canAffordUnitRecruitStock',
   'missingStockFor', 'improvementKeysForHex', 'rerender',

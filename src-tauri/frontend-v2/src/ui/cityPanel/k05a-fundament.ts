@@ -10,6 +10,7 @@
  */
 
 import { UI_PARAMS } from '../uiParams';
+import type { CityPanelK05ADto } from '../../viewmodel/types';
 
 /** ZAŁOŻENIE K05A-Z2: pozycja miasta z DTO (jedyne pola `City` używane przez okolicaPreviewRadius). */
 export type CityHexRef = { readonly q: number; readonly r: number };
@@ -85,6 +86,48 @@ export function setK05aRules(next: K05aRules & K05aRulesExt & K05aRulesRecruit):
 function regul(): K05aRules & K05aRulesExt & K05aRulesRecruit {
   if (rules === null) throw new Error('K05A: brak wejść reguł (setK05aRules)');
   return rules;
+}
+
+/** Odczyt własnego klucza rekordu DTO (bez dziedziczenia z prototypu); brak = undefined. */
+function dtoOwn<T>(rec: object | undefined, key: string | number): T | undefined {
+  return rec !== undefined && Object.prototype.hasOwnProperty.call(rec, key) ? (rec as Record<string | number, T>)[key] : undefined;
+}
+
+/**
+ * K05A r3 (obrona zarzutu 1; ZALOZENIE K05A-Z4): wejścia reguł budowane z DTO `panelInputs.k05a`.
+ * UI czyta wynik z pola DTO (P5.13); gdy pole DTO nie ma wpisu, wartość daje silnik (`engine`, funkcje reguł o logice).
+ * Funkcje o logice (civManpowerMaxMult, ownerSurowcePoolFor, canAffordUnitRecruitStock, missingStockFor,
+ * unitResourceUpkeep, isUnitRecruitStockChipMissing, buildingRequirementChips) zostają w silniku — NIE_ZMIERZONO
+ * (dane tych funkcji nie mieszczą się w 6 polach DTO). Producent DTO w kontrolerze: NIE_ZMIERZONO.
+ */
+export function setK05aFromDto(
+  dto: CityPanelK05ADto | undefined,
+  engine: { cfg: K05aCfg & K05aCfgExt & K05aCfgRecruit; rules: K05aRules & K05aRulesExt & K05aRulesRecruit },
+): void {
+  const engCfg = engine.cfg;
+  const engRules = engine.rules;
+  setK05aCfg({
+    ...engCfg,
+    getEmpireRekruciTotal: (ownerId) => dtoOwn<number>(dto?.empireRekruciTotalByOwner, ownerId) ?? engCfg.getEmpireRekruciTotal?.(ownerId),
+    getManpowerSnapshot: (cityId) => {
+      const v = dtoOwn<number>(dto?.manpowerBiezacyByCity, cityId);
+      return v !== undefined ? { manpowerBiezacy: v } : engCfg.getManpowerSnapshot?.(cityId);
+    },
+  });
+  setK05aRules({
+    ...engRules,
+    unitManpowerCostForType: (typeId, epoch, maxMult) =>
+      dtoOwn<number>(dto?.manpowerCostByUnit, typeId) ?? engRules.unitManpowerCostForType(typeId, epoch, maxMult),
+    techPrereqChain: (data, techName) => {
+      const v = dtoOwn<readonly string[]>(dto?.techPrereqChainByTech, techName);
+      return v !== undefined ? [...v] : engRules.techPrereqChain(data, techName);
+    },
+    unitStockCost: (u) => {
+      const v = u !== undefined ? dtoOwn<Readonly<Record<string, number>>>(dto?.unitStockCostById, u.id) : undefined;
+      return v !== undefined ? { ...v } : engRules.unitStockCost(u);
+    },
+    stockResourceLabel: (key) => dtoOwn<string>(dto?.stockResourceLabelByKey, key) ?? engRules.stockResourceLabel(key),
+  });
 }
 
 // Delegatory reguł (K05A-Z4): nazwy jak w pinie, ciało = wynik z DTO.
