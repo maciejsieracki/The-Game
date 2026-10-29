@@ -1,0 +1,45 @@
+MUTATION A01-assign-le-cap
+OLD: '.find(|cand| counts.get(&(cand.q, cand.r)).copied().unwrap_or(0) < max_per_hex)'
+NEW: '.find(|cand| counts.get(&(cand.q, cand.r)).copied().unwrap_or(0) <= max_per_hex)'
+RESULT: KILLED failed_tests=1
+
+
+running 6 tests
+test pick_rally_city_matches_web ... ok
+test constants_and_flag_match_web ... ok
+test build_rally_candidates_matches_web ... ok
+test split_into_war_armies_matches_web ... ok
+test war_army_count_matches_web ... ok
+test assign_rally_targets_matches_web ... FAILED
+
+failures:
+
+---- assign_rally_targets_matches_web stdout ----
+
+thread 'assign_rally_targets_matches_web' (8629) panicked at tests/p6_repin_wojna_b_army_consolidation.rs:171:13:
+assertion `left == right` failed: przypadek 1/4: targetQ
+  left: -3
+ right: -2
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+   1: core::panicking::panic_fmt
+   2: core::panicking::assert_failed_inner
+   3: core::panicking::assert_failed::<i64, i64>
+   4: p6_repin_wojna_b_army_consolidation::assign_rally_targets_matches_web
+   5: p6_repin_wojna_b_army_consolidation::assign_rally_targets_matches_web::{closure#0}
+   6: <p6_repin_wojna_b_army_consolidation::assign_rally_targets_matches_web::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+
+failures:
+    assign_rally_targets_matches_web
+
+test result: FAILED. 5 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.49s
+
+   Compiling civ-engine v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_921c9171-66d-1/rust-port/engine)
+    Finished `test` profile [unoptimized] target(s) in 36.30s
+     Running tests/p6_repin_wojna_b_ai_general.rs (/home/user/cargo-target-shared/wf_921c9171-66d-1/debug/deps/p6_repin_wojna_b_ai_general-a0a5b02045b60bb5)
+     Running tests/p6_repin_wojna_b_army_consolidation.rs (/home/user/cargo-target-shared/wf_921c9171-66d-1/debug/deps/p6_repin_wojna_b_army_consolidation-a44e2e953451603c)
+error: test failed, to rerun pass `--test p6_repin_wojna_b_army_consolidation`
+error: 1 target failed:
+    `--test p6_repin_wojna_b_army_consolidation`

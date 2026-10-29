@@ -1,10 +1,11 @@
 //! REPIN-WOJNA-NOWE-B: port `gra/src/game/ai-general-war-campaign.ts` (pin `91dc998a`).
 //!
-//! web: gra/src/game/ai-general-war-campaign.ts:1-12 (typy, `AI_GENERAL_WAR_GATHER_TURNS`),
-//! :14-19 (`AiWarLandReachability`), :21-53 (`findAiWarLandReachability`), :55-60
-//! (`aiWarTargetHasReachableLandNeighbor`), :62-73 (`chooseAiGeneralWarTarget`), :75-107
-//! (`reconcileAiGeneralWarCampaign`), :109-124 (`recordAiGeneralGatherTurn`), :126-136
-//! (`aiGeneralCampaignToSave`), :138-170 (`restoreAiGeneralCampaigns`).
+//! web: gra/src/game/ai-general-war-campaign.ts:5 (typ stage), :7 (`AiGeneralWarCampaign`),
+//! :17 (`AI_GENERAL_WAR_GATHER_TURNS`), :19 (`AiWarLandReachability`), :26
+//! (`findAiWarLandReachability`), :54 (`aiWarTargetHasReachableLandNeighbor`), :62
+//! (`chooseAiGeneralWarTarget`), :74 (`reconcileAiGeneralWarCampaign`), :112
+//! (`recordAiGeneralGatherTurn`), :128 (`aiGeneralCampaignToSave`), :139
+//! (`restoreAiGeneralCampaigns`).
 //! Zaleznosci: `hexNeighborCoords`, `keyOf`, `terrainMoveCost` z `gra/src/units/setup.ts`.
 //!
 //! ZALOZENIA (adaptacja typow, zachowanie logiki bez zmian):

@@ -1,9 +1,9 @@
 //! REPIN-WOJNA-NOWE-B: port `gra/src/game/army-consolidation.ts` (pin `91dc998a`).
 //!
-//! web: gra/src/game/army-consolidation.ts:20-27 (flaga `ARMY_CONSOLIDATION_ENABLED`),
-//! :29-32 (`setArmyConsolidationOverride` / `isArmyConsolidationEnabled`), :34-36 (parametry z JSON),
-//! :61-65 (`pickRallyCity`), :70-82 (`buildRallyCandidates`), :91-124 (`assignRallyTargets`),
-//! :127-129 (`warArmyCount`), :137-154 (`splitIntoWarArmies`).
+//! web: gra/src/game/army-consolidation.ts:24 (flaga `ARMY_CONSOLIDATION_ENABLED`),
+//! :26-33 (`flagOverride`, `setArmyConsolidationOverride` :29, `isArmyConsolidationEnabled` :33),
+//! :38-40 (parametry z JSON), :74 (`pickRallyCity`), :89 (`buildRallyCandidates`),
+//! :111 (`assignRallyTargets`), :147 (`warArmyCount`), :156 (`splitIntoWarArmies`).
 //! Dane stale: `data/derived/army-consolidation-params.json` (kopia `gra/data/army-consolidation-params.json`).
 //!
 //! ZALOZENIA (adaptacja typow, zachowanie logiki bez zmian):
