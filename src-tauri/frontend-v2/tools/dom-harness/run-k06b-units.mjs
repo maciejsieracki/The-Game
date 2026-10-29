@@ -124,6 +124,12 @@ function makeFixture(variant) {
     // Odczyt stanu `showEraBuildingPreview` (pin: zmienna modułu, bez wywołania) — nie wpisuje się do dziennika.
     getShowEraBuildingPreview: () => state.showEra,
     rangeName: (R) => `R${R}`,
+    // K06B r2 (poprawka pokrycia M3): katalog epoki z wpisem budynku; flaga `full` (podgląd epoki) decyduje o liście wpisów.
+    // Stub zastępuje `eraBuildingCatalog` + filtr z pinu (cityPanel.ts:8645-8679), tu uproszczony do: pełny podgląd = wszystkie budynki katalogu.
+    // Lista przewijana jako prawdziwy element DOM (inaczej `appendChild` na stubie nie wchodzi w DOM i mutant nie zmienia wyniku).
+    createScrollList: () => globalThis.document.createElement('div'),
+    collectEraPreviewEntries: (data, _techs, _prodCtx, full) =>
+      full ? Object.keys(data?.budynki ?? {}).map((id) => ({ id, nazwa: data.budynki[id].nazwa, status: 'locked' })) : [],
     tury: (n) => `tur${n}`,
     constStr: undefined,
   };
@@ -200,7 +206,8 @@ function buildCases(F) {
   add('appendRecruitmentQueue', (m) => [m.mount, city, true], {});
   add('appendBuildQueueSection', (m) => [m.mount, city, false], {});
   add('appendCatalogBuildingRow', (m) => [m.mount, { id: 'farma', nazwa: 'Farma' }, undefined], {});
-  add('renderBuildList', (m) => [m.mount, city, { budynki: {} }], { showEra: true });
+  // K06B r2 (M3): niepusty katalog + showEra:true — flaga `fullEraPreview` zmienia listę wpisów i DOM (zabija mutant M3).
+  add('renderBuildList', (m) => [m.mount, city, { budynki: { farma: { id: 'farma', nazwa: 'Farma' } }, buildings: [] }], { showEra: true });
   add('renderBuildList', (m) => [m.mount, city, null], { showEra: false });
   add('appendOwnedBuildingRow', (m) => [m.mount, 'farma', { budynki: {} }], {});
   return cases;
