@@ -1,0 +1,21 @@
+{
+ "pin": "edb8fb56",
+ "block": 5,
+ "pinUnits": 377,
+ "k05Units": 45,
+ "k05Loc": 1500,
+ "domUnits": 19,
+ "domLoc": 975,
+ "selectedUnits": 8,
+ "selectedLoc": 78,
+ "deferredUnits": 37,
+ "deferredLoc": 1422,
+ "deferredByClass": {
+  "DOM": 19,
+  "T": 17,
+  "P": 1
+ },
+ "missingInPin": [
+  "<HEADER>"
+ ]
+}

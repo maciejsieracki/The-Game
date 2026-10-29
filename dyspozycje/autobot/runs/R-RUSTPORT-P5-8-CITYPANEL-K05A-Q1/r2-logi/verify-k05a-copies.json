@@ -1,0 +1,65 @@
+{
+ "pin": "edb8fb56",
+ "port": "ui/cityPanel/k05a-fundament.ts",
+ "blocks": 10,
+ "wybraneUnits": 8,
+ "comparisons": [
+  {
+   "block": "gra/src/types/hex.ts:12-24",
+   "lines": 13,
+   "status": "OK"
+  },
+  {
+   "block": "gra/src/game/cities.ts:48-48",
+   "lines": 1,
+   "status": "OK"
+  },
+  {
+   "block": "gra/src/ui/cityPanel.ts:7465-7465",
+   "lines": 1,
+   "status": "OK"
+  },
+  {
+   "block": "gra/src/ui/cityPanel.ts:9495-9500",
+   "lines": 6,
+   "status": "OK"
+  },
+  {
+   "block": "gra/src/ui/cityPanel.ts:9501-9506",
+   "lines": 6,
+   "status": "OK"
+  },
+  {
+   "block": "gra/src/ui/cityPanel.ts:9507-9510",
+   "lines": 4,
+   "status": "OK"
+  },
+  {
+   "block": "gra/src/ui/cityPanel.ts:9512-9539",
+   "lines": 28,
+   "status": "OK"
+  },
+  {
+   "block": "gra/src/ui/cityPanel.ts:9541-9545",
+   "lines": 5,
+   "status": "OK"
+  },
+  {
+   "block": "gra/src/ui/cityPanel.ts:9546-9551",
+   "lines": 6,
+   "status": "OK"
+  },
+  {
+   "block": "gra/src/ui/cityPanel.ts:9552-9554",
+   "lines": 3,
+   "status": "OK"
+  }
+ ],
+ "findings": {
+  "text": [],
+  "orphan": [],
+  "cover": [],
+  "local": []
+ },
+ "status": "OK"
+}

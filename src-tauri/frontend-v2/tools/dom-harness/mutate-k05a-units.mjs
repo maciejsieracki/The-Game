@@ -44,8 +44,30 @@ const MUTANTS = [
   ['okStat-wartosc', '<b>${val}</b>', '<b>${sub}</b>'],
   ['okStat-sub', '<span class="muted">${sub}</span>', '<span class="muted">${val}</span>'],
   ['ENTITY-id', "'civ-city-panel-entity-card-css-v1'", "'civ-city-panel-entity-card-css-v2'"],
+  // r2: TEREN_COL/TEREN_LETTER, kopia enum TerenBazowy (K05A-Z1).
+  ['TEREN-COL-kolor', "'#0d2236'", "'#0d2237'"],
+  ['TEREN-LETTER-znak', "[TerenBazowy.Laka]: 'Ł'", "[TerenBazowy.Laka]: 'L'"],
+  ['enum-wartosc-gory', "Gory     = 'gory',", "Gory     = 'gora',"],
+  // r2: okolicaPreviewRadius: pola DTO (city.q / city.r, K05A-Z2), parametry UI, galezie tryb/reczne/worked.
+  ['okolica-dto-q', 'hexDist(city.q, city.r, q, r)', 'hexDist(city.q, city.q, q, r)'],
+  ['okolica-dto-r', 'hexDist(city.q, city.r, q, r)', 'hexDist(city.r, city.r, q, r)'],
+  ['okolica-fallback-ui', 'okolica_promien, 3)', 'okolica_promien, 4)'],
+  ['okolica-cap', 'const cap = Rwork ?? fallback;', 'const cap = Rwork ?? fallback + 1;'],
+  ['okolica-tryb-galaz', "if (tryb === 'reczny') {", "if (tryb === 'auto') {"],
+  ['okolica-reczne-prog', 'if (!count || count <= 0) continue;', 'if (!count) continue;'],
+  ['okolica-reczne-finite', 'if (Number.isFinite(q) && Number.isFinite(r)) bump(q, r);', 'if (Number.isFinite(q)) bump(q, r);'],
+  ['okolica-worked-swap', 'for (const t of worked ?? []) bump(t.q, t.r);', 'for (const t of worked ?? []) bump(t.r, t.q);'],
 ];
 
+/**
+ * Mutanty udowodnione jako równoważne (przeżycie oczekiwane). Każdy wpis wymaga dowodu w P5-8-K05A.md §7.
+ * okolica-reczne-finite: `Number.isFinite(q)` zamiast `(q) && (r)`. Gdy r = NaN (klucz "7,x"), hexDist daje NaN,
+ * a `NaN <= cap` jest false, więc bump jest no-op — identyczne zachowanie. Gdy q = NaN, d też NaN (no-op).
+ */
+const EQUIVALENT = {
+  'okolica-reczne-finite': 'NaN w hexDist -> d=NaN -> (d <= cap) === false -> bump no-op; wejście {"7,x":3} w harnessie',
+};
+const equivalent = [];
 const tmp = mkdtempSync(join(tmpdir(), 'p58k05a-mutate-'));
 const survived = [];
 const killed = [];
@@ -62,7 +84,10 @@ try {
     writeFileSync(mutPath, src.replace(from, to));
     const r = spawnSync(process.execPath, [HARNESS, '--pin-dir', resolve(PIN_DIR), '--v2', mutPath], { encoding: 'utf8' });
     if (r.status === 1) killed.push(id);
-    else {
+    else if (EQUIVALENT[id]) {
+      equivalent.push(id);
+      console.log(`ROWNOWAZNA ${id} (dowod: ${EQUIVALENT[id]})`);
+    } else {
       survived.push(id);
       console.log(`PRZEZYTA ${id} (exit=${r.status}) ${r.stderr ? r.stderr.trim().slice(0, 200) : ''}`);
     }
@@ -71,7 +96,7 @@ try {
   rmSync(tmp, { recursive: true, force: true });
 }
 if (exitCode === 0) {
-  console.log(`mutate-k05a-units: mutacji=${MUTANTS.length} zabitych=${killed.length} przezytych=${survived.length}`);
+  console.log(`mutate-k05a-units: mutacji=${MUTANTS.length} zabitych=${killed.length} rownowaznych=${equivalent.length} przezytych=${survived.length}`);
   exitCode = survived.length === 0 ? 0 : 1;
 }
 process.exit(exitCode);

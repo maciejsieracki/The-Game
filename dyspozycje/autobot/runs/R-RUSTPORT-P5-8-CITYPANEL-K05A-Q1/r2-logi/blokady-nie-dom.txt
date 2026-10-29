@@ -1,0 +1,20 @@
+# Wszystkie blokady per jednostka K05 odroczona (nie-DOM), runda 2. Generator: select-k05a z instrumentacja (lista `all`).
+# Format: nazwa | LOC | blokady (T=typ z logiki, R=wartosc logiki, P=zaleznosc z innego bloku pinu, F=odroczona zaleznosc wewnetrzna)
+buildingConverterProductionDisplay | 19 | T:BuildingDef@data/loader.ts, T:City@game/cities.ts, T:GameData@data/loader.ts, P:cfg@3, T:RawConverterParamsJson@game/converters.ts, R:converterProductionDisplayForBuilding@game/converters.ts
+buildingLocationRequirementMet | 10 | P:isCapital@3
+buildingRequirementChips | 101 | T:BuildingDef@data/loader.ts, T:City@game/cities.ts, T:GameData@data/loader.ts, T:AvailabilityContext@game/production.ts, P:BuildingReqChip@1, P:ownerSurowcePoolFor@4, P:techIconHintSpan@2, P:parentBuildingName@1, R:isBuildingSupersededByUpgrade@game/production.ts, R:CITY_BUILDING_PREREQ@game/building-resource-gate.ts, P:findBuildingDef@1, R:cityBuildingPrereqMet@game/building-resource-gate.ts, R:WATER_ACCESS_BUILDING_IDS@game/building-resource-gate.ts, R:buildingStockCost@game/building-stock-cost.ts, R:stockResourceLabel@game/building-stock-cost.ts, R:buildingRequiredActiveLabels@game/building-resource-gate.ts, R:empireResourceLabelSatisfied@game/building-resource-gate.ts, P:isEmptyDataVal@1
+buildingCanBuildNow | 16 | T:BuildingDef@data/loader.ts, T:City@game/cities.ts, T:GameData@data/loader.ts, T:AvailabilityContext@game/production.ts
+sortProductionItemsByBuildability | 17 | T:ProductionItem@game/production.ts, T:City@game/cities.ts, T:GameData@data/loader.ts, T:AvailabilityContext@game/production.ts, P:findBuildingDef@1
+recruitManpowerCost | 7 | T:City@game/cities.ts, P:cfg@3, R:civManpowerMaxMult@game/manpower.ts, R:unitManpowerCostForType@game/manpower.ts
+empireRekruciTotal | 7 | T:City@game/cities.ts, P:cfg@3
+empireRekruciAffordable | 14 | T:City@game/cities.ts
+maxAffordableRecruitQuantity | 34 | T:City@game/cities.ts, T:ProductionItem@game/production.ts, P:ownerSurowcePoolFor@4
+unitStockCostChipsHtml | 15 | T:UnitDef@data/loader.ts, T:City@game/cities.ts, R:unitStockCost@game/building-stock-cost.ts, P:ownerSurowcePoolFor@4, R:isUnitRecruitStockChipMissing@game/economy-upkeep.ts, R:stockResourceLabel@game/building-stock-cost.ts
+unitResourceUpkeepChipsHtml | 10 | T:UnitDef@data/loader.ts, R:unitResourceUpkeep@game/economy-upkeep.ts, R:stockResourceLabel@game/building-stock-cost.ts
+recruitUnit | 27 | T:City@game/cities.ts, T:ProductionItem@game/production.ts, P:cfg@3, P:gameData@3, P:findUnitDef@1, P:ownerSurowcePoolFor@4, R:canAffordUnitRecruitStock@game/economy-upkeep.ts, R:unitStockCost@game/building-stock-cost.ts, R:missingStockFor@game/building-stock-cost.ts, P:rerender@9
+missingTechSteps | 5 | T:GameData@data/loader.ts, P:techPrereqChain@3
+formatBuildingCatalogLockHint | 37 | T:BuildingCatalogEntry@game/production.ts, T:GameData@data/loader.ts, P:techIconHintSpan@2, R:getTechDef@data/loader.ts, P:isEmptyDataVal@1
+formatBuildingPreviewHint | 32 | T:BuildingDef@data/loader.ts, T:GameData@data/loader.ts, P:techIconHintSpan@2, R:getTechDef@data/loader.ts, P:isEmptyDataVal@1
+productionCtxForCity | 34 | T:City@game/cities.ts, T:AvailabilityContext@game/production.ts, P:cfg@3, P:getProd@3, R:unitNacjaForCivKey@game/production.ts
+collectEraPreviewEntries | 37 | T:GameData@data/loader.ts, T:ProductionItem@game/production.ts, T:CivBonusLite@game/production.ts, T:BuildingCatalogEntry@game/production.ts, R:eraBuildingCatalog@game/production.ts
+improvementsInCityRange | 25 | T:City@game/cities.ts, T:GameMap@types/map.ts, R:improvementKeysForHex@game/terrain-improvements.ts

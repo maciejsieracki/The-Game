@@ -172,7 +172,7 @@ function isTypeOnlyInSource(file, name) {
 /**
  * Główna funkcja. `pinDir` = katalog zawierający gra/src i gra/data; `pomiar` = sparsowany pomiar-r2.json.
  */
-export function selectK01a({ pinDir, pomiar, localTypes = LOCAL_TYPE_COPIES, block = K01_BLOCK }) {
+export function selectK01a({ pinDir, pomiar, localTypes = LOCAL_TYPE_COPIES, block = K01_BLOCK, dtoSubst = {} }) {
   const localSet = new Set(localTypes.map((t) => t.name));
   const pinCp = join(pinDir, 'gra/src/ui/cityPanel.ts');
   const uiDir = join(pinDir, 'gra/src/ui');
@@ -217,7 +217,10 @@ export function selectK01a({ pinDir, pomiar, localTypes = LOCAL_TYPE_COPIES, blo
       if (importInfo.has(id)) {
         const ii = importInfo.get(id);
         // Typ-only z logiki: dozwolony tylko jako LOKALNA KOPIA zweryfikowana bajtowo z pinem (LOCAL_TYPE_COPIES).
-        if (ii.logic && ii.typeOnly && localSet.has(id)) continue;
+        // K05A (r2): lokalna kopia może być też enum z logiki (`TerenBazowy`); K01A używa wyłącznie typów (typeOnly).
+        if (ii.logic && localSet.has(id)) continue;
+        // K05A-Z2 (DTO): nazwa typu zastąpiona przez DTO w danej jednostce (tylko jawna lista `dtoSubst`, domyślnie pusta).
+        if (ii.logic && (dtoSubst[u.name] ?? []).includes(id)) continue;
         if (ii.logic) blockers.push({ kind: ii.typeOnly ? 'T' : 'R', id, from: ii.rel });
         continue;
       }
