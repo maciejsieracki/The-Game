@@ -79,3 +79,63 @@ Log: `dyspozycje/autobot/runs/R-RUSTPORT-REPIN-EKONOMIA-A-Q1/pomiary-r2.log`.
 
 - Z5: K06 pierwotnie dal blad srodowiska (zapis w trakcie braku miejsca na dysku); powtorzenie daje NIEWYKRYTA. Wynik z powtorzenia przyjmowany.
 - Z6: `mutate-p65b.py` (R1 P6.5B) nie jest uzywany do mutacji portu 91dc998a - dwa wzorce (M03, M04) nie pasuja; skrypt nie jest zmieniany (poza allowlista).
+
+## Runda 3 (Operator-obrona, odpowiedz na FAIL Evaluatora)
+
+Baza: `07c7920f`. Commity R3: `a45f46b1` (testy K04-K07 + skrypt mutacji), `d6d61847` (meta.pin p6_5b), commit tej dokumentacji (SHA w raporcie `03-operator-r3.md`).
+**Ta sekcja nadpisuje statusy z tabeli R1 i sekcji "Pomiary R2"** (tabela R1 zostaje jako historia).
+
+### Statusy po R3 (tabela zmian manpower)
+
+| # | Zmiana (web 91dc998a) | Web (plik:linia) | Rust (plik:linia) | Test / wektor | Status |
+|---|---|---|---|---|---|
+| 1 | bonusy civs.json neutralne (1.0) | `manpower.ts:415,422,429` | `recruitment.rs:1766,1771,1776` | `p6_5b_manpower::civ_bonus_multipliers_match_web` | PORTOWANE |
+| 2 | `civManpowerMatrixMults` (`max(0,1+v)`, override, costMult) | `manpower.ts:447` | `recruitment.rs:1838` | `p6_5b_manpower::civ_matrix_manpower_mults_match_web_formula` (override/NaN); `p6_repin_a_costmult::civ_matrix_path_reads_matrix_fields` (macierz `grecy`/`rzymianie`/nieznany) | PORTOWANE (test galezi macierzy: R3) |
+| 3 | `scaledManpower` = `max(0, isFinite?m:1)` | `manpower.ts:464` | `recruitment.rs:2138` | `p6_5b_vectors/manpower.json`, `p6_7a_vectors/manpower.json` | PORTOWANE |
+| 4 | `costMult` jako parametr koncowy (koszt typu, snapshot, afford, deduct, refund, spend) | `manpower.ts:544,610-615,638-643,725-733,741-749,798-804,838-845,877-882` | `recruitment.rs:2160` i funkcje z `cost_mult` | R3: `p6_repin_a_costmult::unit_cost_for_type_uses_cost_mult_not_max_mult`, `replenish_cost_uses_cost_mult_not_max_mult`. Mutacje K04/K05: WYKRYTA | PORTOWANE, PRZETESTOWANE (R3) |
+| 5 | `unitCost === 0` leczy bez zuzycia MP (bez wczesnego wyjscia `empireMp<=0`) | `manpower.ts:269,342-347` | `recruitment.rs:2654` (blok `unit_cost == 0.0`) | R3: `p6_repin_a_costmult::zero_cost_branch_heals_without_spending_manpower` (kontrola: koszt>0 przy pustej puli = brak leczenia). Mutacje K06/K07: WYKRYTA | PORTOWANE, PRZETESTOWANE (R3) |
+| 6 | parametr `resolveOwnerMatrix` w odnowie | `manpower.ts:289` | `recruitment.rs:2654` | R3: test zero-cost podaje `resolve_owner_matrix` (mp_koszt=-1). Wektory webu nadal bez tego parametru (generator) | PORTOWANE |
+
+### Pomiary mutacji (poprawione liczby)
+
+- R2 raportowal blednie "6 WYKRYTA / 3 NIEWYKRYTA". Log R2 (`pomiary-r2.log`) pokazuje: **WYKRYTA 5** (K01, K02, K03, K08, K09), **NIEWYKRYTA 4** (K04, K05, K06, K07). Zawyzona skutecznosc - korekta.
+- R3 (po dodaniu `p6_repin_a_costmult` do listy testow kazdej mutacji): **WYKRYTA 9/9** (`pomiary-r3-a.log`, `pomiary-r3-b.log`). Kazda mutacja przywracala plik (skrypt, `finally`); `git diff -- rust-port/engine/src` puste po pomiarach.
+
+### Bramki R3
+
+- `cargo fmt --all -- --check`: EXIT=0 (`gate-fmt-r3.log`)
+- `cargo clippy --all-targets -- -D warnings`: EXIT=0 (`gate-clippy-r3.log`)
+- `cargo test --no-fail-fast`: EXIT=0, 171 binarek, **1272 passed / 0 failed** (1266 + 6 nowych) (`gate-test-r3.log`)
+
+### meta.pin wektorow (Z6)
+
+- `p6_5b_vectors/{buildings,format,manpower,replenish}.json`: etykieta `edb8fb56` -> `91dc998a`. Dowod: regeneracja z `git archive 91dc998a gra/src gra/data` (generatory bez zmian, Node v22.22.0) i porownanie po zamianie etykiety: 4/4 identyczne z repo.
+- `p6_7a_vectors/*.json`: pliki NIE zawieraja pola `meta.pin` (sprawdzone grep); etykieta `edb8fb56` wystepuje tylko w komentarzach `gen-p67a-vectors.mjs` i `p6_7a_vectors/common.rs`. `SHA256SUMS.txt` zgodne z plikami (manpower: `5380390a...`). Bez zmian w danych.
+- Generator `gen-p65b-vectors.mjs:749` nadal zapisuje `edb8fb56` na sztywno. Plik lezy w katalogu innego runu (poza allowlista tego tematu) -> NASTEPNA-PARTIA (poprawka generatora + regeneracja).
+- `p6_5b_vectors/common.rs` (komentarz naglowkowy "pin edb8fb56") - nieaktualny komentarz, NASTEPNA-PARTIA.
+
+### Niezalezny weryfikator (Z7)
+
+- `verify-p65b-vectors.py <web91> rust-port/engine` (uruchomiony w R3): `PRZYPADKOW: 81336`, `ROZBIEZNOSCI: 7422` (log: `scratchpad` poza repo).
+- Przyczyna: weryfikator modeluje logike `edb8fb56` (`scaledManpower` z `max(0.1, m)`, mnozniki bonusow civs.json). Na `91dc998a` daje falszywe rozbieznosci. **Nie jest to dowod zgodnosci ani niezgodnosci portu**; wiarygodne porownanie wektorow to regeneracja + porownanie bajtowe (punkt wyzej). Aktualizacja weryfikatora - poza allowlista -> NASTEPNA-PARTIA.
+
+### Dane derived (Z8)
+
+- `skalowanie_min` (0.1) w `rust-port/engine/data/derived/manpower-params.json`: pole czytane wylacznie przez test ksztaltu tabel (`tests/p6_5b_tables.rs:44`); `domain/recruitment.rs` go nie czyta; web 91dc998a nie ma takiego pola. **Status: martwe pole danych, bez wplywu na zachowanie.** Usuniecie wymaga edycji istniejacego pliku JSON (poza allowlista: tylko NOWE pliki) -> NASTEPNA-PARTIA.
+
+### Zakres economy/production/turn-economy/work-tax (Z1) - stan i audyt
+
+Stan R3: **kod tych modulow NIE zostal przeportowany w tej rundzie.** Audyt (dowody: grep po `rust-port/engine/src`):
+
+| Plik weba (zmiany diff) | Odpowiednik Rust (fakt) | Status |
+|---|---|---|
+| `economy.ts` (41 hunkow; `cityYieldPerTurn`, Mennica/Waluta, port, praca->podatek, `additionalTax`, mnozniki macierzy `eko_*`) | Brak funkcji `cityYieldPerTurn` ani logiki Mennicy/Pracy->podatku w silniku (grep: brak `fn city_yield`, `work_tax`; trafienia to tylko pola danych `data/economy_society.rs`). Rust nie ma tego modulu. | NIE-PORTOWALNE w zakresie "odswiezenie": wymaga NOWEGO portu funkcji. ZALOZENIE: wymaga decyzji orkiestratora o zakresie |
+| `production.ts` (44 hunki) | Czesciowy: `building_costs.rs:222` `building_work_cost` (web `buildingWorkCost`, `production.ts:521` -> `562`, 1 zmiana zakresu). Brak odpowiednikow nazwanych dla `availableProduction`, `rushCost`, `unitPurchaseCost`, `unitMoneyCost`, `civRecruitmentDiscount`, `advanceProduction` (grep). | NASTEPNA-PARTIA: `buildingWorkCost` (1 hunk) |
+| `turn-economy.ts` (51 hunkow) | Czesciowy: `city_growth.rs:1702` `compute_city_food_balance_v85` (web `computeCityFoodBalanceV85`, hunki `1645`, `1652`) oraz `recomputeCityFoodBalancesInEcon` (hunk `1685`). Reszta (`previewCityEconomy`, `advanceCityEconomy`, `applyWonderCityYields`, `ownersWithMennica`) bez odpowiednika; `domain/turn_economy.rs` to inny model (rozliczenie tury). | NASTEPNA-PARTIA: 3 hunki food balance |
+| `work-tax.ts` (nowy, 77 linii) | Brak modulu (`grep work_tax`: 0 trafien). | NIE-PORTOWALNE w zakresie "odswiezenie" (nowy modul) |
+
+ZALOZENIE (rozstrzygniecie luki Z1, bez pytan): R4 portuje najpierw 4 hunki wykonalne bez nowego modulu: `buildingWorkCost` (production.ts:521->562) oraz 3 hunki `computeCityFoodBalanceV85`/`recomputeCityFoodBalancesInEcon` (turn-economy.ts:1645, 1652, 1685). Zakres `cityYieldPerTurn`/Mennica/praca->podatek/`work-tax.ts` jest nowym portem funkcji i wymaga decyzji orkiestratora (osobny temat albo rozszerzenie zakresu).
+
+### Nowe testy (R3) - zakres
+
+`rust-port/engine/tests/p6_repin_a_costmult.rs` (6 testow): koszt typu z `costMult` != `maxMult`; koszt z jawnym costMult = maxMult; zwiadowca darmowy; galaz zerowego kosztu (kontrola + przypadek); odnowa z `costMult = 0`, `maxMult = 1`; sciezka macierzy civ (`civ-matrix.json`).
