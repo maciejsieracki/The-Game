@@ -1,0 +1,10 @@
+STATUS: PASS-WITH-NOTES
+DOMAIN: GAME
+TEMAT: R-RUSTPORT-P5-8-CITYPANEL-K08E-Q1
+GOAL: Port 3 jednostek DOM (renderMagazyn, wireTopBarStatDetails, renderCivResourceTopBar) z pinu edb8fb56 do src-tauri/frontend-v2/src/ui/cityPanel/k08e-*.ts wraz z zależnościami; kopie pinu z bramką verify-k08e-copies, reguły gry jako delegaty, wiring w controller/k08eWiring.ts.
+ZMIANY-COMMIT: base origin/rust-port/parity-v2 = fe8e7097. Commity: a83465b6 (partia magazyn: renderMagazyn, buildRacjeWzrostDetailCard, buildGrowthProgressTooltipCard), 38fb1e2d (partia karty-a: buildTopBarZywnoscDetailCard, buildTopBarRekruciDetailCard, buildTopBarLudnoscDetailCard), commit dokumentacji (SHA w odpowiedzi końcowej). Pliki: src/ui/cityPanel/k08e-{deps,magazyn,karty-a}.ts, src/controller/k08eWiring.ts, src/ui/cityPanel/k05b-host.ts (dopiski), tools/dom-harness/{k08e-subs,gen-k08e-port,verify-k08e-copies}.mjs, PORTING-QUEUE.md (dopisek), dyspozycje/rust-port/p5/P5-8-K08E.md (nowy). Zero zmian w gra/**, rust-port, WERSJE.md.
+TESTY: npm ci EXIT 0; verify-k08e-copies --batch magazyn OK; --batch karty-a OK; npm run typecheck EXIT 0 (zero błędów); npm run check EXIT 0 (pin-copies 435, niezgodnych 0); git diff --check EXIT 0. NIE_ZMIERZONO: harness pin-exec, mutacje, measure-k08e-drift, zachowanie w przeglądarce, cargo.
+BLOKADY: (1) partie karty-b (buildTopBarNaukaDetailCard, buildTopBarKulturaDetailCard, buildPorzadekDetailCard) i topbar (capitalBadgeOrButtonHtml, renderCivResourceTopBar, wireTopBarStatDetails) nie kompilują się: typ OrderStateK (k03-model) jest zawężony względem pinu OrderState; WIP poza commitem (definicje w k08e-subs.mjs, BATCHES_K08E_WIP). (2) Rozbieżność id miasta string (pin) vs number (port), obejście String(city.id) w kopiach (K08E-Z4). (3) switchCity i produkcyjne podpięcie installK08eWiring = K09.
+RUNDY: 1/5
+NASTĘPNY KROK: Runda 2 tego samego ID: domknąć karty-b i topbar (pełny typ porządku z silnika, delegat resolveOrderState, wiring hosta), potem harness run-k08e-* i mutacje, pomiar dryfu. Temat NIE jest domknięty (6 z 12 jednostek w zakresie rundy 1).
+DEPLOY/PUSH: NIE WYKONANO

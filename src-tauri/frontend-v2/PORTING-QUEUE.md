@@ -330,3 +330,11 @@ Partia `rail`: 6 z 24 jednostek DOM bloku K08 (150 z 1 324 LOC) w `src/ui/cityPa
 - Gate: `verify-k08d-copies` (handel, slider, religia, wealth-pasek, wealth) OK; `run-k08d-wealth-pin` 53/53; `run-k08d-wiring` 35/35; `mutate-k08d-wealth` 16/16 (pola/delegaty 10/10); `mutate-k08d-wiring` 21/21; `mutate-k08d-religia` 10/10; `mutate-k08d-handel` 6/6 + 12/12; `measure-k08d-drift` 0/11; `npm run check` i `typecheck` zielone.
 - NIE_ZROBIONE: `computeOrderStateLocal` nie należy do domknięcia `renderWealth` ani `renderReligia` (sprawdzone przez `tsc` na kopiach); przypisane do K09 (porządek miasta). Produkcyjne podpięcie wiringu = K09. K08D-Z10 (id number vs string) = K09.
 - Szczegóły: `dyspozycje/rust-port/p5/P5-8-K08D.md` §11.
+
+## P5-8 K08E (R-RUSTPORT-P5-8-CITYPANEL-K08E-Q1, runda 1)
+
+- ZROBIONE: partia `magazyn` (`src/ui/cityPanel/k08e-magazyn.ts`: `renderMagazyn` pin 5203–5472, `buildRacjeWzrostDetailCard` pin 5474–5579, `buildGrowthProgressTooltipCard` pin 1598–1635); partia `karty-a` (`k08e-karty-a.ts`: `buildTopBarZywnoscDetailCard` pin 5582–5650, `buildTopBarRekruciDetailCard` pin 5652–5682, `buildTopBarLudnoscDetailCard` pin 5684–5768). Reguły jako delegaty `k08e-deps.ts`, wiring `controller/k08eWiring.ts`.
+- Gate: `verify-k08e-copies --batch magazyn|karty-a` OK; `npm run check` OK (pin-copies 435, niezgodnych 0); `npm run typecheck` zero błędów.
+- NIE_ZROBIONE: partie `karty-b` (Nauka, Kultura, Porządek) i `topbar` (`capitalBadgeOrButtonHtml`, `renderCivResourceTopBar`, `wireTopBarStatDetails`) — generowane, ale nie kompilują się (typ porządku `OrderStateK` z `k03-model` jest zawężony; brak pełnego `OrderState` z silnika). Definicje WIP w `tools/dom-harness/k08e-subs.mjs` (`BATCHES_K08E_WIP`), poza commitem.
+- NIE_ZROBIONE: harness pin-exec (`run-k08e-*`), mutacje, `measure-k08e-drift`, produkcyjne podpięcie `installK08eWiring` (K09), `switchCity` (cięcie K09, delegat).
+- Szczegóły: `dyspozycje/rust-port/p5/P5-8-K08E.md`.
