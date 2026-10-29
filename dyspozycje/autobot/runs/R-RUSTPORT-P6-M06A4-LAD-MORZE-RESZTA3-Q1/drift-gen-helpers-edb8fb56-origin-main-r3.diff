@@ -1,0 +1,52 @@
+diff --git a/gra/src/map/gen-helpers.ts b/gra/src/map/gen-helpers.ts
+index 9d86be02..fa4bde12 100644
+--- a/gra/src/map/gen-helpers.ts
++++ b/gra/src/map/gen-helpers.ts
+@@ -5995,2 +5995,3 @@ function estimateLandCentroidFromSeed(
+-  while (queue.length > 0 && seen.size < visitCap) {
+-    const k = queue.shift()!;
++  let queueHead = 0;
++  while (queueHead < queue.length && seen.size < visitCap) {
++    const k = queue[queueHead++]!;
+@@ -8469,2 +8470,3 @@ export function buildOceanReachableRiverHexKeys(
+-  while (queue.length > 0) {
+-    const k = queue.shift()!;
++  let queueHead = 0;
++  while (queueHead < queue.length) {
++    const k = queue[queueHead++]!;
+@@ -10355,2 +10357,3 @@ function bfsNearestRiverHexOnLowland(
+-  while (queue.length > 0) {
+-    const [q, r, d] = queue.shift()!;
++  let queueHead = 0;
++  while (queueHead < queue.length) {
++    const [q, r, d] = queue[queueHead++]!;
+@@ -10395,2 +10398,3 @@ function bfsLowlandRiverPath(
+-  while (queue.length > 0) {
+-    const current = queue.shift()!;
++  let queueHead = 0;
++  while (queueHead < queue.length) {
++    const current = queue[queueHead++]!;
+@@ -10544,2 +10548,3 @@ export function maxDryLowlandPatchSize(
+-    while (queue.length > 0) {
+-      const cur = queue.shift()!;
++    let queueHead = 0;
++    while (queueHead < queue.length) {
++      const cur = queue[queueHead++]!;
+@@ -10696,2 +10701,3 @@ function fillDryLowlandPatches(
+-      while (queue.length > 0) {
+-        const cur = queue.shift()!;
++      let queueHead = 0;
++      while (queueHead < queue.length) {
++        const cur = queue[queueHead++]!;
+@@ -10779,2 +10785,3 @@ function findAllOversizedDryLandPatches(
+-    while (queue.length > 0) {
+-      const cur = queue.shift()!;
++    let queueHead = 0;
++    while (queueHead < queue.length) {
++      const cur = queue[queueHead++]!;
+@@ -10807,2 +10814,3 @@ function findLargestDryLowlandPatch(
+-    while (queue.length > 0) {
+-      const cur = queue.shift()!;
++    let queueHead = 0;
++    while (queueHead < queue.length) {
++      const cur = queue[queueHead++]!;

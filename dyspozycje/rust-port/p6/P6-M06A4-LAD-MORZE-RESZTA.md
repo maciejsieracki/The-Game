@@ -188,3 +188,102 @@ Nowe pomiary (obrona r3):
 - M15: nowy test Rust-only `non_canonical_key_is_skipped_not_processed` (plik `tests/p6_m06a4_landsea.rs`, dodany; zaden istniejacy test nie zmieniony w tej rundzie). Mutant M15 (`key_qr(key).unwrap_or((0, 0))`) zabity: test FAILED, pozostale 3 testy OK. Uwaga: web przetworzylby klucz niekanoniczny (Z-1), wiec test pina zachowanie portu, nie weba.
 
 Stan partii 3 (`trimEnclosedOceanOnly`, `purgeInlandWaterForMultiLandTyp`, `applyJaggedCoastNoise`): NIE wykonana w tej rundzie. Zaleznosci zmierzone: `purgeInlandWaterForMultiLandTyp` (web :4215) wola `trimEnclosedOceanOnly` (:4701), ktory wola `morseDepthFromMapBorder` (:4659). W `rust-port/engine/src` brak odpowiednika (grep morse_depth na a91d6fcb: pusto). `fillEnclosedWaterByLandNeighbors` i `removeInlandWaterPools` sa juz w `landsea.rs` (:367, :353).
+
+## Obrona r3: pomiary partii 3a/3b (odpowiedzi na zarzuty Evaluatora r3)
+
+Stan wejsciowy: commity `0c1c708a` (3a) i `21a1eb7e` (3b). Worktree Operatora zniknal w trakcie pracy; ta obrona odtwarza pomiary od zera na `21a1eb7e` (`git checkout --detach 21a1eb7e`). Sekcja niniejsza zastepuje wpisy "NIE_ZMIERZONO" dla mutacji 3a/3b w sekcji "Runda 3" powyzej.
+
+Zmiany kodu w tej obronie: tylko nowy test `tests/p6_m06a4_chan.rs` i wektor `tests/p6_m06a4_vectors/chan-vectors.json` (zabija mutant PM04). Kod `landsea.rs`, `derived.rs`, JSON parametrow: bez zmian (potwierdzone po mutacjach: `git diff --stat` pusty dla tych plikow).
+
+### Zabicie PM04 (przezyta mutacja z obrony rundy 3)
+
+- Mutant PM04 = usuniety OSTATNI `removeInlandWaterPools` w `purge_inland_water_for_multi_land_typ`. Wynik roznic sie od weba wtedy i tylko wtedy, gdy po `fill(4)` istnieje woda inlandowa (`removeInlandWaterPools` cos zamienia).
+- Mechanizm: kanal morza z dokladnie 4 sasiadami Laka jest zamieniany przez `fill(4)` (nie przez `fill(5)`), odcinajac pule morza od oceanu; ta pule zamienia dopiero drugi `removeInland`.
+- Przypadki: `gen-m06a4-chan-vectors.mjs` (seed 20261034, web pin `edb8fb56`) przeszukal 3540 losowych map 9x9 i zachowal 12 przypadkow, w ktorych `inland_after_fill4 > 0` (liczone na kodzie weba krok po kroku). Wektor: `tests/p6_m06a4_vectors/chan-vectors.json` (53997 B).
+- Test: `purge_channel_cut_matches_web_including_last_remove_inland` (12/12 przypadkow z weba) oraz `chan_vectors_meta_pin_and_counts` (kazdy przypadek ma `inland_after_fill4 > 0`).
+- Wynik: PM04 ZABITA (`FAILED` w `purge_channel_cut_matches_web_including_last_remove_inland`). Przypadek przeszedl z "PRZEZYTA" do "ZABITA"; wpis PM04 z zarzutu jest zamkniety pomiarem, nie uzasadnieniem.
+
+### Mutacje partii 3 (49 planowanych, 49 wykonanych)
+
+Runner: `mut-runner-m06a4-r3.py` (ten sam schemat co r2: jeden `old` wystepujacy dokladnie raz, zapis, `cargo test --test p6_m06a4_trim --test p6_m06a4_chan --test p6_m06a4_jagged --no-fail-fast`, przywrocenie pliku w `finally`). Wyniki: `mut-results-partia3-r3.jsonl` (49 wpisow, jeden na ID, 0 BUILD_ERROR w wyniku koncowym, 0 PATTERN_ERROR). Plan ID: MM01-MM10 (indeksy 0-9), TM01-TM09 (10-18), PM01-PM08 (19-26), JD01 (27), JF01 (28), JF02 (29), JV01-JV06 (30-35), JL01-JL08 (36-43), JS01-JS05 (44-48). Plan zostal odtworzony na nowo (oryginalna lista z raportu Operatora r3 nie zostala zapisana), dlatego ID i mutacje sa opisane w tabeli ponizej i w naglowku runnera.
+
+Uwaga o TM01: pierwsza wersja uzywala `Terrain::PlytkieMorze`, co nie kompiluje sie (wariant nazywa sie `Terrain::ShallowSea`); wpis BUILD_ERROR zostal usuniety z jsonl i mutant uruchomiony ponownie (wynik ZABITA). Wpis TM08 wzorca poprawiony (wzorzec wystepowal dwa razy).
+
+| ID | Mutacja | Wynik (obrona r3) |
+|----|---------|-------|
+| MM01 | granica: usun warunek q == 0 | ZABITA |
+| MM02 | granica: usun warunek r == 0 | ZABITA |
+| MM03 | granica: usun warunek q == width-1 | ZABITA |
+| MM04 | granica: usun warunek r == height-1 | ZABITA |
+| MM05 | ziarno: kazda woda (is_water_terrain_local) zamiast Morze | ZABITA |
+| MM06 | sasiad: kazda woda zamiast Morze | ZABITA |
+| MM07 | odleglosc: d+1 -> d | ZABITA |
+| MM08 | kolejka: odczyt od konca (nie FIFO) | ZABITA |
+| MM09 | ziarno: odleglosc 0 -> 1 | ZABITA |
+| MM10 | granica: r == height-1 -> r == height-2 | ZABITA |
+| TM02 | warunek: odwrocone contains_key | ZABITA |
+| TM03 | cel: Grassland -> Plains | ZABITA |
+| TM04 | usun overlay = Brak | ZABITA |
+| TM05 | usun river_present = false | ZABITA |
+| TM06 | usun river_edges.clear() | ZABITA |
+| TM07 | usun has_deposit = false | ZABITA |
+| TM08 | licznik: += 1 -> += 2 | ZABITA |
+| TM09 | usun warunek pomijania heksow z wynikiem BFS | ZABITA |
+| TM01 | zakres: przetwarzaj takze PlytkieMorze | ZABITA |
+| PM01 | usun pierwszy fill(5) | ZABITA |
+| PM02 | prog fill A: 5 -> 4 | ZABITA |
+| PM03 | prog fill B: 4 -> 5 | ZABITA |
+| PM04 | usun OSTATNI removeInland (po fill(B)) | ZABITA |
+| PM05 | usun trim | ZABITA |
+| PM06 | usun PIERWSZY removeInland (po fill(A)) | ZABITA |
+| PM07 | licznik: ostatni krok n = zamiast n += | ZABITA |
+| PM08 | kolejnosc: fill(B) przed trim | ZABITA |
+| JD01 | erozja: coast > prog -> coast >= prog | ZABITA |
+| JF01 | wypelnienie: coast < prog -> coast <= prog | ZABITA |
+| JF02 | wypelnienie: odwrocony kierunek (coast > prog) | ZABITA |
+| JV01 | gruby szum x: usun przesuniecie przebiegu x | ZABITA |
+| JV02 | gruby szum y: usun przesuniecie przebiegu y | ZABITA |
+| JV03 | drobny szum x: usun mnoznik | ZABITA |
+| JV04 | drobny szum: usun wage | ZABITA |
+| JV05 | suma: coarse - fine | ZABITA |
+| JV06 | gruby szum: oktawy drobnej skali | ZABITA |
+| JL01 | petla przebiegow: tylko pierwszy | ZABITA |
+| JL02 | bufor krawedzi: usun pominiecie | ZABITA |
+| JL03 | przebieg: szum zawsze z przebiegu 0 | ZABITA |
+| JL04 | erozja: usun warunek is_coastal_land_hex | ZABITA |
+| JL05 | wypelnienie: usun warunek is_coastal_morse_hex | ZABITA |
+| JL06 | licznik erozji: usun changed += 1 | ZABITA |
+| JL07 | licznik wypelnienia: usun changed += 1 | ZABITA |
+| JL08 | zbieranie: pominiecie zastosowania erozji | ZABITA |
+| JS01 | skala_szumu 0.28 -> 0.29 | ZABITA |
+| JS02 | mnoznik_drobnej_skali 2.1 -> 2.2 | ZABITA |
+| JS03 | przesuniecie_drobnej_skali 200 -> 201 | ZABITA |
+| JS04 | waga_drobnej_skali 0.35 -> 0.36 | ZABITA |
+| JS05 | prog_wypelnienia_morze 0.32 -> 0.33 | ZABITA |
+
+Wynik: 49/49 ZABITA. Zadna mutacja strukturalna (MM/TM/PM/JL/JV) nie przezyla, wiec dowody rownowaznosci nie sa potrzebne.
+
+### Granice (N-1 / N / N+1)
+
+- Progi calkowite `fill(5)` i `fill(4)` (`count_land_neighbors >= min_land`): pokrycie w `trim-vectors.json` (`coverage`, klucze `fill_d<d>_<in|near|border>_<f5|later|nop>`), d = 0..6 dla pozycji in/near/border, obie strony progu. Test `coverage_has_both_sides_of_fill_thresholds` zielony.
+- Progi zmiennoprzecinkowe `coast > 0.68` i `coast < 0.32` (`applyJaggedCoastNoise`): pomiar `probe-m06a4-jagged-boundary-r3.mjs` (log `probe-m06a4-jagged-boundary-r3.log`, prawdziwy kod weba, pin edb8fb56): 12660 ocen szumu w tych samych rozmiarach map, perm (seed 20261031-33) i przebiegach 0-4. Wynik: `coast === 0.68` 0 razy, `coast === 0.32` 0 razy, sasiedztwo 1 ulp (0.6799999999999999 / 0.6800000000000002, 0.31999999999999995 / 0.32000000000000006) 0 razy.
+- Wniosek: wektory z szumu NIE trafiaja na prog zmiennoprzecinkowy (szum jest ciagly; trafienie wymagaloby przypadkowej rownosci z dokladnoscia do bitu). Granice N-1/N/N+1 sa wiec pokryte testami jednostkowymi decyzji (`erode_threshold_n_minus_1_n_n_plus_1`, `fill_threshold_n_minus_1_n_n_plus_1`, 1 ulp), ktore zabijaja JD01, JF01, JF02 i JS05. ODRZUCAM zarzut, ze wektory musza trafiac dokladnie w prog floatowy: nie da sie tego osiagnac przez generator z perm (to pomiar, nie luka testu).
+
+### Dryf po pinie (zakres 3186-4374)
+
+- `git diff -U0 edb8fb56 origin/main -- gra/src/map/gen-helpers.ts` (origin/main = `9f6f7771`): 8 hunkow w liniach edb8fb56: 5995, 8469, 10355, 10395, 10544, 10696, 10779, 10807. Zaden nie wpada w 3186-4374. Plik: `drift-gen-helpers-edb8fb56-origin-main-r3.diff`. Pin pozostaje `edb8fb56`.
+
+### Weryfikator wektorow i bramki (obrona r3)
+
+- Weryfikator: `verifier-pomiary-r3.log`. Wektory `trim-vectors.json`, `jagged-vectors.json` i `chan-vectors.json` przegenerowane z `git archive edb8fb56 gra/src gra/data` (katalog poza repo), `cmp` IDENTICAL, sha256 `gen-helpers.ts` = `ab934703...`.
+- Zgodnosc z uruchomionym webem: testy `*_matches_web` (porownanie kazdego przypadku wektora z wynikiem portu) przechodza: 101 BFS, 101 trim, 100 purge, 55 jagged, 12 chan. Wektory sa wyjsciem uruchomionego weba, wiec 0 rozbieznosci = 0 niezgodnosci test/port w tych przypadkach.
+- fmt: `gate-fmt-pomiary-r3.log` EXIT=0 (po `rustfmt` nowego pliku testowego).
+- clippy `--all-targets -D warnings`: `gate-clippy-pomiary-r3.log` EXIT=0.
+- test (pelny, `--no-fail-fast`): `gate-test-pomiary-r3.log` 1265 passed, 0 failed, EXIT=0 (baseline 1263 z `21a1eb7e` + 2 nowe testy `p6_m06a4_chan`).
+- Mutacje: `mut-results-partia3-r3.jsonl`, 49/49 ZABITA.
+
+### Stan symboli po obronie
+
+- `morseDepthFromMapBorder`, `trimEnclosedOceanOnly`, `purgeInlandWaterForMultiLandTyp`, `applyJaggedCoastNoise`: PORTOWANE (bez zmian kodu w obronie); mutacje 49/49 ZABITA; wektory 0 rozbieznosci.
+- Otwarte (poza ta obrona): `FILL_ENCLOSED_MAX_PASSES` = 8 bez wektora dosiegajacego limitu (Z-13, NIE_ZMIERZONO); reszta symboli RUNDA-2 jak w tabeli powyzej.
+- Zakres RUNDA-2 pozostaje do decyzji orkiestratora (Z-8).

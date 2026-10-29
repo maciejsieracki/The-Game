@@ -1,0 +1,18 @@
+Weryfikator niezalezny (obrona r3, partie 3a/3b + chan)
+Zrodlo web: git archive edb8fb56 gra/src gra/data -> katalog tymczasowy POZA repo (scratchpad/web-r3)
+sha256 gen-helpers.ts = ab934703990ba00e71a801eb0b6fcefeb0906c6bd4ded477c7162361307842de (zgodne z meta wektorow)
+
+Generatory uruchomione na prawdziwym kodzie TS weba (node 22, loader m06a-loader-register.mjs):
+  gen-m06a4-trim-vectors.mjs   -> exit 0
+  gen-m06a4-jagged-vectors.mjs -> exit 0
+  gen-m06a4-chan-vectors.mjs   -> exit 0
+
+Porownanie bajt-w-bajt z plikami w repo (cmp):
+cmp trim-regen2.json   vs tests/p6_m06a4_vectors/trim-vectors.json   -> IDENTICAL, cmp EXIT=0
+cmp jagged-regen2.json vs tests/p6_m06a4_vectors/jagged-vectors.json -> IDENTICAL, cmp EXIT=0
+cmp chan-regen2.json   vs tests/p6_m06a4_vectors/chan-vectors.json   -> IDENTICAL, cmp EXIT=0
+
+Rozmiary: trim-vectors.json 2245855 B; jagged-vectors.json 843576 B; chan-vectors.json 53997 B (wszystkie < 8 MB).
+Liczby przypadkow: morse 101, trim 101, purge 100 (trim-vectors.json); jagged 55 (jagged-vectors.json); purge_channel_cut 12 (chan-vectors.json).
+Pomiar przypadkow chan: stats.tried=3540, killers=12 (inland_after_fill4 > 0 we wszystkich 12).
+EXIT=0
