@@ -95,6 +95,10 @@ window.__openWizard();
     assert.strictEqual((await dealRow.locator('.sv').innerText()).trim(), 'Włączona', 'default diplomacy review remains enabled');
     await dealRow.locator('.arr').nth(1).click();
     assert.strictEqual((await dealRow.locator('.sv').innerText()).trim(), 'Wyłączona', 'diplomacy review value remains changeable');
+    const battleRow = page.locator('.civ-newgame .adv-modal .adv-row', { has: page.locator('.adv-lbl', { hasText: 'Bitwy' }) });
+    await battleRow.locator('.arr').nth(1).click();
+    const selectedBattleMode = (await battleRow.locator('.sv').innerText()).trim();
+    assert(selectedBattleMode !== '', 'battle mode remains selectable alongside the relocated settings');
     await page.locator('.civ-newgame .adv-close').click();
 
     // Close/reopen to verify both changed values persist through the existing preference store.
@@ -109,13 +113,16 @@ window.__openWizard();
     await page.waitForSelector('.civ-newgame .adv-overlay.open');
     const reloadedDeal = page.locator('.civ-newgame .adv-modal .adv-row', { has: page.locator('.adv-lbl', { hasText: 'Wymagaj rozpatrzenia ofert handlowych przed końcem tury' }) });
     assert.strictEqual((await reloadedDeal.locator('.sv').innerText()).trim(), 'Wyłączona', 'diplomacy setting survives closing and reopening the wizard');
+    const reloadedBattle = page.locator('.civ-newgame .adv-modal .adv-row', { has: page.locator('.adv-lbl', { hasText: 'Bitwy' }) });
+    assert.strictEqual((await reloadedBattle.locator('.sv').innerText()).trim(), selectedBattleMode, 'battle mode survives alongside relocated-setting preference persistence');
     await page.locator('.civ-newgame .adv-close').click();
 
     await page.locator('.civ-newgame .nav .next').click();
     const params = await page.evaluate(() => window.__params);
     assert.strictEqual(params.landFractionPercent, Number.parseInt(selectedLand, 10), 'selected land percentage reaches game-start params');
     assert.strictEqual(params.dealsEndTurnGate, false, 'diplomacy gate value reaches game-start params');
-    console.log('newgame-settings-layout-reposition-test: PASS — Chromium placement, choice persistence and game-start params verified');
+    assert.strictEqual(params.advanced.battleAlwaysManual, true, 'selected battle mode reaches game-start params alongside relocated settings');
+    console.log('newgame-settings-layout-reposition-test: PASS — Chromium placement, land/diplomacy/battle persistence and game-start params verified');
   } finally {
     if (browser) await browser.close();
     await new Promise(resolve => server.close(resolve));
