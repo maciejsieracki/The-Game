@@ -1,0 +1,67 @@
+pin-exec: wycięte linie zakresów: 33, sha256=1df7711ff7a48054cd2c6ddf3e639b71148b63e52680c81a70e5d806b860d2b6
+OK   pin.range.el [cityPanel.ts:863-870 (start "function el<K extends keyof HT"…, koniec "}")] got=[true,true] want=[true,true]
+OK   pin.range.resolveDetailSideHint [cityPanel.ts:11512-11516 (start "function resolveDetailSideHint"…, koniec "}")] got=[true,true] want=[true,true]
+OK   pin.range.appendSectionTitleWithDetails [cityPanel.ts:11518-11537 (start "function appendSectionTitleWit"…, koniec "}")] got=[true,true] want=[true,true]
+OK   pin.anchor.1 [cityPanel.ts:11513 ".closest('.civ-ux-left')"] got=true want=true
+OK   pin.anchor.2 [cityPanel.ts:11514 ".closest('.civ-ux-right')"] got=true want=true
+OK   pin.anchor.3 [cityPanel.ts:11523 "el('div', 'ptitle')"] got=true want=true
+OK   pin.anchor.4 [cityPanel.ts:11527 "'okolica-info-link civ-w4-panel-detail gold'"] got=true want=true
+OK   pin.anchor.5 [cityPanel.ts:11529 "'i szczegóły'"] got=true want=true
+OK   pin.anchor.6 [cityPanel.ts:11530 "'Pokaż szczegóły sekcji'"] got=true want=true
+OK   pin.anchor.7 [cityPanel.ts:11532 "mount.appendChild(head)"] got=true want=true
+OK   pin.anchor.8 [cityPanel.ts:11534 "delayMs: 220"] got=true want=true
+OK   pin.anchor.9 [cityPanel.ts:11535 "sideHint: resolveDetailSideHint(mount)"] got=true want=true
+OK   pin.anchor.10 [cityPanel.ts:864 "document.createElement(tag)"] got=true want=true
+OK   pin.anchor.11 [cityPanel.ts:866 "if (html !== undefined) {"] got=true want=true
+OK   exec.pin.source.delay [pin-exec: appendSectionTitleWithDetails zawiera delayMs: 220] got=true want=true
+OK   exec.pin.source.ptitle [pin-exec: appendSectionTitleWithDetails zawiera el(…, ptitle)] got=true want=true
+OK   diff.paths.count [liczba porównywanych pól (pin-exec vs port-exec) > 0] got=true want=true
+OK   diff.cases.auto-pre2.builtCount [pin-exec.cases.auto-pre2.builtCount] got=1 want=1
+OK   diff.cases.auto-pre2.calls.0.buildReturnsDetail [pin-exec.cases.auto-pre2.calls.0.buildReturnsDetail] got=true want=true
+OK   diff.cases.auto-pre2.calls.0.opts.delayMs [pin-exec.cases.auto-pre2.calls.0.opts.delayMs] got=220 want=220
+OK   diff.cases.auto-pre2.calls.0.opts.keys.0 [pin-exec.cases.auto-pre2.calls.0.opts.keys.0] got="delayMs" want="delayMs"
+OK   diff.cases.auto-pre2.calls.0.opts.keys.1 [pin-exec.cases.auto-pre2.calls.0.opts.keys.1] got="sideHint" want="sideHint"
+OK   diff.cases.auto-pre2.calls.0.opts.sideHint [pin-exec.cases.auto-pre2.calls.0.opts.sideHint] got="auto" want="auto"
+OK   diff.cases.auto-pre2.calls.0.targetIsButtonInMount [pin-exec.cases.auto-pre2.calls.0.targetIsButtonInMount] got=true want=true
+OK   diff.cases.auto-pre2.calls.0.targetOuter [pin-exec.cases.auto-pre2.calls.0.targetOuter] got="<button class=\"okolica-info-link civ-w4-panel-detail gold\" type=\"button\" aria-label=\"Pokaż szczegóły sekcji\">i szczegóły</button>" want="<button class=\"okolica-info-link civ-w4-panel-detail gold\" type=\"button\" aria-label=\"Pokaż szczegóły sekcji\">i szczegóły</button>"
+OK   diff.cases.auto-pre2.children [pin-exec.cases.auto-pre2.children] got=3 want=3
+OK   diff.cases.auto-pre2.mount [pin-exec.cases.auto-pre2.mount] got="<div><p></p><p></p><div class=\"ptitle\"><span>T</span><button class=\"okolica-info-link civ-w4-panel-detail gold\" type=\"button\" aria-label=\"Pokaż szczegóły sekcji\">i szczegóły</button></div></div>" want="<div><p></p><p></p><div class=\"ptitle\"><span>T</span><button class=\"okolica-info-link civ-w4-panel-detail gold\" type=\"button\" aria-label=\"Pokaż szczegóły sekcji\">i szczegóły</button></div></div>"
+OK   diff.cases.empty-title.builtCount [pin-exec.cases.empty-title.builtCount] got=1 want=1
+OK   diff.cases.empty-title.calls.0.buildReturnsDetail [pin-exec.cases.empty-title.calls.0.buildReturnsDetail] got=true want=true
+OK   diff.cases.empty-title.calls.0.opts.delayMs [pin-exec.cases.empty-title.calls.0.opts.delayMs] got=220 want=220
+OK   diff.cases.empty-title.calls.0.opts.keys.0 [pin-exec.cases.empty-title.calls.0.opts.keys.0] got="delayMs" want="delayMs"
+OK   diff.cases.empty-title.calls.0.opts.keys.1 [pin-exec.cases.empty-title.calls.0.opts.keys.1] got="sideHint" want="sideHint"
+OK   diff.cases.empty-title.calls.0.opts.sideHint [pin-exec.cases.empty-title.calls.0.opts.sideHint] got="auto" want="auto"
+OK   diff.cases.empty-title.calls.0.targetIsButtonInMount [pin-exec.cases.empty-title.calls.0.targetIsButtonInMount] got=true want=true
+OK   diff.cases.empty-title.calls.0.targetOuter [pin-exec.cases.empty-title.calls.0.targetOuter] got="<button class=\"okolica-info-link civ-w4-panel-detail gold\" type=\"button\" aria-label=\"Pokaż szczegóły sekcji\">i szczegóły</button>" want="<button class=\"okolica-info-link civ-w4-panel-detail gold\" type=\"button\" aria-label=\"Pokaż szczegóły sekcji\">i szczegóły</button>"
+OK   diff.cases.empty-title.children [pin-exec.cases.empty-title.children] got=1 want=1
+OK   diff.cases.empty-title.mount [pin-exec.cases.empty-title.mount] got="<div><div class=\"ptitle\"><span></span><button class=\"okolica-info-link civ-w4-panel-detail gold\" type=\"button\" aria-label=\"Pokaż szczegóły sekcji\">i szczegóły</button></div></div>" want="<div><div class=\"ptitle\"><span></span><button class=\"okolica-info-link civ-w4-panel-detail gold\" type=\"button\" aria-label=\"Pokaż szczegóły sekcji\">i szczegóły</button></div></div>"
+OK   diff.cases.left-entity.builtCount [pin-exec.cases.left-entity.builtCount] got=1 want=1
+OK   diff.cases.left-entity.calls.0.buildReturnsDetail [pin-exec.cases.left-entity.calls.0.buildReturnsDetail] got=true want=true
+OK   diff.cases.left-entity.calls.0.opts.delayMs [pin-exec.cases.left-entity.calls.0.opts.delayMs] got=220 want=220
+OK   diff.cases.left-entity.calls.0.opts.keys.0 [pin-exec.cases.left-entity.calls.0.opts.keys.0] got="delayMs" want="delayMs"
+OK   diff.cases.left-entity.calls.0.opts.keys.1 [pin-exec.cases.left-entity.calls.0.opts.keys.1] got="sideHint" want="sideHint"
+OK   diff.cases.left-entity.calls.0.opts.sideHint [pin-exec.cases.left-entity.calls.0.opts.sideHint] got="left" want="left"
+OK   diff.cases.left-entity.calls.0.targetIsButtonInMount [pin-exec.cases.left-entity.calls.0.targetIsButtonInMount] got=true want=true
+OK   diff.cases.left-entity.calls.0.targetOuter [pin-exec.cases.left-entity.calls.0.targetOuter] got="<button class=\"okolica-info-link civ-w4-panel-detail gold\" type=\"button\" aria-label=\"Pokaż szczegóły sekcji\">i szczegóły</button>" want="<button class=\"okolica-info-link civ-w4-panel-detail gold\" type=\"button\" aria-label=\"Pokaż szczegóły sekcji\">i szczegóły</button>"
+OK   diff.cases.left-entity.children [pin-exec.cases.left-entity.children] got=1 want=1
+OK   diff.cases.left-entity.mount [pin-exec.cases.left-entity.mount] got="<div><div class=\"ptitle\"><span>A &amp; B</span><button class=\"okolica-info-link civ-w4-panel-detail gold\" type=\"button\" aria-label=\"Pokaż szczegóły sekcji\">i szczegóły</button></div></div>" want="<div><div class=\"ptitle\"><span>A &amp; B</span><button class=\"okolica-info-link civ-w4-panel-detail gold\" type=\"button\" aria-label=\"Pokaż szczegóły sekcji\">i szczegóły</button></div></div>"
+OK   diff.cases.right-html.builtCount [pin-exec.cases.right-html.builtCount] got=1 want=1
+OK   diff.cases.right-html.calls.0.buildReturnsDetail [pin-exec.cases.right-html.calls.0.buildReturnsDetail] got=true want=true
+OK   diff.cases.right-html.calls.0.opts.delayMs [pin-exec.cases.right-html.calls.0.opts.delayMs] got=220 want=220
+OK   diff.cases.right-html.calls.0.opts.keys.0 [pin-exec.cases.right-html.calls.0.opts.keys.0] got="delayMs" want="delayMs"
+OK   diff.cases.right-html.calls.0.opts.keys.1 [pin-exec.cases.right-html.calls.0.opts.keys.1] got="sideHint" want="sideHint"
+OK   diff.cases.right-html.calls.0.opts.sideHint [pin-exec.cases.right-html.calls.0.opts.sideHint] got="right" want="right"
+OK   diff.cases.right-html.calls.0.targetIsButtonInMount [pin-exec.cases.right-html.calls.0.targetIsButtonInMount] got=true want=true
+OK   diff.cases.right-html.calls.0.targetOuter [pin-exec.cases.right-html.calls.0.targetOuter] got="<button class=\"okolica-info-link civ-w4-panel-detail gold\" type=\"button\" aria-label=\"Pokaż szczegóły sekcji\">i szczegóły</button>" want="<button class=\"okolica-info-link civ-w4-panel-detail gold\" type=\"button\" aria-label=\"Pokaż szczegóły sekcji\">i szczegóły</button>"
+OK   diff.cases.right-html.children [pin-exec.cases.right-html.children] got=1 want=1
+OK   diff.cases.right-html.mount [pin-exec.cases.right-html.mount] got="<div><div class=\"ptitle\"><span><b>Tytuł</b> <i>x</i></span><button class=\"okolica-info-link civ-w4-panel-detail gold\" type=\"button\" aria-label=\"Pokaż szczegóły sekcji\">i szczegóły</button></div></div>" want="<div><div class=\"ptitle\"><span><b>Tytuł</b> <i>x</i></span><button class=\"okolica-info-link civ-w4-panel-detail gold\" type=\"button\" aria-label=\"Pokaż szczegóły sekcji\">i szczegóły</button></div></div>"
+OK   diff.side.auto [pin-exec.side.auto] got="auto" want="auto"
+OK   diff.side.left [pin-exec.side.left] got="left" want="left"
+OK   diff.side.nestedLeftInRight [pin-exec.side.nestedLeftInRight] got="left" want="left"
+OK   diff.side.right [pin-exec.side.right] got="right" want="right"
+OK   expect.side.nestedLeftInRight [closest: .civ-ux-left wewnątrz .civ-ux-right => left (pin: left pierwszy)] got="left" want="left"
+OK   diff.case.right.sideHint [cityPanel.ts:11535 sideHint z mount w .civ-ux-right = right] got="right" want="right"
+OK   diff.case.right.build [cityPanel.ts:11533 build zwraca węzeł buildDetail] got=true want=true
+OK   diff.case.auto.head [cityPanel.ts:11532 head dopisany na końcu (pre=2 => 3 dzieci)] got=3 want=3
+run-k08b-title-pin: 65/65 porównań zgodnych

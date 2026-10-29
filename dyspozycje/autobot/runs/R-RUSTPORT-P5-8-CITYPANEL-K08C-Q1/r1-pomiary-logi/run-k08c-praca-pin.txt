@@ -1,0 +1,27 @@
+OK   pin.range.buildPracaDetailCard | cityPanel.ts:4946-5018
+OK   pin.range.buildTopBarPracaDetailCard | cityPanel.ts:5770-5822
+OK   pin.anchor.1 | cityPanel.ts:4951 const pctCfg = readPodzialPracy(city, data);
+OK   pin.anchor.2 | cityPanel.ts:4952 const praca = view ? cityPracaSplit(city, view, data) : null;
+OK   pin.anchor.3 | cityPanel.ts:4958 head.innerHTML = '<span>Lokalny przyrost Pracy — ściąga</span>';
+OK   pin.anchor.4 | cityPanel.ts:4999 appendDetailAlgo(card, 'Algorytm (splitPraca + productionProgress)', [
+OK   pin.anchor.5 | cityPanel.ts:5006 ? 'Część pracy (doPuli) + Waluta + Targowisko → dodatkowy pieniądz (osobny strumień).'
+OK   pin.anchor.6 | cityPanel.ts:5007 : 'Bez Targowiska doPuli nie konwertuje się na pieniądz.',
+OK   pin.anchor.7 | cityPanel.ts:5777 const pracaSplit = cityPracaSplit(city, view, data);
+OK   pin.anchor.8 | cityPanel.ts:5816 appendDetailAlgo(card, 'Gdzie zarządzać', [
+OK   wiring.stubbed | installK08cWiring: atrapy regułowe (K08C-Z5)
+OK   exec.praca.noView | pin-exec vs port: outerHTML (3123 znaków)
+OK   exec.praca.noView.nonEmpty | karta niepusta
+OK   exec.praca.view | pin-exec vs port: outerHTML (3344 znaków)
+OK   exec.praca.view.nonEmpty | karta niepusta
+OK   exec.praca.targowisko | pin-exec vs port: outerHTML (3373 znaków)
+OK   exec.praca.targowisko.nonEmpty | karta niepusta
+OK   exec.top.noMap | pin-exec vs port: outerHTML (1653 znaków)
+OK   exec.top.noMap.nonEmpty | karta niepusta
+OK   exec.top.sumCities | pin-exec vs port: outerHTML (1746 znaków)
+OK   exec.top.sumCities.nonEmpty | karta niepusta
+OK   exec.anchor.targowisko | algorytm z Targowiskiem (pin: "Część pracy")
+OK   exec.anchor.noTargowisko | algorytm bez Targowiska (pin: "Bez Targowiska")
+OK   exec.anchor.sumCities | suma miast z dwóch grodów (rywal praca 25 → +25)
+OK   exec.anchor.split | podział z atrapy silnika: doBudynkow=round(40*0.6)=24
+
+k08c-praca-pin: 25/25 zgodnych
