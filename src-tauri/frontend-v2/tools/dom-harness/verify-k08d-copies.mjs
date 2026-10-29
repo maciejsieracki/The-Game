@@ -18,7 +18,7 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { join, resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { LINE_SUBS_K08D, applySubsK08d, batchByNameK08d, codeEndLine } from './k08d-subs.mjs';
+import { LINE_SUBS_K08D, applySubsK08d, batchByNameK08d, codeEndLine, countSubK08d } from './k08d-subs.mjs';
 
 const args = process.argv.slice(2);
 const argOf = (k) => {
@@ -42,7 +42,7 @@ const report = { TEXT: 0, SUBS: 0, COVER: 0, EXPORT: 0, blocks: 0 };
 
 // SUBS: każde podstawienie w zakresie pinu dokładnie raz.
 for (const s of LINE_SUBS_K08D) {
-  const countInRange = pin.slice(s.a - 1, s.b).reduce((n, l) => n + l.split(s.from).length - 1, 0);
+  const countInRange = countSubK08d(pin, s.a, s.b, s.from);
   if (countInRange !== 1) fails.push(`SUBS: "${s.from}" w ${s.a}-${s.b} wystąpień=${countInRange} (oczekiwano 1)`);
   else report.SUBS++;
 }

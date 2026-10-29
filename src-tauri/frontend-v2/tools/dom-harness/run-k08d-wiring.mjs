@@ -69,6 +69,8 @@ try {
   // W1 — przed instalacją: wyjątek jawny, nie cicha wartość.
   const calls = {
     mennicaGate: () => D.mennicaGate(0),
+    religiaSzPunkty: () => D.religiaSzPunkty(0.5, 0),
+    religiaXRelTop: () => D.religiaXRelTop(0, null),
     buildEconParams: () => D.buildEconParams({}, 'hard'),
     cityHasBibliotekaLine: () => D.cityHasBibliotekaLine([]),
     mnoznikHandelPieniadzForCivByDifficulty: () => D.mnoznikHandelPieniadzForCivByDifficulty('rz', {}, 'hard', 1),
@@ -83,6 +85,8 @@ try {
   const seen = [];
   const rules1 = {
     mennicaGate: (o) => { seen.push(['mgt', o]); return { maMennicaBudynek: o === 4, mennicaAktywna: true, mennicaSpiZBrakuZlota: false }; },
+    religiaSzPunkty: (w, o) => { seen.push(['rsp', w, o]); return Math.round(w * 10) + o; },
+    religiaXRelTop: (o, d) => { seen.push(['rxt', o, d]); return o + 1000; },
     buildEconParams: (d, diff) => { seen.push(['bep', d, diff]); return { tag: 'E', korupcjaWspolczynnikDystansu: 1, korupcjaWspolczynnikMiast: 2, korupcjaCap: 3, mennicaMnoznikPoWalucie: 4 }; },
     cityHasBibliotekaLine: (ids) => { seen.push(['bib', ids.length]); return ids.length === 3; },
     mnoznikHandelPieniadzForCivByDifficulty: (k, c, d, fb) => { seen.push(['mno', k, c, d, fb]); return fb * 100 + (k === 'rz' ? 1 : 0); },
@@ -119,7 +123,11 @@ try {
 
   // W5 — zestaw nazw i wywoływalność po instalacji.
   W.installK08dWiring(rules1);
-  check('W5.names', 'K08D_FN_NAMES = 5 delegatów (K08D-Z11: + mennicaGate)', D.K08D_FN_NAMES.length === 5);
+  check('W2.religia.args', 'religiaSzPunkty(0.5, 3) => (5, 3) przekazane i zwrócone (wynik reguły = 8)',
+    safe(() => D.religiaSzPunkty(0.5, 3)) === 8 && seen.some((s) => s[0] === 'rsp' && s[1] === 0.5 && s[2] === 3));
+  check('W2.religia.xrel', 'religiaXRelTop(7, data) => reguła dostaje (7, data) i zwraca 1007',
+    safe(() => D.religiaXRelTop(7, { d: 1 })) === 1007 && seen.some((s) => s[0] === 'rxt' && s[1] === 7 && s[2] !== null && s[2].d === 1));
+  check('W5.names', 'K08D_FN_NAMES = 7 delegatów (K08D-Z11/Z12)', D.K08D_FN_NAMES.length === 7);
   const allCallable = D.K08D_FN_NAMES.every((n) => {
     try {
       return calls[n] !== undefined && typeof calls[n] === 'function' && (calls[n](), true);

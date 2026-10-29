@@ -12,7 +12,10 @@
  *   computeTradeRouteBuildingBonusByCity    — `game/trade-routes.ts:1683`;
  *   daninaLabelAccusative      — `game/danina-nazwa.ts:21` (stała `'podatek'`, bez reguł: tu jako stała pinu).
  */
-import type { GameData, K05bCfg, TradeRouteK05bDto } from './k05b-host';
+import type { City, GameData, K05bCfg, TradeRouteK05bDto } from './k05b-host';
+import type { EmpireHudSnap } from './k01a-fundament';
+import type { GameMap } from './k05a-fundament';
+import { dep } from './k06b-deps';
 
 /**
  * K08D-Z9 (odpowiedź na zarzut Evaluatora, runda 2): wymagane pole `cfg` (K08D-Z2). Pin używa `cfg.X?.(…) ?? wartość`
@@ -50,6 +53,10 @@ export interface MennicaGateK08d {
 /** Kontrakt delegatów reguł K08D (dostarcza wiring/host; UI ich nie implementuje). */
 export interface K08dDeps {
   mennicaGate(ownerId: number): MennicaGateK08d;
+  /** Pin `religiaSzPunkty(wskaznik, ownerId)` (:3050) — punkty Szczęścia wpływu religii (reguła skali epoki). */
+  religiaSzPunkty(wskaznik: number, ownerId: number): number;
+  /** Pin `kultReligScaleForEra(epoka, loadSocietyScaleParams(...))` z tekstu karty religii (:6012-6016) — reguła. */
+  religiaXRelTop(ownerId: number, data: GameData | null): number;
   buildEconParams(data: GameData, difficulty: string): HandelEconParamsK08d;
   cityHasBibliotekaLine(builtIds: readonly string[]): boolean;
   mnoznikHandelPieniadzForCivByDifficulty(
@@ -74,6 +81,19 @@ function depK08d<K extends keyof K08dDeps>(name: K): K08dDeps[K] {
   if (f === undefined) throw new Error(`K08D: brak delegatu ${String(name)} (setK08dDeps)`);
   return f as K08dDeps[K];
 }
+
+/** Delegat K08D: punkty Szczęścia religii (K08D-Z12, reguła pinu `religiaSzPunkty`). */
+export const religiaSzPunkty = (wskaznik: number, ownerId: number): number => depK08d('religiaSzPunkty')(wskaznik, ownerId);
+
+/** Delegat K08D: skala religii w tekście karty (K08D-Z12, reguła pinu). */
+export const religiaXRelTop = (ownerId: number, data: GameData | null): number => depK08d('religiaXRelTop')(ownerId, data);
+
+/**
+ * Snapshot imperium (pin `resolveEmpireSnap`, :1637) — delegat K08C przez rejestr K06B (`dep`, ten sam co `k08c-deps.ts`);
+ * K08D-Z12: nie duplikujemy wiringu, mapa (`_map`) nieczytana przez delegat.
+ */
+export const resolveEmpireSnap = (city: City, map: GameMap | null, data: GameData | null): EmpireHudSnap =>
+  dep('resolveEmpireSnap')(city, map, data) as EmpireHudSnap;
 
 /** Delegat bramki Mennicy (K08D-Z11): UI czyta gotowe pola, nie składa koniunkcji. */
 export const mennicaGate = (ownerId: number): MennicaGateK08d => depK08d('mennicaGate')(ownerId);
@@ -111,6 +131,8 @@ export const daninaLabelAccusative = (_label?: string): 'podatek' => 'podatek';
 /** Nazwy delegatów K08D (do raportu brakujących w `k08dWiring`). */
 export const K08D_FN_NAMES = [
   'mennicaGate',
+  'religiaSzPunkty',
+  'religiaXRelTop',
   'buildEconParams',
   'cityHasBibliotekaLine',
   'mnoznikHandelPieniadzForCivByDifficulty',

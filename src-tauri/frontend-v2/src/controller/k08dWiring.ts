@@ -18,6 +18,10 @@ import type { GameData, TradeRouteK05bDto } from '../ui/cityPanel/k05b-host';
 export interface K08dRuleHost {
   /** K08D-Z11 (NAPRAW 5): bramka Mennicy (koniunkcje pinu `buildHandelDetailCard`, `cityPanel.ts:10861-10874`). */
   mennicaGate(ownerId: number): MennicaGateK08d;
+  /** Pin `religiaSzPunkty` (`cityPanel.ts:3050`) — skala epoki + `proporcjonalneSzczescie` (K08D-Z12). */
+  religiaSzPunkty(wskaznik: number, ownerId: number): number;
+  /** Pin `kultReligScaleForEra(epoka, loadSocietyScaleParams(data))` z karty religii (`cityPanel.ts:6012-6016`, K08D-Z12). */
+  religiaXRelTop(ownerId: number, data: GameData | null): number;
   /** Pin `buildEconParams(data, difficulty)` (`game/turn-economy.ts:317`). */
   buildEconParams(data: GameData, difficulty: string): HandelEconParamsK08d;
   /** Pin `cityHasBibliotekaLine(built)` (`game/building-upgrades.ts:129`). */
@@ -37,6 +41,8 @@ export interface K08dRuleHost {
 export function installK08dWiring(rules: K08dRuleHost): void {
   setK08dDeps({
     mennicaGate: (ownerId) => rules.mennicaGate(ownerId),
+    religiaSzPunkty: (wskaznik, ownerId) => rules.religiaSzPunkty(wskaznik, ownerId),
+    religiaXRelTop: (ownerId, data) => rules.religiaXRelTop(ownerId, data),
     buildEconParams: (data, difficulty) => rules.buildEconParams(data, difficulty),
     cityHasBibliotekaLine: (builtIds) => rules.cityHasBibliotekaLine(builtIds),
     mnoznikHandelPieniadzForCivByDifficulty: (civKey, civs, difficulty, fallbackScaled) =>

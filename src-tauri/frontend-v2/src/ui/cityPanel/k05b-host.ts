@@ -111,8 +111,20 @@ export interface GameData {
   readonly econParams?: unknown;
 }
 
+/** K08D-Z13 (runda 3, partia religia): stan religii miasta (pin `ReligionState`, `cfg.getReligionState`); pola czytane przez kopie. */
+export interface ReligionStateK08d {
+  readonly dominujaca: string;
+  readonly udzialPct: number;
+  readonly wplywSzczescie: number;
+  readonly przyrostWiernych?: number | null;
+  readonly stateReligion?: string | null;
+  readonly sklad?: readonly { readonly name: string; readonly pct: number }[];
+  readonly zrodla?: readonly { readonly nazwa: string; readonly wartosc: number }[];
+}
+
 /** K05B-Z1: metody `cfg` pinu używane przez jednostki K05B; wartości z DTO/silnika (wiring poza zakresem). */
 export interface K05bCfg {
+  getReligionState?: (cityId: number) => ReligionStateK08d | undefined;
   getTreasury?: (ownerId: number) => number | undefined;
   getCityMoneySnap?: (cityId: number) => CityMoneySnap | undefined;
   getPodzialHandluOverride?: (cityId: number) => boolean | undefined;

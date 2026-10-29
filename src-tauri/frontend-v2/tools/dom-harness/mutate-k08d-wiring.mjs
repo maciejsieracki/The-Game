@@ -32,6 +32,10 @@ const MUTANTS = [
   ['biblioteka-delegate-dropped', '    cityHasBibliotekaLine: (builtIds) => rules.cityHasBibliotekaLine(builtIds),\n', ''],
   ['mennicaGate-delegate-dropped', '    mennicaGate: (ownerId) => rules.mennicaGate(ownerId),\n', ''],
   ['mennicaGate-owner-shifted', 'mennicaGate: (ownerId) => rules.mennicaGate(ownerId),', 'mennicaGate: (ownerId) => rules.mennicaGate(ownerId + 1),'],
+  ['religiaSzPunkty-delegate-dropped', '    religiaSzPunkty: (wskaznik, ownerId) => rules.religiaSzPunkty(wskaznik, ownerId),\n', ''],
+  ['religiaSzPunkty-args-swapped', 'rules.religiaSzPunkty(wskaznik, ownerId)', 'rules.religiaSzPunkty(ownerId, wskaznik)'],
+  ['religiaXRelTop-owner-shifted', 'religiaXRelTop: (ownerId, data) => rules.religiaXRelTop(ownerId, data),', 'religiaXRelTop: (ownerId, data) => rules.religiaXRelTop(ownerId + 1, data),'],
+  ['religiaXRelTop-data-dropped', 'rules.religiaXRelTop(ownerId, data)', 'rules.religiaXRelTop(ownerId, null)'],
 ];
 
 const rows = [];
