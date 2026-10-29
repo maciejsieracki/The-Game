@@ -8,7 +8,7 @@
  * zbudowanym bundlu (nie source-text pin, nie jsdom — jsdom nie liczy layoutu i zawsze zwraca
  * zera z getBoundingClientRect). Mechanizm (`installHudTitleTooltips()` w `hudTitleTooltip.ts`
  * + `makeInfoIcon()` w `newGameFlow.ts`) DZIAŁA POPRAWNIE dla wszystkich 8 ustawień wymienionych
- * w zgłoszeniu (Warunki zwycięstwa, Trudność miast-państw, Barbarzyńcy, Bitwy, Koszty budynków,
+ * w zgłoszeniu (Warunki zwycięstwa, rozpatrzenie ofert handlowych, Barbarzyńcy, Bitwy, Koszty budynków,
  * Koszty jednostek, Wzrost ludności, Zasięg ruchu) — z realnym `page.mouse.move` (prawdziwe
  * zdarzenia CDP, nie syntetyczny `dispatchEvent`), włącznie z pozycjami wymagającymi przewinięcia
  * `.adv-modal-body` (`overflow-y:auto`). Zero błędów konsoli. Treść tooltipa = dokładnie `hint`
@@ -40,7 +40,8 @@ const { execSync } = require('child_process');
 const GRA_DIR = path.resolve(__dirname, '..');
 const OUT_DIR = path.join(GRA_DIR, 'dist-newgame-adv-tooltip-test');
 const OUT_HTML = 'file://' + path.join(OUT_DIR, 'index.html');
-const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const FALLBACK_CHROME = process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE
+  || (fs.existsSync('/usr/bin/chromium') ? '/usr/bin/chromium' : '/opt/pw-browsers/chromium-1194/chrome-linux/chrome');
 const SHOW_DELAY_MS = 380; // musi być zsynchronizowane z hudTitleTooltip.ts
 
 let pass = 0;
@@ -108,7 +109,7 @@ async function gotoAdvModal(page) {
 /** Ustawienia dokładnie wymienione w zgłoszeniu Macieja (zrzut ekranu). */
 const NAMED_SETTINGS = [
   'Warunki zwycięstwa',
-  'Trudność miast-państw',
+  'Wymagaj rozpatrzenia ofert handlowych przed końcem tury',
   'Barbarzyńcy',
   'Bitwy',
   'Koszty budynków',

@@ -1598,7 +1598,34 @@ function renderSettingRows(host: HTMLElement, keys: string[]): void {
   const grid = el('div', 'sett-grid');
   for (const key of keys) {
     const s = SETT.find(x => x.key === key);
-    if (!s) continue;
+    if (!s) {
+      if (key === 'landFraction' || key === 'cityStateDifficulty') {
+        const setting = advancedSettingRows().find(x => x.key === key);
+        if (!setting) continue;
+        const row = el('div', 'srow');
+        row.innerHTML = '<div class="srow-hdr"><div class="srow-ic">' + settingIcon('landFraction') + '</div><div class="sl">' + setting.lbl + '</div></div><div class="sctl"></div>';
+        const hdr = row.querySelector('.srow-hdr') as HTMLElement;
+        const infoIcon = makeInfoIcon(setting.hint);
+        hdr.appendChild(infoIcon);
+        const ctl = row.querySelector('.sctl') as HTMLElement;
+        const left = el('button', 'arr', '&#8249;');
+        const sv = el('div', 'sv');
+        const right = el('button', 'arr', '&#8250;');
+        const refreshSv = () => { sv.textContent = setting.opts[setting.getIdx()] ?? ''; };
+        refreshSv();
+        const ch = (d: number) => {
+          const next = (setting.getIdx() + d + setting.opts.length) % setting.opts.length;
+          setting.setIdx(next);
+          refreshSv();
+          markNewGamePrefsDirtyAndSave();
+        };
+        left.addEventListener('click', () => ch(-1));
+        right.addEventListener('click', () => ch(1));
+        ctl.appendChild(left); ctl.appendChild(sv); ctl.appendChild(right);
+        grid.appendChild(row);
+      }
+      continue;
+    }
     const row = el('div', 'srow');
     row.innerHTML = '<div class="srow-hdr"><div class="srow-ic">' + settingIcon(s.key) + '</div><div class="sl">' + s.lbl + '</div></div><div class="sctl"></div>';
     const hdr = row.querySelector('.srow-hdr') as HTMLElement;
@@ -1621,7 +1648,7 @@ function renderSettingRows(host: HTMLElement, keys: string[]): void {
       if (s.key === 'world_type') resetAdvLandOnWorldTypeChange();
       refreshSv();
       markNewGamePrefsDirtyAndSave();
-      if (s.key === 'map_size' || s.key === 'city_states_count' || s.key === 'civ_types_count') {
+      if (s.key === 'map_size' || s.key === 'world_type' || s.key === 'city_states_count' || s.key === 'civ_types_count') {
         render();
       }
     };
@@ -1701,7 +1728,7 @@ function advancedSettingRows(): AdvSettingRow[] {
         if (advOpts.cityStateDifficultyOverride === 'hard') return 2;
         if (advOpts.cityStateDifficultyOverride === 'off') return 3;
         if (advOpts.cityStateDifficultyOverride === 'normal') return 1;
-        // Brak override -- pokaz biezaca glowna trudnosc (SETT difficulty).
+        // Brak override — pokaz bieżącą główną trudność (SETT difficulty).
         const diffRow = SETT.find(x => x.key === 'difficulty');
         return diffRow ? diffRow.idx : 1;
       },
@@ -1709,6 +1736,10 @@ function advancedSettingRows(): AdvSettingRow[] {
         advOpts.cityStateDifficultyOverride = i === 0 ? 'easy' : i === 2 ? 'hard' : i === 3 ? 'off' : 'normal';
       },
     },
+    advRowFromSett(
+      'deals_end_turn_gate',
+      'Dopóki wisi oferta handlowa od AI, nie zakończysz tury — przyjmij, zmodyfikuj lub odrzuć. Wyłączone: oferty AI nie blokują końca tury.',
+    ),
     {
       key: 'barbariansLevel',
       lbl: 'Barbarzyńcy',
@@ -1832,7 +1863,9 @@ function showAdvancedModal(): void {
   head.appendChild(el('div', 'adv-sub', 'Parametry rzadko zmieniane — poza główną siatką kroku 4.'));
   modal.appendChild(head);
   const body = el('div', 'adv-modal-body');
-  const rows = advancedSettingRows();
+  // Udział lądu został przeniesiony do głównej siatki kroku 4; nie renderuj
+  // drugiej kopii w modalu ustawień zaawansowanych.
+  const rows = advancedSettingRows().filter(row => row.key !== 'landFraction' && row.key !== 'cityStateDifficulty');
   for (const row of rows) {
     const box = el('div', 'adv-row');
     const lblRow = el('div', 'adv-lbl-row');
@@ -1952,11 +1985,8 @@ function renderSettStep(host: HTMLElement): void {
   // actions stay BELOW the whole block, always at the same height.
   const layout = el('div', 'sett-layout');
   renderSettingRows(layout, [
-    'difficulty', 'map_size', 'world_type', 'game_speed', 'city_states_count', 'civ_types_count',
-    'deals_end_turn_gate',
-    // R-WEB-WAR-EPOCH-PLAYER-FIRST-Q1 (K2, D3 r2): wiersz ZAWSZE widoczny; przy fladze OFF opcja
-    // jest ignorowana w logice (main.ts), a zapis meta nie zmienia się względem bazy.
-    'player_epoch_war',
+    'difficulty', 'map_size', 'world_type', 'game_speed', 'city_states_count', 'cityStateDifficulty', 'civ_types_count',
+    'landFraction',
   ]);
   renderAiCivPicker(layout);
   host.appendChild(layout);
