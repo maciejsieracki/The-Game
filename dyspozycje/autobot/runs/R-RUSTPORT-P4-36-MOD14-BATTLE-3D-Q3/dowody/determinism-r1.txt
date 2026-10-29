@@ -1,0 +1,11 @@
+## generator tests/fixtures/battle3d/gen_units.ts run in two scratch directories
+## (A = scratchpad/q3, B = scratchpad/q3/q3b; separate `npm install --ignore-scripts three@0.169.0 esbuild@0.24.0`,
+##  separate `git archive edb8fb56 gra/src gra/data`); node v22.22.0
+## $ node build_units.mjs && node gen_units.mjs ../out      (both dirs)
+battle3d units ctor=11 units=1230 bars=10 arrows=12 preview=11 ghosts=16
+## $ sha256sum A/out/units.json B/out/units.json A/refscript/gen_units.mjs B/refscript/gen_units.mjs
+6fb3b65a970716a25b46f86bd394db78e32fad1e51463f56ff5b839f4112b171  out/units.json
+6fb3b65a970716a25b46f86bd394db78e32fad1e51463f56ff5b839f4112b171  q3b/out/units.json
+f59b98427e40d8b01838a1ea981386d42a7437c21a50d791b9224835b70d4bc3  refscript/gen_units.mjs
+f59b98427e40d8b01838a1ea981386d42a7437c21a50d791b9224835b70d4bc3  q3b/refscript/gen_units.mjs
+## committed rust-port/renderer/tests/fixtures/battle3d/units.json = 6fb3b65a…12b171 (MANIFEST.sha256)
