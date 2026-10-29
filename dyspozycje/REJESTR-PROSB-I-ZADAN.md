@@ -8565,4 +8565,3 @@ referencyjnych zielone, `entity-card-historia-section-test` 36/36,
 - **Zgłoszenie:** Dla wszystkich ulepszeń zwiększyć jasność kwalifikujących się pól o 20%; po udanej budowie podświetlenie pola ma zniknąć natychmiast, a po odznaczeniu/odświeżeniu ma ponownie pokazywać tylko aktualne pola możliwe do zbudowania. Szczególny przykład: kopalnia na górze.
 - **Powiązane historyczne prace:** `P-KOPALNIA-PODSWIETLENIE-KOSMETYKA-Q1` i `R-KOPALNIA-PODSWIETLENIE-HEKSOW-Q1` są wcześniejszym, węższym kontekstem renderowania kopalni; nowy ticket obejmuje każdą klasę ulepszeń oraz aktualizację eligibility po budowie.
 - **Pipeline:** Operator → niezależny Evaluator → warunkowa Obrona → Final Control → integracja main → ROBOCZA → push i receipt (graf 1–11 w `dyspozycje/autobot/runs/R-IMPROVEMENT-BUILD-HIGHLIGHT-LIFECYCLE-Q1/00-dispatch.md`).
-
