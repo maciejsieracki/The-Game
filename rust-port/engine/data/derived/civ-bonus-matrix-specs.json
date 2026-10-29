@@ -2,11 +2,12 @@
   "meta": {
     "zrodlo_web": {
       "plik": "gra/src/game/civ-bonuses.ts",
-      "pin": "edb8fb56",
+      "pin": "91dc998a5f1b51ad29e0f4785edfd45655445c53",
       "matrix_combat_specs": "linie 264-283",
-      "excluded_g1": "linia 288",
+      "excluded_g1": "civ-bonuses.ts MATRIX_ADAPTER_EXCLUDED_IDS i MATRIX_ZERO_MARKER_IDS w 91dc998a",
       "petla_ruchu": "od linii 297",
-      "koszt_rekrutacji": "linie 306-307"
+      "koszt_rekrutacji": "linie 306-307",
+      "zmiana": "R-RUSTPORT-REPIN-LOGIKA-CIV-Q1: wykluczone_g1 zawezone do walka_atak_lukownicy (MATRIX_ADAPTER_EXCLUDED_IDS); zerowe_markery; pomin_civ (Egipt, owner 1B); wyjatki_civ rekrutacji (zulusi -> Impi, owner 2A)"
     },
     "opis": "Edytowalna tabela generowania wpisow bonusow walki z macierzy cywilizacji (civMatrixBonusyForCivKey). Kolejnosc wierszy = kolejnosc wyniku. Zmiana wiersza nie wymaga zmiany kodu ani testu ksztaltu."
   },
@@ -199,13 +200,15 @@
     }
   ],
   "wykluczone_g1": [
-    "walka_atak_lukownicy",
+    "walka_atak_lukownicy"
+  ],
+  "zerowe_markery": [
     "walka_atak_piechota",
+    "walka_obrona_piechota",
+    "walka_pancerz_piechota",
     "walka_dystans_lukownicy",
     "walka_hp_piechota",
-    "walka_hp_rydwany",
-    "walka_obrona_piechota",
-    "walka_pancerz_piechota"
+    "walka_hp_rydwany"
   ],
   "parametry_dodatkowe": [
     {
@@ -216,27 +219,39 @@
           "civ_key": "egipt",
           "cel": "rydwany"
         }
+      ],
+      "pomin_civ": [
+        "egipt"
       ]
     },
     {
       "id": "walka_ruch_rydwany",
       "cel_domyslne": "rydwany",
-      "wyjatki_civ": []
+      "wyjatki_civ": [],
+      "pomin_civ": []
     },
     {
       "id": "walka_zasieg_proc",
       "cel_domyslne": "wszystko",
-      "wyjatki_civ": []
+      "wyjatki_civ": [],
+      "pomin_civ": []
     },
     {
       "id": "walka_oblezenie_proc",
       "cel_domyslne": "wszystko",
-      "wyjatki_civ": []
+      "wyjatki_civ": [],
+      "pomin_civ": []
     }
   ],
   "koszt_rekrutacji": {
     "id": "walka_koszt_rekrutacji_proc",
     "typ": "koszt_redukcja",
-    "cel": "jednostki"
+    "cel": "jednostki",
+    "wyjatki_civ": [
+      {
+        "civ_key": "zulusi",
+        "cel": "Impi"
+      }
+    ]
   }
 }

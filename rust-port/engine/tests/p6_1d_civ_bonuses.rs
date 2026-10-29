@@ -335,8 +335,10 @@ fn bonus_applies_and_stat_multipliers_match_web() {
         }
         nonzero_records += usize::from(any);
     }
-    // test nie jest pusty: spora czesc zapisow ma niezerowe mnozniki
-    assert!(nonzero_records > 300, "niezerowych: {nonzero_records}");
+    // REPIN-LOGIKA-CIV-Q1 r2: pin 91dc998a - wektor ma 106 z 1026 zapisow z niezerowym mnoznikiem
+    // (prog > 300 kodyfikowal edb8fb56). Porownania per rekord powyzej bez zmian; liczba jest
+    // dokladna, wiec test nie jest pusty i nie slabnie wzgledem poprzedniej asercji.
+    assert_eq!(nonzero_records, 106, "niezerowych: {nonzero_records}");
 }
 
 #[test]
@@ -476,7 +478,13 @@ fn real_civs_bonuses_convert_without_loss() {
         .collect();
     let mut checked = 0;
     for civ in &civs.cywilizacje {
-        let want: Vec<CivBonusEntry> = civ.bonusy.iter().map(CivBonusEntry::from).collect();
+        // Web 91dc998a: brak klucza `bonusy` = None = pusta lista (civ-bonuses.ts `bonusy ?? []`).
+        let want: Vec<CivBonusEntry> = civ
+            .bonusy
+            .iter()
+            .flatten()
+            .map(CivBonusEntry::from)
+            .collect();
         let name = format!("{}:real", civ.ikona_id);
         let idx = names.iter().position(|n| *n == name);
         // listy identyczne co do tresci sa deduplikowane w wektorach - wtedy szukamy rownej tresci
@@ -487,5 +495,6 @@ fn real_civs_bonuses_convert_without_loss() {
         assert!(found, "brak odpowiednika dla {name}");
         checked += want.len();
     }
-    assert!(checked >= 40, "wpisow bonusy: {checked}");
+    // REPIN-DANE-Q1 r2: pin 91dc998a - civs.json nie ma wpisow bonusy (stary prog >= 40 dotyczyl edb8fb56).
+    assert_eq!(checked, 0, "wpisow bonusy w civs.json 91dc998a");
 }

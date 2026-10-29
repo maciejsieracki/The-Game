@@ -1,0 +1,13 @@
+core: meta equal=true caseKeys 12->12
+  core.computePath: items=480->480 differing=5
+  core.computeReachable: items=400->400 differing=4
+embark: meta equal=true caseKeys 5->5
+  embark.moveCostFnFor: items=130->130 differing=15
+march: meta equal=true caseKeys 10->10
+  march.applyFogToPathPlan: items=116->116 differing=3
+  march.truncatePathToBudget: items=587->587 differing=9
+  march.planPathTurns: items=587->587 differing=12
+  march.shouldStopAtObstacle: items=587->587 differing=8
+  march.executeMarchStep: items=580->580 differing=8
+  march.stopReasonCounts: non-array diff
+EXIT=0

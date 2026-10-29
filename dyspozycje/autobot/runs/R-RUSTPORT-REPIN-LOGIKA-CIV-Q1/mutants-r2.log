@@ -1,0 +1,31 @@
+MUT 1 civ_bonuses.rs :: 'rola == tok::ROLA_MORSKA ||' -> '' :: KILLED newly_failed=['bonus_applies_per_entry_matches_web_for_multi_entry_lists', 'movement_range_siege_wall_multipliers_match_web', 'unit_combat_category_matches_web_for_every_unit', 'unit_matches_cel_matches_web_for_every_unit_and_cel'] total_failed=14 rc=101
+MUT 2 civ_bonuses.rs :: 'rola == tok::ROLA_GALERA ||' -> '' :: SURVIVED newly_failed=[] total_failed=10 rc=101
+MUT 3 civ_bonuses.rs :: '|| counter == tok::COUNTER_NAVAL {' -> '{' :: KILLED newly_failed=['bonus_applies_per_entry_matches_web_for_multi_entry_lists', 'movement_range_siege_wall_multipliers_match_web', 'unit_combat_category_matches_web_for_every_unit', 'unit_matches_cel_matches_web_for_every_unit_and_cel'] total_failed=14 rc=101
+MUT 4 civ_bonuses.rs :: 'if !is_known_matrix_combat_entry(b) {\n        return false;' -> 'if false {\n        return false;' :: KILLED newly_failed=['bonus_applies_per_entry_matches_web_for_multi_entry_lists'] total_failed=11 rc=101
+MUT 5 civ_bonuses.rs :: 'if b.realizuje.as_deref() != Some(kind::REALIZUJE_WALKA) {\n ' -> 'if false {\n        return false;\n    }\n ' :: SURVIVED newly_failed=[] total_failed=10 rc=101
+MUT 6 civ_bonuses.rs :: 'if b.realizuje.as_deref() != Some(kind::REALIZUJE_WALKA) {\n ' -> 'if false {\n        return false;\n    }\n ' :: SURVIVED newly_failed=[] total_failed=10 rc=101
+MUT 7 civ_bonuses.rs :: 'if !v.is_finite() {\n        return false;' -> 'if false {\n        return false;' :: SURVIVED newly_failed=[] total_failed=10 rc=101
+MUT 8 civ_bonuses.rs :: 'is_some_and(|(typ, cel)| b.typ == typ && b.cel == cel)' -> 'is_some_and(|(typ, cel)| b.typ == typ)' :: KILLED newly_failed=['is_combat_modifier_bonus_matches_web', 'movement_range_siege_wall_multipliers_match_web'] total_failed=8 rc=101
+MUT 9 civ_bonuses.rs :: 'let has_matrix_row = matrix.cywilizacje.iter()' -> 'let has_matrix_row = false && matrix.cyw' :: KILLED newly_failed=['matrix_bonusy_match_web_for_every_civ_key_variant'] total_failed=11 rc=101
+MUT 10 civ_bonuses.rs :: 'let marker = has_matrix_row && specs' -> 'let marker = false && specs' :: KILLED newly_failed=['matrix_bonusy_match_web_for_every_civ_key_variant'] total_failed=11 rc=101
+MUT 11 civ_bonuses.rs :: 'let marker = has_matrix_row && specs' -> 'let marker = true && specs' :: KILLED newly_failed=['matrix_bonusy_match_web_for_every_civ_key_variant'] total_failed=11 rc=101
+MUT 12 civ_bonuses.rs :: 'if specs.wykluczone_g1.iter().any(|id| id == &spec.id) {' -> 'if false {' :: SURVIVED newly_failed=[] total_failed=10 rc=101
+MUT 13 civ_bonuses.rs :: 'if specs.wykluczone_g1.iter().any(|w| w == &spec.id) {' -> 'if false {' :: SURVIVED newly_failed=[] total_failed=10 rc=101
+MUT 14 civ_bonuses.rs :: 'if wartosc != 0.0 || marker {' -> 'if wartosc != 0.0 {' :: KILLED newly_failed=['matrix_bonusy_match_web_for_every_civ_key_variant'] total_failed=11 rc=101
+MUT 15 civ_bonuses.rs :: 'if extra.pomin_civ.iter().any(|c| c == civ_key) {' -> 'if false {' :: KILLED newly_failed=['matrix_bonusy_match_web_for_every_civ_key_variant'] total_failed=11 rc=101
+MUT 16 civ_bonuses.rs :: '.map_or(extra.cel_domyslne.as_str(), |w| w.cel.as_str())' -> '.map_or(extra.cel_domyslne.as_str(), |_w' :: SURVIVED newly_failed=[] total_failed=10 rc=101
+MUT 17 civ_bonuses.rs :: 'if wartosc != 0.0 {\n            out.push(CivBonusEntry {\n   ' -> 'if true {\n            out.push(CivBonusE' :: KILLED newly_failed=['matrix_bonusy_match_web_for_every_civ_key_variant'] total_failed=11 rc=101
+MUT 18 civ_bonuses.rs :: '|| !is_known_matrix_combat_entry(b)\n            || !ids.iter' -> '|| !ids.iter()' :: KILLED newly_failed=['movement_range_siege_wall_multipliers_match_web'] total_failed=7 rc=101
+MUT 19 civ_bonuses.rs :: '|| !ids.iter().any(|id| id == matrix_id)' -> '' :: KILLED newly_failed=['movement_range_siege_wall_multipliers_match_web'] total_failed=11 rc=101
+MUT 20 civ_bonuses.rs :: 'civ_key != "egipt"\n                ||' -> 'civ_key != "zzz"\n                ||' :: SURVIVED newly_failed=[] total_failed=10 rc=101
+MUT 21 civ_bonuses.rs :: '|| !EGIPT_POMIJANE.contains(&b.matrix_param_id.as_deref().un' -> '|| true' :: SURVIVED newly_failed=[] total_failed=10 rc=101
+MUT 22 civ_bonuses.rs :: 'is_known_matrix_combat_entry(b) && b.wartosc.as_number() != ' -> 'is_known_matrix_combat_entry(b)' :: KILLED(compile-error) newly_failed=[] total_failed=0 rc=101
+MUT 23 civ_bonuses.rs :: 'is_known_matrix_combat_entry(b) && b.wartosc.as_number() != ' -> 'is_known_matrix_combat_entry(b) && b.war' :: KILLED(compile-error) newly_failed=[] total_failed=0 rc=101
+MUT 22 civ_bonuses.rs :: 'is_known_matrix_combat_entry(b) && b.wartosc.as_number() != ' -> 'is_known_matrix_combat_entry(b)' :: KILLED newly_failed=['is_combat_modifier_bonus_matches_web'] total_failed=11 rc=101
+MUT 24 civ_matrix.rs :: 'if !x.is_finite() || x == 0.0 {' -> 'if !x.is_finite() {' :: KILLED(compile-error) newly_failed=[] total_failed=0 rc=101
+MUT 23 civ_bonuses.rs :: 'is_known_matrix_combat_entry(b) && b.wartosc.as_number() != ' -> 'is_known_matrix_combat_entry(b) && b.war' :: KILLED newly_failed=['is_combat_modifier_bonus_matches_web'] total_failed=11 rc=101
+MUT 24 civ_matrix.rs :: 'if !x.is_finite() || x == 0.0 {' -> 'if !x.is_finite() {' :: SURVIVED newly_failed=[] total_failed=10 rc=101
+MUT 25 civ_matrix.rs :: 'c.ikona_id.to_lowercase() == key\n            || c.typ_cywili' -> 'c.typ_cywilizacji' :: SURVIVED newly_failed=[] total_failed=10 rc=101
+MUT 26 civ_matrix.rs :: 'row.ikona_id.to_lowercase() == key\n                || row.ty' -> 'row.typ_cywilizacji' :: SURVIVED newly_failed=[] total_failed=10 rc=101
+MUT 27 civ_matrix.rs :: '.filter(|v| v.is_finite())' -> '' :: SURVIVED newly_failed=[] total_failed=10 rc=101
+MUT 28 civ_matrix.rs :: 'value.filter(|v| v.is_finite())' -> 'value' :: KILLED newly_failed=['synthetic_cell_grid_matches_web'] total_failed=11 rc=101

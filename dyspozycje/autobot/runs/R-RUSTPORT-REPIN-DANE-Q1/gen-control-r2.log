@@ -1,0 +1,20 @@
+GEN-CONTROL-R2 (kontrola generatorow na pinie edb8fb56 przed uruchomieniem na 91dc998a)
+Web pin edb8fb56: git archive -> katalog tymczasowy poza repo. Web pin 91dc998a: git archive -> katalog tymczasowy poza repo.
+
+gen-web.mjs (unit-stock-costs.json)      : ctrl(units edb8fb56) == committed        -> IDENTYCZNA
+gen-round4.mjs (9 tabel)                 : ctrl(edb8fb56) == committed              -> IDENTYCZNE: building-work-states, unit-gold-states, building-gold-upkeep, unit-food, racje, research-costs, improvement-work, wonder-work, storage-caps
+gen-work-gold.mjs (unit-gold-costs.json) : ctrl(edb8fb56) == committed              -> IDENTYCZNA (+ building-work-costs.json IDENTYCZNA)
+gen-p61e-web-vectors.mjs                 : ctrl(edb8fb56) == tests/p6_1e_vectors    -> IDENTYCZNY (OK numbers=738 scenarios=3 texts=232)
+gen-p61d-web-vectors.mjs                 : ctrl(edb8fb56) == tests/p6_1d_vectors    -> IDENTYCZNY po poprawce `civ.bonusy ?? []` (OK units=174 lists=285)
+
+Uruchomienia na 91dc998a:
+gen-web.mjs                 -> diff 1 rekord (Rydwan (woly)): PRZELICZONA
+gen-round4.mjs              -> unit-food: diff tylko rekord Rydwan (PRZELICZONA); storage-caps, building-gold-upkeep, racje, research-costs, improvement-work, wonder-work: IDENTYCZNE; unit-gold-states: diff 64 linie (NIE PRZELICZONA - logika production.ts unitMoneyCost/civRecruitmentDiscount zmieniona); building-work-states: diff 6828 linii (NIE PRZELICZONA - logika buildingWorkCost + brak zniżki cywilizacji w civs.json)
+gen-work-gold.mjs           -> unit-gold-costs: diff 6 linii (Rydwan Braz 30/24 -> Kamien 15/12): PRZELICZONA
+gen-p61e-web-vectors.mjs    -> OK numbers=738 scenarios=3 texts=240 grid=1666/0/595 names.start=48 pool=1200 assign=720 rotate=108: PRZELICZONA (tests/p6_1e_vectors)
+gen-p61d-web-vectors.mjs    -> OK units=174 reps=18 ctx=160 lists=262 apply=1026 mults=1026 discount=29: PRZELICZONA (tests/p6_1d_vectors)
+
+Zmiany logiki web edb8fb56 -> 91dc998a w plikach zrodlowych generatorow (git diff --stat):
+  gra/src/game/civ-bonuses.ts (204 linie), gra/src/game/production.ts (271), gra/src/game/terrain-improvements.ts (22),
+  gra/src/game/civ-ai-data.ts (66), gra/src/game/civ-matrix-semantic.ts (134).
+Bez zmian: building-stock-cost.ts, r-stawki-strojenie.ts, economy-upkeep.ts, units/setup.ts, civ-matrix.ts, city-names-pool.ts.

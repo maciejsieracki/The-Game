@@ -1,0 +1,15 @@
+# R-RUSTPORT-REPIN-LOGIKA-CIV-Q1 r4 (Operator-obrona) - ponowny pomiar mutantow przezytych w r3
+# Baza: 82b30524 + append-only test gap_egipt_keeps_shallow_sea_infantry_movement_entry (p6_1e_civ_gaps.rs).
+# Metoda: jeden mutant na raz, plik src przywracany po pomiarze (src bez zmian po pomiarze).
+MUT 15 civ_bonuses.rs :: '|| !EGIPT_POMIJANE.contains(..)' -> '|| false' :: KILLED (cargo test --test p6_1e_civ_gaps)
+  failed: gap_egipt_keeps_shallow_sea_infantry_movement_entry  panicked at tests/p6_1e_civ_gaps.rs:212
+  left: 1.0  right: 1.5  ("Egipt zachowuje plytkie morze dla piechoty")
+  reszta binarki: 9 passed
+MUT 21 civ_bonuses.rs :: '.map_or(recruitment.cel.as_str(), |w| w.cel.as_str())' -> '|_w| recruitment.cel.as_str()' :: KILLED
+  (galaz rekrutacji, wyjatek zulusi->Impi; binarki p6_1d_civ_bonuses, p6_1e_civ_matrix, p6_1d_tables, p6_1e_tables, p6_1e_civ_gaps, data_compliance)
+  failed: matrix_bonusy_match_web_for_every_civ_key_variant  (tests/p6_1d_civ_bonuses.rs:383)
+MUT 17 civ_bonuses.rs :: '|_w| extra.cel_domyslne' (petla parametry_dodatkowe) :: EQUIVALENT_BY_DATA (nie mierzony ponownie)
+  dowod: civ-bonus-matrix-specs.json: jedyny wpis wyjatki_civ w parametry_dodatkowe = walka_ruch_bitwa_proc -> [egipt],
+  z pomin_civ = [egipt] (ta sama pozycja); pozostale wyjatki_civ = []. Petla robi `continue` dla pomin_civ PRZED `.find`,
+  wiec galaz `Some(w)` jest nieosiagalna dla kazdej cywilizacji. Niezmiennik: tests/p6_1e_civ_gaps.rs
+  gap_invariant_extra_cel_exceptions_only_for_skipped_civs (PASS).

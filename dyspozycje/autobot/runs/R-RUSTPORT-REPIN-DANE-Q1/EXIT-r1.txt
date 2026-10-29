@@ -1,0 +1,4 @@
+baseline cargo test (original data, HEAD bb74ff9d): EXIT=0 (1207 passed, 0 failed)
+after 4-file swap cargo test: EXIT=101 (1151 passed, 56 failed; sum 1207)
+clippy -D warnings: EXIT=0
+fmt --check: EXIT=0

@@ -1,0 +1,3 @@
+error: failed to build archive at `/home/user/cargo-target-shared/wf_097e36df-577-2/debug/deps/libciv_engine-04c4f13184038694.rlib`: No space left on device (os error 28)
+error: could not compile `civ-engine` (lib) due to 1 previous error
+---

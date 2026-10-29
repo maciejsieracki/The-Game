@@ -1,4 +1,7 @@
-//! P6.1D: bonusy cywilizacji (web `gra/src/game/civ-bonuses.ts`, pin `edb8fb56`).
+//! P6.1D: bonusy cywilizacji (web `gra/src/game/civ-bonuses.ts`, pin `91dc998a`).
+//! REPIN-LOGIKA (R-RUSTPORT-REPIN-LOGIKA-CIV-Q1): bramka `isKnownMatrixCombatEntry`,
+//! usuniete dopasowania po opisie tekstowym (`opisForestOrCharge` i spolka), `galera` = morska,
+//! zerowe markery macierzy, wyjatki Egiptu (pomin_civ) i Zulusow (cel `Impi`).
 //!
 //! Port 1:1 logiki: kategoria bojowa jednostki, dopasowanie `cel`, warunki kontekstu,
 //! sumowanie mnozników statystyk, generowanie wpisow z macierzy cywilizacji, mnozniki
@@ -26,7 +29,6 @@ mod kind {
     pub const REALIZUJE_WALKA: &str = "walka";
     pub const TYP_JEDNOSTKA_SPECJALNA: &str = "jednostka_specjalna";
     pub const TYP_BONUS_OBRONA: &str = "bonus_obrona";
-    pub const TYP_BONUS_WALKA: &str = "bonus_walka";
 
     pub const CAT_MORSKA: &str = "morska";
     pub const CAT_OBLEZENIE: &str = "obleczenie";
@@ -39,6 +41,7 @@ mod kind {
 /// Tokeny dopasowania tekstu (po `strip_diacritics`: male litery, bez diakrytykow poza `ł`).
 mod tok {
     pub const ROLA_MORSKA: &str = "morska";
+    pub const ROLA_GALERA: &str = "galera";
     pub const COUNTER_NAVAL: &str = "naval";
     pub const ROLA_OBLEZNICZA: [&str; 2] = ["oblez-nicza", "obleznicza"];
     pub const COUNTER_SIEGE: &str = "siege";
@@ -58,28 +61,6 @@ mod tok {
     pub const CEL_WSZYSTKO: &str = "wszystko";
 
     pub const TEREN_LAS: [&str; 3] = ["las", "dzungl", "gor"];
-    pub const OPIS_LAS: [&str; 3] = ["les", "dzungl", "gorsk"];
-    pub const OPIS_UDERZENI: &str = "uderzeni";
-    pub const OPIS_SZARZ: &str = "szarz";
-    pub const OPIS_LES: &str = "les";
-    pub const OPIS_PIERWSZ: &str = "pierwsz";
-    pub const OPIS_STARCIU: &str = "starciu";
-    pub const OPIS_LUB: &str = " lub ";
-    pub const OPIS_ZASADZK: &str = "zasadzk";
-
-    pub const OPIS_ATAKU: &str = "ataku";
-    pub const OPIS_ATAK_SPACJA: &str = " atak";
-    pub const OPIS_ATAK: &str = "atak";
-    pub const OPIS_UDERZEN: &str = "uderzen";
-    pub const OPIS_PANCERZ: &str = "pancerz";
-    pub const OPIS_OBRON: &str = "obron";
-    pub const OPIS_KAWALER: &str = "kawaler";
-    pub const OPIS_DYSTANS: &str = "dystans";
-    pub const OPIS_LUCZ: &str = "lucz";
-    pub const OPIS_RYDWAN: &str = "rydwan";
-    pub const OPIS_HP: &str = "hp";
-    pub const OPIS_HEALTH: &str = "health";
-    pub const OPIS_CIEZKA_PIECHOTA: &str = "ciezka piechota";
 }
 
 /// Wartosc bonusu: liczba (ulamek) albo tekst/lista (web: `number | string | string[]`).
@@ -241,7 +222,7 @@ pub fn unit_combat_category(unit: &CivBonusUnitShape) -> &'static str {
     let rola = strip_diacritics(&unit.rola);
     let counter = strip_diacritics(unit.counter_typ.as_deref().unwrap_or(""));
 
-    if rola == tok::ROLA_MORSKA || counter == tok::COUNTER_NAVAL {
+    if rola == tok::ROLA_MORSKA || rola == tok::ROLA_GALERA || counter == tok::COUNTER_NAVAL {
         return kind::CAT_MORSKA;
     }
     if tok::ROLA_OBLEZNICZA.contains(&rola.as_str()) || counter == tok::COUNTER_SIEGE {
@@ -296,36 +277,11 @@ fn terrain_is_forest_or_jungle(terrain: &str) -> bool {
     contains_any(&strip_diacritics(terrain), &tok::TEREN_LAS)
 }
 
-fn opis_mentions_forest(opis: &str) -> bool {
-    contains_any(&strip_diacritics(opis), &tok::OPIS_LAS)
-}
-
-fn opis_charge_only(opis: &str) -> bool {
-    let o = strip_diacritics(opis);
-    if o.contains(tok::OPIS_UDERZENI) && o.contains(tok::OPIS_SZARZ) {
-        return true;
-    }
-    if o.contains(tok::OPIS_PIERWSZ) {
-        return true;
-    }
-    if o.contains(tok::OPIS_SZARZ) && !o.contains(tok::OPIS_LES) {
-        return true;
-    }
-    if o.contains(tok::OPIS_STARCIU) {
-        return true;
-    }
-    false
-}
-
-fn opis_forest_or_charge(opis: &str) -> bool {
-    let o = strip_diacritics(opis);
-    o.contains(tok::OPIS_LUB)
-        && opis_mentions_forest(opis)
-        && (o.contains(tok::OPIS_PIERWSZ) || o.contains(tok::OPIS_ZASADZK))
-}
-
 /// Czy bonus dziala w danym kontekscie walki (web `bonusApplies`).
 pub fn bonus_applies(b: &CivBonusEntry, unit: &CivBonusUnitShape, ctx: &CivCombatContext) -> bool {
+    if !is_known_matrix_combat_entry(b) {
+        return false;
+    }
     if b.realizuje.as_deref() != Some(kind::REALIZUJE_WALKA) {
         return false;
     }
@@ -340,7 +296,6 @@ pub fn bonus_applies(b: &CivBonusEntry, unit: &CivBonusUnitShape, ctx: &CivComba
     }
 
     let rules = &civ_bonus_rules().warunki_kontekstu;
-    let opis = b.opis.as_deref().unwrap_or("");
     let terrain = ctx.terrain.as_str();
     let matrix_id = b.matrix_param_id.as_deref().unwrap_or("");
 
@@ -360,20 +315,6 @@ pub fn bonus_applies(b: &CivBonusEntry, unit: &CivBonusUnitShape, ctx: &CivComba
         return false;
     }
 
-    if opis_forest_or_charge(opis) {
-        let forest_ok = !terrain.is_empty() && terrain_is_forest_or_jungle(terrain);
-        let charge_ok = ctx.is_charge_round;
-        return forest_ok || charge_ok;
-    }
-
-    if opis_mentions_forest(opis) && !terrain.is_empty() && !terrain_is_forest_or_jungle(terrain) {
-        return false;
-    }
-
-    if opis_charge_only(opis) && !ctx.is_charge_round {
-        return false;
-    }
-
     if b.typ == kind::TYP_BONUS_OBRONA && ctx.side != CombatSide::Defender {
         return false;
     }
@@ -389,11 +330,11 @@ fn matrix_id_matches_stat_rule(matrix_id: &str, rule: &CivBonusStatRule) -> bool
             .is_none_or(|fragment| !matrix_id.contains(fragment))
 }
 
-fn apply_walk_bonus(m: &mut CivStatMultipliers, b: &CivBonusEntry, side: CombatSide) {
+/// Web `applyMatrixCombatBonus`: routing wylacznie po `matrixParamId` (bez opisu tekstowego).
+fn apply_matrix_combat_bonus(m: &mut CivStatMultipliers, b: &CivBonusEntry) {
     let Some(v) = b.wartosc.as_number() else {
         return;
     };
-    let opis = strip_diacritics(b.opis.as_deref().unwrap_or(""));
     let matrix_id = b.matrix_param_id.as_deref().unwrap_or("");
     let rules = civ_bonus_rules();
 
@@ -411,71 +352,6 @@ fn apply_walk_bonus(m: &mut CivStatMultipliers, b: &CivBonusEntry, side: CombatS
             m.add(&rule.stat, v);
         }
     }
-    if !matrix_id.is_empty() {
-        return;
-    }
-
-    if b.typ == kind::TYP_BONUS_OBRONA {
-        m.obrona += v;
-        if opis.contains(tok::OPIS_HP)
-            || opis.contains(tok::OPIS_HEALTH)
-            || opis.contains(tok::OPIS_CIEZKA_PIECHOTA)
-        {
-            m.health += v;
-        }
-        if opis.contains(tok::OPIS_PANCERZ) {
-            m.pancerz += v;
-        }
-        return;
-    }
-
-    if b.typ != kind::TYP_BONUS_WALKA {
-        return;
-    }
-
-    // "Atak" przed "uderzeniu": opisy typu "pierwszym uderzeniu" to narracja szarzy, nie stat Uderzenie.
-    if opis.contains(tok::OPIS_ATAKU)
-        || (opis.contains(tok::OPIS_ATAK_SPACJA) && !opis.contains(tok::OPIS_UDERZEN))
-    {
-        m.atk += v;
-        if opis.contains(tok::OPIS_PANCERZ) {
-            m.pancerz += v;
-        }
-        if opis.contains(tok::OPIS_OBRON) && side == CombatSide::Defender {
-            m.obrona += v;
-        }
-        return;
-    }
-
-    if opis.contains(tok::OPIS_UDERZENI)
-        || (opis.contains(tok::OPIS_SZARZ) && opis.contains(tok::OPIS_KAWALER))
-    {
-        m.uderzenie += v;
-        return;
-    }
-    if opis.contains(tok::OPIS_DYSTANS)
-        || (opis.contains(tok::OPIS_LUCZ) && opis.contains(tok::OPIS_RYDWAN))
-    {
-        m.ranged_atk += v;
-        return;
-    }
-    if opis.contains(tok::OPIS_HP) && opis.contains(tok::OPIS_OBRON) {
-        m.health += v;
-        m.obrona += v;
-        return;
-    }
-    if opis.contains(tok::OPIS_PANCERZ) && !opis.contains(tok::OPIS_ATAK) {
-        m.pancerz += v;
-        return;
-    }
-
-    m.atk += v;
-    if opis.contains(tok::OPIS_PANCERZ) {
-        m.pancerz += v;
-    }
-    if opis.contains(tok::OPIS_OBRON) && side == CombatSide::Defender {
-        m.obrona += v;
-    }
 }
 
 /// Sumuje bonusy walki jako ulgi procentowe (0.2 = +20% do statu); pusta lista = zera
@@ -490,7 +366,7 @@ pub fn civ_combat_stat_multipliers(
         if !bonus_applies(b, unit, ctx) {
             continue;
         }
-        apply_walk_bonus(&mut m, b, ctx.side);
+        apply_matrix_combat_bonus(&mut m, b);
     }
     m
 }
@@ -507,11 +383,58 @@ fn matrix_param(matrix: &CivMatrixFile, civ_key: &str, param_id: &str) -> f64 {
     super::civ_matrix::civ_matrix_param(matrix, civ_key, param_id)
 }
 
+/// Tablica wpisow macierzy dla walki (web `MATRIX_COMBAT_ENTRY_SPECS`): spec_walka bez
+/// wykluczonych adapterem + parametry dodatkowe (typ = `typ_walka`, cel = `cel_domyslne`).
+fn matrix_combat_entry_spec(id: &str) -> Option<(&'static str, &'static str)> {
+    static MAP: std::sync::OnceLock<HashMap<String, (String, String)>> = std::sync::OnceLock::new();
+    let map = MAP.get_or_init(|| {
+        let specs = civ_bonus_matrix_specs();
+        let mut m = HashMap::new();
+        for spec in &specs.spec_walka {
+            if specs.wykluczone_g1.iter().any(|w| w == &spec.id) {
+                continue;
+            }
+            m.insert(spec.id.clone(), (spec.typ.clone(), spec.cel.clone()));
+        }
+        for extra in &specs.parametry_dodatkowe {
+            m.insert(
+                extra.id.clone(),
+                (specs.etykiety.typ_walka.clone(), extra.cel_domyslne.clone()),
+            );
+        }
+        m
+    });
+    map.get(id).map(|(t, c)| (t.as_str(), c.as_str()))
+}
+
+/// Web `isKnownMatrixCombatEntry`: wpis macierzy walki o znanym id, typie i celu oraz skonczonej wartosci.
+fn is_known_matrix_combat_entry(b: &CivBonusEntry) -> bool {
+    let Some(id) = b.matrix_param_id.as_deref() else {
+        return false;
+    };
+    if b.realizuje.as_deref() != Some(kind::REALIZUJE_WALKA) {
+        return false;
+    }
+    let Some(v) = b.wartosc.as_number() else {
+        return false;
+    };
+    if !v.is_finite() {
+        return false;
+    }
+    matrix_combat_entry_spec(id).is_some_and(|(typ, cel)| b.typ == typ && b.cel == cel)
+}
+
 /// Wpisy bonusow walki/ekonomii wynikajace z macierzy cywilizacji dla klucza `civ_key`
-/// (web `civMatrixBonusyForCivKey`). Kolejnosc i skład z tabeli `civ-bonus-matrix-specs.json`.
+/// (web `civMatrixBonusyForCivKey`). Kolejnosc i sklad z tabeli `civ-bonus-matrix-specs.json`.
 pub fn civ_matrix_bonusy_for_civ_key(matrix: &CivMatrixFile, civ_key: &str) -> Vec<CivBonusEntry> {
     let specs = civ_bonus_matrix_specs();
     let labels = &specs.etykiety;
+    let normalized = civ_key.to_lowercase();
+    let has_matrix_row = matrix.cywilizacje.iter().any(|row| {
+        [&row.ikona_id, &row.typ_cywilizacji, &row.cywilizacja]
+            .iter()
+            .any(|v| v.to_lowercase() == normalized)
+    });
     let mut out = Vec::new();
 
     for spec in &specs.spec_walka {
@@ -519,7 +442,8 @@ pub fn civ_matrix_bonusy_for_civ_key(matrix: &CivMatrixFile, civ_key: &str) -> V
             continue;
         }
         let wartosc = matrix_param(matrix, civ_key, &spec.id);
-        if wartosc != 0.0 {
+        let marker = has_matrix_row && specs.zerowe_markery.iter().any(|id| id == &spec.id);
+        if wartosc != 0.0 || marker {
             out.push(CivBonusEntry {
                 typ: spec.typ.clone(),
                 cel: spec.cel.clone(),
@@ -531,6 +455,9 @@ pub fn civ_matrix_bonusy_for_civ_key(matrix: &CivMatrixFile, civ_key: &str) -> V
         }
     }
     for extra in &specs.parametry_dodatkowe {
+        if extra.pomin_civ.iter().any(|c| c == civ_key) {
+            continue;
+        }
         let wartosc = matrix_param(matrix, civ_key, &extra.id);
         let cel = extra
             .wyjatki_civ
@@ -551,9 +478,14 @@ pub fn civ_matrix_bonusy_for_civ_key(matrix: &CivMatrixFile, civ_key: &str) -> V
     let recruitment = &specs.koszt_rekrutacji;
     let wartosc = matrix_param(matrix, civ_key, &recruitment.id);
     if wartosc != 0.0 {
+        let cel = recruitment
+            .wyjatki_civ
+            .iter()
+            .find(|w| w.civ_key == civ_key)
+            .map_or(recruitment.cel.as_str(), |w| w.cel.as_str());
         out.push(CivBonusEntry {
             typ: recruitment.typ.clone(),
-            cel: recruitment.cel.clone(),
+            cel: cel.to_owned(),
             wartosc: BonusValue::Number(wartosc),
             opis: Some(format!("{}{}", labels.opis_prefiks, recruitment.id)),
             realizuje: Some(labels.realizuje_ekonomia.clone()),
@@ -575,6 +507,7 @@ fn matching_matrix_sum(
     for b in bonusy {
         let matrix_id = b.matrix_param_id.as_deref().unwrap_or("");
         if matrix_id.is_empty()
+            || !is_known_matrix_combat_entry(b)
             || !ids.iter().any(|id| id == matrix_id)
             || !unit_matches_cel(unit, &b.cel)
         {
@@ -607,6 +540,32 @@ pub fn civ_movement_multiplier(
         terrain,
         shallow_sea,
     )
+}
+
+/// Mnoznik ruchu strategicznego (web `civEmbarkationMovementMultiplier`, decyzja 4B): dla Egiptu
+/// pomija pola ruchu rydwanow/ogolne z `walka_ruch_*`; plytkie morze zostaje. `civ_key` zastepuje
+/// pole `matrixCivKey` z weba (ZALOZENIE: pole nie jest dodawane do `CivBonusEntry`, bo testy
+/// konstruuja go literalem).
+pub fn civ_embarkation_movement_multiplier(
+    bonusy: &[CivBonusEntry],
+    unit: &CivBonusUnitShape,
+    civ_key: &str,
+) -> f64 {
+    const EGIPT_POMIJANE: [&str; 4] = [
+        "walka_ruch_bitwa_proc",
+        "walka_ruch_rydwany",
+        "walka_zasieg_proc",
+        "walka_oblezenie_proc",
+    ];
+    let strategic: Vec<CivBonusEntry> = bonusy
+        .iter()
+        .filter(|b| {
+            civ_key != "egipt"
+                || !EGIPT_POMIJANE.contains(&b.matrix_param_id.as_deref().unwrap_or(""))
+        })
+        .cloned()
+        .collect();
+    civ_movement_multiplier(&strategic, unit, "", true)
 }
 
 /// Mnoznik zasiegu ataku (web `civAttackRangeMultiplier`).
@@ -680,11 +639,5 @@ pub fn building_cost_after_civ_discount(base_cost: f64, bonusy: &[CivBonusEntry]
 
 /// PreBattle: tylko liczbowe modyfikatory walki (web `isCombatModifierBonus`).
 pub fn is_combat_modifier_bonus(b: &CivBonusEntry) -> bool {
-    if b.realizuje.as_deref() != Some(kind::REALIZUJE_WALKA) {
-        return false;
-    }
-    if b.typ == kind::TYP_JEDNOSTKA_SPECJALNA {
-        return false;
-    }
-    b.wartosc.as_number().is_some()
+    is_known_matrix_combat_entry(b) && b.wartosc.as_number() != Some(0.0)
 }

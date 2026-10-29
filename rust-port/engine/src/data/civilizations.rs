@@ -58,16 +58,30 @@ pub struct CywilizacjeItem {
     pub styl_charakter: String,
     #[serde(rename = "Jednostka specjalna")]
     pub jednostka_specjalna: String,
-    #[serde(rename = "Bonus startowy")]
-    pub bonus_startowy: String,
-    #[serde(rename = "Bonusy/minusy (do dopracowania)")]
-    pub bonusy_minusy_do_dopracowania: String,
+    // Pola usuniete z civs.json w webie 91dc998a (gra/src/data/loader.ts:218-227 typuje je jako
+    // opcjonalne `?`). Option + serde(default) + skip: brak klucza = None, round-trip bez zmian.
+    #[serde(
+        rename = "Bonus startowy",
+        default,
+        skip_serializing_if = "Option::is_none"
+    )]
+    pub bonus_startowy: Option<String>,
+    #[serde(
+        rename = "Bonusy/minusy (do dopracowania)",
+        default,
+        skip_serializing_if = "Option::is_none"
+    )]
+    pub bonusy_minusy_do_dopracowania: Option<String>,
     #[serde(rename = "Uwagi")]
     pub uwagi: Option<String>,
     #[serde(rename = "Religia")]
     pub religia: String,
-    #[serde(rename = "mnoznikHandelPieniadz")]
-    pub mnoznik_handel_pieniadz: f64,
+    #[serde(
+        rename = "mnoznikHandelPieniadz",
+        default,
+        skip_serializing_if = "Option::is_none"
+    )]
+    pub mnoznik_handel_pieniadz: Option<f64>,
     #[serde(rename = "ikonaId")]
     pub ikona_id: String,
     #[serde(rename = "wodzowiePula")]
@@ -76,8 +90,8 @@ pub struct CywilizacjeItem {
     pub wodzowie: Wodzowie,
     #[serde(rename = "kolorHex")]
     pub kolor_hex: String,
-    #[serde(rename = "bonusy")]
-    pub bonusy: Vec<BonusyItem>,
+    #[serde(rename = "bonusy", default, skip_serializing_if = "Option::is_none")]
+    pub bonusy: Option<Vec<BonusyItem>>,
     #[serde(rename = "typCywilizacji")]
     pub typ_cywilizacji: String,
     #[serde(rename = "archetyp")]

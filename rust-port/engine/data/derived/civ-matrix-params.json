@@ -50,6 +50,7 @@
   },
   "dyplomacja": {
     "parametr_handel": "dip_handlowosc_archetyp",
+    "parametr_agresja_archetyp": "dip_agresja_archetyp",
     "dzielnik_otwartosc_handel": 10,
     "parametr_nastawienie": "dip_nastawienie_bazowe",
     "nastawienie_baza_domyslna": 50,
