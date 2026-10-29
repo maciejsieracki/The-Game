@@ -1,0 +1,30 @@
+   Compiling civ-engine v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_806cd4d4-c64-4/rust-port/engine)
+    Finished `test` profile [unoptimized] target(s) in 39.76s
+     Running tests/p6_m06a2_landsea.rs (/home/user/cargo-target-shared/wf_806cd4d4-c64-4/debug/deps/p6_m06a2_landsea-c328e8d022047901)
+
+running 1 test
+test remove_small_inland_water_pools_matches_web_with_size_boundaries ... FAILED
+
+failures:
+
+---- remove_small_inland_water_pools_matches_web_with_size_boundaries stdout ----
+
+thread 'remove_small_inland_water_pools_matches_web_with_size_boundaries' (4580) panicked at tests/p6_m06a2_landsea.rs:75:49:
+watchdog: remove_small_inland_water_pools_matches_web_with_size_boundaries nie zakonczyl sie w 20 s (petla bez limitu iteracji)
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+   1: core::panicking::panic_fmt
+   2: p6_m06a2_landsea::with_watchdog::<p6_m06a2_landsea::remove_small_body>
+   3: p6_m06a2_landsea::remove_small_inland_water_pools_matches_web_with_size_boundaries
+   4: p6_m06a2_landsea::remove_small_inland_water_pools_matches_web_with_size_boundaries::{closure#0}
+   5: <p6_m06a2_landsea::remove_small_inland_water_pools_matches_web_with_size_boundaries::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+
+failures:
+    remove_small_inland_water_pools_matches_web_with_size_boundaries
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 5 filtered out; finished in 20.14s
+
+error: test failed, to rerun pass `--test p6_m06a2_landsea`
+EXIT=101

@@ -374,7 +374,7 @@ pub fn fill_enclosed_water_by_land_neighbors(hexes: &mut HexRecord, min_land: us
             if count_land_neighbors(hexes, q, r) < min_land {
                 continue;
             }
-            // Web: `rzeka = { obecna: false, krawedzie: [] }` (:4199) - w odroznieniu od setHexToLaka.
+            // Web: `rzeka = { obecna: false, krawedzie: [] }` (:4204) - w odroznieniu od setHexToLaka.
             if let Some(h) = hexes.get_mut(key) {
                 set_hex_to_laka(h);
                 h.river_present = false;
@@ -390,7 +390,7 @@ pub fn fill_enclosed_water_by_land_neighbors(hexes: &mut HexRecord, min_land: us
     total
 }
 
-/// Web `fill...` pętla `for (let pass = 0; pass < 8; pass++)` (:4191): limit przebiegów.
+/// Web `fill...` pętla `for (let pass = 0; pass < 8; pass++)` (:4194): limit przebiegów.
 const FILL_ENCLOSED_MAX_PASSES: usize = 8;
 
 /// Web `removeSmallInlandWaterPools` (:4276): spojne skladowe wody inlandowej o rozmiarze
