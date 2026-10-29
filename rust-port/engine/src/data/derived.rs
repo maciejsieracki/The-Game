@@ -4552,3 +4552,39 @@ pub fn mapgen_relief_b() -> &'static MapgenReliefBFile {
     static TABLE: std::sync::OnceLock<MapgenReliefBFile> = std::sync::OnceLock::new();
     TABLE.get_or_init(|| parse_mapgen_relief_b().expect("mapgen-relief-b.json must parse"))
 }
+
+// ---------------------------------------------------------------------------------------------
+// P6.M06A (R-RUSTPORT-P6-M06A-LAD-MORZE-WYBRZEZE-A-Q1) - lad/morze/wybrzeze A: edytowalne tabele
+// (pin web edb8fb56: defaultLandFractionForTyp :3254, ERODE_TERRAIN_ORDER :3279).
+// ---------------------------------------------------------------------------------------------
+
+pub const MAPGEN_LANDSEA_JSON: &str = include_str!("../../data/derived/mapgen-landsea.json");
+
+/// Udzial lądu per typ swiata (web `defaultLandFractionForTyp`).
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct LandFractionByTyp {
+    pub kontynenty: f64,
+    pub pangea: f64,
+    pub wyspy: f64,
+    pub ziemia: f64,
+}
+
+/// Plik `mapgen-landsea.json`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct MapgenLandseaFile {
+    pub meta: serde_json::Value,
+    pub udzial_ladu_domyslny: LandFractionByTyp,
+    pub kolejnosc_erozji: Vec<crate::domain::map_generator::Terrain>,
+}
+
+pub fn parse_mapgen_landsea() -> Result<MapgenLandseaFile, serde_json::Error> {
+    serde_json::from_str(MAPGEN_LANDSEA_JSON)
+}
+
+/// Tabela lad/morze/wybrzeze (jednorazowy odczyt; blad danych = panika).
+pub fn mapgen_landsea() -> &'static MapgenLandseaFile {
+    static TABLE: std::sync::OnceLock<MapgenLandseaFile> = std::sync::OnceLock::new();
+    TABLE.get_or_init(|| parse_mapgen_landsea().expect("mapgen-landsea.json must parse"))
+}
