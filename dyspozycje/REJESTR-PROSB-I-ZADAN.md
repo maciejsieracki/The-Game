@@ -8491,5 +8491,6 @@ referencyjnych zielone, `entity-card-historia-section-test` 36/36,
 
 - STATUS: DEPLOY-ROBOCZA / REMOTE-READBACK-PASS — integracja, typecheck, testy Chromium i build PASS; `main` commit `682a6b9a0cd7c4e5d35b8e1cf68a76a9a508c510`.
 - Włączono zatwierdzone poprawki dowódcy/rekrutacji, AI wojennej (5 tur zbiórki, cel morski, odtworzenie kampanii), zachowania i formacji bitwy, oraz kreatora cywilizacji.
-- Test dużego imperium pozostaje odłożony na koniec. C-064 jest zablokowany brakiem natywnego konektora Kanban i nie jest częścią release.
+- Test dużego imperium wykonano po publikacji: 39/100; tura 39→40 przekroczyła bramkę 60 s o 611 ms. Wydajność pozostaje otwarta do profilowania i optymalizacji. C-064 jest zablokowany brakiem natywnego konektora Kanban i nie jest częścią release.
 - Dokładne dowody integracji i ograniczenia: `dyspozycje/autobot/runs/R-CIV-ALL-TOPICS-ROBOCZA-20261027/70-integrated-release-20261029.md`.
+- Raport nieudanego testu dużego imperium i raw JSON: `dyspozycje/autobot/runs/R-CIV-ALL-TOPICS-ROBOCZA-20261027/72-large-empire-performance-20261029.md`.

@@ -18,7 +18,7 @@
   "start_displays_bundle_hash_prefix": true,
   "notes": [
     "Push był fast-forward. GitHub zgłosił wyłącznie ostrzeżenie o rozmiarze bundla powyżej rekomendowanych 50 MiB.",
-    "Test wydajności dużego imperium jest uruchamiany po publikacji, zgodnie z kolejnością wskazaną przez właściciela.",
+    "Test dużego imperium wykonano po publikacji: 39/100; tura 39→40 przekroczyła limit 60 s o 611 ms. Wydajność pozostaje otwarta.",
     "C-064 pozostaje zablokowane brakiem natywnego konektora Kanban."
   ]
 }
