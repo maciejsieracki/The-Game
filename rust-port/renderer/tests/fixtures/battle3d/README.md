@@ -272,6 +272,13 @@ Measured (r1): two runs in two different scratch directories (separate `npm inst
 committed — fixture budget, not in `MANIFEST.sha256`). No `Math.random` is reached (rubble uses
 `tileJitter`).
 
+Measured (Operator "pomiary" r1): a third run of the r1 generator in a new directory reproduced
+`4c7bcc21…` / `9d5071a4…` byte for byte. The generator then got §14 (`out.pomiary`, below; the
+event vectors are unchanged — `JSON` of the new file without `pomiary` = the r1 file). The extended
+generator, run in two directories (separate `npm install`, separate `git archive`), gives identical
+`dynamics.json` (149 178 B, SHA-256 `68ae2085…` = `MANIFEST.sha256`) and `gen_dynamics.mjs`
+(2 793 451 B, SHA-256 `bdb8c7ad23e5c9042329f5c17d790da8e009ff72647864410fee49add1baf74c`).
+
 ## Cases (`dynamics.json`)
 
 | key | what |
@@ -281,6 +288,7 @@ committed — fixture budget, not in `MANIFEST.sha256`). No `Math.random` is rea
 | `deploy` | the `rzym_grecja` preset in deploy `atk`: the deploy UI's 84 group markers, the deploy-phase frame (stale preview cleared, order lines hidden, billboards), `_endDeployPhase` (3D part; UI / logic stubbed) |
 | `projectileKinds`, `projectileMeshes` | `projectileKind` over 9 categories × 17 names (via `nazwa` and via `stats.Jednostka`); `makeProjectileMesh` for the 4 kinds |
 | `consts`, `easing` | the 10 constants; `lerp` / `easeOut` / `easeIn` incl. NaN, `±0`, `Infinity` |
+| `pomiary` (§14, after the events, same scene) | `gateStyles`: for each of the 9 wall civs (`grecja` … `germanie`) `_placeSiegeWall(civ)` + `_breachGate()` (with `def` empty and `siegeGateCol` −1), the visibility string of every wall child before / after, child and mesh counts, gate group visibility (the `breachGate` event covers `rzym` only; the hiding band decides meshes of `egipt` / `celtowie`); `routs`: `_startRout` on a live attacker and defender (facing preset to `Dir.S`) → facing and `group.rotation.y` |
 
 Record format: `dumpTree` / `modelRecord` / `sceneSummary` as in part 3, plus kind `Sprite` (9: material
 identity + `matSig`), Sphere / Icosahedron parameters, `modelRecord` WITHOUT skipping `groupFrame`,
@@ -289,6 +297,6 @@ binary64 hex (`hx`). Mirrored in `battle3d_dynamics.rs`.
 
 | File (part 4) | Content |
 |---|---|
-| `dynamics.json` | the vectors above (136 900 B) |
+| `dynamics.json` | the vectors above (149 178 B) |
 | `gen_dynamics.ts`, `build_dynamics.mjs` | generator and bundler (uses `dom_stub.ts`, `three_shim.ts` of part 2) |
-| `mutate_dynamics.py` | mutation run (48 mutants of `src/battle/dynamics.rs`; runs `--lib battle::dynamics` and `--test battle3d_dynamics`; execution = Operator "pomiary") |
+| `mutate_dynamics.py` | mutation run (50 mutants of `src/battle/dynamics.rs`; runs `--lib battle::dynamics` and `--test battle3d_dynamics`). Operator "pomiary" r1 on 1.87.0: first pass 45/48 (survivors `gate band`, `gate height rule`, `rout west`); after `pomiary` vectors + two lib tests and 2 new mutants (`rout east`, `gate centre band`): **50/50 killed**. `gate height rule` is equivalent on every reachable wall (killed only by the lib probe test, P4-36 §38) |

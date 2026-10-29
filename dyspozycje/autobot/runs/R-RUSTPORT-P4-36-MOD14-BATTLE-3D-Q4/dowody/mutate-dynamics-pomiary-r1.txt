@@ -1,0 +1,134 @@
+## R-RUSTPORT-P4-36-MOD14-BATTLE-3D-Q4 Operator "pomiary" r1 - mutation runs (rust-port/renderer)
+## env: RUSTUP_TOOLCHAIN=1.87.0 CARGO_INCREMENTAL=0 CARGO_PROFILE_DEV_DEBUG=0 CARGO_TARGET_DIR=/home/user/cargo-target-shared/wf_a609e1dd-a5f-2
+## batches: a wrapper imports tests/fixtures/battle3d/mutate_dynamics.py and runs main() on MUTANTS[a:b]
+## (each mutant: cargo test --locked --lib battle::dynamics, then --test battle3d_dynamics; source restored after each)
+##
+## ===== PASS 1: state 773fc8b1 (48 mutants, as committed by Operator-impl)
+rustc 1.87.0 (17067e9ac 2025-05-09)
+## batch MUTANTS[0:24]
+KILLED   MOVE_STEP_MS (test failed)
+KILLED   DEATH_FADE_MS (test failed)
+KILLED   BLOW_HIT_T (test failed)
+KILLED   MORALE_GATE_BREACH (test failed)
+KILLED   RAM_REACH (test failed)
+KILLED   BOULDER_ARC (test failed)
+KILLED   PROJECTILE_ARC (test failed)
+KILLED   MOVE_HOP (test failed)
+KILLED   kind legionist (test failed)
+KILLED   kind procarz (test failed)
+KILLED   arrow shaft radius (test failed)
+KILLED   javelin head radius (test failed)
+KILLED   head offset (test failed)
+KILLED   pilum head past shank (test failed)
+KILLED   fletch flare (test failed)
+KILLED   sling stone shadow (test failed)
+KILLED   shot lift (test failed)
+KILLED   aim threshold (test failed)
+KILLED   projectile removal (test failed)
+KILLED   walk bar height (test failed)
+KILLED   lunge depth (test failed)
+KILLED   lunge return easing (test failed)
+KILLED   lunge end (test failed)
+KILLED   fade shrink (test failed)
+KILLED 24/24
+EXIT=0
+## batch MUTANTS[24:48]
+KILLED   fade opacity (test failed)
+KILLED   fade hides bars (test failed)
+KILLED   ram triangle (test failed)
+KILLED   boulder segments (test failed)
+KILLED   wall shot lift (test failed)
+KILLED   rubble salt (test failed)
+KILLED   rubble rock share (test failed)
+KILLED   rubble lift (test failed)
+KILLED   segments hidden (test failed)
+KILLED   retreat bars (test failed)
+KILLED   gate rows (test failed)
+KILLED   gate hidden (test failed)
+SURVIVED gate band
+SURVIVED gate height rule
+SURVIVED rout west
+KILLED   marker half size (test failed)
+KILLED   marker opacity (test failed)
+KILLED   marker sprite offset (test failed)
+KILLED   marker positive only (test failed)
+KILLED   marker dead guard (test failed)
+KILLED   billboard camera-style (test failed)
+KILLED   damage label lift (test failed)
+KILLED   label opacity (test failed)
+KILLED   end deploy shows lines (test failed)
+KILLED 21/24
+EXIT=1
+## PASS 1 total: KILLED 45/48; SURVIVED: gate band, gate height rule, rout west (analysis: verify-gen-pomiary-r1.txt §B)
+##
+## ===== PASS 2: after the fix (vectors out.pomiary + test gate_styles_and_rout_facing_match_web; lib tests
+##       breach_gate_edges_follow_web_rule, rout_facing_is_home_edge; +2 mutants rout east, gate centre band = 50)
+## rustc 1.87.0 (17067e9ac 2025-05-09)
+## batch MUTANTS[0:25]
+KILLED   MOVE_STEP_MS (test failed)
+KILLED   DEATH_FADE_MS (test failed)
+KILLED   BLOW_HIT_T (test failed)
+KILLED   MORALE_GATE_BREACH (test failed)
+KILLED   RAM_REACH (test failed)
+KILLED   BOULDER_ARC (test failed)
+KILLED   PROJECTILE_ARC (test failed)
+KILLED   MOVE_HOP (test failed)
+KILLED   kind legionist (test failed)
+KILLED   kind procarz (test failed)
+KILLED   arrow shaft radius (test failed)
+KILLED   javelin head radius (test failed)
+KILLED   head offset (test failed)
+KILLED   pilum head past shank (test failed)
+KILLED   fletch flare (test failed)
+KILLED   sling stone shadow (test failed)
+KILLED   shot lift (test failed)
+KILLED   aim threshold (test failed)
+KILLED   projectile removal (test failed)
+KILLED   walk bar height (test failed)
+KILLED   lunge depth (test failed)
+KILLED   lunge return easing (test failed)
+KILLED   lunge end (test failed)
+KILLED   fade shrink (test failed)
+KILLED   fade opacity (test failed)
+KILLED 25/25
+EXIT=0
+## batch MUTANTS[25:51]
+KILLED   fade hides bars (test failed)
+KILLED   ram triangle (test failed)
+KILLED   boulder segments (test failed)
+KILLED   wall shot lift (test failed)
+KILLED   rubble salt (test failed)
+KILLED   rubble rock share (test failed)
+KILLED   rubble lift (test failed)
+KILLED   segments hidden (test failed)
+KILLED   retreat bars (test failed)
+KILLED   gate rows (test failed)
+KILLED   gate hidden (test failed)
+KILLED   gate band (test failed)
+KILLED   gate height rule (test failed)
+KILLED   rout west (test failed)
+KILLED   rout east (test failed)
+KILLED   gate centre band (test failed)
+KILLED   marker half size (test failed)
+KILLED   marker opacity (test failed)
+KILLED   marker sprite offset (test failed)
+KILLED   marker positive only (test failed)
+KILLED   marker dead guard (test failed)
+KILLED   billboard camera-style (test failed)
+KILLED   damage label lift (test failed)
+KILLED   label opacity (test failed)
+KILLED   end deploy shows lines (test failed)
+KILLED 25/25
+EXIT=0
+## PASS 2 total: KILLED 50/50 (25/25 + 25/25), EXIT=0 both batches; git diff of src/ after the run = only the test additions
+##
+## ===== web vectors ALONE (cargo test --locked --test battle3d_dynamics, no --lib) for the 5 boundary mutants
+## $ python3 webonly.py "gate band" "gate height rule" "rout west" "rout east" "gate centre band"
+KILLED   gate band (--test battle3d_dynamics only) ['test gate_styles_and_rout_facing_match_web ... FAILED', 'test result: FAILED. 4 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.67s']
+SURVIVED gate height rule (--test battle3d_dynamics only) []
+KILLED   rout west (--test battle3d_dynamics only) ['test gate_styles_and_rout_facing_match_web ... FAILED', 'test result: FAILED. 4 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.67s']
+KILLED   rout east (--test battle3d_dynamics only) ['test gate_styles_and_rout_facing_match_web ... FAILED', 'test result: FAILED. 4 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.70s']
+KILLED   gate centre band (--test battle3d_dynamics only) ['test gate_styles_and_rout_facing_match_web ... FAILED', 'test dynamics_match_web ... FAILED', 'test result: FAILED. 3 passed; 2 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.67s']
+EXIT=0
+## => `gate height rule` survives the web vectors alone: equivalent on every reachable wall (verify-gen-pomiary-r1.txt §B);
+##    killed by the source-derived lib probe test breach_gate_edges_follow_web_rule.

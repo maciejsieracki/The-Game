@@ -618,6 +618,42 @@ const changedSince = (before: Map<string, unknown[]>): unknown[] => [...s.atk, .
 }
 out.events = ev;
 
+// 14. (Operator "pomiary" r1) after the event list, on the same scene, without touching the
+//     event vectors above:
+//   a) `_breachGate` mesh hiding for EVERY wall style (the `breachGate` event covers `rzym` only):
+//      `_placeSiegeWall(civ)` builds and places a fresh wall (the real battle path:
+//      `buildSiegeWall(civ, { lengthTiles: 156, tileSize: 1, height: 2.5, gateWidthTiles: 2 })`,
+//      rotation, position, breach panels); `_breachGate` then runs with `def` empty and
+//      `siegeGateCol` -1 (tiles and morale are covered by the `breachGate` event); the
+//      visibility of every wall child before / after is dumped and the wall is removed again;
+//   b) the facing `_startRout` gives a unit of each side (`Dir.W` / `Dir.E`) and the resulting
+//      `group.rotation.y` (the `flee` event overwrites it with the move facings before any dump).
+{
+  const keep = { wall: s.siegeWallGroup, def: s.def, gateCol: s.siegeGateCol, hud: s.siegeHudDiv };
+  const visStr = (g: THREE.Object3D): string => g.children.map((c: THREE.Object3D) => (c.visible ? '1' : '0')).join('');
+  const gateStyles = ['grecja', 'rzym', 'sumer', 'egipt', 'inka', 'chiny', 'zulu', 'celtowie', 'germanie'].map((civ) => {
+    s._placeSiegeWall(civ);
+    const wg = s.siegeWallGroup;
+    const before = visStr(wg);
+    s.def = []; s.siegeGateCol = -1;
+    s._breachGate();
+    s.def = keep.def; s.siegeGateCol = keep.gateCol;
+    const rec = { civ, n: wg.children.length, meshes: wg.children.filter((c: any) => c.isMesh).length, before, after: visStr(wg), gate: (wg.userData['gate'] as THREE.Object3D).visible };
+    s.scene.remove(wg);
+    return rec;
+  });
+  s.siegeWallGroup = keep.wall; s.siegeHudDiv = keep.hud;
+  raf.length = 0;
+  routLog = []; // the `flee` event holds the previous array by reference
+  const live = (arr: any[]): any => arr.find((u: any) => !u.dead && !u.routed && !u.fadingOut && !u.removed);
+  const routs = [live(s.atk), live(s.def)].map((ru: any) => {
+    ru.facing = 2; ru.group.rotation.y = BS.dirYaw(2); // Dir.S: neither home edge
+    s._startRout(ru);
+    return [ru.bu.id, ru.side, ru.facing, hx([ru.group.rotation.y])];
+  });
+  out.pomiary = { gateStyles, routs };
+}
+
 // ------------------------------------------------------------- battle 2: deploy phase frame + end of deploy
 {
   const { s: d, rec } = build('rzym_grecja', undefined, 'atk');

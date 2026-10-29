@@ -1882,3 +1882,83 @@ fn constants_and_easing_equal_web() {
     }
     c.finish("constants");
 }
+
+/// `out.pomiary` (`gen_dynamics.ts` §14, Operator "pomiary" r1): `_breachGate`
+/// mesh hiding on a freshly placed wall of EVERY style (the `breachGate`
+/// event covers `rzym` only; the band `TILE_S·1.5 + TILE_S·0.6` decides
+/// meshes of `egipt` and `celtowie`), and the facing `_startRout` gives each
+/// side with the resulting `group.rotation.y`.
+#[test]
+fn gate_styles_and_rout_facing_match_web() {
+    let d = load("dynamics.json");
+    let p = d.get("pomiary");
+    let mut b = build(d.get("siege"));
+    let layout = b.field.siege.clone().expect("siege");
+    let mut grid = rle_grid(d.get("tilesNow"));
+    let mut c = Cmp::default();
+    let vis = |fs: &FieldScene, g: NodeId| -> String {
+        fs.scene.nodes[g]
+            .children
+            .iter()
+            .map(|&k| if fs.scene.nodes[k].visible { '1' } else { '0' })
+            .collect()
+    };
+    let styles = p.get("gateStyles").arr();
+    c.eq("gate styles", styles.len(), 9);
+    for g in styles {
+        let civ = g.get("civ").str();
+        let fs = &mut b.field.field;
+        let pw = units::place_siege_wall(&mut fs.scene, civ, &layout).expect("wall");
+        let kids = &fs.scene.nodes[pw.group].children;
+        let meshes = kids
+            .iter()
+            .filter(|&&k| fs.scene.nodes[k].is_mesh())
+            .count();
+        c.eq(&format!("{civ} n"), kids.len() as i64, g.get("n").i64());
+        c.eq(
+            &format!("{civ} meshes"),
+            meshes as i64,
+            g.get("meshes").i64(),
+        );
+        c.eq(
+            &format!("{civ} before"),
+            vis(fs, pw.group).as_str(),
+            g.get("before").str(),
+        );
+        breach_gate(&mut fs.scene, &mut grid, Some(&pw), -1, layout.gate_row);
+        c.eq(
+            &format!("{civ} after"),
+            vis(fs, pw.group).as_str(),
+            g.get("after").str(),
+        );
+        c.eq(
+            &format!("{civ} gate"),
+            fs.scene.nodes[pw.user_data.gate].visible,
+            g.get("gate").bool(),
+        );
+    }
+    let routs = p.get("routs").arr();
+    c.eq("routs", routs.len(), 2);
+    for r in routs {
+        let a = r.arr();
+        let id = a[0].str();
+        let u = unit(&b, id).clone();
+        let side = u.spawn.side;
+        c.eq(&format!("{id} side"), side, side_of(a[1].str()));
+        let facing = rout_facing(side);
+        c.eq(&format!("{id} facing"), i64::from(facing), a[2].i64());
+        let sc = &mut b.field.field.scene;
+        set_facing(sc, &u, 2);
+        set_facing(sc, &u, facing);
+        c.f(
+            &format!("{id} rotation.y"),
+            sc.nodes[u.group].rotation.y,
+            a[3].hx()[0],
+        );
+    }
+    println!(
+        "gate styles + rout facing: {} scalars + {} checks",
+        c.scalars, c.checks
+    );
+    c.finish("pomiary");
+}

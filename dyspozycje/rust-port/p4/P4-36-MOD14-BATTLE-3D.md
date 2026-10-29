@@ -1366,3 +1366,61 @@ $ recon-q4.py (2 przebiegi, cmp)                                          EXIT=0
   `_disableManualIfCommanderLost`): logika morale / trybu ręcznego (P6.13), skutek w scenie = `_updateMoraleBar`
   (część 3, przez DTO morale). Kod transformacji części 4 bez zmian w tych hunkach. Nie przepinam (dispatch); wpływ na
   wektory części 4 NIE_ZMIERZONO.
+
+## 38. Pomiary części 4 (Operator „pomiary” r1; logi `runs/…-Q4/dowody/{gates-pomiary-r1,mutate-dynamics-pomiary-r1,verify-gen-pomiary-r1}.txt`)
+
+Na commicie Operatora-impl `d22fb721` (+ raport `773fc8b1`), izolowany worktree, `CARGO_INCREMENTAL=0`,
+`CARGO_PROFILE_DEV_DEBUG=0`, rustc 1.87.0 (MSRV) i 1.97.0 (stable).
+
+1. **Mutacje, pierwszy przebieg** (`mutate_dynamics.py`, 1.87.0, partie `MUTANTS[0:24]`, `[24:48]`): **45/48 zabite**;
+   przeżyły `gate band`, `gate height rule`, `rout west`. Analiza (sonda Rust na wszystkich osiągalnych murach:
+   mur bitwy jest zawsze `buildSiegeWall(civ, { lengthTiles: 156, tileSize: 1, height: 2.5, gateWidthTiles: 2 })`,
+   bo `_carveWallTiles` bierze rzędy `0..BF_ROWS−1`; zmienny jest tylko styl — 9 stylów; `dowody/probe-gate-q4.rs.txt`):
+   - `gate band` (`TILE_S·0.6` → `0.5`) **nie jest równoważny**: zmienia widoczność 2 meshy `egipt` i 2 meshy `celtowie`
+     (`celtowie` ma mesh dokładnie na krawędzi pasma — ścisłe `<` ma znaczenie). Wektory r1 miały tylko mur `rzym` →
+     **luka pokrycia**.
+   - `gate height rule` (`wallH·0.9` → `wallH`) **jest równoważny na każdym osiągalnym murze**: w bocznym paśmie
+     (`1,35 ≤ |lx| < 2,1`) żaden mesh żadnego stylu nie ma `0,9·H ≤ y < H` (najmniejszy odstęp od krawędzi 0,2369).
+   - `rout west` (`Atk => 3` → `1`): kierunek ustawiany przez `_startRout` nie był w ogóle obserwowany — zdarzenie `flee`
+     nadpisuje go kierunkami kroków przed pierwszym zrzutem, a obrońcy w wektorach nie uciekają (`routs` = 0).
+2. **Poprawka (tylko testy i wektory; logika `dynamics.rs` bez zmian):**
+   - generator §14 → `dynamics.json` klucz `pomiary` (zdarzenia r1 nietknięte: JSON bez `pomiary` = plik r1):
+     `gateStyles` — dla 9 cywilizacji `_placeSiegeWall(civ)` + `_breachGate()` (z `def = []`, `siegeGateCol = −1`),
+     ciąg widoczności wszystkich dzieci muru przed / po, liczby dzieci i meshy, widoczność bramy; `routs` — `_startRout` na
+     żywym atakującym i obrońcy (kierunek wstępnie `Dir.S`) → kierunek i `group.rotation.y`
+     (`atk0` 3 / −π/2, `def0` 1 / +π/2);
+   - test `gate_styles_and_rout_facing_match_web` (`tests/battle3d_dynamics.rs`): 2 liczby bitowo + 51 sprawdzeń, 0 różnic;
+   - testy jednostkowe `battle::dynamics::tests::breach_gate_edges_follow_web_rule` (sondy przy krawędziach reguły
+     `battleScene.ts:7455`, `:7461`) i `rout_facing_is_home_edge` (`:8971`, `Dir` `:292-297`);
+   - `mutate_dynamics.py` +2 mutanty: `rout east`, `gate centre band` (`gateHalfW·0.9` → `0.8`) → 50.
+3. **Mutacje, drugi przebieg** (1.87.0, `[0:25]`, `[25:51]`): **50/50 zabite**, EXIT=0. Same wektory weba
+   (`--test battle3d_dynamics` bez `--lib`) zabijają `gate band`, `rout west`, `rout east`, `gate centre band`;
+   `gate height rule` zabija tylko jednostkowy test sond (mutant równoważny na osiągalnych wejściach, p. 1).
+   Kandydat r1 `fade hides bars` — zabity już w pierwszym przebiegu (nie jest równoważny).
+4. **Bramy** (stan przed commitem pomiarów; `rustfmt` raz poprawił formatowanie nowego testu):
+   `cargo fmt --all -- --check` EXIT=0; `cargo clippy --locked --all-targets -- -D warnings` i z `--features gpu`
+   EXIT=0 — na **1.87.0** i na **1.97.0**; `cargo test --locked --all-targets` **416 passed, 0 failed, 54 binaria**,
+   EXIT=0 — na 1.87.0 i na 1.97.0 (408 części 1–3 + 5 `battle3d_dynamics` + 3 jednostkowe `battle::dynamics`);
+   `battle3d_dynamics` 5 + `battle3d_units` 8 + `battle3d_field` 5 + `battle3d_siege_wall` 3 EXIT=0; `--lib battle::`
+   13 passed EXIT=0; `sha256sum -c MANIFEST.sha256` 20/20 EXIT=0; katalog fixtur 11 829 494 B (≤ 12 MB), największy
+   plik `siege_wall.json` 7 228 812 B (≤ 8 MB). `cargo test --features gpu` nieuruchomione (jak w Q2/Q3: z `gpu` tylko clippy).
+5. **Niezależny weryfikator generatora:** trzeci katalog poza repo (nowy `npm install --ignore-scripts three@0.169.0
+   esbuild@0.24.0`, nowy `git archive edb8fb56 gra/src gra/data`, node v22.22.0): generator r1 → `dynamics.json`
+   `4c7bcc21…` i bundel `9d5071a4…` — bajt w bajt jak r1 (3/3 przebiegi). Generator rozszerzony (§14) w dwóch katalogach
+   (osobne `npm install` / `git archive`) → identyczne `dynamics.json` 149 178 B `68ae2085…` (= commit / MANIFEST)
+   i bundel 2 793 451 B `bdb8c7ad…`. Próbka stałych w źródle weba @ `edb8fb56`: `MOVE_STEP_MS = 240` (`:945`),
+   `RANGED_FLY_MS = 380` (`:947`), `DEATH_FADE_MS = 500` (`:950`), `BLOW_HIT_T = 150` (`:956`),
+   `MORALE_GATE_BREACH = 5` (`:1073`), reguła bramy (`:7455`, `:7461`), `_tickFades` (`:8605`), kierunek ucieczki
+   (`:8971`) — zgodne z `dynamics.rs`.
+6. **Dryf weba** odmierzony ponownie: `origin/main` = `cc2c6a50`, 13 plików +835 / −221 (jak §37). Porównanie ciał metod
+   @ `edb8fb56` vs `cc2c6a50`: bez zmian `_breachGate`, `_tickFades`, `_doMove`, `_tickProjectiles`, `_animateRam`,
+   `_fleeStep`, `_tickFloatLabels`, `_spawnCatapultBoulder`, `_updateGroupFrameMarker`, `_doMeleeAttack`,
+   `_doRangedAttack`, `_attackGate`, `_attackWallTile`, `_spawnDamageLabel`, `_spawnWallLabel`,
+   `_syncAllGroupFrameMarkers`, `_removeGroupFrameMarker`, `_makeGroupNumberTexture`, `makeProjectileMesh`,
+   `projectileKind`; zmienione `_startRout`, `_breachWallTile`, `_startFade` (blok dowódcy armii, jak §37) oraz —
+   **uzupełnienie §37** — `_endDeployPhase` (+ pętla `ru.formationRank = |ru.q − frontCol|`: logika szyku, bez obiektów
+   sceny). Nowi wywołujący `_startRout` (odwrót dowódców po załamaniu armii) — logika. Nie przepinam.
+7. **ZAŁOŻENIE Z-36-18:** mutant `gate height rule` uznany za równoważny na osiągalnych wejściach (p. 1) i zabity
+   testem jednostkowym wyprowadzonym ze źródła weba (plik:linia w teście) — nie wektorem z uruchomionego weba, bo żaden
+   osiągalny mur nie ma meshu w tym przedziale.
+8. NIE_ZMIERZONO nadal: ocena wzrokowa (§36), wpływ dryfu po pinie na wektory (§37, p. 6).

@@ -1,0 +1,99 @@
+## R-RUSTPORT-P4-36-MOD14-BATTLE-3D-Q4 Operator "pomiary" r1 - independent generator runs
+## Base: 773fc8b1 (Operator-impl report; code d22fb721). node v22.22.0.
+## Scratch dirs outside the repository (session scratchpad): q4v, q4w; each with its own npm install + git archive.
+
+### A. third independent run of the ORIGINAL generator (gen_dynamics.ts @ d22fb721) - dir q4v
+## $ (cd q4v/ref && npm init -y && npm install --ignore-scripts three@0.169.0 esbuild@0.24.0)   EXIT=0
+## $ grep '"version"' q4v/ref/node_modules/{three,esbuild}/package.json  -> 0.169.0 / 0.24.0
+## $ git archive edb8fb56 gra/src gra/data -o q4v/web.tar && tar -x -C q4v/websrc -f q4v/web.tar
+## $ cp rust-port/renderer/tests/fixtures/battle3d/{gen_dynamics.ts,build_dynamics.mjs,dom_stub.ts,three_shim.ts} q4v/refscript/ ; ln -s q4v/ref/node_modules q4v/refscript/node_modules
+## $ node refscript/build_dynamics.mjs     EXIT=0
+## $ node refscript/gen_dynamics.mjs out   EXIT=0
+battle3d dynamics events=23
+## $ sha256sum out/dynamics.json refscript/gen_dynamics.mjs ; stat -c %s
+4c7bcc214cec485d15cd9d29053b82661c177caedd90be6b7e361ca845ae89e0  out/dynamics.json        (136900 B)
+9d5071a451e21b4429e470ed09169b6cbef8ef0b80f1237c984cddf37acb96c2  refscript/gen_dynamics.mjs (2792288 B)
+## => identical to the committed dynamics.json (MANIFEST @ d22fb721) and to the bundle hash in README (r1). 3/3 runs agree.
+
+### B. mutation survivors (see mutate-dynamics-pomiary-r1.txt, first pass) -> probe of the reachable walls
+## Rust probe (copy: probe-gate-q4.rs.txt, run as a temporary tests/zz_probe_gate_q4.rs, deleted afterwards), rustc 1.87.0:
+## the battle wall is always buildSiegeWall(civ, {lengthTiles: 156 (= BF_ROWS, _carveWallTiles rows 0..155), tileSize 1, height 2.5, gateWidthTiles 2})
+style=Grecja gcx=0 wallWalkY=2.5 meshes=442 hiddenByBreach=12 diff[gate band]=0 diff[gate height rule]=0 minGapToBandEdge=0.0977 minGapToHeightEdge=0.3046
+style=Rzym gcx=0 wallWalkY=2.5 meshes=463 hiddenByBreach=9 diff[gate band]=0 diff[gate height rule]=0 minGapToBandEdge=0.1750 minGapToHeightEdge=0.2602
+style=Sumer gcx=0 wallWalkY=2.5 meshes=420 hiddenByBreach=10 diff[gate band]=0 diff[gate height rule]=0 minGapToBandEdge=0.0212 minGapToHeightEdge=0.3313
+style=Egipt gcx=0 wallWalkY=2.5 meshes=405 hiddenByBreach=11 diff[gate band]=2 diff[gate height rule]=0 minGapToBandEdge=0.0500 minGapToHeightEdge=0.2634
+style=Inka gcx=0 wallWalkY=2.5 meshes=421 hiddenByBreach=11 diff[gate band]=0 diff[gate height rule]=0 minGapToBandEdge=0.0212 minGapToHeightEdge=0.2369
+style=Chiny gcx=0 wallWalkY=2.5 meshes=461 hiddenByBreach=7 diff[gate band]=0 diff[gate height rule]=0 minGapToBandEdge=0.1750 minGapToHeightEdge=0.2595
+style=Zulu gcx=0 wallWalkY=2.5 meshes=1591 hiddenByBreach=15 diff[gate band]=0 diff[gate height rule]=0 minGapToBandEdge=0.1500 minGapToHeightEdge=1.0000
+style=Celtowie gcx=0 wallWalkY=2.5 meshes=803 hiddenByBreach=17 diff[gate band]=2 diff[gate height rule]=0 minGapToBandEdge=0.0000 minGapToHeightEdge=0.4375
+style=Germanie gcx=0 wallWalkY=2.5 meshes=738 hiddenByBreach=16 diff[gate band]=0 diff[gate height rule]=0 minGapToBandEdge=0.0200 minGapToHeightEdge=0.5625
+TOTAL diff[gate band]=4 diff[gate height rule]=0
+## => `gate band` is NOT equivalent: it changes 2 meshes of egipt and 2 of celtowie; the vectors only had rzym (coverage gap).
+## => `gate height rule` IS equivalent on every reachable wall (no mesh with 0.9*H <= ly < H in the side band; min gap 0.2369).
+## => `rout west`: the `flee` event overwrites the rout facing with the move facings before any dump (gen_dynamics.ts §10);
+##    defenders never rout in the vectors (`breachWall` / `breachGate` routs = 0). Rout facing was not observed at all.
+
+### C. extended generator (gen_dynamics.ts §14 `out.pomiary`, events untouched) - dir q4v (rebuild) and dir q4w (fresh)
+## q4v: $ node refscript/build_dynamics.mjs ; node refscript/gen_dynamics.mjs out2   EXIT=0 / EXIT=0
+battle3d dynamics events=23
+68ae208573149d983ed9272adf394ed80aaa397a16888181131441f6e65bf0b7  out2/dynamics.json        (149178 B)
+bdb8c7ad23e5c9042329f5c17d790da8e009ff72647864410fee49add1baf74c  refscript/gen_dynamics.mjs (2793451 B)
+## $ node -e "a=out/dynamics.json; b=out2/dynamics.json; delete b.pomiary; JSON.stringify(a)===JSON.stringify(b)"
+IDENTICAL_WITHOUT_POMIARY
+## (a first draft pushed the new `_startRout` ids into the `flee` event's `routs` array, held by reference;
+##  fixed with `routLog = []` before §14b, then the comparison above is identical)
+## pomiary.routs: [["atk0","atk",3,"bff921fb54442d18"],["def0","def",1,"3ff921fb54442d18"]]   (-pi/2 / +pi/2)
+## pomiary.gateStyles (civ n meshes gate.visible hiddenBefore hiddenAfter):
+grecja 443 442 false 0 13
+rzym 464 463 false 0 10
+sumer 421 420 false 0 11
+egipt 406 405 false 0 12
+inka 422 421 false 0 12
+chiny 462 461 false 0 8
+zulu 1592 1591 false 0 16
+celtowie 804 803 false 0 18
+germanie 739 738 false 0 17
+## (hiddenAfter = probe hiddenByBreach + 1 = the gate group, a non-mesh child: consistent with B)
+## q4w (new npm install, new git archive edb8fb56): same commands
+battle3d dynamics events=23
+68ae208573149d983ed9272adf394ed80aaa397a16888181131441f6e65bf0b7  out/dynamics.json
+bdb8c7ad23e5c9042329f5c17d790da8e009ff72647864410fee49add1baf74c  refscript/gen_dynamics.mjs
+68ae208573149d983ed9272adf394ed80aaa397a16888181131441f6e65bf0b7  rust-port/renderer/tests/fixtures/battle3d/dynamics.json (committed copy)
+## => extended generator byte-reproducible in 2 directories; committed dynamics.json = these runs.
+
+### D. web constants spot-check @ edb8fb56 (q4w/websrc/gra/src)
+## $ grep -nE "const (MOVE_STEP_MS|DEATH_FADE_MS|BLOW_HIT_T|MORALE_GATE_BREACH|RANGED_FLY_MS) *=|gateHalfW \+ TILE_S \* 0\.6|wallH \* 0\.9|ru\.side === 'atk' \? Dir\.W : Dir\.E|W = 3,|E = 1,|fadeStart\) / DEATH_FADE_MS" battle/battleScene.ts
+294:  E = 1, // +col
+296:  W = 3, // -col
+945:const MOVE_STEP_MS    = 240;   // time to walk one tile
+947:const RANGED_FLY_MS   = 380;   // projectile flight time
+950:const DEATH_FADE_MS   = 500;
+956:const BLOW_HIT_T      = 150;   // moment within the lunge the blow connects
+1073:const MORALE_GATE_BREACH        = 5;    // wyłom BRAMY: -morale wszystkim obrońcom (jednorazowy)
+7455:        if (Math.abs(lx - gateCX) < gateHalfW + TILE_S * 0.6) {
+7461:          if (ly >= wallH * 0.9 || (Math.abs(lx - gateCX) < gateHalfW * 0.9)) {
+8605:      const p = Math.min(1, (t - ru.fadeStart) / DEATH_FADE_MS);
+8971:    ru.facing = ru.side === 'atk' ? Dir.W : Dir.E;
+## all equal to dynamics.rs (MOVE_STEP_MS 240, DEATH_FADE_MS 500, BLOW_HIT_T 150, MORALE_GATE_BREACH 5, breach_gate band/height, rout_facing).
+
+### E. web drift after the pin
+## $ git fetch origin main ; git rev-parse --short origin/main -> cc2c6a50
+## $ git diff --stat edb8fb56 origin/main -- gra/src/battle gra/src/render
+ 13 files changed, 835 insertions(+), 221 deletions(-)    (= 01-operator-r1 / P4-36 §35)
+## $ git diff edb8fb56 origin/main -- gra/src/battle/battleScene.ts | grep -E '^\+.*(_breachGate|_startRout|gateHalfW|Dir\.W : Dir\.E)'
++    if (brokenA) for (const u of commandersToWithdrawAfterArmyBreak(this.atk, ARMY_MORALE_LOSS_THRESHOLD)) this._startRout(u);
++    if (brokenD) for (const u of commandersToWithdrawAfterArmyBreak(this.def, ARMY_MORALE_LOSS_THRESHOLD)) this._startRout(u);
+## Method bodies compared @ edb8fb56 vs origin/main cc2c6a50 (brace-matched extraction in python, difflib):
+_breachGate SAME | _tickFades SAME | _doMove SAME | _tickProjectiles SAME | _animateRam SAME | _fleeStep SAME
+_tickFloatLabels SAME | _spawnCatapultBoulder SAME | _updateGroupFrameMarker SAME
+_doMeleeAttack SAME | _doRangedAttack SAME | _attackGate SAME | _attackWallTile SAME | _spawnDamageLabel SAME
+_spawnWallLabel SAME | _syncAllGroupFrameMarkers SAME | _removeGroupFrameMarker SAME | _makeGroupNumberTexture SAME
+makeProjectileMesh SAME | projectileKind SAME
+_startFade CHANGED (army-commander block, as listed in r1)
+_startRout CHANGED:     +if (ru.isArmyCommander) { this._removeCommanderMoraleBonus(ru.side); this._disableManualIfCommanderLost(ru.side); }
+_breachWallTile CHANGED: +if (u.isArmyCommander) { this._removeCommanderMoraleBonus(u.side); this._disableManualIfCommanderLost(u.side); }
+_endDeployPhase CHANGED: +for (ru of atk+def) ru.formationRank = Math.abs(ru.q - frontCol)
+## => all three changes are logic (morale bonus, manual control, formation rank), no scene object is touched;
+##    plus new CALLERS of _startRout (army-commander withdrawal). Not re-pinned (dispatch).
+##    r1 (P4-36 §37) listed 3 hunks (_breachWallTile, _startRout, _startFade); this check finds a 4th changed
+##    part-4 method, _endDeployPhase (formationRank, logic only) -> recorded in P4-36 §38.

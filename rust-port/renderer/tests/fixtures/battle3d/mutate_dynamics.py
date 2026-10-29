@@ -65,6 +65,9 @@ MUTANTS = [
     ('gate height rule', 'if ly >= wall_h * 0.9 ||', 'if ly >= wall_h ||'),
     # rout / markers / billboard / labels / deploy
     ('rout west', 'BattleSide::Atk => 3,', 'BattleSide::Atk => 1,'),
+    # added by Operator "pomiary" r1 (P4-36 §38)
+    ('rout east', 'BattleSide::Def => 1,', 'BattleSide::Def => 3,'),
+    ('gate centre band', '< gate_half_w * 0.9', '< gate_half_w * 0.8'),
     ('marker half size', 'let hs = TILE_S * 0.44;', 'let hs = TILE_S * 0.45;'),
     ('marker opacity', 'lm.opacity = 0.92;', 'lm.opacity = 0.9;'),
     ('marker sprite offset', 'set_pos(-hs * 0.85, 0.55, -hs * 0.85);', 'set_pos(-hs * 0.85, 0.5, -hs * 0.85);'),

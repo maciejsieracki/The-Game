@@ -1290,4 +1290,66 @@ mod tests {
         assert_eq!(group_display_num(None), None);
         assert_eq!(group_display_num(Some("\u{feff}\t5")), Some(5.0));
     }
+
+    /// The edges of the `_breachGate` hiding rule (`battleScene.ts:7449-7462`
+    /// @ `edb8fb56`): `|lx − gateCX| < TILE_S·1.5 + TILE_S·0.6` and
+    /// (`ly ≥ wallWalkY·0.9` or `|lx − gateCX| < TILE_S·1.5·0.9`). Probe meshes
+    /// just inside / outside each edge. No reachable wall has a mesh with
+    /// `0.9·H ≤ ly < H` in the side band (P4-36 §38), so the web vectors alone
+    /// cannot see the height edge; the band edge is also covered by the
+    /// `pomiary.gateStyles` vectors (`egipt`, `celtowie`).
+    #[test]
+    fn breach_gate_edges_follow_web_rule() {
+        use super::super::field::{SiegeLayout, BF_ROWS};
+        use super::super::units::place_siege_wall;
+        let mut scene = Scene::new();
+        let layout = SiegeLayout {
+            wall_col: 10,
+            row_lo: 0,
+            row_hi: BF_ROWS - 1,
+            gate_col: 10,
+            gate_row: 78,
+            gate_hp: 1.0,
+            gate_open: false,
+            wall_tile_hp: Vec::new(),
+        };
+        let wall = place_siege_wall(&mut scene, "rzym", &layout).expect("wall");
+        let h = wall.user_data.wall_walk_y;
+        let cx = wall.user_data.gate_center_x;
+        let band = TILE_S * 1.5 + TILE_S * 0.6;
+        let centre = TILE_S * 1.5 * 0.9;
+        let mat = scene.add_material(Material::standard(0, 0.0, 1.0));
+        let probes = [
+            (band - 0.05, h * 0.9, true),
+            (band - 0.05, h * 0.95, true),
+            (band - 0.05, h, true),
+            (band - 0.05, h * 0.9 - 1e-9, false),
+            (band, h, false),
+            (-(band - 0.05), h * 0.95, true),
+            (centre - 1e-9, 0.0, true),
+            (centre, 0.0, false),
+        ];
+        let ids: Vec<NodeId> = probes
+            .iter()
+            .map(|&(dx, y, _)| {
+                let id = scene.mesh(wall.group, Prim::cyl(0.1, 0.1, 0.1, 6), mat);
+                scene.nodes[id].set_pos(cx + dx, y, 0.0);
+                id
+            })
+            .collect();
+        let mut grid = TerrainGrid::new(BF_COLS, BF_ROWS, vec![0; (BF_COLS * BF_ROWS) as usize]);
+        breach_gate(&mut scene, &mut grid, Some(&wall), -1, layout.gate_row);
+        for (&id, &(dx, y, hidden)) in ids.iter().zip(&probes) {
+            assert_eq!(!scene.nodes[id].visible, hidden, "probe dx={dx} y={y}");
+        }
+    }
+
+    /// `_startRout` (`battleScene.ts:8971` @ `edb8fb56`):
+    /// `ru.side === 'atk' ? Dir.W : Dir.E` with `Dir.E = 1`, `Dir.W = 3`
+    /// (`:292-297`); also in `pomiary.routs` of the web vectors.
+    #[test]
+    fn rout_facing_is_home_edge() {
+        assert_eq!(rout_facing(BattleSide::Atk), 3);
+        assert_eq!(rout_facing(BattleSide::Def), 1);
+    }
 }
