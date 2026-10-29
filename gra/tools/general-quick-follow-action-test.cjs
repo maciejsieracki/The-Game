@@ -119,6 +119,35 @@ async function main() {
   check(coLocatedMarches.get(coLocatedFollower.id)?.destQ === 6,
     'same-hex opt-in continues tracking the commander after activation');
 
+  const eotFollower = { id: 'eot-same-hex-follower', ownerId: 2, q: 0, r: 0, followGeneral: true };
+  const eotCommander = { id: 'eot-commander', ownerId: 2, q: 0, r: 0, isGeneral: true };
+  const eotRoster = [eotFollower, eotCommander];
+  const eotMarches = new Map([['eot-commander', { destQ: 3, destR: 0 }]]);
+  const eotQueue = ['eot-commander'];
+  const syncEotSegment = () => {
+    syncTrackedGeneralFollowMarches(eotRoster, eotMarches, () => {});
+    for (const id of planEnabledGeneralFollowMarches(eotRoster, unitId => eotMarches.has(unitId),
+      (unit, point, targetId) => {
+        eotMarches.set(unit.id, { destQ: point.q, destR: point.r, generalTargetId: targetId });
+        return true;
+      })) {
+      if (!eotQueue.includes(id)) eotQueue.push(id);
+    }
+  };
+  // Simulate the instant EOT segment applying the leader's queued march.
+  eotCommander.q = 3;
+  syncEotSegment();
+  check(eotMarches.get(eotFollower.id)?.destQ === 3
+    && eotMarches.get(eotFollower.id)?.generalTargetId === eotCommander.id
+    && eotQueue.filter(id => id === eotFollower.id).length === 1,
+  'instant end-turn leader segment gives a colocated opt-in follower one tracked march');
+  // A later instant segment retargets the existing entry rather than queuing a duplicate.
+  eotCommander.q = 5;
+  syncEotSegment();
+  check(eotMarches.get(eotFollower.id)?.destQ === 5
+    && eotQueue.filter(id => id === eotFollower.id).length === 1,
+  'subsequent instant end-turn segment retargets the same follower order without duplication');
+
   check(generalQuickFollowActionLabel(armyLeaderTitle([])) === 'Idź do najbliższego wodza'
     && generalQuickFollowActionLabel(armyLeaderTitle(['akademia_wojskowa'])) === 'Idź do najbliższego generała'
     && generalQuickFollowActionLabel(armyLeaderTitle(['akademia_wojskowa']), true) === 'Marsz do generała',
@@ -198,6 +227,9 @@ async function main() {
   }
 
   const mainSource = fs.readFileSync(path.join(root, 'src/main.ts'), 'utf8');
+  const instantApplyStart = mainSource.indexOf('function applyMarchSegmentInstant(');
+  const instantApplyEnd = mainSource.indexOf('function runPlannedMarchesAtPlayerEndTurn(', instantApplyStart);
+  const instantApplySource = mainSource.slice(instantApplyStart, instantApplyEnd);
   check(mainSource.includes("id: 'general-follow'")
     && mainSource.includes("actionId === 'general-follow'")
     && mainSource.includes('issueGeneralQuickFollow(u, units, leaderTitle')
@@ -205,10 +237,12 @@ async function main() {
     && mainSource.includes('u.followGeneral = true')
     && mainSource.includes('planEnabledGeneralFollowMarches')
     && mainSource.includes('active.inGarnizon !== true && !active.oblegaCityId')
+    && instantApplySource.includes('syncGeneralMarchTargets();')
+    && instantApplySource.includes('An instant end-turn segment can move the commander away from followers')
     && mainSource.includes('planGeneralFollowMarch(unit, point, targetId)')
     && mainSource.includes('enqueue: unitIds => enqueueMarchSegments(unitIds)'),
   'production HUD handler delegates to the executed follow service and live title resolver');
-  console.log(`\n${pass}/18 PASS`);
+  console.log(`\n${pass}/20 PASS`);
 }
 
 main().catch(error => {

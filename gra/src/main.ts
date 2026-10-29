@@ -27352,6 +27352,7 @@ async function boot(): Promise<void> {
 
       const attackTargetId = marchAttackTargets.get(unitId);
       if (attackTargetId && tryLaunchMarchAttack(u, attackTargetId)) {
+        syncGeneralMarchTargets();
         return true;
       }
       finishMarchSegmentHints(
@@ -27360,6 +27361,10 @@ async function boot(): Promise<void> {
         result.stopReason,
         result.stopDetail,
       );
+      // An instant end-turn segment can move the commander away from followers who
+      // shared its hex and therefore had no march entry yet. Reconcile after every
+      // segment so opted-in units acquire or retarget their tracked order in this pass.
+      syncGeneralMarchTargets();
       return true;
     }
 
