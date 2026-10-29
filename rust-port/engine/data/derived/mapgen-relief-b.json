@@ -1,0 +1,56 @@
+{
+  "meta": {
+    "status": "P6.M05B: wartosci startowe przepisane z weba (gen-helpers.ts:2371-3185). Zrodlem prawdy do recznego balansu jest TA tabela (edytuj liczby, nie kod).",
+    "pin_web": "edb8fb56",
+    "temat": "R-RUSTPORT-P6-M05B-RELIEF-B-POKRYCIE-PASMA-Q1",
+    "uwaga": "Balans pokrycia siatki reliefu (ensureReliefGridCoverage), bezpiecznika rozmiaru skupiska (capReliefClusterSizeSafetyNet) i pasm gorskich (growMountainRanges, regrowLostMountainClusters). Fallback parametrow pasm (FALLBACK_MOUNTAIN_RANGE, map-gen-params-loader.ts:63-65) uzywany jest tylko, gdy JSON gestosc.pasma_gorskie jest uszkodzony. Strukturalne literaly (0, 1 jako licznik/indeks, `> 0`, `>= 0`, typeof number) zostaja w kodzie. Zmiana liczby balansu zmienia wynik wzgledem weba, wiec lamie testy wektorowe p6_m05b_* (zamierzona detekcja driftu) i wymaga przegenerowania wektorow."
+  },
+  "siatka_domykanie": {
+    "min_masa_do_domykania": { "wartosc": 8, "zrodlo_web": "gra/src/map/gen-helpers.ts:2383" },
+    "przebiegi_zewnetrzne": { "wartosc": 8, "zrodlo_web": "gra/src/map/gen-helpers.ts:2387" },
+    "przebiegi_przywracania": { "wartosc": 8, "zrodlo_web": "gra/src/map/gen-helpers.ts:2401" },
+    "przebiegi_mop_up": { "wartosc": 16, "zrodlo_web": "gra/src/map/gen-helpers.ts:2416" },
+    "min_masa_mop_up": { "wartosc": 150, "zrodlo_web": "gra/src/map/gen-helpers.ts:2419" }
+  },
+  "pasma": {
+    "udzial_gor_wzgorz_w_ladzie_sufit": { "wartosc": 0.4, "zrodlo_web": "gra/src/map/gen-helpers.ts:2446" },
+    "maks_skupisko_gor_wzgorz": { "wartosc": 10, "zrodlo_web": "gra/src/map/gen-helpers.ts:2457" },
+    "regrow_odstep_od_reliefu": { "wartosc": 1, "zrodlo_web": "gra/src/map/gen-helpers.ts:2470" },
+    "regrow_mnoznik_celu": { "wartosc": 1, "zrodlo_web": "gra/src/map/gen-helpers.ts:2480" },
+    "regrow_dlugosc_min": { "wartosc": 4, "zrodlo_web": "gra/src/map/gen-helpers.ts:2484" },
+    "regrow_dlugosc_max": { "wartosc": 8, "zrodlo_web": "gra/src/map/gen-helpers.ts:2485" },
+    "rozrzut_seedow_min_odleglosc": { "wartosc": 5, "zrodlo_web": "gra/src/map/gen-helpers.ts:2991" },
+    "szum_seed_pasma": { "wartosc": 0.15, "zrodlo_web": "gra/src/map/gen-helpers.ts:2646" },
+    "szum_seed_regrow": { "wartosc": 0.15, "zrodlo_web": "gra/src/map/gen-helpers.ts:2878" },
+    "szum_kroku_pasma": { "wartosc": 0.3, "zrodlo_web": "gra/src/map/gen-helpers.ts:2680" },
+    "szum_kroku_regrow": { "wartosc": 0.3, "zrodlo_web": "gra/src/map/gen-helpers.ts:2786" },
+    "regrow_proby_na_mase": { "wartosc": 40, "zrodlo_web": "gra/src/map/gen-helpers.ts:2858" },
+    "regrow_proby_bazowe": { "wartosc": 200, "zrodlo_web": "gra/src/map/gen-helpers.ts:2858" }
+  },
+  "pasma_fallback": {
+    "low": {
+      "hexy_na_pasmo": { "wartosc": 320, "zrodlo_web": "gra/src/data/map-gen-params-loader.ts:63" },
+      "max_pasm_na_mase": { "wartosc": 2, "zrodlo_web": "gra/src/data/map-gen-params-loader.ts:63" },
+      "dlugosc_min": { "wartosc": 9, "zrodlo_web": "gra/src/data/map-gen-params-loader.ts:63" },
+      "dlugosc_max": { "wartosc": 15, "zrodlo_web": "gra/src/data/map-gen-params-loader.ts:63" },
+      "min_masa_hexow": { "wartosc": 40, "zrodlo_web": "gra/src/data/map-gen-params-loader.ts:63" },
+      "obrzeze_szansa": { "wartosc": 0.3, "zrodlo_web": "gra/src/data/map-gen-params-loader.ts:63" }
+    },
+    "medium": {
+      "hexy_na_pasmo": { "wartosc": 240, "zrodlo_web": "gra/src/data/map-gen-params-loader.ts:64" },
+      "max_pasm_na_mase": { "wartosc": 3, "zrodlo_web": "gra/src/data/map-gen-params-loader.ts:64" },
+      "dlugosc_min": { "wartosc": 11, "zrodlo_web": "gra/src/data/map-gen-params-loader.ts:64" },
+      "dlugosc_max": { "wartosc": 18, "zrodlo_web": "gra/src/data/map-gen-params-loader.ts:64" },
+      "min_masa_hexow": { "wartosc": 30, "zrodlo_web": "gra/src/data/map-gen-params-loader.ts:64" },
+      "obrzeze_szansa": { "wartosc": 0.35, "zrodlo_web": "gra/src/data/map-gen-params-loader.ts:64" }
+    },
+    "high": {
+      "hexy_na_pasmo": { "wartosc": 170, "zrodlo_web": "gra/src/data/map-gen-params-loader.ts:65" },
+      "max_pasm_na_mase": { "wartosc": 5, "zrodlo_web": "gra/src/data/map-gen-params-loader.ts:65" },
+      "dlugosc_min": { "wartosc": 13, "zrodlo_web": "gra/src/data/map-gen-params-loader.ts:65" },
+      "dlugosc_max": { "wartosc": 22, "zrodlo_web": "gra/src/data/map-gen-params-loader.ts:65" },
+      "min_masa_hexow": { "wartosc": 24, "zrodlo_web": "gra/src/data/map-gen-params-loader.ts:65" },
+      "obrzeze_szansa": { "wartosc": 0.4, "zrodlo_web": "gra/src/data/map-gen-params-loader.ts:65" }
+    }
+  }
+}
