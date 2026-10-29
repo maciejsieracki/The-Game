@@ -45,8 +45,12 @@ const MUTANTS = [
   ['refresh-ux-return', 'pole', 'brak return po uxRefresh (dodatkowy rerender)', '    getK07aUxSectionRefresh()?.();\n    return;', '    getK07aUxSectionRefresh()?.();'],
   ['refresh-closed-guard', 'pole', 'guard zamkniętego panelu odwrócony', '  if (!isCityPanelOpen()) return;', '  if (isCityPanelOpen()) return;'],
   ['refresh-rerender-target', 'pole', 'rerender zastąpiony disposeHoverDetailDock', 'requireK08aDeps().rerender();', 'requireK08aDeps().disposeHoverDetailDock();'],
-  ['refresh-resolve-open', 'pole', 'resolve pominięte na ścieżce otwartej', '  resolveK07aActiveCity();\n  requireK08aDeps().rerender();', '  requireK08aDeps().rerender();'],
-  ['refresh-resolve-ux', 'pole', 'resolve pominięte na ścieżce UX', '    resolveK07aActiveCity();\n    getK07aUxSectionRefresh()?.();', '    getK07aUxSectionRefresh()?.();'],
+  ['refresh-resolve-open', 'pole', 'resolve pominięte na ścieżce otwartej', '  resolveK08aActiveCity();\n  requireK08aDeps().rerender();', '  requireK08aDeps().rerender();'],
+  ['refresh-resolve-ux', 'pole', 'resolve pominięte na ścieżce UX', '    resolveK08aActiveCity();\n    getK07aUxSectionRefresh()?.();', '    getK07aUxSectionRefresh()?.();'],
+  // resolveK08aActiveCity (r3, K08A-Z4): sync lustra K06A (pin ma jedno activeCity).
+  ['resolve-k06-nosync', 'pole', 'bez sync lustra K06A (r3 zarzut FC r2 #1)', '    setK06aActive(fresh as unknown as CityK06, k06.activeMap, k06.activeOnClose);', '    void 0;'],
+  ['resolve-k06-null-nosync', 'pole', 'brak miasta: lustro K06A nie zerowane (r3)', '    if (k06.activeCity !== null) setK06aActive(null, k06.activeMap, k06.activeOnClose);', '    void 0;'],
+  ['resolve-k06-id-any', 'pole', 'sync K06A bez sprawdzenia id (r3)', '  } else if (k06.activeCity !== null && k06.activeCity.id === fresh.id) {', '  } else if (k06.activeCity !== null) {'],
   // clearCityPanelUxMode (pin :10367-10374).
   ['clear-garrison', 'pole', 'clearGarrisonPanel pominięte', '  requireK08aDeps().clearGarrisonPanel();\n  setK07aUxSectionRefresh(null);', '  setK07aUxSectionRefresh(null);'],
   ['clear-dispose', 'pole', 'disposeHoverDetailDock pominięte', '  requireK08aDeps().disposeHoverDetailDock();\n}', '}'],

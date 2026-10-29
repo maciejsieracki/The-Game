@@ -242,6 +242,39 @@ try {
   m.setK07aUxSectionRefresh(() => {});
   m.refreshCityPanelIfOpen();
   check('refreshCityPanelIfOpen.resolve-fresh-ux', 'cityPanel.ts:10340 resolveActiveCity przed uxSectionRefresh', m.getK07aActiveCity()?.name, 'Odswiezona');
+  // --- resolveActiveCity (pin :10339/:10345: JEDNO activeCity) -> resolveK08aActiveCity (r3, K08A-Z4): lustro K06A ---
+  reset();
+  m.setK07aDeps({ isMe: () => true, getCapitalCityId: () => null, getCities: () => [{ ...cityA, name: 'Odswiezona' }], canSetCapital: false, chipDeltaStockHtml: () => '' });
+  fx.open = true;
+  m.setK07aActiveCity(cityA);
+  m.setK06aActive(cityA, { __mapa: 'k08a-r3' }, () => {});
+  const onCloseR3 = m.getK06aState().activeOnClose;
+  m.refreshCityPanelIfOpen();
+  check('refreshCityPanelIfOpen.k06-mirror-sync', 'cityPanel.ts:10345 jedno activeCity: lustro K06A = świeży obiekt z listy (r3)', m.getK06aState().activeCity?.name, 'Odswiezona');
+  check('refreshCityPanelIfOpen.k06-mirror-same-as-k07', 'cityPanel.ts:10345 jedno activeCity: K06A i K07A to ten sam obiekt (r3)', m.getK06aState().activeCity === m.getK07aActiveCity(), true);
+  check('refreshCityPanelIfOpen.k06-mirror-map-kept', 'K08A-Z4 sync nie rusza activeMap (r3)', m.getK06aState().activeMap?.__mapa, 'k08a-r3');
+  check('refreshCityPanelIfOpen.k06-mirror-onclose-kept', 'K08A-Z4 sync nie rusza activeOnClose (r3)', m.getK06aState().activeOnClose === onCloseR3, true);
+  check('refreshCityPanelIfOpen.k06-mirror-rerender', 'cityPanel.ts:10346 rerender po synchronizacji (r3)', calls, ['rerender']);
+  // ścieżka UX: synchronizacja lustra K06A PRZED uxSectionRefresh (pin :10340 resolve przed wywołaniem)
+  reset();
+  m.setK07aActiveCity(cityA);
+  m.setK06aActive(cityA, null, () => {});
+  let seenK06 = null;
+  m.setK07aUxSectionRefresh(() => { seenK06 = m.getK06aState().activeCity?.name ?? null; });
+  m.refreshCityPanelIfOpen();
+  check('refreshCityPanelIfOpen.k06-mirror-before-ux', 'cityPanel.ts:10340 resolve (w tym lustro K06A) przed uxSectionRefresh (r3)', seenK06, 'Odswiezona');
+  // brak miasta w K07A: lustro K06A zerowane (activeOnClose zostaje)
+  reset();
+  m.setK07aActiveCity(null);
+  m.setK06aActive(cityA, null, () => {});
+  m.refreshCityPanelIfOpen();
+  check('refreshCityPanelIfOpen.k06-mirror-null-city', 'K08A-Z4 brak miasta -> lustro K06A null (r3)', m.getK06aState().activeCity, null);
+  // inne id w lustrze K06A: sync nie nadpisuje (pin nie ma takiego stanu; dziedzina brzegowa)
+  reset();
+  m.setK07aActiveCity(cityA);
+  m.setK06aActive({ ...cityA, id: 'c9', name: 'Inne' }, null, () => {});
+  m.refreshCityPanelIfOpen();
+  check('refreshCityPanelIfOpen.k06-mirror-other-id', 'K08A-Z4 lustro K06A o innym id nie nadpisane (r3)', m.getK06aState().activeCity?.name, 'Inne');
   m.setK07aDeps(null);
 
   // --- Dziedziny brzegowe: brak deps = wyjątek (nie cicha utrata efektu) ---
