@@ -48,6 +48,7 @@ dotykające tych samych plików — zawsze sekwencyjnie, nigdy w tej samej fali.
 | 17 | R-RUSTPORT-P5-8-CITYPANEL-K06A-Q1 | P5.8 | 2/5 | wf_9411516f-c63 | **PASS (po poprawce N1/N2) — zintegrowane**; slot wolny | 2026-10-29 |
 | 18 | R-RUSTPORT-P6-M06A3-LAD-MORZE-RESZTA2-Q1 | P6 mapgen | 1/5 | (nowy) | etap 1 | 2026-10-29 |
 | 19 | R-RUSTPORT-P5-8-CITYPANEL-K06B-Q1 | P5.8 | 1/5 | (nowy) | etap 1 | 2026-10-29 |
+| 21 | R-RUSTPORT-P5-8-CITYPANEL-K07A-Q1 | P5.8 | 1/5 | (nowy) | etap 1 | 2026-10-29 |
 | 20 | R-RUSTPORT-P4-36-MOD14-BATTLE-3D-Q4 (3D, Opus — zgoda właściciela) | P4.36 | 1/5 | (nowy) | etap 1 | 2026-10-29 |
 | 3 | R-RUSTPORT-P5-8-CITYPANEL-PODZIAL-Q1 | P5.8 | 3/5 | wf_5b094795-b4f | **PASS — zintegrowane** (docs, `a1246e48`); slot wolny | 2026-10-29 |
 | 4 | R-RUSTPORT-P4-36-MOD14-BATTLE-3D-Q3 | P4.36 | 1/5 | wf_2ef132a4-a0e | **PASS — zintegrowane** na `parity-v2`; slot wolny | 2026-10-29 |
