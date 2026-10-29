@@ -25,7 +25,7 @@
 //! - `Math.*` w tym podzbiorze: brak (sama arytmetyka calkowita i porownania).
 //! - Literaly danych (udzialy lądu, kolejnosc erozji) w `data/derived/mapgen-landsea.json`.
 
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 
 use crate::data::derived::{mapgen_desert_purge, mapgen_landsea};
 use crate::domain::map_generator::{ClimateBand, Terrain, WorldType};
@@ -634,4 +634,104 @@ pub fn purge_desert_enclave_water(hexes: &mut HexRecord, width: i64, height: u32
         converted += 1;
     }
     converted
+}
+
+// ---------------------------------------------------------------------------
+// P6.M06A4 (runda 3, partia 3). Symbole: `morseDepthFromMapBorder` (web :4659),
+// `trimEnclosedOceanOnly` (:4701), `purgeInlandWaterForMultiLandTyp` (:4215).
+// Wektory: tests/p6_m06a4_vectors/trim-vectors.json (generator `gen-m06a4-trim-vectors.mjs`,
+// pin edb8fb56, seed 20261030). Zaleznosci (`fillEnclosedWaterByLandNeighbors`,
+// `removeInlandWaterPools`) juz w tym pliku.
+// ---------------------------------------------------------------------------
+
+/// Progi wywolan `fillEnclosedWaterByLandNeighbors` w `purgeInlandWaterForMultiLandTyp` (web :4218, :4221):
+/// argumenty `5` i `4` (nie dane z JSON). Stale galezi, jak progi M06A3.
+const PURGE_INLAND_FILL_MIN_LAND_A: usize = 5;
+const PURGE_INLAND_FILL_MIN_LAND_B: usize = 4;
+
+/// Web `morseDepthFromMapBorder(hexes, width, height)` (:4659): BFS po Morzu (bez Wybrzeza) od
+/// morskich heksow lezacych na krawedzi mapy. Zwraca odleglosc w krokach dla heksow osiagalnych;
+/// heksy nieosiagalne z krawedzi NIE sa w wyniku (web: `undefined`). Sasiedzi z kluczem spoza mapy
+/// (brak wpisu) sa pomijani. Klucze niekanoniczne nie sa osiagalne (web: `hexKey` nigdy ich nie buduje).
+pub fn morse_depth_from_map_border(
+    hexes: &HexRecord,
+    width: i64,
+    height: i64,
+) -> HashMap<String, usize> {
+    let mut dist: HashMap<String, usize> = HashMap::new();
+    let mut queue: Vec<(i64, i64)> = Vec::new();
+
+    for r in 0..height {
+        for q in 0..width {
+            let on_border = q == 0 || r == 0 || q == width - 1 || r == height - 1;
+            if !on_border {
+                continue;
+            }
+            let key = hex_key(q, r);
+            if hexes.get(&key).is_some_and(|h| h.terrain == Terrain::Sea) {
+                dist.insert(key, 0);
+                queue.push((q, r));
+            }
+        }
+    }
+
+    let mut head = 0usize;
+    while head < queue.len() {
+        let (q, r) = queue[head];
+        head += 1;
+        let d = dist[&hex_key(q, r)];
+        for &(dq, dr) in HEX_DIRECTIONS.iter() {
+            let nq = q + i64::from(dq);
+            let nr = r + i64::from(dr);
+            let nk = hex_key(nq, nr);
+            if dist.contains_key(&nk) {
+                continue;
+            }
+            if !hexes.get(&nk).is_some_and(|nh| nh.terrain == Terrain::Sea) {
+                continue;
+            }
+            dist.insert(nk, d + 1);
+            queue.push((nq, nr));
+        }
+    }
+    dist
+}
+
+/// Web `trimEnclosedOceanOnly(hexes, width, height)` (:4701): kazdy Morze, ktorego nie ma w wyniku
+/// `morseDepthFromMapBorder`, -> Laka (nakladka, rzeka i zloze czyszczone jak w webie).
+/// Iteracja po wszystkich wpisach (takze niekanonicznych, jak `Object.entries`). Zwraca liczbe zmian.
+pub fn trim_enclosed_ocean_only(hexes: &mut HexRecord, width: i64, height: i64) -> usize {
+    let depth = morse_depth_from_map_border(hexes, width, height);
+    let mut converted = 0usize;
+    for (key, hex) in hexes.iter_mut() {
+        if hex.terrain != Terrain::Sea {
+            continue;
+        }
+        if depth.contains_key(key.as_str()) {
+            continue;
+        }
+        hex.terrain = Terrain::Grassland;
+        hex.overlay = Nakladka::Brak;
+        hex.river_present = false;
+        hex.river_edges.clear();
+        hex.has_deposit = false;
+        converted += 1;
+    }
+    converted
+}
+
+/// Web `purgeInlandWaterForMultiLandTyp(hexes, width, height)` (:4215): agresywne czyszczenie wody
+/// w lądzie (kontynenty/wyspy, nie pangea): fill(5) -> removeInland -> trimEnclosedOcean ->
+/// fill(4) -> removeInland. Zwraca sume zmian wszystkich krokow (jak web).
+pub fn purge_inland_water_for_multi_land_typ(
+    hexes: &mut HexRecord,
+    width: i64,
+    height: i64,
+) -> usize {
+    let mut n = fill_enclosed_water_by_land_neighbors(hexes, PURGE_INLAND_FILL_MIN_LAND_A);
+    n += remove_inland_water_pools(hexes, width, height);
+    n += trim_enclosed_ocean_only(hexes, width, height);
+    n += fill_enclosed_water_by_land_neighbors(hexes, PURGE_INLAND_FILL_MIN_LAND_B);
+    n += remove_inland_water_pools(hexes, width, height);
+    n
 }
