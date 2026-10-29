@@ -77,8 +77,9 @@ const HEADER_TITLE = `/**
  */`;
 const IMPORTS_TITLE = `import { attachInteractiveDetail } from '../hoverDetailDock';
 import { el } from './k01b-dom';`;
-const HEAD = BATCH.file === 'k08b-title.ts' ? HEADER_TITLE : HEADER;
-const IMP = BATCH.file === 'k08b-title.ts' ? IMPORTS_TITLE : IMPORTS;
+// Partie z własnym `header`/`imports` (runda 3: owned, purchase) mają je w `k08b-subs.mjs`.
+const HEAD = BATCH.header ?? (BATCH.file === 'k08b-title.ts' ? HEADER_TITLE : HEADER);
+const IMP = BATCH.imports ?? (BATCH.file === 'k08b-title.ts' ? IMPORTS_TITLE : IMPORTS);
 const parts = [HEAD, '', IMP, '', `// ─── Jednostki K08B, partia ${BATCH.file} (kopie pinu wygenerowane; markery = bramka verify-k08b-copies.mjs) ─────────────`, ''];
 for (const u of units) {
   parts.push(blockText(u), '');

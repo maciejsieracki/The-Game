@@ -36,10 +36,71 @@ export const BATCH_TITLE = {
   ],
 };
 
-/** Wszystkie partie (kolejność stała). */
-export const BATCHES = [BATCH_RAIL, BATCH_TITLE];
+/**
+ * Partia `owned` (runda 3, K08B-Z5 domknięte): `renderBuildingsOwned` (pin :9184-9255) i jego prawa karta
+ * `renderBuildingsOwnedRightPanel` (pin :9341-9357). Zależności: porty K01A/K01B/K02/K05B/K06B; dwie funkcje pinu
+ * bez portu (`sumOwnedBuildingsUpkeep`, `groupBuiltBuildingIds`) przez delegaty `k08b-deps.ts` (K08B-Z7).
+ */
+export const BATCH_OWNED = {
+  file: 'k08b-owned.ts',
+  header: `/**
+ * K08B-3 (P5-8, R-RUSTPORT-P5-8-CITYPANEL-K08B-Q1, runda 3, partia \`owned\`): lista „Budynki w mieście" (pin \`edb8fb56\`,
+ * \`gra/src/ui/cityPanel.ts\`) — \`renderBuildingsOwned\` i prawa karta \`renderBuildingsOwnedRightPanel\`.
+ * Jednostki DOM: 2 z zbioru 24 (\`P5-8-K08B.md\` §3, wiersze \`renderBuildingsOwned\` i \`renderBuildingsOwnedRightPanel\`).
+ *
+ * PLIK GENEROWANY przez \`tools/dom-harness/gen-k08b-port.mjs --batch owned\` (bloki = pin + \`k08b-subs.mjs\`).
+ * Edycja ręczna bloku \`// pin edb8fb56 …\` … \`// pin-end\` = FAIL bramki \`verify-k08b-copies.mjs --batch owned\`.
+ * Delegaty bez portu: \`k08b-deps.ts\` (K08B-Z7, wiring \`setK06bDeps\`: NIE_ZROBIONE).
+ */`,
+  imports: `import { BUILDING_UPKEEP_ZERO_LABEL, PH, cityPanelChipIconWrap } from './k01a-fundament';
+import { formatBuildingUpkeepTotalHtml } from './k01b-f';
+import { formatResourceUpkeepText, sumOwnedBuildingsResourceUpkeep } from './k01b-r';
+import { el } from './k01b-dom';
+import { createScrollList } from './k02-units';
+import { cfg, type City, type GameData } from './k05b-host';
+import { appendOwnedBuildingRow } from './k06b-kolejki';
+import { groupBuiltBuildingIds, sumOwnedBuildingsUpkeep } from './k08b-deps';
+import { withW4TabCard } from './k08b-rail';`,
+  units: [
+    { name: 'renderBuildingsOwned', a: 9184, b: 9255 },
+    { name: 'renderBuildingsOwnedRightPanel', a: 9341, b: 9357 },
+  ],
+};
 
-/** Partia po nazwie pliku-partii (`rail`, `title`). */
+/**
+ * Partia `purchase` (runda 3, K08B-Z7): `renderPurchasableUnits` (pin :8891-8977, zakładka Rekrutacja). Zależności
+ * z gry (`purchasableUnits`, `sortByUnitPowerDescending`, `getUnitDef`, pasek surowców rekrutacji) — delegaty `k08b-deps.ts`.
+ */
+export const BATCH_PURCHASE = {
+  file: 'k08b-purchase.ts',
+  header: `/**
+ * K08B-4 (P5-8, R-RUSTPORT-P5-8-CITYPANEL-K08B-Q1, runda 3, partia \`purchase\`): panel „Rekrutuj jednostkę" (pin \`edb8fb56\`,
+ * \`gra/src/ui/cityPanel.ts\`) — \`renderPurchasableUnits\` (zakładka Rekrutacja, kolumna lewa lub karta W4).
+ * Jednostki DOM: 1 z zbioru 24 (\`P5-8-K08B.md\` §3, wiersz \`renderPurchasableUnits\`).
+ *
+ * PLIK GENEROWANY przez \`tools/dom-harness/gen-k08b-port.mjs --batch purchase\` (bloki = pin + \`k08b-subs.mjs\`).
+ * Edycja ręczna bloku \`// pin edb8fb56 …\` … \`// pin-end\` = FAIL bramki \`verify-k08b-copies.mjs --batch purchase\`.
+ * Delegaty bez portu: \`k08b-deps.ts\` (K08B-Z7, wiring \`setK06bDeps\`: NIE_ZROBIONE).
+ */`,
+  imports: `import { LIST_ROW_HEIGHT_COMPACT, LIST_SCROLL_VISIBLE_CATALOG, cityPanelChipIcon } from './k01a-fundament';
+import { el } from './k01b-dom';
+import { appendTabIndicators, createScrollList } from './k02-units';
+import { buildRecruitTabDetailCard, buildUpgradeBonusDetailCard } from './k05b-jednostki';
+import { cfg, getProd, isMeCity, productionCtxForCity, type City, type GameData } from './k05b-host';
+import { appendUnitRecruitCompactRow } from './k06b-jednostki';
+import {
+  appendRecruitMilitaryResourceStrip, getUnitDef, purchasableUnits, sortByUnitPowerDescending, type UnitPowerInput,
+} from './k08b-deps';
+import { appendSectionTitleWithDetails } from './k08b-title';`,
+  units: [
+    { name: 'renderPurchasableUnits', a: 8891, b: 8977 },
+  ],
+};
+
+/** Wszystkie partie (kolejność stała). */
+export const BATCHES = [BATCH_RAIL, BATCH_TITLE, BATCH_OWNED, BATCH_PURCHASE];
+
+/** Partia po nazwie pliku-partii (`rail`, `title`, `owned`, `purchase`). */
 export const batchByName = (name) => {
   const b = BATCHES.find((x) => x.file === `k08b-${name}.ts`);
   if (!b) throw new Error(`nieznana partia K08B: ${name}`);
