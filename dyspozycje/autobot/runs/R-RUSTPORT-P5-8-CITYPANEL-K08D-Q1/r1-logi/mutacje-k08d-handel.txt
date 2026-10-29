@@ -1,0 +1,9 @@
+baseline: verify handel=0 slider=0, pin-exec=0
+ZABITA ownerHasMennica: inny id budynku | verify=1 harness=1
+ZABITA activeTradeRouteCountForCity: status trasy | verify=1 harness=1
+ZABITA activeTradeRouteCountForCity: pomija warunek budynku | verify=1 harness=1
+ZABITA buildHandelDetailCard: tekst algorytmu | verify=1 harness=1
+ZABITA renderHandelSlidersPanel: etykieta chipu | verify=1 harness=1
+ZABITA daninaLabelAccusative: stała (kotwica pinu) | verify=0 harness=1
+
+mutacje k08d: ZABITE 6/6
