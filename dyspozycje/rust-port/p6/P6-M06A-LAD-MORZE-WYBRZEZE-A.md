@@ -89,3 +89,16 @@ W zakresie 3186-4374: **brak zmian** (0 hunkow). Odswiezenie wektorow - osobny t
 - Mutacje strukturalne i weryfikator niezalezny nie byly wykonane w tej rundzie (rola Operator-impl).
 - Pomiar trafien wektorow na granicach (N-1/N/N+1) nie byl wykonany; granice pokrywaja mapy 1x1, 2x1, 1x3, 3x3 z krawedzia.
 - Stale `Math.*` i pozostale 26 symboli: RUNDA-2.
+
+## Pomiary rundy 1 (Operator-pomiary)
+
+Pelny raport: `dyspozycje/autobot/runs/R-RUSTPORT-P6-M06A-LAD-MORZE-WYBRZEZE-A-Q1/02-operator-pomiary-r1.md`.
+
+- Weryfikator: regeneracja `web-vectors.json` z pinu `edb8fb56` daje identyczny plik (sha256 `07dfd5dc...`).
+- Mutacje: 48 mutantow (`mut-runner-m06a.py`, `mutations-r1.log`): KILLED 43, TIMEOUT 1 (`ocean-bfs-no-visited`, nieskonczona petla), SURVIVED 4.
+  - Ekwiwalentne z dowodem: `erode-rank-rposition-EQUIV` (brak duplikatow w kolejnosci erozji), `neighbor-negate-both-EQUIV` (HEX_DIRECTIONS domkniete na negacje).
+  - LUKA: `ring-no-overlay-clear`, `ring-no-deposit-clear`. W wektorach zadne Morze nie ma nakladki ani zloza, wiec galezi czyszczenia w `applyCoastRing`/`applyDoubleCoastRing` nie sa pokryte. Wymagana poprawka w rundzie 2 (mapa specjalna z Morze przy lądzie z nakladka i zlozem, wektor z weba, asercja).
+- Granice: prog `>0` dla wybrzeza pokryty przez `morze_n` 0/1/2 (2206/1681/1123 heksow); ocean-krawedzie: woda na q=0/1/W-2/W-1 i r=0/1/H-2/H-1 w 96-125 mapach kazda linia.
+- Gate'y: fmt EXIT=0, clippy EXIT=0, test EXIT=0 (1224 passed, p6_m06a_landsea 10/10), `git diff --check` czysty.
+- Dryf po pinie w zakresie 3186-4374: potwierdzony, 0 hunkow (8 hunkow w liniach 5992-10811).
+- Status: FAIL (luka testowa w pierscieniu); dalsze symbole RUNDA-2 bez zmian.
