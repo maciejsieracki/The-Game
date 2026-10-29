@@ -55,7 +55,8 @@ dotykające tych samych plików — zawsze sekwencyjnie, nigdy w tej samej fali.
 | 26 | R-RUSTPORT-P4-36-MOD14-BATTLE-3D-Q5 (3D, Opus — zgoda właściciela; Q4 **PASS-WITH-NOTES zintegrowane** `5d900606`, 416/0) | P4.36 | 1/5 | (nowy) | etap 1 | 2026-10-29 |
 | 27 | R-RUSTPORT-P5-8-CITYPANEL-K08C-Q1 | P5.8 | 2/5 | wf_6995f21c-9dd | **PASS-WITH-NOTES (3/6 jedn. + wiring) — zintegrowane** (`f5d34b52`); reszta → K08D |
 | 28 | R-RUSTPORT-P5-8-CITYPANEL-K08D-Q1 | P5.8 | 4/5 | wf_743c0a91-ab4 | **PASS — zintegrowane** (`fe8e7097`) |
-| 29 | R-RUSTPORT-P5-8-CITYPANEL-K08E-Q1 | P5.8 | 1/5 | (nowy) | etap 1 | 2026-10-29 |
+| 29 | R-RUSTPORT-P5-8-CITYPANEL-K08E-Q1 | P5.8 | 2/5 | wf_ee6a00b8-17f | **PASS-WITH-NOTES — zintegrowane** (`f18a18c3`, 12/12 jedn.) |
+| 30 | R-RUSTPORT-P5-8-CITYPANEL-K09A-Q1 | P5.8 | 1/5 | (nowy) | etap 1 | 2026-10-29 |
 | 24 | R-RUSTPORT-P6-M06A4-LAD-MORZE-RESZTA3-Q1 | P6 mapgen | 3/5 | (r3 nowy) | partia 2 zintegrowana (`ea68697d`, 1254/0); r3: morseDepthFromMapBorder + partia 3 — etap 1 | 2026-10-29 |
 | 25 | R-RUSTPORT-P5-8-CITYPANEL-K08B-Q1 | P5.8 | 4/5 | wf_5b437a20-313 | **ZAMKNIĘTE ADMINISTRACYJNIE (9/24 jedn.) — zintegrowane** (`b19311e2`); reszta → K08C/K08D |
 | 3 | R-RUSTPORT-P5-8-CITYPANEL-PODZIAL-Q1 | P5.8 | 3/5 | wf_5b094795-b4f | **PASS — zintegrowane** (docs, `a1246e48`); slot wolny | 2026-10-29 |
