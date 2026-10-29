@@ -65,11 +65,24 @@ obiektach `{ terenBazowy }` (bez rzeki, lasu i drog); w Rust jest to wejscie (`h
 ## Testy i bramki
 
 - Testy wektorowe: `p6_repin_wojna_b_army_consolidation` (6 testow), `p6_repin_wojna_b_ai_general` (7 testow); asercje nie zostaly oslabione (liczby przypadkow sprawdzane `>=`).
-- Mutacje (28 zmian w ciele logiki, po jednej naraz, skrypt `mutate-b.py`): **28 KILLED, 0 SURVIVED**. Logi: `mut-b-G01..G18`, `mut-b-A01..A10`.
-- `cargo fmt --all -- --check`: OK (`fmt-b.log`).
-- `cargo clippy --all-targets -- -D warnings`: OK (`clippy-b-final.log`).
-- `cargo test --no-fail-fast` (`test-b.log`): **1297 passed, 0 failed** (baseline 1284 + 13 nowych).
+- Mutacje, runda operatora (28 zmian w ciele logiki, po jednej naraz, skrypt `mutate-b.py`): **28 KILLED, 0 SURVIVED**. Logi: `mut-b-G01..G18`, `mut-b-A01..A10`.
+- Mutacje, runda weryfikatora (`verify-mut-b-*.log`): dodatkowo 11 mutacji galezi bez pokrycia w rundzie operatora
+  (E01-E07: sticky-cel, pusta lista osiagalnych, ignorowanie `sameTarget`, guard `gathering`, domyslny stage przy restore,
+  utrata `lastGatherTurn`, ignorowanie `isGeneral` w rekrutacji; A11-A14: filtr stolicy, tie-break po id w przydziale,
+  klamp `min(len)` w podziale, filtr pustych armii). Wynik: **10 KILLED, 1 SURVIVED (A13)**.
+  A13 (`min(units.len())` w `split_into_war_armies`) jest mutantem rownowaznym: puste grupy sa filtrowane na koncu, a
+  niepuste grupy zawsze tworza prefiks `0..m-1` (wybor = najnizszy indeks o minimalnej sumie; pierwsza pusta grupa ma
+  sume 0), wiec wynik dla `k > len` jest identyczny jak dla `k = len`. ZALOZENIE: dowod z kodu, nie test.
+- Weryfikacja niezalezna (runda 2): wektory JSON wygenerowane ponownie z kodu weba 91dc998a (`gen-repin-wojna-b-web-vectors.mjs`,
+  Node 22.22.0, `/tmp`-scratch poza repo) sa **bajtowo identyczne** z plikami w repo (`cmp`, EXIT=0). Hashe zrodel
+  (`sourceSha256`) zgodne z `git show 91dc998a:<sciezka> | sha256sum`. Parametry JSON identyczne z `gra/data`.
+- `cargo fmt --all -- --check`: OK (`fmt-b.log`, weryfikator `verify-fmt.log`, EXIT=0).
+- `cargo clippy --all-targets -- -D warnings`: OK (`clippy-b-final.log`, weryfikator `verify-clippy.log`, EXIT=0).
+- `cargo test --no-fail-fast` (`test-b.log`, weryfikator `verify-test.log`): **1297 passed, 0 failed**, EXIT=0 (baseline 1284 + 13 nowych).
 - `git diff --check`: czysty.
+- Uwaga o narzedziu: `mutate-b.py` w rundzie operatora mial sztywne sciezki do innego worktree (`wf_921c9171-66d-1`);
+  zmieniono na sciezki wzgledem lokalizacji skryptu. Mutacje operatora nie zostaly ponowione przez weryfikatora pod ta sama nazwa
+  logow; weryfikator zreprodukowal 28/28 KILLED w swoim worktree (`verify-mut-b-G*/A*`).
 
 ## Nastepne partie (osobne ID)
 

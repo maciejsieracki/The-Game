@@ -1,0 +1,45 @@
+MUTATION A14-split-keep-empty-groups
+OLD: '.filter(|g| !g.is_empty())'
+NEW: '.filter(|_| true)'
+RESULT: KILLED failed_tests=1
+
+
+running 6 tests
+test build_rally_candidates_matches_web ... ok
+test assign_rally_targets_matches_web ... ok
+test constants_and_flag_match_web ... ok
+test pick_rally_city_matches_web ... ok
+test war_army_count_matches_web ... ok
+test split_into_war_armies_matches_web ... FAILED
+
+failures:
+
+---- split_into_war_armies_matches_web stdout ----
+
+thread 'split_into_war_armies_matches_web' (8005) panicked at tests/p6_repin_wojna_b_army_consolidation.rs:249:9:
+assertion `left == right` failed: przypadek 27
+  left: [["s8"], ["s6"], ["s4"], ["s5", "s7"], []]
+ right: [["s8"], ["s6"], ["s4"], ["s5", "s7"]]
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+   1: core::panicking::panic_fmt
+   2: core::panicking::assert_failed_inner
+   3: core::panicking::assert_failed::<alloc::vec::Vec<alloc::vec::Vec<alloc::string::String>>, alloc::vec::Vec<alloc::vec::Vec<alloc::string::String>>>
+   4: p6_repin_wojna_b_army_consolidation::split_into_war_armies_matches_web
+   5: p6_repin_wojna_b_army_consolidation::split_into_war_armies_matches_web::{closure#0}
+   6: <p6_repin_wojna_b_army_consolidation::split_into_war_armies_matches_web::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+
+failures:
+    split_into_war_armies_matches_web
+
+test result: FAILED. 5 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.29s
+
+   Compiling civ-engine v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_921c9171-66d-2/rust-port/engine)
+    Finished `test` profile [unoptimized] target(s) in 32.53s
+     Running tests/p6_repin_wojna_b_ai_general.rs (/home/user/cargo-target-shared/wf_921c9171-66d-2/debug/deps/p6_repin_wojna_b_ai_general-a0a5b02045b60bb5)
+     Running tests/p6_repin_wojna_b_army_consolidation.rs (/home/user/cargo-target-shared/wf_921c9171-66d-2/debug/deps/p6_repin_wojna_b_army_consolidation-a44e2e953451603c)
+error: test failed, to rerun pass `--test p6_repin_wojna_b_army_consolidation`
+error: 1 target failed:
+    `--test p6_repin_wojna_b_army_consolidation`

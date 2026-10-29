@@ -1,8 +1,10 @@
 import os, subprocess, sys, re
 
-ENG = '/home/user/The-Game/.claude/worktrees/wf_921c9171-66d-1/rust-port/engine'
-RUN = '/home/user/The-Game/.claude/worktrees/wf_921c9171-66d-1/dyspozycje/autobot/runs/R-RUSTPORT-REPIN-WOJNA-NOWE-B-Q1'
-ENV = dict(os.environ, CARGO_INCREMENTAL='0', CARGO_TARGET_DIR='/home/user/cargo-target-shared/wf_921c9171-66d-1', CARGO_PROFILE_DEV_DEBUG='0')
+# Sciezki wzgledem lokalizacji skryptu (katalog runu w worktree), nie na sztywno.
+RUN = os.path.dirname(os.path.abspath(__file__))
+ROOT = os.path.abspath(os.path.join(RUN, '..', '..', '..', '..'))
+ENG = os.path.join(ROOT, 'rust-port', 'engine')
+ENV = dict(os.environ, CARGO_INCREMENTAL='0', CARGO_TARGET_DIR='/home/user/cargo-target-shared/' + os.path.basename(ROOT), CARGO_PROFILE_DEV_DEBUG='0')
 
 AG = f'{ENG}/src/domain/ai_general_war_campaign.rs'
 AC = f'{ENG}/src/domain/army_consolidation.rs'
@@ -36,6 +38,19 @@ MUTS = {
  'A08-atrally-q-only': (AC, 'at_rally: u.q == target.q && u.r == target.r,', 'at_rally: u.q == target.q,'),
  'A09-hexdist-no-ds': (AC, 'dq.max(dr).max(ds)', 'dq.max(dr)'),
  'A10-flag-default-inverted': (AC, 'flag_override.unwrap_or(ARMY_CONSOLIDATION_ENABLED)', 'flag_override.unwrap_or(!ARMY_CONSOLIDATION_ENABLED)'),
+ # Runda weryfikatora: galezie sterujace bez mutacji w rundzie operatora.
+ 'E01-choose-sticky-off': (AG, '    if let Some(cur) = current {', '    if let Some(cur) = current.filter(|_| false) {'),
+ 'E02-choose-empty-unguarded': (AG, '    if reachable.is_empty() {\n        return None;\n    }', '    if false {\n        return None;\n    }'),
+ 'E03-reconcile-samedtarget-ignored': (AG, 'let Some(current) = current.filter(|_| same_target) else {', 'let Some(current) = current else {'),
+ 'E04-gather-stage-guard-off': (AG, '    if campaign.stage != AiGeneralCampaignStage::Gathering\n', '    if false\n'),
+ 'E05-restore-stage-default': (AG, '"attacking" => AiGeneralCampaignStage::Attacking,\n        _ => return None,', '"attacking" => AiGeneralCampaignStage::Attacking,\n        _ => AiGeneralCampaignStage::Recruiting,'),
+ 'E06-restore-lastgather-dropped': (AG, 'let last_gather_turn = raw.get("lastGatherTurn").and_then(safe_integer);', 'let last_gather_turn: Option<i64> = None;'),
+ 'E07-reconcile-recruit-ignores-isgeneral': (AG, '        if let Some(g) = general.filter(|g| g.is_general) {\n            let fresh', '        if let Some(g) = general {\n            let fresh'),
+ 'A11-candidates-drop-nonrally-filter': (AC, '.filter(|c| c.id != rally.id)', '.filter(|_| true)'),
+ 'A12-assign-id-tiebreak-off': (AC, 'da.cmp(&db).then_with(|| cmp_js_str(&a.id, &b.id))', 'da.cmp(&db)'),
+ # A13 = mutant rownowazny (klamp min(len) nie zmienia niepustych armii; puste sa filtrowane).
+ 'A13-split-clamp-off': (AC, 'let k = army_count.max(1).min(units.len() as i64) as usize;', 'let k = army_count.max(1) as usize;'),
+ 'A14-split-keep-empty-groups': (AC, '.filter(|g| !g.is_empty())', '.filter(|_| true)'),
 }
 
 def run_one(mid):
