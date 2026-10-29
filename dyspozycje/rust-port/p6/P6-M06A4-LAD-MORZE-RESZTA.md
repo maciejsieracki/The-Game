@@ -4,13 +4,31 @@ Temat: R-RUSTPORT-P6-M06A4-LAD-MORZE-RESZTA3-Q1. Runda 1 (Operator-impl, `5ed29a
 Pin webu: `edb8fb56` (`gra/src/map/gen-helpers.ts`). Zakres: wiersze RUNDA-2 z tabeli M06A (linie 3186-4374).
 Poprzednie partie: `P6-M06A.md` (r1), `P6-M06A2-LAD-MORZE-RESZTA.md`, `P6-M06A3-LAD-MORZE-RESZTA.md` (partia 1).
 
+## Runda 3 (Operator-impl, partie 3a i 3b)
+
+Baza: `origin/rust-port/parity-v2` = `ea68697d` (wczesniej `364a5356` w dispatchu - ta wersja jest ancestorem). Kolejnosc wg dispatchu: `morseDepthFromMapBorder` -> `trimEnclosedOceanOnly` -> `purgeInlandWaterForMultiLandTyp` (partia 3a, commit `0c1c708a`), potem `applyJaggedCoastNoise` (partia 3b, commit: patrz `git log`).
+
+- Wektory: `tests/p6_m06a4_vectors/trim-vectors.json` (2.2 MB; generator `gen-m06a4-trim-vectors.mjs`, seed 20261030) i `tests/p6_m06a4_vectors/jagged-vectors.json` (0.8 MB; generator `gen-m06a4-jagged-vectors.mjs`, seed 20261031). Oba z `git archive edb8fb56 gra/src gra/data` w katalogu POZA repo; sha256 `gen-helpers.ts` = `ab934703...`. `web-vectors.json` (rundy 2) bez zmian.
+- Zaleznosci juz w Rust: `fillEnclosedWaterByLandNeighbors`, `removeInlandWaterPools` (`landsea.rs`); `fbm`, `PERM_TABLE_LEN` (`prims.rs`); `isInMapBorder` (`terrain_class.rs`).
+- Konwencje rozdzielone: literaly galezi (progi 0.68 / 0.32, argumenty 5 i 4) w kodzie jako stale galezi; parametry szumu (skala 0.28, mnoznik 2.1, przesuniecie 200, waga 0.35, oktawy 4/3, przesuniecia przebiegu 17/31) i progi w `mapgen-jagged-coast.json`.
+- Zalozenie Z-9 (partia 3a): `trimEnclosedOceanOnly` iteruje po wszystkich wpisach mapy (takze niekanonicznych), tak jak `Object.entries` w webie. Dla klucza niekanonicznego web i port zgadzaja sie (wektor `edge_noncanonical_key`). Rozbieznosc Z-1 dotyczy wyłącznie `fillEnclosedWaterByLandNeighbors` (web `parseHexKey` bierze dwie pierwsze skladowe, port pomija klucz) - dlatego wektory `purgeInlandWaterForMultiLandTyp` nie zawieraja kluczy niekanonicznych.
+- Zalozenie Z-10 (partia 3b): `applyJaggedCoastNoise` z `passes` jako argumentem (web: 2 domyslnie, 1 w `generator.ts:389`, 5 w `gen-helpers.ts:3690`). Wektory: 1, 2, 5 przebiegow.
+- Pomiar granic (raport generatora, nie dowod portu): `jagged-vectors.json` `stats.near_threshold` = 1049 ocen szumu z `|coast - prog| < 0.01` z 17662 ocen. Liczba trafien dokladnie na progu (`coast == prog`) NIE_ZMIERZONO; granice sprawdzone testami 1-ulp na funkcjach decyzji (`erode_threshold_n_minus_1_n_n_plus_1`, `fill_threshold_n_minus_1_n_n_plus_1`).
+- Pokrycie `purgeInland`: rodzina "brzeg" (srodek Morze, d = 0..6 sasiadow Laka, pozycje in/near/border, wariant Morze i Plytkie Morze); klucze `fill_d<d>_<pos>_<f5|later|nop>`. Pozycja `border` ma tylko 4 istniejace sasiedztwa (brak sasiadow poza mapa), wiec d >= 5 tam nie wystepuje - NIE_ZMIERZONO dla progu 5 na krawedzi.
+- NIE_ZMIERZONO (runda 3, zgodnie z dispatchem "bez dlugich pomiarow"): mutacje dla 3a i 3b; `FILL_ENCLOSED_MAX_PASSES` = 8 (limit przebiegow) - brak wektora, ktory go dosiega (cascade dluzszy niz 8 przebiegow nie zostal zbudowany).
+- Testy: `p6_m06a4_trim.rs` (5 testow), `p6_m06a4_jagged.rs` (4 testy). Wszystkie zielone. Bramki: fmt EXIT=0, clippy `-D warnings` EXIT=0, test 1263 passed / 0 failed (baseline 1254 z ea68697d + 9 nowych). Logi: `gate-*-partia3-r3.log` (3a), `gate-*-partia3b-r3.log` (3b).
+- Dryf po pinie i zakres: bez zmian wzgledem sekcji "Dryf po pinie" ponizej (zaden hunk w 3186-4374).
+- Pozostale symbole zakresu RUNDA-2 po rundzie 3: `applyLandFractionByScore`, `rebalanceLandFractionWithMargins`, `erodePangeaBboxLowScoreRim`, `carvePangeaLongSideGulfs`, `rebalanceLandFractionPangea`, `applyLandFractionByContinent`, `rebalanceLandSeaRatio`, `assignContinentIndices`, `sortLandKeysForErosion`, `pangeaAnnularMaxCorridorWidth`, `groupDryLandMassKeys`, `isPangeaBridgeWater`, `LandFractionFillBias` (dane).
+
 ## Stan symboli (binarne kryterium)
 
 | Symbol (web) | Stan | Dowod |
 |---|---|---|
 | `purgeDesertEnclaveWater` :4156 | PORTOWANY (partia 2) | `landsea.rs::purge_desert_enclave_water`; progi z `data/derived/mapgen-desert-purge.json` (`derived.rs::mapgen_desert_purge`); test `purge_desert_enclave_water_matches_web` (4991 przypadkow z weba, 0 rozbieznosci mapy i liczby zmian); test `coverage_matches_threshold_rule_on_both_sides` |
-| `purgeInlandWaterForMultiLandTyp` :4215 | RUNDA-2 (partia 3) | wywoluje `trimEnclosedOceanOnly` (web :4701, poza zakresem M06A4); najpierw port `trimEnclosedOceanOnly` - decyzja w sekcji Zalozenia Z-3 |
-| `applyJaggedCoastNoise` :4232 | RUNDA-2 (partia 3+) | szum (`mulberry32`/`fbm`/perm) |
+| `morseDepthFromMapBorder` :4659 | PORTOWANY (r3, partia 3a) | `landsea.rs::morse_depth_from_map_border`; test `morse_depth_from_map_border_matches_web` (101 przypadkow, pelny zbior `(klucz, odleglosc)`); wektory `trim-vectors.json` |
+| `trimEnclosedOceanOnly` :4701 | PORTOWANY (r3, partia 3a) | `landsea.rs::trim_enclosed_ocean_only`; test `trim_enclosed_ocean_only_matches_web` (101 przypadkow, liczba zmian + pelna mapa; w tym klucz niekanoniczny `1,2,5`, ktory web tez zamienia) |
+| `purgeInlandWaterForMultiLandTyp` :4215 | PORTOWANY (r3, partia 3a) | `landsea.rs::purge_inland_water_for_multi_land_typ` (progi wywolan 5 i 4 jako stale `PURGE_INLAND_FILL_MIN_LAND_*`); test `purge_inland_water_for_multi_land_typ_matches_web` (100 przypadkow); granice `fill(5)` / `fill(4)`: rodzina "brzeg" w `trim-vectors.json` + `coverage_has_both_sides_of_fill_thresholds` |
+| `applyJaggedCoastNoise` :4232 | PORTOWANY (r3, partia 3b) | `landsea.rs::apply_jagged_coast_noise` (+ `jagged_coast_value`, `jagged_erode_decision`, `jagged_fill_decision`); parametry szumu i progi w `data/derived/mapgen-jagged-coast.json` (`derived.rs::mapgen_jagged_coast`); test `apply_jagged_coast_noise_matches_web` (55 przypadkow, perm z weba, passes 1/2/5); granice `coast > 0.68` i `coast < 0.32`: testy N-1/N/N+1 na 1 ulp (`erode_threshold_n_minus_1_n_n_plus_1`, `fill_threshold_n_minus_1_n_n_plus_1`) |
 | `LandFractionFillBias` / `PANGEA_LAND_FILL_MIN_SCORE` :3435-3438 | RUNDA-2 (dane) | do `data/derived/*.json` |
 | `applyLandFractionByScore` :3444 | RUNDA-2 | - |
 | `rebalanceLandFractionWithMargins` :3532 | RUNDA-2 | - |

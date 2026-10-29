@@ -4631,3 +4631,45 @@ pub fn mapgen_desert_purge() -> &'static MapgenDesertPurgeFile {
     static TABLE: std::sync::OnceLock<MapgenDesertPurgeFile> = std::sync::OnceLock::new();
     TABLE.get_or_init(|| parse_mapgen_desert_purge().expect("mapgen-desert-purge.json must parse"))
 }
+
+/// Plik `mapgen-jagged-coast.json` (P6.M06A4 r3, web `applyJaggedCoastNoise` :4232): parametry szumu
+/// i progi poszarpania brzegow. Wartosci edytowalne; kod nie zawiera ich literalow.
+pub const MAPGEN_JAGGED_COAST_JSON: &str =
+    include_str!("../../data/derived/mapgen-jagged-coast.json");
+
+/// Tabela parametrow `applyJaggedCoastNoise` (P6.M06A4 r3).
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct MapgenJaggedCoastFile {
+    pub meta: serde_json::Value,
+    /// Web `noiseScale` (0.28).
+    pub skala_szumu: f64,
+    /// Web `q * noiseScale * 2.1` (mnoznik drobnej skali).
+    pub mnoznik_drobnej_skali: f64,
+    /// Web `... * 2.1 + 200` (przesuniecie drobnej skali, x i y).
+    pub przesuniecie_drobnej_skali: f64,
+    /// Web `fbm(...) * 0.35` (waga drobnej skali).
+    pub waga_drobnej_skali: f64,
+    /// Web `fbm(perm, ..., 4)` (oktawy grubej skali).
+    pub oktawy_grubej_skali: u32,
+    /// Web `fbm(perm, ..., 3)` (oktawy drobnej skali).
+    pub oktawy_drobnej_skali: u32,
+    /// Web `pass * 17` (przesuniecie przebiegu, x).
+    pub przesuniecie_przebiegu_x: f64,
+    /// Web `pass * 31` (przesuniecie przebiegu, y).
+    pub przesuniecie_przebiegu_y: f64,
+    /// Web `coast > 0.68` (erozja lądu przy morzu).
+    pub prog_erozji_lad: f64,
+    /// Web `coast < 0.32` (wypelnienie morza przy lądzie).
+    pub prog_wypelnienia_morze: f64,
+}
+
+pub fn parse_mapgen_jagged_coast() -> Result<MapgenJaggedCoastFile, serde_json::Error> {
+    serde_json::from_str(MAPGEN_JAGGED_COAST_JSON)
+}
+
+/// Tabela poszarpania brzegow (jednorazowy odczyt; blad danych = panika).
+pub fn mapgen_jagged_coast() -> &'static MapgenJaggedCoastFile {
+    static TABLE: std::sync::OnceLock<MapgenJaggedCoastFile> = std::sync::OnceLock::new();
+    TABLE.get_or_init(|| parse_mapgen_jagged_coast().expect("mapgen-jagged-coast.json must parse"))
+}
