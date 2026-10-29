@@ -442,6 +442,10 @@ export interface CityPanelInputsDto {
   ownedLevels?: Readonly<Record<string, number>>;
   /** K04-Z3 (P5-8-K04 batch 2): utrzymanie budynku na poziomie właściciela po id definicji (silnik: buildingUpkeep). */
   upkeepById?: Readonly<Record<string, number>>;
+  /** K04B-Z1 (P5-8-K04B batch 3): podział Pracy miasta policzony przez silnik dla bieżącego suwaka (pin `splitPraca`). */
+  podzialPracaSplit?: { total: number; doBudynkow: number; doPuli: number };
+  /** K04B-Z2 (P5-8-K04B batch 3): koszt surowcowy utrzymania jednostki po id definicji (pin `unitResourceUpkeep`); brak = {}. */
+  unitResourceUpkeepById?: Readonly<Record<string, Readonly<Record<string, number>>>>;
   /** Bezposrednie wymagania technologii (nazwa -> lista poprzednikow) — zamiast `getTechDef`/`parsePrerequisites` pina. */
   techPrereqs: Record<string, string[]>;
   growthTooltip: { osobNaObywatela: number; gainSlots: number };
