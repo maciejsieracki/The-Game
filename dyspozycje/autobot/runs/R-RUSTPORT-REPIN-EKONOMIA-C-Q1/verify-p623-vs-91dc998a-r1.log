@@ -1,0 +1,83 @@
+dane.miasto-params: 1
+dane.society-params: 1
+dane.terrain-improvements: 1
+fort.applyFortTakeoverOnCityFounded.events: 400
+fort.applyFortTakeoverOnCityFounded.forts: 400
+fort.axialDistance: 150
+fort.cityRangeForPopulation: 20
+fort.cityTerritoryRadius: 80
+fort.findEvacuationHexOutsideCity: 160
+fort.fortNodeAsCityNode: 6
+fort.foundingNodesForOwner: 150
+fort.isHexReservedByRivalFort: 300
+hex.addForeignCityBlocks: 120
+hex.canAiEnterEmptyEnemyCity: 876
+hex.canUnitOccupyCityHex: 120
+hex.cityAtHex: 120
+hex.foreignCityHexKeys: 120
+order.FALLBACK_ORDER_PARAMS: 1
+order.computeOrder: 3544
+order.evaluateOrder: 385
+order.happinessBreakdown: 357
+order.loadOrderParams: 44
+order.orderEffects: 38
+order.orderEffectsToYieldMults: 36
+order.orderTier: 217
+order.pickRevoltMigrationTarget: 400
+tabela.porzadek-params: 14
+tabela.teren-ruch-reguly: 2
+tabela.ulepszenia-reguly: 13
+tabela.zasieg-fortu: 2
+ti.FARMA: 1
+ti.IMPROVEMENT_KEYS: 1
+ti.LIVESTOCK: 1
+ti.RESOURCE_UPKEEP: 1
+ti.ROAD: 1
+ti.applyImprovementBonus: 114
+ti.applyImprovementBonuses: 80
+ti.foodLayerFromAnimalDeposit: 9
+ti.foodPotentialForHex: 972
+ti.hexHasCoveringTerrainImprovement: 296
+ti.hexSuppressesDepositOverlay: 556
+ti.improvementAllowedCivs: 44
+ti.improvementBonusForKey: 44
+ti.improvementDisplayName: 44
+ti.improvementHidesDepositOnHex: 2001
+ti.improvementKeysForHex: 296
+ti.isImprovementAllowedForCiv: 300
+ti.isLivestockImprovementKey: 44
+ti.json_keys_in_order: 1
+ti.migrateImprovementLayers: 80
+ti.migrateLegacyKopalniaKey: 255
+ti.normalizeImprovementKey: 46
+ti.oreYieldFromImprovements: 72
+ti.proto_keys_rust_table: 1
+ti.proto_keys_vector_vs_ecma: 1
+ti.resourceProductionAmountForEra: 1320
+ti.scaleTerrainImprovementWorkCost: 399
+ti.terrainImprovementEraForKey: 46
+ti.terrainImprovementEraMultiplier: 20
+ti.territoryResourceYieldForImprovement: 1372
+RAZEM przypadkow/porownan: 16496
+ROZBIEZNOSCI: 280
+  ti.scaleTerrainImprovementWorkCost: got=1.0 web=0.5 ctx={"base": 0.2, "out": 0.5}
+  ti.scaleTerrainImprovementWorkCost: got=1.0 web=0.5 ctx={"base": 0.2, "era": null, "out": 0.5}
+  ti.scaleTerrainImprovementWorkCost: got=1.0 web=0.5 ctx={"base": 0.2, "era": -3, "out": 0.5}
+  ti.scaleTerrainImprovementWorkCost: got=1.0 web=0.5 ctx={"base": 0.2, "era": 0, "out": 0.5}
+  ti.scaleTerrainImprovementWorkCost: got=1.0 web=0.5 ctx={"base": 0.2, "era": 0.9, "out": 0.5}
+  ti.scaleTerrainImprovementWorkCost: got=1.0 web=0.5 ctx={"base": 0.2, "era": 1, "out": 0.5}
+  ti.scaleTerrainImprovementWorkCost: got=1.0 web=0.5 ctx={"base": 0.2, "era": 1.9, "out": 0.5}
+  ti.scaleTerrainImprovementWorkCost: got=2.0 web=1 ctx={"base": 0.2, "era": 2, "out": 1}
+  ti.scaleTerrainImprovementWorkCost: got=2.0 web=1 ctx={"base": 0.2, "era": 2.5, "out": 1}
+  ti.scaleTerrainImprovementWorkCost: got=4.0 web=2 ctx={"base": 0.2, "era": 3, "out": 2}
+  ti.scaleTerrainImprovementWorkCost: got=8.0 web=4 ctx={"base": 0.2, "era": 4, "out": 4}
+  ti.scaleTerrainImprovementWorkCost: got=16.0 web=8 ctx={"base": 0.2, "era": 5, "out": 8}
+  ti.scaleTerrainImprovementWorkCost: got=32.0 web=16 ctx={"base": 0.2, "era": 6, "out": 16}
+  ti.scaleTerrainImprovementWorkCost: got=64.0 web=32 ctx={"base": 0.2, "era": 7.9, "out": 32}
+  ti.scaleTerrainImprovementWorkCost: got=512.0 web=256 ctx={"base": 0.2, "era": 10, "out": 256}
+  ti.scaleTerrainImprovementWorkCost: got=549755813888.0 web=274877906944 ctx={"base": 0.2, "era": 40, "out": 274877906944}
+  ti.scaleTerrainImprovementWorkCost: got=1.0 web=0.5 ctx={"base": 0.2, "era": {"$n": "NaN"}, "out": 0.5}
+  ti.scaleTerrainImprovementWorkCost: got=1.0 web=0.5 ctx={"base": 0.2, "era": {"$n": "Infinity"}, "out": 0.5}
+  ti.scaleTerrainImprovementWorkCost: got=1.0 web=0.5 ctx={"base": 0.2, "era": {"$n": "-Infinity"}, "out": 0.5}
+  ti.scaleTerrainImprovementWorkCost: got=1.0 web=0.5 ctx={"base": 0.2, "era": "$omit", "out": 0.5}
+EXIT=1 (rozbieznosci=280: wylacznie stara formula w weryfikatorze, patrz raport)

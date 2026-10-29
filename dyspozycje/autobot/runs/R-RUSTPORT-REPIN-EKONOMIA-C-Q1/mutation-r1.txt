@@ -1,0 +1,5 @@
+Mutacja (R-RUSTPORT-REPIN-EKONOMIA-C-Q1, runda 1): w scale_terrain_improvement_work_cost
+zamieniono terrain_improvement_construction_era_multiplier na terrain_improvement_era_multiplier (stara sciezka 1/2/4).
+Wynik: FAILED w p6_repin_c_construction::scale_work_cost_uses_construction_rates_at_boundaries,
+p6_m16_rules::work_cost_scale_matches_web, p6_m16_rules::improvement_meta_and_tech_gate_match_web.
+Po mutacji przywrocono kod (commit b1dfaf08); pelny zestaw testow zielony (log gate-test-r1.log).

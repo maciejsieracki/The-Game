@@ -782,6 +782,24 @@ pub fn terrain_improvement_era_multiplier(era: Option<f64>) -> f64 {
     scale.mnozniki_epoki[&last_era] * scale.podstawa_podwajania.powf(normalized - last_era as f64)
 }
 
+/// Web `terrainImprovementConstructionEraMultiplier` (`terrain-improvements.ts:91`): mnoznik kosztu
+/// BUDOWY ulepszenia terenu (Kamien 0.5x, Braz 1x, Zelazo 2x, potem podwajanie). Brak / niepoprawna
+/// epoka = 1 (jak domyslny parametr `era = 1` w webie), wiec wynik 0.5. Utrzymanie (upkeep) nadal
+/// uzywa `terrain_improvement_era_multiplier` (1/2/4).
+pub fn terrain_improvement_construction_era_multiplier(era: Option<f64>) -> f64 {
+    let normalized = match era {
+        Some(era) if era.is_finite() => era.floor(),
+        _ => 1.0,
+    };
+    if normalized <= 1.0 {
+        return 0.5;
+    }
+    if normalized == 2.0 {
+        return 1.0;
+    }
+    2.0 * 2.0_f64.powf(normalized - 3.0)
+}
+
 /// Web `terrainImprovementEraForKey` (`terrain-improvements.ts:93`).
 pub fn terrain_improvement_era_for_key(key: Option<&str>) -> f64 {
     normalize_improvement_key(key)
@@ -798,13 +816,14 @@ pub fn scale_improvement_work_cost(base: f64) -> f64 {
     js_round(base * rules().skala_pracy.fala2_mnoznik).max(1.0)
 }
 
-/// Web `scaleTerrainImprovementWorkCost` (`terrain-improvements.ts:100`).
+/// Web `scaleTerrainImprovementWorkCost` (`terrain-improvements.ts:108`): FALA2-scaled Stone base
+/// x `terrain_improvement_construction_era_multiplier` (0.5/1/2, nie 1/2/4 jak utrzymanie).
 pub fn scale_terrain_improvement_work_cost(base: f64, era: Option<f64>) -> f64 {
     let stone_base = scale_improvement_work_cost(base);
     if stone_base <= 0.0 {
         return 0.0;
     }
-    stone_base * terrain_improvement_era_multiplier(era)
+    stone_base * terrain_improvement_construction_era_multiplier(era)
 }
 
 /// Web `improvementBonusForKey` (`terrain-improvements.ts:117`): bez normalizacji klucza.
