@@ -52,6 +52,11 @@ const LOCAL_NAMES = new Set([
   'K05aCfg', 'K05aRules', 'setK05aCfg', 'setK05aRules', 'cfg', 'rules', 'regul',
   'civManpowerMaxMult', 'unitManpowerCostForType', 'ownerSurowcePoolFor', 'stockResourceLabel',
   'unitStockCost', 'unitResourceUpkeep', 'isUnitRecruitStockChipMissing', 'techPrereqChain',
+  // K05A-Z5/Z4 (r3, partia 2): lokalne typy i rozszerzenia wejść (cfg/rules) oraz delegatory helperów pinu.
+  'BuildingDef', 'BuildingCatalogEntry', 'AvailabilityContext', 'BuildingReqChipKind', 'BuildingReqChip',
+  'RawConverterParamsJson', 'CivBonusLite', 'K05aCfgExt', 'K05aRulesExt', 'regulExt', 'converterProductionDisplayForBuilding',
+  'findBuildingDef', 'techIconHintSpan', 'getTechDef', 'isEmptyDataVal', 'naukaCostSuffix', 'eraBuildingCatalog',
+  'unitNacjaForCivKey', 'getProd',
 ]);
 
 const isCommentLine = (t) => /^\/\*\*|^\/\*|^\*|^\/\//.test(t.trim()) || /\*\/\s*$/.test(t.trim());
@@ -68,14 +73,14 @@ const pinCache = {};
 const pinLines = (rel) => (pinCache[rel] ??= readFileSync(join(PIN_DIR, rel), 'utf8').split(/\r?\n/));
 
 // 1. Podział na bloki (marker -> treść do następnego markera).
-const MARK = /^\/\/ pin edb8fb56 (gra\/src\/[^:\s]+):(\d+)-(\d+)\s*$/;
+const MARK = /^\/\/ pin(-adapter)? edb8fb56 (gra\/src\/[^:\s]+):(\d+)-(\d+)\s*$/;
 const blocks = [];
 const outside = []; // [lineNo, text] poza blokami
 let cur = null;
 port.forEach((text, idx) => {
   const m = MARK.exec(text);
   if (m) {
-    cur = { rel: m[1], a: Number(m[2]), b: Number(m[3]), markerLine: idx + 1, body: [] };
+    cur = { rel: m[2], a: Number(m[3]), b: Number(m[4]), adapter: !!m[1], markerLine: idx + 1, body: [] };
     blocks.push(cur);
     return;
   }
@@ -92,6 +97,29 @@ for (const b of blocks) {
   const pin = pinLines(b.rel);
   if (b.b > pin.length) {
     findings.text.push(`${b.rel}:${b.a}-${b.b} poza zakresem pinu (${pin.length} linii)`);
+    continue;
+  }
+  // K05A-Z4 (r3): blok ADAPTERA (`// pin-adapter`) — porównywana jest tylko sygnatura (linie do `{` włącznie);
+  // treść adaptera wywołuje wejścia reguł z DTO i nie jest kopią pinu.
+  if (b.adapter) {
+    const sigOf = (arr) => {
+      const out = [];
+      let started = false;
+      for (const l of arr) {
+        if (!started) {
+          if (!/^\s*(export\s+)?(function|const)\s/.test(l)) continue;
+          started = true;
+        }
+        out.push(stripExport(l));
+        if (/\{\s*$/.test(l)) break;
+      }
+      return out;
+    };
+    const expSig = sigOf(pin.slice(b.a - 1, b.b));
+    const gotSig = sigOf(b.body.map((x) => x.text));
+    const sameSig = expSig.length === gotSig.length && expSig.every((l, i) => l === gotSig[i]);
+    comparisons.push({ block: `${b.rel}:${b.a}-${b.b} (adapter, sygnatura)`, lines: expSig.length, status: sameSig ? 'OK' : 'ROZNICA' });
+    if (!sameSig) findings.text.push(`${b.rel}:${b.a}-${b.b} (adapter) różnica sygnatury od pinu`);
     continue;
   }
   let expected = pin.slice(b.a - 1, b.b);

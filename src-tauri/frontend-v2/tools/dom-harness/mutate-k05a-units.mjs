@@ -78,6 +78,23 @@ const MUTANTS = [
   ['missing-chain-slice', 'const chain = techPrereqChain(data, techName);', 'const chain = techPrereqChain(data, techName).slice(1);'],
   ['deleg-stock-upkeep', 'return regul().unitStockCost(u);', 'return regul().unitResourceUpkeep(u);'],
   ['deleg-pool-zloto', 'return regul().ownerSurowcePoolFor(city);', 'return { ...regul().ownerSurowcePoolFor(city), zloto: 0 };'],
+  // r3 (batch 2): kopie z pinu i adapter buildingRequirementChips (wejście z DTO).
+  ['chips-adapter-unl', 'return regulExt().buildingRequirementChips(def, city, data, ctx, unlockedTechs);', 'return regulExt().buildingRequirementChips(def, city, data, ctx, []);'],
+  ['ccbn-some', 'return chips.length === 0 || chips.every(c => c.met);', 'return chips.some(c => c.met);'],
+  ['sort-no-check', 'if (def && buildingCanBuildNow(def, city, data, ctx, techs)) buildable.push(item);', 'if (def) buildable.push(item);'],
+  ['sort-order', 'return [...buildable, ...blocked];', 'return [...blocked, ...buildable];'],
+  ['conv-era-default', 'const era = cfg.getEpoch?.(city.ownerId) ?? 1;', 'const era = cfg.getEpoch?.(city.ownerId) ?? 2;'],
+  ['conv-difficulty', "const difficulty = cfg.difficulty ?? 'normal';", "const difficulty = cfg.difficulty ?? 'hard';"],
+  ['conv-raw', 'const rawParams = data.econParams as unknown as RawConverterParamsJson;', 'const rawParams = {} as RawConverterParamsJson;'],
+  ['lock-built-text', "if (entry.status === 'built') return 'Już wybudowany w tym mieście';", "if (entry.status === 'built') return 'Już wybudowany';"],
+  ['preview-brak-text', "parts.push('Brak wymogu badań');", "parts.push('Brak wymogu');"],
+  ['ctx-capital', 'isCapital: (cfg.getCapitalCityId?.(city.ownerId) ?? null) === city.id,', 'isCapital: (cfg.getCapitalCityId?.(city.ownerId) ?? null) !== city.id,'],
+  ['ctx-epoch', 'epoch: cfg.getEpoch?.(city.ownerId) ?? 1,', 'epoch: cfg.getEpoch?.(city.ownerId) ?? 0,'],
+  ['ctx-queue', 'productionQueue: getProd(city.id).kolejka,', 'productionQueue: [],'],
+  ['ctx-stock', 'empireResourceStock: cfg.getEmpireStock?.(city.ownerId),', 'empireResourceStock: undefined,'],
+  ['era-full', 'if (fullEraPreview) return true;', 'if (fullEraPreview) return false;'],
+  ['era-locblocked', 'if (e.locationBlocked) return false;', 'if (e.locationBlocked && !fullEraPreview) return false;'],
+  ['getprod-fallback', 'return cfg.getProd?.(cityId) ?? { kolejka: [] };', "return cfg.getProd?.(cityId) ?? { kolejka: [{ id: 'z', koszt: 0, kind: 'unit' }] };"],
 ];
 
 /**

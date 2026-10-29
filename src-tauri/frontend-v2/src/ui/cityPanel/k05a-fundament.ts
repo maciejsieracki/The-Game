@@ -40,12 +40,15 @@ export interface ProductionItem {
 }
 
 /** K05A-Z5: dane gry (pin: data/loader.ts `GameData`) — w K05A tylko przekazywane do adaptera reguł. */
-export type GameData = object;
+export interface GameData {
+  readonly econParams?: unknown;
+  readonly buildings?: readonly BuildingDef[];
+}
 
 /** K05A-Z4: metody `cfg` pinu używane przez jednostki K05A; wartości z DTO `panelInputs.k05a`. */
 export interface K05aCfg {
   getEpoch?: (ownerId: number) => number | undefined;
-  getCivBonusy?: (ownerId: number) => unknown;
+  getCivBonusy?: (ownerId: number) => readonly unknown[] | undefined;
   getEmpireRekruciTotal?: (ownerId: number) => number | undefined;
   getManpowerSnapshot?: (cityId: number) => { manpowerBiezacy: number } | undefined;
 }
@@ -62,20 +65,20 @@ export interface K05aRules {
   techPrereqChain(data: GameData, techName: string): string[];
 }
 
-let cfg: K05aCfg = {};
-let rules: K05aRules | null = null;
+let cfg: K05aCfg & K05aCfgExt = {};
+let rules: (K05aRules & K05aRulesExt) | null = null;
 
 /** Wejście z DTO `panelInputs.k05a` (wiring w kontrolerze poza zakresem K05A, NIE_ZMIERZONO). */
-export function setK05aCfg(next: K05aCfg): void {
+export function setK05aCfg(next: K05aCfg & K05aCfgExt): void {
   cfg = next;
 }
 
 /** Wejście reguł z DTO `panelInputs.k05a` (wiring w kontrolerze poza zakresem K05A, NIE_ZMIERZONO). */
-export function setK05aRules(next: K05aRules): void {
+export function setK05aRules(next: K05aRules & K05aRulesExt): void {
   rules = next;
 }
 
-function regul(): K05aRules {
+function regul(): K05aRules & K05aRulesExt {
   if (rules === null) throw new Error('K05A: brak wejść reguł (setK05aRules)');
   return rules;
 }
@@ -104,6 +107,166 @@ export function isUnitRecruitStockChipMissing(pool: Readonly<Record<string, numb
 }
 export function techPrereqChain(data: GameData, techName: string): string[] {
   return regul().techPrereqChain(data, techName);
+}
+
+/** K05A-Z5: lokalna kopia typu `BuildingDef` (pin: data/loader.ts) — pola używane przez jednostki K05A. */
+export interface BuildingDef {
+  readonly id: string;
+  readonly nazwa?: string;
+  readonly techUnlock?: string;
+  readonly upgradeFrom?: string;
+  readonly lokalizacja?: 'stolica' | 'region';
+  readonly wymagania?: unknown;
+}
+
+/** K05A-Z5: lokalna kopia typu `BuildingCatalogEntry` (pin: game/production.ts) — pola używane przez jednostki K05A. */
+export interface BuildingCatalogEntry {
+  readonly id: string;
+  readonly status: string;
+  readonly locationBlocked?: 'stolica' | 'region';
+  readonly missingTech?: string;
+  readonly wymagania?: string;
+}
+
+/** K05A-Z5: lokalna kopia typu `AvailabilityContext` (pin: game/production.ts) — pola wypełniane przez `productionCtxForCity`. */
+export interface AvailabilityContext {
+  epoch: number;
+  builtBuildingIds: readonly string[];
+  productionQueue: readonly ProductionItem[];
+  buildingLevel: number;
+  civBonusy: readonly unknown[];
+  civUnitNacja: unknown;
+  placedImprovements: unknown;
+  hasKopalniaNaZlozuZelaza: boolean;
+  aliveUnitTypeNames: readonly string[] | undefined;
+  buildingCostPace: string;
+  kosztJednostekPace: string;
+  ownerId: number;
+  difficulty: string;
+  activeResourceLabels: readonly string[];
+  empireActiveResourceLabels: readonly string[] | undefined;
+  empireBuiltIds: readonly string[] | undefined;
+  empireResourceStock: Readonly<Record<string, number>> | undefined;
+  cityHasCoastOrRiver: boolean;
+  isCapital: boolean;
+}
+
+/** K05A-Z5: kopia typu `BuildingReqChip` (pin: ui/cityPanel.ts, typ lokalny) — wynik adaptera `buildingRequirementChips`. */
+export type BuildingReqChipKind = 'tech' | 'stock' | 'other';
+export interface BuildingReqChip {
+  label: string;
+  met: boolean;
+  iconHtml?: string;
+  kind: BuildingReqChipKind;
+}
+
+/** K05A-Z5: lokalna kopia typu `RawConverterParamsJson` (pin: game/converters.ts) — tylko przekazywany do reguły. */
+export type RawConverterParamsJson = object;
+
+/** K05A-Z5: lokalna kopia typu `CivBonusLite` (pin: game/production.ts) — wpis bonusu cywilizacji, nieużywany wewnątrz jednostek K05A. */
+export type CivBonusLite = unknown;
+
+/** K05A-Z4: pozostałe metody `cfg` pinu używane przez jednostki K05A (wartości z DTO `panelInputs.k05a`). */
+export interface K05aCfgExt {
+  difficulty?: string;
+  getDifficulty?: () => string | undefined;
+  getResourceAccess?: (cityId: number) => string[] | { active?: string[] } | undefined;
+  getEmpireResourceAccess?: (ownerId: number) => readonly string[] | undefined;
+  getEmpireBuiltIds?: (ownerId: number) => readonly string[] | undefined;
+  getBuiltBuildingIds?: (cityId: number) => readonly string[] | undefined;
+  getCivKey?: (ownerId: number) => string | undefined;
+  getPlacedImprovements?: () => unknown;
+  getHasKopalniaNaZlozuZelaza?: () => boolean | undefined;
+  getAliveUnitTypeNames?: (ownerId: number) => readonly string[] | undefined;
+  getBuildingCostPace?: () => string | undefined;
+  getKosztJednostekPace?: () => string | undefined;
+  getEmpireStock?: (ownerId: number) => Readonly<Record<string, number>> | undefined;
+  getCityHasCoastOrRiver?: (cityId: number) => boolean | undefined;
+  getCapitalCityId?: (ownerId: number) => number | null | undefined;
+  getProd?: (cityId: number) => { readonly kolejka: readonly ProductionItem[] } | undefined;
+}
+
+/** K05A-Z4: reguły gry dla jednostek budynków (pin: game/converters, game/production, ui/cityPanel helpery). */
+export interface K05aRulesExt {
+  converterProductionDisplayForBuilding(
+    id: string,
+    raw: RawConverterParamsJson,
+    difficulty: string,
+    era: number,
+  ): { consumed: Record<string, number>; produced: Record<string, number> } | null;
+  findBuildingDef(data: GameData, id: string): BuildingDef | undefined;
+  buildingRequirementChips(
+    def: BuildingDef,
+    city: City | undefined,
+    data: GameData,
+    ctx: AvailabilityContext,
+    unlockedTechs: readonly string[],
+  ): BuildingReqChip[];
+  techIconHintSpan(tech: string, size?: number, opts?: { inheritColor?: boolean }): string;
+  getTechDef(data: GameData, name: string): Record<string, unknown> | undefined;
+  isEmptyDataVal(v: unknown): boolean;
+  naukaCostSuffix(): string;
+  eraBuildingCatalog(
+    data: GameData,
+    techs: readonly string[],
+    prodCtx: {
+      epoch?: number;
+      builtBuildingIds?: readonly string[];
+      productionQueue?: readonly ProductionItem[];
+      buildingLevel?: number;
+      civBonusy?: readonly unknown[];
+    },
+  ): BuildingCatalogEntry[];
+  unitNacjaForCivKey(key: string | undefined): unknown;
+}
+
+function regulExt(): K05aRulesExt {
+  return regul() as K05aRules & K05aRulesExt;
+}
+
+// Delegatory (K05A-Z4): helpery pinu z bloków 1-3 i reguły z silnika; nazwy i sygnatury jak w pinie.
+export function converterProductionDisplayForBuilding(
+  id: string,
+  raw: RawConverterParamsJson,
+  difficulty: string,
+  era: number,
+): { consumed: Record<string, number>; produced: Record<string, number> } | null {
+  return regulExt().converterProductionDisplayForBuilding(id, raw, difficulty, era);
+}
+export function findBuildingDef(data: GameData, id: string): BuildingDef | undefined {
+  return regulExt().findBuildingDef(data, id);
+}
+export function techIconHintSpan(tech: string, size?: number, opts?: { inheritColor?: boolean }): string {
+  return regulExt().techIconHintSpan(tech, size, opts);
+}
+export function getTechDef(data: GameData, name: string): Record<string, unknown> | undefined {
+  return regulExt().getTechDef(data, name);
+}
+export function isEmptyDataVal(v: unknown): boolean {
+  return regulExt().isEmptyDataVal(v);
+}
+export function naukaCostSuffix(): string {
+  return regulExt().naukaCostSuffix();
+}
+export function eraBuildingCatalog(
+  data: GameData,
+  techs: readonly string[],
+  prodCtx: {
+    epoch?: number;
+    builtBuildingIds?: readonly string[];
+    productionQueue?: readonly ProductionItem[];
+    buildingLevel?: number;
+    civBonusy?: readonly unknown[];
+  },
+): BuildingCatalogEntry[] {
+  return regulExt().eraBuildingCatalog(data, techs, prodCtx);
+}
+export function unitNacjaForCivKey(key: string | undefined): unknown {
+  return regulExt().unitNacjaForCivKey(key);
+}
+/** Stan produkcji miasta (pin: `getProd`, ui/cityPanel.ts) — wartość z DTO; brak = pusta kolejka. */
+export function getProd(cityId: number): { readonly kolejka: readonly ProductionItem[] } {
+  return cfg.getProd?.(cityId) ?? { kolejka: [] };
 }
 
 // pin edb8fb56 gra/src/types/hex.ts:12-24
@@ -305,4 +468,237 @@ export function unitResourceUpkeepChipsHtml(u: UnitDef): string {
 export function missingTechSteps(data: GameData, techName: string, unlocked: ReadonlySet<string>): string[] {
   const chain = techPrereqChain(data, techName);
   return chain.filter(t => !unlocked.has(t));
+}
+// pin-adapter edb8fb56 gra/src/ui/cityPanel.ts:6830-6929
+/** K05A-Z4 (adapter): warunki budowy z oceną spełnienia — wynik silnika z DTO (`panelInputs.k05a`), nie logika UI.
+ *  Pin (ui/cityPanel.ts) składał chipy z reguł gry; ta sama sygnatura i te same etykiety/klasy po stronie silnika. */
+export function buildingRequirementChips(
+  def: BuildingDef,
+  city: City | undefined,
+  data: GameData,
+  ctx: AvailabilityContext,
+  unlockedTechs: readonly string[],
+): BuildingReqChip[] {
+  return regulExt().buildingRequirementChips(def, city, data, ctx, unlockedTechs);
+}
+// pin edb8fb56 gra/src/ui/cityPanel.ts:6931-6941
+/** Czy gracz może TERAZ kliknąć Buduj — wszystkie chipy wymagań spełnione (tech, magazyn…). */
+export function buildingCanBuildNow(
+  def: BuildingDef,
+  city: City,
+  data: GameData,
+  ctx: AvailabilityContext,
+  techs: readonly string[],
+): boolean {
+  const chips = buildingRequirementChips(def, city, data, ctx, techs);
+  return chips.length === 0 || chips.every(c => c.met);
+}
+
+// pin edb8fb56 gra/src/ui/cityPanel.ts:6943-6963
+/**
+ * Sortuje pulę budynków: najpierw te, które można wybudować teraz, potem zablokowane
+ * (np. brak surowców w magazynie). W obrębie tieru zachowuje kolejność wejściową
+ * (koszt → nazwa z buildableProduction).
+ */
+export function sortProductionItemsByBuildability(
+  items: readonly ProductionItem[],
+  city: City,
+  data: GameData,
+  ctx: AvailabilityContext,
+  techs: readonly string[],
+): ProductionItem[] {
+  const buildable: ProductionItem[] = [];
+  const blocked: ProductionItem[] = [];
+  for (const item of items) {
+    const def = findBuildingDef(data, item.id);
+    if (def && buildingCanBuildNow(def, city, data, ctx, techs)) buildable.push(item);
+    else blocked.push(item);
+  }
+  return [...buildable, ...blocked];
+}
+
+// pin edb8fb56 gra/src/ui/cityPanel.ts:6726-6766
+/**
+ * P-CITYPANEL-BUDYNKI-BRAK-PRODUKCJI-W-LISCIE (Maciej 2026-08-14, runda 2 po
+ * werdykcie FAIL Evaluatora — N1/N3): strona PRODUKCYJNA budynku-konwertera
+ * (np. Garncarnia glina+drewno→ceramika) — ODRĘBNA od `buildingUpkeepDisplay`
+ * (koszt utrzymania, koszt_surowce). Cienka otoczka wołająca WPROST czystą
+ * funkcję domenową `converterProductionDisplayForBuilding` z `../game/converters`
+ * (era/trudność właściciela z `cfg`) — cała logika (receptury, throughput,
+ * skalowanie epoką) żyje TYLKO w converters.ts, testowalna bez UI/DOM (N1).
+ * Liczba jest CELOWO BRUTTO (nominalna przepustowość, NIE pomniejszona o brak
+ * wejścia tej konkretnej tury).
+ * SPROSTOWANIE (Evaluator N3, runda 1; naprawione commitem `9482117f`,
+ * `P-HUD-KONWERTER-DOPASOWANIE-BUDYNKI-NIESPOJNE`): dopasowanie budynek↔receptura
+ * tutaj (`converterBuildingIdForRecipe`, jak `turn-economy.ts`) jest DZIŚ TAKIE
+ * SAMO jak w HUD-zie imperium (`empireConverterResourceRatesForOwner` w main.ts,
+ * `gra/src/main.ts:2789`) — obie strony spójne z SILNIKIEM
+ * (`runConverter`/`converterBuildingIdForRecipe`). Wcześniej (przed `9482117f`)
+ * HUD gubił część receptur (Odlewnia żelaza, Wielka odlewnia); to już naprawione.
+ * / EN: converter PRODUCTION side of a building (e.g. Pottery clay+wood→pottery)
+ * — SEPARATE from `buildingUpkeepDisplay` (upkeep). Thin wrapper calling the
+ * pure domain function `converterProductionDisplayForBuilding` from
+ * `../game/converters` directly — all logic (recipes, throughput, era scaling)
+ * lives ONLY in converters.ts, testable without UI/DOM (N1). The number is
+ * DELIBERATELY BRUTTO (nominal throughput, not reduced for this turn's actual
+ * input availability).
+ * CORRECTION (Evaluator N3, round 1; fixed by `9482117f`,
+ * `P-HUD-KONWERTER-DOPASOWANIE-BUDYNKI-NIESPOJNE`): the building↔recipe matching
+ * here now MATCHES the empire HUD counter's (`empireConverterResourceRatesForOwner`
+ * in main.ts) — both consistent with the ENGINE (`runConverter`/
+ * `converterBuildingIdForRecipe`). Before `9482117f` the HUD dropped some
+ * recipes (Iron/Great Foundry); that is now fixed.
+ */
+export function buildingConverterProductionDisplay(
+  def: BuildingDef,
+  city: City,
+  data: GameData,
+): { consumed: Record<string, number>; produced: Record<string, number> } | null {
+  const era = cfg.getEpoch?.(city.ownerId) ?? 1;
+  const difficulty = cfg.difficulty ?? 'normal';
+  const rawParams = data.econParams as unknown as RawConverterParamsJson;
+  return converterProductionDisplayForBuilding(def.id, rawParams, difficulty, era);
+}
+
+// pin edb8fb56 gra/src/ui/cityPanel.ts:8611-8643
+export function productionCtxForCity(city: City): AvailabilityContext {
+  const raw = cfg.getResourceAccess?.(city.id);
+  const activeResourceLabels = Array.isArray(raw)
+    ? raw
+    : (raw?.active ?? []);
+  const empireActiveResourceLabels = cfg.getEmpireResourceAccess?.(city.ownerId);
+  const empireBuiltIds = cfg.getEmpireBuiltIds?.(city.ownerId);
+  return {
+    epoch: cfg.getEpoch?.(city.ownerId) ?? 1,
+    builtBuildingIds: cfg.getBuiltBuildingIds?.(city.id) ?? [],
+    productionQueue: getProd(city.id).kolejka,
+    buildingLevel: 1,
+    civBonusy: cfg.getCivBonusy?.(city.ownerId) ?? [],
+    civUnitNacja: unitNacjaForCivKey(cfg.getCivKey?.(city.ownerId)),
+    placedImprovements: cfg.getPlacedImprovements?.() ?? null,
+    hasKopalniaNaZlozuZelaza: cfg.getHasKopalniaNaZlozuZelaza?.() ?? false,
+    aliveUnitTypeNames: cfg.getAliveUnitTypeNames?.(city.ownerId),
+    buildingCostPace: cfg.getBuildingCostPace?.() ?? 'niski',
+    kosztJednostekPace: cfg.getKosztJednostekPace?.() ?? 'niski',
+    ownerId: city.ownerId,
+    difficulty: cfg.getDifficulty?.() ?? 'normal',
+    activeResourceLabels,
+    empireActiveResourceLabels,
+    empireBuiltIds,
+    empireResourceStock: cfg.getEmpireStock?.(city.ownerId),
+    cityHasCoastOrRiver: cfg.getCityHasCoastOrRiver?.(city.id) ?? false,
+    // ADMIN-STOLICA (2026-07-25): jedno źródło prawdy o stolicy — capitalCityIdForOwner
+    // (main.ts), tu przez cfg.getCapitalCityId (patrz getCapitalCityId doc powyżej —
+    // wyznaczona stolica z fallbackiem na najstarsze miasto, NIE heurystyka
+    // turn-economy.ts "pierwsze miasto w tablicy"). Ownerid-agnostyczne (parytet AI).
+    isCapital: (cfg.getCapitalCityId?.(city.ownerId) ?? null) === city.id,
+  };
+}
+
+// pin edb8fb56 gra/src/ui/cityPanel.ts:8542-8576
+export function formatBuildingCatalogLockHint(
+  entry: BuildingCatalogEntry,
+  data: GameData,
+  unlockedTechs: readonly string[],
+): string {
+  if (entry.status === 'built') return 'Już wybudowany w tym mieście';
+  if (entry.status === 'queued') return '⏳ W kolejce produkcji';
+  if (entry.status === 'ready') return '';
+  if (entry.locationBlocked === 'stolica') return '🔒 Tylko w stolicy';
+  if (entry.locationBlocked === 'region') return '🔒 Tylko poza stolicą';
+
+  const parts: string[] = [];
+  let techIc = '';
+  if (entry.missingTech) {
+    techIc = techIconHintSpan(entry.missingTech);
+    const unlocked = new Set(unlockedTechs);
+    const steps = missingTechSteps(data, entry.missingTech, unlocked);
+    if (steps.length > 0) {
+      parts.push(`Zbadaj: ${steps.join(' → ')}`);
+    } else {
+      parts.push(`Zbadaj: ${entry.missingTech}`);
+    }
+    const tdef = getTechDef(data, entry.missingTech);
+    if (tdef?.['wymagany budynek'] && !isEmptyDataVal(tdef['wymagany budynek'])) {
+      parts.push(`wymaga budynku: ${tdef['wymagany budynek']}`);
+    }
+    if (tdef?.['Koszt nauki'] != null) {
+      parts.push(`koszt badania ${tdef['Koszt nauki']}${naukaCostSuffix()}`);
+    }
+  }
+  if (entry.wymagania && !isEmptyDataVal(entry.wymagania)) {
+    parts.push(entry.wymagania);
+  }
+  return parts.length > 0 ? `🔒 ${techIc}${parts.join(' · ')}` : '🔒 Niedostępny';
+}
+
+// pin edb8fb56 gra/src/ui/cityPanel.ts:8578-8609
+/** Podpowiedź badań do podglądu epoki (toggle B) — łańcuch tech nawet gdy gracz już ma odblokowane. */
+export function formatBuildingPreviewHint(
+  def: BuildingDef,
+  data: GameData,
+  unlockedTechs: readonly string[],
+): string {
+  const parts: string[] = [];
+  const tech = (def.techUnlock ?? '').trim();
+  const unlocked = new Set(unlockedTechs);
+  if (tech) {
+    const steps = missingTechSteps(data, tech, unlocked);
+    if (steps.length > 0) {
+      parts.push(`🔒 ${techIconHintSpan(tech)}Zbadaj: ${steps.join(' → ')}`);
+    } else {
+      parts.push('Badania OK — można budować (lista powyżej)');
+    }
+    const tdef = getTechDef(data, tech);
+    if (tdef?.['wymagany budynek'] && !isEmptyDataVal(tdef['wymagany budynek'])) {
+      parts.push(`wymaga budynku: ${tdef['wymagany budynek']}`);
+    }
+    if (tdef?.['Koszt nauki'] != null) {
+      parts.push(`koszt badania ${tdef['Koszt nauki']}${naukaCostSuffix()}`);
+    }
+  } else {
+    parts.push('Brak wymogu badań');
+  }
+  const wym = (def as unknown as Record<string, unknown>).wymagania;
+  if (typeof wym === 'string' && !isEmptyDataVal(wym)) {
+    parts.push(wym);
+  }
+  return parts.join(' · ');
+}
+
+// pin edb8fb56 gra/src/ui/cityPanel.ts:8645-8679
+export function collectEraPreviewEntries(
+  data: GameData,
+  techs: readonly string[],
+  prodCtx: {
+    epoch?: number;
+    builtBuildingIds?: readonly string[];
+    productionQueue?: readonly ProductionItem[];
+    buildingLevel?: number;
+    civBonusy?: readonly CivBonusLite[];
+  },
+  fullEraPreview: boolean,
+): BuildingCatalogEntry[] {
+  const catalog = eraBuildingCatalog(data, techs, prodCtx);
+  const built = new Set(prodCtx.builtBuildingIds ?? []);
+  const queued = new Set(
+    (prodCtx.productionQueue ?? [])
+      .filter(it => it.kind === 'budynek')
+      .map(it => it.id),
+  );
+  return catalog.filter(e => {
+    if (built.has(e.id) || queued.has(e.id)) return false;
+    // ADMIN-STOLICA (Maciej 2026-07-26 playtest): budynek z `lokalizacja: 'stolica'|'region'`
+    // odrzucony WYŁĄCZNIE przez bramkę lokalizacji (locationBlocked) nigdy nie stanie się
+    // budowalny w TYM mieście — to ograniczenie jest trwałe (nie "jeszcze niedostępne", jak
+    // brak tech/surowca/budynku-warunku), więc karta w ogóle nie trafia na listę (ani do
+    // "Jeszcze zablokowane", ani do "Podgląd epoki"/"Podgląd badań" — tam też byłaby myląca,
+    // bo formatBuildingPreviewHint nie zna bramki lokalizacji i pokazałby "Badania OK").
+    // eraBuildingCatalog (production.ts) CELOWO nadal zwraca ten wpis jako status='locked' +
+    // locationBlocked — to surowe źródło prawdy silnika (testowane wprost w
+    // administracja-stolica-test.cjs); filtrowanie dla UI robimy tutaj, jednym miejscem.
+    if (e.locationBlocked) return false;
+    if (fullEraPreview) return true;
+    return e.status === 'locked';
+  });
 }

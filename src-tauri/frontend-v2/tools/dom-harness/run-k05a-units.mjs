@@ -61,6 +61,9 @@ const PIN_NAMES = [
   // K05A r3 (batch 1): jednostki z pinu wołające reguły przez wejścia z fixture (K05A-Z4).
   'buildingLocationRequirementMet', 'recruitManpowerCost', 'empireRekruciTotal', 'empireRekruciAffordable',
   'maxAffordableRecruitQuantity', 'unitStockCostChipsHtml', 'unitResourceUpkeepChipsHtml', 'missingTechSteps',
+  // K05A r3 (batch 2): kopie z pinu; `buildingRequirementChips` to ADAPTER (K05A-Z4) — nie jest tu porównywany z pinem.
+  'buildingCanBuildNow', 'sortProductionItemsByBuildability', 'buildingConverterProductionDisplay', 'productionCtxForCity',
+  'formatBuildingCatalogLockHint', 'formatBuildingPreviewHint', 'collectEraPreviewEntries',
 ];
 const pinEnum = pinHexLines.slice(11, 24).join('\n'); // types/hex.ts:12-24 (TerenBazowy)
 /** K05A-Z4: wejścia reguł pinu = ten sam fixture co po stronie portu (`globalThis.__K05A_FIX`, ustawiany per wariant). */
@@ -74,6 +77,16 @@ const unitStockCost = (u) => globalThis.__K05A_FIX.rules.unitStockCost(u);
 const unitResourceUpkeep = (u) => globalThis.__K05A_FIX.rules.unitResourceUpkeep(u);
 const isUnitRecruitStockChipMissing = (p, u, k) => globalThis.__K05A_FIX.rules.isUnitRecruitStockChipMissing(p, u, k);
 const techPrereqChain = (d, t) => globalThis.__K05A_FIX.rules.techPrereqChain(d, t);
+const buildingRequirementChips = (...a) => globalThis.__K05A_FIX.rulesExt.buildingRequirementChips(...a);
+const findBuildingDef = (d, id) => globalThis.__K05A_FIX.rulesExt.findBuildingDef(d, id);
+const converterProductionDisplayForBuilding = (...a) => globalThis.__K05A_FIX.rulesExt.converterProductionDisplayForBuilding(...a);
+const techIconHintSpan = (...a) => globalThis.__K05A_FIX.rulesExt.techIconHintSpan(...a);
+const getTechDef = (d, n) => globalThis.__K05A_FIX.rulesExt.getTechDef(d, n);
+const isEmptyDataVal = (v) => globalThis.__K05A_FIX.rulesExt.isEmptyDataVal(v);
+const naukaCostSuffix = () => globalThis.__K05A_FIX.rulesExt.naukaCostSuffix();
+const eraBuildingCatalog = (d, t, p) => globalThis.__K05A_FIX.rulesExt.eraBuildingCatalog(d, t, p);
+const unitNacjaForCivKey = (k) => globalThis.__K05A_FIX.rulesExt.unitNacjaForCivKey(k);
+const getProd = (id) => globalThis.__K05A_FIX.cfg.getProd?.(id) ?? { kolejka: [] };
 `;
 const probeSrc = [
   `export const UI_PARAMS = ${JSON.stringify(PIN_UI_PARAMS)};`,
@@ -91,6 +104,23 @@ function mkFix(v) {
       getCivBonusy: (o) => (v % 2 === 0 ? [o, 'k'] : undefined),
       getEmpireRekruciTotal: (o) => ((o + v) % 3 === 0 ? undefined : (o + 1) * 10 + v),
       getManpowerSnapshot: (c) => ((c + v) % 2 === 0 ? undefined : { manpowerBiezacy: c * 3 + v }),
+      // K05A r3 (batch 2): pola cfg używane przez productionCtxForCity i buildingConverterProductionDisplay.
+      difficulty: v === 2 ? undefined : v % 2 ? 'hard' : 'normal',
+      getDifficulty: () => (v % 2 ? 'hard' : 'normal'),
+      getResourceAccess: (c) => ((c + v) % 2 ? [`r${c}`] : { active: [`x${c}`] }),
+      getEmpireResourceAccess: (o) => ((o + v) % 3 ? ['e'] : undefined),
+      getEmpireBuiltIds: (o) => ((o + v) % 2 ? ['b1', 'b2'] : undefined),
+      getBuiltBuildingIds: (c) => ((c + v) % 3 ? ['b1'] : undefined),
+      getCivKey: (o) => ((o + v) % 2 ? 'kk' : undefined),
+      getPlacedImprovements: () => (v === 2 ? null : { p: v }),
+      getHasKopalniaNaZlozuZelaza: () => v === 1,
+      getAliveUnitTypeNames: (o) => (v === 3 ? undefined : [`u${o}`]),
+      getBuildingCostPace: () => ['niski', 'normalny', 'wysoki'][v % 3],
+      getKosztJednostekPace: () => ['wysoki', 'niski', 'normalny'][v % 3],
+      getEmpireStock: (o) => ((o + v) % 2 ? { drewno: o + v } : undefined),
+      getCityHasCoastOrRiver: (c) => (c + v) % 2 === 0,
+      getCapitalCityId: (o) => ((o + v) % 3 === 0 ? null : o * 2 + v),
+      getProd: (c) => ((c + v) % 4 === 0 ? undefined : { kolejka: [{ id: 'a', koszt: c, kind: 'budynek' }, { id: 'b', koszt: 1, kind: 'unit' }] }),
     },
     rules: {
       civManpowerMaxMult: (b) => (Array.isArray(b) ? b.length + 1 : 1),
@@ -101,6 +131,39 @@ function mkFix(v) {
       unitResourceUpkeep: (u) => (u.id === 'b' ? { zywnosc: 2 + v } : u.id === 'c' ? { drewno: 1, kamien: 0 } : {}),
       isUnitRecruitStockChipMissing: (pool, u, k) => (pool[k] ?? 0) < 2 + v,
       techPrereqChain: (d, t) => (t === 'x' ? ['a', 'b', 'x'] : t === 'y' ? ['b', 'y'] : [t]),
+    },
+    rulesExt: {
+      buildingRequirementChips: (def, city, data, ctx, unl) =>
+        v === 3
+          ? []
+          : [
+              { label: `C${city ? city.id : 'u'}:${def.id}`, met: (ctx.epoch + v) % 2 === 0, kind: 'stock' },
+              { label: `T${unl.length}`, met: unl.length % 2 === 0, iconHtml: '<i>t</i>', kind: 'tech' },
+              ...(v % 2 ? [{ label: 'x', met: false, kind: 'other' }] : []),
+            ],
+      findBuildingDef: (d, id) => (id === 'nope' ? undefined : { id, nazwa: `N-${id}`, techUnlock: id.length % 2 ? 'x' : '-', upgradeFrom: id === 'up' ? 'base' : undefined }),
+      converterProductionDisplayForBuilding: (id, raw, diff, era) =>
+        (id.length + era + (diff === 'hard' ? 1 : 0) + v) % 3 === 0
+          ? null
+          : { consumed: { glina: era + v, drewno: 1 }, produced: { ceramika: (era + v + (raw && raw.x ? raw.x : 0)) / 4, glina: 0 } },
+      techIconHintSpan: (tech, size, opts) => `<i ${size}>${tech}${opts && opts.inheritColor ? '!' : ''}</i>`,
+      getTechDef: (d, name) =>
+        name === 'x' ? { 'wymagany budynek': 'Koszary', 'Koszt nauki': 12 + v }
+          : name === 'y' ? { 'wymagany budynek': '', 'Koszt nauki': undefined }
+            : undefined,
+      isEmptyDataVal: (x) => x === '' || x === '-' || x == null,
+      naukaCostSuffix: () => ` N${v}`,
+      eraBuildingCatalog: (d, t, p) => [
+        { id: 'b1', status: 'locked', missingTech: 'x', wymagania: 'W1' },
+        { id: 'b2', status: v % 2 ? 'locked' : 'ready' },
+        { id: 'b3', status: 'built' },
+        { id: 'b4', status: 'locked', locationBlocked: 'stolica' },
+        { id: 'b5', status: 'queued', missingTech: 'y' },
+        { id: 'b6', status: 'locked', missingTech: 'y', locationBlocked: 'region' },
+        { id: 'b7', status: 'locked', wymagania: '' },
+        { id: 'b8', status: 'locked', missingTech: 'z', wymagania: 'W8' },
+      ],
+      unitNacjaForCivKey: (k) => (k === undefined ? null : `N:${k}`),
     },
   };
 }
@@ -191,7 +254,7 @@ try {
     const fix = mkFix(v);
     globalThis.__K05A_FIX = fix;
     V.setK05aCfg(fix.cfg);
-    V.setK05aRules(fix.rules);
+    V.setK05aRules({ ...fix.rules, ...fix.rulesExt });
     const tag = `v${v}`;
     for (const c of cities3) {
       for (const t of ['a', 'bb', '']) cmp(`recruitManpowerCost(${c.id},${t};${tag})`, () => P.recruitManpowerCost(c, t), () => V.recruitManpowerCost(c, t));
@@ -213,6 +276,40 @@ try {
     for (const u of units3) cmp(`unitResourceUpkeepChipsHtml(${u.id};${tag})`, () => P.unitResourceUpkeepChipsHtml(u), () => V.unitResourceUpkeepChipsHtml(u));
     for (const tech of ['x', 'y', 'z'])
       for (const un of unlocked3) cmp(`missingTechSteps(${tech},${un.size};${tag})`, () => P.missingTechSteps({}, tech, un), () => V.missingTechSteps({}, tech, un));
+
+    // K05A r3 (batch 2): kopie z pinu; ctx/def/item to zwykłe obiekty (typy usuwane przy kompilacji).
+    const defs2 = [{ id: 'd1', techUnlock: 'x', lokalizacja: undefined }, { id: 'up', upgradeFrom: 'base' }, { id: 'd3', techUnlock: '-', lokalizacja: 'stolica' }, { id: 'nope' }];
+    const ctx2 = (c) => ({ epoch: 1 + v, builtBuildingIds: ['b1'], empireResourceStock: { drewno: 3 }, cityHasCoastOrRiver: v % 2 === 0, isCapital: c.id % 2 === 0 });
+    const data2 = { econParams: { x: v } };
+    for (const c of cities3) {
+      for (const d of defs2)
+        for (const techs of [[], ['x'], ['a', 'b', 'x']]) {
+          cmp(`buildingCanBuildNow(${d.id},${c.id},${techs.length};${tag})`, () => P.buildingCanBuildNow(d, c, data2, ctx2(c), techs), () => V.buildingCanBuildNow(d, c, data2, ctx2(c), techs));
+          cmp(`buildingConverterProductionDisplay(${d.id},${c.id};${tag})`, () => P.buildingConverterProductionDisplay(d, c, data2), () => V.buildingConverterProductionDisplay(d, c, data2));
+        }
+      const items2 = [{ id: 'd1', koszt: 1, kind: 'budynek' }, { id: 'nope', koszt: 2, kind: 'budynek' }, { id: 'd3', koszt: 3, kind: 'budynek' }];
+      for (const techs of [[], ['x']])
+        cmp(`sortProductionItemsByBuildability(${c.id},${techs.length};${tag})`, () => P.sortProductionItemsByBuildability(items2, c, data2, ctx2(c), techs), () => V.sortProductionItemsByBuildability(items2, c, data2, ctx2(c), techs));
+      cmp(`productionCtxForCity(${c.id};${tag})`, () => P.productionCtxForCity(c), () => V.productionCtxForCity(c));
+    }
+    const entries = [
+      { id: 'b1', status: 'locked', missingTech: 'x', wymagania: 'W1' },
+      { id: 'b2', status: 'ready' }, { id: 'b3', status: 'built' }, { id: 'b4', status: 'queued' },
+      { id: 'b5', status: 'locked', locationBlocked: 'stolica' }, { id: 'b6', status: 'locked', locationBlocked: 'region' },
+      { id: 'b7', status: 'locked', missingTech: 'y', wymagania: '' }, { id: 'b8', status: 'locked', missingTech: 'z', wymagania: 'W8' },
+    ];
+    for (const e of entries)
+      for (const un of unlocked3) cmp(`formatBuildingCatalogLockHint(${e.id},${un.size};${tag})`, () => P.formatBuildingCatalogLockHint(e, {}, [...un]), () => V.formatBuildingCatalogLockHint(e, {}, [...un]));
+    for (const d of defs2)
+      for (const un of unlocked3) cmp(`formatBuildingPreviewHint(${d.id},${un.size};${tag})`, () => P.formatBuildingPreviewHint(d, {}, [...un]), () => V.formatBuildingPreviewHint(d, {}, [...un]));
+    const prodCtx = { epoch: 1 + v, builtBuildingIds: ['b2'], productionQueue: [{ id: 'b5', koszt: 1, kind: 'budynek' }, { id: 'b1', koszt: 1, kind: 'unit' }], buildingLevel: 1, civBonusy: [] };
+    for (const techs of [[], ['x']])
+      for (const full of [true, false])
+        cmp(`collectEraPreviewEntries(${techs.length},${full};${tag})`, () => P.collectEraPreviewEntries({}, techs, prodCtx, full), () => V.collectEraPreviewEntries({}, techs, prodCtx, full));
+    // Adapter buildingRequirementChips: kontrakt (wynik = wejście reguł z DTO); równoważność z pinem = silnik (NIE_ZMIERZONO).
+    for (const d of defs2)
+      for (const c of cities3)
+        cmp(`buildingRequirementChips-adapter(${d.id},${c.id};${tag})`, () => fix.rulesExt.buildingRequirementChips(d, c, data2, ctx2(c), ['x']), () => V.buildingRequirementChips(d, c, data2, ctx2(c), ['x']));
   }
 } catch (e) {
   console.error(`harness: ${e.message}`);

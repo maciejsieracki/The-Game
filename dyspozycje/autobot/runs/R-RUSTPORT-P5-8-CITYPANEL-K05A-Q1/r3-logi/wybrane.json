@@ -14,5 +14,13 @@
  { "name": "maxAffordableRecruitQuantity", "a": 8073, "b": 8100, "loc": 28, "kind": "function" },
  { "name": "unitStockCostChipsHtml", "a": 8102, "b": 8124, "loc": 23, "kind": "function" },
  { "name": "unitResourceUpkeepChipsHtml", "a": 8126, "b": 8134, "loc": 9, "kind": "function" },
- { "name": "missingTechSteps", "a": 8537, "b": 8540, "loc": 4, "kind": "function" }
+ { "name": "missingTechSteps", "a": 8537, "b": 8540, "loc": 4, "kind": "function" },
+ { "name": "buildingConverterProductionDisplay", "a": 6726, "b": 6766, "loc": 41, "kind": "function" },
+ { "name": "buildingRequirementChips", "a": 6830, "b": 6929, "loc": 100, "kind": "function", "variant": "adapter" },
+ { "name": "buildingCanBuildNow", "a": 6931, "b": 6941, "loc": 11, "kind": "function" },
+ { "name": "sortProductionItemsByBuildability", "a": 6943, "b": 6963, "loc": 21, "kind": "function" },
+ { "name": "formatBuildingCatalogLockHint", "a": 8542, "b": 8576, "loc": 35, "kind": "function" },
+ { "name": "formatBuildingPreviewHint", "a": 8578, "b": 8609, "loc": 32, "kind": "function" },
+ { "name": "productionCtxForCity", "a": 8611, "b": 8643, "loc": 33, "kind": "function" },
+ { "name": "collectEraPreviewEntries", "a": 8645, "b": 8679, "loc": 35, "kind": "function" }
 ]
