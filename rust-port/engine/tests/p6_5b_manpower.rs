@@ -123,8 +123,12 @@ fn pool_and_cost_scalars_match_web() {
     }
     let mut scouts = 0;
     for case in scalar(&root, "unitManpowerCostForType") {
-        let got =
-            unit_manpower_cost_for_type(type_id(case), num(&case["epoka"]), num(&case["maxMult"]));
+        let got = unit_manpower_cost_for_type(
+            type_id(case),
+            num(&case["epoka"]),
+            num(&case["maxMult"]),
+            num(&case["maxMult"]),
+        );
         assert_same("unitManpowerCostForType", got, num(&case["out"]));
         scouts += usize::from(got == 0.0 && type_id(case) == Some("Zwiadowca"));
     }
@@ -283,8 +287,10 @@ fn game_default_params_equal_the_running_web_defaults() {
 
 #[test]
 fn civ_bonus_multipliers_match_web() {
+    // Pin 91dc998a: bonusy civs.json nie wplywaja na Manpower (web zwraca neutralne 1.0).
+    // Asercje rownosci bez zmian; pokrycie liczy juz nie magnitudy (x2 / x0.1), tylko listy bonusow.
     let root = root();
-    let (mut doubled, mut floored) = (0, 0);
+    let mut with_bonus = 0;
     for case in list(&root["cases"]["params"]["civ"], "civ") {
         let list = bonusy(case.get("bonusy"));
         let regen = civ_manpower_regen_mult(list.as_deref());
@@ -294,10 +300,42 @@ fn civ_bonus_multipliers_match_web() {
         let (r2, m2) = civ_manpower_mults(list.as_deref());
         assert_same("mults.regenMult", r2, num(&case["mults"]["regenMult"]));
         assert_same("mults.maxMult", m2, num(&case["mults"]["maxMult"]));
-        doubled += usize::from(max == 2.0 || regen == 2.0);
-        floored += usize::from(max == 0.1 || regen == 0.1);
+        with_bonus += usize::from(list.as_ref().is_some_and(|l| !l.is_empty()));
     }
-    assert!(doubled > 10 && floored > 10);
+    assert!(with_bonus > 10);
+}
+
+#[test]
+fn civ_matrix_manpower_mults_match_web_formula() {
+    // Pin 91dc998a: civManpowerMatrixMults = max(0, 1 + v) dla skonczonych pol, inaczej 1.
+    use civ_engine::domain::recruitment::manpower::{
+        civ_manpower_matrix_mults, ManpowerMatrixOverrides,
+    };
+    let none = civ_manpower_matrix_mults(None, None);
+    assert_eq!(
+        (none.regen_mult, none.max_mult, none.cost_mult),
+        (1.0, 1.0, 1.0)
+    );
+    let ov = ManpowerMatrixOverrides {
+        mp_regen_proc: Some(1.0),
+        mp_max_proc: Some(-2.0),
+        mp_koszt_jednostki_proc: Some(-0.5),
+    };
+    let got = civ_manpower_matrix_mults(Some(&ov), None);
+    assert_eq!(
+        (got.regen_mult, got.max_mult, got.cost_mult),
+        (2.0, 0.0, 0.5)
+    );
+    let nan = ManpowerMatrixOverrides {
+        mp_regen_proc: Some(f64::NAN),
+        mp_max_proc: Some(f64::INFINITY),
+        mp_koszt_jednostki_proc: None,
+    };
+    let got = civ_manpower_matrix_mults(Some(&nan), None);
+    assert_eq!(
+        (got.regen_mult, got.max_mult, got.cost_mult),
+        (1.0, 1.0, 1.0)
+    );
 }
 
 #[test]
@@ -340,6 +378,7 @@ fn city_pool_functions_match_web() {
             num(&case["epoka"]),
             num(&case["regenMult"]),
             num(&case["maxMult"]),
+            num(&case["maxMult"]),
         );
         let want = &case["out"];
         assert_same("epoka", got.epoka, num(&want["epoka"]));
@@ -379,7 +418,8 @@ fn city_pool_functions_match_web() {
                 &ct,
                 num(&case["epoka"]),
                 num(&case["maxMult"]),
-                type_id(case)
+                type_id(case),
+                num(&case["maxMult"]),
             ),
             case["out"].as_bool().expect("out"),
             "{case}"
@@ -409,6 +449,7 @@ fn city_pool_functions_match_web() {
                 &ct,
                 num(&case["epoka"]),
                 opt_num(case.get("amount")),
+                num(&case["maxMult"]),
                 num(&case["maxMult"]),
             ),
             num(&case["out"]),
@@ -465,6 +506,7 @@ fn spawn_and_refund_functions_match_web() {
             num(&case["popCost"]),
             num(&case["maxMult"]),
             type_id(case),
+            num(&case["maxMult"]),
         );
         assert_spawn("tryDeductUnitSpawnCosts", &got, &spawn(&case["out"]));
         ok += usize::from(got.ok);
@@ -481,6 +523,7 @@ fn spawn_and_refund_functions_match_web() {
             opt_num(case.get("popCap")),
             num(&case["maxMult"]),
             type_id(case),
+            num(&case["maxMult"]),
         );
         assert_same(
             "refund.population",
@@ -499,6 +542,7 @@ fn spawn_and_refund_functions_match_web() {
             None,
             1.0,
             None,
+            1.0,
         );
         assert_same(
             "refundDefaults.population",
@@ -552,6 +596,7 @@ fn empire_totals_match_web() {
             num(&case["popCost"]),
             num(&case["maxMult"]),
             type_id(case),
+            num(&case["maxMult"]),
         );
         assert_eq!(got, case["out"].as_bool().expect("out"), "{case}");
     }
@@ -613,6 +658,7 @@ fn empire_deduct_refund_and_spawn_mutate_like_web() {
             0.0,
             num(&case["maxMult"]),
             type_id(case),
+            num(&case["maxMult"]),
         );
         assert_spawn("tryDeductEmpire", &got, &spawn(&case["out"]));
         assert_cities("tryDeductEmpire", &all, &cities(&case["after"]));

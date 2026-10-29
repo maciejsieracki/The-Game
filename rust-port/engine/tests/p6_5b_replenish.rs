@@ -84,6 +84,7 @@ fn replenishment_matches_web_state_results_and_closure_protocol() {
             difficulty(case["difficulty"].as_str().expect("difficulty")),
             &resolve_era,
             &resolve_bon,
+            None,
             &get_max_hp,
             raw.as_ref(),
             if with_cb { Some(&mut record) } else { None },
