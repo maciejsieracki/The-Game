@@ -32,7 +32,7 @@ const PIN_DIR = argOf('--pin-dir');
 const JSON_OUT = argOf('--json');
 const PORT = resolve(argOf('--port') ?? join(FRONT, 'src/ui/cityPanel/k05a-fundament.ts'));
 const WYBRANE = resolve(
-  argOf('--wybrane') ?? join(FRONT, '../../dyspozycje/autobot/runs/R-RUSTPORT-P5-8-CITYPANEL-K05A-Q1/r2-logi/wybrane.json'),
+  argOf('--wybrane') ?? join(FRONT, '../../dyspozycje/autobot/runs/R-RUSTPORT-P5-8-CITYPANEL-K05A-Q1/r3-logi/wybrane.json'),
 );
 if (!PIN_DIR || !existsSync(join(PIN_DIR, 'gra/src'))) {
   console.error('Użycie: node tools/dom-harness/verify-k05a-copies.mjs --pin-dir <PIN_DIR> [--wybrane <plik>] [--json <plik>]');
@@ -44,7 +44,15 @@ const SUBST = [
   { pin: 'gra/src/ui/cityPanel.ts', a: 9512, b: 9539, from: '  city: City,', to: '  city: CityHexRef,', why: 'K05A-Z2 DTO pozycji miasta' },
 ];
 /** Deklaracje portu spoza pinu (K05A-Z1 kopie typów/enum, K05A-Z2 DTO). */
-const LOCAL_NAMES = new Set(['TerenBazowy', 'OkolicaTryb', 'CityHexRef']);
+const LOCAL_NAMES = new Set([
+  'TerenBazowy', 'OkolicaTryb', 'CityHexRef',
+  // K05A-Z5 (r3): lokalne kopie typów z pinu (tylko pola używane przez K05A).
+  'City', 'UnitDef', 'ProductionItem', 'GameData',
+  // K05A-Z4 (r3): wejścia reguł z DTO — interfejsy, rejestr wejść i delegatory reguł (nie są kopiami pinu).
+  'K05aCfg', 'K05aRules', 'setK05aCfg', 'setK05aRules', 'cfg', 'rules', 'regul',
+  'civManpowerMaxMult', 'unitManpowerCostForType', 'ownerSurowcePoolFor', 'stockResourceLabel',
+  'unitStockCost', 'unitResourceUpkeep', 'isUnitRecruitStockChipMissing', 'techPrereqChain',
+]);
 
 const isCommentLine = (t) => /^\/\*\*|^\/\*|^\*|^\/\//.test(t.trim()) || /\*\/\s*$/.test(t.trim());
 const isDecl = (t) => /^(export\s+)?(const|let|function|type|interface|enum|class|import)\b/.test(t);

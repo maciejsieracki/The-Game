@@ -1,0 +1,18 @@
+[
+ { "name": "ENTITY_CARD_BUILDING_STYLE_ID", "a": 7465, "b": 7475, "loc": 11, "kind": "const" },
+ { "name": "TEREN_COL", "a": 9495, "b": 9500, "loc": 6, "kind": "const" },
+ { "name": "TEREN_LETTER", "a": 9501, "b": 9506, "loc": 6, "kind": "const" },
+ { "name": "hexDist", "a": 9507, "b": 9512, "loc": 6, "kind": "function" },
+ { "name": "okolicaPreviewRadius", "a": 9513, "b": 9540, "loc": 28, "kind": "function" },
+ { "name": "rangeName", "a": 9541, "b": 9546, "loc": 6, "kind": "function" },
+ { "name": "ringsTiles", "a": 9547, "b": 9551, "loc": 5, "kind": "function" },
+ { "name": "okStat", "a": 9552, "b": 9561, "loc": 10, "kind": "function" },
+ { "name": "buildingLocationRequirementMet", "a": 6821, "b": 6828, "loc": 8, "kind": "function" },
+ { "name": "recruitManpowerCost", "a": 8050, "b": 8054, "loc": 5, "kind": "function" },
+ { "name": "empireRekruciTotal", "a": 8056, "b": 8061, "loc": 6, "kind": "function" },
+ { "name": "empireRekruciAffordable", "a": 8063, "b": 8071, "loc": 9, "kind": "function" },
+ { "name": "maxAffordableRecruitQuantity", "a": 8073, "b": 8100, "loc": 28, "kind": "function" },
+ { "name": "unitStockCostChipsHtml", "a": 8102, "b": 8124, "loc": 23, "kind": "function" },
+ { "name": "unitResourceUpkeepChipsHtml", "a": 8126, "b": 8134, "loc": 9, "kind": "function" },
+ { "name": "missingTechSteps", "a": 8537, "b": 8540, "loc": 4, "kind": "function" }
+]

@@ -57,6 +57,27 @@ const MUTANTS = [
   ['okolica-reczne-prog', 'if (!count || count <= 0) continue;', 'if (!count) continue;'],
   ['okolica-reczne-finite', 'if (Number.isFinite(q) && Number.isFinite(r)) bump(q, r);', 'if (Number.isFinite(q)) bump(q, r);'],
   ['okolica-worked-swap', 'for (const t of worked ?? []) bump(t.q, t.r);', 'for (const t of worked ?? []) bump(t.r, t.q);'],
+  // r3 (batch 1): pola DTO / wejścia reguł (K05A-Z4) i gałęzie jednostek z pinu.
+  ['loc-stolica', "if (lokalizacja === 'stolica') return isCapital === true;", "if (lokalizacja === 'stolica') return isCapital !== false;"],
+  ['loc-region', "if (lokalizacja === 'region') return isCapital === false;", "if (lokalizacja === 'region') return isCapital !== true;"],
+  ['recruit-ep-default', 'const ep = cfg.getEpoch?.(city.ownerId) ?? 1;', 'const ep = cfg.getEpoch?.(city.ownerId) ?? 2;'],
+  ['recruit-bonusy-dto', 'civManpowerMaxMult(cfg.getCivBonusy?.(city.ownerId));', 'civManpowerMaxMult(undefined);'],
+  ['recruit-cost-maxmult', 'return unitManpowerCostForType(typeId, ep, maxMult);', 'return unitManpowerCostForType(typeId, ep, 1);'],
+  ['rekruci-total-snapshot', 'return cfg.getManpowerSnapshot?.(city.id)?.manpowerBiezacy;', 'return cfg.getManpowerSnapshot?.(city.id)?.manpowerBiezacy ?? 0;'],
+  ['rekruci-total-dto', 'const empireTotal = cfg.getEmpireRekruciTotal?.(city.ownerId);', 'const empireTotal = cfg.getEmpireRekruciTotal?.(city.id);'],
+  ['affordable-default', 'available = empireRekruciTotal(city),', 'available = undefined,'],
+  ['affordable-cmp', 'return available == null || available >= mpCost;', 'return available == null || available > mpCost;'],
+  ['affordable-zero', 'if (mpCost <= 0) return true;', 'if (mpCost < 0) return true;'],
+  ['maxq-treasury', 'applyLimit(skarb, item.koszt);', 'applyLimit(skarb, 1);'],
+  ['maxq-floor', 'return constrained ? Math.max(1, max) : undefined;', 'return constrained ? Math.max(0, max) : undefined;'],
+  ['maxq-pool-default', 'applyLimit(pool[key] ?? 0, cost);', 'applyLimit(pool[key] ?? 3, cost);'],
+  ['unitstock-missing-neg', 'const missing = isUnitRecruitStockChipMissing(pool, u, k);', 'const missing = !isUnitRecruitStockChipMissing(pool, u, k);'],
+  ['unitstock-cls', "const cls = missing ? 'bld-infocard-chip stock-missing' : 'bld-infocard-chip';", "const cls = missing ? 'bld-infocard-chip stock-missing' : 'bld-infocard-chip stock-missing';"],
+  ['upkeep-suffix', '${stockResourceLabel(k)}/t</span>`)', '${stockResourceLabel(k)}</span>`)'],
+  ['missing-filter', 'return chain.filter(t => !unlocked.has(t));', 'return chain.filter(t => unlocked.has(t));'],
+  ['missing-chain-slice', 'const chain = techPrereqChain(data, techName);', 'const chain = techPrereqChain(data, techName).slice(1);'],
+  ['deleg-stock-upkeep', 'return regul().unitStockCost(u);', 'return regul().unitResourceUpkeep(u);'],
+  ['deleg-pool-zloto', 'return regul().ownerSurowcePoolFor(city);', 'return { ...regul().ownerSurowcePoolFor(city), zloto: 0 };'],
 ];
 
 /**

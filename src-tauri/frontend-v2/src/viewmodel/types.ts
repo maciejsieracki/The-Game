@@ -469,6 +469,27 @@ export interface CityPanelInputsDto {
   k04c?: CityPanelK04CDto;
   /** K04D (P5-8-K04D, batch TopBar): wejscia kart paska gornego (Zywnosc, Ludnosc, Praca, Zloto, Nauka, Kultura, Religia). Dopisek, brak = karta bez danych silnika. */
   k04d?: CityPanelK04DDto;
+  /** K05A (P5-8-K05A, runda 3, ZALOZENIE K05A-Z4): wyniki reguł gry dla jednostek rekrutacji (liczone w silniku, UI ich nie liczy). */
+  k05a?: CityPanelK05ADto;
+}
+
+// ─── K05A (P5-8-K05A, R-RUSTPORT-P5-8-CITYPANEL-K05A-Q1, runda 3): wyniki reguł gry dla jednostek budynków i rekrutacji ──
+// ZALOZENIE K05A-Z4 (pełny opis w dyspozycje/rust-port/p5/P5-8-K05A.md): wartości reguł przychodzą z silnika przez
+// `setK05aCfg` / `setK05aRules` (src/ui/cityPanel/k05a-fundament.ts). Pola są dopiskiem; brak = wartość domyślna pinu.
+
+export interface CityPanelK05ADto {
+  /** Pula rekrutów imperium po id właściciela (pin `cfg.getEmpireRekruciTotal`); brak = fallback na pulę miasta. */
+  empireRekruciTotalByOwner?: Readonly<Record<number, number>>;
+  /** Bieżąca pula rekrutów miasta po id miasta (pin `cfg.getManpowerSnapshot(city.id).manpowerBiezacy`). */
+  manpowerBiezacyByCity?: Readonly<Record<number, number>>;
+  /** Koszt rekrutacji per typ jednostki (pin `unitManpowerCostForType`, z epoką i mnożnikiem cywilizacji policzonymi w silniku). */
+  manpowerCostByUnit?: Readonly<Record<string, number>>;
+  /** Łańcuch badań prowadzący do technologii (pin `techPrereqChain`), po nazwie technologii. */
+  techPrereqChainByTech?: Readonly<Record<string, readonly string[]>>;
+  /** Koszt surowcowy jednorazowego zakupu jednostki (pin `unitStockCost`), po id typu; brak = {}. */
+  unitStockCostById?: Readonly<Record<string, Readonly<Record<string, number>>>>;
+  /** Etykieta surowca do chipów (pin `stockResourceLabel`), po kluczu surowca; brak = klucz. */
+  stockResourceLabelByKey?: Readonly<Record<string, string>>;
 }
 
 // ─── K04C (P5-8-K04C, R-RUSTPORT-P5-8-CITYPANEL-K04C-Q1, runda 1): wejscia kart szczegolow batch 4a ──────────
