@@ -196,6 +196,9 @@ const catalog = [
   { Jednostka: 'bez_typu', Epoka: 1, Typ: '   ', 'Rola (linia)': 'piechota', cost: 5, maxHp: 5, category: 'x' },
   { Jednostka: 'stara_zelazo', Epoka: 3, Typ: 'piechota', 'Rola (linia)': 'stara', cost: 9, maxHp: 9, category: 'piechota' },
   { Jednostka: 'rownorzedna_zelazo', Epoka: 3, Typ: 'piechota', 'Rola (linia)': 'piechota', cost: 20, maxHp: 20, category: 'piechota' },
+  // r4 (zarzut 2): brzegi - stary wpis z maxHp 0 (galaz oldMaxHp<=0) i nowszy, TANSZY wpis (ujemny surcharge).
+  { Jednostka: 'zerohp_kamien', Epoka: 1, Typ: 'piechota', 'Rola (linia)': 'zerohp', cost: 30, maxHp: 0, category: 'piechota' },
+  { Jednostka: 'zerohp_braz', Epoka: 2, Typ: 'piechota', 'Rola (linia)': 'zerohp', cost: 10, maxHp: 7, category: 'piechota' },
 ];
 const byId = (id) => catalog.find((c) => c.Jednostka === id) ?? null;
 const cloneCatalogEntry = (c) => (c ? { ...c } : null);
@@ -266,6 +269,14 @@ pushPromo({ typeId: 'stara_zelazo', hp: 9, hpMax: 9 }, 999);
 pushPromo({ typeId: 'nieznana', hp: 3, hpMax: 3 }, 999);
 pushPromo({ typeId: 'konnica_braz', hp: 1, hpMax: 20 }, 1000);
 pushPromo({ typeId: 'konnica_braz', hp: 20, hpMax: 20, ruchLeft: 3 }, 25);
+// r4: oldMaxHp = 0 -> ratio 1 (web: oldMaxHp > 0 ? ... : 1); hp null/0/ponizej 0 maxHp.
+pushPromo({ typeId: 'zerohp_kamien', category: 'piechota', hp: 0, hpMax: 0 }, 100);
+pushPromo({ typeId: 'zerohp_kamien', category: 'piechota', hp: null, hpMax: 0 }, 100);
+pushPromo({ typeId: 'zerohp_kamien', category: 'piechota', hp: 3, hpMax: 0, ruchLeft: 2 }, 100, true);
+// r4: ujemny surcharge (cel tanszy) -> web max(0,..)=0, skarbiec bez zmian.
+pushPromo({ typeId: 'zerohp_kamien', category: 'piechota', hp: 0, hpMax: 0 }, 5);
+// r4: ujemny skarbiec (poza zakresem gry, ale web: treasury < surcharge(0) -> brak awansu) - kontrola ujemnego surchargu.
+pushPromo({ typeId: 'zerohp_kamien', category: 'piechota', hp: 0, hpMax: 0 }, -5);
 for (let i = 0; i < 600; i++) {
   const id = pick(TYPE_IDS);
   const def = byId(id);

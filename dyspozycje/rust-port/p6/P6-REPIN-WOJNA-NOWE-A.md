@@ -76,3 +76,26 @@ Liczby zapisane jako tekst (`String(x)`, `-0`, `NaN`, `Infinity`), zgodnie z kon
   - (M1 `+1.0` -> `+2.0` z Operatora-impl r1 - zabita; nie powtarzana.)
 - Bramki r2 (surowe logi w runie): fmt EXIT=0; clippy `-D warnings` EXIT=0; `cargo test --no-fail-fast` EXIT=0, **1277 passed / 0 failed / 0 ignored**; trzy cele `p6_repin_wojna_a_*` 5+5+2 = **12/12 ok**.
 - Incydent srodowiskowy: pierwsze `cargo test` zakonczylo sie EXIT=101 z bledem linkera (`rust-lld` Bus error, sygnal 7) przy zapelnionym dysku (93%, 3.1 GB wolne). Ponowienie z `-j 2` przeszlo bez zmian w kodzie (log `test-r2.log` = ponowienie).
+
+## 8. Odpowiedz na zarzuty weryfikacji (runda 4, Operator)
+
+- **Zarzut 1 (zakres diakrytykow) - PRZYJETY.** Poprawka w commicie `0a867ba6` (r3): deklaracja zawezona w naglowku `formation_rules.rs` i w sekcji 4 do zbioru faktycznie obslugiwanego przez `strip_base`. Wszystkie rozkladalne litery Latin-1 + ą ć ę ł ń ś ź ż č š ž. Poza zakresem (NIE_ZMIERZONO, Rust != web): ě ř ů ť ď ň ľ ő ű ā ē ī ō ū ğ ş oraz wejscie z osobnymi znakami laczacymi (NFD). Dane `gra/data/units.json` nie zawieraja tych liter (0 wystapien).
+- **Zarzut 2 (mutacje) - PRZYJETY.** Dopisane 10 mutacji na galeziach nowych modulow (R1-R10 ponizej), kazda na pliku Rust, test odpalony, kod przywrocony (`git diff` czysty po kazdej). Logi: `dyspozycje/autobot/runs/R-RUSTPORT-REPIN-WOJNA-NOWE-A-Q1/mut-r4-*.log`.
+
+| ID | Mutacja | Plik Rust | Wynik |
+|---|---|---|---|
+| R1 | classify: galaz `primary_ranged` -> Melee (galaz Ranged) | formation_rules.rs | ZABITA: classify_matches_web_on_all_vectors |
+| R2 | lay_band: `row_start` floor -> ceil (bounds.mid_row) | formation_rules.rs | ZABITA: formation_groups_and_slots_match_web |
+| R3 | withdraw: `>=` -> `>` | army_leadership.rs | ZABITA: withdraw_commanders_matches_web |
+| R4 | ratio: fallback `1.0` -> `0.0` gdy oldMaxHp <= 0 | ai_era_unit_promotion.rs | v0 PRZEZYLA (brak wektora maxHp=0); po dodaniu wektorow brzegowych ZABITA: promotion_matches_web_on_all_vectors |
+| R5 | surcharge: usuniete `setTreasury(treasury - surcharge)` | ai_era_unit_promotion.rs | ZABITA: promotion_matches_web_on_all_vectors |
+| R6 | surcharge: usuniete `max(0,·)` (ujemny surcharge) | ai_era_unit_promotion.rs | v0/v1 PRZEZYLA (guard `surcharge > 0` maskuje dla skarbca >= 0); po dodaniu przypadku skarbiec = -5 ZABITA |
+| R7 | slots mounted: `- 2.0` -> `- 1.0` (top_len) | formation_rules.rs | ZABITA: formation_groups_and_slots_match_web |
+| R8 | compact: strona Def `-candidate_col` -> `candidate_col` | formation_rules.rs | ZABITA: compact_line_matches_web_on_grid |
+| R9 | classify: pominiety warunek `typ == siege_type` | formation_rules.rs | ZABITA: classify_matches_web_on_all_vectors |
+| R10 | promotion: js_round `>= 0.5` -> `> 0.5` (remis) | ai_era_unit_promotion.rs | ZABITA: promotion_matches_web_on_all_vectors |
+
+- Mutacje z rund 1-2 (M1 compact +2.0; M2 leadership ceil->floor; M3 epoka `<=`->`<`; M4 compact min->max) - bez zmian, zabite.
+- Wektory: dodano do `gen-repin-wojna-a-web-vectors.mjs` katalog `zerohp_kamien`/`zerohp_braz` (maxHp 0 na starym wpisie, tanszy nowszy wpis) i 5 przypadkow awansu (w tym skarbiec -5). Regeneracja z weba `91dc998a`: `formation-rules.json` i `army-leadership.json` **bajt-w-bajt identyczne** (bez zmian); `ai-era-unit-promotion.json` przeregenerowany (promo 613 -> 618 przypadkow, 0.27 MB). Asercje testow nie zmienione.
+- Mutacja R6 w zakresie skarbca >= 0 jest **rownowazna** z oryginalem (dla d < 0: `T < d` i `T < 0` nie roznia sie dla T >= 0; `if max(0,d) > 0` i `if d > 0` daja to samo). Rozroznia ja dopiero przypadek T < 0 (web: brak awansu) - dodany jako wektor.
+- **Zarzut 3 (pelny `cargo test`) - ZMIERZONE przeze mnie.** Dysk 6.6 GB wolne (84%). `cargo test --no-fail-fast` EXIT=0, **1277 passed / 0 failed / 0 ignored** (`test-r4.log`). `cargo fmt --all -- --check` EXIT=0 (`fmt-r4.log`). `cargo clippy --all-targets -- -D warnings` EXIT=0 (`clippy-r4.log`).
