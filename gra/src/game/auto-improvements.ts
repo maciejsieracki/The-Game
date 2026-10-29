@@ -384,6 +384,10 @@ export interface PickAutoImprovementsOpts {
   isImprovementAllowedForCiv?: (key: ImprovementKey, civArchetype?: string) => boolean;
   /** Nadpisanie kolejności (np. AI deficit boost). */
   priorityOverride?: readonly ImprovementKey[];
+  /** Food mode: gate all selected cities through empire-wide preparation/farm/livestock/late-food stages. */
+  foodImprovementStages?: boolean | ((city: AutoImprovementCity) => boolean);
+  /** Internal stage-0 gate: only clear forest on river hexes, never off-river forest. */
+  riverForestClearingOnly?: boolean;
 }
 
 /**
@@ -416,7 +420,105 @@ export interface PickAutoImprovementsOpts {
  * (właściciel: „Autopraca działa z budżetu całej cywilizacji, a nie z budżetu miasta").
  * Determinizm: miasta po id, heksy po (q,r), typy wg profilu.
  */
+const FOOD_LIVESTOCK_STAGE_KEYS: readonly ImprovementKey[] = [
+  'bydlo', 'owce', 'lama', 'oboz_lowiecki', 'lodzie_rybackie', 'warzelnia_soli',
+];
+
+function isFoodStageCity(opts: PickAutoImprovementsOpts, city: AutoImprovementCity): boolean {
+  if (typeof opts.foodImprovementStages === 'function') return opts.foodImprovementStages(city);
+  return opts.foodImprovementStages === true;
+}
+
+/**
+ * Food automation is a civilization-wide sequence, not a per-hex stack order:
+ * prepare river forests first, then fill all eligible worked plots with farms,
+ * then livestock/other food, and finally irrigation/terraces. A stage that emits
+ * any orders owns the whole call; later stages wait for the next turn. This keeps
+ * the AI per-city throttle intact while ensuring one city cannot start livestock
+ * while another still has an eligible farm plot.
+ */
 export function pickAutoImprovements(opts: PickAutoImprovementsOpts): AutoImprovementPick[] {
+  const stagedCities = opts.cities.filter(city => isFoodStageCity(opts, city));
+  if (stagedCities.length === 0 || !opts.territoryNodes) {
+    return pickAutoImprovementsSinglePass(opts);
+  }
+  const otherCities = opts.cities.filter(city => !isFoodStageCity(opts, city));
+  const stageLists: readonly ImprovementKey[][] = [
+    ['wyrab'],
+    ['farma'],
+    [...FOOD_LIVESTOCK_STAGE_KEYS],
+    ['irygacja', 'tarasy'],
+  ];
+  let stagedPicks: AutoImprovementPick[] = [];
+  let earlierStageIsPending = false;
+  for (let stageIndex = 0; stageIndex < stageLists.length; stageIndex++) {
+    const keys = stageLists[stageIndex]!;
+    const stageOpts: PickAutoImprovementsOpts = {
+      ...opts,
+      cities: stagedCities,
+      priorityOverride: keys,
+      foodImprovementStages: false,
+      riverForestClearingOnly: stageIndex === 0,
+    };
+    const stagePicks = pickAutoImprovementsSinglePass(stageOpts);
+    if (stagePicks.length > 0) {
+      stagedPicks = stagePicks;
+      break;
+    }
+
+    // Do not skip a stage just because its valid targets are currently blocked by
+    // research or the Work budget. Probe eligibility with this stage's unlocks and
+    // unlimited temporary budget; if a target exists but cannot be built now, later
+    // food stages must wait instead of bypassing the chosen priority.
+    const probeTechs = new Set(opts.unlockedTechs);
+    for (const key of keys) {
+      const tech = getImprovementMeta(key)?.techId;
+      if (tech) probeTechs.add(tech);
+    }
+    const probePicks = pickAutoImprovementsSinglePass({
+      ...stageOpts,
+      unlockedTechs: probeTechs,
+      pracaAvailable: Number.MAX_SAFE_INTEGER,
+      improvementBudgetCap: Number.MAX_SAFE_INTEGER,
+      maxItemsPerCity: Infinity,
+      pracaSurplusThreshold: 0,
+      surplusReport: undefined,
+    });
+    if (probePicks.length > 0) {
+      earlierStageIsPending = true;
+      break;
+    }
+  }
+
+  // Preserve ordinary forestry fallback only after no food stage has any eligible
+  // target. In particular, never let this fallback cut a non-river forest while a
+  // farm/livestock/irrigation phase is waiting on technology or Work budget.
+  if (stagedPicks.length === 0 && !earlierStageIsPending) {
+    stagedPicks = pickAutoImprovementsSinglePass({
+      ...opts,
+      cities: stagedCities,
+      foodImprovementStages: false,
+    });
+  }
+
+  if (otherCities.length === 0) return stagedPicks;
+  // Selected non-food profiles remain active in the same call. Charge their picks
+  // against the same empire envelope, after the currently active food phase.
+  const stageSpent = stagedPicks.reduce((sum, pick) => sum + pick.kosztPraca, 0);
+  const totalBudget = Number.isFinite(opts.improvementBudgetCap)
+    ? Math.max(0, opts.improvementBudgetCap as number)
+    : Math.floor(Math.max(0, opts.pracaAvailable)
+      * Math.max(0, Math.min(100, opts.pracaBudgetPercent ?? 100)) / 100);
+  const normalPicks = pickAutoImprovementsSinglePass({
+    ...opts,
+    cities: otherCities,
+    improvementBudgetCap: Math.max(0, totalBudget - stageSpent),
+    foodImprovementStages: false,
+  });
+  return [...stagedPicks, ...normalPicks];
+}
+
+function pickAutoImprovementsSinglePass(opts: PickAutoImprovementsOpts): AutoImprovementPick[] {
   const {
     cities,
     ownerId,
@@ -440,6 +542,7 @@ export function pickAutoImprovements(opts: PickAutoImprovementsOpts): AutoImprov
     playerEra,
     isImprovementAllowedForCiv: civGate = isImprovementAllowedForCiv,
     priorityOverride,
+    riverForestClearingOnly = false,
   } = opts;
 
   if (cities.length === 0 || !territoryNodes) return [];
@@ -570,7 +673,12 @@ export function pickAutoImprovements(opts: PickAutoImprovementsOpts): AutoImprov
     const focus = getFocus(city);
     // R4-Q2=C: przełącznik „wolno wycinać las" ma dwa zakresy (państwo i miasto), więc
     // `skipWyrab` musi być rozstrzygany PER MIASTO. Bez `getSkipWyrab` — wartość wspólna.
-    const citySkipWyrab = getSkipWyrab ? getSkipWyrab(city) : skipWyrab;
+    // Food phase 0 is an owner-ordered river preparation step; it is limited to
+    // river forests by `riverForestClearingOnly` and therefore does not enable
+    // general forest harvesting. Other profiles still honor the existing toggle.
+    const citySkipWyrab = riverForestClearingOnly
+      ? false
+      : (getSkipWyrab ? getSkipWyrab(city) : skipWyrab);
     const basePriority = priorityOverride ?? prioritiesForUlepszeniaFocus(focus, citySkipWyrab);
     const onlyWorked = getOnlyWorked(city);
     const workedKeys = onlyWorked && getWorkedHexKeys ? getWorkedHexKeys(city) : null;
@@ -882,7 +990,8 @@ export function pickAutoImprovements(opts: PickAutoImprovementsOpts): AutoImprov
       }
       return false;
     });
-    const wolnoKarczowacPozaRzeka = !rzekiDoZagospodarowania && lesneMinSpelnione;
+    const wolnoKarczowacPozaRzeka = !riverForestClearingOnly
+      && !rzekiDoZagospodarowania && lesneMinSpelnione;
 
     // FAZA 1 — heks po heksie.
     for (const { q, r } of orderedHexes) {
@@ -899,7 +1008,7 @@ export function pickAutoImprovements(opts: PickAutoImprovementsOpts): AutoImprov
         && (riverHexKeys.has(hexKey) || wolnoKarczowacPozaRzeka)
         && !scheduledWyrabHexes.has(hexKey)
         && map.hexes[hexKey]?.nakladka === Nakladka.Las
-        && forestLeftInRadius >= WYRAB_MIN_FOREST_IN_RADIUS
+        && (riverForestClearingOnly || forestLeftInRadius >= WYRAB_MIN_FOREST_IN_RADIUS)
         && !(workingPlaced.get(hexKey) ?? []).some(k => k === 'tartak' || k === 'oboz_lowiecki')
         // ZASADA 2: wyrąb NIE jest ulepszeniem złożowym — poza heksami z obywatelami stoi.
         && hexAllowsKey(q, r, 'wyrab')
@@ -972,7 +1081,10 @@ export function pickAutoImprovements(opts: PickAutoImprovementsOpts): AutoImprov
     // do żadnej farmy — to zbieranie Drewna „bo nic pilniejszego się nie kwalifikuje",
     // czyli budowa na zapas, której ECHO właściciela zabrania wprost. Wyrąb pod farmę przy
     // rzece żyje w KROKU 0 wyżej i tam zostaje niezależnie od niedoboru.
-    if (!cityBudgetExhausted && !foodOnly && !citySkipWyrab && basePriority.includes('wyrab')) {
+    if (
+      !riverForestClearingOnly
+      && !cityBudgetExhausted && !foodOnly && !citySkipWyrab && basePriority.includes('wyrab')
+    ) {
       const key: ImprovementKey = 'wyrab';
       const meta = getImprovementMeta(key);
       const techOk = isImprovementTechUnlocked(key, unlockedTechs) && civGate(key, civArchetype);

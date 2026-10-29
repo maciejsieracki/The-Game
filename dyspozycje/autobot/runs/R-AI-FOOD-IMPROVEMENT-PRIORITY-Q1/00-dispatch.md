@@ -2,7 +2,7 @@
 
 TEMAT: `R-AI-FOOD-IMPROVEMENT-PRIORITY-Q1`
 RUNDA: 1/5 · DATA: 2026-10-29 · DOMAIN: GAME · ŚCIEŻKA: A (Workflow)
-STATUS: Operator active after owner instruction. Native Kanban card unavailable in this session; recorded as tooling limitation, not a product blocker.
+STATUS: OWNER OVERRIDE — Kanban is explicitly not used for this work; Operator active under direct owner instruction. This supersedes AutoBot §2c card prerequisite for this task only.
 ROLE ROUTING: Operator `/root/food_priority_operator`; Evaluator independent agent after operator commit; Defense returns to Operator only for evaluator objections; Final Control independent after review; orchestrator integrates, releases, deploys, and pushes.
 
 ## WYZWALACZ
@@ -17,7 +17,7 @@ Gdy wybrano automatyczne budowanie żywności, AI cywilizacji i automatyzacja gr
 
 1. NOWE: test zachowania potwierdza kolejność etapów 0→1→2→3 dla AI cywilizacji i auto-budowania gracza, w tym brak przeskoku do późniejszego etapu, gdy istnieje kwalifikująca się akcja wcześniejsza.
 2. NOWE: farmy i hodowla obejmują wszystkie kwalifikujące się pola z pracującymi obywatelami; pola bez obywateli nie wyprzedzają obywatelskich (zachowaj wyjątki surowcowe istniejące w kanonie).
-3. NOWE: las blokujący farmę nad rzeką jest usuwany przed farmą; po wycince farma staje się kandydatem w odpowiednim etapie.
+3. NOWE: w wybranym Food mode lasy obywatelskich pól przy rzekach są przygotowywane przed farmami. Ta faza jest ograniczona wyłącznie do rzecznych pól i realizuje nowe polecenie właściciela niezależnie od ogólnego przełącznika wyrębu; ogólne wyręby nadal respektują dotychczasowe ustawienia.
 4. NOWE: irygacja i tarasy nie są proponowane przed ukończeniem farm i hodowli na wszystkich odpowiednich polach; wybór tarasów respektuje cywilizację i wzgórza.
 5. NOWE: testy edge/negative obejmują brak kwalifikujących się pól, brak surowców/działań, mieszane cywilizacje oraz brak możliwości wykonania bieżącego etapu; brak pętli lub głodzenia postępu.
 6. Istniejące bramki AI/auto-improvements, obywateli, wycinki i kwalifikacji pól uruchomione przed/po; `tsc --noEmit` i produkcyjny Vite build PASS; raport zawiera parytet AI/gracz i odnotowuje zastane czerwone testy jako baseline.
@@ -25,7 +25,7 @@ Gdy wybrano automatyczne budowanie żywności, AI cywilizacji i automatyzacja gr
 
 ## ALLOWLISTA
 
-- `gra/src/game/ai.ts`, `gra/src/main.ts` (tylko routing automatycznego budowania ulepszeń), oraz minimalne moduły źródłowe odkryte przez rekonesans i uzgodnione w raporcie.
+- `gra/src/game/auto-improvements.ts` (wspólny picker), `gra/src/game/ai.ts`, `gra/src/main.ts` (tylko routing automatycznego budowania ulepszeń), oraz minimalne moduły źródłowe odkryte przez rekonesans i uzgodnione w raporcie.
 - `gra/tools/**` — testy zachowania i diagnostyki.
 - `dyspozycje/autobot/runs/R-AI-FOOD-IMPROVEMENT-PRIORITY-Q1/**`.
 
@@ -45,11 +45,11 @@ Evaluator zgłasza każdy defekt z reprodukcją i minimalną zmianą; wraca wył
 
 ## GRAF 1–11
 
-1. Rejestracja, zakres i dispatch — DONE (Kanban API unavailable; ograniczenie jawnie zapisane).
-2. Rekonesans kodu, poprzednich runów i baseline — Operator.
-3. Implementacja logiki etapów — Operator.
-4. Testy zachowania AI + auto-gracza, edge cases, mutacje — Operator.
-5. Typecheck, build i regresje — Operator.
+1. Rejestracja, zakres i dispatch — DONE (OWNER OVERRIDE: Kanban not used for this work).
+2. Rekonesans kodu, poprzednich runów i baseline — DONE (read-only audit; wyniki przekazane orkiestratorowi przed owner override; pełne sprawozdanie zostanie dołączone do raportu Operatora).
+3. Implementacja logiki etapów — DONE w gałęzi operatora; wspólny picker ma etapy globalne, AI i automat gracza wpinają się warunkowo/zgodnie z profilem.
+4. Testy zachowania AI + auto-gracza, edge cases, mutacje — DONE: 11/11, w tym rzeczywiste `decideAITurn` i negatywna mutacja; zob. `01-operator.md`.
+5. Typecheck, build i regresje — DONE: typecheck/build PASS; istniejące czerwone AI2/AI4 zapisane jako baseline; pełny wykaz w raporcie.
 6. Niezależny Evaluator — oczekuje na etap 5.
 7. Obrona/poprawki Operatora — warunkowa.
 8. Final Control — oczekuje na PASS ewaluatora.

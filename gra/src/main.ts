@@ -1308,6 +1308,7 @@ import {
 } from './game/human-owners';
 import {
   pickAutoImprovements,
+  hasNonFoodResourceDeficit,
   AUTO_ULEPSZENIA_PRACA_RESERVE,
   freshSurplusReport,
   // R-ULEPSZENIA-OBOZ-LOWIECKI-LAS-ZNIKA-I-TEREN-Q1: kanoniczny zbiór ulepszeń
@@ -35131,6 +35132,12 @@ async function boot(): Promise<void> {
                       lostToSiblingByCityAuto.get((city as City).id),
                     );
                     return new Set(coords.map(({ q, r }) => `${q},${r}`));
+                  },
+                  foodImprovementStages: city => {
+                    const policy = effectiveUlepszeniaForCity(city as City);
+                    return policy.focus === 'zywnosc'
+                      || (policy.focus === 'zrownowazone'
+                        && !hasNonFoodResourceDeficit(resourceDeficitKeysForOwner(hOid)));
                   },
                 });
                 const toastLines: string[] = [];

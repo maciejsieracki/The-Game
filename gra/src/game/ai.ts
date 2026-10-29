@@ -2673,6 +2673,8 @@ function planCityImprovements(
     getWorkedHexKeys: city => workedHexKeysForAiCity(city as AICity),
     improvementBudgetCap: improvementBudget,
     priorityOverride: foodPriority,
+    // Keep the same empire-wide sequence as Food automation for the player.
+    foodImprovementStages: true,
   });
   const foodSpent = foodPicks.reduce((s, p) => s + p.kosztPraca, 0);
 
