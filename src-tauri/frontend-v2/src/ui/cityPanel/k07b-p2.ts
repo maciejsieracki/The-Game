@@ -48,7 +48,6 @@ const cfg = valueProxy('cfg') as CfgK07b;
 // ─── K07B-Z2/Z4: delegaty funkcji i wartości pinu spoza partii ──────────────────────────────────────────────────────
 const el = (...args: any[]): any => dep('el')(...args);
 const gameData = (...args: any[]): GameData | null => dep('gameData')(...args);
-const activeMap = (...args: any[]): any => dep('activeMap')(...args);
 const attachInteractiveDetail = (...args: any[]): any => dep('attachInteractiveDetail')(...args);
 const buildableProduction = (...args: any[]): any[] => dep('buildableProduction')(...args);
 const cityPanelChipIconWrap = (...args: any[]): any => dep('cityPanelChipIconWrap')(...args);

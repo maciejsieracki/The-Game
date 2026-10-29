@@ -24,7 +24,9 @@ if (!PIN_DIR) {
 const HERE = dirname(fileURLToPath(import.meta.url));
 const DIR = resolve(HERE, '../../src/ui/cityPanel');
 const pin = readFileSync(join(resolve(PIN_DIR), 'gra/src/ui/cityPanel.ts'), 'utf8').split(/\r?\n/);
-const renamePin = (line) => PIN_TO_PORT_NAMES.reduce((acc, [re, to]) => acc.replace(re, to), line);
+/** K07B-Z4 (r3): zmienna modułu pinu `activeMap` (wartość) → delegat wartości `activeMapK07()` (k07b-p1.ts). */
+const K07B_RENAMES = [[/\bactiveMap\b/g, 'activeMapK07()']];
+const renamePin = (line) => [...PIN_TO_PORT_NAMES, ...K07B_RENAMES].reduce((acc, [re, to]) => acc.replace(re, to), line);
 
 let blocks = 0;
 let mismatches = 0;

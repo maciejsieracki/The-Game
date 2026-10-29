@@ -47,7 +47,9 @@ const cfg = valueProxy('cfg') as CfgK07b;
 type CityHealthK07b = { total: number; lines: { label: string; value: number; [k: string]: any }[]; fromEngine: boolean };
 const el = (...args: any[]): any => dep('el')(...args);
 const gameData = (...args: any[]): any => dep('gameData')(...args);
-const activeMap = (...args: any[]): any => dep('activeMap')(...args);
+/** K07B-Z4 (r3): pin `activeMap` to zmienna modułu (`let activeMap`, :10118) — wartość, nie funkcja. Port: wywołanie delegatu
+ *  `activeMapK07()` w miejscu wartości (jedyne użycie: renderKultura). Wcześniej port przekazywał FUNKCJĘ zamiast mapy (błąd r2). */
+const activeMapK07 = (): any => dep('activeMap')();
 const attachInteractiveDetail = (...args: any[]): any => dep('attachInteractiveDetail')(...args);
 const cityPanelChipIconWrap = (...args: any[]): any => dep('cityPanelChipIconWrap')(...args);
 const cityPracaSplit = (...args: any[]): any => dep('cityPracaSplit')(...args);
@@ -268,7 +270,7 @@ export function renderKultura(mount: HTMLElement, city: CityK07, view: CityView 
   mount.innerHTML = '';
   const cultState = cfg.getCultureState?.(city.id) ?? undefined;
   const data = gameData();
-  const empire = resolveEmpireSnap(city, activeMap, data);
+  const empire = resolveEmpireSnap(city, activeMapK07(), data);
 
   appendSectionTitleWithDetails(
     mount,
