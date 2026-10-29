@@ -207,7 +207,9 @@ function addList(name, entries) {
 }
 addList('pusta', []);
 for (const civ of civsFile.cywilizacje) {
-  const real = civ.bonusy;
+  // REPIN-DANE-Q1 r2: web 91dc998a nie ma klucza civs.json `bonusy` (15/15); web czyta `row.bonusy ?? []`
+  // (economy.ts:776, civ-bonuses.ts `bonusy ?? []`). Na pinie edb8fb56 klucz istnieje - zachowanie bez zmian.
+  const real = civ.bonusy ?? [];
   const matrix = B.civMatrixBonusyForCivKey(civ.ikonaId);
   addList(`${civ.ikonaId}:real`, real);
   addList(`${civ.ikonaId}:matrix`, matrix);
@@ -356,7 +358,7 @@ dl('0.1+0.2', [
   { typ: 'koszt_redukcja', cel: 'budynki', wartosc: 0.1, realizuje: 'miasto' },
   { typ: 'koszt_redukcja', cel: 'budynki', wartosc: 0.2, realizuje: 'miasto' },
 ]);
-for (const civ of civsFile.cywilizacje) dl(`${civ.ikonaId}:real`, civ.bonusy);
+for (const civ of civsFile.cywilizacje) dl(`${civ.ikonaId}:real`, civ.bonusy ?? []); // REPIN-DANE-Q1 r2: jw.
 const costs = [-5, 0, 0.5, 1, 2, 3, 4, 7, 10, 17, 25, 99, 100, 333.7, 1000, 12345.9];
 const discount = discLists.map((l) => ({
   name: l.name,
