@@ -1,0 +1,2 @@
+src/ui/cityPanel/k01b-t.ts(252,15): error TS2551: Property 'units' does not exist on type 'GameDataK'. Did you mean 'unitsM'?
+src/ui/cityPanel/k01b-t.ts(252,26): error TS7006: Parameter 'u' implicitly has an 'any' type.

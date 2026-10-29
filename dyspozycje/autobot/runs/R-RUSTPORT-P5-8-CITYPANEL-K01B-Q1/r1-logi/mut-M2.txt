@@ -1,0 +1,18 @@
+src/ui/cityPanel/k01b-r.ts(42,21): error TS2551: Property 'kolejka' does not exist on type 'CityProductionK'. Did you mean 'kolejkaM'?
+src/ui/cityPanel/k01b-r.ts(45,20): error TS2551: Property 'kolejka' does not exist on type 'CityProductionK'. Did you mean 'kolejkaM'?
+src/ui/cityPanel/k01b-t.ts(42,39): error TS2551: Property 'kolejka' does not exist on type 'CityProductionK'. Did you mean 'kolejkaM'?
+src/ui/cityPanel/k01b-t.ts(44,7): error TS2561: Object literal may only specify known properties, but 'kolejka' does not exist in type 'CityProductionK'. Did you mean to write 'kolejkaM'?
+src/ui/cityPanel/k01b-t.ts(44,25): error TS2551: Property 'kolejka' does not exist on type 'CityProductionK'. Did you mean 'kolejkaM'?
+src/ui/cityPanel/k01b-t.ts(50,22): error TS2551: Property 'kolejka' does not exist on type 'CityProductionK'. Did you mean 'kolejkaM'?
+src/ui/cityPanel/k01b-t.ts(55,5): error TS2561: Object literal may only specify known properties, but 'kolejka' does not exist in type 'CityProductionK'. Did you mean to write 'kolejkaM'?
+src/ui/cityPanel/k01b-t.ts(65,5): error TS2561: Object literal may only specify known properties, but 'kolejka' does not exist in type 'CityProductionK'. Did you mean to write 'kolejkaM'?
+src/ui/cityPanel/k01b-t.ts(65,23): error TS2551: Property 'kolejka' does not exist on type 'CityProductionK'. Did you mean 'kolejkaM'?
+src/ui/cityPanel/k01b-t.ts(85,5): error TS2561: Object literal may only specify known properties, but 'kolejka' does not exist in type 'CityProductionK'. Did you mean to write 'kolejkaM'?
+src/ui/cityPanel/k01b-t.ts(85,23): error TS2551: Property 'kolejka' does not exist on type 'CityProductionK'. Did you mean 'kolejkaM'?
+src/ui/cityPanel/k01b-t.ts(105,5): error TS2561: Object literal may only specify known properties, but 'kolejka' does not exist in type 'CityProductionK'. Did you mean to write 'kolejkaM'?
+src/ui/cityPanel/k01b-t.ts(105,23): error TS2551: Property 'kolejka' does not exist on type 'CityProductionK'. Did you mean 'kolejkaM'?
+src/ui/cityPanel/k01b-t.ts(115,20): error TS2551: Property 'kolejka' does not exist on type 'CityProductionK'. Did you mean 'kolejkaM'?
+src/ui/cityPanel/k01b-t.ts(119,22): error TS2551: Property 'kolejka' does not exist on type 'CityProductionK'. Did you mean 'kolejkaM'?
+src/ui/cityPanel/k01b-t.ts(124,5): error TS2561: Object literal may only specify known properties, but 'kolejka' does not exist in type 'CityProductionK'. Did you mean to write 'kolejkaM'?
+src/ui/cityPanel/k01b-t.ts(314,15): error TS2551: Property 'kolejka' does not exist on type 'CityProductionK'. Did you mean 'kolejkaM'?
+src/ui/cityPanel/k01b-t.ts(314,42): error TS2551: Property 'kolejka' does not exist on type 'CityProductionK'. Did you mean 'kolejkaM'?

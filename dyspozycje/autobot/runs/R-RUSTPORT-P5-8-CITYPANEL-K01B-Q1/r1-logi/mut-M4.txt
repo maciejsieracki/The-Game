@@ -1,0 +1,2 @@
+src/ui/cityPanel/k01b-r.ts(57,20): error TS2551: Property 'total' does not exist on type 'GrowthPercentBreakdownK'. Did you mean 'totalM'?
+src/ui/cityPanel/k01b-r.ts(58,26): error TS2561: Object literal may only specify known properties, but 'total' does not exist in type 'GrowthPercentBreakdownK'. Did you mean to write 'totalM'?

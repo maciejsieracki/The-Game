@@ -1,0 +1,126 @@
+{
+ "markerBlocks": 55,
+ "odroczoneUnits": 57,
+ "rangesInOdrNotInBlocks": [
+  "677-695",
+  "696-714",
+  "889-912",
+  "913-917",
+  "1039-1074",
+  "1335-1347",
+  "1348-1348",
+  "1349-1349",
+  "1434-1443",
+  "1444-1450",
+  "1470-1480",
+  "1563-1597",
+  "1723-1743",
+  "1863-1878",
+  "3039-3049",
+  "3618-3644",
+  "3808-3813",
+  "4357-4375",
+  "6041-6050",
+  "6288-6295",
+  "6391-6398",
+  "6399-6409",
+  "6461-6470",
+  "6496-6504",
+  "6505-6515",
+  "6516-6555",
+  "6579-6614",
+  "6637-6649",
+  "6650-6659",
+  "6660-6672",
+  "6673-6685",
+  "6686-6703",
+  "6704-6719",
+  "6789-6811",
+  "7006-7012",
+  "7342-7348",
+  "7372-7381",
+  "7382-7390"
+ ],
+ "rangesInBlocksNotInOdr": [
+  "3808-3811",
+  "6041-6049",
+  "6288-6294",
+  "7342-7347",
+  "7372-7380",
+  "7382-7389",
+  "1723-1742",
+  "1863-1877",
+  "6673-6684",
+  "6686-6702",
+  "6704-6718",
+  "913-915",
+  "889-911",
+  "1434-1442",
+  "1444-1449",
+  "1563-1595",
+  "4357-4367",
+  "6496-6502",
+  "6505-6513",
+  "6516-6554",
+  "6579-6607",
+  "6637-6648",
+  "6650-6658",
+  "6660-6671",
+  "6789-6810",
+  "677-693",
+  "696-712",
+  "1039-1072",
+  "1335-1337",
+  "1470-1479",
+  "3039-3041",
+  "3618-3643",
+  "6391-6397",
+  "6399-6408",
+  "6461-6469",
+  "7006-7010"
+ ],
+ "totalPinLinesNonEmpty": 638,
+ "blocksWithAnyLineDiff": 40,
+ "totalMissingLines": 93,
+ "totalExtraLines": 84
+}
+{"file":"k01b-dom.ts","range":"3808-3811","pinLines":4,"missing":1,"extra":1,"missSample":["function renderImperiumZywnosc(mount: HTMLElement, _city: City): void {"],"extraSample":["function renderImperiumZywnosc(mount: HTMLElement, _city: CityRefK): void {"]}
+{"file":"k01b-r.ts","range":"913-915","pinLines":3,"missing":1,"extra":1,"missSample":["return etaTurns(koszt, 0, pracaPerTurn);"],"extraSample":["return reguly().etaTurns(koszt, 0, pracaPerTurn);"]}
+{"file":"k01b-r.ts","range":"889-911","pinLines":22,"missing":5,"extra":5,"missSample":["prod: CityProduction,","const front = frontItem(prod);"],"extraSample":["prod: CityProductionK,","const front = frontItemK(prod);"]}
+{"file":"k01b-r.ts","range":"1434-1442","pinLines":9,"missing":2,"extra":2,"missSample":["function clampedGrowthBreakdown(view: CityView, maxSafe?: number): GrowthPercentBreakdown {","const racje = rationGrowthPercent(effectiveLevel);"],"extraSample":["function clampedGrowthBreakdown(view: CityView, maxSafe?: number): GrowthPercentBreakdownK {","const racje = reguly().rationGrowthPercent(effectiveLevel);"]}
+{"file":"k01b-r.ts","range":"1444-1449","pinLines":6,"missing":3,"extra":3,"missSample":["function wyzwienieSummaryLabel(level: PoziomRacji, params: ReturnType<typeof buildRationParams>): string {","const cost = rationFoodCostPerPop(level, params);"],"extraSample":["function wyzwienieSummaryLabel(level: number, params: RationParamsK): string {","const cost = reguly().rationFoodCostPerPop(level, params);"]}
+{"file":"k01b-r.ts","range":"1563-1595","pinLines":30,"missing":2,"extra":3,"missSample":["const gainSlots = growthGainPerTurnSlots(population, growthPct, fed, atPopCap);","const turns = turnsUntilNextCitizen(frac, gainSlots);"],"extraSample":["void epoch;","const gainSlots = reguly().growthGainPerTurnSlots(population, growthPct, fed, atPopCap);"]}
+{"file":"k01b-r.ts","range":"4357-4367","pinLines":11,"missing":1,"extra":1,"missSample":["function orderBandEffectShort(band: ReturnType<typeof porPctBand>): string {"],"extraSample":["function orderBandEffectShort(band: OrderBandK | string): string {"]}
+{"file":"k01b-r.ts","range":"6484-6495","pinLines":11,"missing":2,"extra":1,"missSample":["const effect = buildingEffectAtLevel(baza, przyrost, level);","/** Skrót przychodu na chipie infokarty budynku — realna wartość na poziomie miasta. */"],"extraSample":["const effect = reguly().buildingEffectAtLevel(baza, przyrost, level);"]}
+{"file":"k01b-r.ts","range":"6496-6502","pinLines":7,"missing":1,"extra":1,"missSample":["const effect = buildingEffectAtLevel(baza, przyrost, level);"],"extraSample":["const effect = reguly().buildingEffectAtLevel(baza, przyrost, level);"]}
+{"file":"k01b-r.ts","range":"6505-6513","pinLines":9,"missing":2,"extra":2,"missSample":["function formatBuildingYieldScaleRow(def: BuildingDef, baza: number, przyrost: number): string | null {","const v = buildingEffectAtLevel(baza, przyrost, l);"],"extraSample":["function formatBuildingYieldScaleRow(def: BuildingDefK, baza: number, przyrost: number): string | null {","const v = reguly().buildingEffectAtLevel(baza, przyrost, l);"]}
+{"file":"k01b-r.ts","range":"6516-6554","pinLines":39,"missing":9,"extra":9,"missSample":["def: BuildingDef,","buildings: readonly BuildingDef[],"],"extraSample":["/** Chipy bonusów (max 3) — mockup Poziom B budynków 1E. */","def: BuildingDefK,"]}
+{"file":"k01b-r.ts","range":"6579-6607","pinLines":29,"missing":7,"extra":8,"missSample":["def: BuildingDef,","buildings: readonly BuildingDef[],"],"extraSample":["def: BuildingDefK,","buildings: readonly BuildingDefK[],"]}
+{"file":"k01b-r.ts","range":"6637-6648","pinLines":12,"missing":2,"extra":3,"missSample":["? `−${resources[k]} ${stockResourceLabel(k)}`",": `−${resources[k]} ${stockResourceLabel(k)}/t`))"],"extraSample":["const label = (k: string): string => reguly().stockResourceLabel(k);","? `−${resources[k]} ${label(k)}`"]}
+{"file":"k01b-r.ts","range":"6650-6658","pinLines":9,"missing":3,"extra":4,"missSample":["def: BuildingDef,","gold: buildingUpkeep(def as unknown as BuildingRecord, level),"],"extraSample":["def: BuildingDefK,","const rules = reguly();"]}
+{"file":"k01b-r.ts","range":"6660-6671","pinLines":12,"missing":2,"extra":3,"missSample":["data: GameData,","addResourceCosts(out, buildingResourceUpkeep(def));"],"extraSample":["data: GameDataK,","const rules = reguly();"]}
+{"file":"k01b-r.ts","range":"6789-6810","pinLines":22,"missing":2,"extra":3,"missSample":["const txt = compact ? `−${amtTxt} ${stockResourceLabel(k)}` : `−${amtTxt} ${stockResourceLabel(k)}/t`;","const txt = compact ? `+${amtTxt} ${stockResourceLabel(k)}` : `+${amtTxt} ${stockResourceLabel(k)}/t`;"],"extraSample":["const label = (k: string): string => reguly().stockResourceLabel(k);","const txt = compact ? `−${amtTxt} ${label(k)}` : `−${amtTxt} ${label(k)}/t`;"]}
+{"file":"k01b-t.ts","range":"625-625","pinLines":1,"missing":1,"extra":1,"missSample":["let cachedData: GameData | null = null;"],"extraSample":["let cachedData: GameDataK | null = null;"]}
+{"file":"k01b-t.ts","range":"633-633","pinLines":1,"missing":1,"extra":1,"missSample":["const localProd = new Map<string, CityProduction>();"],"extraSample":["const localProd = new Map<string, CityProductionK>();"]}
+{"file":"k01b-t.ts","range":"645-666","pinLines":21,"missing":3,"extra":3,"missSample":["function moveQueueItem(prod: CityProduction, index: number, dir: -1 | 1): CityProduction {","const a = k[index] as ProductionItem;"],"extraSample":["function moveQueueItem(prod: CityProductionK, index: number, dir: -1 | 1): CityProductionK {","const a = k[index] as ProductionItemK;"]}
+{"file":"k01b-t.ts","range":"667-676","pinLines":9,"missing":2,"extra":1,"missSample":["function copyCityProduction(prod: CityProduction): CityProduction {","/** Przesuń pozycję kolejki rekrutacji w górę/dół. */"],"extraSample":["function copyCityProduction(prod: CityProductionK): CityProductionK {"]}
+{"file":"k01b-t.ts","range":"677-693","pinLines":17,"missing":3,"extra":4,"missSample":["function moveRecruitQueueItem(prod: CityProduction, index: number, dir: -1 | 1): CityProduction {","const a = next[index] as ProductionItem;"],"extraSample":["/** Przesuń pozycję kolejki rekrutacji w górę/dół. */","function moveRecruitQueueItem(prod: CityProductionK, index: number, dir: -1 | 1): CityProductionK {"]}
+{"file":"k01b-t.ts","range":"696-712","pinLines":17,"missing":1,"extra":2,"missSample":["function reorderRecruitQueueItem(prod: CityProduction, fromIndex: number, toIndex: number): CityProduction {"],"extraSample":["/** Przenieś pozycję kolejki rekrutacji na inny indeks. */","function reorderRecruitQueueItem(prod: CityProductionK, fromIndex: number, toIndex: number): CityProductionK {"]}
+{"file":"k01b-t.ts","range":"715-731","pinLines":16,"missing":1,"extra":2,"missSample":["function reorderQueueItem(prod: CityProduction, fromIndex: number, toIndex: number): CityProduction {"],"extraSample":["/** Przenieś pozycję kolejki (indeks ≥ 1) na inny indeks w tej samej kolejce. */","function reorderQueueItem(prod: CityProductionK, fromIndex: number, toIndex: number): CityProductionK {"]}
+{"file":"k01b-t.ts","range":"994-1000","pinLines":6,"missing":6,"extra":1,"missSample":["type CityWithSliders = City & {","podzialHandlu?: PodzialHandluSplit;"],"extraSample":["type CityWithSliders = CityWithSlidersK;"]}
+{"file":"k01b-t.ts","range":"1039-1072","pinLines":34,"missing":3,"extra":4,"missSample":["poziomRacji: PoziomRacji;","growthBreakdown: GrowthPercentBreakdown;"],"extraSample":["// CitizenUpkeepCoverage jako typy DTO — K01B-Z1)","poziomRacji: PoziomRacjiK;"]}
+{"file":"k01b-t.ts","range":"1108-1125","pinLines":18,"missing":0,"extra":1,"missSample":[],"extraSample":["/** Snapshot imperium do paska zasobów w widoku miasta (spójny z HudState). */"]}
+{"file":"k01b-t.ts","range":"1335-1337","pinLines":3,"missing":2,"extra":2,"missSample":["function daninaLabelForCity(_city: City): DaninaLabel {","return daninaLabel();"],"extraSample":["function daninaLabelForCity(_city: CityRefK): DaninaLabelK {","return 'Podatek';"]}
+{"file":"k01b-t.ts","range":"1350-1360","pinLines":10,"missing":9,"extra":0,"missSample":["/**","* R-PRACA-JEDEN-PODZIAL-Q1 — ROOT CAUSE osmiu nawrotow tego tematu byl TUTAJ:"],"extraSample":[]}
+{"file":"k01b-t.ts","range":"1470-1479","pinLines":10,"missing":1,"extra":1,"missSample":["tick?: EmpireFoodTick | null,"],"extraSample":["tick?: EmpireFoodTickK | null,"]}
+{"file":"k01b-t.ts","range":"3039-3041","pinLines":3,"missing":1,"extra":1,"missSample":["function szLinesDoWyswietlenia(lines: SocietyLine[] | undefined): SocietyLine[] | undefined {"],"extraSample":["function szLinesDoWyswietlenia(lines: SocietyLineK[] | undefined): SocietyLineK[] | undefined {"]}
+{"file":"k01b-t.ts","range":"3618-3643","pinLines":26,"missing":5,"extra":1,"missSample":["// DYSPOZYCJA 85 (Maciej 2026-07-26): `raw.tradeSources` (którego szlak handlowy","// przyznał dostęp do tego surowca) już NIE jest odczytywany tutaj -- to jest"],"extraSample":["// nie jest czytany — DYSPOZYCJA 85, zgodnie z pinem)"]}
+{"file":"k01b-t.ts","range":"6368-6371","pinLines":3,"missing":1,"extra":1,"missSample":["function findBuildingDef(data: GameData, id: string): BuildingDef | undefined {"],"extraSample":["function findBuildingDef(data: GameDataK, id: string): BuildingDefK | undefined {"]}
+{"file":"k01b-t.ts","range":"6372-6375","pinLines":3,"missing":1,"extra":1,"missSample":["function findUnitDef(data: GameData, id: string): UnitDef | undefined {"],"extraSample":["function findUnitDef(data: GameDataK, id: string): UnitDefK | undefined {"]}
+{"file":"k01b-t.ts","range":"6376-6379","pinLines":3,"missing":1,"extra":1,"missSample":["function customBuildingIconClass(_def: BuildingDef | undefined): string | null {"],"extraSample":["function customBuildingIconClass(_def: BuildingDefK | undefined): string | null {"]}
+{"file":"k01b-t.ts","range":"6380-6383","pinLines":3,"missing":1,"extra":1,"missSample":["function buildingIconHtml(def: BuildingDef | undefined, buildingId?: string): string {"],"extraSample":["function buildingIconHtml(def: BuildingDefK | undefined, buildingId?: string): string {"]}
+{"file":"k01b-t.ts","range":"6384-6390","pinLines":6,"missing":1,"extra":1,"missSample":["function unitIconHtml(u: UnitDef | undefined, id?: string): string {"],"extraSample":["function unitIconHtml(u: UnitDefK | undefined, id?: string): string {"]}
+{"file":"k01b-t.ts","range":"6391-6397","pinLines":7,"missing":1,"extra":1,"missSample":["function unitMedallionHtml(u: UnitDef | undefined, id?: string, size = 22): string {"],"extraSample":["function unitMedallionHtml(u: UnitDefK | undefined, id?: string, size = 22): string {"]}
+{"file":"k01b-t.ts","range":"6399-6408","pinLines":10,"missing":1,"extra":1,"missSample":["function productionItemIconHtml(data: GameData | null, item: ProductionItem): string {"],"extraSample":["function productionItemIconHtml(data: GameDataK | null, item: ProductionItemK): string {"]}
+{"file":"k01b-t.ts","range":"6461-6469","pinLines":9,"missing":1,"extra":1,"missSample":["const YIELD_BRAND: { key: keyof BuildingDef['baza']; brandId: string; label: string }[] = ["],"extraSample":["const YIELD_BRAND: { key: YieldKeyK; brandId: string; label: string }[] = ["]}
+{"file":"k01b-t.ts","range":"7006-7010","pinLines":5,"missing":1,"extra":1,"missSample":["function parentBuildingName(data: GameData, upgradeFromId: string | undefined): string | null {"],"extraSample":["function parentBuildingName(data: GameDataK, upgradeFromId: string | undefined): string | null {"]}

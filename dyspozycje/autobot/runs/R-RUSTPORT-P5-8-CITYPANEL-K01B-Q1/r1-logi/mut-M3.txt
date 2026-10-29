@@ -1,0 +1,2 @@
+src/ui/cityPanel/k01b-r.ts(141,29): error TS2551: Property 'maksPoziom' does not exist on type 'BuildingDefK'. Did you mean 'maksPoziomM'?
+src/ui/cityPanel/k01b-r.ts(143,28): error TS2551: Property 'maksPoziom' does not exist on type 'BuildingDefK'. Did you mean 'maksPoziomM'?
