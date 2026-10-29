@@ -77,3 +77,105 @@ Odswiezenie wektorow (przepiecie na nowszy pin) - osobny temat po raporcie R-RUS
 - `rebalanceLandFractionPangea` (:3667) wymaga portu `fillPangeaAnnularSeaCorridors` (:4595) i `ensurePangeaSingleContinent` (:4375).
   Oba symbole nie sa w zadnym temacie dispatchu ani w `P6-M06A5`. Potrzebny nowy temat (np. P6-M06A7) lub decyzja, kto je przejmuje.
 - Pomiary mutacyjne (mutacje strukturalne galezi sterujacych, dowody rownowaznosci, pomiar trafien na granicach) - Operator-pomiary, runda 2. NIE_ZMIERZONO w rundzie 1.
+  Wynik rundy 2: patrz sekcja "Runda 2 - pomiary" nizej (2 mutanty nieZabite i nie-rownowazne = luki testowe).
+
+## Runda 2 - pomiary (Operator-pomiary, ten sam ID)
+
+Poprawka do rundy 1: sekcja "Dryf po pinie" podawala 4 hunki; `grep -c "^@@"` na pliku diff daje **8 hunkow** (pin-linie 5992, 8466, 10352, 10392, 10541, 10693, 10776, 10804). Zaden nie lezy w 3186-4374.
+
+### Weryfikator niezalezny (reprodukowalnosc wektorow)
+
+Wektory wygenerowane ponownie z pinu `edb8fb56` (ta sama komenda, seed 20261101) i porownane bajtowo z plikami w repo:
+erode / carve / contfrac - **identyczne** (log: `verify-regen-m06a6-r2.log`).
+
+### Bramki (surowe logi, EXIT)
+
+- fmt: `EXIT=0` (`gate-fmt-r2.log`)
+- clippy `--all-targets -D warnings`: `EXIT=0` (`gate-clippy-r2.log`)
+- test (engine): `EXIT=0`, **1305 passed, 0 failed** (baza 1296 + 9 nowych) (`gate-test-r2.log`)
+
+### Mutacje (`mut-runner-m06a6.py`, log `mutations-r2.log`)
+
+Kazda mutacja: jeden fragment `landsea.rs`, testy `p6_m06a6_pangea`, przywracanie z bajtow, SHA zgodne po kazdej (`zgodne=True`).
+
+| ID | Galaz | Wynik |
+|---|---|---|
+| E01 bbox-stop `<` | erode: stop bbox | SURVIVED - RÓWNOWAZNA (dowod D1) |
+| E02 usuniety wczesny return | erode: stop bbox | SURVIVED - RÓWNOWAZNA (dowod D1) |
+| E03 rim qmin `<` | erode: pas brzegu | KILLED |
+| E04 rim qmax `>` | erode: pas brzegu | KILLED |
+| E05 rim rmin `<` | erode: pas brzegu | KILLED |
+| E06 rim rmax `>` | erode: pas brzegu | KILLED |
+| E07 tolerancja `>=` | erode: sort | KILLED |
+| E08 sort odwrocony | erode: sort | KILLED |
+| E09 stop bez bbox | erode: petla | KILLED |
+| E10 `eroded >` | erode: petla | KILLED |
+| E11 bez przeliczenia | erode: petla | KILLED |
+| E12 bez set_morze | erode: petla | KILLED |
+| E13 bez `js_max(1,area)` | erode: obszar | SURVIVED - RÓWNOWAZNA (dowod D2) |
+| C01 minland `<=` | carve: prog 80 | KILLED |
+| C02 aspect `<` | carve: prog 1.85 | KILLED |
+| C03 `span_q > span_r` | carve: long_is_q | SURVIVED - RÓWNOWAZNA (dowod D3) |
+| C04 onlong min `<` | carve: pas | KILLED |
+| C05 onlong max `>` | carve: pas | KILLED |
+| C06 nearmid `<=` | carve: blisko srodka | SURVIVED - RÓWNOWAZNA (dowod D4) |
+| C07 usuniety warunek nearmid | carve: struktura | KILLED |
+| C08 bez szumu | carve: wynik | KILLED |
+| C09 sort odwrocony | carve: sort | KILLED |
+| C10 `carved >` | carve: limit | KILLED |
+| C11 `dist >=` | carve: krawedz | KILLED |
+| C12 bez `.floor()` | carve: glebokosc | SURVIVED - RÓWNOWAZNA (dowod D5) |
+| C13 bez minimum 3 | carve: glebokosc | KILLED |
+| C14 `js_max` zamiast `js_min` | carve: krawedz | KILLED |
+| K01 bez gornego clampu | cont: udzial | KILLED |
+| K02 ostatni kontynent bez reszty | cont: kwota | KILLED |
+| K03 `floor` zamiast `round` | cont: kwota | KILLED |
+| K04 deficyt `<=` | cont: galaz lad<kwota | SURVIVED - RÓWNOWAZNA (dowod D6) |
+| K05 morse bez break | cont: wzrost | KILLED |
+| K06 galaz erozji wylaczona | cont: spadek | KILLED |
+| K07 rekonsyliacja wylaczona | cont: koniec | KILLED |
+| K08 bez guardu NaN sumy | cont: total_score | **SURVIVED - LUKA (NIE-rownowazna)** |
+| K09 tolerancja sortu morse `>=` | cont: sort morse | **SURVIVED - LUKA (NIE-rownowazna)** |
+| K10 bez dolnego clampu ci | cont: kontynent | KILLED |
+
+Wynik: 37 mutacji (kotwica K09 poprawiona w dry-run przed uruchomieniem). **Zabite 28; rownowazne 7 (E01, E02, E13, C03, C06, C12, K04 - dowody D1-D6); luki 2 (K08, K09).** 28 + 7 + 2 = 37.
+
+### Dowody rownowaznosci
+
+- **D1 (E01, E02):** pierwsza instrukcja petli erozji to `if bbox_fill <= target || eroded >= max { break }`. Przy `bbox_fill == target` (17 przypadkow wektorow, pomiar `bbox_stop_equal`) petla przerywa przy `eroded = 0`; przed petla nie ma skutkow ubocznych (rim i sort nie modyfikuja `hexes`). Wynik `0` identyczny.
+- **D2 (E13):** klucze kanoniczne `"q,r"` (Z-1): `q_max >= q_min`, `r_max >= r_min`, wiec `(Δq+1)(Δr+1) >= 1` dla niepustego lądu; `js_max(1, x) = x` dla `x >= 1`. Dla kluczy niekanonicznych wynik i tak jest NaN (Z-1), a obie wersje propaguja NaN. Brak roznicy.
+- **D3 (C03):** `span_q == span_r` daje `aspect = L / max(1, L) = 1 <= max_aspect` (1.85 z danych; dowod wazny dla `max_aspect >= 1`) -> `return 0` przed uzyciem `long_is_q`. Dla `max_aspect < 1` mutant rozni sie - warunek domeny: `max_aspect >= 1` (jedyne wywolanie produkcyjne uzywa 1.85).
+- **D4 (C06):** dla kluczy calkowitych `mid = (qmin+qmax)/2` jest calkowity <=> `L = Δq+1` nieparzyste. `0.42·L = 21L/50` lezy w `Z/2` <=> `25 | L`; wtedy `L = 25m`: m nieparzyste -> `mid` calkowity, `0.42L = 10.5m` polcalkowity; m parzyste -> `mid` polcalkowity, `0.42L` calkowity. Zatem `|along - mid| = 0.42L` nigdy nie zachodzi (a dla `0.42L` spoza `Z/2` roznica od `Z/2` >= 1/50 >> blad float). Pomiar: `nearmid_eq = 0` w 250 przypadkach.
+- **D5 (C12):** wszystkie porownania z `carve_depth` maja calkowita lewa strone (`across - smin`, `smax - across`, `dist_edge` - calkowite dla kluczy kanonicznych). Dla calkowitego `x`: `x <= f <=> x <= floor(f)`, `x > f <=> x > floor(f)`. `max(3, f)` vs `max(3, floor f)` daje te same decyzje. Brak roznicy.
+- **D6 (K04):** w galezi `land < quota` pierwsza instrukcja petli wzrostu to `if land >= quota { break }`. Przy `land == quota` (wejscie z `<=`) petla konczy sie przed jakakolwiek zmiana `hexes`; sortowanie `morse` nie modyfikuje danych. Brak roznicy.
+
+### Luki (non-equivalent survivors) - wymagaja poprawki Operatora-impl
+
+- **K08 (guard NaN sumy wynikow):** web `totalScore = scoreSums.reduce(...) || 1` - NaN jest falsy, wiec totalScore = 1. Rust (`sum_all.is_nan()`) to odwzorowuje, ALE zaden wektor nie ma NaN w `landScores` (sprawdzone: 0 z 205 przypadkow; NaN wystepuje tylko w `target`, 21 przypadkow). Kod poprawny wzgledem web, ale ta galaz nie jest przetestowana. **Wymagane:** przypadek z jednym NaN w landScores (wektor z uruchomionego weba), asercja zgodnosci.
+- **K09 (tolerancja sortu morse `>` vs `>=`):** wektory maja 164 pary o `|Δscore|` dokladnie rownym `0.04` w arytmetyce float (58 przypadkow), ale zadna z nich nie jest porownywana w sortowaniu kandydatow `morse` z wynikiem zaleznym od gałęzi. Brak trafienia na granicy tolerancji w miejscu decyzji. **Wymagane:** przypadek z kandydatami Morze o scores `0.0` i `0.04` (`0.04 - 0.0 == 0.04` dokladnie w float, sprawdzone), z odwrotna kolejnoscia odleglosci od centrum, wektor z uruchomionego weba.
+
+### Pomiar trafien wektorow na granicach (`measure-boundaries-m06a6.py`, log `measure-boundaries-r2.log`)
+
+Metoda: zliczanie trafien geometrii z danych wejsciowych wektorow (nie wynik funkcji). Tolerancja porownan float: 1e-12 (przyblizenie dla `tol_tie_pairs`).
+
+| Granica | Trafienia (przypadki/elementy) |
+|---|---|
+| erode: `bbox_fill == target` (N) | 17 |
+| erode: pas brzegu, odleglosc od granicy bbox 1 / 2 / 3 (N-1 / N / N+1) | qmin: 1498/1495/1429; qmax: 1515/1478/1441; rmin: 1509/1502/1402; rmax: 1495/1492/1455 |
+| erode: `eroded == max` | 80 przypadkow |
+| erode: pary z `|Δscore| == 0.02` (tolerancja, przyblizona) | 36498 |
+| carve: liczba lądu 79 / 80 / 81 | 30 / 30 / 32 |
+| carve: `aspect == 1.85` (N) | 27 przypadkow |
+| carve: `across - smin` vs glebokosc (N-1 / N / N+1) | 2314 / 2285 / 1963 |
+| carve: `|along - mid| == 0.42·L` (N) | 0 (rownowaznosc D4) |
+| carve: `dist_edge == glebokosc` (N) | 1039 |
+| carve: `carved == maxCarve` | 68 przypadkow |
+| cont: `target == 0.15 / 0.85` (klamp) | 10 przypadkow |
+| cont: kwota z reszta `.5` (Math.round na granicy) | 4 przypadki |
+| cont: `|Δscore| == 0.04` (tolerancja sortu morse) | 164 pary / 58 przypadkow, ale bez wplywu na decyzje (K09) |
+
+### Wnioski rundy 2
+
+- Binarne kryterium "mutacje na kazdej galezi sterujacej + dowody rownowaznosci": **niespelnione** - K08 i K09 to galezie bez zabojcy i nie-rownowazne. Potrzebne dwa przypadki wektorow z weba (K08: NaN w landScores; K09: tie 0.04 w sorcie morse), ponowne mutacje K08/K09 jako zabite, bez oslabiania istniejacych testow.
+- Pozostale mutacje: zabite lub rownowazne z dowodem.
+- Bez zmian kodu w tej rundzie (Operator-pomiary).
