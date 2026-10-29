@@ -1,0 +1,21 @@
+{
+  "meta": {
+    "temat": "R-RUSTPORT-P6-M06A-LAD-MORZE-WYBRZEZE-A-Q1",
+    "zrodlo_web": "gra/src/map/gen-helpers.ts (pin edb8fb56), :3254 defaultLandFractionForTyp, :3279 ERODE_TERRAIN_ORDER",
+    "uwaga": "Wartosci balansowe edytowalne. Kod nie zawiera ich literalow (runda 1)."
+  },
+  "udzial_ladu_domyslny": {
+    "kontynenty": 0.30,
+    "pangea": 0.60,
+    "wyspy": 0.50,
+    "ziemia": 0.21
+  },
+  "kolejnosc_erozji": [
+    "PlytkieMorze",
+    "Laka",
+    "Pustynia",
+    "Rownina",
+    "Wzgorza",
+    "Gory"
+  ]
+}
