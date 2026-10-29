@@ -21,6 +21,12 @@ assert.ok(preBattle.includes('Bez Wodza lub Generała możesz wejść na pole bi
 
 assert.equal((main.match(/deploy: (?:atk|def)RosterRef\.some\(u => u\.isGeneral === true\)/g) ?? []).length, 3,
   'all three player-controlled map-battle entry paths skip manual deployment controls without a commander');
+assert.match(preBattle, /if \(opts\?\.automaticOnly === true\)\s*\{\s*cb\.onAuto\(\);\s*return;/,
+  'automatic-only mode resolves directly and does not show the manual-vs-auto overlay');
+assert.match(main, /function playerBattleAutomaticOnly\(ownerId: number\): boolean[\s\S]*?_lastNewGameParams\?\.advanced\?\.battleAlwaysManual === false/,
+  'new-game mode is read from persisted session parameters and only applies to a human owner');
+assert.equal((main.match(/automaticOnly: playerBattleAutomaticOnly\(/g) ?? []).length, 3,
+  'field attacks, incoming attacks, and city sieges all honor the player mode');
 
 assert.match(scene, /this\._manualMode = !this\._manualCommanderGate \|\| \(this\._manualCommanderGate && hasCommander\)/,
   'manual battlefield controls start enabled only when an assigned commander is present');
@@ -29,4 +35,4 @@ assert.match(scene, /if \(this\._manualCommanderGate && !this\._manualMode[\s\S]
 assert.match(scene, /if \(!this\._manualMode\) this\._kickoffBattleTurn\(\)/,
   'after entering the field without a commander, automatic battle resolution proceeds');
 
-console.log('battle-manual-choice-contract-test: 9 passed, 0 failed');
+console.log('battle-manual-choice-contract-test: 12 passed, 0 failed');

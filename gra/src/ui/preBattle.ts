@@ -152,6 +152,8 @@ export interface PreBattleCallbacks {
 
 export interface PreBattleOptions {
   defaultAction?: 'auto' | 'manual';
+  /** Resolve immediately without opening the pre-battle choice overlay. */
+  automaticOnly?: boolean;
   /** Manual battlefield controls require a Wódz/Generał in the player's roster. */
   manualControlAllowed?: boolean;
   /** Nadpisanie hooka z configurePreBattle (np. jednorazowy test). */
@@ -247,6 +249,13 @@ export function showPreBattle(
     // main.ts::healStaleEndTurnBlockers() uses it so a request stuck in the queue past the
     // threshold (8s, see main.ts) doesn't disable its branch 1 FOREVER.
     deferredAutoRequests.push({ info, cb, opts, enqueuedAt: Date.now() });
+    return;
+  }
+  // The new-game setting Bitwa automatyczna means automatic resolution, with no
+  // manual-vs-auto prompt. Keep this after the deferred-auto guard so incoming attacks
+  // queued behind another modal are still resolved in FIFO order when they flush.
+  if (opts?.automaticOnly === true) {
+    cb.onAuto();
     return;
   }
   hidePreBattle();

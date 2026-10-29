@@ -210,6 +210,16 @@ async function main() {
   if (!autoCalled) throw new Error('Auto action must still resolve without a commander');
   hidePreBattle();
 
+  autoCalled = false;
+  manualCalled = false;
+  showPreBattle(
+    { ...baseInfo, defenderCanRetreat: false },
+    { onAuto: () => { autoCalled = true; }, onBattlefield: () => { manualCalled = true; }, onCancel: () => {} },
+    { automaticOnly: true, manualControlAllowed: true },
+  );
+  if (!autoCalled || manualCalled) throw new Error('automatic-only setting must resolve Auto without offering manual deployment');
+  if (isPreBattleOpen()) throw new Error('automatic-only setting must not open the pre-battle choice overlay');
+
   console.log('pre-battle-defender-retreat-test: OK');
 }
 

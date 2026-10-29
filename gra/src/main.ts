@@ -29019,6 +29019,14 @@ async function boot(): Promise<void> {
       });
     }
 
+    /** Czy ustawienia nowej gry wymuszają auto dla bitwy z udziałem tego gracza. */
+    function playerBattleAutomaticOnly(ownerId: number): boolean {
+      if (!isMe(ownerId)) return false;
+      // Zachowaj stary wybór dla legacy save'ów bez pola; nowe gry zawsze zapisują
+      // jawne false/true w advanced.battleAlwaysManual.
+      return _lastNewGameParams?.advanced?.battleAlwaysManual === false;
+    }
+
     /** MAP PLAYER ATTACK: jednostka → jednostka (sąsiad) → preBattle C-01 */
     function openPlayerMapUnitAttack(atkUnit: RuntimeUnit, defUnit: RuntimeUnit): void {
       if (isMe(atkUnit.ownerId) && !isMe(defUnit.ownerId) && !playerIsAtWarWith(defUnit.ownerId)) {
@@ -29243,7 +29251,11 @@ async function boot(): Promise<void> {
           hidePreBattle();
         },
         onSave: () => doQuickSave(false),
-      }, { defaultAction: 'manual', manualControlAllowed: atkRosterRef.some(u => u.isGeneral === true) });
+      }, {
+        defaultAction: 'manual',
+        manualControlAllowed: atkRosterRef.some(u => u.isGeneral === true),
+        automaticOnly: playerBattleAutomaticOnly(atkUnit.ownerId),
+      });
     }
 
     function snapshotRosterForSummary(roster: RuntimeUnit[]): BattleUnitBeforeSnap[] {
@@ -29954,6 +29966,7 @@ async function boot(): Promise<void> {
       }, {
         defaultAction: 'manual',
         manualControlAllowed: defRosterRef.some(u => u.isGeneral === true),
+        automaticOnly: playerBattleAutomaticOnly(defLead.ownerId),
         // P-KONIEC-TURY-ZDARZENIA-NACHODZA-NA-SIEBIE (Maciej 2026-08-14): JEDYNE
         // automatyczne (nie-gracz-inicjowane) wywołanie showPreBattle w całym kodzie --
         // atak AI/barbarzyńców na gracza w trakcie fazy AI/barbarzyńców końca tury (wołane z
@@ -32137,7 +32150,11 @@ async function boot(): Promise<void> {
           showSiegeMapPanel(ctx, siegePanelActions, siegeTurnByCity.get(city.id) ?? 1);
         },
         onSave: () => doQuickSave(false),
-      }, { defaultAction: 'manual', manualControlAllowed: atkRosterRef.some(u => u.isGeneral === true) });
+      }, {
+        defaultAction: 'manual',
+        manualControlAllowed: atkRosterRef.some(u => u.isGeneral === true),
+        automaticOnly: playerBattleAutomaticOnly(anchor.ownerId),
+      });
 
       console.log('[Oblezenie] szturm preBattle', city.name, 'atk=', atkRoster.length, 'def=', defRoster.length);
     }
