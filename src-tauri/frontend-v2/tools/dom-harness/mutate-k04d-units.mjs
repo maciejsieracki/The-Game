@@ -39,6 +39,14 @@ const MUTATIONS = [
   [F.kult, "gridDetailRow(g1, 'Granice', `+${culture.borderRadius} pierścieni wokół miasta`);", "gridDetailRow(g1, 'Granice', `+${culture.borderRadius + 1} pierścieni wokół miasta`);", 'Kultura', 'granice +1'],
   [F.kult, '  const xRelTop = i.skalaSzEpoki;', '  const xRelTop = i.skalaSzEpoki + 1;', 'Religia', 'skala Szczescia epoki +1'],
   [F.kult, "gridDetailRow(g0, 'Udział wiary', `${share}% ludności`);", "gridDetailRow(g0, 'Udział wiary', `${share + 1}% ludności`);", 'Religia', 'udzial wiary +1'],
+  // R2 (obrona r1): zarzuty Evaluatora 1-5 + dwa punkty estymat
+  [F.gosp, "gridDetailRow(gCity, 'Nauka (osobny bank)', signed(moneySnap.nauka));", "gridDetailRow(gCity, 'Nauka (osobny bank)', signed(0));", 'Zloto', 'zarzut 1: nauka z moneySnap zerowana'],
+  [F.gosp, "  if (est.nauka) gridDetailRow(g1, '→ z handlu (szac.)', `~+${est.nauka}`);", '  if (false) gridDetailRow(g1, \'→ z handlu (szac.)\', `~+${est.nauka}`);', 'Nauka', 'zarzut 2: wiersz z handlu (szac.) wylaczony'],
+  [F.zycie, '  if (foodSplit.clamped) {', '  if (false) {', 'Zywnosc', 'zarzut 3: galaz auto-korekty wylaczona'],
+  [F.kult, '  const share = empire.religionSharePct ?? relSt?.udzialPct ?? 0;', '  const share = empire.religionSharePct ?? 0;', 'Religia', 'zarzut 4: fallback udzialu wiary na DTO usuniety'],
+  [F.gosp, "gridDetailRow(g1, `${daninaLbl} netto (szac.)`, `~${est.netto} → split suwaków`);", "gridDetailRow(g1, `${daninaLbl} netto (szac.)`, `~${est.netto + 1} → split suwaków`);", 'Zloto', 'estymata netto podatku +1'],
+  [F.zycie, "gridDetailRow(g1, 'Bilans żywności', `${signed(foodSplit.total)} 🍞/t`);", "gridDetailRow(g1, 'Bilans żywności', `${signed(view.bilansLokalny)} 🍞/t`);", 'Ludnosc', 'zarzut 5 (bilans przyciety): bilans zywnosci z nieprzycietego pola'],
+  [F.kult, '  const share = empire.religionSharePct ?? relSt?.udzialPct ?? 0;', '  const share = relSt?.udzialPct ?? empire.religionSharePct ?? 0;', 'Religia', 'kolejnosc zrodel udzialu wiary odwrocona'],
 ];
 
 const results = [];

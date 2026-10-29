@@ -92,6 +92,7 @@ try {
   await bundle(
     [
       join(CITY, 'k04d-zycie.ts'), join(CITY, 'k04d-gospodarka.ts'), join(CITY, 'k04d-kultura.ts'),
+      join(CITY, 'k01b-reguly.ts'),
       join(V2_ROOT, 'src/controller/mockCatalog.ts'), join(V2_ROOT, 'src/controller/staticCatalog.ts'),
     ],
     v2Out,
@@ -100,6 +101,11 @@ try {
   const SC = await import(pathToFileURL(entryJs(v2Out, 'staticCatalog.js')).href);
   const MC = await import(pathToFileURL(entryJs(v2Out, 'mockCatalog.js')).href);
   SC.installStaticCatalog(MC.MOCK_STATIC_CATALOG);
+  // Port reguł testowy (R2, obrona r1): wymagany tylko przez przyciecie do maxSafe (`clampedGrowthBreakdown` -> `rationGrowthPercent`).
+  // Wartosc: level - 4 (zgodne z fixture growthBreakdown.racje = -1 przy poziomie 3). Pozostale metody celowo NIEZDEFINIOWANE:
+  // wywolanie rzuca TypeError (harness konczy sie EXIT 2), wiec port nie moze cicho maskowac brakow.
+  const REG = await import(pathToFileURL(entryJs(v2Out, 'k01b-reguly.js')).href);
+  REG.ustawRegulyKontrolera({ rationGrowthPercent: (level) => level - 4 });
   const K = {
     zycie: await import(pathToFileURL(entryJs(v2Out, 'k04d-zycie.js')).href),
     gosp: await import(pathToFileURL(entryJs(v2Out, 'k04d-gospodarka.js')).href),
@@ -242,6 +248,36 @@ try {
   expectText('rel:skala-epoki', relCard, 'proporcjonalnie do udziału: 100% własnej +23, 50/50 = 0, 100% obcej −23'); // pin :6034-6035
   const relBezPanstwa = build(() => K.kult.buildTopBarReligiaDetailCardK({ empire: { ...EMPIRE_BASE, stateReligion: null }, religion: { ...RELIGION_BASE, dominujaca: 'Animizm' }, skalaSzEpoki: 23 }));
   expectRow('rel:nazwa-z-dominujacej', relBezPanstwa, 'Duża liczba 🛕', '77 — wierni „Animizm” w państwie'); // pin :6010 (`stateReligion ?? dominujaca`)
+
+  // ---------------------------------------------------------------- R2 (obrona Operatora r1 na zarzuty Evaluatora)
+  // Z1: galaz auto-korekty Zywnosci (pin :5619-5620) — poziomRacji (5) > maxSafe (3) => foodSplit.clamped.
+  const zywClamp = build(() => K.zycie.buildTopBarZywnoscDetailCardK({ view: { ...VIEW_BASE, poziomRacji: 5 }, maxSafe: 3, wyzywienie: WYZ_BASE }));
+  expectRow('zyw:auto-korekta', zywClamp, 'Auto-korekta', 'ustawione Wyżywienie 5 przekracza limit Spichlerza — Bilans liczony przy 3, poziom zostanie obniżony na koniec tury'); // pin :5619-5620
+  expectRow('zyw:clamp-koszt', zywClamp, 'Koszt wyżywienia', '−5 🍞/t (Wyżywienie 3)'); // pin :5613 przy przycięciu: round(9*3/5)=5
+  expectRow('zyw:clamp-bilans', zywClamp, 'Bilans lokalny', '+5 🍞/t'); // pin :5614 przy przycięciu: 10-5
+  expectAbsentRow('zyw:brak-auto-korekty', zyw, 'Auto-korekta'); // brak klauzuli przy poziomRacji <= maxSafe
+
+  // Z2: wiersz „→ z handlu (szac.)” Nauki (pin :5938): est.nauka = floor(netto*30/100), netto = 23 dla nauka=7, udzial 30%.
+  expectRow('nauka:z-handlu', naukaBank, '→ z handlu (szac.)', '~+6'); // pin :5938 (K01B estimateHandelChips)
+  // Z2b: wiersze estymat Zlota (pin :5888-5889): est.netto = 23, est.skarb = floor(23*50/100) = 11.
+  expectRow('zloto:netto-szac', zlotoCard, 'Podatek netto (szac.)', '~23 → split suwaków'); // pin :5889
+  expectRow('zloto:do-skarbu', zlotoCard, '→ do Skarbu', '~+11'); // pin :5890
+
+  // Z3: galaz moneySnap.nauka („Nauka (osobny bank)”, pin :5874) w karcie Zloto.
+  expectRow('zloto:snap-nauka', zlotoSnap, 'Nauka (osobny bank)', '+4'); // pin :5874 (MONEY_SNAP.nauka = 4)
+
+  // Z4: Ludnosc przy przycieciu do maxSafe — Bilans zywnosci z foodSplit.total (przyciety, pin :5736), nie z bilansLokalny.
+  const ludClamp = build(() => K.zycie.buildTopBarLudnoscDetailCardK({ epoka: 2, population: 7, view: { ...VIEW_BASE, poziomRacji: 5 }, maxSafe: 3, fed: true, turnsDoNastepnego: 3, health: null, ludnoscAbsolutna: 1 }));
+  expectRow('lud:clamp-bilans', ludClamp, 'Bilans żywności', '+5 🍞/t'); // pin :5736 (foodSplit.total przy przycięciu)
+  expectRow('lud:clamp-wyzywienie', ludClamp, 'Wyżywienie', '5'); // pin :5719 (view.poziomRacji, nieprzycięty)
+  // Z4b: K04D-Z3 — „Kolejny obywatel” bierze tury z DTO (turnsDoNastepnego), nie z lokalnego przeliczenia. Zgodnosc z silnikiem NIE_ZMIERZONO.
+  expectRow('lud:clamp-tury-z-dto', ludClamp, 'Kolejny obywatel', 'za ≈ 3 tury'); // K04D-Z3
+
+  // Z5: udzial wiary (pin :6003 `empire.religionSharePct ?? relSt?.udzialPct ?? 0`) — fallback na DTO i kolejnosc zrodel.
+  const relUdzialFallback = build(() => K.kult.buildTopBarReligiaDetailCardK({ empire: { ...EMPIRE_BASE, religionSharePct: undefined }, religion: { ...RELIGION_BASE, udzialPct: 55 }, skalaSzEpoki: 23 }));
+  expectRow('rel:udzial-fallback-dto', relUdzialFallback, 'Udział wiary', '55% ludności'); // pin :6003 (galaz `?? relSt?.udzialPct`)
+  const relUdzialKolejnosc = build(() => K.kult.buildTopBarReligiaDetailCardK({ empire: EMPIRE_BASE, religion: { ...RELIGION_BASE, udzialPct: 55 }, skalaSzEpoki: 23 }));
+  expectRow('rel:udzial-empire-pierwszy', relUdzialKolejnosc, 'Udział wiary', '70% ludności'); // pin :6003 (empire ma pierwszenstwo)
 
   let ok = 0;
   for (const r of results) {
