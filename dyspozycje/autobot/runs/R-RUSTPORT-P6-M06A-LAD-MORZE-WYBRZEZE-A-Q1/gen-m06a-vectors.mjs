@@ -148,6 +148,30 @@ const SPECIAL = {
   diagonal_only: () => buildMap([[0, 0, TerenBazowy.Laka, Nakladka.Brak, 0, 0], [1, 1, TerenBazowy.Morze, Nakladka.Brak, 0, 0]]),
   // Wszystkie 8 terenow w jednym rzedzie (progi rang erozji):
   all_terrains_row: () => buildMap(RUST_TB.map((tb, i) => [i, 0, tb, Nakladka.Brak, 0, 0])),
+  // --- P6-M06A runda 2 (odpowiedz na zarzut Evaluatora r1: luka galezi czyszczenia nakladki/zloza) ---
+  // Morze z nakladka i zlozem przy lądzie (1,0) -> pierwszy pierscien czysci oba pola;
+  // (2,0) dotyka wybrzeza dopiero po pierwszym przebiegu -> drugi pierscien czysci oba pola;
+  // (3,0) nie dotyka wybrzeza nawet po drugim przebiegu -> nakladka i zloze zostaja.
+  coast_overlay_deposit: () => buildMap([
+    [0, 0, TerenBazowy.Laka, Nakladka.Brak, 0, 0],
+    [1, 0, TerenBazowy.Morze, Nakladka.Las, 1, 0],
+    [2, 0, TerenBazowy.Morze, Nakladka.ZlozeRudy, 1, 0],
+    [3, 0, TerenBazowy.Morze, Nakladka.Las, 1, 0],
+  ]),
+  // Wybrzeze-sierota z nakladka i zlozem (sanitize musi wyczyscic oba pola przy cofnieciu do Morza):
+  coast_overlay_orphan: () => buildMap([
+    [0, 0, TerenBazowy.PlytkieMorze, Nakladka.Las, 1, 0],
+    [1, 0, TerenBazowy.Morze, Nakladka.Brak, 0, 0],
+  ]),
+  // Krawedz gorna / lewa 3x3: pojedyncze Morze na krawedzi, otoczone lądem (test seedow BFS oceanu):
+  edge_top_sea: () => buildMap(Array.from({ length: 9 }, (_, i) => {
+    const q = i % 3, r = Math.floor(i / 3);
+    return [q, r, q === 1 && r === 0 ? TerenBazowy.Morze : TerenBazowy.Laka, Nakladka.Brak, 0, 0];
+  })),
+  edge_left_sea: () => buildMap(Array.from({ length: 9 }, (_, i) => {
+    const q = i % 3, r = Math.floor(i / 3);
+    return [q, r, q === 0 && r === 1 ? TerenBazowy.Morze : TerenBazowy.Laka, Nakladka.Brak, 0, 0];
+  })),
 };
 
 // ---------- wektory ----------

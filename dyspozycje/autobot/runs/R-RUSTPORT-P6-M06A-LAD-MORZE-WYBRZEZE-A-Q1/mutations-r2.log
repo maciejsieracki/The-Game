@@ -1,0 +1,18 @@
+SHA poczatkowe: src/domain/mapgen/landsea.rs=58946159d0ba3d939f8f4d7e589a8c1448a1c01b56fb771cd270bc9d7e4c1941 data/derived/mapgen-landsea.json=0a0917a58c9cc8af8408b2a2090b35cecf06254da84cca97dabcd5dbf4eb98b9
+KILLED           ring-no-deposit-clear (33 s) przywrocono=OK 3 testow FAILED: coast_ring_clears_overlay_and_deposit_only_on_converted_sea, apply_double_coast_ring_matches_web, apply_coast_ring_matches_web
+KILLED           ring-no-overlay-clear (32 s) przywrocono=OK 3 testow FAILED: coast_ring_clears_overlay_and_deposit_only_on_converted_sea, apply_double_coast_ring_matches_web, apply_coast_ring_matches_web
+KILLED           double-no-overlay-clear (34 s) przywrocono=OK 2 testow FAILED: apply_double_coast_ring_matches_web, coast_ring_clears_overlay_and_deposit_only_on_converted_sea
+KILLED           double-no-deposit-clear (33 s) przywrocono=OK 2 testow FAILED: coast_ring_clears_overlay_and_deposit_only_on_converted_sea, apply_double_coast_ring_matches_web
+KILLED           sanitize-orphan-no-overlay-clear (34 s) przywrocono=OK 2 testow FAILED: sanitize_clears_overlay_and_deposit_on_orphan_coast, sanitize_coast_hexes_matches_web
+KILLED           sanitize-orphan-no-deposit-clear (33 s) przywrocono=OK 2 testow FAILED: sanitize_clears_overlay_and_deposit_on_orphan_coast, sanitize_coast_hexes_matches_web
+SHA koncowe: src/domain/mapgen/landsea.rs=58946159d0ba3d939f8f4d7e589a8c1448a1c01b56fb771cd270bc9d7e4c1941 data/derived/mapgen-landsea.json=0a0917a58c9cc8af8408b2a2090b35cecf06254da84cca97dabcd5dbf4eb98b9 zgodne=True
+SHA poczatkowe: src/domain/mapgen/landsea.rs=58946159d0ba3d939f8f4d7e589a8c1448a1c01b56fb771cd270bc9d7e4c1941 data/derived/mapgen-landsea.json=0a0917a58c9cc8af8408b2a2090b35cecf06254da84cca97dabcd5dbf4eb98b9
+KILLED           ocean-edge-no-top (34 s) przywrocono=OK 3 testow FAILED: find_inland_water_and_sea_match_web, ocean_connected_water_matches_web, ocean_edge_seeds_cover_top_and_left_rows
+KILLED           ocean-edge-no-left (34 s) przywrocono=OK 3 testow FAILED: find_inland_water_and_sea_match_web, ocean_connected_water_matches_web, ocean_edge_seeds_cover_top_and_left_rows
+KILLED           json-wyspy-0.51 (32 s) przywrocono=OK 1 testow FAILED: default_land_fraction_matches_web
+KILLED           json-ziemia-0.22 (33 s) przywrocono=OK 1 testow FAILED: default_land_fraction_matches_web
+KILLED           json-erode-gory-wzgorza (32 s) przywrocono=OK 1 testow FAILED: terrain_predicates_match_web
+SHA koncowe: src/domain/mapgen/landsea.rs=58946159d0ba3d939f8f4d7e589a8c1448a1c01b56fb771cd270bc9d7e4c1941 data/derived/mapgen-landsea.json=0a0917a58c9cc8af8408b2a2090b35cecf06254da84cca97dabcd5dbf4eb98b9 zgodne=True
+SHA poczatkowe: src/domain/mapgen/landsea.rs=58946159d0ba3d939f8f4d7e589a8c1448a1c01b56fb771cd270bc9d7e4c1941 data/derived/mapgen-landsea.json=0a0917a58c9cc8af8408b2a2090b35cecf06254da84cca97dabcd5dbf4eb98b9
+KILLED           double-src-shallow (33 s) przywrocono=OK 2 testow FAILED: coast_ring_clears_overlay_and_deposit_only_on_converted_sea, apply_double_coast_ring_matches_web
+SHA koncowe: src/domain/mapgen/landsea.rs=58946159d0ba3d939f8f4d7e589a8c1448a1c01b56fb771cd270bc9d7e4c1941 data/derived/mapgen-landsea.json=0a0917a58c9cc8af8408b2a2090b35cecf06254da84cca97dabcd5dbf4eb98b9 zgodne=True
