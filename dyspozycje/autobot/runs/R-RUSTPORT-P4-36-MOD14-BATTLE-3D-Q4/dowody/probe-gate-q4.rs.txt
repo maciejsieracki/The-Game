@@ -1,0 +1,59 @@
+//! TEMPORARY probe (R-RUSTPORT-P4-36-MOD14-BATTLE-3D-Q4 pomiary): reachable
+//! wall geometry vs. the `_breachGate` mesh-hiding boundaries. Not committed
+//! under tests/ (a copy lives in runs/…-Q4/dowody/).
+use civ_renderer::battle::field::{BF_ROWS, TILE_S};
+use civ_renderer::battle::siege_wall::{build_siege_wall_style, SiegeWallOpts, WALL_STYLES};
+use civ_renderer::scene::ROOT;
+
+#[test]
+fn probe_gate_boundaries() {
+    let len = f64::from(BF_ROWS); // carve_wall_tiles: rows 0..=BF_ROWS-1, always
+    let half = TILE_S * 1.5;
+    let (mut band_hits, mut height_hits) = (0, 0);
+    for style in WALL_STYLES {
+        let w = build_siege_wall_style(style, &SiegeWallOpts::battle(len, TILE_S));
+        let gcx = w.user_data.gate_center_x;
+        let h = w.user_data.wall_walk_y;
+        let (mut meshes, mut hidden, mut band, mut height) = (0, 0, 0, 0);
+        let mut min_gap_band = f64::INFINITY;
+        let mut min_gap_h = f64::INFINITY;
+        for &c in &w.scene.nodes[ROOT].children {
+            let n = &w.scene.nodes[c];
+            if !n.is_mesh() {
+                continue;
+            }
+            meshes += 1;
+            let dx = (n.position.x - gcx).abs();
+            let ly = n.position.y;
+            let orig = dx < half + TILE_S * 0.6 && (ly >= h * 0.9 || dx < half * 0.9);
+            if orig {
+                hidden += 1;
+            }
+            // mutant `gate band`: 0.6 -> 0.5
+            let m_band = dx < half + TILE_S * 0.5 && (ly >= h * 0.9 || dx < half * 0.9);
+            if m_band != orig {
+                band += 1;
+            }
+            // mutant `gate height rule`: wall_h * 0.9 -> wall_h
+            let m_h = dx < half + TILE_S * 0.6 && (ly >= h || dx < half * 0.9);
+            if m_h != orig {
+                height += 1;
+            }
+            if ly >= h * 0.9 {
+                // distance of dx to the band edges 2.0 / 2.1
+                min_gap_band = min_gap_band.min((dx - (half + TILE_S * 0.5)).abs()).min((dx - (half + TILE_S * 0.6)).abs());
+            }
+            if dx < half + TILE_S * 0.6 && dx >= half * 0.9 {
+                min_gap_h = min_gap_h.min((ly - h * 0.9).abs()).min((ly - h).abs());
+            }
+        }
+        println!(
+            "style={style:?} gcx={gcx} wallWalkY={h} meshes={meshes} hiddenByBreach={hidden} \
+             diff[gate band]={band} diff[gate height rule]={height} \
+             minGapToBandEdge={min_gap_band:.4} minGapToHeightEdge={min_gap_h:.4}"
+        );
+        band_hits += band;
+        height_hits += height;
+    }
+    println!("TOTAL diff[gate band]={band_hits} diff[gate height rule]={height_hits}");
+}

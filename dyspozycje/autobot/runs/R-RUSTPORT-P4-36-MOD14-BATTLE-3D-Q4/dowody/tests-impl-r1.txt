@@ -1,0 +1,74 @@
+# rustc: rustc 1.97.0 (2d8144b78 2026-07-07)
+$ cargo fmt --all -- --check
+EXIT=0
+$ cargo clippy --locked --lib --test battle3d_dynamics -- -D warnings
+EXIT=0
+$ cargo test --locked --test battle3d_dynamics -- --nocapture
+
+running 4 tests
+projectiles: 0 scalars + 331 checks
+test constants_and_easing_equal_web ... ok
+test projectiles_match_web ... ok
+deploy: 84 player units, 84 group markers
+test deploy_phase_matches_web ... ok
+dynamics: 23 events, 696 scalars + 1417 checks compared bit for bit
+test dynamics_match_web ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.75s
+
+EXIT=0
+$ cargo test --locked --test battle3d_siege_wall --test battle3d_field --test battle3d_units   (parts 1-3, unchanged)
+running 5 tests
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 6.19s
+running 3 tests
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.87s
+running 8 tests
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 5.32s
+EXIT=0
+$ cargo test --locked --lib battle::
+test battle::dynamics::tests::parse_int_follows_ecma ... ok
+test battle::field::tests::constants_follow_their_web_formulas ... ok
+test battle::field::tests::carve_ignores_writes_past_a_short_grid ... ok
+test battle::siege_wall::tests::js_round_matches_ecmascript ... ok
+test battle::siege_wall::tests::map_helpers_follow_js_map_same_value_zero ... ok
+test battle::field::tests::tile_jitter_is_in_unit_interval ... ok
+test battle::units::tests::constants_follow_their_web_formulas ... ok
+test battle::units::tests::dir_yaw_falls_back_to_east ... ok
+test battle::siege_wall::tests::shade_color_clamps_and_rounds ... ok
+test battle::siege_wall::tests::style_dispatch_follows_the_web_switch ... ok
+test battle::units::tests::js_min_max_follow_ecmascript ... ok
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 83 filtered out; finished in 0.00s
+EXIT=0
+$ (cd tests/fixtures/battle3d && sha256sum -c MANIFEST.sha256)
+README.md: OK
+build.mjs: OK
+build_dynamics.mjs: OK
+build_field.mjs: OK
+build_units.mjs: OK
+dom_stub.ts: OK
+dynamics.json: OK
+field.json: OK
+gen.mjs: OK
+gen.ts: OK
+gen_dynamics.ts: OK
+gen_field.ts: OK
+gen_units.ts: OK
+mutate.py: OK
+mutate_dynamics.py: OK
+mutate_field.py: OK
+mutate_units.py: OK
+siege_wall.json: OK
+three_shim.ts: OK
+units.json: OK
+EXIT=0
+$ du -sb tests/fixtures/battle3d
+11813305	tests/fixtures/battle3d
+$ ls -l (largest file) / dynamics.json
+-rw-r--r-- 1 root root 7228812 Oct 29 13:40 siege_wall.json
+-rw-r--r-- 1 root root 136900 Oct 29 14:11 tests/fixtures/battle3d/dynamics.json
+$ python3 mutate_dynamics.py patterns (each exactly once; run = Operator 'pomiary')
+48 mutants, patterns not found exactly once: []
+EXIT=0
+$ grep -c unsafe src/battle/dynamics.rs tests/battle3d_dynamics.rs
+src/battle/dynamics.rs:0
+tests/battle3d_dynamics.rs:0
