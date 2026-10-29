@@ -240,3 +240,6 @@ Dopisano `R-PROC-AUTOBOT.md` §5d: stała ścieżka poprawki 1–11 (z obroną o
 
 ## 2026-10-29 — WZNOWIENIE portu bez ciężkiej grafiki (decyzja właściciela, czat)
 Zdjęto wstrzymanie dispatchy dla tematów nie-graficznych; plan: `PLAN-PO-WZNOWIENIU-20261029.md` (T0 delta weba względem pinu, T1 mapgen M05B→…, T2 P6.8, T3 podział `cityPanel.ts`, T4–T8). Ciężkie 3D (Opus) na sam koniec. Sprawdzony stan GitHub: `origin/main` = ROBOCZA `00f76663`, `origin/rust-port/parity-v2` = `2c2f58f8`.
+
+## 2026-10-29 — Audyt odzysku rozpoczętej grafiki (polecenie właściciela)
+Nic nie utracono: wszystkie MOD i P4.30–35 zintegrowane, P4.36 Q1+Q2 zintegrowane. Do dokończenia zostają P4.36 Q3→Q4→Q5 (scena bitwy 3D, Opus 5.5 medium) — start po pierwszej fali, w slocie Rust #2. RR-T1 (GPU) nadal wymaga maszyny właściciela.
