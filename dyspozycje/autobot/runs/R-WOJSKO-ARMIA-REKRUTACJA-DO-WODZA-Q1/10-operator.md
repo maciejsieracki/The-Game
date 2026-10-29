@@ -5,6 +5,7 @@
 - Added a visible, checked-by-default **Idź do wodza** toggle to the Army recruitment section. Its helper text states that newly completed units march toward and track the leader.
 - Applied the current default to newly completed player units from both production completion and city recruitment completion. Turning the default off sets each new unit's individual `followGeneral` preference to false and prevents the automatic march.
 - Made the selected-unit **Idź do wodza** action a per-unit toggle. Enabling it issues the existing tracked march; disabling it clears that unit's leader-follow march. This keeps partial rally available.
+- Kept the per-unit action visible whenever a living commander exists, even on the commander's hex. An opted-in unit on that hex starts a tracked march when the commander moves and continues retargeting to the commander's current position.
 - Persisted the global default and each unit preference in saves. Older saves without the setting use the historical enabled default; missing per-unit fields do not cause existing units to be redirected.
 
 ## Checks
@@ -12,7 +13,7 @@
 - `cd gra && npm run typecheck` — passed.
 - `cd gra && node tools/recruit-rally-default-ui-test.cjs` — passed; exercises the production Army recruitment renderer in jsdom and confirms the change handler updates the default.
 - `cd gra && node tools/recruit-rally-default-save-test.cjs` — passed; confirms roundtrip persistence of both settings and safe legacy omissions.
-- `cd gra && node tools/general-quick-follow-action-test.cjs` — passed, 15/15; includes live Chromium click, pathing, tracked leader movement, and unit action rendering.
+- `cd gra && node tools/general-quick-follow-action-test.cjs` — passed, 18/18; includes live Chromium click, pathing, same-hex activation followed by commander movement, ongoing retargeting, and unit action rendering.
 - `cd gra && npm run build` — passed.
 
 ## Review state

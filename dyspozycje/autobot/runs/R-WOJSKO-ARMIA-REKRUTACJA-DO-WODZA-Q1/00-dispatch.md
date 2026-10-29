@@ -6,3 +6,5 @@
 **Operator worktree:** `/workspace/leader-rally-operator`, branch `autobot/leader-rally-recruit-toggle-q1`, base `origin/main@9f6f7771`.
 **Acceptance:** toggle is visible and accurately labeled; enabled default affects new units from every recruitment entry point; disabled default is preserved on new units but can be overridden individually; an enabled unit follows the leader's current location; save/load preserves both default and unit overrides; existing saves migrate safely; focused UI/domain and production-render tests pass; independent Evaluator and Final Control required.
 **Restrictions:** no integration, push, or deployment by Operator.
+
+**Operator artifact:** `10-operator.md`.
