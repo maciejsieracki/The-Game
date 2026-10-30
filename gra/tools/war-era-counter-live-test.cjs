@@ -268,12 +268,26 @@ async function main() {
     // bez wojny. Wypowiedzenie w fazie AI jest odłożone do panelu Wydarzeń (toast ukryty, patrz
     // komentarz w sekcji E). Najpierw zamykamy realny modal wyniku auto-walki (przycisk „Kontynuuj"
     // stojący na drodze -- ta sama bitwa, którą wywołał atak AI), potem sprawdzamy WIDOCZNY tekst DOM.
-    await page.evaluate(() => {
-      const btn = [...document.querySelectorAll('button, [role="button"]')]
-        .find(b => /^\s*kontynuuj\s*$/i.test(b.textContent || ''));
-      if (btn) btn.click();
-    });
+    // R-WEB-ERA-WAR-COUNTER-Q1 (r4, zarzut EV r3 nr 1): modal „Broni się" (preBattle, `.pb-overlay`)
+    // zasłaniał część panelu Wydarzeń na zrzucie. Zamykamy go realnym przyciskiem „Auto" (ta sama
+    // ścieżka co pętla tury), a modal wyniku auto-walki realnym „Kontynuuj"; pętla do 10 prób,
+    // aż nie zostanie żaden z nich. Dopiero wtedy zrzut -- bez nakładki nad kartą.
+    for (let i = 0; i < 10; i++) {
+      const hadOverlay = await page.evaluate(() => {
+        let clicked = false;
+        const auto = document.querySelector('.pb-overlay [data-act="auto"]');
+        if (auto) { auto.click(); clicked = true; }
+        const kont = [...document.querySelectorAll('button, [role="button"]')]
+          .find(b => /^\s*kontynuuj\s*$/i.test(b.textContent || ''));
+        if (kont) { kont.click(); clicked = true; }
+        return clicked;
+      });
+      await wait(400);
+      if (!hadOverlay) break;
+    }
     await wait(600);
+    const overlayLeft = await page.evaluate(() => !!document.querySelector('.pb-overlay'));
+    assert('brak modalu preBattle nad panelem przed zrzutem', !overlayLeft, { overlayLeft });
     const domEraCardVisible = await page.evaluate(
       () => /Wojna epoki \(Kamień\)/.test(document.body.innerText || ''),
     );
