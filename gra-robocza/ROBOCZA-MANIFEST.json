@@ -1,5 +1,5 @@
 {
-  "releaseState": "READY FOR ROBOCZA DEPLOY — AI campaign muster/turn-six attack and new-game settings layout",
+  "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED — AI campaign muster/turn-six attack and new-game settings layout; verified against pinned origin/main readback at 0e85b43814f503fe34b42c88df4dd07233dbdfb.",
   "bundle": "Gra-ROBOCZA.html",
   "bundleMd5": "38218e5327c8ee2979ed70658a238cd1",
   "bundleSha256": "f0fed0bddcf6fc76a6a50e63911504f5786f579f3c728a655404c6ff83fa6b4f",
@@ -258,22 +258,10 @@
     "publicationCommit": "f6f63dc839449d8e08a7e2509ec72796757867af"
   },
   "publishPlan": {
-    "status": "READY — source is integrated on main; Robocza artifacts locally built and verified; publish after release receipt commit.",
+    "status": "PUBLISHED to origin/main at 0e85b43814f503fe34b42c88df4dd07233dbdfb; Robocza only; no KANON/FINALNA promotion.",
     "target": "origin/main",
-    "sourceCommit": "c46d6c47ff8643fabdcdd58d5c8067e07737326f"
-  },
-  "remoteReadback": {
-    "status": "PASS",
-    "remote": "origin/main",
-    "commit": "6b7f40b412ec5f9d931f054684746fa9c820baef",
-    "bundleUrl": "https://raw.githubusercontent.com/maciejsieracki/The-Game/6b7f40b412ec5f9d931f054684746fa9c820baef/gra-robocza/Gra-ROBOCZA.html",
-    "manifestUrl": "https://raw.githubusercontent.com/maciejsieracki/The-Game/6b7f40b412ec5f9d931f054684746fa9c820baef/gra-robocza/ROBOCZA-MANIFEST.json",
-    "startUrl": "https://raw.githubusercontent.com/maciejsieracki/The-Game/6b7f40b412ec5f9d931f054684746fa9c820baef/gra-robocza/START.html",
-    "httpStatus": 200,
-    "bundleMd5": "b3d82220c7a8820f5a5e89c9aa209431",
-    "bundleSha256": "7632cbf4c91f4cc67d76c240308dd9cf04d5f860160dd16469d1564b9be6eb1d",
-    "bundleBytes": 70045045,
-    "checks": "Pinned GitHub Raw readback: bundle, manifest and START HTTP 200; fetched bundle hashes and bytes match local files and manifest top-level plus both bundles[] rows; START lists current bundle MD5 prefix."
+    "sourceCommit": "c46d6c47ff8643fabdcdd58d5c8067e07737326f",
+    "publicationCommit": "0e85b43814f503fe34b42c88df4dd07233dbdfb"
   },
   "publishedAt": "2026-10-30T03:23:18.241Z",
   "buildStamp": "2026-10-30 00:52",
