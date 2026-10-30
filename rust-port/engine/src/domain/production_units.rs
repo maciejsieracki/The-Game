@@ -387,7 +387,7 @@ pub struct BuildingCostRow {
 }
 
 /// Wiersz jednostki: pola `UnitDef` czytane przez production.ts 1-692.
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Default)]
 pub struct UnitCostRow {
     /// web `Jednostka` (klucz wyszukiwania; brak osobnego id).
     pub jednostka: String,
@@ -2502,4 +2502,241 @@ pub fn set_paused(prod: &CityProduction, paused: bool) -> CityProduction {
         wstrzymana: Some(paused),
         rekrutacja: prod.rekrutacja.clone(),
     }
+}
+
+// ---------------------------------------------------------------------------
+// P6.8B-P1b-c2b: availableReplacementsFor (production.ts ~1136-1252 @91dc998a).
+// Wektory: p6_8b_vectors/p1b-c2b.json (generator gen-p6-8b-c2b-vectors.mjs; web na PRAWDZIWYCH
+// units.json / buildings.json z pinu). Zalozenia (ZALOZENIE, do weryfikacji):
+// * `units` = lista UnitDef w kolejnosci jak w web `data.units`; `findUnit` = pierwszy wpis o nazwie.
+// * `ctx.epoch` nie-skonczona = 1 (web `Number.isFinite`).
+// * `ctx.civKey`: `None` = `undefined` (uzyj `civUnitNacja`), `Some(None)` = `null`, `Some(Some(s))` = napis.
+// * Koszt: `unitMoneyCost(itemCost('jednostka', id, data, 1), ...)` z `ctx.cost` (markery/tempo/owner/trudnosc).
+// * Sortowanie: koszt, potem `localeCompare` nazwy (`manpower::locale_compare`; poza ASCII = UTF-16).
+// ---------------------------------------------------------------------------
+
+/// Wiersz jednostki dla `availableReplacementsFor`: pola `UnitCostRow` (koszt) oraz pola
+/// `UnitDef` czytane tylko przez logike zamiennikow (Typ, Nacja, Tech, W zamian za, Zastąp specjalnie).
+#[derive(Debug, Clone, PartialEq, Default)]
+pub struct UnitReplaceRow {
+    pub cost: UnitCostRow,
+    /// web `Typ` (`None` = brak / `null`).
+    pub typ: Option<String>,
+    /// web `Nacja`.
+    pub nacja: Option<String>,
+    /// web `Tech`.
+    pub tech: Option<String>,
+    /// web `W zamian za`.
+    pub w_zamian_za: Option<String>,
+    /// web `Zastąp specjalnie`.
+    pub zastap_specjalnie: Option<String>,
+}
+
+impl UnitReplaceRow {
+    fn as_replacement_row(&self) -> UnitReplacementRow {
+        UnitReplacementRow {
+            jednostka: self.cost.jednostka.clone(),
+            nacja: self.nacja.clone(),
+            w_zamian_za: self.w_zamian_za.clone(),
+        }
+    }
+}
+
+/// Pola `AvailabilityContext` czytane przez `availableReplacementsFor` (web defaults w `Default` NIE
+/// stosowane -- konstruowac jawnie; `cost` niesie markery/tempo/ownerId/trudnosc/zapas imperium).
+#[derive(Debug, Clone)]
+pub struct ReplaceAvailabilityCtx<'a> {
+    /// web `ctx.epoch` (nie-skonczona = 1).
+    pub epoch: f64,
+    /// web `ctx.builtBuildingIds` (pusta = brak).
+    pub built_building_ids: &'a [&'a str],
+    /// web `unlockedTechs` (argument `unlockedTechs`, nie pole ctx).
+    pub unlocked_techs: &'a [&'a str],
+    /// web `ctx.civKey` (patrz zalozenia).
+    pub civ_key: Option<Option<&'a str>>,
+    /// web `ctx.civUnitNacja`.
+    pub civ_unit_nacja: Option<&'a str>,
+    /// web `ctx.cityHasCoastOrRiver`.
+    pub city_has_coast_or_river: bool,
+    /// web `ctx.showStockGatedUnits`.
+    pub show_stock_gated_units: bool,
+    /// web `ctx.aliveUnitTypeNames` (pusta = brak).
+    pub alive_unit_type_names: &'a [&'a str],
+    /// Markery kosztu, tempo jednostek, `ownerId`, trudnosc, zapas imperium (`empireResourceStock`).
+    pub cost: AvailabilityContext<'a>,
+}
+
+/// web `passesAvailabilityGates` (availableReplacementsFor): epoka, nacja, tech, koszary, woda, zapas, super.
+fn replace_passes_gates(
+    u: &UnitReplaceRow,
+    epoch: f64,
+    buildings: &[BuildingLinkRow],
+    ctx: &ReplaceAvailabilityCtx<'_>,
+    civ_nation: Option<&str>,
+) -> bool {
+    let unit_epoch = f64::from(epoch_number(u.cost.epoka.as_deref()));
+    if unit_epoch > epoch {
+        return false;
+    }
+    let nacja = js_trim(u.nacja.as_deref().unwrap_or(""));
+    if !unit_allowed_for_civ_nation(nacja, civ_nation) {
+        return false;
+    }
+    let tech = js_trim(u.tech.as_deref().unwrap_or(""));
+    if !tech.is_empty() && tech != "-" && tech != "\u{2014}" && !ctx.unlocked_techs.contains(&tech)
+    {
+        return false;
+    }
+    if unit_epoch >= 2.0
+        && !ctx.built_building_ids.contains(&"koszary")
+        && !is_building_superseded_by_upgrade("koszary", ctx.built_building_ids, buildings)
+    {
+        return false;
+    }
+    let typ = js_trim(u.typ.as_deref().unwrap_or(""));
+    if typ == "Naval" && !ctx.city_has_coast_or_river {
+        return false;
+    }
+    let surowiec = strip_diacritics(js_trim(u.cost.surowiec.as_deref().unwrap_or("")));
+    if !ctx.show_stock_gated_units {
+        let stock = ctx.cost.empire_resource_stock;
+        if (surowiec == "braz" && !empire_stock_has(stock, "braz"))
+            || (surowiec == "zelazo" && !empire_stock_has(stock, "zelazo"))
+            || (surowiec == "drewno" && !empire_stock_has(stock, "drewno"))
+        {
+            return false;
+        }
+    }
+    if u.cost.super_jednostka.as_deref() == Some("TAK")
+        && ctx
+            .alive_unit_type_names
+            .contains(&u.cost.jednostka.as_str())
+    {
+        return false;
+    }
+    true
+}
+
+/// web `costOf(u)` w `availableReplacementsFor` = `unitMoneyCost(itemCost('jednostka', ...))`.
+fn replace_item(u: &UnitReplaceRow, ctx: &ReplaceAvailabilityCtx<'_>) -> ProductionItem {
+    let base = scale_cost_by_epoch(
+        unit_cost_from_def(&u.cost),
+        &epoch_input(u.cost.epoka.as_deref()),
+    );
+    let koszt = unit_money_cost_web(
+        base,
+        &ctx.cost.cost_markers,
+        ctx.cost.unit_cost_pace,
+        ctx.cost.owner_id,
+        ctx.cost.difficulty,
+        Some(&u.cost.jednostka),
+    );
+    ProductionItem {
+        kind: ProductionKind::Jednostka,
+        id: u.cost.jednostka.clone(),
+        nazwa: u.cost.jednostka.clone(),
+        koszt,
+        postep: None,
+        is_general: None,
+    }
+}
+
+/// web `availableReplacementsFor(currentUnitName, data, unlockedTechs, ctx)`: lista jednostek,
+/// ktorymi mozna ZASTAPIC `currentUnitName` (A: ten sam Typ; B: pole `Zastąp specjalnie`).
+/// Pusta gdy bieżąca jednostka nie istnieje. Sortowanie: koszt, potem `localeCompare`.
+pub fn available_replacements_for(
+    current_unit_name: &str,
+    units: &[UnitReplaceRow],
+    buildings: &[BuildingLinkRow],
+    ctx: &ReplaceAvailabilityCtx<'_>,
+) -> Vec<ProductionItem> {
+    let Some(current) = units.iter().find(|u| u.cost.jednostka == current_unit_name) else {
+        return Vec::new();
+    };
+    let current_typ = js_trim(current.typ.as_deref().unwrap_or(""));
+    let epoch = if ctx.epoch.is_finite() {
+        ctx.epoch
+    } else {
+        1.0
+    };
+    let civ_nation = availability_civ_nation(ctx.civ_key, ctx.civ_unit_nacja);
+    let civ = civ_nation.as_deref();
+
+    let mut items: Vec<ProductionItem> = Vec::new();
+    let mut seen: HashSet<String> = HashSet::new();
+
+    // A) wszystkie odblokowane jednostki tego samego Typ (bez chowania bazowej).
+    for u in units {
+        if u.cost.jednostka == current_unit_name {
+            continue;
+        }
+        let utyp = js_trim(u.typ.as_deref().unwrap_or(""));
+        if utyp.is_empty() || utyp != current_typ {
+            continue;
+        }
+        if !replace_passes_gates(u, epoch, buildings, ctx, civ) {
+            continue;
+        }
+        let zamiast = js_trim(u.w_zamian_za.as_deref().unwrap_or(""));
+        if !is_blank_replacement(zamiast)
+            && !is_civ_special_replacement(&u.as_replacement_row(), civ)
+        {
+            continue;
+        }
+        items.push(replace_item(u, ctx));
+        seen.insert(u.cost.jednostka.clone());
+    }
+
+    // B) jednostki z pola `Zastąp specjalnie` bieżącej (nawet inny Typ), wg pelnej nazwy.
+    let special = js_trim(current.zastap_specjalnie.as_deref().unwrap_or(""));
+    if !special.is_empty() && !is_blank_replacement(special) {
+        for raw in special.split('/') {
+            let name = js_trim(raw);
+            if name.is_empty() || name == current_unit_name || seen.contains(name) {
+                continue;
+            }
+            let Some(su) = units.iter().find(|u| u.cost.jednostka == name) else {
+                continue;
+            };
+            if !replace_passes_gates(su, epoch, buildings, ctx, civ) {
+                continue;
+            }
+            items.push(replace_item(su, ctx));
+            seen.insert(su.cost.jednostka.clone());
+        }
+    }
+
+    items.sort_by(|a, b| {
+        a.koszt
+            .partial_cmp(&b.koszt)
+            .unwrap_or(std::cmp::Ordering::Equal)
+            .then_with(|| replacement_name_compare(&a.nazwa, &b.nazwa))
+    });
+    items
+}
+
+/// Liczba znakow z diakrytykiem (lub `ł`/`Ł`) w napisie: poziom 2 porownania (ICU: bez < z diakrytykiem).
+fn diacritic_count(text: &str) -> usize {
+    text.chars()
+        .filter(|&c| {
+            c == '\u{142}' || c == '\u{141}' || {
+                let lower = c.to_lowercase().collect::<String>();
+                strip_diacritics(&c.to_string()) != lower
+            }
+        })
+        .count()
+}
+
+/// Porownanie nazw jak web `a.localeCompare(b)` (ICU, en-US) dla nazw jednostek z diakrytykami.
+/// ZALOZENIE (pomiar w Node 22 `Intl.Collator('en-US')`, 5550/5550 par nazw z `units.json` zgodnych):
+/// poziom 1 = baza bez diakrytykow (`strip_diacritics`, `ł`->`l`) wg `locale_compare`; poziom 2 =
+/// liczba diakrytykow (mniej = wczesniej); poziom 3 = `locale_compare` na oryginalach.
+/// Poza zbiorem zmierzonym (inne alfabety) zachowanie NIE jest zweryfikowane.
+pub fn replacement_name_compare(a: &str, b: &str) -> std::cmp::Ordering {
+    use crate::domain::recruitment::manpower::locale_compare;
+    let base = |s: &str| strip_diacritics(s).replace('\u{142}', "l");
+    let primary = locale_compare(&base(a), &base(b)).cmp(&0);
+    primary
+        .then_with(|| diacritic_count(a).cmp(&diacritic_count(b)))
+        .then_with(|| locale_compare(a, b).cmp(&0))
 }
