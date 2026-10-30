@@ -1,0 +1,21 @@
+{
+  "meta": {
+    "status": "P6.M06B2: wartosci startowe przepisane z weba (gen-helpers.ts:4946-5100). Zrodlem prawdy do recznego balansu jest TA tabela (edytuj liczby, nie kod).",
+    "pin_web": "edb8fb56",
+    "temat": "R-RUSTPORT-P6-M06B2-WYSPY-FINALIZACJA-Q1",
+    "uwaga": "Progi wysp i sprzatania masy lądu (removeTinyLandIslands, minTinyIslandHexesForTyp, finalizeLandMassAfterCoast, enforceTargetDryLandFraction). Strukturalne literaly (0, 1, `> 0`, `/ 100` w przeliczeniu punktow procentowych) zostaja w kodzie. Zmiana liczby zmienia wynik wzgledem weba, wiec lamie testy wektorowe p6_m06b2_* i wymaga przegenerowania wektorow."
+  },
+  "male_wyspy": {
+    "pangea": { "wartosc": 10, "zrodlo_web": "gra/src/map/gen-helpers.ts:4994", "uzycie": "minTinyIslandHexesForTyp: prog wielkosci wyspy (typ pangea); wyspy mniejsze -> Morze" },
+    "kontynenty": { "wartosc": 8, "zrodlo_web": "gra/src/map/gen-helpers.ts:4995", "uzycie": "minTinyIslandHexesForTyp: prog wielkosci wyspy (typ kontynenty)" },
+    "wyspy": { "wartosc": 4, "zrodlo_web": "gra/src/map/gen-helpers.ts:4996", "uzycie": "minTinyIslandHexesForTyp: prog wielkosci wyspy (typ wyspy)" },
+    "ziemia": { "wartosc": 6, "zrodlo_web": "gra/src/map/gen-helpers.ts:4997", "uzycie": "minTinyIslandHexesForTyp: prog wielkosci wyspy (typ ziemia)" }
+  },
+  "sprzatanie": {
+    "przebiegi_maks": { "wartosc": 3, "zrodlo_web": "gra/src/map/gen-helpers.ts:5060", "uzycie": "finalizeLandMassAfterCoast: limit petli (removeTiny + purge); patrz P6-M06B2 §5 (cap nieobserwowalny)" },
+    "wybrzeze_przebiegi_domyslne": { "wartosc": 2, "zrodlo_web": "gra/src/map/gen-helpers.ts:5056", "uzycie": "finalizeLandMassAfterCoast: domyslny coastPasses (przekazywany do finalizeCoastAndInlandWater)" }
+  },
+  "susza": {
+    "tolerancja_pp": { "wartosc": 3, "zrodlo_web": "gra/src/map/gen-helpers.ts:5072", "uzycie": "enforceTargetDryLandFraction: domyslna tolerancja udzialu suchego lądu w punktach procentowych mapy" }
+  }
+}

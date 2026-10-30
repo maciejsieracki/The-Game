@@ -28,8 +28,8 @@
 use std::collections::{HashMap, HashSet};
 
 use crate::data::derived::{
-    mapgen_coast, mapgen_desert_purge, mapgen_jagged_coast, mapgen_landsea, mapgen_landsea_fill,
-    mapgen_landsea_pangea, MapgenJaggedCoastFile,
+    mapgen_coast, mapgen_desert_purge, mapgen_jagged_coast, mapgen_landmass, mapgen_landsea,
+    mapgen_landsea_fill, mapgen_landsea_pangea, MapgenJaggedCoastFile,
 };
 use crate::domain::improvements::js_round;
 use crate::domain::map_generator::{ClimateBand, Terrain, WorldType};
@@ -2277,4 +2277,79 @@ pub fn flatten_false_coastal_river_notches(
         }
     }
     to_flatten.len()
+}
+
+// ---------------------------------------------------------------------------
+// P6.M06B2 (R-RUSTPORT-P6-M06B2-WYSPY-FINALIZACJA-Q1), partia 2 z M06B: wyspy i sprzatanie masy lądu
+// (gen-helpers.ts:4946-5100). Symbole: `removeTinyLandIslands` :4946, `minTinyIslandHexesForTyp` :4992,
+// `countOpenOceanLandSpecks` :5006, `purgeOpenOceanLandSpecks` :5027, `finalizeLandMassAfterCoast` :5050,
+// `enforceTargetDryLandFraction` :5079. Progi: `data/derived/mapgen-landmass.json` (`mapgen_landmass()`).
+// Kolejnosc iteracji = kolejnosc wstawiania `HexRecord` (jak `Object.keys`); mutacje sekwencyjne.
+// ---------------------------------------------------------------------------
+
+/// Web `minTinyIslandHexesForTyp(typ)` (:4992): minimalna wielkosc wyspy (heksy) dla typu swiata.
+pub fn min_tiny_island_hexes_for_typ(typ: WorldType) -> usize {
+    let t = &mapgen_landmass().male_wyspy;
+    match typ {
+        WorldType::Pangea => t.pangea.wartosc,
+        WorldType::Continents => t.kontynenty.wartosc,
+        WorldType::Islands => t.wyspy.wartosc,
+        WorldType::Earth => t.ziemia.wartosc,
+    }
+}
+
+/// Web `removeTinyLandIslands(hexes, minHexes)` (:4946): spojne skladowe lądu/wybrzeza
+/// (`isLandOrCoast` = suchy ląd, czyli nie Morze/Plytkie) mniejsze niz `min_hexes` -> Morze
+/// (nakladka Brak, rzeka wylaczona, zloze usuniete). Zwraca liczbe zamienionych heksow.
+/// Skladowe liczone na stanie przed zmianami tej skladowej (kolejne skladowe nie graniczą z wczesniejszymi).
+pub fn remove_tiny_land_islands(hexes: &mut HexRecord, min_hexes: usize) -> usize {
+    let keys: Vec<String> = hexes.keys().cloned().collect();
+    let mut visited: HashSet<String> = HashSet::new();
+    let mut removed = 0usize;
+
+    for key in &keys {
+        if visited.contains(key) {
+            continue;
+        }
+        let Some(h) = hexes.get(key) else { continue };
+        if is_water_terrain_local(h.terrain) {
+            continue;
+        }
+
+        let mut stack: Vec<String> = vec![key.clone()];
+        let mut comp: Vec<String> = Vec::new();
+        visited.insert(key.clone());
+
+        while let Some(cur) = stack.pop() {
+            // Web: `Number(parts[0])`; klucz niekanoniczny nie ma sasiadow (NaN nie trafia w krawedzie).
+            let Some((q, r)) = key_qr(&cur) else {
+                comp.push(cur);
+                continue;
+            };
+            comp.push(cur);
+            for &(dq, dr) in HEX_DIRECTIONS.iter() {
+                let nk = hex_key(q + i64::from(dq), r + i64::from(dr));
+                if visited.contains(&nk) {
+                    continue;
+                }
+                let Some(nh) = hexes.get(&nk) else { continue };
+                if is_water_terrain_local(nh.terrain) {
+                    continue;
+                }
+                visited.insert(nk.clone());
+                stack.push(nk);
+            }
+        }
+
+        if comp.len() >= min_hexes {
+            continue;
+        }
+        for k in &comp {
+            if let Some(hx) = hexes.get_mut(k) {
+                set_hex_to_morze(hx);
+                removed += 1;
+            }
+        }
+    }
+    removed
 }
