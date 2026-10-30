@@ -1,0 +1,54 @@
+   Compiling serde_core v1.0.229
+   Compiling once_cell v1.21.4
+   Compiling zmij v1.0.23
+   Compiling memchr v2.8.3
+   Compiling itoa v1.0.18
+   Compiling tracing-core v0.1.36
+   Compiling pin-project-lite v0.2.17
+   Compiling tracing v0.1.44
+   Compiling serde_json v1.0.154
+   Compiling serde v1.0.229
+   Compiling civ-engine v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_7887a3f6-fb1-2/rust-port/engine)
+    Finished `test` profile [unoptimized] target(s) in 36.58s
+     Running tests/p6_repin_d2_head.rs (target/debug/deps/p6_repin_d2_head-927d7a6fd5c26b44)
+
+running 11 tests
+test boundary_port_nan_propagates_into_pieniadz ... ok
+test boundary_port_zero_skips_bonus_even_for_infinite_port_income ... ok
+test boundary_port_zero_keeps_negative_zero_bits ... ok
+test structural_mlyn_then_cegielnia_order ... ok
+test structural_cegielnia_alone_scales_terrain_only ... ok
+test structural_port_bonus_needs_owner_and_matrix ... ok
+test synthetic_port_matrix_applied_to_port_income_only ... ok
+test structural_no_mlyn_no_cegielnia_is_identity ... ok
+test synthetic_praca_matrix_applied_to_brutto_sum ... ok
+test synthetic_praca_matrix_uses_brutto_after_mlyn ... ok
+test parity_head_main_bit_exact ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.07s
+
+     Running tests/p6_repin_d2_tail.rs (target/debug/deps/p6_repin_d2_tail-56581f76f4bf4b0c)
+
+running 18 tests
+test boundary_premia_zero_with_negative_zero_trade_is_positive_zero ... ok
+test structural_additional_tax_clamped_at_zero_and_nan_propagates ... ok
+test boundary_nan_strata_reaches_money_but_not_gross_trade ... ok
+test boundary_additional_tax_negative_zero_is_positive_zero ... ok
+test structural_biblioteka_and_akademia_are_additive ... ok
+test structural_civ_nauka_mult_without_owner ... ok
+test structural_garncarnia_food_and_consumption ... ok
+test structural_korupcja_cap_limits_strata ... ok
+test structural_mint_needs_both_flags ... ok
+test structural_neutral_baseline ... ok
+test structural_poborca_adds_two_each ... ok
+test structural_premia_only_when_positive ... ok
+test structural_legacy_civ_handel_mult_only_without_owner ... ok
+test synthetic_luksus_matrix_applied_then_floored ... ok
+test synthetic_kultura_matrix_applied_and_floored ... ok
+test synthetic_matrix_ignored_without_owner ... ok
+test synthetic_zywnosc_matrix_applied_to_brutto_and_netto ... ok
+test parity_tail_main_bit_exact ... ok
+
+test result: ok. 18 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.24s
+
+EXIT=0

@@ -1,0 +1,39 @@
+   Compiling civ-engine v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_7887a3f6-fb1-2/rust-port/engine)
+    Finished `test` profile [unoptimized] target(s) in 31.57s
+     Running tests/p6_repin_d2_head.rs (target/debug/deps/p6_repin_d2_head-927d7a6fd5c26b44)
+
+running 11 tests
+test boundary_port_zero_keeps_negative_zero_bits ... ok
+test boundary_port_nan_propagates_into_pieniadz ... ok
+test structural_mlyn_then_cegielnia_order ... ok
+test structural_no_mlyn_no_cegielnia_is_identity ... ok
+test boundary_port_zero_skips_bonus_even_for_infinite_port_income ... ok
+test structural_cegielnia_alone_scales_terrain_only ... ok
+test synthetic_port_matrix_applied_to_port_income_only ... ok
+test synthetic_praca_matrix_uses_brutto_after_mlyn ... ok
+test synthetic_praca_matrix_applied_to_brutto_sum ... ok
+test structural_port_bonus_needs_owner_and_matrix ... FAILED
+test parity_head_main_bit_exact ... ok
+
+failures:
+
+---- structural_port_bonus_needs_owner_and_matrix stdout ----
+
+thread 'structural_port_bonus_needs_owner_and_matrix' (3630) panicked at tests/p6_repin_d2_head.rs:163:5:
+assertion failed: same(got.pieniadz_budynkow, 6.0)
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+   1: core::panicking::panic_fmt
+   2: core::panicking::panic
+   3: p6_repin_d2_head::structural_port_bonus_needs_owner_and_matrix
+   4: p6_repin_d2_head::structural_port_bonus_needs_owner_and_matrix::{closure#0}
+   5: <p6_repin_d2_head::structural_port_bonus_needs_owner_and_matrix::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+
+failures:
+    structural_port_bonus_needs_owner_and_matrix
+
+test result: FAILED. 10 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.09s
+
+error: test failed, to rerun pass `--test p6_repin_d2_head`

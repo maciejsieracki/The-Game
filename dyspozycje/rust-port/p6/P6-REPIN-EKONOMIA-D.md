@@ -211,3 +211,9 @@ Web: `gra/src/game/economy.ts@91dc998a` L849-860 (Step 2 Młyn→Cegielnia), L88
 - Założenie Z-D2.2b-2: `praca_budynkow` i `praca_terenu` są agregatami z D2.2c; ta partia nie zmienia ich wartości.
 - Wynik bramek (R2 operatora): `cargo fmt --all -- --check` EXIT=0; `cargo clippy --all-targets -- -D warnings` EXIT=0; `cargo test --no-fail-fast` EXIT=0, 225 binarek, **1658 passed / 0 failed** (baza 1647 + 11 nowych); `p6_repin_d2_head` 11/11, `parity_head_main_bit_exact` 1200/1200 bit-w-bit.
 - Mutacje (jedna naraz, przywracane z kopii): M1 wyłączony mnożnik Cegielni — ZABITA (4 testy); M2 zdjęty strażnik `portRaw !== 0` — ZABITA (2); M3 dopuszczony pusty klucz cywilizacji — ZABITA (1); M4 zdjęty bonus Młyna — ZABITA (3).
+
+### Weryfikacja niezależna (R2, Operator-pomiary, 2026-10-30)
+
+- Web: `origin/main` = `7164f7ca1`; sprawdzone `git diff 91dc998a origin/main` dla `economy.ts`, `production.ts`, `terrain-improvements.ts`, `civ-matrix.ts`, `diplomacy-economy.ts`, `turn-economy.ts` i `gra/data/*` — brak zmian; pin `91dc998a` aktualny dla D2.2b.
+- Bramki ponownie: `cargo fmt --all -- --check` EXIT=0; `cargo clippy --all-targets -- -D warnings` EXIT=0; `cargo test --no-fail-fast` EXIT=0, 225 binarek, 1658 passed / 0 failed (`logs/verifier-test-full-r2.log`).
+- Mutacje (jedna naraz, przywracane `git checkout`): M1 ZABITA (3+ testów), M2 ZABITA (2), M3 ZABITA (1), M4 ZABITA (3). Logi: `logs/mut-r2-M1..M4*.log`.
