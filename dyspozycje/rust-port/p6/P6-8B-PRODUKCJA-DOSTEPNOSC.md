@@ -67,6 +67,13 @@ Rownowazniki (mutanty przezywajace, zob. `mut-p6-8b-c2b.py` / `mut-p6-8b-c2c.py`
 - c2c B16 (asymetryczny komparator budynki/jednostki): zmiana tylko jednej galezi (B,J) nie zmienia porzadku przy wejsciu budynki-przed-jednostkami (sortowanie stabilne, komparator zwraca `Greater` dla obu kierunkow miedzy typami). Zmiana obu galezi (B16b) jest zabijana. Ryzyko resztkowe: zalezne od kolejnosci wejscia.
 - c2b/c2c: galezi `Zastąp specjalnie` i zamiennikow cywilizacyjnych nie da sie pokryc samymi realnymi danymi (np. Nacja '' z niepustym `W zamian za` nie wystepuje); pokryte zbiorem syntetycznym.
 
+Weryfikacja niezalezna runda 4 (Operator-pomiary, `runs/R-RUSTPORT-P6-8B-PRODUKCJA-DOSTEPNOSC-REKRUTACJA-Q1/06-operator-pomiary-r4.md`, logi `dowody/pomiar-r4v-*.txt`):
+- Wektory: `git archive 91dc998a gra` -> trzy generatory (`gen-p6-8b-c2{a,b,c}-vectors.mjs`, Node v22.22.0, loader TS) -> `cmp` bajt w bajt z `p1b-c2{a,b,c}.json`: IDENTICAL x3.
+- Gate'y na `8aedd7b1d`: `cargo fmt --all -- --check` EXIT 0; `clippy -D warnings` (lib + 3 testy c2) EXIT 0; testy c2a 5/5, c2b 4/4, c2c 1/1; regresja lib 6/6, helpers 18/18, p1b 7/7.
+- Mutacje: c2a M1-M5 5/5 KILLED; c2b M1-M15 14 KILLED, M14 SURVIVED (rownowaznik, zob. wyzej); c2c B1-B23 bez B20: 21 KILLED, B16 i B17 SURVIVED (rownowazniki / ryzyko resztkowe, zob. wyzej).
+- Korekta skryptow mutacji: wzorce `M2`, `M7`, `M11` (`mut-p6-8b-c2b.py`) i `B19` (`mut-p6-8b-c2c.py`) byly zapisane przed `cargo fmt` i nie trafialy w kod (`pattern count 0`, mutant nie byl stosowany). Wzorce poprawiono do aktualnego formatowania i mutanty uruchomiono ponownie (c2b na zrodle `88991f78b`, B19 osobno na `8aedd7b1d`); wynik: M2, M7, M11 KILLED, B19 KILLED. Liczby z raportu operatora (14/15, 21/23) potwierdzone.
+- Zasada: w skryptach mutacji `pattern count != 1` nie jest liczone jako zabicie ani przezycie; logi nalezy czytac pod katem tego komunikatu.
+
 ## Partie 8B-P1b i 8B-P2 — do wykonania
 
 - P1b-c1 (ZROBIONE, runda 1): `unitStockShortfallLabel`, `UNIT_POPULATION_COST` (= 0 w pinie), `populationCostOf`. Wektory: `tests/p6_8b_vectors/p1b.json` (generator `gen-p6-8b-p1b-vectors.mjs`), testy `tests/p6_8b_p1b_vectors.rs`.

@@ -30,7 +30,7 @@ allm = {
     "B16b": ("(ProductionKind::Jednostka, ProductionKind::Budynek) => std::cmp::Ordering::Greater,", "(ProductionKind::Jednostka, ProductionKind::Budynek) => std::cmp::Ordering::Less,"),
     "B17": ("    let level = if ctx.building_level.is_finite() {", "    let level = if true {"),
     "B18": ("        if typ == \"Naval\" && !ctx.city_has_coast_or_river {\n            continue;", "        if false {\n            continue;"),
-    "B19": ("        if u.cost.super_jednostka.as_deref() == Some(\"TAK\")\n            && ctx.alive_unit_type_names.contains(&u.cost.jednostka.as_str())\n        {\n            continue;", "        if false {\n            continue;"),
+    "B19": ("        if u.cost.super_jednostka.as_deref() == Some(\"TAK\")\n            && ctx\n                .alive_unit_type_names\n                .contains(&u.cost.jednostka.as_str())\n        {\n            continue;", "        if false {\n            continue;"),
     "B21": ("        if !is_blank_replacement(zamiast) {\n            if !is_civ_special_replacement(&u.as_replacement_row(), civ) {", "        if !is_blank_replacement(zamiast) {\n            if false {"),
     "B22": (".then_with(|| replacement_name_compare(&a.nazwa, &b.nazwa)),", ".then_with(|| std::cmp::Ordering::Equal),"),
     "B23": ("                item_cost(ProductionKind::Budynek, id, &data, level),", "                item_cost(ProductionKind::Budynek, id, &data, 1.0),"),

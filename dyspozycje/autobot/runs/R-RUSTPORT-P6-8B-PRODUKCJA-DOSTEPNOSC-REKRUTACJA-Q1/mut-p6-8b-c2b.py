@@ -14,7 +14,7 @@ allm = {
     # gate epoki: '>' -> '>=' (pozwala epoke wyzsza o 0 -> zmiana granicy)
     "M1": ("    if unit_epoch > epoch {\n        return false;", "    if unit_epoch >= epoch {\n        return false;"),
     # gate techu wylaczony
-    "M2": ("        && !ctx.unlocked_techs.contains(&tech)\n    {", "        && false\n    {"),
+    "M2": ("&& tech != \"\\u{2014}\" && !ctx.unlocked_techs.contains(&tech)\n    {", "&& tech != \"\\u{2014}\" && false\n    {"),
     # koszary od epoki 3 zamiast 2
     "M3": ("    if unit_epoch >= 2.0\n        && !ctx.built_building_ids.contains(&\"koszary\")", "    if unit_epoch >= 3.0\n        && !ctx.built_building_ids.contains(&\"koszary\")"),
     # bramka wody (Naval) wylaczona
@@ -24,7 +24,7 @@ allm = {
     # bramka super-jednostki: TAK -> NIE
     "M6": ("    if u.cost.super_jednostka.as_deref() == Some(\"TAK\")", "    if u.cost.super_jednostka.as_deref() == Some(\"NIE\")"),
     # galaz A: sprawdzenie zamiennika specjalnego pominiete
-    "M7": ("        if !is_blank_replacement(zamiast) && !is_civ_special_replacement(&u.as_replacement_row(), civ)", "        if false && !is_blank_replacement(zamiast) && !is_civ_special_replacement(&u.as_replacement_row(), civ)"),
+    "M7": ("        if !is_blank_replacement(zamiast)\n            && !is_civ_special_replacement(&u.as_replacement_row(), civ)", "        if false\n            && !is_blank_replacement(zamiast)\n            && !is_civ_special_replacement(&u.as_replacement_row(), civ)"),
     # galaz B: brak deduplikacji wzgledem A
     "M8": ("            if name.is_empty() || name == current_unit_name || seen.contains(name) {", "            if name.is_empty() || name == current_unit_name {"),
     # sortowanie: brak tie-break po nazwie
@@ -32,7 +32,7 @@ allm = {
     # unitAllowedForCivNation pominiete
     "M10": ("    if !unit_allowed_for_civ_nation(nacja, civ_nation) {", "    if false && !unit_allowed_for_civ_nation(nacja, civ_nation) {"),
     # epoka nie-skonczona: brak normalizacji do 1
-    "M11": ("    let epoch = if ctx.epoch.is_finite() { ctx.epoch } else { 1.0 };", "    let epoch = ctx.epoch;"),
+    "M11": ("    let epoch = if ctx.epoch.is_finite() {\n        ctx.epoch\n    } else {\n        1.0\n    };", "    let epoch = ctx.epoch;"),
     # filtr Typ w galezi A: pusty Typ przepuszczany
     "M12": ("        if utyp.is_empty() || utyp != current_typ {", "        if utyp != current_typ {"),
     # koszt bez skali epoki
