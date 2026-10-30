@@ -3742,6 +3742,16 @@ async function boot(): Promise<void> {
       return civColorHex(data.civs, civTypeForOwner(ownerId));
     }
 
+    /**
+     * Barwa obwódki medalionu właściciela na tabliczce (unitOwnerEmblem.ts::ringHex):
+     * DOKŁADNIE ta sama liczba co obwódka heksu (`civColorFn` = `_resolveOwnerColor`),
+     * zapisana jako `#rrggbb`. Dotyczy tylko pełnych cywilizacji — rezolwer
+     * emblematu podaje ją wyłącznie wtedy, gdy wariant to `civ`.
+     */
+    function civRingHexFn(ownerId: number): string {
+      return '#' + civColorFn(ownerId).toString(16).padStart(6, '0');
+    }
+
     function civRowForType(civType: string): CivEntryEpochRow {
       const row = data.civs.cywilizacje.find(
         (c: CivEntryEpochRow) => c.ikonaId === civType,
@@ -9095,6 +9105,9 @@ async function boot(): Promise<void> {
         era: empireEpochForOwner(ownerId),
         isCityState: portraitForceCultureIcon(ownerId),
         isBarbarian: isBarbarian(ownerId),
+        ringHex: isBarbarian(ownerId) || portraitForceCultureIcon(ownerId)
+          ? null
+          : civRingHexFn(ownerId),
       }));
     }
     wireUnitRendererRingStance();
