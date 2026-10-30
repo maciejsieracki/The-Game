@@ -1,0 +1,99 @@
+
+running 3 tests
+test boundary_finalize_pool2_p1_differs_from_p2_in_web ... ok
+test boundary_thicken_natural_25_passes_cap12_matches_web ... ok
+test boundary_finalize_pool2_maxpasses_1_to_5_matches_web ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+
+running 2 tests
+test cap_11_and_13_differ_from_cap_12_on_web_map ... ok
+test cap12_thicken_maps_match_web_cap12 ... FAILED
+
+failures:
+
+---- cap12_thicken_maps_match_web_cap12 stdout ----
+
+thread 'cap12_thicken_maps_match_web_cap12' (392) panicked at tests/p6_m06b1_vectors/common.rs:66:5:
+assertion `left == right` failed: cap-thick-m0-cap12: zwrot: rust=598.0 web=604.0
+  left: 4648471279446261760
+ right: 4648524056004395008
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+   1: core::panicking::panic_fmt
+   2: core::panicking::assert_failed_inner
+   3: core::panicking::assert_failed::<u64, u64>
+   4: p6_m06b1_cap::common::assert_f64
+   5: p6_m06b1_cap::cap12_thicken_maps_match_web_cap12
+   6: p6_m06b1_cap::cap12_thicken_maps_match_web_cap12::{closure#0}
+   7: <p6_m06b1_cap::cap12_thicken_maps_match_web_cap12::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+
+failures:
+    cap12_thicken_maps_match_web_cap12
+
+test result: FAILED. 1 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.08s
+
+
+running 7 tests
+test coast_thresholds_have_boundary_hits ... ok
+test flatten_threshold_is_five_on_targeted_maps ... ok
+test flatten_false_coastal_river_notches_matches_web ... ok
+test thicken_coast_and_smooth_inlets_matches_web ... FAILED
+test trim_deep_ocean_bays_matches_web ... ok
+test purge_relief_valley_water_matches_web ... ok
+test finalize_coast_and_inland_water_matches_web ... ok
+
+failures:
+
+---- thicken_coast_and_smooth_inlets_matches_web stdout ----
+
+thread 'thicken_coast_and_smooth_inlets_matches_web' (400) panicked at tests/p6_m06b1_vectors/common.rs:66:5:
+assertion `left == right` failed: thick-0-wdefault: zwrot: rust=38.0 web=52.0
+  left: 4630544841867001856
+ right: 4632515166703976448
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+   1: core::panicking::panic_fmt
+   2: core::panicking::assert_failed_inner
+   3: core::panicking::assert_failed::<u64, u64>
+   4: p6_m06b1_coast::common::assert_f64
+   5: p6_m06b1_coast::thicken_coast_and_smooth_inlets_matches_web
+   6: p6_m06b1_coast::thicken_coast_and_smooth_inlets_matches_web::{closure#0}
+   7: <p6_m06b1_coast::thicken_coast_and_smooth_inlets_matches_web::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+
+failures:
+    thicken_coast_and_smooth_inlets_matches_web
+
+test result: FAILED. 6 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.37s
+
+
+running 2 tests
+test max_ocean_bay_depth_both_limits_are_exercised ... ok
+test max_ocean_bay_depth_matches_web ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.37s
+
+
+running 2 tests
+test coast_table_values_match_web_literals ... ok
+test coast_table_every_leaf_has_web_source ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Compiling civ-engine v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_4ce7d74c-bc7-2/rust-port/engine)
+    Finished `test` profile [unoptimized] target(s) in 29.76s
+     Running tests/p6_m06b1_boundary.rs (/home/user/cargo-target-shared/wf_4ce7d74c-bc7-2/debug/deps/p6_m06b1_boundary-3ecc78c543fffc63)
+     Running tests/p6_m06b1_cap.rs (/home/user/cargo-target-shared/wf_4ce7d74c-bc7-2/debug/deps/p6_m06b1_cap-d1de035149342a0e)
+error: test failed, to rerun pass `--test p6_m06b1_cap`
+     Running tests/p6_m06b1_coast.rs (/home/user/cargo-target-shared/wf_4ce7d74c-bc7-2/debug/deps/p6_m06b1_coast-f8ab7080d099dfe1)
+error: test failed, to rerun pass `--test p6_m06b1_coast`
+     Running tests/p6_m06b1_ocean.rs (/home/user/cargo-target-shared/wf_4ce7d74c-bc7-2/debug/deps/p6_m06b1_ocean-64b52ebb03905141)
+     Running tests/p6_m06b1_tables.rs (/home/user/cargo-target-shared/wf_4ce7d74c-bc7-2/debug/deps/p6_m06b1_tables-68e81900ca949ac9)
+error: 2 targets failed:
+    `--test p6_m06b1_cap`
+    `--test p6_m06b1_coast`

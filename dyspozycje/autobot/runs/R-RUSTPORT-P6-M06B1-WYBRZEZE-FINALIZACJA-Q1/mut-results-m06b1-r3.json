@@ -1,0 +1,1414 @@
+[
+ {
+  "id": "M29-overlay-purge-brak-resetu",
+  "plik": "src/domain/mapgen/landsea.rs",
+  "opis": "purge/trim: clear_hex_to_laka_with_river bez resetu nakladki (Q, runda 3)",
+  "verdict": "killed",
+  "rc": 101,
+  "failed_tests": [
+   "purge_relief_valley_water_matches_web"
+  ],
+  "wyniki": [
+   [
+    "ok",
+    "3",
+    "0"
+   ],
+   [
+    "ok",
+    "3",
+    "0"
+   ],
+   [
+    "FAILED",
+    "6",
+    "1"
+   ],
+   [
+    "ok",
+    "2",
+    "0"
+   ],
+   [
+    "ok",
+    "2",
+    "0"
+   ],
+   [
+    "ok",
+    "2",
+    "0"
+   ]
+  ],
+  "sha_przed": "099d71f0686f7d23dba490df4151c12a95ac79d95ab2fdf878c8a29baa069d06",
+  "sha_po": "099d71f0686f7d23dba490df4151c12a95ac79d95ab2fdf878c8a29baa069d06",
+  "przywrocono": true
+ },
+ {
+  "id": "M30-overlay-flatten-brak-resetu",
+  "plik": "src/domain/mapgen/landsea.rs",
+  "opis": "flatten: bez resetu nakladki przy Plytkie->Morze (L, runda 3)",
+  "verdict": "killed",
+  "rc": 101,
+  "failed_tests": [
+   "flatten_false_coastal_river_notches_matches_web"
+  ],
+  "wyniki": [
+   [
+    "ok",
+    "3",
+    "0"
+   ],
+   [
+    "ok",
+    "3",
+    "0"
+   ],
+   [
+    "FAILED",
+    "6",
+    "1"
+   ],
+   [
+    "ok",
+    "2",
+    "0"
+   ],
+   [
+    "ok",
+    "2",
+    "0"
+   ],
+   [
+    "ok",
+    "2",
+    "0"
+   ]
+  ],
+  "sha_przed": "099d71f0686f7d23dba490df4151c12a95ac79d95ab2fdf878c8a29baa069d06",
+  "sha_po": "099d71f0686f7d23dba490df4151c12a95ac79d95ab2fdf878c8a29baa069d06",
+  "przywrocono": true
+ },
+ {
+  "id": "M31-overlay-pierscien-brak-resetu",
+  "plik": "src/domain/mapgen/landsea.rs",
+  "opis": "thicken (b) pierscien: bez resetu nakladki Morze->Plytkie (N, runda 3)",
+  "verdict": "killed",
+  "rc": 101,
+  "failed_tests": [
+   "thicken_coast_and_smooth_inlets_matches_web"
+  ],
+  "wyniki": [
+   [
+    "ok",
+    "3",
+    "0"
+   ],
+   [
+    "ok",
+    "3",
+    "0"
+   ],
+   [
+    "FAILED",
+    "6",
+    "1"
+   ],
+   [
+    "ok",
+    "2",
+    "0"
+   ],
+   [
+    "ok",
+    "2",
+    "0"
+   ],
+   [
+    "ok",
+    "2",
+    "0"
+   ]
+  ],
+  "sha_przed": "099d71f0686f7d23dba490df4151c12a95ac79d95ab2fdf878c8a29baa069d06",
+  "sha_po": "099d71f0686f7d23dba490df4151c12a95ac79d95ab2fdf878c8a29baa069d06",
+  "przywrocono": true
+ },
+ {
+  "id": "M01-ocean-max-zamiast-min",
+  "plik": "src/domain/mapgen/landsea.rs",
+  "opis": "maxOceanBayDepth: zewnetrzne max -> min",
+  "verdict": "killed",
+  "rc": 101,
+  "failed_tests": [
+   "max_ocean_bay_depth_both_limits_are_exercised",
+   "max_ocean_bay_depth_matches_web"
+  ],
+  "wyniki": [
+   [
+    "ok",
+    "3",
+    "0"
+   ],
+   [
+    "ok",
+    "3",
+    "0"
+   ],
+   [
+    "ok",
+    "7",
+    "0"
+   ],
+   [
+    "FAILED",
+    "0",
+    "2"
+   ],
+   [
+    "ok",
+    "2",
+    "0"
+   ],
+   [
+    "ok",
+    "2",
+    "0"
+   ]
+  ],
+  "sha_przed": "099d71f0686f7d23dba490df4151c12a95ac79d95ab2fdf878c8a29baa069d06",
+  "sha_po": "099d71f0686f7d23dba490df4151c12a95ac79d95ab2fdf878c8a29baa069d06",
+  "przywrocono": true
+ },
+ {
+  "id": "M02-ocean-floor-zamiast-ceil",
+  "plik": "src/domain/mapgen/landsea.rs",
+  "opis": "maxOceanBayDepth: floor -> ceil (skala)",
+  "verdict": "killed",
+  "rc": 101,
+  "failed_tests": [
+   "max_ocean_bay_depth_both_limits_are_exercised",
+   "max_ocean_bay_depth_matches_web"
+  ],
+  "wyniki": [
+   [
+    "ok",
+    "3",
+    "0"
+   ],
+   [
+    "ok",
+    "3",
+    "0"
+   ],
+   [
+    "ok",
+    "7",
+    "0"
+   ],
+   [
+    "FAILED",
+    "0",
+    "2"
+   ],
+   [
+    "ok",
+    "2",
+    "0"
+   ],
+   [
+    "ok",
+    "2",
+    "0"
+   ]
+  ],
+  "sha_przed": "099d71f0686f7d23dba490df4151c12a95ac79d95ab2fdf878c8a29baa069d06",
+  "sha_po": "099d71f0686f7d23dba490df4151c12a95ac79d95ab2fdf878c8a29baa069d06",
+  "przywrocono": true
+ },
+ {
+  "id": "M03-purge-rzezba-gt",
+  "plik": "src/domain/mapgen/landsea.rs",
+  "opis": "purge: relief >= N -> > N (granica)",
+  "verdict": "killed",
+  "rc": 101,
+  "failed_tests": [
+   "purge_relief_valley_water_matches_web"
+  ],
+  "wyniki": [
+   [
+    "ok",
+    "3",
+    "0"
+   ],
+   [
+    "ok",
+    "3",
+    "0"
+   ],
+   [
+    "FAILED",
+    "6",
+    "1"
+   ],
+   [
+    "ok",
+    "2",
+    "0"
+   ],
+   [
+    "ok",
+    "2",
+    "0"
+   ],
+   [
+    "ok",
+    "2",
+    "0"
+   ]
+  ],
+  "sha_przed": "099d71f0686f7d23dba490df4151c12a95ac79d95ab2fdf878c8a29baa069d06",
+  "sha_po": "099d71f0686f7d23dba490df4151c12a95ac79d95ab2fdf878c8a29baa069d06",
+  "przywrocono": true
+ },
+ {
+  "id": "M04-purge-suche-gt",
+  "plik": "src/domain/mapgen/landsea.rs",
+  "opis": "purge: dry >= N -> > N (granica)",
+  "verdict": "killed",
+  "rc": 101,
+  "failed_tests": [
+   "purge_relief_valley_water_matches_web"
+  ],
+  "wyniki": [
+   [
+    "ok",
+    "3",
+    "0"
+   ],
+   [
+    "ok",
+    "3",
+    "0"
+   ],
+   [
+    "FAILED",
+    "6",
+    "1"
+   ],
+   [
+    "ok",
+    "2",
+    "0"
+   ],
+   [
+    "ok",
+    "2",
+    "0"
+   ],
+   [
+    "ok",
+    "2",
+    "0"
+   ]
+  ],
+  "sha_przed": "099d71f0686f7d23dba490df4151c12a95ac79d95ab2fdf878c8a29baa069d06",
+  "sha_po": "099d71f0686f7d23dba490df4151c12a95ac79d95ab2fdf878c8a29baa069d06",
+  "przywrocono": true
+ },
+ {
+  "id": "M05-purge-and-or",
+  "plik": "src/domain/mapgen/landsea.rs",
+  "opis": "purge: && -> || (struktura warunku)",
+  "verdict": "killed",
+  "rc": 101,
+  "failed_tests": [
+   "purge_relief_valley_water_matches_web"
+  ],
+  "wyniki": [
+   [
+    "ok",
+    "3",
+    "0"
+   ],
+   [
+    "ok",
+    "3",
+    "0"
+   ],
+   [
+    "FAILED",
+    "6",
+    "1"
+   ],
+   [
+    "ok",
+    "2",
+    "0"
+   ],
+   [
+    "ok",
+    "2",
+    "0"
+   ],
+   [
+    "ok",
+    "2",
+    "0"
+   ]
+  ],
+  "sha_przed": "099d71f0686f7d23dba490df4151c12a95ac79d95ab2fdf878c8a29baa069d06",
+  "sha_po": "099d71f0686f7d23dba490df4151c12a95ac79d95ab2fdf878c8a29baa069d06",
+  "przywrocono": true
+ },
+ {
+  "id": "M06-purge-tylko-gory",
+  "plik": "src/domain/mapgen/landsea.rs",
+  "opis": "purge: Wzgorza nie liczone jako rzezba (struktura)",
+  "verdict": "killed",
+  "rc": 101,
+  "failed_tests": [
+   "purge_relief_valley_water_matches_web"
+  ],
+  "wyniki": [
+   [
+    "ok",
+    "3",
+    "0"
+   ],
+   [
+    "ok",
+    "3",
+    "0"
+   ],
+   [
+    "FAILED",
+    "6",
+    "1"
+   ],
+   [
+    "ok",
+    "2",
+    "0"
+   ],
+   [
+    "ok",
+    "2",
+    "0"
+   ],
+   [
+    "ok",
+    "2",
+    "0"
+   ]
+  ],
+  "sha_przed": "099d71f0686f7d23dba490df4151c12a95ac79d95ab2fdf878c8a29baa069d06",
+  "sha_po": "099d71f0686f7d23dba490df4151c12a95ac79d95ab2fdf878c8a29baa069d06",
+  "przywrocono": true
+ },
+ {
+  "id": "M07-purge-bez-filtra-bfs",
+  "plik": "src/domain/mapgen/landsea.rs",
+  "opis": "purge: brak pominiecia heksow z BFS od krawedzi (struktura)",
+  "verdict": "killed",
+  "rc": 101,
+  "failed_tests": [
+   "purge_relief_valley_water_matches_web"
+  ],
+  "wyniki": [
+   [
+    "ok",
+    "3",
+    "0"
+   ],
+   [
+    "ok",
+    "3",
+    "0"
+   ],
+   [
+    "FAILED",
+    "6",
+    "1"
+   ],
+   [
+    "ok",
+    "2",
+    "0"
+   ],
+   [
+    "ok",
+    "2",
+    "0"
+   ],
+   [
+    "ok",
+    "2",
+    "0"
+   ]
+  ],
+  "sha_przed": "099d71f0686f7d23dba490df4151c12a95ac79d95ab2fdf878c8a29baa069d06",
+  "sha_po": "099d71f0686f7d23dba490df4151c12a95ac79d95ab2fdf878c8a29baa069d06",
+  "przywrocono": true
+ },
+ {
+  "id": "M08-trim-noop",
+  "plik": "src/domain/mapgen/landsea.rs",
+  "opis": "trimDeepOceanBays: brak zmian (no-op)",
+  "verdict": "killed",
+  "rc": 101,
+  "failed_tests": [
+   "trim_deep_ocean_bays_matches_web"
+  ],
+  "wyniki": [
+   [
+    "ok",
+    "3",
+    "0"
+   ],
+   [
+    "ok",
+    "3",
+    "0"
+   ],
+   [
+    "FAILED",
+    "6",
+    "1"
+   ],
+   [
+    "ok",
+    "2",
+    "0"
+   ],
+   [
+    "ok",
+    "2",
+    "0"
+   ],
+   [
+    "ok",
+    "2",
+    "0"
+   ]
+  ],
+  "sha_przed": "099d71f0686f7d23dba490df4151c12a95ac79d95ab2fdf878c8a29baa069d06",
+  "sha_po": "099d71f0686f7d23dba490df4151c12a95ac79d95ab2fdf878c8a29baa069d06",
+  "przywrocono": true
+ },
+ {
+  "id": "M09-finalize-passes-min1",
+  "plik": "src/domain/mapgen/landsea.rs",
+  "opis": "finalize: maxPasses -> min(1) (N-2)",
+  "verdict": "killed",
+  "rc": 101,
+  "failed_tests": [
+   "boundary_finalize_pool2_maxpasses_1_to_5_matches_web",
+   "finalize_coast_and_inland_water_matches_web"
+  ],
+  "wyniki": [
+   [
+    "FAILED",
+    "2",
+    "1"
+   ],
+   [
+    "ok",
+    "3",
+    "0"
+   ],
+   [
+    "FAILED",
+    "6",
+    "1"
+   ],
+   [
+    "ok",
+    "2",
+    "0"
+   ],
+   [
+    "ok",
+    "2",
+    "0"
+   ],
+   [
+    "ok",
+    "2",
+    "0"
+   ]
+  ],
+  "sha_przed": "099d71f0686f7d23dba490df4151c12a95ac79d95ab2fdf878c8a29baa069d06",
+  "sha_po": "099d71f0686f7d23dba490df4151c12a95ac79d95ab2fdf878c8a29baa069d06",
+  "przywrocono": true
+ },
+ {
+  "id": "M10-finalize-passes-plus1",
+  "plik": "src/domain/mapgen/landsea.rs",
+  "opis": "finalize: maxPasses -> N+1",
+  "verdict": "killed",
+  "rc": 101,
+  "failed_tests": [
+   "boundary_finalize_pool2_maxpasses_1_to_5_matches_web",
+   "finalize_coast_and_inland_water_matches_web"
+  ],
+  "wyniki": [
+   [
+    "FAILED",
+    "2",
+    "1"
+   ],
+   [
+    "ok",
+    "3",
+    "0"
+   ],
+   [
+    "FAILED",
+    "6",
+    "1"
+   ],
+   [
+    "ok",
+    "2",
+    "0"
+   ],
+   [
+    "ok",
+    "2",
+    "0"
+   ],
+   [
+    "ok",
+    "2",
+    "0"
+   ]
+  ],
+  "sha_przed": "099d71f0686f7d23dba490df4151c12a95ac79d95ab2fdf878c8a29baa069d06",
+  "sha_po": "099d71f0686f7d23dba490df4151c12a95ac79d95ab2fdf878c8a29baa069d06",
+  "przywrocono": true
+ },
+ {
+  "id": "M11-finalize-passes-minus1",
+  "plik": "src/domain/mapgen/landsea.rs",
+  "opis": "finalize: maxPasses -> N-1",
+  "verdict": "killed",
+  "rc": 101,
+  "failed_tests": [
+   "boundary_finalize_pool2_maxpasses_1_to_5_matches_web",
+   "finalize_coast_and_inland_water_matches_web"
+  ],
+  "wyniki": [
+   [
+    "FAILED",
+    "2",
+    "1"
+   ],
+   [
+    "ok",
+    "3",
+    "0"
+   ],
+   [
+    "FAILED",
+    "6",
+    "1"
+   ],
+   [
+    "ok",
+    "2",
+    "0"
+   ],
+   [
+    "ok",
+    "2",
+    "0"
+   ],
+   [
+    "ok",
+    "2",
+    "0"
+   ]
+  ],
+  "sha_przed": "099d71f0686f7d23dba490df4151c12a95ac79d95ab2fdf878c8a29baa069d06",
+  "sha_po": "099d71f0686f7d23dba490df4151c12a95ac79d95ab2fdf878c8a29baa069d06",
+  "przywrocono": true
+ },
+ {
+  "id": "M12-finalize-early-exit-usuniety",
+  "plik": "src/domain/mapgen/landsea.rs",
+  "opis": "finalize: usuniecie wczesnego wyjscia changed==0 (RZEKOMO-RÓWNOWAŻNA, dowod w dokumencie)",
+  "verdict": "survived",
+  "rc": 0,
+  "failed_tests": [],
+  "wyniki": [
+   [
+    "ok",
+    "3",
+    "0"
+   ],
+   [
+    "ok",
+    "3",
+    "0"
+   ],
+   [
+    "ok",
+    "7",
+    "0"
+   ],
+   [
+    "ok",
+    "2",
+    "0"
+   ],
+   [
+    "ok",
+    "2",
+    "0"
+   ],
+   [
+    "ok",
+    "2",
+    "0"
+   ]
+  ],
+  "sha_przed": "099d71f0686f7d23dba490df4151c12a95ac79d95ab2fdf878c8a29baa069d06",
+  "sha_po": "099d71f0686f7d23dba490df4151c12a95ac79d95ab2fdf878c8a29baa069d06",
+  "przywrocono": true
+ },
+ {
+  "id": "M13-finalize-break-and-or",
+  "plik": "src/domain/mapgen/landsea.rs",
+  "opis": "finalize: warunek stopu && -> ||",
+  "verdict": "killed",
+  "rc": 101,
+  "failed_tests": [
+   "boundary_finalize_pool2_maxpasses_1_to_5_matches_web",
+   "finalize_coast_and_inland_water_matches_web"
+  ],
+  "wyniki": [
+   [
+    "FAILED",
+    "2",
+    "1"
+   ],
+   [
+    "ok",
+    "3",
+    "0"
+   ],
+   [
+    "FAILED",
+    "6",
+    "1"
+   ],
+   [
+    "ok",
+    "2",
+    "0"
+   ],
+   [
+    "ok",
+    "2",
+    "0"
+   ],
+   [
+    "ok",
+    "2",
+    "0"
+   ]
+  ],
+  "sha_przed": "099d71f0686f7d23dba490df4151c12a95ac79d95ab2fdf878c8a29baa069d06",
+  "sha_po": "099d71f0686f7d23dba490df4151c12a95ac79d95ab2fdf878c8a29baa069d06",
+  "przywrocono": true
+ },
+ {
+  "id": "M14-finalize-brak-pierscienia",
+  "plik": "src/domain/mapgen/landsea.rs",
+  "opis": "finalize: pominiety pierscien podwojny (struktura)",
+  "verdict": "killed",
+  "rc": 101,
+  "failed_tests": [
+   "boundary_finalize_pool2_maxpasses_1_to_5_matches_web",
+   "finalize_coast_and_inland_water_matches_web"
+  ],
+  "wyniki": [
+   [
+    "FAILED",
+    "2",
+    "1"
+   ],
+   [
+    "ok",
+    "3",
+    "0"
+   ],
+   [
+    "FAILED",
+    "6",
+    "1"
+   ],
+   [
+    "ok",
+    "2",
+    "0"
+   ],
+   [
+    "ok",
+    "2",
+    "0"
+   ],
+   [
+    "ok",
+    "2",
+    "0"
+   ]
+  ],
+  "sha_przed": "099d71f0686f7d23dba490df4151c12a95ac79d95ab2fdf878c8a29baa069d06",
+  "sha_po": "099d71f0686f7d23dba490df4151c12a95ac79d95ab2fdf878c8a29baa069d06",
+  "przywrocono": true
+ },
+ {
+  "id": "M15-thicken-cap-12-na-1",
+  "plik": "src/domain/mapgen/landsea.rs",
+  "opis": "thicken: cap przebiegow 12 -> 1",
+  "verdict": "killed",
+  "rc": 101,
+  "failed_tests": [
+   "boundary_thicken_natural_25_passes_cap12_matches_web",
+   "cap12_thicken_maps_match_web_cap12",
+   "cap_is_observable_in_rust_on_web_maps",
+   "explicit_passes_match_web_cap11_12_13",
+   "thicken_coast_and_smooth_inlets_matches_web"
+  ],
+  "wyniki": [
+   [
+    "FAILED",
+    "2",
+    "1"
+   ],
+   [
+    "FAILED",
+    "0",
+    "3"
+   ],
+   [
+    "FAILED",
+    "6",
+    "1"
+   ],
+   [
+    "ok",
+    "2",
+    "0"
+   ],
+   [
+    "ok",
+    "2",
+    "0"
+   ],
+   [
+    "ok",
+    "2",
+    "0"
+   ]
+  ],
+  "sha_przed": "099d71f0686f7d23dba490df4151c12a95ac79d95ab2fdf878c8a29baa069d06",
+  "sha_po": "099d71f0686f7d23dba490df4151c12a95ac79d95ab2fdf878c8a29baa069d06",
+  "przywrocono": true
+ },
+ {
+  "id": "M16-thicken-cap-12-na-11",
+  "plik": "src/domain/mapgen/landsea.rs",
+  "opis": "thicken: cap 12 -> 11 (N-1, kod)",
+  "verdict": "killed",
+  "rc": 101,
+  "failed_tests": [
+   "cap12_thicken_maps_match_web_cap12",
+   "explicit_passes_match_web_cap11_12_13"
+  ],
+  "wyniki": [
+   [
+    "ok",
+    "3",
+    "0"
+   ],
+   [
+    "FAILED",
+    "1",
+    "2"
+   ],
+   [
+    "ok",
+    "7",
+    "0"
+   ],
+   [
+    "ok",
+    "2",
+    "0"
+   ],
+   [
+    "ok",
+    "2",
+    "0"
+   ],
+   [
+    "ok",
+    "2",
+    "0"
+   ]
+  ],
+  "sha_przed": "099d71f0686f7d23dba490df4151c12a95ac79d95ab2fdf878c8a29baa069d06",
+  "sha_po": "099d71f0686f7d23dba490df4151c12a95ac79d95ab2fdf878c8a29baa069d06",
+  "przywrocono": true
+ },
+ {
+  "id": "M17-thicken-cap-12-na-13",
+  "plik": "src/domain/mapgen/landsea.rs",
+  "opis": "thicken: cap 12 -> 13 (N+1, kod)",
+  "verdict": "killed",
+  "rc": 101,
+  "failed_tests": [
+   "cap12_thicken_maps_match_web_cap12",
+   "cap_is_observable_in_rust_on_web_maps",
+   "explicit_passes_match_web_cap11_12_13"
+  ],
+  "wyniki": [
+   [
+    "ok",
+    "3",
+    "0"
+   ],
+   [
+    "FAILED",
+    "0",
+    "3"
+   ],
+   [
+    "ok",
+    "7",
+    "0"
+   ],
+   [
+    "ok",
+    "2",
+    "0"
+   ],
+   [
+    "ok",
+    "2",
+    "0"
+   ],
+   [
+    "ok",
+    "2",
+    "0"
+   ]
+  ],
+  "sha_przed": "099d71f0686f7d23dba490df4151c12a95ac79d95ab2fdf878c8a29baa069d06",
+  "sha_po": "099d71f0686f7d23dba490df4151c12a95ac79d95ab2fdf878c8a29baa069d06",
+  "przywrocono": true
+ },
+ {
+  "id": "M18-thicken-prog-ladu-gt",
+  "plik": "src/domain/mapgen/landsea.rs",
+  "opis": "thicken (a): prog >= 4 -> > 4 (granica)",
+  "verdict": "killed",
+  "rc": 101,
+  "failed_tests": [
+   "boundary_thicken_natural_25_passes_cap12_matches_web",
+   "cap12_thicken_maps_match_web_cap12",
+   "cap_is_observable_in_rust_on_web_maps",
+   "explicit_passes_match_web_cap11_12_13",
+   "thicken_coast_and_smooth_inlets_matches_web"
+  ],
+  "wyniki": [
+   [
+    "FAILED",
+    "2",
+    "1"
+   ],
+   [
+    "FAILED",
+    "0",
+    "3"
+   ],
+   [
+    "FAILED",
+    "6",
+    "1"
+   ],
+   [
+    "ok",
+    "2",
+    "0"
+   ],
+   [
+    "ok",
+    "2",
+    "0"
+   ],
+   [
+    "ok",
+    "2",
+    "0"
+   ]
+  ],
+  "sha_przed": "099d71f0686f7d23dba490df4151c12a95ac79d95ab2fdf878c8a29baa069d06",
+  "sha_po": "099d71f0686f7d23dba490df4151c12a95ac79d95ab2fdf878c8a29baa069d06",
+  "przywrocono": true
+ },
+ {
+  "id": "M19-thicken-brak-break-fill",
+  "plik": "src/domain/mapgen/landsea.rs",
+  "opis": "thicken (a): usuniety break przy pustym to_fill (RZEKOMO-RÓWNOWAŻNA)",
+  "verdict": "survived",
+  "rc": 0,
+  "failed_tests": [],
+  "wyniki": [
+   [
+    "ok",
+    "3",
+    "0"
+   ],
+   [
+    "ok",
+    "3",
+    "0"
+   ],
+   [
+    "ok",
+    "7",
+    "0"
+   ],
+   [
+    "ok",
+    "2",
+    "0"
+   ],
+   [
+    "ok",
+    "2",
+    "0"
+   ],
+   [
+    "ok",
+    "2",
+    "0"
+   ]
+  ],
+  "sha_przed": "099d71f0686f7d23dba490df4151c12a95ac79d95ab2fdf878c8a29baa069d06",
+  "sha_po": "099d71f0686f7d23dba490df4151c12a95ac79d95ab2fdf878c8a29baa069d06",
+  "przywrocono": true
+ },
+ {
+  "id": "M20-thicken-brak-break-coast",
+  "plik": "src/domain/mapgen/landsea.rs",
+  "opis": "thicken (b): usuniety break przy pustym to_coast (RZEKOMO-RÓWNOWAŻNA)",
+  "verdict": "survived",
+  "rc": 0,
+  "failed_tests": [],
+  "wyniki": [
+   [
+    "ok",
+    "3",
+    "0"
+   ],
+   [
+    "ok",
+    "3",
+    "0"
+   ],
+   [
+    "ok",
+    "7",
+    "0"
+   ],
+   [
+    "ok",
+    "2",
+    "0"
+   ],
+   [
+    "ok",
+    "2",
+    "0"
+   ],
+   [
+    "ok",
+    "2",
+    "0"
+   ]
+  ],
+  "sha_przed": "099d71f0686f7d23dba490df4151c12a95ac79d95ab2fdf878c8a29baa069d06",
+  "sha_po": "099d71f0686f7d23dba490df4151c12a95ac79d95ab2fdf878c8a29baa069d06",
+  "przywrocono": true
+ },
+ {
+  "id": "M21-thicken-ring-min1",
+  "plik": "src/domain/mapgen/landsea.rs",
+  "opis": "thicken (b): pierscien coastWidth -> min(1)",
+  "verdict": "killed",
+  "rc": 101,
+  "failed_tests": [
+   "cap12_thicken_maps_match_web_cap12",
+   "explicit_passes_match_web_cap11_12_13",
+   "thicken_coast_and_smooth_inlets_matches_web"
+  ],
+  "wyniki": [
+   [
+    "ok",
+    "3",
+    "0"
+   ],
+   [
+    "FAILED",
+    "1",
+    "2"
+   ],
+   [
+    "FAILED",
+    "6",
+    "1"
+   ],
+   [
+    "ok",
+    "2",
+    "0"
+   ],
+   [
+    "ok",
+    "2",
+    "0"
+   ],
+   [
+    "ok",
+    "2",
+    "0"
+   ]
+  ],
+  "sha_przed": "099d71f0686f7d23dba490df4151c12a95ac79d95ab2fdf878c8a29baa069d06",
+  "sha_po": "099d71f0686f7d23dba490df4151c12a95ac79d95ab2fdf878c8a29baa069d06",
+  "przywrocono": true
+ },
+ {
+  "id": "M22-flatten-gt",
+  "plik": "src/domain/mapgen/landsea.rs",
+  "opis": "flatten: prog >= 5 -> > 5 (granica)",
+  "verdict": "killed",
+  "rc": 101,
+  "failed_tests": [
+   "flatten_false_coastal_river_notches_matches_web",
+   "flatten_threshold_is_five_on_targeted_maps"
+  ],
+  "wyniki": [
+   [
+    "ok",
+    "3",
+    "0"
+   ],
+   [
+    "ok",
+    "3",
+    "0"
+   ],
+   [
+    "FAILED",
+    "5",
+    "2"
+   ],
+   [
+    "ok",
+    "2",
+    "0"
+   ],
+   [
+    "ok",
+    "2",
+    "0"
+   ],
+   [
+    "ok",
+    "2",
+    "0"
+   ]
+  ],
+  "sha_przed": "099d71f0686f7d23dba490df4151c12a95ac79d95ab2fdf878c8a29baa069d06",
+  "sha_po": "099d71f0686f7d23dba490df4151c12a95ac79d95ab2fdf878c8a29baa069d06",
+  "przywrocono": true
+ },
+ {
+  "id": "M23-flatten-brak-filtra-rzeki",
+  "plik": "src/domain/mapgen/landsea.rs",
+  "opis": "flatten: brak filtra rzeki (struktura)",
+  "verdict": "killed",
+  "rc": 101,
+  "failed_tests": [
+   "flatten_false_coastal_river_notches_matches_web",
+   "flatten_threshold_is_five_on_targeted_maps"
+  ],
+  "wyniki": [
+   [
+    "ok",
+    "3",
+    "0"
+   ],
+   [
+    "ok",
+    "3",
+    "0"
+   ],
+   [
+    "FAILED",
+    "5",
+    "2"
+   ],
+   [
+    "ok",
+    "2",
+    "0"
+   ],
+   [
+    "ok",
+    "2",
+    "0"
+   ],
+   [
+    "ok",
+    "2",
+    "0"
+   ]
+  ],
+  "sha_przed": "099d71f0686f7d23dba490df4151c12a95ac79d95ab2fdf878c8a29baa069d06",
+  "sha_po": "099d71f0686f7d23dba490df4151c12a95ac79d95ab2fdf878c8a29baa069d06",
+  "przywrocono": true
+ },
+ {
+  "id": "M24-json-cap-12-na-11",
+  "plik": "data/derived/mapgen-coast.json",
+  "opis": "tabela: cap 12 -> 11",
+  "verdict": "killed",
+  "rc": 101,
+  "failed_tests": [
+   "cap12_thicken_maps_match_web_cap12",
+   "coast_table_values_match_web_literals"
+  ],
+  "wyniki": [
+   [
+    "ok",
+    "3",
+    "0"
+   ],
+   [
+    "FAILED",
+    "2",
+    "1"
+   ],
+   [
+    "ok",
+    "7",
+    "0"
+   ],
+   [
+    "ok",
+    "2",
+    "0"
+   ],
+   [
+    "ok",
+    "2",
+    "0"
+   ],
+   [
+    "FAILED",
+    "1",
+    "1"
+   ]
+  ],
+  "sha_przed": "1574badb4c5b49fb85edc055a55b6e960102661fac6bed208da6df61c507d4e2",
+  "sha_po": "1574badb4c5b49fb85edc055a55b6e960102661fac6bed208da6df61c507d4e2",
+  "przywrocono": true
+ },
+ {
+  "id": "M25-json-maxpasses-3-na-2",
+  "plik": "data/derived/mapgen-coast.json",
+  "opis": "tabela: domyslne maxPasses 3 -> 2",
+  "verdict": "killed",
+  "rc": 101,
+  "failed_tests": [
+   "coast_table_values_match_web_literals"
+  ],
+  "wyniki": [
+   [
+    "ok",
+    "3",
+    "0"
+   ],
+   [
+    "ok",
+    "3",
+    "0"
+   ],
+   [
+    "ok",
+    "7",
+    "0"
+   ],
+   [
+    "ok",
+    "2",
+    "0"
+   ],
+   [
+    "ok",
+    "2",
+    "0"
+   ],
+   [
+    "FAILED",
+    "1",
+    "1"
+   ]
+  ],
+  "sha_przed": "1574badb4c5b49fb85edc055a55b6e960102661fac6bed208da6df61c507d4e2",
+  "sha_po": "1574badb4c5b49fb85edc055a55b6e960102661fac6bed208da6df61c507d4e2",
+  "przywrocono": true
+ },
+ {
+  "id": "M26-json-maxpasses-3-na-4",
+  "plik": "data/derived/mapgen-coast.json",
+  "opis": "tabela: domyslne maxPasses 3 -> 4",
+  "verdict": "killed",
+  "rc": 101,
+  "failed_tests": [
+   "coast_table_values_match_web_literals"
+  ],
+  "wyniki": [
+   [
+    "ok",
+    "3",
+    "0"
+   ],
+   [
+    "ok",
+    "3",
+    "0"
+   ],
+   [
+    "ok",
+    "7",
+    "0"
+   ],
+   [
+    "ok",
+    "2",
+    "0"
+   ],
+   [
+    "ok",
+    "2",
+    "0"
+   ],
+   [
+    "FAILED",
+    "1",
+    "1"
+   ]
+  ],
+  "sha_przed": "1574badb4c5b49fb85edc055a55b6e960102661fac6bed208da6df61c507d4e2",
+  "sha_po": "1574badb4c5b49fb85edc055a55b6e960102661fac6bed208da6df61c507d4e2",
+  "przywrocono": true
+ },
+ {
+  "id": "M27-finalize-passes-min2",
+  "plik": "src/domain/mapgen/landsea.rs",
+  "opis": "finalize: maxPasses -> min(2) (N-1 dla N=3, kod)",
+  "verdict": "killed",
+  "rc": 101,
+  "failed_tests": [
+   "finalize_coast_and_inland_water_matches_web"
+  ],
+  "wyniki": [
+   [
+    "ok",
+    "3",
+    "0"
+   ],
+   [
+    "ok",
+    "3",
+    "0"
+   ],
+   [
+    "FAILED",
+    "6",
+    "1"
+   ],
+   [
+    "ok",
+    "2",
+    "0"
+   ],
+   [
+    "ok",
+    "2",
+    "0"
+   ],
+   [
+    "ok",
+    "2",
+    "0"
+   ]
+  ],
+  "sha_przed": "099d71f0686f7d23dba490df4151c12a95ac79d95ab2fdf878c8a29baa069d06",
+  "sha_po": "099d71f0686f7d23dba490df4151c12a95ac79d95ab2fdf878c8a29baa069d06",
+  "przywrocono": true
+ },
+ {
+  "id": "M28-finalize-passes-plus-jeden-tylko-dla-3",
+  "plik": "src/domain/mapgen/landsea.rs",
+  "opis": "finalize: N=3 -> 4 (N+1 dla N=3, kod)",
+  "verdict": "killed",
+  "rc": 101,
+  "failed_tests": [
+   "finalize_coast_and_inland_water_matches_web"
+  ],
+  "wyniki": [
+   [
+    "ok",
+    "3",
+    "0"
+   ],
+   [
+    "ok",
+    "3",
+    "0"
+   ],
+   [
+    "FAILED",
+    "6",
+    "1"
+   ],
+   [
+    "ok",
+    "2",
+    "0"
+   ],
+   [
+    "ok",
+    "2",
+    "0"
+   ],
+   [
+    "ok",
+    "2",
+    "0"
+   ]
+  ],
+  "sha_przed": "099d71f0686f7d23dba490df4151c12a95ac79d95ab2fdf878c8a29baa069d06",
+  "sha_po": "099d71f0686f7d23dba490df4151c12a95ac79d95ab2fdf878c8a29baa069d06",
+  "przywrocono": true
+ }
+]

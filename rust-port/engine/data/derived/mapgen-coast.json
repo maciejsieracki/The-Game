@@ -1,0 +1,28 @@
+{
+  "meta": {
+    "status": "P6.M06B1: wartosci startowe przepisane z weba (gen-helpers.ts:4649-4939). Zrodlem prawdy do recznego balansu jest TA tabela (edytuj liczby, nie kod).",
+    "pin_web": "edb8fb56",
+    "temat": "R-RUSTPORT-P6-M06B1-WYBRZEZE-FINALIZACJA-Q1",
+    "uwaga": "Progi i mnozniki finalizacji wybrzeza (maxOceanBayDepth, purgeReliefValleyWater, finalizeCoastAndInlandWater, thickenCoastAndSmoothInlets, flattenFalseCoastalRiverNotches). Strukturalne literaly (0, 1 jako licznik/indeks, `> 0`, `== 0`) zostaja w kodzie. Zmiana liczby zmienia wynik wzgledem weba, wiec lamie testy wektorowe p6_m06b1_* (zamierzona detekcja driftu) i wymaga przegenerowania wektorow."
+  },
+  "zatoki_oceanu": {
+    "dzielnik_skali": { "wartosc": 6, "zrodlo_web": "gra/src/map/gen-helpers.ts:4651", "uzycie": "maxOceanBayDepth: floor(min(w,h) / dzielnik_skali)" },
+    "bufor_min_dodatek": { "wartosc": 2, "zrodlo_web": "gra/src/map/gen-helpers.ts:4652", "uzycie": "maxOceanBayDepth: dolny limit = bufor brzegu + dodatek" },
+    "bufor_gorny_dodatek": { "wartosc": 14, "zrodlo_web": "gra/src/map/gen-helpers.ts:4652", "uzycie": "maxOceanBayDepth: gorny limit = bufor brzegu + dodatek" }
+  },
+  "dolina_rzezby": {
+    "min_sasiadow_rzezby": { "wartosc": 2, "zrodlo_web": "gra/src/map/gen-helpers.ts:4746", "uzycie": "purgeReliefValleyWater: Gory/Wzgorza wsrod sasiadow (>=)" },
+    "min_sasiadow_suchych": { "wartosc": 3, "zrodlo_web": "gra/src/map/gen-helpers.ts:4746", "uzycie": "purgeReliefValleyWater: sasiedzi suche (>=)" }
+  },
+  "finalizacja": {
+    "max_przebiegow_domyslne": { "wartosc": 3, "zrodlo_web": "gra/src/map/gen-helpers.ts:4791", "uzycie": "finalizeCoastAndInlandWater: domyslny maxPasses" }
+  },
+  "wciecia": {
+    "przebiegi_wygladzania": { "wartosc": 12, "zrodlo_web": "gra/src/map/gen-helpers.ts:4852", "uzycie": "thickenCoastAndSmoothInlets: limit przebiegow czesci (a)" },
+    "prog_sasiadow_ladu": { "wartosc": 4, "zrodlo_web": "gra/src/map/gen-helpers.ts:4858", "uzycie": "thickenCoastAndSmoothInlets (a): Morze z >= tylu sasiadami ladu -> Laka" },
+    "szerokosc_wybrzeza_domyslna": { "wartosc": 2, "zrodlo_web": "gra/src/map/gen-helpers.ts:4844", "uzycie": "thickenCoastAndSmoothInlets (b): domyslny coastWidth" }
+  },
+  "cypel_ujscia": {
+    "prog_sasiadow_morza": { "wartosc": 5, "zrodlo_web": "gra/src/map/gen-helpers.ts:4930", "uzycie": "flattenFalseCoastalRiverNotches: Wybrzeze z >= tylu sasiadami Morze (>=)" }
+  }
+}
