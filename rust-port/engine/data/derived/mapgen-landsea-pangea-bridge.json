@@ -1,0 +1,16 @@
+{
+  "meta": {
+    "temat": "R-RUSTPORT-P6-M06A8-LAD-MORZE-KORYTARZE2-Q1",
+    "zrodlo_web": "gra/src/map/gen-helpers.ts (pin edb8fb56): ensurePangeaSingleContinent :4375 (skala 20160, baza 16, mnoznik 6, zakres 18..48, 12 iteracji, zapas sciezki +2, obca masa usuwana do max(60, floor(glowna*0.25)))",
+    "uwaga": "Wartosci balansowe edytowalne. Kod nie zawiera ich literalow (M06A8 partia 1)."
+  },
+  "bridge_skala_pola": 20160,
+  "bridge_baza": 16,
+  "bridge_mnoznik": 6,
+  "bridge_min": 18,
+  "bridge_max": 48,
+  "bridge_iter_max": 12,
+  "bridge_zapas_sciezki": 2,
+  "masa_obca_min": 60,
+  "masa_obca_ulamek_glownej": 0.25
+}
