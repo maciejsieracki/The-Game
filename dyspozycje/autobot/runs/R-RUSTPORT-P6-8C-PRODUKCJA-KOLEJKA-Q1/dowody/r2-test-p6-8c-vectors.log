@@ -1,0 +1,32 @@
+   Compiling serde_core v1.0.229
+   Compiling once_cell v1.21.4
+   Compiling zmij v1.0.23
+   Compiling itoa v1.0.18
+   Compiling memchr v2.8.3
+   Compiling tracing-core v0.1.36
+   Compiling pin-project-lite v0.2.17
+   Compiling tracing v0.1.44
+   Compiling serde_json v1.0.154
+   Compiling serde v1.0.229
+   Compiling civ-engine v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_79c4c5ca-851-2/rust-port/engine)
+    Finished `test` profile [unoptimized] target(s) in 33.00s
+     Running tests/p6_8c_vectors.rs (target/debug/deps/p6_8c_vectors-2917562851ba301e)
+
+running 13 tests
+test advance_speed_bonus_applies_to_buildings_only ... ok
+test bank_overwrites_and_withdraw_consumes ... ok
+test advance_completes_at_threshold_and_pauses ... ok
+test bank_ignores_units_and_proto_key ... ok
+test enqueue_unit_is_gated_and_banked_progress_restored ... ok
+test dequeue_front_forfeits_own_and_new_front_regains_banked ... ok
+test eta_turns_threshold_and_nan ... ok
+test promote_to_front_moves_progress_per_item ... ok
+test sanitize_refunds_legacy_units_front_and_waiting ... ok
+test unit_capacity_min_one_and_no_carry ... ok
+test p8c_vectors_enqueue_forfeit_bank_withdraw ... ok
+test p8c_vectors_front_eta_work_capacity ... ok
+test p8c_vectors_queue_ops ... ok
+
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.16s
+
+EXIT=0

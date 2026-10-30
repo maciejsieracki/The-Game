@@ -55,8 +55,16 @@ Zależności zamknięte: `drop_front_item`, `rush_production` (8B2), `CityProduc
 - `cargo test --no-fail-fast` (cały silnik): 1770 passed, 0 failed (baseline 1757 + 13 nowych)
 - Mutacje: 12/12 WYKRYTYCH (`dyspozycje/autobot/runs/R-RUSTPORT-P6-8C-PRODUKCJA-KOLEJKA-Q1/dowody/mut-p6-8c-{a,b}.log`)
 
+## Weryfikacja niezalezna (runda 2, Operator-pomiary)
+
+- Regeneracja wektorow z pinu 91dc998a (generator, Node v22.22.0): BYTE-IDENTYCZNY z `p8c.json` (2880).
+- Ponowne bramki: fmt EXIT=0, clippy `-D warnings` EXIT=0, `p6_8c_vectors` 13/0, `--no-fail-fast` 1770/0.
+- Mutacje ponownie: 12/12 WYKRYTE, plik przywrocony (sha256 bez zmian). Logi: `dyspozycje/autobot/runs/R-RUSTPORT-P6-8C-PRODUKCJA-KOLEJKA-Q1/dowody/r2-*.log`.
+- Potwierdzona rozbieznosc pin vs HEAD (zalozenie 1): parity-v2 2378 linii / 0 trafien;
+  pin 91dc998a 2541 linii / 4 trafienia; origin/main 2541 / 2 (`buildingWorkPerTurn`).
+
 ## Status
 
-Kod, wektory i testy: GOTOWE na poziomie Operatora. Do Evaluatora/Obrony: niezależna
-weryfikacja wektorów (ponowne uruchomienie generatora na pinie), przegląd założeń 1–5 i decyzja
-w sprawie punktu 1 (pin vs HEAD).
+Kod, wektory i testy: GOTOWE; weryfikacja niezalezna r2 PASS-WITH-NOTES. Otwarte dla
+Evaluatora/Final Control: przeglad zalozen 1–5 i decyzja w sprawie punktu 1 (pin vs HEAD).
+Integracja i READY_FOR_DEPLOY: wylacznie orkiestrator.

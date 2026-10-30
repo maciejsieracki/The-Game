@@ -3,9 +3,10 @@
 # Kazda mutacja: sed -> cargo test --test p6_8c_vectors -> oczekiwane FAIL (wykryta) -> przywrocenie pliku.
 # Uzycie: bash mut-p6-8c.sh <nr_zakresu: 1 albo 2> ; log: stdout (zapisany do dowody/).
 set -u
-ROOT=/home/user/The-Game/.claude/worktrees/wf_79c4c5ca-851-1
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ROOT="$(cd "$SCRIPT_DIR/../../../.." && pwd)"
 F="$ROOT/rust-port/engine/src/domain/production_queue.rs"
-B="$ROOT/dyspozycje/autobot/runs/R-RUSTPORT-P6-8C-PRODUKCJA-KOLEJKA-Q1/dowody/production_queue.orig.rs.txt"
+B="$(mktemp -d)/production_queue.orig.rs.txt"
 cp "$F" "$B"
 cd "$ROOT/rust-port/engine" || exit 2
 

@@ -1,0 +1,2 @@
+{"total":2880,"counts":{"frontItem":10,"etaTurns":336,"buildingWorkPerTurn":90,"unitRecruitmentCapacityPerTurn":90,"enqueue":400,"forfeitedProgressForIndex":100,"bankRemovedBuildingProgress":400,"withdrawBankedBuildingProgress":24,"sanitizeBuildQueue":10,"dequeue":400,"filterQueue":70,"promoteToFront":100,"insertAtFront":400,"advanceProduction":450}}
+EXIT=0
