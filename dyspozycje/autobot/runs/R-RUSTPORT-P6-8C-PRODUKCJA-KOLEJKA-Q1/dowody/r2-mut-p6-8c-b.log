@@ -1,0 +1,8 @@
+M07-enqueue-banked-gt: WYKRYTA (test result: FAILED. 12 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.40s)
+M08-sanitize-front-legacy: WYKRYTA (test result: FAILED. 11 passed; 2 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.42s)
+M09-bonus-nonfinite: WYKRYTA (test result: FAILED. 11 passed; 2 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.47s)
+M10-enqueue-empty-branch: WYKRYTA (test result: FAILED. 12 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.37s)
+M11-insert-postep-gt: WYKRYTA (test result: FAILED. 12 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.39s)
+M12-advance-paused: WYKRYTA (test result: FAILED. 11 passed; 2 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.19s)
+PLIK_PRZYWROCONY_OK
+EXIT=0

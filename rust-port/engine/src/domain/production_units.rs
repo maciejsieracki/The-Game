@@ -3251,7 +3251,11 @@ pub fn rush_cost(prod: &CityProduction, modifier: f64) -> f64 {
 }
 
 /// web `dropFrontItem(kolejka, remainder)`: zdejmuje front; nowy front odzyskuje swoj zbankowany postep.
-fn drop_front_item(kolejka: &[ProductionItem], remainder: f64) -> (Vec<ProductionItem>, f64) {
+/// P6.8C: `pub(crate)` -- wspoldzielone z `production_queue` (ten sam kod co web `dropFrontItem`).
+pub(crate) fn drop_front_item(
+    kolejka: &[ProductionItem],
+    remainder: f64,
+) -> (Vec<ProductionItem>, f64) {
     let mut rest: Vec<ProductionItem> = kolejka.iter().skip(1).cloned().collect();
     let postep = rest.first().map_or(0.0, |f| f.postep.unwrap_or(0.0)) + remainder;
     if let Some(next) = rest.first_mut() {

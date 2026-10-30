@@ -1,0 +1,8 @@
+M01-queue-slot-zero: WYKRYTA (test result: FAILED. 9 passed; 4 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.48s)
+M02-forfeit-le-zero: WYKRYTA (test result: FAILED. 10 passed; 3 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.33s)
+M03-withdraw-gt-zero: WYKRYTA (test result: FAILED. 12 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.38s)
+M04-eta-min-one: WYKRYTA (test result: FAILED. 11 passed; 2 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.49s)
+M05-advance-threshold: WYKRYTA (test result: FAILED. 11 passed; 2 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.40s)
+M06-promote-slot-min: WYKRYTA (test result: FAILED. 12 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.27s)
+PLIK_PRZYWROCONY_OK
+EXIT=0
