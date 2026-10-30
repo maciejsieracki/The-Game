@@ -1,0 +1,15 @@
+MUTANT: U4-M13-track-empty-target-kept
+FILE: src/domain/general_quick_follow.rs
+OLD:         general_target_id: general_target_id
+            .filter(|s| !s.is_empty())
+            .map(str::to_string),
+NEW:         general_target_id: general_target_id.map(str::to_string),
+--- wynik (wyciag) ---
+test tracked_march_matches_web ... FAILED
+thread 'tracked_march_matches_web' (24527) panicked at tests/p6_repin_wojna_2_generals.rs:580:17:
+assertion `left == right` failed: przypadek 58: generalTargetId sync
+   2: core::panicking::assert_failed_inner
+   3: core::panicking::assert_failed::<core::option::Option<alloc::string::String>, core::option::Option<alloc::string::String>>
+test result: FAILED. 12 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.21s
+error: test failed, to rerun pass `--test p6_repin_wojna_2_generals`
+EXIT=101

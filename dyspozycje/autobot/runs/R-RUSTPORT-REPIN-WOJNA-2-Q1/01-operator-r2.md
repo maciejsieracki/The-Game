@@ -1,0 +1,15 @@
+STATUS: PASS-WITH-NOTES
+DOMAIN: GAME
+TEMAT: R-RUSTPORT-REPIN-WOJNA-2-Q1
+GOAL: Runda 2 (U3 `generals.ts` -> `domain/generals.rs`; U4 `generalQuickFollow.ts` -> `domain/general_quick_follow.rs`), pin `dc8a3adc`, baza `rust-port/parity-v2` `cb57e479`. Integracja battle-mode z zapisem (`main.ts:29056`, `:40818-40820`) i `planned-march.ts` `generalTargetId`/save: NASTEPNA-PARTIA (poza allowlista).
+ZMIANY/COMMIT: kod + wektory + testy + P6 doc: `882a8020`; dowody (generator, weryfikator, logi `mut-r2-*`, `fmt/clippy/test-r2.log`, ten raport): SHA-DOCS (w odpowiedzi). Allowlista OK: `domain/{generals,general_quick_follow}.rs`, `domain/mod.rs` (2x `pub mod`), `tests/p6_repin_wojna_2_generals.rs`, `tests/p6_repin_wojna_2_vectors/{generals,general-quick-follow}.json` (NOWE), `dyspozycje/rust-port/p6/P6-REPIN-WOJNA-2.md`, katalog runu. Zero zmian w `gra/**`, `renderer`, `src-tauri`, `Cargo.toml`, `WERSJE.md`. `Cargo.lock` (artefakt builda, nietrackowany) NIE commitowany.
+TESTY:
+- Generator wektorow (`node --experimental-strip-types`, kopia z dopisanymi `.ts` w katalogu roboczym poza repo, pin `dc8a3adc`): `generals.json` 334 KB, `general-quick-follow.json` 751 KB (< 10 MB). Pokrycie: purchase 600 (60 wywolan kontynuacji), nearest 260, followDest 160, batch 80, labels 5, planEnabled 260, issue 260 (issued 34, unreachable 21, unavailable 160, ineligible 45), tracked 220, sync 260.
+- `cargo test --test p6_repin_wojna_2_generals`: 13/13 OK.
+- Weryfikator niezalezny `verify-r2-generals.py` (python3 -I, ponowna implementacja z TS): 0 rozbieznosci.
+- Mutacje (`mut-r2-*.log`, `EXIT=`): U3 M1-M18 zabite 18/18. U4 M01-M20 zabite 19/20; U4-M03 (`planEnabled` bez `!isGeneral`) przezyl = RownowaZNY: `generals.ts:72` zwraca undefined dla `isGeneral`, wiec `generalFollowDestination` daje null i jednostka jest pomijana (`generalQuickFollow.ts:31`).
+- `cargo fmt --all -- --check` EXIT=0; `cargo clippy --all-targets -- -D warnings` EXIT=0; `cargo test --no-fail-fast` 1459 passed / 0 failed (baseline 1446 + 13), EXIT=0; `git diff --check` EXIT=0.
+BLOKADY: brak. Luki (ZALOZENIA, w P6 doc): (a) `generals.ts` jest NOWY w calosci wzgledem `edb8fb56` (dispatch podawal blok 54-103), wiec portowany 1-103; (b) NaN wspolrzednej KANDYDATA przy >=2 kandydatach = komparator niespojny, NIE_ZMIERZONO, poza wektorami; (c) `nearest` = minimum liniowe zamiast `sort()[0]` (identyczne dla spojnego komparatora, id unikalne); (d) `TrackedMarchDest` lokalny w module (pathfinding nie zna `generalTargetId`); (e) jeden commit kodu dla U3+U4 (wspolny `mod.rs` i plik testu), zamiast osobnego commita na partie.
+RUNDY: 2/5
+NASTEPNY KROK: runda 3 (ten sam ID): (a) `planned-march.ts` +19/-4: `generalTargetId` w `PlannedMarchDest` i `plannedMarchesFromSave`/`ToSave` (`planned-march.ts:446-485`) wraz z `pathfinding.rs` i `save_load.rs` (wymaga rozszerzenia allowlisty); (b) integracja battle-mode z zapisem (`main.ts:29056`, `:40818-40820`, logika `isAutomaticOnlyBattleMode` juz portowana w U2); (c) podpiecie `TrackedMarchDest` pod `pathfinding::PlannedMarchDest`.
+DEPLOY/PUSH: NIE WYKONANO

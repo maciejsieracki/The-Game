@@ -1,0 +1,13 @@
+MUTANT: U4-M16-sync-no-arrived-delete
+FILE: src/domain/general_quick_follow.rs
+OLD:         if follower.q == commander.q && follower.r == commander.r {
+NEW:         if false {
+--- wynik (wyciag) ---
+test sync_tracked_matches_web ... FAILED
+thread 'sync_tracked_matches_web' (23868) panicked at tests/p6_repin_wojna_2_generals.rs:97:5:
+assertion `left == right` failed: przypadek 12: liczba marszy
+   2: core::panicking::assert_failed_inner
+   3: core::panicking::assert_failed::<usize, usize>
+test result: FAILED. 12 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.24s
+error: test failed, to rerun pass `--test p6_repin_wojna_2_generals`
+EXIT=101

@@ -1,0 +1,15 @@
+MUTANT: U3-M6-stone-swap
+FILE: src/domain/generals.rs
+OLD:     if has_wheel {
+        "Rydwan (woły)"
+NEW:     if !has_wheel {
+        "Rydwan (woły)"
+--- wynik (wyciag) ---
+test stone_unit_matches_web ... FAILED
+thread 'stone_unit_matches_web' (25159) panicked at tests/p6_repin_wojna_2_generals.rs:172:9:
+assertion `left == right` failed
+   2: core::panicking::assert_failed_inner
+   3: core::panicking::assert_failed::<&str, &str>
+test result: FAILED. 12 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.21s
+error: test failed, to rerun pass `--test p6_repin_wojna_2_generals`
+EXIT=101

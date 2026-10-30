@@ -1,0 +1,11 @@
+MUTANT: U3-M12-follow-no-isgeneral
+FILE: src/domain/generals.rs
+OLD:     if !general.is_general
+        || general.owner_id
+NEW:     if general.owner_id
+--- wynik (wyciag) ---
+test general_follow_destination_matches_web ... FAILED
+thread 'general_follow_destination_matches_web' (20743) panicked at tests/p6_repin_wojna_2_generals.rs:253:28:
+test result: FAILED. 12 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.21s
+error: test failed, to rerun pass `--test p6_repin_wojna_2_generals`
+EXIT=101

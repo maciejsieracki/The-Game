@@ -1,0 +1,13 @@
+MUTANT: U3-M10-purchase-cost-unchecked
+FILE: src/domain/generals.rs
+OLD:         Some(cost) if cost == request.requested_cost => {}
+NEW:         Some(_) => {}
+--- wynik (wyciag) ---
+test purchase_matches_web_and_calls_continuation_only_when_valid ... FAILED
+thread 'purchase_matches_web_and_calls_continuation_only_when_valid' (20472) panicked at tests/p6_repin_wojna_2_generals.rs:206:9:
+assertion `left == right` failed: przypadek 0: wynik
+   2: core::panicking::assert_failed_inner
+   3: core::panicking::assert_failed::<bool, bool>
+test result: FAILED. 12 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.17s
+error: test failed, to rerun pass `--test p6_repin_wojna_2_generals`
+EXIT=101

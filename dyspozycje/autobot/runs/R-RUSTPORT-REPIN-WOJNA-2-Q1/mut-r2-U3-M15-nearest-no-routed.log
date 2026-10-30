@@ -1,0 +1,16 @@
+MUTANT: U3-M15-nearest-no-routed
+FILE: src/domain/generals.rs
+OLD:             && !candidate.routed
+
+NEW:
+--- wynik (wyciag) ---
+test nearest_living_general_matches_web ... FAILED
+test plan_enabled_matches_web ... FAILED
+thread 'nearest_living_general_matches_web' (21208) panicked at tests/p6_repin_wojna_2_generals.rs:231:9:
+assertion `left == right` failed: przypadek 0
+   2: core::panicking::assert_failed_inner
+   3: core::panicking::assert_failed::<core::option::Option<&str>, core::option::Option<&str>>
+thread 'plan_enabled_matches_web' (21209) panicked at tests/p6_repin_wojna_2_generals.rs:354:13:
+test result: FAILED. 11 passed; 2 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.17s
+error: test failed, to rerun pass `--test p6_repin_wojna_2_generals`
+EXIT=101

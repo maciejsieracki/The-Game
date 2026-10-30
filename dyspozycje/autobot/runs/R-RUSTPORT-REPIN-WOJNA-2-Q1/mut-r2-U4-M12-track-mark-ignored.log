@@ -1,0 +1,15 @@
+MUTANT: U4-M12-track-mark-ignored
+FILE: src/domain/general_quick_follow.rs
+OLD:     if mark_as_player_issued {
+        planner.mark_player_moved
+NEW:     if true {
+        planner.mark_player_moved
+--- wynik (wyciag) ---
+test tracked_march_matches_web ... FAILED
+thread 'tracked_march_matches_web' (23499) panicked at tests/p6_repin_wojna_2_generals.rs:566:9:
+assertion `left == right` failed: przypadek 1: dlugosc logu
+   2: core::panicking::assert_failed_inner
+   3: core::panicking::assert_failed::<usize, usize>
+test result: FAILED. 12 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.24s
+error: test failed, to rerun pass `--test p6_repin_wojna_2_generals`
+EXIT=101
