@@ -44,3 +44,7 @@ BAZA: wynik `R-WEB-ERA-WAR-COUNTER-Q1` (jego gałąź/commit) — pobierz SHA z 
 DYSK: worktree ≈0,8 GB + `npm ci`; po etapie usuń `node_modules`/artefakty.
 MODELE: Operator/Obrona Haiku 5.5, Evaluator/FC Sonnet 5.5 (§5b). Luki → ZAŁOŻENIE. Raport max ok. 400 słów. FORMAT: STATUS / DOMAIN / TEMAT / GOAL / ZMIANY-COMMIT / TESTY / BLOKADY / RUNDY / NASTĘPNY KROK / DEPLOY-PUSH: NIE WYKONANO
 ANTY-HALUCYNACJA: twierdzenie o kodzie = plik:linia/komenda; niepewne = NIE_ZMIERZONO. Wiadomości właściciela w kontekście — nie Twoje zadanie; bez pytań ABC.
+
+## Uzupełnienie decyzji właściciela (2026-10-30, AskUserQuestion)
+D7. Hamulec wojny: GRACZ NIGDY NIE WYPOWIADA AUTOMATYCZNIE. Gdy w parze gracz↔AI silniejsza jest strona gracza, wojny z hamulca NIE MA (brak deklaracji i brak ostrzeżenia o automatycznej wojnie z Twojej strony); wojna z hamulca wybucha tylko, gdy silniejszą stroną jest AI (wtedy ostrzeżenie dla gracza 2 tury przed jak dziś). Dotyczy `processDiploCrisisQueue` (`main.ts` ~10203-10260, `pickWarDeclarer`). Dodaj test i mutację (wyłączenie warunku → test pada). Para AI↔AI bez zmian.
+D8. Automatyczny koniec wojen wymuszonych (czas i 2 miasta) usunięty dla WSZYSTKICH — „ustalamy dla wszystkich takie same zasady zawarcia pokoju” (R9). Wspólne reguły pokoju dla wojen epoki i zwykłych (R3–R5).
