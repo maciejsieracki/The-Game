@@ -1,0 +1,80 @@
+WERYFIKATOR PYTHON P6.M06B1 (runda 3) - niezalezna implementacja z TS pin edb8fb56
+kategoria | sprawdzone | rozbieznosci | nietrywialne (stan zmieniony)
+boundary-finalize | 10 | 0 | 10
+boundary-thicken | 1 | 0 | 1
+cap-flag-cap11 | 13 | 0 | 10
+cap-flag-cap13 | 13 | 0 | 10
+cap-web-cap11 | 13 | 0 | 13
+cap-web-cap12 | 13 | 0 | 13
+cap-web-cap13 | 13 | 0 | 13
+finalize | 520 | 0 | 520
+flatten | 138 | 0 | 55
+ocean | 330 | 0 | 330
+purge | 278 | 30 | 170
+thicken | 396 | 0 | 392
+trim | 130 | 0 | 99
+nakladka na wodzie (przypadki *-ov-*, z resetem las->brak na heksie wodnym w wyjsciu web):
+  finalize: przypadkow=100, z resetem=100
+  flatten: przypadkow=50, z resetem=8
+  purge: przypadkow=50, z resetem=30
+  thicken: przypadkow=100, z resetem=100
+  trim: przypadkow=50, z resetem=31
+RAZEM sprawdzone=1868 rozbieznosci=30
+obserwowalnosc capu: cap-thick-m0-roz-g5 cap11 != cap12 = True
+obserwowalnosc capu: cap-thick-m0-roz-g5 cap13 != cap12 = True
+obserwowalnosc capu: cap-thick-m1-roz-g6 cap11 != cap12 = True
+obserwowalnosc capu: cap-thick-m1-roz-g6 cap13 != cap12 = True
+obserwowalnosc capu: cap-thick-m2-roz-g8 cap11 != cap12 = True
+obserwowalnosc capu: cap-thick-m2-roz-g8 cap13 != cap12 = True
+obserwowalnosc capu: cap-thick-m3-roz-g15 cap11 != cap12 = True
+obserwowalnosc capu: cap-thick-m3-roz-g15 cap13 != cap12 = True
+obserwowalnosc capu: cap-thick-m4-roz-g18 cap11 != cap12 = True
+obserwowalnosc capu: cap-thick-m4-roz-g18 cap13 != cap12 = True
+obserwowalnosc capu: cap-thick-m5-roz-g26 cap11 != cap12 = True
+obserwowalnosc capu: cap-thick-m5-roz-g26 cap13 != cap12 = True
+obserwowalnosc capu: cap-thick-m6-roz-g29 cap11 != cap12 = True
+obserwowalnosc capu: cap-thick-m6-roz-g29 cap13 != cap12 = True
+obserwowalnosc capu: cap-thick-m7-roz-g37 cap11 != cap12 = True
+obserwowalnosc capu: cap-thick-m7-roz-g37 cap13 != cap12 = True
+obserwowalnosc capu: cap-thick-m8-roz-g44 cap11 != cap12 = True
+obserwowalnosc capu: cap-thick-m8-roz-g44 cap13 != cap12 = True
+obserwowalnosc capu: cap-thick-m9-roz-g62 cap11 != cap12 = True
+obserwowalnosc capu: cap-thick-m9-roz-g62 cap13 != cap12 = True
+obserwowalnosc capu: cap-thick-m10-ogol-g0 cap11 != cap12 = False
+obserwowalnosc capu: cap-thick-m10-ogol-g0 cap13 != cap12 = False
+obserwowalnosc capu: cap-thick-m11-ogol-g1 cap11 != cap12 = False
+obserwowalnosc capu: cap-thick-m11-ogol-g1 cap13 != cap12 = False
+obserwowalnosc capu: cap-thick-m12-ogol-g2 cap11 != cap12 = False
+obserwowalnosc capu: cap-thick-m12-ogol-g2 cap13 != cap12 = False
+ROZBIEZNOSCI:
+  purge:purge-ov-0:ret 8 vs 8
+  purge:purge-ov-1:ret 3 vs 3
+  purge:purge-ov-2:ret 8 vs 8
+  purge:purge-ov-3:ret 13 vs 13
+  purge:purge-ov-4:ret 7 vs 7
+  purge:purge-ov-5:ret 2 vs 2
+  purge:purge-ov-6:ret 16 vs 16
+  purge:purge-ov-7:ret 4 vs 4
+  purge:purge-ov-8:ret 7 vs 7
+  purge:purge-ov-9:ret 6 vs 6
+  purge:purge-ov-10:ret 8 vs 8
+  purge:purge-ov-11:ret 9 vs 9
+  purge:purge-ov-12:ret 13 vs 13
+  purge:purge-ov-13:ret 14 vs 14
+  purge:purge-ov-14:ret 6 vs 6
+  purge:purge-ov-15:ret 7 vs 7
+  purge:purge-ov-16:ret 11 vs 11
+  purge:purge-ov-17:ret 10 vs 10
+  purge:purge-ov-18:ret 16 vs 16
+  purge:purge-ov-19:ret 5 vs 5
+  purge:purge-ov-20:ret 11 vs 11
+  purge:purge-ov-21:ret 11 vs 11
+  purge:purge-ov-22:ret 19 vs 19
+  purge:purge-ov-23:ret 6 vs 6
+  purge:purge-ov-24:ret 3 vs 3
+  purge:purge-ov-25:ret 16 vs 16
+  purge:purge-ov-26:ret 8 vs 8
+  purge:purge-ov-27:ret 14 vs 14
+  purge:purge-ov-28:ret 7 vs 7
+  purge:purge-ov-29:ret 5 vs 5
+WYNIK: ROZBIEZNOSCI 30

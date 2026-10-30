@@ -331,6 +331,81 @@ for (const c of cases.flatten) {
   }
 }
 
+// ===== 7. (runda 3) NAKLADKA NA WODZIE: osobny generator (ovRng, ziarno 20261031), dopisany NA KONCU =====
+// Zarzut FC r2: w starych wektorach heksy wodne maja wylacznie nakladke `brak`, wiec resety nakladki
+// w purge/flatten/pierscieniu thicken nie sa obserwowalne. Tu: losowe mapy 7..12 x 7..12 z nakladka
+// `las` na czesci heksow wodnych (i ladowych). Stare kategorie (1..6) i stare mapy NIE sa zmieniane:
+// nowe przypadki sa DOPISANE na koncu kazdej tablicy (prefiks = stare wektory).
+const ovRng = G.mulberry32(20261031);
+const ovr = () => ovRng();
+const ovi = (a, b) => a + Math.floor(ovr() * (b - a + 1));
+const OV_TERR = [TB.Morze, TB.Morze, TB.PlytkieMorze, TB.PlytkieMorze, TB.Laka, TB.Rownina, TB.Gory, TB.Wzgorza, TB.Pustynia];
+function ovMap(W, H) {
+  const rows = [];
+  for (let q = 0; q < W; q++) {
+    for (let r = 0; r < H; r++) {
+      const terr = OV_TERR[ovi(0, OV_TERR.length - 1)];
+      const water = terr === TB.Morze || terr === TB.PlytkieMorze;
+      const nak = (water && ovr() < 0.5) || (!water && ovr() < 0.2) ? NK.Las : NK.Brak;
+      const zloze = ovr() < 0.1 ? 1 : 0;
+      let ro = 0;
+      let ed = [];
+      if (ovr() < 0.2) {
+        ro = 1;
+        ed = [ovi(0, 5)];
+      }
+      rows.push([keyOf(q, r), terr, nak, zloze, ro, ed]);
+    }
+  }
+  return rows;
+}
+const ovWaterLas = (rows) => rows.filter((x) => (x[1] === TB.Morze || x[1] === TB.PlytkieMorze) && x[2] === NK.Las).length;
+// Mapy morskie (60% Morze, 25% Plytkie, 15% Laka): flatten (>=5 sasiadow Morze) i pierscien thicken
+// (b) wymagaja gęstego morza; losowe mapy o rownym rozkladzie daja ich za malo (zmierzone: 0 resetow flatten).
+function ovSeaMap(W, H) {
+  const rows = [];
+  for (let q = 0; q < W; q++) {
+    for (let r = 0; r < H; r++) {
+      const x = ovr();
+      const terr = x < 0.6 ? TB.Morze : x < 0.85 ? TB.PlytkieMorze : TB.Laka;
+      const water = terr === TB.Morze || terr === TB.PlytkieMorze;
+      const nak = (water && ovr() < 0.5) || (!water && ovr() < 0.2) ? NK.Las : NK.Brak;
+      const zloze = ovr() < 0.1 ? 1 : 0;
+      let ro = 0;
+      let ed = [];
+      if (ovr() < 0.15) {
+        ro = 1;
+        ed = [ovi(0, 5)];
+      }
+      rows.push([keyOf(q, r), terr, nak, zloze, ro, ed]);
+    }
+  }
+  return rows;
+}
+let ovHexes = 0;
+const addOvCases = (rows, W, H, tag) => {
+  ovHexes += ovWaterLas(rows);
+  const mi = addMap(buildObj(rows));
+  cases.purge.push({ id: `purge-ov-${tag}`, mi, W, H });
+  cases.trim.push({ id: `trim-ov-${tag}`, mi, W, H, maxDepth: [undefined, 3][tag.length % 2] ?? null });
+  cases.flatten.push({ id: `flat-ov-${tag}`, mi, W, H });
+  cases.thicken.push({ id: `thick-ov-${tag}-wdefault`, mi, W, H, coastWidth: 'default' });
+  cases.thicken.push({ id: `thick-ov-${tag}-w3`, mi, W, H, coastWidth: 3 });
+  cases.finalize.push({ id: `fin-ov-${tag}-p3`, mi, W, H, maxPasses: 3, pool: null });
+  cases.finalize.push({ id: `fin-ov-${tag}-pool2`, mi, W, H, maxPasses: 3, pool: 2 });
+};
+for (let i = 0; i < 30; i++) {
+  const W = ovi(7, 12);
+  const H = ovi(7, 12);
+  addOvCases(ovMap(W, H), W, H, `${i}`);
+}
+for (let i = 0; i < 20; i++) {
+  const W = ovi(7, 12);
+  const H = ovi(7, 12);
+  addOvCases(ovSeaMap(W, H), W, H, `s${i}`);
+}
+bump('overlay_water_las_hexes_in_inputs', ovHexes);
+
 // ---------- uruchomienie funkcji web ----------
 function runCase(kind, c) {
   if (kind === 'ocean') return { ret: c.out };

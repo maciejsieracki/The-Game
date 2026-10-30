@@ -1,0 +1,11 @@
+ocean: stare=330 nowe=330 prefiks=OK
+purge: stare=228 nowe=278 prefiks=OK
+trim: stare=80 nowe=130 prefiks=OK
+finalize: stare=420 nowe=520 prefiks=OK
+thicken: stare=296 nowe=396 prefiks=OK
+flatten: stare=88 nowe=138 prefiks=OK
+maps: stare=530 nowe=580 prefiks=OK
+stats (stare liczniki): IDENTYCZNE
+sha256 starego pliku: 2f9f203904b36cbbcaa710a8d26bfd76eacc6f4e5f3c78a11539f05c291ae919
+sha256 nowego pliku:  82e26b37e85ebe9ced3451af7f08119fab4fcc4f77f9ab0a4636203b6f03ee8d
+WYNIK: PREFIKS ZACHOWANY

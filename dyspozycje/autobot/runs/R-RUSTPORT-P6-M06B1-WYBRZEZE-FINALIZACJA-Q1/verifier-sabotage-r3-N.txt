@@ -1,0 +1,100 @@
+WERYFIKATOR PYTHON P6.M06B1 (runda 3) - niezalezna implementacja z TS pin edb8fb56
+kategoria | sprawdzone | rozbieznosci | nietrywialne (stan zmieniony)
+boundary-finalize | 10 | 0 | 10
+boundary-thicken | 1 | 0 | 1
+cap-flag-cap11 | 13 | 0 | 10
+cap-flag-cap13 | 13 | 0 | 10
+cap-web-cap11 | 13 | 0 | 13
+cap-web-cap12 | 13 | 0 | 13
+cap-web-cap13 | 13 | 0 | 13
+finalize | 520 | 0 | 520
+flatten | 138 | 0 | 55
+ocean | 330 | 0 | 330
+purge | 278 | 0 | 170
+thicken | 396 | 100 | 392
+trim | 130 | 0 | 99
+nakladka na wodzie (przypadki *-ov-*, z resetem las->brak na heksie wodnym w wyjsciu web):
+  finalize: przypadkow=100, z resetem=100
+  flatten: przypadkow=50, z resetem=8
+  purge: przypadkow=50, z resetem=30
+  thicken: przypadkow=100, z resetem=100
+  trim: przypadkow=50, z resetem=31
+RAZEM sprawdzone=1868 rozbieznosci=100
+obserwowalnosc capu: cap-thick-m0-roz-g5 cap11 != cap12 = True
+obserwowalnosc capu: cap-thick-m0-roz-g5 cap13 != cap12 = True
+obserwowalnosc capu: cap-thick-m1-roz-g6 cap11 != cap12 = True
+obserwowalnosc capu: cap-thick-m1-roz-g6 cap13 != cap12 = True
+obserwowalnosc capu: cap-thick-m2-roz-g8 cap11 != cap12 = True
+obserwowalnosc capu: cap-thick-m2-roz-g8 cap13 != cap12 = True
+obserwowalnosc capu: cap-thick-m3-roz-g15 cap11 != cap12 = True
+obserwowalnosc capu: cap-thick-m3-roz-g15 cap13 != cap12 = True
+obserwowalnosc capu: cap-thick-m4-roz-g18 cap11 != cap12 = True
+obserwowalnosc capu: cap-thick-m4-roz-g18 cap13 != cap12 = True
+obserwowalnosc capu: cap-thick-m5-roz-g26 cap11 != cap12 = True
+obserwowalnosc capu: cap-thick-m5-roz-g26 cap13 != cap12 = True
+obserwowalnosc capu: cap-thick-m6-roz-g29 cap11 != cap12 = True
+obserwowalnosc capu: cap-thick-m6-roz-g29 cap13 != cap12 = True
+obserwowalnosc capu: cap-thick-m7-roz-g37 cap11 != cap12 = True
+obserwowalnosc capu: cap-thick-m7-roz-g37 cap13 != cap12 = True
+obserwowalnosc capu: cap-thick-m8-roz-g44 cap11 != cap12 = True
+obserwowalnosc capu: cap-thick-m8-roz-g44 cap13 != cap12 = True
+obserwowalnosc capu: cap-thick-m9-roz-g62 cap11 != cap12 = True
+obserwowalnosc capu: cap-thick-m9-roz-g62 cap13 != cap12 = True
+obserwowalnosc capu: cap-thick-m10-ogol-g0 cap11 != cap12 = False
+obserwowalnosc capu: cap-thick-m10-ogol-g0 cap13 != cap12 = False
+obserwowalnosc capu: cap-thick-m11-ogol-g1 cap11 != cap12 = False
+obserwowalnosc capu: cap-thick-m11-ogol-g1 cap13 != cap12 = False
+obserwowalnosc capu: cap-thick-m12-ogol-g2 cap11 != cap12 = False
+obserwowalnosc capu: cap-thick-m12-ogol-g2 cap13 != cap12 = False
+ROZBIEZNOSCI:
+  thicken:thick-ov-0-wdefault:ret 49 vs 49
+  thicken:thick-ov-0-w3:ret 49 vs 49
+  thicken:thick-ov-1-wdefault:ret 54 vs 54
+  thicken:thick-ov-1-w3:ret 54 vs 54
+  thicken:thick-ov-2-wdefault:ret 66 vs 66
+  thicken:thick-ov-2-w3:ret 66 vs 66
+  thicken:thick-ov-3-wdefault:ret 70 vs 70
+  thicken:thick-ov-3-w3:ret 70 vs 70
+  thicken:thick-ov-4-wdefault:ret 38 vs 38
+  thicken:thick-ov-4-w3:ret 38 vs 38
+  thicken:thick-ov-5-wdefault:ret 33 vs 33
+  thicken:thick-ov-5-w3:ret 33 vs 33
+  thicken:thick-ov-6-wdefault:ret 76 vs 76
+  thicken:thick-ov-6-w3:ret 76 vs 76
+  thicken:thick-ov-7-wdefault:ret 35 vs 35
+  thicken:thick-ov-7-w3:ret 35 vs 35
+  thicken:thick-ov-8-wdefault:ret 49 vs 49
+  thicken:thick-ov-8-w3:ret 50 vs 50
+  thicken:thick-ov-9-wdefault:ret 47 vs 47
+  thicken:thick-ov-9-w3:ret 47 vs 47
+  thicken:thick-ov-10-wdefault:ret 46 vs 46
+  thicken:thick-ov-10-w3:ret 46 vs 46
+  thicken:thick-ov-11-wdefault:ret 54 vs 54
+  thicken:thick-ov-11-w3:ret 54 vs 54
+  thicken:thick-ov-12-wdefault:ret 79 vs 79
+  thicken:thick-ov-12-w3:ret 79 vs 79
+  thicken:thick-ov-13-wdefault:ret 75 vs 75
+  thicken:thick-ov-13-w3:ret 75 vs 75
+  thicken:thick-ov-14-wdefault:ret 42 vs 42
+  thicken:thick-ov-14-w3:ret 42 vs 42
+  thicken:thick-ov-15-wdefault:ret 64 vs 64
+  thicken:thick-ov-15-w3:ret 64 vs 64
+  thicken:thick-ov-16-wdefault:ret 85 vs 85
+  thicken:thick-ov-16-w3:ret 85 vs 85
+  thicken:thick-ov-17-wdefault:ret 49 vs 49
+  thicken:thick-ov-17-w3:ret 49 vs 49
+  thicken:thick-ov-18-wdefault:ret 96 vs 96
+  thicken:thick-ov-18-w3:ret 96 vs 96
+  thicken:thick-ov-19-wdefault:ret 47 vs 47
+  thicken:thick-ov-19-w3:ret 47 vs 47
+  thicken:thick-ov-20-wdefault:ret 50 vs 50
+  thicken:thick-ov-20-w3:ret 50 vs 50
+  thicken:thick-ov-21-wdefault:ret 85 vs 85
+  thicken:thick-ov-21-w3:ret 85 vs 85
+  thicken:thick-ov-22-wdefault:ret 106 vs 106
+  thicken:thick-ov-22-w3:ret 106 vs 106
+  thicken:thick-ov-23-wdefault:ret 50 vs 50
+  thicken:thick-ov-23-w3:ret 50 vs 50
+  thicken:thick-ov-24-wdefault:ret 60 vs 60
+  thicken:thick-ov-24-w3:ret 60 vs 60
+WYNIK: ROZBIEZNOSCI 100

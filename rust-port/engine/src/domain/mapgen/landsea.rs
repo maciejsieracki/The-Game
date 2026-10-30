@@ -2137,10 +2137,24 @@ pub fn thicken_coast_and_smooth_inlets(
     height: i64,
     coast_width: usize,
 ) -> usize {
+    let passes = mapgen_coast().wciecia.przebiegi_wygladzania.wartosc;
+    thicken_coast_and_smooth_inlets_with_passes(hexes, width, height, coast_width, passes)
+}
+
+/// Jak `thicken_coast_and_smooth_inlets`, ale limit przebiegow czesci (a) podany jawnie (`passes`).
+/// Wariant z JSON = `passes` z `przebiegi_wygladzania` (12 wg weba :4852). Jawny limit pozwala testom
+/// porownac zachowanie kodu z kopiami weba o limicie 11 i 13 (runda 3, zarzut FC 4).
+pub fn thicken_coast_and_smooth_inlets_with_passes(
+    hexes: &mut HexRecord,
+    width: i64,
+    height: i64,
+    coast_width: usize,
+    passes: usize,
+) -> usize {
     let p = &mapgen_coast().wciecia;
     let mut changed = 0usize;
 
-    for _pass in 0..p.przebiegi_wygladzania.wartosc {
+    for _pass in 0..passes {
         let mut to_fill: Vec<String> = Vec::new();
         for (key, hex) in hexes.iter() {
             if hex.terrain != Terrain::Sea {

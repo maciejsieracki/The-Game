@@ -22,6 +22,7 @@ TESTS = [
     "p6_m06b1_tables",
     "p6_m06b1_boundary",
     "p6_m06b1_cap",
+    "p6_m06b1_overlay",
 ]
 
 # (id, plik, stary tekst, nowy tekst, opis) - stary tekst musi wystapic DOKLADNIE raz.
@@ -83,16 +84,16 @@ MUTS = [
      "        changed += sanitize_coast_hexes(hexes);",
      "finalize: pominiety pierscien podwojny (struktura)"),
     ("M15-thicken-cap-12-na-1", LANDSEA,
-     "    for _pass in 0..p.przebiegi_wygladzania.wartosc {",
+     "    for _pass in 0..passes {",
      "    for _pass in 0..1 {",
      "thicken: cap przebiegow 12 -> 1"),
     ("M16-thicken-cap-12-na-11", LANDSEA,
-     "    for _pass in 0..p.przebiegi_wygladzania.wartosc {",
-     "    for _pass in 0..p.przebiegi_wygladzania.wartosc.saturating_sub(1) {",
+     "    for _pass in 0..passes {",
+     "    for _pass in 0..passes.saturating_sub(1) {",
      "thicken: cap 12 -> 11 (N-1, kod)"),
     ("M17-thicken-cap-12-na-13", LANDSEA,
-     "    for _pass in 0..p.przebiegi_wygladzania.wartosc {",
-     "    for _pass in 0..p.przebiegi_wygladzania.wartosc + 1 {",
+     "    for _pass in 0..passes {",
+     "    for _pass in 0..passes + 1 {",
      "thicken: cap 12 -> 13 (N+1, kod)"),
     ("M18-thicken-prog-ladu-gt", LANDSEA,
      "if count_land_neighbors(hexes, q, r) >= p.prog_sasiadow_ladu.wartosc {",
@@ -138,6 +139,18 @@ MUTS = [
      "    for _pass in 0..max_passes {",
      "    for _pass in 0..if max_passes == 3 { 4 } else { max_passes } {",
      "finalize: N=3 -> 4 (N+1 dla N=3, kod)"),
+    ("M29-overlay-purge-brak-resetu", LANDSEA,
+     "    hex.terrain = Terrain::Grassland;\n    hex.overlay = Nakladka::Brak;",
+     "    hex.terrain = Terrain::Grassland;",
+     "purge/trim: clear_hex_to_laka_with_river bez resetu nakladki (Q, runda 3)"),
+    ("M30-overlay-flatten-brak-resetu", LANDSEA,
+     "            h.terrain = Terrain::Sea;\n            h.overlay = Nakladka::Brak;",
+     "            h.terrain = Terrain::Sea;",
+     "flatten: bez resetu nakladki przy Plytkie->Morze (L, runda 3)"),
+    ("M31-overlay-pierscien-brak-resetu", LANDSEA,
+     "                h.terrain = Terrain::ShallowSea;\n                h.overlay = Nakladka::Brak;",
+     "                h.terrain = Terrain::ShallowSea;",
+     "thicken (b) pierscien: bez resetu nakladki Morze->Plytkie (N, runda 3)"),
 ]
 
 

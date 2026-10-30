@@ -1,0 +1,50 @@
+WERYFIKATOR PYTHON P6.M06B1 (runda 3) - niezalezna implementacja z TS pin edb8fb56
+kategoria | sprawdzone | rozbieznosci | nietrywialne (stan zmieniony)
+boundary-finalize | 10 | 0 | 10
+boundary-thicken | 1 | 0 | 1
+cap-flag-cap11 | 13 | 0 | 10
+cap-flag-cap13 | 13 | 0 | 10
+cap-web-cap11 | 13 | 0 | 13
+cap-web-cap12 | 13 | 0 | 13
+cap-web-cap13 | 13 | 0 | 13
+finalize | 520 | 0 | 520
+flatten | 138 | 0 | 55
+ocean | 330 | 0 | 330
+purge | 278 | 0 | 170
+thicken | 396 | 0 | 392
+trim | 130 | 0 | 99
+nakladka na wodzie (przypadki *-ov-*, z resetem las->brak na heksie wodnym w wyjsciu web):
+  finalize: przypadkow=100, z resetem=100
+  flatten: przypadkow=50, z resetem=8
+  purge: przypadkow=50, z resetem=30
+  thicken: przypadkow=100, z resetem=100
+  trim: przypadkow=50, z resetem=31
+RAZEM sprawdzone=1868 rozbieznosci=0
+obserwowalnosc capu: cap-thick-m0-roz-g5 cap11 != cap12 = True
+obserwowalnosc capu: cap-thick-m0-roz-g5 cap13 != cap12 = True
+obserwowalnosc capu: cap-thick-m1-roz-g6 cap11 != cap12 = True
+obserwowalnosc capu: cap-thick-m1-roz-g6 cap13 != cap12 = True
+obserwowalnosc capu: cap-thick-m2-roz-g8 cap11 != cap12 = True
+obserwowalnosc capu: cap-thick-m2-roz-g8 cap13 != cap12 = True
+obserwowalnosc capu: cap-thick-m3-roz-g15 cap11 != cap12 = True
+obserwowalnosc capu: cap-thick-m3-roz-g15 cap13 != cap12 = True
+obserwowalnosc capu: cap-thick-m4-roz-g18 cap11 != cap12 = True
+obserwowalnosc capu: cap-thick-m4-roz-g18 cap13 != cap12 = True
+obserwowalnosc capu: cap-thick-m5-roz-g26 cap11 != cap12 = True
+obserwowalnosc capu: cap-thick-m5-roz-g26 cap13 != cap12 = True
+obserwowalnosc capu: cap-thick-m6-roz-g29 cap11 != cap12 = True
+obserwowalnosc capu: cap-thick-m6-roz-g29 cap13 != cap12 = True
+obserwowalnosc capu: cap-thick-m7-roz-g37 cap11 != cap12 = True
+obserwowalnosc capu: cap-thick-m7-roz-g37 cap13 != cap12 = True
+obserwowalnosc capu: cap-thick-m8-roz-g44 cap11 != cap12 = True
+obserwowalnosc capu: cap-thick-m8-roz-g44 cap13 != cap12 = True
+obserwowalnosc capu: cap-thick-m9-roz-g62 cap11 != cap12 = True
+obserwowalnosc capu: cap-thick-m9-roz-g62 cap13 != cap12 = True
+obserwowalnosc capu: cap-thick-m10-ogol-g0 cap11 != cap12 = False
+obserwowalnosc capu: cap-thick-m10-ogol-g0 cap13 != cap12 = False
+obserwowalnosc capu: cap-thick-m11-ogol-g1 cap11 != cap12 = False
+obserwowalnosc capu: cap-thick-m11-ogol-g1 cap13 != cap12 = False
+obserwowalnosc capu: cap-thick-m12-ogol-g2 cap11 != cap12 = False
+obserwowalnosc capu: cap-thick-m12-ogol-g2 cap13 != cap12 = False
+WYNIK: 0 ROZBIEZNOSCI
+VERIFIER_EXIT=0
