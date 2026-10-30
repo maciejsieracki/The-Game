@@ -62,7 +62,20 @@ for (const w of [400, 600, 700, 800, 873, 900, 1000, 1200, 1500, 2000, 4096]) {
 }
 // Progi zaokraglenia: raw = 6 + sqrt(w*h/20160)*2.6 blisko k+0.5 dla k = 6..23 (oraz clamp 6/22).
 // Dla kazdego k i kazdej szerokosci w <= 300 bierzemy h w oknie [h* - 2, h* + 2] wokol rozwiazania.
-const boundaryHits = { near_half: 0, at_clamp_low: 0, at_clamp_high: 0 };
+// Liczniki trafien granicznych (poprawiona definicja, runda Operator-obrona):
+// pasmo = |frac(raw) - 0.5| < 0.05 (OBUSTRONNE wokol progu N+0.5; wczesniej Math.round dawal tylko strone dolna).
+// Dolny/gorny clamp: wynik 6 / 22. Liczone osobno dla siatki (przed wierszami specjalnymi) i dla wszystkich wierszy.
+const countBoundaryHits = (rows) => {
+  const c = { pasmo_progu_N_plus_0_5: 0, dolny_clamp_6: 0, gorny_clamp_22: 0 };
+  for (const [w, h, res] of rows) {
+    if (typeof res !== 'number' || !Number.isFinite(res)) continue;
+    const raw = 6 + Math.sqrt((Number(w) * Number(h)) / 20160) * 2.6;
+    if (Number.isFinite(raw) && Math.abs(raw - Math.floor(raw) - 0.5) < 0.05) c.pasmo_progu_N_plus_0_5++;
+    if (res === 6) c.dolny_clamp_6++;
+    if (res === 22) c.gorny_clamp_22++;
+  }
+  return c;
+};
 for (let k = 6; k <= 23; k++) {
   const target = k + 0.5; // prog zaokraglenia Math.round
   const s = (target - 6) / 2.6;
@@ -72,13 +85,8 @@ for (let k = 6; k <= 23; k++) {
     for (let h = hs - 2; h <= hs + 2; h++) if (h >= 0) push(w, h);
   }
 }
-for (const [w, h, res] of annular) {
-  if (typeof res !== 'number' || !Number.isFinite(res)) continue;
-  const raw = 6 + Math.sqrt((w * h) / 20160) * 2.6;
-  if (Math.abs(raw - Math.round(raw) - 0.5) < 0.05) boundaryHits.near_half++;
-  if (res === 6) boundaryHits.at_clamp_low++;
-  if (res === 22) boundaryHits.at_clamp_high++;
-}
+const trafieniaSiatka = countBoundaryHits(annular);
+const trafieniaSiatkaWiersze = annular.length;
 
 // --- wejscia nie-liczbowe / brzegowe ---
 const special = [
@@ -88,6 +96,7 @@ const special = [
 for (const [w, h] of special) {
   annular.push([enc(w), enc(h), enc(GI.pangeaAnnularMaxCorridorWidth(w, h))]);
 }
+const trafieniaWszystkie = countBoundaryHits(annular);
 
 // --- bridge: wszystkie wartosci TerenBazowy ---
 const bridge = [];
@@ -101,7 +110,11 @@ const annularOut = {
     zrodlo: 'gra/src/map/gen-helpers.ts pangeaAnnularMaxCorridorWidth :4329 (instr. copy)',
     zrodlo_sha256: sha(originalSrc),
     liczba_przypadkow: annular.length,
-    trafienia_graniczne: boundaryHits,
+    trafienia_graniczne: {
+      definicja: '|frac(raw) - 0.5| < 0.05, raw = 6 + sqrt(w*h/20160)*2.6 (obustronnie wokol N+0.5); clamp: wynik 6 / 22',
+      siatka_przed_wierszami_specjalnymi: { wiersze: trafieniaSiatkaWiersze, ...trafieniaSiatka },
+      wszystkie_wiersze: { wiersze: annular.length, ...trafieniaWszystkie },
+    },
   },
   cases: { annular },
 };
@@ -118,4 +131,4 @@ const bridgeOut = {
 mkdirSync(outDir, { recursive: true });
 writeFileSync(`${outDir}/annular-vectors.json`, JSON.stringify(annularOut));
 writeFileSync(`${outDir}/bridge-vectors.json`, JSON.stringify(bridgeOut, null, 1));
-console.log(JSON.stringify({ annular: annular.length, bridge: bridge.length, boundaryHits }));
+console.log(JSON.stringify({ annular: annular.length, bridge: bridge.length, siatka: trafieniaSiatka, wszystkie: trafieniaWszystkie }));

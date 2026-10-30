@@ -38,7 +38,7 @@ plus `morseDepthFromMapBorder` (DANE-JUZ-W-RUST, M06A4). Partia 1 (ten run): dwa
   iloczyn -> NaN (jak web). Zakres wektorow: w, h in 0..300 (pelna siatka), duze mapy (do 4096),
   przypadki brzegowe (NaN, Infinity, ujemne, 0.5) oraz progi zaokraglenia: dla k = 6..23 i w <= 300
   wszystkie h w oknie [h*-2, h*+2] wokol rozwiazania `6 + sqrt(w*h/20160)*2.6 = k + 0.5`.
-  Trafienia graniczne: liczby z runda 1 (15 284 / 4 621) NIE ODTWORZONE w Operator-pomiary; wartosci poprawne i reprodukowalne w sekcji "Pomiary (Operator-pomiary, runda 1)" nizej.
+  Trafienia graniczne: definicja i liczby w `meta.trafienia_graniczne` pliku wektorow (pasmo obustronne `|frac(raw)-0.5| < 0.05`, osobno siatka i wszystkie wiersze). Liczby rundy 1 (15 284 / 4 621) wynikaly z jednostronnej definicji (`Math.round` zamiast `Math.floor`) i zostaly poprawione; patrz sekcja "Obrona zarzutow".
 - Generator: `dyspozycje/autobot/runs/R-RUSTPORT-P6-M06A7-LAD-MORZE-KORYTARZE-Q1/gen-m06a7-annular-vectors.mjs`
   (uruchamia PRAWDZIWY kod TS weba z `git archive edb8fb56`, instrumentowana kopia: jedyna zmiana to `export`).
   Pliki wektorow: 1,3 MB + 0,6 KB (limit 10 MB na plik spelniony).
@@ -74,12 +74,12 @@ Skrypty w `dyspozycje/autobot/runs/R-RUSTPORT-P6-M06A7-LAD-MORZE-KORYTARZE-Q1/`:
 - Formula web liczona od zera w Pythonie (`Math.round` = `floor(x) + [x-floor(x) >= 0.5]`) dla 112 254 wierszy:
   **0 rozbieznosci** z wektorami; 8/8 wartosci mostu zgodne (Polarny, Gory, Morze, PlytkieMorze, ...).
 - Nieskonczone wejscia w wektorach: 7 wierszy (NaN / Infinity / -Infinity), zgodne.
-- Wyniki skonczone: 112 247. Wynik 22 (gorny clamp): 3 794 (zgodne z raportem). Wynik 6: 4 624 (raport: 4 621, roznica 3; nie wyjasniona, NIE_ZMIERZONO co do przyczyny).
-- Trafienia graniczne: raport rundy 1 podawal 15 284 dla `|raw-(N+0.5)|<0.05`. Przy definicji "wszystkie skonczone" wynik to 30 613, a dla pasma niezaklipowanego (k = 6..21) 27 612. Liczby z rundy 1 nie daja sie odtworzyc z zadnej z tych definicji; przyjeto ponizsze pomiary jako wiarygodne.
+- Wyniki skonczone: 112 247 (poza 7 wierszami nieskonczonymi). Wynik 22 (gorny clamp): 3 794 na siatce, 3 796 po wierszach specjalnych. Wynik 6: 4 621 na siatce, 4 624 po wierszach specjalnych (roznica 3 = `[0.5,0.5]`, `[1.5,2.5]`, `[2.5,1.5]`; gorny roznica 2 = `[Infinity,10]`, `[10,Infinity]`). Patrz "Obrona zarzutow", pkt 1.
+- Trafienia graniczne (pasmo obustronne `|frac(raw) - 0.5| < 0.05`, raw = 6 + sqrt(w*h/20160)*2.6): **30 613** na siatce (112 243 wierszy) i **30 613** po wszystkich wierszach (specjalne nie trafiaja w pasmo). Liczby 15 284 / 27 612 z rundy 1 wynikaly z jednostronnej definicji (`raw - Math.round(raw) - 0.5`, mierzy tylko pasmo (0.45, 0.5)) lub z innego zakresu; obie strony pasma daja 30 613. Zrodlo: `meta.trafienia_graniczne` w `annular-vectors.json` (regenerowane generatorem, sekcje `siatka_przed_wierszami_specjalnymi` / `wszystkie_wiersze`).
 - Pokrycie progu zaokraglenia (k+0.5, k = 6..22), liczba punktow siatki w pasmie 0.05 po obu stronach: ok. 720-780 po kazdej stronie dla kazdego k. Najblizszy punkt po stronie `>=` dla k = 12 ma `raw == 12.5` dokladnie (gap 0.0), wiec gałąź `>=` jest trafiona dokladnie na progu.
 - Brak wartosci `raw < 6` na siatce (`6 + sqrt(..)*2.6 >= 6` z definicji).
 
-### Mutacje (mut-runner-m06a7.py, cargo test --test p6_m06a7_annular, 18 mutantow)
+### Mutacje (mut-runner-m06a7.py, cargo test --test p6_m06a7_annular, 19 mutantow)
 
 | ID | Mutacja | Wynik | Uwagi |
 |---|---|---|---|
@@ -107,11 +107,23 @@ Stan drzewa po mutacjach: przywrocone (`landsea.rs`, `improvements.rs`, JSON bez
 
 #### Dowod rownowaznosci K5 (przezyla)
 
-`floor(x+0.5)` rozni sie od `js_round(x)` tylko gdy `fl(x+0.5)` zaokragla sie do `N+1` przy `x-N < 0.5`,
-czyli gdy `x` lezy w paśmie szerokosci rzedu ulp (~1e-15) tuz ponizej `N+0.5`. Pomiar na domenie wektorow:
-0 rozbieznosci (112 247 skonczonych); najmniejszy margines `0.5 - frac(x)` dla `frac(x) < 0.5` wynosi 5.4e-7.
-Mutant jest wiec rownowazny na domenie testowej, ale **nie** w ogole (rozni sie w pasie ulp). Luka testowa
-zapisana jako ryzyko; zadnego testu nie dodano (zakaz zmian w tej rundzie poza pomiarami).
+Teza: dla kazdego skonczonego `x >= 1`: `floor(fl(x+0.5)) = floor(x+0.5) = Math.round(x)` (ECMAScript: najblizsza
+calkowita, remis w gore; w dokladnej arytmetyce = `floor(x+0.5)`). Wiec K5 jest mutantem **rownowaznym na calej
+domenie** `raw >= 6` (nie tylko na wektorach), a nie tylko na siatce.
+
+Dowod: niech `s = x + 0.5` (dokladnie) i `t = fl(s)`. Jesli `s` jest reprezentowalne, `t = s`. Jesli nie, to `s` lezy
+w wyzszym przedziale binarnym niz `x` (0.5 jest wielokrotnoscia ulp(x), wiec suma x+0.5 nie wychodzi poza przedzial x
+inaczej niz przez przekroczenie granicy `2^j`): wtedy `x < 2^j <= s`. Dla `x >= 1` mamy `2^j > 1`, czyli `j >= 1`,
+`2^j` jest calkowite, a `s < 2^j + 0.5` (bo `x < 2^j`). Stad `floor(s) = 2^j`, a `|t - s| <= ulp(s)/2 << 0.5`, wiec
+`t in [2^j, 2^j + 1)` i `floor(t) = 2^j = floor(s)`. Dla `j < 1` (czyli `x < 1`) dowod nie dziala: kontrprzyklad
+`x = 0.49999999999999994` daje `fl(x+0.5) = 1` (dlatego pierwszy wyraz domeny `>= 1` jest istotny).
+
+Weryfikacja empiryczna (`dyspozycje/autobot/runs/R-RUSTPORT-P6-M06A7-LAD-MORZE-KORYTARZE-Q1/verify-k5-rownowaznosc.py`, Python `float` = IEEE double, dokladnosc `Fraction`): 2 797 090
+przypadkow (sasiedztwa kazdego `k+0.5`, `k = 0..64`, +-5000 ulp; sasiedztwa potęg dwojki 2^m, m = 0..12; 2 000 000 losowych
+z `[6, 40)`): **0 rozbieznosci dla x >= 1**; jedyna rozbieznosc to `x = 0.49999999999999994` (x < 1, poza domena).
+
+Wniosek: K5 przezyla, poniewaz jest rownowazna (mutant equivalent), a nie z powodu braku testu. Zadnego testu nie
+dodano (zakaz zmian w tej rundzie poza pomiarami i dowodami).
 
 #### Dowod rownowaznosci D4 (przezyla)
 
@@ -125,3 +137,37 @@ Dolny clamp jest martwym kodem przy obecnych danych (zostaje dla zgodnosci z web
 `Math.sqrt` -> `f64::sqrt`; `Math.round` -> `improvements::js_round` (`x - floor >= 0.5`); `Math.min` / `Math.max` ->
 `masks::v8math::{js_min, js_max}`. Zadnego `Math.sin/cos/pow/atan2/hypot` w partii 1 (`js_hypot` z `landsea.rs` :37 jest uzywany
 w :1170-1171 przez funkcje spoza partii 1).
+
+## Obrona zarzutow (Operator-obrona, runda 1)
+
+Baza: commit Operatora `ac7e023c` (pomiary). Zarzuty Evaluatora rozpatrzone jeden po jednym; kazdy ma werdykt
+PRZYJMUJE (poprawka + dowod) albo ODRZUCAM (dowod).
+
+1. **PRZYJMUJE** - "liczby rundy 1 (15 284 / 4 621 / 3 794) nieodtwarzalne; roznica 4 624 vs 4 621 nie wyjasniona".
+   Zarzut sluszny: Operator blednie uznal liczby za nieodtwarzalne. Przyczyna: generator liczyl pasmo jednostronnie
+   (`Math.abs(raw - Math.round(raw) - 0.5) < 0.05` mierzy tylko (0.45, 0.5)). Dowod (pomiar obrony, ta sama
+   jednostronna definicja z generatora r1, odtworzony na wektorach zacommitowanych w `ac7e023c`): na pierwszych 112 243 wierszach siatki jednostronnie 15 284, dolny clamp 4 621,
+   gorny clamp 3 794. Po dopisaniu 11 wierszy specjalnych: dolny clamp 4 624, gorny 3 796 (roznice = wiersze
+   `[0.5,0.5]`, `[1.5,2.5]`, `[2.5,1.5]` -> 6 oraz `[Infinity,10]`, `[10,Infinity]` -> 22). Poprawna definicja pasma
+   obustronnego `|frac(raw) - 0.5| < 0.05` daje 30 613 (siatka i wszystkie wiersze). Poprawka: generator
+   (`Math.floor` zamiast `Math.round`, liczniki osobno dla siatki i dla wszystkich wierszy); regeneracja z
+   `git archive edb8fb56` daje identyczne `cases` (porownanie JSON) i zmienione tylko `meta`; plik wektorow
+   podmieniony. Pomiary w tej sekcji wyzej poprawione.
+
+2. **PRZYJMUJE** - "meta `trafienia_graniczne` (15 284 / 4 621 / 3 794) jednostronne i sprzed wierszy specjalnych".
+   Poprawka: `meta.trafienia_graniczne` ma pole `definicja` i dwie sekcje: `siatka_przed_wierszami_specjalnymi`
+   (112 243 wiersze: 30 613 / 4 621 / 3 794) oraz `wszystkie_wiersze` (112 254: 30 613 / 4 624 / 3 796). Wartosci
+   odtworzone generatorem z edb8fb56, nie recznie.
+
+3. **PRZYJMUJE** - "naglowek 'Mutacje (... 18 mutantow)'". Poprawka: 19 (K1-K10, B1-B4, D1-D5), zgodnie z tabela
+   i `mut-results-m06a7.json`.
+
+4. **PRZYJMUJE** (wymog dowodu domkniety) - "K5 opisano jako ryzyko ulp, brak dowodu rownowaznosci".
+   Operator w r1 blednie twierdzil, ze K5 rozni sie w pasie ulp. Dowod (sekcja K5 wyzej) i pomiar
+   (`verify-k5-rownowaznosc.py`, 2 797 090 przypadkow, 0 rozbieznosci dla x >= 1) pokazuje, ze
+   `floor(fl(x+0.5)) = Math.round(x)` dla kazdego skonczonego x >= 1, a domena `raw >= 6` lezy w calosci w tym
+   zakresie. K5 jest wiec **rownowazny** (nie "ryzyko"); test nie moze go zabic. Brak zmiany testow.
+
+Stan po obronie: kod (`landsea.rs`, `derived.rs`, JSON z danymi, testy `p6_m06a7_*.rs`) bez zmian; zmienione
+tylko: wektor `annular-vectors.json` (meta), generator `gen-m06a7-annular-vectors.mjs`, dossier, nowy skrypt
+`verify-k5-rownowaznosc.py`. Zadnej zmiany poza allowlista.
