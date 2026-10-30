@@ -2857,8 +2857,8 @@ pub mod p6_7a {
 /// `previewCityEconomy` / `advanceCityEconomy` (tick ekonomii miasta nie ma jeszcze portu Rust).
 pub mod repin_b3 {
     use crate::data::civilizations::CivMatrixFile;
-    use crate::domain::civ_matrix::apply_civ_matrix_param;
     use crate::domain::civ_matrix::js_compat::{js_max, js_min};
+    use crate::domain::civ_matrix::{apply_civ_matrix_param, civ_matrix_param};
 
     /// Web `routeCashForCity(total, maritime, civKey)` (turn-economy.ts): dochod z tras rozdzielony
     /// na czesc morska (wspolczynnik cywilizacji `eko_pieniadz_port_proc`) i reszte.
@@ -2878,5 +2878,77 @@ pub mod repin_b3 {
             _ => sea,
         };
         (total - sea) + sea_cash
+    }
+
+    /// Pola `WealthParams` (wealth.ts) czytane przez modyfikatory cywilizacji. Podzbior: pozostale
+    /// pola (progi, utrzymanie, zadowolenie) przechodza przez web bez zmian i nie sa tu potrzebne.
+    #[derive(Debug, Clone, Copy, PartialEq)]
+    pub struct WealthModParams {
+        /// Web `capNaEpoke`.
+        pub cap_na_epoke: f64,
+        /// Web `mnoznikNaPoziom`.
+        pub mnoznik_na_poziom: f64,
+    }
+
+    /// Web `wealthParamsWithCapModifier` (wealth.ts): `mul_proc` na wspolczynnik capu, przy
+    /// skonczonym modyfikatorze `max(0, 1 + m)`; nieskonczony => 1.
+    // web: gra/src/game/wealth.ts wealthParamsWithCapModifier
+    pub fn wealth_params_with_cap_modifier(
+        params: WealthModParams,
+        modifier: f64,
+    ) -> WealthModParams {
+        let factor = if modifier.is_finite() {
+            js_max(0.0, 1.0 + modifier)
+        } else {
+            1.0
+        };
+        if factor == 1.0 {
+            return params;
+        }
+        WealthModParams {
+            cap_na_epoke: params.cap_na_epoke * factor,
+            ..params
+        }
+    }
+
+    /// Web `wealthParamsWithMultiplierModifier` (wealth.ts): `1 + m` na nachylenie mnoznika
+    /// podatku na poziom; nieskonczony modyfikator => 1.
+    // web: gra/src/game/wealth.ts wealthParamsWithMultiplierModifier
+    pub fn wealth_params_with_multiplier_modifier(
+        params: WealthModParams,
+        modifier: f64,
+    ) -> WealthModParams {
+        let factor = if modifier.is_finite() {
+            1.0 + modifier
+        } else {
+            1.0
+        };
+        if factor == 1.0 {
+            return params;
+        }
+        WealthModParams {
+            mnoznik_na_poziom: params.mnoznik_na_poziom * factor,
+            ..params
+        }
+    }
+
+    /// Web `wealthParamsForOwner` (turn-economy.ts): parametry Wealth po modyfikatorach
+    /// `wealth_cap_proc` i `wealth_mnoznik_proc` wlasciciela. Pusty klucz / brak => baza.
+    // web: gra/src/game/turn-economy.ts wealthParamsForOwner
+    pub fn wealth_params_for_owner(
+        matrix: &CivMatrixFile,
+        base: WealthModParams,
+        civ_key: Option<&str>,
+    ) -> WealthModParams {
+        let key = match civ_key {
+            Some(k) if !k.is_empty() => k,
+            _ => return base,
+        };
+        let with_cap =
+            wealth_params_with_cap_modifier(base, civ_matrix_param(matrix, key, "wealth_cap_proc"));
+        wealth_params_with_multiplier_modifier(
+            with_cap,
+            civ_matrix_param(matrix, key, "wealth_mnoznik_proc"),
+        )
     }
 }

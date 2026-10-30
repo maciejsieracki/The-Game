@@ -1,0 +1,4968 @@
+{
+ "pin": "91dc998a5f1b51ad29e0f4785edfd45655445c53",
+ "source": "turn-economy.ts wealthParamsForOwner; wealth.ts wealthParamsWith{Cap,Multiplier}Modifier (91dc998a)",
+ "paramByKey": {
+  "": {
+   "wealth_cap_proc": "0",
+   "wealth_mnoznik_proc": "0"
+  },
+  "NIEZNANA": {
+   "wealth_cap_proc": "0",
+   "wealth_mnoznik_proc": "0"
+  },
+  "zulusi-nie-ma": {
+   "wealth_cap_proc": "0",
+   "wealth_mnoznik_proc": "0"
+  },
+  "grecy": {
+   "wealth_cap_proc": "0.2",
+   "wealth_mnoznik_proc": "-0.3"
+  },
+  "GRECY": {
+   "wealth_cap_proc": "0.2",
+   "wealth_mnoznik_proc": "-0.3"
+  },
+  "Grecy": {
+   "wealth_cap_proc": "0.2",
+   "wealth_mnoznik_proc": "-0.3"
+  },
+  "rzymianie": {
+   "wealth_cap_proc": "0.2",
+   "wealth_mnoznik_proc": "-0.3"
+  },
+  "RZYMIANIE": {
+   "wealth_cap_proc": "0.2",
+   "wealth_mnoznik_proc": "-0.3"
+  },
+  "Rzymianie": {
+   "wealth_cap_proc": "0.2",
+   "wealth_mnoznik_proc": "-0.3"
+  },
+  "chinczycy": {
+   "wealth_cap_proc": "0",
+   "wealth_mnoznik_proc": "0"
+  },
+  "CHINCZYCY": {
+   "wealth_cap_proc": "0",
+   "wealth_mnoznik_proc": "0"
+  },
+  "Chińczycy": {
+   "wealth_cap_proc": "0",
+   "wealth_mnoznik_proc": "0"
+  },
+  "CHIŃCZYCY": {
+   "wealth_cap_proc": "0",
+   "wealth_mnoznik_proc": "0"
+  },
+  "inkowie": {
+   "wealth_cap_proc": "0.2",
+   "wealth_mnoznik_proc": "-0.3"
+  },
+  "INKOWIE": {
+   "wealth_cap_proc": "0.2",
+   "wealth_mnoznik_proc": "-0.3"
+  },
+  "Inkowie": {
+   "wealth_cap_proc": "0.2",
+   "wealth_mnoznik_proc": "-0.3"
+  },
+  "zulusi": {
+   "wealth_cap_proc": "0",
+   "wealth_mnoznik_proc": "0"
+  },
+  "ZULUSI": {
+   "wealth_cap_proc": "0",
+   "wealth_mnoznik_proc": "0"
+  },
+  "Zulusi": {
+   "wealth_cap_proc": "0",
+   "wealth_mnoznik_proc": "0"
+  },
+  "egipt": {
+   "wealth_cap_proc": "0",
+   "wealth_mnoznik_proc": "0"
+  },
+  "EGIPT": {
+   "wealth_cap_proc": "0",
+   "wealth_mnoznik_proc": "0"
+  },
+  "Egipt": {
+   "wealth_cap_proc": "0",
+   "wealth_mnoznik_proc": "0"
+  },
+  "sumer": {
+   "wealth_cap_proc": "0",
+   "wealth_mnoznik_proc": "0"
+  },
+  "SUMER": {
+   "wealth_cap_proc": "0",
+   "wealth_mnoznik_proc": "0"
+  },
+  "Sumerowie": {
+   "wealth_cap_proc": "0",
+   "wealth_mnoznik_proc": "0"
+  },
+  "SUMEROWIE": {
+   "wealth_cap_proc": "0",
+   "wealth_mnoznik_proc": "0"
+  },
+  "celtowie": {
+   "wealth_cap_proc": "0",
+   "wealth_mnoznik_proc": "0"
+  },
+  "CELTOWIE": {
+   "wealth_cap_proc": "0",
+   "wealth_mnoznik_proc": "0"
+  },
+  "Celtowie": {
+   "wealth_cap_proc": "0",
+   "wealth_mnoznik_proc": "0"
+  },
+  "germanie": {
+   "wealth_cap_proc": "0",
+   "wealth_mnoznik_proc": "0"
+  },
+  "GERMANIE": {
+   "wealth_cap_proc": "0",
+   "wealth_mnoznik_proc": "0"
+  },
+  "Germanie": {
+   "wealth_cap_proc": "0",
+   "wealth_mnoznik_proc": "0"
+  },
+  "harappa": {
+   "wealth_cap_proc": "0",
+   "wealth_mnoznik_proc": "0"
+  },
+  "HARAPPA": {
+   "wealth_cap_proc": "0",
+   "wealth_mnoznik_proc": "0"
+  },
+  "Harappa": {
+   "wealth_cap_proc": "0",
+   "wealth_mnoznik_proc": "0"
+  },
+  "hetyci": {
+   "wealth_cap_proc": "0",
+   "wealth_mnoznik_proc": "0"
+  },
+  "HETYCI": {
+   "wealth_cap_proc": "0",
+   "wealth_mnoznik_proc": "0"
+  },
+  "Hetyci": {
+   "wealth_cap_proc": "0",
+   "wealth_mnoznik_proc": "0"
+  },
+  "slowianie": {
+   "wealth_cap_proc": "0",
+   "wealth_mnoznik_proc": "0"
+  },
+  "SLOWIANIE": {
+   "wealth_cap_proc": "0",
+   "wealth_mnoznik_proc": "0"
+  },
+  "Słowianie": {
+   "wealth_cap_proc": "0",
+   "wealth_mnoznik_proc": "0"
+  },
+  "SŁOWIANIE": {
+   "wealth_cap_proc": "0",
+   "wealth_mnoznik_proc": "0"
+  },
+  "babilonia": {
+   "wealth_cap_proc": "0",
+   "wealth_mnoznik_proc": "0"
+  },
+  "BABILONIA": {
+   "wealth_cap_proc": "0",
+   "wealth_mnoznik_proc": "0"
+  },
+  "Babilonia": {
+   "wealth_cap_proc": "0",
+   "wealth_mnoznik_proc": "0"
+  },
+  "asyria": {
+   "wealth_cap_proc": "0",
+   "wealth_mnoznik_proc": "0"
+  },
+  "ASYRIA": {
+   "wealth_cap_proc": "0",
+   "wealth_mnoznik_proc": "0"
+  },
+  "Asyria": {
+   "wealth_cap_proc": "0",
+   "wealth_mnoznik_proc": "0"
+  },
+  "fenicjanie": {
+   "wealth_cap_proc": "0",
+   "wealth_mnoznik_proc": "0"
+  },
+  "FENICJANIE": {
+   "wealth_cap_proc": "0",
+   "wealth_mnoznik_proc": "0"
+  },
+  "Fenicjanie": {
+   "wealth_cap_proc": "0",
+   "wealth_mnoznik_proc": "0"
+  }
+ },
+ "capModifierCases": [
+  {
+   "base": {
+    "capNaEpoke": "10",
+    "mnoznikNaPoziom": "0.1"
+   },
+   "mod": "0",
+   "out": {
+    "capNaEpoke": "10",
+    "mnoznikNaPoziom": "0.1"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "10",
+    "mnoznikNaPoziom": "0.1"
+   },
+   "mod": "0.1",
+   "out": {
+    "capNaEpoke": "11",
+    "mnoznikNaPoziom": "0.1"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "10",
+    "mnoznikNaPoziom": "0.1"
+   },
+   "mod": "-0.5",
+   "out": {
+    "capNaEpoke": "5",
+    "mnoznikNaPoziom": "0.1"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "10",
+    "mnoznikNaPoziom": "0.1"
+   },
+   "mod": "-1",
+   "out": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0.1"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "10",
+    "mnoznikNaPoziom": "0.1"
+   },
+   "mod": "-2",
+   "out": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0.1"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "10",
+    "mnoznikNaPoziom": "0.1"
+   },
+   "mod": "1",
+   "out": {
+    "capNaEpoke": "20",
+    "mnoznikNaPoziom": "0.1"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "10",
+    "mnoznikNaPoziom": "0.1"
+   },
+   "mod": "0.25",
+   "out": {
+    "capNaEpoke": "12.5",
+    "mnoznikNaPoziom": "0.1"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "10",
+    "mnoznikNaPoziom": "0.1"
+   },
+   "mod": "NaN",
+   "out": {
+    "capNaEpoke": "10",
+    "mnoznikNaPoziom": "0.1"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "10",
+    "mnoznikNaPoziom": "0.1"
+   },
+   "mod": "Infinity",
+   "out": {
+    "capNaEpoke": "10",
+    "mnoznikNaPoziom": "0.1"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "10",
+    "mnoznikNaPoziom": "0.1"
+   },
+   "mod": "-Infinity",
+   "out": {
+    "capNaEpoke": "10",
+    "mnoznikNaPoziom": "0.1"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   },
+   "mod": "0",
+   "out": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   },
+   "mod": "0.1",
+   "out": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   },
+   "mod": "-0.5",
+   "out": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   },
+   "mod": "-1",
+   "out": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   },
+   "mod": "-2",
+   "out": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   },
+   "mod": "1",
+   "out": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   },
+   "mod": "0.25",
+   "out": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   },
+   "mod": "NaN",
+   "out": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   },
+   "mod": "Infinity",
+   "out": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   },
+   "mod": "-Infinity",
+   "out": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "7.3",
+    "mnoznikNaPoziom": "1.5"
+   },
+   "mod": "0",
+   "out": {
+    "capNaEpoke": "7.3",
+    "mnoznikNaPoziom": "1.5"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "7.3",
+    "mnoznikNaPoziom": "1.5"
+   },
+   "mod": "0.1",
+   "out": {
+    "capNaEpoke": "8.030000000000001",
+    "mnoznikNaPoziom": "1.5"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "7.3",
+    "mnoznikNaPoziom": "1.5"
+   },
+   "mod": "-0.5",
+   "out": {
+    "capNaEpoke": "3.65",
+    "mnoznikNaPoziom": "1.5"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "7.3",
+    "mnoznikNaPoziom": "1.5"
+   },
+   "mod": "-1",
+   "out": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "1.5"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "7.3",
+    "mnoznikNaPoziom": "1.5"
+   },
+   "mod": "-2",
+   "out": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "1.5"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "7.3",
+    "mnoznikNaPoziom": "1.5"
+   },
+   "mod": "1",
+   "out": {
+    "capNaEpoke": "14.6",
+    "mnoznikNaPoziom": "1.5"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "7.3",
+    "mnoznikNaPoziom": "1.5"
+   },
+   "mod": "0.25",
+   "out": {
+    "capNaEpoke": "9.125",
+    "mnoznikNaPoziom": "1.5"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "7.3",
+    "mnoznikNaPoziom": "1.5"
+   },
+   "mod": "NaN",
+   "out": {
+    "capNaEpoke": "7.3",
+    "mnoznikNaPoziom": "1.5"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "7.3",
+    "mnoznikNaPoziom": "1.5"
+   },
+   "mod": "Infinity",
+   "out": {
+    "capNaEpoke": "7.3",
+    "mnoznikNaPoziom": "1.5"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "7.3",
+    "mnoznikNaPoziom": "1.5"
+   },
+   "mod": "-Infinity",
+   "out": {
+    "capNaEpoke": "7.3",
+    "mnoznikNaPoziom": "1.5"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "-5",
+    "mnoznikNaPoziom": "-0.5"
+   },
+   "mod": "0",
+   "out": {
+    "capNaEpoke": "-5",
+    "mnoznikNaPoziom": "-0.5"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "-5",
+    "mnoznikNaPoziom": "-0.5"
+   },
+   "mod": "0.1",
+   "out": {
+    "capNaEpoke": "-5.5",
+    "mnoznikNaPoziom": "-0.5"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "-5",
+    "mnoznikNaPoziom": "-0.5"
+   },
+   "mod": "-0.5",
+   "out": {
+    "capNaEpoke": "-2.5",
+    "mnoznikNaPoziom": "-0.5"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "-5",
+    "mnoznikNaPoziom": "-0.5"
+   },
+   "mod": "-1",
+   "out": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "-0.5"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "-5",
+    "mnoznikNaPoziom": "-0.5"
+   },
+   "mod": "-2",
+   "out": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "-0.5"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "-5",
+    "mnoznikNaPoziom": "-0.5"
+   },
+   "mod": "1",
+   "out": {
+    "capNaEpoke": "-10",
+    "mnoznikNaPoziom": "-0.5"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "-5",
+    "mnoznikNaPoziom": "-0.5"
+   },
+   "mod": "0.25",
+   "out": {
+    "capNaEpoke": "-6.25",
+    "mnoznikNaPoziom": "-0.5"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "-5",
+    "mnoznikNaPoziom": "-0.5"
+   },
+   "mod": "NaN",
+   "out": {
+    "capNaEpoke": "-5",
+    "mnoznikNaPoziom": "-0.5"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "-5",
+    "mnoznikNaPoziom": "-0.5"
+   },
+   "mod": "Infinity",
+   "out": {
+    "capNaEpoke": "-5",
+    "mnoznikNaPoziom": "-0.5"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "-5",
+    "mnoznikNaPoziom": "-0.5"
+   },
+   "mod": "-Infinity",
+   "out": {
+    "capNaEpoke": "-5",
+    "mnoznikNaPoziom": "-0.5"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "2"
+   },
+   "mod": "0",
+   "out": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "2"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "2"
+   },
+   "mod": "0.1",
+   "out": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "2"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "2"
+   },
+   "mod": "-0.5",
+   "out": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "2"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "2"
+   },
+   "mod": "-1",
+   "out": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "2"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "2"
+   },
+   "mod": "-2",
+   "out": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "2"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "2"
+   },
+   "mod": "1",
+   "out": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "2"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "2"
+   },
+   "mod": "0.25",
+   "out": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "2"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "2"
+   },
+   "mod": "NaN",
+   "out": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "2"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "2"
+   },
+   "mod": "Infinity",
+   "out": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "2"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "2"
+   },
+   "mod": "-Infinity",
+   "out": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "2"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   },
+   "mod": "0",
+   "out": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   },
+   "mod": "0.1",
+   "out": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   },
+   "mod": "-0.5",
+   "out": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   },
+   "mod": "-1",
+   "out": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "NaN"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   },
+   "mod": "-2",
+   "out": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "NaN"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   },
+   "mod": "1",
+   "out": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   },
+   "mod": "0.25",
+   "out": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   },
+   "mod": "NaN",
+   "out": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   },
+   "mod": "Infinity",
+   "out": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   },
+   "mod": "-Infinity",
+   "out": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   }
+  }
+ ],
+ "multiplierModifierCases": [
+  {
+   "base": {
+    "capNaEpoke": "10",
+    "mnoznikNaPoziom": "0.1"
+   },
+   "mod": "0",
+   "out": {
+    "capNaEpoke": "10",
+    "mnoznikNaPoziom": "0.1"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "10",
+    "mnoznikNaPoziom": "0.1"
+   },
+   "mod": "0.1",
+   "out": {
+    "capNaEpoke": "10",
+    "mnoznikNaPoziom": "0.11000000000000001"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "10",
+    "mnoznikNaPoziom": "0.1"
+   },
+   "mod": "-0.5",
+   "out": {
+    "capNaEpoke": "10",
+    "mnoznikNaPoziom": "0.05"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "10",
+    "mnoznikNaPoziom": "0.1"
+   },
+   "mod": "-1",
+   "out": {
+    "capNaEpoke": "10",
+    "mnoznikNaPoziom": "0"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "10",
+    "mnoznikNaPoziom": "0.1"
+   },
+   "mod": "-2",
+   "out": {
+    "capNaEpoke": "10",
+    "mnoznikNaPoziom": "-0.1"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "10",
+    "mnoznikNaPoziom": "0.1"
+   },
+   "mod": "1",
+   "out": {
+    "capNaEpoke": "10",
+    "mnoznikNaPoziom": "0.2"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "10",
+    "mnoznikNaPoziom": "0.1"
+   },
+   "mod": "0.25",
+   "out": {
+    "capNaEpoke": "10",
+    "mnoznikNaPoziom": "0.125"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "10",
+    "mnoznikNaPoziom": "0.1"
+   },
+   "mod": "NaN",
+   "out": {
+    "capNaEpoke": "10",
+    "mnoznikNaPoziom": "0.1"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "10",
+    "mnoznikNaPoziom": "0.1"
+   },
+   "mod": "Infinity",
+   "out": {
+    "capNaEpoke": "10",
+    "mnoznikNaPoziom": "0.1"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "10",
+    "mnoznikNaPoziom": "0.1"
+   },
+   "mod": "-Infinity",
+   "out": {
+    "capNaEpoke": "10",
+    "mnoznikNaPoziom": "0.1"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   },
+   "mod": "0",
+   "out": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   },
+   "mod": "0.1",
+   "out": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   },
+   "mod": "-0.5",
+   "out": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   },
+   "mod": "-1",
+   "out": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   },
+   "mod": "-2",
+   "out": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   },
+   "mod": "1",
+   "out": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   },
+   "mod": "0.25",
+   "out": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   },
+   "mod": "NaN",
+   "out": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   },
+   "mod": "Infinity",
+   "out": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   },
+   "mod": "-Infinity",
+   "out": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "7.3",
+    "mnoznikNaPoziom": "1.5"
+   },
+   "mod": "0",
+   "out": {
+    "capNaEpoke": "7.3",
+    "mnoznikNaPoziom": "1.5"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "7.3",
+    "mnoznikNaPoziom": "1.5"
+   },
+   "mod": "0.1",
+   "out": {
+    "capNaEpoke": "7.3",
+    "mnoznikNaPoziom": "1.6500000000000001"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "7.3",
+    "mnoznikNaPoziom": "1.5"
+   },
+   "mod": "-0.5",
+   "out": {
+    "capNaEpoke": "7.3",
+    "mnoznikNaPoziom": "0.75"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "7.3",
+    "mnoznikNaPoziom": "1.5"
+   },
+   "mod": "-1",
+   "out": {
+    "capNaEpoke": "7.3",
+    "mnoznikNaPoziom": "0"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "7.3",
+    "mnoznikNaPoziom": "1.5"
+   },
+   "mod": "-2",
+   "out": {
+    "capNaEpoke": "7.3",
+    "mnoznikNaPoziom": "-1.5"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "7.3",
+    "mnoznikNaPoziom": "1.5"
+   },
+   "mod": "1",
+   "out": {
+    "capNaEpoke": "7.3",
+    "mnoznikNaPoziom": "3"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "7.3",
+    "mnoznikNaPoziom": "1.5"
+   },
+   "mod": "0.25",
+   "out": {
+    "capNaEpoke": "7.3",
+    "mnoznikNaPoziom": "1.875"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "7.3",
+    "mnoznikNaPoziom": "1.5"
+   },
+   "mod": "NaN",
+   "out": {
+    "capNaEpoke": "7.3",
+    "mnoznikNaPoziom": "1.5"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "7.3",
+    "mnoznikNaPoziom": "1.5"
+   },
+   "mod": "Infinity",
+   "out": {
+    "capNaEpoke": "7.3",
+    "mnoznikNaPoziom": "1.5"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "7.3",
+    "mnoznikNaPoziom": "1.5"
+   },
+   "mod": "-Infinity",
+   "out": {
+    "capNaEpoke": "7.3",
+    "mnoznikNaPoziom": "1.5"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "-5",
+    "mnoznikNaPoziom": "-0.5"
+   },
+   "mod": "0",
+   "out": {
+    "capNaEpoke": "-5",
+    "mnoznikNaPoziom": "-0.5"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "-5",
+    "mnoznikNaPoziom": "-0.5"
+   },
+   "mod": "0.1",
+   "out": {
+    "capNaEpoke": "-5",
+    "mnoznikNaPoziom": "-0.55"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "-5",
+    "mnoznikNaPoziom": "-0.5"
+   },
+   "mod": "-0.5",
+   "out": {
+    "capNaEpoke": "-5",
+    "mnoznikNaPoziom": "-0.25"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "-5",
+    "mnoznikNaPoziom": "-0.5"
+   },
+   "mod": "-1",
+   "out": {
+    "capNaEpoke": "-5",
+    "mnoznikNaPoziom": "0"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "-5",
+    "mnoznikNaPoziom": "-0.5"
+   },
+   "mod": "-2",
+   "out": {
+    "capNaEpoke": "-5",
+    "mnoznikNaPoziom": "0.5"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "-5",
+    "mnoznikNaPoziom": "-0.5"
+   },
+   "mod": "1",
+   "out": {
+    "capNaEpoke": "-5",
+    "mnoznikNaPoziom": "-1"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "-5",
+    "mnoznikNaPoziom": "-0.5"
+   },
+   "mod": "0.25",
+   "out": {
+    "capNaEpoke": "-5",
+    "mnoznikNaPoziom": "-0.625"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "-5",
+    "mnoznikNaPoziom": "-0.5"
+   },
+   "mod": "NaN",
+   "out": {
+    "capNaEpoke": "-5",
+    "mnoznikNaPoziom": "-0.5"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "-5",
+    "mnoznikNaPoziom": "-0.5"
+   },
+   "mod": "Infinity",
+   "out": {
+    "capNaEpoke": "-5",
+    "mnoznikNaPoziom": "-0.5"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "-5",
+    "mnoznikNaPoziom": "-0.5"
+   },
+   "mod": "-Infinity",
+   "out": {
+    "capNaEpoke": "-5",
+    "mnoznikNaPoziom": "-0.5"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "2"
+   },
+   "mod": "0",
+   "out": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "2"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "2"
+   },
+   "mod": "0.1",
+   "out": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "2.2"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "2"
+   },
+   "mod": "-0.5",
+   "out": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "1"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "2"
+   },
+   "mod": "-1",
+   "out": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "0"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "2"
+   },
+   "mod": "-2",
+   "out": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "-2"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "2"
+   },
+   "mod": "1",
+   "out": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "4"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "2"
+   },
+   "mod": "0.25",
+   "out": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "2.5"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "2"
+   },
+   "mod": "NaN",
+   "out": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "2"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "2"
+   },
+   "mod": "Infinity",
+   "out": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "2"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "2"
+   },
+   "mod": "-Infinity",
+   "out": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "2"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   },
+   "mod": "0",
+   "out": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   },
+   "mod": "0.1",
+   "out": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   },
+   "mod": "-0.5",
+   "out": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   },
+   "mod": "-1",
+   "out": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   },
+   "mod": "-2",
+   "out": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   },
+   "mod": "1",
+   "out": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   },
+   "mod": "0.25",
+   "out": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   },
+   "mod": "NaN",
+   "out": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   },
+   "mod": "Infinity",
+   "out": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   },
+   "mod": "-Infinity",
+   "out": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   }
+  }
+ ],
+ "ownerCases": [
+  {
+   "base": {
+    "capNaEpoke": "10",
+    "mnoznikNaPoziom": "0.1"
+   },
+   "civKey": null,
+   "out": {
+    "capNaEpoke": "10",
+    "mnoznikNaPoziom": "0.1"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "10",
+    "mnoznikNaPoziom": "0.1"
+   },
+   "civKey": "",
+   "out": {
+    "capNaEpoke": "10",
+    "mnoznikNaPoziom": "0.1"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "10",
+    "mnoznikNaPoziom": "0.1"
+   },
+   "civKey": "NIEZNANA",
+   "out": {
+    "capNaEpoke": "10",
+    "mnoznikNaPoziom": "0.1"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "10",
+    "mnoznikNaPoziom": "0.1"
+   },
+   "civKey": "zulusi-nie-ma",
+   "out": {
+    "capNaEpoke": "10",
+    "mnoznikNaPoziom": "0.1"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "10",
+    "mnoznikNaPoziom": "0.1"
+   },
+   "civKey": "grecy",
+   "out": {
+    "capNaEpoke": "12",
+    "mnoznikNaPoziom": "0.06999999999999999"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "10",
+    "mnoznikNaPoziom": "0.1"
+   },
+   "civKey": "GRECY",
+   "out": {
+    "capNaEpoke": "12",
+    "mnoznikNaPoziom": "0.06999999999999999"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "10",
+    "mnoznikNaPoziom": "0.1"
+   },
+   "civKey": "Grecy",
+   "out": {
+    "capNaEpoke": "12",
+    "mnoznikNaPoziom": "0.06999999999999999"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "10",
+    "mnoznikNaPoziom": "0.1"
+   },
+   "civKey": "rzymianie",
+   "out": {
+    "capNaEpoke": "12",
+    "mnoznikNaPoziom": "0.06999999999999999"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "10",
+    "mnoznikNaPoziom": "0.1"
+   },
+   "civKey": "RZYMIANIE",
+   "out": {
+    "capNaEpoke": "12",
+    "mnoznikNaPoziom": "0.06999999999999999"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "10",
+    "mnoznikNaPoziom": "0.1"
+   },
+   "civKey": "Rzymianie",
+   "out": {
+    "capNaEpoke": "12",
+    "mnoznikNaPoziom": "0.06999999999999999"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "10",
+    "mnoznikNaPoziom": "0.1"
+   },
+   "civKey": "chinczycy",
+   "out": {
+    "capNaEpoke": "10",
+    "mnoznikNaPoziom": "0.1"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "10",
+    "mnoznikNaPoziom": "0.1"
+   },
+   "civKey": "CHINCZYCY",
+   "out": {
+    "capNaEpoke": "10",
+    "mnoznikNaPoziom": "0.1"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "10",
+    "mnoznikNaPoziom": "0.1"
+   },
+   "civKey": "Chińczycy",
+   "out": {
+    "capNaEpoke": "10",
+    "mnoznikNaPoziom": "0.1"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "10",
+    "mnoznikNaPoziom": "0.1"
+   },
+   "civKey": "CHIŃCZYCY",
+   "out": {
+    "capNaEpoke": "10",
+    "mnoznikNaPoziom": "0.1"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "10",
+    "mnoznikNaPoziom": "0.1"
+   },
+   "civKey": "inkowie",
+   "out": {
+    "capNaEpoke": "12",
+    "mnoznikNaPoziom": "0.06999999999999999"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "10",
+    "mnoznikNaPoziom": "0.1"
+   },
+   "civKey": "INKOWIE",
+   "out": {
+    "capNaEpoke": "12",
+    "mnoznikNaPoziom": "0.06999999999999999"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "10",
+    "mnoznikNaPoziom": "0.1"
+   },
+   "civKey": "Inkowie",
+   "out": {
+    "capNaEpoke": "12",
+    "mnoznikNaPoziom": "0.06999999999999999"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "10",
+    "mnoznikNaPoziom": "0.1"
+   },
+   "civKey": "zulusi",
+   "out": {
+    "capNaEpoke": "10",
+    "mnoznikNaPoziom": "0.1"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "10",
+    "mnoznikNaPoziom": "0.1"
+   },
+   "civKey": "ZULUSI",
+   "out": {
+    "capNaEpoke": "10",
+    "mnoznikNaPoziom": "0.1"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "10",
+    "mnoznikNaPoziom": "0.1"
+   },
+   "civKey": "Zulusi",
+   "out": {
+    "capNaEpoke": "10",
+    "mnoznikNaPoziom": "0.1"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "10",
+    "mnoznikNaPoziom": "0.1"
+   },
+   "civKey": "egipt",
+   "out": {
+    "capNaEpoke": "10",
+    "mnoznikNaPoziom": "0.1"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "10",
+    "mnoznikNaPoziom": "0.1"
+   },
+   "civKey": "EGIPT",
+   "out": {
+    "capNaEpoke": "10",
+    "mnoznikNaPoziom": "0.1"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "10",
+    "mnoznikNaPoziom": "0.1"
+   },
+   "civKey": "Egipt",
+   "out": {
+    "capNaEpoke": "10",
+    "mnoznikNaPoziom": "0.1"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "10",
+    "mnoznikNaPoziom": "0.1"
+   },
+   "civKey": "sumer",
+   "out": {
+    "capNaEpoke": "10",
+    "mnoznikNaPoziom": "0.1"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "10",
+    "mnoznikNaPoziom": "0.1"
+   },
+   "civKey": "SUMER",
+   "out": {
+    "capNaEpoke": "10",
+    "mnoznikNaPoziom": "0.1"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "10",
+    "mnoznikNaPoziom": "0.1"
+   },
+   "civKey": "Sumerowie",
+   "out": {
+    "capNaEpoke": "10",
+    "mnoznikNaPoziom": "0.1"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "10",
+    "mnoznikNaPoziom": "0.1"
+   },
+   "civKey": "SUMEROWIE",
+   "out": {
+    "capNaEpoke": "10",
+    "mnoznikNaPoziom": "0.1"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "10",
+    "mnoznikNaPoziom": "0.1"
+   },
+   "civKey": "celtowie",
+   "out": {
+    "capNaEpoke": "10",
+    "mnoznikNaPoziom": "0.1"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "10",
+    "mnoznikNaPoziom": "0.1"
+   },
+   "civKey": "CELTOWIE",
+   "out": {
+    "capNaEpoke": "10",
+    "mnoznikNaPoziom": "0.1"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "10",
+    "mnoznikNaPoziom": "0.1"
+   },
+   "civKey": "Celtowie",
+   "out": {
+    "capNaEpoke": "10",
+    "mnoznikNaPoziom": "0.1"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "10",
+    "mnoznikNaPoziom": "0.1"
+   },
+   "civKey": "germanie",
+   "out": {
+    "capNaEpoke": "10",
+    "mnoznikNaPoziom": "0.1"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "10",
+    "mnoznikNaPoziom": "0.1"
+   },
+   "civKey": "GERMANIE",
+   "out": {
+    "capNaEpoke": "10",
+    "mnoznikNaPoziom": "0.1"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "10",
+    "mnoznikNaPoziom": "0.1"
+   },
+   "civKey": "Germanie",
+   "out": {
+    "capNaEpoke": "10",
+    "mnoznikNaPoziom": "0.1"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "10",
+    "mnoznikNaPoziom": "0.1"
+   },
+   "civKey": "harappa",
+   "out": {
+    "capNaEpoke": "10",
+    "mnoznikNaPoziom": "0.1"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "10",
+    "mnoznikNaPoziom": "0.1"
+   },
+   "civKey": "HARAPPA",
+   "out": {
+    "capNaEpoke": "10",
+    "mnoznikNaPoziom": "0.1"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "10",
+    "mnoznikNaPoziom": "0.1"
+   },
+   "civKey": "Harappa",
+   "out": {
+    "capNaEpoke": "10",
+    "mnoznikNaPoziom": "0.1"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "10",
+    "mnoznikNaPoziom": "0.1"
+   },
+   "civKey": "hetyci",
+   "out": {
+    "capNaEpoke": "10",
+    "mnoznikNaPoziom": "0.1"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "10",
+    "mnoznikNaPoziom": "0.1"
+   },
+   "civKey": "HETYCI",
+   "out": {
+    "capNaEpoke": "10",
+    "mnoznikNaPoziom": "0.1"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "10",
+    "mnoznikNaPoziom": "0.1"
+   },
+   "civKey": "Hetyci",
+   "out": {
+    "capNaEpoke": "10",
+    "mnoznikNaPoziom": "0.1"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "10",
+    "mnoznikNaPoziom": "0.1"
+   },
+   "civKey": "slowianie",
+   "out": {
+    "capNaEpoke": "10",
+    "mnoznikNaPoziom": "0.1"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "10",
+    "mnoznikNaPoziom": "0.1"
+   },
+   "civKey": "SLOWIANIE",
+   "out": {
+    "capNaEpoke": "10",
+    "mnoznikNaPoziom": "0.1"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "10",
+    "mnoznikNaPoziom": "0.1"
+   },
+   "civKey": "Słowianie",
+   "out": {
+    "capNaEpoke": "10",
+    "mnoznikNaPoziom": "0.1"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "10",
+    "mnoznikNaPoziom": "0.1"
+   },
+   "civKey": "SŁOWIANIE",
+   "out": {
+    "capNaEpoke": "10",
+    "mnoznikNaPoziom": "0.1"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "10",
+    "mnoznikNaPoziom": "0.1"
+   },
+   "civKey": "babilonia",
+   "out": {
+    "capNaEpoke": "10",
+    "mnoznikNaPoziom": "0.1"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "10",
+    "mnoznikNaPoziom": "0.1"
+   },
+   "civKey": "BABILONIA",
+   "out": {
+    "capNaEpoke": "10",
+    "mnoznikNaPoziom": "0.1"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "10",
+    "mnoznikNaPoziom": "0.1"
+   },
+   "civKey": "Babilonia",
+   "out": {
+    "capNaEpoke": "10",
+    "mnoznikNaPoziom": "0.1"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "10",
+    "mnoznikNaPoziom": "0.1"
+   },
+   "civKey": "asyria",
+   "out": {
+    "capNaEpoke": "10",
+    "mnoznikNaPoziom": "0.1"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "10",
+    "mnoznikNaPoziom": "0.1"
+   },
+   "civKey": "ASYRIA",
+   "out": {
+    "capNaEpoke": "10",
+    "mnoznikNaPoziom": "0.1"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "10",
+    "mnoznikNaPoziom": "0.1"
+   },
+   "civKey": "Asyria",
+   "out": {
+    "capNaEpoke": "10",
+    "mnoznikNaPoziom": "0.1"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "10",
+    "mnoznikNaPoziom": "0.1"
+   },
+   "civKey": "fenicjanie",
+   "out": {
+    "capNaEpoke": "10",
+    "mnoznikNaPoziom": "0.1"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "10",
+    "mnoznikNaPoziom": "0.1"
+   },
+   "civKey": "FENICJANIE",
+   "out": {
+    "capNaEpoke": "10",
+    "mnoznikNaPoziom": "0.1"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "10",
+    "mnoznikNaPoziom": "0.1"
+   },
+   "civKey": "Fenicjanie",
+   "out": {
+    "capNaEpoke": "10",
+    "mnoznikNaPoziom": "0.1"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   },
+   "civKey": null,
+   "out": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   },
+   "civKey": "",
+   "out": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   },
+   "civKey": "NIEZNANA",
+   "out": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   },
+   "civKey": "zulusi-nie-ma",
+   "out": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   },
+   "civKey": "grecy",
+   "out": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   },
+   "civKey": "GRECY",
+   "out": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   },
+   "civKey": "Grecy",
+   "out": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   },
+   "civKey": "rzymianie",
+   "out": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   },
+   "civKey": "RZYMIANIE",
+   "out": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   },
+   "civKey": "Rzymianie",
+   "out": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   },
+   "civKey": "chinczycy",
+   "out": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   },
+   "civKey": "CHINCZYCY",
+   "out": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   },
+   "civKey": "Chińczycy",
+   "out": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   },
+   "civKey": "CHIŃCZYCY",
+   "out": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   },
+   "civKey": "inkowie",
+   "out": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   },
+   "civKey": "INKOWIE",
+   "out": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   },
+   "civKey": "Inkowie",
+   "out": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   },
+   "civKey": "zulusi",
+   "out": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   },
+   "civKey": "ZULUSI",
+   "out": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   },
+   "civKey": "Zulusi",
+   "out": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   },
+   "civKey": "egipt",
+   "out": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   },
+   "civKey": "EGIPT",
+   "out": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   },
+   "civKey": "Egipt",
+   "out": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   },
+   "civKey": "sumer",
+   "out": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   },
+   "civKey": "SUMER",
+   "out": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   },
+   "civKey": "Sumerowie",
+   "out": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   },
+   "civKey": "SUMEROWIE",
+   "out": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   },
+   "civKey": "celtowie",
+   "out": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   },
+   "civKey": "CELTOWIE",
+   "out": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   },
+   "civKey": "Celtowie",
+   "out": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   },
+   "civKey": "germanie",
+   "out": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   },
+   "civKey": "GERMANIE",
+   "out": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   },
+   "civKey": "Germanie",
+   "out": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   },
+   "civKey": "harappa",
+   "out": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   },
+   "civKey": "HARAPPA",
+   "out": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   },
+   "civKey": "Harappa",
+   "out": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   },
+   "civKey": "hetyci",
+   "out": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   },
+   "civKey": "HETYCI",
+   "out": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   },
+   "civKey": "Hetyci",
+   "out": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   },
+   "civKey": "slowianie",
+   "out": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   },
+   "civKey": "SLOWIANIE",
+   "out": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   },
+   "civKey": "Słowianie",
+   "out": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   },
+   "civKey": "SŁOWIANIE",
+   "out": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   },
+   "civKey": "babilonia",
+   "out": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   },
+   "civKey": "BABILONIA",
+   "out": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   },
+   "civKey": "Babilonia",
+   "out": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   },
+   "civKey": "asyria",
+   "out": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   },
+   "civKey": "ASYRIA",
+   "out": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   },
+   "civKey": "Asyria",
+   "out": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   },
+   "civKey": "fenicjanie",
+   "out": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   },
+   "civKey": "FENICJANIE",
+   "out": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   },
+   "civKey": "Fenicjanie",
+   "out": {
+    "capNaEpoke": "0",
+    "mnoznikNaPoziom": "0"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "7.3",
+    "mnoznikNaPoziom": "1.5"
+   },
+   "civKey": null,
+   "out": {
+    "capNaEpoke": "7.3",
+    "mnoznikNaPoziom": "1.5"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "7.3",
+    "mnoznikNaPoziom": "1.5"
+   },
+   "civKey": "",
+   "out": {
+    "capNaEpoke": "7.3",
+    "mnoznikNaPoziom": "1.5"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "7.3",
+    "mnoznikNaPoziom": "1.5"
+   },
+   "civKey": "NIEZNANA",
+   "out": {
+    "capNaEpoke": "7.3",
+    "mnoznikNaPoziom": "1.5"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "7.3",
+    "mnoznikNaPoziom": "1.5"
+   },
+   "civKey": "zulusi-nie-ma",
+   "out": {
+    "capNaEpoke": "7.3",
+    "mnoznikNaPoziom": "1.5"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "7.3",
+    "mnoznikNaPoziom": "1.5"
+   },
+   "civKey": "grecy",
+   "out": {
+    "capNaEpoke": "8.76",
+    "mnoznikNaPoziom": "1.0499999999999998"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "7.3",
+    "mnoznikNaPoziom": "1.5"
+   },
+   "civKey": "GRECY",
+   "out": {
+    "capNaEpoke": "8.76",
+    "mnoznikNaPoziom": "1.0499999999999998"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "7.3",
+    "mnoznikNaPoziom": "1.5"
+   },
+   "civKey": "Grecy",
+   "out": {
+    "capNaEpoke": "8.76",
+    "mnoznikNaPoziom": "1.0499999999999998"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "7.3",
+    "mnoznikNaPoziom": "1.5"
+   },
+   "civKey": "rzymianie",
+   "out": {
+    "capNaEpoke": "8.76",
+    "mnoznikNaPoziom": "1.0499999999999998"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "7.3",
+    "mnoznikNaPoziom": "1.5"
+   },
+   "civKey": "RZYMIANIE",
+   "out": {
+    "capNaEpoke": "8.76",
+    "mnoznikNaPoziom": "1.0499999999999998"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "7.3",
+    "mnoznikNaPoziom": "1.5"
+   },
+   "civKey": "Rzymianie",
+   "out": {
+    "capNaEpoke": "8.76",
+    "mnoznikNaPoziom": "1.0499999999999998"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "7.3",
+    "mnoznikNaPoziom": "1.5"
+   },
+   "civKey": "chinczycy",
+   "out": {
+    "capNaEpoke": "7.3",
+    "mnoznikNaPoziom": "1.5"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "7.3",
+    "mnoznikNaPoziom": "1.5"
+   },
+   "civKey": "CHINCZYCY",
+   "out": {
+    "capNaEpoke": "7.3",
+    "mnoznikNaPoziom": "1.5"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "7.3",
+    "mnoznikNaPoziom": "1.5"
+   },
+   "civKey": "Chińczycy",
+   "out": {
+    "capNaEpoke": "7.3",
+    "mnoznikNaPoziom": "1.5"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "7.3",
+    "mnoznikNaPoziom": "1.5"
+   },
+   "civKey": "CHIŃCZYCY",
+   "out": {
+    "capNaEpoke": "7.3",
+    "mnoznikNaPoziom": "1.5"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "7.3",
+    "mnoznikNaPoziom": "1.5"
+   },
+   "civKey": "inkowie",
+   "out": {
+    "capNaEpoke": "8.76",
+    "mnoznikNaPoziom": "1.0499999999999998"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "7.3",
+    "mnoznikNaPoziom": "1.5"
+   },
+   "civKey": "INKOWIE",
+   "out": {
+    "capNaEpoke": "8.76",
+    "mnoznikNaPoziom": "1.0499999999999998"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "7.3",
+    "mnoznikNaPoziom": "1.5"
+   },
+   "civKey": "Inkowie",
+   "out": {
+    "capNaEpoke": "8.76",
+    "mnoznikNaPoziom": "1.0499999999999998"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "7.3",
+    "mnoznikNaPoziom": "1.5"
+   },
+   "civKey": "zulusi",
+   "out": {
+    "capNaEpoke": "7.3",
+    "mnoznikNaPoziom": "1.5"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "7.3",
+    "mnoznikNaPoziom": "1.5"
+   },
+   "civKey": "ZULUSI",
+   "out": {
+    "capNaEpoke": "7.3",
+    "mnoznikNaPoziom": "1.5"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "7.3",
+    "mnoznikNaPoziom": "1.5"
+   },
+   "civKey": "Zulusi",
+   "out": {
+    "capNaEpoke": "7.3",
+    "mnoznikNaPoziom": "1.5"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "7.3",
+    "mnoznikNaPoziom": "1.5"
+   },
+   "civKey": "egipt",
+   "out": {
+    "capNaEpoke": "7.3",
+    "mnoznikNaPoziom": "1.5"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "7.3",
+    "mnoznikNaPoziom": "1.5"
+   },
+   "civKey": "EGIPT",
+   "out": {
+    "capNaEpoke": "7.3",
+    "mnoznikNaPoziom": "1.5"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "7.3",
+    "mnoznikNaPoziom": "1.5"
+   },
+   "civKey": "Egipt",
+   "out": {
+    "capNaEpoke": "7.3",
+    "mnoznikNaPoziom": "1.5"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "7.3",
+    "mnoznikNaPoziom": "1.5"
+   },
+   "civKey": "sumer",
+   "out": {
+    "capNaEpoke": "7.3",
+    "mnoznikNaPoziom": "1.5"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "7.3",
+    "mnoznikNaPoziom": "1.5"
+   },
+   "civKey": "SUMER",
+   "out": {
+    "capNaEpoke": "7.3",
+    "mnoznikNaPoziom": "1.5"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "7.3",
+    "mnoznikNaPoziom": "1.5"
+   },
+   "civKey": "Sumerowie",
+   "out": {
+    "capNaEpoke": "7.3",
+    "mnoznikNaPoziom": "1.5"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "7.3",
+    "mnoznikNaPoziom": "1.5"
+   },
+   "civKey": "SUMEROWIE",
+   "out": {
+    "capNaEpoke": "7.3",
+    "mnoznikNaPoziom": "1.5"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "7.3",
+    "mnoznikNaPoziom": "1.5"
+   },
+   "civKey": "celtowie",
+   "out": {
+    "capNaEpoke": "7.3",
+    "mnoznikNaPoziom": "1.5"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "7.3",
+    "mnoznikNaPoziom": "1.5"
+   },
+   "civKey": "CELTOWIE",
+   "out": {
+    "capNaEpoke": "7.3",
+    "mnoznikNaPoziom": "1.5"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "7.3",
+    "mnoznikNaPoziom": "1.5"
+   },
+   "civKey": "Celtowie",
+   "out": {
+    "capNaEpoke": "7.3",
+    "mnoznikNaPoziom": "1.5"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "7.3",
+    "mnoznikNaPoziom": "1.5"
+   },
+   "civKey": "germanie",
+   "out": {
+    "capNaEpoke": "7.3",
+    "mnoznikNaPoziom": "1.5"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "7.3",
+    "mnoznikNaPoziom": "1.5"
+   },
+   "civKey": "GERMANIE",
+   "out": {
+    "capNaEpoke": "7.3",
+    "mnoznikNaPoziom": "1.5"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "7.3",
+    "mnoznikNaPoziom": "1.5"
+   },
+   "civKey": "Germanie",
+   "out": {
+    "capNaEpoke": "7.3",
+    "mnoznikNaPoziom": "1.5"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "7.3",
+    "mnoznikNaPoziom": "1.5"
+   },
+   "civKey": "harappa",
+   "out": {
+    "capNaEpoke": "7.3",
+    "mnoznikNaPoziom": "1.5"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "7.3",
+    "mnoznikNaPoziom": "1.5"
+   },
+   "civKey": "HARAPPA",
+   "out": {
+    "capNaEpoke": "7.3",
+    "mnoznikNaPoziom": "1.5"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "7.3",
+    "mnoznikNaPoziom": "1.5"
+   },
+   "civKey": "Harappa",
+   "out": {
+    "capNaEpoke": "7.3",
+    "mnoznikNaPoziom": "1.5"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "7.3",
+    "mnoznikNaPoziom": "1.5"
+   },
+   "civKey": "hetyci",
+   "out": {
+    "capNaEpoke": "7.3",
+    "mnoznikNaPoziom": "1.5"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "7.3",
+    "mnoznikNaPoziom": "1.5"
+   },
+   "civKey": "HETYCI",
+   "out": {
+    "capNaEpoke": "7.3",
+    "mnoznikNaPoziom": "1.5"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "7.3",
+    "mnoznikNaPoziom": "1.5"
+   },
+   "civKey": "Hetyci",
+   "out": {
+    "capNaEpoke": "7.3",
+    "mnoznikNaPoziom": "1.5"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "7.3",
+    "mnoznikNaPoziom": "1.5"
+   },
+   "civKey": "slowianie",
+   "out": {
+    "capNaEpoke": "7.3",
+    "mnoznikNaPoziom": "1.5"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "7.3",
+    "mnoznikNaPoziom": "1.5"
+   },
+   "civKey": "SLOWIANIE",
+   "out": {
+    "capNaEpoke": "7.3",
+    "mnoznikNaPoziom": "1.5"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "7.3",
+    "mnoznikNaPoziom": "1.5"
+   },
+   "civKey": "Słowianie",
+   "out": {
+    "capNaEpoke": "7.3",
+    "mnoznikNaPoziom": "1.5"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "7.3",
+    "mnoznikNaPoziom": "1.5"
+   },
+   "civKey": "SŁOWIANIE",
+   "out": {
+    "capNaEpoke": "7.3",
+    "mnoznikNaPoziom": "1.5"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "7.3",
+    "mnoznikNaPoziom": "1.5"
+   },
+   "civKey": "babilonia",
+   "out": {
+    "capNaEpoke": "7.3",
+    "mnoznikNaPoziom": "1.5"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "7.3",
+    "mnoznikNaPoziom": "1.5"
+   },
+   "civKey": "BABILONIA",
+   "out": {
+    "capNaEpoke": "7.3",
+    "mnoznikNaPoziom": "1.5"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "7.3",
+    "mnoznikNaPoziom": "1.5"
+   },
+   "civKey": "Babilonia",
+   "out": {
+    "capNaEpoke": "7.3",
+    "mnoznikNaPoziom": "1.5"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "7.3",
+    "mnoznikNaPoziom": "1.5"
+   },
+   "civKey": "asyria",
+   "out": {
+    "capNaEpoke": "7.3",
+    "mnoznikNaPoziom": "1.5"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "7.3",
+    "mnoznikNaPoziom": "1.5"
+   },
+   "civKey": "ASYRIA",
+   "out": {
+    "capNaEpoke": "7.3",
+    "mnoznikNaPoziom": "1.5"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "7.3",
+    "mnoznikNaPoziom": "1.5"
+   },
+   "civKey": "Asyria",
+   "out": {
+    "capNaEpoke": "7.3",
+    "mnoznikNaPoziom": "1.5"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "7.3",
+    "mnoznikNaPoziom": "1.5"
+   },
+   "civKey": "fenicjanie",
+   "out": {
+    "capNaEpoke": "7.3",
+    "mnoznikNaPoziom": "1.5"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "7.3",
+    "mnoznikNaPoziom": "1.5"
+   },
+   "civKey": "FENICJANIE",
+   "out": {
+    "capNaEpoke": "7.3",
+    "mnoznikNaPoziom": "1.5"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "7.3",
+    "mnoznikNaPoziom": "1.5"
+   },
+   "civKey": "Fenicjanie",
+   "out": {
+    "capNaEpoke": "7.3",
+    "mnoznikNaPoziom": "1.5"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "-5",
+    "mnoznikNaPoziom": "-0.5"
+   },
+   "civKey": null,
+   "out": {
+    "capNaEpoke": "-5",
+    "mnoznikNaPoziom": "-0.5"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "-5",
+    "mnoznikNaPoziom": "-0.5"
+   },
+   "civKey": "",
+   "out": {
+    "capNaEpoke": "-5",
+    "mnoznikNaPoziom": "-0.5"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "-5",
+    "mnoznikNaPoziom": "-0.5"
+   },
+   "civKey": "NIEZNANA",
+   "out": {
+    "capNaEpoke": "-5",
+    "mnoznikNaPoziom": "-0.5"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "-5",
+    "mnoznikNaPoziom": "-0.5"
+   },
+   "civKey": "zulusi-nie-ma",
+   "out": {
+    "capNaEpoke": "-5",
+    "mnoznikNaPoziom": "-0.5"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "-5",
+    "mnoznikNaPoziom": "-0.5"
+   },
+   "civKey": "grecy",
+   "out": {
+    "capNaEpoke": "-6",
+    "mnoznikNaPoziom": "-0.35"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "-5",
+    "mnoznikNaPoziom": "-0.5"
+   },
+   "civKey": "GRECY",
+   "out": {
+    "capNaEpoke": "-6",
+    "mnoznikNaPoziom": "-0.35"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "-5",
+    "mnoznikNaPoziom": "-0.5"
+   },
+   "civKey": "Grecy",
+   "out": {
+    "capNaEpoke": "-6",
+    "mnoznikNaPoziom": "-0.35"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "-5",
+    "mnoznikNaPoziom": "-0.5"
+   },
+   "civKey": "rzymianie",
+   "out": {
+    "capNaEpoke": "-6",
+    "mnoznikNaPoziom": "-0.35"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "-5",
+    "mnoznikNaPoziom": "-0.5"
+   },
+   "civKey": "RZYMIANIE",
+   "out": {
+    "capNaEpoke": "-6",
+    "mnoznikNaPoziom": "-0.35"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "-5",
+    "mnoznikNaPoziom": "-0.5"
+   },
+   "civKey": "Rzymianie",
+   "out": {
+    "capNaEpoke": "-6",
+    "mnoznikNaPoziom": "-0.35"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "-5",
+    "mnoznikNaPoziom": "-0.5"
+   },
+   "civKey": "chinczycy",
+   "out": {
+    "capNaEpoke": "-5",
+    "mnoznikNaPoziom": "-0.5"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "-5",
+    "mnoznikNaPoziom": "-0.5"
+   },
+   "civKey": "CHINCZYCY",
+   "out": {
+    "capNaEpoke": "-5",
+    "mnoznikNaPoziom": "-0.5"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "-5",
+    "mnoznikNaPoziom": "-0.5"
+   },
+   "civKey": "Chińczycy",
+   "out": {
+    "capNaEpoke": "-5",
+    "mnoznikNaPoziom": "-0.5"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "-5",
+    "mnoznikNaPoziom": "-0.5"
+   },
+   "civKey": "CHIŃCZYCY",
+   "out": {
+    "capNaEpoke": "-5",
+    "mnoznikNaPoziom": "-0.5"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "-5",
+    "mnoznikNaPoziom": "-0.5"
+   },
+   "civKey": "inkowie",
+   "out": {
+    "capNaEpoke": "-6",
+    "mnoznikNaPoziom": "-0.35"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "-5",
+    "mnoznikNaPoziom": "-0.5"
+   },
+   "civKey": "INKOWIE",
+   "out": {
+    "capNaEpoke": "-6",
+    "mnoznikNaPoziom": "-0.35"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "-5",
+    "mnoznikNaPoziom": "-0.5"
+   },
+   "civKey": "Inkowie",
+   "out": {
+    "capNaEpoke": "-6",
+    "mnoznikNaPoziom": "-0.35"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "-5",
+    "mnoznikNaPoziom": "-0.5"
+   },
+   "civKey": "zulusi",
+   "out": {
+    "capNaEpoke": "-5",
+    "mnoznikNaPoziom": "-0.5"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "-5",
+    "mnoznikNaPoziom": "-0.5"
+   },
+   "civKey": "ZULUSI",
+   "out": {
+    "capNaEpoke": "-5",
+    "mnoznikNaPoziom": "-0.5"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "-5",
+    "mnoznikNaPoziom": "-0.5"
+   },
+   "civKey": "Zulusi",
+   "out": {
+    "capNaEpoke": "-5",
+    "mnoznikNaPoziom": "-0.5"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "-5",
+    "mnoznikNaPoziom": "-0.5"
+   },
+   "civKey": "egipt",
+   "out": {
+    "capNaEpoke": "-5",
+    "mnoznikNaPoziom": "-0.5"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "-5",
+    "mnoznikNaPoziom": "-0.5"
+   },
+   "civKey": "EGIPT",
+   "out": {
+    "capNaEpoke": "-5",
+    "mnoznikNaPoziom": "-0.5"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "-5",
+    "mnoznikNaPoziom": "-0.5"
+   },
+   "civKey": "Egipt",
+   "out": {
+    "capNaEpoke": "-5",
+    "mnoznikNaPoziom": "-0.5"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "-5",
+    "mnoznikNaPoziom": "-0.5"
+   },
+   "civKey": "sumer",
+   "out": {
+    "capNaEpoke": "-5",
+    "mnoznikNaPoziom": "-0.5"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "-5",
+    "mnoznikNaPoziom": "-0.5"
+   },
+   "civKey": "SUMER",
+   "out": {
+    "capNaEpoke": "-5",
+    "mnoznikNaPoziom": "-0.5"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "-5",
+    "mnoznikNaPoziom": "-0.5"
+   },
+   "civKey": "Sumerowie",
+   "out": {
+    "capNaEpoke": "-5",
+    "mnoznikNaPoziom": "-0.5"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "-5",
+    "mnoznikNaPoziom": "-0.5"
+   },
+   "civKey": "SUMEROWIE",
+   "out": {
+    "capNaEpoke": "-5",
+    "mnoznikNaPoziom": "-0.5"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "-5",
+    "mnoznikNaPoziom": "-0.5"
+   },
+   "civKey": "celtowie",
+   "out": {
+    "capNaEpoke": "-5",
+    "mnoznikNaPoziom": "-0.5"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "-5",
+    "mnoznikNaPoziom": "-0.5"
+   },
+   "civKey": "CELTOWIE",
+   "out": {
+    "capNaEpoke": "-5",
+    "mnoznikNaPoziom": "-0.5"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "-5",
+    "mnoznikNaPoziom": "-0.5"
+   },
+   "civKey": "Celtowie",
+   "out": {
+    "capNaEpoke": "-5",
+    "mnoznikNaPoziom": "-0.5"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "-5",
+    "mnoznikNaPoziom": "-0.5"
+   },
+   "civKey": "germanie",
+   "out": {
+    "capNaEpoke": "-5",
+    "mnoznikNaPoziom": "-0.5"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "-5",
+    "mnoznikNaPoziom": "-0.5"
+   },
+   "civKey": "GERMANIE",
+   "out": {
+    "capNaEpoke": "-5",
+    "mnoznikNaPoziom": "-0.5"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "-5",
+    "mnoznikNaPoziom": "-0.5"
+   },
+   "civKey": "Germanie",
+   "out": {
+    "capNaEpoke": "-5",
+    "mnoznikNaPoziom": "-0.5"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "-5",
+    "mnoznikNaPoziom": "-0.5"
+   },
+   "civKey": "harappa",
+   "out": {
+    "capNaEpoke": "-5",
+    "mnoznikNaPoziom": "-0.5"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "-5",
+    "mnoznikNaPoziom": "-0.5"
+   },
+   "civKey": "HARAPPA",
+   "out": {
+    "capNaEpoke": "-5",
+    "mnoznikNaPoziom": "-0.5"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "-5",
+    "mnoznikNaPoziom": "-0.5"
+   },
+   "civKey": "Harappa",
+   "out": {
+    "capNaEpoke": "-5",
+    "mnoznikNaPoziom": "-0.5"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "-5",
+    "mnoznikNaPoziom": "-0.5"
+   },
+   "civKey": "hetyci",
+   "out": {
+    "capNaEpoke": "-5",
+    "mnoznikNaPoziom": "-0.5"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "-5",
+    "mnoznikNaPoziom": "-0.5"
+   },
+   "civKey": "HETYCI",
+   "out": {
+    "capNaEpoke": "-5",
+    "mnoznikNaPoziom": "-0.5"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "-5",
+    "mnoznikNaPoziom": "-0.5"
+   },
+   "civKey": "Hetyci",
+   "out": {
+    "capNaEpoke": "-5",
+    "mnoznikNaPoziom": "-0.5"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "-5",
+    "mnoznikNaPoziom": "-0.5"
+   },
+   "civKey": "slowianie",
+   "out": {
+    "capNaEpoke": "-5",
+    "mnoznikNaPoziom": "-0.5"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "-5",
+    "mnoznikNaPoziom": "-0.5"
+   },
+   "civKey": "SLOWIANIE",
+   "out": {
+    "capNaEpoke": "-5",
+    "mnoznikNaPoziom": "-0.5"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "-5",
+    "mnoznikNaPoziom": "-0.5"
+   },
+   "civKey": "Słowianie",
+   "out": {
+    "capNaEpoke": "-5",
+    "mnoznikNaPoziom": "-0.5"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "-5",
+    "mnoznikNaPoziom": "-0.5"
+   },
+   "civKey": "SŁOWIANIE",
+   "out": {
+    "capNaEpoke": "-5",
+    "mnoznikNaPoziom": "-0.5"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "-5",
+    "mnoznikNaPoziom": "-0.5"
+   },
+   "civKey": "babilonia",
+   "out": {
+    "capNaEpoke": "-5",
+    "mnoznikNaPoziom": "-0.5"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "-5",
+    "mnoznikNaPoziom": "-0.5"
+   },
+   "civKey": "BABILONIA",
+   "out": {
+    "capNaEpoke": "-5",
+    "mnoznikNaPoziom": "-0.5"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "-5",
+    "mnoznikNaPoziom": "-0.5"
+   },
+   "civKey": "Babilonia",
+   "out": {
+    "capNaEpoke": "-5",
+    "mnoznikNaPoziom": "-0.5"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "-5",
+    "mnoznikNaPoziom": "-0.5"
+   },
+   "civKey": "asyria",
+   "out": {
+    "capNaEpoke": "-5",
+    "mnoznikNaPoziom": "-0.5"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "-5",
+    "mnoznikNaPoziom": "-0.5"
+   },
+   "civKey": "ASYRIA",
+   "out": {
+    "capNaEpoke": "-5",
+    "mnoznikNaPoziom": "-0.5"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "-5",
+    "mnoznikNaPoziom": "-0.5"
+   },
+   "civKey": "Asyria",
+   "out": {
+    "capNaEpoke": "-5",
+    "mnoznikNaPoziom": "-0.5"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "-5",
+    "mnoznikNaPoziom": "-0.5"
+   },
+   "civKey": "fenicjanie",
+   "out": {
+    "capNaEpoke": "-5",
+    "mnoznikNaPoziom": "-0.5"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "-5",
+    "mnoznikNaPoziom": "-0.5"
+   },
+   "civKey": "FENICJANIE",
+   "out": {
+    "capNaEpoke": "-5",
+    "mnoznikNaPoziom": "-0.5"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "-5",
+    "mnoznikNaPoziom": "-0.5"
+   },
+   "civKey": "Fenicjanie",
+   "out": {
+    "capNaEpoke": "-5",
+    "mnoznikNaPoziom": "-0.5"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "2"
+   },
+   "civKey": null,
+   "out": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "2"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "2"
+   },
+   "civKey": "",
+   "out": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "2"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "2"
+   },
+   "civKey": "NIEZNANA",
+   "out": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "2"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "2"
+   },
+   "civKey": "zulusi-nie-ma",
+   "out": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "2"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "2"
+   },
+   "civKey": "grecy",
+   "out": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "1.4"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "2"
+   },
+   "civKey": "GRECY",
+   "out": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "1.4"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "2"
+   },
+   "civKey": "Grecy",
+   "out": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "1.4"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "2"
+   },
+   "civKey": "rzymianie",
+   "out": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "1.4"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "2"
+   },
+   "civKey": "RZYMIANIE",
+   "out": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "1.4"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "2"
+   },
+   "civKey": "Rzymianie",
+   "out": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "1.4"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "2"
+   },
+   "civKey": "chinczycy",
+   "out": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "2"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "2"
+   },
+   "civKey": "CHINCZYCY",
+   "out": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "2"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "2"
+   },
+   "civKey": "Chińczycy",
+   "out": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "2"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "2"
+   },
+   "civKey": "CHIŃCZYCY",
+   "out": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "2"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "2"
+   },
+   "civKey": "inkowie",
+   "out": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "1.4"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "2"
+   },
+   "civKey": "INKOWIE",
+   "out": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "1.4"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "2"
+   },
+   "civKey": "Inkowie",
+   "out": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "1.4"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "2"
+   },
+   "civKey": "zulusi",
+   "out": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "2"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "2"
+   },
+   "civKey": "ZULUSI",
+   "out": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "2"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "2"
+   },
+   "civKey": "Zulusi",
+   "out": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "2"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "2"
+   },
+   "civKey": "egipt",
+   "out": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "2"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "2"
+   },
+   "civKey": "EGIPT",
+   "out": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "2"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "2"
+   },
+   "civKey": "Egipt",
+   "out": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "2"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "2"
+   },
+   "civKey": "sumer",
+   "out": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "2"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "2"
+   },
+   "civKey": "SUMER",
+   "out": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "2"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "2"
+   },
+   "civKey": "Sumerowie",
+   "out": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "2"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "2"
+   },
+   "civKey": "SUMEROWIE",
+   "out": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "2"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "2"
+   },
+   "civKey": "celtowie",
+   "out": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "2"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "2"
+   },
+   "civKey": "CELTOWIE",
+   "out": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "2"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "2"
+   },
+   "civKey": "Celtowie",
+   "out": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "2"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "2"
+   },
+   "civKey": "germanie",
+   "out": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "2"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "2"
+   },
+   "civKey": "GERMANIE",
+   "out": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "2"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "2"
+   },
+   "civKey": "Germanie",
+   "out": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "2"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "2"
+   },
+   "civKey": "harappa",
+   "out": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "2"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "2"
+   },
+   "civKey": "HARAPPA",
+   "out": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "2"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "2"
+   },
+   "civKey": "Harappa",
+   "out": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "2"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "2"
+   },
+   "civKey": "hetyci",
+   "out": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "2"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "2"
+   },
+   "civKey": "HETYCI",
+   "out": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "2"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "2"
+   },
+   "civKey": "Hetyci",
+   "out": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "2"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "2"
+   },
+   "civKey": "slowianie",
+   "out": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "2"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "2"
+   },
+   "civKey": "SLOWIANIE",
+   "out": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "2"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "2"
+   },
+   "civKey": "Słowianie",
+   "out": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "2"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "2"
+   },
+   "civKey": "SŁOWIANIE",
+   "out": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "2"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "2"
+   },
+   "civKey": "babilonia",
+   "out": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "2"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "2"
+   },
+   "civKey": "BABILONIA",
+   "out": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "2"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "2"
+   },
+   "civKey": "Babilonia",
+   "out": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "2"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "2"
+   },
+   "civKey": "asyria",
+   "out": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "2"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "2"
+   },
+   "civKey": "ASYRIA",
+   "out": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "2"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "2"
+   },
+   "civKey": "Asyria",
+   "out": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "2"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "2"
+   },
+   "civKey": "fenicjanie",
+   "out": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "2"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "2"
+   },
+   "civKey": "FENICJANIE",
+   "out": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "2"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "2"
+   },
+   "civKey": "Fenicjanie",
+   "out": {
+    "capNaEpoke": "NaN",
+    "mnoznikNaPoziom": "2"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   },
+   "civKey": null,
+   "out": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   },
+   "civKey": "",
+   "out": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   },
+   "civKey": "NIEZNANA",
+   "out": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   },
+   "civKey": "zulusi-nie-ma",
+   "out": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   },
+   "civKey": "grecy",
+   "out": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   },
+   "civKey": "GRECY",
+   "out": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   },
+   "civKey": "Grecy",
+   "out": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   },
+   "civKey": "rzymianie",
+   "out": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   },
+   "civKey": "RZYMIANIE",
+   "out": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   },
+   "civKey": "Rzymianie",
+   "out": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   },
+   "civKey": "chinczycy",
+   "out": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   },
+   "civKey": "CHINCZYCY",
+   "out": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   },
+   "civKey": "Chińczycy",
+   "out": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   },
+   "civKey": "CHIŃCZYCY",
+   "out": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   },
+   "civKey": "inkowie",
+   "out": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   },
+   "civKey": "INKOWIE",
+   "out": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   },
+   "civKey": "Inkowie",
+   "out": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   },
+   "civKey": "zulusi",
+   "out": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   },
+   "civKey": "ZULUSI",
+   "out": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   },
+   "civKey": "Zulusi",
+   "out": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   },
+   "civKey": "egipt",
+   "out": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   },
+   "civKey": "EGIPT",
+   "out": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   },
+   "civKey": "Egipt",
+   "out": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   },
+   "civKey": "sumer",
+   "out": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   },
+   "civKey": "SUMER",
+   "out": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   },
+   "civKey": "Sumerowie",
+   "out": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   },
+   "civKey": "SUMEROWIE",
+   "out": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   },
+   "civKey": "celtowie",
+   "out": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   },
+   "civKey": "CELTOWIE",
+   "out": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   },
+   "civKey": "Celtowie",
+   "out": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   },
+   "civKey": "germanie",
+   "out": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   },
+   "civKey": "GERMANIE",
+   "out": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   },
+   "civKey": "Germanie",
+   "out": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   },
+   "civKey": "harappa",
+   "out": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   },
+   "civKey": "HARAPPA",
+   "out": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   },
+   "civKey": "Harappa",
+   "out": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   },
+   "civKey": "hetyci",
+   "out": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   },
+   "civKey": "HETYCI",
+   "out": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   },
+   "civKey": "Hetyci",
+   "out": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   },
+   "civKey": "slowianie",
+   "out": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   },
+   "civKey": "SLOWIANIE",
+   "out": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   },
+   "civKey": "Słowianie",
+   "out": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   },
+   "civKey": "SŁOWIANIE",
+   "out": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   },
+   "civKey": "babilonia",
+   "out": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   },
+   "civKey": "BABILONIA",
+   "out": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   },
+   "civKey": "Babilonia",
+   "out": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   },
+   "civKey": "asyria",
+   "out": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   },
+   "civKey": "ASYRIA",
+   "out": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   },
+   "civKey": "Asyria",
+   "out": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   },
+   "civKey": "fenicjanie",
+   "out": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   },
+   "civKey": "FENICJANIE",
+   "out": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   }
+  },
+  {
+   "base": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   },
+   "civKey": "Fenicjanie",
+   "out": {
+    "capNaEpoke": "Infinity",
+    "mnoznikNaPoziom": "NaN"
+   }
+  }
+ ]
+}
