@@ -260,3 +260,13 @@ Zalozenia rundy 3:
 - Z-D2.2c-4: generator wymaga `git archive 91dc998a gra` rozpakowanego do `gra/` oraz loadera TS (`typescript`, transpilacja `.ts`, rozwiazywanie importow bez rozszerzenia); instrukcja w `logs/gen-full.mts`.
 
 Odpowiedzi na zarzuty Evaluatora: brak (runda 3 jest pierwsza po obronie R2, Evaluator nie wystawil jeszcze zarzutow dla D2.2c).
+
+### D2.2c — weryfikacja niezależna (runda 3, weryfikator, ten sam ID)
+
+- Kod zweryfikowany na `18072caed` (detach). Bramki: `cargo fmt --all -- --check` EXIT=0; `cargo clippy --all-targets -- -D warnings` EXIT=0; `cargo test --no-fail-fast` EXIT=0, 227 binarek, 1675 passed / 0 failed (`logs/verifier-test-r3.log`).
+- Regeneracja wektorów: `logs/gen-full.mts` uruchomiony ponownie przeciw `git archive 91dc998a` (`gra/src`, `gra/data`, `gra/src/types`) przez loader TS z `node 22.22.0`; wynik 1200 przypadków **bajt-identyczny** z `tests/p6_repin_d2_full_vectors/full-main.json` (`cmp`). Plik tymczasowy usunięto po porównaniu, bez zapisu logu.
+- Mutacje weryfikatora (każda zabita; przywrócono plik do `18072caed`):
+  - M5 `cityPracaInteger` pominięte (`praca = praca_netto` bez `round`/zera): 2 FAILED (`structural_neutral_praca_is_mlyn_then_cegielnia_then_integer`, `parity_full_main_bit_exact`) — `logs/verifier-mut-M5-praca-noround.log`.
+  - M6 `additionalTax` bez `js_math_max_zero` (economy_yield.rs L225): 1 FAILED (`parity_full_main_bit_exact`) — `logs/verifier-mut-M6-addtax-noclamp.log`.
+- Z-D2.2c-1 (Step 1 i Step 3 jako wejścia agregatów) i Z-D2.2c-2 (`pieniadzPortu` = `record.id === 'port'`) pozostają ZAŁOŻENIAMI do partii D2.2d; nie są zamknięte tą weryfikacją.
+- Temat pozostaje OTWARTY. Web `origin/main` = `7164f7ca1`; pin `91dc998a` aktualny dla `economy.ts`, `production.ts`, `terrain-improvements.ts`, `civ-matrix.ts`.
