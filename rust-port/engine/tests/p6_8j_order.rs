@@ -386,11 +386,15 @@ fn matrix_matches_web() {
             ..Default::default()
         };
         let s = society_for(sets, name);
-        let base = evaluate_order_from_breakdown(&hin, &lin, s, d);
+        let mut base = evaluate_order_from_breakdown(&hin, &lin, s, d);
+        // `tamper: szPctPlus7` = niespojny order z generatora (web: base.sz.szPct += 7).
+        if case["tamper"].as_str() == Some("szPctPlus7") {
+            base.sz.sz_pct += 7.0;
+        }
         let got = apply_civ_matrix_happiness_modifier(&base, num(&case["raw"]), s, d);
         let ctx = format!(
-            "matrix {} / {name} / {d:?} / raw={:?}",
-            case["happy"], case["raw"]
+            "matrix {} / {name} / {d:?} / raw={:?} / tamper={:?}",
+            case["happy"], case["raw"], case["tamper"]
         );
         order_check(&got, &case["expected"], &ctx);
     }
@@ -639,6 +643,27 @@ fn matrix_unit() {
     assert_eq!(down.sz.lines.len(), base.sz.lines.len() + 1);
     assert_eq!(down.sz.lines.last().unwrap().value, -base.sz.netto);
     let _: &[SocietyLine] = &up.sz.lines;
+    // delta === 0 mimo raw !== 0 i skonczonego (web: linia matryki NIE jest dodawana, society-breakdown.ts:1088).
+    let tiny = apply_civ_matrix_happiness_modifier(&base, 1e-17, None, Difficulty::Normal);
+    assert_eq!(
+        tiny.sz.lines.len(),
+        base.sz.lines.len(),
+        "delta 0: brak linii matrycy"
+    );
+    assert_eq!(tiny.sz.lines, base.sz.lines);
+    assert_eq!(tiny.sz.netto, base.sz.netto);
+    // netto == 0: delta === 0 dla dowolnego raw.
+    let zero_base = apply_civ_matrix_happiness_modifier(&base, -1.0, None, Difficulty::Normal);
+    assert_eq!(
+        zero_base.sz.netto, 0.0,
+        "przypadek testowy musi miec netto == 0"
+    );
+    let z = apply_civ_matrix_happiness_modifier(&zero_base, 0.25, None, Difficulty::Normal);
+    assert_eq!(
+        z.sz.lines.len(),
+        zero_base.sz.lines.len(),
+        "netto 0: brak linii matrycy"
+    );
 }
 
 #[test]

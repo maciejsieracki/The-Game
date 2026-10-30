@@ -185,7 +185,9 @@ for (const hc of HAPPY_INPUTS) for (const lc of LAW_INPUTS) for (const sn of ORD
   const o = SB.evaluateOrderFromBreakdown({ ...hc.in }, { ...lc.in }, s, d);
   orderBreakdownCases.push({ happy: hc.name, law: lc.name, society: sn, difficulty: d, expected: encOrder(o) });
 }
-const RAWS = [0, -0, NaN, Infinity, -Infinity, -0.2, 0.25, 1.5, -1, -1.5, 1e-9];
+// Surowe wartosci, dla ktorych netto*(1+raw) == netto (delta === 0 mimo raw !== 0 i skonczonego):
+// 1e-17 (1+1e-17 === 1), -1e-17, 5e-324 (denormal). Dla netto == 0 delta === 0 zawsze.
+const RAWS = [0, -0, NaN, Infinity, -Infinity, -0.2, 0.25, 1.5, -1, -1.5, 1e-9, 1e-17, -1e-17, 5e-324];
 const matrixCases = [];
 for (const hn of ['typowe', 'udzialy', 'pusty', 'nanPop']) {
   const hc = HAPPY_INPUTS.find((h) => h.name === hn);
@@ -195,6 +197,14 @@ for (const hn of ['typowe', 'udzialy', 'pusty', 'nanPop']) {
     for (const raw of RAWS) {
       const out = SB.applyCivMatrixHappinessModifier(base, raw, s, d);
       matrixCases.push({ happy: hn, society: sn, difficulty: d, raw: enc(raw), expected: encOrder(out) });
+    }
+    // Niespojny order (reczny szPct, sz ssprzeczny z netto): web przy raw === 0 zwraca order bez zmian
+    // (guard `raw === 0`, society-breakdown.ts:1080), a dla raw != 0 przelicza szPct z netto.
+    // Rust musi odtworzyc ten sam order: pole `tamper` mowi, ze base.sz.szPct += 7 przed wywolaniem.
+    const tampered = { ...base, sz: { ...base.sz, szPct: base.sz.szPct + 7 } };
+    for (const raw of [0, -0, 0.25, 1e-17]) {
+      const out = SB.applyCivMatrixHappinessModifier(tampered, raw, s, d);
+      matrixCases.push({ happy: hn, society: sn, difficulty: d, raw: enc(raw), tamper: 'szPctPlus7', expected: encOrder(out) });
     }
   }
 }
