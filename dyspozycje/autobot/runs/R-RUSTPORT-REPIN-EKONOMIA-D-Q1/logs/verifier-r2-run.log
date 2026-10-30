@@ -1,0 +1,28 @@
+    Updating crates.io index
+     Locking 17 packages to latest compatible versions
+   Compiling proc-macro2 v1.0.107
+   Compiling unicode-ident v1.0.27
+   Compiling quote v1.0.47
+   Compiling serde_core v1.0.229
+   Compiling zmij v1.0.23
+   Compiling serde_json v1.0.154
+   Compiling serde v1.0.229
+   Compiling once_cell v1.21.4
+   Compiling tracing-core v0.1.36
+   Compiling syn v3.0.9
+   Compiling syn v2.0.119
+   Compiling memchr v2.8.3
+   Compiling itoa v1.0.18
+   Compiling pin-project-lite v0.2.17
+   Compiling serde_derive v1.0.229
+   Compiling tracing-attributes v0.1.31
+   Compiling tracing v0.1.44
+   Compiling civ-engine v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_93c57b8c-6be-2/rust-port/engine)
+    Finished `test` profile [unoptimized] target(s) in 45.78s
+     Running tests/zz_verifier_tmp.rs (/home/user/cargo-target-shared/wf_93c57b8c-6be-2/debug/deps/zz_verifier_tmp-acbb7f0e3d8b59cd)
+
+running 1 test
+ZZ_CASES=4018
+test zz_independent_vectors ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s

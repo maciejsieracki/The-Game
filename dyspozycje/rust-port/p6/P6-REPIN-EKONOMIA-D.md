@@ -129,3 +129,11 @@ Port od zera do `rust-port/engine/src/domain/economy_yield.rs` (nowy modul, `pub
 - Wektor `zero`: kontrolowana kopia macierzy (`logs/make-zero-matrix.mjs`): wiersz 0 (`grecy`) `meta_mnoznik_waluta = 0`, wiersz 1 (`rzymianie`) bez pola (=> domyslna `2`). Kopia poza repo, wejscie kontrolowane, nie zmiana danych gry.
 - Porownanie bit-w-bit (`to_bits`), liczby jako `{"f": String(x)}`; NaN/±0/±Infinity pokryte.
 - Mutacje (jedna naraz, przywracane, `logs/mut-D2-*.log`): M1 `is_finite`→`>0` (3 testy), M2 delta hard `-0.5`→`+0.5` (4 testy), M3 brak delty w `by_difficulty` (3), M4 delta dodana do fallbacku (3), M5 pominiete sprawdzenie wiersza (6). Zabite 5/5.
+
+### Weryfikacja niezalezna D2.1 (Operator-pomiary R2, ten sam ID)
+
+- Wycinek weba: `logs/verifier-r2-slice.mts` = `economy.ts@91dc998a` L703-762 + L781-786 (roznica wzgledem linii zrodla: tylko importy i aliasy typow).
+- Wektory niezalezne: `logs/verifier-r2-gen.mts` (uruchomienie weba 91dc998a, node 22.22), 82 klucze (wszystkie id macierzy, warianty wielkosci liter, spacja, `null`, `undefined`), fallbacki `0, -0, 0.5, 1, 2, 2.5, -1, 1e-300, 3.14159, NaN, ±Infinity, default`. Wynik: `logs/verifier-r2-main.json` (1066 forCiv + 2952 byDiff). Replay w Rust (tymczasowy test poza commitem, usuniety): **4018/4018 bit-w-bit**, log `logs/verifier-r2-run.log`.
+- Mutacja V2 (niezalezna): znak delty `easy` `+0.5`→`-0.5`. Zabita: `boundary_trudnosc_delta_table`, `parity_mnoznik_by_difficulty_main`, `parity_mnoznik_by_difficulty_zero_matrix`, `structural_known_raw_zero_is_authoritative_and_gets_delta` (log `logs/mut-V2-easy-sign.log`). Plik przywrocony (`git checkout`).
+- Bramki (R2, na 7a7c09bad): `cargo fmt --all -- --check` EXIT=0 (`logs/fmt-r2.log`); `cargo clippy --all-targets -- -D warnings` EXIT=0 (`logs/clippy-r2.log`); `cargo test --no-fail-fast` EXIT=0, 215 binarek, **1566 passed / 0 failed** (`logs/test-r2-full.log`).
+- Luka nieweryfikowana: pelny `cityYieldPerTurn` nadal NIE uruchamiany (Z-D2-2); liczba 41 hunkow `economy.ts` NIE_ZMIERZONO w tej rundzie.
