@@ -1,7 +1,7 @@
 STATUS: DISPATCHED (runda 1 równolegle z R-WEB-ERA-WAR-COUNTER-Q1: R8 i R9 ODŁOŻONE do rundy 2 — kolidują z blokami wojen wymuszonych w main.ts)
 DOMAIN: GAME (WEB — `gra/`, NIE port Rust)
 TEMAT: R-WEB-PEACE-RULES-Q1
-RUNDA: 1/5
+RUNDA: 3/5
 UWAGA PROCESOWA: temat WEBOWY (zmiany w `gra/**` w allowliście). Pierwszy akapit promptu workflow o porcie Rust IGNORUJ. Bramki webowe (tsc, `gra/tools/*.cjs`, Chromium z /opt/pw-browsers). Zakaz `npm run build`/`npm run dev` w `gra/`. Push do `main` ZABRONIONY.
 DECYZJE WŁAŚCICIELA (2026-10-30, AskUserQuestion i czat) — OBOWIĄZUJĄ:
 D1. Wojna epoki BLOKOWANA wobec partnera z Relacją (Zaufanie + Respekt, 0–200) ≥ 100 (`isForcedWarPairBlocked`, ~main.ts:35598 oraz kandydaci gracza-pierwszego). Wolny partner szukany dalej.
@@ -54,3 +54,10 @@ D8. Automatyczny koniec wojen wymuszonych (czas i 2 miasta) usunięty dla WSZYST
 - ZAKRES RUNDY 1: R1–R7, R10, D7 (hamulec: gracz nie wypowiada automatycznie) oraz D4/R4–R5 (20-turowe zmęczenie, bramki pokoju). NIE RUSZAJ w rundzie 1: R8 (blokada wojny epoki przy Relacji ≥ 100) i R9 (usunięcie automatycznego końca wojen wymuszonych: `shouldEnd*ForcedWarByDuration`, `maybeResolve*ForcedWarOnCityCapture`, `forced-war-*.ts`, bloki wojen wymuszonych w `main.ts` ~31159-31300 i ~35500-36700) — te dwa punkty trafią do rundy 2 po zintegrowaniu licznika wojen epoki, żeby uniknąć konfliktów scalania.
 - ALLOWLISTA rundy 1: jak wyżej, BEZ `gra/src/game/forced-war-*.ts` i bez bloków wojen wymuszonych w `main.ts`.
 - Konflikty z licznikiem rozwiązuje orkiestrator przy integracji (cherry-pick na wspólną bazę); NIE kopiuj kodu licznika.
+
+## Runda 3 — stan wejściowy i decyzje orkiestratora
+- START: `git checkout --detach 6650dc0c9` (zawiera kod r1/r2 `f61db5cc9`, raport Final Control r2). Baza webu `7164f7ca1`. Final Control r2: FAIL TYLKO za kryterium 9 (brak dowodu z żywej przeglądarki); zarzuty 1, 3–7, 9, 10 ODDANE; kod i testy (tsc, profile-unit 153, gate 11, main-guard 28, sim 19, d7 8, brake 69/51/17, diplomacy 148) bez zarzutów.
+- DECYZJA ADMINISTRACYJNA (zarzut 8, sprzeczność w R6): `premiaProfilObronny` = **+0.05** do `progPokojSlabosc` zgodnie z TREŚCIĄ wzoru R6; przykładowe liczby w dispatchu (Zulusi 0.28, Chińczycy 0.49) są ILUSTRACYJNE przy profilu = 0 i nie wiążą. Przywróć +0.05 (zaktualizuj `gra/data/diplomacy-war-peace-params.json` i testy tabeli 15 cywilizacji; podaj nową tabelę w raporcie).
+- ZAKRES r3 (tylko to): (1) dowód z żywej przeglądarki (kryterium 9): `node ./node_modules/vite/bin/vite.js build --outDir <katalog POZA repo>` (NIE `npm run build`), potem Playwright z `/opt/pw-browsers`; zrzuty z widocznym komunikatem odmowy „AI czuje się silniejsze” i ostrzeżeniem hamulca „Ryzyko wojny … (łączna Relacja ≤ N)”; asercja DOM/hint w teście (nie sam zrzut); dowód nietautologiczności: po zmutowaniu źródła (np. wyłączenie bramki siły) test live robi się CZERWONY. (2) Test spójności zmęczenia: pełne zmęczenie (`weariness` normalizowane do 1.0) osiągane dokładnie przy `turnsAtWar = T(civ) ≤ 20` (decyzja właściciela D4: po 20 turach pełne), AI NIE proponuje pokoju w turze, w której tego samego pokoju od gracza by nie przyjęło (dopasuj próg sygnału (e) lub bramkę R5(b) tak, by były spójne; zapisz ZAŁOŻENIE) — test wielotur w `diplo-war-peace-sim`. (3) Okablowanie `diploBrakeWarParams` w `main.ts` — jeśli możliwe, test wykonywalny zamiast regexu; w przeciwnym razie udokumentuj.
+- NIE ruszaj R8/R9 (runda 2 po integracji licznika wojen epoki).
+- Timeout live testów max 120 s; czyść `node_modules` i kopie po sobie.
