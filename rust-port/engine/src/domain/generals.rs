@@ -12,7 +12,8 @@
 //! - `undefined` i `false` dla pol `isGeneral`/`dead`/... sa rownowazne (web sprawdza `=== true`).
 //! - `oblegaCityId` jest prawdziwe, gdy jest niepustym napisem (`Some("")` = falsy).
 //! - `nearest_living_general` przy NaN we wspolrzednych KANDYDATA (>=2 kandydatow) daje wynik
-//!   zalezny od algorytmu sortowania JS (komparator niespojny); NIE_ZMIERZONO - wektory tego nie pokrywaja.
+//!   zalezny od algorytmu sortowania JS (komparator niespojny); odtworzone przez `v8_sort_small`
+//!   (R3, wektory `tests/p6_repin_wojna_2_r3_vectors/nearest-nan.json`, 400 przypadkow).
 //! - (e) `recruitment::manpower::locale_compare` (uzyty w komparatorze `compare_nearest`, web `localeCompare`)
 //!   implementuje kolacje tylko dla ASCII 0x20-0x7E; dla innych napisow porownuje kolejnoscia UTF-16.
 //!   ZMIERZONE (R-RUSTPORT-REPIN-WOJNA-2-Q1, obrona R2): web `"ą".localeCompare("b")` = -1, Rust = +1;
@@ -184,9 +185,15 @@ pub fn nearest_living_general<'a>(
 /// Sortowanie jak V8 `Array.prototype.sort` (TimSort) dla n < 64: jeden przebieg
 /// `CountAndMakeRun` (z ewentualnym odwroceniem) + `BinaryInsertionSort` (bez scalania,
 /// bo dla n < 64 `minrun = n`). Porzadek kolejnosci wywolan komparatora zgodny z V8.
-/// Dla n >= 64 wymagane byloby scalanie (ZALOZENIE: rostery generalow < 64).
+/// Dla n >= 64 wymagane byloby scalanie. Precondycja n < 64 wynika z kodu weba (Z-R3-1):
+/// liczba zywych generalow wlasciciela <= `generalLimitForEra` <= 3 (epoki 1-3), patrz
+/// `P6-REPIN-WOJNA-2.md` §Odpowiedzi na zarzuty R3, pkt 3.
 fn v8_sort_small<T: Copy>(items: &mut [T], cmp: impl Fn(T, T) -> Ordering) {
     let n = items.len();
+    debug_assert!(
+        n < 64,
+        "v8_sort_small: n >= 64 wymaga scalania TimSort (Z-R3-1 zaklada n <= 3)"
+    );
     if n < 2 {
         return;
     }
