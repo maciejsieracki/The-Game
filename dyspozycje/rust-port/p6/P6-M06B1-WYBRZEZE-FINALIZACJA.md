@@ -1,6 +1,6 @@
 # P6.M06B1 - finalizacja wybrzeza i wod srodladowych, partia 1 (port `gen-helpers.ts`:4649-4939 do Rust)
 
-Temat: `R-RUSTPORT-P6-M06B1-WYBRZEZE-FINALIZACJA-Q1` · DOMAIN: GAME · RUNDA 1/5 (Operator-impl).
+Temat: `R-RUSTPORT-P6-M06B1-WYBRZEZE-FINALIZACJA-Q1` · DOMAIN: GAME · RUNDA 2/5 (Operator-impl; poprawka po FC r1: NAPRAW 1 cap 12, NAPRAW 2 weryfikator Python).
 Zakres partii 1 (6 symboli): `maxOceanBayDepth` :4649, `purgeReliefValleyWater` :4724, `trimDeepOceanBays` :4761,
 `finalizeCoastAndInlandWater` :4787, `thickenCoastAndSmoothInlets` :4840, `flattenFalseCoastalRiverNotches` :4915.
 Partia M06B2 (`removeTinyLandIslands` :4946 ... `enforceTargetDryLandFraction` :5079) - poza tym tematem.
@@ -75,6 +75,9 @@ Kod: `rust-port/engine/src/domain/mapgen/landsea.rs` (sekcja P6.M06B1 na koncu p
 - `git diff edb8fb56 origin/main -- gra/src/map/gen-helpers.ts`: 24 wstawienia, 16 usuniec; hunki w liniach
   5992, 8466, 10352, 10392, 10541, 10693, 10776, 10804 (`origin/main` = `7d7c7d60`).
 - **0 hunkow w zakresie 4649-4939.** Wektory z pinu `edb8fb56` (zgodnie z dispatchem); odswiezenie przy osobnym temacie.
+- **Zakres 3186-4374 (runda 2):** `git diff -U0 edb8fb56 origin/main -- gra/src/map/gen-helpers.ts | grep "^@@"`
+  daje hunki tylko w liniach 5995, 8470, 10357, 10398, 10548, 10701, 10785, 10814 (nowe). **0 hunkow w 3186-4374.**
+  Wektory M06B1 (z pinu) nie wymagaja odswiezenia pod katem tego zakresu.
 
 ## 5. Zalozenia (luki rozstrzygniete ZALOZENIEM)
 
@@ -109,11 +112,13 @@ Wynik nietrywialny: ret>0 w purge 140/228, trim 65/80, thicken 292/296, flatten 
 ## 7. Ryzyka / do Evaluatora
 
 - **Luka `maxPasses`**: ZAMKNIETA dla N=3 w §9.3 (N-1 i N+1 rozrozniane wektorami z weba); pozostaje tylko dowod ogolny.
-- Limit `przebiegi_wygladzania` (12): cap JEST osiagany (naturalnie 25 przebiegow, §9.2), ale NIE jest obserwowalny na
-  wyjsciu funkcji na zmierzonych mapach - mutacje capu 11/13 przezywaja (§9.2). Otwarte.
+- Limit `przebiegi_wygladzania` (12): OBSERWOWALNY (runda 2, §9.6). Mapa z 302 z 1500 losowych map (LCG 12345)
+  daje inny stan koncowy dla cap 11 i cap 13 niz dla cap 12; wektory `web-cap.json` + test `p6_m06b1_cap.rs`
+  zabijaja M16 i M17. Hipoteza r1 "cap nieobserwowalny" byla FALSZYWA (wynikala ze zbyt slabego hill-climb).
 - Funkcje `trimDeepOceanBays` i `trimEnclosedOceanOnly` maja identyczne cialo w webie; port deleguje (dowod: ten sam
   kod, `gra/src/map/gen-helpers.ts:4761-4772` vs `:4701-4712`).
-- Mutacje: wykonane (28 mutacji, §9.1); przezywaja 5: 3 rownowazne z dowodem (§9.1), 2 cap-11/13 nieobserwowalne (§9.2).
+- Mutacje: wykonane (28 mutacji, §9.1); przezywaja 3 rownowazne z dowodem (M12, M19, M20; §9.1). M16/M17 (cap 11/13)
+  ZABITE w rundzie 2 (§9.6, logi `mut-logs/r2-M16-cap11.log`, `mut-logs/r2-M17-cap13.log`, EXIT=101).
 
 ## 8. Ograniczenia zakresu
 
@@ -145,18 +150,31 @@ Dodane w tej rundzie: `tests/p6_m06b1_boundary.rs` (3 testy), `tests/p6_m06b1_ve
   - **M20** (usuniety `if to_coast.is_empty() { break }`, thicken (b), landsea.rs:2198): RÓWNOWAZNA, ten sam dowod. Web :4891.
   - **M16 / M17** (cap `przebiegi_wygladzania` 12 -> 11 / 13): NIE ZABITE, NIE DOWIEDZIONE. Patrz §9.2.
 
-### 9.2 Limit `przebiegi_wygladzania` = 12 (thicken (a))
+### 9.2 Limit `przebiegi_wygladzania` = 12 (thicken (a)) - ROZSTRZYGNIETE w rundzie 2
 
-- Pomiar: `evidence-thicken-uncapped-search.out` (W=11, H=22): NATURALNIE 25 przebiegow z praca (licznik w kopii
-  instrumentowanej; web bez limitu). Przebiegi 11..24 zmieniaja 1-2 heksy kazdy (log per-przebieg, kopia `instr_dbg`).
-- Mimo to wynik KONCOWY jest identyczny dla capu 11, 12, 13 i bez limitu (sha256 pelnego stanu, prefiks
-  `e77bc2d70418a2fb`; `ret` = 124 we wszystkich). Przyczyna NIE dowiedziona (hipoteza: koncowy
-  `removeInlandWaterPools` przejmuje te heksy).
-- Szukanie mapy z rozbieznoscia (`m06b1-cap-divergence-search.mjs`, hill-climb, 15 x 3000 ocen, W,H 9..24):
-  0 map, w ktorych cap 12 != bez limitu.
-- Wektor `bnd-thick-natural25-default` (Rust == web na tej mapie) PASUJE; nie zabija M16/M17, bo wyjscie nie zalezy od capu.
-- STATUS: OTWARTE. Cap nieobserwowalny na wyjsciu na zmierzonym zakresie; brak dowodu formalnego. Decyzja: ZALOZENIE
-  orkiestratora (cap 12 zostaje z webu) lub osobny dowod/wektor w rundzie 2.
+- Pomiar r1 (`evidence-thicken-uncapped-search.out`, W=11, H=22): naturalnie 25 przebiegow czesci (a). Mapa z
+  r1 (`bnd-thick-natural25-default`) NIE rozrozniala capu (cap 11/12/13 dawaly ten sam stan) - to byl SLABY dowod
+  ("cap nieobserwowalny"), ktory FC obalil (`03-final-control.md`, zarzut 4).
+- Runda 2, pomiar: `m06b1-r2-cap-search.mjs` (3 kopie prawdziwego kodu weba, pin `edb8fb56`; jedyna zmiana
+  `gen-helpers.ts:4852` `pass < N`, N = 11 / 12 (pristine) / 13; kopie w `$HOME`-tmp poza repo). Generator map:
+  LCG Numerical Recipes, ziarno 12345, W,H in [20..49], p = P(morze) in [0.25..0.55], 1500 map.
+  Wynik (`evidence-r2-cap-both.json`, `summary` w pierwszej linii wyjscia): cap11 != cap12 na **379** mapach,
+  cap13 != cap12 na **302** mapach, **oba jednoczesnie na 302**. Pierwsza mapa z obiema roznicami: m=5,
+  W=32, H=40, p=0.4866; cap11 zmienia 1 heks, cap13 zmienia 1 heks (`ret` = 604 we wszystkich trzech).
+- Wektory: `gen-m06b1-cap-vectors.mjs` -> `tests/p6_m06b1_vectors/web-cap.json` (270 KB). Przypadek
+  `cap-thick-m0-cap12` (mapa powyzej) z wynikiem cap 12 z weba; flagi `ref_cap11` / `ref_cap13`
+  (`differs_from_cap12 = true`, sha256 stanu) jako dane referencyjne. Mapy `cap-thick-m1..m3` (naturalne z LCG)
+  nie rozrozniaja capu (flagi false) - zachowane jako ogolne wektory.
+- Test Rust `tests/p6_m06b1_cap.rs` (2 testy): (1) stan i zwrot `thicken_coast_and_smooth_inlets_default` == wynik
+  weba cap 12; (2) flagi obserwowalnosci capu z weba.
+- Mutanty (reczne, runda 2, `rust-port/engine/data/derived/mapgen-coast.json`, sed `wartosc: 12` -> 11 / 13, przywrocenie
+  `cmp`-identyczne): **M16 (cap 11) ZABITY** (`mut-logs/r2-M16-cap11.log`, EXIT=101, FAILED
+  `cap12_thicken_maps_match_web_cap12`); **M17 (cap 13) ZABITY** (`mut-logs/r2-M17-cap13.log`, EXIT=101).
+- Dowod z kodu (dlaczego port jest zgodny z capem 12): `landsea.rs` `thicken_coast_and_smooth_inlets` iteruje
+  `0..p.przebiegi_wygladzania.wartosc` (wartosc z JSON = 12 = literal webu `:4852`), a przerwanie `if to_fill.is_empty()`
+  odpowiada `if (toFill.length === 0) break;` (web). Zrodlo prawdy dla wartosci: `data/derived/mapgen-coast.json`
+  pole `zrodlo_web` i test `coast_table_values_match_web_literals`.
+- STATUS 9.2: ZAMKNIETE (zarzut FC 4 - NAPRAW 1 wykonany).
 
 ### 9.3 Granica `maxPasses` (domyslnie 3)
 
@@ -180,9 +198,55 @@ Dodane w tej rundzie: `tests/p6_m06b1_boundary.rs` (3 testy), `tests/p6_m06b1_ve
 - `git diff --check`: EXIT=0.
 - Test M06B1 (ocean, coast, tables, boundary) na kodzie bazowym: wszystkie zielone.
 
-### 9.5 NIE zrobione w r1 (jawnie)
+### 9.5 NIE zrobione (jawnie; stan po rundzie 2)
 
-- Niezalezny weryfikator w Pythonie (wymog dispatchu): NIE zbudowany. Oracle = web; brak niezaleznej reimplementacji.
+- Niezalezny weryfikator w Pythonie: ZBUDOWANY w rundzie 2 (§9.6), patrz nizej.
 - Scalanie kategorii wektorow jako PREFIKS (cmp-vectors): NIE zrobione; nowe wektory w osobnym pliku.
-- M16 / M17 (cap 11/13): patrz §9.2, otwarte.
+- M16 / M17 (cap 11/13): ZABITE w rundzie 2 (§9.2).
 - Dryf po pinie (§4) bez zmian; odswiezenie wektorow poza zakresem.
+
+### 9.6 Runda 2 (poprawka po Final Control r1: NAPRAW 1 i NAPRAW 2)
+
+**Baza:** `origin/backup/m06b1-f8cc5781` (= `f8cc5781`: kod `deb8055e`, pomiary `bf5e7ad1`, raport FC). Kod `landsea.rs`
+w rundzie 2 NIE zmieniony (wszystkie zmiany: pliki testowe, wektory, dokument, logi).
+
+**NAPRAW 1 (cap 12 obserwowalny):** §9.2. Nowe pliki: `m06b1-r2-cap-search.mjs`, `gen-m06b1-cap-vectors.mjs`,
+`evidence-r2-cap-both.json`, `tests/p6_m06b1_cap.rs`, `tests/p6_m06b1_vectors/web-cap.json`.
+
+**NAPRAW 2 (niezalezny weryfikator Python):** `verify-m06b1-r2.py` (stdlib, `python3 -I`). Implementacja
+napisana OD ZERA z tekstu TS pina `edb8fb56` (`gra/src/map/gen-helpers.ts`; linie w komentarzach kodu), bez
+czytania `landsea.rs`. Zakres: 6 symboli M06B1 + helpery (`oceanConnectedWaterKeys`, `morseDepthFromMapBorder`,
+`removeInlandWaterPools`, `removeSmallInlandWaterPools`, `applyCoastRing`, `applyDoubleCoastRing`,
+`sanitizeCoastHexes`, `findDryLandTouchingSea`, `isInMapBorder`, `countLandNeighbors`). Kolejnosc iteracji
+wstawiania zachowana (`purgeReliefValleyWater` zmienia stan w trakcie petli - kolejnosc ma znaczenie).
+Wynik (`verifier-python-r2.txt`, EXIT=0):
+
+| Kategoria | Sprawdzone | Rozbieznosci | Nietrywialne (stan zmieniony) |
+|---|---|---|---|
+| ocean (maxOceanBayDepth) | 330 | 0 | - |
+| purge | 228 | 0 | 140 |
+| trim | 80 | 0 | 65 |
+| finalize | 420 | 0 | 420 |
+| thicken | 296 | 0 | 292 |
+| flatten | 88 | 0 | 40 |
+| granice thicken / finalize | 1 / 10 | 0 / 0 | 1 / 10 |
+| cap 12 (state + ret) / flagi cap 11 i 13 (sha256 stanu z weba) | 4 / 4+4 | 0 | 4 / 1 |
+| **RAZEM** | **1469** | **0** | |
+
+Weryfikator odtwarza flagi `ref_cap11` / `ref_cap13` z weba (ten sam wynik: cap 11 i 13 roznia sie od 12 na
+mapie `cap-thick-m0`, identyczne na pozostalych), wiec potwierdza obserwowalnosc capu takze niezaleznie.
+
+**Bramki (runda 2, logi z `EXIT=`, w katalogu runu):**
+- `cargo fmt -- --check`: EXIT=0 (`gate-fmt-r2.log`).
+- `cargo clippy --offline --all-targets -- -D warnings`: EXIT=0 (`gate-clippy-r2.log`).
+- `cargo test --offline --no-fail-fast`: EXIT=0, **1438 passed, 0 failed** (`gate-test-r2.log`; 1436 z r1 + 2 nowe
+  w `p6_m06b1_cap.rs`). Zero zmian w istniejacych testach.
+- `git diff --check`: sprawdzane przy commicie.
+
+**Ryzyka i luki (jawnie):**
+- Weryfikator i port korzystaja z tych samych wektorow (`web-*.json`); wektory pochodza z weba, wiec nie sa
+  niezalezne od weba (to wlasciwa wartosc referencyjna). Niezaleznosc dotyczy implementacji, nie danych.
+- Pomiar trafien na granicach (N-1/N/N+1) dla capu 11/12/13: cap jest petla bez porownania progowego; granica
+  "przebieg 12 vs 13" jest pokryta mapa `cap-thick-m0` (cap 13 zmienia stan). Cap 11 pokryty ta sama mapa.
+- Mutacje M01-M28 NIE powtorzone w rundzie 2 (poza M16/M17); wynik r1 (23 zabite + 3 rownowazne) pozostaje.
+- Dryf po pinie (§4): zakres 3186-4374 bez zmian; wektory nadal z `edb8fb56`.
