@@ -9,7 +9,7 @@
 //! - `parity_*`: wektory weba (porownanie BIT-W-BIT, znak zera i NaN sprawdzane).
 //! - `structural_*` / `boundary_*`: galezie logiki wyprowadzone z kodu weba.
 
-use civ_engine::data::civilizations::CivMatrixFile;
+use civ_engine::data::civilizations::{CivMatrixFile, Num};
 use civ_engine::domain::civ_matrix::{load_civ_matrix, CivMatrixData};
 use civ_engine::domain::economy_yield::{
     civ_economy_yield_multipliers, civ_matrix_mnoznik_handel_pieniadz_raw,
@@ -234,6 +234,36 @@ fn structural_known_row_missing_field_uses_matrix_default() {
         mnoznik_handel_pieniadz_for_civ(&zm.file, Some("rzymianie"), 1.0),
         2.0
     );
+}
+
+#[test]
+fn structural_non_finite_matrix_value_is_unknown() {
+    // web civMatrixMnoznikHandelPieniadzRaw (L717-728): Number.isFinite(raw) ? raw : undefined.
+    // Wartosc nieskonczona lub NaN w wierszu znanej cywilizacji => brak => fallback
+    // (ten test zabija mutacje `is_finite().then_some(v)` -> `Some(v)`, ktora przepuszcza NaN/Inf).
+    for bad in [f64::INFINITY, f64::NEG_INFINITY, f64::NAN] {
+        let mut file = main_matrix().clone();
+        file.cywilizacje[0]
+            .params
+            .insert("meta_mnoznik_waluta".to_string(), Num::Float(bad));
+        assert_eq!(
+            civ_matrix_mnoznik_handel_pieniadz_raw(&file, Some("grecy")),
+            None
+        );
+        assert_eq!(
+            mnoznik_handel_pieniadz_for_civ(&file, Some("grecy"), 3.0),
+            3.0
+        );
+        assert_eq!(
+            mnoznik_handel_pieniadz_for_civ_by_difficulty(
+                &file,
+                Some("grecy"),
+                Difficulty::Easy,
+                3.0
+            ),
+            3.0
+        );
+    }
 }
 
 #[test]

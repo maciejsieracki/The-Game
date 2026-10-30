@@ -137,3 +137,18 @@ Port od zera do `rust-port/engine/src/domain/economy_yield.rs` (nowy modul, `pub
 - Mutacja V2 (niezalezna): znak delty `easy` `+0.5`→`-0.5`. Zabita: `boundary_trudnosc_delta_table`, `parity_mnoznik_by_difficulty_main`, `parity_mnoznik_by_difficulty_zero_matrix`, `structural_known_raw_zero_is_authoritative_and_gets_delta` (log `logs/mut-V2-easy-sign.log`). Plik przywrocony (`git checkout`).
 - Bramki (R2, na 7a7c09bad): `cargo fmt --all -- --check` EXIT=0 (`logs/fmt-r2.log`); `cargo clippy --all-targets -- -D warnings` EXIT=0 (`logs/clippy-r2.log`); `cargo test --no-fail-fast` EXIT=0, 215 binarek, **1566 passed / 0 failed** (`logs/test-r2-full.log`).
 - Luka nieweryfikowana: pelny `cityYieldPerTurn` nadal NIE uruchamiany (Z-D2-2); liczba 41 hunkow `economy.ts` NIE_ZMIERZONO w tej rundzie.
+
+## Odpowiedzi na zarzuty Evaluatora R4 (Operator, ten sam ID)
+
+| # | Zarzut | Odpowiedź | Dowód |
+|---|---|---|---|
+| 1 | Generator głównego zestawu `web-vectors.json` (work-tax) nie jest w repo; `gen-vectors-verifier.mts` to nie dowód | **PRZYJMUJĘ** jako lukę, której NIE da się zamknąć przez odtworzenie generatora: oryginalnego generatora nie odzyskano (przeszukano: repo i `logs/` runów D1/D2, `/tmp` sesji, scratchpad). Zamiast tego dodano weryfikację WYJŚĆ: `logs/rerun-work-tax-frozen.mts` bierze zamrożone wejścia z `web-vectors.json`, uruchamia `gra/src/game/work-tax.ts@91dc998a` (node 22.22, kopia `git archive` poza repo) i porównuje wyjścia (`Object.is`, znak zera). Wynik: 2344/2344, 0 rozbieżności (tax 529, convert 1600, canConvert 90, serialize 9, restore 20, exec 96). Zestaw zamrożony jest więc wyjściem weba 91dc998a. Generator wejść pozostaje ZAŁOŻENIEM Z-WT-7 (wejścia zamrożone, nie regenerowane). | `logs/rerun-work-tax-frozen.log` (EXIT=0) |
+| 2 | Zakres rundy (port 41 hunków) vs D2.1; temat niezamknięty | **PRZYJMUJĘ** (bez zmiany kodu): zgodnie ze zleceniem tej rundy zakres to D2.1. Temat pozostaje OTWARTY z tym samym ID; D2.2+ (Mint/override, `eko_*`, `additionalTax`, `dochodTrasHandlowych`, brak `cityYieldPerTurn`) są kolejnymi rundami. | sekcja „Partia D2.1” i „Kolejne partie” |
+| 3 | Mutant przeżywający: usunięcie `value.is_finite()` w `civ_matrix_mnoznik_handel_pieniadz_raw` | **PRZYJMUJĘ**: mutant NIE był równoważny w sensie kontraktu funkcji (web L717-728: `Number.isFinite(raw) ? raw : undefined`); wejście nieskończone/NaN w wierszu znanej cywilizacji jest osiągalne w `CivMatrixFile` (pole `Num::Float`), nie tylko przez JSON. Dodano test `structural_non_finite_matrix_value_is_unknown` (NaN, +Inf, -Inf => `None` => fallback dla `forCiv` i `byDifficulty`). Mutant zabity: 1 test padł (`logs/mut-R4-is-finite.log`), kod przywrócony, `git diff` źródła pusty. | `tests/p6_repin_d_economy_mnoznik.rs` (nowy test); `logs/` |
+
+Testy po poprawce (R4): `cargo test --no-fail-fast` 215 binarek, 1567 passed / 0 failed (1566 + 1 nowy test).
+Numeracja: ta runda to R4 (zarzuty R3 → poprawka R4). Numeracja wg dispatchu: runda 4/5 (limit 5; po limicie DECISION_REQUIRED).
+
+### Założenie Z-WT-7 (R4)
+
+- Generator wejść głównego zestawu work-tax (1600/529/90/9/20/96) jest nieodzyskany. Zestaw zamrożony traktujemy jako dane wejściowe; dowodem jego zgodności z webem 91dc998a jest ponowne uruchomienie wyjść (`logs/rerun-work-tax-frozen.mts`). Jeśli właściciel wymaga regeneracji wejść, to osobny temat.
