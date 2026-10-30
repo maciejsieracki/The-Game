@@ -141,3 +141,4 @@ Pelny raport: `dyspozycje/autobot/runs/R-RUSTPORT-P6-M06A-LAD-MORZE-WYBRZEZE-A-Q
 - Gate'y: fmt EXIT=0, clippy EXIT=0, test EXIT=0 (1224 passed, p6_m06a_landsea 10/10), `git diff --check` czysty.
 - Dryf po pinie w zakresie 3186-4374: potwierdzony, 0 hunkow (8 hunkow w liniach 5992-10811).
 - Status: FAIL (luka testowa w pierscieniu); dalsze symbole RUNDA-2 bez zmian.
+- Aktualizacja (odeslanie): stan wierszy RUNDA-2 i domkniecie Pangei (`fillPangeaAnnularSeaCorridors`, `rebalanceLandFractionPangea`, `rebalanceLandSeaRatio`) - patrz `P6-M06A9-LAD-MORZE-PANGEA-FINAL.md`.

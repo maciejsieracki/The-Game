@@ -1618,3 +1618,379 @@ pub fn ensure_pangea_single_continent(
     converted += fill_annular(hexes, width, height);
     converted
 }
+
+// ---------------------------------------------------------------------------------------------
+// P6.M06A9 (R-RUSTPORT-P6-M06A9-LAD-MORZE-PANGEA-FINAL-Q1), partia 1: korytarze obwarzanka
+// (`fillPangeaAnnularSeaCorridors` :4595 z pomocnikami), rebalance Pangei (:3667) i rebalance
+// lad/morze (:3791). Literaly w `data/derived/mapgen-landsea-pangea-fill.json`.
+// ---------------------------------------------------------------------------------------------
+
+/// Web `pangeaLandCentroid(hexes)` (gen-helpers.ts :4473, prywatna): srodek ciezkosci suchego lądu.
+/// `None` gdy suchego lądu jest mniej niz `fill_centroid_min_land`. Wspolrzedne z kluczy (`parseHexKey`).
+fn pangea_land_centroid(hexes: &HexRecord) -> Option<(f64, f64)> {
+    let t = crate::data::derived::mapgen_landsea_pangea_fill();
+    let mut n = 0usize;
+    let mut sum_q = 0.0f64;
+    let mut sum_r = 0.0f64;
+    for (key, h) in hexes.iter() {
+        if !is_dry_land_terrain(h.terrain) {
+            continue;
+        }
+        let (q, r) = parse_hex_key(key);
+        sum_q += q;
+        sum_r += r;
+        n += 1;
+    }
+    if n < t.fill_centroid_min_land {
+        return None;
+    }
+    Some((sum_q / n as f64, sum_r / n as f64))
+}
+
+/// Web `pangeaRadialDryLandSteps(hexes, q, r, cQ, cR, towardCenter, maxSteps)` (gen-helpers.ts :4484,
+/// prywatna). Kroki wzdluz promienia do najblizszego suchego lądu przez Morze/Wybrzeze.
+fn pangea_radial_dry_land_steps(
+    hexes: &HexRecord,
+    q: f64,
+    r: f64,
+    cq: f64,
+    cr: f64,
+    toward_center: bool,
+    max_steps: f64,
+) -> Option<i64> {
+    let eps = crate::data::derived::mapgen_landsea_pangea_fill().fill_dist_epsilon;
+    let dist_self = js_hypot(q - cq, r - cr);
+    if dist_self < eps {
+        return None;
+    }
+    let uq = (q - cq) / dist_self;
+    let ur = (r - cr) / dist_self;
+    let sign = if toward_center { -1.0 } else { 1.0 };
+    let mut step = 1.0f64;
+    while step <= max_steps {
+        let nq = js_round(q + sign * uq * step) as i64;
+        let nr = js_round(r + sign * ur * step) as i64;
+        let nh = hexes.get(&hex_key(nq, nr))?;
+        if is_dry_land_terrain(nh.terrain) {
+            return Some(step as i64);
+        }
+        if !is_pangea_bridge_water(nh.terrain) {
+            return None;
+        }
+        step += 1.0;
+    }
+    None
+}
+
+/// Web `pangeaSeaHexIsAnnularCorridor(hexes, q, r, cQ, cR, maxCorridorWidth)` (gen-helpers.ts :4512,
+/// prywatna): heks wody lezy w cienkim pierscieniu rdzen-obwarzanek w obu kierunkach promienia.
+fn pangea_sea_hex_is_annular_corridor(
+    hexes: &HexRecord,
+    q: f64,
+    r: f64,
+    cq: f64,
+    cr: f64,
+    max_w: f64,
+) -> bool {
+    let inward = pangea_radial_dry_land_steps(hexes, q, r, cq, cr, true, max_w);
+    let outward = pangea_radial_dry_land_steps(hexes, q, r, cq, cr, false, max_w);
+    match (inward, outward) {
+        (Some(i), Some(o)) => (i as f64) <= max_w && (o as f64) <= max_w,
+        _ => false,
+    }
+}
+
+/// Web `fillPangeaAnnularSeaCorridors(hexes, width, height, maxCorridorWidth?)` (gen-helpers.ts :4595,
+/// export). Wypelnia cienkie korytarze wody (Morze/Wybrzeze) miedzy rdzeniem a obreczą Pangei.
+/// `max_corridor_width` = `None` (web `undefined`) -> `pangeaAnnularMaxCorridorWidth(w, h)`.
+/// Zwraca liczbe zmian (web `converted`). Zrodlo granicy obwarzanka: `morse_depth_from_map_border`
+/// liczone raz na poczatku wywolania (jak w webie).
+pub fn fill_pangea_annular_sea_corridors(
+    hexes: &mut HexRecord,
+    width: i64,
+    height: i64,
+    max_corridor_width: Option<f64>,
+) -> usize {
+    let t = crate::data::derived::mapgen_landsea_pangea_fill();
+    let max_w = max_corridor_width
+        .unwrap_or_else(|| pangea_annular_max_corridor_width(width as f64, height as f64));
+    let border_depth = morse_depth_from_map_border(hexes, width, height);
+    let zapas = t.fill_zapas_szerokosci;
+    let eps = t.fill_dist_epsilon;
+    let mut converted = 0usize;
+
+    let mut pass = 0.0f64;
+    while pass < max_w + zapas {
+        let Some((cq, cr)) = pangea_land_centroid(hexes) else {
+            break;
+        };
+        let mut pass_converted = 0usize;
+        // Klucze w kolejnosci wstawiania; stan terenu czytany na zywo (jak `hex` z `Object.entries`).
+        let keys: Vec<String> = hexes.iter().map(|(k, _)| k.clone()).collect();
+        for key in &keys {
+            let Some(hex) = hexes.get(key) else {
+                continue;
+            };
+            if !is_pangea_bridge_water(hex.terrain) {
+                continue;
+            }
+            let (q, r) = (hex.q, hex.r);
+            if !pangea_sea_hex_is_annular_corridor(hexes, q as f64, r as f64, cq, cr, max_w) {
+                continue;
+            }
+
+            // Nie wypelniaj szerokich zatok otwartych do oceanu - tylko cienki pierscien.
+            if border_depth.contains_key(key) {
+                let (qf, rf) = (q as f64, r as f64);
+                let dist_self = js_hypot(qf - cq, rf - cr);
+                let denom = js_max(eps, dist_self);
+                let uq = (qf - cq) / denom;
+                let ur = (rf - cr) / denom;
+                let mut sea_band: i64 = 1;
+                let limit = max_w + zapas;
+                let mut step = 1.0f64;
+                while step <= limit {
+                    let oq = js_round(qf + uq * step) as i64;
+                    let or = js_round(rf + ur * step) as i64;
+                    match hexes.get(&hex_key(oq, or)) {
+                        Some(oh) if is_pangea_bridge_water(oh.terrain) => sea_band += 1,
+                        _ => break,
+                    }
+                    step += 1.0;
+                }
+                let mut step = 1.0f64;
+                while step <= limit {
+                    let iq = js_round(qf - uq * step) as i64;
+                    let ir = js_round(rf - ur * step) as i64;
+                    match hexes.get(&hex_key(iq, ir)) {
+                        Some(ih) if is_pangea_bridge_water(ih.terrain) => sea_band += 1,
+                        _ => break,
+                    }
+                    step += 1.0;
+                }
+                if sea_band as f64 > max_w + t.fill_prog_pasma_zapas {
+                    continue;
+                }
+            }
+
+            if let Some(h) = hexes.get_mut(key) {
+                set_hex_to_laka(h);
+                pass_converted += 1;
+            }
+        }
+        converted += pass_converted;
+        if pass_converted == 0 {
+            break;
+        }
+        pass += 1.0;
+    }
+    converted
+}
+
+/// Web `rebalanceLandFractionPangea(hexes, landScores, target, width, height, perm)` (gen-helpers.ts
+/// :3667, export). Sekwencja przebiegow 1:1 z webem; hak `ensurePangeaSingleContinent` dostaje
+/// prawdziwe `fillPangeaAnnularSeaCorridors` (RUNDA-2 z M06A8 zamknieta w tej partii).
+pub fn rebalance_land_fraction_pangea(
+    hexes: &mut HexRecord,
+    land_scores: &HashMap<String, f64>,
+    target_land_fraction: f64,
+    width: i64,
+    height: i64,
+    perm: &[u8; PERM_TABLE_LEN],
+) {
+    let fill_min = crate::domain::mapgen::masks::pangea_land_layout_params(
+        target_land_fraction,
+        width as u32,
+        height as u32,
+    )
+    .fill_min_score;
+    let p = mapgen_landsea_pangea();
+    let jagged_passes = crate::data::derived::mapgen_landsea_pangea_fill().rebalance_jagged_passes;
+    let mask = LandFractionFillBias::Mask;
+    let dims = Some((width, height));
+    let fill_hook =
+        |h: &mut HexRecord, w: i64, hh: i64| fill_pangea_annular_sea_corridors(h, w, hh, None);
+
+    fill_pangea_annular_sea_corridors(hexes, width, height, None);
+    apply_land_fraction_by_score(
+        hexes,
+        land_scores,
+        target_land_fraction,
+        dims,
+        mask,
+        fill_min,
+    );
+    enforce_map_border_ocean(hexes, width, height, None);
+    erode_pangea_bbox_low_score_rim(
+        hexes,
+        land_scores,
+        p.erode_docelowe_wypelnienie_bbox,
+        p.erode_max,
+    );
+    carve_pangea_long_side_gulfs(
+        hexes,
+        land_scores,
+        perm,
+        p.carve_max_aspect,
+        p.carve_max_wyciec,
+    );
+    fill_pangea_annular_sea_corridors(hexes, width, height, None);
+    apply_land_fraction_by_score(
+        hexes,
+        land_scores,
+        target_land_fraction,
+        dims,
+        mask,
+        fill_min,
+    );
+    enforce_map_border_ocean(hexes, width, height, None);
+    erode_pangea_bbox_low_score_rim(
+        hexes,
+        land_scores,
+        p.erode_docelowe_wypelnienie_bbox,
+        p.erode_max,
+    );
+    carve_pangea_long_side_gulfs(
+        hexes,
+        land_scores,
+        perm,
+        p.carve_max_aspect,
+        p.carve_max_wyciec,
+    );
+    fill_pangea_annular_sea_corridors(hexes, width, height, None);
+    ensure_pangea_single_continent(hexes, width, height, fill_hook);
+    apply_land_fraction_by_score(
+        hexes,
+        land_scores,
+        target_land_fraction,
+        dims,
+        mask,
+        fill_min,
+    );
+    enforce_map_border_ocean(hexes, width, height, None);
+    apply_jagged_coast_noise(hexes, perm, width, height, jagged_passes);
+    fill_pangea_annular_sea_corridors(hexes, width, height, None);
+    ensure_pangea_single_continent(hexes, width, height, fill_hook);
+    enforce_map_border_ocean(hexes, width, height, None);
+}
+
+/// Web `rebalanceLandSeaRatio(hexes, width, height, targetLandFraction)` (gen-helpers.ts :3791, export).
+/// Zwraca liczbe zmian (`adjusted`). Warstwy: maxLayers = ceil(sqrt(w*h)).
+pub fn rebalance_land_sea_ratio(
+    hexes: &mut HexRecord,
+    width: i64,
+    height: i64,
+    target_land_fraction: f64,
+) -> usize {
+    let fill = mapgen_landsea_fill();
+    let clamped = js_max(
+        fill.clamp_udzialu_min,
+        js_min(fill.clamp_udzialu_max, target_land_fraction),
+    );
+    let total = (width as f64) * (height as f64);
+    let target_land = js_round(total * clamped) as i64;
+    let mut adjusted = 0usize;
+    let max_layers = total.sqrt().ceil() as i64;
+
+    let mut layer = 0i64;
+    while layer < max_layers {
+        layer += 1;
+        let mut land = count_land_sea_hexes(hexes).land as i64;
+        if land == target_land {
+            break;
+        }
+
+        if land < target_land {
+            let mut to_fill: Vec<String> = Vec::new();
+            for r in 0..height {
+                for q in 0..width {
+                    if is_coastal_morse_hex(hexes, q, r) {
+                        to_fill.push(hex_key(q, r));
+                    }
+                }
+            }
+            if to_fill.is_empty() {
+                break;
+            }
+            for key in &to_fill {
+                if let Some(h) = hexes.get_mut(key) {
+                    set_hex_to_laka(h);
+                    adjusted += 1;
+                }
+            }
+            land += to_fill.len() as i64;
+            if land >= target_land {
+                // Cofnij nadmiar - erozja najnizszego priorytetu na brzegu (wynik skanu wiersz po wierszu).
+                while land > target_land {
+                    let mut best_key: Option<String> = None;
+                    let mut best_score: Option<i64> = None;
+                    for r in 0..height {
+                        for q in 0..width {
+                            if !is_coastal_land_hex(hexes, q, r) {
+                                continue;
+                            }
+                            let Some(hex) = hexes.get(&hex_key(q, r)) else {
+                                continue;
+                            };
+                            let score = erode_terrain_rank(hex.terrain) as i64 * 10
+                                - count_morse_neighbors(hexes, q, r) as i64;
+                            if best_score.is_none_or(|b| score < b) {
+                                best_score = Some(score);
+                                best_key = Some(hex_key(q, r));
+                            }
+                        }
+                    }
+                    let Some(bk) = best_key else {
+                        break;
+                    };
+                    if let Some(h) = hexes.get_mut(&bk) {
+                        set_hex_to_morze(h);
+                        land -= 1;
+                        adjusted += 1;
+                    }
+                }
+                break;
+            }
+            continue;
+        }
+
+        // land > targetLand - jedna warstwa erozji (najpierw brzeg niskiego rzedu).
+        let mut to_erode: Vec<String> = Vec::new();
+        for r in 0..height {
+            for q in 0..width {
+                if !is_coastal_land_hex(hexes, q, r) {
+                    continue;
+                }
+                let Some(hex) = hexes.get(&hex_key(q, r)) else {
+                    continue;
+                };
+                if erode_terrain_rank(hex.terrain) <= 1 {
+                    to_erode.push(hex_key(q, r));
+                }
+            }
+        }
+        if to_erode.is_empty() {
+            for r in 0..height {
+                for q in 0..width {
+                    if is_coastal_land_hex(hexes, q, r) {
+                        to_erode.push(hex_key(q, r));
+                    }
+                }
+            }
+        }
+        if to_erode.is_empty() {
+            break;
+        }
+        for key in &to_erode {
+            if land <= target_land {
+                break;
+            }
+            if let Some(h) = hexes.get_mut(key) {
+                set_hex_to_morze(h);
+                land -= 1;
+                adjusted += 1;
+            }
+        }
+    }
+    adjusted
+}

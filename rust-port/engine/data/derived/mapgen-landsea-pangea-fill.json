@@ -1,0 +1,12 @@
+{
+  "meta": {
+    "temat": "R-RUSTPORT-P6-M06A9-LAD-MORZE-PANGEA-FINAL-Q1",
+    "zrodlo_web": "gra/src/map/gen-helpers.ts (pin edb8fb56): pangeaLandCentroid :4473 (prog 40 lądu), pangeaRadialDryLandSteps :4484 (epsilon 0.01), fillPangeaAnnularSeaCorridors :4595 (zapas szerokosci +2, prog pasma maxW+1), rebalanceLandFractionPangea :3667 (jagged 5 przebiegow)",
+    "uwaga": "Wartosci balansowe edytowalne. Kod nie zawiera ich literalow (partia 1 M06A9). Struktura (startowe 1, petle, zerowe progi) - patrz dossier."
+  },
+  "fill_centroid_min_land": 40,
+  "fill_dist_epsilon": 0.01,
+  "fill_zapas_szerokosci": 2,
+  "fill_prog_pasma_zapas": 1,
+  "rebalance_jagged_passes": 5
+}
