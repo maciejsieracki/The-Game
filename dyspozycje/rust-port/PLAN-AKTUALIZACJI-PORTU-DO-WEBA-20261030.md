@@ -144,3 +144,12 @@ Podział 101 plików wg stanu w porcie (heurystyka cytowań `web:` + wiedza o zi
 | `src/game/forced-war-bronze.ts` | +1/−1 | — | TODO (brak odpowiednika w Rust) | P6.11–12 AI (REPIN-AI-2) |
 | `src/game/forced-war-stone.ts` | +1/−1 | — | TODO (brak odpowiednika w Rust) | P6.11–12 AI (REPIN-AI-2) |
 | `src/ui/diplomacyNegotiationModal.ts` | +2/−0 | TAK | UI (frontend-v2) | REPIN-UI-2 + pomiar dryfu kopii K01–K09 |
+
+## Dopisek 2026-10-30 (pomiar `origin/main` = `7164f7ca1`)
+- Od pinu `dc8a3adc`: **3 commity**, 4 pliki w `gra/` (+147/−15), wszystkie KLASY UI, zero zmian reguł silnika:
+  - `4f0e92ec6` fix(ui): `gra/src/ui/hexContextTooltip.ts` — pole `commanderTitle?: 'Wódz' | 'Generał'` w `stackCards`, karta dowódcy (klasa `.commander`, `data-commander`, etykieta „★ Wódz/Generał”, „Wybrana jednostka: Wódz — …”) + CSS;
+  - `gra/src/ui/newGameFlow.ts` (+36/−12): zwinięte parametry cywilizacji w kreatorze nowej gry;
+  - testy web: `army-stack-commander-identity-test.cjs`, `newgame-bottom-navigation-test.cjs`;
+  - `2bbb19238` deploy(robocza), `7164f7ca1` docs(release) — bez kodu.
+- Skutek dla portu: dopisać do **U3 / REPIN-UI-3**: re-kopia `hexContextTooltip.ts` i `newGameFlow.ts` do `src-tauri/frontend-v2/src/ui/` (kopie rozjadą się z pinem), `verify-pin-copies` na nowy pin, dom-harness dla karty dowódcy. Powiązanie z silnikiem: `commanderTitle` pochodzi z danych generała (generals.rs, zintegrowane) — nie liczyć w UI (P5.13).
+- Nowy pin docelowy po U4: `7164f7ca1` (lub nowszy; powtórzyć `git rev-list --count dc8a3adc..origin/main`).
