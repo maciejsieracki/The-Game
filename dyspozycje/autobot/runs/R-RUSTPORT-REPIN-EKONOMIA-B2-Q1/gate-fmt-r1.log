@@ -1,0 +1,1 @@
+cargo fmt --all -- --check: brak wyjscia (zgodnie), EXIT=0

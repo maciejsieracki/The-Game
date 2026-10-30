@@ -1574,3 +1574,92 @@ pub mod p6_7b {
         }
     }
 }
+
+/// REPIN-EKONOMIA-B2 (pin webu 91dc998a): `buildingWorkCost` z `gra/src/game/production.ts:555-571`
+/// oraz jego pomocniki (`applyCostDiscount`, `getCostMultiplierForOwner`, `applyDifficultyCostMultiplier`).
+///
+/// ZALOZENIA (ZALOZENIE, do weryfikacji przez Evaluatora):
+/// * funkcje sa NOWE i nie sa jeszcze podpiete pod wywolania (`building_work_cost` powyzej
+///   pozostaje bez zmian do partii B3); podpiecie to osobny krok.
+/// * rabat cywilizacyjny przyjmowany jest jako `matrix_discount: Option<f64>` - wartosc markera
+///   `prod_koszt_budynku_proc` (web `civMatrixCostDiscount`); wolajacy przekazuje `None` gdy
+///   marker brak lub wartosc nie jest skonczona. Web `?? 0` = `unwrap_or(0.0)` tutaj.
+/// * `ownerId` jako `i64` (web `number`); `humanOwnerIds` = domyslne `[0]`.
+pub mod repin_b2 {
+    use crate::domain::city_growth::p6_7a::r_stawki::{r_stawki_fala2_mult, r_stawki_koszt_mult};
+    use crate::domain::civ_matrix::js_compat::{js_math_round, js_max};
+    use crate::domain::types::Difficulty;
+
+    use super::p6_7b::{apply_building_cost_pace, PaceInput};
+
+    /// web `GLOBAL_BUILDING_PROD_MULT` (production.ts:552).
+    pub const GLOBAL_BUILDING_PROD_MULT: f64 = 0.25;
+
+    /// web `getCostMultiplierForOwner` (difficulty-cost.ts) z `humanOwnerIds = [0]`.
+    pub fn cost_multiplier_for_owner(owner_id: i64, difficulty: Difficulty) -> f64 {
+        let is_player = owner_id == 0;
+        match difficulty {
+            Difficulty::Normal => 1.0,
+            Difficulty::Easy => {
+                if is_player {
+                    1.0
+                } else {
+                    2.0
+                }
+            }
+            Difficulty::Hard => {
+                if is_player {
+                    2.0
+                } else {
+                    1.0
+                }
+            }
+        }
+    }
+
+    /// web `applyDifficultyCostMultiplier`: `Math.max(1, Math.round(cost * mult))`.
+    pub fn apply_difficulty_cost_multiplier(
+        cost_after_pace: f64,
+        owner_id: i64,
+        difficulty: Difficulty,
+    ) -> f64 {
+        js_max(
+            1.0,
+            js_math_round(cost_after_pace * cost_multiplier_for_owner(owner_id, difficulty)),
+        )
+    }
+
+    /// web `applyCostDiscount` (production.ts:654-657).
+    pub fn apply_cost_discount(base_cost: f64, discount: f64) -> f64 {
+        if !base_cost.is_finite() || base_cost <= 0.0 || discount <= 0.0 {
+            return base_cost;
+        }
+        js_max(1.0, (base_cost * (1.0 - discount)).floor())
+    }
+
+    /// web `buildingWorkCost` (production.ts:555-571). Kolejnosc mnozen zachowana 1:1
+    /// (`afterPace * GLOBAL * KOSZT * FALA2`), zeby wynik byl bitowo identyczny z webem.
+    pub fn building_work_cost_web(
+        base_cost: f64,
+        matrix_discount: Option<f64>,
+        pace: Option<PaceInput<'_>>,
+        owner_id: i64,
+        difficulty: Difficulty,
+    ) -> f64 {
+        let after_civ = apply_cost_discount(base_cost, matrix_discount.unwrap_or(0.0));
+        let after_pace = match pace {
+            Some(p) => apply_building_cost_pace(after_civ, p),
+            None => after_civ,
+        };
+        let after_global = js_max(
+            1.0,
+            js_math_round(
+                after_pace
+                    * GLOBAL_BUILDING_PROD_MULT
+                    * r_stawki_koszt_mult()
+                    * r_stawki_fala2_mult(),
+            ),
+        );
+        apply_difficulty_cost_multiplier(after_global, owner_id, difficulty)
+    }
+}
