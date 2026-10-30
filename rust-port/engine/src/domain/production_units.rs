@@ -327,6 +327,8 @@ use crate::domain::building_costs::repin_b2::{
     building_work_cost_web, unit_money_cost_web, CostMarker,
 };
 use crate::domain::civ_matrix::js_compat::{js_math_round, js_max, js_min};
+// `cityPracaInteger` (web production.ts) ma JEDNO zrodlo: `economy_yield` (D2). Brak duplikatu.
+use crate::domain::economy_yield::city_praca_integer;
 use crate::domain::recruitment::army_merge::UnitCostPace;
 use crate::domain::types::Difficulty;
 
@@ -3310,15 +3312,6 @@ pub struct PodzialPracyMiasta {
     pub do_puli: f64,
 }
 
-/// web `cityPracaInteger(raw)`: `Math.round` dla skonczonych dodatnich, inaczej 0.
-pub fn city_praca_integer(raw: f64) -> f64 {
-    if raw.is_finite() && raw > 0.0 {
-        js_math_round(raw)
-    } else {
-        0.0
-    }
-}
-
 /// web `splitPraca(cityPraca, udzialBudynki)`: jedyny podzial Pracy miasta. Udzial nie-skonczony = 1.
 pub fn split_praca(city_praca: f64, udzial_budynki: f64) -> PodzialPracyMiasta {
     let total = city_praca_integer(city_praca);
@@ -3538,6 +3531,12 @@ pub fn polish_locale_compare(a: &str, b: &str) -> std::cmp::Ordering {
 
 /// web `eraBuildingCatalog(data, unlockedTechs, ctx)`: wszystkie budynki epoki `ctx.epoch`
 /// (takze zablokowane, w kolejce i wybudowane). Sortowanie: status, potem nazwa.
+///
+/// ZAKRES (BLOKADA r1, NIE_ZMIERZONO): web liczy `koszt` przez
+/// `buildingWorkCost(itemCost(...), ctx.civBonusy, ctx.buildingCostPace, ownerId, difficulty)`
+/// (`production.ts:2370-2375`). `EraCatalogCtx` nie ma pol `civBonusy`/`buildingCostPace`, wiec
+/// Rust przekazuje `&[]` i `None`. Koszt wpisu jest zgodny z webem TYLKO bez bonusow cywilizacji
+/// i bez tempa kosztow budynkow. Wektory P2 tego nie pokrywaja.
 pub fn era_building_catalog(
     rows: &[EraBuildingRow],
     unlocked_techs: &[&str],
