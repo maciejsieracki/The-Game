@@ -152,3 +152,17 @@ Numeracja: ta runda to R4 (zarzuty R3 → poprawka R4). Numeracja wg dispatchu: 
 ### Założenie Z-WT-7 (R4)
 
 - Generator wejść głównego zestawu work-tax (1600/529/90/9/20/96) jest nieodzyskany. Zestaw zamrożony traktujemy jako dane wejściowe; dowodem jego zgodności z webem 91dc998a jest ponowne uruchomienie wyjść (`logs/rerun-work-tax-frozen.mts`). Jeśli właściciel wymaga regeneracji wejść, to osobny temat.
+
+### Weryfikacja niezalezna D2.2a (Operator-pomiary R1, ten sam ID `R-RUSTPORT-REPIN-EKONOMIA-D2-Q1`)
+
+- Kod sprawdzony wzrokowo wzgledem `economy.ts@91dc998a` L908-1009: kolejnosc krokow, `Math.max(0, ..)` vs `js_max`, `Math.min` vs `js_min`, warunki `civKey` (truthy), `civNaukaMult` (`!== undefined && !== 1`), `premia > 0`, Mint (`walutaOdkryta && maMennica`), zwroty `handelBrutto`/`zywnoscBrutto` (`Math.floor`). Nie wykryto rozbieznosci.
+- Regeneracja wektorow: `logs/verifier-regen-web-91dc998a.log` (EXIT=0, "wrote 2400 cases"); kopia weba = `git archive 91dc998a gra/src gra/data` poza repo. Wynik **identyczny bajt-w-bajt** z `tests/p6_repin_d2_tail_vectors/tail-main.json` (`cmp`).
+- Bramki (niezaleznie, na c9af459c3): `cargo fmt --all -- --check` EXIT=0; `cargo clippy --all-targets -- -D warnings` EXIT=0 (`logs/verifier-clippy-r1.log`); `cargo test --no-fail-fast` EXIT=0, 220 binarek, **1627 passed / 0 failed** (`logs/verifier-test-r1.log`); `tests/p6_repin_d2_tail` 12/12.
+- Mutacje niezalezne (jedna naraz, przywracane `git checkout`, logi `logs/mut-verifier-*.log`):
+  - M8 brak korupcja cap (`js_min` usuniete): ZABITA (2 testy).
+  - M9 poborca przed macierza `eko_pieniadz_proc`: ZABITA (`parity_tail_main_bit_exact`).
+  - M7 `eko_luksus_proc` bez koncowego `.floor()`: PRZEZYLA. W `civ-matrix.json` wszystkie 16 wartosci `eko_luksus_proc` = 0, wiec `floor` po mnozeniu nie ma efektu na danych i wektorach. Luka pokrycia, nie blad na danych.
+  - M10 `eko_zywnosc_proc` bez `apply_civ_matrix_param`: PRZEZYLA. Wszystkie 16 wartosci `eko_zywnosc_proc` = 0. Analogicznie `eko_kultura_proc` = 0 we wszystkich wierszach (wniosek z danych, mutacja NIE_ZMIERZONO).
+  - M11 `premia > 0` zmienione na `>= 0`: PRZEZYLA. Roznica tylko dla `premia == 0` i wejsciowego `-0` w `handelBrutto` (`x + 0 = +0`); wektory nie zawieraja takiego przypadku. Mutant prawie-rownowazny (roznica znaku zera).
+- ZALOZENIE dla D2.2b (kod nie zmieniony w tej rundzie): dodac testy strukturalne z NIEZEROWA macierza dla `eko_luksus_proc`, `eko_zywnosc_proc`, `eko_kultura_proc` (wartosc niecalkowita, zeby `floor` mial efekt) oraz przypadek `handelBrutto = -0` z `premia = 0`. Wtedy M7, M10, M11 zostana zabite.
+- Poza zakresem: w `rust-port/engine/` pozostaja nieśledzone `Cargo.lock` i `target/` (artefakty builda); NIE dodawane do commita.
