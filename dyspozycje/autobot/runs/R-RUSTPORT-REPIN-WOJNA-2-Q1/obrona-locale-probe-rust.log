@@ -1,0 +1,17 @@
+   Compiling civ-engine v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_a87f1451-a49-4/rust-port/engine)
+    Finished `test` profile [unoptimized] target(s) in 0.23s
+     Running tests/obrona_tmp_locale_probe.rs (/home/user/cargo-target-shared/wf_a87f1451-a49-4/debug/deps/obrona_tmp_locale_probe-d2b4af2c4a4834b3)
+
+running 1 test
+PROBE "ą" "b" rust=1
+PROBE "b" "ą" rust=-1
+PROBE "ż" "z" rust=1
+PROBE "é" "f" rust=1
+PROBE "a" "B" rust=-1
+PROBE "ł" "m" rust=1
+PROBE "prod_1_Łódź" "prod_1_Lodz" rust=1
+test probe_locale_compare_non_ascii ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+EXIT=0

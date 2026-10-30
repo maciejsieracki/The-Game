@@ -13,6 +13,13 @@
 //! - `oblegaCityId` jest prawdziwe, gdy jest niepustym napisem (`Some("")` = falsy).
 //! - `nearest_living_general` przy NaN we wspolrzednych KANDYDATA (>=2 kandydatow) daje wynik
 //!   zalezny od algorytmu sortowania JS (komparator niespojny); NIE_ZMIERZONO - wektory tego nie pokrywaja.
+//! - (e) `recruitment::manpower::locale_compare` (uzyty w komparatorze `compare_nearest`, web `localeCompare`)
+//!   implementuje kolacje tylko dla ASCII 0x20-0x7E; dla innych napisow porownuje kolejnoscia UTF-16.
+//!   ZMIERZONE (R-RUSTPORT-REPIN-WOJNA-2-Q1, obrona R2): web `"ą".localeCompare("b")` = -1, Rust = +1;
+//!   `"é"` vs `"f"`, `"ł"` vs `"m"` - ta sama rozbieznosc (log `obrona-locale-probe-rust.log`, sonda Node
+//!   `obrona-locale-probe.mjs`). Remis odleglosci przy identyfikatorach spoza ASCII NIE jest pokryty wektorami.
+//!   Poza domena: identyfikatory produkcyjne sa ASCII (`prod_<turn>_<cityId>_<base36>`, `main.ts:4043`;
+//!   `diffbonus_...`, `main.ts:9897`; brak identyfikatorow z non-ASCII w `gra/data` @ dc8a3adc).
 
 use crate::domain::recruitment::army_merge::js_max;
 use crate::domain::recruitment::manpower::locale_compare;
