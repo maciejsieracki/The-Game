@@ -75,9 +75,10 @@ dotykające tych samych plików — zawsze sekwencyjnie, nigdy w tej samej fali.
 | 46 | R-RUSTPORT-P6-8D-UTRZYMANIE-OBYWATELI-Q1 | P6.8D | 4/5 | wf_d2570e00-ba6 | **PASS-WITH-NOTES — zintegrowane** (1443/0): citizen-resource-upkeep, gold-deficit (+applyGoldDeficitHpLoss), mennica-zloto-grace, wealth; mutacje 17/17 + 14/14 + 6 granicznych; dług: podpięcie `state.rs` (wealth :1661/:1759) → osobna partia | 2026-10-30 |
 | 47 | R-RUSTPORT-P6-8A-PRODUKCJA-KOSZTY-Q1 | P6.8A | — | kolejka (dispatch gotowy; start po zwolnieniu slotu Rust) | — | 2026-10-30 |
 | 48 | R-RUSTPORT-P6-M06A9-LAD-MORZE-PANGEA-FINAL-Q1 | P6 mapgen | 2/5 | wf_dd947043-660 | **PASS — zintegrowane** (1422/0; fillPangeaAnnularSeaCorridors, rebalanceLandFractionPangea, rebalanceLandSeaRatio). **M06A KOMPLET** (wszystkie wiersze tabeli zamknięte) | 2026-10-30 |
-| 49 | R-RUSTPORT-P6-M06B1-WYBRZEZE-FINALIZACJA-Q1 | P6 mapgen | 2/5 | (r2 nowy) | r1 FC FAIL (cap 12, weryfikator Python); r2 etap 1 | 2026-10-30 |
+| 49 | R-RUSTPORT-P6-M06B1-WYBRZEZE-FINALIZACJA-Q1 | P6 mapgen | 3/5 | wf_4ce7d74c-bc7 | **PASS — zintegrowane** (`1aba22f7`, 1465/0; 6 symboli, 31 mutacji 28+3 equiv, weryfikator Python 1868/0) | 2026-10-30 |
 | 50 | R-RUSTPORT-REPIN-DELTA-2-Q1 | REPIN (dok.) | 1/5 | wf_ca7a08b1-acd | **PASS — zintegrowane (docs-branch)**: `p6/REPIN-DELTA-2.md`; pin docelowy `dc8a3adc989b…`; dryf K08D (2 jedn.), K08E (1), kopie `armyMergePanel.ts`/`unitActionBarHtml.ts`; kolejność U1–U5 skorygowana (WOJNA-2 na początek U1, REPIN-MAIN-LOGIC dodany) | 2026-10-30 |
 | 51 | R-RUSTPORT-REPIN-WOJNA-2-Q1 | REPIN U1 (pin dc8a3adc) | 2/5 | (r2) | r1 U1+U2 **zintegrowane** (1446/0); r2: generals.rs, general_quick_follow.rs — etap 1 | 2026-10-30 |
+| 52 | R-RUSTPORT-P6-M06B2-WYSPY-FINALIZACJA-Q1 | P6 mapgen | 1/5 | (nowy) | etap 1 | 2026-10-30 |
 | 24 | R-RUSTPORT-P6-M06A4-LAD-MORZE-RESZTA3-Q1 | P6 mapgen | 3/5 | wf_206786d8-1fa | **PASS-WITH-NOTES (partie 2–3) — zintegrowane** (`5a1fbb33`, 1265/0); zamknięte adm.; reszta → M06A5 |
 | 25 | R-RUSTPORT-P5-8-CITYPANEL-K08B-Q1 | P5.8 | 4/5 | wf_5b437a20-313 | **ZAMKNIĘTE ADMINISTRACYJNIE (9/24 jedn.) — zintegrowane** (`b19311e2`); reszta → K08C/K08D |
 | 3 | R-RUSTPORT-P5-8-CITYPANEL-PODZIAL-Q1 | P5.8 | 3/5 | wf_5b094795-b4f | **PASS — zintegrowane** (docs, `a1246e48`); slot wolny | 2026-10-29 |
