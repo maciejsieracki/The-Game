@@ -1,0 +1,62 @@
+   Compiling civ-engine v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_b50a88bf-be6-1/rust-port/engine)
+warning: function `js_math_max_zero` is never used
+  --> src/domain/economy_yield.rs:95:4
+   |
+95 | fn js_math_max_zero(x: f64) -> f64 {
+   |    ^^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `civ-engine` (lib) generated 1 warning
+    Finished `test` profile [unoptimized] target(s) in 35.92s
+     Running tests/p6_repin_d2_full.rs (target/debug/deps/p6_repin_d2_full-924b479502af8de3)
+
+running 9 tests
+test boundary_negative_zero_additional_tax_is_positive_zero_in_trade ... ok
+test structural_neutral_praca_is_mlyn_then_cegielnia_then_integer ... ok
+test structural_pieniadz_z_pracy_is_always_zero ... ok
+test structural_port_bonus_requires_owner_and_nonzero_param ... ok
+test structural_port_zero_param_is_neutral_and_nan_propagates ... ok
+test structural_praca_integer_rounds_and_zeroes_non_positive ... ok
+test structural_additional_tax_enters_gross_trade_after_matrix ... FAILED
+test parity_full_main_bit_exact ... FAILED
+test parity_full_main_exercises_port_bonus_and_owner_paths ... ok
+
+failures:
+
+---- structural_additional_tax_enters_gross_trade_after_matrix stdout ----
+
+thread 'structural_additional_tax_enters_gross_trade_after_matrix' (8275) panicked at tests/p6_repin_d2_full.rs:363:5:
+assertion `left == right` failed
+  left: 200.0
+ right: 220.0
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+   1: core::panicking::panic_fmt
+   2: core::panicking::assert_failed_inner
+   3: core::panicking::assert_failed::<f64, f64>
+   4: p6_repin_d2_full::structural_additional_tax_enters_gross_trade_after_matrix
+   5: p6_repin_d2_full::structural_additional_tax_enters_gross_trade_after_matrix::{closure#0}
+   6: <p6_repin_d2_full::structural_additional_tax_enters_gross_trade_after_matrix::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+---- parity_full_main_bit_exact stdout ----
+
+thread 'parity_full_main_bit_exact' (8273) panicked at tests/p6_repin_d2_full.rs:240:5:
+904 mismatches, first: ["#1 handelBrutto: got 0.0 exp NaN", "#4 pieniadz: got 4.0 exp NaN", "#4 nauka: got 30.0 exp NaN", "#4 luksus: got 10.0 exp NaN", "#4 handelBrutto: got 13.0 exp NaN"]
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+   1: core::panicking::panic_fmt
+   2: p6_repin_d2_full::parity_full_main_bit_exact
+   3: p6_repin_d2_full::parity_full_main_bit_exact::{closure#0}
+   4: <p6_repin_d2_full::parity_full_main_bit_exact::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+
+failures:
+    parity_full_main_bit_exact
+    structural_additional_tax_enters_gross_trade_after_matrix
+
+test result: FAILED. 7 passed; 2 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.38s
+
+error: test failed, to rerun pass `--test p6_repin_d2_full`

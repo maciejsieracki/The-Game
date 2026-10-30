@@ -227,3 +227,69 @@ Stan: temat **OTWARTY** (nie zamykać na tej partii). Baza kodu: `8a3baa6ab`; oc
 3. **Wektory 1200/1200 z wycinka, nie z pełnej funkcji** — **PRZYJMUJĘ** jako ograniczenie zakresu, z dowodem zgodności wycinka. Wycinek `logs/economy-head-slice.mts` względem `economy.ts@91dc998a` L849-860, L884-890, L892-903: porównanie mechaniczne (znormalizowane wcięcia, pomijając puste linie) — **31/31 niepustych linii webu obecnych w wycinku**, 0 brakujących. Wycinek zmienia tylko nagłówek funkcji i podaje agregaty `pracaTerenu`, `pracaBudynkow`, `pieniadzBudynkow`, `pieniadzPortu` jawnie. Zobowiązanie na D2.2c: wektory z **pełnej** funkcji `cityYieldPerTurn` (po portie Step 1-4), uruchomionej z weba `91dc998a`, zanim sygnatura zostanie zmieniona. Do tego czasu ochrona wektorów dotyczy wyłącznie `city_yield_head`.
 
 Web pin: `origin/main` = `7164f7ca1`; `git diff 91dc998a origin/main` dla `economy.ts`, `production.ts`, `terrain-improvements.ts`, `civ-matrix.ts`, `diplomacy-economy.ts`, `turn-economy.ts`, `gra/data` — **pusty** (brak zmian). Pin `91dc998a` aktualny.
+
+## D2.2c (runda 3 operatora, ten sam ID `R-RUSTPORT-REPIN-EKONOMIA-D2-Q1`) — pelna `cityYieldPerTurn` jako zlozenie
+
+Web (pin): `gra/src/game/economy.ts@91dc998a` L819-1020 (cala funkcja `cityYieldPerTurn`). Port: `rust-port/engine/src/domain/economy_yield.rs` — `city_praca_integer`, `CityYieldParams`, `CityYieldInput`, `CityYieldOutput`, `city_yield_per_turn` (zlozenie `city_yield_head` + `city_yield_tail`). Test: `rust-port/engine/tests/p6_repin_d2_full.rs` (9 testow), wektory `tests/p6_repin_d2_full_vectors/full-main.json` (1200 przypadkow z URUCHOMIENIA PELNEJ funkcji weba 91dc998a, generator `logs/gen-full.mts`).
+
+Stan klasyfikacji hunkow (pin 91dc998a):
+
+| Hunk pinu | Zachowanie | Status | Dowod |
+|---|---|---|---|
+| L837-847 Step 1 (`tileYield`, sumy kafelkow) | sumowanie kafelkow przez `tileYield` (improvements, zloza) | NASTEPNA-PARTIA (Z-D2.2c-1) | wejscie `pracaTerenu`/`handelTerenu`/`zywnoscTerenu`; generator liczy przez eksportowane `tileYield` (petla 1:1) |
+| L849-860 Step 2 (Mlyn, Cegielnia) | `city_yield_head` | ZROBIONE (D2.2b) | `structural_neutral_praca_is_mlyn_then_cegielnia_then_integer` |
+| L865-882 Step 3 (sumy budynkow, `pieniadzPortu`) | sumowanie `buildingValue` po rekordach | NASTEPNA-PARTIA (Z-D2.2c-1); definicja `pieniadzPortu` = `record.id === 'port'` potwierdzona czytaniem L877 | generator mirror + wektory z rekordem `port` |
+| L884-890 Step 3' (bonus portu) | `pieniadzBudynkow += pieniadzPortu * portRaw` przy wlascicielu | ZROBIONE (D2.2b, domkniete w kompozycji) | 164 wektorow z wlascicielem i niezerowym bonusem portu; `structural_port_bonus_requires_owner_and_nonzero_param` |
+| L892-903 praca netto (`eko_praca_proc`) | `city_yield_head` | ZROBIONE (D2.2b) | wektory 1200/1200 |
+| L909-910 `cityPracaInteger`, `pieniadzZPracy = 0` | `city_praca_integer`; `pieniadz_z_pracy` stale 0 | ZROBIONE (D2.2c) | `structural_praca_integer_rounds_and_zeroes_non_positive`, `structural_pieniadz_z_pracy_is_always_zero` |
+| L914-936 handel brutto (civHandelMult, premia, `eko_handel_brutto_proc`, `additionalTax`) | `city_yield_tail` Step 4 | ZROBIONE (D2.2a/D2.2c) | `structural_additional_tax_enters_gross_trade_after_matrix` |
+| L946-949 Mint (bez `walutaMnoznikOverride`) | `params.mennicaMnoznikPoWalucie` | ZROBIONE (w pinie nie ma override) | `city_yield_tail` |
+| `dochodTrasHandlowych`, `walutaMnoznikOverride`, Targowisko (`pieniadzZPracy` > 0) | w pinie 91dc998a NIE istnieja (sprawdzone `grep` na pinie) | NIE-DOTYCZY dla pina | `grep -n dochodTrasHandlowych` na `economy-91dc998a` = pusto |
+| L938-1018 Step 5-9 | `city_yield_tail` | ZROBIONE (D2.2a) | parity |
+
+Zobowiazanie z D2.2b (wektory z PELNEJ funkcji przed zmiana sygnatury): SPELNIONE. Wektory `full-main.json` pochodza z uruchomienia `cityYieldPerTurn` (nie wycinka). Agregaty Step 1/3 sa wejsciem Rust, liczone przez eksportowane funkcje weba (`tileYield`, `buildingValue`, `buildingHappinessAtLevel`) petla 1:1 z L837-847 i L873-882.
+
+Wynik: `parity_full_main_bit_exact` 1200/1200 bit-w-bit (12 pol wyniku, znak zera i NaN); mutacje M1 (`raw.round()`→`floor`), M3 (`additionalTax` wylaczone), M4 (kompozycja pomija bonus portu) ZABITE (logi `logs/mut-r3-*.log`).
+
+Pin web: `git diff --stat 91dc998a 7164f7ca1` dla `economy.ts`, `production.ts`, `terrain-improvements.ts`, `civ-matrix.ts` — pusty. Gałąź `rust-port/parity-v2` (`a83ae51d6`) ma `gra/src/game/economy.ts` rozny od pinu (211+/155-): NIE_ZMIERZONO, dlaczego; wektory brane z pinu, nie z working tree.
+
+Zalozenia rundy 3:
+- Z-D2.2c-1: Step 1 (`tileYield`, `terrain-improvements.ts`, zloza) i Step 3 (sumowanie `buildingValue`, `buildingEffectAtLevel`) NIE sa portowane w Rust; sa wejsciem agregatow. Nastepna partia: port `tileYield` + `terrain-improvements` (484 LOC web) i `buildingValue` (production.ts), wtedy wektory z `cityYieldPerTurn(city, tiles, buildings)` bez agregatow.
+- Z-D2.2c-2: definicja `pieniadzPortu` (`record.id === 'port'`) jest zweryfikowana przez wektory tylko dla rekordow syntetycznych o id `port`; mapowanie id z danych gry nie jest testowane.
+- Z-D2.2c-3: parametry (`EconParams`) w wektorach z puli syntetycznej (jak w D2.2a/D2.2b); macierz cywilizacji = realna `civ-matrix.json` (przez web i przez `load_civ_matrix`).
+- Z-D2.2c-4: generator wymaga `git archive 91dc998a gra` rozpakowanego do `gra/` oraz loadera TS (`typescript`, transpilacja `.ts`, rozwiazywanie importow bez rozszerzenia); instrukcja w `logs/gen-full.mts`.
+
+Odpowiedzi na zarzuty Evaluatora: brak (runda 3 jest pierwsza po obronie R2, Evaluator nie wystawil jeszcze zarzutow dla D2.2c).
+
+### D2.2c — weryfikacja niezależna (runda 3, weryfikator, ten sam ID)
+
+- Kod zweryfikowany na `18072caed` (detach). Bramki: `cargo fmt --all -- --check` EXIT=0; `cargo clippy --all-targets -- -D warnings` EXIT=0; `cargo test --no-fail-fast` EXIT=0, 227 binarek, 1675 passed / 0 failed (`logs/verifier-test-r3.log`).
+- Regeneracja wektorów: `logs/gen-full.mts` uruchomiony ponownie przeciw `git archive 91dc998a` (`gra/src`, `gra/data`, `gra/src/types`) przez loader TS z `node 22.22.0`; wynik 1200 przypadków **bajt-identyczny** z `tests/p6_repin_d2_full_vectors/full-main.json` (`cmp`). Plik tymczasowy usunięto po porównaniu, bez zapisu logu.
+- Mutacje weryfikatora (każda zabita; przywrócono plik do `18072caed`):
+  - M5 `cityPracaInteger` pominięte (`praca = praca_netto` bez `round`/zera): 2 FAILED (`structural_neutral_praca_is_mlyn_then_cegielnia_then_integer`, `parity_full_main_bit_exact`) — `logs/verifier-mut-M5-praca-noround.log`.
+  - M6 `additionalTax` bez `js_math_max_zero` (economy_yield.rs L225): 1 FAILED (`parity_full_main_bit_exact`) — `logs/verifier-mut-M6-addtax-noclamp.log`.
+- Z-D2.2c-1 (Step 1 i Step 3 jako wejścia agregatów) i Z-D2.2c-2 (`pieniadzPortu` = `record.id === 'port'`) pozostają ZAŁOŻENIAMI do partii D2.2d; nie są zamknięte tą weryfikacją.
+- Temat pozostaje OTWARTY. Web `origin/main` = `7164f7ca1`; pin `91dc998a` aktualny dla `economy.ts`, `production.ts`, `terrain-improvements.ts`, `civ-matrix.ts`.
+
+## D2.2d (runda 4 operatora, ten sam ID `R-RUSTPORT-REPIN-EKONOMIA-D2-Q1`) — Step 1 i Step 3 w Rust, odpowiedzi na zarzuty D2.2c
+
+Kod: `rust-port/engine/src/domain/economy_yield.rs` (dopisek na końcu: `terrain_row_name`, `WorkedTileInput`, `tile_yield_base`, `city_terrain_sums`, `building_value`, `CityBuildingInput`, `city_building_sums`, `city_yield_per_turn_from_worked`). Wektory: `tests/p6_repin_d2_full_vectors/full-main.json` (1500 przypadków: 1200 syntetycznych + 300 z PRAWDZIWYMI rekordami `buildings.json` z 42 budynków, w tym `port` i `port_wielki`; 3,1 MB). Generator: `logs/gen-full.mts` (N_SYNTH 1200, N_REAL 300, wektor zawiera `tiles` i `buildings`, `agg` liczone przez eksportowane funkcje weba), uruchomiony na `git archive 91dc998a gra`, node 22.22.0.
+
+| Zarzut Evaluatora (D2.2c) | Decyzja | Dowód |
+|---|---|---|
+| 1. Step 1 (`tileYield`) i Step 3 (`buildingValue`, `pieniadzPortu`) nieportowane bez uzasadnienia | **PRZYJMUJĘ** (poprawka). Step 3 w całości; Step 1 bez galęzi ulepszeń i złóż (Z-D2.2d-1) | `building_value` = `Math.floor(baza + przyrost*(max(1,floor(level))-1))` (`production.ts` `buildingEffectAtLevel`, `economy.ts@91dc998a` L493-501); `city_building_sums` = L873-882; `tile_yield_base` = `tileYield` L421-470 bez `impKeys`; `city_terrain_sums` = L837-847. Test `aggregates_bit_exact_vs_web_loops`: 1500/1500 sum bit-w-bit z petlami weba. `parity_full_main_bit_exact`: 1500/1500, 12 pól, kafelki i budynki wchodzą surowo przez `city_yield_per_turn_from_worked`. |
+| 2. Nazwa „pełna cityYieldPerTurn” myli (sumy podane z zewnątrz) | **PRZYJMUJĘ** (doc poprawiony) | `city_yield_per_turn` opisana jako kompozycja z agregatami; pełna funkcja od surowych wejść to `city_yield_per_turn_from_worked`; agregaty w `CityYieldInput` są nadpisywane sumami. Zakres ulepszeń jawnie w Z-D2.2d-1. |
+| 3. `economy.ts` parity-v2 rozni się od pina — NIE_ZMIERZONO | **PRZYJMUJĘ jako pomiar** (luka zamknięta pomiarem, nie kodem) | `git diff --stat 91dc998a origin/main -- gra/src/game/{economy,production,terrain-improvements,civ-matrix}.ts` = pusty. `git diff --stat 91dc998a a83ae51d6 -- gra/src/game/economy.ts` = 211 wstawień / 155 usunięć. `dochodTrasHandlowych` i `walutaMnoznikOverride`: obecne w `a83ae51d6` (economy.ts, turn-economy.ts; `walutaMnoznikOverride` też cityPanel.ts), nieobecne w `91dc998a` i `origin/main`. Symbol wprowadzony w `269de23ac` („Dochód z tras handlowych…”), który JEST przodkiem pina; usunięty na linii main w `92d124b72` (`git log -S`, oba przodkowie pina). Merge-base pina z `a83ae51d6` = `f4c89d00`: gałąź parity-v2 nie ma tego usunięcia. |
+| 4. Pokrycie wektorów: 4 zestawy syntetyczne, tylko `port` z 7 nazw, brak testu z realnym `buildings.json`, brak testu Rust dla budynku | **PRZYJMUJĘ** | 300 przypadków z realnymi rekordami (`port` ~30% losowań); `real_buildings_cover_port_and_port_wielki` (oba id obecne); `structural_port_sum_only_counts_id_port_at_level` (`port_wielki` NIE wchodzi do `pieniadzPortu`, poziom 3 daje `3 + 2*2 = 7`). Kafelki: 0-4 na przypadek, 8 terenów × nakładka (`brak`/`las`) × rzeka. |
+
+**Mutacje (każda gałąź nowego kodu):**
+- M7 `if b.id == "port"` → `if true`: 3 FAILED (`structural_port_sum_only_counts_id_port_at_level`, `parity_full_main_bit_exact`, `aggregates_bit_exact_vs_web_loops`). Przywrócono, cmp OK.
+- M8 `if tile.nakladka == "las"` → `if false && …`: 3 FAILED (`structural_tile_forest_and_river_modifiers_and_unknown_terrain`, `parity_full_main_bit_exact`, `aggregates_bit_exact_vs_web_loops`). Przywrócono.
+- M9 `lf > 1.0` → `lf > 0.0` w `building_value`: 0 FAILED. **Mutant równoważny**: dla całkowitego `lf` (`floor`) gałąź `else` daje `n = 1` dla każdego `lf <= 1`, więc `max(1, ·)` jest identyczne.
+
+**Bramki (runda 4, na commicie kodu):** `cargo fmt --all -- --check` EXIT=0 (`logs/fmt-r4.log`); `cargo clippy --all-targets -- -D warnings` EXIT=0 (`logs/clippy-r4.log`); `cargo test --no-fail-fast` EXIT=0, 227 binarek, **1680 passed / 0 failed** (`logs/test-r4-full.log`; baza 1666 + 14 testów `p6_repin_d2_full`).
+
+**Założenia (aktualne):**
+- Z-D2.2d-1: galąź ulepszeń i złóż `tileYield` (`applyImprovementBonuses`, `oreYieldFromImprovements`, `impKeys`) oraz `buildingHappinessAtLevel` NIE są portowane w tej partii. `CityYieldResult` (pola z pina) nie zawiera szczęścia. Rust ma już `apply_improvement_bonuses` (`improvements.rs` L859) i `ore_yield_from_improvements` (L866); następna partia = podpięcie i wektory z ulepszeniami. Kolumny `drewno`/`kamien`/`glina`/`ruda` nie są wyjściem `cityYieldPerTurn` w pinie, więc nie są sumowane.
+- Z-D2.2d-2: port trzyma się pina `91dc998a`, zgodnie z dispatchem. Symbole `dochodTrasHandlowych` i `walutaMnoznikOverride` z `a83ae51d6` NIE wchodzą do wektorów. Ich zgodność z linią parity-v2 jest decyzją orkiestratora (pochodzenie zmierzone powyżej).
+- Z-D2.2c-2 zamknięte testem (realne rekordy + syntetyczne); Z-D2.2c-1 zamknięte dla Step 1 bez ulepszeń i Step 3.

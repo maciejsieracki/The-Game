@@ -21,6 +21,7 @@
 //! - Surowe zero macierzy jest wartoscia (web: `Number.isFinite`, nie `> 0`); NaN/Infinity = brak.
 
 use crate::data::civilizations::CivMatrixFile;
+use crate::data::terrain_map::TerrainYieldsFile;
 use crate::domain::civ_matrix::js_compat::js_min;
 use crate::domain::civ_matrix::{apply_civ_matrix_param, civ_matrix_param, resolve_row};
 use crate::domain::types::Difficulty;
@@ -378,4 +379,344 @@ pub fn city_yield_head(
         praca_brutto_lacznie,
         praca_netto,
     }
+}
+
+/// Web `cityPracaInteger(raw)` (`gra/src/game/production.ts`, pin `91dc998a`): skonczone i dodatnie
+/// -> `Math.round`, w przeciwnym razie `0` (`-0`, NaN, Infinity-bez-skonczonosci i ujemne -> `+0`).
+pub fn city_praca_integer(raw: f64) -> f64 {
+    if raw.is_finite() && raw > 0.0 {
+        raw.round()
+    } else {
+        0.0
+    }
+}
+
+/// Parametry pelnej `cityYieldPerTurn` (web `EconParams`): glowa (Step 2) i ogon (Step 5-9).
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct CityYieldParams {
+    pub head: CityYieldHeadParams,
+    pub tail: CityYieldTailParams,
+}
+
+/// Wejscia pelnej `cityYieldPerTurn` (pin `91dc998a`) z agregatami Step 1 (teren) i Step 3 (budynki)
+/// podanymi przez wywolujacego. Sumowanie od surowych kafelkow i budynkow (`tileYield`,
+/// `buildingValue`, D2.2d): [`city_yield_per_turn_from_worked`].
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct CityYieldInput<'a> {
+    /// Web `city.civKey`.
+    pub civ_key: Option<&'a str>,
+    /// Web `city.ludnosc`.
+    pub ludnosc: f64,
+    /// Web `city.podziałHandlu` (surowo 0..100).
+    pub procent_nauka: f64,
+    pub procent_pieniadz: f64,
+    pub procent_luksus: f64,
+    /// Liczba wpisow `'poborca'` w `city.specjalisci`.
+    pub poborca_count: u32,
+    /// Web Step 1: `pracaTerenu`, `handelTerenu`, `zywnoscTerenu`.
+    pub praca_terenu: f64,
+    pub handel_terenu: f64,
+    pub zywnosc_terenu: f64,
+    /// Web Step 3: `pracaBudynkow`, `pieniadzBudynkow` (przed bonusem portu), `pieniadzPortu`,
+    /// `zywnoscBudynkow`, `naukaBudynkow`, `kulturaBudynkow`.
+    pub praca_budynkow: f64,
+    pub pieniadz_budynkow: f64,
+    pub pieniadz_portu: f64,
+    pub zywnosc_budynkow: f64,
+    pub nauka_budynkow: f64,
+    pub kultura_budynkow: f64,
+    /// Web `ctx` (pola czytane przez pin 91dc998a).
+    pub ma_mlyn: bool,
+    pub ma_cegielnia: bool,
+    pub strata_fraction: f64,
+    pub waluta_odkryta: bool,
+    pub ma_mennica: bool,
+    pub ma_biblioteka: bool,
+    pub ma_akademia: bool,
+    pub civ_handel_mult: Option<f64>,
+    pub premia_handlu_tras: Option<f64>,
+    pub additional_tax: Option<f64>,
+    pub civ_nauka_mult: Option<f64>,
+    pub liczba_garncarni: Option<f64>,
+    pub wojsko_zuzycie_zywnosci: f64,
+}
+
+/// Wynik pelnej `cityYieldPerTurn` (pola `CityYieldResult` obecne w pinie 91dc998a).
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct CityYieldOutput {
+    pub praca: f64,
+    pub pieniadz: f64,
+    pub zywnosc: f64,
+    pub nauka: f64,
+    pub luksus: f64,
+    pub kultura: f64,
+    pub zywnosc_brutto: f64,
+    pub handel_brutto: f64,
+    pub praca_terenu: f64,
+    pub praca_budynkow: f64,
+    pub pieniadz_budynkow: f64,
+    /// Web `pieniadzZPracy`: w pinie 91dc998a stale `0` (D5 wylaczone).
+    pub pieniadz_z_pracy: f64,
+}
+
+/// Kompozycja `cityYieldPerTurn` (`gra/src/game/economy.ts@91dc998a` L819-1020) z AGREGATAMI
+/// Step 1 i Step 3 podanymi przez wywolujacego: glowa (`city_yield_head`: Step 2, Step 3' port,
+/// praca netto) i ogon (`city_yield_tail`: Step 4-9). Pelna funkcja od kafelkow i budynkow:
+/// [`city_yield_per_turn_from_worked`]. Kolejnosc jak w webie: praca netto -> `cityPracaInteger`; `pieniadzZPracy` = 0;
+/// bonus portu wchodzi do `pieniadzBudynkow` przed handlem brutto.
+pub fn city_yield_per_turn(
+    matrix: &CivMatrixFile,
+    params: &CityYieldParams,
+    input: &CityYieldInput<'_>,
+) -> CityYieldOutput {
+    let head_input = CityYieldHeadInput {
+        civ_key: input.civ_key,
+        praca_terenu: input.praca_terenu,
+        praca_budynkow: input.praca_budynkow,
+        pieniadz_budynkow: input.pieniadz_budynkow,
+        pieniadz_portu: input.pieniadz_portu,
+        ma_mlyn: input.ma_mlyn,
+        ma_cegielnia: input.ma_cegielnia,
+    };
+    let head = city_yield_head(matrix, &params.head, &head_input);
+    let praca_int = city_praca_integer(head.praca_netto);
+
+    let tail_input = CityYieldTailInput {
+        civ_key: input.civ_key,
+        ludnosc: input.ludnosc,
+        procent_nauka: input.procent_nauka,
+        procent_pieniadz: input.procent_pieniadz,
+        procent_luksus: input.procent_luksus,
+        poborca_count: input.poborca_count,
+        handel_terenu: input.handel_terenu,
+        pieniadz_budynkow: head.pieniadz_budynkow,
+        nauka_budynkow: input.nauka_budynkow,
+        zywnosc_terenu: input.zywnosc_terenu,
+        zywnosc_budynkow: input.zywnosc_budynkow,
+        kultura_budynkow: input.kultura_budynkow,
+        strata_fraction: input.strata_fraction,
+        waluta_odkryta: input.waluta_odkryta,
+        ma_mennica: input.ma_mennica,
+        civ_handel_mult: input.civ_handel_mult,
+        premia_handlu_tras: input.premia_handlu_tras,
+        additional_tax: input.additional_tax,
+        civ_nauka_mult: input.civ_nauka_mult,
+        ma_biblioteka: input.ma_biblioteka,
+        ma_akademia: input.ma_akademia,
+        liczba_garncarni: input.liczba_garncarni,
+        wojsko_zuzycie_zywnosci: input.wojsko_zuzycie_zywnosci,
+    };
+    let tail = city_yield_tail(matrix, &tail_input, &params.tail);
+
+    CityYieldOutput {
+        praca: praca_int,
+        pieniadz: tail.pieniadz,
+        zywnosc: tail.zywnosc,
+        nauka: tail.nauka,
+        luksus: tail.luksus,
+        kultura: tail.kultura,
+        zywnosc_brutto: tail.zywnosc_brutto,
+        handel_brutto: tail.handel_brutto,
+        praca_terenu: head.praca_brutto_terenu.floor(),
+        praca_budynkow: input.praca_budynkow.floor(),
+        pieniadz_budynkow: head.pieniadz_budynkow.floor(),
+        pieniadz_z_pracy: 0.0,
+    }
+}
+
+// ---------------------------------------------------------------------------
+// D2.2d (runda 4): Step 1 (`tileYield`, bez ulepszen i zloz) i Step 3 (`buildingValue`,
+// suma `pieniadzPortu`). Wejscia surowe: kafelki i rekordy budynkow; agregaty licza sie tutaj.
+// ---------------------------------------------------------------------------
+
+/// Web `TERRAIN_NAME_TO_ENUM` (`economy.ts@91dc998a` L368-377): klucz `TerenBazowy` -> etykieta
+/// wiersza w `terrain-yields.json`. Nieznany klucz = brak wiersza (web: `?? ZERO_YIELD`).
+fn terrain_row_name(teren_bazowy: &str) -> Option<&'static str> {
+    Some(match teren_bazowy {
+        "laka" => "Łąka",
+        "rownina" => "Równina",
+        "wzgorza" => "Wzgórza",
+        "gory" => "Góry",
+        "plytkie_morze" => "Wybrzeże",
+        "morze" => "Morze",
+        "pustynia" => "Pustynia",
+        "polarny" => "Polarny",
+        _ => return None,
+    })
+}
+
+/// Web `WorkedTile` (pola czytane przez `tileYield` bez ulepszen): `terenBazowy`, `nakladka`
+/// (tylko `'las'` ma wplyw na ten zakres), `maRzeke`. Ulepszenia i zloza NIE sa wejsciem (ZALOZENIE
+/// Z-D2.2d-1: galaz `impKeys` tileYield nieportowana).
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct WorkedTileInput<'a> {
+    pub teren_bazowy: &'a str,
+    pub nakladka: &'a str,
+    pub ma_rzeke: bool,
+}
+
+/// Wynik `tileYield` w zakresie uzywanym przez wyjscie `cityYieldPerTurn` (zywnosc, praca, handel).
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct TileYieldBase {
+    pub zywnosc: f64,
+    pub praca: f64,
+    pub handel: f64,
+}
+
+/// Web `tileYield(tile)` (`economy.ts@91dc998a` L421-470) bez galezi ulepszen: wiersz terenu +
+/// modyfikator `'Las (nakładka)'` (gdy las) + modyfikator `'Rzeka'` (gdy rzeka), kolejnosc jak w
+/// webie; potem `Math.max(0, x)` per pole. Brak wiersza terenu lub modyfikatora = zera.
+/// Kolumna `Podatek` = handel (web: `row['Podatek'] ?? row['Handel']`).
+pub fn tile_yield_base(data: &TerrainYieldsFile, tile: &WorkedTileInput<'_>) -> TileYieldBase {
+    let modifier = |name: &str| -> (f64, f64, f64) {
+        data.terrain_modifiers
+            .iter()
+            .find(|m| m.modyfikator == name)
+            .map(|m| (m.zywnosc as f64, m.praca as f64, m.podatek as f64))
+            .unwrap_or((0.0, 0.0, 0.0))
+    };
+    let (mut zywnosc, mut praca, mut handel) = terrain_row_name(tile.teren_bazowy)
+        .and_then(|name| data.terrain_types.iter().find(|r| r.teren == name))
+        .map(|r| (r.zywnosc as f64, r.praca as f64, r.podatek as f64))
+        .unwrap_or((0.0, 0.0, 0.0));
+    if tile.nakladka == "las" {
+        let (z, p, h) = modifier("Las (nakładka)");
+        zywnosc += z;
+        praca += p;
+        handel += h;
+    }
+    if tile.ma_rzeke {
+        let (z, p, h) = modifier("Rzeka");
+        zywnosc += z;
+        praca += p;
+        handel += h;
+    }
+    TileYieldBase {
+        zywnosc: js_math_max_zero(zywnosc),
+        praca: js_math_max_zero(praca),
+        handel: js_math_max_zero(handel),
+    }
+}
+
+/// Web Step 1 (L837-847): sumy `zywnoscTerenu`, `pracaTerenu`, `handelTerenu` po kafelkach,
+/// w kolejnosci tablicy, od `+0`.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct TerrainSums {
+    pub zywnosc: f64,
+    pub praca: f64,
+    pub handel: f64,
+}
+
+pub fn city_terrain_sums(data: &TerrainYieldsFile, tiles: &[WorkedTileInput<'_>]) -> TerrainSums {
+    let mut sums = TerrainSums {
+        zywnosc: 0.0,
+        praca: 0.0,
+        handel: 0.0,
+    };
+    for tile in tiles {
+        let y = tile_yield_base(data, tile);
+        sums.zywnosc += y.zywnosc;
+        sums.praca += y.praca;
+        sums.handel += y.handel;
+    }
+    sums
+}
+
+/// Wartosci bazowe lub przyrost budynku dla kluczy Step 3 (web `BuildingYieldKey` z tej zestawu).
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct BuildingYieldsInput {
+    pub praca: f64,
+    pub pieniadz: f64,
+    pub zywnosc: f64,
+    pub nauka: f64,
+    pub kultura: f64,
+}
+
+/// Wpis Step 3 (web `{ record, level }`): `id` rekordu (`record.id`), `level`, `baza`, `przyrost`.
+/// `NaN` w polu = brak klucza w rekordzie (web `undefined` daje `NaN` w `buildingEffectAtLevel`).
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct CityBuildingInput<'a> {
+    pub id: &'a str,
+    pub level: f64,
+    pub baza: BuildingYieldsInput,
+    pub przyrost: BuildingYieldsInput,
+}
+
+/// Web `buildingValue(b, level, key)` = `Math.floor(buildingEffectAtLevel(baza, przyrost, level))`,
+/// gdzie `buildingEffectAtLevel` = `baza + przyrost * (max(1, floor(level)) - 1)`.
+/// `NaN` propaguje (web `Math.max(1, NaN)` = NaN).
+pub fn building_value(baza: f64, przyrost: f64, level: f64) -> f64 {
+    let lf = level.floor();
+    let n = if lf.is_nan() {
+        f64::NAN
+    } else if lf > 1.0 {
+        lf
+    } else {
+        1.0
+    };
+    (baza + przyrost * (n - 1.0)).floor()
+}
+
+/// Web Step 3 (L873-882): sumy `pracaBudynkow`, `pieniadzBudynkow` (przed bonusem portu),
+/// `pieniadzPortu` (tylko `id === 'port'`; np. `'port_wielki'` NIE wchodzi), `zywnoscBudynkow`,
+/// `naukaBudynkow`, `kulturaBudynkow`.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct BuildingSums {
+    pub praca: f64,
+    pub pieniadz: f64,
+    pub pieniadz_portu: f64,
+    pub zywnosc: f64,
+    pub nauka: f64,
+    pub kultura: f64,
+}
+
+pub fn city_building_sums(buildings: &[CityBuildingInput<'_>]) -> BuildingSums {
+    let mut sums = BuildingSums {
+        praca: 0.0,
+        pieniadz: 0.0,
+        pieniadz_portu: 0.0,
+        zywnosc: 0.0,
+        nauka: 0.0,
+        kultura: 0.0,
+    };
+    for b in buildings {
+        sums.praca += building_value(b.baza.praca, b.przyrost.praca, b.level);
+        let money = building_value(b.baza.pieniadz, b.przyrost.pieniadz, b.level);
+        sums.pieniadz += money;
+        if b.id == "port" {
+            sums.pieniadz_portu += money;
+        }
+        sums.zywnosc += building_value(b.baza.zywnosc, b.przyrost.zywnosc, b.level);
+        sums.nauka += building_value(b.baza.nauka, b.przyrost.nauka, b.level);
+        sums.kultura += building_value(b.baza.kultura, b.przyrost.kultura, b.level);
+    }
+    sums
+}
+
+/// Pelna `cityYieldPerTurn` od surowych wejsc (web `cityYieldPerTurn(city, workedTiles,
+/// cityBuildings, params, ctx)`): Step 1 i Step 3 licza sie z `tiles` i `buildings`, potem
+/// skladanie jak w [`city_yield_per_turn`]. Pola agregatow w `input` (`praca_terenu`,
+/// `handel_terenu`, `zywnosc_terenu`, `praca_budynkow`, `pieniadz_budynkow`, `pieniadz_portu`,
+/// `zywnosc_budynkow`, `nauka_budynkow`, `kultura_budynkow`) sa IGNOROWANE i nadpisywane sumami.
+pub fn city_yield_per_turn_from_worked(
+    matrix: &CivMatrixFile,
+    terrain: &TerrainYieldsFile,
+    params: &CityYieldParams,
+    input: &CityYieldInput<'_>,
+    tiles: &[WorkedTileInput<'_>],
+    buildings: &[CityBuildingInput<'_>],
+) -> CityYieldOutput {
+    let t = city_terrain_sums(terrain, tiles);
+    let b = city_building_sums(buildings);
+    let mut full = *input;
+    full.praca_terenu = t.praca;
+    full.handel_terenu = t.handel;
+    full.zywnosc_terenu = t.zywnosc;
+    full.praca_budynkow = b.praca;
+    full.pieniadz_budynkow = b.pieniadz;
+    full.pieniadz_portu = b.pieniadz_portu;
+    full.zywnosc_budynkow = b.zywnosc;
+    full.nauka_budynkow = b.nauka;
+    full.kultura_budynkow = b.kultura;
+    city_yield_per_turn(matrix, params, &full)
 }
