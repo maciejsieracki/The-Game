@@ -16,7 +16,7 @@ use civ_engine::domain::mapgen::landsea::{
 };
 use common::{
     build_map, cases, check_input, dims, dump, expected_state, load, map_index, map_rows,
-    map_scores, s, WEB_CASES_ENFORCE, WEB_CASES_ENFORCE_PROBE,
+    map_scores, s, WEB_CASES_ENFORCE, WEB_CASES_ENFORCE_LARGE, WEB_CASES_ENFORCE_PROBE,
 };
 use serde_json::Value;
 
@@ -123,6 +123,20 @@ fn enforce_probe_matches_web() {
         .filter(|c| c["sonda"].as_str() == Some("klamp-decyzja"))
         .count();
     assert!(decyzja >= 10, "za malo sond decyzji klampu: {decyzja}");
+    for c in cs {
+        check_case(&r, c);
+    }
+}
+
+/// Duze mapy (40x40 i 60x60, pojemnosc ladu do 97%; plik `web-enforce-large.json`, generator
+/// `gen-m06b2-enforce-large.mjs`). Rozrozniaja gorny klamp celu 0.85 vs 0.86 (mutacja M11) oraz
+/// 1 vs 2 przebiegi wybrzeza w etapie 1 enforce (mutacja M12): na mniejszych mapach (18x18) obie
+/// mutacje przezywaly. Cele 0.85 / 0.86 / 0.9 / 0.99 i tolerancje 2/3/4 pp.
+#[test]
+fn enforce_large_maps_match_web() {
+    let r = load(WEB_CASES_ENFORCE_LARGE);
+    let cs = cases(&r, "enforceLarge");
+    assert!(cs.len() >= 150, "za malo przypadkow duzych map: {}", cs.len());
     for c in cs {
         check_case(&r, c);
     }
