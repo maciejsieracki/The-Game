@@ -1,0 +1,329 @@
+{
+ "pin": "dc8a3adc989bc82aab2cde6bb747c883f949fc1a",
+ "generator": "gen-repin-wojna-2-battle-mode-vectors.mjs (U2 r1)",
+ "node": "v22.22.0",
+ "sourceSha256": "ca6a88868b2bdfebf73180fb5d59cc3fec278f37cf161e16d4c34a2c2b9bff9a",
+ "BATTLE_MODE_SETTING_VERSION": "1",
+ "cases": [
+  {
+   "settingVersion": "undef",
+   "battleAlwaysManual": "undef",
+   "out": false
+  },
+  {
+   "settingVersion": "undef",
+   "battleAlwaysManual": "null",
+   "out": false
+  },
+  {
+   "settingVersion": "undef",
+   "battleAlwaysManual": "bool:true",
+   "out": false
+  },
+  {
+   "settingVersion": "undef",
+   "battleAlwaysManual": "bool:false",
+   "out": false
+  },
+  {
+   "settingVersion": "undef",
+   "battleAlwaysManual": "num:0",
+   "out": false
+  },
+  {
+   "settingVersion": "undef",
+   "battleAlwaysManual": "num:1",
+   "out": false
+  },
+  {
+   "settingVersion": "undef",
+   "battleAlwaysManual": "str:false",
+   "out": false
+  },
+  {
+   "settingVersion": "undef",
+   "battleAlwaysManual": "str:",
+   "out": false
+  },
+  {
+   "settingVersion": "num:0",
+   "battleAlwaysManual": "undef",
+   "out": false
+  },
+  {
+   "settingVersion": "num:0",
+   "battleAlwaysManual": "null",
+   "out": false
+  },
+  {
+   "settingVersion": "num:0",
+   "battleAlwaysManual": "bool:true",
+   "out": false
+  },
+  {
+   "settingVersion": "num:0",
+   "battleAlwaysManual": "bool:false",
+   "out": false
+  },
+  {
+   "settingVersion": "num:0",
+   "battleAlwaysManual": "num:0",
+   "out": false
+  },
+  {
+   "settingVersion": "num:0",
+   "battleAlwaysManual": "num:1",
+   "out": false
+  },
+  {
+   "settingVersion": "num:0",
+   "battleAlwaysManual": "str:false",
+   "out": false
+  },
+  {
+   "settingVersion": "num:0",
+   "battleAlwaysManual": "str:",
+   "out": false
+  },
+  {
+   "settingVersion": "num:1",
+   "battleAlwaysManual": "undef",
+   "out": false
+  },
+  {
+   "settingVersion": "num:1",
+   "battleAlwaysManual": "null",
+   "out": false
+  },
+  {
+   "settingVersion": "num:1",
+   "battleAlwaysManual": "bool:true",
+   "out": false
+  },
+  {
+   "settingVersion": "num:1",
+   "battleAlwaysManual": "bool:false",
+   "out": true
+  },
+  {
+   "settingVersion": "num:1",
+   "battleAlwaysManual": "num:0",
+   "out": false
+  },
+  {
+   "settingVersion": "num:1",
+   "battleAlwaysManual": "num:1",
+   "out": false
+  },
+  {
+   "settingVersion": "num:1",
+   "battleAlwaysManual": "str:false",
+   "out": false
+  },
+  {
+   "settingVersion": "num:1",
+   "battleAlwaysManual": "str:",
+   "out": false
+  },
+  {
+   "settingVersion": "num:2",
+   "battleAlwaysManual": "undef",
+   "out": false
+  },
+  {
+   "settingVersion": "num:2",
+   "battleAlwaysManual": "null",
+   "out": false
+  },
+  {
+   "settingVersion": "num:2",
+   "battleAlwaysManual": "bool:true",
+   "out": false
+  },
+  {
+   "settingVersion": "num:2",
+   "battleAlwaysManual": "bool:false",
+   "out": false
+  },
+  {
+   "settingVersion": "num:2",
+   "battleAlwaysManual": "num:0",
+   "out": false
+  },
+  {
+   "settingVersion": "num:2",
+   "battleAlwaysManual": "num:1",
+   "out": false
+  },
+  {
+   "settingVersion": "num:2",
+   "battleAlwaysManual": "str:false",
+   "out": false
+  },
+  {
+   "settingVersion": "num:2",
+   "battleAlwaysManual": "str:",
+   "out": false
+  },
+  {
+   "settingVersion": "num:-1",
+   "battleAlwaysManual": "undef",
+   "out": false
+  },
+  {
+   "settingVersion": "num:-1",
+   "battleAlwaysManual": "null",
+   "out": false
+  },
+  {
+   "settingVersion": "num:-1",
+   "battleAlwaysManual": "bool:true",
+   "out": false
+  },
+  {
+   "settingVersion": "num:-1",
+   "battleAlwaysManual": "bool:false",
+   "out": false
+  },
+  {
+   "settingVersion": "num:-1",
+   "battleAlwaysManual": "num:0",
+   "out": false
+  },
+  {
+   "settingVersion": "num:-1",
+   "battleAlwaysManual": "num:1",
+   "out": false
+  },
+  {
+   "settingVersion": "num:-1",
+   "battleAlwaysManual": "str:false",
+   "out": false
+  },
+  {
+   "settingVersion": "num:-1",
+   "battleAlwaysManual": "str:",
+   "out": false
+  },
+  {
+   "settingVersion": "num:1.5",
+   "battleAlwaysManual": "undef",
+   "out": false
+  },
+  {
+   "settingVersion": "num:1.5",
+   "battleAlwaysManual": "null",
+   "out": false
+  },
+  {
+   "settingVersion": "num:1.5",
+   "battleAlwaysManual": "bool:true",
+   "out": false
+  },
+  {
+   "settingVersion": "num:1.5",
+   "battleAlwaysManual": "bool:false",
+   "out": false
+  },
+  {
+   "settingVersion": "num:1.5",
+   "battleAlwaysManual": "num:0",
+   "out": false
+  },
+  {
+   "settingVersion": "num:1.5",
+   "battleAlwaysManual": "num:1",
+   "out": false
+  },
+  {
+   "settingVersion": "num:1.5",
+   "battleAlwaysManual": "str:false",
+   "out": false
+  },
+  {
+   "settingVersion": "num:1.5",
+   "battleAlwaysManual": "str:",
+   "out": false
+  },
+  {
+   "settingVersion": "num:NaN",
+   "battleAlwaysManual": "undef",
+   "out": false
+  },
+  {
+   "settingVersion": "num:NaN",
+   "battleAlwaysManual": "null",
+   "out": false
+  },
+  {
+   "settingVersion": "num:NaN",
+   "battleAlwaysManual": "bool:true",
+   "out": false
+  },
+  {
+   "settingVersion": "num:NaN",
+   "battleAlwaysManual": "bool:false",
+   "out": false
+  },
+  {
+   "settingVersion": "num:NaN",
+   "battleAlwaysManual": "num:0",
+   "out": false
+  },
+  {
+   "settingVersion": "num:NaN",
+   "battleAlwaysManual": "num:1",
+   "out": false
+  },
+  {
+   "settingVersion": "num:NaN",
+   "battleAlwaysManual": "str:false",
+   "out": false
+  },
+  {
+   "settingVersion": "num:NaN",
+   "battleAlwaysManual": "str:",
+   "out": false
+  },
+  {
+   "settingVersion": "null",
+   "battleAlwaysManual": "undef",
+   "out": false
+  },
+  {
+   "settingVersion": "null",
+   "battleAlwaysManual": "null",
+   "out": false
+  },
+  {
+   "settingVersion": "null",
+   "battleAlwaysManual": "bool:true",
+   "out": false
+  },
+  {
+   "settingVersion": "null",
+   "battleAlwaysManual": "bool:false",
+   "out": false
+  },
+  {
+   "settingVersion": "null",
+   "battleAlwaysManual": "num:0",
+   "out": false
+  },
+  {
+   "settingVersion": "null",
+   "battleAlwaysManual": "num:1",
+   "out": false
+  },
+  {
+   "settingVersion": "null",
+   "battleAlwaysManual": "str:false",
+   "out": false
+  },
+  {
+   "settingVersion": "null",
+   "battleAlwaysManual": "str:",
+   "out": false
+  }
+ ]
+}

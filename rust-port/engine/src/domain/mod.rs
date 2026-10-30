@@ -6,6 +6,7 @@ pub mod ai_move_range;
 pub mod army_consolidation;
 pub mod army_leadership;
 pub mod barbarians;
+pub mod battle_mode;
 pub mod building_costs;
 pub mod city_growth;
 pub mod city_names;
