@@ -18,9 +18,18 @@ use crate::domain::mapgen::prims::{
 use crate::domain::mapgen::terrain_class::{set_hex_to_morze, HexRecord, Nakladka, TerrainHex};
 
 pub mod fields;
+pub mod walk;
 pub use self::fields::{
     build_open_ocean_distance_field, build_river_field_cache, build_sea_distance_field,
     river_path_respects_sea_buffer, rivers_quota_for_land_mass, RiverFieldCache,
+};
+pub use self::walk::{
+    audit_map_terrain_data, can_river_drain_step, estimate_land_centroid_from_mouth,
+    estimate_land_centroid_from_seed, infer_map_dims_from_hexes, is_relief_river_source,
+    is_river_drainage_goal, path_ends_at_sea, reconstruct_river_path, river_hex_dir_delta,
+    river_step_dir, same_river_dir, score_river_step_toward_center_square,
+    score_river_step_toward_centroid, score_river_step_toward_land_center, MapTerrainAudit,
+    CENTROID_VISIT_CAP,
 };
 
 /// Web `RiverCoord` (gen-helpers.ts:5844): `{ q, r }`.
@@ -101,12 +110,12 @@ pub const fn elevation_rank(t: Terrain) -> u8 {
 // ---------------------------------------------------------------------------
 
 /// Web `isReliefTerrain` (:5847): gory i wzgorza.
-const fn is_relief_terrain(t: Terrain) -> bool {
+pub(crate) const fn is_relief_terrain(t: Terrain) -> bool {
     matches!(t, Terrain::Mountains | Terrain::Hills)
 }
 
 /// Web `isRiverLandTerrain` (:6854): lad nadajacy sie na zrodlo / bieg rzeki.
-const fn is_river_land_terrain(t: Terrain) -> bool {
+pub(crate) const fn is_river_land_terrain(t: Terrain) -> bool {
     matches!(
         t,
         Terrain::Grassland
