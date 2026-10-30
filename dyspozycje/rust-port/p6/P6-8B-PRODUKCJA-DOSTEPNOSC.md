@@ -14,7 +14,7 @@
 | 8B-P1b-c2a | `manpowerCostOf` (1985), `setPaused` (1990), pola `wstrzymana`/`rekrutacja` w `CityProduction` | **ZROBIONE (kod + wektory + mutacje), runda 4 Operatora** | `9040d3bca` |
 | 8B-P1b-c2b | `availableReplacementsFor` (1136–1252), `replacement_name_compare` (localeCompare) | **ZROBIONE (kod + wektory + mutacje), runda 4 Operatora** | `88991f78b` |
 | 8B-P1b-c2c | `availableProduction` (923–1135) | **ZROBIONE (kod + wektory + mutacje), runda 4 Operatora** | `fbd9faf12` |
-| 8B-P2 | rekrutacja, rush, praca/podział, katalog epok, podział wyjścia (2004–2541) | NIEWYKONANE; wymaga zamknięcia B3 (`recruitment.rs`, §4 podziału) | — |
+| 8B-P2 | rekrutacja, rush, praca/podział, katalog epok, podział wyjścia (2004–2541) | **ZROBIONE (kod + wektory z weba 91dc998a + testy progów), runda 1 Operatora tematu `R-RUSTPORT-P6-8B2-PRODUKCJA-REKRUTACJA-Q1`; mutacje NIE_ZMIERZONO (patrz raport)** | SHA w `dyspozycje/autobot/runs/R-RUSTPORT-P6-8B2-PRODUKCJA-REKRUTACJA-Q1/01-operator-r1.md` |
 
 Kryteria końca tematu **nie są spełnione**. Temat pozostaje OTWARTY.
 

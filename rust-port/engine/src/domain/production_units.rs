@@ -3062,3 +3062,682 @@ fn lite_of(b: &BuildingAvailRow) -> BuildingUpgradeLite {
         suppressed: b.suppressed,
     }
 }
+
+// ---------------------------------------------------------------------------
+// P6.8B2-P2: rekrutacja, rush, praca/podzial, katalog epok, podzial outputu
+// (production.ts 2004-2541 @91dc998a). Wektory: tests/p6_8b2_vectors/p2-*.json z URUCHOMIONEGO
+// weba (generator R-RUSTPORT-P6-8B2-PRODUKCJA-REKRUTACJA-Q1/gen-p6-8b2-vectors.mjs).
+// Zalozenia (ZALOZENIE, do weryfikacji):
+// * `advanceRecruitment(prod, maxPerTurn)`: `maxPerTurn` jako f64 (domyslny web = RECRUIT_UNITS_PER_TURN);
+//   NaN daje 0 zdjetych (JS `slice(0, NaN)` = pusty), a ogon = cala kolejka.
+// * `advanceRecruitmentGated`: `city` = (population, manpower) zamiast calego obiektu City.
+// * `eraBuildingCatalog`: sortowanie nazw wg `polish_locale_compare` (przyblizenie ICU 'pl': litery
+//   polskie po bazie, `ch` po `h`). Zgodnosc z `localeCompare(b, 'pl')` potwierdzona wektorami katalogu
+//   (450 kontekstow z webu); ogolny ICU poza nazwami budynkow NIE_ZMIERZONO.
+// ---------------------------------------------------------------------------
+
+use crate::domain::building_costs::p6_7b::{
+    building_stock_cost, can_afford_building_stock, BuildingStockSource, StockRecord,
+};
+use crate::domain::recruitment::manpower::{
+    city_manpower_current, try_deduct_unit_spawn_costs, ManpowerCity,
+};
+
+/// web `EPOCH_NUMBER_TO_NAME` (production.ts): numer epoki -> etykieta.
+pub const EPOCH_NUMBER_TO_NAME: [(u32, &str); 3] = [(1, "Kamień"), (2, "Brąz"), (3, "Żelazo")];
+
+/// web `EPOCH_NUMBER_TO_NAME[n]` (`None` = brak klucza).
+pub fn epoch_number_to_name(n: u32) -> Option<&'static str> {
+    EPOCH_NUMBER_TO_NAME
+        .iter()
+        .find(|(k, _)| *k == n)
+        .map(|(_, name)| *name)
+}
+
+/// Kopia `CityProduction` z podmienionymi `kolejka`/`postep`/`rekrutacja` (`wstrzymana` zachowane).
+fn with_queue(prod: &CityProduction, rekrutacja: Option<Vec<ProductionItem>>) -> CityProduction {
+    CityProduction {
+        kolejka: prod.kolejka.clone(),
+        postep: prod.postep,
+        wstrzymana: prod.wstrzymana,
+        rekrutacja,
+    }
+}
+
+/// web `enqueueRecruitment(prod, item)`: dopisuje jednostke na koniec kolejki rekrutacji.
+/// Nie-jednostka = `prod` bez zmian.
+pub fn enqueue_recruitment(prod: &CityProduction, item: &ProductionItem) -> CityProduction {
+    if item.kind != ProductionKind::Jednostka {
+        return prod.clone();
+    }
+    let mut rq = prod.rekrutacja.clone().unwrap_or_default();
+    rq.push(item.clone());
+    with_queue(prod, Some(rq))
+}
+
+/// web `dequeueRecruitment(prod, index)`: usuwa pozycje `index`; poza zakresem (w tym ujemny) = bez zmian.
+pub fn dequeue_recruitment(prod: &CityProduction, index: i64) -> CityProduction {
+    let rq = prod.rekrutacja.clone().unwrap_or_default();
+    let next: Vec<ProductionItem> = if index < 0 || index >= rq.len() as i64 {
+        rq
+    } else {
+        rq.into_iter()
+            .enumerate()
+            .filter(|(i, _)| *i as i64 != index)
+            .map(|(_, it)| it)
+            .collect()
+    };
+    let rekrutacja = if next.is_empty() { None } else { Some(next) };
+    with_queue(prod, rekrutacja)
+}
+
+/// web `AdvanceRecruitmentResult`.
+#[derive(Debug, Clone, PartialEq)]
+pub struct AdvanceRecruitmentResult {
+    pub prod: CityProduction,
+    /// Jednostki ukonczone w tej turze (max `maxPerTurn`).
+    pub completed: Vec<ProductionItem>,
+}
+
+/// web `AdvanceRecruitmentGatedResult`.
+#[derive(Debug, Clone, PartialEq)]
+pub struct AdvanceRecruitmentGatedResult {
+    pub prod: CityProduction,
+    pub completed: Vec<ProductionItem>,
+    pub population: f64,
+    pub manpower: f64,
+}
+
+/// web `advanceRecruitment(prod, maxPerTurn)`: zdejmuje z przodu max `maxPerTurn` jednostek.
+pub fn advance_recruitment(prod: &CityProduction, max_per_turn: f64) -> AdvanceRecruitmentResult {
+    let rq = prod.rekrutacja.clone().unwrap_or_default();
+    if rq.is_empty() || max_per_turn <= 0.0 {
+        let rekrutacja = if rq.is_empty() { None } else { Some(rq) };
+        return AdvanceRecruitmentResult {
+            prod: with_queue(prod, rekrutacja),
+            completed: Vec::new(),
+        };
+    }
+    let cap = js_min(max_per_turn, rq.len() as f64);
+    // JS `slice(0, NaN)` = pusty; `slice(NaN)` = cala tablica.
+    let n = if cap.is_nan() {
+        0
+    } else {
+        cap.trunc() as usize
+    };
+    let completed: Vec<ProductionItem> = rq[..n].to_vec();
+    let rest: Vec<ProductionItem> = rq[n..].to_vec();
+    let rekrutacja = if rest.is_empty() { None } else { Some(rest) };
+    AdvanceRecruitmentResult {
+        prod: with_queue(prod, rekrutacja),
+        completed,
+    }
+}
+
+/// web `advanceRecruitmentGated(prod, city, epoka, maxPerTurn, costAlreadyPaid, maxMult, costMult)`.
+/// `city` = `(population, manpower)`; `manpower` `None` = pole nieobecne (web `undefined`).
+#[allow(clippy::too_many_arguments)]
+pub fn advance_recruitment_gated(
+    prod: &CityProduction,
+    city: (f64, Option<f64>),
+    epoka: f64,
+    max_per_turn: f64,
+    cost_already_paid: bool,
+    max_mult: f64,
+    cost_mult: f64,
+) -> AdvanceRecruitmentGatedResult {
+    let city_obj = ManpowerCity {
+        id: String::new(),
+        owner_id: 0,
+        population: city.0,
+        manpower: city.1,
+        q: 0,
+        r: 0,
+        oblegane: None,
+    };
+    let mut pop = city.0;
+    let mut mp = city_manpower_current(&city_obj, epoka, max_mult);
+    let mut rq = prod.rekrutacja.clone().unwrap_or_default();
+    let mut completed: Vec<ProductionItem> = Vec::new();
+    let mut n: f64 = 0.0;
+    while n < max_per_turn && !rq.is_empty() {
+        if cost_already_paid {
+            completed.push(rq.remove(0));
+            n += 1.0;
+            continue;
+        }
+        let front_id = rq[0].id.clone();
+        let step_city = ManpowerCity {
+            population: pop,
+            manpower: Some(mp),
+            ..city_obj.clone()
+        };
+        let d = try_deduct_unit_spawn_costs(
+            &step_city,
+            epoka,
+            UNIT_POPULATION_COST,
+            max_mult,
+            Some(front_id.as_str()),
+            cost_mult,
+        );
+        if !d.ok {
+            break;
+        }
+        completed.push(rq.remove(0));
+        pop = d.population;
+        mp = d.manpower;
+        n += 1.0;
+    }
+    let rekrutacja = if rq.is_empty() { None } else { Some(rq) };
+    AdvanceRecruitmentGatedResult {
+        prod: with_queue(prod, rekrutacja),
+        completed,
+        population: pop,
+        manpower: mp,
+    }
+}
+
+/// web `rushCost(prod, modifier)`: zloto do natychmiastowego ukonczenia frontu (1 Praca = 1 Pieniadz).
+/// Pusta kolejka = 0. Modyfikator nie-skonczony = 0.
+pub fn rush_cost(prod: &CityProduction, modifier: f64) -> f64 {
+    let Some(front) = prod.kolejka.first() else {
+        return 0.0;
+    };
+    let raw = if modifier.is_finite() { modifier } else { 0.0 };
+    let remaining = js_max(0.0, (front.koszt - prod.postep).ceil());
+    js_max(0.0, (remaining * (1.0 + raw)).ceil())
+}
+
+/// web `dropFrontItem(kolejka, remainder)`: zdejmuje front; nowy front odzyskuje swoj zbankowany postep.
+fn drop_front_item(kolejka: &[ProductionItem], remainder: f64) -> (Vec<ProductionItem>, f64) {
+    let mut rest: Vec<ProductionItem> = kolejka.iter().skip(1).cloned().collect();
+    let postep = rest.first().map_or(0.0, |f| f.postep.unwrap_or(0.0)) + remainder;
+    if let Some(next) = rest.first_mut() {
+        if next.postep.is_some() {
+            next.postep = None;
+        }
+    }
+    (rest, postep)
+}
+
+/// web `AdvanceProduction`-podobny wynik `rushProduction`.
+#[derive(Debug, Clone, PartialEq)]
+pub struct RushProductionResult {
+    pub prod: CityProduction,
+    /// Ukonczony front (`None` gdy kolejka pusta).
+    pub completed: Option<ProductionItem>,
+}
+
+/// web `rushProduction(prod)`: natychmiast konczy front, niezaleznie od zgromadzonej Pracy.
+pub fn rush_production(prod: &CityProduction) -> RushProductionResult {
+    let Some(front) = prod.kolejka.first().cloned() else {
+        return RushProductionResult {
+            prod: CityProduction {
+                kolejka: Vec::new(),
+                postep: 0.0,
+                wstrzymana: prod.wstrzymana,
+                rekrutacja: prod.rekrutacja.clone(),
+            },
+            completed: None,
+        };
+    };
+    let (kolejka, postep) = drop_front_item(&prod.kolejka, 0.0);
+    RushProductionResult {
+        prod: CityProduction {
+            kolejka,
+            postep,
+            wstrzymana: prod.wstrzymana,
+            rekrutacja: prod.rekrutacja.clone(),
+        },
+        completed: Some(front),
+    }
+}
+
+// --- Praca: JEDEN podzial (production.ts 2200-2260) ---------------------------------------
+
+/// web `PracaSplitTick` / wejscie `pracaImperialPoolGain`.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct PracaSplitTick {
+    pub do_budynkow: f64,
+    pub do_puli: f64,
+}
+
+/// web `PodzialPracyMiasta`.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct PodzialPracyMiasta {
+    pub total: f64,
+    pub do_budynkow: f64,
+    pub do_puli: f64,
+}
+
+/// web `cityPracaInteger(raw)`: `Math.round` dla skonczonych dodatnich, inaczej 0.
+pub fn city_praca_integer(raw: f64) -> f64 {
+    if raw.is_finite() && raw > 0.0 {
+        js_math_round(raw)
+    } else {
+        0.0
+    }
+}
+
+/// web `splitPraca(cityPraca, udzialBudynki)`: jedyny podzial Pracy miasta. Udzial nie-skonczony = 1.
+pub fn split_praca(city_praca: f64, udzial_budynki: f64) -> PodzialPracyMiasta {
+    let total = city_praca_integer(city_praca);
+    let raw = if udzial_budynki.is_finite() {
+        udzial_budynki
+    } else {
+        1.0
+    };
+    let u = js_min(1.0, js_max(0.0, raw));
+    let do_budynkow = js_math_round(total * u);
+    PodzialPracyMiasta {
+        total,
+        do_budynkow,
+        do_puli: total - do_budynkow,
+    }
+}
+
+/// web `pracaImperialPoolGain(split, queueEmpty)`: pusta kolejka = caly podzial, inaczej `doPuli`.
+pub fn praca_imperial_pool_gain(split: &PracaSplitTick, queue_empty: bool) -> f64 {
+    if queue_empty {
+        split.do_puli + split.do_budynkow
+    } else {
+        split.do_puli
+    }
+}
+
+/// web `previewPracaPoolBrutto(ticks, {queueEmpty, paused})`. `queue_empty[i]` brak = true;
+/// `paused` `None` = brak tablicy, `paused[i]` brak = false.
+pub fn preview_praca_pool_brutto(
+    ticks: &[PracaSplitTick],
+    queue_empty: &[bool],
+    paused: Option<&[bool]>,
+) -> f64 {
+    let mut sum = 0.0;
+    for (i, tk) in ticks.iter().enumerate() {
+        if paused.and_then(|p| p.get(i)).copied().unwrap_or(false) {
+            continue;
+        }
+        let qe = queue_empty.get(i).copied().unwrap_or(true);
+        sum += praca_imperial_pool_gain(tk, qe);
+    }
+    sum
+}
+
+/// web `unitCostMode(_def)`: zawsze `'pieniadz'` (decyzja Q1, 2026-06-25).
+pub fn unit_cost_mode(_def: &UnitCostRow) -> &'static str {
+    "pieniadz"
+}
+
+/// web `unitPurchaseCost(def, civBonusy?, kosztJednostekPace?, ownerId = 0, difficulty = 'normal')`.
+/// Brak bonusow/tempa = `markers` puste i `pace` `None`.
+pub fn unit_purchase_cost(
+    def: &UnitCostRow,
+    markers: &[CostMarker<'_>],
+    pace: Option<UnitCostPace<'_>>,
+    owner_id: i64,
+    difficulty: Difficulty,
+) -> f64 {
+    let base = scale_cost_by_epoch(unit_cost_from_def(def), &epoch_input(def.epoka.as_deref()));
+    unit_money_cost_web(
+        base,
+        markers,
+        pace,
+        owner_id,
+        difficulty,
+        Some(def.jednostka.as_str()),
+    )
+}
+
+/// web `buildableProduction`: tylko budynki z `availableProduction`.
+pub fn buildable_production(
+    buildings: &[BuildingAvailRow],
+    units: &[UnitReplaceRow],
+    ctx: &ProductionAvailabilityCtx<'_>,
+) -> Vec<ProductionItem> {
+    available_production(buildings, units, ctx)
+        .into_iter()
+        .filter(|it| it.kind == ProductionKind::Budynek)
+        .collect()
+}
+
+/// web `purchasableUnits`: tylko jednostki z `availableProduction`.
+pub fn purchasable_units(
+    buildings: &[BuildingAvailRow],
+    units: &[UnitReplaceRow],
+    ctx: &ProductionAvailabilityCtx<'_>,
+) -> Vec<ProductionItem> {
+    available_production(buildings, units, ctx)
+        .into_iter()
+        .filter(|it| it.kind == ProductionKind::Jednostka)
+        .collect()
+}
+
+// --- Katalog epok (production.ts 2400-2472) ------------------------------------------------
+
+/// web `BuildingCatalogStatus`.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum BuildingCatalogStatus {
+    Ready,
+    Locked,
+    Built,
+    Queued,
+}
+
+impl BuildingCatalogStatus {
+    /// Ranga sortowania web (`ready` 0, `locked` 1, `queued` 2, `built` 3).
+    fn rank(self) -> u8 {
+        match self {
+            Self::Ready => 0,
+            Self::Locked => 1,
+            Self::Queued => 2,
+            Self::Built => 3,
+        }
+    }
+}
+
+/// Wiersz budynku dla katalogu epok: pola `availableProduction` + `kategoria`, `wielokrotny`,
+/// `wymagania` i `koszt_surowce` (czytane przez `eraBuildingCatalog`).
+#[derive(Debug, Clone, PartialEq, Default)]
+pub struct EraBuildingRow {
+    pub avail: BuildingAvailRow,
+    pub kategoria: String,
+    /// web `wielokrotny` (`None` = brak; w danych pinu pole nie wystepuje).
+    pub wielokrotny: Option<bool>,
+    /// web `wymagania` (`None` = brak).
+    pub wymagania: Option<String>,
+    /// web `koszt_surowce` (`None` = brak).
+    pub koszt_surowce: Option<BTreeMap<String, Option<f64>>>,
+}
+
+/// Kontekst `eraBuildingCatalog` (pola `AvailabilityContext` czytane przez katalog).
+#[derive(Debug, Clone)]
+pub struct EraCatalogCtx<'a> {
+    /// web `ctx.epoch` (nie-skonczona = 1).
+    pub epoch: f64,
+    /// web `ctx.buildingLevel` (nie-skonczona = 1).
+    pub building_level: f64,
+    /// web `ctx.builtBuildingIds`.
+    pub built_building_ids: &'a [&'a str],
+    /// web `ctx.productionQueue`.
+    pub production_queue: &'a [ProductionItem],
+    /// web `ctx.isCapital` (`None` = brak).
+    pub is_capital: Option<bool>,
+    /// web `ctx.empireResourceStock` (`None` = brak).
+    pub empire_resource_stock: Option<&'a StockRecord>,
+    /// web `ctx.empireBuiltIds` (`None` = brak).
+    pub empire_built_ids: Option<&'a [String]>,
+    /// web `ctx.ownerId` (domyslnie 0).
+    pub owner_id: i64,
+    /// web `ctx.difficulty` (domyslnie `normal`).
+    pub difficulty: Difficulty,
+}
+
+/// Wpis katalogu budynkow epoki (web `BuildingCatalogEntry`).
+#[derive(Debug, Clone, PartialEq)]
+pub struct BuildingCatalogEntry {
+    pub id: String,
+    pub nazwa: String,
+    pub kategoria: String,
+    pub koszt: f64,
+    pub status: BuildingCatalogStatus,
+    /// Wymagana, niepozyskana tech (pusta = brak wymogu).
+    pub missing_tech: String,
+    pub wymagania: String,
+    /// `Some("stolica" | "region")` gdy lokalizacja blokuje budowe.
+    pub location_blocked: Option<String>,
+}
+
+/// Klucze porzadku ICU `localeCompare(b, 'pl')` (tailoring polski): litery polskie sortuja sie
+/// po swojej bazie (`ą` po `a`, `ł` po `l`, `ź` przed `ż`), digraf `ch` po `h` i przed `i`.
+/// Klasa 0 = znaki spoza liter (spacje, cyfry, interpunkcja) przed litery (klasa 1).
+fn pl_primary_keys(s: &str) -> Vec<(u8, u32)> {
+    let chars: Vec<char> = s.chars().flat_map(char::to_lowercase).collect();
+    let mut out = Vec::with_capacity(chars.len());
+    let mut i = 0;
+    while i < chars.len() {
+        let c = chars[i];
+        if c == 'c' && chars.get(i + 1) == Some(&'h') {
+            out.push((1, 'h' as u32 * 10 + 5));
+            i += 2;
+            continue;
+        }
+        let weight = match c {
+            'ą' => Some('a' as u32 * 10 + 1),
+            'ć' => Some('c' as u32 * 10 + 1),
+            'ę' => Some('e' as u32 * 10 + 1),
+            'ł' => Some('l' as u32 * 10 + 1),
+            'ń' => Some('n' as u32 * 10 + 1),
+            'ó' => Some('o' as u32 * 10 + 1),
+            'ś' => Some('s' as u32 * 10 + 1),
+            'ź' => Some('z' as u32 * 10 + 1),
+            'ż' => Some('z' as u32 * 10 + 2),
+            c if c.is_ascii_alphabetic() => Some(c as u32 * 10),
+            _ => None,
+        };
+        match weight {
+            Some(w) => out.push((1, w)),
+            None => out.push((0, c as u32)),
+        }
+        i += 1;
+    }
+    out
+}
+
+/// web `a.localeCompare(b, 'pl')` dla nazw budynkow: pierwszy poziom wg `pl_primary_keys`,
+/// remis = wielkosc liter (male przed wielkimi, jak ICU), na koniec porzadek bajtowy.
+pub fn polish_locale_compare(a: &str, b: &str) -> std::cmp::Ordering {
+    pl_primary_keys(a)
+        .cmp(&pl_primary_keys(b))
+        .then_with(|| {
+            let case_a: Vec<bool> = a.chars().map(char::is_uppercase).collect();
+            let case_b: Vec<bool> = b.chars().map(char::is_uppercase).collect();
+            case_a.cmp(&case_b)
+        })
+        .then_with(|| a.cmp(b))
+}
+
+/// web `eraBuildingCatalog(data, unlockedTechs, ctx)`: wszystkie budynki epoki `ctx.epoch`
+/// (takze zablokowane, w kolejce i wybudowane). Sortowanie: status, potem nazwa.
+pub fn era_building_catalog(
+    rows: &[EraBuildingRow],
+    unlocked_techs: &[&str],
+    ctx: &EraCatalogCtx<'_>,
+) -> Vec<BuildingCatalogEntry> {
+    let epoch = if ctx.epoch.is_finite() {
+        ctx.epoch
+    } else {
+        1.0
+    };
+    let level = if ctx.building_level.is_finite() {
+        ctx.building_level
+    } else {
+        1.0
+    };
+    let built = ctx.built_building_ids;
+    let built_owned: Vec<String> = built.iter().map(|s| (*s).to_string()).collect();
+    let data = ProductionData {
+        buildings: rows.iter().map(|r| r.avail.cost.clone()).collect(),
+        units: Vec::new(),
+    };
+    let links: Vec<BuildingLinkRow> = rows
+        .iter()
+        .map(|b| BuildingLinkRow {
+            id: b.avail.cost.id.clone(),
+            upgrade_from: b.avail.upgrade_from.clone(),
+            odblokowuje: b.avail.odblokowuje.clone(),
+        })
+        .collect();
+    let prereq_rows: Vec<PrereqBuilding> = rows
+        .iter()
+        .map(|b| PrereqBuilding {
+            id: b.avail.cost.id.clone(),
+            upgrade_from: b.avail.upgrade_from.clone(),
+        })
+        .collect();
+    let superseded = |id: &str, built_list: &[String], _bl: &[PrereqBuilding]| -> bool {
+        let refs: Vec<&str> = built_list.iter().map(String::as_str).collect();
+        is_building_superseded_by_upgrade(id, &refs, &links)
+    };
+    let techs = unlocked_techs;
+    let mut entries: Vec<BuildingCatalogEntry> = Vec::new();
+
+    for row in rows {
+        let b = &row.avail.cost;
+        let id = b.id.as_str();
+        if b.epoka_wejscia != Some(epoch) {
+            continue;
+        }
+        if is_building_suppressed_from_production(&lite_of(&row.avail)) {
+            continue;
+        }
+        if id == "palisada" && (built.contains(&"mury") || built.contains(&"fort")) {
+            continue;
+        }
+        let koszt = building_work_cost_web(
+            item_cost(ProductionKind::Budynek, id, &data, level),
+            &[],
+            None,
+            ctx.owner_id,
+            ctx.difficulty,
+        );
+        let tech = js_trim(row.avail.tech_unlock.as_deref().unwrap_or(""));
+        let tech_ok = tech.is_empty() || tech == "-" || tech == "\u{2014}" || techs.contains(&tech);
+        let location_ok = building_location_allowed(b.lokalizacja.as_deref(), ctx.is_capital);
+        let prereq_ok = city_building_prereq_met(
+            city_building_prereq(id),
+            &built_owned,
+            &prereq_rows,
+            &superseded,
+        );
+        let stock_cost = building_stock_cost(Some(&BuildingStockSource {
+            epoka_wejscia: b.epoka_wejscia,
+            koszt_surowce: row.koszt_surowce.clone(),
+        }));
+        let gate = GateBuilding {
+            id: id.to_string(),
+            epoka_wejscia: b.epoka_wejscia,
+            wymagany_surowiec: row.avail.wymagany_surowiec.clone(),
+        };
+        let resource_ok = can_afford_building_stock(ctx.empire_resource_stock, &stock_cost)
+            && building_resource_gate_met(
+                &gate,
+                None,
+                ctx.empire_built_ids,
+                ctx.empire_resource_stock,
+            );
+
+        let (status, location_blocked) = if building_type_queued(id, ctx.production_queue) {
+            (BuildingCatalogStatus::Queued, None)
+        } else if !row.wielokrotny.unwrap_or(false) && built.contains(&id) {
+            (BuildingCatalogStatus::Built, None)
+        } else if !tech_ok {
+            (BuildingCatalogStatus::Locked, None)
+        } else if !location_ok {
+            (BuildingCatalogStatus::Locked, b.lokalizacja.clone())
+        } else if !prereq_ok || !resource_ok {
+            (BuildingCatalogStatus::Locked, None)
+        } else {
+            (BuildingCatalogStatus::Ready, None)
+        };
+
+        entries.push(BuildingCatalogEntry {
+            id: b.id.clone(),
+            nazwa: b.nazwa.clone(),
+            kategoria: row.kategoria.clone(),
+            koszt,
+            status,
+            missing_tech: if tech_ok {
+                String::new()
+            } else {
+                tech.to_string()
+            },
+            wymagania: js_trim(row.wymagania.as_deref().unwrap_or("")).to_string(),
+            location_blocked,
+        });
+    }
+
+    entries.sort_by(|a, b| {
+        a.status
+            .rank()
+            .cmp(&b.status.rank())
+            .then_with(|| polish_locale_compare(&a.nazwa, &b.nazwa))
+    });
+    entries
+}
+
+// --- Podzial outputu na 4 strumienie (production.ts 2480-2541) -----------------------------
+
+/// web `OutputShares` (udzialy; nie musza sumowac sie do 1).
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct OutputShares {
+    pub produkcja: f64,
+    pub pieniadz: f64,
+    pub nauka: f64,
+    pub rozwoj: f64,
+}
+
+/// web `OutputSplit` (ten sam ksztalt co `OutputShares`; wynik sumuje sie do `total`).
+pub type OutputSplit = OutputShares;
+
+/// web `DEFAULT_OUTPUT_SHARES` = `miasto-params` `udzial_output_*` (`?? 0.4 / 0.3 / 0.2 / 0.1`).
+pub fn default_output_shares() -> OutputShares {
+    let p = miasto_params_static();
+    OutputShares {
+        produkcja: miasto_wartosc_in(p, "udzial_output_produkcja").unwrap_or(0.4),
+        pieniadz: miasto_wartosc_in(p, "udzial_output_pieniadz").unwrap_or(0.3),
+        nauka: miasto_wartosc_in(p, "udzial_output_nauka").unwrap_or(0.2),
+        rozwoj: miasto_wartosc_in(p, "udzial_output_rozwoj").unwrap_or(0.1),
+    }
+}
+
+/// web `splitOutput(total, shares?)`: podzial na 4 strumienie; suma == `total`.
+pub fn split_output(total: f64, shares: Option<&OutputShares>) -> OutputSplit {
+    let t = if total.is_finite() && total > 0.0 {
+        total
+    } else {
+        0.0
+    };
+    if t == 0.0 {
+        return OutputSplit {
+            produkcja: 0.0,
+            pieniadz: 0.0,
+            nauka: 0.0,
+            rozwoj: 0.0,
+        };
+    }
+    let s = shares.copied().unwrap_or_else(default_output_shares);
+    let fix = |v: f64| if v.is_finite() && v >= 0.0 { v } else { 0.0 };
+    let rp = fix(s.produkcja);
+    let rpi = fix(s.pieniadz);
+    let rn = fix(s.nauka);
+    let rr = fix(s.rozwoj);
+    let sum = rp + rpi + rn + rr;
+    if sum <= 0.0 {
+        return OutputSplit {
+            produkcja: t,
+            pieniadz: 0.0,
+            nauka: 0.0,
+            rozwoj: 0.0,
+        };
+    }
+    let produkcja = (t * rp / sum).floor();
+    let pieniadz = (t * rpi / sum).floor();
+    let nauka = (t * rn / sum).floor();
+    let rozwoj = t - produkcja - pieniadz - nauka;
+    OutputSplit {
+        produkcja,
+        pieniadz,
+        nauka,
+        rozwoj,
+    }
+}
+
+/// web `cityScienceOutput(total, shares?)` = `splitOutput(...).nauka`.
+pub fn city_science_output(total: f64, shares: Option<&OutputShares>) -> f64 {
+    split_output(total, shares).nauka
+}
+
+/// web `cityMoneyOutput(total, shares?)` = `splitOutput(...).pieniadz`.
+pub fn city_money_output(total: f64, shares: Option<&OutputShares>) -> f64 {
+    split_output(total, shares).pieniadz
+}
