@@ -323,3 +323,18 @@ fn multi_city_drain_is_single_owner_pool() {
     assert_eq!(d.deductions.get("glina"), Some(&5.0));
     assert!(d.coverage.available.is_empty());
 }
+
+#[test]
+fn era_table_epochs_are_unique_and_sorted() {
+    // Poprawka r2 (zarzut Evaluatora 7): web przy zduplikowanych epokach bierze pierwszy wiersz,
+    // Rust ostatni. Rownowaznosc zachodzi TYLKO dopoki epoki sa unikalne - test to pilnuje.
+    let t = table();
+    let epochs: Vec<i64> = t.epoki.iter().map(|row| row.epoka).collect();
+    assert!(!epochs.is_empty());
+    for pair in epochs.windows(2) {
+        assert!(
+            pair[0] < pair[1],
+            "epoki musza byc unikalne i rosnace: {epochs:?}"
+        );
+    }
+}

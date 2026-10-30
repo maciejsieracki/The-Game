@@ -1,10 +1,25 @@
 #!/bin/bash
-# Mutation checks for P6.8D-P1 citizen upkeep (run from worktree engine dir).
-cd /home/user/The-Game/.claude/worktrees/wf_0243c140-2fc-1/rust-port/engine || exit 1
-export CARGO_INCREMENTAL=0 CARGO_PROFILE_DEV_DEBUG=0 CARGO_TARGET_DIR=/home/user/cargo-target-shared/wf_0243c140-2fc-1
+# Mutation checks for P6.8D citizen upkeep (poprawka r2: odtwarzalnosc).
+# Uruchomienie z dowolnego katalogu wewnatrz worktree:
+#   bash dyspozycje/autobot/runs/R-RUSTPORT-P6-8D-UTRZYMANIE-OBYWATELI-Q1/mut-citizen-upkeep.sh
+# Sciezki wzgledne wzgledem korzenia worktree (git rev-parse), kopia oryginalu w mktemp,
+# trap przywraca plik nawet po przerwaniu (Ctrl-C / blad). Zadnych hardkodowanych worktree.
+set -u
+ROOT="$(git rev-parse --show-toplevel)" || exit 1
+ENGINE="$ROOT/rust-port/engine"
+cd "$ENGINE" || exit 1
+export CARGO_INCREMENTAL=0 CARGO_PROFILE_DEV_DEBUG=0
+export CARGO_TARGET_DIR="${CARGO_TARGET_DIR:-$ENGINE/target}"
 F=src/domain/resource_production.rs
-ORIG=/home/user/scratch-8d/rp_orig.rs
-cp "$F" "$ORIG"
+ORIG="$(mktemp)" || exit 1
+cp "$F" "$ORIG" || exit 1
+restore() {
+  if [ -f "$ORIG" ]; then
+    cp "$ORIG" "$F"
+    rm -f "$ORIG"
+  fi
+}
+trap restore EXIT INT TERM
 
 mutate() {
   local expr="$1"
