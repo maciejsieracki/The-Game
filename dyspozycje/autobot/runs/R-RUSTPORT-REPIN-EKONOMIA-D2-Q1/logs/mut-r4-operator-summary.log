@@ -1,0 +1,21 @@
+Mutanty operatora r4 (obrona r4) -- jedna zmiana naraz, przywrocenie pliku z kopii, cargo test --test p6_repin_d2_imp --test p6_repin_d2_full --no-fail-fast
+Runner: poza repo (scratchpad), wynik surowy z cargo test (linie "test result" i "FAILED").
+
+M1-ruda-z-ulepszen-pominieta: out.ruda += ore.ruda -> 0.0 * ore.ruda
+  exit=101; FAILED: parity_tile_yield_full_bit_exact, structural_ore_mines_and_zloze_ignored, parity_full_city_with_improvements_bit_exact -> ZABITY (3)
+M2-zadowolenie-zero: acc + building_happiness_at_level( -> acc + 0.0 * building_happiness_at_level(
+  exit=101; FAILED: parity_full_city_with_improvements_bit_exact, structural_happiness_sums_across_buildings_then_floor -> ZABITY (2)
+M3-drewno-terenu-pominiete: s.drewno += y.drewno -> s.drewno += 0.0
+  exit=101; FAILED: parity_full_city_with_improvements_bit_exact -> ZABITY (1)
+M4-kamien-terenu-pominiety: s.kamien += y.kamien -> s.kamien += 0.0
+  exit=101; FAILED: parity_full_city_with_improvements_bit_exact -> ZABITY (1)
+M5-ruda-zelaza-terenu-pominieta: s.ruda_zelaza += y.ruda_zelaza -> s.ruda_zelaza += 0.0
+  exit=101; FAILED: parity_full_city_with_improvements_bit_exact -> ZABITY (1)
+M6-clamp-praca-po-ulepszeniach-usuniety: usuniety wiersz out.praca = js_math_max_zero(out.praca) w galezi impKeys
+  exit=0; wszystkie testy OK -> PRZEZYWA (rownowazny pod zalozeniem Z-D2.2e-2; test structural_improvement_bonuses_nonnegative_in_data PASS)
+M7-zloze-None-w-ore: ore_yield_from_improvements(&keys, tile.zloze) -> ore_yield_from_improvements(&keys, None)
+  exit=0; wszystkie testy OK -> PRZEZYWA (rownowazny z konstrukcji: web oreYieldFromImprovements nie czyta zloze, pin terrain-improvements.ts L165-180; Rust parametr _zloze)
+M8-ryczalt-szczescia-0: BUILDING_HAPPINESS_BASE_PER_BUILDING + extra -> extra
+  exit=101; FAILED: structural_happiness_branches, parity_building_happiness_bit_exact, parity_full_city_with_improvements_bit_exact, structural_happiness_sums_across_buildings_then_floor -> ZABITY (4)
+
+Po mutacjach: git diff economy_yield.rs wolny od 0.0 * / None / usuniecia clampu (sprawdzone grepem: 0 trafien dla mutantow).

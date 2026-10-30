@@ -9,17 +9,21 @@
 //!
 //! - `parity_tile_yield_full_bit_exact`: 2000 kafelkow, 8 pol, bit-w-bit (znak zera, NaN).
 //! - `parity_city_terrain_sums_imp_bit_exact`: 400 miast, sumy Step 1 z ulepszeniami.
-//! - `parity_full_city_with_improvements_bit_exact`: 800 PELNYCH `cityYieldPerTurn` (12 pol).
+//! - `parity_full_city_with_improvements_bit_exact`: 800 PELNYCH `cityYieldPerTurn` (WSZYSTKIE 18 pol
+//!   `CityYieldResult` z pinu 91dc998a, L1011-1031; wraz z `zadowolenie` i polami `*Terenu`).
 //! - `parity_building_happiness_bit_exact`: 1900 wywolan `buildingHappinessAtLevel`.
 //! - `structural_*` / `boundary_*`: galezie wyprowadzone z kodu weba (nazwy odpowiadaja galeziom).
+//! - `structural_improvement_bonuses_nonnegative_in_data`: zalozenie Z-V-2 (clamp `Math.max(0,.)` po
+//!   ulepszeniach jest rownowazny tylko przy nieujemnych bonusach) -- test pilnuje tego zalozenia danych.
 
 use civ_engine::data::civilizations::CivMatrixFile;
 use civ_engine::data::terrain_map::parse_terrain_yields;
+use civ_engine::data::terrain_map::TERRAIN_IMPROVEMENTS_JSON;
 use civ_engine::domain::civ_matrix::load_civ_matrix;
 use civ_engine::domain::economy_yield::{
     building_happiness_at_level, city_terrain_sums_imp, city_yield_per_turn_from_worked_imp,
-    tile_yield_full, CityBuildingInput, CityYieldHeadParams, CityYieldInput, CityYieldOutput,
-    CityYieldParams, CityYieldTailParams, TerrainSums, WorkedTileImpInput,
+    tile_yield_full, CityBuildingFullInput, CityBuildingInput, CityYieldHeadParams, CityYieldInput,
+    CityYieldOutput, CityYieldParams, CityYieldTailParams, TerrainSums, WorkedTileImpInput,
     BUILDING_HAPPINESS_BASE_PER_BUILDING,
 };
 use civ_engine::domain::improvements::TileYield;
@@ -173,16 +177,36 @@ fn yields_of(v: &Value) -> civ_engine::domain::economy_yield::BuildingYieldsInpu
     }
 }
 
-fn buildings_of(case: &Value) -> Vec<CityBuildingInput<'_>> {
+/// Budynki pelnego przypadku z polami szczescia. `dajeSzczescie`: tylko JSON `true` daje szczescie
+/// (web `=== true`); `zadBaza` gdy liczba (`typeof === 'number'`), inaczej `None`; `zadPrzyrost` gdy
+/// brak = `NaN` (web `undefined` w `buildingEffectAtLevel`).
+fn buildings_of(case: &Value) -> Vec<CityBuildingFullInput<'_>> {
     case["in"]["buildings"]
         .as_array()
         .expect("buildings")
         .iter()
-        .map(|b| CityBuildingInput {
-            id: b["id"].as_str().expect("id"),
-            level: ef(&b["level"]),
-            baza: yields_of(&b["baza"]),
-            przyrost: yields_of(&b["przyrost"]),
+        .map(|b| {
+            let baza_z = if b["zadBaza"].get("f").is_some() {
+                Some(ef(&b["zadBaza"]))
+            } else {
+                None
+            };
+            let przyrost_z = if b["zadPrzyrost"].get("f").is_some() {
+                ef(&b["zadPrzyrost"])
+            } else {
+                f64::NAN
+            };
+            CityBuildingFullInput {
+                base: CityBuildingInput {
+                    id: b["id"].as_str().expect("id"),
+                    level: ef(&b["level"]),
+                    baza: yields_of(&b["baza"]),
+                    przyrost: yields_of(&b["przyrost"]),
+                },
+                daje_szczescie: b["dajeSzczescie"].as_bool() == Some(true),
+                baza_zadowolenie: baza_z,
+                przyrost_zadowolenie: przyrost_z,
+            }
         })
         .collect()
 }
@@ -217,6 +241,16 @@ fn city_fields(out: &CityYieldOutput, exp: &Value) -> Vec<(&'static str, f64, f6
             "pieniadzZPracy",
             out.pieniadz_z_pracy,
             ef(&exp["pieniadzZPracy"]),
+        ),
+        ("zadowolenie", out.zadowolenie, ef(&exp["zadowolenie"])),
+        ("drewnoTerenu", out.drewno_terenu, ef(&exp["drewnoTerenu"])),
+        ("kamienTerenu", out.kamien_terenu, ef(&exp["kamienTerenu"])),
+        ("glinaTerenu", out.glina_terenu, ef(&exp["glinaTerenu"])),
+        ("rudaTerenu", out.ruda_terenu, ef(&exp["rudaTerenu"])),
+        (
+            "rudaZelazaTerenu",
+            out.ruda_zelaza_terenu,
+            ef(&exp["rudaZelazaTerenu"]),
         ),
     ]
 }
@@ -649,4 +683,100 @@ fn structural_city_uses_improved_tile_sums() {
     );
     // Step 1 dokleja praca kafelka (farma: praca 3) do pracaTerenu; ulepszenie nie moze byc ignorowane.
     assert_eq!(improved.praca_terenu - base.praca_terenu, 3.0);
+}
+
+/// Zadowolenie miasta (web `zadBudynkow` = suma `buildingHappinessAtLevel` po budynkach, floor, L881/L1020):
+/// budynki z szczesciem sumuja sie od 0; `dajeSzczescie !== true` daje 0; bez `baza.zadowolenie` tylko ryczalt.
+#[test]
+fn structural_happiness_sums_across_buildings_then_floor() {
+    let terrain = parse_terrain_yields().unwrap();
+    let matrix: &CivMatrixFile = &load_civ_matrix().file;
+    let v = vectors();
+    let case = &v["full"].as_array().unwrap()[0];
+    let params = params_of(&case["in"]["params"]);
+    let input = input_of(case);
+    let zero = civ_engine::domain::economy_yield::BuildingYieldsInput {
+        praca: 0.0,
+        pieniadz: 0.0,
+        zywnosc: 0.0,
+        nauka: 0.0,
+        kultura: 0.0,
+    };
+    let base = CityBuildingInput {
+        id: "swiatynia",
+        level: 2.0,
+        baza: zero,
+        przyrost: zero,
+    };
+    let buildings = [
+        // 1 + buildingValue(baza 2, przyrost 1, poziom 2) = 1 + 3 = 4
+        CityBuildingFullInput {
+            base,
+            daje_szczescie: true,
+            baza_zadowolenie: Some(2.0),
+            przyrost_zadowolenie: 1.0,
+        },
+        // Mury: dajeSzczescie false -> 0
+        CityBuildingFullInput {
+            base,
+            daje_szczescie: false,
+            baza_zadowolenie: Some(9.0),
+            przyrost_zadowolenie: 9.0,
+        },
+        // ryczalt bez baza.zadowolenie -> 1
+        CityBuildingFullInput {
+            base: CityBuildingInput { level: 1.0, ..base },
+            daje_szczescie: true,
+            baza_zadowolenie: None,
+            przyrost_zadowolenie: f64::NAN,
+        },
+    ];
+    let out =
+        city_yield_per_turn_from_worked_imp(matrix, &terrain, &params, &input, &[], &buildings);
+    assert_eq!(out.zadowolenie, 5.0);
+    assert_eq!(out.drewno_terenu, 0.0);
+    assert_eq!(out.ruda_zelaza_terenu, 0.0);
+    // Ulamkowa suma: floor po sumie (web Math.floor(zadBudynkow)); 1 + buildingValue(1.5, 0, 2) = 1 + 1 = 2.
+    let frac = [CityBuildingFullInput {
+        base,
+        daje_szczescie: true,
+        baza_zadowolenie: Some(1.5),
+        przyrost_zadowolenie: 0.0,
+    }];
+    let out2 = city_yield_per_turn_from_worked_imp(matrix, &terrain, &params, &input, &[], &frac);
+    assert_eq!(out2.zadowolenie, 2.0);
+}
+
+/// Zalozenie Z-V-2: clamp `Math.max(0,.)` po ulepszeniach jest rownowazny tylko, gdy zaden bonus ulepszen
+/// nie jest ujemny. Test pilnuje tego zalozenia danych (zmiana na ujemne wymaga ponownego dowodu clampu).
+#[test]
+fn structural_improvement_bonuses_nonnegative_in_data() {
+    fn collect(v: &Value, out: &mut Vec<f64>) {
+        match v {
+            Value::Object(map) => {
+                for (key, child) in map {
+                    if key == "bonus" {
+                        if let Value::Object(bonus) = child {
+                            out.extend(bonus.values().filter_map(Value::as_f64));
+                        }
+                    }
+                    collect(child, out);
+                }
+            }
+            Value::Array(items) => items.iter().for_each(|item| collect(item, out)),
+            _ => {}
+        }
+    }
+    let data: Value = serde_json::from_str(TERRAIN_IMPROVEMENTS_JSON).unwrap();
+    let mut values = Vec::new();
+    collect(&data, &mut values);
+    assert!(
+        values.len() >= 20,
+        "too few bonus values checked: {}",
+        values.len()
+    );
+    assert!(
+        values.iter().all(|x| *x >= 0.0),
+        "negative improvement bonus present"
+    );
 }

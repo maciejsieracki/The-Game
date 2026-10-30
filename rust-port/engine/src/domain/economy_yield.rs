@@ -444,7 +444,12 @@ pub struct CityYieldInput<'a> {
     pub wojsko_zuzycie_zywnosci: f64,
 }
 
-/// Wynik pelnej `cityYieldPerTurn` (pola `CityYieldResult` obecne w pinie 91dc998a).
+/// Wynik pelnej `cityYieldPerTurn` (wszystkie 18 pol `CityYieldResult` z pinu 91dc998a, `economy.ts` L1011-1031).
+///
+/// Pola `zadowolenie` i `*_terenu` (drewno, kamien, glina, ruda, ruda_zelaza) licza sie tylko w
+/// [`city_yield_per_turn_from_worked_imp`] (potrzebuja kafelkow z ulepszeniami i danych szczescia
+/// budynkow). W ścieżkach [`city_yield_per_turn`] i [`city_yield_per_turn_from_worked`] (bez
+/// ulepszen) sa rowne `0`, a NIE wynikiem webu.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct CityYieldOutput {
     pub praca: f64,
@@ -460,6 +465,14 @@ pub struct CityYieldOutput {
     pub pieniadz_budynkow: f64,
     /// Web `pieniadzZPracy`: w pinie 91dc998a stale `0` (D5 wylaczone).
     pub pieniadz_z_pracy: f64,
+    /// Web `zadowolenie` = `Math.floor(zadBudynkow)` (suma `buildingHappinessAtLevel`, Step 3, L881, L1020).
+    pub zadowolenie: f64,
+    /// Web `drewnoTerenu` / `kamienTerenu` / `glinaTerenu` / `rudaTerenu` / `rudaZelazaTerenu` (Step 1, L842-846, L1027-1031).
+    pub drewno_terenu: f64,
+    pub kamien_terenu: f64,
+    pub glina_terenu: f64,
+    pub ruda_terenu: f64,
+    pub ruda_zelaza_terenu: f64,
 }
 
 /// Kompozycja `cityYieldPerTurn` (`gra/src/game/economy.ts@91dc998a` L819-1020) z AGREGATAMI
@@ -524,6 +537,13 @@ pub fn city_yield_per_turn(
         praca_budynkow: input.praca_budynkow.floor(),
         pieniadz_budynkow: head.pieniadz_budynkow.floor(),
         pieniadz_z_pracy: 0.0,
+        // Brak danych szczescia i rud w tej sciezce: patrz doc `CityYieldOutput`.
+        zadowolenie: 0.0,
+        drewno_terenu: 0.0,
+        kamien_terenu: 0.0,
+        glina_terenu: 0.0,
+        ruda_terenu: 0.0,
+        ruda_zelaza_terenu: 0.0,
     }
 }
 
@@ -643,6 +663,20 @@ pub struct CityBuildingInput<'a> {
     pub level: f64,
     pub baza: BuildingYieldsInput,
     pub przyrost: BuildingYieldsInput,
+}
+
+/// Wpis budynku dla pelnej `cityYieldPerTurn` z szczesciem (web `{ record, level }`, gdzie `record`
+/// niesie takze `dajeSzczescie` i `baza.zadowolenie`/`przyrost.zadowolenie`). Uzywany przez
+/// [`city_yield_per_turn_from_worked_imp`].
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct CityBuildingFullInput<'a> {
+    pub base: CityBuildingInput<'a>,
+    /// Web `record.dajeSzczescie === true` (tylko dokladnie `true`).
+    pub daje_szczescie: bool,
+    /// Web `record.baza.zadowolenie` gdy jest liczba (`typeof === 'number'`); inaczej `None`.
+    pub baza_zadowolenie: Option<f64>,
+    /// Web `record.przyrost.zadowolenie` (`NaN` gdy brak, jak `undefined`).
+    pub przyrost_zadowolenie: f64,
 }
 
 /// Web `buildingValue(b, level, key)` = `Math.floor(buildingEffectAtLevel(baza, przyrost, level))`,
@@ -864,18 +898,79 @@ pub fn city_terrain_sums_imp(
     sums
 }
 
-/// Pelna `cityYieldPerTurn` od kafelkow z ulepszeniami (web liczy `tileYield` z `impKeys` w Step 1).
+/// Sumy Step 1 z ulepszeniami wraz z polami surowcow terenu (web `drewnoTerenu` ... `rudaZelazaTerenu`).
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct TerrainSumsImpFull {
+    pub base: TerrainSums,
+    pub drewno: f64,
+    pub kamien: f64,
+    pub glina: f64,
+    pub ruda: f64,
+    pub ruda_zelaza: f64,
+}
+
+/// Web Step 1 (L837-847) z galezia ulepszen, wszystkie sumy w jednej petli, od `+0`, w kolejnosci kafelkow.
+pub fn city_terrain_sums_imp_full(
+    data: &TerrainYieldsFile,
+    tiles: &[WorkedTileImpInput<'_>],
+) -> TerrainSumsImpFull {
+    let mut s = TerrainSumsImpFull {
+        base: TerrainSums {
+            zywnosc: 0.0,
+            praca: 0.0,
+            handel: 0.0,
+        },
+        drewno: 0.0,
+        kamien: 0.0,
+        glina: 0.0,
+        ruda: 0.0,
+        ruda_zelaza: 0.0,
+    };
+    for tile in tiles {
+        let y = tile_yield_full(data, tile);
+        s.base.zywnosc += y.zywnosc;
+        s.base.praca += y.praca;
+        s.base.handel += y.handel;
+        s.drewno += y.drewno;
+        s.kamien += y.kamien;
+        s.glina += y.glina;
+        s.ruda += y.ruda;
+        s.ruda_zelaza += y.ruda_zelaza;
+    }
+    s
+}
+
+/// Pelna `cityYieldPerTurn` od kafelkow z ulepszeniami (web liczy `tileYield` z `impKeys` w Step 1)
+/// i budynkow z szczesciem (web Step 3: `zadBudynkow` = suma `buildingHappinessAtLevel`).
 /// Pola agregatow w `input` sa IGNOROWANE i nadpisywane sumami (jak w [`city_yield_per_turn_from_worked`]).
+/// Pola wyjscia `zadowolenie` i `*_terenu` sa liczone tutaj (`Math.floor` jak w webie, L1020, L1027-1031).
 pub fn city_yield_per_turn_from_worked_imp(
     matrix: &CivMatrixFile,
     terrain: &TerrainYieldsFile,
     params: &CityYieldParams,
     input: &CityYieldInput<'_>,
     tiles: &[WorkedTileImpInput<'_>],
-    buildings: &[CityBuildingInput<'_>],
+    buildings: &[CityBuildingFullInput<'_>],
 ) -> CityYieldOutput {
-    let t = city_terrain_sums_imp(terrain, tiles);
-    city_yield_per_turn_with_sums(matrix, params, input, t, buildings)
+    let t = city_terrain_sums_imp_full(terrain, tiles);
+    let bases: Vec<CityBuildingInput<'_>> = buildings.iter().map(|b| b.base).collect();
+    let mut out = city_yield_per_turn_with_sums(matrix, params, input, t.base, &bases);
+    // Web L1011-1031: `zadBudynkow` sumowane po budynkach, od `0`, w tej samej kolejnosci co Step 3.
+    let zad_budynkow = buildings.iter().fold(0.0, |acc, b| {
+        acc + building_happiness_at_level(
+            b.daje_szczescie,
+            b.baza_zadowolenie,
+            b.przyrost_zadowolenie,
+            b.base.level,
+        )
+    });
+    out.zadowolenie = zad_budynkow.floor();
+    out.drewno_terenu = t.drewno.floor();
+    out.kamien_terenu = t.kamien.floor();
+    out.glina_terenu = t.glina.floor();
+    out.ruda_terenu = t.ruda.floor();
+    out.ruda_zelaza_terenu = t.ruda_zelaza.floor();
+    out
 }
 
 /// Web `buildingHappinessAtLevel(b, level)` (`economy.ts@91dc998a` L523-531).

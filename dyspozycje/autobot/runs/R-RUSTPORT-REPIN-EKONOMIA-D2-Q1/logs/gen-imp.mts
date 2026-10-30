@@ -152,6 +152,9 @@ const makeBuilding = (id: string) => {
     baza[k] = rnd() < 0.4 ? 0 : num(0, 12);
     przyrost[k] = rnd() < 0.5 ? 0 : num(0, 4);
   }
+  // R2 (operator obrona r4): szczescie budynku -- zadowolenie w baza/przyrost (opcjonalne, jak w buildings.json).
+  if (rnd() < 0.5) baza.zadowolenie = rnd() < 0.2 ? 0 : num(0, 4);
+  if (rnd() < 0.5) przyrost.zadowolenie = num(0, 2);
   return { id, baza, przyrost, dajeSzczescie: rnd() < 0.5 };
 };
 const yEnc = (o: any) => Object.fromEntries(YIELD_KEYS.map((k) => [k, f(Number(o[k] ?? NaN))]));
@@ -201,6 +204,10 @@ for (let i = 0; i < N_FULL; i++) {
         level: f(level),
         baza: yEnc(record.baza),
         przyrost: yEnc(record.przyrost),
+        // Szczescie (web buildingHappinessAtLevel): dajeSzczescie (=== true), baza/przyrost.zadowolenie (undefined = {u:true}).
+        dajeSzczescie: enc(record.dajeSzczescie),
+        zadBaza: enc(record.baza?.zadowolenie),
+        zadPrzyrost: enc(record.przyrost?.zadowolenie),
       })),
       city: { civKey: enc(civKey), ludnosc: enc(city.ludnosc), podzial: { procentNauka: enc(city.podziałHandlu.procentNauka), procentPieniadz: enc(city.podziałHandlu.procentPieniadz), procentLuksus: enc(city.podziałHandlu.procentLuksus) }, poborca: specjalisci.filter((s) => s === 'poborca').length },
       flags: { maMlyn: ctx.maMlyn, maCegielnia: ctx.maCegielnia, walutaOdkryta: ctx.walutaOdkryta, maMennica: ctx.maMennica, maBiblioteka: ctx.maBiblioteka, maAkademia: ctx.maAkademia },
@@ -214,6 +221,8 @@ for (let i = 0; i < N_FULL; i++) {
       praca: enc(got.praca), pieniadz: enc(got.pieniadz), zywnosc: enc(got.zywnosc), nauka: enc(got.nauka), luksus: enc(got.luksus), kultura: enc(got.kultura),
       zywnoscBrutto: enc(got.zywnoscBrutto), handelBrutto: enc(got.handelBrutto), pracaTerenu: enc(got.pracaTerenu), pracaBudynkow: enc(got.pracaBudynkow),
       pieniadzBudynkow: enc(got.pieniadzBudynkow), pieniadzZPracy: enc(got.pieniadzZPracy),
+      zadowolenie: enc(got.zadowolenie), drewnoTerenu: enc(got.drewnoTerenu), kamienTerenu: enc(got.kamienTerenu),
+      glinaTerenu: enc(got.glinaTerenu), rudaTerenu: enc(got.rudaTerenu), rudaZelazaTerenu: enc(got.rudaZelazaTerenu),
     },
   });
 }
