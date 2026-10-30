@@ -19,3 +19,26 @@ BLOKADY: brak.
 RUNDY: 2/5 (R1 Evaluator FAIL, R2 Obrona, FC PASS-WITH-NOTES).
 NASTEPNY KROK: integracja orkiestratora `f2010871691` (+ ten commit z 03-final-control.md) na `origin/rust-port/parity-v2`; baza `d7f72e70b` jest przodkiem origin/rust-port/parity-v2, wiec merge/cherry-pick tylko tych dwoch commitow, potem re-bramki po integracji. Dalej D2.2c (Step 1-4, Step 3').
 DEPLOY/PUSH: NIE WYKONANO
+
+---
+
+# Final Control — runda 2 (D2.2b), oceniany 322b07d6d
+
+STATUS: PASS-WITH-NOTES
+DOMAIN: GAME
+TEMAT: R-RUSTPORT-REPIN-EKONOMIA-D2-Q1 (pozostaje OTWARTY; nie zamykac na tej partii)
+GOAL: D2.2b - Step 2, Step 3' (bonus portu), praca netto `city_yield_head` (web `economy.ts@91dc998a` L849-903). Reszta (Step 1, akumulacja Step 3, Step 4, Mint/`walutaMnoznikOverride`, `dochodTrasHandlowych`, `additionalTax`) = D2.2c.
+ZMIANY/COMMIT: oceniany `322b07d6d` (obrona; baza operatora `8a3baa6ab`, weryfikacja `93e5b76c6`, baza integracji `9bec76ef3`). Allowlista: `git diff --name-only 9bec76ef3 322b07d6d` = economy_yield.rs, tests/p6_repin_d2_head.rs, p6_repin_d2_head_vectors/head-main.json, P6-REPIN-EKONOMIA-D.md, runs/R-RUSTPORT-REPIN-EKONOMIA-D2-Q1/**. Zero gra/**, Cargo.toml, renderer, src-tauri, WERSJE.md. `git diff --check` czysty. Obrona (93e5b76c6..322b07d6d) zmienia tylko 2 pliki dokumentacji; kod Rust bez zmian.
+WEB (ostatnia aktualizacja): `origin/main` = `7164f7ca1` (git fetch). `git diff --stat 91dc998a origin/main` dla economy.ts, production.ts, terrain-improvements.ts, civ-matrix.ts, diplomacy-economy.ts, turn-economy.ts, gra/data = pusty. Pin 91dc998a aktualny, wektory nie wymagaja regeneracji.
+TESTY (samodzielnie na 322b07d6d, rust-port/engine): fmt --check EXIT=0; clippy --all-targets -D warnings EXIT=0; cargo test --no-fail-fast EXIT=0, 225 binarek, 1658 passed / 0 failed. target/ usuniety.
+ZARZUTY:
+1. Zakres r2 niedomkniety / Z-D2.2b-1 nieprzetestowane - ODDAL do D2.2c (udokumentowane jako NASTEPNA-PARTIA; temat otwarty; to nie defekt kodu D2.2b). Warunek: D2.2c musi przetestowac definicje `pieniadzPortu`.
+2. Niespojnosc M1 "4 testy" vs "3+" - NAPRAWIONE przez obrone (doc: 4, potwierdzone logami; sprawdzone w P6-REPIN-EKONOMIA-D.md L213/L219/L226).
+3. Wektory z wycinka, nie z pelnej funkcji - ODDAL do D2.2c (zobowiazanie Z-OBR-R2-1: wektory z pelnej `cityYieldPerTurn` przed zmiana sygnatury). Zgodnosc wycinka z webem potwierdzona mechanicznie przez obrone (31/31 linii).
+Zero zarzutow NAPRAW pozostajacych -> PASS-WITH-NOTES.
+NIE_ZMIERZONO: wektory nie regenerowane z weba (node nie uruchamiany); mutacje M1-M4 nie powtarzane (opieram sie na logach mut-r2-*).
+BLOKADY: brak.
+RUNDY: 2/5.
+KOLEJNOSC INTEGRACJI: SHA koncowy do integracji = `322b07d6d` (gałąź wf-d2-obrona-r2; zawiera 8a3baa6ab i 93e5b76c6). Integrowac PO `origin/rust-port/parity-v2` = `9bec76ef3` (bezposredni potomek, fast-forward/cherry-pick bez konfliktu). Commit FC (ten plik) lezy na wierzchu.
+NASTEPNY KROK: integracja orkiestratora; nastepnie partia D2.2c.
+DEPLOY/PUSH: NIE WYKONANO
