@@ -1,0 +1,6 @@
+MUTACJE P6.8B-P1b-c1 (runda 1 Operatora), skrypt: mut-p6-8b-p1b-c1.py (kopia zapasowa zrodla poza repo)
+M1 zwrot etykiety unitStockShortfallLabel -> None: KILLED
+M2 population_cost_of Jednostka -> 0.0: SURVIVED (EQUIV: UNIT_POPULATION_COST = 0 w pinie 91dc998a)
+M3 prog zapasu > 0 -> >= 0: KILLED
+M4 population_cost_of Budynek -> UNIT_POPULATION_COST: SURVIVED (EQUIV: j.w.)
+Zrodlo przywrocone: TAK (porownanie bajt w bajt)

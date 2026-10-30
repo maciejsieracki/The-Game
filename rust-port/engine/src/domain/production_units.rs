@@ -2441,3 +2441,21 @@ pub fn unit_matches_special_name(unit_name: &str, tokens: &[String]) -> bool {
             || tn.contains(&un)
     })
 }
+
+// ---------------------------------------------------------------------------
+// P6.8B-P1b (czesc 1): unitStockShortfallLabel (production.ts 682-693 @91dc998a) oraz
+// populationCostOf / UNIT_POPULATION_COST (production.ts 1980-1982 / 1977 @91dc998a). Wektory: p6_8b_vectors/p1b.json.
+// ---------------------------------------------------------------------------
+
+/// web `UNIT_POPULATION_COST` = `miasto-params.json` `jednostka_koszt_ludnosci.wartosc` (?? 1).
+/// Pin 91dc998a: wartosc 0 (rekrutacja nie zabiera ludnosci). Wartosc zamrozona w Rust; generator
+/// wektorow odczytuje ja z weba (`unitPopulationCost` w p1b.json).
+pub const UNIT_POPULATION_COST: f64 = 0.0;
+
+/// web `populationCostOf(item)`: koszt ludnosci ukonczenia pozycji (jednostka = `UNIT_POPULATION_COST`, budynek = 0).
+pub fn population_cost_of(item: &ProductionItem) -> f64 {
+    match item.kind {
+        ProductionKind::Jednostka => UNIT_POPULATION_COST,
+        ProductionKind::Budynek => 0.0,
+    }
+}

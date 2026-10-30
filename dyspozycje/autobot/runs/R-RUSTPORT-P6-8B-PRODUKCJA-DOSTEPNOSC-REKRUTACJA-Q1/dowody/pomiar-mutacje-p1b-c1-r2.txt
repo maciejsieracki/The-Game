@@ -1,0 +1,11 @@
+MUTACJE P6.8B-P1b-c1 (runda 2, weryfikator), skrypt: mut-p6-8b-p1b-c1-r2.py, komenda: cargo test --test p6_8b_p1b_vectors (CARGO_INCREMENTAL=0, bez dlugich pomiarow)
+Kod bazowy: ae62996d7 (production_units.rs bajt w bajt jak w commicie)
+M1 zwrot etykiety unitStockShortfallLabel -> None: KILLED (3 testy FAILED: text_is_exact, matches_web_vectors, thresholds_and_special_values; korekta r3: w r2 bylo blednie "4"; ponowny pomiar w pomiar-mutacje-p1b-c1-r3.txt)
+M2 population_cost_of Jednostka -> 0.0: SURVIVED = EQUIV przy UNIT_POPULATION_COST = 0.0 (zamrozona wartosc pinu; patrz M6)
+M3 prog zapasu unwrap_or(0.0) > 0.0 -> >= 0.0: KILLED (matches_web_vectors, thresholds, text_is_exact)
+M4 population_cost_of Budynek -> UNIT_POPULATION_COST: SURVIVED = EQUIV przy UNIT_POPULATION_COST = 0.0 (j.w.)
+M5 usuniecie js_trim z argumentu Surowiec: KILLED (matches_web_vectors)
+M6 UNIT_POPULATION_COST 0.0 -> 1.0 (wartosc fallbacku weba): KILLED (unit_population_cost_matches_web, population_cost_of_matches_web_vectors)
+M7 usuniecie toLowerCase w stripDiacritics (.to_lowercase() -> .to_string()): KILLED (thresholds, matches_web_vectors, text_is_exact)
+Wniosek: M2 i M4 przezywaja tylko dlatego, ze stala wynosi 0; sprzeczna z wartoscia webu zmiana stalej zabija M6 (test pinu). Lacznie 5 zabitych, 2 EQUIV.
+Zrodlo przywrocone: TAK (porownanie bajt w bajt po kazdym przebiegu i po calosci: restored_bytes_identical True).
