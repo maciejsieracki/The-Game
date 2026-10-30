@@ -38,3 +38,30 @@ RUNDY: 2/5
 NASTEPNY KROK: integracja e3ddd301 (+ ten commit) na rust-port/parity-v2; runda 3 pod tym samym ID z rozszerzona allowlista.
 KOLEJNOSC: baza cb57e479; origin/rust-port/parity-v2 (1aba22f7) ma 9 nowszych commitow M06B1 (mapgen/landsea.rs, data/derived.rs, mapgen-coast.json, p6_m06b1_*), rozlacznych z plikami r2 (mod.rs nietkniety po stronie parity-v2). Integrowac PO obecnym HEAD parity-v2; po integracji powtorzyc bramki.
 DEPLOY/PUSH: NIE WYKONANO
+
+---
+
+## Runda 3 — Final Control (Sonnet 5.5)
+
+STATUS: PASS-WITH-NOTES (temat OTWARTY; runda 4/5 wymagana: wpięcie logiki R3 + decyzja Z-R3-4)
+DOMAIN: GAME
+TEMAT: R-RUSTPORT-REPIN-WOJNA-2-Q1
+Weryfikowany HEAD: 47b1cd109 (detached). Baza: 9e56f6e3c (przodek origin/rust-port/parity-v2).
+
+Bramki odtworzone samodzielnie (rust-port/engine, CARGO_INCREMENTAL=0, DEBUG=0):
+- cargo fmt --all -- --check: EXIT=0
+- cargo clippy --all-targets -- -D warnings: EXIT=0
+- cargo test --no-fail-fast: EXIT=0, 220 wierszy "test result", 1591 passed / 0 failed
+- git diff --check 9e56f6e3c..47b1cd109: czysty
+- Allowlista: tylko generals.rs, battle_mode.rs, pathfinding.rs, tests/p6_4_march.rs (addytywnie), tests/p6_repin_wojna_2_r3_* + wektory, P6-REPIN-WOJNA-2.md, run. Zero gra/, renderer/, src-tauri/, Cargo.toml, WERSJE.md.
+- Obrona 4e6c899c1: tylko debug_assert!(n < 64) + komentarz; brak zmiany zachowania.
+
+Rozstrzygnięcie zarzutów:
+1. Brak meta.battleModeSettingVersion w save_load.rs: ODDAL (Obrona rozstrzygnęła ZAŁOŻENIEM Z-R3-4, dossier l.138/204; wpięcie to zmiana formatu SnapshotV2, runda 4).
+2. Status PORTOWANE bez wpięcia: ODDAL (naprawione w obronie: "PORTOWANE (logika, bez wpięcia)" w wierszach 14-16, 114-121).
+3. Sortowanie V8 n>=64 / nie-ASCII: ODDAL (Z-R3-1 rozstrzygnięte kodem weba: <=3 generałów; debug_assert dodany; nie-ASCII NIE_ZMIERZONO, jawnie).
+4. Z-P-1 kolejność kluczy: ODDAL (zmierzone, NIE-DOTYCZY dla id produkcyjnych z prefiksem).
+Zero NAPRAW. Brak DO DECYZJI CZŁOWIEKA.
+
+Integracja: merge-tree 47b1cd109 z aktualnym origin/rust-port/parity-v2 (e03a10fdb) bez konfliktów; parity-v2 nie dotknął plików kodu R3 od 9e56f6e3c. Kolejność: integrować na parity-v2 e03a10fdb. SHA końcowy do integracji: commit tego dokumentu na bazie 47b1cd109.
+DEPLOY/PUSH: NIE WYKONANO
