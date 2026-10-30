@@ -243,6 +243,65 @@ where
     })
 }
 
+/// Object-only field (web `saved.meta?.x`, `saved.autoMarch`): any other JSON type gives `None`.
+fn lenient_object<'de, D, T>(deserializer: D) -> Result<Option<T>, D::Error>
+where
+    D: Deserializer<'de>,
+    T: de::DeserializeOwned,
+{
+    Ok(match Option::<Value>::deserialize(deserializer)? {
+        Some(object @ Value::Object(_)) => serde_json::from_value::<T>(object).ok(),
+        _ => None,
+    })
+}
+
+/// `plannedMarches` in either shape: the Rust list form (`[{unitId, ...}]`) or the web object
+/// form (`{uid: {destQ, destR, attackUnitId?, generalTargetId?} | null}`, `planned-march.ts:440-462`).
+/// Web skips `null` entries; other malformed entries are dropped here or filtered by the caller.
+fn lenient_planned_marches<'de, D>(
+    deserializer: D,
+) -> Result<Option<Vec<SavedPlannedMarch>>, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    Ok(Some(match Option::<Value>::deserialize(deserializer)? {
+        Some(Value::Array(items)) => items
+            .into_iter()
+            .filter_map(|item| serde_json::from_value::<SavedPlannedMarch>(item).ok())
+            .collect(),
+        Some(Value::Object(entries)) => entries
+            .into_iter()
+            .filter_map(|(unit_id, dest)| web_planned_march(unit_id, &dest))
+            .collect(),
+        _ => Vec::new(),
+    }))
+}
+
+fn web_planned_march(unit_id: String, dest: &Value) -> Option<SavedPlannedMarch> {
+    let dest = dest.as_object()?;
+    Some(SavedPlannedMarch {
+        unit_id,
+        dest_q: dest.get("destQ").and_then(json_number),
+        dest_r: dest.get("destR").and_then(json_number),
+        attack_unit_id: dest.get("attackUnitId").and_then(json_nonempty_string),
+        general_target_id: dest.get("generalTargetId").and_then(json_nonempty_string),
+    })
+}
+
+fn json_number(value: &Value) -> Option<Number> {
+    match value {
+        Value::Number(number) => Some(number.clone()),
+        _ => None,
+    }
+}
+
+fn json_nonempty_string(value: &Value) -> Option<String> {
+    match value {
+        Value::String(text) if !text.is_empty() => Some(text.clone()),
+        _ => None,
+    }
+}
+
 /// Version-aware input accepted by [`SaveSnapshot`]'s custom deserializer.
 ///
 /// Optional fields are kept here, rather than on `SaveSnapshot`, so omission is
@@ -259,11 +318,17 @@ struct SnapshotWire {
     rng: Option<Rng>,
     #[serde(default)]
     rng_state: Option<u32>,
-    #[serde(default)]
+    // Web reads these fields as optional lookups (`saved.meta?.x`): a wrong JSON type is
+    // ignored, never a load error (R4 Z-5). `plannedMarches` also accepts the web object form.
+    #[serde(default, deserialize_with = "lenient_object")]
     meta: Option<SaveMeta>,
-    #[serde(default, rename = "plannedMarches")]
+    #[serde(
+        default,
+        rename = "plannedMarches",
+        deserialize_with = "lenient_planned_marches"
+    )]
     planned_marches: Option<Vec<SavedPlannedMarch>>,
-    #[serde(default, rename = "autoMarch")]
+    #[serde(default, rename = "autoMarch", deserialize_with = "lenient_object")]
     auto_march: Option<SavedAutoMarch>,
 }
 

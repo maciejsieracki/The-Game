@@ -38,6 +38,23 @@ pub fn restored_setting_version(saved: Option<f64>) -> Option<f64> {
     }
 }
 
+/// Wejscie z zapisu -> decyzja auto-only (web `restoreGameFromSave` `main.ts:40818-40821`
+/// oraz `playerBattleAutomaticOnly` `main.ts:29052-29060`).
+///
+/// Jedyna funkcja skladajaca oba kroki; wywolujacy podaje surowe wartosci z `SaveMeta`
+/// (`save_load.rs`).
+pub fn player_battle_automatic_only_from_save(
+    is_me: bool,
+    raw_setting_version: Option<f64>,
+    battle_always_manual: Option<bool>,
+) -> bool {
+    player_battle_automatic_only(
+        is_me,
+        restored_setting_version(raw_setting_version),
+        battle_always_manual,
+    )
+}
+
 /// Web `playerBattleAutomaticOnly` (`main.ts:29052-29060`): tryb dotyczy tylko gracza
 /// (`isMe`) i tylko przy wersji markera oraz jawnym `battleAlwaysManual === false`.
 pub fn player_battle_automatic_only(

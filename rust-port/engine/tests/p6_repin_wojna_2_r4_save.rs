@@ -22,7 +22,7 @@ mod save_load;
 #[path = "p6_4_vectors/common.rs"]
 mod common;
 
-use battle_mode::{player_battle_automatic_only, restored_setting_version};
+use battle_mode::{player_battle_automatic_only_from_save, restored_setting_version};
 use civ_engine::domain::pathfinding::ruch_jednostek::{
     planned_marches_from_save, AutoMarchSave, PlannedMarchDest, PlannedMarchSaved,
 };
@@ -88,9 +88,9 @@ fn restored(snapshot: &SaveSnapshot) -> Option<f64> {
 
 /// Web `playerBattleAutomaticOnly` (`main.ts:29052-29060`) on the decoded snapshot.
 fn auto_only(snapshot: &SaveSnapshot, is_me: bool) -> bool {
-    player_battle_automatic_only(
+    player_battle_automatic_only_from_save(
         is_me,
-        restored(snapshot),
+        snapshot.meta().battle_mode_setting_value(),
         snapshot.meta().battle_always_manual(),
     )
 }
@@ -324,4 +324,79 @@ fn planned_marches_wiring_through_save_matches_web_from_save_vectors() {
     }
     assert_eq!(checked, cases.len());
     assert!(with_auto > 0, "pokrycie: brak przypadkow z autoMarch");
+}
+
+#[test]
+fn player_auto_only_from_save_needs_player_marker_and_explicit_false_in_advanced() {
+    let meta: SaveMeta = serde_json::from_str(
+        r#"{"battleModeSettingVersion":1,"newGameParams":{"advanced":{"battleAlwaysManual":false}}}"#,
+    )
+    .expect("meta");
+    let (raw, manual) = (
+        meta.battle_mode_setting_value(),
+        meta.battle_always_manual(),
+    );
+    assert!(player_battle_automatic_only_from_save(true, raw, manual));
+    assert!(!player_battle_automatic_only_from_save(false, raw, manual));
+    // Stary zapis bez markera wersji: nawet przy `battleAlwaysManual: false` brak auto-only.
+    let stale: SaveMeta =
+        serde_json::from_str(r#"{"newGameParams":{"advanced":{"battleAlwaysManual":false}}}"#)
+            .expect("meta");
+    assert!(!player_battle_automatic_only_from_save(
+        true,
+        stale.battle_mode_setting_value(),
+        stale.battle_always_manual()
+    ));
+}
+
+#[test]
+fn planned_marches_web_object_form_decodes_like_list_form() {
+    let root = load(PLANNED_VECTORS);
+    let cases = root["fromSave"].as_array().expect("fromSave");
+    let mut checked = 0usize;
+    for case in cases {
+        // Ksztalt web: obiekt uid -> dest | null (`planned-march.ts:440-462`).
+        let mut web_map = serde_json::Map::new();
+        let mut expected = Vec::new();
+        if let Some(pairs) = case["planned"].as_array() {
+            for pair in pairs {
+                let uid = pair[0].as_str().expect("uid").to_owned();
+                let dest = pair[1].clone();
+                if !dest.is_null() {
+                    expected.push(SavedPlannedMarch {
+                        unit_id: uid.clone(),
+                        dest_q: opt_number(dest.get("destQ")),
+                        dest_r: opt_number(dest.get("destR")),
+                        // Web: pusty napis nie przechodzi (`length > 0`, `planned-march.ts:449-462`).
+                        attack_unit_id: opt_string(dest.get("attackUnitId"))
+                            .filter(|text| !text.is_empty()),
+                        general_target_id: opt_string(dest.get("generalTargetId"))
+                            .filter(|text| !text.is_empty()),
+                    });
+                }
+                web_map.insert(uid, dest);
+            }
+        }
+        let mut wire = serde_json::to_value(snapshot()).expect("value");
+        wire["plannedMarches"] = Value::Object(web_map);
+        let decoded: SaveSnapshot = serde_json::from_value(wire).expect("web form decodes");
+        let mut got = decoded.planned_marches().to_vec();
+        got.sort_by(|a, b| a.unit_id.cmp(&b.unit_id));
+        expected.sort_by(|a, b| a.unit_id.cmp(&b.unit_id));
+        assert_eq!(got, expected, "web object form {case}");
+        checked += 1;
+    }
+    assert!(checked > 0, "brak przypadkow fromSave");
+}
+
+#[test]
+fn wrong_json_types_for_r4_fields_are_ignored_like_web_optional_lookups() {
+    let mut wire = serde_json::to_value(snapshot()).expect("value");
+    wire["meta"] = Value::String("text".to_owned());
+    wire["plannedMarches"] = Value::String("x".to_owned());
+    wire["autoMarch"] = Value::Number(5.into());
+    let decoded: SaveSnapshot = serde_json::from_value(wire).expect("decodes without error");
+    assert!(decoded.meta().is_empty());
+    assert!(decoded.planned_marches().is_empty());
+    assert!(decoded.auto_march().is_none());
 }
