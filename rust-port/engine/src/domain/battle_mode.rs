@@ -13,9 +13,9 @@
 //! - Wersja zapisu: `Option<f64>`; NaN i wartosci rozne od 1 daja `false` (jak `=== 1` w webie).
 //! - Integracja z zapisem (R3): logika wczytania wersji (`main.ts:40819-40821`) i
 //!   `playerBattleAutomaticOnly` (`main.ts:29052-29060`) jest tu jako czyste funkcje
-//!   (`restored_setting_version`, `player_battle_automatic_only`). Pole `meta` zapisu w
-//!   `save_load.rs` (SaveSnapshot v2) NIE istnieje - jego wprowadzenie to zmiana formatu,
-//!   NASTEPNA-PARTIA (patrz raport tematu).
+//!   (`restored_setting_version`, `player_battle_automatic_only`). Pole `meta` zapisu
+//!   (`save_load.rs`, R4) przechowuje surowe wartosci; normalizacje skladaja wywolujacy
+//!   (test `p6_repin_wojna_2_r4_save`). Wywolanie w grze - NASTEPNA-PARTIA (patrz raport tematu).
 
 /// Wersja markera zapisu, ktora aktywuje semantyke automatycznej bitwy (web: `BATTLE_MODE_SETTING_VERSION`).
 pub const BATTLE_MODE_SETTING_VERSION: f64 = 1.0;

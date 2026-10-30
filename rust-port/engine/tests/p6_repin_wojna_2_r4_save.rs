@@ -141,7 +141,7 @@ fn save_meta_vectors_match_web_restore_and_automatic_only() {
             auto_true += 1;
         }
     }
-    // Pokrycie: wersje `1` i `1.0` (2 z 12 wartosci) przechodza: 2 * 6 * 4 * 2 = 96 przypadkow;
+    // Pokrycie: wersja `1` (JSON nie rozroznia `1` i `1.0`) przechodzi: 96 przypadkow;
     // tryb auto-only: wersja 1 + `battleAlwaysManual: false` + ksztalt `advanced` + isMe = 2 przypadki.
     assert_eq!(restored_some, 96, "wersja 1 w wektorach");
     assert_eq!(auto_true, 2, "tryb auto-only w wektorach");
