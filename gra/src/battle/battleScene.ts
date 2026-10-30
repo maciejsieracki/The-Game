@@ -5669,6 +5669,7 @@ export class BattleScene {
 
     // Find the next unit in the snapshot that is still alive and has not acted.
     let ru: RuntimeBattleUnit | null = null;
+    let clearedSkippedQueuedOrder = false;
     while (this.turnIdx < this.turnOrder.length) {
       const cand = this.turnIdx < this.turnOrder.length ? this.turnOrder[this.turnIdx] : undefined;
       this.turnIdx++;
@@ -5676,7 +5677,11 @@ export class BattleScene {
       // mid-turn must not take an action).
       // Routed units ARE activated (to flee a few tiles per turn); they never attack.
       if (cand && !cand.dead && !cand.fadingOut && !cand.removed && !cand.acted) { ru = cand; break; }
+      if (cand && this._manualMode && this._queuedOrderUnitIds.delete(cand.bu.id)) {
+        clearedSkippedQueuedOrder = true;
+      }
     }
+    if (clearedSkippedQueuedOrder) this._refreshQueuedOrderVisuals();
 
     if (!ru) {
       // Whole turn done -> start the next turn after a short breather.
@@ -5687,6 +5692,13 @@ export class BattleScene {
     const u = ru;
     this._updateBattlePhaseBanner(u);
     this._activateUnit(u, () => {
+      // A queued pointer order has now been consumed by this unit's real turn
+      // activation. Keep queue membership limited to orders still waiting for
+      // activation; otherwise a stale id leaves the order marked as queued and
+      // can incorrectly gate a later immediate-order batch.
+      if (this._manualMode && this._queuedOrderUnitIds.delete(u.bu.id)) {
+        this._refreshQueuedOrderVisuals();
+      }
       if (this._autoBattleSuspended) {
         this.busy = false;
         return;

@@ -1,0 +1,57 @@
+{
+  "phase": "manual-pointer-battle",
+  "state": {
+    "href": "http://127.0.0.1:41225/?playtest=mapa",
+    "readyState": "complete",
+    "title": "The Game — 4X",
+    "bodyText": "Skarbiec\n5000\n+33\nPraca\n800\n+28\nSpichlerz\n0\n−64\nNauka\n200\n+9\nSurowce\nHandel\n0\nEpoka brązu\n18 tys. (9)\n2847\nMOC\nArmia\n3\n+9\nMiasta\n1\n+1\nObywatele\n9\n+1\nKultura\n120\n+2\nReligia\n9\n0\nCIVPEDIA\nMENU\n−\n100%\n+\n⛶\nWYDARZENIA\n🌍 Inne cyw.\nBrak wydarzeń w tej turze.\nWYKONAJ\nZAKOŃCZ TURĘ\nTURA 1 · 4000 P.N.E.\n1\nTura 2 · Ręczne\nx1\nWYCOFAJ SIĘ\nRzym\nNuma Pompiliusz\natakujacy\n8\n·\n10\n·\n10\n·\n28\n02:21\nCZAS BITWY\nPrzewaga na polu: 50% Ty · 50% wróg\nGrecja\nAgamemnon\nobronca\n8\n·\n10\n·\n10\n·\n28\nTEMPO\nKIERUNEK NATARCIA\nTAKTYK",
+    "canvasCount": 4,
+    "canvases": [
+      {
+        "connected": true,
+        "width": 1440,
+        "height": 900,
+        "id": "",
+        "cls": ""
+      },
+      {
+        "connected": true,
+        "width": 280,
+        "height": 170,
+        "id": "",
+        "cls": ""
+      },
+      {
+        "connected": true,
+        "width": 1440,
+        "height": 900,
+        "id": "",
+        "cls": ""
+      },
+      {
+        "connected": true,
+        "width": 180,
+        "height": 120,
+        "id": "",
+        "cls": ""
+      }
+    ],
+    "loadOverlay": null,
+    "debugReady": true,
+    "turnDebugReady": true,
+    "mapCanvas": {
+      "connected": true,
+      "width": 1440,
+      "height": 900
+    },
+    "battleProbeReady": true,
+    "battleCanvas": {
+      "connected": true,
+      "width": 1440,
+      "height": 900,
+      "finished": false
+    },
+    "errors": []
+  },
+  "errors": []
+}
