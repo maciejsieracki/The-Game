@@ -1,0 +1,459 @@
+{
+  "run": "R3 post-fix live land-only gate",
+  "seed": 981044,
+  "ownerId": 1,
+  "worldTurn": 7,
+  "campaign": {
+    "targetOwnerId": 0,
+    "stage": "attacking",
+    "generalUnitId": "rec_2_city2_sehp9bbme3k",
+    "gatherTurnsCompleted": 5,
+    "lastGatherTurn": 6
+  },
+  "selectedTarget": {
+    "id": "city0",
+    "ownerId": 0,
+    "q": 5,
+    "r": 3
+  },
+  "rosterIds": [
+    "war-campaign-live-stack-1",
+    "war-campaign-live-stack-2",
+    "war-campaign-live-stack-3",
+    "rec_2_city2_sehp9bbme3k"
+  ],
+  "rosterBefore": [
+    {
+      "id": "war-campaign-live-stack-1",
+      "q": 2,
+      "r": 2
+    },
+    {
+      "id": "war-campaign-live-stack-2",
+      "q": 2,
+      "r": 2
+    },
+    {
+      "id": "war-campaign-live-stack-3",
+      "q": 2,
+      "r": 2
+    },
+    {
+      "id": "rec_2_city2_sehp9bbme3k",
+      "q": 2,
+      "r": 2
+    }
+  ],
+  "rosterAfter": [
+    {
+      "id": "war-campaign-live-stack-1",
+      "q": 4,
+      "r": 2
+    },
+    {
+      "id": "war-campaign-live-stack-2",
+      "q": 4,
+      "r": 2
+    },
+    {
+      "id": "war-campaign-live-stack-3",
+      "q": 4,
+      "r": 2
+    },
+    {
+      "id": "rec_2_city2_sehp9bbme3k",
+      "q": 4,
+      "r": 2
+    }
+  ],
+  "aiTurn": {
+    "ownerId": 1,
+    "turn": 7,
+    "commands": [
+      {
+        "type": "move",
+        "unitId": "diffbonus_1_1_zp11hy367vm",
+        "toQ": 6,
+        "toR": 6,
+        "targetCityId": "city0"
+      },
+      {
+        "type": "move",
+        "unitId": "war-campaign-live-stack-1",
+        "toQ": 4,
+        "toR": 2,
+        "targetCityId": "city0",
+        "allowFriendlyStack": true
+      },
+      {
+        "type": "move",
+        "unitId": "war-campaign-live-stack-2",
+        "toQ": 4,
+        "toR": 2,
+        "targetCityId": "city0",
+        "allowFriendlyStack": true
+      },
+      {
+        "type": "move",
+        "unitId": "war-campaign-live-stack-3",
+        "toQ": 4,
+        "toR": 2,
+        "targetCityId": "city0",
+        "allowFriendlyStack": true
+      },
+      {
+        "type": "move",
+        "unitId": "rec_2_city2_sehp9bbme3k",
+        "toQ": 4,
+        "toR": 2,
+        "targetCityId": "city0",
+        "allowFriendlyStack": true
+      },
+      {
+        "type": "endTurn"
+      }
+    ],
+    "moveResults": [
+      {
+        "ownerId": 1,
+        "unitId": "diffbonus_1_1_zp11hy367vm",
+        "command": {
+          "type": "move",
+          "unitId": "diffbonus_1_1_zp11hy367vm",
+          "toQ": 6,
+          "toR": 6,
+          "targetCityId": "city0"
+        },
+        "moved": true,
+        "path": [
+          {
+            "q": 7,
+            "r": 6
+          },
+          {
+            "q": 6,
+            "r": 6
+          }
+        ]
+      },
+      {
+        "ownerId": 1,
+        "unitId": "war-campaign-live-stack-1",
+        "command": {
+          "type": "move",
+          "unitId": "war-campaign-live-stack-1",
+          "toQ": 4,
+          "toR": 2,
+          "targetCityId": "city0",
+          "allowFriendlyStack": true
+        },
+        "moved": true,
+        "path": [
+          {
+            "q": 3,
+            "r": 2
+          },
+          {
+            "q": 4,
+            "r": 2
+          }
+        ]
+      },
+      {
+        "ownerId": 1,
+        "unitId": "war-campaign-live-stack-2",
+        "command": {
+          "type": "move",
+          "unitId": "war-campaign-live-stack-2",
+          "toQ": 4,
+          "toR": 2,
+          "targetCityId": "city0",
+          "allowFriendlyStack": true
+        },
+        "moved": true,
+        "path": [
+          {
+            "q": 3,
+            "r": 2
+          },
+          {
+            "q": 4,
+            "r": 2
+          }
+        ]
+      },
+      {
+        "ownerId": 1,
+        "unitId": "war-campaign-live-stack-3",
+        "command": {
+          "type": "move",
+          "unitId": "war-campaign-live-stack-3",
+          "toQ": 4,
+          "toR": 2,
+          "targetCityId": "city0",
+          "allowFriendlyStack": true
+        },
+        "moved": true,
+        "path": [
+          {
+            "q": 3,
+            "r": 2
+          },
+          {
+            "q": 4,
+            "r": 2
+          }
+        ]
+      },
+      {
+        "ownerId": 1,
+        "unitId": "rec_2_city2_sehp9bbme3k",
+        "command": {
+          "type": "move",
+          "unitId": "rec_2_city2_sehp9bbme3k",
+          "toQ": 4,
+          "toR": 2,
+          "targetCityId": "city0",
+          "allowFriendlyStack": true
+        },
+        "moved": true,
+        "path": [
+          {
+            "q": 3,
+            "r": 2
+          },
+          {
+            "q": 4,
+            "r": 2
+          }
+        ]
+      }
+    ],
+    "aiDecision": {
+      "campaign": {
+        "targetOwnerId": 0,
+        "stage": "attacking",
+        "generalUnitId": "rec_2_city2_sehp9bbme3k",
+        "gatherTurnsCompleted": 5,
+        "lastGatherTurn": 6,
+        "rallyQ": 2,
+        "rallyR": 2,
+        "target": {
+          "ownerId": 0,
+          "cityId": "city0",
+          "q": 5,
+          "r": 3
+        },
+        "turn": 7,
+        "seaTravelAllowed": false
+      },
+      "units": [
+        {
+          "id": "diffbonus_1_1_zp11hy367vm",
+          "q": 8,
+          "r": 6,
+          "ruchLeft": 2,
+          "isGeneral": false,
+          "category": "miecznik",
+          "inGarnizon": false,
+          "embarked": false
+        },
+        {
+          "id": "war-campaign-live-stack-1",
+          "q": 2,
+          "r": 2,
+          "ruchLeft": 2,
+          "isGeneral": false,
+          "category": "miecznik",
+          "inGarnizon": false,
+          "embarked": false
+        },
+        {
+          "id": "war-campaign-live-stack-2",
+          "q": 2,
+          "r": 2,
+          "ruchLeft": 2,
+          "isGeneral": false,
+          "category": "miecznik",
+          "inGarnizon": false,
+          "embarked": false
+        },
+        {
+          "id": "war-campaign-live-stack-3",
+          "q": 2,
+          "r": 2,
+          "ruchLeft": 2,
+          "isGeneral": false,
+          "category": "miecznik",
+          "inGarnizon": false,
+          "embarked": false
+        },
+        {
+          "id": "rec_2_city2_sehp9bbme3k",
+          "q": 2,
+          "r": 2,
+          "ruchLeft": 2,
+          "isGeneral": true,
+          "category": "miecznik",
+          "inGarnizon": false,
+          "embarked": false
+        }
+      ],
+      "commands": [
+        {
+          "type": "move",
+          "unitId": "diffbonus_1_1_zp11hy367vm",
+          "toQ": 6,
+          "toR": 6,
+          "targetCityId": "city0"
+        },
+        {
+          "type": "move",
+          "unitId": "war-campaign-live-stack-1",
+          "toQ": 4,
+          "toR": 2,
+          "targetCityId": "city0",
+          "allowFriendlyStack": true
+        },
+        {
+          "type": "move",
+          "unitId": "war-campaign-live-stack-2",
+          "toQ": 4,
+          "toR": 2,
+          "targetCityId": "city0",
+          "allowFriendlyStack": true
+        },
+        {
+          "type": "move",
+          "unitId": "war-campaign-live-stack-3",
+          "toQ": 4,
+          "toR": 2,
+          "targetCityId": "city0",
+          "allowFriendlyStack": true
+        },
+        {
+          "type": "move",
+          "unitId": "rec_2_city2_sehp9bbme3k",
+          "toQ": 4,
+          "toR": 2,
+          "targetCityId": "city0",
+          "allowFriendlyStack": true
+        },
+        {
+          "type": "endTurn"
+        }
+      ]
+    },
+    "warPlanDiagnostic": {
+      "playerId": 1,
+      "targets": [
+        {
+          "ownerId": 0,
+          "cityId": "city0",
+          "q": 5,
+          "r": 3
+        }
+      ],
+      "eligible": [
+        {
+          "id": "diffbonus_1_1_zp11hy367vm",
+          "q": 8,
+          "r": 6,
+          "ruchLeft": 2
+        },
+        {
+          "id": "war-campaign-live-stack-1",
+          "q": 2,
+          "r": 2,
+          "ruchLeft": 2
+        },
+        {
+          "id": "war-campaign-live-stack-2",
+          "q": 2,
+          "r": 2,
+          "ruchLeft": 2
+        },
+        {
+          "id": "war-campaign-live-stack-3",
+          "q": 2,
+          "r": 2,
+          "ruchLeft": 2
+        },
+        {
+          "id": "rec_2_city2_sehp9bbme3k",
+          "q": 2,
+          "r": 2,
+          "ruchLeft": 2
+        }
+      ],
+      "plans": [
+        {
+          "orders": [
+            {
+              "unitId": "diffbonus_1_1_zp11hy367vm",
+              "step": {
+                "q": 6,
+                "r": 6
+              },
+              "targetCityId": "city0",
+              "targetOwnerId": 0,
+              "mode": "rendezvous"
+            },
+            {
+              "unitId": "rec_2_city2_sehp9bbme3k",
+              "step": {
+                "q": 3,
+                "r": 3
+              },
+              "targetCityId": "city0",
+              "targetOwnerId": 0,
+              "mode": "capital"
+            },
+            {
+              "unitId": "war-campaign-live-stack-1",
+              "step": {
+                "q": 4,
+                "r": 2
+              },
+              "targetCityId": "city0",
+              "targetOwnerId": 0,
+              "mode": "capital"
+            },
+            {
+              "unitId": "war-campaign-live-stack-2",
+              "step": {
+                "q": 1,
+                "r": 3
+              },
+              "targetCityId": "city0",
+              "targetOwnerId": 0,
+              "mode": "capital"
+            },
+            {
+              "unitId": "war-campaign-live-stack-3",
+              "step": {
+                "q": 4,
+                "r": 1
+              },
+              "targetCityId": "city0",
+              "targetOwnerId": 0,
+              "mode": "capital"
+            }
+          ],
+          "noPath": [],
+          "held": []
+        }
+      ]
+    }
+  },
+  "terrainAfterBeginWarCampaign": {
+    "counts": {
+      "laka": 3952
+    },
+    "water": 0
+  },
+  "assertions": "28 passed, 0 failed",
+  "elapsedSeconds": 49,
+  "pageErrors": 0,
+  "claims": "Main group movement and land rendezvous only; this fixture is not marine evidence."
+}

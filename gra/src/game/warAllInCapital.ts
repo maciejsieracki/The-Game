@@ -60,6 +60,8 @@ export interface WarAllInContext {
   targets: readonly WarCapitalTarget[];
   /** Owner has existing Seafaring/embarkation access; used by the General-led campaign only. */
   allowSea?: boolean;
+  /** Let the already assembled General-led force keep attacking while outlying units catch up. */
+  marchMainGroupWhileRendezvous?: boolean;
   /**
    * R-WEB-WAR-RULES-MULTIWAR-Q1 (tylko gdy flaga WAR_RULES_MULTIWAR_ENABLED ON; brak = baza):
    * armie wrogów w wojnie z wołającym (W1), promień zaangażowania (W1), siła przeciwników (W2).
@@ -336,6 +338,8 @@ export interface WarAllInPlanOpts {
   engageRadius?: number;
   /** W2: siła militarna przeciwników (do proporcjonalnego przydziału całych grup). */
   enemyStrength?: ReadonlyArray<EnemyStrengthRef>;
+  /** Campaign-only: do not hold the leading group while a separated unit approaches it. */
+  marchMainGroupWhileRendezvous?: boolean;
 }
 
 export interface WarAllInPlan {
@@ -357,9 +361,8 @@ export interface WarAllInPlan {
 export const WAR_ALLIN_LINK_RADIUS: number = warAllInParamsRaw.link_radius.wartosc;
 /**
  * Grupa dolacza do wiekszej/wczesniejszej grupy tego samego celu, jesli jest nie dalej.
- * Wieksza grupa CZEKA na miejscu, dopoki doganiajaca ja grupa faktycznie sie zbliza (inaczej
- * obie szlyby 1 heks/ture i odstep nigdy by sie nie zmniejszyl) -- zbiorka trwa najwyzej tyle
- * tur, ile heksow dzieli grupy.
+ * W zwyklym all-in wieksza grupa czeka, az doganiajaca sie zblizy. Kampania wodza moze
+ * wylaczyc to czekanie po swojej piecioturowej zbiorce, by glowny stack zaatakowal w turze 6.
  */
 export const WAR_ALLIN_MERGE_RADIUS: number = warAllInParamsRaw.merge_radius.wartosc;
 /** Blisko stolicy nie zbieramy sie -- natarcie. */
@@ -840,9 +843,11 @@ export function planWarAllInCapital(
   // Glowa czeka na miejscu, gdy doganiajaca ja grupa FAKTYCZNIE sie zbliza w tej turze
   // (inaczej obie szlyby ta sama predkoscia i odstep nigdy by sie nie zmniejszyl).
   const waiting = new Set<Cluster>();
-  for (const f of joiningFollowers) {
-    const p = f.rendezvous!;
-    if (p.rendezvous === undefined && p.distToTarget > WAR_ALLIN_NO_MERGE_NEAR_CAPITAL) waiting.add(p);
+  if (opts.marchMainGroupWhileRendezvous !== true) {
+    for (const f of joiningFollowers) {
+      const p = f.rendezvous!;
+      if (p.rendezvous === undefined && p.distToTarget > WAR_ALLIN_NO_MERGE_NEAR_CAPITAL) waiting.add(p);
+    }
   }
   const marching: Cluster[] = [];
   for (const h of clusters.filter(c => c.rendezvous === undefined)) {

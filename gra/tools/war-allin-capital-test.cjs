@@ -268,7 +268,7 @@ console.log('\n--- 8: planWarAllInCapital -- grupowanie / rendezvous ---');
 {
   const planRaw = E.planWarAllInCapital;
   const map = S.aiVsAi().map;
-  const P = (units, targets, nav) => planRaw(units, targets, nav || { map, blocked: new Set() });
+  const P = (units, targets, nav, opts) => planRaw(units, targets, nav || { map, blocked: new Set() }, opts);
   const target = { ownerId: 2, cityId: 'T', q: 35, r: 10 };
   // Duza grupa (4) w (10,10), mala (1) w (10,17) -- dystans 7 <= 8 => rendezvous do duzej.
   const big = [0, 1, 2, 3].map(i => ({ id: `b${i}`, q: 10 + (i % 2), r: 10 + (i >> 1) }));
@@ -286,6 +286,18 @@ console.log('\n--- 8: planWarAllInCapital -- grupowanie / rendezvous ---');
   assert(alone.orders.every(o => dist(o.step.q, o.step.r, 35, 10) <
     dist(big.find(b => b.id === o.unitId).q, big.find(b => b.id === o.unitId).r, 35, 10)),
   '8d2 kazdy krok na stolice zmniejsza dystans do niej');
+  // R-AI-KAMPANIA-MARSZ-REKRUTACJA-Q1: after the fixed five-turn muster, the already gathered
+  // main force must start attacking while a separated straggler closes in. Ordinary all-in
+  // wars keep their existing rendezvous wait; only the General campaign enables this option.
+  const mainForce = [0, 1, 2, 3].map(i => ({ ...big[i], ruchLeft: 2 }));
+  const approaching = { id: 'approaching', q: 10, r: 17, ruchLeft: 2 };
+  const campaignPlan = P([...mainForce, approaching], [target], undefined,
+    { marchMainGroupWhileRendezvous: true });
+  eq(campaignPlan.orders.filter(o => mainForce.some(u => u.id === o.unitId) && o.mode === 'capital').length,
+    mainForce.length, '8d3 kampania wodza: zebrany glowny stack maszeruje na stolice w 6. turze mimo doganiacza');
+  eq(campaignPlan.orders.find(o => o.unitId === approaching.id)?.mode, 'rendezvous',
+    '8d4 doganiacz nadal zmierza do glownej grupy');
+  eq(campaignPlan.held.length, 0, '8d5 opcja kampanii nie blokuje glownego stacku przez doganiacza');
   // Daleko (> MERGE_RADIUS): kazdy na stolice.
   const bigN = big.map(b => ({ ...b, r: b.r - 8 }));
   const far = P([...bigN, { id: 'z', q: 10, r: 19 }], [target]);

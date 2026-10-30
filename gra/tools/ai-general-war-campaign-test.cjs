@@ -105,6 +105,21 @@ check('shared first step explicitly permits friendly stacking in the production 
   gatheredMoves.length === gatheredIds.length && gatheredMoves.every(command => command.allowFriendlyStack === true),
   gatheredMoves);
 
+// After five muster turns, a late/separated unit must keep approaching while the already
+// assembled General-led main stack begins its attack in turn six.
+for (const u of remoteTroops) u.ruchLeft = u.ruch;
+const attackWithStragglerOpts = { currentTurn: 6, aiGeneralWarCampaign: { ...campaign, turn: 6 } };
+const attackWithStraggler = M.decideAITurn(1, remoteTroops, cities, map, data, attackWithStragglerOpts);
+const mainStackMoves = attackWithStraggler.filter(command => command.type === 'move'
+  && troops.some(unit => unit.id === command.unitId));
+check('sixth campaign turn sends every assembled main-stack unit toward the target despite a straggler',
+  mainStackMoves.length === troops.length
+    && mainStackMoves.every(command => command.targetCityId === 'enemy-near'),
+  { expected: troops.map(unit => unit.id), actual: mainStackMoves });
+check('sixth campaign turn continues to move the separated unit toward the assembled force',
+  attackWithStraggler.some(command => command.type === 'move' && command.unitId === 'infantry-remote'),
+  attackWithStraggler);
+
 // No-path regression: disconnect both enemy capitals from the field army with a full missing
 // column. The production planner must preserve an explicit noPath diagnostic for every unit,
 // and the AI command adapter must not leave behind ordinary movement orders that mask it.

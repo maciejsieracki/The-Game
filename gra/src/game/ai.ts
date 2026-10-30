@@ -3993,6 +3993,7 @@ function applyWarAllInCapitalToCommands(
     enemyArmies: ctx.enemyArmies,
     engageRadius: ctx.engageRadius,
     enemyStrength: ctx.enemyStrength,
+    marchMainGroupWhileRendezvous: ctx.marchMainGroupWhileRendezvous,
   };
   const nav = { map, blocked, occupied, allowSea: ctx.allowSea === true };
   // R-WEB-ARMY-CONSOLIDATION-Q1 (flaga ON): liczba armii = liczba wojen; kazda armia to
@@ -4066,7 +4067,8 @@ function planWarArmiesByEnemy(
   units: RuntimeUnit[],
   ctx: WarAllInContext,
   nav: { map: GameMap; blocked: ReadonlySet<string>; occupied: ReadonlySet<string> },
-  warOpts: { enemyArmies?: ReadonlyArray<EngageArmyHex>; engageRadius?: number; enemyStrength?: ReadonlyArray<EnemyStrengthRef> },
+  warOpts: { enemyArmies?: ReadonlyArray<EngageArmyHex>; engageRadius?: number; enemyStrength?: ReadonlyArray<EnemyStrengthRef>;
+    marchMainGroupWhileRendezvous?: boolean },
   data: GameData,
 ): ReturnType<typeof planWarAllInCapital>[] {
   // Jeden cel na wroga (ctxFor w main.ts), wiec liczba wrogich cywilizacji = liczba wojen.
@@ -4326,7 +4328,8 @@ function appendAiGeneralCampaignOrders(
     const campaignCommandStart = commands.length;
     applyWarAllInCapitalToCommands(
       commands, myUnits, units, cities, playerId, map,
-      { targets: [campaign.target], allowSea: campaign.seaTravelAllowed === true }, data,
+      { targets: [campaign.target], allowSea: campaign.seaTravelAllowed === true,
+        marchMainGroupWhileRendezvous: true }, data,
     );
     // Campaign members can already be concentrated on one friendly hex after
     // five muster turns. The shared war planner reserves each destination once,

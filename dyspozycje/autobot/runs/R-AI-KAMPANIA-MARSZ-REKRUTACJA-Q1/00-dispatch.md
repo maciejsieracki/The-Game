@@ -19,15 +19,17 @@ Nie zmieniać czasu zbiórki, reguł pokoju, balansu jednostek ani mechaniki rę
 ## 11 etapów AutoBot
 1. Rejestracja i dispatch — DONE.
 2. Rekonesans kodu i dowodów — DONE: istniejący run Q1 ma live fixture oraz osobne land/sea testy, ale wymaga weryfikacji na aktualnej bazie i naturalnym marszu.
-3. Reprodukcja/przyczyna — DONE, NIE ODTWORZONO na kandydacie d6e8b53b. Nie stwierdzono błędnego wyboru celu ani niewykorzystanego ruchu w przebadanych ścieżkach; dokładny zapis użytkownika nie był dostępny.
-4. Minimalna poprawka operatora i regresja — N/A: brak potwierdzonej usterki; nie zmieniono kodu produktu.
-5. Testy operatora na aktualnym kandydacie — DONE: test logiki 49/49; Chromium produkcyjny 68/68; `npm run typecheck` i `git diff --check` PASS.
-6. Niezależny Evaluator — DONE: PASS-WITH-NOTES w `01-evaluator.md`; rerun potwierdzony w `02-audit-rerun-20261030.md`.
-7. Operator Defense — N/A: niezależny Evaluator nie wykazał niepopartego twierdzenia; nie ma fixu do obrony.
-8. Final Control dla zmian — BLOCKED: brak kandydata produktowego, bo oryginalny objaw na mapie właściciela nie został odtworzony.
-9. Integracja lokalnego main dla tego zgłoszenia — BLOCKED: brak potwierdzonej poprawki.
-10. Deploy Roboczej dla tego zgłoszenia — BLOCKED: brak kandydata.
-11. Git push/receipt produktu — BLOCKED: brak kandydata.
+3. Reprodukcja/przyczyna — R3: potwierdzono kontrolowany przypadek 981044, gdzie po 5 EOT follower rendezvous wstrzymywał czterojednostkową główną grupę (`held`), mimo `campaign=attacking`; brak `noPath`.
+4. Minimalna poprawka operatora i regresja — DONE R3: kampania wodza opt-in `marchMainGroupWhileRendezvous`; zwykłe all-in czeka jak wcześniej. Czerwona/zielona regresja kampanii 50/1 → 51/0.
+5. Testy operatora — DONE R3: kampania 51/51; post-fix Chromium 28/28, pięć tur zbiórki, EOT6 ruch 4/4 głównej grupy oraz oddzielnego followera rendezvous; `pageErrors=0`.
+6. Niezależny Evaluator — DONE R3: PASS-WITH-NOTES; 94/4 szerokiego planera, 4 znane błędy bazowe przed/po.
+7. Operator Defense — N/A: Evaluator nie zgłosił zarzutu wymagającego obrony.
+8. Final Control — DONE R3: PASS-WITH-NOTES; raport `50-final-control-r3-20261030.md`.
+9. Integracja lokalnego `main` — DONE lokalnie; raport `51-integration-r3.md`; testy na bieżącym `main` i typecheck PASS.
+10. Deploy Roboczej — oczekuje na wspólny build/release po gotowych poprawkach.
+11. Git push/receipt dla R3 — oczekuje na release. Wcześniejszy bazowy cykl kampanii już jest opublikowany; R3 jeszcze nie.
+
+OGRANICZENIA R3: Chromium użył kontrolowanej mapy wyłącznie lądowej, więc nie dowodzi priorytetu ataku morskiego; brak zapisu mapy właściciela; gate potwierdza ruch, nie obrażenia ani zdobycie miasta. Nie przypisuj tych niezweryfikowanych zachowań do PASS.
 
 ## Izolacja i stan
 Worktree operatora: /workspace/ai-campaign-assault-operator; gałąź autobot/ai-campaign-target-follow-q1; baza d6e8b53b1413025e3e0b4d752ae45534bb3d1943. Nie modyfikować starego brudnego worktree /tmp/the-game-ai-five-turn-20261028. Brak Kanbanu w tym projekcie nie blokuje pracy; ślad jest w plikach AutoBot.
