@@ -5,7 +5,8 @@ import os, subprocess, sys
 RUN = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.abspath(os.path.join(RUN, '..', '..', '..', '..'))
 ENG = os.path.join(ROOT, 'rust-port', 'engine')
-ENV = dict(os.environ, CARGO_INCREMENTAL='0', CARGO_TARGET_DIR='/home/user/cargo-target-shared/wf_2fae1a05-0e5-1', CARGO_PROFILE_DEV_DEBUG='0')
+# r2: katalog builda musi byc podany z zewnatrz (domyslnie tmpfs; dysk / bywa pelny). Logi: mut-c-r2-<ID>.log.
+ENV = dict(os.environ, CARGO_INCREMENTAL='0', CARGO_TARGET_DIR=os.environ.get('CARGO_TARGET_DIR', '/dev/shm/wf_2fae1a05-0e5-4'), CARGO_PROFILE_DEV_DEBUG='0')
 
 MR = f'{ENG}/src/domain/ai_move_range.rs'
 DB = f'{ENG}/src/domain/diplomacy_tick_war_brake.rs'
@@ -25,7 +26,7 @@ MUTS = {
  'R12-claim-keep-zero-source': (MR, 'if n > 1 {', 'if n > 0 {'),
  'R13-claim-target-reset': (MR, 'occ.insert(to.clone(), t + 1);', 'occ.insert(to.clone(), 1);'),
  'D01-flag-default-inverted': (DB, 'flag_override.unwrap_or(DIPLO_TICK_WAR_BRAKE_ENABLED_DEFAULT)', 'flag_override.unwrap_or(!DIPLO_TICK_WAR_BRAKE_ENABLED_DEFAULT)'),
- 'D02-advance-prog-strict': (DB, 'if zaufanie.is_nan() || zaufanie > p.kryzys_prog_zaufania {', 'if zaufanie.is_nan() || zaufanie >= p.kryzys_prog_zaufania {'),
+ 'D02-advance-prog-strict': (DB, 'let kryzys = zaufanie <= p.kryzys_prog_zaufania;', 'let kryzys = zaufanie < p.kryzys_prog_zaufania;'),
  'D03-warning-strict': (DB, 'warning_active: counter >= warn_at,', 'warning_active: counter > warn_at,'),
  'D04-war-trigger-strict': (DB, 'war_trigger_ready: counter >= p.kryzys_tur_do_wojny,', 'war_trigger_ready: counter > p.kryzys_tur_do_wojny,'),
  'D05-prev-no-floor': (DB, 'prev_counter.floor()', 'prev_counter'),
@@ -36,7 +37,7 @@ MUTS = {
  'D10-trade-no-max-cap': (DB, 'js_min(js_min(surowy, p.wymiana_max_per_tura), headroom)', 'js_min(surowy, headroom)'),
  'D11-parse-zero-kept': (DB, 'if n.is_finite() && n > 0.0 {', 'if n.is_finite() && n >= 0.0 {'),
  'D12-parse-no-floor': (DB, 'out.push((k.clone(), n.floor()));', 'out.push((k.clone(), n));'),
- 'D13-queue-counter-ignored': (DB, 'if y.counter != x.counter {', 'if false {'),
+ 'D13-queue-counter-ignored': (DB, '(false, false) if y.counter != x.counter => {', '(false, false) if false => {'),
  'D14-queue-owner-desc': (DB, 'return xl.cmp(&yl);', 'return yl.cmp(&xl);'),
  'D15-declarer-tie-max': (DB, 'a.owner_id.min(b.owner_id)', 'a.owner_id.max(b.owner_id)'),
  'D16-dobra-no-clamp': (DB, 'next: if r - 1.0 > 0.0 { r - 1.0 } else { 0.0 },', 'next: r - 1.0,'),
@@ -59,7 +60,7 @@ def run_one(mid):
         out = r.stdout + r.stderr
         status = 'KILLED' if r.returncode != 0 else 'SURVIVED'
         failed = [l.strip() for l in out.splitlines() if l.strip().startswith('test ') and 'FAILED' in l]
-        log = os.path.join(RUN, f'mut-c-{mid}.log')
+        log = os.path.join(RUN, f'mut-c-r2-{mid}.log')
         with open(log, 'w', encoding='utf-8') as f:
             f.write(out)
             f.write(f'\nEXIT={r.returncode}\n')

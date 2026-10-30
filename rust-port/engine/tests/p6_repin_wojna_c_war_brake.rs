@@ -141,6 +141,12 @@ fn crisis_counter_hysteresis_and_thresholds() {
     assert_eq!(advance_crisis_counter(4.0, 0.5, &p).counter, 0.0);
     // NaN Zaufania: porownanie falszywe -> brak kryzysu.
     assert_eq!(advance_crisis_counter(4.0, f64::NAN, &p).counter, 0.0);
+    // NaN PROGU (web: `!(zaufanie <= NaN)` = prawda -> reset). Zweryfikowane na webie 91dc998a:
+    // advanceCrisisCounter(1, -1, {prog: NaN}) = {counter: 0}.
+    let p_nan = p6(f64::NAN, 5.0, 2.0);
+    let s_nan = advance_crisis_counter(1.0, -1.0, &p_nan);
+    assert_eq!(s_nan.counter, 0.0);
+    assert!(!s_nan.warning_active && !s_nan.war_trigger_ready);
     // Ostrzezenie od N - 2 = 3, wojna od N = 5.
     let s3 = advance_crisis_counter(2.0, -1.0, &p);
     assert!(s3.warning_active && !s3.war_trigger_ready);
@@ -349,6 +355,101 @@ fn krok_edge_cases_explicit() {
         ..p7_default()
     };
     assert!(krok_pkt_wymiany(f64::INFINITY, &one).is_nan());
+    // mnoznik -1 (ODRZUCONE wczesniej: Rust powf(-1, Inf) = 1, JS Math.pow(-1, Infinity) = NaN).
+    // Zweryfikowane na webie 91dc998a: krokPktWymiany(Infinity, {mnoznik: -1}) = NaN.
+    let neg = TradeBonusP7Params {
+        wymiana_mnoznik_na_epoke: -1.0,
+        ..p7_default()
+    };
+    assert!(krok_pkt_wymiany(f64::INFINITY, &neg).is_nan());
+    // -Infinity epoki: Math.max(1, -Infinity) = 1 -> tabela, krok 100 (nie NaN)
+    assert_eq!(krok_pkt_wymiany(f64::NEG_INFINITY, &neg), 100.0);
+    // skonczona epoka: 400 * (-1)^(5-3) = 400 (JS i Rust zgodnie)
+    assert_eq!(krok_pkt_wymiany(5.0, &neg), 400.0);
+    assert_eq!(krok_pkt_wymiany(6.0, &neg), -400.0);
+}
+
+/// Deterministyczny generator (LCG) - tylko dane testowe, nie testowany kod.
+fn lcg(seed: &mut u64) -> u64 {
+    *seed = seed
+        .wrapping_mul(6_364_136_223_846_793_005)
+        .wrapping_add(1_442_695_040_888_963_407);
+    *seed >> 33
+}
+
+fn key_of(e: &CrisisQueueEntry) -> (i64, i64) {
+    (e.owner_a.min(e.owner_b), e.owner_a.max(e.owner_b))
+}
+
+#[test]
+fn sort_crisis_queue_nan_counters_total_order_no_panic() {
+    // Wczesniej: komparator z NaN lamal porzadek calkowity (wynik bledny; `sort_by` moze tez
+    // panikowac przy niespojnym porzadku). Teraz: bez paniki, deterministycznie, NaN na koncu.
+    // Mutant (stary komparator) pada na asercji ulozenia NaN, nie na panice, dla tego zbioru.
+    let mut seed: u64 = 0x9E37_79B9_7F4A_7C15;
+    let entries: Vec<CrisisQueueEntry> = (0..300)
+        .map(|i| {
+            let r = lcg(&mut seed);
+            CrisisQueueEntry {
+                owner_a: (r % 40) as i64,
+                owner_b: 100 + i as i64,
+                counter: if r.is_multiple_of(3) {
+                    f64::NAN
+                } else {
+                    (r % 5) as f64
+                },
+            }
+        })
+        .collect();
+    let first = sort_crisis_queue(&entries);
+    let second = sort_crisis_queue(&entries);
+    assert_eq!(first.len(), entries.len());
+    let bits = |v: &[CrisisQueueEntry]| {
+        v.iter()
+            .map(|e| (e.owner_a, e.owner_b, e.counter.to_bits()))
+            .collect::<Vec<_>>()
+    };
+    assert_eq!(bits(&first), bits(&second));
+    let split = first
+        .iter()
+        .position(|e| e.counter.is_nan())
+        .unwrap_or(first.len());
+    assert!(first[..split].iter().all(|e| !e.counter.is_nan()));
+    assert!(first[split..].iter().all(|e| e.counter.is_nan()));
+    // skonczona czesc: licznik nierosnaco, przy remisie klucz pary niemalejaco
+    for w in first[..split].windows(2) {
+        assert!(w[0].counter >= w[1].counter);
+        if w[0].counter == w[1].counter {
+            assert!(key_of(&w[0]) <= key_of(&w[1]));
+        }
+    }
+    // NaN-owa czesc: remis wg klucza pary
+    for w in first[split..].windows(2) {
+        assert!(key_of(&w[0]) <= key_of(&w[1]));
+    }
+}
+
+#[test]
+fn sort_crisis_queue_permutation_invariant_for_canonical_keys() {
+    // ZALOZENIE z dokumentacji parse_crisis_counters: klucze kanoniczne sa unikalne,
+    // wiec wynik sortowania nie zalezy od kolejnosci wejscia (Object.entries vs alfabetycznie).
+    let pairs = ai_ai_pairs(&[1, 2, 3, 4, 5, 6, 7, 8]);
+    let base: Vec<CrisisQueueEntry> = pairs
+        .iter()
+        .enumerate()
+        .map(|(i, &(a, b))| CrisisQueueEntry {
+            owner_a: a,
+            owner_b: b,
+            counter: ((i * 7) % 4) as f64,
+        })
+        .collect();
+    let want = sort_crisis_queue(&base);
+    let mut rev = base.clone();
+    rev.reverse();
+    assert_eq!(sort_crisis_queue(&rev), want);
+    let mut rot = base.clone();
+    rot.rotate_left(11);
+    assert_eq!(sort_crisis_queue(&rot), want);
 }
 
 #[test]

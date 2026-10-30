@@ -20,7 +20,7 @@
 //!   przez `Number.isFinite`, a wejscie Rust przyjmuje juz przefiltrowane (ZALOZENIE).
 //! - Identyfikatory wlascicieli = `i64` (web: `number`, calkowite); klucz pary = `"lo-hi"`.
 //! - `parseCrisisCounters` przyjmuje `serde_json::Value` (web: `unknown`), zwraca `Vec<(String, f64)>`
-//!   w kolejnosci wejscia (`Object.entries`).
+//!   jako ZBIOR par (klucz, wartosc); kolejnosc NIE jest czescia kontraktu (patrz `parse_crisis_counters`).
 
 use serde_json::Value;
 use std::collections::BTreeMap;
@@ -66,7 +66,10 @@ pub fn advance_crisis_counter(
     } else {
         0.0
     };
-    if zaufanie.is_nan() || zaufanie > p.kryzys_prog_zaufania {
+    // web: `if (!(zaufanie <= prog))` -- negacja celowa: NaN Zaufania ALBO NaN progu daje reset.
+    #[allow(clippy::neg_cmp_op_on_partial_ord)]
+    let kryzys = zaufanie <= p.kryzys_prog_zaufania;
+    if !kryzys {
         return CrisisStep {
             counter: 0.0,
             warning_active: false,
@@ -134,12 +137,12 @@ fn js_min(a: f64, b: f64) -> f64 {
     }
 }
 
-/// Web: `Math.pow` (`pow(1, NaN)` = NaN, `pow(1, ±Infinity)` = NaN; w Rust `powf` dawalby 1).
+/// Web: `Math.pow` (`pow(±1, NaN)` = NaN, `pow(±1, ±Infinity)` = NaN; w Rust `powf` dawalby 1).
 fn js_pow(base: f64, exp: f64) -> f64 {
     if exp.is_nan() {
         return f64::NAN;
     }
-    if base == 1.0 && exp.is_infinite() {
+    if base.abs() == 1.0 && exp.is_infinite() {
         return f64::NAN;
     }
     base.powf(exp)
@@ -225,7 +228,13 @@ pub fn trade_trust_bonus_per_tura(input: &TradeBonusInput, p: &TradeBonusP7Param
 }
 
 /// Web: `parseCrisisCounters`. Nieliczbowe / niefinite / ujemne / zerowe wartosci pomijane;
-/// reszta: `floor(v)`. Kolejnosc wejscia (`Object.entries`) dla kluczy nieliczbowo-podobnych.
+/// reszta: `floor(v)`.
+///
+/// ZALOZENIE (kolejnosc): wynik traktowany jako ZBIOR par. Web zwraca obiekt (`Object.entries`: klucze
+/// calkowite rosnaco, potem reszta wg wstawiania); Rust bez `serde_json/preserve_order` iteruje
+/// alfabetycznie. Nie odtwarzamy kolejnosci: klucze zapisu sa kanoniczne `"lo-hi"` (zapisuje je tylko
+/// `crisis_pair_key`), wiec sa unikalne, a `sort_crisis_queue` dla unikalnych kluczy daje wynik
+/// niezalezny od kolejnosci wejscia (test `sort_crisis_queue_permutation_invariant`).
 pub fn parse_crisis_counters(raw: &Value) -> Vec<(String, f64)> {
     let mut out = Vec::new();
     if let Value::Object(map) = raw {
@@ -250,19 +259,26 @@ pub struct CrisisQueueEntry {
 
 /// Web: `sortCrisisQueue`. Najdluzej na progu pierwsze; remis: nizsze min(owner), potem nizsze max(owner).
 /// Nie modyfikuje wejscia.
+///
+/// ZALOZENIE: licznik NaN nie powstaje w potoku (`parse_crisis_counters` odrzuca niefinite, a
+/// `advance_crisis_counter` zwraca skonczone). Dla bezpieczenstwa komparator jest CALKOWITYM
+/// preporzadkiem (brak paniki `sort_by` przy niespojnym porzadku): wpisy z NaN licznika ida na koniec,
+/// miedzy soba wg remisu owner. Web (V8, komparator zwracajacy NaN) daje wynik zalezny od implementacji
+/// i tego zachowania nie odtwarzamy.
 pub fn sort_crisis_queue(entries: &[CrisisQueueEntry]) -> Vec<CrisisQueueEntry> {
     let mut out = entries.to_vec();
     out.sort_by(|x, y| {
-        if y.counter != x.counter {
-            // web: `return y.counter - x.counter;` (NaN traktowany jak 0 przez sort)
-            let d = y.counter - x.counter;
-            return if d < 0.0 {
-                std::cmp::Ordering::Less
-            } else if d > 0.0 {
-                std::cmp::Ordering::Greater
-            } else {
-                std::cmp::Ordering::Equal
-            };
+        match (x.counter.is_nan(), y.counter.is_nan()) {
+            (true, false) => return std::cmp::Ordering::Greater,
+            (false, true) => return std::cmp::Ordering::Less,
+            (false, false) if y.counter != x.counter => {
+                // web: `return y.counter - x.counter;` -- ten sam znak, bez NaN.
+                return y
+                    .counter
+                    .partial_cmp(&x.counter)
+                    .unwrap_or(std::cmp::Ordering::Equal);
+            }
+            _ => {}
         }
         let xl = x.owner_a.min(x.owner_b);
         let yl = y.owner_a.min(y.owner_b);
