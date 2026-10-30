@@ -80,6 +80,17 @@ M = [
     ("BD-osiedle-false-sz", "society_breakdown/breakdown.rs", "        legacy_male,\n    );\n    if js_truthy(osiedle_v) {", "        legacy_male,\n    );\n    if false {"),
     ("BD-osiedle-false-pr", "society_breakdown/breakdown.rs", "        pick_osiedle_pop_bonus(pr_block, \"prawo_bonus_osiedle_pop\", pop, diff, legacy_osada);\n    if js_truthy(osiedle_v) {", "        pick_osiedle_pop_bonus(pr_block, \"prawo_bonus_osiedle_pop\", pop, diff, legacy_osada);\n    if false {"),
 
+    ("JSMAX-B-NAN-eq", "society_breakdown.rs", "pub fn js_max(a: f64, b: f64) -> f64 {\n    if a.is_nan() || b.is_nan() {", "pub fn js_max(a: f64, b: f64) -> f64 {\n    if a.is_nan() {"),
+    ("JSMIN-B-NAN-eq", "society_breakdown.rs", "pub fn js_min(a: f64, b: f64) -> f64 {\n    if a.is_nan() || b.is_nan() {", "pub fn js_min(a: f64, b: f64) -> f64 {\n    if a.is_nan() {"),
+    ("CIT-NAN-keep", "society_breakdown/breakdown.rs", "        .citizen_resource_happiness_delta\n        .filter(|v| js_truthy(*v))", "        .citizen_resource_happiness_delta\n        .filter(|v| *v == *v)"),
+    ("REL-TRUE", "society_breakdown/breakdown.rs", "    if js_truthy(rel_v) {", "    if true {"),
+    ("OWN-SHARE-1", "society_breakdown.rs", "    let v = finite_opt(signal).unwrap_or(0.0);", "    let v = finite_opt(signal).unwrap_or(1.0);"),
+    ("SHARE-FIN", "society_breakdown.rs", "    let share = if udzial_wlasnej.is_finite() {", "    let share = if true {"),
+    ("POP-FIN", "society_breakdown.rs", "    let pop = if population.is_finite() {", "    let pop = if true {"),
+    ("REF-FIN", "society_breakdown.rs", "    let reference = if pop_odniesienia.is_finite() {", "    let reference = if true {"),
+    ("BUNT-MULT-05", "society_breakdown/order.rs", "js_max(0.0, base.production_mult - BUNT_SKRAJNY_MULT_KARA)", "js_max(0.5, base.production_mult - BUNT_SKRAJNY_MULT_KARA)"),
+    ("BUNT-RISK-09", "society_breakdown/order.rs", "js_min(1.0, params.ryzyko_buntu_t1 + BUNT_SKRAJNY_RYZYKO_DOD)", "js_min(0.9, params.ryzyko_buntu_t1 + BUNT_SKRAJNY_RYZYKO_DOD)"),
+
 ]
 
 def run_cargo():

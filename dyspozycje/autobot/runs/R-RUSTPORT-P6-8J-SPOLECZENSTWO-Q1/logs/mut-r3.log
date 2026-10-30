@@ -1,5 +1,5 @@
-# Mutacje rundy 3 (Operator). Format: id<TAB>wynik<TAB>zabijajace testy. Ostatni wpis per id.
-# NOMATCH = mutant zastapiony wersja z kontekstem (wpisy *-ctx/-happy/-law/-sz/-pr/-max/-kult/-finite/-round-*).
+# Mutacje rundy 3 (Operator), 1 mutant naraz, cargo test p6_8j_{society,order,guards}. Format: id<TAB>wynik<TAB>zabijajace testy. Ostatni wpis per id.
+# NOMATCH = mutant zastapiony wersja z kontekstem (np. BD-stolica-neg -> -happy/-law, SB-era-finite -> -max/-kult, SB-round-finite-false, SB-clamp-finite-ctx).
 I-delta	KILLED 39s	matrix_unit;matrix_matches_web;result:
 M10-raw0	KILLED 37s	matrix_matches_web;result:
 J-maxge0	SURVIVED 38s	
@@ -70,3 +70,13 @@ SB-clamp-finite-ctx	KILLED 40s	por_pct_cap_unit;por_pct_match_web;result:
 SB-jsmax-ret-a	KILLED 37s	js_max_min_signed_zero_like_math;result:
 BD-osiedle-false-sz	KILLED 37s	breakdown_matches_web;result:
 BD-osiedle-false-pr	KILLED 38s	breakdown_matches_web;result:
+JSMAX-B-NAN-eq	SURVIVED 40s	
+JSMIN-B-NAN-eq	SURVIVED 36s	
+CIT-NAN-keep	KILLED 33s	nan_and_zero_inputs_are_falsy_no_line;result:
+REL-TRUE	KILLED 34s	breakdown_matches_web;matrix_matches_web;result:
+OWN-SHARE-1	KILLED 34s	breakdown_matches_web;matrix_matches_web;result:
+SHARE-FIN	KILLED 36s	scalar_functions_match_web;result:
+POP-FIN	KILLED 37s	matrix_matches_web;breakdown_matches_web;result:
+REF-FIN	SURVIVED 38s	
+BUNT-MULT-05	KILLED 36s	effects_branches_unit;result:
+BUNT-RISK-09	KILLED 37s	effects_branches_unit;result:
