@@ -26,7 +26,7 @@ pub fn truncate_path_within_budget(
     budget: f64,
     hex_costs: &HashMap<Hex, f64>,
 ) -> Vec<Hex> {
-    if !(budget > 0.0) || path.is_empty() {
+    if budget.is_nan() || budget <= 0.0 || path.is_empty() {
         return Vec::new();
     }
     let mut out: Vec<Hex> = Vec::new();
@@ -68,7 +68,7 @@ pub fn farthest_step_within_budget(
     hex_costs: &HashMap<Hex, f64>,
     blocked: Option<&HashSet<Hex>>,
 ) -> Option<Hex> {
-    if !(budget > 0.0) || path.len() < 2 {
+    if budget.is_nan() || budget <= 0.0 || path.len() < 2 {
         return None;
     }
     let cut = truncate_path_within_budget(path, budget, hex_costs);

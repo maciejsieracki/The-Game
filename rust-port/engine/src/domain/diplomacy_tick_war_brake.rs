@@ -66,7 +66,7 @@ pub fn advance_crisis_counter(
     } else {
         0.0
     };
-    if !(zaufanie <= p.kryzys_prog_zaufania) {
+    if zaufanie.is_nan() || zaufanie > p.kryzys_prog_zaufania {
         return CrisisStep {
             counter: 0.0,
             warning_active: false,
@@ -208,14 +208,14 @@ pub fn krok_pkt_wymiany(epoka: f64, p: &TradeBonusP7Params) -> f64 {
 /// Web: `tradeTrustBonusPerTura` (P7). Schodkowo: `floor(nadwyzka / krok) x zaufanieNaKrok`,
 /// limit `wymianaMaxPerTura`, przyciete do wolnego miejsca pod sufitem; zero w warunkach brzegowych.
 pub fn trade_trust_bonus_per_tura(input: &TradeBonusInput, p: &TradeBonusP7Params) -> f64 {
-    if !(input.nadwyzka_pn > 0.0) {
+    if input.nadwyzka_pn.is_nan() || input.nadwyzka_pn <= 0.0 {
         return 0.0;
     }
     if input.kolejne_tury_dostaw < p.wymiana_min_tur_dostaw {
         return 0.0;
     }
     let headroom = p.wymiana_sufit_zaufania - input.zaufanie;
-    if !(headroom > 0.0) {
+    if headroom.is_nan() || headroom <= 0.0 {
         return 0.0;
     }
     let krok = krok_pkt_wymiany(input.epoka, p);
@@ -271,5 +271,72 @@ pub fn sort_crisis_queue(entries: &[CrisisQueueEntry]) -> Vec<CrisisQueueEntry> 
         }
         x.owner_a.max(x.owner_b).cmp(&y.owner_a.max(y.owner_b))
     });
+    out
+}
+
+/// Web: `WarPower` -- argument `pickWarDeclarer` (`{ ownerId, power }`).
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct WarPower {
+    pub owner_id: i64,
+    pub power: f64,
+}
+
+/// Web: `pickWarDeclarer`. Silniejsza strona (wieksza potega); przy `power !== power` (takze NaN)
+/// wygrywa `b` (`a.power > b.power` falsz); remis: nizsze ownerId. ZALOZENIE (dispatch bez remisu).
+pub fn pick_war_declarer(a: WarPower, b: WarPower) -> i64 {
+    if a.power != b.power {
+        return if a.power > b.power {
+            a.owner_id
+        } else {
+            b.owner_id
+        };
+    }
+    a.owner_id.min(b.owner_id)
+}
+
+/// Web: `dobraWolaTurnStep` (P4 r3). Odliczanie przed tickiem AI; `activeThisTurn` = licznik > 0 PRZED odliczeniem.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct DobraWolaStep {
+    pub active_this_turn: bool,
+    pub next: f64,
+}
+
+/// Web: `dobraWolaTurnStep`. Niefinite / ujemne / NaN -> 0; ulamki obcinane w dol.
+pub fn dobra_wola_turn_step(remaining: f64) -> DobraWolaStep {
+    let r = if remaining.is_finite() && remaining > 0.0 {
+        remaining.floor()
+    } else {
+        0.0
+    };
+    DobraWolaStep {
+        active_this_turn: r > 0.0,
+        // web: `Math.max(0, r - 1)`
+        next: if r - 1.0 > 0.0 { r - 1.0 } else { 0.0 },
+    }
+}
+
+/// Web: `AiAiOwnerInfo`.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct AiAiOwnerInfo {
+    pub is_player: bool,
+    pub is_barbarian: bool,
+    pub is_city_copy: bool,
+    pub eliminated: bool,
+    pub city_count: f64,
+}
+
+/// Web: `isAiAiEligibleOwner` (P3 r3): bez gracza, barbarzyncow, kopii, eliminowanych; wymaga miast (> 0).
+pub fn is_ai_ai_eligible_owner(o: &AiAiOwnerInfo) -> bool {
+    !o.is_player && !o.is_barbarian && !o.is_city_copy && !o.eliminated && o.city_count > 0.0
+}
+
+/// Web: `aiAiPairs` (P3 r3): wszystkie nieuporzadkowane pary `(i < j)` w kolejnosci wejscia.
+pub fn ai_ai_pairs(owners: &[i64]) -> Vec<(i64, i64)> {
+    let mut out = Vec::new();
+    for i in 0..owners.len() {
+        for j in (i + 1)..owners.len() {
+            out.push((owners[i], owners[j]));
+        }
+    }
     out
 }

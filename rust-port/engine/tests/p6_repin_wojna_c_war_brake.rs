@@ -2,9 +2,11 @@
 //! URUCHOMIONEGO weba (`tests/p6_repin_wojna_c_vectors/diplomacy-tick-war-brake.json`).
 
 use civ_engine::domain::diplomacy_tick_war_brake::{
-    advance_crisis_counter, crisis_pair_key, crisis_step_for_pair, is_diplo_tick_war_brake_enabled,
-    krok_pkt_wymiany, parse_crisis_counters, sort_crisis_queue, trade_trust_bonus_per_tura,
-    CrisisQueueEntry, CrisisStep, TradeBonusInput, TradeBonusP7Params, WarBrakeP6Params,
+    advance_crisis_counter, ai_ai_pairs, crisis_pair_key, crisis_step_for_pair,
+    dobra_wola_turn_step, is_ai_ai_eligible_owner, is_diplo_tick_war_brake_enabled,
+    krok_pkt_wymiany, parse_crisis_counters, pick_war_declarer, sort_crisis_queue,
+    trade_trust_bonus_per_tura, AiAiOwnerInfo, CrisisQueueEntry, CrisisStep, DobraWolaStep,
+    TradeBonusInput, TradeBonusP7Params, WarBrakeP6Params, WarPower,
     DIPLO_TICK_WAR_BRAKE_ENABLED_DEFAULT,
 };
 use serde_json::Value;
@@ -416,4 +418,150 @@ fn parse_crisis_counters_drops_garbage() {
     assert_eq!(got, vec![("1-2".to_string(), 2.0), ("e".to_string(), 4.0)]);
     assert!(parse_crisis_counters(&Value::Null).is_empty());
     assert!(parse_crisis_counters(&serde_json::json!([1, 2])).is_empty());
+}
+
+#[test]
+fn pick_war_declarer_matches_web() {
+    let root = root();
+    let cases = root["declarerCases"].as_array().expect("declarerCases");
+    assert!(cases.len() >= 400);
+    for (i, c) in cases.iter().enumerate() {
+        let w = |v: &Value| WarPower {
+            owner_id: v["ownerId"].as_i64().expect("ownerId"),
+            power: num(&v["power"]),
+        };
+        assert_eq!(
+            pick_war_declarer(w(&c["a"]), w(&c["b"])),
+            c["out"].as_i64().unwrap(),
+            "declarerCases[{i}]"
+        );
+    }
+}
+
+#[test]
+fn dobra_wola_turn_step_matches_web() {
+    let root = root();
+    let cases = root["dobraCases"].as_array().expect("dobraCases");
+    assert_eq!(cases.len(), 12);
+    for (i, c) in cases.iter().enumerate() {
+        let got = dobra_wola_turn_step(num(&c["remaining"]));
+        assert_eq!(
+            got.active_this_turn,
+            c["out"]["activeThisTurn"].as_bool().unwrap(),
+            "dobraCases[{i}] active"
+        );
+        assert!(
+            same_f64(got.next, num(&c["out"]["next"])),
+            "dobraCases[{i}] next"
+        );
+    }
+}
+
+#[test]
+fn ai_ai_eligibility_matches_web() {
+    let root = root();
+    let cases = root["eligCases"].as_array().expect("eligCases");
+    assert!(cases.len() >= 300);
+    for (i, c) in cases.iter().enumerate() {
+        let o = &c["owner"];
+        let info = AiAiOwnerInfo {
+            is_player: o["isPlayer"].as_bool().unwrap(),
+            is_barbarian: o["isBarbarian"].as_bool().unwrap(),
+            is_city_copy: o["isCityCopy"].as_bool().unwrap(),
+            eliminated: o["eliminated"].as_bool().unwrap(),
+            city_count: num(&o["cityCount"]),
+        };
+        assert_eq!(
+            is_ai_ai_eligible_owner(&info),
+            c["out"].as_bool().unwrap(),
+            "eligCases[{i}]"
+        );
+    }
+}
+
+#[test]
+fn ai_ai_pairs_match_web() {
+    let root = root();
+    let cases = root["pairsCases"].as_array().expect("pairsCases");
+    assert!(cases.len() >= 200);
+    for (i, c) in cases.iter().enumerate() {
+        let owners: Vec<i64> = c["owners"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|v| v.as_i64().unwrap())
+            .collect();
+        let want: Vec<(i64, i64)> = c["out"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|p| (p[0].as_i64().unwrap(), p[1].as_i64().unwrap()))
+            .collect();
+        assert_eq!(ai_ai_pairs(&owners), want, "pairsCases[{i}]");
+    }
+}
+
+#[test]
+fn declarer_dobra_and_pairs_explicit_edges() {
+    let w = |id: i64, power: f64| WarPower {
+        owner_id: id,
+        power,
+    };
+    assert_eq!(pick_war_declarer(w(4, 3.0), w(2, 3.0)), 2);
+    assert_eq!(pick_war_declarer(w(4, 5.0), w(2, 3.0)), 4);
+    // NaN potegi: `!==` prawdziwe, `>` falszywe -> strona b
+    assert_eq!(pick_war_declarer(w(1, f64::NAN), w(9, 3.0)), 9);
+
+    assert_eq!(
+        dobra_wola_turn_step(3.0),
+        DobraWolaStep {
+            active_this_turn: true,
+            next: 2.0
+        }
+    );
+    assert_eq!(
+        dobra_wola_turn_step(1.0),
+        DobraWolaStep {
+            active_this_turn: true,
+            next: 0.0
+        }
+    );
+    assert_eq!(
+        dobra_wola_turn_step(0.5),
+        DobraWolaStep {
+            active_this_turn: false,
+            next: 0.0
+        }
+    );
+    assert_eq!(
+        dobra_wola_turn_step(f64::NAN),
+        DobraWolaStep {
+            active_this_turn: false,
+            next: 0.0
+        }
+    );
+
+    let base = AiAiOwnerInfo {
+        is_player: false,
+        is_barbarian: false,
+        is_city_copy: false,
+        eliminated: false,
+        city_count: 1.0,
+    };
+    assert!(is_ai_ai_eligible_owner(&base));
+    assert!(!is_ai_ai_eligible_owner(&AiAiOwnerInfo {
+        city_count: 0.0,
+        ..base
+    }));
+    assert!(!is_ai_ai_eligible_owner(&AiAiOwnerInfo {
+        city_count: f64::NAN,
+        ..base
+    }));
+    assert!(!is_ai_ai_eligible_owner(&AiAiOwnerInfo {
+        is_barbarian: true,
+        ..base
+    }));
+
+    assert_eq!(ai_ai_pairs(&[1, 2, 3]), vec![(1, 2), (1, 3), (2, 3)]);
+    assert!(ai_ai_pairs(&[7]).is_empty());
 }
