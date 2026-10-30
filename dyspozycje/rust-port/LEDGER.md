@@ -331,3 +331,4 @@ Cel końcowy i bieżący zapisane w `GOAL-RUST-PORT-20261020.md` (§"CEL PĘTLI 
 | 2026-10-30 | R-RUSTPORT-P6-M06A7-LAD-MORZE-KORYTARZE-Q1 | 2 | partia 1 (korytarz, most); weryfikator Python 112 254 wierszy 0 rozbieżności; FC PASS-WITH-NOTES | **ZINTEGROWANE** `db72e298` (1335/0); otwarte M06A8 |
 | 2026-10-30 | R-RUSTPORT-REPIN-WOJNA-NOWE-C-Q1 | 2 | ai_move_range, diplomacy_tick_war_brake; poprawki NaN/pow/sort wg weba; FC PASS | **ZINTEGROWANE** `80f44911` (1371/0) |
 | 2026-10-30 | R-RUSTPORT-REPIN-EKONOMIA-B2-Q1 | 2 | production.ts 12 hunków + hunki 13–14; 4 wektory z weba; FC PASS-WITH-NOTES | **ZINTEGROWANE** `4c005237` (1388/0); B3 start; P6.8 rekonesans start |
+| 2026-10-30 | R-RUSTPORT-P6-8-MIASTA-REKONESANS-Q1 | 2 | podział P6.8: 18 pozycji → 8A–8J, 515 symboli z plik:linia, gotowe dispatche; FC PASS-WITH-NOTES | **ZINTEGROWANE (docs, docs-branch)**; start 8D, dispatch 8A gotowy |

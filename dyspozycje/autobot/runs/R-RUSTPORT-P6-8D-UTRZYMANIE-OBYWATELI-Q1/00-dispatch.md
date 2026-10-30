@@ -1,0 +1,6 @@
+STATUS: DISPATCHED
+DOMAIN: GAME
+TEMAT: R-RUSTPORT-P6-8D-UTRZYMANIE-OBYWATELI-Q1
+GOAL: P6.8D — tematu wykonawczy z podziału `dyspozycje/rust-port/p6/P6-8-MIASTA-PODZIAL.md` (docs-branch / `parity-v2`). Treść poniżej skopiowana z §9; lista symboli z §11 (wiersze `8D-P*`), partie ≤600 LOC na granicy symbolu, commit po każdej partii, KOD PIERWSZY, brak „budżetu czasu" jako blokady. Wektory z URUCHOMIONEGO weba 91dc998a (pliki ≤ 10 MB), testy NaN/progów/brakujących kluczy, mutacje na każdej gałęzi sterującej lub dowód równoważności z kodu, niezależny weryfikator. Aktualny HEAD: `git fetch origin rust-port/parity-v2`.
+- **GOAL:** `citizen-resource-upkeep.ts`, `gold-deficit.ts`, `mennica-zloto-grace.ts`, `wealth.ts` (w tym `wealthParamsWithCapModifier`, `wealthParamsWithMultiplierModifier` — BRAK w Rust, §1 poz. 16).
+- **ALLOWLISTA: wg treści GOAL powyżej (pole ALLOWLISTA z §9); dokument tematu i `dyspozycje/autobot/runs/R-RUSTPORT-P6-8D-UTRZYMANIE-OBYWATELI-Q1/**`. Zero zmian w `gra/**`, `rust-port/renderer/**`, `src-tauri/**`, `Cargo.toml`, `WERSJE.md`. IZOLACJA: worktree; commit z jawnym `git add`, PUSH NIE. FAIL → ten sam ID, limit 5 rund.
