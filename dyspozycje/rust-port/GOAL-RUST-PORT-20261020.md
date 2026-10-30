@@ -69,7 +69,7 @@ dotykające tych samych plików — zawsze sekwencyjnie, nigdy w tej samej fali.
 | 40 | R-RUSTPORT-REPIN-WOJNA-NOWE-C-Q1 | REPIN 2a | 2/5 | wf_2fae1a05-0e5 | **PASS — zintegrowane** (`80f44911`, 1371/0; ai_move_range, diplomacy_tick_war_brake; mutacje 30/31 + 1 equiv). `forced-war-*`/dyplomacja zmiany = P6.11–P6.14 (brak odpowiednika w Rust) | 2026-10-30 |
 | 41 | R-RUSTPORT-P6-M06A7-LAD-MORZE-KORYTARZE-Q1 | P6 mapgen | 2/5 | wf_1accf3de-da0 | **PASS-WITH-NOTES — zintegrowane** (`db72e298`, 1335/0; pangeaAnnularMaxCorridorWidth, isPangeaBridgeWater) | 2026-10-30 |
 | 42 | R-RUSTPORT-REPIN-EKONOMIA-B2-Q1 | REPIN 4b | 2/5 | wf_cabd5916-6d2 | **PASS-WITH-NOTES — zintegrowane** (`4c005237`, 1388/0; production.ts hunki 3,7,8–14) | 2026-10-30 |
-| 43 | R-RUSTPORT-REPIN-EKONOMIA-B3-Q1 | REPIN 4b | 1/5 | (nowy) | etap 1 | 2026-10-30 |
+| 43 | R-RUSTPORT-REPIN-EKONOMIA-B3-Q1 | REPIN 4b | 1/5 | wf_3b1341a2-e6d | **PASS-WITH-NOTES — zintegrowane** (1404/0; turn-economy helpery: routeCashForCity, wealthParamsForOwner + modyfikatory; wektory z weba bajt-w-bajt). Tick ekonomii (hunki 18,21,24–26,28,29) → 8F/REPIN-D | 2026-10-30 |
 | 44 | R-RUSTPORT-P6-M06A8-LAD-MORZE-KORYTARZE2-Q1 | P6 mapgen | 1/5 | wf_fac0d57f-23a | **PASS-WITH-NOTES — zintegrowane** (`87fda853`, 1396/0; groupDryLandMassKeys, ensurePangeaSingleContinent; mutacje 32/38 + 6 equiv z dowodami) | 2026-10-30 |
 | 45 | R-RUSTPORT-P6-8-MIASTA-REKONESANS-Q1 | P6.8 (dok.) | 2/5 | wf_64144d57-d67 | **PASS-WITH-NOTES — zintegrowane (docs)**: `P6-8-MIASTA-PODZIAL.md` (18 pozycji → 10 tematów 8A–8J, 515 symboli, 22 partie ≤600 LOC; fale: 1=8A,8D,8J; 2=8B; 3=8C,8F(po REPIN-D); 4=8E; reszta 8G,8H,8I) | 2026-10-30 |
 | 46 | R-RUSTPORT-P6-8D-UTRZYMANIE-OBYWATELI-Q1 | P6.8D | 1/5 | (nowy) | etap 1 | 2026-10-30 |
