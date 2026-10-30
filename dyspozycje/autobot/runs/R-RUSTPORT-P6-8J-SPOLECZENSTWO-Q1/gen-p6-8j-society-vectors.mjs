@@ -141,8 +141,85 @@ for (const lc of LAW_INPUTS) {
   }
 }
 
+// ---- Partia 2: PorPct, pasma, efekty, rozbicie wkladu, macierz, laska buntu (P2) ----
+const OR = await import(src('game/order.ts'));
+const encOrder = (o) => ({
+  porPct: enc(o.porPct), tier: o.tier, band: o.band, bandLabel: o.bandLabel,
+  effects: encObj(o.effects), wagaSz: enc(o.wagaSz), wagaPraw: enc(o.wagaPraw),
+  szNetto: enc(o.sz.netto), szMax: enc(o.sz.szMax), szPct: enc(o.sz.szPct), szLines: encLines(o.sz.lines),
+  prawNetto: enc(o.prawo.netto), prawPct: enc(o.prawo.prawPct),
+});
+const PORS = [-5, 0, 11.9, 12, 12.0000001, 29.9, 30, 49.99, 50, 69.9, 70, 89.9, 90, 100, 120, 170, NaN, Infinity, -Infinity];
+const CRITS = [12, 0, 5, 40, NaN, -3, Infinity];
+const bandCases = [];
+for (const p of PORS) for (const c of CRITS) {
+  const b = SB.porPctBand(p, c);
+  bandCases.push({ porPct: enc(p), crit: enc(c), band: b, bandLabel: SB.POR_BAND_LABELS[b] });
+}
+const tierCases = PORS.map((p) => ({ porPct: enc(p), tier: SB.tierFromPorPct(p) }));
+const effectsCases = [];
+for (const [sn, s] of Object.entries(SOCIETY_SETS)) for (const d of ['normal', 'hard']) {
+  const params = OR.loadOrderParams(s, d);
+  for (const p of PORS) for (const c of [12, 40, NaN]) {
+    effectsCases.push({ society: sn, difficulty: d, porPct: enc(p), crit: enc(c),
+      effects: encObj(SB.orderEffectsFromPorPct(p, params, c)) });
+  }
+}
+const PORPCT_PAIRS = [[0, 0], [100, 0], [0, 100], [50, 50], [120, 170], [NaN, 50], [50, NaN], [Infinity, 1], [-5, 200], [33.3, 66.6]];
+const porPctCases = [];
+for (const [sn, s] of Object.entries(SOCIETY_SETS)) for (const d of DIFFS) {
+  const params = OR.loadOrderParams(s, d);
+  for (const [a, b] of PORPCT_PAIRS) {
+    porPctCases.push({ society: sn, difficulty: d, sz: enc(a), praw: enc(b), porPct: enc(SB.computePorPct(a, b, params)) });
+  }
+}
+const CONTRIB = [[50, 50, 1, 1], [80, 20, 1, 1], [0, 0, 0.5, 0.5], [0, 0, 0, 0], [0, 0, 1, 3], [10, 0, 0, 0], [NaN, 30, 1, 1], [30, 30, NaN, 1], [30, 30, -1, 1], [30, 30, 2, -1], [33, 33, 1, 2], [100, 100, 1, 0], [-10, 50, 1, 1], [Infinity, 5, 1, 1]];
+const contribCases = CONTRIB.map(([a, b, c, d2]) => {
+  const r = SB.orderContributionPct(a, b, c, d2);
+  return { sz: enc(a), praw: enc(b), wSz: enc(c), wPraw: enc(d2), szWklad: enc(r.szWkladPct), prawWklad: enc(r.prawWkladPct) };
+});
+const ORDER_SOCS = ['pelny', 'none', 'zlySzablon', 'ujemne'];
+const orderBreakdownCases = [];
+for (const hc of HAPPY_INPUTS) for (const lc of LAW_INPUTS) for (const sn of ORDER_SOCS) for (const d of ['normal', 'hard']) {
+  const s = SOCIETY_SETS[sn];
+  const o = SB.evaluateOrderFromBreakdown({ ...hc.in }, { ...lc.in }, s, d);
+  orderBreakdownCases.push({ happy: hc.name, law: lc.name, society: sn, difficulty: d, expected: encOrder(o) });
+}
+const RAWS = [0, -0, NaN, Infinity, -Infinity, -0.2, 0.25, 1.5, -1, -1.5, 1e-9];
+const matrixCases = [];
+for (const hn of ['typowe', 'udzialy', 'pusty', 'nanPop']) {
+  const hc = HAPPY_INPUTS.find((h) => h.name === hn);
+  for (const sn of ['pelny', 'none', 'ujemne']) for (const d of ['normal', 'hard']) {
+    const s = SOCIETY_SETS[sn];
+    const base = SB.evaluateOrderFromBreakdown({ ...hc.in }, { garnizonCount: 2 }, s, d);
+    for (const raw of RAWS) {
+      const out = SB.applyCivMatrixHappinessModifier(base, raw, s, d);
+      matrixCases.push({ happy: hn, society: sn, difficulty: d, raw: enc(raw), expected: encOrder(out) });
+    }
+  }
+}
+const REVOLTS = [
+  { criticalPorPct: 12, graceTurns: 3 }, { criticalPorPct: 5, graceTurns: 2.7 },
+  { criticalPorPct: NaN, graceTurns: -1 }, { criticalPorPct: 12, graceTurns: NaN }, { criticalPorPct: 12, graceTurns: Infinity },
+];
+const GRACE_CURR = [null, undefined, -1, 0, 0.5, 1, 2, 3, NaN, 7];
+const GRACE_PORS = [11.9, 12, 13, 0, NaN, 40, Infinity, -1];
+const graceCases = [];
+for (const cg of GRACE_CURR) for (const p of GRACE_PORS) for (const rv of REVOLTS) {
+  graceCases.push({ currentGrace: cg === undefined ? { $undef: true } : enc(cg), porPct: enc(p), revolt: encObj(rv),
+    expected: encObj(SB.updateRevoltGrace(cg, p, rv)) });
+}
+const MSG_LEFT = [null, -1, 0, 0.5, 1, 2, 3, 2.5, NaN, Infinity];
+const messageCases = MSG_LEFT.map((g) => ({ left: enc(g), msg: SB.revoltWarningMessage('Kraków', g) }));
+const order = {
+  bands: bandCases, tiers: tierCases, effects: effectsCases, porPct: porPctCases,
+  contribution: contribCases, breakdown: orderBreakdownCases, matrix: matrixCases,
+  grace: graceCases, messages: messageCases,
+};
+
 const doc = {
   pin: PIN,
+  order,
   generator: 'gen-p6-8j-society-vectors.mjs',
   // JSON.stringify zamienia NaN na null (to samo, co Rust po stronie testu). Zestaw `pelny` = plik
   // society-params.json z pina; po stronie Rust zastepowany przez `data::derived::SOCIETY_PARAMS_JSON`.
