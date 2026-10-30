@@ -5,6 +5,14 @@
 import { writeFileSync } from 'node:fs';
 import { cityYieldPerTurn, tileYield, buildingValue, buildingHappinessAtLevel } from './economy.ts';
 import { TerenBazowy, Nakladka } from '../types/hex.ts';
+import realBuildingsJson from '../../data/buildings.json';
+
+// D2.2d-prep (r4): 1200 syntetycznych + 300 przypadkow z PRAWDZIWYMI rekordami buildings.json (42 szt., w tym 'port' i 'port_wielki').
+const N_SYNTH = 1200;
+const N_REAL = 300;
+const REAL: any[] = Array.isArray(realBuildingsJson) ? (realBuildingsJson as any[]) : ((realBuildingsJson as any).buildings as any[]);
+const REAL_PORT = REAL.find((r) => r.id === 'port');
+const YIELD_KEYS = ['praca', 'pieniadz', 'zywnosc', 'nauka', 'kultura'];
 
 const out = process.argv[2];
 const f = (x: number): { f: string } => ({ f: Object.is(x, -0) ? '-0' : String(x) });
@@ -51,8 +59,7 @@ const makeBuilding = (id: string) => {
 };
 
 const cases: any[] = [];
-const N = 1200;
-for (let i = 0; i < N; i++) {
+for (let i = 0; i < N_SYNTH + N_REAL; i++) {
   const civKeyPool: (string | null | undefined)[] = [null, undefined, '', 'nieznana_cywilizacja', 'Fenicjanie', 'GRECY', 'Grecy'];
   const civKey = pick(civKeyPool);
   const nTiles = Math.floor(rnd() * 5);
@@ -67,7 +74,12 @@ for (let i = 0; i < N; i++) {
   const nB = Math.floor(rnd() * 5);
   const buildings: { record: any; level: number }[] = [];
   for (let b = 0; b < nB; b++) {
-    buildings.push({ record: makeBuilding(pick(BUILDING_IDS)), level: 1 + Math.floor(rnd() * 3) });
+    if (i < N_SYNTH) {
+      buildings.push({ record: makeBuilding(pick(BUILDING_IDS)), level: 1 + Math.floor(rnd() * 3) });
+    } else {
+      const rec = rnd() < 0.3 && REAL_PORT ? REAL_PORT : pick(REAL);
+      buildings.push({ record: rec, level: 1 + Math.floor(rnd() * Math.min(3, rec.maksPoziom ?? 3)) });
+    }
   }
   // Agregaty Step 1 (L837-847) i Step 3 (L873-882) -- dokladnie petle weba, przez eksportowane funkcje.
   let zywnoscTerenu = 0, pracaTerenu = 0, handelTerenu = 0;
@@ -127,6 +139,13 @@ for (let i = 0; i < N; i++) {
   };
   cases.push({
     in: {
+      tiles: tiles.map((t) => ({ teren: t.terenBazowy, nakladka: t.nakladka, maRzeke: t.maRzeke })),
+      buildings: buildings.map(({ record, level }) => ({
+        id: record.id,
+        level: f(level),
+        baza: Object.fromEntries(YIELD_KEYS.map((k) => [k, f(Number(record.baza[k] ?? NaN))])),
+        przyrost: Object.fromEntries(YIELD_KEYS.map((k) => [k, f(Number(record.przyrost[k] ?? NaN))])),
+      })),
       agg: encObj(aggregates),
       city: { civKey: enc(civKey), ludnosc: enc(city.ludnosc), podzial: encObj(city.podziałHandlu), poborca: specjalisci.filter((s) => s === 'poborca').length },
       flags: { maMlyn: ctx.maMlyn, maCegielnia: ctx.maCegielnia, walutaOdkryta: ctx.walutaOdkryta, maMennica: ctx.maMennica, maBiblioteka: ctx.maBiblioteka, maAkademia: ctx.maAkademia },

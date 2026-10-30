@@ -2,20 +2,27 @@
 //! (Step 2, Step 3' port, praca netto) i ogona (Step 4-9) z `gra/src/game/economy.ts`
 //! (pin `91dc998a`, L819-1020).
 //!
-//! Wektory: `tests/p6_repin_d2_full_vectors/full-main.json` (1200 przypadkow). Generowane
-//! URUCHOMIENIEM PELNEJ funkcji `cityYieldPerTurn` z weba 91dc998a (node 22.22, loader TS
-//! z `typescript`). Generator: `dyspozycje/autobot/runs/R-RUSTPORT-REPIN-EKONOMIA-D2-Q1/logs/gen-full.mts`.
-//! Agregaty Step 1 (`tileYield`) i Step 3 (`buildingValue`) podaje generator przez eksportowane
-//! funkcje weba (petla 1:1); w Rust sa to wejscia (ZALOZENIE Z-D2.2c-1: sumowanie nieportowane).
+//! Wektory: `tests/p6_repin_d2_full_vectors/full-main.json` (1500 przypadkow: 1200 syntetycznych
+//! oraz 300 z PRAWDZIWYMI rekordami `buildings.json` z weba 91dc998a, w tym `port` i `port_wielki`).
+//!
+//! Wektory sa generowane URUCHOMIENIEM PELNEJ funkcji `cityYieldPerTurn` z weba 91dc998a (node 22.22,
+//! loader TS z `typescript`). Generator: `dyspozycje/autobot/runs/R-RUSTPORT-REPIN-EKONOMIA-D2-Q1/logs/gen-full.mts`.
+//!
+//! Od D2.2d (runda 4) wejscie Rust to surowe kafelki (`tiles`) i budynki (`buildings`); Step 1
+//! (`tileYield` bez ulepszen) i Step 3 (`buildingValue`, `pieniadzPortu`) licza sie w Rust.
+//! `aggregates_bit_exact_vs_web_loops` porownuje te sumy bit-w-bit z petlami weba (pole `agg`).
 //!
 //! - `parity_full_main_bit_exact`: wszystkie pola wyniku, porownanie bit-w-bit (znak zera, NaN).
 //! - `structural_*` / `boundary_*`: galezie wyprowadzone z kodu weba.
 
 use civ_engine::data::civilizations::{CivMatrixFile, Num};
+use civ_engine::data::terrain_map::{parse_terrain_yields, TerrainYieldsFile};
 use civ_engine::domain::civ_matrix::load_civ_matrix;
 use civ_engine::domain::economy_yield::{
-    city_praca_integer, city_yield_per_turn, CityYieldHeadParams, CityYieldInput, CityYieldOutput,
-    CityYieldParams, CityYieldTailParams,
+    building_value, city_building_sums, city_praca_integer, city_terrain_sums, city_yield_per_turn,
+    city_yield_per_turn_from_worked, tile_yield_base, BuildingYieldsInput, CityBuildingInput,
+    CityYieldHeadParams, CityYieldInput, CityYieldOutput, CityYieldParams, CityYieldTailParams,
+    WorkedTileInput,
 };
 use serde_json::Value;
 
@@ -134,10 +141,50 @@ fn input_of<'a>(case: &'a Value) -> CityYieldInput<'a> {
     }
 }
 
-fn run_case(matrix: &CivMatrixFile, case: &Value) -> CityYieldOutput {
+fn tiles_of(case: &Value) -> Vec<WorkedTileInput<'_>> {
+    case["in"]["tiles"]
+        .as_array()
+        .expect("tiles")
+        .iter()
+        .map(|t| WorkedTileInput {
+            teren_bazowy: t["teren"].as_str().expect("teren"),
+            nakladka: t["nakladka"].as_str().expect("nakladka"),
+            ma_rzeke: t["maRzeke"].as_bool().expect("maRzeke"),
+        })
+        .collect()
+}
+
+fn yields_of(v: &Value) -> BuildingYieldsInput {
+    BuildingYieldsInput {
+        praca: ef(&v["praca"]),
+        pieniadz: ef(&v["pieniadz"]),
+        zywnosc: ef(&v["zywnosc"]),
+        nauka: ef(&v["nauka"]),
+        kultura: ef(&v["kultura"]),
+    }
+}
+
+fn buildings_of(case: &Value) -> Vec<CityBuildingInput<'_>> {
+    case["in"]["buildings"]
+        .as_array()
+        .expect("buildings")
+        .iter()
+        .map(|b| CityBuildingInput {
+            id: b["id"].as_str().expect("id"),
+            level: ef(&b["level"]),
+            baza: yields_of(&b["baza"]),
+            przyrost: yields_of(&b["przyrost"]),
+        })
+        .collect()
+}
+
+/// Pelna sciezka D2.2d: kafelki i budynki z wektora, Step 1 i Step 3 liczone w Rust.
+fn run_case(matrix: &CivMatrixFile, terrain: &TerrainYieldsFile, case: &Value) -> CityYieldOutput {
     let params = params_of(&case["in"]["params"]);
     let input = input_of(case);
-    city_yield_per_turn(matrix, &params, &input)
+    let tiles = tiles_of(case);
+    let buildings = buildings_of(case);
+    city_yield_per_turn_from_worked(matrix, terrain, &params, &input, &tiles, &buildings)
 }
 
 /// Klucze `eko_*` uzywane przez pelna funkcje (do wyzerowania przed podmiana).
@@ -226,11 +273,12 @@ fn parity_full_main_bit_exact() {
     let v: Value = serde_json::from_str(FULL_VECTORS).expect("vectors json");
     assert_eq!(v["pin"], "91dc998a");
     let cases = v["cases"].as_array().expect("cases");
-    assert_eq!(cases.len(), 1200);
+    assert_eq!(cases.len(), 1500);
     let matrix = &load_civ_matrix().file;
+    let terrain = parse_terrain_yields().expect("terrain-yields.json");
     let mut mismatches = Vec::new();
     for (i, case) in cases.iter().enumerate() {
-        let out = run_case(matrix, case);
+        let out = run_case(matrix, &terrain, case);
         for (name, got, exp) in fields(&out, &case["out"]) {
             if !same(got, exp) {
                 mismatches.push(format!("#{i} {name}: got {got:?} exp {exp:?}"));
@@ -383,4 +431,163 @@ fn boundary_negative_zero_additional_tax_is_positive_zero_in_trade() {
     input.additional_tax = Some(-0.0);
     let out = city_yield_per_turn(&matrix, &neutral_params(), &input);
     assert_eq!(out.handel_brutto.to_bits(), 0.0f64.to_bits());
+}
+
+#[test]
+fn aggregates_bit_exact_vs_web_loops() {
+    // Step 1 (L837-847) i Step 3 (L873-882) z pinu: sumy Rust = petle weba, bit-w-bit.
+    let v: Value = serde_json::from_str(FULL_VECTORS).expect("vectors json");
+    let terrain = parse_terrain_yields().expect("terrain-yields.json");
+    let mut mismatches = Vec::new();
+    for (i, case) in v["cases"].as_array().unwrap().iter().enumerate() {
+        let tiles = tiles_of(case);
+        let buildings = buildings_of(case);
+        let t = city_terrain_sums(&terrain, &tiles);
+        let b = city_building_sums(&buildings);
+        let a = &case["in"]["agg"];
+        let pairs = [
+            ("zywnoscTerenu", t.zywnosc),
+            ("pracaTerenu", t.praca),
+            ("handelTerenu", t.handel),
+            ("pracaBudynkow", b.praca),
+            ("pieniadzBudynkow", b.pieniadz),
+            ("pieniadzPortu", b.pieniadz_portu),
+            ("zywnoscBudynkow", b.zywnosc),
+            ("naukaBudynkow", b.nauka),
+            ("kulturaBudynkow", b.kultura),
+        ];
+        for (name, got) in pairs {
+            let exp = ef(&a[name]);
+            if !same(got, exp) {
+                mismatches.push(format!("#{i} {name}: got {got:?} exp {exp:?}"));
+            }
+        }
+    }
+    assert!(
+        mismatches.is_empty(),
+        "first: {:?}",
+        mismatches.iter().take(5).collect::<Vec<_>>()
+    );
+}
+
+#[test]
+fn real_buildings_cover_port_and_port_wielki() {
+    // Prawdziwe rekordy: 'port' wchodzi do pieniadzPortu, 'port_wielki' nie (web: record.id === 'port').
+    let v: Value = serde_json::from_str(FULL_VECTORS).expect("vectors json");
+    let (mut port, mut wielki) = (0usize, 0usize);
+    for case in v["cases"].as_array().unwrap().iter().skip(1200) {
+        for b in case["in"]["buildings"].as_array().unwrap() {
+            match b["id"].as_str().unwrap() {
+                "port" => port += 1,
+                "port_wielki" => wielki += 1,
+                _ => {}
+            }
+        }
+    }
+    assert!(port > 0 && wielki > 0, "port={port} port_wielki={wielki}");
+}
+
+fn yields(
+    praca: f64,
+    pieniadz: f64,
+    zywnosc: f64,
+    nauka: f64,
+    kultura: f64,
+) -> BuildingYieldsInput {
+    BuildingYieldsInput {
+        praca,
+        pieniadz,
+        zywnosc,
+        nauka,
+        kultura,
+    }
+}
+
+#[test]
+fn structural_building_value_follows_level_formula() {
+    // baza + przyrost*(max(1, floor(level)) - 1), potem floor.
+    assert_eq!(building_value(10.0, 2.0, 1.0), 10.0);
+    assert_eq!(building_value(10.0, 2.0, 3.0), 14.0);
+    assert_eq!(building_value(10.0, 2.0, 2.9), 12.0); // floor(level) = 2
+    assert_eq!(building_value(10.7, 0.0, 1.0), 10.0); // floor wyniku
+    assert_eq!(building_value(10.0, 2.0, 0.0).to_bits(), 10.0f64.to_bits()); // max(1, 0)
+    assert!(building_value(10.0, 2.0, f64::NAN).is_nan());
+    assert!(building_value(f64::NAN, 2.0, 1.0).is_nan()); // brak klucza w rekordzie
+}
+
+#[test]
+fn structural_port_sum_only_counts_id_port_at_level() {
+    let b = [
+        CityBuildingInput {
+            id: "port",
+            level: 3.0,
+            baza: yields(0.0, 3.0, 0.0, 0.0, 0.0),
+            przyrost: yields(0.0, 2.0, 0.0, 0.0, 0.0),
+        },
+        CityBuildingInput {
+            id: "port_wielki",
+            level: 1.0,
+            baza: yields(0.0, 5.0, 0.0, 0.0, 0.0),
+            przyrost: yields(0.0, 0.0, 0.0, 0.0, 0.0),
+        },
+    ];
+    let s = city_building_sums(&b);
+    assert_eq!(s.pieniadz_portu, 7.0); // 3 + 2*2
+    assert_eq!(s.pieniadz, 12.0); // + 5 z port_wielki
+}
+
+#[test]
+fn structural_tile_forest_and_river_modifiers_and_unknown_terrain() {
+    let data = parse_terrain_yields().expect("terrain-yields.json");
+    let base = tile_yield_base(
+        &data,
+        &WorkedTileInput {
+            teren_bazowy: "laka",
+            nakladka: "brak",
+            ma_rzeke: false,
+        },
+    );
+    let forest = tile_yield_base(
+        &data,
+        &WorkedTileInput {
+            teren_bazowy: "laka",
+            nakladka: "las",
+            ma_rzeke: false,
+        },
+    );
+    let row = data
+        .terrain_modifiers
+        .iter()
+        .find(|m| m.modyfikator == "Las (nakładka)")
+        .expect("forest modifier");
+    assert_eq!(forest.zywnosc, base.zywnosc + row.zywnosc as f64);
+    assert_eq!(forest.praca, base.praca + row.praca as f64);
+    assert_eq!(forest.handel, base.handel + row.podatek as f64);
+    let unknown = tile_yield_base(
+        &data,
+        &WorkedTileInput {
+            teren_bazowy: "nieznany",
+            nakladka: "brak",
+            ma_rzeke: false,
+        },
+    );
+    assert_eq!(unknown.zywnosc.to_bits(), 0.0f64.to_bits());
+    assert_eq!(unknown.praca.to_bits(), 0.0f64.to_bits());
+    assert_eq!(unknown.handel.to_bits(), 0.0f64.to_bits());
+    let sums = city_terrain_sums(
+        &data,
+        &[
+            WorkedTileInput {
+                teren_bazowy: "laka",
+                nakladka: "las",
+                ma_rzeke: false,
+            },
+            WorkedTileInput {
+                teren_bazowy: "laka",
+                nakladka: "las",
+                ma_rzeke: false,
+            },
+        ],
+    );
+    assert_eq!(sums.praca, 2.0 * forest.praca);
 }
