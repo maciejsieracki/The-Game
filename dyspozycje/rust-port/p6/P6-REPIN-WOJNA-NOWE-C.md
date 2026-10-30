@@ -20,10 +20,11 @@
 - Z1: `GameMap.hexes` + `costFn` -> `hex_costs: HashMap<(i64,i64), f64>` (obecnosc klucza = `key in map.hexes`, wartosc = `costFn(hex)`). `terrainMoveCost` nie jest portowane (wejscie wolajacego).
 - Z2: `blockedKeys` -> `Option<&HashSet<(i64,i64)>>`; `buildHexOccupancy` / `claimHexForMove` generyczne po kluczu `K` (web: string z `keyFn`).
 - Z3: stan globalny `flagOverride` nie istnieje w Rust: `is_diplo_tick_war_brake_enabled(flag_override: Option<bool>)`.
-- Z4: liczby `number` = `f64`; `Math.max/min/pow` zapisane jako `js_max`, `js_min`, `js_pow` (NaN-propagacja, `pow(1, ±Inf)` = NaN, `max(+0,-0)`, `min(+0,-0)`).
+- Z4: liczby `number` = `f64`; `Math.max/min/pow` zapisane jako `js_max`, `js_min`, `js_pow` (NaN-propagacja, `pow(±1, ±Inf)` = NaN (r2: wczesniej tylko `+1`), `max(+0,-0)`, `min(+0,-0)`).
 - Z5: tabela `wymianaKrokPktPerEpoka` = `BTreeMap<i64, f64>`; klucze JSON to calkowite epoki (plik danych), niecalkowite odfiltrowuje web przez `Number.isFinite`, wejscie Rust przyjmuje juz przefiltrowane.
 - Z6: identyfikatory wlascicieli = `i64`; klucz pary = `"lo-hi"`.
-- Z7: `parseCrisisCounters(unknown)` -> `&serde_json::Value`, wynik `Vec<(String, f64)>` w kolejnosci wejscia; wektory nie zawieraja kluczy niecalkowitych (kolejnosc `Object.entries` dla kluczy typu indeks nie jest testowana).
+- Z7: `parseCrisisCounters(unknown)` -> `&serde_json::Value`, wynik `Vec<(String, f64)>` traktowany jako ZBIOR par (r2: kolejnosc nie jest kontraktem; web `Object.entries` ma inna kolejnosc niz alfabetyczna iteracja `serde_json::Map` bez `preserve_order`). Klucze zapisu sa kanoniczne `"lo-hi"` (zapisuje je tylko `crisisPairKey`), wiec unikalne; wtedy `sort_crisis_queue` daje wynik niezalezny od kolejnosci (test `sort_crisis_queue_permutation_invariant_for_canonical_keys`).
+- Z9 (r2): `sortCrisisQueue` z licznikiem NaN: komparator Rust traktuje NaN jako wpis NA KONCU (deterministycznie, remis wg pary); web (V8, komparator zwracajacy NaN) daje wynik zalezny od implementacji. Licznik NaN nie powstaje w potoku (`parse` odrzuca niefinite, `advance` zwraca skonczone), wiec ta galaz jest ochrona przed panika, nie odtwarzaniem zachowania weba.
 - Z8: remis w `pickWarDeclarer` = nizszy ownerId (jak w webie; `power !== power` dla NaN -> strona b).
 
 ## Tabela zmian: web -> Rust -> test -> status
@@ -76,3 +77,14 @@ Brak zmian behawioralnych bez odpowiednika w Rust w tym zakresie. Kolejna czesc 
 - Wektory `ai-move-range.json` i `diplomacy-tick-war-brake.json` zregenerowane z `git archive 91dc998a` i porównane bajt-w-bajt: identyczne.
 - Mutacje: 8 z 31 powtorzonych niezaleznie (R01, R07, R09, R12, D05, D15, D16, D18), wszystkie zabite. R13 potwierdzona jako równoważna (`t == 0` na linii przypisania).
 - Szczegoly: `dyspozycje/autobot/runs/R-RUSTPORT-REPIN-WOJNA-NOWE-C-Q1/02-operator-pomiary-r1.md`.
+
+## Runda r2: odpowiedzi na zarzuty Evaluatora (commit kodu `7f2f5d2f`)
+
+- Zarzut 1 (NaN progu w `advance_crisis_counter`): PRZYJETY. Poprawka `!(zaufanie <= prog)`; test `crisis_counter_hysteresis_and_thresholds` (prog NaN -> counter 0, wartosc zweryfikowana na webie).
+- Zarzut 2 (`js_pow(-1, ±Inf)`): PRZYJETY. Poprawka `base.abs() == 1`; test `krok_edge_cases_explicit` (mnoznik -1: epoka +Inf -> NaN, -Inf -> 100, 5 -> 400, 6 -> -400; zgodne z webem).
+- Zarzut 3 (panika `sort_by` przy NaN licznika): PRZYJETY. Komparator calkowity; test `sort_crisis_queue_nan_counters_total_order_no_panic` (300 wpisow, ~1/3 NaN). Patrz Z9.
+- Zarzut 4 (kolejnosc `parseCrisisCounters`): PRZYJETY wariant "usuniecie deklaracji" + ZALOZENIE Z7 + test `sort_crisis_queue_permutation_invariant_for_canonical_keys`.
+- Uwaga proceduralna (23 mutacje niezweryfikowane): PRZYJETA. Wszystkie 31 mutacji powtorzone na kodzie r2 (`mutate-c.py`, logi `mut-c-r2-<ID>.log`): 30 ZABITYCH, R13 SURVIVED = równoważna (dowod w `03-operator-r2-odpowiedzi.md`). D02 i D13 przepisane na nowe wzorce po zmianach.
+- Bramki r2: `cargo fmt --all -- --check` EXIT=0; `cargo clippy --all-targets -- -D warnings` EXIT=0; `cargo test --no-fail-fast` EXIT=0, 1349 passed / 0 failed (bylo 1347; +2 testy).
+- Wektory: NIE regenerowane w r2 (kod zmieniony tylko w przypadkach brzegowych NaN/Inf/ujemnej bazy; wszystkie wektory nadal przechodza).
+- Odpowiedzi i SHA: `dyspozycje/autobot/runs/R-RUSTPORT-REPIN-WOJNA-NOWE-C-Q1/03-operator-r2-odpowiedzi.md`.

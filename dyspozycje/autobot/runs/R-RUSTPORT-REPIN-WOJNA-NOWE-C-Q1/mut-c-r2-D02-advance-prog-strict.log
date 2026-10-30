@@ -1,0 +1,111 @@
+
+running 12 tests
+test budget_nan_or_zero_or_negative_returns_empty ... ok
+test claim_rejects_occupied_target_and_moves_counter ... ok
+test farthest_target_blocked_steps_back_one ... ok
+test min_move_first_step_enters_even_if_over_budget ... ok
+test missing_key_or_infinity_stops_prefix ... ok
+test nan_cost_is_not_a_stop ... ok
+test occupancy_matches_web ... ok
+test claim_sequences_match_web ... ok
+test farthest_step_matches_web_default_terrain_costs ... ok
+test farthest_step_matches_web_with_blocked_keys ... ok
+test truncate_path_matches_web_custom_costs ... ok
+test truncate_path_matches_web_default_terrain_costs ... ok
+
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.14s
+
+
+running 24 tests
+test ai_ai_pairs_match_web ... ok
+test crisis_counter_sanitizes_previous_value ... ok
+test ai_ai_eligibility_matches_web ... ok
+test crisis_step_at_war_resets_counter ... ok
+test crisis_counter_hysteresis_and_thresholds ... FAILED
+test declarer_dobra_and_pairs_explicit_edges ... ok
+test advance_crisis_counter_matches_web ... FAILED
+test derived_params_file_matches_pinned_web_values ... ok
+test crisis_pair_key_matches_web ... ok
+test flag_override_wins_over_default ... ok
+test krok_edge_cases_explicit ... ok
+test crisis_step_for_pair_matches_web ... FAILED
+test parse_crisis_counters_drops_garbage ... ok
+test dobra_wola_turn_step_matches_web ... ok
+test krok_pkt_wymiany_matches_web ... ok
+test sort_crisis_queue_matches_web ... ok
+test sort_crisis_queue_nan_counters_total_order_no_panic ... ok
+test default_and_flag_match_web ... ok
+test sort_crisis_queue_permutation_invariant_for_canonical_keys ... ok
+test trade_bonus_stepwise_and_capped ... ok
+test sort_queue_ties_use_owner_ids ... ok
+test parse_crisis_counters_matches_web ... ok
+test pick_war_declarer_matches_web ... ok
+test trade_trust_bonus_matches_web ... ok
+
+failures:
+
+---- crisis_counter_hysteresis_and_thresholds stdout ----
+
+thread 'crisis_counter_hysteresis_and_thresholds' (20275) panicked at tests/p6_repin_wojna_c_war_brake.rs:139:5:
+assertion `left == right` failed
+  left: 0.0
+ right: 1.0
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+   1: core::panicking::panic_fmt
+   2: core::panicking::assert_failed_inner
+   3: core::panicking::assert_failed::<f64, f64>
+   4: p6_repin_wojna_c_war_brake::crisis_counter_hysteresis_and_thresholds
+   5: p6_repin_wojna_c_war_brake::crisis_counter_hysteresis_and_thresholds::{closure#0}
+   6: <p6_repin_wojna_c_war_brake::crisis_counter_hysteresis_and_thresholds::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+---- advance_crisis_counter_matches_web stdout ----
+
+thread 'advance_crisis_counter_matches_web' (20272) panicked at tests/p6_repin_wojna_c_war_brake.rs:54:5:
+assertion `left == right` failed: advanceCases[19]: counter CrisisStep { counter: 0.0, warning_active: false, war_trigger_ready: false } vs CrisisStep { counter: 4.0, warning_active: true, war_trigger_ready: false }
+  left: 0
+ right: 4616189618054758400
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+   1: core::panicking::panic_fmt
+   2: core::panicking::assert_failed_inner
+   3: core::panicking::assert_failed::<u64, u64>
+   4: p6_repin_wojna_c_war_brake::assert_step
+   5: p6_repin_wojna_c_war_brake::advance_crisis_counter_matches_web
+   6: p6_repin_wojna_c_war_brake::advance_crisis_counter_matches_web::{closure#0}
+   7: <p6_repin_wojna_c_war_brake::advance_crisis_counter_matches_web::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+---- crisis_step_for_pair_matches_web stdout ----
+
+thread 'crisis_step_for_pair_matches_web' (20279) panicked at tests/p6_repin_wojna_c_war_brake.rs:54:5:
+assertion `left == right` failed: stepCases[0]: counter CrisisStep { counter: 0.0, warning_active: false, war_trigger_ready: false } vs CrisisStep { counter: 1000000001.0, warning_active: true, war_trigger_ready: true }
+  left: 0
+ right: 4741671816374779904
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+   1: core::panicking::panic_fmt
+   2: core::panicking::assert_failed_inner
+   3: core::panicking::assert_failed::<u64, u64>
+   4: p6_repin_wojna_c_war_brake::assert_step
+   5: p6_repin_wojna_c_war_brake::crisis_step_for_pair_matches_web
+   6: p6_repin_wojna_c_war_brake::crisis_step_for_pair_matches_web::{closure#0}
+   7: <p6_repin_wojna_c_war_brake::crisis_step_for_pair_matches_web::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+
+failures:
+    advance_crisis_counter_matches_web
+    crisis_counter_hysteresis_and_thresholds
+    crisis_step_for_pair_matches_web
+
+test result: FAILED. 21 passed; 3 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.32s
+
+   Compiling civ-engine v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_2fae1a05-0e5-4/rust-port/engine)
+    Finished `test` profile [unoptimized] target(s) in 29.17s
+     Running tests/p6_repin_wojna_c_move_range.rs (/dev/shm/wf_2fae1a05-0e5-4/debug/deps/p6_repin_wojna_c_move_range-d6c1e444bd4e40ba)
+     Running tests/p6_repin_wojna_c_war_brake.rs (/dev/shm/wf_2fae1a05-0e5-4/debug/deps/p6_repin_wojna_c_war_brake-e39c4e4f997f3959)
+error: test failed, to rerun pass `--test p6_repin_wojna_c_war_brake`
+
+EXIT=101
