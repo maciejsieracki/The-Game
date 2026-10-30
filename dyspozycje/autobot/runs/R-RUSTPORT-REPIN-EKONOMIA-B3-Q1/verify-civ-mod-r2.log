@@ -1,0 +1,23 @@
+R-RUSTPORT-REPIN-EKONOMIA-B3-Q1 r2 - odtworzenie lancucha fixture i wektorow (pin weba 91dc998a)
+Zrodlo weba: git archive 91dc998a gra/src gra/data -> katalog tymczasowy poza repo (dwie kopie: real, mod).
+Node: v22.22.0. Komendy uruchamiane z katalogu runu; kazda linia "EXIT" to kod zwrotny polecenia.
+
+== 1. Generator fixture civ_matrix_mod.json (gen-civ-matrix-mod.mjs na realnej macierzy rust-port/engine/data/civ-matrix.json)
+zmienionych komorek: 9
+EXIT=0
+CMP civ_matrix_mod.json vs tests/p6_repin_b3_vectors/civ_matrix_mod.json: EXIT=0 (bajt-w-bajt)
+
+== 2. Wektory z wariantu realnego (kopia weba 'real', nieruszona macierz)
+route=5200 wealthOwner=312 capMod=60 mulMod=60
+EXIT=0
+CMP route_cash.json: EXIT=0
+CMP wealth_owner.json: EXIT=0
+
+== 3. Wektory wariantu _mod (kopia weba 'mod', gra/data/civ-matrix.json zastapione przez wynik kroku 1)
+route=5200 wealthOwner=312 capMod=60 mulMod=60
+EXIT=0
+CMP route_cash_mod.json: EXIT=0
+CMP wealth_owner_mod.json: EXIT=0
+
+Wynik: 0 rozbieznosci w 5 plikach (civ_matrix_mod.json, route_cash.json, wealth_owner.json, route_cash_mod.json, wealth_owner_mod.json).
+Uwaga: route_cash.json jest liczony z kopii realnej; w kroku 3 kopia 'mod' ma podmieniona macierz, co jest zamierzone.

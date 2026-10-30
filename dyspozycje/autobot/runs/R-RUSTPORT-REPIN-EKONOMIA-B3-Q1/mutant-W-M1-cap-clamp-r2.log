@@ -1,0 +1,38 @@
+   Compiling civ-engine v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_3b1341a2-e6d-2/rust-port/engine)
+    Finished `test` profile [unoptimized] target(s) in 37.94s
+     Running tests/p6_repin_b3_wealth.rs (/home/user/cargo-target-shared/wf_3b1341a2-e6d-2/debug/deps/p6_repin_b3_wealth-5ac6be5ea922b5b5)
+
+running 4 tests
+test wealth_owner_matches_web_vectors_real_matrix ... ok
+test wealth_owner_matches_web_vectors_modified_matrix ... ok
+test wealth_owner_without_civ_key_returns_base ... ok
+test wealth_modifiers_match_web_vectors ... FAILED
+
+failures:
+
+---- wealth_modifiers_match_web_vectors stdout ----
+
+thread 'wealth_modifiers_match_web_vectors' (27083) panicked at tests/p6_repin_b3_wealth.rs:123:9:
+rozbieznosci z webem: [
+    "capModifierCases base=WealthModParams { cap_na_epoke: 10.0, mnoznik_na_poziom: 0.1 } mod=-2: rust=WealthModParams { cap_na_epoke: -10.0, mnoznik_na_poziom: 0.1 } web=WealthModParams { cap_na_epoke: 0.0, mnoznik_na_poziom: 0.1 }",
+    "capModifierCases base=WealthModParams { cap_na_epoke: 7.3, mnoznik_na_poziom: 1.5 } mod=-2: rust=WealthModParams { cap_na_epoke: -7.3, mnoznik_na_poziom: 1.5 } web=WealthModParams { cap_na_epoke: 0.0, mnoznik_na_poziom: 1.5 }",
+    "capModifierCases base=WealthModParams { cap_na_epoke: -5.0, mnoznik_na_poziom: -0.5 } mod=-2: rust=WealthModParams { cap_na_epoke: 5.0, mnoznik_na_poziom: -0.5 } web=WealthModParams { cap_na_epoke: 0.0, mnoznik_na_poziom: -0.5 }",
+    "capModifierCases base=WealthModParams { cap_na_epoke: inf, mnoznik_na_poziom: NaN } mod=-2: rust=WealthModParams { cap_na_epoke: -inf, mnoznik_na_poziom: NaN } web=WealthModParams { cap_na_epoke: NaN, mnoznik_na_poziom: NaN }",
+]
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+   1: core::panicking::panic_fmt
+   2: p6_repin_b3_wealth::check_modifier_vectors
+   3: p6_repin_b3_wealth::wealth_modifiers_match_web_vectors
+   4: p6_repin_b3_wealth::wealth_modifiers_match_web_vectors::{closure#0}
+   5: <p6_repin_b3_wealth::wealth_modifiers_match_web_vectors::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+
+failures:
+    wealth_modifiers_match_web_vectors
+
+test result: FAILED. 3 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.08s
+
+error: test failed, to rerun pass `--test p6_repin_b3_wealth`
+EXIT=101 (mutant zabity: wealth_modifiers_match_web_vectors FAILED)
