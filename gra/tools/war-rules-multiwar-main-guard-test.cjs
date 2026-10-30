@@ -53,7 +53,7 @@ check(
   'main.ts importuje bramki z war-rules-multiwar',
   /from '\.\/game\/war-rules-multiwar';/.test(main)
     && /\bevaluateInterCivWarGate,/.test(main)
-    && /\bcanDeclareEraForcedWar,/.test(main)
+    && /\bevaluateEraForcedWarGate,/.test(main)
     && /\bforcedEraTagFromPowod,/.test(main)
     && /\bisInterCivWarOpenAtTurn,/.test(main)
     && /\bisWarRulesMultiwarEnabled,/.test(main),
@@ -85,9 +85,13 @@ check(
   'wypowiedz_wojne: blok bramki R1/R2/R3 istnieje (flaga ON)',
   declGateIdx > 0,
 );
+// R-WEB-ERA-WAR-COUNTER-Q1 (r3, ZMIANA ŚWIADOMA): globalny limit R3 (`canDeclareEraForcedWar`,
+// `maxEraForcedWarsPerEra`) zniesiony (null). Zastąpiony licznikiem per (cywilizacja, epoka) w czystej
+// funkcji `evaluateEraForcedWarGate`, wołanej w main.ts PRZED blokiem R1/R2. Asercja R3 sprawdza
+// nowy kontrakt na całym `main` (okno 1600 znaków od bloku R1/R2 go nie obejmuje).
 check(
-  'wypowiedz_wojne: R3 -- blokada wojny epoki przez canDeclareEraForcedWar(tag, forcedEraWarDeclaredByTag) -> continue',
-  /if \(gateForcedTag !== null && !canDeclareEraForcedWar\(gateForcedTag, forcedEraWarDeclaredByTag\)\) continue;/.test(declGateBlock),
+  'wypowiedz_wojne: licznik epoki per cywilizacja -- evaluateEraForcedWarGate(counts: eraWarCountByCivKey, attacker+target) -> continue',
+  /const eraGateVerdict = evaluateEraForcedWarGate\(\{[\s\S]{0,400}counts: eraWarCountByCivKey[\s\S]{0,400}attackerId: ownerId[\s\S]{0,400}targetId,[\s\S]{0,600}\}, WAR_RULES_PARAMS\);\s*if \(eraGateVerdict !== 'ok'\) continue;/.test(main),
 );
 check(
   'wypowiedz_wojne: R1/R2 -- evaluateInterCivWarGate z turn/era/liczbą wojen napastnika i celu',

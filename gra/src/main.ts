@@ -24502,6 +24502,11 @@ async function boot(): Promise<void> {
         ownerEraByOwner.set(attackerId, 1);
         stoneForceWarPendingOwners.add(attackerId);
         stoneForceWarCycleOwners.delete(attackerId);
+        // R-WEB-ERA-WAR-COUNTER-Q1 (r3): opcja „Wojna epoki z udziałem gracza” (nowa gra: domyślnie ON,
+        // `doStartGame` -> `params.playerEpochWarEnabled ?? true`). Sandbox `?playtest=mapa` nie przechodzi
+        // przez `doStartGame` z tą opcją, więc flaga zostaje `false` i `assignForcedWarPairings` wyrzuca gracza
+        // z puli (main.ts ~l.35654). Tu tylko ustawiamy stan startowy jak w nowej grze -- tempo testu.
+        playerEpochWarEnabled = true;
         for (const [key, st] of [...stoneForceWarActiveByPairKey.entries()]) {
           if (st.attackerId === attackerId) {
             stoneForceWarActiveByPairKey.delete(key);

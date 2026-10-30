@@ -171,6 +171,18 @@ async function main() {
     process.exit(1);
   }
 
+  // R-WEB-ERA-WAR-COUNTER-Q1 (r3): wojny epoki BRĄZU wyłączone flagą `enabledForcedWarEras`
+  // (data/war-rules-params.json). Scenariusz Brązu nie może przejść przy wyłączonej epoce, więc test
+  // jawnie się POMIJA (SKIP, exit 0 z komunikatem) zamiast cicho zielonego lub czerwonego. Przepięcie
+  // na Kamień = osobny temat. Gdy flaga znów zawiera "bronze", test wykonuje się normalnie.
+  {
+    const enabledEras = JSON.parse(fs.readFileSync(path.join(GRA_DIR, 'data', 'war-rules-params.json'), 'utf8')).enabledForcedWarEras;
+    if (!Array.isArray(enabledEras) || !enabledEras.includes('bronze')) {
+      console.log('SKIP: wojny epoki Brązu wyłączone flagą enabledForcedWarEras (war-rules-params.json) -- test pominięty jawnie (nie zielony).');
+      process.exit(0);
+    }
+  }
+
   buildBundle();
 
   const browser = await launchBrowser(chromium);

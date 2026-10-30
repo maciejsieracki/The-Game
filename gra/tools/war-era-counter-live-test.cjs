@@ -250,20 +250,34 @@ async function main() {
     const warLog = await page.evaluate(() => window.__eraTestDebug.getWarEventLogHead());
     assert('warEventLog ma co najmniej 1 wpis po DOW', Array.isArray(warLog) && warLog.length > 0, warLog);
     const warCard = Array.isArray(warLog)
-      ? warLog.find((e) => e && e.kind === 'enemy' && /wojn/i.test(String(e.title || '')))
+      ? warLog.find((e) => e && /wojn/i.test(String(e.title || '') + ' ' + String(e.subtitle || '')))
       : undefined;
     assert(
-      'warEventLog zawiera dedykowaną kartę "kind: enemy" z tytułem o wypowiedzeniu wojny (trwały dowód widoczności w UI)',
+      'warEventLog zawiera wpis o wypowiedzeniu wojny (title lub subtitle; enemy albo info, zależnie od ścieżki odroczenia EOT)',
       !!warCard,
       { warCard, warLog },
     );
 
     // R-WEB-ERA-WAR-COUNTER-Q1 (kryterium 5, zarzut FC r1 nr 1): powód wojny epoki widoczny dla gracza.
     const eraCard = Array.isArray(warLog)
-      ? warLog.find((e) => e && e.kind === 'enemy' && /Wojna epoki \(Kamień\)/.test(String(e.title || '')))
+      ? warLog.find((e) => e && /Wojna epoki \(Kamień\)/.test(String(e.title || '') + ' ' + String(e.subtitle || '')))
       : undefined;
     assert('karta zdarzeń niesie powód "Wojna epoki (Kamień)" (kryterium 5/6)', !!eraCard, warLog);
     console.log('   toast:', JSON.stringify(toastFinal), '\n   karta:', JSON.stringify(eraCard || null));
+    // R-WEB-ERA-WAR-COUNTER-Q1 (r3, zarzut FC r2 nr 1): zrzut MA pokazywać powód wojny, nie stan
+    // bez wojny. Wypowiedzenie w fazie AI jest odłożone do panelu Wydarzeń (toast ukryty, patrz
+    // komentarz w sekcji E). Najpierw zamykamy realny modal wyniku auto-walki (przycisk „Kontynuuj"
+    // stojący na drodze -- ta sama bitwa, którą wywołał atak AI), potem sprawdzamy WIDOCZNY tekst DOM.
+    await page.evaluate(() => {
+      const btn = [...document.querySelectorAll('button, [role="button"]')]
+        .find(b => /^\s*kontynuuj\s*$/i.test(b.textContent || ''));
+      if (btn) btn.click();
+    });
+    await wait(600);
+    const domEraCardVisible = await page.evaluate(
+      () => /Wojna epoki \(Kamień\)/.test(document.body.innerText || ''),
+    );
+    assert('powód "Wojna epoki (Kamień)" widoczny w DOM (panel Wydarzeń, nie tylko dane)', domEraCardVisible, { domEraCardVisible });
     const shotPath = process.env.WAR_ERA_SHOT || path.join(require('os').tmpdir(), 'war-era-counter-hint.png');
     await page.screenshot({ path: shotPath, fullPage: false });
     assert('zrzut Chromium po wypowiedzeniu zapisany', fs.existsSync(shotPath), { shotPath });
