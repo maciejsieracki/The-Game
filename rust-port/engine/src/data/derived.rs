@@ -4953,6 +4953,8 @@ pub struct LandmassSprzatanie {
 #[serde(deny_unknown_fields)]
 pub struct LandmassSusza {
     pub tolerancja_pp: StartValue<f64>,
+    pub klamp_min: StartValue<f64>,
+    pub klamp_max: StartValue<f64>,
 }
 
 /// Plik `mapgen-landmass.json`.

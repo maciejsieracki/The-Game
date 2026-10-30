@@ -16,6 +16,8 @@
     "wybrzeze_przebiegi_domyslne": { "wartosc": 2, "zrodlo_web": "gra/src/map/gen-helpers.ts:5056", "uzycie": "finalizeLandMassAfterCoast: domyslny coastPasses (przekazywany do finalizeCoastAndInlandWater)" }
   },
   "susza": {
-    "tolerancja_pp": { "wartosc": 3, "zrodlo_web": "gra/src/map/gen-helpers.ts:5072", "uzycie": "enforceTargetDryLandFraction: domyslna tolerancja udzialu suchego lądu w punktach procentowych mapy" }
+    "tolerancja_pp": { "wartosc": 3, "zrodlo_web": "gra/src/map/gen-helpers.ts:5072", "uzycie": "enforceTargetDryLandFraction: domyslna tolerancja udzialu suchego lądu w punktach procentowych mapy" },
+    "klamp_min": { "wartosc": 0.15, "zrodlo_web": "gra/src/map/gen-helpers.ts:5090", "uzycie": "enforceTargetDryLandFraction: dolny klamp udzialu docelowego, Math.max(0.15, ...)" },
+    "klamp_max": { "wartosc": 0.85, "zrodlo_web": "gra/src/map/gen-helpers.ts:5090", "uzycie": "enforceTargetDryLandFraction: gorny klamp udzialu docelowego, Math.min(0.85, ...)" }
   }
 }

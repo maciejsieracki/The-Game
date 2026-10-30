@@ -2279,6 +2279,100 @@ pub fn flatten_false_coastal_river_notches(
     to_flatten.len()
 }
 
+/// Web `enforceTargetDryLandFraction(hexes, landScores, target, width, height, coastOpts?, tolerancePctPoints,
+/// fillBias, minMaskFillScore)` (:5079). Cel klamp do [klamp_min, klamp_max] (JSON); tolerancja w heksach
+/// `max(1, round(total * tol / 100))`. Sekwencja: wypelnienie wg wynikow -> granica -> wybrzeze(1 przebieg)
+/// -> granica; jesli poza tolerancja: wypelnienie + pierscien wybrzeza, a jesli nadal poza tolerancja,
+/// jeszcze jedno wypelnienie. Zwraca sume zmian z `applyLandFractionByScore`.
+// Sygnatura 1:1 z web (9 parametrow, z domyslnymi wartosciami jako argumenty): stad allow.
+#[allow(clippy::too_many_arguments)]
+pub fn enforce_target_dry_land_fraction(
+    hexes: &mut HexRecord,
+    land_scores: &HashMap<String, f64>,
+    target_land_fraction: f64,
+    width: i64,
+    height: i64,
+    max_inland_pool_size: Option<usize>,
+    tolerance_pct_points: f64,
+    fill_bias: LandFractionFillBias,
+    min_mask_fill_score: f64,
+) -> usize {
+    let susza = &mapgen_landmass().susza;
+    let clamped = js_max(
+        susza.klamp_min.wartosc,
+        js_min(susza.klamp_max.wartosc, target_land_fraction),
+    );
+    let total = hexes.len() as f64;
+    let target_land = js_round(total * clamped);
+    let tolerance_hexes = js_max(1.0, js_round(total * tolerance_pct_points / 100.0));
+    let dims = Some((width, height));
+    let mut adjusted = 0usize;
+
+    adjusted += apply_land_fraction_by_score(
+        hexes,
+        land_scores,
+        clamped,
+        dims,
+        fill_bias,
+        min_mask_fill_score,
+    );
+    enforce_map_border_ocean(hexes, width, height, None);
+
+    finalize_coast_and_inland_water(hexes, width, height, 1, max_inland_pool_size);
+    enforce_map_border_ocean(hexes, width, height, None);
+
+    let mut land = count_land_sea_hexes(hexes).land as f64;
+    if (land - target_land).abs() > tolerance_hexes {
+        adjusted += apply_land_fraction_by_score(
+            hexes,
+            land_scores,
+            clamped,
+            dims,
+            fill_bias,
+            min_mask_fill_score,
+        );
+        enforce_map_border_ocean(hexes, width, height, None);
+        apply_coast_ring(hexes);
+        land = count_land_sea_hexes(hexes).land as f64;
+        if (land - target_land).abs() > tolerance_hexes {
+            adjusted += apply_land_fraction_by_score(
+                hexes,
+                land_scores,
+                clamped,
+                dims,
+                fill_bias,
+                min_mask_fill_score,
+            );
+            enforce_map_border_ocean(hexes, width, height, None);
+        }
+    }
+    adjusted
+}
+
+/// Wariant domyslny `enforceTargetDryLandFraction` (web: tolerancja 3 pp z JSON, `fillBias = 'center'`,
+/// `minMaskFillScore = PANGEA_LAND_FILL_MIN_SCORE`, bez `coastOpts`).
+pub fn enforce_target_dry_land_fraction_default(
+    hexes: &mut HexRecord,
+    land_scores: &HashMap<String, f64>,
+    target_land_fraction: f64,
+    width: i64,
+    height: i64,
+) -> usize {
+    let tol = mapgen_landmass().susza.tolerancja_pp.wartosc;
+    let min_score = mapgen_landsea_fill().pangea_min_score_wypelnienia;
+    enforce_target_dry_land_fraction(
+        hexes,
+        land_scores,
+        target_land_fraction,
+        width,
+        height,
+        None,
+        tol,
+        LandFractionFillBias::Center,
+        min_score,
+    )
+}
+
 // ---------------------------------------------------------------------------
 // P6.M06B2 (R-RUSTPORT-P6-M06B2-WYSPY-FINALIZACJA-Q1), partia 2 z M06B: wyspy i sprzatanie masy lądu
 // (gen-helpers.ts:4946-5100). Symbole: `removeTinyLandIslands` :4946, `minTinyIslandHexesForTyp` :4992,
@@ -2413,7 +2507,10 @@ pub fn finalize_land_mass_after_coast_default(
     width: i64,
     height: i64,
 ) -> usize {
-    let coast_passes = mapgen_landmass().sprzatanie.wybrzeze_przebiegi_domyslne.wartosc;
+    let coast_passes = mapgen_landmass()
+        .sprzatanie
+        .wybrzeze_przebiegi_domyslne
+        .wartosc;
     finalize_land_mass_after_coast(hexes, typ, width, height, None, coast_passes)
 }
 
