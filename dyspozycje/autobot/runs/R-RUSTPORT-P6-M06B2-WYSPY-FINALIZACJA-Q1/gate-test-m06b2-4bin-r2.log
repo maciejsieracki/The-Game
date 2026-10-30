@@ -1,0 +1,45 @@
+   Compiling civ-engine v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_1f2222a2-bfc-4/rust-port/engine)
+    Finished `test` profile [unoptimized] target(s) in 1.06s
+     Running tests/p6_m06b2_enforce.rs (target/debug/deps/p6_m06b2_enforce-6333a3a0e473e441)
+
+running 7 tests
+test enforce_default_wrapper_equals_explicit_default_on_vectors ... ok
+test mask_bias_is_covered ... ok
+test target_clamp_neighbours_are_discriminated ... ok
+test tolerance_neighbours_are_discriminated ... ok
+test enforce_probe_matches_web ... ok
+test enforce_target_dry_land_fraction_matches_web ... ok
+test enforce_large_maps_match_web ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 17.27s
+
+     Running tests/p6_m06b2_finalize.rs (target/debug/deps/p6_m06b2_finalize-8d7243a89836359a)
+
+running 4 tests
+test coast_passes_neighbours_are_discriminated ... ok
+test land_mass_loop_second_pass_is_noop_on_vectors ... ok
+test finalize_default_wrapper_equals_explicit_default_on_vectors ... ok
+test finalize_land_mass_after_coast_matches_web ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 3.83s
+
+     Running tests/p6_m06b2_specks.rs (target/debug/deps/p6_m06b2_specks-9712a81a902bdf8c)
+
+running 3 tests
+test specks_vectors_include_removals ... ok
+test count_open_ocean_land_specks_matches_web ... ok
+test purge_open_ocean_land_specks_matches_web ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.12s
+
+     Running tests/p6_m06b2_tiny.rs (target/debug/deps/p6_m06b2_tiny-823aea1824dd2d64)
+
+running 4 tests
+test min_tiny_island_hexes_for_typ_matches_web ... ok
+test tiny_threshold_neighbours_are_discriminated ... ok
+test tiny_vectors_cover_overlays_rivers_and_deposits_on_water_and_land ... ok
+test remove_tiny_land_islands_matches_web ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.86s
+
+EXIT=0 (cargo test --offline --test p6_m06b2_tiny --test p6_m06b2_specks --test p6_m06b2_finalize --test p6_m06b2_enforce; zapis po uruchomieniu)

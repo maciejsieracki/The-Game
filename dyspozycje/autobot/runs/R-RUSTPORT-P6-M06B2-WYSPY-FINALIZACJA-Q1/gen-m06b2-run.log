@@ -1,0 +1,6 @@
+{"file":"web-enforce-probe.json","bytes":3348874,"cases":{"enforceProbe":596}}
+{"file":"web-tiny.json","bytes":1397673,"cases":{"tiny":544,"minTyp":4}}
+{"file":"web-specks.json","bytes":248265,"cases":{"specks":20,"purge":20}}
+{"file":"web-finalize.json","bytes":2238790,"cases":{"finalize":384}}
+{"file":"web-enforce.json","bytes":4530484,"cases":{"enforce":720}}
+{"stats":{"tiny_prog_N-1_vs_N_rozne":77,"tiny_prog_N_vs_N+1_rozne":89,"tiny_mapy":32,"specks_mapy_z_specks":10,"purge_mapy_z_usunieciem":10,"enf_tol3_vs_4_rozne":12,"enf_cele_przy_granicy":72,"enf_clamp_0.15_vs_0.16_center":12,"enf_clamp_0.15_vs_0.16_mask":12,"enf_mapy":12,"enf_tol2_vs_3_rozne":2}}

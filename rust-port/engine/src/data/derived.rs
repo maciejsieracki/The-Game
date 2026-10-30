@@ -4921,3 +4921,58 @@ pub fn mapgen_coast() -> &'static MapgenCoastFile {
     static TABLE: std::sync::OnceLock<MapgenCoastFile> = std::sync::OnceLock::new();
     TABLE.get_or_init(|| parse_mapgen_coast().expect("mapgen-coast.json must parse"))
 }
+
+// ---------------------------------------------------------------------------
+// P6.M06B2 (R-RUSTPORT-P6-M06B2-WYSPY-FINALIZACJA-Q1): `mapgen-landmass.json`.
+// Progi wysp (`minTinyIslandHexesForTyp` :4992), sprzatanie masy lądu (`finalizeLandMassAfterCoast` :5050),
+// tolerancja suchego lądu (`enforceTargetDryLandFraction` :5079).
+// ---------------------------------------------------------------------------
+
+pub const MAPGEN_LANDMASS_JSON: &str = include_str!("../../data/derived/mapgen-landmass.json");
+
+/// Sekcja `male_wyspy` (web `minTinyIslandHexesForTyp` :4992).
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct LandmassMaleWyspy {
+    pub pangea: StartValue<usize>,
+    pub kontynenty: StartValue<usize>,
+    pub wyspy: StartValue<usize>,
+    pub ziemia: StartValue<usize>,
+}
+
+/// Sekcja `sprzatanie` (web `finalizeLandMassAfterCoast` :5050).
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct LandmassSprzatanie {
+    pub przebiegi_maks: StartValue<usize>,
+    pub wybrzeze_przebiegi_domyslne: StartValue<usize>,
+}
+
+/// Sekcja `susza` (web `enforceTargetDryLandFraction` :5072).
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct LandmassSusza {
+    pub tolerancja_pp: StartValue<f64>,
+    pub klamp_min: StartValue<f64>,
+    pub klamp_max: StartValue<f64>,
+}
+
+/// Plik `mapgen-landmass.json`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct MapgenLandmassFile {
+    pub meta: serde_json::Value,
+    pub male_wyspy: LandmassMaleWyspy,
+    pub sprzatanie: LandmassSprzatanie,
+    pub susza: LandmassSusza,
+}
+
+pub fn parse_mapgen_landmass() -> Result<MapgenLandmassFile, serde_json::Error> {
+    serde_json::from_str(MAPGEN_LANDMASS_JSON)
+}
+
+/// Tabela masy lądu (jednorazowy odczyt; blad danych = panika z komunikatem).
+pub fn mapgen_landmass() -> &'static MapgenLandmassFile {
+    static TABLE: std::sync::OnceLock<MapgenLandmassFile> = std::sync::OnceLock::new();
+    TABLE.get_or_init(|| parse_mapgen_landmass().expect("mapgen-landmass.json must parse"))
+}

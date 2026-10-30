@@ -28,8 +28,8 @@
 use std::collections::{HashMap, HashSet};
 
 use crate::data::derived::{
-    mapgen_coast, mapgen_desert_purge, mapgen_jagged_coast, mapgen_landsea, mapgen_landsea_fill,
-    mapgen_landsea_pangea, MapgenJaggedCoastFile,
+    mapgen_coast, mapgen_desert_purge, mapgen_jagged_coast, mapgen_landmass, mapgen_landsea,
+    mapgen_landsea_fill, mapgen_landsea_pangea, MapgenJaggedCoastFile,
 };
 use crate::domain::improvements::js_round;
 use crate::domain::map_generator::{ClimateBand, Terrain, WorldType};
@@ -2277,4 +2277,261 @@ pub fn flatten_false_coastal_river_notches(
         }
     }
     to_flatten.len()
+}
+
+/// Web `enforceTargetDryLandFraction(hexes, landScores, target, width, height, coastOpts?, tolerancePctPoints,
+/// fillBias, minMaskFillScore)` (:5079). Cel klamp do [klamp_min, klamp_max] (JSON); tolerancja w heksach
+/// `max(1, round(total * tol / 100))`. Sekwencja: wypelnienie wg wynikow -> granica -> wybrzeze(1 przebieg)
+/// -> granica; jesli poza tolerancja: wypelnienie + pierscien wybrzeza, a jesli nadal poza tolerancja,
+/// jeszcze jedno wypelnienie. Zwraca sume zmian z `applyLandFractionByScore`.
+// Sygnatura 1:1 z web (9 parametrow, z domyslnymi wartosciami jako argumenty): stad allow.
+#[allow(clippy::too_many_arguments)]
+pub fn enforce_target_dry_land_fraction(
+    hexes: &mut HexRecord,
+    land_scores: &HashMap<String, f64>,
+    target_land_fraction: f64,
+    width: i64,
+    height: i64,
+    max_inland_pool_size: Option<usize>,
+    tolerance_pct_points: f64,
+    fill_bias: LandFractionFillBias,
+    min_mask_fill_score: f64,
+) -> usize {
+    let susza = &mapgen_landmass().susza;
+    let clamped = js_max(
+        susza.klamp_min.wartosc,
+        js_min(susza.klamp_max.wartosc, target_land_fraction),
+    );
+    let total = hexes.len() as f64;
+    let target_land = js_round(total * clamped);
+    let tolerance_hexes = js_max(1.0, js_round(total * tolerance_pct_points / 100.0));
+    let dims = Some((width, height));
+    let mut adjusted = 0usize;
+
+    adjusted += apply_land_fraction_by_score(
+        hexes,
+        land_scores,
+        clamped,
+        dims,
+        fill_bias,
+        min_mask_fill_score,
+    );
+    enforce_map_border_ocean(hexes, width, height, None);
+
+    finalize_coast_and_inland_water(hexes, width, height, 1, max_inland_pool_size);
+    enforce_map_border_ocean(hexes, width, height, None);
+
+    let mut land = count_land_sea_hexes(hexes).land as f64;
+    if (land - target_land).abs() > tolerance_hexes {
+        adjusted += apply_land_fraction_by_score(
+            hexes,
+            land_scores,
+            clamped,
+            dims,
+            fill_bias,
+            min_mask_fill_score,
+        );
+        enforce_map_border_ocean(hexes, width, height, None);
+        apply_coast_ring(hexes);
+        land = count_land_sea_hexes(hexes).land as f64;
+        if (land - target_land).abs() > tolerance_hexes {
+            adjusted += apply_land_fraction_by_score(
+                hexes,
+                land_scores,
+                clamped,
+                dims,
+                fill_bias,
+                min_mask_fill_score,
+            );
+            enforce_map_border_ocean(hexes, width, height, None);
+        }
+    }
+    adjusted
+}
+
+/// Wariant domyslny `enforceTargetDryLandFraction` (web: tolerancja 3 pp z JSON, `fillBias = 'center'`,
+/// `minMaskFillScore = PANGEA_LAND_FILL_MIN_SCORE`, bez `coastOpts`).
+pub fn enforce_target_dry_land_fraction_default(
+    hexes: &mut HexRecord,
+    land_scores: &HashMap<String, f64>,
+    target_land_fraction: f64,
+    width: i64,
+    height: i64,
+) -> usize {
+    let tol = mapgen_landmass().susza.tolerancja_pp.wartosc;
+    let min_score = mapgen_landsea_fill().pangea_min_score_wypelnienia;
+    enforce_target_dry_land_fraction(
+        hexes,
+        land_scores,
+        target_land_fraction,
+        width,
+        height,
+        None,
+        tol,
+        LandFractionFillBias::Center,
+        min_score,
+    )
+}
+
+// ---------------------------------------------------------------------------
+// P6.M06B2 (R-RUSTPORT-P6-M06B2-WYSPY-FINALIZACJA-Q1), partia 2 z M06B: wyspy i sprzatanie masy lądu
+// (gen-helpers.ts:4946-5100). Symbole: `removeTinyLandIslands` :4946, `minTinyIslandHexesForTyp` :4992,
+// `countOpenOceanLandSpecks` :5006, `purgeOpenOceanLandSpecks` :5027, `finalizeLandMassAfterCoast` :5050,
+// `enforceTargetDryLandFraction` :5079. Progi: `data/derived/mapgen-landmass.json` (`mapgen_landmass()`).
+// Kolejnosc iteracji = kolejnosc wstawiania `HexRecord` (jak `Object.keys`); mutacje sekwencyjne.
+// ---------------------------------------------------------------------------
+
+/// Web `minTinyIslandHexesForTyp(typ)` (:4992): minimalna wielkosc wyspy (heksy) dla typu swiata.
+pub fn min_tiny_island_hexes_for_typ(typ: WorldType) -> usize {
+    let t = &mapgen_landmass().male_wyspy;
+    match typ {
+        WorldType::Pangea => t.pangea.wartosc,
+        WorldType::Continents => t.kontynenty.wartosc,
+        WorldType::Islands => t.wyspy.wartosc,
+        WorldType::Earth => t.ziemia.wartosc,
+    }
+}
+
+/// Web `removeTinyLandIslands(hexes, minHexes)` (:4946): spojne skladowe lądu/wybrzeza
+/// (`isLandOrCoast` = suchy ląd, czyli nie Morze/Plytkie) mniejsze niz `min_hexes` -> Morze
+/// (nakladka Brak, rzeka wylaczona, zloze usuniete). Zwraca liczbe zamienionych heksow.
+/// Skladowe liczone na stanie przed zmianami tej skladowej (kolejne skladowe nie graniczą z wczesniejszymi).
+pub fn remove_tiny_land_islands(hexes: &mut HexRecord, min_hexes: usize) -> usize {
+    let keys: Vec<String> = hexes.keys().cloned().collect();
+    let mut visited: HashSet<String> = HashSet::new();
+    let mut removed = 0usize;
+
+    for key in &keys {
+        if visited.contains(key) {
+            continue;
+        }
+        let Some(h) = hexes.get(key) else { continue };
+        if is_water_terrain_local(h.terrain) {
+            continue;
+        }
+
+        let mut stack: Vec<String> = vec![key.clone()];
+        let mut comp: Vec<String> = Vec::new();
+        visited.insert(key.clone());
+
+        while let Some(cur) = stack.pop() {
+            // Web: `Number(parts[0])`; klucz niekanoniczny nie ma sasiadow (NaN nie trafia w krawedzie).
+            let Some((q, r)) = key_qr(&cur) else {
+                comp.push(cur);
+                continue;
+            };
+            comp.push(cur);
+            for &(dq, dr) in HEX_DIRECTIONS.iter() {
+                let nk = hex_key(q + i64::from(dq), r + i64::from(dr));
+                if visited.contains(&nk) {
+                    continue;
+                }
+                let Some(nh) = hexes.get(&nk) else { continue };
+                if is_water_terrain_local(nh.terrain) {
+                    continue;
+                }
+                visited.insert(nk.clone());
+                stack.push(nk);
+            }
+        }
+
+        if comp.len() >= min_hexes {
+            continue;
+        }
+        for k in &comp {
+            if let Some(hx) = hexes.get_mut(k) {
+                set_hex_to_morze(hx);
+                removed += 1;
+            }
+        }
+    }
+    removed
+}
+
+/// Liczba sasiadow (w `hexes`) bedacych suchym lądem (nie Morze/Plytkie), web `dryLandNeighbors`
+/// w `countOpenOceanLandSpecks` / `purgeOpenOceanLandSpecks` (:5006, :5027). Brak sasiada = pominiety.
+fn dry_land_neighbor_count(hexes: &HexRecord, q: i64, r: i64) -> usize {
+    HEX_DIRECTIONS
+        .iter()
+        .filter(|&&(dq, dr)| {
+            hexes
+                .get(&hex_key(q + i64::from(dq), r + i64::from(dr)))
+                .is_some_and(|nh| !is_water_terrain_local(nh.terrain))
+        })
+        .count()
+}
+
+/// Web `countOpenOceanLandSpecks(hexes)` (:5006): suchy ląd bez sasiada-lądu (tylko woda/brzeg mapy).
+/// Brzeg `Plytkie` jest woda (`isWaterTerrainLocal`), wiec nie jest liczony jako ląd.
+pub fn count_open_ocean_land_specks(hexes: &HexRecord) -> usize {
+    hexes
+        .iter()
+        .filter(|(_, h)| !is_water_terrain_local(h.terrain))
+        .filter(|(_, h)| dry_land_neighbor_count(hexes, h.q, h.r) == 0)
+        .count()
+}
+
+/// Web `finalizeLandMassAfterCoast(hexes, typ, width, height, coastOpts?, coastPasses = 2)` (:5050).
+/// Petla (limit `przebiegi_maks` z JSON, web `pass < 3`): `removeTinyLandIslands` z progiem typu +
+/// `purgeOpenOceanLandSpecks`; przerwanie gdy purge nic nie usunal po pierwszym przebiegu. Potem
+/// `finalizeCoastAndInlandWater(coast_passes, max_inland_pool_size)` i `enforceMapBorderOcean`.
+/// Zwraca sume zamienionych heksow (tiny + purge).
+pub fn finalize_land_mass_after_coast(
+    hexes: &mut HexRecord,
+    typ: WorldType,
+    width: i64,
+    height: i64,
+    max_inland_pool_size: Option<usize>,
+    coast_passes: usize,
+) -> usize {
+    let min_hexes = min_tiny_island_hexes_for_typ(typ);
+    let max_passes = mapgen_landmass().sprzatanie.przebiegi_maks.wartosc;
+    let mut total = 0usize;
+    for pass in 0..max_passes {
+        total += remove_tiny_land_islands(hexes, min_hexes);
+        let purged = purge_open_ocean_land_specks(hexes);
+        total += purged;
+        if purged == 0 && pass > 0 {
+            break;
+        }
+    }
+    finalize_coast_and_inland_water(hexes, width, height, coast_passes, max_inland_pool_size);
+    enforce_map_border_ocean(hexes, width, height, None);
+    total
+}
+
+/// Wariant domyslny `finalizeLandMassAfterCoast` (bez `coastOpts`, `coastPasses` z JSON = 2).
+pub fn finalize_land_mass_after_coast_default(
+    hexes: &mut HexRecord,
+    typ: WorldType,
+    width: i64,
+    height: i64,
+) -> usize {
+    let coast_passes = mapgen_landmass()
+        .sprzatanie
+        .wybrzeze_przebiegi_domyslne
+        .wartosc;
+    finalize_land_mass_after_coast(hexes, typ, width, height, None, coast_passes)
+}
+
+/// Web `purgeOpenOceanLandSpecks(hexes)` (:5027): suchy ląd bez sasiada-lądu -> `setHexToMorze`.
+/// Sekwencyjnie: stan sasiadow czytany na biezaco (jak w JS). Zwraca liczbe usunietych heksow.
+pub fn purge_open_ocean_land_specks(hexes: &mut HexRecord) -> usize {
+    let keys: Vec<String> = hexes.keys().cloned().collect();
+    let mut removed = 0usize;
+    for key in &keys {
+        let Some(h) = hexes.get(key) else { continue };
+        if is_water_terrain_local(h.terrain) {
+            continue;
+        }
+        let (q, r) = (h.q, h.r);
+        if dry_land_neighbor_count(hexes, q, r) > 0 {
+            continue;
+        }
+        if let Some(hx) = hexes.get_mut(key) {
+            set_hex_to_morze(hx);
+            removed += 1;
+        }
+    }
+    removed
 }

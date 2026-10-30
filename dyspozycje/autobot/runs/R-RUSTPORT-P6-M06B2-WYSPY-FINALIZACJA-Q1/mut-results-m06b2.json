@@ -1,0 +1,157 @@
+{
+ "M01": {
+  "sym": "removeTinyLandIslands",
+  "web": "gen-helpers.ts:4946",
+  "desc": "prog wielkosci: > zamiast >= (granica N)",
+  "occurrences": 1,
+  "sek": 31.6,
+  "exit": 101,
+  "failed_tests": [
+   "test remove_tiny_land_islands_matches_web ... FAILED"
+  ],
+  "wynik": "ZABITA"
+ },
+ "M02": {
+  "sym": "removeTinyLandIslands",
+  "web": "gen-helpers.ts:4946",
+  "desc": "sasiad Plytkie Morze traktowany jako lad (lacza skladowe)",
+  "occurrences": 1,
+  "sek": 29.8,
+  "exit": 101,
+  "failed_tests": [
+   "test remove_tiny_land_islands_matches_web ... FAILED"
+  ],
+  "wynik": "ZABITA"
+ },
+ "M03": {
+  "sym": "minTinyIslandHexesForTyp",
+  "web": "gen-helpers.ts:4996",
+  "desc": "typ wyspy -> prog ziemi (6 zamiast 4)",
+  "occurrences": 1,
+  "sek": 35.1,
+  "exit": 101,
+  "failed_tests": [
+   "test min_tiny_island_hexes_for_typ_matches_web ... FAILED"
+  ],
+  "wynik": "ZABITA"
+ },
+ "M04": {
+  "sym": "countOpenOceanLandSpecks",
+  "web": "gen-helpers.ts:5006",
+  "desc": "warunek specka: <= 1 sasiad lądu zamiast == 0",
+  "occurrences": 1,
+  "sek": 30.8,
+  "exit": 101,
+  "failed_tests": [
+   "test count_open_ocean_land_specks_matches_web ... FAILED",
+   "test purge_open_ocean_land_specks_matches_web ... FAILED"
+  ],
+  "wynik": "ZABITA"
+ },
+ "_przywrocenie": {
+  "sha_przed": "34d4ebfc020b7e5ea9b84e27c0232daeebc31d61a81e552671296da0a53a4e88",
+  "sha_po": "34d4ebfc020b7e5ea9b84e27c0232daeebc31d61a81e552671296da0a53a4e88",
+  "zgodne": true
+ },
+ "M05": {
+  "sym": "purgeOpenOceanLandSpecks",
+  "web": "gen-helpers.ts:5027",
+  "desc": "purge: prog sasiadow > 1 zamiast > 0 (usuwa tez lad z 1 sasiadem)",
+  "occurrences": 1,
+  "sek": 30.5,
+  "exit": 101,
+  "failed_tests": [
+   "test finalize_land_mass_after_coast_matches_web ... FAILED",
+   "test land_mass_loop_second_pass_is_noop_on_vectors ... FAILED"
+  ],
+  "wynik": "ZABITA"
+ },
+ "M06": {
+  "sym": "finalizeLandMassAfterCoast",
+  "web": "gen-helpers.ts:5060-5062",
+  "desc": "usuniety warunek przerwania petli (purged === 0 && pass > 0) - oczekiwany ROWNOWAZNY",
+  "occurrences": 1,
+  "sek": 35.7,
+  "exit": 0,
+  "failed_tests": [],
+  "wynik": "PRZEZYTA"
+ },
+ "M07": {
+  "sym": "finalizeLandMassAfterCoast",
+  "web": "gen-helpers.ts:5063",
+  "desc": "suma zwrotu pomija purge (total += purged usuniete)",
+  "occurrences": 1,
+  "sek": 36.5,
+  "exit": 0,
+  "failed_tests": [],
+  "wynik": "PRZEZYTA"
+ },
+ "M08": {
+  "sym": "finalizeLandMassAfterCoast",
+  "web": "gen-helpers.ts:5066-5067",
+  "desc": "usuniete enforceMapBorderOcean po finalizacji wybrzeza",
+  "occurrences": 1,
+  "sek": 35.4,
+  "exit": 101,
+  "failed_tests": [
+   "test finalize_land_mass_after_coast_matches_web ... FAILED"
+  ],
+  "wynik": "ZABITA"
+ },
+ "M09": {
+  "sym": "enforceTargetDryLandFraction",
+  "web": "gen-helpers.ts:5101",
+  "desc": "pierwsza granica tolerancji: >= zamiast >",
+  "occurrences": 1,
+  "sek": 42.7,
+  "exit": 101,
+  "failed_tests": [
+   "test enforce_probe_matches_web ... FAILED"
+  ],
+  "wynik": "ZABITA"
+ },
+ "M10": {
+  "sym": "enforceTargetDryLandFraction",
+  "web": "gen-helpers.ts:5104",
+  "desc": "usuniety applyCoastRing w galezi tolerancji",
+  "occurrences": 1,
+  "sek": 35.8,
+  "exit": 101,
+  "failed_tests": [
+   "test enforce_target_dry_land_fraction_matches_web ... FAILED"
+  ],
+  "wynik": "ZABITA"
+ },
+ "M11": {
+  "sym": "enforceTargetDryLandFraction",
+  "web": "gen-helpers.ts:5088-5090",
+  "desc": "gorny klamp celu 0.85 -> 0.86",
+  "occurrences": 1,
+  "sek": 40.4,
+  "exit": 0,
+  "failed_tests": [],
+  "wynik": "PRZEZYTA"
+ },
+ "M12": {
+  "sym": "enforceTargetDryLandFraction",
+  "web": "gen-helpers.ts:5094",
+  "desc": "wybrzeze w enforce: 2 przebiegi zamiast 1",
+  "occurrences": 1,
+  "sek": 37.3,
+  "exit": 0,
+  "failed_tests": [],
+  "wynik": "PRZEZYTA"
+ },
+ "M13": {
+  "sym": "enforceTargetDryLandFraction",
+  "web": "gen-helpers.ts:5084",
+  "desc": "tolerancja w heksach +1",
+  "occurrences": 1,
+  "sek": 37.7,
+  "exit": 101,
+  "failed_tests": [
+   "test enforce_target_dry_land_fraction_matches_web ... FAILED"
+  ],
+  "wynik": "ZABITA"
+ }
+}
