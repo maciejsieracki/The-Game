@@ -1,0 +1,65 @@
+   Compiling civ-engine v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_d04131c2-b8c-2/rust-port/engine)
+warning: unused import: `js_min`
+  --> src/domain/economy_yield.rs:24:52
+   |
+24 | use crate::domain::civ_matrix::js_compat::{js_max, js_min};
+   |                                                    ^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: `civ-engine` (lib) generated 1 warning (run `cargo fix --lib -p civ-engine` to apply 1 suggestion)
+    Finished `test` profile [unoptimized] target(s) in 40.96s
+     Running tests/p6_repin_d2_tail.rs (target/debug/deps/p6_repin_d2_tail-56581f76f4bf4b0c)
+
+running 12 tests
+test boundary_nan_strata_reaches_money_but_not_gross_trade ... ok
+test structural_biblioteka_and_akademia_are_additive ... ok
+test structural_additional_tax_clamped_at_zero_and_nan_propagates ... ok
+test structural_civ_nauka_mult_without_owner ... ok
+test structural_garncarnia_food_and_consumption ... ok
+test structural_legacy_civ_handel_mult_only_without_owner ... ok
+test structural_mint_needs_both_flags ... ok
+test structural_poborca_adds_two_each ... ok
+test structural_premia_only_when_positive ... ok
+test structural_neutral_baseline ... ok
+test structural_korupcja_cap_limits_strata ... FAILED
+test parity_tail_main_bit_exact ... FAILED
+
+failures:
+
+---- structural_korupcja_cap_limits_strata stdout ----
+
+thread 'structural_korupcja_cap_limits_strata' (3433) panicked at tests/p6_repin_d2_tail.rs:275:5:
+assertion `left == right` failed
+  left: 4.0
+ right: 25.0
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+   1: core::panicking::panic_fmt
+   2: core::panicking::assert_failed_inner
+   3: core::panicking::assert_failed::<f64, f64>
+   4: p6_repin_d2_tail::structural_korupcja_cap_limits_strata
+   5: p6_repin_d2_tail::structural_korupcja_cap_limits_strata::{closure#0}
+   6: <p6_repin_d2_tail::structural_korupcja_cap_limits_strata::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+---- parity_tail_main_bit_exact stdout ----
+
+thread 'parity_tail_main_bit_exact' (3426) panicked at tests/p6_repin_d2_tail.rs:148:13:
+case 1 field pieniadz: got 4.0 exp NaN
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+   1: core::panicking::panic_fmt
+   2: p6_repin_d2_tail::parity_tail_main_bit_exact
+   3: p6_repin_d2_tail::parity_tail_main_bit_exact::{closure#0}
+   4: <p6_repin_d2_tail::parity_tail_main_bit_exact::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+
+failures:
+    parity_tail_main_bit_exact
+    structural_korupcja_cap_limits_strata
+
+test result: FAILED. 10 passed; 2 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.32s
+
+error: test failed, to rerun pass `--test p6_repin_d2_tail`
