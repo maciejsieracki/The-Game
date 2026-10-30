@@ -65,9 +65,11 @@ dotykające tych samych plików — zawsze sekwencyjnie, nigdy w tej samej fali.
 | 36 | R-RUSTPORT-REPIN-WOJNA-NOWE-B-Q1 | REPIN 2a | 1/5 | wf_921c9171-66d | **PASS-WITH-NOTES — zintegrowane** (1313/0; army_consolidation, ai_general_war_campaign; mutacje 38/39 + 1 equiv) | 2026-10-29 |
 | 37 | R-RUSTPORT-REPIN-EKONOMIA-C-Q1 | REPIN 4b | 2/5 | wf_29db1dc6-fdf | **PASS-WITH-NOTES — zintegrowane** (1300/0; mnożnik budowy 0.5/1/2, wektory M16/P6.23 z weba, M16 domknięte); C5 relief-preserving i C6 population-growth-v85 → nowe ID | 2026-10-29 |
 | 38 | R-RUSTPORT-P6-M06A6-LAD-MORZE-PANGEA-Q1 | P6 mapgen | 3/5 | wf_602b7b44-742 | **PASS-WITH-NOTES — zintegrowane** (1326/0; erode, carve, applyLandFractionByContinent; mutacje 31+7 equiv) | 2026-10-29 |
-| 39 | R-RUSTPORT-REPIN-EKONOMIA-B-Q1 | REPIN 4b | 1/5 | (nowy) | etap 1 | 2026-10-29 |
+| 39 | R-RUSTPORT-REPIN-EKONOMIA-B-Q1 | REPIN 4b | 3/5 | wf_7519e610-85f | **ZAMKNIĘTE ADM. (B1: era Racji + recompute ownerEra) — zintegrowane** (1331/0); reszta → B2 (production.ts), B3 (turn-economy.ts) | 2026-10-30 |
 | 40 | R-RUSTPORT-REPIN-WOJNA-NOWE-C-Q1 | REPIN 2a | 1/5 | (nowy) | etap 1 | 2026-10-29 |
 | 41 | R-RUSTPORT-P6-M06A7-LAD-MORZE-KORYTARZE-Q1 | P6 mapgen | 1/5 | (nowy) | etap 1 | 2026-10-30 |
+| 42 | R-RUSTPORT-REPIN-EKONOMIA-B2-Q1 | REPIN 4b | 1/5 | (nowy) | etap 1 | 2026-10-30 |
+| 43 | R-RUSTPORT-REPIN-EKONOMIA-B3-Q1 | REPIN 4b | — | kolejka (po zwolnieniu slotu Rust) | dispatch gotowy | 2026-10-30 |
 | 24 | R-RUSTPORT-P6-M06A4-LAD-MORZE-RESZTA3-Q1 | P6 mapgen | 3/5 | wf_206786d8-1fa | **PASS-WITH-NOTES (partie 2–3) — zintegrowane** (`5a1fbb33`, 1265/0); zamknięte adm.; reszta → M06A5 |
 | 25 | R-RUSTPORT-P5-8-CITYPANEL-K08B-Q1 | P5.8 | 4/5 | wf_5b437a20-313 | **ZAMKNIĘTE ADMINISTRACYJNIE (9/24 jedn.) — zintegrowane** (`b19311e2`); reszta → K08C/K08D |
 | 3 | R-RUSTPORT-P5-8-CITYPANEL-PODZIAL-Q1 | P5.8 | 3/5 | wf_5b094795-b4f | **PASS — zintegrowane** (docs, `a1246e48`); slot wolny | 2026-10-29 |
