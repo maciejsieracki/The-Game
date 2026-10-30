@@ -1,6 +1,6 @@
 # P6-REPIN-EKONOMIA-B3 - odswiezenie portu ekonomii do webu 91dc998a (czesc B3)
 
-**Temat:** `R-RUSTPORT-REPIN-EKONOMIA-B3-Q1` · **Runda:** 1/5 (Operator-impl) · **Pin portu:** `edb8fb56` (bez zmiany pinu) · **Cel:** `91dc998a5f1b51ad29e0f4785edfd45655445c53` · **Baza kodu:** `4c005237` (origin/rust-port/parity-v2)
+**Temat:** `R-RUSTPORT-REPIN-EKONOMIA-B3-Q1` · **Runda:** 1/5 (Operator-impl; weryfikacja niezalezna r2 i odpowiedzi na zarzuty w tej samej rundzie) · **Pin portu:** `edb8fb56` (bez zmiany pinu) · **Cel:** `91dc998a5f1b51ad29e0f4785edfd45655445c53` · **Baza kodu:** `4c005237` (origin/rust-port/parity-v2)
 
 ## 1. Zakres i zalozenia
 
@@ -43,9 +43,11 @@ Zaleznosci przeniesione z hunkow 1-14 (tylko funkcje, wiring w ticku nadal NASTE
 | Commit | Zawartosc |
 |---|---|
 | `b240d834` | `routeCashForCity` (`repin_b3::route_cash_for_city`), testy `p6_repin_b3_route.rs`, wektory `route_cash.json`, `route_cash_mod.json`, `civ_matrix_mod.json` |
-| (SHA w raporcie `01-operator-r1.md`) | `wealthParamsForOwner` + modyfikatory Wealth, testy `p6_repin_b3_wealth.rs`, wektory `wealth_owner.json`, `wealth_owner_mod.json`, dossier i generator |
+| `7d25ad56` | `wealthParamsForOwner` + modyfikatory Wealth, testy `p6_repin_b3_wealth.rs`, wektory `wealth_owner.json`, `wealth_owner_mod.json`, dossier i generator |
 
 Generator wektorow: `dyspozycje/autobot/runs/R-RUSTPORT-REPIN-EKONOMIA-B3-Q1/gen-repin-b3-vectors.mjs` (Node v22.22.0, loader `repin-b-loader-*.mjs` jak w B2). Wejscie: `git archive 91dc998a gra/src gra/data` do katalogu tymczasowego poza repo.
+
+Fixture `civ_matrix_mod.json` (r2, zamkniecie luki procesowej): generator `dyspozycje/autobot/runs/R-RUSTPORT-REPIN-EKONOMIA-B3-Q1/gen-civ-matrix-mod.mjs <realna civ-matrix.json> <wyjscie>` nanosi 9 komorek `params` (Grecy, Rzymianie, Inkowie x `eko_pieniadz_port_proc`, `wealth_cap_proc`, `wealth_mnoznik_proc`) i zapisuje bajt-w-bajt plik commitowany. Wariant `_mod` wektorow = ten sam generator `gen-repin-b3-vectors.mjs` uruchomiony na kopii weba, w ktorej `gra/data/civ-matrix.json` zastapiono wynikiem `gen-civ-matrix-mod.mjs`. Odtworzenie lancucha (5 plikow, 0 rozbieznosci): log `R-RUSTPORT-REPIN-EKONOMIA-B3-Q1/verify-civ-mod-r2.log`.
 
 Wynik weryfikacji wektorow z URUCHOMIONEGO weba 91dc998a:
 
@@ -91,13 +93,23 @@ Status tematu: **PASS-WITH-NOTES** dla partii B3 (kod i wektory tej partii zgodn
 Wykonane w tej samej rundzie 1/5 (bez zwrotu FAIL). Kod nie zmieniony: `git diff` przed i po pomiarach = pusty.
 
 - **Regeneracja wektorow z weba 91dc998a (bajt-po-bajcie).** Generator z runu uruchomiony na swiezym `git archive 91dc998a gra/src gra/data` poza repo: `route_cash.json` i `wealth_owner.json` zgodne bitowo z commitowanymi (cmp = 0). Wynik: `route=5200 wealthOwner=312 capMod=60 mulMod=60`, EXIT=0. Log: `R-RUSTPORT-REPIN-EKONOMIA-B3-Q1/verify-vectors-r2.log`.
-- **Wektory `_mod`.** Generator nie zawiera trybu `_mod`; odtworzono go, podmieniajac w kopii weba `gra/data/civ-matrix.json` na `tests/p6_repin_b3_vectors/civ_matrix_mod.json`. Wynik: `route_cash_mod.json` i `wealth_owner_mod.json` zgodne bitowo (cmp = 0). Roznica semantyczna `civ_matrix_mod.json` vs realna macierz: dokladnie 3 komorki `params` (wiersze: Grecy, Rzymianie, Inkowie): `eko_pieniadz_port_proc` 0.15/0->0.4 (Grecy zmienia 0.15->0.4, Rzymianie 0->0.4, Inkowie 0->0.4), `wealth_cap_proc` 0->0.2 i `wealth_mnoznik_proc` 0->-0.3 (Grecy, Inkowie). Pozostale klucze top-level bez zmian.
+- **Wektory `_mod`.** Generator nie zawiera trybu `_mod`; odtworzono go, podmieniajac w kopii weba `gra/data/civ-matrix.json` na `tests/p6_repin_b3_vectors/civ_matrix_mod.json`. Wynik: `route_cash_mod.json` i `wealth_owner_mod.json` zgodne bitowo (cmp = 0). Roznica semantyczna `civ_matrix_mod.json` vs realna macierz: dokladnie 9 komorek `params` (3 wiersze: Grecy, Rzymianie, Inkowie; 3 klucze): `eko_pieniadz_port_proc` -> 0.4 (Grecy 0.15->0.4, Rzymianie 0->0.4, Inkowie 0->0.4), `wealth_cap_proc` -> 0.2 i `wealth_mnoznik_proc` -> -0.3 (wszystkie trzy cywilizacje, 0->wartosc). (Poprawka r2: wczesniej bledne "3 komorki" i "(Grecy, Inkowie)".) Pozostale klucze top-level bez zmian.
 - **Zgodnosc logiki z webem (odczyt zrodla 91dc998a).** `wealth.ts:59-75`: cap `Number.isFinite(m) ? Math.max(0, 1+m) : 1`, mnoznik `Number.isFinite(m) ? 1+m : 1` - zgodne z `wealth_params_with_cap_modifier` / `..._multiplier_modifier`. `turn-economy.ts:186-197` (`wealthParamsForOwner`: falsy key => baza, kolejnosc cap potem mnoznik) i `turn-economy.ts:228-231` (`routeCashForCity`: `Math.min(total, Math.max(0, maritime))`, `civKey` falsy => bez mnoznika) - zgodne z portem.
 - **Mutacje (weryfikator, jedna naraz, plik przywracany, `git diff` pusty po restore):**
   - R-M1 (brak mnoznika cywilizacji w `route_cash_for_city`): ZABITY, 4/4 FAILED (`mutant-R-M1-route-r2.log`).
   - W-M1 (brak klamry `max(0, 1+m)` w capie): ZABITY, `wealth_modifiers_match_web_vectors` FAILED, 3 pozostale testy ok (`mutant-W-M1-cap-clamp-r2.log`).
 - **Bramki (surowe logi z EXIT):** `cargo fmt --all -- --check` EXIT=0; `cargo clippy --all-targets -- -D warnings` EXIT=0; `cargo test --no-fail-fast` EXIT=0, 1396 passed / 0 failed (baseline 1388). Logi: `gate-fmt-r2.log`, `gate-clippy-r2.log`, `gate-test-r2.log`.
 - **Stan nieosiagniety w tej partii (bez zmian wzgledem sekcji 2 i 6):** wiring w ticku (hunki 24, 25, 28 w `advanceCityEconomy`) i hunki 18, 21, 26, 29 - NASTEPNA-PARTIA (tick). Brak tiku ekonomii w Rust (Z3).
-- **Luka procesowa (NIE_ZMIERZONO):** generator z runu nie zapisuje sposobu wytworzenia `civ_matrix_mod.json` (dane wejsciowe zostaly zmodyfikowane poza generatorem). Mozliwosc powtorzenia jest w tym dossier (3 komorki wyzej), nie jako skrypt.
+- **Luka procesowa (zamknieta w r2):** wczesniej `civ_matrix_mod.json` powstal poza generatorem. Teraz powstaje skryptem `gen-civ-matrix-mod.mjs` (sekcja 3); wynik jest bajt-w-bajt identyczny z commitowanym plikiem, a caly lancuch (fixture -> kopia weba -> 4 wektory) odtworzony w `verify-civ-mod-r2.log`.
 
 Status partii B3 bez zmian: **PASS-WITH-NOTES** (kod i wektory zgodne z webem 91dc998a). DEPLOY/PUSH: NIE WYKONANO.
+
+## 8. Odpowiedzi na zarzuty i notatki weryfikatora (runda 1, r2)
+
+Werdykt weryfikatora: PASS-WITH-NOTES, zero zarzutow blokujacych. Kazda nota ma odpowiedz PRZYJMUJE (poprawka + dowod) albo ODRZUCAM (uzasadnienie).
+
+- **Nota 1 - kosmetyka dossier (pusta komorka SHA w sekcji 3, naglowek "Runda"): PRZYJMUJE.** Wiersz tabeli ma `7d25ad56` (commit `REPIN B3b`, `git show --stat 7d25ad56`); naglowek opisuje runde 1/5 z weryfikacja r2.
+- **Nota 2 - luka procesowa `civ_matrix_mod.json` (brak skryptu): PRZYJMUJE.** Dodano `gen-civ-matrix-mod.mjs` (realna macierz -> 9 komorek `params`); wynik bajt-w-bajt identyczny z commitowanym plikiem. Caly lancuch (fixture -> kopia weba -> wektory realne i `_mod`) odtworzony: 5 plikow, 0 rozbieznosci, log `R-RUSTPORT-REPIN-EKONOMIA-B3-Q1/verify-civ-mod-r2.log`. Korekta bledu w tym dossier: zmiana to 9 komorek (3 wiersze x 3 klucze), a `wealth_cap_proc`/`wealth_mnoznik_proc` dotycza wszystkich trzech cywilizacji, nie dwoch.
+- **Nota 3 - realna macierz daje 0 zmian w `wealth_owner.json`, pokrycie niezerowych modyfikatorow tylko przez `_mod`: ODRZUCAM jako defekt.** To swiadome zalozenie Z7 (sekcja 1). Weryfikator sam stwierdza, ze kod liczy oba warianty bez zmian. Wektory realne sa zgodne z webem (cmp = 0). Brak zmian w kodzie.
+- **Nota 4 - brak wiringu w ticku ekonomii (hunki 18, 21, 24-26, 28, 29): ODRZUCAM jako zarzut tej partii.** Zakres partii wg dispatchu: "Wiring w ticku ekonomii nie jest w zakresie tej partii (brak tiku w Rust)". Hunki sa w NASTEPNA-PARTIA (sekcja 6, Z3). Decyzja o zakresie tiku nalezy do orkiestratora. Brak zmian.
+- **Nota 5 - hunki 7 i 8 poza numeracja 18-29: ODRZUCAM jako defekt.** Przeniesienie jest udokumentowane w Z2 (zaleznosci `routeCashForCity` i `wealthParamsForOwner` wolane przez hunki 25 i 28). Weryfikator potwierdza zgodnosc logiki z webem. Brak zmian.
