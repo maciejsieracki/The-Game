@@ -166,3 +166,37 @@ Numeracja: ta runda to R4 (zarzuty R3 → poprawka R4). Numeracja wg dispatchu: 
   - M11 `premia > 0` zmienione na `>= 0`: PRZEZYLA. Roznica tylko dla `premia == 0` i wejsciowego `-0` w `handelBrutto` (`x + 0 = +0`); wektory nie zawieraja takiego przypadku. Mutant prawie-rownowazny (roznica znaku zera).
 - ZALOZENIE dla D2.2b (kod nie zmieniony w tej rundzie): dodac testy strukturalne z NIEZEROWA macierza dla `eko_luksus_proc`, `eko_zywnosc_proc`, `eko_kultura_proc` (wartosc niecalkowita, zeby `floor` mial efekt) oraz przypadek `handelBrutto = -0` z `premia = 0`. Wtedy M7, M10, M11 zostana zabite.
 - Poza zakresem: w `rust-port/engine/` pozostaja nieśledzone `Cargo.lock` i `target/` (artefakty builda); NIE dodawane do commita.
+
+## Odpowiedzi na zarzuty Evaluatora D2.2a (Operator R2, ten sam ID `R-RUSTPORT-REPIN-EKONOMIA-D2-Q1`)
+
+| # | Zarzut | Odpowiedź | Dowód |
+|---|---|---|---|
+| 1 | M7 (`eko_luksus_proc` bez `.floor()`) przeżywa; brak niezerowej macierzy | **PRZYJMUJĘ**: test `synthetic_luksus_matrix_applied_then_floored` (macierz syntetyczna `eko_luksus_proc = 0.37`, wejście 33 => `floor(33*1.37)=45`). Mutant ZABITY. | `tests/p6_repin_d2_tail.rs`; `logs/mut-R2-M7-luksus-nofloor.log` |
+| 2 | M10 (`eko_zywnosc_proc` bez macierzy) przeżywa | **PRZYJMUJĘ**: `synthetic_zywnosc_matrix_applied_to_brutto_and_netto` (`0.41`, 33 => brutto 46). ZABITY. | `logs/mut-R2-M10-zywnosc-nomatrix.log` |
+| 2b | `eko_kultura_proc` bez pokrycia (zarzut Operatora R1 z dopiskiem NIE_ZMIERZONO) | **PRZYJMUJĘ**: `synthetic_kultura_matrix_applied_and_floored` (`0.23`, 33 => 40). ZABITY. | `logs/mut-R2-M12-kultura-nomatrix.log` |
+| 3 | M11 (`premia > 0` => `>= 0`) przeżywa; brak dowodu równoważności | **PRZYJMUJĘ jako dowód równoważności** (mutant NIE jest zabijalny; kod bez zmiany tej gałęzi). Dowód niżej. | `economy_yield.rs` `if premia > 0.0`; `logs/mut-R2-M11-premia-ge0.log` (18/18 zielone) |
+| 4 | Nieprzewidziany przez Evaluatora: `js_max(0, -0)` w Rust zwraca `-0`, a web `Math.max(0, -0)` daje `+0` | **PRZYJMUJĘ** (defekt parity odkryty przy pisaniu testu `boundary_additional_tax_negative_zero_is_positive_zero`, który przed poprawką padał: `handel = -0.0`). Poprawka: lokalna `js_math_max_zero` w `economy_yield.rs` (NaN propaguje; `x > 0` => `x`; inaczej `+0`); import `js_max` usunięty. `js_compat::js_max` w `civ_matrix.rs` NIE zmieniany (poza allowlistą). | przed poprawką test padał z `handel = -0.0` (log terminala, nie zapisany); po poprawce 18/18 |
+| 5 | Zakres: Step 1-4, Step 3', `eko_praca_proc`, Mint/override, `dochodTrasHandlowych`, `additionalTax` i pełne `cityYieldPerTurn` niezportowane | **PRZYJMUJĘ jako stan zakresu** (nie jest podstawą FAIL wg Evaluatora); bez zmiany w tej rundzie. Kolejna partia: D2.2c (Step 1-4 + Step 3'). Temat pozostaje OTWARTY. | sekcja „Kolejne partie” |
+| 6 | Niezależność weryfikatora: weryfikacja D2.2a była autorstwa Operatora | **PRZYJMUJĘ jako uwagę procesową**: rola niezależna nie jest zapewniona. Regeneracja wektorów z weba 91dc998a (`cmp` bajt-w-bajt) jest powtarzalna komendą z logu; Evaluator odtworzył ją samodzielnie. | `logs/verifier-regen-web-91dc998a.log` |
+| 7 | `Cargo.lock` nieśledzony | Nie jest zarzutem; bez zmian (poza commitem). | — |
+
+### Dowód równoważności mutanta M11 (`premia >= 0`)
+
+Gałąź różni się wyłącznie dla `premia == ±0` (dla `premia > 0` i NaN zachowanie identyczne). W oryginale `premia == ±0` nie dodaje nic, w mutancie dodaje `±0` do `handel_bazowy * mnoznik_trasy`: `x + (±0) = x` dla każdego `x` poza `x = -0` (gdzie `-0 + +0 = +0`). Ogon zwraca `handelBrutto` jako:
+`f(x) + m`, gdzie `f` to mnożnik macierzy `eko_handel_brutto_proc` (`f(±0) ∈ {±0}`, `f(NaN) = NaN`, `0*Inf = NaN`) oraz `m = js_math_max_zero(additional_tax ?? 0) ∈ {+0} ∪ (0,∞) ∪ {NaN}`.
+- `m = +0`: `f(±0) + (+0) = +0` w obu wariantach.
+- `m > 0`: `f(±0) + m = m` w obu wariantach.
+- `m = NaN`: `NaN` w obu wariantach.
+Zatem wynik bitowy jest identyczny dla każdego wejścia; `m` jest zawsze nieujemne (po `js_math_max_zero`), co jest warunkiem dowodu. Mutant jest równoważny, a Z-VER-2 (przeżycie M7/M10/M11 jako luka pokrycia) jest ZAMKNIĘTE dla M7/M10/M12 testami, a dla M11 dowodem.
+
+### Wynik bramek (R2)
+
+- `cargo fmt --all -- --check`: EXIT=0.
+- `cargo clippy --all-targets -- -D warnings`: EXIT=0 (`logs/clippy-r2.log`).
+- `cargo test --no-fail-fast`: EXIT=0, 220 binarek, **1633 passed / 0 failed** (`logs/test-r2-full.log`); baseline 1627 + 6 nowych testów.
+- `tests/p6_repin_d2_tail`: 18/18 (12 wcześniejszych + 6 nowych); `parity_tail_main_bit_exact` nadal bit-w-bit (2400/2400).
+- Mutacje (jedna naraz, przywracane z kopii — nie `git checkout`): M7 ZABITA (1 test), M10 ZABITA (1 test), M12 ZABITA (1 test), M11 równoważny (0 zabitych, dowód wyżej).
+
+### Założenie Z-VER-3 (R2)
+
+- `js_compat::js_max` (`civ_matrix.rs`) zwraca `-0` dla `(0, -0)`, różnie od JS. Poza tym tematem (inne moduły korzystają z niego) — nie zmieniane w tej rundzie; lokalna wersja w `economy_yield.rs`. Propozycja: osobny temat „js_compat zero sign” z przeglądem wszystkich wywołań `js_max` / `js_min`.

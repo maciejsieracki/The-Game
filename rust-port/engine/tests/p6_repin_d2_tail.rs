@@ -9,6 +9,7 @@
 //! - `structural_*` / `boundary_*`: galezie logiki wyprowadzone z kodu weba (wartosci liczone
 //!   recznie, bez macierzy: klucz cywilizacji `None` lub `""`).
 
+use civ_engine::data::civilizations::{CivMatrixFile, Num};
 use civ_engine::domain::civ_matrix::load_civ_matrix;
 use civ_engine::domain::economy_yield::{
     city_yield_tail, CityYieldTailInput, CityYieldTailOutput, CityYieldTailParams,
@@ -285,4 +286,130 @@ fn structural_garncarnia_food_and_consumption() {
     // brutto = 10 * (1 + 0.1 * 3) = 13; netto = 13 - (5 * 0.5) = 10.5 -> 10
     assert_eq!(out.zywnosc_brutto, 13.0);
     assert_eq!(out.zywnosc, 10.0);
+}
+
+/// Klucze macierzy czytane przez ogon (Step 4-9). Usuwane z wierszy i z `defaults`, zeby test
+/// kontrolowal wartosc wylacznie przez `defaults` (wiersz `grecy` bez pola => domyslna).
+const TAIL_KEYS: &[&str] = &[
+    "eko_handel_brutto_proc",
+    "eko_korupcja_proc",
+    "eko_luksus_proc",
+    "eko_nauka_proc",
+    "eko_pieniadz_proc",
+    "eko_zywnosc_proc",
+    "eko_kultura_proc",
+];
+
+/// Syntetyczna, NIEZEROWA i NIECALKOWITA macierz (mul_proc: baza * (1 + v)) dla luksusu, zywnosci
+/// i kultury. Pozostale klucze `eko_*` = 0 (neutralne). Dane z wlasnego testu, nie z gry.
+fn synthetic_matrix(luksus: f64, zywnosc: f64, kultura: f64) -> CivMatrixFile {
+    let mut m = load_civ_matrix().file.clone();
+    for key in TAIL_KEYS {
+        for row in m.cywilizacje.iter_mut() {
+            row.params.remove(*key);
+        }
+        m.defaults.remove(*key);
+    }
+    m.defaults
+        .insert("eko_luksus_proc".to_owned(), Num::Float(luksus));
+    m.defaults
+        .insert("eko_zywnosc_proc".to_owned(), Num::Float(zywnosc));
+    m.defaults
+        .insert("eko_kultura_proc".to_owned(), Num::Float(kultura));
+    m
+}
+
+/// Wejscie z wlascicielem `grecy` (truthy civKey), bez udzialu Nauki i Pieniedzy z handlu.
+fn owned_isolated_input() -> CityYieldTailInput<'static> {
+    let mut input = base_input();
+    input.civ_key = Some("grecy");
+    input.procent_nauka = 0.0;
+    input.procent_pieniadz = 0.0;
+    input.nauka_budynkow = 0.0;
+    input
+}
+
+#[test]
+fn synthetic_luksus_matrix_applied_then_floored() {
+    // luksusRaw = floor(33) = 33; 33 * (1 + 0.37) = 45.21 -> floor 45 (bez floor: 45.21).
+    let m = synthetic_matrix(0.37, 0.41, 0.23);
+    let mut input = owned_isolated_input();
+    input.procent_luksus = 100.0;
+    input.handel_terenu = 33.0;
+    let out = city_yield_tail(&m, &input, &params());
+    assert!(same(out.luksus, 45.0), "luksus = {:?}", out.luksus);
+}
+
+#[test]
+fn synthetic_zywnosc_matrix_applied_to_brutto_and_netto() {
+    // zywnoscBrutto = floor(33 * (1 + 0.41)) = floor(46.53) = 46; netto (ludnosc 0) = 46.
+    let m = synthetic_matrix(0.37, 0.41, 0.23);
+    let mut input = owned_isolated_input();
+    input.zywnosc_terenu = 33.0;
+    let out = city_yield_tail(&m, &input, &params());
+    assert!(
+        same(out.zywnosc_brutto, 46.0),
+        "brutto = {:?}",
+        out.zywnosc_brutto
+    );
+    assert!(same(out.zywnosc, 46.0), "netto = {:?}", out.zywnosc);
+}
+
+#[test]
+fn synthetic_kultura_matrix_applied_and_floored() {
+    // kultura = floor(33 * (1 + 0.23)) = floor(40.59) = 40.
+    let m = synthetic_matrix(0.37, 0.41, 0.23);
+    let mut input = owned_isolated_input();
+    input.kultura_budynkow = 33.0;
+    let out = city_yield_tail(&m, &input, &params());
+    assert!(same(out.kultura, 40.0), "kultura = {:?}", out.kultura);
+}
+
+#[test]
+fn synthetic_matrix_ignored_without_owner() {
+    // Brak wlasciciela (civKey None): zadna macierz nie jest czytana, wartosci bazowe.
+    let m = synthetic_matrix(0.37, 0.41, 0.23);
+    let mut input = base_input();
+    input.procent_nauka = 0.0;
+    input.procent_pieniadz = 0.0;
+    input.nauka_budynkow = 0.0;
+    input.procent_luksus = 100.0;
+    input.handel_terenu = 33.0;
+    input.zywnosc_terenu = 33.0;
+    input.kultura_budynkow = 33.0;
+    let out = city_yield_tail(&m, &input, &params());
+    assert!(same(out.luksus, 33.0));
+    assert!(same(out.zywnosc_brutto, 33.0));
+    assert!(same(out.kultura, 33.0));
+}
+
+#[test]
+fn boundary_premia_zero_with_negative_zero_trade_is_positive_zero() {
+    // Web: premia > 0 false => brak dodawania; Math.max(0, 0) = +0; -0 + +0 = +0.
+    // Mutant `premia >= 0` dodaje +0 do -0 => +0, potem ten sam wynik: rownowaznosc bitowa.
+    let mut input = base_input();
+    input.handel_terenu = -0.0;
+    input.pieniadz_budynkow = -0.0;
+    input.premia_handlu_tras = Some(0.0);
+    let out = run(&input);
+    assert!(
+        same(out.handel_brutto, 0.0),
+        "handel = {:?}",
+        out.handel_brutto
+    );
+}
+
+#[test]
+fn boundary_additional_tax_negative_zero_is_positive_zero() {
+    // Math.max(0, -0) = +0 (spec JS). Test pilnuje, ze js_max w Rust zachowuje ten znak.
+    let mut input = base_input();
+    input.handel_terenu = -0.0;
+    input.pieniadz_budynkow = -0.0;
+    input.additional_tax = Some(-0.0);
+    let out = run(&input);
+    assert!(
+        same(out.handel_brutto, 0.0),
+        "handel = {:?}",
+        out.handel_brutto
+    );
 }

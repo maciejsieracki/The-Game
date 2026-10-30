@@ -21,7 +21,7 @@
 //! - Surowe zero macierzy jest wartoscia (web: `Number.isFinite`, nie `> 0`); NaN/Infinity = brak.
 
 use crate::data::civilizations::CivMatrixFile;
-use crate::domain::civ_matrix::js_compat::{js_max, js_min};
+use crate::domain::civ_matrix::js_compat::js_min;
 use crate::domain::civ_matrix::{apply_civ_matrix_param, civ_matrix_param, resolve_row};
 use crate::domain::types::Difficulty;
 
@@ -86,6 +86,19 @@ pub fn civ_economy_yield_multipliers() -> EconomyYieldMultipliers {
     EconomyYieldMultipliers {
         handel: 1.0,
         nauka: 1.0,
+    }
+}
+
+/// Web `Math.max(0, x)` (D2.2a/D2.2b): `NaN` propaguje; dla `x` <= 0 (w tym `-0`) wynik to `+0`,
+/// bo w ECMAScript `+0` jest wieksze od `-0`. `js_compat::js_max` z `civ_matrix.rs` zwraca `-0`
+/// dla `(0, -0)`, wiec tu jest lokalna wersja zgodna z webem.
+fn js_math_max_zero(x: f64) -> f64 {
+    if x.is_nan() {
+        f64::NAN
+    } else if x > 0.0 {
+        x
+    } else {
+        0.0
     }
 }
 
@@ -209,7 +222,7 @@ pub fn city_yield_tail(
         handel_brutto += premia;
     }
     handel_brutto = via_matrix(handel_brutto, "eko_handel_brutto_proc");
-    handel_brutto += js_max(0.0, input.additional_tax.unwrap_or(0.0));
+    handel_brutto += js_math_max_zero(input.additional_tax.unwrap_or(0.0));
 
     // Step 5: korupcja na calym ogonie podatkowym, potem Mennica (tylko lokalny podatek).
     let strata_raw = via_matrix(input.strata_fraction, "eko_korupcja_proc");

@@ -1,0 +1,26 @@
+
+running 18 tests
+test boundary_nan_strata_reaches_money_but_not_gross_trade ... ok
+test boundary_additional_tax_negative_zero_is_positive_zero ... ok
+test boundary_premia_zero_with_negative_zero_trade_is_positive_zero ... ok
+test structural_additional_tax_clamped_at_zero_and_nan_propagates ... ok
+test structural_biblioteka_and_akademia_are_additive ... ok
+test structural_civ_nauka_mult_without_owner ... ok
+test structural_garncarnia_food_and_consumption ... ok
+test structural_mint_needs_both_flags ... ok
+test structural_neutral_baseline ... ok
+test structural_poborca_adds_two_each ... ok
+test structural_premia_only_when_positive ... ok
+test synthetic_kultura_matrix_applied_and_floored ... ok
+test structural_korupcja_cap_limits_strata ... ok
+test structural_legacy_civ_handel_mult_only_without_owner ... ok
+test synthetic_luksus_matrix_applied_then_floored ... ok
+test synthetic_matrix_ignored_without_owner ... ok
+test synthetic_zywnosc_matrix_applied_to_brutto_and_netto ... ok
+test parity_tail_main_bit_exact ... ok
+
+test result: ok. 18 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.29s
+
+   Compiling civ-engine v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_d04131c2-b8c-4/rust-port/engine)
+    Finished `test` profile [unoptimized] target(s) in 34.24s
+     Running tests/p6_repin_d2_tail.rs (target/debug/deps/p6_repin_d2_tail-56581f76f4bf4b0c)
