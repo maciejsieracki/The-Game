@@ -89,6 +89,7 @@ dotykające tych samych plików — zawsze sekwencyjnie, nigdy w tej samej fali.
 | 13 | R-RUSTPORT-P5-8-CITYPANEL-K04D-Q1 | P5.8 | 1/5 (+obrona) | wf_e7578c36-d0c | **PASS-WITH-NOTES — zintegrowane**; slot wolny | 2026-10-29 |
 | 10 | R-RUSTPORT-P5-8-CITYPANEL-SCAL-K01K02-Q1 | P5.8 | 1/5 | wf_19fd2604-c69 | **PASS-WITH-NOTES — zintegrowane** (`ce8f4d45`); slot wolny | 2026-10-29 |
 | 6 | R-RUSTPORT-P5-8-CITYPANEL-K02-Q1 | P5.8 | 3/5 | wf_febbb236-243 | **PASS-WITH-NOTES — zintegrowane** na `parity-v2` (po K01A); slot wolny | 2026-10-29 |
+| 52 | R-RUSTPORT-P6-8J-SPOLECZENSTWO-Q1 | P6 miasta | 1/5 | (r1 wznowiony po ENOSPC) | etap 3 (Obrona) | 2026-10-30 |
 
 
 
