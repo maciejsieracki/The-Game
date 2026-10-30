@@ -2,6 +2,7 @@
 
 pub mod ai_era_unit_promotion;
 pub mod ai_general_war_campaign;
+pub mod ai_move_range;
 pub mod army_consolidation;
 pub mod army_leadership;
 pub mod barbarians;
