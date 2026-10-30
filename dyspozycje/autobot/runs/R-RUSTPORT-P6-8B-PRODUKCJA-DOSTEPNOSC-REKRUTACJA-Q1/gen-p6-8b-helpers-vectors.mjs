@@ -87,6 +87,16 @@ const synUnits = [
   { Jednostka: 'syn_zamiast_nacja_diakr', Nacja: 'Słowianie', 'W zamian za': 'Konnica' },
   // jedyny zamiennik dla bazy 'Hetyta_x' ma spacje wokol nazwy (kill: brak js_trim w civHasReplacementFor)
   { Jednostka: 'syn_zamiast_pad_only', Nacja: 'Sumer', 'W zamian za': '  Hetyta_x  ' },
+  // (r2) nacja z bialymi znakami po obu stronach przy niepustym zamienniku (kill: brak js_trim na nacji jednostki)
+  { Jednostka: 'syn_nacja_biale_zamiast', Nacja: '  Grecja ', 'W zamian za': 'Falanga' },
+  // (r2) nacja z diakrytykami i bialymi znakami; zamiennik z bialymi znakami (kill: brak js_trim na zamienniku)
+  { Jednostka: 'syn_nacja_diakr_ws', Nacja: ' Słowianie ', 'W zamian za': ' Konnica ' },
+  // (r2) para roznica tylko diakrytyki, zamiennik niepusty (kill: porownanie surowe zamiast strip_diacritics)
+  { Jednostka: 'syn_zamiast_slowianie_ascii', Nacja: 'Slowianie', 'W zamian za': 'Wojownik' },
+  // (r2) para roznica tylko znakiem zlozonym (e+akcent, NFD -> stripDiacritics => rowne): kill E4 (porownanie surowe)
+  { Jednostka: 'syn_nacja_akcent', Nacja: 'Sumér', 'W zamian za': 'Wojownik' },
+  // (r2) nacja/civ zlozona wylacznie ze znakow diakrytycznych (po stripDiacritics = ''): kill brakow sprawdzen pustosci
+  { Jednostka: 'syn_nacja_tylko_diakr', Nacja: '́', 'W zamian za': 'Wojownik' },
 ];
 const units = [...realUnits, ...synUnits];
 const realBuildings = readData('buildings.json').map((b) => ({
@@ -108,19 +118,24 @@ const buildingIds = buildings.map((b) => b.id);
 const unitNames = [...units.map((u) => u.Jednostka), 'Nieznana', 'Wojownik', 'Hoplita', 'Zwiadowca'];
 
 // --- 3. unitNacjaForCivKey ---------------------------------------------------------
+// (r2) wynik weba nie-napisowy (klucz prototypowy: lookup w obiekt JS zwraca funkcje/obiekt) zapisany jako {"$js": typeof}.
+const encOut = (r) => (r === undefined || r === null ? null : typeof r === 'string' ? r : { $js: typeof r });
 const civKeyInputs = [
   undefined, null, '', '   ', 'grecy', 'Grecy', ' Grecy ', 'RZYMIANIE', 'sumer', 'sumerowie', 'babilon',
   'slowianie', 'Słowianie', 'słowianie', 'nieznany', 'babilonia', 'fenicjanie', '\tegipt\n', 'chinczycy',
   'zulusi', 'inkowie', 'celtowie', 'germanie', 'harappa', 'hetyci', 'asyria', 'egipt2',
+  // (r2) klucze prototypowe: web zwraca wartosc dziedziczona (nie-napis), Rust -> None (udokumentowane odstepstwo)
+  'constructor', '__proto__', 'toString', 'hasOwnProperty',
 ];
 const civKeyCases = civKeyInputs.map((k) => ({
   key: k === undefined ? { absent: true } : k,
-  out: W.unitNacjaForCivKey(k) ?? null,
+  out: encOut(W.unitNacjaForCivKey(k)),
 }));
 
 // --- 4. unitAllowedForCivNation ----------------------------------------------------
-const nacjaVals = ['', '   ', 'Grecja', ' Grecja ', 'Słowianie', 'Slowianie', 'Rzym', 'Sumer', 'Ludy Morza'];
-const civVals = [undefined, null, '', '   ', 'Grecja', 'Słowianie', 'Slowianie', 'Rzym', 'Sumer'];
+const nacjaVals = ['', '   ', 'Grecja', ' Grecja ', 'Słowianie', 'Slowianie', 'Rzym', 'Sumer', 'Ludy Morza', 'Sumér', '́'];
+// (r2) ' Grecja ' / ' Słowianie ' = biale znaki po obu stronach po stronie cywilizacji (kill: brak js_trim na civUnitNacja)
+const civVals = [undefined, null, '', '   ', 'Grecja', ' Grecja ', 'Słowianie', ' Słowianie ', 'Slowianie', 'Rzym', 'Sumer', 'Sumér', '́'];
 const allowedCases = [];
 for (const n of nacjaVals) {
   for (const c of civVals) {
@@ -148,17 +163,21 @@ const ctxVariants = [
   { civKey: null, civUnitNacja: 'Rzym' },
   { civKey: 'slowianie', civUnitNacja: 'Rzym' },
   { civUnitNacja: 'Grecja' },
+  // (r2) klucz prototypowy w ctx.civKey (odstepstwo jak w unitNacjaForCivKey)
+  { civKey: 'constructor', civUnitNacja: 'Rzym' },
+  { civKey: '__proto__' },
+  { civKey: ' Grecy ', civUnitNacja: 'Rzym' },
 ];
 const availCases = ctxVariants.map((ctx) => ({
   ctx: Object.fromEntries(Object.entries(ctx).map(([k, v]) => [k, v === undefined ? { absent: true } : v])),
-  out: W.availabilityCivNation(ctx) ?? null,
+  out: encOut(W.availabilityCivNation(ctx)),
 }));
 
 // --- 6. isBlankReplacement / isCivSpecialReplacement / civHasReplacementFor --------
 const blankInputs = ['', '-', '—', ' ', '—', '--', 'Wojownik', ' - '];
 const blankCases = blankInputs.map((z) => ({ z, out: W.isBlankReplacement(z) }));
 
-const civNations = [undefined, null, '', 'Rzym', 'Grecja', 'Słowianie', 'Slowianie', 'Sumer', 'Ludy Morza', '  Rzym '];
+const civNations = [undefined, null, '', 'Rzym', 'Grecja', 'Słowianie', 'Slowianie', 'Sumer', 'Ludy Morza', '  Rzym ', '́'];
 const specialCases = [];
 for (const u of units) {
   for (const c of civNations) {
@@ -182,7 +201,9 @@ for (const base of baseNames) {
 }
 
 // --- 7. buildingGoldPurchaseCost ---------------------------------------------------
-const goldInputs = [0, 0.25, 0.49, 0.5, 0.25, 1, 1.5, 2.5, 3, 10.4, 12.345678, -3, -0.5, -0.25, NaN, Infinity, -Infinity, 1e300, 1e-7, 4.5, 0.4999999999999999];
+// (r2) progi: 0.25/0.5/0.75/1.25/2.5 (x2 -> .5 i Math.max(1,.)); -0; NaN; +-Infinity; denormal
+const goldInputs = [0, 0.25, 0.49, 0.5, 0.25, 1, 1.5, 2.5, 3, 10.4, 12.345678, -3, -0.5, -0.25, NaN, Infinity, -Infinity, 1e300, 1e-7, 4.5, 0.4999999999999999,
+  -0, 0.2499999999, 0.75, 0.7499999999, 1.25, 1.2499999999, 2.5000000001, -1e300, 5e-324, 1.5000000000000002];
 const goldCases = goldInputs.map((p) => ({ praca: enc(p), out: enc(W.buildingGoldPurchaseCost(p)) }));
 
 // --- 8. kolejka i budynki: buildingTypeCommitted / buildingTypeQueued / upgrade ---
@@ -198,10 +219,23 @@ for (let i = 0; i < 400; i++) {
   const queue = [];
   const qn = Math.floor(rand() * 4);
   for (let k = 0; k < qn; k++) {
-    queue.push(rand() < 0.7 ? queueItem('budynek', pick(buildingIds)) : queueItem('jednostka', pick(unitNames)));
+    // (r2) trzy warianty: budynek; jednostka z id BUDYNKU (kill: brak sprawdzenia kind); jednostka z nazwa jednostki
+  const r = rand();
+  queue.push(r < 0.5 ? queueItem('budynek', pick(buildingIds))
+    : r < 0.75 ? queueItem('jednostka', pick(buildingIds))
+    : queueItem('jednostka', pick(unitNames)));
   }
   commitCases.push({ id: bid, built, queue, out: W.buildingTypeCommitted(bid, built, queue) });
   queueCases.push({ id: bid, queue, out: W.buildingTypeQueued(bid, queue) });
+}
+// (r2) jawne przypadki: jednostka o id budynku w kolejce, bez budynku w kolejce i bez zbudowanego
+for (const bid of ['pretorium', 'mury', 'palisada', 'syn_up_ws']) {
+  const q = [queueItem('jednostka', bid)];
+  commitCases.push({ id: bid, built: [], queue: q, out: W.buildingTypeCommitted(bid, [], q) });
+  queueCases.push({ id: bid, queue: q, out: W.buildingTypeQueued(bid, q) });
+  const q2 = [queueItem('budynek', bid)];
+  commitCases.push({ id: bid, built: [], queue: q2, out: W.buildingTypeCommitted(bid, [], q2) });
+  queueCases.push({ id: bid, queue: q2, out: W.buildingTypeQueued(bid, q2) });
 }
 for (let i = 0; i < 400; i++) {
   const bid = pick(buildingIds);
@@ -222,6 +256,11 @@ for (const completed of completedPool) {
 }
 for (const completed of completedPool) {
   unlockCases.push({ completed, out: W.buildingUnlockFlagFor(completed, buildings) ?? null });
+}
+// (r2) pusty predecesor po trim: web (guard length>0) nie usuwa '' z built; zbudowany '' jest w liscie
+for (const completed of ['syn_up_pusty', 'syn_up_puste', 'syn_up_ws']) {
+  const b = ['', 'pretorium', 'mury'];
+  applyCases.push({ built: b, completed, out: W.applyCompletedBuildingIds(b, completed, buildings) });
 }
 
 // --- 9. civSpecialUnitNameTokens / unitMatchesSpecialName --------------------------
@@ -259,6 +298,26 @@ for (let i = 0; i < 500; i++) {
 }
 for (const name of unitNames) {
   matchCases.push({ name, tokens: [], out: W.unitMatchesSpecialName(name, []) });
+}
+// (r2) jawne przypadki kontrolne: kazda galez dopasowania osobno (kill E25/E26/E29/E53/E54 i pokrewne)
+const explicitMatch = [
+  ['Wojownik', ['Elitarny Wojownik']],        // tn zawiera un, nie prefiks (tn.includes(un))
+  ['Elitarny Wojownik', ['Wojownik']],        // un zawiera tn, nie prefiks (un.includes(tn))
+  ['Wojownik', ['ojow']],                     // infiks tokenu w srodku nazwy
+  ['Wojownik', ['']],                         // token pusty
+  ['Wojownik', ['̀']],                   // token pusty po stripDiacritics
+  ['Wojownik', ['', 'Zz']],                   // pusty token przed niepasujacym
+  ['Wojownik', ['Zz', '́']],             // pusty po strip po niepasujacym
+  ['Slowianie', ['Słowianie']],               // roznica tylko diakrytyki (token)
+  ['Słowianie', ['slowianie']],               // roznica tylko diakrytyki i wielkosc liter
+  ['', ['Wojownik']],                         // pusta nazwa
+  ['Wojownik', ['Wojownik (Elitarny)']],      // token z nawiasem, nazwa jako prefiks tokenu
+  ['Hoplita', ['Hoplita/Falanga']],           // surowy token z ukosnikiem
+  ['Sumer', ['Sumér']],                       // token z akcentem: stripDiacritics na tokenie (kill E52)
+  ['Sumér', ['Sumer']],                       // nazwa z akcentem: stripDiacritics na nazwie (kill E53)
+];
+for (const [name, tokens] of explicitMatch) {
+  matchCases.push({ name, tokens, out: W.unitMatchesSpecialName(name, tokens) });
 }
 
 // --- 10. stale do Rust --------------------------------------------------------------

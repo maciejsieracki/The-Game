@@ -358,3 +358,158 @@ fn unit_matches_special_name_matches_web() {
         );
     }
 }
+
+// ---------------------------------------------------------------------------
+// (r2) Testy jawne: wartosci specjalne, progi, brakujace klucze, galezie dopasowania,
+// odstepstwo dla kluczy prototypowych. Oczekiwania sa z weba 91dc998a (te same przypadki
+// sa w helpers.json; kazdy assert ponizej ma odpowiednik w wektorach).
+// ---------------------------------------------------------------------------
+
+/// Odstepstwo udokumentowane i przypiete. Web `CIV_KEY_TO_UNIT_NACJA[key]` dla kluczy
+/// prototypowych (`constructor`, `__proto__`; klucz jest zmieniany na male litery, wiec
+/// nazwy typu `hasOwnProperty` NIE sa prototypowe) zwraca wartosc dziedziczona z
+/// Object.prototype: funkcja albo obiekt, a nie napis. Rust zwraca `None`
+/// (`CIV_KEY_TO_UNIT_NACJA` jest tablica, bez lookupu po prototypie).
+#[test]
+fn prototype_keys_deviation_is_pinned() {
+    let data = root();
+    let mut seen = 0;
+    for case in data["civKey"].as_array().unwrap() {
+        if let Some(js) = case["out"].get("$js").and_then(Value::as_str) {
+            seen += 1;
+            assert!(js == "function" || js == "object", "typeof weba: {js}");
+            let key = case["key"].as_str().expect("klucz");
+            assert_eq!(
+                unit_nacja_for_civ_key(Some(key)),
+                None,
+                "klucz prototypowy {key:?}"
+            );
+        }
+    }
+    assert!(seen >= 2, "brak wektorow kluczy prototypowych");
+    let mut seen_av = 0;
+    for case in data["availability"].as_array().unwrap() {
+        if case["out"].get("$js").is_some() {
+            seen_av += 1;
+            let key = case["ctx"]["civKey"].as_str().expect("civKey");
+            assert_eq!(
+                availability_civ_nation(Some(Some(key)), None),
+                None,
+                "availability {key:?}"
+            );
+        }
+    }
+    assert!(
+        seen_av >= 2,
+        "brak wektorow availability dla kluczy prototypowych"
+    );
+}
+
+/// Wartosci specjalne (NaN, +-Infinity, -0, denormal) i progi zaokraglenia x2.
+#[test]
+fn gold_cost_special_values_and_thresholds() {
+    assert!(building_gold_purchase_cost(f64::NAN).is_nan());
+    assert_eq!(building_gold_purchase_cost(f64::INFINITY), f64::INFINITY);
+    assert_eq!(building_gold_purchase_cost(f64::NEG_INFINITY), 1.0);
+    assert_eq!(building_gold_purchase_cost(-0.0), 1.0);
+    assert_eq!(building_gold_purchase_cost(5e-324), 1.0);
+    assert_eq!(building_gold_purchase_cost(-1e300), 1.0);
+    assert_eq!(building_gold_purchase_cost(1e300), 2e300);
+    // 0.25*2=0.5 -> 1 (max); 0.2499999999*2 -> 0 -> 1; 0.75*2=1.5 -> 2; 0.7499999999*2 -> 1 -> 1;
+    // 1.25*2=2.5 -> 3; 1.2499999999*2 -> 2; 2.5000000001*2 -> 5; 1.5000000000000002*2 -> 3
+    for (praca, want) in [
+        (0.25, 1.0),
+        (0.2499999999, 1.0),
+        (0.75, 2.0),
+        (0.7499999999, 1.0),
+        (1.25, 3.0),
+        (1.2499999999, 2.0),
+        (2.5000000001, 5.0),
+        (1.5000000000000002, 3.0),
+    ] {
+        assert_eq!(building_gold_purchase_cost(praca), want, "praca={praca}");
+    }
+    // Wektory musza zawierac wartosci specjalne (NaN, Infinity, -Infinity, -0).
+    let data = root();
+    let inputs: Vec<&Value> = data["goldCost"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|c| &c["praca"])
+        .collect();
+    let has = |n: &str| {
+        inputs
+            .iter()
+            .any(|v| v.get("$n").and_then(Value::as_str) == Some(n))
+    };
+    assert!(has("NaN") && has("Infinity") && has("-Infinity") && has("-0"));
+}
+
+/// Brakujace klucze (undefined / brak pola) wg semantyki weba.
+#[test]
+fn missing_keys_follow_web_absent_semantics() {
+    // unitNacjaForCivKey: undefined / pusty po trim -> undefined (None)
+    assert_eq!(unit_nacja_for_civ_key(None), None);
+    assert_eq!(unit_nacja_for_civ_key(Some("")), None);
+    assert_eq!(unit_nacja_for_civ_key(Some(" \t\n ")), None);
+    // availabilityCivNation: civKey undefined -> civUnitNacja; civKey null -> brak (bez fallbacku)
+    assert_eq!(
+        availability_civ_nation(None, Some("Rzym")),
+        Some("Rzym".to_string())
+    );
+    assert_eq!(availability_civ_nation(Some(None), Some("Rzym")), None);
+    assert_eq!(availability_civ_nation(None, None), None);
+    // civSpecialUnitNameTokens: brak / pusta lista / brak wartosci -> brak tokenow
+    let empty: [CivSpecialBonus; 0] = [];
+    assert!(civ_special_unit_name_tokens(None).is_empty());
+    assert!(civ_special_unit_name_tokens(Some(&empty[..])).is_empty());
+    let brak = [CivSpecialBonus {
+        typ: "jednostka_specjalna".into(),
+        wartosc: CivBonusValue::Single(None),
+    }];
+    assert!(civ_special_unit_name_tokens(Some(&brak[..])).is_empty());
+    // wiersz jednostki bez Nacja i bez W zamian za (klucze nieobecne w units.json)
+    let row = UnitReplacementRow {
+        jednostka: "X".into(),
+        nacja: None,
+        w_zamian_za: None,
+    };
+    assert!(!is_civ_special_replacement(&row, Some("Rzym")));
+    assert!(!civ_has_replacement_for(
+        std::slice::from_ref(&row),
+        "X",
+        Some("Rzym")
+    ));
+    // pusta kolejka, brak zbudowanych
+    let no_queue: [ProductionItem; 0] = [];
+    assert!(!building_type_queued("pretorium", &no_queue[..]));
+    assert!(!building_type_committed("pretorium", &[], &no_queue[..]));
+    assert!(!is_building_superseded_by_upgrade("pretorium", &[], &[]));
+}
+
+/// Kazda galez unitMatchesSpecialName osobno (oczekiwania z weba; te same przypadki w matchName).
+#[test]
+fn unit_matches_special_name_each_branch() {
+    let one = |s: &str| vec![s.to_string()];
+    let cases: [(&str, Vec<String>, bool); 12] = [
+        ("Wojownik", one("Elitarny Wojownik"), true), // tn.includes(un)
+        ("Elitarny Wojownik", one("Wojownik"), true), // un.includes(tn)
+        ("Wojownik", one("ojow"), true),              // infiks tokenu
+        ("Wojownik", one(""), false),                 // token pusty
+        ("Wojownik", one("\u{0300}"), false),         // token pusty po stripDiacritics
+        ("Wojownik", vec!["".into(), "Zz".into()], false),
+        ("Wojownik", vec!["Zz".into(), "\u{0301}".into()], false),
+        ("Slowianie", one("Słowianie"), false), // Ł nie jest skladany przez NFD (web)
+        ("Słowianie", one("slowianie"), false),
+        ("", one("Wojownik"), true), // pusta nazwa: tn.startsWith('')
+        ("Wojownik", one("Wojownik (Elitarny)"), true),
+        ("Hoplita", one("Hoplita/Falanga"), true),
+    ];
+    for (name, tokens, want) in cases {
+        assert_eq!(
+            unit_matches_special_name(name, &tokens),
+            want,
+            "unitMatchesSpecialName({name:?}, {tokens:?})"
+        );
+    }
+}

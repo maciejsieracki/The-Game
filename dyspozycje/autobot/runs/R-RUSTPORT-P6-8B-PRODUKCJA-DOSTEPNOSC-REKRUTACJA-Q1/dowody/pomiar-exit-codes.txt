@@ -1,1 +1,1 @@
-EXIT fmt=0 clippy=0 test8b=0 regresja=0 mutacje=run EXIT=0 wektory=IDENTICAL(cmp)
+EXIT fmt=0 clippy=0 test8b=0 (18/18) regresja=0 mutacje=0 (48 KILLED, 8 EQUIV, 0 nieoczekiwanych) wektory=IDENTICAL(cmp, fresh extraction 91dc998a, Node v22.22.0)
