@@ -1,0 +1,13 @@
+   Compiling civ-engine v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_1accf3de-da0-1/rust-port/engine)
+    Finished `test` profile [unoptimized] target(s) in 0.25s
+     Running tests/p6_m06a7_annular.rs (/home/user/cargo-target-shared/wf_1accf3de-da0-1/debug/deps/p6_m06a7_annular-4945288d5dbd8301)
+
+running 4 tests
+test annular_boundary_values_hit_round_and_clamp_thresholds ... ok
+test annular_nonfinite_and_negative_inputs_propagate_nan_like_web ... ok
+test bridge_water_matches_web_for_every_base_terrain ... ok
+test annular_vectors_match_web_bit_for_bit ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.12s
+
+EXIT=0

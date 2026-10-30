@@ -4745,3 +4745,37 @@ pub fn mapgen_landsea_pangea() -> &'static MapgenLandseaPangeaFile {
         parse_mapgen_landsea_pangea().expect("mapgen-landsea-pangea.json must parse")
     })
 }
+
+// ---------------------------------------------------------------------------------------------
+// P6.M06A7 (R-RUSTPORT-P6-M06A7-LAD-MORZE-KORYTARZE-Q1) - korytarze obwarzanka Pangei, partia 1:
+// szerokosc korytarza z web `pangeaAnnularMaxCorridorWidth` (gen-helpers.ts :4329).
+// ---------------------------------------------------------------------------------------------
+
+pub const MAPGEN_LANDSEA_PANGEA_ANNULAR_JSON: &str =
+    include_str!("../../data/derived/mapgen-landsea-pangea-annular.json");
+
+/// Plik `mapgen-landsea-pangea-annular.json` (web: `pangeaAnnularMaxCorridorWidth` :4329).
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct MapgenLandseaPangeaAnnularFile {
+    pub meta: serde_json::Value,
+    pub annular_skala_pola: f64,
+    pub annular_baza: f64,
+    pub annular_mnoznik: f64,
+    pub annular_min: f64,
+    pub annular_max: f64,
+}
+
+pub fn parse_mapgen_landsea_pangea_annular(
+) -> Result<MapgenLandseaPangeaAnnularFile, serde_json::Error> {
+    serde_json::from_str(MAPGEN_LANDSEA_PANGEA_ANNULAR_JSON)
+}
+
+/// Tabela korytarzy obwarzanka Pangei (jednorazowy odczyt; blad danych = panika).
+pub fn mapgen_landsea_pangea_annular() -> &'static MapgenLandseaPangeaAnnularFile {
+    static TABLE: std::sync::OnceLock<MapgenLandseaPangeaAnnularFile> = std::sync::OnceLock::new();
+    TABLE.get_or_init(|| {
+        parse_mapgen_landsea_pangea_annular()
+            .expect("mapgen-landsea-pangea-annular.json must parse")
+    })
+}

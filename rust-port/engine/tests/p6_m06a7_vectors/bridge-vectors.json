@@ -1,0 +1,44 @@
+{
+ "meta": {
+  "temat": "R-RUSTPORT-P6-M06A7-LAD-MORZE-KORYTARZE-Q1",
+  "zrodlo": "gra/src/map/gen-helpers.ts isPangeaBridgeWater :4371 (instr. copy)",
+  "zrodlo_sha256": "ab934703990ba00e71a801eb0b6fcefeb0906c6bd4ded477c7162361307842de",
+  "liczba_przypadkow": 8
+ },
+ "cases": {
+  "bridge": [
+   [
+    "Laka",
+    false
+   ],
+   [
+    "Rownina",
+    false
+   ],
+   [
+    "Wzgorza",
+    false
+   ],
+   [
+    "Gory",
+    false
+   ],
+   [
+    "PlytkieMorze",
+    true
+   ],
+   [
+    "Morze",
+    true
+   ],
+   [
+    "Pustynia",
+    false
+   ],
+   [
+    "Polarny",
+    false
+   ]
+  ]
+ }
+}
