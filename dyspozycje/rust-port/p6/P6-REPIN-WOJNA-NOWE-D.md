@@ -88,3 +88,16 @@ NASTEPNA-PARTIA = nie portowane w tej rundzie (przyczyna w kolumnie Uwagi).
 2. Wektory z weba `dc8a3adc` + testy progow i mutacje; zapis w `tests/p6_repin_wojna_d_*`.
 3. Przeniesienie JSON do `rust-port/engine/data/` z rejestracja loadera (po rozszerzeniu
    allowlisty o `tests/data_loader.rs` i `tests/data_compliance.rs`).
+
+## Pomiary niezaleznego weryfikatora (runda 1, Operator-pomiary)
+
+- Bramki na `5163cea26` (logi w `dyspozycje/autobot/runs/R-RUSTPORT-REPIN-WOJNA-NOWE-D-Q1/evidence/r2-*.log`):
+  fmt EXIT=0; clippy `-D warnings` EXIT=0; `cargo test --no-fail-fast` EXIT=0, 1680 passed / 0 failed.
+- JSON: `war_all_in_capital_params.json` identyczny z `dc8a3adc:gra/data/war-allin-params.json` (diff pusty).
+- Mutacje (przywrocenie przez `git checkout`):
+  - M3 `war_all_in_capital_plan.rs` link_radius `<=` -> `<`: ZABITA (`units_within_link_radius_form_one_group`).
+  - M1 `war_all_in_capital_nav.rs` usuniecie `budget.is_nan() ||` (web `!(budget > 1)`, `warAllInCapital.ts:458`): PRZEZYLA (14/14 pass).
+  - M2 `war_all_in_capital_nav.rs` `budget <= 1.0` -> `budget < 1.0` (granica N): PRZEZYLA (14/14 pass).
+  - Wniosek: brak testow NaN i progu N dla `extend_walk`. Luka otwarta.
+- Wektory z uruchomionego weba `dc8a3adc`: NIE_ZMIERZONO (harness TS dla `setup.ts` nie zbudowany w tej rundzie).
+- Testy progow N-1/N/N+1 dla `link_radius`, `merge_radius`, `no_merge_near_capital`: NIE_ZMIERZONO (brak w `tests/p6_repin_wojna_d_nav.rs`; merge/no-merge nie pokryte).
