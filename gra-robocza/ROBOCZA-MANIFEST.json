@@ -1,37 +1,32 @@
 {
-  "releaseState": "DEPLOYED — cztery poprawki bitewne w Roboczej i origin/main; pinned GitHub Raw readback PASS.",
+  "releaseState": "DEPLOYED — naprawa lifecycle kolejki rozkazów bitewnych",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "b3d82220c7a8820f5a5e89c9aa209431",
-  "bundleSha256": "7632cbf4c91f4cc67d76c240308dd9cf04d5f860160dd16469d1564b9be6eb1d",
-  "bundleBytes": 70045045,
+  "bundleMd5": "2f15bd3b3ef6b3732cee4007f8c49cda",
+  "bundleSha256": "2c6e0e446af65e6d76d6e09f378801fe69f3614391489f4d418bac90bad336b7",
+  "bundleBytes": 70045250,
   "sourceSnapshot": {
-    "baseCommit": "origin/main @ 973e24ce",
-    "source": "main @ a9c555e44c968e1d7d037d4c34a02a57691ece66",
+    "baseCommit": "c0724801",
+    "source": "main 96d088b4",
     "build": "Vite 5.4.21 single-file; 919 modules; stamped ROBOCZA",
-    "buildCommit": "a9c555e4",
-    "publicationCommit": "6b7f40b412ec5f9d931f054684746fa9c820baef"
+    "buildCommit": "96d088b4"
   },
   "scope": [
-    "R-BITWA-DEAD-UNIT-DISAPPEARS-Q1: rozbita jednostka znika z pola bitwy.",
-    "R-BITWA-MANUAL-MELEE-ATTACK-STUCK-Q1: walka wręcz atakuje przy doktrynie Atak.",
-    "R-BITWA-ATAK-MARSZEM-HEX-Q1: atak-marszem do wskazanego pustego heksa.",
-    "R-BITWA-ATAK-LUCZNICY-POZA-ZASIEGIEM-Q1: łucznicy podchodzą do zasięgu bez niepotrzebnego kitingu; korekta regresji Skirmish."
+    "R-BITWA-KOLEJKA-ROZKAZOW-STALE-Q1: czyszczenie ID kolejki po aktywacji oraz po pominięciu martwej/zużytej jednostki."
   ],
   "verification": [
     "TypeScript PASS",
-    "Vite build PASS: 919 modules",
-    "verify-robocza-bundle.cjs VERIFY OK (manifest and bundles[] match; known iterative stamp warning)",
-    "Local HTTP + Chromium smoke PASS: HTTP 200, title The Game — 4X, 2 canvases, zero page/console errors (favicon handled as 204)",
-    "Focused logic/behavior tests and Final Control: see per-topic AutoBot run receipts"
+    "Vite main build PASS: 919 modules",
+    "Vite standalone battle build PASS: 589 modules",
+    "Chromium integrated 28v28 lifecycle 15/15 PASS; independent evaluator and Final Control PASS-WITH-NOTES",
+    "verify-robocza-bundle.cjs VERIFY OK"
   ],
   "limits": [
-    "To jest testowe wydanie Robocza dla podanego zakresu; oczekuje na test właściciela.",
-    "Rozległy test dużej bitwy jest osobnym, aktywnym tematem i nie wchodzi do tego pakietu.",
-    "Test dużego imperium pozostaje odłożony."
+    "Manual-control large-army scope remains open for broader scenarios; no duplicate immediate move was confirmed in the 60-second observation.",
+    "Large empire performance test remains deferred to the end."
   ],
   "finalControl": {
-    "status": "PASS",
-    "notes": "Leader rally passed independent Final Control; evaluator PASS-WITH-NOTES. End-turn test simulates helper/queue behavior and source-checks production hook rather than running a full end-turn game-runtime integration."
+    "status": "PASS-WITH-NOTES",
+    "notes": "Current-main integration independently evaluated; stale queue lifecycle fix validated. Test is 28v28 with subset pointer order, not the 120-per-side cap."
   },
   "startHub": "START.html",
   "hubGeneratedAt": "2026-10-29T23:52:25",
@@ -40,32 +35,40 @@
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "b3d82220c7a8820f5a5e89c9aa209431",
-      "sizeBytes": 70045045
+      "md5": "2f15bd3b3ef6b3732cee4007f8c49cda",
+      "sizeBytes": 70045250
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "b3d82220c7a8820f5a5e89c9aa209431",
-      "sizeBytes": 70045045
+      "md5": "2f15bd3b3ef6b3732cee4007f8c49cda",
+      "sizeBytes": 70045250
     }
   ],
-  "md5": "b3d82220c7a8820f5a5e89c9aa209431",
-  "sizeBytes": 70045045,
-  "publisher": "Codex AutoBot — właściciel wcześniej zlecił scalanie do main, deploy do Robocza i git push",
-  "source": "gra/src; local main integration 6f9ef3ce",
+  "md5": "2f15bd3b3ef6b3732cee4007f8c49cda",
+  "sizeBytes": 70045250,
+  "publisher": "Codex AutoBot — wcześniejsza dyspozycja właściciela: merge main, deploy Robocza, git push",
+  "source": "gra/src; main 96d088b4",
   "immediatePreviousRelease": {
-    "publicationCommit": "fb2d613b68a3a32a370fb6a2d29121c312cac51f",
-    "bundleMd5": "15eabd0ba132bde2454f74d47371a685",
-    "bundleSha256": "80be74dbece3ae923efdeffee193aec1607ae6e0555a4f36973406891a31b508",
-    "bundleBytes": 70033099
+    "releaseState": "DEPLOYED — cztery poprawki bitewne w Roboczej i origin/main; pinned GitHub Raw readback PASS.",
+    "bundle": "Gra-ROBOCZA.html",
+    "bundleMd5": "b3d82220c7a8820f5a5e89c9aa209431",
+    "bundleSha256": "7632cbf4c91f4cc67d76c240308dd9cf04d5f860160dd16469d1564b9be6eb1d",
+    "bundleBytes": 70045045,
+    "sourceSnapshot": {
+      "baseCommit": "origin/main @ 973e24ce",
+      "source": "main @ a9c555e44c968e1d7d037d4c34a02a57691ece66",
+      "build": "Vite 5.4.21 single-file; 919 modules; stamped ROBOCZA",
+      "buildCommit": "a9c555e4",
+      "publicationCommit": "6b7f40b412ec5f9d931f054684746fa9c820baef"
+    }
   },
   "rollbackPlan": {
-    "method": "Revert source/release commits; restore prior bundle whose checksums are recorded here.",
-    "previousBundleMd5": "03d8d29e4714204bff62a27823e946ee",
-    "previousBundleSha256": "f379b328b1f7c63f1e860a76f3310a98b189ebcb16ed5a444e3f7ebd4a41b452",
-    "previousBundleBytes": 70019132
+    "method": "Restore the previous release bundle and manifest recorded in immediatePreviousRelease, then revert source/release commits.",
+    "previousBundleMd5": "b3d82220c7a8820f5a5e89c9aa209431",
+    "previousBundleSha256": "7632cbf4c91f4cc67d76c240308dd9cf04d5f860160dd16469d1564b9be6eb1d",
+    "previousBundleBytes": 70045045
   },
   "previousRelease": {
     "releaseState": "DEPLOYED — testowa ROBOCZA; zatwierdzony subset wodza/rekrutacji i szyku/doktryn bitwy; GitHub Raw readback PASS.",
@@ -276,6 +279,13 @@
     "bundleBytes": 70045045,
     "checks": "Pinned GitHub Raw readback: bundle, manifest and START HTTP 200; fetched bundle hashes and bytes match local files and manifest top-level plus both bundles[] rows; START lists current bundle MD5 prefix."
   },
-  "publishedAt": "2026-10-29T23:56:54.637Z",
-  "buildStamp": "2026-10-30 00:52"
+  "publishedAt": "2026-10-30T02:16:07.883Z",
+  "buildStamp": "2026-10-30 00:52",
+  "battleBundle": {
+    "file": "Gra-ROBOCZA-POLE-BITWY.html",
+    "md5": "daf66e2423e0f550db70ee41d8cdf12f",
+    "sha256": "ecf1e42a8ec6eeaddca66a86596c34614199f101b253c73c98e266ca16fde4ec",
+    "sizeBytes": 57380299,
+    "build": "Vite 5.4.21 standalone battle; 589 modules"
+  }
 }
