@@ -142,3 +142,55 @@ Baza: `rust-port/parity-v2` `9e56f6e3c` (U1-U4 zintegrowane). Pin: `dc8a3adc`. R
 - `cargo clippy --all-targets -- -D warnings`: EXIT=0 (`clippy-r3b.log`).
 - `cargo test --no-fail-fast`: 1591 passed / 0 failed, 220 binarek `test result`, EXIT=0 (`test-r3.log`). Uwaga: baseline z dispatchu (1313) jest nieaktualny; pomiar przed R3 na tym pinie NIE_ZMIERZONO (zakres R3 dodaje 7 testow + istniejace).
 - Mutanty R3: PM1 (zachowanie zgodnej pozycji bez `generalTargetId` usuniete), PM2 (niepusty filtr `generalTargetId` przy zapisie usuniety), BM1 (bez `isMe`), NM1 (bez odwrocenia runu w sortowaniu) - wszystkie zabite (logi `mut-pm1.log`, `mut-pm2.log`, `mut-bm1.log`, `mut-nm1b.log` w katalogu runu; pliki w `/home/user/cargo-target-shared` poza repo).
+
+## Weryfikacja niezalezna R3 (Operator-pomiary, R-RUSTPORT-REPIN-WOJNA-2-Q1, runda 3)
+
+Commit weryfikowany: `6ee3141a7` (detached). Pin weba: `dc8a3adc` (`git archive` do `/home/user/webpin-r3pomiary`, poza repo).
+
+**Status tematu: OTWARTY.** Zakres R3 zweryfikowany; brakuje `meta.battleModeSettingVersion` (zapis i odczyt w `save_load.rs`) oraz wpiecia funkcji w wywolania silnika.
+
+### Bramki (surowe logi, `EXIT=` w pliku)
+
+- `cargo fmt --all -- --check`: EXIT=0 (`fmt-pomiary-r3.log`).
+- `cargo clippy --all-targets -- -D warnings`: EXIT=0 (`clippy-pomiary-r3.log`).
+- `cargo test --no-fail-fast`: EXIT=0, 220 wierszy `test result`, suma 1591 passed / 0 failed (`test-pomiary-r3.log`).
+- `git diff --check`: sprawdzone przed commitem.
+
+### Regeneracja wektorow z weba dc8a3adc (niezalezna od commitu Operatora)
+
+Generatory z katalogu runu uruchomione ponownie na pinie `dc8a3adc` i porownane bajt po bajcie z plikami w `tests/p6_repin_wojna_2_r3_vectors/`:
+- `planned-march-general.json` (348879 B): identyczny (`cmp` OK), log `vectors-regen-pomiary-r3.log`.
+- `battle-mode-restore.json` (10012 B): identyczny.
+- `nearest-nan.json` (103285 B): identyczny.
+
+### Weryfikator niezalezny
+
+- `verify-r3.py` uruchomiony ponownie (`python3 -I`): `verify-r3 nearest: cases=400 withNaN=328 mismatches=0`; `fromSave=900 toSave=300 battleMode=126 fails=0`; EXIT=0 (`verify-r3-pomiary.log`).
+- Przeglad zgodnosci reimplementacji z TS pinu: `planned-march.ts:426-490` (warunki `has_gen` przed pominieciem zgodnej pozycji, filtr niepustego napisu, legacy `autoMarch`, kolejnosc wpisow), `battle-mode.ts:9-14`, `main.ts:29052-29060`, `main.ts:40819-40821`, `generals.ts:76-82` (`NaN || localeCompare` = fallback na id), symulacja CountAndMakeRun + BinaryInsertionSort V8 dla n < 64. Zgodne.
+- Przeglad Rust vs web: `generals.rs::compare_nearest` (NaN roznicy → gałąź `localeCompare`, jak `NaN || ...` w TS), `v8_sort_small` (kolejnosc wywolan komparatora zgodna z CountAndMakeRun/BinaryInsertionSort V8), `pathfinding.rs::planned_marches_from_save/to_save` (`has_general`, filtry niepustych napisow), `battle_mode.rs` (`restored_setting_version`, `player_battle_automatic_only`). Zgodne z pinem.
+
+### Mutanty na galeziach R3 (kazdy: patch, `cargo test` na 8 binarkach, przywrocenie pliku i asercja rownosci)
+
+| ID | Mutacja | Plik | Wynik | Log |
+|---|---|---|---|---|
+| PM3 | `generalTargetId` bez filtra niepustego napisu w `has_general` | `pathfinding.rs` | FAIL 2 (`general_target_edge_cases_are_explicit`, `planned_marches_from_save_with_general_target_matches_web`) | `mut-pomiary-r3-PM3.log` |
+| PM4 | `generalTargetId` bez filtra niepustego napisu przy zapisie | `pathfinding.rs` | FAIL 2 (`general_target_edge_cases_are_explicit`, `planned_marches_to_save_with_general_target_matches_web`) | `mut-pomiary-r3-PM4.log` |
+| NM2 | `diff >= 0` zamiast `> 0` w komparatorze | `generals.rs` | FAIL 3 | `mut-pomiary-r3-NM2.log` |
+| NM3 | `NaN` roznicy traktowany jak `> 0` | `generals.rs` | FAIL 3 (w tym `nearest_living_general_with_nan_candidate_matches_web`) | `mut-pomiary-r3-NM3.log` |
+| NM4 | odwrocona detekcja malejacego runu (`cmp(items[0], items[1])`) | `generals.rs` | FAIL 4 | `mut-pomiary-r3-NM4.log` |
+| NM5 | `hp >= 0` zamiast `hp > 0` | `generals.rs` | FAIL 1 (`nearest_living_general_matches_web`) | `mut-pomiary-r3-NM5.log` |
+| BM2 | `restored_setting_version` akceptuje dowolna wartosc (`is_some`) | `battle_mode.rs` | FAIL 3 (`legacy_save_without_marker_never_activates_auto_only`, `restored_setting_version_matches_web`, `player_battle_automatic_only_matches_web_on_all_combinations`) | `mut-pomiary-r3-BM2.log` |
+
+Mutanty PM1, PM2, BM1, NM1, NM1b (Operator-impl) pozostaja zabite (logi w katalogu runu). Wszystkie 7 nowych mutantow zabite; zaden nie przezyl, wiec brak dowodow rownowaznosci do dopisania.
+
+### Ustalenia niezaleznego przegladu (nowe)
+
+1. **Brak wywolan produkcyjnych.** `planned_marches_from_save`, `planned_marches_to_save` (poza wewnetrznym `validate_auto_march_from_save`), `restored_setting_version`, `player_battle_automatic_only` nie maja wywolan poza testami (`grep` po `src/` i `tests/`). `save_load.rs` nie zawiera pola planned marches ani `meta`. Status „PORTOWANE" w tabeli R3 oznacza funkcje czyste, nie zachowanie zapisu w grze. Doprecyzowanie: NASTĘPNA-PARTIA (wpiecie do zapisu i wczytania).
+2. **Kolejnosc kluczy obiektu JS (ZALOZENIE Z-P-1).** `plannedMarchesToSave` buduje obiekt `plannedMarches[unitId]`. Silnik JS ustawia klucze calkowitoliczbowe przed innymi, wiec kolejnosc wpisow po wczytaniu moze sie roznic od `Map`. Rust zachowuje kolejnosc wstawiania. Dotyczy tylko identyfikatorow calkowitoliczbowych; identyfikatory produkcyjne nie zostaly zmierzone (NIE_ZMIERZONO). Wplyw: kolejnosc planowania marszy.
+3. **Rostery >= 64 (ZALOZENIE Z-R3-1)** pozostaja NIE_ZMIERZONO; sortowanie V8 dla n >= 64 nie jest odtworzone.
+
+### Pozostaje do zamkniecia tematu
+
+- `meta.battleModeSettingVersion` w zapisie (`main.ts:32378` zapis, `main.ts:40818-40821` odczyt) — zmiana formatu SaveSnapshot v2 w `save_load.rs`.
+- Wpiecie `player_battle_automatic_only` w wywolania silnika (`main.ts:29052-29060`).
+- Wpiecie `planned_marches_*` w zapis/odczyt gry (poza funkcjami czystymi).
