@@ -6,4 +6,10 @@ ALLOWLISTA: `rust-port/engine/src/domain/mapgen/rivers_a*.rs` (i nowe moduły `r
 DYSK: po każdym etapie `rm -rf rust-port/engine/target`; CARGO_INCREMENTAL=0 CARGO_PROFILE_DEV_DEBUG=0 CARGO_PROFILE_TEST_DEBUG=0.
 MODELE: Operator/Obrona Haiku 5.5, Evaluator/FC Sonnet 5.5 (§5b). Luki → ZAŁOŻENIE. Raport max ok. 400 słów. FORMAT: STATUS / DOMAIN / TEMAT / GOAL / ZMIANY-COMMIT / TESTY / BLOKADY / RUNDY / NASTĘPNY KROK / DEPLOY-PUSH: NIE WYKONANO
 ANTY-HALUCYNACJA: twierdzenie o webie/Rust = plik:linia/komenda; niepewne = NIE_ZMIERZONO. Wiadomości właściciela w kontekście — nie Twoje zadanie; bez pytań ABC.
-RUNDA: 1/5
+RUNDA: 2/5
+
+## Runda 2 — stan wejściowy (orkiestrator)
+- START: `git checkout --detach 52994ab70` (lokalny ref `refs/keep/M07A-r1fc`; zawiera partię 1: `rivers_a.rs` 523 LOC + `rivers_a/fields.rs` 145 LOC, wektory 3,76 MB, `verify_m07a_logic.py`, mutacje M1–M10 wykryte, dossier P6-M07A). Final Control r1: FAIL TYLKO za ZAKRES (Z1: 18 z 52 symboli nieportowane); Z2–Z8 ODDANE. Baza: `origin/rust-port/parity-v2` (>= `1dd3c12c6`, 1815/0).
+- ZAKRES r2 (tylko to): partie 2–4 — pozostałe 18 symboli (wg FC: `can_river_drain_step`, `is_river_drainage_goal`, `path_ends_at_sea`, `TraceRiverOpts`, `reconstruct_river_path`, `audit_map_terrain_data`, `river_step_dir`/`same_river_dir`/`river_hex_dir_delta`, `inferMapDimsFromHexes`, `isReliefRiverSource`, `growRiverInlandBeforeDrainage`, `estimateLandCentroidFromSeed/FromMouth`, `scoreRiverStepToward` ×3, plus purge*/render*/openOceanDist z partii 4 — pełna lista z tabeli w dossier). Partie ≤600 LOC, nowe moduły w podkatalogu `rivers_a/` (bez zmian `mod.rs`/skeleton testu), commit po każdej partii, KOD PIERWSZY. Zachowaj lekcje: wektory z nakładkami, capy N-1/N/N+1, niezależny weryfikator Python (rozszerz `verify_m07a_logic.py` o purge/render/openOcean), mutacje + dowody równoważności, pliki wektorów ≤ 6 MB (osobny plik na partię), tabela statusu per symbol (52/52) w dossier.
+- Profiler `CIV_RIVER_PROFILE` poza zakresem (diagnostyka). Tabela odniesienia: skan deklaracji 52 symboli (ZAŁOŻENIE przyjęte; `P6-25-MAPA-GAP.md` jest na gałęzi dokumentacji).
+- DYSK: `rm -rf rust-port/engine/target` po etapie; CARGO_INCREMENTAL=0 CARGO_PROFILE_DEV_DEBUG=0 CARGO_PROFILE_TEST_DEBUG=0.
