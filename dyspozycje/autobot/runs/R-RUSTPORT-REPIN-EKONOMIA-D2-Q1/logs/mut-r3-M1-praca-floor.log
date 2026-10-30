@@ -1,0 +1,70 @@
+   Compiling civ-engine v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_b50a88bf-be6-1/rust-port/engine)
+    Finished `test` profile [unoptimized] target(s) in 34.16s
+     Running tests/p6_repin_d2_full.rs (target/debug/deps/p6_repin_d2_full-924b479502af8de3)
+
+running 9 tests
+test boundary_negative_zero_additional_tax_is_positive_zero_in_trade ... ok
+test structural_additional_tax_enters_gross_trade_after_matrix ... ok
+test structural_pieniadz_z_pracy_is_always_zero ... ok
+test structural_port_bonus_requires_owner_and_nonzero_param ... ok
+test structural_port_zero_param_is_neutral_and_nan_propagates ... ok
+test structural_neutral_praca_is_mlyn_then_cegielnia_then_integer ... FAILED
+test structural_praca_integer_rounds_and_zeroes_non_positive ... FAILED
+test parity_full_main_bit_exact ... FAILED
+test parity_full_main_exercises_port_bonus_and_owner_paths ... ok
+
+failures:
+
+---- structural_neutral_praca_is_mlyn_then_cegielnia_then_integer stdout ----
+
+thread 'structural_neutral_praca_is_mlyn_then_cegielnia_then_integer' (7702) panicked at tests/p6_repin_d2_full.rs:312:5:
+assertion `left == right` failed
+  left: 27.0
+ right: 28.0
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+   1: core::panicking::panic_fmt
+   2: core::panicking::assert_failed_inner
+   3: core::panicking::assert_failed::<f64, f64>
+   4: p6_repin_d2_full::structural_neutral_praca_is_mlyn_then_cegielnia_then_integer
+   5: p6_repin_d2_full::structural_neutral_praca_is_mlyn_then_cegielnia_then_integer::{closure#0}
+   6: <p6_repin_d2_full::structural_neutral_praca_is_mlyn_then_cegielnia_then_integer::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+---- structural_praca_integer_rounds_and_zeroes_non_positive stdout ----
+
+thread 'structural_praca_integer_rounds_and_zeroes_non_positive' (7706) panicked at tests/p6_repin_d2_full.rs:287:5:
+assertion `left == right` failed
+  left: 0
+ right: 4607182418800017408
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+   1: core::panicking::panic_fmt
+   2: core::panicking::assert_failed_inner
+   3: core::panicking::assert_failed::<u64, u64>
+   4: p6_repin_d2_full::structural_praca_integer_rounds_and_zeroes_non_positive
+   5: p6_repin_d2_full::structural_praca_integer_rounds_and_zeroes_non_positive::{closure#0}
+   6: <p6_repin_d2_full::structural_praca_integer_rounds_and_zeroes_non_positive::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+---- parity_full_main_bit_exact stdout ----
+
+thread 'parity_full_main_bit_exact' (7699) panicked at tests/p6_repin_d2_full.rs:240:5:
+184 mismatches, first: ["#4 praca: got 33.0 exp 34.0", "#10 praca: got 30.0 exp 31.0", "#21 praca: got 1000010.0 exp 1000011.0", "#28 praca: got 14.0 exp 15.0", "#29 praca: got 28.0 exp 29.0"]
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+   1: core::panicking::panic_fmt
+   2: p6_repin_d2_full::parity_full_main_bit_exact
+   3: p6_repin_d2_full::parity_full_main_bit_exact::{closure#0}
+   4: <p6_repin_d2_full::parity_full_main_bit_exact::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+
+failures:
+    parity_full_main_bit_exact
+    structural_neutral_praca_is_mlyn_then_cegielnia_then_integer
+    structural_praca_integer_rounds_and_zeroes_non_positive
+
+test result: FAILED. 6 passed; 3 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.26s
+
+error: test failed, to rerun pass `--test p6_repin_d2_full`
