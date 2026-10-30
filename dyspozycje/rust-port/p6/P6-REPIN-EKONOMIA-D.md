@@ -1,30 +1,66 @@
 # P6-REPIN-EKONOMIA-D — dossier tematu (krok 4b, część D)
 
-**Temat:** `R-RUSTPORT-REPIN-EKONOMIA-D-Q1` · **Runda:** 1/5 · **Rola:** Operator-impl
+**Temat:** `R-RUSTPORT-REPIN-EKONOMIA-D-Q1` · **Rola:** Operator-impl
+**Numeracja rund (jedna, ujednolicona w R3):** R1 = port work-tax `d0dfe1f89`; R2 = weryfikacja i mutacje `7ddd85a42`; **R3 = ten dokument i commity odpowiedzi na zarzuty Evaluatora R2** (ten sam ID, bez FAIL). Każde przejście Operatora tego ID to kolejna runda; limit 5.
 **Baza:** `origin/rust-port/parity-v2` = `d961b14b4` (zawiera `84136f57` i `d961b14b`).
 **Pin weba (cel):** `91dc998a5f1b51ad29e0f4785edfd45655445c53` · **Pin dotychczasowy:** `edb8fb56` (bez zmian w manifestach).
+**Status tematu:** OTWARTY. Część D1 (`work-tax.ts`) PORTOWANA. Cel GOAL (cały REPIN krok 4b) NIEOSIĄGNIĘTY: `economy.ts` ma sklasyfikowane hunki, ale niezportowane.
 
-## Tabela: zmiana → web → Rust → test → status
+## Odpowiedzi na zarzuty Evaluatora R2
+
+| # | Zarzut | Odpowiedź | Dowód |
+|---|---|---|---|
+| 1 | `economy.ts` nieanalizowany, temat niezamknięty | **PRZYJMUJĘ** częściowo: klasyfikacja wszystkich 41 hunków `git diff -U0 edb8fb56 91dc998a -- gra/src/game/economy.ts` wykonana (sekcja „Klasyfikacja economy.ts"). Port hunków NIE wykonany w tej rundzie, temat zostaje otwarty z tym samym ID. | sekcja niżej; SHA commitu R3 w raporcie |
+| 2 | Numeracja rund niespójna (`1/5` vs R2) | **PRZYJMUJĘ**: ujednolicono do schematu R1/R2/R3 (nagłówek i sekcja bramek). | nagłówek powyżej |
+| 3 | Baseline 1272 NIE_ZMIERZONO | **PRZYJMUJĘ**: zmierzono na pełnym drzewie `d961b14b4` (czysty target): **1538 passed / 0 failed**, 212 wyników (w tym doc-tests). Log: `logs/baseline-d961b14b4-test-results.log`. Różnica: 1551 = 1538 + 13 testów `p6_repin_d_work_tax` (wszystkie 13 nowe). Liczba 1272 z dispatchu jest nieaktualna (nie odpowiada `d961b14b4`). | log baseline; 1551 − 13 = 1538 |
+| 4 | Brak wektorów brzegowych (`-0`, 1e300, 2^53) w repo | **PRZYJMUJĘ**: dodano zatwierdzony podzbiór brzegowy `web-vectors-edge.json` (484 + 1024 + 22 przypadki) wygenerowany URUCHOMIENIEM weba 91dc998a, generator committed w `logs/gen-vectors-edge.mts`, test bit-w-bit `p6_repin_d_work_tax_edge.rs` (3 testy, porównanie `to_bits`, więc znak zera jest sprawdzany). | `tests/p6_repin_d_work_tax_edge.rs`; wynik testu w raporcie |
+
+Uwaga do zarzutu 4: generator dla głównego `web-vectors.json` (zestaw 1600 + 529 + 90 + 9 + 20 + 96) nadal NIE jest w repo (pozostał w katalogu roboczym poza repo). Zapisane jako luka: zestaw brzegowy w repo zastępuje brakujący dowód na przypadki skrajne, główny zestaw pozostaje zamrożony i zweryfikowany przez `7904`-przypadkowy weryfikator R2. Dołączenie generatora głównego zestawu to zadanie na następną rundę.
+
+## Tabela: zmiana → web → Rust → test → status (work-tax)
 
 | Zmiana (web, pin 91dc998a) | Plik:linia weba | Plik:linia Rust | Test / wektor | Status |
 |---|---|---|---|---|
 | `WorkTaxConversion` (typ wyniku) | `gra/src/game/work-tax.ts:2-6` | `rust-port/engine/src/domain/work_tax.rs` (`struct WorkTaxConversion`) | `parity_convert_work_pool_to_tax`, `parity_execute_manual_work_tax_conversion` | PORTOWANE |
-| `taxForWorkAmount` | `work-tax.ts:8-12` | `work_tax.rs` `tax_for_work_amount` | `parity_tax_for_work_amount` (529 wektorów), `boundary_tax_floor_and_rate_defaults` | PORTOWANE |
+| `taxForWorkAmount` | `work-tax.ts:8-12` | `work_tax.rs` `tax_for_work_amount` | `parity_tax_for_work_amount` (529), `boundary_tax_floor_and_rate_defaults`, `edge_tax_for_work_amount_bitexact` (484) | PORTOWANE |
 | `ownerCanConvertWorkToTax` | `work-tax.ts:14-24` | `work_tax.rs` `owner_can_convert_work_to_tax` | `parity_owner_can_convert_work_to_tax` (90), `structural_can_convert_requires_human_and_targowisko` | PORTOWANE |
-| `serializePendingWorkTax` | `work-tax.ts:26-28` | `work_tax.rs` `serialize_pending_work_tax` | `parity_serialize_pending_work_tax` (9), `structural_serialize_then_restore_roundtrip` | PORTOWANE |
+| `serializePendingWorkTax` | `work-tax.ts:26-28` | `work_tax.rs` `serialize_pending_work_tax` | `parity_serialize_pending_work_tax` (9), `structural_serialize_then_restore_roundtrip`, `edge_serialize_pending_work_tax_bitexact` (22) | PORTOWANE |
 | `restorePendingWorkTax` | `work-tax.ts:30-41` | `work_tax.rs` `restore_pending_work_tax` | `parity_restore_pending_work_tax` (20), `structural_restore_rejects_bad_rows_and_overwrites_in_place` | PORTOWANE |
-| `convertWorkPoolToTax` | `work-tax.ts:43-58` | `work_tax.rs` `convert_work_pool_to_tax` | `parity_convert_work_pool_to_tax` (1600), `structural_work_not_spent_when_tax_rounds_to_zero`, `structural_disabled_or_empty_request_spends_nothing`, `boundary_pool_and_request_are_sanitized` | PORTOWANE |
-| `executeManualWorkTaxConversion` | `work-tax.ts:60-77` | `work_tax.rs` `execute_manual_work_tax_conversion` + trait `WorkTaxDeps` | `parity_execute_manual_work_tax_conversion` (96, z kolejnoscia wywolan `set`/`tax`) | PORTOWANE |
-| `gra/src/game/economy.ts` (diff 329 linii, `cityYieldPerTurn`, Mennica, praca→podatek) | `gra/src/game/economy.ts` (hunki NIE przeanalizowane w tej rundzie) | — | — | NASTĘPNA-PARTIA (krok 2 dispatchu po work-tax) |
+| `convertWorkPoolToTax` | `work-tax.ts:43-58` | `work_tax.rs` `convert_work_pool_to_tax` | `parity_convert_work_pool_to_tax` (1600), `edge_convert_work_pool_to_tax_bitexact` (1024), `structural_*`, `boundary_pool_and_request_are_sanitized` | PORTOWANE |
+| `executeManualWorkTaxConversion` | `work-tax.ts:60-77` | `work_tax.rs` `execute_manual_work_tax_conversion` + trait `WorkTaxDeps` | `parity_execute_manual_work_tax_conversion` (96, kolejność wywołań `set`/`tax`) | PORTOWANE |
 
 Nowy plik `work-tax.ts` jest w całości nowy (status A w REPIN-DELTA §3, wiersz 65), więc każda linia jest zmianą behawioralną.
 
-## Wektory
+## Klasyfikacja economy.ts (R3, zarzut 1)
 
-- `rust-port/engine/tests/p6_repin_d_work_tax_vectors/web-vectors.json` (≈317 KB, ≤10 MB).
-- Generowane przez URUCHOMIENIE `work-tax.ts` z `git show 91dc998a:gra/src/game/work-tax.ts` pod `node 22 --experimental-strip-types` (generator poza repo, w katalogu scratchpad sesji). Wejścia: siatka liczb z brzegami (`-1, -0.5, 0, 0.4, 0.5, 0.99, 1, 1.5, 2, 2.9999, 3, 7, 10, 99.99, 100, 101, 1e6`, `NaN`, `±Infinity`, `null`, `undefined`, `'5'`), pule i zadania N-1/N/N+1 względem progów podatku, wszystkie kombinacje `enabled`, kolekcje zapisu z duplikatami i wierszami złej długości.
-- Kodowanie: `NaN`/`±Infinity` jako tekst, `undefined`/`null`/`'5'` jako nie-liczba (w Rust = NaN; JS `Number.isFinite` zwraca false dla każdej nie-liczby, więc zachowanie jest równoważne).
-- Dla walidacji rozbieżności: 0 (wszystkie 13 testów zielone).
+Źródło: `git diff -U0 edb8fb56 91dc998a -- gra/src/game/economy.ts` = **41 hunków**, `+116/−213`. Numery linii = strona NOWA (`91dc998a`), odczytane z `grep -n` dla kluczowych wierszy (L871-1018) i z nagłówków hunków dla pozostałych; dla hunków czysto usuniętych podano miejsce usunięcia w pliku nowym (zakres przybliżony ±2 linie). Klasyfikacja: **PORTOWANE** (nie dotyczy), **NIE-DOTYCZY** (komentarze/typy bez zachowania), **NASTĘPNA-PARTIA** (zmiana zachowania, do portu hunk po hunku w kolejnych rundach).
+
+| Grupa hunków (linie weba) | Zmiana | Status | Uzasadnienie / Rust |
+|---|---|---|---|
+| L45 (import) | import `applyCivMatrixParam` | NIE-DOTYCZY | sam import; zachowanie w wierszach niżej |
+| L149-166, L237 (`EconParams`, `loadEconParams`) | usunięty `targowiskoPracaMnoznik` (`targowisko_praca_na_pieniadz_mnoznik`); komentarze `mennicaMnoznikPoWalucie` | NASTĘPNA-PARTIA | usunięcie Efektu 2 (Targowisko+Waluta) — zmiana zachowania |
+| L326-341 (`CityYieldResult`) | `pieniadzZPracy` = 0 (pole zdeprecjonowane); komentarze | NASTĘPNA-PARTIA | zerowanie pola to zmiana wyniku |
+| L644-660 (`CityYieldContext`, `maMennica`/`walutaOdkryta`) | tylko komentarze, nowa definicja bramki Mint | NIE-DOTYCZY | opis; logika w wierszu „Mint" |
+| L668-671 (`dochodTrasHandlowych` usunięty) | usunięte pole dochodu tras | NASTĘPNA-PARTIA | zmiana wejścia `handelBrutto` |
+| L674-675 (`additionalTax`) | nowe pole: Praca przeliczona ręcznie na podatek, wchodzi do puli podatku | NASTĘPNA-PARTIA | połączenie z `work_tax.rs` (adapter „integracja w turze"); kluczowe dla Z-WT-5 |
+| L683-690 (`walutaMnoznikOverride` usunięty) | usunięty override mnożnika Mennicy | NASTĘPNA-PARTIA | zmiana formuły Mint |
+| L703-745 (`mnoznikHandelPieniadzForCiv`, `…ByDifficulty`, `civMatrixMnoznikHandelPieniadzRaw`) | fallback 2→1; civs.json nieczytany; zero z macierzy jest wartością (`Number.isFinite` zamiast `>0`) | NASTĘPNA-PARTIA | zmiana kontraktu funkcji (wektory `economy` potrzebne) |
+| L782-806 (`civBonusyForCivKey`, `civEconomyYieldMultipliers`) | mnożniki z bonusów cywilizacji zawsze `{handel:1, nauka:1}` | NASTĘPNA-PARTIA | zmiana zachowania |
+| L871-889 (Step 3': `pieniadzPortu`, `eko_pieniadz_port_proc`) | Port: pieniądz z portu × współczynnik cywilizacji, raz, przed mnożnikami | NASTĘPNA-PARTIA (częściowo istnieje) | Rust ma już odczyt tego klucza w `rust-port/engine/src/domain/city_growth.rs:2864-2876`; zgodność z 91dc998a wymaga porównania hunk po hunku |
+| L901-902 (`pracaNetto`) | `applyCivMatrixParam(…, 'eko_praca_proc')`, zero neutralne | NASTĘPNA-PARTIA | nowy klucz macierzy, brak w Rust |
+| L910-914 (`pieniadzZPracy = 0`, `handelBazowy` bez pracy) | usunięcie D5 (Praca→Handel u źródła) | NASTĘPNA-PARTIA | zmiana bazy Handlu |
+| L919 (`civHandelMult`) | dla znanego właściciela macierz jest autorytatywna (także 0), legacy mnożnik tylko dla nieznanego | NASTĘPNA-PARTIA | zmiana zachowania |
+| L933-936 (`eko_handel_brutto_proc`, `additionalTax`) | mnożnik brutto Handlu z macierzy; podatek z Pracy dodany PO mnożnikach tras | NASTĘPNA-PARTIA | jw. |
+| L940-943 (`eko_korupcja_proc`) | korupcja z macierzy, cap `korupcjaCap` | NASTĘPNA-PARTIA | klucz macierzy brak w Rust |
+| L946-947 (Mint) | `walutaMnoznikBase = params.mennicaMnoznikPoWalucie` (bez override) | NASTĘPNA-PARTIA | jw. |
+| L964-965 (`eko_luksus_proc`) | luksus z macierzy | NASTĘPNA-PARTIA | klucz macierzy brak w Rust |
+| L976-981 (`eko_nauka_proc`) | nauka lokalna z macierzy zamiast `civNaukaMult` | NASTĘPNA-PARTIA | klucz macierzy brak w Rust |
+| L986-989 (`eko_pieniadz_proc`) | pieniądz końcowy z macierzy (Step 8) | NASTĘPNA-PARTIA | klucz macierzy brak w Rust |
+| L1004-1005 (`eko_zywnosc_proc`) | żywność brutto z macierzy po Garncarni | NASTĘPNA-PARTIA | klucz macierzy brak w Rust |
+| L1017-1018 (`eko_kultura_proc`) | kultura budynków z macierzy | NASTĘPNA-PARTIA | klucz macierzy brak w Rust |
+| pozostałe hunki (komentarze Step 3/5/7/8, opisy pól) | tylko tekst | NIE-DOTYCZY | bez zachowania |
+
+Wniosek R3: część `economy.ts` jest zakresem następnych rund (≈14 grup zmian zachowania; 8 nowych kluczy macierzy `eko_*`, z których w Rust istnieje tylko `eko_pieniadz_port_proc`). Klasyfikacja nie jest portem: żaden z tych hunków nie ma jeszcze kodu Rust ani wektora.
 
 ## Założenia (luki rozstrzygnięte ZAŁOŻENIEM)
 
@@ -32,37 +68,42 @@ Nowy plik `work-tax.ts` jest w całości nowy (status A w REPIN-DELTA §3, wiers
 - Z-WT-2: `restorePendingWorkTax(unknown)` → `serde_json::Value`; liczba = `Value::Number`, reszta nie-liczba.
 - Z-WT-3: `Map<number, number>` → `Vec<(f64, f64)>` w kolejności wstawiania; duplikat klucza nadpisuje wartość na istniejącej pozycji (jak `Map.set`).
 - Z-WT-4: `deps` → trait `WorkTaxDeps` (lustro kontraktu zywej gry; adapter gry nie jest częścią tej partii).
-- Z-WT-5: w tej partii NIE podpinano funkcji do silnika (brak wywołań w `state`/`session`); integracja z turą to osobna partia po `economy.ts`, bo web `work-tax.ts` nie ma wywołań turowych (`No turn automation lives here`).
+- Z-WT-5: w tej partii NIE podpinano funkcji do silnika (brak wywołań w `state`/`session`); integracja z turą to osobna partia po `economy.ts` (`additionalTax`), bo web `work-tax.ts` nie ma wywołań turowych (`No turn automation lives here`).
+- Z-WT-6 (R3): wektory brzegowe kodowane jako `{"f": String(x)}` (`-0` jako `"-0"`); Rust `f64::from_str` daje ten sam bit-pattern; wykluczono `serde_json` jako źródło liczb (liczby w edge nie przechodzą przez parser liczb JSON).
+
+## Wektory
+
+- `rust-port/engine/tests/p6_repin_d_work_tax_vectors/web-vectors.json` (≈317 KB, ≤10 MB): zestaw główny, zamrożony.
+- `rust-port/engine/tests/p6_repin_d_work_tax_vectors/web-vectors-edge.json` (≈200 KB, R3): przypadki brzegowe `-0`, `±0.5`, `0.999999999`, `1.0000001`, `2.9999999999999996`, `±1e300`, `2^53`, `2^53+2`, `MAX_VALUE`, `MIN_VALUE`, `1.5e-300`, `129419.99999999999`, `0.1+0.2`, `±Infinity`, `NaN`. Kombinacje: tax 22×22=484, convert 8×8×8×2=1024, serialize 22 (mapy z kluczami z brzegów; duplikaty i `-0`/`+0` zgodnie z `Map`).
+- Generator główny (1600/529/90/9/20/96 przypadków): URUCHOMIENIE `work-tax.ts` z `91dc998a` pod node 22 — poza repo; luka opisana w odpowiedzi na zarzut 4.
+- Generator brzegowy: `logs/gen-vectors-edge.mts` (w repo, dowód odtwarzalności).
+- Weryfikator niezależny R2 (7904 przypadki, poza repo): 0 rozbieżności.
 
 ## Mutacje
 
-- M1 (wykonana): `candidate_tax > 0.0` → `candidate_tax >= 0.0` w `convert_work_pool_to_tax`. Wynik: 3 testy padają (`structural_work_not_spent_when_tax_rounds_to_zero`, `parity_convert_work_pool_to_tax`, `parity_execute_manual_work_tax_conversion`). Zabite. Plik przywrócony z kopii, sprawdzony.
-- M2..M7 (runda weryfikacji, Operator-pomiary, na `d0dfe1f89`, jedna mutacja naraz, plik przywracany `git checkout`):
-  - M2 `pool.min(request)` → `pool.max(request)`: 5 testów padło.
-  - M3 `work_spent > 0.0` → `>= 0.0` w `execute_manual_work_tax_conversion`: 1 test padł.
-  - M4 `amount > 0.0` → `>= 0.0` w `restore_pending_work_tax`: 2 testy padły.
-  - M5 `is_human_owner` → `true` w `owner_can_convert_work_to_tax`: 2 testy padły.
-  - M6 usunięty `.floor()` w `tax_for_work_amount`: 4 testy padły.
-  - M7 `enabled` ignorowane w `convert_work_pool_to_tax`: 3 testy padły.
-  - Wszystkie 7 mutacji (M1..M7) zabite; plik `work_tax.rs` sprawdzony jako czysty (`git diff --quiet`).
-- M8+ (mutacje `economy.ts`): NIE_ZMIERZONO, do partii `economy.ts`.
+- M1 (R1): `candidate_tax > 0.0` → `>= 0.0` w `convert_work_pool_to_tax`: 3 testy padają. Zabite.
+- M2..M7 (R2, na `d0dfe1f89`, jedna naraz, plik przywracany):
+  - M2 `pool.min(request)` → `pool.max(request)`: 5 testów.
+  - M3 `work_spent > 0.0` → `>= 0.0` w `execute_manual_work_tax_conversion`: 1 test.
+  - M4 `amount > 0.0` → `>= 0.0` w `restore_pending_work_tax`: 2 testy.
+  - M5 `is_human_owner` → `true` w `owner_can_convert_work_to_tax`: 2 testy.
+  - M6 usunięty `.floor()` w `tax_for_work_amount`: 4 testy.
+  - M7 `enabled` ignorowane w `convert_work_pool_to_tax`: 3 testy.
+- M8 (R3, znak zera): `work.floor().max(0.0)` → `work.floor()` w `tax_for_work_amount`. Wynik: `edge_tax_for_work_amount_bitexact` pada (wejście `-0` daje `-0` zamiast `+0`), a także `boundary_tax_floor_and_rate_defaults` i `parity_tax_for_work_amount` z zestawu głównego. Zabite; `work_tax.rs` przywrócony (`git checkout`, `git diff --quiet` czysty). Log: `logs/mut-M8-negzero-edge.log`.
+- M8+ (mutacje `economy.ts`): NIE_ZMIERZONO, bo kodu economy w Rust nie ma.
 
-## Weryfikacja niezależna (runda weryfikacji)
+## Bramki (R3, na commicie z edge)
 
-- Osobny zestaw wektorów: generator (poza repo) uruchamia `work-tax.ts` z `91dc998a` pod node 22.22 (`--experimental-strip-types`), inny seed PRNG, losowe wejścia ze specjalnymi wartościami (`-0`, `±Infinity`, `NaN`, `1e300`, `2^53`, ułamki `0.999999`, `1.0000001`), łącznie 7904 przypadków: tax 1500, convert 2500, owner 1200, serialize 900, restore 904, exec 900. Wynik: `VERIFIED_CASES=7904`, 0 rozbieżności.
-- Kodowanie liczb w tym zestawie: liczby całkowite bezpieczne jako JSON, pozostałe jako tekst (`String(x)`), bo `serde_json` bez feature `float_roundtrip` może zaokrąglić ostatni bit (wykryte: `r=129419.99999999999` → `129420.0`). To artefakt harnessu weryfikacji, nie portu. Zestaw zatwierdzony w repo (`web-vectors.json`) nie zawiera liczb z więcej niż 12 cyframi znaczącymi, więc ten problem go nie dotyczy (0 trafień regexu `[0-9]+\.[0-9]{12,}`).
-- Weryfikator tymczasowy (`tests/zz_verifier_tmp.rs`) usunięty; nie jest częścią commita.
+- `cargo fmt --all -- --check`: EXIT=0 (po `cargo fmt --all` na nowym pliku brzegowym).
+- `cargo clippy --all-targets -- -D warnings`: EXIT=0 (czysty target po czyszczeniu).
+- `cargo test --no-fail-fast` (rust-port/engine, czysty target): EXIT=0, **1554 passed / 0 failed**, 214 wyników (212 + 2 nowe pliki testów). Składnik: 1538 (baseline `d961b14b4`) + 13 (`p6_repin_d_work_tax`) + 3 (`p6_repin_d_work_tax_edge`).
+- Baseline: `logs/baseline-d961b14b4-test-results.log` (1538/0, EXIT=0, pełne drzewo `d961b14b4` z `git archive`, czysty target).
+- `git diff --check`: wykonany przed commitem R3 (wynik w raporcie).
+- Log uruchomienia R3: `logs/test-r3-summary.log`.
 
-## Bramki (runda 1)
+## Kolejne partie (NASTĘPNA-PARTIA, ten sam ID)
 
-- `cargo fmt --all -- --check`: EXIT=0.
-- `cargo clippy --all-targets -- -D warnings`: EXIT=0 (po zamianie `map_or(false, …)` na `is_some_and`).
-- `cargo test --no-fail-fast` (rust-port/engine): EXIT=0, suma 1551 passed / 0 failed. Nowe: `p6_repin_d_work_tax` 13/13. Dispatch podaje baseline 1272; rozbieżność liczebności NIE_ZMIERZONO (nie uruchomiono baseline na czystym `d961b14b4`).
-- `git diff --check`: czysty.
-
-## Kolejne partie (NASTĘPNA-PARTIA)
-
-1. `economy.ts` hunk po hunku (329 linii diffu, `cityYieldPerTurn`, Mennica, praca→podatek). Wymaga wcześniejszego `git diff edb8fb56 91dc998a -- gra/src/game/economy.ts`, klasyfikacji zmian i ustalenia modułu Rust (kandydat: `domain/city_growth.rs` / nowy `economy_yield.rs`).
-2. Wektory `economy` przeliczyć z weba 91dc998a (pliki ≤10 MB).
+1. `economy.ts` hunk po hunku wg klasyfikacji wyżej, po kolejności: (a) Mint i `walutaMnoznikOverride`, (b) `mnoznikHandelPieniadzForCiv` i `civEconomyYieldMultipliers`, (c) klucze `eko_*` w kolejności przepływu (praca, handel brutto, korupcja, luksus, nauka, pieniądz, żywność, kultura), (d) Step 3' port, (e) `additionalTax` (adapter, Z-WT-5).
+2. Wektory `economy` z weba 91dc998a (pliki ≤10 MB) i generator główny work-tax dodany do `logs/`.
 3. Mutacje na nowych gałęziach `economy.ts`.
 4. Odświeżenie pinu / kopii bajtowych (poza tym tematem, REPIN-DELTA §6).

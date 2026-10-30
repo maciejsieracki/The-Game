@@ -1,0 +1,425 @@
+     Running unittests src/lib.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/civ_engine-1bbc9b30fd19233c)
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+     Running tests/ai_turn.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/ai_turn-4853b445cb16bc2a)
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+     Running tests/assets_manifest.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/assets_manifest-9e0e6731e9c41709)
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.70s
+     Running tests/barbarians.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/barbarians-75b4934003bd2eba)
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/bridge_add_player.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/bridge_add_player-a0d81e65d0eb1063)
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/building_costs.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/building_costs-0b94438d4bbd582c)
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/city_growth.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/city_growth-18e028c2dfe221e7)
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/city_id.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/city_id-2106f62cdf59d53b)
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/combat.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/combat-7ecd6a5cbfb63f64)
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/combat_ai_multipliers.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/combat_ai_multipliers-4fa26719395007c4)
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/counter_multipliers.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/counter_multipliers-ebd5d474f4923bc1)
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/data_buildings_tech.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/data_buildings_tech-08e73c716002026c)
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/data_civilizations.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/data_civilizations-3e05dbd96fd68d15)
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+     Running tests/data_compliance.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/data_compliance-296fd93df1cf46d4)
+test result: ok. 40 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.07s
+     Running tests/data_economy_society.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/data_economy_society-bff6b3f93ccb4b36)
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/data_loader.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/data_loader-96ce69b2c2257717)
+test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.35s
+     Running tests/data_terrain_map.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/data_terrain_map-9ac1cddca38f16e5)
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/data_units_combat.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/data_units_combat-d7c5756a274c8e2b)
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+     Running tests/derived_values.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/derived_values-4474497a08465cd8)
+test result: ok. 25 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s
+     Running tests/diplomacy.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/diplomacy-7c642a5ffd3a16fb)
+test result: ok. 32 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+     Running tests/events.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/events-96113e9d42ca60d2)
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/hex_terrain.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/hex_terrain-98de7dd6c6710bc2)
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/improvements.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/improvements-84eb6d1b3230941a)
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/map_generator.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/map_generator-311d8de75d9dc560)
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/owner_ref.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/owner_ref-5a399fe7bbcbf2a4)
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/p6_1_civ_entry_epoch.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_1_civ_entry_epoch-a91d6c84e749b126)
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/p6_1_first_player_city.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_1_first_player_city-94398a3ee2771aaa)
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/p6_1_owner_seats.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_1_owner_seats-5daba21e696f3e3e)
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/p6_1_rng_mulberry.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_1_rng_mulberry-ac01f099a6dd8e15)
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/p6_1b_playerstate.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_1b_playerstate-d74dd9498af4f828)
+test result: ok. 19 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.97s
+     Running tests/p6_1c_braz_access.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_1c_braz_access-4a7e258476c1085e)
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.08s
+     Running tests/p6_1c_llama_seed.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_1c_llama_seed-ce953c7b2023113f)
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.10s
+     Running tests/p6_1c_start_cluster.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_1c_start_cluster-ef9ec537ccab6e81)
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.33s
+     Running tests/p6_1c_tables.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_1c_tables-56523b2c9bccd15b)
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/p6_1d_city_names.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_1d_city_names-cbdb310a19a6a8b7)
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
+     Running tests/p6_1d_civ_bonuses.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_1d_civ_bonuses-6968a308406bbcbf)
+test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.89s
+     Running tests/p6_1d_tables.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_1d_tables-93ddf0ef076e2869)
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+     Running tests/p6_1e_civ_gaps.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_1e_civ_gaps-cdecc971f586ccd2)
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+     Running tests/p6_1e_civ_matrix.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_1e_civ_matrix-9b42c1cd0ad71b15)
+test result: ok. 21 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.44s
+     Running tests/p6_1e_civ_names.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_1e_civ_names-b61b79b6559b573b)
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.79s
+     Running tests/p6_1e_js_compat.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_1e_js_compat-bb57a4311e27e381)
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.26s
+     Running tests/p6_1e_tables.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_1e_tables-847ba41176e3d840)
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+     Running tests/p6_23_fort.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_23_fort-3c93d278f4233641)
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.24s
+     Running tests/p6_23_hexmove.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_23_hexmove-2f5639d71248bb2b)
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s
+     Running tests/p6_23_improvements.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_23_improvements-3e7c705c25fd140f)
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.24s
+     Running tests/p6_23_order.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_23_order-a9081f823062a737)
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.34s
+     Running tests/p6_23_tables.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_23_tables-388139cf43e54de2)
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/p6_4_core.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_4_core-e159a307f15a998b)
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.46s
+     Running tests/p6_4_embark.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_4_embark-47f2b7179fec885f)
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.55s
+     Running tests/p6_4_march.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_4_march-c676a25fb00fbc6c)
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.86s
+     Running tests/p6_4_rally.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_4_rally-a039002eb5185ea1)
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+     Running tests/p6_4_scout.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_4_scout-a9bd3604bfefc29e)
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 21.56s
+     Running tests/p6_4_tables.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_4_tables-f5eadfd3c0c56c57)
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/p6_5a_cost.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_5a_cost-23f486857acf5f5d)
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+     Running tests/p6_5a_display.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_5a_display-0399217a7455a62e)
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.38s
+     Running tests/p6_5a_ruch.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_5a_ruch-fb51f2c1973b6fc4)
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.79s
+     Running tests/p6_5a_stack.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_5a_stack-1c24a99827116d8b)
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.81s
+     Running tests/p6_5a_tables.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_5a_tables-bff36a9594a48f52)
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/p6_5b_bonuses.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_5b_bonuses-64bba6122425bdf4)
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.02s
+     Running tests/p6_5b_format.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_5b_format-872c60c92067c9be)
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.15s
+     Running tests/p6_5b_manpower.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_5b_manpower-c41c9693288b2540)
+test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.90s
+     Running tests/p6_5b_replenish.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_5b_replenish-a8ed014e257ca206)
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.99s
+     Running tests/p6_5b_tables.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_5b_tables-f2dc76b2891f8ef3)
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.08s
+     Running tests/p6_6a_conquest.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_6a_conquest-d2aaef025db25faf)
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
+     Running tests/p6_6a_founding.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_6a_founding-d4db386ecb2f3443)
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s
+     Running tests/p6_6a_hexclear.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_6a_hexclear-b8271b15ae90c19f)
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+     Running tests/p6_6a_tables.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_6a_tables-696ac16085ef4353)
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/p6_6a_visibility.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_6a_visibility-35b973fbe730b2e7)
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.80s
+     Running tests/p6_6b_cities_ensure.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_6b_cities_ensure-e5b2afde74797e8a)
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.26s
+     Running tests/p6_6b_cities_found.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_6b_cities_found-d42180bce5331148)
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.58s
+     Running tests/p6_6b_display.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_6b_display-6317bc53a781eb7d)
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.35s
+     Running tests/p6_6b_empire.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_6b_empire-960711fa5d97e77e)
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.71s
+     Running tests/p6_6b_lists.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_6b_lists-5530e6fb0fb122bf)
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+     Running tests/p6_6b_percent.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_6b_percent-893eed37a807f7ad)
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.50s
+     Running tests/p6_6b_tables.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_6b_tables-29107cfbbf0ca8da)
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/p6_7a_empire.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_7a_empire-e5b319a27d75a718)
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.72s
+     Running tests/p6_7a_growth.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_7a_growth-49598a19cc4a131f)
+test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.81s
+     Running tests/p6_7a_post_central.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_7a_post_central-e62b2298ba1fa502)
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.40s
+     Running tests/p6_7a_tables.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_7a_tables-b32135b624f61239)
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+     Running tests/p6_7a_tempo.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_7a_tempo-e5cac824c9e2f0ce)
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+     Running tests/p6_7b_cost.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_7b_cost-94e694eb0580118f)
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.65s
+     Running tests/p6_7b_gate.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_7b_gate-90a5932b3408c2c1)
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.63s
+     Running tests/p6_7b_nfd.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_7b_nfd-9fd5320f682b9004)
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.49s
+     Running tests/p6_7b_pool.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_7b_pool-b14286b1ed5bcdae)
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.41s
+     Running tests/p6_7b_spichlerz.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_7b_spichlerz-c9a11ca5be9c2f5b)
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.84s
+     Running tests/p6_7b_tables.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_7b_tables-992ca5d85bea2354)
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+     Running tests/p6_8a_building_upgrades.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_8a_building_upgrades-ae59e532856041c3)
+test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/p6_8a_pending_improvements.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_8a_pending_improvements-53c85d6eb8b8934c)
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/p6_8a_production_costs.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_8a_production_costs-0070a0f7ce48b5aa)
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.13s
+     Running tests/p6_8a_vectors.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_8a_vectors-82bd45e84acecb28)
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.31s
+     Running tests/p6_8d_citizen_upkeep.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_8d_citizen_upkeep-df531721b1d12c84)
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.16s
+     Running tests/p6_8d_gold_deficit.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_8d_gold_deficit-e5f2c5bdb3631d27)
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.16s
+     Running tests/p6_8d_mennica_grace.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_8d_mennica_grace-edcc0f7ae9c2e305)
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+     Running tests/p6_8d_wealth.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_8d_wealth-2a4449413d3556f0)
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.07s
+     Running tests/p6_m00_skeleton.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_m00_skeleton-0a6da254f710216e)
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/p6_m01_climate.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_m01_climate-64e98efa2dd8ee86)
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.10s
+     Running tests/p6_m01_earth_mask.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_m01_earth_mask-59a8b20d63852ac8)
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.35s
+     Running tests/p6_m01_params_shape.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_m01_params_shape-1b447365c7a83d44)
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.16s
+     Running tests/p6_m01_prims.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_m01_prims-ef77e10199831ef6)
+test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.07s
+     Running tests/p6_m02_deposit_river.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_m02_deposit_river-8c110c675ec3a61a)
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+     Running tests/p6_m02_float_parse.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_m02_float_parse-df45422414ba627b)
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/p6_m02_generator.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_m02_generator-9e55c18781b65081)
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/p6_m02_new_game.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_m02_new_game-4b54a4c319541f38)
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.13s
+     Running tests/p6_m02_quality.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_m02_quality-6555815337e62870)
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/p6_m02_tables.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_m02_tables-b313d9ede990c6cc)
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/p6_m03_centers.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_m03_centers-a7625928e46f9ff9)
+test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.06s
+     Running tests/p6_m03_earth.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_m03_earth-11b6f9d7d613b475)
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+     Running tests/p6_m03_edges.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_m03_edges-fa8d7a8f76d3b67b)
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+     Running tests/p6_m03_jsmath.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_m03_jsmath-fc0fad2cbfe2337a)
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.10s
+     Running tests/p6_m03_masks.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_m03_masks-54a880c0b017f178)
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 5.14s
+     Running tests/p6_m03_strait.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_m03_strait-11ec0b15e92bab02)
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/p6_m03_tables.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_m03_tables-38e8391b619770f7)
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/p6_m04_border.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_m04_border-ae4ed7f72f344d2b)
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.73s
+     Running tests/p6_m04_classify.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_m04_classify-c25d340391fbda61)
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.47s
+     Running tests/p6_m04_reapply.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_m04_reapply-6f7cbd5d88e751bd)
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.70s
+     Running tests/p6_m04_tables.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_m04_tables-1dbccdb81c509f94)
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/p6_m05a_cover.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_m05a_cover-c91acd72a35dbee3)
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 10.37s
+     Running tests/p6_m05a_masses.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_m05a_masses-059aa122deabb1c4)
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 13.34s
+     Running tests/p6_m05a_relief.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_m05a_relief-abbc165185bf0dd4)
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 9.76s
+     Running tests/p6_m05a_tables.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_m05a_tables-4b10d7b3b1e6ad62)
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.36s
+     Running tests/p6_m05b_grow.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_m05b_grow-5daa5969a07aa21b)
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.50s
+     Running tests/p6_m05b_helpers.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_m05b_helpers-2d559fd21f8a1cbb)
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.20s
+     Running tests/p6_m05b_tables.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_m05b_tables-0a7045e321d6ce42)
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.35s
+     Running tests/p6_m06a2_landsea.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_m06a2_landsea-75fca29f40dbb379)
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.18s
+     Running tests/p6_m06a3_climate.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_m06a3_climate-38993259c1730c04)
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.17s
+     Running tests/p6_m06a4_chan.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_m06a4_chan-265737f8a7d97eab)
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+     Running tests/p6_m06a4_jagged.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_m06a4_jagged-cd4a435b690c2ab5)
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.14s
+     Running tests/p6_m06a4_landsea.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_m06a4_landsea-ec83295e790287b0)
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.70s
+     Running tests/p6_m06a4_trim.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_m06a4_trim-38461afcb83df506)
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.33s
+     Running tests/p6_m06a5_landfrac.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_m06a5_landfrac-37cc5e0a359cfa1e)
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.12s
+     Running tests/p6_m06a5_landfrac_edge.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_m06a5_landfrac_edge-57238217b7fe3156)
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.11s
+     Running tests/p6_m06a6_pangea.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_m06a6_pangea-96822d2fe635d2bf)
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.66s
+     Running tests/p6_m06a7_annular.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_m06a7_annular-d7fb2019ccb28581)
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.09s
+     Running tests/p6_m06a8_landsea.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_m06a8_landsea-49a5b8d4dad97a57)
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.33s
+     Running tests/p6_m06a8_pomiary.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_m06a8_pomiary-e1b2fd655ac014ad)
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.08s
+     Running tests/p6_m06a9_edge.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_m06a9_edge-1f2e7a897d29d6e2)
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+     Running tests/p6_m06a9_landsea.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_m06a9_landsea-1d3ca2ccf820bf77)
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.99s
+     Running tests/p6_m06a_landsea.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_m06a_landsea-014b4bfe39cb84ad)
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.16s
+     Running tests/p6_m06b1_boundary.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_m06b1_boundary-4f5f638196674bea)
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s
+     Running tests/p6_m06b1_cap.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_m06b1_cap-6d2c1a6384fa10db)
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.48s
+     Running tests/p6_m06b1_coast.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_m06b1_coast-19809d97397e5c2c)
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.31s
+     Running tests/p6_m06b1_ocean.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_m06b1_ocean-051e580ea2329c8e)
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.51s
+     Running tests/p6_m06b1_overlay.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_m06b1_overlay-a21387cf7402e245)
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.49s
+     Running tests/p6_m06b1_tables.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_m06b1_tables-2d6e151df22d6d57)
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/p6_m06b2_enforce.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_m06b2_enforce-03faecc22fa06b9c)
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 21.52s
+     Running tests/p6_m06b2_finalize.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_m06b2_finalize-c00c20460d21ae91)
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 3.93s
+     Running tests/p6_m06b2_specks.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_m06b2_specks-639b456ee5ae939f)
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.09s
+     Running tests/p6_m06b2_tiny.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_m06b2_tiny-24abf7f09d31d92a)
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.69s
+     Running tests/p6_m09_rivals.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_m09_rivals-dc8aea05967d6fbf)
+test result: ok. 19 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 5.31s
+     Running tests/p6_m09_tables.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_m09_tables-6575914efddc577f)
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/p6_m10_masses.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_m10_masses-8e508f8ca826bd9e)
+test result: ok. 16 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 5.57s
+     Running tests/p6_m10_placement.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_m10_placement-6cf9cc21fee6aa0d)
+test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 6.47s
+     Running tests/p6_m10_start_scoring.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_m10_start_scoring-3a82dff6eea747f9)
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.65s
+     Running tests/p6_m10_tables.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_m10_tables-97223db4b7a3a78f)
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/p6_m10_v8sort.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_m10_v8sort-4748aa88c5fa0972)
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.37s
+     Running tests/p6_m11_gates.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_m11_gates-e40a2375770aa347)
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 3.12s
+     Running tests/p6_m11_integration.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_m11_integration-1497f615b39a128b)
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.07s
+     Running tests/p6_m11_layout.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_m11_layout-8f523e8b801e8190)
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 5.77s
+     Running tests/p6_m11_repair.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_m11_repair-9d55138cece6c4cb)
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 4.82s
+     Running tests/p6_m11_tables.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_m11_tables-58d2e6bfbd3899a5)
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/p6_m12_compute.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_m12_compute-b9c064b914925a9e)
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 91.20s
+     Running tests/p6_m12_integration.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_m12_integration-07f0c1d287ce6d4f)
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.70s
+     Running tests/p6_m12_spawn.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_m12_spawn-0da310c8da7e6ea5)
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 45.73s
+     Running tests/p6_m12_tables.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_m12_tables-9a13d7d634d12697)
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.09s
+     Running tests/p6_m14_range.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_m14_range-f780123b94119f8a)
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.13s
+     Running tests/p6_m14_territory.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_m14_territory-719cb275dc81837d)
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.11s
+     Running tests/p6_m14_wonder.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_m14_wonder-896ffaa487dc824e)
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.38s
+     Running tests/p6_m14_work.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_m14_work-b59797844ccc45fc)
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.31s
+     Running tests/p6_m15_roads.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_m15_roads-bad25e5ae7718eea)
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.14s
+     Running tests/p6_m16_divergence.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_m16_divergence-75461c8daed78f99)
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.86s
+     Running tests/p6_m16_doc.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_m16_doc-5393b7871454cf7a)
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/p6_m16_gallery.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_m16_gallery-390db8c07b0238ec)
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s
+     Running tests/p6_m16_qualifier.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_m16_qualifier-0f6ab2004e40a00e)
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 4.54s
+     Running tests/p6_m16_rules.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_m16_rules-e0a28fc0a7eb5ec4)
+test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.41s
+     Running tests/p6_m16_tables.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_m16_tables-be54aaf695f39ad4)
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+     Running tests/p6_m17_rebuild.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_m17_rebuild-ca8b459b94ade638)
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.20s
+     Running tests/p6_m17_serialize.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_m17_serialize-810595c29119180c)
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.14s
+     Running tests/p6_m17_validate.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_m17_validate-c3ab0a7d8e07689e)
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.13s
+     Running tests/p6_repin_a_costmult.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_repin_a_costmult-d555aae4983af55f)
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+     Running tests/p6_repin_b2_production.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_repin_b2_production-f9f727abdc8f8ff4)
+test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.42s
+     Running tests/p6_repin_b3_route.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_repin_b3_route-853f6cf62b54fccd)
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.10s
+     Running tests/p6_repin_b3_wealth.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_repin_b3_wealth-501eac8433eb80a8)
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+     Running tests/p6_repin_b_ration_era.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_repin_b_ration_era-fe459c2aaed491e2)
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
+     Running tests/p6_repin_b_recompute_era.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_repin_b_recompute_era-ecf6f61b898dd641)
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.21s
+     Running tests/p6_repin_c_construction.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_repin_c_construction-e97a616d89b5dae9)
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/p6_repin_wojna_2_battle_mode.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_repin_wojna_2_battle_mode-da759f89c92052ba)
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/p6_repin_wojna_2_generals.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_repin_wojna_2_generals-f608956110a8b4c8)
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.20s
+     Running tests/p6_repin_wojna_a_formation.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_repin_wojna_a_formation-4ca29f4f846118e5)
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.18s
+     Running tests/p6_repin_wojna_a_leadership.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_repin_wojna_a_leadership-e0da3e52f95a6e59)
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.11s
+     Running tests/p6_repin_wojna_a_promotion.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_repin_wojna_a_promotion-09200a4a61d19185)
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+     Running tests/p6_repin_wojna_b_ai_general.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_repin_wojna_b_ai_general-628fbc0b18b5c208)
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.41s
+     Running tests/p6_repin_wojna_b_army_consolidation.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_repin_wojna_b_army_consolidation-3a912c5d87240bb4)
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.32s
+     Running tests/p6_repin_wojna_c_move_range.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_repin_wojna_c_move_range-e03a44834e39a955)
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.34s
+     Running tests/p6_repin_wojna_c_war_brake.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/p6_repin_wojna_c_war_brake-f99d4aca9aa63060)
+test result: ok. 24 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.45s
+     Running tests/parity_suite.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/parity_suite-1877036d45ebff49)
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+     Running tests/pathfinding.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/pathfinding-5a96694b5ba00411)
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/playable_slice.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/playable_slice-0a3e336791aafa40)
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/recruitment.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/recruitment-0ab24ec44b5a405f)
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+     Running tests/replay.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/replay-e0590e9e6d38065e)
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/resource_production.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/resource_production-4b2b2685a4355ed7)
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/rng.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/rng-a7995a9cd23547f5)
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/road_movement_multipliers.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/road_movement_multipliers-8b6616908a631fa3)
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/save_load.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/save_load-6b44ed52d616e2b8)
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/smoke.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/smoke-3bfe417a96dc17e0)
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/state_dto.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/state_dto-13d39aa53afbe18a)
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/steam_adapter.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/steam_adapter-56312807def75b52)
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/structure_defense_max.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/structure_defense_max-54f4037b4955f4df)
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/terrain_movement_fix.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/terrain_movement_fix-db8179dd0b5e12f0)
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/trade.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/trade-1a1ae42178df3cce)
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/turn_economy.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/turn_economy-649806b2446b547a)
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/unit_epoch.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4-base/debug/deps/unit_epoch-cf4c81b6682df002)
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+   Doc-tests civ_engine
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+EXIT=0 (cargo test --no-fail-fast, pelny drzewo d961b14b4, czysty target)

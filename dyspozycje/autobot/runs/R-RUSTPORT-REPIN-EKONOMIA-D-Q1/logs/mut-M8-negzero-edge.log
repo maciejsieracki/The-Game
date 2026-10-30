@@ -1,0 +1,24 @@
+    Finished `test` profile [unoptimized] target(s) in 0.06s
+     Running tests/p6_repin_d_work_tax_edge.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-4/debug/deps/p6_repin_d_work_tax_edge-5550d3615f745f05)
+
+running 3 tests
+test edge_serialize_pending_work_tax_bitexact ... ok
+test edge_convert_work_pool_to_tax_bitexact ... ok
+test edge_tax_for_work_amount_bitexact ... FAILED
+
+failures:
+
+---- edge_tax_for_work_amount_bitexact stdout ----
+
+thread 'edge_tax_for_work_amount_bitexact' (16442) panicked at tests/p6_repin_d_work_tax_edge.rs:40:9:
+w={"f":"-0"} r={"f":"-0"} got=-0.0 exp=0.0
+stack backtrace:
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+
+failures:
+    edge_tax_for_work_amount_bitexact
+
+test result: FAILED. 2 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.14s
+
+error: test failed, to rerun pass `--test p6_repin_d_work_tax_edge`
