@@ -61,6 +61,11 @@ const MUTS = [
     from: 'pieniadz_total += 2.0;', to: 'pieniadz_total += 3.0;' },
   { id: 'Y12-biblioteka', file: 'src/domain/economy_yield.rs', test: R4,
     from: 'let biblioteka = if input.ma_biblioteka {', to: 'let biblioteka = if !input.ma_biblioteka {' },
+  // #1 loadEconParams: galezie odczytu wiersza trudnosci (read)
+  { id: 'L1-difficulty', file: 'src/domain/economy_city_params.rs', test: 'economy_city_vectors_r3',
+    from: '.and_then(|row| row.get(difficulty))', to: '.and_then(|row| row.get("normal"))' },
+  { id: 'L2-fallback', file: 'src/domain/economy_city_params.rs', test: 'economy_city_vectors_r3',
+    from: '.filter(|v| v.is_finite())\n        .unwrap_or(fallback)', to: '.filter(|v| v.is_finite())\n        .unwrap_or(0.0)' },
   // #22 corruptionRate (M6 i M2) - fixture r4 i fixture r2
   { id: 'M6-r4', file: 'src/domain/economy_city_fns.rs', test: R4,
     from: 'js_min(cap_pct, strata_pct) / 100.0', to: 'cap_pct.min(strata_pct) / 100.0' },
