@@ -1,13 +1,16 @@
 //! P6.8F - port czystych funkcji miejskich z `gra/src/game/economy.ts` (pin `91dc998a`),
 //! ktorych nie bylo w silniku (R-RUSTPORT-P6-8F-EKONOMIA-MIASTA-Q1, partia 8F-P1).
 //!
-//! web (`gra/src/game/economy.ts@91dc998a`):
-//! - `sumBuildingHappinessFromBuiltIds` (L556-566) -> [`sum_building_happiness_from_built_ids`]
-//! - `sumBuildingHappiness` (L571-577) -> [`sum_building_happiness`]
-//! - `cityBuildingEntriesFromBuiltIds` (L613-632) -> [`city_building_entries_from_built_ids`]
-//! - `productionProgress` (L1207-1240) -> [`production_progress`]
-//! - `corruptionRate` (L1246-1252) -> [`corruption_rate`]
-//! - `corruptionBuildingReduction` (L1279-1284) -> [`corruption_building_reduction`]
+//! web (`gra/src/game/economy.ts@91dc998a`, 1243 LOC; zakresy wg `^}` w pinie):
+//! - `sumBuildingHappinessFromBuiltIds` (L546-558) -> [`sum_building_happiness_from_built_ids`]
+//! - `sumBuildingHappiness` (L561-567) -> [`sum_building_happiness`]
+//! - `cityBuildingEntriesFromBuiltIds` (L589-609) -> [`city_building_entries_from_built_ids`]
+//! - `productionProgress` (L1151-1171) -> [`production_progress`]
+//! - `corruptionRate` (L1190-1199) -> [`corruption_rate`]
+//! - `corruptionBuildingReduction` (L1202-1229; stale stałe L1202-1211) -> [`corruption_building_reduction`]
+//!
+//! Dowod rownowaznosci: wektory z pinu (`tests/economy_city_vectors.rs`, plik
+//! `tests/fixtures/economy_city_vectors_91dc998a.json`), 2100 wektorow, bundle esbuild z pinu.
 //!
 //! ZALOZENIA (adaptacja typow, logika bez zmian):
 //! - `buildingGivesHappiness` / `buildingHappinessAtLevel` sa juz portem w
@@ -385,5 +388,59 @@ mod tests {
         // Duplikat w built_ids nie zwieksza redukcji (liczy sie stala lista budynkow).
         assert_eq!(corruption_building_reduction(&["sad", "sad"]), 0.30);
         assert_eq!(corruption_building_reduction(&["mury"]), 0.0);
+    }
+
+    #[test]
+    fn corruption_rate_nan_cap_propagates() {
+        // Web Math.min(NaN, x) = NaN: NaN w korupcjaCap nie moze zniknac (zabija mutacje js_min bez galezi NaN).
+        let p = CorruptionParams {
+            wspolczynnik_dystansu: 2.0,
+            wspolczynnik_miast: 1.0,
+            cap: f64::NAN,
+        };
+        assert!(corruption_rate(5.0, 2.0, p).is_nan());
+        assert!(corruption_rate(0.0, 0.0, p).is_nan());
+    }
+
+    #[test]
+    fn happiness_from_built_ids_duplicate_catalog_ids_use_first_entry() {
+        // Dwa wpisy o tym samym id: web `find` bierze PIERWSZY (zabija mutacje "ostatni wpis").
+        const SWIATYNIA_DRUGA: HappinessCatalogEntry<'static> = HappinessCatalogEntry {
+            id: "swiatynia",
+            daje_szczescie: true,
+            baza_zadowolenie: Some(7.0),
+            przyrost_zadowolenie: 0.0,
+        };
+        let catalog = [SZCZESCIE, SWIATYNIA_DRUGA];
+        let sum = sum_building_happiness_from_built_ids(&["swiatynia"], &catalog, |_| 1.0);
+        // Pierwszy wpis: 1 + 2 = 3 (drugi dalby 1 + 7 = 8).
+        assert_eq!(sum, 3.0);
+    }
+
+    #[test]
+    fn city_entries_duplicate_catalog_ids_use_first_entry() {
+        let catalog = [
+            BuildingLevelCatalogEntry {
+                id: "a",
+                epoka_wejscia: 1.0,
+                maks_poziom: 3.0,
+                poziom_tech_gate: None,
+            },
+            BuildingLevelCatalogEntry {
+                id: "a",
+                epoka_wejscia: 2.0,
+                maks_poziom: 1.0,
+                poziom_tech_gate: None,
+            },
+        ];
+        let out = city_building_entries_from_built_ids(&["a"], &catalog, 3.0, None);
+        // Pierwszy wpis (indeks 0, poziom 3). Ostatni dalby indeks 1, poziom 1.
+        assert_eq!(
+            out,
+            vec![CityBuildingLevel {
+                catalog_index: 0,
+                level: 3.0
+            }]
+        );
     }
 }
