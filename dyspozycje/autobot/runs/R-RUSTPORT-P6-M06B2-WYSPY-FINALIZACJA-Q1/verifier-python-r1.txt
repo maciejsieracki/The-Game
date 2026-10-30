@@ -1,0 +1,14 @@
+{
+ "progi_ts": {
+  "pangea": 10,
+  "kontynenty": 8,
+  "wyspy": 4,
+  "ziemia": 6
+ },
+ "minTyp": 4,
+ "removeTiny": 544,
+ "countSpecks": 20,
+ "purgeSpecks": 20,
+ "rozbieznosci": 0,
+ "przyklady": []
+}

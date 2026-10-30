@@ -15,6 +15,7 @@ pub const WEB_CASES_TINY: &str = include_str!("web-tiny.json");
 pub const WEB_CASES_SPECKS: &str = include_str!("web-specks.json");
 pub const WEB_CASES_FINALIZE: &str = include_str!("web-finalize.json");
 pub const WEB_CASES_ENFORCE: &str = include_str!("web-enforce.json");
+pub const WEB_CASES_ENFORCE_PROBE: &str = include_str!("web-enforce-probe.json");
 
 /// Parsuje plik wektorow (raz na test).
 pub fn load(text: &str) -> Value {

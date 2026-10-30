@@ -346,6 +346,104 @@ for (const mi of enfMaps) {
   bump('enf_mapy');
 }
 
+// ===== 5. Sondy granic (plik web-enforce-probe.json) =====
+// (a) Rownosc granicy tolerancji: |land - targetLand| === tolHexes po pierwszym etapie (wypelnienie,
+//     granica, wybrzeze 1 przebieg). Cel = m/total daje targetLand = m dokladnie. Sonda liczy etap
+//     pierwszy funkcjami weba; wektor zapisuje PRAWDZIWE wyjscie enforceTargetDryLandFraction.
+// (b) Klamp gorny: cele 0.9 / 0.95 / 0.99 (dla kazdego klampu 0.85 vs 0.86 inna tolerancja decyzji).
+// Mapy o duzej pojemnosci lądu (0.85-0.95 lądu): dopiero na nich wypelnienie dochodzi do celu > 0.85.
+const lhMaps = [];
+for (let i = 0; i < 6; i++) {
+  const mi = addMap(blobRows(18, 18, [0.85, 0.9, 0.95][i % 3], OPTS[i % 3]));
+  maps[mi].scores = mapRows(mi).map(() => Math.round(rnd() * 1000) / 1000);
+  lhMaps.push(mi);
+}
+const probeMaps = [...enfMaps, ...lhMaps];
+const probeCases = [];
+const probeHits = {};
+const probeBump = (k) => {
+  probeHits[k] = (probeHits[k] ?? 0) + 1;
+};
+for (const mi of probeMaps) {
+  const W = maps[mi].W;
+  const H = maps[mi].H;
+  const total = mapRows(mi).length;
+  const scoreMapP = () => new Map(mapRows(mi).map((row, i) => [row[0], maps[mi].scores[i]]));
+  const minScore = 0.11;
+  for (const tol of [2, 3, 4]) {
+    const tolHexes = Math.max(1, Math.round((total * tol) / 100));
+    for (const bias of ['center', 'mask']) {
+      let found = 0;
+      const lo = Math.ceil(0.15 * total);
+      const hi = Math.floor(0.85 * total);
+      for (let m = lo; m <= hi && found < 4; m++) {
+        const target = m / total;
+        const hx = buildObj(mapRows(mi));
+        G.applyLandFractionByScore(hx, scoreMapP(), target, W, H, bias, minScore);
+        G.enforceMapBorderOcean(hx, W, H);
+        G.finalizeCoastAndInlandWater(hx, W, H, 1, undefined);
+        G.enforceMapBorderOcean(hx, W, H);
+        const land = G.countLandSeaHexes(hx).land;
+        if (Math.abs(land - m) === tolHexes) {
+          const res = runOn(mi, (h2) => G.enforceTargetDryLandFraction(h2, scoreMapP(), target, W, H, undefined, tol, bias));
+          probeCases.push({ id: `enfprobe-eq-${mi}-m${m}-tol${tol}-${bias}`, mi, W, H, target, tol, bias, sonda: 'rownosc-granicy', out: { ret: res.ret, diff: res.diff } });
+          probeBump(`rownosc_granicy_tol${tol}_${bias}`);
+          found++;
+        }
+      }
+    }
+  }
+  // (c) Decyzja klampu gornego: |land1 - tl(0.85)| > tol i |land1 - tl(0.86)| > tol daja rozne galezie.
+  // Tolerancja w heksach T = 2..40 (tol = T*100/total daje tolHexes = T dokladnie). Cel 0.86: tlO = tl(0.85),
+  // tlM = tl(0.86) roznia sie o kilka heksow; okno decyzji istnieje dla T w [|land1-tlO|, |land1-tlM|).
+  for (const bias of ['center', 'mask']) {
+    // Dla `mask` zawezamy kandydatow progiem minMaskFillScore (0.5 / 0.9): niedobor lądu -> okno decyzji.
+    for (const ms of bias === 'mask' ? [minScore, 0.5, 0.9] : [minScore]) {
+      let found = 0;
+      for (let T = 2; T <= Math.round(total * 0.4) && found < 2; T++) {
+        const tol = (T * 100) / total;
+        const tolHexes = Math.max(1, Math.round((total * tol) / 100));
+        const target = 0.86;
+        const hx = buildObj(mapRows(mi));
+        G.applyLandFractionByScore(hx, scoreMapP(), Math.min(0.85, target), W, H, bias, ms);
+        G.enforceMapBorderOcean(hx, W, H);
+        G.finalizeCoastAndInlandWater(hx, W, H, 1, undefined);
+        G.enforceMapBorderOcean(hx, W, H);
+        const land1 = G.countLandSeaHexes(hx).land;
+        const tlO = Math.round(total * Math.min(0.85, target));
+        const tlM = Math.round(total * Math.min(0.86, target));
+        const dO = Math.abs(land1 - tlO) > tolHexes;
+        const dM = Math.abs(land1 - tlM) > tolHexes;
+        if (dO !== dM) {
+          const res = runOn(mi, (h2) => G.enforceTargetDryLandFraction(h2, scoreMapP(), target, W, H, undefined, tol, bias, ms));
+          probeCases.push({ id: `enfprobe-klamp-decyzja-${mi}-T${tolHexes}-${bias}-ms${ms}`, mi, W, H, target, tol, bias, minScore: ms, sonda: 'klamp-decyzja', out: { ret: res.ret, diff: res.diff } });
+          probeBump(`klamp_decyzja_${bias}_ms${ms}`);
+          found++;
+        }
+      }
+    }
+  }
+  for (const tol of [2, 3, 4]) {
+    for (const bias of ['center', 'mask']) {
+      for (const target of [0.9, 0.95, 0.99]) {
+        const res = runOn(mi, (h2) => G.enforceTargetDryLandFraction(h2, scoreMapP(), target, W, H, undefined, tol, bias));
+        probeCases.push({ id: `enfprobe-clamp-${mi}-t${target}-tol${tol}-${bias}`, mi, W, H, target, tol, bias, sonda: 'klamp-gorny', out: { ret: res.ret, diff: res.diff } });
+        probeBump('klamp_gorny');
+      }
+    }
+  }
+}
+{
+  const probePos = new Map(probeMaps.map((mi, j) => [mi, j]));
+  const payload = {
+    meta: { pin_web: 'edb8fb56', temat: 'R-RUSTPORT-P6-M06B2-WYSPY-FINALIZACJA-Q1', plik: 'web-enforce-probe.json', generator: 'gen-m06b2-vectors.mjs' },
+    cases: { enforceProbe: probeCases.map((c) => ({ ...c, mi: probePos.get(c.mi) })) },
+    maps: probeMaps.map((mi) => maps[mi]),
+    stats: probeHits,
+  };
+  write('web-enforce-probe.json', payload);
+}
+
 // Zapis: kazdy plik osobno (limit 6 MB na plik wektorow).
 function write(name, payload) {
   const text = JSON.stringify(payload);

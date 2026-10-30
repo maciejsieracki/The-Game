@@ -16,7 +16,7 @@ use civ_engine::domain::mapgen::landsea::{
 };
 use common::{
     build_map, cases, check_input, dims, dump, expected_state, load, map_index, map_rows,
-    map_scores, s, WEB_CASES_ENFORCE,
+    map_scores, s, WEB_CASES_ENFORCE, WEB_CASES_ENFORCE_PROBE,
 };
 use serde_json::Value;
 
@@ -61,36 +61,70 @@ fn run(r: &Value, idx: usize, target: f64, tol: f64, fill: &str) -> (usize, Valu
     (ret, dump(&hx))
 }
 
+/// Sprawdza jeden przypadek wektorowy (wejscie = mapa, wyjscie = zwrot + stan wzgledem weba).
+fn check_case(r: &Value, c: &Value) {
+    let id = c["id"].as_str().unwrap_or("?");
+    let idx = map_index(c);
+    check_input(r, idx, id);
+    let (w, h) = dims(c);
+    let mut hx = build_map(r, idx);
+    // `minScore` obecny tylko w sondach (domyslnie = PANGEA_LAND_FILL_MIN_SCORE z JSON).
+    let min_score = c["minScore"]
+        .as_f64()
+        .unwrap_or_else(|| mapgen_landsea_fill().pangea_min_score_wypelnienia);
+    let ret = enforce_target_dry_land_fraction(
+        &mut hx,
+        &scores(r, idx),
+        c["target"].as_f64().expect("target"),
+        w,
+        h,
+        None,
+        c["tol"].as_f64().expect("tol"),
+        bias(s(&c["bias"])),
+        min_score,
+    );
+    let out = &c["out"];
+    assert_eq!(ret as u64, out["ret"].as_u64().expect("ret"), "{id}: zwrot");
+    assert_eq!(
+        dump(&hx),
+        expected_state(r, idx, &out["diff"]),
+        "{id}: stan"
+    );
+}
+
 #[test]
 fn enforce_target_dry_land_fraction_matches_web() {
     let r = root();
     let cs = cases(&r, "enforce");
     assert!(cs.len() >= 400, "za malo przypadkow enforce: {}", cs.len());
     for c in cs {
-        let id = c["id"].as_str().unwrap_or("?");
-        let idx = map_index(c);
-        check_input(&r, idx, id);
-        let (w, h) = dims(c);
-        let mut hx = build_map(&r, idx);
-        let min_score = mapgen_landsea_fill().pangea_min_score_wypelnienia;
-        let ret = enforce_target_dry_land_fraction(
-            &mut hx,
-            &scores(&r, idx),
-            c["target"].as_f64().expect("target"),
-            w,
-            h,
-            None,
-            c["tol"].as_f64().expect("tol"),
-            bias(s(&c["bias"])),
-            min_score,
-        );
-        let out = &c["out"];
-        assert_eq!(ret as u64, out["ret"].as_u64().expect("ret"), "{id}: zwrot");
-        assert_eq!(
-            dump(&hx),
-            expected_state(&r, idx, &out["diff"]),
-            "{id}: stan"
-        );
+        check_case(&r, c);
+    }
+}
+
+/// Sondy granic (plik `web-enforce-probe.json`): rownosc |land - targetLand| === tolHexes po pierwszym
+/// etapie (kasuje mutacje `>` -> `>=`) oraz cele powyzej klampu 0.85 (kasuje zmiane klampu).
+#[test]
+fn enforce_probe_matches_web() {
+    let r = load(WEB_CASES_ENFORCE_PROBE);
+    let cs = cases(&r, "enforceProbe");
+    let rown = cs
+        .iter()
+        .filter(|c| c["sonda"].as_str() == Some("rownosc-granicy"))
+        .count();
+    let klamp = cs
+        .iter()
+        .filter(|c| c["sonda"].as_str() == Some("klamp-gorny"))
+        .count();
+    assert!(rown >= 50, "za malo sond rownosci granicy: {rown}");
+    assert!(klamp >= 100, "za malo sond klampu: {klamp}");
+    let decyzja = cs
+        .iter()
+        .filter(|c| c["sonda"].as_str() == Some("klamp-decyzja"))
+        .count();
+    assert!(decyzja >= 10, "za malo sond decyzji klampu: {decyzja}");
+    for c in cs {
+        check_case(&r, c);
     }
 }
 
