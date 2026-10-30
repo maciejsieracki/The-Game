@@ -1,0 +1,9811 @@
+{
+ "_opis": "P6.8D-P2 mennica-zloto-grace.ts - wektory z weba, pin 91dc998a5f1b51ad29e0f4785edfd45655445c53",
+ "_pin": "91dc998a5f1b51ad29e0f4785edfd45655445c53",
+ "constants": {
+  "MENNICA_ZLOTO_GRACE_TURNS": 1,
+  "DEFAULT_PARAMS": {
+   "zlotoDeficytStatMult": {
+    "$f": "0.75"
+   },
+   "zlotoDeficytKarencjaTur": 3,
+   "zlotoDeficytHpFrac": {
+    "$f": "0.08"
+   }
+  }
+ },
+ "cases": [
+  {
+   "name": "utrataJednaTura",
+   "owners": [
+    1,
+    2,
+    3
+   ],
+   "steps": [
+    {
+     "access": {
+      "1": true,
+      "2": true,
+      "3": false
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       true
+      ],
+      [
+       2,
+       true
+      ],
+      [
+       3,
+       false
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ],
+       [
+        2,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        true
+       ],
+       [
+        2,
+        true
+       ],
+       [
+        3,
+        false
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": false,
+      "2": true,
+      "3": false
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       true
+      ],
+      [
+       2,
+       true
+      ],
+      [
+       3,
+       false
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       1
+      ],
+      [
+       2,
+       0
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ],
+       [
+        2,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        false
+       ],
+       [
+        2,
+        true
+       ],
+       [
+        3,
+        false
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": true,
+      "2": true,
+      "3": false
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       true
+      ],
+      [
+       2,
+       true
+      ],
+      [
+       3,
+       false
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ],
+       [
+        2,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        true
+       ],
+       [
+        2,
+        true
+       ],
+       [
+        3,
+        false
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": false,
+      "2": false,
+      "3": false
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       true
+      ],
+      [
+       2,
+       true
+      ],
+      [
+       3,
+       false
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       1
+      ],
+      [
+       2,
+       1
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ],
+       [
+        2,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        false
+       ],
+       [
+        2,
+        false
+       ],
+       [
+        3,
+        false
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": false,
+      "2": true,
+      "3": false
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       false
+      ],
+      [
+       2,
+       true
+      ],
+      [
+       3,
+       false
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ],
+       [
+        2,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        false
+       ],
+       [
+        2,
+        true
+       ],
+       [
+        3,
+        false
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": false,
+      "2": true,
+      "3": false
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       false
+      ],
+      [
+       2,
+       true
+      ],
+      [
+       3,
+       false
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ],
+       [
+        2,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        false
+       ],
+       [
+        2,
+        true
+       ],
+       [
+        3,
+        false
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": true,
+      "2": false,
+      "3": false
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       true
+      ],
+      [
+       2,
+       true
+      ],
+      [
+       3,
+       false
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       1
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ],
+       [
+        2,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        true
+       ],
+       [
+        2,
+        false
+       ],
+       [
+        3,
+        false
+       ]
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "utrataDwieTury",
+   "owners": [
+    1,
+    2,
+    3
+   ],
+   "steps": [
+    {
+     "access": {
+      "1": true,
+      "2": false,
+      "3": false
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       true
+      ],
+      [
+       2,
+       false
+      ],
+      [
+       3,
+       false
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       0
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        true
+       ],
+       [
+        2,
+        false
+       ],
+       [
+        3,
+        false
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": false,
+      "2": false,
+      "3": false
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       true
+      ],
+      [
+       2,
+       false
+      ],
+      [
+       3,
+       false
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       1
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        false
+       ],
+       [
+        2,
+        false
+       ],
+       [
+        3,
+        false
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": false,
+      "2": false,
+      "3": false
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       false
+      ],
+      [
+       2,
+       false
+      ],
+      [
+       3,
+       false
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       0
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        false
+       ],
+       [
+        2,
+        false
+       ],
+       [
+        3,
+        false
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": true,
+      "2": false,
+      "3": false
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       true
+      ],
+      [
+       2,
+       false
+      ],
+      [
+       3,
+       false
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       0
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        true
+       ],
+       [
+        2,
+        false
+       ],
+       [
+        3,
+        false
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": false,
+      "2": false,
+      "3": false
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       true
+      ],
+      [
+       2,
+       false
+      ],
+      [
+       3,
+       false
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       1
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        false
+       ],
+       [
+        2,
+        false
+       ],
+       [
+        3,
+        false
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": false,
+      "2": false,
+      "3": false
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       false
+      ],
+      [
+       2,
+       false
+      ],
+      [
+       3,
+       false
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       0
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        false
+       ],
+       [
+        2,
+        false
+       ],
+       [
+        3,
+        false
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": false,
+      "2": false,
+      "3": false
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       false
+      ],
+      [
+       2,
+       false
+      ],
+      [
+       3,
+       false
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       0
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        false
+       ],
+       [
+        2,
+        false
+       ],
+       [
+        3,
+        false
+       ]
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "nigdyDostep",
+   "owners": [
+    1,
+    2,
+    3
+   ],
+   "steps": [
+    {
+     "access": {
+      "1": false,
+      "2": false,
+      "3": false
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       false
+      ],
+      [
+       2,
+       false
+      ],
+      [
+       3,
+       false
+      ]
+     ],
+     "afterPrepareGrace": [],
+     "serialized": {
+      "graceTurnsLeft": [],
+      "hadAccessLastTurn": [
+       [
+        1,
+        false
+       ],
+       [
+        2,
+        false
+       ],
+       [
+        3,
+        false
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": false,
+      "2": false,
+      "3": false
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       false
+      ],
+      [
+       2,
+       false
+      ],
+      [
+       3,
+       false
+      ]
+     ],
+     "afterPrepareGrace": [],
+     "serialized": {
+      "graceTurnsLeft": [],
+      "hadAccessLastTurn": [
+       [
+        1,
+        false
+       ],
+       [
+        2,
+        false
+       ],
+       [
+        3,
+        false
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": false,
+      "2": false,
+      "3": false
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       false
+      ],
+      [
+       2,
+       false
+      ],
+      [
+       3,
+       false
+      ]
+     ],
+     "afterPrepareGrace": [],
+     "serialized": {
+      "graceTurnsLeft": [],
+      "hadAccessLastTurn": [
+       [
+        1,
+        false
+       ],
+       [
+        2,
+        false
+       ],
+       [
+        3,
+        false
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": false,
+      "2": false,
+      "3": false
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       false
+      ],
+      [
+       2,
+       false
+      ],
+      [
+       3,
+       false
+      ]
+     ],
+     "afterPrepareGrace": [],
+     "serialized": {
+      "graceTurnsLeft": [],
+      "hadAccessLastTurn": [
+       [
+        1,
+        false
+       ],
+       [
+        2,
+        false
+       ],
+       [
+        3,
+        false
+       ]
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "zawszeDostep",
+   "owners": [
+    1,
+    2,
+    3
+   ],
+   "steps": [
+    {
+     "access": {
+      "1": true,
+      "2": false,
+      "3": false
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       true
+      ],
+      [
+       2,
+       false
+      ],
+      [
+       3,
+       false
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       0
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        true
+       ],
+       [
+        2,
+        false
+       ],
+       [
+        3,
+        false
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": true,
+      "2": false,
+      "3": false
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       true
+      ],
+      [
+       2,
+       false
+      ],
+      [
+       3,
+       false
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       0
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        true
+       ],
+       [
+        2,
+        false
+       ],
+       [
+        3,
+        false
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": true,
+      "2": false,
+      "3": false
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       true
+      ],
+      [
+       2,
+       false
+      ],
+      [
+       3,
+       false
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       0
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        true
+       ],
+       [
+        2,
+        false
+       ],
+       [
+        3,
+        false
+       ]
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "brakMigawki",
+   "owners": [
+    1,
+    2,
+    3
+   ],
+   "steps": [
+    {
+     "access": {
+      "1": false,
+      "2": false,
+      "3": false
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       false
+      ],
+      [
+       2,
+       false
+      ],
+      [
+       3,
+       false
+      ]
+     ],
+     "afterPrepareGrace": [],
+     "serialized": {
+      "graceTurnsLeft": [],
+      "hadAccessLastTurn": [
+       [
+        1,
+        false
+       ],
+       [
+        2,
+        false
+       ],
+       [
+        3,
+        false
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": false,
+      "2": true,
+      "3": false
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       false
+      ],
+      [
+       2,
+       true
+      ],
+      [
+       3,
+       false
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       2,
+       0
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        2,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        false
+       ],
+       [
+        2,
+        true
+       ],
+       [
+        3,
+        false
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": true,
+      "2": false,
+      "3": false
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       true
+      ],
+      [
+       2,
+       true
+      ],
+      [
+       3,
+       false
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       1
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ],
+       [
+        2,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        true
+       ],
+       [
+        2,
+        false
+       ],
+       [
+        3,
+        false
+       ]
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "losowy1",
+   "owners": [
+    1,
+    2,
+    3
+   ],
+   "steps": [
+    {
+     "access": {
+      "1": true,
+      "2": true,
+      "3": true
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       true
+      ],
+      [
+       2,
+       true
+      ],
+      [
+       3,
+       true
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       3,
+       0
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ],
+       [
+        2,
+        0
+       ],
+       [
+        3,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        true
+       ],
+       [
+        2,
+        true
+       ],
+       [
+        3,
+        true
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": false,
+      "2": true,
+      "3": true
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       true
+      ],
+      [
+       2,
+       true
+      ],
+      [
+       3,
+       true
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       1
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       3,
+       0
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ],
+       [
+        2,
+        0
+       ],
+       [
+        3,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        false
+       ],
+       [
+        2,
+        true
+       ],
+       [
+        3,
+        true
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": false,
+      "2": true,
+      "3": true
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       false
+      ],
+      [
+       2,
+       true
+      ],
+      [
+       3,
+       true
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       3,
+       0
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ],
+       [
+        2,
+        0
+       ],
+       [
+        3,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        false
+       ],
+       [
+        2,
+        true
+       ],
+       [
+        3,
+        true
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": false,
+      "2": true,
+      "3": true
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       false
+      ],
+      [
+       2,
+       true
+      ],
+      [
+       3,
+       true
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       3,
+       0
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ],
+       [
+        2,
+        0
+       ],
+       [
+        3,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        false
+       ],
+       [
+        2,
+        true
+       ],
+       [
+        3,
+        true
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": true,
+      "2": false,
+      "3": true
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       true
+      ],
+      [
+       2,
+       true
+      ],
+      [
+       3,
+       true
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       3,
+       0
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ],
+       [
+        2,
+        0
+       ],
+       [
+        3,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        true
+       ],
+       [
+        2,
+        false
+       ],
+       [
+        3,
+        true
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": false,
+      "2": false,
+      "3": true
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       true
+      ],
+      [
+       2,
+       false
+      ],
+      [
+       3,
+       true
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       1
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       3,
+       0
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ],
+       [
+        2,
+        0
+       ],
+       [
+        3,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        false
+       ],
+       [
+        2,
+        false
+       ],
+       [
+        3,
+        true
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": false,
+      "2": true,
+      "3": true
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       false
+      ],
+      [
+       2,
+       true
+      ],
+      [
+       3,
+       true
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       3,
+       0
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ],
+       [
+        2,
+        0
+       ],
+       [
+        3,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        false
+       ],
+       [
+        2,
+        true
+       ],
+       [
+        3,
+        true
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": true,
+      "2": true,
+      "3": true
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       true
+      ],
+      [
+       2,
+       true
+      ],
+      [
+       3,
+       true
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       3,
+       0
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ],
+       [
+        2,
+        0
+       ],
+       [
+        3,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        true
+       ],
+       [
+        2,
+        true
+       ],
+       [
+        3,
+        true
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": true,
+      "2": false,
+      "3": true
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       true
+      ],
+      [
+       2,
+       true
+      ],
+      [
+       3,
+       true
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       3,
+       0
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ],
+       [
+        2,
+        0
+       ],
+       [
+        3,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        true
+       ],
+       [
+        2,
+        false
+       ],
+       [
+        3,
+        true
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": true,
+      "2": true,
+      "3": false
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       true
+      ],
+      [
+       2,
+       true
+      ],
+      [
+       3,
+       true
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       3,
+       1
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ],
+       [
+        2,
+        0
+       ],
+       [
+        3,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        true
+       ],
+       [
+        2,
+        true
+       ],
+       [
+        3,
+        false
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": false,
+      "2": true,
+      "3": true
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       true
+      ],
+      [
+       2,
+       true
+      ],
+      [
+       3,
+       true
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       1
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       3,
+       0
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ],
+       [
+        2,
+        0
+       ],
+       [
+        3,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        false
+       ],
+       [
+        2,
+        true
+       ],
+       [
+        3,
+        true
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": false,
+      "2": true,
+      "3": true
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       false
+      ],
+      [
+       2,
+       true
+      ],
+      [
+       3,
+       true
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       3,
+       0
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ],
+       [
+        2,
+        0
+       ],
+       [
+        3,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        false
+       ],
+       [
+        2,
+        true
+       ],
+       [
+        3,
+        true
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": true,
+      "2": false,
+      "3": false
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       true
+      ],
+      [
+       2,
+       true
+      ],
+      [
+       3,
+       true
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       3,
+       1
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ],
+       [
+        2,
+        0
+       ],
+       [
+        3,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        true
+       ],
+       [
+        2,
+        false
+       ],
+       [
+        3,
+        false
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": false,
+      "2": false,
+      "3": false
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       true
+      ],
+      [
+       2,
+       false
+      ],
+      [
+       3,
+       false
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       1
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       3,
+       0
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ],
+       [
+        2,
+        0
+       ],
+       [
+        3,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        false
+       ],
+       [
+        2,
+        false
+       ],
+       [
+        3,
+        false
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": true,
+      "2": true,
+      "3": false
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       true
+      ],
+      [
+       2,
+       true
+      ],
+      [
+       3,
+       false
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       3,
+       0
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ],
+       [
+        2,
+        0
+       ],
+       [
+        3,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        true
+       ],
+       [
+        2,
+        true
+       ],
+       [
+        3,
+        false
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": true,
+      "2": true,
+      "3": true
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       true
+      ],
+      [
+       2,
+       true
+      ],
+      [
+       3,
+       true
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       3,
+       0
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ],
+       [
+        2,
+        0
+       ],
+       [
+        3,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        true
+       ],
+       [
+        2,
+        true
+       ],
+       [
+        3,
+        true
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": true,
+      "2": false,
+      "3": true
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       true
+      ],
+      [
+       2,
+       true
+      ],
+      [
+       3,
+       true
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       3,
+       0
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ],
+       [
+        2,
+        0
+       ],
+       [
+        3,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        true
+       ],
+       [
+        2,
+        false
+       ],
+       [
+        3,
+        true
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": true,
+      "2": false,
+      "3": true
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       true
+      ],
+      [
+       2,
+       false
+      ],
+      [
+       3,
+       true
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       3,
+       0
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ],
+       [
+        2,
+        0
+       ],
+       [
+        3,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        true
+       ],
+       [
+        2,
+        false
+       ],
+       [
+        3,
+        true
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": false,
+      "2": true,
+      "3": true
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       true
+      ],
+      [
+       2,
+       true
+      ],
+      [
+       3,
+       true
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       1
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       3,
+       0
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ],
+       [
+        2,
+        0
+       ],
+       [
+        3,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        false
+       ],
+       [
+        2,
+        true
+       ],
+       [
+        3,
+        true
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": true,
+      "2": true,
+      "3": true
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       true
+      ],
+      [
+       2,
+       true
+      ],
+      [
+       3,
+       true
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       3,
+       0
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ],
+       [
+        2,
+        0
+       ],
+       [
+        3,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        true
+       ],
+       [
+        2,
+        true
+       ],
+       [
+        3,
+        true
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": false,
+      "2": true,
+      "3": true
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       true
+      ],
+      [
+       2,
+       true
+      ],
+      [
+       3,
+       true
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       1
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       3,
+       0
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ],
+       [
+        2,
+        0
+       ],
+       [
+        3,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        false
+       ],
+       [
+        2,
+        true
+       ],
+       [
+        3,
+        true
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": false,
+      "2": false,
+      "3": false
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       false
+      ],
+      [
+       2,
+       true
+      ],
+      [
+       3,
+       true
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       3,
+       1
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ],
+       [
+        2,
+        0
+       ],
+       [
+        3,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        false
+       ],
+       [
+        2,
+        false
+       ],
+       [
+        3,
+        false
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": true,
+      "2": true,
+      "3": false
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       true
+      ],
+      [
+       2,
+       true
+      ],
+      [
+       3,
+       false
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       3,
+       0
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ],
+       [
+        2,
+        0
+       ],
+       [
+        3,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        true
+       ],
+       [
+        2,
+        true
+       ],
+       [
+        3,
+        false
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": false,
+      "2": true,
+      "3": true
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       true
+      ],
+      [
+       2,
+       true
+      ],
+      [
+       3,
+       true
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       1
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       3,
+       0
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ],
+       [
+        2,
+        0
+       ],
+       [
+        3,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        false
+       ],
+       [
+        2,
+        true
+       ],
+       [
+        3,
+        true
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": false,
+      "2": false,
+      "3": false
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       false
+      ],
+      [
+       2,
+       true
+      ],
+      [
+       3,
+       true
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       3,
+       1
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ],
+       [
+        2,
+        0
+       ],
+       [
+        3,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        false
+       ],
+       [
+        2,
+        false
+       ],
+       [
+        3,
+        false
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": true,
+      "2": true,
+      "3": true
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       true
+      ],
+      [
+       2,
+       true
+      ],
+      [
+       3,
+       true
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       3,
+       0
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ],
+       [
+        2,
+        0
+       ],
+       [
+        3,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        true
+       ],
+       [
+        2,
+        true
+       ],
+       [
+        3,
+        true
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": false,
+      "2": false,
+      "3": false
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       true
+      ],
+      [
+       2,
+       true
+      ],
+      [
+       3,
+       true
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       1
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       3,
+       1
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ],
+       [
+        2,
+        0
+       ],
+       [
+        3,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        false
+       ],
+       [
+        2,
+        false
+       ],
+       [
+        3,
+        false
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": true,
+      "2": true,
+      "3": true
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       true
+      ],
+      [
+       2,
+       true
+      ],
+      [
+       3,
+       true
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       3,
+       0
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ],
+       [
+        2,
+        0
+       ],
+       [
+        3,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        true
+       ],
+       [
+        2,
+        true
+       ],
+       [
+        3,
+        true
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": true,
+      "2": true,
+      "3": false
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       true
+      ],
+      [
+       2,
+       true
+      ],
+      [
+       3,
+       true
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       3,
+       1
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ],
+       [
+        2,
+        0
+       ],
+       [
+        3,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        true
+       ],
+       [
+        2,
+        true
+       ],
+       [
+        3,
+        false
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": true,
+      "2": false,
+      "3": true
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       true
+      ],
+      [
+       2,
+       true
+      ],
+      [
+       3,
+       true
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       3,
+       0
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ],
+       [
+        2,
+        0
+       ],
+       [
+        3,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        true
+       ],
+       [
+        2,
+        false
+       ],
+       [
+        3,
+        true
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": false,
+      "2": false,
+      "3": true
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       true
+      ],
+      [
+       2,
+       false
+      ],
+      [
+       3,
+       true
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       1
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       3,
+       0
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ],
+       [
+        2,
+        0
+       ],
+       [
+        3,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        false
+       ],
+       [
+        2,
+        false
+       ],
+       [
+        3,
+        true
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": true,
+      "2": true,
+      "3": true
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       true
+      ],
+      [
+       2,
+       true
+      ],
+      [
+       3,
+       true
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       3,
+       0
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ],
+       [
+        2,
+        0
+       ],
+       [
+        3,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        true
+       ],
+       [
+        2,
+        true
+       ],
+       [
+        3,
+        true
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": false,
+      "2": false,
+      "3": true
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       true
+      ],
+      [
+       2,
+       true
+      ],
+      [
+       3,
+       true
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       1
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       3,
+       0
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ],
+       [
+        2,
+        0
+       ],
+       [
+        3,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        false
+       ],
+       [
+        2,
+        false
+       ],
+       [
+        3,
+        true
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": true,
+      "2": false,
+      "3": true
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       true
+      ],
+      [
+       2,
+       false
+      ],
+      [
+       3,
+       true
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       3,
+       0
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ],
+       [
+        2,
+        0
+       ],
+       [
+        3,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        true
+       ],
+       [
+        2,
+        false
+       ],
+       [
+        3,
+        true
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": true,
+      "2": true,
+      "3": false
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       true
+      ],
+      [
+       2,
+       true
+      ],
+      [
+       3,
+       true
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       3,
+       1
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ],
+       [
+        2,
+        0
+       ],
+       [
+        3,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        true
+       ],
+       [
+        2,
+        true
+       ],
+       [
+        3,
+        false
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": true,
+      "2": true,
+      "3": true
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       true
+      ],
+      [
+       2,
+       true
+      ],
+      [
+       3,
+       true
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       3,
+       0
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ],
+       [
+        2,
+        0
+       ],
+       [
+        3,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        true
+       ],
+       [
+        2,
+        true
+       ],
+       [
+        3,
+        true
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": true,
+      "2": false,
+      "3": true
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       true
+      ],
+      [
+       2,
+       true
+      ],
+      [
+       3,
+       true
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       3,
+       0
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ],
+       [
+        2,
+        0
+       ],
+       [
+        3,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        true
+       ],
+       [
+        2,
+        false
+       ],
+       [
+        3,
+        true
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": false,
+      "2": true,
+      "3": false
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       true
+      ],
+      [
+       2,
+       true
+      ],
+      [
+       3,
+       true
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       1
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       3,
+       1
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ],
+       [
+        2,
+        0
+       ],
+       [
+        3,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        false
+       ],
+       [
+        2,
+        true
+       ],
+       [
+        3,
+        false
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": true,
+      "2": true,
+      "3": false
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       true
+      ],
+      [
+       2,
+       true
+      ],
+      [
+       3,
+       false
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       3,
+       0
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ],
+       [
+        2,
+        0
+       ],
+       [
+        3,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        true
+       ],
+       [
+        2,
+        true
+       ],
+       [
+        3,
+        false
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": false,
+      "2": false,
+      "3": true
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       true
+      ],
+      [
+       2,
+       true
+      ],
+      [
+       3,
+       true
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       1
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       3,
+       0
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ],
+       [
+        2,
+        0
+       ],
+       [
+        3,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        false
+       ],
+       [
+        2,
+        false
+       ],
+       [
+        3,
+        true
+       ]
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "losowy2",
+   "owners": [
+    1,
+    2,
+    3
+   ],
+   "steps": [
+    {
+     "access": {
+      "1": true,
+      "2": false,
+      "3": true
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       true
+      ],
+      [
+       2,
+       false
+      ],
+      [
+       3,
+       true
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       0
+      ],
+      [
+       3,
+       0
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ],
+       [
+        3,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        true
+       ],
+       [
+        2,
+        false
+       ],
+       [
+        3,
+        true
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": false,
+      "2": false,
+      "3": true
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       true
+      ],
+      [
+       2,
+       false
+      ],
+      [
+       3,
+       true
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       1
+      ],
+      [
+       3,
+       0
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ],
+       [
+        3,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        false
+       ],
+       [
+        2,
+        false
+       ],
+       [
+        3,
+        true
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": false,
+      "2": false,
+      "3": true
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       false
+      ],
+      [
+       2,
+       false
+      ],
+      [
+       3,
+       true
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       0
+      ],
+      [
+       3,
+       0
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ],
+       [
+        3,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        false
+       ],
+       [
+        2,
+        false
+       ],
+       [
+        3,
+        true
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": true,
+      "2": true,
+      "3": true
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       true
+      ],
+      [
+       2,
+       true
+      ],
+      [
+       3,
+       true
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       3,
+       0
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ],
+       [
+        2,
+        0
+       ],
+       [
+        3,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        true
+       ],
+       [
+        2,
+        true
+       ],
+       [
+        3,
+        true
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": true,
+      "2": true,
+      "3": true
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       true
+      ],
+      [
+       2,
+       true
+      ],
+      [
+       3,
+       true
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       3,
+       0
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ],
+       [
+        2,
+        0
+       ],
+       [
+        3,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        true
+       ],
+       [
+        2,
+        true
+       ],
+       [
+        3,
+        true
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": true,
+      "2": false,
+      "3": true
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       true
+      ],
+      [
+       2,
+       true
+      ],
+      [
+       3,
+       true
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       3,
+       0
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ],
+       [
+        2,
+        0
+       ],
+       [
+        3,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        true
+       ],
+       [
+        2,
+        false
+       ],
+       [
+        3,
+        true
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": false,
+      "2": false,
+      "3": true
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       true
+      ],
+      [
+       2,
+       false
+      ],
+      [
+       3,
+       true
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       1
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       3,
+       0
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ],
+       [
+        2,
+        0
+       ],
+       [
+        3,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        false
+       ],
+       [
+        2,
+        false
+       ],
+       [
+        3,
+        true
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": true,
+      "2": true,
+      "3": false
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       true
+      ],
+      [
+       2,
+       true
+      ],
+      [
+       3,
+       true
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       3,
+       1
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ],
+       [
+        2,
+        0
+       ],
+       [
+        3,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        true
+       ],
+       [
+        2,
+        true
+       ],
+       [
+        3,
+        false
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": true,
+      "2": false,
+      "3": true
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       true
+      ],
+      [
+       2,
+       true
+      ],
+      [
+       3,
+       true
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       3,
+       0
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ],
+       [
+        2,
+        0
+       ],
+       [
+        3,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        true
+       ],
+       [
+        2,
+        false
+       ],
+       [
+        3,
+        true
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": false,
+      "2": false,
+      "3": false
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       true
+      ],
+      [
+       2,
+       false
+      ],
+      [
+       3,
+       true
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       1
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       3,
+       1
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ],
+       [
+        2,
+        0
+       ],
+       [
+        3,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        false
+       ],
+       [
+        2,
+        false
+       ],
+       [
+        3,
+        false
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": true,
+      "2": true,
+      "3": false
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       true
+      ],
+      [
+       2,
+       true
+      ],
+      [
+       3,
+       false
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       3,
+       0
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ],
+       [
+        2,
+        0
+       ],
+       [
+        3,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        true
+       ],
+       [
+        2,
+        true
+       ],
+       [
+        3,
+        false
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": true,
+      "2": true,
+      "3": true
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       true
+      ],
+      [
+       2,
+       true
+      ],
+      [
+       3,
+       true
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       3,
+       0
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ],
+       [
+        2,
+        0
+       ],
+       [
+        3,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        true
+       ],
+       [
+        2,
+        true
+       ],
+       [
+        3,
+        true
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": false,
+      "2": false,
+      "3": true
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       true
+      ],
+      [
+       2,
+       true
+      ],
+      [
+       3,
+       true
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       1
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       3,
+       0
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ],
+       [
+        2,
+        0
+       ],
+       [
+        3,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        false
+       ],
+       [
+        2,
+        false
+       ],
+       [
+        3,
+        true
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": false,
+      "2": true,
+      "3": false
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       false
+      ],
+      [
+       2,
+       true
+      ],
+      [
+       3,
+       true
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       3,
+       1
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ],
+       [
+        2,
+        0
+       ],
+       [
+        3,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        false
+       ],
+       [
+        2,
+        true
+       ],
+       [
+        3,
+        false
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": true,
+      "2": true,
+      "3": true
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       true
+      ],
+      [
+       2,
+       true
+      ],
+      [
+       3,
+       true
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       3,
+       0
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ],
+       [
+        2,
+        0
+       ],
+       [
+        3,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        true
+       ],
+       [
+        2,
+        true
+       ],
+       [
+        3,
+        true
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": true,
+      "2": true,
+      "3": false
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       true
+      ],
+      [
+       2,
+       true
+      ],
+      [
+       3,
+       true
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       3,
+       1
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ],
+       [
+        2,
+        0
+       ],
+       [
+        3,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        true
+       ],
+       [
+        2,
+        true
+       ],
+       [
+        3,
+        false
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": true,
+      "2": true,
+      "3": true
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       true
+      ],
+      [
+       2,
+       true
+      ],
+      [
+       3,
+       true
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       3,
+       0
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ],
+       [
+        2,
+        0
+       ],
+       [
+        3,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        true
+       ],
+       [
+        2,
+        true
+       ],
+       [
+        3,
+        true
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": true,
+      "2": true,
+      "3": true
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       true
+      ],
+      [
+       2,
+       true
+      ],
+      [
+       3,
+       true
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       3,
+       0
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ],
+       [
+        2,
+        0
+       ],
+       [
+        3,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        true
+       ],
+       [
+        2,
+        true
+       ],
+       [
+        3,
+        true
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": false,
+      "2": true,
+      "3": true
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       true
+      ],
+      [
+       2,
+       true
+      ],
+      [
+       3,
+       true
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       1
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       3,
+       0
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ],
+       [
+        2,
+        0
+       ],
+       [
+        3,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        false
+       ],
+       [
+        2,
+        true
+       ],
+       [
+        3,
+        true
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": false,
+      "2": true,
+      "3": false
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       false
+      ],
+      [
+       2,
+       true
+      ],
+      [
+       3,
+       true
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       3,
+       1
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ],
+       [
+        2,
+        0
+       ],
+       [
+        3,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        false
+       ],
+       [
+        2,
+        true
+       ],
+       [
+        3,
+        false
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": false,
+      "2": true,
+      "3": true
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       false
+      ],
+      [
+       2,
+       true
+      ],
+      [
+       3,
+       true
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       3,
+       0
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ],
+       [
+        2,
+        0
+       ],
+       [
+        3,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        false
+       ],
+       [
+        2,
+        true
+       ],
+       [
+        3,
+        true
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": false,
+      "2": true,
+      "3": true
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       false
+      ],
+      [
+       2,
+       true
+      ],
+      [
+       3,
+       true
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       3,
+       0
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ],
+       [
+        2,
+        0
+       ],
+       [
+        3,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        false
+       ],
+       [
+        2,
+        true
+       ],
+       [
+        3,
+        true
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": true,
+      "2": true,
+      "3": false
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       true
+      ],
+      [
+       2,
+       true
+      ],
+      [
+       3,
+       true
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       3,
+       1
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ],
+       [
+        2,
+        0
+       ],
+       [
+        3,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        true
+       ],
+       [
+        2,
+        true
+       ],
+       [
+        3,
+        false
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": true,
+      "2": true,
+      "3": true
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       true
+      ],
+      [
+       2,
+       true
+      ],
+      [
+       3,
+       true
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       3,
+       0
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ],
+       [
+        2,
+        0
+       ],
+       [
+        3,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        true
+       ],
+       [
+        2,
+        true
+       ],
+       [
+        3,
+        true
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": false,
+      "2": false,
+      "3": false
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       true
+      ],
+      [
+       2,
+       true
+      ],
+      [
+       3,
+       true
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       1
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       3,
+       1
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ],
+       [
+        2,
+        0
+       ],
+       [
+        3,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        false
+       ],
+       [
+        2,
+        false
+       ],
+       [
+        3,
+        false
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": true,
+      "2": true,
+      "3": true
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       true
+      ],
+      [
+       2,
+       true
+      ],
+      [
+       3,
+       true
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       3,
+       0
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ],
+       [
+        2,
+        0
+       ],
+       [
+        3,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        true
+       ],
+       [
+        2,
+        true
+       ],
+       [
+        3,
+        true
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": true,
+      "2": true,
+      "3": false
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       true
+      ],
+      [
+       2,
+       true
+      ],
+      [
+       3,
+       true
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       3,
+       1
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ],
+       [
+        2,
+        0
+       ],
+       [
+        3,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        true
+       ],
+       [
+        2,
+        true
+       ],
+       [
+        3,
+        false
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": true,
+      "2": true,
+      "3": true
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       true
+      ],
+      [
+       2,
+       true
+      ],
+      [
+       3,
+       true
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       3,
+       0
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ],
+       [
+        2,
+        0
+       ],
+       [
+        3,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        true
+       ],
+       [
+        2,
+        true
+       ],
+       [
+        3,
+        true
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": false,
+      "2": false,
+      "3": true
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       true
+      ],
+      [
+       2,
+       true
+      ],
+      [
+       3,
+       true
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       1
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       3,
+       0
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ],
+       [
+        2,
+        0
+       ],
+       [
+        3,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        false
+       ],
+       [
+        2,
+        false
+       ],
+       [
+        3,
+        true
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": true,
+      "2": true,
+      "3": false
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       true
+      ],
+      [
+       2,
+       true
+      ],
+      [
+       3,
+       true
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       3,
+       1
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ],
+       [
+        2,
+        0
+       ],
+       [
+        3,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        true
+       ],
+       [
+        2,
+        true
+       ],
+       [
+        3,
+        false
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": false,
+      "2": false,
+      "3": true
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       true
+      ],
+      [
+       2,
+       true
+      ],
+      [
+       3,
+       true
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       1
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       3,
+       0
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ],
+       [
+        2,
+        0
+       ],
+       [
+        3,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        false
+       ],
+       [
+        2,
+        false
+       ],
+       [
+        3,
+        true
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": false,
+      "2": true,
+      "3": true
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       false
+      ],
+      [
+       2,
+       true
+      ],
+      [
+       3,
+       true
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       3,
+       0
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ],
+       [
+        2,
+        0
+       ],
+       [
+        3,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        false
+       ],
+       [
+        2,
+        true
+       ],
+       [
+        3,
+        true
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": false,
+      "2": false,
+      "3": false
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       false
+      ],
+      [
+       2,
+       true
+      ],
+      [
+       3,
+       true
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       3,
+       1
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ],
+       [
+        2,
+        0
+       ],
+       [
+        3,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        false
+       ],
+       [
+        2,
+        false
+       ],
+       [
+        3,
+        false
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": true,
+      "2": false,
+      "3": false
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       true
+      ],
+      [
+       2,
+       false
+      ],
+      [
+       3,
+       false
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       3,
+       0
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ],
+       [
+        2,
+        0
+       ],
+       [
+        3,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        true
+       ],
+       [
+        2,
+        false
+       ],
+       [
+        3,
+        false
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": false,
+      "2": true,
+      "3": false
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       true
+      ],
+      [
+       2,
+       true
+      ],
+      [
+       3,
+       false
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       1
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       3,
+       0
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ],
+       [
+        2,
+        0
+       ],
+       [
+        3,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        false
+       ],
+       [
+        2,
+        true
+       ],
+       [
+        3,
+        false
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": true,
+      "2": true,
+      "3": false
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       true
+      ],
+      [
+       2,
+       true
+      ],
+      [
+       3,
+       false
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       3,
+       0
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ],
+       [
+        2,
+        0
+       ],
+       [
+        3,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        true
+       ],
+       [
+        2,
+        true
+       ],
+       [
+        3,
+        false
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": false,
+      "2": false,
+      "3": true
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       true
+      ],
+      [
+       2,
+       true
+      ],
+      [
+       3,
+       true
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       1
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       3,
+       0
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ],
+       [
+        2,
+        0
+       ],
+       [
+        3,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        false
+       ],
+       [
+        2,
+        false
+       ],
+       [
+        3,
+        true
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": false,
+      "2": true,
+      "3": false
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       false
+      ],
+      [
+       2,
+       true
+      ],
+      [
+       3,
+       true
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       3,
+       1
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ],
+       [
+        2,
+        0
+       ],
+       [
+        3,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        false
+       ],
+       [
+        2,
+        true
+       ],
+       [
+        3,
+        false
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": true,
+      "2": true,
+      "3": true
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       true
+      ],
+      [
+       2,
+       true
+      ],
+      [
+       3,
+       true
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       3,
+       0
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ],
+       [
+        2,
+        0
+       ],
+       [
+        3,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        true
+       ],
+       [
+        2,
+        true
+       ],
+       [
+        3,
+        true
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": true,
+      "2": true,
+      "3": true
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       true
+      ],
+      [
+       2,
+       true
+      ],
+      [
+       3,
+       true
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       3,
+       0
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ],
+       [
+        2,
+        0
+       ],
+       [
+        3,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        true
+       ],
+       [
+        2,
+        true
+       ],
+       [
+        3,
+        true
+       ]
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "losowy3",
+   "owners": [
+    1,
+    2,
+    3
+   ],
+   "steps": [
+    {
+     "access": {
+      "1": true,
+      "2": false,
+      "3": false
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       true
+      ],
+      [
+       2,
+       false
+      ],
+      [
+       3,
+       false
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       0
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        true
+       ],
+       [
+        2,
+        false
+       ],
+       [
+        3,
+        false
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": false,
+      "2": true,
+      "3": false
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       true
+      ],
+      [
+       2,
+       true
+      ],
+      [
+       3,
+       false
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       1
+      ],
+      [
+       2,
+       0
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ],
+       [
+        2,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        false
+       ],
+       [
+        2,
+        true
+       ],
+       [
+        3,
+        false
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": true,
+      "2": true,
+      "3": true
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       true
+      ],
+      [
+       2,
+       true
+      ],
+      [
+       3,
+       true
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       3,
+       0
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ],
+       [
+        2,
+        0
+       ],
+       [
+        3,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        true
+       ],
+       [
+        2,
+        true
+       ],
+       [
+        3,
+        true
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": false,
+      "2": false,
+      "3": true
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       true
+      ],
+      [
+       2,
+       true
+      ],
+      [
+       3,
+       true
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       1
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       3,
+       0
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ],
+       [
+        2,
+        0
+       ],
+       [
+        3,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        false
+       ],
+       [
+        2,
+        false
+       ],
+       [
+        3,
+        true
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": true,
+      "2": true,
+      "3": false
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       true
+      ],
+      [
+       2,
+       true
+      ],
+      [
+       3,
+       true
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       3,
+       1
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ],
+       [
+        2,
+        0
+       ],
+       [
+        3,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        true
+       ],
+       [
+        2,
+        true
+       ],
+       [
+        3,
+        false
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": false,
+      "2": false,
+      "3": true
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       true
+      ],
+      [
+       2,
+       true
+      ],
+      [
+       3,
+       true
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       1
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       3,
+       0
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ],
+       [
+        2,
+        0
+       ],
+       [
+        3,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        false
+       ],
+       [
+        2,
+        false
+       ],
+       [
+        3,
+        true
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": true,
+      "2": false,
+      "3": true
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       true
+      ],
+      [
+       2,
+       false
+      ],
+      [
+       3,
+       true
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       3,
+       0
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ],
+       [
+        2,
+        0
+       ],
+       [
+        3,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        true
+       ],
+       [
+        2,
+        false
+       ],
+       [
+        3,
+        true
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": true,
+      "2": true,
+      "3": false
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       true
+      ],
+      [
+       2,
+       true
+      ],
+      [
+       3,
+       true
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       3,
+       1
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ],
+       [
+        2,
+        0
+       ],
+       [
+        3,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        true
+       ],
+       [
+        2,
+        true
+       ],
+       [
+        3,
+        false
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": false,
+      "2": true,
+      "3": true
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       true
+      ],
+      [
+       2,
+       true
+      ],
+      [
+       3,
+       true
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       1
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       3,
+       0
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ],
+       [
+        2,
+        0
+       ],
+       [
+        3,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        false
+       ],
+       [
+        2,
+        true
+       ],
+       [
+        3,
+        true
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": false,
+      "2": true,
+      "3": true
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       false
+      ],
+      [
+       2,
+       true
+      ],
+      [
+       3,
+       true
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       3,
+       0
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ],
+       [
+        2,
+        0
+       ],
+       [
+        3,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        false
+       ],
+       [
+        2,
+        true
+       ],
+       [
+        3,
+        true
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": true,
+      "2": true,
+      "3": true
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       true
+      ],
+      [
+       2,
+       true
+      ],
+      [
+       3,
+       true
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       3,
+       0
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ],
+       [
+        2,
+        0
+       ],
+       [
+        3,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        true
+       ],
+       [
+        2,
+        true
+       ],
+       [
+        3,
+        true
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": false,
+      "2": false,
+      "3": true
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       true
+      ],
+      [
+       2,
+       true
+      ],
+      [
+       3,
+       true
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       1
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       3,
+       0
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ],
+       [
+        2,
+        0
+       ],
+       [
+        3,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        false
+       ],
+       [
+        2,
+        false
+       ],
+       [
+        3,
+        true
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": false,
+      "2": false,
+      "3": true
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       false
+      ],
+      [
+       2,
+       false
+      ],
+      [
+       3,
+       true
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       3,
+       0
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ],
+       [
+        2,
+        0
+       ],
+       [
+        3,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        false
+       ],
+       [
+        2,
+        false
+       ],
+       [
+        3,
+        true
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": true,
+      "2": true,
+      "3": true
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       true
+      ],
+      [
+       2,
+       true
+      ],
+      [
+       3,
+       true
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       3,
+       0
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ],
+       [
+        2,
+        0
+       ],
+       [
+        3,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        true
+       ],
+       [
+        2,
+        true
+       ],
+       [
+        3,
+        true
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": true,
+      "2": false,
+      "3": true
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       true
+      ],
+      [
+       2,
+       true
+      ],
+      [
+       3,
+       true
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       3,
+       0
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ],
+       [
+        2,
+        0
+       ],
+       [
+        3,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        true
+       ],
+       [
+        2,
+        false
+       ],
+       [
+        3,
+        true
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": true,
+      "2": false,
+      "3": false
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       true
+      ],
+      [
+       2,
+       false
+      ],
+      [
+       3,
+       true
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       3,
+       1
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ],
+       [
+        2,
+        0
+       ],
+       [
+        3,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        true
+       ],
+       [
+        2,
+        false
+       ],
+       [
+        3,
+        false
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": true,
+      "2": false,
+      "3": true
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       true
+      ],
+      [
+       2,
+       false
+      ],
+      [
+       3,
+       true
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       3,
+       0
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ],
+       [
+        2,
+        0
+       ],
+       [
+        3,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        true
+       ],
+       [
+        2,
+        false
+       ],
+       [
+        3,
+        true
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": true,
+      "2": true,
+      "3": false
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       true
+      ],
+      [
+       2,
+       true
+      ],
+      [
+       3,
+       true
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       3,
+       1
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ],
+       [
+        2,
+        0
+       ],
+       [
+        3,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        true
+       ],
+       [
+        2,
+        true
+       ],
+       [
+        3,
+        false
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": true,
+      "2": true,
+      "3": true
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       true
+      ],
+      [
+       2,
+       true
+      ],
+      [
+       3,
+       true
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       3,
+       0
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ],
+       [
+        2,
+        0
+       ],
+       [
+        3,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        true
+       ],
+       [
+        2,
+        true
+       ],
+       [
+        3,
+        true
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": true,
+      "2": true,
+      "3": true
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       true
+      ],
+      [
+       2,
+       true
+      ],
+      [
+       3,
+       true
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       3,
+       0
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ],
+       [
+        2,
+        0
+       ],
+       [
+        3,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        true
+       ],
+       [
+        2,
+        true
+       ],
+       [
+        3,
+        true
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": false,
+      "2": false,
+      "3": true
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       true
+      ],
+      [
+       2,
+       true
+      ],
+      [
+       3,
+       true
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       1
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       3,
+       0
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ],
+       [
+        2,
+        0
+       ],
+       [
+        3,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        false
+       ],
+       [
+        2,
+        false
+       ],
+       [
+        3,
+        true
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": true,
+      "2": false,
+      "3": false
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       true
+      ],
+      [
+       2,
+       false
+      ],
+      [
+       3,
+       true
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       3,
+       1
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ],
+       [
+        2,
+        0
+       ],
+       [
+        3,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        true
+       ],
+       [
+        2,
+        false
+       ],
+       [
+        3,
+        false
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": true,
+      "2": true,
+      "3": false
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       true
+      ],
+      [
+       2,
+       true
+      ],
+      [
+       3,
+       false
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       3,
+       0
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ],
+       [
+        2,
+        0
+       ],
+       [
+        3,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        true
+       ],
+       [
+        2,
+        true
+       ],
+       [
+        3,
+        false
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": false,
+      "2": true,
+      "3": true
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       true
+      ],
+      [
+       2,
+       true
+      ],
+      [
+       3,
+       true
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       1
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       3,
+       0
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ],
+       [
+        2,
+        0
+       ],
+       [
+        3,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        false
+       ],
+       [
+        2,
+        true
+       ],
+       [
+        3,
+        true
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": false,
+      "2": false,
+      "3": true
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       false
+      ],
+      [
+       2,
+       true
+      ],
+      [
+       3,
+       true
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       3,
+       0
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ],
+       [
+        2,
+        0
+       ],
+       [
+        3,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        false
+       ],
+       [
+        2,
+        false
+       ],
+       [
+        3,
+        true
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": false,
+      "2": true,
+      "3": true
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       false
+      ],
+      [
+       2,
+       true
+      ],
+      [
+       3,
+       true
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       3,
+       0
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ],
+       [
+        2,
+        0
+       ],
+       [
+        3,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        false
+       ],
+       [
+        2,
+        true
+       ],
+       [
+        3,
+        true
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": false,
+      "2": false,
+      "3": true
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       false
+      ],
+      [
+       2,
+       true
+      ],
+      [
+       3,
+       true
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       3,
+       0
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ],
+       [
+        2,
+        0
+       ],
+       [
+        3,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        false
+       ],
+       [
+        2,
+        false
+       ],
+       [
+        3,
+        true
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": true,
+      "2": true,
+      "3": false
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       true
+      ],
+      [
+       2,
+       true
+      ],
+      [
+       3,
+       true
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       3,
+       1
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ],
+       [
+        2,
+        0
+       ],
+       [
+        3,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        true
+       ],
+       [
+        2,
+        true
+       ],
+       [
+        3,
+        false
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": false,
+      "2": true,
+      "3": true
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       true
+      ],
+      [
+       2,
+       true
+      ],
+      [
+       3,
+       true
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       1
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       3,
+       0
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ],
+       [
+        2,
+        0
+       ],
+       [
+        3,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        false
+       ],
+       [
+        2,
+        true
+       ],
+       [
+        3,
+        true
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": false,
+      "2": true,
+      "3": true
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       false
+      ],
+      [
+       2,
+       true
+      ],
+      [
+       3,
+       true
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       3,
+       0
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ],
+       [
+        2,
+        0
+       ],
+       [
+        3,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        false
+       ],
+       [
+        2,
+        true
+       ],
+       [
+        3,
+        true
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": true,
+      "2": true,
+      "3": false
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       true
+      ],
+      [
+       2,
+       true
+      ],
+      [
+       3,
+       true
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       3,
+       1
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ],
+       [
+        2,
+        0
+       ],
+       [
+        3,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        true
+       ],
+       [
+        2,
+        true
+       ],
+       [
+        3,
+        false
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": true,
+      "2": false,
+      "3": false
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       true
+      ],
+      [
+       2,
+       true
+      ],
+      [
+       3,
+       false
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       3,
+       0
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ],
+       [
+        2,
+        0
+       ],
+       [
+        3,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        true
+       ],
+       [
+        2,
+        false
+       ],
+       [
+        3,
+        false
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": true,
+      "2": true,
+      "3": true
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       true
+      ],
+      [
+       2,
+       true
+      ],
+      [
+       3,
+       true
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       3,
+       0
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ],
+       [
+        2,
+        0
+       ],
+       [
+        3,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        true
+       ],
+       [
+        2,
+        true
+       ],
+       [
+        3,
+        true
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": true,
+      "2": true,
+      "3": true
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       true
+      ],
+      [
+       2,
+       true
+      ],
+      [
+       3,
+       true
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       3,
+       0
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ],
+       [
+        2,
+        0
+       ],
+       [
+        3,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        true
+       ],
+       [
+        2,
+        true
+       ],
+       [
+        3,
+        true
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": true,
+      "2": false,
+      "3": false
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       true
+      ],
+      [
+       2,
+       true
+      ],
+      [
+       3,
+       true
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       3,
+       1
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ],
+       [
+        2,
+        0
+       ],
+       [
+        3,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        true
+       ],
+       [
+        2,
+        false
+       ],
+       [
+        3,
+        false
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": false,
+      "2": true,
+      "3": false
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       true
+      ],
+      [
+       2,
+       true
+      ],
+      [
+       3,
+       false
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       1
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       3,
+       0
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ],
+       [
+        2,
+        0
+       ],
+       [
+        3,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        false
+       ],
+       [
+        2,
+        true
+       ],
+       [
+        3,
+        false
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": true,
+      "2": true,
+      "3": false
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       true
+      ],
+      [
+       2,
+       true
+      ],
+      [
+       3,
+       false
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       3,
+       0
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ],
+       [
+        2,
+        0
+       ],
+       [
+        3,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        true
+       ],
+       [
+        2,
+        true
+       ],
+       [
+        3,
+        false
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": false,
+      "2": true,
+      "3": false
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       true
+      ],
+      [
+       2,
+       true
+      ],
+      [
+       3,
+       false
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       1
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       3,
+       0
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ],
+       [
+        2,
+        0
+       ],
+       [
+        3,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        false
+       ],
+       [
+        2,
+        true
+       ],
+       [
+        3,
+        false
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": true,
+      "2": false,
+      "3": true
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       true
+      ],
+      [
+       2,
+       true
+      ],
+      [
+       3,
+       true
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       0
+      ],
+      [
+       2,
+       1
+      ],
+      [
+       3,
+       0
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ],
+       [
+        2,
+        0
+       ],
+       [
+        3,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        true
+       ],
+       [
+        2,
+        false
+       ],
+       [
+        3,
+        true
+       ]
+      ]
+     }
+    },
+    {
+     "access": {
+      "1": false,
+      "2": false,
+      "3": true
+     },
+     "owners": [
+      1,
+      2,
+      3
+     ],
+     "resolved": [
+      [
+       1,
+       true
+      ],
+      [
+       2,
+       false
+      ],
+      [
+       3,
+       true
+      ]
+     ],
+     "afterPrepareGrace": [
+      [
+       1,
+       1
+      ],
+      [
+       2,
+       0
+      ],
+      [
+       3,
+       0
+      ]
+     ],
+     "serialized": {
+      "graceTurnsLeft": [
+       [
+        1,
+        0
+       ],
+       [
+        2,
+        0
+       ],
+       [
+        3,
+        0
+       ]
+      ],
+      "hadAccessLastTurn": [
+       [
+        1,
+        false
+       ],
+       [
+        2,
+        false
+       ],
+       [
+        3,
+        true
+       ]
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "const",
+   "graceTurns": 1
+  },
+  {
+   "name": "restoreClear",
+   "restoreFrom": {
+    "graceTurnsLeft": [
+     [
+      9,
+      1
+     ],
+     [
+      2,
+      0
+     ]
+    ],
+    "hadAccessLastTurn": [
+     [
+      9,
+      false
+     ]
+    ]
+   },
+   "restored": {
+    "graceTurnsLeft": [
+     [
+      2,
+      0
+     ],
+     [
+      9,
+      1
+     ]
+    ],
+    "hadAccessLastTurn": [
+     [
+      9,
+      false
+     ]
+    ]
+   },
+   "afterClear": {
+    "graceTurnsLeft": [],
+    "hadAccessLastTurn": []
+   },
+   "restoreNull": {
+    "graceTurnsLeft": [],
+    "hadAccessLastTurn": []
+   }
+  }
+ ]
+}
