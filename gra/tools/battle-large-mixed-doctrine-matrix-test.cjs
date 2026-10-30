@@ -229,6 +229,25 @@ function makeScenario(BattleScene, { doctrine, rangedLines, priorityVariant, ter
     if (traceIds.has(ru.bu.id)) events.push({ type: 'ranged-pick', unitId: ru.bu.id, targetId: selected?.bu.id ?? null, at: [ru.q, ru.r], targetAt: selected ? [selected.q, selected.r] : null, distance: selected ? Math.abs(ru.q-selected.q)+Math.abs(ru.r-selected.r) : null, range: ru.range, ammo: ru.ammoLeft, rank: ru.formationRank, moveLeft: ru.moveLeft, acted: ru.acted, turn: this._traceTurn, enemies: this._enemiesOf(ru).map(e=>({id:e.bu.id,at:[e.q,e.r],distance:Math.abs(ru.q-e.q)+Math.abs(ru.r-e.r),class:this._unitBattleClass(e),priority:this._priorityScore(ru,e)})).filter(e=>e.distance<=ru.range+2).sort((a,b)=>a.distance-b.distance).slice(0,8) });
     return selected;
   };
+  const originalBestForwardStep = BattleScene.prototype._bestForwardStep;
+  scene._bestForwardStep = function(ru, nearest, ...args) {
+    const selected = originalBestForwardStep.call(this, ru, nearest, ...args);
+    if (traceIds.has(ru.bu.id)) events.push({
+      type: 'ranged-step-pick', unitId: ru.bu.id, from: [ru.q, ru.r],
+      nearest: [nearest.q, nearest.r], selected,
+      neighbors: [[1,0],[-1,0],[0,1],[0,-1]].map(([dc,dr]) => ({
+        q: ru.q + dc, r: ru.r + dr,
+        occupiedBy: this.occByKey.get(key(ru.q + dc, ru.r + dr))?.bu.id ?? null,
+        passable: this.terrainMap.passable(ru.q + dc, ru.r + dr),
+      })),
+      forwardLane: Array.from({ length: 11 }, (_, i) => ru.r - 5 + i).map(row => ({
+        row,
+        sameCol: this.occByKey.get(key(ru.q, row))?.bu.id ?? null,
+        nextCol: this.occByKey.get(key(ru.q + this._advanceDir(ru.side), row))?.bu.id ?? null,
+      })),
+    });
+    return selected;
+  };
   const originalCompactGate = BattleScene.prototype._compactAttackAllowsStep;
   scene._compactAttackAllowsStep = function(ru, candidateCol) {
     const allowed = originalCompactGate.call(this, ru, candidateCol);
@@ -356,12 +375,27 @@ async function main() {
                 const movedInLastActivation = unitEvents.some(event => event.type==='move' && event.turn===turnCount-1);
                 const enteredRangeAtHorizon = lastActivation?.turn===turnCount-1
                   && startDistance>roleDetails[role].reach && finalDistance<=roleDetails[role].reach && movedInLastActivation;
-                if (!fired && finalDistance<=roleDetails[role].reach && !enteredRangeAtHorizon) {
+                // A shooter in a later configured depth rank is a reserve
+                // while its same-role front-rank partner occupies the direct
+                // lane and is already firing. This headless matrix holds all
+                // enemies and applies no damage, so the front rank never opens
+                // space during the run; do not classify a correctly compact
+                // reserve as an AI unit that failed to approach.
+                const frontRankShooter = rangedLines > 1
+                  ? s.active.find(other => other !== ru
+                    && roleForId(other.bu.id) === role
+                    && (other.formationRank ?? Infinity) < (ru.formationRank ?? -Infinity)
+                    && other.r === ru.r
+                    && other.q === ru.q + (ru.side === 'atk' ? 1 : -1))
+                  : undefined;
+                const heldBehindFiringFront = !!frontRankShooter
+                  && s.events.some(event => event.unitId === frontRankShooter.bu.id && event.type === 'shot');
+                if (!fired && finalDistance<=roleDetails[role].reach && !enteredRangeAtHorizon && !heldBehindFiringFront) {
                   errors.push(`${doctrine}/lines${rangedLines}/priority${priorityVariant}/${terrainVariant}: ${ru.bu.id} started an activation in range but never fired`);
                 }
                 const initial = s.initialPositions[ru.bu.id];
                 const initialDistance = Math.min(...s.enemies.map(enemy => Math.abs(initial.q-enemy.q)+Math.abs(initial.r-enemy.r)));
-                if (!fired && finalDistance>roleDetails[role].reach && finalDistance>=initialDistance) {
+                if (!fired && finalDistance>roleDetails[role].reach && finalDistance>=initialDistance && !heldBehindFiringFront) {
                   errors.push(`${doctrine}/lines${rangedLines}/priority${priorityVariant}/${terrainVariant}: ${ru.bu.id} remained outside range without reducing distance (${initialDistance}->${finalDistance})`);
                 }
               }

@@ -200,6 +200,102 @@
           ]
         },
         {
+          "type": "ranged-step-pick",
+          "unitId": "atk-archer-26",
+          "from": [
+            12,
+            36
+          ],
+          "nearest": [
+            16,
+            36
+          ],
+          "selected": null,
+          "neighbors": [
+            {
+              "q": 13,
+              "r": 36,
+              "occupiedBy": "atk-archer-22",
+              "passable": true
+            },
+            {
+              "q": 11,
+              "r": 36,
+              "occupiedBy": "atk-slinger-29",
+              "passable": true
+            },
+            {
+              "q": 12,
+              "r": 37,
+              "occupiedBy": "atk-archer-27",
+              "passable": true
+            },
+            {
+              "q": 12,
+              "r": 35,
+              "occupiedBy": null,
+              "passable": true
+            }
+          ],
+          "forwardLane": [
+            {
+              "row": 31,
+              "sameCol": null,
+              "nextCol": null
+            },
+            {
+              "row": 32,
+              "sameCol": null,
+              "nextCol": null
+            },
+            {
+              "row": 33,
+              "sameCol": "atk-archer-25",
+              "nextCol": "atk-archer-24"
+            },
+            {
+              "row": 34,
+              "sameCol": null,
+              "nextCol": "atk-archer-20"
+            },
+            {
+              "row": 35,
+              "sameCol": null,
+              "nextCol": "atk-archer-21"
+            },
+            {
+              "row": 36,
+              "sameCol": "atk-archer-26",
+              "nextCol": "atk-archer-22"
+            },
+            {
+              "row": 37,
+              "sameCol": "atk-archer-27",
+              "nextCol": "atk-archer-23"
+            },
+            {
+              "row": 38,
+              "sameCol": null,
+              "nextCol": null
+            },
+            {
+              "row": 39,
+              "sameCol": null,
+              "nextCol": null
+            },
+            {
+              "row": 40,
+              "sameCol": null,
+              "nextCol": null
+            },
+            {
+              "row": 41,
+              "sameCol": null,
+              "nextCol": null
+            }
+          ]
+        },
+        {
           "type": "activation",
           "unitId": "atk-archer-26",
           "doctrine": "steady",
@@ -305,6 +401,102 @@
           ]
         },
         {
+          "type": "ranged-step-pick",
+          "unitId": "atk-slinger-28",
+          "from": [
+            11,
+            35
+          ],
+          "nearest": [
+            16,
+            35
+          ],
+          "selected": "12,35",
+          "neighbors": [
+            {
+              "q": 12,
+              "r": 35,
+              "occupiedBy": null,
+              "passable": true
+            },
+            {
+              "q": 10,
+              "r": 35,
+              "occupiedBy": "atk-slinger-30",
+              "passable": true
+            },
+            {
+              "q": 11,
+              "r": 36,
+              "occupiedBy": "atk-slinger-29",
+              "passable": true
+            },
+            {
+              "q": 11,
+              "r": 34,
+              "occupiedBy": null,
+              "passable": true
+            }
+          ],
+          "forwardLane": [
+            {
+              "row": 30,
+              "sameCol": null,
+              "nextCol": null
+            },
+            {
+              "row": 31,
+              "sameCol": null,
+              "nextCol": null
+            },
+            {
+              "row": 32,
+              "sameCol": null,
+              "nextCol": null
+            },
+            {
+              "row": 33,
+              "sameCol": null,
+              "nextCol": "atk-archer-25"
+            },
+            {
+              "row": 34,
+              "sameCol": null,
+              "nextCol": null
+            },
+            {
+              "row": 35,
+              "sameCol": "atk-slinger-28",
+              "nextCol": null
+            },
+            {
+              "row": 36,
+              "sameCol": "atk-slinger-29",
+              "nextCol": "atk-archer-26"
+            },
+            {
+              "row": 37,
+              "sameCol": null,
+              "nextCol": null
+            },
+            {
+              "row": 38,
+              "sameCol": null,
+              "nextCol": null
+            },
+            {
+              "row": 39,
+              "sameCol": null,
+              "nextCol": null
+            },
+            {
+              "row": 40,
+              "sameCol": null,
+              "nextCol": null
+            }
+          ]
+        },
+        {
           "type": "move",
           "unitId": "atk-slinger-28",
           "role": "slinger",
@@ -403,6 +595,102 @@
           ]
         },
         {
+          "type": "ranged-step-pick",
+          "unitId": "atk-slinger-30",
+          "from": [
+            10,
+            35
+          ],
+          "nearest": [
+            16,
+            35
+          ],
+          "selected": "11,35",
+          "neighbors": [
+            {
+              "q": 11,
+              "r": 35,
+              "occupiedBy": null,
+              "passable": true
+            },
+            {
+              "q": 9,
+              "r": 35,
+              "occupiedBy": null,
+              "passable": true
+            },
+            {
+              "q": 10,
+              "r": 36,
+              "occupiedBy": "atk-slinger-31",
+              "passable": true
+            },
+            {
+              "q": 10,
+              "r": 34,
+              "occupiedBy": null,
+              "passable": true
+            }
+          ],
+          "forwardLane": [
+            {
+              "row": 30,
+              "sameCol": null,
+              "nextCol": null
+            },
+            {
+              "row": 31,
+              "sameCol": null,
+              "nextCol": null
+            },
+            {
+              "row": 32,
+              "sameCol": null,
+              "nextCol": null
+            },
+            {
+              "row": 33,
+              "sameCol": null,
+              "nextCol": null
+            },
+            {
+              "row": 34,
+              "sameCol": null,
+              "nextCol": null
+            },
+            {
+              "row": 35,
+              "sameCol": "atk-slinger-30",
+              "nextCol": null
+            },
+            {
+              "row": 36,
+              "sameCol": "atk-slinger-31",
+              "nextCol": null
+            },
+            {
+              "row": 37,
+              "sameCol": null,
+              "nextCol": null
+            },
+            {
+              "row": 38,
+              "sameCol": null,
+              "nextCol": null
+            },
+            {
+              "row": 39,
+              "sameCol": null,
+              "nextCol": null
+            },
+            {
+              "row": 40,
+              "sameCol": null,
+              "nextCol": null
+            }
+          ]
+        },
+        {
           "type": "move",
           "unitId": "atk-slinger-30",
           "role": "slinger",
@@ -412,6 +700,102 @@
           "moveLeftBefore": 2,
           "moveLeftAfter": 1,
           "turn": 0
+        },
+        {
+          "type": "ranged-step-pick",
+          "unitId": "atk-slinger-30",
+          "from": [
+            11,
+            35
+          ],
+          "nearest": [
+            16,
+            35
+          ],
+          "selected": "11,34",
+          "neighbors": [
+            {
+              "q": 12,
+              "r": 35,
+              "occupiedBy": "atk-slinger-28",
+              "passable": true
+            },
+            {
+              "q": 10,
+              "r": 35,
+              "occupiedBy": null,
+              "passable": true
+            },
+            {
+              "q": 11,
+              "r": 36,
+              "occupiedBy": null,
+              "passable": true
+            },
+            {
+              "q": 11,
+              "r": 34,
+              "occupiedBy": null,
+              "passable": true
+            }
+          ],
+          "forwardLane": [
+            {
+              "row": 30,
+              "sameCol": null,
+              "nextCol": null
+            },
+            {
+              "row": 31,
+              "sameCol": null,
+              "nextCol": null
+            },
+            {
+              "row": 32,
+              "sameCol": null,
+              "nextCol": null
+            },
+            {
+              "row": 33,
+              "sameCol": null,
+              "nextCol": "atk-archer-25"
+            },
+            {
+              "row": 34,
+              "sameCol": null,
+              "nextCol": null
+            },
+            {
+              "row": 35,
+              "sameCol": "atk-slinger-30",
+              "nextCol": "atk-slinger-28"
+            },
+            {
+              "row": 36,
+              "sameCol": null,
+              "nextCol": "atk-archer-26"
+            },
+            {
+              "row": 37,
+              "sameCol": null,
+              "nextCol": "atk-slinger-29"
+            },
+            {
+              "row": 38,
+              "sameCol": null,
+              "nextCol": null
+            },
+            {
+              "row": 39,
+              "sameCol": null,
+              "nextCol": null
+            },
+            {
+              "row": 40,
+              "sameCol": null,
+              "nextCol": null
+            }
+          ]
         },
         {
           "type": "move",
@@ -526,6 +910,102 @@
               "distance": 5,
               "class": "ranged",
               "priority": 1
+            }
+          ]
+        },
+        {
+          "type": "ranged-step-pick",
+          "unitId": "atk-archer-26",
+          "from": [
+            12,
+            36
+          ],
+          "nearest": [
+            16,
+            36
+          ],
+          "selected": null,
+          "neighbors": [
+            {
+              "q": 13,
+              "r": 36,
+              "occupiedBy": "atk-archer-22",
+              "passable": true
+            },
+            {
+              "q": 11,
+              "r": 36,
+              "occupiedBy": null,
+              "passable": true
+            },
+            {
+              "q": 12,
+              "r": 37,
+              "occupiedBy": "atk-slinger-29",
+              "passable": true
+            },
+            {
+              "q": 12,
+              "r": 35,
+              "occupiedBy": "atk-slinger-28",
+              "passable": true
+            }
+          ],
+          "forwardLane": [
+            {
+              "row": 31,
+              "sameCol": null,
+              "nextCol": null
+            },
+            {
+              "row": 32,
+              "sameCol": null,
+              "nextCol": "atk-archer-25"
+            },
+            {
+              "row": 33,
+              "sameCol": null,
+              "nextCol": "atk-archer-24"
+            },
+            {
+              "row": 34,
+              "sameCol": null,
+              "nextCol": "atk-archer-20"
+            },
+            {
+              "row": 35,
+              "sameCol": "atk-slinger-28",
+              "nextCol": "atk-archer-21"
+            },
+            {
+              "row": 36,
+              "sameCol": "atk-archer-26",
+              "nextCol": "atk-archer-22"
+            },
+            {
+              "row": 37,
+              "sameCol": "atk-slinger-29",
+              "nextCol": "atk-archer-23"
+            },
+            {
+              "row": 38,
+              "sameCol": null,
+              "nextCol": "atk-archer-27"
+            },
+            {
+              "row": 39,
+              "sameCol": null,
+              "nextCol": null
+            },
+            {
+              "row": 40,
+              "sameCol": null,
+              "nextCol": null
+            },
+            {
+              "row": 41,
+              "sameCol": null,
+              "nextCol": null
             }
           ]
         },
@@ -795,6 +1275,102 @@
           ]
         },
         {
+          "type": "ranged-step-pick",
+          "unitId": "atk-slinger-30",
+          "from": [
+            11,
+            34
+          ],
+          "nearest": [
+            16,
+            34
+          ],
+          "selected": "12,34",
+          "neighbors": [
+            {
+              "q": 12,
+              "r": 34,
+              "occupiedBy": null,
+              "passable": true
+            },
+            {
+              "q": 10,
+              "r": 34,
+              "occupiedBy": null,
+              "passable": true
+            },
+            {
+              "q": 11,
+              "r": 35,
+              "occupiedBy": null,
+              "passable": true
+            },
+            {
+              "q": 11,
+              "r": 33,
+              "occupiedBy": null,
+              "passable": true
+            }
+          ],
+          "forwardLane": [
+            {
+              "row": 29,
+              "sameCol": null,
+              "nextCol": null
+            },
+            {
+              "row": 30,
+              "sameCol": null,
+              "nextCol": null
+            },
+            {
+              "row": 31,
+              "sameCol": null,
+              "nextCol": null
+            },
+            {
+              "row": 32,
+              "sameCol": null,
+              "nextCol": null
+            },
+            {
+              "row": 33,
+              "sameCol": null,
+              "nextCol": null
+            },
+            {
+              "row": 34,
+              "sameCol": "atk-slinger-30",
+              "nextCol": null
+            },
+            {
+              "row": 35,
+              "sameCol": null,
+              "nextCol": "atk-slinger-28"
+            },
+            {
+              "row": 36,
+              "sameCol": null,
+              "nextCol": "atk-archer-26"
+            },
+            {
+              "row": 37,
+              "sameCol": "atk-slinger-31",
+              "nextCol": "atk-slinger-29"
+            },
+            {
+              "row": 38,
+              "sameCol": null,
+              "nextCol": null
+            },
+            {
+              "row": 39,
+              "sameCol": null,
+              "nextCol": null
+            }
+          ]
+        },
+        {
           "type": "move",
           "unitId": "atk-slinger-30",
           "role": "slinger",
@@ -919,6 +1495,102 @@
               "distance": 5,
               "class": "ranged",
               "priority": 1
+            }
+          ]
+        },
+        {
+          "type": "ranged-step-pick",
+          "unitId": "atk-archer-26",
+          "from": [
+            12,
+            36
+          ],
+          "nearest": [
+            16,
+            36
+          ],
+          "selected": null,
+          "neighbors": [
+            {
+              "q": 13,
+              "r": 36,
+              "occupiedBy": "atk-archer-22",
+              "passable": true
+            },
+            {
+              "q": 11,
+              "r": 36,
+              "occupiedBy": null,
+              "passable": true
+            },
+            {
+              "q": 12,
+              "r": 37,
+              "occupiedBy": "atk-slinger-29",
+              "passable": true
+            },
+            {
+              "q": 12,
+              "r": 35,
+              "occupiedBy": "atk-slinger-28",
+              "passable": true
+            }
+          ],
+          "forwardLane": [
+            {
+              "row": 31,
+              "sameCol": null,
+              "nextCol": null
+            },
+            {
+              "row": 32,
+              "sameCol": null,
+              "nextCol": "atk-archer-25"
+            },
+            {
+              "row": 33,
+              "sameCol": null,
+              "nextCol": "atk-archer-24"
+            },
+            {
+              "row": 34,
+              "sameCol": "atk-slinger-30",
+              "nextCol": "atk-archer-20"
+            },
+            {
+              "row": 35,
+              "sameCol": "atk-slinger-28",
+              "nextCol": "atk-archer-21"
+            },
+            {
+              "row": 36,
+              "sameCol": "atk-archer-26",
+              "nextCol": "atk-archer-22"
+            },
+            {
+              "row": 37,
+              "sameCol": "atk-slinger-29",
+              "nextCol": "atk-archer-23"
+            },
+            {
+              "row": 38,
+              "sameCol": "atk-slinger-31",
+              "nextCol": "atk-archer-27"
+            },
+            {
+              "row": 39,
+              "sameCol": null,
+              "nextCol": null
+            },
+            {
+              "row": 40,
+              "sameCol": null,
+              "nextCol": null
+            },
+            {
+              "row": 41,
+              "sameCol": null,
+              "nextCol": null
             }
           ]
         },
@@ -1344,6 +2016,102 @@
               "distance": 5,
               "class": "ranged",
               "priority": 1
+            }
+          ]
+        },
+        {
+          "type": "ranged-step-pick",
+          "unitId": "atk-archer-26",
+          "from": [
+            12,
+            36
+          ],
+          "nearest": [
+            16,
+            36
+          ],
+          "selected": null,
+          "neighbors": [
+            {
+              "q": 13,
+              "r": 36,
+              "occupiedBy": "atk-archer-22",
+              "passable": true
+            },
+            {
+              "q": 11,
+              "r": 36,
+              "occupiedBy": null,
+              "passable": true
+            },
+            {
+              "q": 12,
+              "r": 37,
+              "occupiedBy": "atk-slinger-29",
+              "passable": true
+            },
+            {
+              "q": 12,
+              "r": 35,
+              "occupiedBy": "atk-slinger-28",
+              "passable": true
+            }
+          ],
+          "forwardLane": [
+            {
+              "row": 31,
+              "sameCol": null,
+              "nextCol": null
+            },
+            {
+              "row": 32,
+              "sameCol": null,
+              "nextCol": "atk-archer-25"
+            },
+            {
+              "row": 33,
+              "sameCol": null,
+              "nextCol": "atk-archer-24"
+            },
+            {
+              "row": 34,
+              "sameCol": "atk-slinger-30",
+              "nextCol": "atk-archer-20"
+            },
+            {
+              "row": 35,
+              "sameCol": "atk-slinger-28",
+              "nextCol": "atk-archer-21"
+            },
+            {
+              "row": 36,
+              "sameCol": "atk-archer-26",
+              "nextCol": "atk-archer-22"
+            },
+            {
+              "row": 37,
+              "sameCol": "atk-slinger-29",
+              "nextCol": "atk-archer-23"
+            },
+            {
+              "row": 38,
+              "sameCol": "atk-slinger-31",
+              "nextCol": "atk-archer-27"
+            },
+            {
+              "row": 39,
+              "sameCol": null,
+              "nextCol": null
+            },
+            {
+              "row": 40,
+              "sameCol": null,
+              "nextCol": null
+            },
+            {
+              "row": 41,
+              "sameCol": null,
+              "nextCol": null
             }
           ]
         },
@@ -1769,6 +2537,102 @@
               "distance": 5,
               "class": "ranged",
               "priority": 1
+            }
+          ]
+        },
+        {
+          "type": "ranged-step-pick",
+          "unitId": "atk-archer-26",
+          "from": [
+            12,
+            36
+          ],
+          "nearest": [
+            16,
+            36
+          ],
+          "selected": null,
+          "neighbors": [
+            {
+              "q": 13,
+              "r": 36,
+              "occupiedBy": "atk-archer-22",
+              "passable": true
+            },
+            {
+              "q": 11,
+              "r": 36,
+              "occupiedBy": null,
+              "passable": true
+            },
+            {
+              "q": 12,
+              "r": 37,
+              "occupiedBy": "atk-slinger-29",
+              "passable": true
+            },
+            {
+              "q": 12,
+              "r": 35,
+              "occupiedBy": "atk-slinger-28",
+              "passable": true
+            }
+          ],
+          "forwardLane": [
+            {
+              "row": 31,
+              "sameCol": null,
+              "nextCol": null
+            },
+            {
+              "row": 32,
+              "sameCol": null,
+              "nextCol": "atk-archer-25"
+            },
+            {
+              "row": 33,
+              "sameCol": null,
+              "nextCol": "atk-archer-24"
+            },
+            {
+              "row": 34,
+              "sameCol": "atk-slinger-30",
+              "nextCol": "atk-archer-20"
+            },
+            {
+              "row": 35,
+              "sameCol": "atk-slinger-28",
+              "nextCol": "atk-archer-21"
+            },
+            {
+              "row": 36,
+              "sameCol": "atk-archer-26",
+              "nextCol": "atk-archer-22"
+            },
+            {
+              "row": 37,
+              "sameCol": "atk-slinger-29",
+              "nextCol": "atk-archer-23"
+            },
+            {
+              "row": 38,
+              "sameCol": "atk-slinger-31",
+              "nextCol": "atk-archer-27"
+            },
+            {
+              "row": 39,
+              "sameCol": null,
+              "nextCol": null
+            },
+            {
+              "row": 40,
+              "sameCol": null,
+              "nextCol": null
+            },
+            {
+              "row": 41,
+              "sameCol": null,
+              "nextCol": null
             }
           ]
         },
@@ -2194,6 +3058,102 @@
               "distance": 5,
               "class": "ranged",
               "priority": 1
+            }
+          ]
+        },
+        {
+          "type": "ranged-step-pick",
+          "unitId": "atk-archer-26",
+          "from": [
+            12,
+            36
+          ],
+          "nearest": [
+            16,
+            36
+          ],
+          "selected": null,
+          "neighbors": [
+            {
+              "q": 13,
+              "r": 36,
+              "occupiedBy": "atk-archer-22",
+              "passable": true
+            },
+            {
+              "q": 11,
+              "r": 36,
+              "occupiedBy": null,
+              "passable": true
+            },
+            {
+              "q": 12,
+              "r": 37,
+              "occupiedBy": "atk-slinger-29",
+              "passable": true
+            },
+            {
+              "q": 12,
+              "r": 35,
+              "occupiedBy": "atk-slinger-28",
+              "passable": true
+            }
+          ],
+          "forwardLane": [
+            {
+              "row": 31,
+              "sameCol": null,
+              "nextCol": null
+            },
+            {
+              "row": 32,
+              "sameCol": null,
+              "nextCol": "atk-archer-25"
+            },
+            {
+              "row": 33,
+              "sameCol": null,
+              "nextCol": "atk-archer-24"
+            },
+            {
+              "row": 34,
+              "sameCol": "atk-slinger-30",
+              "nextCol": "atk-archer-20"
+            },
+            {
+              "row": 35,
+              "sameCol": "atk-slinger-28",
+              "nextCol": "atk-archer-21"
+            },
+            {
+              "row": 36,
+              "sameCol": "atk-archer-26",
+              "nextCol": "atk-archer-22"
+            },
+            {
+              "row": 37,
+              "sameCol": "atk-slinger-29",
+              "nextCol": "atk-archer-23"
+            },
+            {
+              "row": 38,
+              "sameCol": "atk-slinger-31",
+              "nextCol": "atk-archer-27"
+            },
+            {
+              "row": 39,
+              "sameCol": null,
+              "nextCol": null
+            },
+            {
+              "row": 40,
+              "sameCol": null,
+              "nextCol": null
+            },
+            {
+              "row": 41,
+              "sameCol": null,
+              "nextCol": null
             }
           ]
         },
@@ -2619,6 +3579,102 @@
               "distance": 5,
               "class": "ranged",
               "priority": 1
+            }
+          ]
+        },
+        {
+          "type": "ranged-step-pick",
+          "unitId": "atk-archer-26",
+          "from": [
+            12,
+            36
+          ],
+          "nearest": [
+            16,
+            36
+          ],
+          "selected": null,
+          "neighbors": [
+            {
+              "q": 13,
+              "r": 36,
+              "occupiedBy": "atk-archer-22",
+              "passable": true
+            },
+            {
+              "q": 11,
+              "r": 36,
+              "occupiedBy": null,
+              "passable": true
+            },
+            {
+              "q": 12,
+              "r": 37,
+              "occupiedBy": "atk-slinger-29",
+              "passable": true
+            },
+            {
+              "q": 12,
+              "r": 35,
+              "occupiedBy": "atk-slinger-28",
+              "passable": true
+            }
+          ],
+          "forwardLane": [
+            {
+              "row": 31,
+              "sameCol": null,
+              "nextCol": null
+            },
+            {
+              "row": 32,
+              "sameCol": null,
+              "nextCol": "atk-archer-25"
+            },
+            {
+              "row": 33,
+              "sameCol": null,
+              "nextCol": "atk-archer-24"
+            },
+            {
+              "row": 34,
+              "sameCol": "atk-slinger-30",
+              "nextCol": "atk-archer-20"
+            },
+            {
+              "row": 35,
+              "sameCol": "atk-slinger-28",
+              "nextCol": "atk-archer-21"
+            },
+            {
+              "row": 36,
+              "sameCol": "atk-archer-26",
+              "nextCol": "atk-archer-22"
+            },
+            {
+              "row": 37,
+              "sameCol": "atk-slinger-29",
+              "nextCol": "atk-archer-23"
+            },
+            {
+              "row": 38,
+              "sameCol": "atk-slinger-31",
+              "nextCol": "atk-archer-27"
+            },
+            {
+              "row": 39,
+              "sameCol": null,
+              "nextCol": null
+            },
+            {
+              "row": 40,
+              "sameCol": null,
+              "nextCol": null
+            },
+            {
+              "row": 41,
+              "sameCol": null,
+              "nextCol": null
             }
           ]
         },
@@ -3044,6 +4100,102 @@
               "distance": 5,
               "class": "ranged",
               "priority": 1
+            }
+          ]
+        },
+        {
+          "type": "ranged-step-pick",
+          "unitId": "atk-archer-26",
+          "from": [
+            12,
+            36
+          ],
+          "nearest": [
+            16,
+            36
+          ],
+          "selected": null,
+          "neighbors": [
+            {
+              "q": 13,
+              "r": 36,
+              "occupiedBy": "atk-archer-22",
+              "passable": true
+            },
+            {
+              "q": 11,
+              "r": 36,
+              "occupiedBy": null,
+              "passable": true
+            },
+            {
+              "q": 12,
+              "r": 37,
+              "occupiedBy": "atk-slinger-29",
+              "passable": true
+            },
+            {
+              "q": 12,
+              "r": 35,
+              "occupiedBy": "atk-slinger-28",
+              "passable": true
+            }
+          ],
+          "forwardLane": [
+            {
+              "row": 31,
+              "sameCol": null,
+              "nextCol": null
+            },
+            {
+              "row": 32,
+              "sameCol": null,
+              "nextCol": "atk-archer-25"
+            },
+            {
+              "row": 33,
+              "sameCol": null,
+              "nextCol": "atk-archer-24"
+            },
+            {
+              "row": 34,
+              "sameCol": "atk-slinger-30",
+              "nextCol": "atk-archer-20"
+            },
+            {
+              "row": 35,
+              "sameCol": "atk-slinger-28",
+              "nextCol": "atk-archer-21"
+            },
+            {
+              "row": 36,
+              "sameCol": "atk-archer-26",
+              "nextCol": "atk-archer-22"
+            },
+            {
+              "row": 37,
+              "sameCol": "atk-slinger-29",
+              "nextCol": "atk-archer-23"
+            },
+            {
+              "row": 38,
+              "sameCol": "atk-slinger-31",
+              "nextCol": "atk-archer-27"
+            },
+            {
+              "row": 39,
+              "sameCol": null,
+              "nextCol": null
+            },
+            {
+              "row": 40,
+              "sameCol": null,
+              "nextCol": null
+            },
+            {
+              "row": 41,
+              "sameCol": null,
+              "nextCol": null
             }
           ]
         },
@@ -3611,6 +4763,102 @@
           ]
         },
         {
+          "type": "ranged-step-pick",
+          "unitId": "atk-archer-26",
+          "from": [
+            12,
+            36
+          ],
+          "nearest": [
+            16,
+            36
+          ],
+          "selected": null,
+          "neighbors": [
+            {
+              "q": 13,
+              "r": 36,
+              "occupiedBy": "atk-archer-22",
+              "passable": true
+            },
+            {
+              "q": 11,
+              "r": 36,
+              "occupiedBy": "atk-slinger-29",
+              "passable": true
+            },
+            {
+              "q": 12,
+              "r": 37,
+              "occupiedBy": "atk-archer-27",
+              "passable": true
+            },
+            {
+              "q": 12,
+              "r": 35,
+              "occupiedBy": "atk-archer-25",
+              "passable": true
+            }
+          ],
+          "forwardLane": [
+            {
+              "row": 31,
+              "sameCol": null,
+              "nextCol": "atk-infantry-2"
+            },
+            {
+              "row": 32,
+              "sameCol": null,
+              "nextCol": "atk-infantry-3"
+            },
+            {
+              "row": 33,
+              "sameCol": null,
+              "nextCol": "atk-archer-24"
+            },
+            {
+              "row": 34,
+              "sameCol": null,
+              "nextCol": "atk-archer-20"
+            },
+            {
+              "row": 35,
+              "sameCol": "atk-archer-25",
+              "nextCol": "atk-archer-21"
+            },
+            {
+              "row": 36,
+              "sameCol": "atk-archer-26",
+              "nextCol": "atk-archer-22"
+            },
+            {
+              "row": 37,
+              "sameCol": "atk-archer-27",
+              "nextCol": "atk-archer-23"
+            },
+            {
+              "row": 38,
+              "sameCol": null,
+              "nextCol": null
+            },
+            {
+              "row": 39,
+              "sameCol": null,
+              "nextCol": null
+            },
+            {
+              "row": 40,
+              "sameCol": null,
+              "nextCol": null
+            },
+            {
+              "row": 41,
+              "sameCol": null,
+              "nextCol": null
+            }
+          ]
+        },
+        {
           "type": "activation",
           "unitId": "atk-archer-26",
           "doctrine": "steady",
@@ -3716,6 +4964,102 @@
           ]
         },
         {
+          "type": "ranged-step-pick",
+          "unitId": "atk-slinger-28",
+          "from": [
+            11,
+            35
+          ],
+          "nearest": [
+            16,
+            35
+          ],
+          "selected": "11,34",
+          "neighbors": [
+            {
+              "q": 12,
+              "r": 35,
+              "occupiedBy": "atk-archer-25",
+              "passable": true
+            },
+            {
+              "q": 10,
+              "r": 35,
+              "occupiedBy": "atk-slinger-30",
+              "passable": true
+            },
+            {
+              "q": 11,
+              "r": 36,
+              "occupiedBy": "atk-slinger-29",
+              "passable": true
+            },
+            {
+              "q": 11,
+              "r": 34,
+              "occupiedBy": null,
+              "passable": true
+            }
+          ],
+          "forwardLane": [
+            {
+              "row": 30,
+              "sameCol": null,
+              "nextCol": null
+            },
+            {
+              "row": 31,
+              "sameCol": null,
+              "nextCol": null
+            },
+            {
+              "row": 32,
+              "sameCol": null,
+              "nextCol": null
+            },
+            {
+              "row": 33,
+              "sameCol": null,
+              "nextCol": null
+            },
+            {
+              "row": 34,
+              "sameCol": null,
+              "nextCol": null
+            },
+            {
+              "row": 35,
+              "sameCol": "atk-slinger-28",
+              "nextCol": "atk-archer-25"
+            },
+            {
+              "row": 36,
+              "sameCol": "atk-slinger-29",
+              "nextCol": "atk-archer-26"
+            },
+            {
+              "row": 37,
+              "sameCol": null,
+              "nextCol": null
+            },
+            {
+              "row": 38,
+              "sameCol": null,
+              "nextCol": null
+            },
+            {
+              "row": 39,
+              "sameCol": null,
+              "nextCol": null
+            },
+            {
+              "row": 40,
+              "sameCol": null,
+              "nextCol": null
+            }
+          ]
+        },
+        {
           "type": "move",
           "unitId": "atk-slinger-28",
           "role": "slinger",
@@ -3725,6 +5069,102 @@
           "moveLeftBefore": 2,
           "moveLeftAfter": 1,
           "turn": 0
+        },
+        {
+          "type": "ranged-step-pick",
+          "unitId": "atk-slinger-28",
+          "from": [
+            11,
+            34
+          ],
+          "nearest": [
+            16,
+            34
+          ],
+          "selected": "12,34",
+          "neighbors": [
+            {
+              "q": 12,
+              "r": 34,
+              "occupiedBy": null,
+              "passable": true
+            },
+            {
+              "q": 10,
+              "r": 34,
+              "occupiedBy": null,
+              "passable": true
+            },
+            {
+              "q": 11,
+              "r": 35,
+              "occupiedBy": null,
+              "passable": true
+            },
+            {
+              "q": 11,
+              "r": 33,
+              "occupiedBy": null,
+              "passable": true
+            }
+          ],
+          "forwardLane": [
+            {
+              "row": 29,
+              "sameCol": null,
+              "nextCol": null
+            },
+            {
+              "row": 30,
+              "sameCol": null,
+              "nextCol": null
+            },
+            {
+              "row": 31,
+              "sameCol": null,
+              "nextCol": null
+            },
+            {
+              "row": 32,
+              "sameCol": null,
+              "nextCol": null
+            },
+            {
+              "row": 33,
+              "sameCol": null,
+              "nextCol": null
+            },
+            {
+              "row": 34,
+              "sameCol": "atk-slinger-28",
+              "nextCol": null
+            },
+            {
+              "row": 35,
+              "sameCol": null,
+              "nextCol": "atk-archer-25"
+            },
+            {
+              "row": 36,
+              "sameCol": "atk-slinger-29",
+              "nextCol": "atk-archer-26"
+            },
+            {
+              "row": 37,
+              "sameCol": null,
+              "nextCol": null
+            },
+            {
+              "row": 38,
+              "sameCol": null,
+              "nextCol": null
+            },
+            {
+              "row": 39,
+              "sameCol": null,
+              "nextCol": null
+            }
+          ]
         },
         {
           "type": "move",
@@ -3825,6 +5265,102 @@
           ]
         },
         {
+          "type": "ranged-step-pick",
+          "unitId": "atk-slinger-30",
+          "from": [
+            10,
+            35
+          ],
+          "nearest": [
+            16,
+            35
+          ],
+          "selected": "11,35",
+          "neighbors": [
+            {
+              "q": 11,
+              "r": 35,
+              "occupiedBy": null,
+              "passable": true
+            },
+            {
+              "q": 9,
+              "r": 35,
+              "occupiedBy": null,
+              "passable": true
+            },
+            {
+              "q": 10,
+              "r": 36,
+              "occupiedBy": "atk-slinger-31",
+              "passable": true
+            },
+            {
+              "q": 10,
+              "r": 34,
+              "occupiedBy": null,
+              "passable": true
+            }
+          ],
+          "forwardLane": [
+            {
+              "row": 30,
+              "sameCol": null,
+              "nextCol": null
+            },
+            {
+              "row": 31,
+              "sameCol": null,
+              "nextCol": null
+            },
+            {
+              "row": 32,
+              "sameCol": null,
+              "nextCol": null
+            },
+            {
+              "row": 33,
+              "sameCol": null,
+              "nextCol": null
+            },
+            {
+              "row": 34,
+              "sameCol": null,
+              "nextCol": null
+            },
+            {
+              "row": 35,
+              "sameCol": "atk-slinger-30",
+              "nextCol": null
+            },
+            {
+              "row": 36,
+              "sameCol": "atk-slinger-31",
+              "nextCol": null
+            },
+            {
+              "row": 37,
+              "sameCol": null,
+              "nextCol": null
+            },
+            {
+              "row": 38,
+              "sameCol": null,
+              "nextCol": null
+            },
+            {
+              "row": 39,
+              "sameCol": null,
+              "nextCol": null
+            },
+            {
+              "row": 40,
+              "sameCol": null,
+              "nextCol": null
+            }
+          ]
+        },
+        {
           "type": "move",
           "unitId": "atk-slinger-30",
           "role": "slinger",
@@ -3834,6 +5370,102 @@
           "moveLeftBefore": 2,
           "moveLeftAfter": 1,
           "turn": 0
+        },
+        {
+          "type": "ranged-step-pick",
+          "unitId": "atk-slinger-30",
+          "from": [
+            11,
+            35
+          ],
+          "nearest": [
+            16,
+            35
+          ],
+          "selected": "11,34",
+          "neighbors": [
+            {
+              "q": 12,
+              "r": 35,
+              "occupiedBy": "atk-archer-25",
+              "passable": true
+            },
+            {
+              "q": 10,
+              "r": 35,
+              "occupiedBy": null,
+              "passable": true
+            },
+            {
+              "q": 11,
+              "r": 36,
+              "occupiedBy": null,
+              "passable": true
+            },
+            {
+              "q": 11,
+              "r": 34,
+              "occupiedBy": null,
+              "passable": true
+            }
+          ],
+          "forwardLane": [
+            {
+              "row": 30,
+              "sameCol": null,
+              "nextCol": null
+            },
+            {
+              "row": 31,
+              "sameCol": null,
+              "nextCol": null
+            },
+            {
+              "row": 32,
+              "sameCol": null,
+              "nextCol": null
+            },
+            {
+              "row": 33,
+              "sameCol": null,
+              "nextCol": null
+            },
+            {
+              "row": 34,
+              "sameCol": null,
+              "nextCol": "atk-slinger-28"
+            },
+            {
+              "row": 35,
+              "sameCol": "atk-slinger-30",
+              "nextCol": "atk-archer-25"
+            },
+            {
+              "row": 36,
+              "sameCol": null,
+              "nextCol": "atk-archer-26"
+            },
+            {
+              "row": 37,
+              "sameCol": null,
+              "nextCol": "atk-slinger-29"
+            },
+            {
+              "row": 38,
+              "sameCol": null,
+              "nextCol": null
+            },
+            {
+              "row": 39,
+              "sameCol": null,
+              "nextCol": null
+            },
+            {
+              "row": 40,
+              "sameCol": null,
+              "nextCol": null
+            }
+          ]
         },
         {
           "type": "move",
@@ -3948,6 +5580,102 @@
               "distance": 5,
               "class": "ranged",
               "priority": 1
+            }
+          ]
+        },
+        {
+          "type": "ranged-step-pick",
+          "unitId": "atk-archer-26",
+          "from": [
+            12,
+            36
+          ],
+          "nearest": [
+            16,
+            36
+          ],
+          "selected": null,
+          "neighbors": [
+            {
+              "q": 13,
+              "r": 36,
+              "occupiedBy": "atk-archer-22",
+              "passable": true
+            },
+            {
+              "q": 11,
+              "r": 36,
+              "occupiedBy": null,
+              "passable": true
+            },
+            {
+              "q": 12,
+              "r": 37,
+              "occupiedBy": "atk-slinger-29",
+              "passable": true
+            },
+            {
+              "q": 12,
+              "r": 35,
+              "occupiedBy": "atk-archer-25",
+              "passable": true
+            }
+          ],
+          "forwardLane": [
+            {
+              "row": 31,
+              "sameCol": null,
+              "nextCol": null
+            },
+            {
+              "row": 32,
+              "sameCol": null,
+              "nextCol": null
+            },
+            {
+              "row": 33,
+              "sameCol": null,
+              "nextCol": "atk-archer-24"
+            },
+            {
+              "row": 34,
+              "sameCol": "atk-slinger-28",
+              "nextCol": "atk-archer-20"
+            },
+            {
+              "row": 35,
+              "sameCol": "atk-archer-25",
+              "nextCol": "atk-archer-21"
+            },
+            {
+              "row": 36,
+              "sameCol": "atk-archer-26",
+              "nextCol": "atk-archer-22"
+            },
+            {
+              "row": 37,
+              "sameCol": "atk-slinger-29",
+              "nextCol": "atk-archer-23"
+            },
+            {
+              "row": 38,
+              "sameCol": null,
+              "nextCol": "atk-archer-27"
+            },
+            {
+              "row": 39,
+              "sameCol": null,
+              "nextCol": null
+            },
+            {
+              "row": 40,
+              "sameCol": null,
+              "nextCol": null
+            },
+            {
+              "row": 41,
+              "sameCol": null,
+              "nextCol": "atk-infantry-10"
             }
           ]
         },
@@ -4217,6 +5945,102 @@
           ]
         },
         {
+          "type": "ranged-step-pick",
+          "unitId": "atk-slinger-30",
+          "from": [
+            11,
+            34
+          ],
+          "nearest": [
+            16,
+            34
+          ],
+          "selected": "11,33",
+          "neighbors": [
+            {
+              "q": 12,
+              "r": 34,
+              "occupiedBy": "atk-slinger-28",
+              "passable": true
+            },
+            {
+              "q": 10,
+              "r": 34,
+              "occupiedBy": null,
+              "passable": true
+            },
+            {
+              "q": 11,
+              "r": 35,
+              "occupiedBy": null,
+              "passable": true
+            },
+            {
+              "q": 11,
+              "r": 33,
+              "occupiedBy": null,
+              "passable": true
+            }
+          ],
+          "forwardLane": [
+            {
+              "row": 29,
+              "sameCol": null,
+              "nextCol": null
+            },
+            {
+              "row": 30,
+              "sameCol": null,
+              "nextCol": null
+            },
+            {
+              "row": 31,
+              "sameCol": null,
+              "nextCol": null
+            },
+            {
+              "row": 32,
+              "sameCol": null,
+              "nextCol": null
+            },
+            {
+              "row": 33,
+              "sameCol": null,
+              "nextCol": null
+            },
+            {
+              "row": 34,
+              "sameCol": "atk-slinger-30",
+              "nextCol": "atk-slinger-28"
+            },
+            {
+              "row": 35,
+              "sameCol": null,
+              "nextCol": "atk-archer-25"
+            },
+            {
+              "row": 36,
+              "sameCol": null,
+              "nextCol": "atk-archer-26"
+            },
+            {
+              "row": 37,
+              "sameCol": "atk-slinger-31",
+              "nextCol": "atk-slinger-29"
+            },
+            {
+              "row": 38,
+              "sameCol": null,
+              "nextCol": null
+            },
+            {
+              "row": 39,
+              "sameCol": null,
+              "nextCol": null
+            }
+          ]
+        },
+        {
           "type": "move",
           "unitId": "atk-slinger-30",
           "role": "slinger",
@@ -4226,6 +6050,102 @@
           "moveLeftBefore": 2,
           "moveLeftAfter": 1,
           "turn": 1
+        },
+        {
+          "type": "ranged-step-pick",
+          "unitId": "atk-slinger-30",
+          "from": [
+            11,
+            33
+          ],
+          "nearest": [
+            16,
+            33
+          ],
+          "selected": "12,33",
+          "neighbors": [
+            {
+              "q": 12,
+              "r": 33,
+              "occupiedBy": null,
+              "passable": true
+            },
+            {
+              "q": 10,
+              "r": 33,
+              "occupiedBy": null,
+              "passable": true
+            },
+            {
+              "q": 11,
+              "r": 34,
+              "occupiedBy": null,
+              "passable": true
+            },
+            {
+              "q": 11,
+              "r": 32,
+              "occupiedBy": null,
+              "passable": true
+            }
+          ],
+          "forwardLane": [
+            {
+              "row": 28,
+              "sameCol": null,
+              "nextCol": null
+            },
+            {
+              "row": 29,
+              "sameCol": null,
+              "nextCol": null
+            },
+            {
+              "row": 30,
+              "sameCol": null,
+              "nextCol": null
+            },
+            {
+              "row": 31,
+              "sameCol": null,
+              "nextCol": null
+            },
+            {
+              "row": 32,
+              "sameCol": null,
+              "nextCol": null
+            },
+            {
+              "row": 33,
+              "sameCol": "atk-slinger-30",
+              "nextCol": null
+            },
+            {
+              "row": 34,
+              "sameCol": null,
+              "nextCol": "atk-slinger-28"
+            },
+            {
+              "row": 35,
+              "sameCol": null,
+              "nextCol": "atk-archer-25"
+            },
+            {
+              "row": 36,
+              "sameCol": null,
+              "nextCol": "atk-archer-26"
+            },
+            {
+              "row": 37,
+              "sameCol": "atk-slinger-31",
+              "nextCol": "atk-slinger-29"
+            },
+            {
+              "row": 38,
+              "sameCol": null,
+              "nextCol": null
+            }
+          ]
         },
         {
           "type": "move",
@@ -4352,6 +6272,102 @@
               "distance": 5,
               "class": "ranged",
               "priority": 1
+            }
+          ]
+        },
+        {
+          "type": "ranged-step-pick",
+          "unitId": "atk-archer-26",
+          "from": [
+            12,
+            36
+          ],
+          "nearest": [
+            16,
+            36
+          ],
+          "selected": null,
+          "neighbors": [
+            {
+              "q": 13,
+              "r": 36,
+              "occupiedBy": "atk-archer-22",
+              "passable": true
+            },
+            {
+              "q": 11,
+              "r": 36,
+              "occupiedBy": null,
+              "passable": true
+            },
+            {
+              "q": 12,
+              "r": 37,
+              "occupiedBy": "atk-slinger-29",
+              "passable": true
+            },
+            {
+              "q": 12,
+              "r": 35,
+              "occupiedBy": "atk-archer-25",
+              "passable": true
+            }
+          ],
+          "forwardLane": [
+            {
+              "row": 31,
+              "sameCol": null,
+              "nextCol": null
+            },
+            {
+              "row": 32,
+              "sameCol": null,
+              "nextCol": null
+            },
+            {
+              "row": 33,
+              "sameCol": "atk-slinger-30",
+              "nextCol": "atk-archer-24"
+            },
+            {
+              "row": 34,
+              "sameCol": "atk-slinger-28",
+              "nextCol": "atk-archer-20"
+            },
+            {
+              "row": 35,
+              "sameCol": "atk-archer-25",
+              "nextCol": "atk-archer-21"
+            },
+            {
+              "row": 36,
+              "sameCol": "atk-archer-26",
+              "nextCol": "atk-archer-22"
+            },
+            {
+              "row": 37,
+              "sameCol": "atk-slinger-29",
+              "nextCol": "atk-archer-23"
+            },
+            {
+              "row": 38,
+              "sameCol": "atk-slinger-31",
+              "nextCol": "atk-archer-27"
+            },
+            {
+              "row": 39,
+              "sameCol": null,
+              "nextCol": null
+            },
+            {
+              "row": 40,
+              "sameCol": null,
+              "nextCol": null
+            },
+            {
+              "row": 41,
+              "sameCol": null,
+              "nextCol": null
             }
           ]
         },
@@ -4767,6 +6783,102 @@
               "distance": 5,
               "class": "ranged",
               "priority": 1
+            }
+          ]
+        },
+        {
+          "type": "ranged-step-pick",
+          "unitId": "atk-archer-26",
+          "from": [
+            12,
+            36
+          ],
+          "nearest": [
+            16,
+            36
+          ],
+          "selected": null,
+          "neighbors": [
+            {
+              "q": 13,
+              "r": 36,
+              "occupiedBy": "atk-archer-22",
+              "passable": true
+            },
+            {
+              "q": 11,
+              "r": 36,
+              "occupiedBy": null,
+              "passable": true
+            },
+            {
+              "q": 12,
+              "r": 37,
+              "occupiedBy": "atk-slinger-29",
+              "passable": true
+            },
+            {
+              "q": 12,
+              "r": 35,
+              "occupiedBy": "atk-archer-25",
+              "passable": true
+            }
+          ],
+          "forwardLane": [
+            {
+              "row": 31,
+              "sameCol": null,
+              "nextCol": null
+            },
+            {
+              "row": 32,
+              "sameCol": null,
+              "nextCol": null
+            },
+            {
+              "row": 33,
+              "sameCol": "atk-slinger-30",
+              "nextCol": "atk-archer-24"
+            },
+            {
+              "row": 34,
+              "sameCol": "atk-slinger-28",
+              "nextCol": "atk-archer-20"
+            },
+            {
+              "row": 35,
+              "sameCol": "atk-archer-25",
+              "nextCol": "atk-archer-21"
+            },
+            {
+              "row": 36,
+              "sameCol": "atk-archer-26",
+              "nextCol": "atk-archer-22"
+            },
+            {
+              "row": 37,
+              "sameCol": "atk-slinger-29",
+              "nextCol": "atk-archer-23"
+            },
+            {
+              "row": 38,
+              "sameCol": "atk-slinger-31",
+              "nextCol": "atk-archer-27"
+            },
+            {
+              "row": 39,
+              "sameCol": null,
+              "nextCol": null
+            },
+            {
+              "row": 40,
+              "sameCol": null,
+              "nextCol": null
+            },
+            {
+              "row": 41,
+              "sameCol": null,
+              "nextCol": "atk-infantry-11"
             }
           ]
         },
@@ -5182,6 +7294,102 @@
               "distance": 5,
               "class": "ranged",
               "priority": 1
+            }
+          ]
+        },
+        {
+          "type": "ranged-step-pick",
+          "unitId": "atk-archer-26",
+          "from": [
+            12,
+            36
+          ],
+          "nearest": [
+            16,
+            36
+          ],
+          "selected": null,
+          "neighbors": [
+            {
+              "q": 13,
+              "r": 36,
+              "occupiedBy": "atk-archer-22",
+              "passable": true
+            },
+            {
+              "q": 11,
+              "r": 36,
+              "occupiedBy": null,
+              "passable": true
+            },
+            {
+              "q": 12,
+              "r": 37,
+              "occupiedBy": "atk-slinger-29",
+              "passable": true
+            },
+            {
+              "q": 12,
+              "r": 35,
+              "occupiedBy": "atk-archer-25",
+              "passable": true
+            }
+          ],
+          "forwardLane": [
+            {
+              "row": 31,
+              "sameCol": null,
+              "nextCol": null
+            },
+            {
+              "row": 32,
+              "sameCol": null,
+              "nextCol": null
+            },
+            {
+              "row": 33,
+              "sameCol": "atk-slinger-30",
+              "nextCol": "atk-archer-24"
+            },
+            {
+              "row": 34,
+              "sameCol": "atk-slinger-28",
+              "nextCol": "atk-archer-20"
+            },
+            {
+              "row": 35,
+              "sameCol": "atk-archer-25",
+              "nextCol": "atk-archer-21"
+            },
+            {
+              "row": 36,
+              "sameCol": "atk-archer-26",
+              "nextCol": "atk-archer-22"
+            },
+            {
+              "row": 37,
+              "sameCol": "atk-slinger-29",
+              "nextCol": "atk-archer-23"
+            },
+            {
+              "row": 38,
+              "sameCol": "atk-slinger-31",
+              "nextCol": "atk-archer-27"
+            },
+            {
+              "row": 39,
+              "sameCol": null,
+              "nextCol": null
+            },
+            {
+              "row": 40,
+              "sameCol": null,
+              "nextCol": "atk-infantry-9"
+            },
+            {
+              "row": 41,
+              "sameCol": null,
+              "nextCol": null
             }
           ]
         },
@@ -5597,6 +7805,102 @@
               "distance": 5,
               "class": "ranged",
               "priority": 1
+            }
+          ]
+        },
+        {
+          "type": "ranged-step-pick",
+          "unitId": "atk-archer-26",
+          "from": [
+            12,
+            36
+          ],
+          "nearest": [
+            16,
+            36
+          ],
+          "selected": null,
+          "neighbors": [
+            {
+              "q": 13,
+              "r": 36,
+              "occupiedBy": "atk-archer-22",
+              "passable": true
+            },
+            {
+              "q": 11,
+              "r": 36,
+              "occupiedBy": null,
+              "passable": true
+            },
+            {
+              "q": 12,
+              "r": 37,
+              "occupiedBy": "atk-slinger-29",
+              "passable": true
+            },
+            {
+              "q": 12,
+              "r": 35,
+              "occupiedBy": "atk-archer-25",
+              "passable": true
+            }
+          ],
+          "forwardLane": [
+            {
+              "row": 31,
+              "sameCol": null,
+              "nextCol": null
+            },
+            {
+              "row": 32,
+              "sameCol": null,
+              "nextCol": null
+            },
+            {
+              "row": 33,
+              "sameCol": "atk-slinger-30",
+              "nextCol": "atk-archer-24"
+            },
+            {
+              "row": 34,
+              "sameCol": "atk-slinger-28",
+              "nextCol": "atk-archer-20"
+            },
+            {
+              "row": 35,
+              "sameCol": "atk-archer-25",
+              "nextCol": "atk-archer-21"
+            },
+            {
+              "row": 36,
+              "sameCol": "atk-archer-26",
+              "nextCol": "atk-archer-22"
+            },
+            {
+              "row": 37,
+              "sameCol": "atk-slinger-29",
+              "nextCol": "atk-archer-23"
+            },
+            {
+              "row": 38,
+              "sameCol": "atk-slinger-31",
+              "nextCol": "atk-archer-27"
+            },
+            {
+              "row": 39,
+              "sameCol": null,
+              "nextCol": null
+            },
+            {
+              "row": 40,
+              "sameCol": null,
+              "nextCol": null
+            },
+            {
+              "row": 41,
+              "sameCol": null,
+              "nextCol": null
             }
           ]
         },
@@ -6012,6 +8316,102 @@
               "distance": 5,
               "class": "ranged",
               "priority": 1
+            }
+          ]
+        },
+        {
+          "type": "ranged-step-pick",
+          "unitId": "atk-archer-26",
+          "from": [
+            12,
+            36
+          ],
+          "nearest": [
+            16,
+            36
+          ],
+          "selected": null,
+          "neighbors": [
+            {
+              "q": 13,
+              "r": 36,
+              "occupiedBy": "atk-archer-22",
+              "passable": true
+            },
+            {
+              "q": 11,
+              "r": 36,
+              "occupiedBy": null,
+              "passable": true
+            },
+            {
+              "q": 12,
+              "r": 37,
+              "occupiedBy": "atk-slinger-29",
+              "passable": true
+            },
+            {
+              "q": 12,
+              "r": 35,
+              "occupiedBy": "atk-archer-25",
+              "passable": true
+            }
+          ],
+          "forwardLane": [
+            {
+              "row": 31,
+              "sameCol": null,
+              "nextCol": null
+            },
+            {
+              "row": 32,
+              "sameCol": null,
+              "nextCol": null
+            },
+            {
+              "row": 33,
+              "sameCol": "atk-slinger-30",
+              "nextCol": "atk-archer-24"
+            },
+            {
+              "row": 34,
+              "sameCol": "atk-slinger-28",
+              "nextCol": "atk-archer-20"
+            },
+            {
+              "row": 35,
+              "sameCol": "atk-archer-25",
+              "nextCol": "atk-archer-21"
+            },
+            {
+              "row": 36,
+              "sameCol": "atk-archer-26",
+              "nextCol": "atk-archer-22"
+            },
+            {
+              "row": 37,
+              "sameCol": "atk-slinger-29",
+              "nextCol": "atk-archer-23"
+            },
+            {
+              "row": 38,
+              "sameCol": "atk-slinger-31",
+              "nextCol": "atk-archer-27"
+            },
+            {
+              "row": 39,
+              "sameCol": null,
+              "nextCol": null
+            },
+            {
+              "row": 40,
+              "sameCol": null,
+              "nextCol": null
+            },
+            {
+              "row": 41,
+              "sameCol": null,
+              "nextCol": null
             }
           ]
         },
@@ -6427,6 +8827,102 @@
               "distance": 5,
               "class": "ranged",
               "priority": 1
+            }
+          ]
+        },
+        {
+          "type": "ranged-step-pick",
+          "unitId": "atk-archer-26",
+          "from": [
+            12,
+            36
+          ],
+          "nearest": [
+            16,
+            36
+          ],
+          "selected": null,
+          "neighbors": [
+            {
+              "q": 13,
+              "r": 36,
+              "occupiedBy": "atk-archer-22",
+              "passable": true
+            },
+            {
+              "q": 11,
+              "r": 36,
+              "occupiedBy": null,
+              "passable": true
+            },
+            {
+              "q": 12,
+              "r": 37,
+              "occupiedBy": "atk-slinger-29",
+              "passable": true
+            },
+            {
+              "q": 12,
+              "r": 35,
+              "occupiedBy": "atk-archer-25",
+              "passable": true
+            }
+          ],
+          "forwardLane": [
+            {
+              "row": 31,
+              "sameCol": null,
+              "nextCol": null
+            },
+            {
+              "row": 32,
+              "sameCol": null,
+              "nextCol": null
+            },
+            {
+              "row": 33,
+              "sameCol": "atk-slinger-30",
+              "nextCol": "atk-archer-24"
+            },
+            {
+              "row": 34,
+              "sameCol": "atk-slinger-28",
+              "nextCol": "atk-archer-20"
+            },
+            {
+              "row": 35,
+              "sameCol": "atk-archer-25",
+              "nextCol": "atk-archer-21"
+            },
+            {
+              "row": 36,
+              "sameCol": "atk-archer-26",
+              "nextCol": "atk-archer-22"
+            },
+            {
+              "row": 37,
+              "sameCol": "atk-slinger-29",
+              "nextCol": "atk-archer-23"
+            },
+            {
+              "row": 38,
+              "sameCol": "atk-slinger-31",
+              "nextCol": "atk-archer-27"
+            },
+            {
+              "row": 39,
+              "sameCol": null,
+              "nextCol": null
+            },
+            {
+              "row": 40,
+              "sameCol": null,
+              "nextCol": null
+            },
+            {
+              "row": 41,
+              "sameCol": null,
+              "nextCol": null
             }
           ]
         },
@@ -6789,9 +9285,5 @@
       ]
     }
   ],
-  "errors": [
-    "steady/lines2/priority0/engaged: atk-archer-26 remained outside range without reducing distance (4->4)",
-    "steady/lines2/priority1/engaged: atk-archer-25 remained outside range without reducing distance (4->4)",
-    "steady/lines2/priority1/engaged: atk-archer-26 remained outside range without reducing distance (4->4)"
-  ]
+  "errors": []
 }
