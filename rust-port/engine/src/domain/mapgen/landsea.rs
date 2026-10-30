@@ -2377,6 +2377,46 @@ pub fn count_open_ocean_land_specks(hexes: &HexRecord) -> usize {
         .count()
 }
 
+/// Web `finalizeLandMassAfterCoast(hexes, typ, width, height, coastOpts?, coastPasses = 2)` (:5050).
+/// Petla (limit `przebiegi_maks` z JSON, web `pass < 3`): `removeTinyLandIslands` z progiem typu +
+/// `purgeOpenOceanLandSpecks`; przerwanie gdy purge nic nie usunal po pierwszym przebiegu. Potem
+/// `finalizeCoastAndInlandWater(coast_passes, max_inland_pool_size)` i `enforceMapBorderOcean`.
+/// Zwraca sume zamienionych heksow (tiny + purge).
+pub fn finalize_land_mass_after_coast(
+    hexes: &mut HexRecord,
+    typ: WorldType,
+    width: i64,
+    height: i64,
+    max_inland_pool_size: Option<usize>,
+    coast_passes: usize,
+) -> usize {
+    let min_hexes = min_tiny_island_hexes_for_typ(typ);
+    let max_passes = mapgen_landmass().sprzatanie.przebiegi_maks.wartosc;
+    let mut total = 0usize;
+    for pass in 0..max_passes {
+        total += remove_tiny_land_islands(hexes, min_hexes);
+        let purged = purge_open_ocean_land_specks(hexes);
+        total += purged;
+        if purged == 0 && pass > 0 {
+            break;
+        }
+    }
+    finalize_coast_and_inland_water(hexes, width, height, coast_passes, max_inland_pool_size);
+    enforce_map_border_ocean(hexes, width, height, None);
+    total
+}
+
+/// Wariant domyslny `finalizeLandMassAfterCoast` (bez `coastOpts`, `coastPasses` z JSON = 2).
+pub fn finalize_land_mass_after_coast_default(
+    hexes: &mut HexRecord,
+    typ: WorldType,
+    width: i64,
+    height: i64,
+) -> usize {
+    let coast_passes = mapgen_landmass().sprzatanie.wybrzeze_przebiegi_domyslne.wartosc;
+    finalize_land_mass_after_coast(hexes, typ, width, height, None, coast_passes)
+}
+
 /// Web `purgeOpenOceanLandSpecks(hexes)` (:5027): suchy ląd bez sasiada-lądu -> `setHexToMorze`.
 /// Sekwencyjnie: stan sasiadow czytany na biezaco (jak w JS). Zwraca liczbe usunietych heksow.
 pub fn purge_open_ocean_land_specks(hexes: &mut HexRecord) -> usize {
