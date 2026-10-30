@@ -1,6 +1,7 @@
 // P6.8B-P1b (pin 91dc998a): wektory z URUCHOMIONEGO weba dla symboli P1b bez zaleznosci zewnetrznych:
 // unitStockShortfallLabel (production.ts 682-693 w pinie, z UNIT_STOCK_GATE_LABEL i empireStockHas/stripDiacritics),
-// UNIT_POPULATION_COST + populationCostOf (production.ts 1815-1825 w pinie; wartosc z gra/data/miasto-params.json).
+// UNIT_POPULATION_COST (production.ts 1977 w pinie) + populationCostOf (1980-1982 w pinie); wartosc z gra/data/miasto-params.json.
+// Dodatkowo: stripDiacritics na CALEJ płaszczyźnie BMP (bez surogatow): lista znakow, dla ktorych wynik webu != toLowerCase(znak).
 // Uruchomienie (Node 22, katalog tego runu, bez builda gra/):
 //   node --experimental-transform-types --no-warnings --import ./repin-b-loader-register.mjs \
 //        ./gen-p6-8b-p1b-vectors.mjs <WEB_ROOT (git archive 91dc998a gra)> <KATALOG_WYJSCIA> <KATALOG_ROBOCZY_POZA_REPO>
@@ -105,13 +106,24 @@ const popItems = [
 ];
 const popCases = popItems.map((it) => ({ item: { ...it, koszt: enc(it.koszt) }, out: enc(W.populationCostOf(it)) }));
 
+// --- 5. stripDiacritics: pelna plaszczyzna BMP -------------------------------------
+// Rust sprawdza wszystkie znaki BMP; oczekiwany wynik = wpis z tej listy, a dla pozostalych toLowerCase(znak).
+const stripChanged = [];
+for (let c = 0; c <= 0xFFFF; c++) {
+  if (c >= 0xD800 && c <= 0xDFFF) continue;
+  const ch = String.fromCharCode(c);
+  const out = W.stripDiacritics(ch);
+  if (out !== ch.toLowerCase()) stripChanged.push({ c, out });
+}
+
 const doc = {
   pin: '91dc998a5f1b51ad29e0f4785edfd45655445c53',
-  zrodlo: 'gra/src/game/production.ts 682-693 (unitStockShortfallLabel + UNIT_STOCK_GATE_LABEL, empireStockHas, stripDiacritics), 1815-1825 (UNIT_POPULATION_COST, populationCostOf); miasto-params.json',
+  zrodlo: 'gra/src/game/production.ts 682-693 (unitStockShortfallLabel + UNIT_STOCK_GATE_LABEL, empireStockHas, stripDiacritics), 1977 (UNIT_POPULATION_COST), 1980-1982 (populationCostOf); miasto-params.json; stripDiacriticsChanged: pelny BMP',
   unitPopulationCost: enc(W.UNIT_POPULATION_COST),
   stockShortfall: shortfallCases,
   stockShortfallProto: devCases,
   populationCost: popCases,
+  stripDiacriticsChanged: stripChanged,
 };
 const outFile = join(outDir, 'p1b.json');
 writeFileSync(outFile, JSON.stringify(doc));

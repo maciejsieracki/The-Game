@@ -8,8 +8,8 @@
 //! Nieobecne pole = {"absent": true}; null = null.
 
 use civ_engine::domain::production_units::{
-    population_cost_of, unit_stock_shortfall_label, ProductionItem, ProductionKind,
-    UNIT_POPULATION_COST,
+    population_cost_of, strip_diacritics, unit_stock_shortfall_label, ProductionItem,
+    ProductionKind, UNIT_POPULATION_COST,
 };
 use serde_json::Value;
 use std::collections::BTreeMap;
@@ -137,6 +137,56 @@ fn stock_shortfall_prototype_keys_deviation_is_pinned() {
             "{surowiec}"
         );
     }
+}
+
+#[test]
+fn strip_diacritics_bmp_matches_web() {
+    // Pelna plaszczyzna BMP (bez surogatow): oczekiwany wynik = wpis z listy webu (`stripDiacriticsChanged`),
+    // a dla pozostalych znakow toLowerCase(znak) (web: NFD, usuniecie U+0300-U+036F, toLowerCase).
+    let r = root();
+    let mut expected: BTreeMap<u32, String> = BTreeMap::new();
+    for c in r["stripDiacriticsChanged"]
+        .as_array()
+        .expect("stripDiacriticsChanged")
+    {
+        let cp = c["c"].as_u64().expect("c") as u32;
+        expected.insert(cp, c["out"].as_str().expect("out").to_string());
+    }
+    // Znana, PRZYPIETA granica (nie blad testu): (a) sylaby Hangul AC00-D7A3 (11 172 znakow) nie sa
+    // rozkladane algorytmicznie; (b) 173 pozostalych znakow BMP, dla ktorych web zostawia znaki spoza
+    // U+0300-U+036F albo ma kilka baz, nie jest w tablicy NFD_BASE -> Rust zwraca znak bez zmian.
+    // Zmiana liczby rozbieznosci (np. po rozszerzeniu tablicy) wymaga swiadomej aktualizacji tych liczb.
+    const HANGUL_FIRST: u32 = 0xAC00;
+    const HANGUL_LAST: u32 = 0xD7A3;
+    const PINNED_HANGUL_MISMATCHES: usize = 11_172;
+    const PINNED_OTHER_MISMATCHES: usize = 173;
+    let mut hangul = 0usize;
+    let mut other: Vec<(u32, String, String)> = Vec::new();
+    for cp in 0u32..=0xFFFF {
+        let Some(ch) = char::from_u32(cp) else {
+            continue;
+        };
+        let lower = ch.to_lowercase().collect::<String>();
+        let want = expected.get(&cp).cloned().unwrap_or_else(|| lower.clone());
+        let got = strip_diacritics(&ch.to_string());
+        if got == want {
+            continue;
+        }
+        if (HANGUL_FIRST..=HANGUL_LAST).contains(&cp) {
+            hangul += 1;
+        } else {
+            // Pozostale rozbieznosci: Rust zwraca znak bez zmian (poza tablica NFD_BASE).
+            assert_eq!(got, lower, "U+{cp:04X}: oczekiwany pass-through");
+            other.push((cp, want, got));
+        }
+    }
+    assert_eq!(hangul, PINNED_HANGUL_MISMATCHES, "rozbieznosci Hangul");
+    assert_eq!(
+        other.len(),
+        PINNED_OTHER_MISMATCHES,
+        "pozostale rozbieznosci strip_diacritics: {:?}",
+        &other[..other.len().min(10)]
+    );
 }
 
 #[test]

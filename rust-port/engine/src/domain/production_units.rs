@@ -2444,7 +2444,7 @@ pub fn unit_matches_special_name(unit_name: &str, tokens: &[String]) -> bool {
 
 // ---------------------------------------------------------------------------
 // P6.8B-P1b (czesc 1): unitStockShortfallLabel (production.ts 682-693 @91dc998a) oraz
-// populationCostOf / UNIT_POPULATION_COST (production.ts 1815-1825). Wektory: p6_8b_vectors/p1b.json.
+// populationCostOf / UNIT_POPULATION_COST (production.ts 1980-1982 / 1977 @91dc998a). Wektory: p6_8b_vectors/p1b.json.
 // ---------------------------------------------------------------------------
 
 /// web `UNIT_POPULATION_COST` = `miasto-params.json` `jednostka_koszt_ludnosci.wartosc` (?? 1).

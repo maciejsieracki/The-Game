@@ -1,0 +1,7 @@
+POMIAR P6.8B-P1b-c1 RUNDA 3 (Operator, odpowiedz na zarzut nr 2 weryfikatora)
+Kod bazowy: production_units.rs z poprawka komentarza (zarzut 1), bez zmiany logiki; cargo test --test p6_8b_p1b_vectors (CARGO_INCREMENTAL=0)
+M1 zwrot etykiety unitStockShortfallLabel -> None (Some(format!(...)) zastapione przez None): KILLED
+  wynik: 4 passed, 3 failed
+  FAILED: stock_shortfall_label_thresholds_and_special_values, stock_shortfall_label_text_is_exact, stock_shortfall_label_matches_web_vectors
+  Korekta: runda 2 podawala "4 testy FAILED" (blad zapisu); poprawny wynik to 3 FAILED.
+Zrodlo przywrocone: TAK (cmp z kopia zapasowa poza repo: RESTORED_IDENTICAL).
