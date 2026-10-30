@@ -74,7 +74,7 @@ dotykające tych samych plików — zawsze sekwencyjnie, nigdy w tej samej fali.
 | 45 | R-RUSTPORT-P6-8-MIASTA-REKONESANS-Q1 | P6.8 (dok.) | 2/5 | wf_64144d57-d67 | **PASS-WITH-NOTES — zintegrowane (docs)**: `P6-8-MIASTA-PODZIAL.md` (18 pozycji → 10 tematów 8A–8J, 515 symboli, 22 partie ≤600 LOC; fale: 1=8A,8D,8J; 2=8B; 3=8C,8F(po REPIN-D); 4=8E; reszta 8G,8H,8I) | 2026-10-30 |
 | 46 | R-RUSTPORT-P6-8D-UTRZYMANIE-OBYWATELI-Q1 | P6.8D | 2/5 | (r2) | r1: citizen-resource-upkeep **zintegrowane** (`a8f4c7ee`, 1415/0); r2: gold-deficit, mennica, wealth, applyGoldDeficitHpLoss — etap 1 | 2026-10-30 |
 | 47 | R-RUSTPORT-P6-8A-PRODUKCJA-KOSZTY-Q1 | P6.8A | — | kolejka (dispatch gotowy; start po zwolnieniu slotu Rust) | — | 2026-10-30 |
-| 48 | R-RUSTPORT-P6-M06A9-LAD-MORZE-PANGEA-FINAL-Q1 | P6 mapgen | 1/5 | (nowy) | etap 1 | 2026-10-30 |
+| 48 | R-RUSTPORT-P6-M06A9-LAD-MORZE-PANGEA-FINAL-Q1 | P6 mapgen | 2/5 | wf_dd947043-660 | **PASS — zintegrowane** (1422/0; fillPangeaAnnularSeaCorridors, rebalanceLandFractionPangea, rebalanceLandSeaRatio). **M06A KOMPLET** (wszystkie wiersze tabeli zamknięte) | 2026-10-30 |
 | 24 | R-RUSTPORT-P6-M06A4-LAD-MORZE-RESZTA3-Q1 | P6 mapgen | 3/5 | wf_206786d8-1fa | **PASS-WITH-NOTES (partie 2–3) — zintegrowane** (`5a1fbb33`, 1265/0); zamknięte adm.; reszta → M06A5 |
 | 25 | R-RUSTPORT-P5-8-CITYPANEL-K08B-Q1 | P5.8 | 4/5 | wf_5b437a20-313 | **ZAMKNIĘTE ADMINISTRACYJNIE (9/24 jedn.) — zintegrowane** (`b19311e2`); reszta → K08C/K08D |
 | 3 | R-RUSTPORT-P5-8-CITYPANEL-PODZIAL-Q1 | P5.8 | 3/5 | wf_5b094795-b4f | **PASS — zintegrowane** (docs, `a1246e48`); slot wolny | 2026-10-29 |

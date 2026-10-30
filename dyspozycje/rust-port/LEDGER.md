@@ -336,3 +336,4 @@ Cel końcowy i bieżący zapisane w `GOAL-RUST-PORT-20261020.md` (§"CEL PĘTLI 
 | 2026-10-30 | R-RUSTPORT-REPIN-EKONOMIA-B3-Q1 | 1 | turn-economy hunki 18–29 (helpery); 4 wektory z weba; FC PASS-WITH-NOTES | **ZINTEGROWANE** (1404/0); dług: tick ekonomii (previewCityEconomy/advanceCityEconomy), manpower mp_regen_proc, wektory edge/post_central |
 | 2026-10-30 | R-RUSTPORT-P6-8D-UTRZYMANIE-OBYWATELI-Q1 | 1 | citizen-resource-upkeep; wektory z weba 0 rozbieżności; FC FAIL (zakres 1/4 plików) | **CZĘŚĆ ZINTEGROWANA** `a8f4c7ee` (1415/0); r2 ten sam ID |
 | 2026-10-30 | KONTENER | - | trzeci restart przy 3 równoległych workflow Rust — limit 2 równoległych workflow Rust obowiązuje twardo; P6.8A w kolejce | zasada |
+| 2026-10-30 | R-RUSTPORT-P6-M06A9-LAD-MORZE-PANGEA-FINAL-Q1 | 2 | r1 BLOCK/FAIL (M07, M17, M21, tabela) → r2 wektory prog-eps/warstwy + dowody → FC PASS | **ZINTEGROWANE** (1422/0); M06A KOMPLET; następne: P6 M06B, M07A… |
