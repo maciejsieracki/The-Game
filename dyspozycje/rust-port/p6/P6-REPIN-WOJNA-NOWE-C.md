@@ -69,3 +69,10 @@ Skrypt `mutate-c.py`, po jednej mutacji na galaz; kazda uruchamia `p6_repin_wojn
 ## NASTEPNA-PARTIA
 
 Brak zmian behawioralnych bez odpowiednika w Rust w tym zakresie. Kolejna czesc (osobne ID): WOJNA-ZMIANY (`forced-war-*`, `armyMerge.ts`, `planned-march.ts`).
+
+## Weryfikacja niezalezna (Operator-pomiary r1)
+
+- Bramki odtworzone na `ded9a2fb`: fmt EXIT=0, clippy EXIT=0, test 1347 passed / 0 failed (logi `ver-*-c-r1.log`).
+- Wektory `ai-move-range.json` i `diplomacy-tick-war-brake.json` zregenerowane z `git archive 91dc998a` i porównane bajt-w-bajt: identyczne.
+- Mutacje: 8 z 31 powtorzonych niezaleznie (R01, R07, R09, R12, D05, D15, D16, D18), wszystkie zabite. R13 potwierdzona jako równoważna (`t == 0` na linii przypisania).
+- Szczegoly: `dyspozycje/autobot/runs/R-RUSTPORT-REPIN-WOJNA-NOWE-C-Q1/02-operator-pomiary-r1.md`.
