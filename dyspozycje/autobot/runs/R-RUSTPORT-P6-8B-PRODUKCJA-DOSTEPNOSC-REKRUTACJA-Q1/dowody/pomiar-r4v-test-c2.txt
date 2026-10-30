@@ -1,0 +1,39 @@
+   Compiling serde_core v1.0.229
+   Compiling once_cell v1.21.4
+   Compiling zmij v1.0.23
+   Compiling pin-project-lite v0.2.17
+   Compiling itoa v1.0.18
+   Compiling memchr v2.8.3
+   Compiling tracing-core v0.1.36
+   Compiling tracing v0.1.44
+   Compiling serde_json v1.0.154
+   Compiling serde v1.0.229
+   Compiling civ-engine v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_19449271-622-2/rust-port/engine)
+    Finished `test` profile [unoptimized] target(s) in 40.77s
+     Running tests/p6_8b_c2a_vectors.rs (target/debug/deps/p6_8b_c2a_vectors-34e223986d95f94b)
+
+running 5 tests
+test set_paused_keeps_rekrutacja_absent_and_does_not_mutate_input ... ok
+test manpower_cost_of_scout_and_budynek_are_zero ... ok
+test manpower_cost_of_cost_mult_defaults_to_max_mult ... ok
+test set_paused_matches_web_vectors ... ok
+test manpower_cost_of_matches_web_vectors ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.17s
+
+     Running tests/p6_8b_c2b_vectors.rs (target/debug/deps/p6_8b_c2b_vectors-7ab9b9678a0fb039)
+
+running 4 tests
+test replacement_name_compare_matches_icu_measured_pairs ... ok
+test unknown_current_unit_returns_empty_list ... ok
+test current_unit_is_never_its_own_replacement ... ok
+test available_replacements_match_web_vectors ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.17s
+
+     Running tests/p6_8b_c2c_vectors.rs (target/debug/deps/p6_8b_c2c_vectors-da78bf777b291cd4)
+
+running 1 test
+test available_production_matches_web_vectors ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.48s

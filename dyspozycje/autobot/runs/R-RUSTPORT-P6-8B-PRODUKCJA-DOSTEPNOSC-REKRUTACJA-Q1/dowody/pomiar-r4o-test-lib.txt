@@ -1,0 +1,15 @@
+   Compiling civ-engine v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_19449271-622-4/rust-port/engine)
+    Finished `test` profile [unoptimized] target(s) in 22.62s
+     Running unittests src/lib.rs (target/debug/deps/civ_engine-16aabb0664806a8f)
+
+running 6 tests
+test domain::map_generator::tests::canonical_climate_band_vectors_match_typescript ... ok
+test domain::map_generator::tests::axial_distance_and_neighbours_match_hex_contract ... ok
+test domain::map_generator::tests::mulberry32_matches_typescript_first_values ... ok
+test domain::map_generator::tests::canonical_mask_vectors_match_typescript ... ok
+test domain::map_generator::tests::value_noise_and_fbm_match_typescript_golden_vectors ... ok
+test domain::map_generator::tests::terrain_bias_and_classification_match_typescript_golden_vectors ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+EXIT 0

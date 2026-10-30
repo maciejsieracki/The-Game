@@ -11,7 +11,9 @@
 |---|---|---|---|
 | 8B-P1a | helpery: nacja jednostek, zamienniki, kolejka ulepszeń, tokeny jednostek specjalnych, koszt kupna za złoto (web 694–905) | **ZROBIONE (kod + wektory + mutacje), runda 2 Operatora** | kod `7a8c9927b`, pomiary r1 `8bc151ddc`, runda 2 = commit opisany w raporcie |
 | 8B-P1b-c1 | `unitStockShortfallLabel` (682–693), `UNIT_POPULATION_COST` (1977), `populationCostOf` (1980–1982) | **ZROBIONE (kod + wektory `p1b.json` + 6 testów + mutacje), runda 1 Operatora; weryfikacja niezależna runda 2 (`pomiar-mutacje-p1b-c1-r2.txt`)** | kod: `population_cost_of`/`UNIT_POPULATION_COST` (nowe), `unit_stock_shortfall_label` (już był w `production_units.rs`, teraz przypięty wektorami); kod `ae62996d7`, raport `01-operator-r1.md`, weryfikacja `02-operator-pomiary-r2.md` |
-| 8B-P1b-c2 | `availableProduction` (923–1135), `availableReplacementsFor` (1136–1252), `setPaused` (1990), `manpowerCostOf` (1985) | NIEWYKONANE (c2 wymaga: pola `wstrzymana`/`rekrutacja` w `CityProduction`, bramki miasta i `manpower` z `recruitment.rs`) | — |
+| 8B-P1b-c2a | `manpowerCostOf` (1985), `setPaused` (1990), pola `wstrzymana`/`rekrutacja` w `CityProduction` | **ZROBIONE (kod + wektory + mutacje), runda 4 Operatora** | `9040d3bca` |
+| 8B-P1b-c2b | `availableReplacementsFor` (1136–1252), `replacement_name_compare` (localeCompare) | **ZROBIONE (kod + wektory + mutacje), runda 4 Operatora** | `88991f78b` |
+| 8B-P1b-c2c | `availableProduction` (923–1135) | **ZROBIONE (kod + wektory + mutacje), runda 4 Operatora** | `fbd9faf12` |
 | 8B-P2 | rekrutacja, rush, praca/podział, katalog epok, podział wyjścia (2004–2541) | NIEWYKONANE; wymaga zamknięcia B3 (`recruitment.rs`, §4 podziału) | — |
 
 Kryteria końca tematu **nie są spełnione**. Temat pozostaje OTWARTY.
@@ -47,10 +49,41 @@ Wektory: `rust-port/engine/tests/p6_8b_vectors/helpers.json` (generator `gen-p6-
 2. **Diakrytyki i `ł`.** Web `stripDiacritics` (NFD + usunięcie U+0300–U+036F + lower) NIE składa `ł`: `Słowianie` ≠ `Slowianie`. Pary testowe dla „tylko diakrytyki” używają znaków złożonych (np. `Sumér` = `Sumer`), a nie `ł`/`l`.
 3. **Puste wejścia po strip.** Wektory zawierają nacje/cywilizacje złożone wyłącznie ze znaków diakrytycznych (po strip = pusty napis).
 
+## Partie 8B-P1b-c2 (runda 4 Operatora; poprawka po zarzutach Evaluatora)
+
+- **c2a** (`manpowerCostOf`, `setPaused`): `manpower_cost_of(item, epoka, max_mult, cost_mult: Option)` (costMult domyslnie = maxMult), `set_paused`. Wektory `p1b-c2a.json` (10780 + 14 przypadkow) z prawdziwego `production.ts` przez loader TS. Mutacje M1-M5: 5/5 KILLED.
+- **c2b** (`availableReplacementsFor`): `available_replacements_for` + `ReplaceAvailabilityCtx`, `UnitReplaceRow`, komparator `cost_then_name_order` i `replacement_name_compare`. Wektory `p1b-c2b.json`: 2592 przypadki (1278 niepustych; zbior realny + syntetyczny: 'Wojownik próbny', 'Galera testowa', 'Jednostka bez typu' x2). Dodatkowo: 400 przypadkow sortowania z kosztami NaN/Infinity (`p1b-c2b-nan-sort.json`) i 42 039 par nazw wg ICU (`p1b-c2-icu-names.json`). Mutacje M1-M16: 16/16 KILLED.
+- **c2c** (`availableProduction`): `available_production` + `ProductionAvailabilityCtx`, `BuildingAvailRow`, `production_item_order`. Wektory `p1b-c2c.json`: 700 przypadkow (320 kontekstow siatki + 126 kontekstow lancuchow `upgradeFrom`, x 2 zbiory), 5982 pozycje-budynki. Dodatkowo: 400 przypadkow sortowania z kosztami NaN/Infinity (`p1b-c2c-nan-sort.json`) i test niezaleznosci od kolejnosci wejscia. Mutacje B1-B23 + B16b (24 wpisy): 23 KILLED, B17 SURVIVED (rownowaznik, ponizej).
+
+Zalozenia (ZALOZENIE, do weryfikacji):
+1. `replacement_name_compare` = `localeCompare` (ICU en-US) dla nazw z diakrytykami: poziom 1 = `strip_diacritics` + `ł`->`l` wg `locale_compare`; poziom 2 = `locale_compare` na oryginalach (fallback UTF-16 dla znakow spoza ASCII). Poprzedni poziom 2 (liczba diakrytykow) BYL BLEDNY: na alfabecie polskim (male litery, pelne pary, 37 890 180) roznil sie od ICU w 2682 parach, np. "źą" vs "ża" (ICU -1, stary kod +1). Obecna wersja: 0 rozbieznosci na tym samym zbiorze (`dowody/pomiar-r4o-icu-diakrytyki.txt`) i 0 na 42 039 parach z testu. NIE_ZMIERZONO: wielkosc liter przy nazwach z diakrytykami (UTF-16 zamiast ICU) poza `units.json`.
+2. `ctx.epoch` / `ctx.buildingLevel` nie-skonczone = 1 (web `Number.isFinite`).
+3. `ctx.civKey`: `None` = `undefined`, `Some(None)` = `null`.
+4. `units` w kolejnosci `data.units`; `findUnit` = pierwszy wpis.
+5. Sortowanie (web `Array#sort`, V8): `js_array_sort_by` = CountAndMakeRun + BinaryInsertionSort, czyli algorytm V8 dla n < 64. Komparator z kosztem NaN zwraca Equal bez tie-breaku po nazwie (spec SortCompare: NaN -> +0), jak web. Procedura nie panikuje przy niespojnych komparatorach (w przeciwienstwie do `slice::sort_by`). Zgodnosc z V8 dla NaN potwierdzona testem na 800 przypadkach (n = 2..63). Dla n >= 64 bez scalania runow V8: przy spojnym porzadku wynik identyczny; dla NaN zgodnosci nie deklarujemy. Osiagalnosc kosztu NaN w danych gry: NIE_ZMIERZONO (wektory z weba nie maja NaN w kosztach wyjsciowych).
+6. Kolejnosc wejscia `available_production`: web wstawia budynki przed jednostkami, Rust `production_item_order` daje ten sam porzadek niezaleznie od kolejnosci wejscia (test `production_item_order_is_input_order_independent`).
+
+Rownowazniki:
+- c2c B17 (`level` nie-skonczony nie normalizowany w `available_production`): `level` jest uzywany tylko w `item_cost(Budynek, ..., level)` (`production_units.rs`, wywolanie w petli budynkow), a `item_cost` dla budynku normalizuje nie-skonczony poziom do 1 (`is_finite` -> `else 1.0`, jak web). Wynik identyczny dla kazdej wartosci nie-skonczonej i NaN: rownowaznik z kodu.
+
+Wycofane z poprzedniej wersji (r4 Operatora):
+- c2b M14 NIE jest rownowaznikiem. Poprzednie uzasadnienie (identyczny wynik na 2592 przypadkach) opieralo sie na zbiorze, ktory nie wykrywal bledu poziomu 2. Poprawiona funkcja: poziom 2 usuniety; mutant M14 (usuniecie poziomu 3) zabity; stary poziom 2 odtworzony jako M16 i zabity.
+- c2c B16 NIE jest rownowaznikiem i nie zalezy od kolejnosci wejscia: zabity testem `production_item_order_is_input_order_independent`.
+- c2b/c2c: galezi `Zastąp specjalnie` i zamiennikow cywilizacyjnych nie da sie pokryc samymi realnymi danymi (np. Nacja '' z niepustym `W zamian za` nie wystepuje); pokryte zbiorem syntetycznym.
+
+Weryfikacja r4 (obrona po zarzutach Evaluatora; logi `dowody/pomiar-r4o-*.txt`, kazdy z linia `EXIT`):
+- Gate'y na commicie poprawki: `cargo fmt --all -- --check` EXIT 0; `cargo clippy --lib --test p6_8b_c2a/c2b/c2c_vectors -- -D warnings` EXIT 0; testy c2a 5/5, c2b 6/6, c2c 3/3; regresja lib 6/6, helpers 18/18, p1b 7/7 (EXIT 0).
+- Wektory z weba 91dc998a (c2a/c2b/c2c, `cmp` IDENTICAL x3) bez zmian; wektory NaN i ICU generuje `gen-p6-8b-c2-icu-nan.mjs` (Node v22.22.0; komparatory przepisane 1:1 z production.ts, sortowanie = V8 `Array.prototype.sort`).
+- Logi `pomiar-r4v-*.txt` pochodza z commitu przed poprawka i sa historyczne; `pomiar-r4v-cargo-fmt-check.txt` byl pusty (0 bajtow, bez EXIT) i zostal zastapiony przez `pomiar-r4o-cargo-fmt-check.txt`.
+- Mutacje na biezacym zrodle (przywracanie bajt w bajt: `restored_bytes_identical True`): c2a 5/5 KILLED; c2b M1-M16 16/16 KILLED; c2c B1-B23 + B16b: 23 KILLED, B17 SURVIVED (rownowaznik). B20 wykonany (bramka narodowosci w petli jednostek `available_production`; c2b M10 dotyczy innej galezi).
+- Korekta skryptow mutacji: wzorce `M4`, `M5`, `M6`, `M11` (`mut-p6-8b-c2b.py`) byly niejednoznaczne na zrodle zawierajacym kopie galezi z `available_production` (`pattern count 2`, mutant nie byl stosowany) — doprecyzowane kontekstem linii. `M9`, `M14`, `M16`, `B22` przepisane do `cost_then_name_order` / `replacement_name_compare`. B20 zdefiniowany (wczesniej pominiety z uzasadnieniem bez dowodu).
+- Liczby koncowe: c2a 5/5; c2b 16/16; c2c 23/24 (jedyny przezyjacy B17 = rownowaznik z kodu).
+- Licznik rund bez zmian (4/5, naglowek dispatchu). P2 (28 symboli) nadal NIE wykonane (8B2 po B3).
+
 ## Partie 8B-P1b i 8B-P2 — do wykonania
 
 - P1b-c1 (ZROBIONE, runda 1): `unitStockShortfallLabel`, `UNIT_POPULATION_COST` (= 0 w pinie), `populationCostOf`. Wektory: `tests/p6_8b_vectors/p1b.json` (generator `gen-p6-8b-p1b-vectors.mjs`), testy `tests/p6_8b_p1b_vectors.rs`.
-- P1b-c2 (NIEWYKONANE): `availableProduction` (923–1135 @91dc998a), `availableReplacementsFor` (1136–1252), `setPaused` (1990), `manpowerCostOf` (1985, zależy od `unitManpowerCostForType` z `manpower.ts`; w Rust istnieje `recruitment::unit_manpower_cost_for_type` z parametrem `cost_mult`, sygnatura webu ma `costMult = maxMult` -- do zweryfikowania). Wymaga rozszerzenia `CityProduction` o `wstrzymana` i `rekrutacja` (dotąd tylko `kolejka`, `postep`).
+- P1b-c2 (ZROBIONE w rundzie 4, patrz sekcja wyzej): `availableProduction`, `availableReplacementsFor`, `setPaused`, `manpowerCostOf`; `CityProduction` rozszerzone o `wstrzymana`/`rekrutacja`.
 - Uwaga do wcześniejszego wpisu: zakres `unitStockShortfallLabel` w dyspozycji (682–693) jest poprawny dla pinu 91dc998a; w `gra/` roboczej kopii repo funkcja nie występuje w tym miejscu (kopia jest nowsza niż pin, nie używać jej jako źródła wektorów).
 - P2 (28 symboli, ok. 538 LOC): `enqueueRecruitment`, `dequeueRecruitment`, `AdvanceRecruitmentResult`, `AdvanceRecruitmentGatedResult`, `advanceRecruitmentGated`, `advanceRecruitment`, `rushCost`, `rushProduction`, `cityPracaInteger`, `PodzialPracyMiasta`, `splitPraca`, `pracaImperialPoolGain`, `PracaSplitTick`, `previewPracaPoolBrutto`, `unitCostMode`, `unitPurchaseCost`, `buildableProduction`, `purchasableUnits`, `EPOCH_NUMBER_TO_NAME`, `BuildingCatalogStatus`, `BuildingCatalogEntry`, `eraBuildingCatalog`, `OutputShares`, `OutputSplit`, `DEFAULT_OUTPUT_SHARES`, `splitOutput`, `cityScienceOutput`, `cityMoneyOutput`. Przed P2: zamknięcie B3 (`recruitment.rs`).
 

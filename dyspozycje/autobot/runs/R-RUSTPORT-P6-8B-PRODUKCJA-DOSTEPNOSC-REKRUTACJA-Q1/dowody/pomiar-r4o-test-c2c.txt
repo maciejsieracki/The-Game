@@ -1,0 +1,12 @@
+   Compiling civ-engine v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_19449271-622-4/rust-port/engine)
+    Finished `test` profile [unoptimized] target(s) in 0.43s
+     Running tests/p6_8b_c2c_vectors.rs (target/debug/deps/p6_8b_c2c_vectors-da78bf777b291cd4)
+
+running 3 tests
+test production_item_order_is_input_order_independent ... ok
+test available_production_sort_matches_v8_with_nan_costs ... ok
+test available_production_matches_web_vectors ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.59s
+
+EXIT 0

@@ -1,0 +1,12 @@
+B1 KILLED ['test available_production_matches_web_vectors ... FAILED', 'test result: FAILED. 2 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.10s'] rc= 101
+B2 KILLED ['test available_production_matches_web_vectors ... FAILED', 'test result: FAILED. 2 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.14s'] rc= 101
+B3 KILLED ['test available_production_matches_web_vectors ... FAILED', 'test result: FAILED. 2 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.10s'] rc= 101
+B4 KILLED ['test available_production_matches_web_vectors ... FAILED', 'test result: FAILED. 2 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.17s'] rc= 101
+B5 KILLED ['test available_production_matches_web_vectors ... FAILED', 'test result: FAILED. 2 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.15s'] rc= 101
+B6 KILLED ['test available_production_matches_web_vectors ... FAILED', 'test result: FAILED. 2 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.47s'] rc= 101
+B7 KILLED ['test available_production_matches_web_vectors ... FAILED', 'test result: FAILED. 2 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.21s'] rc= 101
+B8 KILLED ['test available_production_matches_web_vectors ... FAILED', 'test result: FAILED. 2 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.22s'] rc= 101
+B9 KILLED ['test available_production_matches_web_vectors ... FAILED', 'test result: FAILED. 2 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.21s'] rc= 101
+B10 KILLED ['test available_production_matches_web_vectors ... FAILED', 'test result: FAILED. 2 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.25s'] rc= 101
+restored_bytes_identical True
+EXIT 0

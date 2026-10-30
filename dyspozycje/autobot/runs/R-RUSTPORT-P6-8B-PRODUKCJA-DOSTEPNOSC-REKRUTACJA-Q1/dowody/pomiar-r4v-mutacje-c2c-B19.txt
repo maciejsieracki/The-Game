@@ -1,0 +1,7 @@
+B19 KILLED ['test available_production_matches_web_vectors ... FAILED', 'test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.26s'] rc= 101
+restored_bytes_identical True
+Traceback (most recent call last):
+  File "/home/user/The-Game/.claude/worktrees/wf_19449271-622-2/dyspozycje/autobot/runs/R-RUSTPORT-P6-8B-PRODUKCJA-DOSTEPNOSC-REKRUTACJA-Q1/mut-p6-8b-c2c.py", line 42, in <module>
+    a, b = allm[k]
+           ~~~~^^^
+KeyError: 'B20'

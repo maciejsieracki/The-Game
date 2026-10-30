@@ -1,0 +1,11 @@
+M4 KILLED ['test available_replacements_match_web_vectors ... FAILED', 'test result: FAILED. 5 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.32s'] rc= 101
+M5 KILLED ['test available_replacements_match_web_vectors ... FAILED', 'test result: FAILED. 5 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.35s'] rc= 101
+M6 KILLED ['test available_replacements_match_web_vectors ... FAILED', 'test result: FAILED. 5 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.33s'] rc= 101
+M11 pattern count 2
+M12 KILLED ['test available_replacements_match_web_vectors ... FAILED', 'test result: FAILED. 5 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.36s'] rc= 101
+M13 KILLED ['test available_replacements_match_web_vectors ... FAILED', 'test result: FAILED. 5 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.40s'] rc= 101
+M14 KILLED ['test replacement_name_compare_matches_icu_measured_pairs ... FAILED', 'test replacement_sort_matches_v8_with_nan_costs ... FAILED', 'test replacement_name_compare_matches_icu_pairs_file ... FAILED'] rc= 101
+M15 KILLED ['test replacement_name_compare_matches_icu_measured_pairs ... FAILED', 'test available_replacements_match_web_vectors ... FAILED', 'test replacement_sort_matches_v8_with_nan_costs ... FAILED'] rc= 101
+M16 KILLED ['test replacement_name_compare_matches_icu_pairs_file ... FAILED', 'test result: FAILED. 5 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.55s'] rc= 101
+restored_bytes_identical True
+EXIT 0

@@ -1,0 +1,16 @@
+   Compiling civ-engine v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_19449271-622-4/rust-port/engine)
+    Finished `test` profile [unoptimized] target(s) in 0.34s
+     Running tests/p6_8b_p1b_vectors.rs (target/debug/deps/p6_8b_p1b_vectors-45604a8ab8f4187b)
+
+running 7 tests
+test stock_shortfall_label_thresholds_and_special_values ... ok
+test stock_shortfall_label_text_is_exact ... ok
+test stock_shortfall_prototype_keys_deviation_is_pinned ... ok
+test stock_shortfall_label_matches_web_vectors ... ok
+test population_cost_of_matches_web_vectors ... ok
+test unit_population_cost_matches_web ... ok
+test strip_diacritics_bmp_matches_web ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.16s
+
+EXIT 0

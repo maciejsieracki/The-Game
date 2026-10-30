@@ -1,0 +1,12 @@
+M1 KILLED ['test available_replacements_match_web_vectors ... FAILED', 'test result: FAILED. 5 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.39s'] rc= 101
+M2 KILLED ['test available_replacements_match_web_vectors ... FAILED', 'test result: FAILED. 5 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.40s'] rc= 101
+M3 KILLED ['test available_replacements_match_web_vectors ... FAILED', 'test result: FAILED. 5 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.41s'] rc= 101
+M4 pattern count 2
+M5 pattern count 2
+M6 pattern count 2
+M7 KILLED ['test available_replacements_match_web_vectors ... FAILED', 'test result: FAILED. 5 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.50s'] rc= 101
+M8 KILLED ['test available_replacements_match_web_vectors ... FAILED', 'test result: FAILED. 5 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.43s'] rc= 101
+M9 KILLED ['test available_replacements_match_web_vectors ... FAILED', 'test replacement_sort_matches_v8_with_nan_costs ... FAILED', 'test result: FAILED. 4 passed; 2 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.42s'] rc= 101
+M10 KILLED ['test available_replacements_match_web_vectors ... FAILED', 'test result: FAILED. 5 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.38s'] rc= 101
+restored_bytes_identical True
+EXIT 0

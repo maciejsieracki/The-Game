@@ -1,0 +1,27 @@
+   Compiling civ-engine v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_19449271-622-4/rust-port/engine)
+    Finished `test` profile [unoptimized] target(s) in 0.32s
+     Running tests/p6_8b_helpers_vectors.rs (target/debug/deps/p6_8b_helpers_vectors-69b57cfea0322a46)
+
+running 18 tests
+test availability_civ_nation_matches_web ... ok
+test apply_completed_building_ids_matches_web ... ok
+test blank_replacement_matches_web ... ok
+test building_gold_purchase_cost_matches_web ... ok
+test building_superseded_by_upgrade_matches_web ... ok
+test building_type_committed_matches_web ... ok
+test civ_key_to_nacja_matches_web ... ok
+test civ_special_replacement_matches_web ... ok
+test building_unlock_flag_matches_web ... ok
+test building_type_queued_matches_web ... ok
+test missing_keys_follow_web_absent_semantics ... ok
+test civ_special_unit_name_tokens_match_web ... ok
+test civ_has_replacement_for_matches_web ... ok
+test unit_matches_special_name_each_branch ... ok
+test gold_cost_special_values_and_thresholds ... ok
+test unit_allowed_for_civ_nation_matches_web ... ok
+test prototype_keys_deviation_is_pinned ... ok
+test unit_matches_special_name_matches_web ... ok
+
+test result: ok. 18 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.19s
+
+EXIT 0

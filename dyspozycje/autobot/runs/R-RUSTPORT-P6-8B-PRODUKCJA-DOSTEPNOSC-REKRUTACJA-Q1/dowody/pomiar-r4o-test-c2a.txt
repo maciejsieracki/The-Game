@@ -1,0 +1,14 @@
+   Compiling civ-engine v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_19449271-622-4/rust-port/engine)
+    Finished `test` profile [unoptimized] target(s) in 0.43s
+     Running tests/p6_8b_c2a_vectors.rs (target/debug/deps/p6_8b_c2a_vectors-34e223986d95f94b)
+
+running 5 tests
+test manpower_cost_of_cost_mult_defaults_to_max_mult ... ok
+test manpower_cost_of_scout_and_budynek_are_zero ... ok
+test set_paused_keeps_rekrutacja_absent_and_does_not_mutate_input ... ok
+test set_paused_matches_web_vectors ... ok
+test manpower_cost_of_matches_web_vectors ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.15s
+
+EXIT 0
