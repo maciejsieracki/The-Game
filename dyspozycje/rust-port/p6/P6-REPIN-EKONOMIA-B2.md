@@ -13,11 +13,11 @@ Lista wejsciowa: `git diff -U0 edb8fb56 91dc998a -- gra/src/game/production.ts` 
 |---|---|---|---|---|---|---|
 | 1 | `-65 +65` | import (bez zmiany zachowania) | production.ts:65 | - | - | NIE-DOTYCZY (import) |
 | 2 | `-128 +129,2` | pole `ProductionItem.isGeneral?: boolean` (Generał przy zakupie) | production.ts:129-130 | - | - | NASTEPNA-PARTIA (B3: pole uzywane w zakupie, brak Rust-owego odpowiednika) |
-| 3 | `-204 +207,20` | `newestAvailableSameTypeUnit` + `epochNumber`/`EPOCH_BY_NAME` | production.ts:190-226 | `rust-port/engine/src/domain/production_units.rs` `epoch_number`, `newest_available_same_type_unit` | `tests/p6_repin_b2_production.rs::newest_same_type_unit_matches_web_vectors`, `epoch_number_matches_web_vectors` (wektor `unit_newest.json`: 70 + 10 przypadkow), testy brzegowe (remis, brak Typ, pusty Typ po trim, brak Epoka) | PORTOWANE (mutanty M3 zabite) |
+| 3 | `-204 +207,20` | `newestAvailableSameTypeUnit` + `epochNumber`/`EPOCH_BY_NAME` | production.ts:190-226 | `rust-port/engine/src/domain/production_units.rs` `epoch_number`, `newest_available_same_type_unit` | `tests/p6_repin_b2_production.rs::newest_same_type_unit_matches_web_vectors`, `epoch_number_matches_web_vectors` (wektor `unit_newest.json`: 70 + 10 przypadkow), testy brzegowe (remis, brak Typ, pusty Typ po trim, brak Epoka), `newest_same_type_unit_trims_current_typ_like_web` (DODANY w pomiarach: bieżąca `Typ` z białymi znakami; wynik web = `Y`, zweryfikowane na 91dc998a) | PORTOWANE (mutanty M3, M4, M5, M6 zabite) |
 | 4 | `-397 +420` | `unitProductionItem`: dodatkowy argument `u.Jednostka` | production.ts:420 | - | - | NASTEPNA-PARTIA (kontekst wywolania NIE_ZMIERZONO w tej rundzie) |
 | 5 | `-424 +448,2` | `AvailabilityContext.civKey?: string` (matrix-only roster) | production.ts:448-449 | - | - | NASTEPNA-PARTIA (B3, razem z `civProductionCostBonusyForCivKey`) |
 | 6 | `-462 +488,16` | `AvailabilityContext.showStockGatedUnits` / `showResourceGatedBuildings` (flagi TYLKO widoku, domyslnie `false`; reguly gry bez zmian wg komentarza web) | production.ts:488-503 | - | - | NIE-DOTYCZY (widok UI; domyslne `false` = zachowanie silnika bez zmian; Rust nie ma warstwy widoku) |
-| 7 | `-521 +562,2` | `buildingWorkCost`: rabat z markera `prod_koszt_budynku_proc` zamiast `buildingCostAfterCivDiscount` | production.ts:555-571 | `rust-port/engine/src/domain/building_costs.rs` `repin_b2::building_work_cost_web` (+ `apply_cost_discount`, `apply_difficulty_cost_multiplier`, `cost_multiplier_for_owner`) | `tests/p6_repin_b2_production.rs::building_work_cost_matches_web_vectors` (wektor `building_work_cost.json`: 9240 przypadkow: 14 baz x 11 wariantow bonusow x 5 tempo x 4 wlasciciele x 3 trudnosci; NaN/Infinity; rabat 0/0.1/0.25/0.5/0.99/1/ujemny/inny parametr/brak markera), `matrix_discount_floor_and_minimum_one`, `difficulty_multiplier_thresholds_exact`, `building_work_cost_nan_and_infinity_propagate_like_web` | PORTOWANE-FUNKCJA: nowa funkcja, NIE podpieta pod wywolania (`building_work_cost` bez zmian; podpiecie = B3). Mutanty M1 (GLOBAL 0.25->0.5) i M2 (odwrocona kontrola wlasciciela) zabite |
+| 7 | `-521 +562,2` | `buildingWorkCost`: rabat z markera `prod_koszt_budynku_proc` zamiast `buildingCostAfterCivDiscount` | production.ts:555-571 | `rust-port/engine/src/domain/building_costs.rs` `repin_b2::building_work_cost_web` (+ `apply_cost_discount`, `apply_difficulty_cost_multiplier`, `cost_multiplier_for_owner`) | `tests/p6_repin_b2_production.rs::building_work_cost_matches_web_vectors` (wektor `building_work_cost.json`: 9240 przypadkow: 14 baz x 11 wariantow bonusow x 5 tempo x 4 wlasciciele x 3 trudnosci; NaN/Infinity; rabat 0/0.1/0.25/0.5/0.99/1/ujemny/inny parametr/brak markera), `matrix_discount_floor_and_minimum_one`, `difficulty_multiplier_thresholds_exact`, `building_work_cost_nan_and_infinity_propagate_like_web` | PORTOWANE-FUNKCJA: nowa funkcja, NIE podpieta pod wywolania (`building_work_cost` bez zmian; podpiecie = B3). Mutanty M1 (GLOBAL 0.25->0.5), M2 (odwrocona kontrola wlasciciela), M7 (floor->round w rabacie), M8 (rabat cywilizacyjny ignorowany) zabite |
 | 8 | `-540 +583` | `unitMoneyCost`: parametr `unitTypeName?` | production.ts:583 | - | - | NASTEPNA-PARTIA (B3) |
 | 9 | `-544 +587,2` | `unitMoneyCost`: rabat z markera `prod_koszt_jednostki_proc` dodany do `recDisc` | production.ts:587-588 | - | - | NASTEPNA-PARTIA (B3) |
 | 10 | `-564 +608,18` | `civProductionCostBonusyForCivKey` (nowa funkcja, markery F-04 z `civMatrixParam`) | production.ts:608-621 | - | - | NASTEPNA-PARTIA (B3) |
@@ -62,4 +62,23 @@ Surowe logi: `dyspozycje/autobot/runs/R-RUSTPORT-REPIN-EKONOMIA-B2-Q1/gate-*-r1.
 
 Hunki 2, 4, 5, 8-12 (wyzej) oraz 13-31 w `production.ts`: kolejne partie wg tabeli §2 i dossier `P6-REPIN-EKONOMIA-B.md` §4. `turn-economy.ts` (36 hunkow) poza zakresem tej rundy.
 
-Pin nie przesuniety (`meta.pin` i manifesty bez zmian). DEPLOY/PUSH: NIE WYKONANO.
+Pin nie przesuniety (`meta.pin` i manifesty bez zmian). DEPLOY/PUSH: NIE WYKONANO
+
+## 8. Weryfikacja pomiarowa (Operator-pomiary, ta sama runda 1/5)
+
+* **Regeneracja wektorow z webu 91dc998a:** `git archive 91dc998a gra/src gra/data` do katalogu tymczasowego poza repo; `gen-repin-b2-vectors.mjs` uruchomiony ponownie. Oba pliki (`building_work_cost.json` 9240 przypadkow, `unit_newest.json`) identyczne bajt w bajt z zacommitowanymi (`cmp`). 0 rozbieznosci.
+* **Rozszerzenie testow:** dodany `newest_same_type_unit_trims_current_typ_like_web`. Luka wykryta mutacja: wektory nie pokrywaja przycinania `Typ` po stronie BIEZACEJ jednostki (web `production.ts`, `currentTyp = (current?.Typ ?? '').trim()`). Probe na webie 91dc998a: `X(Typ " Piechota ")` -> kandydat `Y(Typ "Piechota")` daje `Y`; test zamyka luke.
+* **Mutanty (jedna naraz, plik przywracany `git checkout --`):**
+
+| Mutant | Miejsce | Wynik |
+|---|---|---|
+| M4 `Zelazo` epoka 3 -> 2 | `production_units.rs` `epoch_number` | ZABITY: 3 testy FAILED (`epoch_number_*`, `newest_same_type_unit_matches_web_vectors`) |
+| M5 bez `trim` bieżącej `Typ` | `production_units.rs` `newest_available_same_type_unit` | ZABITY: nowy test FAILED (luka wykryta analiza wektorow: wektory nie maja bieżącej `Typ` z bialymi znakami) |
+| M6 bez `trim` `Typ` kandydata | `production_units.rs` (`unit.typ`) | ZABITY: `newest_same_type_unit_matches_web_vectors` FAILED |
+| M7 `floor` -> `round` w rabacie | `building_costs.rs` `repin_b2::apply_cost_discount` | ZABITY: `matrix_discount_floor_and_minimum_one` + wektor FAILED |
+| M8 rabat markera ignorowany | `building_costs.rs` `repin_b2::building_work_cost_web` | ZABITY: wektor `building_work_cost_matches_web_vectors` FAILED |
+
+Pliki mutantow przywrocone do wersji z commita (`git status`: tylko testy i dokument).
+* **Bramki (stan koncowy):** `cargo fmt --all -- --check` EXIT=0; `cargo clippy --all-targets -- -D warnings` EXIT=0; `cargo test --no-fail-fast` 1342 passed / 0 failed / EXIT=0 (1341 + nowy test). Logi: `gate-*-pomiar-r1.log` w katalogu runu.
+* **Uwagi:** (a) pierwsza proba pelnego testu zakonczyla sie EXIT=101 z powodu braku miejsca na dysku (`No space left on device` przy budowie `civ-engine`); usunieto wylacznie wlasny podkatalog `cargo-target-shared/wf_cabd5916-6d2-2`, po czym test przeszedl. Inne katalogi wspoldzielone nie byly ruszane. (b) Komentarz w `repin-b-loader-hooks.mjs` nadal mowi `pin edb8fb56`; generator faktycznie uruchamia `91dc998a` (komentarz do poprawy, bez wplywu na wynik). (c) `Cargo.lock` jest niesledzony (wygenerowany przez cargo) i NIE jest commitowany.
+* **Dalej bez zmian:** hunki 2, 4, 5, 8-12 -> B3; `building_work_cost_web` nie podpieta (B3); pin nie przesuniety; DEPLOY/PUSH: NIE WYKONANO..

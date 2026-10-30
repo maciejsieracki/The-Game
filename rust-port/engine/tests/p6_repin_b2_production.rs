@@ -207,6 +207,30 @@ fn newest_same_type_unit_tie_keeps_first_in_units_order() {
 }
 
 #[test]
+fn newest_same_type_unit_trims_current_typ_like_web() {
+    // web production.ts (newestAvailableSameTypeUnit): `currentTyp = (current?.Typ ?? '').trim()`.
+    // Wektor unit_newest.json nie ma bieżącej jednostki z białymi znakami w Typ - ten test to domyka
+    // (zweryfikowane na URUCHOMIONYM webie 91dc998a: wynik = "Y").
+    let rows = [
+        UnitRow {
+            jednostka: "X",
+            typ: Some(" Piechota "),
+            epoka: Some("Kamien"),
+        },
+        UnitRow {
+            jednostka: "Y",
+            typ: Some("Piechota"),
+            epoka: Some("Braz"),
+        },
+    ];
+    assert_eq!(
+        newest_available_same_type_unit("X", &["Y"], &rows),
+        Some(1),
+        "bieząca Typ z białymi znakami musi być przycięta jak w webie"
+    );
+}
+
+#[test]
 fn newest_same_type_unit_missing_keys_and_empty_typ_yield_none() {
     let rows = [
         UnitRow {
