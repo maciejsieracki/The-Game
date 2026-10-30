@@ -1,35 +1,31 @@
 {
-  "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED — AI campaign muster/turn-six attack and new-game settings layout; verified against pinned origin/main readback at 0e85b43814f503fe34b42c88df4dd07233dbdfb.",
+  "releaseState": "DEPLOYED TO ROBOCZA; git push/readback pending",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "38218e5327c8ee2979ed70658a238cd1",
-  "bundleSha256": "f0fed0bddcf6fc76a6a50e63911504f5786f579f3c728a655404c6ff83fa6b4f",
-  "bundleBytes": 70045527,
+  "bundleMd5": "e666ecb6020b55c68f0c2d3d5067ad54",
+  "bundleSha256": "e5acc382cf8210d913bda9c57d82dc42e5ae1b9097be0d8c3315aa09537bfe81",
+  "bundleBytes": 70046987,
   "sourceSnapshot": {
-    "baseCommit": "origin/main 6abc4ed3",
-    "source": "main c46d6c47",
-    "build": "Vite 5.4.21 single-file; 919 modules; stamped ROBOCZA",
-    "buildCommit": "c46d6c47"
+    "source": "main 4f0e92ec6c9ef53f653bb807b17c1c10d3a70f89",
+    "buildCommit": "4f0e92ec6c9ef53f653bb807b17c1c10d3a70f89",
+    "build": "Vite 5.4.21; 919 modules; ROBOCZA stamp"
   },
   "scope": [
-    "R-AI-KAMPANIA-MARSZ-REKRUTACJA-Q1: assembled leader-led AI main group advances on turn six while a straggler continues rendezvous; sea-target priority logic retained and covered by planner tests.",
-    "R-NEWGAME-SETTINGS-LAND-DIPLO-REPOSITION-Q1: land share in final main-grid slot; diplomacy review in former city-state difficulty slot; city-state difficulty and epoch-war toggle remain in Advanced."
+    "R-ARMY-STACK-COMMANDER-IDENTITY-Q1: commander title and star in active unit cards; exact commander selection",
+    "R-NEWGAME-MATRIX-ROW-COLLAPSE-Q1: individual civilization parameters collapsed by default"
   ],
   "verification": [
-    "npm run typecheck: PASS",
-    "Vite 5.4.21 main build: PASS; 919 modules",
-    "ai-general-war-campaign-test.cjs: 51/51 PASS, including reachable sea-target priority and technology gate",
-    "newgame-settings-layout-reposition-test.cjs: Chromium PASS; slot, persistence, and game-start parameters verified",
-    "newgame-adv-tooltip-test.cjs: 31/31 PASS via loopback HTTP, 0 page/console errors",
-    "verify-robocza-bundle.cjs: VERIFY OK; top-level and bundles[] MD5/size match",
-    "smoke.cjs: SMOKE OK; canvas=1, rAF=1"
+    "Commander Chromium 8/8 PASS",
+    "Civilization parameters Chromium 270/270 PASS across five viewports",
+    "Typecheck PASS",
+    "Build 919 modules PASS",
+    "Candidate smoke PASS"
   ],
   "limits": [
-    "Manual-control large-army follow-up remains open at stage 8: exact pointer attack reduced HP 80→62; attack-march was issued after the unit activation and is unresolved, not a confirmed product failure.",
-    "Large empire performance stress test remains deferred until other fixes close."
+    "Commander component and exact-ID callback tested; full campaign boot selection not tested"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
-    "notes": "AI campaign Final Control and settings Final Control passed with notes. Live 28v28 combat exact-target attack also passed; attack-march follow-up is unresolved and outside this ready release subset."
+    "notes": "Both task receipts completed; campaign limitation recorded."
   },
   "startHub": "START.html",
   "hubGeneratedAt": "2026-10-30T03:22:41",
@@ -38,33 +34,26 @@
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "38218e5327c8ee2979ed70658a238cd1",
-      "sizeBytes": 70045527
+      "md5": "e666ecb6020b55c68f0c2d3d5067ad54",
+      "sizeBytes": 70046987
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "38218e5327c8ee2979ed70658a238cd1",
-      "sizeBytes": 70045527
+      "md5": "e666ecb6020b55c68f0c2d3d5067ad54",
+      "sizeBytes": 70046987
     }
   ],
-  "md5": "38218e5327c8ee2979ed70658a238cd1",
-  "sizeBytes": 70045527,
+  "md5": "e666ecb6020b55c68f0c2d3d5067ad54",
+  "sizeBytes": 70046987,
   "publisher": "Codex AutoBot — wcześniejsza dyspozycja właściciela: merge main, deploy Robocza, git push",
-  "source": "gra/src; main c46d6c47ff8643fabdcdd58d5c8067e07737326f",
+  "source": "gra/src; main 4f0e92ec6c9ef53f653bb807b17c1c10d3a70f89",
   "immediatePreviousRelease": {
-    "publicationCommit": "87aa8678427109b9a109aea7797ca3c171cfd84f",
-    "bundleMd5": "2f15bd3b3ef6b3732cee4007f8c49cda",
-    "bundleSha256": "2c6e0e446af65e6d76d6e09f378801fe69f3614391489f4d418bac90bad336b7",
-    "bundleBytes": 70045250,
-    "sourceCommit": "main 96d088b4"
+    "bundleMd5": "38218e5327c8ee2979ed70658a238cd1"
   },
   "rollbackPlan": {
-    "method": "Restore the previous release bundle and manifest recorded in immediatePreviousRelease, then revert source/release commits.",
-    "previousBundleMd5": "b3d82220c7a8820f5a5e89c9aa209431",
-    "previousBundleSha256": "7632cbf4c91f4cc67d76c240308dd9cf04d5f860160dd16469d1564b9be6eb1d",
-    "previousBundleBytes": 70045045
+    "method": "Restore previous bundle/manifest from parent commit and revert source commit."
   },
   "previousRelease": {
     "releaseState": "DEPLOYED — testowa ROBOCZA; zatwierdzony subset wodza/rekrutacji i szyku/doktryn bitwy; GitHub Raw readback PASS.",
@@ -263,7 +252,7 @@
     "sourceCommit": "c46d6c47ff8643fabdcdd58d5c8067e07737326f",
     "publicationCommit": "0e85b43814f503fe34b42c88df4dd07233dbdfb"
   },
-  "publishedAt": "2026-10-30T03:23:18.241Z",
+  "publishedAt": "2026-10-30T11:57:28.877176+00:00",
   "buildStamp": "2026-10-30 00:52",
   "battleBundle": {
     "file": "Gra-ROBOCZA-POLE-BITWY.html",
