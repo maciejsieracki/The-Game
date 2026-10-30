@@ -1,0 +1,56 @@
+MUTANT=B2-manual-not-true SED=s/battle_always_manual == Some(false)/battle_always_manual != Some(true)/
+25c25
+<     setting_version == Some(BATTLE_MODE_SETTING_VERSION) && battle_always_manual == Some(false)
+---
+>     setting_version == Some(BATTLE_MODE_SETTING_VERSION) && battle_always_manual != Some(true)
+   Compiling civ-engine v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_9dfc3853-65b-2/rust-port/engine)
+    Finished `test` profile [unoptimized] target(s) in 32.29s
+     Running tests/p6_repin_wojna_2_battle_mode.rs (/home/user/cargo-target-shared/wf_9dfc3853-65b-2/debug/deps/p6_repin_wojna_2_battle_mode-f7e55fc660860dda)
+
+running 3 tests
+test version_constant_matches_web ... ok
+test legacy_save_without_marker_is_not_automatic_only ... FAILED
+test automatic_only_matches_web_on_all_vectors ... FAILED
+
+failures:
+
+---- legacy_save_without_marker_is_not_automatic_only stdout ----
+
+thread 'legacy_save_without_marker_is_not_automatic_only' (2554) panicked at tests/p6_repin_wojna_2_battle_mode.rs:70:5:
+assertion failed: !is_automatic_only_battle_mode(Some(1.0), None)
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+   1: core::panicking::panic_fmt
+   2: core::panicking::panic
+   3: p6_repin_wojna_2_battle_mode::legacy_save_without_marker_is_not_automatic_only
+   4: p6_repin_wojna_2_battle_mode::legacy_save_without_marker_is_not_automatic_only::{closure#0}
+   5: <p6_repin_wojna_2_battle_mode::legacy_save_without_marker_is_not_automatic_only::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+---- automatic_only_matches_web_on_all_vectors stdout ----
+
+thread 'automatic_only_matches_web_on_all_vectors' (2553) panicked at tests/p6_repin_wojna_2_battle_mode.rs:55:9:
+assertion `left == right` failed: przypadek 16: {"battleAlwaysManual":"undef","out":false,"settingVersion":"num:1"}
+  left: true
+ right: false
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+   1: core::panicking::panic_fmt
+   2: core::panicking::assert_failed_inner
+   3: core::panicking::assert_failed::<bool, bool>
+   4: p6_repin_wojna_2_battle_mode::automatic_only_matches_web_on_all_vectors
+   5: p6_repin_wojna_2_battle_mode::automatic_only_matches_web_on_all_vectors::{closure#0}
+   6: <p6_repin_wojna_2_battle_mode::automatic_only_matches_web_on_all_vectors::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+
+failures:
+    automatic_only_matches_web_on_all_vectors
+    legacy_save_without_marker_is_not_automatic_only
+
+test result: FAILED. 1 passed; 2 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.07s
+
+error: test failed, to rerun pass `--test p6_repin_wojna_2_battle_mode`
+error: 1 target failed:
+    `--test p6_repin_wojna_2_battle_mode`
+EXIT=101

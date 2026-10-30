@@ -1,0 +1,44 @@
+MUTANT=X6-compact-cmp SED=s/candidate_progress <= limit/candidate_progress < limit/
+438c438
+<     candidate_progress <= limit
+---
+>     candidate_progress < limit
+   Compiling civ-engine v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_9dfc3853-65b-2/rust-port/engine)
+    Finished `test` profile [unoptimized] target(s) in 32.40s
+     Running tests/p6_repin_wojna_a_formation.rs (/home/user/cargo-target-shared/wf_9dfc3853-65b-2/debug/deps/p6_repin_wojna_a_formation-8a087d52216ce94c)
+
+running 5 tests
+test diacritics_are_folded_like_web ... ok
+test commander_wins_over_mounted_and_mounted_wins_over_siege ... ok
+test classify_matches_web_on_all_vectors ... ok
+test formation_groups_and_slots_match_web ... ok
+test compact_line_matches_web_on_grid ... FAILED
+
+failures:
+
+---- compact_line_matches_web_on_grid stdout ----
+
+thread 'compact_line_matches_web_on_grid' (1817) panicked at tests/p6_repin_wojna_a_formation.rs:192:9:
+assertion `left == right` failed: {"candidateCol":"-3","lineReferenceProgress":"-4","out":true,"previousLineReferenceProgress":null,"side":"atk"}
+  left: false
+ right: true
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+   1: core::panicking::panic_fmt
+   2: core::panicking::assert_failed_inner
+   3: core::panicking::assert_failed::<bool, bool>
+   4: p6_repin_wojna_a_formation::compact_line_matches_web_on_grid
+   5: p6_repin_wojna_a_formation::compact_line_matches_web_on_grid::{closure#0}
+   6: <p6_repin_wojna_a_formation::compact_line_matches_web_on_grid::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+
+failures:
+    compact_line_matches_web_on_grid
+
+test result: FAILED. 4 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.21s
+
+error: test failed, to rerun pass `--test p6_repin_wojna_a_formation`
+error: 1 target failed:
+    `--test p6_repin_wojna_a_formation`
+EXIT=101

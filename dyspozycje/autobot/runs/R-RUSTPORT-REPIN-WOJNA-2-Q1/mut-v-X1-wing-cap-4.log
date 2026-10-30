@@ -1,0 +1,44 @@
+MUTANT=X1-wing-cap-4 SED=s/let wing_count = 3\.0_f64\.min(/let wing_count = 4.0_f64.min(/
+395c395
+<     let wing_count = 3.0_f64.min(top_available).min(bottom_available).max(1.0) as usize;
+---
+>     let wing_count = 4.0_f64.min(top_available).min(bottom_available).max(1.0) as usize;
+   Compiling civ-engine v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_9dfc3853-65b-2/rust-port/engine)
+    Finished `test` profile [unoptimized] target(s) in 31.83s
+     Running tests/p6_repin_wojna_a_formation.rs (/home/user/cargo-target-shared/wf_9dfc3853-65b-2/debug/deps/p6_repin_wojna_a_formation-8a087d52216ce94c)
+
+running 5 tests
+test commander_wins_over_mounted_and_mounted_wins_over_siege ... ok
+test diacritics_are_folded_like_web ... ok
+test compact_line_matches_web_on_grid ... ok
+test classify_matches_web_on_all_vectors ... ok
+test formation_groups_and_slots_match_web ... FAILED
+
+failures:
+
+---- formation_groups_and_slots_match_web stdout ----
+
+thread 'formation_groups_and_slots_match_web' (954) panicked at tests/p6_repin_wojna_a_formation.rs:164:9:
+assertion `left == right` failed: przypadek 8: sloty
+  left: [(0, 7.0, 0.0), (1, 8.0, 0.0), (2, 9.0, 0.0), (3, 10.0, 0.0), (4, 11.0, 0.0), (5, 12.0, 0.0), (6, 6.0, 0.0), (7, 13.0, 0.0), (8, 5.0, 0.0), (9, 14.0, 0.0), (10, 4.0, 0.0), (11, 15.0, 0.0), (12, 3.0, 0.0), (13, 16.0, 0.0)]
+ right: [(0, 7.0, 0.0), (1, 8.0, 0.0), (2, 9.0, 0.0), (3, 10.0, 0.0), (4, 11.0, 0.0), (5, 12.0, 0.0), (6, 6.0, 0.0), (7, 13.0, 0.0), (8, 5.0, 0.0), (9, 14.0, 0.0), (10, 4.0, 0.0), (11, 15.0, 0.0), (12, 6.0, 1.0), (13, 13.0, 1.0)]
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+   1: core::panicking::panic_fmt
+   2: core::panicking::assert_failed_inner
+   3: core::panicking::assert_failed::<alloc::vec::Vec<(u64, f64, f64)>, alloc::vec::Vec<(u64, f64, f64)>>
+   4: p6_repin_wojna_a_formation::formation_groups_and_slots_match_web
+   5: p6_repin_wojna_a_formation::formation_groups_and_slots_match_web::{closure#0}
+   6: <p6_repin_wojna_a_formation::formation_groups_and_slots_match_web::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+
+failures:
+    formation_groups_and_slots_match_web
+
+test result: FAILED. 4 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.17s
+
+error: test failed, to rerun pass `--test p6_repin_wojna_a_formation`
+error: 1 target failed:
+    `--test p6_repin_wojna_a_formation`
+EXIT=101
