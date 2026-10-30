@@ -1,7 +1,8 @@
 {
   "taskId": "R-READY-SUBSET-ROBOCZA-20261030",
-  "status": "LOCAL_ROBOCZA_READY_REMOTE_PENDING",
-  "stage": "10/11",
+  "status": "PUBLISHED_ROBOCZA_AND_PUSHED",
+  "stage": "11/11",
+  "publicationCommit": "0e85b43814f503fe34b42c88df4dd07233dbdfb0",
   "source": {
     "branch": "main",
     "commit": "c46d6c47ff8643fabdcdd58d5c8067e07737326f",
@@ -42,10 +43,19 @@
     "Large empire performance test remains postponed until all other open topics are closed."
   ],
   "remoteReadback": {
-    "status": "PENDING",
-    "required": [
-      "git ls-remote origin refs/heads/main",
-      "pinned GitHub Raw bundle/manifest/START HTTP and hash readback"
-    ]
+    "status": "PASS",
+    "remote": "origin/main",
+    "commit": "0e85b43814f503fe34b42c88df4dd07233dbdfb0",
+    "gitLsRemote": "0e85b43814f503fe34b42c88df4dd07233dbdfb0 refs/heads/main",
+    "bundleUrl": "https://raw.githubusercontent.com/maciejsieracki/The-Game/0e85b43814f503fe34b42c88df4dd07233dbdfb0/gra-robocza/Gra-ROBOCZA.html",
+    "manifestUrl": "https://raw.githubusercontent.com/maciejsieracki/The-Game/0e85b43814f503fe34b42c88df4dd07233dbdfb0/gra-robocza/ROBOCZA-MANIFEST.json",
+    "startUrl": "https://raw.githubusercontent.com/maciejsieracki/The-Game/0e85b43814f503fe34b42c88df4dd07233dbdfb0/gra-robocza/START.html",
+    "httpStatus": 200,
+    "bundleMd5": "38218e5327c8ee2979ed70658a238cd1",
+    "bundleSha256": "f0fed0bddcf6fc76a6a50e63911504f5786f579f3c728a655404c6ff83fa6b4f",
+    "bundleBytes": 70045527,
+    "manifestSha256": "d8f1d58b70ea77e9450a625b7f85cc9cd7d82ccb0feed855a51a87ef8c73b664",
+    "startSha256": "3071cf674dcb199dd8b1975aac9a3e164250bdaad79fbb7435d226f7cae19a08",
+    "checks": "Pinned GitHub Raw bundle, manifest and START all returned HTTP 200. Bundle MD5/SHA-256/size matched manifest top-level and both bundles[] entries; START referenced current bundle MD5 prefix."
   }
 }
