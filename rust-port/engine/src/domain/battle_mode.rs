@@ -11,8 +11,11 @@
 //!   null, 0, '', 'false', ...). Web dla wszystkich nie-boolowskich wartosci zwraca `false`
 //!   (`=== false` nie jest wtedy spelnione), wiec mapowanie na `None` jest rownowazne.
 //! - Wersja zapisu: `Option<f64>`; NaN i wartosci rozne od 1 daja `false` (jak `=== 1` w webie).
-//! - Integracja z zapisem (`meta.battleModeSettingVersion`, `playerBattleAutomaticOnly`) poza
-//!   zakresem tego modulu - NASTEPNA-PARTIA (patrz raport tematu).
+//! - Integracja z zapisem (R3): logika wczytania wersji (`main.ts:40819-40821`) i
+//!   `playerBattleAutomaticOnly` (`main.ts:29052-29060`) jest tu jako czyste funkcje
+//!   (`restored_setting_version`, `player_battle_automatic_only`). Pole `meta` zapisu w
+//!   `save_load.rs` (SaveSnapshot v2) NIE istnieje - jego wprowadzenie to zmiana formatu,
+//!   NASTEPNA-PARTIA (patrz raport tematu).
 
 /// Wersja markera zapisu, ktora aktywuje semantyke automatycznej bitwy (web: `BATTLE_MODE_SETTING_VERSION`).
 pub const BATTLE_MODE_SETTING_VERSION: f64 = 1.0;
@@ -23,4 +26,24 @@ pub fn is_automatic_only_battle_mode(
     battle_always_manual: Option<bool>,
 ) -> bool {
     setting_version == Some(BATTLE_MODE_SETTING_VERSION) && battle_always_manual == Some(false)
+}
+
+/// Normalizacja wersji markera przy wczytaniu zapisu (web `main.ts:40819-40821`, `restoreGameFromSave`):
+/// tylko dokladnie `1` przechodzi, kazda inna wartosc (brak, `2`, NaN, napis, `null`) daje `None`.
+pub fn restored_setting_version(saved: Option<f64>) -> Option<f64> {
+    if saved == Some(BATTLE_MODE_SETTING_VERSION) {
+        Some(BATTLE_MODE_SETTING_VERSION)
+    } else {
+        None
+    }
+}
+
+/// Web `playerBattleAutomaticOnly` (`main.ts:29052-29060`): tryb dotyczy tylko gracza
+/// (`isMe`) i tylko przy wersji markera oraz jawnym `battleAlwaysManual === false`.
+pub fn player_battle_automatic_only(
+    is_me: bool,
+    setting_version: Option<f64>,
+    battle_always_manual: Option<bool>,
+) -> bool {
+    is_me && is_automatic_only_battle_mode(setting_version, battle_always_manual)
 }

@@ -156,7 +156,8 @@ pub fn general_follow_destination(
 
 /// Web `nearestLivingGeneral` (`generals.ts:68-83`): najblizszy zywy generał wlasciciela (bez `unit`).
 /// Sortowanie JS: po odleglosci, przy zerowej/NaN roznicy - `localeCompare` po id.
-/// Wybor minimum liniowo (dla spojnego komparatora = `sort()[0]`; zob. ZALOZENIA).
+/// Wynik = `sort(cmp)[0]` po filtrze; sortowanie odtwarza V8 TimSort dla n < 64
+/// (`v8_sort_small`), wiec daje ten sam wynik takze dla niespojnego komparatora (NaN wspolrzednej).
 pub fn nearest_living_general<'a>(
     unit: &GeneralUnit,
     roster: &'a [GeneralUnit],
@@ -164,30 +165,66 @@ pub fn nearest_living_general<'a>(
     if unit.is_general || unit.dead || unit.removed || unit.routed {
         return None;
     }
-    let mut best: Option<&GeneralUnit> = None;
-    for candidate in roster {
-        let eligible = candidate.id != unit.id
-            && candidate.owner_id == unit.owner_id
-            && candidate.is_general
-            && !candidate.dead
-            && !candidate.removed
-            && !candidate.routed
-            && candidate.hp.is_none_or(|hp| hp > 0.0);
-        if !eligible {
-            continue;
-        }
-        best = match best {
-            None => Some(candidate),
-            Some(current) => {
-                if compare_nearest(unit, candidate, current) == Ordering::Less {
-                    Some(candidate)
-                } else {
-                    Some(current)
-                }
-            }
-        };
+    let mut eligible: Vec<&'a GeneralUnit> = roster
+        .iter()
+        .filter(|candidate| {
+            candidate.id != unit.id
+                && candidate.owner_id == unit.owner_id
+                && candidate.is_general
+                && !candidate.dead
+                && !candidate.removed
+                && !candidate.routed
+                && candidate.hp.is_none_or(|hp| hp > 0.0)
+        })
+        .collect();
+    v8_sort_small(&mut eligible, |a, b| compare_nearest(unit, a, b));
+    eligible.first().copied()
+}
+
+/// Sortowanie jak V8 `Array.prototype.sort` (TimSort) dla n < 64: jeden przebieg
+/// `CountAndMakeRun` (z ewentualnym odwroceniem) + `BinaryInsertionSort` (bez scalania,
+/// bo dla n < 64 `minrun = n`). Porzadek kolejnosci wywolan komparatora zgodny z V8.
+/// Dla n >= 64 wymagane byloby scalanie (ZALOZENIE: rostery generalow < 64).
+fn v8_sort_small<T: Copy>(items: &mut [T], cmp: impl Fn(T, T) -> Ordering) {
+    let n = items.len();
+    if n < 2 {
+        return;
     }
-    best
+    // CountAndMakeRun(0, n)
+    let descending = cmp(items[1], items[0]) == Ordering::Less;
+    let mut run = 2;
+    let mut previous = items[1];
+    for &current in &items[2..] {
+        let order = cmp(current, previous);
+        let breaks = if descending {
+            order != Ordering::Less
+        } else {
+            order == Ordering::Less
+        };
+        if breaks {
+            break;
+        }
+        previous = current;
+        run += 1;
+    }
+    if descending {
+        items[..run].reverse();
+    }
+    // BinaryInsertionSort(0, run, n)
+    for start in run..n {
+        let pivot = items[start];
+        let (mut left, mut right) = (0, start);
+        while left < right {
+            let mid = left + ((right - left) >> 1);
+            if cmp(pivot, items[mid]) == Ordering::Less {
+                right = mid;
+            } else {
+                left = mid + 1;
+            }
+        }
+        items.copy_within(left..start, left + 1);
+        items[left] = pivot;
+    }
 }
 
 /// Komparator z `generals.ts:81-82`: `d || a.id.localeCompare(b.id)` (NaN i 0 sa falsy w JS).
