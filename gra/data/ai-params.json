@@ -282,17 +282,17 @@
   "dyplomacja_relacja_prog_wojna": {
     "wartosc": -40,
     "sekcja": "§6 Dyplomacja",
-    "opis": "Relacja ≤ wartość → poboczna AI może wypowiedzieć wojnę."
+    "opis": "NIEAKTYWNY (R-WEB-PEACE-RULES-Q1 R10): nieczytany w kodzie; zastapiony progiem wojny per cywilizacja progWojnyRelacji z gra/data/diplomacy-war-peace-params.json (resolver diplomacy-war-peace-profile.ts). Wartosc zostawiona bez zmian."
   },
   "dyplomacja_max_propozycji_ture": {
     "wartosc": 1,
     "sekcja": "§6 Dyplomacja",
-    "opis": "Max liczba propozycji dyplomatycznych wysyłanych przez AI do jednego gracza/tury."
+    "opis": "NIEPODLACZONY (R-WEB-PEACE-RULES-Q1 R10): brak limitu propozycji AI na ture w gra/src (NIE_ZMIERZONO: grep bez trafien). Zachowanie bez zmian; decyzja o podlaczeniu = osobny temat."
   },
   "dyplomacja_zdrowie_armii_pokój": {
     "wartosc": 0.4,
     "sekcja": "§6 Dyplomacja",
-    "opis": "Próg HP armii AI (% startowego) poniżej którego AI wysyła propozycję pokoju."
+    "opis": "NIEPODLACZONY (R-WEB-PEACE-RULES-Q1 R10): sygnal (c) zdrowie armii nie ma zrodla HP armii w silniku (NIE_ZMIERZONO); baza progZdrowia zostaje w diplomacy-war-peace-params.json (0.40). Decyzja o podlaczeniu = osobny temat."
   },
   "ai_diplomacja_prog_wojna_sila": {
     "wartosc": 0.6,

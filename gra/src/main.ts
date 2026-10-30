@@ -1419,6 +1419,7 @@ import {
   type DiploPairMeta,
   type ZlozeGrant,
 } from './game/diplomacy-pn-engine';
+import { resolveWarPeaceProfile, brakeRelationThreshold, type WarPeaceProfile } from './game/diplomacy-war-peace-profile';
 import {
   isPeaceTreatyLocked,
   startPeaceTreatyLock,
@@ -10125,17 +10126,127 @@ async function boot(): Promise<void> {
       diplomacyPairMeta.set(diploPairKey(a, b), meta);
     }
 
+    /**
+     * R-WEB-PEACE-RULES-Q1 R1/R2/R3(d): stan BIEŻĄCEJ wojny pary — tury wojny (od wojnaOdTury),
+     * miasta utracone przez `a` w tej wojnie i tury od ostatniej zmiany miast. Zapis per wojna:
+     * rekord `wojnaMiasta` ważny tylko dla tego samego `od` (nowa wojna = czysty licznik).
+     * Poza wojną wszystko 0.
+     */
+    /**
+     * R-WEB-PEACE-RULES-Q1 R1/R2: pola per para dopisane do DiploPairMeta (typ lokalny, bo
+     * diplomacy-pn-engine.ts jest poza allowlistą rundy 1). Zapis przez `as DiploPairMeta`;
+     * save/load przenosi cały obiekt meta bez filtrowania pól.
+     */
+    type WarPairMetaR1 = {
+      wojnaMiasta?: { od: number; utraty: Record<string, number>; ostatniaTura?: number };
+      wojnaStartTura?: number;
+    };
+
+    function diploWarStateFor(a: number, b: number): { turnsAtWar: number; lostCities: number; turnsSinceCityChange: number } {
+      const key = diploPairKey(a, b);
+      if (getDiploRelation(a, b).status !== 'wojna') {
+        const metaPeace = diplomacyPairMeta.get(key) as (DiploPairMeta & WarPairMetaR1) | undefined;
+        if (metaPeace?.wojnaStartTura !== undefined) {
+          diplomacyPairMeta.set(key, { ...metaPeace, wojnaStartTura: undefined } as DiploPairMeta);
+        }
+        return { turnsAtWar: 0, lostCities: 0, turnsSinceCityChange: 0 };
+      }
+      const od = diploEnsureWarStart(a, b);
+      const meta = diplomacyPairMeta.get(key) as (DiploPairMeta & WarPairMetaR1) | undefined;
+      const rec = meta?.wojnaMiasta && meta.wojnaMiasta.od === od ? meta.wojnaMiasta : undefined;
+      return {
+        turnsAtWar: Math.max(0, turn - od),
+        lostCities: rec?.utraty?.[String(a)] ?? 0,
+        turnsSinceCityChange: Math.max(0, turn - (rec?.ostatniaTura ?? od)),
+      };
+    }
+
+    /**
+     * R-WEB-PEACE-RULES-Q1 R1: tura początku BIEŻĄCEJ wojny pary. Stempel `wojnaStartTura` ustawiany
+     * przy pierwszym zaobserwowaniu wojny (niezależnie od ścieżki wypowiedzenia — część ścieżek
+     * nie ustawia wojnaOdTury) i zdejmowany przy pokoju w diploWarStateFor. ZAŁOŻENIE: ≤ 1 tura
+     * opóźnienia względem faktycznej deklaracji.
+     */
+    function diploEnsureWarStart(a: number, b: number): number {
+      const meta = getDiploPairMeta(a, b) as DiploPairMeta & WarPairMetaR1;
+      if (meta.wojnaStartTura !== undefined) return meta.wojnaStartTura;
+      setDiploPairMeta(a, b, { ...meta, wojnaStartTura: turn } as DiploPairMeta);
+      return turn;
+    }
+
+    /** R-WEB-PEACE-RULES-Q1 R1/R3(d): pola stanu wojny do wpisu relacjeDip (pusty poza wojną). */
+    function diploRelWarFields(a: number, b: number): { turnsAtWar: number; lostCitiesInWar: number; turnsSinceCityChange: number } {
+      const s = diploWarStateFor(a, b);
+      return { turnsAtWar: s.turnsAtWar, lostCitiesInWar: s.lostCities, turnsSinceCityChange: s.turnsSinceCityChange };
+    }
+
+    /** R-WEB-PEACE-RULES-Q1 R5: stan wojny z perspektywy RESPONDENTA do bramki pokoju (undefined poza wojną). */
+    function diploProposalWarState(
+      proposerId: number,
+      responderId: number,
+      responderRw: number,
+    ): ProposalEvalContext['warState'] {
+      if (getDiploRelation(proposerId, responderId).status !== 'wojna') return undefined;
+      const s = diploWarStateFor(responderId, proposerId);
+      return {
+        turnsAtWar: s.turnsAtWar,
+        lostCitiesResponder: s.lostCities,
+        turnsSinceCityChange: s.turnsSinceCityChange,
+        responderRw,
+      };
+    }
+
+    /** R-WEB-PEACE-RULES-Q1 R2: zapis utraty miasta przez `oldOwner` w TRWAJĄCEJ wojnie z `newOwner` (dla wszystkich wojen). */
+    function recordWarCityLossForPair(oldOwner: number, newOwner: number): void {
+      if (oldOwner === newOwner) return;
+      if (getDiploRelation(oldOwner, newOwner).status !== 'wojna') return;
+      const od = diploEnsureWarStart(oldOwner, newOwner);
+      const meta = getDiploPairMeta(oldOwner, newOwner) as DiploPairMeta & WarPairMetaR1;
+      const prev = meta.wojnaMiasta && meta.wojnaMiasta.od === od
+        ? meta.wojnaMiasta
+        : { od, utraty: {} as Record<string, number> };
+      const oldKey = String(oldOwner);
+      const utraty = { ...prev.utraty, [oldKey]: (prev.utraty[oldKey] ?? 0) + 1 };
+      setDiploPairMeta(oldOwner, newOwner, { ...meta, wojnaMiasta: { od, utraty, ostatniaTura: turn } } as DiploPairMeta);
+    }
+
     // ---- R-WEB-DIPLO-TICK-WAR-BRAKE-Q1 r2: P3 / P4 / P6 / P7 (wszystko za flagą) ----
 
     /** Parametry P6/P7 z gra/data/diplomacy-tick-params.json (wersja ostateczna kalibracji P7). */
     const diploTickP6 = diplomacyTickParams.p6;
     const diploTickP7 = diplomacyTickParams.p7;
 
-    /** P6: jeden krok histerezy kryzysu dla pary; licznik 0 = wpis usunięty. */
-    function diploBrakeCrisisStep(a: number, b: number, zaufanie: number): ReturnType<typeof crisisStepForPair> {
+    /** R-WEB-PEACE-RULES-Q1 R6: profil wojny/pokoju strony (gracz = brak wiersza macierzy = wartości bazowe). */
+    function diploWarProfileOf(o: number): WarPeaceProfile {
+      return resolveWarPeaceProfile(isMe(o) ? undefined : civKeyForOwnerId(o));
+    }
+
+    /**
+     * R-WEB-PEACE-RULES-Q1 R7: próg kryzysu (Relacja ≤ próg) i liczba tur N dla pary = wyższa
+     * z dwóch progWojnyRelacji (ZAŁOŻENIE rundy 1: gracz = baza 30; N z tej samej strony).
+     */
+    function diploBrakeWarParams(a: number, b: number): { prog: number; n: number } {
+      const pa = diploWarProfileOf(a);
+      const pb = diploWarProfileOf(b);
+      const higher = pa.progWojnyRelacji >= pb.progWojnyRelacji ? pa : pb;
+      return { prog: brakeRelationThreshold(higher.progWojnyRelacji), n: higher.hamulecN };
+    }
+
+    /**
+     * P6: jeden krok histerezy kryzysu dla pary; licznik 0 = wpis usunięty.
+     * R-WEB-PEACE-RULES-Q1 R7 (D2): licznik liczy ŁĄCZNĄ Relację (relationScore), nie samo Zaufanie.
+     */
+    function diploBrakeCrisisStep(a: number, b: number): ReturnType<typeof crisisStepForPair> {
       const key = diploPairKey(a, b);
       const atWar = getDiploRelation(a, b).status === 'wojna';
-      const step = crisisStepForPair(diplomacyCrisisCounters.get(key) ?? 0, zaufanie, atWar, diploTickP6);
+      const relacja = relationScore(getDiploRelation(a, b));
+      const w = diploBrakeWarParams(a, b);
+      const step = crisisStepForPair(
+        diplomacyCrisisCounters.get(key) ?? 0,
+        relacja,
+        atWar,
+        { ...diploTickP6, kryzysProgZaufania: w.prog, kryzysTurDoWojny: w.n },
+      );
       if (step.counter > 0) diplomacyCrisisCounters.set(key, step.counter);
       else diplomacyCrisisCounters.delete(key);
       return step;
@@ -10203,9 +10314,8 @@ async function boot(): Promise<void> {
      * Kara Wiarygodności za wypowiedzenie NIE jest nakładana (casus belli — ZAŁOŻENIE r2).
      */
     function processDiploCrisisQueue(): void {
-      const n = diploTickP6.kryzysTurDoWojny;
-      const warnAt = n - diploTickP6.kryzysOstrzezenieTurPrzed;
       const ready: Array<{ ownerA: number; ownerB: number; counter: number }> = [];
+      if (diplomacyCrisisCounters.size > 0) refreshObjectivePowerCache();
       for (const [key, counter] of Array.from(diplomacyCrisisCounters.entries())) {
         const parts = key.split('_').map(Number);
         const sa = parts[0]!;
@@ -10214,17 +10324,25 @@ async function boot(): Promise<void> {
           diplomacyCrisisCounters.delete(key);
           continue;
         }
-        if ((isMe(sa) || isMe(sb)) && counter >= warnAt && counter < n) {
+        // R-WEB-PEACE-RULES-Q1 R7: N per para (wyższy progWojnyRelacji), ostrzeżenie 2 tury przed.
+        const nPair = diploBrakeWarParams(sa, sb).n;
+        const warnAtPair = nPair - diploTickP6.kryzysOstrzezenieTurPrzed;
+        // D7 (właściciel 2026-10-30): gdy silniejsza strona pary to GRACZ, wojna z hamulca nie
+        // wybucha — ostrzeżenie o automatycznej wojnie z jego strony też nie jest pokazywane.
+        const playerStrongerHere = (isMe(sa) || isMe(sb)) && pickWarDeclarer(
+          { ownerId: sa, power: objectivePowerForOwner(sa) },
+          { ownerId: sb, power: objectivePowerForOwner(sb) },
+        ) === (isMe(sa) ? sa : sb);
+        if ((isMe(sa) || isMe(sb)) && counter >= warnAtPair && counter < nPair && !playerStrongerHere) {
           const other = isMe(sa) ? sb : sa;
           showHintMessage(
-            'Ryzyko wojny z ' + ownerDiploLabel(other) + ': ' + (n - counter) + ' tur do wypowiedzenia (Zaufanie ≤ ' + diploTickP6.kryzysProgZaufania + ')',
+            'Ryzyko wojny z ' + ownerDiploLabel(other) + ': ' + (nPair - counter) + ' tur do wypowiedzenia (łączna Relacja ≤ ' + diploBrakeWarParams(sa, sb).prog + ')',
             4000,
           );
         }
-        if (counter >= n) ready.push({ ownerA: sa, ownerB: sb, counter });
+        if (counter >= nPair) ready.push({ ownerA: sa, ownerB: sb, counter });
       }
       if (ready.length === 0) return;
-      refreshObjectivePowerCache();
       for (const e of sortCrisisQueue(ready)) {
         const key = diploPairKey(e.ownerA, e.ownerB);
         if (getDiploRelation(e.ownerA, e.ownerB).status === 'wojna') {
@@ -10236,6 +10354,9 @@ async function boot(): Promise<void> {
           { ownerId: e.ownerA, power: objectivePowerForOwner(e.ownerA) },
           { ownerId: e.ownerB, power: objectivePowerForOwner(e.ownerB) },
         );
+        // D7 (właściciel 2026-10-30): gracz NIGDY nie wypowiada wojny automatycznie z hamulca.
+        // Gdy silniejsza strona to gracz, para zostaje w kolejce bez deklaracji (AI↔AI bez zmian).
+        if (isMe(declarer)) continue;
         const victim = declarer === e.ownerA ? e.ownerB : e.ownerA;
         // R1/R2 dotyczą też gracza jako strony silniejszej (wojna z progu jest automatyczna,
         // nie jego wyborem) — dlatego bez wyjątku isMe, w przeciwieństwie do interCivWarBlockedForAi.
@@ -10278,7 +10399,7 @@ async function boot(): Promise<void> {
         const next = ticked as unknown as Relation;
         if (next.status !== cur.status) setDiploRelation(a, b, next);
         else diplomacyRelations.set(diploPairKey(a, b), next);
-        diploBrakeCrisisStep(a, b, next.zaufanie ?? 0);
+        diploBrakeCrisisStep(a, b);
       }
     }
 
@@ -15566,6 +15687,7 @@ async function boot(): Promise<void> {
         maybeResolveStoneForcedWarOnCityCapture(oldOwner, newOwner);
         maybeResolveIronForcedWarOnCityCapture(oldOwner, newOwner);
         maybeResolveRegularWarOnCityCapture(oldOwner, newOwner);
+        recordWarCityLossForPair(oldOwner, newOwner); // R-WEB-PEACE-RULES-Q1 R2
         // P-REKRUTACJA-JEDNOSTEK-TYLKO-SKARBIEC-Q1=B: kapitulacja głodowa
         // jest drugim (obok podboju bojowego) wejściem przejęcia miasta. Legacy
         // jednostki z kolejki Pracy nie mogą przejść do nowego właściciela;
@@ -21606,7 +21728,7 @@ async function boot(): Promise<void> {
         // P6 (r3): licznik kryzysu dla WSZYSTKICH par (AI↔AI i gracz↔AI) w jednym miejscu,
         // po ticku, przed kolejką — ta sama kadencja. Gracz↔AI: Zaufanie z ostatniego ticku pętli AI.
         for (const oid of diploAiOwnersEligible()) {
-          diploBrakeCrisisStep(ME(), oid, getDiploRelation(ME(), oid).zaufanie ?? 0);
+          diploBrakeCrisisStep(ME(), oid);
         }
         // P6: kolejka wojen z progu (po N turach).
         processDiploCrisisQueue();
@@ -21734,6 +21856,12 @@ async function boot(): Promise<void> {
         // evaluateProposal (gracz->AI, AI->gracz preview, live preview UI).
         hasTradeTechProposer: ownerHasTradeTech(proposerId),
         hasTradeTechResponder: ownerHasTradeTech(responderId),
+        // R-WEB-PEACE-RULES-Q1 R5: bramka pokoju AI (gracz proponuje, AI respondent).
+        warState: diploProposalWarState(
+          proposerId,
+          responderId,
+          potSum > 0 ? potResponder / potSum : 0.5,
+        ),
       };
     }
 
@@ -31436,6 +31564,7 @@ async function boot(): Promise<void> {
       maybeResolveStoneForcedWarOnCityCapture(oldOwner, atkOwner);
       maybeResolveIronForcedWarOnCityCapture(oldOwner, atkOwner);
       maybeResolveRegularWarOnCityCapture(oldOwner, atkOwner);
+      recordWarCityLossForPair(oldOwner, atkOwner); // R-WEB-PEACE-RULES-Q1 R2
       // Domknięcie luki temat 8 batcha 7-10 (miasta barbarzyńskie -- zob. wpięcie
       // tickBarbarianCityGarrisons niżej w ticku barbarzyńców): capture NIE czyścił
       // odziedziczonej kolejki budowy ofiary -- budynek W TOKU (front kolejki, np.
@@ -36167,7 +36296,7 @@ async function boot(): Promise<void> {
                   isMinorCiv: false,
                   militaryRatio,
                   currentTurn: turn,
-                  turnsAtWar: rel.status === 'wojna' ? 1 : 0,
+                  turnsAtWar: diploWarStateFor(ownerId, ME()).turnsAtWar, // R-WEB-PEACE-RULES-Q1 R1
                 };
                 const plrTyp = ((player.civType ?? 'rzymianie') as TypCywilizacji);
                 const aiStub: Player = { ownerId, typCywilizacji: aiTyp } as unknown as Player;
@@ -36259,6 +36388,7 @@ async function boot(): Promise<void> {
                   mapContact: contactedOwners.has(ownerId),
                   lastAudienceRequestTurn: aiAudienceLastRequestTurn.get(ownerId),
                   peaceLocked: isPeaceLockedBetween(ownerId, ME()),
+                  ...diploRelWarFields(ownerId, ME()), // R-WEB-PEACE-RULES-Q1 R1/R3(d)
                 });
               }
 
@@ -36311,6 +36441,7 @@ async function boot(): Promise<void> {
                   isMinorCivPartner: isOwnerClusterCityState(otherId, ownerCityStateOpts()),
                   lastResourceTradeProposalTurn: aiResourceTradeLastProposalTurn.get(ownerId),
                   peaceLocked: isPeaceLockedBetween(ownerId, otherId),
+                  ...diploRelWarFields(ownerId, otherId), // R-WEB-PEACE-RULES-Q1 R1/R3(d)
                 });
               }
 

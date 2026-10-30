@@ -1,0 +1,96 @@
+{
+  "_opis": "R-WEB-PEACE-RULES-Q1 (runda 1) — wspolne reguly wojny i pokoju per cywilizacja. Wspolczynniki wzorow; wartosci cywilizacji liczone z gra/data/civ-matrix.json (dip_prog_wojny, ai_agresywnosc, ai_ekspansywnosc, ai_sklonnosc_podboju, ai_tolerancja_ryzyka, ai_profil_obronna). Brak wiersza macierzy -> wartosci bazowe (bazaBrakDanych / baza). Resolver: gra/src/game/diplomacy-war-peace-profile.ts.",
+  "progWojnyRelacji": {
+    "_wzor": "clamp(baza + wagaProgWojny*dip_prog_wojny + wagaEkspansja*(ai_ekspansywnosc-ekspansjaSrodek) + wagaPodboj*(ai_sklonnosc_podboju-podbojSrodek), min, max)",
+    "baza": 10,
+    "wagaProgWojny": 5,
+    "wagaEkspansja": 2,
+    "ekspansjaSrodek": 3,
+    "wagaPodboj": 2,
+    "podbojSrodek": 2,
+    "min": 10,
+    "max": 70,
+    "bazaBrakDanych": 30
+  },
+  "progPokojSlabosc": {
+    "_wzor": "clamp(baza - wagaAgresja*(ai_agresywnosc-agresjaSrodek) + [premiaProfilObronny gdy ai_profil_obronna=1], min, max)",
+    "baza": 0.40,
+    "agresjaSrodek": 5,
+    "wagaAgresja": 0.03,
+    "premiaProfilObronny": 0,
+    "_zalozenie_premiaProfilObronny": "ZALOZENIE rundy 1: dispatch podaje +0.05 za ai_profil_obronna=1, ale ta sama tresc podaje przyklady Zulusi 0.28 i Chinczycy 0.49, a obie cywilizacje maja profil_obronna=1; przyklady (binarne kryterium 2) maja pierwszenstwo, wiec premia = 0. Wartosc 0.05 do przywrocenia po decyzji wlasciciela.",
+    "min": 0.20,
+    "max": 0.55,
+    "bazaBrakDanych": 0.40
+  },
+  "progKrytyczny": {
+    "_wzor": "clamp(baza - wagaAgresja*(ai_agresywnosc-agresjaSrodek), min, max)",
+    "baza": 0.25,
+    "agresjaSrodek": 5,
+    "wagaAgresja": 0.02,
+    "min": 0.12,
+    "max": 0.35,
+    "bazaBrakDanych": 0.25
+  },
+  "progZdrowia": {
+    "_wzor": "clamp(baza - wagaTolerancja*(ai_tolerancja_ryzyka-tolerancjaSrodek), min, max)",
+    "baza": 0.40,
+    "tolerancjaSrodek": 5,
+    "wagaTolerancja": 0.02,
+    "min": 0.20,
+    "max": 0.55,
+    "bazaBrakDanych": 0.40
+  },
+  "minTurWojny": {
+    "_wzor": "clamp(baza + [premiaAgresjaWysoka gdy ai_agresywnosc>=agresjaWysoka] + [karaAgresjaNiska gdy ai_agresywnosc<=agresjaNiska] + [karaProfilObronny gdy ai_profil_obronna=1], min, max)",
+    "baza": 5,
+    "agresjaWysoka": 7,
+    "premiaAgresjaWysoka": 3,
+    "agresjaNiska": 3,
+    "karaAgresjaNiska": -2,
+    "karaProfilObronny": -1,
+    "min": 1,
+    "max": 8,
+    "bazaBrakDanych": 5
+  },
+  "zmeczenie": {
+    "_wzor": "udzial = min(maksUdzial, turyWojny / T); T = min(maksTur, bazaTur + wagaAgresja*ai_agresywnosc)",
+    "maksUdzial": 0.5,
+    "bazaTur": 15,
+    "wagaAgresja": 1,
+    "maksTur": 20,
+    "progSygnaluPokoju": 0.4,
+    "bazaTurBrakDanych": 20
+  },
+  "sygnalyPokoju": {
+    "_opis": "AI proponuje pokoj (priorytet 2 decideAIDiplomacy) przy: (a) rw <= progPokojSlabosc; (b) >=1 miasto utracone w tej wojnie i rw <= progRwMiasta; (d) pat: >=patTurWojny tur wojny i brak zmiany miast przez patBrakZmianyTur tur; (e) udzial zmeczenia >= progSygnaluPokoju. Sygnal (c) (zdrowie armii) NIEZAIMPLEMENTOWANY: brak zrodla HP armii w silniku (NIE_ZMIERZONO).",
+    "progRwMiasta": 0.5,
+    "patTurWojny": 15,
+    "patBrakZmianyTur": 10
+  },
+  "cenaPokoju": {
+    "_opis": "R5 — akceptacja pokoju proponowanego przez gracza do AI. rw = udzial sily AI (0..1). Odrzucenie i premia sily wylaczone po turyBezOgraniczenAi turach wojny.",
+    "odrzucenieRwProg": 0.55,
+    "odrzucenieMaxTurWojny": 10,
+    "progSilyWysoki": 0.55,
+    "wagaSily": 2,
+    "maxMnoznikSily": 2,
+    "progSilyNiski": 0.25,
+    "mnoznikSilyNiski": 0.5,
+    "agresjaSrodek": 5,
+    "wagaAgresja": 0.05,
+    "podbojSrodek": 2,
+    "wagaPodboj": 0.04,
+    "mnoznikCywMin": 0.7,
+    "mnoznikCywMax": 1.5,
+    "turyBezOgraniczenAi": 20
+  },
+  "hamulecRelacji": {
+    "_opis": "R7 — hamulec wojny wg lacznej Relacji. Prog kryzysu = progWojnyRelacji(wyzszy z pary) - progKryzysuMinusPunkty; liczba tur N = clamp(round(bazaN - wagaProgWojny*dip_prog_wojny), minN, maxN). Strona gracza bez wiersza macierzy = progWojnyRelacji bazaBrakDanych.",
+    "progKryzysuMinusPunkty": 15,
+    "bazaN": 8,
+    "wagaProgWojny": 0.5,
+    "minN": 3,
+    "maxN": 7
+  }
+}
