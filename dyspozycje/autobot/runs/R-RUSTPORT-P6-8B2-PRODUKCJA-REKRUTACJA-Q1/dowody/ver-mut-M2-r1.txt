@@ -1,0 +1,56 @@
+   Compiling civ-engine v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_19de3d10-d8a-2/rust-port/engine)
+    Finished `test` profile [unoptimized] target(s) in 36.42s
+     Running tests/p6_8b2_p2_vectors.rs (target/debug/deps/p6_8b2_p2_vectors-18e8543e8850dba3)
+
+running 14 tests
+test buildable_and_purchasable_empty_input ... ok
+test enqueue_non_unit_is_identity ... ok
+test enqueue_and_dequeue_match_web ... ok
+test gated_manpower_n_minus_n_plus ... ok
+test output_split_matches_web ... ok
+test output_split_sums_to_total_and_falls_back ... ok
+test praca_rounding_thresholds_n_minus_n_plus ... ok
+test praca_split_matches_web ... ok
+test rush_cost_boundaries ... ok
+test rush_matches_web ... ok
+test advance_recruitment_nan_limit_completes_nothing ... FAILED
+test unit_cost_matches_web ... ok
+test advance_recruitment_matches_web ... FAILED
+test era_building_catalog_matches_web ... ok
+
+failures:
+
+---- advance_recruitment_nan_limit_completes_nothing stdout ----
+
+thread 'advance_recruitment_nan_limit_completes_nothing' (28745) panicked at tests/p6_8b2_p2_vectors.rs:802:5:
+assertion failed: out.completed.is_empty()
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+   1: core::panicking::panic_fmt
+   2: core::panicking::panic
+   3: p6_8b2_p2_vectors::advance_recruitment_nan_limit_completes_nothing
+   4: p6_8b2_p2_vectors::advance_recruitment_nan_limit_completes_nothing::{closure#0}
+   5: <p6_8b2_p2_vectors::advance_recruitment_nan_limit_completes_nothing::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+---- advance_recruitment_matches_web stdout ----
+
+thread 'advance_recruitment_matches_web' (28744) panicked at tests/p6_8b2_p2_vectors.rs:187:19:
+advance.rekrutacja: actual=None expected=Some(Array [Object {"id": String("Wojownik"), "kind": String("jednostka"), "koszt": Number(10), "nazwa": String("Wojownik")}])
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+   1: core::panicking::panic_fmt
+   2: p6_8b2_p2_vectors::assert_prod
+   3: p6_8b2_p2_vectors::advance_recruitment_matches_web
+   4: p6_8b2_p2_vectors::advance_recruitment_matches_web::{closure#0}
+   5: <p6_8b2_p2_vectors::advance_recruitment_matches_web::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+
+failures:
+    advance_recruitment_matches_web
+    advance_recruitment_nan_limit_completes_nothing
+
+test result: FAILED. 12 passed; 2 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.34s
+
+error: test failed, to rerun pass `--test p6_8b2_p2_vectors`

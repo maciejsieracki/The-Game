@@ -1,0 +1,59 @@
+   Compiling civ-engine v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_19de3d10-d8a-2/rust-port/engine)
+    Finished `test` profile [unoptimized] target(s) in 36.86s
+     Running tests/p6_8b2_p2_vectors.rs (target/debug/deps/p6_8b2_p2_vectors-18e8543e8850dba3)
+
+running 14 tests
+test advance_recruitment_nan_limit_completes_nothing ... ok
+test buildable_and_purchasable_empty_input ... ok
+test enqueue_non_unit_is_identity ... ok
+test gated_manpower_n_minus_n_plus ... ok
+test output_split_matches_web ... ok
+test output_split_sums_to_total_and_falls_back ... ok
+test enqueue_and_dequeue_match_web ... ok
+test advance_recruitment_matches_web ... ok
+test rush_cost_boundaries ... ok
+test rush_matches_web ... ok
+test praca_split_matches_web ... FAILED
+test praca_rounding_thresholds_n_minus_n_plus ... FAILED
+test unit_cost_matches_web ... ok
+test era_building_catalog_matches_web ... ok
+
+failures:
+
+---- praca_split_matches_web stdout ----
+
+thread 'praca_split_matches_web' (29571) panicked at tests/p6_8b2_p2_vectors.rs:81:5:
+splitPraca.doBudynkow: actual=0.0 expected=1.0 (1)
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+   1: core::panicking::panic_fmt
+   2: p6_8b2_p2_vectors::assert_num
+   3: p6_8b2_p2_vectors::praca_split_matches_web
+   4: p6_8b2_p2_vectors::praca_split_matches_web::{closure#0}
+   5: <p6_8b2_p2_vectors::praca_split_matches_web::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+---- praca_rounding_thresholds_n_minus_n_plus stdout ----
+
+thread 'praca_rounding_thresholds_n_minus_n_plus' (29570) panicked at tests/p6_8b2_p2_vectors.rs:724:5:
+assertion `left == right` failed
+  left: 1.0
+ right: 2.0
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+   1: core::panicking::panic_fmt
+   2: core::panicking::assert_failed_inner
+   3: core::panicking::assert_failed::<f64, f64>
+   4: p6_8b2_p2_vectors::praca_rounding_thresholds_n_minus_n_plus
+   5: p6_8b2_p2_vectors::praca_rounding_thresholds_n_minus_n_plus::{closure#0}
+   6: <p6_8b2_p2_vectors::praca_rounding_thresholds_n_minus_n_plus::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+
+failures:
+    praca_rounding_thresholds_n_minus_n_plus
+    praca_split_matches_web
+
+test result: FAILED. 12 passed; 2 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.24s
+
+error: test failed, to rerun pass `--test p6_8b2_p2_vectors`

@@ -1,0 +1,23 @@
+   Compiling civ-engine v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_19de3d10-d8a-2/rust-port/engine)
+    Finished `test` profile [unoptimized] target(s) in 30.30s
+     Running tests/p6_8b2_p2_vectors.rs (target/debug/deps/p6_8b2_p2_vectors-18e8543e8850dba3)
+
+running 14 tests
+test buildable_and_purchasable_empty_input ... ok
+test advance_recruitment_nan_limit_completes_nothing ... ok
+test enqueue_non_unit_is_identity ... ok
+test gated_manpower_n_minus_n_plus ... ok
+test output_split_matches_web ... ok
+test output_split_sums_to_total_and_falls_back ... ok
+test praca_rounding_thresholds_n_minus_n_plus ... ok
+test praca_split_matches_web ... ok
+test rush_cost_boundaries ... ok
+test enqueue_and_dequeue_match_web ... ok
+test advance_recruitment_matches_web ... ok
+test rush_matches_web ... ok
+test unit_cost_matches_web ... ok
+test era_building_catalog_matches_web ... ok
+
+test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.24s
+
+EXIT=0

@@ -1,0 +1,48 @@
+MUTACJE OBRONY r1 - R-RUSTPORT-P6-8B2-PRODUKCJA-REKRUTACJA-Q1
+Kod: rust-port/engine/src/domain/production_units.rs (po rebase na origin/rust-port/parity-v2 a47a5e306)
+Komenda na mutanta: cargo test --test p6_8b2_p2_vectors --test p6_8b2_p2_gaps (CARGO_INCREMENTAL=0, CARGO_PROFILE_DEV_DEBUG=0, CARGO_PROFILE_TEST_DEBUG=0)
+Driver: dowody/obr-mutate-r1.py (przed i po kazdym mutancie plik przywracany z kopii; ostatni komunikat RESTORED_CLEAN)
+KILLED = co najmniej jeden test FAILED; SURVIVED = wszystkie testy PASS (exit=0).
+Linie = production_units.rs po zmianach obrony.
+
+ID    | galaz (linia)                                                    | wynik    | test zabijajacy (lub uzasadnienie)
+M4    | polish_locale_compare: tiebreak .then_with(|| a.cmp(b)) (3529)    | KILLED   | polish_compare_case_level_and_bytewise_tiebreak
+M5    | advance_recruitment: cap.trunc() -> cap.ceil() (3168)             | KILLED   | advance_recruitment_fractional_limit_truncates_like_js_slice
+M6    | rush_cost: raw bez guardu is_finite (3248)                        | KILLED   | rush_cost_boundaries, rush_matches_web
+M7    | rush_cost: pusta kolejka return 0.0 -> 1.0 (3246)                 | KILLED   | rush_cost_boundaries, rush_matches_web
+M8    | rush_cost: usuniety .ceil() na reszcie (3249)                     | KILLED   | rush_matches_web
+M9    | rush_production: pusta kolejka postep 0.0 -> prod.postep (3279)   | KILLED   | rush_production_front_drop_and_postep_handover
+M10   | drop_front_item: brak czyszczenia postep nowego frontu (3259)     | KILLED   | rush_production_front_drop_and_postep_handover
+M11   | drop_front_item: unwrap_or(0.0) -> unwrap_or(1.0) (3256)          | KILLED   | rush_production_front_drop_and_postep_handover
+M12   | advance_recruitment_gated: gałąź cost_already_paid wyłączona (3206) | KILLED   | gated_manpower_n_minus_n_plus, advance_recruitment_matches_web
+M13   | advance_recruitment_gated: if !d.ok { break } wyłączone (3225)    | KILLED   | gated_manpower_n_minus_n_plus, advance_recruitment_matches_web
+M14   | advance_recruitment_gated: while n < max -> n <= max (3205)       | KILLED   | advance_recruitment_matches_web
+M15   | split_output: fallback produkcja: t -> 0.0 (3716)                 | KILLED   | output_split_matches_web, output_split_sums_to_total_and_falls_back
+M16   | split_output: rozwoj = reszta -> floor (3725)                     | KILLED   | output_split_sums_to_total_and_falls_back, output_split_matches_web
+M17   | split_output: pieniadz floor -> round (3723)                      | KILLED   | output_split_matches_web
+M18   | split_output: fix bez is_finite (3708, Infinity)                  | KILLED   | output_split_negative_and_infinite_shares_clamp_to_zero
+M18b  | split_output: fix bez v>=0 (3708, ujemny udzial)                  | KILLED   | output_split_negative_and_infinite_shares_clamp_to_zero
+M19   | split_output: t bez guardu total>0 (3694)                         | KILLED   | output_split_matches_web, output_split_sums_to_total_and_falls_back
+M20   | dequeue_recruitment: galaz poza zakresem (3123)                   | SURVIVED | RÓWNOWAZNY - patrz dowod E1
+M21   | praca_imperial_pool_gain: if queue_empty zanegowane (3334)        | KILLED   | praca_pool_gain_queue_empty_branch, preview_praca_paused_and_default_queue_empty
+M22   | previewPracaPoolBrutto: pominiecie paused wylaczone (3350)        | KILLED   | preview_praca_paused_and_default_queue_empty
+M23   | previewPracaPoolBrutto: queue_empty ?? true -> false (3353)       | KILLED   | preview_praca_paused_and_default_queue_empty
+M24   | era_building_catalog: rank Queued/Built zamienione (3425)         | KILLED   | era_building_catalog_matches_web
+M25   | era_building_catalog: galaz palisada (3592)                       | KILLED   | era_building_catalog_matches_web
+M26   | era_building_catalog: wielokrotny wylaczone (3630)                | KILLED   | era_catalog_wielokrotny_allows_rebuild_of_built_building (nowy; pin nie ma pola wielokrotny)
+M27   | era_building_catalog: location_blocked = None (3635)              | KILLED   | era_building_catalog_matches_web
+M28   | era_building_catalog: tech == "-" usuniete (3603)                 | KILLED   | era_building_catalog_matches_web
+M29   | advance_recruitment: guard max<=0 wylaczony (3156)                | SURVIVED | RÓWNOWAZNY - patrz dowod E3
+M31   | split_output: guard t == 0 wylaczony (3699)                       | SURVIVED | RÓWNOWAZNY - patrz dowod E2
+M1eco | economy_yield.rs city_praca_integer: is_finite usuniete (ex M1)   | KILLED   | praca_split_matches_web (plik przeniesiony z production_units, dowod: dowody/obr-mutate-eco-r1.py)
+
+Razem: 29 mutantow (28 w production_units.rs + M1eco w economy_yield.rs): 26 KILLED, 3 SURVIVED = rownowazne (M20, M29, M31).
+
+DOWODY ROWNOWAZNOSCI (kod po zmianach):
+E1 (M20, linia 3123): guard `index < 0 || index >= len` zwraca `rq` bez zmian. Galaz else filtruje `*i as i64 != index`;
+   dla indeksu poza [0,len) zaden i nie spelnia rownosci, wiec filtr zwraca identyczna zawartosc. Guard jest zbedny.
+E2 (M31, linia 3699): dla t == 0 (t = 0.0 z linii 3694) galaz ogolna daje produkcja = floor(0*rp/sum) = 0 (sum>0, rp skonczone >= 0)
+   albo produkcja = t = 0 (sum <= 0), pieniadz/nauka = 0, rozwoj = 0 - 0 - 0 - 0 = 0. Wynik: same +0.0 jak galaz zerowa.
+E3 (M29, linia 3156): dla niepustej kolejki i max <= 0 (NaN nie trafia: NaN <= 0 = false): cap = js_min(max, len) <= 0
+   (lub -inf), a `cap.trunc() as usize` (linia 3168) nasyca ujemne do 0 w Rust. n = 0 -> completed = [], rest = cala kolejka,
+   rekrutacja = Some(rq). Identyczne z galaza guardu. Dla pustej kolejki obie sciezki daja rekrutacja None.
