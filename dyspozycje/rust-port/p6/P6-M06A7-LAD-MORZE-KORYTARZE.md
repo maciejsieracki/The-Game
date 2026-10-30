@@ -38,7 +38,7 @@ plus `morseDepthFromMapBorder` (DANE-JUZ-W-RUST, M06A4). Partia 1 (ten run): dwa
   iloczyn -> NaN (jak web). Zakres wektorow: w, h in 0..300 (pelna siatka), duze mapy (do 4096),
   przypadki brzegowe (NaN, Infinity, ujemne, 0.5) oraz progi zaokraglenia: dla k = 6..23 i w <= 300
   wszystkie h w oknie [h*-2, h*+2] wokol rozwiazania `6 + sqrt(w*h/20160)*2.6 = k + 0.5`.
-  Trafienia graniczne (|raw - (N+0.5)| < 0.05): 15 284; wynik 6 (dolny clamp): 4 621; wynik 22 (gorny clamp): 3 794.
+  Trafienia graniczne: liczby z runda 1 (15 284 / 4 621) NIE ODTWORZONE w Operator-pomiary; wartosci poprawne i reprodukowalne w sekcji "Pomiary (Operator-pomiary, runda 1)" nizej.
 - Generator: `dyspozycje/autobot/runs/R-RUSTPORT-P6-M06A7-LAD-MORZE-KORYTARZE-Q1/gen-m06a7-annular-vectors.mjs`
   (uruchamia PRAWDZIWY kod TS weba z `git archive edb8fb56`, instrumentowana kopia: jedyna zmiana to `export`).
   Pliki wektorow: 1,3 MB + 0,6 KB (limit 10 MB na plik spelniony).
@@ -62,3 +62,66 @@ symboli zakresu 3186-4374 nie zmienione. Pin `edb8fb56` NIE przepinany w tym tem
 - `cargo test --test p6_m06a7_annular`: 4 passed.
 - `cargo test` (pelny silnik): 1330 passed, 0 failed, EXIT=0 (baza 1326 + 4 nowe).
 - Zero zmian istniejacych testow.
+
+## Pomiary (Operator-pomiary, runda 1)
+
+Skrypty w `dyspozycje/autobot/runs/R-RUSTPORT-P6-M06A7-LAD-MORZE-KORYTARZE-Q1/`:
+`verify-m06a7-independent.py` (weryfikator niezalezny, Python, bez kodu Rust i bez generatora),
+`mut-runner-m06a7.py` -> `mut-results-m06a7.json` (mutacje), logi `gate-*-m1.log`.
+
+### Weryfikator niezalezny
+
+- Formula web liczona od zera w Pythonie (`Math.round` = `floor(x) + [x-floor(x) >= 0.5]`) dla 112 254 wierszy:
+  **0 rozbieznosci** z wektorami; 8/8 wartosci mostu zgodne (Polarny, Gory, Morze, PlytkieMorze, ...).
+- Nieskonczone wejscia w wektorach: 7 wierszy (NaN / Infinity / -Infinity), zgodne.
+- Wyniki skonczone: 112 247. Wynik 22 (gorny clamp): 3 794 (zgodne z raportem). Wynik 6: 4 624 (raport: 4 621, roznica 3; nie wyjasniona, NIE_ZMIERZONO co do przyczyny).
+- Trafienia graniczne: raport rundy 1 podawal 15 284 dla `|raw-(N+0.5)|<0.05`. Przy definicji "wszystkie skonczone" wynik to 30 613, a dla pasma niezaklipowanego (k = 6..21) 27 612. Liczby z rundy 1 nie daja sie odtworzyc z zadnej z tych definicji; przyjeto ponizsze pomiary jako wiarygodne.
+- Pokrycie progu zaokraglenia (k+0.5, k = 6..22), liczba punktow siatki w pasmie 0.05 po obu stronach: ok. 720-780 po kazdej stronie dla kazdego k. Najblizszy punkt po stronie `>=` dla k = 12 ma `raw == 12.5` dokladnie (gap 0.0), wiec gałąź `>=` jest trafiona dokladnie na progu.
+- Brak wartosci `raw < 6` na siatce (`6 + sqrt(..)*2.6 >= 6` z definicji).
+
+### Mutacje (mut-runner-m06a7.py, cargo test --test p6_m06a7_annular, 18 mutantow)
+
+| ID | Mutacja | Wynik | Uwagi |
+|---|---|---|---|
+| K1 | dolny clamp max -> min | zabita (exit 101) | |
+| K2 | gorny clamp min -> max | zabita | |
+| K3 | round usuniety | zabita | |
+| K4 | round -> floor | zabita | |
+| K5 | round -> floor(x+0.5) | PRZEZYLA | patrz dowod ponizej |
+| K6 | sqrt usuniety | zabita | |
+| K7 | w*h -> w+h | zabita | |
+| K8 | mnoznik pominiety | zabita | |
+| K9 | js_round: `>` zamiast `>=` | zabita | granica polowki trafiona |
+| K10 | js_round: prog 0.499 | zabita | |
+| B1 | most: tylko Morze | zabita | |
+| B2 | most: zawsze false | zabita | |
+| B3 | most: zawsze true | zabita | |
+| B4 | most: + Gory | zabita | |
+| D1 | dane: baza 6 -> 7 | zabita | |
+| D2 | dane: mnoznik 2.6 -> 2.5 | zabita | |
+| D3 | dane: skala 20160 -> 20161 | zabita | |
+| D4 | dane: min 6 -> 5 | PRZEZYLA | patrz dowod ponizej |
+| D5 | dane: max 22 -> 23 | zabita | |
+
+Stan drzewa po mutacjach: przywrocone (`landsea.rs`, `improvements.rs`, JSON bez zmian; `git status` czysty poza plikami runa).
+
+#### Dowod rownowaznosci K5 (przezyla)
+
+`floor(x+0.5)` rozni sie od `js_round(x)` tylko gdy `fl(x+0.5)` zaokragla sie do `N+1` przy `x-N < 0.5`,
+czyli gdy `x` lezy w paśmie szerokosci rzedu ulp (~1e-15) tuz ponizej `N+0.5`. Pomiar na domenie wektorow:
+0 rozbieznosci (112 247 skonczonych); najmniejszy margines `0.5 - frac(x)` dla `frac(x) < 0.5` wynosi 5.4e-7.
+Mutant jest wiec rownowazny na domenie testowej, ale **nie** w ogole (rozni sie w pasie ulp). Luka testowa
+zapisana jako ryzyko; zadnego testu nie dodano (zakaz zmian w tej rundzie poza pomiarami).
+
+#### Dowod rownowaznosci D4 (przezyla)
+
+`min` (dolny clamp) jest nieaktywny dla kazdego wejscia: `map_scale = sqrt(p) >= 0` albo NaN (`p = w*h`);
+przy `annular_baza = 6` i `annular_mnoznik = 2.6 > 0` mamy `6 + map_scale*2.6 >= 6`, wiec `round(...) >= 6`,
+a `max(5, y) = y` dla `y >= 6`. Dla NaN wynik i tak NaN. Zatem zmiana `annular_min` z 6 na 5 nie zmienia zadnego wyniku.
+Dolny clamp jest martwym kodem przy obecnych danych (zostaje dla zgodnosci z webem).
+
+### Wykaz Math.* (partia 1)
+
+`Math.sqrt` -> `f64::sqrt`; `Math.round` -> `improvements::js_round` (`x - floor >= 0.5`); `Math.min` / `Math.max` ->
+`masks::v8math::{js_min, js_max}`. Zadnego `Math.sin/cos/pow/atan2/hypot` w partii 1 (`js_hypot` z `landsea.rs` :37 jest uzywany
+w :1170-1171 przez funkcje spoza partii 1).

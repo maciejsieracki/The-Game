@@ -1,0 +1,247 @@
+[
+ {
+  "id": "K1",
+  "desc": "dolny clamp: max -> min",
+  "exit": 101,
+  "killed": true,
+  "summary": [
+   "test annular_nonfinite_and_negative_inputs_propagate_nan_like_web ... FAILED",
+   "test annular_boundary_values_hit_round_and_clamp_thresholds ... FAILED",
+   "test annular_vectors_match_web_bit_for_bit ... FAILED",
+   "thread 'annular_nonfinite_and_negative_inputs_propagate_nan_like_web' (2236) panicked at tests/p6_m06a7_annular.rs:84:5:",
+   "thread 'annular_boundary_values_hit_round_and_clamp_thresholds' (2235) panicked at tests/p6_m06a7_annular.rs:72:5:",
+   "thread 'annular_vectors_match_web_bit_for_bit' (2237) panicked at tests/p6_m06a7_annular.rs:63:5:",
+   "test result: FAILED. 1 passed; 3 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.17s"
+  ]
+ },
+ {
+  "id": "K2",
+  "desc": "gorny clamp: min -> max",
+  "exit": 101,
+  "killed": true,
+  "summary": [
+   "test annular_nonfinite_and_negative_inputs_propagate_nan_like_web ... FAILED",
+   "test annular_boundary_values_hit_round_and_clamp_thresholds ... FAILED",
+   "test annular_vectors_match_web_bit_for_bit ... FAILED",
+   "thread 'annular_nonfinite_and_negative_inputs_propagate_nan_like_web' (2482) panicked at tests/p6_m06a7_annular.rs:84:5:",
+   "thread 'annular_boundary_values_hit_round_and_clamp_thresholds' (2481) panicked at tests/p6_m06a7_annular.rs:70:5:",
+   "thread 'annular_vectors_match_web_bit_for_bit' (2483) panicked at tests/p6_m06a7_annular.rs:63:5:",
+   "test result: FAILED. 1 passed; 3 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.15s"
+  ]
+ },
+ {
+  "id": "K3",
+  "desc": "round usuniety",
+  "exit": 101,
+  "killed": true,
+  "summary": [
+   "test annular_boundary_values_hit_round_and_clamp_thresholds ... FAILED",
+   "test annular_nonfinite_and_negative_inputs_propagate_nan_like_web ... FAILED",
+   "test annular_vectors_match_web_bit_for_bit ... FAILED",
+   "thread 'annular_boundary_values_hit_round_and_clamp_thresholds' (2950) panicked at tests/p6_m06a7_annular.rs:71:5:",
+   "thread 'annular_nonfinite_and_negative_inputs_propagate_nan_like_web' (2951) panicked at tests/p6_m06a7_annular.rs:84:5:",
+   "thread 'annular_vectors_match_web_bit_for_bit' (2952) panicked at tests/p6_m06a7_annular.rs:63:5:",
+   "test result: FAILED. 1 passed; 3 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.11s"
+  ]
+ },
+ {
+  "id": "K4",
+  "desc": "round -> floor",
+  "exit": 101,
+  "killed": true,
+  "summary": [
+   "test annular_nonfinite_and_negative_inputs_propagate_nan_like_web ... FAILED",
+   "test annular_boundary_values_hit_round_and_clamp_thresholds ... FAILED",
+   "test annular_vectors_match_web_bit_for_bit ... FAILED",
+   "thread 'annular_nonfinite_and_negative_inputs_propagate_nan_like_web' (3245) panicked at tests/p6_m06a7_annular.rs:84:5:",
+   "thread 'annular_boundary_values_hit_round_and_clamp_thresholds' (3244) panicked at tests/p6_m06a7_annular.rs:76:5:",
+   "thread 'annular_vectors_match_web_bit_for_bit' (3246) panicked at tests/p6_m06a7_annular.rs:63:5:",
+   "test result: FAILED. 1 passed; 3 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.11s"
+  ]
+ },
+ {
+  "id": "K5",
+  "desc": "round -> floor(x+0.5)",
+  "exit": 0,
+  "killed": false,
+  "summary": [
+   "test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.09s"
+  ]
+ },
+ {
+  "id": "K6",
+  "desc": "sqrt usuniety (skala liniowa)",
+  "exit": 101,
+  "killed": true,
+  "summary": [
+   "test annular_boundary_values_hit_round_and_clamp_thresholds ... FAILED",
+   "test annular_nonfinite_and_negative_inputs_propagate_nan_like_web ... FAILED",
+   "test annular_vectors_match_web_bit_for_bit ... FAILED",
+   "thread 'annular_boundary_values_hit_round_and_clamp_thresholds' (4266) panicked at tests/p6_m06a7_annular.rs:76:5:",
+   "thread 'annular_nonfinite_and_negative_inputs_propagate_nan_like_web' (4267) panicked at tests/p6_m06a7_annular.rs:84:5:",
+   "thread 'annular_vectors_match_web_bit_for_bit' (4268) panicked at tests/p6_m06a7_annular.rs:63:5:",
+   "test result: FAILED. 1 passed; 3 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.09s"
+  ]
+ },
+ {
+  "id": "K7",
+  "desc": "iloczyn w*h -> w+h",
+  "exit": 101,
+  "killed": true,
+  "summary": [
+   "test annular_boundary_values_hit_round_and_clamp_thresholds ... FAILED",
+   "test annular_nonfinite_and_negative_inputs_propagate_nan_like_web ... FAILED",
+   "test annular_vectors_match_web_bit_for_bit ... FAILED",
+   "thread 'annular_boundary_values_hit_round_and_clamp_thresholds' (4635) panicked at tests/p6_m06a7_annular.rs:72:5:",
+   "thread 'annular_nonfinite_and_negative_inputs_propagate_nan_like_web' (4636) panicked at tests/p6_m06a7_annular.rs:84:5:",
+   "thread 'annular_vectors_match_web_bit_for_bit' (4637) panicked at tests/p6_m06a7_annular.rs:63:5:",
+   "test result: FAILED. 1 passed; 3 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.09s"
+  ]
+ },
+ {
+  "id": "K8",
+  "desc": "mnoznik pominiety",
+  "exit": 101,
+  "killed": true,
+  "summary": [
+   "test annular_boundary_values_hit_round_and_clamp_thresholds ... FAILED",
+   "test annular_nonfinite_and_negative_inputs_propagate_nan_like_web ... FAILED",
+   "test annular_vectors_match_web_bit_for_bit ... FAILED",
+   "thread 'annular_boundary_values_hit_round_and_clamp_thresholds' (5660) panicked at tests/p6_m06a7_annular.rs:76:5:",
+   "thread 'annular_nonfinite_and_negative_inputs_propagate_nan_like_web' (5661) panicked at tests/p6_m06a7_annular.rs:84:5:",
+   "thread 'annular_vectors_match_web_bit_for_bit' (5662) panicked at tests/p6_m06a7_annular.rs:63:5:",
+   "test result: FAILED. 1 passed; 3 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.20s"
+  ]
+ },
+ {
+  "id": "K9",
+  "desc": "js_round: porownanie > zamiast >= (granica polowki)",
+  "exit": 101,
+  "killed": true,
+  "summary": [
+   "test annular_vectors_match_web_bit_for_bit ... FAILED",
+   "thread 'annular_vectors_match_web_bit_for_bit' (6071) panicked at tests/p6_m06a7_annular.rs:63:5:",
+   "test result: FAILED. 3 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.23s"
+  ]
+ },
+ {
+  "id": "K10",
+  "desc": "js_round: prog 0.499 zamiast 0.5",
+  "exit": 101,
+  "killed": true,
+  "summary": [
+   "test annular_boundary_values_hit_round_and_clamp_thresholds ... FAILED",
+   "test annular_vectors_match_web_bit_for_bit ... FAILED",
+   "thread 'annular_boundary_values_hit_round_and_clamp_thresholds' (6867) panicked at tests/p6_m06a7_annular.rs:75:5:",
+   "thread 'annular_vectors_match_web_bit_for_bit' (6869) panicked at tests/p6_m06a7_annular.rs:63:5:",
+   "test result: FAILED. 2 passed; 2 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.12s"
+  ]
+ },
+ {
+  "id": "B1",
+  "desc": "most: tylko Morze (bez PlytkieMorze)",
+  "exit": 101,
+  "killed": true,
+  "summary": [
+   "test bridge_water_matches_web_for_every_base_terrain ... FAILED",
+   "thread 'bridge_water_matches_web_for_every_base_terrain' (8443) panicked at tests/p6_m06a7_annular.rs:97:9:",
+   "test result: FAILED. 3 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.12s"
+  ]
+ },
+ {
+  "id": "B2",
+  "desc": "most: zawsze false",
+  "exit": 101,
+  "killed": true,
+  "summary": [
+   "test bridge_water_matches_web_for_every_base_terrain ... FAILED",
+   "thread 'bridge_water_matches_web_for_every_base_terrain' (10855) panicked at tests/p6_m06a7_annular.rs:97:9:",
+   "test result: FAILED. 3 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.13s"
+  ]
+ },
+ {
+  "id": "B3",
+  "desc": "most: zawsze true",
+  "exit": 101,
+  "killed": true,
+  "summary": [
+   "test bridge_water_matches_web_for_every_base_terrain ... FAILED",
+   "thread 'bridge_water_matches_web_for_every_base_terrain' (11263) panicked at tests/p6_m06a7_annular.rs:97:9:",
+   "test result: FAILED. 3 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.09s"
+  ]
+ },
+ {
+  "id": "B4",
+  "desc": "most: + Gory",
+  "exit": 101,
+  "killed": true,
+  "summary": [
+   "test bridge_water_matches_web_for_every_base_terrain ... FAILED",
+   "thread 'bridge_water_matches_web_for_every_base_terrain' (11596) panicked at tests/p6_m06a7_annular.rs:97:9:",
+   "test result: FAILED. 3 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.12s"
+  ]
+ },
+ {
+  "id": "D1",
+  "desc": "dane: baza 6 -> 7",
+  "exit": 101,
+  "killed": true,
+  "summary": [
+   "test annular_boundary_values_hit_round_and_clamp_thresholds ... FAILED",
+   "test annular_nonfinite_and_negative_inputs_propagate_nan_like_web ... FAILED",
+   "test annular_vectors_match_web_bit_for_bit ... FAILED",
+   "thread 'annular_boundary_values_hit_round_and_clamp_thresholds' (11898) panicked at tests/p6_m06a7_annular.rs:70:5:",
+   "thread 'annular_nonfinite_and_negative_inputs_propagate_nan_like_web' (11899) panicked at tests/p6_m06a7_annular.rs:84:5:",
+   "thread 'annular_vectors_match_web_bit_for_bit' (11900) panicked at tests/p6_m06a7_annular.rs:63:5:",
+   "test result: FAILED. 1 passed; 3 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.09s"
+  ]
+ },
+ {
+  "id": "D2",
+  "desc": "dane: mnoznik 2.6 -> 2.5",
+  "exit": 101,
+  "killed": true,
+  "summary": [
+   "test annular_boundary_values_hit_round_and_clamp_thresholds ... FAILED",
+   "test annular_vectors_match_web_bit_for_bit ... FAILED",
+   "thread 'annular_boundary_values_hit_round_and_clamp_thresholds' (12173) panicked at tests/p6_m06a7_annular.rs:76:5:",
+   "thread 'annular_vectors_match_web_bit_for_bit' (12175) panicked at tests/p6_m06a7_annular.rs:63:5:",
+   "test result: FAILED. 2 passed; 2 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.13s"
+  ]
+ },
+ {
+  "id": "D3",
+  "desc": "dane: skala 20160 -> 20161",
+  "exit": 101,
+  "killed": true,
+  "summary": [
+   "test annular_vectors_match_web_bit_for_bit ... FAILED",
+   "thread 'annular_vectors_match_web_bit_for_bit' (12666) panicked at tests/p6_m06a7_annular.rs:63:5:",
+   "test result: FAILED. 3 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.18s"
+  ]
+ },
+ {
+  "id": "D4",
+  "desc": "dane: min 6 -> 5",
+  "exit": 0,
+  "killed": false,
+  "summary": [
+   "test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.12s"
+  ]
+ },
+ {
+  "id": "D5",
+  "desc": "dane: max 22 -> 23",
+  "exit": 101,
+  "killed": true,
+  "summary": [
+   "test annular_boundary_values_hit_round_and_clamp_thresholds ... FAILED",
+   "test annular_nonfinite_and_negative_inputs_propagate_nan_like_web ... FAILED",
+   "test annular_vectors_match_web_bit_for_bit ... FAILED",
+   "thread 'annular_boundary_values_hit_round_and_clamp_thresholds' (15204) panicked at tests/p6_m06a7_annular.rs:72:5:",
+   "thread 'annular_nonfinite_and_negative_inputs_propagate_nan_like_web' (15205) panicked at tests/p6_m06a7_annular.rs:86:5:",
+   "thread 'annular_vectors_match_web_bit_for_bit' (15206) panicked at tests/p6_m06a7_annular.rs:63:5:",
+   "test result: FAILED. 1 passed; 3 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.18s"
+  ]
+ }
+]
