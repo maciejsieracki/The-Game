@@ -1714,11 +1714,14 @@ pub mod ruch_jednostek {
     // -----------------------------------------------------------------------
 
     /// Web `PlannedMarchDest` (`planned-march.ts:14`).
+    /// `general_target_id` (web `planned-march.ts:20`, REPIN-WOJNA-2 R3): id ruchomego
+    /// generała będącego celem; `None` = brak pola lub pusty napis (jak w webie).
     #[derive(Debug, Clone, PartialEq)]
     pub struct PlannedMarchDest {
         pub dest_q: f64,
         pub dest_r: f64,
         pub attack_unit_id: Option<String>,
+        pub general_target_id: Option<String>,
     }
 
     /// Web `MarchStopReason` (`planned-march.ts:31`).
@@ -2117,12 +2120,13 @@ pub mod ruch_jednostek {
         pub dest_r: Option<f64>,
     }
 
-    /// Wpis `plannedMarches` z zapisu (`attackUnitId` tylko gdy napis).
+    /// Wpis `plannedMarches` z zapisu (`attackUnitId` / `generalTargetId` tylko gdy napis).
     #[derive(Debug, Clone, PartialEq)]
     pub struct PlannedMarchSaved {
         pub dest_q: Option<f64>,
         pub dest_r: Option<f64>,
         pub attack_unit_id: Option<String>,
+        pub general_target_id: Option<String>,
     }
 
     /// Web `validateAutoMarchFromSave` (`planned-march.ts:424`): `(leaderId, destQ, destR)`.
@@ -2172,11 +2176,22 @@ pub mod ruch_jednostek {
                 if unit.owner_id != player_owner_id {
                     continue;
                 }
-                if f64::from(unit.q) == dest_q && f64::from(unit.r) == dest_r {
+                // web `planned-march.ts:455`: wpis generała zachowany nawet przy zgodnej pozycji
+                // (cel = ostatnia znana pozycja lidera; rozwiazywana po wczytaniu).
+                let has_general = dest
+                    .general_target_id
+                    .as_ref()
+                    .is_some_and(|id| !id.is_empty());
+                if f64::from(unit.q) == dest_q && f64::from(unit.r) == dest_r && !has_general {
                     continue;
                 }
                 let attack_unit_id = dest
                     .attack_unit_id
+                    .as_ref()
+                    .filter(|id| !id.is_empty())
+                    .cloned();
+                let general_target_id = dest
+                    .general_target_id
                     .as_ref()
                     .filter(|id| !id.is_empty())
                     .cloned();
@@ -2186,6 +2201,7 @@ pub mod ruch_jednostek {
                         dest_q,
                         dest_r,
                         attack_unit_id,
+                        general_target_id,
                     },
                 ));
             }
@@ -2200,6 +2216,7 @@ pub mod ruch_jednostek {
                         dest_q,
                         dest_r,
                         attack_unit_id: None,
+                        general_target_id: None,
                     },
                 ));
             }
@@ -2232,12 +2249,18 @@ pub mod ruch_jednostek {
                 .as_ref()
                 .filter(|id| !id.is_empty())
                 .cloned();
+            let general_target_id = dest
+                .general_target_id
+                .as_ref()
+                .filter(|id| !id.is_empty())
+                .cloned();
             planned.push((
                 unit_id.clone(),
                 PlannedMarchDest {
                     dest_q: dest.dest_q,
                     dest_r: dest.dest_r,
                     attack_unit_id,
+                    general_target_id,
                 },
             ));
             if first.is_none() {
