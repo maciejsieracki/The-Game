@@ -54,6 +54,13 @@ NASTEPNA-PARTIA = nie portowane w tej rundzie (przyczyna w kolumnie Uwagi).
    Promien W1 (`engageRadius`) podawany jawnie przez wolajacego (web: `opts.engageRadius ?? 0`).
    Sily W2 (`strength`) traktowane jako liczby calkowite (`i64`); web-wektory generowane z
    calkowitych sil (`{0,1,2,5,10}`), wiec ta zamiana nie zmienia wyniku dla danych z gry.
+   DOWOD (runda 3, obrona zarzutu 5): zrodlo sily w webie to LICZBA jednostek bojowych danego
+   wlasciciela: `gra/src/main.ts:30495` (`strengthByOwner.set(..., (... ?? 0) + 1)`) i
+   `main.ts:30502` (`strength: strengthByOwner.get(o) ?? 0`), czyli calkowita i nieujemna
+   (`dc8a3adc`). Ujemna sila w grze nie wystepuje; klamra `Math.max(0, strength)` (web
+   `war-rules-multiwar.ts:214,218`) jest zachowana dla zgodnosci z webem na dowolnych wejsciach
+   i pokryta testem `allocate_negative_strength_is_clamped_to_zero`. Poza zakresem tej partii:
+   `ai.ts:4089` ma domyslne `?? 1` dla armii bez wpisu w `enemyStrength` (inna funkcja, NASTEPNA-PARTIA).
    Wektory bazowe (`web-dc8a3adc.json`) nie maja trybu `engage`; wektory W1/W2 w
    `web-dc8a3adc-w12.json` (runda 3, `engageOrders` = 175, 148 scenariuszy W2).
 2. Parametry JSON (runda 2, zarzut 5 PRZYJETY): kopia 1:1 `war-allin-params.json` lezy w
@@ -146,3 +153,12 @@ Logi: `dyspozycje/autobot/runs/R-RUSTPORT-REPIN-WOJNA-NOWE-D-Q1/evidence/r4-*.lo
 - Regeneracja `web-dc8a3adc-w12.json` z `dc8a3adc` (git archive do katalogu tymczasowego, tsc, `gen-vectors-w12.js`): plik BAJT-W-BAJT identyczny z commitowanym; liczby 300 / engage 175 / rendezvous 74 / W1 213 / W2 148 / wielokrokowe 820 zgodne z raportem.
 - Gate w worktree na `acee10eec`: `cargo fmt --all -- --check` EXIT=0; `cargo clippy --all-targets -- -D warnings` EXIT=0; `cargo test --no-fail-fast` EXIT=0, 1725 passed / 0 failed. Logi: `evidence/r3v-*.log`.
 - Mutacje niezalezne od Operatora (wszystkie ZABITE, pliki przywrocone `cmp`): A tie-break owner w `pick_engagement_army` (test jednostkowy), B min-1 `>=` -> `>` w `allocate_groups_to_enemies` (wektory), D tie-break merge `<` -> `<=` w planerze (wektory).
+
+## Odpowiedzi obrony na zarzuty weryfikatora (runda 3, Operator, zapis `R-RUSTPORT-REPIN-WOJNA-NOWE-D-Q1`)
+
+- Z1 (klamra `max(0)`, `war_rules_multiwar.rs:89,95`): PRZYJETY. Nowe testy `allocate_negative_strength_is_clamped_to_zero` (web S1: `a->3, b->2, c->3`, wyliczone na `dc8a3adc` przez `allocateGroupsToEnemies`). Mutanty: usuniecie klamry na :89 ZABITE; na :95 PRZEZYWA (ponizej); na :89 i :95 razem ZABITE. Ekwiwalencja :95 (przy zalozeniu rozmiarow grup >= 1, czyli niepusty klaster): gdy `total > 0`, wlasciwe udzialy dodatnich wrogow nie zmieniaja sie, a wrog z udzialem <= 0 ma deficyt <= 0 (`-przydzielone`), podczas gdy suma deficytow dodatnich wrogow = R + przydzielone_niedodatnich > 0 (R = rozmiar pozostalych grup), wiec maksimum zawsze wypada u dodatniego wroga; wybor nie zmienia sie.
+- Z2 (`enemy_strength.is_some()` :177 i :384 vs web `!== undefined`): PRZYJETY. Nowe testy `w2_empty_enemy_strength_list_still_splits_engage_pool` (web: `mode 'engage'` dla None, `'capital'` dla `Some([])`) i `w2_empty_enemy_strength_list_blocks_spare_targets_of_other_owners` (web: rozkaz `cap3` dla None, brak rozkazu i `noPath=[a1]` dla `Some([])`). Mutanty :177 ZABITE, :384 ZABITE, obie razem ZABITE.
+- Z3 (tie-break po id, `war_rules_multiwar.rs:106`): PRZYJETY. Test `allocate_equal_sizes_orders_groups_by_id` (web S2: `a->2, b->3`). Mutant ZABITY.
+- Z4 (N-1 dla `engageRadius`): PRZYJETY. Test `engage_radius_boundary_n_minus_1_hits`.
+- Z5 (`i64` niepotwierdzone): PRZYJETY, dowod w sekcji 1 powyzej (`main.ts:30495,30502`).
+- Logi: `evidence/r3o-fmt.log`, `evidence/r3o-clippy.log`, `evidence/r3o-cargo-test.log` (1730 passed / 0 failed).
