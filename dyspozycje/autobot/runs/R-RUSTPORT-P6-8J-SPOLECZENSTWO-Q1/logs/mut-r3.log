@@ -1,0 +1,82 @@
+# Mutacje rundy 3 (Operator), 1 mutant naraz, cargo test p6_8j_{society,order,guards}. Format: id<TAB>wynik<TAB>zabijajace testy. Ostatni wpis per id.
+# NOMATCH = mutant zastapiony wersja z kontekstem (np. BD-stolica-neg -> -happy/-law, SB-era-finite -> -max/-kult, SB-round-finite-false, SB-clamp-finite-ctx).
+I-delta	KILLED 39s	matrix_unit;matrix_matches_web;result:
+M10-raw0	KILLED 37s	matrix_matches_web;result:
+J-maxge0	SURVIVED 38s	
+GRACE-ge	KILLED 36s	grace_unit;grace_matches_web;result:
+CRIT-gt	KILLED 37s	grace_unit;grace_matches_web;result:
+MSG-1.5	KILLED 35s	message_unit;messages_match_web;result:
+MSG-le0	KILLED 34s	message_unit;messages_match_web;result:
+BAND-lad-gt	KILLED 47s	band_boundaries_unit;bands_match_web;effects_match_web
+BAND-spok-gt	KILLED 36s	band_boundaries_unit;bands_match_web;effects_match_web
+BAND-nap-gt	KILLED 34s	band_boundaries_unit;bands_match_web;effects_match_web
+BAND-niep-gt	KILLED 33s	band_boundaries_unit;bands_match_web;effects_match_web
+BAND-crit-gt	KILLED 34s	band_boundaries_unit;bands_match_web;effects_match_web
+BAND-crit-finite	KILLED 32s	band_boundaries_unit;effects_match_web;bands_match_web
+TIER-ord-gt	KILLED 31s	tier_boundaries_unit;tiers_match_web;result:
+TIER-neu-gt	KILLED 36s	tier_boundaries_unit;tiers_match_web;result:
+EFF-lad-neutral	KILLED 34s	effects_match_web;breakdown_matches_web;matrix_matches_web
+EFF-spok-order	KILLED 35s	breakdown_matches_web;effects_match_web;matrix_matches_web
+EFF-niep-neutral	KILLED 34s	effects_match_web;breakdown_matches_web;result:
+FIN-finite	KILLED 34s	band_boundaries_unit;bands_match_web;contribution_matches_web
+PORPCT-unwrap	KILLED 35s	por_pct_cap_unit;result:
+CONTR-total-ge	KILLED 33s	contribution_unit;contribution_matches_web;result:
+CONTR-wsum-ge	KILLED 35s	contribution_unit;contribution_matches_web;result:
+BD-building-true	KILLED 35s	breakdown_matches_web;matrix_matches_web;result:
+BD-kult-none	KILLED 36s	breakdown_matches_web;matrix_matches_web;result:
+BD-kult-js-false	KILLED 38s	breakdown_matches_web;matrix_matches_web;result:
+BD-luks-ge	KILLED 34s	matrix_matches_web;breakdown_matches_web;result:
+BD-luks-le	KILLED 35s	breakdown_matches_web;matrix_matches_web;result:
+BD-atwar-neg	KILLED 33s	matrix_matches_web;breakdown_matches_web;result:
+BD-stolica-neg	NOMATCH(count=2)	
+BD-palac-range	KILLED 39s	breakdown_matches_web;result:
+BD-palac-has2	KILLED 38s	breakdown_matches_web;result:
+BD-effective-ge	KILLED 39s	law_breakdown_matches_web;result:
+BD-palac-contains	KILLED 36s	breakdown_matches_web;result:
+BD-palac-fallback	KILLED 37s	breakdown_matches_web;result:
+BD-garn-false	KILLED 37s	breakdown_matches_web;result:
+BD-osada-ge	SURVIVED 41s	
+BD-osiedle-false	NOMATCH(count=2)	
+BD-male-lt	KILLED 41s	breakdown_matches_web;result:
+SB-round-ge	KILLED 37s	breakdown_matches_web;matrix_matches_web;por_pct_match_web
+SB-round-sign	SURVIVED 39s	
+SB-finite-false	NOMATCH(count=2)	
+SB-jsmax-sign	KILLED 36s	js_max_min_signed_zero_like_math;result:
+SB-jsmin-sign	KILLED 35s	js_max_min_signed_zero_like_math;result:
+SB-truthy	KILLED 36s	nan_wealth_and_cuda_are_falsy_no_line;result:
+SB-jsnum-inf	KILLED 33s	messages_match_web;result:
+SB-table-empty	KILLED 39s	breakdown_matches_web;result:
+SB-pop-nan	KILLED 40s	osiedle_and_revolt_match_web;result:
+SB-osiedle-range	KILLED 39s	matrix_matches_web;breakdown_matches_web;result:
+SB-p-lt1	SURVIVED 39s	
+SB-era-empty	NOMATCH(count=0)	
+SB-era-finite	NOMATCH(count=2)	
+SB-wsp-gt	SURVIVED 40s	
+SB-scale-finite	KILLED 38s	scalar_functions_match_web;result:
+SB-pctnetto-gt	KILLED 35s	scalar_functions_match_web;result:
+SB-clamp-finite	NOMATCH(count=2)	
+SB-prog-le0	KILLED 35s	scalar_functions_match_web;result:
+SB-luks-finite	KILLED 37s	scalar_functions_match_web;result:
+BD-stolica-neg-happy	KILLED 39s	breakdown_matches_web;matrix_matches_web;result:
+BD-stolica-neg-law	KILLED 35s	breakdown_matches_web;matrix_matches_web;result:
+BD-osiedle-false-happy	NOMATCH(count=2)	
+SB-round-finite-false	SURVIVED 36s	
+SB-clamp-finite-false	KILLED 35s	por_pct_cap_unit;por_pct_match_web;result:
+SB-truthy-nan-kept	KILLED 34s	nan_wealth_and_cuda_are_falsy_no_line;result:
+SB-era-empty-ctx	KILLED 34s	era_table_nonfinite_or_empty_use_same_fallback;result:
+SB-era-finite-max	KILLED 36s	era_table_nonfinite_or_empty_use_same_fallback;result:
+SB-era-finite-kult	KILLED 36s	era_table_nonfinite_or_empty_use_same_fallback;result:
+SB-clamp-finite-ctx	KILLED 40s	por_pct_cap_unit;por_pct_match_web;result:
+SB-jsmax-ret-a	KILLED 37s	js_max_min_signed_zero_like_math;result:
+BD-osiedle-false-sz	KILLED 37s	breakdown_matches_web;result:
+BD-osiedle-false-pr	KILLED 38s	breakdown_matches_web;result:
+JSMAX-B-NAN-eq	SURVIVED 40s	
+JSMIN-B-NAN-eq	SURVIVED 36s	
+CIT-NAN-keep	KILLED 33s	nan_and_zero_inputs_are_falsy_no_line;result:
+REL-TRUE	KILLED 34s	breakdown_matches_web;matrix_matches_web;result:
+OWN-SHARE-1	KILLED 34s	breakdown_matches_web;matrix_matches_web;result:
+SHARE-FIN	KILLED 36s	scalar_functions_match_web;result:
+POP-FIN	KILLED 37s	matrix_matches_web;breakdown_matches_web;result:
+REF-FIN	SURVIVED 38s	
+BUNT-MULT-05	KILLED 36s	effects_branches_unit;result:
+BUNT-RISK-09	KILLED 37s	effects_branches_unit;result:
