@@ -3,27 +3,34 @@
 Temat: `R-RUSTPORT-P6-M07A-RZEKI-A-SCIEZKI-POLA-Q1`. Zakres web: `gra/src/map/gen-helpers.ts:5121-6068`,
 pin `edb8fb56` (uruchamiany kod TS, `git archive edb8fb56 gra/src gra/data`). Baza: `rust-port/parity-v2` @ `48d301fe8`.
 
-**Status tematu: RUNDA 1/5 - ZAKRES NIEKOMPLETNY (partia 1 z 4).** Część symboli zakresu jest portowana i zweryfikowana
-wektorami; reszta (trasowanie, meandry, centroidy, `pathEndsAtSea`) czeka na partie 2-4. Dossier nie deklaruje
-zakończenia tematu.
+**Status tematu: RUNDA 3/5 - ZAKRES NIEKOMPLETNY (partia 1 z 4, 34 z 52 pozycji PORTOWANE).** Partia 1 jest
+domknięta wektorami, mutacjami i niezależnym weryfikatorem Python (§3). Reszta (trasowanie, meandry, centroidy,
+`pathEndsAtSea`) czeka na partie 2-4. Dossier nie deklaruje zakończenia tematu.
 
 ## 1. Pliki
 
 | Plik | Rola | Linie |
 |---|---|---|
-| `rust-port/engine/src/domain/mapgen/rivers_a.rs` | port partii 1 | 650 (limit partii 600 - przekroczony o 50, patrz §5) |
+| `rust-port/engine/src/domain/mapgen/rivers_a.rs` | port partii 1 (stałe, render, sanityzacja, repair, `can_river_flow_through`) | 523 (limit 600) |
+| `rust-port/engine/src/domain/mapgen/rivers_a/fields.rs` | pola odległości, bufor od morza, `RiverFieldCache`, kwota rzek (re-eksport z `rivers_a`) | 145 |
 | `rust-port/engine/tests/p6_m07a_rivers_a.rs` | testy wektorowe (17) | - |
+| `rust-port/engine/tests/p6_m07a_rivers_a_caps.rs` | testy wektorowe galezi i capow r3 (4) | 166 |
 | `rust-port/engine/tests/p6_m07a_vectors/common.rs` | wspólny loader wektorów | - |
-| `rust-port/engine/tests/p6_m07a_vectors/web-rivers-a.json` | wektory z uruchomionego weba (3,1 MB < 6 MB) | - |
-| `dyspozycje/autobot/runs/R-RUSTPORT-P6-M07A-RZEKI-A-SCIEZKI-POLA-Q1/gen-m07a-vectors.mjs` | generator wektorów (importuje `gen-helpers.ts` z pinu) | - |
+| `rust-port/engine/tests/p6_m07a_vectors/web-rivers-a.json` | wektory z uruchomionego weba, wersja r3 (3,76 MB < 6 MB) | - |
+| `dyspozycje/autobot/runs/R-RUSTPORT-P6-M07A-RZEKI-A-SCIEZKI-POLA-Q1/gen-m07a-vectors.mjs` | generator wektorów (uruchamia `gen-helpers.ts` z pinu) | - |
+| `.../R-RUSTPORT-P6-M07A-RZEKI-A-SCIEZKI-POLA-Q1/reg/m07a-register.mjs`, `reg/m07a-hooks.mjs` | loader TS (rozwiązywanie importów, JSON, dopisek eksportu `canRiverFlowThrough`) | - |
+| `.../R-RUSTPORT-P6-M07A-RZEKI-A-SCIEZKI-POLA-Q1/verify_m07a_logic.py` | niezależny weryfikator Python (stdlib) wektorów | - |
+| `.../R-RUSTPORT-P6-M07A-RZEKI-A-SCIEZKI-POLA-Q1/mutate_m07a_r3.py` | skrypt mutacji r3 | - |
 
-`mod.rs` i `data/derived.rs` bez zmian (`rivers_a` był już zadeklarowany w szkielecie M00).
+`mod.rs` i `data/derived.rs` bez zmian. Podział `rivers_a/fields.rs` jest podmodułem `rivers_a` (katalog
+`mapgen/rivers_a/`), więc `mapgen/mod.rs` i test szkieletu M00 (`mapgen_mod_declares_exactly_doc_modules`) pozostają
+bez zmian i zielone.
 
 ## 2. Tabela statusu per symbol
 
 Legenda: PORTOWANE = funkcja Rust + wektor z weba + testy; NIE = jeszcze nie portowane (partia wskazana).
 
-| Symbol web | Linia web | Rust (`rivers_a.rs`) | Status | Wektory / dowód |
+| Symbol web | Linia web | Rust (`rivers_a.rs` / `rivers_a/fields.rs`) | Status | Wektory / dowód |
 |---|---|---|---|---|
 | `auditMapTerrainData` | 5121 | - | NIE (partia 4, diagnostyka audytu) | - |
 | `ELEVATION_RANK` | 5175 | `elevation_rank` | PORTOWANE | `constants` + tabela w teście |
@@ -34,39 +41,39 @@ Legenda: PORTOWANE = funkcja Rust + wektor z weba + testy; NIE = jeszcze nie por
 | `landRiverRenderPath` | 5261 | `land_river_render_path` | PORTOWANE | `landRender`: 360 |
 | `countMediumInlandLandHexes` | 5279 | `count_medium_inland_land_hexes` | PORTOWANE | `countMediumInland`: 360 |
 | `mediumRiverRenderPath` | 5295 | `medium_river_render_path` | PORTOWANE | `mediumRender`: 360 |
-| `coastalRiverRenderPath` | 5312 | `coastal_river_render_path` | PORTOWANE | `coastalRender`: 360 (282 niepuste, 154 o długości >=2) |
+| `coastalRiverRenderPath` | 5312 | `coastal_river_render_path` | PORTOWANE | `coastalRender`: 360; cap dociągania (guard<4): `coastCap`: 3 przypadki, mutacje M9/M10 |
 | `hasLandNeighborTouchingSea` (prywatna) | 5383 | `has_land_neighbor_touching_sea` | PORTOWANE | przez `coastalRender` |
 | `hasMorzeNeighborForRiverRender` (prywatna) | 5392 | `has_morze_neighbor_for_river_render` | PORTOWANE | przez `coastalRender` |
 | `assertRiverPathAdjacent` | 5400 | `assert_river_path_adjacent` | PORTOWANE | `adjacent`: 400 |
 | `splitAdjacentRiverChains` | 5415 | `split_adjacent_river_chains` | PORTOWANE | `split`: 400 (146 z >1 łańcuchem) |
 | `sanitizeRiverPath` | 5440 | `sanitize_river_path` | PORTOWANE | `sanitize`: 400 (284 zmienione) |
 | `riverPathHasRevisitedHex` | 5457 | `river_path_has_revisited_hex` | PORTOWANE | `revisited`: 400 |
-| `repairRiverPathAdjacency` | 5468 | `repair_river_path_adjacency` | PORTOWANE | `repair`: 240 (191 zmienionych, 111 z wejściem niesąsiednim) |
+| `repairRiverPathAdjacency` | 5468 | `repair_river_path_adjacency` | PORTOWANE | `repair`: 240 (191 zmienionych); cap pętli (guard<64): `repairCap`: D=62..67, obie osie, mutacje M7/M8 |
 | `RIVER_MIN_INLAND_FROM_SEA` | 5512 | stała | PORTOWANE | `constants` |
 | `RIVER_MIN_MAIN_LEN` | 5518 | stała | PORTOWANE | `constants` |
 | `RIVER_HARD_MEANDER_LEN` | 5523 | stała | PORTOWANE | `constants` |
 | `RIVER_MOUTH_TAIL_LEN` | 5526 | stała | PORTOWANE | `constants` |
 | `MAIN_RIVER_MIN_PATH_SEP` | 5529 | stała | PORTOWANE | `constants` |
 | `MEDIUM_TRIBUTARY_SPACING_HEX` | 5532 | stała | PORTOWANE | `constants` |
-| `mediumTributarySpacingHex` | 5535 | `medium_tributary_spacing_hex` | PORTOWANE | test jednostkowy (definicja web bez argumentu zależnego od rozmiaru) |
+| `mediumTributarySpacingHex` | 5535 | `medium_tributary_spacing_hex` | PORTOWANE | test jednostkowy (stała 4 niezależnie od rozmiaru) |
 | `MEDIUM_TRIBUTARY_MIN_NET_LEN` | 5538 | stała | PORTOWANE | `constants` |
-| `mediumTributaryMinNetLen` | 5543 | `medium_tributary_min_net_len` | PORTOWANE | test jednostkowy progów 79/80/119/120 (ZAŁOŻENIE: bez wektora, wartości z definicji web) |
+| `mediumTributaryMinNetLen` | 5543 | `medium_tributary_min_net_len` | PORTOWANE | test jednostkowy progów 79/80/119/120 (ZAŁOŻENIE: bez wektora, wartości z definicji web :5545-5547) |
 | `MAIN_RIVER_COAST_MOUTH_MAX_GAP` | 5551 | stała | PORTOWANE | `constants` |
-| `mainRiverCoastMouthMaxGapForDims` | 5554 | `main_river_coast_mouth_max_gap_for_dims` | CZĘŚCIOWO | test tylko dla gałęzi poza 'mala' (200x200); gałąź 'mala' (5) NIEPRZETESTOWANA wektorem |
-| `riverPathRespectsSeaBuffer` | 5561 | `river_path_respects_sea_buffer` (w `rivers_a.rs`) | PORTOWANE | `seaBuffer`: 240 (102 true / 138 false) |
+| `mainRiverCoastMouthMaxGapForDims` | 5554 | `main_river_coast_mouth_max_gap_for_dims` | PORTOWANE | `mouthGap`: 324 pary (w, h), 195 gałąź 'mala' (5), 129 standard (7); mutacja M6 (5→6) wykryta |
+| `riverPathRespectsSeaBuffer` | 5561 | `river_path_respects_sea_buffer` (`rivers_a/fields.rs`) | PORTOWANE | `seaBuffer`: 240 (102 true / 138 false) |
 | `canRiverDrainStep` (prywatna) | 5580 | - | NIE (partia 3) | - |
 | `isRiverDrainageGoal` (prywatna) | 5595 | - | NIE (partia 3) | - |
-| `buildSeaDistanceField` | 5614 | `build_sea_distance_field` | PORTOWANE | `fields`: 40 map (seaDist) |
-| `buildOpenOceanDistanceField` | 5640 | `build_open_ocean_distance_field` | PORTOWANE | `fields`: 40 map (openOceanDist) |
+| `buildSeaDistanceField` | 5614 | `build_sea_distance_field` (`fields.rs`) | PORTOWANE | `fields`: 40 map (seaDist) |
+| `buildOpenOceanDistanceField` | 5640 | `build_open_ocean_distance_field` (`fields.rs`) | PORTOWANE | `fields`: 40 map (openOceanDist) |
 | profiler `CIV_RIVER_PROFILE` (`RIVER_PROFILE_ON`, `rpNow`, `RiverProfileStats`, `rpEnsure`, `reset/get/formatRiverProfileReport`) | 5670-5752 | - | NIE PORTOWANE - diagnostyka env, bez wpływu na wynik (ZAŁOŻENIE; weryfikacja w partii 3, gdy profiler zostanie dotknięty przez `generateRivers`) | - |
-| `RiverFieldCache` / `buildRiverFieldCache` | 5755-5761 | `RiverFieldCache` / `build_river_field_cache` | PORTOWANE (bez gałęzi profilera) | `fields`: 40 map |
+| `RiverFieldCache` / `buildRiverFieldCache` | 5755-5761 | `RiverFieldCache` / `build_river_field_cache` (`fields.rs`) | PORTOWANE (bez gałęzi profilera) | `fields`: 40 map |
 | `inferMapDimsFromHexes` (prywatna) | 5781 | - | NIE (partia 3) | - |
 | `isReliefRiverSource` (prywatna) | 5792 | - | NIE (partia 3) | - |
 | `pathEndsAtSea` | 5797 | - | NIE (partia 3) | - |
 | `TraceRiverOpts` (interfejs) | 5819 | - | NIE (partia 3) | - |
 | `RiverCoord` (typ) | 5844 | `RiverCoord` | PORTOWANE | - |
-| `isReliefTerrain` (prywatna) | 5847 | `is_relief_terrain` | PORTOWANE | przez `repair` / `canRiverFlowThrough` |
-| `canRiverFlowThrough` | 5862 | `can_river_flow_through` | CZĘŚCIOWO | wywołania z `repair` używają tylko domyślnych argumentów (`blockExisting=false`, `allowRelief=false`); gałęzie `block_existing`/`allow_key`/`allow_relief_traversal` NIE są pokryte wektorami (pokryje partia 2/3) |
+| `isReliefTerrain` (prywatna) | 5847 | `is_relief_terrain` | PORTOWANE | przez `flow`, `repair`, `coastal` |
+| `canRiverFlowThrough` | 5862 | `can_river_flow_through` | PORTOWANE (funkcja w całości; wywołania z partii 2+ poza zakresem) | `flow`: 5760 przypadków, wszystkie gałęzie (morze; relief + źródło; `block_existing` + `allow_key` = cell / inny / brak; `allow_relief_traversal`; poza mapą); mutacje M1-M5 wykryte |
 | `riverStepDir` (prywatna) | 5879 | - | NIE (partia 2) | - |
 | `sameRiverDir` (prywatna) | 5883 | - | NIE (partia 2) | - |
 | `reconstructRiverPath` (prywatna) | 5887 | - | NIE (partia 2) | - |
@@ -78,63 +85,98 @@ Legenda: PORTOWANE = funkcja Rust + wektor z weba + testy; NIE = jeszcze nie por
 | `scoreRiverStepTowardCenterSquare` (prywatna) | 6041 | - | NIE (partia 4) | - |
 | `scoreRiverStepTowardLandCenter` (prywatna) | 6057 | - | NIE (partia 4) | - |
 
-Podsumowanie: 52 pozycje tabeli (symbole i stałe zliczone z deklaracji `export`/`function`/`const`/`interface`/`type` w 5121-6068, profiler jako jedna pozycja).
-PORTOWANE w pełni: 32. CZĘŚCIOWO: 2. NIE: 18 (w tym profiler, celowo poza zakresem wyniku).
+Podsumowanie: 52 pozycje tabeli (symbole i stałe zliczone z deklaracji `export`/`function`/`const`/`interface`/`type`
+w 5121-6068, profiler jako jedna pozycja; patrz §5.4 o rozbieżności z tabelą P6-25).
+PORTOWANE w pełni: 34 (w r1 było 32; `mainRiverCoastMouthMaxGapForDims` i `canRiverFlowThrough` domknięte w r3).
+CZĘŚCIOWO: 0. NIE: 18 (w tym profiler, celowo poza zakresem wyniku).
 
-## 3. Lekcje M06B (wymogi dispatchu) - stan
+## 3. Lekcje M06B (wymogi dispatchu) - stan po r3
 
 - (a) wektory z nakładkami na heksach wodnych i lądowych: TAK. `render_vectors_exercise_water_and_land_overlays`
-  sprawdza `las` (woda i ląd), `zloze` (woda i ląd), `rzeka` (woda i ląd) w mapach wektorów.
-- (b) cap pętli z wektorem N-1/N/N+1: DOTYCZY partii 2+ (pętle `repair` `guard<64` i dociąganie wybrzeża `guard<4`).
-  Partia 1 ma mutacje na capach (M6: `0..4`→`0..3`, M1 tie-break), NIE ma osobnych map N-1/N/N+1 dla capu `guard`.
-- (c) niezależny weryfikator Python od zera z TS pinu: NIE ZROBIONO (partia 1 weryfikowana bezpośrednio
-  uruchomionym kodem TS; weryfikator Python zaplanowany na koniec tematu).
-- (d) mutacje na każdej gałęzi sterującej: CZĘŚCIOWO. Partia 1: 7 mutacji, wszystkie wykryte (§4).
-  Gałęzie `canRiverFlowThrough` (block/allow) jeszcze nie mutowane (brak wywołań z wektorami).
-- (e) plik wektorów ≤ 6 MB: TAK (3 068 407 B).
+  sprawdza `las`, `zloze`, `rzeka` (woda i ląd); `flow` ma heksy wodne i lądowe z nakładkami i rzekami.
+- (b) cap pętli z wektorem N-1/N/N+1 na mapach rozróżniających cap: TAK (r3).
+  `repair` (guard<64): mapa 70x70 Laka, D=62,63,64,65,66,67 w dwóch osiach; D<=64 domyka cel (długość D+1),
+  D>=65 ucina przed celem (długość 65). `coastalRiverRenderPath` (guard<4): mapa 12x12 bez Morza, L=1,2,3;
+  wynik 6/5/5 zależy od capu 4 (mutacje M9 cap 3 i M10 cap 5 wykryte).
+- (c) niezależny weryfikator Python od zera z TS pinu: TAK, częściowo (zakres §5.3). `verify_m07a_logic.py`
+  (stdlib, `python3 -I`) implementuje logikę niezależnie od Rust i generatora i porównuje z wektorami:
+  quota 166/166, constants 4/4, mouthGap 324/324, sanitize 400/400, revisited 400/400, adjacent 400/400,
+  split 400/400, flow 5760/5760, repair 240/240, repairCap 12/12, seaBuffer 240/240, fields.seaDist 40/40. RESULT: PASS.
+  Plus `verify_m07a_consts.py` (r2): stałe 8/8, ELEVATION_RANK 8/8.
+- (d) mutacje na każdej gałęzi sterującej: TAK (r3), 10/10 wykryte (§4).
+- (e) plik wektorów ≤ 6 MB: TAK (3 763 728 B).
 - (f) dossier z tabelą statusu per symbol: TAK (ten plik, §2).
-- (g) logi bramek z `EXIT=`: TAK (`gate-fmt-r1.log`, `gate-clippy-r1.log`, `gate-test-r1.log` w katalogu runu).
-  Puste linie na końcu plików: `git diff --check` czysty.
+- (g) logi bramek z `EXIT=`: TAK (r3): `gate-fmt-r3.log`, `gate-clippy-r3.log`, `gate-test-full-r3.log` w katalogu runu.
+  `git diff --check` czysty.
 - (h) komparatory sortowania zgodne z V8: DOTYCZY partii 2+. W partii 1 wyjścia są listami w kolejności
-  wstawiania (`Object.entries`) lub zbiorami porównywanymi po sortowaniu (`fields`: sortowanie po kluczu w generatorze i teście).
+  wstawiania albo zbiorami porównywanymi po sortowaniu (`fields`).
 
-## 4. Mutacje (partia 1) - wszystkie wykryte
+## 4. Mutacje
 
-Skrypt: mutacja pojedynczej linii w `rivers_a.rs`, `cargo test --test p6_m07a_rivers_a`, przywrócenie oryginału.
+### 4.1 Runda r3 (`mutate_m07a_r3.py`, każda mutacja = jedna podmiana w `rivers_a.rs`)
 
-| Mutacja | Wykryta przez |
-|---|---|
-| M1 tie-break repair `nd < best_dist` → `<=` | `coastal_river_render_path_matches_web`, `repair_river_path_adjacency_matches_web` |
-| M2 `Terrain::Polar` wyłączony z `is_river_land_terrain` | `count_medium_inland_land_hexes_matches_web`, `medium_river_render_path_matches_web` |
-| M3 próg pustyni `pust_n >= 2` → `>= 3` | `purge_ocean_inside_earth_mask_matches_web` |
-| M4 tie coastal `score > best` → `>=` | `coastal_river_render_path_matches_web` |
-| M5 bufor morza `body_end` o +1 | `river_path_respects_sea_buffer_matches_web` |
-| M6 cap dociągania wybrzeża `0..4` → `0..3` | `coastal_river_render_path_matches_web` |
-| M7 sanityzacja bez odrzucania powtórzeń | 5 testów (render, repair, pure path) |
+| Mutacja | Gałąź / cap | Wynik | Wykryta przez |
+|---|---|---|---|
+| M1 `block_existing && ...` → `false && ...` | `can_river_flow_through` block | WYKRYTA | `can_river_flow_through_matches_web_all_branches` |
+| M2 `allow_key != Some(cell_key)` → `true` | `can_river_flow_through` allow_key | WYKRYTA | `can_river_flow_through_matches_web_all_branches` |
+| M3 `!allow_relief_traversal` → `false` | `can_river_flow_through` relief | WYKRYTA | `coastal_river_render_path_matches_web`, `repair_river_path_adjacency_matches_web` (+ flow) |
+| M4 `return cell_key == source_key` → `false` | relief dla źródła | WYKRYTA | `can_river_flow_through_matches_web_all_branches` |
+| M5 `hex.terrain == Sea` → `&& false` | morze | WYKRYTA | `coastal_river_render_path_matches_web`, `repair_river_path_adjacency_matches_web` |
+| M6 `MapSizeLabel::Mala => 5` → `6` | gałąź 'mala' | WYKRYTA | `main_river_coast_mouth_gap_matches_web_size_labels` |
+| M7 `while guard < 64` → `63` | cap repair | WYKRYTA | `repair_loop_cap_matches_web_n_minus_1_n_n_plus_1` |
+| M8 `while guard < 64` → `65` | cap repair | WYKRYTA | `repair_loop_cap_matches_web_n_minus_1_n_n_plus_1` |
+| M9 `for _guard in 0..4` → `0..3` | cap wybrzeża | WYKRYTA | `coastal_river_render_path_matches_web`, `coastal_extension_cap_matches_web` |
+| M10 `for _guard in 0..4` → `0..5` | cap wybrzeża | WYKRYTA | `coastal_river_render_path_matches_web`, `coastal_extension_cap_matches_web` |
+
+Uwaga: pierwsze przebiegi M1-M8 uruchamiały testy bez `--no-fail-fast`; wykrycie jest ważne (czerwony test),
+ale lista czerwonych testów była skrócona. M9/M10 przebiegnięto ponownie z `--no-fail-fast`.
+
+### 4.2 Sesje r1 i r2 (zachowane dla historii; NIE są powtarzane w r3)
+
+- r1 deklarowała "7/7 wykryte" dla innego zestawu (tie-break repair, `Polar` w `is_river_land_terrain`, próg pustyni,
+  tie coastal, bufor morza, cap wybrzeża 0..4→0..3, sanityzacja). Zestaw r1 NIE został odtworzony przez r2 ani r3.
+- r2 wykryła 5/7 z innym zestawem; niewykryte były `block_existing` i gałąź 'mala' - obie zamknięte w r3 (M1, M6).
 
 ## 5. Odstępstwa i zastrzeżenia (do decyzji orkiestratora / FC)
 
-1. **Limit LOC partii**: `rivers_a.rs` ma 650 linii (limit 600). Próba podziału na `rivers_a_fields.rs` została
-   wycofana: test szkieletu `tests/p6_m00_skeleton.rs:173` (`mapgen_mod_declares_exactly_doc_modules`) wymaga,
-   by `mapgen/mod.rs` deklarował dokładnie 22 moduły z dokumentu M00, a dokument M00 nie jest na allowliście tematu.
+1. **Limit LOC partii - ROZWIĄZANE w r3**: `rivers_a.rs` ma 523 linie, `rivers_a/fields.rs` 145 (podmoduł
+   `rivers_a::fields`, plik w katalogu `mapgen/rivers_a/`). `mapgen/mod.rs` bez zmian, więc test szkieletu M00
+   (`mapgen_mod_declares_exactly_doc_modules`) zostaje zielony (sprawdzone w r3: 5/5 testów `p6_m00_skeleton`).
 2. **Stałe jako kod, nie JSON**: stałe `RIVER_*` i progi są literałami w Rust (wartości z web, komentarze z numerami linii).
    Zmiana wartości w webie wymaga aktualizacji Rust i wektorów (wektory `constants` wykrywają dryf).
-3. **Brak weryfikatora Python** (lekcja c) - do domknięcia w końcowej partii tematu.
-4. **Plik `P6-25-MAPA-GAP.md` nieobecny** w `rust-port/parity-v2` (dispatch podaje go jako tabelę symboli).
-   Zakres ustalono skanem deklaracji w `gen-helpers.ts:5121-6068` oraz wierszem M07A z
-   `dyspozycje/autobot/runs/R-RUSTPORT-P6-M00-MAPGEN-SZKIELET-Q1/p6-25-sec6-rows-m00-m18.txt`.
+3. **Weryfikator Python - zakres częściowy**: `verify_m07a_logic.py` NIE obejmuje: `purge*` (wymaga
+   `earthTemplateLandAt`), `render*` i `coastalRender` (patrz wektory + testy Rust), `fields.oceanConnected` i
+   `openOceanDist`, profilera oraz symboli partii 2-4. Pełny weryfikator Python zaplanowany na koniec tematu (partia 4).
+4. **Rozbieżność z tabelą P6-25 (zakres 52 vs ok. 32)**: plik `dyspozycje/rust-port/p6/P6-25-MAPA-GAP.md` nie
+   istnieje w `rust-port/parity-v2`. Jego źródłowa tabela `gap-rows.tsv` istnieje w historii (commit `ae36d9ded`,
+   `dyspozycje/autobot/runs/R-RUSTPORT-P6-25-MAPA-GAP-Q1/gap-rows.tsv`): zawiera 30 wierszy M07A od
+   `ELEVATION_RANK` (5175) do `TraceRiverOpts` (5819) i NIE zawiera wierszy dla 5819-6068. Skan deklaracji
+   w 5121-6068 daje 52 pozycje. Rozbieżność jest ZAŁOŻENIEM: zakres = skan deklaracji (52), tabela P6-25 = podzbiór.
 5. **Profiler `CIV_RIVER_PROFILE`** nie jest portowany (ZAŁOŻENIE: bez wpływu na wynik generatora).
+6. **Eksport `canRiverFlowThrough` do testów**: w pinie symbol nie jest eksportowany. Generator wektorów dopisuje
+   jedną linię `export { canRiverFlowThrough };` w loaderze (`reg/m07a-hooks.mjs`) - kod funkcji nietknięty.
 
 ## 6. Następne partie (plan)
 
-- Partia 2: `riverStepDir`, `sameRiverDir`, `reconstructRiverPath`, pełne gałęzie `canRiverFlowThrough` (wektory + mutacje).
+- Partia 2: `riverStepDir`, `sameRiverDir`, `reconstructRiverPath` (wektory + mutacje + cap, jeśli pętla).
 - Partia 3: `canRiverDrainStep`, `isRiverDrainageGoal`, `inferMapDimsFromHexes`, `isReliefRiverSource`, `pathEndsAtSea`,
   `TraceRiverOpts`, `growRiverInlandBeforeDrainage`, `riverHexDirDelta` (pętle z capami N-1/N/N+1).
-- Partia 4: `estimateLandCentroid*`, `scoreRiverStepToward*`, `auditMapTerrainData`, weryfikator Python, dossier domknięte.
+- Partia 4: `estimateLandCentroid*`, `scoreRiverStepToward*`, `auditMapTerrainData`, pełny weryfikator Python, dossier domknięte.
 
 ## 7. Weryfikacja r2 (Operator-pomiary, run `R-RUSTPORT-P6-M07A-RZEKI-A-SCIEZKI-POLA-Q1/02-operator-r2.md`)
 
 - Bramki na `bef9b491b`: `cargo test --test p6_m07a_rivers_a` 17/17 EXIT=0; pełny `cargo test` 1799 passed / 0 failed EXIT=0; `cargo fmt --check` EXIT=0; `cargo clippy --all-targets -D warnings` EXIT=0.
-- Weryfikator niezależny `runs/.../verify_m07a_consts.py` (stdlib, TS pinu `edb8fb56` vs `rivers_a.rs`): stałe RIVER_*/MAIN_RIVER_* 8/8, progi `mediumTributaryMinNetLen` (80→4, 120→5), `ELEVATION_RANK` 8/8: PASS. Nie pokrywa `mapSizeLabelFromDims` ani wektorów.
-- Mutacje r2 (7 sztuk): wykryte 5/7. NIEWYKRYTE: (a) `canRiverFlowThrough` gałąź `blockExisting` (wektory bez tej gałęzi) — luka zgodna z §3 (CZĘŚCIOWO); (b) `mainRiverCoastMouthMaxGapForDims` gałąź `mala` → 5 (web :5554-5557) — brak wektora i asercji; dodać przypadek Mała w partii 2.
-- Status wierszy §3 bez zmian; r2 nie zmienia kodu.
+- Weryfikator `verify_m07a_consts.py` (stdlib, TS pinu `edb8fb56` vs `rivers_a.rs`): stałe 8/8, progi `mediumTributaryMinNetLen`, `ELEVATION_RANK` 8/8: PASS. Nie pokrywa `mapSizeLabelFromDims` ani wektorów.
+- Mutacje r2: 5/7 wykryte; niewykryte (block_existing, gałąź 'mala') zamknięte w r3 (§4.1 M1, M6).
+
+## 8. Runda r3 - odpowiedzi na zarzuty (kolejne rundy: kontrola niezależna przez orkiestratora)
+
+- Z2 (luka `canRiverFlowThrough`): PRZYJĘTE. Wektory `flow` (5760), mutacje M1-M4 wykryte.
+- Z3 (gałąź 'mala' bez wektora): PRZYJĘTE. Wektory `mouthGap` (324 pary, 195 'mala'), mutacja M6 wykryta.
+- Z4 (brak weryfikatora Python): PRZYJĘTE CZĘŚCIOWO. `verify_m07a_logic.py` PASS na 12 zestawach (§3c); zakres poza partią 1 i purge/render zostaje do partii 4.
+- Z5 (cap pętli i wybrzeża bez map N-1/N/N+1): PRZYJĘTE. `repairCap` (D=62..67), `coastCap` (L=1..3), mutacje M7-M10 wykryte.
+- Z6 (650 LOC > 600): PRZYJĘTE. Podział na `rivers_a.rs` (523) i `rivers_a/fields.rs` (145); mod.rs i test M00 nietknięte.
+- Z7 (sprzeczne raporty mutacji): PRZYJĘTE. §4 przepisany: zestaw r3 (10/10) oddzielony od zestawów r1/r2, których nie odtworzono.
+- Z8 (brak P6-25-MAPA-GAP.md): ZAŁOŻENIE z dowodem: §5.4 (30 wierszy M07A w historii vs skan 52).
+- Z1 (zakres 18 symboli nieportowanych): PRZYJĘTE jako otwarte. Partie 2-4 NIE są wykonane w r3; ten temat NIE jest
+  PASS i nie jest READY_FOR_DEPLOY. Nie zamykam go w tej rundzie.

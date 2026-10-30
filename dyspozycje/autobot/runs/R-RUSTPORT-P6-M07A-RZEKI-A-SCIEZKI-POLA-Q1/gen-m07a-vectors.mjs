@@ -293,11 +293,91 @@ for (let i = 0; i < 40; i++) {
   });
 }
 
+// ---------- [r3] canRiverFlowThrough (eksport z loadera m07a-hooks.mjs; logika bez zmian) ----------
+// Pokrycie galezi: block_existing (rzeka obecna + allowKey), allowKey (rowny / inny / brak),
+// allowReliefTraversal (gory/wzgorza: zrodlo vs nie-zrodlo), morze, poza mapa.
+const flowCases = [];
+for (const m of PATH_MAPS) {
+  const hx = mapOf(m);
+  const { w: W, h: H } = maps[m];
+  const keys = Object.keys(hx);
+  const riverKeys = keys.filter((k) => hx[k].rzeka.obecna);
+  const reliefKeys = keys.filter((k) => hx[k].terenBazowy === TB.Gory || hx[k].terenBazowy === TB.Wzgorza);
+  const picks = [];
+  for (let i = 0; i < 8 && riverKeys.length; i++) picks.push(riverKeys[ri(0, riverKeys.length - 1)]);
+  for (let i = 0; i < 4 && reliefKeys.length; i++) picks.push(reliefKeys[ri(0, reliefKeys.length - 1)]);
+  for (let i = 0; i < 4; i++) picks.push(keyOf(ri(-1, W), ri(-1, H)));
+  for (const cell of picks) {
+    const src = rnd() < 0.3 ? cell : keys[ri(0, keys.length - 1)];
+    const other = keys[ri(0, keys.length - 1)];
+    for (const block of [false, true]) {
+      for (const allow of [null, cell, other]) {
+        for (const relief of [false, true]) {
+          const ret = G.canRiverFlowThrough(hx[cell], cell, src, block, allow ?? undefined, relief);
+          flowCases.push({ map: m, cell, src, block, allow, relief, ret });
+        }
+      }
+    }
+  }
+}
+
+// ---------- [r3] mainRiverCoastMouthMaxGapForDims: progi etykiety 'mala' (area < 4800) ----------
+const mouthGapCases = [];
+const DIMV = [1, 2, 8, 10, 20, 40, 48, 60, 69, 70, 79, 80, 99, 100, 119, 120, 150, 200];
+for (const w of DIMV) for (const h of DIMV) mouthGapCases.push({ w, h, ret: G.mainRiverCoastMouthMaxGapForDims(w, h) });
+
+// ---------- [r3] cap petli repairRiverPathAdjacency (guard < 64): odleglosci D = 62..67 ----------
+// Otwarty lad 70x70; trasa [start -> start + D*kierunek]. Iteracji = D, wiec D <= 64 domyka cel,
+// D >= 65 ucina sciezke przed celem. Przypadki N-1/N/N+1 wokol capu.
+const capLand = {};
+for (let r = 0; r < 70; r++) {
+  for (let q = 0; q < 70; q++) {
+    capLand[keyOf(q, r)] = { coords: { q, r }, terenBazowy: TB.Laka, nakladka: NK.Brak, rzeka: { obecna: false, krawedzie: [] } };
+  }
+}
+const CAP_MAP = addMap(70, 70, capLand);
+const repairCapCases = [];
+for (const D of [62, 63, 64, 65, 66, 67]) {
+  for (const [dq, dr] of [[1, 0], [0, 1]]) {
+    const hx = mapOf(CAP_MAP);
+    const start = { q: 2, r: 2 };
+    const target = { q: 2 + D * dq, r: 2 + D * dr };
+    const ret = G.repairRiverPathAdjacency([start, target], hx, keyOf(2, 2)).map((c) => [c.q, c.r]);
+    repairCapCases.push({ map: CAP_MAP, D, dir: [dq, dr], path: [[2, 2], [target.q, target.r]], sourceKey: keyOf(2, 2), ret });
+  }
+}
+
+// ---------- [r3] cap dociagania wybrzeza coastalRiverRenderPath (guard < 4) ----------
+// Mapa 12x12: Laka w (0,0), reszta Plytkie Morze, BEZ Morza -> brak wczesnego stopu, wiec
+// dociaganie zawsze wykonuje pelne 4 kroki (wynik = prefiks + 4 hexy plytkie).
+const coastMap = {};
+for (let r = 0; r < 12; r++) {
+  for (let q = 0; q < 12; q++) {
+    coastMap[keyOf(q, r)] = {
+      coords: { q, r },
+      terenBazowy: q === 0 && r === 0 ? TB.Laka : TB.PlytkieMorze,
+      nakladka: NK.Brak,
+      rzeka: { obecna: false, krawedzie: [] },
+    };
+  }
+}
+const COAST_MAP = addMap(12, 12, coastMap);
+const coastCapCases = [];
+for (let L = 1; L <= 3; L++) {
+  const path = [[0, 0]];
+  for (let i = 1; i <= L; i++) path.push([i, 0]);
+  const hx = mapOf(COAST_MAP);
+  const ret = G.coastalRiverRenderPath(hx, path.map(([q, r]) => ({ q, r }))).map((c) => [c.q, c.r]);
+  coastCapCases.push({ map: COAST_MAP, path, ret });
+}
+
 const doc = {
   meta: {
     pin: 'edb8fb56',
     zrodlo: 'gra/src/map/gen-helpers.ts:5121-6068 (uruchomiony kod TS)',
     seed: 20261030,
+    wersja_wektorow: 'r3',
+    uwaga_r3: 'canRiverFlowThrough eksportowany przez dopisek w loaderze m07a-hooks.mjs (logika nietknieta)',
   },
   maps,
   cases: {
@@ -316,6 +396,10 @@ const doc = {
     adjacent: pureCases.adjacent,
     split: pureCases.split,
     fields: fieldCases,
+    flow: flowCases,
+    mouthGap: mouthGapCases,
+    repairCap: repairCapCases,
+    coastCap: coastCapCases,
   },
 };
 writeFileSync(out, JSON.stringify(doc));

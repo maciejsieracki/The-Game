@@ -1,21 +1,27 @@
 //! P6.M07A (czesc A: sciezki i pola rzek) - port gen-helpers.ts:5121-6068 (pin `edb8fb56`).
 //! Temat wlasciciel: R-RUSTPORT-P6-M07A-RZEKI-A-SCIEZKI-POLA-Q1.
-//! Partia 1 (ten plik): stale, ranking wysokosci, kwota rzek, czyszczenie maski Ziemi,
-//! render sciezek (land / medium / coastal), sanityzacja i naprawa sciezek, bufor od morza,
-//! pola odleglosci (morze / ocean otwarty) i `RiverFieldCache`.
+//! Partia 1 (ten plik + `rivers_a_fields.rs`): stale, ranking wysokosci, czyszczenie maski Ziemi,
+//! render sciezek (land / medium / coastal), sanityzacja i naprawa sciezek,
+//! `can_river_flow_through`. Pola odleglosci, bufor od morza i kwota rzek: `rivers_a_fields.rs`
+//! (re-eksport nizej; podzial dla limitu 600 LOC na partie).
 //! Partie 2+ (trasowanie, meandry, pathEndsAtSea, ...) - patrz dossier P6-M07A (tabela statusu).
 //! Profiler `CIV_RIVER_PROFILE` (web :5651-5752) NIE jest portowany: nie wplywa na wynik generatora.
 
-use std::collections::{HashMap, HashSet};
+use std::collections::HashSet;
 
-use crate::domain::improvements::js_round;
 use crate::domain::map_generator::{ClimateBand, Terrain};
-use crate::domain::mapgen::landsea::{is_dry_land_terrain, key_qr, ocean_connected_water_keys};
-use crate::domain::mapgen::params::{map_size_label_from_dims, DensityTier, MapSizeLabel};
+use crate::domain::mapgen::landsea::{is_dry_land_terrain, key_qr};
+use crate::domain::mapgen::params::{map_size_label_from_dims, MapSizeLabel};
 use crate::domain::mapgen::prims::{
     climate_band_at, earth_template_land_at, hex_key, is_water_terrain_local, HEX_DIRECTIONS,
 };
 use crate::domain::mapgen::terrain_class::{set_hex_to_morze, HexRecord, Nakladka, TerrainHex};
+
+pub mod fields;
+pub use self::fields::{
+    build_open_ocean_distance_field, build_river_field_cache, build_sea_distance_field,
+    river_path_respects_sea_buffer, rivers_quota_for_land_mass, RiverFieldCache,
+};
 
 /// Web `RiverCoord` (gen-helpers.ts:5844): `{ q, r }`.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -119,7 +125,7 @@ fn hex_axial_distance(q1: i64, r1: i64, q2: i64, r2: i64) -> i64 {
     (dq.abs() + dr.abs() + (dq + dr).abs()) / 2
 }
 
-fn neighbour(q: i64, r: i64, dir: (i32, i32)) -> (i64, i64) {
+pub(crate) fn neighbour(q: i64, r: i64, dir: (i32, i32)) -> (i64, i64) {
     (q + i64::from(dir.0), r + i64::from(dir.1))
 }
 
@@ -509,139 +515,6 @@ pub fn coastal_river_render_path(hexes: &HexRecord, path: &[RiverCoord]) -> Vec<
     }
     let src = hex_key(out[0].q, out[0].r);
     repair_river_path_adjacency(&out, hexes, &src)
-}
-
-// ---------------------------------------------------------------------------
-// Bufor od morza i pola odleglosci (web :5561-5660, :5755-5793).
-// ---------------------------------------------------------------------------
-
-/// Web `riverPathRespectsSeaBuffer(hexes, path, seaDist, minInland, mouthTail)` (:5561).
-/// Ciało trasy (bez ostatnich `mouth_tail` heksow) musi byc lądem o `seaDist >= min_inland`.
-pub fn river_path_respects_sea_buffer(
-    hexes: &HexRecord,
-    path: &[RiverCoord],
-    sea_dist: &HashMap<String, i64>,
-    min_inland: i64,
-    mouth_tail: usize,
-) -> bool {
-    if path.is_empty() {
-        return false;
-    }
-    let body_end = path.len().saturating_sub(mouth_tail);
-    for p in &path[..body_end] {
-        let k = hex_key(p.q, p.r);
-        let Some(h) = hexes.get(&k) else { return false };
-        if is_water_terrain_local(h.terrain) {
-            return false;
-        }
-        if sea_dist.get(&k).copied().unwrap_or(0) < min_inland {
-            return false;
-        }
-    }
-    true
-}
-
-/// Web `buildSeaDistanceField(hexes)` (:5614): BFS od wody (Morze + PlytkieMorze) po heksach mapy.
-pub fn build_sea_distance_field(hexes: &HexRecord) -> HashMap<String, i64> {
-    let mut dist: HashMap<String, i64> = HashMap::new();
-    let mut queue: Vec<String> = Vec::new();
-    for (key, hex) in hexes.iter() {
-        if is_water_terrain_local(hex.terrain) {
-            dist.insert(key.clone(), 0);
-            queue.push(key.clone());
-        }
-    }
-    bfs_extend(&mut dist, queue, hexes);
-    dist
-}
-
-/// Web `buildOpenOceanDistanceField(hexes, width, height, oceanConnected?)` (:5640).
-/// Zrodla = woda polaczona z krawedzia mapy (nie jeziora w ladzie).
-pub fn build_open_ocean_distance_field(
-    hexes: &HexRecord,
-    width: i64,
-    height: i64,
-    ocean_connected: Option<&HashSet<String>>,
-) -> HashMap<String, i64> {
-    let computed;
-    let ocean = match ocean_connected {
-        Some(o) => o,
-        None => {
-            computed = ocean_connected_water_keys(hexes, width, height);
-            &computed
-        }
-    };
-    let mut dist: HashMap<String, i64> = HashMap::new();
-    let mut queue: Vec<String> = Vec::new();
-    for key in ocean {
-        dist.insert(key.clone(), 0);
-        queue.push(key.clone());
-    }
-    bfs_extend(&mut dist, queue, hexes);
-    dist
-}
-
-/// Wspolne rozszerzenie BFS: sasiedzi istniejacy w `hexes` dostaja `d + 1` (pierwsze odkrycie).
-fn bfs_extend(dist: &mut HashMap<String, i64>, mut queue: Vec<String>, hexes: &HexRecord) {
-    let mut qi = 0;
-    while qi < queue.len() {
-        let key = queue[qi].clone();
-        qi += 1;
-        let d = dist[&key];
-        let Some((q, r)) = key_qr(&key) else { continue };
-        for dir in HEX_DIRECTIONS {
-            let (nq, nr) = neighbour(q, r, dir);
-            let nk = hex_key(nq, nr);
-            if dist.contains_key(&nk) {
-                continue;
-            }
-            if hexes.get(&nk).is_none() {
-                continue;
-            }
-            dist.insert(nk.clone(), d + 1);
-            queue.push(nk);
-        }
-    }
-}
-
-/// Web `RiverFieldCache` (:5755): pola morza liczone raz na blok rzek.
-#[derive(Debug, Clone, Default)]
-pub struct RiverFieldCache {
-    pub sea_dist: HashMap<String, i64>,
-    pub ocean_connected: HashSet<String>,
-    pub open_ocean_dist: HashMap<String, i64>,
-}
-
-/// Web `buildRiverFieldCache(hexes, width, height)` (:5761).
-pub fn build_river_field_cache(hexes: &HexRecord, width: i64, height: i64) -> RiverFieldCache {
-    let ocean_connected = ocean_connected_water_keys(hexes, width, height);
-    RiverFieldCache {
-        sea_dist: build_sea_distance_field(hexes),
-        open_ocean_dist: build_open_ocean_distance_field(
-            hexes,
-            width,
-            height,
-            Some(&ocean_connected),
-        ),
-        ocean_connected,
-    }
-}
-
-/// Web `riversQuotaForLandMass(landHexCount, tier)` (:5187; legacy, nieuzywany przez generateRivers).
-pub fn rivers_quota_for_land_mass(land_hex_count: usize, tier: DensityTier) -> i64 {
-    if land_hex_count < 8 {
-        return 0;
-    }
-    if land_hex_count < 14 {
-        return 3;
-    }
-    let hex_per_river = match tier {
-        DensityTier::High => 1.0,
-        DensityTier::Low => 5.0,
-        DensityTier::Medium => 2.0,
-    };
-    let rounded = js_round(land_hex_count as f64 / hex_per_river) as i64;
-    rounded.max(3)
 }
 
 /// Pomocniczo dla testow: klucz heksa z wspolrzednych (zgodny z web `hexKey`).
