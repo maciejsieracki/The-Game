@@ -63,3 +63,8 @@ buildingValue 500 + resolvePopulationCapMatrixDelta 200 + civMatrixMnoznikRaw 20
 mnoznikByDifficulty 200 + civEconomyYieldMultipliers 100.
 
 Otwarte dla rundy 4: #17 `cityYieldPerTurn` (osobna partia, <=600 LOC) oraz #15 `civBonusyForCivKey` (port z parametrem `civs`).
+
+Weryfikacja niezalezna r3 (Operator-pomiary, `09-operator-pomiary-r3.md`): regeneracja 07-gen z bundla pinu 91dc998a
+daje plik BAJT-W-BAJT zgodny z `tests/fixtures/economy_city_vectors_r3_91dc998a.json` (2708). Mutacje: M2, M3, M5 zabite
+przez wektory r3; M6 (`cap_pct.min` zamiast `js_min`) przeszla wektory r3, zabita przez testy jednostkowe lib
+`corruption_rate_*` (luka: wektory r3 nie zawieraja `corruptionRate`).
