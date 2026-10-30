@@ -24,6 +24,9 @@ use crate::data::civilizations::CivMatrixFile;
 use crate::data::terrain_map::TerrainYieldsFile;
 use crate::domain::civ_matrix::js_compat::js_min;
 use crate::domain::civ_matrix::{apply_civ_matrix_param, civ_matrix_param, resolve_row};
+use crate::domain::improvements::{
+    apply_improvement_bonuses, ore_yield_from_improvements, TileYield,
+};
 use crate::domain::types::Difficulty;
 
 /// Web `mnoznikHandelPieniadzForCiv(..., fallback = 1)`: domyslna wartosc zapasowa.
@@ -707,6 +710,17 @@ pub fn city_yield_per_turn_from_worked(
     buildings: &[CityBuildingInput<'_>],
 ) -> CityYieldOutput {
     let t = city_terrain_sums(terrain, tiles);
+    city_yield_per_turn_with_sums(matrix, params, input, t, buildings)
+}
+
+/// Skladanie `cityYieldPerTurn` z gotowymi sumami Step 1 (`t`) i liczonymi Step 3 (`buildings`).
+fn city_yield_per_turn_with_sums(
+    matrix: &CivMatrixFile,
+    params: &CityYieldParams,
+    input: &CityYieldInput<'_>,
+    t: TerrainSums,
+    buildings: &[CityBuildingInput<'_>],
+) -> CityYieldOutput {
     let b = city_building_sums(buildings);
     let mut full = *input;
     full.praca_terenu = t.praca;
@@ -719,4 +733,170 @@ pub fn city_yield_per_turn_from_worked(
     full.nauka_budynkow = b.nauka;
     full.kultura_budynkow = b.kultura;
     city_yield_per_turn(matrix, params, &full)
+}
+
+// ---------------------------------------------------------------------------
+// D2.2e (runda 1 operatora, R-RUSTPORT-REPIN-EKONOMIA-D2-Q1): galaz ulepszen i zloz `tileYield`
+// (web `economy.ts@91dc998a` L421-470, `impKeys` L458-472) oraz `buildingHappinessAtLevel`
+// (L513-531). Zamyka Z-D2.2d-1 dla Step 1 (ulepszenia) i daje osobna funkcje szczescia.
+// ---------------------------------------------------------------------------
+
+/// Web `BUILDING_HAPPINESS_BASE_PER_BUILDING` (`economy.ts@91dc998a`, ryczalt +1 za budynek).
+pub const BUILDING_HAPPINESS_BASE_PER_BUILDING: f64 = 1.0;
+
+/// Web `WorkedTile` z polami ulepszen. `ulepszenia_keys`: `None` = `undefined` lub `null`;
+/// `ulepszenie_key`: `None` = brak lub `null`. `zloze` jest czytane przez web tylko w
+/// `oreYieldFromImprovements`, ktore go ignoruje (nie wplywa na wynik).
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct WorkedTileImpInput<'a> {
+    pub teren_bazowy: &'a str,
+    pub nakladka: &'a str,
+    pub ma_rzeke: bool,
+    pub ulepszenia_keys: Option<&'a [String]>,
+    pub ulepszenie_key: Option<&'a str>,
+    pub zloze: Option<&'a str>,
+}
+
+/// Web `impKeys` (L458-460): `ulepszeniaKeys?.length ? ulepszeniaKeys : (ulepszenieKey ? [ulepszenieKey] : [])`.
+fn imp_keys_of(tile: &WorkedTileImpInput<'_>) -> Vec<String> {
+    match tile.ulepszenia_keys {
+        Some(keys) if !keys.is_empty() => keys.to_vec(),
+        _ => tile
+            .ulepszenie_key
+            .filter(|key| !key.is_empty())
+            .map(|key| vec![key.to_owned()])
+            .unwrap_or_default(),
+    }
+}
+
+/// Web `tileYield(tile)` (`economy.ts@91dc998a` L421-470) z galezia ulepszen: wiersz terenu, modyfikator
+/// lasu (zywnosc, praca, handel, drewno), modyfikator rzeki (zywnosc, praca, handel, glina), potem
+/// `Math.max(0, x)`. Gdy `impKeys` niepusta: `applyImprovementBonuses`, ponowne `Math.max(0, x)` na
+/// zywnosc, praca, handel, drewno, kamien, glina oraz `ruda`/`ruda_zelaza` z `oreYieldFromImprovements`.
+pub fn tile_yield_full(data: &TerrainYieldsFile, tile: &WorkedTileImpInput<'_>) -> TileYield {
+    let modifier = |name: &str| -> [f64; 6] {
+        data.terrain_modifiers
+            .iter()
+            .find(|m| m.modyfikator == name)
+            .map(|m| {
+                [
+                    m.zywnosc as f64,
+                    m.praca as f64,
+                    m.podatek as f64,
+                    m.drewno as f64,
+                    m.kamien as f64,
+                    m.glina as f64,
+                ]
+            })
+            .unwrap_or([0.0; 6])
+    };
+    let base = terrain_row_name(tile.teren_bazowy)
+        .and_then(|name| data.terrain_types.iter().find(|r| r.teren == name))
+        .map(|r| {
+            [
+                r.zywnosc as f64,
+                r.praca as f64,
+                r.podatek as f64,
+                r.drewno as f64,
+                r.kamien as f64,
+                r.glina as f64,
+            ]
+        })
+        .unwrap_or([0.0; 6]);
+    let [mut zywnosc, mut praca, mut handel, mut drewno, kamien, mut glina] = base;
+    if tile.nakladka == "las" {
+        let m = modifier("Las (nakładka)");
+        zywnosc += m[0];
+        praca += m[1];
+        handel += m[2];
+        drewno += m[3];
+    }
+    if tile.ma_rzeke {
+        let m = modifier("Rzeka");
+        zywnosc += m[0];
+        praca += m[1];
+        handel += m[2];
+        glina += m[5];
+    }
+    let mut out = TileYield {
+        zywnosc: js_math_max_zero(zywnosc),
+        praca: js_math_max_zero(praca),
+        handel: js_math_max_zero(handel),
+        drewno: js_math_max_zero(drewno),
+        kamien: js_math_max_zero(kamien),
+        glina: js_math_max_zero(glina),
+        ruda: 0.0,
+        ruda_zelaza: 0.0,
+    };
+    let keys = imp_keys_of(tile);
+    if !keys.is_empty() {
+        apply_improvement_bonuses(&mut out, &keys);
+        out.zywnosc = js_math_max_zero(out.zywnosc);
+        out.praca = js_math_max_zero(out.praca);
+        out.handel = js_math_max_zero(out.handel);
+        out.drewno = js_math_max_zero(out.drewno);
+        out.kamien = js_math_max_zero(out.kamien);
+        out.glina = js_math_max_zero(out.glina);
+        let ore = ore_yield_from_improvements(&keys, tile.zloze);
+        out.ruda += ore.ruda;
+        out.ruda_zelaza += ore.ruda_zelaza;
+    }
+    out
+}
+
+/// Web Step 1 (L837-847) z galezia ulepszen: sumy `zywnoscTerenu`, `pracaTerenu`, `handelTerenu`
+/// po kafelkach `tileYield` (z ulepszeniami), w kolejnosci tablicy, od `+0`.
+pub fn city_terrain_sums_imp(
+    data: &TerrainYieldsFile,
+    tiles: &[WorkedTileImpInput<'_>],
+) -> TerrainSums {
+    let mut sums = TerrainSums {
+        zywnosc: 0.0,
+        praca: 0.0,
+        handel: 0.0,
+    };
+    for tile in tiles {
+        let y = tile_yield_full(data, tile);
+        sums.zywnosc += y.zywnosc;
+        sums.praca += y.praca;
+        sums.handel += y.handel;
+    }
+    sums
+}
+
+/// Pelna `cityYieldPerTurn` od kafelkow z ulepszeniami (web liczy `tileYield` z `impKeys` w Step 1).
+/// Pola agregatow w `input` sa IGNOROWANE i nadpisywane sumami (jak w [`city_yield_per_turn_from_worked`]).
+pub fn city_yield_per_turn_from_worked_imp(
+    matrix: &CivMatrixFile,
+    terrain: &TerrainYieldsFile,
+    params: &CityYieldParams,
+    input: &CityYieldInput<'_>,
+    tiles: &[WorkedTileImpInput<'_>],
+    buildings: &[CityBuildingInput<'_>],
+) -> CityYieldOutput {
+    let t = city_terrain_sums_imp(terrain, tiles);
+    city_yield_per_turn_with_sums(matrix, params, input, t, buildings)
+}
+
+/// Web `buildingHappinessAtLevel(b, level)` (`economy.ts@91dc998a` L523-531).
+/// - `daje_szczescie` = `b.dajeSzczescie === true` (w Rust pole typu `bool`, patrz `buildings_tech.rs`);
+/// - `baza_zadowolenie` = `b.baza.zadowolenie` gdy jest liczba (`typeof === 'number'`), inaczej `None`;
+/// - `przyrost_zadowolenie` = `b.przyrost.zadowolenie` (NaN gdy brak, jak `undefined` w webie).
+///
+/// Wynik: 0 gdy budynek nie daje szczescia; inaczej `1 + buildingValue(b, level, 'zadowolenie')`
+/// gdy `baza.zadowolenie !== 0`, a `1` w przeciwnym razie.
+pub fn building_happiness_at_level(
+    daje_szczescie: bool,
+    baza_zadowolenie: Option<f64>,
+    przyrost_zadowolenie: f64,
+    level: f64,
+) -> f64 {
+    if !daje_szczescie {
+        return 0.0;
+    }
+    let extra = match baza_zadowolenie {
+        Some(z) if z != 0.0 => building_value(z, przyrost_zadowolenie, level),
+        _ => 0.0,
+    };
+    BUILDING_HAPPINESS_BASE_PER_BUILDING + extra
 }
