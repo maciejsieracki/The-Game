@@ -1,0 +1,24 @@
+WERYFIKATOR PYTHON P6.M06B1 (runda 2) - niezalezna implementacja z TS pin edb8fb56
+kategoria | sprawdzone | rozbieznosci | nietrywialne (stan zmieniony)
+boundary-finalize | 10 | 0 | 10
+boundary-thicken | 1 | 0 | 1
+cap-ref-cap11 | 4 | 0 | 1
+cap-ref-cap13 | 4 | 0 | 1
+cap-sha-cap12 | 4 | 0 | 4
+cap-thicken-cap12 | 4 | 0 | 4
+finalize | 420 | 0 | 420
+flatten | 88 | 0 | 40
+ocean | 330 | 0 | 330
+purge | 228 | 0 | 140
+thicken | 296 | 0 | 292
+trim | 80 | 0 | 65
+RAZEM sprawdzone=1469 rozbieznosci=0
+obserwowalnosc capu: cap-thick-m0-cap12 cap11 != cap12 = True
+obserwowalnosc capu: cap-thick-m0-cap12 cap13 != cap12 = True
+obserwowalnosc capu: cap-thick-m1-cap12 cap11 != cap12 = False
+obserwowalnosc capu: cap-thick-m1-cap12 cap13 != cap12 = False
+obserwowalnosc capu: cap-thick-m2-cap12 cap11 != cap12 = False
+obserwowalnosc capu: cap-thick-m2-cap12 cap13 != cap12 = False
+obserwowalnosc capu: cap-thick-m3-cap12 cap11 != cap12 = False
+obserwowalnosc capu: cap-thick-m3-cap12 cap13 != cap12 = False
+WYNIK: 0 ROZBIEZNOSCI

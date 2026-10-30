@@ -250,3 +250,19 @@ mapie `cap-thick-m0`, identyczne na pozostalych), wiec potwierdza obserwowalnosc
   "przebieg 12 vs 13" jest pokryta mapa `cap-thick-m0` (cap 13 zmienia stan). Cap 11 pokryty ta sama mapa.
 - Mutacje M01-M28 NIE powtorzone w rundzie 2 (poza M16/M17); wynik r1 (23 zabite + 3 rownowazne) pozostaje.
 - Dryf po pinie (§4): zakres 3186-4374 bez zmian; wektory nadal z `edb8fb56`.
+
+### 9.7 Pomiary Operator-pomiary, runda 2 (na `298f004e`)
+
+- **Mutacje, pelny zestaw M01-M28 powtorzony** (`mut-runner-m06b1.py`, rozszerzony o `p6_m06b1_cap` i zmienna
+  `MUT_LOG_DIR`; wyniki `mut-results-m06b1-r2.json`, surowe logi `mut-logs-r2/*.log`, `rc`=101 dla zabitych):
+  **25 zabitych, 3 przezyte** (M12, M19, M20 = rownowazne, dowody §9.1). M16 (cap 11) i M17 (cap 13) ZABITE
+  przez `cap12_thicken_maps_match_web_cap12`; M21 i M24-M26 tez zabite przez test capu. Wszystkie 28 plikow
+  przywroconych (sha256 przed = po). Zadna mutacja nie zostala zostawiona w drzewie.
+- **Weryfikator Python ponownie:** `verifier-python-r2-pom.log`, EXIT=0, RAZEM sprawdzone=1469, rozbieznosci=0.
+- **Przeglad zgodnosci weryfikatora z TS (pin):** `thicken_coast_and_smooth_inlets` (verify-m06b1-r2.py:341-381)
+  vs `gen-helpers.ts:4840-4909` (`git show edb8fb56:gra/src/map/gen-helpers.ts`): petla (a) z `cap`, prog `>= 4`,
+  pominiecie `isInMapBorder`, przerwanie na pustym zbiorze; reset Plytkie->Morze; `coastWidth` pierscieni z
+  przerwaniem na pustym zbiorze. Zgodne.
+- **Bramki (runda 2, pomiar Operatora-pomiary):** `gate-fmt-r2-pom.log` EXIT=0; `gate-clippy-r2-pom.log` EXIT=0;
+  `gate-test-r2-pom.log` EXIT=0, 1438 passed / 0 failed.
+- **Zrodlo czasu/pinu:** web wciaz `edb8fb56`; dryf po pinie bez zmian (§4).

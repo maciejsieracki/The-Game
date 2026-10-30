@@ -21,6 +21,7 @@ TESTS = [
     "p6_m06b1_ocean",
     "p6_m06b1_tables",
     "p6_m06b1_boundary",
+    "p6_m06b1_cap",
 ]
 
 # (id, plik, stary tekst, nowy tekst, opis) - stary tekst musi wystapic DOKLADNIE raz.
@@ -193,7 +194,7 @@ def main():
             with open(path, "w", encoding="utf-8") as fh:
                 fh.write(mutated)
             rc, failed, results, cargo_out = run_cargo(engine)
-            log_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "mut-logs")
+            log_dir = os.environ.get("MUT_LOG_DIR") or os.path.join(os.path.dirname(os.path.abspath(__file__)), "mut-logs")
             os.makedirs(log_dir, exist_ok=True)
             with open(os.path.join(log_dir, mid + ".log"), "w", encoding="utf-8") as lf:
                 lf.write(cargo_out)
