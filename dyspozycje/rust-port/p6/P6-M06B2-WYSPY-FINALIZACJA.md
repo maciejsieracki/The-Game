@@ -206,3 +206,14 @@ z testami wektorowymi, mutacjami i bramkami zielonymi. Pozostalosci (do decyzji 
 Zero zmian w `relief.rs`, `bridge.rs`, `Cargo.toml`, `gra/**`, `rust-port/renderer/**`, `src-tauri/**`, `domain/mod.rs`,
 istniejacych testach. Nowe pliki: `tests/p6_m06b2_*.rs`, `tests/p6_m06b2_vectors/**`, `data/derived/mapgen-landmass.json`,
 dossier, runda. `git worktree prune` i usuwanie cudzych worktree: nie wykonywano.
+
+## 12. Weryfikacja niezalezna r1 (Operator-pomiary, HEAD f6822347)
+
+- Dowod statyczny (zrodla TS pinu): `purge` wewnatrz `finalizeLandMassAfterCoast` zawsze zwraca 0, bo po `removeTinyLandIslands`
+  (minHexes >= 4) nie ma suchego ladu bez suchego sasiada (`isLandOrCoast` = `!isWaterTerrainLocal`). Stad M07 rownowazny dowodowo.
+  Przerwanie petli `purged===0 && pass>0` (M06) nieobserwowalne: `removeTiny` jest punktem stalym. Cap `pass<3` nieobserwowalny (§5.2).
+- Weryfikator Python ponownie: EXIT=0, rozbieznosci 0 (tiny 544, minTyp 4, specks 20, purge 20).
+- fmt EXIT=0, clippy EXIT=0 (ponownie). Test gate NIE powtorzony: dysk zapelniony (blad linkera Bus error / brak miejsca);
+  wiarygodny dowod testow = log Operatora `gate-test-r1.log` (EXIT=0, 1482/0).
+- Mutacje nie powtorzone (ta sama przyczyna). Residua #1-#4 bez zmian; #3 (M11/M12) nadal otwarte.
+- Szczegoly: `dyspozycje/autobot/runs/R-RUSTPORT-P6-M06B2-WYSPY-FINALIZACJA-Q1/02-verifier-r1-evidence.txt`.

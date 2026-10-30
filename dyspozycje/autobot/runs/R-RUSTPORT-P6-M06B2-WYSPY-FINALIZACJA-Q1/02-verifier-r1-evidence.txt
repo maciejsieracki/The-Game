@@ -1,0 +1,20 @@
+Weryfikacja niezalezna r1 (Operator-pomiary), HEAD=f6822347 (detach), TEMAT R-RUSTPORT-P6-M06B2-WYSPY-FINALIZACJA-Q1
+1) cargo fmt --check (rust-port/engine): EXIT=0
+2) cargo clippy --offline --all-targets -- -D warnings: EXIT=0 (log: gate-clippy-r1-verifier.log)
+3) cargo test --offline --no-fail-fast: NIE POWTORZONO W TEJ RUNDZIE.
+   Proba 1: EXIT=101, linker "Bus error" (signal 7) przy linkowaniu testow. Przyczyna: dysk / prawie pelny (0-374 MB wolne).
+   Proba 2 (po usunieciu WLASNEGO target/debug/incremental, 1.6 GB, regenerowalny): zapis przerwany "No space left on device", EXIT=101.
+   Plik gate-test-r1-verifier.log to log tej nieudanej proby (NIE jest dowodem testow).
+   Wiarygodny dowod testow: gate-test-r1.log Operatora, EXIT=0, 1482 passed, 0 failed (commit f6822347).
+4) Weryfikator Python: python3 -I verify-m06b2-python.py gra/src/map/gen-helpers.ts rust-port/engine/tests/p6_m06b2_vectors
+   EXIT=0; progi_ts pangea 10 / kontynenty 8 / wyspy 4 / ziemia 6; minTyp=4; removeTiny=544; countSpecks=20; purgeSpecks=20; rozbieznosci=0.
+   gen-helpers.ts w worktree jest identyczny z edb8fb56 (git diff pusty).
+5) Mutacje: NIE POWTORZONO (wymagaja kompilacji testow; brak miejsca na dysku). Wynik Operatora: mut-results-m06b2.json (M01-M05, M08-M10, M13 ZABITE; M06, M07, M11, M12 PRZEZYTE).
+6) Rownowaznosc statyczna (zrodla TS pinu, gra/src/map/gen-helpers.ts 4946-5066; isLandOrCoast = !isWaterTerrainLocal, linie 152-154 i 3249-3251):
+   a) removeTinyLandIslands z minHexes>=4 (wszystkie typy) usuwa kazda skladowa niewodna o rozmiarze <minHexes.
+      Skladowa rozmiaru 1 = suchy lad bez suchego sasiada. Zatem po removeTiny countOpenOceanLandSpecks/purgeOpenOceanLandSpecks == 0,
+      czyli purge wewnatrz finalize zawsze zwraca 0. => M07 (pominiecie total += purged) ROWNOWAZNY DOWODOWO.
+   b) Po removeTiny stan jest punktem stalym removeTiny (nieusuniete skladowe sie nie zmieniaja, usuniete znikaja).
+      Przebiegi pass>=1 sa no-op. => przerwanie `purged===0 && pass>0` (M06) nieobserwowalne.
+   c) Cap `pass<3` w finalizeLandMassAfterCoast jest nieobserwowalny (efektywnie jeden przebieg). Zgodne z dossier §5.2.
+   d) M11 (klamp 0.85 -> 0.86) i M12 (2 zamiast 1 przebiegu wybrzeza w enforce) nie sa dowiedzione statycznie w tej rundzie; residuum #3 pozostaje otwarte.
