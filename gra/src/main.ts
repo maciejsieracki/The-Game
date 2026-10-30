@@ -1281,15 +1281,16 @@ import { isEligibleForArmyConcentration } from './game/army-concentration';
 import {
   WAR_RULES_PARAMS,
   canCivJoinEraForcedWar,
-  canDeclareEraForcedWar,
+  evaluateEraForcedWarGate,
   evaluateInterCivWarGate,
   forcedEraTagFromPowod,
   isForcedEraWarEnabled,
   isInterCivWarOpenAtTurn,
   isWarRulesMultiwarEnabled,
   isWarEpochPlayerFirstEnabled,
-  rebuildEraWarCountsFromActivePairs,
+  pickPlayerReferenceCity,
   recordEraForcedWarParticipation,
+  restoreEraWarCounts,
   type EngageArmyHex,
   type ForcedEraTag,
 } from './game/war-rules-multiwar';
@@ -2228,7 +2229,8 @@ async function boot(): Promise<void> {
         prev === 1 && next === 2
         && !isOwnerClusterCityState(ownerId, ownerCityStateOpts())
       ) {
-        bronzeForceWarPendingOwners.add(ownerId);
+        // R-WEB-ERA-WAR-COUNTER-Q1 (zarzut FC r1 nr 3): Brąz wyłączony flagą → brak pending.
+        if (isForcedEraWarEnabled('bronze')) bronzeForceWarPendingOwners.add(ownerId);
         // R-WOJNA-WYMUSZONA-REGULY-Q1 (Część A): zapamiętaj TURĘ awansu — próg „25 tur od
         // początku epoki" dla Brązu liczy się od TEGO momentu, nie od startu gry.
         bronzeEraEnterTurnByOwner.set(ownerId, turn);
@@ -2244,7 +2246,8 @@ async function boot(): Promise<void> {
         isIronEraEntry(prev, next)
         && !isOwnerClusterCityState(ownerId, ownerCityStateOpts())
       ) {
-        ironForceWarPendingOwners.add(ownerId);
+        // R-WEB-ERA-WAR-COUNTER-Q1 (zarzut FC r1 nr 3): Żelazo wyłączone flagą → brak pending.
+        if (isForcedEraWarEnabled('iron')) ironForceWarPendingOwners.add(ownerId);
         // R-WOJNA-WYMUSZONA-ZELAZO-PROG-TURY-Q1: zapamiętaj TURĘ awansu — próg „25 tur od
         // początku epoki" dla Żelaza liczy się od TEGO momentu, nie od startu gry ani od
         // wejścia w Brąz (analogicznie do `bronzeEraEnterTurnByOwner.set` wyżej).
@@ -24446,7 +24449,7 @@ async function boot(): Promise<void> {
           const rel = getDiploRelation(attackerId, oid);
           if (rel.status === 'wojna') setDiploRelation(attackerId, oid, { ...rel, status: 'neutralni' });
         }
-        bronzeForceWarPendingOwners.add(attackerId);
+        if (isForcedEraWarEnabled('bronze')) bronzeForceWarPendingOwners.add(attackerId); // R-WEB-ERA-WAR-COUNTER-Q1 (flaga epok)
         bronzeForceWarCycleOwners.delete(attackerId);
         for (const [key, st] of [...bronzeForceWarActiveByPairKey.entries()]) {
           if (st.attackerId === attackerId) {
@@ -24458,6 +24461,53 @@ async function boot(): Promise<void> {
         // z perspektywy gracza; bez tego relacjeDip (main.ts) nie zbudowałaby wpisu
         // partnerId='0', a `dipLayer` (patrz naprawa b) byłby 'pre_contact' dla komend
         // DOTYCZĄCYCH gracza, słusznie kasując DOW na niego (D3-Q2, bez regresji).
+        diplomaticallyDiscoveredOwnersSet().add(attackerId);
+        const playerCity = cities.find(c => isMe(c.ownerId));
+        if (playerCity) { playerCity.q = attacker.q; playerCity.r = attacker.r; }
+        return { attackerId };
+      },
+      // R-WEB-ERA-WAR-COUNTER-Q1 (zarzut FC r1 nr 1): lustro `forceBronzeForcedWarOnPlayer` dla
+      // KAMIENIA (jedyna epoka z włączoną flagą `enabledForcedWarEras`) -- wyzwalacz live testu
+      // forced-war-era-counter-live-test.cjs. Ten sam kształt co Brąz: pending + czyszczenie
+      // wojen attackera + odkrycie + przesunięcie miasta referencyjnego na pozycję gracza.
+      forceStoneForcedWarOnPlayer: (): { attackerId: number } => {
+        // Napastnik: AI nie na poziomie łatwym. Epoka wymuszana na 1 (Kamień) niżej -- wojna Kamienia
+        // wymaga `empireEpochForOwner === 1` (pętla AI); w przebiegu testu live AI są już w Brązie.
+        // Ta sama trójka co `isForcedWarPairBlocked` (pętla AI): NAP / blokada pokoju / sojusz z graczem.
+        const blockedWithPlayer = (oid: number): boolean =>
+          hasTreaty(activeDeals, oid, 0, RodzajTraktatu.PaktNieagresji)
+          || isPeaceLockedBetween(oid, 0)
+          || allianceFormalKindBetween(activeDeals, oid, 0) !== null;
+        const attacker = cities.find(c =>
+          c.ownerId > 0
+          && aiDiffLevelForOwner(c.ownerId) !== 1
+          && !blockedWithPlayer(c.ownerId)
+          && !typCityCopyOwners.has(c.ownerId)
+          && !isBarbarian(c.ownerId)
+          && !eliminatedOwners.has(c.ownerId)
+          && !isOwnerClusterCityState(c.ownerId, ownerCityStateOpts()),
+        );
+        if (!attacker) throw new Error('forceStoneForcedWarOnPlayer: brak eligible AI ownera w tym świecie');
+        const attackerId = attacker.ownerId;
+        for (const oid of allPowerOwnerIds()) {
+          if (oid === attackerId || isBarbarian(oid)) continue;
+          const rel = getDiploRelation(attackerId, oid);
+          if (rel.status === 'wojna') setDiploRelation(attackerId, oid, { ...rel, status: 'neutralni' });
+        }
+        // Tempo testu (nie mechanizm): napastnik staje się Kamieniem, jak wymaga wojna Kamienia.
+        // Sync epoki (`syncOwnerEraFromResearch`) liczy epokę z badań: czyścimy badania napastnika,
+        // inaczej epoka wraca do Brązu przed pętlą dyplomacji AI.
+        aiResearchDone.set(attackerId, new Set<string>());
+        ownerStartEraByOwner.set(attackerId, 1);
+        ownerEraByOwner.set(attackerId, 1);
+        stoneForceWarPendingOwners.add(attackerId);
+        stoneForceWarCycleOwners.delete(attackerId);
+        for (const [key, st] of [...stoneForceWarActiveByPairKey.entries()]) {
+          if (st.attackerId === attackerId) {
+            stoneForceWarActiveByPairKey.delete(key);
+            forcedWarWavesByPairKey.delete(key);
+          }
+        }
         diplomaticallyDiscoveredOwnersSet().add(attackerId);
         const playerCity = cities.find(c => isMe(c.ownerId));
         if (playerCity) { playerCity.q = attacker.q; playerCity.r = attacker.r; }
@@ -24495,7 +24545,7 @@ async function boot(): Promise<void> {
           const rel = getDiploRelation(attackerId, oid);
           if (rel.status === 'wojna') setDiploRelation(attackerId, oid, { ...rel, status: 'neutralni' });
         }
-        bronzeForceWarPendingOwners.add(attackerId);
+        if (isForcedEraWarEnabled('bronze')) bronzeForceWarPendingOwners.add(attackerId); // R-WEB-ERA-WAR-COUNTER-Q1 (flaga epok)
         bronzeForceWarCycleOwners.delete(attackerId);
         for (const [key, st] of [...bronzeForceWarActiveByPairKey.entries()]) {
           if (st.attackerId === attackerId) {
@@ -24577,7 +24627,7 @@ async function boot(): Promise<void> {
           const rel = getDiploRelation(attackerId, oid);
           if (rel.status === 'wojna') setDiploRelation(attackerId, oid, { ...rel, status: 'neutralni' });
         }
-        ironForceWarPendingOwners.add(attackerId);
+        if (isForcedEraWarEnabled('iron')) ironForceWarPendingOwners.add(attackerId); // R-WEB-ERA-WAR-COUNTER-Q1 (flaga epok)
         ironForceWarCycleOwners.delete(attackerId);
         for (const [key, st] of [...ironForceWarActiveByPairKey.entries()]) {
           if (st.attackerId === attackerId) {
@@ -35589,9 +35639,7 @@ async function boot(): Promise<void> {
             ];
             // R-WEB-ERA-WAR-COUNTER-Q1 (5): odległość partnera gracza liczona od STOLICY gracza
             // (`capitalCityIdForOwner`), fallback na pierwsze miasto gdy stolicy brak.
-            const playerCapIdForWar = capitalCityIdForOwner(0);
-            const playerCity = cities.find(c => c.id === playerCapIdForWar && c.ownerId === 0)
-              ?? cities.find(c => c.ownerId === 0);
+            const playerCity = pickPlayerReferenceCity(cities, capitalCityIdForOwner(0), 0);
             if (
               playerCity
               && turn >= WOJNA_KAMIEN_WYMUSZONA_START_TURY
@@ -36716,14 +36764,22 @@ async function boot(): Promise<void> {
                     // w epoce (napastnik i cel, także gracz) -- licznik `eraWarCountByCivKey`.
                     // Obejście R3 (`waveActorBypassR3`) USUNIĘTE: żaden aktor nie omija licznika.
                     const gateForcedTagAny = cmd.type === 'wypowiedz_wojne' ? forcedEraTagFromPowod(cmd.powod) : null;
-                    if (gateForcedTagAny !== null && !isForcedEraWarEnabled(gateForcedTagAny)) continue;
+                    // R-WEB-ERA-WAR-COUNTER-Q1 (zarzut FC r1 nr 2): cała bramka epoki w czystej funkcji
+                    // `evaluateEraForcedWarGate` (war-rules-multiwar.ts, testowana wprost).
+                    if (cmd.type === 'wypowiedz_wojne') {
+                      const eraGateVerdict = evaluateEraForcedWarGate({
+                        multiwarEnabled: isWarRulesMultiwarEnabled(),
+                        tag: gateForcedTagAny,
+                        declaredByTag: forcedEraWarDeclaredByTag,
+                        counts: eraWarCountByCivKey,
+                        attackerId: ownerId,
+                        attackerEpoch: empireEpochForOwner(ownerId),
+                        targetId,
+                        targetEpoch: empireEpochForOwner(targetId),
+                      }, WAR_RULES_PARAMS);
+                      if (eraGateVerdict !== 'ok') continue;
+                    }
                     if (cmd.type === 'wypowiedz_wojne' && isWarRulesMultiwarEnabled()) {
-                      const gateForcedTag = gateForcedTagAny;
-                      if (gateForcedTag !== null && !canDeclareEraForcedWar(gateForcedTag, forcedEraWarDeclaredByTag)) continue;
-                      if (gateForcedTag !== null && (
-                        !canCivJoinEraForcedWar(eraWarCountByCivKey, ownerId, empireEpochForOwner(ownerId), WAR_RULES_PARAMS)
-                        || !canCivJoinEraForcedWar(eraWarCountByCivKey, targetId, empireEpochForOwner(targetId), WAR_RULES_PARAMS)
-                      )) continue;
                       const gateVerdict = evaluateInterCivWarGate({
                         turn,
                         attackerEra: empireEpochForOwner(ownerId),
@@ -41390,22 +41446,16 @@ async function boot(): Promise<void> {
       // (stary zapis) → odtwórz z AKTYWNYCH par wojen wymuszonych (obie strony = 1 w bieżącej
       // epoce), reszta 0. Odtworzenie wymaga już wczytanych epok (sekcja wyżej).
       eraWarCountByCivKey.clear();
-      const savedEraWarCount = saved.meta?.warRulesEraWarCountByCiv as Array<[string, number]> | undefined;
-      if (Array.isArray(savedEraWarCount)) {
-        for (const [k, n] of savedEraWarCount) {
-          if (typeof k === 'string' && Number.isFinite(n)) eraWarCountByCivKey.set(k, n);
-        }
-      } else {
-        const rebuiltEraWarCounts = rebuildEraWarCountsFromActivePairs(
-          [
-            ...bronzeForceWarActiveByPairKey.values(),
-            ...stoneForceWarActiveByPairKey.values(),
-            ...ironForceWarActiveByPairKey.values(),
-          ],
-          empireEpochForOwner,
-        );
-        for (const [k, n] of rebuiltEraWarCounts) eraWarCountByCivKey.set(k, n);
-      }
+      const restoredEraWarCounts = restoreEraWarCounts(
+        saved.meta?.warRulesEraWarCountByCiv,
+        [
+          ...bronzeForceWarActiveByPairKey.values(),
+          ...stoneForceWarActiveByPairKey.values(),
+          ...ironForceWarActiveByPairKey.values(),
+        ],
+        empireEpochForOwner,
+      );
+      for (const [k, n] of restoredEraWarCounts) eraWarCountByCivKey.set(k, n);
       const savedStartEra = saved.meta?.ownerStartEraByOwner as Array<[number, number]> | undefined;
       if (savedStartEra?.length) {
         for (const [oid, e] of savedStartEra) ownerStartEraByOwner.set(oid, e);

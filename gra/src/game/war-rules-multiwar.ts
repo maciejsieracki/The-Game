@@ -235,6 +235,69 @@ export function rebuildEraWarCountsFromActivePairs(
   return out;
 }
 
+/**
+ * R-WEB-ERA-WAR-COUNTER-Q1 (zarzut FC r1 nr 2): odczyt licznika przy wczytaniu zapisu — jedna
+ * funkcja zamiast bloku w main.ts, żeby test używał tego samego kodu co gra. `saved` = wartość
+ * `meta.warRulesEraWarCountByCiv` (tablica par [klucz, n]) albo `undefined` (stary zapis).
+ */
+export function restoreEraWarCounts(
+  saved: unknown,
+  activePairs: ReadonlyArray<{ attackerId: number; targetId: number }>,
+  epochOf: (ownerId: number) => number,
+): Map<string, number> {
+  if (!Array.isArray(saved)) return rebuildEraWarCountsFromActivePairs(activePairs, epochOf);
+  const out = new Map<string, number>();
+  for (const e of saved) {
+    if (Array.isArray(e) && typeof e[0] === 'string' && Number.isFinite(e[1])) out.set(e[0], e[1] as number);
+  }
+  return out;
+}
+
+/** Werdykt bramki wypowiedzenia wojny epoki (main.ts, blok `wypowiedz_wojne`). `ok` = wolno wypowiedzieć. */
+export type EraWarGateVerdict = 'ok' | 'era-disabled' | 'era-cap' | 'civ-cap-attacker' | 'civ-cap-target';
+
+/**
+ * R-WEB-ERA-WAR-COUNTER-Q1 (zarzut FC r1 nr 2): czysta bramka wypowiedzenia — ta sama logika,
+ * którą main.ts wywołuje przy `wypowiedz_wojne` z powodem wojny epoki. Kolejność:
+ * (1) epoka wyłączona flagą (także bez multiwar, jak w bazie); (2) limit globalny (tylko gdy
+ * multiwar włączony; przy `maxEraForcedWarsPerEra = null` przepuszcza); (3) licznik napastnika;
+ * (4) licznik celu.
+ */
+export function evaluateEraForcedWarGate(
+  input: {
+    multiwarEnabled: boolean;
+    tag: ForcedEraTag | null;
+    declaredByTag: ReadonlyMap<ForcedEraTag, number>;
+    counts: ReadonlyMap<string, number>;
+    attackerId: number;
+    attackerEpoch: number;
+    targetId: number;
+    targetEpoch: number;
+  },
+  params: WarRulesParams = WAR_RULES_PARAMS,
+): EraWarGateVerdict {
+  if (input.tag === null) return 'ok';
+  if (!isForcedEraWarEnabled(input.tag, params)) return 'era-disabled';
+  if (!input.multiwarEnabled) return 'ok';
+  if (!canDeclareEraForcedWar(input.tag, input.declaredByTag, params)) return 'era-cap';
+  if (!canCivJoinEraForcedWar(input.counts, input.attackerId, input.attackerEpoch, params)) return 'civ-cap-attacker';
+  if (!canCivJoinEraForcedWar(input.counts, input.targetId, input.targetEpoch, params)) return 'civ-cap-target';
+  return 'ok';
+}
+
+/**
+ * R-WEB-ERA-WAR-COUNTER-Q1 (5): miasto referencyjne gracza do odległości partnera — stolica,
+ * a gdy jej brak (lub nie należy do gracza) — pierwsze miasto gracza. Ta sama kolejność co main.ts.
+ */
+export function pickPlayerReferenceCity<T extends { id: string; ownerId: number }>(
+  cities: readonly T[],
+  capitalCityId: string | null | undefined,
+  playerOwnerId = 0,
+): T | undefined {
+  return cities.find(c => c.id === capitalCityId && c.ownerId === playerOwnerId)
+    ?? cities.find(c => c.ownerId === playerOwnerId);
+}
+
 export interface EngageArmyHex {
   q: number;
   r: number;

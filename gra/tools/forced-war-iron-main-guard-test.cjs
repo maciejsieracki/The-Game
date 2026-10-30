@@ -113,7 +113,7 @@ check(
     + 'dziś żadnej aktywnej wojny wymuszonej ORAZ minął próg tury (R-WOJNA-WYMUSZONA-PROG-TURY-'
     + 'GRACZ-Q1, turn >= WOJNA_KAMIEN_WYMUSZONA_START_TURY) -- bez innego specjalnego wykluczania',
   // R-WEB-ERA-WAR-COUNTER-Q1 (5): gracz liczony od STOLICY (capitalCityIdForOwner), fallback pierwsze miasto.
-  /const playerCity = cities\.find\(c => c\.id === playerCapIdForWar && c\.ownerId === 0\)\s*\n\s*\?\? cities\.find\(c => c\.ownerId === 0\);\s*\n\s*if \(\s*\n\s*playerCity\s*\n\s*&& turn >= WOJNA_KAMIEN_WYMUSZONA_START_TURY\s*\n\s*&& totalActiveForcedWarsByOwner\(0\) === 0\s*\n\s*\) \{\s*\n\s*triggeredSubjects\.push\(\{ ownerId: 0, q: playerCity\.q, r: playerCity\.r \}\);/.test(main),
+  /const playerCity = pickPlayerReferenceCity\(cities, capitalCityIdForOwner\(0\), 0\);\s*\n\s*if \(\s*\n\s*playerCity\s*\n\s*&& turn >= WOJNA_KAMIEN_WYMUSZONA_START_TURY\s*\n\s*&& totalActiveForcedWarsByOwner\(0\) === 0\s*\n\s*\) \{\s*\n\s*triggeredSubjects\.push\(\{ ownerId: 0, q: playerCity\.q, r: playerCity\.r \}\);/.test(main),
 );
 check(
   'isForcedWarPairBlocked (NAP, blokada pokoju, sojusz) -- ten sam symetryczny predykat dla '
@@ -246,7 +246,7 @@ check(
   'przy awansie do Żelaza (isIronEraEntry) ustawiane jest ironEraEnterTurnByOwner.set(ownerId, turn) '
     + 'OBOK ironForceWarPendingOwners.add(ownerId) -- bez tego próg 25 tur nie ma od czego liczyć '
     + 'dla nowo awansowanych cywilizacji',
-  /isIronEraEntry\(prev, next\)\s*\n\s*&& !isOwnerClusterCityState\(ownerId, ownerCityStateOpts\(\)\)\s*\n\s*\) \{\s*\n\s*ironForceWarPendingOwners\.add\(ownerId\);[\s\S]{0,400}?ironEraEnterTurnByOwner\.set\(ownerId, turn\);\s*\n\s*\}/.test(main),
+  /isIronEraEntry\(prev, next\)\s*\n\s*&& !isOwnerClusterCityState\(ownerId, ownerCityStateOpts\(\)\)\s*\n\s*\) \{\s*\n(?:\s*\/\/[^\n]*\n)*\s*(?:if \(isForcedEraWarEnabled\('iron'\)\) )?ironForceWarPendingOwners\.add\(ownerId\);[\s\S]{0,400}?ironEraEnterTurnByOwner\.set\(ownerId, turn\);\s*\n\s*\}/.test(main),
 );
 check(
   'eliminacja ownera sprząta ironEraEnterTurnByOwner.delete(ownerId) OBOK reszty sprzątacza Żelaza',

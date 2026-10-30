@@ -62,9 +62,12 @@ const GUARDS = {
     // R-WEB-ERA-WAR-COUNTER-Q1: bypass R3 (waveActorBypassR3) USUNIĘTY; zastąpiony licznikiem per
     // (cywilizacja, epoka) w bramce deklaracji -- napastnik I cel muszą mieć wolny licznik.
     'main.ts: bypass R3 usunięty (brak waveActorBypassR3) + licznik per cywilizacja w bramce deklaracji (napastnik i cel)',
+    // Zmiana jawna (R-WEB-ERA-WAR-COUNTER-Q1, zarzut FC r1 nr 2): logika bramki przeniesiona do czystej
+    // funkcji `evaluateEraForcedWarGate`; main.ts przekazuje licznik, epoki i id napastnika/celu.
     s => !/const waveActorBypassR3/.test(s.main)
-      && /\|\| !canCivJoinEraForcedWar\(eraWarCountByCivKey, targetId, empireEpochForOwner\(targetId\), WAR_RULES_PARAMS\)/.test(s.main)
-      && /!canCivJoinEraForcedWar\(eraWarCountByCivKey, ownerId, empireEpochForOwner\(ownerId\), WAR_RULES_PARAMS\)/.test(s.main),
+      && /evaluateEraForcedWarGate\(\{[\s\S]*?attackerId: ownerId,[\s\S]*?targetId,[\s\S]*?\}, WAR_RULES_PARAMS\)/.test(s.main)
+      && /counts: eraWarCountByCivKey,/.test(s.main)
+      && /targetEpoch: empireEpochForOwner\(targetId\),/.test(s.main),
   ],
   discoveryOnDeclare: [
     'main.ts: odkrycie nieodkrytej strony AI przy wypowiedzeniu wojny epoki z graczem (zarzut FC r1 nr 1)',
@@ -130,7 +133,7 @@ const MUTATIONS = [
   ['kolejnosc: AI przed graczem (mutacja D2)', 'main', 'return [lead, ...aiOwnerList.filter(oid => oid !== lead)];', 'return aiOwnerList;', 'leadFirstInLoop'],
   ['opcja K2 zignorowana w puli', 'main', 'if (isWarEpochPlayerFirstEnabled() && !playerEpochWarEnabled) {', 'if (false) {', 'playerInPoolOnlyWhenOption'],
   ['bypass mgly K1 usuniety', 'main', '&& !diplomaticallyDiscoveredOwnersSet().has(ownerId)\n                && forcedWarAssignmentByOwner', '&& forcedWarAssignmentByOwner', 'fogBypassK1'],
-  ['licznik wojen epoki celu zdjęty z bramki deklaracji (R-WEB-ERA-WAR-COUNTER-Q1)', 'main', '|| !canCivJoinEraForcedWar(eraWarCountByCivKey, targetId, empireEpochForOwner(targetId), WAR_RULES_PARAMS)', '', 'waveSnapshotR3'],
+  ['licznik wojen epoki zdjęty z bramki deklaracji (R-WEB-ERA-WAR-COUNTER-Q1)', 'main', 'counts: eraWarCountByCivKey,', 'counts: new Map(),', 'waveSnapshotR3'],
   ['odkrycie przy wypowiedzeniu usuniete (mutacja FC r1)', 'main', 'if (isHuman(ownerId) && !isHuman(targetId)) diplomaticallyDiscoveredOwnersSet().add(targetId);', '', 'discoveryOnDeclare'],
   ['zapis opcji bez flagi', 'main', '...(isWarEpochPlayerFirstEnabled() ? { playerEpochWarEnabled } : {}),', '...{ playerEpochWarEnabled },', 'saveMetaFlagged'],
   ['nowa gra domyslnie OFF', 'main', 'playerEpochWarEnabled = params.playerEpochWarEnabled ?? true;', 'playerEpochWarEnabled = params.playerEpochWarEnabled ?? false;', 'startDefaultOn'],
