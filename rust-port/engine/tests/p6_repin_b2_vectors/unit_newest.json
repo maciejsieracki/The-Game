@@ -64,6 +64,11 @@
    "Jednostka": "E2",
    "Typ": "Piechota",
    "Epoka": "Braz"
+  },
+  {
+   "Jednostka": "F1",
+   "Typ": " Piechota﻿",
+   "Epoka": "Zelazo"
   }
  ],
  "epochCases": [
@@ -180,6 +185,15 @@
    "outIndex": null
   },
   {
+   "current": "A1",
+   "candidates": [
+    "F1",
+    "A4"
+   ],
+   "out": "A4|Żelazo|Piechota",
+   "outIndex": 3
+  },
+  {
    "current": "A2",
    "candidates": [
     "A1",
@@ -250,6 +264,15 @@
    "outIndex": null
   },
   {
+   "current": "A2",
+   "candidates": [
+    "F1",
+    "A4"
+   ],
+   "out": "A4|Żelazo|Piechota",
+   "outIndex": 3
+  },
+  {
    "current": "A5",
    "candidates": [
     "A1",
@@ -316,6 +339,15 @@
   {
    "current": "A5",
    "candidates": [],
+   "out": null,
+   "outIndex": null
+  },
+  {
+   "current": "A5",
+   "candidates": [
+    "F1",
+    "A4"
+   ],
    "out": null,
    "outIndex": null
   },
@@ -390,6 +422,15 @@
    "outIndex": null
   },
   {
+   "current": "B1",
+   "candidates": [
+    "F1",
+    "A4"
+   ],
+   "out": null,
+   "outIndex": null
+  },
+  {
    "current": "A7",
    "candidates": [
     "A1",
@@ -460,6 +501,15 @@
    "outIndex": null
   },
   {
+   "current": "A7",
+   "candidates": [
+    "F1",
+    "A4"
+   ],
+   "out": "A4|Żelazo|Piechota",
+   "outIndex": 3
+  },
+  {
    "current": "A8",
    "candidates": [
     "A1",
@@ -530,6 +580,15 @@
    "outIndex": null
   },
   {
+   "current": "A8",
+   "candidates": [
+    "F1",
+    "A4"
+   ],
+   "out": "A4|Żelazo|Piechota",
+   "outIndex": 3
+  },
+  {
    "current": "A3",
    "candidates": [
     "A1",
@@ -600,6 +659,15 @@
    "outIndex": null
   },
   {
+   "current": "A3",
+   "candidates": [
+    "F1",
+    "A4"
+   ],
+   "out": null,
+   "outIndex": null
+  },
+  {
    "current": "A4",
    "candidates": [
     "A1",
@@ -666,6 +734,15 @@
   {
    "current": "A4",
    "candidates": [],
+   "out": null,
+   "outIndex": null
+  },
+  {
+   "current": "A4",
+   "candidates": [
+    "F1",
+    "A4"
+   ],
    "out": null,
    "outIndex": null
   },
@@ -740,6 +817,15 @@
    "outIndex": null
   },
   {
+   "current": "E1",
+   "candidates": [
+    "F1",
+    "A4"
+   ],
+   "out": "A4|Żelazo|Piechota",
+   "outIndex": 3
+  },
+  {
    "current": "ZZZ",
    "candidates": [
     "A1",
@@ -806,6 +892,94 @@
   {
    "current": "ZZZ",
    "candidates": [],
+   "out": null,
+   "outIndex": null
+  },
+  {
+   "current": "ZZZ",
+   "candidates": [
+    "F1",
+    "A4"
+   ],
+   "out": null,
+   "outIndex": null
+  },
+  {
+   "current": "F1",
+   "candidates": [
+    "A1",
+    "A2",
+    "A3",
+    "A4",
+    "A5",
+    "A6",
+    "A7",
+    "A8",
+    "B1",
+    "D1",
+    "E1",
+    "E2"
+   ],
+   "out": null,
+   "outIndex": null
+  },
+  {
+   "current": "F1",
+   "candidates": [
+    "A2",
+    "A3"
+   ],
+   "out": null,
+   "outIndex": null
+  },
+  {
+   "current": "F1",
+   "candidates": [
+    "A4",
+    "A3"
+   ],
+   "out": null,
+   "outIndex": null
+  },
+  {
+   "current": "F1",
+   "candidates": [
+    "A6"
+   ],
+   "out": null,
+   "outIndex": null
+  },
+  {
+   "current": "F1",
+   "candidates": [
+    "A7",
+    "A8",
+    "E2"
+   ],
+   "out": null,
+   "outIndex": null
+  },
+  {
+   "current": "F1",
+   "candidates": [
+    "B1",
+    "A1"
+   ],
+   "out": null,
+   "outIndex": null
+  },
+  {
+   "current": "F1",
+   "candidates": [],
+   "out": null,
+   "outIndex": null
+  },
+  {
+   "current": "F1",
+   "candidates": [
+    "F1",
+    "A4"
+   ],
    "out": null,
    "outIndex": null
   }

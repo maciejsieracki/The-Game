@@ -1,4 +1,4 @@
-// Loader ESM (hooks) do uruchamiania PRAWDZIWEGO kodu TS weba z git archive (pin edb8fb56).
+// Loader ESM (hooks) do uruchamiania PRAWDZIWEGO kodu TS weba z git archive (pin 91dc998a; poprawka r1: wczesniej komentarz mowil edb8fb56).
 // Dopisuje .ts / /index.ts do importow bez rozszerzenia, .json traktuje jako modul.
 // ZERO stubow i wrapperow: graf importow cities/empire-city-defaults/display-names
 // (units/setup, wealth, economy-upkeep, population-growth-v85, types/*) laduje sie w calosci.
