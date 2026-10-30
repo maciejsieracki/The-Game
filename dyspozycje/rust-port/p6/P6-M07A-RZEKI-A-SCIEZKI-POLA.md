@@ -131,3 +131,10 @@ Skrypt: mutacja pojedynczej linii w `rivers_a.rs`, `cargo test --test p6_m07a_ri
 - Partia 3: `canRiverDrainStep`, `isRiverDrainageGoal`, `inferMapDimsFromHexes`, `isReliefRiverSource`, `pathEndsAtSea`,
   `TraceRiverOpts`, `growRiverInlandBeforeDrainage`, `riverHexDirDelta` (pętle z capami N-1/N/N+1).
 - Partia 4: `estimateLandCentroid*`, `scoreRiverStepToward*`, `auditMapTerrainData`, weryfikator Python, dossier domknięte.
+
+## 7. Weryfikacja r2 (Operator-pomiary, run `R-RUSTPORT-P6-M07A-RZEKI-A-SCIEZKI-POLA-Q1/02-operator-r2.md`)
+
+- Bramki na `bef9b491b`: `cargo test --test p6_m07a_rivers_a` 17/17 EXIT=0; pełny `cargo test` 1799 passed / 0 failed EXIT=0; `cargo fmt --check` EXIT=0; `cargo clippy --all-targets -D warnings` EXIT=0.
+- Weryfikator niezależny `runs/.../verify_m07a_consts.py` (stdlib, TS pinu `edb8fb56` vs `rivers_a.rs`): stałe RIVER_*/MAIN_RIVER_* 8/8, progi `mediumTributaryMinNetLen` (80→4, 120→5), `ELEVATION_RANK` 8/8: PASS. Nie pokrywa `mapSizeLabelFromDims` ani wektorów.
+- Mutacje r2 (7 sztuk): wykryte 5/7. NIEWYKRYTE: (a) `canRiverFlowThrough` gałąź `blockExisting` (wektory bez tej gałęzi) — luka zgodna z §3 (CZĘŚCIOWO); (b) `mainRiverCoastMouthMaxGapForDims` gałąź `mala` → 5 (web :5554-5557) — brak wektora i asercji; dodać przypadek Mała w partii 2.
+- Status wierszy §3 bez zmian; r2 nie zmienia kodu.
