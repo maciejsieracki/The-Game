@@ -4816,3 +4816,37 @@ pub fn mapgen_landsea_pangea_bridge() -> &'static MapgenLandseaPangeaBridgeFile 
         parse_mapgen_landsea_pangea_bridge().expect("mapgen-landsea-pangea-bridge.json must parse")
     })
 }
+
+// ---------------------------------------------------------------------------------------------
+// P6.M06A9 (R-RUSTPORT-P6-M06A9-LAD-MORZE-PANGEA-FINAL-Q1) - wypelnianie korytarzy Pangei i
+// rebalance udzialu lądu, partia 1. Literaly w `data/derived/mapgen-landsea-pangea-fill.json`.
+// ---------------------------------------------------------------------------------------------
+
+/// Tekst `mapgen-landsea-pangea-fill.json` (wbudowany w binarke).
+pub const MAPGEN_LANDSEA_PANGEA_FILL_JSON: &str =
+    include_str!("../../data/derived/mapgen-landsea-pangea-fill.json");
+
+/// Plik `mapgen-landsea-pangea-fill.json` (web: `pangeaLandCentroid` :4473, `pangeaRadialDryLandSteps`
+/// :4484, `fillPangeaAnnularSeaCorridors` :4595, przebiegi `rebalanceLandFractionPangea` :3667).
+#[derive(Debug, Clone, serde::Deserialize)]
+pub struct MapgenLandseaPangeaFillFile {
+    pub meta: serde_json::Value,
+    pub fill_centroid_min_land: usize,
+    pub fill_dist_epsilon: f64,
+    pub fill_zapas_szerokosci: f64,
+    pub fill_prog_pasma_zapas: f64,
+    pub rebalance_jagged_passes: u32,
+}
+
+pub fn parse_mapgen_landsea_pangea_fill() -> Result<MapgenLandseaPangeaFillFile, serde_json::Error>
+{
+    serde_json::from_str(MAPGEN_LANDSEA_PANGEA_FILL_JSON)
+}
+
+/// Tabela wypelniania korytarzy Pangei (jednorazowy odczyt; blad danych = panika).
+pub fn mapgen_landsea_pangea_fill() -> &'static MapgenLandseaPangeaFillFile {
+    static TABLE: std::sync::OnceLock<MapgenLandseaPangeaFillFile> = std::sync::OnceLock::new();
+    TABLE.get_or_init(|| {
+        parse_mapgen_landsea_pangea_fill().expect("mapgen-landsea-pangea-fill.json must parse")
+    })
+}

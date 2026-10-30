@@ -1,0 +1,2 @@
+fmt: cargo fmt -- --check, wynik pusty (brak roznic)
+EXIT=0
