@@ -32,7 +32,7 @@ Commit weryfikowany: `9a16b238` (łańcuch `3d744de8` → `2117c4bf` → `9a16b2
 - Bramki (surowe logi, `EXIT=` w pliku): `fmt-verify.log` EXIT=0; `clippy-verify.log` EXIT=0; `verify-test.log` EXIT=0, suma wyników 1446 passed / 0 failed (197 binarek `test result`).
 - Delta `91dc998a..dc8a3adc` dla `formationRules.ts`: wszystkie 9 hunków mieści się w `initialBattleSlots` (46-118) i `compactLineAllowsAdvance` (148-160). `classifyInitialBattleRole` (3-42) i `initialBattleFormation` (125-146) nie mają delty — NIE-DOTYCZY potwierdzone `git diff -U0`.
 - Z-3 potwierdzone: `gra/src/game/army-leadership.ts` i `gra/src/game/ai-era-unit-promotion.ts` nie są w liście zmienionych plików między pinami.
-- Przegląd kodu Rust vs web (`formation_rules.rs` 240-412, `battle_mode.rs`): `lines_for_band`, `lay_band`, `main_band_width`, skrzydła (`min(3, top, bottom).max(1)`), `rowStart`, `mounted` parzystość i `rank` — zgodne z `formationRules.ts:46-118`. `compact_line_allows_advance` zgodne z `:148-160`. `is_automatic_only_battle_mode` zgodne z `battle-mode.ts:2,9-13` (cytowanie w kodzie `:9-14` — różnica 1 wiersza, kosmetyczna).
+- Przegląd kodu Rust vs web (`formation_rules.rs` 240-412, `battle_mode.rs`): `lines_for_band`, `lay_band`, `main_band_width`, skrzydła (`min(3, top, bottom).max(1)`), `rowStart`, `mounted` parzystość i `rank` — zgodne z `formationRules.ts:46-118`. `compact_line_allows_advance` zgodne z `:148-160`. `is_automatic_only_battle_mode` zgodne z `battle-mode.ts:2,9-14` (funkcja domyka się klamrą `}` w wierszu 14; cytowanie `:9-14` w kodzie i w tabeli §Tabela zmian jest poprawne — patrz „Odpowiedzi na zarzuty R1").
 - Mutanty weryfikatora (każdy: `cargo test`, EXIT=101 = zabity; logi `mut-v-*.log`, przywrócenie pliku po każdym i `cmp` OK):
 
 | ID | Mutacja | Gdzie | Wynik |
@@ -48,5 +48,27 @@ Commit weryfikowany: `9a16b238` (łańcuch `3d744de8` → `2117c4bf` → `9a16b2
 
 Operatorskie M1-M4 pozostają ważne (logi `mut-b1-*`, `mut-b2-M4-battle-mode.log`).
 
-- Nadal NIE_ZMIERZONO: `rankWidth` NaN / nieskończony (web propaguje NaN przez `Math.max(1, Math.floor(...))`; Rust `f64::floor().max(1.0)` daje 1). Wektory tego nie obejmują. Nie blokuje rundy 1 (poza zakresem wektorów), wymaga osobnej decyzji przed integracją.
+- NaN / nieskończony `rankWidth` (lub `midRow`, `playRow0`, `playRow1`): zmierzone na webie 91dc998a→dc8a3adc, patrz „Odpowiedzi na zarzuty R1", pkt 4 (log `obrona-nan-probe-web.log`). Web daje wiersze `NaN` / `undefined`, czyli wynik poza kontraktem slotu; Rust daje wynik skończony. Rozbieżność jest prawdziwa, ale poza domeną wejść produkcyjnych (stałe `battleScene.ts`).
 - Pozostaje NASTĘPNA-PARTIA: U3 `generals.ts`, U4 `generalQuickFollow.ts`, integracja battle-mode z zapisem (`main.ts:29056`, `:40818-40820`).
+
+## Odpowiedzi na zarzuty R1 (obrona Operatora, R-RUSTPORT-REPIN-WOJNA-2-Q1, runda 1)
+
+Stan wejściowy: commit `6a71fcb6` (odtworzony detached, kod Rust jak w `3d744de8`/`2117c4bf`). Kod Rust w tej obronie NIE zmieniony, więc bramki z `6a71fcb6` pozostają ważne (`fmt-verify.log`, `clippy-verify.log`, `verify-test.log`, EXIT=0).
+
+1. **Zakres GOAL U1-U4 tylko częściowo — PRZYJMUJĘ (bez zmiany kodu w tej rundzie).** Temat NIE jest zamknięty. U3 `generals.rs`, U4 `general_quick_follow.rs` i integracja battle-mode z zapisem pozostają NASTĘPNA-PARTIA pod tym samym ID `R-RUSTPORT-REPIN-WOJNA-2-Q1` w rundach 2+ (limit 5). Żadna część GOAL nie jest tu deklarowana jako wykonana poza U1/U2.
+
+2. **Cytowanie `battle-mode.ts :9-14` jest o wiersz za szerokie (`:9-13`) — ODRZUCAM (dowód) co do funkcji; PRZYJMUJĘ co do niespójności w dossier.** Dowód: `gra/src/game/battle-mode.ts` @ `dc8a3adc`, `cat -n`: wiersz 9 = `export function isAutomaticOnlyBattleMode(`, wiersz 13 = `return settingVersion === BATTLE_MODE_SETTING_VERSION && battleAlwaysManual === false;`, wiersz 14 = `}` (domknięcie funkcji). Zakres `:9-14` jest więc poprawny. Zarzut 2 wynikał z tego, że przegląd w dossier (§Weryfikacja, linia 35 przed poprawką) pisał `:9-13`, a tabela `:9-14`. Ujednolicono do `:9-14` (commit obrony, §Weryfikacja linia 35).
+
+3. **Przeżyty mutant: usunięcie `.max(0.0)` przy `top_available` bez dowodu równoważności — PRZYJMUJĘ, dowód dodany.** Miejsce: `rust-port/engine/src/domain/formation_rules.rs:393` (`top_available`), `:395` (`wing_count`); web: `gra/src/battle/formationRules.ts:107-109` (`topWingRowsAvailable`, `wingRowCount`) @ `dc8a3adc`. Rozumowanie dla skończonego `top`:
+   - `top >= 0`: `.max(0.0)` jest identycznością, mutant zachowuje się tak samo.
+   - `top < 0`: oryginał daje `top' = 0`, więc `min(3, 0, bottom) <= 0`, a po `.max(1.0)` wynik = 1. Mutant daje `min(3, top, bottom) <= top < 0`, po `.max(1.0)` także = 1.
+   - Symetrycznie dla `bottom`, które mutant nie rusza. Wynik `wing_count` jest identyczny dla każdego skończonego `top` i `bottom`, więc mutant jest RÓWNOWAŻNY i żaden test nie może go zabić bez zmiany domeny.
+   - Jedyna różnica to `top = NaN`: Rust `f64::max`/`min` ignorują NaN, więc oryginał daje 1, a mutant może dać `min(3, bottom)`. NaN nie jest osiągalne: `main_row_start = mid_row - floor(band_width/2)` z `band_width = max(1, main_band_width)` i z całkowitych `mid_row`/liczb pasm (`formation_rules.rs:390-392`), a wejścia produkcyjne są stałymi (pkt 4).
+
+4. **NaN / nieskończony `rankWidth` NIE_ZMIERZONO — PRZYJMUJĘ jako zmierzoną rozbieżność poza domeną; ODRZUCAM konieczność zmiany kodu.** Pomiar na webie (`dc8a3adc`, `node --experimental-strip-types`, skrypt `obrona-nan-probe.mjs`, log `obrona-nan-probe-web.log`):
+   - `rankWidth: NaN` → wiersz `NaN` dla slotu 0 i `undefined` dla slotów 1-4 (4 z 5 slotów bez wiersza), rank `NaN`/`Infinity` (log `obrona-nan-probe-web.log`). Web nie daje poprawnego wyniku slotu.
+   - `rankWidth: Infinity` i `-3` → wynik identyczny z bazowym (`Math.floor(Inf)=Inf`, `Math.max(1,-3)=1`).
+   - `midRow`, `playRow0`, `playRow1` = NaN → także `NaN`/`undefined`. `playRow1`/`playRow0` = ±Infinity → wynik bazowy.
+   - Rust: `rank_width.floor().max(1.0)` (`formation_rules.rs:315`) daje 1 dla NaN, więc wynik skończony. Rozbieżność jest realna, ale web w tym przypadku NIE produkuje poprawnego układu, więc nie ma czego wiernie odtwarzać.
+   - Domena produkcyjna: `battleScene.ts:693` `RANK_WIDTH = 20`; `:631` `BF_ROWS = 156`; `:635` `PLAYABLE_ROWS = Math.round(BF_ROWS * Math.SQRT1_2)` = 110; `:637/:639/:641` `PLAY_ROW0`, `PLAY_ROW1`, `PLAY_MID_ROW` — wszystkie z tych stałych, skończone. Wywołania: `battleScene.ts:5022-5023` i `:16343-16344`. NaN/Inf nie są osiągalne z gry.
+   - Status: NIE-DOTYCZY (wejście poza domeną produkcyjną; web nie ma poprawnego wyniku). ZAŁOŻENIE Z-4: wektory pozostają w domenie skończonej. Jeśli właściciel zażąda parytetu także dla NaN, to osobna decyzja, nie blokuje rundy 1.
