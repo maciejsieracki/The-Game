@@ -200,3 +200,14 @@ Zatem wynik bitowy jest identyczny dla każdego wejścia; `m` jest zawsze nieuje
 ### Założenie Z-VER-3 (R2)
 
 - `js_compat::js_max` (`civ_matrix.rs`) zwraca `-0` dla `(0, -0)`, różnie od JS. Poza tym tematem (inne moduły korzystają z niego) — nie zmieniane w tej rundzie; lokalna wersja w `economy_yield.rs`. Propozycja: osobny temat „js_compat zero sign” z przeglądem wszystkich wywołań `js_max` / `js_min`.
+
+## D2.2b (runda 2 operatora, częściowo) — Step 2 + Step 3' + praca netto
+
+Web: `gra/src/game/economy.ts@91dc998a` L849-860 (Step 2 Młyn→Cegielnia), L884-890 (Step 3' bonus portu `eko_pieniadz_port_proc`), L892-903 (`pracaNetto` = `eko_praca_proc`). Port: `city_yield_head` w `economy_yield.rs`; wektory `tests/p6_repin_d2_head_vectors/head-main.json` (1200 przypadków, generowane URUCHOMIENIEM weba 91dc998a; generator `logs/gen-head.mts`, wycinek `logs/economy-head-slice.mts` verbatim); testy `tests/p6_repin_d2_head.rs` (11 testów).
+
+- Pin webu: `origin/main` = `7164f7ca1`; od `91dc998a` zmieniono 84 pliki, ale NIE `economy.ts`, `production.ts`, `terrain-improvements.ts`, `civ-matrix.ts`, `diplomacy-economy.ts`, `turn-economy.ts` ani `gra/data/*` — wektory z 91dc998a pozostają aktualne.
+- NIEPORTOWANE w tej partii (NASTĘPNA-PARTIA D2.2c): Step 1 (`tileYield`, `terrainModifier`, ulepszenia i rudy), Step 3 (akumulacja `buildingValue` / `buildingHappinessAtLevel`), Step 4 (`cityPracaInteger`, `splitPraca`), zależności `production.ts` i `terrain-improvements.ts`. Wejścia `pracaTerenu`, `pracaBudynkow`, `pieniadzBudynkow`, `pieniadzPortu` podawane jawnie.
+- Założenie Z-D2.2b-1: `pieniadzPortu` = suma `buildingValue(..., 'pieniadz')` budynków o `id === 'port'` (Step 3 web, L871-886), liczona w D2.2c.
+- Założenie Z-D2.2b-2: `praca_budynkow` i `praca_terenu` są agregatami z D2.2c; ta partia nie zmienia ich wartości.
+- Wynik bramek (R2 operatora): `cargo fmt --all -- --check` EXIT=0; `cargo clippy --all-targets -- -D warnings` EXIT=0; `cargo test --no-fail-fast` EXIT=0, 225 binarek, **1658 passed / 0 failed** (baza 1647 + 11 nowych); `p6_repin_d2_head` 11/11, `parity_head_main_bit_exact` 1200/1200 bit-w-bit.
+- Mutacje (jedna naraz, przywracane z kopii): M1 wyłączony mnożnik Cegielni — ZABITA (4 testy); M2 zdjęty strażnik `portRaw !== 0` — ZABITA (2); M3 dopuszczony pusty klucz cywilizacji — ZABITA (1); M4 zdjęty bonus Młyna — ZABITA (3).

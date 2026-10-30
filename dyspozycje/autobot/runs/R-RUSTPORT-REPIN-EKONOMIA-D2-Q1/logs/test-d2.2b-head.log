@@ -1,0 +1,18 @@
+   Compiling civ-engine v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_7887a3f6-fb1-1/rust-port/engine)
+    Finished `test` profile [unoptimized] target(s) in 0.30s
+     Running tests/p6_repin_d2_head.rs (target/debug/deps/p6_repin_d2_head-927d7a6fd5c26b44)
+
+running 11 tests
+test boundary_port_zero_skips_bonus_even_for_infinite_port_income ... ok
+test boundary_port_zero_keeps_negative_zero_bits ... ok
+test boundary_port_nan_propagates_into_pieniadz ... ok
+test structural_cegielnia_alone_scales_terrain_only ... ok
+test structural_mlyn_then_cegielnia_order ... ok
+test structural_no_mlyn_no_cegielnia_is_identity ... ok
+test structural_port_bonus_needs_owner_and_matrix ... ok
+test synthetic_port_matrix_applied_to_port_income_only ... ok
+test synthetic_praca_matrix_applied_to_brutto_sum ... ok
+test synthetic_praca_matrix_uses_brutto_after_mlyn ... ok
+test parity_head_main_bit_exact ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.07s

@@ -294,3 +294,88 @@ pub fn city_yield_tail(
         handel_brutto: handel_brutto.floor(),
     }
 }
+
+/// Parametry Step 2 `cityYieldPerTurn` (web `EconParams`, pin `91dc998a`): Mlyn i Cegielnia na Pracy terenu.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct CityYieldHeadParams {
+    /// Web `params.budynekMlynMnoznikPracy`.
+    pub budynek_mlyn_mnoznik_pracy: f64,
+    /// Web `params.budynekMlynBonusPracy`.
+    pub budynek_mlyn_bonus_pracy: f64,
+    /// Web `params.budynekCegielniBonusPracy`.
+    pub budynek_cegielni_bonus_pracy: f64,
+}
+
+/// Wejscia glowy `cityYieldPerTurn` (web Step 2, Step 3' i praca netto): agregaty Step 1 i Step 3
+/// podane jawnie oraz pola `city`/`ctx`, ktore ta czesc czyta.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct CityYieldHeadInput<'a> {
+    /// Web `city.civKey` (truthy: `None` i `Some("")` = brak wlasciciela).
+    pub civ_key: Option<&'a str>,
+    /// Web `pracaTerenu` (Step 1, suma surowej Pracy z kafli).
+    pub praca_terenu: f64,
+    /// Web `pracaBudynkow` (Step 3).
+    pub praca_budynkow: f64,
+    /// Web `pieniadzBudynkow` przed bonusem portu (Step 3).
+    pub pieniadz_budynkow: f64,
+    /// Web `pieniadzPortu` (Step 3, suma Pieniadza budynkow o `id === 'port'`).
+    pub pieniadz_portu: f64,
+    /// Web `ctx.maMlyn`.
+    pub ma_mlyn: bool,
+    /// Web `ctx.maCegielnia`.
+    pub ma_cegielnia: bool,
+}
+
+/// Wynik glowy `cityYieldPerTurn` (web zmienne Step 2, Step 3' i praca netto).
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct CityYieldHeadOutput {
+    /// Web `pracaBruttoTerenu` (po Mlynie i Cegielni).
+    pub praca_brutto_terenu: f64,
+    /// Web `pieniadzBudynkow` po ewentualnym bonusie portu.
+    pub pieniadz_budynkow: f64,
+    /// Web `pracaBruttoLacznie` = teren + budynki.
+    pub praca_brutto_lacznie: f64,
+    /// Web `pracaNetto` (mnoznik `eko_praca_proc` tylko dla wlasciciela).
+    pub praca_netto: f64,
+}
+
+/// Port web `cityYieldPerTurn` Step 2 + Step 3' + praca netto (`gra/src/game/economy.ts@91dc998a`
+/// L849-860, L884-890, L892-903). Kolejnosc jak w webie: Mlyn, potem Cegielnia (po Mlynie);
+/// bonus portu dziala tylko gdy `eko_pieniadz_port_proc` jest rozne od zera (NaN przechodzi,
+/// `-0` nie); mnozniki macierzy tylko przy niepustym kluczu cywilizacji.
+pub fn city_yield_head(
+    matrix: &CivMatrixFile,
+    params: &CityYieldHeadParams,
+    input: &CityYieldHeadInput<'_>,
+) -> CityYieldHeadOutput {
+    let mut praca_brutto_terenu = if input.ma_mlyn {
+        input.praca_terenu * params.budynek_mlyn_mnoznik_pracy + params.budynek_mlyn_bonus_pracy
+    } else {
+        input.praca_terenu
+    };
+    if input.ma_cegielnia {
+        praca_brutto_terenu *= 1.0 + params.budynek_cegielni_bonus_pracy;
+    }
+
+    let owner = input.civ_key.filter(|key| !key.is_empty());
+    let mut pieniadz_budynkow = input.pieniadz_budynkow;
+    if let Some(key) = owner {
+        let port_raw = civ_matrix_param(matrix, key, "eko_pieniadz_port_proc");
+        if port_raw != 0.0 {
+            pieniadz_budynkow += input.pieniadz_portu * port_raw;
+        }
+    }
+
+    let praca_brutto_lacznie = praca_brutto_terenu + input.praca_budynkow;
+    let praca_netto = match owner {
+        Some(key) => apply_civ_matrix_param(matrix, praca_brutto_lacznie, key, "eko_praca_proc"),
+        None => praca_brutto_lacznie,
+    };
+
+    CityYieldHeadOutput {
+        praca_brutto_terenu,
+        pieniadz_budynkow,
+        praca_brutto_lacznie,
+        praca_netto,
+    }
+}
