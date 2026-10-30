@@ -2852,3 +2852,31 @@ pub mod p6_7a {
         EmpireFoodTickResult, OwnerFoodStates,
     };
 }
+
+/// REPIN-EKONOMIA-B3 (pin weba 91dc998a): helpery `turn-economy.ts` / `wealth.ts` poza
+/// `previewCityEconomy` / `advanceCityEconomy` (tick ekonomii miasta nie ma jeszcze portu Rust).
+pub mod repin_b3 {
+    use crate::data::civilizations::CivMatrixFile;
+    use crate::domain::civ_matrix::apply_civ_matrix_param;
+    use crate::domain::civ_matrix::js_compat::{js_max, js_min};
+
+    /// Web `routeCashForCity(total, maritime, civKey)` (turn-economy.ts): dochod z tras rozdzielony
+    /// na czesc morska (wspolczynnik cywilizacji `eko_pieniadz_port_proc`) i reszte.
+    /// `civKey` pusty lub brak = falsy w JS -> bez mnoznika cywilizacji.
+    // web: gra/src/game/turn-economy.ts routeCashForCity
+    pub fn route_cash_for_city(
+        matrix: &CivMatrixFile,
+        total: f64,
+        maritime: f64,
+        civ_key: Option<&str>,
+    ) -> f64 {
+        let sea = js_min(total, js_max(0.0, maritime));
+        let sea_cash = match civ_key {
+            Some(key) if !key.is_empty() => {
+                apply_civ_matrix_param(matrix, sea, key, "eko_pieniadz_port_proc")
+            }
+            _ => sea,
+        };
+        (total - sea) + sea_cash
+    }
+}
