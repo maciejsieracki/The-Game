@@ -209,7 +209,29 @@ Stan wejściowy: commit `10159d696` (odtworzony detached; kod Rust z `6ee3141a7`
 
 4. **Kolejność kluczy JS dla id całkowitoliczbowych (Z-P-1) — PRZYJMUJĘ; ZMIERZONE, NIE-DOTYCZY w produkcji.** Pomiar (node v22.22.0, `EXIT=0`): `Object.keys({b:1, "7":2, a:3, "prod_1_x_ab":4})` = `["7","b","a","prod_1_x_ab"]`, czyli klucze będące indeksami tablicowymi idą przed pozostałymi. Wszystkie znalezione konstrukcje id jednostek (`main.ts:4043`, `:5243`, `:9897`, `:27629`, `:34859`, `:37827`) zaczynają się od prefiksu niebędącego cyfrą, więc klucz `plannedMarches[unitId]` nigdy nie jest indeksem tablicowym i kolejność wstawiania jest zachowana (jak w `Map` i w Rust). ZAŁOŻENIE (ograniczenie): pełna enumeracja wszystkich ścieżek tworzenia jednostek nie została wykonana (NIE_ZMIERZONE poza znalezionymi konstrukcjami).
 
-### Pozostaje do zamknięcia tematu (runda 4)
+## Runda 4 (wpięcie meta, plannedMarches, autoMarch w zapis/odczyt)
 
-- Z-R3-4: wpięcie `meta.battleModeSettingVersion` (zapis `main.ts:32378`, odczyt `main.ts:40818-40821`) w `save_load.rs`, jeśli Rust ma wczytywać zapisy webowe.
-- Wpięcie `player_battle_automatic_only` (`main.ts:29052-29060`) i `planned_marches_*` w zapis/odczyt gry (poza funkcjami czystymi).
+Decyzja orkiestratora (administracyjna): pole `meta.battleModeSettingVersion` w `save_load.rs` jako pole addytywne/opcjonalne. Z-R3-4 przestaje obowiązywać.
+
+**Status tematu: OTWARTY do integracji R4 (kod i wektory gotowe; bramki zielone).** Zakres R4 wykonany w `save_load.rs` (SnapshotV2 bez zmiany wersji i bez zmiany znaczenia istniejących pól).
+
+| Zmiana (web dc8a3adc) | Rust | Test / wektor | Status |
+|---|---|---|---|
+| `meta.battleModeSettingVersion` zapis (`main.ts:32378`) i odczyt `=== 1 ? 1 : undefined` (`main.ts:40818-40821`) | `save_load.rs::SaveMeta` (pole `battleModeSettingVersion`, `Option<Value>`), `SaveMeta::battle_mode_setting_value` → `battle_mode::restored_setting_version` | `p6_repin_wojna_2_r4_save::save_meta_vectors_match_web_restore_and_automatic_only` (`save-meta.json`, 576 przypadków z generatora `gen-repin-wojna-2-r4-save-meta.mjs`, wykonany na `battle-mode.ts` i wyrażeniach `main.ts` dc8a3adc) | PORTOWANE (wpięte w zapis/odczyt) |
+| `newGameParams.advanced.battleAlwaysManual` (`_lastNewGameParams`, `main.ts:29058`) | `SaveMeta::battle_always_manual` (tylko JSON `true`/`false` → `Some`) | j.w. | PORTOWANE (wpięte) |
+| `playerBattleAutomaticOnly` (`main.ts:29052-29060`) | `battle_mode::player_battle_automatic_only(is_me, restored, SaveMeta::battle_always_manual())` (składane w teście `auto_only`) | j.w. (isMe true/false) | PORTOWANE (wpięte) |
+| `plannedMarches` zapis/odczyt (`planned-march.ts:466-490`, `main.ts:32307`, `:40864`) | `SaveSnapshot.planned_marches: Vec<SavedPlannedMarch>` (`plannedMarches` w JSON, tylko gdy niepuste); konwersja do `pathfinding::PlannedMarchSaved` i `planned_marches_from_save` w teście | `p6_repin_wojna_2_r4_save::planned_marches_wiring_through_save_matches_web_from_save_vectors` (wejście: `planned-march-general.json` fromSave, 900 przypadków, zapis→odczyt przez `SaveSnapshot`) | PORTOWANE (wpięte w format zapisu; produkcyjny adapter Tauri NIE istnieje w repo) |
+| legacy `autoMarch` (`planned-march.ts:424-431`, fallback w `plannedMarchesFromSave`) | `SaveSnapshot.auto_march: Option<SavedAutoMarch>` (`autoMarch`) | j.w. (przypadki z `saved` niepustym) | PORTOWANE (wpięte) |
+| normalizacja niepoprawnych typów (`destQ` napis, `attackUnitId: ""`, `generalTargetId` liczba, `battleAlwaysManual: "false"`) | `lenient_number`, `lenient_nonempty_string`, `Value::as_bool` | `non_conforming_r4_values_normalize_like_web_without_load_errors`; mutanty MS1, MS3 zabite | PORTOWANE |
+
+Architektura: `save_load.rs` NIE importuje `battle_mode.rs` (path-ładowany także przez `tests/replay.rs`, którego nie wolno ruszać). `SaveMeta::battle_mode_setting_value()` zwraca surową liczbę, a normalizację `=== 1` (`battle_mode::restored_setting_version`) i `playerBattleAutomaticOnly` (`battle_mode::player_battle_automatic_only`) składa wywołujący (test R4 `restored`/`auto_only`). Pola położenia `destQ/destR` i `Eq` na `SaveSnapshot`: `serde_json::Number` (nie `f64`), dzięki czemu `derive(Eq)` pozostaje i `replay.rs` nie wymaga zmian. Zmiany w istniejących plikach testowych: tylko `tests/save_load.rs` (addytywny `#[allow(dead_code)]` na `mod save_load`).
+
+Mutacje (R4, `cargo test` na `p6_repin_wojna_2_r4_save`, `p6_repin_wojna_2_r3_battle_mode`, `save_load`): MB1 (`setting_version.is_some()`), MB2 (`manual != Some(true)`), MB3 (bez `isMe`), MB4 (restore przyjmuje każdą wartość), MS1 (pusty `attackUnitId` przechodzi), MS2 (`trunc` wersji), MS3 (napis jako `destQ`) — **7/7 zabite (KILLED)**.
+
+Bramki: `cargo fmt --all -- --check` EXIT=0; `cargo clippy --all-targets -- -D warnings` EXIT=0; `cargo test --no-fail-fast` EXIT=0, 1634 passed / 0 failed (baza parity-v2 1629 + 5 nowych testów R4).
+
+Pozostaje (NASTĘPNA-PARTIA, poza zakresem R4): produkcyjne wywołanie (adapter Tauri/`main` Rust) wczytujące `plannedMarches` do stanu gry i wywołujące `planned_marches_from_save` w grze; `player_battle_automatic_only` w ścieżce sterowania walką gry (UI/bitwa). Silnik Rust nie ma jeszcze runtime gry z planned marches.
+
+### Runda 4 - pomiary Operatora (kontynuacja, R-RUSTPORT-REPIN-WOJNA-2-Q1)
+
+Stan wejsciowy: `c90304d00` (kod `edc7835c8`). Niezalezny weryfikator: `dyspozycje/autobot/runs/R-RUSTPORT-REPIN-WOJNA-2-Q1/verify-r4-save-meta.py` (semantyka z `dc8a3adc` od zera, bez importu generatora): 576 przypadkow meta, 900 przypadkow fromSave - 0 rozbieznosci; zrodla `main.ts:32378`, `:40819`, `:29056`, `:29058`, `battle-mode.ts:13` obecne. Mutacje (ponownie, po jednej na raz, przywracanie `git checkout`): MB1 zabite tylko przez `p6_repin_wojna_2_r3_battle_mode` (test R4 podaje wartosc juz znormalizowana); MB2, MB3, MB4 zabite; MS1, MS2, MS3 zabite przez `p6_repin_wojna_2_r4_save`. Korekty komentarzy: `battle_mode.rs` (opis pola `meta` byl nieaktualny), `p6_repin_wojna_2_r4_save.rs` (liczba przypadkow `1.0`). Nieoznaczone luki: `meta`, `plannedMarches` lub `autoMarch` o typie innym niz obiekt/tablica daje blad ladowania (serde), a nie normalizacje - NIE_ZMIERZONO empirycznie, wynika z definicji `Deserialize`.

@@ -1,0 +1,10 @@
+meta cases 576 mismatch 0 restored=1 96 autoOnly 2
+version encodings ['0', '1', '1.5', '2', '\\"1\\"', '\\"x\\"', 'false', 'null', 'true']
+planned fromSave cases 900 mismatch 0
+main.ts:32378 OK
+main.ts:40819 OK
+main.ts:29056 OK
+main.ts:29058 OK
+battle-mode.ts:13 OK
+TOTAL_MISMATCH 0
+EXIT=0
