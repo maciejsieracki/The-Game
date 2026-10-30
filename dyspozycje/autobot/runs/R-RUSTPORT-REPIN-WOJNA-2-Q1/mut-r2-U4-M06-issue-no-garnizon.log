@@ -1,0 +1,15 @@
+MUTANT: U4-M06-issue-no-garnizon
+FILE: src/domain/general_quick_follow.rs
+OLD:     if unit.is_general || unit.in_garnizon || oblega_truthy(&unit.oblega_city_id) {
+        return GeneralQuickFollowResult::Ineligible;
+NEW:     if unit.is_general || oblega_truthy(&unit.oblega_city_id) {
+        return GeneralQuickFollowResult::Ineligible;
+--- wynik (wyciag) ---
+test issue_matches_web ... FAILED
+thread 'issue_matches_web' (22388) panicked at tests/p6_repin_wojna_2_generals.rs:425:9:
+assertion `left == right` failed: przypadek 108: wynik
+   2: core::panicking::assert_failed_inner
+   3: core::panicking::assert_failed::<civ_engine::domain::general_quick_follow::GeneralQuickFollowResult, civ_engine::domain::general_quick_follow::GeneralQuickFollowResult>
+test result: FAILED. 12 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.18s
+error: test failed, to rerun pass `--test p6_repin_wojna_2_generals`
+EXIT=101

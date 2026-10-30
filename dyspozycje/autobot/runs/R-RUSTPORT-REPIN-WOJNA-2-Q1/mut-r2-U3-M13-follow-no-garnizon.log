@@ -1,0 +1,15 @@
+MUTANT: U3-M13-follow-no-garnizon
+FILE: src/domain/generals.rs
+OLD:         || unit.in_garnizon
+        || oblega_truthy(&unit.oblega_city_id)
+    {
+        return None;
+NEW:         || oblega_truthy(&unit.oblega_city_id)
+    {
+        return None;
+--- wynik (wyciag) ---
+test general_follow_destination_matches_web ... FAILED
+thread 'general_follow_destination_matches_web' (20965) panicked at tests/p6_repin_wojna_2_generals.rs:253:28:
+test result: FAILED. 12 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.13s
+error: test failed, to rerun pass `--test p6_repin_wojna_2_generals`
+EXIT=101

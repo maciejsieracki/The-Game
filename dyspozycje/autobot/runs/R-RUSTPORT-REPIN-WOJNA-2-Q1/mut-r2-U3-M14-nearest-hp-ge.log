@@ -1,0 +1,13 @@
+MUTANT: U3-M14-nearest-hp-ge
+FILE: src/domain/generals.rs
+OLD: candidate.hp.is_none_or(|hp| hp > 0.0)
+NEW: candidate.hp.is_none_or(|hp| hp >= 0.0)
+--- wynik (wyciag) ---
+test nearest_living_general_matches_web ... FAILED
+thread 'nearest_living_general_matches_web' (21088) panicked at tests/p6_repin_wojna_2_generals.rs:231:9:
+assertion `left == right` failed: przypadek 11
+   2: core::panicking::assert_failed_inner
+   3: core::panicking::assert_failed::<core::option::Option<&str>, core::option::Option<&str>>
+test result: FAILED. 12 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.23s
+error: test failed, to rerun pass `--test p6_repin_wojna_2_generals`
+EXIT=101

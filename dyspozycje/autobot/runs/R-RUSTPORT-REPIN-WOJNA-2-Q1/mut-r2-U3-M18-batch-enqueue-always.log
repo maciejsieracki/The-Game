@@ -1,0 +1,15 @@
+MUTANT: U3-M18-batch-enqueue-always
+FILE: src/domain/generals.rs
+OLD:     if !marching.is_empty() {
+        enqueue(&marching);
+NEW:     {
+        enqueue(&marching);
+--- wynik (wyciag) ---
+test deferred_batch_matches_web ... FAILED
+thread 'deferred_batch_matches_web' (21628) panicked at tests/p6_repin_wojna_2_generals.rs:294:9:
+assertion `left == right` failed: przypadek 2: kolejkowanie
+   2: core::panicking::assert_failed_inner
+   3: core::panicking::assert_failed::<alloc::vec::Vec<alloc::vec::Vec<alloc::string::String>>, alloc::vec::Vec<alloc::vec::Vec<alloc::string::String>>>
+test result: FAILED. 12 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.19s
+error: test failed, to rerun pass `--test p6_repin_wojna_2_generals`
+EXIT=101

@@ -1,0 +1,10 @@
+MUTANT: U4-M18-sync-no-dest-q-update
+FILE: src/domain/general_quick_follow.rs
+OLD:             moved.dest_q = commander.q;
+NEW:
+--- wynik (wyciag) ---
+test sync_tracked_matches_web ... FAILED
+thread 'sync_tracked_matches_web' (24101) panicked at tests/p6_repin_wojna_2_generals.rs:104:9:
+test result: FAILED. 12 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.27s
+error: test failed, to rerun pass `--test p6_repin_wojna_2_generals`
+EXIT=101

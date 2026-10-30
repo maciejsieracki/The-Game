@@ -1,0 +1,28 @@
+MUTANT: U3-M2-limit-nonfinite-0
+FILE: src/domain/generals.rs
+OLD:     } else {
+        1.0
+    }
+}
+
+/// Web `GeneralRosterCount`
+NEW:     } else {
+        0.0
+    }
+}
+
+/// Web `GeneralRosterCount`
+--- wynik (wyciag) ---
+test can_recruit_matches_web ... FAILED
+test purchase_matches_web_and_calls_continuation_only_when_valid ... FAILED
+test limit_for_era_matches_web ... FAILED
+thread 'can_recruit_matches_web' (24756) panicked at tests/p6_repin_wojna_2_generals.rs:164:9:
+assertion `left == right` failed: przypadek 36
+   2: core::panicking::assert_failed_inner
+   3: core::panicking::assert_failed::<bool, bool>
+thread 'purchase_matches_web_and_calls_continuation_only_when_valid' (24764) panicked at tests/p6_repin_wojna_2_generals.rs:206:9:
+assertion `left == right` failed: przypadek 321: wynik
+   2: core::panicking::assert_failed_inner
+   3: core::panicking::assert_failed::<bool, bool>
+thread 'limit_for_era_matches_web' (24761) panicked at tests/p6_repin_wojna_2_generals.rs:131:9:
+EXIT=101

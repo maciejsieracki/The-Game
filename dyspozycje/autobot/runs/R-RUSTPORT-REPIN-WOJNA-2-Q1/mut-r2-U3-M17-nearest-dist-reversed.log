@@ -1,0 +1,20 @@
+MUTANT: U3-M17-nearest-dist-reversed
+FILE: src/domain/generals.rs
+OLD:     if diff > 0.0 {
+        Ordering::Greater
+NEW:     if diff < 0.0 {
+        Ordering::Greater
+--- wynik (wyciag) ---
+test nearest_living_general_matches_web ... FAILED
+test issue_matches_web ... FAILED
+test plan_enabled_matches_web ... FAILED
+thread 'nearest_living_general_matches_web' (21513) panicked at tests/p6_repin_wojna_2_generals.rs:231:9:
+assertion `left == right` failed: przypadek 44
+   2: core::panicking::assert_failed_inner
+   3: core::panicking::assert_failed::<core::option::Option<&str>, core::option::Option<&str>>
+thread 'issue_matches_web' (21506) panicked at tests/p6_repin_wojna_2_generals.rs:425:9:
+assertion `left == right` failed: przypadek 6: wynik
+   2: core::panicking::assert_failed_inner
+   3: core::panicking::assert_failed::<civ_engine::domain::general_quick_follow::GeneralQuickFollowResult, civ_engine::domain::general_quick_follow::GeneralQuickFollowResult>
+thread 'plan_enabled_matches_web' (21514) panicked at tests/p6_repin_wojna_2_generals.rs:354:13:
+EXIT=101

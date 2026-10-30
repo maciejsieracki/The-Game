@@ -1,0 +1,13 @@
+MUTANT: U4-M09-issue-no-enqueue
+FILE: src/domain/general_quick_follow.rs
+OLD:         effects.enqueue(std::slice::from_ref(&unit.id));
+NEW:         let _ = &unit.id;
+--- wynik (wyciag) ---
+test issue_matches_web ... FAILED
+thread 'issue_matches_web' (22814) panicked at tests/p6_repin_wojna_2_generals.rs:453:9:
+assertion `left == right` failed: przypadek 3: kolejka
+   2: core::panicking::assert_failed_inner
+   3: core::panicking::assert_failed::<alloc::vec::Vec<alloc::vec::Vec<alloc::string::String>>, alloc::vec::Vec<alloc::vec::Vec<alloc::string::String>>>
+test result: FAILED. 12 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.14s
+error: test failed, to rerun pass `--test p6_repin_wojna_2_generals`
+EXIT=101

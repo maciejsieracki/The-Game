@@ -1,0 +1,8 @@
+["ą","b"] web= -1 utf16= 1 DIFF
+["b","ą"] web= 1 utf16= -1 DIFF
+["ż","z"] web= 1 utf16= 1 SAME
+["é","f"] web= -1 utf16= 1 DIFF
+["a","B"] web= -1 utf16= 1 DIFF
+["ł","m"] web= -1 utf16= 1 DIFF
+["prod_1_Łódź","prod_1_Lodz"] web= 1 utf16= 1 SAME
+EXIT=0

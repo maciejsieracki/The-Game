@@ -1,0 +1,13 @@
+MUTANT: U4-M04-enabled-no-zero-check
+FILE: src/domain/general_quick_follow.rs
+OLD:         if hex_distance(unit.q, unit.r, follow.q, follow.r) == 0.0 {
+NEW:         if false {
+--- wynik (wyciag) ---
+test plan_enabled_matches_web ... FAILED
+thread 'plan_enabled_matches_web' (22147) panicked at tests/p6_repin_wojna_2_generals.rs:345:9:
+assertion `left == right` failed: przypadek 33: zaplanowane
+   2: core::panicking::assert_failed_inner
+   3: core::panicking::assert_failed::<alloc::vec::Vec<alloc::string::String>, alloc::vec::Vec<alloc::string::String>>
+test result: FAILED. 12 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.18s
+error: test failed, to rerun pass `--test p6_repin_wojna_2_generals`
+EXIT=101

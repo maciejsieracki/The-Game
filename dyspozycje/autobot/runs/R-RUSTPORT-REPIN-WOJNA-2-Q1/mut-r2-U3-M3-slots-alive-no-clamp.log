@@ -1,0 +1,15 @@
+MUTANT: U3-M3-slots-alive-no-clamp
+FILE: src/domain/generals.rs
+OLD: js_max(0.0, count.alive.floor()) + js_max(0.0, count.queued.floor())
+NEW: count.alive.floor() + js_max(0.0, count.queued.floor())
+--- wynik (wyciag) ---
+test can_recruit_matches_web ... FAILED
+test slots_used_matches_web ... FAILED
+thread 'can_recruit_matches_web' (24826) panicked at tests/p6_repin_wojna_2_generals.rs:164:9:
+assertion `left == right` failed: przypadek 3
+   2: core::panicking::assert_failed_inner
+   3: core::panicking::assert_failed::<bool, bool>
+thread 'slots_used_matches_web' (24835) panicked at tests/p6_repin_wojna_2_generals.rs:147:9:
+test result: FAILED. 11 passed; 2 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.18s
+error: test failed, to rerun pass `--test p6_repin_wojna_2_generals`
+EXIT=101

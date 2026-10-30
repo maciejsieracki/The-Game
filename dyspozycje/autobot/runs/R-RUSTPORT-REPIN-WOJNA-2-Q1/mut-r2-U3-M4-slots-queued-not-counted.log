@@ -1,0 +1,18 @@
+MUTANT: U3-M4-slots-queued-not-counted
+FILE: src/domain/generals.rs
+OLD: js_max(0.0, count.alive.floor()) + js_max(0.0, count.queued.floor())
+NEW: js_max(0.0, count.alive.floor())
+--- wynik (wyciag) ---
+test can_recruit_matches_web ... FAILED
+test purchase_matches_web_and_calls_continuation_only_when_valid ... FAILED
+test slots_used_matches_web ... FAILED
+thread 'can_recruit_matches_web' (24893) panicked at tests/p6_repin_wojna_2_generals.rs:164:9:
+assertion `left == right` failed: przypadek 3
+   2: core::panicking::assert_failed_inner
+   3: core::panicking::assert_failed::<bool, bool>
+thread 'purchase_matches_web_and_calls_continuation_only_when_valid' (24901) panicked at tests/p6_repin_wojna_2_generals.rs:206:9:
+assertion `left == right` failed: przypadek 20: wynik
+   2: core::panicking::assert_failed_inner
+   3: core::panicking::assert_failed::<bool, bool>
+thread 'slots_used_matches_web' (24902) panicked at tests/p6_repin_wojna_2_generals.rs:147:9:
+EXIT=101

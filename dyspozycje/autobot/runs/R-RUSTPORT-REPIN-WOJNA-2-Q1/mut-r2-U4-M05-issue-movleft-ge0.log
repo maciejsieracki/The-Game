@@ -1,0 +1,13 @@
+MUTANT: U4-M05-issue-movleft-ge0
+FILE: src/domain/general_quick_follow.rs
+OLD:     if effects.movement_left(unit) > 0.0 {
+NEW:     if effects.movement_left(unit) >= 0.0 {
+--- wynik (wyciag) ---
+test issue_matches_web ... FAILED
+thread 'issue_matches_web' (22267) panicked at tests/p6_repin_wojna_2_generals.rs:453:9:
+assertion `left == right` failed: przypadek 19: kolejka
+   2: core::panicking::assert_failed_inner
+   3: core::panicking::assert_failed::<alloc::vec::Vec<alloc::vec::Vec<alloc::string::String>>, alloc::vec::Vec<alloc::vec::Vec<alloc::string::String>>>
+test result: FAILED. 12 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.18s
+error: test failed, to rerun pass `--test p6_repin_wojna_2_generals`
+EXIT=101

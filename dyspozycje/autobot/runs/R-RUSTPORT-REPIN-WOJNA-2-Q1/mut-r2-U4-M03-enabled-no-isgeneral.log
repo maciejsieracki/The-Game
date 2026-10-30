@@ -1,0 +1,10 @@
+MUTANT: U4-M03-enabled-no-isgeneral
+FILE: src/domain/general_quick_follow.rs
+OLD:             || unit.is_general
+            || unit.in_garnizon
+
+NEW:             || unit.in_garnizon
+
+--- wynik (wyciag) ---
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.14s
+EXIT=0

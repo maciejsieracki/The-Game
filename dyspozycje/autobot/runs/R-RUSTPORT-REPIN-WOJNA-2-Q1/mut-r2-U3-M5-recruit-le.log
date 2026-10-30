@@ -1,0 +1,18 @@
+MUTANT: U3-M5-recruit-le
+FILE: src/domain/generals.rs
+OLD:     general_slots_used(count) < general_limit_for_era(era)
+NEW:     general_slots_used(count) <= general_limit_for_era(era)
+--- wynik (wyciag) ---
+test purchase_matches_web_and_calls_continuation_only_when_valid ... FAILED
+test can_recruit_matches_web ... FAILED
+thread 'purchase_matches_web_and_calls_continuation_only_when_valid' (24969) panicked at tests/p6_repin_wojna_2_generals.rs:206:9:
+assertion `left == right` failed: przypadek 20: wynik
+   2: core::panicking::assert_failed_inner
+   3: core::panicking::assert_failed::<bool, bool>
+thread 'can_recruit_matches_web' (24961) panicked at tests/p6_repin_wojna_2_generals.rs:164:9:
+assertion `left == right` failed: przypadek 61
+   2: core::panicking::assert_failed_inner
+   3: core::panicking::assert_failed::<bool, bool>
+test result: FAILED. 11 passed; 2 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.16s
+error: test failed, to rerun pass `--test p6_repin_wojna_2_generals`
+EXIT=101

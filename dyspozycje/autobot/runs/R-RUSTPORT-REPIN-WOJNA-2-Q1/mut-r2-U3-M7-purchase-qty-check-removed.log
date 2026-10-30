@@ -1,0 +1,13 @@
+MUTANT: U3-M7-purchase-qty-check-removed
+FILE: src/domain/generals.rs
+OLD:     if request.requested_quantity != 1.0 || request.city_id != request.capital_city_id {
+NEW:     if request.city_id != request.capital_city_id {
+--- wynik (wyciag) ---
+test purchase_matches_web_and_calls_continuation_only_when_valid ... FAILED
+thread 'purchase_matches_web_and_calls_continuation_only_when_valid' (25311) panicked at tests/p6_repin_wojna_2_generals.rs:207:9:
+assertion `left == right` failed: przypadek 44: wywolanie zakupu
+   2: core::panicking::assert_failed_inner
+   3: core::panicking::assert_failed::<bool, bool>
+test result: FAILED. 12 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.15s
+error: test failed, to rerun pass `--test p6_repin_wojna_2_generals`
+EXIT=101

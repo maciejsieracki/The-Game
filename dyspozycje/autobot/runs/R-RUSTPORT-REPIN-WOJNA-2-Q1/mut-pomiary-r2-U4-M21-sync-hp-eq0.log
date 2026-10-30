@@ -1,0 +1,45 @@
+   Compiling civ-engine v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_a87f1451-a49-2/rust-port/engine)
+    Finished `test` profile [unoptimized] target(s) in 29.55s
+     Running tests/p6_repin_wojna_2_generals.rs (/home/user/cargo-target-shared/wf_a87f1451-a49-2/debug/deps/p6_repin_wojna_2_generals-b2a41bf653684b50)
+
+running 13 tests
+test general_follow_destination_matches_web ... ok
+test deferred_batch_matches_web ... ok
+test can_recruit_matches_web ... ok
+test issue_matches_web ... ok
+test nearest_living_general_matches_web ... ok
+test limit_for_era_matches_web ... ok
+test labels_match_web ... ok
+test plan_enabled_matches_web ... ok
+test purchase_matches_web_and_calls_continuation_only_when_valid ... ok
+test stone_unit_matches_web ... ok
+test slots_used_matches_web ... ok
+test tracked_march_matches_web ... ok
+test sync_tracked_matches_web ... FAILED
+
+failures:
+
+---- sync_tracked_matches_web stdout ----
+
+thread 'sync_tracked_matches_web' (16161) panicked at tests/p6_repin_wojna_2_generals.rs:610:9:
+assertion `left == right` failed: przypadek 53: wyczyszczone
+  left: ["Zed", "u7"]
+ right: ["Zed", "u7", "G3"]
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+   1: core::panicking::panic_fmt
+   2: core::panicking::assert_failed_inner
+   3: core::panicking::assert_failed::<alloc::vec::Vec<alloc::string::String>, alloc::vec::Vec<alloc::string::String>>
+   4: p6_repin_wojna_2_generals::sync_tracked_matches_web
+   5: p6_repin_wojna_2_generals::sync_tracked_matches_web::{closure#0}
+   6: <p6_repin_wojna_2_generals::sync_tracked_matches_web::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+
+failures:
+    sync_tracked_matches_web
+
+test result: FAILED. 12 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.17s
+
+error: test failed, to rerun pass `--test p6_repin_wojna_2_generals`
+EXIT=101

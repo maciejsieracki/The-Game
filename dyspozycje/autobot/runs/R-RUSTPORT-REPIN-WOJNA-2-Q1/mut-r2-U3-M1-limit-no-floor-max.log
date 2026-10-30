@@ -1,0 +1,20 @@
+MUTANT: U3-M1-limit-no-floor-max
+FILE: src/domain/generals.rs
+OLD:         js_max(1.0, era.floor())
+
+NEW:         era.floor()
+
+--- wynik (wyciag) ---
+test limit_for_era_matches_web ... FAILED
+test can_recruit_matches_web ... FAILED
+test purchase_matches_web_and_calls_continuation_only_when_valid ... FAILED
+thread 'limit_for_era_matches_web' (24621) panicked at tests/p6_repin_wojna_2_generals.rs:131:9:
+thread 'can_recruit_matches_web' (24616) panicked at tests/p6_repin_wojna_2_generals.rs:164:9:
+assertion `left == right` failed: przypadek 24
+   2: core::panicking::assert_failed_inner
+   3: core::panicking::assert_failed::<bool, bool>
+thread 'purchase_matches_web_and_calls_continuation_only_when_valid' (24624) panicked at tests/p6_repin_wojna_2_generals.rs:207:9:
+assertion `left == right` failed: przypadek 420: wywolanie zakupu
+   2: core::panicking::assert_failed_inner
+   3: core::panicking::assert_failed::<bool, bool>
+EXIT=101

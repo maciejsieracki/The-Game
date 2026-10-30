@@ -1,0 +1,13 @@
+MUTANT: U3-M9-purchase-offered-empty-ok
+FILE: src/domain/generals.rs
+OLD:         Some(offered) if !offered.is_empty() && *offered == request.requested_item_id => {}
+NEW:         Some(offered) if *offered == request.requested_item_id => {}
+--- wynik (wyciag) ---
+test purchase_matches_web_and_calls_continuation_only_when_valid ... FAILED
+thread 'purchase_matches_web_and_calls_continuation_only_when_valid' (20032) panicked at tests/p6_repin_wojna_2_generals.rs:206:9:
+assertion `left == right` failed: przypadek 17: wynik
+   2: core::panicking::assert_failed_inner
+   3: core::panicking::assert_failed::<bool, bool>
+test result: FAILED. 12 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.18s
+error: test failed, to rerun pass `--test p6_repin_wojna_2_generals`
+EXIT=101
