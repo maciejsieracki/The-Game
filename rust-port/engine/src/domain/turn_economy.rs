@@ -381,6 +381,36 @@ fn debit(available: u64, required: u64, paid: &mut u64, unpaid: &mut u64) {
     *unpaid = required - *paid;
 }
 
+/// Web `Math.max(a, b)`: NaN propaguje; `Math.max(-0, 0)` = `0`.
+fn js_max(a: f64, b: f64) -> f64 {
+    if a.is_nan() || b.is_nan() {
+        f64::NAN
+    } else if a > b {
+        a
+    } else if b > a {
+        b
+    } else if a.is_sign_positive() {
+        a
+    } else {
+        b
+    }
+}
+
+/// Web `Math.min(a, b)`: NaN propaguje; `Math.min(0, -0)` = `-0`.
+fn js_min(a: f64, b: f64) -> f64 {
+    if a.is_nan() || b.is_nan() {
+        f64::NAN
+    } else if a < b {
+        a
+    } else if b < a {
+        b
+    } else if a.is_sign_negative() {
+        a
+    } else {
+        b
+    }
+}
+
 /// P6.8D-P1 - `gold-deficit.ts` (web pin 91dc998a): kara za deficyt Zlota.
 ///
 /// Globalny `_lastTicks` z webu jest tu jawnym polem [`gold_deficit::GoldDeficitRuntime`]
@@ -389,7 +419,7 @@ fn debit(available: u64, required: u64, paid: &mut u64, unpaid: &mut u64) {
 pub mod gold_deficit {
     use std::collections::BTreeMap;
 
-    use crate::domain::civ_matrix::js_compat::{js_max, js_min};
+    use super::{js_max, js_min};
 
     /// Web `GoldDeficitState`: liczba kolejnych tur Z RZEDU ze Skarbcem < 0.
     #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
@@ -677,6 +707,224 @@ pub mod gold_deficit {
             }
         }
         result
+    }
+}
+
+/// P6.8D-P2 - `wealth.ts` (web pin 91dc998a): poziom Wealth per miasto.
+///
+/// `wealthParamsWithCapModifier` / `wealthParamsWithMultiplierModifier` NIE sa tu powielone:
+/// sa w `city_growth` (B3, `WealthModParams`, wektory `p6_repin_b3_wealth`).
+pub mod wealth {
+    use std::collections::BTreeMap;
+
+    use super::gold_deficit::Difficulty;
+    use super::{js_max, js_min};
+
+    /// Web `WealthParams` (wszystkie 9 pol).
+    #[derive(Debug, Clone, Copy, PartialEq)]
+    pub struct WealthParams {
+        pub cap_na_epoke: f64,
+        pub prog_na_poziom: f64,
+        pub mnoznik_na_poziom: f64,
+        pub utrzymanie_baza: f64,
+        pub utrzymanie_przy_cap: f64,
+        pub zachowanie_po_awansie: f64,
+        pub zadowolenie_max: f64,
+        pub kara_zero: f64,
+        pub immunitet_tur: f64,
+    }
+
+    /// Web `FALLBACK_WEALTH_PARAMS`.
+    pub const FALLBACK_WEALTH_PARAMS: WealthParams = WealthParams {
+        cap_na_epoke: 10.0,
+        prog_na_poziom: 4.5,
+        mnoznik_na_poziom: 0.15,
+        utrzymanie_baza: 0.20,
+        utrzymanie_przy_cap: 0.40,
+        zachowanie_po_awansie: 0.5,
+        zadowolenie_max: 10.0,
+        kara_zero: 0.0,
+        immunitet_tur: 5.0,
+    };
+
+    /// Wiersz `wealth` z econ-params.json; `None` = brak / wartosc nie-liczbowa.
+    #[derive(Debug, Clone, Copy, PartialEq, Default)]
+    pub struct RawWealthRow {
+        pub easy: Option<f64>,
+        pub normal: Option<f64>,
+        pub hard: Option<f64>,
+    }
+
+    /// Web `RawWealthParamsJson` (`wealth ?? {}`).
+    #[derive(Debug, Clone, PartialEq, Default)]
+    pub struct RawWealthParamsJson {
+        pub wealth: BTreeMap<String, RawWealthRow>,
+    }
+
+    impl RawWealthRow {
+        fn for_difficulty(&self, d: Difficulty) -> Option<f64> {
+            match d {
+                Difficulty::Easy => self.easy,
+                Difficulty::Normal => self.normal,
+                Difficulty::Hard => self.hard,
+            }
+        }
+    }
+
+    /// Web `loadWealthParams`: brak / niefinite => fallback z `FALLBACK_WEALTH_PARAMS`.
+    pub fn load_wealth_params(raw: &RawWealthParamsJson, difficulty: Difficulty) -> WealthParams {
+        let read = |key: &str, fallback: f64| -> f64 {
+            raw.wealth
+                .get(key)
+                .and_then(|row| row.for_difficulty(difficulty))
+                .filter(|v| v.is_finite())
+                .unwrap_or(fallback)
+        };
+        let f = FALLBACK_WEALTH_PARAMS;
+        WealthParams {
+            cap_na_epoke: read("wealth_cap_na_epoke", f.cap_na_epoke),
+            prog_na_poziom: read("wealth_prog_na_poziom", f.prog_na_poziom),
+            mnoznik_na_poziom: read("wealth_mnoznik_na_poziom", f.mnoznik_na_poziom),
+            utrzymanie_baza: read("wealth_utrzymanie_baza", f.utrzymanie_baza),
+            utrzymanie_przy_cap: read("wealth_utrzymanie_przy_cap", f.utrzymanie_przy_cap),
+            zachowanie_po_awansie: read("wealth_zachowanie_po_awansie", f.zachowanie_po_awansie),
+            zadowolenie_max: read("wealth_zadowolenie_max", f.zadowolenie_max),
+            kara_zero: read("wealth_kara_zero", f.kara_zero),
+            immunitet_tur: read("wealth_immunitet_tur", f.immunitet_tur),
+        }
+    }
+
+    /// Web `wealthCap`: `max(0, floor(epoka)) * capNaEpoke`.
+    pub fn wealth_cap(epoka: f64, p: WealthParams) -> f64 {
+        js_max(0.0, epoka.floor()) * p.cap_na_epoke
+    }
+
+    /// Web `wealthMnoznik`: `max(1, 1 + (W-1) * k)`.
+    pub fn wealth_mnoznik(poziom: f64, p: WealthParams) -> f64 {
+        js_max(1.0, 1.0 + (poziom - 1.0) * p.mnoznik_na_poziom)
+    }
+
+    /// Web `wealthZadowolenie` (G6): `floor(poziom * zadowolenieMax / cap)`, poziom przycinany do capu.
+    pub fn wealth_zadowolenie(poziom: f64, p: WealthParams, epoka: f64) -> f64 {
+        if poziom <= 0.0 {
+            return p.kara_zero;
+        }
+        let cap = wealth_cap(epoka, p);
+        if !cap.is_finite() || cap <= 0.0 {
+            return 0.0;
+        }
+        let poz = js_min(poziom, cap);
+        (poz * p.zadowolenie_max / cap).floor()
+    }
+
+    /// Web `wealthRownowaga`: `baza + frac * (przyCap - baza)`, `frac = clamp(W/cap, 0, 1)`.
+    pub fn wealth_rownowaga(poziom: f64, epoka: f64, p: WealthParams) -> f64 {
+        let cap = wealth_cap(epoka, p);
+        if cap <= 0.0 {
+            return p.utrzymanie_przy_cap;
+        }
+        let frac = js_min(1.0, js_max(0.0, poziom / cap));
+        p.utrzymanie_baza + frac * (p.utrzymanie_przy_cap - p.utrzymanie_baza)
+    }
+
+    /// Web `wealthProg`: `progNaPoziom * (L+1) * max(1, floor(epoka))`.
+    pub fn wealth_prog(poziom: f64, epoka: f64, p: WealthParams) -> f64 {
+        p.prog_na_poziom * (poziom + 1.0) * js_max(1.0, epoka.floor())
+    }
+
+    /// Web `WealthState`.
+    #[derive(Debug, Clone, Copy, PartialEq)]
+    pub struct WealthState {
+        pub poziom: f64,
+        pub pula: f64,
+    }
+
+    /// Web `WealthTickResult`.
+    #[derive(Debug, Clone, Copy, PartialEq)]
+    pub struct WealthTickResult {
+        pub poziom: f64,
+        pub pula: f64,
+        pub mnoznik: f64,
+        pub zadowolenie: f64,
+        pub awans: u64,
+        pub spadek: u64,
+    }
+
+    /// Web `freshWealthState`: poziom 1 (mnoznik x1), pusta pula.
+    pub fn fresh_wealth_state() -> WealthState {
+        WealthState {
+            poziom: 1.0,
+            pula: 0.0,
+        }
+    }
+
+    /// Web `advanceWealth`. `min_poziom` = `opts?.minPoziom` (`None` = undefined/null => 0).
+    pub fn advance_wealth(
+        state: WealthState,
+        spol_money: f64,
+        miasto_money: f64,
+        epoka: f64,
+        p: WealthParams,
+        min_poziom: Option<f64>,
+    ) -> WealthTickResult {
+        let cap = wealth_cap(epoka, p);
+        let mut poziom = js_min(cap, js_max(0.0, state.poziom.floor()));
+        let mut pula = js_max(
+            0.0,
+            if state.pula.is_finite() {
+                state.pula
+            } else {
+                0.0
+            },
+        );
+        let min_poz = js_max(0.0, min_poziom.unwrap_or(0.0).floor());
+
+        let spol = if spol_money.is_finite() {
+            js_max(0.0, spol_money)
+        } else {
+            0.0
+        };
+        let miasto = if miasto_money.is_finite() {
+            js_max(0.0, miasto_money)
+        } else {
+            0.0
+        };
+
+        // utrzymanie / decay
+        let decay = wealth_rownowaga(poziom, epoka, p) * miasto;
+        pula += spol - decay;
+
+        let mut spadek = 0;
+        if pula < 0.0 {
+            pula = 0.0;
+            if poziom > min_poz {
+                poziom -= 1.0;
+                spadek = 1;
+            }
+        }
+
+        // awanse
+        let mut awans = 0;
+        while poziom < cap {
+            let prog = wealth_prog(poziom, epoka, p);
+            if pula >= prog {
+                pula -= prog;
+                poziom += 1.0;
+                pula = (pula * p.zachowanie_po_awansie).floor();
+                awans += 1;
+            } else {
+                break;
+            }
+        }
+
+        WealthTickResult {
+            poziom,
+            pula,
+            mnoznik: wealth_mnoznik(poziom, p),
+            zadowolenie: wealth_zadowolenie(poziom, p, epoka),
+            awans,
+            spadek,
+        }
     }
 }
 
