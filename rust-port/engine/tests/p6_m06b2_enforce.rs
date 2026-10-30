@@ -136,7 +136,11 @@ fn enforce_probe_matches_web() {
 fn enforce_large_maps_match_web() {
     let r = load(WEB_CASES_ENFORCE_LARGE);
     let cs = cases(&r, "enforceLarge");
-    assert!(cs.len() >= 150, "za malo przypadkow duzych map: {}", cs.len());
+    assert!(
+        cs.len() >= 150,
+        "za malo przypadkow duzych map: {}",
+        cs.len()
+    );
     for c in cs {
         check_case(&r, c);
     }

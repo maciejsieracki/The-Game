@@ -1,0 +1,29 @@
+{
+ "M11": {
+  "sym": "enforceTargetDryLandFraction",
+  "web": "gen-helpers.ts:5088-5090",
+  "desc": "gorny klamp celu 0.85 -> 0.86",
+  "occurrences": 1,
+  "sek": 42.8,
+  "exit": 101,
+  "failed_tests": [
+   "test enforce_large_maps_match_web ... FAILED"
+  ],
+  "wynik": "ZABITA"
+ },
+ "M12": {
+  "sym": "enforceTargetDryLandFraction",
+  "web": "gen-helpers.ts:5094",
+  "desc": "wybrzeze w enforce: 2 przebiegi zamiast 1",
+  "occurrences": 1,
+  "sek": 51.7,
+  "exit": 0,
+  "failed_tests": [],
+  "wynik": "PRZEZYTA"
+ },
+ "_przywrocenie": {
+  "sha_przed": "34d4ebfc020b7e5ea9b84e27c0232daeebc31d61a81e552671296da0a53a4e88",
+  "sha_po": "34d4ebfc020b7e5ea9b84e27c0232daeebc31d61a81e552671296da0a53a4e88",
+  "zgodne": true
+ }
+}

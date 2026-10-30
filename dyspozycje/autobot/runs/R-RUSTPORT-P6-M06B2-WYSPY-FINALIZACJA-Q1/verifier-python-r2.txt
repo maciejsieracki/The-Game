@@ -1,0 +1,34 @@
+{
+ "progi_ts": {
+  "pangea": 10,
+  "kontynenty": 8,
+  "wyspy": 4,
+  "ziemia": 6
+ },
+ "stale_ts": {
+  "PANGEA_MIN": 0.11,
+  "BORDER_B": 2,
+  "MARGIN_Z": 10,
+  "ERODE_RANK": {
+   "plytkie_morze": 0,
+   "laka": 1,
+   "pustynia": 2,
+   "rownina": 3,
+   "wzgorza": 4,
+   "gory": 5
+  }
+ },
+ "przypadki": {
+  "minTyp": 4,
+  "removeTiny": 544,
+  "countSpecks": 20,
+  "purgeSpecks": 20,
+  "finalizeLandMass": 384,
+  "enforce": 720,
+  "enforce-probe": 596,
+  "enforce-large": 160
+ },
+ "rozbieznosci": 0,
+ "przyklady": []
+}
+EXIT=0
