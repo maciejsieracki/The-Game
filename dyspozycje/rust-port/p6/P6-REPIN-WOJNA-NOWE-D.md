@@ -1,6 +1,6 @@
 # P6 REPIN WOJNA-NOWE-D: `gra/src/game/warAllInCapital.ts` -> Rust
 
-Temat: R-RUSTPORT-REPIN-WOJNA-NOWE-D-Q1 (runda 1/5, partia 1).
+Temat: R-RUSTPORT-REPIN-WOJNA-NOWE-D-Q1 (runda 2/5, partia 1; runda 2 = poprawka po FAIL weryfikatora z rundy 1).
 Pin web: `dc8a3adc` (`gra/src/game/warAllInCapital.ts`, 859 linii, `gra/data/war-allin-params.json`).
 Baza portu: `origin/rust-port/parity-v2` = `a83ae51d6` (gate 1666/0 przed zmianą).
 Cel modulu Rust: `rust-port/engine/src/domain/war_all_in_capital*.rs`.
@@ -28,7 +28,7 @@ NASTEPNA-PARTIA = nie portowane w tej rundzie (przyczyna w kolumnie Uwagi).
 | `WarAllInOrder` | 317-328 | typ | PORTED-CZESCIOWO | `WarAllInOrder` | tryb `engage` pominiety (W1) |
 | `WarAllInPlanOpts` | 334-343 | typ | PORTED-CZESCIOWO | `WarAllInPlanOpts` | pola `enemyArmies`, `engageRadius`, `enemyStrength` pominiete (W1/W2) |
 | `WarAllInPlan` | 345-358 | typ | PORTED | `WarAllInPlan` | `groupsByTarget` jako `BTreeMap` |
-| `WAR_ALLIN_LINK_RADIUS` / `MERGE_RADIUS` / `NO_MERGE_NEAR_CAPITAL` | 361-369 | stale z JSON | PORTED | `war_allin_params()` | JSON: `src/domain/war_all_in_capital_params.json` (patrz ZALOZENIA) |
+| `WAR_ALLIN_LINK_RADIUS` / `MERGE_RADIUS` / `NO_MERGE_NEAR_CAPITAL` | 361-369 | stale z JSON | PORTED | `war_allin_params()` | JSON: `rust-port/engine/data/derived/war-allin-params.json`, loader `data::derived::WAR_ALLIN_PARAMS_JSON` (patrz ZALOZENIA 2) |
 | `Cluster` | 371-381 | typ wewn. | PORTED-CZESCIOWO | `war_all_in_capital_plan::Cluster` | pole `engage` pominiete (W1) |
 | `Goal` | 384-391 | typ wewn. | PORTED | `war_all_in_capital_nav::Goal` | `field: Rc<Field>` |
 | `cmpTarget` | 393-395 | funkcja | PORTED | `cmp_target` | |
@@ -36,7 +36,7 @@ NASTEPNA-PARTIA = nie portowane w tej rundzie (przyczyna w kolumnie Uwagi).
 | `StepResult` | 414-417 | typ | PORTED | `war_all_in_capital_nav::StepResult` | |
 | `StepState` | 419-423 | typ | PORTED | `war_all_in_capital_nav::StepState` | |
 | `isFreeFor` | 430-435 | funkcja | PORTED | `war_all_in_capital_nav::is_free_for` | |
-| `extendWalk` | 446-485 | funkcja | PORTED | `war_all_in_capital_nav::extend_walk` | `!(budget > 1)` -> `NaN` lub `<= 1` |
+| `extendWalk` | 446-485 | funkcja | PORTED | `war_all_in_capital_nav::extend_walk` | guard web `!(budget > 1)` (linia 459) -> Rust `budget.is_nan() \|\| budget <= 1.0` (nav.rs:243) |
 | `chooseStep` | 487-533 | funkcja | PORTED | `war_all_in_capital_nav::choose_step` | |
 | `plannerRouteUsesSea` | 541-585 | funkcja | PORTED | `war_all_in_capital_nav::planner_route_uses_sea` | |
 | `planWarAllInCapital` | 593-859 | funkcja (planer) | PORTED-CZESCIOWO | `war_all_in_capital_plan::plan_war_all_in_capital` | etapy 1, 2, 3, 4 (bez W1/W2) |
@@ -50,54 +50,70 @@ NASTEPNA-PARTIA = nie portowane w tej rundzie (przyczyna w kolumnie Uwagi).
 
 1. Zakres partii 1: W1/W2 nie sa portowane, poniewaz zaleza od niezportowanego
    `war-rules-multiwar.ts`. Kod Rust odpowiada galezi W1/W2 OFF (rowna sie dotychczasowemu
-   zachowaniu przy braku pól `enemyArmies`/`enemyStrength`).
-2. Parametry JSON: kopia 1:1 `war-allin-params.json` lezy w
-   `rust-port/engine/src/domain/war_all_in_capital_params.json`, a nie w `rust-port/engine/data/`.
-   Powod: katalog `data/` jest objety niezmiennikami `tests/data_loader.rs` (lista DATA_FILES)
-   i `tests/data_compliance.rs` (liczba probe, pin `edb8fb56`); te testy sa poza allowlista
-   tematu. Przeniesienie do `data/` i rejestracja w loaderze = osobna partia z rozszerzeniem
-   allowlisty.
+   zachowaniu przy braku pol `enemyArmies`/`enemyStrength`). Wektory z weba (ZALOZENIE 1)
+   nie zawieraja trybu `engage` (`engageOrders` = 0, patrz Pomiary rundy 2).
+2. Parametry JSON (runda 2, zarzut 5 PRZYJETY): kopia 1:1 `war-allin-params.json` lezy w
+   `rust-port/engine/data/derived/war-allin-params.json` (commit `e4b387a2e`). Ladowana przez
+   addytywna stala `data::derived::WAR_ALLIN_PARAMS_JSON` (`src/data/derived.rs`, wzorzec
+   `RUCH_JEDNOSTEK_PARAMS_JSON`). Plik NIE trafia do top-level `data/`, bo tam obowiazuja
+   niezmienniki `tests/data_loader.rs` (DATA_FILES == 29) i `tests/data_compliance.rs`
+   (liczba *.json == 29). `src/data/mod.rs` bez zmian (`pub mod derived` juz istnieje).
 3. Klucz heksu: `Klucz (q, r)` zamiast napisu `"q,r"` (`keyOf`); porzadek id = `Ord` na
    `String` (ASCII, zgodne z `<` na UTF-16 dla tych danych).
 4. Sasiedztwo: `teren.sasiedzi` z `ruch-jednostek-params.json` (kolejnosc = `HEX_NEIGHBORS`,
    `setup.ts:623`).
 
-## Testy i bramki (partia 1)
+## Testy i bramki (runda 2)
 
-- `cargo fmt --all -- --check`: czysty.
-- `cargo clippy --all-targets -- -D warnings`: czysty.
-- `cargo test --no-fail-fast` (w `rust-port/engine`): 1680 passed / 0 failed (baseline 1666/0,
-  +14 testow `p6_repin_wojna_d_nav`).
-- Testy `tests/p6_repin_wojna_d_nav.rs` sa wlasnorecznie wyliczone (rownoległosc, grupy
-  link/merge, wyspa bez morza, klasyfikacja tras, preferencja morska, tie-break celu).
+- `cargo fmt --all -- --check`: EXIT=0 (`evidence/r4-fmt.log`).
+- `cargo clippy --all-targets -- -D warnings`: EXIT=0 (`evidence/r4-clippy.log`).
+- `cargo test --no-fail-fast` (w `rust-port/engine`): EXIT=0, 1690 passed / 0 failed
+  (`evidence/r4-cargo-test.log`; baseline 1666/0 + 23 testow `p6_repin_wojna_d_nav` + 1 test
+  `p6_repin_wojna_d_vectors`).
+- `tests/p6_repin_wojna_d_nav.rs`: 23 testy (rownoleglosc, grupy link N-1/N/N+1, scalanie
+  merge N/N+1, no-merge N/N+1, extend_walk NaN / budzet 1.0 (N) / 1.0+1e-9 (N+1), wyspa bez morza,
+  klasyfikacja tras, preferencja morska, tie-break celu, `params_match_web_json`).
+- `tests/p6_repin_wojna_d_vectors.rs`: 300 scenariuszy z uruchomionego weba `dc8a3adc`
+  (`tests/p6_repin_wojna_d_vectors/web-dc8a3adc.json`); porownanie rozkazow, `noPath`, `held`,
+  `groupsByTarget`.
 
-## NIE_ZMIERZONO w partii 1
+## NIE_ZMIERZONO / NASTEPNA-PARTIA w partii 1
 
-- Wektory z URUCHOMIONEGO weba `dc8a3adc` (`git archive` + harness w `mktemp -d`): NIE
-  WYKONANO. Przyczyna: wymaga osobnego harnessu TS (zaleznosci `setup.ts`,
-  `war-rules-multiwar.ts`) i nie miesci sie w tej rundzie.
-- Testy progow NaN / N-1 / N / N+1 dla `link_radius`, `merge_radius`, `no_merge_near_capital`:
-  NASTEPNA-PARTIA.
-- Mutacje na galeziach sterujacych i dowod rownowaznosci (plik:linia): NASTEPNA-PARTIA.
+- W1/W2 (`engageGoal`, `allocateGroupsToEnemies`, `pickEngagementArmy`, filtr zapasowych
+  celow W2) oraz tryb `engage`: NASTEPNA-PARTIA (zaleznosc od `war-rules-multiwar.ts`).
+  Wektory nie pokrywaja tych galezi.
 - Podpiecie w `ai.ts` / `barbarians.ts` / `main.ts` (WarAllInContext): NASTEPNA-PARTIA.
+- Mutacje galezi W1/W2: nie dotyczy (galezi nie ma w Rust).
 
 ## NASTEPNA-PARTIA
 
 1. Port `war-rules-multiwar.ts` (`pickEngagementArmy`, `allocateGroupsToEnemies`) i galezi
-   W1/W2 w `war_all_in_capital_plan.rs`.
-2. Wektory z weba `dc8a3adc` + testy progow i mutacje; zapis w `tests/p6_repin_wojna_d_*`.
-3. Przeniesienie JSON do `rust-port/engine/data/` z rejestracja loadera (po rozszerzeniu
-   allowlisty o `tests/data_loader.rs` i `tests/data_compliance.rs`).
+   W1/W2 w `war_all_in_capital_plan.rs`; wektory W1/W2 z weba (tryb `engage` > 0).
+2. Podpiecie `WarAllInContext` (ai.ts / barbarians.ts / main.ts).
 
-## Pomiary niezaleznego weryfikatora (runda 1, Operator-pomiary)
+## Pomiary niezaleznego weryfikatora (runda 2, Operator-poprawka)
 
-- Bramki na `5163cea26` (logi w `dyspozycje/autobot/runs/R-RUSTPORT-REPIN-WOJNA-NOWE-D-Q1/evidence/r2-*.log`):
-  fmt EXIT=0; clippy `-D warnings` EXIT=0; `cargo test --no-fail-fast` EXIT=0, 1680 passed / 0 failed.
-- JSON: `war_all_in_capital_params.json` identyczny z `dc8a3adc:gra/data/war-allin-params.json` (diff pusty).
-- Mutacje (przywrocenie przez `git checkout`):
-  - M3 `war_all_in_capital_plan.rs` link_radius `<=` -> `<`: ZABITA (`units_within_link_radius_form_one_group`).
-  - M1 `war_all_in_capital_nav.rs` usuniecie `budget.is_nan() ||` (web `!(budget > 1)`, `warAllInCapital.ts:458`): PRZEZYLA (14/14 pass).
-  - M2 `war_all_in_capital_nav.rs` `budget <= 1.0` -> `budget < 1.0` (granica N): PRZEZYLA (14/14 pass).
-  - Wniosek: brak testow NaN i progu N dla `extend_walk`. Luka otwarta.
-- Wektory z uruchomionego weba `dc8a3adc`: NIE_ZMIERZONO (harness TS dla `setup.ts` nie zbudowany w tej rundzie).
-- Testy progow N-1/N/N+1 dla `link_radius`, `merge_radius`, `no_merge_near_capital`: NIE_ZMIERZONO (brak w `tests/p6_repin_wojna_d_nav.rs`; merge/no-merge nie pokryte).
+Kod: `rust-port/engine` na commicie `3bca9774e` (lancuch: `e4815251f` -> `e4b387a2e` -> `3bca9774e`).
+Logi: `dyspozycje/autobot/runs/R-RUSTPORT-REPIN-WOJNA-NOWE-D-Q1/evidence/r4-*.log`.
+
+- Bramki: fmt EXIT=0; clippy `-D warnings` EXIT=0; `cargo test --no-fail-fast` EXIT=0, 1690 passed / 0 failed.
+- JSON: `data/derived/war-allin-params.json` == `dc8a3adc:gra/data/war-allin-params.json` (rename 100%, `git diff` pusty).
+- Wektory z uruchomionego weba (zarzut 4, PRZYJETY): `evidence/gen-vectors.js` uruchomiony na
+  drzewie `git archive dc8a3adc gra/src gra/data` w katalogu tymczasowym (`tsc` -> CommonJS,
+  wywolanie zywego `planWarAllInCapital`, `setup.configureTerrainMovement` z `terrain-movement.json`).
+  Regeneracja 300 ziaren: JSON BYTE-IDENTYCZNY z `tests/p6_repin_wojna_d_vectors/web-dc8a3adc.json`
+  (sha256 `c3527f45314645be0229f16ba7370875085b88f0086b54581646330c53e6d93e`). Statystyki:
+  278 scenariuszy z rozkazami, 110 rozkazow rendezvous, 0 engage, 826 rozkazow wielokrokowych.
+  Test `web_vectors_match_rust_plan` PASS.
+- Mutacje galezi sterujacych (kazda: jedna zmiana, `cargo test --test p6_repin_wojna_d_nav --test p6_repin_wojna_d_vectors`, przywrocenie przez odtworzenie pliku z `HEAD`):
+  - M1 `war_all_in_capital_nav.rs:243` usuniecie `budget.is_nan() ||` (odpowiednik web :459): ZABITA (`extend_walk_nan_budget_stops_at_first_hex`, 22 pass / 1 fail; `r4-mut1-nan-guard.log`).
+  - M2 `war_all_in_capital_nav.rs:243` `budget <= 1.0` -> `budget < 1.0` (granica N): ZABITA (`extend_walk_budget_exactly_1_stops_at_first_hex`; `r4-mut2-budget-boundary.log`).
+  - M3 `war_all_in_capital_plan.rs:262` link `<=` -> `<` (web :644): ZABITA (`units_within_link_radius_form_one_group`; `r4-mut3-link-radius.log`).
+  - M4 `war_all_in_capital_plan.rs:355` merge `d <=` -> `d <` (web :755): ZABITA (`merge_radius_n_joins_rendezvous`; `r4-mut4-merge-radius.log`).
+  - M5 `war_all_in_capital_plan.rs:343` no-merge `<=` -> `<` (web :748): ZABITA (`no_merge_near_capital_n_marches_to_capital`; `r4-mut5-no-merge-near-capital.log`).
+- Progi N-1/N/N+1 (zarzut 3, PRZYJETY): link_radius (N-1 `link_radius_n_minus_1_groups_together`,
+  N `units_within_link_radius_form_one_group`, N+1 `units_beyond_link_radius_form_two_groups`);
+  merge_radius (N `merge_radius_n_joins_rendezvous`, N+1 `merge_radius_n_plus_1_marches_to_capital`);
+  no_merge_near_capital (N `no_merge_near_capital_n_marches_to_capital`, N+1 `no_merge_near_capital_n_plus_1_may_join`).
+- extend_walk (zarzut 1-2, PRZYJETY): NaN, budzet 1.0 (N), budzet 1.0+1e-9 (N+1) -- testy PASS na kodzie, FAIL po mutacji M1/M2.
+- Uwaga korekcyjna: w rundzie 1 guard web byl cytowany jako `warAllInCapital.ts:458`; wlasciwa linia to 459 (`grep -n` na `dc8a3adc`).

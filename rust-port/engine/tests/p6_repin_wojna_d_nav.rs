@@ -1,7 +1,7 @@
 //! REPIN-WOJNA-NOWE-D (partia 1): testy portu `warAllInCapital.ts` (pin `dc8a3adc`).
 //! Granice N-1/N/N+1 progow (`link_radius`, `merge_radius`, `no_merge_near_capital`) oraz
 //! galezi `extend_walk` (NaN, budzet 1.0) -- patrz sekcje na koncu pliku.
-//! Wektory z uruchomionego weba: `tests/p6_repin_wojna_d_vectors.rs` (jesli obecne).
+//! Wektory z uruchomionego weba: `tests/p6_repin_wojna_d_vectors.rs` (osobny plik).
 
 use std::collections::{HashMap, HashSet};
 use std::rc::Rc;
