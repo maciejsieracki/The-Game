@@ -69,6 +69,27 @@
    "karaZero": -2,
    "immunitetTur": 0
   },
+  "ujemnyCap": {
+   "capNaEpoke": -2,
+   "progNaPoziom": {
+    "$f": "4.5"
+   },
+   "mnoznikNaPoziom": {
+    "$f": "0.15"
+   },
+   "utrzymanieBaza": {
+    "$f": "0.2"
+   },
+   "utrzymaniePrzyCap": {
+    "$f": "0.4"
+   },
+   "zachowaniePoAwansie": {
+    "$f": "0.5"
+   },
+   "zadowolenieMax": 10,
+   "karaZero": 0,
+   "immunitetTur": 5
+  },
   "zerowyCap": {
    "capNaEpoke": 0,
    "progNaPoziom": 2,
@@ -831,6 +852,13 @@
   {
    "params": "fallback",
    "epoka": {
+    "$n": "-0"
+   },
+   "cap": 0
+  },
+  {
+   "params": "fallback",
+   "epoka": {
     "$f": "0.5"
    },
    "cap": 0
@@ -912,6 +940,19 @@
    "params": "fallback",
    "poziom": -5,
    "epoka": 0,
+   "mnoznik": 1,
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": -18
+  },
+  {
+   "params": "fallback",
+   "poziom": -5,
+   "epoka": {
+    "$n": "-0"
+   },
    "mnoznik": 1,
    "zadowolenie": 0,
    "rownowaga": {
@@ -1075,6 +1116,23 @@
     "$n": "-0"
    },
    "epoka": 0,
+   "mnoznik": 1,
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$f": "4.5"
+   }
+  },
+  {
+   "params": "fallback",
+   "poziom": {
+    "$n": "-0"
+   },
+   "epoka": {
+    "$n": "-0"
+   },
    "mnoznik": 1,
    "zadowolenie": 0,
    "rownowaga": {
@@ -1272,6 +1330,21 @@
    "params": "fallback",
    "poziom": 0,
    "epoka": 0,
+   "mnoznik": 1,
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$f": "4.5"
+   }
+  },
+  {
+   "params": "fallback",
+   "poziom": 0,
+   "epoka": {
+    "$n": "-0"
+   },
    "mnoznik": 1,
    "zadowolenie": 0,
    "rownowaga": {
@@ -1451,6 +1524,23 @@
     "$f": "0.5"
    },
    "epoka": 0,
+   "mnoznik": 1,
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$f": "6.75"
+   }
+  },
+  {
+   "params": "fallback",
+   "poziom": {
+    "$f": "0.5"
+   },
+   "epoka": {
+    "$n": "-0"
+   },
    "mnoznik": 1,
    "zadowolenie": 0,
    "rownowaga": {
@@ -1661,6 +1751,19 @@
    "params": "fallback",
    "poziom": 1,
    "epoka": {
+    "$n": "-0"
+   },
+   "mnoznik": 1,
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": 9
+  },
+  {
+   "params": "fallback",
+   "poziom": 1,
+   "epoka": {
     "$f": "0.5"
    },
    "mnoznik": 1,
@@ -1811,6 +1914,23 @@
    "params": "fallback",
    "poziom": 2,
    "epoka": 0,
+   "mnoznik": {
+    "$f": "1.15"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$f": "13.5"
+   }
+  },
+  {
+   "params": "fallback",
+   "poziom": 2,
+   "epoka": {
+    "$n": "-0"
+   },
    "mnoznik": {
     "$f": "1.15"
    },
@@ -2016,6 +2136,25 @@
     "$f": "3.7"
    },
    "epoka": 0,
+   "mnoznik": {
+    "$f": "1.405"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$f": "21.150000000000002"
+   }
+  },
+  {
+   "params": "fallback",
+   "poziom": {
+    "$f": "3.7"
+   },
+   "epoka": {
+    "$n": "-0"
+   },
    "mnoznik": {
     "$f": "1.405"
    },
@@ -2258,6 +2397,23 @@
    "params": "fallback",
    "poziom": 10,
    "epoka": {
+    "$n": "-0"
+   },
+   "mnoznik": {
+    "$f": "2.3499999999999996"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$f": "49.5"
+   }
+  },
+  {
+   "params": "fallback",
+   "poziom": 10,
+   "epoka": {
     "$f": "0.5"
    },
    "mnoznik": {
@@ -2455,6 +2611,21 @@
    "params": "fallback",
    "poziom": 25,
    "epoka": {
+    "$n": "-0"
+   },
+   "mnoznik": {
+    "$f": "4.6"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": 117
+  },
+  {
+   "params": "fallback",
+   "poziom": 25,
+   "epoka": {
     "$f": "0.5"
    },
    "mnoznik": {
@@ -2627,6 +2798,23 @@
    "params": "fallback",
    "poziom": 100,
    "epoka": 0,
+   "mnoznik": {
+    "$f": "15.85"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$f": "454.5"
+   }
+  },
+  {
+   "params": "fallback",
+   "poziom": 100,
+   "epoka": {
+    "$n": "-0"
+   },
    "mnoznik": {
     "$f": "15.85"
    },
@@ -2835,6 +3023,19 @@
    "params": "fallback",
    "poziom": 101,
    "epoka": {
+    "$n": "-0"
+   },
+   "mnoznik": 16,
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": 459
+  },
+  {
+   "params": "fallback",
+   "poziom": 101,
+   "epoka": {
     "$f": "0.5"
    },
    "mnoznik": 16,
@@ -2985,6 +3186,23 @@
    "params": "fallback",
    "poziom": 500,
    "epoka": 0,
+   "mnoznik": {
+    "$f": "75.85"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$f": "2254.5"
+   }
+  },
+  {
+   "params": "fallback",
+   "poziom": 500,
+   "epoka": {
+    "$n": "-0"
+   },
    "mnoznik": {
     "$f": "75.85"
    },
@@ -3207,6 +3425,25 @@
     "$n": "NaN"
    },
    "epoka": {
+    "$n": "-0"
+   },
+   "mnoznik": {
+    "$n": "NaN"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$n": "NaN"
+   }
+  },
+  {
+   "params": "fallback",
+   "poziom": {
+    "$n": "NaN"
+   },
+   "epoka": {
     "$f": "0.5"
    },
    "mnoznik": {
@@ -3435,6 +3672,25 @@
     "$n": "Infinity"
    },
    "epoka": 0,
+   "mnoznik": {
+    "$n": "Infinity"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$n": "Infinity"
+   }
+  },
+  {
+   "params": "fallback",
+   "poziom": {
+    "$n": "Infinity"
+   },
+   "epoka": {
+    "$n": "-0"
+   },
    "mnoznik": {
     "$n": "Infinity"
    },
@@ -3664,6 +3920,23 @@
     "$n": "-Infinity"
    },
    "epoka": 0,
+   "mnoznik": 1,
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$n": "-Infinity"
+   }
+  },
+  {
+   "params": "fallback",
+   "poziom": {
+    "$n": "-Infinity"
+   },
+   "epoka": {
+    "$n": "-0"
+   },
    "mnoznik": 1,
    "zadowolenie": 0,
    "rownowaga": {
@@ -3856,6 +4129,13 @@
   {
    "params": "mocne",
    "epoka": 0,
+   "cap": 0
+  },
+  {
+   "params": "mocne",
+   "epoka": {
+    "$n": "-0"
+   },
    "cap": 0
   },
   {
@@ -3942,6 +4222,19 @@
    "params": "mocne",
    "poziom": -5,
    "epoka": 0,
+   "mnoznik": 1,
+   "zadowolenie": -2,
+   "rownowaga": {
+    "$f": "0.9"
+   },
+   "prog": -6
+  },
+  {
+   "params": "mocne",
+   "poziom": -5,
+   "epoka": {
+    "$n": "-0"
+   },
    "mnoznik": 1,
    "zadowolenie": -2,
    "rownowaga": {
@@ -4105,6 +4398,23 @@
     "$n": "-0"
    },
    "epoka": 0,
+   "mnoznik": 1,
+   "zadowolenie": -2,
+   "rownowaga": {
+    "$f": "0.9"
+   },
+   "prog": {
+    "$f": "1.5"
+   }
+  },
+  {
+   "params": "mocne",
+   "poziom": {
+    "$n": "-0"
+   },
+   "epoka": {
+    "$n": "-0"
+   },
    "mnoznik": 1,
    "zadowolenie": -2,
    "rownowaga": {
@@ -4302,6 +4612,21 @@
    "params": "mocne",
    "poziom": 0,
    "epoka": 0,
+   "mnoznik": 1,
+   "zadowolenie": -2,
+   "rownowaga": {
+    "$f": "0.9"
+   },
+   "prog": {
+    "$f": "1.5"
+   }
+  },
+  {
+   "params": "mocne",
+   "poziom": 0,
+   "epoka": {
+    "$n": "-0"
+   },
    "mnoznik": 1,
    "zadowolenie": -2,
    "rownowaga": {
@@ -4481,6 +4806,23 @@
     "$f": "0.5"
    },
    "epoka": 0,
+   "mnoznik": 1,
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.9"
+   },
+   "prog": {
+    "$f": "2.25"
+   }
+  },
+  {
+   "params": "mocne",
+   "poziom": {
+    "$f": "0.5"
+   },
+   "epoka": {
+    "$n": "-0"
+   },
    "mnoznik": 1,
    "zadowolenie": 0,
    "rownowaga": {
@@ -4691,6 +5033,19 @@
    "params": "mocne",
    "poziom": 1,
    "epoka": {
+    "$n": "-0"
+   },
+   "mnoznik": 1,
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.9"
+   },
+   "prog": 3
+  },
+  {
+   "params": "mocne",
+   "poziom": 1,
+   "epoka": {
     "$f": "0.5"
    },
    "mnoznik": 1,
@@ -4841,6 +5196,23 @@
    "params": "mocne",
    "poziom": 2,
    "epoka": 0,
+   "mnoznik": {
+    "$f": "1.3"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.9"
+   },
+   "prog": {
+    "$f": "4.5"
+   }
+  },
+  {
+   "params": "mocne",
+   "poziom": 2,
+   "epoka": {
+    "$n": "-0"
+   },
    "mnoznik": {
     "$f": "1.3"
    },
@@ -5046,6 +5418,25 @@
     "$f": "3.7"
    },
    "epoka": 0,
+   "mnoznik": {
+    "$f": "1.81"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.9"
+   },
+   "prog": {
+    "$f": "7.050000000000001"
+   }
+  },
+  {
+   "params": "mocne",
+   "poziom": {
+    "$f": "3.7"
+   },
+   "epoka": {
+    "$n": "-0"
+   },
    "mnoznik": {
     "$f": "1.81"
    },
@@ -5288,6 +5679,23 @@
    "params": "mocne",
    "poziom": 10,
    "epoka": {
+    "$n": "-0"
+   },
+   "mnoznik": {
+    "$f": "3.6999999999999997"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.9"
+   },
+   "prog": {
+    "$f": "16.5"
+   }
+  },
+  {
+   "params": "mocne",
+   "poziom": 10,
+   "epoka": {
     "$f": "0.5"
    },
    "mnoznik": {
@@ -5485,6 +5893,21 @@
    "params": "mocne",
    "poziom": 25,
    "epoka": {
+    "$n": "-0"
+   },
+   "mnoznik": {
+    "$f": "8.2"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.9"
+   },
+   "prog": 39
+  },
+  {
+   "params": "mocne",
+   "poziom": 25,
+   "epoka": {
     "$f": "0.5"
    },
    "mnoznik": {
@@ -5657,6 +6080,23 @@
    "params": "mocne",
    "poziom": 100,
    "epoka": 0,
+   "mnoznik": {
+    "$f": "30.7"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.9"
+   },
+   "prog": {
+    "$f": "151.5"
+   }
+  },
+  {
+   "params": "mocne",
+   "poziom": 100,
+   "epoka": {
+    "$n": "-0"
+   },
    "mnoznik": {
     "$f": "30.7"
    },
@@ -5865,6 +6305,19 @@
    "params": "mocne",
    "poziom": 101,
    "epoka": {
+    "$n": "-0"
+   },
+   "mnoznik": 31,
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.9"
+   },
+   "prog": 153
+  },
+  {
+   "params": "mocne",
+   "poziom": 101,
+   "epoka": {
     "$f": "0.5"
    },
    "mnoznik": 31,
@@ -6015,6 +6468,23 @@
    "params": "mocne",
    "poziom": 500,
    "epoka": 0,
+   "mnoznik": {
+    "$f": "150.7"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.9"
+   },
+   "prog": {
+    "$f": "751.5"
+   }
+  },
+  {
+   "params": "mocne",
+   "poziom": 500,
+   "epoka": {
+    "$n": "-0"
+   },
    "mnoznik": {
     "$f": "150.7"
    },
@@ -6237,6 +6707,25 @@
     "$n": "NaN"
    },
    "epoka": {
+    "$n": "-0"
+   },
+   "mnoznik": {
+    "$n": "NaN"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.9"
+   },
+   "prog": {
+    "$n": "NaN"
+   }
+  },
+  {
+   "params": "mocne",
+   "poziom": {
+    "$n": "NaN"
+   },
+   "epoka": {
     "$f": "0.5"
    },
    "mnoznik": {
@@ -6482,6 +6971,25 @@
     "$n": "Infinity"
    },
    "epoka": {
+    "$n": "-0"
+   },
+   "mnoznik": {
+    "$n": "Infinity"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.9"
+   },
+   "prog": {
+    "$n": "Infinity"
+   }
+  },
+  {
+   "params": "mocne",
+   "poziom": {
+    "$n": "Infinity"
+   },
+   "epoka": {
     "$f": "0.5"
    },
    "mnoznik": {
@@ -6709,6 +7217,23 @@
     "$n": "-Infinity"
    },
    "epoka": {
+    "$n": "-0"
+   },
+   "mnoznik": 1,
+   "zadowolenie": -2,
+   "rownowaga": {
+    "$f": "0.9"
+   },
+   "prog": {
+    "$n": "-Infinity"
+   }
+  },
+  {
+   "params": "mocne",
+   "poziom": {
+    "$n": "-Infinity"
+   },
+   "epoka": {
     "$f": "0.5"
    },
    "mnoznik": 1,
@@ -6873,6 +7398,3284 @@
    "zadowolenie": -2,
    "rownowaga": {
     "$f": "0.9"
+   },
+   "prog": {
+    "$n": "-Infinity"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "epoka": -1,
+   "cap": {
+    "$n": "-0"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "epoka": 0,
+   "cap": {
+    "$n": "-0"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "epoka": {
+    "$n": "-0"
+   },
+   "cap": {
+    "$n": "-0"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "epoka": {
+    "$f": "0.5"
+   },
+   "cap": {
+    "$n": "-0"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "epoka": 1,
+   "cap": -2
+  },
+  {
+   "params": "ujemnyCap",
+   "epoka": {
+    "$f": "1.9"
+   },
+   "cap": -2
+  },
+  {
+   "params": "ujemnyCap",
+   "epoka": 2,
+   "cap": -4
+  },
+  {
+   "params": "ujemnyCap",
+   "epoka": 3,
+   "cap": -6
+  },
+  {
+   "params": "ujemnyCap",
+   "epoka": 5,
+   "cap": -10
+  },
+  {
+   "params": "ujemnyCap",
+   "epoka": 10,
+   "cap": -20
+  },
+  {
+   "params": "ujemnyCap",
+   "epoka": 11,
+   "cap": -22
+  },
+  {
+   "params": "ujemnyCap",
+   "epoka": {
+    "$n": "NaN"
+   },
+   "cap": {
+    "$n": "NaN"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "epoka": {
+    "$n": "Infinity"
+   },
+   "cap": {
+    "$n": "-Infinity"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "epoka": {
+    "$n": "-Infinity"
+   },
+   "cap": {
+    "$n": "-0"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": -5,
+   "epoka": -1,
+   "mnoznik": 1,
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": -18
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": -5,
+   "epoka": 0,
+   "mnoznik": 1,
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": -18
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": -5,
+   "epoka": {
+    "$n": "-0"
+   },
+   "mnoznik": 1,
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": -18
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": -5,
+   "epoka": {
+    "$f": "0.5"
+   },
+   "mnoznik": 1,
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": -18
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": -5,
+   "epoka": 1,
+   "mnoznik": 1,
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": -18
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": -5,
+   "epoka": {
+    "$f": "1.9"
+   },
+   "mnoznik": 1,
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": -18
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": -5,
+   "epoka": 2,
+   "mnoznik": 1,
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": -36
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": -5,
+   "epoka": 3,
+   "mnoznik": 1,
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": -54
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": -5,
+   "epoka": 5,
+   "mnoznik": 1,
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": -90
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": -5,
+   "epoka": 10,
+   "mnoznik": 1,
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": -180
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": -5,
+   "epoka": 11,
+   "mnoznik": 1,
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": -198
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": -5,
+   "epoka": {
+    "$n": "NaN"
+   },
+   "mnoznik": 1,
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$n": "NaN"
+   },
+   "prog": {
+    "$n": "NaN"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": -5,
+   "epoka": {
+    "$n": "Infinity"
+   },
+   "mnoznik": 1,
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$n": "-Infinity"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": -5,
+   "epoka": {
+    "$n": "-Infinity"
+   },
+   "mnoznik": 1,
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": -18
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": {
+    "$n": "-0"
+   },
+   "epoka": -1,
+   "mnoznik": 1,
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$f": "4.5"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": {
+    "$n": "-0"
+   },
+   "epoka": 0,
+   "mnoznik": 1,
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$f": "4.5"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": {
+    "$n": "-0"
+   },
+   "epoka": {
+    "$n": "-0"
+   },
+   "mnoznik": 1,
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$f": "4.5"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": {
+    "$n": "-0"
+   },
+   "epoka": {
+    "$f": "0.5"
+   },
+   "mnoznik": 1,
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$f": "4.5"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": {
+    "$n": "-0"
+   },
+   "epoka": 1,
+   "mnoznik": 1,
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$f": "4.5"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": {
+    "$n": "-0"
+   },
+   "epoka": {
+    "$f": "1.9"
+   },
+   "mnoznik": 1,
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$f": "4.5"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": {
+    "$n": "-0"
+   },
+   "epoka": 2,
+   "mnoznik": 1,
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": 9
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": {
+    "$n": "-0"
+   },
+   "epoka": 3,
+   "mnoznik": 1,
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$f": "13.5"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": {
+    "$n": "-0"
+   },
+   "epoka": 5,
+   "mnoznik": 1,
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$f": "22.5"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": {
+    "$n": "-0"
+   },
+   "epoka": 10,
+   "mnoznik": 1,
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": 45
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": {
+    "$n": "-0"
+   },
+   "epoka": 11,
+   "mnoznik": 1,
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$f": "49.5"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": {
+    "$n": "-0"
+   },
+   "epoka": {
+    "$n": "NaN"
+   },
+   "mnoznik": 1,
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$n": "NaN"
+   },
+   "prog": {
+    "$n": "NaN"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": {
+    "$n": "-0"
+   },
+   "epoka": {
+    "$n": "Infinity"
+   },
+   "mnoznik": 1,
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$n": "Infinity"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": {
+    "$n": "-0"
+   },
+   "epoka": {
+    "$n": "-Infinity"
+   },
+   "mnoznik": 1,
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$f": "4.5"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": 0,
+   "epoka": -1,
+   "mnoznik": 1,
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$f": "4.5"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": 0,
+   "epoka": 0,
+   "mnoznik": 1,
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$f": "4.5"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": 0,
+   "epoka": {
+    "$n": "-0"
+   },
+   "mnoznik": 1,
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$f": "4.5"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": 0,
+   "epoka": {
+    "$f": "0.5"
+   },
+   "mnoznik": 1,
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$f": "4.5"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": 0,
+   "epoka": 1,
+   "mnoznik": 1,
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$f": "4.5"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": 0,
+   "epoka": {
+    "$f": "1.9"
+   },
+   "mnoznik": 1,
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$f": "4.5"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": 0,
+   "epoka": 2,
+   "mnoznik": 1,
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": 9
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": 0,
+   "epoka": 3,
+   "mnoznik": 1,
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$f": "13.5"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": 0,
+   "epoka": 5,
+   "mnoznik": 1,
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$f": "22.5"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": 0,
+   "epoka": 10,
+   "mnoznik": 1,
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": 45
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": 0,
+   "epoka": 11,
+   "mnoznik": 1,
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$f": "49.5"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": 0,
+   "epoka": {
+    "$n": "NaN"
+   },
+   "mnoznik": 1,
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$n": "NaN"
+   },
+   "prog": {
+    "$n": "NaN"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": 0,
+   "epoka": {
+    "$n": "Infinity"
+   },
+   "mnoznik": 1,
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$n": "Infinity"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": 0,
+   "epoka": {
+    "$n": "-Infinity"
+   },
+   "mnoznik": 1,
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$f": "4.5"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": {
+    "$f": "0.5"
+   },
+   "epoka": -1,
+   "mnoznik": 1,
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$f": "6.75"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": {
+    "$f": "0.5"
+   },
+   "epoka": 0,
+   "mnoznik": 1,
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$f": "6.75"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": {
+    "$f": "0.5"
+   },
+   "epoka": {
+    "$n": "-0"
+   },
+   "mnoznik": 1,
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$f": "6.75"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": {
+    "$f": "0.5"
+   },
+   "epoka": {
+    "$f": "0.5"
+   },
+   "mnoznik": 1,
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$f": "6.75"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": {
+    "$f": "0.5"
+   },
+   "epoka": 1,
+   "mnoznik": 1,
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$f": "6.75"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": {
+    "$f": "0.5"
+   },
+   "epoka": {
+    "$f": "1.9"
+   },
+   "mnoznik": 1,
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$f": "6.75"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": {
+    "$f": "0.5"
+   },
+   "epoka": 2,
+   "mnoznik": 1,
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$f": "13.5"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": {
+    "$f": "0.5"
+   },
+   "epoka": 3,
+   "mnoznik": 1,
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$f": "20.25"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": {
+    "$f": "0.5"
+   },
+   "epoka": 5,
+   "mnoznik": 1,
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$f": "33.75"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": {
+    "$f": "0.5"
+   },
+   "epoka": 10,
+   "mnoznik": 1,
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$f": "67.5"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": {
+    "$f": "0.5"
+   },
+   "epoka": 11,
+   "mnoznik": 1,
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$f": "74.25"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": {
+    "$f": "0.5"
+   },
+   "epoka": {
+    "$n": "NaN"
+   },
+   "mnoznik": 1,
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$n": "NaN"
+   },
+   "prog": {
+    "$n": "NaN"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": {
+    "$f": "0.5"
+   },
+   "epoka": {
+    "$n": "Infinity"
+   },
+   "mnoznik": 1,
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$n": "Infinity"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": {
+    "$f": "0.5"
+   },
+   "epoka": {
+    "$n": "-Infinity"
+   },
+   "mnoznik": 1,
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$f": "6.75"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": 1,
+   "epoka": -1,
+   "mnoznik": 1,
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": 9
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": 1,
+   "epoka": 0,
+   "mnoznik": 1,
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": 9
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": 1,
+   "epoka": {
+    "$n": "-0"
+   },
+   "mnoznik": 1,
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": 9
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": 1,
+   "epoka": {
+    "$f": "0.5"
+   },
+   "mnoznik": 1,
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": 9
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": 1,
+   "epoka": 1,
+   "mnoznik": 1,
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": 9
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": 1,
+   "epoka": {
+    "$f": "1.9"
+   },
+   "mnoznik": 1,
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": 9
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": 1,
+   "epoka": 2,
+   "mnoznik": 1,
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": 18
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": 1,
+   "epoka": 3,
+   "mnoznik": 1,
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": 27
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": 1,
+   "epoka": 5,
+   "mnoznik": 1,
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": 45
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": 1,
+   "epoka": 10,
+   "mnoznik": 1,
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": 90
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": 1,
+   "epoka": 11,
+   "mnoznik": 1,
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": 99
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": 1,
+   "epoka": {
+    "$n": "NaN"
+   },
+   "mnoznik": 1,
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$n": "NaN"
+   },
+   "prog": {
+    "$n": "NaN"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": 1,
+   "epoka": {
+    "$n": "Infinity"
+   },
+   "mnoznik": 1,
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$n": "Infinity"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": 1,
+   "epoka": {
+    "$n": "-Infinity"
+   },
+   "mnoznik": 1,
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": 9
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": 2,
+   "epoka": -1,
+   "mnoznik": {
+    "$f": "1.15"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$f": "13.5"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": 2,
+   "epoka": 0,
+   "mnoznik": {
+    "$f": "1.15"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$f": "13.5"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": 2,
+   "epoka": {
+    "$n": "-0"
+   },
+   "mnoznik": {
+    "$f": "1.15"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$f": "13.5"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": 2,
+   "epoka": {
+    "$f": "0.5"
+   },
+   "mnoznik": {
+    "$f": "1.15"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$f": "13.5"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": 2,
+   "epoka": 1,
+   "mnoznik": {
+    "$f": "1.15"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$f": "13.5"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": 2,
+   "epoka": {
+    "$f": "1.9"
+   },
+   "mnoznik": {
+    "$f": "1.15"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$f": "13.5"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": 2,
+   "epoka": 2,
+   "mnoznik": {
+    "$f": "1.15"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": 27
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": 2,
+   "epoka": 3,
+   "mnoznik": {
+    "$f": "1.15"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$f": "40.5"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": 2,
+   "epoka": 5,
+   "mnoznik": {
+    "$f": "1.15"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$f": "67.5"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": 2,
+   "epoka": 10,
+   "mnoznik": {
+    "$f": "1.15"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": 135
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": 2,
+   "epoka": 11,
+   "mnoznik": {
+    "$f": "1.15"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$f": "148.5"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": 2,
+   "epoka": {
+    "$n": "NaN"
+   },
+   "mnoznik": {
+    "$f": "1.15"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$n": "NaN"
+   },
+   "prog": {
+    "$n": "NaN"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": 2,
+   "epoka": {
+    "$n": "Infinity"
+   },
+   "mnoznik": {
+    "$f": "1.15"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$n": "Infinity"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": 2,
+   "epoka": {
+    "$n": "-Infinity"
+   },
+   "mnoznik": {
+    "$f": "1.15"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$f": "13.5"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": {
+    "$f": "3.7"
+   },
+   "epoka": -1,
+   "mnoznik": {
+    "$f": "1.405"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$f": "21.150000000000002"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": {
+    "$f": "3.7"
+   },
+   "epoka": 0,
+   "mnoznik": {
+    "$f": "1.405"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$f": "21.150000000000002"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": {
+    "$f": "3.7"
+   },
+   "epoka": {
+    "$n": "-0"
+   },
+   "mnoznik": {
+    "$f": "1.405"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$f": "21.150000000000002"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": {
+    "$f": "3.7"
+   },
+   "epoka": {
+    "$f": "0.5"
+   },
+   "mnoznik": {
+    "$f": "1.405"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$f": "21.150000000000002"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": {
+    "$f": "3.7"
+   },
+   "epoka": 1,
+   "mnoznik": {
+    "$f": "1.405"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$f": "21.150000000000002"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": {
+    "$f": "3.7"
+   },
+   "epoka": {
+    "$f": "1.9"
+   },
+   "mnoznik": {
+    "$f": "1.405"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$f": "21.150000000000002"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": {
+    "$f": "3.7"
+   },
+   "epoka": 2,
+   "mnoznik": {
+    "$f": "1.405"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$f": "42.300000000000004"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": {
+    "$f": "3.7"
+   },
+   "epoka": 3,
+   "mnoznik": {
+    "$f": "1.405"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$f": "63.45"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": {
+    "$f": "3.7"
+   },
+   "epoka": 5,
+   "mnoznik": {
+    "$f": "1.405"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$f": "105.75000000000001"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": {
+    "$f": "3.7"
+   },
+   "epoka": 10,
+   "mnoznik": {
+    "$f": "1.405"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$f": "211.50000000000003"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": {
+    "$f": "3.7"
+   },
+   "epoka": 11,
+   "mnoznik": {
+    "$f": "1.405"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$f": "232.65000000000003"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": {
+    "$f": "3.7"
+   },
+   "epoka": {
+    "$n": "NaN"
+   },
+   "mnoznik": {
+    "$f": "1.405"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$n": "NaN"
+   },
+   "prog": {
+    "$n": "NaN"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": {
+    "$f": "3.7"
+   },
+   "epoka": {
+    "$n": "Infinity"
+   },
+   "mnoznik": {
+    "$f": "1.405"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$n": "Infinity"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": {
+    "$f": "3.7"
+   },
+   "epoka": {
+    "$n": "-Infinity"
+   },
+   "mnoznik": {
+    "$f": "1.405"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$f": "21.150000000000002"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": 10,
+   "epoka": -1,
+   "mnoznik": {
+    "$f": "2.3499999999999996"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$f": "49.5"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": 10,
+   "epoka": 0,
+   "mnoznik": {
+    "$f": "2.3499999999999996"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$f": "49.5"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": 10,
+   "epoka": {
+    "$n": "-0"
+   },
+   "mnoznik": {
+    "$f": "2.3499999999999996"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$f": "49.5"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": 10,
+   "epoka": {
+    "$f": "0.5"
+   },
+   "mnoznik": {
+    "$f": "2.3499999999999996"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$f": "49.5"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": 10,
+   "epoka": 1,
+   "mnoznik": {
+    "$f": "2.3499999999999996"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$f": "49.5"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": 10,
+   "epoka": {
+    "$f": "1.9"
+   },
+   "mnoznik": {
+    "$f": "2.3499999999999996"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$f": "49.5"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": 10,
+   "epoka": 2,
+   "mnoznik": {
+    "$f": "2.3499999999999996"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": 99
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": 10,
+   "epoka": 3,
+   "mnoznik": {
+    "$f": "2.3499999999999996"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$f": "148.5"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": 10,
+   "epoka": 5,
+   "mnoznik": {
+    "$f": "2.3499999999999996"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$f": "247.5"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": 10,
+   "epoka": 10,
+   "mnoznik": {
+    "$f": "2.3499999999999996"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": 495
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": 10,
+   "epoka": 11,
+   "mnoznik": {
+    "$f": "2.3499999999999996"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$f": "544.5"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": 10,
+   "epoka": {
+    "$n": "NaN"
+   },
+   "mnoznik": {
+    "$f": "2.3499999999999996"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$n": "NaN"
+   },
+   "prog": {
+    "$n": "NaN"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": 10,
+   "epoka": {
+    "$n": "Infinity"
+   },
+   "mnoznik": {
+    "$f": "2.3499999999999996"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$n": "Infinity"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": 10,
+   "epoka": {
+    "$n": "-Infinity"
+   },
+   "mnoznik": {
+    "$f": "2.3499999999999996"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$f": "49.5"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": 25,
+   "epoka": -1,
+   "mnoznik": {
+    "$f": "4.6"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": 117
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": 25,
+   "epoka": 0,
+   "mnoznik": {
+    "$f": "4.6"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": 117
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": 25,
+   "epoka": {
+    "$n": "-0"
+   },
+   "mnoznik": {
+    "$f": "4.6"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": 117
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": 25,
+   "epoka": {
+    "$f": "0.5"
+   },
+   "mnoznik": {
+    "$f": "4.6"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": 117
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": 25,
+   "epoka": 1,
+   "mnoznik": {
+    "$f": "4.6"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": 117
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": 25,
+   "epoka": {
+    "$f": "1.9"
+   },
+   "mnoznik": {
+    "$f": "4.6"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": 117
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": 25,
+   "epoka": 2,
+   "mnoznik": {
+    "$f": "4.6"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": 234
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": 25,
+   "epoka": 3,
+   "mnoznik": {
+    "$f": "4.6"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": 351
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": 25,
+   "epoka": 5,
+   "mnoznik": {
+    "$f": "4.6"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": 585
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": 25,
+   "epoka": 10,
+   "mnoznik": {
+    "$f": "4.6"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": 1170
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": 25,
+   "epoka": 11,
+   "mnoznik": {
+    "$f": "4.6"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": 1287
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": 25,
+   "epoka": {
+    "$n": "NaN"
+   },
+   "mnoznik": {
+    "$f": "4.6"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$n": "NaN"
+   },
+   "prog": {
+    "$n": "NaN"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": 25,
+   "epoka": {
+    "$n": "Infinity"
+   },
+   "mnoznik": {
+    "$f": "4.6"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$n": "Infinity"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": 25,
+   "epoka": {
+    "$n": "-Infinity"
+   },
+   "mnoznik": {
+    "$f": "4.6"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": 117
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": 100,
+   "epoka": -1,
+   "mnoznik": {
+    "$f": "15.85"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$f": "454.5"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": 100,
+   "epoka": 0,
+   "mnoznik": {
+    "$f": "15.85"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$f": "454.5"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": 100,
+   "epoka": {
+    "$n": "-0"
+   },
+   "mnoznik": {
+    "$f": "15.85"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$f": "454.5"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": 100,
+   "epoka": {
+    "$f": "0.5"
+   },
+   "mnoznik": {
+    "$f": "15.85"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$f": "454.5"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": 100,
+   "epoka": 1,
+   "mnoznik": {
+    "$f": "15.85"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$f": "454.5"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": 100,
+   "epoka": {
+    "$f": "1.9"
+   },
+   "mnoznik": {
+    "$f": "15.85"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$f": "454.5"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": 100,
+   "epoka": 2,
+   "mnoznik": {
+    "$f": "15.85"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": 909
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": 100,
+   "epoka": 3,
+   "mnoznik": {
+    "$f": "15.85"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$f": "1363.5"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": 100,
+   "epoka": 5,
+   "mnoznik": {
+    "$f": "15.85"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$f": "2272.5"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": 100,
+   "epoka": 10,
+   "mnoznik": {
+    "$f": "15.85"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": 4545
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": 100,
+   "epoka": 11,
+   "mnoznik": {
+    "$f": "15.85"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$f": "4999.5"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": 100,
+   "epoka": {
+    "$n": "NaN"
+   },
+   "mnoznik": {
+    "$f": "15.85"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$n": "NaN"
+   },
+   "prog": {
+    "$n": "NaN"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": 100,
+   "epoka": {
+    "$n": "Infinity"
+   },
+   "mnoznik": {
+    "$f": "15.85"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$n": "Infinity"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": 100,
+   "epoka": {
+    "$n": "-Infinity"
+   },
+   "mnoznik": {
+    "$f": "15.85"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$f": "454.5"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": 101,
+   "epoka": -1,
+   "mnoznik": 16,
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": 459
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": 101,
+   "epoka": 0,
+   "mnoznik": 16,
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": 459
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": 101,
+   "epoka": {
+    "$n": "-0"
+   },
+   "mnoznik": 16,
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": 459
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": 101,
+   "epoka": {
+    "$f": "0.5"
+   },
+   "mnoznik": 16,
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": 459
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": 101,
+   "epoka": 1,
+   "mnoznik": 16,
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": 459
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": 101,
+   "epoka": {
+    "$f": "1.9"
+   },
+   "mnoznik": 16,
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": 459
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": 101,
+   "epoka": 2,
+   "mnoznik": 16,
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": 918
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": 101,
+   "epoka": 3,
+   "mnoznik": 16,
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": 1377
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": 101,
+   "epoka": 5,
+   "mnoznik": 16,
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": 2295
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": 101,
+   "epoka": 10,
+   "mnoznik": 16,
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": 4590
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": 101,
+   "epoka": 11,
+   "mnoznik": 16,
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": 5049
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": 101,
+   "epoka": {
+    "$n": "NaN"
+   },
+   "mnoznik": 16,
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$n": "NaN"
+   },
+   "prog": {
+    "$n": "NaN"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": 101,
+   "epoka": {
+    "$n": "Infinity"
+   },
+   "mnoznik": 16,
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$n": "Infinity"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": 101,
+   "epoka": {
+    "$n": "-Infinity"
+   },
+   "mnoznik": 16,
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": 459
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": 500,
+   "epoka": -1,
+   "mnoznik": {
+    "$f": "75.85"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$f": "2254.5"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": 500,
+   "epoka": 0,
+   "mnoznik": {
+    "$f": "75.85"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$f": "2254.5"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": 500,
+   "epoka": {
+    "$n": "-0"
+   },
+   "mnoznik": {
+    "$f": "75.85"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$f": "2254.5"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": 500,
+   "epoka": {
+    "$f": "0.5"
+   },
+   "mnoznik": {
+    "$f": "75.85"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$f": "2254.5"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": 500,
+   "epoka": 1,
+   "mnoznik": {
+    "$f": "75.85"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$f": "2254.5"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": 500,
+   "epoka": {
+    "$f": "1.9"
+   },
+   "mnoznik": {
+    "$f": "75.85"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$f": "2254.5"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": 500,
+   "epoka": 2,
+   "mnoznik": {
+    "$f": "75.85"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": 4509
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": 500,
+   "epoka": 3,
+   "mnoznik": {
+    "$f": "75.85"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$f": "6763.5"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": 500,
+   "epoka": 5,
+   "mnoznik": {
+    "$f": "75.85"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$f": "11272.5"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": 500,
+   "epoka": 10,
+   "mnoznik": {
+    "$f": "75.85"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": 22545
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": 500,
+   "epoka": 11,
+   "mnoznik": {
+    "$f": "75.85"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$f": "24799.5"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": 500,
+   "epoka": {
+    "$n": "NaN"
+   },
+   "mnoznik": {
+    "$f": "75.85"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$n": "NaN"
+   },
+   "prog": {
+    "$n": "NaN"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": 500,
+   "epoka": {
+    "$n": "Infinity"
+   },
+   "mnoznik": {
+    "$f": "75.85"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$n": "Infinity"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": 500,
+   "epoka": {
+    "$n": "-Infinity"
+   },
+   "mnoznik": {
+    "$f": "75.85"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$f": "2254.5"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": {
+    "$n": "NaN"
+   },
+   "epoka": -1,
+   "mnoznik": {
+    "$n": "NaN"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$n": "NaN"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": {
+    "$n": "NaN"
+   },
+   "epoka": 0,
+   "mnoznik": {
+    "$n": "NaN"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$n": "NaN"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": {
+    "$n": "NaN"
+   },
+   "epoka": {
+    "$n": "-0"
+   },
+   "mnoznik": {
+    "$n": "NaN"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$n": "NaN"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": {
+    "$n": "NaN"
+   },
+   "epoka": {
+    "$f": "0.5"
+   },
+   "mnoznik": {
+    "$n": "NaN"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$n": "NaN"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": {
+    "$n": "NaN"
+   },
+   "epoka": 1,
+   "mnoznik": {
+    "$n": "NaN"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$n": "NaN"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": {
+    "$n": "NaN"
+   },
+   "epoka": {
+    "$f": "1.9"
+   },
+   "mnoznik": {
+    "$n": "NaN"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$n": "NaN"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": {
+    "$n": "NaN"
+   },
+   "epoka": 2,
+   "mnoznik": {
+    "$n": "NaN"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$n": "NaN"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": {
+    "$n": "NaN"
+   },
+   "epoka": 3,
+   "mnoznik": {
+    "$n": "NaN"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$n": "NaN"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": {
+    "$n": "NaN"
+   },
+   "epoka": 5,
+   "mnoznik": {
+    "$n": "NaN"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$n": "NaN"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": {
+    "$n": "NaN"
+   },
+   "epoka": 10,
+   "mnoznik": {
+    "$n": "NaN"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$n": "NaN"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": {
+    "$n": "NaN"
+   },
+   "epoka": 11,
+   "mnoznik": {
+    "$n": "NaN"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$n": "NaN"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": {
+    "$n": "NaN"
+   },
+   "epoka": {
+    "$n": "NaN"
+   },
+   "mnoznik": {
+    "$n": "NaN"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$n": "NaN"
+   },
+   "prog": {
+    "$n": "NaN"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": {
+    "$n": "NaN"
+   },
+   "epoka": {
+    "$n": "Infinity"
+   },
+   "mnoznik": {
+    "$n": "NaN"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$n": "NaN"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": {
+    "$n": "NaN"
+   },
+   "epoka": {
+    "$n": "-Infinity"
+   },
+   "mnoznik": {
+    "$n": "NaN"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$n": "NaN"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": {
+    "$n": "Infinity"
+   },
+   "epoka": -1,
+   "mnoznik": {
+    "$n": "Infinity"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$n": "Infinity"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": {
+    "$n": "Infinity"
+   },
+   "epoka": 0,
+   "mnoznik": {
+    "$n": "Infinity"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$n": "Infinity"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": {
+    "$n": "Infinity"
+   },
+   "epoka": {
+    "$n": "-0"
+   },
+   "mnoznik": {
+    "$n": "Infinity"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$n": "Infinity"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": {
+    "$n": "Infinity"
+   },
+   "epoka": {
+    "$f": "0.5"
+   },
+   "mnoznik": {
+    "$n": "Infinity"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$n": "Infinity"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": {
+    "$n": "Infinity"
+   },
+   "epoka": 1,
+   "mnoznik": {
+    "$n": "Infinity"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$n": "Infinity"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": {
+    "$n": "Infinity"
+   },
+   "epoka": {
+    "$f": "1.9"
+   },
+   "mnoznik": {
+    "$n": "Infinity"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$n": "Infinity"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": {
+    "$n": "Infinity"
+   },
+   "epoka": 2,
+   "mnoznik": {
+    "$n": "Infinity"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$n": "Infinity"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": {
+    "$n": "Infinity"
+   },
+   "epoka": 3,
+   "mnoznik": {
+    "$n": "Infinity"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$n": "Infinity"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": {
+    "$n": "Infinity"
+   },
+   "epoka": 5,
+   "mnoznik": {
+    "$n": "Infinity"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$n": "Infinity"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": {
+    "$n": "Infinity"
+   },
+   "epoka": 10,
+   "mnoznik": {
+    "$n": "Infinity"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$n": "Infinity"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": {
+    "$n": "Infinity"
+   },
+   "epoka": 11,
+   "mnoznik": {
+    "$n": "Infinity"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$n": "Infinity"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": {
+    "$n": "Infinity"
+   },
+   "epoka": {
+    "$n": "NaN"
+   },
+   "mnoznik": {
+    "$n": "Infinity"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$n": "NaN"
+   },
+   "prog": {
+    "$n": "NaN"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": {
+    "$n": "Infinity"
+   },
+   "epoka": {
+    "$n": "Infinity"
+   },
+   "mnoznik": {
+    "$n": "Infinity"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$n": "Infinity"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": {
+    "$n": "Infinity"
+   },
+   "epoka": {
+    "$n": "-Infinity"
+   },
+   "mnoznik": {
+    "$n": "Infinity"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$n": "Infinity"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": {
+    "$n": "-Infinity"
+   },
+   "epoka": -1,
+   "mnoznik": 1,
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$n": "-Infinity"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": {
+    "$n": "-Infinity"
+   },
+   "epoka": 0,
+   "mnoznik": 1,
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$n": "-Infinity"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": {
+    "$n": "-Infinity"
+   },
+   "epoka": {
+    "$n": "-0"
+   },
+   "mnoznik": 1,
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$n": "-Infinity"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": {
+    "$n": "-Infinity"
+   },
+   "epoka": {
+    "$f": "0.5"
+   },
+   "mnoznik": 1,
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$n": "-Infinity"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": {
+    "$n": "-Infinity"
+   },
+   "epoka": 1,
+   "mnoznik": 1,
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$n": "-Infinity"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": {
+    "$n": "-Infinity"
+   },
+   "epoka": {
+    "$f": "1.9"
+   },
+   "mnoznik": 1,
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$n": "-Infinity"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": {
+    "$n": "-Infinity"
+   },
+   "epoka": 2,
+   "mnoznik": 1,
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$n": "-Infinity"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": {
+    "$n": "-Infinity"
+   },
+   "epoka": 3,
+   "mnoznik": 1,
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$n": "-Infinity"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": {
+    "$n": "-Infinity"
+   },
+   "epoka": 5,
+   "mnoznik": 1,
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$n": "-Infinity"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": {
+    "$n": "-Infinity"
+   },
+   "epoka": 10,
+   "mnoznik": 1,
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$n": "-Infinity"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": {
+    "$n": "-Infinity"
+   },
+   "epoka": 11,
+   "mnoznik": 1,
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$n": "-Infinity"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": {
+    "$n": "-Infinity"
+   },
+   "epoka": {
+    "$n": "NaN"
+   },
+   "mnoznik": 1,
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$n": "NaN"
+   },
+   "prog": {
+    "$n": "NaN"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": {
+    "$n": "-Infinity"
+   },
+   "epoka": {
+    "$n": "Infinity"
+   },
+   "mnoznik": 1,
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$n": "-Infinity"
+   }
+  },
+  {
+   "params": "ujemnyCap",
+   "poziom": {
+    "$n": "-Infinity"
+   },
+   "epoka": {
+    "$n": "-Infinity"
+   },
+   "mnoznik": 1,
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
    },
    "prog": {
     "$n": "-Infinity"
@@ -6886,6 +10689,13 @@
   {
    "params": "zerowyCap",
    "epoka": 0,
+   "cap": 0
+  },
+  {
+   "params": "zerowyCap",
+   "epoka": {
+    "$n": "-0"
+   },
    "cap": 0
   },
   {
@@ -6972,6 +10782,19 @@
    "params": "zerowyCap",
    "poziom": -5,
    "epoka": 0,
+   "mnoznik": 1,
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": -8
+  },
+  {
+   "params": "zerowyCap",
+   "poziom": -5,
+   "epoka": {
+    "$n": "-0"
+   },
    "mnoznik": 1,
    "zadowolenie": 0,
    "rownowaga": {
@@ -7146,6 +10969,21 @@
     "$n": "-0"
    },
    "epoka": {
+    "$n": "-0"
+   },
+   "mnoznik": 1,
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": 2
+  },
+  {
+   "params": "zerowyCap",
+   "poziom": {
+    "$n": "-0"
+   },
+   "epoka": {
     "$f": "0.5"
    },
    "mnoznik": 1,
@@ -7312,6 +11150,19 @@
    "params": "zerowyCap",
    "poziom": 0,
    "epoka": 0,
+   "mnoznik": 1,
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": 2
+  },
+  {
+   "params": "zerowyCap",
+   "poziom": 0,
+   "epoka": {
+    "$n": "-0"
+   },
    "mnoznik": 1,
    "zadowolenie": 0,
    "rownowaga": {
@@ -7473,6 +11324,21 @@
     "$f": "0.5"
    },
    "epoka": 0,
+   "mnoznik": 1,
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": 3
+  },
+  {
+   "params": "zerowyCap",
+   "poziom": {
+    "$f": "0.5"
+   },
+   "epoka": {
+    "$n": "-0"
+   },
    "mnoznik": 1,
    "zadowolenie": 0,
    "rownowaga": {
@@ -7663,6 +11529,19 @@
    "params": "zerowyCap",
    "poziom": 1,
    "epoka": {
+    "$n": "-0"
+   },
+   "mnoznik": 1,
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": 4
+  },
+  {
+   "params": "zerowyCap",
+   "poziom": 1,
+   "epoka": {
     "$f": "0.5"
    },
    "mnoznik": 1,
@@ -7811,6 +11690,21 @@
    "params": "zerowyCap",
    "poziom": 2,
    "epoka": 0,
+   "mnoznik": {
+    "$f": "1.15"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": 6
+  },
+  {
+   "params": "zerowyCap",
+   "poziom": 2,
+   "epoka": {
+    "$n": "-0"
+   },
    "mnoznik": {
     "$f": "1.15"
    },
@@ -8000,6 +11894,25 @@
     "$f": "3.7"
    },
    "epoka": 0,
+   "mnoznik": {
+    "$f": "1.405"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$f": "9.4"
+   }
+  },
+  {
+   "params": "zerowyCap",
+   "poziom": {
+    "$f": "3.7"
+   },
+   "epoka": {
+    "$n": "-0"
+   },
    "mnoznik": {
     "$f": "1.405"
    },
@@ -8234,6 +12147,21 @@
    "params": "zerowyCap",
    "poziom": 10,
    "epoka": {
+    "$n": "-0"
+   },
+   "mnoznik": {
+    "$f": "2.3499999999999996"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": 22
+  },
+  {
+   "params": "zerowyCap",
+   "poziom": 10,
+   "epoka": {
     "$f": "0.5"
    },
    "mnoznik": {
@@ -8404,6 +12332,21 @@
    "params": "zerowyCap",
    "poziom": 25,
    "epoka": 0,
+   "mnoznik": {
+    "$f": "4.6"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": 52
+  },
+  {
+   "params": "zerowyCap",
+   "poziom": 25,
+   "epoka": {
+    "$n": "-0"
+   },
    "mnoznik": {
     "$f": "4.6"
    },
@@ -8600,6 +12543,21 @@
    "params": "zerowyCap",
    "poziom": 100,
    "epoka": {
+    "$n": "-0"
+   },
+   "mnoznik": {
+    "$f": "15.85"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": 202
+  },
+  {
+   "params": "zerowyCap",
+   "poziom": 100,
+   "epoka": {
     "$f": "0.5"
    },
    "mnoznik": {
@@ -8779,6 +12737,19 @@
    "params": "zerowyCap",
    "poziom": 101,
    "epoka": {
+    "$n": "-0"
+   },
+   "mnoznik": 16,
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": 204
+  },
+  {
+   "params": "zerowyCap",
+   "poziom": 101,
+   "epoka": {
     "$f": "0.5"
    },
    "mnoznik": 16,
@@ -8927,6 +12898,21 @@
    "params": "zerowyCap",
    "poziom": 500,
    "epoka": 0,
+   "mnoznik": {
+    "$f": "75.85"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": 1002
+  },
+  {
+   "params": "zerowyCap",
+   "poziom": 500,
+   "epoka": {
+    "$n": "-0"
+   },
    "mnoznik": {
     "$f": "75.85"
    },
@@ -9133,6 +13119,25 @@
     "$n": "NaN"
    },
    "epoka": {
+    "$n": "-0"
+   },
+   "mnoznik": {
+    "$n": "NaN"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$n": "NaN"
+   }
+  },
+  {
+   "params": "zerowyCap",
+   "poziom": {
+    "$n": "NaN"
+   },
+   "epoka": {
     "$f": "0.5"
    },
    "mnoznik": {
@@ -9347,6 +13352,25 @@
     "$n": "Infinity"
    },
    "epoka": 0,
+   "mnoznik": {
+    "$n": "Infinity"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$n": "Infinity"
+   }
+  },
+  {
+   "params": "zerowyCap",
+   "poziom": {
+    "$n": "Infinity"
+   },
+   "epoka": {
+    "$n": "-0"
+   },
    "mnoznik": {
     "$n": "Infinity"
    },
@@ -9576,6 +13600,23 @@
     "$n": "-Infinity"
    },
    "epoka": 0,
+   "mnoznik": 1,
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.4"
+   },
+   "prog": {
+    "$n": "-Infinity"
+   }
+  },
+  {
+   "params": "zerowyCap",
+   "poziom": {
+    "$n": "-Infinity"
+   },
+   "epoka": {
+    "$n": "-0"
+   },
    "mnoznik": 1,
    "zadowolenie": 0,
    "rownowaga": {
@@ -9768,6 +13809,13 @@
   {
    "params": "ujemneMnoznik",
    "epoka": 0,
+   "cap": 0
+  },
+  {
+   "params": "ujemneMnoznik",
+   "epoka": {
+    "$n": "-0"
+   },
    "cap": 0
   },
   {
@@ -9856,6 +13904,21 @@
    "params": "ujemneMnoznik",
    "poziom": -5,
    "epoka": 0,
+   "mnoznik": {
+    "$f": "2.2"
+   },
+   "zadowolenie": 1,
+   "rownowaga": {
+    "$f": "0.1"
+   },
+   "prog": -2
+  },
+  {
+   "params": "ujemneMnoznik",
+   "poziom": -5,
+   "epoka": {
+    "$n": "-0"
+   },
    "mnoznik": {
     "$f": "2.2"
    },
@@ -10062,6 +14125,25 @@
     "$n": "-0"
    },
    "epoka": {
+    "$n": "-0"
+   },
+   "mnoznik": {
+    "$f": "1.2"
+   },
+   "zadowolenie": 1,
+   "rownowaga": {
+    "$f": "0.1"
+   },
+   "prog": {
+    "$f": "0.5"
+   }
+  },
+  {
+   "params": "ujemneMnoznik",
+   "poziom": {
+    "$n": "-0"
+   },
+   "epoka": {
     "$f": "0.5"
    },
    "mnoznik": {
@@ -10268,6 +14350,23 @@
    "params": "ujemneMnoznik",
    "poziom": 0,
    "epoka": 0,
+   "mnoznik": {
+    "$f": "1.2"
+   },
+   "zadowolenie": 1,
+   "rownowaga": {
+    "$f": "0.1"
+   },
+   "prog": {
+    "$f": "0.5"
+   }
+  },
+  {
+   "params": "ujemneMnoznik",
+   "poziom": 0,
+   "epoka": {
+    "$n": "-0"
+   },
    "mnoznik": {
     "$f": "1.2"
    },
@@ -10473,6 +14572,25 @@
     "$f": "0.5"
    },
    "epoka": 0,
+   "mnoznik": {
+    "$f": "1.1"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.1"
+   },
+   "prog": {
+    "$f": "0.75"
+   }
+  },
+  {
+   "params": "ujemneMnoznik",
+   "poziom": {
+    "$f": "0.5"
+   },
+   "epoka": {
+    "$n": "-0"
+   },
    "mnoznik": {
     "$f": "1.1"
    },
@@ -10707,6 +14825,19 @@
    "params": "ujemneMnoznik",
    "poziom": 1,
    "epoka": {
+    "$n": "-0"
+   },
+   "mnoznik": 1,
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.1"
+   },
+   "prog": 1
+  },
+  {
+   "params": "ujemneMnoznik",
+   "poziom": 1,
+   "epoka": {
     "$f": "0.5"
    },
    "mnoznik": 1,
@@ -10855,6 +14986,21 @@
    "params": "ujemneMnoznik",
    "poziom": 2,
    "epoka": 0,
+   "mnoznik": 1,
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.1"
+   },
+   "prog": {
+    "$f": "1.5"
+   }
+  },
+  {
+   "params": "ujemneMnoznik",
+   "poziom": 2,
+   "epoka": {
+    "$n": "-0"
+   },
    "mnoznik": 1,
    "zadowolenie": 0,
    "rownowaga": {
@@ -11034,6 +15180,23 @@
     "$f": "3.7"
    },
    "epoka": 0,
+   "mnoznik": 1,
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.1"
+   },
+   "prog": {
+    "$f": "2.35"
+   }
+  },
+  {
+   "params": "ujemneMnoznik",
+   "poziom": {
+    "$f": "3.7"
+   },
+   "epoka": {
+    "$n": "-0"
+   },
    "mnoznik": 1,
    "zadowolenie": 0,
    "rownowaga": {
@@ -11248,6 +15411,21 @@
    "params": "ujemneMnoznik",
    "poziom": 10,
    "epoka": {
+    "$n": "-0"
+   },
+   "mnoznik": 1,
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.1"
+   },
+   "prog": {
+    "$f": "5.5"
+   }
+  },
+  {
+   "params": "ujemneMnoznik",
+   "poziom": 10,
+   "epoka": {
     "$f": "0.5"
    },
    "mnoznik": 1,
@@ -11419,6 +15597,19 @@
    "params": "ujemneMnoznik",
    "poziom": 25,
    "epoka": {
+    "$n": "-0"
+   },
+   "mnoznik": 1,
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.1"
+   },
+   "prog": 13
+  },
+  {
+   "params": "ujemneMnoznik",
+   "poziom": 25,
+   "epoka": {
     "$f": "0.5"
    },
    "mnoznik": 1,
@@ -11567,6 +15758,21 @@
    "params": "ujemneMnoznik",
    "poziom": 100,
    "epoka": 0,
+   "mnoznik": 1,
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.1"
+   },
+   "prog": {
+    "$f": "50.5"
+   }
+  },
+  {
+   "params": "ujemneMnoznik",
+   "poziom": 100,
+   "epoka": {
+    "$n": "-0"
+   },
    "mnoznik": 1,
    "zadowolenie": 0,
    "rownowaga": {
@@ -11751,6 +15957,19 @@
    "params": "ujemneMnoznik",
    "poziom": 101,
    "epoka": {
+    "$n": "-0"
+   },
+   "mnoznik": 1,
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.1"
+   },
+   "prog": 51
+  },
+  {
+   "params": "ujemneMnoznik",
+   "poziom": 101,
+   "epoka": {
     "$f": "0.5"
    },
    "mnoznik": 1,
@@ -11899,6 +16118,21 @@
    "params": "ujemneMnoznik",
    "poziom": 500,
    "epoka": 0,
+   "mnoznik": 1,
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.1"
+   },
+   "prog": {
+    "$f": "250.5"
+   }
+  },
+  {
+   "params": "ujemneMnoznik",
+   "poziom": 500,
+   "epoka": {
+    "$n": "-0"
+   },
    "mnoznik": 1,
    "zadowolenie": 0,
    "rownowaga": {
@@ -12097,6 +16331,25 @@
     "$n": "NaN"
    },
    "epoka": {
+    "$n": "-0"
+   },
+   "mnoznik": {
+    "$n": "NaN"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.1"
+   },
+   "prog": {
+    "$n": "NaN"
+   }
+  },
+  {
+   "params": "ujemneMnoznik",
+   "poziom": {
+    "$n": "NaN"
+   },
+   "epoka": {
     "$f": "0.5"
    },
    "mnoznik": {
@@ -12323,6 +16576,23 @@
     "$n": "Infinity"
    },
    "epoka": 0,
+   "mnoznik": 1,
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$f": "0.1"
+   },
+   "prog": {
+    "$n": "Infinity"
+   }
+  },
+  {
+   "params": "ujemneMnoznik",
+   "poziom": {
+    "$n": "Infinity"
+   },
+   "epoka": {
+    "$n": "-0"
+   },
    "mnoznik": 1,
    "zadowolenie": 0,
    "rownowaga": {
@@ -12530,6 +16800,25 @@
     "$n": "-Infinity"
    },
    "epoka": 0,
+   "mnoznik": {
+    "$n": "Infinity"
+   },
+   "zadowolenie": 1,
+   "rownowaga": {
+    "$f": "0.1"
+   },
+   "prog": {
+    "$n": "-Infinity"
+   }
+  },
+  {
+   "params": "ujemneMnoznik",
+   "poziom": {
+    "$n": "-Infinity"
+   },
+   "epoka": {
+    "$n": "-0"
+   },
    "mnoznik": {
     "$n": "Infinity"
    },
@@ -12748,6 +17037,15 @@
   {
    "params": "nanCap",
    "epoka": 0,
+   "cap": {
+    "$n": "NaN"
+   }
+  },
+  {
+   "params": "nanCap",
+   "epoka": {
+    "$n": "-0"
+   },
    "cap": {
     "$n": "NaN"
    }
@@ -12854,6 +17152,19 @@
    "params": "nanCap",
    "poziom": -5,
    "epoka": 0,
+   "mnoznik": 1,
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$n": "NaN"
+   },
+   "prog": -18
+  },
+  {
+   "params": "nanCap",
+   "poziom": -5,
+   "epoka": {
+    "$n": "-0"
+   },
    "mnoznik": 1,
    "zadowolenie": 0,
    "rownowaga": {
@@ -13017,6 +17328,23 @@
     "$n": "-0"
    },
    "epoka": 0,
+   "mnoznik": 1,
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$n": "NaN"
+   },
+   "prog": {
+    "$f": "4.5"
+   }
+  },
+  {
+   "params": "nanCap",
+   "poziom": {
+    "$n": "-0"
+   },
+   "epoka": {
+    "$n": "-0"
+   },
    "mnoznik": 1,
    "zadowolenie": 0,
    "rownowaga": {
@@ -13214,6 +17542,21 @@
    "params": "nanCap",
    "poziom": 0,
    "epoka": 0,
+   "mnoznik": 1,
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$n": "NaN"
+   },
+   "prog": {
+    "$f": "4.5"
+   }
+  },
+  {
+   "params": "nanCap",
+   "poziom": 0,
+   "epoka": {
+    "$n": "-0"
+   },
    "mnoznik": 1,
    "zadowolenie": 0,
    "rownowaga": {
@@ -13393,6 +17736,23 @@
     "$f": "0.5"
    },
    "epoka": 0,
+   "mnoznik": 1,
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$n": "NaN"
+   },
+   "prog": {
+    "$f": "6.75"
+   }
+  },
+  {
+   "params": "nanCap",
+   "poziom": {
+    "$f": "0.5"
+   },
+   "epoka": {
+    "$n": "-0"
+   },
    "mnoznik": 1,
    "zadowolenie": 0,
    "rownowaga": {
@@ -13603,6 +17963,19 @@
    "params": "nanCap",
    "poziom": 1,
    "epoka": {
+    "$n": "-0"
+   },
+   "mnoznik": 1,
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$n": "NaN"
+   },
+   "prog": 9
+  },
+  {
+   "params": "nanCap",
+   "poziom": 1,
+   "epoka": {
     "$f": "0.5"
    },
    "mnoznik": 1,
@@ -13753,6 +18126,23 @@
    "params": "nanCap",
    "poziom": 2,
    "epoka": 0,
+   "mnoznik": {
+    "$f": "1.15"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$n": "NaN"
+   },
+   "prog": {
+    "$f": "13.5"
+   }
+  },
+  {
+   "params": "nanCap",
+   "poziom": 2,
+   "epoka": {
+    "$n": "-0"
+   },
    "mnoznik": {
     "$f": "1.15"
    },
@@ -13958,6 +18348,25 @@
     "$f": "3.7"
    },
    "epoka": 0,
+   "mnoznik": {
+    "$f": "1.405"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$n": "NaN"
+   },
+   "prog": {
+    "$f": "21.150000000000002"
+   }
+  },
+  {
+   "params": "nanCap",
+   "poziom": {
+    "$f": "3.7"
+   },
+   "epoka": {
+    "$n": "-0"
+   },
    "mnoznik": {
     "$f": "1.405"
    },
@@ -14200,6 +18609,23 @@
    "params": "nanCap",
    "poziom": 10,
    "epoka": {
+    "$n": "-0"
+   },
+   "mnoznik": {
+    "$f": "2.3499999999999996"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$n": "NaN"
+   },
+   "prog": {
+    "$f": "49.5"
+   }
+  },
+  {
+   "params": "nanCap",
+   "poziom": 10,
+   "epoka": {
     "$f": "0.5"
    },
    "mnoznik": {
@@ -14397,6 +18823,21 @@
    "params": "nanCap",
    "poziom": 25,
    "epoka": {
+    "$n": "-0"
+   },
+   "mnoznik": {
+    "$f": "4.6"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$n": "NaN"
+   },
+   "prog": 117
+  },
+  {
+   "params": "nanCap",
+   "poziom": 25,
+   "epoka": {
     "$f": "0.5"
    },
    "mnoznik": {
@@ -14569,6 +19010,23 @@
    "params": "nanCap",
    "poziom": 100,
    "epoka": 0,
+   "mnoznik": {
+    "$f": "15.85"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$n": "NaN"
+   },
+   "prog": {
+    "$f": "454.5"
+   }
+  },
+  {
+   "params": "nanCap",
+   "poziom": 100,
+   "epoka": {
+    "$n": "-0"
+   },
    "mnoznik": {
     "$f": "15.85"
    },
@@ -14777,6 +19235,19 @@
    "params": "nanCap",
    "poziom": 101,
    "epoka": {
+    "$n": "-0"
+   },
+   "mnoznik": 16,
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$n": "NaN"
+   },
+   "prog": 459
+  },
+  {
+   "params": "nanCap",
+   "poziom": 101,
+   "epoka": {
     "$f": "0.5"
    },
    "mnoznik": 16,
@@ -14927,6 +19398,23 @@
    "params": "nanCap",
    "poziom": 500,
    "epoka": 0,
+   "mnoznik": {
+    "$f": "75.85"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$n": "NaN"
+   },
+   "prog": {
+    "$f": "2254.5"
+   }
+  },
+  {
+   "params": "nanCap",
+   "poziom": 500,
+   "epoka": {
+    "$n": "-0"
+   },
    "mnoznik": {
     "$f": "75.85"
    },
@@ -15149,6 +19637,25 @@
     "$n": "NaN"
    },
    "epoka": {
+    "$n": "-0"
+   },
+   "mnoznik": {
+    "$n": "NaN"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$n": "NaN"
+   },
+   "prog": {
+    "$n": "NaN"
+   }
+  },
+  {
+   "params": "nanCap",
+   "poziom": {
+    "$n": "NaN"
+   },
+   "epoka": {
     "$f": "0.5"
    },
    "mnoznik": {
@@ -15363,6 +19870,25 @@
     "$n": "Infinity"
    },
    "epoka": 0,
+   "mnoznik": {
+    "$n": "Infinity"
+   },
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$n": "NaN"
+   },
+   "prog": {
+    "$n": "Infinity"
+   }
+  },
+  {
+   "params": "nanCap",
+   "poziom": {
+    "$n": "Infinity"
+   },
+   "epoka": {
+    "$n": "-0"
+   },
    "mnoznik": {
     "$n": "Infinity"
    },
@@ -15592,6 +20118,23 @@
     "$n": "-Infinity"
    },
    "epoka": 0,
+   "mnoznik": 1,
+   "zadowolenie": 0,
+   "rownowaga": {
+    "$n": "NaN"
+   },
+   "prog": {
+    "$n": "-Infinity"
+   }
+  },
+  {
+   "params": "nanCap",
+   "poziom": {
+    "$n": "-Infinity"
+   },
+   "epoka": {
+    "$n": "-0"
+   },
    "mnoznik": 1,
    "zadowolenie": 0,
    "rownowaga": {
@@ -20397,6 +24940,2124 @@
       },
       "zadowolenie": 2,
       "awans": 1,
+      "spadek": 0
+     }
+    }
+   ]
+  },
+  {
+   "params": "ujemnyCap",
+   "startIndex": 0,
+   "steps": [
+    {
+     "inState": {
+      "poziom": 1,
+      "pula": 0
+     },
+     "spol": 0,
+     "miasto": 0,
+     "epoka": 1,
+     "minPoziom": {
+      "$undef": true
+     },
+     "out": {
+      "poziom": -2,
+      "pula": 0,
+      "mnoznik": 1,
+      "zadowolenie": 0,
+      "awans": 0,
+      "spadek": 0
+     }
+    },
+    {
+     "inState": {
+      "poziom": -2,
+      "pula": 0
+     },
+     "spol": 10,
+     "miasto": 20,
+     "epoka": 1,
+     "minPoziom": 0,
+     "out": {
+      "poziom": -2,
+      "pula": 2,
+      "mnoznik": 1,
+      "zadowolenie": 0,
+      "awans": 0,
+      "spadek": 0
+     }
+    },
+    {
+     "inState": {
+      "poziom": -2,
+      "pula": 2
+     },
+     "spol": {
+      "$n": "NaN"
+     },
+     "miasto": -1,
+     "epoka": 2,
+     "minPoziom": 1,
+     "out": {
+      "poziom": -4,
+      "pula": 2,
+      "mnoznik": 1,
+      "zadowolenie": 0,
+      "awans": 0,
+      "spadek": 0
+     }
+    },
+    {
+     "inState": {
+      "poziom": -4,
+      "pula": 2
+     },
+     "spol": 0,
+     "miasto": {
+      "$f": "33.3"
+     },
+     "epoka": 2,
+     "minPoziom": 3,
+     "out": {
+      "poziom": -4,
+      "pula": 0,
+      "mnoznik": 1,
+      "zadowolenie": 0,
+      "awans": 0,
+      "spadek": 0
+     }
+    },
+    {
+     "inState": {
+      "poziom": -4,
+      "pula": 0
+     },
+     "spol": 10,
+     "miasto": 5,
+     "epoka": 3,
+     "minPoziom": -2,
+     "out": {
+      "poziom": -6,
+      "pula": 8,
+      "mnoznik": 1,
+      "zadowolenie": 0,
+      "awans": 0,
+      "spadek": 0
+     }
+    },
+    {
+     "inState": {
+      "poziom": -6,
+      "pula": 8
+     },
+     "spol": {
+      "$n": "NaN"
+     },
+     "miasto": 100,
+     "epoka": 3,
+     "minPoziom": {
+      "$n": "NaN"
+     },
+     "out": {
+      "poziom": -6,
+      "pula": 0,
+      "mnoznik": 1,
+      "zadowolenie": 0,
+      "awans": 0,
+      "spadek": 0
+     }
+    },
+    {
+     "inState": {
+      "poziom": -6,
+      "pula": 0
+     },
+     "spol": 0,
+     "miasto": {
+      "$n": "NaN"
+     },
+     "epoka": 5,
+     "minPoziom": null,
+     "out": {
+      "poziom": -10,
+      "pula": 0,
+      "mnoznik": 1,
+      "zadowolenie": 0,
+      "awans": 0,
+      "spadek": 0
+     }
+    },
+    {
+     "inState": {
+      "poziom": -10,
+      "pula": 0
+     },
+     "spol": 10,
+     "miasto": 0,
+     "epoka": 10,
+     "minPoziom": 2,
+     "out": {
+      "poziom": -20,
+      "pula": 10,
+      "mnoznik": 1,
+      "zadowolenie": 0,
+      "awans": 0,
+      "spadek": 0
+     }
+    },
+    {
+     "inState": {
+      "poziom": -20,
+      "pula": 10
+     },
+     "spol": {
+      "$n": "NaN"
+     },
+     "miasto": 20,
+     "epoka": 10,
+     "minPoziom": {
+      "$undef": true
+     },
+     "out": {
+      "poziom": -20,
+      "pula": 2,
+      "mnoznik": 1,
+      "zadowolenie": 0,
+      "awans": 0,
+      "spadek": 0
+     }
+    },
+    {
+     "inState": {
+      "poziom": -20,
+      "pula": 2
+     },
+     "spol": 0,
+     "miasto": -1,
+     "epoka": 11,
+     "minPoziom": 0,
+     "out": {
+      "poziom": -22,
+      "pula": 2,
+      "mnoznik": 1,
+      "zadowolenie": 0,
+      "awans": 0,
+      "spadek": 0
+     }
+    },
+    {
+     "inState": {
+      "poziom": -22,
+      "pula": 2
+     },
+     "spol": 10,
+     "miasto": {
+      "$f": "33.3"
+     },
+     "epoka": {
+      "$f": "0.5"
+     },
+     "minPoziom": 1,
+     "out": {
+      "poziom": {
+       "$n": "-0"
+      },
+      "pula": 0,
+      "mnoznik": 1,
+      "zadowolenie": 0,
+      "awans": 0,
+      "spadek": 0
+     }
+    },
+    {
+     "inState": {
+      "poziom": {
+       "$n": "-0"
+      },
+      "pula": 0
+     },
+     "spol": {
+      "$n": "NaN"
+     },
+     "miasto": 5,
+     "epoka": 4,
+     "minPoziom": 3,
+     "out": {
+      "poziom": -8,
+      "pula": 0,
+      "mnoznik": 1,
+      "zadowolenie": 0,
+      "awans": 0,
+      "spadek": 0
+     }
+    },
+    {
+     "inState": {
+      "poziom": -8,
+      "pula": 0
+     },
+     "spol": 0,
+     "miasto": 100,
+     "epoka": 1,
+     "minPoziom": -2,
+     "out": {
+      "poziom": -2,
+      "pula": 0,
+      "mnoznik": 1,
+      "zadowolenie": 0,
+      "awans": 0,
+      "spadek": 0
+     }
+    },
+    {
+     "inState": {
+      "poziom": -2,
+      "pula": 0
+     },
+     "spol": 10,
+     "miasto": {
+      "$n": "NaN"
+     },
+     "epoka": 1,
+     "minPoziom": {
+      "$n": "NaN"
+     },
+     "out": {
+      "poziom": -2,
+      "pula": 10,
+      "mnoznik": 1,
+      "zadowolenie": 0,
+      "awans": 0,
+      "spadek": 0
+     }
+    }
+   ]
+  },
+  {
+   "params": "ujemnyCap",
+   "startIndex": 1,
+   "steps": [
+    {
+     "inState": {
+      "poziom": 0,
+      "pula": 0
+     },
+     "spol": 0,
+     "miasto": 5,
+     "epoka": 1,
+     "minPoziom": 0,
+     "out": {
+      "poziom": -2,
+      "pula": 0,
+      "mnoznik": 1,
+      "zadowolenie": 0,
+      "awans": 0,
+      "spadek": 0
+     }
+    },
+    {
+     "inState": {
+      "poziom": -2,
+      "pula": 0
+     },
+     "spol": 10,
+     "miasto": 100,
+     "epoka": 1,
+     "minPoziom": 1,
+     "out": {
+      "poziom": -2,
+      "pula": 0,
+      "mnoznik": 1,
+      "zadowolenie": 0,
+      "awans": 0,
+      "spadek": 0
+     }
+    },
+    {
+     "inState": {
+      "poziom": -2,
+      "pula": 0
+     },
+     "spol": {
+      "$n": "NaN"
+     },
+     "miasto": {
+      "$n": "NaN"
+     },
+     "epoka": 2,
+     "minPoziom": 3,
+     "out": {
+      "poziom": -4,
+      "pula": 0,
+      "mnoznik": 1,
+      "zadowolenie": 0,
+      "awans": 0,
+      "spadek": 0
+     }
+    },
+    {
+     "inState": {
+      "poziom": -4,
+      "pula": 0
+     },
+     "spol": 0,
+     "miasto": 0,
+     "epoka": 2,
+     "minPoziom": -2,
+     "out": {
+      "poziom": -4,
+      "pula": 0,
+      "mnoznik": 1,
+      "zadowolenie": 0,
+      "awans": 0,
+      "spadek": 0
+     }
+    },
+    {
+     "inState": {
+      "poziom": -4,
+      "pula": 0
+     },
+     "spol": 10,
+     "miasto": 20,
+     "epoka": 3,
+     "minPoziom": {
+      "$n": "NaN"
+     },
+     "out": {
+      "poziom": -6,
+      "pula": 2,
+      "mnoznik": 1,
+      "zadowolenie": 0,
+      "awans": 0,
+      "spadek": 0
+     }
+    },
+    {
+     "inState": {
+      "poziom": -6,
+      "pula": 2
+     },
+     "spol": {
+      "$n": "NaN"
+     },
+     "miasto": -1,
+     "epoka": 3,
+     "minPoziom": null,
+     "out": {
+      "poziom": -6,
+      "pula": 2,
+      "mnoznik": 1,
+      "zadowolenie": 0,
+      "awans": 0,
+      "spadek": 0
+     }
+    },
+    {
+     "inState": {
+      "poziom": -6,
+      "pula": 2
+     },
+     "spol": 0,
+     "miasto": {
+      "$f": "33.3"
+     },
+     "epoka": 5,
+     "minPoziom": 2,
+     "out": {
+      "poziom": -10,
+      "pula": 0,
+      "mnoznik": 1,
+      "zadowolenie": 0,
+      "awans": 0,
+      "spadek": 0
+     }
+    },
+    {
+     "inState": {
+      "poziom": -10,
+      "pula": 0
+     },
+     "spol": 10,
+     "miasto": 5,
+     "epoka": 10,
+     "minPoziom": {
+      "$undef": true
+     },
+     "out": {
+      "poziom": -20,
+      "pula": 8,
+      "mnoznik": 1,
+      "zadowolenie": 0,
+      "awans": 0,
+      "spadek": 0
+     }
+    },
+    {
+     "inState": {
+      "poziom": -20,
+      "pula": 8
+     },
+     "spol": {
+      "$n": "NaN"
+     },
+     "miasto": 100,
+     "epoka": 10,
+     "minPoziom": 0,
+     "out": {
+      "poziom": -20,
+      "pula": 0,
+      "mnoznik": 1,
+      "zadowolenie": 0,
+      "awans": 0,
+      "spadek": 0
+     }
+    },
+    {
+     "inState": {
+      "poziom": -20,
+      "pula": 0
+     },
+     "spol": 0,
+     "miasto": {
+      "$n": "NaN"
+     },
+     "epoka": 11,
+     "minPoziom": 1,
+     "out": {
+      "poziom": -22,
+      "pula": 0,
+      "mnoznik": 1,
+      "zadowolenie": 0,
+      "awans": 0,
+      "spadek": 0
+     }
+    },
+    {
+     "inState": {
+      "poziom": -22,
+      "pula": 0
+     },
+     "spol": 10,
+     "miasto": 0,
+     "epoka": {
+      "$f": "0.5"
+     },
+     "minPoziom": 3,
+     "out": {
+      "poziom": {
+       "$n": "-0"
+      },
+      "pula": 10,
+      "mnoznik": 1,
+      "zadowolenie": 0,
+      "awans": 0,
+      "spadek": 0
+     }
+    },
+    {
+     "inState": {
+      "poziom": {
+       "$n": "-0"
+      },
+      "pula": 10
+     },
+     "spol": {
+      "$n": "NaN"
+     },
+     "miasto": 20,
+     "epoka": 4,
+     "minPoziom": -2,
+     "out": {
+      "poziom": -8,
+      "pula": 2,
+      "mnoznik": 1,
+      "zadowolenie": 0,
+      "awans": 0,
+      "spadek": 0
+     }
+    },
+    {
+     "inState": {
+      "poziom": -8,
+      "pula": 2
+     },
+     "spol": 0,
+     "miasto": -1,
+     "epoka": 1,
+     "minPoziom": {
+      "$n": "NaN"
+     },
+     "out": {
+      "poziom": -2,
+      "pula": 2,
+      "mnoznik": 1,
+      "zadowolenie": 0,
+      "awans": 0,
+      "spadek": 0
+     }
+    },
+    {
+     "inState": {
+      "poziom": -2,
+      "pula": 2
+     },
+     "spol": 10,
+     "miasto": {
+      "$f": "33.3"
+     },
+     "epoka": 1,
+     "minPoziom": null,
+     "out": {
+      "poziom": -2,
+      "pula": 0,
+      "mnoznik": 1,
+      "zadowolenie": 0,
+      "awans": 0,
+      "spadek": 0
+     }
+    }
+   ]
+  },
+  {
+   "params": "ujemnyCap",
+   "startIndex": 2,
+   "steps": [
+    {
+     "inState": {
+      "poziom": {
+       "$f": "3.7"
+      },
+      "pula": {
+       "$f": "12.5"
+      }
+     },
+     "spol": 0,
+     "miasto": 20,
+     "epoka": 1,
+     "minPoziom": 1,
+     "out": {
+      "poziom": -2,
+      "pula": {
+       "$f": "4.5"
+      },
+      "mnoznik": 1,
+      "zadowolenie": 0,
+      "awans": 0,
+      "spadek": 0
+     }
+    },
+    {
+     "inState": {
+      "poziom": -2,
+      "pula": {
+       "$f": "4.5"
+      }
+     },
+     "spol": 10,
+     "miasto": -1,
+     "epoka": 1,
+     "minPoziom": 3,
+     "out": {
+      "poziom": -2,
+      "pula": {
+       "$f": "14.5"
+      },
+      "mnoznik": 1,
+      "zadowolenie": 0,
+      "awans": 0,
+      "spadek": 0
+     }
+    },
+    {
+     "inState": {
+      "poziom": -2,
+      "pula": {
+       "$f": "14.5"
+      }
+     },
+     "spol": {
+      "$n": "NaN"
+     },
+     "miasto": {
+      "$f": "33.3"
+     },
+     "epoka": 2,
+     "minPoziom": -2,
+     "out": {
+      "poziom": -4,
+      "pula": {
+       "$f": "1.1799999999999997"
+      },
+      "mnoznik": 1,
+      "zadowolenie": 0,
+      "awans": 0,
+      "spadek": 0
+     }
+    },
+    {
+     "inState": {
+      "poziom": -4,
+      "pula": {
+       "$f": "1.1799999999999997"
+      }
+     },
+     "spol": 0,
+     "miasto": 5,
+     "epoka": 2,
+     "minPoziom": {
+      "$n": "NaN"
+     },
+     "out": {
+      "poziom": -4,
+      "pula": 0,
+      "mnoznik": 1,
+      "zadowolenie": 0,
+      "awans": 0,
+      "spadek": 0
+     }
+    },
+    {
+     "inState": {
+      "poziom": -4,
+      "pula": 0
+     },
+     "spol": 10,
+     "miasto": 100,
+     "epoka": 3,
+     "minPoziom": null,
+     "out": {
+      "poziom": -6,
+      "pula": 0,
+      "mnoznik": 1,
+      "zadowolenie": 0,
+      "awans": 0,
+      "spadek": 0
+     }
+    },
+    {
+     "inState": {
+      "poziom": -6,
+      "pula": 0
+     },
+     "spol": {
+      "$n": "NaN"
+     },
+     "miasto": {
+      "$n": "NaN"
+     },
+     "epoka": 3,
+     "minPoziom": 2,
+     "out": {
+      "poziom": -6,
+      "pula": 0,
+      "mnoznik": 1,
+      "zadowolenie": 0,
+      "awans": 0,
+      "spadek": 0
+     }
+    },
+    {
+     "inState": {
+      "poziom": -6,
+      "pula": 0
+     },
+     "spol": 0,
+     "miasto": 0,
+     "epoka": 5,
+     "minPoziom": {
+      "$undef": true
+     },
+     "out": {
+      "poziom": -10,
+      "pula": 0,
+      "mnoznik": 1,
+      "zadowolenie": 0,
+      "awans": 0,
+      "spadek": 0
+     }
+    },
+    {
+     "inState": {
+      "poziom": -10,
+      "pula": 0
+     },
+     "spol": 10,
+     "miasto": 20,
+     "epoka": 10,
+     "minPoziom": 0,
+     "out": {
+      "poziom": -20,
+      "pula": 2,
+      "mnoznik": 1,
+      "zadowolenie": 0,
+      "awans": 0,
+      "spadek": 0
+     }
+    },
+    {
+     "inState": {
+      "poziom": -20,
+      "pula": 2
+     },
+     "spol": {
+      "$n": "NaN"
+     },
+     "miasto": -1,
+     "epoka": 10,
+     "minPoziom": 1,
+     "out": {
+      "poziom": -20,
+      "pula": 2,
+      "mnoznik": 1,
+      "zadowolenie": 0,
+      "awans": 0,
+      "spadek": 0
+     }
+    },
+    {
+     "inState": {
+      "poziom": -20,
+      "pula": 2
+     },
+     "spol": 0,
+     "miasto": {
+      "$f": "33.3"
+     },
+     "epoka": 11,
+     "minPoziom": 3,
+     "out": {
+      "poziom": -22,
+      "pula": 0,
+      "mnoznik": 1,
+      "zadowolenie": 0,
+      "awans": 0,
+      "spadek": 0
+     }
+    },
+    {
+     "inState": {
+      "poziom": -22,
+      "pula": 0
+     },
+     "spol": 10,
+     "miasto": 5,
+     "epoka": {
+      "$f": "0.5"
+     },
+     "minPoziom": -2,
+     "out": {
+      "poziom": {
+       "$n": "-0"
+      },
+      "pula": 8,
+      "mnoznik": 1,
+      "zadowolenie": 0,
+      "awans": 0,
+      "spadek": 0
+     }
+    },
+    {
+     "inState": {
+      "poziom": {
+       "$n": "-0"
+      },
+      "pula": 8
+     },
+     "spol": {
+      "$n": "NaN"
+     },
+     "miasto": 100,
+     "epoka": 4,
+     "minPoziom": {
+      "$n": "NaN"
+     },
+     "out": {
+      "poziom": -8,
+      "pula": 0,
+      "mnoznik": 1,
+      "zadowolenie": 0,
+      "awans": 0,
+      "spadek": 0
+     }
+    },
+    {
+     "inState": {
+      "poziom": -8,
+      "pula": 0
+     },
+     "spol": 0,
+     "miasto": {
+      "$n": "NaN"
+     },
+     "epoka": 1,
+     "minPoziom": null,
+     "out": {
+      "poziom": -2,
+      "pula": 0,
+      "mnoznik": 1,
+      "zadowolenie": 0,
+      "awans": 0,
+      "spadek": 0
+     }
+    },
+    {
+     "inState": {
+      "poziom": -2,
+      "pula": 0
+     },
+     "spol": 10,
+     "miasto": 0,
+     "epoka": 1,
+     "minPoziom": 2,
+     "out": {
+      "poziom": -2,
+      "pula": 10,
+      "mnoznik": 1,
+      "zadowolenie": 0,
+      "awans": 0,
+      "spadek": 0
+     }
+    }
+   ]
+  },
+  {
+   "params": "ujemnyCap",
+   "startIndex": 3,
+   "steps": [
+    {
+     "inState": {
+      "poziom": 500,
+      "pula": -4
+     },
+     "spol": 0,
+     "miasto": 100,
+     "epoka": 1,
+     "minPoziom": 3,
+     "out": {
+      "poziom": -2,
+      "pula": 0,
+      "mnoznik": 1,
+      "zadowolenie": 0,
+      "awans": 0,
+      "spadek": 0
+     }
+    },
+    {
+     "inState": {
+      "poziom": -2,
+      "pula": 0
+     },
+     "spol": 10,
+     "miasto": {
+      "$n": "NaN"
+     },
+     "epoka": 1,
+     "minPoziom": -2,
+     "out": {
+      "poziom": -2,
+      "pula": 10,
+      "mnoznik": 1,
+      "zadowolenie": 0,
+      "awans": 0,
+      "spadek": 0
+     }
+    },
+    {
+     "inState": {
+      "poziom": -2,
+      "pula": 10
+     },
+     "spol": {
+      "$n": "NaN"
+     },
+     "miasto": 0,
+     "epoka": 2,
+     "minPoziom": {
+      "$n": "NaN"
+     },
+     "out": {
+      "poziom": -4,
+      "pula": 10,
+      "mnoznik": 1,
+      "zadowolenie": 0,
+      "awans": 0,
+      "spadek": 0
+     }
+    },
+    {
+     "inState": {
+      "poziom": -4,
+      "pula": 10
+     },
+     "spol": 0,
+     "miasto": 20,
+     "epoka": 2,
+     "minPoziom": null,
+     "out": {
+      "poziom": -4,
+      "pula": 2,
+      "mnoznik": 1,
+      "zadowolenie": 0,
+      "awans": 0,
+      "spadek": 0
+     }
+    },
+    {
+     "inState": {
+      "poziom": -4,
+      "pula": 2
+     },
+     "spol": 10,
+     "miasto": -1,
+     "epoka": 3,
+     "minPoziom": 2,
+     "out": {
+      "poziom": -6,
+      "pula": 12,
+      "mnoznik": 1,
+      "zadowolenie": 0,
+      "awans": 0,
+      "spadek": 0
+     }
+    },
+    {
+     "inState": {
+      "poziom": -6,
+      "pula": 12
+     },
+     "spol": {
+      "$n": "NaN"
+     },
+     "miasto": {
+      "$f": "33.3"
+     },
+     "epoka": 3,
+     "minPoziom": {
+      "$undef": true
+     },
+     "out": {
+      "poziom": -6,
+      "pula": 0,
+      "mnoznik": 1,
+      "zadowolenie": 0,
+      "awans": 0,
+      "spadek": 0
+     }
+    },
+    {
+     "inState": {
+      "poziom": -6,
+      "pula": 0
+     },
+     "spol": 0,
+     "miasto": 5,
+     "epoka": 5,
+     "minPoziom": 0,
+     "out": {
+      "poziom": -10,
+      "pula": 0,
+      "mnoznik": 1,
+      "zadowolenie": 0,
+      "awans": 0,
+      "spadek": 0
+     }
+    },
+    {
+     "inState": {
+      "poziom": -10,
+      "pula": 0
+     },
+     "spol": 10,
+     "miasto": 100,
+     "epoka": 10,
+     "minPoziom": 1,
+     "out": {
+      "poziom": -20,
+      "pula": 0,
+      "mnoznik": 1,
+      "zadowolenie": 0,
+      "awans": 0,
+      "spadek": 0
+     }
+    },
+    {
+     "inState": {
+      "poziom": -20,
+      "pula": 0
+     },
+     "spol": {
+      "$n": "NaN"
+     },
+     "miasto": {
+      "$n": "NaN"
+     },
+     "epoka": 10,
+     "minPoziom": 3,
+     "out": {
+      "poziom": -20,
+      "pula": 0,
+      "mnoznik": 1,
+      "zadowolenie": 0,
+      "awans": 0,
+      "spadek": 0
+     }
+    },
+    {
+     "inState": {
+      "poziom": -20,
+      "pula": 0
+     },
+     "spol": 0,
+     "miasto": 0,
+     "epoka": 11,
+     "minPoziom": -2,
+     "out": {
+      "poziom": -22,
+      "pula": 0,
+      "mnoznik": 1,
+      "zadowolenie": 0,
+      "awans": 0,
+      "spadek": 0
+     }
+    },
+    {
+     "inState": {
+      "poziom": -22,
+      "pula": 0
+     },
+     "spol": 10,
+     "miasto": 20,
+     "epoka": {
+      "$f": "0.5"
+     },
+     "minPoziom": {
+      "$n": "NaN"
+     },
+     "out": {
+      "poziom": {
+       "$n": "-0"
+      },
+      "pula": 2,
+      "mnoznik": 1,
+      "zadowolenie": 0,
+      "awans": 0,
+      "spadek": 0
+     }
+    },
+    {
+     "inState": {
+      "poziom": {
+       "$n": "-0"
+      },
+      "pula": 2
+     },
+     "spol": {
+      "$n": "NaN"
+     },
+     "miasto": -1,
+     "epoka": 4,
+     "minPoziom": null,
+     "out": {
+      "poziom": -8,
+      "pula": 2,
+      "mnoznik": 1,
+      "zadowolenie": 0,
+      "awans": 0,
+      "spadek": 0
+     }
+    },
+    {
+     "inState": {
+      "poziom": -8,
+      "pula": 2
+     },
+     "spol": 0,
+     "miasto": {
+      "$f": "33.3"
+     },
+     "epoka": 1,
+     "minPoziom": 2,
+     "out": {
+      "poziom": -2,
+      "pula": 0,
+      "mnoznik": 1,
+      "zadowolenie": 0,
+      "awans": 0,
+      "spadek": 0
+     }
+    },
+    {
+     "inState": {
+      "poziom": -2,
+      "pula": 0
+     },
+     "spol": 10,
+     "miasto": 5,
+     "epoka": 1,
+     "minPoziom": {
+      "$undef": true
+     },
+     "out": {
+      "poziom": -2,
+      "pula": 8,
+      "mnoznik": 1,
+      "zadowolenie": 0,
+      "awans": 0,
+      "spadek": 0
+     }
+    }
+   ]
+  },
+  {
+   "params": "ujemnyCap",
+   "startIndex": 4,
+   "steps": [
+    {
+     "inState": {
+      "poziom": {
+       "$n": "NaN"
+      },
+      "pula": {
+       "$n": "NaN"
+      }
+     },
+     "spol": 0,
+     "miasto": -1,
+     "epoka": 1,
+     "minPoziom": -2,
+     "out": {
+      "poziom": {
+       "$n": "NaN"
+      },
+      "pula": 0,
+      "mnoznik": {
+       "$n": "NaN"
+      },
+      "zadowolenie": 0,
+      "awans": 0,
+      "spadek": 0
+     }
+    },
+    {
+     "inState": {
+      "poziom": {
+       "$n": "NaN"
+      },
+      "pula": 0
+     },
+     "spol": 10,
+     "miasto": {
+      "$f": "33.3"
+     },
+     "epoka": 1,
+     "minPoziom": {
+      "$n": "NaN"
+     },
+     "out": {
+      "poziom": {
+       "$n": "NaN"
+      },
+      "pula": 0,
+      "mnoznik": {
+       "$n": "NaN"
+      },
+      "zadowolenie": 0,
+      "awans": 0,
+      "spadek": 0
+     }
+    },
+    {
+     "inState": {
+      "poziom": {
+       "$n": "NaN"
+      },
+      "pula": 0
+     },
+     "spol": {
+      "$n": "NaN"
+     },
+     "miasto": 5,
+     "epoka": 2,
+     "minPoziom": null,
+     "out": {
+      "poziom": {
+       "$n": "NaN"
+      },
+      "pula": 0,
+      "mnoznik": {
+       "$n": "NaN"
+      },
+      "zadowolenie": 0,
+      "awans": 0,
+      "spadek": 0
+     }
+    },
+    {
+     "inState": {
+      "poziom": {
+       "$n": "NaN"
+      },
+      "pula": 0
+     },
+     "spol": 0,
+     "miasto": 100,
+     "epoka": 2,
+     "minPoziom": 2,
+     "out": {
+      "poziom": {
+       "$n": "NaN"
+      },
+      "pula": 0,
+      "mnoznik": {
+       "$n": "NaN"
+      },
+      "zadowolenie": 0,
+      "awans": 0,
+      "spadek": 0
+     }
+    },
+    {
+     "inState": {
+      "poziom": {
+       "$n": "NaN"
+      },
+      "pula": 0
+     },
+     "spol": 10,
+     "miasto": {
+      "$n": "NaN"
+     },
+     "epoka": 3,
+     "minPoziom": {
+      "$undef": true
+     },
+     "out": {
+      "poziom": {
+       "$n": "NaN"
+      },
+      "pula": 10,
+      "mnoznik": {
+       "$n": "NaN"
+      },
+      "zadowolenie": 0,
+      "awans": 0,
+      "spadek": 0
+     }
+    },
+    {
+     "inState": {
+      "poziom": {
+       "$n": "NaN"
+      },
+      "pula": 10
+     },
+     "spol": {
+      "$n": "NaN"
+     },
+     "miasto": 0,
+     "epoka": 3,
+     "minPoziom": 0,
+     "out": {
+      "poziom": {
+       "$n": "NaN"
+      },
+      "pula": 10,
+      "mnoznik": {
+       "$n": "NaN"
+      },
+      "zadowolenie": 0,
+      "awans": 0,
+      "spadek": 0
+     }
+    },
+    {
+     "inState": {
+      "poziom": {
+       "$n": "NaN"
+      },
+      "pula": 10
+     },
+     "spol": 0,
+     "miasto": 20,
+     "epoka": 5,
+     "minPoziom": 1,
+     "out": {
+      "poziom": {
+       "$n": "NaN"
+      },
+      "pula": 2,
+      "mnoznik": {
+       "$n": "NaN"
+      },
+      "zadowolenie": 0,
+      "awans": 0,
+      "spadek": 0
+     }
+    },
+    {
+     "inState": {
+      "poziom": {
+       "$n": "NaN"
+      },
+      "pula": 2
+     },
+     "spol": 10,
+     "miasto": -1,
+     "epoka": 10,
+     "minPoziom": 3,
+     "out": {
+      "poziom": {
+       "$n": "NaN"
+      },
+      "pula": 12,
+      "mnoznik": {
+       "$n": "NaN"
+      },
+      "zadowolenie": 0,
+      "awans": 0,
+      "spadek": 0
+     }
+    },
+    {
+     "inState": {
+      "poziom": {
+       "$n": "NaN"
+      },
+      "pula": 12
+     },
+     "spol": {
+      "$n": "NaN"
+     },
+     "miasto": {
+      "$f": "33.3"
+     },
+     "epoka": 10,
+     "minPoziom": -2,
+     "out": {
+      "poziom": {
+       "$n": "NaN"
+      },
+      "pula": 0,
+      "mnoznik": {
+       "$n": "NaN"
+      },
+      "zadowolenie": 0,
+      "awans": 0,
+      "spadek": 0
+     }
+    },
+    {
+     "inState": {
+      "poziom": {
+       "$n": "NaN"
+      },
+      "pula": 0
+     },
+     "spol": 0,
+     "miasto": 5,
+     "epoka": 11,
+     "minPoziom": {
+      "$n": "NaN"
+     },
+     "out": {
+      "poziom": {
+       "$n": "NaN"
+      },
+      "pula": 0,
+      "mnoznik": {
+       "$n": "NaN"
+      },
+      "zadowolenie": 0,
+      "awans": 0,
+      "spadek": 0
+     }
+    },
+    {
+     "inState": {
+      "poziom": {
+       "$n": "NaN"
+      },
+      "pula": 0
+     },
+     "spol": 10,
+     "miasto": 100,
+     "epoka": {
+      "$f": "0.5"
+     },
+     "minPoziom": null,
+     "out": {
+      "poziom": {
+       "$n": "NaN"
+      },
+      "pula": 0,
+      "mnoznik": {
+       "$n": "NaN"
+      },
+      "zadowolenie": 0,
+      "awans": 0,
+      "spadek": 0
+     }
+    },
+    {
+     "inState": {
+      "poziom": {
+       "$n": "NaN"
+      },
+      "pula": 0
+     },
+     "spol": {
+      "$n": "NaN"
+     },
+     "miasto": {
+      "$n": "NaN"
+     },
+     "epoka": 4,
+     "minPoziom": 2,
+     "out": {
+      "poziom": {
+       "$n": "NaN"
+      },
+      "pula": 0,
+      "mnoznik": {
+       "$n": "NaN"
+      },
+      "zadowolenie": 0,
+      "awans": 0,
+      "spadek": 0
+     }
+    },
+    {
+     "inState": {
+      "poziom": {
+       "$n": "NaN"
+      },
+      "pula": 0
+     },
+     "spol": 0,
+     "miasto": 0,
+     "epoka": 1,
+     "minPoziom": {
+      "$undef": true
+     },
+     "out": {
+      "poziom": {
+       "$n": "NaN"
+      },
+      "pula": 0,
+      "mnoznik": {
+       "$n": "NaN"
+      },
+      "zadowolenie": 0,
+      "awans": 0,
+      "spadek": 0
+     }
+    },
+    {
+     "inState": {
+      "poziom": {
+       "$n": "NaN"
+      },
+      "pula": 0
+     },
+     "spol": 10,
+     "miasto": 20,
+     "epoka": 1,
+     "minPoziom": 0,
+     "out": {
+      "poziom": {
+       "$n": "NaN"
+      },
+      "pula": 2,
+      "mnoznik": {
+       "$n": "NaN"
+      },
+      "zadowolenie": 0,
+      "awans": 0,
+      "spadek": 0
+     }
+    }
+   ]
+  },
+  {
+   "params": "ujemnyCap",
+   "startIndex": 5,
+   "steps": [
+    {
+     "inState": {
+      "poziom": -2,
+      "pula": {
+       "$n": "Infinity"
+      }
+     },
+     "spol": 0,
+     "miasto": {
+      "$n": "NaN"
+     },
+     "epoka": 1,
+     "minPoziom": {
+      "$n": "NaN"
+     },
+     "out": {
+      "poziom": -2,
+      "pula": 0,
+      "mnoznik": 1,
+      "zadowolenie": 0,
+      "awans": 0,
+      "spadek": 0
+     }
+    },
+    {
+     "inState": {
+      "poziom": -2,
+      "pula": 0
+     },
+     "spol": 10,
+     "miasto": 0,
+     "epoka": 1,
+     "minPoziom": null,
+     "out": {
+      "poziom": -2,
+      "pula": 10,
+      "mnoznik": 1,
+      "zadowolenie": 0,
+      "awans": 0,
+      "spadek": 0
+     }
+    },
+    {
+     "inState": {
+      "poziom": -2,
+      "pula": 10
+     },
+     "spol": {
+      "$n": "NaN"
+     },
+     "miasto": 20,
+     "epoka": 2,
+     "minPoziom": 2,
+     "out": {
+      "poziom": -4,
+      "pula": 2,
+      "mnoznik": 1,
+      "zadowolenie": 0,
+      "awans": 0,
+      "spadek": 0
+     }
+    },
+    {
+     "inState": {
+      "poziom": -4,
+      "pula": 2
+     },
+     "spol": 0,
+     "miasto": -1,
+     "epoka": 2,
+     "minPoziom": {
+      "$undef": true
+     },
+     "out": {
+      "poziom": -4,
+      "pula": 2,
+      "mnoznik": 1,
+      "zadowolenie": 0,
+      "awans": 0,
+      "spadek": 0
+     }
+    },
+    {
+     "inState": {
+      "poziom": -4,
+      "pula": 2
+     },
+     "spol": 10,
+     "miasto": {
+      "$f": "33.3"
+     },
+     "epoka": 3,
+     "minPoziom": 0,
+     "out": {
+      "poziom": -6,
+      "pula": 0,
+      "mnoznik": 1,
+      "zadowolenie": 0,
+      "awans": 0,
+      "spadek": 0
+     }
+    },
+    {
+     "inState": {
+      "poziom": -6,
+      "pula": 0
+     },
+     "spol": {
+      "$n": "NaN"
+     },
+     "miasto": 5,
+     "epoka": 3,
+     "minPoziom": 1,
+     "out": {
+      "poziom": -6,
+      "pula": 0,
+      "mnoznik": 1,
+      "zadowolenie": 0,
+      "awans": 0,
+      "spadek": 0
+     }
+    },
+    {
+     "inState": {
+      "poziom": -6,
+      "pula": 0
+     },
+     "spol": 0,
+     "miasto": 100,
+     "epoka": 5,
+     "minPoziom": 3,
+     "out": {
+      "poziom": -10,
+      "pula": 0,
+      "mnoznik": 1,
+      "zadowolenie": 0,
+      "awans": 0,
+      "spadek": 0
+     }
+    },
+    {
+     "inState": {
+      "poziom": -10,
+      "pula": 0
+     },
+     "spol": 10,
+     "miasto": {
+      "$n": "NaN"
+     },
+     "epoka": 10,
+     "minPoziom": -2,
+     "out": {
+      "poziom": -20,
+      "pula": 10,
+      "mnoznik": 1,
+      "zadowolenie": 0,
+      "awans": 0,
+      "spadek": 0
+     }
+    },
+    {
+     "inState": {
+      "poziom": -20,
+      "pula": 10
+     },
+     "spol": {
+      "$n": "NaN"
+     },
+     "miasto": 0,
+     "epoka": 10,
+     "minPoziom": {
+      "$n": "NaN"
+     },
+     "out": {
+      "poziom": -20,
+      "pula": 10,
+      "mnoznik": 1,
+      "zadowolenie": 0,
+      "awans": 0,
+      "spadek": 0
+     }
+    },
+    {
+     "inState": {
+      "poziom": -20,
+      "pula": 10
+     },
+     "spol": 0,
+     "miasto": 20,
+     "epoka": 11,
+     "minPoziom": null,
+     "out": {
+      "poziom": -22,
+      "pula": 2,
+      "mnoznik": 1,
+      "zadowolenie": 0,
+      "awans": 0,
+      "spadek": 0
+     }
+    },
+    {
+     "inState": {
+      "poziom": -22,
+      "pula": 2
+     },
+     "spol": 10,
+     "miasto": -1,
+     "epoka": {
+      "$f": "0.5"
+     },
+     "minPoziom": 2,
+     "out": {
+      "poziom": {
+       "$n": "-0"
+      },
+      "pula": 12,
+      "mnoznik": 1,
+      "zadowolenie": 0,
+      "awans": 0,
+      "spadek": 0
+     }
+    },
+    {
+     "inState": {
+      "poziom": {
+       "$n": "-0"
+      },
+      "pula": 12
+     },
+     "spol": {
+      "$n": "NaN"
+     },
+     "miasto": {
+      "$f": "33.3"
+     },
+     "epoka": 4,
+     "minPoziom": {
+      "$undef": true
+     },
+     "out": {
+      "poziom": -8,
+      "pula": 0,
+      "mnoznik": 1,
+      "zadowolenie": 0,
+      "awans": 0,
+      "spadek": 0
+     }
+    },
+    {
+     "inState": {
+      "poziom": -8,
+      "pula": 0
+     },
+     "spol": 0,
+     "miasto": 5,
+     "epoka": 1,
+     "minPoziom": 0,
+     "out": {
+      "poziom": -2,
+      "pula": 0,
+      "mnoznik": 1,
+      "zadowolenie": 0,
+      "awans": 0,
+      "spadek": 0
+     }
+    },
+    {
+     "inState": {
+      "poziom": -2,
+      "pula": 0
+     },
+     "spol": 10,
+     "miasto": 100,
+     "epoka": 1,
+     "minPoziom": 1,
+     "out": {
+      "poziom": -2,
+      "pula": 0,
+      "mnoznik": 1,
+      "zadowolenie": 0,
+      "awans": 0,
+      "spadek": 0
+     }
+    }
+   ]
+  },
+  {
+   "params": "ujemnyCap",
+   "startIndex": 6,
+   "steps": [
+    {
+     "inState": {
+      "poziom": 2,
+      "pula": 40
+     },
+     "spol": 0,
+     "miasto": {
+      "$f": "33.3"
+     },
+     "epoka": 1,
+     "minPoziom": null,
+     "out": {
+      "poziom": -2,
+      "pula": {
+       "$f": "26.68"
+      },
+      "mnoznik": 1,
+      "zadowolenie": 0,
+      "awans": 0,
+      "spadek": 0
+     }
+    },
+    {
+     "inState": {
+      "poziom": -2,
+      "pula": {
+       "$f": "26.68"
+      }
+     },
+     "spol": 10,
+     "miasto": 5,
+     "epoka": 1,
+     "minPoziom": 2,
+     "out": {
+      "poziom": -2,
+      "pula": {
+       "$f": "34.68"
+      },
+      "mnoznik": 1,
+      "zadowolenie": 0,
+      "awans": 0,
+      "spadek": 0
+     }
+    },
+    {
+     "inState": {
+      "poziom": -2,
+      "pula": {
+       "$f": "34.68"
+      }
+     },
+     "spol": {
+      "$n": "NaN"
+     },
+     "miasto": 100,
+     "epoka": 2,
+     "minPoziom": {
+      "$undef": true
+     },
+     "out": {
+      "poziom": -4,
+      "pula": 0,
+      "mnoznik": 1,
+      "zadowolenie": 0,
+      "awans": 0,
+      "spadek": 0
+     }
+    },
+    {
+     "inState": {
+      "poziom": -4,
+      "pula": 0
+     },
+     "spol": 0,
+     "miasto": {
+      "$n": "NaN"
+     },
+     "epoka": 2,
+     "minPoziom": 0,
+     "out": {
+      "poziom": -4,
+      "pula": 0,
+      "mnoznik": 1,
+      "zadowolenie": 0,
+      "awans": 0,
+      "spadek": 0
+     }
+    },
+    {
+     "inState": {
+      "poziom": -4,
+      "pula": 0
+     },
+     "spol": 10,
+     "miasto": 0,
+     "epoka": 3,
+     "minPoziom": 1,
+     "out": {
+      "poziom": -6,
+      "pula": 10,
+      "mnoznik": 1,
+      "zadowolenie": 0,
+      "awans": 0,
+      "spadek": 0
+     }
+    },
+    {
+     "inState": {
+      "poziom": -6,
+      "pula": 10
+     },
+     "spol": {
+      "$n": "NaN"
+     },
+     "miasto": 20,
+     "epoka": 3,
+     "minPoziom": 3,
+     "out": {
+      "poziom": -6,
+      "pula": 2,
+      "mnoznik": 1,
+      "zadowolenie": 0,
+      "awans": 0,
+      "spadek": 0
+     }
+    },
+    {
+     "inState": {
+      "poziom": -6,
+      "pula": 2
+     },
+     "spol": 0,
+     "miasto": -1,
+     "epoka": 5,
+     "minPoziom": -2,
+     "out": {
+      "poziom": -10,
+      "pula": 2,
+      "mnoznik": 1,
+      "zadowolenie": 0,
+      "awans": 0,
+      "spadek": 0
+     }
+    },
+    {
+     "inState": {
+      "poziom": -10,
+      "pula": 2
+     },
+     "spol": 10,
+     "miasto": {
+      "$f": "33.3"
+     },
+     "epoka": 10,
+     "minPoziom": {
+      "$n": "NaN"
+     },
+     "out": {
+      "poziom": -20,
+      "pula": 0,
+      "mnoznik": 1,
+      "zadowolenie": 0,
+      "awans": 0,
+      "spadek": 0
+     }
+    },
+    {
+     "inState": {
+      "poziom": -20,
+      "pula": 0
+     },
+     "spol": {
+      "$n": "NaN"
+     },
+     "miasto": 5,
+     "epoka": 10,
+     "minPoziom": null,
+     "out": {
+      "poziom": -20,
+      "pula": 0,
+      "mnoznik": 1,
+      "zadowolenie": 0,
+      "awans": 0,
+      "spadek": 0
+     }
+    },
+    {
+     "inState": {
+      "poziom": -20,
+      "pula": 0
+     },
+     "spol": 0,
+     "miasto": 100,
+     "epoka": 11,
+     "minPoziom": 2,
+     "out": {
+      "poziom": -22,
+      "pula": 0,
+      "mnoznik": 1,
+      "zadowolenie": 0,
+      "awans": 0,
+      "spadek": 0
+     }
+    },
+    {
+     "inState": {
+      "poziom": -22,
+      "pula": 0
+     },
+     "spol": 10,
+     "miasto": {
+      "$n": "NaN"
+     },
+     "epoka": {
+      "$f": "0.5"
+     },
+     "minPoziom": {
+      "$undef": true
+     },
+     "out": {
+      "poziom": {
+       "$n": "-0"
+      },
+      "pula": 10,
+      "mnoznik": 1,
+      "zadowolenie": 0,
+      "awans": 0,
+      "spadek": 0
+     }
+    },
+    {
+     "inState": {
+      "poziom": {
+       "$n": "-0"
+      },
+      "pula": 10
+     },
+     "spol": {
+      "$n": "NaN"
+     },
+     "miasto": 0,
+     "epoka": 4,
+     "minPoziom": 0,
+     "out": {
+      "poziom": -8,
+      "pula": 10,
+      "mnoznik": 1,
+      "zadowolenie": 0,
+      "awans": 0,
+      "spadek": 0
+     }
+    },
+    {
+     "inState": {
+      "poziom": -8,
+      "pula": 10
+     },
+     "spol": 0,
+     "miasto": 20,
+     "epoka": 1,
+     "minPoziom": 1,
+     "out": {
+      "poziom": -2,
+      "pula": 2,
+      "mnoznik": 1,
+      "zadowolenie": 0,
+      "awans": 0,
+      "spadek": 0
+     }
+    },
+    {
+     "inState": {
+      "poziom": -2,
+      "pula": 2
+     },
+     "spol": 10,
+     "miasto": -1,
+     "epoka": 1,
+     "minPoziom": 3,
+     "out": {
+      "poziom": -2,
+      "pula": 12,
+      "mnoznik": 1,
+      "zadowolenie": 0,
+      "awans": 0,
       "spadek": 0
      }
     }
@@ -27784,6 +34445,28 @@
       "zadowolenie": 0,
       "awans": 0,
       "spadek": 1
+     }
+    },
+    {
+     "inState": {
+      "poziom": 1,
+      "pula": 0
+     },
+     "spol": 18,
+     "miasto": 0,
+     "epoka": 2,
+     "minPoziom": {
+      "$undef": true
+     },
+     "out": {
+      "poziom": 2,
+      "pula": 0,
+      "mnoznik": {
+       "$f": "1.15"
+      },
+      "zadowolenie": 1,
+      "awans": 1,
+      "spadek": 0
      }
     }
    ]

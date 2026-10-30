@@ -127,9 +127,29 @@ fn check_tick(actual: &GoldDeficitTick, json: &Value, ctx: &str) {
     );
 }
 
+/// Liczba z wektora raw: JSON number, `{"$f"}`, `{"$n"}` (NaN/Infinity/-Infinity/-0); string / brak => None.
+fn raw_num(v: &Value) -> Option<f64> {
+    match v {
+        Value::Number(n) => n.as_f64(),
+        Value::Object(o) => {
+            if let Some(s) = o.get("$f") {
+                return s.as_str()?.parse::<f64>().ok();
+            }
+            match o.get("$n")?.as_str()? {
+                "NaN" => Some(f64::NAN),
+                "Infinity" => Some(f64::INFINITY),
+                "-Infinity" => Some(f64::NEG_INFINITY),
+                "-0" => Some(-0.0),
+                _ => None,
+            }
+        }
+        _ => None,
+    }
+}
+
 fn raw_row(v: &Value) -> Option<RawParamRow> {
     let o = v.as_object()?;
-    let f = |k: &str| o.get(k).and_then(Value::as_f64);
+    let f = |k: &str| o.get(k).and_then(raw_num);
     Some(RawParamRow {
         easy: f("easy"),
         normal: f("normal"),
@@ -367,7 +387,7 @@ fn clear_resets_runtime_accessors() {
 fn stat_mult_matches_web_vectors() {
     let r = root();
     let cases = arr(&r["statMult"], "statMult");
-    assert_eq!(cases.len(), 88);
+    assert_eq!(cases.len(), 132);
     for (i, c) in cases.iter().enumerate() {
         let inp = &c["input"];
         let base = GoldDeficitCombatStats {

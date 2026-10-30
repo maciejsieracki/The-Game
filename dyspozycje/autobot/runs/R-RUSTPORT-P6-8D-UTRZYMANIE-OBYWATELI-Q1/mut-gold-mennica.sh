@@ -36,6 +36,10 @@ MUTS=(
   's/MENNICA_ZLOTO_GRACE_TURNS);/MENNICA_ZLOTO_GRACE_TURNS + 1);/|laska 2 tury'
   's/                if grace > 0 {/                if grace > 1 {/|dekrement laski przy 1 pominiety'
   's/state.grace_turns_left.get(&owner_id).copied().unwrap_or(0) > 0/state.grace_turns_left.get(\&owner_id).copied().unwrap_or(0) > 1/|dostep z laska wymaga >1'
+  # r4 (Evaluator r3 zarzut 2-4): pick z is_finite; js_round granica k+0.5 i galaz -0
+  's/            Some(x) if x.is_finite() => x,/            Some(x) => x,/|pick: brak is_finite (NaN/Inf w raw)'
+  's/        let rounded = if x - floor >= 0.5 {/        let rounded = if x - floor > 0.5 {/|js_round: polowka k+0.5 w dol (> zamiast >=)'
+  's/        if rounded == 0.0 && x < 0.0 {/        if false {/|js_round: galaz -0 usunieta'
 )
 
 OD="${1:-1}"

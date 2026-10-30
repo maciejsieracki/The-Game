@@ -76,7 +76,9 @@
    "difficulty": "easy",
    "raw": {
     "zloto_deficyt_stat_mult": {
-     "normal": 0.6
+     "normal": {
+      "$f": "0.6"
+     }
     }
    },
    "expected": {
@@ -94,7 +96,9 @@
    "difficulty": "normal",
    "raw": {
     "zloto_deficyt_stat_mult": {
-     "normal": 0.6
+     "normal": {
+      "$f": "0.6"
+     }
     }
    },
    "expected": {
@@ -112,7 +116,9 @@
    "difficulty": "hard",
    "raw": {
     "zloto_deficyt_stat_mult": {
-     "normal": 0.6
+     "normal": {
+      "$f": "0.6"
+     }
     }
    },
    "expected": {
@@ -130,9 +136,15 @@
    "difficulty": "easy",
    "raw": {
     "zloto_deficyt_stat_mult": {
-     "easy": 0.9,
-     "normal": 0.75,
-     "hard": 0.6
+     "easy": {
+      "$f": "0.9"
+     },
+     "normal": {
+      "$f": "0.75"
+     },
+     "hard": {
+      "$f": "0.6"
+     }
     },
     "zloto_deficyt_karencja_tur": {
      "easy": 5,
@@ -140,9 +152,15 @@
      "hard": 2
     },
     "zloto_deficyt_hp_frac": {
-     "easy": 0.05,
-     "normal": 0.08,
-     "hard": 0.12
+     "easy": {
+      "$f": "0.05"
+     },
+     "normal": {
+      "$f": "0.08"
+     },
+     "hard": {
+      "$f": "0.12"
+     }
     }
    },
    "expected": {
@@ -160,9 +178,15 @@
    "difficulty": "normal",
    "raw": {
     "zloto_deficyt_stat_mult": {
-     "easy": 0.9,
-     "normal": 0.75,
-     "hard": 0.6
+     "easy": {
+      "$f": "0.9"
+     },
+     "normal": {
+      "$f": "0.75"
+     },
+     "hard": {
+      "$f": "0.6"
+     }
     },
     "zloto_deficyt_karencja_tur": {
      "easy": 5,
@@ -170,9 +194,15 @@
      "hard": 2
     },
     "zloto_deficyt_hp_frac": {
-     "easy": 0.05,
-     "normal": 0.08,
-     "hard": 0.12
+     "easy": {
+      "$f": "0.05"
+     },
+     "normal": {
+      "$f": "0.08"
+     },
+     "hard": {
+      "$f": "0.12"
+     }
     }
    },
    "expected": {
@@ -190,9 +220,15 @@
    "difficulty": "hard",
    "raw": {
     "zloto_deficyt_stat_mult": {
-     "easy": 0.9,
-     "normal": 0.75,
-     "hard": 0.6
+     "easy": {
+      "$f": "0.9"
+     },
+     "normal": {
+      "$f": "0.75"
+     },
+     "hard": {
+      "$f": "0.6"
+     }
     },
     "zloto_deficyt_karencja_tur": {
      "easy": 5,
@@ -200,9 +236,15 @@
      "hard": 2
     },
     "zloto_deficyt_hp_frac": {
-     "easy": 0.05,
-     "normal": 0.08,
-     "hard": 0.12
+     "easy": {
+      "$f": "0.05"
+     },
+     "normal": {
+      "$f": "0.08"
+     },
+     "hard": {
+      "$f": "0.12"
+     }
     }
    },
    "expected": {
@@ -221,9 +263,15 @@
    "raw": {
     "ekonomia_miasta": {
      "zloto_deficyt_stat_mult": {
-      "easy": 0.5,
-      "normal": 0.25,
-      "hard": 0.1
+      "easy": {
+       "$f": "0.5"
+      },
+      "normal": {
+       "$f": "0.25"
+      },
+      "hard": {
+       "$f": "0.1"
+      }
      },
      "zloto_deficyt_karencja_tur": {
       "easy": 0,
@@ -233,7 +281,9 @@
      "zloto_deficyt_hp_frac": {
       "easy": 1,
       "normal": 0,
-      "hard": 0.5
+      "hard": {
+       "$f": "0.5"
+      }
      }
     }
    },
@@ -251,9 +301,15 @@
    "raw": {
     "ekonomia_miasta": {
      "zloto_deficyt_stat_mult": {
-      "easy": 0.5,
-      "normal": 0.25,
-      "hard": 0.1
+      "easy": {
+       "$f": "0.5"
+      },
+      "normal": {
+       "$f": "0.25"
+      },
+      "hard": {
+       "$f": "0.1"
+      }
      },
      "zloto_deficyt_karencja_tur": {
       "easy": 0,
@@ -263,7 +319,9 @@
      "zloto_deficyt_hp_frac": {
       "easy": 1,
       "normal": 0,
-      "hard": 0.5
+      "hard": {
+       "$f": "0.5"
+      }
      }
     }
    },
@@ -281,9 +339,15 @@
    "raw": {
     "ekonomia_miasta": {
      "zloto_deficyt_stat_mult": {
-      "easy": 0.5,
-      "normal": 0.25,
-      "hard": 0.1
+      "easy": {
+       "$f": "0.5"
+      },
+      "normal": {
+       "$f": "0.25"
+      },
+      "hard": {
+       "$f": "0.1"
+      }
      },
      "zloto_deficyt_karencja_tur": {
       "easy": 0,
@@ -293,7 +357,9 @@
      "zloto_deficyt_hp_frac": {
       "easy": 1,
       "normal": 0,
-      "hard": 0.5
+      "hard": {
+       "$f": "0.5"
+      }
      }
     }
    },
@@ -435,7 +501,9 @@
      "normal": -2
     },
     "zloto_deficyt_hp_frac": {
-     "normal": -0.3
+     "normal": {
+      "$f": "-0.3"
+     }
     }
    },
    "expected": {
@@ -459,7 +527,9 @@
      "normal": -2
     },
     "zloto_deficyt_hp_frac": {
-     "normal": -0.3
+     "normal": {
+      "$f": "-0.3"
+     }
     }
    },
    "expected": {
@@ -481,7 +551,9 @@
      "normal": -2
     },
     "zloto_deficyt_hp_frac": {
-     "normal": -0.3
+     "normal": {
+      "$f": "-0.3"
+     }
     }
    },
    "expected": {
@@ -495,13 +567,157 @@
    }
   },
   {
+   "name": "nieskonczonosci",
+   "difficulty": "easy",
+   "raw": {
+    "zloto_deficyt_stat_mult": {
+     "easy": {
+      "$n": "NaN"
+     },
+     "normal": {
+      "$n": "Infinity"
+     },
+     "hard": {
+      "$n": "-Infinity"
+     }
+    },
+    "zloto_deficyt_karencja_tur": {
+     "easy": {
+      "$n": "-Infinity"
+     },
+     "normal": {
+      "$n": "NaN"
+     },
+     "hard": 4
+    },
+    "zloto_deficyt_hp_frac": {
+     "easy": {
+      "$n": "NaN"
+     },
+     "normal": {
+      "$n": "NaN"
+     },
+     "hard": {
+      "$f": "-0.2"
+     }
+    }
+   },
+   "expected": {
+    "zlotoDeficytStatMult": {
+     "$f": "0.75"
+    },
+    "zlotoDeficytKarencjaTur": 3,
+    "zlotoDeficytHpFrac": {
+     "$f": "0.08"
+    }
+   }
+  },
+  {
+   "name": "nieskonczonosci",
+   "difficulty": "normal",
+   "raw": {
+    "zloto_deficyt_stat_mult": {
+     "easy": {
+      "$n": "NaN"
+     },
+     "normal": {
+      "$n": "Infinity"
+     },
+     "hard": {
+      "$n": "-Infinity"
+     }
+    },
+    "zloto_deficyt_karencja_tur": {
+     "easy": {
+      "$n": "-Infinity"
+     },
+     "normal": {
+      "$n": "NaN"
+     },
+     "hard": 4
+    },
+    "zloto_deficyt_hp_frac": {
+     "easy": {
+      "$n": "NaN"
+     },
+     "normal": {
+      "$n": "NaN"
+     },
+     "hard": {
+      "$f": "-0.2"
+     }
+    }
+   },
+   "expected": {
+    "zlotoDeficytStatMult": {
+     "$f": "0.75"
+    },
+    "zlotoDeficytKarencjaTur": 3,
+    "zlotoDeficytHpFrac": {
+     "$f": "0.08"
+    }
+   }
+  },
+  {
+   "name": "nieskonczonosci",
+   "difficulty": "hard",
+   "raw": {
+    "zloto_deficyt_stat_mult": {
+     "easy": {
+      "$n": "NaN"
+     },
+     "normal": {
+      "$n": "Infinity"
+     },
+     "hard": {
+      "$n": "-Infinity"
+     }
+    },
+    "zloto_deficyt_karencja_tur": {
+     "easy": {
+      "$n": "-Infinity"
+     },
+     "normal": {
+      "$n": "NaN"
+     },
+     "hard": 4
+    },
+    "zloto_deficyt_hp_frac": {
+     "easy": {
+      "$n": "NaN"
+     },
+     "normal": {
+      "$n": "NaN"
+     },
+     "hard": {
+      "$f": "-0.2"
+     }
+    }
+   },
+   "expected": {
+    "zlotoDeficytStatMult": {
+     "$f": "0.75"
+    },
+    "zlotoDeficytKarencjaTur": 4,
+    "zlotoDeficytHpFrac": {
+     "$f": "-0.2"
+    }
+   }
+  },
+  {
    "name": "domyslnaTrudnosc",
    "difficulty": null,
    "raw": {
     "zloto_deficyt_stat_mult": {
-     "easy": 0.9,
-     "normal": 0.75,
-     "hard": 0.6
+     "easy": {
+      "$f": "0.9"
+     },
+     "normal": {
+      "$f": "0.75"
+     },
+     "hard": {
+      "$f": "0.6"
+     }
     },
     "zloto_deficyt_karencja_tur": {
      "easy": 5,
@@ -509,9 +725,15 @@
      "hard": 2
     },
     "zloto_deficyt_hp_frac": {
-     "easy": 0.05,
-     "normal": 0.08,
-     "hard": 0.12
+     "easy": {
+      "$f": "0.05"
+     },
+     "normal": {
+      "$f": "0.08"
+     },
+     "hard": {
+      "$f": "0.12"
+     }
     }
    },
    "expected": {
@@ -47789,6 +48011,51 @@
     },
     "health": 10,
     "missileAttack": 0,
+    "Prog dezercji (% health)": null
+   },
+   "progInput": null,
+   "mult": {
+    "$f": "0.9375"
+   },
+   "out": {
+    "meleeAttack": {
+     "$f": "6.5625"
+    },
+    "meleeDefence": {
+     "$f": "4.6875"
+    },
+    "weaponDamage": {
+     "$f": "3.28125"
+    },
+    "piercing": {
+     "$f": "1.875"
+    },
+    "chargeBonus": {
+     "$f": "1.171875"
+    },
+    "health": {
+     "$f": "9.375"
+    },
+    "missileAttack": 0,
+    "Prog dezercji (% health)": null
+   },
+   "armorKept": 4,
+   "identity": false
+  },
+  {
+   "input": {
+    "meleeAttack": 7,
+    "meleeDefence": 5,
+    "weaponDamage": {
+     "$f": "3.5"
+    },
+    "armor": 4,
+    "piercing": 2,
+    "chargeBonus": {
+     "$f": "1.25"
+    },
+    "health": 10,
+    "missileAttack": 0,
     "Prog dezercji (% health)": {
      "$undef": true
     }
@@ -48292,6 +48559,57 @@
     },
     "health": 10,
     "missileAttack": 0,
+    "Prog dezercji (% health)": {
+     "$undef": true
+    }
+   },
+   "progInput": {
+    "$undef": true
+   },
+   "mult": {
+    "$f": "0.9375"
+   },
+   "out": {
+    "meleeAttack": {
+     "$f": "6.5625"
+    },
+    "meleeDefence": {
+     "$f": "4.6875"
+    },
+    "weaponDamage": {
+     "$f": "3.28125"
+    },
+    "piercing": {
+     "$f": "1.875"
+    },
+    "chargeBonus": {
+     "$f": "1.171875"
+    },
+    "health": {
+     "$f": "9.375"
+    },
+    "missileAttack": 0,
+    "Prog dezercji (% health)": {
+     "$undef": true
+    }
+   },
+   "armorKept": 4,
+   "identity": false
+  },
+  {
+   "input": {
+    "meleeAttack": 7,
+    "meleeDefence": 5,
+    "weaponDamage": {
+     "$f": "3.5"
+    },
+    "armor": 4,
+    "piercing": 2,
+    "chargeBonus": {
+     "$f": "1.25"
+    },
+    "health": 10,
+    "missileAttack": 0,
     "Prog dezercji (% health)": 0
    },
    "progInput": 0,
@@ -48711,6 +49029,51 @@
      "$f": "0.125"
     },
     "health": 1,
+    "missileAttack": 0,
+    "Prog dezercji (% health)": 0
+   },
+   "armorKept": 4,
+   "identity": false
+  },
+  {
+   "input": {
+    "meleeAttack": 7,
+    "meleeDefence": 5,
+    "weaponDamage": {
+     "$f": "3.5"
+    },
+    "armor": 4,
+    "piercing": 2,
+    "chargeBonus": {
+     "$f": "1.25"
+    },
+    "health": 10,
+    "missileAttack": 0,
+    "Prog dezercji (% health)": 0
+   },
+   "progInput": 0,
+   "mult": {
+    "$f": "0.9375"
+   },
+   "out": {
+    "meleeAttack": {
+     "$f": "6.5625"
+    },
+    "meleeDefence": {
+     "$f": "4.6875"
+    },
+    "weaponDamage": {
+     "$f": "3.28125"
+    },
+    "piercing": {
+     "$f": "1.875"
+    },
+    "chargeBonus": {
+     "$f": "1.171875"
+    },
+    "health": {
+     "$f": "9.375"
+    },
     "missileAttack": 0,
     "Prog dezercji (% health)": 0
    },
@@ -49156,6 +49519,53 @@
     "health": 1,
     "missileAttack": 0,
     "Prog dezercji (% health)": 95
+   },
+   "armorKept": 4,
+   "identity": false
+  },
+  {
+   "input": {
+    "meleeAttack": 7,
+    "meleeDefence": 5,
+    "weaponDamage": {
+     "$f": "3.5"
+    },
+    "armor": 4,
+    "piercing": 2,
+    "chargeBonus": {
+     "$f": "1.25"
+    },
+    "health": 10,
+    "missileAttack": 0,
+    "Prog dezercji (% health)": 50
+   },
+   "progInput": 50,
+   "mult": {
+    "$f": "0.9375"
+   },
+   "out": {
+    "meleeAttack": {
+     "$f": "6.5625"
+    },
+    "meleeDefence": {
+     "$f": "4.6875"
+    },
+    "weaponDamage": {
+     "$f": "3.28125"
+    },
+    "piercing": {
+     "$f": "1.875"
+    },
+    "chargeBonus": {
+     "$f": "1.171875"
+    },
+    "health": {
+     "$f": "9.375"
+    },
+    "missileAttack": 0,
+    "Prog dezercji (% health)": {
+     "$f": "53.125"
+    }
    },
    "armorKept": 4,
    "identity": false
@@ -49656,6 +50066,57 @@
     "missileAttack": 0,
     "Prog dezercji (% health)": {
      "$f": "63.3333"
+    }
+   },
+   "armorKept": 4,
+   "identity": false
+  },
+  {
+   "input": {
+    "meleeAttack": 7,
+    "meleeDefence": 5,
+    "weaponDamage": {
+     "$f": "3.5"
+    },
+    "armor": 4,
+    "piercing": 2,
+    "chargeBonus": {
+     "$f": "1.25"
+    },
+    "health": 10,
+    "missileAttack": 0,
+    "Prog dezercji (% health)": {
+     "$f": "33.33333"
+    }
+   },
+   "progInput": {
+    "$f": "33.33333"
+   },
+   "mult": {
+    "$f": "0.9375"
+   },
+   "out": {
+    "meleeAttack": {
+     "$f": "6.5625"
+    },
+    "meleeDefence": {
+     "$f": "4.6875"
+    },
+    "weaponDamage": {
+     "$f": "3.28125"
+    },
+    "piercing": {
+     "$f": "1.875"
+    },
+    "chargeBonus": {
+     "$f": "1.171875"
+    },
+    "health": {
+     "$f": "9.375"
+    },
+    "missileAttack": 0,
+    "Prog dezercji (% health)": {
+     "$f": "35.4167"
     }
    },
    "armorKept": 4,
@@ -50179,6 +50640,57 @@
     "health": 10,
     "missileAttack": 0,
     "Prog dezercji (% health)": {
+     "$f": "-7.5"
+    }
+   },
+   "progInput": {
+    "$f": "-7.5"
+   },
+   "mult": {
+    "$f": "0.9375"
+   },
+   "out": {
+    "meleeAttack": {
+     "$f": "6.5625"
+    },
+    "meleeDefence": {
+     "$f": "4.6875"
+    },
+    "weaponDamage": {
+     "$f": "3.28125"
+    },
+    "piercing": {
+     "$f": "1.875"
+    },
+    "chargeBonus": {
+     "$f": "1.171875"
+    },
+    "health": {
+     "$f": "9.375"
+    },
+    "missileAttack": 0,
+    "Prog dezercji (% health)": {
+     "$f": "-7.9687"
+    }
+   },
+   "armorKept": 4,
+   "identity": false
+  },
+  {
+   "input": {
+    "meleeAttack": 7,
+    "meleeDefence": 5,
+    "weaponDamage": {
+     "$f": "3.5"
+    },
+    "armor": 4,
+    "piercing": 2,
+    "chargeBonus": {
+     "$f": "1.25"
+    },
+    "health": 10,
+    "missileAttack": 0,
+    "Prog dezercji (% health)": {
      "$n": "NaN"
     }
    },
@@ -50659,6 +51171,57 @@
      "$f": "0.125"
     },
     "health": 1,
+    "missileAttack": 0,
+    "Prog dezercji (% health)": {
+     "$n": "NaN"
+    }
+   },
+   "armorKept": 4,
+   "identity": false
+  },
+  {
+   "input": {
+    "meleeAttack": 7,
+    "meleeDefence": 5,
+    "weaponDamage": {
+     "$f": "3.5"
+    },
+    "armor": 4,
+    "piercing": 2,
+    "chargeBonus": {
+     "$f": "1.25"
+    },
+    "health": 10,
+    "missileAttack": 0,
+    "Prog dezercji (% health)": {
+     "$n": "NaN"
+    }
+   },
+   "progInput": {
+    "$n": "NaN"
+   },
+   "mult": {
+    "$f": "0.9375"
+   },
+   "out": {
+    "meleeAttack": {
+     "$f": "6.5625"
+    },
+    "meleeDefence": {
+     "$f": "4.6875"
+    },
+    "weaponDamage": {
+     "$f": "3.28125"
+    },
+    "piercing": {
+     "$f": "1.875"
+    },
+    "chargeBonus": {
+     "$f": "1.171875"
+    },
+    "health": {
+     "$f": "9.375"
+    },
     "missileAttack": 0,
     "Prog dezercji (% health)": {
      "$n": "NaN"
@@ -51165,6 +51728,1719 @@
     "missileAttack": 0,
     "Prog dezercji (% health)": {
      "$f": "23.4568"
+    }
+   },
+   "armorKept": 4,
+   "identity": false
+  },
+  {
+   "input": {
+    "meleeAttack": 7,
+    "meleeDefence": 5,
+    "weaponDamage": {
+     "$f": "3.5"
+    },
+    "armor": 4,
+    "piercing": 2,
+    "chargeBonus": {
+     "$f": "1.25"
+    },
+    "health": 10,
+    "missileAttack": 0,
+    "Prog dezercji (% health)": {
+     "$f": "12.34567"
+    }
+   },
+   "progInput": {
+    "$f": "12.34567"
+   },
+   "mult": {
+    "$f": "0.9375"
+   },
+   "out": {
+    "meleeAttack": {
+     "$f": "6.5625"
+    },
+    "meleeDefence": {
+     "$f": "4.6875"
+    },
+    "weaponDamage": {
+     "$f": "3.28125"
+    },
+    "piercing": {
+     "$f": "1.875"
+    },
+    "chargeBonus": {
+     "$f": "1.171875"
+    },
+    "health": {
+     "$f": "9.375"
+    },
+    "missileAttack": 0,
+    "Prog dezercji (% health)": {
+     "$f": "13.1173"
+    }
+   },
+   "armorKept": 4,
+   "identity": false
+  },
+  {
+   "input": {
+    "meleeAttack": 7,
+    "meleeDefence": 5,
+    "weaponDamage": {
+     "$f": "3.5"
+    },
+    "armor": 4,
+    "piercing": 2,
+    "chargeBonus": {
+     "$f": "1.25"
+    },
+    "health": 10,
+    "missileAttack": 0,
+    "Prog dezercji (% health)": {
+     "$f": "0.5"
+    }
+   },
+   "progInput": {
+    "$f": "0.5"
+   },
+   "mult": {
+    "$f": "0.75"
+   },
+   "out": {
+    "meleeAttack": {
+     "$f": "5.25"
+    },
+    "meleeDefence": {
+     "$f": "3.75"
+    },
+    "weaponDamage": {
+     "$f": "2.625"
+    },
+    "piercing": {
+     "$f": "1.5"
+    },
+    "chargeBonus": {
+     "$f": "0.9375"
+    },
+    "health": {
+     "$f": "7.5"
+    },
+    "missileAttack": 0,
+    "Prog dezercji (% health)": {
+     "$f": "0.625"
+    }
+   },
+   "armorKept": 4,
+   "identity": false
+  },
+  {
+   "input": {
+    "meleeAttack": 7,
+    "meleeDefence": 5,
+    "weaponDamage": {
+     "$f": "3.5"
+    },
+    "armor": 4,
+    "piercing": 2,
+    "chargeBonus": {
+     "$f": "1.25"
+    },
+    "health": 10,
+    "missileAttack": 0,
+    "Prog dezercji (% health)": {
+     "$f": "0.5"
+    }
+   },
+   "progInput": {
+    "$f": "0.5"
+   },
+   "mult": 1,
+   "out": {
+    "meleeAttack": 7,
+    "meleeDefence": 5,
+    "weaponDamage": {
+     "$f": "3.5"
+    },
+    "piercing": 2,
+    "chargeBonus": {
+     "$f": "1.25"
+    },
+    "health": 10,
+    "missileAttack": 0,
+    "Prog dezercji (% health)": {
+     "$f": "0.5"
+    }
+   },
+   "armorKept": 4,
+   "identity": true
+  },
+  {
+   "input": {
+    "meleeAttack": 7,
+    "meleeDefence": 5,
+    "weaponDamage": {
+     "$f": "3.5"
+    },
+    "armor": 4,
+    "piercing": 2,
+    "chargeBonus": {
+     "$f": "1.25"
+    },
+    "health": 10,
+    "missileAttack": 0,
+    "Prog dezercji (% health)": {
+     "$f": "0.5"
+    }
+   },
+   "progInput": {
+    "$f": "0.5"
+   },
+   "mult": 0,
+   "out": {
+    "meleeAttack": 7,
+    "meleeDefence": 5,
+    "weaponDamage": {
+     "$f": "3.5"
+    },
+    "piercing": 2,
+    "chargeBonus": {
+     "$f": "1.25"
+    },
+    "health": 10,
+    "missileAttack": 0,
+    "Prog dezercji (% health)": {
+     "$f": "0.5"
+    }
+   },
+   "armorKept": 4,
+   "identity": true
+  },
+  {
+   "input": {
+    "meleeAttack": 7,
+    "meleeDefence": 5,
+    "weaponDamage": {
+     "$f": "3.5"
+    },
+    "armor": 4,
+    "piercing": 2,
+    "chargeBonus": {
+     "$f": "1.25"
+    },
+    "health": 10,
+    "missileAttack": 0,
+    "Prog dezercji (% health)": {
+     "$f": "0.5"
+    }
+   },
+   "progInput": {
+    "$f": "0.5"
+   },
+   "mult": -1,
+   "out": {
+    "meleeAttack": 7,
+    "meleeDefence": 5,
+    "weaponDamage": {
+     "$f": "3.5"
+    },
+    "piercing": 2,
+    "chargeBonus": {
+     "$f": "1.25"
+    },
+    "health": 10,
+    "missileAttack": 0,
+    "Prog dezercji (% health)": {
+     "$f": "0.5"
+    }
+   },
+   "armorKept": 4,
+   "identity": true
+  },
+  {
+   "input": {
+    "meleeAttack": 7,
+    "meleeDefence": 5,
+    "weaponDamage": {
+     "$f": "3.5"
+    },
+    "armor": 4,
+    "piercing": 2,
+    "chargeBonus": {
+     "$f": "1.25"
+    },
+    "health": 10,
+    "missileAttack": 0,
+    "Prog dezercji (% health)": {
+     "$f": "0.5"
+    }
+   },
+   "progInput": {
+    "$f": "0.5"
+   },
+   "mult": {
+    "$f": "0.5"
+   },
+   "out": {
+    "meleeAttack": {
+     "$f": "3.5"
+    },
+    "meleeDefence": {
+     "$f": "2.5"
+    },
+    "weaponDamage": {
+     "$f": "1.75"
+    },
+    "piercing": 1,
+    "chargeBonus": {
+     "$f": "0.625"
+    },
+    "health": 5,
+    "missileAttack": 0,
+    "Prog dezercji (% health)": {
+     "$f": "0.75"
+    }
+   },
+   "armorKept": 4,
+   "identity": false
+  },
+  {
+   "input": {
+    "meleeAttack": 7,
+    "meleeDefence": 5,
+    "weaponDamage": {
+     "$f": "3.5"
+    },
+    "armor": 4,
+    "piercing": 2,
+    "chargeBonus": {
+     "$f": "1.25"
+    },
+    "health": 10,
+    "missileAttack": 0,
+    "Prog dezercji (% health)": {
+     "$f": "0.5"
+    }
+   },
+   "progInput": {
+    "$f": "0.5"
+   },
+   "mult": {
+    "$n": "NaN"
+   },
+   "out": {
+    "meleeAttack": {
+     "$n": "NaN"
+    },
+    "meleeDefence": {
+     "$n": "NaN"
+    },
+    "weaponDamage": {
+     "$n": "NaN"
+    },
+    "piercing": {
+     "$n": "NaN"
+    },
+    "chargeBonus": {
+     "$n": "NaN"
+    },
+    "health": {
+     "$n": "NaN"
+    },
+    "missileAttack": {
+     "$n": "NaN"
+    },
+    "Prog dezercji (% health)": {
+     "$n": "NaN"
+    }
+   },
+   "armorKept": 4,
+   "identity": false
+  },
+  {
+   "input": {
+    "meleeAttack": 7,
+    "meleeDefence": 5,
+    "weaponDamage": {
+     "$f": "3.5"
+    },
+    "armor": 4,
+    "piercing": 2,
+    "chargeBonus": {
+     "$f": "1.25"
+    },
+    "health": 10,
+    "missileAttack": 0,
+    "Prog dezercji (% health)": {
+     "$f": "0.5"
+    }
+   },
+   "progInput": {
+    "$f": "0.5"
+   },
+   "mult": {
+    "$f": "0.333"
+   },
+   "out": {
+    "meleeAttack": {
+     "$f": "2.331"
+    },
+    "meleeDefence": {
+     "$f": "1.665"
+    },
+    "weaponDamage": {
+     "$f": "1.1655"
+    },
+    "piercing": {
+     "$f": "0.666"
+    },
+    "chargeBonus": {
+     "$f": "0.41625"
+    },
+    "health": {
+     "$f": "3.33"
+    },
+    "missileAttack": 0,
+    "Prog dezercji (% health)": {
+     "$f": "0.8335"
+    }
+   },
+   "armorKept": 4,
+   "identity": false
+  },
+  {
+   "input": {
+    "meleeAttack": 7,
+    "meleeDefence": 5,
+    "weaponDamage": {
+     "$f": "3.5"
+    },
+    "armor": 4,
+    "piercing": 2,
+    "chargeBonus": {
+     "$f": "1.25"
+    },
+    "health": 10,
+    "missileAttack": 0,
+    "Prog dezercji (% health)": {
+     "$f": "0.5"
+    }
+   },
+   "progInput": {
+    "$f": "0.5"
+   },
+   "mult": {
+    "$f": "1.5"
+   },
+   "out": {
+    "meleeAttack": 7,
+    "meleeDefence": 5,
+    "weaponDamage": {
+     "$f": "3.5"
+    },
+    "piercing": 2,
+    "chargeBonus": {
+     "$f": "1.25"
+    },
+    "health": 10,
+    "missileAttack": 0,
+    "Prog dezercji (% health)": {
+     "$f": "0.5"
+    }
+   },
+   "armorKept": 4,
+   "identity": true
+  },
+  {
+   "input": {
+    "meleeAttack": 7,
+    "meleeDefence": 5,
+    "weaponDamage": {
+     "$f": "3.5"
+    },
+    "armor": 4,
+    "piercing": 2,
+    "chargeBonus": {
+     "$f": "1.25"
+    },
+    "health": 10,
+    "missileAttack": 0,
+    "Prog dezercji (% health)": {
+     "$f": "0.5"
+    }
+   },
+   "progInput": {
+    "$f": "0.5"
+   },
+   "mult": {
+    "$n": "Infinity"
+   },
+   "out": {
+    "meleeAttack": 7,
+    "meleeDefence": 5,
+    "weaponDamage": {
+     "$f": "3.5"
+    },
+    "piercing": 2,
+    "chargeBonus": {
+     "$f": "1.25"
+    },
+    "health": 10,
+    "missileAttack": 0,
+    "Prog dezercji (% health)": {
+     "$f": "0.5"
+    }
+   },
+   "armorKept": 4,
+   "identity": true
+  },
+  {
+   "input": {
+    "meleeAttack": 7,
+    "meleeDefence": 5,
+    "weaponDamage": {
+     "$f": "3.5"
+    },
+    "armor": 4,
+    "piercing": 2,
+    "chargeBonus": {
+     "$f": "1.25"
+    },
+    "health": 10,
+    "missileAttack": 0,
+    "Prog dezercji (% health)": {
+     "$f": "0.5"
+    }
+   },
+   "progInput": {
+    "$f": "0.5"
+   },
+   "mult": {
+    "$f": "-0.25"
+   },
+   "out": {
+    "meleeAttack": 7,
+    "meleeDefence": 5,
+    "weaponDamage": {
+     "$f": "3.5"
+    },
+    "piercing": 2,
+    "chargeBonus": {
+     "$f": "1.25"
+    },
+    "health": 10,
+    "missileAttack": 0,
+    "Prog dezercji (% health)": {
+     "$f": "0.5"
+    }
+   },
+   "armorKept": 4,
+   "identity": true
+  },
+  {
+   "input": {
+    "meleeAttack": 7,
+    "meleeDefence": 5,
+    "weaponDamage": {
+     "$f": "3.5"
+    },
+    "armor": 4,
+    "piercing": 2,
+    "chargeBonus": {
+     "$f": "1.25"
+    },
+    "health": 10,
+    "missileAttack": 0,
+    "Prog dezercji (% health)": {
+     "$f": "0.5"
+    }
+   },
+   "progInput": {
+    "$f": "0.5"
+   },
+   "mult": {
+    "$f": "0.1"
+   },
+   "out": {
+    "meleeAttack": {
+     "$f": "0.7000000000000001"
+    },
+    "meleeDefence": {
+     "$f": "0.5"
+    },
+    "weaponDamage": {
+     "$f": "0.35000000000000003"
+    },
+    "piercing": {
+     "$f": "0.2"
+    },
+    "chargeBonus": {
+     "$f": "0.125"
+    },
+    "health": 1,
+    "missileAttack": 0,
+    "Prog dezercji (% health)": {
+     "$f": "0.95"
+    }
+   },
+   "armorKept": 4,
+   "identity": false
+  },
+  {
+   "input": {
+    "meleeAttack": 7,
+    "meleeDefence": 5,
+    "weaponDamage": {
+     "$f": "3.5"
+    },
+    "armor": 4,
+    "piercing": 2,
+    "chargeBonus": {
+     "$f": "1.25"
+    },
+    "health": 10,
+    "missileAttack": 0,
+    "Prog dezercji (% health)": {
+     "$f": "0.5"
+    }
+   },
+   "progInput": {
+    "$f": "0.5"
+   },
+   "mult": {
+    "$f": "0.9375"
+   },
+   "out": {
+    "meleeAttack": {
+     "$f": "6.5625"
+    },
+    "meleeDefence": {
+     "$f": "4.6875"
+    },
+    "weaponDamage": {
+     "$f": "3.28125"
+    },
+    "piercing": {
+     "$f": "1.875"
+    },
+    "chargeBonus": {
+     "$f": "1.171875"
+    },
+    "health": {
+     "$f": "9.375"
+    },
+    "missileAttack": 0,
+    "Prog dezercji (% health)": {
+     "$f": "0.5313"
+    }
+   },
+   "armorKept": 4,
+   "identity": false
+  },
+  {
+   "input": {
+    "meleeAttack": 7,
+    "meleeDefence": 5,
+    "weaponDamage": {
+     "$f": "3.5"
+    },
+    "armor": 4,
+    "piercing": 2,
+    "chargeBonus": {
+     "$f": "1.25"
+    },
+    "health": 10,
+    "missileAttack": 0,
+    "Prog dezercji (% health)": {
+     "$f": "-0.5"
+    }
+   },
+   "progInput": {
+    "$f": "-0.5"
+   },
+   "mult": {
+    "$f": "0.75"
+   },
+   "out": {
+    "meleeAttack": {
+     "$f": "5.25"
+    },
+    "meleeDefence": {
+     "$f": "3.75"
+    },
+    "weaponDamage": {
+     "$f": "2.625"
+    },
+    "piercing": {
+     "$f": "1.5"
+    },
+    "chargeBonus": {
+     "$f": "0.9375"
+    },
+    "health": {
+     "$f": "7.5"
+    },
+    "missileAttack": 0,
+    "Prog dezercji (% health)": {
+     "$f": "-0.625"
+    }
+   },
+   "armorKept": 4,
+   "identity": false
+  },
+  {
+   "input": {
+    "meleeAttack": 7,
+    "meleeDefence": 5,
+    "weaponDamage": {
+     "$f": "3.5"
+    },
+    "armor": 4,
+    "piercing": 2,
+    "chargeBonus": {
+     "$f": "1.25"
+    },
+    "health": 10,
+    "missileAttack": 0,
+    "Prog dezercji (% health)": {
+     "$f": "-0.5"
+    }
+   },
+   "progInput": {
+    "$f": "-0.5"
+   },
+   "mult": 1,
+   "out": {
+    "meleeAttack": 7,
+    "meleeDefence": 5,
+    "weaponDamage": {
+     "$f": "3.5"
+    },
+    "piercing": 2,
+    "chargeBonus": {
+     "$f": "1.25"
+    },
+    "health": 10,
+    "missileAttack": 0,
+    "Prog dezercji (% health)": {
+     "$f": "-0.5"
+    }
+   },
+   "armorKept": 4,
+   "identity": true
+  },
+  {
+   "input": {
+    "meleeAttack": 7,
+    "meleeDefence": 5,
+    "weaponDamage": {
+     "$f": "3.5"
+    },
+    "armor": 4,
+    "piercing": 2,
+    "chargeBonus": {
+     "$f": "1.25"
+    },
+    "health": 10,
+    "missileAttack": 0,
+    "Prog dezercji (% health)": {
+     "$f": "-0.5"
+    }
+   },
+   "progInput": {
+    "$f": "-0.5"
+   },
+   "mult": 0,
+   "out": {
+    "meleeAttack": 7,
+    "meleeDefence": 5,
+    "weaponDamage": {
+     "$f": "3.5"
+    },
+    "piercing": 2,
+    "chargeBonus": {
+     "$f": "1.25"
+    },
+    "health": 10,
+    "missileAttack": 0,
+    "Prog dezercji (% health)": {
+     "$f": "-0.5"
+    }
+   },
+   "armorKept": 4,
+   "identity": true
+  },
+  {
+   "input": {
+    "meleeAttack": 7,
+    "meleeDefence": 5,
+    "weaponDamage": {
+     "$f": "3.5"
+    },
+    "armor": 4,
+    "piercing": 2,
+    "chargeBonus": {
+     "$f": "1.25"
+    },
+    "health": 10,
+    "missileAttack": 0,
+    "Prog dezercji (% health)": {
+     "$f": "-0.5"
+    }
+   },
+   "progInput": {
+    "$f": "-0.5"
+   },
+   "mult": -1,
+   "out": {
+    "meleeAttack": 7,
+    "meleeDefence": 5,
+    "weaponDamage": {
+     "$f": "3.5"
+    },
+    "piercing": 2,
+    "chargeBonus": {
+     "$f": "1.25"
+    },
+    "health": 10,
+    "missileAttack": 0,
+    "Prog dezercji (% health)": {
+     "$f": "-0.5"
+    }
+   },
+   "armorKept": 4,
+   "identity": true
+  },
+  {
+   "input": {
+    "meleeAttack": 7,
+    "meleeDefence": 5,
+    "weaponDamage": {
+     "$f": "3.5"
+    },
+    "armor": 4,
+    "piercing": 2,
+    "chargeBonus": {
+     "$f": "1.25"
+    },
+    "health": 10,
+    "missileAttack": 0,
+    "Prog dezercji (% health)": {
+     "$f": "-0.5"
+    }
+   },
+   "progInput": {
+    "$f": "-0.5"
+   },
+   "mult": {
+    "$f": "0.5"
+   },
+   "out": {
+    "meleeAttack": {
+     "$f": "3.5"
+    },
+    "meleeDefence": {
+     "$f": "2.5"
+    },
+    "weaponDamage": {
+     "$f": "1.75"
+    },
+    "piercing": 1,
+    "chargeBonus": {
+     "$f": "0.625"
+    },
+    "health": 5,
+    "missileAttack": 0,
+    "Prog dezercji (% health)": {
+     "$f": "-0.75"
+    }
+   },
+   "armorKept": 4,
+   "identity": false
+  },
+  {
+   "input": {
+    "meleeAttack": 7,
+    "meleeDefence": 5,
+    "weaponDamage": {
+     "$f": "3.5"
+    },
+    "armor": 4,
+    "piercing": 2,
+    "chargeBonus": {
+     "$f": "1.25"
+    },
+    "health": 10,
+    "missileAttack": 0,
+    "Prog dezercji (% health)": {
+     "$f": "-0.5"
+    }
+   },
+   "progInput": {
+    "$f": "-0.5"
+   },
+   "mult": {
+    "$n": "NaN"
+   },
+   "out": {
+    "meleeAttack": {
+     "$n": "NaN"
+    },
+    "meleeDefence": {
+     "$n": "NaN"
+    },
+    "weaponDamage": {
+     "$n": "NaN"
+    },
+    "piercing": {
+     "$n": "NaN"
+    },
+    "chargeBonus": {
+     "$n": "NaN"
+    },
+    "health": {
+     "$n": "NaN"
+    },
+    "missileAttack": {
+     "$n": "NaN"
+    },
+    "Prog dezercji (% health)": {
+     "$n": "NaN"
+    }
+   },
+   "armorKept": 4,
+   "identity": false
+  },
+  {
+   "input": {
+    "meleeAttack": 7,
+    "meleeDefence": 5,
+    "weaponDamage": {
+     "$f": "3.5"
+    },
+    "armor": 4,
+    "piercing": 2,
+    "chargeBonus": {
+     "$f": "1.25"
+    },
+    "health": 10,
+    "missileAttack": 0,
+    "Prog dezercji (% health)": {
+     "$f": "-0.5"
+    }
+   },
+   "progInput": {
+    "$f": "-0.5"
+   },
+   "mult": {
+    "$f": "0.333"
+   },
+   "out": {
+    "meleeAttack": {
+     "$f": "2.331"
+    },
+    "meleeDefence": {
+     "$f": "1.665"
+    },
+    "weaponDamage": {
+     "$f": "1.1655"
+    },
+    "piercing": {
+     "$f": "0.666"
+    },
+    "chargeBonus": {
+     "$f": "0.41625"
+    },
+    "health": {
+     "$f": "3.33"
+    },
+    "missileAttack": 0,
+    "Prog dezercji (% health)": {
+     "$f": "-0.8335"
+    }
+   },
+   "armorKept": 4,
+   "identity": false
+  },
+  {
+   "input": {
+    "meleeAttack": 7,
+    "meleeDefence": 5,
+    "weaponDamage": {
+     "$f": "3.5"
+    },
+    "armor": 4,
+    "piercing": 2,
+    "chargeBonus": {
+     "$f": "1.25"
+    },
+    "health": 10,
+    "missileAttack": 0,
+    "Prog dezercji (% health)": {
+     "$f": "-0.5"
+    }
+   },
+   "progInput": {
+    "$f": "-0.5"
+   },
+   "mult": {
+    "$f": "1.5"
+   },
+   "out": {
+    "meleeAttack": 7,
+    "meleeDefence": 5,
+    "weaponDamage": {
+     "$f": "3.5"
+    },
+    "piercing": 2,
+    "chargeBonus": {
+     "$f": "1.25"
+    },
+    "health": 10,
+    "missileAttack": 0,
+    "Prog dezercji (% health)": {
+     "$f": "-0.5"
+    }
+   },
+   "armorKept": 4,
+   "identity": true
+  },
+  {
+   "input": {
+    "meleeAttack": 7,
+    "meleeDefence": 5,
+    "weaponDamage": {
+     "$f": "3.5"
+    },
+    "armor": 4,
+    "piercing": 2,
+    "chargeBonus": {
+     "$f": "1.25"
+    },
+    "health": 10,
+    "missileAttack": 0,
+    "Prog dezercji (% health)": {
+     "$f": "-0.5"
+    }
+   },
+   "progInput": {
+    "$f": "-0.5"
+   },
+   "mult": {
+    "$n": "Infinity"
+   },
+   "out": {
+    "meleeAttack": 7,
+    "meleeDefence": 5,
+    "weaponDamage": {
+     "$f": "3.5"
+    },
+    "piercing": 2,
+    "chargeBonus": {
+     "$f": "1.25"
+    },
+    "health": 10,
+    "missileAttack": 0,
+    "Prog dezercji (% health)": {
+     "$f": "-0.5"
+    }
+   },
+   "armorKept": 4,
+   "identity": true
+  },
+  {
+   "input": {
+    "meleeAttack": 7,
+    "meleeDefence": 5,
+    "weaponDamage": {
+     "$f": "3.5"
+    },
+    "armor": 4,
+    "piercing": 2,
+    "chargeBonus": {
+     "$f": "1.25"
+    },
+    "health": 10,
+    "missileAttack": 0,
+    "Prog dezercji (% health)": {
+     "$f": "-0.5"
+    }
+   },
+   "progInput": {
+    "$f": "-0.5"
+   },
+   "mult": {
+    "$f": "-0.25"
+   },
+   "out": {
+    "meleeAttack": 7,
+    "meleeDefence": 5,
+    "weaponDamage": {
+     "$f": "3.5"
+    },
+    "piercing": 2,
+    "chargeBonus": {
+     "$f": "1.25"
+    },
+    "health": 10,
+    "missileAttack": 0,
+    "Prog dezercji (% health)": {
+     "$f": "-0.5"
+    }
+   },
+   "armorKept": 4,
+   "identity": true
+  },
+  {
+   "input": {
+    "meleeAttack": 7,
+    "meleeDefence": 5,
+    "weaponDamage": {
+     "$f": "3.5"
+    },
+    "armor": 4,
+    "piercing": 2,
+    "chargeBonus": {
+     "$f": "1.25"
+    },
+    "health": 10,
+    "missileAttack": 0,
+    "Prog dezercji (% health)": {
+     "$f": "-0.5"
+    }
+   },
+   "progInput": {
+    "$f": "-0.5"
+   },
+   "mult": {
+    "$f": "0.1"
+   },
+   "out": {
+    "meleeAttack": {
+     "$f": "0.7000000000000001"
+    },
+    "meleeDefence": {
+     "$f": "0.5"
+    },
+    "weaponDamage": {
+     "$f": "0.35000000000000003"
+    },
+    "piercing": {
+     "$f": "0.2"
+    },
+    "chargeBonus": {
+     "$f": "0.125"
+    },
+    "health": 1,
+    "missileAttack": 0,
+    "Prog dezercji (% health)": {
+     "$f": "-0.95"
+    }
+   },
+   "armorKept": 4,
+   "identity": false
+  },
+  {
+   "input": {
+    "meleeAttack": 7,
+    "meleeDefence": 5,
+    "weaponDamage": {
+     "$f": "3.5"
+    },
+    "armor": 4,
+    "piercing": 2,
+    "chargeBonus": {
+     "$f": "1.25"
+    },
+    "health": 10,
+    "missileAttack": 0,
+    "Prog dezercji (% health)": {
+     "$f": "-0.5"
+    }
+   },
+   "progInput": {
+    "$f": "-0.5"
+   },
+   "mult": {
+    "$f": "0.9375"
+   },
+   "out": {
+    "meleeAttack": {
+     "$f": "6.5625"
+    },
+    "meleeDefence": {
+     "$f": "4.6875"
+    },
+    "weaponDamage": {
+     "$f": "3.28125"
+    },
+    "piercing": {
+     "$f": "1.875"
+    },
+    "chargeBonus": {
+     "$f": "1.171875"
+    },
+    "health": {
+     "$f": "9.375"
+    },
+    "missileAttack": 0,
+    "Prog dezercji (% health)": {
+     "$f": "-0.5312"
+    }
+   },
+   "armorKept": 4,
+   "identity": false
+  },
+  {
+   "input": {
+    "meleeAttack": 7,
+    "meleeDefence": 5,
+    "weaponDamage": {
+     "$f": "3.5"
+    },
+    "armor": 4,
+    "piercing": 2,
+    "chargeBonus": {
+     "$f": "1.25"
+    },
+    "health": 10,
+    "missileAttack": 0,
+    "Prog dezercji (% health)": {
+     "$f": "-0.00001"
+    }
+   },
+   "progInput": {
+    "$f": "-0.00001"
+   },
+   "mult": {
+    "$f": "0.75"
+   },
+   "out": {
+    "meleeAttack": {
+     "$f": "5.25"
+    },
+    "meleeDefence": {
+     "$f": "3.75"
+    },
+    "weaponDamage": {
+     "$f": "2.625"
+    },
+    "piercing": {
+     "$f": "1.5"
+    },
+    "chargeBonus": {
+     "$f": "0.9375"
+    },
+    "health": {
+     "$f": "7.5"
+    },
+    "missileAttack": 0,
+    "Prog dezercji (% health)": {
+     "$n": "-0"
+    }
+   },
+   "armorKept": 4,
+   "identity": false
+  },
+  {
+   "input": {
+    "meleeAttack": 7,
+    "meleeDefence": 5,
+    "weaponDamage": {
+     "$f": "3.5"
+    },
+    "armor": 4,
+    "piercing": 2,
+    "chargeBonus": {
+     "$f": "1.25"
+    },
+    "health": 10,
+    "missileAttack": 0,
+    "Prog dezercji (% health)": {
+     "$f": "-0.00001"
+    }
+   },
+   "progInput": {
+    "$f": "-0.00001"
+   },
+   "mult": 1,
+   "out": {
+    "meleeAttack": 7,
+    "meleeDefence": 5,
+    "weaponDamage": {
+     "$f": "3.5"
+    },
+    "piercing": 2,
+    "chargeBonus": {
+     "$f": "1.25"
+    },
+    "health": 10,
+    "missileAttack": 0,
+    "Prog dezercji (% health)": {
+     "$f": "-0.00001"
+    }
+   },
+   "armorKept": 4,
+   "identity": true
+  },
+  {
+   "input": {
+    "meleeAttack": 7,
+    "meleeDefence": 5,
+    "weaponDamage": {
+     "$f": "3.5"
+    },
+    "armor": 4,
+    "piercing": 2,
+    "chargeBonus": {
+     "$f": "1.25"
+    },
+    "health": 10,
+    "missileAttack": 0,
+    "Prog dezercji (% health)": {
+     "$f": "-0.00001"
+    }
+   },
+   "progInput": {
+    "$f": "-0.00001"
+   },
+   "mult": 0,
+   "out": {
+    "meleeAttack": 7,
+    "meleeDefence": 5,
+    "weaponDamage": {
+     "$f": "3.5"
+    },
+    "piercing": 2,
+    "chargeBonus": {
+     "$f": "1.25"
+    },
+    "health": 10,
+    "missileAttack": 0,
+    "Prog dezercji (% health)": {
+     "$f": "-0.00001"
+    }
+   },
+   "armorKept": 4,
+   "identity": true
+  },
+  {
+   "input": {
+    "meleeAttack": 7,
+    "meleeDefence": 5,
+    "weaponDamage": {
+     "$f": "3.5"
+    },
+    "armor": 4,
+    "piercing": 2,
+    "chargeBonus": {
+     "$f": "1.25"
+    },
+    "health": 10,
+    "missileAttack": 0,
+    "Prog dezercji (% health)": {
+     "$f": "-0.00001"
+    }
+   },
+   "progInput": {
+    "$f": "-0.00001"
+   },
+   "mult": -1,
+   "out": {
+    "meleeAttack": 7,
+    "meleeDefence": 5,
+    "weaponDamage": {
+     "$f": "3.5"
+    },
+    "piercing": 2,
+    "chargeBonus": {
+     "$f": "1.25"
+    },
+    "health": 10,
+    "missileAttack": 0,
+    "Prog dezercji (% health)": {
+     "$f": "-0.00001"
+    }
+   },
+   "armorKept": 4,
+   "identity": true
+  },
+  {
+   "input": {
+    "meleeAttack": 7,
+    "meleeDefence": 5,
+    "weaponDamage": {
+     "$f": "3.5"
+    },
+    "armor": 4,
+    "piercing": 2,
+    "chargeBonus": {
+     "$f": "1.25"
+    },
+    "health": 10,
+    "missileAttack": 0,
+    "Prog dezercji (% health)": {
+     "$f": "-0.00001"
+    }
+   },
+   "progInput": {
+    "$f": "-0.00001"
+   },
+   "mult": {
+    "$f": "0.5"
+   },
+   "out": {
+    "meleeAttack": {
+     "$f": "3.5"
+    },
+    "meleeDefence": {
+     "$f": "2.5"
+    },
+    "weaponDamage": {
+     "$f": "1.75"
+    },
+    "piercing": 1,
+    "chargeBonus": {
+     "$f": "0.625"
+    },
+    "health": 5,
+    "missileAttack": 0,
+    "Prog dezercji (% health)": {
+     "$n": "-0"
+    }
+   },
+   "armorKept": 4,
+   "identity": false
+  },
+  {
+   "input": {
+    "meleeAttack": 7,
+    "meleeDefence": 5,
+    "weaponDamage": {
+     "$f": "3.5"
+    },
+    "armor": 4,
+    "piercing": 2,
+    "chargeBonus": {
+     "$f": "1.25"
+    },
+    "health": 10,
+    "missileAttack": 0,
+    "Prog dezercji (% health)": {
+     "$f": "-0.00001"
+    }
+   },
+   "progInput": {
+    "$f": "-0.00001"
+   },
+   "mult": {
+    "$n": "NaN"
+   },
+   "out": {
+    "meleeAttack": {
+     "$n": "NaN"
+    },
+    "meleeDefence": {
+     "$n": "NaN"
+    },
+    "weaponDamage": {
+     "$n": "NaN"
+    },
+    "piercing": {
+     "$n": "NaN"
+    },
+    "chargeBonus": {
+     "$n": "NaN"
+    },
+    "health": {
+     "$n": "NaN"
+    },
+    "missileAttack": {
+     "$n": "NaN"
+    },
+    "Prog dezercji (% health)": {
+     "$n": "NaN"
+    }
+   },
+   "armorKept": 4,
+   "identity": false
+  },
+  {
+   "input": {
+    "meleeAttack": 7,
+    "meleeDefence": 5,
+    "weaponDamage": {
+     "$f": "3.5"
+    },
+    "armor": 4,
+    "piercing": 2,
+    "chargeBonus": {
+     "$f": "1.25"
+    },
+    "health": 10,
+    "missileAttack": 0,
+    "Prog dezercji (% health)": {
+     "$f": "-0.00001"
+    }
+   },
+   "progInput": {
+    "$f": "-0.00001"
+   },
+   "mult": {
+    "$f": "0.333"
+   },
+   "out": {
+    "meleeAttack": {
+     "$f": "2.331"
+    },
+    "meleeDefence": {
+     "$f": "1.665"
+    },
+    "weaponDamage": {
+     "$f": "1.1655"
+    },
+    "piercing": {
+     "$f": "0.666"
+    },
+    "chargeBonus": {
+     "$f": "0.41625"
+    },
+    "health": {
+     "$f": "3.33"
+    },
+    "missileAttack": 0,
+    "Prog dezercji (% health)": {
+     "$n": "-0"
+    }
+   },
+   "armorKept": 4,
+   "identity": false
+  },
+  {
+   "input": {
+    "meleeAttack": 7,
+    "meleeDefence": 5,
+    "weaponDamage": {
+     "$f": "3.5"
+    },
+    "armor": 4,
+    "piercing": 2,
+    "chargeBonus": {
+     "$f": "1.25"
+    },
+    "health": 10,
+    "missileAttack": 0,
+    "Prog dezercji (% health)": {
+     "$f": "-0.00001"
+    }
+   },
+   "progInput": {
+    "$f": "-0.00001"
+   },
+   "mult": {
+    "$f": "1.5"
+   },
+   "out": {
+    "meleeAttack": 7,
+    "meleeDefence": 5,
+    "weaponDamage": {
+     "$f": "3.5"
+    },
+    "piercing": 2,
+    "chargeBonus": {
+     "$f": "1.25"
+    },
+    "health": 10,
+    "missileAttack": 0,
+    "Prog dezercji (% health)": {
+     "$f": "-0.00001"
+    }
+   },
+   "armorKept": 4,
+   "identity": true
+  },
+  {
+   "input": {
+    "meleeAttack": 7,
+    "meleeDefence": 5,
+    "weaponDamage": {
+     "$f": "3.5"
+    },
+    "armor": 4,
+    "piercing": 2,
+    "chargeBonus": {
+     "$f": "1.25"
+    },
+    "health": 10,
+    "missileAttack": 0,
+    "Prog dezercji (% health)": {
+     "$f": "-0.00001"
+    }
+   },
+   "progInput": {
+    "$f": "-0.00001"
+   },
+   "mult": {
+    "$n": "Infinity"
+   },
+   "out": {
+    "meleeAttack": 7,
+    "meleeDefence": 5,
+    "weaponDamage": {
+     "$f": "3.5"
+    },
+    "piercing": 2,
+    "chargeBonus": {
+     "$f": "1.25"
+    },
+    "health": 10,
+    "missileAttack": 0,
+    "Prog dezercji (% health)": {
+     "$f": "-0.00001"
+    }
+   },
+   "armorKept": 4,
+   "identity": true
+  },
+  {
+   "input": {
+    "meleeAttack": 7,
+    "meleeDefence": 5,
+    "weaponDamage": {
+     "$f": "3.5"
+    },
+    "armor": 4,
+    "piercing": 2,
+    "chargeBonus": {
+     "$f": "1.25"
+    },
+    "health": 10,
+    "missileAttack": 0,
+    "Prog dezercji (% health)": {
+     "$f": "-0.00001"
+    }
+   },
+   "progInput": {
+    "$f": "-0.00001"
+   },
+   "mult": {
+    "$f": "-0.25"
+   },
+   "out": {
+    "meleeAttack": 7,
+    "meleeDefence": 5,
+    "weaponDamage": {
+     "$f": "3.5"
+    },
+    "piercing": 2,
+    "chargeBonus": {
+     "$f": "1.25"
+    },
+    "health": 10,
+    "missileAttack": 0,
+    "Prog dezercji (% health)": {
+     "$f": "-0.00001"
+    }
+   },
+   "armorKept": 4,
+   "identity": true
+  },
+  {
+   "input": {
+    "meleeAttack": 7,
+    "meleeDefence": 5,
+    "weaponDamage": {
+     "$f": "3.5"
+    },
+    "armor": 4,
+    "piercing": 2,
+    "chargeBonus": {
+     "$f": "1.25"
+    },
+    "health": 10,
+    "missileAttack": 0,
+    "Prog dezercji (% health)": {
+     "$f": "-0.00001"
+    }
+   },
+   "progInput": {
+    "$f": "-0.00001"
+   },
+   "mult": {
+    "$f": "0.1"
+   },
+   "out": {
+    "meleeAttack": {
+     "$f": "0.7000000000000001"
+    },
+    "meleeDefence": {
+     "$f": "0.5"
+    },
+    "weaponDamage": {
+     "$f": "0.35000000000000003"
+    },
+    "piercing": {
+     "$f": "0.2"
+    },
+    "chargeBonus": {
+     "$f": "0.125"
+    },
+    "health": 1,
+    "missileAttack": 0,
+    "Prog dezercji (% health)": {
+     "$n": "-0"
+    }
+   },
+   "armorKept": 4,
+   "identity": false
+  },
+  {
+   "input": {
+    "meleeAttack": 7,
+    "meleeDefence": 5,
+    "weaponDamage": {
+     "$f": "3.5"
+    },
+    "armor": 4,
+    "piercing": 2,
+    "chargeBonus": {
+     "$f": "1.25"
+    },
+    "health": 10,
+    "missileAttack": 0,
+    "Prog dezercji (% health)": {
+     "$f": "-0.00001"
+    }
+   },
+   "progInput": {
+    "$f": "-0.00001"
+   },
+   "mult": {
+    "$f": "0.9375"
+   },
+   "out": {
+    "meleeAttack": {
+     "$f": "6.5625"
+    },
+    "meleeDefence": {
+     "$f": "4.6875"
+    },
+    "weaponDamage": {
+     "$f": "3.28125"
+    },
+    "piercing": {
+     "$f": "1.875"
+    },
+    "chargeBonus": {
+     "$f": "1.171875"
+    },
+    "health": {
+     "$f": "9.375"
+    },
+    "missileAttack": 0,
+    "Prog dezercji (% health)": {
+     "$n": "-0"
     }
    },
    "armorKept": 4,

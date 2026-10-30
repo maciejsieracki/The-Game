@@ -37,6 +37,11 @@ const PARAM_SETS = {
     capNaEpoke: 5, progNaPoziom: 1.5, mnoznikNaPoziom: 0.3, utrzymanieBaza: 0.1,
     utrzymaniePrzyCap: 0.9, zachowaniePoAwansie: 0.33, zadowolenieMax: 7, karaZero: -2, immunitetTur: 0,
   },
+  // r4 (Evaluator r3 zarzut 1): ujemny cap => wealthCap = -0 dla epoka <= 0 (JS Math.min/max, znak zera)
+  ujemnyCap: {
+    capNaEpoke: -2, progNaPoziom: 4.5, mnoznikNaPoziom: 0.15, utrzymanieBaza: 0.2,
+    utrzymaniePrzyCap: 0.4, zachowaniePoAwansie: 0.5, zadowolenieMax: 10, karaZero: 0, immunitetTur: 5,
+  },
   zerowyCap: {
     capNaEpoke: 0, progNaPoziom: 2, mnoznikNaPoziom: 0.15, utrzymanieBaza: 0.2,
     utrzymaniePrzyCap: 0.4, zachowaniePoAwansie: 0.5, zadowolenieMax: 10, karaZero: 0, immunitetTur: 5,
@@ -92,7 +97,7 @@ for (const [name, raw] of Object.entries(RAW)) {
 }
 
 // --- funkcje skladowe ---
-const EPOKI = [-1, 0, 0.5, 1, 1.9, 2, 3, 5, 10, 11, NaN, Infinity, -Infinity];
+const EPOKI = [-1, 0, -0, 0.5, 1, 1.9, 2, 3, 5, 10, 11, NaN, Infinity, -Infinity];
 const POZIOMY = [-5, -0, 0, 0.5, 1, 2, 3.7, 10, 25, 100, 101, 500, NaN, Infinity, -Infinity];
 const fnCases = [];
 for (const [pn, p] of Object.entries(PARAM_SETS)) {
@@ -173,6 +178,8 @@ for (const [pn, p] of Object.entries(PARAM_SETS)) {
     { poziom: 1, pula: 0, spol: 0, miasto: 100, epoka: 1, minP: undefined },
     { poziom: 1, pula: 0, spol: 0, miasto: 100, epoka: 1, minP: 1 },
     { poziom: 1, pula: 0, spol: 0, miasto: 100, epoka: 1, minP: null },
+    // r4 (Evaluator r3 zarzut 1): granica pula == prog (prog = 4.5*(1+1)*max(1,2) = 18) => awans
+    { poziom: 1, pula: 0, spol: 18, miasto: 0, epoka: 2, minP: undefined },
   ];
   const steps = pinned.map((s) => {
     const opts = s.minP === undefined ? undefined : { minPoziom: s.minP };

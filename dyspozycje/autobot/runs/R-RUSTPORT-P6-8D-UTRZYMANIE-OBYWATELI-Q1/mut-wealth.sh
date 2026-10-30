@@ -32,6 +32,10 @@ MUTS=(
   's/                pula = (pula \* p.zachowanie_po_awansie).floor();/                pula = pula * p.zachowanie_po_awansie;/|awans: pula bez floor'
   's/            if poziom > min_poz {/            if poziom >= min_poz {/|spadek: minPoziom inklusywnie'
   's/        let min_poz = js_max(0.0, min_poziom.unwrap_or(0.0).floor());/        let min_poz = js_max(0.0, min_poziom.unwrap_or(1.0).floor());/|minPoziom domyslny 1'
+  # r4 (Evaluator r3 zarzut 1 i 4): granica pula == prog; znak zera w remisie js_max/js_min
+  's/            if pula >= prog {/            if pula > prog {/|awans: pula == prog nie awansuje'
+  's/    } else if a.is_sign_positive() {/    } else if a.is_sign_negative() {/|js_max: znak zera w remisie odwrocony'
+  's/    } else if a.is_sign_negative() {/    } else if a.is_sign_positive() {/|js_min: znak zera w remisie odwrocony'
 )
 
 OD="${1:-1}"

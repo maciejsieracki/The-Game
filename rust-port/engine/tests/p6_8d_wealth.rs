@@ -183,7 +183,7 @@ fn pure_functions_match_web_vectors() {
     let r = root();
     let sets = param_sets(&r);
     let cases = arr(&r["fn"], "fn");
-    assert_eq!(cases.len(), 1040);
+    assert_eq!(cases.len(), 1344);
     let mut full = 0;
     for (i, c) in cases.iter().enumerate() {
         let p = sets[c["params"].as_str().unwrap()];
@@ -218,7 +218,7 @@ fn pure_functions_match_web_vectors() {
     }
     assert_eq!(
         full,
-        15 * 13 * 5,
+        15 * 14 * 6,
         "liczba pelnych przypadkow poziom x epoka x params"
     );
 }
@@ -228,7 +228,7 @@ fn advance_sequences_match_web_vectors() {
     let r = root();
     let sets = param_sets(&r);
     let cases = arr(&r["advance"], "advance");
-    assert_eq!(cases.len(), 5 * 7 + 1);
+    assert_eq!(cases.len(), 6 * 7 + 1);
     let mut steps_total = 0;
     for (ci, case) in cases.iter().enumerate() {
         let p = sets[case["params"].as_str().unwrap()];
@@ -272,7 +272,7 @@ fn advance_sequences_match_web_vectors() {
             );
         }
     }
-    assert_eq!(steps_total, 5 * 7 * 14 + 3, "liczba krokow");
+    assert_eq!(steps_total, 6 * 7 * 14 + 4, "liczba krokow");
 }
 
 #[test]

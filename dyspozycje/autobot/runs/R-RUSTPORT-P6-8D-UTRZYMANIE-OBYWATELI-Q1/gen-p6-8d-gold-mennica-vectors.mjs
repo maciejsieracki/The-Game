@@ -85,7 +85,21 @@ const RAW_CASES = [
       zloto_deficyt_hp_frac: { normal: -0.3 },
     },
   },
+  // r4 (Evaluator r3 zarzut 2): NaN/Infinity/-Infinity w wierszach raw => fallback (web Number.isFinite)
+  {
+    name: 'nieskonczonosci',
+    raw: {
+      zloto_deficyt_stat_mult: { easy: NaN, normal: Infinity, hard: -Infinity },
+      zloto_deficyt_karencja_tur: { easy: -Infinity, normal: NaN, hard: 4 },
+      zloto_deficyt_hp_frac: { easy: NaN, normal: NaN, hard: -0.2 },
+    },
+  },
 ];
+// raw kodowany jak wektor (NaN/Infinity przezyja JSON); buildGoldDeficitParams dostaje oryginal
+const encRaw = (v) =>
+  v !== null && typeof v === 'object' && !Array.isArray(v)
+    ? Object.fromEntries(Object.entries(v).map(([k, x]) => [k, encRaw(x)]))
+    : enc(v);
 const DIFFS = ['easy', 'normal', 'hard'];
 const paramCases = [];
 for (const rc of RAW_CASES) {
@@ -93,7 +107,7 @@ for (const rc of RAW_CASES) {
     paramCases.push({
       name: rc.name,
       difficulty: d,
-      raw: rc.raw,
+      raw: encRaw(rc.raw),
       expected: encObj(GD.buildGoldDeficitParams(rc.raw, d)),
     });
   }
@@ -102,7 +116,7 @@ for (const rc of RAW_CASES) {
 paramCases.push({
   name: 'domyslnaTrudnosc',
   difficulty: null,
-  raw: RAW_CASES[2].raw,
+  raw: encRaw(RAW_CASES[2].raw),
   expected: encObj(GD.buildGoldDeficitParams(RAW_CASES[2].raw)),
 });
 
@@ -215,8 +229,10 @@ const baseCu = (prog) => ({
   missileAttack: 0,
   'Prog dezercji (% health)': prog,
 });
-const PROG_VALUES = [null, undefined, 0, 50, 33.33333, -7.5, NaN, 12.34567];
-const MULTS = [0.75, 1, 0, -1, 0.5, NaN, 0.333, 1.5, Infinity, -0.25, 0.1];
+const PROG_VALUES = [null, undefined, 0, 50, 33.33333, -7.5, NaN, 12.34567, 0.5, -0.5, -0.00001];
+// r4 (Evaluator r3 zarzut 3): prog*(2-mult)*10000 = k+0.5 dokladnie (0.5*1.0625=17/32, *10000=5312.5)
+// oraz mala ujemna dajaca -0 po round4 (-0.00001*1.5*10000 = -0.15)
+const MULTS = [0.75, 1, 0, -1, 0.5, NaN, 0.333, 1.5, Infinity, -0.25, 0.1, 0.9375];
 const statCases = [];
 for (const prog of PROG_VALUES) {
   for (const mult of MULTS) {
