@@ -1,0 +1,121 @@
+   Compiling civ-engine v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_93c57b8c-6be-1/rust-port/engine)
+warning: unused import: `resolve_row`
+  --> src/domain/economy_yield.rs:24:51
+   |
+24 | use crate::domain::civ_matrix::{civ_matrix_param, resolve_row};
+   |                                                   ^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: `civ-engine` (lib) generated 1 warning (run `cargo fix --lib -p civ-engine` to apply 1 suggestion)
+    Finished `test` profile [unoptimized] target(s) in 39.70s
+     Running tests/p6_repin_d_economy_mnoznik.rs (/home/user/cargo-target-shared/wf_93c57b8c-6be-1/debug/deps/p6_repin_d_economy_mnoznik-e3e12d28e22d8837)
+
+running 12 tests
+test boundary_trudnosc_delta_table ... ok
+test parity_civ_economy_yield_multipliers ... ok
+test parity_mnoznik_for_civ_main ... FAILED
+test parity_mnoznik_for_civ_zero_matrix ... FAILED
+test parity_mnoznik_by_difficulty_main ... FAILED
+test parity_mnoznik_by_difficulty_zero_matrix ... FAILED
+test structural_key_lookup_is_case_insensitive_across_three_fields ... ok
+test structural_empty_or_missing_key_is_unknown ... FAILED
+test structural_fallback_default_is_web_default_one ... ok
+test structural_known_raw_zero_is_authoritative_and_gets_delta ... ok
+test structural_unknown_key_returns_fallback_without_delta ... FAILED
+test structural_known_row_missing_field_uses_matrix_default ... ok
+
+failures:
+
+---- parity_mnoznik_for_civ_main stdout ----
+
+thread 'parity_mnoznik_for_civ_main' (17360) panicked at tests/p6_repin_d_economy_mnoznik.rs:87:9:
+forCiv mismatch: {"civs":"none","fb":{"default":true},"key":"nieznana_cywilizacja","out":{"f":"1"}}
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+   1: core::panicking::panic_fmt
+   2: p6_repin_d_economy_mnoznik::parity_mnoznik_for_civ_main
+   3: p6_repin_d_economy_mnoznik::parity_mnoznik_for_civ_main::{closure#0}
+   4: <p6_repin_d_economy_mnoznik::parity_mnoznik_for_civ_main::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+---- parity_mnoznik_for_civ_zero_matrix stdout ----
+
+thread 'parity_mnoznik_for_civ_zero_matrix' (17361) panicked at tests/p6_repin_d_economy_mnoznik.rs:116:9:
+zero forCiv mismatch: {"civs":"none","fb":{"default":true},"key":"nieznana_cywilizacja","out":{"f":"1"}}
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+   1: core::panicking::panic_fmt
+   2: p6_repin_d_economy_mnoznik::parity_mnoznik_for_civ_zero_matrix
+   3: p6_repin_d_economy_mnoznik::parity_mnoznik_for_civ_zero_matrix::{closure#0}
+   4: <p6_repin_d_economy_mnoznik::parity_mnoznik_for_civ_zero_matrix::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+---- parity_mnoznik_by_difficulty_main stdout ----
+
+thread 'parity_mnoznik_by_difficulty_main' (17358) panicked at tests/p6_repin_d_economy_mnoznik.rs:104:9:
+byDiff mismatch: {"diff":"easy","fb":{"f":"0"},"key":"nieznana_cywilizacja","out":{"f":"0"}}
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+   1: core::panicking::panic_fmt
+   2: p6_repin_d_economy_mnoznik::parity_mnoznik_by_difficulty_main
+   3: p6_repin_d_economy_mnoznik::parity_mnoznik_by_difficulty_main::{closure#0}
+   4: <p6_repin_d_economy_mnoznik::parity_mnoznik_by_difficulty_main::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+---- parity_mnoznik_by_difficulty_zero_matrix stdout ----
+
+thread 'parity_mnoznik_by_difficulty_zero_matrix' (17359) panicked at tests/p6_repin_d_economy_mnoznik.rs:133:9:
+zero byDiff mismatch: {"diff":"easy","fb":{"f":"0"},"key":"nieznana_cywilizacja","out":{"f":"0"}}
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+   1: core::panicking::panic_fmt
+   2: p6_repin_d_economy_mnoznik::parity_mnoznik_by_difficulty_zero_matrix
+   3: p6_repin_d_economy_mnoznik::parity_mnoznik_by_difficulty_zero_matrix::{closure#0}
+   4: <p6_repin_d_economy_mnoznik::parity_mnoznik_by_difficulty_zero_matrix::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+---- structural_empty_or_missing_key_is_unknown stdout ----
+
+thread 'structural_empty_or_missing_key_is_unknown' (17377) panicked at tests/p6_repin_d_economy_mnoznik.rs:161:5:
+assertion `left == right` failed
+  left: Some(2.0)
+ right: None
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+   1: core::panicking::panic_fmt
+   2: core::panicking::assert_failed_inner
+   3: core::panicking::assert_failed::<core::option::Option<f64>, core::option::Option<f64>>
+   4: p6_repin_d_economy_mnoznik::structural_empty_or_missing_key_is_unknown
+   5: p6_repin_d_economy_mnoznik::structural_empty_or_missing_key_is_unknown::{closure#0}
+   6: <p6_repin_d_economy_mnoznik::structural_empty_or_missing_key_is_unknown::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+---- structural_unknown_key_returns_fallback_without_delta stdout ----
+
+thread 'structural_unknown_key_returns_fallback_without_delta' (17382) panicked at tests/p6_repin_d_economy_mnoznik.rs:176:5:
+assertion `left == right` failed
+  left: 1.5
+ right: 2.5
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+   1: core::panicking::panic_fmt
+   2: core::panicking::assert_failed_inner
+   3: core::panicking::assert_failed::<f64, f64>
+   4: p6_repin_d_economy_mnoznik::structural_unknown_key_returns_fallback_without_delta
+   5: p6_repin_d_economy_mnoznik::structural_unknown_key_returns_fallback_without_delta::{closure#0}
+   6: <p6_repin_d_economy_mnoznik::structural_unknown_key_returns_fallback_without_delta::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+
+failures:
+    parity_mnoznik_by_difficulty_main
+    parity_mnoznik_by_difficulty_zero_matrix
+    parity_mnoznik_for_civ_main
+    parity_mnoznik_for_civ_zero_matrix
+    structural_empty_or_missing_key_is_unknown
+    structural_unknown_key_returns_fallback_without_delta
+
+test result: FAILED. 6 passed; 6 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.21s
+
+error: test failed, to rerun pass `--test p6_repin_d_economy_mnoznik`
