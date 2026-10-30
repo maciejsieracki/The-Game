@@ -1,0 +1,22 @@
+   Compiling civ-engine v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_0122948c-af3-2/rust-port/engine)
+    Finished `test` profile [unoptimized] target(s) in 30.71s
+     Running tests/p6_repin_wojna_d_nav.rs (target/debug/deps/p6_repin_wojna_d_nav-b47a15f9b54f2899)
+
+running 14 tests
+test flag_default_and_override ... ok
+test nearest_target_tie_break_by_city_id ... ok
+test island_unit_without_sea_has_no_path ... ok
+test distance_field_on_flat_line_is_hex_distance ... ok
+test nav_move_cost_land_and_sea_gate ... ok
+test neighbour_keys_are_six_and_adjacent ... ok
+test params_match_web_json ... ok
+test prefer_sea_targets_then_land_fallback ... ok
+test route_classification_missing_start_is_empty ... ok
+test unit_on_capital_is_held ... ok
+test route_classification_land_only_on_flat_map ... ok
+test single_unit_steps_towards_capital ... ok
+test units_beyond_link_radius_form_two_groups ... ok
+test units_within_link_radius_form_one_group ... ok
+
+test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

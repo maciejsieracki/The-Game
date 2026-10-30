@@ -1,0 +1,9 @@
+# Regeneracja wektorow z weba dc8a3adc (runda 2, Operator)
+# 1. git archive dc8a3adc gra/src gra/data gra/tsconfig.json -> mktemp -d (/tmp/claude-0/web-dc8-lrN9)
+# 2. tsc --ignoreConfig --module commonjs --rootDir gra/src --outDir out src/game/warAllInCapital.ts src/units/setup.ts
+#    (tsc 6.x: ostrzezenie TS5107 o moduleResolution=node10, emisja wykonana; out/ przeniesiony do out/src/, gra/data -> out/data)
+# 3. require(out/src/game/warAllInCapital.js) -> "load ok"
+# 4. node gen-vectors.js /tmp/claude-0/web-dc8-lrN9/web-dc8a3adc.json 300
+{"scenarios":300,"withOrders":278,"rendezvousOrders":110,"engageOrders":0,"multiStepOrders":826}
+# 5. cmp web-dc8a3adc.json tests/p6_repin_wojna_d_vectors/web-dc8a3adc.json -> IDENTICAL
+# sha256 c3527f45314645be0229f16ba7370875085b88f0086b54581646330c53e6d93e

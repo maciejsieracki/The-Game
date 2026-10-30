@@ -1,0 +1,17 @@
+{
+  "link_radius": {
+    "wartosc": 3,
+    "sekcja": "R-WEB-WAR-ALLIN-CAPITAL-Q1 (regula TYMCZASOWA)",
+    "opis": "Jednostki w tym dystansie heksow (lancuchowo) tworza jedna grupe marszu."
+  },
+  "merge_radius": {
+    "wartosc": 10,
+    "sekcja": "R-WEB-WAR-ALLIN-CAPITAL-Q1 (regula TYMCZASOWA)",
+    "opis": "Grupa dolacza do wiekszej/wczesniejszej grupy tego samego celu, jesli jest nie dalej niz tyle heksow (zbiorka)."
+  },
+  "no_merge_near_capital": {
+    "wartosc": 3,
+    "sekcja": "R-WEB-WAR-ALLIN-CAPITAL-Q1 (regula TYMCZASOWA)",
+    "opis": "Grupa o tylu heksach (lub mniej) od stolicy celu nie czeka na zbiorke -- natarcie."
+  }
+}

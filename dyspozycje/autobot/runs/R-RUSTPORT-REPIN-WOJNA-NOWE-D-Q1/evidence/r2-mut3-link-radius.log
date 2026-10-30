@@ -1,0 +1,45 @@
+   Compiling civ-engine v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_0122948c-af3-2/rust-port/engine)
+    Finished `test` profile [unoptimized] target(s) in 33.13s
+     Running tests/p6_repin_wojna_d_nav.rs (target/debug/deps/p6_repin_wojna_d_nav-b47a15f9b54f2899)
+
+running 14 tests
+test distance_field_on_flat_line_is_hex_distance ... ok
+test flag_default_and_override ... ok
+test island_unit_without_sea_has_no_path ... ok
+test neighbour_keys_are_six_and_adjacent ... ok
+test params_match_web_json ... ok
+test nearest_target_tie_break_by_city_id ... ok
+test nav_move_cost_land_and_sea_gate ... ok
+test route_classification_missing_start_is_empty ... ok
+test unit_on_capital_is_held ... ok
+test units_beyond_link_radius_form_two_groups ... ok
+test prefer_sea_targets_then_land_fallback ... ok
+test route_classification_land_only_on_flat_map ... ok
+test single_unit_steps_towards_capital ... ok
+test units_within_link_radius_form_one_group ... FAILED
+
+failures:
+
+---- units_within_link_radius_form_one_group stdout ----
+
+thread 'units_within_link_radius_form_one_group' (7994) panicked at tests/p6_repin_wojna_d_nav.rs:155:5:
+assertion `left == right` failed
+  left: Some([1, 1])
+ right: Some([2])
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+   1: core::panicking::panic_fmt
+   2: core::panicking::assert_failed_inner
+   3: core::panicking::assert_failed::<core::option::Option<&alloc::vec::Vec<usize>>, core::option::Option<&alloc::vec::Vec<usize>>>
+   4: p6_repin_wojna_d_nav::units_within_link_radius_form_one_group
+   5: p6_repin_wojna_d_nav::units_within_link_radius_form_one_group::{closure#0}
+   6: <p6_repin_wojna_d_nav::units_within_link_radius_form_one_group::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+
+failures:
+    units_within_link_radius_form_one_group
+
+test result: FAILED. 13 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.08s
+
+error: test failed, to rerun pass `--test p6_repin_wojna_d_nav`
