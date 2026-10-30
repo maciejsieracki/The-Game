@@ -1,68 +1,64 @@
 {
-  "releaseState": "DEPLOYED — naprawa lifecycle kolejki rozkazów bitewnych",
+  "releaseState": "READY FOR ROBOCZA DEPLOY — AI campaign muster/turn-six attack and new-game settings layout",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "2f15bd3b3ef6b3732cee4007f8c49cda",
-  "bundleSha256": "2c6e0e446af65e6d76d6e09f378801fe69f3614391489f4d418bac90bad336b7",
-  "bundleBytes": 70045250,
+  "bundleMd5": "38218e5327c8ee2979ed70658a238cd1",
+  "bundleSha256": "f0fed0bddcf6fc76a6a50e63911504f5786f579f3c728a655404c6ff83fa6b4f",
+  "bundleBytes": 70045527,
   "sourceSnapshot": {
-    "baseCommit": "c0724801",
-    "source": "main 96d088b4",
+    "baseCommit": "origin/main 6abc4ed3",
+    "source": "main c46d6c47",
     "build": "Vite 5.4.21 single-file; 919 modules; stamped ROBOCZA",
-    "buildCommit": "96d088b4"
+    "buildCommit": "c46d6c47"
   },
   "scope": [
-    "R-BITWA-KOLEJKA-ROZKAZOW-STALE-Q1: czyszczenie ID kolejki po aktywacji oraz po pominięciu martwej/zużytej jednostki."
+    "R-AI-KAMPANIA-MARSZ-REKRUTACJA-Q1: assembled leader-led AI main group advances on turn six while a straggler continues rendezvous; sea-target priority logic retained and covered by planner tests.",
+    "R-NEWGAME-SETTINGS-LAND-DIPLO-REPOSITION-Q1: land share in final main-grid slot; diplomacy review in former city-state difficulty slot; city-state difficulty and epoch-war toggle remain in Advanced."
   ],
   "verification": [
-    "TypeScript PASS",
-    "Vite main build PASS: 919 modules",
-    "Vite standalone battle build PASS: 589 modules",
-    "Chromium integrated 28v28 lifecycle 15/15 PASS; independent evaluator and Final Control PASS-WITH-NOTES",
-    "verify-robocza-bundle.cjs VERIFY OK"
+    "npm run typecheck: PASS",
+    "Vite 5.4.21 main build: PASS; 919 modules",
+    "ai-general-war-campaign-test.cjs: 51/51 PASS, including reachable sea-target priority and technology gate",
+    "newgame-settings-layout-reposition-test.cjs: Chromium PASS; slot, persistence, and game-start parameters verified",
+    "newgame-adv-tooltip-test.cjs: 31/31 PASS via loopback HTTP, 0 page/console errors",
+    "verify-robocza-bundle.cjs: VERIFY OK; top-level and bundles[] MD5/size match",
+    "smoke.cjs: SMOKE OK; canvas=1, rAF=1"
   ],
   "limits": [
-    "Manual-control large-army scope remains open for broader scenarios; no duplicate immediate move was confirmed in the 60-second observation.",
-    "Large empire performance test remains deferred to the end."
+    "Manual-control large-army follow-up remains open at stage 8: exact pointer attack reduced HP 80→62; attack-march was issued after the unit activation and is unresolved, not a confirmed product failure.",
+    "Large empire performance stress test remains deferred until other fixes close."
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
-    "notes": "Current-main integration independently evaluated; stale queue lifecycle fix validated. Test is 28v28 with subset pointer order, not the 120-per-side cap."
+    "notes": "AI campaign Final Control and settings Final Control passed with notes. Live 28v28 combat exact-target attack also passed; attack-march follow-up is unresolved and outside this ready release subset."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-10-29T23:52:25",
+  "hubGeneratedAt": "2026-10-30T03:22:41",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "2f15bd3b3ef6b3732cee4007f8c49cda",
-      "sizeBytes": 70045250
+      "md5": "38218e5327c8ee2979ed70658a238cd1",
+      "sizeBytes": 70045527
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "2f15bd3b3ef6b3732cee4007f8c49cda",
-      "sizeBytes": 70045250
+      "md5": "38218e5327c8ee2979ed70658a238cd1",
+      "sizeBytes": 70045527
     }
   ],
-  "md5": "2f15bd3b3ef6b3732cee4007f8c49cda",
-  "sizeBytes": 70045250,
+  "md5": "38218e5327c8ee2979ed70658a238cd1",
+  "sizeBytes": 70045527,
   "publisher": "Codex AutoBot — wcześniejsza dyspozycja właściciela: merge main, deploy Robocza, git push",
-  "source": "gra/src; main 96d088b4",
+  "source": "gra/src; main c46d6c47ff8643fabdcdd58d5c8067e07737326f",
   "immediatePreviousRelease": {
-    "releaseState": "DEPLOYED — cztery poprawki bitewne w Roboczej i origin/main; pinned GitHub Raw readback PASS.",
-    "bundle": "Gra-ROBOCZA.html",
-    "bundleMd5": "b3d82220c7a8820f5a5e89c9aa209431",
-    "bundleSha256": "7632cbf4c91f4cc67d76c240308dd9cf04d5f860160dd16469d1564b9be6eb1d",
-    "bundleBytes": 70045045,
-    "sourceSnapshot": {
-      "baseCommit": "origin/main @ 973e24ce",
-      "source": "main @ a9c555e44c968e1d7d037d4c34a02a57691ece66",
-      "build": "Vite 5.4.21 single-file; 919 modules; stamped ROBOCZA",
-      "buildCommit": "a9c555e4",
-      "publicationCommit": "6b7f40b412ec5f9d931f054684746fa9c820baef"
-    }
+    "publicationCommit": "87aa8678427109b9a109aea7797ca3c171cfd84f",
+    "bundleMd5": "2f15bd3b3ef6b3732cee4007f8c49cda",
+    "bundleSha256": "2c6e0e446af65e6d76d6e09f378801fe69f3614391489f4d418bac90bad336b7",
+    "bundleBytes": 70045250,
+    "sourceCommit": "main 96d088b4"
   },
   "rollbackPlan": {
     "method": "Restore the previous release bundle and manifest recorded in immediatePreviousRelease, then revert source/release commits.",
@@ -262,9 +258,9 @@
     "publicationCommit": "f6f63dc839449d8e08a7e2509ec72796757867af"
   },
   "publishPlan": {
-    "status": "PUBLISHED to origin/main at 6b7f40b412ec5f9d931f054684746fa9c820baef; Robocza only; no KANON/FINALNA promotion.",
+    "status": "READY — source is integrated on main; Robocza artifacts locally built and verified; publish after release receipt commit.",
     "target": "origin/main",
-    "publicationCommit": "6b7f40b412ec5f9d931f054684746fa9c820baef"
+    "sourceCommit": "c46d6c47ff8643fabdcdd58d5c8067e07737326f"
   },
   "remoteReadback": {
     "status": "PASS",
@@ -279,7 +275,7 @@
     "bundleBytes": 70045045,
     "checks": "Pinned GitHub Raw readback: bundle, manifest and START HTTP 200; fetched bundle hashes and bytes match local files and manifest top-level plus both bundles[] rows; START lists current bundle MD5 prefix."
   },
-  "publishedAt": "2026-10-30T02:16:07.883Z",
+  "publishedAt": "2026-10-30T03:23:18.241Z",
   "buildStamp": "2026-10-30 00:52",
   "battleBundle": {
     "file": "Gra-ROBOCZA-POLE-BITWY.html",
@@ -287,5 +283,6 @@
     "sha256": "ecf1e42a8ec6eeaddca66a86596c34614199f101b253c73c98e266ca16fde4ec",
     "sizeBytes": 57380299,
     "build": "Vite 5.4.21 standalone battle; 589 modules"
-  }
+  },
+  "releaseScope": "R-AI-KAMPANIA-MARSZ-REKRUTACJA-Q1: leader-led AI force advances after five full gathering turns; R-NEWGAME-SETTINGS-LAND-DIPLO-REPOSITION-Q1: land share and diplomacy review settings placement."
 }

@@ -1,0 +1,51 @@
+{
+  "taskId": "R-READY-SUBSET-ROBOCZA-20261030",
+  "status": "LOCAL_ROBOCZA_READY_REMOTE_PENDING",
+  "stage": "10/11",
+  "source": {
+    "branch": "main",
+    "commit": "c46d6c47ff8643fabdcdd58d5c8067e07737326f",
+    "base": "origin/main @ 6abc4ed3ed42e70ef8d81a9ab28a012ca72fea5e",
+    "includedSourceCommits": [
+      "e84d4328fb30ca42ae837f4dadd1bf0aa604a58f",
+      "c46d6c47ff8643fabdcdd58d5c8067e07737326f"
+    ]
+  },
+  "topics": [
+    "R-AI-KAMPANIA-MARSZ-REKRUTACJA-Q1",
+    "R-NEWGAME-SETTINGS-LAND-DIPLO-REPOSITION-Q1"
+  ],
+  "bundle": {
+    "path": "gra-robocza/Gra-ROBOCZA.html",
+    "md5": "38218e5327c8ee2979ed70658a238cd1",
+    "sha256": "f0fed0bddcf6fc76a6a50e63911504f5786f579f3c728a655404c6ff83fa6b4f",
+    "sizeBytes": 70045527,
+    "build": "Vite 5.4.21 single-file; 919 modules; stamped ROBOCZA"
+  },
+  "previousRelease": {
+    "publicationCommit": "87aa8678427109b9a109aea7797ca3c171cfd84f",
+    "bundleMd5": "2f15bd3b3ef6b3732cee4007f8c49cda",
+    "bundleSha256": "2c6e0e446af65e6d76d6e09f378801fe69f3614391489f4d418bac90bad336b7",
+    "bundleBytes": 70045250
+  },
+  "checks": [
+    "npm run typecheck: PASS",
+    "Vite main build: PASS, 919 modules",
+    "ai-general-war-campaign-test.cjs: 51/51 PASS; sea-target priority and Seafaring technology gate covered by logic tests",
+    "newgame-settings-layout-reposition-test.cjs: Chromium PASS; layout, persistence and game-start params",
+    "newgame-adv-tooltip-test.cjs: 31/31 PASS over HTTP; zero page/console errors",
+    "node gra/tools/verify-robocza-bundle.cjs: VERIFY OK; manifest and bundles[] match (known iterative stamp WARN)",
+    "node gra/tools/smoke.cjs: SMOKE OK; canvas=1, rAF=1"
+  ],
+  "limits": [
+    "Manual-control large-army topic remains 8/11; exact-target attack passed HP 80→62, but attack-march is unresolved because the test order was issued after that unit's activation.",
+    "Large empire performance test remains postponed until all other open topics are closed."
+  ],
+  "remoteReadback": {
+    "status": "PENDING",
+    "required": [
+      "git ls-remote origin refs/heads/main",
+      "pinned GitHub Raw bundle/manifest/START HTTP and hash readback"
+    ]
+  }
+}
