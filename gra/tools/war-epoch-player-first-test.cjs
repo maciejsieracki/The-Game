@@ -129,7 +129,9 @@ const pfc = (candidates, extra = {}) => ({ ...extra, playerFirst: { playerOwnerI
 // Z5: limit funkcji bez zmian (baza); omijanie R3 w main.ts tylko dla aktora z przydziałem tej tury.
 {
   const declared = new Map([['stone', 1]]);
-  ok(C.canDeclareEraForcedWar('stone', declared, C.WAR_RULES_PARAMS) === false, 'Z5: po jednej wojnie -> blokada funkcji (baza)');
+  // R-WEB-ERA-WAR-COUNTER-Q1: globalny limit (maxEraForcedWarsPerEra) zniesiony -> funkcja nie blokuje;
+  // blokadę przejmuje licznik per cywilizacja (test `war-era-counter-test.cjs`).
+  ok(C.canDeclareEraForcedWar('stone', declared, C.WAR_RULES_PARAMS) === true, 'Z5: globalny limit zniesiony (null) -> funkcja nie blokuje');
   ok(C.canDeclareEraForcedWar('bronze', declared, C.WAR_RULES_PARAMS) === true, 'Z5: inna epoka ma własny licznik');
   ok(C.canDeclareEraForcedWar('stone', new Map(), C.WAR_RULES_PARAMS) === true, 'Z5: pierwsza wojna epoki zawsze dozwolona');
 }

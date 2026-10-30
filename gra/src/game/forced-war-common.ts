@@ -196,6 +196,13 @@ export interface ForcedWarPairingExistingPair {
 export interface ForcedWarPairingOpts {
   /** Symetryczny predykat: NAP / peaceLocked (w tym cooldown tej samej pary) / aktywny sojusz MIĘDZY a i b — main.ts ta sama trójka warunków co dawne blockedOwnerIds, teraz jeden predykat zamiast osobnego zbioru per owner. */
   isPairBlocked: (a: number, b: number) => boolean;
+  /**
+   * R-WEB-ERA-WAR-COUNTER-Q1: `true` = podmiot ZUŻYŁ już wojnę epoki w bieżącej epoce
+   * (licznik per (cywilizacja, epoka), napastnik LUB cel). Taki podmiot odpada z puli
+   * warless, z kandydatów partnera gracza i nie może zostać stroną dołączanej pary.
+   * Brak pola = brak licznika (zachowanie bazowe).
+   */
+  isEraWarExhausted?: (ownerId: number) => boolean;
   hexDistanceFn: (aq: number, ar: number, bq: number, br: number) => number;
   /** Krok 2 ECHO: CAŁKOWITA liczba aktywnych wojen wymuszonych (wszystkie epoki) tego ownera PRZED przydziałem tej tury. */
   totalActiveForcedWarsByOwner: (ownerId: number) => number;
@@ -275,10 +282,12 @@ export function assignForcedWarPairings(
 ): ForcedWarPairingResult {
   const assignments: ForcedWarPairingAssignment[] = [];
   const unresolvedOwnerIds: number[] = [];
+  // R-WEB-ERA-WAR-COUNTER-Q1: podmiot z zużytym licznikiem wojen epoki nie wchodzi do puli.
+  const exhausted = (ownerId: number): boolean => opts.isEraWarExhausted?.(ownerId) === true;
 
   // Krok 1-2: pula "warless", posortowana deterministycznie po ownerId.
   let warlessAll = triggeredSubjects
-    .filter(s => opts.totalActiveForcedWarsByOwner(s.ownerId) === 0)
+    .filter(s => opts.totalActiveForcedWarsByOwner(s.ownerId) === 0 && !exhausted(s.ownerId))
     .slice()
     .sort((a, b) => a.ownerId - b.ownerId);
 
@@ -300,6 +309,7 @@ export function assignForcedWarPairings(
       for (const cand of pool) {
         if (cand.ownerId === playerFirst.playerOwnerId || cand.era == null) continue;
         if (opts.totalActiveForcedWarsByOwner(cand.ownerId) !== 0) continue;
+        if (exhausted(cand.ownerId)) continue;
         if (opts.isPairBlocked(playerFirst.playerOwnerId, cand.ownerId)) continue;
         if (!playerFirst.isPlayerPairGateOpen(cand.ownerId)) continue;
         const dist = opts.hexDistanceFn(playerSubject.q, playerSubject.r, cand.q, cand.r);
@@ -461,6 +471,9 @@ export function assignForcedWarPairings(
       const attackerBlocked = opts.isPairBlocked(leftoverId, pair.attackerId);
       const targetBlocked = opts.isPairBlocked(leftoverId, pair.targetId);
       if (attackerBlocked || targetBlocked) continue;
+      // R-WEB-ERA-WAR-COUNTER-Q1: obie strony pary muszą mieć wolny licznik wojen epoki —
+      // strona z zużytym licznikiem nie dostaje drugiej wojny w tej epoce (także jako cel).
+      if (exhausted(pair.attackerId) || exhausted(pair.targetId)) continue;
       // Obie strony niezablokowane -- deterministyczny wybór (niższy ownerId), zgodny z
       // konwencją tie-breaku reszty modułu.
       const chosenSide = Math.min(pair.attackerId, pair.targetId);

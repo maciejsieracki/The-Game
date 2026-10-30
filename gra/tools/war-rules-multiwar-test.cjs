@@ -71,7 +71,10 @@ try {
   eq(M.canDeclareEraForcedWar('iron', new Map([['bronze', 1], ['stone', 1]]), P1), true, 'R3i wojna Żelaza dozwolona po Kamieniu i Brązie');
   eq(M.canDeclareEraForcedWar('bronze', new Map([['bronze', 1]]), P1), false, 'R3k druga wojna Brązu blokowana');
   eq(M.canDeclareEraForcedWar('stone', new Map([['stone', 1]]), { ...P1, maxEraForcedWarsPerEra: null }), true, 'R3l null = brak limitu');
-  eq(M.WAR_RULES_PARAMS.maxEraForcedWarsPerEra, 1, 'R3j parametr JSON maxEraForcedWarsPerEra = 1 (r3)');
+  // R-WEB-ERA-WAR-COUNTER-Q1: globalny limit wojen epoki ZNIESIONY (null); zastąpiony licznikiem per cywilizacja.
+  eq(M.WAR_RULES_PARAMS.maxEraForcedWarsPerEra, null, 'R3j parametr JSON maxEraForcedWarsPerEra = null (R-WEB-ERA-WAR-COUNTER-Q1, globalny limit zniesiony)');
+  eq(M.WAR_RULES_PARAMS.maxEraForcedWarsPerCivPerEra, 1, 'R-WEB-ERA-WAR-COUNTER-Q1 parametr maxEraForcedWarsPerCivPerEra = 1');
+  eq(JSON.stringify(M.WAR_RULES_PARAMS.enabledForcedWarEras), '["stone"]', 'R-WEB-ERA-WAR-COUNTER-Q1 enabledForcedWarEras = ["stone"]');
   eq(M.evaluateInterCivWarGate({ turn: 50, attackerEra: 1, attackerWarCount: 1, targetIsPlayer: true, targetEra: 1, targetWarCount: 0 }), 'stone_limit_attacker_r2', 'R2 nadal blokuje AI w Kamieniu z 1 wojną (także wobec gracza)');
   eq(M.evaluateInterCivWarGate({ turn: 50, attackerEra: 2, attackerWarCount: 5, targetIsPlayer: false, targetEra: 2, targetWarCount: 5 }), 'ok', 'R2 od Brązu bez limitu');
 
