@@ -2,7 +2,7 @@ STATUS: PASS-WITH-NOTES
 DOMAIN: GAME
 TEMAT: R-RUSTPORT-P6-M06A8-LAD-MORZE-KORYTARZE2-Q1
 GOAL: Port `groupDryLandMassKeys` (:4338) i `ensurePangeaSingleContinent` (:4375) do `rust-port/engine/src/domain/mapgen/landsea.rs`, z wektorami z uruchomionego weba (pin `edb8fb56`) i testami. Partia 1 z dispatchu (<= 2 symbole).
-ZMIANY/COMMIT: Baza `origin/rust-port/parity-v2` = `db72e298`. Commit: SHA w sekcji "COMMIT" nizej.
+ZMIANY/COMMIT: Baza `origin/rust-port/parity-v2` = `db72e298`. Commit kodu i wektorow: `f680dca0`. Ten raport dopisany osobnym commitem po `f680dca0`.
 Allowlista (zmienione/nowe):
 - rust-port/engine/src/domain/mapgen/landsea.rs (dopisek: `group_dry_land_mass_keys`, `ensure_pangea_single_continent`)
 - rust-port/engine/src/data/derived.rs (dopisek: `mapgen_landsea_pangea_bridge()`)
