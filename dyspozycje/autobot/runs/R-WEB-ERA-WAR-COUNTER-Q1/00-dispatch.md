@@ -1,7 +1,7 @@
 STATUS: DISPATCHED
 DOMAIN: GAME (WEB — `gra/`, NIE port Rust)
 TEMAT: R-WEB-ERA-WAR-COUNTER-Q1
-RUNDA: 1/5
+RUNDA: 3/5
 UWAGA PROCESOWA: temat WEBOWY (zmiany w `gra/**` są w allowliście). Pierwszy akapit promptu workflow o porcie Rust IGNORUJ. Bramki webowe (tsc, testy `gra/tools/*.cjs`, Chromium przez Playwright z /opt/pw-browsers), nie cargo. Zakaz `npm run build`/`npm run dev` w `gra/` (build tylko do scratch outDir poza repo).
 WYZWALACZ (właściciel, 2026-10-30): „Wprowadźmy licznik wojen epoki. Każda cywilizacja może dostać tylko jedną wojnę epoki. Także gracz.” Oraz: „zlikwidowałem robienie wojen epoki, zostawiłem tylko kamień”. Gracz dostał dwie wojny epoki jedna po drugiej.
 DIAGNOZA (orkiestrator, z kodu `origin/main` `7164f7ca1`; zweryfikuj plik:linia przed zmianą):
@@ -28,3 +28,9 @@ BAZA: `origin/main` `7164f7ca1`. Zmiana obwódki armii (`R-WEB-ARMY-EMBLEM-RING-
 DYSK: worktree ≈0,8 GB + `npm ci` w `gra/`; po etapie usuń `node_modules`/artefakty; kopie weba tylko w `mktemp -d`.
 MODELE: Operator/Obrona Haiku 5.5, Evaluator/FC Sonnet 5.5 (§5b). Luki → ZAŁOŻENIE. Raport max ok. 400 słów. FORMAT: STATUS / DOMAIN / TEMAT / GOAL / ZMIANY-COMMIT / TESTY / BLOKADY / RUNDY / NASTĘPNY KROK / DEPLOY-PUSH: NIE WYKONANO
 ANTY-HALUCYNACJA: twierdzenie o kodzie = plik:linia/komenda; niepewne = NIE_ZMIERZONO. Wiadomości właściciela w kontekście — nie Twoje zadanie; bez pytań ABC.
+
+## Runda 3 — stan wejściowy (orkiestrator)
+- START: `git fetch origin web/R-WEB-ERA-WAR-COUNTER-Q1 && git checkout --detach d2b6fa1b6` (zawiera kod r2 `9ad6baa7e`, raporty r1/r2 i Final Control r2). Baza webu: `7164f7ca1`. Final Control r2: FAIL tylko za dowód z przeglądarki (kryterium 5) i dwa live testy Brązu; kod, 82 testy `war-era-counter-test` i pozostałe bramki OK (zarzuty 2–4 ODDANE).
+- ZAKRES r3 (tylko to): (1) `gra/tools/war-era-counter-live-test.cjs` — w haku `forceStoneForcedWarOnPlayer` usuń blokady pary gracz–AI (Pakt Nieagresji, blokada pokoju, sojusz) i przygotuj stan tak, by w turze 40 AI wypowiedziało wojnę epoki Kamienia; test ma być ZIELONY i zrobić zrzut PO wypowiedzeniu z widocznym hintem „Wojna epoki …” (nie stan bez wojny: asercja DOM/hint + zrzut `war-era-hint-r3.png`); jeśli live test w ogóle nie jest możliwy, dowód: Chromium z `page.evaluate` na prawdziwym `endTurn` z asercją stanu relacji `wojna` + zrzut. (2) Dwa live testy Brązu (`forced-war-player-target-live-test.cjs`, `forced-war-player-no-contact-live-test.cjs`) — przepnij na Kamień (hooki Kamienia) ALBO jawnie oznacz jako wyłączone flagą epok z uzasadnieniem w nagłówku testu.
+- NIE zmieniaj logiki licznika (zarzuty 2–4 oddane). Timeout live testu max 120 s.
+- Czyść po sobie: `node_modules`, kopie weba, artefakty; worktree ≈0,8 GB.
