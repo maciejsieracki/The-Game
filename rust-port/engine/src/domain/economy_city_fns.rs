@@ -7,10 +7,10 @@
 //! - `cityBuildingEntriesFromBuiltIds` (L589-609) -> [`city_building_entries_from_built_ids`]
 //! - `productionProgress` (L1151-1171) -> [`production_progress`]
 //! - `corruptionRate` (L1190-1199) -> [`corruption_rate`]
-//! - `corruptionBuildingReduction` (L1202-1229; stale stałe L1202-1211) -> [`corruption_building_reduction`]
+//! - `corruptionBuildingReduction` (deklaracja L1223-1229; stale `CORRUPTION_*` L1202-1211) -> [`corruption_building_reduction`]
 //!
 //! Dowod rownowaznosci: wektory z pinu (`tests/economy_city_vectors.rs`, plik
-//! `tests/fixtures/economy_city_vectors_91dc998a.json`), 2100 wektorow, bundle esbuild z pinu.
+//! `tests/fixtures/economy_city_vectors_91dc998a.json`), 2500 wektorow (asercja liczb per funkcja), bundle esbuild z pinu.
 //!
 //! ZALOZENIA (adaptacja typow, logika bez zmian):
 //! - `buildingGivesHappiness` / `buildingHappinessAtLevel` sa juz portem w

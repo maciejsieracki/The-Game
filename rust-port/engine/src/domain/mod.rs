@@ -17,6 +17,8 @@ pub mod combat;
 pub mod diplomacy;
 pub mod diplomacy_tick_war_brake;
 pub mod economy_city_fns;
+pub mod economy_city_params;
+pub mod economy_city_terrain;
 pub mod economy_yield;
 mod error;
 pub mod events;
