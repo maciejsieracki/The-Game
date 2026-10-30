@@ -319,7 +319,9 @@ use std::collections::{BTreeMap, HashSet};
 use std::sync::OnceLock;
 
 use crate::domain::building_costs::p6_7b::{
-    building_era_cost_multiplier, scale_cost_by_epoch, EpochInput, PaceInput,
+    building_era_cost_multiplier, building_resource_gate_met, city_building_prereq,
+    city_building_prereq_met, is_water_access_building, scale_cost_by_epoch, EpochInput,
+    GateBuilding, PaceInput, PrereqBuilding,
 };
 use crate::domain::building_costs::repin_b2::{
     building_work_cost_web, unit_money_cost_web, CostMarker,
@@ -372,7 +374,7 @@ pub struct CityProduction {
 }
 
 /// Wiersz budynku: pola `BuildingDef` czytane przez production.ts 1-692.
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Default)]
 pub struct BuildingCostRow {
     pub id: String,
     pub nazwa: String,
@@ -2618,19 +2620,24 @@ fn replace_passes_gates(
 }
 
 /// web `costOf(u)` w `availableReplacementsFor` = `unitMoneyCost(itemCost('jednostka', ...))`.
-fn replace_item(u: &UnitReplaceRow, ctx: &ReplaceAvailabilityCtx<'_>) -> ProductionItem {
+/// web `unitMoneyCost(itemCost('jednostka', u.Jednostka, data, 1), ...)` (koszt rekrutacji/zastapienia).
+fn unit_recruit_cost(u: &UnitReplaceRow, cost: &AvailabilityContext<'_>) -> f64 {
     let base = scale_cost_by_epoch(
         unit_cost_from_def(&u.cost),
         &epoch_input(u.cost.epoka.as_deref()),
     );
-    let koszt = unit_money_cost_web(
+    unit_money_cost_web(
         base,
-        &ctx.cost.cost_markers,
-        ctx.cost.unit_cost_pace,
-        ctx.cost.owner_id,
-        ctx.cost.difficulty,
+        &cost.cost_markers,
+        cost.unit_cost_pace,
+        cost.owner_id,
+        cost.difficulty,
         Some(&u.cost.jednostka),
-    );
+    )
+}
+
+fn replace_item(u: &UnitReplaceRow, ctx: &ReplaceAvailabilityCtx<'_>) -> ProductionItem {
+    let koszt = unit_recruit_cost(u, &ctx.cost);
     ProductionItem {
         kind: ProductionKind::Jednostka,
         id: u.cost.jednostka.clone(),
@@ -2739,4 +2746,273 @@ pub fn replacement_name_compare(a: &str, b: &str) -> std::cmp::Ordering {
     primary
         .then_with(|| diacritic_count(a).cmp(&diacritic_count(b)))
         .then_with(|| locale_compare(a, b).cmp(&0))
+}
+
+// ---------------------------------------------------------------------------
+// P6.8B-P1b-c2c: availableProduction (production.ts ~923-1135 @91dc998a).
+// Wektory: p6_8b_vectors/p1b-c2c.json (generator gen-p6-8b-c2c-vectors.mjs; web na PRAWDZIWYCH
+// buildings.json / units.json z pinu). Zalozenia (ZALOZENIE, do weryfikacji):
+// * `city` nieuzywane w webie (`void city`) -- pominiete w sygnaturze.
+// * `ctx.epoch` / `ctx.buildingLevel` nie-skonczone = 1 (web `Number.isFinite`).
+// * Koszt budynku: `buildingWorkCost(itemCost('budynek', id, data, level), ...)`; koszt jednostki:
+//   `unitMoneyCost(itemCost('jednostka', ...,1), ...)`; markery/tempo z `ctx.cost` (w wektorach puste).
+// * Nazwa budynku: `upgradeProductionDisplayName(b, data.buildings)`.
+// * Sortowanie: budynki przed jednostkami, potem koszt, potem `replacement_name_compare`.
+// ---------------------------------------------------------------------------
+
+/// Wiersz budynku dla `availableProduction`: pola `BuildingDef` czytane przez te funkcje.
+#[derive(Debug, Clone, PartialEq, Default)]
+pub struct BuildingAvailRow {
+    /// `id`, `nazwa`, `kosztBudowy`, `przyrostKosztu`, `epokaWejscia`, `lokalizacja` (koszt i gate lokalizacji).
+    pub cost: BuildingCostRow,
+    /// web `upgradeFrom` (`None` = brak).
+    pub upgrade_from: Option<String>,
+    /// web `suppressed` (`None` = brak; web: tylko `true` ukrywa).
+    pub suppressed: Option<bool>,
+    /// web `techUnlock` (`None` = brak).
+    pub tech_unlock: Option<String>,
+    /// web `wymaganySurowiec` (`None` = brak).
+    pub wymagany_surowiec: Option<String>,
+    /// web `odblokowuje` (`None` = brak).
+    pub odblokowuje: Option<String>,
+}
+
+/// Kontekst `availableProduction` (pola `AvailabilityContext` + argument `unlockedTechs`).
+#[derive(Debug, Clone)]
+pub struct ProductionAvailabilityCtx<'a> {
+    /// web `ctx.epoch` (nie-skonczona = 1).
+    pub epoch: f64,
+    /// web `ctx.buildingLevel` (nie-skonczona = 1).
+    pub building_level: f64,
+    /// web `ctx.builtBuildingIds` (pusta = brak).
+    pub built_building_ids: &'a [&'a str],
+    /// web `ctx.productionQueue` (pusta = brak).
+    pub production_queue: &'a [ProductionItem],
+    /// web `unlockedTechs`.
+    pub unlocked_techs: &'a [&'a str],
+    /// web `ctx.civKey` (zasady jak w `ReplaceAvailabilityCtx`).
+    pub civ_key: Option<Option<&'a str>>,
+    /// web `ctx.civUnitNacja`.
+    pub civ_unit_nacja: Option<&'a str>,
+    /// web `ctx.cityHasCoastOrRiver`.
+    pub city_has_coast_or_river: bool,
+    /// web `ctx.showStockGatedUnits`.
+    pub show_stock_gated_units: bool,
+    /// web `ctx.showResourceGatedBuildings`.
+    pub show_resource_gated_buildings: bool,
+    /// web `ctx.aliveUnitTypeNames` (pusta = brak).
+    pub alive_unit_type_names: &'a [&'a str],
+    /// web `ctx.empireBuiltIds` (`None` = brak).
+    pub empire_built_ids: Option<&'a [String]>,
+    /// Markery, tempo, `ownerId`, trudnosc, `isCapital`, `empireResourceStock`.
+    pub cost: AvailabilityContext<'a>,
+}
+
+/// web `availableProduction(city, data, unlockedTechs, ctx)` (bez `city`): pozycje do budowy/rekrutacji.
+pub fn available_production(
+    buildings: &[BuildingAvailRow],
+    units: &[UnitReplaceRow],
+    ctx: &ProductionAvailabilityCtx<'_>,
+) -> Vec<ProductionItem> {
+    let epoch = if ctx.epoch.is_finite() {
+        ctx.epoch
+    } else {
+        1.0
+    };
+    let level = if ctx.building_level.is_finite() {
+        ctx.building_level
+    } else {
+        1.0
+    };
+    let built = ctx.built_building_ids;
+    let built_owned: Vec<String> = built.iter().map(|s| (*s).to_string()).collect();
+    let civ_nation = availability_civ_nation(ctx.civ_key, ctx.civ_unit_nacja);
+    let civ = civ_nation.as_deref();
+    let links: Vec<BuildingLinkRow> = buildings
+        .iter()
+        .map(|b| BuildingLinkRow {
+            id: b.cost.id.clone(),
+            upgrade_from: b.upgrade_from.clone(),
+            odblokowuje: b.odblokowuje.clone(),
+        })
+        .collect();
+    let prereq_rows: Vec<PrereqBuilding> = buildings
+        .iter()
+        .map(|b| PrereqBuilding {
+            id: b.cost.id.clone(),
+            upgrade_from: b.upgrade_from.clone(),
+        })
+        .collect();
+    let lite: Vec<BuildingUpgradeLite> = buildings.iter().map(lite_of).collect();
+    let data = ProductionData {
+        buildings: buildings.iter().map(|b| b.cost.clone()).collect(),
+        units: units.iter().map(|u| u.cost.clone()).collect(),
+    };
+    let repl_rows: Vec<UnitReplacementRow> = units
+        .iter()
+        .map(UnitReplaceRow::as_replacement_row)
+        .collect();
+    let superseded = |id: &str, built_list: &[String], _bl: &[PrereqBuilding]| -> bool {
+        let refs: Vec<&str> = built_list.iter().map(String::as_str).collect();
+        is_building_superseded_by_upgrade(id, &refs, &links)
+    };
+    let techs = ctx.unlocked_techs;
+    let mut items: Vec<ProductionItem> = Vec::new();
+
+    // --- budynki -------------------------------------------------------------------------
+    for b in buildings {
+        let id = b.cost.id.as_str();
+        if b.cost.epoka_wejscia.is_some_and(|e| e > epoch) {
+            continue;
+        }
+        if is_building_suppressed_from_production(&lite_of(b)) {
+            continue;
+        }
+        // Palisada drewniana: tylko gdy miasto nie ma kamiennych Murow/Cytadeli.
+        if id == "palisada" && (built.contains(&"mury") || built.contains(&"fort")) {
+            continue;
+        }
+        let upgrade_from = js_trim(b.upgrade_from.as_deref().unwrap_or(""));
+        if !upgrade_from.is_empty() {
+            if !built.contains(&upgrade_from) {
+                continue;
+            }
+            if building_type_committed(id, built, ctx.production_queue) {
+                continue;
+            }
+        } else {
+            if is_building_superseded_by_upgrade(id, built, &links) {
+                continue;
+            }
+            if building_type_committed(id, built, ctx.production_queue) {
+                continue;
+            }
+        }
+        let tech = js_trim(b.tech_unlock.as_deref().unwrap_or(""));
+        if !tech.is_empty() && tech != "-" && tech != "\u{2014}" && !techs.contains(&tech) {
+            continue;
+        }
+        if !building_location_allowed(b.cost.lokalizacja.as_deref(), ctx.cost.is_capital) {
+            continue;
+        }
+        let prereq = city_building_prereq(id);
+        if !city_building_prereq_met(prereq, &built_owned, &prereq_rows, &superseded) {
+            continue;
+        }
+        if is_water_access_building(id) && !ctx.city_has_coast_or_river {
+            continue;
+        }
+        let gate = GateBuilding {
+            id: id.to_string(),
+            epoka_wejscia: b.cost.epoka_wejscia,
+            wymagany_surowiec: b.wymagany_surowiec.clone(),
+        };
+        if !ctx.show_resource_gated_buildings
+            && !building_resource_gate_met(
+                &gate,
+                None,
+                ctx.empire_built_ids,
+                ctx.cost.empire_resource_stock,
+            )
+        {
+            continue;
+        }
+        items.push(ProductionItem {
+            kind: ProductionKind::Budynek,
+            id: b.cost.id.clone(),
+            nazwa: upgrade_production_display_name(&lite_of(b), &lite),
+            koszt: building_work_cost_web(
+                item_cost(ProductionKind::Budynek, id, &data, level),
+                &ctx.cost.cost_markers,
+                ctx.cost.building_cost_pace,
+                ctx.cost.owner_id,
+                ctx.cost.difficulty,
+            ),
+            postep: None,
+            is_general: None,
+        });
+    }
+
+    // --- jednostki -----------------------------------------------------------------------
+    for u in units {
+        let unit_epoch = f64::from(epoch_number(u.cost.epoka.as_deref()));
+        let typ = js_trim(u.typ.as_deref().unwrap_or(""));
+        // Zwiadowca (jedyna Typ='Civilian') dostepny we wszystkich epokach.
+        let is_scout_exception = typ == "Civilian";
+        if !is_scout_exception && (unit_epoch > epoch || unit_epoch < epoch - 1.0) {
+            continue;
+        }
+        let nacja = js_trim(u.nacja.as_deref().unwrap_or(""));
+        if !unit_allowed_for_civ_nation(nacja, civ) {
+            continue;
+        }
+        let zamiast = js_trim(u.w_zamian_za.as_deref().unwrap_or(""));
+        if !is_blank_replacement(zamiast) {
+            if !is_civ_special_replacement(&u.as_replacement_row(), civ) {
+                continue;
+            }
+        } else if civ_has_replacement_for(&repl_rows, &u.cost.jednostka, civ) {
+            continue;
+        }
+        let tech = js_trim(u.tech.as_deref().unwrap_or(""));
+        if !tech.is_empty() && tech != "-" && tech != "\u{2014}" && !techs.contains(&tech) {
+            continue;
+        }
+        if unit_epoch >= 2.0
+            && !built.contains(&"koszary")
+            && !is_building_superseded_by_upgrade("koszary", built, &links)
+        {
+            continue;
+        }
+        if typ == "Naval" && !ctx.city_has_coast_or_river {
+            continue;
+        }
+        let surowiec = strip_diacritics(js_trim(u.cost.surowiec.as_deref().unwrap_or("")));
+        if !ctx.show_stock_gated_units {
+            let stock = ctx.cost.empire_resource_stock;
+            if (surowiec == "braz" && !empire_stock_has(stock, "braz"))
+                || (surowiec == "zelazo" && !empire_stock_has(stock, "zelazo"))
+                || (surowiec == "drewno" && !empire_stock_has(stock, "drewno"))
+            {
+                continue;
+            }
+        }
+        if u.cost.super_jednostka.as_deref() == Some("TAK")
+            && ctx
+                .alive_unit_type_names
+                .contains(&u.cost.jednostka.as_str())
+        {
+            continue;
+        }
+        items.push(ProductionItem {
+            kind: ProductionKind::Jednostka,
+            id: u.cost.jednostka.clone(),
+            nazwa: u.cost.jednostka.clone(),
+            koszt: unit_recruit_cost(u, &ctx.cost),
+            postep: None,
+            is_general: None,
+        });
+    }
+
+    // Budynki przed jednostkami, potem najtansze, potem nazwa (localeCompare).
+    items.sort_by(|a, b| match (a.kind, b.kind) {
+        (ProductionKind::Budynek, ProductionKind::Jednostka) => std::cmp::Ordering::Less,
+        (ProductionKind::Jednostka, ProductionKind::Budynek) => std::cmp::Ordering::Greater,
+        _ => a
+            .koszt
+            .partial_cmp(&b.koszt)
+            .unwrap_or(std::cmp::Ordering::Equal)
+            .then_with(|| replacement_name_compare(&a.nazwa, &b.nazwa)),
+    });
+    items
+}
+
+/// Widok `BuildingUpgradeLite` wiersza budynku (pola: id, nazwa, upgradeFrom, suppressed).
+fn lite_of(b: &BuildingAvailRow) -> BuildingUpgradeLite {
+    BuildingUpgradeLite {
+        id: b.cost.id.clone(),
+        nazwa: b.cost.nazwa.clone(),
+        upgrade_from: b.upgrade_from.clone(),
+        suppressed: b.suppressed,
+    }
 }
