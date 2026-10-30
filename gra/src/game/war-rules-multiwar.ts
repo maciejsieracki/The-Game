@@ -19,8 +19,12 @@ export interface WarRulesParams {
   delayInterCivWarsUntilTurn: number;
   maxConcurrentWarsStone: number | null;
   maxConcurrentWarsFromBronze: number | null;
-  /** R3 (r3, właściciel 2026-10-25): najwyżej N wojen epoki na epokę w skali świata (`null` = bez limitu). */
+  /** R3 (r3, właściciel 2026-10-25): najwyżej N wojen epoki na epokę w skali świata (`null` = bez limitu). R-WEB-ERA-WAR-COUNTER-Q1: `null` (limit globalny zniesiony). */
   maxEraForcedWarsPerEra: number | null;
+  /** R-WEB-ERA-WAR-COUNTER-Q1: najwyżej N wojen epoki na JEDNĄ cywilizację (także gracza, napastnik LUB cel) w jednej epoce (`null` = bez limitu). */
+  maxEraForcedWarsPerCivPerEra: number | null;
+  /** R-WEB-ERA-WAR-COUNTER-Q1: epoki, dla których wolno wypowiadać wojny wymuszone (`["stone"]` = tylko Kamień). */
+  enabledForcedWarEras: ForcedEraTag[];
   engageRadiusHexes: number;
   splitArmyByWarCount: boolean;
 }
@@ -30,6 +34,8 @@ export const WAR_RULES_PARAMS: WarRulesParams = {
   maxConcurrentWarsStone: warRulesParamsRaw.maxConcurrentWarsStone,
   maxConcurrentWarsFromBronze: warRulesParamsRaw.maxConcurrentWarsFromBronze,
   maxEraForcedWarsPerEra: warRulesParamsRaw.maxEraForcedWarsPerEra,
+  maxEraForcedWarsPerCivPerEra: warRulesParamsRaw.maxEraForcedWarsPerCivPerEra,
+  enabledForcedWarEras: warRulesParamsRaw.enabledForcedWarEras as ForcedEraTag[],
   engageRadiusHexes: warRulesParamsRaw.engageRadiusHexes,
   splitArmyByWarCount: warRulesParamsRaw.splitArmyByWarCount,
 };
@@ -152,6 +158,144 @@ export function canDeclareEraForcedWar(
 ): boolean {
   if (params.maxEraForcedWarsPerEra === null) return true;
   return (declaredByTag.get(tag) ?? 0) < params.maxEraForcedWarsPerEra;
+}
+
+/**
+ * R-WEB-ERA-WAR-COUNTER-Q1: czy wojny wymuszone danej epoki są włączone (flaga w JSON
+ * `enabledForcedWarEras`). Wyłączona epoka = brak pending, przydziału i wypowiedzenia;
+ * kod epoki zostaje nietknięty.
+ */
+export function isForcedEraWarEnabled(
+  tag: ForcedEraTag,
+  params: WarRulesParams = WAR_RULES_PARAMS,
+): boolean {
+  return params.enabledForcedWarEras.includes(tag);
+}
+
+/**
+ * R-WEB-ERA-WAR-COUNTER-Q1: licznik wojen epoki per (cywilizacja, epoka). Klucz zawiera
+ * numer epoki właściciela, więc awans epoki = nowy klucz = licznik odnawia się.
+ * Wartość = ile wojen wymuszonych tego podmiotu (jako napastnik LUB cel) w tej epoce.
+ */
+export function eraWarCivKey(ownerId: number, epoch: number): string {
+  return `${ownerId}:${epoch}`;
+}
+
+/** Ile wojen epoki podmiot już zużył w tej epoce (0 = brak wpisu). */
+export function eraWarCountFor(
+  counts: ReadonlyMap<string, number>,
+  ownerId: number,
+  epoch: number,
+): number {
+  return counts.get(eraWarCivKey(ownerId, epoch)) ?? 0;
+}
+
+/**
+ * R-WEB-ERA-WAR-COUNTER-Q1: czy podmiot może jeszcze uczestniczyć (napastnik LUB cel) w
+ * wojnie epoki w tej epoce. `maxEraForcedWarsPerCivPerEra` = null → bez limitu.
+ */
+export function canCivJoinEraForcedWar(
+  counts: ReadonlyMap<string, number>,
+  ownerId: number,
+  epoch: number,
+  params: WarRulesParams = WAR_RULES_PARAMS,
+): boolean {
+  if (params.maxEraForcedWarsPerCivPerEra === null) return true;
+  return eraWarCountFor(counts, ownerId, epoch) < params.maxEraForcedWarsPerCivPerEra;
+}
+
+/** Zużycie licznika przy wypowiedzeniu: napastnik i cel dostają po jednym wpisie w bieżącej epoce. */
+export function recordEraForcedWarParticipation(
+  counts: Map<string, number>,
+  attackerId: number,
+  targetId: number,
+  attackerEpoch: number,
+  targetEpoch: number,
+): void {
+  const ka = eraWarCivKey(attackerId, attackerEpoch);
+  const kt = eraWarCivKey(targetId, targetEpoch);
+  counts.set(ka, (counts.get(ka) ?? 0) + 1);
+  counts.set(kt, (counts.get(kt) ?? 0) + 1);
+}
+
+/**
+ * R-WEB-ERA-WAR-COUNTER-Q1, zapis stary bez pola: odtwarza licznik z AKTYWNYCH par wojen
+ * wymuszonych (obie strony = 1 w bieżącej epoce); reszta = 0. Świadomie konserwatywne.
+ */
+export function rebuildEraWarCountsFromActivePairs(
+  activePairs: ReadonlyArray<{ attackerId: number; targetId: number }>,
+  epochOf: (ownerId: number) => number,
+): Map<string, number> {
+  const out = new Map<string, number>();
+  for (const p of activePairs) {
+    for (const oid of [p.attackerId, p.targetId]) {
+      out.set(eraWarCivKey(oid, epochOf(oid)), 1);
+    }
+  }
+  return out;
+}
+
+/**
+ * R-WEB-ERA-WAR-COUNTER-Q1 (zarzut FC r1 nr 2): odczyt licznika przy wczytaniu zapisu — jedna
+ * funkcja zamiast bloku w main.ts, żeby test używał tego samego kodu co gra. `saved` = wartość
+ * `meta.warRulesEraWarCountByCiv` (tablica par [klucz, n]) albo `undefined` (stary zapis).
+ */
+export function restoreEraWarCounts(
+  saved: unknown,
+  activePairs: ReadonlyArray<{ attackerId: number; targetId: number }>,
+  epochOf: (ownerId: number) => number,
+): Map<string, number> {
+  if (!Array.isArray(saved)) return rebuildEraWarCountsFromActivePairs(activePairs, epochOf);
+  const out = new Map<string, number>();
+  for (const e of saved) {
+    if (Array.isArray(e) && typeof e[0] === 'string' && Number.isFinite(e[1])) out.set(e[0], e[1] as number);
+  }
+  return out;
+}
+
+/** Werdykt bramki wypowiedzenia wojny epoki (main.ts, blok `wypowiedz_wojne`). `ok` = wolno wypowiedzieć. */
+export type EraWarGateVerdict = 'ok' | 'era-disabled' | 'era-cap' | 'civ-cap-attacker' | 'civ-cap-target';
+
+/**
+ * R-WEB-ERA-WAR-COUNTER-Q1 (zarzut FC r1 nr 2): czysta bramka wypowiedzenia — ta sama logika,
+ * którą main.ts wywołuje przy `wypowiedz_wojne` z powodem wojny epoki. Kolejność:
+ * (1) epoka wyłączona flagą (także bez multiwar, jak w bazie); (2) limit globalny (tylko gdy
+ * multiwar włączony; przy `maxEraForcedWarsPerEra = null` przepuszcza); (3) licznik napastnika;
+ * (4) licznik celu.
+ */
+export function evaluateEraForcedWarGate(
+  input: {
+    multiwarEnabled: boolean;
+    tag: ForcedEraTag | null;
+    declaredByTag: ReadonlyMap<ForcedEraTag, number>;
+    counts: ReadonlyMap<string, number>;
+    attackerId: number;
+    attackerEpoch: number;
+    targetId: number;
+    targetEpoch: number;
+  },
+  params: WarRulesParams = WAR_RULES_PARAMS,
+): EraWarGateVerdict {
+  if (input.tag === null) return 'ok';
+  if (!isForcedEraWarEnabled(input.tag, params)) return 'era-disabled';
+  if (!input.multiwarEnabled) return 'ok';
+  if (!canDeclareEraForcedWar(input.tag, input.declaredByTag, params)) return 'era-cap';
+  if (!canCivJoinEraForcedWar(input.counts, input.attackerId, input.attackerEpoch, params)) return 'civ-cap-attacker';
+  if (!canCivJoinEraForcedWar(input.counts, input.targetId, input.targetEpoch, params)) return 'civ-cap-target';
+  return 'ok';
+}
+
+/**
+ * R-WEB-ERA-WAR-COUNTER-Q1 (5): miasto referencyjne gracza do odległości partnera — stolica,
+ * a gdy jej brak (lub nie należy do gracza) — pierwsze miasto gracza. Ta sama kolejność co main.ts.
+ */
+export function pickPlayerReferenceCity<T extends { id: string; ownerId: number }>(
+  cities: readonly T[],
+  capitalCityId: string | null | undefined,
+  playerOwnerId = 0,
+): T | undefined {
+  return cities.find(c => c.id === capitalCityId && c.ownerId === playerOwnerId)
+    ?? cities.find(c => c.ownerId === playerOwnerId);
 }
 
 export interface EngageArmyHex {

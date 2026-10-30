@@ -1,9 +1,11 @@
 {
-  "_opis": "R-WEB-WAR-RULES-MULTIWAR-Q1 r3 (regula TYMCZASOWA, flaga WAR_RULES_MULTIWAR_ENABLED w src/game/war-rules-multiwar.ts). Progi wojen w JSON, nie w kodzie. R3 przywrocone: maxEraForcedWarsPerEra=1 (globalnie, na epoke).",
+  "_opis": "R-WEB-WAR-RULES-MULTIWAR-Q1 r3 (regula TYMCZASOWA, flaga WAR_RULES_MULTIWAR_ENABLED w src/game/war-rules-multiwar.ts). Progi wojen w JSON, nie w kodzie. R-WEB-ERA-WAR-COUNTER-Q1: globalny limit wojen epoki (maxEraForcedWarsPerEra) zniesiony (null); zamiast niego licznik per (cywilizacja, epoka) -- maxEraForcedWarsPerCivPerEra=1 (także gracz; napastnik i cel liczeni). enabledForcedWarEras: tylko wojny epoki Kamienia (Brąz i Żelazo wyłączone flagą, kod zostaje).",
   "delayInterCivWarsUntilTurn": 40,
   "maxConcurrentWarsStone": 1,
   "maxConcurrentWarsFromBronze": null,
-  "maxEraForcedWarsPerEra": 1,
+  "maxEraForcedWarsPerEra": null,
+  "maxEraForcedWarsPerCivPerEra": 1,
+  "enabledForcedWarEras": ["stone"],
   "engageRadiusHexes": 10,
   "splitArmyByWarCount": true
 }

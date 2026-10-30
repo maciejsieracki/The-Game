@@ -319,7 +319,7 @@ check(
     + '„25 tur od wejścia w Brąz" (isEligibleForBronzeForcedWar eraEnterTurn) nie ma od czego liczyć '
     + 'dla nowo awansowanych cywilizacji. Zweryfikowano mutacyjnie: usunięcie SAMEJ linii .set() '
     + '(pozostawiając .add(ownerId) i resztę bloku awansu) czerwieni tę asercję.',
-  /if \(\s*\n\s*prev === 1 && next === 2\s*\n\s*&& !isOwnerClusterCityState\(ownerId, ownerCityStateOpts\(\)\)\s*\n\s*\) \{\s*\n\s*bronzeForceWarPendingOwners\.add\(ownerId\);[\s\S]{0,400}?bronzeEraEnterTurnByOwner\.set\(ownerId, turn\);\s*\n\s*\}/.test(mainSrc),
+  /if \(\s*\n\s*prev === 1 && next === 2\s*\n\s*&& !isOwnerClusterCityState\(ownerId, ownerCityStateOpts\(\)\)\s*\n\s*\) \{\s*\n(?:\s*\/\/[^\n]*\n)*\s*(?:if \(isForcedEraWarEnabled\('bronze'\)\) )?bronzeForceWarPendingOwners\.add\(ownerId\);[\s\S]{0,400}?bronzeEraEnterTurnByOwner\.set\(ownerId, turn\);\s*\n\s*\}/.test(mainSrc),
 );
 
 console.log('');
