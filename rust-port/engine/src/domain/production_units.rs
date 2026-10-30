@@ -950,3 +950,77 @@ pub fn unit_stock_shortfall_label(
     }
     Some(format!("Brak w magazynie państwa: {label}"))
 }
+
+// ---------------------------------------------------------------------------
+// P6.8A-P1 (dokonczenie): buildingStatSummaryLines (building-upgrades.ts:98-125).
+// Zalezy od mnoznikow bojowych z `unit-building-bonuses` (port: combat::unit_building_bonuses).
+// ---------------------------------------------------------------------------
+
+/// web `STAT_KEYS` (building-upgrades.ts): kolejnosc wierszy statystyk.
+pub const BUILDING_STAT_KEYS: [&str; 7] = [
+    "praca",
+    "pieniadz",
+    "zywnosc",
+    "nauka",
+    "kultura",
+    "zadowolenie",
+    "obrona",
+];
+
+/// web `statLine(label, baza, przyrost)`: `None` gdy oba zero; `NaN` przechodzi (web `NaN !== 0`).
+fn stat_line(label: &str, baza: f64, przyrost: f64) -> Option<String> {
+    if baza == 0.0 && przyrost == 0.0 {
+        return None;
+    }
+    let mut parts: Vec<String> = Vec::new();
+    if baza != 0.0 {
+        parts.push(crate::domain::civ_matrix::js_compat::js_number_to_string(baza));
+    }
+    if przyrost != 0.0 {
+        parts.push(format!(
+            "+{}/poz",
+            crate::domain::civ_matrix::js_compat::js_number_to_string(przyrost)
+        ));
+    }
+    Some(format!("{label} {}", parts.join(" ")))
+}
+
+/// web `buildingStatSummaryLines(def, buildings?)`.
+/// * `baza` / `przyrost` = mapy liczbowe definicji (brak klucza = 0 jak `?? 0`).
+/// * `buildings` = `None` (web `undefined`) -> wlasny `baza.mnoznik`; `Some(lista)` (takze pusta:
+///   w JS pusta tablica jest prawdziwa) -> skumulowany mnoznik lancucha upgradeFrom.
+pub fn building_stat_summary_lines(
+    def_id: &str,
+    baza: &BTreeMap<String, f64>,
+    przyrost: &BTreeMap<String, f64>,
+    buildings: Option<&[crate::domain::combat::unit_building_bonuses::MnoznikBuildingLookup]>,
+) -> Vec<String> {
+    use crate::domain::combat::unit_building_bonuses::{
+        cumulative_mnoznik_for_building_id, mnoznik_role_for_building_id, MnoznikRole,
+    };
+    let mut lines: Vec<String> = BUILDING_STAT_KEYS
+        .iter()
+        .filter_map(|k| {
+            let b = baza.get(*k).copied().unwrap_or(0.0);
+            let p = przyrost.get(*k).copied().unwrap_or(0.0);
+            stat_line(k, b, p)
+        })
+        .collect();
+    if let Some(role) = mnoznik_role_for_building_id(def_id) {
+        let cumulative = match buildings {
+            Some(list) => cumulative_mnoznik_for_building_id(def_id, Some(list)),
+            None => baza.get("mnoznik").copied().unwrap_or(0.0),
+        };
+        if cumulative != 0.0 {
+            let label = match role {
+                MnoznikRole::Pancerz => "Pancerz (jednostki)",
+                MnoznikRole::Parametry => "Parametry poza Pancerzem (jednostki)",
+            };
+            lines.push(format!(
+                "{label} +{}%",
+                crate::domain::civ_matrix::js_compat::js_number_to_string(cumulative)
+            ));
+        }
+    }
+    lines
+}

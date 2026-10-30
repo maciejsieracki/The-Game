@@ -194,6 +194,56 @@ const structuralCases = ['palisada', 'mury', 'fort', 'baszta', 'teatr', 'palac',
   line: BU.buildingStructuralDefenseBonusLine(id),
 }));
 
+// --- 5b. buildingStatSummaryLines (zalezy od unit-building-bonuses; bez losowania) --------
+// Wejscia web: obiekty JS (bez undefined jako wartosci); liczby w zagniezdzonych mapach kodowane.
+const encDeep = (v) => {
+  if (v === null || v === undefined) return v;
+  if (typeof v === 'number') return enc(v);
+  if (Array.isArray(v)) return v.map(encDeep);
+  if (typeof v === 'object') {
+    const out = {};
+    for (const [k, x] of Object.entries(v)) if (x !== undefined) out[k] = encDeep(x);
+    return out;
+  }
+  return v;
+};
+const statLookupReal = buildings.map((b) => {
+  const o = { id: b.id };
+  if (b.baza && b.baza.mnoznik !== undefined) o.baza = { mnoznik: b.baza.mnoznik };
+  if (b.upgradeFrom !== undefined) o.upgradeFrom = b.upgradeFrom;
+  return o;
+});
+const statLookupSyn = [
+  { id: 'kuznia', baza: { mnoznik: 20 } },
+  { id: 'kuznia_zelaza', baza: { mnoznik: 10 }, upgradeFrom: 'kuznia' },
+  { id: 'wielka_kuznia', baza: { mnoznik: 5 }, upgradeFrom: 'kuznia_zelaza' },
+  { id: 'koszary', baza: { mnoznik: 15 } },
+  { id: 'akademia_wojskowa', baza: { mnoznik: 25 }, upgradeFrom: 'koszary' },
+  { id: 'koszary2', baza: { mnoznik: 7 }, upgradeFrom: '  koszary ' },
+  { id: 'brak_mnoznika', baza: {}, upgradeFrom: 'kuznia' },
+];
+const statDefs = [
+  ...buildings.map((b) => ({ id: b.id, baza: b.baza ?? undefined, przyrost: b.przyrost ?? undefined })),
+  { id: 'kuznia', baza: { praca: 2, mnoznik: 20 }, przyrost: { praca: 1 } },
+  { id: 'akademia_wojskowa', baza: { mnoznik: 25, obrona: 0.5 } },
+  { id: 'koszary', baza: { mnoznik: 0, praca: 0 }, przyrost: { praca: 0, nauka: 0 } },
+  { id: 'koszary', baza: { mnoznik: NaN, nauka: NaN } },
+  { id: 'warsztat_oblezniczy', baza: { mnoznik: -3 } },
+  { id: 'nieznany', baza: { praca: 1e21, pieniadz: -0.5 }, przyrost: { praca: 0.25, obrona: Infinity } },
+  { id: 'kuznia_zelaza', baza: {}, przyrost: {} },
+];
+const statLookupVariants = [undefined, statLookupReal, statLookupSyn, []];
+const statCases = [];
+for (const def of statDefs) {
+  for (const lk of statLookupVariants) {
+    statCases.push({
+      def: encDeep(def),
+      buildings: lk === undefined ? null : encDeep(lk),
+      lines: BU.buildingStatSummaryLines(def, lk),
+    });
+  }
+}
+
 // --- 6. pending-improvements: sekwencje operacji ----------------------------
 const HEX = ['1,1', '2,3', '0,-1'];
 const KEYS = ['kopalnia', 'farma', 'droga', 'tama'];
@@ -262,6 +312,7 @@ writeFileSync(join(outDir, 'building_upgrades.json'), JSON.stringify({
   presence: presenceCases,
   groups: groupCases,
   structural: structuralCases,
+  stats: statCases,
   groupOrder: BU.BUILDING_GROUP_ORDER,
   groupFallback: BU.BUILDING_GROUP_FALLBACK,
 }));

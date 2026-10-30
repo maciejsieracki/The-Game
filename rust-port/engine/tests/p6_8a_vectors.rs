@@ -376,3 +376,51 @@ fn vectors_pending_id_helpers_match_web() {
         }
     }
 }
+
+// ---------------------------------------------------------------------------
+// P6.8A-P1 (dokonczenie): buildingStatSummaryLines z mnoznikami unit-building-bonuses.
+// ---------------------------------------------------------------------------
+
+fn num_map(v: &Value) -> std::collections::BTreeMap<String, f64> {
+    v.as_object()
+        .map(|m| m.iter().map(|(k, x)| (k.clone(), dec(x))).collect())
+        .unwrap_or_default()
+}
+
+#[test]
+fn vectors_building_stat_summary_lines_match_web() {
+    use civ_engine::domain::combat::unit_building_bonuses::MnoznikBuildingLookup;
+    use civ_engine::domain::production_units::building_stat_summary_lines;
+    let root = parse(BU_JSON);
+    let cases = root["stats"].as_array().unwrap();
+    assert!(cases.len() >= 190, "za malo przypadkow stats: {}", cases.len());
+    let mut with_lines = 0usize;
+    for c in cases {
+        let def = &c["def"];
+        let id = def["id"].as_str().unwrap();
+        let baza = num_map(&def["baza"]);
+        let przyrost = num_map(&def["przyrost"]);
+        let lookups: Option<Vec<MnoznikBuildingLookup>> = c["buildings"].as_array().map(|items| {
+            items
+                .iter()
+                .map(|b| MnoznikBuildingLookup {
+                    id: b["id"].as_str().unwrap().to_string(),
+                    baza_mnoznik: b.get("baza").and_then(|x| x.get("mnoznik")).map(dec),
+                    upgrade_from: b.get("upgradeFrom").and_then(Value::as_str).map(String::from),
+                })
+                .collect()
+        });
+        let got = building_stat_summary_lines(id, &baza, &przyrost, lookups.as_deref());
+        let want: Vec<String> = c["lines"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|x| x.as_str().unwrap().to_string())
+            .collect();
+        if !want.is_empty() {
+            with_lines += 1;
+        }
+        assert_eq!(got, want, "buildingStatSummaryLines dla {id}");
+    }
+    assert!(with_lines >= 100, "za malo niepustych wynikow: {with_lines}");
+}
