@@ -34,6 +34,7 @@ use crate::domain::pathfinding::ruch_jednostek::{
 };
 
 use super::war_all_in_capital_nav::{hex_neighbour_keys, planner_route_uses_sea, JsHeap};
+use super::war_rules_multiwar::{EnemyStrengthRef, EngageArmyHex};
 
 /// GLOWNA FLAGA (web `WAR_ALLIN_CAPITAL_ENABLED`, `warAllInCapital.ts:37`).
 pub const WAR_ALLIN_CAPITAL_ENABLED: bool = true;
@@ -110,11 +111,12 @@ pub struct WarAllInUnit {
     pub ruch_left: Option<f64>,
 }
 
-/// Web `mode` rozkazu (`warAllInCapital.ts:327`). 'engage' poza zakresem partii 1 (patrz ZALOZENIA).
+/// Web `mode` rozkazu (`warAllInCapital.ts:327`). 'engage' = W1 (marsz na wroga armie w promieniu).
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum WarAllInMode {
     Capital,
     Rendezvous,
+    Engage,
 }
 
 /// Web `WarAllInOrder` (`warAllInCapital.ts:317`).
@@ -128,11 +130,17 @@ pub struct WarAllInOrder {
     pub mode: WarAllInMode,
 }
 
-/// Web `WarAllInPlanOpts` (`warAllInCapital.ts:334`) -- bez pol W1/W2 (patrz ZALOZENIA).
-#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+/// Web `WarAllInPlanOpts` (`warAllInCapital.ts:334`).
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub struct WarAllInPlanOpts {
     /// Web `marchMainGroupWhileRendezvous` (kampania wodza).
     pub march_main_group_while_rendezvous: bool,
+    /// Web `enemyArmies` (W1). `None` lub pusta lista = brak trafien zaangazowania.
+    pub enemy_armies: Option<Vec<EngageArmyHex>>,
+    /// Web `engageRadius` (`opts.engageRadius ?? 0`).
+    pub engage_radius: i64,
+    /// Web `enemyStrength` (W2). `Some` (takze pusta lista) = tryb podzialu armii przy k>1 wojnach.
+    pub enemy_strength: Option<Vec<EnemyStrengthRef>>,
 }
 
 /// Web `WarAllInPlan` (`warAllInCapital.ts:345`).

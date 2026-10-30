@@ -9,6 +9,7 @@ use std::cmp::Ordering;
 use std::collections::{BTreeMap, HashMap, HashSet};
 use std::rc::Rc;
 
+use super::war_rules_multiwar::EnemyStrengthRef;
 use crate::domain::pathfinding::ruch_jednostek::{hex_distance, Klucz};
 
 use super::war_all_in_capital::{
@@ -18,11 +19,14 @@ use super::war_all_in_capital::{
 use super::war_all_in_capital_nav::{
     choose_step, distance_field, extend_walk, Field, Goal, StepResult, StepState, WarAllInNav,
 };
+use super::war_rules_multiwar::{
+    allocate_groups_to_enemies, pick_engagement_army, ArmyGroupRef, EngageArmyHex,
+};
 
 // Planner (`planWarAllInCapital`, web :593)
 // ---------------------------------------------------------------------------
 
-/// Grupa jednostek (web `Cluster`, `warAllInCapital.ts:371`). Bez pola `engage` (W1 poza zakresem).
+/// Grupa jednostek (web `Cluster`, `warAllInCapital.ts:371`).
 #[derive(Debug, Clone)]
 struct Cluster {
     members: Vec<WarAllInUnit>,
@@ -32,6 +36,8 @@ struct Cluster {
     min_id: String,
     /// Indeks wiekszej/wczesniejszej grupy tego samego celu, do ktorej ta dolacza.
     rendezvous: Option<usize>,
+    /// Web `engage` (W1): wroga armia, z ktora grupa walczy najpierw.
+    engage: Option<EngageArmyHex>,
 }
 
 /// Wynik pojedynczej proby celu (web `tryGoal`).
@@ -74,6 +80,19 @@ impl<'a> Planner<'a> {
             dest: dk,
             mode: WarAllInMode::Capital,
             target: t.clone(),
+        }
+    }
+
+    /// Web `engageGoal` (`warAllInCapital.ts:610`): marsz grupy `ci` na wroga armie `hex` (W1).
+    fn engage_goal(&self, ci: usize, hex: EngageArmyHex) -> Goal {
+        let c = &self.clusters[ci];
+        let from_set: HashSet<Klucz> = c.members.iter().map(|m| (m.q, m.r)).collect();
+        let dest = (hex.q, hex.r);
+        Goal {
+            field: Rc::new(distance_field(self.nav, dest, &from_set)),
+            dest,
+            mode: WarAllInMode::Engage,
+            target: c.target.clone(),
         }
     }
 
@@ -120,8 +139,8 @@ impl<'a> Planner<'a> {
                 Try::Step
             }
             StepResult::Hold => {
-                // 'capital' (i 'engage') zatrzymuje sie; 'rendezvous' idzie do nastepnego celu.
-                if g.mode == WarAllInMode::Capital {
+                // 'capital' i 'engage' zatrzymuja sie; 'rendezvous' idzie do nastepnego celu.
+                if g.mode == WarAllInMode::Capital || g.mode == WarAllInMode::Engage {
                     Try::Stop
                 } else {
                     Try::Next { hold: true }
@@ -154,10 +173,13 @@ impl<'a> Planner<'a> {
             }
             Try::Next { hold } => saw_hold |= hold,
         }
+        // Web (r6, zarzut 4): przy W2 zapasowy cel tylko u przydzielonego wroga.
+        let w2 = self.opts.enemy_strength.is_some();
         let mut others: Vec<WarCapitalTarget> = self
             .targets
             .iter()
             .filter(|t| t.city_id != cap_target.city_id)
+            .filter(|t| !w2 || t.owner_id == cap_target.owner_id)
             .cloned()
             .collect();
         others.sort_by(|a, b| {
@@ -192,7 +214,10 @@ impl<'a> Planner<'a> {
         let mut entries: Vec<(f64, WarAllInUnit, usize, Option<Goal>)> = Vec::new();
         for &ci in pass {
             let c = &clusters[ci];
-            let first = c.rendezvous.map(|p| self.cluster_goal(ci, p));
+            let first = match c.rendezvous {
+                Some(p) => Some(self.cluster_goal(ci, p)),
+                None => c.engage.map(|hex| self.engage_goal(ci, hex)),
+            };
             let primary_field = match &first {
                 Some(g) => Rc::clone(&g.field),
                 None => {
@@ -311,7 +336,67 @@ pub fn plan_war_all_in_capital(
             dist_to_target,
             min_id,
             rendezvous: None,
+            engage: None,
         });
+    }
+
+    // 2a) W2 (web :692-711): przydzial CALYCH grup do wrogow proporcjonalnie do sily; grupa
+    //     celuje w najblizsza stolice przydzielonego wroga (grupy nie sa dzielone).
+    if let Some(strength) = opts.enemy_strength.as_ref().filter(|s| !s.is_empty()) {
+        let enemy_owners: HashSet<i64> = targets.iter().map(|t| t.owner_id).collect();
+        let enemies: Vec<EnemyStrengthRef> = strength
+            .iter()
+            .filter(|e| enemy_owners.contains(&e.owner_id))
+            .copied()
+            .collect();
+        if !enemies.is_empty() {
+            let groups: Vec<ArmyGroupRef> = clusters
+                .iter()
+                .map(|c| ArmyGroupRef {
+                    id: c.min_id.clone(),
+                    size: c.members.len() as i64,
+                })
+                .collect();
+            let alloc = allocate_groups_to_enemies(&groups, &enemies);
+            for c in clusters.iter_mut() {
+                let Some(&owner) = alloc.get(&c.min_id) else {
+                    continue;
+                };
+                let own: Vec<WarCapitalTarget> = targets
+                    .iter()
+                    .filter(|t| t.owner_id == owner)
+                    .cloned()
+                    .collect();
+                if own.is_empty() {
+                    continue;
+                }
+                c.target = nearest_target(c.anchor.q, c.anchor.r, &own)
+                    .expect("own niepuste")
+                    .clone();
+                c.dist_to_target = hex_distance(c.anchor.q, c.anchor.r, c.target.q, c.target.r);
+            }
+        }
+    }
+
+    // 2b) W1 (web :717-727): grupa z wroga armia w promieniu najpierw z nia walczy. Przy W2
+    //     pula = armie wylacznie przydzielonego wroga (c.target.ownerId).
+    if let Some(armies) = opts.enemy_armies.as_ref().filter(|a| !a.is_empty()) {
+        let w2_split = opts.enemy_strength.is_some();
+        for c in clusters.iter_mut() {
+            let pool: Vec<EngageArmyHex> = armies
+                .iter()
+                .filter(|e| !w2_split || e.owner_id == c.target.owner_id)
+                .copied()
+                .collect();
+            if let Some(hit) = pick_engagement_army(
+                (c.anchor.q, c.anchor.r),
+                &pool,
+                hex_distance,
+                opts.engage_radius,
+            ) {
+                c.engage = Some(hit);
+            }
+        }
     }
 
     // 3) Per cel: porzadek grup (rozmiar malejaco, blizej celu, id); kazda grupa poza pierwsza
@@ -343,9 +428,15 @@ pub fn plan_war_all_in_capital(
             if clusters[c_idx].dist_to_target <= params.no_merge_near_capital {
                 continue;
             }
+            if clusters[c_idx].engage.is_some() {
+                continue;
+            }
             let mut best_d = i64::MAX;
             let mut best_p: Option<usize> = None;
             for &p_idx in &list[..ci] {
+                if clusters[p_idx].engage.is_some() {
+                    continue;
+                }
                 let d = hex_distance(
                     clusters[c_idx].anchor.q,
                     clusters[c_idx].anchor.r,

@@ -1,0 +1,11 @@
+Mutacje obrony (runda 3, Operator). Kazda: sed na jednej linii -> cargo test --no-fail-fast
+(p6_repin_wojna_d_engage + p6_repin_wojna_d_vectors [+ p6_repin_wojna_d_nav dla M5]) -> git checkout -- pliku.
+Pliki przywrocone przez git checkout; po kazdej mutacji git status czysty poza testem i Cargo.lock.
+
+M1  war_rules_multiwar.rs:89  usuniecie max(0) w sumie sil            -> ZABITY (allocate_negative_strength_is_clamped_to_zero)
+M2  war_rules_multiwar.rs:95  usuniecie max(0) w udziale             -> PRZEZYL (ekwiwalencja, patrz P6 doc, Z1)
+M3  war_rules_multiwar.rs:89,95 usuniecie max(0) obu                 -> ZABITY (allocate_negative_strength_is_clamped_to_zero)
+M4  war_rules_multiwar.rs:106 usuniecie tie-breaku po id             -> ZABITY (allocate_equal_sizes_orders_groups_by_id)
+M5  war_all_in_capital_plan.rs:177 is_some -> is_some_and(!empty)   -> ZABITY (w2_empty_enemy_strength_list_blocks_spare_targets_of_other_owners)
+M6  war_all_in_capital_plan.rs:384 is_some -> is_some_and(!empty)   -> ZABITY (w2_empty_enemy_strength_list_still_splits_engage_pool)
+M7  war_all_in_capital_plan.rs:177 i :384 razem                      -> ZABITY (obydwa testy W2)

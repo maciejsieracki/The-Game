@@ -1,0 +1,38 @@
+   Compiling proc-macro2 v1.0.107
+   Compiling unicode-ident v1.0.27
+   Compiling quote v1.0.47
+   Compiling serde_core v1.0.229
+   Compiling zmij v1.0.23
+   Compiling once_cell v1.21.4
+   Compiling serde v1.0.229
+   Compiling serde_json v1.0.154
+   Compiling tracing-core v0.1.36
+   Compiling itoa v1.0.18
+   Compiling memchr v2.8.3
+   Compiling pin-project-lite v0.2.17
+   Compiling syn v3.0.9
+   Compiling syn v2.0.119
+   Compiling serde_derive v1.0.229
+   Compiling tracing-attributes v0.1.31
+   Compiling tracing v0.1.44
+   Compiling civ-engine v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_08acdd25-537-2/rust-port/engine)
+    Finished `test` profile [unoptimized] target(s) in 42.96s
+     Running tests/p6_repin_wojna_d_engage.rs (target/debug/deps/p6_repin_wojna_d_engage-e3bb02f8b40e08ea)
+
+running 7 tests
+test allocate_empty_inputs_return_empty_map ... ok
+test allocate_deficit_assigns_remaining_group_to_largest_deficit ... ok
+test allocate_fewer_groups_than_enemies_skips_min_one_phase ... ok
+test allocate_min_one_group_per_enemy_strongest_gets_largest ... ok
+test engage_tie_same_distance_prefers_smaller_q_then_r_then_owner ... ok
+test engage_full_tie_prefers_smaller_owner_id ... ok
+test engage_radius_boundary_n_hits_n_plus_1_misses ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/p6_repin_wojna_d_vectors.rs (target/debug/deps/p6_repin_wojna_d_vectors-2f23862e3cb7ca31)
+
+running 1 test
+test web_vectors_match_rust_plan ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.73s

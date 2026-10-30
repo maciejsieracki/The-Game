@@ -28,3 +28,41 @@ RUNDY: 2/5
 INTEGRACJA: baza a83ae51d6; origin/rust-port/parity-v2 (a47a5e306) jest 13 commitów przed, 6 commitów tematu po bazie. Pliki wspólne (domain/mod.rs, data/derived.rs) NIE zmienione na parity-v2 od bazy -> brak konfliktu plików. Kolejność: najpierw parity-v2, potem temat (cherry-pick 47110d3c0, e4b387a2e, 3bca9774e + dokumentacja/runs 5163cea26, e4815251f, 1778834b3 i commit tego pliku), następnie powtórzenie 3 bramek po rebase (oczekiwane >=1690 + przyrost parity-v2). Integruje orkiestrator.
 NASTĘPNY KROK: integracja orkiestratora na parity-v2, bramki, READY_FOR_DEPLOY dla partii 1; kolejne partie (engage/W1/W2) jako nowy dispatch tego samego tematu po porcie war-rules-multiwar.
 DEPLOY/PUSH: NIE WYKONANO
+
+---
+
+# Final Control — runda 3 (W1/W2, engage, war_rules_multiwar)
+
+STATUS: PASS-WITH-NOTES
+DOMAIN: GAME
+TEMAT: R-RUSTPORT-REPIN-WOJNA-NOWE-D-Q1
+GOAL: REPIN WOJNA-NOWE-D, runda 3: W1/W2, tryb engage, port war-rules-multiwar (pin dc8a3adc)
+ZMIANY/COMMIT: oceniany bf04118ae (baza 942ffbf71 <- acee10eec <- 66985dd3f). Ten dokument: commit FC na wierzchu bf04118ae.
+Diff bf04118ae vs fd96ea3b3 (merge-base z parity-v2): poza dyspozycje/autobot/runs/<ID>/** tylko allowlista (P6-REPIN-WOJNA-NOWE-D.md, domain/mod.rs, war_all_in_capital.rs, war_all_in_capital_plan.rs, war_rules_multiwar.rs, tests/p6_repin_wojna_d_engage.rs, tests/p6_repin_wojna_d_vectors.rs, web-dc8a3adc-w12.json). Zero zmian w gra/**, src-tauri/**, renderer/**, Cargo.toml, WERSJE.md. Cargo.lock/target untracked, poza commitem. git diff --check 942ffbf71..bf04118ae: czysty.
+
+TESTY (wlasne, w rust-port/engine, CARGO_INCREMENTAL=0):
+- cargo fmt --all -- --check: EXIT=0
+- cargo clippy --all-targets -- -D warnings: EXIT=0
+- cargo test --no-fail-fast: EXIT=0, 1730 passed / 0 failed
+- Mutacje na kodzie portu, kazda przywrocona git checkout:
+  - war_rules_multiwar.rs:89 bez max(0): ZABITA (allocate_negative_strength_is_clamped_to_zero)
+  - war_rules_multiwar.rs:106 bez tie-breaku id: ZABITA (allocate_equal_sizes_orders_groups_by_id)
+  - war_all_in_capital_plan.rs:177+:384 is_some -> as_ref().is_some_and(!is_empty): ZABITA (oba testy w2_empty_*)
+- Web dc8a3adc war-rules-multiwar.ts:214-223 i main.ts:30495-30502 zgodne z testami i uzasadnieniem Z5 (sila = liczba jednostek, nieujemna calkowita).
+
+OCENA ZARZUTOW:
+- Z1 (clamp ujemnej sily): ODDAL (obrona dodala test, mutant :89 zabity; :95 rownowazny przy rozmiarach grup >= 1, dowod w P6 doc).
+- Z2 (Some(pusta) vs None): ODDAL (2 testy, mutanty :177/:384 zabite).
+- Z3 (tie-break id): ODDAL (test, mutant zabity).
+- Z4 (N-1 promienia): ODDAL (test engage_radius_boundary_n_minus_1_hits).
+- Z5 (i64): ODDAL (dowod z kodu gry; ai.ts:4089 `?? 1` poza zakresem -> NASTEPNA-PARTIA).
+Zero NAPRAW -> PASS-WITH-NOTES.
+
+NOTATKI:
+- Nieodtworzone przeze mnie: regeneracja wektorow z weba (opieram sie na weryfikatorze: bajtowa zgodnosc W12).
+- Mutant :95 (drugi max(0)) przezywa jako rownowazny; akceptowane z dowodem w P6 doc.
+- INTEGRACJA: bf04118ae nie jest na origin; parity-v2 poszedl do 28f16d9da (11 commitow, m.in. D2.2e, P6.8B2). Kolejnosc: zintegrowac (merge/cherry-pick) 66985dd3f..bf04118ae + commit FC na parity-v2 28f16d9da lub nowszy; spodziewany konflikt tylko w domain/mod.rs (addytywne `pub mod`) i P6 docs; po merge powtorzyc 3 bramki. SHA koncowy do integracji: commit FC tej galezi (wf-repin-wojna-d-r3-fc).
+BLOKADY: brak
+RUNDY: 3/5
+NASTEPNY KROK: integracja orkiestratora, potem partia: podpiecie WarAllInContext (ai.ts/diplo), brakujace symbole wg tabeli P6
+DEPLOY/PUSH: NIE WYKONANO

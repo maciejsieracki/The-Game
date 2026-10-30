@@ -1,0 +1,45 @@
+   Compiling civ-engine v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_08acdd25-537-2/rust-port/engine)
+    Finished `test` profile [unoptimized] target(s) in 33.11s
+     Running tests/p6_repin_wojna_d_engage.rs (target/debug/deps/p6_repin_wojna_d_engage-e3bb02f8b40e08ea)
+
+running 7 tests
+test allocate_deficit_assigns_remaining_group_to_largest_deficit ... ok
+test allocate_empty_inputs_return_empty_map ... ok
+test allocate_fewer_groups_than_enemies_skips_min_one_phase ... ok
+test allocate_min_one_group_per_enemy_strongest_gets_largest ... ok
+test engage_tie_same_distance_prefers_smaller_q_then_r_then_owner ... ok
+test engage_full_tie_prefers_smaller_owner_id ... ok
+test engage_radius_boundary_n_hits_n_plus_1_misses ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/p6_repin_wojna_d_vectors.rs (target/debug/deps/p6_repin_wojna_d_vectors-2f23862e3cb7ca31)
+
+running 1 test
+test web_vectors_match_rust_plan ... FAILED
+
+failures:
+
+---- web_vectors_match_rust_plan stdout ----
+
+thread 'web_vectors_match_rust_plan' (17546) panicked at tests/p6_repin_wojna_d_vectors.rs:292:5:
+rozbieznosci z webem (3): [
+    "base seed 4: orders [(\"ae3\", (9, 1), \"cC0\", 2, \"rendezvous\"), (\"zy5\", (2, 8), \"cC0\", 2, \"rendezvous\"), (\"ae4\", (4, 1), \"cC0\", 2, \"rendezvous\"), (\"ka0\", (0, 3), \"cC0\", 2, \"rendezvous\")] != [(\"zy5\", (2, 8), \"cC0\", 2, \"rendezvous\"), (\"ae3\", (9, 1), \"cC0\", 2, \"rendezvous\"), (\"ae4\", (4, 1), \"cC0\", 2, \"rendezvous\"), (\"ka0\", (0, 3), \"cC0\", 2, \"rendezvous\")]",
+    "base seed 230: orders [(\"zy5\", (3, 4), \"cB0\", 2, \"rendezvous\"), (\"zy4\", (8, 1), \"cB0\", 2, \"rendezvous\"), (\"zy1\", (14, 4), \"cB0\", 2, \"capital\"), (\"ae0\", (13, 6), \"cB0\", 2, \"capital\")] != [(\"zy4\", (8, 1), \"cB0\", 2, \"rendezvous\"), (\"zy5\", (3, 4), \"cB0\", 2, \"rendezvous\"), (\"zy1\", (14, 4), \"cB0\", 2, \"capital\"), (\"ae0\", (13, 6), \"cB0\", 2, \"capital\")]",
+    "w12 seed 230: orders [(\"zy5\", (3, 4), \"cB0\", 2, \"rendezvous\"), (\"zy4\", (8, 1), \"cB0\", 2, \"rendezvous\"), (\"zy1\", (14, 4), \"cB0\", 2, \"capital\"), (\"ae0\", (13, 6), \"cB0\", 2, \"capital\")] != [(\"zy4\", (8, 1), \"cB0\", 2, \"rendezvous\"), (\"zy5\", (3, 4), \"cB0\", 2, \"rendezvous\"), (\"zy1\", (14, 4), \"cB0\", 2, \"capital\"), (\"ae0\", (13, 6), \"cB0\", 2, \"capital\")]",
+]
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+   1: core::panicking::panic_fmt
+   2: p6_repin_wojna_d_vectors::web_vectors_match_rust_plan
+   3: p6_repin_wojna_d_vectors::web_vectors_match_rust_plan::{closure#0}
+   4: <p6_repin_wojna_d_vectors::web_vectors_match_rust_plan::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+
+failures:
+    web_vectors_match_rust_plan
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.72s
+
+error: test failed, to rerun pass `--test p6_repin_wojna_d_vectors`

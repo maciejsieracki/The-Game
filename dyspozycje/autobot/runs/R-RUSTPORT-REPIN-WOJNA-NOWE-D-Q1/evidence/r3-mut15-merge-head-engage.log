@@ -1,0 +1,39 @@
+   Compiling civ-engine v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_08acdd25-537-1/rust-port/engine)
+    Finished `test` profile [unoptimized] target(s) in 33.58s
+     Running tests/p6_repin_wojna_d_vectors.rs (target/debug/deps/p6_repin_wojna_d_vectors-2f23862e3cb7ca31)
+
+running 1 test
+test web_vectors_match_rust_plan ... FAILED
+
+failures:
+
+---- web_vectors_match_rust_plan stdout ----
+
+thread 'web_vectors_match_rust_plan' (923) panicked at tests/p6_repin_wojna_d_vectors.rs:292:5:
+rozbieznosci z webem (12): [
+    "w12 seed 4: orders [(\"zy5\", (2, 8), \"cC0\", 2, \"rendezvous\"), (\"ae3\", (9, 1), \"cC0\", 2, \"rendezvous\"), (\"ae4\", (4, 1), \"cC0\", 2, \"rendezvous\"), (\"ka0\", (0, 3), \"cC0\", 2, \"rendezvous\")] != [(\"ae3\", (9, 1), \"cC0\", 2, \"rendezvous\"), (\"zy5\", (2, 8), \"cC0\", 2, \"rendezvous\"), (\"ae2\", (6, 8), \"cC0\", 2, \"engage\"), (\"ae1\", (6, 7), \"cC0\", 2, \"engage\")]",
+    "w12 seed 4: held [\"ae1\", \"ae2\"]",
+    "w12 seed 44: orders [(\"bo3\", (4, 5), \"cB0\", 2, \"rendezvous\"), (\"zy0\", (7, 7), \"cB0\", 2, \"rendezvous\"), (\"bo1\", (1, 1), \"cB0\", 2, \"capital\")] != [(\"zy0\", (7, 7), \"cB0\", 2, \"rendezvous\"), (\"bo3\", (4, 5), \"cB0\", 2, \"rendezvous\"), (\"bo1\", (1, 1), \"cB0\", 2, \"capital\"), (\"ka2\", (5, 3), \"cB0\", 2, \"engage\"), (\"zy4\", (7, 1), \"cB0\", 2, \"engage\")]",
+    "w12 seed 44: held [\"ka2\", \"zy4\"]",
+    "w12 seed 81: orders [(\"bo0\", (8, 7), \"cB2\", 4, \"rendezvous\"), (\"bo1\", (7, 4), \"cB2\", 4, \"engage\"), (\"ae2\", (13, 4), \"cC1\", 3, \"capital\")] != [(\"bo1\", (7, 4), \"cB2\", 4, \"engage\"), (\"bo0\", (8, 7), \"cB2\", 4, \"capital\"), (\"ae2\", (13, 4), \"cC1\", 3, \"capital\")]",
+    "w12 seed 91: orders [(\"mi1\", (9, 2), \"cA0\", 2, \"rendezvous\"), (\"bo0\", (6, 2), \"cA0\", 2, \"engage\"), (\"mi3\", (5, 1), \"cA0\", 2, \"engage\"), (\"zy2\", (4, 2), \"cA0\", 2, \"engage\")] != [(\"bo0\", (6, 2), \"cA0\", 2, \"engage\"), (\"mi3\", (5, 1), \"cA0\", 2, \"engage\"), (\"zy2\", (4, 2), \"cA0\", 2, \"engage\"), (\"mi1\", (9, 2), \"cA0\", 2, \"capital\")]",
+    "w12 seed 144: orders [(\"mi5\", (9, 5), \"cB0\", 2, \"rendezvous\"), (\"mi0\", (8, 2), \"cB0\", 2, \"engage\"), (\"zy1\", (7, 3), \"cB0\", 2, \"engage\"), (\"mi2\", (6, 5), \"cB0\", 2, \"engage\"), (\"ae4\", (1, 7), \"cB0\", 2, \"engage\")] != [(\"mi0\", (8, 2), \"cB0\", 2, \"engage\"), (\"zy1\", (7, 3), \"cB0\", 2, \"engage\"), (\"mi5\", (9, 5), \"cB0\", 2, \"capital\"), (\"mi2\", (6, 5), \"cB0\", 2, \"engage\"), (\"ae4\", (1, 7), \"cB0\", 2, \"engage\")]",
+    "w12 seed 179: orders [(\"ae0\", (14, 2), \"cC0\", 2, \"rendezvous\"), (\"ka4\", (9, 1), \"cC0\", 2, \"engage\"), (\"zy2\", (8, 1), \"cC0\", 2, \"engage\"), (\"mi3\", (12, 1), \"cC0\", 2, \"engage\")] != [(\"ka4\", (9, 1), \"cC0\", 2, \"engage\"), (\"zy2\", (8, 1), \"cC0\", 2, \"engage\"), (\"mi3\", (12, 1), \"cC0\", 2, \"engage\"), (\"ae0\", (14, 2), \"cC0\", 2, \"capital\")]",
+    "w12 seed 201: orders [(\"ae2\", (3, 5), \"cB0\", 2, \"rendezvous\"), (\"zy4\", (2, 4), \"cB0\", 2, \"rendezvous\"), (\"mi5\", (8, 3), \"cB0\", 2, \"engage\"), (\"ka3\", (10, 3), \"cB0\", 2, \"engage\"), (\"mi1\", (9, 5), \"cB0\", 2, \"engage\"), (\"ka0\", (13, 4), \"cA1\", 3, \"capital\")] != [(\"mi5\", (8, 3), \"cB0\", 2, \"engage\"), (\"ka3\", (10, 3), \"cB0\", 2, \"engage\"), (\"ae2\", (3, 5), \"cB0\", 2, \"capital\"), (\"mi1\", (9, 5), \"cB0\", 2, \"engage\"), (\"zy4\", (2, 4), \"cB0\", 2, \"capital\"), (\"ka0\", (13, 4), \"cA1\", 3, \"capital\")]",
+    "w12 seed 226: orders [(\"zy1\", (4, 1), \"cC0\", 2, \"rendezvous\"), (\"zy3\", (11, 0), \"cC0\", 2, \"engage\"), (\"zy2\", (11, 1), \"cC0\", 2, \"engage\"), (\"zy0\", (10, 2), \"cC0\", 2, \"engage\"), (\"mi4\", (12, 1), \"cC0\", 2, \"engage\")] != [(\"zy3\", (11, 0), \"cC0\", 2, \"engage\"), (\"zy2\", (11, 1), \"cC0\", 2, \"engage\"), (\"zy0\", (10, 2), \"cC0\", 2, \"engage\"), (\"mi4\", (12, 1), \"cC0\", 2, \"engage\"), (\"zy1\", (4, 1), \"cC0\", 2, \"capital\")]",
+]
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+   1: core::panicking::panic_fmt
+   2: p6_repin_wojna_d_vectors::web_vectors_match_rust_plan
+   3: p6_repin_wojna_d_vectors::web_vectors_match_rust_plan::{closure#0}
+   4: <p6_repin_wojna_d_vectors::web_vectors_match_rust_plan::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+
+failures:
+    web_vectors_match_rust_plan
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.77s
+
+error: test failed, to rerun pass `--test p6_repin_wojna_d_vectors`
