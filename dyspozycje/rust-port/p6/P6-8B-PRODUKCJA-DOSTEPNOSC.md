@@ -10,8 +10,8 @@
 | Partia | Zakres | Status | Commit |
 |---|---|---|---|
 | 8B-P1a | helpery: nacja jednostek, zamienniki, kolejka ulepszeń, tokeny jednostek specjalnych, koszt kupna za złoto (web 694–905) | **ZROBIONE (kod + wektory + mutacje), runda 2 Operatora** | kod `7a8c9927b`, pomiary r1 `8bc151ddc`, runda 2 = commit opisany w raporcie |
-| 8B-P1b-c1 | `unitStockShortfallLabel` (682–693), `UNIT_POPULATION_COST`, `populationCostOf` (1815–1825) | **ZROBIONE (kod + wektory `p1b.json` + 6 testów + mutacje), runda 1 Operatora** | kod: `population_cost_of`/`UNIT_POPULATION_COST` (nowe), `unit_stock_shortfall_label` (już był w `production_units.rs`, teraz przypięty wektorami); SHA w raporcie `01-operator-r1.md` |
-| 8B-P1b-c2 | `availableProduction` (793–1003), `availableReplacementsFor` (1004–1115), `setPaused` (1833), `manpowerCostOf` (1828) | NIEWYKONANE (c2 wymaga: pola `wstrzymana`/`rekrutacja` w `CityProduction`, bramki miasta i `manpower` z `recruitment.rs`) | — |
+| 8B-P1b-c1 | `unitStockShortfallLabel` (682–693), `UNIT_POPULATION_COST` (1977), `populationCostOf` (1980–1982) | **ZROBIONE (kod + wektory `p1b.json` + 6 testów + mutacje), runda 1 Operatora; weryfikacja niezależna runda 2 (`pomiar-mutacje-p1b-c1-r2.txt`)** | kod: `population_cost_of`/`UNIT_POPULATION_COST` (nowe), `unit_stock_shortfall_label` (już był w `production_units.rs`, teraz przypięty wektorami); kod `ae62996d7`, raport `01-operator-r1.md`, weryfikacja `02-operator-pomiary-r2.md` |
+| 8B-P1b-c2 | `availableProduction` (923–1135), `availableReplacementsFor` (1136–1252), `setPaused` (1990), `manpowerCostOf` (1985) | NIEWYKONANE (c2 wymaga: pola `wstrzymana`/`rekrutacja` w `CityProduction`, bramki miasta i `manpower` z `recruitment.rs`) | — |
 | 8B-P2 | rekrutacja, rush, praca/podział, katalog epok, podział wyjścia (2004–2541) | NIEWYKONANE; wymaga zamknięcia B3 (`recruitment.rs`, §4 podziału) | — |
 
 Kryteria końca tematu **nie są spełnione**. Temat pozostaje OTWARTY.
@@ -50,7 +50,7 @@ Wektory: `rust-port/engine/tests/p6_8b_vectors/helpers.json` (generator `gen-p6-
 ## Partie 8B-P1b i 8B-P2 — do wykonania
 
 - P1b-c1 (ZROBIONE, runda 1): `unitStockShortfallLabel`, `UNIT_POPULATION_COST` (= 0 w pinie), `populationCostOf`. Wektory: `tests/p6_8b_vectors/p1b.json` (generator `gen-p6-8b-p1b-vectors.mjs`), testy `tests/p6_8b_p1b_vectors.rs`.
-- P1b-c2 (NIEWYKONANE): `availableProduction` (793–1003 @91dc998a, 211 LOC), `availableReplacementsFor` (1004–1115, 112 LOC), `setPaused` (1833), `manpowerCostOf` (1828, zależy od `unitManpowerCostForType` z `manpower.ts`; w Rust istnieje `recruitment::unit_manpower_cost_for_type` z parametrem `cost_mult`, sygnatura webu ma `costMult = maxMult` -- do zweryfikowania). Wymaga rozszerzenia `CityProduction` o `wstrzymana` i `rekrutacja` (dotąd tylko `kolejka`, `postep`).
+- P1b-c2 (NIEWYKONANE): `availableProduction` (923–1135 @91dc998a), `availableReplacementsFor` (1136–1252), `setPaused` (1990), `manpowerCostOf` (1985, zależy od `unitManpowerCostForType` z `manpower.ts`; w Rust istnieje `recruitment::unit_manpower_cost_for_type` z parametrem `cost_mult`, sygnatura webu ma `costMult = maxMult` -- do zweryfikowania). Wymaga rozszerzenia `CityProduction` o `wstrzymana` i `rekrutacja` (dotąd tylko `kolejka`, `postep`).
 - Uwaga do wcześniejszego wpisu: zakres `unitStockShortfallLabel` w dyspozycji (682–693) jest poprawny dla pinu 91dc998a; w `gra/` roboczej kopii repo funkcja nie występuje w tym miejscu (kopia jest nowsza niż pin, nie używać jej jako źródła wektorów).
 - P2 (28 symboli, ok. 538 LOC): `enqueueRecruitment`, `dequeueRecruitment`, `AdvanceRecruitmentResult`, `AdvanceRecruitmentGatedResult`, `advanceRecruitmentGated`, `advanceRecruitment`, `rushCost`, `rushProduction`, `cityPracaInteger`, `PodzialPracyMiasta`, `splitPraca`, `pracaImperialPoolGain`, `PracaSplitTick`, `previewPracaPoolBrutto`, `unitCostMode`, `unitPurchaseCost`, `buildableProduction`, `purchasableUnits`, `EPOCH_NUMBER_TO_NAME`, `BuildingCatalogStatus`, `BuildingCatalogEntry`, `eraBuildingCatalog`, `OutputShares`, `OutputSplit`, `DEFAULT_OUTPUT_SHARES`, `splitOutput`, `cityScienceOutput`, `cityMoneyOutput`. Przed P2: zamknięcie B3 (`recruitment.rs`).
 
@@ -63,9 +63,17 @@ Wektory: `rust-port/engine/tests/p6_8b_vectors/helpers.json` (generator `gen-p6-
 | Web (pin 91dc998a) | Rust | Wektory / test |
 |---|---|---|
 | 682 `unitStockShortfallLabel(u, stock)` | `unit_stock_shortfall_label(surowiec, stock)` | `stockShortfall` (416 przypadków: Surowiec x stock), `stock_shortfall_label_*` |
-| 1815 `UNIT_POPULATION_COST` = `miasto-params.jednostka_koszt_ludnosci.wartosc` (pin: 0) | `UNIT_POPULATION_COST` = 0.0 | `unitPopulationCost`, `unit_population_cost_matches_web` |
-| 1823 `populationCostOf(item)` | `population_cost_of(item)` | `populationCost` (5 przypadków) |
+| 1977 `UNIT_POPULATION_COST` = `miasto-params.jednostka_koszt_ludnosci.wartosc ?? 1` (pin: 0) | `UNIT_POPULATION_COST` = 0.0 | `unitPopulationCost`, `unit_population_cost_matches_web` |
+| 1980 `populationCostOf(item)` | `population_cost_of(item)` | `populationCost` (5 przypadków) |
+
+Uwaga do numeracji: poprzednie zapisy „1815–1825” dla `populationCostOf` były błędne (pomyłka numeracji w runie r1); właściwe linie @91dc998a to 1977–1982. Komentarz w kodzie `production_units.rs` (sekcja P1b-c1) nadal podaje 1815–1825: poprawka komentarza bez zmiany kodu jest odłożona do osobnej partii.
 
 Odstępstwa: klucze `constructor` i `__proto__` w `UNIT_STOCK_GATE_LABEL` (web: etykieta z wartością dziedziczoną; Rust: `None`), przypięte `stock_shortfall_prototype_keys_deviation_is_pinned`. Klucze `toString`, `valueOf` itd. po `toLowerCase()` nie są prototypowe (web zwraca `null`, zgodnie z Rust).
 
-Mutacje (`/tmp` scratch, wynik zapisany w `dowody/pomiar-mutacje-p1b-c1-r1.txt`): M1 zwrot etykiety -> `None`: KILLED; M2 `Jednostka => 0.0`: EQUIV (UNIT_POPULATION_COST = 0 w pinie); M3 próg `> 0` -> `>= 0`: KILLED; M4 `Budynek => UNIT_POPULATION_COST`: EQUIV (j.w.). Przy zmianie wartości UNIT_POPULATION_COST równoważność M2/M4 przestaje obowiązywać.
+Mutacje runda 1 (`dowody/pomiar-mutacje-p1b-c1-r1.txt`): M1 KILLED, M3 KILLED, M2 i M4 EQUIV (UNIT_POPULATION_COST = 0 w pinie).
+
+Mutacje runda 2 (weryfikator, `dowody/pomiar-mutacje-p1b-c1-r2.txt`, skrypt `mut-p6-8b-p1b-c1-r2.py`): M1 KILLED, M2 EQUIV, M3 KILLED, M4 EQUIV, M5 (usunięcie `js_trim`) KILLED, M6 (`UNIT_POPULATION_COST` = 1.0) KILLED, M7 (usunięcie `toLowerCase`) KILLED. M2/M4 są równoważne tylko przy wartości 0; test pinu `unit_population_cost_matches_web` zabija zmianę stałej (M6). Przy zmianie wartości UNIT_POPULATION_COST równoważność M2/M4 przestaje obowiązywać.
+
+Weryfikacja niezależna runda 2 (`ae62996d7`): generator ponownie uruchomiony na `git archive 91dc998a gra`, wynik `p1b.json` bajt w bajt identyczny z wersją w repo (`cmp`); 416 + 2 + 5 przypadków; testy: p6_8b_p1b_vectors 6/6, p6_8b_helpers_vectors 18/18, --lib 6/6; clippy `-D warnings` EXIT 0; fmt --check EXIT 0; `git diff --check` czysto.
+
+Znane ograniczenie (poza P1b-c1, do rozważenia przy P1b-c2): `strip_diacritics` używa ręcznej tablicy `NFD_BASE` (BMP bez Hangul; 177 znaków pominiętych), a nie pełnego `normalize("NFD")`. Dla znaków spoza tablicy wynik może się różnić od weba; w danych gry (Brąz, Żelazo, Drewno, Kamień) nie występuje.
