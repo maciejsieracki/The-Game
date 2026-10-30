@@ -2353,3 +2353,48 @@ pub fn remove_tiny_land_islands(hexes: &mut HexRecord, min_hexes: usize) -> usiz
     }
     removed
 }
+
+/// Liczba sasiadow (w `hexes`) bedacych suchym lądem (nie Morze/Plytkie), web `dryLandNeighbors`
+/// w `countOpenOceanLandSpecks` / `purgeOpenOceanLandSpecks` (:5006, :5027). Brak sasiada = pominiety.
+fn dry_land_neighbor_count(hexes: &HexRecord, q: i64, r: i64) -> usize {
+    HEX_DIRECTIONS
+        .iter()
+        .filter(|&&(dq, dr)| {
+            hexes
+                .get(&hex_key(q + i64::from(dq), r + i64::from(dr)))
+                .is_some_and(|nh| !is_water_terrain_local(nh.terrain))
+        })
+        .count()
+}
+
+/// Web `countOpenOceanLandSpecks(hexes)` (:5006): suchy ląd bez sasiada-lądu (tylko woda/brzeg mapy).
+/// Brzeg `Plytkie` jest woda (`isWaterTerrainLocal`), wiec nie jest liczony jako ląd.
+pub fn count_open_ocean_land_specks(hexes: &HexRecord) -> usize {
+    hexes
+        .iter()
+        .filter(|(_, h)| !is_water_terrain_local(h.terrain))
+        .filter(|(_, h)| dry_land_neighbor_count(hexes, h.q, h.r) == 0)
+        .count()
+}
+
+/// Web `purgeOpenOceanLandSpecks(hexes)` (:5027): suchy ląd bez sasiada-lądu -> `setHexToMorze`.
+/// Sekwencyjnie: stan sasiadow czytany na biezaco (jak w JS). Zwraca liczbe usunietych heksow.
+pub fn purge_open_ocean_land_specks(hexes: &mut HexRecord) -> usize {
+    let keys: Vec<String> = hexes.keys().cloned().collect();
+    let mut removed = 0usize;
+    for key in &keys {
+        let Some(h) = hexes.get(key) else { continue };
+        if is_water_terrain_local(h.terrain) {
+            continue;
+        }
+        let (q, r) = (h.q, h.r);
+        if dry_land_neighbor_count(hexes, q, r) > 0 {
+            continue;
+        }
+        if let Some(hx) = hexes.get_mut(key) {
+            set_hex_to_morze(hx);
+            removed += 1;
+        }
+    }
+    removed
+}
