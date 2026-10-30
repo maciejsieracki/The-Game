@@ -22,6 +22,9 @@
 //! - `parseCrisisCounters` przyjmuje `serde_json::Value` (web: `unknown`), zwraca `Vec<(String, f64)>`
 //!   w kolejnosci wejscia (`Object.entries`).
 
+use serde_json::Value;
+use std::collections::BTreeMap;
+
 /// Wydanie ROBOCZE (R-WEB-DIPLO-RELEASE-ROBOCZA-Q1): ON domyslnie.
 pub const DIPLO_TICK_WAR_BRAKE_ENABLED_DEFAULT: bool = true;
 
@@ -99,4 +102,174 @@ pub fn crisis_step_for_pair(
 /// Web: `crisisPairKey`. Klucz pary niezalezny od kolejnosci wlascicieli: `"lo-hi"`.
 pub fn crisis_pair_key(a: i64, b: i64) -> String {
     format!("{}-{}", a.min(b), a.max(b))
+}
+
+/// Web: `Math.max` (NaN-propagacja; `max(+0, -0) = +0`).
+fn js_max(a: f64, b: f64) -> f64 {
+    if a.is_nan() || b.is_nan() {
+        return f64::NAN;
+    }
+    if a == 0.0 && b == 0.0 {
+        return if a.is_sign_negative() { b } else { a };
+    }
+    if a > b {
+        a
+    } else {
+        b
+    }
+}
+
+/// Web: `Math.min` (NaN-propagacja; `min(+0, -0) = -0`).
+fn js_min(a: f64, b: f64) -> f64 {
+    if a.is_nan() || b.is_nan() {
+        return f64::NAN;
+    }
+    if a == 0.0 && b == 0.0 {
+        return if a.is_sign_negative() { a } else { b };
+    }
+    if a < b {
+        a
+    } else {
+        b
+    }
+}
+
+/// Web: `Math.pow` (`pow(1, NaN)` = NaN, `pow(1, ±Infinity)` = NaN; w Rust `powf` dawalby 1).
+fn js_pow(base: f64, exp: f64) -> f64 {
+    if exp.is_nan() {
+        return f64::NAN;
+    }
+    if base == 1.0 && exp.is_infinite() {
+        return f64::NAN;
+    }
+    base.powf(exp)
+}
+
+/// Web: `TradeBonusP7Params` (`gra/data/diplomacy-tick-params.json`, sekcja `p7`).
+#[derive(Debug, Clone, PartialEq)]
+pub struct TradeBonusP7Params {
+    /// Krok nadwyzki (PN) per numer epoki platacego (dostawcy); klucze = epoki (calkowite).
+    pub wymiana_krok_pkt_per_epoka: BTreeMap<i64, f64>,
+    /// Mnoznik kroku na kazda epoke ponad najwieksza epoke w tabeli.
+    pub wymiana_mnoznik_na_epoke: f64,
+    /// Zaufanie za kazdy PELNY krok nadwyzki w turze.
+    pub wymiana_zaufanie_na_krok: f64,
+    /// Limit bonusu z wymiany na pare na ture.
+    pub wymiana_max_per_tura: f64,
+    /// Sufit Zaufania: bonus nie podnosi Zaufania powyzej tej wartosci.
+    pub wymiana_sufit_zaufania: f64,
+    /// Minimalna liczba kolejnych tur dostaw, zanim bonus zacznie dzialac.
+    pub wymiana_min_tur_dostaw: f64,
+}
+
+/// Web: `TradeBonusInput`.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct TradeBonusInput {
+    /// Wartosc netto na plusie (PN) dostarczona w tej turze.
+    pub nadwyzka_pn: f64,
+    /// Numer epoki platacego (dostawcy).
+    pub epoka: f64,
+    /// Aktualne Zaufanie odbiorcy wobec dostawcy.
+    pub zaufanie: f64,
+    /// Liczba kolejnych tur dostaw (1 = pierwsza tura cyklu).
+    pub kolejne_tury_dostaw: f64,
+}
+
+/// Web: `krokPktWymiany`. Tabela; powyzej jej najwiekszego klucza -- mnoznik na epoke.
+/// Pusta tabela -> `+Infinity` (web: `Number.POSITIVE_INFINITY`).
+pub fn krok_pkt_wymiany(epoka: f64, p: &TradeBonusP7Params) -> f64 {
+    let (Some((&first_key, _)), Some((&top, &top_val))) = (
+        p.wymiana_krok_pkt_per_epoka.iter().next(),
+        p.wymiana_krok_pkt_per_epoka.iter().next_back(),
+    ) else {
+        return f64::INFINITY;
+    };
+    let e = js_max(first_key as f64, epoka.floor());
+    let top_f = top as f64;
+    if e <= top_f {
+        // e jest calkowite (NaN nie przechodzi porownania i trafia nizej).
+        let e_key = e as i64;
+        if let Some(&v) = p.wymiana_krok_pkt_per_epoka.get(&e_key) {
+            if v > 0.0 {
+                return v;
+            }
+        }
+        // web: luka w tabeli -- najblizszy nizszy klucz (`keys.filter(k <= e).pop()`).
+        return p
+            .wymiana_krok_pkt_per_epoka
+            .range(..=e_key)
+            .next_back()
+            .map(|(_, v)| *v)
+            .unwrap_or(top_val);
+    }
+    top_val * js_pow(p.wymiana_mnoznik_na_epoke, e - top_f)
+}
+
+/// Web: `tradeTrustBonusPerTura` (P7). Schodkowo: `floor(nadwyzka / krok) x zaufanieNaKrok`,
+/// limit `wymianaMaxPerTura`, przyciete do wolnego miejsca pod sufitem; zero w warunkach brzegowych.
+pub fn trade_trust_bonus_per_tura(input: &TradeBonusInput, p: &TradeBonusP7Params) -> f64 {
+    if !(input.nadwyzka_pn > 0.0) {
+        return 0.0;
+    }
+    if input.kolejne_tury_dostaw < p.wymiana_min_tur_dostaw {
+        return 0.0;
+    }
+    let headroom = p.wymiana_sufit_zaufania - input.zaufanie;
+    if !(headroom > 0.0) {
+        return 0.0;
+    }
+    let krok = krok_pkt_wymiany(input.epoka, p);
+    let pelne_kroki = (input.nadwyzka_pn / krok).floor();
+    let surowy = pelne_kroki * p.wymiana_zaufanie_na_krok;
+    js_min(js_min(surowy, p.wymiana_max_per_tura), headroom)
+}
+
+/// Web: `parseCrisisCounters`. Nieliczbowe / niefinite / ujemne / zerowe wartosci pomijane;
+/// reszta: `floor(v)`. Kolejnosc wejscia (`Object.entries`) dla kluczy nieliczbowo-podobnych.
+pub fn parse_crisis_counters(raw: &Value) -> Vec<(String, f64)> {
+    let mut out = Vec::new();
+    if let Value::Object(map) = raw {
+        for (k, v) in map {
+            if let Some(n) = v.as_f64() {
+                if n.is_finite() && n > 0.0 {
+                    out.push((k.clone(), n.floor()));
+                }
+            }
+        }
+    }
+    out
+}
+
+/// Web: `CrisisQueueEntry`.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct CrisisQueueEntry {
+    pub owner_a: i64,
+    pub owner_b: i64,
+    pub counter: f64,
+}
+
+/// Web: `sortCrisisQueue`. Najdluzej na progu pierwsze; remis: nizsze min(owner), potem nizsze max(owner).
+/// Nie modyfikuje wejscia.
+pub fn sort_crisis_queue(entries: &[CrisisQueueEntry]) -> Vec<CrisisQueueEntry> {
+    let mut out = entries.to_vec();
+    out.sort_by(|x, y| {
+        if y.counter != x.counter {
+            // web: `return y.counter - x.counter;` (NaN traktowany jak 0 przez sort)
+            let d = y.counter - x.counter;
+            return if d < 0.0 {
+                std::cmp::Ordering::Less
+            } else if d > 0.0 {
+                std::cmp::Ordering::Greater
+            } else {
+                std::cmp::Ordering::Equal
+            };
+        }
+        let xl = x.owner_a.min(x.owner_b);
+        let yl = y.owner_a.min(y.owner_b);
+        if xl != yl {
+            return xl.cmp(&yl);
+        }
+        x.owner_a.max(x.owner_b).cmp(&y.owner_a.max(y.owner_b))
+    });
+    out
 }

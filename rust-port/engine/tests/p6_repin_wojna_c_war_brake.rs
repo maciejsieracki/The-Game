@@ -3,9 +3,12 @@
 
 use civ_engine::domain::diplomacy_tick_war_brake::{
     advance_crisis_counter, crisis_pair_key, crisis_step_for_pair, is_diplo_tick_war_brake_enabled,
-    CrisisStep, WarBrakeP6Params, DIPLO_TICK_WAR_BRAKE_ENABLED_DEFAULT,
+    krok_pkt_wymiany, parse_crisis_counters, sort_crisis_queue, trade_trust_bonus_per_tura,
+    CrisisQueueEntry, CrisisStep, TradeBonusInput, TradeBonusP7Params, WarBrakeP6Params,
+    DIPLO_TICK_WAR_BRAKE_ENABLED_DEFAULT,
 };
 use serde_json::Value;
+use std::collections::BTreeMap;
 
 const VECTORS: &str = include_str!("p6_repin_wojna_c_vectors/diplomacy-tick-war-brake.json");
 
@@ -174,4 +177,243 @@ fn flag_override_wins_over_default() {
     assert!(is_diplo_tick_war_brake_enabled(None));
     assert!(!is_diplo_tick_war_brake_enabled(Some(false)));
     assert!(is_diplo_tick_war_brake_enabled(Some(true)));
+}
+
+/// Porownanie liczb jak `Object.is`: NaN = NaN, -0 != +0.
+fn same_f64(got: f64, want: f64) -> bool {
+    (got.is_nan() && want.is_nan()) || got.to_bits() == want.to_bits()
+}
+
+fn p7_of(v: &Value) -> TradeBonusP7Params {
+    let table: BTreeMap<i64, f64> = v["wymianaKrokPktPerEpoka"]
+        .as_object()
+        .expect("tabela krokow")
+        .iter()
+        .map(|(k, val)| (k.parse::<i64>().expect("klucz epoki"), num(val)))
+        .collect();
+    TradeBonusP7Params {
+        wymiana_krok_pkt_per_epoka: table,
+        wymiana_mnoznik_na_epoke: num(&v["wymianaMnoznikNaEpoke"]),
+        wymiana_zaufanie_na_krok: num(&v["wymianaZaufanieNaKrok"]),
+        wymiana_max_per_tura: num(&v["wymianaMaxPerTura"]),
+        wymiana_sufit_zaufania: num(&v["wymianaSufitZaufania"]),
+        wymiana_min_tur_dostaw: num(&v["wymianaMinTurDostaw"]),
+    }
+}
+
+#[test]
+fn krok_pkt_wymiany_matches_web() {
+    let root = root();
+    let cases = root["krokCases"].as_array().expect("krokCases");
+    assert!(cases.len() >= 700);
+    for (i, c) in cases.iter().enumerate() {
+        let got = krok_pkt_wymiany(num(&c["epoka"]), &p7_of(&c["p7"]));
+        assert!(
+            same_f64(got, num(&c["out"])),
+            "krokCases[{i}]: {got} vs {}",
+            c["out"]
+        );
+    }
+}
+
+#[test]
+fn trade_trust_bonus_matches_web() {
+    let root = root();
+    let cases = root["tradeCases"].as_array().expect("tradeCases");
+    assert!(cases.len() >= 1000);
+    for (i, c) in cases.iter().enumerate() {
+        let inp = &c["input"];
+        let input = TradeBonusInput {
+            nadwyzka_pn: num(&inp["nadwyzkaPn"]),
+            epoka: num(&inp["epoka"]),
+            zaufanie: num(&inp["zaufanie"]),
+            kolejne_tury_dostaw: num(&inp["kolejneTuryDostaw"]),
+        };
+        let got = trade_trust_bonus_per_tura(&input, &p7_of(&c["p7"]));
+        assert!(
+            same_f64(got, num(&c["out"])),
+            "tradeCases[{i}]: {got} vs {}",
+            c["out"]
+        );
+    }
+}
+
+#[test]
+fn parse_crisis_counters_matches_web() {
+    let root = root();
+    let cases = root["parseCases"].as_array().expect("parseCases");
+    assert!(cases.len() >= 500);
+    for (i, c) in cases.iter().enumerate() {
+        let got = parse_crisis_counters(&c["raw"]);
+        let mut got: Vec<(String, f64)> = got;
+        got.sort_by(|a, b| a.0.cmp(&b.0));
+        let mut want: Vec<(String, f64)> = c["out"]
+            .as_object()
+            .expect("out obiekt")
+            .iter()
+            .map(|(k, v)| (k.clone(), num(v)))
+            .collect();
+        want.sort_by(|a, b| a.0.cmp(&b.0));
+        assert_eq!(got.len(), want.len(), "parseCases[{i}] dlugosc");
+        for (g, w) in got.iter().zip(want.iter()) {
+            assert!(
+                g.0 == w.0 && same_f64(g.1, w.1),
+                "parseCases[{i}]: {g:?} vs {w:?}"
+            );
+        }
+    }
+}
+
+#[test]
+fn sort_crisis_queue_matches_web() {
+    let root = root();
+    let cases = root["queueCases"].as_array().expect("queueCases");
+    assert!(cases.len() >= 500);
+    for (i, c) in cases.iter().enumerate() {
+        let entries: Vec<CrisisQueueEntry> = c["entries"]
+            .as_array()
+            .expect("entries")
+            .iter()
+            .map(|e| CrisisQueueEntry {
+                owner_a: e["ownerA"].as_i64().unwrap(),
+                owner_b: e["ownerB"].as_i64().unwrap(),
+                counter: num(&e["counter"]),
+            })
+            .collect();
+        let got: Vec<(i64, i64, f64)> = sort_crisis_queue(&entries)
+            .iter()
+            .map(|e| (e.owner_a, e.owner_b, e.counter))
+            .collect();
+        let want: Vec<(i64, i64, f64)> = c["out"]
+            .as_array()
+            .expect("out")
+            .iter()
+            .map(|t| (t[0].as_i64().unwrap(), t[1].as_i64().unwrap(), num(&t[2])))
+            .collect();
+        assert_eq!(got, want, "queueCases[{i}]");
+    }
+}
+
+#[test]
+fn derived_params_file_matches_pinned_web_values() {
+    let v: Value = serde_json::from_str(include_str!("../data/derived/diplomacy-tick-params.json"))
+        .expect("diplomacy-tick-params.json parse");
+    let got6 = p6_of(&v["p6"]);
+    assert_eq!(got6, p6(0.0, 5.0, 2.0));
+    let p7 = p7_of(&v["p7"]);
+    let want: BTreeMap<i64, f64> = [(1, 100.0), (2, 200.0), (3, 400.0)].into_iter().collect();
+    assert_eq!(p7.wymiana_krok_pkt_per_epoka, want);
+    assert_eq!(p7.wymiana_mnoznik_na_epoke, 2.0);
+    assert_eq!(p7.wymiana_zaufanie_na_krok, 0.5);
+    assert_eq!(p7.wymiana_max_per_tura, 5.0);
+    assert_eq!(p7.wymiana_sufit_zaufania, 60.0);
+    assert_eq!(p7.wymiana_min_tur_dostaw, 2.0);
+}
+
+fn p7_default() -> TradeBonusP7Params {
+    TradeBonusP7Params {
+        wymiana_krok_pkt_per_epoka: [(1, 100.0), (2, 200.0), (3, 400.0)].into_iter().collect(),
+        wymiana_mnoznik_na_epoke: 2.0,
+        wymiana_zaufanie_na_krok: 0.5,
+        wymiana_max_per_tura: 5.0,
+        wymiana_sufit_zaufania: 60.0,
+        wymiana_min_tur_dostaw: 2.0,
+    }
+}
+
+#[test]
+fn krok_edge_cases_explicit() {
+    let p = p7_default();
+    assert_eq!(krok_pkt_wymiany(2.0, &p), 200.0);
+    // powyzej najwiekszego klucza: 400 * 2^(5-3)
+    assert_eq!(krok_pkt_wymiany(5.0, &p), 1600.0);
+    // luka w tabeli: najblizszy nizszy klucz
+    let gap = TradeBonusP7Params {
+        wymiana_krok_pkt_per_epoka: [(1, 100.0), (3, 400.0)].into_iter().collect(),
+        ..p7_default()
+    };
+    assert_eq!(krok_pkt_wymiany(2.0, &gap), 100.0);
+    // pusta tabela -> +Infinity
+    let empty = TradeBonusP7Params {
+        wymiana_krok_pkt_per_epoka: BTreeMap::new(),
+        ..p7_default()
+    };
+    assert_eq!(krok_pkt_wymiany(2.0, &empty), f64::INFINITY);
+    // NaN epoki: web idzie w galaz mnoznika -> NaN
+    assert!(krok_pkt_wymiany(f64::NAN, &p).is_nan());
+    // mnoznik 1 i nieskonczonosc epoki: Math.pow(1, Infinity) = NaN w JS
+    let one = TradeBonusP7Params {
+        wymiana_mnoznik_na_epoke: 1.0,
+        ..p7_default()
+    };
+    assert!(krok_pkt_wymiany(f64::INFINITY, &one).is_nan());
+}
+
+#[test]
+fn trade_bonus_stepwise_and_capped() {
+    let p = p7_default();
+    let base = |nadwyzka: f64, zaufanie: f64, tury: f64| TradeBonusInput {
+        nadwyzka_pn: nadwyzka,
+        epoka: 2.0,
+        zaufanie,
+        kolejne_tury_dostaw: tury,
+    };
+    // 399 / 200 = 1 pelny krok -> 0,5
+    assert_eq!(trade_trust_bonus_per_tura(&base(399.0, 0.0, 2.0), &p), 0.5);
+    // ponizej kroku -> 0
+    assert_eq!(trade_trust_bonus_per_tura(&base(199.9, 0.0, 2.0), &p), 0.0);
+    // limit 5,0 na ture
+    assert_eq!(
+        trade_trust_bonus_per_tura(&base(100_000.0, 0.0, 2.0), &p),
+        5.0
+    );
+    // przyciete do wolnego miejsca pod sufitem (60 - 58 = 2)
+    assert_eq!(
+        trade_trust_bonus_per_tura(&base(1000.0, 58.0, 2.0), &p),
+        2.0
+    );
+    // zaufanie na sufitem -> 0
+    assert_eq!(
+        trade_trust_bonus_per_tura(&base(1000.0, 60.0, 2.0), &p),
+        0.0
+    );
+    // za krotka dostawa (1. tura) -> 0
+    assert_eq!(trade_trust_bonus_per_tura(&base(1000.0, 0.0, 1.0), &p), 0.0);
+    // NaN nadwyzki / zaufania -> 0 (warunki falszywe)
+    assert_eq!(
+        trade_trust_bonus_per_tura(&base(f64::NAN, 0.0, 2.0), &p),
+        0.0
+    );
+    assert_eq!(
+        trade_trust_bonus_per_tura(&base(1000.0, f64::NAN, 2.0), &p),
+        0.0
+    );
+}
+
+#[test]
+fn sort_queue_ties_use_owner_ids() {
+    let e = |a: i64, b: i64, c: f64| CrisisQueueEntry {
+        owner_a: a,
+        owner_b: b,
+        counter: c,
+    };
+    let input = vec![e(2, 4, 3.0), e(3, 1, 3.0), e(2, 1, 3.0), e(5, 6, 5.0)];
+    let got: Vec<(i64, i64)> = sort_crisis_queue(&input)
+        .iter()
+        .map(|x| (x.owner_a, x.owner_b))
+        .collect();
+    // counter 5 pierwszy; remis 3: min 1 (2-1 przed 3-1), potem min 2 (2-4)
+    assert_eq!(got, vec![(5, 6), (2, 1), (3, 1), (2, 4)]);
+    // wejscie nietkniete
+    assert_eq!(input[0], e(2, 4, 3.0));
+}
+
+#[test]
+fn parse_crisis_counters_drops_garbage() {
+    let raw = serde_json::json!({ "1-2": 2.7, "0-3": 0, "a": "x", "c": -1, "d": null, "e": 4 });
+    let mut got = parse_crisis_counters(&raw);
+    got.sort_by(|a, b| a.0.cmp(&b.0));
+    assert_eq!(got, vec![("1-2".to_string(), 2.0), ("e".to_string(), 4.0)]);
+    assert!(parse_crisis_counters(&Value::Null).is_empty());
+    assert!(parse_crisis_counters(&serde_json::json!([1, 2])).is_empty());
 }
