@@ -91,3 +91,22 @@ Commit bazowy: `60a90a1d` (kod partii 1: `9a0f97cd`). Weryfikacja w tym samym wo
 Ustalenie rundy 1 (`edge`/`post_central` różnią się tylko w `manpower`) jest potwierdzone. Ustalenie dla `params` jest potwierdzone co do lokalizacji (dotyczy `econParamsRawForBuild`, nie partii 1). Regeneracja `edge`/`post_central` pozostaje po partii 4 (manpower).
 
 Pin nie zmieniony (`meta.pin` i manifesty bez zmian). DEPLOY/PUSH: NIE WYKONANO.
+
+## 7. Runda 3 - obrona Operatora (odpowiedzi na zarzuty Final Control z rundy 2)
+
+Korekta §6: **kolejnosc commitow** to `497b6461` (baza kodu, potomek `dcd3eadb`) -> `9a0f97cd` (kod partii 1) -> `60a90a1d` (dokumenty rundy 1) -> `639bdb74` (dokumenty rundy 2). Zapis "Baza: 60a90a1d, kod partii 1: 9a0f97cd" byl myląco ułożony i jest uznany za błąd.
+
+| # | Zarzut | Decyzja | Dowod / zmiana |
+|---|---|---|---|
+| 1 | GOAL niespelniony: 60 z 67 hunkow `production.ts`/`turn-economy.ts` niezaportowanych; partia 2 (`building_costs.rs`) nie ruszona | **PRZYJETY** (temat OTWARTY, nie zamykam) | Zakres partii 2-6 wg §4. Ta runda nie portuje kolejnych hunkow: wykonano domkniecie luki z zarzutu 2. Status hunkow bez zmian: NASTEPNA-PARTIA. |
+| 2 | M4 przezyla: `tick.owner_era.unwrap_or(1.0)` -> `1.0` w `recompute_city_food_balances_in_econ` nie jest mutantem rownowaznym | **PRZYJETY** | Nowy test `rust-port/engine/tests/p6_repin_b_recompute_era.rs` (`recompute_with_owner_era_matches_web`) na wektorze `tests/p6_repin_b_vectors/recompute_era.json` (1248 przypadkow; `ownerEra` = brak / 0.5 / 1 / 1.0000001 / 2 / 3 / 4 / 5 x populacja x poziom racji x spichlerz). Wektor z URUCHOMIONEGO weba 91dc998a: `gen-repin-b-recompute-era.mjs` (Node v22.22.0, kodowanie jak `gen-p67a-vectors.mjs`). Przed mutacja: PASS. Mutant M4 (`unwrap_or(1.0)` -> `1.0`): **FAILED** (`recompute_era[0]` i kolejne). Po przywroceniu pliku (`git checkout --`): PASS. Test `vector_covers_era_2_and_4_with_nonzero_cost` pilnuje, ze wektor nie jest pusty dla ery 2 i 4. Asercje P6.7A nie oslabione. |
+| 3 | Wektory `edge` (78), `post_central` (72), `params` (8) nie zregenerowane z weba do 0 rozbieznosci | **PRZYJETY jako otwarte** | `edge`/`post_central`: roznice tylko w `manpower`/`manpowerCheck` (`manpowerMaxMultByOwnerId`, partia 4). Nie wolno nadpisac wektorow bez portu, bo testy P6.7A zrobilyby sie czerwone. Regeneracja po partii 4. `params`: `econParamsRawForBuild` (dane `econ-params`), poza zakresem partii 1, przypisane do partii danych (NASTEPNA-PARTIA). |
+| 4 | Mutacje "min. 1 na hunk" niespelnione dla hunkow `production.ts`/`turn-economy.ts` niezaportowanych | **CZESCIOWO PRZYJETY** | Zaportowane hunki maja mutanty: hunk 44-45 (`computeCityFoodBalanceV85`, ownerEra) -> M3 (koszt bez mnoznika) ZABITY; hunk 46 (`recompute`) -> M4 ZABITY (zarzut 2). Hunki niezaportowane nie maja kodu do mutowania; mutacje dla nich sa wymagane w partiach 2-6, nie w tej rundzie. |
+| 5 | Niedokladnosc SHA w raporcie (kolejnosc baza -> kod) | **PRZYJETY** | Poprawione w §6 i w tym §7. Baza `497b6461` jest potomkiem `dcd3eadb` (zgodnie z dispatchem), co sprawdzono poleceniem `git merge-base --is-ancestor` dla `639bdb74` (EXIT=0). |
+| 6 | Test `p6_7a_growth` przekazuje stale `owner_era=1.0`; sciezka era>1 pokryta tylko czystymi funkcjami | **PRZYJETY w czesci recompute** | Wektory P6.7A (pin `edb8fb56`) nie maja `ownerEra` (`grep -c ownerEra` = 0), wiec stale 1.0 jest zgodne z wektorem. Sciezka era>1 przez `recompute` pokryta przez `p6_repin_b_recompute_era`; `computeCityRationCost` przez `p6_repin_b_ration_era`. Zarzut "tylko czyste funkcje" przestaje byc aktualny. |
+
+Gate'y rundy 3 (`cargo fmt --all -- --check`, `cargo clippy --all-targets -- -D warnings`, `cargo test --no-fail-fast`, `git diff --check`): wyniki w logach `gate-*-r3.log` w katalogu runu (EXIT= na koncu kazdego logu).
+
+Status tematu: **OTWARTY** (GOAL nie zrealizowany: 60 hunkow i partie 2-6 do wykonania, regeneracja `edge`/`post_central` po partii 4, zmiana pinu dopiero po krokach 1-5 REPIN-DELTA §6). Ta runda domyka luke M4 i korekte SHA, nie zamyka tematu.
+
+NASTEPNA-PARTIA: partia 2 (`buildingWorkCost` -> `building_costs.rs`, z najpierw dodanym odpowiednikiem rabatu cywilizacyjnego), nastepnie partie 3-6 wg §4. DEPLOY/PUSH: NIE WYKONANO.
