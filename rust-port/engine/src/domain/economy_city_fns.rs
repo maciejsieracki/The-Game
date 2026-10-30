@@ -235,6 +235,62 @@ pub fn corruption_building_reduction(built_ids: &[&str]) -> f64 {
     js_min(KORUPCJA_REDUKCJA_SUFIT, suma)
 }
 
+/// Web `buildingGivesHappiness(b)` (`economy.ts@91dc998a` L514-516): `b.dajeSzczescie === true`.
+/// `None` = pole nieobecne (`undefined`). Tylko dokladnie logiczne `true` daje `true`; `"true"`,
+/// `1`, `"tak"`, `{}`, `[]`, `null`, `false` i brak daja `false`.
+pub fn building_gives_happiness(daje_szczescie: Option<&serde_json::Value>) -> bool {
+    matches!(daje_szczescie, Some(serde_json::Value::Bool(true)))
+}
+
+/// JS truthiness dla wartosci JSON (`!row` w web): `null`, `false`, `0`, `NaN`, `""` sa falsy.
+fn js_truthy(v: &serde_json::Value) -> bool {
+    use serde_json::Value;
+    match v {
+        Value::Null => false,
+        Value::Bool(b) => *b,
+        Value::Number(n) => n.as_f64().is_some_and(|x| x != 0.0 && !x.is_nan()),
+        Value::String(s) => !s.is_empty(),
+        Value::Array(_) | Value::Object(_) => true,
+    }
+}
+
+/// Web `civBonusyForCivKey(civKey, civs)` (`economy.ts@91dc998a` L765-779): wiersz `civs.cywilizacje`,
+/// ktorego `ikonaId` / `typCywilizacji` / `Cywilizacja` (niepuste stringi, porownanie bez wielkosci
+/// liter) rowna sie kluczowi cywilizacji; zwraca jego `bonusy` (lub pusta liste). Pierwszy pasujacy wiersz wygrywa.
+/// Dziedzina: `civs` = obiekt JSON lub `None`/`null`; `bonusy` = tablica lub `null`/brak (typ TS `CivEconomyBonus[] | undefined`).
+pub fn civ_bonusy_for_civ_key(
+    civ_key: Option<&str>,
+    civs: Option<&serde_json::Value>,
+) -> Vec<serde_json::Value> {
+    let Some(key) = civ_key.filter(|k| !k.is_empty()) else {
+        return Vec::new();
+    };
+    let key = key.to_lowercase();
+    let Some(rows) = civs
+        .and_then(|c| c.get("cywilizacje"))
+        .and_then(|v| v.as_array())
+    else {
+        return Vec::new();
+    };
+    for row in rows {
+        if !js_truthy(row) {
+            continue;
+        }
+        let matches_key = ["ikonaId", "typCywilizacji", "Cywilizacja"]
+            .iter()
+            .filter_map(|f| row.get(*f).and_then(|v| v.as_str()))
+            .filter(|s| !s.is_empty())
+            .any(|s| s.to_lowercase() == key);
+        if matches_key {
+            return match row.get("bonusy") {
+                Some(serde_json::Value::Array(items)) => items.clone(),
+                _ => Vec::new(),
+            };
+        }
+    }
+    Vec::new()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
