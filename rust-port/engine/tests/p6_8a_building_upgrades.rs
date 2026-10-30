@@ -54,6 +54,21 @@ fn suppressed_only_when_strictly_true() {
 }
 
 #[test]
+fn chain_duplicate_ids_last_entry_wins_like_js_map() {
+    // web: `new Map(buildings.map(b => [b.id, b]))` -- ostatni duplikat wygrywa.
+    let cat = vec![
+        b("x", "Stara", None, None),
+        b("y", "Nastepca", Some("x"), None),
+        b("x", "Nowa", None, None),
+    ];
+    let names: Vec<&str> = upgrade_chain_steps("y", &cat)
+        .iter()
+        .map(|x| x.nazwa.as_str())
+        .collect();
+    assert_eq!(names, vec!["Nowa", "Nastepca"]);
+}
+
+#[test]
 fn chain_is_oldest_first_and_stops_at_root() {
     let cat = catalog();
     let ids: Vec<&str> = upgrade_chain_steps("fort", &cat)

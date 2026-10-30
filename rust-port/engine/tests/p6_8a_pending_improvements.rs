@@ -51,6 +51,20 @@ fn add_get_has_remove_roundtrip() {
 }
 
 #[test]
+fn undo_key_set_drops_removed_id_and_keeps_rest_in_order() {
+    let mut p = PendingImprovementsTurn::new();
+    p.add(e("0,0", "a", 1.0, "x"));
+    p.add(e("0,1", "b", 2.0, "x"));
+    p.add(e("0,2", "c", 3.0, "x"));
+    assert!(p.remove("0,1", "b").is_some());
+    assert_eq!(
+        p.undo_key_set(),
+        vec!["0,0:a".to_string(), "0,2:c".to_string()]
+    );
+    assert_eq!(p.size(), 2);
+}
+
+#[test]
 fn re_add_overwrites_value_but_keeps_position() {
     let mut p = PendingImprovementsTurn::new();
     p.add(e("0,0", "a", 1.0, "x"));
