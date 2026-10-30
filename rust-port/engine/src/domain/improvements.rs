@@ -1116,3 +1116,107 @@ pub fn resource_upkeep_improvement_keys() -> Vec<String> {
         })
         .collect()
 }
+
+// ---------------------------------------------------------------------------
+// P6.8A-P1 (pin webu 91dc998a): odpowiednik `gra/src/game/pending-improvements.ts`.
+// ZALOZENIE (Operator R1): `ImprovementKey` webu (unia napisow) = `String` w tym module;
+// `ImprovementActionTyp` (`improvement-tech`) = napis; `kosztPraca` = f64 (liczba JS).
+// Kolejnosc wpisow = kolejnosc wstawienia (jak JS `Map`; ponowny `add` nadpisuje
+// wartosc bez zmiany pozycji).
+// ---------------------------------------------------------------------------
+
+/// web `PendingImprovementEntry`.
+#[derive(Debug, Clone, PartialEq)]
+pub struct PendingImprovementEntry {
+    pub hex_key: String,
+    pub key: String,
+    pub koszt_praca: f64,
+    pub action: String,
+}
+
+/// web `pendingImprovementId`: `"<hexKey>:<improvementKey>"`.
+pub fn pending_improvement_id(hex_key: &str, improvement_key: &str) -> String {
+    format!("{hex_key}:{improvement_key}")
+}
+
+/// web `parsePendingImprovementId`: dzieli po OSTATNIM `:`; brak lub pozycja 0 => `None`.
+pub fn parse_pending_improvement_id(id: &str) -> Option<(String, String)> {
+    let idx = id.rfind(':')?;
+    if idx == 0 {
+        return None;
+    }
+    Some((id[..idx].to_string(), id[idx + 1..].to_string()))
+}
+
+/// web `PendingImprovementsTurn`: wpisy postawione w biezacej turze (cofanie do endTurn).
+#[derive(Debug, Clone, Default, PartialEq)]
+pub struct PendingImprovementsTurn {
+    order: Vec<String>,
+    entries: std::collections::HashMap<String, PendingImprovementEntry>,
+}
+
+impl PendingImprovementsTurn {
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    pub fn size(&self) -> usize {
+        self.entries.len()
+    }
+
+    pub fn has(&self, hex_key: &str, key: &str) -> bool {
+        self.entries
+            .contains_key(&pending_improvement_id(hex_key, key))
+    }
+
+    pub fn get(&self, hex_key: &str, key: &str) -> Option<&PendingImprovementEntry> {
+        self.entries.get(&pending_improvement_id(hex_key, key))
+    }
+
+    /// web `getUndoKeySet`: id w kolejnosci wstawienia.
+    pub fn undo_key_set(&self) -> Vec<String> {
+        self.order.clone()
+    }
+
+    pub fn add(&mut self, entry: PendingImprovementEntry) {
+        let id = pending_improvement_id(&entry.hex_key, &entry.key);
+        if !self.entries.contains_key(&id) {
+            self.order.push(id.clone());
+        }
+        self.entries.insert(id, entry);
+    }
+
+    pub fn remove(&mut self, hex_key: &str, key: &str) -> Option<PendingImprovementEntry> {
+        let id = pending_improvement_id(hex_key, key);
+        let removed = self.entries.remove(&id);
+        if removed.is_some() {
+            self.order.retain(|x| x != &id);
+        }
+        removed
+    }
+
+    /// web `commitTurn`: pending -> committed (brak cofania).
+    pub fn commit_turn(&mut self) {
+        self.order.clear();
+        self.entries.clear();
+    }
+
+    /// web `toSave`: wpisy w kolejnosci wstawienia.
+    pub fn to_save(&self) -> Vec<PendingImprovementEntry> {
+        self.order
+            .iter()
+            .filter_map(|id| self.entries.get(id).cloned())
+            .collect()
+    }
+
+    /// web `fromSave`: kolejno `add` dla kazdego wiersza (brak wierszy => pusty).
+    pub fn from_save(rows: Option<&[PendingImprovementEntry]>) -> Self {
+        let mut p = Self::new();
+        if let Some(rows) = rows {
+            for e in rows {
+                p.add(e.clone());
+            }
+        }
+        p
+    }
+}
