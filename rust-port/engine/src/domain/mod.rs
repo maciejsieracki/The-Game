@@ -47,6 +47,7 @@ pub mod turn_economy;
 pub mod types;
 pub mod unit_epoch;
 pub mod wonder_placement;
+pub mod work_tax;
 
 pub use error::EngineError;
 pub use events::{canonical_phase_order, phase_order, TurnEvent, TurnPhase, PHASE_COUNT};
