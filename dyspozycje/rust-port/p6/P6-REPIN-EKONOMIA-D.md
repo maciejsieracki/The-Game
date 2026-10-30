@@ -344,3 +344,18 @@ Wynik mutacji: 11 mutantów, 9 zabitych, 2 przeżyte; oba przeżycia to mutanty 
 - OTWARTE / NASTĘPNA-PARTIA (bez zmiany w r1, wg tabeli „Klasyfikacja economy.ts”): `EconParams`/`targowiskoPracaMnoznik` (L149-166, L237) — zmiana zachowania Efektu 2; `CityYieldResult.pieniadzZPracy` (L326-341) — zerowanie pola w wyniku (w Rust już `pieniadz_z_pracy` stałe 0, patrz D2.2c); `civHandelMult` dla znanego właściciela (L919) i `civBonusyForCivKey` (L782-806) — sprawdzić wektorami z właścicielem; Mint/`walutaMnoznikBase` (L946-947) — zależy od `walutaMnoznikOverride`, NIE istnieje w pinie (Z-D2.2d-2).
 - DŁUG (Rust, do usunięcia, NIE port): brak symboli `dochodTrasHandlowych`/`walutaMnoznikOverride` w pinie; jeśli gałąź Rust je zawiera, zapis w dokumencie jako dług (Z-D2.2d-2); w r1 nie zmieniano.
 - Luka Z-WT-7 (generator głównego zestawu work-tax) — bez zmian, NIE_ZMIERZONO w tej rundzie.
+
+## Weryfikacja niezalezna D2.2e (runda 4 weryfikatora, ID `R-RUSTPORT-REPIN-EKONOMIA-D2-Q1`) — WERDYKT: FAIL
+
+Szczegoly: `dyspozycje/autobot/runs/R-RUSTPORT-REPIN-EKONOMIA-D2-Q1/08-verifier-r4.md`. Kod `2c21d762f` nie zmieniony.
+
+- Wektory `imp-main.json` odtworzone z pinu `91dc998a` (archiwum gra, node 22.22.0): BYTE-IDENTICAL.
+- Bramki na `2c21d762f`: fmt EXIT=0; clippy EXIT=0; test 1708 passed / 0 failed; `p6_repin_d2_imp` 14/14.
+- Mutanty (V2-V9): 6 zabitych, 2 przezyte (V8 rownowazny pod danymi JSON; V9 rownowazny z konstrukcji, `zloze` ignorowane przez web). Logi: `logs/mut-r4-verifier-*.log`.
+
+Korekty do zdan powyzej w tej sekcji (D2.2e):
+- **Blad faktograficzny:** „CityYieldResult (pola z pina) nie zawiera szczescia” oraz „kolumny drewno/kamien/glina/ruda nie sa wyjsciem `cityYieldPerTurn` w pinie” sa NIEPRAWDZIWE dla `91dc998a`. Return `cityYieldPerTurn` (`gra/src/game/economy.ts` L1011-1031) ma 18 pol: 12 porownywanych + `zadowolenie` (= `Math.floor(zadBudynkow)`, L1020), `drewnoTerenu`, `kamienTerenu`, `glinaTerenu`, `rudaTerenu`, `rudaZelazaTerenu`.
+- **Zakres niezamkniety:** 6 z 18 pol nie jest produkowanych przez Rust (`CityYieldOutput`, `economy_yield.rs` L449-463, ma 12 pol) i nie jest porownywanych w wektorach. Z-D2.2d-1 (szczescie) i pole „pelna cityYieldPerTurn” NIE sa zamkniete. Zalozenie Z-V-1: brak = FAIL, nie NASTEPNA-PARTIA.
+- Generator `logs/gen-imp.mts` porownuje 12 pol (`out`); rozszerzenie do 18 pol to wymagany krok operatora.
+
+Stan: OTWARTE (ten sam ID), kolejna runda operatora: dodac 6 pol, rozszerzyc wektory, poprawic opis.

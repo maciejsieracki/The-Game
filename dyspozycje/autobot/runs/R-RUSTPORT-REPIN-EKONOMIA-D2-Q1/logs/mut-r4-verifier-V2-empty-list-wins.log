@@ -1,0 +1,81 @@
+   Compiling civ-engine v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_bbf7346c-ced-2/rust-port/engine)
+    Finished `test` profile [unoptimized] target(s) in 29.34s
+     Running tests/p6_repin_d2_imp.rs (target/debug/deps/p6_repin_d2_imp-e33724850b6d16e6)
+
+running 14 tests
+test boundary_unknown_terrain_zero_then_bonus_only ... ok
+test parity_building_happiness_bit_exact ... ok
+test parity_city_terrain_sums_imp_bit_exact ... FAILED
+test structural_empty_key_is_noop ... ok
+test structural_empty_list_falls_back_to_single_key ... FAILED
+test structural_forest_adds_wood_river_adds_clay ... ok
+test structural_happiness_branches ... ok
+test structural_imp_keys_list_wins_over_single_key ... ok
+test structural_ore_mines_and_zloze_ignored ... ok
+test structural_pieniadz_bonus_goes_to_handel ... ok
+test structural_unknown_and_legacy_key_no_bonus ... ok
+test parity_tile_yield_full_bit_exact ... FAILED
+test parity_full_city_with_improvements_bit_exact ... FAILED
+test structural_city_uses_improved_tile_sums ... ok
+
+failures:
+
+---- parity_city_terrain_sums_imp_bit_exact stdout ----
+
+thread 'parity_city_terrain_sums_imp_bit_exact' (6766) panicked at tests/p6_repin_d2_imp.rs:309:5:
+["city#6 pracaTerenu: rust=12.0 web=13.0", "city#6 handelTerenu: rust=15.0 web=17.0", "city#13 zywnoscTerenu: rust=7.0 web=8.0", "city#13 pracaTerenu: rust=11.0 web=12.0", "city#13 handelTerenu: rust=17.0 web=20.0", "city#33 pracaTerenu: rust=20.0 web=22.0", "city#33 handelTerenu: rust=20.0 web=25.0", "city#45 pracaTerenu: rust=8.0 web=9.0"]
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+   1: core::panicking::panic_fmt
+   2: p6_repin_d2_imp::parity_city_terrain_sums_imp_bit_exact
+   3: p6_repin_d2_imp::parity_city_terrain_sums_imp_bit_exact::{closure#0}
+   4: <p6_repin_d2_imp::parity_city_terrain_sums_imp_bit_exact::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+---- structural_empty_list_falls_back_to_single_key stdout ----
+
+thread 'structural_empty_list_falls_back_to_single_key' (6771) panicked at tests/p6_repin_d2_imp.rs:254:9:
+zywnosc: 2.0 != 5.0
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+   1: core::panicking::panic_fmt
+   2: p6_repin_d2_imp::assert_bits_eq
+   3: p6_repin_d2_imp::structural_empty_list_falls_back_to_single_key
+   4: p6_repin_d2_imp::structural_empty_list_falls_back_to_single_key::{closure#0}
+   5: <p6_repin_d2_imp::structural_empty_list_falls_back_to_single_key::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+---- parity_tile_yield_full_bit_exact stdout ----
+
+thread 'parity_tile_yield_full_bit_exact' (6768) panicked at tests/p6_repin_d2_imp.rs:274:5:
+147 mismatches, first: ["tile#90 zywnosc: rust=5.0 web=6.0", "tile#90 praca: rust=2.0 web=3.0", "tile#90 handel: rust=5.0 web=9.0", "tile#120 praca: rust=4.0 web=5.0", "tile#120 handel: rust=4.0 web=6.0", "tile#120 glina: rust=5.0 web=15.0", "tile#187 praca: rust=4.0 web=6.0", "tile#187 handel: rust=5.0 web=10.0"]
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+   1: core::panicking::panic_fmt
+   2: p6_repin_d2_imp::parity_tile_yield_full_bit_exact
+   3: p6_repin_d2_imp::parity_tile_yield_full_bit_exact::{closure#0}
+   4: <p6_repin_d2_imp::parity_tile_yield_full_bit_exact::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+---- parity_full_city_with_improvements_bit_exact stdout ----
+
+thread 'parity_full_city_with_improvements_bit_exact' (6767) panicked at tests/p6_repin_d2_imp.rs:344:5:
+193 mismatches, first: ["full#7 praca: rust=10.0 web=12.0", "full#7 pracaTerenu: rust=3.0 web=5.0", "full#12 praca: rust=134.0 web=138.0", "full#12 pracaTerenu: rust=2.0 web=6.0", "full#31 praca: rust=55.0 web=62.0", "full#31 pieniadz: rust=7.0 web=8.0", "full#31 zywnosc: rust=8.0 web=9.0", "full#31 nauka: rust=7.0 web=8.0"]
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+   1: core::panicking::panic_fmt
+   2: p6_repin_d2_imp::parity_full_city_with_improvements_bit_exact
+   3: p6_repin_d2_imp::parity_full_city_with_improvements_bit_exact::{closure#0}
+   4: <p6_repin_d2_imp::parity_full_city_with_improvements_bit_exact::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+
+failures:
+    parity_city_terrain_sums_imp_bit_exact
+    parity_full_city_with_improvements_bit_exact
+    parity_tile_yield_full_bit_exact
+    structural_empty_list_falls_back_to_single_key
+
+test result: FAILED. 10 passed; 4 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.82s
+
+error: test failed, to rerun pass `--test p6_repin_d2_imp`

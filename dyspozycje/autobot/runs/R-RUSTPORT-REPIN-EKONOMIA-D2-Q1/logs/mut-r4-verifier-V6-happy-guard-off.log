@@ -1,0 +1,58 @@
+   Compiling civ-engine v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_bbf7346c-ced-2/rust-port/engine)
+    Finished `test` profile [unoptimized] target(s) in 30.95s
+     Running tests/p6_repin_d2_imp.rs (target/debug/deps/p6_repin_d2_imp-e33724850b6d16e6)
+
+running 14 tests
+test boundary_unknown_terrain_zero_then_bonus_only ... ok
+test parity_full_city_with_improvements_bit_exact ... ok
+test parity_tile_yield_full_bit_exact ... ok
+test parity_city_terrain_sums_imp_bit_exact ... ok
+test structural_empty_key_is_noop ... ok
+test structural_empty_list_falls_back_to_single_key ... ok
+test structural_forest_adds_wood_river_adds_clay ... ok
+test structural_happiness_branches ... FAILED
+test structural_imp_keys_list_wins_over_single_key ... ok
+test structural_pieniadz_bonus_goes_to_handel ... ok
+test structural_ore_mines_and_zloze_ignored ... ok
+test structural_unknown_and_legacy_key_no_bonus ... ok
+test parity_building_happiness_bit_exact ... FAILED
+test structural_city_uses_improved_tile_sums ... ok
+
+failures:
+
+---- structural_happiness_branches stdout ----
+
+thread 'structural_happiness_branches' (8982) panicked at tests/p6_repin_d2_imp.rs:597:5:
+assertion `left == right` failed
+  left: 8.0
+ right: 0.0
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+   1: core::panicking::panic_fmt
+   2: core::panicking::assert_failed_inner
+   3: core::panicking::assert_failed::<f64, f64>
+   4: p6_repin_d2_imp::structural_happiness_branches
+   5: p6_repin_d2_imp::structural_happiness_branches::{closure#0}
+   6: <p6_repin_d2_imp::structural_happiness_branches::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+---- parity_building_happiness_bit_exact stdout ----
+
+thread 'parity_building_happiness_bit_exact' (8974) panicked at tests/p6_repin_d2_imp.rs:389:5:
+1443 mismatches, first: ["hap#1 (\"syn\"): rust=1.0 web=0.0", "hap#2 (\"syn\"): rust=NaN web=0.0", "hap#3 (\"syn\"): rust=1.0 web=0.0", "hap#4 (\"syn\"): rust=1.0 web=0.0", "hap#7 (\"syn\"): rust=NaN web=0.0", "hap#8 (\"syn\"): rust=1.0 web=0.0", "hap#9 (\"syn\"): rust=1.0 web=0.0", "hap#10 (\"syn\"): rust=3.0 web=0.0"]
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+   1: core::panicking::panic_fmt
+   2: p6_repin_d2_imp::parity_building_happiness_bit_exact
+   3: p6_repin_d2_imp::parity_building_happiness_bit_exact::{closure#0}
+   4: <p6_repin_d2_imp::parity_building_happiness_bit_exact::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+
+failures:
+    parity_building_happiness_bit_exact
+    structural_happiness_branches
+
+test result: FAILED. 12 passed; 2 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.66s
+
+error: test failed, to rerun pass `--test p6_repin_d2_imp`
