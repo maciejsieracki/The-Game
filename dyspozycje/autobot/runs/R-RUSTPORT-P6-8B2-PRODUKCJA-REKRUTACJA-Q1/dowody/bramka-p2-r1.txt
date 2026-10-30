@@ -1,0 +1,2 @@
+cargo test --test p6_8b2_p2_vectors
+EXIT=0 (9 testow wektorowych + 5 progowych = 14 passed)
