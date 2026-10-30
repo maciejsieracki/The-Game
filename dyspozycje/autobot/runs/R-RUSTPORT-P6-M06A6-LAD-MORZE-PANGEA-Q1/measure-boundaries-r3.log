@@ -1,0 +1,7 @@
+K08 cn_ cases (NaN in landScores): 48 with NaN values: 48 with web changes: 42
+K11 cz_ cases (all scores 0): 12 with web changes: 12
+ct_0..11  pair(0.0,0.04)   exact N cases: 12 web converts centre 7,7: 12 web converts other cell: 0 adjusted sum: 12
+ct_12..23 pair(0.04,0.08) exact N cases: 12 web converts centre 7,7: 12 web converts other cell: 0 adjusted sum: 12
+ct_24..35 pair(0.0,0.04-ulp) N-1 cases: 12 web converts centre 7,7: 12 web converts other cell: 0 adjusted sum: 12
+ct_36..47 pair(0.0,0.04+ulp) N+1 cases: 12 web converts centre 7,7: 6 web converts other cell: 6 adjusted sum: 12
+EXIT=0

@@ -1,0 +1,8 @@
+# Weryfikator niezalezny R2: ponowna generacja wektorow z pinu edb8fb56 (seed 20261101) i porownanie bajtowe
+# Komenda: node --experimental-transform-types --no-warnings --import ./m06a-loader-register.mjs ./gen-m06a6-pangea-vectors.mjs /tmp/claude-0/pinweb-lWqa /tmp/claude-0/m06a6-regen
+# WEB_ROOT = git archive edb8fb56 gra/src gra/data (rozpakowane poza repo)
+{"outDir":"/tmp/claude-0/m06a6-regen","counts":{"erode":250,"carve":250,"contfrac":205}}
+IDENTYCZNY erode-vectors.json (1165640 B, sha256 2b4abcd001fd17debd712629faab9cfa58948fee172d04ce67dc1e8c109d5218)
+IDENTYCZNY carve-vectors.json (4595619 B, sha256 63c3e9eed2bb826cf5aa1df11573faba1fd3f668444e80e18b68bcb50f638e09)
+IDENTYCZNY contfrac-vectors.json (593078 B, sha256 e27be83ce6cc0c50111f540a21ceecf33e2df2bfabed65eebb1b9b725b67fcee)
+EXIT=0

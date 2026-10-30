@@ -1,0 +1,10 @@
+Weryfikacja regeneracji wektorow M06A6, runda 3 (Operator-impl, R-RUSTPORT-P6-M06A6-LAD-MORZE-PANGEA-Q1)
+pin: edb8fb56 (git archive gra/src gra/data do katalogu tymczasowego poza repo)
+generator: gen-m06a6-pangea-vectors.mjs (runda 3), loader: m06a-loader-register.mjs, node v22.22.0
+
+1. Baseline: generator rundy 2 uruchomiony na pinie -> erode, carve, contfrac BAJTOWO IDENTYCZNE z wektorami w repo (rozmiar 250/250/205 przypadkow).
+2. Runda 3: generator rozszerzony NA KONCU sekcji contfrac (nowe losowania po wszystkich istniejacych, prefiks zachowany).
+   counts: erode 250, carve 250, contfrac 313 (205 rundy 2 + 48 cn_ + 12 cz_ + 48 ct_).
+   erode i carve: BAJTOWO IDENTYCZNE z repo (nie zmienione).
+   contfrac: 205 pierwszych przypadkow JSON-owo identycznych z rundy 2 (sprawdzone).
+3. Rozmiary po regeneracji: erode 1165640 B, carve 4595619 B, contfrac 1295035 B (wszystkie < 10 MB).

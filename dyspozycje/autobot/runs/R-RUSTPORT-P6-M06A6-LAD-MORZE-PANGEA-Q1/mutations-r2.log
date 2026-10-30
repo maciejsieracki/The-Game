@@ -1,0 +1,45 @@
+SHA poczatkowe: src/domain/mapgen/landsea.rs=5928f313c761f71356cbc2f87958d784e590dc89deaa7ac6513043a6cf4b4ab6
+SURVIVED         E01-bbox-stop-lt (31 s) przywrocono=OK wszystkie testy zielone
+SURVIVED         E02-early-guard-off (32 s) przywrocono=OK wszystkie testy zielone
+KILLED           E03-rim-qmin-lt (33 s) przywrocono=OK 1 FAILED: erode_pangea_bbox_low_score_rim_matches_web
+KILLED           E04-rim-qmax-gt (34 s) przywrocono=OK 1 FAILED: erode_pangea_bbox_low_score_rim_matches_web
+SHA koncowe: src/domain/mapgen/landsea.rs=5928f313c761f71356cbc2f87958d784e590dc89deaa7ac6513043a6cf4b4ab6 zgodne=True
+SHA poczatkowe: src/domain/mapgen/landsea.rs=5928f313c761f71356cbc2f87958d784e590dc89deaa7ac6513043a6cf4b4ab6
+KILLED           E05-rim-rmin-lt (33 s) przywrocono=OK 1 FAILED: erode_pangea_bbox_low_score_rim_matches_web
+KILLED           E06-rim-rmax-gt (32 s) przywrocono=OK 1 FAILED: erode_pangea_bbox_low_score_rim_matches_web
+KILLED           E07-tol-ge (31 s) przywrocono=OK 1 FAILED: erode_pangea_bbox_low_score_rim_matches_web
+KILLED           E08-sort-reverse-dist (34 s) przywrocono=OK 1 FAILED: erode_pangea_bbox_low_score_rim_matches_web
+KILLED           E09-stop-struct-no-fill (38 s) przywrocono=OK 2 FAILED: erode_bbox_threshold_n_minus_1_n_n_plus_1, erode_pangea_bbox_low_score_rim_matches_web
+KILLED           E10-max-gt (39 s) przywrocono=OK 2 FAILED: erode_bbox_threshold_n_minus_1_n_n_plus_1, erode_pangea_bbox_low_score_rim_matches_web
+KILLED           E11-no-recount (38 s) przywrocono=OK 2 FAILED: erode_bbox_threshold_n_minus_1_n_n_plus_1, erode_pangea_bbox_low_score_rim_matches_web
+KILLED           E12-no-morze (40 s) przywrocono=OK 1 FAILED: erode_pangea_bbox_low_score_rim_matches_web
+SURVIVED         E13-area-noclamp (41 s) przywrocono=OK wszystkie testy zielone
+KILLED           C01-minland-le (37 s) przywrocono=OK 2 FAILED: carve_threshold_79_and_80_land_hexes, carve_pangea_long_side_gulfs_matches_web
+KILLED           C02-aspect-lt (35 s) przywrocono=OK 2 FAILED: carve_aspect_exactly_1_85_does_not_carve, carve_pangea_long_side_gulfs_matches_web
+SURVIVED         C03-longisq-gt (36 s) przywrocono=OK wszystkie testy zielone
+SHA koncowe: src/domain/mapgen/landsea.rs=5928f313c761f71356cbc2f87958d784e590dc89deaa7ac6513043a6cf4b4ab6 zgodne=True
+SHA poczatkowe: src/domain/mapgen/landsea.rs=5928f313c761f71356cbc2f87958d784e590dc89deaa7ac6513043a6cf4b4ab6
+KILLED           C04-onlong-min-lt (38 s) przywrocono=OK 1 FAILED: carve_pangea_long_side_gulfs_matches_web
+KILLED           C05-onlong-max-gt (37 s) przywrocono=OK 1 FAILED: carve_pangea_long_side_gulfs_matches_web
+SURVIVED         C06-nearmid-le (37 s) przywrocono=OK wszystkie testy zielone
+KILLED           C07-struct-no-nearmid (39 s) przywrocono=OK 1 FAILED: carve_pangea_long_side_gulfs_matches_web
+KILLED           C08-noise-drop (35 s) przywrocono=OK 1 FAILED: carve_pangea_long_side_gulfs_matches_web
+KILLED           C09-sort-reverse (33 s) przywrocono=OK 1 FAILED: carve_pangea_long_side_gulfs_matches_web
+KILLED           C10-max-gt (35 s) przywrocono=OK 1 FAILED: carve_pangea_long_side_gulfs_matches_web
+KILLED           C11-edge-ge (39 s) przywrocono=OK 1 FAILED: carve_pangea_long_side_gulfs_matches_web
+SURVIVED         C12-depth-nofloor (36 s) przywrocono=OK wszystkie testy zielone
+KILLED           C13-depth-nomin (35 s) przywrocono=OK 1 FAILED: carve_pangea_long_side_gulfs_matches_web
+KILLED           C14-edge-min-max (43 s) przywrocono=OK 2 FAILED: carve_threshold_79_and_80_land_hexes, carve_pangea_long_side_gulfs_matches_web
+SHA koncowe: src/domain/mapgen/landsea.rs=5928f313c761f71356cbc2f87958d784e590dc89deaa7ac6513043a6cf4b4ab6 zgodne=True
+SHA poczatkowe: src/domain/mapgen/landsea.rs=5928f313c761f71356cbc2f87958d784e590dc89deaa7ac6513043a6cf4b4ab6
+KILLED           K01-clamp-noupper (34 s) przywrocono=OK 1 FAILED: apply_land_fraction_by_continent_matches_web
+KILLED           K02-last-quota (33 s) przywrocono=OK 1 FAILED: apply_land_fraction_by_continent_matches_web
+KILLED           K03-round-floor (34 s) przywrocono=OK 1 FAILED: apply_land_fraction_by_continent_matches_web
+SURVIVED         K04-deficit-le (35 s) przywrocono=OK wszystkie testy zielone
+KILLED           K05-morse-nobreak (36 s) przywrocono=OK 1 FAILED: apply_land_fraction_by_continent_matches_web
+KILLED           K06-erode-branch-off (34 s) przywrocono=OK 1 FAILED: apply_land_fraction_by_continent_matches_web
+KILLED           K07-reconcile-off (34 s) przywrocono=OK 1 FAILED: apply_land_fraction_by_continent_matches_web
+SURVIVED         K08-nan-guard-off (34 s) przywrocono=OK wszystkie testy zielone
+SURVIVED         K09-sort-tol-ge (33 s) przywrocono=OK wszystkie testy zielone
+KILLED           K10-ci-noclamp-hi (34 s) przywrocono=OK 1 FAILED: apply_land_fraction_by_continent_matches_web
+SHA koncowe: src/domain/mapgen/landsea.rs=5928f313c761f71356cbc2f87958d784e590dc89deaa7ac6513043a6cf4b4ab6 zgodne=True
