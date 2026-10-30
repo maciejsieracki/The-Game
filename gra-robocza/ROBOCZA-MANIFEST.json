@@ -1,5 +1,5 @@
 {
-  "releaseState": "DEPLOYED TO ROBOCZA; git push/readback pending",
+  "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; pinned readback PASS at 2bbb192380fea0f43a74109ce04b50e74d229fb3",
   "bundle": "Gra-ROBOCZA.html",
   "bundleMd5": "e666ecb6020b55c68f0c2d3d5067ad54",
   "bundleSha256": "e5acc382cf8210d913bda9c57d82dc42e5ae1b9097be0d8c3315aa09537bfe81",
