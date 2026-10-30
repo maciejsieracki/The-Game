@@ -361,11 +361,14 @@ pub struct ProductionItem {
     pub is_general: Option<bool>,
 }
 
-/// web `CityProduction` (pola P1; `wstrzymana` i `rekrutacja` naleza do 8B).
+/// web `CityProduction`. `wstrzymana` (`None` = pole nieobecne, jak `wstrzymana?: boolean`) i
+/// `rekrutacja` (`None` = pole nieobecne) dodane w P6.8B-P1b-c2a.
 #[derive(Debug, Clone, PartialEq, Default)]
 pub struct CityProduction {
     pub kolejka: Vec<ProductionItem>,
     pub postep: f64,
+    pub wstrzymana: Option<bool>,
+    pub rekrutacja: Option<Vec<ProductionItem>>,
 }
 
 /// Wiersz budynku: pola `BuildingDef` czytane przez production.ts 1-692.
@@ -2457,5 +2460,46 @@ pub fn population_cost_of(item: &ProductionItem) -> f64 {
     match item.kind {
         ProductionKind::Jednostka => UNIT_POPULATION_COST,
         ProductionKind::Budynek => 0.0,
+    }
+}
+
+// ---------------------------------------------------------------------------
+// P6.8B-P1b-c2a: manpowerCostOf (production.ts ~1985 @91dc998a) oraz setPaused (~1990).
+// Wektory: p6_8b_vectors/p1b-c2a.json (generator gen-p6-8b-c2a-vectors.mjs, import PRAWDZIWEGO
+// production.ts z pinu). Zalozenie: `costMult` domyslnie = `maxMult` (JS default), czyli
+// `None` -> `max_mult`; `Some(NaN)` zostaje NaN (JS: jawne NaN nie uruchamia domyslnej wartosci).
+// ---------------------------------------------------------------------------
+
+/// web `manpowerCostOf(item, epoka, maxMult = 1, costMult = maxMult)`: koszt puli rekrutow
+/// ukonczenia pozycji. Jednostka -> `unitManpowerCostForType(item.id, epoka, maxMult, costMult)`;
+/// budynek -> 0. `max_mult` = wartosc po domyslnym parametrze (wolajacy podaje 1.0 gdy brak).
+pub fn manpower_cost_of(
+    item: &ProductionItem,
+    epoka: f64,
+    max_mult: f64,
+    cost_mult: Option<f64>,
+) -> f64 {
+    match item.kind {
+        ProductionKind::Jednostka => {
+            let cm = cost_mult.unwrap_or(max_mult);
+            crate::domain::recruitment::manpower::unit_manpower_cost_for_type(
+                Some(item.id.as_str()),
+                epoka,
+                max_mult,
+                cm,
+            )
+        }
+        ProductionKind::Budynek => 0.0,
+    }
+}
+
+/// web `setPaused(prod, paused)`: nowy `CityProduction` z ustawionym `wstrzymana`; kolejka i
+/// `rekrutacja` kopiowane (nowe wektory, te same wartosci; `rekrutacja` pozostaje nieobecna gdy byla).
+pub fn set_paused(prod: &CityProduction, paused: bool) -> CityProduction {
+    CityProduction {
+        kolejka: prod.kolejka.clone(),
+        postep: prod.postep,
+        wstrzymana: Some(paused),
+        rekrutacja: prod.rekrutacja.clone(),
     }
 }
