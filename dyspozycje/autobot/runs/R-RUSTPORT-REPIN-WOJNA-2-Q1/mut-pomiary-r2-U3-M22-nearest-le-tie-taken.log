@@ -1,0 +1,22 @@
+   Compiling civ-engine v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_a87f1451-a49-2/rust-port/engine)
+    Finished `test` profile [unoptimized] target(s) in 31.27s
+     Running tests/p6_repin_wojna_2_generals.rs (/home/user/cargo-target-shared/wf_a87f1451-a49-2/debug/deps/p6_repin_wojna_2_generals-b2a41bf653684b50)
+
+running 13 tests
+test general_follow_destination_matches_web ... ok
+test can_recruit_matches_web ... ok
+test issue_matches_web ... ok
+test deferred_batch_matches_web ... ok
+test limit_for_era_matches_web ... ok
+test labels_match_web ... ok
+test nearest_living_general_matches_web ... ok
+test purchase_matches_web_and_calls_continuation_only_when_valid ... ok
+test slots_used_matches_web ... ok
+test stone_unit_matches_web ... ok
+test plan_enabled_matches_web ... ok
+test tracked_march_matches_web ... ok
+test sync_tracked_matches_web ... ok
+
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.13s
+
+EXIT=0
