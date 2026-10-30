@@ -42,3 +42,24 @@ RUNDY: 2/5.
 KOLEJNOSC INTEGRACJI: SHA koncowy do integracji = `322b07d6d` (gałąź wf-d2-obrona-r2; zawiera 8a3baa6ab i 93e5b76c6). Integrowac PO `origin/rust-port/parity-v2` = `9bec76ef3` (bezposredni potomek, fast-forward/cherry-pick bez konfliktu). Commit FC (ten plik) lezy na wierzchu.
 NASTEPNY KROK: integracja orkiestratora; nastepnie partia D2.2c.
 DEPLOY/PUSH: NIE WYKONANO
+
+---
+
+# Final Control — runda 4 (D2.2c + obrona D2.2d), oceniany 07dd30342
+
+STATUS: PASS-WITH-NOTES
+DOMAIN: GAME
+TEMAT: R-RUSTPORT-REPIN-EKONOMIA-D2-Q1 (pozostaje OTWARTY)
+GOAL: Final Control D2.2c + obrona D2.2d (Step 1 bez ulepszen, Step 3 buildingValue/pieniadzPortu) na 07dd30342.
+ZMIANY/COMMIT: oceniany kod 07dd30342 (baza a83ae51d6); allowlista: economy_yield.rs (+341/-0), tests/p6_repin_d2_full.rs (+593), p6_repin_d2_full_vectors/full-main.json (3,1 MB), P6-REPIN-EKONOMIA-D.md, runs/R-RUSTPORT-REPIN-EKONOMIA-D2-Q1/**. Zero zmian w gra/, renderer, src-tauri, Cargo.toml, WERSJE.md, mod.rs. Commit FC: dopisany niniejszy plik.
+TESTY (wlasne, na 07dd30342): cargo fmt --check EXIT=0; cargo clippy --all-targets -D warnings EXIT=0; cargo test --test p6_repin_d2_full 14/14 (w tym parity_full_main_bit_exact, aggregates_bit_exact_vs_web_loops, real_buildings_cover_port_and_port_wielki); git diff --check a83ae51d6..07dd30342 czysty; git merge-tree z origin/rust-port/parity-v2 (efc0ee829) bez konfliktow. Pelnego cargo test (1680/0) nie odtwarzalem; opieram sie na test-r4-full.log Operatora.
+ZARZUTY:
+1 (niepelny zakres Step 1/3): ODDAL - obrona zportowala building_value, city_building_sums (pieniadzPortu tylko id=="port"), tile_yield_base, city_terrain_sums, city_yield_per_turn_from_worked; kod zgodny z economy.ts@91dc998a L421-470, L493, L873-882. Pozostalosc (galaz impKeys: applyImprovementBonuses/oreYieldFromImprovements, buildingHappinessAtLevel) = jawne ZALOZENIE Z-D2.2d-1, nie wplywa na wyjscie dla kafelkow bez ulepszen; do D2.2e.
+2 (mylaca nazwa): ODDAL - dokument i doc-comment rozrozniaja city_yield_per_turn (kompozycja z agregatami) od city_yield_per_turn_from_worked.
+3 (NIE_ZMIERZONO economy.ts): ODDAL - zmierzone: pin 91dc998a == origin/main dla economy/production/terrain-improvements; dochodTrasHandlowych/walutaMnoznikOverride tylko w a83ae51d6 (przodek pina, usuniete w 92d124b72, b4d37d9f8). Luka jawna: Z-D2.2d-2 (decyzja orkiestratora o zgodnosci z parity-v2).
+4 (pokrycie): ODDAL - 300 przypadkow z realnym buildings.json (port, port_wielki), mutacje M7/M8 zabite; M9 rownowazny (uzasadnione).
+Zero zarzutow NAPRAW, zero DO DECYZJI CZLOWIEKA.
+BLOKADY: brak.
+RUNDY: 4/5 (FC po obronie). Werdykt: PASS-WITH-NOTES.
+NASTEPNY KROK: integracja orkiestratora: merge commitu FC (potomek 07dd30342) do rust-port/parity-v2 (efc0ee829); zakresy plikow rozlaczne, merge czysty; pelny cargo test po merge. Temat OTWARTY: D2.2e = galaz ulepszen tileYield (improvements.rs apply_improvement_bonuses/ore_yield_from_improvements), Mint/walutaMnoznikOverride, dochodTrasHandlowych wg Z-D2.2d-2.
+DEPLOY/PUSH: NIE WYKONANO
