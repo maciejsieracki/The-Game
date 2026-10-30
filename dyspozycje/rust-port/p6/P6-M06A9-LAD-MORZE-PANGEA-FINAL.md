@@ -1,6 +1,6 @@
 # P6.M06A9 - Lad / morze / Pangea (finał): korytarze, rebalance Pangei, rebalance lad/morze
 
-Temat: R-RUSTPORT-P6-M06A9-LAD-MORZE-PANGEA-FINAL-Q1. Runda 1 (Operator-impl).
+Temat: R-RUSTPORT-P6-M06A9-LAD-MORZE-PANGEA-FINAL-Q1. Runda 1 (Operator-impl + Operator-pomiary), runda 2 (Operator-impl r2, odpowiedz na zarzuty Evaluatora).
 Baza: `origin/rust-port/parity-v2` = `87fda853` (silnik 1396 testow przed zmianami tematu).
 Pin web: `edb8fb56` (eksport `git archive edb8fb56 gra/src gra/data` do katalogu tymczasowego poza repo).
 Wzorzec: P6-M06A8 (ensure, hak fill), P6-M05B (wektory brzegowe, generator z pinu).
@@ -8,55 +8,15 @@ Run: `dyspozycje/autobot/runs/R-RUSTPORT-P6-M06A9-LAD-MORZE-PANGEA-FINAL-Q1/`.
 
 ## Status symboli zakresu (binarne kryterium)
 
-| Symbol web (pin edb8fb56) | Status r1 | Kod Rust | Dowod |
+| Symbol web (pin edb8fb56) | Status | Kod Rust | Dowod |
 |---|---|---|---|
-| `fillPangeaAnnularSeaCorridors` (:4595, export) | PORTOWANY (impl) | `landsea.rs::fill_pangea_annular_sea_corridors` | `fill-vectors.json` (120 przyp.), test `fill_pangea_annular_sea_corridors_matches_web`: 0 rozbieznosci |
-| `pangeaLandCentroid` (:4473, prywatna) | PORTOWANY (impl) | `landsea.rs::pangea_land_centroid` | pokryty przez fill (wektory) |
-| `pangeaRadialDryLandSteps` (:4484, prywatna) | PORTOWANY (impl) | `landsea.rs::pangea_radial_dry_land_steps` | pokryty przez fill (wektory) |
-| `pangeaSeaHexIsAnnularCorridor` (:4512, prywatna) | PORTOWANY (impl) | `landsea.rs::pangea_sea_hex_is_annular_corridor` | pokryty przez fill (wektory) |
-| `rebalanceLandFractionPangea` (:3667, export) | PORTOWANY (impl) | `landsea.rs::rebalance_land_fraction_pangea` | `pangea-vectors.json` (60 przyp.), test `rebalance_land_fraction_pangea_matches_web`: 0 rozbieznosci |
-| `rebalanceLandSeaRatio` (:3791, export) | PORTOWANY (impl) | `landsea.rs::rebalance_land_sea_ratio` | `ratio-vectors.json` (101 przyp.), test `rebalance_land_sea_ratio_matches_web`: 0 rozbieznosci |
+| `fillPangeaAnnularSeaCorridors` (:4595, export) | PORTOWANY | `landsea.rs::fill_pangea_annular_sea_corridors` (:1708) | `fill-vectors.json` (120 przyp.) + `edge-vectors.json` (prog-eps, 5 przyp.); testy `fill_pangea_annular_sea_corridors_matches_web`, `fill_dist_epsilon_boundary_matches_web`: 0 rozbieznosci |
+| `pangeaLandCentroid` (:4473, prywatna) | PORTOWANY | `landsea.rs::pangea_land_centroid` (:1630) | pokryty przez fill i prog-eps (centroid = 1/n dokladnie) |
+| `pangeaRadialDryLandSteps` (:4484, prywatna) | PORTOWANY | `landsea.rs::pangea_radial_dry_land_steps` (:1652) | pokryty przez fill i prog-eps (granica `dist < eps`, M17 zabity) |
+| `pangeaSeaHexIsAnnularCorridor` (:4512, prywatna) | PORTOWANY | `landsea.rs::pangea_sea_hex_is_annular_corridor` (:1687) | pokryty przez fill; mutant M02 = rownowazny (dowod nizej) |
+| `rebalanceLandFractionPangea` (:3667, export) | PORTOWANY | `landsea.rs::rebalance_land_fraction_pangea` (:1793) | `pangea-vectors.json` (60 przyp.), test `rebalance_land_fraction_pangea_matches_web`: 0 rozbieznosci |
+| `rebalanceLandSeaRatio` (:3791, export) | PORTOWANY | `landsea.rs::rebalance_land_sea_ratio` (:1879) | `ratio-vectors.json` (101 przyp.) + `edge-vectors.json` (warstwy, 4 przyp.); testy `rebalance_land_sea_ratio_matches_web`, `rebalance_land_sea_ratio_layer_limit_matches_web`: 0 rozbieznosci |
 | hak `ensurePangeaSingleContinent` (M06A8) | ZAMKNIETY | `ensure_pangea_single_continent(..., fill_hook)`; w `rebalance_land_fraction_pangea` hak = prawdziwe `fill_pangea_annular_sea_corridors` | wektory M06A8 nadal z hakiem `0` (testy bez zmian) |
-
-Pelna rownowaznosc `ensurePangeaSingleContinent` z webem (z fill) jest zapewniona przez `rebalanceLandFractionPangea`
-(test pangea-vectors z prawdziwym fill). Wektory M06A8 (`ensure-vectors.json`) pozostaja z hakiem `0` i nie sa oslabione.
-
-## Tabela M06A (wiersze RUNDA-2 z `P6-M06A-LAD-MORZE-WYBRZEZE-A.md`)
-
-Stan kodu sprawdzony `grep` po `rust-port/engine/src` (r1). Dowod wektorowy dla wierszy innych niz M06A9 pochodzi z
-tematow wlasciciela (kolumna "Temat"); w TEJ rundzie NIE ZWERYFIKOWANO go ponownie (pomiary = runda Operator-pomiary).
-
-| Symbol web | Kod Rust (landsea.rs) | Temat wlasciciela | Status r1 |
-|---|---|---|---|
-| `assignContinentIndices` :3186 | `assign_continent_indices` | M06A2-A4 (kolejne) | KOD ISTNIEJE - dowod do potwierdzenia |
-| `sortLandKeysForErosion` :3207 | `sort_land_keys_for_erosion` | M06A5 | KOD ISTNIEJE - dowod do potwierdzenia |
-| `enforceLatitudinalOceanBuffer` :3339 | `enforce_latitudinal_ocean_buffer` | M06A3 | KOD ISTNIEJE - dowod do potwierdzenia |
-| `climateBandBaseTerrain` :3360 | `climate_band_base_terrain` | M06A3 | KOD ISTNIEJE - dowod do potwierdzenia |
-| `applyClimateBandsToHexes` :3380 | `apply_climate_bands_to_hexes` | M06A3 | KOD ISTNIEJE - dowod do potwierdzenia |
-| `enforceEarthTemplateOnHexes` :3418 | `enforce_earth_template_on_hexes` | M06A3 | KOD ISTNIEJE - dowod do potwierdzenia |
-| `LandFractionFillBias` / `PANGEA_LAND_FILL_MIN_SCORE` :3435-3438 | `LandFractionFillBias`, `mapgen-landsea-fill.json` | M06A5 | KOD ISTNIEJE - dowod do potwierdzenia |
-| `applyLandFractionByScore` :3444 | `apply_land_fraction_by_score` | M06A5 | KOD ISTNIEJE - dowod do potwierdzenia |
-| `rebalanceLandFractionWithMargins` :3532 | `rebalance_land_fraction_with_margins` | M06A5 | KOD ISTNIEJE - dowod do potwierdzenia |
-| `erodePangeaBboxLowScoreRim` :3551 | `erode_pangea_bbox_low_score_rim` | M06A6 | KOD ISTNIEJE - dowod do potwierdzenia; uzywany przez `rebalance_land_fraction_pangea` (M06A9) |
-| `carvePangeaLongSideGulfs` :3606 | `carve_pangea_long_side_gulfs` | M06A6 | KOD ISTNIEJE - dowod do potwierdzenia; uzywany przez `rebalance_land_fraction_pangea` (M06A9) |
-| `rebalanceLandFractionPangea` :3667 | `rebalance_land_fraction_pangea` | M06A9 | PORTOWANY (wektory 60, 0 rozbieznosci) |
-| `applyLandFractionByContinent` :3701 | `apply_land_fraction_by_continent` | M06A5/M06A7 | KOD ISTNIEJE - dowod do potwierdzenia |
-| `rebalanceLandSeaRatio` :3791 | `rebalance_land_sea_ratio` | M06A9 | PORTOWANY (wektory 101, 0 rozbieznosci) |
-| `removeInlandWaterPools` :4137 | `remove_inland_water_pools` | M06A4 | KOD ISTNIEJE - dowod do potwierdzenia |
-| `purgeDesertEnclaveWater` :4156 | `purge_desert_enclave_water` | M06A4 | KOD ISTNIEJE - dowod do potwierdzenia |
-| `fillEnclosedWaterByLandNeighbors` :4189 | `fill_enclosed_water_by_land_neighbors` | M06A4 | KOD ISTNIEJE - dowod do potwierdzenia |
-| `purgeInlandWaterForMultiLandTyp` :4215 | `purge_inland_water_for_multi_land_typ` | M06A4 | KOD ISTNIEJE - dowod do potwierdzenia |
-| `applyJaggedCoastNoise` :4232 | `apply_jagged_coast_noise` | M06A4 | KOD ISTNIEJE - dowod do potwierdzenia; wywolanie z 5 przebiegami w `rebalance_land_fraction_pangea` |
-| `removeSmallInlandWaterPools` :4276 | `remove_small_inland_water_pools` | M06A4 | KOD ISTNIEJE - dowod do potwierdzenia |
-| `removeInlandSeaPools` :4320 | `remove_inland_sea_pools` | M06A4 | KOD ISTNIEJE - dowod do potwierdzenia |
-| `pangeaAnnularMaxCorridorWidth` :4329 | `pangea_annular_max_corridor_width` | M06A7 | PORTOWANY (M06A7) |
-| `groupDryLandMassKeys` :4338 | `group_dry_land_mass_keys` | M06A8 | PORTOWANY (M06A8, 418+39 przyp.) |
-| `isPangeaBridgeWater` :4371 | `is_pangea_bridge_water` | M06A7 | DANE-JUZ-W-RUST |
-| `ensurePangeaSingleContinent` :4375 | `ensure_pangea_single_continent` | M06A8 + M06A9 | PORTOWANY (hak zamkniety w M06A9) |
-
-Zamkniete w tej rundzie: `fillPangeaAnnularSeaCorridors`, `rebalanceLandFractionPangea`, `rebalanceLandSeaRatio`.
-**M06A KOMPLET: NIE** - wiersze oznaczone "dowod do potwierdzenia" wymagaja weryfikacji wektorowej w rundzie
-Operator-pomiary (lub osobnego tematu). Nie zapisano "M06A KOMPLET" (binarne kryterium nie jest spelnione).
 
 ## Zalozenia (rozstrzygniete bez pytan)
 
@@ -64,52 +24,171 @@ Operator-pomiary (lub osobnego tematu). Nie zapisano "M06A KOMPLET" (binarne kry
   erode, carve, x2; fill, ensure, applyLFS, enforce, jagged(5), fill, ensure, enforce).
 - Z2. `hex.coords` w `fill` = `TerrainHex.q/r`. Dla kluczy kanonicznych "q,r" identyczne z `parseHexKey`. Klucze niekanoniczne
   NIE sa w wektorach (poza zakresem, jak Z2 w M06A8).
-- Z3. Iteracja `Object.entries(hexes)` w fill = iteracja po kluczach w kolejnosci wstawiania, stan terenu czytany na zywo
-  (jak `hex` - ta sama referencja w JS). Klucze nie sa usuwane w trakcie, wiec snapshot kluczy jest rownowazny.
+- Z3. Iteracja `Object.entries(hexes)` w fill = iteracja po kluczach w kolejnosci wstawiania, stan terenu czytany na zywo.
 - Z4. `pangeaLandCentroid`: suma `parseHexKey` po suchym lądzie w kolejnosci wstawiania (sumy calkowite, dokladne w f64).
-- Z5. Literaly danych przeniesione do `rust-port/engine/data/derived/mapgen-landsea-pangea-fill.json`
+- Z5. Literaly danych w `rust-port/engine/data/derived/mapgen-landsea-pangea-fill.json`
   (`fill_centroid_min_land` 40, `fill_dist_epsilon` 0.01, `fill_zapas_szerokosci` 2, `fill_prog_pasma_zapas` 1,
-  `rebalance_jagged_passes` 5). Progi `erode`/`carve` i ich domyslne wartosci (0.74/1200, 1.85/900) - z istniejacego
-  `mapgen-landsea-pangea.json`. Clamp udzialu 0.15/0.85 - z `mapgen-landsea-fill.json`.
+  `rebalance_jagged_passes` 5). Progi `erode`/`carve` - z `mapgen-landsea-pangea.json`. Clamp udzialu 0.15/0.85 - z `mapgen-landsea-fill.json`.
   Stale strukturalne (startowe `sea_band = 1`, `pass` od 0, `step` od 1, `rel. <= 1` erozji, `ceil(sqrt)`) pozostaja w kodzie.
 - Z6. `rebalanceLandSeaRatio`: skan wierszami (r, potem q) jak w webie; wybor najnizszego `score` przez ostre `<` (pierwszy wygrywa).
 - Z7. Hak `ensurePangeaSingleContinent` w `rebalance_land_fraction_pangea` = `fill_pangea_annular_sea_corridors(h, w, hh, None)`.
   Wywolania `ensure` z innych miejsc (testy M06A8) nadal podaja `|_, _, _| 0`.
+- Z8 (runda 2). Dwa literaly `0.01` w webie (`pangeaRadialDryLandSteps` :4496 `distSelf < 0.01`; fill :4602 `Math.max(0.01, distSelf)`)
+  sa w Rust zsprzezone w jedno pole `fill_dist_epsilon` (ta sama wartosc 0.01). Zakres wartosci jest identyczny, wiec
+  zachowanie jest rownowazne; rozdzielenie na dwa pola nie jest potrzebne dla parytetu.
+
+## Tabela M06A - runda 2 (zamknieta)
+
+Zrodlo wierszy: `P6-M06A-LAD-MORZE-WYBRZEZE-A.md` (25 wierszy RUNDA-2). Runda 1 oznaczala 22 wiersze jako
+"dowod do potwierdzenia"; w rundzie 2 dla kazdego wiersza podano: funkcje Rust (plik:linia w `landsea.rs`),
+testy, ktore ja wywoluja (wszystkie uruchomione w pelnym `cargo test`, 1403 passed, 0 failed).
+
+| Symbol web | Kod Rust | Testy / wektory (runda 2) | Status |
+|---|---|---|---|
+| `assignContinentIndices` :3186 | `assign_continent_indices` (:866) | `p6_m06a5_landfrac.rs` (wektory `p6_m06a5_vectors`) | PORTOWANY |
+| `sortLandKeysForErosion` :3207 | `sort_land_keys_for_erosion` (:894) | `p6_m06a5_landfrac.rs`, `p6_m06a5_landfrac_edge.rs` | PORTOWANY |
+| `enforceLatitudinalOceanBuffer` :3339 | `enforce_latitudinal_ocean_buffer` (:473) | `p6_m06a3_climate.rs::enforce_latitudinal_ocean_buffer_matches_web_with_boundaries` | PORTOWANY |
+| `climateBandBaseTerrain` :3360 | `climate_band_base_terrain` (:502) | `p6_m06a3_climate.rs::climate_band_base_terrain_matches_web` | PORTOWANY |
+| `applyClimateBandsToHexes` :3380 | `apply_climate_bands_to_hexes` (:541) | `p6_m06a3_climate.rs::apply_climate_bands_to_hexes_matches_web` | PORTOWANY (uwaga: w `map_generator.rs` istnieje osobna kopia - NIE zmieniana, poza allowlista; parytet pilnuje test landsea) |
+| `enforceEarthTemplateOnHexes` :3418 | `enforce_earth_template_on_hexes` (:576) | `p6_m06a3_climate.rs::enforce_earth_template_on_hexes_matches_web` | PORTOWANY |
+| `LandFractionFillBias` / `PANGEA_LAND_FILL_MIN_SCORE` :3435-3438 | enum `LandFractionFillBias` (:859), dane `mapgen-landsea-fill.json` | `p6_m06a5_landfrac.rs` | PORTOWANY |
+| `applyLandFractionByScore` :3444 | `apply_land_fraction_by_score` (:955) | `p6_m06a5_landfrac.rs`, `p6_m06a5_landfrac_edge.rs` | PORTOWANY |
+| `rebalanceLandFractionWithMargins` :3532 | `rebalance_land_fraction_with_margins` (:1081) | `p6_m06a5_landfrac.rs`, `p6_m06a5_landfrac_edge.rs` | PORTOWANY |
+| `erodePangeaBboxLowScoreRim` :3551 | `erode_pangea_bbox_low_score_rim` (:1122) | `p6_m06a6_pangea.rs` (wektory `p6_m06a6_vectors`) | PORTOWANY |
+| `carvePangeaLongSideGulfs` :3606 | `carve_pangea_long_side_gulfs` (:1192) | `p6_m06a6_pangea.rs` | PORTOWANY |
+| `rebalanceLandFractionPangea` :3667 | `rebalance_land_fraction_pangea` (:1793) | `p6_m06a9_landsea.rs` (`pangea-vectors.json`, 60) | PORTOWANY |
+| `applyLandFractionByContinent` :3701 | `apply_land_fraction_by_continent` (:1290) | `p6_m06a6_pangea.rs` | PORTOWANY |
+| `rebalanceLandSeaRatio` :3791 | `rebalance_land_sea_ratio` (:1879) | `p6_m06a9_landsea.rs`, `p6_m06a9_edge.rs` | PORTOWANY |
+| `removeInlandWaterPools` :4137 | `remove_inland_water_pools` (:364) | `p6_m06a2_landsea.rs::remove_inland_water_pools_matches_web` | PORTOWANY |
+| `purgeDesertEnclaveWater` :4156 | `purge_desert_enclave_water` (:607) | `p6_m06a4_landsea.rs::purge_desert_enclave_water_matches_web` | PORTOWANY |
+| `fillEnclosedWaterByLandNeighbors` :4189 | `fill_enclosed_water_by_land_neighbors` (:378) | `p6_m06a2_landsea.rs::fill_enclosed_water_matches_web_with_boundaries` | PORTOWANY |
+| `purgeInlandWaterForMultiLandTyp` :4215 | `purge_inland_water_for_multi_land_typ` (:737) | `p6_m06a4_trim.rs::purge_inland_water_for_multi_land_typ_matches_web` | PORTOWANY |
+| `applyJaggedCoastNoise` :4232 | `apply_jagged_coast_noise` (:801) | `p6_m06a4_jagged.rs` (`jagged-vectors.json`) | PORTOWANY |
+| `removeSmallInlandWaterPools` :4276 | `remove_small_inland_water_pools` (:413) | `p6_m06a2_landsea.rs::remove_small_inland_water_pools_matches_web_with_size_boundaries` | PORTOWANY |
+| `removeInlandSeaPools` :4320 | `remove_inland_sea_pools` (:460) | `p6_m06a2_landsea.rs::remove_inland_sea_pools_matches_web` | PORTOWANY |
+| `pangeaAnnularMaxCorridorWidth` :4329 | `pangea_annular_max_corridor_width` (:1430) | `p6_m06a7_annular.rs` | PORTOWANY |
+| `groupDryLandMassKeys` :4338 | `group_dry_land_mass_keys` (:1457) | `p6_m06a8_landsea.rs`, `p6_m06a8_pomiary.rs` | PORTOWANY |
+| `isPangeaBridgeWater` :4371 | `is_pangea_bridge_water` (:1445) = `is_water_terrain_local` (:52) | `p6_m06a7_annular.rs` | DANE-JUZ-W-RUST (predykat = istniejacy `is_water_terrain_local`) |
+| `ensurePangeaSingleContinent` :4375 | `ensure_pangea_single_continent` (:1496) | `p6_m06a8_landsea.rs`, `p6_m06a8_pomiary.rs`; hak zamkniety w M06A9 | PORTOWANY |
+
+Wiersze DANE-JUZ-W-RUST z tabeli M06A (bez zmian): `parseHexKey`, `setHexToMorze`, `setHexToLaka`.
+
+**M06A KOMPLET: TAK** (runda 2): wszystkie 25 wierszy RUNDA-2 maja status PORTOWANY lub DANE-JUZ-W-RUST z funkcja Rust,
+testem i wektorem z uruchomionego weba. Zadna pozycja nie jest "dowod do potwierdzenia".
+Zastrzezenie: wiersze `p6_m06a5_*`..`p6_m06a8_*` sa zamkniete na podstawie testow z tematow wlascicieli, uruchomionych
+w pelnym `cargo test` tej rundy (EXIT=0); wektory tych tematow nie zostaly regenerowane w tej rundzie.
+
+## Odpowiedzi na zarzuty Evaluatora (runda 2)
+
+| Zarzut | Odpowiedz | Dowod |
+|---|---|---|
+| Tabela M06A nie zamknieta (25 wierszy RUNDA-2, 22 "dowod do potwierdzenia") | PRZYJMUJE | tabela zamknieta w sekcji powyzej; w `P6-M06A-...md` dopisane tylko odeslanie (allowlista) |
+| Brak zapisu "M06A KOMPLET" | PRZYJMUJE | "M06A KOMPLET: TAK" w sekcji powyzej, po zamknieciu tabeli |
+| M07 (limit petli seaBand `maxW+2` -> `maxW`) przezywa i nie jest rownowazny | PRZYJMUJE w czesci: mutant JEST rownowazny - korekta wlasnego wniosku r1 (dowod kodowy nizej, nie wektor) | dowod nizej |
+| M17 (`dist < 0.01` -> `<=`) przezywa | PRZYJMUJE: wektor na progu dokladnym dist == 0.01 (n=100) | `edge-vectors.json` przypadek `prog-eps` (solo, maxW 4/2/6), test `fill_dist_epsilon_boundary_matches_web`; mutant KILLED |
+| M21 (`max_layers - 1`) przezywa | PRZYJMUJE: wektory granicy warstw (pasek 100x1, cele 0.2/0.3/0.5/0.15) | `edge-vectors.json` rodzina `warstwy`, test `rebalance_land_sea_ratio_layer_limit_matches_web`; mutant KILLED |
+| Dowody M02/M09/M19 to jednozdaniowe uzasadnienia | PRZYJMUJE: rozpisane z plikiem i linia ponizej | dowody nizej |
+
+### Dowody rownowaznosci z kodu (plik `landsea.rs`, linie wg stanu f9d855ed + r2)
+
+**M02** (`&&` -> `||` w `pangea_sea_hex_is_annular_corridor`, :1698). Przy `Some(i), Some(o)`:
+`pangea_radial_dry_land_steps` (:1670) zwraca `Some(step)` tylko w ciele petli `while step <= max_steps` (:1670),
+a `max_steps` to ten sam `max_w` co w :1698. Zatem `i <= max_w` i `o <= max_w` sa prawdziwe zawsze w tej galezi,
+koniunkcja jest tautologia i `||` daje identyczny wynik. Galezie `_ => false` nie zmieniaja sie. **RÓWNOWAŻNY.**
+
+**M07** (`let limit = max_w + zapas;` -> `let limit = max_w;`, :1750). Dowod: `sea_band` jest liczony tylko dla hexa,
+ktory przeszedl `pangea_sea_hex_is_annular_corridor` (:1738-1740). Wtedy `i` i `o` (kroki do suchego lądu wzdluz promienia)
+spelniaja `i <= max_w`, `o <= max_w` (:1698), a promien seaBand jest identyczny z promieniem radialnym:
+- `uq`/`ur` (:1745-1747 seaBand; `dist_self` radialu :1663): `denom = max(eps, dist)`; `dist >= eps` wynika z tego, ze radial zwrocil `Some`
+  (:1663 `if dist_self < eps { return None }`), wiec `denom = dist`, tak jak w radialu;
+- kroki: seaBand outward (:1753) `q + uq*step`, inward (:1763) `q - uq*step`; radial inward `q + (-1.0*uq)*step`; mnozenie przez `-1.0` jest dokladne,
+  wiec zaokraglone wspolrzedne sa bitowo te same; analogicznie outward;
+- kazdy krok `< i` (resp. `< o`) trafia na wode bridge (warunek radialu, :1670-1681), a krok `i` trafia na suchy lad
+  (`is_dry_land_terrain`), ktory przerywa petle seaBand (`_ => break`, :1757 / :1767) zanim limit zostanie osiagniety, bo `i <= max_w`.
+
+Zatem seaBand liczy dokladnie `1 + (i-1) + (o-1)` niezaleznie od tego, czy limit to `max_w` czy `max_w + 2`. **RÓWNOWAŻNY**.
+(Korekta: runda 1 uznawala M07 za nieekwiwalentny - bledna ocena, poniewaz nie uwzgledniono, ze radial ogranicza `i,o`.)
+
+**M09** (`if land < target_land` -> `<=`, :1903). Linia :1899 `if land == target_land { break; }` konczy przebieg,
+gdy `land == target_land`. Linia :1903 jest osiagana tylko, gdy `land != target_land`, wiec `<` i `<=` sa rownowazne. **RÓWNOWAŻNY.**
+
+**M19** (`if land >= target_land` -> `>`, :1922). Przypadek `land == target_land` po dolaniu `to_fill` (`land` = dokladna liczba lądu,
+bo kazdy `to_fill` (:1904-1921) to Morze->Laka, `land += to_fill.len()` :1921):
+- oryginal: wchodzi w blok (:1922), petla `while land > target_land` (:1924) nie wykonuje sie, `break`;
+- mutant: pomija blok, `continue`; nowa iteracja liczy `land` ponownie (= target, nic nie zmieniono), `if land == target_land { break; }` (:1899).
+Zadna zmiana stanu ani `adjusted`. Koniec petli takze przy `layer == max_layers`, bez efektu. **RÓWNOWAŻNY.**
+
+**M17 - nie jest rownowazny (zabity)**, patrz wektory `prog-eps`. Wektor: centroid = (fl(1/100), 0), hex (0,0) Morze,
+`dist = js_hypot(-0.01, 0) = 0.01 = fill_dist_epsilon`. Web: `dist < 0.01` falsz -> konwersja (0,0). Mutant: `dist <= eps` -> brak konwersji.
+
+**M21 - nie jest rownowazny (zabity)**, patrz wektory `warstwy`: pasek 100x1, `max_layers = 10`; cel 20/30/50 wymaga 10 warstw
+(fill +2 na warstwe). Oryginal konczy 10 warstw (21 lądu lub trim do celu), mutant 9 (19 lądu).
+
+## Wektory i testy
+
+- Generator r1: `gen-m06a9-vectors.mjs` (fill/ratio/pangea). Generator r2: `gen-m06a9-edge-vectors.mjs` (wektory brzegowe).
+  Oba uruchamiane z ORYGINALNEGO pinu `edb8fb56` (`git archive`), loadery `m06a-loader-*.mjs`.
+- `tests/p6_m06a9_vectors/fill-vectors.json` (1.6 MB, 120 przyp.): `losowe` 90, `granica-pas` 24, `prog-ladu` 3, `brzeg` 3.
+- `tests/p6_m06a9_vectors/ratio-vectors.json` (0.6 MB, 101 przyp.): `losowe` 90, `prog-udzialu` 9, `brzeg` 2.
+- `tests/p6_m06a9_vectors/pangea-vectors.json` (1.6 MB, 60 przyp.).
+- `tests/p6_m06a9_vectors/edge-vectors.json` (72 KB, 9 przyp., NOWY r2): `prog-eps` 5 (n=99 / n=100 solo maxW 4,2,6 / n=101),
+  `warstwy` 4 (pasek 100x1, cel 0.15/0.2/0.3/0.5). Wyniki weba: prog-eps n=100 -> converted 1 (tylko (0,0));
+  n=99/101 -> 0 zmian; warstwy 0.2 -> 21 lądu po 10 warstwach z trimem do celu 20 (19 zmian).
+- Testy: `tests/p6_m06a9_landsea.rs` (4, bez zmian), `tests/p6_m06a9_edge.rs` (3, NOWY r2: liczba rodzin, prog-eps, warstwy).
+- Trafienia graniczne: fill `losowe-00022` ma dokladnie 40 suchych heksow (N) i `converted=12`; prog 39/41 (`prog-ladu`) -> 0 zmian;
+  prog-eps: 99/100/101 (N-1/N/N+1 dla `dist` vs 0.01) - trafione; warstwy: 0.2 trafia granice 10 warstw (N=max_layers).
 
 ## Math.* - wykaz miejsc
 
 | Miejsce web | Rust | Uwagi |
 |---|---|---|
-| `Math.hypot` (fill :4602/4611 i `pangeaRadialDryLandSteps` :4488) | `masks::v8math::js_hypot` | zgodnie z dispatchem |
+| `Math.hypot` (fill :4602/4611 i `pangeaRadialDryLandSteps` :4496) | `masks::v8math::js_hypot` (masks.rs:91) | zgodnie z dispatchem |
 | `Math.max(0.01, distSelf)` (fill, dzielnik) | `js_max` | eps z JSON |
 | `Math.round(q + uq*step)` (fill, radial) | `improvements::js_round` | JS half-up; na calkowitych kluczach zgodne |
 | `Math.sqrt((w*h)/20160)` (`pangeaAnnularMaxCorridorWidth`) | `pangea_annular_max_corridor_width` (M06A7) | bez zmian |
-| `Math.sqrt(w*h)` + `Math.ceil` (`rebalanceLandSeaRatio` maxLayers) | `f64::sqrt`, `f64::ceil` | IEEE, identyczne |
+| `Math.sqrt(w*h)` + `Math.ceil` (`rebalanceLandSeaRatio` maxLayers) | `f64::sqrt`, `f64::ceil` (:1893) | IEEE, identyczne |
 | `Math.round(total*clamped)` (ratio) | `js_round` | |
 | `Math.max/min` clamp (ratio) | `js_max`/`js_min` | |
 | `Math.floor` (`applyJaggedCoastNoise` przez landsea) | wewnatrz istniejacego kodu (M06A4) | |
-| `Math.sin/cos/pow/atan2` | NIE DOTYCZY w tym temacie (nie wystepuja w trzech symbolach) | jadra `k_sin/k_cos/rem_pio2` nie zmieniano |
+| `Math.sin/cos/pow/atan2` | NIE DOTYCZY w tym temacie | jadra `k_sin/k_cos/rem_pio2` nie zmieniano |
 
-## Wektory i testy
+## Gate (runda 2)
 
-- Generator: `dyspozycje/autobot/runs/R-RUSTPORT-P6-M06A9-LAD-MORZE-PANGEA-FINAL-Q1/gen-m06a9-vectors.mjs`
-  (node 22, loadery `m06a-loader-*.mjs`; wywolania eksportowanych symboli z ORYGINALNEGO pinu, bez instrumentacji).
-- `tests/p6_m06a9_vectors/fill-vectors.json` (1.6 MB, 120 przyp.): `losowe` 90, `granica-pas` 24 (maxW 3/4/6/8 x a 5/7 x T = maxW-1/maxW/maxW+1),
-  `prog-ladu` 3 (39/40/41 suchych), `brzeg` 3.
-- `tests/p6_m06a9_vectors/ratio-vectors.json` (0.6 MB, 101 przyp.): `losowe` 90, `prog-udzialu` 9 (land = target-1/target/target+1 dla 0.3/0.5/0.7), `brzeg` 2.
-- `tests/p6_m06a9_vectors/pangea-vectors.json` (1.6 MB, 60 przyp., landScores + perm 256): `losowe` 60; 60/60 zmienia stan.
-- Testy: `rust-port/engine/tests/p6_m06a9_landsea.rs` (4 testy: liczby rodzin; fill/ratio/pangea zgodne z webem).
-- Zmiany: fill zmienil stan w 112/120 przyp. (`converted>0`), ratio w 95/101.
-- Prog `prog-ladu` (39/40/41): wynik 0 zmian we wszystkich 3 przypadkach - wartosc progu centroidu NIE jest tu rozstrzygalna
-  w tej rodzinie (dowod graniczny do rundy pomiarowej; NIE ZMIERZONO trafien N-1/N/N+1 na progu 40).
-- Trafienia graniczne (N-1/N/N+1 dla pasma i progu) i mutacje: NIE ZMIERZONO w tej rundzie (Operator-impl; pomiary = Operator-pomiary).
+- `cargo fmt -- --check`: EXIT=0 (`gate-fmt-r2.log`; nowy plik sformatowany `rustfmt --edition 2021`).
+- `cargo clippy --all-targets -- -D warnings`: EXIT=0 (`gate-clippy-r2.log`).
+- `cargo test` (pelny silnik): 1403 passed, 0 failed, EXIT=0 (`gate-test-r2.log`); baza 1400 (r1) + 3 nowe.
+- Build w `CARGO_TARGET_DIR=/dev/shm/cargo-target-m06a9-r2` (dysk `/` byl zapelniony w czasie rundy; cargo nie zapisuje w `/`).
 
-## Gate (runda 1)
+## Mutacje - runda 2 (`mut-runner-r2.py`, `mut-results-r2.log`)
 
-- `cargo fmt -- --check`: EXIT=0 (`gate-fmt-r1.log`).
-- `cargo clippy --all-targets -- -D warnings`: EXIT=0 po dwu poprawkach (`question_mark`, `is_none_or`) (`gate-clippy-r1.log`).
-- `cargo test` (pelny silnik): 1400 passed, 0 failed (`gate-test-r1.log`); baza 1396 + 4 nowe.
-- `git diff --check`: patrz run.
+Runner: `cargo test --test p6_m06a9_landsea --test p6_m06a9_edge`, plik przywracany po kazdym mutancie (RESTORED True x3).
+
+| Mutant | Wynik r2 | Uzasadnienie |
+|---|---|---|
+| M01 inward `<=` -> `<` | KILLED | granica pasma |
+| M02 `&&` -> `||` | SURVIVED = RÓWNOWAŻNY | dowod wyzej |
+| M03 seaband `>` -> `>=` | KILLED | |
+| M04 seaband prog `-1` | KILLED | |
+| M05 centroid `< 40` -> `<= 40` | KILLED | trafia N=40 |
+| M06 galaz border inwersja | KILLED | |
+| M07 limit seaBand `maxW+2` -> `maxW` | SURVIVED = RÓWNOWAŻNY | dowod wyzej (korekta r1) |
+| M08 `step <= max_steps` -> `<` | KILLED | |
+| M09 ratio `land < target` -> `<=` | SURVIVED = RÓWNOWAŻNY | dowod wyzej |
+| M10 rank `<= 1` -> `<= 0` | KILLED | |
+| M11 wybor `score < b` -> `<=` | KILLED | |
+| M12 clamp max `0.85 - 0.01` | KILLED | |
+| M13 hak koncowy `ensure` -> `0` | KILLED | |
+| M14 hak posredni `ensure` -> `0` | KILLED | |
+| M15 usuniety drugi fill po jagged | KILLED | |
+| M16 zamiana erode/carve | KILLED | |
+| M17 radial `dist < eps` -> `<=` | KILLED | edge prog-eps solo (dist == 0.01) |
+| M18 jagged passes `-1` | KILLED | |
+| M19 ratio trim `>=` -> `>` | SURVIVED = RÓWNOWAŻNY | dowod wyzej |
+| M20 total `+1` | KILLED | |
+| M21 `max_layers` `-1` | KILLED | edge warstwy 0.2/0.3/0.5 |
+
+Podsumowanie r2: 21 mutantow = KILLED 17 + RÓWNOWAŻNE 4 (M02, M07, M09, M19) + NIE-ZABITE nieekwiwalentne 0.
+Testy nie oslabione; zaden istniejacy test nie zmieniony (dopisane wylacznie nowe pliki).
 
 ## Dryf po pinie
 
@@ -118,80 +197,14 @@ Operator-pomiary (lub osobnego tematu). Nie zapisano "M06A KOMPLET" (binarne kry
 (4473-4612, 3667-3700, 3791-3880). Pin NIE przepinany (zgodnie z dispatchem); odswiezenie = osobny temat po
 R-RUSTPORT-REPIN-DELTA-Q1.
 
-## Pomiary (Operator-pomiary, ta sama runda 1)
+## Historia rundy 1 (zachowana)
 
-Commit kodu: `7eb3c0ea`; raport Operatora-impl: `5539e4b8`. Pomiary wykonane na `5539e4b8` (detached).
+- Mutacje r1 (`mut-results-pomiary.log`, commit pomiarowy `f9d855ed`): KILLED 15, RÓWNOWAŻNE 3 (M02, M09, M19), NIE-ZABITE 3 (M07, M17, M21).
+  Bledy r1: M07 oznaczony jako nieekwiwalentny (poprawnie: rownowazny, runda 2); M17/M21 bez wektorow (zamkniete w rundzie 2).
+- Runda 1 zapisala "M06A KOMPLET: NIE" - nieaktualne od rundy 2.
 
-### Niezalezna weryfikacja wektorow
+## Nastepne kroki
 
-- Ponowna generacja wektorow z pinu `edb8fb56` (eksport `git archive` do katalogu tymczasowego POZA repo,
-  generator `gen-m06a9-vectors.mjs` uruchomiony ponownie): sumy SHA-256 identyczne z plikami w repo
-  (`fill` 77a80adc..., `ratio` 5f8d5d61..., `pangea` 4ad61ee2...). Wektory sa powtarzalne i pochodza z pinu.
-- Przeglad kodu Rust vs web (czytanie `gen-helpers.ts` :3667, :3791, :4375, :4473-4612): sekwencja przebiegow
-  `rebalanceLandFractionPangea` 1:1; hak `ensurePangeaSingleContinent` (web :4469 wola `fillPangeaAnnularSeaCorridors`)
-  = `fill_hook` w Rust. Zgodne progi: seaBand `> maxW+1` (Rust `> max_w + fill_prog_pasma_zapas`), limit petli
-  `maxW+2` (Rust `max_w + zapas`), `n < 40`, `dist < 0.01`. Rozbieznosc jedynie nazewnicza: Rust uzywa
-  `fill_dist_epsilon` takze w `pangea_radial_dry_land_steps` (web: literal 0.01 w obu miejscach); ta sama wartosc,
-  ale dwa literaly w JSON-ie zostana zsprzezone - do zapisania w zakresie kolejnego tematu.
-- Trafienia graniczne (zmierzone na wektorach): fill `losowe-00022` ma dokladnie 40 suchych heksow (N) i
-  `converted=12`; prog N-1/N+1 (`prog-ladu-00114/00116`, 39 i 41) daje 0 zmian - prog 40 jest trafiony przez
-  wektor losowy, nie przez rodzine prog-ladu. Wektory `granica-pas` (maxW 3/4/6/8 x a x T = maxW-1/maxW/maxW+1)
-  trafiaja warunki `i<=maxW`, `o<=maxW` i `seaBand>maxW+1` (potwierdzone mutantami M01, M03, M04, M08 - KILLED).
-  Prog pasma `seaBand` przy limicie `maxW+2` NIE jest trafiony (M07 - SURVIVED, patrz nizej).
-- Prog udzialu ratio: `land = target` (N) trafiony wektorami; mutanty M09/M19 (`<`->`<=`, `>=`->`>`) sa
-  równoważne (patrz nizej), a M20 (target+1) i M12 (clamp) zabite.
-
-### Mutacje strukturalne (`mut-runner-pomiary.py`, wynik: `mut-results-pomiary.log`)
-
-Ran: 21 mutantow, po jednym na raz, `cargo test --test p6_m06a9_landsea`; plik przywracany po kazdym mutancie (RESTORED True).
-
-| Mutant | Wynik | Uwagi |
-|---|---|---|
-| M01 inward `<=` -> `<` | KILLED | granica pasma |
-| M02 `&&` -> `||` w `pangea_sea_hex_is_annular_corridor` | SURVIVED = RÓWNOWAŻNY | (Some(i),Some(o)) zachodzi tylko gdy i,o <= max_w, bo `pangea_radial_dry_land_steps` zwraca krok tylko wewnatrz `while step <= max_steps`; koniunkcja `i<=max_w && o<=max_w` jest tautologia w tej galezi; `||` daje ten sam wynik |
-| M03 seaband `>` -> `>=` | KILLED | |
-| M04 seaband prog `-1` | KILLED | |
-| M05 centroid `< 40` -> `<= 40` | KILLED | trafia `losowe-00022` (N=40) |
-| M06 galaz border inwersja | KILLED | |
-| M07 limit petli seaband `max_w + zapas` -> `max_w` | SURVIVED - NIE-ZABITY, NIE-EKWIWALENTNY | LUKA: brak wektora, w ktorym ciagla woda w jedna strone ma dlugosc maxW+1 (a w druga 0) przy hexie bramy obwarzanka; mutant zmienia decyzje `seaBand > maxW+1` tylko w takim przypadku. Do zamkniecia wektorem (nowy przypadek w rodzinie granica-zatoka), NIE w tej rundzie |
-| M08 `step <= max_steps` -> `<` | KILLED | |
-| M09 ratio `land < target` -> `<=` | SURVIVED = RÓWNOWAŻNY | linia po `if land == target_land { break; }` bez zmiany `land` - warunek `<=` i `<` daja to samo |
-| M10 rank `<= 1` -> `<= 0` | KILLED | |
-| M11 wybor `score < b` -> `<=` | KILLED | pierwszy-wygrywa |
-| M12 clamp max `0.85 - 0.01` | KILLED | |
-| M13 hak koncowy `ensure` -> `0` | KILLED | |
-| M14 hak posredni `ensure` -> `0` | KILLED | |
-| M15 usuniety drugi `fill` po jagged | KILLED | |
-| M16 zamiana erode/carve | KILLED | |
-| M17 radial `dist < eps` -> `<=` | SURVIVED - NIE-ZABITY, równoważność NIE DOWIEDZIONA | zmienia wynik tylko przy hypot == 0.01 dokladnie; brak takiego heksa we wektorach; wymaga przypadku z odleglosca rowna eps |
-| M18 jagged passes `-1` | KILLED | |
-| M19 ratio trim `land >= target` -> `>` | SURVIVED = RÓWNOWAŻNY | przy `land == target` blok trim jest pusty (`while land > target` nie wchodzi), potem `break` vs `continue` -> kolejna iteracja widzi `land == target` i wychodzi; `land` sledzone dokladnie (kazdy to_fill to +1 Morze->Laka) |
-| M20 total `+1` | KILLED | |
-| M21 `max_layers` `-1` | SURVIVED - NIE-ZABITY, równoważność NIE DOWIEDZIONA | granica petli `ceil(sqrt(w*h))`; zadna iteracja nie zmienia `land` o 0 (fill dodaje >=1, erozja >=1), ale nie udowodniono, ze liczba iteracji nigdy nie dochodzi do ceil(sqrt); wymaga przypadku |
-
-Podsumowanie mutacji: 21 mutantow = KILLED 15 + RÓWNOWAŻNE 3 (M02, M09, M19) + NIE-ZABITE 3 (M07 nieekwiwalentny, M17 i M21 nieudowodnione).
-
-### Gate po pomiarach (surowe logi w run)
-
-- `cargo fmt -- --check`: EXIT=0 (`gate-fmt-pomiary.log`).
-- `cargo clippy --all-targets -- -D warnings`: EXIT=0 (`gate-clippy-pomiary.log`).
-- `cargo test` (pelny silnik): 1400 passed, 0 failed, EXIT=0 (`gate-test-pomiary.log`); suma `passed` z logu = 1400.
-
-### Zmiany w tej rundzie
-
-Brak zmian w kodzie i w wektorach. Testy nie zmienione. Dodano: run-artefakty pomiarowe (`mut-runner-pomiary.py`,
-`mut-results-pomiary.log`, logi gate `*-pomiary.log`) i ten rozdzial.
-
-### Status
-
-- M07 (nieekwiwalentny) = LUKA WEKTOROWA: wymaga osobnej partii wektorow (nowy przypadek zatoki na granicy seaBand),
-  wiec "M06A9 PORTOWANY z dowodem" NIE jest jeszcze spelnione binarnie dla rodziny seaBand.
-- M17, M21 = nieudowodnione; do rozstrzygniecia dowodem lub wektorem w kolejnej partii.
-- Tabela M06A: wiersze "KOD ISTNIEJE - dowod do potwierdzenia" bez zmian (osobne tematy). "M06A KOMPLET: NIE".
-
-## Nastepne kroki (osobne ID)
-
-- (WYKONANE w pomiarach powyzej) niezalezna regeneracja wektorow, trafienia graniczne, mutanty strukturalne, dowody rownowaznosci M02/M09/M19.
-- Do zrobienia: wektor dla M07 (zatoka seaBand, limit maxW+2), dowod lub wektor dla M17 (dist == eps) i M21 (granica warstw).
-- Weryfikacja wektorowa wierszy "dowod do potwierdzenia" w tabeli M06A (osobne przeglady ich tematow).
-- Po zamknieciu tabeli: wpis "M06A KOMPLET" w dossier (dopiero wtedy).
+- Weryfikacja regeneracji wektorow `gen-m06a9-edge-vectors.mjs` przez Evaluatora (node 22, pin `edb8fb56`, `git archive`).
+- Osobny temat: odswiezenie wektorow po R-RUSTPORT-REPIN-DELTA-Q1 (dryf po pinie, sekcja wyzej).
+- Wykonanie integracji/deploy - poza tym tematem (Operator nie integruje i nie pushuje).

@@ -142,3 +142,4 @@ Pelny raport: `dyspozycje/autobot/runs/R-RUSTPORT-P6-M06A-LAD-MORZE-WYBRZEZE-A-Q
 - Dryf po pinie w zakresie 3186-4374: potwierdzony, 0 hunkow (8 hunkow w liniach 5992-10811).
 - Status: FAIL (luka testowa w pierscieniu); dalsze symbole RUNDA-2 bez zmian.
 - Aktualizacja (odeslanie): stan wierszy RUNDA-2 i domkniecie Pangei (`fillPangeaAnnularSeaCorridors`, `rebalanceLandFractionPangea`, `rebalanceLandSeaRatio`) - patrz `P6-M06A9-LAD-MORZE-PANGEA-FINAL.md`.
+- Aktualizacja (runda 2 M06A9): zamknieta tabela symboli M06A (25 wierszy RUNDA-2 -> PORTOWANY / DANE-JUZ-W-RUST) i wpis "M06A KOMPLET: TAK" - patrz sekcja "Tabela M06A - runda 2" w `P6-M06A9-LAD-MORZE-PANGEA-FINAL.md`. Wiersze w powyzszej tabeli sa historycznym stanem rundy 1.
