@@ -4,5 +4,5 @@ Regeneracja wektorow D2.2e (obrona operatora r4, R-RUSTPORT-REPIN-EKONOMIA-D2-Q1
 - Loader: logs/hooks-ts.mjs (rejestracja: node --import reg-ts.mjs z register('file:///.../logs/hooks-ts.mjs'))
 - Wynik: "wrote tiles 2000 cities 400 hap 1900", EXIT=0
 - Porownanie z poprzednia wersja imp-main.json (kod 2c21d762f): sekcje tiles, cities, hap -- identyczne (JSON equal); sekcja full -- przegenerowana (800 przypadkow, 18 pol out; wejscia full zmienione, bo makeBuilding losuje dodatkowe pola szczescia)
-- Pokrycie full: 496 z 800 przypadkow z zadowoleniem > 0; 350 z drewnem terenu > 0; 89 z rudą terenu > 0
+- Pokrycie full (liczba przypadkow, pole != '0' w kodowaniu): zadowolenie 496 z 800; drewno terenu 350 z 800; ruda terenu 89 z 800
 - Plik wektorow: rust-port/engine/tests/p6_repin_d2_imp_vectors/imp-main.json (3343481 B, <= 10 MB)
