@@ -1116,3 +1116,114 @@ pub fn resource_upkeep_improvement_keys() -> Vec<String> {
         })
         .collect()
 }
+
+/// R-RUSTPORT-P6-8A-PRODUKCJA-KOSZTY-Q1 (partia 8A-P1, pin webu 91dc998a):
+/// port `gra/src/game/pending-improvements.ts` (74 LOC, 2 fn + klasa). Modul zagniezdzony w tym
+/// pliku (allowlista tematu nie obejmuje `domain/mod.rs`).
+///
+/// Rozbieznosci celowe (ZALOZENIA): klucz ulepszenia jest `String` (web: unia napisow
+/// `ImprovementKey`); `action` jest `String` (web: unia `ImprovementActionTyp`). Kolejnosc wpisow
+/// zachowana jak w JS `Map` (ponowne `add` istniejacego id nie zmienia pozycji; `remove` + `add`
+/// trafia na koniec).
+pub mod pending_improvements {
+    use std::collections::HashSet;
+
+    /// Web `PendingImprovementEntry` (`pending-improvements.ts:8`).
+    #[derive(Debug, Clone, PartialEq)]
+    pub struct PendingImprovementEntry {
+        pub hex_key: String,
+        pub key: String,
+        pub koszt_praca: f64,
+        pub action: String,
+    }
+
+    /// Web `pendingImprovementId` (`pending-improvements.ts:16`): `"<hexKey>:<key>"`.
+    pub fn pending_improvement_id(hex_key: &str, improvement_key: &str) -> String {
+        format!("{}:{}", hex_key, improvement_key)
+    }
+
+    /// Web `parsePendingImprovementId` (`pending-improvements.ts:20`): dzieli po OSTATNIM `:`;
+    /// `None` gdy brak dwukropka albo dwukropek jest na pozycji 0.
+    pub fn parse_pending_improvement_id(id: &str) -> Option<(String, String)> {
+        let idx = id.rfind(':')?;
+        if idx == 0 {
+            return None;
+        }
+        Some((id[..idx].to_string(), id[idx + 1..].to_string()))
+    }
+
+    /// Web `PendingImprovementsTurn` (`pending-improvements.ts:27`).
+    #[derive(Debug, Clone, Default, PartialEq)]
+    pub struct PendingImprovementsTurn {
+        entries: Vec<(String, PendingImprovementEntry)>,
+    }
+
+    impl PendingImprovementsTurn {
+        pub fn new() -> Self {
+            Self::default()
+        }
+
+        /// Web `size`.
+        pub fn size(&self) -> usize {
+            self.entries.len()
+        }
+
+        fn position(&self, id: &str) -> Option<usize> {
+            self.entries.iter().position(|(k, _)| k == id)
+        }
+
+        /// Web `has`.
+        pub fn has(&self, hex_key: &str, key: &str) -> bool {
+            self.position(&pending_improvement_id(hex_key, key))
+                .is_some()
+        }
+
+        /// Web `get`.
+        pub fn get(&self, hex_key: &str, key: &str) -> Option<&PendingImprovementEntry> {
+            let id = pending_improvement_id(hex_key, key);
+            self.position(&id).map(|i| &self.entries[i].1)
+        }
+
+        /// Web `getUndoKeySet`: zbior id wpisow.
+        pub fn get_undo_key_set(&self) -> HashSet<String> {
+            self.entries.iter().map(|(k, _)| k.clone()).collect()
+        }
+
+        /// Web `add`: nadpisuje wartosc, pozycja zachowana gdy id juz istnieje.
+        pub fn add(&mut self, entry: PendingImprovementEntry) {
+            let id = pending_improvement_id(&entry.hex_key, &entry.key);
+            match self.position(&id) {
+                Some(i) => self.entries[i].1 = entry,
+                None => self.entries.push((id, entry)),
+            }
+        }
+
+        /// Web `remove`: zwraca usuniety wpis (`None` gdy brak).
+        pub fn remove(&mut self, hex_key: &str, key: &str) -> Option<PendingImprovementEntry> {
+            let id = pending_improvement_id(hex_key, key);
+            let i = self.position(&id)?;
+            Some(self.entries.remove(i).1)
+        }
+
+        /// Web `commitTurn`: pending -> committed (brak cofania).
+        pub fn commit_turn(&mut self) {
+            self.entries.clear();
+        }
+
+        /// Web `toSave`: wpisy w kolejnosci wstawiania.
+        pub fn to_save(&self) -> Vec<PendingImprovementEntry> {
+            self.entries.iter().map(|(_, e)| e.clone()).collect()
+        }
+
+        /// Web `fromSave`: `None` albo pusta lista = pusty stan.
+        pub fn from_save(rows: Option<&[PendingImprovementEntry]>) -> Self {
+            let mut p = Self::new();
+            if let Some(rows) = rows {
+                for e in rows {
+                    p.add(e.clone());
+                }
+            }
+            p
+        }
+    }
+}

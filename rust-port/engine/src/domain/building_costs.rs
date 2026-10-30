@@ -1808,3 +1808,335 @@ pub mod repin_b2 {
         apply_difficulty_cost_multiplier(after_global, owner_id, difficulty)
     }
 }
+
+/// R-RUSTPORT-P6-8A-PRODUKCJA-KOSZTY-Q1 (partia 8A-P1, pin webu 91dc998a):
+/// port `gra/src/game/building-upgrades.ts` (248 LOC, 14 fn). Modul zagniezdzony w tym pliku
+/// (allowlista tematu nie obejmuje `domain/mod.rs`).
+///
+/// Odpowiedniki web: `isBuildingSuppressedFromProduction`, `upgradeChainSteps`,
+/// `upgradeProductionDisplayName`, `upgradeCompositionLines`, `buildingStatSummaryLines`,
+/// `cityHasBibliotekaLine` / `cityHasAmfiteatrLine` / `cityHasMurLine` / `cityHasPalacLine`,
+/// `buildingStructuralDefenseBonusPercent` / `...Line`, `cityPalacTier`, `groupBuiltBuildingIds`.
+///
+/// Rozbieznosci celowe (ZALOZENIA, do weryfikacji przez Evaluatora):
+/// * web `upgradeChainSteps` w cyklu `upgradeFrom` zapetlilby sie; Rust przerywa na powtorzeniu
+///   (dane gry nie maja cykli).
+/// * `String(liczba)` z JS: liczby calkowite zgodne 1:1; niecalkowite w zakresie Rust `Display`
+///   (formy wykladnicze JS, np. `1e-7`, nie wystepuja w danych `baza`/`przyrost`).
+pub mod building_upgrades {
+    use std::collections::{HashMap, HashSet};
+
+    use crate::data::economy_society::{MiastoParams, MiastoParamsMinDystansMiast};
+    use crate::domain::civ_matrix::js_compat::js_trim;
+    use crate::domain::combat::unit_building_bonuses::{
+        cumulative_mnoznik_for_building_id, mnoznik_role_for_building_id, MnoznikBuildingLookup,
+        MnoznikRole,
+    };
+
+    /// Web `BuildingUpgradeLite` (`building-upgrades.ts:15`).
+    #[derive(Debug, Clone, Default, PartialEq)]
+    pub struct BuildingUpgradeLite {
+        pub id: String,
+        pub nazwa: String,
+        /// web `upgradeFrom` (`None` = pole brakujace).
+        pub upgrade_from: Option<String>,
+        /// web `suppressed` (`None` = brak; tylko `Some(true)` ukrywa budynek).
+        pub suppressed: Option<bool>,
+        /// web `baza` (`None` = brak obiektu).
+        pub baza: Option<HashMap<String, f64>>,
+        /// web `przyrost` (`None` = brak obiektu).
+        pub przyrost: Option<HashMap<String, f64>>,
+    }
+
+    /// Web `STRUCTURAL_DEFENSE_PARAM_KEY` (`building-upgrades.ts:8`): budynek -> klucz `miasto-params.json`.
+    fn structural_defense_entry<'a>(
+        building_id: &str,
+        params: &'a MiastoParams,
+    ) -> Option<&'a MiastoParamsMinDystansMiast> {
+        match building_id {
+            "palisada" => Some(&params.bonus_obrona_palisada_proc),
+            "mury" => Some(&params.bonus_obrona_mur_proc),
+            "fort" => Some(&params.bonus_obrona_cytadela_proc),
+            "baszta" => Some(&params.bonus_obrona_baszta_proc),
+            _ => None,
+        }
+    }
+
+    /// Web `isBuildingSuppressedFromProduction` (`building-upgrades.ts:30`).
+    pub fn is_building_suppressed_from_production(suppressed: Option<bool>) -> bool {
+        suppressed == Some(true)
+    }
+
+    /// Web `upgradeChainSteps` (`building-upgrades.ts:38`): lancuch [najstarszy ... aktualny].
+    /// Mapa `id -> budynek` buduje sie z listy w kolejnosci (ostatni wpis wygrywa, jak JS `Map`).
+    pub fn upgrade_chain_steps<'a>(
+        building_id: &str,
+        buildings: &'a [BuildingUpgradeLite],
+    ) -> Vec<&'a BuildingUpgradeLite> {
+        let by_id: HashMap<&str, &BuildingUpgradeLite> =
+            buildings.iter().map(|b| (b.id.as_str(), b)).collect();
+        let mut chain: Vec<&BuildingUpgradeLite> = Vec::new();
+        let mut seen: HashSet<&str> = HashSet::new();
+        let mut cur = by_id.get(building_id).copied();
+        while let Some(b) = cur {
+            if !seen.insert(b.id.as_str()) {
+                break;
+            }
+            chain.insert(0, b);
+            let from = js_trim(b.upgrade_from.as_deref().unwrap_or(""));
+            cur = if from.is_empty() {
+                None
+            } else {
+                by_id.get(from).copied()
+            };
+        }
+        chain
+    }
+
+    /// Web `upgradeProductionDisplayName` (`building-upgrades.ts:54`). `Array.find` = pierwszy wpis.
+    pub fn upgrade_production_display_name(
+        target: &BuildingUpgradeLite,
+        buildings: &[BuildingUpgradeLite],
+    ) -> String {
+        let from = js_trim(target.upgrade_from.as_deref().unwrap_or(""));
+        if from.is_empty() {
+            return target.nazwa.clone();
+        }
+        let prev_name = buildings
+            .iter()
+            .find(|b| b.id == from)
+            .map(|b| b.nazwa.as_str())
+            .unwrap_or(from);
+        format!("Rozbuduj {} → {}", prev_name, target.nazwa)
+    }
+
+    /// Web `STAT_KEYS` (`building-upgrades.ts:64`).
+    const STAT_KEYS: [&str; 7] = [
+        "praca",
+        "pieniadz",
+        "zywnosc",
+        "nauka",
+        "kultura",
+        "zadowolenie",
+        "obrona",
+    ];
+
+    /// Formatowanie liczby jak JS `String(x)` dla wartosci z danych (calkowite 1:1).
+    fn js_number_string(x: f64) -> String {
+        if x.is_finite() && x.fract() == 0.0 && x.abs() < 1e21 {
+            format!("{}", x as i64)
+        } else {
+            format!("{}", x)
+        }
+    }
+
+    /// Web `statLine` (`building-upgrades.ts:68`).
+    fn stat_line(label: &str, baza: f64, przyrost: f64) -> Option<String> {
+        if baza == 0.0 && przyrost == 0.0 {
+            return None;
+        }
+        let mut parts: Vec<String> = Vec::new();
+        if baza != 0.0 {
+            parts.push(js_number_string(baza));
+        }
+        if przyrost != 0.0 {
+            parts.push(format!("+{}/poz", js_number_string(przyrost)));
+        }
+        Some(format!("{} {}", label, parts.join(" ")))
+    }
+
+    fn map_value(map: &Option<HashMap<String, f64>>, key: &str) -> f64 {
+        map.as_ref()
+            .and_then(|m| m.get(key).copied())
+            .unwrap_or(0.0)
+    }
+
+    /// Web `upgradeCompositionLines` (`building-upgrades.ts:77`).
+    pub fn upgrade_composition_lines(
+        building_id: &str,
+        buildings: &[BuildingUpgradeLite],
+    ) -> Vec<String> {
+        let chain = upgrade_chain_steps(building_id, buildings);
+        if chain.len() <= 1 {
+            return Vec::new();
+        }
+        let names: Vec<&str> = chain.iter().map(|c| c.nazwa.as_str()).collect();
+        vec![
+            format!("Łańcuch: {}", names.join(" → ")),
+            "Bonusy w silniku = suma poprzednich poziomów (zapisane w JSON tego budynku)."
+                .to_string(),
+        ]
+    }
+
+    /// Web `buildingStatSummaryLines` (`building-upgrades.ts:98`).
+    /// `buildings = None` odpowiada brakowi argumentu w web (wtedy wlasny `baza.mnoznik`).
+    pub fn building_stat_summary_lines(
+        def: &BuildingUpgradeLite,
+        buildings: Option<&[BuildingUpgradeLite]>,
+    ) -> Vec<String> {
+        let mut lines: Vec<String> = Vec::new();
+        for k in STAT_KEYS {
+            let b = map_value(&def.baza, k);
+            let p = map_value(&def.przyrost, k);
+            if let Some(line) = stat_line(k, b, p) {
+                lines.push(line);
+            }
+        }
+        if let Some(role) = mnoznik_role_for_building_id(&def.id) {
+            let cumulative = match buildings {
+                Some(list) => {
+                    let lookup: Vec<MnoznikBuildingLookup> = list
+                        .iter()
+                        .map(|b| MnoznikBuildingLookup {
+                            id: b.id.clone(),
+                            baza_mnoznik: b.baza.as_ref().and_then(|m| m.get("mnoznik").copied()),
+                            upgrade_from: b.upgrade_from.clone(),
+                        })
+                        .collect();
+                    cumulative_mnoznik_for_building_id(&def.id, Some(&lookup))
+                }
+                None => map_value(&def.baza, "mnoznik"),
+            };
+            if cumulative != 0.0 {
+                let label = match role {
+                    MnoznikRole::Pancerz => "Pancerz (jednostki)",
+                    MnoznikRole::Parametry => "Parametry poza Pancerzem (jednostki)",
+                };
+                lines.push(format!("{} +{}%", label, js_number_string(cumulative)));
+            }
+        }
+        lines
+    }
+
+    /// Web `cityHasBibliotekaLine` (`building-upgrades.ts:129`).
+    pub fn city_has_biblioteka_line(built_ids: &[&str]) -> bool {
+        built_ids.contains(&"biblioteka") || built_ids.contains(&"akademia")
+    }
+
+    /// Web `cityHasAmfiteatrLine` (`building-upgrades.ts:134`).
+    pub fn city_has_amfiteatr_line(built_ids: &[&str]) -> bool {
+        built_ids.contains(&"teatr") || built_ids.contains(&"akademia")
+    }
+
+    /// Web `cityHasMurLine` (`building-upgrades.ts:139`).
+    pub fn city_has_mur_line(built_ids: &[&str]) -> bool {
+        built_ids.contains(&"mury")
+            || built_ids.contains(&"fort")
+            || built_ids.contains(&"palisada")
+    }
+
+    /// Web `buildingStructuralDefenseBonusPercent` (`building-upgrades.ts:144`).
+    /// Zwraca `Some` tylko dla wartosci `> 0` (web: `typeof raw === 'number' && raw > 0`).
+    pub fn building_structural_defense_bonus_percent(
+        building_id: &str,
+        params: &MiastoParams,
+    ) -> Option<f64> {
+        structural_defense_entry(building_id, params)
+            .map(|e| e.wartosc as f64)
+            .filter(|v| *v > 0.0)
+    }
+
+    /// Web `buildingStructuralDefenseBonusLine` (`building-upgrades.ts:153`).
+    pub fn building_structural_defense_bonus_line(
+        building_id: &str,
+        params: &MiastoParams,
+    ) -> Option<String> {
+        let proc_ = building_structural_defense_bonus_percent(building_id, params)?;
+        let p = js_number_string(proc_);
+        let line = match building_id {
+            "palisada" => {
+                format!("Obrona (jednostki broniące miasta) +{p}% — zastąpione przez Mury kamienne")
+            }
+            "mury" => {
+                format!("Obrona (jednostki broniące miasta) +{p}% — zastępuje Palisadę drewnianą")
+            }
+            "fort" | "baszta" => {
+                format!(
+                    "Obrona (jednostki broniące miasta) +{p}% dodatkowo (wymaga Murów w mieście)"
+                )
+            }
+            _ => format!("Obrona (jednostki broniące miasta) +{p}%"),
+        };
+        Some(line)
+    }
+
+    /// Web `cityHasPalacLine` (`building-upgrades.ts:172`).
+    pub fn city_has_palac_line(built_ids: &[&str]) -> bool {
+        built_ids.contains(&"palac")
+            || built_ids.contains(&"palac_ii")
+            || built_ids.contains(&"palac_iii")
+    }
+
+    /// Web `cityPalacTier` (`building-upgrades.ts:185`): najwyzszy tier, `None` = brak Palacu.
+    pub fn city_palac_tier(built_ids: &[&str]) -> Option<u8> {
+        if built_ids.contains(&"palac_iii") {
+            Some(3)
+        } else if built_ids.contains(&"palac_ii") {
+            Some(2)
+        } else if built_ids.contains(&"palac") {
+            Some(1)
+        } else {
+            None
+        }
+    }
+
+    /// Web `BUILDING_GROUP_ORDER` (`building-upgrades.ts:202`).
+    pub const BUILDING_GROUP_ORDER: [&str; 8] = [
+        "Prawo i administracja",
+        "Wojsko i obrona",
+        "Handel i pieniądz",
+        "Nauka i kultura",
+        "Wiara",
+        "Zdrowie",
+        "Produkcja surowców",
+        "Żywność",
+    ];
+
+    /// Web `BUILDING_GROUP_FALLBACK` (`building-upgrades.ts:216`).
+    pub const BUILDING_GROUP_FALLBACK: &str = "Inne";
+
+    /// Web `BuildingGroupLite` (`building-upgrades.ts:218`). `grupa = None` = null/undefined/nie-tekst.
+    #[derive(Debug, Clone, Default, PartialEq, Eq)]
+    pub struct BuildingGroupLite {
+        pub id: String,
+        pub grupa: Option<String>,
+    }
+
+    /// Web `BuildingGroupBucket` (`building-upgrades.ts:220`).
+    #[derive(Debug, Clone, PartialEq, Eq)]
+    pub struct BuildingGroupBucket {
+        pub grupa: String,
+        pub ids: Vec<String>,
+    }
+
+    /// Web `groupBuiltBuildingIds` (`building-upgrades.ts:234`). Osiem grup zawsze obecnych,
+    /// nieznana grupa dopisywana na koncu w kolejnosci wystapienia.
+    pub fn group_built_building_ids(
+        built_ids: &[&str],
+        buildings: &[BuildingGroupLite],
+    ) -> Vec<BuildingGroupBucket> {
+        let by_id: HashMap<&str, &BuildingGroupLite> =
+            buildings.iter().map(|b| (b.id.as_str(), b)).collect();
+        let mut buckets: Vec<BuildingGroupBucket> = BUILDING_GROUP_ORDER
+            .iter()
+            .map(|g| BuildingGroupBucket {
+                grupa: (*g).to_string(),
+                ids: Vec::new(),
+            })
+            .collect();
+        for id in built_ids {
+            let g = match by_id.get(id).and_then(|b| b.grupa.as_deref()) {
+                Some(raw) if !js_trim(raw).is_empty() => js_trim(raw).to_string(),
+                _ => BUILDING_GROUP_FALLBACK.to_string(),
+            };
+            match buckets.iter_mut().find(|b| b.grupa == g) {
+                Some(bucket) => bucket.ids.push((*id).to_string()),
+                None => buckets.push(BuildingGroupBucket {
+                    grupa: g,
+                    ids: vec![(*id).to_string()],
+                }),
+            }
+        }
+        buckets
+    }
+}
