@@ -1,0 +1,103 @@
+   Compiling civ-engine v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_a9d963c8-ef3-2/rust-port/engine)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 31.87s
+     Running unittests src/lib.rs (target/debug/deps/civ_engine-51f74fbbb260e756)
+
+running 6 tests
+test domain::map_generator::tests::mulberry32_matches_typescript_first_values ... ok
+test domain::map_generator::tests::axial_distance_and_neighbours_match_hex_contract ... ok
+test domain::map_generator::tests::canonical_climate_band_vectors_match_typescript ... ok
+test domain::map_generator::tests::terrain_bias_and_classification_match_typescript_golden_vectors ... ok
+test domain::map_generator::tests::value_noise_and_fbm_match_typescript_golden_vectors ... ok
+test domain::map_generator::tests::canonical_mask_vectors_match_typescript ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/p6_8a_building_upgrades.rs (target/debug/deps/p6_8a_building_upgrades-23efa174aba75f08)
+
+running 14 tests
+test chain_cycle_guard_terminates ... ok
+test chain_empty_for_unknown_id_and_blank_upgrade_from_is_root ... ok
+test chain_duplicate_ids_last_entry_wins_like_js_map ... ok
+test chain_is_oldest_first_and_stops_at_root ... ok
+test city_building_line_predicates ... ok
+test chain_missing_predecessor_keeps_successor ... ok
+test composition_lines_empty_for_root_two_lines_for_chain ... ok
+test palac_tier_takes_highest_and_none_when_absent ... ok
+test group_assigns_in_builtin_order_with_fallback_appended_last ... ok
+test display_name_for_upgrade_and_plain ... ok
+test structural_defense_keys_and_percent_rules ... ok
+test group_order_is_eight_and_all_present_when_empty ... ok
+test structural_defense_lines_per_building ... ok
+test suppressed_only_when_strictly_true ... ok
+
+test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/p6_8a_pending_improvements.rs (target/debug/deps/p6_8a_pending_improvements-1c97ed6e152fb62f)
+
+running 7 tests
+test id_format_and_parse_split_on_last_colon ... ok
+test add_get_has_remove_roundtrip ... ok
+test commit_turn_clears_everything ... ok
+test parse_rejects_missing_colon_and_leading_colon ... ok
+test re_add_overwrites_value_but_keeps_position ... ok
+test undo_key_set_drops_removed_id_and_keeps_rest_in_order ... ok
+test save_load_preserves_order_and_dedups ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/p6_8a_production_costs.rs (target/debug/deps/p6_8a_production_costs-aff3567dc82d9290)
+
+running 9 tests
+test vectors_building_level_for_epoch_match_web ... ok
+test vectors_constants_match_web ... ok
+test vectors_building_production_items_match_web ... ok
+test vectors_item_cost_match_web ... ok
+test vectors_unit_cost_defaults_match_web_for_all_variants ... ok
+test vectors_location_match_web ... ok
+test vectors_stock_shortfall_label_match_web ... ok
+test vectors_unit_production_items_match_web ... ok
+test vectors_strip_diacritics_match_web ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.13s
+
+     Running tests/p6_8a_vectors.rs (target/debug/deps/p6_8a_vectors-2cb3cf4935b849cd)
+
+running 12 tests
+test vectors_building_stat_summary_lines_match_web ... ok
+test vectors_building_groups_match_web ... ok
+test vectors_building_upgrades_chain_match_web ... ok
+test vectors_building_upgrades_display_name_match_web ... ok
+test vectors_building_upgrades_composition_match_web ... ok
+test vectors_building_upgrades_presence_and_palac_tier_match_web ... ok
+test vectors_structural_defense_napis_null_brak_match_web ... ok
+test vectors_structural_defense_realny_match_web ... ok
+test vectors_structural_defense_zero_ujemna_ulamek_match_web ... ok
+test vectors_building_upgrades_suppressed_match_web ... ok
+test vectors_pending_id_helpers_match_web ... ok
+test vectors_pending_scenarios_match_web ... ok
+
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.33s
+
+     Running tests/p6_repin_b2_production.rs (target/debug/deps/p6_repin_b2_production-8d320382d1390e10)
+
+running 17 tests
+test civ_matrix_cost_discount_uses_first_marker_only ... ok
+test building_work_cost_nan_and_infinity_propagate_like_web ... ok
+test civ_production_cost_markers_match_web_vectors ... ok
+test civ_recruitment_discount_impi_rule_and_realizuje ... ok
+test epoch_number_missing_and_unknown_default_to_stone ... ok
+test epoch_number_matches_web_vectors ... ok
+test difficulty_multiplier_thresholds_exact ... ok
+test matrix_discount_floor_and_minimum_one ... ok
+test newest_same_type_unit_missing_keys_and_empty_typ_yield_none ... ok
+test newest_same_type_unit_only_strictly_newer_epoch ... ok
+test newest_same_type_unit_tie_keeps_first_in_units_order ... ok
+test newest_same_type_unit_trims_current_typ_like_web ... ok
+test newest_same_type_unit_trims_unicode_whitespace_like_js ... ok
+test pace_zero_nan_and_empty_key_are_falsy_like_web ... ok
+test newest_same_type_unit_matches_web_vectors ... ok
+test building_work_cost_matches_web_vectors ... ok
+test unit_money_cost_matches_web_vectors ... ok
+
+test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.26s
+

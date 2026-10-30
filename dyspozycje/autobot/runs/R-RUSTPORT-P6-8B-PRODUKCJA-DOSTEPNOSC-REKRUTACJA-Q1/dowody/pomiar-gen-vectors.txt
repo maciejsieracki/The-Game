@@ -1,0 +1,15 @@
+zapisano /tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/v2out/helpers.json liczniki: {
+  civKey: 27,
+  allowed: 81,
+  availability: 14,
+  blank: 8,
+  special: 890,
+  hasRep: 637,
+  gold: 21,
+  committed: 400,
+  superseded: 400,
+  apply: 600,
+  unlock: 50,
+  tokens: 16,
+  match: 593
+}

@@ -1,0 +1,32 @@
+   Compiling serde_core v1.0.229
+   Compiling once_cell v1.21.4
+   Compiling zmij v1.0.23
+   Compiling itoa v1.0.18
+   Compiling memchr v2.8.3
+   Compiling tracing-core v0.1.36
+   Compiling pin-project-lite v0.2.17
+   Compiling tracing v0.1.44
+   Compiling serde_json v1.0.154
+   Compiling serde v1.0.229
+   Compiling civ-engine v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_a9d963c8-ef3-2/rust-port/engine)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 55.22s
+     Running tests/p6_8b_helpers_vectors.rs (target/debug/deps/p6_8b_helpers_vectors-02dc02cb2cf56923)
+
+running 14 tests
+test building_gold_purchase_cost_matches_web ... ok
+test apply_completed_building_ids_matches_web ... ok
+test availability_civ_nation_matches_web ... ok
+test blank_replacement_matches_web ... ok
+test building_superseded_by_upgrade_matches_web ... ok
+test building_type_committed_matches_web ... ok
+test building_type_queued_matches_web ... ok
+test civ_key_to_nacja_matches_web ... ok
+test building_unlock_flag_matches_web ... ok
+test civ_special_replacement_matches_web ... ok
+test unit_allowed_for_civ_nation_matches_web ... ok
+test civ_special_unit_name_tokens_match_web ... ok
+test unit_matches_special_name_matches_web ... ok
+test civ_has_replacement_for_matches_web ... ok
+
+test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.46s
+

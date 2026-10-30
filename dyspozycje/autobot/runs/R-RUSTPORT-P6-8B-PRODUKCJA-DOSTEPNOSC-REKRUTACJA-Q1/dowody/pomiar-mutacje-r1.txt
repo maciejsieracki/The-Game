@@ -1,0 +1,12 @@
+M1-blank-em-dash KILLED
+M2-unit-allowed-empty KILLED
+M3-gold-no-min KILLED
+M4-mury-palisada KILLED
+M5-match-tn-starts SURVIVED
+M6-primary-token KILLED
+M7-lowercase-key KILLED
+M8-committed-queue KILLED
+M9-superseded-built KILLED
+M10-civ-has-rep-trim KILLED
+RESTORED
+[('M1-blank-em-dash', 'KILLED'), ('M2-unit-allowed-empty', 'KILLED'), ('M3-gold-no-min', 'KILLED'), ('M4-mury-palisada', 'KILLED'), ('M5-match-tn-starts', 'SURVIVED'), ('M6-primary-token', 'KILLED'), ('M7-lowercase-key', 'KILLED'), ('M8-committed-queue', 'KILLED'), ('M9-superseded-built', 'KILLED'), ('M10-civ-has-rep-trim', 'KILLED')]

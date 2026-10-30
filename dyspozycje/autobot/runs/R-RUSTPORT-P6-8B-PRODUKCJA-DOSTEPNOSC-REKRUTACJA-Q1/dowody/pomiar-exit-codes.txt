@@ -1,0 +1,1 @@
+EXIT fmt=0 clippy=0 test8b=0 regresja=0 mutacje=run EXIT=0 wektory=IDENTICAL(cmp)
