@@ -1574,3 +1574,237 @@ pub mod p6_7b {
         }
     }
 }
+
+/// REPIN-EKONOMIA-B2 (pin webu 91dc998a): `buildingWorkCost` z `gra/src/game/production.ts:555-571`
+/// oraz jego pomocniki (`applyCostDiscount`, `getCostMultiplierForOwner`, `applyDifficultyCostMultiplier`).
+///
+/// ZALOZENIA (ZALOZENIE, do weryfikacji przez Evaluatora):
+/// * funkcje sa NOWE i nie sa jeszcze podpiete pod wywolania (`building_work_cost` powyzej
+///   pozostaje bez zmian do partii B3); podpiecie to osobny krok.
+/// * rabat cywilizacyjny liczony jest z listy markerow `CostMarker` (web `civMatrixCostDiscount`,
+///   production.ts:644): pierwszy marker `prod_koszt_budynku_proc`, niefinite / nie-liczba = brak.
+/// * tempo: web `pace ?` - wartosc falsy (`''`, `0`, `NaN`) = brak tempa (`building_pace_truthy`).
+/// * `ownerId` jako `i64` (web `number`); `humanOwnerIds` = domyslne `[0]`.
+/// * PODPIECIE (ZALOZENIE): `building_work_cost` (wyzej, live) pozostaje bez zmian - zmiana zachowania
+///   zywego silnika wymaga przesuniecia pinu (krok 5 wg REPIN-DELTA §5); `building_work_cost_web`
+///   jest przygotowana i przetestowana wektorami, nie ma wolajacych w zywej sciezce.
+pub mod repin_b2 {
+    use crate::data::civilizations::CivMatrixFile;
+    use crate::domain::city_growth::p6_7a::r_stawki::{r_stawki_fala2_mult, r_stawki_koszt_mult};
+    use crate::domain::civ_matrix::js_compat::{js_math_round, js_max, js_trim};
+    use crate::domain::civ_matrix::{civ_matrix_param, resolve_row};
+    use crate::domain::recruitment::army_merge::{apply_unit_cost_pace, UnitCostPace};
+    use crate::domain::types::Difficulty;
+
+    use super::p6_7b::{apply_building_cost_pace, PaceInput};
+
+    /// web `GLOBAL_BUILDING_PROD_MULT` (production.ts:552).
+    pub const GLOBAL_BUILDING_PROD_MULT: f64 = 0.25;
+
+    /// Parametry macierzy cywilizacji z F-04 (web `civMatrixCostDiscount` / `civProductionCostBonusyForCivKey`).
+    pub const PARAM_KOSZT_BUDYNKU: &str = "prod_koszt_budynku_proc";
+    pub const PARAM_KOSZT_JEDNOSTKI: &str = "prod_koszt_jednostki_proc";
+    pub const PARAM_REKRUTACJA_WALKA: &str = "walka_koszt_rekrutacji_proc";
+
+    /// Wartosc `wartosc` markera web (`number | string | string[]`).
+    #[derive(Debug, Clone, Copy, PartialEq)]
+    pub enum MarkerValue {
+        /// JS `typeof === 'number'` (takze `NaN` / `Infinity`: filtrowane przez funkcje kosztu).
+        Number(f64),
+        /// Napis / tablica: web `typeof !== 'number'`.
+        NotNumber,
+    }
+
+    /// Marker `CivBonusLite` (web production.ts:597): tylko pola czytane przez funkcje kosztu.
+    /// `cel: None` = web `undefined` (`b.cel ?? ''`).
+    #[derive(Debug, Clone, Copy, PartialEq)]
+    pub struct CostMarker<'a> {
+        pub cel: Option<&'a str>,
+        pub wartosc: MarkerValue,
+        pub realizuje: Option<&'a str>,
+        pub matrix_param_id: Option<&'a str>,
+    }
+
+    /// web `civMatrixCostDiscount` (production.ts:644-652): PIERWSZY marker o `matrixParamId`.
+    /// Gdy jego `wartosc` nie jest skonczona liczba -> `None` (web nie szuka nastepnego markera).
+    /// `None` takze, gdy markera brak (web `bonusy?.find` = `undefined`).
+    pub fn civ_matrix_cost_discount(markers: &[CostMarker<'_>], parameter_id: &str) -> Option<f64> {
+        let marker = markers
+            .iter()
+            .find(|m| m.matrix_param_id == Some(parameter_id))?;
+        match marker.wartosc {
+            MarkerValue::Number(v) if v.is_finite() => Some(v),
+            _ => None,
+        }
+    }
+
+    /// web `civRecruitmentDiscount` (production.ts:626-641): suma dodatnich skonczonych wartosci
+    /// markerow `walka_koszt_rekrutacji_proc` z `realizuje = 'ekonomia'`. Marker `cel = 'impi'`
+    /// tylko gdy typ jednostki (web `unitTypeName?.trim().toLowerCase()`) == `"impi"`.
+    pub fn civ_recruitment_discount(
+        markers: &[CostMarker<'_>],
+        unit_type_name: Option<&str>,
+    ) -> f64 {
+        let mut discount = 0.0;
+        for b in markers {
+            if b.realizuje != Some("ekonomia") {
+                continue;
+            }
+            if b.matrix_param_id != Some(PARAM_REKRUTACJA_WALKA) {
+                continue;
+            }
+            let impi_only = b.cel.unwrap_or("").to_lowercase() == "impi";
+            if impi_only {
+                let unit_key = unit_type_name.map(|s| js_trim(s).to_lowercase());
+                if unit_key.as_deref() != Some("impi") {
+                    continue;
+                }
+            }
+            if let MarkerValue::Number(v) = b.wartosc {
+                if v.is_finite() && v > 0.0 {
+                    discount += v;
+                }
+            }
+        }
+        discount
+    }
+
+    /// web `civProductionCostBonusyForCivKey` (production.ts:609-621): dwa markery F-04 dla
+    /// wiersza macierzy pasujacego do klucza (ikonaId / typCywilizacji / Cywilizacja, bez wielkosci
+    /// liter). Brak wiersza -> pusta lista.
+    pub fn civ_production_cost_markers(
+        matrix: &CivMatrixFile,
+        civ_key: &str,
+    ) -> Vec<CostMarker<'static>> {
+        if resolve_row(matrix, civ_key).is_none() {
+            return Vec::new();
+        }
+        let budynki = CostMarker {
+            cel: Some("budynki"),
+            wartosc: MarkerValue::Number(civ_matrix_param(matrix, civ_key, PARAM_KOSZT_BUDYNKU)),
+            realizuje: Some("miasto"),
+            matrix_param_id: Some(PARAM_KOSZT_BUDYNKU),
+        };
+        let jednostki = CostMarker {
+            cel: Some("jednostki"),
+            wartosc: MarkerValue::Number(civ_matrix_param(matrix, civ_key, PARAM_KOSZT_JEDNOSTKI)),
+            realizuje: Some("ekonomia"),
+            matrix_param_id: Some(PARAM_KOSZT_JEDNOSTKI),
+        };
+        vec![budynki, jednostki]
+    }
+
+    /// web `pace ? ... : ...` dla tempa budynku: falsy (`''`, `0`, `NaN`) = brak tempa.
+    fn building_pace_truthy(pace: Option<PaceInput<'_>>) -> Option<PaceInput<'_>> {
+        match pace {
+            Some(PaceInput::Key("")) => None,
+            Some(PaceInput::Multiplier(m)) if m == 0.0 || m.is_nan() => None,
+            other => other,
+        }
+    }
+
+    /// web `pace ? ... : ...` dla tempa jednostki (ta sama semantyka falsy co dla budynku).
+    fn unit_pace_truthy(pace: Option<UnitCostPace<'_>>) -> Option<UnitCostPace<'_>> {
+        match pace {
+            Some(UnitCostPace::Key("")) => None,
+            Some(UnitCostPace::Multiplier(m)) if m == 0.0 || m.is_nan() => None,
+            other => other,
+        }
+    }
+
+    /// web `unitMoneyCost` (production.ts:577-594). Rabat = `civRecruitmentDiscount(bonusy, typ)`
+    /// + `civMatrixCostDiscount(bonusy, 'prod_koszt_jednostki_proc') ?? 0`; `Math.max(1, floor)` gdy > 0.
+    pub fn unit_money_cost_web(
+        base_cost: f64,
+        markers: &[CostMarker<'_>],
+        pace: Option<UnitCostPace<'_>>,
+        owner_id: i64,
+        difficulty: Difficulty,
+        unit_type_name: Option<&str>,
+    ) -> f64 {
+        if !base_cost.is_finite() || base_cost <= 0.0 {
+            return 0.0;
+        }
+        let matrix = civ_matrix_cost_discount(markers, PARAM_KOSZT_JEDNOSTKI);
+        let rec_disc = civ_recruitment_discount(markers, unit_type_name) + matrix.unwrap_or(0.0);
+        let koszt = if rec_disc > 0.0 {
+            js_max(1.0, (base_cost * (1.0 - rec_disc)).floor())
+        } else {
+            base_cost
+        };
+        let after_pace = match unit_pace_truthy(pace) {
+            Some(p) => apply_unit_cost_pace(koszt, p),
+            None => koszt,
+        };
+        apply_difficulty_cost_multiplier(after_pace, owner_id, difficulty)
+    }
+
+    /// web `getCostMultiplierForOwner` (difficulty-cost.ts) z `humanOwnerIds = [0]`.
+    pub fn cost_multiplier_for_owner(owner_id: i64, difficulty: Difficulty) -> f64 {
+        let is_player = owner_id == 0;
+        match difficulty {
+            Difficulty::Normal => 1.0,
+            Difficulty::Easy => {
+                if is_player {
+                    1.0
+                } else {
+                    2.0
+                }
+            }
+            Difficulty::Hard => {
+                if is_player {
+                    2.0
+                } else {
+                    1.0
+                }
+            }
+        }
+    }
+
+    /// web `applyDifficultyCostMultiplier`: `Math.max(1, Math.round(cost * mult))`.
+    pub fn apply_difficulty_cost_multiplier(
+        cost_after_pace: f64,
+        owner_id: i64,
+        difficulty: Difficulty,
+    ) -> f64 {
+        js_max(
+            1.0,
+            js_math_round(cost_after_pace * cost_multiplier_for_owner(owner_id, difficulty)),
+        )
+    }
+
+    /// web `applyCostDiscount` (production.ts:654-657).
+    pub fn apply_cost_discount(base_cost: f64, discount: f64) -> f64 {
+        if !base_cost.is_finite() || base_cost <= 0.0 || discount <= 0.0 {
+            return base_cost;
+        }
+        js_max(1.0, (base_cost * (1.0 - discount)).floor())
+    }
+
+    /// web `buildingWorkCost` (production.ts:555-571). Kolejnosc mnozen zachowana 1:1
+    /// (`afterPace * GLOBAL * KOSZT * FALA2`), zeby wynik byl bitowo identyczny z webem.
+    pub fn building_work_cost_web(
+        base_cost: f64,
+        markers: &[CostMarker<'_>],
+        pace: Option<PaceInput<'_>>,
+        owner_id: i64,
+        difficulty: Difficulty,
+    ) -> f64 {
+        let matrix_discount = civ_matrix_cost_discount(markers, PARAM_KOSZT_BUDYNKU);
+        let after_civ = apply_cost_discount(base_cost, matrix_discount.unwrap_or(0.0));
+        let after_pace = match building_pace_truthy(pace) {
+            Some(p) => apply_building_cost_pace(after_civ, p),
+            None => after_civ,
+        };
+        let after_global = js_max(
+            1.0,
+            js_math_round(
+                after_pace
+                    * GLOBAL_BUILDING_PROD_MULT
+                    * r_stawki_koszt_mult()
+                    * r_stawki_fala2_mult(),
+            ),
+        );
+        apply_difficulty_cost_multiplier(after_global, owner_id, difficulty)
+    }
+}

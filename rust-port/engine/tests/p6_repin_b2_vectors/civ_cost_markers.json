@@ -1,0 +1,833 @@
+{
+ "pin": "91dc998a5f1b51ad29e0f4785edfd45655445c53",
+ "cases": [
+  {
+   "civKey": "",
+   "markers": []
+  },
+  {
+   "civKey": "NIEZNANA",
+   "markers": []
+  },
+  {
+   "civKey": "zulusi-nie-ma",
+   "markers": []
+  },
+  {
+   "civKey": "grecy",
+   "markers": [
+    {
+     "cel": "budynki",
+     "realizuje": "miasto",
+     "matrixParamId": "prod_koszt_budynku_proc",
+     "wartosc": 0
+    },
+    {
+     "cel": "jednostki",
+     "realizuje": "ekonomia",
+     "matrixParamId": "prod_koszt_jednostki_proc",
+     "wartosc": 0
+    }
+   ]
+  },
+  {
+   "civKey": "GRECY",
+   "markers": [
+    {
+     "cel": "budynki",
+     "realizuje": "miasto",
+     "matrixParamId": "prod_koszt_budynku_proc",
+     "wartosc": 0
+    },
+    {
+     "cel": "jednostki",
+     "realizuje": "ekonomia",
+     "matrixParamId": "prod_koszt_jednostki_proc",
+     "wartosc": 0
+    }
+   ]
+  },
+  {
+   "civKey": "Grecy",
+   "markers": [
+    {
+     "cel": "budynki",
+     "realizuje": "miasto",
+     "matrixParamId": "prod_koszt_budynku_proc",
+     "wartosc": 0
+    },
+    {
+     "cel": "jednostki",
+     "realizuje": "ekonomia",
+     "matrixParamId": "prod_koszt_jednostki_proc",
+     "wartosc": 0
+    }
+   ]
+  },
+  {
+   "civKey": "rzymianie",
+   "markers": [
+    {
+     "cel": "budynki",
+     "realizuje": "miasto",
+     "matrixParamId": "prod_koszt_budynku_proc",
+     "wartosc": 0.2
+    },
+    {
+     "cel": "jednostki",
+     "realizuje": "ekonomia",
+     "matrixParamId": "prod_koszt_jednostki_proc",
+     "wartosc": 0
+    }
+   ]
+  },
+  {
+   "civKey": "RZYMIANIE",
+   "markers": [
+    {
+     "cel": "budynki",
+     "realizuje": "miasto",
+     "matrixParamId": "prod_koszt_budynku_proc",
+     "wartosc": 0.2
+    },
+    {
+     "cel": "jednostki",
+     "realizuje": "ekonomia",
+     "matrixParamId": "prod_koszt_jednostki_proc",
+     "wartosc": 0
+    }
+   ]
+  },
+  {
+   "civKey": "Rzymianie",
+   "markers": [
+    {
+     "cel": "budynki",
+     "realizuje": "miasto",
+     "matrixParamId": "prod_koszt_budynku_proc",
+     "wartosc": 0.2
+    },
+    {
+     "cel": "jednostki",
+     "realizuje": "ekonomia",
+     "matrixParamId": "prod_koszt_jednostki_proc",
+     "wartosc": 0
+    }
+   ]
+  },
+  {
+   "civKey": "chinczycy",
+   "markers": [
+    {
+     "cel": "budynki",
+     "realizuje": "miasto",
+     "matrixParamId": "prod_koszt_budynku_proc",
+     "wartosc": 0
+    },
+    {
+     "cel": "jednostki",
+     "realizuje": "ekonomia",
+     "matrixParamId": "prod_koszt_jednostki_proc",
+     "wartosc": 0
+    }
+   ]
+  },
+  {
+   "civKey": "CHINCZYCY",
+   "markers": [
+    {
+     "cel": "budynki",
+     "realizuje": "miasto",
+     "matrixParamId": "prod_koszt_budynku_proc",
+     "wartosc": 0
+    },
+    {
+     "cel": "jednostki",
+     "realizuje": "ekonomia",
+     "matrixParamId": "prod_koszt_jednostki_proc",
+     "wartosc": 0
+    }
+   ]
+  },
+  {
+   "civKey": "Chińczycy",
+   "markers": [
+    {
+     "cel": "budynki",
+     "realizuje": "miasto",
+     "matrixParamId": "prod_koszt_budynku_proc",
+     "wartosc": 0
+    },
+    {
+     "cel": "jednostki",
+     "realizuje": "ekonomia",
+     "matrixParamId": "prod_koszt_jednostki_proc",
+     "wartosc": 0
+    }
+   ]
+  },
+  {
+   "civKey": "CHIŃCZYCY",
+   "markers": [
+    {
+     "cel": "budynki",
+     "realizuje": "miasto",
+     "matrixParamId": "prod_koszt_budynku_proc",
+     "wartosc": 0
+    },
+    {
+     "cel": "jednostki",
+     "realizuje": "ekonomia",
+     "matrixParamId": "prod_koszt_jednostki_proc",
+     "wartosc": 0
+    }
+   ]
+  },
+  {
+   "civKey": "inkowie",
+   "markers": [
+    {
+     "cel": "budynki",
+     "realizuje": "miasto",
+     "matrixParamId": "prod_koszt_budynku_proc",
+     "wartosc": 0
+    },
+    {
+     "cel": "jednostki",
+     "realizuje": "ekonomia",
+     "matrixParamId": "prod_koszt_jednostki_proc",
+     "wartosc": 0
+    }
+   ]
+  },
+  {
+   "civKey": "INKOWIE",
+   "markers": [
+    {
+     "cel": "budynki",
+     "realizuje": "miasto",
+     "matrixParamId": "prod_koszt_budynku_proc",
+     "wartosc": 0
+    },
+    {
+     "cel": "jednostki",
+     "realizuje": "ekonomia",
+     "matrixParamId": "prod_koszt_jednostki_proc",
+     "wartosc": 0
+    }
+   ]
+  },
+  {
+   "civKey": "Inkowie",
+   "markers": [
+    {
+     "cel": "budynki",
+     "realizuje": "miasto",
+     "matrixParamId": "prod_koszt_budynku_proc",
+     "wartosc": 0
+    },
+    {
+     "cel": "jednostki",
+     "realizuje": "ekonomia",
+     "matrixParamId": "prod_koszt_jednostki_proc",
+     "wartosc": 0
+    }
+   ]
+  },
+  {
+   "civKey": "zulusi",
+   "markers": [
+    {
+     "cel": "budynki",
+     "realizuje": "miasto",
+     "matrixParamId": "prod_koszt_budynku_proc",
+     "wartosc": 0
+    },
+    {
+     "cel": "jednostki",
+     "realizuje": "ekonomia",
+     "matrixParamId": "prod_koszt_jednostki_proc",
+     "wartosc": 0.1
+    }
+   ]
+  },
+  {
+   "civKey": "ZULUSI",
+   "markers": [
+    {
+     "cel": "budynki",
+     "realizuje": "miasto",
+     "matrixParamId": "prod_koszt_budynku_proc",
+     "wartosc": 0
+    },
+    {
+     "cel": "jednostki",
+     "realizuje": "ekonomia",
+     "matrixParamId": "prod_koszt_jednostki_proc",
+     "wartosc": 0.1
+    }
+   ]
+  },
+  {
+   "civKey": "Zulusi",
+   "markers": [
+    {
+     "cel": "budynki",
+     "realizuje": "miasto",
+     "matrixParamId": "prod_koszt_budynku_proc",
+     "wartosc": 0
+    },
+    {
+     "cel": "jednostki",
+     "realizuje": "ekonomia",
+     "matrixParamId": "prod_koszt_jednostki_proc",
+     "wartosc": 0.1
+    }
+   ]
+  },
+  {
+   "civKey": "egipt",
+   "markers": [
+    {
+     "cel": "budynki",
+     "realizuje": "miasto",
+     "matrixParamId": "prod_koszt_budynku_proc",
+     "wartosc": 0
+    },
+    {
+     "cel": "jednostki",
+     "realizuje": "ekonomia",
+     "matrixParamId": "prod_koszt_jednostki_proc",
+     "wartosc": 0
+    }
+   ]
+  },
+  {
+   "civKey": "EGIPT",
+   "markers": [
+    {
+     "cel": "budynki",
+     "realizuje": "miasto",
+     "matrixParamId": "prod_koszt_budynku_proc",
+     "wartosc": 0
+    },
+    {
+     "cel": "jednostki",
+     "realizuje": "ekonomia",
+     "matrixParamId": "prod_koszt_jednostki_proc",
+     "wartosc": 0
+    }
+   ]
+  },
+  {
+   "civKey": "Egipt",
+   "markers": [
+    {
+     "cel": "budynki",
+     "realizuje": "miasto",
+     "matrixParamId": "prod_koszt_budynku_proc",
+     "wartosc": 0
+    },
+    {
+     "cel": "jednostki",
+     "realizuje": "ekonomia",
+     "matrixParamId": "prod_koszt_jednostki_proc",
+     "wartosc": 0
+    }
+   ]
+  },
+  {
+   "civKey": "sumer",
+   "markers": [
+    {
+     "cel": "budynki",
+     "realizuje": "miasto",
+     "matrixParamId": "prod_koszt_budynku_proc",
+     "wartosc": 0
+    },
+    {
+     "cel": "jednostki",
+     "realizuje": "ekonomia",
+     "matrixParamId": "prod_koszt_jednostki_proc",
+     "wartosc": 0
+    }
+   ]
+  },
+  {
+   "civKey": "SUMER",
+   "markers": [
+    {
+     "cel": "budynki",
+     "realizuje": "miasto",
+     "matrixParamId": "prod_koszt_budynku_proc",
+     "wartosc": 0
+    },
+    {
+     "cel": "jednostki",
+     "realizuje": "ekonomia",
+     "matrixParamId": "prod_koszt_jednostki_proc",
+     "wartosc": 0
+    }
+   ]
+  },
+  {
+   "civKey": "Sumerowie",
+   "markers": [
+    {
+     "cel": "budynki",
+     "realizuje": "miasto",
+     "matrixParamId": "prod_koszt_budynku_proc",
+     "wartosc": 0
+    },
+    {
+     "cel": "jednostki",
+     "realizuje": "ekonomia",
+     "matrixParamId": "prod_koszt_jednostki_proc",
+     "wartosc": 0
+    }
+   ]
+  },
+  {
+   "civKey": "SUMEROWIE",
+   "markers": [
+    {
+     "cel": "budynki",
+     "realizuje": "miasto",
+     "matrixParamId": "prod_koszt_budynku_proc",
+     "wartosc": 0
+    },
+    {
+     "cel": "jednostki",
+     "realizuje": "ekonomia",
+     "matrixParamId": "prod_koszt_jednostki_proc",
+     "wartosc": 0
+    }
+   ]
+  },
+  {
+   "civKey": "celtowie",
+   "markers": [
+    {
+     "cel": "budynki",
+     "realizuje": "miasto",
+     "matrixParamId": "prod_koszt_budynku_proc",
+     "wartosc": 0
+    },
+    {
+     "cel": "jednostki",
+     "realizuje": "ekonomia",
+     "matrixParamId": "prod_koszt_jednostki_proc",
+     "wartosc": 0
+    }
+   ]
+  },
+  {
+   "civKey": "CELTOWIE",
+   "markers": [
+    {
+     "cel": "budynki",
+     "realizuje": "miasto",
+     "matrixParamId": "prod_koszt_budynku_proc",
+     "wartosc": 0
+    },
+    {
+     "cel": "jednostki",
+     "realizuje": "ekonomia",
+     "matrixParamId": "prod_koszt_jednostki_proc",
+     "wartosc": 0
+    }
+   ]
+  },
+  {
+   "civKey": "Celtowie",
+   "markers": [
+    {
+     "cel": "budynki",
+     "realizuje": "miasto",
+     "matrixParamId": "prod_koszt_budynku_proc",
+     "wartosc": 0
+    },
+    {
+     "cel": "jednostki",
+     "realizuje": "ekonomia",
+     "matrixParamId": "prod_koszt_jednostki_proc",
+     "wartosc": 0
+    }
+   ]
+  },
+  {
+   "civKey": "germanie",
+   "markers": [
+    {
+     "cel": "budynki",
+     "realizuje": "miasto",
+     "matrixParamId": "prod_koszt_budynku_proc",
+     "wartosc": 0
+    },
+    {
+     "cel": "jednostki",
+     "realizuje": "ekonomia",
+     "matrixParamId": "prod_koszt_jednostki_proc",
+     "wartosc": 0
+    }
+   ]
+  },
+  {
+   "civKey": "GERMANIE",
+   "markers": [
+    {
+     "cel": "budynki",
+     "realizuje": "miasto",
+     "matrixParamId": "prod_koszt_budynku_proc",
+     "wartosc": 0
+    },
+    {
+     "cel": "jednostki",
+     "realizuje": "ekonomia",
+     "matrixParamId": "prod_koszt_jednostki_proc",
+     "wartosc": 0
+    }
+   ]
+  },
+  {
+   "civKey": "Germanie",
+   "markers": [
+    {
+     "cel": "budynki",
+     "realizuje": "miasto",
+     "matrixParamId": "prod_koszt_budynku_proc",
+     "wartosc": 0
+    },
+    {
+     "cel": "jednostki",
+     "realizuje": "ekonomia",
+     "matrixParamId": "prod_koszt_jednostki_proc",
+     "wartosc": 0
+    }
+   ]
+  },
+  {
+   "civKey": "harappa",
+   "markers": [
+    {
+     "cel": "budynki",
+     "realizuje": "miasto",
+     "matrixParamId": "prod_koszt_budynku_proc",
+     "wartosc": 0
+    },
+    {
+     "cel": "jednostki",
+     "realizuje": "ekonomia",
+     "matrixParamId": "prod_koszt_jednostki_proc",
+     "wartosc": 0
+    }
+   ]
+  },
+  {
+   "civKey": "HARAPPA",
+   "markers": [
+    {
+     "cel": "budynki",
+     "realizuje": "miasto",
+     "matrixParamId": "prod_koszt_budynku_proc",
+     "wartosc": 0
+    },
+    {
+     "cel": "jednostki",
+     "realizuje": "ekonomia",
+     "matrixParamId": "prod_koszt_jednostki_proc",
+     "wartosc": 0
+    }
+   ]
+  },
+  {
+   "civKey": "Harappa",
+   "markers": [
+    {
+     "cel": "budynki",
+     "realizuje": "miasto",
+     "matrixParamId": "prod_koszt_budynku_proc",
+     "wartosc": 0
+    },
+    {
+     "cel": "jednostki",
+     "realizuje": "ekonomia",
+     "matrixParamId": "prod_koszt_jednostki_proc",
+     "wartosc": 0
+    }
+   ]
+  },
+  {
+   "civKey": "hetyci",
+   "markers": [
+    {
+     "cel": "budynki",
+     "realizuje": "miasto",
+     "matrixParamId": "prod_koszt_budynku_proc",
+     "wartosc": 0
+    },
+    {
+     "cel": "jednostki",
+     "realizuje": "ekonomia",
+     "matrixParamId": "prod_koszt_jednostki_proc",
+     "wartosc": 0
+    }
+   ]
+  },
+  {
+   "civKey": "HETYCI",
+   "markers": [
+    {
+     "cel": "budynki",
+     "realizuje": "miasto",
+     "matrixParamId": "prod_koszt_budynku_proc",
+     "wartosc": 0
+    },
+    {
+     "cel": "jednostki",
+     "realizuje": "ekonomia",
+     "matrixParamId": "prod_koszt_jednostki_proc",
+     "wartosc": 0
+    }
+   ]
+  },
+  {
+   "civKey": "Hetyci",
+   "markers": [
+    {
+     "cel": "budynki",
+     "realizuje": "miasto",
+     "matrixParamId": "prod_koszt_budynku_proc",
+     "wartosc": 0
+    },
+    {
+     "cel": "jednostki",
+     "realizuje": "ekonomia",
+     "matrixParamId": "prod_koszt_jednostki_proc",
+     "wartosc": 0
+    }
+   ]
+  },
+  {
+   "civKey": "slowianie",
+   "markers": [
+    {
+     "cel": "budynki",
+     "realizuje": "miasto",
+     "matrixParamId": "prod_koszt_budynku_proc",
+     "wartosc": 0
+    },
+    {
+     "cel": "jednostki",
+     "realizuje": "ekonomia",
+     "matrixParamId": "prod_koszt_jednostki_proc",
+     "wartosc": 0
+    }
+   ]
+  },
+  {
+   "civKey": "SLOWIANIE",
+   "markers": [
+    {
+     "cel": "budynki",
+     "realizuje": "miasto",
+     "matrixParamId": "prod_koszt_budynku_proc",
+     "wartosc": 0
+    },
+    {
+     "cel": "jednostki",
+     "realizuje": "ekonomia",
+     "matrixParamId": "prod_koszt_jednostki_proc",
+     "wartosc": 0
+    }
+   ]
+  },
+  {
+   "civKey": "Słowianie",
+   "markers": [
+    {
+     "cel": "budynki",
+     "realizuje": "miasto",
+     "matrixParamId": "prod_koszt_budynku_proc",
+     "wartosc": 0
+    },
+    {
+     "cel": "jednostki",
+     "realizuje": "ekonomia",
+     "matrixParamId": "prod_koszt_jednostki_proc",
+     "wartosc": 0
+    }
+   ]
+  },
+  {
+   "civKey": "SŁOWIANIE",
+   "markers": [
+    {
+     "cel": "budynki",
+     "realizuje": "miasto",
+     "matrixParamId": "prod_koszt_budynku_proc",
+     "wartosc": 0
+    },
+    {
+     "cel": "jednostki",
+     "realizuje": "ekonomia",
+     "matrixParamId": "prod_koszt_jednostki_proc",
+     "wartosc": 0
+    }
+   ]
+  },
+  {
+   "civKey": "babilonia",
+   "markers": [
+    {
+     "cel": "budynki",
+     "realizuje": "miasto",
+     "matrixParamId": "prod_koszt_budynku_proc",
+     "wartosc": 0
+    },
+    {
+     "cel": "jednostki",
+     "realizuje": "ekonomia",
+     "matrixParamId": "prod_koszt_jednostki_proc",
+     "wartosc": 0
+    }
+   ]
+  },
+  {
+   "civKey": "BABILONIA",
+   "markers": [
+    {
+     "cel": "budynki",
+     "realizuje": "miasto",
+     "matrixParamId": "prod_koszt_budynku_proc",
+     "wartosc": 0
+    },
+    {
+     "cel": "jednostki",
+     "realizuje": "ekonomia",
+     "matrixParamId": "prod_koszt_jednostki_proc",
+     "wartosc": 0
+    }
+   ]
+  },
+  {
+   "civKey": "Babilonia",
+   "markers": [
+    {
+     "cel": "budynki",
+     "realizuje": "miasto",
+     "matrixParamId": "prod_koszt_budynku_proc",
+     "wartosc": 0
+    },
+    {
+     "cel": "jednostki",
+     "realizuje": "ekonomia",
+     "matrixParamId": "prod_koszt_jednostki_proc",
+     "wartosc": 0
+    }
+   ]
+  },
+  {
+   "civKey": "asyria",
+   "markers": [
+    {
+     "cel": "budynki",
+     "realizuje": "miasto",
+     "matrixParamId": "prod_koszt_budynku_proc",
+     "wartosc": 0
+    },
+    {
+     "cel": "jednostki",
+     "realizuje": "ekonomia",
+     "matrixParamId": "prod_koszt_jednostki_proc",
+     "wartosc": 0
+    }
+   ]
+  },
+  {
+   "civKey": "ASYRIA",
+   "markers": [
+    {
+     "cel": "budynki",
+     "realizuje": "miasto",
+     "matrixParamId": "prod_koszt_budynku_proc",
+     "wartosc": 0
+    },
+    {
+     "cel": "jednostki",
+     "realizuje": "ekonomia",
+     "matrixParamId": "prod_koszt_jednostki_proc",
+     "wartosc": 0
+    }
+   ]
+  },
+  {
+   "civKey": "Asyria",
+   "markers": [
+    {
+     "cel": "budynki",
+     "realizuje": "miasto",
+     "matrixParamId": "prod_koszt_budynku_proc",
+     "wartosc": 0
+    },
+    {
+     "cel": "jednostki",
+     "realizuje": "ekonomia",
+     "matrixParamId": "prod_koszt_jednostki_proc",
+     "wartosc": 0
+    }
+   ]
+  },
+  {
+   "civKey": "fenicjanie",
+   "markers": [
+    {
+     "cel": "budynki",
+     "realizuje": "miasto",
+     "matrixParamId": "prod_koszt_budynku_proc",
+     "wartosc": 0
+    },
+    {
+     "cel": "jednostki",
+     "realizuje": "ekonomia",
+     "matrixParamId": "prod_koszt_jednostki_proc",
+     "wartosc": 0
+    }
+   ]
+  },
+  {
+   "civKey": "FENICJANIE",
+   "markers": [
+    {
+     "cel": "budynki",
+     "realizuje": "miasto",
+     "matrixParamId": "prod_koszt_budynku_proc",
+     "wartosc": 0
+    },
+    {
+     "cel": "jednostki",
+     "realizuje": "ekonomia",
+     "matrixParamId": "prod_koszt_jednostki_proc",
+     "wartosc": 0
+    }
+   ]
+  },
+  {
+   "civKey": "Fenicjanie",
+   "markers": [
+    {
+     "cel": "budynki",
+     "realizuje": "miasto",
+     "matrixParamId": "prod_koszt_budynku_proc",
+     "wartosc": 0
+    },
+    {
+     "cel": "jednostki",
+     "realizuje": "ekonomia",
+     "matrixParamId": "prod_koszt_jednostki_proc",
+     "wartosc": 0
+    }
+   ]
+  }
+ ]
+}

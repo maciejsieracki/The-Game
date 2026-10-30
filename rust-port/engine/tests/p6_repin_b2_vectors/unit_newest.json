@@ -1,0 +1,987 @@
+{
+ "pin": "91dc998a5f1b51ad29e0f4785edfd45655445c53",
+ "units": [
+  {
+   "Jednostka": "A1",
+   "Typ": "Piechota",
+   "Epoka": "Kamien"
+  },
+  {
+   "Jednostka": "A2",
+   "Typ": "Piechota",
+   "Epoka": "Braz"
+  },
+  {
+   "Jednostka": "A3",
+   "Typ": " Piechota ",
+   "Epoka": "Zelazo"
+  },
+  {
+   "Jednostka": "A4",
+   "Typ": "Piechota",
+   "Epoka": "Żelazo"
+  },
+  {
+   "Jednostka": "B1",
+   "Typ": "Lucznik",
+   "Epoka": "Braz"
+  },
+  {
+   "Jednostka": "A5",
+   "Typ": "",
+   "Epoka": "Zelazo"
+  },
+  {
+   "Jednostka": "A6",
+   "Typ": "Piechota",
+   "Epoka": "Nieznana"
+  },
+  {
+   "Jednostka": "A7",
+   "Typ": "Piechota"
+  },
+  {
+   "Jednostka": "A8",
+   "Typ": "Piechota",
+   "Epoka": null
+  },
+  {
+   "Jednostka": "A1",
+   "Typ": "Lucznik",
+   "Epoka": "Zelazo"
+  },
+  {
+   "Jednostka": "D1",
+   "Typ": "Piechota",
+   "Epoka": "Zelazo"
+  },
+  {
+   "Jednostka": "E1",
+   "Typ": "Piechota",
+   "Epoka": "Braz"
+  },
+  {
+   "Jednostka": "E2",
+   "Typ": "Piechota",
+   "Epoka": "Braz"
+  },
+  {
+   "Jednostka": "F1",
+   "Typ": " Piechota﻿",
+   "Epoka": "Zelazo"
+  }
+ ],
+ "epochCases": [
+  {
+   "epoka": "Kamien",
+   "out": 1
+  },
+  {
+   "epoka": "Kamień",
+   "out": 1
+  },
+  {
+   "epoka": "Braz",
+   "out": 2
+  },
+  {
+   "epoka": "Brąz",
+   "out": 2
+  },
+  {
+   "epoka": "Zelazo",
+   "out": 3
+  },
+  {
+   "epoka": "Żelazo",
+   "out": 3
+  },
+  {
+   "epoka": "Nieznana",
+   "out": 1
+  },
+  {
+   "epoka": "",
+   "out": 1
+  },
+  {
+   "epoka": "constructor",
+   "out": 1
+  },
+  {
+   "epoka": null,
+   "out": 1
+  }
+ ],
+ "cases": [
+  {
+   "current": "A1",
+   "candidates": [
+    "A1",
+    "A2",
+    "A3",
+    "A4",
+    "A5",
+    "A6",
+    "A7",
+    "A8",
+    "B1",
+    "D1",
+    "E1",
+    "E2"
+   ],
+   "out": "A3|Zelazo| Piechota ",
+   "outIndex": 2
+  },
+  {
+   "current": "A1",
+   "candidates": [
+    "A2",
+    "A3"
+   ],
+   "out": "A3|Zelazo| Piechota ",
+   "outIndex": 2
+  },
+  {
+   "current": "A1",
+   "candidates": [
+    "A4",
+    "A3"
+   ],
+   "out": "A3|Zelazo| Piechota ",
+   "outIndex": 2
+  },
+  {
+   "current": "A1",
+   "candidates": [
+    "A6"
+   ],
+   "out": null,
+   "outIndex": null
+  },
+  {
+   "current": "A1",
+   "candidates": [
+    "A7",
+    "A8",
+    "E2"
+   ],
+   "out": "E2|Braz|Piechota",
+   "outIndex": 12
+  },
+  {
+   "current": "A1",
+   "candidates": [
+    "B1",
+    "A1"
+   ],
+   "out": null,
+   "outIndex": null
+  },
+  {
+   "current": "A1",
+   "candidates": [],
+   "out": null,
+   "outIndex": null
+  },
+  {
+   "current": "A1",
+   "candidates": [
+    "F1",
+    "A4"
+   ],
+   "out": "A4|Żelazo|Piechota",
+   "outIndex": 3
+  },
+  {
+   "current": "A2",
+   "candidates": [
+    "A1",
+    "A2",
+    "A3",
+    "A4",
+    "A5",
+    "A6",
+    "A7",
+    "A8",
+    "B1",
+    "D1",
+    "E1",
+    "E2"
+   ],
+   "out": "A3|Zelazo| Piechota ",
+   "outIndex": 2
+  },
+  {
+   "current": "A2",
+   "candidates": [
+    "A2",
+    "A3"
+   ],
+   "out": "A3|Zelazo| Piechota ",
+   "outIndex": 2
+  },
+  {
+   "current": "A2",
+   "candidates": [
+    "A4",
+    "A3"
+   ],
+   "out": "A3|Zelazo| Piechota ",
+   "outIndex": 2
+  },
+  {
+   "current": "A2",
+   "candidates": [
+    "A6"
+   ],
+   "out": null,
+   "outIndex": null
+  },
+  {
+   "current": "A2",
+   "candidates": [
+    "A7",
+    "A8",
+    "E2"
+   ],
+   "out": null,
+   "outIndex": null
+  },
+  {
+   "current": "A2",
+   "candidates": [
+    "B1",
+    "A1"
+   ],
+   "out": null,
+   "outIndex": null
+  },
+  {
+   "current": "A2",
+   "candidates": [],
+   "out": null,
+   "outIndex": null
+  },
+  {
+   "current": "A2",
+   "candidates": [
+    "F1",
+    "A4"
+   ],
+   "out": "A4|Żelazo|Piechota",
+   "outIndex": 3
+  },
+  {
+   "current": "A5",
+   "candidates": [
+    "A1",
+    "A2",
+    "A3",
+    "A4",
+    "A5",
+    "A6",
+    "A7",
+    "A8",
+    "B1",
+    "D1",
+    "E1",
+    "E2"
+   ],
+   "out": null,
+   "outIndex": null
+  },
+  {
+   "current": "A5",
+   "candidates": [
+    "A2",
+    "A3"
+   ],
+   "out": null,
+   "outIndex": null
+  },
+  {
+   "current": "A5",
+   "candidates": [
+    "A4",
+    "A3"
+   ],
+   "out": null,
+   "outIndex": null
+  },
+  {
+   "current": "A5",
+   "candidates": [
+    "A6"
+   ],
+   "out": null,
+   "outIndex": null
+  },
+  {
+   "current": "A5",
+   "candidates": [
+    "A7",
+    "A8",
+    "E2"
+   ],
+   "out": null,
+   "outIndex": null
+  },
+  {
+   "current": "A5",
+   "candidates": [
+    "B1",
+    "A1"
+   ],
+   "out": null,
+   "outIndex": null
+  },
+  {
+   "current": "A5",
+   "candidates": [],
+   "out": null,
+   "outIndex": null
+  },
+  {
+   "current": "A5",
+   "candidates": [
+    "F1",
+    "A4"
+   ],
+   "out": null,
+   "outIndex": null
+  },
+  {
+   "current": "B1",
+   "candidates": [
+    "A1",
+    "A2",
+    "A3",
+    "A4",
+    "A5",
+    "A6",
+    "A7",
+    "A8",
+    "B1",
+    "D1",
+    "E1",
+    "E2"
+   ],
+   "out": "A1|Zelazo|Lucznik",
+   "outIndex": 9
+  },
+  {
+   "current": "B1",
+   "candidates": [
+    "A2",
+    "A3"
+   ],
+   "out": null,
+   "outIndex": null
+  },
+  {
+   "current": "B1",
+   "candidates": [
+    "A4",
+    "A3"
+   ],
+   "out": null,
+   "outIndex": null
+  },
+  {
+   "current": "B1",
+   "candidates": [
+    "A6"
+   ],
+   "out": null,
+   "outIndex": null
+  },
+  {
+   "current": "B1",
+   "candidates": [
+    "A7",
+    "A8",
+    "E2"
+   ],
+   "out": null,
+   "outIndex": null
+  },
+  {
+   "current": "B1",
+   "candidates": [
+    "B1",
+    "A1"
+   ],
+   "out": "A1|Zelazo|Lucznik",
+   "outIndex": 9
+  },
+  {
+   "current": "B1",
+   "candidates": [],
+   "out": null,
+   "outIndex": null
+  },
+  {
+   "current": "B1",
+   "candidates": [
+    "F1",
+    "A4"
+   ],
+   "out": null,
+   "outIndex": null
+  },
+  {
+   "current": "A7",
+   "candidates": [
+    "A1",
+    "A2",
+    "A3",
+    "A4",
+    "A5",
+    "A6",
+    "A7",
+    "A8",
+    "B1",
+    "D1",
+    "E1",
+    "E2"
+   ],
+   "out": "A3|Zelazo| Piechota ",
+   "outIndex": 2
+  },
+  {
+   "current": "A7",
+   "candidates": [
+    "A2",
+    "A3"
+   ],
+   "out": "A3|Zelazo| Piechota ",
+   "outIndex": 2
+  },
+  {
+   "current": "A7",
+   "candidates": [
+    "A4",
+    "A3"
+   ],
+   "out": "A3|Zelazo| Piechota ",
+   "outIndex": 2
+  },
+  {
+   "current": "A7",
+   "candidates": [
+    "A6"
+   ],
+   "out": null,
+   "outIndex": null
+  },
+  {
+   "current": "A7",
+   "candidates": [
+    "A7",
+    "A8",
+    "E2"
+   ],
+   "out": "E2|Braz|Piechota",
+   "outIndex": 12
+  },
+  {
+   "current": "A7",
+   "candidates": [
+    "B1",
+    "A1"
+   ],
+   "out": null,
+   "outIndex": null
+  },
+  {
+   "current": "A7",
+   "candidates": [],
+   "out": null,
+   "outIndex": null
+  },
+  {
+   "current": "A7",
+   "candidates": [
+    "F1",
+    "A4"
+   ],
+   "out": "A4|Żelazo|Piechota",
+   "outIndex": 3
+  },
+  {
+   "current": "A8",
+   "candidates": [
+    "A1",
+    "A2",
+    "A3",
+    "A4",
+    "A5",
+    "A6",
+    "A7",
+    "A8",
+    "B1",
+    "D1",
+    "E1",
+    "E2"
+   ],
+   "out": "A3|Zelazo| Piechota ",
+   "outIndex": 2
+  },
+  {
+   "current": "A8",
+   "candidates": [
+    "A2",
+    "A3"
+   ],
+   "out": "A3|Zelazo| Piechota ",
+   "outIndex": 2
+  },
+  {
+   "current": "A8",
+   "candidates": [
+    "A4",
+    "A3"
+   ],
+   "out": "A3|Zelazo| Piechota ",
+   "outIndex": 2
+  },
+  {
+   "current": "A8",
+   "candidates": [
+    "A6"
+   ],
+   "out": null,
+   "outIndex": null
+  },
+  {
+   "current": "A8",
+   "candidates": [
+    "A7",
+    "A8",
+    "E2"
+   ],
+   "out": "E2|Braz|Piechota",
+   "outIndex": 12
+  },
+  {
+   "current": "A8",
+   "candidates": [
+    "B1",
+    "A1"
+   ],
+   "out": null,
+   "outIndex": null
+  },
+  {
+   "current": "A8",
+   "candidates": [],
+   "out": null,
+   "outIndex": null
+  },
+  {
+   "current": "A8",
+   "candidates": [
+    "F1",
+    "A4"
+   ],
+   "out": "A4|Żelazo|Piechota",
+   "outIndex": 3
+  },
+  {
+   "current": "A3",
+   "candidates": [
+    "A1",
+    "A2",
+    "A3",
+    "A4",
+    "A5",
+    "A6",
+    "A7",
+    "A8",
+    "B1",
+    "D1",
+    "E1",
+    "E2"
+   ],
+   "out": null,
+   "outIndex": null
+  },
+  {
+   "current": "A3",
+   "candidates": [
+    "A2",
+    "A3"
+   ],
+   "out": null,
+   "outIndex": null
+  },
+  {
+   "current": "A3",
+   "candidates": [
+    "A4",
+    "A3"
+   ],
+   "out": null,
+   "outIndex": null
+  },
+  {
+   "current": "A3",
+   "candidates": [
+    "A6"
+   ],
+   "out": null,
+   "outIndex": null
+  },
+  {
+   "current": "A3",
+   "candidates": [
+    "A7",
+    "A8",
+    "E2"
+   ],
+   "out": null,
+   "outIndex": null
+  },
+  {
+   "current": "A3",
+   "candidates": [
+    "B1",
+    "A1"
+   ],
+   "out": null,
+   "outIndex": null
+  },
+  {
+   "current": "A3",
+   "candidates": [],
+   "out": null,
+   "outIndex": null
+  },
+  {
+   "current": "A3",
+   "candidates": [
+    "F1",
+    "A4"
+   ],
+   "out": null,
+   "outIndex": null
+  },
+  {
+   "current": "A4",
+   "candidates": [
+    "A1",
+    "A2",
+    "A3",
+    "A4",
+    "A5",
+    "A6",
+    "A7",
+    "A8",
+    "B1",
+    "D1",
+    "E1",
+    "E2"
+   ],
+   "out": null,
+   "outIndex": null
+  },
+  {
+   "current": "A4",
+   "candidates": [
+    "A2",
+    "A3"
+   ],
+   "out": null,
+   "outIndex": null
+  },
+  {
+   "current": "A4",
+   "candidates": [
+    "A4",
+    "A3"
+   ],
+   "out": null,
+   "outIndex": null
+  },
+  {
+   "current": "A4",
+   "candidates": [
+    "A6"
+   ],
+   "out": null,
+   "outIndex": null
+  },
+  {
+   "current": "A4",
+   "candidates": [
+    "A7",
+    "A8",
+    "E2"
+   ],
+   "out": null,
+   "outIndex": null
+  },
+  {
+   "current": "A4",
+   "candidates": [
+    "B1",
+    "A1"
+   ],
+   "out": null,
+   "outIndex": null
+  },
+  {
+   "current": "A4",
+   "candidates": [],
+   "out": null,
+   "outIndex": null
+  },
+  {
+   "current": "A4",
+   "candidates": [
+    "F1",
+    "A4"
+   ],
+   "out": null,
+   "outIndex": null
+  },
+  {
+   "current": "E1",
+   "candidates": [
+    "A1",
+    "A2",
+    "A3",
+    "A4",
+    "A5",
+    "A6",
+    "A7",
+    "A8",
+    "B1",
+    "D1",
+    "E1",
+    "E2"
+   ],
+   "out": "A3|Zelazo| Piechota ",
+   "outIndex": 2
+  },
+  {
+   "current": "E1",
+   "candidates": [
+    "A2",
+    "A3"
+   ],
+   "out": "A3|Zelazo| Piechota ",
+   "outIndex": 2
+  },
+  {
+   "current": "E1",
+   "candidates": [
+    "A4",
+    "A3"
+   ],
+   "out": "A3|Zelazo| Piechota ",
+   "outIndex": 2
+  },
+  {
+   "current": "E1",
+   "candidates": [
+    "A6"
+   ],
+   "out": null,
+   "outIndex": null
+  },
+  {
+   "current": "E1",
+   "candidates": [
+    "A7",
+    "A8",
+    "E2"
+   ],
+   "out": null,
+   "outIndex": null
+  },
+  {
+   "current": "E1",
+   "candidates": [
+    "B1",
+    "A1"
+   ],
+   "out": null,
+   "outIndex": null
+  },
+  {
+   "current": "E1",
+   "candidates": [],
+   "out": null,
+   "outIndex": null
+  },
+  {
+   "current": "E1",
+   "candidates": [
+    "F1",
+    "A4"
+   ],
+   "out": "A4|Żelazo|Piechota",
+   "outIndex": 3
+  },
+  {
+   "current": "ZZZ",
+   "candidates": [
+    "A1",
+    "A2",
+    "A3",
+    "A4",
+    "A5",
+    "A6",
+    "A7",
+    "A8",
+    "B1",
+    "D1",
+    "E1",
+    "E2"
+   ],
+   "out": null,
+   "outIndex": null
+  },
+  {
+   "current": "ZZZ",
+   "candidates": [
+    "A2",
+    "A3"
+   ],
+   "out": null,
+   "outIndex": null
+  },
+  {
+   "current": "ZZZ",
+   "candidates": [
+    "A4",
+    "A3"
+   ],
+   "out": null,
+   "outIndex": null
+  },
+  {
+   "current": "ZZZ",
+   "candidates": [
+    "A6"
+   ],
+   "out": null,
+   "outIndex": null
+  },
+  {
+   "current": "ZZZ",
+   "candidates": [
+    "A7",
+    "A8",
+    "E2"
+   ],
+   "out": null,
+   "outIndex": null
+  },
+  {
+   "current": "ZZZ",
+   "candidates": [
+    "B1",
+    "A1"
+   ],
+   "out": null,
+   "outIndex": null
+  },
+  {
+   "current": "ZZZ",
+   "candidates": [],
+   "out": null,
+   "outIndex": null
+  },
+  {
+   "current": "ZZZ",
+   "candidates": [
+    "F1",
+    "A4"
+   ],
+   "out": null,
+   "outIndex": null
+  },
+  {
+   "current": "F1",
+   "candidates": [
+    "A1",
+    "A2",
+    "A3",
+    "A4",
+    "A5",
+    "A6",
+    "A7",
+    "A8",
+    "B1",
+    "D1",
+    "E1",
+    "E2"
+   ],
+   "out": null,
+   "outIndex": null
+  },
+  {
+   "current": "F1",
+   "candidates": [
+    "A2",
+    "A3"
+   ],
+   "out": null,
+   "outIndex": null
+  },
+  {
+   "current": "F1",
+   "candidates": [
+    "A4",
+    "A3"
+   ],
+   "out": null,
+   "outIndex": null
+  },
+  {
+   "current": "F1",
+   "candidates": [
+    "A6"
+   ],
+   "out": null,
+   "outIndex": null
+  },
+  {
+   "current": "F1",
+   "candidates": [
+    "A7",
+    "A8",
+    "E2"
+   ],
+   "out": null,
+   "outIndex": null
+  },
+  {
+   "current": "F1",
+   "candidates": [
+    "B1",
+    "A1"
+   ],
+   "out": null,
+   "outIndex": null
+  },
+  {
+   "current": "F1",
+   "candidates": [],
+   "out": null,
+   "outIndex": null
+  },
+  {
+   "current": "F1",
+   "candidates": [
+    "F1",
+    "A4"
+   ],
+   "out": null,
+   "outIndex": null
+  }
+ ]
+}

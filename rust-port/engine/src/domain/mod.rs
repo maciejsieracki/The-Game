@@ -28,6 +28,7 @@ pub mod mapgen;
 pub mod pathfinding;
 pub mod playable;
 pub mod player;
+pub mod production_units;
 pub mod recruitment;
 pub mod resource_production;
 pub mod rng;
