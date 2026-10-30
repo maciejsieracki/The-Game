@@ -1,0 +1,66 @@
+
+running 3 tests
+test boundary_finalize_pool2_p1_differs_from_p2_in_web ... ok
+test boundary_thicken_natural_25_passes_cap12_matches_web ... ok
+test boundary_finalize_pool2_maxpasses_1_to_5_matches_web ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+
+
+running 7 tests
+test flatten_threshold_is_five_on_targeted_maps ... ok
+test coast_thresholds_have_boundary_hits ... ok
+test flatten_false_coastal_river_notches_matches_web ... ok
+test thicken_coast_and_smooth_inlets_matches_web ... FAILED
+test purge_relief_valley_water_matches_web ... ok
+test trim_deep_ocean_bays_matches_web ... ok
+test finalize_coast_and_inland_water_matches_web ... ok
+
+failures:
+
+---- thicken_coast_and_smooth_inlets_matches_web stdout ----
+
+thread 'thicken_coast_and_smooth_inlets_matches_web' (20823) panicked at tests/p6_m06b1_vectors/common.rs:66:5:
+assertion `left == right` failed: thick-0-wdefault: zwrot: rust=38.0 web=52.0
+  left: 4630544841867001856
+ right: 4632515166703976448
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+   1: core::panicking::panic_fmt
+   2: core::panicking::assert_failed_inner
+   3: core::panicking::assert_failed::<u64, u64>
+   4: p6_m06b1_coast::common::assert_f64
+   5: p6_m06b1_coast::thicken_coast_and_smooth_inlets_matches_web
+   6: p6_m06b1_coast::thicken_coast_and_smooth_inlets_matches_web::{closure#0}
+   7: <p6_m06b1_coast::thicken_coast_and_smooth_inlets_matches_web::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+
+failures:
+    thicken_coast_and_smooth_inlets_matches_web
+
+test result: FAILED. 6 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.41s
+
+
+running 2 tests
+test max_ocean_bay_depth_both_limits_are_exercised ... ok
+test max_ocean_bay_depth_matches_web ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.32s
+
+
+running 2 tests
+test coast_table_every_leaf_has_web_source ... ok
+test coast_table_values_match_web_literals ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Compiling civ-engine v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_08650ee5-6a3-4/rust-port/engine)
+    Finished `test` profile [unoptimized] target(s) in 29.37s
+     Running tests/p6_m06b1_boundary.rs (/home/user/cargo-target-shared/wf_08650ee5-6a3-4/debug/deps/p6_m06b1_boundary-3ecc78c543fffc63)
+     Running tests/p6_m06b1_coast.rs (/home/user/cargo-target-shared/wf_08650ee5-6a3-4/debug/deps/p6_m06b1_coast-f8ab7080d099dfe1)
+error: test failed, to rerun pass `--test p6_m06b1_coast`
+     Running tests/p6_m06b1_ocean.rs (/home/user/cargo-target-shared/wf_08650ee5-6a3-4/debug/deps/p6_m06b1_ocean-64b52ebb03905141)
+     Running tests/p6_m06b1_tables.rs (/home/user/cargo-target-shared/wf_08650ee5-6a3-4/debug/deps/p6_m06b1_tables-68e81900ca949ac9)
+error: 1 target failed:
+    `--test p6_m06b1_coast`

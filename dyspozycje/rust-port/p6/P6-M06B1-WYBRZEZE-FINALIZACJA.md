@@ -22,8 +22,7 @@ Wzorzec: M05B (`P6-M05B-RELIEF-B-POKRYCIE-PASMA.md`), M06A9 (wektory i weryfikac
   `cargo test --offline --no-fail-fast`: **1433 passed, 0 failed** (= 1422 baza + 11). Zero zmian testow bazowych.
 - Bramki (surowe logi w runie): fmt `EXIT=0` (`gate-fmt-r1.log`), clippy `--all-targets -D warnings` `EXIT=0`
   (`gate-clippy-r1.log`), test `EXIT=0` (`gate-test-r1.log`), `git diff --check` `EXIT=0`.
-- Mutacje, niezalezny weryfikator i pomiary granic w tej rundzie NIE wykonywane (rola Operator-impl; wykonuje
-  Operator-pomiary w osobnym wywolaniu).
+- Mutacje i pomiary granic: wykonane w Operator-pomiary r1, patrz §9 (niezalezny weryfikator w Pythonie NIE zbudowany, §9.5).
 
 ## 1. Symbole zakresu - status
 
@@ -99,8 +98,9 @@ Liczby = dokladne trafienia wartosci (`==`) w wejsciu kazdego przypadku (generat
 | `dryN >= 3` (purge; woda, bez filtra BFS) | 2112 (==2) | 955 (==3) | 593 (==4) | j.w. |
 | `floor(min(w,h)/6)` vs dolny limit 4 (ocean) | 18 (==3) | 18 (==4) | 18 (==5) | |
 | `floor(min(w,h)/6)` vs gorny limit 16 (ocean) | 33 (==15) | 12 (==16) | 12 (==17) | |
-| `maxPasses` (finalize), przebiegi 1..5 | 0 roznic | - | - | **LUKA**: wynik identyczny dla 1..5 na 60 mapach |
-| `przebiegi_wygladzania` = 12 (thicken a) | - | - | - | **NIE_ZMIERZONO**: brak instrumentacji webu |
+| `maxPasses` (finalize), przebiegi 1..5, pula null | 0 roznic | - | - | wynik identyczny dla 1..5 (60 map) - dotyczy TYLKO puli null |
+| `maxPasses` (finalize), pula 2 | roznica out(2) != out(1) | - | - | sprawdzone w §9 (fin-7-pool2, fin-32-pool2, bnd-fin-pool2-*) |
+| `przebiegi_wygladzania` = 12 (thicken a) | naturalnie 25 przebiegow (§9) | - | - | cap NIE zmienia wyniku koncowego na zmierzonych mapach (§9) |
 
 Pokrycie wektorow (liczba przypadkow): ocean 330, purge 228, trim 80, finalize 420, thicken 296, flatten 88 (razem 1442);
 mapy 530; plik `tests/p6_m06b1_vectors/web-vectors.json` 7 173 573 B (< 10 MB), SHA-256 `2f9f203904b36cbbcaa710a8d26bfd76eacc6f4e5f3c78a11539f05c291ae919`.
@@ -108,16 +108,81 @@ Wynik nietrywialny: ret>0 w purge 140/228, trim 65/80, thicken 292/296, flatten 
 
 ## 7. Ryzyka / do Evaluatora
 
-- **Luka `maxPasses`**: przebiegi 2+ nie zmieniaja wyniku na zebranych mapach, wiec granica N-1/N/N+1 dla
-  `maxPasses` NIE jest pokryta. Wymaga map, w ktorych sanityzacja/pierscien tworza nowa wode srodladowa lub
-  morze dotykajace lądu (kolejna runda: generator zlozonych zatok). Nie zamykane tutaj (zakaz wydluzania rundy).
-- Limit `przebiegi_wygladzania` (12) nie jest mierzony (NIE_ZMIERZONO); wektory nie sprawdzaja, czy cap 12 jest kiedykolwiek osiagany.
+- **Luka `maxPasses`**: ZAMKNIETA dla N=3 w §9.3 (N-1 i N+1 rozrozniane wektorami z weba); pozostaje tylko dowod ogolny.
+- Limit `przebiegi_wygladzania` (12): cap JEST osiagany (naturalnie 25 przebiegow, §9.2), ale NIE jest obserwowalny na
+  wyjsciu funkcji na zmierzonych mapach - mutacje capu 11/13 przezywaja (§9.2). Otwarte.
 - Funkcje `trimDeepOceanBays` i `trimEnclosedOceanOnly` maja identyczne cialo w webie; port deleguje (dowod: ten sam
   kod, `gra/src/map/gen-helpers.ts:4761-4772` vs `:4701-4712`).
-- Mutacje (wymagane przez R-PROC) NIE wykonane w r1; zostaja dla Operator-pomiary.
+- Mutacje: wykonane (28 mutacji, §9.1); przezywaja 5: 3 rownowazne z dowodem (§9.1), 2 cap-11/13 nieobserwowalne (§9.2).
 
 ## 8. Ograniczenia zakresu
 
 - Symbole M06B2 (`removeTinyLandIslands` :4946 i dalej) poza tematem; ich port wymaga osobnego ID.
 - Brak zmian w `relief.rs`, `bridge.rs`, `Cargo.toml`, `gra/**`, `renderer/**`, `src-tauri/**`, `domain/mod.rs`,
   `tests/p6_m00_skeleton.rs`; brak zmian istniejacych testow.
+
+## 9. Operator-pomiary r1 (odpowiedz na zarzuty; baza kodu = deb8055e, bez zmian w `landsea.rs`)
+
+Dodane w tej rundzie: `tests/p6_m06b1_boundary.rs` (3 testy), `tests/p6_m06b1_vectors/web-boundary.json`
+(generator `gen-m06b1-boundary-vectors.mjs`, wejscia = `evidence-*.out`), `mut-runner-m06b1.py`,
+`mut-results-m06b1-r1.json`, `mut-logs/*.log`, `m06b1-*-search.mjs` (pomiary). Stare wektory
+`web-vectors.json` NIEZMIENIONE. Oracle = prawdziwy kod weba (pin `edb8fb56`), bez reimplementacji.
+
+### 9.1 Mutacje (28; kazda: dokladnie 1 wystapienie, przywrocenie pliku zweryfikowane sha256)
+
+- Zabite (23): M01-M11, M13, M14, M15, M18, M21-M28. Ocean (M01-M02), purge (M03-M08), finalize (M09-M11,
+  M13, M14, M27, M28), thicken (M15, M18, M21), flatten (M22, M23), tabela JSON (M24-M26). Logi: `mut-logs/`.
+- Przezyly (5):
+  - **M12** (usuniety `if changed == 0 { break }` w `finalize_coast_and_inland_water`, landsea.rs:2105):
+    RÓWNOWAZNA. Kazdy helper zwraca liczbe heksow, ktorych TERRAIN faktycznie zmienil: `remove_inland_water_pools`
+    (l.365: `inland.len()`, kazdy heks woda -> Laka), `apply_double_coast_ring` (l.201: `n + to_coast.len()`,
+    Morze -> Plytkie), `sanitize_coast_hexes` (l.246: `orphans.len()`, Plytkie -> Morze),
+    `remove_small_inland_water_pools` (l.414: `converted`, woda -> Laka). Zadna z tych funkcji nie uzywa RNG.
+    Zatem `changed == 0` <=> stan bitowo bez zmian; kolejne przebiegi sa no-opami; wynik identyczny.
+    Web: `gra/src/map/gen-helpers.ts:4787-4822` (ten sam argument w komentarzu przy `changed`; break web :4820).
+  - **M19** (usuniety `if to_fill.is_empty() { break }`, thicken (a), landsea.rs:2157): RÓWNOWAZNA. Pusty `to_fill`
+    nie zmienia stanu ani `changed`; kolejna iteracja liczy ten sam pusty zbior (funkcja czysta). Web :4860.
+  - **M20** (usuniety `if to_coast.is_empty() { break }`, thicken (b), landsea.rs:2198): RÓWNOWAZNA, ten sam dowod. Web :4891.
+  - **M16 / M17** (cap `przebiegi_wygladzania` 12 -> 11 / 13): NIE ZABITE, NIE DOWIEDZIONE. Patrz §9.2.
+
+### 9.2 Limit `przebiegi_wygladzania` = 12 (thicken (a))
+
+- Pomiar: `evidence-thicken-uncapped-search.out` (W=11, H=22): NATURALNIE 25 przebiegow z praca (licznik w kopii
+  instrumentowanej; web bez limitu). Przebiegi 11..24 zmieniaja 1-2 heksy kazdy (log per-przebieg, kopia `instr_dbg`).
+- Mimo to wynik KONCOWY jest identyczny dla capu 11, 12, 13 i bez limitu (sha256 pelnego stanu, prefiks
+  `e77bc2d70418a2fb`; `ret` = 124 we wszystkich). Przyczyna NIE dowiedziona (hipoteza: koncowy
+  `removeInlandWaterPools` przejmuje te heksy).
+- Szukanie mapy z rozbieznoscia (`m06b1-cap-divergence-search.mjs`, hill-climb, 15 x 3000 ocen, W,H 9..24):
+  0 map, w ktorych cap 12 != bez limitu.
+- Wektor `bnd-thick-natural25-default` (Rust == web na tej mapie) PASUJE; nie zabija M16/M17, bo wyjscie nie zalezy od capu.
+- STATUS: OTWARTE. Cap nieobserwowalny na wyjsciu na zmierzonym zakresie; brak dowodu formalnego. Decyzja: ZALOZENIE
+  orkiestratora (cap 12 zostaje z webu) lub osobny dowod/wektor w rundzie 2.
+
+### 9.3 Granica `maxPasses` (domyslnie 3)
+
+- Pula null: out(p) == out(p-1) dla p=2..5 na 3000 losowych mapach (`m06b1-boundary-search.mjs`) i na 60 mapach
+  generatora. Dotyczy TYLKO puli null (poprzednie zdanie "0 roznic" nie obejmowalo puli).
+- Pula 2: out(2) != out(1) na 1/3000 losowych map; out(3)==out(2) i out(4)==out(3) na calym zbiorze.
+- Wektory z weba (istniejace w `web-vectors.json`, sprawdzone bezposrednio przez web, pula 2):
+  - `fin-7-pool2`: out(2) != out(3) (= N-1 dla N=3); out(3) = out(4) = out(5). Zabija M27 (min(2)).
+  - `fin-32-pool2`: out(3) != out(4) (= N+1 dla N=3). Zabija M28 (N=3 -> 4).
+  - Granica N=1/2: `bnd-fin-pool2-p1` != `bnd-fin-pool2-p2` (nowe wektory). Zabija M09, M10, M11.
+- Wniosek: granica N-1/N/N+1 dla maxPasses=3 pokryta wektorami zrodlowymi z weba. Sprzecznosc z zarzutu wyjasniona:
+  min(1) byl zabity przez przypadki puli 2, nie przez pule null.
+- Uwaga o logach: surowe logi cargo zapisuje runner dopiero od M21 (`mut-logs/`); wyniki M01-M20 sa w
+  `mut-results-m06b1-r1.json` (pola `rc`, `wyniki`, `failed_tests`, `przywrocono`).
+
+### 9.4 Bramki (commit z tym dokumentem; logi surowe z `EXIT=`)
+
+- `cargo fmt -- --check`: EXIT=0 (`gate-fmt-r1.log`).
+- `cargo clippy --offline --all-targets -- -D warnings`: EXIT=0 (`gate-clippy-r1.log`).
+- `cargo test --offline --no-fail-fast`: EXIT=0, 1436 passed, 0 failed (`gate-test-r1.log`); 1433 z impl + 3 nowe.
+- `git diff --check`: EXIT=0.
+- Test M06B1 (ocean, coast, tables, boundary) na kodzie bazowym: wszystkie zielone.
+
+### 9.5 NIE zrobione w r1 (jawnie)
+
+- Niezalezny weryfikator w Pythonie (wymog dispatchu): NIE zbudowany. Oracle = web; brak niezaleznej reimplementacji.
+- Scalanie kategorii wektorow jako PREFIKS (cmp-vectors): NIE zrobione; nowe wektory w osobnym pliku.
+- M16 / M17 (cap 11/13): patrz §9.2, otwarte.
+- Dryf po pinie (§4) bez zmian; odswiezenie wektorow poza zakresem.
