@@ -28,7 +28,7 @@
 use std::collections::{HashMap, HashSet};
 
 use crate::data::derived::{
-    mapgen_desert_purge, mapgen_jagged_coast, mapgen_landsea, mapgen_landsea_fill,
+    mapgen_coast, mapgen_desert_purge, mapgen_jagged_coast, mapgen_landsea, mapgen_landsea_fill,
     mapgen_landsea_pangea, MapgenJaggedCoastFile,
 };
 use crate::domain::improvements::js_round;
@@ -42,8 +42,9 @@ use crate::domain::mapgen::prims::{
 };
 use crate::domain::mapgen::terrain_class::{
     apply_marginal_land_zone_caps, enforce_map_border_ocean, hash_int3, hex_border_distance,
-    is_in_map_border, map_center_distance_norm, map_margin_land_zone_hexes, parse_hex_key,
-    set_hex_to_laka, set_hex_to_morze, HexRecord, MarginZoneHooks, Nakladka,
+    is_in_map_border, map_border_width, map_center_distance_norm, map_margin_land_zone_hexes,
+    parse_hex_key, set_hex_to_laka, set_hex_to_morze, HexRecord, MarginZoneHooks, Nakladka,
+    TerrainHex,
 };
 use crate::domain::recruitment::manpower::locale_compare;
 
@@ -1993,4 +1994,273 @@ pub fn rebalance_land_sea_ratio(
         }
     }
     adjusted
+}
+
+// ---------------------------------------------------------------------------
+// P6.M06B1 (R-RUSTPORT-P6-M06B1-WYBRZEZE-FINALIZACJA-Q1), partia 1 z M06B: finalizacja wybrzeza
+// i wod srodladowych (gen-helpers.ts:4649-4939). Symbole: `maxOceanBayDepth` :4649,
+// `purgeReliefValleyWater` :4724, `trimDeepOceanBays` :4761, `finalizeCoastAndInlandWater` :4787,
+// `thickenCoastAndSmoothInlets` :4840, `flattenFalseCoastalRiverNotches` :4915.
+// Progi i mnozniki: `data/derived/mapgen-coast.json` (`mapgen_coast()`), bez literalow w kodzie.
+// Kolejnosc iteracji = kolejnosc wstawiania `HexRecord` (jak `Object.entries`). Sekwencyjne
+// mutacje (purge, thicken) czytaja stan na biezaco, jak w JS.
+// ---------------------------------------------------------------------------
+
+/// Web `setHexToLaka` z czyszczeniem rzeki (kopia lokalna `trimEnclosedOceanOnly` / `purgeReliefValleyWater`):
+/// Laka, Brak, rzeka wylaczona, zloze usuniete.
+fn clear_hex_to_laka_with_river(hex: &mut TerrainHex) {
+    hex.terrain = Terrain::Grassland;
+    hex.overlay = Nakladka::Brak;
+    hex.river_present = false;
+    hex.river_edges.clear();
+    hex.has_deposit = false;
+}
+
+/// Web `maxOceanBayDepth(width, height)` (:4649): `max(bufor+dolny, min(bufor+gorny, floor(min(w,h)/dzielnik)))`.
+/// Bufor brzegu = `map_border_width` (terrain_class; dla kazdego rozmiaru = twardy pas oceanu).
+pub fn max_ocean_bay_depth(width: i64, height: i64) -> f64 {
+    let p = &mapgen_coast().zatoki_oceanu;
+    let border = map_border_width(width as f64, height as f64);
+    let scaled = js_min(width as f64, height as f64);
+    let scaled = (scaled / p.dzielnik_skali.wartosc).floor();
+    js_max(
+        border + p.bufor_min_dodatek.wartosc,
+        js_min(border + p.bufor_gorny_dodatek.wartosc, scaled),
+    )
+}
+
+/// Web `purgeReliefValleyWater(hexes, width, height)` (:4724): woda (Morze/Plytkie) poza zasiegiem
+/// BFS z krawedzi, z >= `min_sasiadow_rzezby` sasiadami Gory/Wzgorza ORAZ >= `min_sasiadow_suchych`
+/// sasiadami suchego lądu -> Laka. Sasiedzi czytani na biezaco (zmiany wczesniejszych heksow widoczne).
+/// Zwraca liczbe zamienionych heksow.
+pub fn purge_relief_valley_water(hexes: &mut HexRecord, width: i64, height: i64) -> usize {
+    let p = &mapgen_coast().dolina_rzezby;
+    let depth = morse_depth_from_map_border(hexes, width, height);
+    let keys: Vec<String> = hexes.keys().cloned().collect();
+    let mut converted = 0usize;
+    for key in &keys {
+        let Some(hex) = hexes.get(key) else { continue };
+        if !is_water_terrain_local(hex.terrain) {
+            continue;
+        }
+        let (q, r) = (hex.q, hex.r);
+        if depth.contains_key(&hex_key(q, r)) {
+            continue;
+        }
+        let mut relief_neighbors = 0usize;
+        let mut dry_land_neighbors = 0usize;
+        for &(dq, dr) in HEX_DIRECTIONS.iter() {
+            let Some(nh) = hexes.get(&hex_key(q + i64::from(dq), r + i64::from(dr))) else {
+                continue;
+            };
+            if is_water_terrain_local(nh.terrain) {
+                continue;
+            }
+            dry_land_neighbors += 1;
+            if matches!(nh.terrain, Terrain::Mountains | Terrain::Hills) {
+                relief_neighbors += 1;
+            }
+        }
+        if relief_neighbors >= p.min_sasiadow_rzezby.wartosc
+            && dry_land_neighbors >= p.min_sasiadow_suchych.wartosc
+        {
+            if let Some(h) = hexes.get_mut(key) {
+                clear_hex_to_laka_with_river(h);
+            }
+            converted += 1;
+        }
+    }
+    converted
+}
+
+/// Web `trimDeepOceanBays(hexes, width, height, _maxDepth?)` (:4761). Parametr `_maxDepth` nie jest
+/// czytany w ciele funkcji (NIE-DOTYCZY w porcie). Logika web jest identyczna z `trimEnclosedOceanOnly`
+/// (:4701): Morze spoza wyniku `morseDepthFromMapBorder` -> Laka z czyszczeniem rzeki i zloza.
+pub fn trim_deep_ocean_bays(hexes: &mut HexRecord, width: i64, height: i64) -> usize {
+    trim_enclosed_ocean_only(hexes, width, height)
+}
+
+/// Web `finalizeCoastAndInlandWater(hexes, width, height, maxPasses = 3, opts?)` (:4787).
+/// `max_inland_pool_size = None` = brak `opts.maxInlandPoolSize` (`removeInlandWaterPools`).
+/// Przebieg: usun wode srodladowa -> pierscien podwojny -> sanity -> usun wode srodladowa; stop gdy
+/// brak wody srodladowej i brak lądu stykajacego morze, albo przebieg nic nie zmienil.
+pub fn finalize_coast_and_inland_water(
+    hexes: &mut HexRecord,
+    width: i64,
+    height: i64,
+    max_passes: usize,
+    max_inland_pool_size: Option<usize>,
+) {
+    for _pass in 0..max_passes {
+        let mut changed = 0usize;
+        changed += remove_inland_pools_opt(hexes, width, height, max_inland_pool_size);
+        changed += apply_double_coast_ring(hexes);
+        changed += sanitize_coast_hexes(hexes);
+        changed += remove_inland_pools_opt(hexes, width, height, max_inland_pool_size);
+        if find_inland_water_hexes(hexes, width, height).is_empty()
+            && find_dry_land_touching_sea(hexes).is_empty()
+        {
+            break;
+        }
+        if changed == 0 {
+            break;
+        }
+    }
+}
+
+/// Wariant domyslny (web: `maxPasses` z domyslnej wartosci, `opts` nieobecne) z tabeli JSON.
+pub fn finalize_coast_and_inland_water_default(hexes: &mut HexRecord, width: i64, height: i64) {
+    let max_passes = mapgen_coast().finalizacja.max_przebiegow_domyslne.wartosc;
+    finalize_coast_and_inland_water(hexes, width, height, max_passes, None);
+}
+
+fn remove_inland_pools_opt(
+    hexes: &mut HexRecord,
+    width: i64,
+    height: i64,
+    max_inland_pool_size: Option<usize>,
+) -> usize {
+    match max_inland_pool_size {
+        Some(max) => remove_small_inland_water_pools(hexes, width, height, max),
+        None => remove_inland_water_pools(hexes, width, height),
+    }
+}
+
+/// Web `thickenCoastAndSmoothInlets(hexes, width, height, coastWidth = 2)` (:4840). Zwraca `changed`.
+///  (a) Morze poza krawedzia z >= `prog_sasiadow_ladu` sasiadami lądu -> Laka; zbieznie, max
+///      `przebiegi_wygladzania` przebiegow; potem `remove_inland_water_pools`.
+///  (b) Plytkie -> Morze; potem `coast_width` pierscieni Plytkiego Morza od lądu/Plytkiego (bez
+///      `sanitize_coast_hexes`).
+pub fn thicken_coast_and_smooth_inlets(
+    hexes: &mut HexRecord,
+    width: i64,
+    height: i64,
+    coast_width: usize,
+) -> usize {
+    let p = &mapgen_coast().wciecia;
+    let mut changed = 0usize;
+
+    for _pass in 0..p.przebiegi_wygladzania.wartosc {
+        let mut to_fill: Vec<String> = Vec::new();
+        for (key, hex) in hexes.iter() {
+            if hex.terrain != Terrain::Sea {
+                continue;
+            }
+            let Some((q, r)) = key_qr(key) else { continue };
+            if is_in_map_border(q as f64, r as f64, width as f64, height as f64, None) {
+                continue;
+            }
+            if count_land_neighbors(hexes, q, r) >= p.prog_sasiadow_ladu.wartosc {
+                to_fill.push(key.clone());
+            }
+        }
+        if to_fill.is_empty() {
+            break;
+        }
+        for key in &to_fill {
+            if let Some(h) = hexes.get_mut(key) {
+                set_hex_to_laka(h);
+                changed += 1;
+            }
+        }
+    }
+    changed += remove_inland_water_pools(hexes, width, height);
+
+    let shallow_keys: Vec<String> = hexes
+        .iter()
+        .filter(|(_, h)| h.terrain == Terrain::ShallowSea)
+        .map(|(k, _)| k.clone())
+        .collect();
+    for key in &shallow_keys {
+        if let Some(h) = hexes.get_mut(key) {
+            set_hex_to_morze(h);
+            changed += 1;
+        }
+    }
+    for _ring in 0..coast_width {
+        let mut to_coast: Vec<String> = Vec::new();
+        for (key, hex) in hexes.iter() {
+            if hex.terrain != Terrain::Sea {
+                continue;
+            }
+            let Some((q, r)) = key_qr(key) else { continue };
+            let touches = HEX_DIRECTIONS.iter().any(|&(dq, dr)| {
+                hexes
+                    .get(&hex_key(q + i64::from(dq), r + i64::from(dr)))
+                    .is_some_and(|nb| {
+                        is_dry_land_terrain(nb.terrain) || nb.terrain == Terrain::ShallowSea
+                    })
+            });
+            if touches {
+                to_coast.push(key.clone());
+            }
+        }
+        if to_coast.is_empty() {
+            break;
+        }
+        for key in &to_coast {
+            if let Some(h) = hexes.get_mut(key) {
+                h.terrain = Terrain::ShallowSea;
+                h.overlay = Nakladka::Brak;
+                h.has_deposit = false;
+                changed += 1;
+            }
+        }
+    }
+    changed
+}
+
+/// Wariant domyslny `thickenCoastAndSmoothInlets` (bez `coastWidth`): szerokosc z tabeli JSON.
+pub fn thicken_coast_and_smooth_inlets_default(
+    hexes: &mut HexRecord,
+    width: i64,
+    height: i64,
+) -> usize {
+    let coast_width = mapgen_coast().wciecia.szerokosc_wybrzeza_domyslna.wartosc;
+    thicken_coast_and_smooth_inlets(hexes, width, height, coast_width)
+}
+
+/// Web `flattenFalseCoastalRiverNotches(hexes, width, height)` (:4915): pojedynczy przebieg; Plytkie
+/// bez rzeki, poza krawedzia, z >= `prog_sasiadow_morza` sasiadami Morze -> Morze (rzeka wylaczona,
+/// zloze usuniete). Zwraca liczbe zamienionych heksow.
+pub fn flatten_false_coastal_river_notches(
+    hexes: &mut HexRecord,
+    width: i64,
+    height: i64,
+) -> usize {
+    let prog = mapgen_coast().cypel_ujscia.prog_sasiadow_morza.wartosc;
+    let mut to_flatten: Vec<String> = Vec::new();
+    for (key, hex) in hexes.iter() {
+        if hex.terrain != Terrain::ShallowSea {
+            continue;
+        }
+        if hex.river_present {
+            continue;
+        }
+        let Some((q, r)) = key_qr(key) else { continue };
+        if is_in_map_border(q as f64, r as f64, width as f64, height as f64, None) {
+            continue;
+        }
+        let morze_n = HEX_DIRECTIONS
+            .iter()
+            .filter(|&&(dq, dr)| {
+                hexes
+                    .get(&hex_key(q + i64::from(dq), r + i64::from(dr)))
+                    .is_some_and(|nh| nh.terrain == Terrain::Sea)
+            })
+            .count();
+        if morze_n >= prog {
+            to_flatten.push(key.clone());
+        }
+    }
+    for key in &to_flatten {
+        if let Some(h) = hexes.get_mut(key) {
+            h.terrain = Terrain::Sea;
+            h.overlay = Nakladka::Brak;
+            h.river_present = false;
+            h.river_edges.clear();
+            h.has_deposit = false;
+        }
+    }
+    to_flatten.len()
 }

@@ -4850,3 +4850,74 @@ pub fn mapgen_landsea_pangea_fill() -> &'static MapgenLandseaPangeaFillFile {
         parse_mapgen_landsea_pangea_fill().expect("mapgen-landsea-pangea-fill.json must parse")
     })
 }
+
+// ---------------------------------------------------------------------------------------------
+// P6.M06B1 (R-RUSTPORT-P6-M06B1-WYBRZEZE-FINALIZACJA-Q1) - finalizacja wybrzeza i wod srodladowych,
+// partia 1. Literaly progow i mnoznikow w `data/derived/mapgen-coast.json` (pin web edb8fb56,
+// gen-helpers.ts:4649-4939). Kazdy lisc ma `zrodlo_web`.
+// ---------------------------------------------------------------------------------------------
+
+/// Tekst `mapgen-coast.json` (wbudowany w binarke).
+pub const MAPGEN_COAST_JSON: &str = include_str!("../../data/derived/mapgen-coast.json");
+
+/// Sekcja `zatoki_oceanu` (web `maxOceanBayDepth` :4649).
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct CoastZatokiOceanu {
+    pub dzielnik_skali: StartValue<f64>,
+    pub bufor_min_dodatek: StartValue<f64>,
+    pub bufor_gorny_dodatek: StartValue<f64>,
+}
+
+/// Sekcja `dolina_rzezby` (web `purgeReliefValleyWater` :4724).
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct CoastDolinaRzezby {
+    pub min_sasiadow_rzezby: StartValue<usize>,
+    pub min_sasiadow_suchych: StartValue<usize>,
+}
+
+/// Sekcja `finalizacja` (web `finalizeCoastAndInlandWater` :4787).
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct CoastFinalizacja {
+    pub max_przebiegow_domyslne: StartValue<usize>,
+}
+
+/// Sekcja `wciecia` (web `thickenCoastAndSmoothInlets` :4840).
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct CoastWciecia {
+    pub przebiegi_wygladzania: StartValue<usize>,
+    pub prog_sasiadow_ladu: StartValue<usize>,
+    pub szerokosc_wybrzeza_domyslna: StartValue<usize>,
+}
+
+/// Sekcja `cypel_ujscia` (web `flattenFalseCoastalRiverNotches` :4915).
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct CoastCypelUjscia {
+    pub prog_sasiadow_morza: StartValue<usize>,
+}
+
+/// Plik `mapgen-coast.json`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct MapgenCoastFile {
+    pub meta: serde_json::Value,
+    pub zatoki_oceanu: CoastZatokiOceanu,
+    pub dolina_rzezby: CoastDolinaRzezby,
+    pub finalizacja: CoastFinalizacja,
+    pub wciecia: CoastWciecia,
+    pub cypel_ujscia: CoastCypelUjscia,
+}
+
+pub fn parse_mapgen_coast() -> Result<MapgenCoastFile, serde_json::Error> {
+    serde_json::from_str(MAPGEN_COAST_JSON)
+}
+
+/// Tabela finalizacji wybrzeza (jednorazowy odczyt; blad danych = panika z komunikatem).
+pub fn mapgen_coast() -> &'static MapgenCoastFile {
+    static TABLE: std::sync::OnceLock<MapgenCoastFile> = std::sync::OnceLock::new();
+    TABLE.get_or_init(|| parse_mapgen_coast().expect("mapgen-coast.json must parse"))
+}
