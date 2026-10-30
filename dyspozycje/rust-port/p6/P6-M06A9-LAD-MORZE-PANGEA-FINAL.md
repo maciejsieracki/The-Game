@@ -118,9 +118,80 @@ Operator-pomiary (lub osobnego tematu). Nie zapisano "M06A KOMPLET" (binarne kry
 (4473-4612, 3667-3700, 3791-3880). Pin NIE przepinany (zgodnie z dispatchem); odswiezenie = osobny temat po
 R-RUSTPORT-REPIN-DELTA-Q1.
 
+## Pomiary (Operator-pomiary, ta sama runda 1)
+
+Commit kodu: `7eb3c0ea`; raport Operatora-impl: `5539e4b8`. Pomiary wykonane na `5539e4b8` (detached).
+
+### Niezalezna weryfikacja wektorow
+
+- Ponowna generacja wektorow z pinu `edb8fb56` (eksport `git archive` do katalogu tymczasowego POZA repo,
+  generator `gen-m06a9-vectors.mjs` uruchomiony ponownie): sumy SHA-256 identyczne z plikami w repo
+  (`fill` 77a80adc..., `ratio` 5f8d5d61..., `pangea` 4ad61ee2...). Wektory sa powtarzalne i pochodza z pinu.
+- Przeglad kodu Rust vs web (czytanie `gen-helpers.ts` :3667, :3791, :4375, :4473-4612): sekwencja przebiegow
+  `rebalanceLandFractionPangea` 1:1; hak `ensurePangeaSingleContinent` (web :4469 wola `fillPangeaAnnularSeaCorridors`)
+  = `fill_hook` w Rust. Zgodne progi: seaBand `> maxW+1` (Rust `> max_w + fill_prog_pasma_zapas`), limit petli
+  `maxW+2` (Rust `max_w + zapas`), `n < 40`, `dist < 0.01`. Rozbieznosc jedynie nazewnicza: Rust uzywa
+  `fill_dist_epsilon` takze w `pangea_radial_dry_land_steps` (web: literal 0.01 w obu miejscach); ta sama wartosc,
+  ale dwa literaly w JSON-ie zostana zsprzezone - do zapisania w zakresie kolejnego tematu.
+- Trafienia graniczne (zmierzone na wektorach): fill `losowe-00022` ma dokladnie 40 suchych heksow (N) i
+  `converted=12`; prog N-1/N+1 (`prog-ladu-00114/00116`, 39 i 41) daje 0 zmian - prog 40 jest trafiony przez
+  wektor losowy, nie przez rodzine prog-ladu. Wektory `granica-pas` (maxW 3/4/6/8 x a x T = maxW-1/maxW/maxW+1)
+  trafiaja warunki `i<=maxW`, `o<=maxW` i `seaBand>maxW+1` (potwierdzone mutantami M01, M03, M04, M08 - KILLED).
+  Prog pasma `seaBand` przy limicie `maxW+2` NIE jest trafiony (M07 - SURVIVED, patrz nizej).
+- Prog udzialu ratio: `land = target` (N) trafiony wektorami; mutanty M09/M19 (`<`->`<=`, `>=`->`>`) sa
+  równoważne (patrz nizej), a M20 (target+1) i M12 (clamp) zabite.
+
+### Mutacje strukturalne (`mut-runner-pomiary.py`, wynik: `mut-results-pomiary.log`)
+
+Ran: 21 mutantow, po jednym na raz, `cargo test --test p6_m06a9_landsea`; plik przywracany po kazdym mutancie (RESTORED True).
+
+| Mutant | Wynik | Uwagi |
+|---|---|---|
+| M01 inward `<=` -> `<` | KILLED | granica pasma |
+| M02 `&&` -> `||` w `pangea_sea_hex_is_annular_corridor` | SURVIVED = RÓWNOWAŻNY | (Some(i),Some(o)) zachodzi tylko gdy i,o <= max_w, bo `pangea_radial_dry_land_steps` zwraca krok tylko wewnatrz `while step <= max_steps`; koniunkcja `i<=max_w && o<=max_w` jest tautologia w tej galezi; `||` daje ten sam wynik |
+| M03 seaband `>` -> `>=` | KILLED | |
+| M04 seaband prog `-1` | KILLED | |
+| M05 centroid `< 40` -> `<= 40` | KILLED | trafia `losowe-00022` (N=40) |
+| M06 galaz border inwersja | KILLED | |
+| M07 limit petli seaband `max_w + zapas` -> `max_w` | SURVIVED - NIE-ZABITY, NIE-EKWIWALENTNY | LUKA: brak wektora, w ktorym ciagla woda w jedna strone ma dlugosc maxW+1 (a w druga 0) przy hexie bramy obwarzanka; mutant zmienia decyzje `seaBand > maxW+1` tylko w takim przypadku. Do zamkniecia wektorem (nowy przypadek w rodzinie granica-zatoka), NIE w tej rundzie |
+| M08 `step <= max_steps` -> `<` | KILLED | |
+| M09 ratio `land < target` -> `<=` | SURVIVED = RÓWNOWAŻNY | linia po `if land == target_land { break; }` bez zmiany `land` - warunek `<=` i `<` daja to samo |
+| M10 rank `<= 1` -> `<= 0` | KILLED | |
+| M11 wybor `score < b` -> `<=` | KILLED | pierwszy-wygrywa |
+| M12 clamp max `0.85 - 0.01` | KILLED | |
+| M13 hak koncowy `ensure` -> `0` | KILLED | |
+| M14 hak posredni `ensure` -> `0` | KILLED | |
+| M15 usuniety drugi `fill` po jagged | KILLED | |
+| M16 zamiana erode/carve | KILLED | |
+| M17 radial `dist < eps` -> `<=` | SURVIVED - NIE-ZABITY, równoważność NIE DOWIEDZIONA | zmienia wynik tylko przy hypot == 0.01 dokladnie; brak takiego heksa we wektorach; wymaga przypadku z odleglosca rowna eps |
+| M18 jagged passes `-1` | KILLED | |
+| M19 ratio trim `land >= target` -> `>` | SURVIVED = RÓWNOWAŻNY | przy `land == target` blok trim jest pusty (`while land > target` nie wchodzi), potem `break` vs `continue` -> kolejna iteracja widzi `land == target` i wychodzi; `land` sledzone dokladnie (kazdy to_fill to +1 Morze->Laka) |
+| M20 total `+1` | KILLED | |
+| M21 `max_layers` `-1` | SURVIVED - NIE-ZABITY, równoważność NIE DOWIEDZIONA | granica petli `ceil(sqrt(w*h))`; zadna iteracja nie zmienia `land` o 0 (fill dodaje >=1, erozja >=1), ale nie udowodniono, ze liczba iteracji nigdy nie dochodzi do ceil(sqrt); wymaga przypadku |
+
+Podsumowanie mutacji: 21 mutantow = KILLED 15 + RÓWNOWAŻNE 3 (M02, M09, M19) + NIE-ZABITE 3 (M07 nieekwiwalentny, M17 i M21 nieudowodnione).
+
+### Gate po pomiarach (surowe logi w run)
+
+- `cargo fmt -- --check`: EXIT=0 (`gate-fmt-pomiary.log`).
+- `cargo clippy --all-targets -- -D warnings`: EXIT=0 (`gate-clippy-pomiary.log`).
+- `cargo test` (pelny silnik): 1400 passed, 0 failed, EXIT=0 (`gate-test-pomiary.log`); suma `passed` z logu = 1400.
+
+### Zmiany w tej rundzie
+
+Brak zmian w kodzie i w wektorach. Testy nie zmienione. Dodano: run-artefakty pomiarowe (`mut-runner-pomiary.py`,
+`mut-results-pomiary.log`, logi gate `*-pomiary.log`) i ten rozdzial.
+
+### Status
+
+- M07 (nieekwiwalentny) = LUKA WEKTOROWA: wymaga osobnej partii wektorow (nowy przypadek zatoki na granicy seaBand),
+  wiec "M06A9 PORTOWANY z dowodem" NIE jest jeszcze spelnione binarnie dla rodziny seaBand.
+- M17, M21 = nieudowodnione; do rozstrzygniecia dowodem lub wektorem w kolejnej partii.
+- Tabela M06A: wiersze "KOD ISTNIEJE - dowod do potwierdzenia" bez zmian (osobne tematy). "M06A KOMPLET: NIE".
+
 ## Nastepne kroki (osobne ID)
 
-- Operator-pomiary: niezalezny weryfikator (Python), trafienia graniczne (N-1/N/N+1 pasma, prog 40, prog masy),
-  mutanty strukturalne galezi (fill, ratio, pangea), dowody rownowaznosci dla przezytych mutantow.
+- (WYKONANE w pomiarach powyzej) niezalezna regeneracja wektorow, trafienia graniczne, mutanty strukturalne, dowody rownowaznosci M02/M09/M19.
+- Do zrobienia: wektor dla M07 (zatoka seaBand, limit maxW+2), dowod lub wektor dla M17 (dist == eps) i M21 (granica warstw).
 - Weryfikacja wektorowa wierszy "dowod do potwierdzenia" w tabeli M06A (osobne przeglady ich tematow).
 - Po zamknieciu tabeli: wpis "M06A KOMPLET" w dossier (dopiero wtedy).

@@ -1,0 +1,29 @@
+Mutation run (Operator-pomiary) on rust-port/engine/src/domain/mapgen/landsea.rs at 5539e4b8 (kod 7eb3c0ea).
+Runner: mut-runner-pomiary.py (cargo test --test p6_m06a9_landsea per mutant; plik przywracany po kazdym mutancie).
+Baseline: p6_m06a9_landsea 4/4 OK przed mutacjami.
+Wynik: RESTORED True po kazdej partii (plik landsea.rs czysty, git status bez zmian w src).
+
+M01-inward-le-to-lt               KILLED  (fill_pangea_annular_sea_corridors_matches_web, rebalance_land_fraction_pangea_matches_web)
+M02-outward-and-to-or             SURVIVED  -> EQUIVALENT (dowod: patrz dossier, sekcja Mutacje)
+M03-seaband-gt-to-ge              KILLED  (fill, pangea)
+M04-seaband-zapas-minus1          KILLED  (fill, pangea)
+M05-centroid-min-lt-to-le         KILLED  (fill, pangea)
+M06-border-branch-inverted        KILLED  (fill)
+M07-seaband-limit-max_w           SURVIVED  -> NIE-ZABITY, NIE-EKWIWALENTNY (luka wektorowa)
+M08-radial-steps-lt               KILLED  (fill, pangea)
+M09-ratio-land-lt-to-le           SURVIVED  -> EQUIVALENT (land==target wczesniej break)
+M10-ratio-rank-le1-to-le0         KILLED  (rebalance_land_sea_ratio_matches_web)
+M11-ratio-pick-le                 KILLED  (rebalance_land_sea_ratio_matches_web)
+M12-ratio-clamp-max-0.01          KILLED  (rebalance_land_sea_ratio_matches_web)
+M13-pangea-final-hook-null        KILLED  (rebalance_land_fraction_pangea_matches_web)
+M14-pangea-mid-hook-null          KILLED  (rebalance_land_fraction_pangea_matches_web)
+M15-pangea-drop-jagged-fill       KILLED  (rebalance_land_fraction_pangea_matches_web)
+M16-pangea-swap-erode-carve       KILLED  (rebalance_land_fraction_pangea_matches_web)
+M17-dist-eps-le                   SURVIVED  -> NIE-ZABITY, równoważność NIE DOWIEDZIONA (wymaga dist == 0.01 dokładnie)
+M18-pangea-jagged-passes-minus1   KILLED  (rebalance_land_fraction_pangea_matches_web)
+M19-ratio-erode-ge-to-gt          SURVIVED  -> EQUIVALENT (blok trim pusty gdy land == target; land sledzone dokladnie)
+M20-ratio-total-plus1             KILLED  (rebalance_land_sea_ratio_matches_web)
+M21-ratio-maxlayers-minus1        SURVIVED  -> NIE-ZABITY, równoważność NIE DOWIEDZIONA (granica ceil(sqrt(w*h)))
+
+Podsumowanie: 21 mutantow; KILLED 15; EQUIVALENT 3 (M02, M09, M19); NIE-ZABITE nieekwiwalentne lub nieudowodnione 3 (M07, M17, M21).
+Testy NIE zostaly oslabione; zadnego testu nie zmieniano.
