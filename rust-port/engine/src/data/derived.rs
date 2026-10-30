@@ -1803,6 +1803,15 @@ pub fn ruch_jednostek_params() -> &'static RuchJednostekParamsFile {
 }
 
 // ---------------------------------------------------------------------------
+// REPIN-WOJNA-NOWE-D (partia 1): `war-allin-params.json` (kopia 1:1 `gra/data/war-allin-params.json`
+// @ dc8a3adc). Plik w `data/derived/` (nie w top-level `data/`: tam obowiazuja niezmienniki
+// liczby plikow `data_loader.rs` i `data_compliance.rs`). Czytany przez
+// `domain/war_all_in_capital.rs::war_allin_params`.
+// ---------------------------------------------------------------------------
+
+pub const WAR_ALLIN_PARAMS_JSON: &str = include_str!("../../data/derived/war-allin-params.json");
+
+// ---------------------------------------------------------------------------
 // P6.M09 (R-RUSTPORT-P6-M09-KLASTRY-RYWALE-MIN-Q1): stale wycinka rywali klastra.
 // Czytane przez `domain/mapgen/cluster_rivals.rs`. Wartosci balansowe sa EDYTOWALNE
 // w `data/derived/mapgen-cluster-rivals.json`; kod nie zawiera ich literalow.

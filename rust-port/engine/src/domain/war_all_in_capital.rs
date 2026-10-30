@@ -17,12 +17,11 @@
 //! - `GameMap` = `RuchMapa`; klucz heksu = `Klucz` `(q, r)` zamiast napisu `"q,r"`.
 //! - `WarAllInContext` (`ai.ts`/`barbarians.ts`/`main.ts`) poza zakresem: wolajacy podaje
 //!   `targets` i `allow_sea` wprost.
-//! - parametry balansowe: `src/domain/war_all_in_capital_params.json` (kopia 1:1
-//!   `gra/data/war-allin-params.json` z pinu), ladowane przez `include_str!`. Odstepstwo od
-//!   dispatchu (`rust-port/engine/data/`): ten katalog jest objety niezmiennikami
-//!   `tests/data_loader.rs` (lista DATA_FILES) i `tests/data_compliance.rs` (12 probe, pin
-//!   edb8fb56), a te pliki sa poza allowlista. Przeniesienie do `data/` + rejestracja loadera =
-//!   osobna partia z rozszerzeniem allowlisty.
+//! - parametry balansowe: `data/derived/war-allin-params.json` (kopia 1:1
+//!   `gra/data/war-allin-params.json` z pinu dc8a3adc), ladowane przez stala
+//!   `data::derived::WAR_ALLIN_PARAMS_JSON` (addytywny loader wzorcem `RUCH_JEDNOSTEK_PARAMS_JSON`).
+//!   Plik NIE trafia do top-level `data/`: `tests/data_loader.rs` (DATA_FILES == 29) i
+//!   `tests/data_compliance.rs` (liczba *.json w `data/` == 29 probe) pilnuja tej liczby.
 //! - sortowanie id: `Ord` na `String` (ASCII; web `<` na UTF-16 -- identyczne dla ASCII).
 
 use std::cmp::Ordering;
@@ -158,9 +157,9 @@ pub struct WarAllInParams {
 }
 
 fn load_params() -> WarAllInParams {
-    const RAW: &str = include_str!("war_all_in_capital_params.json");
     let value: serde_json::Value =
-        serde_json::from_str(RAW).expect("war-allin-params.json must parse");
+        serde_json::from_str(crate::data::derived::WAR_ALLIN_PARAMS_JSON)
+            .expect("war-allin-params.json must parse");
     let read = |key: &str| -> i64 {
         value[key]["wartosc"]
             .as_i64()
