@@ -1,0 +1,3462 @@
+{
+ "constVersion": 1,
+ "count": 576,
+ "cases": [
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1}",
+   "isMe": true,
+   "restoredVersion": 1,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1}",
+   "isMe": false,
+   "restoredVersion": 1,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1,\"newGameParams\":{\"seed\":7}}",
+   "isMe": true,
+   "restoredVersion": 1,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1,\"newGameParams\":{\"seed\":7}}",
+   "isMe": false,
+   "restoredVersion": 1,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1,\"newGameParams\":{\"advanced\":null}}",
+   "isMe": true,
+   "restoredVersion": 1,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1,\"newGameParams\":{\"advanced\":null}}",
+   "isMe": false,
+   "restoredVersion": 1,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1,\"newGameParams\":{\"advanced\":{\"battleAlwaysManual\":false}}}",
+   "isMe": true,
+   "restoredVersion": 1,
+   "automaticOnly": true
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1,\"newGameParams\":{\"advanced\":{\"battleAlwaysManual\":false}}}",
+   "isMe": false,
+   "restoredVersion": 1,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1}",
+   "isMe": true,
+   "restoredVersion": 1,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1}",
+   "isMe": false,
+   "restoredVersion": 1,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1,\"newGameParams\":{\"seed\":7}}",
+   "isMe": true,
+   "restoredVersion": 1,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1,\"newGameParams\":{\"seed\":7}}",
+   "isMe": false,
+   "restoredVersion": 1,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1,\"newGameParams\":{\"advanced\":null}}",
+   "isMe": true,
+   "restoredVersion": 1,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1,\"newGameParams\":{\"advanced\":null}}",
+   "isMe": false,
+   "restoredVersion": 1,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1,\"newGameParams\":{\"advanced\":{\"battleAlwaysManual\":true}}}",
+   "isMe": true,
+   "restoredVersion": 1,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1,\"newGameParams\":{\"advanced\":{\"battleAlwaysManual\":true}}}",
+   "isMe": false,
+   "restoredVersion": 1,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1}",
+   "isMe": true,
+   "restoredVersion": 1,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1}",
+   "isMe": false,
+   "restoredVersion": 1,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1,\"newGameParams\":{\"seed\":7}}",
+   "isMe": true,
+   "restoredVersion": 1,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1,\"newGameParams\":{\"seed\":7}}",
+   "isMe": false,
+   "restoredVersion": 1,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1,\"newGameParams\":{\"advanced\":null}}",
+   "isMe": true,
+   "restoredVersion": 1,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1,\"newGameParams\":{\"advanced\":null}}",
+   "isMe": false,
+   "restoredVersion": 1,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1,\"newGameParams\":{\"advanced\":{\"battleAlwaysManual\":null}}}",
+   "isMe": true,
+   "restoredVersion": 1,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1,\"newGameParams\":{\"advanced\":{\"battleAlwaysManual\":null}}}",
+   "isMe": false,
+   "restoredVersion": 1,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1}",
+   "isMe": true,
+   "restoredVersion": 1,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1}",
+   "isMe": false,
+   "restoredVersion": 1,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1,\"newGameParams\":{\"seed\":7}}",
+   "isMe": true,
+   "restoredVersion": 1,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1,\"newGameParams\":{\"seed\":7}}",
+   "isMe": false,
+   "restoredVersion": 1,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1,\"newGameParams\":{\"advanced\":null}}",
+   "isMe": true,
+   "restoredVersion": 1,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1,\"newGameParams\":{\"advanced\":null}}",
+   "isMe": false,
+   "restoredVersion": 1,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1,\"newGameParams\":{\"advanced\":{\"battleAlwaysManual\":\"false\"}}}",
+   "isMe": true,
+   "restoredVersion": 1,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1,\"newGameParams\":{\"advanced\":{\"battleAlwaysManual\":\"false\"}}}",
+   "isMe": false,
+   "restoredVersion": 1,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1}",
+   "isMe": true,
+   "restoredVersion": 1,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1}",
+   "isMe": false,
+   "restoredVersion": 1,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1,\"newGameParams\":{\"seed\":7}}",
+   "isMe": true,
+   "restoredVersion": 1,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1,\"newGameParams\":{\"seed\":7}}",
+   "isMe": false,
+   "restoredVersion": 1,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1,\"newGameParams\":{\"advanced\":null}}",
+   "isMe": true,
+   "restoredVersion": 1,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1,\"newGameParams\":{\"advanced\":null}}",
+   "isMe": false,
+   "restoredVersion": 1,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1,\"newGameParams\":{\"advanced\":{\"battleAlwaysManual\":0}}}",
+   "isMe": true,
+   "restoredVersion": 1,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1,\"newGameParams\":{\"advanced\":{\"battleAlwaysManual\":0}}}",
+   "isMe": false,
+   "restoredVersion": 1,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1}",
+   "isMe": true,
+   "restoredVersion": 1,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1}",
+   "isMe": false,
+   "restoredVersion": 1,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1,\"newGameParams\":{\"seed\":7}}",
+   "isMe": true,
+   "restoredVersion": 1,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1,\"newGameParams\":{\"seed\":7}}",
+   "isMe": false,
+   "restoredVersion": 1,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1,\"newGameParams\":{\"advanced\":null}}",
+   "isMe": true,
+   "restoredVersion": 1,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1,\"newGameParams\":{\"advanced\":null}}",
+   "isMe": false,
+   "restoredVersion": 1,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1,\"newGameParams\":{\"advanced\":{}}}",
+   "isMe": true,
+   "restoredVersion": 1,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1,\"newGameParams\":{\"advanced\":{}}}",
+   "isMe": false,
+   "restoredVersion": 1,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1}",
+   "isMe": true,
+   "restoredVersion": 1,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1}",
+   "isMe": false,
+   "restoredVersion": 1,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1,\"newGameParams\":{\"seed\":7}}",
+   "isMe": true,
+   "restoredVersion": 1,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1,\"newGameParams\":{\"seed\":7}}",
+   "isMe": false,
+   "restoredVersion": 1,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1,\"newGameParams\":{\"advanced\":null}}",
+   "isMe": true,
+   "restoredVersion": 1,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1,\"newGameParams\":{\"advanced\":null}}",
+   "isMe": false,
+   "restoredVersion": 1,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1,\"newGameParams\":{\"advanced\":{\"battleAlwaysManual\":false}}}",
+   "isMe": true,
+   "restoredVersion": 1,
+   "automaticOnly": true
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1,\"newGameParams\":{\"advanced\":{\"battleAlwaysManual\":false}}}",
+   "isMe": false,
+   "restoredVersion": 1,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1}",
+   "isMe": true,
+   "restoredVersion": 1,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1}",
+   "isMe": false,
+   "restoredVersion": 1,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1,\"newGameParams\":{\"seed\":7}}",
+   "isMe": true,
+   "restoredVersion": 1,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1,\"newGameParams\":{\"seed\":7}}",
+   "isMe": false,
+   "restoredVersion": 1,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1,\"newGameParams\":{\"advanced\":null}}",
+   "isMe": true,
+   "restoredVersion": 1,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1,\"newGameParams\":{\"advanced\":null}}",
+   "isMe": false,
+   "restoredVersion": 1,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1,\"newGameParams\":{\"advanced\":{\"battleAlwaysManual\":true}}}",
+   "isMe": true,
+   "restoredVersion": 1,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1,\"newGameParams\":{\"advanced\":{\"battleAlwaysManual\":true}}}",
+   "isMe": false,
+   "restoredVersion": 1,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1}",
+   "isMe": true,
+   "restoredVersion": 1,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1}",
+   "isMe": false,
+   "restoredVersion": 1,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1,\"newGameParams\":{\"seed\":7}}",
+   "isMe": true,
+   "restoredVersion": 1,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1,\"newGameParams\":{\"seed\":7}}",
+   "isMe": false,
+   "restoredVersion": 1,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1,\"newGameParams\":{\"advanced\":null}}",
+   "isMe": true,
+   "restoredVersion": 1,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1,\"newGameParams\":{\"advanced\":null}}",
+   "isMe": false,
+   "restoredVersion": 1,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1,\"newGameParams\":{\"advanced\":{\"battleAlwaysManual\":null}}}",
+   "isMe": true,
+   "restoredVersion": 1,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1,\"newGameParams\":{\"advanced\":{\"battleAlwaysManual\":null}}}",
+   "isMe": false,
+   "restoredVersion": 1,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1}",
+   "isMe": true,
+   "restoredVersion": 1,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1}",
+   "isMe": false,
+   "restoredVersion": 1,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1,\"newGameParams\":{\"seed\":7}}",
+   "isMe": true,
+   "restoredVersion": 1,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1,\"newGameParams\":{\"seed\":7}}",
+   "isMe": false,
+   "restoredVersion": 1,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1,\"newGameParams\":{\"advanced\":null}}",
+   "isMe": true,
+   "restoredVersion": 1,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1,\"newGameParams\":{\"advanced\":null}}",
+   "isMe": false,
+   "restoredVersion": 1,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1,\"newGameParams\":{\"advanced\":{\"battleAlwaysManual\":\"false\"}}}",
+   "isMe": true,
+   "restoredVersion": 1,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1,\"newGameParams\":{\"advanced\":{\"battleAlwaysManual\":\"false\"}}}",
+   "isMe": false,
+   "restoredVersion": 1,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1}",
+   "isMe": true,
+   "restoredVersion": 1,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1}",
+   "isMe": false,
+   "restoredVersion": 1,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1,\"newGameParams\":{\"seed\":7}}",
+   "isMe": true,
+   "restoredVersion": 1,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1,\"newGameParams\":{\"seed\":7}}",
+   "isMe": false,
+   "restoredVersion": 1,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1,\"newGameParams\":{\"advanced\":null}}",
+   "isMe": true,
+   "restoredVersion": 1,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1,\"newGameParams\":{\"advanced\":null}}",
+   "isMe": false,
+   "restoredVersion": 1,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1,\"newGameParams\":{\"advanced\":{\"battleAlwaysManual\":0}}}",
+   "isMe": true,
+   "restoredVersion": 1,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1,\"newGameParams\":{\"advanced\":{\"battleAlwaysManual\":0}}}",
+   "isMe": false,
+   "restoredVersion": 1,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1}",
+   "isMe": true,
+   "restoredVersion": 1,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1}",
+   "isMe": false,
+   "restoredVersion": 1,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1,\"newGameParams\":{\"seed\":7}}",
+   "isMe": true,
+   "restoredVersion": 1,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1,\"newGameParams\":{\"seed\":7}}",
+   "isMe": false,
+   "restoredVersion": 1,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1,\"newGameParams\":{\"advanced\":null}}",
+   "isMe": true,
+   "restoredVersion": 1,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1,\"newGameParams\":{\"advanced\":null}}",
+   "isMe": false,
+   "restoredVersion": 1,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1,\"newGameParams\":{\"advanced\":{}}}",
+   "isMe": true,
+   "restoredVersion": 1,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1,\"newGameParams\":{\"advanced\":{}}}",
+   "isMe": false,
+   "restoredVersion": 1,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":0}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":0}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":0,\"newGameParams\":{\"seed\":7}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":0,\"newGameParams\":{\"seed\":7}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":0,\"newGameParams\":{\"advanced\":null}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":0,\"newGameParams\":{\"advanced\":null}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":0,\"newGameParams\":{\"advanced\":{\"battleAlwaysManual\":false}}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":0,\"newGameParams\":{\"advanced\":{\"battleAlwaysManual\":false}}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":0}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":0}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":0,\"newGameParams\":{\"seed\":7}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":0,\"newGameParams\":{\"seed\":7}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":0,\"newGameParams\":{\"advanced\":null}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":0,\"newGameParams\":{\"advanced\":null}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":0,\"newGameParams\":{\"advanced\":{\"battleAlwaysManual\":true}}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":0,\"newGameParams\":{\"advanced\":{\"battleAlwaysManual\":true}}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":0}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":0}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":0,\"newGameParams\":{\"seed\":7}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":0,\"newGameParams\":{\"seed\":7}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":0,\"newGameParams\":{\"advanced\":null}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":0,\"newGameParams\":{\"advanced\":null}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":0,\"newGameParams\":{\"advanced\":{\"battleAlwaysManual\":null}}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":0,\"newGameParams\":{\"advanced\":{\"battleAlwaysManual\":null}}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":0}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":0}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":0,\"newGameParams\":{\"seed\":7}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":0,\"newGameParams\":{\"seed\":7}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":0,\"newGameParams\":{\"advanced\":null}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":0,\"newGameParams\":{\"advanced\":null}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":0,\"newGameParams\":{\"advanced\":{\"battleAlwaysManual\":\"false\"}}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":0,\"newGameParams\":{\"advanced\":{\"battleAlwaysManual\":\"false\"}}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":0}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":0}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":0,\"newGameParams\":{\"seed\":7}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":0,\"newGameParams\":{\"seed\":7}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":0,\"newGameParams\":{\"advanced\":null}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":0,\"newGameParams\":{\"advanced\":null}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":0,\"newGameParams\":{\"advanced\":{\"battleAlwaysManual\":0}}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":0,\"newGameParams\":{\"advanced\":{\"battleAlwaysManual\":0}}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":0}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":0}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":0,\"newGameParams\":{\"seed\":7}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":0,\"newGameParams\":{\"seed\":7}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":0,\"newGameParams\":{\"advanced\":null}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":0,\"newGameParams\":{\"advanced\":null}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":0,\"newGameParams\":{\"advanced\":{}}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":0,\"newGameParams\":{\"advanced\":{}}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":2}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":2}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":2,\"newGameParams\":{\"seed\":7}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":2,\"newGameParams\":{\"seed\":7}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":2,\"newGameParams\":{\"advanced\":null}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":2,\"newGameParams\":{\"advanced\":null}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":2,\"newGameParams\":{\"advanced\":{\"battleAlwaysManual\":false}}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":2,\"newGameParams\":{\"advanced\":{\"battleAlwaysManual\":false}}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":2}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":2}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":2,\"newGameParams\":{\"seed\":7}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":2,\"newGameParams\":{\"seed\":7}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":2,\"newGameParams\":{\"advanced\":null}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":2,\"newGameParams\":{\"advanced\":null}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":2,\"newGameParams\":{\"advanced\":{\"battleAlwaysManual\":true}}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":2,\"newGameParams\":{\"advanced\":{\"battleAlwaysManual\":true}}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":2}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":2}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":2,\"newGameParams\":{\"seed\":7}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":2,\"newGameParams\":{\"seed\":7}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":2,\"newGameParams\":{\"advanced\":null}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":2,\"newGameParams\":{\"advanced\":null}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":2,\"newGameParams\":{\"advanced\":{\"battleAlwaysManual\":null}}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":2,\"newGameParams\":{\"advanced\":{\"battleAlwaysManual\":null}}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":2}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":2}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":2,\"newGameParams\":{\"seed\":7}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":2,\"newGameParams\":{\"seed\":7}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":2,\"newGameParams\":{\"advanced\":null}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":2,\"newGameParams\":{\"advanced\":null}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":2,\"newGameParams\":{\"advanced\":{\"battleAlwaysManual\":\"false\"}}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":2,\"newGameParams\":{\"advanced\":{\"battleAlwaysManual\":\"false\"}}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":2}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":2}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":2,\"newGameParams\":{\"seed\":7}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":2,\"newGameParams\":{\"seed\":7}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":2,\"newGameParams\":{\"advanced\":null}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":2,\"newGameParams\":{\"advanced\":null}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":2,\"newGameParams\":{\"advanced\":{\"battleAlwaysManual\":0}}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":2,\"newGameParams\":{\"advanced\":{\"battleAlwaysManual\":0}}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":2}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":2}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":2,\"newGameParams\":{\"seed\":7}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":2,\"newGameParams\":{\"seed\":7}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":2,\"newGameParams\":{\"advanced\":null}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":2,\"newGameParams\":{\"advanced\":null}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":2,\"newGameParams\":{\"advanced\":{}}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":2,\"newGameParams\":{\"advanced\":{}}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":\"1\"}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":\"1\"}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":\"1\",\"newGameParams\":{\"seed\":7}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":\"1\",\"newGameParams\":{\"seed\":7}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":\"1\",\"newGameParams\":{\"advanced\":null}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":\"1\",\"newGameParams\":{\"advanced\":null}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":\"1\",\"newGameParams\":{\"advanced\":{\"battleAlwaysManual\":false}}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":\"1\",\"newGameParams\":{\"advanced\":{\"battleAlwaysManual\":false}}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":\"1\"}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":\"1\"}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":\"1\",\"newGameParams\":{\"seed\":7}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":\"1\",\"newGameParams\":{\"seed\":7}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":\"1\",\"newGameParams\":{\"advanced\":null}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":\"1\",\"newGameParams\":{\"advanced\":null}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":\"1\",\"newGameParams\":{\"advanced\":{\"battleAlwaysManual\":true}}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":\"1\",\"newGameParams\":{\"advanced\":{\"battleAlwaysManual\":true}}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":\"1\"}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":\"1\"}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":\"1\",\"newGameParams\":{\"seed\":7}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":\"1\",\"newGameParams\":{\"seed\":7}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":\"1\",\"newGameParams\":{\"advanced\":null}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":\"1\",\"newGameParams\":{\"advanced\":null}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":\"1\",\"newGameParams\":{\"advanced\":{\"battleAlwaysManual\":null}}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":\"1\",\"newGameParams\":{\"advanced\":{\"battleAlwaysManual\":null}}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":\"1\"}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":\"1\"}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":\"1\",\"newGameParams\":{\"seed\":7}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":\"1\",\"newGameParams\":{\"seed\":7}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":\"1\",\"newGameParams\":{\"advanced\":null}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":\"1\",\"newGameParams\":{\"advanced\":null}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":\"1\",\"newGameParams\":{\"advanced\":{\"battleAlwaysManual\":\"false\"}}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":\"1\",\"newGameParams\":{\"advanced\":{\"battleAlwaysManual\":\"false\"}}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":\"1\"}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":\"1\"}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":\"1\",\"newGameParams\":{\"seed\":7}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":\"1\",\"newGameParams\":{\"seed\":7}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":\"1\",\"newGameParams\":{\"advanced\":null}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":\"1\",\"newGameParams\":{\"advanced\":null}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":\"1\",\"newGameParams\":{\"advanced\":{\"battleAlwaysManual\":0}}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":\"1\",\"newGameParams\":{\"advanced\":{\"battleAlwaysManual\":0}}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":\"1\"}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":\"1\"}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":\"1\",\"newGameParams\":{\"seed\":7}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":\"1\",\"newGameParams\":{\"seed\":7}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":\"1\",\"newGameParams\":{\"advanced\":null}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":\"1\",\"newGameParams\":{\"advanced\":null}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":\"1\",\"newGameParams\":{\"advanced\":{}}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":\"1\",\"newGameParams\":{\"advanced\":{}}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":null}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":null}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":null,\"newGameParams\":{\"seed\":7}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":null,\"newGameParams\":{\"seed\":7}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":null,\"newGameParams\":{\"advanced\":null}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":null,\"newGameParams\":{\"advanced\":null}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":null,\"newGameParams\":{\"advanced\":{\"battleAlwaysManual\":false}}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":null,\"newGameParams\":{\"advanced\":{\"battleAlwaysManual\":false}}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":null}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":null}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":null,\"newGameParams\":{\"seed\":7}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":null,\"newGameParams\":{\"seed\":7}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":null,\"newGameParams\":{\"advanced\":null}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":null,\"newGameParams\":{\"advanced\":null}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":null,\"newGameParams\":{\"advanced\":{\"battleAlwaysManual\":true}}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":null,\"newGameParams\":{\"advanced\":{\"battleAlwaysManual\":true}}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":null}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":null}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":null,\"newGameParams\":{\"seed\":7}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":null,\"newGameParams\":{\"seed\":7}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":null,\"newGameParams\":{\"advanced\":null}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":null,\"newGameParams\":{\"advanced\":null}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":null,\"newGameParams\":{\"advanced\":{\"battleAlwaysManual\":null}}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":null,\"newGameParams\":{\"advanced\":{\"battleAlwaysManual\":null}}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":null}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":null}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":null,\"newGameParams\":{\"seed\":7}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":null,\"newGameParams\":{\"seed\":7}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":null,\"newGameParams\":{\"advanced\":null}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":null,\"newGameParams\":{\"advanced\":null}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":null,\"newGameParams\":{\"advanced\":{\"battleAlwaysManual\":\"false\"}}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":null,\"newGameParams\":{\"advanced\":{\"battleAlwaysManual\":\"false\"}}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":null}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":null}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":null,\"newGameParams\":{\"seed\":7}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":null,\"newGameParams\":{\"seed\":7}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":null,\"newGameParams\":{\"advanced\":null}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":null,\"newGameParams\":{\"advanced\":null}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":null,\"newGameParams\":{\"advanced\":{\"battleAlwaysManual\":0}}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":null,\"newGameParams\":{\"advanced\":{\"battleAlwaysManual\":0}}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":null}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":null}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":null,\"newGameParams\":{\"seed\":7}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":null,\"newGameParams\":{\"seed\":7}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":null,\"newGameParams\":{\"advanced\":null}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":null,\"newGameParams\":{\"advanced\":null}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":null,\"newGameParams\":{\"advanced\":{}}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":null,\"newGameParams\":{\"advanced\":{}}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":true}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":true}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":true,\"newGameParams\":{\"seed\":7}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":true,\"newGameParams\":{\"seed\":7}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":true,\"newGameParams\":{\"advanced\":null}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":true,\"newGameParams\":{\"advanced\":null}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":true,\"newGameParams\":{\"advanced\":{\"battleAlwaysManual\":false}}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":true,\"newGameParams\":{\"advanced\":{\"battleAlwaysManual\":false}}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":true}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":true}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":true,\"newGameParams\":{\"seed\":7}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":true,\"newGameParams\":{\"seed\":7}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":true,\"newGameParams\":{\"advanced\":null}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":true,\"newGameParams\":{\"advanced\":null}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":true,\"newGameParams\":{\"advanced\":{\"battleAlwaysManual\":true}}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":true,\"newGameParams\":{\"advanced\":{\"battleAlwaysManual\":true}}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":true}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":true}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":true,\"newGameParams\":{\"seed\":7}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":true,\"newGameParams\":{\"seed\":7}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":true,\"newGameParams\":{\"advanced\":null}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":true,\"newGameParams\":{\"advanced\":null}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":true,\"newGameParams\":{\"advanced\":{\"battleAlwaysManual\":null}}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":true,\"newGameParams\":{\"advanced\":{\"battleAlwaysManual\":null}}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":true}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":true}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":true,\"newGameParams\":{\"seed\":7}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":true,\"newGameParams\":{\"seed\":7}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":true,\"newGameParams\":{\"advanced\":null}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":true,\"newGameParams\":{\"advanced\":null}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":true,\"newGameParams\":{\"advanced\":{\"battleAlwaysManual\":\"false\"}}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":true,\"newGameParams\":{\"advanced\":{\"battleAlwaysManual\":\"false\"}}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":true}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":true}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":true,\"newGameParams\":{\"seed\":7}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":true,\"newGameParams\":{\"seed\":7}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":true,\"newGameParams\":{\"advanced\":null}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":true,\"newGameParams\":{\"advanced\":null}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":true,\"newGameParams\":{\"advanced\":{\"battleAlwaysManual\":0}}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":true,\"newGameParams\":{\"advanced\":{\"battleAlwaysManual\":0}}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":true}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":true}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":true,\"newGameParams\":{\"seed\":7}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":true,\"newGameParams\":{\"seed\":7}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":true,\"newGameParams\":{\"advanced\":null}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":true,\"newGameParams\":{\"advanced\":null}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":true,\"newGameParams\":{\"advanced\":{}}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":true,\"newGameParams\":{\"advanced\":{}}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":false}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":false}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":false,\"newGameParams\":{\"seed\":7}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":false,\"newGameParams\":{\"seed\":7}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":false,\"newGameParams\":{\"advanced\":null}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":false,\"newGameParams\":{\"advanced\":null}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":false,\"newGameParams\":{\"advanced\":{\"battleAlwaysManual\":false}}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":false,\"newGameParams\":{\"advanced\":{\"battleAlwaysManual\":false}}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":false}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":false}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":false,\"newGameParams\":{\"seed\":7}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":false,\"newGameParams\":{\"seed\":7}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":false,\"newGameParams\":{\"advanced\":null}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":false,\"newGameParams\":{\"advanced\":null}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":false,\"newGameParams\":{\"advanced\":{\"battleAlwaysManual\":true}}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":false,\"newGameParams\":{\"advanced\":{\"battleAlwaysManual\":true}}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":false}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":false}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":false,\"newGameParams\":{\"seed\":7}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":false,\"newGameParams\":{\"seed\":7}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":false,\"newGameParams\":{\"advanced\":null}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":false,\"newGameParams\":{\"advanced\":null}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":false,\"newGameParams\":{\"advanced\":{\"battleAlwaysManual\":null}}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":false,\"newGameParams\":{\"advanced\":{\"battleAlwaysManual\":null}}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":false}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":false}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":false,\"newGameParams\":{\"seed\":7}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":false,\"newGameParams\":{\"seed\":7}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":false,\"newGameParams\":{\"advanced\":null}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":false,\"newGameParams\":{\"advanced\":null}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":false,\"newGameParams\":{\"advanced\":{\"battleAlwaysManual\":\"false\"}}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":false,\"newGameParams\":{\"advanced\":{\"battleAlwaysManual\":\"false\"}}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":false}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":false}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":false,\"newGameParams\":{\"seed\":7}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":false,\"newGameParams\":{\"seed\":7}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":false,\"newGameParams\":{\"advanced\":null}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":false,\"newGameParams\":{\"advanced\":null}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":false,\"newGameParams\":{\"advanced\":{\"battleAlwaysManual\":0}}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":false,\"newGameParams\":{\"advanced\":{\"battleAlwaysManual\":0}}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":false}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":false}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":false,\"newGameParams\":{\"seed\":7}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":false,\"newGameParams\":{\"seed\":7}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":false,\"newGameParams\":{\"advanced\":null}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":false,\"newGameParams\":{\"advanced\":null}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":false,\"newGameParams\":{\"advanced\":{}}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":false,\"newGameParams\":{\"advanced\":{}}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":\"x\"}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":\"x\"}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":\"x\",\"newGameParams\":{\"seed\":7}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":\"x\",\"newGameParams\":{\"seed\":7}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":\"x\",\"newGameParams\":{\"advanced\":null}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":\"x\",\"newGameParams\":{\"advanced\":null}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":\"x\",\"newGameParams\":{\"advanced\":{\"battleAlwaysManual\":false}}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":\"x\",\"newGameParams\":{\"advanced\":{\"battleAlwaysManual\":false}}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":\"x\"}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":\"x\"}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":\"x\",\"newGameParams\":{\"seed\":7}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":\"x\",\"newGameParams\":{\"seed\":7}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":\"x\",\"newGameParams\":{\"advanced\":null}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":\"x\",\"newGameParams\":{\"advanced\":null}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":\"x\",\"newGameParams\":{\"advanced\":{\"battleAlwaysManual\":true}}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":\"x\",\"newGameParams\":{\"advanced\":{\"battleAlwaysManual\":true}}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":\"x\"}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":\"x\"}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":\"x\",\"newGameParams\":{\"seed\":7}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":\"x\",\"newGameParams\":{\"seed\":7}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":\"x\",\"newGameParams\":{\"advanced\":null}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":\"x\",\"newGameParams\":{\"advanced\":null}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":\"x\",\"newGameParams\":{\"advanced\":{\"battleAlwaysManual\":null}}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":\"x\",\"newGameParams\":{\"advanced\":{\"battleAlwaysManual\":null}}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":\"x\"}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":\"x\"}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":\"x\",\"newGameParams\":{\"seed\":7}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":\"x\",\"newGameParams\":{\"seed\":7}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":\"x\",\"newGameParams\":{\"advanced\":null}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":\"x\",\"newGameParams\":{\"advanced\":null}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":\"x\",\"newGameParams\":{\"advanced\":{\"battleAlwaysManual\":\"false\"}}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":\"x\",\"newGameParams\":{\"advanced\":{\"battleAlwaysManual\":\"false\"}}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":\"x\"}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":\"x\"}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":\"x\",\"newGameParams\":{\"seed\":7}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":\"x\",\"newGameParams\":{\"seed\":7}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":\"x\",\"newGameParams\":{\"advanced\":null}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":\"x\",\"newGameParams\":{\"advanced\":null}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":\"x\",\"newGameParams\":{\"advanced\":{\"battleAlwaysManual\":0}}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":\"x\",\"newGameParams\":{\"advanced\":{\"battleAlwaysManual\":0}}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":\"x\"}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":\"x\"}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":\"x\",\"newGameParams\":{\"seed\":7}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":\"x\",\"newGameParams\":{\"seed\":7}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":\"x\",\"newGameParams\":{\"advanced\":null}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":\"x\",\"newGameParams\":{\"advanced\":null}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":\"x\",\"newGameParams\":{\"advanced\":{}}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":\"x\",\"newGameParams\":{\"advanced\":{}}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"newGameParams\":{\"seed\":7}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"newGameParams\":{\"seed\":7}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"newGameParams\":{\"advanced\":null}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"newGameParams\":{\"advanced\":null}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"newGameParams\":{\"advanced\":{\"battleAlwaysManual\":false}}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"newGameParams\":{\"advanced\":{\"battleAlwaysManual\":false}}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"newGameParams\":{\"seed\":7}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"newGameParams\":{\"seed\":7}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"newGameParams\":{\"advanced\":null}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"newGameParams\":{\"advanced\":null}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"newGameParams\":{\"advanced\":{\"battleAlwaysManual\":true}}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"newGameParams\":{\"advanced\":{\"battleAlwaysManual\":true}}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"newGameParams\":{\"seed\":7}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"newGameParams\":{\"seed\":7}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"newGameParams\":{\"advanced\":null}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"newGameParams\":{\"advanced\":null}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"newGameParams\":{\"advanced\":{\"battleAlwaysManual\":null}}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"newGameParams\":{\"advanced\":{\"battleAlwaysManual\":null}}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"newGameParams\":{\"seed\":7}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"newGameParams\":{\"seed\":7}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"newGameParams\":{\"advanced\":null}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"newGameParams\":{\"advanced\":null}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"newGameParams\":{\"advanced\":{\"battleAlwaysManual\":\"false\"}}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"newGameParams\":{\"advanced\":{\"battleAlwaysManual\":\"false\"}}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"newGameParams\":{\"seed\":7}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"newGameParams\":{\"seed\":7}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"newGameParams\":{\"advanced\":null}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"newGameParams\":{\"advanced\":null}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"newGameParams\":{\"advanced\":{\"battleAlwaysManual\":0}}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"newGameParams\":{\"advanced\":{\"battleAlwaysManual\":0}}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"newGameParams\":{\"seed\":7}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"newGameParams\":{\"seed\":7}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"newGameParams\":{\"advanced\":null}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"newGameParams\":{\"advanced\":null}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"newGameParams\":{\"advanced\":{}}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"newGameParams\":{\"advanced\":{}}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":null}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":null}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":null,\"newGameParams\":{\"seed\":7}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":null,\"newGameParams\":{\"seed\":7}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":null,\"newGameParams\":{\"advanced\":null}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":null,\"newGameParams\":{\"advanced\":null}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":null,\"newGameParams\":{\"advanced\":{\"battleAlwaysManual\":false}}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":null,\"newGameParams\":{\"advanced\":{\"battleAlwaysManual\":false}}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":null}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":null}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":null,\"newGameParams\":{\"seed\":7}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":null,\"newGameParams\":{\"seed\":7}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":null,\"newGameParams\":{\"advanced\":null}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":null,\"newGameParams\":{\"advanced\":null}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":null,\"newGameParams\":{\"advanced\":{\"battleAlwaysManual\":true}}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":null,\"newGameParams\":{\"advanced\":{\"battleAlwaysManual\":true}}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":null}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":null}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":null,\"newGameParams\":{\"seed\":7}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":null,\"newGameParams\":{\"seed\":7}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":null,\"newGameParams\":{\"advanced\":null}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":null,\"newGameParams\":{\"advanced\":null}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":null,\"newGameParams\":{\"advanced\":{\"battleAlwaysManual\":null}}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":null,\"newGameParams\":{\"advanced\":{\"battleAlwaysManual\":null}}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":null}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":null}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":null,\"newGameParams\":{\"seed\":7}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":null,\"newGameParams\":{\"seed\":7}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":null,\"newGameParams\":{\"advanced\":null}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":null,\"newGameParams\":{\"advanced\":null}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":null,\"newGameParams\":{\"advanced\":{\"battleAlwaysManual\":\"false\"}}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":null,\"newGameParams\":{\"advanced\":{\"battleAlwaysManual\":\"false\"}}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":null}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":null}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":null,\"newGameParams\":{\"seed\":7}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":null,\"newGameParams\":{\"seed\":7}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":null,\"newGameParams\":{\"advanced\":null}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":null,\"newGameParams\":{\"advanced\":null}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":null,\"newGameParams\":{\"advanced\":{\"battleAlwaysManual\":0}}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":null,\"newGameParams\":{\"advanced\":{\"battleAlwaysManual\":0}}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":null}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":null}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":null,\"newGameParams\":{\"seed\":7}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":null,\"newGameParams\":{\"seed\":7}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":null,\"newGameParams\":{\"advanced\":null}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":null,\"newGameParams\":{\"advanced\":null}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":null,\"newGameParams\":{\"advanced\":{}}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":null,\"newGameParams\":{\"advanced\":{}}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1.5}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1.5}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1.5,\"newGameParams\":{\"seed\":7}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1.5,\"newGameParams\":{\"seed\":7}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1.5,\"newGameParams\":{\"advanced\":null}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1.5,\"newGameParams\":{\"advanced\":null}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1.5,\"newGameParams\":{\"advanced\":{\"battleAlwaysManual\":false}}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1.5,\"newGameParams\":{\"advanced\":{\"battleAlwaysManual\":false}}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1.5}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1.5}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1.5,\"newGameParams\":{\"seed\":7}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1.5,\"newGameParams\":{\"seed\":7}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1.5,\"newGameParams\":{\"advanced\":null}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1.5,\"newGameParams\":{\"advanced\":null}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1.5,\"newGameParams\":{\"advanced\":{\"battleAlwaysManual\":true}}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1.5,\"newGameParams\":{\"advanced\":{\"battleAlwaysManual\":true}}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1.5}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1.5}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1.5,\"newGameParams\":{\"seed\":7}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1.5,\"newGameParams\":{\"seed\":7}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1.5,\"newGameParams\":{\"advanced\":null}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1.5,\"newGameParams\":{\"advanced\":null}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1.5,\"newGameParams\":{\"advanced\":{\"battleAlwaysManual\":null}}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1.5,\"newGameParams\":{\"advanced\":{\"battleAlwaysManual\":null}}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1.5}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1.5}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1.5,\"newGameParams\":{\"seed\":7}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1.5,\"newGameParams\":{\"seed\":7}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1.5,\"newGameParams\":{\"advanced\":null}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1.5,\"newGameParams\":{\"advanced\":null}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1.5,\"newGameParams\":{\"advanced\":{\"battleAlwaysManual\":\"false\"}}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1.5,\"newGameParams\":{\"advanced\":{\"battleAlwaysManual\":\"false\"}}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1.5}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1.5}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1.5,\"newGameParams\":{\"seed\":7}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1.5,\"newGameParams\":{\"seed\":7}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1.5,\"newGameParams\":{\"advanced\":null}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1.5,\"newGameParams\":{\"advanced\":null}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1.5,\"newGameParams\":{\"advanced\":{\"battleAlwaysManual\":0}}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1.5,\"newGameParams\":{\"advanced\":{\"battleAlwaysManual\":0}}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1.5}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1.5}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1.5,\"newGameParams\":{\"seed\":7}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1.5,\"newGameParams\":{\"seed\":7}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1.5,\"newGameParams\":{\"advanced\":null}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1.5,\"newGameParams\":{\"advanced\":null}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1.5,\"newGameParams\":{\"advanced\":{}}}",
+   "isMe": true,
+   "restoredVersion": null,
+   "automaticOnly": false
+  },
+  {
+   "metaJson": "{\"battleModeSettingVersion\":1.5,\"newGameParams\":{\"advanced\":{}}}",
+   "isMe": false,
+   "restoredVersion": null,
+   "automaticOnly": false
+  }
+ ]
+}

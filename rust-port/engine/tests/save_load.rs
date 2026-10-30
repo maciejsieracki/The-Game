@@ -3,6 +3,7 @@
 mod events;
 
 #[path = "../src/domain/save_load.rs"]
+#[allow(dead_code)]
 mod save_load;
 
 use civ_engine::{

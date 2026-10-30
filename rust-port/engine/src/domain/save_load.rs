@@ -16,6 +16,7 @@
 use std::{error::Error, fmt};
 
 use serde::{de, Deserialize, Deserializer, Serialize};
+use serde_json::{Number, Value};
 
 // The source file is currently exercised as an integration-test path module.
 // The production branch resolves these types from the sibling domain modules;
@@ -81,6 +82,165 @@ pub struct SaveSnapshot {
     state: GameStateDto,
     event_queue: EventQueue<TurnEvent>,
     rng: Rng,
+    /// Additive, optional save metadata (REPIN-WOJNA-2 R4). Absent in older saves.
+    #[serde(skip_serializing_if = "SaveMeta::is_empty")]
+    meta: SaveMeta,
+    /// Additive, optional `plannedMarches` entries (web `planned-march.ts:466`).
+    #[serde(
+        rename = "plannedMarches",
+        default,
+        skip_serializing_if = "Vec::is_empty"
+    )]
+    planned_marches: Vec<SavedPlannedMarch>,
+    /// Additive legacy `autoMarch` fallback (web `planned-march.ts:424-431`).
+    #[serde(rename = "autoMarch", default, skip_serializing_if = "Option::is_none")]
+    auto_march: Option<SavedAutoMarch>,
+}
+
+/// Web `AutoMarchSave` (`autoMarch` in the save). Only `leaderId` as non-empty string survives.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct SavedAutoMarch {
+    #[serde(
+        rename = "leaderId",
+        default,
+        deserialize_with = "lenient_nonempty_string",
+        skip_serializing_if = "Option::is_none"
+    )]
+    pub leader_id: Option<String>,
+    #[serde(
+        rename = "destQ",
+        default,
+        deserialize_with = "lenient_number",
+        skip_serializing_if = "Option::is_none"
+    )]
+    pub dest_q: Option<Number>,
+    #[serde(
+        rename = "destR",
+        default,
+        deserialize_with = "lenient_number",
+        skip_serializing_if = "Option::is_none"
+    )]
+    pub dest_r: Option<Number>,
+}
+
+/// Additive save metadata. Mirrors the web `meta` block only for the fields that gate
+/// battle-mode semantics (web `main.ts:40818-40820` and `main.ts:32378`).
+///
+/// Values are kept as raw JSON so that a non-conforming value (string, `null`, `NaN`
+/// written as `null`) is normalized by the same rules as the web, never by a load error.
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
+pub struct SaveMeta {
+    #[serde(
+        rename = "battleModeSettingVersion",
+        default,
+        skip_serializing_if = "Option::is_none"
+    )]
+    battle_mode_setting_version: Option<Value>,
+    /// Web `meta.newGameParams` (carries `advanced.battleAlwaysManual`).
+    #[serde(
+        rename = "newGameParams",
+        default,
+        skip_serializing_if = "Option::is_none"
+    )]
+    new_game_params: Option<Value>,
+}
+
+impl SaveMeta {
+    /// True when no metadata field is present (used to omit the block from the output).
+    pub fn is_empty(&self) -> bool {
+        self.battle_mode_setting_version.is_none() && self.new_game_params.is_none()
+    }
+
+    /// Sets the raw `battleModeSettingVersion` value (web `meta.battleModeSettingVersion`).
+    pub fn with_battle_mode_setting_version(mut self, value: Value) -> Self {
+        self.battle_mode_setting_version = Some(value);
+        self
+    }
+
+    /// Sets the raw `newGameParams` value.
+    pub fn with_new_game_params(mut self, value: Value) -> Self {
+        self.new_game_params = Some(value);
+        self
+    }
+
+    /// Raw numeric marker (web `meta.battleModeSettingVersion`); non-numbers give `None`.
+    /// The web normalization `=== 1 ? 1 : undefined` (`main.ts:40819-40821`) is applied by
+    /// `battle_mode::restored_setting_version`, so the rule has a single owner.
+    pub fn battle_mode_setting_value(&self) -> Option<f64> {
+        self.battle_mode_setting_version
+            .as_ref()
+            .and_then(Value::as_f64)
+    }
+
+    /// Web `_lastNewGameParams?.advanced?.battleAlwaysManual`: only a JSON boolean is `Some`.
+    pub fn battle_always_manual(&self) -> Option<bool> {
+        self.new_game_params
+            .as_ref()?
+            .get("advanced")?
+            .get("battleAlwaysManual")?
+            .as_bool()
+    }
+}
+
+/// One `plannedMarches` entry of the save (web `PlannedMarchesSave` value).
+///
+/// Field rules follow the web load path (`planned-march.ts:438-462`): a destination
+/// must be a JSON number; `attackUnitId` / `generalTargetId` survive only as non-empty
+/// strings. Filtering against live units is done by the caller.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct SavedPlannedMarch {
+    #[serde(rename = "unitId")]
+    pub unit_id: String,
+    #[serde(
+        rename = "destQ",
+        default,
+        deserialize_with = "lenient_number",
+        skip_serializing_if = "Option::is_none"
+    )]
+    pub dest_q: Option<Number>,
+    #[serde(
+        rename = "destR",
+        default,
+        deserialize_with = "lenient_number",
+        skip_serializing_if = "Option::is_none"
+    )]
+    pub dest_r: Option<Number>,
+    #[serde(
+        rename = "attackUnitId",
+        default,
+        deserialize_with = "lenient_nonempty_string",
+        skip_serializing_if = "Option::is_none"
+    )]
+    pub attack_unit_id: Option<String>,
+    #[serde(
+        rename = "generalTargetId",
+        default,
+        deserialize_with = "lenient_nonempty_string",
+        skip_serializing_if = "Option::is_none"
+    )]
+    pub general_target_id: Option<String>,
+}
+
+/// Destination coordinates: only JSON numbers survive (web `Number.isFinite` on a parsed save).
+/// `Number` (not `f64`) keeps `Eq` derivable on the snapshot, which `replay.rs` requires.
+fn lenient_number<'de, D>(deserializer: D) -> Result<Option<Number>, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    Ok(match Option::<Value>::deserialize(deserializer)? {
+        Some(Value::Number(number)) => Some(number),
+        _ => None,
+    })
+}
+
+fn lenient_nonempty_string<'de, D>(deserializer: D) -> Result<Option<String>, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    Ok(match Option::<Value>::deserialize(deserializer)? {
+        Some(Value::String(text)) if !text.is_empty() => Some(text),
+        _ => None,
+    })
 }
 
 /// Version-aware input accepted by [`SaveSnapshot`]'s custom deserializer.
@@ -99,6 +259,12 @@ struct SnapshotWire {
     rng: Option<Rng>,
     #[serde(default)]
     rng_state: Option<u32>,
+    #[serde(default)]
+    meta: Option<SaveMeta>,
+    #[serde(default, rename = "plannedMarches")]
+    planned_marches: Option<Vec<SavedPlannedMarch>>,
+    #[serde(default, rename = "autoMarch")]
+    auto_march: Option<SavedAutoMarch>,
 }
 
 impl SaveSnapshot {
@@ -109,7 +275,43 @@ impl SaveSnapshot {
             state,
             event_queue,
             rng,
+            meta: SaveMeta::default(),
+            planned_marches: Vec::new(),
+            auto_march: None,
         }
+    }
+
+    /// Returns a copy carrying the legacy `autoMarch` fallback entry.
+    pub fn with_auto_march(mut self, auto_march: Option<SavedAutoMarch>) -> Self {
+        self.auto_march = auto_march;
+        self
+    }
+
+    /// Returns the legacy `autoMarch` entry, if the save carried one.
+    pub fn auto_march(&self) -> Option<&SavedAutoMarch> {
+        self.auto_march.as_ref()
+    }
+
+    /// Returns a copy carrying the additive save metadata.
+    pub fn with_meta(mut self, meta: SaveMeta) -> Self {
+        self.meta = meta;
+        self
+    }
+
+    /// Returns a copy carrying the additive `plannedMarches` entries.
+    pub fn with_planned_marches(mut self, planned_marches: Vec<SavedPlannedMarch>) -> Self {
+        self.planned_marches = planned_marches;
+        self
+    }
+
+    /// Returns the additive save metadata (empty for saves written before R4).
+    pub fn meta(&self) -> &SaveMeta {
+        &self.meta
+    }
+
+    /// Returns the saved `plannedMarches` entries (empty when absent).
+    pub fn planned_marches(&self) -> &[SavedPlannedMarch] {
+        &self.planned_marches
     }
 
     /// Returns the format version stamped on this snapshot.
@@ -195,6 +397,10 @@ impl<'de> Deserialize<'de> for SaveSnapshot {
             }
         };
 
+        let snapshot = snapshot
+            .with_meta(wire.meta.unwrap_or_default())
+            .with_planned_marches(wire.planned_marches.unwrap_or_default())
+            .with_auto_march(wire.auto_march);
         snapshot.validate().map_err(de::Error::custom)?;
         Ok(snapshot)
     }
