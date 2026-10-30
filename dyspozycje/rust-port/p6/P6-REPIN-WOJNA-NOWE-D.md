@@ -25,11 +25,11 @@ NASTEPNA-PARTIA = nie portowane w tej rundzie (przyczyna w kolumnie Uwagi).
 | `navMoveCost` | 223-226 | funkcja | PORTED | `war_all_in_capital_nav::nav_move_cost` | test `nav_move_cost_land_and_sea_gate` |
 | `distanceField` | 228-304 | funkcja (Dijkstra) | PORTED | `war_all_in_capital_nav::distance_field` + `war_all_in_capital_nav::JsHeap` | kopiec 1:1 z JS (zamiany przy push/pop) |
 | `WarAllInUnit` | 306-315 | typ | PORTED | `WarAllInUnit` | `ruch_left: Option<f64>` (`ruchLeft`) |
-| `WarAllInOrder` | 317-328 | typ | PORTED-CZESCIOWO | `WarAllInOrder` | tryb `engage` pominiety (W1) |
-| `WarAllInPlanOpts` | 334-343 | typ | PORTED-CZESCIOWO | `WarAllInPlanOpts` | pola `enemyArmies`, `engageRadius`, `enemyStrength` pominiete (W1/W2) |
+| `WarAllInOrder` | 317-328 | typ | PORTED | `WarAllInOrder`, `WarAllInMode::Engage` | tryb `engage` (W1) od rundy 3 |
+| `WarAllInPlanOpts` | 334-343 | typ | PORTED | `WarAllInPlanOpts` | pola `enemy_armies`, `engage_radius`, `enemy_strength` (runda 3) |
 | `WarAllInPlan` | 345-358 | typ | PORTED | `WarAllInPlan` | `groupsByTarget` jako `BTreeMap` |
 | `WAR_ALLIN_LINK_RADIUS` / `MERGE_RADIUS` / `NO_MERGE_NEAR_CAPITAL` | 361-369 | stale z JSON | PORTED | `war_allin_params()` | JSON: `rust-port/engine/data/derived/war-allin-params.json`, loader `data::derived::WAR_ALLIN_PARAMS_JSON` (patrz ZALOZENIA 2) |
-| `Cluster` | 371-381 | typ wewn. | PORTED-CZESCIOWO | `war_all_in_capital_plan::Cluster` | pole `engage` pominiete (W1) |
+| `Cluster` | 371-381 | typ wewn. | PORTED | `war_all_in_capital_plan::Cluster` | pole `engage` (runda 3) |
 | `Goal` | 384-391 | typ wewn. | PORTED | `war_all_in_capital_nav::Goal` | `field: Rc<Field>` |
 | `cmpTarget` | 393-395 | funkcja | PORTED | `cmp_target` | |
 | `nearestTarget` | 397-412 | funkcja | PORTED | `nearest_target` | |
@@ -39,19 +39,23 @@ NASTEPNA-PARTIA = nie portowane w tej rundzie (przyczyna w kolumnie Uwagi).
 | `extendWalk` | 446-485 | funkcja | PORTED | `war_all_in_capital_nav::extend_walk` | guard web `!(budget > 1)` (linia 459) -> Rust `budget.is_nan() \|\| budget <= 1.0` (nav.rs:243) |
 | `chooseStep` | 487-533 | funkcja | PORTED | `war_all_in_capital_nav::choose_step` | |
 | `plannerRouteUsesSea` | 541-585 | funkcja | PORTED | `war_all_in_capital_nav::planner_route_uses_sea` | |
-| `planWarAllInCapital` | 593-859 | funkcja (planer) | PORTED-CZESCIOWO | `war_all_in_capital_plan::plan_war_all_in_capital` | etapy 1, 2, 3, 4 (bez W1/W2) |
-| `engageGoal` | 610-617 | funkcja | NASTEPNA-PARTIA | - | W1 |
-| etap 2a (`allocateGroupsToEnemies`) | 692-711 | galaz W2 | NASTEPNA-PARTIA | - | zalezy od `war-rules-multiwar.ts` (brak portu) |
-| etap 2b (`pickEngagementArmy`) | 717-727 | galaz W1 | NASTEPNA-PARTIA | - | zalezy od `war-rules-multiwar.ts` (brak portu) |
-| filtr zapasowych celow W2 | 808-811 | galaz W2 | NASTEPNA-PARTIA | - | tylko przy `enemyStrength` |
-| `war-rules-multiwar.ts` (`pickEngagementArmy`, `allocateGroupsToEnemies`) | poza modulem | zaleznosc | NASTEPNA-PARTIA | - | brak portu w `rust-port/engine` |
+| `planWarAllInCapital` | 593-859 | funkcja (planer) | PORTED | `war_all_in_capital_plan::plan_war_all_in_capital` | etapy 1, 2, 2a, 2b, 3, 4 (W1/W2 od rundy 3); bez wiringu `WarAllInContext` |
+| `engageGoal` | 610-617 | funkcja | PORTED | `Planner::engage_goal` | W1 (runda 3) |
+| etap 2a (`allocateGroupsToEnemies`) | 692-711 | galaz W2 | PORTED | `war_all_in_capital_plan` (etap 2a) + `war_rules_multiwar::allocate_groups_to_enemies` | runda 3 |
+| etap 2b (`pickEngagementArmy`) | 717-727 | galaz W1 | PORTED | `war_all_in_capital_plan` (etap 2b) + `war_rules_multiwar::pick_engagement_army` | runda 3 |
+| filtr zapasowych celow W2 | 808-811 | galaz W2 | PORTED | `Planner::resolve` (filtr `w2`) | runda 3 |
+| `war-rules-multiwar.ts` (`pickEngagementArmy`, `allocateGroupsToEnemies`) | `:168`, `:207` | zaleznosc | PORTED-CZESCIOWO | `rust-port/engine/src/domain/war_rules_multiwar.rs` (NOWY) | tylko 2 funkcje z W1/W2; bramki R1-R3, flagi, `WAR_RULES_PARAMS` z `war-rules-params.json` NIE portowane |
 
 ## ZALOZENIA (luki rozstrzygniete zalozeniem)
 
-1. Zakres partii 1: W1/W2 nie sa portowane, poniewaz zaleza od niezportowanego
-   `war-rules-multiwar.ts`. Kod Rust odpowiada galezi W1/W2 OFF (rowna sie dotychczasowemu
-   zachowaniu przy braku pol `enemyArmies`/`enemyStrength`). Wektory z weba (ZALOZENIE 1)
-   nie zawieraja trybu `engage` (`engageOrders` = 0, patrz Pomiary rundy 2).
+1. Zakres partii 1 (runda 2): W1/W2 nie byly portowane. Runda 3 port W1/W2 z
+   minimalnym zakresem `war-rules-multiwar.ts` (tylko `pickEngagementArmy`,
+   `allocateGroupsToEnemies`; bramki R1-R3, flagi i `war-rules-params.json` poza zakresem).
+   Promien W1 (`engageRadius`) podawany jawnie przez wolajacego (web: `opts.engageRadius ?? 0`).
+   Sily W2 (`strength`) traktowane jako liczby calkowite (`i64`); web-wektory generowane z
+   calkowitych sil (`{0,1,2,5,10}`), wiec ta zamiana nie zmienia wyniku dla danych z gry.
+   Wektory bazowe (`web-dc8a3adc.json`) nie maja trybu `engage`; wektory W1/W2 w
+   `web-dc8a3adc-w12.json` (runda 3, `engageOrders` = 175, 148 scenariuszy W2).
 2. Parametry JSON (runda 2, zarzut 5 PRZYJETY): kopia 1:1 `war-allin-params.json` lezy w
    `rust-port/engine/data/derived/war-allin-params.json` (commit `e4b387a2e`). Ladowana przez
    addytywna stala `data::derived::WAR_ALLIN_PARAMS_JSON` (`src/data/derived.rs`, wzorzec
@@ -85,11 +89,30 @@ NASTEPNA-PARTIA = nie portowane w tej rundzie (przyczyna w kolumnie Uwagi).
 - Podpiecie w `ai.ts` / `barbarians.ts` / `main.ts` (WarAllInContext): NASTEPNA-PARTIA.
 - Mutacje galezi W1/W2: nie dotyczy (galezi nie ma w Rust).
 
+## Runda 3 (zakres: W1/W2 + tryb `engage`)
+
+- Kod: `war_rules_multiwar.rs` (NOWY), `war_all_in_capital.rs` (`WarAllInMode::Engage`, pola opts),
+  `war_all_in_capital_plan.rs` (`engage_goal`, etapy 2a/2b, filtr W2, pominiecie scalania przy `engage`).
+- Wektory: `tests/p6_repin_wojna_d_vectors/web-dc8a3adc-w12.json` z `evidence/gen-vectors-w12.js`
+  (zywy `planWarAllInCapital` z `gra/` @ dc8a3adc, `enemyArmies`/`engageRadius`/`enemyStrength`).
+  Statystyki: 300 scenariuszy, 280 z rozkazami, `engage` 175, `rendezvous` 74, wielokrokowe 820,
+  W1 213 scenariuszy, W2 148 scenariuszy.
+- Testy: `tests/p6_repin_wojna_d_engage.rs` (7 testow: promien N/N+1, remisy q/r/owner,
+  alokacja min-1, deficyt, pusta lista).
+- Mutacje galezi (kazda: jedna zmiana, przywrocenie z kopii, `cmp` OK): M6 `engage` nie zatrzymuje
+  (plan.rs), M7 filtr puli armii W2 (plan.rs), M8 filtr zapasowych celow W2 (plan.rs), M9 scalanie
+  z grupa `engage` (follower), M15 scalanie z grupa `engage` (glowa), M10 tie-break ownerId
+  (multiwar), M11 alokacja min-1 `>` zamiast `>=`, M12 deficyt `>=`, M13 filtr wlascicieli W2,
+  M14 promien `>=` zamiast `>`: wszystkie ZABITE. Logi: `evidence/r3-mut*.log` (surowe wyniki w
+  kolumnie wyniku w raporcie 04-operator-r3.md).
+- NIE_ZMIERZONO: `WarAllInContext` (ai.ts / barbarians.ts / main.ts) nie podpiety; bramki R1-R3 i flagi
+  `war-rules-multiwar.ts` nie portowane.
+
 ## NASTEPNA-PARTIA
 
-1. Port `war-rules-multiwar.ts` (`pickEngagementArmy`, `allocateGroupsToEnemies`) i galezi
-   W1/W2 w `war_all_in_capital_plan.rs`; wektory W1/W2 z weba (tryb `engage` > 0).
-2. Podpiecie `WarAllInContext` (ai.ts / barbarians.ts / main.ts).
+1. Podpiecie `WarAllInContext` (ai.ts / barbarians.ts / main.ts) -- wejscia `enemyArmies`,
+   `enemyStrength` podawane jawnie (jak `city_yield_head`).
+2. Opcjonalnie: port bramek wojen z `war-rules-multiwar.ts` (R1-R3) jesli temat tego wymaga.
 
 ## Pomiary niezaleznego weryfikatora (runda 2, Operator-poprawka)
 

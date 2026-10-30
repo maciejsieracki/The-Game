@@ -51,6 +51,7 @@ pub mod unit_epoch;
 pub mod war_all_in_capital;
 pub mod war_all_in_capital_nav;
 pub mod war_all_in_capital_plan;
+pub mod war_rules_multiwar;
 pub mod wonder_placement;
 pub mod work_tax;
 

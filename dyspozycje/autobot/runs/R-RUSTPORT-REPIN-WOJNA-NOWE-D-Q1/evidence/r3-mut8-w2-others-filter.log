@@ -1,0 +1,54 @@
+   Compiling civ-engine v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_08acdd25-537-1/rust-port/engine)
+warning: unused variable: `t`
+   --> src/domain/war_all_in_capital_plan.rs:182:22
+    |
+182 |             .filter(|t| true)
+    |                      ^ help: if this is intentional, prefix it with an underscore: `_t`
+    |
+    = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused variable: `w2`
+   --> src/domain/war_all_in_capital_plan.rs:177:13
+    |
+177 |         let w2 = self.opts.enemy_strength.is_some();
+    |             ^^ help: if this is intentional, prefix it with an underscore: `_w2`
+
+warning: `civ-engine` (lib) generated 2 warnings (run `cargo fix --lib -p civ-engine` to apply 2 suggestions)
+    Finished `test` profile [unoptimized] target(s) in 34.39s
+     Running tests/p6_repin_wojna_d_vectors.rs (target/debug/deps/p6_repin_wojna_d_vectors-2f23862e3cb7ca31)
+
+running 1 test
+test web_vectors_match_rust_plan ... FAILED
+
+failures:
+
+---- web_vectors_match_rust_plan stdout ----
+
+thread 'web_vectors_match_rust_plan' (30408) panicked at tests/p6_repin_wojna_d_vectors.rs:292:5:
+rozbieznosci z webem (30): [
+    "w12 seed 21: orders [(\"ka1\", (2, 6), \"cB1\", 3, \"capital\"), (\"mi0\", (1, 5), \"cB1\", 3, \"capital\"), (\"bo3\", (6, 1), \"cB0\", 2, \"capital\")] != [(\"ka1\", (2, 6), \"cB1\", 3, \"capital\"), (\"mi0\", (1, 5), \"cB1\", 3, \"capital\")]",
+    "w12 seed 21: noPath []",
+    "w12 seed 21: held [\"ae4\", \"mi2\", \"bo5\"]",
+    "w12 seed 75: orders [(\"bo1\", (4, 0), \"cA2\", 4, \"capital\"), (\"zy0\", (0, 3), \"cA2\", 4, \"capital\")] != []",
+    "w12 seed 75: noPath []",
+    "w12 seed 86: orders [(\"zy0\", (8, 2), \"cC1\", 3, \"capital\")] != []",
+    "w12 seed 86: noPath []",
+    "w12 seed 93: orders [(\"bo0\", (13, 0), \"cB1\", 3, \"capital\"), (\"bo5\", (12, 1), \"cB1\", 3, \"capital\"), (\"ka3\", (12, 0), \"cB1\", 3, \"capital\"), (\"zy4\", (11, 0), \"cB1\", 3, \"capital\")] != []",
+    "w12 seed 93: noPath []",
+    "w12 seed 93: held [\"mi1\", \"mi2\"]",
+]
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+   1: core::panicking::panic_fmt
+   2: p6_repin_wojna_d_vectors::web_vectors_match_rust_plan
+   3: p6_repin_wojna_d_vectors::web_vectors_match_rust_plan::{closure#0}
+   4: <p6_repin_wojna_d_vectors::web_vectors_match_rust_plan::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+
+failures:
+    web_vectors_match_rust_plan
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.67s
+
+error: test failed, to rerun pass `--test p6_repin_wojna_d_vectors`
