@@ -14,14 +14,14 @@
   },
   "progPokojSlabosc": {
     "_wzor": "clamp(baza - wagaAgresja*(ai_agresywnosc-agresjaSrodek) + [premiaProfilObronny gdy ai_profil_obronna=1], min, max)",
-    "baza": 0.40,
+    "baza": 0.4,
     "agresjaSrodek": 5,
     "wagaAgresja": 0.03,
     "premiaProfilObronny": 0,
-    "_zalozenie_premiaProfilObronny": "ZALOZENIE rundy 1: dispatch podaje +0.05 za ai_profil_obronna=1, ale ta sama tresc podaje przyklady Zulusi 0.28 i Chinczycy 0.49, a obie cywilizacje maja profil_obronna=1; przyklady (binarne kryterium 2) maja pierwszenstwo, wiec premia = 0. Wartosc 0.05 do przywrocenia po decyzji wlasciciela.",
-    "min": 0.20,
+    "_zalozenie_premiaProfilObronny": "ZALOZENIE rundy 1 (potwierdzenie orkiestratora, NIE zmieniane w r2 bez decyzji): dispatch podaje +0.05 za ai_profil_obronna=1, ale kryterium 2 binarnie wymaga przykladow Zulusi 0.28 i Chinczycy 0.49 (obie maja profil_obronna=1). Premia = 0. Wartosc 0.05 do przywrocenia po decyzji wlasciciela (jedna liczba).",
+    "min": 0.2,
     "max": 0.55,
-    "bazaBrakDanych": 0.40
+    "bazaBrakDanych": 0.4
   },
   "progKrytyczny": {
     "_wzor": "clamp(baza - wagaAgresja*(ai_agresywnosc-agresjaSrodek), min, max)",
@@ -34,12 +34,12 @@
   },
   "progZdrowia": {
     "_wzor": "clamp(baza - wagaTolerancja*(ai_tolerancja_ryzyka-tolerancjaSrodek), min, max)",
-    "baza": 0.40,
+    "baza": 0.4,
     "tolerancjaSrodek": 5,
     "wagaTolerancja": 0.02,
-    "min": 0.20,
+    "min": 0.2,
     "max": 0.55,
-    "bazaBrakDanych": 0.40
+    "bazaBrakDanych": 0.4
   },
   "minTurWojny": {
     "_wzor": "clamp(baza + [premiaAgresjaWysoka gdy ai_agresywnosc>=agresjaWysoka] + [karaAgresjaNiska gdy ai_agresywnosc<=agresjaNiska] + [karaProfilObronny gdy ai_profil_obronna=1], min, max)",
@@ -54,7 +54,7 @@
     "bazaBrakDanych": 5
   },
   "zmeczenie": {
-    "_wzor": "udzial = min(maksUdzial, turyWojny / T); T = min(maksTur, bazaTur + wagaAgresja*ai_agresywnosc)",
+    "_wzor": "udzial = maksUdzial * min(1, turyWojny / T); T = min(maksTur, bazaTur + wagaAgresja*ai_agresywnosc). Progi (e): ulamek min(1, t/T) >= progSygnaluPokoju. Pelne zmeczenie najpozniej po maksTur (20) turach (D4).",
     "maksUdzial": 0.5,
     "bazaTur": 15,
     "wagaAgresja": 1,
@@ -63,13 +63,14 @@
     "bazaTurBrakDanych": 20
   },
   "sygnalyPokoju": {
-    "_opis": "AI proponuje pokoj (priorytet 2 decideAIDiplomacy) przy: (a) rw <= progPokojSlabosc; (b) >=1 miasto utracone w tej wojnie i rw <= progRwMiasta; (d) pat: >=patTurWojny tur wojny i brak zmiany miast przez patBrakZmianyTur tur; (e) udzial zmeczenia >= progSygnaluPokoju. Sygnal (c) (zdrowie armii) NIEZAIMPLEMENTOWANY: brak zrodla HP armii w silniku (NIE_ZMIERZONO).",
+    "_opis": "AI proponuje pokoj (priorytet 2 decideAIDiplomacy) przy: (a) rw <= progPokojSlabosc; (b) >=1 miasto utracone w tej wojnie i rw <= progRwMiasta; (c) zdrowie armii AI (sum health/sum hpMax jednostek bojowych) < progZdrowia; (d) pat: >=patTurWojny tur wojny i brak zmiany miast przez patBrakZmianyTur tur; (e) ulamek zmeczenia >= progSygnaluPokoju. ZAWSZE tylko gdy AI sama przyjęłaby pokoj od gracza (bramka cenaPokoju, verdict ok) — spojnosc: AI nie proponuje pokoju, ktorego sama by odrzucila.",
     "progRwMiasta": 0.5,
     "patTurWojny": 15,
-    "patBrakZmianyTur": 10
+    "patBrakZmianyTur": 10,
+    "_zrodlo_c": "HP jednostek: pole health (types/unit.ts) i hpMaxEffective (combat). Sumowane po jednostkach bojowych wlasciciela (nie cywilnych)."
   },
   "cenaPokoju": {
-    "_opis": "R5 — akceptacja pokoju proponowanego przez gracza do AI. rw = udzial sily AI (0..1). Odrzucenie i premia sily wylaczone po turyBezOgraniczenAi turach wojny.",
+    "_opis": "R5 - akceptacja pokoju proponowanego przez gracza do AI. rw = udzial sily AI (0..1). Odrzucenie (b) i premia sily (c) wylaczone po turyBezOgraniczenAi turach wojny. Ta sama bramka (verdict ok) decyduje, czy AI sama proponuje pokoj (sygnaly).",
     "odrzucenieRwProg": 0.55,
     "odrzucenieMaxTurWojny": 10,
     "progSilyWysoki": 0.55,

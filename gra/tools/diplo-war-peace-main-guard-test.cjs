@@ -24,19 +24,19 @@ const count = (src, s) => src.split(s).length - 1;
 const once = (src, s) => count(src, s) === 1;
 
 // ---- D7: gracz nie wypowiada wojny z hamulca ----
-check('D7: gracz jako silniejsza strona nie deklaruje (guard w processDiploCrisisQueue)',
-  once(MAIN, 'if (isMe(declarer)) continue;'));
-check('D7: brak ostrzeżenia o automatycznej wojnie gdy gracz silniejszy',
-  MAIN.includes('&& !playerStrongerHere)'));
-// mutacje D7
+check('D7: gracz jako silniejsza strona nie deklaruje (guard mayDeclare w processDiploCrisisQueue)',
+  once(MAIN, 'if (!outcome.mayDeclare) continue;') && count(MAIN, 'brakeWarOutcome(') === 2);
+check('D7: brak ostrzeżenia o automatycznej wojnie gdy gracz silniejszy (warOutcome.mayDeclare)',
+  MAIN.includes('&& warOutcome.mayDeclare) {'));
+// mutacje D7 (zachowaniowy test: diplo-war-peace-d7-test.cjs)
 check('mutacja D7 (usunięty guard) jest wykrywalna',
-  count(MAIN.replace('if (isMe(declarer)) continue;', ''), 'if (isMe(declarer)) continue;') === 0);
+  count(MAIN.replace('if (!outcome.mayDeclare) continue;', ''), 'if (!outcome.mayDeclare) continue;') === 0);
 
 // ---- R7: hamulec feeds łączną Relację, N/prog per para ----
 check('R7: diploBrakeCrisisStep czyta relationScore (nie samo Zaufanie)',
   MAIN.includes('const relacja = relationScore(getDiploRelation(a, b));'));
 check('R7: krok kryzysu z progiem i N per para',
-  MAIN.includes('{ ...diploTickP6, kryzysProgZaufania: w.prog, kryzysTurDoWojny: w.n },'));
+  MAIN.includes('{ ...diploTickP6, kryzysProgZaufania: w.prog, kryzysTurDoWojny: w.n })'));
 check('R7: wywołania bez wartości Zaufania (AI↔AI, gracz↔AI)',
   once(MAIN, 'diploBrakeCrisisStep(a, b);') && once(MAIN, 'diploBrakeCrisisStep(ME(), oid);'));
 check('R7: próg i N z wyższej strony pary (diploBrakeWarParams)',
@@ -50,7 +50,7 @@ check('mutacja R7 (feed Zaufania) jest wykrywalna',
 check('R2: recordWarCityLossForPair w obu lejkach przejęcia miasta',
   count(MAIN, 'recordWarCityLossForPair(oldOwner, newOwner);') === 1 && count(MAIN, 'recordWarCityLossForPair(oldOwner, atkOwner);') === 1);
 check('R2: rekord wojny ważny tylko dla tego samego startu wojny (od)',
-  MAIN.includes('meta.wojnaMiasta.od === od'));
+  read('src/game/diplomacy-war-peace-profile.ts').includes('rec.od === od') && MAIN.includes('warStateFromRecord(meta?.wojnaMiasta, od, String(a), turn)'));
 // mutacja R2: usunięcie hooka w bitwie
 check('mutacja R2 (brak hooka bitwy) jest wykrywalna',
   count(MAIN.replace('recordWarCityLossForPair(oldOwner, atkOwner);', ''), 'recordWarCityLossForPair(oldOwner, atkOwner);') === 0);
@@ -81,9 +81,18 @@ check('R3: priorytet 2 używa sygnałów (aiPeaceSignals)', AI.includes('aiPeace
 check('R6: priorytet 4 używa progu wojny per cywilizacja', AI.includes('const progMinimalnyRelacja = warProfile.progWojnyRelacji;'));
 // mutacja R3: usunięcie sygnałów z priorytetu 2
 {
-  const mutR3 = AI.replace('rel.stanWojny && (rw <= progPokojSlabosc || peaceSignals.wantsPeace)', 'rel.stanWojny && (rw <= progPokojSlabosc)');
+  const mutR3 = AI.replace('rel.stanWojny && !aiFeelsStronger && (rw <= progPokojSlabosc || peaceSignals.wantsPeace)', 'rel.stanWojny && !aiFeelsStronger && (rw <= progPokojSlabosc)');
   check('mutacja R3 (sygnały wyłączone) jest wykrywalna: warunek zmieniony i brak sygnałów w priorytecie 2',
     mutR3 !== AI && !mutR3.includes('|| peaceSignals.wantsPeace)'));
+}
+// R3(c)/R3 spójność: zdrowie armii podpięte, AI nie proponuje gdy czuje się silniejsze
+check('R3(c): zdrowie armii liczone w main (diploArmyHealthShare) i podane do ai.ts',
+  count(MAIN, 'diploArmyHealthShare(a)') === 1 && AI.includes('armyHealthShare: rel.armyHealthShare'));
+check('R3 spojnosc: AI nie proponuje pokoju gdy czuje sie silniejsze (isFeelingStronger)',
+  AI.includes('const aiFeelsStronger = rel.stanWojny && isFeelingStronger({') && AI.includes('!aiFeelsStronger && (rw <= progPokojSlabosc'));
+{
+  const mutSpojn = AI.replace('rel.stanWojny && !aiFeelsStronger && (rw', 'rel.stanWojny && (rw');
+  check('mutacja spojnosci R3 (AI proponuje mimo czucia sily) jest wykrywalna', mutSpojn !== AI);
 }
 
 // ---- R5: bramka pokoju podpięta w buildProposalEvalContext ----

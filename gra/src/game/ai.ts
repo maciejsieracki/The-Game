@@ -66,7 +66,7 @@ import {
   type ResearchBuildingGate,
 } from './research';
 import { hexKeysWithinRadius } from './okolica';
-import { resolveWarPeaceProfile, aiPeaceSignals, type WarPeaceProfile } from './diplomacy-war-peace-profile';
+import { resolveWarPeaceProfile, aiPeaceSignals, isFeelingStronger, type WarPeaceProfile } from './diplomacy-war-peace-profile';
 import {
   AI_IMPROVEMENT_PRIORITY,
   pickAutoImprovements,
@@ -5287,6 +5287,8 @@ export interface RelacjaWejscie {
   lostCitiesInWar?: number;
   /** R-WEB-PEACE-RULES-Q1 R3(d): tury od ostatniej zmiany posiadania miast w tej wojnie. */
   turnsSinceCityChange?: number;
+  /** R-WEB-PEACE-RULES-Q1 R3(c): zdrowie armii AI 0..1 (Σ health / Σ hpMax jednostek bojowych). */
+  armyHealthShare?: number;
 }
 
 /**
@@ -5809,11 +5811,20 @@ export function decideAIDiplomacy(
             turnsAtWar: turnsAtWarRel,
             lostCitiesInWar: Math.max(0, rel.lostCitiesInWar ?? 0),
             turnsSinceCityChange: rel.turnsSinceCityChange,
+            armyHealthShare: rel.armyHealthShare,
           },
           { ...warProfile, progPokojSlabosc },
         )
       : { wantsPeace: false, reasons: [] as string[] };
-    if (rel.stanWojny && (rw <= progPokojSlabosc || peaceSignals.wantsPeace)) {
+    // Spójność (R5 ↔ R3): AI NIE proponuje pokoju, gdy sama odrzuciłaby pokój od gracza jako
+    // „czuje się silniejsze" (isFeelingStronger = bramka R5b). Bramka R5 dotyczy wyłącznie
+    // propozycji GRACZA (ZAŁOŻENIE F2), więc minTurWojny nie blokuje propozycji AI.
+    const aiFeelsStronger = rel.stanWojny && isFeelingStronger({
+      rw,
+      turnsAtWar: turnsAtWarRel,
+      lostCitiesInWar: Math.max(0, rel.lostCitiesInWar ?? 0),
+    });
+    if (rel.stanWojny && !aiFeelsStronger && (rw <= progPokojSlabosc || peaceSignals.wantsPeace)) {
       komendy.push({
         type:     'zaproponuj_pokoj',
         targetId: rel.partnerId,

@@ -6,6 +6,19 @@
 
 import matrixRaw from '../../data/civ-matrix.json';
 import paramsRaw from '../../data/diplomacy-war-peace-params.json';
+import aiParamsRaw from '../../data/ai-params.json';
+
+/**
+ * R10 (R-WEB-PEACE-RULES-Q1): klucz ai-params.json = baza progZdrowia (sygnał c, próg HP armii).
+ * Odczyt z klucza; brak/niepoprawna wartość → baza z diplomacy-war-peace-params.json.
+ */
+export const ZDROWIE_AI_PARAM_KEY = 'dyplomacja_zdrowie_armii_pokój';
+
+export function zdrowieBazaZAiParams(params: WarPeaceParams = WAR_PEACE_PARAMS): number {
+  const entry = (aiParamsRaw as unknown as Record<string, { wartosc?: unknown }>)[ZDROWIE_AI_PARAM_KEY];
+  const v = entry?.wartosc;
+  return typeof v === 'number' && Number.isFinite(v) ? v : params.progZdrowia.baza;
+}
 
 export interface WarPeaceParams {
   progWojnyRelacji: { baza: number; wagaProgWojny: number; wagaEkspansja: number; ekspansjaSrodek: number; wagaPodboj: number; podbojSrodek: number; min: number; max: number; bazaBrakDanych: number };
@@ -96,7 +109,7 @@ export function resolveWarPeaceProfile(civKey?: string | null, params: WarPeaceP
       progWojnyRelacji: params.progWojnyRelacji.bazaBrakDanych,
       progPokojSlabosc: params.progPokojSlabosc.bazaBrakDanych,
       progKrytyczny: params.progKrytyczny.bazaBrakDanych,
-      progZdrowia: params.progZdrowia.bazaBrakDanych,
+      progZdrowia: zdrowieBazaZAiParams(params),
       minTurWojny: params.minTurWojny.bazaBrakDanych,
       zmeczenieT: params.zmeczenie.bazaTurBrakDanych,
       hamulecN: clampNum(Math.round(params.hamulecRelacji.bazaN - params.hamulecRelacji.wagaProgWojny * 5), params.hamulecRelacji.minN, params.hamulecRelacji.maxN),
@@ -128,7 +141,7 @@ export function resolveWarPeaceProfile(civKey?: string | null, params: WarPeaceP
   const progKrytyczny = clampNum(K.baza - K.wagaAgresja * (agr - K.agresjaSrodek), K.min, K.max);
 
   const Z = params.progZdrowia;
-  const progZdrowia = clampNum(Z.baza - Z.wagaTolerancja * (risk - Z.tolerancjaSrodek), Z.min, Z.max);
+  const progZdrowia = clampNum(zdrowieBazaZAiParams(params) - Z.wagaTolerancja * (risk - Z.tolerancjaSrodek), Z.min, Z.max);
 
   const M = params.minTurWojny;
   const minTurWojny = Math.round(clampNum(
@@ -166,13 +179,61 @@ export function resolveWarPeaceProfile(civKey?: string | null, params: WarPeaceP
 }
 
 /**
- * Udział zmęczenia wojną: min(maksUdzial, turyWojny / T). Zero poza wojną (turyWojny <= 0).
- * R4 (D4): T ≤ 20, więc każda cywilizacja osiąga pełne zmęczenie najpóźniej po 20 turach.
+ * Ułamek pełnego zmęczenia wojną: min(1, turyWojny / T), 0..1. Zero poza wojną.
+ * R4 (D4): T ≤ 20 → pełne zmęczenie najpóźniej po 20 turach wojny (dla każdej cywilizacji).
  */
-export function warWearinessShare(turnsAtWar: number, zmeczenieT: number): number {
+export function warWearinessFraction(turnsAtWar: number, zmeczenieT: number): number {
   const turns = Number.isFinite(turnsAtWar) ? Math.max(0, turnsAtWar) : 0;
   if (!(zmeczenieT > 0) || turns <= 0) return 0;
-  return Math.min(WAR_WEARINESS_MAX_SHARE, turns / zmeczenieT);
+  return Math.min(1, turns / zmeczenieT);
+}
+
+/**
+ * Udział zmęczenia wojną w udziale wpływającym na decyzję: maksUdzial · ułamek (0..0.5).
+ * Poprzednia wersja min(0.5, t/T) saturowała się już przy t = T/2 (~10 tur), co łamało D4.
+ */
+export function warWearinessShare(turnsAtWar: number, zmeczenieT: number): number {
+  return WAR_WEARINESS_MAX_SHARE * warWearinessFraction(turnsAtWar, zmeczenieT);
+}
+
+/**
+ * Stan wojny pary zapisywany w DiploPairMeta (R1/R2): rekord utrat miast ważny tylko dla tej samej
+ * wojny (`od` = tura startu). Czyste funkcje, żeby round-trip save/load był testowalny.
+ */
+export interface WarCityRecord {
+  od: number;
+  utraty: Record<string, number>;
+  ostatniaTura?: number;
+}
+
+/** Zapis utraty miasta przez właściciela `oldOwnerKey` w wojnie startującej w `od`. */
+export function recordWarCityLoss(
+  prev: WarCityRecord | undefined,
+  od: number,
+  oldOwnerKey: string,
+  turn: number,
+): WarCityRecord {
+  const base: WarCityRecord = prev && prev.od === od ? prev : { od, utraty: {} };
+  return {
+    od,
+    utraty: { ...base.utraty, [oldOwnerKey]: (base.utraty[oldOwnerKey] ?? 0) + 1 },
+    ostatniaTura: turn,
+  };
+}
+
+/** Odczyt stanu wojny z rekordu (rekord z innej wojny jest ignorowany). */
+export function warStateFromRecord(
+  rec: WarCityRecord | undefined,
+  od: number,
+  ownerKey: string,
+  turn: number,
+): { turnsAtWar: number; lostCities: number; turnsSinceCityChange: number } {
+  const valid = rec && rec.od === od ? rec : undefined;
+  return {
+    turnsAtWar: Math.max(0, turn - od),
+    lostCities: valid?.utraty?.[ownerKey] ?? 0,
+    turnsSinceCityChange: Math.max(0, turn - (valid?.ostatniaTura ?? od)),
+  };
 }
 
 /** Próg kryzysu Relacji dla pary: progWojnyRelacji wyższej strony − 15 (R7). */
@@ -188,6 +249,8 @@ export interface PeaceSignalInput {
   lostCitiesInWar: number;
   /** Tury od ostatniej zmiany posiadania miast w tej wojnie (undefined = od początku wojny). */
   turnsSinceCityChange?: number;
+  /** R3(c): zdrowie armii AI = Σ health / Σ hpMax jednostek bojowych (0..1). undefined = brak danych. */
+  armyHealthShare?: number;
 }
 
 export interface PeaceSignalResult {
@@ -212,8 +275,12 @@ export function aiPeaceSignals(input: PeaceSignalInput, profile: WarPeaceProfile
   if (input.turnsAtWar >= S.patTurWojny && sinceChange >= S.patBrakZmianyTur) {
     reasons.push('d');
   }
-  if (warWearinessShare(input.turnsAtWar, profile.zmeczenieT) >= params.zmeczenie.progSygnaluPokoju) {
+  // (e): ułamek pełnego zmęczenia (0..1) ≥ progSygnaluPokoju (0.4 = ok. 0.4·T tur wojny).
+  if (warWearinessFraction(input.turnsAtWar, profile.zmeczenieT) >= params.zmeczenie.progSygnaluPokoju) {
     reasons.push('e');
+  }
+  if (input.armyHealthShare !== undefined && input.armyHealthShare < profile.progZdrowia) {
+    reasons.push('c');
   }
   return { wantsPeace: reasons.length > 0, reasons };
 }
@@ -252,6 +319,12 @@ export interface PeaceAiGateResult {
   reason?: string;
 }
 
+/** R5(b): AI „czuje się silniejsze" = rw ≥ 0.55 ∧ brak utraconego miasta ∧ turnsAtWar < 10 (bez efektu po 20 turach — tam bramka i tak zdjęta). */
+export function isFeelingStronger(input: PeaceAiGateInput, params: WarPeaceParams = WAR_PEACE_PARAMS): boolean {
+  const C = params.cenaPokoju;
+  return input.rw >= C.odrzucenieRwProg && input.lostCitiesInWar === 0 && Math.max(0, input.turnsAtWar) < C.odrzucenieMaxTurWojny;
+}
+
 /**
  * Bramka AI dla pokoju proponowanego przez gracza (R5 a/b/c/d/e).
  *  (a) minimalny czas wojny: turnsAtWar < minTurWojny → odrzucenie (zawsze, także po 20 turach — min ≤ 8).
@@ -277,7 +350,7 @@ export function evaluatePeaceAiGate(
   if (turns >= C.turyBezOgraniczenAi) {
     return { verdict: 'ok', priceMultiplier: Math.min(1, peaceCivPriceMultiplier(profile, params)) };
   }
-  if (input.rw >= C.odrzucenieRwProg && input.lostCitiesInWar === 0 && turns < C.odrzucenieMaxTurWojny) {
+  if (isFeelingStronger(input, params)) {
     return {
       verdict: 'stronger',
       priceMultiplier: 1,

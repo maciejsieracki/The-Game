@@ -74,8 +74,12 @@ for (const k of civKeys) {
 
 // ---- R4 / D4: zmęczenie wojną ----
 near('zmęczenie 0 poza wojną', M.warWearinessShare(0, 20), 0);
-near('zmęczenie 10/20 = 0.5', M.warWearinessShare(10, 20), 0.5);
-near('zmęczenie 5/20 = 0.25', M.warWearinessShare(5, 20), 0.25);
+near('zmęczenie 10/20 = 0.25 (połowa maksimum, NIE saturacja)', M.warWearinessShare(10, 20), 0.25);
+near('zmęczenie 5/20 = 0.125', M.warWearinessShare(5, 20), 0.125);
+near('zmęczenie 20/20 = 0.5 (D4: pełne po 20 turach)', M.warWearinessShare(20, 20), 0.5);
+near('ułamek zmęczenia 15/15 = 1 (T=15, Grecy-like)', M.warWearinessFraction(15, 15), 1);
+near('ułamek zmęczenia 10/20 = 0.5 (brak saturacji przy T/2)', M.warWearinessFraction(10, 20), 0.5);
+near('ułamek zmęczenia 99/20 = 1 (kapa)', M.warWearinessFraction(99, 20), 1);
 near('zmęczenie po 20 turach pełne (0.5)', M.warWearinessShare(20, 20), 0.5);
 near('zmęczenie po 20 turach pełne dla T=17', M.warWearinessShare(20, 17), 0.5);
 near('zmęczenie nie przekracza 0.5', M.warWearinessShare(99, 17), 0.5);
@@ -90,6 +94,10 @@ eq('sygnał d: pat 15 tur bez zmiany miast 10 tur', M.aiPeaceSignals({ rw: 0.9, 
 eq('sygnał d NIE: pat 14 tur', M.aiPeaceSignals({ rw: 0.9, turnsAtWar: 14, lostCitiesInWar: 0, turnsSinceCityChange: 14 }, rzym).reasons.includes('d'), false);
 eq('sygnał e: zmęczenie >= 0.4 (Zulusi 8/20)', M.aiPeaceSignals({ rw: 0.9, turnsAtWar: 8, lostCitiesInWar: 0 }, zulusi).reasons.includes('e'), true);
 eq('sygnał e NIE: Zulusi 7/20', M.aiPeaceSignals({ rw: 0.9, turnsAtWar: 7, lostCitiesInWar: 0 }, zulusi).wantsPeace, false);
+
+// ---- R10: klucz ai-params dyplomacja_zdrowie_armii_pokój = baza progZdrowia (podłączony) ----
+near('R10: baza zdrowia z ai-params = 0.40', M.zdrowieBazaZAiParams(), 0.4);
+near('R10: zulusi progZdrowia = klucz - 0.02*(tol-5), clamp 0.20-0.55', zulusi.progZdrowia, Math.min(0.55, Math.max(0.2, 0.4 - 0.02 * (zulusi.tolerancjaRyzyka - 5))));
 
 // ---- R5: bramka pokoju od gracza ----
 eq('R5a: za wcześnie (Zulusi minTur 7, tura 6)', M.evaluatePeaceAiGate({ rw: 0.3, turnsAtWar: 6, lostCitiesInWar: 0 }, zulusi).verdict, 'too_early');
@@ -108,6 +116,27 @@ near('R5d: zulusi mnożnik cywilizacji 1.32', M.peaceCivPriceMultiplier(zulusi),
 near('R5d: chinczycy 1+0.05*-3+0.04*-1=0.81', M.peaceCivPriceMultiplier(chin), 0.81);
 const gz = M.evaluatePeaceAiGate({ rw: 0.8, turnsAtWar: 12, lostCitiesInWar: 0 }, zulusi);
 near('R5 cena: zulusi rw0.8 = 1.6*1.32', gz.priceMultiplier, 1.6 * 1.32);
+
+// ---- R3(c): zdrowie armii ----
+eq('sygnał c: zdrowie armii 0.1 < progZdrowia (zulusi 0.40 -> prog ok.)', M.aiPeaceSignals({ rw: 0.9, turnsAtWar: 3, lostCitiesInWar: 0, armyHealthShare: 0.1 }, zulusi).reasons.includes('c'), true);
+eq('sygnał c NIE: zdrowie 0.9', M.aiPeaceSignals({ rw: 0.9, turnsAtWar: 3, lostCitiesInWar: 0, armyHealthShare: 0.9 }, zulusi).reasons.includes('c'), false);
+eq('sygnał c NIE: brak danych o armii (undefined)', M.aiPeaceSignals({ rw: 0.9, turnsAtWar: 3, lostCitiesInWar: 0 }, zulusi).reasons.includes('c'), false);
+
+// ---- R2 / save round-trip licznika miast i startu wojny (pure helpers używane przez main.ts) ----
+{
+  const rec1 = M.recordWarCityLoss(undefined, 5, '0', 7);
+  const rec2 = M.recordWarCityLoss(rec1, 5, '0', 9);
+  const saved = JSON.parse(JSON.stringify([['0_1', { wojnaMiasta: rec2, wojnaStartTura: 5 }]]));
+  const back = saved[0][1].wojnaMiasta;
+  const st = M.warStateFromRecord(back, 5, '0', 12);
+  eq('round-trip: 2 utraty miast przeżywają save/load', st.lostCities, 2);
+  eq('round-trip: tury wojny liczone od wojnaStartTura (12-5)', st.turnsAtWar, 7);
+  eq('round-trip: tury od ostatniej utraty (12-9)', st.turnsSinceCityChange, 3);
+  eq('round-trip: rekord z INNEJ wojny (od 9) jest ignorowany', M.warStateFromRecord(back, 9, '0', 12).lostCities, 0);
+  eq('round-trip: utrata przez drugą stronę nie liczy się dla właściciela 0', M.warStateFromRecord(back, 5, '1', 12).lostCities, 0);
+  const rec3 = M.recordWarCityLoss(back, 20, '0', 21);
+  eq('nowa wojna (od 20) zaczyna czysty licznik', rec3.utraty['0'], 1);
+}
 
 // ---- R7: próg kryzysu Relacji ----
 near('R7 próg kryzysu dla Zulusów = 63-15 = 48', M.brakeRelationThreshold(zulusi.progWojnyRelacji), 48);

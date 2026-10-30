@@ -292,7 +292,7 @@
   "dyplomacja_zdrowie_armii_pokój": {
     "wartosc": 0.4,
     "sekcja": "§6 Dyplomacja",
-    "opis": "NIEPODLACZONY (R-WEB-PEACE-RULES-Q1 R10): sygnal (c) zdrowie armii nie ma zrodla HP armii w silniku (NIE_ZMIERZONO); baza progZdrowia zostaje w diplomacy-war-peace-params.json (0.40). Decyzja o podlaczeniu = osobny temat."
+    "opis": "Próg zdrowia armii AI (Σ hp / Σ hpMax jednostek bojowych) poniżej którego AI szuka pokoju (sygnał c, R-WEB-PEACE-RULES-Q1 R3/R10). PODŁĄCZONY: baza progZdrowia w gra/src/game/diplomacy-war-peace-profile.ts (zdrowieBazaZAiParams), korekta per cywilizacja z tolerancji ryzyka."
   },
   "ai_diplomacja_prog_wojna_sila": {
     "wartosc": 0.6,

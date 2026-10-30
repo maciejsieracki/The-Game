@@ -143,7 +143,7 @@ async function main() {
     await buildBundle(BUNDLE_OK, []);
     const m1 = mutantPlugin("if (ctx.warState && r5PlayerAuthors && r5RespondentIsAi && !ctx.responderIsCityState) {", "if (false) {");
     await buildBundle(BUNDLE_M1, [m1.plugin]);
-    const m2 = mutantPlugin("turns < C.odrzucenieMaxTurWojny", "turns < 0", PROFILE);
+    const m2 = mutantPlugin("Math.max(0, input.turnsAtWar) < C.odrzucenieMaxTurWojny", "Math.max(0, input.turnsAtWar) < 0", PROFILE);
     await buildBundle(BUNDLE_M2, [m2.plugin]);
     check('(0) mutanty faktycznie zmienily zrodlo (M1, M2 po 1 podmianie)', m1.info.applied === 1 && m2.info.applied === 1, [m1.info, m2.info]);
 

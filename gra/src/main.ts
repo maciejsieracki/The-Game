@@ -858,7 +858,7 @@ import aiParamsRaw from '../data/ai-params.json';
 import diplomacyTickParams from '../data/diplomacy-tick-params.json';
 import {
   aiAiPairs, crisisStepForPair, dobraWolaTurnStep, isAiAiEligibleOwner, isDiploTickWarBrakeEnabled,
-  parseCrisisCounters, pickWarDeclarer, sortCrisisQueue, tradeTrustBonusPerTura,
+  parseCrisisCounters, brakeWarOutcome, sortCrisisQueue, tradeTrustBonusPerTura,
 } from './game/diplomacy-tick-war-brake';
 import {
   resolveAutoBattleByPower,
@@ -1419,7 +1419,7 @@ import {
   type DiploPairMeta,
   type ZlozeGrant,
 } from './game/diplomacy-pn-engine';
-import { resolveWarPeaceProfile, brakeRelationThreshold, type WarPeaceProfile } from './game/diplomacy-war-peace-profile';
+import { resolveWarPeaceProfile, brakeRelationThreshold, recordWarCityLoss, warStateFromRecord, type WarPeaceProfile } from './game/diplomacy-war-peace-profile';
 import {
   isPeaceTreatyLocked,
   startPeaceTreatyLock,
@@ -10153,12 +10153,7 @@ async function boot(): Promise<void> {
       }
       const od = diploEnsureWarStart(a, b);
       const meta = diplomacyPairMeta.get(key) as (DiploPairMeta & WarPairMetaR1) | undefined;
-      const rec = meta?.wojnaMiasta && meta.wojnaMiasta.od === od ? meta.wojnaMiasta : undefined;
-      return {
-        turnsAtWar: Math.max(0, turn - od),
-        lostCities: rec?.utraty?.[String(a)] ?? 0,
-        turnsSinceCityChange: Math.max(0, turn - (rec?.ostatniaTura ?? od)),
-      };
+      return warStateFromRecord(meta?.wojnaMiasta, od, String(a), turn);
     }
 
     /**
@@ -10174,10 +10169,29 @@ async function boot(): Promise<void> {
       return turn;
     }
 
-    /** R-WEB-PEACE-RULES-Q1 R1/R3(d): pola stanu wojny do wpisu relacjeDip (pusty poza wojną). */
-    function diploRelWarFields(a: number, b: number): { turnsAtWar: number; lostCitiesInWar: number; turnsSinceCityChange: number } {
+    /**
+     * R-WEB-PEACE-RULES-Q1 R3(c): zdrowie armii właściciela = Σ hp / Σ hpMax jednostek BOJOWYCH
+     * (hp z RuntimeUnit, hpMax z effectiveRuntimeUnitMaxHp). Brak jednostek bojowych → undefined
+     * (sygnał c nie działa; NIE_ZMIERZONO dla pustej armii).
+     */
+    function diploArmyHealthShare(ownerId: number): number | undefined {
+      let hp = 0;
+      let max = 0;
+      for (const u of units) {
+        if (u.ownerId !== ownerId || isCivilianUnit(u)) continue;
+        const m = effectiveRuntimeUnitMaxHp(u);
+        if (!(m > 0)) continue;
+        hp += Math.max(0, Math.min(m, u.hp ?? m));
+        max += m;
+      }
+      return max > 0 ? hp / max : undefined;
+    }
+
+    /** R-WEB-PEACE-RULES-Q1 R1/R3(c)/R3(d): pola stanu wojny do wpisu relacjeDip (pusty poza wojną). */
+    function diploRelWarFields(a: number, b: number): { turnsAtWar: number; lostCitiesInWar: number; turnsSinceCityChange: number; armyHealthShare?: number } {
       const s = diploWarStateFor(a, b);
-      return { turnsAtWar: s.turnsAtWar, lostCitiesInWar: s.lostCities, turnsSinceCityChange: s.turnsSinceCityChange };
+      const armyHealthShare = s.turnsAtWar > 0 ? diploArmyHealthShare(a) : undefined;
+      return { turnsAtWar: s.turnsAtWar, lostCitiesInWar: s.lostCities, turnsSinceCityChange: s.turnsSinceCityChange, armyHealthShare };
     }
 
     /** R-WEB-PEACE-RULES-Q1 R5: stan wojny z perspektywy RESPONDENTA do bramki pokoju (undefined poza wojną). */
@@ -10202,12 +10216,8 @@ async function boot(): Promise<void> {
       if (getDiploRelation(oldOwner, newOwner).status !== 'wojna') return;
       const od = diploEnsureWarStart(oldOwner, newOwner);
       const meta = getDiploPairMeta(oldOwner, newOwner) as DiploPairMeta & WarPairMetaR1;
-      const prev = meta.wojnaMiasta && meta.wojnaMiasta.od === od
-        ? meta.wojnaMiasta
-        : { od, utraty: {} as Record<string, number> };
-      const oldKey = String(oldOwner);
-      const utraty = { ...prev.utraty, [oldKey]: (prev.utraty[oldKey] ?? 0) + 1 };
-      setDiploPairMeta(oldOwner, newOwner, { ...meta, wojnaMiasta: { od, utraty, ostatniaTura: turn } } as DiploPairMeta);
+      const rec = recordWarCityLoss(meta.wojnaMiasta, od, String(oldOwner), turn);
+      setDiploPairMeta(oldOwner, newOwner, { ...meta, wojnaMiasta: rec } as DiploPairMeta);
     }
 
     // ---- R-WEB-DIPLO-TICK-WAR-BRAKE-Q1 r2: P3 / P4 / P6 / P7 (wszystko za flagą) ----
@@ -10241,12 +10251,7 @@ async function boot(): Promise<void> {
       const atWar = getDiploRelation(a, b).status === 'wojna';
       const relacja = relationScore(getDiploRelation(a, b));
       const w = diploBrakeWarParams(a, b);
-      const step = crisisStepForPair(
-        diplomacyCrisisCounters.get(key) ?? 0,
-        relacja,
-        atWar,
-        { ...diploTickP6, kryzysProgZaufania: w.prog, kryzysTurDoWojny: w.n },
-      );
+      const step = crisisStepForPair(diplomacyCrisisCounters.get(key) ?? 0, relacja, atWar, { ...diploTickP6, kryzysProgZaufania: w.prog, kryzysTurDoWojny: w.n });
       if (step.counter > 0) diplomacyCrisisCounters.set(key, step.counter);
       else diplomacyCrisisCounters.delete(key);
       return step;
@@ -10329,11 +10334,12 @@ async function boot(): Promise<void> {
         const warnAtPair = nPair - diploTickP6.kryzysOstrzezenieTurPrzed;
         // D7 (właściciel 2026-10-30): gdy silniejsza strona pary to GRACZ, wojna z hamulca nie
         // wybucha — ostrzeżenie o automatycznej wojnie z jego strony też nie jest pokazywane.
-        const playerStrongerHere = (isMe(sa) || isMe(sb)) && pickWarDeclarer(
+        const warOutcome = brakeWarOutcome(
           { ownerId: sa, power: objectivePowerForOwner(sa) },
           { ownerId: sb, power: objectivePowerForOwner(sb) },
-        ) === (isMe(sa) ? sa : sb);
-        if ((isMe(sa) || isMe(sb)) && counter >= warnAtPair && counter < nPair && !playerStrongerHere) {
+          (o) => isMe(o),
+        );
+        if ((isMe(sa) || isMe(sb)) && counter >= warnAtPair && counter < nPair && warOutcome.mayDeclare) {
           const other = isMe(sa) ? sb : sa;
           showHintMessage(
             'Ryzyko wojny z ' + ownerDiploLabel(other) + ': ' + (nPair - counter) + ' tur do wypowiedzenia (łączna Relacja ≤ ' + diploBrakeWarParams(sa, sb).prog + ')',
@@ -10350,14 +10356,16 @@ async function boot(): Promise<void> {
           continue;
         }
         if (isPeaceLockedBetween(e.ownerA, e.ownerB)) continue;
-        const declarer = pickWarDeclarer(
+        const outcome = brakeWarOutcome(
           { ownerId: e.ownerA, power: objectivePowerForOwner(e.ownerA) },
           { ownerId: e.ownerB, power: objectivePowerForOwner(e.ownerB) },
+          (o) => isMe(o),
         );
         // D7 (właściciel 2026-10-30): gracz NIGDY nie wypowiada wojny automatycznie z hamulca.
         // Gdy silniejsza strona to gracz, para zostaje w kolejce bez deklaracji (AI↔AI bez zmian).
-        if (isMe(declarer)) continue;
-        const victim = declarer === e.ownerA ? e.ownerB : e.ownerA;
+        if (!outcome.mayDeclare) continue;
+        const declarer = outcome.declarer;
+        const victim = outcome.victim;
         // R1/R2 dotyczą też gracza jako strony silniejszej (wojna z progu jest automatyczna,
         // nie jego wyborem) — dlatego bez wyjątku isMe, w przeciwieństwie do interCivWarBlockedForAi.
         if (diploCrisisWarGateBlocked(declarer, victim)) continue;
