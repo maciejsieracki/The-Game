@@ -1,6 +1,6 @@
-//! REPIN-WOJNA-NOWE-A - `gra/src/battle/formationRules.ts` (pin 91dc998a) z wektorami z
+//! REPIN-WOJNA-2 (U1) - `gra/src/battle/formationRules.ts` (pin dc8a3adc; wczesniej 91dc998a) z wektorami z
 //! URUCHOMIONEGO weba (`tests/p6_repin_wojna_a_vectors/formation-rules.json`, generator
-//! `dyspozycje/autobot/runs/R-RUSTPORT-REPIN-WOJNA-NOWE-A-Q1/gen-repin-wojna-a-web-vectors.mjs`).
+//! `dyspozycje/autobot/runs/R-RUSTPORT-REPIN-WOJNA-2-Q1/gen-repin-wojna-2-formation-vectors.mjs`).
 
 use civ_engine::domain::formation_rules::{
     classify_initial_battle_role, compact_line_allows_advance, initial_battle_formation,
@@ -38,6 +38,13 @@ fn role_from_web(text: &str) -> InitialBattleRole {
 
 fn opt(value: &Value) -> Option<&str> {
     value.as_str()
+}
+
+/// web `meleeLines` / `archerLines`: liczba 1|2|3 zapisana jako tekst, `null` = brak.
+fn lines(value: &Value) -> Option<u8> {
+    value
+        .as_str()
+        .map(|s| s.parse::<u8>().expect("linie 1|2|3"))
 }
 
 #[test]
@@ -90,6 +97,8 @@ fn formation_groups_and_slots_match_web() {
             mid_row: num(&b["midRow"]),
             play_row0: num(&b["playRow0"]),
             play_row1: num(&b["playRow1"]),
+            melee_lines: lines(&b["meleeLines"]),
+            archer_lines: lines(&b["archerLines"]),
         };
         let formation = initial_battle_formation(units, |u| u.1);
         let g = &case["groups"];
@@ -171,13 +180,13 @@ fn compact_line_matches_web_on_grid() {
             "def" => CompactSide::Def,
             other => panic!("nieznana strona {other}"),
         };
-        let prev = case["previousLineMinimumProgress"]
+        let prev = case["previousLineReferenceProgress"]
             .as_str()
             .map(|s| s.parse::<f64>().expect("f64"));
         let got = compact_line_allows_advance(
             side,
             num(&case["candidateCol"]),
-            num(&case["lineMinimumProgress"]),
+            num(&case["lineReferenceProgress"]),
             prev,
         );
         assert_eq!(got, case["out"].as_bool().expect("out"), "{case}");

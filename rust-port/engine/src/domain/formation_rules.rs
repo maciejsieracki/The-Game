@@ -1,7 +1,8 @@
-//! REPIN-WOJNA-NOWE-A: port `gra/src/battle/formationRules.ts` (pin `91dc998a`).
+//! REPIN-WOJNA-NOWE-A: port `gra/src/battle/formationRules.ts` (pin `dc8a3adc`, poprzednio `91dc998a`).
+//! REPIN-WOJNA-2 (U1): odswiezony do pinu `dc8a3adc` (uklad pasm: meleeLines/archerLines, skrzydla jazdy).
 //!
-//! web: gra/src/battle/formationRules.ts:3-30 (`classifyInitialBattleRole`), :46-85
-//! (`initialBattleSlots`), :92-113 (`initialBattleFormation`), :115-127
+//! web: gra/src/battle/formationRules.ts:3-30 (`classifyInitialBattleRole`), :46-118
+//! (`initialBattleSlots`), :123-146 (`initialBattleFormation`), :148-160
 //! (`compactLineAllowsAdvance`). Slowa kluczowe: `data/derived/formation-role-keywords.json`.
 //!
 //! Zalozenia (ZALOZENIE, nie zmierzone na pelnej przestrzeni Unicode):
@@ -195,15 +196,18 @@ pub struct InitialBattleSlot<T> {
 }
 
 /// Granice planszy (web: argument `bounds` w `initialBattleSlots`).
+/// `melee_lines` / `archer_lines` = web `meleeLines` / `archerLines` (1|2|3, `None` = brak).
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct BattleBounds {
     pub rank_width: f64,
     pub mid_row: f64,
     pub play_row0: f64,
     pub play_row1: f64,
+    pub melee_lines: Option<u8>,
+    pub archer_lines: Option<u8>,
 }
 
-/// Dzieli jednostki na pasma rol (web: formationRules.ts:92-113). Kolejnosc w pasmie zachowana.
+/// Dzieli jednostki na pasma rol (web: formationRules.ts:123-146). Kolejnosc w pasmie zachowana.
 pub fn initial_battle_formation<T>(
     units: Vec<T>,
     role_of: impl Fn(&T) -> InitialBattleRole,
@@ -233,36 +237,167 @@ pub fn initial_battle_formation<T>(
     groups
 }
 
-/// Ulozenie pasm piechoty i jazdy na planszy (web: formationRules.ts:46-85).
+/// Parametry rozmieszczenia wspolne dla pasm (web: `width`, `bounds` w `initialBattleSlots`).
+#[derive(Debug, Clone, Copy)]
+struct Layout {
+    width: f64,
+    mid_row: f64,
+    play_row0: f64,
+    play_row1: f64,
+}
+
+/// Wynik `linesForBand` z weba: `per` = jednostek w rzedzie, `count` = liczba rzedow.
+#[derive(Debug, Clone, Copy, PartialEq)]
+struct BandLines {
+    per: f64,
+    count: f64,
+}
+
+impl Layout {
+    /// web: `linesForBand(count, configuredLines)` (formationRules.ts:60-66).
+    fn lines_for_band(&self, count: f64, configured: Option<u8>) -> BandLines {
+        if count == 0.0 {
+            return BandLines {
+                per: 0.0,
+                count: 0.0,
+            };
+        }
+        let playable_rows = (self.play_row1 - self.play_row0 - 1.0).max(1.0);
+        let requested = match configured {
+            Some(lines) => f64::from(lines),
+            None => (count / self.width).ceil(),
+        };
+        let line_count = count.min(requested.max((count / playable_rows).ceil()));
+        let per = (count / line_count).ceil();
+        BandLines {
+            per,
+            count: (count / per).ceil(),
+        }
+    }
+}
+
+/// web: `layBand(units, configuredLines?)` (formationRules.ts:68-82).
+fn lay_band<T>(
+    units: Vec<T>,
+    configured: Option<u8>,
+    layout: Layout,
+    rank_base: &mut f64,
+    out: &mut Vec<InitialBattleSlot<T>>,
+) {
+    if units.is_empty() {
+        return;
+    }
+    let len = units.len() as f64;
+    let lines = layout.lines_for_band(len, configured);
+    let per = lines.per;
+    let per_u = per as usize;
+    for (i, unit) in units.into_iter().enumerate() {
+        let rank_within = (i / per_u) as f64;
+        let index_within = (i % per_u) as f64;
+        let rank_size = per.min(len - rank_within * per);
+        let row_start = layout.mid_row - (rank_size / 2.0).floor();
+        out.push(InitialBattleSlot {
+            unit,
+            row: row_start + index_within,
+            rank: *rank_base + rank_within,
+        });
+    }
+    *rank_base += lines.count;
+}
+
+/// Ulozenie pasm piechoty i jazdy na planszy (web: formationRules.ts:46-118).
 pub fn initial_battle_slots<T>(
     formation: InitialBattleFormation<T>,
     bounds: BattleBounds,
 ) -> Vec<InitialBattleSlot<T>> {
     // web: Math.max(1, Math.floor(bounds.rankWidth)) - dla skonczonych wartosci.
-    let width = bounds.rank_width.floor().max(1.0);
+    let layout = Layout {
+        width: bounds.rank_width.floor().max(1.0),
+        mid_row: bounds.mid_row,
+        play_row0: bounds.play_row0,
+        play_row1: bounds.play_row1,
+    };
+    let melee = bounds.melee_lines;
+    let archer = bounds.archer_lines;
+    // web: mainBandWidth = max(per) po pasmach nie-jazdy (formationRules.ts:93-103).
+    let main_band_width = [
+        layout
+            .lines_for_band(formation.infantry.len() as f64, melee)
+            .per,
+        layout
+            .lines_for_band(formation.javelins.len() as f64, melee)
+            .per,
+        layout
+            .lines_for_band(formation.archers.len() as f64, archer)
+            .per,
+        layout
+            .lines_for_band(formation.slingers.len() as f64, archer)
+            .per,
+        layout
+            .lines_for_band(formation.ranged.len() as f64, archer)
+            .per,
+        layout
+            .lines_for_band(formation.siege.len() as f64, None)
+            .per,
+        layout
+            .lines_for_band(formation.commanders.len() as f64, None)
+            .per,
+    ]
+    .into_iter()
+    .fold(0.0_f64, f64::max);
+
     let mut slots = Vec::new();
     let mut rank_base = 0.0_f64;
-    let bands = [
+    lay_band(
         formation.infantry,
+        melee,
+        layout,
+        &mut rank_base,
+        &mut slots,
+    );
+    lay_band(
         formation.javelins,
+        melee,
+        layout,
+        &mut rank_base,
+        &mut slots,
+    );
+    lay_band(
         formation.archers,
+        archer,
+        layout,
+        &mut rank_base,
+        &mut slots,
+    );
+    lay_band(
         formation.slingers,
-        formation.ranged,
-        formation.siege,
+        archer,
+        layout,
+        &mut rank_base,
+        &mut slots,
+    );
+    lay_band(formation.ranged, archer, layout, &mut rank_base, &mut slots);
+    lay_band(formation.siege, None, layout, &mut rank_base, &mut slots);
+    lay_band(
         formation.commanders,
-    ];
-    for band in bands {
-        lay_band(band, width, bounds.mid_row, &mut rank_base, &mut slots);
-    }
+        None,
+        layout,
+        &mut rank_base,
+        &mut slots,
+    );
 
-    let half_line = (width / 2.0).ceil();
-    let top_len = (bounds.mid_row - bounds.play_row0 - half_line - 2.0).max(1.0) as usize;
-    let bottom_len = (bounds.play_row1 - bounds.mid_row - half_line - 1.0).max(1.0) as usize;
-    let top_rows: Vec<f64> = (0..top_len)
-        .map(|i| bounds.play_row0 + 1.0 + i as f64)
+    // web: skrzydla jazdy tuz obok glownego pasma, najwyzej 3 rzedy (formationRules.ts:104-111).
+    let band_width = main_band_width.max(1.0);
+    let main_row_start = bounds.mid_row - (band_width / 2.0).floor();
+    let main_row_end = main_row_start + band_width - 1.0;
+    let top_available = (main_row_start - (bounds.play_row0 + 1.0)).max(0.0);
+    let bottom_available = ((bounds.play_row1 - 1.0) - main_row_end).max(0.0);
+    let wing_count = 3.0_f64.min(top_available).min(bottom_available).max(1.0) as usize;
+    let top_rows: Vec<f64> = (0..wing_count)
+        .map(|i| main_row_start - 1.0 - i as f64)
         .collect();
-    let bottom_rows: Vec<f64> = (0..bottom_len)
-        .map(|i| bounds.play_row1 - 1.0 - i as f64)
+    let bottom_rows: Vec<f64> = (0..wing_count)
+        .map(|i| main_row_end + 1.0 + i as f64)
         .collect();
     for (i, unit) in formation.mounted.into_iter().enumerate() {
         let rows = if i % 2 == 0 { &top_rows } else { &bottom_rows };
@@ -276,30 +411,6 @@ pub fn initial_battle_slots<T>(
     slots
 }
 
-fn lay_band<T>(
-    units: Vec<T>,
-    width: f64,
-    mid_row: f64,
-    rank_base: &mut f64,
-    out: &mut Vec<InitialBattleSlot<T>>,
-) {
-    if units.is_empty() {
-        return;
-    }
-    let len = units.len() as f64;
-    let per = len.min(width);
-    let per_u = per as usize;
-    let row_start = mid_row - (per / 2.0).floor();
-    for (i, unit) in units.into_iter().enumerate() {
-        out.push(InitialBattleSlot {
-            unit,
-            row: row_start + (i % per_u) as f64,
-            rank: *rank_base + (i / per_u) as f64,
-        });
-    }
-    *rank_base += (len / per).ceil();
-}
-
 /// Strona w liniowym przesuwaniu (web: `side: 'atk' | 'def'`).
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum CompactSide {
@@ -307,19 +418,20 @@ pub enum CompactSide {
     Def,
 }
 
-/// Czy kandydat moze wejsc w przod linii (web: formationRules.ts:115-127).
+/// Czy kandydat moze wejsc w przod linii (web: formationRules.ts:148-160).
+/// Argumenty: `line_reference_progress` = web `lineReferenceProgress` (dawniej `lineMinimumProgress`).
 pub fn compact_line_allows_advance(
     side: CompactSide,
     candidate_col: f64,
-    line_minimum_progress: f64,
-    previous_line_minimum_progress: Option<f64>,
+    line_reference_progress: f64,
+    previous_line_reference_progress: Option<f64>,
 ) -> bool {
     let candidate_progress = match side {
         CompactSide::Atk => candidate_col,
         CompactSide::Def => -candidate_col,
     };
-    let own_line_limit = line_minimum_progress + 1.0;
-    let limit = match previous_line_minimum_progress {
+    let own_line_limit = line_reference_progress + 1.0;
+    let limit = match previous_line_reference_progress {
         None => own_line_limit,
         Some(previous) => own_line_limit.min(previous),
     };
