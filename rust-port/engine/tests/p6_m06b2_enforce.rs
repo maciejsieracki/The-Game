@@ -103,7 +103,8 @@ fn enforce_target_dry_land_fraction_matches_web() {
 }
 
 /// Sondy granic (plik `web-enforce-probe.json`): rownosc |land - targetLand| === tolHexes po pierwszym
-/// etapie (kasuje mutacje `>` -> `>=`) oraz cele powyzej klampu 0.85 (kasuje zmiane klampu).
+/// etapie (kasuje mutacje `>` -> `>=`). Cele 0.9/0.95/0.99 (klamp gorny) NIE kasuja zmiany klampu 0.85->0.86
+/// (mutacja M11 przezyla te sondy); zmiane klampu kasuje `enforce_large_maps_match_web`.
 #[test]
 fn enforce_probe_matches_web() {
     let r = load(WEB_CASES_ENFORCE_PROBE);
