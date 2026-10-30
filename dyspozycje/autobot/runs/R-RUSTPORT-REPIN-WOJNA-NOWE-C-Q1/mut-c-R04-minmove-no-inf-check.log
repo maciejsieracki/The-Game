@@ -1,0 +1,119 @@
+
+running 12 tests
+test claim_rejects_occupied_target_and_moves_counter ... ok
+test budget_nan_or_zero_or_negative_returns_empty ... ok
+test farthest_target_blocked_steps_back_one ... ok
+test min_move_first_step_enters_even_if_over_budget ... ok
+test missing_key_or_infinity_stops_prefix ... FAILED
+test nan_cost_is_not_a_stop ... ok
+test farthest_step_matches_web_with_blocked_keys ... FAILED
+test farthest_step_matches_web_default_terrain_costs ... FAILED
+test claim_sequences_match_web ... ok
+test truncate_path_matches_web_custom_costs ... FAILED
+test occupancy_matches_web ... ok
+test truncate_path_matches_web_default_terrain_costs ... FAILED
+
+failures:
+
+---- missing_key_or_infinity_stops_prefix stdout ----
+
+thread 'missing_key_or_infinity_stops_prefix' (1198) panicked at tests/p6_repin_wojna_c_move_range.rs:267:5:
+assertion failed: truncate_path_within_budget(&path, 10.0, &first_inf).is_empty()
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+   1: core::panicking::panic_fmt
+   2: core::panicking::panic
+   3: p6_repin_wojna_c_move_range::missing_key_or_infinity_stops_prefix
+   4: p6_repin_wojna_c_move_range::missing_key_or_infinity_stops_prefix::{closure#0}
+   5: <p6_repin_wojna_c_move_range::missing_key_or_infinity_stops_prefix::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+---- farthest_step_matches_web_with_blocked_keys stdout ----
+
+thread 'farthest_step_matches_web_with_blocked_keys' (1195) panicked at tests/p6_repin_wojna_c_move_range.rs:117:9:
+assertion `left == right` failed: farthestCases[71]
+  left: Some((3, -1))
+ right: None
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+   1: core::panicking::panic_fmt
+   2: core::panicking::assert_failed_inner
+   3: core::panicking::assert_failed::<core::option::Option<(i64, i64)>, core::option::Option<(i64, i64)>>
+   4: p6_repin_wojna_c_move_range::farthest_step_matches_web_with_blocked_keys
+   5: p6_repin_wojna_c_move_range::farthest_step_matches_web_with_blocked_keys::{closure#0}
+   6: <p6_repin_wojna_c_move_range::farthest_step_matches_web_with_blocked_keys::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+---- farthest_step_matches_web_default_terrain_costs stdout ----
+
+thread 'farthest_step_matches_web_default_terrain_costs' (1194) panicked at tests/p6_repin_wojna_c_move_range.rs:140:9:
+assertion `left == right` failed: farthestDefaultCases[0]
+  left: Some((-2, 1))
+ right: None
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+   1: core::panicking::panic_fmt
+   2: core::panicking::assert_failed_inner
+   3: core::panicking::assert_failed::<core::option::Option<(i64, i64)>, core::option::Option<(i64, i64)>>
+   4: p6_repin_wojna_c_move_range::farthest_step_matches_web_default_terrain_costs
+   5: p6_repin_wojna_c_move_range::farthest_step_matches_web_default_terrain_costs::{closure#0}
+   6: <p6_repin_wojna_c_move_range::farthest_step_matches_web_default_terrain_costs::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+---- truncate_path_matches_web_custom_costs stdout ----
+
+thread 'truncate_path_matches_web_custom_costs' (1202) panicked at tests/p6_repin_wojna_c_move_range.rs:74:9:
+assertion `left == right` failed: truncateCases[10]
+  left: [(-2, -2)]
+ right: []
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+   1: core::panicking::panic_fmt
+   2: core::panicking::assert_failed_inner
+   3: core::panicking::assert_failed::<alloc::vec::Vec<(i64, i64)>, alloc::vec::Vec<(i64, i64)>>
+   4: p6_repin_wojna_c_move_range::truncate_path_matches_web_custom_costs
+   5: p6_repin_wojna_c_move_range::truncate_path_matches_web_custom_costs::{closure#0}
+   6: <p6_repin_wojna_c_move_range::truncate_path_matches_web_custom_costs::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+---- truncate_path_matches_web_default_terrain_costs stdout ----
+
+thread 'truncate_path_matches_web_default_terrain_costs' (1203) panicked at tests/p6_repin_wojna_c_move_range.rs:91:9:
+assertion `left == right` failed: defaultCostCases[7]
+  left: [(-1, 0)]
+ right: []
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+   1: core::panicking::panic_fmt
+   2: core::panicking::assert_failed_inner
+   3: core::panicking::assert_failed::<alloc::vec::Vec<(i64, i64)>, alloc::vec::Vec<(i64, i64)>>
+   4: p6_repin_wojna_c_move_range::truncate_path_matches_web_default_terrain_costs
+   5: p6_repin_wojna_c_move_range::truncate_path_matches_web_default_terrain_costs::{closure#0}
+   6: <p6_repin_wojna_c_move_range::truncate_path_matches_web_default_terrain_costs::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+
+failures:
+    farthest_step_matches_web_default_terrain_costs
+    farthest_step_matches_web_with_blocked_keys
+    missing_key_or_infinity_stops_prefix
+    truncate_path_matches_web_custom_costs
+    truncate_path_matches_web_default_terrain_costs
+
+test result: FAILED. 7 passed; 5 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.31s
+
+   Compiling civ-engine v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_2fae1a05-0e5-1/rust-port/engine)
+warning: unused variable: `c`
+  --> src/domain/ai_move_range.rs:53:22
+   |
+53 |         if let Some(&c) = hex_costs.get(&first) {
+   |                      ^ help: if this is intentional, prefix it with an underscore: `_c`
+   |
+   = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: `civ-engine` (lib) generated 1 warning (run `cargo fix --lib -p civ-engine` to apply 1 suggestion)
+    Finished `test` profile [unoptimized] target(s) in 32.99s
+     Running tests/p6_repin_wojna_c_move_range.rs (/home/user/cargo-target-shared/wf_2fae1a05-0e5-1/debug/deps/p6_repin_wojna_c_move_range-d6c1e444bd4e40ba)
+error: test failed, to rerun pass `--test p6_repin_wojna_c_move_range`
+
+EXIT=101
