@@ -1,0 +1,161 @@
+   Compiling civ-engine v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_bbf7346c-ced-2/rust-port/engine)
+warning: unused import: `apply_improvement_bonuses`
+  --> src/domain/economy_yield.rs:28:5
+   |
+28 |     apply_improvement_bonuses, ore_yield_from_improvements, TileYield,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: `civ-engine` (lib) generated 1 warning (run `cargo fix --lib -p civ-engine` to apply 1 suggestion)
+    Finished `test` profile [unoptimized] target(s) in 32.52s
+     Running tests/p6_repin_d2_imp.rs (target/debug/deps/p6_repin_d2_imp-e33724850b6d16e6)
+
+running 14 tests
+test boundary_unknown_terrain_zero_then_bonus_only ... FAILED
+test parity_city_terrain_sums_imp_bit_exact ... FAILED
+test parity_building_happiness_bit_exact ... ok
+test structural_empty_key_is_noop ... ok
+test structural_empty_list_falls_back_to_single_key ... FAILED
+test structural_forest_adds_wood_river_adds_clay ... ok
+test structural_happiness_branches ... ok
+test parity_full_city_with_improvements_bit_exact ... FAILED
+test structural_imp_keys_list_wins_over_single_key ... FAILED
+test structural_ore_mines_and_zloze_ignored ... ok
+test structural_pieniadz_bonus_goes_to_handel ... FAILED
+test structural_unknown_and_legacy_key_no_bonus ... ok
+test parity_tile_yield_full_bit_exact ... FAILED
+test structural_city_uses_improved_tile_sums ... FAILED
+
+failures:
+
+---- boundary_unknown_terrain_zero_then_bonus_only stdout ----
+
+thread 'boundary_unknown_terrain_zero_then_bonus_only' (7691) panicked at tests/p6_repin_d2_imp.rs:584:5:
+assertion `left == right` failed
+  left: 0.0
+ right: 3.0
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+   1: core::panicking::panic_fmt
+   2: core::panicking::assert_failed_inner
+   3: core::panicking::assert_failed::<f64, f64>
+   4: p6_repin_d2_imp::boundary_unknown_terrain_zero_then_bonus_only
+   5: p6_repin_d2_imp::boundary_unknown_terrain_zero_then_bonus_only::{closure#0}
+   6: <p6_repin_d2_imp::boundary_unknown_terrain_zero_then_bonus_only::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+---- parity_city_terrain_sums_imp_bit_exact stdout ----
+
+thread 'parity_city_terrain_sums_imp_bit_exact' (7693) panicked at tests/p6_repin_d2_imp.rs:309:5:
+["city#0 zywnoscTerenu: rust=5.0 web=6.0", "city#0 pracaTerenu: rust=10.0 web=14.0", "city#0 handelTerenu: rust=5.0 web=15.0", "city#2 zywnoscTerenu: rust=14.0 web=16.0", "city#2 pracaTerenu: rust=11.0 web=21.0", "city#2 handelTerenu: rust=11.0 web=30.0", "city#3 zywnoscTerenu: rust=3.0 web=4.0", "city#3 pracaTerenu: rust=2.0 web=6.0"]
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+   1: core::panicking::panic_fmt
+   2: p6_repin_d2_imp::parity_city_terrain_sums_imp_bit_exact
+   3: p6_repin_d2_imp::parity_city_terrain_sums_imp_bit_exact::{closure#0}
+   4: <p6_repin_d2_imp::parity_city_terrain_sums_imp_bit_exact::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+---- structural_empty_list_falls_back_to_single_key stdout ----
+
+thread 'structural_empty_list_falls_back_to_single_key' (7698) panicked at tests/p6_repin_d2_imp.rs:444:5:
+assertion `left == right` failed
+  left: 0.0
+ right: 3.0
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+   1: core::panicking::panic_fmt
+   2: core::panicking::assert_failed_inner
+   3: core::panicking::assert_failed::<f64, f64>
+   4: p6_repin_d2_imp::structural_empty_list_falls_back_to_single_key
+   5: p6_repin_d2_imp::structural_empty_list_falls_back_to_single_key::{closure#0}
+   6: <p6_repin_d2_imp::structural_empty_list_falls_back_to_single_key::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+---- parity_full_city_with_improvements_bit_exact stdout ----
+
+thread 'parity_full_city_with_improvements_bit_exact' (7694) panicked at tests/p6_repin_d2_imp.rs:344:5:
+3035 mismatches, first: ["full#0 praca: rust=8.0 web=20.0", "full#0 pieniadz: rust=6.0 web=18.0", "full#0 zywnosc: rust=-4.0 web=4.0", "full#0 nauka: rust=12.0 web=17.0", "full#0 zywnoscBrutto: rust=8.0 web=16.0", "full#0 handelBrutto: rust=7.0 web=32.0", "full#0 pracaTerenu: rust=3.0 web=15.0", "full#1 nauka: rust=0.0 web=4.0"]
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+   1: core::panicking::panic_fmt
+   2: p6_repin_d2_imp::parity_full_city_with_improvements_bit_exact
+   3: p6_repin_d2_imp::parity_full_city_with_improvements_bit_exact::{closure#0}
+   4: <p6_repin_d2_imp::parity_full_city_with_improvements_bit_exact::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+---- structural_imp_keys_list_wins_over_single_key stdout ----
+
+thread 'structural_imp_keys_list_wins_over_single_key' (7701) panicked at tests/p6_repin_d2_imp.rs:416:5:
+assertion `left == right` failed
+  left: 0.0
+ right: 3.0
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+   1: core::panicking::panic_fmt
+   2: core::panicking::assert_failed_inner
+   3: core::panicking::assert_failed::<f64, f64>
+   4: p6_repin_d2_imp::structural_imp_keys_list_wins_over_single_key
+   5: p6_repin_d2_imp::structural_imp_keys_list_wins_over_single_key::{closure#0}
+   6: <p6_repin_d2_imp::structural_imp_keys_list_wins_over_single_key::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+---- structural_pieniadz_bonus_goes_to_handel stdout ----
+
+thread 'structural_pieniadz_bonus_goes_to_handel' (7703) panicked at tests/p6_repin_d2_imp.rs:478:5:
+assertion `left == right` failed
+  left: 0.0
+ right: 1.0
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+   1: core::panicking::panic_fmt
+   2: core::panicking::assert_failed_inner
+   3: core::panicking::assert_failed::<f64, f64>
+   4: p6_repin_d2_imp::structural_pieniadz_bonus_goes_to_handel
+   5: p6_repin_d2_imp::structural_pieniadz_bonus_goes_to_handel::{closure#0}
+   6: <p6_repin_d2_imp::structural_pieniadz_bonus_goes_to_handel::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+---- parity_tile_yield_full_bit_exact stdout ----
+
+thread 'parity_tile_yield_full_bit_exact' (7695) panicked at tests/p6_repin_d2_imp.rs:274:5:
+3684 mismatches, first: ["tile#0 handel: rust=1.0 web=3.0", "tile#1 praca: rust=4.0 web=7.0", "tile#1 handel: rust=0.0 web=3.0", "tile#2 praca: rust=0.0 web=1.0", "tile#2 handel: rust=0.0 web=2.0", "tile#2 kamien: rust=0.0 web=5.0", "tile#3 zywnosc: rust=0.0 web=2.0", "tile#3 praca: rust=0.0 web=5.0"]
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+   1: core::panicking::panic_fmt
+   2: p6_repin_d2_imp::parity_tile_yield_full_bit_exact
+   3: p6_repin_d2_imp::parity_tile_yield_full_bit_exact::{closure#0}
+   4: <p6_repin_d2_imp::parity_tile_yield_full_bit_exact::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+---- structural_city_uses_improved_tile_sums stdout ----
+
+thread 'structural_city_uses_improved_tile_sums' (7696) panicked at tests/p6_repin_d2_imp.rs:651:5:
+assertion `left == right` failed
+  left: 0.0
+ right: 3.0
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+   1: core::panicking::panic_fmt
+   2: core::panicking::assert_failed_inner
+   3: core::panicking::assert_failed::<f64, f64>
+   4: p6_repin_d2_imp::structural_city_uses_improved_tile_sums
+   5: p6_repin_d2_imp::structural_city_uses_improved_tile_sums::{closure#0}
+   6: <p6_repin_d2_imp::structural_city_uses_improved_tile_sums::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+
+failures:
+    boundary_unknown_terrain_zero_then_bonus_only
+    parity_city_terrain_sums_imp_bit_exact
+    parity_full_city_with_improvements_bit_exact
+    parity_tile_yield_full_bit_exact
+    structural_city_uses_improved_tile_sums
+    structural_empty_list_falls_back_to_single_key
+    structural_imp_keys_list_wins_over_single_key
+    structural_pieniadz_bonus_goes_to_handel
+
+test result: FAILED. 6 passed; 8 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.32s
+
+error: test failed, to rerun pass `--test p6_repin_d2_imp`

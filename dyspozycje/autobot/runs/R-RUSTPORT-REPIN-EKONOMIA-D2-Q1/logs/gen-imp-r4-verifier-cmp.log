@@ -1,0 +1,6 @@
+Porownanie wektorow D2.2e (weryfikator r4)
+- Plik: rust-port/engine/tests/p6_repin_d2_imp_vectors/imp-main.json (kod 2c21d762f)
+- Regeneracja: archiwum gra z pinu 91dc998a, node 22.22.0, loader logs/hooks-ts.mjs, generator logs/gen-imp.mts
+- Wynik: cmp -> BYTE-IDENTICAL, rozmiar 3113527 B
+- Pokrycie generatora: 2000 kafelkow, 400 miast, 800 pelnych cityYieldPerTurn (12 porownywanych pol z 18 w pinie), 1900 buildingHappinessAtLevel
+EXIT=0

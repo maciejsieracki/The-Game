@@ -290,6 +290,85 @@ Kod: `rust-port/engine/src/domain/economy_yield.rs` (dopisek na końcu: `terrain
 **Bramki (runda 4, na commicie kodu):** `cargo fmt --all -- --check` EXIT=0 (`logs/fmt-r4.log`); `cargo clippy --all-targets -- -D warnings` EXIT=0 (`logs/clippy-r4.log`); `cargo test --no-fail-fast` EXIT=0, 227 binarek, **1680 passed / 0 failed** (`logs/test-r4-full.log`; baza 1666 + 14 testów `p6_repin_d2_full`).
 
 **Założenia (aktualne):**
-- Z-D2.2d-1: galąź ulepszeń i złóż `tileYield` (`applyImprovementBonuses`, `oreYieldFromImprovements`, `impKeys`) oraz `buildingHappinessAtLevel` NIE są portowane w tej partii. `CityYieldResult` (pola z pina) nie zawiera szczęścia. Rust ma już `apply_improvement_bonuses` (`improvements.rs` L859) i `ore_yield_from_improvements` (L866); następna partia = podpięcie i wektory z ulepszeniami. Kolumny `drewno`/`kamien`/`glina`/`ruda` nie są wyjściem `cityYieldPerTurn` w pinie, więc nie są sumowane.
+- Z-D2.2d-1 (**KOREKTA r4: zdanie o `CityYieldResult` poniżej jest BŁĘDNE — pin zwraca 18 pól, w tym `zadowolenie` i `*Terenu`; patrz sekcja „Obrona operatora r4”**): galąź ulepszeń i złóż `tileYield` (`applyImprovementBonuses`, `oreYieldFromImprovements`, `impKeys`) oraz `buildingHappinessAtLevel` NIE są portowane w tej partii. `CityYieldResult` (pola z pina) nie zawiera szczęścia. Rust ma już `apply_improvement_bonuses` (`improvements.rs` L859) i `ore_yield_from_improvements` (L866); następna partia = podpięcie i wektory z ulepszeniami. Kolumny `drewno`/`kamien`/`glina`/`ruda` nie są wyjściem `cityYieldPerTurn` w pinie, więc nie są sumowane.
 - Z-D2.2d-2: port trzyma się pina `91dc998a`, zgodnie z dispatchem. Symbole `dochodTrasHandlowych` i `walutaMnoznikOverride` z `a83ae51d6` NIE wchodzą do wektorów. Ich zgodność z linią parity-v2 jest decyzją orkiestratora (pochodzenie zmierzone powyżej).
 - Z-D2.2c-2 zamknięte testem (realne rekordy + syntetyczne); Z-D2.2c-1 zamknięte dla Step 1 bez ulepszeń i Step 3.
+
+## D2.2e (runda 1 operatora, ID `R-RUSTPORT-REPIN-EKONOMIA-D2-Q1`, nagłówek dispatchu: RUNDA 4/5) — galąź ulepszeń `tileYield`, `buildingHappinessAtLevel`, pełna `cityYieldPerTurn` z ulepszeniami
+
+Kod: `rust-port/engine/src/domain/economy_yield.rs` (dopisek: `BUILDING_HAPPINESS_BASE_PER_BUILDING`, `WorkedTileImpInput`, `imp_keys_of`, `tile_yield_full`, `city_terrain_sums_imp`, `city_yield_per_turn_from_worked_imp`, `building_happiness_at_level`; wydzielone `city_yield_per_turn_with_sums` — czysta refaktoryzacja, `city_yield_per_turn_from_worked` zachowuje zachowanie). Testy: `tests/p6_repin_d2_imp.rs` (NOWY, 14 testów). Wektory: `tests/p6_repin_d2_imp_vectors/imp-main.json` (3,1 MB; pin `91dc998a`; 2000 kafelków, 400 miast, 800 PEŁNYCH `cityYieldPerTurn`, 1900 wywołań `buildingHappinessAtLevel`). Generator: `logs/gen-imp.mts` (uruchomiony na `git archive 91dc998a gra`, node 22.22.0, loader `hooks-ts.mjs`); wywołuje PEŁNE funkcje weba `tileYield`, `cityYieldPerTurn`, `buildingHappinessAtLevel`, bez wycinków.
+
+Pokrycie wejść: kafelki z `ulepszeniaKeys` (tablica 1-3 kluczy, pusta, undefined, null), `ulepszenieKey` (undefined/null/''/klucz), `zloze` (zelazo, miedz, wegiel, ''; null/undefined), legacy `pastwisko`, `kopalnia`, `brak`, klucze nieznane; wszystkie 8 terenów + nieznany, nakładka las/brak/nieznana, rzeka. Happiness: `dajeSzczescie` true/false/undefined/'tak'/1; `baza.zadowolenie` liczba/0/-0/NaN/'x'/null/brak; poziomy 0, -1, 1.5, NaN, Infinity; 42 PRAWDZIWE rekordy `buildings.json`.
+
+| Zmiana (web, pin 91dc998a) | Plik:linia weba | Plik:linia Rust | Test / wektor | Status |
+|---|---|---|---|---|
+| `impKeys` (fallback lista → pojedynczy klucz) | `economy.ts` L458-460 | `economy_yield.rs` `imp_keys_of` | `structural_imp_keys_list_wins_over_single_key`, `structural_empty_list_falls_back_to_single_key`, `structural_empty_key_is_noop`, `parity_tile_yield_full_bit_exact` (2000) | PORTOWANE |
+| `applyImprovementBonuses` (w tym `pieniadz` → `handel`) | `economy.ts` L462; `terrain-improvements.ts:127-186` | `improvements.rs` `apply_improvement_bonuses` (użyte w Rust) | `structural_pieniadz_bonus_goes_to_handel`, `structural_unknown_and_legacy_key_no_bonus`, parity | PORTOWANE (podpięte) |
+| `Math.max(0,·)` po ulepszeniach (zywnosc, praca, handel, drewno, kamien, glina) | `economy.ts` L463-468 | `tile_yield_full` | parity; mutant M-E7 równoważny (patrz niżej) | PORTOWANE |
+| `oreYieldFromImprovements` → `ruda`, `ruda_zelaza` | `economy.ts` L469-470; `terrain-improvements.ts:157-172` | `improvements.rs` `ore_yield_from_improvements` (użyte w Rust) | `structural_ore_mines_and_zloze_ignored` (zloze nie wpływa), parity (ruda/ruda_zelaza w 8 polach) | PORTOWANE |
+| Modyfikator lasu: drewno; rzeki: glina (pełny `tileYield`) | `economy.ts` L441-455 | `tile_yield_full` | `structural_forest_adds_wood_river_adds_clay`, parity | PORTOWANE |
+| Step 1 z ulepszeniami (sumy `zywnoscTerenu`/`pracaTerenu`/`handelTerenu`) | `economy.ts` L837-847 | `city_terrain_sums_imp` | `parity_city_terrain_sums_imp_bit_exact` (400 miast), `parity_full_city_with_improvements_bit_exact` (800) | PORTOWANE — **zamyka Z-D2.2d-1 (Step 1)** |
+| `buildingHappinessAtLevel` (ryczałt 1, `dajeSzczescie === true`, `baza.zadowolenie !== 0`) | `economy.ts` L513-531 | `building_happiness_at_level` (+ `BUILDING_HAPPINESS_BASE_PER_BUILDING`) | `parity_building_happiness_bit_exact` (1900), `structural_happiness_branches` | PORTOWANE jako funkcja; suma miasta `zadowolenie` (L881, L1020) PORTOWANA w r4 (`city_yield_per_turn_from_worked_imp`); **zamyka Z-D2.2d-1 (szczęście) po r4** |
+| `cityYieldPerTurn` (12 pól pina) z kafelkami z ulepszeniami | `economy.ts` L~790-1020 | `city_yield_per_turn_from_worked_imp` | `parity_full_city_with_improvements_bit_exact` (800/800, 12 pól, bit-w-bit), `structural_city_uses_improved_tile_sums` | PORTOWANE |
+
+**Wynik pomiarów (r1 operatora):** `parity_tile_yield_full_bit_exact` 2000/2000; `parity_city_terrain_sums_imp_bit_exact` 400/400 (3 sumy); `parity_full_city_with_improvements_bit_exact` 800/800 (12 pól); `parity_building_happiness_bit_exact` 1900/1900. Testy strukturalne 10/10. Log: `dyspozycje/autobot/runs/R-RUSTPORT-REPIN-EKONOMIA-D2-Q1/logs/test-r1-full.log` (pełny zestaw) oraz `cargo test --test p6_repin_d2_imp`: 14 passed / 0 failed.
+
+**Mutacje (każda gałąź nowego kodu, jedna naraz, przywracane, `cmp` OK):**
+
+| Mutant | Miejsce (Rust) | Wynik |
+|---|---|---|
+| M-E1 `Some(keys) if !keys.is_empty()` → `Some(keys)` | `economy_yield.rs:763` | ZABITY 4 (`structural_empty_list_falls_back_to_single_key`, 3× parity) |
+| M-E2 usunięty `.filter(|k| !k.is_empty())` przy `ulepszenie_key` | `economy_yield.rs:766` | PRZEŻYWA — **mutant równoważny**: klucz `""` daje `impKeys=[""]`; `apply_improvement_bonus` (`improvements.rs`, filtr `is_empty`) i `normalize_improvement_key(Some(""))` (`filter(!is_empty)?`) nie zmieniają wyniku; web: `if (!improvementKey) return;` (`terrain-improvements.ts:127`) i `normalizeImprovementKey('')` = undefined |
+| M-E3 `drewno += m[3]` (las) → `+= 0` | `economy_yield.rs:812` | ZABITY 2 (`structural_forest_adds_wood_river_adds_clay`, parity) |
+| M-E4 `glina += m[5]` (rzeka) → `+= 0` | `economy_yield.rs:819` | ZABITY 2 (jw.) |
+| M-E5 `if !keys.is_empty()` → `if false && …` (brak ulepszeń) | `economy_yield.rs:832` | ZABITY 9 |
+| M-E6 `out.ruda += ore.ruda` → `+= 0` | `economy_yield.rs:841` | ZABITY 2 (`structural_ore_mines_and_zloze_ignored`, parity) |
+| M-E7 usunięty `Math.max(0,·)` na `zywnosc` po ulepszeniach | `economy_yield.rs:834` | PRZEŻYWA — **mutant równoważny pod pinem**: wszystkie wartości `bonus` w `terrain-improvements.json` są ≥ 0 (odczyt wszystkich 22 wierszy), a wiersz terenu i modyfikatory są ≥ 0 po pierwszym `max(0,·)`; suma jest zawsze ≥ 0. ZAŁOŻENIE Z-D2.2e-2 (r4): pilnowane testem `structural_improvement_bonuses_nonnegative_in_data` (każdy `bonus` w `terrain-improvements.json` >= 0). Dowód równoważności: wiersz terenu po `Math.max(0,·)` (pin `tileYield` L448-453) jest >= 0; bonusy >= 0 (`add_nonzero` pomija 0 i NaN) nie zmniejszają go; więc clamp L463-468 jest tożsamością. Zmiana danych na ujemne = test pada i równoważność trzeba udowodnić od nowa |
+| M-E8 `if tile.nakladka == "las"` → `if false` | `economy_yield.rs:807` | ZABITY 4 |
+| M-H1 `if !daje_szczescie` → `if false` | `economy_yield.rs:894` | ZABITY 2 (`structural_happiness_branches`, parity) |
+| M-H2 `Some(z) if z != 0.0` → `Some(z)` | `economy_yield.rs:898` | ZABITY 2 |
+| M-H3 `BUILDING_HAPPINESS_BASE_PER_BUILDING` 1.0 → 0.0 | `economy_yield.rs:745` | ZABITY 2 |
+
+Wynik mutacji: 11 mutantów, 9 zabitych, 2 przeżyte; oba przeżycia to mutanty równoważne (M-E2, M-E7) z uzasadnieniem plik:linia powyżej.
+
+**Bramki (r1 operatora, na commicie kodu):** `cargo fmt --all -- --check` EXIT=0 (po `cargo fmt --all`, zmienione tylko pliki tematu); `cargo clippy --all-targets -- -D warnings` EXIT=0; `cargo test --no-fail-fast` EXIT=0, 231 binarek, **1708 passed / 0 failed** (baza `a47a5e306` = 1694 + 14 nowych `p6_repin_d2_imp`).
+
+**Założenia (aktualne, D2.2e):**
+- Z-D2.2e-1: `buildingHappinessAtLevel` jest portowane jako funkcja z wejściami skalarnymi (`daje_szczescie: bool`, `baza_zadowolenie: Option<f64>`, `przyrost_zadowolenie: f64`). Web `=== true` dla danych nie-bool jest niereprezentowalne w typie Rust (`buildings_tech.rs` `daje_szczescie: bool`); wartość wejściowa jest mapowana po stronie wywołującego. Suma szczęścia miasta (L881, L1020) PORTOWANA w r4: `city_yield_per_turn_from_worked_imp` z `CityBuildingFullInput` (`daje_szczescie`, `baza_zadowolenie`, `przyrost_zadowolenie`); `zadowolenie` = `floor(suma)`.
+- Z-D2.2e-2: patrz M-E7 (równoważność pod pinem zależy od danych `terrain-improvements.json`).
+- Z-D2.2e-3: `zloze` przyjmowane jako wejście i ignorowane, zgodnie z web `oreYieldFromImprovements` (`gra/src/game/terrain-improvements.ts` L165-180; parametr `zloze` L167 nieużywany w ciele).
+- Z-D2.2e-4: `ORE_YIELD_PER_MINE` = 2 w Rust pochodzi z `rules().ruda` (`improvements.rs`); zgodność z web-stałą 2 potwierdzona wektorami (parity 2000/2000).
+
+**Status tematu po D2.2e (co jeszcze zostało w `economy.ts@91dc998a`, 41 hunków, wg tabeli klasyfikacji wyżej):**
+- ZAMKNIĘTE (Step 1-9 dla pina, z ulepszeniami): kompozycja `cityYieldPerTurn` od surowych kafelków i budynków (D2.2a-e); `tileYield` z ulepszeniami i złożami; `buildingHappinessAtLevel`.
+- OTWARTE / NASTĘPNA-PARTIA (bez zmiany w r1, wg tabeli „Klasyfikacja economy.ts”): `EconParams`/`targowiskoPracaMnoznik` (L149-166, L237) — zmiana zachowania Efektu 2; `CityYieldResult.pieniadzZPracy` (L326-341) — zerowanie pola w wyniku (w Rust już `pieniadz_z_pracy` stałe 0, patrz D2.2c); `civHandelMult` dla znanego właściciela (L919) i `civBonusyForCivKey` (L782-806) — sprawdzić wektorami z właścicielem; Mint/`walutaMnoznikBase` (L946-947) — zależy od `walutaMnoznikOverride`, NIE istnieje w pinie (Z-D2.2d-2).
+- DŁUG (Rust, do usunięcia, NIE port): brak symboli `dochodTrasHandlowych`/`walutaMnoznikOverride` w pinie; jeśli gałąź Rust je zawiera, zapis w dokumencie jako dług (Z-D2.2d-2); w r1 nie zmieniano.
+- Luka Z-WT-7 (generator głównego zestawu work-tax) — bez zmian, NIE_ZMIERZONO w tej rundzie.
+
+## Weryfikacja niezalezna D2.2e (runda 4 weryfikatora, ID `R-RUSTPORT-REPIN-EKONOMIA-D2-Q1`) — WERDYKT: FAIL
+
+Szczegoly: `dyspozycje/autobot/runs/R-RUSTPORT-REPIN-EKONOMIA-D2-Q1/08-verifier-r4.md`. Kod `2c21d762f` nie zmieniony.
+
+- Wektory `imp-main.json` odtworzone z pinu `91dc998a` (archiwum gra, node 22.22.0): BYTE-IDENTICAL.
+- Bramki na `2c21d762f`: fmt EXIT=0; clippy EXIT=0; test 1708 passed / 0 failed; `p6_repin_d2_imp` 14/14.
+- Mutanty (V2-V9): 6 zabitych, 2 przezyte (V8 rownowazny pod danymi JSON; V9 rownowazny z konstrukcji, `zloze` ignorowane przez web). Logi: `logs/mut-r4-verifier-*.log`.
+
+Korekty do zdan powyzej w tej sekcji (D2.2e):
+- **Blad faktograficzny:** „CityYieldResult (pola z pina) nie zawiera szczescia” oraz „kolumny drewno/kamien/glina/ruda nie sa wyjsciem `cityYieldPerTurn` w pinie” sa NIEPRAWDZIWE dla `91dc998a`. Return `cityYieldPerTurn` (`gra/src/game/economy.ts` L1011-1031) ma 18 pol: 12 porownywanych + `zadowolenie` (= `Math.floor(zadBudynkow)`, L1020), `drewnoTerenu`, `kamienTerenu`, `glinaTerenu`, `rudaTerenu`, `rudaZelazaTerenu`.
+- **Zakres niezamkniety:** 6 z 18 pol nie jest produkowanych przez Rust (`CityYieldOutput`, `economy_yield.rs` L449-463, ma 12 pol) i nie jest porownywanych w wektorach. Z-D2.2d-1 (szczescie) i pole „pelna cityYieldPerTurn” NIE sa zamkniete. Zalozenie Z-V-1: brak = FAIL, nie NASTEPNA-PARTIA.
+- Generator `logs/gen-imp.mts` porownuje 12 pol (`out`); rozszerzenie do 18 pol to wymagany krok operatora.
+
+Stan: OTWARTE (ten sam ID), kolejna runda operatora: dodac 6 pol, rozszerzyc wektory, poprawic opis.
+
+## Obrona operatora r4 (ID `R-RUSTPORT-REPIN-EKONOMIA-D2-Q1`, RUNDA 5/5) — odpowiedzi na zarzuty
+
+Szczegoly: `dyspozycje/autobot/runs/R-RUSTPORT-REPIN-EKONOMIA-D2-Q1/09-operator-obrona-r4.md`. Kod poprawki: `972518cab` (baza: `2c21d762f`, weryfikator `74c373d41`).
+
+- **Zakres 18 pol (B1): PRZYJĘTE.** `CityYieldOutput` ma 18 pol pina (`economy.ts` L1011-1031): dopisane `zadowolenie` (L1020), `drewno_terenu`, `kamien_terenu`, `glina_terenu`, `ruda_terenu`, `ruda_zelaza_terenu` (L1027-1031). Wejście: `CityBuildingFullInput` (`dajeSzczescie`, `baza/przyrost.zadowolenie`). Wektory `imp-main.json` przegenerowane z `91dc998a`: 800 pelnych przypadkow x 18 pol; `parity_full_city_with_improvements_bit_exact` PASS.
+- **Blad faktograficzny (B2): PRZYJĘTE.** Zdania o `CityYieldResult` (Z-D2.2d-1, L293), wiersz `buildingHappinessAtLevel` (L311) i Z-D2.2e-1 sa skorygowane wyzej w dokumencie. Pin zwraca szczescie i surowce terenu.
+- **Sumy Step 1 i mutanty (zarzut 3): CZESCIOWO.** Drewno, kamien, glina, ruda, ruda zelaza sa w wyjsciu i wektorach; mutanty M1, M3, M4, M5 zabite. Mutant `zloze` (M7) — ODRZUCONE jako FAIL: rownowaznosc z konstrukcji (web `oreYieldFromImprovements` nie czyta `zloze`: `gra/src/game/terrain-improvements.ts` L165-180, parametr L167; Rust `_zloze`). Clamp praca po ulepszeniach (M6) — PRZYJETE jako zaleznosc od danych: test `structural_improvement_bonuses_nonnegative_in_data` pilnuje zalozenia Z-D2.2e-2 (wszystkie `bonus` w `terrain-improvements.json` >= 0).
+- **Cytat `0ae489285` (zarzut 4): PRZYJĘTE jako doprecyzowanie.** `0ae489285` = commit raportu operatora r1, potomek `2c21d762f` (nie przodek). Dowod zakonczenia: `2c21d762f` (kod) i `972518cab` (poprawka).
+- **Z-WT-7 (zarzut 5): bez zmian, NIE_ZMIERZONO.**
+- **Runda 4/5 (zarzut 6): PRZYJĘTE.** Wykonane: 6 pol, generator 18 pol, regeneracja z pinu, mutanty na nowych polach, korekta dossier.
+
+Bramki (`972518cab`): fmt EXIT=0; clippy `-D warnings` EXIT=0; `cargo test --no-fail-fast` 1710 passed / 0 failed. Stan: PASS-WITH-NOTES, oddany do Evaluatora. DEPLOY/PUSH: NIE WYKONANO.

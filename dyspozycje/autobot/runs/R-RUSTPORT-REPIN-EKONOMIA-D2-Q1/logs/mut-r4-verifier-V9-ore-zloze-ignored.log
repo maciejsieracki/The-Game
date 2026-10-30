@@ -1,0 +1,22 @@
+   Compiling civ-engine v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_bbf7346c-ced-2/rust-port/engine)
+    Finished `test` profile [unoptimized] target(s) in 29.12s
+     Running tests/p6_repin_d2_imp.rs (target/debug/deps/p6_repin_d2_imp-e33724850b6d16e6)
+
+running 14 tests
+test boundary_unknown_terrain_zero_then_bonus_only ... ok
+test parity_building_happiness_bit_exact ... ok
+test parity_tile_yield_full_bit_exact ... ok
+test structural_empty_key_is_noop ... ok
+test structural_empty_list_falls_back_to_single_key ... ok
+test structural_forest_adds_wood_river_adds_clay ... ok
+test structural_happiness_branches ... ok
+test structural_imp_keys_list_wins_over_single_key ... ok
+test structural_ore_mines_and_zloze_ignored ... ok
+test structural_pieniadz_bonus_goes_to_handel ... ok
+test structural_unknown_and_legacy_key_no_bonus ... ok
+test parity_city_terrain_sums_imp_bit_exact ... ok
+test parity_full_city_with_improvements_bit_exact ... ok
+test structural_city_uses_improved_tile_sums ... ok
+
+test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.65s
+
