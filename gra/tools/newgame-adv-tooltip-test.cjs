@@ -8,7 +8,7 @@
  * zbudowanym bundlu (nie source-text pin, nie jsdom — jsdom nie liczy layoutu i zawsze zwraca
  * zera z getBoundingClientRect). Mechanizm (`installHudTitleTooltips()` w `hudTitleTooltip.ts`
  * + `makeInfoIcon()` w `newGameFlow.ts`) DZIAŁA POPRAWNIE dla wszystkich 8 ustawień wymienionych
- * w zgłoszeniu (Warunki zwycięstwa, rozpatrzenie ofert handlowych, Barbarzyńcy, Bitwy, Koszty budynków,
+ * w zgłoszeniu (Warunki zwycięstwa, trudność miast-państw, Barbarzyńcy, Bitwy, Koszty budynków,
  * Koszty jednostek, Wzrost ludności, Zasięg ruchu) — z realnym `page.mouse.move` (prawdziwe
  * zdarzenia CDP, nie syntetyczny `dispatchEvent`), włącznie z pozycjami wymagającymi przewinięcia
  * `.adv-modal-body` (`overflow-y:auto`). Zero błędów konsoli. Treść tooltipa = dokładnie `hint`
@@ -35,11 +35,12 @@
 
 const path = require('path');
 const fs = require('fs');
+const http = require('http');
 const { execSync } = require('child_process');
 
 const GRA_DIR = path.resolve(__dirname, '..');
 const OUT_DIR = path.join(GRA_DIR, 'dist-newgame-adv-tooltip-test');
-const OUT_HTML = 'file://' + path.join(OUT_DIR, 'index.html');
+let appOrigin = null;
 const FALLBACK_CHROME = process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE
   || (fs.existsSync('/usr/bin/chromium') ? '/usr/bin/chromium' : '/opt/pw-browsers/chromium-1194/chrome-linux/chrome');
 const SHOW_DELAY_MS = 380; // musi być zsynchronizowane z hudTitleTooltip.ts
@@ -86,7 +87,7 @@ async function wait(ms) { return new Promise((r) => setTimeout(r, ms)); }
 
 /** Kreator -> krok 4 -> otwórz modal "Zaawansowane opcje". */
 async function gotoAdvModal(page) {
-  await page.goto(OUT_HTML, { waitUntil: 'load', timeout: 120000 });
+  await page.goto(appOrigin, { waitUntil: 'load', timeout: 120000 });
   await page.waitForSelector('.civ-menu', { timeout: 60000 });
   await wait(400);
   await page.locator('.civ-menu .mbtn.primary').click();
@@ -109,7 +110,7 @@ async function gotoAdvModal(page) {
 /** Ustawienia dokładnie wymienione w zgłoszeniu Macieja (zrzut ekranu). */
 const NAMED_SETTINGS = [
   'Warunki zwycięstwa',
-  'Wymagaj rozpatrzenia ofert handlowych przed końcem tury',
+  'Trudność miast-państw',
   'Barbarzyńcy',
   'Bitwy',
   'Koszty budynków',
@@ -162,15 +163,32 @@ async function main() {
 
   buildBundle();
 
-  const browser = await launchBrowser(chromium);
+  // file:// is blocked in some managed Chromium environments before the app loads.
+  // Serve the single-file Vite bundle over loopback HTTP so this test exercises the UI.
+  const server = http.createServer((_req, res) => {
+    res.writeHead(200, { 'content-type': 'text/html; charset=utf-8' });
+    fs.createReadStream(path.join(OUT_DIR, 'index.html')).pipe(res);
+  });
+  await new Promise((resolve, reject) => {
+    server.once('error', reject);
+    server.listen(0, '127.0.0.1', resolve);
+  });
+  appOrigin = `http://127.0.0.1:${server.address().port}/`;
+
+  let browser;
   const consoleErrors = [];
   try {
+    browser = await launchBrowser(chromium);
     const page = await browser.newPage({ viewport: { width: 1400, height: 900 } });
     page.on('console', (msg) => { if (msg.type() === 'error') consoleErrors.push(msg.text()); });
     page.on('pageerror', (err) => consoleErrors.push('[pageerror] ' + err.message));
 
     console.log('\n-- Scenariusz 1: hover PEŁNY (>380ms) na WSZYSTKICH 8 ustawień z realnego zgłoszenia --');
     await gotoAdvModal(page);
+    const advancedLabels = (await page.locator('.civ-newgame .adv-modal .adv-lbl').allTextContents()).map(x => x.trim());
+    assert('[układ] trudność miast-państw jest w Zaawansowanych', advancedLabels.includes('Trudność miast-państw'));
+    assert('[układ] bramka ofert handlowych nie jest zdublowana w Zaawansowanych',
+      !advancedLabels.includes('Wymagaj rozpatrzenia ofert handlowych przed końcem tury'));
 
     for (const label of NAMED_SETTINGS) {
       const r = await hoverIconForLabel(page, label);
@@ -229,7 +247,8 @@ async function main() {
 
     await page.close();
   } finally {
-    await browser.close();
+    if (browser) await browser.close();
+    await new Promise((resolve) => server.close(resolve));
   }
 
   try { fs.rmSync(OUT_DIR, { recursive: true, force: true }); } catch (e) { /* nieistotne */ }

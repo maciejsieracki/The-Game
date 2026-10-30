@@ -1740,6 +1740,10 @@ function advancedSettingRows(): AdvSettingRow[] {
       'deals_end_turn_gate',
       'Dopóki wisi oferta handlowa od AI, nie zakończysz tury — przyjmij, zmodyfikuj lub odrzuć. Wyłączone: oferty AI nie blokują końca tury.',
     ),
+    advRowFromSett(
+      'player_epoch_war',
+      'Włączone: możesz zostać uczestnikiem wymuszonej wojny epoki. Wyłączone: wymuszone wojny epoki omijają gracza.',
+    ),
     {
       key: 'barbariansLevel',
       lbl: 'Barbarzyńcy',
@@ -1865,7 +1869,7 @@ function showAdvancedModal(): void {
   const body = el('div', 'adv-modal-body');
   // Udział lądu został przeniesiony do głównej siatki kroku 4; nie renderuj
   // drugiej kopii w modalu ustawień zaawansowanych.
-  const rows = advancedSettingRows().filter(row => row.key !== 'landFraction' && row.key !== 'cityStateDifficulty');
+  const rows = advancedSettingRows().filter(row => row.key !== 'landFraction' && row.key !== 'deals_end_turn_gate');
   for (const row of rows) {
     const box = el('div', 'adv-row');
     const lblRow = el('div', 'adv-lbl-row');
@@ -1985,7 +1989,7 @@ function renderSettStep(host: HTMLElement): void {
   // actions stay BELOW the whole block, always at the same height.
   const layout = el('div', 'sett-layout');
   renderSettingRows(layout, [
-    'difficulty', 'map_size', 'world_type', 'game_speed', 'city_states_count', 'cityStateDifficulty', 'civ_types_count',
+    'difficulty', 'map_size', 'world_type', 'game_speed', 'city_states_count', 'deals_end_turn_gate', 'civ_types_count',
     'landFraction',
   ]);
   renderAiCivPicker(layout);
