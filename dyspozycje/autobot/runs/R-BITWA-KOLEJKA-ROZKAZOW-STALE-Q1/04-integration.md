@@ -12,3 +12,7 @@
 **RUNDY:** 2/5
 **NASTĘPNY KROK:** commit artefaktów Roboczej i dokumentacji, push `main`, zdalny odczyt hashów i aktualizacja etapu do 11.
 **DEPLOY/PUSH:** deploy bundle wykonany lokalnie; push i zdalny readback jeszcze niewykonane.
+
+## Push/readback — etap 11
+
+`git push origin main` zakończył się powodzeniem. `git ls-remote` zwrócił release commit `87aa8678427109b9a109aea7797ca3c171cfd84f`. Pinned GitHub Raw SHA-256 dla main bundle (`2c6e0e44…`) oraz standalone battle bundle (`ecf1e42a…`) zgadza się z lokalnymi artefaktami; manifest zdalny zwraca MD5 `2f15bd3b…` i rozmiar `70,045,250 B`. Raport i rejestr aktualizują etap do 11/11.
