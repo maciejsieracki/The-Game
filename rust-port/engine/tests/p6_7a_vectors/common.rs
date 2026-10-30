@@ -360,6 +360,7 @@ pub fn tick(v: &Value) -> CityEconomyTick {
         wzrost_procent: f("wzrostProcent"),
         wzrost_ulamkowy_po: f("wzrostUlamkowyPo"),
         magazyn_po_turze: f("magazynPoTurze"),
+        owner_era: f("ownerEra"),
     }
 }
 
@@ -383,6 +384,7 @@ pub fn tick_value(t: &CityEconomyTick) -> Value {
     put_n("wzrostProcent", t.wzrost_procent);
     put_n("wzrostUlamkowyPo", t.wzrost_ulamkowy_po);
     put_n("magazynPoTurze", t.magazyn_po_turze);
+    put_n("ownerEra", t.owner_era);
     let mut put_b = |k: &str, x: Option<bool>| {
         if let Some(x) = x {
             o.insert(k.to_string(), json!(x));

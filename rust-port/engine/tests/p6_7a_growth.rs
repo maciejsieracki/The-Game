@@ -145,7 +145,8 @@ fn city_ration_level_matches_web() {
 fn ration_cost_matches_web() {
     for (i, c) in arr(&growth(), "cost").iter().enumerate() {
         let st = opt_spichlerz_state(&c["st"]);
-        let got = compute_city_ration_cost(num(&c["pop"]), num(&c["level"]), st.as_ref());
+        // Wektory P6.7A (pin edb8fb56) nie maja ownerEra: web domyslnie 1 (mnoznik 1x).
+        let got = compute_city_ration_cost(num(&c["pop"]), num(&c["level"]), st.as_ref(), 1.0);
         assert_bits(&format!("cost[{i}]"), got, num(&c["out"]));
     }
 }

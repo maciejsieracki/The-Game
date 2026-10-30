@@ -1156,13 +1156,31 @@ pub mod p6_7a {
             }
         }
 
-        /// Web `computeCityRationCost` (`population-growth-v85.ts:205`).
+        /// Web `rationEraFoodCostMultiplier` (`population-growth-v85.ts`, pin 91dc998a):
+        /// Stone 1x, Bronze 2x, Iron+ 4x; non-finite or <=1 eras are neutral (1x).
+        // web: gra/src/game/population-growth-v85.ts (rationEraFoodCostMultiplier)
+        pub fn ration_era_food_cost_multiplier(owner_era: f64) -> f64 {
+            if !owner_era.is_finite() || owner_era <= 1.0 {
+                return 1.0;
+            }
+            if owner_era == 2.0 {
+                2.0
+            } else {
+                4.0
+            }
+        }
+
+        /// Web `computeCityRationCost` (`population-growth-v85.ts:205`, pin 91dc998a: + `ownerEra`).
+        // web: gra/src/game/population-growth-v85.ts (computeCityRationCost)
         pub fn compute_city_ration_cost(
             population: f64,
             level: PoziomRacji,
             spichlerz_state: Option<&SpichlerzCityBonusState>,
+            owner_era: f64,
         ) -> f64 {
-            let base = js_max(0.0, population) * ration_food_cost_per_pop(level);
+            let base = js_max(0.0, population)
+                * ration_food_cost_per_pop(level)
+                * ration_era_food_cost_multiplier(owner_era);
             let mult = spichlerz_state.map_or(1.0, spichlerz_ration_food_cost_multiplier);
             base * mult
         }
@@ -1688,6 +1706,8 @@ pub mod p6_7a {
         pub wzrost_procent: Option<f64>,
         pub wzrost_ulamkowy_po: Option<f64>,
         pub magazyn_po_turze: Option<f64>,
+        /// Web `CityEconomyTick.ownerEra` (pin 91dc998a): era for era-scaled Racja cost; `None` = 1.
+        pub owner_era: Option<f64>,
     }
 
     /// Podzbior web `EconomyTickResult`.
@@ -1698,16 +1718,23 @@ pub mod p6_7a {
         pub starved: f64,
     }
 
-    /// Web `computeCityFoodBalanceV85` (`turn-economy.ts:1640`): (`kosztRacji`, `bilansLokalny`, `poziomRacji`).
+    /// Web `computeCityFoodBalanceV85` (`turn-economy.ts:1640`, pin 91dc998a: + `ownerEra`):
+    /// (`kosztRacji`, `bilansLokalny`, `poziomRacji`).
+    // web: gra/src/game/turn-economy.ts (computeCityFoodBalanceV85)
     pub fn compute_city_food_balance_v85(
         zywnosc_brutto: f64,
         population: f64,
         city: &City,
         spichlerz_state: Option<&SpichlerzCityBonusState>,
+        owner_era: f64,
     ) -> (f64, f64, f64) {
         let poziom_racji = growth_v85::get_city_ration_level(city);
-        let koszt_racji =
-            growth_v85::compute_city_ration_cost(population, poziom_racji, spichlerz_state);
+        let koszt_racji = growth_v85::compute_city_ration_cost(
+            population,
+            poziom_racji,
+            spichlerz_state,
+            owner_era,
+        );
         (koszt_racji, zywnosc_brutto - koszt_racji, poziom_racji)
     }
 
@@ -1734,11 +1761,13 @@ pub mod p6_7a {
             let produkcja = tick.zywnosc_brutto.unwrap_or_else(|| {
                 js_max(0.0, tick.zywnosc_netto + tick.koszt_racji.unwrap_or(0.0))
             });
+            // web: `tick.ownerEra ?? 1` (turn-economy.ts recomputeCityFoodBalancesInEcon)
             let (koszt, bilans, poziom) = compute_city_food_balance_v85(
                 produkcja,
                 gc.city.population,
                 &gc.city,
                 Some(&spichlerz),
+                tick.owner_era.unwrap_or(1.0),
             );
             tick.koszt_racji = Some(koszt);
             tick.bilans_lokalny = Some(bilans);
