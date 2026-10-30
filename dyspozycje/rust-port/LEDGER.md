@@ -338,3 +338,4 @@ Cel końcowy i bieżący zapisane w `GOAL-RUST-PORT-20261020.md` (§"CEL PĘTLI 
 | 2026-10-30 | KONTENER | - | trzeci restart przy 3 równoległych workflow Rust — limit 2 równoległych workflow Rust obowiązuje twardo; P6.8A w kolejce | zasada |
 | 2026-10-30 | R-RUSTPORT-P6-M06A9-LAD-MORZE-PANGEA-FINAL-Q1 | 2 | r1 BLOCK/FAIL (M07, M17, M21, tabela) → r2 wektory prog-eps/warstwy + dowody → FC PASS | **ZINTEGROWANE** (1422/0); M06A KOMPLET; następne: P6 M06B, M07A… |
 | 2026-10-30 | WEB-DELTA | - | `origin/main`=7d7c7d60: 96 commitów po 91dc998a, 23 pliki gra/src+data (+1733/−358); otwarte po stronie weba: MANUAL-CONTROL-LARGE-ARMY (8/11), PERF-LARGE-EMPIRE (3/11, świadomie wstrzymany); zapis w PLAN-AKTUALIZACJA §6 | informacja; REPIN-DELTA-2 po krokach 1–5 |
+| 2026-10-30 | WEB-DELTA | - | `origin/main`=dc8a3adc: +3 commity po 7d7c7d60, bez zmian w gra/src; MANUAL-CONTROL-LARGE-ARMY zamknięty 11/11; otwarty tylko PERF-LARGE-EMPIRE (3/11) | informacja |
