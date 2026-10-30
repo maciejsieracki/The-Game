@@ -2156,3 +2156,288 @@ pub fn building_stat_summary_lines(
     }
     lines
 }
+
+// ---------------------------------------------------------------------------
+// P6.8B-P1a (pin webu 91dc998a; production.ts 694-905): nacja jednostek, zamienniki
+// cywilizacji, kolejka ulepszen, tokeny jednostek specjalnych oraz koszt kupna budynku
+// za zloto. Bez availableProduction / availableReplacementsFor / rekrutacji
+// (P1b, P2 -- NASTEPNA-PARTIA w P6-8B-*.md).
+// ---------------------------------------------------------------------------
+
+/// web `CIV_KEY_TO_UNIT_NACJA` (production.ts:694-716). Klucze ASCII; wartosci jak w units.json.
+/// Web trzyma to w obiekcie JS: lookup po nazwie prototypowej (`constructor` itp.) zwraca
+/// wartosc dziedziczona -- NIE odtwarzane (NOTE w P6-8B-*.md; zadna cywilizacja nie ma takiego klucza).
+const CIV_KEY_TO_UNIT_NACJA: [(&str, &str); 17] = [
+    ("grecy", "Grecja"),
+    ("rzymianie", "Rzym"),
+    ("chinczycy", "Chiny"),
+    ("zulusi", "Zulu"),
+    ("inkowie", "Inkowie"),
+    ("egipt", "Egipt"),
+    ("sumer", "Sumer"),
+    ("sumerowie", "Sumer"),
+    ("babilon", "Sumer"),
+    ("celtowie", "Celtowie"),
+    ("germanie", "Germanie"),
+    ("harappa", "Harappa"),
+    ("hetyci", "Hetyci"),
+    ("slowianie", "Słowianie"),
+    ("babilonia", "Babilonia"),
+    ("asyria", "Asyria"),
+    ("fenicjanie", "Fenicjanie"),
+];
+
+/// web `unitNacjaForCivKey(civKey)`: `None` = brak klucza (`undefined`/`null`/pusty po trim)
+/// albo klucz nieznany.
+pub fn unit_nacja_for_civ_key(civ_key: Option<&str>) -> Option<&'static str> {
+    let key = js_trim(civ_key?);
+    if key.is_empty() {
+        return None;
+    }
+    let lower = key.to_lowercase();
+    CIV_KEY_TO_UNIT_NACJA
+        .iter()
+        .find(|(k, _)| *k == lower)
+        .map(|(_, v)| *v)
+}
+
+/// web `unitAllowedForCivNation(unitNacja, civUnitNacja)`.
+pub fn unit_allowed_for_civ_nation(unit_nacja: &str, civ_unit_nacja: Option<&str>) -> bool {
+    let n = js_trim(unit_nacja);
+    if n.is_empty() {
+        return true;
+    }
+    let c = js_trim(civ_unit_nacja.unwrap_or(""));
+    if c.is_empty() {
+        return false;
+    }
+    strip_diacritics(n) == strip_diacritics(c)
+}
+
+/// web `availabilityCivNation(ctx)`: `civ_key` = `ctx.civKey` (`None` = pole `undefined`,
+/// `Some(None)` = `null`, `Some(Some(s))` = napis). Gdy `civKey !== undefined` -> nacja z klucza,
+/// inaczej `ctx.civUnitNacja`.
+pub fn availability_civ_nation(
+    civ_key: Option<Option<&str>>,
+    civ_unit_nacja: Option<&str>,
+) -> Option<String> {
+    match civ_key {
+        Some(key) => unit_nacja_for_civ_key(key).map(str::to_string),
+        None => civ_unit_nacja.map(str::to_string),
+    }
+}
+
+/// Wiersz jednostki dla logiki zamiennikow (pola `UnitDef` czytane przez web
+/// `isBlankReplacement` / `isCivSpecialReplacement` / `civHasReplacementFor`).
+#[derive(Debug, Clone, PartialEq, Default)]
+pub struct UnitReplacementRow {
+    pub jednostka: String,
+    /// web `Nacja` (`None` = brak / `null`).
+    pub nacja: Option<String>,
+    /// web `W zamian za` (`None` = brak / `null`).
+    pub w_zamian_za: Option<String>,
+}
+
+/// web `isBlankReplacement(zamiast)`: pusty, `-` albo em dash.
+pub fn is_blank_replacement(zamiast: &str) -> bool {
+    zamiast.is_empty() || zamiast == "-" || zamiast == "\u{2014}"
+}
+
+/// web `isCivSpecialReplacement(unit, civNation)`. `civ_nation` pusty/`None` = falsy (false).
+pub fn is_civ_special_replacement(unit: &UnitReplacementRow, civ_nation: Option<&str>) -> bool {
+    let Some(civ) = civ_nation.filter(|c| !c.is_empty()) else {
+        return false;
+    };
+    let replacement = js_trim(unit.w_zamian_za.as_deref().unwrap_or(""));
+    let unit_nation = js_trim(unit.nacja.as_deref().unwrap_or(""));
+    !is_blank_replacement(replacement)
+        && !unit_nation.is_empty()
+        && strip_diacritics(unit_nation) == strip_diacritics(civ)
+}
+
+/// web `civHasReplacementFor(data, baseUnitName, civNation)`.
+pub fn civ_has_replacement_for(
+    units: &[UnitReplacementRow],
+    base_unit_name: &str,
+    civ_nation: Option<&str>,
+) -> bool {
+    if civ_nation.is_none_or(str::is_empty) {
+        return false;
+    }
+    units.iter().any(|unit| {
+        is_civ_special_replacement(unit, civ_nation)
+            && js_trim(unit.w_zamian_za.as_deref().unwrap_or("")) == base_unit_name
+    })
+}
+
+/// web `BUILDING_GOLD_PURCHASE_MULT` (production.ts:757).
+pub const BUILDING_GOLD_PURCHASE_MULT: f64 = 2.0;
+
+/// web `buildingGoldPurchaseCost(pracaKoszt)` = `Math.max(1, Math.round(praca * 2))`.
+/// `Math.max` zwraca NaN, gdy argument jest NaN (w odroznieniu od `f64::max`).
+pub fn building_gold_purchase_cost(praca_koszt: f64) -> f64 {
+    let rounded = js_math_round(praca_koszt * BUILDING_GOLD_PURCHASE_MULT);
+    if rounded.is_nan() {
+        f64::NAN
+    } else {
+        rounded.max(1.0)
+    }
+}
+
+/// Wiersz budynku dla logiki kolejki ulepszen (pola web `upgradeFrom` i `odblokowuje`).
+#[derive(Debug, Clone, PartialEq, Default)]
+pub struct BuildingLinkRow {
+    pub id: String,
+    /// web `upgradeFrom` (`None` = brak).
+    pub upgrade_from: Option<String>,
+    /// web `odblokowuje` (`None` = brak).
+    pub odblokowuje: Option<String>,
+}
+
+/// web `buildingTypeCommitted(buildingId, builtIds, queue)`.
+pub fn building_type_committed(
+    building_id: &str,
+    built_ids: &[&str],
+    queue: &[ProductionItem],
+) -> bool {
+    built_ids.contains(&building_id)
+        || queue
+            .iter()
+            .any(|it| it.kind == ProductionKind::Budynek && it.id == building_id)
+}
+
+/// web `isBuildingSupersededByUpgrade(buildingId, builtIds, buildings)`.
+pub fn is_building_superseded_by_upgrade(
+    building_id: &str,
+    built_ids: &[&str],
+    buildings: &[BuildingLinkRow],
+) -> bool {
+    buildings.iter().any(|b| {
+        b.upgrade_from.as_deref() == Some(building_id) && built_ids.contains(&b.id.as_str())
+    })
+}
+
+/// web `applyCompletedBuildingIds(builtIds, completedBuildingId, buildings)` (ABC-7, T-TECH-8).
+/// Usuwa pierwsze wystapienie poprzednika (`upgradeFrom` po trim, niepusty), dopisuje ukonczony
+/// budynek (jesli go nie ma) i dla `mury` usuwa pierwsza `palisada`.
+pub fn apply_completed_building_ids(
+    built_ids: &[&str],
+    completed_building_id: &str,
+    buildings: &[BuildingLinkRow],
+) -> Vec<String> {
+    let mut next: Vec<String> = built_ids.iter().map(|s| s.to_string()).collect();
+    let def = buildings.iter().find(|b| b.id == completed_building_id);
+    if let Some(upgrade_from) = def
+        .and_then(|d| d.upgrade_from.as_deref())
+        .map(js_trim)
+        .filter(|s| !s.is_empty())
+    {
+        if let Some(idx) = next.iter().position(|id| id == upgrade_from) {
+            next.remove(idx);
+        }
+    }
+    if !next.iter().any(|id| id == completed_building_id) {
+        next.push(completed_building_id.to_string());
+    }
+    if completed_building_id == "mury" {
+        if let Some(pi) = next.iter().position(|id| id == "palisada") {
+            next.remove(pi);
+        }
+    }
+    next
+}
+
+/// web `buildingUnlockFlagFor(completedBuildingId, buildings)`: `odblokowuje` po trim
+/// (niepusty) albo `None`.
+pub fn building_unlock_flag_for(
+    completed_building_id: &str,
+    buildings: &[BuildingLinkRow],
+) -> Option<String> {
+    buildings
+        .iter()
+        .find(|b| b.id == completed_building_id)
+        .and_then(|b| b.odblokowuje.as_deref())
+        .map(js_trim)
+        .filter(|s| !s.is_empty())
+        .map(str::to_string)
+}
+
+/// web `buildingTypeQueued(buildingId, queue)`.
+pub fn building_type_queued(building_id: &str, queue: &[ProductionItem]) -> bool {
+    queue
+        .iter()
+        .any(|it| it.kind == ProductionKind::Budynek && it.id == building_id)
+}
+
+/// Wartosc `bonusy[].wartosc` (web: `string[]` albo `string`). `None` = brak/`null`
+/// (web: `String(undefined ?? '')` = pusty napis); elementy listy `None` = `null` w tablicy.
+#[derive(Debug, Clone, PartialEq)]
+pub enum CivBonusValue {
+    Single(Option<String>),
+    List(Vec<Option<String>>),
+}
+
+/// Pola bonusu cywilizacji czytane przez `civSpecialUnitNameTokens`.
+#[derive(Debug, Clone, PartialEq)]
+pub struct CivSpecialBonus {
+    pub typ: String,
+    pub wartosc: CivBonusValue,
+}
+
+/// web `civSpecialUnitNameTokens(bonusy)`: tokeny nazw z bonusow `jednostka_specjalna`
+/// (rozdzielone `/`, z obcieciem nawiasu jako dodatkowy token).
+pub fn civ_special_unit_name_tokens(bonusy: Option<&[CivSpecialBonus]>) -> Vec<String> {
+    let mut tokens: Vec<String> = Vec::new();
+    let Some(bonusy) = bonusy.filter(|b| !b.is_empty()) else {
+        return tokens;
+    };
+    for b in bonusy {
+        if b.typ != "jednostka_specjalna" {
+            continue;
+        }
+        let raw_values: Vec<String> = match &b.wartosc {
+            CivBonusValue::List(items) => items
+                .iter()
+                .map(|v| v.clone().unwrap_or_default())
+                .collect(),
+            CivBonusValue::Single(v) => vec![v.clone().unwrap_or_default()],
+        };
+        for raw_value in raw_values {
+            let raw = js_trim(&raw_value);
+            if raw.is_empty() {
+                continue;
+            }
+            for part in raw.split('/') {
+                let trimmed = js_trim(part);
+                if trimmed.is_empty() {
+                    continue;
+                }
+                tokens.push(trimmed.to_string());
+                let primary = js_trim(trimmed.split('(').next().unwrap_or(""));
+                if !primary.is_empty() && primary != trimmed {
+                    tokens.push(primary.to_string());
+                }
+            }
+        }
+    }
+    tokens
+}
+
+/// web `unitMatchesSpecialName(unitName, tokens)`.
+pub fn unit_matches_special_name(unit_name: &str, tokens: &[String]) -> bool {
+    if tokens.is_empty() {
+        return false;
+    }
+    let un = strip_diacritics(unit_name);
+    tokens.iter().any(|token| {
+        let tn = strip_diacritics(token);
+        if tn.is_empty() {
+            return false;
+        }
+        un == tn
+            || un.starts_with(&tn)
+            || tn.starts_with(&un)
+            || un.contains(&tn)
+            || tn.contains(&un)
+    })
+}

@@ -1,0 +1,126 @@
+   Compiling civ-engine v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_a9d963c8-ef3-4/rust-port/engine)
+    Finished `test` profile [unoptimized] target(s) in 46.11s
+     Running unittests src/lib.rs (/home/user/cargo-target-shared/wf_a9d963c8-ef3-4/debug/deps/civ_engine-16aabb0664806a8f)
+
+running 6 tests
+test domain::map_generator::tests::canonical_mask_vectors_match_typescript ... ok
+test domain::map_generator::tests::terrain_bias_and_classification_match_typescript_golden_vectors ... ok
+test domain::map_generator::tests::axial_distance_and_neighbours_match_hex_contract ... ok
+test domain::map_generator::tests::mulberry32_matches_typescript_first_values ... ok
+test domain::map_generator::tests::value_noise_and_fbm_match_typescript_golden_vectors ... ok
+test domain::map_generator::tests::canonical_climate_band_vectors_match_typescript ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/p6_8a_building_upgrades.rs (/home/user/cargo-target-shared/wf_a9d963c8-ef3-4/debug/deps/p6_8a_building_upgrades-87162777d1d1baaa)
+
+running 14 tests
+test chain_is_oldest_first_and_stops_at_root ... ok
+test chain_cycle_guard_terminates ... ok
+test chain_duplicate_ids_last_entry_wins_like_js_map ... ok
+test chain_missing_predecessor_keeps_successor ... ok
+test display_name_for_upgrade_and_plain ... ok
+test city_building_line_predicates ... ok
+test chain_empty_for_unknown_id_and_blank_upgrade_from_is_root ... ok
+test composition_lines_empty_for_root_two_lines_for_chain ... ok
+test group_assigns_in_builtin_order_with_fallback_appended_last ... ok
+test group_order_is_eight_and_all_present_when_empty ... ok
+test palac_tier_takes_highest_and_none_when_absent ... ok
+test structural_defense_keys_and_percent_rules ... ok
+test structural_defense_lines_per_building ... ok
+test suppressed_only_when_strictly_true ... ok
+
+test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/p6_8a_pending_improvements.rs (/home/user/cargo-target-shared/wf_a9d963c8-ef3-4/debug/deps/p6_8a_pending_improvements-c900f30750f095b2)
+
+running 7 tests
+test add_get_has_remove_roundtrip ... ok
+test commit_turn_clears_everything ... ok
+test id_format_and_parse_split_on_last_colon ... ok
+test re_add_overwrites_value_but_keeps_position ... ok
+test parse_rejects_missing_colon_and_leading_colon ... ok
+test save_load_preserves_order_and_dedups ... ok
+test undo_key_set_drops_removed_id_and_keeps_rest_in_order ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/p6_8a_production_costs.rs (/home/user/cargo-target-shared/wf_a9d963c8-ef3-4/debug/deps/p6_8a_production_costs-7f3d65a6ee83cf2a)
+
+running 9 tests
+test vectors_building_production_items_match_web ... ok
+test vectors_constants_match_web ... ok
+test vectors_building_level_for_epoch_match_web ... ok
+test vectors_location_match_web ... ok
+test vectors_unit_cost_defaults_match_web_for_all_variants ... ok
+test vectors_item_cost_match_web ... ok
+test vectors_unit_production_items_match_web ... ok
+test vectors_strip_diacritics_match_web ... ok
+test vectors_stock_shortfall_label_match_web ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.21s
+
+     Running tests/p6_8a_vectors.rs (/home/user/cargo-target-shared/wf_a9d963c8-ef3-4/debug/deps/p6_8a_vectors-01a8cd8390790de7)
+
+running 12 tests
+test vectors_building_upgrades_composition_match_web ... ok
+test vectors_building_groups_match_web ... ok
+test vectors_building_upgrades_chain_match_web ... ok
+test vectors_building_stat_summary_lines_match_web ... ok
+test vectors_building_upgrades_display_name_match_web ... ok
+test vectors_building_upgrades_presence_and_palac_tier_match_web ... ok
+test vectors_structural_defense_napis_null_brak_match_web ... ok
+test vectors_structural_defense_realny_match_web ... ok
+test vectors_structural_defense_zero_ujemna_ulamek_match_web ... ok
+test vectors_building_upgrades_suppressed_match_web ... ok
+test vectors_pending_id_helpers_match_web ... ok
+test vectors_pending_scenarios_match_web ... ok
+
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.39s
+
+     Running tests/p6_8b_helpers_vectors.rs (/home/user/cargo-target-shared/wf_a9d963c8-ef3-4/debug/deps/p6_8b_helpers_vectors-69b57cfea0322a46)
+
+running 18 tests
+test availability_civ_nation_matches_web ... ok
+test apply_completed_building_ids_matches_web ... ok
+test building_gold_purchase_cost_matches_web ... ok
+test blank_replacement_matches_web ... ok
+test building_superseded_by_upgrade_matches_web ... ok
+test building_type_queued_matches_web ... ok
+test building_unlock_flag_matches_web ... ok
+test civ_key_to_nacja_matches_web ... ok
+test building_type_committed_matches_web ... ok
+test civ_special_replacement_matches_web ... ok
+test missing_keys_follow_web_absent_semantics ... ok
+test gold_cost_special_values_and_thresholds ... ok
+test prototype_keys_deviation_is_pinned ... ok
+test unit_matches_special_name_each_branch ... ok
+test unit_allowed_for_civ_nation_matches_web ... ok
+test unit_matches_special_name_matches_web ... ok
+test civ_special_unit_name_tokens_match_web ... ok
+test civ_has_replacement_for_matches_web ... ok
+
+test result: ok. 18 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.33s
+
+     Running tests/p6_repin_b2_production.rs (/home/user/cargo-target-shared/wf_a9d963c8-ef3-4/debug/deps/p6_repin_b2_production-370faf1d68fbbfa9)
+
+running 17 tests
+test building_work_cost_nan_and_infinity_propagate_like_web ... ok
+test civ_production_cost_markers_match_web_vectors ... ok
+test civ_matrix_cost_discount_uses_first_marker_only ... ok
+test difficulty_multiplier_thresholds_exact ... ok
+test epoch_number_matches_web_vectors ... ok
+test epoch_number_missing_and_unknown_default_to_stone ... ok
+test matrix_discount_floor_and_minimum_one ... ok
+test civ_recruitment_discount_impi_rule_and_realizuje ... ok
+test newest_same_type_unit_matches_web_vectors ... ok
+test newest_same_type_unit_only_strictly_newer_epoch ... ok
+test newest_same_type_unit_tie_keeps_first_in_units_order ... ok
+test newest_same_type_unit_missing_keys_and_empty_typ_yield_none ... ok
+test pace_zero_nan_and_empty_key_are_falsy_like_web ... ok
+test newest_same_type_unit_trims_unicode_whitespace_like_js ... ok
+test newest_same_type_unit_trims_current_typ_like_web ... ok
+test building_work_cost_matches_web_vectors ... ok
+test unit_money_cost_matches_web_vectors ... ok
+
+test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.37s
