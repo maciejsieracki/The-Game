@@ -1,0 +1,52 @@
+{
+ "pin": "91dc998a5f1b51ad29e0f4785edfd45655445c53",
+ "variant": "ujemna",
+ "miastoRaw": {
+  "bonus_obrona_palisada_proc": 100,
+  "bonus_obrona_mur_proc": -5,
+  "bonus_obrona_cytadela_proc": 100,
+  "bonus_obrona_baszta_proc": 100
+ },
+ "cases": [
+  {
+   "buildingId": "palisada",
+   "percent": 100,
+   "line": "Obrona (jednostki broniące miasta) +100% — zastąpione przez Mury kamienne"
+  },
+  {
+   "buildingId": "mury",
+   "percent": null,
+   "line": null
+  },
+  {
+   "buildingId": "fort",
+   "percent": 100,
+   "line": "Obrona (jednostki broniące miasta) +100% dodatkowo (wymaga Murów w mieście)"
+  },
+  {
+   "buildingId": "baszta",
+   "percent": 100,
+   "line": "Obrona (jednostki broniące miasta) +100% dodatkowo (wymaga Murów w mieście)"
+  },
+  {
+   "buildingId": "teatr",
+   "percent": null,
+   "line": null
+  },
+  {
+   "buildingId": "palac",
+   "percent": null,
+   "line": null
+  },
+  {
+   "buildingId": "",
+   "percent": null,
+   "line": null
+  },
+  {
+   "buildingId": "nieznany",
+   "percent": null,
+   "line": null
+  }
+ ]
+}
