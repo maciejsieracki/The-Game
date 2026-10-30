@@ -1,0 +1,86 @@
+
+running 12 tests
+test budget_nan_or_zero_or_negative_returns_empty ... ok
+test claim_rejects_occupied_target_and_moves_counter ... ok
+test farthest_target_blocked_steps_back_one ... ok
+test min_move_first_step_enters_even_if_over_budget ... ok
+test missing_key_or_infinity_stops_prefix ... ok
+test nan_cost_is_not_a_stop ... ok
+test farthest_step_matches_web_default_terrain_costs ... ok
+test occupancy_matches_web ... ok
+test farthest_step_matches_web_with_blocked_keys ... ok
+test claim_sequences_match_web ... ok
+test truncate_path_matches_web_custom_costs ... ok
+test truncate_path_matches_web_default_terrain_costs ... ok
+
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.14s
+
+
+running 22 tests
+test crisis_counter_hysteresis_and_thresholds ... ok
+test crisis_counter_sanitizes_previous_value ... ok
+test advance_crisis_counter_matches_web ... ok
+test crisis_step_at_war_resets_counter ... ok
+test ai_ai_eligibility_matches_web ... ok
+test declarer_dobra_and_pairs_explicit_edges ... ok
+test crisis_pair_key_matches_web ... ok
+test derived_params_file_matches_pinned_web_values ... ok
+test ai_ai_pairs_match_web ... ok
+test flag_override_wins_over_default ... ok
+test krok_edge_cases_explicit ... ok
+test crisis_step_for_pair_matches_web ... ok
+test parse_crisis_counters_drops_garbage ... ok
+test dobra_wola_turn_step_matches_web ... ok
+test krok_pkt_wymiany_matches_web ... ok
+test default_and_flag_match_web ... ok
+test sort_queue_ties_use_owner_ids ... ok
+test parse_crisis_counters_matches_web ... ok
+test sort_crisis_queue_matches_web ... ok
+test pick_war_declarer_matches_web ... ok
+test trade_bonus_stepwise_and_capped ... FAILED
+test trade_trust_bonus_matches_web ... FAILED
+
+failures:
+
+---- trade_bonus_stepwise_and_capped stdout ----
+
+thread 'trade_bonus_stepwise_and_capped' (16723) panicked at tests/p6_repin_wojna_c_war_brake.rs:364:5:
+assertion `left == right` failed
+  left: 0.0
+ right: 0.5
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+   1: core::panicking::panic_fmt
+   2: core::panicking::assert_failed_inner
+   3: core::panicking::assert_failed::<f64, f64>
+   4: p6_repin_wojna_c_war_brake::trade_bonus_stepwise_and_capped
+   5: p6_repin_wojna_c_war_brake::trade_bonus_stepwise_and_capped::{closure#0}
+   6: <p6_repin_wojna_c_war_brake::trade_bonus_stepwise_and_capped::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+---- trade_trust_bonus_matches_web stdout ----
+
+thread 'trade_trust_bonus_matches_web' (16724) panicked at tests/p6_repin_wojna_c_war_brake.rs:235:9:
+tradeCases[76]: 0 vs "-160"
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+   1: core::panicking::panic_fmt
+   2: p6_repin_wojna_c_war_brake::trade_trust_bonus_matches_web
+   3: p6_repin_wojna_c_war_brake::trade_trust_bonus_matches_web::{closure#0}
+   4: <p6_repin_wojna_c_war_brake::trade_trust_bonus_matches_web::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+
+failures:
+    trade_bonus_stepwise_and_capped
+    trade_trust_bonus_matches_web
+
+test result: FAILED. 20 passed; 2 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.25s
+
+   Compiling civ-engine v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_2fae1a05-0e5-1/rust-port/engine)
+    Finished `test` profile [unoptimized] target(s) in 29.62s
+     Running tests/p6_repin_wojna_c_move_range.rs (/home/user/cargo-target-shared/wf_2fae1a05-0e5-1/debug/deps/p6_repin_wojna_c_move_range-d6c1e444bd4e40ba)
+     Running tests/p6_repin_wojna_c_war_brake.rs (/home/user/cargo-target-shared/wf_2fae1a05-0e5-1/debug/deps/p6_repin_wojna_c_war_brake-e39c4e4f997f3959)
+error: test failed, to rerun pass `--test p6_repin_wojna_c_war_brake`
+
+EXIT=101

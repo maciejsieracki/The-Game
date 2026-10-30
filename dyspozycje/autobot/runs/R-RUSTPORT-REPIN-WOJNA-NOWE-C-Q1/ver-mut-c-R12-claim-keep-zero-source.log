@@ -1,0 +1,59 @@
+
+running 12 tests
+test budget_nan_or_zero_or_negative_returns_empty ... ok
+test farthest_step_matches_web_with_blocked_keys ... ok
+test farthest_target_blocked_steps_back_one ... ok
+test min_move_first_step_enters_even_if_over_budget ... ok
+test missing_key_or_infinity_stops_prefix ... ok
+test nan_cost_is_not_a_stop ... ok
+test claim_rejects_occupied_target_and_moves_counter ... FAILED
+test farthest_step_matches_web_default_terrain_costs ... ok
+test claim_sequences_match_web ... FAILED
+test occupancy_matches_web ... ok
+test truncate_path_matches_web_default_terrain_costs ... ok
+test truncate_path_matches_web_custom_costs ... ok
+
+failures:
+
+---- claim_rejects_occupied_target_and_moves_counter stdout ----
+
+thread 'claim_rejects_occupied_target_and_moves_counter' (20004) panicked at tests/p6_repin_wojna_c_move_range.rs:312:5:
+assertion failed: !occ.contains_key("a")
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+   1: core::panicking::panic_fmt
+   2: core::panicking::panic
+   3: p6_repin_wojna_c_move_range::claim_rejects_occupied_target_and_moves_counter
+   4: p6_repin_wojna_c_move_range::claim_rejects_occupied_target_and_moves_counter::{closure#0}
+   5: <p6_repin_wojna_c_move_range::claim_rejects_occupied_target_and_moves_counter::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+---- claim_sequences_match_web stdout ----
+
+thread 'claim_sequences_match_web' (20005) panicked at tests/p6_repin_wojna_c_move_range.rs:215:9:
+assertion `left == right` failed: claimCases[4] stan
+  left: [("-1,2", 2), ("-2,-2", 1), ("-2,2", 1), ("0,0", 2), ("0,2", 1), ("1,0", 2), ("1,1", 1), ("2,-2", 0)]
+ right: [("-1,2", 2), ("-2,-2", 1), ("-2,2", 1), ("0,0", 2), ("0,2", 1), ("1,0", 2), ("1,1", 1)]
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+   1: core::panicking::panic_fmt
+   2: core::panicking::assert_failed_inner
+   3: core::panicking::assert_failed::<alloc::vec::Vec<(alloc::string::String, u32)>, alloc::vec::Vec<(alloc::string::String, u32)>>
+   4: p6_repin_wojna_c_move_range::claim_sequences_match_web
+   5: p6_repin_wojna_c_move_range::claim_sequences_match_web::{closure#0}
+   6: <p6_repin_wojna_c_move_range::claim_sequences_match_web::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+
+failures:
+    claim_rejects_occupied_target_and_moves_counter
+    claim_sequences_match_web
+
+test result: FAILED. 10 passed; 2 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.35s
+
+   Compiling civ-engine v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_2fae1a05-0e5-2/rust-port/engine)
+    Finished `test` profile [unoptimized] target(s) in 31.61s
+     Running tests/p6_repin_wojna_c_move_range.rs (/home/user/cargo-target-shared/wf_2fae1a05-0e5-2/debug/deps/p6_repin_wojna_c_move_range-d6c1e444bd4e40ba)
+error: test failed, to rerun pass `--test p6_repin_wojna_c_move_range`
+
+EXIT=101
