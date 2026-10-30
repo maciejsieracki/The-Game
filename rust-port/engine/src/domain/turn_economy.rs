@@ -1038,3 +1038,513 @@ pub mod mennica_zloto_grace {
         }
     }
 }
+
+/// P6.8E-P1 - `economy-upkeep.ts` (web pin 91dc998a), czesc P1: magazyn zywnosci/surowcow per miasto,
+/// pula panstwa (SUROW-CIV-01) i parametry utrzymania. Mapy web (`Record`/`Map`) => `BTreeMap`
+/// (kolejnosc wstawiania nie wplywa na wynik, poza jawnie opisanym sortowaniem).
+/// Mnoznik epoki magazynu NIE jest tu portowany ponownie: reuse `city_growth::p6_7a::magazyn_era_multiplier`.
+pub mod economy_upkeep_p1 {
+    use std::collections::{BTreeMap, BTreeSet};
+
+    use super::{js_max, js_min};
+    use crate::domain::city_growth::p6_7a::magazyn_era_multiplier;
+
+    /// Web `Difficulty` (`'easy' | 'normal' | 'hard'`). Wartosc spoza unii jest bledem typu po stronie webu.
+    #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+    pub enum Difficulty {
+        Easy,
+        #[default]
+        Normal,
+        Hard,
+    }
+
+    impl Difficulty {
+        /// Klucz trudnosci w econ-params.json.
+        pub const fn key(self) -> &'static str {
+            match self {
+                Difficulty::Easy => "easy",
+                Difficulty::Normal => "normal",
+                Difficulty::Hard => "hard",
+            }
+        }
+    }
+
+    /// Komorka surowego econ-params: `typeof v === 'number'` (takze NaN/Infinity, ktore `readNum`
+    /// odrzuca przez `Number.isFinite`) albo wartosc nie-liczbowa / brak (`Other`).
+    #[derive(Debug, Clone, Copy, PartialEq)]
+    pub enum RawCell {
+        Num(f64),
+        Other,
+    }
+
+    /// Web `RawEconRow`: wiersz (klucz = nazwa trudnosci).
+    pub type RawRow = BTreeMap<String, RawCell>;
+
+    /// Grupa econ-params (klucz = nazwa wiersza parametru).
+    pub type RawGroup = BTreeMap<String, RawRow>;
+
+    /// Web `RawEconParamsForUpkeep`. `None` = grupa nieobecna w JSON.
+    #[derive(Debug, Clone, Default, PartialEq)]
+    pub struct RawEconParamsForUpkeep {
+        pub ekonomia_miasta: Option<RawGroup>,
+        pub budynki: Option<RawGroup>,
+        pub globalne: Option<RawGroup>,
+    }
+
+    /// Web `readNum`: skonczona liczba z wiersza dla trudnosci, inaczej `fallback`.
+    fn read_num(group: Option<&RawGroup>, key: &str, difficulty: Difficulty, fallback: f64) -> f64 {
+        let cell = group
+            .and_then(|g| g.get(key))
+            .and_then(|row| row.get(difficulty.key()));
+        match cell {
+            Some(RawCell::Num(v)) if v.is_finite() => *v,
+            _ => fallback,
+        }
+    }
+
+    // ----------------------------------------------------------------------------------
+    // A. STORAGE (Spec-ekonomia.md s.7)
+    // ----------------------------------------------------------------------------------
+
+    /// Web `StorageParams`.
+    #[derive(Debug, Clone, Copy, PartialEq)]
+    pub struct StorageParams {
+        pub baza_zywnosc: f64,
+        pub baza_surowce: f64,
+        pub mnoznik_magazynu: f64,
+    }
+
+    /// Web `DEFAULT_STORAGE_PARAMS`.
+    pub const DEFAULT_STORAGE_PARAMS: StorageParams = StorageParams {
+        baza_zywnosc: 20.0,
+        baza_surowce: 10.0,
+        mnoznik_magazynu: 5.0,
+    };
+
+    /// Web `loadStorageParams`.
+    pub fn load_storage_params(
+        raw: &RawEconParamsForUpkeep,
+        difficulty: Difficulty,
+    ) -> StorageParams {
+        let g = raw.globalne.as_ref();
+        StorageParams {
+            baza_zywnosc: read_num(
+                g,
+                "magazyn_baza_zywnosc",
+                difficulty,
+                DEFAULT_STORAGE_PARAMS.baza_zywnosc,
+            ),
+            baza_surowce: read_num(
+                g,
+                "magazyn_baza_surowce",
+                difficulty,
+                DEFAULT_STORAGE_PARAMS.baza_surowce,
+            ),
+            mnoznik_magazynu: read_num(
+                g,
+                "magazyn_mnoznik_spichlerz",
+                difficulty,
+                DEFAULT_STORAGE_PARAMS.mnoznik_magazynu,
+            ),
+        }
+    }
+
+    /// Web `foodStorageCapacity`.
+    pub fn food_storage_capacity(ma_spichlerz: bool, p: &StorageParams) -> f64 {
+        if ma_spichlerz {
+            p.baza_zywnosc * p.mnoznik_magazynu
+        } else {
+            p.baza_zywnosc
+        }
+    }
+
+    /// Wejscie web `readCityFoodBuffer(unknown)`: liczba, obiekt `{aktualny?}`, albo cokolwiek innego.
+    #[derive(Debug, Clone, Copy, PartialEq)]
+    pub enum FoodBuffer {
+        Num(f64),
+        Obj { aktualny: Option<f64> },
+        Other,
+    }
+
+    /// Web `readCityFoodBuffer`.
+    pub fn read_city_food_buffer(input: FoodBuffer) -> f64 {
+        match input {
+            FoodBuffer::Num(v) if v.is_finite() => js_max(0.0, v),
+            FoodBuffer::Obj { aktualny: Some(a) } if a.is_finite() => js_max(0.0, a),
+            _ => 0.0,
+        }
+    }
+
+    /// Web `resourceStorageCapacityPerType`.
+    pub fn resource_storage_capacity_per_type(ma_magazyn: bool, p: &StorageParams) -> f64 {
+        if ma_magazyn {
+            p.baza_surowce * p.mnoznik_magazynu
+        } else {
+            p.baza_surowce
+        }
+    }
+
+    /// Web `ClampResult`.
+    #[derive(Debug, Clone, Copy, PartialEq)]
+    pub struct ClampResult {
+        pub stored: f64,
+        pub overflow: f64,
+    }
+
+    /// Web `clampStore`.
+    pub fn clamp_store(amount: f64, capacity: f64) -> ClampResult {
+        if !amount.is_finite() || amount <= 0.0 {
+            return ClampResult {
+                stored: 0.0,
+                overflow: 0.0,
+            };
+        }
+        let cap = if capacity.is_finite() && capacity > 0.0 {
+            capacity
+        } else {
+            0.0
+        };
+        if amount > cap {
+            ClampResult {
+                stored: cap,
+                overflow: amount - cap,
+            }
+        } else {
+            ClampResult {
+                stored: amount,
+                overflow: 0.0,
+            }
+        }
+    }
+
+    /// Web `CityStores`.
+    #[derive(Debug, Clone, PartialEq, Default)]
+    pub struct CityStores {
+        pub zywnosc: f64,
+        pub surowce: BTreeMap<String, f64>,
+    }
+
+    /// Web `emptyCityStores`.
+    pub fn empty_city_stores() -> CityStores {
+        CityStores::default()
+    }
+
+    /// Web `applyFood`.
+    pub fn apply_food(current: f64, delta: f64, capacity: f64) -> ClampResult {
+        let base = if current.is_finite() { current } else { 0.0 };
+        let change = if delta.is_finite() { delta } else { 0.0 };
+        clamp_store(base + change, capacity)
+    }
+
+    /// Web `ResourceOverflow` (klucz = typ surowca; `zywnosc` tylko w `onCityConquered`).
+    pub type ResourceOverflow = BTreeMap<String, f64>;
+
+    /// Web `applyResourceIntake`: zwraca NOWE stores (wejscie nietkniete) + utracona nadwyzke.
+    pub fn apply_resource_intake(
+        stores: &CityStores,
+        intake: &BTreeMap<String, f64>,
+        capacity_per_type: f64,
+    ) -> (CityStores, ResourceOverflow) {
+        let mut next = stores.surowce.clone();
+        let mut overflow = ResourceOverflow::new();
+        for (key, &add) in intake {
+            if !add.is_finite() || add == 0.0 {
+                continue;
+            }
+            let have = match next.get(key) {
+                Some(v) if v.is_finite() => *v,
+                _ => 0.0,
+            };
+            let res = clamp_store(have + add, capacity_per_type);
+            next.insert(key.clone(), res.stored);
+            if res.overflow > 0.0 {
+                overflow.insert(key.clone(), res.overflow);
+            }
+        }
+        (
+            CityStores {
+                zywnosc: stores.zywnosc,
+                surowce: next,
+            },
+            overflow,
+        )
+    }
+
+    /// Web `globalResourceCapacityPerType`: suma capow per miasto (`has` = Magazyn w miescie).
+    pub fn global_resource_capacity_per_type(city_has_magazyn: &[bool], p: &StorageParams) -> f64 {
+        let mut total = 0.0;
+        for &has in city_has_magazyn {
+            total += resource_storage_capacity_per_type(has, p);
+        }
+        total
+    }
+
+    /// Web `onCityLost`.
+    pub fn on_city_lost() -> CityStores {
+        empty_city_stores()
+    }
+
+    /// Web `||0` na liczbie: NaN, +0 i -0 daja 0.
+    fn or_zero(v: f64) -> f64 {
+        if v.is_nan() || v == 0.0 {
+            0.0
+        } else {
+            v
+        }
+    }
+
+    /// Web `onCityConquered`: zwyciezca przejmuje magazyn; nadwyzka (w tym `zywnosc`) przepada.
+    pub fn on_city_conquered(
+        winner: &CityStores,
+        loser: &CityStores,
+        food_capacity: f64,
+        resource_capacity: f64,
+    ) -> (CityStores, ResourceOverflow) {
+        let food = clamp_store(
+            or_zero(winner.zywnosc) + or_zero(loser.zywnosc),
+            food_capacity,
+        );
+        let base = CityStores {
+            zywnosc: food.stored,
+            surowce: winner.surowce.clone(),
+        };
+        let (stores, mut overflow) =
+            apply_resource_intake(&base, &loser.surowce, resource_capacity);
+        if food.overflow > 0.0 {
+            overflow.insert("zywnosc".to_string(), food.overflow);
+        }
+        (stores, overflow)
+    }
+
+    // ----------------------------------------------------------------------------------
+    // A2. CIV-WIDE RESOURCE STORAGE (SUROW-CIV-01)
+    // ----------------------------------------------------------------------------------
+
+    /// Web `OwnerStorageParams`.
+    #[derive(Debug, Clone, Copy, PartialEq)]
+    pub struct OwnerStorageParams {
+        pub baza_surowce_panstwo: f64,
+        pub bonus_surowce_na_budynek: f64,
+    }
+
+    /// Web `DEFAULT_OWNER_STORAGE_PARAMS` (R-EKONOMIA-SUROWCE-SKALA-5X-Q1: 50000 / 500).
+    pub const DEFAULT_OWNER_STORAGE_PARAMS: OwnerStorageParams = OwnerStorageParams {
+        baza_surowce_panstwo: 50000.0,
+        bonus_surowce_na_budynek: 500.0,
+    };
+
+    /// Web `OWNER_CAPPED_RESOURCE_KEYS` (kolejnosc jak w webie).
+    pub const OWNER_CAPPED_RESOURCE_KEYS: [&str; 14] = [
+        "drewno",
+        "kamien",
+        "glina",
+        "ruda",
+        "ruda_zelaza",
+        "ruda_cyny",
+        "cegla",
+        "ceramika",
+        "braz",
+        "zelazo",
+        "stal",
+        "sol",
+        "zloto",
+        "kon",
+    ];
+
+    /// Web `isOwnerCappedResourceKey` (`Set.has`: dokladne dopasowanie).
+    pub fn is_owner_capped_resource_key(key: &str) -> bool {
+        OWNER_CAPPED_RESOURCE_KEYS.contains(&key)
+    }
+
+    /// Web `loadOwnerStorageParams`.
+    pub fn load_owner_storage_params(
+        raw: &RawEconParamsForUpkeep,
+        difficulty: Difficulty,
+    ) -> OwnerStorageParams {
+        let g = raw.globalne.as_ref();
+        OwnerStorageParams {
+            baza_surowce_panstwo: read_num(
+                g,
+                "magazyn_baza_surowce",
+                difficulty,
+                DEFAULT_OWNER_STORAGE_PARAMS.baza_surowce_panstwo,
+            ),
+            bonus_surowce_na_budynek: read_num(
+                g,
+                "magazyn_bonus_surowce_na_budynek",
+                difficulty,
+                DEFAULT_OWNER_STORAGE_PARAMS.bonus_surowce_na_budynek,
+            ),
+        }
+    }
+
+    /// Web `ownerResourceCapacityPerType` (`era` = epoka wlasciciela; web default 1 podaje wolajacy).
+    pub fn owner_resource_capacity_per_type(
+        magazyn_count: f64,
+        p: &OwnerStorageParams,
+        era: f64,
+    ) -> f64 {
+        let cnt = if magazyn_count.is_finite() && magazyn_count > 0.0 {
+            magazyn_count.floor()
+        } else {
+            0.0
+        };
+        (p.baza_surowce_panstwo + p.bonus_surowce_na_budynek * cnt) * magazyn_era_multiplier(era)
+    }
+
+    /// Web `ownerStorageParamsForEra`.
+    pub fn owner_storage_params_for_era(p: &OwnerStorageParams, era: f64) -> OwnerStorageParams {
+        let mult = magazyn_era_multiplier(era);
+        OwnerStorageParams {
+            baza_surowce_panstwo: p.baza_surowce_panstwo * mult,
+            bonus_surowce_na_budynek: p.bonus_surowce_na_budynek * mult,
+        }
+    }
+
+    /// Web `CityResourceHolder`. `surowce: None` = brak pola w miescie (pomijane).
+    #[derive(Debug, Clone, PartialEq)]
+    pub struct CityResourceHolder {
+        pub id: String,
+        pub owner_id: i64,
+        pub surowce: Option<BTreeMap<String, f64>>,
+    }
+
+    /// Porownanie web `holders.sort` (V8): wynik `b - a`; NaN traktowany jak 0 (Equal);
+    /// przy 0 remis po `id` rosnaco.
+    fn holder_order(
+        a: &CityResourceHolder,
+        b: &CityResourceHolder,
+        key: &str,
+    ) -> std::cmp::Ordering {
+        use std::cmp::Ordering;
+        let av = a
+            .surowce
+            .as_ref()
+            .and_then(|s| s.get(key))
+            .copied()
+            .unwrap_or(0.0);
+        let bv = b
+            .surowce
+            .as_ref()
+            .and_then(|s| s.get(key))
+            .copied()
+            .unwrap_or(0.0);
+        let diff = bv - av;
+        if diff.is_nan() {
+            Ordering::Equal
+        } else if diff < 0.0 {
+            Ordering::Less
+        } else if diff > 0.0 {
+            Ordering::Greater
+        } else if a.id < b.id {
+            Ordering::Less
+        } else if a.id > b.id {
+            Ordering::Greater
+        } else {
+            Ordering::Equal
+        }
+    }
+
+    /// Web `reconcileOwnerResourceCaps` (SUROW-CIV-01): obcina nadwyzke ponad cap ownera,
+    /// zabierajac z miast o najwiekszym zapasie najpierw. Mutuje `surowce` miast in place.
+    /// `cap_for_owner` zwraca `None` gdy web zwrocilby `undefined`.
+    pub fn reconcile_owner_resource_caps(
+        cities: &mut [CityResourceHolder],
+        cap_for_owner: impl Fn(i64) -> Option<f64>,
+    ) {
+        let mut by_owner: BTreeMap<i64, Vec<usize>> = BTreeMap::new();
+        for (idx, c) in cities.iter().enumerate() {
+            if c.surowce.is_some() {
+                by_owner.entry(c.owner_id).or_default().push(idx);
+            }
+        }
+
+        for (owner_id, indices) in &by_owner {
+            let cap = match cap_for_owner(*owner_id) {
+                Some(v) if v.is_finite() && v >= 0.0 => v,
+                _ => continue,
+            };
+
+            let mut keys: BTreeSet<String> = BTreeSet::new();
+            for &i in indices {
+                if let Some(s) = cities[i].surowce.as_ref() {
+                    for k in s.keys() {
+                        if is_owner_capped_resource_key(k) {
+                            keys.insert(k.clone());
+                        }
+                    }
+                }
+            }
+
+            for key in &keys {
+                let mut total = 0.0;
+                for &i in indices {
+                    total += cities[i]
+                        .surowce
+                        .as_ref()
+                        .and_then(|s| s.get(key))
+                        .copied()
+                        .unwrap_or(0.0);
+                }
+                let mut excess = total - cap;
+                if excess <= 0.0 {
+                    continue;
+                }
+
+                let mut holders: Vec<usize> = indices
+                    .iter()
+                    .copied()
+                    .filter(|&i| {
+                        cities[i]
+                            .surowce
+                            .as_ref()
+                            .and_then(|s| s.get(key))
+                            .copied()
+                            .unwrap_or(0.0)
+                            > 0.0
+                    })
+                    .collect();
+                holders.sort_by(|&x, &y| holder_order(&cities[x], &cities[y], key));
+
+                for i in holders {
+                    if excess <= 0.0 {
+                        break;
+                    }
+                    let Some(map) = cities[i].surowce.as_mut() else {
+                        continue;
+                    };
+                    let have = map.get(key).copied().unwrap_or(0.0);
+                    let take = js_min(have, excess);
+                    map.insert(key.clone(), have - take);
+                    excess -= take;
+                }
+            }
+        }
+    }
+
+    // ----------------------------------------------------------------------------------
+    // B. MAINTENANCE - parametry (Spec-ekonomia.md s.6)
+    // ----------------------------------------------------------------------------------
+
+    /// Web `UpkeepParams`. `budynek_utrzymanie_flat` = `budynekUtrzymanieFlat?` (domyslne dla
+    /// budynku bez wpisu `utrzymanie`).
+    #[derive(Debug, Clone, Copy, PartialEq)]
+    pub struct UpkeepParams {
+        pub budynek_utrzymanie_flat: Option<f64>,
+        pub jednostka_utrzymanie_std: f64,
+        pub zywnosc_jednostka_ruch: f64,
+        pub zywnosc_jednostka_oboz: f64,
+        pub zywnosc_mnoznik_terytorium: f64,
+        pub zywnosc_mnoznik_poza_terytorium: f64,
+    }
+
+    /// Web `DEFAULT_UPKEEP_PARAMS`.
+    pub const DEFAULT_UPKEEP_PARAMS: UpkeepParams = UpkeepParams {
+        budynek_utrzymanie_flat: Some(1.0),
+        jednostka_utrzymanie_std: 1.0,
+        zywnosc_jednostka_ruch: 1.0,
+        zywnosc_jednostka_oboz: 0.5,
+        zywnosc_mnoznik_terytorium: 1.0,
+        zywnosc_mnoznik_poza_terytorium: 2.0,
+    };
+}
