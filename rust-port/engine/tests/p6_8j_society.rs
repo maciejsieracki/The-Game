@@ -442,3 +442,32 @@ fn fallback_scale_is_normal_column() {
     assert_eq!(f.sz_max_pop_wsp, 0.04);
     assert_eq!(f.praw_max_pop_odniesienia, 2.0);
 }
+
+#[test]
+fn era_table_edge_cases_match_web() {
+    // Web maxFromEraTable: pusta tablica -> 24; era NaN/Inf -> epoka 1; era > len -> ostatni
+    // wpis; era <= 0 -> epoka 1; niefinitny wpis -> 24.
+    let mut s = fallback_society_scale();
+    s.sz_max_by_era = vec![];
+    assert_eq!(sz_max_for_era(1.0, &s), 24.0, "empty table fallback");
+    assert_eq!(sz_max_for_era(f64::NAN, &s), 24.0, "empty table, NaN era");
+
+    let mut t = fallback_society_scale();
+    t.sz_max_by_era = vec![11.0, 22.0, 33.0];
+    assert_eq!(sz_max_for_era(f64::NAN, &t), 11.0, "NaN era -> epoka 1");
+    assert_eq!(
+        sz_max_for_era(f64::INFINITY, &t),
+        11.0,
+        "Inf era -> epoka 1"
+    );
+    assert_eq!(sz_max_for_era(0.0, &t), 11.0, "era 0 -> epoka 1");
+    assert_eq!(sz_max_for_era(2.9, &t), 22.0, "era floor");
+    assert_eq!(
+        sz_max_for_era(9.0, &t),
+        33.0,
+        "era above length -> last entry"
+    );
+
+    t.sz_max_by_era = vec![f64::NAN, 22.0];
+    assert_eq!(sz_max_for_era(1.0, &t), 24.0, "non-finite entry -> 24");
+}
