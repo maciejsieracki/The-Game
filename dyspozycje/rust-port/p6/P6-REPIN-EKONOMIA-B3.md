@@ -85,3 +85,19 @@ Surowe logi: katalog runu `R-RUSTPORT-REPIN-EKONOMIA-B3-Q1/` (`gate-*.log`).
 - `meta.pin` i manifesty: bez zmian (REPIN-DELTA §6).
 
 Status tematu: **PASS-WITH-NOTES** dla partii B3 (kod i wektory tej partii zgodne z webem 91dc998a; wiring ticku i reszta hunkow otwarte). DEPLOY/PUSH: NIE WYKONANO.
+
+## 7. Weryfikacja niezalezna (runda 1, Operator-pomiary, kontynuacja)
+
+Wykonane w tej samej rundzie 1/5 (bez zwrotu FAIL). Kod nie zmieniony: `git diff` przed i po pomiarach = pusty.
+
+- **Regeneracja wektorow z weba 91dc998a (bajt-po-bajcie).** Generator z runu uruchomiony na swiezym `git archive 91dc998a gra/src gra/data` poza repo: `route_cash.json` i `wealth_owner.json` zgodne bitowo z commitowanymi (cmp = 0). Wynik: `route=5200 wealthOwner=312 capMod=60 mulMod=60`, EXIT=0. Log: `R-RUSTPORT-REPIN-EKONOMIA-B3-Q1/verify-vectors-r2.log`.
+- **Wektory `_mod`.** Generator nie zawiera trybu `_mod`; odtworzono go, podmieniajac w kopii weba `gra/data/civ-matrix.json` na `tests/p6_repin_b3_vectors/civ_matrix_mod.json`. Wynik: `route_cash_mod.json` i `wealth_owner_mod.json` zgodne bitowo (cmp = 0). Roznica semantyczna `civ_matrix_mod.json` vs realna macierz: dokladnie 3 komorki `params` (wiersze: Grecy, Rzymianie, Inkowie): `eko_pieniadz_port_proc` 0.15/0->0.4 (Grecy zmienia 0.15->0.4, Rzymianie 0->0.4, Inkowie 0->0.4), `wealth_cap_proc` 0->0.2 i `wealth_mnoznik_proc` 0->-0.3 (Grecy, Inkowie). Pozostale klucze top-level bez zmian.
+- **Zgodnosc logiki z webem (odczyt zrodla 91dc998a).** `wealth.ts:59-75`: cap `Number.isFinite(m) ? Math.max(0, 1+m) : 1`, mnoznik `Number.isFinite(m) ? 1+m : 1` - zgodne z `wealth_params_with_cap_modifier` / `..._multiplier_modifier`. `turn-economy.ts:186-197` (`wealthParamsForOwner`: falsy key => baza, kolejnosc cap potem mnoznik) i `turn-economy.ts:228-231` (`routeCashForCity`: `Math.min(total, Math.max(0, maritime))`, `civKey` falsy => bez mnoznika) - zgodne z portem.
+- **Mutacje (weryfikator, jedna naraz, plik przywracany, `git diff` pusty po restore):**
+  - R-M1 (brak mnoznika cywilizacji w `route_cash_for_city`): ZABITY, 4/4 FAILED (`mutant-R-M1-route-r2.log`).
+  - W-M1 (brak klamry `max(0, 1+m)` w capie): ZABITY, `wealth_modifiers_match_web_vectors` FAILED, 3 pozostale testy ok (`mutant-W-M1-cap-clamp-r2.log`).
+- **Bramki (surowe logi z EXIT):** `cargo fmt --all -- --check` EXIT=0; `cargo clippy --all-targets -- -D warnings` EXIT=0; `cargo test --no-fail-fast` EXIT=0, 1396 passed / 0 failed (baseline 1388). Logi: `gate-fmt-r2.log`, `gate-clippy-r2.log`, `gate-test-r2.log`.
+- **Stan nieosiagniety w tej partii (bez zmian wzgledem sekcji 2 i 6):** wiring w ticku (hunki 24, 25, 28 w `advanceCityEconomy`) i hunki 18, 21, 26, 29 - NASTEPNA-PARTIA (tick). Brak tiku ekonomii w Rust (Z3).
+- **Luka procesowa (NIE_ZMIERZONO):** generator z runu nie zapisuje sposobu wytworzenia `civ_matrix_mod.json` (dane wejsciowe zostaly zmodyfikowane poza generatorem). Mozliwosc powtorzenia jest w tym dossier (3 komorki wyzej), nie jako skrypt.
+
+Status partii B3 bez zmian: **PASS-WITH-NOTES** (kod i wektory zgodne z webem 91dc998a). DEPLOY/PUSH: NIE WYKONANO.

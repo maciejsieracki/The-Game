@@ -1,0 +1,10 @@
+# Weryfikator r2 (Operator-pomiary): regeneracja wektorow z weba 91dc998a
+# Generator: dyspozycje/autobot/runs/R-RUSTPORT-REPIN-EKONOMIA-B3-Q1/gen-repin-b3-vectors.mjs (node v22.22.0)
+# Wejscie: git archive 91dc998a gra/src gra/data (katalog tymczasowy poza repo)
+real: route=5200 wealthOwner=312 capMod=60 mulMod=60 EXIT=0
+cmp route_cash.json (regen real vs commit)        -> identyczne (EXIT 0)
+cmp wealth_owner.json (regen real vs commit)      -> identyczne (EXIT 0)
+mod: kopia weba z gra/data/civ-matrix.json := tests/p6_repin_b3_vectors/civ_matrix_mod.json
+mod: route=5200 wealthOwner=312 capMod=60 mulMod=60 EXIT=0
+cmp route_cash.json (regen mod vs route_cash_mod.json)   -> identyczne (EXIT 0)
+cmp wealth_owner.json (regen mod vs wealth_owner_mod.json) -> identyczne (EXIT 0)
