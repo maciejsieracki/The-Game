@@ -1445,3 +1445,176 @@ pub fn pangea_annular_max_corridor_width(width: f64, height: f64) -> f64 {
 pub fn is_pangea_bridge_water(t: Terrain) -> bool {
     is_water_terrain_local(t)
 }
+
+// ---------------------------------------------------------------------------------------------
+// P6.M06A8 (R-RUSTPORT-P6-M06A8-LAD-MORZE-KORYTARZE2-Q1), partia 1: jednosc Pangei.
+// Literaly danych w `data/derived/mapgen-landsea-pangea-bridge.json`.
+// ---------------------------------------------------------------------------------------------
+
+/// Web `groupDryLandMassKeys(hexes)` (gen-helpers.ts :4338, prywatna): masy suchego ladu
+/// (bez Wybrzeza i Morza) jako listy kluczy, BFS po 6 sasiadach, w kolejnosci wstawiania.
+/// Klucz niekanoniczny jest w masie, ale nie rozwija sasiedztwa (ZALOZENIA w naglowku pliku).
+pub fn group_dry_land_mass_keys(hexes: &HexRecord) -> Vec<Vec<String>> {
+    let mut visited: HashSet<String> = HashSet::new();
+    let mut groups: Vec<Vec<String>> = Vec::new();
+    for key in hexes.keys() {
+        let Some(hex) = hexes.get(key) else { continue };
+        if !is_dry_land_terrain(hex.terrain) || visited.contains(key) {
+            continue;
+        }
+        let mut mass: Vec<String> = Vec::new();
+        let mut stack: Vec<String> = vec![key.clone()];
+        visited.insert(key.clone());
+        while let Some(k) = stack.pop() {
+            let neighbours = key_qr(&k);
+            mass.push(k);
+            let Some((q, r)) = neighbours else { continue };
+            for &(dq, dr) in HEX_DIRECTIONS.iter() {
+                let nk = hex_key(q + i64::from(dq), r + i64::from(dr));
+                if visited.contains(&nk) {
+                    continue;
+                }
+                let Some(nh) = hexes.get(&nk) else { continue };
+                if !is_dry_land_terrain(nh.terrain) {
+                    continue;
+                }
+                visited.insert(nk.clone());
+                stack.push(nk);
+            }
+        }
+        groups.push(mass);
+    }
+    groups
+}
+
+/// Web `ensurePangeaSingleContinent(hexes, width, height)` (gen-helpers.ts :4375, export).
+/// Laczy obce masy ladu mostem wodnym (Morze/Wybrzeze) z glowna masa; gdy most jest poza zasiegiem
+/// `maxBridge`, usuwa obce masy o rozmiarze <= max(60, floor(glowna*0.25)) -> Morze.
+/// Koncowe wywolanie web `fillPangeaAnnularSeaCorridors` (:4595, RUNDA-2) przechodzi przez
+/// `fill_annular`; wywolujacy bez tego kroku podaje `|_, _, _| 0` (zgodnie z kopia web uzyta do
+/// wektorow, patrz `gen-m06a8-landsea-vectors.mjs`). Zwraca liczbe zmian (web `converted`).
+pub fn ensure_pangea_single_continent(
+    hexes: &mut HexRecord,
+    width: i64,
+    height: i64,
+    fill_annular: impl FnOnce(&mut HexRecord, i64, i64) -> usize,
+) -> usize {
+    let t = crate::data::derived::mapgen_landsea_pangea_bridge();
+    let map_scale = ((width as f64) * (height as f64) / t.bridge_skala_pola).sqrt();
+    let max_bridge = js_max(
+        t.bridge_min,
+        js_min(
+            t.bridge_max,
+            js_round(t.bridge_baza + map_scale * t.bridge_mnoznik),
+        ),
+    ) as i64;
+    let mut converted = 0usize;
+
+    for _iter in 0..t.bridge_iter_max {
+        let mut masses = group_dry_land_mass_keys(hexes);
+        js_array_sort_by(&mut masses, |a, b| b.len() as f64 - a.len() as f64);
+        if masses.len() <= 1 {
+            break;
+        }
+        let main = masses[0].clone();
+        let main_set: HashSet<String> = main.iter().cloned().collect();
+
+        // Multi-source BFS od brzegu glownej masy w wode mostowa - szukaj obcej masy.
+        let mut dist: HashMap<String, i64> = HashMap::new();
+        let mut parent: HashMap<String, String> = HashMap::new();
+        let mut queue: Vec<(i64, i64)> = Vec::new();
+        for k in &main {
+            let Some((q, r)) = key_qr(k) else { continue };
+            for &(dq, dr) in HEX_DIRECTIONS.iter() {
+                let (nq, nr) = (q + i64::from(dq), r + i64::from(dr));
+                let nk = hex_key(nq, nr);
+                let Some(nh) = hexes.get(&nk) else { continue };
+                if !is_pangea_bridge_water(nh.terrain) || dist.contains_key(&nk) {
+                    continue;
+                }
+                dist.insert(nk.clone(), 1);
+                parent.insert(nk, k.clone());
+                queue.push((nq, nr));
+            }
+        }
+
+        let mut hit_sea: Option<String> = None;
+        let mut qi = 0usize;
+        while qi < queue.len() {
+            let (q, r) = queue[qi];
+            qi += 1;
+            let cur = hex_key(q, r);
+            let d = dist[&cur];
+            if d > max_bridge {
+                continue;
+            }
+            let mut found_foreign = false;
+            for &(dq, dr) in HEX_DIRECTIONS.iter() {
+                let (nq, nr) = (q + i64::from(dq), r + i64::from(dr));
+                let nk = hex_key(nq, nr);
+                let Some(nh) = hexes.get(&nk) else { continue };
+                if is_dry_land_terrain(nh.terrain) {
+                    if !main_set.contains(&nk) {
+                        hit_sea = Some(cur.clone());
+                        found_foreign = true;
+                        break;
+                    }
+                    continue;
+                }
+                if !is_pangea_bridge_water(nh.terrain) || dist.contains_key(&nk) {
+                    continue;
+                }
+                dist.insert(nk.clone(), d + 1);
+                parent.insert(nk, cur.clone());
+                queue.push((nq, nr));
+            }
+            if found_foreign {
+                break;
+            }
+        }
+
+        let Some(hit) = hit_sea else {
+            // Obce masy poza maxBridge: usun male obce masy (do max(60, floor(glowna*ulamek))).
+            let limit = js_max(
+                t.masa_obca_min,
+                (main.len() as f64 * t.masa_obca_ulamek_glownej).floor(),
+            );
+            for other in masses.iter().skip(1) {
+                if other.len() as f64 > limit {
+                    continue;
+                }
+                for k in other {
+                    if let Some(h) = hexes.get_mut(k) {
+                        if is_dry_land_terrain(h.terrain) {
+                            set_hex_to_morze(h);
+                            converted += 1;
+                        }
+                    }
+                }
+            }
+            break;
+        };
+
+        // Wypelnij sciezke wody od hitSea wstecz do lądu glownego.
+        let mut cur: Option<String> = Some(hit);
+        let mut path_len: i64 = 0;
+        while let Some(c) = cur.clone() {
+            if path_len > max_bridge + t.bridge_zapas_sciezki {
+                break;
+            }
+            let Some(h) = hexes.get_mut(&c) else { break };
+            if is_pangea_bridge_water(h.terrain) {
+                set_hex_to_laka(h);
+                converted += 1;
+            }
+            if main_set.contains(&c) {
+                break;
+            }
+            cur = parent.get(&c).cloned();
+            path_len += 1;
+        }
+    }
+
+    converted += fill_annular(hexes, width, height);
+    converted
+}

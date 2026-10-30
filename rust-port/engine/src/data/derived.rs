@@ -4779,3 +4779,40 @@ pub fn mapgen_landsea_pangea_annular() -> &'static MapgenLandseaPangeaAnnularFil
             .expect("mapgen-landsea-pangea-annular.json must parse")
     })
 }
+
+// ---------------------------------------------------------------------------------------------
+// P6.M06A8 (R-RUSTPORT-P6-M06A8-LAD-MORZE-KORYTARZE2-Q1) - jednosc Pangei, partia 1:
+// most i usuwanie obcych mas z web `ensurePangeaSingleContinent` (gen-helpers.ts :4375).
+// ---------------------------------------------------------------------------------------------
+
+pub const MAPGEN_LANDSEA_PANGEA_BRIDGE_JSON: &str =
+    include_str!("../../data/derived/mapgen-landsea-pangea-bridge.json");
+
+/// Plik `mapgen-landsea-pangea-bridge.json` (web: `ensurePangeaSingleContinent` :4375).
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct MapgenLandseaPangeaBridgeFile {
+    pub meta: serde_json::Value,
+    pub bridge_skala_pola: f64,
+    pub bridge_baza: f64,
+    pub bridge_mnoznik: f64,
+    pub bridge_min: f64,
+    pub bridge_max: f64,
+    pub bridge_iter_max: usize,
+    pub bridge_zapas_sciezki: i64,
+    pub masa_obca_min: f64,
+    pub masa_obca_ulamek_glownej: f64,
+}
+
+pub fn parse_mapgen_landsea_pangea_bridge(
+) -> Result<MapgenLandseaPangeaBridgeFile, serde_json::Error> {
+    serde_json::from_str(MAPGEN_LANDSEA_PANGEA_BRIDGE_JSON)
+}
+
+/// Tabela mostow Pangei (jednorazowy odczyt; blad danych = panika).
+pub fn mapgen_landsea_pangea_bridge() -> &'static MapgenLandseaPangeaBridgeFile {
+    static TABLE: std::sync::OnceLock<MapgenLandseaPangeaBridgeFile> = std::sync::OnceLock::new();
+    TABLE.get_or_init(|| {
+        parse_mapgen_landsea_pangea_bridge().expect("mapgen-landsea-pangea-bridge.json must parse")
+    })
+}
