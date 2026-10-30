@@ -1,0 +1,7 @@
+M1 KILLED ['test manpower_cost_of_cost_mult_defaults_to_max_mult ... FAILED', 'test manpower_cost_of_matches_web_vectors ... FAILED', 'test result: FAILED. 3 passed; 2 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.29s'] rc= 101
+M2 KILLED ['test manpower_cost_of_scout_and_budynek_are_zero ... FAILED', 'test manpower_cost_of_matches_web_vectors ... FAILED', 'test result: FAILED. 3 passed; 2 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.31s'] rc= 101
+M3 KILLED ['test set_paused_keeps_rekrutacja_absent_and_does_not_mutate_input ... FAILED', 'test set_paused_matches_web_vectors ... FAILED', 'test result: FAILED. 3 passed; 2 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.25s'] rc= 101
+M4 KILLED ['test set_paused_keeps_rekrutacja_absent_and_does_not_mutate_input ... FAILED', 'test set_paused_matches_web_vectors ... FAILED', 'test result: FAILED. 3 passed; 2 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.25s'] rc= 101
+M5 KILLED ['test manpower_cost_of_cost_mult_defaults_to_max_mult ... FAILED', 'test manpower_cost_of_matches_web_vectors ... FAILED', 'test result: FAILED. 3 passed; 2 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.20s'] rc= 101
+restored_bytes_identical True
+EXIT 0

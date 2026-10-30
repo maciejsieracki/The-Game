@@ -49,30 +49,36 @@ Wektory: `rust-port/engine/tests/p6_8b_vectors/helpers.json` (generator `gen-p6-
 2. **Diakrytyki i `ł`.** Web `stripDiacritics` (NFD + usunięcie U+0300–U+036F + lower) NIE składa `ł`: `Słowianie` ≠ `Slowianie`. Pary testowe dla „tylko diakrytyki” używają znaków złożonych (np. `Sumér` = `Sumer`), a nie `ł`/`l`.
 3. **Puste wejścia po strip.** Wektory zawierają nacje/cywilizacje złożone wyłącznie ze znaków diakrytycznych (po strip = pusty napis).
 
-## Partie 8B-P1b-c2 (runda 4 Operatora)
+## Partie 8B-P1b-c2 (runda 4 Operatora; poprawka po zarzutach Evaluatora)
 
-- **c2a** (`manpowerCostOf`, `setPaused`): `manpower_cost_of(item, epoka, max_mult, cost_mult: Option)` (costMult domyslnie = maxMult), `set_paused`. Wektory `p1b-c2a.json` (10780 + 14 przypadkow) z prawdziwego `production.ts` przez loader TS. Mutacje M1-M5: 5 KILLED.
-- **c2b** (`availableReplacementsFor`): `available_replacements_for` + `ReplaceAvailabilityCtx`, `UnitReplaceRow`. Zbior realny (`units.json`) i syntetyczny (+ 'Wojownik próbny', 'Galera testowa', 'Jednostka bez typu' x2). 2592 przypadki (1278 niepustych). Mutacje M1-M15: 14 KILLED, M14 SURVIVED (rownowaznik, patrz nizej).
-- **c2c** (`availableProduction`): `available_production` + `ProductionAvailabilityCtx`, `BuildingAvailRow`. Wektory `p1b-c2c.json`: 700 przypadkow (320 kontekstow siatki + 126 kontekstow lancuchow `upgradeFrom`, x 2 zbiory), 5982 pozycje-budynki. Mutacje B1-B23 (B20 pominiete: wzorzec zduplikowany z `available_replacements_for`): 21 KILLED (w tym B16b); B16 i B17 SURVIVED (rownowazniki na dziedzinie, patrz nizej).
+- **c2a** (`manpowerCostOf`, `setPaused`): `manpower_cost_of(item, epoka, max_mult, cost_mult: Option)` (costMult domyslnie = maxMult), `set_paused`. Wektory `p1b-c2a.json` (10780 + 14 przypadkow) z prawdziwego `production.ts` przez loader TS. Mutacje M1-M5: 5/5 KILLED.
+- **c2b** (`availableReplacementsFor`): `available_replacements_for` + `ReplaceAvailabilityCtx`, `UnitReplaceRow`, komparator `cost_then_name_order` i `replacement_name_compare`. Wektory `p1b-c2b.json`: 2592 przypadki (1278 niepustych; zbior realny + syntetyczny: 'Wojownik próbny', 'Galera testowa', 'Jednostka bez typu' x2). Dodatkowo: 400 przypadkow sortowania z kosztami NaN/Infinity (`p1b-c2b-nan-sort.json`) i 42 039 par nazw wg ICU (`p1b-c2-icu-names.json`). Mutacje M1-M16: 16/16 KILLED.
+- **c2c** (`availableProduction`): `available_production` + `ProductionAvailabilityCtx`, `BuildingAvailRow`, `production_item_order`. Wektory `p1b-c2c.json`: 700 przypadkow (320 kontekstow siatki + 126 kontekstow lancuchow `upgradeFrom`, x 2 zbiory), 5982 pozycje-budynki. Dodatkowo: 400 przypadkow sortowania z kosztami NaN/Infinity (`p1b-c2c-nan-sort.json`) i test niezaleznosci od kolejnosci wejscia. Mutacje B1-B23 + B16b (24 wpisy): 23 KILLED, B17 SURVIVED (rownowaznik, ponizej).
 
 Zalozenia (ZALOZENIE, do weryfikacji):
-1. `replacement_name_compare` = `localeCompare` (ICU en-US) dla nazw z diakrytykami: poziom 1 = `strip_diacritics` + `ł`->`l` wg `locale_compare`; poziom 2 = liczba diakrytykow; poziom 3 = `locale_compare` na oryginalach. Pomiar w Node 22 `Intl.Collator('en-US')`: 5550/5550 par nazw z `units.json` zgodnych. Poza zbiorem zmierzonym zachowanie NIE jest zweryfikowane.
+1. `replacement_name_compare` = `localeCompare` (ICU en-US) dla nazw z diakrytykami: poziom 1 = `strip_diacritics` + `ł`->`l` wg `locale_compare`; poziom 2 = `locale_compare` na oryginalach (fallback UTF-16 dla znakow spoza ASCII). Poprzedni poziom 2 (liczba diakrytykow) BYL BLEDNY: na alfabecie polskim (male litery, pelne pary, 37 890 180) roznil sie od ICU w 2682 parach, np. "źą" vs "ża" (ICU -1, stary kod +1). Obecna wersja: 0 rozbieznosci na tym samym zbiorze (`dowody/pomiar-r4o-icu-diakrytyki.txt`) i 0 na 42 039 parach z testu. NIE_ZMIERZONO: wielkosc liter przy nazwach z diakrytykami (UTF-16 zamiast ICU) poza `units.json`.
 2. `ctx.epoch` / `ctx.buildingLevel` nie-skonczone = 1 (web `Number.isFinite`).
 3. `ctx.civKey`: `None` = `undefined`, `Some(None)` = `null`.
 4. `units` w kolejnosci `data.units`; `findUnit` = pierwszy wpis.
+5. Sortowanie (web `Array#sort`, V8): `js_array_sort_by` = CountAndMakeRun + BinaryInsertionSort, czyli algorytm V8 dla n < 64. Komparator z kosztem NaN zwraca Equal bez tie-breaku po nazwie (spec SortCompare: NaN -> +0), jak web. Procedura nie panikuje przy niespojnych komparatorach (w przeciwienstwie do `slice::sort_by`). Zgodnosc z V8 dla NaN potwierdzona testem na 800 przypadkach (n = 2..63). Dla n >= 64 bez scalania runow V8: przy spojnym porzadku wynik identyczny; dla NaN zgodnosci nie deklarujemy. Osiagalnosc kosztu NaN w danych gry: NIE_ZMIERZONO (wektory z weba nie maja NaN w kosztach wyjsciowych).
+6. Kolejnosc wejscia `available_production`: web wstawia budynki przed jednostkami, Rust `production_item_order` daje ten sam porzadek niezaleznie od kolejnosci wejscia (test `production_item_order_is_input_order_independent`).
 
-Rownowazniki (mutanty przezywajace, zob. `mut-p6-8b-c2b.py` / `mut-p6-8b-c2c.py`):
-- c2b M14 (poziom 2 diakrytykow usuniety): dla par o tym samym poziomie 1 roznica diakrytykow zawsze ustawia bazowa litere ASCII przed znakiem diakrytycznym (>= 0x80); poziom 3 (`locale_compare` na oryginalach, fallback UTF-16 dla nie-ASCII) daje ten sam porzadek. Wynik identyczny na 2592 przypadkach.
-- c2c B17 (`level` nie-skonczony nie normalizowany): `item_cost` dla budynku sam normalizuje nie-skonczony poziom do 1 (jak web), wynik identyczny.
-- c2c B16 (asymetryczny komparator budynki/jednostki): zmiana tylko jednej galezi (B,J) nie zmienia porzadku przy wejsciu budynki-przed-jednostkami (sortowanie stabilne, komparator zwraca `Greater` dla obu kierunkow miedzy typami). Zmiana obu galezi (B16b) jest zabijana. Ryzyko resztkowe: zalezne od kolejnosci wejscia.
+Rownowazniki:
+- c2c B17 (`level` nie-skonczony nie normalizowany w `available_production`): `level` jest uzywany tylko w `item_cost(Budynek, ..., level)` (`production_units.rs`, wywolanie w petli budynkow), a `item_cost` dla budynku normalizuje nie-skonczony poziom do 1 (`is_finite` -> `else 1.0`, jak web). Wynik identyczny dla kazdej wartosci nie-skonczonej i NaN: rownowaznik z kodu.
+
+Wycofane z poprzedniej wersji (r4 Operatora):
+- c2b M14 NIE jest rownowaznikiem. Poprzednie uzasadnienie (identyczny wynik na 2592 przypadkach) opieralo sie na zbiorze, ktory nie wykrywal bledu poziomu 2. Poprawiona funkcja: poziom 2 usuniety; mutant M14 (usuniecie poziomu 3) zabity; stary poziom 2 odtworzony jako M16 i zabity.
+- c2c B16 NIE jest rownowaznikiem i nie zalezy od kolejnosci wejscia: zabity testem `production_item_order_is_input_order_independent`.
 - c2b/c2c: galezi `Zastąp specjalnie` i zamiennikow cywilizacyjnych nie da sie pokryc samymi realnymi danymi (np. Nacja '' z niepustym `W zamian za` nie wystepuje); pokryte zbiorem syntetycznym.
 
-Weryfikacja niezalezna runda 4 (Operator-pomiary, `runs/R-RUSTPORT-P6-8B-PRODUKCJA-DOSTEPNOSC-REKRUTACJA-Q1/06-operator-pomiary-r4.md`, logi `dowody/pomiar-r4v-*.txt`):
-- Wektory: `git archive 91dc998a gra` -> trzy generatory (`gen-p6-8b-c2{a,b,c}-vectors.mjs`, Node v22.22.0, loader TS) -> `cmp` bajt w bajt z `p1b-c2{a,b,c}.json`: IDENTICAL x3.
-- Gate'y na `8aedd7b1d`: `cargo fmt --all -- --check` EXIT 0; `clippy -D warnings` (lib + 3 testy c2) EXIT 0; testy c2a 5/5, c2b 4/4, c2c 1/1; regresja lib 6/6, helpers 18/18, p1b 7/7.
-- Mutacje: c2a M1-M5 5/5 KILLED; c2b M1-M15 14 KILLED, M14 SURVIVED (rownowaznik, zob. wyzej); c2c B1-B23 bez B20: 21 KILLED, B16 i B17 SURVIVED (rownowazniki / ryzyko resztkowe, zob. wyzej).
-- Korekta skryptow mutacji: wzorce `M2`, `M7`, `M11` (`mut-p6-8b-c2b.py`) i `B19` (`mut-p6-8b-c2c.py`) byly zapisane przed `cargo fmt` i nie trafialy w kod (`pattern count 0`, mutant nie byl stosowany). Wzorce poprawiono do aktualnego formatowania i mutanty uruchomiono ponownie (c2b na zrodle `88991f78b`, B19 osobno na `8aedd7b1d`); wynik: M2, M7, M11 KILLED, B19 KILLED. Liczby z raportu operatora (14/15, 21/23) potwierdzone.
-- Zasada: w skryptach mutacji `pattern count != 1` nie jest liczone jako zabicie ani przezycie; logi nalezy czytac pod katem tego komunikatu.
+Weryfikacja r4 (obrona po zarzutach Evaluatora; logi `dowody/pomiar-r4o-*.txt`, kazdy z linia `EXIT`):
+- Gate'y na commicie poprawki: `cargo fmt --all -- --check` EXIT 0; `cargo clippy --lib --test p6_8b_c2a/c2b/c2c_vectors -- -D warnings` EXIT 0; testy c2a 5/5, c2b 6/6, c2c 3/3; regresja lib 6/6, helpers 18/18, p1b 7/7 (EXIT 0).
+- Wektory z weba 91dc998a (c2a/c2b/c2c, `cmp` IDENTICAL x3) bez zmian; wektory NaN i ICU generuje `gen-p6-8b-c2-icu-nan.mjs` (Node v22.22.0; komparatory przepisane 1:1 z production.ts, sortowanie = V8 `Array.prototype.sort`).
+- Logi `pomiar-r4v-*.txt` pochodza z commitu przed poprawka i sa historyczne; `pomiar-r4v-cargo-fmt-check.txt` byl pusty (0 bajtow, bez EXIT) i zostal zastapiony przez `pomiar-r4o-cargo-fmt-check.txt`.
+- Mutacje na biezacym zrodle (przywracanie bajt w bajt: `restored_bytes_identical True`): c2a 5/5 KILLED; c2b M1-M16 16/16 KILLED; c2c B1-B23 + B16b: 23 KILLED, B17 SURVIVED (rownowaznik). B20 wykonany (bramka narodowosci w petli jednostek `available_production`; c2b M10 dotyczy innej galezi).
+- Korekta skryptow mutacji: wzorce `M4`, `M5`, `M6`, `M11` (`mut-p6-8b-c2b.py`) byly niejednoznaczne na zrodle zawierajacym kopie galezi z `available_production` (`pattern count 2`, mutant nie byl stosowany) — doprecyzowane kontekstem linii. `M9`, `M14`, `M16`, `B22` przepisane do `cost_then_name_order` / `replacement_name_compare`. B20 zdefiniowany (wczesniej pominiety z uzasadnieniem bez dowodu).
+- Liczby koncowe: c2a 5/5; c2b 16/16; c2c 23/24 (jedyny przezyjacy B17 = rownowaznik z kodu).
+- Licznik rund bez zmian (4/5, naglowek dispatchu). P2 (28 symboli) nadal NIE wykonane (8B2 po B3).
 
 ## Partie 8B-P1b i 8B-P2 — do wykonania
 

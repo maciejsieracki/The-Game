@@ -2713,39 +2713,93 @@ pub fn available_replacements_for(
         }
     }
 
-    items.sort_by(|a, b| {
-        a.koszt
-            .partial_cmp(&b.koszt)
-            .unwrap_or(std::cmp::Ordering::Equal)
-            .then_with(|| replacement_name_compare(&a.nazwa, &b.nazwa))
-    });
+    js_array_sort_by(&mut items, cost_then_name_order);
     items
 }
 
-/// Liczba znakow z diakrytykiem (lub `ł`/`Ł`) w napisie: poziom 2 porownania (ICU: bez < z diakrytykiem).
-fn diacritic_count(text: &str) -> usize {
-    text.chars()
-        .filter(|&c| {
-            c == '\u{142}' || c == '\u{141}' || {
-                let lower = c.to_lowercase().collect::<String>();
-                strip_diacritics(&c.to_string()) != lower
-            }
-        })
-        .count()
-}
-
 /// Porownanie nazw jak web `a.localeCompare(b)` (ICU, en-US) dla nazw jednostek z diakrytykami.
-/// ZALOZENIE (pomiar w Node 22 `Intl.Collator('en-US')`, 5550/5550 par nazw z `units.json` zgodnych):
-/// poziom 1 = baza bez diakrytykow (`strip_diacritics`, `ł`->`l`) wg `locale_compare`; poziom 2 =
-/// liczba diakrytykow (mniej = wczesniej); poziom 3 = `locale_compare` na oryginalach.
-/// Poza zbiorem zmierzonym (inne alfabety) zachowanie NIE jest zweryfikowane.
+/// Poziom 1 = baza bez diakrytykow (`strip_diacritics`, `ł`->`l`) wg `locale_compare`; poziom 2 =
+/// `locale_compare` na oryginalach (UTF-16 dla znakow spoza ASCII).
+/// P6.8B-P1b-c2 (r4 obrona): poprzedni poziom 2 (liczba diakrytykow) BYL BLEDNY wobec ICU:
+/// na alfabecie polskim 2682 z 37 890 180 par (np. "źą" vs "ża": ICU -1, stary kod +1).
+/// Obecna postac: 0 rozbieznosci z ICU na tym samym zbiorze (pelne pary, Node 22); test:
+/// `tests/p6_8b_c2b_vectors.rs` (`replacement_name_compare_matches_icu_pairs`, 42 039 par).
+/// Wielkosc liter przy nazwach z diakrytykami (UTF-16 zamiast ICU) -- NIE_ZMIERZONO poza `units.json`.
 pub fn replacement_name_compare(a: &str, b: &str) -> std::cmp::Ordering {
     use crate::domain::recruitment::manpower::locale_compare;
     let base = |s: &str| strip_diacritics(s).replace('\u{142}', "l");
-    let primary = locale_compare(&base(a), &base(b)).cmp(&0);
-    primary
-        .then_with(|| diacritic_count(a).cmp(&diacritic_count(b)))
+    locale_compare(&base(a), &base(b))
+        .cmp(&0)
         .then_with(|| locale_compare(a, b).cmp(&0))
+}
+
+/// Porzadek jak web `items.sort` (koszt, potem `localeCompare` nazwy). Koszt NaN: web zwraca
+/// `NaN` z komparatora, a spec SortCompare zamienia NaN na +0 (= rowne) -- BEZ tie-breaku po nazwie.
+pub fn cost_then_name_order(a: &ProductionItem, b: &ProductionItem) -> std::cmp::Ordering {
+    use std::cmp::Ordering;
+    if a.koszt.is_nan() || b.koszt.is_nan() {
+        return Ordering::Equal;
+    }
+    if a.koszt != b.koszt {
+        return a.koszt.partial_cmp(&b.koszt).unwrap_or(Ordering::Equal);
+    }
+    replacement_name_compare(&a.nazwa, &b.nazwa)
+}
+
+/// Porzadek `availableProduction` jak web: budynki przed jednostkami, potem `cost_then_name_order`.
+/// Kolejnosc wejscia NIE wplywa na wynik (testowane na wejsciu jednostki-przed-budynkami).
+pub fn production_item_order(a: &ProductionItem, b: &ProductionItem) -> std::cmp::Ordering {
+    use std::cmp::Ordering;
+    match (a.kind, b.kind) {
+        (ProductionKind::Budynek, ProductionKind::Jednostka) => Ordering::Less,
+        (ProductionKind::Jednostka, ProductionKind::Budynek) => Ordering::Greater,
+        _ => cost_then_name_order(a, b),
+    }
+}
+
+/// Sortowanie jak V8 `Array.prototype.sort` dla n < 64 (TimSort: CountAndMakeRun + BinaryInsertionSort;
+/// dla n < 64 V8 nie scala runow). Komparator NaN traktowany jak w V8/spec (= Equal). Procedura nie
+/// panikuje dla niespojnych komparatorow (w odroznieniu od `slice::sort_by`). Dla n >= 64 ta sama
+/// procedura bez scalania runow V8: przy spojnym porzadku wynik jest identyczny; dla NaN nie
+/// deklarujemy zgodnosci poza n < 64 (koszt NaN w danych gry nie jest zmierzony jako osiagalny).
+pub fn js_array_sort_by<T>(items: &mut [T], cmp: impl Fn(&T, &T) -> std::cmp::Ordering) {
+    use std::cmp::Ordering;
+    let n = items.len();
+    if n < 2 {
+        return;
+    }
+    // CountAndMakeRun(0, n)
+    let descending = cmp(&items[1], &items[0]) == Ordering::Less;
+    let mut run = 2;
+    while run < n {
+        let order = cmp(&items[run], &items[run - 1]);
+        let continues = if descending {
+            order == Ordering::Less
+        } else {
+            order != Ordering::Less
+        };
+        if !continues {
+            break;
+        }
+        run += 1;
+    }
+    if descending {
+        items[..run].reverse();
+    }
+    // BinaryInsertionSort(0, run, n)
+    for start in run..n {
+        let mut left = 0;
+        let mut right = start;
+        while left < right {
+            let mid = left + ((right - left) >> 1);
+            if cmp(&items[start], &items[mid]) == Ordering::Less {
+                right = mid;
+            } else {
+                left = mid + 1;
+            }
+        }
+        items[left..=start].rotate_right(1);
+    }
 }
 
 // ---------------------------------------------------------------------------
@@ -2995,15 +3049,7 @@ pub fn available_production(
     }
 
     // Budynki przed jednostkami, potem najtansze, potem nazwa (localeCompare).
-    items.sort_by(|a, b| match (a.kind, b.kind) {
-        (ProductionKind::Budynek, ProductionKind::Jednostka) => std::cmp::Ordering::Less,
-        (ProductionKind::Jednostka, ProductionKind::Budynek) => std::cmp::Ordering::Greater,
-        _ => a
-            .koszt
-            .partial_cmp(&b.koszt)
-            .unwrap_or(std::cmp::Ordering::Equal)
-            .then_with(|| replacement_name_compare(&a.nazwa, &b.nazwa)),
-    });
+    js_array_sort_by(&mut items, production_item_order);
     items
 }
 

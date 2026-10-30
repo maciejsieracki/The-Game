@@ -1,0 +1,14 @@
+    Finished `test` profile [unoptimized] target(s) in 0.03s
+     Running tests/p6_8b_c2b_vectors.rs (target/debug/deps/p6_8b_c2b_vectors-7ab9b9678a0fb039)
+
+running 6 tests
+test replacement_name_compare_matches_icu_measured_pairs ... ok
+test current_unit_is_never_its_own_replacement ... ok
+test unknown_current_unit_returns_empty_list ... ok
+test replacement_sort_matches_v8_with_nan_costs ... ok
+test available_replacements_match_web_vectors ... ok
+test replacement_name_compare_matches_icu_pairs_file ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.53s
+
+EXIT 0

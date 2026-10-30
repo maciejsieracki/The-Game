@@ -1,0 +1,5 @@
+B21 KILLED ['test available_production_matches_web_vectors ... FAILED', 'test result: FAILED. 2 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.47s'] rc= 101
+B22 KILLED ['test available_production_matches_web_vectors ... FAILED', 'test available_production_sort_matches_v8_with_nan_costs ... FAILED'] rc= 101
+B23 KILLED ['test available_production_matches_web_vectors ... FAILED', 'test result: FAILED. 2 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.14s'] rc= 101
+restored_bytes_identical True
+EXIT 0

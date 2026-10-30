@@ -26,13 +26,17 @@ allm = {
     "B13": ("        let is_scout_exception = typ == \"Civilian\";", "        let is_scout_exception = false;"),
     "B14": ("        } else if civ_has_replacement_for(&repl_rows, &u.cost.jednostka, civ) {", "        } else if false {"),
     "B15": ("        if unit_epoch >= 2.0\n            && !built.contains(&\"koszary\")", "        if unit_epoch >= 3.0\n            && !built.contains(&\"koszary\")"),
-    "B16": ("(ProductionKind::Budynek, ProductionKind::Jednostka) => std::cmp::Ordering::Less,", "(ProductionKind::Budynek, ProductionKind::Jednostka) => std::cmp::Ordering::Greater,"),
-    "B16b": ("(ProductionKind::Jednostka, ProductionKind::Budynek) => std::cmp::Ordering::Greater,", "(ProductionKind::Jednostka, ProductionKind::Budynek) => std::cmp::Ordering::Less,"),
+    # (r4 obrona) kolejnosc budynki-przed-jednostkami w production_item_order (wejscie permutowane w testach)
+    "B16": ("(ProductionKind::Budynek, ProductionKind::Jednostka) => Ordering::Less,", "(ProductionKind::Budynek, ProductionKind::Jednostka) => Ordering::Greater,"),
+    "B16b": ("(ProductionKind::Jednostka, ProductionKind::Budynek) => Ordering::Greater,", "(ProductionKind::Jednostka, ProductionKind::Budynek) => Ordering::Less,"),
     "B17": ("    let level = if ctx.building_level.is_finite() {", "    let level = if true {"),
     "B18": ("        if typ == \"Naval\" && !ctx.city_has_coast_or_river {\n            continue;", "        if false {\n            continue;"),
     "B19": ("        if u.cost.super_jednostka.as_deref() == Some(\"TAK\")\n            && ctx\n                .alive_unit_type_names\n                .contains(&u.cost.jednostka.as_str())\n        {\n            continue;", "        if false {\n            continue;"),
     "B21": ("        if !is_blank_replacement(zamiast) {\n            if !is_civ_special_replacement(&u.as_replacement_row(), civ) {", "        if !is_blank_replacement(zamiast) {\n            if false {"),
-    "B22": (".then_with(|| replacement_name_compare(&a.nazwa, &b.nazwa)),", ".then_with(|| std::cmp::Ordering::Equal),"),
+    # (r4 obrona) tie-break po nazwie w cost_then_name_order (wspolny z c2b)
+    "B22": ("    replacement_name_compare(&a.nazwa, &b.nazwa)\n}", "    std::cmp::Ordering::Equal\n}"),
+    # (r4 obrona) B20 = bramka narodowosci jednostek w petli jednostek available_production (inna galaz niz c2b M10: wzorzec z `civ`, nie `civ_nation`)
+    "B20": ("        if !unit_allowed_for_civ_nation(nacja, civ) {", "        if false {"),
     "B23": ("                item_cost(ProductionKind::Budynek, id, &data, level),", "                item_cost(ProductionKind::Budynek, id, &data, 1.0),"),
 }
 sel = sys.argv[1:] or list(allm)

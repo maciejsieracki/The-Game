@@ -1,0 +1,3 @@
+M11 KILLED ['test available_replacements_match_web_vectors ... FAILED', 'test result: FAILED. 5 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.43s'] rc= 101
+restored_bytes_identical True
+EXIT 0

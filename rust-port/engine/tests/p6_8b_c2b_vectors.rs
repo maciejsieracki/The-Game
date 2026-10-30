@@ -269,3 +269,72 @@ fn replacement_name_compare_matches_icu_measured_pairs() {
     assert_eq!(replacement_name_compare("Wojownik", "Wojownik"), Equal);
     assert_eq!(replacement_name_compare("Wojownik", "wojownik"), Greater);
 }
+
+const ICU_NAMES_JSON: &str = include_str!("p6_8b_vectors/p1b-c2-icu-names.json");
+const NAN_SORT_C2B_JSON: &str = include_str!("p6_8b_vectors/p1b-c2b-nan-sort.json");
+
+/// P6.8B-P1b-c2 (r4 obrona, zarzut 3): 42 039 par nazw wg ICU (generator gen-p6-8b-c2-icu-nan.mjs),
+/// w tym wszystkie pary o tej samej bazie z roznica liczby diakrytykow. Stary poziom 2 (liczba
+/// diakrytykow) daje tu rozbieznosci (np. "źą" vs "ża": ICU -1); test zabija ten blad.
+#[test]
+fn replacement_name_compare_matches_icu_pairs_file() {
+    use civ_engine::domain::production_units::replacement_name_compare;
+    use std::cmp::Ordering::{Equal, Greater, Less};
+    let pairs: Value = serde_json::from_str(ICU_NAMES_JSON).expect("p1b-c2-icu-names");
+    let rows = pairs.as_array().expect("tablica par");
+    assert_eq!(rows.len(), 42039);
+    let mut bad = Vec::new();
+    for row in rows {
+        let a = row[0].as_str().expect("a");
+        let b = row[1].as_str().expect("b");
+        let want = row[2].as_i64().expect("znak");
+        let got = match replacement_name_compare(a, b) {
+            Less => -1,
+            Equal => 0,
+            Greater => 1,
+        };
+        if got != want {
+            bad.push(format!("{a}|{b}: icu {want} rust {got}"));
+        }
+    }
+    assert!(
+        bad.is_empty(),
+        "rozbieznosci z ICU ({}): {:?}",
+        bad.len(),
+        &bad[..bad.len().min(10)]
+    );
+}
+
+/// Sortowanie jak web `items.sort` z kosztami NaN/Infinity i duplikatami nazw: wynik = V8
+/// (`Array.prototype.sort`, komparator 1:1 z production.ts), 400 przypadkow, n = 2..63.
+#[test]
+fn replacement_sort_matches_v8_with_nan_costs() {
+    use civ_engine::domain::production_units::{cost_then_name_order, js_array_sort_by};
+    let cases: Value = serde_json::from_str(NAN_SORT_C2B_JSON).expect("p1b-c2b-nan-sort");
+    let cases = cases.as_array().expect("tablica przypadkow");
+    assert_eq!(cases.len(), 400);
+    for (ci, case) in cases.iter().enumerate() {
+        let mut items: Vec<ProductionItem> = case["items"]
+            .as_array()
+            .expect("items")
+            .iter()
+            .map(|it| ProductionItem {
+                kind: ProductionKind::Jednostka,
+                id: it["id"].as_str().expect("id").to_string(),
+                nazwa: it["nazwa"].as_str().expect("nazwa").to_string(),
+                koszt: dec(&it["koszt"]),
+                postep: None,
+                is_general: None,
+            })
+            .collect();
+        js_array_sort_by(&mut items, cost_then_name_order);
+        let got: Vec<&str> = items.iter().map(|it| it.id.as_str()).collect();
+        let want: Vec<&str> = case["order"]
+            .as_array()
+            .expect("order")
+            .iter()
+            .map(|v| v.as_str().expect("id"))
+            .collect();
+        assert_eq!(got, want, "przypadek {ci}");
+    }
+}

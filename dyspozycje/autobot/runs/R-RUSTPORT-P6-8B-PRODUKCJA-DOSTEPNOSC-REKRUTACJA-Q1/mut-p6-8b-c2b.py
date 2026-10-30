@@ -18,27 +18,31 @@ allm = {
     # koszary od epoki 3 zamiast 2
     "M3": ("    if unit_epoch >= 2.0\n        && !ctx.built_building_ids.contains(&\"koszary\")", "    if unit_epoch >= 3.0\n        && !ctx.built_building_ids.contains(&\"koszary\")"),
     # bramka wody (Naval) wylaczona
-    "M4": ("    if typ == \"Naval\" && !ctx.city_has_coast_or_river {", "    if typ == \"Navalx\" && !ctx.city_has_coast_or_river {"),
+    # (r4 obrona) wzorce z pocz. nowej linii: w pliku jest tez kopia galezi w available_production (wciecie 8)
+    "M4": ("\n    if typ == \"Naval\" && !ctx.city_has_coast_or_river {", "\n    if typ == \"Navalx\" && !ctx.city_has_coast_or_river {"),
     # bramka zapasu brazu wylaczona
-    "M5": ("        if (surowiec == \"braz\" && !empire_stock_has(stock, \"braz\"))", "        if (false && !empire_stock_has(stock, \"braz\"))"),
+    "M5": ("\n        if (surowiec == \"braz\" && !empire_stock_has(stock, \"braz\"))", "\n        if (false && !empire_stock_has(stock, \"braz\"))"),
     # bramka super-jednostki: TAK -> NIE
-    "M6": ("    if u.cost.super_jednostka.as_deref() == Some(\"TAK\")", "    if u.cost.super_jednostka.as_deref() == Some(\"NIE\")"),
+    "M6": ("\n    if u.cost.super_jednostka.as_deref() == Some(\"TAK\")", "\n    if u.cost.super_jednostka.as_deref() == Some(\"NIE\")"),
     # galaz A: sprawdzenie zamiennika specjalnego pominiete
     "M7": ("        if !is_blank_replacement(zamiast)\n            && !is_civ_special_replacement(&u.as_replacement_row(), civ)", "        if false\n            && !is_blank_replacement(zamiast)\n            && !is_civ_special_replacement(&u.as_replacement_row(), civ)"),
     # galaz B: brak deduplikacji wzgledem A
     "M8": ("            if name.is_empty() || name == current_unit_name || seen.contains(name) {", "            if name.is_empty() || name == current_unit_name {"),
     # sortowanie: brak tie-break po nazwie
-    "M9": (".then_with(|| replacement_name_compare(&a.nazwa, &b.nazwa))", ".then_with(|| std::cmp::Ordering::Equal)"),
+    # (r4 obrona) pozniej przeniesione do cost_then_name_order: tie-break po nazwie usuniety
+    "M9": ("    replacement_name_compare(&a.nazwa, &b.nazwa)\n}", "    std::cmp::Ordering::Equal\n}"),
     # unitAllowedForCivNation pominiete
     "M10": ("    if !unit_allowed_for_civ_nation(nacja, civ_nation) {", "    if false && !unit_allowed_for_civ_nation(nacja, civ_nation) {"),
     # epoka nie-skonczona: brak normalizacji do 1
-    "M11": ("    let epoch = if ctx.epoch.is_finite() {\n        ctx.epoch\n    } else {\n        1.0\n    };", "    let epoch = ctx.epoch;"),
+    "M11": ("    let current_typ = js_trim(current.typ.as_deref().unwrap_or(\"\"));\n    let epoch = if ctx.epoch.is_finite() {\n        ctx.epoch\n    } else {\n        1.0\n    };", "    let current_typ = js_trim(current.typ.as_deref().unwrap_or(\"\"));\n    let epoch = ctx.epoch;"),
     # filtr Typ w galezi A: pusty Typ przepuszczany
     "M12": ("        if utyp.is_empty() || utyp != current_typ {", "        if utyp != current_typ {"),
     # koszt bez skali epoki
     "M13": ("    let base = scale_cost_by_epoch(\n        unit_cost_from_def(&u.cost),\n        &epoch_input(u.cost.epoka.as_deref()),\n    );", "    let base = unit_cost_from_def(&u.cost);"),
-    # poziom 2 porownania (diakrytyki) usuniety
-    "M14": (".then_with(|| diacritic_count(a).cmp(&diacritic_count(b)))", ".then_with(|| std::cmp::Ordering::Equal)"),
+    # (r4 obrona) poziom 3 (locale_compare na oryginalach) usuniety: pary o tej samej bazie -> rowne
+    "M14": ("        .cmp(&0)\n        .then_with(|| locale_compare(a, b).cmp(&0))\n}", "        .cmp(&0)\n}"),
+    # (r4 obrona) STARE zachowanie (przed poprawka): poziom 2 = liczba diakrytykow -> musi byc ZABITE
+    "M16": ("        .cmp(&0)\n        .then_with(|| locale_compare(a, b).cmp(&0))\n}", "        .cmp(&0)\n        .then_with(|| {\n            let dc = |t: &str| t.chars().filter(|&c| c == '\\u{142}' || c == '\\u{141}' || { let l = c.to_lowercase().collect::<String>(); strip_diacritics(&c.to_string()) != l }).count();\n            dc(a).cmp(&dc(b))\n        })\n        .then_with(|| locale_compare(a, b).cmp(&0))\n}"),
     # ł nie mapowane na l w poziomie 1
     "M15": ("let base = |s: &str| strip_diacritics(s).replace('\\u{142}', \"l\");", "let base = |s: &str| strip_diacritics(s);"),
 }

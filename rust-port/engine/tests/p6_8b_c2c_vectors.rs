@@ -269,3 +269,77 @@ fn available_production_matches_web_vectors() {
         }
     }
 }
+
+const NAN_SORT_C2C_JSON: &str = include_str!("p6_8b_vectors/p1b-c2c-nan-sort.json");
+
+fn sort_item(kind: ProductionKind, id: &str, nazwa: &str, koszt: f64) -> ProductionItem {
+    ProductionItem {
+        kind,
+        id: id.to_string(),
+        nazwa: nazwa.to_string(),
+        koszt,
+        postep: None,
+        is_general: None,
+    }
+}
+
+/// P6.8B-P1b-c2c (r4 obrona, zarzut 2 / mutant B16): kolejnosc wejscia nie wplywa na wynik.
+/// Web wstawia budynki przed jednostkami, wiec wejscie "jednostka przed budynkiem" nigdy nie
+/// wystepuje w grze -- test wymusza ja jawnie; komparator asymetryczny daje wtedy zly porzadek.
+#[test]
+fn production_item_order_is_input_order_independent() {
+    use civ_engine::domain::production_units::{js_array_sort_by, production_item_order};
+    let unit = sort_item(ProductionKind::Jednostka, "lucznik", "Łucznik", 1.0);
+    let building = sort_item(ProductionKind::Budynek, "mury", "Mury", 5.0);
+    for input in [
+        vec![unit.clone(), building.clone()],
+        vec![building.clone(), unit.clone()],
+    ] {
+        let mut v = input;
+        js_array_sort_by(&mut v, production_item_order);
+        assert_eq!(
+            v[0].kind,
+            ProductionKind::Budynek,
+            "budynek przed jednostka"
+        );
+        assert_eq!(v[1].kind, ProductionKind::Jednostka);
+    }
+}
+
+/// Sortowanie `availableProduction` z kosztami NaN/Infinity, typami i duplikatami nazw:
+/// wynik = V8 `Array.prototype.sort` z komparatorem 1:1 z production.ts (400 przypadkow, n = 2..63).
+#[test]
+fn available_production_sort_matches_v8_with_nan_costs() {
+    use civ_engine::domain::production_units::{js_array_sort_by, production_item_order};
+    let cases: Value = serde_json::from_str(NAN_SORT_C2C_JSON).expect("p1b-c2c-nan-sort");
+    let cases = cases.as_array().expect("tablica przypadkow");
+    assert_eq!(cases.len(), 400);
+    for (ci, case) in cases.iter().enumerate() {
+        let mut items: Vec<ProductionItem> = case["items"]
+            .as_array()
+            .expect("items")
+            .iter()
+            .map(|it| {
+                let kind = match it["kind"].as_str().expect("kind") {
+                    "budynek" => ProductionKind::Budynek,
+                    _ => ProductionKind::Jednostka,
+                };
+                sort_item(
+                    kind,
+                    it["id"].as_str().expect("id"),
+                    it["nazwa"].as_str().expect("nazwa"),
+                    dec(&it["koszt"]),
+                )
+            })
+            .collect();
+        js_array_sort_by(&mut items, production_item_order);
+        let got: Vec<&str> = items.iter().map(|it| it.id.as_str()).collect();
+        let want: Vec<&str> = case["order"]
+            .as_array()
+            .expect("order")
+            .iter()
+            .map(|v| v.as_str().expect("id"))
+            .collect();
+        assert_eq!(got, want, "przypadek {ci}");
+    }
+}
