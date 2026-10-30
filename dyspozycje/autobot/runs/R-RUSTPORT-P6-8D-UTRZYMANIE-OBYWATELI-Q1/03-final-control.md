@@ -1,3 +1,23 @@
+STATUS: PASS-WITH-NOTES
+DOMAIN: GAME
+TEMAT: R-RUSTPORT-P6-8D-UTRZYMANIE-OBYWATELI-Q1
+GOAL: citizen-resource-upkeep, gold-deficit, mennica-zloto-grace, wealth (w tym wealthParamsWith*) zaportowane z weba 91dc998a z wektorami z uruchomionego weba i mutacjami KILLED.
+ZMIANY/COMMIT: Final Control r4 nad `6189fb78` (kod `8f866ee2`). Allowlista `a2e6f837..8f866ee2` = 8 plikow (2 gen, 2 mut, 2 testy, 2 wektory); brak zmian w gra/, renderer/, src-tauri/, Cargo.toml, WERSJE.md, turn_economy.rs. `git diff --check` czysty. Wektory <= 1,33 MB.
+TESTY (moje uruchomienie, CARGO_INCREMENTAL=0, DEBUG=0):
+- cargo fmt --all -- --check: EXIT 0
+- cargo clippy --all-targets -- -D warnings: EXIT 0
+- cargo test --no-fail-fast: EXIT 0, passed=1436, failed=0
+- Mutacje samodzielne: `pula >= prog` -> `>` KILLED (p6_8d_wealth advance_sequences_match_web_vectors, panic); usuniecie `is_finite` w pick (turn_economy.rs:483) KILLED (p6_8d_gold_deficit build_params_matches_web_vectors, panic). turn_economy.rs przywrocony, drzewo czyste.
+- Pozostale mutacje: wg Evaluatora r4 (6/6 r4) i weryfikatora r4 (17/17 i 14/14 KILLED).
+ZARZUTY: Evaluator r4 = 0 zarzutow. Notatki: (1) brak dokumentu P6-8-MIASTA-PODZIAL.md w HEAD = ODDAL (zalozenie Z-R4-1: dokumentacja w raportach 02-06); (2) state.rs nie podpiety (wealth :1661, :1759) = ODDAL jako NASTEPNA-PARTIA, 8D nie jest zintegrowane do czasu tej partii; (3) mut-*.sh KILLED takze po bledzie kompilacji = ODDAL (higiena; 6 mutacji r4 potwierdzone jako exit 101); (4) numeracja rund = ODDAL. NAPRAW: brak. DO DECYZJI CZLOWIEKA: brak.
+BLOKADY: brak
+RUNDY: 4/5; werdykt koncowy PASS-WITH-NOTES
+NASTEPNY KROK: integracja orkiestratora. SHA do integracji: kod `8f866ee2`, raporty `41e98956`, `6189fb78` (+ commit tego raportu). Kolejnosc wzgledem origin/rust-port/parity-v2 (db102531): galaz 8D rozwidla sie od merge-base a8f4c7ee; parity-v2 dodalo m06a9 (mapgen/landsea.rs, derived.rs, testy p6_m06a9_*) - pliki rozlaczne z 8D. Zintegrowac 8D (cherry-pick/merge) na aktualny parity-v2 PO ostatnim pushu m06a9 i powtorzyc fmt/clippy/test po integracji. Potem osobna partia state.rs.
+DEPLOY/PUSH: NIE WYKONANO
+
+---
+HISTORIA (poprzednie rundy, bez zmian):
+
 STATUS: FAIL
 DOMAIN: GAME
 TEMAT: R-RUSTPORT-P6-8D-UTRZYMANIE-OBYWATELI-Q1
