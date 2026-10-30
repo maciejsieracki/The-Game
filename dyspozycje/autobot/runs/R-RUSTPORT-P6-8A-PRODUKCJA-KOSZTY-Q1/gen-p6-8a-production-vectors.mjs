@@ -310,6 +310,8 @@ for (const s of SURO) {
 const stripInputs = new Set();
 for (let c = 0xc0; c <= 0x17f; c++) stripInputs.add(String.fromCharCode(c));
 for (const s of ['  Żółw ', 'ĄĘ', 'łódź', 'ŚĆŹŻ', 'İstanbul', 'Brąz', 'Żelazo', 'Kamień', 'Wręcz', 'ＡＢＣ', 'ΑΒΓ', 'Ế']) stripInputs.add(s);
+// znaki laczace na granicach zakresu U+0300-U+036F (usuwane przez web)
+for (const s of ['̀', 'ͯ', 'Ͱ', 'aͯ', 'é', 'òͯ', 'xͮ']) stripInputs.add(s);
 for (const b of allBuildings) if (b.nazwa) stripInputs.add(b.nazwa);
 for (const u of allUnits) if (typeof u.Surowiec === 'string') stripInputs.add(u.Surowiec);
 const stripCases = [...stripInputs].map((input) => ({ input, output: STRIP.stripDiacritics(input) }));

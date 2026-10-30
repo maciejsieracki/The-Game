@@ -9,12 +9,14 @@
 use std::collections::{BTreeMap, HashSet};
 
 use civ_engine::domain::building_costs::p6_7b::{building_cost_pace_multiplier, PaceInput};
-use civ_engine::domain::building_costs::repin_b2::{CostMarker, MarkerValue, GLOBAL_BUILDING_PROD_MULT};
+use civ_engine::domain::building_costs::repin_b2::{
+    CostMarker, MarkerValue, GLOBAL_BUILDING_PROD_MULT,
+};
 use civ_engine::domain::production_units::{
-    building_level_for_epoch, building_location_allowed, building_production_item, empire_stock_has,
-    item_cost, strip_diacritics, unit_production_item, unit_stock_shortfall_label, BuildingCostRow,
-    ProductionData, ProductionKind, UnitCostRow, EPOCH_BY_NAME, RECRUIT_UNITS_PER_TURN,
-    default_unit_cost,
+    building_level_for_epoch, building_location_allowed, building_production_item,
+    default_unit_cost, empire_stock_has, item_cost, strip_diacritics, unit_production_item,
+    unit_stock_shortfall_label, BuildingCostRow, ProductionData, ProductionKind, UnitCostRow,
+    EPOCH_BY_NAME, RECRUIT_UNITS_PER_TURN,
 };
 use civ_engine::domain::recruitment::army_merge::UnitCostPace;
 use civ_engine::domain::types::Difficulty;
@@ -50,10 +52,12 @@ fn num_or_nan(row: &Value, key: &str) -> f64 {
     row.get(key).map_or(f64::NAN, dec)
 }
 
+/// Pole liczbowe: nieobecne / `null` / napis (web `typeof !== 'number'`) = `None`.
 fn opt_num(row: &Value, key: &str) -> Option<f64> {
     match row.get(key) {
-        None | Some(Value::Null) => None,
-        Some(v) => Some(dec(v)),
+        Some(v @ Value::Number(_)) => Some(dec(v)),
+        Some(v @ Value::Object(_)) => Some(dec(v)),
+        _ => None,
     }
 }
 
@@ -158,16 +162,35 @@ fn vectors_constants_match_web() {
     let c = &root["constants"];
     let epochs: Vec<(String, u32)> = c["EPOCH_BY_NAME"]
         .as_object()
-        .map(|m| m.iter().map(|(k, v)| (k.clone(), v.as_u64().unwrap() as u32)).collect())
+        .map(|m| {
+            m.iter()
+                .map(|(k, v)| (k.clone(), v.as_u64().unwrap() as u32))
+                .collect()
+        })
         .unwrap();
-    let mut rust_epochs: Vec<(String, u32)> = EPOCH_BY_NAME.iter().map(|(k, v)| (k.to_string(), *v)).collect();
+    let mut rust_epochs: Vec<(String, u32)> = EPOCH_BY_NAME
+        .iter()
+        .map(|(k, v)| (k.to_string(), *v))
+        .collect();
     let mut want = epochs.clone();
     rust_epochs.sort();
     want.sort();
     assert_eq!(rust_epochs, want, "EPOCH_BY_NAME");
-    assert_eq!(RECRUIT_UNITS_PER_TURN as u64, c["RECRUIT_UNITS_PER_TURN"].as_u64().unwrap());
-    assert!(same_num(default_unit_cost(), dec(&c["DEFAULT_UNIT_COST"])), "DEFAULT_UNIT_COST");
-    assert!(same_num(GLOBAL_BUILDING_PROD_MULT, dec(&c["GLOBAL_BUILDING_PROD_MULT"])), "GLOBAL_BUILDING_PROD_MULT");
+    assert_eq!(
+        RECRUIT_UNITS_PER_TURN as u64,
+        c["RECRUIT_UNITS_PER_TURN"].as_u64().unwrap()
+    );
+    assert!(
+        same_num(default_unit_cost(), dec(&c["DEFAULT_UNIT_COST"])),
+        "DEFAULT_UNIT_COST"
+    );
+    assert!(
+        same_num(
+            GLOBAL_BUILDING_PROD_MULT,
+            dec(&c["GLOBAL_BUILDING_PROD_MULT"])
+        ),
+        "GLOBAL_BUILDING_PROD_MULT"
+    );
     for (key, value) in c["KOSZT_BUDYNKOW_PACE"].as_object().unwrap() {
         let got = building_cost_pace_multiplier(PaceInput::Key(key));
         assert!(same_num(got, dec(value)), "KOSZT_BUDYNKOW_PACE[{key}]");
@@ -179,7 +202,11 @@ fn vectors_item_cost_match_web() {
     let root: Value = serde_json::from_str(PROD_JSON).unwrap();
     let data = load_data(&root);
     let cases = root["itemCost"].as_array().unwrap();
-    assert!(cases.len() >= 900, "za malo przypadkow itemCost: {}", cases.len());
+    assert!(
+        cases.len() >= 900,
+        "za malo przypadkow itemCost: {}",
+        cases.len()
+    );
     for c in cases {
         let got = item_cost(
             kind(c["kind"].as_str().unwrap()),
@@ -188,7 +215,13 @@ fn vectors_item_cost_match_web() {
             dec(&c["level"]),
         );
         let want = dec(&c["cost"]);
-        assert!(same_num(got, want), "itemCost {} {} level={}: {got} != {want}", c["kind"], c["id"], c["level"]);
+        assert!(
+            same_num(got, want),
+            "itemCost {} {} level={}: {got} != {want}",
+            c["kind"],
+            c["id"],
+            c["level"]
+        );
     }
 }
 
@@ -204,7 +237,12 @@ fn vectors_building_level_for_epoch_match_web() {
             c["gate"].as_array().map(|pairs| {
                 pairs
                     .iter()
-                    .map(|p| (p[0].as_str().unwrap().to_string(), p[1].as_str().unwrap().to_string()))
+                    .map(|p| {
+                        (
+                            p[0].as_str().unwrap().to_string(),
+                            p[1].as_str().unwrap().to_string(),
+                        )
+                    })
                     .collect()
             })
         };
@@ -219,7 +257,10 @@ fn vectors_building_level_for_epoch_match_web() {
             unlocked.as_ref(),
         );
         let want = dec(&c["level"]);
-        assert!(same_num(got, want), "buildingLevelForEpoch {c}: {got} != {want}");
+        assert!(
+            same_num(got, want),
+            "buildingLevelForEpoch {c}: {got} != {want}"
+        );
     }
 }
 
@@ -251,8 +292,17 @@ fn vectors_building_production_items_match_web() {
             (want, Some(item)) => {
                 assert_eq!(item.kind, ProductionKind::Budynek, "{c}");
                 assert_eq!(item.id, want["id"].as_str().unwrap(), "{c}");
-                assert_eq!(item.nazwa, want["nazwa"].as_str().unwrap_or(&item.nazwa), "{c}");
-                assert!(same_num(item.koszt, dec(&want["koszt"])), "buildingProductionItem {c}: {} != {}", item.koszt, dec(&want["koszt"]));
+                assert_eq!(
+                    item.nazwa,
+                    want["nazwa"].as_str().unwrap_or(&item.nazwa),
+                    "{c}"
+                );
+                assert!(
+                    same_num(item.koszt, dec(&want["koszt"])),
+                    "buildingProductionItem {c}: {} != {}",
+                    item.koszt,
+                    dec(&want["koszt"])
+                );
             }
             (want, got) => panic!("buildingProductionItem {c}: web={want} rust={got:?}"),
         }
@@ -286,7 +336,12 @@ fn vectors_unit_production_items_match_web() {
             (want, Some(item)) => {
                 assert_eq!(item.kind, ProductionKind::Jednostka, "{c}");
                 assert_eq!(item.id, want["id"].as_str().unwrap(), "{c}");
-                assert!(same_num(item.koszt, dec(&want["koszt"])), "unitProductionItem {c}: {} != {}", item.koszt, dec(&want["koszt"]));
+                assert!(
+                    same_num(item.koszt, dec(&want["koszt"])),
+                    "unitProductionItem {c}: {} != {}",
+                    item.koszt,
+                    dec(&want["koszt"])
+                );
             }
             (want, got) => panic!("unitProductionItem {c}: web={want} rust={got:?}"),
         }
@@ -299,7 +354,11 @@ fn vectors_location_match_web() {
     for c in root["location"].as_array().unwrap() {
         let lok = c["lokalizacja"].as_str();
         let cap = c["isCapital"].as_bool();
-        assert_eq!(building_location_allowed(lok, cap), c["allowed"].as_bool().unwrap(), "{c}");
+        assert_eq!(
+            building_location_allowed(lok, cap),
+            c["allowed"].as_bool().unwrap(),
+            "{c}"
+        );
     }
 }
 
@@ -335,6 +394,77 @@ fn vectors_strip_diacritics_match_web() {
     assert!(cases.len() >= 200);
     for c in cases {
         let input = c["input"].as_str().unwrap();
-        assert_eq!(strip_diacritics(input), c["output"].as_str().unwrap(), "stripDiacritics({input:?})");
+        assert_eq!(
+            strip_diacritics(input),
+            c["output"].as_str().unwrap(),
+            "stripDiacritics({input:?})"
+        );
     }
+}
+
+// ---------------------------------------------------------------------------
+// unitCostFromDef / DEFAULT_UNIT_COST / DEFAULT_COST_BY_ROLE dla trzech wariantow miasto-params:
+// realny, brak kluczy (literalne fallbacki web), inne wartosci (w tym 0 i null).
+// ---------------------------------------------------------------------------
+
+const DEFAULTS_REALNY: &str = include_str!("p6_8a_vectors/defaults-realny.json");
+const DEFAULTS_BRAK_ROL: &str = include_str!("p6_8a_vectors/defaults-brak-rol.json");
+const DEFAULTS_INNE: &str = include_str!("p6_8a_vectors/defaults-inne-wartosci.json");
+
+fn unit_row_from(v: &Value) -> UnitCostRow {
+    UnitCostRow {
+        jednostka: v["Jednostka"].as_str().unwrap().to_string(),
+        epoka: opt_str(v, "Epoka"),
+        pieniadz_koszt: opt_num(v, "Pieniądz (koszt)"),
+        super_jednostka: opt_str(v, "Super-jednostka"),
+        rola: opt_str(v, "Rola (linia)"),
+        surowiec: opt_str(v, "Surowiec"),
+    }
+}
+
+#[test]
+fn vectors_unit_cost_defaults_match_web_for_all_variants() {
+    use civ_engine::domain::production_units::{
+        default_cost_by_role_in, default_unit_cost_in, unit_cost_from_def_in,
+    };
+    let mut total = 0usize;
+    for (name, text) in [
+        ("realny", DEFAULTS_REALNY),
+        ("brak-rol", DEFAULTS_BRAK_ROL),
+        ("inne-wartosci", DEFAULTS_INNE),
+    ] {
+        let root = parse_value(text);
+        let params = root["miasto"].clone();
+        assert!(
+            same_num(default_unit_cost_in(&params), dec(&root["defaultUnitCost"])),
+            "{name}: DEFAULT_UNIT_COST"
+        );
+        for c in root["cases"].as_array().unwrap() {
+            let row = unit_row_from(&c["unit"]);
+            let got = unit_cost_from_def_in(&row, &params);
+            let want = dec(&c["cost"]);
+            assert!(
+                same_num(got, want),
+                "{name}: unitCostFromDef {} = {got} != {want}",
+                row.jednostka
+            );
+            total += 1;
+        }
+        // Mapowanie rol (klucz wrecz obejmuje obie pisownie; Nieznana = brak wpisu).
+        assert_eq!(
+            default_cost_by_role_in(&params, "Wręcz"),
+            default_cost_by_role_in(&params, "Wrecz"),
+            "{name}: alias"
+        );
+        assert_eq!(
+            default_cost_by_role_in(&params, "Nieznana"),
+            None,
+            "{name}: rola nieznana"
+        );
+    }
+    assert!(total >= 250, "za malo przypadkow defaults: {total}");
+}
+
+fn parse_value(s: &str) -> Value {
+    serde_json::from_str(s).expect("wektor JSON")
 }

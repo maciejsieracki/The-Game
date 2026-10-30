@@ -10,6 +10,10 @@
 //! widok typowany Rust: `suppressed` inne niz bool => `None`, `grupa` inne niz napis => `None`
 //! (web: `=== true` / `typeof === 'string'` daje ten sam wynik).
 
+use civ_engine::domain::improvements::{
+    parse_pending_improvement_id, pending_improvement_id, PendingImprovementEntry,
+    PendingImprovementsTurn,
+};
 use civ_engine::domain::production_units::{
     building_structural_defense_bonus_line, building_structural_defense_bonus_percent,
     city_has_amfiteatr_line, city_has_biblioteka_line, city_has_mur_line, city_has_palac_line,
@@ -17,10 +21,6 @@ use civ_engine::domain::production_units::{
     structural_defense_param_key, upgrade_chain_steps, upgrade_composition_lines,
     upgrade_production_display_name, BuildingGroupLite, BuildingUpgradeLite,
     BUILDING_GROUP_FALLBACK, BUILDING_GROUP_ORDER,
-};
-use civ_engine::domain::improvements::{
-    parse_pending_improvement_id, pending_improvement_id, PendingImprovementEntry,
-    PendingImprovementsTurn,
 };
 use serde_json::Value;
 
@@ -84,7 +84,11 @@ fn lite_from(v: &Value) -> BuildingUpgradeLite {
 }
 
 fn lites(list: &Value) -> Vec<BuildingUpgradeLite> {
-    list.as_array().expect("lista").iter().map(lite_from).collect()
+    list.as_array()
+        .expect("lista")
+        .iter()
+        .map(lite_from)
+        .collect()
 }
 
 fn built_ids(v: &Value) -> Vec<String> {
@@ -114,7 +118,12 @@ fn vectors_building_upgrades_suppressed_match_web() {
     assert!(cases.len() >= 40, "za malo przypadkow: {}", cases.len());
     for c in cases {
         let rust = is_building_suppressed_from_production(&lite_from(&c["input"]));
-        assert_eq!(rust, c["result"].as_bool().unwrap(), "suppressed {}", c["input"]);
+        assert_eq!(
+            rust,
+            c["result"].as_bool().unwrap(),
+            "suppressed {}",
+            c["input"]
+        );
     }
 }
 
@@ -175,8 +184,14 @@ fn vectors_building_upgrades_presence_and_palac_tier_match_web() {
     for c in cases {
         let owned = built_ids(&c["built"]);
         let refs: Vec<&str> = owned.iter().map(String::as_str).collect();
-        assert_eq!(city_has_biblioteka_line(&refs), c["biblioteka"].as_bool().unwrap());
-        assert_eq!(city_has_amfiteatr_line(&refs), c["amfiteatr"].as_bool().unwrap());
+        assert_eq!(
+            city_has_biblioteka_line(&refs),
+            c["biblioteka"].as_bool().unwrap()
+        );
+        assert_eq!(
+            city_has_amfiteatr_line(&refs),
+            c["amfiteatr"].as_bool().unwrap()
+        );
         assert_eq!(city_has_mur_line(&refs), c["mur"].as_bool().unwrap());
         assert_eq!(city_has_palac_line(&refs), c["palac"].as_bool().unwrap());
         let want_tier = c["palacTier"].as_u64().map(|t| t as u8);
@@ -187,9 +202,17 @@ fn vectors_building_upgrades_presence_and_palac_tier_match_web() {
 #[test]
 fn vectors_building_groups_match_web() {
     let root = parse(BU_JSON);
-    let order: Vec<&str> = root["groupOrder"].as_array().unwrap().iter().map(|x| x.as_str().unwrap()).collect();
+    let order: Vec<&str> = root["groupOrder"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|x| x.as_str().unwrap())
+        .collect();
     assert_eq!(order, BUILDING_GROUP_ORDER.to_vec());
-    assert_eq!(root["groupFallback"].as_str().unwrap(), BUILDING_GROUP_FALLBACK);
+    assert_eq!(
+        root["groupFallback"].as_str().unwrap(),
+        BUILDING_GROUP_FALLBACK
+    );
     let cases = root["groups"].as_array().unwrap();
     assert!(cases.len() >= 230);
     for c in cases {
@@ -209,7 +232,12 @@ fn vectors_building_groups_match_web() {
         assert_eq!(got.len(), want.len(), "liczba grup dla {owned:?}");
         for (g, w) in got.iter().zip(want) {
             assert_eq!(g.grupa, w["grupa"].as_str().unwrap());
-            let want_ids: Vec<&str> = w["ids"].as_array().unwrap().iter().map(|x| x.as_str().unwrap()).collect();
+            let want_ids: Vec<&str> = w["ids"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .map(|x| x.as_str().unwrap())
+                .collect();
             let got_ids: Vec<&str> = g.ids.iter().map(String::as_str).collect();
             assert_eq!(got_ids, want_ids, "ids grupy {}", g.grupa);
         }
@@ -238,7 +266,10 @@ fn check_structural(text: &str, variant: &str) {
             v => {
                 let want = dec(v);
                 let got = got_pct.unwrap_or_else(|| panic!("[{variant}] brak procentu dla {id}"));
-                assert!(same_num(got, want), "[{variant}] procent {id}: {got} != {want}");
+                assert!(
+                    same_num(got, want),
+                    "[{variant}] procent {id}: {got} != {want}"
+                );
             }
         }
         let got_line = building_structural_defense_bonus_line(id, raw);
@@ -283,7 +314,10 @@ fn entry_from(v: &Value) -> PendingImprovementEntry {
 }
 
 fn same_entry(a: &PendingImprovementEntry, b: &PendingImprovementEntry) -> bool {
-    a.hex_key == b.hex_key && a.key == b.key && a.action == b.action && same_num(a.koszt_praca, b.koszt_praca)
+    a.hex_key == b.hex_key
+        && a.key == b.key
+        && a.action == b.action
+        && same_num(a.koszt_praca, b.koszt_praca)
 }
 
 #[test]
@@ -293,7 +327,12 @@ fn vectors_pending_scenarios_match_web() {
         .as_array()
         .unwrap()
         .iter()
-        .map(|p| (p[0].as_str().unwrap().to_string(), p[1].as_str().unwrap().to_string()))
+        .map(|p| {
+            (
+                p[0].as_str().unwrap().to_string(),
+                p[1].as_str().unwrap().to_string(),
+            )
+        })
         .collect();
     let scenarios = root["scenarios"].as_array().unwrap();
     assert!(scenarios.len() >= 40);
@@ -306,7 +345,8 @@ fn vectors_pending_scenarios_match_web() {
             match op["op"].as_str().unwrap() {
                 "add" => state.add(entry_from(&op["entry"])),
                 "remove" => {
-                    let got = state.remove(op["hexKey"].as_str().unwrap(), op["key"].as_str().unwrap());
+                    let got =
+                        state.remove(op["hexKey"].as_str().unwrap(), op["key"].as_str().unwrap());
                     match (&op["ret"], got) {
                         (Value::Null, None) => {}
                         (v, Some(g)) => assert!(same_entry(&g, &entry_from(v)), "{what}: remove"),
@@ -315,32 +355,57 @@ fn vectors_pending_scenarios_match_web() {
                 }
                 "commit" => state.commit_turn(),
                 "fromSave" => {
-                    let rows: Vec<PendingImprovementEntry> =
-                        op["rows"].as_array().unwrap().iter().map(entry_from).collect();
+                    let rows: Vec<PendingImprovementEntry> = op["rows"]
+                        .as_array()
+                        .unwrap()
+                        .iter()
+                        .map(entry_from)
+                        .collect();
                     state = PendingImprovementsTurn::from_save(Some(&rows));
                 }
                 "probe" => {}
                 other => panic!("nieznana operacja {other}"),
             }
-            assert_eq!(state.size() as u64, op["size"].as_u64().unwrap(), "{what}: size");
+            assert_eq!(
+                state.size() as u64,
+                op["size"].as_u64().unwrap(),
+                "{what}: size"
+            );
             for (pi, (h, k)) in probes.iter().enumerate() {
-                assert_eq!(state.has(h, k), op["has"][pi].as_bool().unwrap(), "{what}: has {h} {k}");
+                assert_eq!(
+                    state.has(h, k),
+                    op["has"][pi].as_bool().unwrap(),
+                    "{what}: has {h} {k}"
+                );
                 match (&op["get"][pi], state.get(h, k)) {
                     (Value::Null, None) => {}
                     (v, Some(g)) => assert!(same_entry(g, &entry_from(v)), "{what}: get {h} {k}"),
                     (v, g) => panic!("{what}: get web={v} rust={g:?}"),
                 }
             }
-            let want_save: Vec<PendingImprovementEntry> =
-                op["toSave"].as_array().unwrap().iter().map(entry_from).collect();
+            let want_save: Vec<PendingImprovementEntry> = op["toSave"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .map(entry_from)
+                .collect();
             let got_save = state.to_save();
             assert_eq!(got_save.len(), want_save.len(), "{what}: toSave len");
             for (g, w) in got_save.iter().zip(&want_save) {
                 assert!(same_entry(g, w), "{what}: toSave {g:?} != {w:?}");
             }
-            let want_undo: Vec<&str> = op["undoKeySet"].as_array().unwrap().iter().map(|x| x.as_str().unwrap()).collect();
+            let want_undo: Vec<&str> = op["undoKeySet"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .map(|x| x.as_str().unwrap())
+                .collect();
             let got_undo = state.undo_key_set();
-            assert_eq!(got_undo.iter().map(String::as_str).collect::<Vec<_>>(), want_undo, "{what}: undo");
+            assert_eq!(
+                got_undo.iter().map(String::as_str).collect::<Vec<_>>(),
+                want_undo,
+                "{what}: undo"
+            );
         }
     }
     assert!(ops_total >= 2000, "za malo krokow: {ops_total}");
@@ -393,7 +458,11 @@ fn vectors_building_stat_summary_lines_match_web() {
     use civ_engine::domain::production_units::building_stat_summary_lines;
     let root = parse(BU_JSON);
     let cases = root["stats"].as_array().unwrap();
-    assert!(cases.len() >= 190, "za malo przypadkow stats: {}", cases.len());
+    assert!(
+        cases.len() >= 190,
+        "za malo przypadkow stats: {}",
+        cases.len()
+    );
     let mut with_lines = 0usize;
     for c in cases {
         let def = &c["def"];
@@ -406,7 +475,10 @@ fn vectors_building_stat_summary_lines_match_web() {
                 .map(|b| MnoznikBuildingLookup {
                     id: b["id"].as_str().unwrap().to_string(),
                     baza_mnoznik: b.get("baza").and_then(|x| x.get("mnoznik")).map(dec),
-                    upgrade_from: b.get("upgradeFrom").and_then(Value::as_str).map(String::from),
+                    upgrade_from: b
+                        .get("upgradeFrom")
+                        .and_then(Value::as_str)
+                        .map(String::from),
                 })
                 .collect()
         });
@@ -422,5 +494,8 @@ fn vectors_building_stat_summary_lines_match_web() {
         }
         assert_eq!(got, want, "buildingStatSummaryLines dla {id}");
     }
-    assert!(with_lines >= 100, "za malo niepustych wynikow: {with_lines}");
+    assert!(
+        with_lines >= 100,
+        "za malo niepustych wynikow: {with_lines}"
+    );
 }
