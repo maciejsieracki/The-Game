@@ -1,4 +1,4 @@
-STATUS: DISPATCHED (czeka na koniec R-WEB-ERA-WAR-COUNTER-Q1 — wspólny `main.ts`; start dopiero po jego zintegrowaniu/zamknięciu)
+STATUS: DISPATCHED (runda 1 równolegle z R-WEB-ERA-WAR-COUNTER-Q1: R8 i R9 ODŁOŻONE do rundy 2 — kolidują z blokami wojen wymuszonych w main.ts)
 DOMAIN: GAME (WEB — `gra/`, NIE port Rust)
 TEMAT: R-WEB-PEACE-RULES-Q1
 RUNDA: 1/5
@@ -48,3 +48,9 @@ ANTY-HALUCYNACJA: twierdzenie o kodzie = plik:linia/komenda; niepewne = NIE_ZMIE
 ## Uzupełnienie decyzji właściciela (2026-10-30, AskUserQuestion)
 D7. Hamulec wojny: GRACZ NIGDY NIE WYPOWIADA AUTOMATYCZNIE. Gdy w parze gracz↔AI silniejsza jest strona gracza, wojny z hamulca NIE MA (brak deklaracji i brak ostrzeżenia o automatycznej wojnie z Twojej strony); wojna z hamulca wybucha tylko, gdy silniejszą stroną jest AI (wtedy ostrzeżenie dla gracza 2 tury przed jak dziś). Dotyczy `processDiploCrisisQueue` (`main.ts` ~10203-10260, `pickWarDeclarer`). Dodaj test i mutację (wyłączenie warunku → test pada). Para AI↔AI bez zmian.
 D8. Automatyczny koniec wojen wymuszonych (czas i 2 miasta) usunięty dla WSZYSTKICH — „ustalamy dla wszystkich takie same zasady zawarcia pokoju” (R9). Wspólne reguły pokoju dla wojen epoki i zwykłych (R3–R5).
+
+## Zmiana kolejności (orkiestrator, 2026-10-30, na polecenie właściciela „odpalaj poprawki”)
+- RUNDA 1 startuje RÓWNOLEGLE z `R-WEB-ERA-WAR-COUNTER-Q1` (ten sam `main.ts`, inne bloki). BAZA rundy 1: `origin/main` `7164f7ca1`.
+- ZAKRES RUNDY 1: R1–R7, R10, D7 (hamulec: gracz nie wypowiada automatycznie) oraz D4/R4–R5 (20-turowe zmęczenie, bramki pokoju). NIE RUSZAJ w rundzie 1: R8 (blokada wojny epoki przy Relacji ≥ 100) i R9 (usunięcie automatycznego końca wojen wymuszonych: `shouldEnd*ForcedWarByDuration`, `maybeResolve*ForcedWarOnCityCapture`, `forced-war-*.ts`, bloki wojen wymuszonych w `main.ts` ~31159-31300 i ~35500-36700) — te dwa punkty trafią do rundy 2 po zintegrowaniu licznika wojen epoki, żeby uniknąć konfliktów scalania.
+- ALLOWLISTA rundy 1: jak wyżej, BEZ `gra/src/game/forced-war-*.ts` i bez bloków wojen wymuszonych w `main.ts`.
+- Konflikty z licznikiem rozwiązuje orkiestrator przy integracji (cherry-pick na wspólną bazę); NIE kopiuj kodu licznika.
