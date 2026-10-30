@@ -11,9 +11,9 @@ Temat: `R-RUSTPORT-REPIN-WOJNA-2-Q1` (runda 1/5). Pin docelowy: `dc8a3adc989bc82
 | `compactLineAllowsAdvance`: zmiana nazw argumentów (`lineReferenceProgress`) | `formationRules.ts:148-160` | `formation_rules.rs::compact_line_allows_advance` | `compact_line_matches_web_on_grid` (1872) | PORTOWANE (zmiana niebehawioralna, klucze wektora zaktualizowane) |
 | `classifyInitialBattleRole` | `formationRules.ts:3-30` (bez zmian między 91dc998a a dc8a3adc) | `formation_rules.rs::classify_initial_battle_role` | `classify_matches_web_on_all_vectors` (2031) | NIE-DOTYCZY (brak delty; wektory odświeżone) |
 | `initialBattleFormation` | `formationRules.ts:123-146` (bez zmian) | `formation_rules.rs::initial_battle_formation` | j.w. | NIE-DOTYCZY (brak delty) |
-| `battle-mode.ts`: `BATTLE_MODE_SETTING_VERSION`, `isAutomaticOnlyBattleMode` | `gra/src/game/battle-mode.ts:2,9-14` | `rust-port/engine/src/domain/battle_mode.rs` | `p6_repin_wojna_2_battle_mode` (3 testy, 64 przypadki) | PORTOWANE (funkcja czysta); integracja z zapisem (`main.ts:29056`, `main.ts:40818-40820`) NASTĘPNA-PARTIA |
+| `battle-mode.ts`: `BATTLE_MODE_SETTING_VERSION`, `isAutomaticOnlyBattleMode` | `gra/src/game/battle-mode.ts:2,9-14` | `rust-port/engine/src/domain/battle_mode.rs` | `p6_repin_wojna_2_battle_mode` (3 testy, 64 przypadki) | PORTOWANE (funkcja czysta; R3: logika integracji z zapisem `restored_setting_version`, `player_battle_automatic_only`, `main.ts:29052-29060`, `:40819-40821`); pole `meta.battleModeSettingVersion` w `save_load.rs` NASTĘPNA-PARTIA (zmiana formatu SaveSnapshot v2) |
 | `generals.ts` (nowy plik, +50): limit generałów, rezerwacja slotu, zakup, `nearestLivingGeneral`, `generalFollowDestination`, `planDeferredGeneralMarchBatch` | `gra/src/game/generals.ts:1-103` | `rust-port/engine/src/domain/generals.rs` (cały plik, 1-103; pliku nie ma w `edb8fb56`, wiec 1-53 tez nowe) | `p6_repin_wojna_2_generals::{limit,slots,can_recruit,stone,purchase,nearest,follow_destination,batch}_matches_web` (`generals.json`: 20+60+120+2+600+260+160+80 przypadkow) | PORTOWANE (runda 2) |
-| `generalQuickFollow.ts` (nowy plik, +161): etykiety, `planEnabledGeneralFollowMarches`, `planTrackedGeneralFollowMarch`, `syncTrackedGeneralFollowMarches`, `issueGeneralQuickFollow` | `gra/src/game/generalQuickFollow.ts:1-161` | `rust-port/engine/src/domain/general_quick_follow.rs` | `p6_repin_wojna_2_generals::{labels,plan_enabled,issue,tracked_march,sync_tracked}_matches_web` (`general-quick-follow.json`: 5+260+260+220+260 przypadkow; mutanty U4-M01..M20 zabite, M03 równoważny) | PORTOWANE (runda 2); `PlannedMarchDest.generalTargetId` i zapis/odczyt save (`planned-march.ts:446-485`) NASTĘPNA-PARTIA (`pathfinding.rs` poza allowlistą) |
+| `generalQuickFollow.ts` (nowy plik, +161): etykiety, `planEnabledGeneralFollowMarches`, `planTrackedGeneralFollowMarch`, `syncTrackedGeneralFollowMarches`, `issueGeneralQuickFollow` | `gra/src/game/generalQuickFollow.ts:1-161` | `rust-port/engine/src/domain/general_quick_follow.rs` | `p6_repin_wojna_2_generals::{labels,plan_enabled,issue,tracked_march,sync_tracked}_matches_web` (`general-quick-follow.json`: 5+260+260+220+260 przypadkow; mutanty U4-M01..M20 zabite, M03 równoważny) | PORTOWANE (runda 2); `PlannedMarchDest.generalTargetId` i zapis/odczyt save (`planned-march.ts:446-490`) PORTOWANE (R3, `pathfinding.rs`, `p6_repin_wojna_2_r3_planned_march`) |
 
 Poza zakresem tego tematu (osobne ID, wg dispatchu): `gra/src/game/warAllInCapital.ts` (WOJNA-NOWE-D), `war-rules-multiwar.ts`, `ai.ts`.
 
@@ -102,3 +102,43 @@ Stan wejściowy: commit `6ddade6a` (odtworzony detached; kod Rust `882a8020`, do
 4. **Pełny `cargo test --no-fail-fast` nie odtworzony — PRZYJMUJĘ, odtworzone w tej obronie.** Poprzedni brak miejsca na dysku (0 MB) już nie występuje (2.3 GB wolne po buildzie). Wyniki (surowe logi w katalogu runu, `EXIT=` w pliku): `cargo fmt --all -- --check` EXIT=0; `cargo clippy --all-targets -- -D warnings` EXIT=0 (`clippy-obrona-r2.log`); `cargo test --no-fail-fast --no-run` EXIT=0 (`test-obrona-r2-build.log`); `cargo test --no-fail-fast` EXIT=0, 1459 passed / 0 failed, 198 wierszy `test result` (`test-obrona-r2.log`).
 
 Pliki zmienione w obronie R2: wyłącznie `dyspozycje/rust-port/p6/P6-REPIN-WOJNA-2.md`, `rust-port/engine/src/domain/generals.rs` (komentarz modułu, bez zmiany kodu), katalog runu. Sonda Rust `tests/obrona_tmp_locale_probe.rs` była tymczasowa i została usunięta przed commitem.
+
+## Runda 3 (planned-march `generalTargetId`, battle-mode z zapisem, domkniecie NaN z R2)
+
+Baza: `rust-port/parity-v2` `9e56f6e3c` (U1-U4 zintegrowane). Pin: `dc8a3adc`. Rozszerzona allowlista (decyzja orkiestratora): `pathfinding.rs`, `save_load.rs`, `tests/{pathfinding,save_load}.rs`, `tests/p6_repin_wojna_2_r3_*`.
+
+**Status tematu: OTWARTY w zakresie `meta.battleModeSettingVersion` (save_load).** Reszta zakresu R3 zrobiona (patrz tabela).
+
+| Zmiana (web) | Plik:linia weba (dc8a3adc) | Plik:linia Rust | Test / wektor | Status |
+|---|---|---|---|---|
+| `PlannedMarchDest.generalTargetId` (typ) | `gra/src/game/planned-march.ts:14-21` | `pathfinding.rs` `PlannedMarchDest::general_target_id`, `PlannedMarchSaved::general_target_id` | `p6_repin_wojna_2_r3_planned_march` (kompilacja + wektory) | PORTOWANE |
+| `plannedMarchesFromSave`: wyjatek od odrzucenia zgodnej pozycji przy niepustym `generalTargetId` | `planned-march.ts:452-455` | `pathfinding.rs::planned_marches_from_save` (`has_general`) | `planned_marches_from_save_with_general_target_matches_web` (900 przypadkow, 354 wpisy z generalTargetId, 179 z zgodna pozycja); mutant PM1 zabity | PORTOWANE |
+| `plannedMarchesFromSave`: `generalTargetId` tylko niepusty napis | `planned-march.ts:460-462` | `pathfinding.rs` (filtr `!is_empty`) | j.w.; `general_target_edge_cases_are_explicit` | PORTOWANE |
+| `plannedMarchesToSave`: `...(generalTargetId ? {...} : {})` | `planned-march.ts:481-486` | `pathfinding.rs::planned_marches_to_save` | `planned_marches_to_save_with_general_target_matches_web` (300 przypadkow, 155 z generalTarget); mutant PM2 zabity | PORTOWANE |
+| `restoreGameFromSave`: normalizacja wersji (`=== 1 ? 1 : undefined`) | `gra/src/main.ts:40819-40821` | `battle_mode.rs::restored_setting_version` | `p6_repin_wojna_2_r3_battle_mode::restored_setting_version_matches_web` | PORTOWANE (logika) |
+| `playerBattleAutomaticOnly` (`isMe` + `isAutomaticOnlyBattleMode`) | `gra/src/main.ts:29052-29060` | `battle_mode.rs::player_battle_automatic_only` | `player_battle_automatic_only_matches_web_on_all_combinations` (126 kombinacji); mutant BM1 (bez `isMe`) zabity | PORTOWANE (logika) |
+| zapis `meta.battleModeSettingVersion` i odczyt z `saved.meta` | `gra/src/main.ts:32378`, `:40818` | brak pola w `save_load.rs` (SaveSnapshot v2: `version`, `state`, `event_queue`, `rng`) | NIE-DOTYCZY w tej rundzie | NASTĘPNA-PARTIA (zmiana formatu zapisu; wymaga decyzji o wersji SaveSnapshot) |
+| `nearestLivingGeneral` przy NaN wspolrzednej kandydata (domkniecie R2) | `gra/src/game/generals.ts:76-82` (`.sort(cmp)[0]`) | `generals.rs::nearest_living_general` + `v8_sort_small` (TimSort V8 dla n<64) | `p6_repin_wojna_2_r3_nearest_nan` (400 przypadkow, 328 z NaN; przed poprawka 1 rozbieznosc, np. przypadek 25: web `c`, Rust `b`); mutant NM1 (bez odwrocenia runu) zabity | PORTOWANE (n<64; ZALOZENIE Z-R3-1) |
+
+### Wektory i generatory (R3)
+
+- `tests/p6_repin_wojna_2_r3_vectors/planned-march-general.json` (349 kB): generator `gen-repin-wojna-2-r3-planned-march.mjs` wycina dosłownie `planned-march.ts:13-31` i `:425-490` z pinu i uruchamia w node v22.22.0 (`--experimental-strip-types`).
+- `tests/p6_repin_wojna_2_r3_vectors/battle-mode-restore.json` (10 kB): generator `gen-repin-wojna-2-r3-battle-mode.mjs` importuje `battle-mode.ts` bez zmian; pełny iloczyn 9 x 7 x 2.
+- `tests/p6_repin_wojna_2_r3_vectors/nearest-nan.json` (103 kB): probe `gen-repin-wojna-2-r3-nan-nearest-probe.mjs` importuje `generals.ts` bez zmian.
+
+### Weryfikacja niezalezna (R3)
+
+- `verify-r3.py` (`python3 -I`, reimplementacja od zera z TS pinu, bez kodu Rust): `planned-march` from/to-save, `battle-mode` (126 wierszy), `nearest` z symulacja V8 TimSort: 0 rozbieznosci. Log: `verify-r3.log`.
+
+### ZALOZENIA (R3)
+
+- **Z-R3-1**: sortowanie V8 (TimSort) dla n < 64 jest odtworzone (jeden przebieg `CountAndMakeRun` + `BinaryInsertionSort`, bez scalania, bo dla n < 64 `minrun = n`). Rostery generalow gracza sa < 64 (NIE_ZMIERZONO w grze; ZALOZENIE). Dla n >= 64 wynik moze rozni sie od webu przy NIESPOJNYM komparatorze (NaN); dla spojnego komparatora wynik = minimum (tak jak przed poprawka).
+- **Z-R3-2**: `isMe(ownerId)` modelowane jako wejscie `bool` (`player_battle_automatic_only(is_me, ...)`); sposob wyznaczenia `isMe` po stronie gry poza zakresem tego modulu.
+- **Z-R3-3**: `battleAlwaysManual` jako `Option<bool>` (jak w U2): tylko boolowskie `false` aktywuje tryb.
+
+### Bramki (R3)
+
+- `cargo fmt --all -- --check`: EXIT=0 (`fmt-r3b.log`).
+- `cargo clippy --all-targets -- -D warnings`: EXIT=0 (`clippy-r3b.log`).
+- `cargo test --no-fail-fast`: 1591 passed / 0 failed, 220 binarek `test result`, EXIT=0 (`test-r3.log`). Uwaga: baseline z dispatchu (1313) jest nieaktualny; pomiar przed R3 na tym pinie NIE_ZMIERZONO (zakres R3 dodaje 7 testow + istniejace).
+- Mutanty R3: PM1 (zachowanie zgodnej pozycji bez `generalTargetId` usuniete), PM2 (niepusty filtr `generalTargetId` przy zapisie usuniety), BM1 (bez `isMe`), NM1 (bez odwrocenia runu w sortowaniu) - wszystkie zabite (logi `mut-pm1.log`, `mut-pm2.log`, `mut-bm1.log`, `mut-nm1b.log` w katalogu runu; pliki w `/home/user/cargo-target-shared` poza repo).

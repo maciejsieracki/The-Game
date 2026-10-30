@@ -1,0 +1,32 @@
+   Compiling civ-engine v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_f619c40f-051-1/rust-port/engine)
+    Finished `test` profile [unoptimized] target(s) in 34.45s
+     Running tests/p6_repin_wojna_2_r3_nearest_nan.rs (/home/user/cargo-target-shared/wf_f619c40f-051-1/debug/deps/p6_repin_wojna_2_r3_nearest_nan-d9afa4583664b987)
+
+running 1 test
+test nearest_living_general_with_nan_candidate_matches_web ... FAILED
+
+failures:
+
+---- nearest_living_general_with_nan_candidate_matches_web stdout ----
+
+thread 'nearest_living_general_with_nan_candidate_matches_web' (14559) panicked at tests/p6_repin_wojna_2_r3_nearest_nan.rs:58:9:
+assertion `left == right` failed: przypadek 0: {"out":"a","roster":[{"id":"g","isGeneral":true,"ownerId":"0","q":"NaN","r":"2"},{"id":"a","isGeneral":true,"ownerId":"0","q":"NaN","r":"NaN"},{"id":"e","isGeneral":true,"ownerId":"0","q":"2","r":"1"}],"unit":{"id":"u","isGeneral":false,"ownerId":"0","q":"2","r":"0"}}
+  left: Some("g")
+ right: Some("a")
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+   1: core::panicking::panic_fmt
+   2: core::panicking::assert_failed_inner
+   3: core::panicking::assert_failed::<core::option::Option<&str>, core::option::Option<&str>>
+   4: p6_repin_wojna_2_r3_nearest_nan::nearest_living_general_with_nan_candidate_matches_web
+   5: p6_repin_wojna_2_r3_nearest_nan::nearest_living_general_with_nan_candidate_matches_web::{closure#0}
+   6: <p6_repin_wojna_2_r3_nearest_nan::nearest_living_general_with_nan_candidate_matches_web::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+
+failures:
+    nearest_living_general_with_nan_candidate_matches_web
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.10s
+
+error: test failed, to rerun pass `--test p6_repin_wojna_2_r3_nearest_nan`

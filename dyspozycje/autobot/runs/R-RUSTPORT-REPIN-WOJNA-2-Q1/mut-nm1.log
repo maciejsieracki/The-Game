@@ -1,0 +1,74 @@
+   Compiling civ-engine v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_f619c40f-051-1/rust-port/engine)
+    Finished `test` profile [unoptimized] target(s) in 33.02s
+     Running tests/p6_repin_wojna_2_generals.rs (/home/user/cargo-target-shared/wf_f619c40f-051-1/debug/deps/p6_repin_wojna_2_generals-b2a41bf653684b50)
+
+running 13 tests
+test can_recruit_matches_web ... ok
+test deferred_batch_matches_web ... ok
+test general_follow_destination_matches_web ... ok
+test limit_for_era_matches_web ... ok
+test labels_match_web ... ok
+test issue_matches_web ... FAILED
+test nearest_living_general_matches_web ... FAILED
+test plan_enabled_matches_web ... FAILED
+test purchase_matches_web_and_calls_continuation_only_when_valid ... ok
+test slots_used_matches_web ... ok
+test stone_unit_matches_web ... ok
+test tracked_march_matches_web ... ok
+test sync_tracked_matches_web ... ok
+
+failures:
+
+---- issue_matches_web stdout ----
+
+thread 'issue_matches_web' (13750) panicked at tests/p6_repin_wojna_2_generals.rs:425:9:
+assertion `left == right` failed: przypadek 6: wynik
+  left: Unreachable
+ right: Unavailable
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+   1: core::panicking::panic_fmt
+   2: core::panicking::assert_failed_inner
+   3: core::panicking::assert_failed::<civ_engine::domain::general_quick_follow::GeneralQuickFollowResult, civ_engine::domain::general_quick_follow::GeneralQuickFollowResult>
+   4: p6_repin_wojna_2_generals::issue_matches_web
+   5: p6_repin_wojna_2_generals::issue_matches_web::{closure#0}
+   6: <p6_repin_wojna_2_generals::issue_matches_web::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+---- nearest_living_general_matches_web stdout ----
+
+thread 'nearest_living_general_matches_web' (13753) panicked at tests/p6_repin_wojna_2_generals.rs:231:9:
+assertion `left == right` failed: przypadek 55
+  left: Some("b")
+ right: Some("u7")
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+   1: core::panicking::panic_fmt
+   2: core::panicking::assert_failed_inner
+   3: core::panicking::assert_failed::<core::option::Option<&str>, core::option::Option<&str>>
+   4: p6_repin_wojna_2_generals::nearest_living_general_matches_web
+   5: p6_repin_wojna_2_generals::nearest_living_general_matches_web::{closure#0}
+   6: <p6_repin_wojna_2_generals::nearest_living_general_matches_web::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+---- plan_enabled_matches_web stdout ----
+
+thread 'plan_enabled_matches_web' (13754) panicked at tests/p6_repin_wojna_2_generals.rs:354:13:
+przypadek 4: punkt
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+   1: core::panicking::panic_fmt
+   2: p6_repin_wojna_2_generals::plan_enabled_matches_web
+   3: p6_repin_wojna_2_generals::plan_enabled_matches_web::{closure#0}
+   4: <p6_repin_wojna_2_generals::plan_enabled_matches_web::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+
+failures:
+    issue_matches_web
+    nearest_living_general_matches_web
+    plan_enabled_matches_web
+
+test result: FAILED. 10 passed; 3 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.17s
+
+error: test failed, to rerun pass `--test p6_repin_wojna_2_generals`
