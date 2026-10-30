@@ -5,8 +5,15 @@ GOAL: P6.8F — tematu wykonawczy z podziału `dyspozycje/rust-port/p6/P6-8-MIAS
 - **GOAL:** `economy.ts` (1243 LOC, 23 fn) fn-po-fn, partie `8F-P1..P3`, po zamknięciu REPIN-D.
 - **ALLOWLISTA: wg treści GOAL powyżej (pole ALLOWLISTA z §9); dokument tematu i `dyspozycje/autobot/runs/R-RUSTPORT-P6-8F-EKONOMIA-MIASTA-Q1/**`. Zero zmian w `gra/**`, `rust-port/renderer/**`, `src-tauri/**`, `Cargo.toml`, `WERSJE.md`. IZOLACJA: worktree; commit z jawnym `git add`, PUSH NIE. FAIL → ten sam ID, limit 5 rund.
 
-RUNDA: 1/5
+RUNDA: 3/5
 
 BAZA: `git fetch origin rust-port/parity-v2` (>= `28f16d9da`, 1757/0). Zależności zamknięte: 8A, 8B, 8B2 (production), REPIN-EKONOMIA-D/D2 (`economy_yield.rs`: `city_yield_per_turn*`, `city_praca_integer`; `work_tax.rs`). REUŻYWAJ istniejących symboli, nie portuj duplikatów (`git grep` przed portem). Web: `origin/main` = `7164f7ca1`, pin wektorów 91dc998a/dc8a3adc bez zmian dla tych plików.
 KONTRAKT: logi bramek Z LINIĄ `EXIT=`, bez pustych linii na końcu plików (`git diff --check`), komparatory sortowania zgodne z V8 (NaN → Equal), mutacje na każdej gałęzi sterującej lub dowód równoważności plik:linia, wektory z uruchomionego weba, dokument tematu z tabelą symboli i statusem.
 DYSK: `rm -rf rust-port/engine/target` po etapie; CARGO_INCREMENTAL=0 CARGO_PROFILE_DEV_DEBUG=0 CARGO_PROFILE_TEST_DEBUG=0; kopie weba tylko w mktemp -d i usuń.
+
+## Runda 3 — stan wejściowy (orkiestrator)
+- START: `git checkout --detach 1c322b4af` (lokalny ref `refs/keep/P68F-r2fc`; zawiera kod r2 `eccd4902d`, raport `95e3947e6`, dokument tematu `03-dokument-tematu.md` z 23 symbolami, fixture `tests/fixtures/economy_city_vectors_91dc998a.json` 2500 wektorów, generator i skrypt mutacji). Final Control r2: FAIL tylko za ZAKRES (zarzut 1); bramki fmt/clippy/test/2500 wektorów i numery linii pinu zweryfikowane OK; odstępstwo „wektory z bundla esbuild pinu uruchomionego w node” (zakaz buildu w `gra/`) UZNANE — w r3+ ta sama metoda.
+- ZAKRES r3: pozostałe OTWARTE symbole z tabeli (#1–#5, #12–#17, #19 wg FC; `populationGrowth` #20 wyłączone ZAŁOŻENIEM FC — na pinie tylko definicja/komentarze w `economy-upkeep.ts`, wywołania wyłącznie w `gra/tools/*.cjs`). Partie ≤600 LOC, commit po każdej, KOD PIERWSZY; kolejność wg tabeli, najpierw te bez zależności od niezportowanych modułów. Reuse istniejących symboli tylko z wektorami (`economy_yield.rs`: `tile_yield_base`, `city_yield_per_turn*`, `building_value`, `city_praca_integer` — NIE duplikuj; sprawdź `git grep` przed portem).
+- Aktualizuj tabelę symboli (status per symbol) w `03-dokument-tematu.md` i skopiuj ją do `dyspozycje/rust-port/p6/P6-8F-EKONOMIA-MIASTA.md`.
+- BAZA: `git fetch origin rust-port/parity-v2` (>= `e7b7acfea`, 1769/0); jeśli rebase konieczny — rozwiąż konflikty w `domain/mod.rs` (dopiski `pub mod`).
+- DYSK: `rm -rf rust-port/engine/target` po etapie; CARGO_INCREMENTAL=0 CARGO_PROFILE_DEV_DEBUG=0 CARGO_PROFILE_TEST_DEBUG=0.
