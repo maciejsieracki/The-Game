@@ -1423,3 +1423,25 @@ pub fn apply_land_fraction_by_continent(
     }
     adjusted
 }
+
+/// P6.M06A7 (partia 1). Web `pangeaAnnularMaxCorridorWidth` (gen-helpers.ts :4329):
+/// `mapScale = Math.sqrt((w*h)/skala)`; wynik `Math.max(min, Math.min(max, Math.round(baza + mapScale*mnoznik)))`.
+/// Literaly danych w `data/derived/mapgen-landsea-pangea-annular.json`.
+pub fn pangea_annular_max_corridor_width(width: f64, height: f64) -> f64 {
+    let t = crate::data::derived::mapgen_landsea_pangea_annular();
+    let map_scale = ((width * height) / t.annular_skala_pola).sqrt();
+    js_max(
+        t.annular_min,
+        js_min(
+            t.annular_max,
+            js_round(t.annular_baza + map_scale * t.annular_mnoznik),
+        ),
+    )
+}
+
+/// P6.M06A7 (partia 1). Web `isPangeaBridgeWater` (gen-helpers.ts :4371) =
+/// `isWaterTerrainLocal(tb)`: most Pangei przez Morze i Wybrzeze.
+#[inline]
+pub fn is_pangea_bridge_water(t: Terrain) -> bool {
+    is_water_terrain_local(t)
+}

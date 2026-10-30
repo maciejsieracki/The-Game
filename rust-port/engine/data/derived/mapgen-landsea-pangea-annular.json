@@ -1,0 +1,12 @@
+{
+  "meta": {
+    "temat": "R-RUSTPORT-P6-M06A7-LAD-MORZE-KORYTARZE-Q1",
+    "zrodlo_web": "gra/src/map/gen-helpers.ts (pin edb8fb56): pangeaAnnularMaxCorridorWidth :4329 (skala 20160, baza 6, mnoznik 2.6, zakres 6..22)",
+    "uwaga": "Wartosci balansowe edytowalne. Kod nie zawiera ich literalow (partia 1 M06A7)."
+  },
+  "annular_skala_pola": 20160,
+  "annular_baza": 6,
+  "annular_mnoznik": 2.6,
+  "annular_min": 6,
+  "annular_max": 22
+}
