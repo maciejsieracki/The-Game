@@ -696,6 +696,8 @@ export interface UnitContextTooltipInput extends UnitSufferingStatusFields {
   stackCards?: ReadonlyArray<{
     id: string;
     name: string;
+    /** Rola jednostki dowodzącej, odróżniana od zwykłej jednostki tego samego typu. */
+    commanderTitle?: 'Wódz' | 'Generał';
     icon: string;
     hp: number;
     hpMax: number;
@@ -767,9 +769,15 @@ function buildUnitStackCardsHtml(
   for (const c of cards) {
     const hpPct = c.hpMax > 0 ? (c.hp / c.hpMax) * 100 : 0;
     const movPct = c.ruchMax > 0 ? (c.ruchLeft / c.ruchMax) * 100 : 0;
-    html += `<div class="sp-unit-stack-card${c.active ? ' on' : ''}" data-unit="${esc(c.id)}" role="button" tabindex="0">`
+    const isCommander = c.commanderTitle === 'Wódz' || c.commanderTitle === 'Generał';
+    const cardLabel = isCommander ? `${c.commanderTitle} — ${c.name}` : c.name;
+    html += `<div class="sp-unit-stack-card${c.active ? ' on' : ''}${isCommander ? ' commander' : ''}" data-unit="${esc(c.id)}"`
+      + (isCommander ? ` data-commander="true" aria-label="${esc(cardLabel)}" title="${esc(cardLabel)}"` : '')
+      + ' role="button" tabindex="0">'
       + `<div class="sp-unit-stack-ic">${c.icon || unitIconSvg(undefined)}</div>`
-      + `<div class="sp-unit-stack-name">${esc(c.name)}</div>`
+      + (isCommander
+        ? `<div class="sp-unit-stack-commander-role">★ ${esc(c.commanderTitle!)}</div><div class="sp-unit-stack-name sp-unit-stack-commander-type">${esc(c.name)}</div>`
+        : `<div class="sp-unit-stack-name">${esc(c.name)}</div>`)
       + '<div class="sp-unit-stack-bars">'
       + buildUnitStackBarHtml(hpPct, 'hp')
       + buildUnitStackBarHtml(movPct, 'mov')
@@ -878,6 +886,9 @@ ${UNIT_CARD_STATUS_CSS}
 .sp-unit-stack-card{flex:0 0 auto;width:76px;padding:6px 4px;border-radius:8px;cursor:pointer;
   border:1px solid rgba(212,175,90,.22);background:rgba(16,20,28,.85);text-align:center;}
 .sp-unit-stack-card.on{border-color:rgba(212,175,90,.55);box-shadow:0 0 10px rgba(212,175,90,.12);}
+.sp-unit-stack-card.commander{border-color:rgba(232,216,138,.78);background:linear-gradient(180deg,rgba(92,73,28,.4),rgba(10,14,22,.72));box-shadow:inset 0 0 0 1px rgba(232,216,138,.12);}
+.sp-unit-stack-commander-role{font-size:8px;font-weight:800;line-height:1.15;color:var(--civ-gold-primary,#e8d88a);white-space:nowrap;}
+.sp-unit-stack-commander-type{font-size:8px!important;color:var(--civ-text-muted,#a09880);}
 .sp-unit-stack-ic{font-size:18px;line-height:1;min-height:20px;}
 .sp-unit-stack-name{font-size:9px;font-weight:600;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .sp-unit-stack-bars{display:flex;flex-direction:column;gap:3px;margin-top:5px;padding:0 3px;}
@@ -910,7 +921,10 @@ function buildArmySelectedUnitLabelHtml(
 ): string {
   const active = cards.find(c => c.active);
   if (!active) return '';
-  return `<div class="sp-army-sel-lbl">Wybrana jednostka: <b>${esc(active.name)}</b></div>`;
+  const activeName = active.commanderTitle
+    ? `${active.commanderTitle} — ${active.name}`
+    : active.name;
+  return `<div class="sp-army-sel-lbl">Wybrana jednostka: <b>${esc(activeName)}</b></div>`;
 }
 
 function buildUnitDetailExtrasHtml(u: UnitContextTooltipInput, statusInput: UnitCardStatusInput): string {

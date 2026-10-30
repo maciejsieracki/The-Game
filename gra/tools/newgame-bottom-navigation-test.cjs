@@ -244,6 +244,36 @@ async function exerciseViewport(browser, viewport) {
     await profileToggle.click();
     assert(`${viewport.label}/cywilizacja: uchwyt rozwija szczegóły`,
       await profileToggle.getAttribute('aria-expanded') === 'true' && await detailPanel.isVisible());
+    const matrixRows = detailPanel.locator('.civ-matrix-cell');
+    const profileNote = await detailPanel.locator('.civ-matrix-profile-note').textContent();
+    const reportedParameterCount = Number(profileNote?.match(/^(\d+) wskaźników/)?.[1]);
+    assert(`${viewport.label}/macierz: licznik (${reportedParameterCount}) odpowiada liczbie kart`,
+      Number.isInteger(reportedParameterCount) && await matrixRows.count() === reportedParameterCount);
+    assert(`${viewport.label}/macierz: każda karta jest domyślnie zwinięta`,
+      await detailPanel.locator('.civ-matrix-cell[open]').count() === 0);
+    const previewRow = matrixRows.first();
+    const previewParameter = await previewRow.getAttribute('data-parameter-id');
+    await previewRow.locator('summary').click();
+    assert(`${viewport.label}/macierz: wybrany parametr można rozwinąć do podglądu`,
+      await previewRow.evaluate(element => element.hasAttribute('open'))
+        && await previewRow.locator('.civ-matrix-cell-body').isVisible());
+    await previewRow.locator('summary').click();
+    assert(`${viewport.label}/macierz: podgląd parametru można ponownie zwinąć`,
+      !(await previewRow.evaluate(element => element.hasAttribute('open'))));
+    const matrixSearch = detailPanel.locator('.civ-matrix-profile-search');
+    await matrixSearch.fill(previewParameter || '');
+    assert(`${viewport.label}/macierz: wyszukiwanie nadal filtruje karty parametrów`,
+      await previewRow.isVisible() && await detailPanel.locator('.civ-matrix-profile-legend').textContent().then(t => new RegExp(`Widoczne: 1 \\/ ${reportedParameterCount}`).test(t || '')));
+    assert(`${viewport.label}/macierz: wyszukany parametr pozostaje zwinięty do ręcznego podglądu`,
+      !(await previewRow.evaluate(element => element.hasAttribute('open'))));
+    await matrixSearch.fill('');
+    const matrixFilter = detailPanel.locator('.civ-matrix-profile-filter');
+    await matrixFilter.selectOption('inactive');
+    assert(`${viewport.label}/macierz: filtr kategorii nadal pokazuje pasujące pozycje`,
+      await detailPanel.locator('.civ-matrix-cell:visible').count() > 0);
+    assert(`${viewport.label}/macierz: filtrowanie nie rozwija automatycznie kart`,
+      await detailPanel.locator('.civ-matrix-cell[open]').count() === 0);
+    await matrixFilter.selectOption('all');
     await profileToggle.click();
     assert(`${viewport.label}/cywilizacja: uchwyt ponownie zwija profil`,
       await profileToggle.getAttribute('aria-expanded') === 'false' && !(await detailPanel.isVisible()));

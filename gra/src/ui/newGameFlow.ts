@@ -962,6 +962,10 @@ function ensureStyles(): void {
 .civ-newgame .civ-matrix-cell-explanation{margin-top:4px;color:var(--tx-muted);font:10px Arial,sans-serif;line-height:1.4;}
 .civ-newgame .civ-matrix-profile-legend{margin-top:7px;color:var(--tx-muted);font:10px Arial,sans-serif;line-height:1.4;}
 .civ-newgame .civ-matrix-profile-error{padding:10px;border:1px solid #9A5040;border-radius:var(--radius);color:#D77C66;font:11px Arial,sans-serif;line-height:1.4;}
+.civ-newgame .civ-matrix-cell>summary{cursor:pointer;list-style:none;}
+.civ-newgame .civ-matrix-cell>summary::-webkit-details-marker{display:none;}
+.civ-newgame .civ-matrix-cell-chevron{color:var(--tx-muted);font:14px Arial,sans-serif;transition:transform .14s ease;}
+.civ-newgame .civ-matrix-cell[open] .civ-matrix-cell-chevron{transform:rotate(180deg);}
 .civ-newgame .bonus{display:flex;align-items:flex-start;gap:8px;font-size:13px;color:var(--tx2);line-height:1.5;}
 .civ-newgame .bdot{width:6px;height:6px;border-radius:50%;flex-shrink:0;margin-top:6px;}
 .civ-newgame .bonus.bp .bdot{background:#4A9A68;}
@@ -1208,7 +1212,8 @@ function civMatrixCellSearchText(cell: CivMatrixSemanticCell): string {
 }
 
 function appendCivMatrixCell(parent: HTMLElement, cell: CivMatrixSemanticCell): HTMLElement {
-  const row = el('article', 'civ-matrix-cell');
+  const row = document.createElement('details');
+  row.className = 'civ-matrix-cell';
   row.dataset.civMatrixRow = 'true';
   row.dataset.status = cell.consumerStatus;
   row.dataset.label = cell.label;
@@ -1219,39 +1224,48 @@ function appendCivMatrixCell(parent: HTMLElement, cell: CivMatrixSemanticCell): 
     `${civMatrixParameterLabelPl(cell.parameterId)}: ${cell.label}, ${cell.statusLabelPl}, siła ${civMatrixIntensityLabel(cell.signedIntensity)}`,
   );
 
-  const head = el('div', 'civ-matrix-cell-head');
+  const summary = document.createElement('summary');
+  summary.className = 'civ-matrix-cell-head';
+  const head = summary;
   head.appendChild(el('div', 'civ-matrix-cell-name', civMatrixParameterLabelPl(cell.parameterId)));
   const badge = el('span', 'civ-matrix-cell-badge', cell.label);
   badge.dataset.label = cell.label;
   badge.setAttribute('aria-label', `Etykieta: ${cell.label}`);
   head.appendChild(badge);
-  row.appendChild(head);
+  const chevron = el('span', 'civ-matrix-cell-chevron', '⌄');
+  chevron.setAttribute('aria-hidden', 'true');
+  head.appendChild(chevron);
+  row.appendChild(summary);
+
+  const body = el('div', 'civ-matrix-cell-body');
 
   const meta = el('div', 'civ-matrix-cell-meta');
   meta.appendChild(el('span', '', `Wartość: ${civMatrixFormattedValue(cell.rawValue, cell.unit)}`));
   meta.appendChild(el('span', '', `Mediana Normal: ${civMatrixFormattedValue(cell.baselineValue, cell.unit)}`));
   meta.appendChild(el('span', '', `Siła: ${civMatrixIntensityLabel(cell.signedIntensity)} / 10`));
   meta.appendChild(el('span', '', polarityLabelPl(cell.polarity)));
-  row.appendChild(meta);
+  body.appendChild(meta);
 
   const status = el('div', 'civ-matrix-cell-status', cell.statusLabelPl);
   status.dataset.status = cell.consumerStatus;
   status.setAttribute('aria-label', `Status konsumenta: ${cell.statusLabelPl}`);
-  row.appendChild(status);
+  body.appendChild(status);
 
   const explanation = el('div', 'civ-matrix-cell-explanation');
   explanation.textContent = `${cell.statusReasonPl} W panelu pokazano wyłącznie tożsamość Normal.`;
-  row.appendChild(explanation);
+  body.appendChild(explanation);
+  row.appendChild(body);
   parent.appendChild(row);
   return row;
 }
 
 /**
- * Pełny profil 113 pól w kroku wyboru cywilizacji.
+ * Pełny profil parametrów w kroku wyboru cywilizacji; liczba pól pochodzi z danych macierzy.
  *
- * Tylko REAL_GAMEPLAY jest rozwinięte domyślnie. UI_ONLY, UNWIRED i BLOCKED
- * pozostają w jednym natywnym `<details>`, ale wyszukiwarka może go otworzyć;
- * żadna komórka nie jest usuwana ani zapisywana do stanu gry.
+ * Każdy parametr ma własny natywny `<details>` i jest domyślnie zwinięty;
+ * UI_ONLY, UNWIRED i BLOCKED dodatkowo pozostają w grupie „Pozostałe”.
+ * Wyszukiwanie nadal filtruje wszystkie karty, a ich treść można rozwinąć
+ * osobno. Żadna komórka nie jest usuwana ani zapisywana do stanu gry.
  */
 function appendCivMatrixProfile(parent: HTMLElement, civKey: string): void {
   const profile = buildCivMatrixSemanticProfile(civKey);
@@ -1264,7 +1278,7 @@ function appendCivMatrixProfile(parent: HTMLElement, civKey: string): void {
   head.appendChild(el(
     'div',
     'civ-matrix-profile-note',
-    `113 wskaźników · mediana wszystkich 15 cywilizacji · aktywne domyślnie: ${profile.activeCount}`,
+    `${profile.parameterCount} wskaźników · mediana wszystkich 15 cywilizacji · aktywne domyślnie: ${profile.activeCount}`,
   ));
   box.appendChild(head);
 

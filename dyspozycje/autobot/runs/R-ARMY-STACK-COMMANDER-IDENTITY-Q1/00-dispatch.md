@@ -1,7 +1,7 @@
 # R-ARMY-STACK-COMMANDER-IDENTITY-Q1 — dispatch
 
 TEMAT: `R-ARMY-STACK-COMMANDER-IDENTITY-Q1` · RUNDA: 1/5 · 2026-10-29 · DOMAIN: GAME
-STATUS: Operator implementation and verification complete; awaiting independent Evaluator. No Kanban is used in this project per owner decision `docs/decyzje/D-AUTOBOT-BEZ-KANBAN-THE-GAME-20261029.md`.
+STATUS: **8/11 — Final Control PASS-WITH-NOTES** for the 2026-10-30 active-panel fix; exact integration is next. Receipt: `36-final-control-active-panel-20261030.md`. No Kanban is used in this project per owner decision `docs/decyzje/D-AUTOBOT-BEZ-KANBAN-THE-GAME-20261029.md`.
 GOAL: In the map Army panel roster, the actual commander unit among a large stack is unmistakably labeled `Wódz` or `Generał` (and visually marked), so the player can select it. Preserve its actual type, model, combat role, stats, HP, and ordinary-unit labels.
 WYZWALACZ: new owner screenshot/report (2026-10-29): army stack shows 89 cards named `Wojownik`; the army marker's star does not identify which individual is the commander.
 RELATED HISTORY: `R-ARMY-COMMANDER-UNIT-LABEL-Q1` only proves the battle unit adapter/card label and is insufficient for this map roster surface. Reuse its findings, do not claim it fixes this screen.
@@ -21,9 +21,9 @@ RELATED HISTORY: `R-ARMY-COMMANDER-UNIT-LABEL-Q1` only proves the battle unit ad
 3. Implement identity label/marker in Army stack card — DONE.
 4. Production renderer and selection tests, large roster — DONE, 89 cards and both titles.
 5. Chromium, typecheck/build/regression — DONE; see `operator-report.md`.
-6. Independent Evaluator — PENDING.
-7. Operator Defense if objections.
-8. Final Control.
+6. Independent Evaluator and operator response on active-panel selection — DONE; see `35-operator-evaluator-response-20261030.md`.
+7. Independent Defense — PASS-WITH-NOTES for active renderer and exact-ID click-through (2026-10-30).
+8. Final Control — PASS-WITH-NOTES; see `36-final-control-active-panel-20261030.md`.
 9. Exact integration to main.
 10. Robocza deploy, smoke, remote readback.
 11. Push, receipt, registry close.
