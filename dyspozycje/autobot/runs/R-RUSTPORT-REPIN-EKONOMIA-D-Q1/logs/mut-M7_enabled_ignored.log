@@ -1,0 +1,87 @@
+   Compiling civ-engine v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_9a5b4845-9e5-2/rust-port/engine)
+warning: unused variable: `enabled`
+   --> src/domain/work_tax.rs:137:5
+    |
+137 |     enabled: bool,
+    |     ^^^^^^^ help: if this is intentional, prefix it with an underscore: `_enabled`
+    |
+    = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: `civ-engine` (lib) generated 1 warning (run `cargo fix --lib -p civ-engine` to apply 1 suggestion)
+    Finished `test` profile [unoptimized] target(s) in 31.39s
+     Running tests/p6_repin_d_work_tax.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-2/debug/deps/p6_repin_d_work_tax-f2f289e329addd22)
+
+running 13 tests
+test boundary_pool_and_request_are_sanitized ... ok
+test boundary_tax_floor_and_rate_defaults ... ok
+test parity_owner_can_convert_work_to_tax ... ok
+test parity_restore_pending_work_tax ... ok
+test parity_tax_for_work_amount ... ok
+test structural_can_convert_requires_human_and_targowisko ... ok
+test parity_serialize_pending_work_tax ... ok
+test structural_restore_rejects_bad_rows_and_overwrites_in_place ... ok
+test structural_serialize_then_restore_roundtrip ... ok
+test structural_work_not_spent_when_tax_rounds_to_zero ... ok
+test structural_disabled_or_empty_request_spends_nothing ... FAILED
+test parity_convert_work_pool_to_tax ... FAILED
+test parity_execute_manual_work_tax_conversion ... FAILED
+
+failures:
+
+---- structural_disabled_or_empty_request_spends_nothing stdout ----
+
+thread 'structural_disabled_or_empty_request_spends_nothing' (30763) panicked at tests/p6_repin_d_work_tax.rs:245:5:
+assertion `left == right` failed
+  left: WorkTaxConversion { work_remaining: 5.0, work_spent: 5.0, tax_gained: 5.0 }
+ right: WorkTaxConversion { work_remaining: 10.0, work_spent: 0.0, tax_gained: 0.0 }
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+   1: core::panicking::panic_fmt
+   2: core::panicking::assert_failed_inner
+   3: core::panicking::assert_failed::<civ_engine::domain::work_tax::WorkTaxConversion, civ_engine::domain::work_tax::WorkTaxConversion>
+   4: p6_repin_d_work_tax::structural_disabled_or_empty_request_spends_nothing
+   5: p6_repin_d_work_tax::structural_disabled_or_empty_request_spends_nothing::{closure#0}
+   6: <p6_repin_d_work_tax::structural_disabled_or_empty_request_spends_nothing::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+---- parity_convert_work_pool_to_tax stdout ----
+
+thread 'parity_convert_work_pool_to_tax' (30756) panicked at tests/p6_repin_d_work_tax.rs:80:9:
+assertion `left == right` failed: {"enabled":false,"out":{"taxGained":0,"workRemaining":1,"workSpent":0},"pool":1,"rate":1,"req":1}
+  left: 0.0
+ right: 1.0
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+   1: core::panicking::panic_fmt
+   2: core::panicking::assert_failed_inner
+   3: core::panicking::assert_failed::<f64, f64>
+   4: p6_repin_d_work_tax::parity_convert_work_pool_to_tax
+   5: p6_repin_d_work_tax::parity_convert_work_pool_to_tax::{closure#0}
+   6: <p6_repin_d_work_tax::parity_convert_work_pool_to_tax::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+---- parity_execute_manual_work_tax_conversion stdout ----
+
+thread 'parity_execute_manual_work_tax_conversion' (30757) panicked at tests/p6_repin_d_work_tax.rs:179:9:
+assertion `left == right` failed: {"calls":[],"en":false,"finalPool":5,"out":{"taxGained":0,"workRemaining":5,"workSpent":0},"pool":5,"rate":1,"req":4}
+  left: 1.0
+ right: 5.0
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+   1: core::panicking::panic_fmt
+   2: core::panicking::assert_failed_inner
+   3: core::panicking::assert_failed::<f64, f64>
+   4: p6_repin_d_work_tax::parity_execute_manual_work_tax_conversion
+   5: p6_repin_d_work_tax::parity_execute_manual_work_tax_conversion::{closure#0}
+   6: <p6_repin_d_work_tax::parity_execute_manual_work_tax_conversion::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+
+failures:
+    parity_convert_work_pool_to_tax
+    parity_execute_manual_work_tax_conversion
+    structural_disabled_or_empty_request_spends_nothing
+
+test result: FAILED. 10 passed; 3 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.09s
+
+error: test failed, to rerun pass `--test p6_repin_d_work_tax`

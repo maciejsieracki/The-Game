@@ -37,7 +37,21 @@ Nowy plik `work-tax.ts` jest w całości nowy (status A w REPIN-DELTA §3, wiers
 ## Mutacje
 
 - M1 (wykonana): `candidate_tax > 0.0` → `candidate_tax >= 0.0` w `convert_work_pool_to_tax`. Wynik: 3 testy padają (`structural_work_not_spent_when_tax_rounds_to_zero`, `parity_convert_work_pool_to_tax`, `parity_execute_manual_work_tax_conversion`). Zabite. Plik przywrócony z kopii, sprawdzony.
-- M2..Mn: NIE_ZMIERZONO (pełna seria mutacji nie była w zakresie tej rundy; kolejne mutacje po partii `economy.ts`).
+- M2..M7 (runda weryfikacji, Operator-pomiary, na `d0dfe1f89`, jedna mutacja naraz, plik przywracany `git checkout`):
+  - M2 `pool.min(request)` → `pool.max(request)`: 5 testów padło.
+  - M3 `work_spent > 0.0` → `>= 0.0` w `execute_manual_work_tax_conversion`: 1 test padł.
+  - M4 `amount > 0.0` → `>= 0.0` w `restore_pending_work_tax`: 2 testy padły.
+  - M5 `is_human_owner` → `true` w `owner_can_convert_work_to_tax`: 2 testy padły.
+  - M6 usunięty `.floor()` w `tax_for_work_amount`: 4 testy padły.
+  - M7 `enabled` ignorowane w `convert_work_pool_to_tax`: 3 testy padły.
+  - Wszystkie 7 mutacji (M1..M7) zabite; plik `work_tax.rs` sprawdzony jako czysty (`git diff --quiet`).
+- M8+ (mutacje `economy.ts`): NIE_ZMIERZONO, do partii `economy.ts`.
+
+## Weryfikacja niezależna (runda weryfikacji)
+
+- Osobny zestaw wektorów: generator (poza repo) uruchamia `work-tax.ts` z `91dc998a` pod node 22.22 (`--experimental-strip-types`), inny seed PRNG, losowe wejścia ze specjalnymi wartościami (`-0`, `±Infinity`, `NaN`, `1e300`, `2^53`, ułamki `0.999999`, `1.0000001`), łącznie 7904 przypadków: tax 1500, convert 2500, owner 1200, serialize 900, restore 904, exec 900. Wynik: `VERIFIED_CASES=7904`, 0 rozbieżności.
+- Kodowanie liczb w tym zestawie: liczby całkowite bezpieczne jako JSON, pozostałe jako tekst (`String(x)`), bo `serde_json` bez feature `float_roundtrip` może zaokrąglić ostatni bit (wykryte: `r=129419.99999999999` → `129420.0`). To artefakt harnessu weryfikacji, nie portu. Zestaw zatwierdzony w repo (`web-vectors.json`) nie zawiera liczb z więcej niż 12 cyframi znaczącymi, więc ten problem go nie dotyczy (0 trafień regexu `[0-9]+\.[0-9]{12,}`).
+- Weryfikator tymczasowy (`tests/zz_verifier_tmp.rs`) usunięty; nie jest częścią commita.
 
 ## Bramki (runda 1)
 

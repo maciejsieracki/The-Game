@@ -1,0 +1,9 @@
+   Compiling civ-engine v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_9a5b4845-9e5-2/rust-port/engine)
+    Finished `test` profile [unoptimized] target(s) in 0.25s
+     Running tests/zz_verifier_tmp.rs (/home/user/cargo-target-shared/wf_9a5b4845-9e5-2/debug/deps/zz_verifier_tmp-acbb7f0e3d8b59cd)
+
+running 1 test
+VERIFIED_CASES=7904
+test verify_external_vectors ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.06s
