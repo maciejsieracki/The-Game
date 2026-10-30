@@ -1,0 +1,51 @@
+   Compiling civ-engine v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_f619c40f-051-1/rust-port/engine)
+    Finished `test` profile [unoptimized] target(s) in 37.83s
+     Running tests/p6_repin_wojna_2_r3_planned_march.rs (/home/user/cargo-target-shared/wf_f619c40f-051-1/debug/deps/p6_repin_wojna_2_r3_planned_march-f18d7955fbd96bcf)
+
+running 3 tests
+test planned_marches_from_save_with_general_target_matches_web ... ok
+test general_target_edge_cases_are_explicit ... FAILED
+test planned_marches_to_save_with_general_target_matches_web ... FAILED
+
+failures:
+
+---- general_target_edge_cases_are_explicit stdout ----
+
+thread 'general_target_edge_cases_are_explicit' (4925) panicked at tests/p6_repin_wojna_2_r3_planned_march.rs:220:5:
+assertion `left == right` failed
+  left: Some("")
+ right: None
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+   1: core::panicking::panic_fmt
+   2: core::panicking::assert_failed_inner
+   3: core::panicking::assert_failed::<core::option::Option<alloc::string::String>, core::option::Option<alloc::string::String>>
+   4: p6_repin_wojna_2_r3_planned_march::general_target_edge_cases_are_explicit
+   5: p6_repin_wojna_2_r3_planned_march::general_target_edge_cases_are_explicit::{closure#0}
+   6: <p6_repin_wojna_2_r3_planned_march::general_target_edge_cases_are_explicit::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+---- planned_marches_to_save_with_general_target_matches_web stdout ----
+
+thread 'planned_marches_to_save_with_general_target_matches_web' (4927) panicked at tests/p6_repin_wojna_2_r3_planned_march.rs:141:21:
+assertion `left == right` failed: {"marches":[["u2",{"attackUnitId":"x1","destQ":3,"destR":0,"generalTargetId":""}],["u4",{"attackUnitId":"g2","destQ":3,"destR":1,"generalTargetId":"x1"}]],"out":{"autoMarch":{"destQ":3,"destR":0,"leaderId":"u2"},"plannedMarches":{"u2":{"attackUnitId":"x1","destQ":3,"destR":0},"u4":{"attackUnitId":"g2","destQ":3,"destR":1,"generalTargetId":"x1"}}}}
+  left: PlannedMarchDest { dest_q: 3.0, dest_r: 0.0, attack_unit_id: Some("x1"), general_target_id: Some("") }
+ right: PlannedMarchDest { dest_q: 3.0, dest_r: 0.0, attack_unit_id: Some("x1"), general_target_id: None }
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+   1: core::panicking::panic_fmt
+   2: core::panicking::assert_failed_inner
+   3: core::panicking::assert_failed::<civ_engine::domain::pathfinding::ruch_jednostek::PlannedMarchDest, civ_engine::domain::pathfinding::ruch_jednostek::PlannedMarchDest>
+   4: p6_repin_wojna_2_r3_planned_march::planned_marches_to_save_with_general_target_matches_web
+   5: p6_repin_wojna_2_r3_planned_march::planned_marches_to_save_with_general_target_matches_web::{closure#0}
+   6: <p6_repin_wojna_2_r3_planned_march::planned_marches_to_save_with_general_target_matches_web::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+
+failures:
+    general_target_edge_cases_are_explicit
+    planned_marches_to_save_with_general_target_matches_web
+
+test result: FAILED. 1 passed; 2 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.12s
+
+error: test failed, to rerun pass `--test p6_repin_wojna_2_r3_planned_march`

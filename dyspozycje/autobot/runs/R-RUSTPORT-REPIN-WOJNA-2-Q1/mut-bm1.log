@@ -1,0 +1,48 @@
+   Compiling civ-engine v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_f619c40f-051-1/rust-port/engine)
+    Finished `test` profile [unoptimized] target(s) in 38.34s
+     Running tests/p6_repin_wojna_2_r3_battle_mode.rs (/home/user/cargo-target-shared/wf_f619c40f-051-1/debug/deps/p6_repin_wojna_2_r3_battle_mode-c6b83aa9bd979177)
+
+running 3 tests
+test restored_setting_version_matches_web ... ok
+test legacy_save_without_marker_never_activates_auto_only ... FAILED
+test player_battle_automatic_only_matches_web_on_all_combinations ... FAILED
+
+failures:
+
+---- legacy_save_without_marker_never_activates_auto_only stdout ----
+
+thread 'legacy_save_without_marker_never_activates_auto_only' (10546) panicked at tests/p6_repin_wojna_2_r3_battle_mode.rs:119:5:
+assertion failed: !player_battle_automatic_only(false, Some(1.0), Some(false))
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+   1: core::panicking::panic_fmt
+   2: core::panicking::panic
+   3: p6_repin_wojna_2_r3_battle_mode::legacy_save_without_marker_never_activates_auto_only
+   4: p6_repin_wojna_2_r3_battle_mode::legacy_save_without_marker_never_activates_auto_only::{closure#0}
+   5: <p6_repin_wojna_2_r3_battle_mode::legacy_save_without_marker_never_activates_auto_only::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+---- player_battle_automatic_only_matches_web_on_all_combinations stdout ----
+
+thread 'player_battle_automatic_only_matches_web_on_all_combinations' (10547) panicked at tests/p6_repin_wojna_2_r3_battle_mode.rs:80:17:
+assertion `left == right` failed: player(false, restore(Some(1.0)), Some(false)) vs web {"isMe":false,"manual":false,"rawAuto":1,"restoredThenAuto":0,"version":1}
+  left: true
+ right: false
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+   1: core::panicking::panic_fmt
+   2: core::panicking::assert_failed_inner
+   3: core::panicking::assert_failed::<bool, bool>
+   4: p6_repin_wojna_2_r3_battle_mode::player_battle_automatic_only_matches_web_on_all_combinations
+   5: p6_repin_wojna_2_r3_battle_mode::player_battle_automatic_only_matches_web_on_all_combinations::{closure#0}
+   6: <p6_repin_wojna_2_r3_battle_mode::player_battle_automatic_only_matches_web_on_all_combinations::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+
+failures:
+    legacy_save_without_marker_never_activates_auto_only
+    player_battle_automatic_only_matches_web_on_all_combinations
+
+test result: FAILED. 1 passed; 2 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.06s
+
+error: test failed, to rerun pass `--test p6_repin_wojna_2_r3_battle_mode`

@@ -76,6 +76,7 @@ fn dest_from(value: &Value) -> PlannedMarchDest {
         dest_q: num(&value["destQ"]),
         dest_r: num(&value["destR"]),
         attack_unit_id: opt_string(value.get("attackUnitId")),
+        general_target_id: opt_string(value.get("generalTargetId")),
     }
 }
 
@@ -287,6 +288,7 @@ fn saved_dest(value: &Value) -> Option<PlannedMarchSaved> {
         dest_q: opt_num(value.get("destQ")),
         dest_r: opt_num(value.get("destR")),
         attack_unit_id: opt_string(value.get("attackUnitId")),
+        general_target_id: opt_string(value.get("generalTargetId")),
     })
 }
 

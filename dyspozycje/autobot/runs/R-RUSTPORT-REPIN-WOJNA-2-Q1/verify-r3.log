@@ -1,0 +1,3 @@
+verify-r3 nearest: cases=400 withNaN=328 mismatches=0
+verify-r3: fromSave=900 toSave=300 battleMode=126 fails=0
+EXIT=0
