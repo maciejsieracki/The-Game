@@ -19,6 +19,8 @@ pub mod diplomacy_tick_war_brake;
 mod error;
 pub mod events;
 pub mod formation_rules;
+pub mod general_quick_follow;
+pub mod generals;
 pub mod hex;
 mod ids;
 pub mod improvement_build;
