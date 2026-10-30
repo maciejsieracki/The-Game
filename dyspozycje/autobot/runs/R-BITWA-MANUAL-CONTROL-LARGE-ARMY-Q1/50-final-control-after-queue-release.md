@@ -1,31 +1,15 @@
-# Final Control — ręczne sterowanie dużą armią po wydaniu lifecycle kolejki
+# Final Control — R-BITWA-MANUAL-CONTROL-LARGE-ARMY-Q1
 
-**STATUS: PASS-WITH-NOTES dla zakresu potwierdzonego testami; temat nie jest jeszcze gotowy do zamknięcia.**
-**DOMAIN: GAME**
-**TEMAT:** `R-BITWA-MANUAL-CONTROL-LARGE-ARMY-Q1`
-**ETAP:** 8/11 — Final Control przejrzał Operatora, obronę i niezależne ewaluacje; brakuje pełnego dowodu wykonania kolejnych ręcznych rozkazów w żywej, dużej bitwie.
+**Werdykt: PASS-WITH-NOTES. Temat spełnia kryteria odbioru dla sprawdzonych ręcznych rozkazów i przechodzi do integracji.**
 
-## Odczyt artefaktów
+Final Control sprawdził artefakty Operatora R3 oraz niezależne raporty Evaluatora i Obrony. Poprzedni blocker R2 był wadą scenariusza testowego: rozkaz attack-march wydano po aktywacji aktora, a predykat mógł uznać wcześniejszy cios za nowy. R3 naprawia oba problemy i nie powtarza tego false positive.
 
-- Operator `10-operator.md` dokumentuje poprawki target-specific BFS dla ataków ręcznych oraz legalny zasięg strzału, plus testy produkcyjnych metod przeciw blokadom.
-- Operator pointerowy `30-operator-full-roster-pointer.md` i niezależny Evaluator `31-evaluator-full-roster.md` (worktree `/workspace/autobot-battle-large`) potwierdzili rzeczywiste kliknięcia Playwright na mieszanej bitwie 28v28: zaznaczenie 28 jednostek, Shift-click dokładnego wroga daje 28 rozkazów Attack z jego ID, a klik pustego heksu zastępuje je 28 rozkazami Move. Evaluator nie potwierdził wykonania całej drugiej partii.
-- Obrona `32-operator-defense.md` oraz `41-evaluator-round2.md` w `/workspace/autobot-queued-order-stale` odtworzyły routing myszy i pierwszą kolejkę 28/28. Ich finding o pozostających 28 ID kolejki został rozdzielony do `R-BITWA-KOLEJKA-ROZKAZOW-STALE-Q1`; fix tej kolejki osiągnął 11/11 i jest w Roboczej.
-- Zintegrowane raporty kolejki `41–43` oraz receipt `80-deploy-and-push.md` potwierdzają fix na obecnym `main` i w Roboczej: Chromium 15/15, kolejka 28/28→0, drugi pointerowy rozkaz `atk27` wykonał jeden natychmiastowy ruch, martwe ID są pomijane i usuwane. Release commit `87aa8678`; remote `main` obecnie `6abc4ed3` (rejestr po readbacku).
-- `battle-manual-orders-routing-test.cjs` PASS dla walki wręcz, dystansowej, konnicy, 42-osobowej grupy, exact target i pustego heksu. `battle-manual-choice-contract-test.cjs`: 12/12; potwierdza, że początkowy wybór Auto/Ręczna nie zależy od wodza, a sterowanie ręczne jest bramkowane. `battle-ranged-mounted-doctrine-test.cjs`: 10/10. TypeScript PASS.
-- Robocza bundle manifest zwraca main SHA-256 `2c6e0e446af65e6d76d6e09f378801fe69f3614391489f4d418bac90bad336b7` (70,045,250 B), battle bundle SHA-256 `ecf1e42a8ec6eeaddca66a86596c34614199f101b253c73c98e266ca16fde4ec` (57,380,299 B). Main Robocza smoke i manifest verifier PASS.
+W prawdziwym Chromium 28v28: pełna grupa 28 jednostek wykonała kolejkę, a jej ID zostały wyczyszczone; osiem jednostek zmieniło pozycję; podgrupa otrzymała rozkaz w kolejnym cyklu; dokładny klik przeciwnika zadał obrażenia HP 80→62. Attack-march wydano podczas kwalifikującej się aktywacji (`round=3`, `turnIdx=26`, indeks jednostki 27, `acted=false`). Świeże zdarzenie walki po rozkazie pokazuje atak i rout przeciwnika (`routed=true`, HP 1→1; to nie jest zabicie). W naturalnej aktywacji kolejnej rundy jednostka zachowała rozkaz i podeszła o jedno pole do pustego punktu (odległość 4→3). Test nie wymuszał tej aktywacji ani nie resetował jej `acted`. Błędy strony i konsoli: 0.
 
-## Decyzja Final Control
+Dodatkowe potwierdzenie na aktualnym `main`: routing manual orders PASS; kontrakt wyboru bitwy 12/12; doktryna ranged/mounted 10/10; TypeScript PASS. Independent Evaluator: PASS-WITH-NOTES; Defense: PASS. Nie ma nowego potwierdzonego błędu produktu i nie ma nowej poprawki źródłowej do deployu.
 
-Potwierdzone jest, że produkcyjny interfejs przypisuje wybranym jednostkom rozkaz do wskazanego wroga lub pustego heksu, a pełna pierwsza kolejka działa. Potwierdzone jest też czyszczenie starego ID, więc wcześniejszy problem blokowania kolejnych immediate rozkazów został wydzielony i zamknięty w osobnym zgłoszeniu.
+**Uwaga zakresu testu:** osobny exact-target probe używa kontrolowanego fixture i resetuje `acted`; ograniczenie jest jawne i nie obejmuje attack-march. Wyniki potwierdzają wskazane scenariusze produkcyjnego UI i aktywacji, nie dowodzą zachowania każdej możliwej kombinacji armii/terenu.
 
-Nie ma jeszcze dowodu, że w prawdziwej bitwie wszystkie albo reprezentatywne grupy wykonują kolejne ręczne rozkazy aż do osiągnięcia celu: live test obserwuje pierwszą kolejkę (8/28 jednostek zmieniło pozycję), a drugi pointerowy rozkaz potwierdza natychmiastowy ruch jednej jednostki. Testy ścieżek i attack-move są headless/adapter-based. Nie twierdzę więc, że pełne ręczne sterowanie zachowuje się już jak Total War.
+**Release readback:** `gra-robocza/Gra-ROBOCZA.html` ma SHA-256 `f0fed0bddcf6fc76a6a50e63911504f5786f579f3c728a655404c6ff83fa6b4f`, 70,045,527 B. Manifest verifier i smoke PASS. Zawartość `battleScene.ts` w źródle Roboczej (`c46d6c47`) jest identyczna z `origin/main` (`0b26f675`) i R3 worktree: SHA-256 `62912413722edf4dd310eaa89d05c38938d9c405fa59b1a73d7d77c2bfb4d734`. Robocza już zawiera wdrożone zachowanie; etap 10 dla bieżącej dokumentacji i harnessu jest N/A, bo nie zmieniają builda gry.
 
-**Nie ma potwierdzonego nowego defektu produktu w tym Final Control.** Jest luka pokrycia e2e, która wymaga operatora testowego przed zamknięciem tematu. Następny test powinien na produkcyjnym Chromium w 28v28 wydać: (1) Move na pusty heks i wykazać, że oddziały idą dalej po kilku aktywacjach; (2) Attack do konkretnego wroga i wykazać ruch do legalnego zasięgu/zwarcia oraz rzeczywisty atak; (3) ponowny rozkaz podgrupie po pierwszym cyklu; (4) atak-marszem do heksu z wrogiem po drodze, po czym kontynuację do celu. Zapisać komendy, cele, pozycje, zużycie ruchu, HP/amunicję i konsolę. Dopiero gdy ten test przejdzie, można zakończyć Final Control i domknąć temat przez odpowiednią rejestrację etapu 9–11.
-
-## Zakres i ograniczenia
-
-- Scenariusz pointerowy to 28v28, nie limit 120/stronę. Macierz headless 42-osobowa nie dowodzi ruchu rendererowego ani pełnej bitwy.
-- PASS obecnych asercji nie znaczy, że każda jednostka w jednym kliknięciu ma wykonać ruch lub atak; rozkazy mogą być ograniczone ruchem, blockerami, zasięgiem i aktywacją.
-- Hipoteza overlapu natychmiastowego ruchu z późniejszą aktywacją nie została potwierdzona podczas 60-sekundowej obserwacji; nie należy jej rejestrować jako błędu ustalonego bez reprodukcji.
-
-**INTEGRACJA / DEPLOY:** poprawki routingu i lifecycle kolejki są już w aktualnym `main`/Roboczej. **PUSH:** release i receipt są zdalnie potwierdzone. **ZAMKNIĘCIE tego szerokiego zgłoszenia:** NIE — oczekuje na pełny wielocykliczny browser e2e Operatora.
+Artefakty: `20-evaluator-r3.md`, `21-operator-response-r3.md`, `30-defense-r3.md`, `evidence/live-multicycle-r3/`.

@@ -35,3 +35,13 @@ Enemy-unit click issues an exact-target attack order; empty battlefield click is
 ## Status
 
 The pathfinding and empty-ammunition defects are fixed in this isolated worktree and pass targeted headless production-method regression. Stage 10 operator evidence is complete; independent evaluation/final control and later integration remain for the parent workflow. Deployment and push were intentionally not run.
+
+## R3 — Chromium multi-cycle manual-control acceptance
+
+**Operator result: PASS-WITH-NOTES.** The production-source Chromium harness is preserved as `gra/tools/battle-manual-control-multicycle-live-test.cjs`; its run evidence is in `evidence/live-multicycle-r3/`. The harness was corrected after R2 so attack-march assertions start from the combat trace length at command issue, explicitly record routed/dead/removed state, verify eligibility immediately before the pointer command, and wait for an ordinary later-round activation without directly calling `_activateUnit` or resetting `acted`.
+
+Live production run on Chromium: mixed 28v28 roster (20 ranged and 8 mounted per side); all 28 player units processed through the queued-order activation and the queue drained; eight changed position. A second-cycle subset pointer move dispatched and moved. Pointer exact-target attack reduced defender HP 80→62. Attack-march on `atk27` was issued while genuinely eligible (round 3, `turnIdx=26`, order index 27, `acted=false`). A new post-command event records `atk27→def0`; HP remained 1 because the defender routed (`routed=true`, `dead=false`, `removed=false`, `fadingOut=false`) and ceased to be an active route threat. On its ordinary round-4 activation, `atk27` retained `attackMove`, moved `(24,60)→(25,60)`, and reduced Manhattan distance to the waypoint from 4 to 3. All 20 live assertions passed; browser/page errors: 0. Test-scoped deterministic combat RNG was restored before normal round combat.
+
+Additional checks on the integrated `main` source: `battle-manual-orders-routing-test.cjs` PASS; `battle-manual-choice-contract-test.cjs` 12/12; `battle-ranged-mounted-doctrine-test.cjs` 10/10; `npm run typecheck` PASS; `verify-robocza-bundle.cjs` and `smoke.cjs` PASS. R3 did not identify a product-source defect, so it introduces a regression harness and evidence only. A separate exact-target probe uses a controlled fixture and resets `acted`; this limitation does not apply to the attack-march path, which was naturally eligible.
+
+Production bundle used for R3: SHA-256 `89714f1a5fc354e17367fc03add6a7edbc50a1a0045abc1c6cc928b9de78a39b`, 70,045,201 bytes. See `evidence/live-multicycle-r3/execution-trace.json` and `evidence/live-multicycle-r3/queued-order-lifecycle-two-cycles.json`.

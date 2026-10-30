@@ -1,0 +1,2834 @@
+{
+  "initial": {
+    "attacker": 28,
+    "defender": 28,
+    "ownCount": 28,
+    "enemyCount": 28,
+    "playerSide": "atk",
+    "ranged": 20,
+    "mounted": 8,
+    "friendly": {
+      "id": "atk0",
+      "point": {
+        "x": 689.3432207014171,
+        "y": 420.75242214021847,
+        "tile": {
+          "col": 30,
+          "row": 73
+        },
+        "hitId": "atk0"
+      }
+    },
+    "target": {
+      "id": "def0",
+      "point": {
+        "x": 747.5495065107673,
+        "y": 414.1149736566458,
+        "tile": {
+          "col": 36,
+          "row": 72
+        },
+        "hitId": "def0"
+      }
+    },
+    "ground": {
+      "x": 660.4913291765727,
+      "y": 180.11409826801085,
+      "tile": {
+        "col": 25,
+        "row": 25
+      }
+    },
+    "allChip": true,
+    "manualMode": true,
+    "awaitingOrders": true
+  },
+  "speedProbe": {
+    "speedMul": 16
+  },
+  "slowTempo": 1,
+  "slowSteps": [
+    8,
+    4,
+    2,
+    1
+  ],
+  "roundTwoSpeed": [
+    2,
+    4,
+    8,
+    16
+  ],
+  "gateProbe": {
+    "gateEnabled": true,
+    "commanders": [],
+    "autoToManualBlocked": true,
+    "manualModeAfterAttempt": false
+  },
+  "clicks": [
+    {
+      "action": "canvas-select-friendly",
+      "id": "atk0",
+      "selected": [
+        "atk0"
+      ]
+    },
+    {
+      "action": "production-roster-all-pointer",
+      "point": {
+        "x": 168,
+        "y": 288.046875,
+        "label": "Wszystkie"
+      },
+      "state": {
+        "selected": [
+          "atk0",
+          "atk1",
+          "atk2",
+          "atk3",
+          "atk4",
+          "atk5",
+          "atk6",
+          "atk7",
+          "atk8",
+          "atk9",
+          "atk10",
+          "atk11",
+          "atk12",
+          "atk13",
+          "atk14",
+          "atk15",
+          "atk16",
+          "atk17",
+          "atk18",
+          "atk19",
+          "atk20",
+          "atk21",
+          "atk22",
+          "atk23",
+          "atk24",
+          "atk25",
+          "atk26",
+          "atk27"
+        ],
+        "player": [
+          "atk0",
+          "atk1",
+          "atk2",
+          "atk3",
+          "atk4",
+          "atk5",
+          "atk6",
+          "atk7",
+          "atk8",
+          "atk9",
+          "atk10",
+          "atk11",
+          "atk12",
+          "atk13",
+          "atk14",
+          "atk15",
+          "atk16",
+          "atk17",
+          "atk18",
+          "atk19",
+          "atk20",
+          "atk21",
+          "atk22",
+          "atk23",
+          "atk24",
+          "atk25",
+          "atk26",
+          "atk27"
+        ]
+      }
+    },
+    {
+      "action": "shift-canvas-click-exact-enemy",
+      "point": {
+        "x": 747.5495065107673,
+        "y": 414.1149736566458,
+        "tile": {
+          "col": 36,
+          "row": 72
+        },
+        "hitId": "def0"
+      },
+      "state": {
+        "targetId": "def0",
+        "selected": [
+          "atk0",
+          "atk1",
+          "atk2",
+          "atk3",
+          "atk4",
+          "atk5",
+          "atk6",
+          "atk7",
+          "atk8",
+          "atk9",
+          "atk10",
+          "atk11",
+          "atk12",
+          "atk13",
+          "atk14",
+          "atk15",
+          "atk16",
+          "atk17",
+          "atk18",
+          "atk19",
+          "atk20",
+          "atk21",
+          "atk22",
+          "atk23",
+          "atk24",
+          "atk25",
+          "atk26",
+          "atk27"
+        ],
+        "queued": [
+          "atk0",
+          "atk1",
+          "atk2",
+          "atk3",
+          "atk4",
+          "atk5",
+          "atk6",
+          "atk7",
+          "atk8",
+          "atk9",
+          "atk10",
+          "atk11",
+          "atk12",
+          "atk13",
+          "atk14",
+          "atk15",
+          "atk16",
+          "atk17",
+          "atk18",
+          "atk19",
+          "atk20",
+          "atk21",
+          "atk22",
+          "atk23",
+          "atk24",
+          "atk25",
+          "atk26",
+          "atk27"
+        ],
+        "orders": [
+          {
+            "id": "atk0",
+            "type": "attack",
+            "targetId": "def0"
+          },
+          {
+            "id": "atk1",
+            "type": "attack",
+            "targetId": "def0"
+          },
+          {
+            "id": "atk2",
+            "type": "attack",
+            "targetId": "def0"
+          },
+          {
+            "id": "atk3",
+            "type": "attack",
+            "targetId": "def0"
+          },
+          {
+            "id": "atk4",
+            "type": "attack",
+            "targetId": "def0"
+          },
+          {
+            "id": "atk5",
+            "type": "attack",
+            "targetId": "def0"
+          },
+          {
+            "id": "atk6",
+            "type": "attack",
+            "targetId": "def0"
+          },
+          {
+            "id": "atk7",
+            "type": "attack",
+            "targetId": "def0"
+          },
+          {
+            "id": "atk8",
+            "type": "attack",
+            "targetId": "def0"
+          },
+          {
+            "id": "atk9",
+            "type": "attack",
+            "targetId": "def0"
+          },
+          {
+            "id": "atk10",
+            "type": "attack",
+            "targetId": "def0"
+          },
+          {
+            "id": "atk11",
+            "type": "attack",
+            "targetId": "def0"
+          },
+          {
+            "id": "atk12",
+            "type": "attack",
+            "targetId": "def0"
+          },
+          {
+            "id": "atk13",
+            "type": "attack",
+            "targetId": "def0"
+          },
+          {
+            "id": "atk14",
+            "type": "attack",
+            "targetId": "def0"
+          },
+          {
+            "id": "atk15",
+            "type": "attack",
+            "targetId": "def0"
+          },
+          {
+            "id": "atk16",
+            "type": "attack",
+            "targetId": "def0"
+          },
+          {
+            "id": "atk17",
+            "type": "attack",
+            "targetId": "def0"
+          },
+          {
+            "id": "atk18",
+            "type": "attack",
+            "targetId": "def0"
+          },
+          {
+            "id": "atk19",
+            "type": "attack",
+            "targetId": "def0"
+          },
+          {
+            "id": "atk20",
+            "type": "attack",
+            "targetId": "def0"
+          },
+          {
+            "id": "atk21",
+            "type": "attack",
+            "targetId": "def0"
+          },
+          {
+            "id": "atk22",
+            "type": "attack",
+            "targetId": "def0"
+          },
+          {
+            "id": "atk23",
+            "type": "attack",
+            "targetId": "def0"
+          },
+          {
+            "id": "atk24",
+            "type": "attack",
+            "targetId": "def0"
+          },
+          {
+            "id": "atk25",
+            "type": "attack",
+            "targetId": "def0"
+          },
+          {
+            "id": "atk26",
+            "type": "attack",
+            "targetId": "def0"
+          },
+          {
+            "id": "atk27",
+            "type": "attack",
+            "targetId": "def0"
+          }
+        ]
+      }
+    },
+    {
+      "action": "shift-canvas-click-empty-ground",
+      "point": {
+        "x": 660.4913291765727,
+        "y": 180.11409826801085,
+        "tile": {
+          "col": 25,
+          "row": 25
+        }
+      },
+      "state": {
+        "ground": {
+          "col": 25,
+          "row": 25
+        },
+        "selected": [
+          "atk0",
+          "atk1",
+          "atk2",
+          "atk3",
+          "atk4",
+          "atk5",
+          "atk6",
+          "atk7",
+          "atk8",
+          "atk9",
+          "atk10",
+          "atk11",
+          "atk12",
+          "atk13",
+          "atk14",
+          "atk15",
+          "atk16",
+          "atk17",
+          "atk18",
+          "atk19",
+          "atk20",
+          "atk21",
+          "atk22",
+          "atk23",
+          "atk24",
+          "atk25",
+          "atk26",
+          "atk27"
+        ],
+        "queued": [
+          "atk0",
+          "atk1",
+          "atk2",
+          "atk3",
+          "atk4",
+          "atk5",
+          "atk6",
+          "atk7",
+          "atk8",
+          "atk9",
+          "atk10",
+          "atk11",
+          "atk12",
+          "atk13",
+          "atk14",
+          "atk15",
+          "atk16",
+          "atk17",
+          "atk18",
+          "atk19",
+          "atk20",
+          "atk21",
+          "atk22",
+          "atk23",
+          "atk24",
+          "atk25",
+          "atk26",
+          "atk27"
+        ],
+        "orders": [
+          {
+            "id": "atk0",
+            "type": "move",
+            "col": 25,
+            "row": 21
+          },
+          {
+            "id": "atk1",
+            "type": "move",
+            "col": 25,
+            "row": 22
+          },
+          {
+            "id": "atk2",
+            "type": "move",
+            "col": 25,
+            "row": 23
+          },
+          {
+            "id": "atk3",
+            "type": "move",
+            "col": 25,
+            "row": 24
+          },
+          {
+            "id": "atk4",
+            "type": "move",
+            "col": 25,
+            "row": 25
+          },
+          {
+            "id": "atk5",
+            "type": "move",
+            "col": 25,
+            "row": 26
+          },
+          {
+            "id": "atk6",
+            "type": "move",
+            "col": 25,
+            "row": 27
+          },
+          {
+            "id": "atk7",
+            "type": "move",
+            "col": 25,
+            "row": 28
+          },
+          {
+            "id": "atk8",
+            "type": "move",
+            "col": 25,
+            "row": 29
+          },
+          {
+            "id": "atk9",
+            "type": "move",
+            "col": 25,
+            "row": 30
+          },
+          {
+            "id": "atk10",
+            "type": "move",
+            "col": 25,
+            "row": 21
+          },
+          {
+            "id": "atk11",
+            "type": "move",
+            "col": 25,
+            "row": 22
+          },
+          {
+            "id": "atk12",
+            "type": "move",
+            "col": 25,
+            "row": 23
+          },
+          {
+            "id": "atk13",
+            "type": "move",
+            "col": 25,
+            "row": 24
+          },
+          {
+            "id": "atk14",
+            "type": "move",
+            "col": 25,
+            "row": 25
+          },
+          {
+            "id": "atk15",
+            "type": "move",
+            "col": 25,
+            "row": 26
+          },
+          {
+            "id": "atk16",
+            "type": "move",
+            "col": 25,
+            "row": 27
+          },
+          {
+            "id": "atk17",
+            "type": "move",
+            "col": 25,
+            "row": 28
+          },
+          {
+            "id": "atk18",
+            "type": "move",
+            "col": 25,
+            "row": 29
+          },
+          {
+            "id": "atk19",
+            "type": "move",
+            "col": 25,
+            "row": 30
+          },
+          {
+            "id": "atk20",
+            "type": "move",
+            "col": 25,
+            "row": 26
+          },
+          {
+            "id": "atk21",
+            "type": "move",
+            "col": 25,
+            "row": 24
+          },
+          {
+            "id": "atk22",
+            "type": "move",
+            "col": 25,
+            "row": 27
+          },
+          {
+            "id": "atk23",
+            "type": "move",
+            "col": 25,
+            "row": 23
+          },
+          {
+            "id": "atk24",
+            "type": "move",
+            "col": 25,
+            "row": 28
+          },
+          {
+            "id": "atk25",
+            "type": "move",
+            "col": 25,
+            "row": 22
+          },
+          {
+            "id": "atk26",
+            "type": "move",
+            "col": 25,
+            "row": 29
+          },
+          {
+            "id": "atk27",
+            "type": "move",
+            "col": 25,
+            "row": 21
+          }
+        ]
+      }
+    },
+    {
+      "action": "space-starts-production-activation-queue",
+      "state": {
+        "round": 1,
+        "turnIdx": 28,
+        "queueRemaining": 0,
+        "live": 28,
+        "acted": 28,
+        "moved": 8,
+        "movedIds": [
+          "atk20",
+          "atk21",
+          "atk22",
+          "atk23",
+          "atk24",
+          "atk25",
+          "atk26",
+          "atk27"
+        ]
+      }
+    },
+    {
+      "action": "round-two-active-canvas-pointer-subset-immediate-move",
+      "state": {
+        "id": "atk27",
+        "round": 2,
+        "turnIdx": 27,
+        "queuedBefore": 0,
+        "queuedAfter": 0,
+        "queueIdsBefore": [],
+        "acted": true,
+        "order": {
+          "type": "move",
+          "col": 31,
+          "row": 68
+        },
+        "before": {
+          "q": 30,
+          "r": 72
+        },
+        "after": {
+          "q": 31,
+          "r": 71
+        },
+        "destination": {
+          "col": 31,
+          "row": 72
+        },
+        "selected": [
+          "atk0"
+        ],
+        "observation": {
+          "commands": [
+            {
+              "at": "2026-10-30T06:03:48.559Z",
+              "round": 2,
+              "turnIdx": 24,
+              "col": 31,
+              "row": 72,
+              "queueOnly": false,
+              "ids": [
+                "atk20",
+                "atk21",
+                "atk22",
+                "atk23",
+                "atk24",
+                "atk25",
+                "atk26",
+                "atk27"
+              ],
+              "before": [
+                {
+                  "id": "atk20",
+                  "groupId": "1",
+                  "formationOffset": {
+                    "dc": 0,
+                    "dr": 1
+                  },
+                  "expected": {
+                    "col": 31,
+                    "row": 73
+                  },
+                  "before": {
+                    "q": 29,
+                    "r": 76
+                  },
+                  "acted": true
+                },
+                {
+                  "id": "atk21",
+                  "groupId": "1",
+                  "formationOffset": {
+                    "dc": 0,
+                    "dr": -1
+                  },
+                  "expected": {
+                    "col": 31,
+                    "row": 71
+                  },
+                  "before": {
+                    "q": 29,
+                    "r": 74
+                  },
+                  "acted": true
+                },
+                {
+                  "id": "atk22",
+                  "groupId": "1",
+                  "formationOffset": {
+                    "dc": 0,
+                    "dr": 2
+                  },
+                  "expected": {
+                    "col": 31,
+                    "row": 74
+                  },
+                  "before": {
+                    "q": 29,
+                    "r": 77
+                  },
+                  "acted": true
+                },
+                {
+                  "id": "atk23",
+                  "groupId": "1",
+                  "formationOffset": {
+                    "dc": 0,
+                    "dr": -2
+                  },
+                  "expected": {
+                    "col": 31,
+                    "row": 70
+                  },
+                  "before": {
+                    "q": 29,
+                    "r": 73
+                  },
+                  "acted": true
+                },
+                {
+                  "id": "atk24",
+                  "groupId": "1",
+                  "formationOffset": {
+                    "dc": 0,
+                    "dr": 3
+                  },
+                  "expected": {
+                    "col": 31,
+                    "row": 75
+                  },
+                  "before": {
+                    "q": 30,
+                    "r": 79
+                  },
+                  "acted": false
+                },
+                {
+                  "id": "atk25",
+                  "groupId": "1",
+                  "formationOffset": {
+                    "dc": 0,
+                    "dr": -3
+                  },
+                  "expected": {
+                    "col": 31,
+                    "row": 69
+                  },
+                  "before": {
+                    "q": 30,
+                    "r": 73
+                  },
+                  "acted": false
+                },
+                {
+                  "id": "atk26",
+                  "groupId": "1",
+                  "formationOffset": {
+                    "dc": 0,
+                    "dr": 4
+                  },
+                  "expected": {
+                    "col": 31,
+                    "row": 76
+                  },
+                  "before": {
+                    "q": 29,
+                    "r": 81
+                  },
+                  "acted": false
+                },
+                {
+                  "id": "atk27",
+                  "groupId": "1",
+                  "formationOffset": {
+                    "dc": 0,
+                    "dr": -4
+                  },
+                  "expected": {
+                    "col": 31,
+                    "row": 68
+                  },
+                  "before": {
+                    "q": 30,
+                    "r": 72
+                  },
+                  "acted": false
+                }
+              ],
+              "after": [
+                {
+                  "id": "atk20",
+                  "playerOrder": {
+                    "type": "move",
+                    "col": 31,
+                    "row": 73
+                  },
+                  "acted": true
+                },
+                {
+                  "id": "atk21",
+                  "playerOrder": {
+                    "type": "move",
+                    "col": 31,
+                    "row": 71
+                  },
+                  "acted": true
+                },
+                {
+                  "id": "atk22",
+                  "playerOrder": {
+                    "type": "move",
+                    "col": 31,
+                    "row": 74
+                  },
+                  "acted": true
+                },
+                {
+                  "id": "atk23",
+                  "playerOrder": {
+                    "type": "move",
+                    "col": 31,
+                    "row": 70
+                  },
+                  "acted": true
+                },
+                {
+                  "id": "atk24",
+                  "playerOrder": {
+                    "type": "move",
+                    "col": 31,
+                    "row": 75
+                  },
+                  "acted": false
+                },
+                {
+                  "id": "atk25",
+                  "playerOrder": {
+                    "type": "move",
+                    "col": 31,
+                    "row": 69
+                  },
+                  "acted": false
+                },
+                {
+                  "id": "atk26",
+                  "playerOrder": {
+                    "type": "move",
+                    "col": 31,
+                    "row": 76
+                  },
+                  "acted": false
+                },
+                {
+                  "id": "atk27",
+                  "playerOrder": {
+                    "type": "move",
+                    "col": 31,
+                    "row": 68
+                  },
+                  "acted": false
+                }
+              ]
+            }
+          ],
+          "immediateDispatches": [
+            {
+              "at": "2026-10-30T06:03:48.560Z",
+              "round": 2,
+              "turnIdx": 24,
+              "requested": [
+                "atk20",
+                "atk21",
+                "atk22",
+                "atk23",
+                "atk24",
+                "atk25",
+                "atk26",
+                "atk27"
+              ],
+              "eligible": [
+                "atk24",
+                "atk25",
+                "atk26",
+                "atk27"
+              ],
+              "queue": [],
+              "busy": false
+            }
+          ],
+          "performCalls": [
+            {
+              "at": "2026-10-30T06:03:48.560Z",
+              "id": "atk24",
+              "round": 2,
+              "turnIdx": 24,
+              "turnOrderIndex": 24,
+              "activationContext": null,
+              "immediateBatch": true,
+              "actedBefore": false,
+              "orderBefore": {
+                "type": "move",
+                "col": 31,
+                "row": 75
+              },
+              "before": {
+                "q": 30,
+                "r": 79
+              },
+              "completedAt": "2026-10-30T06:03:48.649Z",
+              "actedAfter": false,
+              "after": {
+                "q": 31,
+                "r": 77
+              }
+            },
+            {
+              "at": "2026-10-30T06:03:48.573Z",
+              "id": "atk24",
+              "round": 2,
+              "turnIdx": 25,
+              "turnOrderIndex": 24,
+              "activationContext": "atk24",
+              "immediateBatch": false,
+              "actedBefore": false,
+              "orderBefore": {
+                "type": "move",
+                "col": 31,
+                "row": 75
+              },
+              "before": {
+                "q": 31,
+                "r": 78
+              },
+              "completedAt": "2026-10-30T06:03:49.611Z",
+              "actedAfter": true,
+              "after": {
+                "q": 31,
+                "r": 77
+              }
+            },
+            {
+              "at": "2026-10-30T06:03:48.649Z",
+              "id": "atk25",
+              "round": 2,
+              "turnIdx": 25,
+              "turnOrderIndex": 25,
+              "activationContext": null,
+              "immediateBatch": true,
+              "actedBefore": false,
+              "orderBefore": {
+                "type": "move",
+                "col": 31,
+                "row": 69
+              },
+              "before": {
+                "q": 30,
+                "r": 73
+              },
+              "completedAt": "2026-10-30T06:03:49.612Z",
+              "actedAfter": false,
+              "after": {
+                "q": 31,
+                "r": 72
+              }
+            },
+            {
+              "at": "2026-10-30T06:03:49.612Z",
+              "id": "atk26",
+              "round": 2,
+              "turnIdx": 25,
+              "turnOrderIndex": 26,
+              "activationContext": null,
+              "immediateBatch": true,
+              "actedBefore": false,
+              "orderBefore": {
+                "type": "move",
+                "col": 31,
+                "row": 76
+              },
+              "before": {
+                "q": 29,
+                "r": 81
+              },
+              "completedAt": "2026-10-30T06:03:50.706Z",
+              "actedAfter": false,
+              "after": {
+                "q": 31,
+                "r": 79
+              }
+            },
+            {
+              "at": "2026-10-30T06:03:50.621Z",
+              "id": "atk26",
+              "round": 2,
+              "turnIdx": 27,
+              "turnOrderIndex": 26,
+              "activationContext": "atk26",
+              "immediateBatch": false,
+              "actedBefore": false,
+              "orderBefore": {
+                "type": "move",
+                "col": 31,
+                "row": 76
+              },
+              "before": {
+                "q": 30,
+                "r": 80
+              },
+              "completedAt": "2026-10-30T06:03:51.715Z",
+              "actedAfter": true,
+              "after": {
+                "q": 31,
+                "r": 79
+              }
+            },
+            {
+              "at": "2026-10-30T06:03:50.706Z",
+              "id": "atk27",
+              "round": 2,
+              "turnIdx": 27,
+              "turnOrderIndex": 27,
+              "activationContext": null,
+              "immediateBatch": true,
+              "actedBefore": false,
+              "orderBefore": {
+                "type": "move",
+                "col": 31,
+                "row": 68
+              },
+              "before": {
+                "q": 30,
+                "r": 72
+              },
+              "completedAt": "2026-10-30T06:03:51.716Z",
+              "actedAfter": false,
+              "after": {
+                "q": 31,
+                "r": 71
+              }
+            }
+          ],
+          "activationCalls": [
+            {
+              "at": "2026-10-30T06:03:48.573Z",
+              "id": "atk24",
+              "round": 2,
+              "turnIdx": 25,
+              "turnOrderIndex": 24,
+              "acted": false
+            },
+            {
+              "at": "2026-10-30T06:03:50.621Z",
+              "id": "atk26",
+              "round": 2,
+              "turnIdx": 27,
+              "turnOrderIndex": 26,
+              "acted": false
+            }
+          ]
+        }
+      },
+      "activeRoundTrace": [
+        {
+          "at": "2026-10-30T06:02:36.768Z",
+          "round": 1,
+          "turnIdx": 50,
+          "awaitingOrders": false
+        },
+        {
+          "at": "2026-10-30T06:02:42.672Z",
+          "round": 1,
+          "turnIdx": 51,
+          "awaitingOrders": false
+        },
+        {
+          "at": "2026-10-30T06:02:49.605Z",
+          "round": 1,
+          "turnIdx": 52,
+          "awaitingOrders": false
+        },
+        {
+          "at": "2026-10-30T06:02:55.267Z",
+          "round": 1,
+          "turnIdx": 53,
+          "awaitingOrders": false
+        },
+        {
+          "at": "2026-10-30T06:03:02.494Z",
+          "round": 1,
+          "turnIdx": 54,
+          "awaitingOrders": false
+        },
+        {
+          "at": "2026-10-30T06:03:08.184Z",
+          "round": 1,
+          "turnIdx": 55,
+          "awaitingOrders": false
+        },
+        {
+          "at": "2026-10-30T06:03:15.051Z",
+          "round": 1,
+          "turnIdx": 56,
+          "awaitingOrders": false
+        },
+        {
+          "at": "2026-10-30T06:03:21.857Z",
+          "round": 2,
+          "turnIdx": 1,
+          "awaitingOrders": false
+        }
+      ]
+    }
+  ],
+  "attack": {
+    "targetId": "def0",
+    "selected": [
+      "atk0",
+      "atk1",
+      "atk2",
+      "atk3",
+      "atk4",
+      "atk5",
+      "atk6",
+      "atk7",
+      "atk8",
+      "atk9",
+      "atk10",
+      "atk11",
+      "atk12",
+      "atk13",
+      "atk14",
+      "atk15",
+      "atk16",
+      "atk17",
+      "atk18",
+      "atk19",
+      "atk20",
+      "atk21",
+      "atk22",
+      "atk23",
+      "atk24",
+      "atk25",
+      "atk26",
+      "atk27"
+    ],
+    "queued": [
+      "atk0",
+      "atk1",
+      "atk2",
+      "atk3",
+      "atk4",
+      "atk5",
+      "atk6",
+      "atk7",
+      "atk8",
+      "atk9",
+      "atk10",
+      "atk11",
+      "atk12",
+      "atk13",
+      "atk14",
+      "atk15",
+      "atk16",
+      "atk17",
+      "atk18",
+      "atk19",
+      "atk20",
+      "atk21",
+      "atk22",
+      "atk23",
+      "atk24",
+      "atk25",
+      "atk26",
+      "atk27"
+    ],
+    "orders": [
+      {
+        "id": "atk0",
+        "type": "attack",
+        "targetId": "def0"
+      },
+      {
+        "id": "atk1",
+        "type": "attack",
+        "targetId": "def0"
+      },
+      {
+        "id": "atk2",
+        "type": "attack",
+        "targetId": "def0"
+      },
+      {
+        "id": "atk3",
+        "type": "attack",
+        "targetId": "def0"
+      },
+      {
+        "id": "atk4",
+        "type": "attack",
+        "targetId": "def0"
+      },
+      {
+        "id": "atk5",
+        "type": "attack",
+        "targetId": "def0"
+      },
+      {
+        "id": "atk6",
+        "type": "attack",
+        "targetId": "def0"
+      },
+      {
+        "id": "atk7",
+        "type": "attack",
+        "targetId": "def0"
+      },
+      {
+        "id": "atk8",
+        "type": "attack",
+        "targetId": "def0"
+      },
+      {
+        "id": "atk9",
+        "type": "attack",
+        "targetId": "def0"
+      },
+      {
+        "id": "atk10",
+        "type": "attack",
+        "targetId": "def0"
+      },
+      {
+        "id": "atk11",
+        "type": "attack",
+        "targetId": "def0"
+      },
+      {
+        "id": "atk12",
+        "type": "attack",
+        "targetId": "def0"
+      },
+      {
+        "id": "atk13",
+        "type": "attack",
+        "targetId": "def0"
+      },
+      {
+        "id": "atk14",
+        "type": "attack",
+        "targetId": "def0"
+      },
+      {
+        "id": "atk15",
+        "type": "attack",
+        "targetId": "def0"
+      },
+      {
+        "id": "atk16",
+        "type": "attack",
+        "targetId": "def0"
+      },
+      {
+        "id": "atk17",
+        "type": "attack",
+        "targetId": "def0"
+      },
+      {
+        "id": "atk18",
+        "type": "attack",
+        "targetId": "def0"
+      },
+      {
+        "id": "atk19",
+        "type": "attack",
+        "targetId": "def0"
+      },
+      {
+        "id": "atk20",
+        "type": "attack",
+        "targetId": "def0"
+      },
+      {
+        "id": "atk21",
+        "type": "attack",
+        "targetId": "def0"
+      },
+      {
+        "id": "atk22",
+        "type": "attack",
+        "targetId": "def0"
+      },
+      {
+        "id": "atk23",
+        "type": "attack",
+        "targetId": "def0"
+      },
+      {
+        "id": "atk24",
+        "type": "attack",
+        "targetId": "def0"
+      },
+      {
+        "id": "atk25",
+        "type": "attack",
+        "targetId": "def0"
+      },
+      {
+        "id": "atk26",
+        "type": "attack",
+        "targetId": "def0"
+      },
+      {
+        "id": "atk27",
+        "type": "attack",
+        "targetId": "def0"
+      }
+    ]
+  },
+  "move": {
+    "ground": {
+      "col": 25,
+      "row": 25
+    },
+    "selected": [
+      "atk0",
+      "atk1",
+      "atk2",
+      "atk3",
+      "atk4",
+      "atk5",
+      "atk6",
+      "atk7",
+      "atk8",
+      "atk9",
+      "atk10",
+      "atk11",
+      "atk12",
+      "atk13",
+      "atk14",
+      "atk15",
+      "atk16",
+      "atk17",
+      "atk18",
+      "atk19",
+      "atk20",
+      "atk21",
+      "atk22",
+      "atk23",
+      "atk24",
+      "atk25",
+      "atk26",
+      "atk27"
+    ],
+    "queued": [
+      "atk0",
+      "atk1",
+      "atk2",
+      "atk3",
+      "atk4",
+      "atk5",
+      "atk6",
+      "atk7",
+      "atk8",
+      "atk9",
+      "atk10",
+      "atk11",
+      "atk12",
+      "atk13",
+      "atk14",
+      "atk15",
+      "atk16",
+      "atk17",
+      "atk18",
+      "atk19",
+      "atk20",
+      "atk21",
+      "atk22",
+      "atk23",
+      "atk24",
+      "atk25",
+      "atk26",
+      "atk27"
+    ],
+    "orders": [
+      {
+        "id": "atk0",
+        "type": "move",
+        "col": 25,
+        "row": 21
+      },
+      {
+        "id": "atk1",
+        "type": "move",
+        "col": 25,
+        "row": 22
+      },
+      {
+        "id": "atk2",
+        "type": "move",
+        "col": 25,
+        "row": 23
+      },
+      {
+        "id": "atk3",
+        "type": "move",
+        "col": 25,
+        "row": 24
+      },
+      {
+        "id": "atk4",
+        "type": "move",
+        "col": 25,
+        "row": 25
+      },
+      {
+        "id": "atk5",
+        "type": "move",
+        "col": 25,
+        "row": 26
+      },
+      {
+        "id": "atk6",
+        "type": "move",
+        "col": 25,
+        "row": 27
+      },
+      {
+        "id": "atk7",
+        "type": "move",
+        "col": 25,
+        "row": 28
+      },
+      {
+        "id": "atk8",
+        "type": "move",
+        "col": 25,
+        "row": 29
+      },
+      {
+        "id": "atk9",
+        "type": "move",
+        "col": 25,
+        "row": 30
+      },
+      {
+        "id": "atk10",
+        "type": "move",
+        "col": 25,
+        "row": 21
+      },
+      {
+        "id": "atk11",
+        "type": "move",
+        "col": 25,
+        "row": 22
+      },
+      {
+        "id": "atk12",
+        "type": "move",
+        "col": 25,
+        "row": 23
+      },
+      {
+        "id": "atk13",
+        "type": "move",
+        "col": 25,
+        "row": 24
+      },
+      {
+        "id": "atk14",
+        "type": "move",
+        "col": 25,
+        "row": 25
+      },
+      {
+        "id": "atk15",
+        "type": "move",
+        "col": 25,
+        "row": 26
+      },
+      {
+        "id": "atk16",
+        "type": "move",
+        "col": 25,
+        "row": 27
+      },
+      {
+        "id": "atk17",
+        "type": "move",
+        "col": 25,
+        "row": 28
+      },
+      {
+        "id": "atk18",
+        "type": "move",
+        "col": 25,
+        "row": 29
+      },
+      {
+        "id": "atk19",
+        "type": "move",
+        "col": 25,
+        "row": 30
+      },
+      {
+        "id": "atk20",
+        "type": "move",
+        "col": 25,
+        "row": 26
+      },
+      {
+        "id": "atk21",
+        "type": "move",
+        "col": 25,
+        "row": 24
+      },
+      {
+        "id": "atk22",
+        "type": "move",
+        "col": 25,
+        "row": 27
+      },
+      {
+        "id": "atk23",
+        "type": "move",
+        "col": 25,
+        "row": 23
+      },
+      {
+        "id": "atk24",
+        "type": "move",
+        "col": 25,
+        "row": 28
+      },
+      {
+        "id": "atk25",
+        "type": "move",
+        "col": 25,
+        "row": 22
+      },
+      {
+        "id": "atk26",
+        "type": "move",
+        "col": 25,
+        "row": 29
+      },
+      {
+        "id": "atk27",
+        "type": "move",
+        "col": 25,
+        "row": 21
+      }
+    ]
+  },
+  "beforeExecution": {
+    "atk0": {
+      "q": 30,
+      "r": 73
+    },
+    "atk1": {
+      "q": 30,
+      "r": 74
+    },
+    "atk2": {
+      "q": 30,
+      "r": 75
+    },
+    "atk3": {
+      "q": 30,
+      "r": 76
+    },
+    "atk4": {
+      "q": 30,
+      "r": 77
+    },
+    "atk5": {
+      "q": 30,
+      "r": 78
+    },
+    "atk6": {
+      "q": 30,
+      "r": 79
+    },
+    "atk7": {
+      "q": 30,
+      "r": 80
+    },
+    "atk8": {
+      "q": 30,
+      "r": 81
+    },
+    "atk9": {
+      "q": 30,
+      "r": 83
+    },
+    "atk10": {
+      "q": 29,
+      "r": 73
+    },
+    "atk11": {
+      "q": 29,
+      "r": 74
+    },
+    "atk12": {
+      "q": 29,
+      "r": 75
+    },
+    "atk13": {
+      "q": 29,
+      "r": 76
+    },
+    "atk14": {
+      "q": 29,
+      "r": 77
+    },
+    "atk15": {
+      "q": 29,
+      "r": 78
+    },
+    "atk16": {
+      "q": 29,
+      "r": 79
+    },
+    "atk17": {
+      "q": 29,
+      "r": 80
+    },
+    "atk18": {
+      "q": 29,
+      "r": 81
+    },
+    "atk19": {
+      "q": 29,
+      "r": 82
+    },
+    "atk20": {
+      "q": 31,
+      "r": 78
+    },
+    "atk21": {
+      "q": 31,
+      "r": 76
+    },
+    "atk22": {
+      "q": 31,
+      "r": 79
+    },
+    "atk23": {
+      "q": 31,
+      "r": 75
+    },
+    "atk24": {
+      "q": 31,
+      "r": 80
+    },
+    "atk25": {
+      "q": 31,
+      "r": 74
+    },
+    "atk26": {
+      "q": 30,
+      "r": 82
+    },
+    "atk27": {
+      "q": 31,
+      "r": 73
+    }
+  },
+  "execution": {
+    "round": 1,
+    "turnIdx": 28,
+    "queueRemaining": 0,
+    "live": 28,
+    "acted": 28,
+    "moved": 8,
+    "movedIds": [
+      "atk20",
+      "atk21",
+      "atk22",
+      "atk23",
+      "atk24",
+      "atk25",
+      "atk26",
+      "atk27"
+    ]
+  },
+  "attackMarchActiveRound": {
+    "round": 3,
+    "turnIdx": 1
+  },
+  "subset": {
+    "friendly": {
+      "id": "atk27",
+      "before": {
+        "q": 30,
+        "r": 72
+      },
+      "turnIndex": 27
+    },
+    "ground": {
+      "x": 700.6892140221722,
+      "y": 415.3168392039911,
+      "tile": {
+        "col": 31,
+        "row": 72
+      }
+    },
+    "queuedBefore": 0,
+    "queueIds": [],
+    "round": 2,
+    "turnIdx": 2
+  },
+  "postScroll": {
+    "eligible": true,
+    "id": "atk27",
+    "round": 2,
+    "turnIdx": 23,
+    "turnIndex": 27,
+    "acted": false,
+    "before": {
+      "q": 30,
+      "r": 72
+    },
+    "ground": {
+      "x": 700.6892140221722,
+      "y": 415.3168392039911,
+      "tile": {
+        "col": 31,
+        "row": 72
+      }
+    },
+    "queueIds": [],
+    "canvasRect": {
+      "x": 0,
+      "y": 0,
+      "width": 1440,
+      "height": 900
+    }
+  },
+  "orderTrace": {
+    "round": 2,
+    "turnIdx": 24,
+    "id": "atk27",
+    "turnOrderIndex": 27,
+    "groupId": "1",
+    "formationOffset": {
+      "dc": 0,
+      "dr": -4
+    },
+    "destination": {
+      "col": 31,
+      "row": 72
+    },
+    "expected": {
+      "col": 31,
+      "row": 68
+    }
+  },
+  "secondCycle": {
+    "id": "atk27",
+    "round": 2,
+    "turnIdx": 27,
+    "queuedBefore": 0,
+    "queuedAfter": 0,
+    "queueIdsBefore": [],
+    "acted": true,
+    "order": {
+      "type": "move",
+      "col": 31,
+      "row": 68
+    },
+    "before": {
+      "q": 30,
+      "r": 72
+    },
+    "after": {
+      "q": 31,
+      "r": 71
+    },
+    "destination": {
+      "col": 31,
+      "row": 72
+    },
+    "selected": [
+      "atk0"
+    ],
+    "observation": {
+      "commands": [
+        {
+          "at": "2026-10-30T06:03:48.559Z",
+          "round": 2,
+          "turnIdx": 24,
+          "col": 31,
+          "row": 72,
+          "queueOnly": false,
+          "ids": [
+            "atk20",
+            "atk21",
+            "atk22",
+            "atk23",
+            "atk24",
+            "atk25",
+            "atk26",
+            "atk27"
+          ],
+          "before": [
+            {
+              "id": "atk20",
+              "groupId": "1",
+              "formationOffset": {
+                "dc": 0,
+                "dr": 1
+              },
+              "expected": {
+                "col": 31,
+                "row": 73
+              },
+              "before": {
+                "q": 29,
+                "r": 76
+              },
+              "acted": true
+            },
+            {
+              "id": "atk21",
+              "groupId": "1",
+              "formationOffset": {
+                "dc": 0,
+                "dr": -1
+              },
+              "expected": {
+                "col": 31,
+                "row": 71
+              },
+              "before": {
+                "q": 29,
+                "r": 74
+              },
+              "acted": true
+            },
+            {
+              "id": "atk22",
+              "groupId": "1",
+              "formationOffset": {
+                "dc": 0,
+                "dr": 2
+              },
+              "expected": {
+                "col": 31,
+                "row": 74
+              },
+              "before": {
+                "q": 29,
+                "r": 77
+              },
+              "acted": true
+            },
+            {
+              "id": "atk23",
+              "groupId": "1",
+              "formationOffset": {
+                "dc": 0,
+                "dr": -2
+              },
+              "expected": {
+                "col": 31,
+                "row": 70
+              },
+              "before": {
+                "q": 29,
+                "r": 73
+              },
+              "acted": true
+            },
+            {
+              "id": "atk24",
+              "groupId": "1",
+              "formationOffset": {
+                "dc": 0,
+                "dr": 3
+              },
+              "expected": {
+                "col": 31,
+                "row": 75
+              },
+              "before": {
+                "q": 30,
+                "r": 79
+              },
+              "acted": false
+            },
+            {
+              "id": "atk25",
+              "groupId": "1",
+              "formationOffset": {
+                "dc": 0,
+                "dr": -3
+              },
+              "expected": {
+                "col": 31,
+                "row": 69
+              },
+              "before": {
+                "q": 30,
+                "r": 73
+              },
+              "acted": false
+            },
+            {
+              "id": "atk26",
+              "groupId": "1",
+              "formationOffset": {
+                "dc": 0,
+                "dr": 4
+              },
+              "expected": {
+                "col": 31,
+                "row": 76
+              },
+              "before": {
+                "q": 29,
+                "r": 81
+              },
+              "acted": false
+            },
+            {
+              "id": "atk27",
+              "groupId": "1",
+              "formationOffset": {
+                "dc": 0,
+                "dr": -4
+              },
+              "expected": {
+                "col": 31,
+                "row": 68
+              },
+              "before": {
+                "q": 30,
+                "r": 72
+              },
+              "acted": false
+            }
+          ],
+          "after": [
+            {
+              "id": "atk20",
+              "playerOrder": {
+                "type": "move",
+                "col": 31,
+                "row": 73
+              },
+              "acted": true
+            },
+            {
+              "id": "atk21",
+              "playerOrder": {
+                "type": "move",
+                "col": 31,
+                "row": 71
+              },
+              "acted": true
+            },
+            {
+              "id": "atk22",
+              "playerOrder": {
+                "type": "move",
+                "col": 31,
+                "row": 74
+              },
+              "acted": true
+            },
+            {
+              "id": "atk23",
+              "playerOrder": {
+                "type": "move",
+                "col": 31,
+                "row": 70
+              },
+              "acted": true
+            },
+            {
+              "id": "atk24",
+              "playerOrder": {
+                "type": "move",
+                "col": 31,
+                "row": 75
+              },
+              "acted": false
+            },
+            {
+              "id": "atk25",
+              "playerOrder": {
+                "type": "move",
+                "col": 31,
+                "row": 69
+              },
+              "acted": false
+            },
+            {
+              "id": "atk26",
+              "playerOrder": {
+                "type": "move",
+                "col": 31,
+                "row": 76
+              },
+              "acted": false
+            },
+            {
+              "id": "atk27",
+              "playerOrder": {
+                "type": "move",
+                "col": 31,
+                "row": 68
+              },
+              "acted": false
+            }
+          ]
+        }
+      ],
+      "immediateDispatches": [
+        {
+          "at": "2026-10-30T06:03:48.560Z",
+          "round": 2,
+          "turnIdx": 24,
+          "requested": [
+            "atk20",
+            "atk21",
+            "atk22",
+            "atk23",
+            "atk24",
+            "atk25",
+            "atk26",
+            "atk27"
+          ],
+          "eligible": [
+            "atk24",
+            "atk25",
+            "atk26",
+            "atk27"
+          ],
+          "queue": [],
+          "busy": false
+        }
+      ],
+      "performCalls": [
+        {
+          "at": "2026-10-30T06:03:48.560Z",
+          "id": "atk24",
+          "round": 2,
+          "turnIdx": 24,
+          "turnOrderIndex": 24,
+          "activationContext": null,
+          "immediateBatch": true,
+          "actedBefore": false,
+          "orderBefore": {
+            "type": "move",
+            "col": 31,
+            "row": 75
+          },
+          "before": {
+            "q": 30,
+            "r": 79
+          },
+          "completedAt": "2026-10-30T06:03:48.649Z",
+          "actedAfter": false,
+          "after": {
+            "q": 31,
+            "r": 77
+          }
+        },
+        {
+          "at": "2026-10-30T06:03:48.573Z",
+          "id": "atk24",
+          "round": 2,
+          "turnIdx": 25,
+          "turnOrderIndex": 24,
+          "activationContext": "atk24",
+          "immediateBatch": false,
+          "actedBefore": false,
+          "orderBefore": {
+            "type": "move",
+            "col": 31,
+            "row": 75
+          },
+          "before": {
+            "q": 31,
+            "r": 78
+          },
+          "completedAt": "2026-10-30T06:03:49.611Z",
+          "actedAfter": true,
+          "after": {
+            "q": 31,
+            "r": 77
+          }
+        },
+        {
+          "at": "2026-10-30T06:03:48.649Z",
+          "id": "atk25",
+          "round": 2,
+          "turnIdx": 25,
+          "turnOrderIndex": 25,
+          "activationContext": null,
+          "immediateBatch": true,
+          "actedBefore": false,
+          "orderBefore": {
+            "type": "move",
+            "col": 31,
+            "row": 69
+          },
+          "before": {
+            "q": 30,
+            "r": 73
+          },
+          "completedAt": "2026-10-30T06:03:49.612Z",
+          "actedAfter": false,
+          "after": {
+            "q": 31,
+            "r": 72
+          }
+        },
+        {
+          "at": "2026-10-30T06:03:49.612Z",
+          "id": "atk26",
+          "round": 2,
+          "turnIdx": 25,
+          "turnOrderIndex": 26,
+          "activationContext": null,
+          "immediateBatch": true,
+          "actedBefore": false,
+          "orderBefore": {
+            "type": "move",
+            "col": 31,
+            "row": 76
+          },
+          "before": {
+            "q": 29,
+            "r": 81
+          },
+          "completedAt": "2026-10-30T06:03:50.706Z",
+          "actedAfter": false,
+          "after": {
+            "q": 31,
+            "r": 79
+          }
+        },
+        {
+          "at": "2026-10-30T06:03:50.621Z",
+          "id": "atk26",
+          "round": 2,
+          "turnIdx": 27,
+          "turnOrderIndex": 26,
+          "activationContext": "atk26",
+          "immediateBatch": false,
+          "actedBefore": false,
+          "orderBefore": {
+            "type": "move",
+            "col": 31,
+            "row": 76
+          },
+          "before": {
+            "q": 30,
+            "r": 80
+          },
+          "completedAt": "2026-10-30T06:03:51.715Z",
+          "actedAfter": true,
+          "after": {
+            "q": 31,
+            "r": 79
+          }
+        },
+        {
+          "at": "2026-10-30T06:03:50.706Z",
+          "id": "atk27",
+          "round": 2,
+          "turnIdx": 27,
+          "turnOrderIndex": 27,
+          "activationContext": null,
+          "immediateBatch": true,
+          "actedBefore": false,
+          "orderBefore": {
+            "type": "move",
+            "col": 31,
+            "row": 68
+          },
+          "before": {
+            "q": 30,
+            "r": 72
+          },
+          "completedAt": "2026-10-30T06:03:51.716Z",
+          "actedAfter": false,
+          "after": {
+            "q": 31,
+            "r": 71
+          }
+        }
+      ],
+      "activationCalls": [
+        {
+          "at": "2026-10-30T06:03:48.573Z",
+          "id": "atk24",
+          "round": 2,
+          "turnIdx": 25,
+          "turnOrderIndex": 24,
+          "acted": false
+        },
+        {
+          "at": "2026-10-30T06:03:50.621Z",
+          "id": "atk26",
+          "round": 2,
+          "turnIdx": 27,
+          "turnOrderIndex": 26,
+          "acted": false
+        }
+      ]
+    }
+  },
+  "ordinaryFollowup": {
+    "activation": {
+      "at": "2026-10-30T06:08:14.574Z",
+      "id": "atk27",
+      "round": 4,
+      "turnIdx": 28,
+      "turnOrderIndex": 27,
+      "acted": false
+    },
+    "perform": {
+      "at": "2026-10-30T06:08:14.574Z",
+      "id": "atk27",
+      "round": 4,
+      "turnIdx": 28,
+      "turnOrderIndex": 27,
+      "activationContext": "atk27",
+      "immediateBatch": false,
+      "actedBefore": false,
+      "orderBefore": {
+        "type": "attackMove",
+        "col": 28,
+        "row": 60
+      },
+      "before": {
+        "q": 24,
+        "r": 60
+      },
+      "completedAt": "2026-10-30T06:08:15.398Z",
+      "actedAfter": false,
+      "after": {
+        "q": 25,
+        "r": 60
+      }
+    },
+    "position": {
+      "q": 25,
+      "r": 60
+    },
+    "round": 4,
+    "turnIdx": 29,
+    "immediate": [
+      {
+        "at": "2026-10-30T06:03:50.706Z",
+        "id": "atk27",
+        "round": 2,
+        "turnIdx": 27,
+        "turnOrderIndex": 27,
+        "activationContext": null,
+        "immediateBatch": true,
+        "actedBefore": false,
+        "orderBefore": {
+          "type": "move",
+          "col": 31,
+          "row": 68
+        },
+        "before": {
+          "q": 30,
+          "r": 72
+        },
+        "completedAt": "2026-10-30T06:03:51.716Z",
+        "actedAfter": false,
+        "after": {
+          "q": 31,
+          "r": 71
+        }
+      },
+      {
+        "at": "2026-10-30T06:04:18.402Z",
+        "id": "atk27",
+        "round": 2,
+        "turnIdx": 40,
+        "turnOrderIndex": 27,
+        "activationContext": null,
+        "immediateBatch": true,
+        "actedBefore": false,
+        "orderBefore": {
+          "type": "attack",
+          "targetId": "def0"
+        },
+        "before": {
+          "q": 24,
+          "r": 60
+        },
+        "completedAt": "2026-10-30T06:04:19.244Z",
+        "actedAfter": false,
+        "after": {
+          "q": 24,
+          "r": 60
+        }
+      },
+      {
+        "at": "2026-10-30T06:06:03.287Z",
+        "id": "atk27",
+        "round": 3,
+        "turnIdx": 26,
+        "turnOrderIndex": 27,
+        "activationContext": null,
+        "immediateBatch": true,
+        "actedBefore": false,
+        "orderBefore": {
+          "type": "attackMove",
+          "col": 28,
+          "row": 60
+        },
+        "before": {
+          "q": 24,
+          "r": 60
+        },
+        "completedAt": "2026-10-30T06:06:04.148Z",
+        "actedAfter": false,
+        "after": {
+          "q": 24,
+          "r": 60
+        }
+      }
+    ]
+  },
+  "attackPair": {
+    "attackerId": "atk27",
+    "targetId": "def0",
+    "attackerPoint": {
+      "x": 638.1906756665716,
+      "y": 340.9424308188107,
+      "hitId": "atk27"
+    },
+    "enemyPoint": {
+      "x": 647.1315854297877,
+      "y": 340.9424308188107,
+      "hitId": "def0"
+    },
+    "ground": {
+      "x": 674.2711688871922,
+      "y": 342.1319052517067,
+      "tile": {
+        "col": 28,
+        "row": 60
+      }
+    },
+    "start": {
+      "q": 24,
+      "r": 60
+    },
+    "target": {
+      "q": 25,
+      "r": 60,
+      "hp": 80
+    },
+    "dist": 1,
+    "ranged": false,
+    "range": 0,
+    "route": [
+      "24,60",
+      "25,60",
+      "26,60",
+      "27,60",
+      "28,60"
+    ],
+    "round": 2,
+    "turnIdx": 30,
+    "turnIndex": 27,
+    "before": {
+      "q": 24,
+      "r": 60,
+      "hp": 80,
+      "ammo": null
+    }
+  },
+  "exactAttack": {
+    "attackerId": "atk27",
+    "targetId": "def0",
+    "selected": [
+      "atk0"
+    ],
+    "order": {
+      "type": "attack",
+      "targetId": "def0"
+    },
+    "round": 2,
+    "turnIdx": 40,
+    "acted": false,
+    "before": {
+      "q": 24,
+      "r": 60
+    },
+    "queued": []
+  },
+  "exactAttackResult": {
+    "pair": {
+      "attackerId": "atk27",
+      "targetId": "def0",
+      "attackerPoint": {
+        "x": 638.1906756665716,
+        "y": 340.9424308188107,
+        "hitId": "atk27"
+      },
+      "enemyPoint": {
+        "x": 647.1315854297877,
+        "y": 340.9424308188107,
+        "hitId": "def0"
+      },
+      "ground": {
+        "x": 674.2711688871922,
+        "y": 342.1319052517067,
+        "tile": {
+          "col": 28,
+          "row": 60
+        }
+      },
+      "start": {
+        "q": 24,
+        "r": 60
+      },
+      "target": {
+        "q": 25,
+        "r": 60,
+        "hp": 80
+      },
+      "dist": 1,
+      "ranged": false,
+      "range": 0,
+      "route": [
+        "24,60",
+        "25,60",
+        "26,60",
+        "27,60",
+        "28,60"
+      ],
+      "round": 2,
+      "turnIdx": 30,
+      "turnIndex": 27,
+      "before": {
+        "q": 24,
+        "r": 60,
+        "hp": 80,
+        "ammo": null
+      }
+    },
+    "events": [
+      {
+        "at": "2026-10-30T06:04:18.402Z",
+        "attackerId": "atk27",
+        "targetId": "def0",
+        "beforeHp": 80,
+        "beforeAmmo": null,
+        "ranged": false,
+        "from": {
+          "q": 24,
+          "r": 60
+        },
+        "target": {
+          "q": 25,
+          "r": 60
+        },
+        "afterHp": 62,
+        "afterAmmo": null,
+        "targetState": {
+          "dead": false,
+          "routed": false,
+          "removed": false,
+          "fadingOut": false
+        },
+        "completedAt": "2026-10-30T06:04:19.243Z"
+      }
+    ],
+    "errors": []
+  },
+  "attackMarchSetup": {
+    "attackerId": "atk27",
+    "targetId": "def0",
+    "attackerPoint": {
+      "x": 638.1906756665716,
+      "y": 340.9424308188107,
+      "hitId": "atk27"
+    },
+    "enemyPoint": {
+      "x": 647.1315854297877,
+      "y": 340.9424308188107,
+      "hitId": "def0"
+    },
+    "ground": {
+      "x": 674.2711688871922,
+      "y": 342.1319052517067,
+      "tile": {
+        "col": 28,
+        "row": 60
+      }
+    },
+    "start": {
+      "q": 24,
+      "r": 60
+    },
+    "target": {
+      "q": 25,
+      "r": 60,
+      "hp": 80
+    },
+    "dist": 1,
+    "ranged": false,
+    "range": 0,
+    "route": [
+      "24,60",
+      "25,60",
+      "26,60",
+      "27,60",
+      "28,60"
+    ],
+    "round": 2,
+    "turnIdx": 30,
+    "turnIndex": 27,
+    "before": {
+      "q": 24,
+      "r": 60
+    },
+    "targetBeforeHp": 1,
+    "issueRound": 3,
+    "issueTurnIdx": 2,
+    "actedBefore": false
+  },
+  "marchEligibility": {
+    "round": 3,
+    "turnIdx": 26,
+    "turnOrderIndex": 27,
+    "acted": false,
+    "eligible": true
+  },
+  "marchTraceStart": 5,
+  "marchOrder": {
+    "id": "atk27",
+    "order": {
+      "type": "attackMove",
+      "col": 28,
+      "row": 60
+    },
+    "before": {
+      "q": 24,
+      "r": 60
+    },
+    "round": 3,
+    "turnIdx": 26,
+    "issueRound": 3,
+    "issueTurnIdx": 2,
+    "turnOrderIndex": 27,
+    "actedBefore": false,
+    "eligibleAtIssue": true
+  },
+  "marchAttack": {
+    "setup": {
+      "attackerId": "atk27",
+      "targetId": "def0",
+      "attackerPoint": {
+        "x": 638.1906756665716,
+        "y": 340.9424308188107,
+        "hitId": "atk27"
+      },
+      "enemyPoint": {
+        "x": 647.1315854297877,
+        "y": 340.9424308188107,
+        "hitId": "def0"
+      },
+      "ground": {
+        "x": 674.2711688871922,
+        "y": 342.1319052517067,
+        "tile": {
+          "col": 28,
+          "row": 60
+        }
+      },
+      "start": {
+        "q": 24,
+        "r": 60
+      },
+      "target": {
+        "q": 25,
+        "r": 60,
+        "hp": 80
+      },
+      "dist": 1,
+      "ranged": false,
+      "range": 0,
+      "route": [
+        "24,60",
+        "25,60",
+        "26,60",
+        "27,60",
+        "28,60"
+      ],
+      "round": 2,
+      "turnIdx": 30,
+      "turnIndex": 27,
+      "before": {
+        "q": 24,
+        "r": 60
+      },
+      "targetBeforeHp": 1,
+      "issueRound": 3,
+      "issueTurnIdx": 2,
+      "actedBefore": false
+    },
+    "unit": {
+      "q": 24,
+      "r": 60,
+      "order": {
+        "type": "attackMove",
+        "col": 28,
+        "row": 60
+      },
+      "acted": true
+    },
+    "events": [
+      {
+        "at": "2026-10-30T06:06:03.288Z",
+        "attackerId": "atk27",
+        "targetId": "def0",
+        "beforeHp": 1,
+        "beforeAmmo": null,
+        "ranged": false,
+        "from": {
+          "q": 24,
+          "r": 60
+        },
+        "target": {
+          "q": 25,
+          "r": 60
+        },
+        "afterHp": 1,
+        "afterAmmo": null,
+        "targetState": {
+          "dead": false,
+          "routed": true,
+          "removed": false,
+          "fadingOut": false
+        },
+        "completedAt": "2026-10-30T06:06:04.148Z"
+      }
+    ],
+    "targetState": {
+      "dead": false,
+      "routed": true,
+      "removed": false,
+      "fadingOut": false
+    },
+    "targetStillThreat": false
+  },
+  "marchContinuation": {
+    "id": "atk27",
+    "order": {
+      "type": "attackMove",
+      "col": 28,
+      "row": 60
+    },
+    "event": {
+      "at": "2026-10-30T06:08:14.574Z",
+      "round": 4,
+      "turnIdx": 28,
+      "turnOrderIndex": 27,
+      "actedBefore": false,
+      "before": {
+        "q": 24,
+        "r": 60
+      },
+      "orderBefore": {
+        "type": "attackMove",
+        "col": 28,
+        "row": 60
+      },
+      "after": {
+        "q": 25,
+        "r": 60
+      },
+      "orderAfter": {
+        "type": "attackMove",
+        "col": 28,
+        "row": 60
+      },
+      "actedAfter": false,
+      "completedAt": "2026-10-30T06:08:15.398Z"
+    },
+    "before": {
+      "q": 24,
+      "r": 60
+    },
+    "after": {
+      "q": 25,
+      "r": 60
+    },
+    "waypoint": {
+      "col": 28,
+      "row": 60
+    },
+    "distanceBefore": 4,
+    "distanceAfter": 3,
+    "round": 4,
+    "turnIdx": 28
+  },
+  "combatRngRestored": true,
+  "skippedDead": {
+    "deadId": "atk1",
+    "liveId": "atk2",
+    "turnIdx": 2,
+    "queueAfter": [],
+    "deadQueued": false,
+    "deadActivated": true,
+    "liveActivated": true,
+    "liveOrder": "hold"
+  },
+  "checks": [
+    [
+      "production mixed 28v28 roster remains intact through manual orders",
+      true
+    ],
+    [
+      "four production KeyV events advance battle tempo 1x→16x",
+      true
+    ],
+    [
+      "four production Zwolnij clicks lower battle tempo 16x→1x",
+      true
+    ],
+    [
+      "production KeyV restores 1x→16x for bounded multi-cycle checks",
+      true
+    ],
+    [
+      "production commander gate rejects manual mode without a commander",
+      true
+    ],
+    [
+      "canvas pointer selects the exact friendly unit",
+      true
+    ],
+    [
+      "production All chip selects all 28 player units by pointer",
+      true
+    ],
+    [
+      "enemy canvas pointer assigns exact target to every selected unit",
+      true
+    ],
+    [
+      "empty-ground canvas pointer assigns move orders to every selected unit",
+      true
+    ],
+    [
+      "Space executes queued full-roster orders through the production turn activation queue",
+      true
+    ],
+    [
+      "activation clears consumed queued ids after the 28-unit batch",
+      true
+    ],
+    [
+      "second-cycle canvas-pointer subset order moves the selected unit",
+      true
+    ],
+    [
+      "second-cycle pointer move dispatches immediately before atk27 ordinary activation begins",
+      true
+    ],
+    [
+      "group move target equals clicked hex plus atk27 formation offset",
+      true
+    ],
+    [
+      "pointer exact-target Attack causes actual HP loss in production combat",
+      true
+    ],
+    [
+      "pointer attack-march issued while actor is eligible creates a new strike and rout/death event",
+      true
+    ],
+    [
+      "natural next-round production activation continues attack-march toward waypoint after threat resolves",
+      true
+    ],
+    [
+      "test-scoped combat RNG restored before close",
+      true
+    ],
+    [
+      "production _activateNext clears dead queued id and activates next live candidate",
+      true
+    ],
+    [
+      "no browser page or console errors",
+      true
+    ]
+  ],
+  "errors": []
+}
