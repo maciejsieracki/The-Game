@@ -140,3 +140,9 @@ Logi: `dyspozycje/autobot/runs/R-RUSTPORT-REPIN-WOJNA-NOWE-D-Q1/evidence/r4-*.lo
   no_merge_near_capital (N `no_merge_near_capital_n_marches_to_capital`, N+1 `no_merge_near_capital_n_plus_1_may_join`).
 - extend_walk (zarzut 1-2, PRZYJETY): NaN, budzet 1.0 (N), budzet 1.0+1e-9 (N+1) -- testy PASS na kodzie, FAIL po mutacji M1/M2.
 - Uwaga korekcyjna: w rundzie 1 guard web byl cytowany jako `warAllInCapital.ts:458`; wlasciwa linia to 459 (`grep -n` na `dc8a3adc`).
+
+## Weryfikacja niezalezna (runda 3, Operator-pomiary)
+
+- Regeneracja `web-dc8a3adc-w12.json` z `dc8a3adc` (git archive do katalogu tymczasowego, tsc, `gen-vectors-w12.js`): plik BAJT-W-BAJT identyczny z commitowanym; liczby 300 / engage 175 / rendezvous 74 / W1 213 / W2 148 / wielokrokowe 820 zgodne z raportem.
+- Gate w worktree na `acee10eec`: `cargo fmt --all -- --check` EXIT=0; `cargo clippy --all-targets -- -D warnings` EXIT=0; `cargo test --no-fail-fast` EXIT=0, 1725 passed / 0 failed. Logi: `evidence/r3v-*.log`.
+- Mutacje niezalezne od Operatora (wszystkie ZABITE, pliki przywrocone `cmp`): A tie-break owner w `pick_engagement_army` (test jednostkowy), B min-1 `>=` -> `>` w `allocate_groups_to_enemies` (wektory), D tie-break merge `<` -> `<=` w planerze (wektory).
