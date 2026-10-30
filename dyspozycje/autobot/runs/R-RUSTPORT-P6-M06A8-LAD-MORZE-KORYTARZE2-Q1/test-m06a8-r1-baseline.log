@@ -1,0 +1,21 @@
+   Compiling civ-engine v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_fac0d57f-23a-2/rust-port/engine)
+    Finished `test` profile [unoptimized] target(s) in 34.34s
+     Running tests/p6_m06a8_landsea.rs (/home/user/cargo-target-shared/wf_fac0d57f-23a-2/debug/deps/p6_m06a8_landsea-19c126e7d926fe44)
+
+running 5 tests
+test ensure_pangea_invokes_fill_hook_exactly_once_with_map_size ... ok
+test vector_file_has_expected_families_and_size ... ok
+test group_dry_land_mass_keys_matches_web ... ok
+test bridge_boundary_n_minus_1_n_n_plus_1_are_distinguishable ... ok
+test ensure_pangea_single_continent_matches_web_with_fill_hook_zero ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.88s
+
+     Running tests/p6_m06a8_pomiary.rs (/home/user/cargo-target-shared/wf_fac0d57f-23a-2/debug/deps/p6_m06a8_pomiary-f309e5e042dcba56)
+
+running 3 tests
+test pomiary_vector_families_and_counts ... ok
+test pomiary_group_dry_land_mass_keys_matches_web ... ok
+test pomiary_ensure_pangea_single_continent_matches_web_with_fill_hook_zero ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s

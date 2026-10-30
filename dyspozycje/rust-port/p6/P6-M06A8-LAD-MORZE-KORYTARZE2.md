@@ -56,3 +56,67 @@ NIE ZMIERZONO w tej rundzie (Operator-impl; mutacje i niezalezny weryfikator Pyt
 
 - `fillPangeaAnnularSeaCorridors` :4595 (wraz z `pangeaLandCentroid`, `pangeaSeaHexIsAnnularCorridor`) - usunie hak `fill_annular` i odblokuje pelne wektory ensure.
 - `rebalanceLandFractionPangea` :3667, `rebalanceLandSeaRatio` :3791.
+
+## Operator-pomiary r1 (R-RUSTPORT-P6-M06A8-LAD-MORZE-KORYTARZE2-Q1, runda pomiarowa)
+
+Ta sekcja zastepuje pozycje "NIE ZMIERZONO" z Operatora-impl. Kod `landsea.rs` nie zostal zmieniony.
+Dodano: wektory uzupelniajace (`tests/p6_m06a8_vectors/pomiary-r1-vectors.json`, 39 przypadkow,
+generator `gen-m06a8-pomiary-vectors.mjs`), testy `tests/p6_m06a8_pomiary.rs` (3 testy), weryfikator
+niezalezny `verify-m06a8-independent.py`, mut-runner `mut-runner-m06a8-r1.py`. Wszystko w run dir.
+
+### Weryfikator niezalezny (Python, bez Rust)
+
+- Implementacja `groupDryLandMassKeys` i `ensurePangeaSingleContinent` z zrodla TS pina `edb8fb56`.
+  HEX_DIRECTIONS i predykat wody czytane regexem z `gra/src/map/gen-helpers.ts`.
+- `ensure-vectors.json` (418): 0 rozbieznosci (`verify-ensure-r1.log`).
+- `pomiary-r1-vectors.json` (39): 0 rozbieznosci (`verify-pomiary-r1.log`).
+- Generator wektorow odtworzony z pina: `ensure-vectors.json` byte-identyczny z commitowanym.
+
+### Pomiar trafien na granicach (verifier, coverage)
+
+- Mosty `granica-mostu`: trafienie BFS przy d = N-1 (70 przyp.), d = N (70), d = N+1 pominiete (70).
+- Prog masy `prog-masy`: rozmiar obcej masy T-1 / T / T+1 dla kazdej z 4 mas glownych.
+- Iteracje: 34 przypadki `losowe` wykonuja pelne 12 iteracji (cap 12 osiagniety; wiazanie potwierdza mutant E08/E09 zabity wektorami).
+- Zapas sciezki (`pathLen <= N+2`): 0 trafien w starych wektorach (patrz dowod nizej).
+- Rozklad N w starych wektorach: wylacznie N = 18 (35 map kwadratowych 6..40). Gorny clamp 48 i N > 18
+  nie byly pokryte. Dodano rodziny `skala-N` (N = 19, 20, 23, 45, 46, 48) i `iter-gap`.
+
+### Mutacje (38 unikalnych; 49 wierszy w `mut-results-r1.jsonl` z powtorkami po dopisaniu wektorow)
+
+Wynik koncowy: 32 KILLED, 6 SURVIVED, wszystkie 6 z dowodem rownowaznosci z kodu.
+
+- Zabite: sasiedztwo grupowania (G01-G05 w tym niekanoniczny klucz rozwijany jak (0,0)), granica N
+  (E01/E02), clampy N (E03/E04), zaokraglenie i wspolczynniki N (E05-E07), iteracje 11/13 (E08/E09),
+  sortowanie (E12), dist/dubel BFS (E14/E15), przerwanie BFS (E16), odwrocone warunki (E17/E23),
+  sciezka (E18, E20 cap N-2 przez `iter-gap`, E28, E30, E31), limit obcej masy (E24-E26, E29),
+  P01 (tylko Sea), P02 (suchy = nie-Morze).
+- Przezyte, z dowodem:
+  - E10 `masses.len() <= 0`: dla 1 masy brak obcej suchej komorki, wiec `hit` = None i nic sie nie
+    zmienia; dla 0 mas break jak w oryginale.
+  - E13 seed bez `dist.contains_key`: duplikaty w kolejce maja ten sam dist=1; parent nadpisany innym
+    glownym kluczem, a sciezka konwertuje ta sama komorke wodna i przerywa na glownej masie.
+  - E19 (cap N+1) i E21 (cap N+7): przetworzona komorka wodna ma pathLen <= d_hit-1 <= N-1, wiec cap
+    >= N-1 nigdy nie wiaze. Wartosc `bridge_zapas_sciezki` (JSON = 2) nie wplywa na wynik dla dowolnej
+    wartosci >= -1 (ustalenie: martwy parametr, bez zmiany web).
+  - E22 brak przerwania na glownej masie: klucze glownej masy sa suche i nigdy nie sa w `parent`
+    (parent zawiera tylko wodne komorki z BFS), wiec `parent.get` zwraca None.
+  - E27 brak testu suchego ladu przy usuwaniu obcej masy: obca masa pochodzi z grupowania tej samej
+    iteracji i w tym bloku nic nie zmienia hexow przed petla, wiec warunek jest zawsze prawdziwy.
+
+### Dryf po pinie (zweryfikowany)
+
+`git diff edb8fb56 origin/main -- gra/src/map/gen-helpers.ts`: 8 hunkow, pierwszy `-5992`, ostatni
+`-10804`. Zaden hunk nie wpada w zakres 3186-4374. Pin nie przepinany.
+
+### Wplyw na symbole
+
+- `groupDryLandMassKeys`: PORTOWANY, zweryfikowany niezaleznie (418 + 39 przypadkow, 0 rozbieznosci).
+- `ensurePangeaSingleContinent`: PORTOWANY Z HAKIEM (RUNDA-2 `fillPangeaAnnularSeaCorridors` :4595),
+  bez zmian wzgledem Operatora-impl; zakres pelnej rownowaznosci nadal wymaga RUNDA-2.
+
+### Ograniczenia
+
+- Brak zmian w allowliscie kodu. Nowe pliki: tylko testy `p6_m06a8_pomiary.rs`, wektory pomiary-r1,
+  run dir i ten dokument.
+- Iteracje kolejnosci Object.keys: web zwraca klucze liczbowe najpierw (np. "5"), Rust nie. Wszystkie
+  klucze hexow maja postac "q,r" (NIE DOTYCZY w produkcji), wektory nie zawieraja kluczy liczbowych.

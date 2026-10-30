@@ -1,0 +1,30 @@
+cases=39 mismatch_total=0
+{
+ "iter-cap": {
+  "cases": 1,
+  "cases_hit_iter_cap": 1,
+  "hit_at_d_offset_-17": 1
+ },
+ "iter-gap": {
+  "cases": 2,
+  "cases_bfs_expands_d_eq_N": 2,
+  "cases_hit_iter_cap": 1,
+  "hit_at_d_offset_+0": 2
+ },
+ "niekanon": {
+  "cases": 8,
+  "cases_no_hit_limit_branch": 8,
+  "foreign_size_minus_limit_-59": 9,
+  "hit_at_d_offset_-17": 1
+ },
+ "skala-N": {
+  "cases": 28,
+  "cases_bfs_expands_d_eq_N": 18,
+  "cases_bfs_skips_d_eq_N_plus_1": 8,
+  "cases_no_hit_limit_branch": 8,
+  "foreign_size_minus_limit_-57": 8,
+  "hit_at_d_offset_+0": 10,
+  "hit_at_d_offset_-1": 10
+ }
+}
+EXIT=0

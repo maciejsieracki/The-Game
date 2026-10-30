@@ -1,0 +1,79 @@
+cases=418 mismatch_total=0
+{
+ "brzeg": {
+  "cases": 6,
+  "cases_no_hit_limit_branch": 2,
+  "foreign_size_minus_limit_-59": 3
+ },
+ "granica-mostu": {
+  "cases": 210,
+  "cases_bfs_expands_d_eq_N": 140,
+  "cases_bfs_skips_d_eq_N_plus_1": 70,
+  "cases_no_hit_limit_branch": 70,
+  "foreign_size_minus_limit_-20": 2,
+  "foreign_size_minus_limit_-21": 2,
+  "foreign_size_minus_limit_-22": 2,
+  "foreign_size_minus_limit_-23": 2,
+  "foreign_size_minus_limit_-24": 2,
+  "foreign_size_minus_limit_-25": 2,
+  "foreign_size_minus_limit_-26": 2,
+  "foreign_size_minus_limit_-27": 2,
+  "foreign_size_minus_limit_-28": 2,
+  "foreign_size_minus_limit_-29": 2,
+  "foreign_size_minus_limit_-30": 2,
+  "foreign_size_minus_limit_-31": 2,
+  "foreign_size_minus_limit_-32": 2,
+  "foreign_size_minus_limit_-33": 2,
+  "foreign_size_minus_limit_-34": 2,
+  "foreign_size_minus_limit_-35": 2,
+  "foreign_size_minus_limit_-36": 2,
+  "foreign_size_minus_limit_-37": 2,
+  "foreign_size_minus_limit_-38": 2,
+  "foreign_size_minus_limit_-39": 2,
+  "foreign_size_minus_limit_-40": 2,
+  "foreign_size_minus_limit_-41": 2,
+  "foreign_size_minus_limit_-42": 2,
+  "foreign_size_minus_limit_-43": 2,
+  "foreign_size_minus_limit_-44": 2,
+  "foreign_size_minus_limit_-45": 2,
+  "foreign_size_minus_limit_-46": 2,
+  "foreign_size_minus_limit_-47": 2,
+  "foreign_size_minus_limit_-48": 2,
+  "foreign_size_minus_limit_-49": 2,
+  "foreign_size_minus_limit_-50": 2,
+  "foreign_size_minus_limit_-51": 2,
+  "foreign_size_minus_limit_-52": 2,
+  "foreign_size_minus_limit_-53": 2,
+  "foreign_size_minus_limit_-54": 2,
+  "hit_at_d_offset_+0": 70,
+  "hit_at_d_offset_-1": 70
+ },
+ "losowe": {
+  "cases": 160,
+  "cases_hit_iter_cap": 34,
+  "hit_at_d_offset_-12": 1,
+  "hit_at_d_offset_-14": 1,
+  "hit_at_d_offset_-15": 4,
+  "hit_at_d_offset_-16": 30,
+  "hit_at_d_offset_-17": 131
+ },
+ "prog-masy": {
+  "cases": 12,
+  "cases_bfs_expands_d_eq_N": 12,
+  "cases_bfs_skips_d_eq_N_plus_1": 12,
+  "cases_no_hit_limit_branch": 12,
+  "foreign_size_minus_limit_+0": 3,
+  "foreign_size_minus_limit_+1": 3,
+  "foreign_size_minus_limit_-1": 3,
+  "foreign_size_minus_limit_-30": 3
+ },
+ "wyspy": {
+  "cases": 30,
+  "hit_at_d_offset_-11": 1,
+  "hit_at_d_offset_-12": 6,
+  "hit_at_d_offset_-13": 30,
+  "hit_at_d_offset_-16": 1,
+  "hit_at_d_offset_-17": 28
+ }
+}
+EXIT=0
