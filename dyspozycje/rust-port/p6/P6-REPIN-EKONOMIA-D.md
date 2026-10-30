@@ -107,3 +107,48 @@ Wniosek R3: część `economy.ts` jest zakresem następnych rund (≈14 grup zmi
 2. Wektory `economy` z weba 91dc998a (pliki ≤10 MB) i generator główny work-tax dodany do `logs/`.
 3. Mutacje na nowych gałęziach `economy.ts`.
 4. Odświeżenie pinu / kopii bajtowych (poza tym tematem, REPIN-DELTA §6).
+
+## Partia D2.1 (R-RUSTPORT-REPIN-EKONOMIA-D-Q1, runda 1 Operatora po R3) — mnozniki Handel→Pieniadz
+
+Port od zera do `rust-port/engine/src/domain/economy_yield.rs` (nowy modul, `pub mod economy_yield;` w `domain/mod.rs`). W silniku NIE istnieje jeszcze odpowiednik `cityYieldPerTurn`, wiec ta partia obejmuje tylko czyste funkcje z `economy.ts@91dc998a`. Zakres: 4 zmiany zachowania z klasyfikacji R3 (pierwsza partia z grupy „mnozniki”).
+
+| Zmiana (web, pin 91dc998a) | Plik:linia weba (`economy.ts`) | Plik:linia Rust | Test / wektor | Status |
+|---|---|---|---|---|
+| `mnoznikHandelPieniadzForCiv`: fallback 2→1, `civs.json` ignorowane | L704-711 | `economy_yield.rs:53` `mnoznik_handel_pieniadz_for_civ` | `parity_mnoznik_for_civ_main` (588), `parity_mnoznik_for_civ_zero_matrix` (588) | PORTOWANE |
+| `civMatrixMnoznikHandelPieniadzRaw`: `>0` → `Number.isFinite` (surowe zero macierzy jest wartoscia), pusty klucz = brak | L717-728 | `economy_yield.rs:42` `civ_matrix_mnoznik_handel_pieniadz_raw` | `structural_known_raw_zero_is_authoritative_and_gets_delta`, `structural_empty_or_missing_key_is_unknown`, wektory `zero` | PORTOWANE |
+| `MNOZNIK_HANDEL_TRUDNOSC_DELTA` (easy +0.5 / normal 0 / hard −0.5) | L738-742 | `economy_yield.rs:31` `mnoznik_handel_trudnosc_delta` | `boundary_trudnosc_delta_table` | PORTOWANE |
+| `mnoznikHandelPieniadzForCivByDifficulty`: bez czytania `civs.json`; brak wiersza → `fallbackScaled` bez drugiej delty | L753-762 | `economy_yield.rs:63` `mnoznik_handel_pieniadz_for_civ_by_difficulty` | `parity_mnoznik_by_difficulty_main` (1029), `parity_mnoznik_by_difficulty_zero_matrix` (1029), `structural_unknown_key_returns_fallback_without_delta` | PORTOWANE |
+| `civEconomyYieldMultipliers` → zawsze `{handel:1, nauka:1}` | L781-786 | `economy_yield.rs:84` `civ_economy_yield_multipliers` | `parity_civ_economy_yield_multipliers` (4) | PORTOWANE |
+
+**Pozostale hunki `economy.ts` (z klasyfikacji R3) — NASTEPNA-PARTIA, bez zmian statusu:** `EconParams`/`targowiskoPracaMnoznik` (L149-166, L237); `CityYieldResult.pieniadzZPracy = 0` (L326-341); `dochodTrasHandlowych` (L668-671); `additionalTax` (L674-675); usuniecie `walutaMnoznikOverride` i bramka Mint (L683-690, L946-947; Mint wymaga `cityYieldPerTurn`, ktorego Rust jeszcze nie ma); Step 3' port `eko_pieniadz_port_proc` (L871-889); `pracaNetto` `eko_praca_proc` (L901-902); D5 `pieniadzZPracy` (L910-914); `civHandelMult` (L919); `eko_handel_brutto_proc` (L933-936); `eko_korupcja_proc` (L940-943); `eko_luksus_proc` (L964-965); `eko_nauka_proc` (L976-981); `eko_pieniadz_proc` (L986-989); `eko_zywnosc_proc` (L1004-1005); `eko_kultura_proc` (L1017-1018).
+
+### Wektory i pochodzenie (D2.1)
+
+- `rust-port/engine/tests/p6_repin_d_economy_vectors/mnoznik-main.json` (588 + 1029 + 4 przypadkow) i `mnoznik-zero.json` (ta sama siatka na kopii macierzy, patrz nizej). Generator: `dyspozycje/autobot/runs/R-RUSTPORT-REPIN-EKONOMIA-D-Q1/logs/gen-vectors-mnoznik.mts`.
+- Wykonanie: node 22.22, `--experimental-strip-types` + loader JSON (`logs/loader-hooks.mjs`, `logs/loader-register.mjs`). Kod weba uruchamiany to **doslowny wycinek** `economy.ts@91dc998a` L703-762 i L781-786 (`logs/economy-mnoznik-slice.mts`; zmiana tylko w specyfikatorze importu `./civ-matrix.ts` i aliasach typow), oraz `civ-matrix.ts@91dc998a` i `civ-matrix.json@91dc998a` (identyczny z `rust-port/engine/data/civ-matrix.json`, sprawdzone `cmp`). **Luka:** pelny `cityYieldPerTurn` nie byl uruchamiany (zaleznosci: `production.ts`, `terrain-improvements.ts`, dane terenu) — ZALOZENIE: wycinek funkcji mnoznikowych jest wystarczajacy dla tej partii; reszta w kolejnych partiach.
+- Wektor `zero`: kontrolowana kopia macierzy (`logs/make-zero-matrix.mjs`): wiersz 0 (`grecy`) `meta_mnoznik_waluta = 0`, wiersz 1 (`rzymianie`) bez pola (=> domyslna `2`). Kopia poza repo, wejscie kontrolowane, nie zmiana danych gry.
+- Porownanie bit-w-bit (`to_bits`), liczby jako `{"f": String(x)}`; NaN/±0/±Infinity pokryte.
+- Mutacje (jedna naraz, przywracane, `logs/mut-D2-*.log`): M1 `is_finite`→`>0` (3 testy), M2 delta hard `-0.5`→`+0.5` (4 testy), M3 brak delty w `by_difficulty` (3), M4 delta dodana do fallbacku (3), M5 pominiete sprawdzenie wiersza (6). Zabite 5/5.
+
+### Weryfikacja niezalezna D2.1 (Operator-pomiary R2, ten sam ID)
+
+- Wycinek weba: `logs/verifier-r2-slice.mts` = `economy.ts@91dc998a` L703-762 + L781-786 (roznica wzgledem linii zrodla: tylko importy i aliasy typow).
+- Wektory niezalezne: `logs/verifier-r2-gen.mts` (uruchomienie weba 91dc998a, node 22.22), 82 klucze (wszystkie id macierzy, warianty wielkosci liter, spacja, `null`, `undefined`), fallbacki `0, -0, 0.5, 1, 2, 2.5, -1, 1e-300, 3.14159, NaN, ±Infinity, default`. Wynik: `logs/verifier-r2-main.json` (1066 forCiv + 2952 byDiff). Replay w Rust (tymczasowy test poza commitem, usuniety): **4018/4018 bit-w-bit**, log `logs/verifier-r2-run.log`.
+- Mutacja V2 (niezalezna): znak delty `easy` `+0.5`→`-0.5`. Zabita: `boundary_trudnosc_delta_table`, `parity_mnoznik_by_difficulty_main`, `parity_mnoznik_by_difficulty_zero_matrix`, `structural_known_raw_zero_is_authoritative_and_gets_delta` (log `logs/mut-V2-easy-sign.log`). Plik przywrocony (`git checkout`).
+- Bramki (R2, na 7a7c09bad): `cargo fmt --all -- --check` EXIT=0 (`logs/fmt-r2.log`); `cargo clippy --all-targets -- -D warnings` EXIT=0 (`logs/clippy-r2.log`); `cargo test --no-fail-fast` EXIT=0, 215 binarek, **1566 passed / 0 failed** (`logs/test-r2-full.log`).
+- Luka nieweryfikowana: pelny `cityYieldPerTurn` nadal NIE uruchamiany (Z-D2-2); liczba 41 hunkow `economy.ts` NIE_ZMIERZONO w tej rundzie.
+
+## Odpowiedzi na zarzuty Evaluatora R4 (Operator, ten sam ID)
+
+| # | Zarzut | Odpowiedź | Dowód |
+|---|---|---|---|
+| 1 | Generator głównego zestawu `web-vectors.json` (work-tax) nie jest w repo; `gen-vectors-verifier.mts` to nie dowód | **PRZYJMUJĘ** jako lukę, której NIE da się zamknąć przez odtworzenie generatora: oryginalnego generatora nie odzyskano (przeszukano: repo i `logs/` runów D1/D2, `/tmp` sesji, scratchpad). Zamiast tego dodano weryfikację WYJŚĆ: `logs/rerun-work-tax-frozen.mts` bierze zamrożone wejścia z `web-vectors.json`, uruchamia `gra/src/game/work-tax.ts@91dc998a` (node 22.22, kopia `git archive` poza repo) i porównuje wyjścia (`Object.is`, znak zera). Wynik: 2344/2344, 0 rozbieżności (tax 529, convert 1600, canConvert 90, serialize 9, restore 20, exec 96). Zestaw zamrożony jest więc wyjściem weba 91dc998a. Generator wejść pozostaje ZAŁOŻENIEM Z-WT-7 (wejścia zamrożone, nie regenerowane). | `logs/rerun-work-tax-frozen.log` (EXIT=0) |
+| 2 | Zakres rundy (port 41 hunków) vs D2.1; temat niezamknięty | **PRZYJMUJĘ** (bez zmiany kodu): zgodnie ze zleceniem tej rundy zakres to D2.1. Temat pozostaje OTWARTY z tym samym ID; D2.2+ (Mint/override, `eko_*`, `additionalTax`, `dochodTrasHandlowych`, brak `cityYieldPerTurn`) są kolejnymi rundami. | sekcja „Partia D2.1” i „Kolejne partie” |
+| 3 | Mutant przeżywający: usunięcie `value.is_finite()` w `civ_matrix_mnoznik_handel_pieniadz_raw` | **PRZYJMUJĘ**: mutant NIE był równoważny w sensie kontraktu funkcji (web L717-728: `Number.isFinite(raw) ? raw : undefined`); wejście nieskończone/NaN w wierszu znanej cywilizacji jest osiągalne w `CivMatrixFile` (pole `Num::Float`), nie tylko przez JSON. Dodano test `structural_non_finite_matrix_value_is_unknown` (NaN, +Inf, -Inf => `None` => fallback dla `forCiv` i `byDifficulty`). Mutant zabity: 1 test padł (`logs/mut-R4-is-finite.log`), kod przywrócony, `git diff` źródła pusty. | `tests/p6_repin_d_economy_mnoznik.rs` (nowy test); `logs/` |
+
+Testy po poprawce (R4): `cargo test --no-fail-fast` 215 binarek, 1567 passed / 0 failed (1566 + 1 nowy test).
+Numeracja: ta runda to R4 (zarzuty R3 → poprawka R4). Numeracja wg dispatchu: runda 4/5 (limit 5; po limicie DECISION_REQUIRED).
+
+### Założenie Z-WT-7 (R4)
+
+- Generator wejść głównego zestawu work-tax (1600/529/90/9/20/96) jest nieodzyskany. Zestaw zamrożony traktujemy jako dane wejściowe; dowodem jego zgodności z webem 91dc998a jest ponowne uruchomienie wyjść (`logs/rerun-work-tax-frozen.mts`). Jeśli właściciel wymaga regeneracji wejść, to osobny temat.

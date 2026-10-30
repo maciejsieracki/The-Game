@@ -1,0 +1,86 @@
+   Compiling civ-engine v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_93c57b8c-6be-1/rust-port/engine)
+    Finished `test` profile [unoptimized] target(s) in 40.50s
+     Running tests/p6_repin_d_economy_mnoznik.rs (/home/user/cargo-target-shared/wf_93c57b8c-6be-1/debug/deps/p6_repin_d_economy_mnoznik-e3e12d28e22d8837)
+
+running 12 tests
+test parity_civ_economy_yield_multipliers ... ok
+test boundary_trudnosc_delta_table ... FAILED
+test parity_mnoznik_by_difficulty_main ... FAILED
+test structural_empty_or_missing_key_is_unknown ... ok
+test structural_fallback_default_is_web_default_one ... ok
+test parity_mnoznik_for_civ_main ... ok
+test parity_mnoznik_by_difficulty_zero_matrix ... FAILED
+test structural_key_lookup_is_case_insensitive_across_three_fields ... ok
+test structural_known_raw_zero_is_authoritative_and_gets_delta ... FAILED
+test structural_unknown_key_returns_fallback_without_delta ... ok
+test structural_known_row_missing_field_uses_matrix_default ... ok
+test parity_mnoznik_for_civ_zero_matrix ... ok
+
+failures:
+
+---- boundary_trudnosc_delta_table stdout ----
+
+thread 'boundary_trudnosc_delta_table' (15299) panicked at tests/p6_repin_d_economy_mnoznik.rs:153:5:
+assertion `left == right` failed
+  left: 0.5
+ right: -0.5
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+   1: core::panicking::panic_fmt
+   2: core::panicking::assert_failed_inner
+   3: core::panicking::assert_failed::<f64, f64>
+   4: p6_repin_d_economy_mnoznik::boundary_trudnosc_delta_table
+   5: p6_repin_d_economy_mnoznik::boundary_trudnosc_delta_table::{closure#0}
+   6: <p6_repin_d_economy_mnoznik::boundary_trudnosc_delta_table::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+---- parity_mnoznik_by_difficulty_main stdout ----
+
+thread 'parity_mnoznik_by_difficulty_main' (15301) panicked at tests/p6_repin_d_economy_mnoznik.rs:104:9:
+byDiff mismatch: {"diff":"hard","fb":{"f":"0"},"key":"GRECY","out":{"f":"1.7999999999999998"}}
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+   1: core::panicking::panic_fmt
+   2: p6_repin_d_economy_mnoznik::parity_mnoznik_by_difficulty_main
+   3: p6_repin_d_economy_mnoznik::parity_mnoznik_by_difficulty_main::{closure#0}
+   4: <p6_repin_d_economy_mnoznik::parity_mnoznik_by_difficulty_main::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+---- parity_mnoznik_by_difficulty_zero_matrix stdout ----
+
+thread 'parity_mnoznik_by_difficulty_zero_matrix' (15302) panicked at tests/p6_repin_d_economy_mnoznik.rs:133:9:
+zero byDiff mismatch: {"diff":"hard","fb":{"f":"0"},"key":"GRECY","out":{"f":"-0.5"}}
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+   1: core::panicking::panic_fmt
+   2: p6_repin_d_economy_mnoznik::parity_mnoznik_by_difficulty_zero_matrix
+   3: p6_repin_d_economy_mnoznik::parity_mnoznik_by_difficulty_zero_matrix::{closure#0}
+   4: <p6_repin_d_economy_mnoznik::parity_mnoznik_by_difficulty_zero_matrix::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+---- structural_known_raw_zero_is_authoritative_and_gets_delta stdout ----
+
+thread 'structural_known_raw_zero_is_authoritative_and_gets_delta' (15308) panicked at tests/p6_repin_d_economy_mnoznik.rs:187:5:
+assertion `left == right` failed
+  left: 0.5
+ right: -0.5
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+   1: core::panicking::panic_fmt
+   2: core::panicking::assert_failed_inner
+   3: core::panicking::assert_failed::<f64, f64>
+   4: p6_repin_d_economy_mnoznik::structural_known_raw_zero_is_authoritative_and_gets_delta
+   5: p6_repin_d_economy_mnoznik::structural_known_raw_zero_is_authoritative_and_gets_delta::{closure#0}
+   6: <p6_repin_d_economy_mnoznik::structural_known_raw_zero_is_authoritative_and_gets_delta::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+
+failures:
+    boundary_trudnosc_delta_table
+    parity_mnoznik_by_difficulty_main
+    parity_mnoznik_by_difficulty_zero_matrix
+    structural_known_raw_zero_is_authoritative_and_gets_delta
+
+test result: FAILED. 8 passed; 4 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.16s
+
+error: test failed, to rerun pass `--test p6_repin_d_economy_mnoznik`
