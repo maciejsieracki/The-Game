@@ -44,6 +44,29 @@ esbuild.buildSync({
   absWorkingDir: GRA_ROOT, logLevel: 'error',
   nodePaths: [path.resolve(GRA_ROOT, 'node_modules')],
 });
+// Wariant z PODMIENIONYMI kosztami (plugin esbuild na terrain-improvements.json): stadnina znacznie drozsza od fortu.
+// Dane produkcyjne maja dzis wszystkie ulepszenia niedoboru TANSZE od fortu (stadnina 56 < fort 100), wiec mutant m7
+// (usuniecie `!deficitIsPendingNow()`) jest rownowazny na danych produkcyjnych — ten wariant go zabija niezaleznie od danych.
+const bundleCostly = path.join(temp, 'bundle-costly.cjs');
+// Plugin wymaga asynchronicznego API esbuild -> osobny proces potomny (reszta testu jest synchroniczna).
+require('node:child_process').execFileSync(process.execPath, ['-e', `
+const esbuild = require(${JSON.stringify(path.resolve(GRA_ROOT, 'node_modules', 'esbuild'))});
+const fs = require('node:fs');
+esbuild.build({
+  entryPoints: [${JSON.stringify(entry)}], bundle: true, platform: 'node', format: 'cjs', target: 'node18',
+  outfile: ${JSON.stringify(bundleCostly)}, loader: { '.ts': 'ts', '.json': 'json' },
+  absWorkingDir: ${JSON.stringify(GRA_ROOT)}, logLevel: 'error',
+  nodePaths: [${JSON.stringify(path.resolve(GRA_ROOT, 'node_modules'))}],
+  plugins: [{ name: 'costly-stadnina', setup(b) {
+    b.onLoad({ filter: /terrain-improvements\\.json$/ }, a => {
+      const j = JSON.parse(fs.readFileSync(a.path, 'utf8'));
+      j.stadnina.koszt_praca = j.stadnina.koszt_praca * 10;
+      return { contents: JSON.stringify(j), loader: 'json' };
+    });
+  } }],
+}).catch(e => { console.error(e); process.exit(1); });
+`], { stdio: 'inherit' });
+const MC = require(bundleCostly);
 const M = require(bundle);
 const { pickAutoImprovements } = M.AIMP;
 // Stan sprzed zmiany: brak eksportu -> sekcje P/J czerwone (nie blad budowania).
@@ -332,6 +355,76 @@ console.log('P. parytet isCityLimitExhausted z canFoundCity');
   const realC = canFoundCity(40, 40, conquered, map, { ownerId: 0, ownerEra: 1, gameConfig: { cityLimitBase: 10 } });
   ok((realC.reason === 'limit miast na tej epoce') === isCityLimitExhausted(conquered, 10, 1), 'miasta zdobyte (foundedByOwner=false) nie licza sie do limitu — parytet');
   ok(isCityLimitExhausted(mk(50), undefined, 1) === false, 'brak cityLimitBase -> false');
+}
+
+// =========================================================================
+console.log('K. m7: niedobor czekajacy na Prace wstrzymuje fort (stadnina drozsza od fortu)');
+{
+  const costs = ks => ks.map(k => `${k}=${getImprovementMeta(k)?.kosztPraca}`).join(' ');
+  console.log('  [info] koszty produkcyjne: ' + costs(['fort', 'posterunek', 'tartak', 'kamieniolom', 'glinianka', 'kopalnia_miedzi', 'kopalnia_zelaza', 'kopalnia_cyny', 'warzelnia_soli', 'stadnina']));
+  // (a) dane produkcyjne: kazde ulepszenie niedoboru tansze od fortu -> m7 rownowazny; pin tej zaleznosci.
+  const DEF_KEYS = ['tartak', 'kamieniolom', 'glinianka', 'kopalnia_miedzi', 'kopalnia_zelaza', 'kopalnia_cyny', 'warzelnia_soli', 'stadnina'];
+  const maxDef = Math.max(...DEF_KEYS.map(k => getImprovementMeta(k).kosztPraca));
+  ok(maxDef < FORT_COST, `dane produkcyjne: najdrozsze ulepszenie niedoboru (${maxDef}) < fort (${FORT_COST}) — m7 rownowazny na tych danych (patrz wariant nizej)`);
+  // (b) wariant z kosztami podmienionymi: stadnina x10 -> drozsza od fortu; to zabija m7.
+  const G = MC.AIMP, getMetaC = MC.getImprovementMeta;
+  const STAD = getMetaC('stadnina').kosztPraca, FORTC = getMetaC('fort').kosztPraca;
+  console.log(`  [info] wariant kosztowy: stadnina=${STAD}, fort=${FORTC}`);
+  ok(STAD > FORTC, `fixtura: stadnina (${STAD}) drozsza od fortu (${FORTC})`);
+  const map = makeMap({ mountains: [[CQ + 5, CR]] });
+  map.hexes[K(CQ + 1, CR)].nakladka = 'zloze_konia';
+  const callC = (over = {}) => G.pickAutoImprovements({
+    cities: [{ ...CITY, ulepszeniaFocus: 'zrownowazone' }], ownerId: 0, map, territoryNodes: mkTN(),
+    placedImprovements: new Map(), pracaAvailable: over.pool, unlockedTechs: FULL,
+    pracaSurplusThreshold: 30, skipWyrab: true, demandDriven: true, resourceDeficitKeys: over.deficit ?? [],
+    getFocus: () => 'zrownowazone', getOnlyWorked: () => true, getWorkedHexKeys: () => new Set(),
+    getResourcePassOnlyWorked: () => false,
+    pracaBudgetPercent: 100, civArchetype: 'grecy', playerEra: 3, foodImprovementStages: () => true,
+    cityLimitExhausted: true,
+  });
+  const richC = callC({ pool: STAD + 500, deficit: ['kon'] });
+  ok(richC.some(p => p.key === 'stadnina') && forts(richC).length === 0, `kontrola: pula ${STAD + 500} -> stadnina TAK, fort NIE (got ${JSON.stringify(richC.map(p => p.key))})`);
+  const pool = FORTC + 30 + 1;
+  ok(pool < STAD + 30, `fixtura: pula ${pool} miesci fort (+rezerwa 30) ale nie stadnine (+rezerwa 30)`);
+  const poorC = callC({ pool, deficit: ['kon'] });
+  ok(!poorC.some(p => p.key === 'stadnina'), `pula ${pool}: stadniny nie stac`);
+  ok(forts(poorC).length === 0, `niedobor konia czeka na Prace -> fort NIE jest stawiany (got ${JSON.stringify(poorC.map(p => p.key))})`);
+  const noDefC = callC({ pool, deficit: [] });
+  ok(forts(noDefC).length === 1, 'ta sama pula bez niedoboru -> fort stawiany (kontrola: wstrzymuje niedobor, nie pula)');
+}
+
+// =========================================================================
+console.log('L. fort i kopalnia na tym samym heksie (wspolistnienie w silniku)');
+{
+  // Zloze rudy (miedz) NA GORZE na granicy: heks jest kandydatem i fortu, i kopalni.
+  const map = makeMap({ mountains: [[CQ + 5, CR]], deposits: [[CQ + 5, CR]] });
+  const extra = { getResourcePassOnlyWorked: () => false };
+  const onHex = ps => ps.filter(p => p.q === CQ + 5 && p.r === CR).map(p => p.key);
+  const ctl = callK2(map, { deficit: ['ruda'], extra });
+  console.log('  [info] kontrola (niedobor rudy, bez fortu): ' + JSON.stringify(ctl.map(p => p.key + '@' + p.q + ',' + p.r)));
+  ok(onHex(ctl).includes('kopalnia_miedzi'), 'kontrola fixtury: bez fortu niedobor rudy daje kopalnie na zlozu');
+  const fortPlaced = new Map([[K(CQ + 5, CR), ['fort']]]);
+  const tn = mkTN(); tn.push({ q: CQ + 5, r: CR, ownerId: 0, pop: 0, level: 1, isFort: true });
+  const withFort = callK2(map, { deficit: ['ruda'], placed: fortPlaced, territoryNodes: tn, extra });
+  console.log('  [info] fort stoi na zlozu -> ' + JSON.stringify(withFort.map(p => p.key + '@' + p.q + ',' + p.r)));
+  ok(onHex(withFort).includes('kopalnia_miedzi'), 'kopalnia MOZE stanac na heksie z fortem (wspolistnienie warstw w silniku)');
+  const minePlaced = new Map([[K(CQ + 5, CR), ['kopalnia_miedzi']]]);
+  const withMine = callK2(map, { placed: minePlaced });
+  ok(onHex(withMine).includes('fort'), 'fort MOZE stanac na heksie z kopalnia (wspolistnienie warstw w silniku)');
+}
+
+// =========================================================================
+console.log('M. fort drozszy od sufitu % gracza na stale: drogi wstrzymane (udokumentowane zachowanie)');
+{
+  const map = makeMap({ mountains: [[CQ + 5, CR]] });
+  const wR = new Set([K(CQ + 1, CR)]);
+  const placedR = new Map([[K(CQ + 1, CR), ['farma']]]);
+  const isRoad = p => p.key === 'droga' || p.key === 'droga_brukowana';
+  const pct = Math.floor((FORT_COST - 1) / 10);
+  const picks = callK2(map, { pool: 1000, pct, placed: placedR, extra: { getWorkedHexKeys: () => wR } });
+  ok(picks.length === 0, `sufit ${pct}% z 1000 < koszt fortu: ani fort, ani droga (got ${JSON.stringify(picks.map(p => p.key))}) — ZAMIERZONE: wzorzec jak E1-E5 (cel czekajacy na Prace wstrzymuje nizsze priorytety)`);
+  const picks2 = callK2(map, { pool: 1000, pct: pct + 3, placed: placedR, extra: { getWorkedHexKeys: () => wR } });
+  ok(forts(picks2).length === 1, 'po podniesieniu sufitu % gracza fort jest stawiany i blokada znika');
 }
 
 console.log(`\nauto-fort-claim-test: ${passed} passed, ${failed} failed`);
