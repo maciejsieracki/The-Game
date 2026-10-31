@@ -1,3 +1,12 @@
+## ROBOCZA e20eea75 -- 2026-10-31 -- zdobycie fortu wejściem wojska, kolejność fortów, opisy zasięgu 3/5 (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`18bbf0cf6` + temat) i commit wdrożenia bundla; stała zgoda właściciela 2026-10-31.
+- Bundle MD5 `e20eea75cc1b77db80f3c4456c0733e8`, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, outDir poza repo, stempel ROBOCZA; `verify-robocza-bundle.cjs` VERIFY OK.
+- Zakres: `R-WEB-OUTPOST-FORT-TERRITORY-Q1` runda 3 — wróg zdobywa fort/posterunek razem z terytorium, gdy jego jednostka wojskowa (cywilizacji w stanie wojny) stanie na heksie fortu, a właściciel nie ma tam jednostki (gracz i AI); sporny heks między fortami różnych cywilizacji należy do wcześniejszego fortu; stare zapisy dostają kolejność z tablicy; opisy w grze i poradnik na 3/5.
+- Testy po scaleniu: tsc PASS; fort-outpost-hard-territory 80/0, fort-nodes-save-load 18/0, fort-strazniaca-zasieg-zakladania 85/0, territory-border 9/0 i 15/0, improvement-territory-gate 6/0, ai-founding-territory 29/0, autoimprove-stages-q1 184/0, city-clears-forest 18/0, defeat-last-city 14/0, diplomacy 148, war-era-counter 82, ring 15; Chromium (FC) 33/0.
+- Ograniczenia: NIE_ZMIERZONO zdobycie przez prawdziwy ruch AI w Chromium i wizualna zmiana granicy; barbarzyńcy nie zdobywają fortów; otwarte ABC: wiek zdobytego fortu, przypadki sporne zdobycia; znane czerwone w bazie: civ-matrix-ai-diplomacy-wiring 42/1, ai-test 291/4.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `3feaf8843cf610a4ce811924a85ffa29`, 70,101,816 bajtów.
+
 ## ROBOCZA 3feaf884 -- 2026-10-31 -- auto-ulepszenia: niedobór tylko brakującego surowca, drogi na końcu, centrum miasta; twarde terytorium posterunku i fortu (testowa)
 
 - **STATUS: DEPLOYED** — merge do `origin/main` (`d8b2766b4` + dwa tematy) i commit wdrożenia bundla; stała zgoda właściciela 2026-10-31.
