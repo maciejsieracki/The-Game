@@ -35,7 +35,7 @@ pub fn assign_worked_tiles(
             }
         })
         .collect();
-    let scored = stable_sort_by(scored, &|a, b| compare_scored(a, b, opts.focus));
+    let scored = v8_sort_by(scored, &|a, b| compare_scored(a, b, opts.focus));
     let pop = if population.is_finite() {
         population
     } else {
