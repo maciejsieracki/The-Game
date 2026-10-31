@@ -403,3 +403,5 @@ Cel końcowy i bieżący zapisane w `GOAL-RUST-PORT-20261020.md` (§"CEL PĘTLI 
 - FC r4 `ad2bc6e3c` (kod `0534eacb3`). Scalone do `web/integration-20261030` (`ad2bc6e3c`). Bramki: tsc 0; cession 79/0 + r3 73/0; value-catalog 82; counter 82; multiwar 57+21; relation-gate 14; stone 31, iron 54; profile 198, gate 11, sim 22, main-guard 28, d7 8; diplomacy 148; peace-lock 9; ring 15; picker-ui (Chromium) 13/0; cession-live (Chromium: AI oddaje, AI żąda, stolica odrzucona) 17/0. Znane czerwone w bazie: civ-matrix-ai-diplomacy-wiring 42/1.
 - Dług: niepokój 5 tur po cesji NIE wdrożony (brak mechaniki w modelu miasta; decyzja administracyjna); wasalizacja z miastem bez preflightu; live test wstrzykuje komendę AI przez konwerter, nie pętlę tury AI; guard >1 miasta bez testu live.
 - Push do `main`: NIE WYKONANO.
+
+- 2026-10-31 04:12 UTC — kontrola cykliczna: M07B r1, 8H r1, WEB AGGRESSOR-FLAG r1 biegną; brak PASS do integracji.
