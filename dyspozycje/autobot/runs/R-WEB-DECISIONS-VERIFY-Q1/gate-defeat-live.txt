@@ -1,0 +1,4 @@
+  OK  S3 endTurn przesunął turę, gra trwa
+  OK  C. zero pageerror / console.error w scenariuszach
+[defeat-last-city-live] 19 passed, 0 failed
+EXIT=0

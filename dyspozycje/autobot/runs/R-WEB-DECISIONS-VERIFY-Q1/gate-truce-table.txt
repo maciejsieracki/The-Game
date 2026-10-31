@@ -1,0 +1,5 @@
+[ai-table] PASS (rozejm) — AI wstawiło rozejm na stół (tura 2); karta otwarta+zaakceptowana klikiem: true
+[ai-table] błędy strony: brak
+[ai-table] czas całkowity: 100.0s (limit kryterium 120 s: spełniony )
+[ai-table] scenariusz po wygenerowaniu swiata: 30.6s (strażnik 60s: OK)
+EXIT=0

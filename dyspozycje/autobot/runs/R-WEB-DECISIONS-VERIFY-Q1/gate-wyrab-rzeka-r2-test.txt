@@ -1,0 +1,4 @@
+5. E3: hodowla TYLKO na heksach przy rzece (bydło nie wchodzi na heksy bez rzeki)
+  PASS: brak hodowli na heksach bez rzeki (got [])
+Wynik: 10 PASS / 0 FAIL
+EXIT=0
