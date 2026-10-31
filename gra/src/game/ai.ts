@@ -71,6 +71,7 @@ import {
   AI_IMPROVEMENT_PRIORITY,
   IMPROVEMENT_FOR_DEFICIT,
   actionableDeficitKeys,
+  isCityLimitExhausted,
   pickAutoImprovements,
   type AutoImprovementSurplusReport,
 } from './auto-improvements';
@@ -406,6 +407,12 @@ export interface AITurnOpts {
    * od epoki 3, patrz livestock-unlock.ts). Domyślnie 1 gdy brak.
    */
   civEra?: number;
+  /**
+   * R-WEB-AUTO-FORT-CLAIM-Q1: bazowy limit miast z konfiguracji gry (`gameConfig.cityLimitBase`, jak w `canFoundCity`).
+   * Brak = krok E-FORT (fort na cennym terenie przy wyczerpanym limicie miast) NIEAKTYWNY dla tego AI —
+   * silnik (main.ts, poza allowlistą tematu) musi go podać, patrz raport Operatora.
+   */
+  cityLimitBase?: number;
   /**
    * D-START posiłki v2 (Maciej 2026-07-21 przeróbka ZMIANA 1): "Wsparcie miast-państw"
    * — NIE osobna opcja setupu (usunięta), pochodna TRUDNOŚCI gry (niskie/normalne/mocne
@@ -2652,6 +2659,10 @@ function planCityImprovements(
     skipWyrab: false,
     civArchetype: opts.civType,
     playerEra: opts.civEra ?? 1,
+    // R-WEB-AUTO-FORT-CLAIM-Q1 (K3 = K2): fort na cennym terenie dopiero przy WYCZERPANYM limicie miast. Miasta-państwa
+    // (`defensiveCopy`) są wyłączone z ekspansji terytorialnej (jak `planExpansionFortBuilding`, F4) — ZAŁOŻENIE.
+    cityLimitExhausted: !opts.defensiveCopy
+      && isCityLimitExhausted(myCities, opts.cityLimitBase, opts.civEra),
   };
 
   // WYWOŁANIE 1 — kategoria ŻYWNOŚCIOWA: zachowanie bez zmian (onlyWorked=true), pełny
