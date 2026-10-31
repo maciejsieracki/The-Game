@@ -56,3 +56,4 @@ RUNDY: 1/5 (licznik workflow); zakres = RUNDA 5/5 dispatchu. Zuzyte: 1. Ostatni 
 NASTEPNY KROK: Evaluator (to samo ID) — niezalezny przebieg bramek gate-r5-*, mutacji i przeglad usunietej asercji (k2); potem Obrona/Final Control; integracja orkiestratora; READY_FOR_DEPLOY dopiero po niej.
 DEPLOY/PUSH: NIE WYKONANO
 COMMIT SHA: patrz ostatnia linia pliku (uzupelnione po commicie) i `git log -1`.
+COMMIT SHA: a6ec65d8538af21a04abdffb0a80b01b9d97fc51 (kod + testy + logi + raport); kolejny commit docs dopisuje tylko te linie (git log -2).
