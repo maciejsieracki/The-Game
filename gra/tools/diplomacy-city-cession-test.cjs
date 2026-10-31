@@ -68,6 +68,7 @@ eq(D.diplomacyPnMiasto({ populacja: -5, budynki: [] }), 400, 'ujemna populacja o
 eq(D.diplomacyPnZlozaMiasta(['miedz', 'zelazo']), 270, 'złoża miedz(120)+zelazo(150) = 270');
 eq(D.diplomacyPnZlozaMiasta(['nieznane_zloze']), 0, 'nieznane złoże = 0 PW');
 eq(D.diplomacyPnZlozaMiasta([]), 0, 'brak złóż = 0 PW');
+eq(D.diplomacyPnMiasto({ populacja: 0, budynki: [], zlozaPn: D.diplomacyPnZlozaMiasta(['zelazo']) }), 550, 'wycena miasta: złoże żelaza 150 wchodzi do sumy');
 eq(D.diplomacyPnMiasto({ populacja: 4, budynki: T3, zlozaPn: D.diplomacyPnZlozaMiasta(['miedz', 'zelazo']) }),
   1060 + 270, 'wycena 4+3 z realnymi złożami = 1330');
 
@@ -176,6 +177,16 @@ eq(D.planCityCession({ ...baseCession, toOwnerId: 1 }).ok, false, 'plan: cesja d
   const p = D.planCityCession({ ...baseCession, units: [{ id: 'r1', ownerId: 2, q: 5, r: 0 }] });
   eq(p.ok, true, 'plan z jednostką przyjmującego dozwolony');
   eq(p.unitMoves.length, 0, 'jednostka przyjmującego nie jest przesuwana');
+}
+{
+  // Wolny heks dopiero w odległości 2 (BFS musi sięgnąć drugiego pierścienia).
+  const p = D.planCityCession({
+    ...baseCession,
+    units: [{ id: 'a', ownerId: 1, q: 5, r: 0 }],
+    isFreeHex: (q) => q === 7,
+  });
+  eq(p.ok, true, 'wolny heks w odległości 2 znaleziony');
+  eq(p.ok && p.unitMoves[0] ? p.unitMoves[0].q : -1, 7, 'jednostka trafia na heks q=7');
 }
 eq(D.planCityCession({
   ...baseCession,
