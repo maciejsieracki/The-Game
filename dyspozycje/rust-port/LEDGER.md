@@ -390,3 +390,5 @@ Cel końcowy i bieżący zapisane w `GOAL-RUST-PORT-20261020.md` (§"CEL PĘTLI 
 - `R-WEB-PEACE-RULES-R8R9-Q1` PASS-WITH-NOTES (FC r2 `0083aed43`; R8 blokada wojny epoki przy Relacji ≥100, R9 usunięty auto-koniec wojen wymuszonych). Scalone na `web/integration-20261030` (`0083aed43`): tsc 0; relation-gate 14/0; counter 82/0; multiwar 57/0+21/0; stone 31/0, iron 54/0; main-guardy stone/iron/bronze zielone; profile 198, sim 22, main-guard 28; diplomacy 148; peace-lock 9; ring 15. NIE_ZMIERZONO: war-rules-multiwar-live-test (>580 s także na bazie). Znane czerwone w bazie bez zmian: forced-war-waves 16/1, bronze-new-game-reset.
 - Push do `main`: NIE WYKONANO. Następne web: CITY-CESSION → AGGRESSOR-FLAG → TRUCE.
 - 8G: FC r3 FAIL → r4 (hak rebalansu + state.rs, wektory, mutacje) biegnie.
+
+- 2026-10-31 03:12 UTC — kontrola cykliczna: 8G r4, M07B r1, WEB CITY-CESSION r3 biegną; brak PASS do integracji. Wolne sloty Rust: 8H/8I czekają na 8G.
