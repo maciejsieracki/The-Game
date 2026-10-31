@@ -25,6 +25,7 @@ import {
   normalizeTreatyKind,
 } from './diplomacy-treaties';
 import { RodzajTraktatu } from '../types/diplomacy';
+import { czyAgresorAktywny, deltaRelacjiSojusz } from './diplomacy';
 import { resolveWarPeaceProfile, evaluatePeaceAiGate } from './diplomacy-war-peace-profile';
 import type { Player } from '../types/player';
 import { TypCywilizacji } from '../types/player';
@@ -372,7 +373,10 @@ export function makeDealId(
   return `${prefix}-${p0}-${p1}-t${turn}`;
 }
 
-function stanceForEval(ctx: ProposalEvalContext): ReturnType<typeof aiDiplomacyStance> {
+function stanceForEval(
+  ctx: ProposalEvalContext,
+  celAgresorAktywny: boolean,
+): ReturnType<typeof aiDiplomacyStance> {
   const responder = ctx.responderPlayer ?? STUB_RESPONDER;
   const proposer = ctx.proposerPlayer ?? STUB_PROPOSER;
   const proposerMil = ctx.militaryRatio ?? 1;
@@ -384,6 +388,8 @@ function stanceForEval(ctx: ProposalEvalContext): ReturnType<typeof aiDiplomacyS
     currentTurn: ctx.turn,
     // R-WEB-PEACE-RULES-Q1 R1: realny czas wojny (dawna stała 5 usunięta).
     turnsAtWar: ctx.stanWojny ? Math.max(0, ctx.warState?.turnsAtWar ?? 0) : 0,
+    // R-WEB-WAR-AGGRESSOR-FLAG-Q1: proponent (druga strona stance) z aktywną flagą agresora.
+    celAgresorAktywny,
   };
   return aiDiplomacyStance(responder, proposer, ctx.relation, dipCtx);
 }
@@ -1052,7 +1058,9 @@ export function evaluateProposal(
     ...proposalPnTurnsMultiplier(payload),
   };
   const score = relationScore(relation);
-  const stance = stanceForEval(ctx);
+  // R-WEB-WAR-AGGRESSOR-FLAG-Q1: proponent z aktywną flagą agresora → gorszy próg/chęć (JSON).
+  const proponentAgresor = czyAgresorAktywny(proposerOwnerId, ctx.turn);
+  const stance = stanceForEval(ctx, proponentAgresor);
 
   if (actionId === 'pokoj' && !stanWojny) {
     return { accepted: false, reason: 'Pokój — brak trwającej wojny' };
@@ -1098,7 +1106,10 @@ export function evaluateProposal(
       // MAKSYMALNY słodzik dokładnie go kasuje — to jest gwarancja, że warunek nigdy nie
       // jest nieosiągalny. Wartość WYPROWADZONA z istniejącej stałej, nie nowy balans.
       const napExpansionSurcharge = ctx.karaWspolnaGranica ? NAP_GRANICA_RELACJA_NARZUT : 0;
-      const napThreshold = Math.max(0, p.progNapRelacja + napExpansionSurcharge - napEase);
+      const napThreshold = Math.max(
+        0,
+        p.progNapRelacja + napExpansionSurcharge - napEase + deltaRelacjiSojusz(proponentAgresor),
+      );
       if (score < napThreshold) {
         return {
           accepted: false, pwBalance: -1,
@@ -1144,7 +1155,8 @@ export function evaluateProposal(
       const sojuszEase = sweetenerEasePoints(payload, pnOpts);
       const minZ = Math.max(0, diplomacyAllianceMinZaufanie(adj, milRatio, p) - sojuszEase);
       const minScore = diplomacyTreatyMinRelacja(
-        p.progSojuszRelacja - adj.ease.scoreThresholdDelta + adj.penaltyScore - sojuszEase,
+        p.progSojuszRelacja - adj.ease.scoreThresholdDelta + adj.penaltyScore - sojuszEase
+          + deltaRelacjiSojusz(proponentAgresor),
         p,
       );
       const minAlly = Math.max(0, p.progSojuszWillingnessMin - adj.ease.allyThresholdDelta + adj.penaltyAlly);

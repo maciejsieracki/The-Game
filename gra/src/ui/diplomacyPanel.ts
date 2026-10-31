@@ -31,6 +31,8 @@ export type DiploPlayerAction = 'pokoj' | 'wojna' | 'handel';
 export interface DiploRelation {
   /** ownerId rywala (wymagane do akcji gracza). */
   ownerId?: number;
+  /** R-WEB-WAR-AGGRESSOR-FLAG-Q1: tura końca (wyłącznie) aktywnej flagi agresora; brak = bez znacznika. */
+  agresorDoTury?: number;
   /** Nazwa wyświetlana (miasto rywala klastra lub nacja). */
   civ: string;
   /** Miasto-państwo klastra — silnik ustawia flagę; UI formatuje przez display-names. */
@@ -215,6 +217,18 @@ function panelRelTotal(zaufanie: number, respekt: number): number {
   return Math.round(Math.max(0, Math.min(200, zaufanie + respekt)));
 }
 
+/**
+ * R-WEB-WAR-AGGRESSOR-FLAG-Q1: znacznik „Agresor" przy cywilizacji z aktywną flagą agresora.
+ * Tooltip: „Wypowiedział wojnę bez powodu (do tury N)" — N = tura końca (wyłącznie).
+ */
+export function agresorBadgeHtml(doTury: number | undefined): string {
+  if (doTury === undefined || !Number.isFinite(doTury)) return '';
+  const title = 'Wypowiedział wojnę bez powodu (do tury ' + Math.trunc(doTury) + ')';
+  return '<span class="cd-agresor" title="' + esc(title) + '" style="display:inline-block;margin-left:.4em;'
+    + 'padding:0 .45em;border-radius:3px;background:#7a1f1f;color:#fff;font-size:.72em;'
+    + 'font-weight:700;letter-spacing:.04em;vertical-align:middle;">Agresor</span>';
+}
+
 function renderRow(rel: DiploRelation, isPlaceholder: boolean): string {
   const btnLabel = 'Porozmawiaj';
   let actionBtn = '';
@@ -245,6 +259,7 @@ function renderRow(rel: DiploRelation, isPlaceholder: boolean): string {
       pennant +
       '<div class="cd-civ-wrap">' +
         '<span class="cd-civ">' + esc(rel.civ) + '</span>' +
+        agresorBadgeHtml(rel.agresorDoTury) +
         tierBadge + stats +
       '</div>' +
       actionBtn +

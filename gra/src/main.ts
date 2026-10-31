@@ -1387,6 +1387,22 @@ import {
   type BarbarianCooperationGraceState,
   recordBarbarianCooperationGrace,
 } from './game/diplomacy-treaties';
+// R-WEB-WAR-AGGRESSOR-FLAG-Q1: flaga agresora + casus belli (stan modułu, zapis w meta).
+import {
+  type WarCause,
+  przyczynaWypowiedzenia,
+  zarejestrujWypowiedzenie,
+  zarejestrujCasusBelli,
+  maCasusBelliAktywne,
+  czyAgresorAktywny,
+  doTuryFlagiAgresora,
+  pobierzStanAgresorow,
+  pobierzStanCasusBelli,
+  ustawStanAgresorow,
+  ustawStanCasusBelli,
+  resetStanAgresora,
+  wczytajMape,
+} from './game/diplomacy';
 import { empireDiploResourceFlowPerTurn } from './game/empire-diplo-resource-flow';
 import {
   activeDealsToPaymentDeals, tickDiplomacyPayments, applyOneShotGoldTransfer,
@@ -7304,6 +7320,8 @@ async function boot(): Promise<void> {
           contactEstablished: diplomaticContactEstablishedSet().has(otherId),
           activeTreaties: activeTreatyLabelsForPair(activeDeals, ME(), otherId),
           wiarygodnosc: getWiarygodnosc(otherId),
+          // R-WEB-WAR-AGGRESSOR-FLAG-Q1: znacznik „Agresor" (tura końca flagi, gdy aktywna).
+          agresorDoTury: doTuryFlagiAgresora(otherId, turn),
         });
       }
       rels.sort((x, y) => x.civ.localeCompare(y.civ, 'pl'));
@@ -10413,6 +10431,8 @@ async function boot(): Promise<void> {
           victim,
           applyDiploEventTracked(declarer, victim, getDiploRelation(declarer, victim), 'wojna_wypowiedziana'),
         );
+        // R-WEB-WAR-AGGRESSOR-FLAG-Q1: wojna z progu (hamulec) NIE nadaje flagi agresora.
+        zarejestrujWypowiedzenie(declarer, turn, 'hamulec');
         if (isMe(declarer) || isMe(victim)) pruneTributeNegotiationsBetween(declarer, victim);
         // R-WEB-ERA-WAR-COUNTER-Q1 (6): wojna z progu (hamulec) — powód widoczny w karcie zdarzeń.
         recordWarDeclarationEvent(declarer, victim, 'Wojna z progu zaufania');
@@ -11618,6 +11638,8 @@ async function boot(): Promise<void> {
         ownerId,
         applyDiploEventTracked(ME(), ownerId, getDiploRelation(ME(), ownerId), 'wojna_wypowiedziana'),
       );
+      // R-WEB-WAR-AGGRESSOR-FLAG-Q1: wypowiedzenie gracza — flaga tylko bez casus belli.
+      zarejestrujWypowiedzenie(ME(), turn, przyczynaWypowiedzenia({ casusBelliAktywny: maCasusBelliAktywne(ME(), ownerId, turn) }));
       pruneTributeNegotiationsBetween(ME(), ownerId);
       recordWarDeclarationEvent(ME(), ownerId);
       pruneInvalidNegotiations();
@@ -11637,7 +11659,7 @@ async function boot(): Promise<void> {
      * pokoju w `diplomacyPairMeta` zostałaby martwym, mylącym reliktem, wciąż zgłaszanym
      * przez `isPeaceLockedBetween` jako "trwający traktat") — używane wyłącznie przez
      * `triggerRebelProtectionWarConsequence` (patrz niżej). */
-    function ownerDeclareWarOn(attackerId: number, defenderId: number, force = false): void {
+    function ownerDeclareWarOn(attackerId: number, defenderId: number, force = false, cause?: WarCause): void {
       if (attackerId === defenderId) return;
       if (force) {
         setDiploPairMeta(attackerId, defenderId, { ...getDiploPairMeta(attackerId, defenderId), peaceUntilTurn: undefined });
@@ -11656,6 +11678,13 @@ async function boot(): Promise<void> {
           getDiploRelation(attackerId, defenderId),
           'wojna_wypowiedziana',
         ),
+      );
+      // R-WEB-WAR-AGGRESSOR-FLAG-Q1: flaga agresora tylko dla przyczyny 'bez_powodu' (domyślnie
+      // wyznaczanej z aktywnego casus belli napastnika wobec celu; wywołujący może podać przyczynę).
+      zarejestrujWypowiedzenie(
+        attackerId,
+        turn,
+        cause ?? przyczynaWypowiedzenia({ casusBelliAktywny: maCasusBelliAktywne(attackerId, defenderId, turn) }),
       );
       if (isMe(defenderId) || isMe(attackerId)) {
         pruneTributeNegotiationsBetween(attackerId, defenderId);
@@ -11690,7 +11719,7 @@ async function boot(): Promise<void> {
       if (rebelPrevOwnerId === undefined) return;
       if (newOwner === rebelPrevOwnerId) return;
       if (isBarbarian(newOwner)) return;
-      ownerDeclareWarOn(newOwner, rebelPrevOwnerId, true);
+      ownerDeclareWarOn(newOwner, rebelPrevOwnerId, true, 'wymuszona_inna');
     }
 
     /** Bramka UX: atak / marsz na obce państwo wymaga wojny (modal potwierdzenia). */
@@ -18277,6 +18306,15 @@ async function boot(): Promise<void> {
         negotiationTable.splice(ni, 1);
         const result = outcome.kind === 'accepted' ? outcome.result : { accepted: false as const, reason: outcome.reason };
         applyProposalOutcome(entry.proposerOwnerId, entry.responderOwnerId, result, entry.payload, entry.actionId);
+        // R-WEB-WAR-AGGRESSOR-FLAG-Q1: odmowa trybutu/ultimatum przez ADRESATA (awaitingId) daje
+        // żądającemu (proposerOwnerId) casus belli wobec adresata — PRZED ewentualnym wypowiedzeniem.
+        if (
+          outcome.kind === 'rejected'
+          && (entry.actionId === 'trybut_zadanie' || entry.actionId === 'ultimatum' || entry.payload.warThreat)
+          && entry.proposerOwnerId !== awaitingId
+        ) {
+          zarejestrujCasusBelli(entry.proposerOwnerId, awaitingId, turn);
+        }
         if (outcome.kind === 'rejected' && entry.payload.warThreat) {
           if (isMe(entry.proposerOwnerId)) {
             playerDeclareWarOnOwner(entry.responderOwnerId);
@@ -18421,6 +18459,13 @@ async function boot(): Promise<void> {
       }
       negotiationTable.splice(idx, 1);
       const aiPartnerId = negotiationPartnerOwnerId(entry.proposerOwnerId, entry.responderOwnerId);
+      // R-WEB-WAR-AGGRESSOR-FLAG-Q1: odmowa gracza (adresata) trybutu/ultimatum daje żądającemu casus belli.
+      if (
+        !isMe(entry.proposerOwnerId)
+        && (entry.actionId === 'trybut_zadanie' || entry.actionId === 'ultimatum' || entry.payload.warThreat)
+      ) {
+        zarejestrujCasusBelli(entry.proposerOwnerId, ME(), turn);
+      }
       if (entry.payload.warThreat && !isMe(entry.proposerOwnerId)) {
         ownerDeclareWarOn(entry.proposerOwnerId, ME());
       }
@@ -21288,6 +21333,8 @@ async function boot(): Promise<void> {
         mustDeclareWarOn,
         applyDiploEventTracked(allyId, mustDeclareWarOn, getDiploRelation(allyId, mustDeclareWarOn), 'wojna_wypowiedziana'),
       );
+      // R-WEB-WAR-AGGRESSOR-FLAG-Q1: obowiązek sojuszniczy — wejście w wojnę NIE nadaje flagi agresora.
+      zarejestrujWypowiedzenie(allyId, turn, 'wymuszona_inna');
       recordWarDeclarationEvent(allyId, mustDeclareWarOn);
       appendWiarygodnoscEvent(allyId, 'pomoc_sojusznikowi_realna', _diplomacyParams().wiarygodnoscP5PomocSojusznikowi);
     }
@@ -25784,6 +25831,25 @@ async function boot(): Promise<void> {
     // resolvePlayerAcceptsAiPending → applyProposalOutcome), z REALNYM konwerterem komend AI i REALNYM
     // transferem w applyProposalOutcome/executePnDealTransfer/transferBasketItems. Hak nie liczy
     // żadnej wartości miasta ani kierunku — tylko podaje komendę i odczytuje stan.
+    // R-WEB-WAR-AGGRESSOR-FLAG-Q1 (hak live): REALNE ścieżki (ownerDeclareWarOn → rejestracja
+    // przyczyny; zarejestrujCasusBelli = odmowa adresata) + odczyt stanu i otwarcie panelu.
+    (window as any).__aggressorTestDebug = {
+      contact: (ownerId: number): void => { diplomaticContactEstablishedSet().add(ownerId); updateDiplomacyPanel(); },
+      declareWar: (attackerId: number, defenderId: number): void => {
+        ownerDeclareWarOn(attackerId, defenderId);
+        updateDiplomacyPanel();
+      },
+      refusalCasusBelli: (requesterId: number, targetId: number): void => { zarejestrujCasusBelli(requesterId, targetId, turn); },
+      state: (): { turn: number; flags: Record<string, number>; casus: Record<string, number> } => ({
+        turn,
+        flags: { ...pobierzStanAgresorow() },
+        casus: { ...pobierzStanCasusBelli() },
+      }),
+      openPanel: (): void => {
+        showDiplomacyPanel({ getRelations: () => buildPlayerDiploRelations(), onOpenAudience: () => {} });
+        updateDiplomacyPanel();
+      },
+    };
     (window as any).__cityCessionTestDebug = {
       cityOwner: (cityId: string): number | null => cities.find(c => c.id === cityId)?.ownerId ?? null,
       ownerCityIds: (ownerId: number): string[] => cities.filter(c => c.ownerId === ownerId).map(c => c.id),
@@ -32916,6 +32982,9 @@ async function boot(): Promise<void> {
           ...(isWarRulesMultiwarEnabled()
             ? { warRulesEraWarCountByCiv: Array.from(eraWarCountByCivKey.entries()) }
             : {}),
+          // R-WEB-WAR-AGGRESSOR-FLAG-Q1: flaga agresora (ownerId -> tura końca) i casus belli (req>tgt -> tura końca).
+          aggressorFlagUntilByOwner: pobierzStanAgresorow(),
+          casusBelliUntilByPair: pobierzStanCasusBelli(),
           stoneForceWarPendingOwners: stoneForceWarSave.pendingOwners,
           stoneForceWarCycleOwners: stoneForceWarSave.cycleOwners,
           stoneForceWarRestUntilByOwner: stoneForceWarSave.restUntilByOwner,
@@ -35811,6 +35880,8 @@ async function boot(): Promise<void> {
                     csOwnerId, ME(), getDiploRelation(csOwnerId, ME()), 'wojna_wypowiedziana',
                   );
                   setDiploRelation(csOwnerId, ME(), newRel);
+                  // R-WEB-WAR-AGGRESSOR-FLAG-Q1: klaster państw-miast wypowiada wojnę bez powodu (lub z casus belli).
+                  zarejestrujWypowiedzenie(csOwnerId, turn, przyczynaWypowiedzenia({ casusBelliAktywny: maCasusBelliAktywne(csOwnerId, ME(), turn) }));
                   pruneTributeNegotiationsBetween(csOwnerId, ME());
                   recordWarDeclarationEvent(csOwnerId, ME());
                   console.log(
@@ -36668,6 +36739,8 @@ async function boot(): Promise<void> {
                   hasActiveResourceTradeDeal: hasActiveResourceTradeDealForPair(ME(), ownerId),
                   lastResourceTradeProposalTurn: aiResourceTradeLastProposalTurn.get(ownerId),
                   partnerTypCywilizacji: civKeyForOwnerId(ME()),
+                  // R-WEB-WAR-AGGRESSOR-FLAG-Q1: gracz jako partner — flaga agresora (u innych AI).
+                  celAgresorAktywny: czyAgresorAktywny(ME(), turn),
                   hasNapTreaty: hasTreaty(
                     activeDeals, ownerId, ME(), RodzajTraktatu.PaktNieagresji,
                   ),
@@ -36708,6 +36781,8 @@ async function boot(): Promise<void> {
                   respektWzgledny: respektWzgAi,
                   stanWojny: relAi.status === 'wojna',
                   partnerTypCywilizacji: civKeyForOwnerId(otherId),
+                  // R-WEB-WAR-AGGRESSOR-FLAG-Q1: partner AI — flaga agresora wpływa na sojusz/pakt.
+                  celAgresorAktywny: czyAgresorAktywny(otherId, turn),
                   hasNapTreaty: hasTreaty(
                     activeDeals, ownerId, otherId, RodzajTraktatu.PaktNieagresji,
                   ),
@@ -37164,6 +37239,12 @@ async function boot(): Promise<void> {
                         ownerId, targetId, getDiploRelation(ownerId, targetId), 'wojna_wypowiedziana',
                       );
                       setDiploRelation(ownerId, targetId, newRel);
+                      // R-WEB-WAR-AGGRESSOR-FLAG-Q1: wojna wymuszona epoki NIE nadaje flagi agresora;
+                      // zwykłe wypowiedzenie AI — flaga tylko bez aktywnego casus belli wobec celu.
+                      zarejestrujWypowiedzenie(ownerId, turn, przyczynaWypowiedzenia({
+                        wymuszonaEpoka: forcedEraTagFromPowod(cmd.powod) !== null,
+                        casusBelliAktywny: maCasusBelliAktywne(ownerId, targetId, turn),
+                      }));
                       // R-WEB-WAR-RULES-MULTIWAR-Q1 (R3): licznik wojen epoki per epoka (świat).
                       const declaredEraTag = forcedEraTagFromPowod(cmd.powod);
                       if (declaredEraTag !== null) {
@@ -40195,6 +40276,8 @@ async function boot(): Promise<void> {
       forcedEraWarDeclaredByTag.clear();
       // R-WEB-ERA-WAR-COUNTER-Q1: nowa gra zaczyna z zerowym licznikiem wojen epoki.
       eraWarCountByCivKey.clear();
+      // R-WEB-WAR-AGGRESSOR-FLAG-Q1: nowa gra — brak flag agresora i casus belli z poprzedniej rozgrywki.
+      resetStanAgresora();
       clearedBarbCampHexes.clear();
       // Audyt #43: cityRelig/autoManageCities przezywaly restart (id 'cityN'
       // koliduja miedzy rozgrywkami) -- nowe miasto dziedziczylo zombie stan
@@ -41786,6 +41869,9 @@ async function boot(): Promise<void> {
       // (stary zapis) → odtwórz z AKTYWNYCH par wojen wymuszonych (obie strony = 1 w bieżącej
       // epoce), reszta 0. Odtworzenie wymaga już wczytanych epok (sekcja wyżej).
       eraWarCountByCivKey.clear();
+      // R-WEB-WAR-AGGRESSOR-FLAG-Q1: brak pól (stary zapis) = pusty stan flagi i casus belli.
+      ustawStanAgresorow(wczytajMape(saved.meta?.aggressorFlagUntilByOwner));
+      ustawStanCasusBelli(wczytajMape(saved.meta?.casusBelliUntilByPair));
       const restoredEraWarCounts = restoreEraWarCounts(
         saved.meta?.warRulesEraWarCountByCiv,
         [

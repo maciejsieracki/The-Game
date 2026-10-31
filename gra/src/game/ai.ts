@@ -5106,6 +5106,7 @@ import {
   relationScore,
 } from './diplomacy';
 import type { Relation, AIDiplomacyContext } from './diplomacy';
+import { deltaRelacjiSojusz } from './diplomacy';
 import { diplomacyMiastoWagaBilansu } from './diplomacy-value-catalog';
 import {
   shouldHonorAllianceWarObligation,
@@ -5200,6 +5201,8 @@ export const AI_MAJOR_EARLY_NO_WAR_TURNS = 25;
 export interface RelacjaWejscie {
   /** Id cywilizacji partnera (klucz silnikowy, np. 'rzym-1'). */
   partnerId: string;
+  /** R-WEB-WAR-AGGRESSOR-FLAG-Q1: partner ma aktywną flagę agresora (main.ts: czyAgresorAktywny). */
+  celAgresorAktywny?: boolean;
   /** Bieżąca relacja (zaufanie + respekt + status). */
   relation: Relation;
   /**
@@ -5857,6 +5860,8 @@ export function decideAIDiplomacy(
       currentTurn:  0,       // nie wpływa na logikę v0.1
       turnsAtWar:   turnsAtWarRel,
       civMatrixDifficulty: difficulty,
+      // R-WEB-WAR-AGGRESSOR-FLAG-Q1: partner (druga strona stance) z aktywną flagą agresora.
+      celAgresorAktywny: rel.celAgresorAktywny === true,
     };
 
     // Missing/unknown owner type must not borrow a civilization's matrix row.
@@ -6097,7 +6102,7 @@ export function decideAIDiplomacy(
       && (inp.fullDiplomacyLayer !== false)
       && bias.proposeNap
       && !rel.hasNapTreaty
-      && score >= dipP.progNapRelacja - bias.napScoreEase
+      && score >= dipP.progNapRelacja - bias.napScoreEase + deltaRelacjiSojusz(rel.celAgresorAktywny === true, undefined)
     ) {
       const napIndefinite = score >= dipP.progSojuszRelacja;
       komendy.push({
@@ -6154,8 +6159,10 @@ export function decideAIDiplomacy(
       dipP,
     );
     const minSojuszAlly = p.progSojusz - sojuszAdj.ease.allyThresholdDelta + sojuszAdj.penaltyAlly - bias.allyThresholdEase;
+    // R-WEB-WAR-AGGRESSOR-FLAG-Q1: partner z aktywną flagą agresora — wyższy próg Relacji na sojusz.
     const minSojuszScore = diplomacyTreatyMinRelacja(
-      dipP.progSojuszRelacja - sojuszAdj.ease.scoreThresholdDelta + sojuszAdj.penaltyScore,
+      dipP.progSojuszRelacja - sojuszAdj.ease.scoreThresholdDelta + sojuszAdj.penaltyScore
+        + deltaRelacjiSojusz(rel.celAgresorAktywny === true, undefined),
       dipP,
     );
     // D-MP-DYPL Q1 (część 2): dyplomacjaAktywnosc skaluje willingnessAlly (T4=B analogicznie

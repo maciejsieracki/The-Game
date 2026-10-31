@@ -5,8 +5,8 @@
     "trwaTur": 20
   },
   "wplywNaAI": {
-    "_zalozenie": "Delta progu Relacji dla sojuszu/paktu (ujemna = łatwiej odrzucić) i mnożnik willingnessAlly wobec agresora u INNYCH AI.",
-    "relacjaDeltaSojusz": -15,
+    "_zalozenie": "Przesuniecie progu Relacji dla sojuszu/paktu wobec agresora (DODATNIE = prog wyzej, trudniej; poprzednia wersja miala znak odwrotny, poprawione w r2) i mnoznik willingnessAlly wobec agresora u INNYCH AI.",
+    "relacjaDeltaSojusz": 15,
     "willingnessAllyMnoznik": 0.7
   },
   "casusBelli": {

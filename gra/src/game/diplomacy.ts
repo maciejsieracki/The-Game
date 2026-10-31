@@ -21,6 +21,8 @@ import { StanWojny }                 from '../types/diplomacy';
 import { TypCywilizacji }            from '../types/player';
 import type { Player }               from '../types/player';
 import diplomacyData from '../../data/diplomacy.json';
+// R-WEB-WAR-AGGRESSOR-FLAG-Q1: parametry flagi agresora (sekcja na końcu pliku).
+import aggressorParamsJson from '../../data/diplomacy-aggressor-params.json';
 import type { GameDifficulty } from './difficulty-cost';
 import type { CivMatrixDifficulty } from './civ-matrix';
 import {
@@ -1103,6 +1105,11 @@ export interface AIDiplomacyContext {
   turnsAtWar: number;
   /** Poziom używany do odczytu wartości skali z macierzy cywilizacji. */
   civMatrixDifficulty?: CivMatrixDifficulty;
+  /**
+   * R-WEB-WAR-AGGRESSOR-FLAG-Q1: druga strona (`otherPlayer`) ma aktywną flagę agresora.
+   * true = wyższy próg Relacji na sojusz i mnożnik willingnessAlly (parametry w JSON).
+   */
+  celAgresorAktywny?: boolean;
 }
 
 // ---------------------------------------------------------------------------
@@ -1327,8 +1334,10 @@ export function aiDiplomacyStance(
     p,
   );
   let minAllyZ = diplomacyAllianceMinZaufanie(adj, otherMilOverAi, p);
+  // R-WEB-WAR-AGGRESSOR-FLAG-Q1: wobec agresora (flaga aktywna) próg sojuszu wyżej o deltę z JSON.
+  const agresorDeltaSojusz = deltaRelacjiSojusz(context.celAgresorAktywny === true);
   let minAllyScore = diplomacyTreatyMinRelacja(
-    p.progSojuszRelacja - adj.ease.scoreThresholdDelta + adj.penaltyScore,
+    p.progSojuszRelacja - adj.ease.scoreThresholdDelta + adj.penaltyScore + agresorDeltaSojusz,
     p,
   );
 
@@ -1355,6 +1364,9 @@ export function aiDiplomacyStance(
       allyW = clamp(allyW - adj.allyWPenalty, 0, 1);
     }
   }
+
+  // R-WEB-WAR-AGGRESSOR-FLAG-Q1: gorsza chęć sojuszu wobec agresora (mnożnik z JSON; 1 bez flagi).
+  allyW = clamp(allyW * mnoznikWillingnessAlly(context.celAgresorAktywny === true), 0, 1);
 
   return {
     willingnessWar:   parseFloat(warW.toFixed(4)),
@@ -1769,4 +1781,173 @@ export function tickDiplomacy(rdip: RelacjaDyplomatyczna, ctx: TickCtx): Relacja
     traktaty:         aktywne,
     urazyHistoryczne: noweUrazy,
   };
+}
+// R-WEB-WAR-AGGRESSOR-FLAG-Q1 — flaga agresora i casus belli.
+// Parametry: gra/data/diplomacy-aggressor-params.json (nie w kodzie).
+// Funkcje czyste zwracają NOWE obiekty (bez mutacji). Stan silnika trzymany jest w tym module
+// (ustawStanAgresorow / ustawStanCasusBelli), zapisywany i wczytywany w SaveGame.meta przez main.ts.
+
+
+export interface AggressorParams {
+  flagaAgresora: { trwaTur: number };
+  wplywNaAI: { relacjaDeltaSojusz: number; willingnessAllyMnoznik: number };
+  casusBelli: { trwaTur: number };
+}
+
+export const AGGRESSOR_PARAMS: AggressorParams = aggressorParamsJson as unknown as AggressorParams;
+
+/**
+ * Przyczyna wypowiedzenia wojny. Tylko 'bez_powodu' nadaje flagę agresora.
+ * - casus_belli: wypowiedzenie po odmowie trybutu/ultimatum (aktywne casus belli wobec celu).
+ * - wymuszona_epoka: wojna wymuszona epoki (prefiks R-EPOKA-*-WYMUSZONA-WOJNA).
+ * - hamulec: wojna z progu zaufania (hamulec Relacji).
+ * - wymuszona_inna: obowiązek sojuszniczy lub ochrona rebelii (wymuszone wejście w wojnę).
+ */
+export type WarCause = 'bez_powodu' | 'casus_belli' | 'wymuszona_epoka' | 'hamulec' | 'wymuszona_inna';
+
+/** Czy wypowiedzenie wojny tej przyczyny nadaje flagę agresora (GOAL 1 i 3). */
+export function czyDajeFlageAgresora(cause: WarCause): boolean {
+  return cause === 'bez_powodu';
+}
+
+/**
+ * Wejście wyboru przyczyny. Priorytety: hamulec > wymuszona epoka > wymuszona inna
+ * > casus belli > bez powodu. Hamulec i wymuszenia NIE nadają flagi nawet przy aktywnym casus belli.
+ */
+export interface WarCauseInput {
+  hamulec?: boolean;
+  wymuszonaEpoka?: boolean;
+  wymuszonaInna?: boolean;
+  casusBelliAktywny?: boolean;
+}
+
+export function przyczynaWypowiedzenia(input: WarCauseInput): WarCause {
+  if (input.hamulec) return 'hamulec';
+  if (input.wymuszonaEpoka) return 'wymuszona_epoka';
+  if (input.wymuszonaInna) return 'wymuszona_inna';
+  if (input.casusBelliAktywny) return 'casus_belli';
+  return 'bez_powodu';
+}
+
+/** Mapa ownerId -> tura, do której (wyłącznie) trwa flaga agresora. */
+export type AggressorState = Record<string, number>;
+
+/** Nadaje flagę agresora od `turn` (jeśli przyczyna na to pozwala). Zwraca nowy stan. */
+export function ustawFlageAgresora(
+  state: AggressorState,
+  ownerId: number,
+  turn: number,
+  cause: WarCause,
+  params: AggressorParams = AGGRESSOR_PARAMS,
+): AggressorState {
+  if (!czyDajeFlageAgresora(cause)) return state;
+  if (!Number.isFinite(turn) || !Number.isFinite(ownerId)) return state;
+  const doTury = turn + params.flagaAgresora.trwaTur;
+  const prev = state[String(ownerId)];
+  if (prev !== undefined && prev >= doTury) return state;
+  return { ...state, [String(ownerId)]: doTury };
+}
+
+/** Czy `ownerId` jest agresorem w turze `turn` (aktywna dla turn < doTury). */
+export function czyAgresor(state: AggressorState, ownerId: number, turn: number): boolean {
+  const doTury = state[String(ownerId)];
+  if (doTury === undefined || !Number.isFinite(doTury) || !Number.isFinite(turn)) return false;
+  return turn < doTury;
+}
+
+/** Mnożnik willingnessAlly wobec agresora u INNEGO AI (1 = bez zmian). */
+export function mnoznikWillingnessAlly(aktywnaFlaga: boolean, params: AggressorParams = AGGRESSOR_PARAMS): number {
+  return aktywnaFlaga ? params.wplywNaAI.willingnessAllyMnoznik : 1;
+}
+
+/**
+ * Przesunięcie progu Relacji dla sojuszu wobec agresora (0 gdy brak flagi). Wartość DODATNIA
+ * podnosi próg (trudniej o sojusz/pakt), zgodnie z GOAL (4) „gorsza chęć sojuszu".
+ */
+export function deltaRelacjiSojusz(aktywnaFlaga: boolean, params: AggressorParams = AGGRESSOR_PARAMS): number {
+  return aktywnaFlaga ? params.wplywNaAI.relacjaDeltaSojusz : 0;
+}
+
+/** Casus belli: klucz `requester>target` -> tura końca (wyłącznie). */
+export type CasusBelliState = Record<string, number>;
+
+export function casusBelliKey(requester: number, target: number): string {
+  return `${requester}>${target}`;
+}
+
+export function ustawCasusBelli(
+  state: CasusBelliState,
+  requester: number,
+  target: number,
+  turn: number,
+  params: AggressorParams = AGGRESSOR_PARAMS,
+): CasusBelliState {
+  if (!Number.isFinite(requester) || !Number.isFinite(target) || !Number.isFinite(turn)) return state;
+  if (requester === target) return state;
+  const key = casusBelliKey(requester, target);
+  const doTury = turn + params.casusBelli.trwaTur;
+  const prev = state[key];
+  if (prev !== undefined && prev >= doTury) return state;
+  return { ...state, [key]: doTury };
+}
+
+export function maCasusBelli(state: CasusBelliState, requester: number, target: number, turn: number): boolean {
+  const doTury = state[casusBelliKey(requester, target)];
+  if (doTury === undefined || !Number.isFinite(doTury) || !Number.isFinite(turn)) return false;
+  return turn < doTury;
+}
+
+/** Serializacja do zapisu: tylko wpisy z poprawną liczbą. */
+export function serializujMape(state: Record<string, number>): Record<string, number> {
+  const out: Record<string, number> = {};
+  for (const k of Object.keys(state)) {
+    const v = state[k];
+    if (typeof v === 'number' && Number.isFinite(v)) out[k] = v;
+  }
+  return out;
+}
+
+/** Wczytanie z zapisu; brak lub uszkodzone dane = pusty stan (stary zapis bez pola). */
+export function wczytajMape(raw: unknown): Record<string, number> {
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return {};
+  return serializujMape(raw as Record<string, number>);
+}
+
+// ---------------------------------------------------------------------------
+// Stan silnika (singleton modułu; main.ts resetuje go przy nowej grze i wczytaniu zapisu).
+// ---------------------------------------------------------------------------
+
+let stanAgresorow: AggressorState = {};
+let stanCasusBelli: CasusBelliState = {};
+
+export function pobierzStanAgresorow(): AggressorState { return stanAgresorow; }
+export function pobierzStanCasusBelli(): CasusBelliState { return stanCasusBelli; }
+export function ustawStanAgresorow(s: AggressorState): void { stanAgresorow = serializujMape(s); }
+export function ustawStanCasusBelli(s: CasusBelliState): void { stanCasusBelli = serializujMape(s); }
+export function resetStanAgresora(): void { stanAgresorow = {}; stanCasusBelli = {}; }
+
+/** Czy owner jest agresorem (aktywna flaga) w turze `turn`. */
+export function czyAgresorAktywny(ownerId: number, turn: number): boolean {
+  return czyAgresor(stanAgresorow, ownerId, turn);
+}
+
+/** Tura końca (wyłącznie) aktywnej flagi agresora owner'a; undefined gdy flagi nie ma w turze `turn`. */
+export function doTuryFlagiAgresora(ownerId: number, turn: number): number | undefined {
+  if (!czyAgresorAktywny(ownerId, turn)) return undefined;
+  return stanAgresorow[String(ownerId)];
+}
+
+/** Czy `requester` ma aktywne casus belli wobec `target` w turze `turn`. */
+export function maCasusBelliAktywne(requester: number, target: number, turn: number): boolean {
+  return maCasusBelli(stanCasusBelli, requester, target, turn);
+}
+
+/** Rejestruje wypowiedzenie wojny (flaga agresora tylko dla przyczyny 'bez_powodu'). */
+export function zarejestrujWypowiedzenie(attackerId: number, turn: number, cause: WarCause): void {
+  stanAgresorow = serializujMape(ustawFlageAgresora(stanAgresorow, attackerId, turn, cause));
+}
+
+/** Rejestruje odmowę trybutu/ultimatum: żądający dostaje casus belli wobec adresata. */
+export function zarejestrujCasusBelli(requester: number, target: number, turn: number): void {
+  stanCasusBelli = serializujMape(ustawCasusBelli(stanCasusBelli, requester, target, turn));
 }
