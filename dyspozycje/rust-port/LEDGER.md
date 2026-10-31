@@ -392,3 +392,9 @@ Cel końcowy i bieżący zapisane w `GOAL-RUST-PORT-20261020.md` (§"CEL PĘTLI 
 - 8G: FC r3 FAIL → r4 (hak rebalansu + state.rs, wektory, mutacje) biegnie.
 
 - 2026-10-31 03:12 UTC — kontrola cykliczna: 8G r4, M07B r1, WEB CITY-CESSION r3 biegną; brak PASS do integracji. Wolne sloty Rust: 8H/8I czekają na 8G.
+
+## 2026-10-31 — 8G (okolica) zintegrowane
+- `R-RUSTPORT-P6-8G-OKOLICA-Q1` PASS-WITH-NOTES (5 rund; FC r5 `54dd7e307`). Merge na `rust-port/parity-v2` `74b81339e`: fmt OK, clippy OK, test 1925/0. Okolica.rs podzielona (≤600 LOC), dedup `hex_disk_offsets`, wektory z pinu 91dc998a (rebalance 722, adjust 9504, collect 90, lost 9, resolve 256, nanBig 24).
+- Decyzja orkiestratora: zmiana `tests/p6_6b_vectors/common.rs` (`okolica_reczne: None`) i pole `City::okolica_reczne` w `state.rs` zatwierdzone administracyjnie (wymuszone kompilacją, bez zmiany zachowania).
+- Dług: hak `OkolicaPopulationHook` zaimplementowany i testowany, ale bez produkcyjnego wywołującego (`apply_central_food_population_growth`/`apply_post_central_population_growth` nie są wołane w żywej ścieżce — zależność od P6.7A / tick miasta). Tabela symboli 8G: `runs/R-RUSTPORT-P6-8G-OKOLICA-Q1/04-operator-r4.md` (przenieść do dokumentu P6-8 przy okazji).
+- Odblokowane: 8H, 8I (po 8G).
