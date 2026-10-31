@@ -26572,6 +26572,26 @@ async function boot(): Promise<void> {
         restoreGameFromSave(snap);
         return playerPracaPool;
       },
+      /** R-WEB-SAVELOAD-HOTSEAT-PRACA-Q1: round-trip z podmianą/usunięciem pól `meta` (stary zapis, wartości graniczne). */
+      roundTripMeta: (patch: Record<string, unknown>, deleteKeys: string[] = []): void => {
+        const snap = JSON.parse(JSON.stringify(buildSaveGameSnapshot('praca-pool-hotseat-test')));
+        for (const k of deleteKeys) delete (snap.meta as any)[k];
+        Object.assign(snap.meta as any, patch);
+        restoreGameFromSave(snap);
+      },
+      /** Odczyt bez rzucania: `pracaPoolByHuman.get(ownerId)` (undefined = brak wpisu fotela). */
+      seatPoolRaw: (ownerId: number): number | null => pracaPoolByHuman.get(ownerId)?.praca ?? null,
+      seatLastPraca: (ownerId: number): number => ownerLastPraca(ownerId),
+      /** Pole zapisu `meta.pracaPoolByHuman` z realnego snapshotu (JSON). */
+      savedSeatPools: (): unknown => JSON.parse(JSON.stringify(buildSaveGameSnapshot('praca-pool-hotseat-test').meta)).pracaPoolByHuman ?? null,
+      /** Kopia slotu IndexedDB bez pola `meta.pracaPoolByHuman` (format sprzed tej zmiany). */
+      writeLegacySlot: async (srcSlot: string, dstSlot: string): Promise<boolean> => {
+        const s: any = await loadFromLocal(srcSlot);
+        if (!s) return false;
+        const meta: any = { ...s.meta };
+        delete meta.pracaPoolByHuman;
+        return (await saveToLocal(dstSlot, { ...s, meta })).ok;
+      },
     };
 
     // R-HOTSEAT-ETAP5-SWITCH-HUMAN-Q1 — hak testowy WYŁĄCZNIE dla
@@ -33470,6 +33490,10 @@ async function boot(): Promise<void> {
           ulepszeniaEmpireByOwner: Array.from(ulepszeniaEmpireByOwner.entries()),
           mennicaZlotoGrace: serializeMennicaZlotoGrace(mennicaZlotoGraceState),
           playerPracaPool,
+          // R-WEB-SAVELOAD-HOTSEAT-PRACA-Q1 (decyzja wlasciciela A, 2026-10-31): pula Pracy KAZDEGO
+          // fotela hot-seat jako pary [ownerId, pula]. `playerPracaPool` wyzej zostaje (fotel 0,
+          // zgodnosc wstecz); stary zapis bez tego pola wczytuje sie jak dotad (pula fotela 2+ = 0).
+          pracaPoolByHuman: Array.from(pracaPoolByHuman.entries()).map(([oid, cell]) => [oid, cell.praca] as [number, number]),
           pendingManualWorkTaxByOwner: serializePendingWorkTax(pendingManualWorkTaxByOwner),
           budowaListaBiblioteka: budowaListaBiblioteka.map(s => ({
             id: s.id,
@@ -42705,6 +42729,24 @@ async function boot(): Promise<void> {
       }
       budowaListaBiblioteka = loadBudowaListaBiblioteka(saved.meta);
       _lastPraca = playerPracaPool;
+      // R-WEB-SAVELOAD-HOTSEAT-PRACA-Q1: pule foteli 2+ (fotel 0 = `playerPracaPool` wyzej, alias komorki).
+      // Wpis KAZDEGO fotela z zapisu musi istniec (inaczej `ownerPracaPool` rzuca na `.get(id)!.praca`);
+      // brak pola / smieciowy wpis -> 0 (jak dotad). Ten sam sanitizer co fotel 0. Komorke fotela 0 nie ruszamy.
+      for (const oid of Array.from(pracaPoolByHuman.keys())) {
+        if (oid !== HUMAN_OWNER_PRIMARY) pracaPoolByHuman.delete(oid);
+      }
+      for (const oid of humanSeats.humanOwnerIds) {
+        if (oid !== HUMAN_OWNER_PRIMARY) pracaPoolByHuman.set(oid, { praca: 0 });
+      }
+      const savedSeatPools = saved.meta?.pracaPoolByHuman;
+      if (Array.isArray(savedSeatPools)) {
+        for (const entry of savedSeatPools) {
+          if (!Array.isArray(entry) || typeof entry[0] !== 'number') continue;
+          const cell = entry[0] === HUMAN_OWNER_PRIMARY ? undefined : pracaPoolByHuman.get(entry[0]);
+          if (cell) cell.praca = sanitizeLoadedPracaPool(entry[1]);
+        }
+      }
+      for (const [oid, cell] of pracaPoolByHuman) setOwnerLastPraca(oid, cell.praca);
       if (saved.cityProd) {
         // P-REKRUTACJA-JEDNOSTEK-TYLKO-SKARBIEC-Q1=B: stare zapisy mogły
         // mieć jednostkę w kolejce Pracy. Teraz pula właściciela jest już

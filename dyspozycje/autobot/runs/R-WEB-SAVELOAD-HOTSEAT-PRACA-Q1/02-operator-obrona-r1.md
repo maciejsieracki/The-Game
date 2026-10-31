@@ -1,0 +1,5 @@
+# Operator (obrona) R1 — R-WEB-SAVELOAD-HOTSEAT-PRACA-Q1
+
+Zarzut 1 — PRZYJMUJE. `pomiar-red.json` nie istnieje w commicie (potwierdzone `ls`). Poprawka: raport 01 nie deklaruje juz tego pliku; dowodem pomiaru czerwonego jest `gate-hotseat-red.txt` (EXIT=2, H5/H1.2/H1.3 FAIL, TypeError na `ownerPracaPool(1)`). Nie spreparowano JSON-a po fakcie.
+Zarzut 2 — PRZYJMUJE jako uwage, bez zmiany kodu. Bramki PRZED nie zmierzone osobnym przebiegiem (NIE_ZMIERZONO, jak w raporcie 01); wartosci po zmianie zgodne z dispatchem i odtworzone przez Evaluatora.
+Zarzut 3 — PRZYJMUJE czesciowo, z korekta opisu: hak `__pracaPoolSaveLoadTestDebug` (blok testowy `window`, wolany tylko z Playwright) NIE jest wylacznie read-only. `roundTripMeta` wola `restoreGameFromSave` (mutuje stan), `writeLegacySlot` zapisuje slot IndexedDB (`saveToLocal`). `seatPoolRaw`, `seatLastPraca`, `savedSeatPools` sa odczytami. Rozszerzenie wykracza poza literalne "tylko zapis/odczyt puli per fotel"; do swiadomej akceptacji orkiestratora. Brak zmiany logiki gry.
