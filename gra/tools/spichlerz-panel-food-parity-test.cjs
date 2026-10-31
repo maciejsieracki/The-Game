@@ -141,7 +141,7 @@ eq(Math.round(y.zywnoscBrutto) - Math.round(y.zywnosc), city.ludnosc * params.zy
 const rationParams = M.buildRationParams(econParamsRaw, 'normal');
 const poziomRacji = M.getCityRationLevel(city);
 eq(poziomRacji, 4, 'getCityRationLevel: poziom Wyzywienia miasta = 4');
-const spichlerzDrain = M.paySpichlerzDrainForCity([city], 0, [], true);
+const spichlerzDrain = M.paySpichlerzDrainForCity([city], 0, [], true, { ceramikaI: 25, ceramikaII: 25, solII: 25 });
 const spichlerzState = M.resolveSpichlerzCityBonusState([], spichlerzDrain);
 const kosztRacji = M.computeCityRationCost(city.ludnosc, poziomRacji, rationParams, spichlerzState);
 eq(Math.round(kosztRacji), 32, 'computeCityRationCost: koszt Racji = 32 -- zgadza sie z "Koszt racji" w tabeli MIASTA ze zgloszenia');

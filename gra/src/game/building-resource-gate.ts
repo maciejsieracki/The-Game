@@ -345,13 +345,6 @@ export interface SpichlerzDrainParams {
   solII: number;
 }
 
-/** Wartości fallback (25/25/25). Użyte TYLKO gdy wywołujący nie podał `params`. */
-export const SPICHLERZ_DRAIN_DEFAULT_PARAMS: SpichlerzDrainParams = {
-  ceramikaI: SPICHLERZ_DRAIN_FALLBACK_PER_TURN,
-  ceramikaII: SPICHLERZ_DRAIN_FALLBACK_PER_TURN,
-  solII: SPICHLERZ_DRAIN_FALLBACK_PER_TURN,
-};
-
 /** Czyta 3 klucze Spichlerza z econ-params (wzorzec loadThroughput z converters.ts).
  *  Brak klucza / NaN / ujemny → SPICHLERZ_DRAIN_FALLBACK_PER_TURN. */
 export function loadSpichlerzDrainParams(
@@ -419,8 +412,8 @@ export function paySpichlerzDrainForCity<T extends StockCitySource>(
   cities: readonly T[],
   ownerId: number,
   builtIds: readonly string[],
-  dryRun = false,
-  params: SpichlerzDrainParams = SPICHLERZ_DRAIN_DEFAULT_PARAMS,
+  dryRun: boolean,
+  params: SpichlerzDrainParams,
 ): SpichlerzDrainPayResult {
   const hasI = builtIds.includes('spichlerz');
   const hasII = builtIds.includes('spichlerz_ii');
@@ -618,8 +611,8 @@ export function resolveOwnedBuildingInactiveStatus(
     empireStock?: Readonly<Record<string, number>>;
     building?: Pick<BuildingDef, 'id' | 'epokaWejscia'> & { wymaganySurowiec?: string | null };
     resolveOwnerZlotoAccess?: (ownerId: number) => boolean;
-    /** Parametry drain Spichlerza z econ-params (wg trudności). Brak → fallback 25. */
-    drainParams?: SpichlerzDrainParams;
+    /** Parametry drain Spichlerza z econ-params (wg trudności) — WYMAGANE (R-WEB-SPICHLERZ-HUD-PARAMS-Q1). */
+    drainParams: SpichlerzDrainParams;
   },
 ): OwnedBuildingInactiveStatus {
   const empty: OwnedBuildingInactiveStatus = { inactive: false, missingLabels: [], tooltip: '' };
