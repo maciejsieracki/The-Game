@@ -25524,6 +25524,72 @@ async function boot(): Promise<void> {
       },
     };
 
+    // R-WEB-PEACE-RULES-Q1 r3 (kryterium 9: żywa weryfikacja w Chromium). Hak WYŁĄCZNIE do
+    // `tools/diplo-war-peace-live-test.cjs`. NIE reimplementuje logiki: `evaluatePeaceFromPlayer`
+    // woła REALNE `evaluateProposal` z REALNYM `buildProposalEvalContext` (ta sama ścieżka co
+    // podgląd negocjacji gracza), `endTurn` (w `__eraTestDebug`) woła REALNY tick z hamulcem.
+    // Hak steruje wyłącznie stanem wejściowym: wojna gracza z AI, wiek wojny, relacja, licznik.
+    (window as any).__peaceRulesTestDebug = {
+      getPlayerOwnerId: (): number => ME(),
+      listAiOwnerIds: (): number[] => allPowerOwnerIds().filter(oid => oid !== ME() && !isBarbarian(oid) && !eliminatedOwners.has(oid)),
+      // Świeży odczyt (bez cache), tylko do diagnostyki testu.
+      getPowers: (aiId: number): { player: number; ai: number } => ({
+        player: buildObjectivePowerForOwner(ME()).power,
+        ai: buildObjectivePowerForOwner(aiId).power,
+      }),
+      // Test-only: istniejący składnik Power (`zdobyczePowerByOwner`) podnosi moc AI, żeby
+      // scenariusz „AI silniejsza od gracza" był realnym stanem silnika (nie fałszywą wartością rw).
+      setAiPowerBonusForTest: (aiId: number, bonus: number): void => {
+        zdobyczePowerByOwner.set(aiId, bonus);
+        markCityStateDirty();
+        refreshObjectivePowerCache();
+      },
+      setPlayerWarWithAi: (aiId: number, turnsAtWar: number): void => {
+        setDiploRelation(ME(), aiId, applyDiploEventTracked(ME(), aiId, getDiploRelation(ME(), aiId), 'wojna_wypowiedziana'));
+        const key = diploPairKey(ME(), aiId);
+        const meta = (diplomacyPairMeta.get(key) ?? {}) as Record<string, unknown>;
+        diplomacyPairMeta.set(key, { ...meta, wojnaStartTura: turn - turnsAtWar } as any);
+      },
+      getWarTurns: (aiId: number): { turnsAtWar: number; lostCities: number } => {
+        const s = diploWarStateFor(ME(), aiId);
+        return { turnsAtWar: s.turnsAtWar, lostCities: s.lostCities };
+      },
+      evaluatePeaceFromPlayer: (aiId: number): { accepted: boolean; reason: string | null; rw: number | null } => {
+        const ctx = buildProposalEvalContext(ME(), aiId);
+        const r = evaluateProposal(
+          { actionId: 'pokoj', proposerOwnerId: ME(), responderOwnerId: aiId, payload: { givePn: 0, receivePn: 0 } } as any,
+          ctx,
+        );
+        return { accepted: r.accepted, reason: r.reason ?? null, rw: ctx.warState?.responderRw ?? null };
+      },
+      // Test-only: hamulec liczy tylko pary, w których AI ma miasta (isAiAiEligibleOwner) i które
+      // NIE są w wojnie — stąd status 'neutralni' i niska łączna Relacja.
+      setRelationForBrake: (aiId: number, zaufanie: number, respekt: number): void => {
+        const rel = getDiploRelation(ME(), aiId);
+        setDiploRelation(ME(), aiId, { ...rel, status: 'neutralni', zaufanie, respekt } as Relation);
+      },
+      getCityCountForOwner: (aiId: number): number => cities.reduce((n, c) => (c.ownerId === aiId ? n + 1 : n), 0),
+      // Ostrzeżenie hamulca idzie w trakcie tury przez showHintMessage → kolejka deferredEotHints
+      // (endTurnInProgress) → dziennik wydarzeń (warEventLog) po EOT, nie jako toast. Stąd asercja na dzienniku.
+      warEventLogHas: (s: string): { found: boolean; texts: string[] } => {
+        const texts = warEventLog.map(e => JSON.stringify(e));
+        return { found: texts.some(t => t.includes(s)), texts: texts.filter(t => t.includes(s)).slice(0, 3) };
+      },
+      // Diagnostyka: moc z cache używanego przez hamulec i ocenę pokoju (objectivePowerForOwner).
+      getCachedPowers: (aiId: number): { player: number; ai: number; mayDeclareDeclarer: number } => {
+        const a = objectivePowerForOwner(ME());
+        const b = objectivePowerForOwner(aiId);
+        return { player: a, ai: b, mayDeclareDeclarer: a !== b ? (a > b ? ME() : aiId) : Math.min(ME(), aiId) };
+      },
+      setCrisisCounter: (aiId: number, counter: number): void => {
+        diplomacyCrisisCounters.set(diploPairKey(ME(), aiId), counter);
+      },
+      getCrisisCounter: (aiId: number): number => diplomacyCrisisCounters.get(diploPairKey(ME(), aiId)) ?? 0,
+      getBrakeParams: (aiId: number): { prog: number; n: number } => diploBrakeWarParams(ME(), aiId),
+      getRelationTotal: (aiId: number): number => relationScore(getDiploRelation(ME(), aiId)),
+      getStatus: (aiId: number): string => getDiploRelation(ME(), aiId).status,
+    };
+
     // R-MIASTA-PANSTWA-STARTOWE-JEDNOSTKI-Q1 (Operator obrona runda 1, Evaluator zarzut 1):
     // hak testowy WYŁĄCZNIE do `tools/city-state-start-units-live-test.cjs` — REGUŁA
     // PRZECIW SAMOOSZUKIWANIU dispatchu zakazuje uznania kryteriów końca 1/2 za spełnione

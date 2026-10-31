@@ -17,8 +17,8 @@
     "baza": 0.4,
     "agresjaSrodek": 5,
     "wagaAgresja": 0.03,
-    "premiaProfilObronny": 0,
-    "_zalozenie_premiaProfilObronny": "ZALOZENIE rundy 1 (potwierdzenie orkiestratora, NIE zmieniane w r2 bez decyzji): dispatch podaje +0.05 za ai_profil_obronna=1, ale kryterium 2 binarnie wymaga przykladow Zulusi 0.28 i Chinczycy 0.49 (obie maja profil_obronna=1). Premia = 0. Wartosc 0.05 do przywrocenia po decyzji wlasciciela (jedna liczba).",
+    "premiaProfilObronny": 0.05,
+    "_zalozenie_premiaProfilObronny": "DECYZJA ADMINISTRACYJNA orkiestratora (runda 3, zarzut 8 FC r2): premia +0.05 za ai_profil_obronna=1 zgodnie z trescia wzoru R6. Przyklady dispatchu (Zulusi 0.28, Chinczycy 0.49) byly liczone przy profilu=0 i sa ilustracyjne; po premii: Zulusi 0.33, Chinczycy 0.54.",
     "min": 0.2,
     "max": 0.55,
     "bazaBrakDanych": 0.4

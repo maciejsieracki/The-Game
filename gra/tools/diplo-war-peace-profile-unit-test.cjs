@@ -36,14 +36,14 @@ function eq(name, got, want) {
 const zulusi = M.resolveWarPeaceProfile('zulusi');
 eq('zulusi hasData', zulusi.hasData, true);
 near('zulusi progWojnyRelacji=63', zulusi.progWojnyRelacji, 63);
-near('zulusi progPokojSlabosc=0.28', zulusi.progPokojSlabosc, 0.28);
+near('zulusi progPokojSlabosc=0.33 (agr 9: 0.28 + premia profilu 0.05)', zulusi.progPokojSlabosc, 0.33);
 eq('zulusi minTurWojny=7 (agr 9 => +3, profil obronny => -1)', zulusi.minTurWojny, 7);
 near('zulusi zmeczenieT=20', zulusi.zmeczenieT, 20);
 eq('zulusi hamulecN=4 (round(8-4.5))', zulusi.hamulecN, 4);
 
 const chin = M.resolveWarPeaceProfile('chinczycy');
 near('chinczycy progWojnyRelacji=16', chin.progWojnyRelacji, 16);
-near('chinczycy progPokojSlabosc=0.49', chin.progPokojSlabosc, 0.49);
+near('chinczycy progPokojSlabosc=0.54 (agr 2: 0.49 + premia profilu 0.05)', chin.progPokojSlabosc, 0.54);
 near('chinczycy zmeczenieT=17', chin.zmeczenieT, 17);
 eq('chinczycy hamulecN=7', chin.hamulecN, 7);
 
@@ -80,6 +80,14 @@ near('zmęczenie 20/20 = 0.5 (D4: pełne po 20 turach)', M.warWearinessShare(20,
 near('ułamek zmęczenia 15/15 = 1 (T=15, Grecy-like)', M.warWearinessFraction(15, 15), 1);
 near('ułamek zmęczenia 10/20 = 0.5 (brak saturacji przy T/2)', M.warWearinessFraction(10, 20), 0.5);
 near('ułamek zmęczenia 99/20 = 1 (kapa)', M.warWearinessFraction(99, 20), 1);
+// R-WEB-PEACE-RULES-Q1 r3 (D4): dla KAŻDEJ z 15 cywilizacji pełne zmęczenie (1.0) osiągane
+// dokładnie przy turnsAtWar = T(civ) ≤ 20, a tura wcześniej jest jeszcze niepełne.
+for (const k of civKeys) {
+  const T = M.resolveWarPeaceProfile(k).zmeczenieT;
+  eq(`${k} T(civ)<=20 (D4)`, T <= 20, true);
+  eq(`${k} pełne zmęczenie dokładnie przy T=${T}`, M.warWearinessFraction(T, T) === 1, true);
+  eq(`${k} przed T zmęczenie niepełne`, M.warWearinessFraction(T - 1, T) < 1, true);
+}
 near('zmęczenie po 20 turach pełne (0.5)', M.warWearinessShare(20, 20), 0.5);
 near('zmęczenie po 20 turach pełne dla T=17', M.warWearinessShare(20, 17), 0.5);
 near('zmęczenie nie przekracza 0.5', M.warWearinessShare(99, 17), 0.5);
