@@ -11,7 +11,11 @@
  *   2. 'nauka' — wszystkie technologie w zakresie gry zbadane ORAZ
  *      rakieta z robotami wystrzelona (flaga od SILNIK).
  *
- *   3. 'przegrana' — brak miast i osadników (jak wcześniej).
+ *   3. 'przegrana' — brak miast gracza po tym, jak kiedykolwiek miał miasto.
+ *      Osadnicy NIE ratują gracza po utracie ostatniego miasta (R-WEB-DEFEAT-LAST-CITY-
+ *      BARBARIANS-Q1, decyzja właściciela 2026-10-31: gra kończy się PRZEGRANĄ, gdy
+ *      zdobyte zostanie jedyne miasto — także przez barbarzyńców). Przed założeniem
+ *      pierwszego miasta gracz nie przegrywa (`graczKiedysMialMiasto` = false).
  *
  * Pure logic — no DOM, no THREE, no side effects.
  */
@@ -88,9 +92,15 @@ export interface VictoryInput {
   epokaKoncowa?: boolean;
   /** @deprecated użyj wszystkieTechZbadane + rakietaWystrzelona */
   naukaUkonczona?: boolean;
+  /** @deprecated Bez wpływu na przegraną (R-WEB-DEFEAT-LAST-CITY-BARBARIANS-Q1):
+   *  osadnicy nie ratują gracza po utracie ostatniego miasta. Pole zostaje, żeby
+   *  istniejące wywołania się kompilowały. */
   liczbaOsadnikow?: number;
   graczKiedysMialMiasto?: boolean;
 }
+
+/** Wejście dla samej reguły przegranej (patrz `checkDefeat`). */
+export type DefeatInput = Pick<VictoryInput, 'cities' | 'gracz' | 'graczKiedysMialMiasto'>;
 
 export interface VictoryResult {
   winner: number;
@@ -196,9 +206,23 @@ export function techIdsInGameScope(
 // ---------------------------------------------------------------------------
 
 /**
+ * Przegrana gracza (R-WEB-DEFEAT-LAST-CITY-BARBARIANS-Q1): brak miast gracza `gracz`
+ * (`isEliminated`) i gracz kiedykolwiek miał miasto (`graczKiedysMialMiasto`, domyślnie
+ * true). Osadnicy, jednostki wojskowe ani liczba innych cywilizacji nie wchodzą w grę.
+ * Wywoływane też w połowie tury po bitwie, która zdobyła ostatnie miasto gracza.
+ */
+export function checkDefeat(input: DefeatInput): VictoryResult | null {
+  const kiedysMial = input.graczKiedysMialMiasto ?? true;
+  if (kiedysMial && isEliminated(input.gracz, input.cities)) {
+    return { winner: input.gracz, rodzaj: 'przegrana' };
+  }
+  return null;
+}
+
+/**
  * Resolution order (10=A*):
  *   1. Dominacja Power > 50% (ostatnia epoka)
- *   2. Przegrana (brak miast + brak osadników)
+ *   2. Przegrana (brak miast gracza, bez względu na osadników)
  *   3. Nauka (wszystkie tech + rakieta)
  */
 export function checkVictory(input: VictoryInput): VictoryResult | null {
@@ -220,11 +244,8 @@ export function checkVictory(input: VictoryInput): VictoryResult | null {
   }
 
   // --- 2. Defeat ------------------------------------------------------------
-  const osadnicy = input.liczbaOsadnikow ?? 0;
-  const kiedysMial = input.graczKiedysMialMiasto ?? true;
-  if (isEliminated(gracz, cities) && osadnicy === 0 && kiedysMial) {
-    return { winner: gracz, rodzaj: 'przegrana' };
-  }
+  const defeat = checkDefeat(input);
+  if (defeat !== null) return defeat;
 
   // --- 3. Moc / nauka (10=A* — tech + rakieta) ------------------------------
   const wszystkieTech = input.wszystkieTechZbadane

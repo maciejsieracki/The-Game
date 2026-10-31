@@ -1246,7 +1246,7 @@ import {
   type ForcedWarWave,
   type ForcedWarWaveState,
 } from './game/forced-war-waves';
-import { checkVictory, techIdsInGameScope, allTechInScopeResearched, OSTATNIA_EPOKA_GRY_V1, powerShare } from './game/victory';
+import { checkVictory, checkDefeat, techIdsInGameScope, allTechInScopeResearched, OSTATNIA_EPOKA_GRY_V1, powerShare } from './game/victory';
 import type { VictoryPlayer, VictoryInput } from './game/victory';
 import {
   showVictoryScreen,
@@ -25691,6 +25691,43 @@ async function boot(): Promise<void> {
       },
     };
 
+    // R-WEB-DEFEAT-LAST-CITY-BARBARIANS-Q1: hak testowy WYŁĄCZNIE do
+    // `tools/defeat-last-city-live-test.cjs`. Steruje WEJŚCIEM (czy gracz ma osadnika,
+    // kto zdobywa jego miasto); samą przegraną liczy REALNY końcowy check tury
+    // (`__eraTestDebug.endTurn()` -> runWorldEndTurn -> checkDefeat).
+    // Przejęcie: REALNA `captureCityWithoutBattle`; klon jednostki barbarzyńców tylko jako anchor.
+    (window as any).__defeatTestDebug = {
+      BARBARIAN_OWNER_ID,
+      isGameOver: (): boolean => gameOver,
+      getTurn: (): number => turn,
+      ownerCityIds: (owner: number): string[] => cities.filter(c => c.ownerId === owner).map(c => c.id),
+      /** Dodaje osadnika właściciela (klon jednostki wojskowej tego właściciela, typ/kategoria `osadnik`) na hexie jego miasta. */
+      addSettlerForOwner: (owner: number): string | null => {
+        const home = cities.find(c => c.ownerId === owner);
+        const tpl = units.find(u => u.ownerId === owner && !isCivilianUnit(u));
+        if (!home || !tpl) return null;
+        const id = tpl.id + '_defeatTestSettler';
+        units.push({ ...tpl, id, typeId: 'Osadnik', category: 'osadnik', isGeneral: false, q: home.q, r: home.r, ownerId: owner });
+        return id;
+      },
+      countSettlersForOwner: (owner: number): number =>
+        units.filter(u => u.ownerId === owner && u.category === 'osadnik').length,
+      /** Barbarzyńcy zdobywają miasto: REALNA `captureCityWithoutBattle`. */
+      captureCityByBarbarians: (cityId: string): { ownerIdAfter: number } => {
+        const c = cities.find(x => x.id === cityId);
+        if (!c) throw new Error('captureCityByBarbarians: city not found: ' + cityId);
+        let anchor = units.find(u => u.ownerId === BARBARIAN_OWNER_ID && !isCivilianUnit(u));
+        if (!anchor) {
+          const template = units.find(u => !isCivilianUnit(u));
+          if (!template) throw new Error('captureCityByBarbarians: no military unit template in this world');
+          anchor = { ...template, id: template.id + '_defeatTestBarb', ownerId: BARBARIAN_OWNER_ID, q: c.q, r: c.r };
+          units.push(anchor);
+        }
+        captureCityWithoutBattle(c, anchor, [anchor]);
+        return { ownerIdAfter: c.ownerId };
+      },
+    };
+
     // R-AI-WOJNY-ZWYKLE-CAP-DWA-MIASTA-Q1: hak testowy WYŁĄCZNIE do
     // `tools/ai-wojny-zwykle-cap-dwa-miasta-test.cjs` — REGUŁA PRZECIW SAMOOSZUKIWANIU
     // dispatchu zakazuje uznania kryteriów (a)-(d) za spełnione bez REALNEJ sekwencji zmiany
@@ -38632,6 +38669,35 @@ async function boot(): Promise<void> {
             // defending unit -- see the updated `difficulty` comment on
             // decideBarbarianMoves, barbarians.ts). easy/normal: unchanged (an empty city
             // still blocks barbarian entry, exactly as today).
+            /* R-WEB-DEFEAT-LAST-CITY-BARBARIANS-Q1: przegrana po utracie OSTATNIEGO miasta
+             * gracza w bitwie, która rozstrzyga się POZA blokiem VICTORY CHECK na końcu tury.
+             * Atak barbarzyńców na bronione miasto idzie przez launchIncomingMapFieldBattle
+             * (bitwa z UI, asynchroniczna): jej onResolved przychodzi już po tym, jak końcowy
+             * check tury się wykonał, więc bez tego wywołania przegrana wypadała do następnej
+             * tury (i wcale, gdy gracz miał osadnika). Ta sama reguła co w bloku końca tury
+             * (checkDefeat), ten sam ekran; dominacja i nauka zostają na końcu tury.
+             * / EN: defeat after losing the LAST city of the player in a battle that resolves
+             * outside the end-of-turn VICTORY CHECK block (barbarian attack on a defended city
+             * goes through the async launchIncomingMapFieldBattle; its onResolved runs after the
+             * end-of-turn check already ran). Same rule (checkDefeat) and screen; dominance and
+             * science stay in the end-of-turn block. */
+            function sprawdzPrzegranaPoUtracieMiasta(): void {
+              if (gameOver || truceTestSuppressVictory || rebelProtectionTestSkipVictoryCheck) return;
+              const defeat = checkDefeat({
+                cities,
+                gracz: 0,
+                graczKiedysMialMiasto: playerEverOwnedCityByOwner.has(HUMAN_OWNER_PRIMARY),
+              });
+              if (defeat === null) return;
+              gameOver = true;
+              const eraLabelsDefeat = ['', 'Kamień', 'Brąz', 'Żelazo'];
+              showVictoryScreen(buildVictoryScreenData(defeat, {
+                turn,
+                eraLabel: eraLabelsDefeat[player.era] ?? ('Epoka ' + player.era),
+                civLabel: player.civType,
+              }), () => location.reload());
+              console.log('[Victory] ' + formatVictoryTitle(defeat.rodzaj, turn) + ' gracz=0 rodzaj=' + defeat.rodzaj + ' (po bitwie)');
+            }
             const barbAllowCityCapture = shouldAllowBarbCityCapture(_menuDifficulty);
             // R-WEB-AI-MOVE-RANGE-Q1 r5: zajetosc heksow prowadzona PER TURA. Snapshot `occupied`
             // z decideBarbarianMoves nie widzi ruchow wykonanych wczesniej w tej samej turze, wiec
@@ -38729,7 +38795,11 @@ async function boot(): Promise<void> {
                       teren2,
                       structBonusBarb,
                       'Atak barbarzyńców',
-                      () => { /* reszta tury już poszła — tylko odśwież mapę */ },
+                      () => {
+                        // Reszta tury już poszła (VICTORY CHECK wykonany) — odśwież mapę i
+                        // sprawdź przegraną, gdyby ta bitwa zdobyła ostatnie miasto gracza.
+                        sprawdzPrzegranaPoUtracieMiasta();
+                      },
                       worldTerrainFromHex(hexObj2),
                       barbAllowCityCapture,
                     );
