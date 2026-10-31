@@ -1,3 +1,12 @@
+## ROBOCZA dcbf2d10 -- 2026-10-31 -- przegrana po utracie ostatniego miasta; rozejm AI na stole i zapis gry (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`4d9ed1810` + dwa tematy) i commit wdrożenia bundla; stała zgoda właściciela 2026-10-31.
+- Bundle MD5 `dcbf2d10f7d146c620c362c2351cd99c`, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, outDir poza repo, stempel ROBOCZA; `verify-robocza-bundle.cjs` VERIFY OK.
+- Zakres: (1) `R-WEB-DEFEAT-LAST-CITY-BARBARIANS-Q1` — gracz przegrywa po utracie jedynego miasta także na rzecz barbarzyńców (nawet z osadnikiem), po rozstrzygnięciu bitwy o miasto; (2) `R-WEB-TRUCE-E2E-SAVELOAD-MEASURE-Q1` — rozejm AI trafia na stół (naprawione mapowanie `rozejm` w UI), roundtrip zapisu w rozejmie zachowuje rozejm, flagę agresora, casus belli, licznik wojen epoki i metę pary; wygasanie bez kary.
+- Testy po scaleniu: tsc PASS; defeat-last-city 14/0, victory 12/0, barbarians 213/0, miasto-zdobycie-raport 117/0, autoimprove-stages 111/0, battle-standoff 9/9, diplomacy 148, war-era-counter 82; Chromium (FC): defeat-last-city-live 28/0, diplo-truce-live 23/0, saveload save 3/0 load 9/0 expire 6/0.
+- Ograniczenia: NIE_ZMIERZONO pętla decyzyjna barbarzyńców w Chromium; `hotseat-drugi-fotel-tura-test` EXIT=2 identycznie przed i po; znane czerwone w bazie: civ-matrix-ai-diplomacy-wiring 42/1, ai-test 274/20.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `8bad46d95da161129239e1ebe68671fe`, 70,093,115 bajtów.
+
 ## ROBOCZA 8bad46d9 -- 2026-10-31 -- auto-ulepszenia: etapy żywnościowe, wycinka przy rzece; podgląd Spichlerza (testowa)
 
 - **STATUS: DEPLOYED** — merge do `origin/main` (`93a6aba1d` + dwa tematy) i commit wdrożenia bundla; stała zgoda właściciela 2026-10-31.
