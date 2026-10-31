@@ -443,3 +443,9 @@ Cel końcowy i bieżący zapisane w `GOAL-RUST-PORT-20261020.md` (§"CEL PĘTLI 
 - 2026-10-31 09:12 UTC — kontrola cykliczna: M07B-Q2 r3, 8H2 r1, 8I2 r1, WEB E2E/DEFEAT/MENU-REORDER/DEFAULTS/ADV-APPLY biegną; brak PASS do integracji. Analizy drewno/ceramika zakończone (czekają decyzje balansowe właściciela).
 
 - 2026-10-31 10:12 UTC — kontrola cykliczna: wstrzymano wszystkie tematy poza trzema menu (polecenie właściciela). Biegną Evaluator/FC: MENU-REORDER, DEFAULTS, ADV-APPLY-BTN. Wstrzymane z postępem na GitHubie (web-wip/*, rust-port-wip/*): DEFEAT, PROD50, CITIZEN, SPICH, E2E, M07B-Q2, 8I2, 8H2. Po deployu menu: wznowić w kolejności PROD50, CITIZEN, SPICH, DEFEAT, E2E, Rust.
+
+## 2026-10-31 — WDROŻENIE ROBOCZEJ d9408b27: menu nowej gry (merge main + deploy + push, polecenie właściciela)
+- Trzy tematy: `R-WEB-NEWGAME-MENU-REORDER-Q1` (FC `c094d2429`), `R-WEB-NEWGAME-ADV-APPLY-BTN-Q1` (FC `f4e0da1ee`), `R-WEB-NEWGAME-DEFAULTS-Q1` (FC `9e52df647`) — wszystkie PASS-WITH-NOTES. Scalone fast-forwardem do `origin/main` (`5ab3d58e2` → `914daa502`); po scaleniu poprawiono oczekiwania testów `newgame-defaults` i `newgame-adv-apply-btn` (konflikt oczekiwań między tematami: karty przeszły z „Zaawansowanych” do siatki).
+- Bundle MD5 `d9408b27ad23b88d3c936138e166bc13`, 70,086,441 B; `verify-robocza-bundle` VERIFY OK; GitHub Raw (bundle/manifest/START) HTTP 200, MD5 i rozmiar zgodne. Wpis w `dyspozycje/WERSJE.md`.
+- Sprzątanie: worktree usunięte, katalog roboczy wyczyszczony. `/tmp/claude-0` (stare pozostałości po Operatorach, ok. 3 GB) wymaga zgody właściciela / reguły uprawnień.
+- Wstrzymane (postęp na GitHubie: `web-wip/*`, `rust-port-wip/*`): PROD50, CITIZEN-UPKEEP, SPICHLERZ, DEFEAT, E2E (rozejm AI→stół + zapis), M07B-Q2, 8I2, 8H2.
