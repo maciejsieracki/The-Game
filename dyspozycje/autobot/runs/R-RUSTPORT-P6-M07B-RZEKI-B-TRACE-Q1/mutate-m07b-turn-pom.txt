@@ -1,0 +1,23 @@
+Mutacje turn.rs, przebieg pomiarowy Operatora-pomiarow (HEAD ee67ccaab). Test: cargo test --test p6_m07b_turn (committed wektory). Kazda mutacja: 1 podmiana, przywrocenie pliku (RESTORED True).
+M1 sharp threshold < -> <= (equiv exp.) | SURVIVED | rc=0
+M2 sharp threshold -0.01 -> 0.0 | KILLED | rc=101
+M3 has_sharp guard 3 -> 2 (equiv exp.) | SURVIVED | rc=0
+M4 sharp early return dropped | KILLED | rc=101
+M5 violates guard 3 -> 2 (equiv exp.) | SURVIVED | rc=0
+M6 unit zero-length guard removed | KILLED | rc=101
+M7 |delta| > 1 -> > 2 | KILLED | rc=101
+M8 window skip < -> <= | KILLED | rc=101
+M9 sum > maxSum -> >= | KILLED | rc=101
+M10 window slice start off by one | KILLED | rc=101
+M11 sqrt3 dropped on x1 | KILLED | rc=101
+M12 y scale 1.5 -> 1.4 | KILLED | rc=101
+M13 |delta|>1 return dropped | KILLED | rc=101
+M14 window-sum return dropped | KILLED | rc=101
+M15 sharp predicate < -> > | KILLED | rc=101
+M16 window slice end excludes current delta | KILLED | rc=101
+M17 unit dy sign flipped | KILLED | rc=101
+M18 unit y2 uses a.r | KILLED | rc=101
+M19 axial r/2 -> r/3 (x1) | KILLED | rc=101
+M20 sharp loop drops last triple | KILLED | rc=101
+KILLED 17 of 20; SURVIVED 3 (M1, M3, M5 - rownowazne, patrz dossier)
+Uwaga: M1 jest rownowazny tylko dla wejsc z sasiednich krokow i nie jest formalnie dowiedziony dla skokow niesasiednich (ZALOZENIE).

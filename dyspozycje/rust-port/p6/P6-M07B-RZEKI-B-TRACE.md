@@ -77,22 +77,42 @@ Podsumowanie (44 wiersze tabeli, funkcje i typy razem): PORTOWANE 3 (P1), REUSE 
   wyniki logiczne (dot < -0.01, długości) porównywane dokładnie. Maksymalny błąd w wektorach: 2,2e-16 (weryfikator Python).
 - Weryfikator niezależny od zera (Python, bez Rusta): `rust-port/engine/tests/p6_m07b_vectors/verify_m07b_turn.py`
   — 22187/22187 przypadków zgodnych, statystyki zgodne. Pokrywa WSZYSTKIE 3 funkcje partii 1 (nie całą strefę).
-- Mutanty (`mutate-m07b-turn-r1.txt`): 12 mutantów na gałęziach sterujących `turn.rs`; 9 wykrytych (KILLED).
+- Mutanty (`mutate-m07b-turn-r1.txt`, runda 1): 12 mutantów; 9 wykrytych (KILLED).
+- Mutanty (`mutate-m07b-turn-pom.txt`, przebieg pomiarowy): 20 mutantów (M1–M20; M13–M20 dodane, bo r1 nie mutował
+  usunięcia gałęzi `|delta|>1`, `suma>maxSum`, znaku predykatu, końca okna, znaku dy, y2 i skali x/y w `unit`).
+  17 KILLED, 3 SURVIVED (M1, M3, M5 — równoważne, uzasadnienie niżej).
   Pozostałe 3 — równoważne, uzasadnienie:
   - M1 (`< -0.01` → `<= -0.01`): wartość dot = -0.01 dokładnie nie jest osiągalna z wektorów jednostkowych
-    o kątach wielokrotności 60° (dot ∈ {±1, ±0.5, 0}) — granica nieosiągalna w zakresie wejść.
+    o kątach wielokrotności 60° (dot ∈ {±1, ±0.5, 0}). KOREKTA r1: ta argumentacja dotyczy tylko kroków sąsiednich;
+    przy skokach niesąsiednich (`path` z punktami nie-sąsiadami) dot jest dowolny. Równoważność jest więc
+    ZAŁOŻENIEM praktycznym (dokładna równość float -0.01 z tych wejść jest pomijalna), NIE dowodem formalnym.
   - M3 (`path.len() < 3` → `< 2` w `river_path_has_sharp_u_turn`): dla długości 2 pętla `0..len-2` jest pusta, wynik ten sam.
   - M5 (`path.len() < 3` → `< 2` w `river_path_violates_turn_window`): dla długości 2 `deltas` jest puste, wynik ten sam.
 - Brak sortowań i komparatorów w partii 1 (lekcja h: N/A).
 - Limity: plik wektorów 2,26 MB ≤ 6 MB (lekcja e). Brak pustych linii na końcu plików (lekcja g — do sprawdzenia `git diff --check`).
 
-## Bramki (runda 1)
+## Pomiar niezależny (Operator-pomiary, HEAD ee67ccaab)
 
-- `cargo fmt -- --check`: EXIT=0 (`gate-fmt-r1.txt`).
-- `cargo clippy --test p6_m07b_turn`: 0 ostrzeżeń, EXIT=0 (`gate-clippy-r1.txt`).
-- `cargo test` (pełny zestaw silnika): 1887 passed, 0 failed, EXIT=0 (`gate-test-full-r1.txt`; poprzednio 1885 + 2 nowe).
-- Weryfikator Python: EXIT=0 (`verify-m07b-turn-r1.txt`). Mutanty: 9/12 KILLED, 3 równoważne (`mutate-m07b-turn-r1.txt`).
-- Target Cargo: `/dev/shm/m07b-target` (do usunięcia po etapie).
+- Wektory ŚWIEŻE z weba pinu `edb8fb56` (inne ziarno, szersze parametry okna 1–9 i capa 0–4, długości do 18,
+  zygzaki/skoki): 36184 przypadków (unit 1184, uturn 7000, viol 28000), plik 3,9 MB ≤ 6 MB. Generator scratch
+  (node strip-types nad funkcjami wyciągniętymi z pinu), nie w repo.
+- Weryfikator Python od zera (`verify-m07b-turn-pom.txt`): 36184/36184 zgodne, EXIT=0. Weryfikator r1 też 36184/36184, EXIT=0.
+- Rust (tymczasowy test, usunięty, nie commitowany) na świeżych wektorach: 36184/36184 zgodne, EXIT=0.
+- Mutanty: patrz sekcja „Mutanty (pomiar)" wyżej.
+- Lekcja (a) nakładki: N/A (funkcje czysto geometryczne, bez wejścia terenowego).
+- Lekcja (b) cap N-1/N/N+1: dla parametrów okna/capa (`windowHex` 1–9, `maxSum` 0–4, wartości 6/1 ± 1) pokryte;
+  cap na mapach (przypadek `capRiverQuotas`) — partia 4, N/A w partii 1.
+- Uwaga o provenance: log `gate-test-full-r1.txt` z rundy 1 został wygenerowany ścieżką worktree `wf_2914b1d3-0fc-1`
+  (nie tym worktree); dlatego bramki powtórzono tutaj: `gate-*-pom.txt`.
+
+## Bramki
+
+- `cargo fmt -- --check`: EXIT=0 (`gate-fmt-pom.txt`; r1: `gate-fmt-r1.txt`).
+- `cargo clippy --lib --tests`: 0 ostrzeżeń, EXIT=0 (`gate-clippy-pom.txt`).
+- `cargo test` (pełny zestaw silnika, ten worktree): 1887 passed, 0 failed, EXIT=0 (`gate-test-full-pom.txt`).
+- Weryfikacje: `verify-m07b-turn-r1.txt` (22187, r1), `verify-m07b-turn-pom.txt` (36184, pomiar).
+- Target Cargo: `/dev/shm/m07b-pom-target` (do usunięcia po etapie).
+- `Cargo.lock` w `rust-port/engine/` jest niesledzony i NIE jest częścią commita (zgodnie z r1).
 
 ## Zakres niedomknięty i plan
 
