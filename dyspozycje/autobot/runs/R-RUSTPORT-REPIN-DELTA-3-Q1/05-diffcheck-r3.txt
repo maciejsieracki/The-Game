@@ -1,0 +1,7 @@
+$ git diff --check 4bbef081d HEAD
+(no output)
+EXIT=0
+
+$ git diff --check (working tree, before commit d58003d2b)
+(no output)
+rc=0

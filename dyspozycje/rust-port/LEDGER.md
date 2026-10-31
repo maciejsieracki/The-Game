@@ -458,3 +458,7 @@ Cel końcowy i bieżący zapisane w `GOAL-RUST-PORT-20261020.md` (§"CEL PĘTLI 
 ## 2026-10-31 (noc) — WDROŻENIE ROBOCZEJ d205f607: forty z automatu; wznowienie portu Rust
 - Web: `R-WEB-AUTO-FORT-CLAIM-Q1` (FC `0e93c3d6b`, PASS-WITH-NOTES) + wiązanie `main.ts` (orkiestrator, 2 linie) scalone do `origin/main` (`a07e6916f` → `4bbef081d`). ROBOCZA MD5 `d205f607cba1ed97e3e7ef441ce5e288`; GitHub Raw (bundle, manifest, START) MD5 zgodne; wpis w `WERSJE.md`. Sprzątanie: worktree, `/tmp/civ-dist`, gałąź FC usunięte. Kolejka web pusta.
 - Rust (polecenie właściciela: wróć do zadania, pętla autonomiczna): wznowione `8H2` r3 (wf_897f8549-fe0) i `M07B2` r4 (wf_b7e5a6eb-4c8, Operator Sonnet). Kolejne w kolejce: 8G r4, 8A, 8I/8I2 (wymagają nowego pinu — auto-ulepszenia weba zmienione), REPIN-WOJNA-2 r3, REPIN-DELTA-3 (pin web `4bbef081d`).
+
+## 2026-10-31 — REPIN-DELTA-3 PASS (r3) zintegrowane (docs)
+- FC `80325319c`: `p6/REPIN-DELTA-3.md` — delta weba `dc8a3adc` → `4bbef081d`: 47 plików, 541 hunków (453 z kodem), wojna/pokój 236; wpływ: 8G/8A/8H2 = 0 hunków, 8I = 4, 8I2 = 11. Luki: 100 hunków bez tagu R- „wg pliku, bez ustalenia”; K01–K07, K08A–C NIE_ZMIERZONO blokowo; propozycja `R-WEB-UI-EMBLEM-TOOLTIP-Q1` bez startu.
+- Następny krok: 8I/8I2 przepiąć na nowy pin po zwolnieniu slotu kodu; 8H2 r3 i M07B2 r4 w toku.
