@@ -2623,9 +2623,6 @@ function planCityImprovements(
   const foodPriority = fullPriority.filter(
     k => AI_IMPROVEMENT_ZYWNOSCIOWE_KEYS.has(k) || k === 'wyrab',
   );
-  const resourcePriority = fullPriority.filter(
-    k => !AI_IMPROVEMENT_ZYWNOSCIOWE_KEYS.has(k) && k !== 'wyrab',
-  );
 
   const sharedOpts = {
     cities: myCities,
@@ -2677,52 +2674,13 @@ function planCityImprovements(
     // K3 = K2 (jedna logika w pickerze): brakujący surowiec idzie na przód, surowce wszędzie (ECHO 2026-09-08).
     getResourcePassOnlyWorked: () => false,
   });
-  const foodSpent = foodPicks.reduce((s, p) => s + p.kosztPraca, 0);
-
-  // Scalony stan `placedImprovements` PRZED wywołaniem 2, żeby ono widziało to, co
-  // wywołanie 1 już postawiło TĘ SAMĄ turę (unika podwójnego stawiania tej samej warstwy
-  // na tym samym heksie i respektuje np. próg lasu/FAZA 0, patrz komentarz w
-  // auto-improvements.ts przy `workingPlaced`).
-  const mergedPlaced = new Map<string, string[]>();
-  if (opts.placedImprovements) {
-    for (const [hk, v] of opts.placedImprovements) {
-      mergedPlaced.set(hk, Array.isArray(v) ? [...v] : [v]);
-    }
-  }
-  const foodPickedCityIds = new Set<string>();
-  for (const p of foodPicks) {
-    const hk = `${p.q},${p.r}`;
-    mergedPlaced.set(hk, [...(mergedPlaced.get(hk) ?? []), p.key]);
-    foodPickedCityIds.add(p.cityId);
-  }
-
-  // P-AI-ULEPSZENIA-BUDOWA-ZNIKOMA-Q1 (runda 2, Evaluator/Operator znalezisko własne przy
-  // testowaniu): bez tego wykluczenia dwa NIEZALEŻNE wywołania pickera z limitem jednej sztuki na miasto (jedno
-  // na żywność, jedno na surowce) dają miastu do DWÓCH ulepszeń/turę zamiast dotychczasowego
-  // JEDNEGO -- co w symulacji PRZED/PO windowało też liczbę ŻYWNOŚCIOWYCH ulepszeń (bo
-  // wcześniej dzieliły z surowcowymi TEN SAM jeden slot na hex-po-hexie, teraz każda
-  // kategoria dostawała WŁASNY), łamiąc wprost kryterium 4 dispatchu („żywnościowe zostają
-  // na tym samym poziomie co dziś"). Naprawa: miasto, które W TEJ TURZE dostało już pick
-  // żywnościowy, jest WYKLUCZONE z wywołania 2 -- surowce dostają swój (nieograniczony
-  // hexowo) strzał WYŁĄCZNIE w miastach, gdzie żywność nic nie znalazła, zachowując
-  // dotychczasowy limit „maks. 1 ulepszenie/miasto/turę" 1:1 z kodem sprzed tej rundy.
-  const citiesForResource = myCities.filter(c => !foodPickedCityIds.has(c.id));
-
-  // WYWOŁANIE 2 — kategoria SUROWCOWA/INFRASTRUKTURALNA: BEZ ograniczenia do heksów
-  // obrabianych (ECHO właściciela runda 2: „surowce mogą być budowane bez problemu
-  // wszędzie"), z resztą budżetu i puli po wywołaniu 1, WYŁĄCZNIE dla miast bez picku
-  // żywnościowego tej tury.
-  const resourcePicks = citiesForResource.length === 0 ? [] : pickAutoImprovements({
-    ...sharedOpts,
-    cities: citiesForResource,
-    placedImprovements: mergedPlaced,
-    pracaAvailable: Math.max(0, pracaAvailable - foodSpent),
-    getOnlyWorked: () => false,
-    improvementBudgetCap: Math.max(0, improvementBudget - foodSpent),
-    priorityOverride: resourcePriority,
-  });
-
-  return [...foodPicks, ...resourcePicks].map(p => ({
+  // R-WEB-AUTOIMPROVE-STAGES-Q1 R4 (właściciel 2026-10-31: „Niedobór ma tylko otwierać ulepszenia brakującego
+  // surowca, nic więcej” + „Drogi dopiero gdy zaspokojone potrzeby żywności i surowców”): DRUGIE wywołanie
+  // pickera (kategoria „surowcowa/infrastrukturalna” z `resourcePriority`, bez onlyWorked) ZLIKWIDOWANE.
+  // Otwierało ono całą resztę listy (kamieniołomy, warzelnie, drogi, forty, posterunki) przy niedoborze
+  // dowolnego surowca. Teraz JEDNO wywołanie (K3 = K2): picker sam robi krok „brakujący surowiec” (tylko jego
+  // ulepszenie), etapy żywności E1–E6 i — na samym końcu — drogi (auto-improvements.ts, `pickAutoImprovements`).
+  return foodPicks.map(p => ({
     type: 'buildImprovement' as const,
     ownerId: p.ownerId,
     q: p.q,

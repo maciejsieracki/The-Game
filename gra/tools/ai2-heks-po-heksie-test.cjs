@@ -345,8 +345,11 @@ console.log('H. W-B: posterunek/fort NIE domykaja heksa i maja pulap ceil(pop/10
 console.log('I. WYRAB: AI CYWILIZACJI faktycznie wycina las na heksie z rzeka (GOAL tematu)');
 {
   const map = makeMap(16, 16, { nakladka: 'las', riverAt: [[7, 5], [7, 6], [7, 7], [7, 8]] });
-  // R3, ABC-F=A: obejscie `nakladka='brak'` na heksie centrum USUNIETE — test sprawdza kod:
-  // centrum miasta (7,7) jest lasem i NIE moze dostac zadnego ulepszenia (sprawdzenie nizej).
+  // R4 KOREKTA F (wlasciciel 2026-10-31): heks centrum miasta to ZWYKLY heks; tartaku na nim nie bedzie, bo
+  // centrum nigdy nie ma lasu (R-WEB-CITY-CLEARS-FOREST-Q1: zakladanie/wczytanie zapisu czysci las pod miastem).
+  // Fikstura odwzorowuje ten stan produkcyjny (to NIE obejscie kodu pickera — picker nie ma zadnego filtra
+  // centrum; sprawdzenie nizej: tartak/obóz na centrum sie nie kwalifikuja, a farma/inne wolno).
+  map.hexes['7,7'].nakladka = 'brak';
   // RUNDA 4, ZASADA 2: automat buduje wylacznie na heksach OBRABIANYCH przez obywateli
   // (poza zlozami). Zeby ten scenariusz nadal testowal to, co testowal w rundzie 3
   // („pierwszy wyrab trafia na heks Z RZEKA"), obywatele musza te heksy z rzeka realnie
@@ -401,15 +404,18 @@ console.log('I. WYRAB: AI CYWILIZACJI faktycznie wycina las na heksie z rzeka (G
   const zTartakiem = new Set(slad.filter(e => e.key === 'tartak' || e.key === 'oboz_lowiecki').map(e => e.hk));
   ok(!wyreby.some(e => zTartakiem.has(e.hk)),
     'zaden heks z tartakiem albo obozem nie zostal wyciety');
-  // ABC-F=A (K3): heks centrum miasta (las pod miastem) nie dostaje zadnego rozkazu budowy.
-  ok(!slad.some(e => e.hk === '7,7'),
-    `ABC-F=A: zero rozkazow na heksie centrum miasta 7,7 (${slad.filter(e => e.hk === '7,7').map(e => e.key).join(',') || 'brak'})`);
-  // K — obrona nadal powstaje przez decideAITurn, w granicach pulapu
+  // KOREKTA F (K3): centrum miasta jest zwyklym kandydatem; bez lasu nie kwalifikuje sie tartak ani oboz.
+  const naCentrum = slad.filter(e => e.hk === '7,7').map(e => e.key);
+  ok(!naCentrum.includes('tartak') && !naCentrum.includes('oboz_lowiecki'),
+    `KOREKTA F: na centrum 7,7 (bez lasu) brak tartaku/obozu (rozkazy na centrum: ${naCentrum.join(',') || 'brak'})`);
+  ok(naCentrum.includes('farma'), `KOREKTA F: centrum 7,7 dostaje zwykle ulepszenie zywnosciowe (${naCentrum.join(',') || 'brak'})`);
+  // K — R4 (wlasciciel 2026-10-31: „Niedobor ma tylko otwierac ulepszenia brakujacego surowca, nic wiecej”):
+  // FAZA 0 (posterunek/fort) NIE jest otwierana niedoborem w K3 (wczesniej: posterunek>0 i fort>0 przy niedoborze
+  // drewna). Obrona AI poza pickerem (`planExpansionFortBuilding` w ai.ts) bez zmian. Test H wyzej nadal
+  // pilnuje semantyki FAZY 0 dla wywolan BEZ `demandDriven` (profil „infrastruktura” gracza itd.).
   const post = slad.filter(e => e.key === 'posterunek').length;
   const fort = slad.filter(e => e.key === 'fort').length;
-  const cap = Math.max(1, Math.ceil(6 / CAPDIV));
-  ok(post > 0 && fort > 0, `posterunek i fort NADAL powstaja poza sekwencja domykania (posterunek ${post}, fort ${fort})`);
-  ok(post <= cap && fort <= cap, `... i nie przekraczaja pulapu ${cap} na miasto`);
+  ok(post === 0 && fort === 0, `R4: picker AI (niedobor drewna) nie stawia posterunku/fortu (posterunek ${post}, fort ${fort})`);
 }
 
 console.log('L. sciezka AI GRACZA: silnik wycinki jest WSPOLNY — blokuje ja wylacznie `skipWyrab` z main.ts');

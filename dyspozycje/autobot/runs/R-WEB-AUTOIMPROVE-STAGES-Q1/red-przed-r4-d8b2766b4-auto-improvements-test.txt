@@ -1,0 +1,22 @@
+1. focus zywnosc — farma przed kamieniolom
+2. onlyWorked=true — pomija nieobrabiane
+  FAIL: centrum (zawsze pracowane) jest zwyklym kandydatem (got false, want true)
+3. onlyWorked=false — moze nieobrabiane
+4. brak sztuk-cap — 100% budzetu + duza pula = wiele ulepszen w 1 miescie
+5. skipWyrab — brak wyrab
+6. focus surowce — kamieniolom na wzgorzach
+7. getPracaBudgetPercent=50%
+8. getPracaBudgetPercent=75%
+9. rezerwa Pracy 30
+10. pracaBudgetPercent=0% — zero auto-ulepszen mimo dostepnej Pracy
+11. pracaBudgetPercent=100% — wydaje do flat-rezerwy, nie ponizej
+12. pracaBudgetPercent=50% — JEDEN wspólny budżet dla obu miast razem (nie per miasto)
+13. AUTO_ULEPSZENIA_PRACA_RESERVE = 30 (pin literalny, łapie mutację na 0)
+14. laczny wydatek NIEZALEZNY od liczby miast N (1 vs 4 miasta, ten sam %)
+15. Q3=B — polityka imperium 20% jest TWARDYM pułapem SUMY mimo override miasta 80%
+16. Q3=B REGRESSION GUARD — bez override (wszystkie miasta = polityka imperium) wynik identyczny jak przed naprawa
+-- 17. FALA 292: STRUKTURA (regex na main.ts) — split absolutny jest policzony przed pickerem, a picker nie dzieli go drugi raz --
+-- 18. FALA 292: realny picker respektuje absolutny split mimo starego override per-miasto --
+
+auto-improvements-test: 45 passed, 1 failed
+EXIT=1

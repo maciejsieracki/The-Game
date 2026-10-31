@@ -1,0 +1,67 @@
+M1-droga-przed-zywnoscia: ZABITA (test czerwony)
+    autoimprove-stages-q1: EXIT=1 FAIL=7
+        [FAIL] [K3] ... nadal w granicach limitu etapu (6)
+        [FAIL] [K2] drogi (jesli sa) dopiero PO ostatnim tartaku (t=0); pierwsza droga t=0
+        [FAIL] [K3] drogi (jesli sa) dopiero PO ostatnim tartaku (t=0); pierwsza droga t=0
+    ai4-popyt-obywatele: EXIT=1 FAIL=2
+        [FAIL] Z1a2: R4 drogi dopiero PO ostatnim rozkazie zywnosciowym (8 drog przed/w turze zywnosci; drog razem 8)
+        [FAIL] Z1c4: R4 drogi dopiero po zywnosci I po tartaku (brakujacy surowiec)
+    ai2-heks-po-heksie: EXIT=1 FAIL=1
+        [FAIL] decideAITurn: wiecej niz 1 ulepszenie na miasto na ture, <=3 na miasto (12 rozkazow przy 2 miastach: [["c0",6],["c1",6]])
+    auto-improvements: EXIT=0 FAIL=0
+M2-niedobor-otwiera-cala-liste: ZABITA (test czerwony)
+    autoimprove-stages-q1: EXIT=1 FAIL=9
+        [FAIL] [K2=K3] bez niedoboru: identyczna sekwencja (K2: 0:wyrab@12,10 0:wyrab@13,10 0:wyrab@12,9 1:farma@12,10 1:farma@13,10 1:farma@12,9 2:bydlo@…)
+        [FAIL] [K2=K3] niedobor kamienia (t<3): identyczna sekwencja (K2: 0:kamieniolom@13,11 0:kamieniolom@11,11 0:wyrab@12,10 0:wyrab@13,10 0:wyrab@12,9 1:farma@1…)
+        [FAIL] [K2=K3] cykl niedoboru (t<12): identyczna sekwencja
+    ai4-popyt-obywatele: EXIT=1 FAIL=5
+        [FAIL] Z1a: BEZ niedoboru ZERO rozkazow poza zywnoscia i (najnizszym priorytetem) drogami: 1 (warzelnia_soli)
+        [FAIL] Z1c2: R4 niedobor drewna otwiera TYLKO tartak (obce klucze: warzelnia_soli)
+        [FAIL] Z1d: niedobor SAMEJ zywnosci NIE otwiera budowy surowcow/infrastruktury (1)
+    ai2-heks-po-heksie: EXIT=0 FAIL=0
+    auto-improvements: EXIT=0 FAIL=0
+M3a-filtr-centrum-K2K3: ZABITA (test czerwony)
+    autoimprove-stages-q1: EXIT=1 FAIL=2
+        [FAIL] [K2] centrum miasta (zwykly heks, bez lasu): farma(-1) < bydlo(-1) < irygacja(-1)
+        [FAIL] [K3] centrum miasta (zwykly heks, bez lasu): farma(-1) < bydlo(-1) < irygacja(-1)
+    ai4-popyt-obywatele: EXIT=0 FAIL=0
+    ai2-heks-po-heksie: EXIT=1 FAIL=1
+        [FAIL] KOREKTA F: centrum 7,7 dostaje zwykle ulepszenie zywnosciowe (brak)
+    auto-improvements: EXIT=0 FAIL=0
+M3b-centrum-nie-pracowane: ZABITA (test czerwony)
+    autoimprove-stages-q1: EXIT=1 FAIL=3
+        [FAIL] [K1] centrum miasta (zwykly heks, bez lasu): farma(-1) < bydlo(-1) < irygacja(-1)
+        [FAIL] [K2] centrum miasta (zwykly heks, bez lasu): farma(-1) < bydlo(-1) < irygacja(-1)
+        [FAIL] [K3] centrum miasta (zwykly heks, bez lasu): farma(-1) < bydlo(-1) < irygacja(-1)
+    ai4-popyt-obywatele: EXIT=0 FAIL=0
+    ai2-heks-po-heksie: EXIT=1 FAIL=1
+        [FAIL] KOREKTA F: centrum 7,7 dostaje zwykle ulepszenie zywnosciowe (brak)
+    auto-improvements: EXIT=1 FAIL=1
+        FAIL: centrum (zawsze pracowane) jest zwyklym kandydatem (got false, want true)
+M4b-obrona-w-K2K3: ZABITA (test czerwony)
+    autoimprove-stages-q1: EXIT=1 FAIL=7
+        [FAIL] [K2=K3] bez niedoboru: identyczna sekwencja (K2: 0:wyrab@12,10 0:wyrab@13,10 0:wyrab@12,9 1:farma@12,10 1:farma@13,10 1:farma@12,9 2:bydlo@…)
+        [FAIL] [K2=K3] niedobor kamienia (t<3): identyczna sekwencja (K2: 0:kamieniolom@13,11 0:kamieniolom@11,11 0:wyrab@12,10 0:wyrab@13,10 0:wyrab@12,9 1:farma@1…)
+        [FAIL] [K2=K3] cykl niedoboru (t<12): identyczna sekwencja
+    ai4-popyt-obywatele: EXIT=0 FAIL=0
+    ai2-heks-po-heksie: EXIT=0 FAIL=0
+    auto-improvements: EXIT=0 FAIL=0
+M5-droga-ignoruje-oczekujacy-niedobor: ZABITA (test czerwony)
+    autoimprove-stages-q1: EXIT=1 FAIL=1
+        [FAIL] [K2/K3] kamieniolom poza obrabianymi czeka na Prace (pula 50, rezerwa 30): 0 rozkazow, w tym 0 drog (droga)
+    ai4-popyt-obywatele: EXIT=0 FAIL=0
+    ai2-heks-po-heksie: EXIT=0 FAIL=0
+    auto-improvements: EXIT=0 FAIL=0
+M6-droga-ignoruje-oczekujaca-zywnosc: ZABITA (test czerwony)
+    autoimprove-stages-q1: EXIT=1 FAIL=1
+        [FAIL] [K2] irygacja czeka na Prace (pula 50, +8/ture): 0 drog przed pierwsza irygacja (5); irygacja w pozycji -1
+    ai4-popyt-obywatele: EXIT=0 FAIL=0
+    ai2-heks-po-heksie: EXIT=0 FAIL=0
+    auto-improvements: EXIT=0 FAIL=0
+M7-K1-bez-filtra-lasu: ZABITA (test czerwony)
+    autoimprove-stages-q1: EXIT=1 FAIL=2
+        [FAIL] [K1] bez niedoboru: tartak 0, oboz 1 (== 0)
+        [FAIL] [K1] z niedoborem drewna: tartak 0, oboz 1 (== 0)
+    ai4-popyt-obywatele: EXIT=0 FAIL=0
+    ai2-heks-po-heksie: EXIT=0 FAIL=0
+    auto-improvements: EXIT=0 FAIL=0

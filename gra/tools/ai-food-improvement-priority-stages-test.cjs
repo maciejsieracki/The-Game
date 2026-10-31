@@ -199,8 +199,12 @@ try {
     map: makeMap(), cities, worked: new Map([['a', new Set()], ['b', new Set()]]),
     placed: new Map(),
   });
-  assert.equal(empty.length, 0);
-  check('negative. no worked/eligible fields means no food improvement', () => {});
+  // R4 KOREKTA F (wlasciciel 2026-10-31): heks CENTRUM miasta jest zwyklym heksem, zawsze pracowanym —
+  // jedyne dopuszczalne rozkazy bez obywateli leza w centrum miasta; zadnych poza nim.
+  const cityCenters = new Set(cities.map(c => `${c.q},${c.r}`));
+  assert.ok(empty.every(p => cityCenters.has(`${p.q},${p.r}`)),
+    `no worked fields: only city-centre hexes may be built (got ${empty.map(p => `${p.key}@${p.q},${p.r}`).join(' ')})`);
+  check('negative. no worked/eligible fields means no food improvement outside the city centre hex (centre = ordinary, always-worked hex)', () => {});
 
   // Source wiring: both production callers opt into staged planning. Behavioral tests
   // above exercise the shared production picker itself.
