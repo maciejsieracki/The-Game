@@ -1,3 +1,12 @@
+## ROBOCZA 79a5ca16 -- 2026-10-31 -- tartak nie przy rzece, bez limitu etapu, znacznik „Agresor (N)”, zerowanie HUD foteli hot-seat (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`1b6dc1c08` + trzy tematy) i commit wdrożenia bundla; stała zgoda właściciela 2026-10-31.
+- Bundle MD5 `79a5ca16c766bdb736ea851746ae6962`, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, outDir poza repo, stempel ROBOCZA; `verify-robocza-bundle.cjs` VERIFY OK.
+- Zakres: (1) `R-WEB-AUTOIMPROVE-STAGES3-Q1` — tartak i obóz nigdy na heksie z rzeką ani sąsiadującym z rzeką (we wszystkich profilach automatu); preferencja: wzgórza z lasem, potem las bez dostępu do rzeki; tartak może stać na lesie pod farmę, jeśli nie ma tam dostępu do rzeki; zdjęty limit „3 budowle na etap na miasto na turę”; (2) `R-WEB-HOTSEAT-HUD-CACHE-Q1` — przy wczytaniu zapisu zerowane wartości pomocnicze HUD wszystkich foteli hot-seat; (3) `R-WEB-AGGRESSOR-MARKER-Q1` — znacznik „Agresor (N)” z licznikiem tur przy nazwie cywilizacji na liście dyplomacji (tylko przy aktywnej fladze).
+- Testy po scaleniu: tsc PASS; autoimprove-stages-q1 302/0, auto-improvements 46/0, ai-improvements 56/0, ai-food-stages 13/0, ai2-heks-po-heksie 37/0, hodowla-las 113/0, ai4-popyt-obywatele 55/0, wyrab-rzeka 3/0, 10/0, 2/0, city-clears-forest 18/0, fort-outpost-hard-territory 80/0, defeat-last-city 14/0, spichlerz-hud-params-parity 66/0, znacznik Agresor: unit 21/0, mutacje 8/8, Chromium 24/0; HUD hot-seat Chromium 18/0; diplomacy 148, war-era-counter 82, ring 15.
+- Ograniczenia: NIE_ZMIERZONO stan Drewna i Żywności w magazynie; skutek reguły rzeki: tartaki AI przy niedoborze drewna 123 → 34 w teście (decyzja właściciela); „dostęp do wody” = tylko rzeka (jezioro/morze nie liczą się — pytanie ABC otwarte); cztery pola HUD fotela 2+ zerowane (dowód statyczny); znane czerwone w bazie: ai-major-economy, tartak-oboz-wyscig-race, ai-praca-split-parity, food-hodowla 20/4, oboz-lowiecki-las 72/19, praca-jeden-podzial-kontrakt 635/2, civ-matrix-ai-diplomacy-wiring 42/1, ai-test.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `f5b7b1b329fcc2fe3844a530c3d99964`, 70,105,484 bajtów.
+
 ## ROBOCZA f5b7b1b3 -- 2026-10-31 -- auto-ulepszenia wg decyzji właściciela (budżet sztywno, brak limitów w niedoborze, tartak nie na rzece), pula Pracy foteli hot-seat (testowa)
 
 - **STATUS: DEPLOYED** — merge do `origin/main` (`0f9f60a10` + trzy tematy i raport weryfikacji) i commit wdrożenia bundla; stała zgoda właściciela 2026-10-31.
