@@ -7,6 +7,9 @@
 
 use std::cmp::Ordering;
 
+#[cfg(test)]
+mod tests;
+
 const MIN_GALLOP_WINS: usize = 7;
 
 /// Sortowanie `items` komparatorem `cmp` jak V8 `Array.prototype.sort` (stabilne, TimSort).

@@ -173,18 +173,21 @@ for (const mname of ['full', 'holes'])
         }
 
 // ---- sekcja 6: rebalans trybu recznego ------------------------------------------------------
-const ROB_PAIRS = [[0, 1], [1, 2], [3, 2], [4, 1], [3, 0], [2, 2], [5, 5], [1.5, 2.9], [2, -1], [2, NaN], [0, -2]];
+// r4: pary z dopisanymi wzrostami czesciowymi (pop_after > liczba obsadzonych -> petla free/pick)
+const ROB_PAIRS = [[0, 1], [1, 2], [3, 2], [4, 1], [3, 0], [2, 2], [5, 5], [1.5, 2.9], [2, -1], [2, NaN], [0, -2], [1, 4], [2, 5], [1, 5], [0, 3]];
 const rebalRows = [];
 for (const mname of ['full', 'holes'])
   for (const [cq, cr] of [[0, 0], [2, -1]])
     for (const [pb, pa] of ROB_PAIRS)
       for (const focus of ['zywnosc', 'produkcja'])
-        for (const init of ['none', 'empty', 'three', 'illegal']) {
+        for (const init of ['none', 'empty', 'three', 'one', 'zero', 'illegal']) {
           const tiles = O.okolicaTiles(cq, cr, 5, MAPOBJ[mname]).map((t) => t.key);
           let reczne;
           if (init === 'none') reczne = undefined;
           else if (init === 'empty') reczne = {};
           else if (init === 'three') reczne = { [tiles[0]]: 1, [tiles[3]]: 1, [tiles[7]]: 1 };
+          else if (init === 'one') reczne = { [tiles[2]]: 1 };
+          else if (init === 'zero') reczne = { [tiles[0]]: 1, [tiles[4]]: 0, [tiles[1]]: 1, [tiles[6]]: 1 }; // wpis 0 nie liczy sie (TS: > 0)
           else reczne = { [tiles[1]]: 1, '99,99': 1, [tiles[5]]: 1 };
           const city = {
             id: `c${cq}_${cr}`, ownerId: 1, q: cq, r: cr, population: pa, okolicaFocus: focus,
@@ -339,6 +342,28 @@ for (const [cq, cr] of [[0, 0], [3, -2]])
       );
       NAN_BIG.push({ cq, cr, pop: enc(pop), focus, radius: enc(rad), candidates, out: out.map((t) => t.key) });
     }
+
+// ---- sekcja 12 (r4): Array.prototype.sort V8 na kluczach z NaN i remisami (test portu TimSort) ----
+// Komparator (a, b) => a.k - b.k: NaN -> 0 po stronie V8. Wynik = permutacja indeksow.
+let sortSeed = 12345;
+const sortRnd = () => {
+  sortSeed = (sortSeed * 1103515245 + 12345) & 0x7fffffff;
+  return sortSeed / 0x7fffffff;
+};
+const SORT_CASES = [];
+for (const n of [0, 1, 2, 3, 5, 8, 16, 31, 32, 33, 63, 64, 65, 96, 127, 128, 129, 200, 257, 300, 512, 777, 1000])
+  for (let rep = 0; rep < 6; rep++) {
+    const pNan = [0, 0.05, 0.2][rep % 3];
+    const keys = Array.from({ length: n }, (_, i) => {
+      if (rep === 4) return i < n / 2 ? i : n - i; // gora (runy rosnace + malejace)
+      if (sortRnd() < pNan) return NaN;
+      return rep % 2 ? Math.floor(sortRnd() * 5) : Math.floor(sortRnd() * 50);
+    });
+    const items = keys.map((k, i) => ({ i, k }));
+    const sorted = items.slice().sort((a, b) => a.k - b.k);
+    SORT_CASES.push({ n, keys: keys.map((k) => enc(k)), out: sorted.map((x) => x.i) });
+  }
+writeFileSync(join(outDir, 'v8sort.json'), JSON.stringify({ cases: SORT_CASES }) + '\n');
 
 const meta = {
   pin: PIN,

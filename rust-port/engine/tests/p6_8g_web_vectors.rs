@@ -347,7 +347,7 @@ fn web_rebalance_manual_matches_ts() {
     maps.insert("holes", build_map(&root, "holes"));
     let web = yield_table(&root, "yieldTable");
     let rows = root["rebalance"].as_array().unwrap();
-    assert_eq!(rows.len(), 354);
+    assert_eq!(rows.len(), 722);
     for row in rows {
         let name = row["map"].as_str().unwrap();
         let yo = yield_fn(&web, name);
