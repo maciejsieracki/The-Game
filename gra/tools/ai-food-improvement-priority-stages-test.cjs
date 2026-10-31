@@ -108,8 +108,13 @@ try {
   check('0. E1 river farm (no forest) precedes river forest clearing; AI throttle intact', () => {});
   place(farmFirst, map, placed);
 
-  const clear = runPicker({ map, cities, worked, placed, maxItemsPerCity: 1, getSkipWyrab: () => true });
-  onlyKey(clear, 'wyrab', 'stage E2 river clearing overrides the general woodcut toggle');
+  // R-WEB-AUTOIMPROVE-STAGES2-Q1 (decyzja wlasciciela 2026-10-31, przycisk „Wolno wycinac las”): przy przycisku
+  // WYLACZONYM (getSkipWyrab=true) automat gracza NIE wycina nigdzie — takze przy rzece (dawny pin: „E2 overrides
+  // the toggle”, 1 wycinka). Przy WLACZONYM wycinka E2 rusza.
+  const clearOff = runPicker({ map, cities, worked, placed, maxItemsPerCity: 1, getSkipWyrab: () => true });
+  assert.ok(!clearOff.some(p => p.key === 'wyrab'), 'toggle OFF: zero wycinek, takze przy rzece (E2 nie omija przycisku)');
+  const clear = runPicker({ map, cities, worked, placed, maxItemsPerCity: 1, getSkipWyrab: () => false });
+  onlyKey(clear, 'wyrab', 'stage E2 river clearing runs when the woodcut toggle is ON');
   assert.equal(clear.length, 1, 'AI-style one-order-per-city cap must remain intact');
   check('0a. E2 river forest clearing is isolated from farms/livestock and respects AI throttle', () => {});
   place(clear, map, placed);

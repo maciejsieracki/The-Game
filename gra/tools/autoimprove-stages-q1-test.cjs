@@ -1,6 +1,12 @@
 'use strict';
 
 /**
+ * R-WEB-AUTOIMPROVE-STAGES2-Q1 (2026-10-31, decyzje wlasciciela, WIAZACE — nadpisuja czesc oczekiwan R5):
+ *   B$ budzet SZTYWNO: procent budzetu Pracy gracza (K1/K2) to TWARDY SUFIT, bez wyjatkow (Q2=B z R3 i D-R5-3 ODWOLANE);
+ *       AI cywilizacji i panstwa-miasta = 100% puli, bez limitu %;
+ *   D-R5-1: farma ma pierwszenstwo na lesie pod farme; tartak (niedobor) tylko na lesie, gdzie farma niemozliwa;
+ *   D-R5-2: tartak/oboz NIGDY na heksie rzeka+las — we wszystkich profilach automatu;
+ *   W$ przycisk „Wolno wycinac las”: gracz OFF => automat NIE wycina nigdzie (takze przy rzece); AI/panstwa-miasta bez przycisku.
  * R-WEB-AUTOIMPROVE-STAGES-Q1 — kontrakt etapowego automatu ulepszen (produkcyjny
  * pickAutoImprovements + decideAITurn, symulacja tura po turze na realnym kwalifikatorze).
  *
@@ -25,14 +31,14 @@ const SRC = process.env.STAGES_Q1_SRC_DIR || path.resolve(GRA_ROOT, 'src');
 const temp = fs.mkdtempSync(path.join(os.tmpdir(), 'stages-q1-'));
 const entry = path.join(temp, 'entry.ts');
 const bundle = path.join(temp, 'bundle.cjs');
-fs.writeFileSync(entry, `export { pickAutoImprovements, prioritiesForUlepszeniaFocus } from ${JSON.stringify(SRC + '/game/auto-improvements')};\nexport { decideAITurn } from ${JSON.stringify(SRC + '/game/ai')};\n`);
+fs.writeFileSync(entry, `export { pickAutoImprovements, prioritiesForUlepszeniaFocus } from ${JSON.stringify(SRC + '/game/auto-improvements')};\nexport { decideAITurn } from ${JSON.stringify(SRC + '/game/ai')};\nexport { getImprovementMeta } from ${JSON.stringify(SRC + '/game/improvement-tech')};\n`);
 esbuild.buildSync({
   entryPoints: [entry], bundle: true, platform: 'node', format: 'cjs', target: 'node18',
   outfile: bundle, loader: { '.ts': 'ts', '.json': 'json' },
   absWorkingDir: GRA_ROOT, logLevel: 'error',
   nodePaths: [path.resolve(GRA_ROOT, 'node_modules')],
 });
-const { pickAutoImprovements, prioritiesForUlepszeniaFocus, decideAITurn } = require(bundle);
+const { pickAutoImprovements, prioritiesForUlepszeniaFocus, decideAITurn, getImprovementMeta } = require(bundle);
 
 let passed = 0, failed = 0;
 function ok(cond, msg) {
@@ -78,7 +84,10 @@ function sim({
   const workedSet = new Set(worked.map(([q, r]) => K(q, r)));
   let pool = pool0;
   const log = [];
+  const turnSpend = [];
   for (let t = 0; t < turns; t++) {
+    const poolEntry = pool;
+    let spent = 0;
     const techs = new Set(techsByTurn(t));
     const deficit = deficitFn(t, placed, map);
     let picks;
@@ -106,12 +115,14 @@ function sim({
       const hk = K(p.q, p.r);
       log.push({ t, key: p.key, hk });
       pool -= p.kosztPraca;
+      spent += p.kosztPraca;
       if (p.key === 'wyrab') { map.hexes[hk].nakladka = 'brak'; continue; }
       placed.set(hk, [...(placed.get(hk) ?? []), p.key]);
     }
+    turnSpend.push({ t, poolEntry, spent });
     pool += income;
   }
-  return { log, placed };
+  return { log, placed, turnSpend, pool };
 }
 const seqOf = log => log.map(e => `${e.t}:${e.key}@${e.hk}`).join(' ');
 const idx = (log, key, hk) => log.findIndex(e => e.key === key && e.hk === hk);
@@ -199,12 +210,43 @@ console.log('(c2) [K2] wycinka poza rzeka BEZ progu lasu i BEZ minimum lesnego (
   ok(idx(log, 'wyrab', '14,12') >= 0, '[K2] pojedynczy las poza rzeka (ponizej progu 3, bez tartaku) zostaje wyciety');
 }
 
-console.log('(c3) [K2] wolno wycinac las = OFF: poza rzeka nie tniemy, na rzece tniemy (etap E2)');
+console.log('(c3) [K1/K2] wolno wycinac las = OFF (decyzja wlasciciela 2026-10-31): ZERO wycinek — takze przy rzece (krok 0 / E2)');
+for (const profil of ['K1', 'K2']) {
+  const map = makeMap({ river: RIVER, forest: [...RIVER, [14, 12], [11, 13]] });
+  const { log } = sim({ map, worked: [...WORKED_ALL, [14, 12], [11, 13]], profil, turns: 30, wolnoWycinac: false });
+  ok(count(log, 'wyrab') === 0, `[${profil}] OFF: 0 wycinek (rzeka + poza rzeka), jest ${count(log, 'wyrab')}`);
+  ok(RIVER.every(([q, r]) => idx(log, 'wyrab', K(q, r)) < 0), `[${profil}] OFF: brak wyrebu na rzece (dawny pin c3: 2 wycinki — poprawiony decyzja wlasciciela)`);
+  ok(RIVER.every(([q, r]) => map.hexes[K(q, r)].nakladka === 'las'), `[${profil}] OFF: las przy rzece nietkniety`);
+  const on = makeMap({ river: RIVER, forest: [...RIVER, [14, 12], [11, 13]] });
+  const r2 = sim({ map: on, worked: [...WORKED_ALL, [14, 12], [11, 13]], profil, turns: 30, wolnoWycinac: true });
+  ok(count(r2.log, 'wyrab') >= 3 && count(r2.log, 'farma') >= 3, `[${profil}] ON: wycinka pod farmy dziala (wyrab ${count(r2.log, 'wyrab')}, farma ${count(r2.log, 'farma')})`);
+}
+console.log('(c3b) override miasta (getSkipWyrab) i AI: przycisk dotyczy tylko gracza');
 {
-  const map = makeMap({ river: RIVER, forest: [...RIVER, [14, 12]] });
-  const { log } = sim({ map, worked: [...WORKED_ALL, [14, 12]], profil: 'K2', turns: 30, wolnoWycinac: false });
-  ok(RIVER.every(([q, r]) => idx(log, 'wyrab', K(q, r)) >= 0), '[K2] OFF: wyrab na rzece nadal dziala');
-  ok(idx(log, 'wyrab', '14,12') < 0, '[K2] OFF: brak wyrebu poza rzeka');
+  const mkSim = (flagFn, skipWyrab) => {
+    const map = makeMap({ river: RIVER, forest: [...RIVER, [14, 12]] });
+    const placed = new Map();
+    const picks = [];
+    for (let t = 0; t < 6; t++) {
+      const ps = pickAutoImprovements({
+        cities: [{ ...CITY, ulepszeniaFocus: 'zrownowazone' }], ownerId: 0, map, territoryNodes: TN, placedImprovements: placed,
+        pracaAvailable: 5000, unlockedTechs: new Set(FULL), pracaSurplusThreshold: 30, skipWyrab,
+        ...(flagFn ? { getSkipWyrab: flagFn } : {}),
+        demandDriven: true, resourceDeficitKeys: [], getFocus: () => 'zrownowazone', getOnlyWorked: () => true,
+        getWorkedHexKeys: () => new Set([...WORKED_ALL, [14, 12]].map(([q, r]) => K(q, r))), pracaBudgetPercent: 100,
+        civArchetype: 'grecy', playerEra: 3, foodImprovementStages: () => true,
+      });
+      for (const p of ps) { picks.push(p); if (p.key === 'wyrab') map.hexes[K(p.q, p.r)].nakladka = 'brak'; else placed.set(K(p.q, p.r), [...(placed.get(K(p.q, p.r)) ?? []), p.key]); }
+    }
+    return picks.filter(p => p.key === 'wyrab').length;
+  };
+  ok(mkSim(() => true, false) === 0, '[K2] override miasta OFF (getSkipWyrab=true) przy skipWyrab=false: 0 wycinek (przycisk miasta wygrywa)');
+  ok(mkSim(() => false, true) >= 3, '[K2] override miasta ON (getSkipWyrab=false) przy skipWyrab=true: wycinka dziala');
+  ok(mkSim(undefined, true) === 0, '[K2] skipWyrab=true bez override: 0 wycinek (takze przy rzece)');
+  const aiSrc = fs.readFileSync(path.resolve(SRC, 'game/ai.ts'), 'utf8');
+  ok(!/wolnoWycinacLas/.test(aiSrc) && !/getSkipWyrab/.test(aiSrc), '[K3] ai.ts nie czyta flagi gracza (`wolnoWycinacLas`/`getSkipWyrab`) — AI przycisku nie ma');
+  const k3 = sim({ map: makeMap({ river: RIVER, forest: [...RIVER, [14, 12]] }), worked: [...WORKED_ALL, [14, 12]], profil: 'K3', turns: 30, wolnoWycinac: false });
+  ok(count(k3.log, 'wyrab') >= 3, `[K3] AI wycina niezaleznie od flagi gracza (wolnoWycinac=false w symulacji nie dotyczy AI): wyrab ${count(k3.log, 'wyrab')}`);
 }
 
 // (e) Nowy Swiat
@@ -247,35 +289,21 @@ for (const profil of ['K1', 'K2', 'K3']) {
   ok(count(log, 'bydlo') === 0 && count(log, 'irygacja') >= RIVER.length, `[${profil}] bez Oswojenia: trzoda 0, irygacja ${count(log, 'irygacja')} >= ${RIVER.length}`);
 }
 
-console.log('(h) Q2=B / ABC-6=A: trzoda i irygacja poza limitem %; rezerwacja budzetu na irygacje (koniec starvation)');
+console.log('(h) BUDZET SZTYWNO (wlasciciel 2026-10-31): koszt > budzet => 0 budowy, pula sie KUMULUJE, po kilku turach budowa startuje');
 for (const profil of ['K1', 'K2']) {
-  // limit 20% przy puli 200 = 40 < koszt irygacji 60; E3/E4 poza limitem — irygacja i tak powstaje
+  // 20% puli 200 = 40 < koszt irygacji 60 — BEZ wyjatku od limitu: irygacja NIE powstaje; pula rosnie; procent liczony od skumulowanej puli.
+  const m0 = makeMap({ river: RIVER });
+  const placed0 = new Map(RIVER.map(([q, r]) => [K(q, r), ['farma', 'bydlo']]));
+  const r0 = sim({ map: m0, worked: WORKED_ALL, profil, turns: 6, pool0: 200, income: 0, pct: 20, placed0 });
+  ok(count(r0.log, 'irygacja') === 0 && r0.log.length === 0, `[${profil}] limit 20% (40 < 60), bez przychodu: 0 budow, pula nietknieta (${r0.log.length} szt., pula ${r0.pool})`);
   const m1 = makeMap({ river: RIVER });
-  const placed0 = new Map(RIVER.map(([q, r]) => [K(q, r), ['farma', 'bydlo']]));
-  const r1 = sim({ map: m1, worked: WORKED_ALL, profil, turns: 6, pool0: 200, income: 0, pct: 20, placed0 });
-  ok(count(r1.log, 'irygacja') >= 1, `[${profil}] limit 20% (40 < 60): irygacja powstaje poza limitem (${count(r1.log, 'irygacja')} szt.)`);
-  // starvation: male przychody, wiele tanich farm poza rzeka czeka; irygacja (60) ma pierwszenstwo
-  const FOR2 = [[14, 12], [11, 11], [13, 11], [11, 13], [12, 13]];
-  const m2 = makeMap({ river: RIVER });
-  const placed2 = new Map(RIVER.map(([q, r]) => [K(q, r), ['farma', 'bydlo']]));
-  const r2 = sim({ map: m2, worked: [...WORKED_ALL, ...FOR2], profil, turns: 30, pool0: 80, income: 12, pct: 100, placed0: placed2 });
-  const firstIrr = r2.log.findIndex(e => e.key === 'irygacja');
-  const farmBefore = r2.log.slice(0, firstIrr < 0 ? r2.log.length : firstIrr).filter(e => e.key === 'farma').length;
-  ok(firstIrr >= 0 && count(r2.log, 'irygacja') >= RIVER.length, `[${profil}] male przychody (12/ture): wszystkie ${RIVER.length} irygacje powstaja w 30 turach (${count(r2.log, 'irygacja')})`);
-  ok(farmBefore === 0, `[${profil}] tanie farmy poza rzeka NIE wyprzedzaja irygacji rzecznej (${farmBefore} przed pierwsza irygacja)`);
-}
-
-console.log('(h2) rezerwacja budzetu wewnatrz etapu E4: tanie tarasy nie zjadaja budzetu irygacji (60)');
-for (const profil of ['K1', 'K2']) {
-  const map = makeMap({ river: RIVER, hills: [[11, 13], [14, 12]] });
-  const placed0 = new Map(RIVER.map(([q, r]) => [K(q, r), ['farma', 'bydlo']]));
-  const { log } = sim({ map, worked: [...WORKED_ALL, [14, 12]], profil, turns: 70, pool0: 82, income: 8, placed0, civ: 'chinczycy' });
-  ok(count(log, 'tarasy') > 0, `[${profil}] (kontrola) tarasy w ogole powstaja dla Chinczykow (${count(log, 'tarasy')})`);
-  console.log('  [seq] ' + seqOf(log).split(' ').slice(0, 12).join(' '));
-  const firstIrr = log.findIndex(e => e.key === 'irygacja');
-  const tarasBefore = log.slice(0, firstIrr < 0 ? log.length : firstIrr).filter(e => e.key === 'tarasy').length;
-  ok(firstIrr >= 0 && count(log, 'irygacja') >= RIVER.length, `[${profil}] irygacje rzeczne powstaja mimo tanich tarasow (${count(log, 'irygacja')}/${RIVER.length})`);
-  ok(tarasBefore === 0, `[${profil}] tarasy nie wyprzedzaja irygacji rzecznej (${tarasBefore} przed pierwsza irygacja)`);
+  const r1 = sim({ map: m1, worked: WORKED_ALL, profil, turns: 12, pool0: 200, income: 60, pct: 20, placed0 });
+  const firstIrr = r1.log.findIndex(e => e.key === 'irygacja');
+  const tIrr = firstIrr < 0 ? -1 : r1.log[firstIrr].t;
+  const poolAtFirst = tIrr < 0 ? 0 : r1.turnSpend[tIrr].poolEntry;
+  ok(tIrr >= 2 && poolAtFirst * 20 >= 60 * 100, `[${profil}] pula kumuluje sie 200->...: irygacja startuje w t=${tIrr} przy puli ${poolAtFirst} (20% >= 60), nie wczesniej`);
+  ok(r1.turnSpend.slice(0, Math.max(0, tIrr)).every(x => x.spent === 0), `[${profil}] w turach przed startem irygacji wydatek == 0 (pula sie odklada, zadnych tanszych „zapchajdziur”)`);
+  ok(r1.turnSpend.every(x => x.spent * 100 <= 20 * x.poolEntry), `[${profil}] kazda tura: wydatek <= 20% skumulowanej puli (tolerancja 0)`);
 }
 
 console.log('(i) [K2] cykl: niedobor -> ulepszenie surowca NA PRZOD -> zaspokojenie -> powrot do zywnosci -> ponowny niedobor');
@@ -340,20 +368,20 @@ console.log('(k) profile gracza „surowce" (S) i „infrastruktura" (I) BEZ ZMI
   ok(count(i.log, 'tartak') === 0 && count(i.log, 'farma') === 0, `[I] profil „infrastruktura": tylko infrastruktura (tartak ${count(i.log, 'tartak')}, farma ${count(i.log, 'farma')})`);
 }
 
-console.log('(k2) [K2/K3] R5 (wlasciciel 2026-10-31): BRAK LIMITU tartakow przy niedoborze drewna — zamiast dawnego ceil(pop/10)');
+console.log('(k2) [K2/K3] R5 + D-R5-1: BRAK LIMITU tartakow przy niedoborze drewna (lasy na Wzgorzach — farma tam niemozliwa)');
 {
   const FOR = [[14, 12], [11, 11], [13, 11], [11, 13], [12, 13], [13, 12]];
   for (const profil of ['K2', 'K3']) {
     // niedobor TRWA: tartak na KAZDYM dostepnym lesie (6), nie ceil(pop/10)=2.
-    const { log } = sim({ map: makeMap({ forest: FOR }), worked: FOR, profil, turns: 30, deficitFn: () => ['drewno'] });
+    const { log } = sim({ map: makeMap({ forest: FOR, hills: FOR }), worked: FOR, profil, turns: 30, deficitFn: () => ['drewno'] });
     ok(count(log, 'tartak') === FOR.length, `[${profil}] R5 niedobor drewna trwa: tartaki ${count(log, 'tartak')} == ${FOR.length} (wszystkie lasy; bez ceil(pop/10)=${Math.ceil(CITY.population / 10)})`);
     ok(FOR.every(([q, r]) => idx(log, 'tartak', K(q, r)) >= 0), `[${profil}] R5 tartak na kazdym z ${FOR.length} lasow bez rzeki`);
     // niedobor ZASPOKOJONY (tylko t<2): po zaspokojeniu zadnych nowych tartakow, wraca zywnosc/wyrab.
-    const k = sim({ map: makeMap({ forest: FOR }), worked: FOR, profil, turns: 30, deficitFn: t => (t < 2 ? ['drewno'] : []) });
+    const k = sim({ map: makeMap({ forest: FOR, hills: FOR }), worked: FOR, profil, turns: 30, deficitFn: t => (t < 2 ? ['drewno'] : []) });
     ok(k.log.filter(e => e.key === 'tartak').every(e => e.t < 2) && count(k.log, 'tartak') === FOR.length,
       `[${profil}] R5 niedobor zaspokojony (t>=2): tartaki ${count(k.log, 'tartak')} powstaly tylko w oknie niedoboru`);
     // BEZ niedoboru: zero tartakow (ABC-B=B bez zmian).
-    const b = sim({ map: makeMap({ forest: FOR }), worked: FOR, profil, turns: 30 });
+    const b = sim({ map: makeMap({ forest: FOR, hills: FOR }), worked: FOR, profil, turns: 30 });
     ok(count(b.log, 'tartak') === 0, `[${profil}] R5 bez niedoboru: tartaki ${count(b.log, 'tartak')} == 0`);
   }
 }
@@ -362,7 +390,7 @@ console.log('(r5-river) [K2/K3] R5: tartak/obóz NIE na heksie rzeka+las (zareze
 {
   const FOR = [[14, 12], [11, 11], [13, 11]];
   for (const profil of ['K2', 'K3']) {
-    const map = makeMap({ river: RIVER, forest: [...RIVER, ...FOR] });
+    const map = makeMap({ river: RIVER, forest: [...RIVER, ...FOR], hills: FOR });
     const { log } = sim({ map, worked: [...WORKED_ALL, ...FOR], profil, turns: 40, deficitFn: () => ['drewno'] });
     const naRzece = log.filter(e => (e.key === 'tartak' || e.key === 'oboz_lowiecki') && RIVER.some(([q, r]) => K(q, r) === e.hk));
     ok(naRzece.length === 0, `[${profil}] R5 niedobor drewna: 0 tartakow/obozow na rzece+las (${naRzece.map(e => e.key + '@' + e.hk).join(',') || '-'})`);
@@ -390,11 +418,11 @@ console.log('(r5-wyrab) [K1/K2/K3] R5: wycinka TYLKO pod farmy (Laka/Rownina), n
   }
   // rzeka + las na Wzgorzach: ani wyrab, ani tartak (K2/K3), a nie blokuje wyrebu poza rzeka.
   for (const profil of ['K2', 'K3']) {
-    const map = makeMap({ river: RIVER, forest: [[12, 9], [14, 12]], hills: [[12, 9]] });
+    const map = makeMap({ river: RIVER, forest: [[12, 9], [14, 12]], hills: [[12, 9], [14, 12]] });
     const placed0 = new Map([[K(12, 10), ['farma', 'bydlo', 'irygacja']], [K(13, 10), ['farma', 'bydlo', 'irygacja']]]);
     const { log } = sim({ map, worked: [...WORKED_ALL, [14, 12]], profil, turns: 30, placed0, deficitFn: () => ['drewno'] });
     ok(idx(log, 'wyrab', '12,9') < 0 && idx(log, 'tartak', '12,9') < 0, `[${profil}] R5 rzeka+las na Wzgorzach: zero wyrebu i zero tartaku`);
-    ok(idx(log, 'tartak', '14,12') >= 0, `[${profil}] R5 niedobor drewna: tartak na lesie bez rzeki 14,12`);
+    ok(idx(log, 'tartak', '14,12') >= 0, `[${profil}] R5 niedobor drewna: tartak na lesie bez rzeki 14,12 (Wzgorza — farma niemozliwa)`);
   }
 }
 
@@ -402,7 +430,7 @@ console.log('(r5-drogi) [K2/K3] R5: drogi dopiero gdy NIE MA kandydata dla zywno
 {
   const FOR = [[14, 12], [11, 11], [13, 11], [11, 13], [12, 13], [13, 12]];
   for (const profil of ['K2', 'K3']) {
-    const { log } = sim({ map: makeMap({ forest: FOR }), worked: FOR, profil, turns: 30, deficitFn: () => ['drewno'] });
+    const { log } = sim({ map: makeMap({ forest: FOR, hills: FOR }), worked: FOR, profil, turns: 30, deficitFn: () => ['drewno'] });
     const roads = log.filter(e => e.key === 'droga' || e.key === 'droga_brukowana');
     const rest = log.filter(e => !(e.key === 'droga' || e.key === 'droga_brukowana'));
     const lastRest = Math.max(...rest.map(e => e.t));
@@ -430,11 +458,11 @@ console.log('(k3) [K2/K3] KOREKTA F: heks CENTRUM z lasem jest ZWYKLYM heksem �
   // centrum kwalifikuje sie na tych samych zasadach co kazdy inny heks z lasem (przywrocenie filtra -> pada).
   const wyniki = {};
   for (const profil of ['K2', 'K3']) {
-    const mapC = makeMap({ forest: [[CQ, CR]] });
+    const mapC = makeMap({ forest: [[CQ, CR]], hills: [[CQ, CR]] });
     const { log: logC } = sim({ map: mapC, worked: [[CQ, CR]], profil, turns: 6, deficitFn: () => ['drewno'] });
     const naCentrum = logC.filter(e => e.hk === K(CQ, CR)).map(e => e.key);
     // ten sam las na zwyklym heksie obrabianym (nie-centrum) — referencja
-    const mapR = makeMap({ forest: [[CQ + 2, CR]] });
+    const mapR = makeMap({ forest: [[CQ + 2, CR]], hills: [[CQ + 2, CR]] });
     const { log: logR } = sim({ map: mapR, worked: [[CQ + 2, CR]], profil, turns: 6, deficitFn: () => ['drewno'] });
     const naZwyklym = logR.filter(e => e.hk === K(CQ + 2, CR)).map(e => e.key);
     wyniki[profil] = naCentrum.join(',');
@@ -479,8 +507,9 @@ for (const profil of ['K2', 'K3']) {
   ok(count(bez.log, 'wyrab') > 0, `[${profil}] bez niedoboru wycinka nadal rusza (${count(bez.log, 'wyrab')} szt.)`);
   const inny = sim({ map: mk(), worked: FOR, profil, turns: 30, deficitFn: () => ['kamien'] });
   ok(count(inny.log, 'tartak') === 0, `[${profil}] niedobor INNEGO surowca (kamien) nie otwiera tartaku (${count(inny.log, 'tartak')})`);
-  const z = sim({ map: mk(), worked: FOR, profil, turns: 30, deficitFn: () => ['drewno'] });
-  ok(count(z.log, 'tartak') >= 1, `[${profil}] z niedoborem drewna tartak powstaje (${count(z.log, 'tartak')})`);
+  // D-R5-1: tartak tylko na lesie, gdzie farma niemozliwa (Wzgorza); las na rowninie zostaje wycince+farmie.
+  const z = sim({ map: makeMap({ forest: FOR, hills: FOR }), worked: FOR, profil, turns: 30, deficitFn: () => ['drewno'] });
+  ok(count(z.log, 'tartak') >= 1, `[${profil}] z niedoborem drewna tartak powstaje na lesie z Wzgorzami (${count(z.log, 'tartak')})`);
   // obóz: tylko na heksie z JUZ istniejacym tartakiem, bez budowy nowego tartaku
   const map2 = mk();
   const placed0 = new Map([['14,12', ['tartak']]]);
@@ -567,7 +596,7 @@ const keysOf = log => [...new Set(log.map(e => e.key))].sort();
 console.log('(q) [K2/K3] niedobor drewna, brak miejsc na zywnosc: lista = WYLACZNIE tartak (dopiero potem drogi)');
 for (const profil of ['K2', 'K3']) {
   const FOR = [[14, 12], [11, 11], [13, 11], [11, 13], [12, 13], [13, 12]];
-  const map = makeMap({ forest: FOR });
+  const map = makeMap({ forest: FOR, hills: FOR });
   const { log } = sim({ map, worked: FOR, profil, turns: 12, deficitFn: () => ['drewno'], techsByTurn: () => TECH_BEZ_ZYWNOSCI });
   // `wyrab` = etap E5 (wycinka pod farmy) — to ZYWNOSC, nie „otwarcie listy niedoborem”.
   const obce = log.filter(e => e.key !== 'tartak' && e.key !== 'wyrab' && !ROADS.has(e.key));
@@ -687,6 +716,147 @@ console.log('(u) parytet K2 <-> K3 z drogami i niedoborem: ta sama kolejnosc i z
     ok(seqOf(k2.log) === seqOf(k3.log), `[K2=K3] ${nazwa}: identyczna sekwencja (${k2.log.length} rozkazow)`);
     if (seqOf(k2.log) !== seqOf(k3.log)) { console.error('K2: ' + seqOf(k2.log)); console.error('K3: ' + seqOf(k3.log)); }
   }
+}
+
+// ===========================================================================
+// R-WEB-AUTOIMPROVE-STAGES2-Q1 — nowe kontrakty (decyzje wlasciciela 2026-10-31)
+// ===========================================================================
+console.log('(s1) BUDZET SZTYWNO — test globalny: procent 10/33/50/100 x pule x niedobor x K1/K2; suma kosztow WSZYSTKICH pickow w turze <= procent x pula (tolerancja 0)');
+{
+  const FORP = [[14, 12], [11, 13]];
+  const FORH = [[11, 11], [13, 11]];
+  let lacznie = 0, naruszen = 0, scen = 0;
+  const widziane = new Set();
+  for (const profil of ['K1', 'K2']) {
+    for (const [nazwaD, deficitFn] of [['bez niedoboru', () => []], ['niedobor drewna+gliny', () => ['drewno', 'glina']]]) {
+      for (const pct of [10, 33, 50, 100]) {
+        for (const pool0 of [100, 600, 5000]) {
+          const map = makeMap({ river: RIVER, forest: [...FORP, ...FORH], hills: [...FORH, [13, 12]] });
+          const r = sim({ map, worked: [...WORKED_ALL, ...FORP, ...FORH], profil, turns: 15, pool0, income: 40, pct, civ: 'chinczycy', deficitFn });
+          scen++;
+          for (const x of r.turnSpend) {
+            lacznie += x.spent;
+            if (x.spent * 100 > pct * x.poolEntry) {
+              naruszen++;
+              console.error(`    naruszenie: ${profil} ${nazwaD} pct=${pct} pula0=${pool0} t=${x.t}: wydano ${x.spent} > ${pct}% x ${x.poolEntry}`);
+            }
+          }
+          for (const e of r.log) widziane.add(e.key);
+        }
+      }
+    }
+  }
+  ok(naruszen === 0, `[K1/K2] ${scen} scenariuszy x 15 tur: 0 naruszen sufitu procentowego (wydano lacznie ${lacznie})`);
+  ok(lacznie > 0 && widziane.has('bydlo') && widziane.has('irygacja') && widziane.has('farma') && widziane.has('wyrab'),
+    `[K1/K2] test nie jest prozny: wydatek > 0 i powstaly farma/wyrab/bydlo(E3)/irygacja(E4) (${[...widziane].sort().join(',')})`);
+  // wprost kluczowy przypadek: irygacja 60 przy 10% puli 400 = 40 — NIE powstaje, nawet z E4 (dawny wyjatek Q2=B)
+  for (const profil of ['K1', 'K2']) {
+    const placed0 = new Map(RIVER.map(([q, r]) => [K(q, r), ['farma', 'bydlo']]));
+    const r = sim({ map: makeMap({ river: RIVER }), worked: WORKED_ALL, profil, turns: 1, pool0: 400, income: 0, pct: 10, placed0 });
+    ok(r.log.length === 0, `[${profil}] 10% x 400 = 40 < irygacja 60: 0 budow w turze (dawny wyjatek E4 usuniety), jest ${r.log.length}`);
+    const placedF = new Map(RIVER.map(([q, r2]) => [K(q, r2), ['farma']]));
+    const r3 = sim({ map: makeMap({ river: RIVER }), worked: WORKED_ALL, profil, turns: 1, pool0: 400, income: 0, pct: 5, placed0: placedF });
+    ok(r3.turnSpend[0].spent * 100 <= 5 * 400, `[${profil}] 5% x 400 = 20: wydatek ${r3.turnSpend[0].spent} <= 20 (trzoda E3 w limicie %)`);
+  }
+  // kilka miast, override jednego miasta WYZSZY niz polityka imperium nie przebija sufitu (Q3=B zostaje)
+  {
+    const cities = [0, 1].map(i => ({ id: `c${i}`, ownerId: 0, q: 6 + i * 12, r: 12, name: `M${i}`, population: 8, ulepszeniaFocus: 'zrownowazone' }));
+    const tn = cities.map(c => ({ q: c.q, r: c.r, ownerId: 0, cityId: c.id, pop: 8, level: 1 }));
+    const map = makeMap({ river: [[6, 9], [18, 9]] });
+    const placed = new Map();
+    const worked = new Set(['6,9', '18,9', '5,12', '7,12', '17,12', '19,12']);
+    let bad = 0;
+    for (let t = 0; t < 12; t++) {
+      const pool = 700 + t * 30;
+      const picks = pickAutoImprovements({
+        cities, ownerId: 0, map, territoryNodes: tn, placedImprovements: placed, pracaAvailable: pool, unlockedTechs: new Set(FULL),
+        pracaSurplusThreshold: 30, demandDriven: true, resourceDeficitKeys: [], getFocus: () => 'zrownowazone', getOnlyWorked: () => true,
+        getWorkedHexKeys: () => worked, pracaBudgetPercent: 20, getPracaBudgetPercent: c => (c.id === 'c0' ? 80 : 20),
+        civArchetype: 'grecy', playerEra: 3, foodImprovementStages: () => true,
+      });
+      const spent = picks.reduce((n, p) => n + p.kosztPraca, 0);
+      if (spent * 100 > 20 * pool) bad++;
+      for (const p of picks) placed.set(K(p.q, p.r), [...(placed.get(K(p.q, p.r)) ?? []), p.key]);
+    }
+    ok(bad === 0, '[K2] 2 miasta, override jednego 80% przy polityce 20%: suma <= 20% puli w kazdej z 12 tur');
+  }
+}
+
+console.log('(s2) AI cywilizacji i PANSTWA-MIASTA: budzet = 100% puli (brak limitu %, brak capu 50%/33%) — pula X => AI wydaje do X');
+{
+  const farmCost = getImprovementMeta('farma').kosztPraca;
+  const aiCmds = (defensiveCopy, pool, worked) => decideAITurn(0, [], [{ ...CITY, okolicaTryb: 'reczny', okolicaReczne: Object.fromEntries(worked.map(([q, r]) => [K(q, r), 1])) }], makeMap({ river: RIVER }),
+    { units: [], buildings: [], aiParams: {}, terrainYields: { terrain_types: [] } }, {
+      civType: 'grecy', poziomTrudnosci: 2, defensiveCopy, cityBuildings: {}, territoryNodes: TN,
+      placedImprovements: new Map(), improvementTechs: new Set(FULL), pracaAvailable: pool, civEra: 3, resourceDeficitKeys: [],
+      // BEZ improvementBudgetCap: sciezka awaryjna ai.ts (dawny fallback 50% = MAX_PROCENT_PULI_IMPERIUM) — teraz 100%
+    }).filter(c => c.type === 'buildImprovement');
+  for (const [nazwa, defensiveCopy] of [['AI cywilizacji', false], ['panstwo-miasto / kopia obronna', true]]) {
+    const pool = 3 * farmCost + (defensiveCopy ? 12 : 0); // > 30 (rezerwa wejscia kopii obronnej), 3 farmy = maks. etapu
+    const cmds = aiCmds(defensiveCopy, pool, WORKED_ALL);
+    const spent = cmds.reduce((n, c) => n + getImprovementMeta(c.key).kosztPraca, 0);
+    ok(spent === 3 * farmCost && spent * 100 > 50 * pool, `[${nazwa}] pula ${pool}: wydano ${spent} (3 farmy = ${3 * farmCost}) > 50% puli — brak capu %`);
+    const none = aiCmds(defensiveCopy, farmCost - 1, WORKED_ALL);
+    ok(none.length === 0, `[${nazwa}] pula ${farmCost - 1} < koszt farmy ${farmCost}: 0 budow`);
+  }
+  const mkPick = (pct, cap) => pickAutoImprovements({
+    cities: [{ ...CITY, ulepszeniaFocus: 'zrownowazone' }], ownerId: 0, map: makeMap({ river: RIVER }), territoryNodes: TN, placedImprovements: new Map(),
+    pracaAvailable: 2000, unlockedTechs: new Set(FULL), pracaSurplusThreshold: 0, demandDriven: true, resourceDeficitKeys: [],
+    getFocus: () => 'zrownowazone', getOnlyWorked: () => true, getWorkedHexKeys: () => new Set(WORKED_ALL.map(([q, r]) => K(q, r))),
+    pracaBudgetPercent: pct, ...(cap !== undefined ? { improvementBudgetCap: cap } : {}), civArchetype: 'grecy', playerEra: 3, foodImprovementStages: () => true,
+  }).reduce((n, p) => n + p.kosztPraca, 0);
+  ok(mkPick(100, 2000) >= mkPick(33), 'picker: 100% puli >= 33% puli (sanity)');
+  ok(mkPick(33) * 100 <= 33 * 2000, 'picker gracza 33%: wydatek <= 33% puli');
+}
+
+console.log('(s3) D-R5-1 [K2/K3]: FARMA ma pierwszenstwo na lesie pod farme; tartak (niedobor) tylko na lesie, gdzie farma niemozliwa i NIE na rzece');
+{
+  const FP = [[14, 12], [11, 13], [13, 13]];   // las na rowninie — nadaje sie pod farme po wycince
+  const FH = [[11, 11], [13, 11]];             // las na Wzgorzach — farma niemozliwa
+  for (const profil of ['K2', 'K3']) {
+    const map = makeMap({ forest: [...FP, ...FH], hills: FH });
+    const { log } = sim({ map, worked: [...WORKED_ALL, ...FP, ...FH], profil, turns: 40, deficitFn: () => ['drewno'] });
+    ok(FP.every(([q, r]) => idx(log, 'tartak', K(q, r)) < 0), `[${profil}] D-R5-1: ZERO tartakow na lesie pod farme (rownina)`);
+    ok(FP.every(([q, r]) => idx(log, 'wyrab', K(q, r)) >= 0 && idx(log, 'farma', K(q, r)) > idx(log, 'wyrab', K(q, r))), `[${profil}] D-R5-1: las pod farme -> wyrab -> farma`);
+    ok(FH.every(([q, r]) => idx(log, 'tartak', K(q, r)) >= 0), `[${profil}] D-R5-1: tartak na lesie bez mozliwosci farmy (Wzgorza) ${FH.length}/${FH.length}`);
+  }
+  // ZALOZENIE: gracz z wycinka WYLACZONA nie dojdzie do farmy na lesie => tartak go nie wyprzedza (inaczej niedobor nierozwiazywalny)
+  {
+    const map = makeMap({ forest: [...FP, ...FH], hills: FH });
+    const { log } = sim({ map, worked: [...WORKED_ALL, ...FP, ...FH], profil: 'K2', turns: 40, deficitFn: () => ['drewno'], wolnoWycinac: false });
+    ok(count(log, 'wyrab') === 0 && count(log, 'tartak') === FP.length + FH.length, `[K2] przycisk OFF: wyrab 0, tartak ${count(log, 'tartak')} == ${FP.length + FH.length} (zalozenie: farma niemozliwa bez wycinki)`);
+  }
+  // ZALOZENIE: las na rowninie POZA obrabianymi heksami (onlyWorked) nie jest „przejety” przez farme
+  {
+    const FPU = [[14, 12], [13, 13], [15, 12]]; // poza pierscieniem obrabianych heksow
+    const map = makeMap({ forest: FPU });
+    const { log } = sim({ map, worked: WORKED_ALL, profil: 'K3', turns: 20, deficitFn: () => ['drewno'] });
+    ok(count(log, 'tartak') === FPU.length, `[K3] las na rowninie poza heksami obywateli (farma tam nie dojdzie): tartak ${count(log, 'tartak')} == ${FPU.length}`);
+  }
+  // rzeka + las na Wzgorzach: zero tartaku (D-R5-2) mimo ze farma niemozliwa (D-R5-1)
+  for (const profil of ['K2', 'K3']) {
+    const map = makeMap({ river: RIVER, forest: RIVER, hills: RIVER });
+    const { log } = sim({ map, worked: WORKED_ALL, profil, turns: 20, deficitFn: () => ['drewno'] });
+    ok(count(log, 'tartak') === 0 && count(log, 'oboz_lowiecki') === 0, `[${profil}] rzeka+las na Wzgorzach + niedobor: zero tartaku/obozu (D-R5-2)`);
+  }
+}
+
+console.log('(s4) D-R5-2: tartak i oboz NIGDY na heksie rzeka+las we WSZYSTKICH profilach automatu (takze „surowce”); lasy poza rzeka bez zmian');
+{
+  const FOR = [[14, 12], [11, 11], [13, 13]];
+  const mk = () => makeMap({ river: RIVER, forest: [...RIVER, ...FOR] });
+  const worked = [...WORKED_ALL, ...FOR];
+  const s = sim({ map: mk(), worked, profil: 'S', turns: 20 });
+  const naRzece = s.log.filter(e => (e.key === 'tartak' || e.key === 'oboz_lowiecki') && RIVER.some(([q, r]) => K(q, r) === e.hk));
+  ok(naRzece.length === 0, `[S „surowce”] 0 tartakow/obozow na rzece+las (${naRzece.map(e => e.key + '@' + e.hk).join(',') || '-'})`);
+  ok(FOR.every(([q, r]) => idx(s.log, 'tartak', K(q, r)) >= 0), `[S „surowce”] tartaki poza rzeka bez zmian (${count(s.log, 'tartak')} szt.)`);
+  for (const profil of ['K1', 'K2', 'K3', 'I']) {
+    const r = sim({ map: mk(), worked, profil, turns: 25, deficitFn: () => ['drewno'] });
+    const bad = r.log.filter(e => (e.key === 'tartak' || e.key === 'oboz_lowiecki') && RIVER.some(([q, r2]) => K(q, r2) === e.hk));
+    ok(bad.length === 0, `[${profil}] 0 tartakow/obozow na rzece+las`);
+  }
+  const picker = fs.readFileSync(path.resolve(SRC, 'game/auto-improvements.ts'), 'utf8');
+  ok(!/demandActive\s*&&\s*\(key === 'tartak' \|\| key === 'oboz_lowiecki'\)\s*&&\s*riverHexKeys/.test(picker), 'auto-improvements.ts: zakaz tartak/oboz na rzece nie jest warunkowany `demandActive`');
 }
 
 console.log(`\nautoimprove-stages-q1-test: ${passed} passed, ${failed} failed`);

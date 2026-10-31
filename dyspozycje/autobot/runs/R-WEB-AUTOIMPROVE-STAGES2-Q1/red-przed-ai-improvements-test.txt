@@ -1,0 +1,4 @@
+  FAIL: Praca=25 (100% puli >= koszt farmy 20; brak capu 50%) -> 1 buildImprovement (got 0, want 1)
+  FAIL: praca=40 -> 2 farmy (100% puli; brak capu 50%) (got 1, want 2)
+AI-IMPROVEMENTS-TEST: 52 passed, 2 failed
+EXIT=1

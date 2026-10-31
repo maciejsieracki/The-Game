@@ -38,7 +38,7 @@ import {
   type DifficultyLevel,
 } from './city-state-difficulty';
 import type { City }       from './cities';
-import { canFoundCity, MAX_PROCENT_NAUKA, MAX_PROCENT_PULI_IMPERIUM, AI_FIXED_PROCENT_BUDYNKI, AI_FIXED_PROCENT_NAUKA }    from './cities';
+import { canFoundCity, MAX_PROCENT_NAUKA, AI_FIXED_PROCENT_BUDYNKI, AI_FIXED_PROCENT_NAUKA }    from './cities';
 import { evaluateFoundCityAffordance } from './city-founding';
 import {
   aiBypassClusterConsolidation,
@@ -2591,10 +2591,10 @@ function planCityImprovements(
   // ulepszen policzona z `pracaAutoPercent% x SKUMULOWANA pula` tego ownera
   // (main.ts, `aiImprovementBudgetByOwner`) — NIE z tegorocznego przyrostu puli i NIE
   // z drugiego podzialu tej samej Pracy. Fallback (test/AI bez silnika) to maksymalny
-  // dozwolony udzial puli, `MAX_PROCENT_PULI_IMPERIUM`.
+  // dozwolony udzial puli: 100% (R-WEB-AUTOIMPROVE-STAGES2-Q1, wlasciciel 2026-10-31: AI i panstwa-miasta bez limitu %; dawne 50% = MAX_PROCENT_PULI_IMPERIUM USUNIETE).
   const improvementBudget = Number.isFinite(opts.improvementBudgetCap)
     ? Math.max(0, opts.improvementBudgetCap as number)
-    : Math.floor(pracaAvailable * MAX_PROCENT_PULI_IMPERIUM / 100);
+    : Math.floor(Math.max(0, pracaAvailable)); // AI/państwa-miasta: 100% puli, BEZ limitu % (właściciel 2026-10-31)
   // R-AI-WYRAB-PRZY-RZECE-FARMY-Q1 (runda 4, ZASADA 2): heksy obrabiane przez obywateli
   // TEGO miasta, liczone raz na wywołanie i cache'owane po `city.id` (picker pyta o nie
   // raz na miasto, ale `planCityImprovements` bywa wołane dwiema ścieżkami —
@@ -2754,10 +2754,10 @@ export function planExpansionFortBuilding(
   // ulepszen policzona z `pracaAutoPercent% x SKUMULOWANA pula` tego ownera
   // (main.ts, `aiImprovementBudgetByOwner`) — NIE z tegorocznego przyrostu puli i NIE
   // z drugiego podzialu tej samej Pracy. Fallback (test/AI bez silnika) to maksymalny
-  // dozwolony udzial puli, `MAX_PROCENT_PULI_IMPERIUM`.
+  // dozwolony udzial puli: 100% (R-WEB-AUTOIMPROVE-STAGES2-Q1, wlasciciel 2026-10-31: AI i panstwa-miasta bez limitu %; dawne 50% = MAX_PROCENT_PULI_IMPERIUM USUNIETE).
   const improvementBudget = Number.isFinite(opts.improvementBudgetCap)
     ? Math.max(0, opts.improvementBudgetCap as number)
-    : Math.floor(pracaAvailable * MAX_PROCENT_PULI_IMPERIUM / 100);
+    : Math.floor(Math.max(0, pracaAvailable)); // AI/państwa-miasta: 100% puli, BEZ limitu % (właściciel 2026-10-31)
   const plannedCost = Number.isFinite(opts.plannedImprovementCost)
     ? Math.max(0, opts.plannedImprovementCost as number)
     : 0;

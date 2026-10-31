@@ -398,8 +398,12 @@ console.log('I. WYRAB: AI CYWILIZACJI faktycznie wycina las na heksie z rzeka (G
   // minimum lesne miasta: tartak i oboz nadal powstaja mimo wycinki
   const tartaki = slad.filter(e => e.key === 'tartak').length;
   const obozy = slad.filter(e => e.key === 'oboz_lowiecki').length;
-  ok(tartaki > 0 && obozy > 0,
-    `minimum lesne miasta dotrzymane mimo wycinki: tartak ${tartaki}, oboz ${obozy}`);
+  // R-WEB-AUTOIMPROVE-STAGES2-Q1 (D-R5-1, wlasciciel 2026-10-31): „minimum lesne” (tartak I oboz) to nieaktualne ECHO
+  // 2026-08-27. Las nadajacy sie pod farme (tu: caly teren to rownina z lasem) zostaje wycince+farmie; tartak
+  // powstaje tylko na lesie poza zasiegiem farmy (tu: heksy bez obywateli), a oboz (kategoria ZYWNOSCI, tylko
+  // heksy obrabiane) nie ma wtedy gdzie powstac. Wymagamy wiec tylko, ze tartak powstaje mimo wycinki.
+  ok(tartaki > 0,
+    `tartak powstaje mimo wycinki (D-R5-1; oboz nie jest wymagany): tartak ${tartaki}, oboz ${obozy}`);
   // heks z tartakiem/obozem nigdy nie idzie pod topor
   const zTartakiem = new Set(slad.filter(e => e.key === 'tartak' || e.key === 'oboz_lowiecki').map(e => e.hk));
   ok(!wyreby.some(e => zTartakiem.has(e.hk)),
