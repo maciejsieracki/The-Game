@@ -5,7 +5,8 @@
  * odwzorowane 1:1 z main.ts ~35713-35855 (tech/civ/pool/territory/prevLayers/wycinka) + tick wycinki
  * (main.ts ~34390 + finalizeHexClearing ~15173). Zero zmian w gra/src.
  *
- * Uzycie:  AUDIT_NM=<katalog z node_modules (esbuild+three)> node tools/audit-autoimprove-blockers.cjs [--json]
+ * Uzycie:  AUDIT_NM=<katalog z node_modules (esbuild+three)> [AUDIT_VERBOSE=1] node tools/audit-autoimprove-blockers.cjs [--json]
+ * AUDIT_VERBOSE=1 wypisuje pelny log tur kazdego scenariusza ("== <ID> log"); --json zapisuje results.json w katalogu tymczasowym.
  * (esbuild/three NIE sa instalowane w gra/ — scratch poza repo.)
  */
 const fs = require('fs');
