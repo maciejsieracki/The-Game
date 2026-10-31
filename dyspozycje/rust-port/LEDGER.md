@@ -449,3 +449,8 @@ Cel końcowy i bieżący zapisane w `GOAL-RUST-PORT-20261020.md` (§"CEL PĘTLI 
 - Bundle MD5 `d9408b27ad23b88d3c936138e166bc13`, 70,086,441 B; `verify-robocza-bundle` VERIFY OK; GitHub Raw (bundle/manifest/START) HTTP 200, MD5 i rozmiar zgodne. Wpis w `dyspozycje/WERSJE.md`.
 - Sprzątanie: worktree usunięte, katalog roboczy wyczyszczony. `/tmp/claude-0` (stare pozostałości po Operatorach, ok. 3 GB) wymaga zgody właściciela / reguły uprawnień.
 - Wstrzymane (postęp na GitHubie: `web-wip/*`, `rust-port-wip/*`): PROD50, CITIZEN-UPKEEP, SPICHLERZ, DEFEAT, E2E (rozejm AI→stół + zapis), M07B-Q2, 8I2, 8H2.
+
+## 2026-10-31 (wieczór) — stała zgoda właściciela na scalanie i deploy do ROBOCZEJ (tematy webowe)
+- **Zgoda (właściciel, czat):** „Jak coś skończysz, rób scalenie do main i deploy do roboczej”; „działaj w pętli tak długo, aż wszystko skończysz i naprawisz”. Zakres: tematy WEBOWE (`gra/`) po Final Control PASS/PASS-WITH-NOTES → merge do `origin/main`, build bundla do scratch, deploy `gra-robocza` (ROBOCZA), wpis w `dyspozycje/WERSJE.md` PO deployu, push do `main`, odczyt GitHub Raw, sprzątanie. NIE obejmuje KANON/FINALNA ani tematów Rust (wstrzymane), ani zmiany reguł gry bez decyzji właściciela.
+- **W toku (web):** R-WEB-AUTOIMPROVE-STAGES-Q1 r1 (Sonnet), R-WEB-BATTLE-STANDOFF-TWO-WARRIORS-Q1 r3 (Sonnet), R-WEB-DEFEAT-LAST-CITY-BARBARIANS-Q1 r3, R-WEB-TRUCE-E2E-SAVELOAD-MEASURE-Q1 r2, R-WEB-SPICHLERZ-HUD-PARAMS-Q1 r1.
+- **Gotowe, czeka na wdrożenie:** R-WEB-SPICHLERZ-DRAIN-KEYS-Q1 (FC `37148c80a`, `web-wip/SPICH-fc`); R-WEB-AUTOIMPROVE-BLOCKERS-AUDIT-Q1 (audyt, `web-wip/AUDIT-fc`, tylko dokumentacja + `gra/tools/audit-*.cjs`).
