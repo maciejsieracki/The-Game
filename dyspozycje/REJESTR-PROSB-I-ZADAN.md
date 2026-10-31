@@ -8327,3 +8327,9 @@ Przy okazji znaleziono i osobno zarejestrowano przedistniejący, niezwiązany
 crash `P-HOTSEAT-ETAP6E-ZEPSUTY-GALAZ-CRASH-Q1` (patrz wyżej).
 
 **CAŁY PLAN HOT-SEAT (Etapy 0-8, dane + UI) JEST TERAZ W PEŁNI ZAMKNIĘTY.**
+
+## R-WEB-DEFEAT-LAST-CITY-BARBARIANS-Q1 — gracz nie przegrywa po utracie jedynego miasta na rzecz barbarzyńców (2026-10-31)
+- **Zgłoszenie (właściciel, ze zrzutem ekranu):** po zdobyciu mojego jedynego miasta przez barbarzyńców gracz nie przegrywa, a powinien po prostu przegrać i gra powinna się skończyć.
+- **Status:** zarejestrowane, dispatch gotowy (`dyspozycje/autobot/runs/R-WEB-DEFEAT-LAST-CITY-BARBARIANS-Q1/00-dispatch.md`).
+- **Podejrzane miejsca (HIPOTEZY, NIE_ZMIERZONO):** `gra/src/game/victory.ts:222-226` (`isEliminated && osadnicy === 0 && kiedysMial`) — warunek wymaga braku osadników i `graczKiedysMialMiasto`; sprawdzenie tylko na końcu tury w `gra/src/main.ts` ~38770-38830 (`playerEverOwnedCityByOwner` ustawiany m.in. w ~14690, 15906, 32021, 40902).
+- **Pipeline:** Operator → Evaluator → Obrona → Final Control → integracja gałąź web → osobna zgoda na deploy.
