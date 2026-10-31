@@ -1437,6 +1437,11 @@ import {
   isPeaceTreatyLocked,
   startPeaceTreatyLock,
   filterAllianceObligationsRespectingPeaceLock,
+  truceUntilTurn as truceUntilTurnFor,
+  truceExpiryAction,
+  isTruceBreach,
+  normalizeTruceDuration,
+  TRUCE_DEFAULT_TURNS,
 } from './game/diplomacy-peace-lock';
 import {
   computeIncomingPlayerAcceptNetPw,
@@ -10607,6 +10612,7 @@ async function boot(): Promise<void> {
       proposerId: number,
       responderId: number,
       lockTurnsOverride?: number,
+      truceTurns?: number,
     ): void {
       const pairKey = diploPairKey(proposerId, responderId);
       const forcedWar = stoneForceWarActiveByPairKey.get(pairKey)
@@ -10624,15 +10630,29 @@ async function boot(): Promise<void> {
         responderId,
         applyDiploEventTracked(proposerId, responderId, cur, 'pokoj'),
       );
-      setDiploPairMeta(
-        proposerId,
-        responderId,
-        startPeaceTreatyLock(
-          getDiploPairMeta(proposerId, responderId),
-          turn,
-          lockTurnsOverride,
-        ),
-      );
+      if (truceTurns != null) {
+        // R-WEB-TRUCE-Q1 r3 (N1): rozejm NIE zakłada twardej blokady DOW (peaceUntilTurn) ani
+        // okna N3 — wypowiedzenie w oknie rozejmu jest złamaniem (kara + flaga, patrz
+        // chargeWarDeclarationCredibility), a wygaśnięcie wraca do wojny bez kary (tickTruceExpiries).
+        const until = truceUntilTurnFor(turn, truceTurns);
+        const metaT = getDiploPairMeta(proposerId, responderId);
+        setDiploPairMeta(proposerId, responderId, {
+          ...metaT,
+          peaceUntilTurn: undefined,
+          n3Window: undefined,
+          truceUntilTurn: until ?? undefined,
+        });
+      } else {
+        setDiploPairMeta(
+          proposerId,
+          responderId,
+          startPeaceTreatyLock(
+            getDiploPairMeta(proposerId, responderId),
+            turn,
+            lockTurnsOverride,
+          ),
+        );
+      }
       cancelSiegesBetweenPeaceOwners(proposerId, responderId);
       // R-EPOKA-KAMIEN-WYMUSZONA-WOJNA: pokój czyści osobny rejestr Kamienia
       // przed zachowaniem istniejącego cleanupu Brązu.
@@ -10733,6 +10753,31 @@ async function boot(): Promise<void> {
       }
     }
 
+    /**
+     * R-WEB-TRUCE-Q1 r3 (N1): wygaśnięcie rozejmu. Gdy `truceExpiryAction` = 'revert_to_war'
+     * i para nadal jest w 'pokoj', status wraca do wojny (zdarzenie stanu wojny — czysta
+     * zmiana statusu, bez kary Wiarygodności, bez zerwania traktatów, bez flagi agresora).
+     * Zawsze czyści `truceUntilTurn`. Wołane raz na turę, przed rozliczeniem płatności.
+     * Przywrócenie stanu wojny NIE jest nowym wypowiedzeniem (brak rejestracji / flagi).
+     */
+    function tickTruceExpiries(): void {
+      const ids = allWiarygodnoscOwnerIds();
+      for (let i = 0; i < ids.length; i++) {
+        for (let j = i + 1; j < ids.length; j++) {
+          const a = ids[i]!;
+          const b = ids[j]!;
+          const meta = diplomacyPairMeta.get(diploPairKey(a, b));
+          if (meta?.truceUntilTurn == null) continue;
+          if (truceExpiryAction(meta.truceUntilTurn, turn) !== 'revert_to_war') continue;
+          const cur = getDiploRelation(a, b);
+          if (cur.status === 'pokoj') {
+            setDiploRelation(a, b, applyDiploEventTracked(a, b, cur, 'wojna_wypowiedziana'));
+          }
+          setDiploPairMeta(a, b, { ...meta, truceUntilTurn: undefined });
+        }
+      }
+    }
+
     /** Wszyscy znani ownerzy (gracz + AI na mapie) — do pętli P4 co turę. Barbarzyńcy wykluczeni (§1 — nie mają Wiarygodności). */
     function allWiarygodnoscOwnerIds(): number[] {
       return [0, ...Array.from(aiOwnerCivMap.keys())];
@@ -10771,11 +10816,14 @@ async function boot(): Promise<void> {
       declarerId: number,
       targetId: number,
       opts?: { skipN2AllianceDefense?: boolean },
-    ): void {
-      if (isBarbarian(declarerId) || isBarbarian(targetId)) return;
+    ): boolean {
+      if (isBarbarian(declarerId) || isBarbarian(targetId)) return false;
       const retaliation = isCredibilityRetaliation(declarerId, targetId);
       const skipN2 = retaliation || opts?.skipN2AllianceDefense === true;
 
+      // R-WEB-TRUCE-Q1 r3 (N1): wypowiedzenie wojny w oknie aktywnego rozejmu = złamanie,
+      // karane jak złamanie paktu NAP (ta sama wartość N2). Zrywa rozejm (truceUntilTurn → undefined).
+      const truceBreach = isTruceBreach(getDiploPairMeta(declarerId, targetId).truceUntilTurn, turn);
       if (!skipN2) {
         const hasAlliance = activeDeals.some(
           d => dealInvolvesOwners(d, declarerId, targetId) && isAllianceDealKind(d.rodzaj),
@@ -10786,11 +10834,15 @@ async function boot(): Promise<void> {
         } else if (hasNap) {
           appendWiarygodnoscEvent(declarerId, 'zlamanie_paktu_nap', _diplomacyParams().wiarygodnoscN2ZlamaniePaktuNap);
         }
+        if (truceBreach) {
+          appendWiarygodnoscEvent(declarerId, 'zlamanie_paktu_nap', _diplomacyParams().wiarygodnoscN2ZlamaniePaktuNap);
+        }
       }
 
       const meta = getDiploPairMeta(declarerId, targetId);
       setDiploPairMeta(declarerId, targetId, {
         ...meta,
+        truceUntilTurn: undefined,
         wojnaOdTury: turn,
         n1Zastosowany: false,
         ...(retaliation ? {} : {
@@ -10804,6 +10856,7 @@ async function boot(): Promise<void> {
       // P4 (§3/§9.3) — KAŻDA wojna zeruje licznik "bez wojny" OBU stron, globalnie.
       wiarygodnoscOstatniaWojnaTuraByOwner.set(declarerId, turn);
       wiarygodnoscOstatniaWojnaTuraByOwner.set(targetId, turn);
+      return truceBreach;
     }
 
     /** Czy jednostka jest zwiadowcą — POLE DANYCH (units.json "Typ"==="Civilian"), NIE nazwa (C-WIAR-SKAUT=A, różne nazwy per nacja). */
@@ -11630,7 +11683,7 @@ async function boot(): Promise<void> {
         showHintMessage('Nie możesz teraz wypowiedzieć wojny: ' + civName, 4000);
         return false;
       }
-      chargeWarDeclarationCredibility(ME(), ownerId);
+      const truceBreachPlayer = chargeWarDeclarationCredibility(ME(), ownerId);
       breakTreatiesOnWar(ME(), ownerId, true);
       applyAllianceObligationsOnWar(ME(), ownerId);
       setDiploRelation(
@@ -11639,7 +11692,7 @@ async function boot(): Promise<void> {
         applyDiploEventTracked(ME(), ownerId, getDiploRelation(ME(), ownerId), 'wojna_wypowiedziana'),
       );
       // R-WEB-WAR-AGGRESSOR-FLAG-Q1: wypowiedzenie gracza — flaga tylko bez casus belli.
-      zarejestrujWypowiedzenie(ME(), turn, przyczynaWypowiedzenia({ casusBelliAktywny: maCasusBelliAktywne(ME(), ownerId, turn) }));
+      zarejestrujWypowiedzenie(ME(), turn, przyczynaWypowiedzenia({ zlamanieRozejmu: truceBreachPlayer, casusBelliAktywny: maCasusBelliAktywne(ME(), ownerId, turn) }));
       pruneTributeNegotiationsBetween(ME(), ownerId);
       recordWarDeclarationEvent(ME(), ownerId);
       pruneInvalidNegotiations();
@@ -11666,7 +11719,8 @@ async function boot(): Promise<void> {
       } else if (isPeaceLockedBetween(attackerId, defenderId)) {
         return;
       }
-      chargeWarDeclarationCredibility(attackerId, defenderId);
+      // R-WEB-TRUCE-Q1 r3 (N1): złamanie rozejmu — czytane PRZED chargeWarDeclarationCredibility (która go zrywa).
+      const truceBreachNow = chargeWarDeclarationCredibility(attackerId, defenderId);
       breakTreatiesOnWar(attackerId, defenderId, isMe(attackerId));
       applyAllianceObligationsOnWar(attackerId, defenderId);
       setDiploRelation(
@@ -11681,10 +11735,14 @@ async function boot(): Promise<void> {
       );
       // R-WEB-WAR-AGGRESSOR-FLAG-Q1: flaga agresora tylko dla przyczyny 'bez_powodu' (domyślnie
       // wyznaczanej z aktywnego casus belli napastnika wobec celu; wywołujący może podać przyczynę).
+      // R-WEB-TRUCE-Q1 r3: złamanie rozejmu = przyczyna 'bez_powodu' (flaga agresora).
       zarejestrujWypowiedzenie(
         attackerId,
         turn,
-        cause ?? przyczynaWypowiedzenia({ casusBelliAktywny: maCasusBelliAktywne(attackerId, defenderId, turn) }),
+        cause ?? przyczynaWypowiedzenia({
+          zlamanieRozejmu: truceBreachNow,
+          casusBelliAktywny: maCasusBelliAktywne(attackerId, defenderId, turn),
+        }),
       );
       if (isMe(defenderId) || isMe(attackerId)) {
         pruneTributeNegotiationsBetween(attackerId, defenderId);
@@ -21782,6 +21840,7 @@ async function boot(): Promise<void> {
       tickCyclicResourceTradeDeals();
       updateWiarygodnoscStreamsThisTurn();
       for (const oid of allWiarygodnoscOwnerIds()) tickWiarygodnoscBezWojnyMilestone(oid);
+      tickTruceExpiries();
       const treasury = buildDiploTreasury();
       const payDeals = activeDealsToPaymentDeals(activeDeals, turn);
       const { broken, messages } = tickDiplomacyPayments(payDeals, treasury, turn);
@@ -22186,6 +22245,11 @@ async function boot(): Promise<void> {
         } else if (cywAction === 'pokoj') {
           finalizePeaceTreatyBetween(proposerId, responderId);
           showHintMessage('\u{1F54A} Pokój zawarty', 4000);
+        } else if (cywAction === 'rozejm') {
+          // R-WEB-TRUCE-Q1 r3 (N1): długość z payloadu (5/10/15, domyślnie TRUCE_DEFAULT_TURNS).
+          const truceLen = normalizeTruceDuration(payload.turns ?? TRUCE_DEFAULT_TURNS) ?? TRUCE_DEFAULT_TURNS;
+          finalizePeaceTreatyBetween(proposerId, responderId, undefined, truceLen);
+          showHintMessage('\u{1F54A} Rozejm zawarty na ' + truceLen + ' tur', 4000);
         }
       } else if (cywAction === 'trybut_zadanie') {
         const cur = getDiploRelation(proposerId, responderId);
@@ -35873,7 +35937,7 @@ async function boot(): Promise<void> {
                 try {
                   // R-WEB-WAR-RULES-MULTIWAR-Q1 (R1/R2): klaster państw-miast też podlega bramce.
                   if (interCivWarBlockedForAi(csOwnerId, ME())) continue;
-                  chargeWarDeclarationCredibility(csOwnerId, ME());
+                  const truceBreachCluster = chargeWarDeclarationCredibility(csOwnerId, ME());
                   breakTreatiesOnWar(csOwnerId, ME(), false);
                   applyAllianceObligationsOnWar(csOwnerId, ME());
                   const newRel = applyDiploEventTracked(
@@ -35881,7 +35945,7 @@ async function boot(): Promise<void> {
                   );
                   setDiploRelation(csOwnerId, ME(), newRel);
                   // R-WEB-WAR-AGGRESSOR-FLAG-Q1: klaster państw-miast wypowiada wojnę bez powodu (lub z casus belli).
-                  zarejestrujWypowiedzenie(csOwnerId, turn, przyczynaWypowiedzenia({ casusBelliAktywny: maCasusBelliAktywne(csOwnerId, ME(), turn) }));
+                  zarejestrujWypowiedzenie(csOwnerId, turn, przyczynaWypowiedzenia({ zlamanieRozejmu: truceBreachCluster, casusBelliAktywny: maCasusBelliAktywne(csOwnerId, ME(), turn) }));
                   pruneTributeNegotiationsBetween(csOwnerId, ME());
                   recordWarDeclarationEvent(csOwnerId, ME());
                   console.log(
@@ -37232,7 +37296,7 @@ async function boot(): Promise<void> {
                       ) {
                         continue;
                       }
-                      chargeWarDeclarationCredibility(ownerId, targetId);
+                      const truceBreachAi = chargeWarDeclarationCredibility(ownerId, targetId);
                       breakTreatiesOnWar(ownerId, targetId, false);
                       applyAllianceObligationsOnWar(ownerId, targetId);
                       const newRel = applyDiploEventTracked(
@@ -37242,6 +37306,7 @@ async function boot(): Promise<void> {
                       // R-WEB-WAR-AGGRESSOR-FLAG-Q1: wojna wymuszona epoki NIE nadaje flagi agresora;
                       // zwykłe wypowiedzenie AI — flaga tylko bez aktywnego casus belli wobec celu.
                       zarejestrujWypowiedzenie(ownerId, turn, przyczynaWypowiedzenia({
+                        zlamanieRozejmu: truceBreachAi,
                         wymuszonaEpoka: forcedEraTagFromPowod(cmd.powod) !== null,
                         casusBelliAktywny: maCasusBelliAktywne(ownerId, targetId, turn),
                       }));

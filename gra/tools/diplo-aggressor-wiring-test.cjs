@@ -35,13 +35,17 @@ const decl = count(main, "'wojna_wypowiedziana'");
 const testDebugDecl = count(main, "setDiploRelation(a, b, applyDiploEventTracked(a, b, getDiploRelation(a, b), 'wojna_wypowiedziana'))")
   + count(main, "setDiploRelation(ME(), aiId, applyDiploEventTracked(ME(), aiId, getDiploRelation(ME(), aiId), 'wojna_wypowiedziana'))")
   + count(main, "setDiploRelation(attackerId, targetId, applyDiploEventTracked(attackerId, targetId, cur, 'wojna_wypowiedziana'))");
+// R-WEB-TRUCE-Q1 r3: wygaśnięcie rozejmu (tickTruceExpiries) przywraca wojnę przez to samo zdarzenie,
+// ale NIE jest wypowiedzeniem (bez kary, bez flagi agresora) — odejmowane z liczby produkcyjnych.
+const truceExpiryRevert = count(main, "applyDiploEventTracked(a, b, cur, 'wojna_wypowiedziana')");
 const reg = count(main, 'zarejestrujWypowiedzenie(');
-check('main: wszystkie produkcyjne wypowiedzenia maja rejestracje', reg === decl - testDebugDecl,
-  `wojna_wypowiedziana=${decl} (testowe=${testDebugDecl}), zarejestrujWypowiedzenie=${reg}`);
+check('main: wszystkie produkcyjne wypowiedzenia maja rejestracje', reg === decl - testDebugDecl - truceExpiryRevert,
+  `wojna_wypowiedziana=${decl} (testowe=${testDebugDecl}, wygasniecie rozejmu=${truceExpiryRevert}), zarejestrujWypowiedzenie=${reg}`);
 check('main: rejestracja gracza (bez powodu lub casus belli)',
-  main.includes('zarejestrujWypowiedzenie(ME(), turn, przyczynaWypowiedzenia({ casusBelliAktywny: maCasusBelliAktywne(ME(), ownerId, turn) }))'));
+  main.includes('zarejestrujWypowiedzenie(ME(), turn, przyczynaWypowiedzenia({ zlamanieRozejmu: truceBreachPlayer, casusBelliAktywny: maCasusBelliAktywne(ME(), ownerId, turn) }))'));
 check('main: ownerDeclareWarOn rejestruje (przyczyna jawna lub z casus belli)',
-  main.includes('cause ?? przyczynaWypowiedzenia({ casusBelliAktywny: maCasusBelliAktywne(attackerId, defenderId, turn) })'));
+  main.includes('cause ?? przyczynaWypowiedzenia({') && main.includes('zlamanieRozejmu: truceBreachNow')
+  && main.includes('casusBelliAktywny: maCasusBelliAktywne(attackerId, defenderId, turn)'));
 check('main: hamulec nie nadaje flagi', main.includes("zarejestrujWypowiedzenie(declarer, turn, 'hamulec');"));
 check('main: wymuszona inna (sojusz/rebelia) nie nadaje flagi',
   main.includes("zarejestrujWypowiedzenie(allyId, turn, 'wymuszona_inna');")

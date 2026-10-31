@@ -2597,8 +2597,9 @@ const NEGOTIATION_MONEY_STEP_PCT = 0.2;
 /** Maks. prób na kierunek (± do 80% od bieżącej kwoty) zanim uznajemy impas. */
 const NEGOTIATION_MONEY_MAX_STEPS = 4;
 
+// R-WEB-TRUCE-Q1 r3 (N3): rozejm ma ten sam słodzik kontrprzeciwny co pokój (ta sama bramka PW).
 const SWEETENER_COUNTER_ELIGIBLE: ReadonlySet<ProposalActionId> = new Set([
-  'nap', 'sojusz_defensywny', 'sojusz_pelny', 'granice', 'wasal', 'pokoj',
+  'nap', 'sojusz_defensywny', 'sojusz_pelny', 'granice', 'wasal', 'pokoj', 'rozejm',
 ]);
 
 function withExtraSweetenerGold(payload: ProposalPayload, extraGold: number): ProposalPayload {

@@ -220,10 +220,16 @@ async function main() {
       { rozejm: ok.rozejmLong.pwBalance, pokoj: ok.pokojLong.pwBalance });
 
     const mod = require(BUNDLE_OK);
-    const paid = { turns: 10, giveItems: [{ typ: 'zywnosc', id: 'zywnosc', ilosc: 400 }] };
+    // R-WEB-TRUCE-Q1 r3 (N2): P8 testuje WALUTĘ wojenną (złoto), nie żywność — żywność nie jest walutą
+    // i nie dowodzi wyjątku bramki walutowej. Rozejm ze złotem w wojnie musi przejść tak jak pokój.
+    const paid = { turns: 10, goldOnce: 400 };
     const ackRes = mod.evaluateProposal(propose(mod, 'rozejm', paid), ctxFor({ warState: WAR_LONG }));
-    check('P8: rozejm z 400 żywności w koszyku (baza 200, bez waluty wojennej) zostaje zaakceptowany',
-      ackRes.accepted === true, ackRes);
+    // Kontrola: pokój ma bazę 500 PW, więc dla porównania potrzebuje większej zapłaty (600 złota).
+    const pokojPaid = mod.evaluateProposal(propose(mod, 'pokoj', { turns: 10, goldOnce: 600 }), ctxFor({ warState: WAR_LONG }));
+    check('P8: rozejm ze złotem (400) w wojnie zostaje zaakceptowany (bramka walutowa jak dla pokoju)',
+      ackRes.accepted === true && !/pieniądze tylko w ugodzie/.test(ackRes.reason || ''), ackRes);
+    check('P8b: pokój ze złotem w wojnie — kontrola: ta sama ścieżka co rozejm',
+      pokojPaid.accepted === true, pokojPaid);
     const resolved = mod.resolvePlayerAcceptsAiPending
       ? mod.resolvePlayerAcceptsAiPending
       : null;

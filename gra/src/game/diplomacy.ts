@@ -1819,12 +1819,15 @@ export interface WarCauseInput {
   wymuszonaEpoka?: boolean;
   wymuszonaInna?: boolean;
   casusBelliAktywny?: boolean;
+  /** R-WEB-TRUCE-Q1 r3 (N1): wypowiedzenie w oknie aktywnego rozejmu = złamanie → bez_powodu (flaga agresora), nawet przy casus belli. */
+  zlamanieRozejmu?: boolean;
 }
 
 export function przyczynaWypowiedzenia(input: WarCauseInput): WarCause {
   if (input.hamulec) return 'hamulec';
   if (input.wymuszonaEpoka) return 'wymuszona_epoka';
   if (input.wymuszonaInna) return 'wymuszona_inna';
+  if (input.zlamanieRozejmu) return 'bez_powodu';
   if (input.casusBelliAktywny) return 'casus_belli';
   return 'bez_powodu';
 }
