@@ -257,11 +257,7 @@ fn edges_vectors_cover_branches_and_overlays() {
                     sanitize_changed += 1;
                 }
             }
-            "simplify" => {
-                if c["out"] != c["p"] {
-                    simp_changed += 1;
-                }
-            }
+            "simplify" if c["out"] != c["p"] => simp_changed += 1,
             _ => {}
         }
     }

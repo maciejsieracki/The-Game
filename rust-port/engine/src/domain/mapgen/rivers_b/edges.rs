@@ -98,8 +98,9 @@ pub fn walk_river_hex_perimeter(from_corner: i64, to_corner: i64, cw: bool) -> V
 /// krawedzia wejscia a wyjscia (ten sam łuk co render). Parzystosc heksa rozstrzyga remis
 /// (`hexParity % 2 === 0`); JS `%` = Rust `%` (znak dzielnej), wiec wartosci ujemne sa zgodne.
 pub fn river_corners_along_hex_edges(dir_in: i64, dir_out: i64, hex_parity: i64) -> Vec<i64> {
-    let a = ((dir_in % 6) + 6) % 6;
-    let b = ((dir_out % 6) + 6) % 6;
+    // Web `((dirIn % 6) + 6) % 6` = `rem_euclid(6)` dla kazdej wartosci calkowitej.
+    let a = dir_in.rem_euclid(6);
+    let b = dir_out.rem_euclid(6);
     if a == b {
         return Vec::new();
     }

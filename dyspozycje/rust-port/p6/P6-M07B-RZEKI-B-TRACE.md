@@ -170,3 +170,72 @@ Zauważone błędy poprzedniej rundy (korekta): w r1 dossier podawał M1 jako r�
 - `git diff --check`: sprawdzane przed commitem.
 - `Cargo.lock` w `rust-port/engine/` jest niesledzony i NIE jest częścią commita.
 - Target Cargo: `/dev/shm/m07b-r2-target` (usunięty po etapie).
+
+---
+
+## Sekcja Q2 — temat R-RUSTPORT-P6-M07B2-RZEKI-B-KRAWEDZIE-Q1 (runda 1/5, Operator)
+
+Pin `edb8fb56`, źródło `gra/src/map/gen-helpers.ts`. Baza: `origin/rust-port/parity-v2` (silnik 1927/0 przed tematem).
+Zakres dispatchu: wiersze 2, 3, 6, 11, 34–44 (15 symboli). Kod: `rust-port/engine/src/domain/mapgen/rivers_b/`.
+
+### Tabela statusu per symbol (Q2)
+
+Status: PORTOWANE-Q2 = kod Rust + wektory z weba + test zgodności (`tests/p6_m07b2_*`). Mutanty i weryfikator Python: **NIE WYKONANE w tej rundzie** (patrz „Luki").
+
+| # | Symbol | Linia web | Status Q2 | Rust (plik:symbol) | Wektory (`fn`) |
+|---|---|---|---|---|---|
+| 2 | CoastInlandGrowOpts (typ) | 6081 | PORTOWANE-Q2 (struct, bez wektorów: typ) | `rivers_b/coast_grow.rs` `CoastInlandGrowOpts` | przez `collect`/`grow` |
+| 3 | collectCoastInlandGrowCandidates | 6098 | PORTOWANE-Q2 | `rivers_b/coast_grow.rs` `collect_coast_inland_grow_candidates` | `collect` (3000) |
+| 6 | growRiverFromCoastInland | 6181 | PORTOWANE-Q2 | `rivers_b/coast_grow.rs` `grow_river_from_coast_inland` | `grow` (1500) |
+| 11 | findRiverMeanderStep | 6485 | PORTOWANE-Q2 | `rivers_b/meander.rs` `find_river_meander_step` | `meander` (2000) |
+| 34 | sanitizeRiverTurnWindow | 7094 | PORTOWANE-Q2 | `rivers_b/window.rs` `sanitize_river_turn_window` | `sanitize_window` (3000) |
+| 35 | canReceiveRiverYieldMark | 7122 | PORTOWANE-Q2 | `rivers_b/edges.rs` `can_receive_river_yield_mark` | `canreceive` (3000) |
+| 36 | markRiverEdge | 7127 | PORTOWANE-Q2 | `rivers_b/edges.rs` `mark_river_edge` | `mark_edge` (2500) |
+| 37 | markRiverEdgePair | 7137 | PORTOWANE-Q2 | `rivers_b/edges.rs` `mark_river_edge_pair` | `mark_pair` (2500) |
+| 38 | riverHexCornerStep | 7146 | PORTOWANE-Q2 | `rivers_b/edges.rs` `river_hex_corner_step` | `corner_step` (12, wyczerpująco) |
+| 39 | walkRiverHexPerimeter | 7150 | PORTOWANE-Q2 | `rivers_b/edges.rs` `walk_river_hex_perimeter` | `walk` (72, wyczerpująco) |
+| 40 | riverCornersAlongHexEdges | 7166 | PORTOWANE-Q2 | `rivers_b/edges.rs` `river_corners_along_hex_edges` | `corners` (1250, wyczerpująco, parzystość 0/1) |
+| 41 | riverEdgeBetweenCorners | 7195 | PORTOWANE-Q2 | `rivers_b/edges.rs` `river_edge_between_corners` | `edge_between` (36, wyczerpująco) |
+| 42 | riverTransitEdgeIndices | 7202 | PORTOWANE-Q2 | `rivers_b/edges.rs` `river_transit_edge_indices` | `transit_idx` (722, wyczerpująco) |
+| 43 | simplifyRiverRenderPath | 7214 | PORTOWANE-Q2 | `rivers_b/edges.rs` `simplify_river_render_path` | `simplify` (3000) |
+| 44 | markRiverTransitEdgesOnPath | 7232 | PORTOWANE-Q2 | `rivers_b/edges.rs` `mark_river_transit_edges_on_path` | `mark_transit` (3000) |
+
+Podsumowanie Q2: 15/15 symboli zakresu ma kod; wektory z weba: 19092 (edges) + 6500 (coast/grow/meander).
+
+### Pliki i rozmiary
+
+- `tests/p6_m07b2_vectors/gen_edges_vectors.mjs` → `web-rivers-b-edges.json` (2 215 786 B, format `p6-m07b2-edges-v1`, 19 092 przypadków).
+- `tests/p6_m07b2_vectors/gen_coast_grow_vectors.mjs` → `web-rivers-b-coast-grow.json` (2 346 962 B, format `p6-m07b2-coast-v1`, 6 500 przypadków: collect 3000 / grow 1500 / meander 2000).
+- Oba ≤ 6 MB (lekcja e). Generatory deterministyczne (mulberry32, ziarna `0x5eed2027`, `0x5eed2028`), wyciągają tekst z pinu po nazwie.
+- Testy: `tests/p6_m07b2_edges.rs` (3 testy), `tests/p6_m07b2_coast.rs` (2 testy).
+- Pokrycie gałęzi (asercje w testach): canReceive true/false; zmiany stanu rzeki dla mark_edge/mark_pair/mark_transit; sanityzacja zmienia ścieżkę; uproszczenie zmienia ścieżkę; collect niepusty ≥300; grow ≥3 heksy ≥200; grow z indeksem sepIndex ≥100; meander Some ≥300 i None ≥300.
+- Lekcja (a) nakładki: mapy generatorów zawierają `las`/`zloze_*` na heksach wodnych (morze, płytkie) i lądowych; asercja w teście `edges_vectors_cover_branches_and_overlays`.
+- Lekcja (b) cap: w zakresie Q2 nie ma capów pętli z parametrem N (pętle: `guard < 48`, `< 4000`, `< 7` — stałe sztywne, NIE dotyczy wektorów N-1/N/N+1; ZAŁOŻENIE: zachowanie guardów pokryte pośrednio losowymi ścieżkami 0..16 kroków, NIE zmierzono osobno).
+- Lekcja (h) komparatory: NaN nie występuje w wektorach; sortowanie kandydatów przez `cmp_candidates_desc` (współdzielone z M07A, stabilne jak `Array.prototype.sort`).
+
+### Zmiany w obszarze rivers_a (dozwolone allowlistą: tylko widoczność)
+
+- `rivers_a/grow.rs:290`: `fn cmp_candidates_desc` → `pub(crate) fn cmp_candidates_desc` (użycie w `coast_grow.rs`). Logika bez zmian.
+
+### ZAŁOŻENIA (luki rozstrzygnięte założeniem)
+
+1. Gałąź kwadratu centrum (`ContinentCenterSquare`, `landCenterSquare` != null) NIE jest generowana w wektorach Q2: pole `square` = null. Powód: konstruktor `ContinentCenterSquare` w Rust (`relief.rs:298`) nie ma publicznego konstruktora, a zmiana `relief.rs` jest poza allowlistą. Gałąź `scoreRiverStepTowardCenterSquare` pozostaje pokryta testami M07A (`rivers_a/walk.rs`, `score_river_step_toward_land_center`); przekazywanie `square` w Q2 jest kodem 1:1 (`Option` forward). Do zamknięcia w kolejnym temacie.
+2. `openOceanDist` w `growRiverFromCoastInland` nie jest używany przez web (argument przekazywany, nieczytany). Rust: parametr `_open_ocean_dist` (zachowana sygnatura).
+3. `serde_json` (bez feature `float_roundtrip`) potrafi dać 1 ulp błędu przy parsowaniu długich dziesiętnych z wektora (`221.33434182980562` → `221.3343418298056`). Zweryfikowano w node: wartość obliczona przez web-formułę = wartość Rust (`EQ`). Porównanie score w `coast_grow_vectors_match_web` z tolerancją 1e-12 (ZAŁOŻENIE: rozbieżność wyłącznie w parserze testu). Cargo.toml bez zmian (poza allowlistą).
+4. `ContinentCenterSquare.centroid` w Rust jest niepustym `(f64,f64)`; web: `landCenterSquare?.centroid` może być `null` -> przejście do `estimateLandCentroidFromMouth`. W wektorach square = null, więc gałąź nie jest testowana; zgodność przy square != null i centroid == null to ZAŁOŻENIE (w webie pole typu `{q,r}` zawsze ustawione przy konstrukcji, zob. gen-helpers.ts:1532-1536).
+
+### Luki (NIE WYKONANO w tej rundzie)
+
+- **Mutanty (lekcja d)**: NIE WYKONANO. Brak skryptu mutacji w repo i brak tabeli niezmutowanych konstrukcji plik:linia dla Q2. Przeniesione do Evaluatora/kolejnej rundy.
+- **Weryfikator Python od zera (lekcja c)**: NIE WYKONANO dla Q2.
+- **Długie pomiary**: nie wykonywano (zgodnie z rolą Operator-impl w dispatchu).
+
+### Bramki (worktree `wf_4f4325d0-462-1`, gałąź `r-rustport-m07b2-q2`)
+
+- `cargo fmt --check`: EXIT=0 (`runs/R-RUSTPORT-P6-M07B2-RZEKI-B-KRAWEDZIE-Q1/gate-fmt-r1.txt`).
+- `cargo clippy --lib --tests`: 0 ostrzeżeń, EXIT=0 (`gate-clippy-r1.txt`).
+- `cargo test --test p6_m07b2_edges --test p6_m07b2_coast --test p6_m07b_turn`: 2+3+2 OK, EXIT=0 (`gate-test-m07b2-r1.txt`).
+- `cargo test` (pełny silnik): 1932 passed, 0 failed, EXIT=0 (`gate-test-full-r1.txt`; baza 1927 + 5 nowych testów).
+- `git diff --check`: sprawdzane przed commitem.
+- `Cargo.lock` w `rust-port/engine/` jest niesledzony i NIE jest częścią commitów.
+- Target Cargo: `/dev/shm/m07b2-q2-target` (do usunięcia po etapie).
