@@ -1,0 +1,246 @@
+{
+  "pin": "91dc998a",
+  "source": "gra/src/game/relief-preserving-improvements.ts",
+  "keyCases": [
+    {
+      "key": "bydlo",
+      "expected": true
+    },
+    {
+      "key": "owce",
+      "expected": true
+    },
+    {
+      "key": "lama",
+      "expected": true
+    },
+    {
+      "key": "kamieniolom",
+      "expected": true
+    },
+    {
+      "key": "tartak",
+      "expected": true
+    },
+    {
+      "key": "farma",
+      "expected": false
+    },
+    {
+      "key": "wyrab",
+      "expected": false
+    },
+    {
+      "key": "droga",
+      "expected": false
+    },
+    {
+      "key": "glinianka",
+      "expected": false
+    },
+    {
+      "key": "fort",
+      "expected": false
+    },
+    {
+      "key": "kopalnia",
+      "expected": true
+    },
+    {
+      "key": "kopalnia_",
+      "expected": true
+    },
+    {
+      "key": "kopalnia_miedzi",
+      "expected": true
+    },
+    {
+      "key": "kopalnia_zelaza",
+      "expected": true
+    },
+    {
+      "key": "kopalnia_cyny",
+      "expected": true
+    },
+    {
+      "key": "kopalnia_zlota",
+      "expected": true
+    },
+    {
+      "key": "kopalnia_wegla",
+      "expected": true
+    },
+    {
+      "key": "niekopalnia",
+      "expected": false
+    },
+    {
+      "key": "kopalniany",
+      "expected": false
+    },
+    {
+      "key": "Kopalnia_miedzi",
+      "expected": false
+    },
+    {
+      "key": "KOPALNIA",
+      "expected": false
+    },
+    {
+      "key": "kopalnia-miedzi",
+      "expected": false
+    },
+    {
+      "key": "kopalnia miedzi",
+      "expected": false
+    },
+    {
+      "key": " bydlo",
+      "expected": false
+    },
+    {
+      "key": "bydlo ",
+      "expected": false
+    },
+    {
+      "key": "Bydlo",
+      "expected": false
+    },
+    {
+      "key": "owca",
+      "expected": false
+    },
+    {
+      "key": "",
+      "expected": false
+    },
+    {
+      "key": "kamieniolo",
+      "expected": false
+    },
+    {
+      "key": "tartaki",
+      "expected": false
+    },
+    {
+      "key": "stadnina",
+      "expected": false
+    },
+    {
+      "key": "oboz_lowiecki",
+      "expected": false
+    },
+    {
+      "key": "kopalnia_żółta",
+      "expected": true
+    },
+    {
+      "key": "kopalnia_miedzi",
+      "expected": true
+    }
+  ],
+  "layerCases": [
+    {
+      "layers": [],
+      "expected": false
+    },
+    {
+      "layers": [
+        "bydlo"
+      ],
+      "expected": true
+    },
+    {
+      "layers": [
+        "owce"
+      ],
+      "expected": true
+    },
+    {
+      "layers": [
+        "lama",
+        "kamieniolom"
+      ],
+      "expected": true
+    },
+    {
+      "layers": [
+        "tartak"
+      ],
+      "expected": true
+    },
+    {
+      "layers": [
+        "farma"
+      ],
+      "expected": false
+    },
+    {
+      "layers": [
+        "farma",
+        "bydlo"
+      ],
+      "expected": false
+    },
+    {
+      "layers": [
+        "kopalnia_miedzi",
+        "kopalnia_cyny"
+      ],
+      "expected": true
+    },
+    {
+      "layers": [
+        "kopalnia",
+        "tartak"
+      ],
+      "expected": true
+    },
+    {
+      "layers": [
+        "kopalnia_zlota",
+        "farma"
+      ],
+      "expected": false
+    },
+    {
+      "layers": [
+        "bydlo",
+        "bydlo"
+      ],
+      "expected": true
+    },
+    {
+      "layers": [
+        "kopalnia"
+      ],
+      "expected": true
+    },
+    {
+      "layers": [
+        "kopalnia_",
+        "lama"
+      ],
+      "expected": true
+    },
+    {
+      "layers": [
+        "niekopalnia"
+      ],
+      "expected": false
+    },
+    {
+      "layers": [
+        ""
+      ],
+      "expected": false
+    },
+    {
+      "layers": [
+        "wyrab",
+        "droga"
+      ],
+      "expected": false
+    }
+  ]
+}
