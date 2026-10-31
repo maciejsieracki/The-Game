@@ -1,0 +1,6 @@
+### AI CYWILIZACJI — decideAITurn, SCENARIUSZ A: BEZ NIEDOBORU przez cale 40 tur
+  BEZ OBYWATELI wg (centrum|inny):klucz: {"CENTRUM:farma":8,"CENTRUM:irygacja":4,"CENTRUM:lodzie_rybackie":3,"CENTRUM:wyrab":3,"CENTRUM:bydlo":1}
+### AI CYWILIZACJI — decideAITurn, SCENARIUSZ B: NIEDOBOR DREWNA przez cale 40 tur
+  BEZ OBYWATELI wg (centrum|inny):klucz: {"INNY:tartak":10,"CENTRUM:farma":7,"CENTRUM:irygacja":3,"INNY:oboz_lowiecki":6,"CENTRUM:lodzie_rybackie":3,"CENTRUM:tartak":1,"CENTRUM:oboz_lowiecki":1,"CENTRUM:wyrab":2}
+### AI CYWILIZACJI — decideAITurn, SCENARIUSZ C: NIEDOBOR DREWNA tylko w turach 10-19
+  BEZ OBYWATELI wg (centrum|inny):klucz: {"CENTRUM:farma":8,"CENTRUM:irygacja":4,"CENTRUM:lodzie_rybackie":3,"INNY:tartak":14,"INNY:oboz_lowiecki":6,"CENTRUM:wyrab":3,"CENTRUM:bydlo":1}

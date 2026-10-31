@@ -350,12 +350,25 @@ for (const profil of ['K2', 'K3']) {
   ok(count(log, 'oboz_lowiecki') <= lesneMin, `[${profil}] obozy ${count(log, 'oboz_lowiecki')} <= ${lesneMin}`);
 }
 
-console.log('(k3) POMIAR (informacyjny, zarzut FC R1 nr 7): tartak na heksie CENTRUM MIASTA z lasem — czy picker go stawia?');
-for (const profil of ['K2', 'K3']) {
-  const map = makeMap({ forest: [[CQ, CR]] });
-  const { log } = sim({ map, worked: [[CQ, CR]], profil, turns: 6, deficitFn: () => ['drewno'] });
-  const naCentrum = log.filter(e => e.hk === K(CQ, CR)).map(e => e.key);
-  console.log(`  [POMIAR] [${profil}] heks centrum miasta z lasem + niedobor drewna: rozkazy na centrum = [${naCentrum.join(',')}] (NIE asercja; pytanie ABC-F do wlasciciela)`);
+console.log('(k3) [K2/K3] KOREKTA F: heks CENTRUM z lasem jest ZWYKLYM heksem — brak filtra centrum (zarzut Evaluatora R4 nr 4: asercja zamiast pomiaru)');
+{
+  // Produkcyjnie centrum nie ma lasu (R-WEB-CITY-CLEARS-FOREST-Q1), wiec fikstura ai2-heks-po-heksie ustawia
+  // `nakladka='brak'`; ten przypadek pilnuje, ze PICKER nie ma specjalnego filtra centrum: gdyby las byl,
+  // centrum kwalifikuje sie na tych samych zasadach co kazdy inny heks z lasem (przywrocenie filtra -> pada).
+  const wyniki = {};
+  for (const profil of ['K2', 'K3']) {
+    const mapC = makeMap({ forest: [[CQ, CR]] });
+    const { log: logC } = sim({ map: mapC, worked: [[CQ, CR]], profil, turns: 6, deficitFn: () => ['drewno'] });
+    const naCentrum = logC.filter(e => e.hk === K(CQ, CR)).map(e => e.key);
+    // ten sam las na zwyklym heksie obrabianym (nie-centrum) — referencja
+    const mapR = makeMap({ forest: [[CQ + 2, CR]] });
+    const { log: logR } = sim({ map: mapR, worked: [[CQ + 2, CR]], profil, turns: 6, deficitFn: () => ['drewno'] });
+    const naZwyklym = logR.filter(e => e.hk === K(CQ + 2, CR)).map(e => e.key);
+    wyniki[profil] = naCentrum.join(',');
+    ok(naCentrum.includes('tartak'), `[${profil}] centrum z lasem + niedobor drewna: tartak sie kwalifikuje (${naCentrum.join(',') || 'brak'})`);
+    ok(naCentrum.join(',') === naZwyklym.join(','), `[${profil}] centrum == zwykly heks z lasem (${naCentrum.join(',')} vs ${naZwyklym.join(',')})`);
+  }
+  ok(wyniki.K2 === wyniki.K3, `parytet K2<->K3 na centrum z lasem (${wyniki.K2} vs ${wyniki.K3})`);
 }
 
 console.log('(l) [K2/K3] niedobor surowca bez ulepszenia terenu (zloto) NIE zmienia kolejnosci');
