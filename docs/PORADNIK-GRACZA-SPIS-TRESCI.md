@@ -335,8 +335,8 @@ Panel miasta · Warstwa kultury na mapie · Kreator nowej gry · Zapis gry · Sk
 
 **9.1.** Zasięg miasta (10 heksów) · posterunek (3) · fort (5)
 - **Miasto** — rośczenie do ok. **10 heksów** wokół centrum (model v1)
-- **Posterunek (Strażnica)** — mniejszy zasięg, ok. **5 heksów**
-- **Fort** — większy zasięg, ok. **10 heksów** jak miasto
+- **Posterunek (Strażnica)** — teren zabezpieczony w promieniu **3 heksów**
+- **Fort** — teren zabezpieczony w promieniu **5 heksów** (jak miasto: obca cywilizacja nie może tam budować)
 - Tylko **twój** terytorium — budowa i plony z twoich pól
 
 **9.2.** Zakładanie kolejnego miasta (Strażnica LUB zasięg istniejącego miasta)
@@ -2248,7 +2248,7 @@ Panel miasta · Warstwa kultury na mapie · Kreator nowej gry · Zapis gry · Sk
 
 **80.3.** Terytorium a posterunki i forty
 - Twój posterunek — **twoje** terytorium (promień 3 heksów)
-- Fort — 10 heksów (Część II §9)
+- Fort — 5 heksów (Część II §9)
 - Wrogie terytorium — tylko w wojnie lub z przemarszem
 - Zakończenie tury na cudzym hexie — liczy się kara
 

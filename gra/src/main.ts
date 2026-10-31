@@ -25344,6 +25344,27 @@ async function boot(): Promise<void> {
         syncUnitsRender();
       },
       sweepCaptures: (): number => sweepFortCaptures(),
+      // Obrona R3: REALNY ruch gracza o 1 heks (startAnimatedMove -> petla renderu -> koniec animacji -> sweepFortCaptures).
+      moveStep: (id: string, q: number, r: number): boolean => {
+        const u = units.find(x => x.id === id);
+        if (!u || isAnimating) return false;
+        u.ruchLeft = Math.max(u.ruchLeft ?? 0, 2);
+        startAnimatedMove(u, [{ q, r }], q, r, 1);
+        return true;
+      },
+      isAnimating: (): boolean => isAnimating,
+      landNeighbor: (cq: number, cr: number): { q: number; r: number } | null => {
+        for (const h of hexNeighborCoords(cq, cr)) {
+          const hx = map.hexes[keyOf(h.q, h.r)];
+          if (hx && !isWaterTerrain(hx.terenBazowy) && hx.terenBazowy !== TerenBazowy.Gory
+            && !units.some(x => x.q === h.q && x.r === h.r)) return { q: h.q, r: h.r };
+        }
+        return null;
+      },
+      unitPos: (id: string): { q: number; r: number } | null => {
+        const u = units.find(x => x.id === id);
+        return u ? { q: u.q, r: u.r } : null;
+      },
       hexesWithin: (q: number, r: number, rad: number): Array<{ q: number; r: number }> =>
         hexKeysWithinRadius(q, r, rad, map).map(k => {
           const [a, b] = k.split(',');
@@ -38842,6 +38863,10 @@ async function boot(): Promise<void> {
         // transition can paint or the player regains control, including errors
         // and resumed AI phases after a battle.
         flushAiCityRenderBatch();
+        // R3 Q-A=A (obrona zarzut 4): wejscie wojska AI-cywilizacji na heks fortu = zdobycie od razu po
+        // fazie AI (bezwarunkowo; sweep przy barbarzyncach jest w bloku warunkowym, a koniec tury
+        // sprawdzalby dopiero w nastepnej turze).
+        try { sweepFortCaptures(); } catch (eFortSweepAi) { console.error('[Fort] Blad sweepu po fazie AI:', eFortSweepAi); }
 
         // ===================================================================
         // BARBARIANS TICK: spawn camps + move barbarian units

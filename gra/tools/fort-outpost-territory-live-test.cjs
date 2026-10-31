@@ -155,6 +155,38 @@ async function main() {
         const SHOT2 = SHOT ? SHOT.replace(/\.png$/, '-captured.png') : null;
         if (SHOT2) { await page.screenshot({ path: SHOT2 }); console.log('zrzut: ' + SHOT2); }
       }
+
+      // Q-A przez PRAWDZIWY ruch (obrona zarzut 4): jednostka gracza robi krok startAnimatedMove -> petla renderu ->
+      // koniec animacji -> sweepFortCaptures w main.ts. Bez wolania hooka sweepCaptures.
+      {
+        let C = null, N = null;
+        for (let skip = 0; skip < 400 && !C; skip++) {
+          const c = await T('landHexAtDistance', st.myCity.q, st.myCity.r, 20, skip, true);
+          if (!c) break;
+          if (dist(c, A) < 14 || dist(c, B) < 14 || dist(c, fortHex) < 14 || (postHex && dist(c, postHex) < 14)) continue;
+          await T('placeFort', 'fort', c.q, c.r, foreign);
+          if ((await T('fortOwner', c.q, c.r)) === foreign) C = c;
+        }
+        ok('Q-A ruch: znaleziono heks pod fort C (obcy)', !!C, C);
+        if (C) {
+          N = await T('landNeighbor', C.q, C.r);
+          ok('Q-A ruch: sasiedni heks lad N', !!N, N);
+        }
+        if (C && N) {
+          await T('setWar', me, foreign);
+          const uid2 = await T('placeUnitAt', me, N.q, N.r, false);
+          ok('Q-A ruch: jednostka gracza stoi obok fortu C (nie na nim)', !!uid2 && (await T('fortOwner', C.q, C.r)) === foreign, uid2);
+          const moved = await T('moveStep', uid2, C.q, C.r);
+          ok('Q-A ruch: startAnimatedMove uruchomiony', moved === true, moved);
+          for (let i = 0; i < 100 && (await T('isAnimating')); i++) await wait(100);
+          const pos = await T('unitPos', uid2);
+          ok('Q-A ruch: animacja zakonczona, jednostka stoi na forcie C', pos && pos.q === C.q && pos.r === C.r, pos);
+          ok('Q-A ruch: fort C zdobyty przez koniec ruchu (bez hooka sweepCaptures)', (await T('fortOwner', C.q, C.r)) === me, await T('fortOwner', C.q, C.r));
+          const ringC = await T('hexesWithin', C.q, C.r, 5);
+          ok('Q-A ruch: terytorium C przeszlo na gracza', (await Promise.all(ringC.map(h => T('ownerAt', h.q, h.r)))).filter(o => o === foreign).length === 0);
+          await T('removeUnit', uid2);
+        }
+      }
     }
     ok('F: zero console.error/pageerror', errors.length === 0, errors.slice(0, 3));
   } finally {

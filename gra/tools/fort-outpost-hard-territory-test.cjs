@@ -249,6 +249,7 @@ console.log('\n--- I: straznik main.ts R3 ---');
   assert(/backfillFortOrder\(fortNodes\)/.test(main), 'I2: wczytanie zapisu robi backfill kolejnosci');
   const calls = (main.match(/sweepFortCaptures\(\)/g) || []).length;
   assert(calls >= 6, `I3: sweepFortCaptures wolany w ruchu/bitwie/koncu tury (${calls} wywolan)`);
+  assert(/flushAiCityRenderBatch\(\);\s*\/\/[^\n]*\n(\s*\/\/[^\n]*\n)*\s*try \{ sweepFortCaptures\(\); \}/.test(main), 'I5: sweep bezposrednio po fazie AI cywilizacji (nie tylko w bloku barbarzyncow)');
   assert(/function sweepFortCaptures/.test(main) && /applyFortCaptureByOccupation\(/.test(main), 'I4: sweep uzywa applyFortCaptureByOccupation');
 }
 
