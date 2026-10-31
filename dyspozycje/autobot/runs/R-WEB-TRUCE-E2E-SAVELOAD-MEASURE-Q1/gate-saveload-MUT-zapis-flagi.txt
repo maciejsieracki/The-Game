@@ -1,0 +1,3 @@
+[saveload] strona 1 — zapis (1.7s)
+[saveload] WYJĄTEK: page.goto: Page crashed
+EXIT=1

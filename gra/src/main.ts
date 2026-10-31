@@ -18083,6 +18083,13 @@ async function boot(): Promise<void> {
       // zakresem tego zlecenia do wyjaśnienia). Ta runda naprawia to STRUKTURALNIE: skoro AI
       // teraz zawsze dopisuje `receiveItems` (gdy bilans niekorzystny — patrz niżej), payload
       // przestaje być pusty i przechodzi przez ten guard normalnie, jak każda inna oferta.
+      // R-WEB-TRUCE-E2E-SAVELOAD-MEASURE-Q1 (część A, pomiar → naprawa): gdy bilans AI jest w
+      // tolerancji (neededPn<=0), goły rozejm (payload {turns}) nie ma żadnej pozycji koszyka, więc
+      // guardy („brak giveItems/receiveItems/goldOnce") odrzucały go po cichu — rozejm AI nie trafiał
+      // na stół (pomiar: AI decyduje „proponujemy rozejm", wpis stołu = 0). Goły rozejm jest poprawną
+      // propozycją (ta sama ścieżka co akceptacja gracza), więc przepuszczamy go przez oba guardy
+      // wyłącznie gdy neededPn<=0 i brak pozycji; oferty z pozycjami i pokój zachowują dotychczasową ścieżkę.
+      let peaceBareAllowed = false;
       if (workingCmd.type === 'zaproponuj_pokoj') {
         const relForPeace = getDiploRelation(ownerId, ME());
         const difficultyForPeace = effectiveGameDifficultyForOwner(ownerId);
@@ -18102,9 +18109,18 @@ async function boot(): Promise<void> {
             converted.payload = { ...converted.payload, receiveItems: requestItems };
           }
         }
+        // Zakres: WYŁĄCZNIE rozejm (pokój zostaje bit w bit — ten sam ubytek zmierzony w kontroli
+        // pokoju, decyzja o pokoju poza tym tematem; patrz raport R-WEB-TRUCE-E2E-SAVELOAD-MEASURE-Q1).
+        peaceBareAllowed = workingCmd.rodzaj === 'rozejm'
+          && neededPn <= 0
+          && !converted.payload.giveItems?.length
+          && !converted.payload.receiveItems?.length
+          && (converted.payload.goldOnce == null || converted.payload.goldOnce <= 0);
       }
 
-      const clampedPayload = clampAiProposalPayloadToRealResources(ownerId, converted.payload);
+      const clampedPayload = peaceBareAllowed
+        ? converted.payload
+        : clampAiProposalPayloadToRealResources(ownerId, converted.payload);
       if (!clampedPayload) return;
       const relForBalance = getDiploRelation(ownerId, ME());
       const difficultyForBalance = effectiveGameDifficultyForOwner(ownerId);
@@ -18136,7 +18152,8 @@ async function boot(): Promise<void> {
         pnBalanceOpts,
       );
       if (
-        !balancedPayload.giveItems?.length
+        !peaceBareAllowed
+        && !balancedPayload.giveItems?.length
         && !balancedPayload.receiveItems?.length
         && (balancedPayload.goldOnce == null || balancedPayload.goldOnce <= 0)
       ) {
@@ -26026,6 +26043,53 @@ async function boot(): Promise<void> {
       closeAudience: (): void => { hideDiplomacyAudience(); },
       /** SETUP testu: mapa playtest kończy grę zwycięstwem w pierwszym EOT; hak wyłącza tylko ten warunek. */
       suppressVictoryForTest: (): void => { truceTestSuppressVictory = true; },
+    };
+
+    // R-WEB-TRUCE-E2E-SAVELOAD-MEASURE-Q1 (część B): hak WYŁĄCZNIE do
+    // tools/diplo-truce-saveload-live-test.cjs. Zapis i odczyt idą REALNĄ ścieżką gry:
+    // `quickSave` = persistSaveToSlot (buildSaveGameSnapshot + saveToLocal, IndexedDB), `loadSlot` =
+    // loadGameFromSlot (ta sama funkcja co „Wczytaj grę"). Metody `setXForTest` to SETUP: ustawiają
+    // ten sam stan, który silnik trzyma w pamięci (ustawStanAgresorow / ustawStanCasusBelli /
+    // eraWarCountByCivKey), i nie są częścią testowanego zapisu. Domyślnie nieaktywne (wołane tylko z testu).
+    (window as any).__truceSaveLoadTestDebug = {
+      turn: (): number => turn,
+      setAggressorFlagForTest: (ownerId: number, untilTurn: number): void => {
+        ustawStanAgresorow({ ...pobierzStanAgresorow(), [String(ownerId)]: untilTurn });
+      },
+      setCasusBelliForTest: (requester: number, target: number, untilTurn: number): void => {
+        ustawStanCasusBelli({ ...pobierzStanCasusBelli(), [`${requester}>${target}`]: untilTurn });
+      },
+      setEraWarCountForTest: (ownerId: number, epoch: number, count: number): void => {
+        eraWarCountByCivKey.set(`${ownerId}:${epoch}`, count);
+      },
+      /** Pełny stan dyplomacji istotny dla rozejmu, flagi agresora, casus belli i licznika epoki. */
+      dumpDiploState: (): Record<string, unknown> => ({
+        turn,
+        pairMeta: Array.from(diplomacyPairMeta.entries()).map(([k, m]) => [k, JSON.parse(JSON.stringify(m))]),
+        aggressor: { ...pobierzStanAgresorow() },
+        casusBelli: { ...pobierzStanCasusBelli() },
+        eraWarCounts: Array.from(eraWarCountByCivKey.entries()),
+        negotiationLen: negotiationTable.length,
+        credibility: Array.from(wiarygodnoscZdarzeniaByOwner.entries()).map(([k, v]) => [k, JSON.parse(JSON.stringify(v))]),
+      }),
+      /** REALNY zapis do slotu (ta sama funkcja co „Zapisz grę"). */
+      quickSave: async (slot: string): Promise<boolean> => (await persistSaveToSlot(slot, 'truce-saveload-test')).ok,
+      /** REALNY odczyt slotu (ta sama funkcja co „Wczytaj grę"). */
+      loadSlot: async (slot: string): Promise<void> => { await loadGameFromSlot(slot, false); },
+      /** Kopia slotu w formacie SPRZED pól rozejmu/flagi/licznika (brak kluczy), do testu starego zapisu. */
+      writeLegacySlot: async (srcSlot: string, dstSlot: string): Promise<boolean> => {
+        const s: any = await loadFromLocal(srcSlot);
+        if (!s) return false;
+        const meta: any = { ...s.meta };
+        delete meta.aggressorFlagUntilByOwner;
+        delete meta.casusBelliUntilByPair;
+        delete meta.warRulesEraWarCountByCiv;
+        meta.diplomacyPairMeta = (meta.diplomacyPairMeta ?? []).map(([k, m]: [string, any]) => {
+          const { truceUntilTurn: _t, ...rest } = m;
+          return [k, rest];
+        });
+        return (await saveToLocal(dstSlot, { ...s, meta })).ok;
+      },
     };
 
     // R-MIASTA-PANSTWA-STARTOWE-JEDNOSTKI-Q1 (Operator obrona runda 1, Evaluator zarzut 1):
