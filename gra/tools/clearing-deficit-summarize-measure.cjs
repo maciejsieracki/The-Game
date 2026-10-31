@@ -36,6 +36,14 @@ for (const f of process.argv.slice(2)) {
   const noDefStock = rows.filter((r) => r.stockDeficit.length === 0).map((r) => r.turn);
   // surowce "stale" (w deficycie w >=95% tur) i "bywa" (5..95%)
   const always = Object.entries(keyFreq).filter(([, v]) => v >= 0.95 * n).map(([k]) => k);
+  // rozdzielenie 15 wycenionych surowcow od flagi `zywnosc` (flaga NIE jest jednym z 15 kluczy magazynu)
+  const alwaysRes = always.filter((k) => k !== 'zywnosc');
+  const alwaysFood = always.includes('zywnosc');
+  // klucze niedoboru wynikajace TYLKO z kolejki (poza magazynem <pakiet i != zywnosc): ktore i ile tur
+  const queueOnlyKeys = {};
+  for (const r of rows) for (const k of queueOnly(r)) queueOnlyKeys[k] = (queueOnlyKeys[k] || 0) + 1;
+  const queueOnlyTurns = rows.filter((r) => queueOnly(r).length > 0).map((r) => r.turn);
+  const maxCities = Math.max(...rows.map((r) => r.cities));
   const some = Object.entries(keyFreq).filter(([, v]) => v < 0.95 * n).map(([k, v]) => k + ':' + v + '/' + n);
   const stockKeysAbove = {};
   for (const r of rows) for (const k of r.pricedKeys) if (r.stock[k] >= r.pakiet) stockKeysAbove[k] = (stockKeysAbove[k] || 0) + 1;
@@ -51,6 +59,9 @@ for (const f of process.argv.slice(2)) {
     sredniaLiczbaKluczyMagazyn: +(rows.reduce((s, r) => s + r.stockDeficit.length, 0) / n).toFixed(2),
     tury_bez_niedoboru: noDef, tury_bez_niedoboru_magazynowego: noDefStock,
     kluczeStale95: always, kluczeBywa: some,
+    kluczeStale95Surowce: alwaysRes, kluczeStale95SurowceLiczba: alwaysRes.length + '/15', flagaZywnoscStala95: alwaysFood,
+    kolejkaPozaMagazynem_turyLista: queueOnlyTurns, kolejkaPozaMagazynem_kluczeLiczbaTur: queueOnlyKeys,
+    maxMiast: maxCities, turyZ2PlusMiast: cnt((r) => r.cities >= 2) + '/' + n,
     surowceZapasGePakiet_liczbaTur: stockKeysAbove,
     wgLiczbyMiast: byCities,
     turyZNiepustaKolejkaBudowyLubRekrutacji: cnt((r) => (r.queuedB && r.queuedB.length) || (r.queuedU && r.queuedU.length)) + '/' + n,
