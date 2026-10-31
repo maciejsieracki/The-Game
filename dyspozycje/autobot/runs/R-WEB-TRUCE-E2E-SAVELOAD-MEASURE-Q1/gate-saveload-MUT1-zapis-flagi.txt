@@ -1,0 +1,23 @@
+[saveload] stan po starcie strony: {"citiesLen":2,"unitsLen":4,"turn":1}
+[saveload:save] świat gotowy (95.7s)
+[saveload:save] akceptacja rozejmu: {"accepted":true,"reason":"Rozejm zawarty"}
+[saveload:save] przed zapisem: tura 2, para {"status":"pokoj","truceUntilTurn":6,"peaceUntilTurn":null,"turn":2}
+  OK  save: zapis do slotu i kopia legacy zapisane, rozejm aktywny
+  OK  save: zero pageerror
+[saveload:save] wynik: 2 pass / 0 fail (118.5s)
+[saveload] FAZA save: exit=0 czas=118.8s (<=limit)
+[saveload] stan po starcie strony: {"citiesLen":2,"unitsLen":4,"turn":1}
+[saveload:load] NOWA sesja przeglądarki, świat gotowy (95.8s)
+[saveload:load] po wczytaniu: tura 2, para {"status":"pokoj","truceUntilTurn":6,"peaceUntilTurn":null,"turn":2}
+  OK  wczytanie: tura zgodna z zapisem
+  OK  wczytanie: status pary i truceUntilTurn zgodne (rozejm trwa)
+  FAIL wczytanie: flaga agresora (aggressorFlagUntilByOwner) zgodna — Expected values to be strictly equal:
+  OK  wczytanie: casus belli (casusBelliUntilByPair) zgodne
+  OK  wczytanie: licznik wojen epoki (per owner, epoka) zgodny
+  OK  wczytanie: meta pary (diplomacyPairMeta) zgodna, bez duplikatów kluczy
+  OK  wczytanie: zdarzenia Wiarygodności zgodne (brak utraty/duplikacji)
+  OK  load: zero pageerror
+[saveload:load] wynik: 7 pass / 1 fail (122.8s)
+[saveload] FAZA load: exit=1 czas=123.0s (<=limit)
+[saveload] FAIL (fazy: save,load)
+EXIT=1

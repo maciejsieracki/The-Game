@@ -1,0 +1,11 @@
+[saveload] stan po starcie strony: {"citiesLen":2,"unitsLen":4,"turn":1}
+[saveload:expire] NOWA sesja przeglądarki, świat gotowy (85.7s)
+  OK  po wczytaniu: w turze U-1 (5) rozejm nadal aktywny
+  OK  po wczytaniu: w turze U (6) rozejm wygasa do wojny
+  OK  po wygaśnięciu: BEZ kary (brak nowego zlamanie_paktu_nap u gracza)
+  OK  po wygaśnięciu: BEZ nowej flagi agresora (brak nowych kluczy i wzrostu wartości)
+[saveload:expire] scenariusz po wygenerowaniu swiata: 32.5s (strażnik 60s)
+  OK  expire: scenariusz po swiecie <= 60s
+  OK  expire: zero pageerror
+[saveload:expire] wynik: 6 pass / 0 fail (118.2s)
+EXIT=0

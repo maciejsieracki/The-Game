@@ -1,0 +1,14 @@
+[ai-table] świat gotowy po 79.5s (tryb rozejm); start przeglądarki 0.6s
+[ai-table] setup: moc {"player":2847,"ai":1275} tury wojny {"turnsAtWar":5,"lostCities":0} rw AI 0.309315866084425
+[ai-table] tura 2: wpisy stołu 1 [{"actionId":"rozejm","proposerOwnerId":1,"responderOwnerId":0,"rodzaj":null,"turns":10}]
+[ai-table] tury 1 -> 2 | stan pary {"status":"wojna","truceUntilTurn":null,"peaceUntilTurn":null,"turn":2}
+[ai-table] decyzje AI (console): [Dyplomacja] AI1 zaproponuj_pokoj: slabszy w wojnie (respektWzgledny=0.31 <= prog=0.48000000000000004; sygnaly=a; tury wojny=6): proponujemy rozejm
+[ai-table] wpisy AI na stole (unikalne): [{"actionId":"rozejm","proposerOwnerId":1,"responderOwnerId":0,"rodzaj":null,"turns":10,"tura":2}]
+[ai-table] zrzut po akceptacji: dyspozycje/autobot/runs/R-WEB-TRUCE-E2E-SAVELOAD-MEASURE-Q1/evidence/przed/ai-table-rozejm-po-akceptacji.png
+[ai-table] DOM karty: {"kartaLicznik":1,"kartaWidoczna":true,"bitwaEscape":4,"bitwaPozostala":true,"otwarto":true,"tekstRozejm":false,"przyciskPrzyjmij":1,"przyciskStan":[{"act":"remove","disabled":false,"title":null,"text":"Usuń"},{"act":"remove","disabled":false,"title":null,"text":"Usuń"},{"act":"accept-package","disabled":true,"title":"Bilans PW ujemny (-130) — nie można przyjąć na minusie","text":"Przyjmij"},{"act":"reject-package","disabled":false,"title":null,"text":"Odrzuć"}],"kolumnyTekst":["Rzymianie Kamillus Władca · Żelazo W +20 · Uczciwy ATRYBUTY Moc militarna 2802 Potencjał sojuszniczy Niski REPUTACJA Wiarygodność +20 · Uczciwy REJESTR WIARYGODNOŚCI Wartość startowa (trudność) +20 Su","Usuń","Usuń","Grecy Perykles Przedstawiciel · Brąz W +20 · Uczciwy WROGI ATRYBUTY Moc militarna 1515 Potencjał sojuszniczy Niski RELACJE Z TOBĄ Zaufanie 0 / 100 -0.5 / turę Respekt 29 / 100 Relacja 65 / 200 -0.5 / "],"akceptacja":{"para":{"status":"wojna","truceUntilTurn":null,"peaceUntilTurn":null,"turn":2},"przyjmijZablokowany":true,"wpisyPoAkceptacji":1},"akceptOk":false} | zrzuty: dyspozycje/autobot/runs/R-WEB-TRUCE-E2E-SAVELOAD-MEASURE-Q1/evidence/przed/ai-table-rozejm-karta-stol.png dyspozycje/autobot/runs/R-WEB-TRUCE-E2E-SAVELOAD-MEASURE-Q1/evidence/przed/ai-table-rozejm-karta-otwarta.png
+[ai-table] stołWpisów(ostatnia tura)=1
+[ai-table] FAIL (rozejm) — AI wstawiło rozejm na stół (tura 2); karta otwarta+zaakceptowana klikiem: false
+[ai-table] błędy strony: brak
+[ai-table] czas całkowity: 121.5s (limit kryterium 120 s: PRZEKROCZONY )
+[ai-table] scenariusz po wygenerowaniu swiata: 42.0s (strażnik 60s: OK)
+EXIT=1

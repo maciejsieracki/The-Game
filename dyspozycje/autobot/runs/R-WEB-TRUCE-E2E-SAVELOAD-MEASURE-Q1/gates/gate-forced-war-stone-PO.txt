@@ -1,0 +1,9 @@
+--- kontrakt Q1/Q3, R-WOJNA-WYMUSZONA-REGULY-Q1 Część A/C ---
+--- trigger po turn 25 i guardy ownera (R-WOJNA-WYMUSZONA-REGULY-Q1 Część A) ---
+--- R-WEB-PEACE-RULES-R8R9-Q1 R9: brak automatycznego końca wojny Kamienia (czas / 2 miasta) ---
+--- target guard: najbliższy i wykluczenia ---
+--- R9: 2 miasta, odpoczynek i cooldown (brak auto-końca po miastach) ---
+--- decideAIDiplomacy: finalny target guard ---
+--- save/load i mutacje stanu ---
+PASSED: 31 / FAILED: 0 / TOTAL: 31
+EXIT=0
