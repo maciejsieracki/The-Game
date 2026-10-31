@@ -25704,6 +25704,33 @@ async function boot(): Promise<void> {
     // `resetCityOwnerForTest` NIE jest zdarzeniem przejęcia (nie woła żadnego funnela wojny)
     // — steruje WYŁĄCZNIE tym, kto ma miasto PRZED kolejną, REALNĄ próbą przejęcia, dokładnie
     // jak `stageRebelCity` wyżej.
+    // R-WEB-DEFEAT-LAST-CITY-BARBARIANS-Q1 — hak testowy WYŁĄCZNIE dla Playwright
+    // (tools/defeat-last-city-barbarians-live-test.cjs). Steruje tylko stanem wejściowym:
+    // dokłada gracza osadnika na wolny, lądowy heks obok miasta gracza. Zdobycie miasta,
+    // EOT, checkVictory i ekran przegranej idą realnymi ścieżkami gry.
+    (window as any).__defeatLastCityTestDebug = {
+      getPlayerCityIds: (): string[] => cities.filter(c => c.ownerId === 0).map(c => c.id),
+      getOwnerOfCity: (cityId: string): number | null => {
+        const c = cities.find(x => x.id === cityId);
+        return c ? c.ownerId : null;
+      },
+      countPlayerSettlers: (): number => units.filter(u => u.ownerId === 0 && u.category === 'osadnik').length,
+      addSettlerForPlayer: (): boolean => {
+        const home = cities.find(c => c.ownerId === 0);
+        const tpl = units.find(u => u.ownerId === 0 && !isCivilianUnit(u));
+        if (!home || !tpl) return false;
+        const occupied = new Set(units.map(u => keyOf(u.q, u.r)));
+        for (const nb of hexNeighborCoords(home.q, home.r)) {
+          const hex = map.hexes[keyOf(nb.q, nb.r)];
+          if (!hex || occupied.has(keyOf(nb.q, nb.r)) || isWaterTerrain(hex.terenBazowy)) continue;
+          units.push({ ...tpl, id: tpl.id + '_defeatTestSettler', ownerId: 0, category: 'osadnik', q: nb.q, r: nb.r, ruchLeft: 0 } as typeof tpl);
+          return true;
+        }
+        return false;
+      },
+      isGameOver: (): boolean => gameOver,
+    };
+
     (window as any).__aiWojnyZwykleCapTestDebug = {
       declareRegularWarBetween: (a: number, b: number): void => {
         setDiploRelation(a, b, applyDiploEventTracked(a, b, getDiploRelation(a, b), 'wojna_wypowiedziana'));
@@ -38778,7 +38805,6 @@ async function boot(): Promise<void> {
             }
 
             // Check player.
-            const settlersCount = units.filter(u => u.ownerId === 0 && u.category === 'osadnik').length;
             refreshObjectivePowerCache();
             const potegiWszystkich: number[] = [];
             for (const oid of allOwners) {
@@ -38789,7 +38815,8 @@ async function boot(): Promise<void> {
               players: vPlayers,
               cities,
               gracz: 0,
-              liczbaOsadnikow: settlersCount,
+              // R-WEB-DEFEAT-LAST-CITY-BARBARIANS-Q1: `liczbaOsadnikow` NIE jest już przekazywane —
+              // osadnicy nie ratują gracza po utracie ostatniego miasta (patrz victory.ts §2).
               // R-HOTSEAT-DRUGI-FOTEL-NIE-DOSTAJE-TURY-Q1: migracja Set<owner> -- ten system
               // zwycięstwa jest już dziś scoped na `gracz: 0`/`potegaGracza: ...(0)` (linie
               // sąsiednie), więc czytamy per-owner wpis DOKŁADNIE dla fotela 1 -- zero zmiany
