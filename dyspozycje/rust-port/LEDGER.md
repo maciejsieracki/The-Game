@@ -369,3 +369,5 @@ Cel końcowy i bieżący zapisane w `GOAL-RUST-PORT-20261020.md` (§"CEL PĘTLI 
 - Scalone na `origin/main` `7164f7ca1` → gałąź `web/integration-20261030` (`88e1a3f74`). tsc 0; war-era-counter 82/0; ring 15/0; multiwar 57/0; commander-star 12/0.
 - Push do `main`: NIE WYKONANO (wymaga zgody właściciela). Uwaga kontrastu: chinczycy #c41e3a vs barbarzyńcy #c84040 (1,19:1), Asyria #5c4033.
 - Kolejne tematy web (PEACE-RULES r2, CITY-CESSION, AGGRESSOR-FLAG, TRUCE) startują na tej bazie po PEACE-RULES r3.
+
+- 2026-10-31 00:12 UTC — kontrola cykliczna: PEACE-RULES r3, M07A r2, 8E r1 wciąż biegną; brak PASS do integracji; dysk wolny ok. 5,8 GB.
