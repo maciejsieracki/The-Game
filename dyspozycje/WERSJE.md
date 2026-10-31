@@ -1,3 +1,12 @@
+## ROBOCZA 3feaf884 -- 2026-10-31 -- auto-ulepszenia: niedobór tylko brakującego surowca, drogi na końcu, centrum miasta; twarde terytorium posterunku i fortu (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`d8b2766b4` + dwa tematy) i commit wdrożenia bundla; stała zgoda właściciela 2026-10-31.
+- Bundle MD5 `3feaf8843cf610a4ce811924a85ffa29`, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, outDir poza repo, stempel ROBOCZA; `verify-robocza-bundle.cjs` VERIFY OK.
+- Zakres: (1) `R-WEB-AUTOIMPROVE-STAGES-Q1` runda 4 — niedobór surowca otwiera tylko ulepszenia brakującego surowca (bez dróg/fortów/posterunków z „reszty listy”); drogi dopiero po wyczerpaniu żywności i zaspokojeniu surowców; centrum miasta zwykłym heksem (farma, trzoda, irygacja); sól→warzelnia, koń→stadnina; (2) `R-WEB-OUTPOST-FORT-TERRITORY-Q1` runda 2 — posterunek (promień 3) i fort (promień 5) tworzą twarde terytorium właściciela jak miasto: obcy nie buduje tam ulepszeń ani miast; limit miast nie dotyka terytorium fortu; fort nie odbiera heksów w promieniu miasta; opisy i poradnik na 3/5.
+- Testy po scaleniu: tsc PASS; autoimprove-stages-q1 184/0, auto-improvements 46/0, ai-improvements 53/0, ai2-heks-po-heksie 37/0, hodowla-las 113/0, ai4-popyt-obywatele 55/0, fort-outpost-hard-territory 46/0, fort-nodes-save-load 18/0, fort-strazniaca-zasieg-zakladania 85/0, territory-border 9/0 i 15/0, improvement-territory-gate 6/0, city-clears-forest 18/0, spichlerz-hud-params-parity 66/0, defeat-last-city 14/0, diplomacy 148, war-era-counter 82, ring 15. Chromium (FC): fort 15/0, auto-ulepszenia K2 na żywej grze (farma, bydło, irygacja na centrum; kamieniołom/tartak/warzelnia przy niedoborach; 0 dróg i fortów).
+- Ograniczenia: zdobycie fortu przez wejście wojska i spór „wcześniejszy fort” NIE są jeszcze zaimplementowane (decyzje właściciela, runda 3 w toku); wieloturowa wycinka gracza na żywo NIE_ZMIERZONO (pomiar w toku); drogi startują po osiągnięciu limitu tartaków przy stałym niedoborze (otwarte ABC); znane czerwone w bazie: civ-matrix-ai-diplomacy-wiring 42/1, ai-test 291/4.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `bdd458723cd82b928a89fe09fe638a42`, 70,098,090 bajtów.
+
 ## ROBOCZA bdd45872 -- 2026-10-31 -- auto-ulepszenia wg decyzji właściciela A–F; miasto bez lasu także po wczytaniu zapisu (testowa)
 
 - **STATUS: DEPLOYED** — merge do `origin/main` (`ac952c567` + dwa tematy) i commit wdrożenia bundla; stała zgoda właściciela 2026-10-31.
