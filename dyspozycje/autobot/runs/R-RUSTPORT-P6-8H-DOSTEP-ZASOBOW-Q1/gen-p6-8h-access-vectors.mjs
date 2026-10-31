@@ -67,6 +67,9 @@ const PLACED = {
   pastwisko: [['0,0', 'pastwisko'], ['1,0', 'bydlo']],
   zlotoNaBrak: [['5,5', 'kopalnia_zlota']],
   zlotoWTablicyDuzaLista: [['0,0', ['kopalnia_zlota', 'kopalnia_zlota', 'kopalnia_zlota']]],
+  // R2 (zarzut Evaluatora 1): znaki biale, w ktorych JS trim i Rust trim sie roznia
+  // (U+FEFF: JS usuwa, Rust nie; U+0085: Rust usuwa, JS nie).
+  trimPlaced: [['0,0', 'kopalnia_cyny'], ['1,0', 'kopalnia_zelaza'], ['2,0', 'kopalnia_cyny'], ['3,0', 'kopalnia_zelaza'], ['4,0', 'kopalnia_cyny']],
 };
 
 const HEXES = {
@@ -75,6 +78,14 @@ const HEXES = {
   spacjeICase: { '0,0': { zloze: ' CYNA ' }, '1,0': { zloze: 'Zelazo\t' }, '2,0': { zloze: '' } },
   bezZlozy: { '0,0': {}, '1,0': { zloze: undefined } },
   pusteHexy: {},
+  // R2: U+FEFF (JS trim tak, Rust nie), U+0085 (Rust trim tak, JS nie), NBSP/LS (oba tak).
+  trimZlozy: {
+    '0,0': { zloze: '﻿cyna' },
+    '1,0': { zloze: '\u0085cyna' },
+    '2,0': { zloze: 'cyna\u0085' },
+    '3,0': { zloze: '\u0085zelazo' },
+    '4,0': { zloze: '﻿ cyna ' },
+  },
 };
 
 // ---- wyniki: zloto ----------------------------------------------------------------------

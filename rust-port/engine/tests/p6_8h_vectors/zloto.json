@@ -211,6 +211,31 @@
     "out": 3
    },
    {
+    "placed": [
+     [
+      "0,0",
+      "kopalnia_cyny"
+     ],
+     [
+      "1,0",
+      "kopalnia_zelaza"
+     ],
+     [
+      "2,0",
+      "kopalnia_cyny"
+     ],
+     [
+      "3,0",
+      "kopalnia_zelaza"
+     ],
+     [
+      "4,0",
+      "kopalnia_cyny"
+     ]
+    ],
+    "out": 0
+   },
+   {
     "placed": null,
     "out": 0
    }
@@ -423,6 +448,31 @@
      ]
     ],
     "out": true
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      "kopalnia_cyny"
+     ],
+     [
+      "1,0",
+      "kopalnia_zelaza"
+     ],
+     [
+      "2,0",
+      "kopalnia_cyny"
+     ],
+     [
+      "3,0",
+      "kopalnia_zelaza"
+     ],
+     [
+      "4,0",
+      "kopalnia_cyny"
+     ]
+    ],
+    "out": false
    },
    {
     "placed": null,
@@ -2050,6 +2100,53 @@
        "kopalnia_zlota",
        "kopalnia_zlota"
       ]
+     ]
+    ]
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      "kopalnia_cyny"
+     ],
+     [
+      "1,0",
+      "kopalnia_zelaza"
+     ],
+     [
+      "2,0",
+      "kopalnia_cyny"
+     ],
+     [
+      "3,0",
+      "kopalnia_zelaza"
+     ],
+     [
+      "4,0",
+      "kopalnia_cyny"
+     ]
+    ],
+    "grant": true,
+    "out": [
+     [
+      "0,0",
+      "kopalnia_cyny"
+     ],
+     [
+      "1,0",
+      "kopalnia_zelaza"
+     ],
+     [
+      "2,0",
+      "kopalnia_cyny"
+     ],
+     [
+      "3,0",
+      "kopalnia_zelaza"
+     ],
+     [
+      "4,0",
+      "kopalnia_cyny"
      ]
     ]
    }

@@ -65,12 +65,19 @@ pub type PlacedMap<'a> = [(&'a str, Placed<'a>)];
 /// Web `ZlozeHexMapLike.hexes`: klucz "q,r" -> `zloze` (`None` = brak pola / heks bez zloza).
 pub type HexZlozeMap = HashMap<String, Option<String>>;
 
+/// Zbior znakow, ktore JS `String.prototype.trim` usuwa (ECMAScript WhiteSpace + LineTerminator):
+/// = `char::is_whitespace` (Unicode White_Space) bez U+0085 (NEL), plus U+FEFF (ZWNBSP).
+/// Rust `trim()` rozni sie od JS dokladnie w tych dwoch znakach.
+fn is_js_trim_char(c: char) -> bool {
+    (c.is_whitespace() && c != '\u{0085}') || c == '\u{FEFF}'
+}
+
 /// Web `hex?.zloze?.toString().trim().toLowerCase()`.
 fn hex_zloze_normalized(hexes: &HexZlozeMap, hex_key: &str) -> Option<String> {
     hexes
         .get(hex_key)
         .and_then(|zloze| zloze.as_deref())
-        .map(|zloze| zloze.trim().to_lowercase())
+        .map(|zloze| zloze.trim_matches(is_js_trim_char).to_lowercase())
 }
 
 /// Web `improvementKeysOnPlaced` (`cyna-access.ts`, `zelazo-access.ts`):
@@ -282,7 +289,13 @@ pub struct CultureMixLine {
 /// Web `Math.max(0, Math.min(1, x))`. `f64::clamp` zwraca NaN dla NaN (jak JS `Math.min/max`),
 /// a jego granice 0.0 i 1.0 nie są NaN, więc nie panikuje.
 fn js_clamp_unit(x: f64) -> f64 {
-    x.clamp(0.0, 1.0)
+    // JS `Math.max(0, -0)` zwraca +0; Rust `clamp` zostawia -0.0. Normalizacja do +0.0.
+    let v = x.clamp(0.0, 1.0);
+    if v == 0.0 {
+        0.0
+    } else {
+        v
+    }
 }
 
 /// Web `resolveOwnCultureShare`: `?? ` (tylko `undefined`/`null`), skonczona liczba -> clamp

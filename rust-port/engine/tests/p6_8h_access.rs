@@ -6,7 +6,7 @@
 //! Kodowanie: NaN/Infinity/-Infinity jako napisy; `null` = `undefined`/`null` po stronie TS;
 //! `placedImprovements` jako tablica par `[klucz, wartosc]`; `{"bool": x}` = legacy boolean stock.
 
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, HashMap};
 
 use civ_engine::domain::building_costs::p6_7b::{
     empire_zloto_stock, owner_can_feed_mennica, StockRecord,
@@ -460,4 +460,75 @@ fn vector_files_are_not_empty() {
     assert!(!load(CYNA, "cyna").is_empty());
     assert!(!load(ZELAZO, "zelazo").is_empty());
     assert!(!load(SOCIETY, "society").is_empty());
+}
+
+/// R2 (zarzut Evaluatora 2): JS `Math.max(0, -0)` daje +0. Wektory JSON nie odroznia -0 od 0,
+/// wiec znak zera sprawdzamy bezposrednio. Granice N-1/N/N+1 dla clampu [0,1] tez.
+#[test]
+fn culture_share_clamp_boundaries_and_negative_zero() {
+    let share = |raw: f64| {
+        resolve_own_culture_share(&CultureMixFields {
+            own_culture_share: Some(raw),
+            kultura_own_share: None,
+        })
+    };
+    let neg_zero = share(-0.0);
+    assert_eq!(neg_zero, 0.0);
+    assert!(neg_zero.is_sign_positive(), "-0 musi dac +0 (JS Math.max)");
+    assert!(share(-1e-300).is_sign_positive() && share(-1e-300) == 0.0);
+    assert_eq!(share(-1.0), 0.0);
+    assert_eq!(share(1.0 - f64::EPSILON), 1.0 - f64::EPSILON);
+    assert_eq!(share(1.0), 1.0);
+    assert_eq!(share(1.0 + f64::EPSILON), 1.0);
+    assert_eq!(share(0.0), 0.0);
+    assert!(share(0.0).is_sign_positive());
+}
+
+/// R2 (zarzut Evaluatora 1): pelna zgodnosc `trim`. Przedzialy code pointow, ktore JS
+/// `String.prototype.trim` (V8, Node 22) usuwa: `String.fromCodePoint(c).trim().length === 0`
+/// dla kazdego c w 0..=0x10FFFF bez surogatow (25 code pointow, 10 przedzialow).
+const JS_TRIM_RANGES: &[(u32, u32)] = &[
+    (0x0009, 0x000D),
+    (0x0020, 0x0020),
+    (0x00A0, 0x00A0),
+    (0x1680, 0x1680),
+    (0x2000, 0x200A),
+    (0x2028, 0x2029),
+    (0x202F, 0x202F),
+    (0x205F, 0x205F),
+    (0x3000, 0x3000),
+    (0xFEFF, 0xFEFF),
+];
+
+/// Dla kazdego code pointa c: zloze = c + "cyna" trafia w "cyna" po trim wtedy i tylko wtedy,
+/// gdy JS trim usuwa c. Test pokrywa cala przestrzen Unicode, nie tylko wybrane wektory.
+#[test]
+fn js_trim_set_matches_v8_for_all_code_points() {
+    let placed_vec: Vec<(&str, Placed<'_>)> = vec![("0,0", Placed::One("kopalnia_cyny"))];
+    let placed = Some(placed_vec.as_slice());
+
+    let mut sanity: HexZlozeMap = HashMap::new();
+    sanity.insert("0,0".to_owned(), Some("cyna".to_owned()));
+    assert!(
+        empire_has_kopalnia_na_zlozu_cyny(placed, Some(&sanity)),
+        "kontrola: 'cyna' trafia"
+    );
+
+    let mut checked = 0u32;
+    for cp in 0u32..=0x10FFFF {
+        let Some(ch) = char::from_u32(cp) else {
+            continue; // surogaty
+        };
+        let in_js = JS_TRIM_RANGES.iter().any(|&(a, b)| cp >= a && cp <= b);
+        let mut hexes: HexZlozeMap = HashMap::new();
+        hexes.insert("0,0".to_owned(), Some(format!("{ch}cyna")));
+        let got = empire_has_kopalnia_na_zlozu_cyny(placed, Some(&hexes));
+        assert_eq!(got, in_js, "code point U+{cp:04X}");
+        checked += 1;
+    }
+    assert_eq!(
+        checked,
+        0x10FFFF + 1 - 0x800,
+        "bez surogatow: 1114112 - 2048"
+    );
 }

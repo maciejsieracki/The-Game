@@ -62,6 +62,27 @@
    },
    {
     "placed": [],
+    "hexes": {
+     "0,0": {
+      "zloze": "﻿cyna"
+     },
+     "1,0": {
+      "zloze": "cyna"
+     },
+     "2,0": {
+      "zloze": "cyna"
+     },
+     "3,0": {
+      "zloze": "zelazo"
+     },
+     "4,0": {
+      "zloze": "﻿ cyna "
+     }
+    },
+    "out": false
+   },
+   {
+    "placed": [],
     "hexes": null,
     "out": false
    },
@@ -146,6 +167,32 @@
      ]
     ],
     "hexes": {},
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "1,0",
+      "kopalnia_zlota"
+     ]
+    ],
+    "hexes": {
+     "0,0": {
+      "zloze": "﻿cyna"
+     },
+     "1,0": {
+      "zloze": "cyna"
+     },
+     "2,0": {
+      "zloze": "cyna"
+     },
+     "3,0": {
+      "zloze": "zelazo"
+     },
+     "4,0": {
+      "zloze": "﻿ cyna "
+     }
+    },
     "out": false
    },
    {
@@ -302,6 +349,41 @@
       ]
      ]
     ],
+    "hexes": {
+     "0,0": {
+      "zloze": "﻿cyna"
+     },
+     "1,0": {
+      "zloze": "cyna"
+     },
+     "2,0": {
+      "zloze": "cyna"
+     },
+     "3,0": {
+      "zloze": "zelazo"
+     },
+     "4,0": {
+      "zloze": "﻿ cyna "
+     }
+    },
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "1,0",
+      [
+       "kopalnia_zlota",
+       "tartak"
+      ]
+     ],
+     [
+      "2,0",
+      [
+       "kopalnia_zlota"
+      ]
+     ]
+    ],
     "hexes": null,
     "out": false
    },
@@ -419,6 +501,36 @@
       "kopalnia_zlota"
      ]
     ],
+    "hexes": {
+     "0,0": {
+      "zloze": "﻿cyna"
+     },
+     "1,0": {
+      "zloze": "cyna"
+     },
+     "2,0": {
+      "zloze": "cyna"
+     },
+     "3,0": {
+      "zloze": "zelazo"
+     },
+     "4,0": {
+      "zloze": "﻿ cyna "
+     }
+    },
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      "kopalnia_zlota"
+     ],
+     [
+      "0,1",
+      "kopalnia_zlota"
+     ]
+    ],
     "hexes": null,
     "out": false
    },
@@ -512,6 +624,32 @@
       "kopalnia_cyny"
      ]
     ],
+    "hexes": {
+     "0,0": {
+      "zloze": "﻿cyna"
+     },
+     "1,0": {
+      "zloze": "cyna"
+     },
+     "2,0": {
+      "zloze": "cyna"
+     },
+     "3,0": {
+      "zloze": "zelazo"
+     },
+     "4,0": {
+      "zloze": "﻿ cyna "
+     }
+    },
+    "out": true
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      "kopalnia_cyny"
+     ]
+    ],
     "hexes": null,
     "out": false
    },
@@ -612,6 +750,35 @@
     ],
     "hexes": {},
     "out": false
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      [
+       "tartak",
+       "kopalnia_cyny"
+      ]
+     ]
+    ],
+    "hexes": {
+     "0,0": {
+      "zloze": "﻿cyna"
+     },
+     "1,0": {
+      "zloze": "cyna"
+     },
+     "2,0": {
+      "zloze": "cyna"
+     },
+     "3,0": {
+      "zloze": "zelazo"
+     },
+     "4,0": {
+      "zloze": "﻿ cyna "
+     }
+    },
+    "out": true
    },
    {
     "placed": [
@@ -740,6 +907,36 @@
       "tartak"
      ]
     ],
+    "hexes": {
+     "0,0": {
+      "zloze": "﻿cyna"
+     },
+     "1,0": {
+      "zloze": "cyna"
+     },
+     "2,0": {
+      "zloze": "cyna"
+     },
+     "3,0": {
+      "zloze": "zelazo"
+     },
+     "4,0": {
+      "zloze": "﻿ cyna "
+     }
+    },
+    "out": true
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      "kopalnia_cyny"
+     ],
+     [
+      "1,0",
+      "tartak"
+     ]
+    ],
     "hexes": null,
     "out": false
    },
@@ -833,6 +1030,32 @@
       " kopalnia_cyny "
      ]
     ],
+    "hexes": {
+     "0,0": {
+      "zloze": "﻿cyna"
+     },
+     "1,0": {
+      "zloze": "cyna"
+     },
+     "2,0": {
+      "zloze": "cyna"
+     },
+     "3,0": {
+      "zloze": "zelazo"
+     },
+     "4,0": {
+      "zloze": "﻿ cyna "
+     }
+    },
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      " kopalnia_cyny "
+     ]
+    ],
     "hexes": null,
     "out": false
    },
@@ -926,6 +1149,32 @@
       "Kopalnia_Cyny"
      ]
     ],
+    "hexes": {
+     "0,0": {
+      "zloze": "﻿cyna"
+     },
+     "1,0": {
+      "zloze": "cyna"
+     },
+     "2,0": {
+      "zloze": "cyna"
+     },
+     "3,0": {
+      "zloze": "zelazo"
+     },
+     "4,0": {
+      "zloze": "﻿ cyna "
+     }
+    },
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      "Kopalnia_Cyny"
+     ]
+    ],
     "hexes": null,
     "out": false
    },
@@ -1019,6 +1268,32 @@
       "kopalnia_zelaza"
      ]
     ],
+    "hexes": {
+     "0,0": {
+      "zloze": "﻿cyna"
+     },
+     "1,0": {
+      "zloze": "cyna"
+     },
+     "2,0": {
+      "zloze": "cyna"
+     },
+     "3,0": {
+      "zloze": "zelazo"
+     },
+     "4,0": {
+      "zloze": "﻿ cyna "
+     }
+    },
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      "kopalnia_zelaza"
+     ]
+    ],
     "hexes": null,
     "out": false
    },
@@ -1103,6 +1378,32 @@
      ]
     ],
     "hexes": {},
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      "kopalnia"
+     ]
+    ],
+    "hexes": {
+     "0,0": {
+      "zloze": "﻿cyna"
+     },
+     "1,0": {
+      "zloze": "cyna"
+     },
+     "2,0": {
+      "zloze": "cyna"
+     },
+     "3,0": {
+      "zloze": "zelazo"
+     },
+     "4,0": {
+      "zloze": "﻿ cyna "
+     }
+    },
     "out": false
    },
    {
@@ -1223,6 +1524,35 @@
       ]
      ]
     ],
+    "hexes": {
+     "0,0": {
+      "zloze": "﻿cyna"
+     },
+     "1,0": {
+      "zloze": "cyna"
+     },
+     "2,0": {
+      "zloze": "cyna"
+     },
+     "3,0": {
+      "zloze": "zelazo"
+     },
+     "4,0": {
+      "zloze": "﻿ cyna "
+     }
+    },
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      [
+       "kopalnia",
+       "tartak"
+      ]
+     ]
+    ],
     "hexes": null,
     "out": false
    },
@@ -1316,6 +1646,32 @@
       "kopalnia"
      ]
     ],
+    "hexes": {
+     "0,0": {
+      "zloze": "﻿cyna"
+     },
+     "1,0": {
+      "zloze": "cyna"
+     },
+     "2,0": {
+      "zloze": "cyna"
+     },
+     "3,0": {
+      "zloze": "zelazo"
+     },
+     "4,0": {
+      "zloze": "﻿ cyna "
+     }
+    },
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      "kopalnia"
+     ]
+    ],
     "hexes": null,
     "out": false
    },
@@ -1400,6 +1756,32 @@
      ]
     ],
     "hexes": {},
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      "kopalnia_zelaza"
+     ]
+    ],
+    "hexes": {
+     "0,0": {
+      "zloze": "﻿cyna"
+     },
+     "1,0": {
+      "zloze": "cyna"
+     },
+     "2,0": {
+      "zloze": "cyna"
+     },
+     "3,0": {
+      "zloze": "zelazo"
+     },
+     "4,0": {
+      "zloze": "﻿ cyna "
+     }
+    },
     "out": false
    },
    {
@@ -1513,6 +1895,36 @@
      ]
     ],
     "hexes": {},
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      "brak"
+     ],
+     [
+      "1,0",
+      ""
+     ]
+    ],
+    "hexes": {
+     "0,0": {
+      "zloze": "﻿cyna"
+     },
+     "1,0": {
+      "zloze": "cyna"
+     },
+     "2,0": {
+      "zloze": "cyna"
+     },
+     "3,0": {
+      "zloze": "zelazo"
+     },
+     "4,0": {
+      "zloze": "﻿ cyna "
+     }
+    },
     "out": false
    },
    {
@@ -1661,6 +2073,39 @@
       ]
      ]
     ],
+    "hexes": {
+     "0,0": {
+      "zloze": "﻿cyna"
+     },
+     "1,0": {
+      "zloze": "cyna"
+     },
+     "2,0": {
+      "zloze": "cyna"
+     },
+     "3,0": {
+      "zloze": "zelazo"
+     },
+     "4,0": {
+      "zloze": "﻿ cyna "
+     }
+    },
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      "foo"
+     ],
+     [
+      "1,0",
+      [
+       "bar",
+       "constructor"
+      ]
+     ]
+    ],
     "hexes": null,
     "out": false
    },
@@ -1778,6 +2223,36 @@
       "bydlo"
      ]
     ],
+    "hexes": {
+     "0,0": {
+      "zloze": "﻿cyna"
+     },
+     "1,0": {
+      "zloze": "cyna"
+     },
+     "2,0": {
+      "zloze": "cyna"
+     },
+     "3,0": {
+      "zloze": "zelazo"
+     },
+     "4,0": {
+      "zloze": "﻿ cyna "
+     }
+    },
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      "pastwisko"
+     ],
+     [
+      "1,0",
+      "bydlo"
+     ]
+    ],
     "hexes": null,
     "out": false
    },
@@ -1871,6 +2346,32 @@
       "kopalnia_zlota"
      ]
     ],
+    "hexes": {
+     "0,0": {
+      "zloze": "﻿cyna"
+     },
+     "1,0": {
+      "zloze": "cyna"
+     },
+     "2,0": {
+      "zloze": "cyna"
+     },
+     "3,0": {
+      "zloze": "zelazo"
+     },
+     "4,0": {
+      "zloze": "﻿ cyna "
+     }
+    },
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "5,5",
+      "kopalnia_zlota"
+     ]
+    ],
     "hexes": null,
     "out": false
    },
@@ -1986,6 +2487,267 @@
        "kopalnia_zlota",
        "kopalnia_zlota"
       ]
+     ]
+    ],
+    "hexes": {
+     "0,0": {
+      "zloze": "﻿cyna"
+     },
+     "1,0": {
+      "zloze": "cyna"
+     },
+     "2,0": {
+      "zloze": "cyna"
+     },
+     "3,0": {
+      "zloze": "zelazo"
+     },
+     "4,0": {
+      "zloze": "﻿ cyna "
+     }
+    },
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      [
+       "kopalnia_zlota",
+       "kopalnia_zlota",
+       "kopalnia_zlota"
+      ]
+     ]
+    ],
+    "hexes": null,
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      "kopalnia_cyny"
+     ],
+     [
+      "1,0",
+      "kopalnia_zelaza"
+     ],
+     [
+      "2,0",
+      "kopalnia_cyny"
+     ],
+     [
+      "3,0",
+      "kopalnia_zelaza"
+     ],
+     [
+      "4,0",
+      "kopalnia_cyny"
+     ]
+    ],
+    "hexes": {
+     "0,0": {
+      "zloze": "cyna"
+     },
+     "1,0": {
+      "zloze": "cyna"
+     },
+     "2,0": {
+      "zloze": "miedz"
+     },
+     "5,5": {
+      "zloze": "cyna"
+     }
+    },
+    "out": true
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      "kopalnia_cyny"
+     ],
+     [
+      "1,0",
+      "kopalnia_zelaza"
+     ],
+     [
+      "2,0",
+      "kopalnia_cyny"
+     ],
+     [
+      "3,0",
+      "kopalnia_zelaza"
+     ],
+     [
+      "4,0",
+      "kopalnia_cyny"
+     ]
+    ],
+    "hexes": {
+     "0,0": {
+      "zloze": "zelazo"
+     },
+     "1,0": {
+      "zloze": "zelazo"
+     }
+    },
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      "kopalnia_cyny"
+     ],
+     [
+      "1,0",
+      "kopalnia_zelaza"
+     ],
+     [
+      "2,0",
+      "kopalnia_cyny"
+     ],
+     [
+      "3,0",
+      "kopalnia_zelaza"
+     ],
+     [
+      "4,0",
+      "kopalnia_cyny"
+     ]
+    ],
+    "hexes": {
+     "0,0": {
+      "zloze": " CYNA "
+     },
+     "1,0": {
+      "zloze": "Zelazo\t"
+     },
+     "2,0": {
+      "zloze": ""
+     }
+    },
+    "out": true
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      "kopalnia_cyny"
+     ],
+     [
+      "1,0",
+      "kopalnia_zelaza"
+     ],
+     [
+      "2,0",
+      "kopalnia_cyny"
+     ],
+     [
+      "3,0",
+      "kopalnia_zelaza"
+     ],
+     [
+      "4,0",
+      "kopalnia_cyny"
+     ]
+    ],
+    "hexes": {
+     "0,0": {},
+     "1,0": {}
+    },
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      "kopalnia_cyny"
+     ],
+     [
+      "1,0",
+      "kopalnia_zelaza"
+     ],
+     [
+      "2,0",
+      "kopalnia_cyny"
+     ],
+     [
+      "3,0",
+      "kopalnia_zelaza"
+     ],
+     [
+      "4,0",
+      "kopalnia_cyny"
+     ]
+    ],
+    "hexes": {},
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      "kopalnia_cyny"
+     ],
+     [
+      "1,0",
+      "kopalnia_zelaza"
+     ],
+     [
+      "2,0",
+      "kopalnia_cyny"
+     ],
+     [
+      "3,0",
+      "kopalnia_zelaza"
+     ],
+     [
+      "4,0",
+      "kopalnia_cyny"
+     ]
+    ],
+    "hexes": {
+     "0,0": {
+      "zloze": "﻿cyna"
+     },
+     "1,0": {
+      "zloze": "cyna"
+     },
+     "2,0": {
+      "zloze": "cyna"
+     },
+     "3,0": {
+      "zloze": "zelazo"
+     },
+     "4,0": {
+      "zloze": "﻿ cyna "
+     }
+    },
+    "out": true
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      "kopalnia_cyny"
+     ],
+     [
+      "1,0",
+      "kopalnia_zelaza"
+     ],
+     [
+      "2,0",
+      "kopalnia_cyny"
+     ],
+     [
+      "3,0",
+      "kopalnia_zelaza"
+     ],
+     [
+      "4,0",
+      "kopalnia_cyny"
      ]
     ],
     "hexes": null,
