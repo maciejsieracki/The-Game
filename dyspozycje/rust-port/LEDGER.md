@@ -421,3 +421,9 @@ Cel końcowy i bieżący zapisane w `GOAL-RUST-PORT-20261020.md` (§"CEL PĘTLI 
 - 2026-10-31 06:12 UTC — kontrola cykliczna: 8H r1, WEB TRUCE r4, M07B-Q2 r1 biegną; brak PASS do integracji.
 
 - 2026-10-31 07:12 UTC — kontrola cykliczna: 8H r1, WEB TRUCE r4, M07B-Q2 r1 wciąż biegną; brak PASS do integracji.
+
+## 2026-10-31 — R-WEB-TRUCE-Q1 PASS-WITH-NOTES (r5) zintegrowane — KOLEJKA DYPLOMACJI WEB ZAMKNIĘTA
+- FC r5 `5f5ad5a3c` (kod `f2f6c7cea`). `web/integration-20261030` = `5f5ad5a3c`. Bramki po scaleniu: tsc 0; truce r1 30, n6 save/load 8, r4-ai 24, live (Chromium) 23; war-gates 22; aggressor 73+15; cession 79+73, picker-ui 13; counter 82; multiwar 57+21; relation-gate 14; stone 31/15, iron 54/35; profile 198, gate 11, sim 22, main-guard 28, d7 8; diplomacy 148; peace-lock 9; ring 15.
+- Efekt: rozejm 5/10/15 tur (baza 200 PW, te same bramki co pokój i ta sama waluta w wojnie), AI proponuje rozejm gdy wojna krótsza niż 20 tur, wygaśnięcie bez kary i bez flagi agresora, wypowiedzenie w oknie = kara + flaga; przełącznik pokój/rozejm w modalu; zapis/odczyt; picker miasta ukryty dla rozejmu.
+- Dług (NIE_ZMIERZONO): E2E AI→stół (harness w repo, przekracza 400 s przy obciążeniu), żywy roundtrip pliku zapisu, forced-war-r9 live; ai-test 274/20 (znane, bez zmian); civ-matrix-ai-diplomacy-wiring 42/1 (baza).
+- Gałąź `web/integration-20261030` zawiera: ring + licznik wojen epoki + PEACE-RULES r3 + R8/R9 + CITY-CESSION + AGGRESSOR-FLAG + TRUCE. Push do `main`: NIE WYKONANO — czeka na zgodę właściciela.
