@@ -1,0 +1,4 @@
+--- I: straznik main.ts R3 ---
+
+=== fort-outpost-hard-territory-test: 80 passed, 0 failed ===
+EXIT=0

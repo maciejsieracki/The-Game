@@ -1,0 +1,2 @@
+hotseat-etap4-noop-test: NIE_ZAKONCZONY (live Chromium, ~500 s limit; ubity recznie w turze 5/proba 2, hash-e tur identyczne do tej chwili)
+EXIT=137

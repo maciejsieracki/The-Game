@@ -1,0 +1,4 @@
+--- B: okablowanie main.ts (tekstowe) ---
+WYNIK B: 16 / 16 OK
+war-era-counter-test: 82 pass / 0 fail
+EXIT=0

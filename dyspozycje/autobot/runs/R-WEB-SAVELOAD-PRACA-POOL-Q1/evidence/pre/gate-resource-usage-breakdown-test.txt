@@ -1,0 +1,4 @@
+-- K. Niedobór magazynu: citizens klamrowane (realne), buildings/units NIE (zapotrzebowanie) -- real HTML --
+
+resource-usage-breakdown-test: 98 passed, 2 failed
+EXIT=1

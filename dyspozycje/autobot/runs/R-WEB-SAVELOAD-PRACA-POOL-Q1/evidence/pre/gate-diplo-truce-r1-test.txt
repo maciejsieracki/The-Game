@@ -1,0 +1,4 @@
+PASS: M5 (aktywny w N zamiast tylko przed N): L6/L10 wykrywają
+
+diplo-truce-r1-test: 30 pass / 0 fail
+EXIT=0

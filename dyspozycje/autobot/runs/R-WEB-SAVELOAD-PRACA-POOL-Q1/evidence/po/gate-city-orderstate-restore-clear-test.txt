@@ -1,0 +1,4 @@
+  [OK] RC5: main.ts ma dokładnie 5 wystąpień "cityOrderState.clear();" w całym pliku (4 istniejące miejsca startu nowej gry + 1 nowe w restoreGameFromSave) (got 5)
+
+9 passed, 0 failed
+EXIT=0

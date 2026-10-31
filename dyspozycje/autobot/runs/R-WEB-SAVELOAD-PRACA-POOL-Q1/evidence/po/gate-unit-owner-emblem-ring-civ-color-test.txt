@@ -1,0 +1,4 @@
+PASS: applyUnitOwnerEmblem nadal tworzy sprite dla pełnej cywilizacji
+
+unit-owner-emblem-ring-civ-color-test: 15 passed, 0 failed
+EXIT=0

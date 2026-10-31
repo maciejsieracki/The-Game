@@ -12693,6 +12693,28 @@ async function boot(): Promise<void> {
     }
     // P3a: Last-turn totals for HUD display (Praca, Kultura from economy; Porzadek from order)
     /** Pula Pracy gracza (suma doPuli z miast — plaster D2=A). */
+    /**
+     * R-WEB-SAVELOAD-PRACA-POOL-Q1 — gorny, BEZPIECZNY prog sanity puli Pracy przy wczytaniu.
+     * Dawniej (od eksportu e1e0e528) wczytanie zerowalo pule > max(50, miasta*100) ("stary bug
+     * map-total"), co kasowalo REALNA pule (zmierzone: 405 -> 0 przy 1 miescie; pula >100 przy
+     * jednym miescie powstaje naturalnie, gdy automat nie ma co budowac). Teraz pula jest
+     * zachowana; ograniczamy tylko wartosc nierealna. Prog 1_000_000: o 3 rzedy wielkosci
+     * powyzej najwiekszej zmierzonej realnej puli (405 t5, 398 t17; NIE_ZMIERZONO pule po 300+
+     * turach) i rowny wartosci, ktora hak testowy foundPlayerCity wpisuje celowo (1_000_000 ma
+     * przezyc round-trip). Wartosc > progu -> przyciecie DO progu (nie zero); NaN/Infinity/ujemna
+     * /nie-liczba -> 0 (jak brak pola w starym zapisie).
+     */
+    const PRACA_POOL_LOAD_SANITY_MAX = 1_000_000;
+    function sanitizeLoadedPracaPool(raw: unknown): number {
+      if (typeof raw !== 'number' || !Number.isFinite(raw) || raw < 0) return 0;
+      if (raw > PRACA_POOL_LOAD_SANITY_MAX) {
+        console.warn(
+          `[Save] playerPracaPool=${raw} nierealne (> ${PRACA_POOL_LOAD_SANITY_MAX}) — przyciete do progu`,
+        );
+        return PRACA_POOL_LOAD_SANITY_MAX;
+      }
+      return raw;
+    }
     let playerPracaPool: number = 0;
     /** One-shot Work tax credits waiting for the next ordinary city tax tick. */
     const pendingManualWorkTaxByOwner = new Map<number, number>();
@@ -26532,6 +26554,23 @@ async function boot(): Promise<void> {
         const snap = buildSaveGameSnapshot('city-forest-test');
         restoreGameFromSave(snap);
         reapplyCityHexDecorHides();
+      },
+    };
+
+    // R-WEB-SAVELOAD-PRACA-POOL-Q1 — hak testowy WYLACZNIE dla tools/saveload-praca-pool-live-test.cjs.
+    // Zero reimplementacji: REALNE buildSaveGameSnapshot -> restoreGameFromSave.
+    (window as any).__pracaPoolSaveLoadTestDebug = {
+      getPool: (): number => playerPracaPool,
+      setPool: (n: number): void => { playerPracaPool = n; _lastPraca = n; },
+      getOwnerPool: (ownerId: number): number => ownerPracaPool(ownerId),
+      cityCount: (): number => cities.filter(c => c.ownerId === 0).length,
+      /** snapshot -> (opcjonalnie nadpisane meta.playerPracaPool, jak stary zapis) -> restore. */
+      roundTrip: (metaOverride?: unknown): number => {
+        // JSON-klon = realne przejscie przez serializacje zapisu (IndexedDB/plik).
+        const snap = JSON.parse(JSON.stringify(buildSaveGameSnapshot('praca-pool-test')));
+        if (metaOverride !== undefined) (snap.meta as any).playerPracaPool = metaOverride;
+        restoreGameFromSave(snap);
+        return playerPracaPool;
       },
     };
 
@@ -42657,21 +42696,14 @@ async function boot(): Promise<void> {
         mennicaZlotoGraceState,
         saved.meta?.mennicaZlotoGrace as MennicaZlotoGraceSave | undefined,
       );
-      const savedPracaPool = saved.meta?.playerPracaPool as number | undefined;
-      playerPracaPool = typeof savedPracaPool === 'number' ? savedPracaPool : 0;
+      // R-WEB-SAVELOAD-PRACA-POOL-Q1 (decyzja wlasciciela A, 2026-10-31): wczytanie ZACHOWUJE pule
+      // Pracy gracza; ogranicza TYLKO wartosc nierealna (patrz sanitizeLoadedPracaPool).
+      playerPracaPool = sanitizeLoadedPracaPool(saved.meta?.playerPracaPool);
       pendingManualWorkTaxByOwner.clear();
       for (const [ownerId, tax] of restorePendingWorkTax(saved.meta?.pendingManualWorkTaxByOwner)) {
         pendingManualWorkTaxByOwner.set(ownerId, tax);
       }
       budowaListaBiblioteka = loadBudowaListaBiblioteka(saved.meta);
-      const playerCityCountOnLoad = cities.filter(c => c.ownerId === 0).length;
-      const maxReasonablePracaPool = Math.max(50, playerCityCountOnLoad * 100);
-      if (playerPracaPool > maxReasonablePracaPool) {
-        console.warn(
-          `[Save] playerPracaPool=${playerPracaPool} zawyżone (stary bug map-total) — reset do 0`,
-        );
-        playerPracaPool = 0;
-      }
       _lastPraca = playerPracaPool;
       if (saved.cityProd) {
         // P-REKRUTACJA-JEDNOSTEK-TYLKO-SKARBIEC-Q1=B: stare zapisy mogły
