@@ -1,0 +1,43 @@
+R-WEB-CITIZEN-UPKEEP-ERA-MULT-Q1 — runda 2 — wyniki bramek (HEAD = commit po poprawkach R2, baza zmierzona na 914daa502 w summary)
+Uruchomienie: node gra/tools/<nazwa>.cjs, pierwszy plan, bez run_in_background.
+
+tsc --noEmit: EXIT=0
+citizen-upkeep-era-mult-test: 663 passed, 0 failed (R1: 655; +8 = sekcja H integracja tury)
+mutacja 1 (stawka = stała 1,0 w citizenUpkeepRateForEra): 441 passed, 222 failed (EXIT=1)
+mutacja 2 (zamiana Brąz 2 <-> Żelazo 3 w JSON): 468 passed, 195 failed (EXIT=1)
+(obie mutacje cofnięte, git status: tylko pliki commita)
+
+Regresja vs baza 914daa502 (summary: baza-914daa502-summary.txt) — zgodne exit i liczby:
+ai-major-economy-test EXIT=1 (baza EXIT=1)
+ai-recruit-upkeep-gate-test EXIT=0 23/0 (baza 23/0)
+ai-test EXIT=1 274/20 (baza 274/20)
+barbarian-cooperation-grace-maints-wiring-test EXIT=0 29/0
+citizen-resource-upkeep-test EXIT=1 107/2 (baza 107/2)
+civ-matrix-ai-diplomacy-wiring-test EXIT=1 42/1
+civ-matrix-meta-roster-wiring-test EXIT=1 62/1
+cs-military-cap-wiring-test EXIT=0
+diplo-aggressor-wiring-test EXIT=0 15/0
+diplo-truce-r4-ai-test EXIT=0 24/0
+diplomacy-economy-test EXIT=0 21/21
+diplomacy-test EXIT=0 148/0
+era-improvement-cost-upkeep-test EXIT=0 52/0
+hotseat-etap6c-economy-noop-test EXIT=0 70/0
+kolor-surowce-spojnosc-test EXIT=0 34/34
+koszty-surowcowe-test EXIT=1 126/3 (baza 126/3)
+owner-economy-test EXIT=0 20/0
+population-civ-matrix-wiring-test EXIT=0 122/0
+pr141-matrix-only-ai-test EXIT=0 40/0
+pr141-matrix-only-economy-test EXIT=1 (baza EXIT=1)
+recruitment-no-upkeep-gate-test EXIT=1 22/14 (baza 22/14)
+siege-ai-test EXIT=0
+spichlerz-cap-citypanel-wiring-test EXIT=0 12/0
+surowce-dostep-test EXIT=0 13/0
+surowce-katalog-kolejnosc-test EXIT=0 62/0
+unit-info-card-wiring-test EXIT=1 5/1 (baza 5/1)
+unit-owner-emblem-ring-civ-color-test EXIT=0 15/0 (ring 15)
+unit-resource-upkeep-test EXIT=1 3/4 (baza 3/4)
+upkeep-test EXIT=0 73/0
+war-era-counter-test EXIT=0 82/0
+resource-usage-breakdown-test EXIT=1 98/2 (baza 98/2)
+porzadek-panel-czytelnosc-test EXIT=0 93/0
+szczescie-przebudowa-skali-test EXIT=1 515/4 (baza 515/4)

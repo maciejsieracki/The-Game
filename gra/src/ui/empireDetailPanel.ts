@@ -2430,7 +2430,14 @@ export function renderObywateleSection(
   // Magazynu Państwa — panel nie zna epoki wprost, ale silnik już oznaczył nią te wiersze.
   // EN: same formula the engine uses — floor(population × rate) per resource required this era.
   const citizenResCount = resources.filter(r => r.citizenRequired === true).length;
-  const zuzyciePerTyp = Math.floor(sumObyw * CITIZEN_UPKEEP_RATE_PER_CITIZEN);
+  // R-WEB-CITIZEN-UPKEEP-ERA-MULT-Q1: stawka BIEŻĄCEJ epoki — ta sama, którą silnik użył do
+  // drenażu (`citizenRatePerCitizen` z wiersza surowca wymaganego przez obywateli). Brak wiersza
+  // → fallback 1,0 (`CITIZEN_UPKEEP_RATE_PER_CITIZEN`).
+  // / EN: current era's rate, taken from the engine's own row; fallback 1.0.
+  const citizenRate = resources.find(
+    r => r.citizenRequired === true && typeof r.citizenRatePerCitizen === 'number',
+  )?.citizenRatePerCitizen ?? CITIZEN_UPKEEP_RATE_PER_CITIZEN;
+  const zuzyciePerTyp = Math.floor(sumObyw * citizenRate);
   // `e.zadowolenie` (HudState, main.ts buildHudState()) NIE jest nigdzie wypełniane silnikiem —
   // zawsze `undefined` (pre-istniejące, niezależne od tego dociągnięcia). Realny, na żywo liczony
   // poziom Zadowolenia imperium bierzemy z `happiness.totalNetto` (suma tych samych
@@ -2617,7 +2624,7 @@ export function renderObywateleSection(
     const grid = '1fr 0.6fr 1fr';
     h += `<div class="civ-emp-mini">${miniHeader(['MIASTO', 'OBYW.', 'ZUŻYCIE / TURĘ'], grid)}`;
     for (const c of cp) {
-      const z = Math.floor(c.ludki * CITIZEN_UPKEEP_RATE_PER_CITIZEN);
+      const z = Math.floor(c.ludki * citizenRate);
       h += miniRow([
         esc(c.name),
         String(c.ludki),
@@ -2627,7 +2634,7 @@ export function renderObywateleSection(
     h += `<div class="civ-emp-mini-r civ-emp-mini-summary" style="grid-template-columns:${grid}">`
       + `<div>CYWILIZACJA</div><div>${sumObyw}</div><div>−${zuzyciePerTyp}</div></div>`;
     h += '</div>';
-    h += `<div class="civ-emp-foot">${formatLiczbaPl(CITIZEN_UPKEEP_RATE_PER_CITIZEN, 1)} szt. surowca `
+    h += `<div class="civ-emp-foot">${formatLiczbaPl(citizenRate, 1)} szt. surowca `
       + 'na obywatela na turę, z magazynu CENTRALNEGO imperium — liczba w kolumnie dotyczy KAŻDEGO '
       + `z ${citizenResCount} surowców wymaganych w tej epoce osobno, nie ich sumy. Wiersz `
       + 'CYWILIZACJA to zużycie całego imperium (silnik liczy je od sumy obywateli, nie miasto po '
@@ -3145,7 +3152,7 @@ function resTooltipHtml(r: EmpireResourceRow): string {
     parts.push(prod === 0 ? 'Produkcja: brak zmiany w tej turze' : `Produkcja: ${signedTxt(prod)} / turę`);
   }
   // R-ZUZYCIE-SUROWCOW-OBYWATELE N2 (Maciej 2026-08-11): reguła pokrycia = magazyn centralny
-  // ZASPOKAJA CAŁĄ populację imperium tego ownera (stawka CITIZEN_UPKEEP_RATE_PER_CITIZEN szt.
+  // ZASPOKAJA CAŁĄ populację imperium tego ownera (stawka per epoka citizenUpkeepRateForEra szt.
   // surowca/obywatela/turę — kanon: citizen-resource-upkeep.ts), NIE starsza binarna
   // „magazyn > 0" — panel musi zgadzać się z tym, co faktycznie liczy silnik tury
   // (citizenUpkeepDrainForOwner / computeCitizenResourceDrain).
