@@ -201,8 +201,12 @@ export function applyImprovementBonuses(yld: TileYield, improvementKeys: readonl
 //   Tartak->drewno 50 (bylo 10) · Glinianka->glina 50 (bylo 10) · Kamieniolom->kamien 50 (bylo 10) ·
 //   Kopalnia miedzi->ruda 20 (bylo 4) · Kopalnia (zloze zelaza)->ruda_zelaza 20 (bylo 4) ·
 //   Warzelnia soli->sol 50 (bylo 10) · Stadnina->kon 25 (bylo 5) · Kopalnia zlota->zloto 1 (BEZ ZMIAN).
+// Tartak i Kamieniolom: baza 50/ture (epoka 1), skalowana x1,5 za epoke (50/75/113).
+// Historia: 2026-09-09 (commit 9175f031f) podniesione do 200 = REGRES; 2026-10-31
+// przywrocone 50 decyzja wlasciciela (R-WEB-SAWMILL-QUARRY-PRODUCTION-50-Q1).
 // EN: rates above are current as of 2026-08-13 (R-EKONOMIA-SUROWCE-SKALA-5X-Q1, ×5 vs the
 // prior state; gold excluded -- currency, not a construction resource);
+// tartak/kamieniolom restored to 50 on 2026-10-31 (see above);
 // see terrain-improvements.json surowiec_ilosc_tura per improvement for source of truth.
 // Domyslny fallback (gdy pole nieobecne w JSON) = 10/ture (bylo 2) -- czysto bezpieczenstwo,
 // nie stawka docelowa; do dalszego strojenia w panelu Excel jesli potrzeba.

@@ -142,8 +142,8 @@
       "handel": 2
     },
     "surowiecOdblokowany": "kamien",
-    "surowiecOdblokowany_uwaga": "klucz 'kamien' wg Surowiec='Kamień' w resources.json; produkcja terytorialna bazowo 200/turę, skalowana +50% za epokę.",
-    "surowiec_ilosc_tura": 200,
+    "surowiecOdblokowany_uwaga": "klucz 'kamien' wg Surowiec='Kamień' w resources.json; produkcja terytorialna bazowo 50/turę (epoka 1), skalowana +50% za epokę (50 / 75 / 113). Historia: R-EKONOMIA-SUROWCE-SKALA-5X-Q1 (2026-08-13) = 50; commit 9175f031f (2026-09-09, Integracja PR #135 H-KAMIENIOLOM-KAMIEN-PRODUKCJA-Q1) podniósł do 200 = REGRES; 2026-10-31 przywrócone 50 decyzją właściciela (R-WEB-SAWMILL-QUARRY-PRODUCTION-50-Q1). ZAŁOŻENIE orkiestratora: skalowanie epoką z 9175f031f bez zmian.",
+    "surowiec_ilosc_tura": 50,
     "teren": "Wzgórza, Góry (kamień)",
     "warunek": "budulec — mury, budynki",
     "koszt_praca": 22,
@@ -200,8 +200,8 @@
       "handel": 3
     },
     "surowiecOdblokowany": "drewno",
-    "surowiecOdblokowany_uwaga": "SUROW-TERYT-01 (Maciej 2026-07-23): produkcja per ulepszenie w terytorium, niezaleznie od obsadzenia populacja. PYTANIE-84-B9/U-18 (Maciej 2026-07-27): stawka REALNA = 20/ture; korekta balansu Maciej 2026-07-29: 10/ture (bylo 20 — magazyn PEŁNY); korekta balansu Maciej 2026-08-09: 4/ture (wyrownanie do kamieniolomu). R-ZUZYCIE-SUROWCOW-OBYWATELE-PROD-Q1, korekta balansu Maciej 2026-08-12: 10/turę (było 4/turę). R-EKONOMIA-SUROWCE-SKALA-5X-Q1 (Maciej 2026-08-13): ×5 → 50/turę (było 10/turę).",
-    "surowiec_ilosc_tura": 200,
+    "surowiecOdblokowany_uwaga": "SUROW-TERYT-01 (Maciej 2026-07-23): produkcja per ulepszenie w terytorium, niezaleznie od obsadzenia populacja. PYTANIE-84-B9/U-18 (Maciej 2026-07-27): stawka REALNA = 20/ture; korekta balansu Maciej 2026-07-29: 10/ture (bylo 20 — magazyn PEŁNY); korekta balansu Maciej 2026-08-09: 4/ture (wyrownanie do kamieniolomu). R-ZUZYCIE-SUROWCOW-OBYWATELE-PROD-Q1, korekta balansu Maciej 2026-08-12: 10/turę (było 4/turę). R-EKONOMIA-SUROWCE-SKALA-5X-Q1 (Maciej 2026-08-13): ×5 → 50/turę (było 10/turę). Historia: commit 9175f031f (2026-09-09, PR #135 wiring) podniósł do 200/turę = REGRES; 2026-10-31 przywrócone 50/turę decyzją właściciela (R-WEB-SAWMILL-QUARRY-PRODUCTION-50-Q1). Skalowanie epoką (50 / 75 / 113) bez zmian.",
+    "surowiec_ilosc_tura": 50,
     "teren": "Ląd w terytorium (łąka, lasy, wzgórza…)",
     "warunek": "stałe ulepszenie; MOŻE na lesie — las NIE znika; odblokowuje dostęp do drewna (v0.1 bez ilości)",
     "koszt_praca": 25,
