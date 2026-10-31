@@ -175,7 +175,7 @@
       },
       {
         "key": "player_epoch_war",
-        "label": "Wojna epoki z udziałem gracza",
+        "label": "Wojna epoki",
         "opts": [
           "Włączona",
           "Wyłączona"

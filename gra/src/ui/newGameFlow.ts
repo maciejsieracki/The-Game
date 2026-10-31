@@ -662,8 +662,13 @@ const SETTING_GLYPHS: Record<string, string> = {
   map_size: 'Mx',
   world_type: 'Sw',
   city_states_count: 'MP',
+  cityStateDifficulty: 'TM',
   deals_end_turn_gate: 'Ha',
   player_epoch_war: 'Wo',
+  barbariansLevel: 'Ba',
+  victory_mode: 'Zw',
+  landFraction: 'Ld',
+  village_rewards_enabled: 'Ch',
   civ_types_count: 'Cy',
   game_speed: 'Tp',
   map_quality: 'Gf',
@@ -674,9 +679,16 @@ const SETTING_GLYPHS: Record<string, string> = {
   relief_density: 'Gw',
 };
 
+/** Klucze mające dedykowaną ikonę SVG (setting-icon-map.json); pozostałe → glif tekstowy. */
+const SETTING_SVG_KEYS = new Set([
+  'difficulty', 'map_size', 'world_type', 'game_speed', 'city_states_count', 'civ_types_count',
+]);
+
 function settingIcon(key: string): string {
-  const svg = settingIconSvg(key, 20);
-  if (svg) return svg;
+  if (SETTING_SVG_KEYS.has(key)) {
+    const svg = settingIconSvg(key, 20);
+    if (svg) return svg;
+  }
   const g = SETTING_GLYPHS[key] ?? 'Op';
   return '<span class="ng-glyph ng-glyph-sm">' + g + '</span>';
 }
@@ -1613,11 +1625,11 @@ function renderSettingRows(host: HTMLElement, keys: string[]): void {
   for (const key of keys) {
     const s = SETT.find(x => x.key === key);
     if (!s) {
-      if (key === 'landFraction' || key === 'cityStateDifficulty') {
-        const setting = advancedSettingRows().find(x => x.key === key);
+      {
+        const setting = mainGridExtraRows().find(x => x.key === key);
         if (!setting) continue;
         const row = el('div', 'srow');
-        row.innerHTML = '<div class="srow-hdr"><div class="srow-ic">' + settingIcon('landFraction') + '</div><div class="sl">' + setting.lbl + '</div></div><div class="sctl"></div>';
+        row.innerHTML = '<div class="srow-hdr"><div class="srow-ic">' + settingIcon(key) + '</div><div class="sl">' + setting.lbl + '</div></div><div class="sctl"></div>';
         const hdr = row.querySelector('.srow-hdr') as HTMLElement;
         const infoIcon = makeInfoIcon(setting.hint);
         hdr.appendChild(infoIcon);
@@ -1686,24 +1698,10 @@ function advRowFromSett(key: string, hint: string): AdvSettingRow {
   };
 }
 
-function advancedSettingRows(): AdvSettingRow[] {
+/** Pozycje głównej siatki kroku 4 spoza SETT (ui-params). Kolejność bez znaczenia —
+ * siatkę układa renderSettingRows wg tablicy kluczy. */
+function mainGridExtraRows(): AdvSettingRow[] {
   return [
-    advRowFromSett('map_quality', 'Jakość renderu mapy 3D — niska / średnia / wysoka (GPU).'),
-    advRowFromSett('resources_density', 'Gęstość wszystkich złóż (ruda, bydło, glina…). Reguły terenu bez zmian.'),
-    advRowFromSett(
-      'rivers_density',
-      'Fair play: min. 1 rzeka / komórkę siatki (Mało 10×10 · Normalnie 5×5 · Dużo 5×5). Wyższy tier = gęstsza siatka + ewentualnie dłuższe trasy.',
-    ),
-    advRowFromSett('desert_density', 'Udział pustynnych hexów.'),
-    advRowFromSett(
-      'forest_density',
-      'Fair play: min. 1 las / komórkę siatki (Mało 15 · Normalnie 10 · Dużo 5). Wyższy tier = gęstsza siatka + bonus lasu z szumu (więcej, równomiernie).',
-    ),
-    advRowFromSett(
-      'relief_density',
-      'Fair play: min. 2 góry / komórkę żelaza + 2 wzgórza / komórkę miedzi (Mało 35/21 · Normalnie 25/15 · Dużo 20/12). Wyższy tier = gęstsza siatka + bonus ukształtowania.',
-    ),
-    advRowFromSett('village_rewards_enabled', 'Wioski na mapie dają losowe nagrody: złoto, jednostki, technologia lub relikt. Wyłączenie usywa wszystkie wioski.'),
     {
       key: 'landFraction',
       lbl: 'Udział lądu na mapie',
@@ -1750,14 +1748,6 @@ function advancedSettingRows(): AdvSettingRow[] {
         advOpts.cityStateDifficultyOverride = i === 0 ? 'easy' : i === 2 ? 'hard' : i === 3 ? 'off' : 'normal';
       },
     },
-    advRowFromSett(
-      'deals_end_turn_gate',
-      'Dopóki wisi oferta handlowa od AI, nie zakończysz tury — przyjmij, zmodyfikuj lub odrzuć. Wyłączone: oferty AI nie blokują końca tury.',
-    ),
-    advRowFromSett(
-      'player_epoch_war',
-      'Włączone: możesz zostać uczestnikiem wymuszonej wojny epoki. Wyłączone: wymuszone wojny epoki omijają gracza.',
-    ),
     {
       key: 'barbariansLevel',
       lbl: 'Barbarzyńcy',
@@ -1773,56 +1763,11 @@ function advancedSettingRows(): AdvSettingRow[] {
         advOpts.barbariansLevel = i === 0 ? 'latwy' : i === 2 ? 'trudny' : i === 3 ? 'brak' : 'normalny';
       },
     },
-    {
-      key: 'battleAlwaysManual',
-      lbl: 'Bitwy',
-      hint: 'Bitwa automatyczna — wynik bez wchodzenia na pole bitwy. Bitwa ręczna i automatyczna — przed każdą bitwą wybierasz, czy wejść na pole bitwy, czy rozstrzygnąć ją automatycznie.',
-      opts: ['Bitwa automatyczna', 'Bitwa ręczna i automatyczna'],
-      getIdx: () => (advOpts.battleAlwaysManual ? 1 : 0),
-      setIdx: (i) => { advOpts.battleAlwaysManual = i === 1; },
-    },
-    {
-      key: 'buildingCostPace',
-      lbl: 'Koszty budynków',
-      hint: 'Mnożnik Pracy przy budowie — bazowe koszty z panelu = Niski (×1).',
-      opts: ['Niski', 'Normalny', 'Wysoki'],
-      getIdx: () => {
-        if (advOpts.buildingCostPace === 'normalny') return 1;
-        if (advOpts.buildingCostPace === 'wysoki') return 2;
-        return 0;
-      },
-      setIdx: (i) => {
-        advOpts.buildingCostPace = i === 1 ? 'normalny' : i === 2 ? 'wysoki' : 'niski';
-      },
-    },
-    {
-      key: 'kosztJednostekPace',
-      lbl: 'Koszty jednostek',
-      hint: 'Mnożnik złota rekrutacji — bazowe koszty z panelu = Niski (×1).',
-      opts: ['Niski', 'Normalny', 'Wysoki'],
-      getIdx: () => {
-        if (advOpts.kosztJednostekPace === 'normalny') return 1;
-        if (advOpts.kosztJednostekPace === 'wysoki') return 2;
-        return 0;
-      },
-      setIdx: (i) => {
-        advOpts.kosztJednostekPace = i === 1 ? 'normalny' : i === 2 ? 'wysoki' : 'niski';
-      },
-    },
-    {
-      key: 'wzrostLudnosciPace',
-      lbl: 'Wzrost ludności',
-      hint: 'Mnożnik progu 🍞 na +1 mieszkańca — bazowy = Wysoki (×1).',
-      opts: ['Wysoki', 'Normalny', 'Wolny'],
-      getIdx: () => {
-        if (advOpts.wzrostLudnosciPace === 'normalny') return 1;
-        if (advOpts.wzrostLudnosciPace === 'wolny') return 2;
-        return 0;
-      },
-      setIdx: (i) => {
-        advOpts.wzrostLudnosciPace = i === 1 ? 'normalny' : i === 2 ? 'wolny' : 'wysoki';
-      },
-    },
+  ];
+}
+
+function advancedSettingRows(): AdvSettingRow[] {
+  return [
     {
       key: 'ruchSwiataPace',
       lbl: 'Zasięg ruchu',
@@ -1852,6 +1797,75 @@ function advancedSettingRows(): AdvSettingRow[] {
         advOpts.cityLimitBase = limits[i] ?? 10;
       },
     },
+    {
+      key: 'battleAlwaysManual',
+      lbl: 'Bitwy',
+      hint: 'Bitwa automatyczna — wynik bez wchodzenia na pole bitwy. Bitwa ręczna i automatyczna — przed każdą bitwą wybierasz, czy wejść na pole bitwy, czy rozstrzygnąć ją automatycznie.',
+      opts: ['Bitwa automatyczna', 'Bitwa ręczna i automatyczna'],
+      getIdx: () => (advOpts.battleAlwaysManual ? 1 : 0),
+      setIdx: (i) => { advOpts.battleAlwaysManual = i === 1; },
+    },
+    advRowFromSett(
+      'deals_end_turn_gate',
+      'Dopóki wisi oferta handlowa od AI, nie zakończysz tury — przyjmij, zmodyfikuj lub odrzuć. Wyłączone: oferty AI nie blokują końca tury.',
+    ),
+    {
+      key: 'wzrostLudnosciPace',
+      lbl: 'Wzrost ludności',
+      hint: 'Mnożnik progu 🍞 na +1 mieszkańca — bazowy = Wysoki (×1).',
+      opts: ['Wysoki', 'Normalny', 'Wolny'],
+      getIdx: () => {
+        if (advOpts.wzrostLudnosciPace === 'normalny') return 1;
+        if (advOpts.wzrostLudnosciPace === 'wolny') return 2;
+        return 0;
+      },
+      setIdx: (i) => {
+        advOpts.wzrostLudnosciPace = i === 1 ? 'normalny' : i === 2 ? 'wolny' : 'wysoki';
+      },
+    },
+    {
+      key: 'buildingCostPace',
+      lbl: 'Koszty budynków',
+      hint: 'Mnożnik Pracy przy budowie — bazowe koszty z panelu = Niski (×1).',
+      opts: ['Niski', 'Normalny', 'Wysoki'],
+      getIdx: () => {
+        if (advOpts.buildingCostPace === 'normalny') return 1;
+        if (advOpts.buildingCostPace === 'wysoki') return 2;
+        return 0;
+      },
+      setIdx: (i) => {
+        advOpts.buildingCostPace = i === 1 ? 'normalny' : i === 2 ? 'wysoki' : 'niski';
+      },
+    },
+    {
+      key: 'kosztJednostekPace',
+      lbl: 'Koszty jednostek',
+      hint: 'Mnożnik złota rekrutacji — bazowe koszty z panelu = Niski (×1).',
+      opts: ['Niski', 'Normalny', 'Wysoki'],
+      getIdx: () => {
+        if (advOpts.kosztJednostekPace === 'normalny') return 1;
+        if (advOpts.kosztJednostekPace === 'wysoki') return 2;
+        return 0;
+      },
+      setIdx: (i) => {
+        advOpts.kosztJednostekPace = i === 1 ? 'normalny' : i === 2 ? 'wysoki' : 'niski';
+      },
+    },
+    advRowFromSett('map_quality', 'Jakość renderu mapy 3D — niska / średnia / wysoka (GPU).'),
+    advRowFromSett('resources_density', 'Gęstość wszystkich złóż (ruda, bydło, glina…). Reguły terenu bez zmian.'),
+    advRowFromSett(
+      'rivers_density',
+      'Fair play: min. 1 rzeka / komórkę siatki (Mało 10×10 · Normalnie 5×5 · Dużo 5×5). Wyższy tier = gęstsza siatka + ewentualnie dłuższe trasy.',
+    ),
+    advRowFromSett('desert_density', 'Udział pustynnych hexów.'),
+    advRowFromSett(
+      'forest_density',
+      'Fair play: min. 1 las / komórkę siatki (Mało 15 · Normalnie 10 · Dużo 5). Wyższy tier = gęstsza siatka + bonus lasu z szumu (więcej, równomiernie).',
+    ),
+    advRowFromSett(
+      'relief_density',
+      'Fair play: min. 2 góry / komórkę żelaza + 2 wzgórza / komórkę miedzi (Mało 35/21 · Normalnie 25/15 · Dużo 20/12). Wyższy tier = gęstsza siatka + bonus ukształtowania.',
+    ),
   ];
 }
 
@@ -1881,9 +1895,9 @@ function showAdvancedModal(): void {
   head.appendChild(el('div', 'adv-sub', 'Parametry rzadko zmieniane — poza główną siatką kroku 4.'));
   modal.appendChild(head);
   const body = el('div', 'adv-modal-body');
-  // Udział lądu został przeniesiony do głównej siatki kroku 4; nie renderuj
-  // drugiej kopii w modalu ustawień zaawansowanych.
-  const rows = advancedSettingRows().filter(row => row.key !== 'landFraction' && row.key !== 'deals_end_turn_gate');
+  // Pozycje przeniesione do głównej siatki kroku 4 nie są już w tej liście
+  // (advancedSettingRows zawiera wyłącznie opcje zaawansowane, bez duplikatów).
+  const rows = advancedSettingRows();
   for (const row of rows) {
     const box = el('div', 'adv-row');
     const lblRow = el('div', 'adv-lbl-row');
@@ -2002,9 +2016,16 @@ function renderSettStep(host: HTMLElement): void {
   // live DOM after mount — see syncSettLayoutHeight in render()). "Your start" +
   // actions stay BELOW the whole block, always at the same height.
   const layout = el('div', 'sett-layout');
+  // Siatka 2 kolumny, wypełniana rzędami: [lewa1, prawa1, lewa2, prawa2, …].
+  // LEWA: Rozmiar mapy, Typ świata, Udział lądu, Prędkość gry, Poziom trudności, Warunki zwycięstwa.
+  // PRAWA: Liczba cywilizacji, Liczba miast-państw, Trudność miast-państw, Wojna epoki, Barbarzyńcy, Chatki z nagrodami.
   renderSettingRows(layout, [
-    'difficulty', 'map_size', 'world_type', 'game_speed', 'city_states_count', 'deals_end_turn_gate', 'civ_types_count',
-    'landFraction',
+    'map_size', 'civ_types_count',
+    'world_type', 'city_states_count',
+    'landFraction', 'cityStateDifficulty',
+    'game_speed', 'player_epoch_war',
+    'difficulty', 'barbariansLevel',
+    'victory_mode', 'village_rewards_enabled',
   ]);
   renderAiCivPicker(layout);
   host.appendChild(layout);

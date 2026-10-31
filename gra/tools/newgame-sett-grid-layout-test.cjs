@@ -143,11 +143,11 @@ async function measure(page) {
 
 /** Asercje "geometria siatki 2×3 + reszta ekranu spójne" — jądro tego testu. */
 function assertGridGeometry(data, tag) {
-  assert(`[${tag}] dokładnie 6 kart bezpośrednio w .sett-grid (hipoteza (a): brak owijającego kontenera)`,
-    data.directChildrenCount === 6 && data.directChildrenClasses.every((c) => c === 'srow'));
+  assert(`[${tag}] dokładnie 12 kart bezpośrednio w .sett-grid (hipoteza (a): brak owijającego kontenera)`,
+    data.directChildrenCount === 12 && data.directChildrenClasses.every((c) => c === 'srow'));
 
   const c = data.cards;
-  if (c.length !== 6) {
+  if (c.length !== 12) {
     assert(`[${tag}] pomiar kart niekompletny — reszta asercji geometrii pominięta`, false);
     return;
   }
@@ -169,11 +169,11 @@ function assertGridGeometry(data, tag) {
   const relHdr = c.map((x) => x.hdrTop - x.row.top);
   const relSctl = c.map((x) => x.sctlTop - x.row.top);
   const relSv = c.map((x) => x.svTop - x.row.top);
-  assert(`[${tag}] offset nagłówka od topu karty identyczny na 6/6 kart (hipoteza (b))`,
+  assert(`[${tag}] offset nagłówka od topu karty identyczny na 12/12 kart (hipoteza (b))`,
     relHdr.every((v) => close(v, relHdr[0])));
-  assert(`[${tag}] offset kontrolek (‹ wartość ›) od topu karty identyczny na 6/6 kart`,
+  assert(`[${tag}] offset kontrolek (‹ wartość ›) od topu karty identyczny na 12/12 kart`,
     relSctl.every((v) => close(v, relSctl[0])));
-  assert(`[${tag}] offset wartości od topu karty identyczny na 6/6 kart`,
+  assert(`[${tag}] offset wartości od topu karty identyczny na 12/12 kart`,
     relSv.every((v) => close(v, relSv[0])));
 
   // Panel "Cywilizacje przeciwnika" wyrównany górą z siatką 2×3 (sett-layout ma align-items:start).
@@ -185,8 +185,12 @@ function assertGridGeometry(data, tag) {
   if (data.startPreview && data.settActions) {
     const gap1 = data.startPreview.top - data.layout.bottom;
     const gap2 = data.settActions.top - data.startPreview.bottom;
-    assert(`[${tag}] odstęp siatka->"Twój start" (${gap1.toFixed(2)}px) spójny z odstępem "Twój start"->akcje (${gap2.toFixed(2)}px) — hipoteza (c)`,
-      close(gap1, gap2, 1.5));
+    // Między „Twój start" a akcjami leży rząd przełącznika hot-seat (`.seat2-toggle-row`), więc
+    // odstęp 2 nie jest już pojedynczym marginesem 1rem; pilnujemy rytmu 1rem tylko pod siatką.
+    assert(`[${tag}] odstęp siatka->"Twój start" (${gap1.toFixed(2)}px) = 1rem (16px) — rytm pod siatką (hipoteza (c))`,
+      close(gap1, 16, 1.5));
+    assert(`[${tag}] odstęp "Twój start"->akcje (${gap2.toFixed(2)}px) nie mniejszy niż 1rem`,
+      gap2 >= 16 - 1.5);
   }
 }
 
@@ -210,12 +214,12 @@ async function main() {
 
     console.log('\n-- Scenariusz 2: Rozmiar mapy = "Super Huge" (najdłuższa etykieta wartości) --');
     const rows = await page.locator('.civ-newgame .sett-grid .srow').all();
-    const mapSizeRightArrow = rows[1].locator('.arr').nth(1); // wiersz1/kol2 = "Rozmiar mapy"
+    const mapSizeRightArrow = rows[0].locator(".arr").nth(1); // wiersz1/kol1 = "Rozmiar mapy"
     for (let i = 0; i < 3; i++) { await mapSizeRightArrow.click(); await wait(60); } // idx2->5 "Super Huge"
     await wait(200);
     const superHugeData = await measure(page);
     assert('[Super Huge] wartość faktycznie zmieniona na "Super Huge" (kontrola sensu scenariusza)',
-      superHugeData.cards[1]?.label === 'Rozmiar mapy');
+      superHugeData.cards[0]?.label === "Rozmiar mapy");
     assertGridGeometry(superHugeData, 'Rozmiar mapy = Super Huge');
 
     console.log('\n-- Scenariusz 3: 5 cywilizacji AI zaznaczonych (panel przewijany) --');

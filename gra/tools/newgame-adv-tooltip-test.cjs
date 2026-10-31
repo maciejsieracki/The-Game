@@ -108,10 +108,9 @@ async function gotoAdvModal(page) {
 }
 
 /** Ustawienia dokładnie wymienione w zgłoszeniu Macieja (zrzut ekranu). */
+// R-WEB-NEWGAME-MENU-REORDER-Q1: „Warunki zwycięstwa", „Trudność miast-państw" i „Barbarzyńcy"
+// przeniesiono do głównej siatki kroku 4 — ich ikony (i) sprawdza blok [układ] poniżej.
 const NAMED_SETTINGS = [
-  'Warunki zwycięstwa',
-  'Trudność miast-państw',
-  'Barbarzyńcy',
   'Bitwy',
   'Koszty budynków',
   'Koszty jednostek',
@@ -186,9 +185,17 @@ async function main() {
     console.log('\n-- Scenariusz 1: hover PEŁNY (>380ms) na WSZYSTKICH 8 ustawień z realnego zgłoszenia --');
     await gotoAdvModal(page);
     const advancedLabels = (await page.locator('.civ-newgame .adv-modal .adv-lbl').allTextContents()).map(x => x.trim());
-    assert('[układ] trudność miast-państw jest w Zaawansowanych', advancedLabels.includes('Trudność miast-państw'));
-    assert('[układ] bramka ofert handlowych nie jest zdublowana w Zaawansowanych',
-      !advancedLabels.includes('Wymagaj rozpatrzenia ofert handlowych przed końcem tury'));
+    for (const moved of ['Trudność miast-państw', 'Barbarzyńcy', 'Warunki zwycięstwa', 'Udział lądu na mapie', 'Wojna epoki', 'Chatki z nagrodami']) {
+      assert(`[układ] "${moved}" nie jest zdublowana w Zaawansowanych`, !advancedLabels.includes(moved));
+    }
+    const gridInfo = await page.evaluate(() => Array.from(document.querySelectorAll('.civ-newgame .sett-grid .srow'))
+      .map(r => ({ label: (r.querySelector('.sl')?.textContent || '').trim(), aria: r.querySelector('.ng-info')?.getAttribute('aria-label') || '' })));
+    for (const moved of ['Trudność miast-państw', 'Barbarzyńcy', 'Warunki zwycięstwa']) {
+      const g = gridInfo.find(x => x.label === moved);
+      assert(`[układ] "${moved}" w siatce głównej ma ikonę (i) z opisem`, !!g && g.aria.startsWith('Informacja: ') && g.aria.length > 'Informacja: '.length);
+    }
+    assert('[układ] bramka ofert handlowych jest w Zaawansowanych (poza główną siatką)',
+      advancedLabels.includes('Wymagaj rozpatrzenia ofert handlowych przed końcem tury'));
 
     for (const label of NAMED_SETTINGS) {
       const r = await hoverIconForLabel(page, label);
@@ -209,7 +216,7 @@ async function main() {
     console.log('\n-- Scenariusz 2: hover KRÓTKI (<380ms) — throttling zamierzony, tooltip NIE POWINIEN się pokazać --');
     // To jest najbardziej prawdopodobne wytłumaczenie subiektywnego "nie działa": pobieżne
     // najechanie krócej niż SHOW_DELAY_MS. Dokumentujemy to jako ZAMIERZONE zachowanie, nie bug.
-    const r2 = await hoverIconForLabel(page, 'Warunki zwycięstwa');
+    const r2 = await hoverIconForLabel(page, 'Bitwy');
     assert('[krótki hover] ikona znaleziona', r2.found && r2.visible);
     if (r2.found && r2.visible) {
       await wait(150); // < SHOW_DELAY_MS=380
@@ -230,7 +237,7 @@ async function main() {
       if (root) root.className = 'civ-newgame-MUTATED-OUT-OF-SCOPE';
     });
     await wait(100);
-    const rMut = await hoverIconForLabel(page, 'Barbarzyńcy', { scoped: false });
+    const rMut = await hoverIconForLabel(page, 'Koszty budynków', { scoped: false });
     assert('[mutacja scope] ikona nadal fizycznie znaleziona (kontrola sensu scenariusza)', rMut.found && rMut.visible);
     if (rMut.found && rMut.visible) {
       await wait(SHOW_DELAY_MS + 250);
