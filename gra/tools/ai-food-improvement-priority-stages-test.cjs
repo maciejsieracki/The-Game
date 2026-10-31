@@ -97,36 +97,36 @@ try {
   map.hexes['14,3'].nakladka = 'zloze_bydla';
   const placed = new Map();
 
+  // R-WEB-AUTOIMPROVE-PRIORITY-Q1 R5 (D4 wlasciciela 2026-10-31, etapy E1..E6): farma na heksie z rzeka
+  // BEZ lasu (5,4) ma PIERWSZENSTWO przed wycinka lasu na rzece (E1 > E2) — wczesniej wycinka byla
+  // etapem 0 i wyprzedzala kazda farme. Zmiana oczekiwan zgodna z wiazaca specyfikacja
+  // ("Farma na heksach z rzeka, na ktorych NIE MA lasu - pierwszy priorytet, wszedzie, zanim cokolwiek z E2+").
+  const farmFirst = runPicker({ map, cities, worked, placed, maxItemsPerCity: 1, getSkipWyrab: () => true });
+  onlyKey(farmFirst, 'farma', 'E1: farm on the river hex without forest comes before river forest clearing');
+  assert.equal(farmFirst.length, 1, 'AI-style one-order-per-city cap must remain intact');
+  assert.ok(farmFirst.some(p => p.cityId === 'a' && p.q === 5 && p.r === 4), 'E1 target is the river hex 5,4');
+  check('0. E1 river farm (no forest) precedes river forest clearing; AI throttle intact', () => {});
+  place(farmFirst, map, placed);
+
   const clear = runPicker({ map, cities, worked, placed, maxItemsPerCity: 1, getSkipWyrab: () => true });
-  onlyKey(clear, 'wyrab', 'stage 0 river clearing overrides the general woodcut toggle');
+  onlyKey(clear, 'wyrab', 'stage E2 river clearing overrides the general woodcut toggle');
   assert.equal(clear.length, 1, 'AI-style one-order-per-city cap must remain intact');
-  check('0. river forest clearing is isolated from farms/livestock and respects AI throttle', () => {});
+  check('0a. E2 river forest clearing is isolated from farms/livestock and respects AI throttle', () => {});
   place(clear, map, placed);
 
+  // E1 > E2: the freshly cleared river hex gets its farm BEFORE the next river forest is cut.
+  const farmCleared = runPicker({ map, cities, worked, placed, maxItemsPerCity: 1 });
+  onlyKey(farmCleared, 'farma', 'E1: farm on the cleared river hex precedes clearing the next river forest');
+  place(farmCleared, map, placed);
   const clearAgain = runPicker({ map, cities, worked, placed, maxItemsPerCity: 1 });
-  onlyKey(clearAgain, 'wyrab', 'stage 0 continues until every eligible river forest is prepared');
-  check('0b. all river forests are prepared before any farm is allowed', () => {});
+  onlyKey(clearAgain, 'wyrab', 'E2 continues with the remaining river forest');
   place(clearAgain, map, placed);
+  const farmCleared2 = runPicker({ map, cities, worked, placed, maxItemsPerCity: 1 });
+  onlyKey(farmCleared2, 'farma', 'E1: farm on the second cleared river hex');
+  place(farmCleared2, map, placed);
+  check('0b. river hexes are developed one by one: clear -> farm (E1 > E2), all river forests prepared before E3+', () => {});
 
-  let farmPasses = 0;
-  let livestock = [];
-  for (let turn = 0; turn < 10; turn++) {
-    const picks = runPicker({ map, cities, worked, placed, maxItemsPerCity: 1 });
-    if (picks.length > 0 && picks.every(p => p.key === 'farma')) {
-      if (turn === 0) {
-        assert.ok(picks.some(p => p.cityId === 'a'), 'farm stage should include city with empty worked farmland');
-        check('1. farm stage wins across cities before cattle stage', () => {});
-      }
-      farmPasses++;
-      place(picks, map, placed);
-      continue;
-    }
-    livestock = picks;
-    break;
-  }
-  assert.ok(farmPasses >= 3, `AI should keep filling all eligible farm fields before later stages (passes=${farmPasses})`);
-  check('1b. AI keeps the farm stage active until all eligible farms are placed', () => {});
-
+  // E3: trzoda przy rzece (poprzednio etap 2 po WSZYSTKICH farmach; teraz farmy poza rzeka sa E5).
   let livestockPasses = 0;
   let lateFood = [];
   for (let turn = 0; turn < 20; turn++) {
@@ -134,7 +134,7 @@ try {
     if (picks.length > 0 && picks.every(p => ['bydlo', 'owce', 'lama'].includes(p.key))) {
       if (turn === 0) {
         assert.ok(picks.some(p => p.key === 'bydlo'), 'the first available livestock action should be Trzoda');
-        check('2. livestock stage follows all eligible farms', () => {});
+        check('2. E3 livestock (river hexes) follows the river farms and precedes farms off the river', () => {});
       }
       livestockPasses++;
       place(picks, map, placed);
@@ -143,24 +143,56 @@ try {
     lateFood = picks;
     break;
   }
-  assert.ok(livestockPasses > 0, 'livestock stage should run after farms');
+  assert.ok(livestockPasses > 0, 'livestock stage should run after river farms');
   assert.ok(lateFood.length > 0 && lateFood.every(p => ['irygacja', 'tarasy'].includes(p.key)),
-    `irrigation/terraces should be next only after farms and livestock (got ${lateFood.map(p => p.key).join(',')})`);
+    `E4 irrigation/terraces should be next after river farms and livestock, BEFORE off-river farms (got ${lateFood.map(p => p.key).join(',')})`);
+  check('3. E4 irrigation/terraces precede the off-river farms (E5)', () => {});
+  let irrPasses = 0;
+  let offRiver = lateFood;
+  for (let turn = 0; turn < 20; turn++) {
+    if (offRiver.length > 0 && offRiver.every(p => ['irygacja', 'tarasy'].includes(p.key))) {
+      irrPasses++;
+      place(offRiver, map, placed);
+      offRiver = runPicker({ map, cities, worked, placed, maxItemsPerCity: 1 });
+      continue;
+    }
+    break;
+  }
+  assert.ok(irrPasses > 0, 'irrigation stage ran');
+  assert.ok(offRiver.length > 0 && offRiver.every(p => p.key === 'farma'),
+    `E5 farms off the river come after irrigation (got ${offRiver.map(p => p.key).join(',')})`);
+  check('3b. E5 farms outside the river follow E4', () => {});
+  let farmPasses = 0;
+  for (let turn = 0; turn < 10; turn++) {
+    if (offRiver.length > 0 && offRiver.every(p => p.key === 'farma')) {
+      farmPasses++;
+      place(offRiver, map, placed);
+      offRiver = runPicker({ map, cities, worked, placed, maxItemsPerCity: 1 });
+      continue;
+    }
+    break;
+  }
+  assert.ok(farmPasses >= 1, 'AI keeps filling the eligible off-river farm fields');
+  check('1b. AI keeps the E5 farm stage active until all eligible off-river farms are placed', () => {});
   const saltStillAvailable = runPicker({
     map, cities, worked, placed, maxItemsPerCity: 1, foodImprovementStages: false,
     priorityOverride: ['warzelnia_soli'],
   });
   assert.ok(saltStillAvailable.some(p => p.key === 'warzelnia_soli'),
-    'salt works remain eligible after livestock, so they must not block the irrigation phase');
-  check('3. irrigation/terraces precede remaining salt food improvements after livestock', () => {});
-  place(lateFood, map, placed);
+    'salt works remain eligible after livestock, so they must not block earlier phases');
+  check('3c. salt works (E6) stay available and do not block the earlier stages', () => {});
+  const lateFoodPlaceholder = lateFood;
+  place(lateFoodPlaceholder, map, new Map());
 
-  const noLivestockTech = runPicker({
+  // D4: etap bez odblokowanej technologii NIE jest celem i nie blokuje nastepnych (poprzednio
+  // sonda dodawala technologie etapu i wstrzymywala irygacje, dopoki istnial niepostawiony cel farmy).
+  const noFarmTech = runPicker({
     map, cities, worked, placed: new Map(), maxItemsPerCity: 1,
-    unlockedTechs: new Set(['Irygacja']),
+    unlockedTechs: new Set(['Gospodarka wodna']),
   });
-  assert.ok(noLivestockTech.length === 0, 'unlocked irrigation must not bypass farm stage while unbuilt eligible farm targets exist');
-  check('edge. locked earlier stage blocks later food actions until it becomes available', () => {});
+  assert.ok(noFarmTech.length > 0 && noFarmTech.every(p => p.key === 'irygacja'),
+    `locked farm tech must not block irrigation (got ${noFarmTech.map(p => p.key).join(',') || 'none'})`);
+  check('edge. a stage without unlocked technology is not a target and does not block later stages (D4)', () => {});
 
   // Explicit negative: when there are no eligible citizen plots, the planner is a no-op.
   const empty = runPicker({
@@ -206,10 +238,14 @@ try {
       else aiPlaced.set(hexKey, [...(aiPlaced.get(hexKey) ?? []), command.key]);
     }
   }
-  const firstFarmIndex = aiTrace.indexOf('farma');
-  assert.ok(firstFarmIndex >= 2 && aiTrace.slice(0, firstFarmIndex).every(key => key === 'wyrab'),
-    `decideAITurn must issue both river clearing orders before first farm (got ${aiTrace.join(',')})`);
-  check('parity. real AI turn planner clears river forest before farm orders', () => {});
+  // D4 (R5): E1 > E2 — kazdy wyciety heks rzeki dostaje farme ZANIM zostanie wyciety nastepny las na rzece;
+  // trzoda/irygacja (E3/E4) dopiero gdy na rzece nie ma juz wycinki ani farmy do zrobienia.
+  assert.deepEqual(aiTrace.slice(0, 4), ['wyrab', 'farma', 'wyrab', 'farma'],
+    `decideAITurn must develop river hexes one by one (clear -> farm) before livestock/irrigation (got ${aiTrace.join(',')})`);
+  const lastWyrab = aiTrace.lastIndexOf('wyrab');
+  const firstLater = aiTrace.findIndex(k => k === 'bydlo' || k === 'irygacja');
+  assert.ok(firstLater > lastWyrab, `E3/E4 start only after the river clearing is finished (got ${aiTrace.join(',')})`);
+  check('parity. real AI turn planner develops river hexes clear -> farm (E1 > E2), then E3/E4', () => {});
 
   if (process.env.FOOD_STAGES_MUTATION_PROBE !== '1') {
     const mutatedRoot = path.join(temp, 'mutated-project');

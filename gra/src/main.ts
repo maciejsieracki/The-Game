@@ -35764,12 +35764,16 @@ async function boot(): Promise<void> {
                     );
                     return new Set(coords.map(({ q, r }) => `${q},${r}`));
                   },
+                  // R-WEB-AUTOIMPROVE-PRIORITY-Q1 (R5): etapy E1-E6 obowiazuja takze przy niedoborze
+                  // surowca (zmierzone na realnej grze: bez tego picker wracal do "heks po heksie",
+                  // a ulepszenia surowcowe zjadaly limit % puli przed irygacja). Picker sam dolicza
+                  // reszte listy z pozostalego budzetu PO etapie zywnosci (patrz pickAutoImprovements).
                   foodImprovementStages: city => {
                     const policy = effectiveUlepszeniaForCity(city as City);
-                    return policy.focus === 'zywnosc'
-                      || (policy.focus === 'zrownowazone'
-                        && !hasNonFoodResourceDeficit(resourceDeficitKeysForOwner(hOid)));
+                    return policy.focus === 'zywnosc' || policy.focus === 'zrownowazone';
                   },
+                  // Wycinka w toku (wieloturowa) - picker nie moze jej emitowac drugi raz (exec-wycinka-in-progress).
+                  clearingHexKeys: new Set(hexClearingStates.keys()),
                 });
                 const toastLines: string[] = [];
                 for (const pick of picks) {

@@ -90,7 +90,11 @@ const TECHS = new Set(['Łowiectwo', 'Rolnictwo', 'Oswojenie zwierząt', 'Obrób
 // ===========================================================================
 console.log('A. petla po HEKSACH, nie po TYPACH');
 {
-  const map = makeMap(12, 12);
+  // R-WEB-AUTOIMPROVE-PRIORITY-Q1 (R5): hodowla (bydlo/owce/lama) jest dozwolona TYLKO na heksach przy
+  // rzece (wiazaca specyfikacja E3 wlasciciela 2026-10-31; auto-improvements.ts: `riverHexKeys` w FAZIE 1).
+  // Domykanie heksa (farma -> trzoda na TYM SAMYM heksie) sprawdzamy wiec na heksie z rzeka; na mapie
+  // bez rzek trzoda nie powstaje (kontrola ponizej), wiec wczesniejsza mapa bez rzeki nie dawala pary.
+  const map = makeMap(12, 12, { riverAt: [[4, 5]] });
   const city = { id: 'c0', ownerId: 0, q: 5, r: 5, population: 6 };
   const picks = M.pickAutoImprovements({
     cities: [city], ownerId: 0, map,
@@ -109,6 +113,17 @@ console.log('A. petla po HEKSACH, nie po TYPACH');
   ok(!przeplatanie, `zaden heks nie wraca po przerwie (sekwencja: ${seq.join(' ')})`);
   ok(seq[0] === seq[1], `pierwsze DWA ulepszenia trafiaja na TEN SAM heks (${seq[0]} vs ${seq[1]})`);
   ok(picks[0].key !== picks[1].key, `... i sa to ROZNE typy (${picks[0].key} / ${picks[1].key}) — czyli domykanie heksa, nie ten sam typ na dwoch heksach`);
+  const noRiverMap = makeMap(12, 12);
+  const noRiverPicks = M.pickAutoImprovements({
+    cities: [city], ownerId: 0, map: noRiverMap,
+    territoryNodes: territory(5, 5, 3, 0, 'c0', noRiverMap),
+    placedImprovements: new Map(),
+    pracaAvailable: 100000, unlockedTechs: TECHS,
+    pracaBudgetPercent: 100, maxItemsPerCity: 6, skipWyrab: true, playerEra: 3,
+    priorityOverride: M.AI_IMPROVEMENT_PRIORITY.filter(k => k !== 'wyrab'),
+  });
+  ok(!noRiverPicks.some(p => p.key === 'bydlo' || p.key === 'owce' || p.key === 'lama'),
+    'E3: bez rzeki trzoda nie powstaje (hodowla tylko przy rzece)');
 }
 
 console.log('B. heks z rzeka ma priorytet przed heksem bez rzeki');
