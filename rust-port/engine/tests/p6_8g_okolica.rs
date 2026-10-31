@@ -10,8 +10,8 @@ use civ_engine::domain::improvements::TerrainType;
 use civ_engine::domain::okolica::{
     adjust_tile_worker, assign_worked_tiles, compute_lost_to_nearer_sibling_by_city,
     is_land_workable_hex, okolica_tiles, rebalance_workers_after_population_change,
-    toggle_tile_worker, wagi_for_focus, AssignOptions, OkolicaCity, OkolicaFocus, OkolicaTryb,
-    OkolicaYield, Reczne, Wagi,
+    surrounding_worker_cap, toggle_tile_worker, wagi_for_focus, AssignOptions, OkolicaCity,
+    OkolicaFocus, OkolicaTryb, OkolicaYield, Reczne, Wagi,
 };
 use civ_engine::domain::start_position::Overlay;
 use civ_engine::domain::terrain::{
@@ -401,4 +401,26 @@ fn lost_map_empty_for_other_owners() {
     b.owner_id = 2;
     let lost = compute_lost_to_nearer_sibling_by_city(&[a, b], &map);
     assert!(lost.is_empty());
+}
+
+/// Zabija mutacje M3 (usuniete `max(0, ...)` w `js_floor_nonneg`, wywolanie z `surrounding_worker_cap`):
+/// ujemna populacja daje limit 0 (web `Math.max(0, Math.floor(population))`), a nie ujemny `floor`.
+#[test]
+fn negative_population_clamps_worker_cap_to_zero() {
+    assert_eq!(surrounding_worker_cap(-0.5), 0.0);
+    assert_eq!(surrounding_worker_cap(-3.0), 0.0);
+    assert_eq!(surrounding_worker_cap(-1.0), 0.0);
+    assert_eq!(surrounding_worker_cap(0.0), 0.0);
+    assert_eq!(surrounding_worker_cap(2.7), 2.0);
+}
+
+/// Ujemna populacja w rebalansie trybu recznym (spadek do ujemnej wartosci) = pusty zbior robotnikow.
+#[test]
+fn negative_population_rebalance_empties_manual_workers() {
+    let map = disk(2, TerrainType::Grassland);
+    let mut c = city(0, 0, 3.0);
+    c.tryb = Some(OkolicaTryb::Reczny);
+    c.reczne = Some(reczne_of(&[("1,0", 1.0), ("0,1", 1.0), ("-1,0", 1.0)]));
+    rebalance_workers_after_population_change(&mut c, &map, &flat, 3.0, -2.0, None, None);
+    assert_eq!(c.reczne.as_ref().map(|r| r.count_assigned()), Some(0));
 }
