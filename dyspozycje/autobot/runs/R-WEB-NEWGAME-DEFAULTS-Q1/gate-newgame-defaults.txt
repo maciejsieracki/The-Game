@@ -1,2 +1,68 @@
-node tools/newgame-defaults-test.cjs (świeży profil, Kontynenty/Pangea/Wyspy/Ziemia, krok 4, okno Zaawansowane, krok Start): 39 pass · 0 fail
+== 1. świeży profil: siatka + Zaawansowane
+  OK  krok 4 „Rozmiar mapy" = Standardowy
+  OK  krok 4 „Typ świata" = Kontynenty
+  OK  krok 4 „Poziom trudności" = Normalny
+  OK  krok 4 „Prędkość gry" = Standardowa
+  OK  krok 4 „Wymagaj rozpatrzenia ofert handlowych przed końcem tury" = Włączona
+  OK  krok 4 „Udział lądu na mapie" = 30% lądu / 70% morze
+  OK  okno „Zaawansowane" „Warunki zwycięstwa" = Moc + dominacja
+  OK  okno „Zaawansowane" „Trudność miast-państw" = Normalny
+  OK  okno „Zaawansowane" „Barbarzyńcy" = Normalny
+  OK  okno „Zaawansowane" „Bitwy" = Bitwa ręczna i automatyczna
+  OK  okno „Zaawansowane" „Koszty budynków" = Normalny
+  OK  okno „Zaawansowane" „Koszty jednostek" = Normalny
+  OK  okno „Zaawansowane" „Wzrost ludności" = Normalny
+  OK  okno „Zaawansowane" „Zasięg ruchu" = Normalny
+  OK  okno „Zaawansowane" „Limit miast zakładanych (baza)" = 10 miast
+  OK  okno „Zaawansowane" „Wojna epoki z udziałem gracza" = Włączona
+  OK  okno „Zaawansowane" „Chatki z nagrodami" = Włączone
+  OK  okno „Zaawansowane" „Jakość grafiki mapy" = Średnia
+  OK  okno „Zaawansowane" „Surowce na mapie" = Normalnie
+  OK  okno „Zaawansowane" „Rzeki" = Normalnie
+  OK  okno „Zaawansowane" „Pustynie" = Normalnie
+  OK  okno „Zaawansowane" „Las" = Normalnie
+  OK  okno „Zaawansowane" „Góry i wzgórza" = Normalnie
+  OK  okno „Zaawansowane" nie zawiera suwaka „Udział lądu" (jest tylko w siatce)
+== 2. udział lądu 30% (Pangea/Wyspy), Ziemia bez suwaka
+  OK  Kontynenty -> Pangea
+  OK  Pangea: typ = Pangea
+  OK  Pangea: udział lądu = 30%
+  OK  Pangea -> Wyspy
+  OK  Wyspy: typ = Wyspy
+  OK  Wyspy: udział lądu = 30%
+  OK  Wyspy -> Ziemia
+  OK  Ziemia: typ = Ziemia
+  OK  Ziemia: brak wiersza „Udział lądu na mapie" w siatce
+  OK  Ziemia: brak suwaka lądu w oknie Zaawansowane
+  OK  Ziemia -> Wyspy
+  OK  Wyspy po powrocie: udział lądu = 30%
+== 3. krok Start: podsumowanie + parametry startu
+  OK  krok Start zawiera „Bitwa ręczna i automatyczna"
+  OK  krok Start zawiera „Moc + dominacja"
+  OK  krok Start zawiera „Standardowy"
+  OK  krok Start zawiera „Normalny"
+  OK  __params: landFractionPercent = 30 (Wyspy)
+  OK  __params: dealsEndTurnGate = true
+  OK  __params: playerEpochWarEnabled = true
+  OK  __params.advanced.battleAlwaysManual = true
+  OK  __params.advanced.ruchSwiataPace = "normalny"
+  OK  __params.advanced.buildingCostPace = "normalny"
+  OK  __params.advanced.wzrostLudnosciPace = "normalny"
+  OK  __params.advanced.kosztJednostekPace = "normalny"
+  OK  __params.advanced.cityStateDifficultyOverride = "normal"
+  OK  __params.advanced.barbariansLevel = "normalny"
+  OK  __params.advanced.victoryMode = "moc_i_dominacja"
+  OK  __params.advanced.cityLimitBase = 10
+  OK  __params.advanced.landFractionCustom = false
+  OK  brak błędów strony (pageerror)
+== 4. zapisane preferencje nie są nadpisywane
+  OK  zmiana Bitwy na „Bitwa automatyczna" przed zapisem
+  OK  prefs zapisane pod kluczem civ-new-game-prefs-v1
+  OK  po przeładowaniu: zapisana Bitwa „Bitwa automatyczna" zachowana (nie nadpisana domyślną)
+== 5. reset preferencji = domyślne
+  OK  reset: Bitwy = Bitwa ręczna i automatyczna
+  OK  reset: Zasięg ruchu = Normalny
+  OK  reset: udział lądu (Kontynenty) = 30%
+
+60 pass · 0 fail
 EXIT=0

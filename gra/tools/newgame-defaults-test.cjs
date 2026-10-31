@@ -2,188 +2,29 @@
 /**
  * newgame-defaults-test.cjs — R-WEB-NEWGAME-DEFAULTS-Q1 (Maciej 2026-10-31).
  *
- * Real-browser test of the NEW-GAME wizard defaults on a FRESH profile (empty localStorage):
- *   - krok 4 „Ustawienia Rozgrywki" (grid) i okno „Zaawansowane opcje" pokazują tabelę domyślnych,
- *   - udział lądu = 30% dla Kontynenty / Pangea / Wyspy (suwak widoczny we wszystkich trzech),
- *   - typ Ziemia = brak suwaka „Udział lądu na mapie",
- *   - krok 5 „Start" (podsumowanie parametrów startu) odzwierciedla te same wartości.
+ * Real-browser test of the NEW-GAME wizard defaults (esbuild harness, jak newgame-settings-layout-reposition-test):
+ *   1. świeży profil (pusty localStorage): siatka kroku 4 + okno „Zaawansowane opcje" = tabela domyślnych,
+ *   2. udział lądu 30% dla Pangea / Wyspy (suwak obecny), brak suwaka dla Ziemi,
+ *   3. krok Start: DOM podsumowania oraz window.__params (parametry startu gry = domyślne),
+ *   4. zapisane preferencje gracza NIE są nadpisywane nowymi domyślnymi (po przeładowaniu),
+ *   5. wyczyszczenie preferencji (reset) przywraca tabelę domyślnych.
  *
- * Bundle budowany vite'em DO KATALOGU TYMCZASOWEGO POZA REPO (nie `npm run build`).
- *
- * Run from gra/:  node tools/newgame-defaults-test.cjs
+ * Run from gra/:  PLAYWRIGHT_CHROMIUM_EXECUTABLE=... node tools/newgame-defaults-test.cjs
  */
 
-const path = require('path');
+const assert = require('assert');
 const fs = require('fs');
 const os = require('os');
+const path = require('path');
 const http = require('http');
-const { execSync } = require('child_process');
 
-const GRA_DIR = path.resolve(__dirname, '..');
-const OUT_DIR = fs.mkdtempSync(path.join(os.tmpdir(), 'newgame-defaults-'));
-let OUT_HTML = '';
+const esbuild = require(path.join(__dirname, '..', 'node_modules', 'esbuild'));
+const { chromium } = require(path.join(__dirname, '..', 'node_modules', 'playwright'));
 
-let pass = 0;
-let fail = 0;
-
-function assert(label, condition) {
-  if (condition) {
-    pass++;
-    console.log(`  OK  ${label}`);
-  } else {
-    fail++;
-    console.error(` FAIL ${label}`);
-  }
-}
-
-function buildBundle() {
-  console.log('[newgame-defaults-test] budowanie bundla (vite build -> katalog tymczasowy)...');
-  execSync(
-    `node ./node_modules/vite/bin/vite.js build --outDir ${JSON.stringify(OUT_DIR)} --emptyOutDir`,
-    { cwd: GRA_DIR, stdio: 'pipe' },
-  );
-  if (!fs.existsSync(path.join(OUT_DIR, 'index.html'))) {
-    throw new Error('Build nie wyprodukował index.html w ' + OUT_DIR);
-  }
-  console.log('[newgame-defaults-test] build OK.');
-}
-
-async function serveBundleOverHttp() {
-  const htmlPath = path.join(OUT_DIR, 'index.html');
-  const server = http.createServer((request, response) => {
-    const pathname = new URL(request.url || '/', 'http://127.0.0.1').pathname;
-    if (pathname === '/favicon.ico') {
-      response.writeHead(204).end();
-      return;
-    }
-    if (pathname !== '/') {
-      response.writeHead(404).end();
-      return;
-    }
-    response.writeHead(200, { 'content-type': 'text/html; charset=utf-8' });
-    fs.createReadStream(htmlPath).pipe(response);
-  });
-  await new Promise((resolve, reject) => {
-    server.once('error', reject);
-    server.listen(0, '127.0.0.1', resolve);
-  });
-  OUT_HTML = `http://127.0.0.1:${server.address().port}/`;
-  return server;
-}
-
-function browserCandidates() {
-  const explicit = process.env.CIV_CHROME_PATH || process.env.CHROME_PATH;
-  const candidates = explicit ? [explicit] : [];
-  candidates.push('/usr/bin/chromium');
-  const roots = [];
-  const playwrightRoot = process.env.PLAYWRIGHT_BROWSERS_PATH;
-  if (playwrightRoot && playwrightRoot !== '0') roots.push(playwrightRoot);
-  roots.push(path.join(os.homedir(), '.cache', 'ms-playwright'));
-  roots.push('/opt/pw-browsers');
-  for (const root of roots) {
-    let entries;
-    try { entries = fs.readdirSync(root).sort().reverse(); } catch (_) { continue; }
-    for (const entry of entries) {
-      if (!entry.startsWith('chromium')) continue;
-      for (const relative of [path.join('chrome-linux64', 'chrome'), path.join('chrome-linux', 'chrome')]) {
-        candidates.push(path.join(root, entry, relative));
-      }
-    }
-  }
-  return [...new Set(candidates)].filter((candidate) => fs.existsSync(candidate));
-}
-
-async function launchBrowser(chromium) {
-  let defaultError;
-  try {
-    return await chromium.launch({ headless: true });
-  } catch (error) {
-    defaultError = error;
-  }
-  for (const executablePath of browserCandidates()) {
-    try {
-      return await chromium.launch({
-        headless: true,
-        executablePath,
-        args: ['--no-sandbox', '--use-gl=swiftshader', '--enable-unsafe-swiftshader'],
-      });
-    } catch (_) {
-      // next candidate
-    }
-  }
-  throw new Error('Nie udało się uruchomić Chromium. Domyślny błąd: ' + defaultError.message);
-}
-
-function wait(ms) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
-/** Świeży profil: nowy kontekst = pusty localStorage. */
-async function openFreshWizard(browser) {
-  const context = await browser.newContext({ viewport: { width: 1770, height: 970 }, deviceScaleFactor: 1 });
-  const page = await context.newPage();
-  const errors = [];
-  page.on('pageerror', (error) => errors.push(String(error && error.message)));
-  await page.goto(OUT_HTML, { waitUntil: 'load', timeout: 120000 });
-  await page.waitForSelector('.civ-menu', { timeout: 60000 });
-  await wait(400);
-  await page.locator('.civ-menu .mbtn.primary').click();
-  await page.waitForSelector('.civ-newgame .cta-hero', { timeout: 15000 });
-  await wait(120);
-  return { context, page, errors };
-}
-
-async function activeStepLabel(page) {
-  const text = await page.locator('.civ-newgame .stepbar .si.active .si-l').textContent();
-  return (text || '').trim();
-}
-
-async function clickNext(page) {
-  // Krok Intro: przejście CTA „cta-hero" (dolna nawigacja pojawia się od kroku 2).
-  if ((await activeStepLabel(page)) === 'Intro') {
-    await page.locator('.civ-newgame .cta-hero').click();
-  } else {
-    await page.locator('.civ-newgame .nav .nb.next').click();
-  }
-  await wait(150);
-}
-
-async function gotoStep(page, label) {
-  for (let i = 0; i < 8; i++) {
-    if ((await activeStepLabel(page)) === label) return;
-    await clickNext(page);
-  }
-  throw new Error('Nie udało się dojść do kroku ' + label + ' (aktywny: ' + (await activeStepLabel(page)) + ')');
-}
-
-/** Wiersze siatki „Ustawienia Rozgrywki" (krok 4): [{lbl, val}]. */
-async function gridRows(page) {
-  return page.evaluate(() => Array.from(document.querySelectorAll('.civ-newgame .sett-grid .srow')).map((row) => ({
-    lbl: (row.querySelector('.sl')?.textContent || '').trim(),
-    val: (row.querySelector('.sv')?.textContent || '').trim(),
-  })));
-}
-
-/** Kliknij strzałkę „›" w wierszu siatki o danej etykiecie. */
-async function clickGridArrow(page, lbl, dir) {
-  const ok = await page.evaluate(({ lbl, dir }) => {
-    const row = Array.from(document.querySelectorAll('.civ-newgame .sett-grid .srow'))
-      .find((r) => (r.querySelector('.sl')?.textContent || '').trim() === lbl);
-    if (!row) return false;
-    const arrows = row.querySelectorAll('.sctl .arr');
-    const btn = dir < 0 ? arrows[0] : arrows[arrows.length - 1];
-    if (!btn) return false;
-    btn.click();
-    return true;
-  }, { lbl, dir });
-  await wait(150);
-  return ok;
-}
-
-function valueOf(rows, lbl) {
-  const row = rows.find((r) => r.lbl === lbl);
-  return row ? row.val : undefined;
-}
+const GRA = process.env.GAME_ROOT || path.resolve(__dirname, '..');
+const TMP = fs.mkdtempSync(path.join(os.tmpdir(), 'newgame-defaults-'));
+const PREFS_KEY = 'civ-new-game-prefs-v1';
+const EVIDENCE = path.resolve(GRA, '..', 'dyspozycje', 'autobot', 'runs', 'R-WEB-NEWGAME-DEFAULTS-Q1', 'evidence');
 
 const EXPECTED_GRID = {
   'Rozmiar mapy': 'Standardowy',
@@ -214,88 +55,259 @@ const EXPECTED_ADV = {
   'Góry i wzgórza': 'Normalnie',
 };
 
-async function main() {
-  buildBundle();
-  const server = await serveBundleOverHttp();
-  let chromium;
-  try {
-    ({ chromium } = require('playwright'));
-  } catch (error) {
-    throw new Error('Brak modułu playwright: ' + error.message);
+/** Parametry startu gry (window.__params.advanced) dla świeżego profilu = tabela domyślnych. */
+const EXPECTED_PARAMS_ADVANCED = {
+  battleAlwaysManual: true,
+  ruchSwiataPace: 'normalny',
+  buildingCostPace: 'normalny',
+  wzrostLudnosciPace: 'normalny',
+  kosztJednostekPace: 'normalny',
+  cityStateDifficultyOverride: 'normal',
+  barbariansLevel: 'normalny',
+  victoryMode: 'moc_i_dominacja',
+  cityLimitBase: 10,
+  landFractionCustom: false,
+};
+
+let pass = 0;
+let fail = 0;
+function check(label, condition) {
+  if (condition) { pass++; console.log(`  OK  ${label}`); }
+  else { fail++; console.error(` FAIL ${label}`); }
+}
+
+function buildHarness() {
+  const entry = path.join(TMP, 'entry.ts');
+  const bundle = path.join(TMP, 'bundle.js');
+  fs.writeFileSync(entry, `
+import { showNewGameFlow, hideNewGameFlow } from ${JSON.stringify(path.join(GRA, 'src/ui/newGameFlow.ts'))};
+import { DEFAULT_PLAYER_CIV_ID, DEFAULT_START_EPOCH_ID } from ${JSON.stringify(path.join(GRA, 'src/map/newGameMapDefaults.ts'))};
+const civ = { id: DEFAULT_PLAYER_CIV_ID, name: 'Grecy', epokiStartowe: [DEFAULT_START_EPOCH_ID], epokaWejscia: DEFAULT_START_EPOCH_ID };
+const config = { getCivs: () => [civ], onStart: p => { window.__params = p; } };
+window.__openWizard = () => showNewGameFlow(config);
+window.__closeWizard = () => hideNewGameFlow();
+window.__openWizard();
+`);
+  return esbuild.build({
+    entryPoints: [entry], bundle: true, platform: 'browser', format: 'iife', target: 'es2020',
+    outfile: bundle, absWorkingDir: GRA, logLevel: 'silent',
+    plugins: [{ name: 'browser-asset-stubs', setup(build) {
+      build.onResolve({ filter: /data\/loader$/ }, () => ({ path: 'loader', namespace: 'stub' }));
+      build.onLoad({ filter: /.*/, namespace: 'stub' }, args => {
+        if (args.path === 'loader') return { contents: 'export const loadGameData=()=>null;', loader: 'js' };
+        if (args.path === 'brands') return { contents: 'export const civIconSvg=()=>""; export const epochIconSvg=()=>""; export const newGameIntroEmblemSvg=()=>""; export const settingIconSvg=()=>"";', loader: 'js' };
+        if (args.path === 'tokens') return { contents: 'export const CIV_BRAND_SCOPE_VARS=""; export const ensureBrandRootTokens=()=>{};', loader: 'js' };
+        if (args.path === 'tooltip') return { contents: 'export const installHudTitleTooltips=()=>{};', loader: 'js' };
+        return null;
+      });
+      build.onResolve({ filter: /icons\/brandAssets$/ }, () => ({ path: 'brands', namespace: 'stub' }));
+      build.onResolve({ filter: /brandTokenVars$/ }, () => ({ path: 'tokens', namespace: 'stub' }));
+      build.onResolve({ filter: /hero-intro\.png\?url$/ }, () => ({ path: 'hero', namespace: 'asset-stub' }));
+      build.onLoad({ filter: /.*/, namespace: 'asset-stub' }, () => ({ contents: 'export default "";', loader: 'js' }));
+      build.onResolve({ filter: /hudTitleTooltip$/ }, () => ({ path: 'tooltip', namespace: 'stub' }));
+    } }],
+  }).then(() => bundle);
+}
+
+async function launch() {
+  try { return await chromium.launch({ headless: true, args: ['--no-sandbox'] }); }
+  catch (_error) {
+    return chromium.launch({
+      headless: true, executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE || '/usr/bin/chromium',
+      args: ['--no-sandbox', '--use-gl=swiftshader', '--enable-unsafe-swiftshader'],
+    });
   }
-  const browser = await launchBrowser(chromium);
+}
+
+/** Ładuje bundle do świeżej strony; localStorage pochodzi z kontekstu przeglądarki. */
+async function loadPage(context, origin, bundle) {
+  const page = await context.newPage();
+  const errors = [];
+  page.on('pageerror', (error) => errors.push(String(error && error.message)));
+  await page.goto(origin, { waitUntil: 'load' });
+  await page.addScriptTag({ path: bundle });
+  await page.waitForSelector('.civ-newgame .cta-hero', { timeout: 15000 });
+  return { page, errors };
+}
+
+async function reloadPage(page, bundle) {
+  await page.reload({ waitUntil: 'load' });
+  await page.addScriptTag({ path: bundle });
+  await page.waitForSelector('.civ-newgame .cta-hero', { timeout: 15000 });
+}
+
+async function activeStepLabel(page) {
+  return ((await page.locator('.civ-newgame .stepbar .si.active .si-l').textContent()) || '').trim();
+}
+
+async function gotoStep(page, label) {
+  for (let i = 0; i < 8; i++) {
+    const current = await activeStepLabel(page);
+    if (current === label) return;
+    if (current === 'Intro') await page.locator('.civ-newgame .cta-hero').click();
+    else await page.locator('.civ-newgame .nav .nb.next').click();
+    await page.waitForTimeout(150);
+  }
+  throw new Error('Nie udało się dojść do kroku ' + label + ' (aktywny: ' + (await activeStepLabel(page)) + ')');
+}
+
+async function gridRows(page) {
+  return page.evaluate(() => Array.from(document.querySelectorAll('.civ-newgame .sett-grid .srow')).map((row) => ({
+    lbl: (row.querySelector('.sl')?.textContent || '').trim(),
+    val: (row.querySelector('.sv')?.textContent || '').trim(),
+  })));
+}
+
+async function advRows(page) {
+  await page.locator('.civ-newgame .btn-adv').click();
+  await page.waitForSelector('.civ-newgame .adv-overlay.open');
+  return page.evaluate(() => Array.from(document.querySelectorAll('.adv-modal .adv-row')).map((row) => ({
+    lbl: (row.querySelector('.adv-lbl')?.textContent || '').trim(),
+    val: (row.querySelector('.sv')?.textContent || '').trim(),
+  })));
+}
+
+async function closeAdv(page) {
+  await page.locator('.adv-modal .adv-close').click();
+  await page.waitForTimeout(150);
+}
+
+async function clickGridArrow(page, lbl, dir) {
+  const ok = await page.evaluate(({ lbl, dir }) => {
+    const row = Array.from(document.querySelectorAll('.civ-newgame .sett-grid .srow'))
+      .find((r) => (r.querySelector('.sl')?.textContent || '').trim() === lbl);
+    if (!row) return false;
+    const arrows = row.querySelectorAll('.sctl .arr');
+    const btn = dir < 0 ? arrows[0] : arrows[arrows.length - 1];
+    if (!btn) return false;
+    btn.click();
+    return true;
+  }, { lbl, dir });
+  await page.waitForTimeout(150);
+  return ok;
+}
+
+function valueOf(rows, lbl) {
+  const row = rows.find((r) => r.lbl === lbl);
+  return row ? row.val : undefined;
+}
+
+async function main() {
+  const bundle = await buildHarness().then(() => path.join(TMP, 'bundle.js'));
+  const server = http.createServer((_req, res) => {
+    res.writeHead(200, { 'content-type': 'text/html; charset=utf-8' });
+    res.end('<!doctype html><html><head></head><body></body></html>');
+  });
+  await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));
+  const origin = `http://127.0.0.1:${server.address().port}/`;
+  const browser = await launch();
   try {
-    // --- 1. Świeży profil: krok 4, siatka + domyślne Kontynenty ---
-    console.log('\n== 1. świeży profil, Kontynenty ==');
-    const a = await openFreshWizard(browser);
+    fs.mkdirSync(EVIDENCE, { recursive: true });
+
+    // --- 1. Świeży profil: siatka kroku 4 + okno Zaawansowane ---
+    console.log('== 1. świeży profil: siatka + Zaawansowane');
+    const ctxA = await browser.newContext({ viewport: { width: 1600, height: 1000 } });
+    const a = await loadPage(ctxA, origin, bundle);
     await gotoStep(a.page, 'Ustawienia');
     const grid = await gridRows(a.page);
-    console.log('  GRID ' + JSON.stringify(grid));
     for (const [lbl, expected] of Object.entries(EXPECTED_GRID)) {
-      assert(`krok 4 „${lbl}" = ${expected}`, valueOf(grid, lbl) === expected);
+      check(`krok 4 „${lbl}" = ${expected}`, valueOf(grid, lbl) === expected);
     }
-    const evidenceDir = path.resolve(GRA_DIR, '..', 'dyspozycje', 'autobot', 'runs', 'R-WEB-NEWGAME-DEFAULTS-Q1', 'evidence');
-    fs.mkdirSync(evidenceDir, { recursive: true });
-    await a.page.screenshot({ path: path.join(evidenceDir, 'krok4-ustawienia-domyslne.png') });
-    await a.page.locator('.civ-newgame .btn-adv').click();
-    await wait(200);
-    await a.page.screenshot({ path: path.join(evidenceDir, 'zaawansowane-domyslne.png') });
-    const adv =await a.page.evaluate(() => Array.from(document.querySelectorAll('.adv-modal .adv-row')).map((row) => ({
-      lbl: (row.querySelector('.adv-lbl')?.textContent || '').trim(),
-      val: (row.querySelector('.sv')?.textContent || '').trim(),
-    })));
-    console.log('  ADV ' + JSON.stringify(adv));
+    await a.page.screenshot({ path: path.join(EVIDENCE, 'krok4-ustawienia-domyslne.png') });
+    const adv = await advRows(a.page);
     for (const [lbl, expected] of Object.entries(EXPECTED_ADV)) {
       const row = adv.find((r) => r.lbl === lbl);
-      assert(`okno „Zaawansowane" „${lbl}" = ${expected}`, !!row && row.val === expected);
+      check(`okno „Zaawansowane" „${lbl}" = ${expected}`, !!row && row.val === expected);
     }
-    await a.page.locator('.adv-modal .adv-close').click();
-    await wait(150);
+    check('okno „Zaawansowane" nie zawiera suwaka „Udział lądu" (jest tylko w siatce)',
+      !adv.some((r) => r.lbl === 'Udział lądu na mapie'));
+    await a.page.screenshot({ path: path.join(EVIDENCE, 'zaawansowane-domyslne.png') });
+    await closeAdv(a.page);
 
-    // --- 2. Udział lądu 30% dla Pangea i Wyspy (suwak obecny) ---
-    console.log('\n== 2. udział lądu: Pangea / Wyspy ==');
-    assert('Kontynenty: zmiana typu na Pangea (strzałka w prawo)', await clickGridArrow(a.page, 'Typ świata', 1));
+    // --- 2. Udział lądu 30%: Kontynenty -> Pangea -> Wyspy; Ziemia bez suwaka ---
+    console.log('== 2. udział lądu 30% (Pangea/Wyspy), Ziemia bez suwaka');
+    check('Kontynenty -> Pangea', await clickGridArrow(a.page, 'Typ świata', 1));
     let rows = await gridRows(a.page);
-    assert('Pangea: typ świata = Pangea', valueOf(rows, 'Typ świata') === 'Pangea');
-    assert('Pangea: suwak lądu obecny = 30% lądu / 70% morze', valueOf(rows, 'Udział lądu na mapie') === '30% lądu / 70% morze');
-    assert('Wyspy: zmiana typu na Wyspy', await clickGridArrow(a.page, 'Typ świata', 1));
+    check('Pangea: typ = Pangea', valueOf(rows, 'Typ świata') === 'Pangea');
+    check('Pangea: udział lądu = 30%', valueOf(rows, 'Udział lądu na mapie') === '30% lądu / 70% morze');
+    check('Pangea -> Wyspy', await clickGridArrow(a.page, 'Typ świata', 1));
     rows = await gridRows(a.page);
-    assert('Wyspy: typ świata = Wyspy', valueOf(rows, 'Typ świata') === 'Wyspy');
-    assert('Wyspy: suwak lądu obecny = 30% lądu / 70% morze', valueOf(rows, 'Udział lądu na mapie') === '30% lądu / 70% morze');
+    check('Wyspy: typ = Wyspy', valueOf(rows, 'Typ świata') === 'Wyspy');
+    check('Wyspy: udział lądu = 30%', valueOf(rows, 'Udział lądu na mapie') === '30% lądu / 70% morze');
+    check('Wyspy -> Ziemia', await clickGridArrow(a.page, 'Typ świata', 1));
+    rows = await gridRows(a.page);
+    check('Ziemia: typ = Ziemia', valueOf(rows, 'Typ świata') === 'Ziemia');
+    check('Ziemia: brak wiersza „Udział lądu na mapie" w siatce', valueOf(rows, 'Udział lądu na mapie') === undefined);
+    const advZiemia = await advRows(a.page);
+    check('Ziemia: brak suwaka lądu w oknie Zaawansowane', !advZiemia.some((r) => r.lbl === 'Udział lądu na mapie'));
+    await closeAdv(a.page);
+    check('Ziemia -> Wyspy', await clickGridArrow(a.page, 'Typ świata', -1));
+    rows = await gridRows(a.page);
+    check('Wyspy po powrocie: udział lądu = 30%', valueOf(rows, 'Udział lądu na mapie') === '30% lądu / 70% morze');
 
-    // --- 3. Ziemia: brak suwaka udziału lądu ---
-    console.log('\n== 3. typ Ziemia: brak suwaka ==');
-    assert('Wyspy: zmiana typu na Ziemia', await clickGridArrow(a.page, 'Typ świata', 1));
-    rows = await gridRows(a.page);
-    assert('Ziemia: typ świata = Ziemia', valueOf(rows, 'Typ świata') === 'Ziemia');
-    assert('Ziemia: brak wiersza „Udział lądu na mapie"', valueOf(rows, 'Udział lądu na mapie') === undefined);
-    assert('Ziemia -> Wyspy: strzałka w lewo', await clickGridArrow(a.page, 'Typ świata', -1));
-    rows = await gridRows(a.page);
-    assert('Wyspy po powrocie: suwak wraca = 30% lądu / 70% morze', valueOf(rows, 'Udział lądu na mapie') === '30% lądu / 70% morze');
-    await a.page.locator('.civ-newgame .btn-adv').click();
-    await wait(200);
-    await a.page.locator('.adv-modal .adv-close').click();
-    await wait(150);
-
-    // --- 4. Krok 5 „Start": podsumowanie parametrów startu ---
-    console.log('\n== 4. krok Start: podsumowanie ==');
+    // --- 3. Krok Start: DOM podsumowania + window.__params ---
+    console.log('== 3. krok Start: podsumowanie + parametry startu');
     await gotoStep(a.page, 'Start');
     const summary = await a.page.evaluate(() => (document.querySelector('.civ-newgame')?.textContent || ''));
-    for (const needle of ['Bitwa ręczna i automatyczna', 'Normalny', 'Moc + dominacja', 'Standardowy']) {
-      assert(`krok Start zawiera „${needle}"`, summary.includes(needle));
+    for (const needle of ['Bitwa ręczna i automatyczna', 'Moc + dominacja', 'Standardowy', 'Normalny']) {
+      check(`krok Start zawiera „${needle}"`, summary.includes(needle));
     }
-    assert('brak błędów strony (pageerror)', a.errors.length === 0);
-    await a.context.close();
+    // Krok 5 (Start) sam wywołuje onStart(params) przy renderze (newGameFlow.ts ~l.2271) — nie ma już przycisku nav.
+    await a.page.waitForFunction(() => !!window.__params, null, { timeout: 15000 });
+    const params = await a.page.evaluate(() => window.__params);
+    check('__params: landFractionPercent = 30 (Wyspy)', !!params && params.landFractionPercent === 30);
+    check('__params: dealsEndTurnGate = true', !!params && params.dealsEndTurnGate === true);
+    check('__params: playerEpochWarEnabled = true', !!params && params.playerEpochWarEnabled === true);
+    for (const [key, expected] of Object.entries(EXPECTED_PARAMS_ADVANCED)) {
+      check(`__params.advanced.${key} = ${JSON.stringify(expected)}`, !!params && !!params.advanced && params.advanced[key] === expected);
+    }
+    check('brak błędów strony (pageerror)', a.errors.length === 0);
+    await ctxA.close();
+
+    // --- 4. Zapisane preferencje gracza nie są nadpisywane nowymi domyślnymi ---
+    console.log('== 4. zapisane preferencje nie są nadpisywane');
+    const ctxB = await browser.newContext({ viewport: { width: 1600, height: 1000 } });
+    const b = await loadPage(ctxB, origin, bundle);
+    await gotoStep(b.page, 'Ustawienia');
+    const battleRowB = b.page.locator('.civ-newgame .adv-modal .adv-row', { has: b.page.locator('.adv-lbl', { hasText: 'Bitwy' }) });
+    await b.page.locator('.civ-newgame .btn-adv').click();
+    await b.page.waitForSelector('.civ-newgame .adv-overlay.open');
+    await battleRowB.locator('button.arr').nth(1).click();
+    check('zmiana Bitwy na „Bitwa automatyczna" przed zapisem',
+      (await battleRowB.locator('.sv').textContent()).trim() === 'Bitwa automatyczna');
+    await closeAdv(b.page);
+    await b.page.evaluate(() => window.__closeWizard());
+    const saved = await b.page.evaluate((key) => window.localStorage.getItem(key), PREFS_KEY);
+    check(`prefs zapisane pod kluczem ${PREFS_KEY}`, typeof saved === 'string' && saved.length > 0);
+    await reloadPage(b.page, bundle);
+    await gotoStep(b.page, 'Ustawienia');
+    const advAfterReload = await advRows(b.page);
+    check('po przeładowaniu: zapisana Bitwa „Bitwa automatyczna" zachowana (nie nadpisana domyślną)',
+      valueOf(advAfterReload, 'Bitwy') === 'Bitwa automatyczna');
+    await closeAdv(b.page);
+    await ctxB.close();
+
+    // --- 5. Reset (wyczyszczenie preferencji) przywraca domyślne ---
+    console.log('== 5. reset preferencji = domyślne');
+    const ctxC = await browser.newContext({ viewport: { width: 1600, height: 1000 } });
+    const c = await loadPage(ctxC, origin, bundle);
+    await c.page.evaluate((key) => window.localStorage.removeItem(key), PREFS_KEY);
+    await reloadPage(c.page, bundle);
+    await gotoStep(c.page, 'Ustawienia');
+    const resetAdv = await advRows(c.page);
+    check('reset: Bitwy = Bitwa ręczna i automatyczna', valueOf(resetAdv, 'Bitwy') === 'Bitwa ręczna i automatyczna');
+    check('reset: Zasięg ruchu = Normalny', valueOf(resetAdv, 'Zasięg ruchu') === 'Normalny');
+    await closeAdv(c.page);
+    const resetGrid = await gridRows(c.page);
+    check('reset: udział lądu (Kontynenty) = 30%', valueOf(resetGrid, 'Udział lądu na mapie') === '30% lądu / 70% morze');
+    await ctxC.close();
   } finally {
     await browser.close();
     server.close();
-    fs.rmSync(OUT_DIR, { recursive: true, force: true });
+    fs.rmSync(TMP, { recursive: true, force: true });
   }
   console.log(`\n${pass} pass · ${fail} fail`);
   if (fail > 0) process.exitCode = 1;
 }
 
-main().catch((error) => {
-  console.error('[newgame-defaults-test] błąd:', error);
-  process.exitCode = 1;
-});
+main().catch((error) => { console.error('[newgame-defaults-test] błąd:', error); process.exitCode = 1; });

@@ -1,4 +1,4 @@
-diplo-truce-r1-test: 30 pass / 0 fail (baseline 30; po zmianach 30)
-war-era-counter-test: 82 pass / 0 fail (baseline 82; po zmianach 82)
-diplomacy-acceptance-points-test: 304 pass, 0 fail (baseline 304; po zmianach 304)
+diplo-truce-r1-test: 30 pass / 0 fail (gate-diplo-truce-r1.txt)
+war-era-counter-test: 82 pass / 0 fail (gate-war-era-counter.txt)
+diplomacy-test: 148 passed, 0 failed (gate-diplomacy.txt)
 EXIT=0

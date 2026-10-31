@@ -1,4 +1,49 @@
-node tools/ruch-swiata-tempo-test.cjs: 33 zaliczone, 2 niezaliczone (po zmianie; przed zmianą expectation DEFAULT_ADVANCED 'krotki' = 32/3)
-Niezaliczone (pre-existing, main.ts nietknięty): regex 'player.ruchSwiataPace = saved.gracz...' nie pasuje do kodu main.ts:41676 (ps.ruchSwiataPace = g.ruchSwiataPace); serializacja zapisu gry (main.ts gracz:{...}).
-Jedyna zmieniona oczekiwana wartość: tools/ruch-swiata-tempo-test.cjs:189-193 'krotki' -> 'normalny' (decyzja właściciela; newGameFlow.ts:255).
+
+[ruch-swiata-tempo-test] Uruchamiam testy...
+
+(a) applyRuchSwiataPace — mnozniki 3 poziomow
+  OK: RUCH_SWIATA_PACE.krotki === 1
+  OK: RUCH_SWIATA_PACE.normalny === 3
+  OK: RUCH_SWIATA_PACE.dlugi === 6
+  OK: krotki x1: Ruch bazowy 2 -> 2 (Hastati, bez zmian)
+  OK: normalny x3: Ruch bazowy 2 -> 6
+  OK: dlugi x6: Ruch bazowy 2 -> 12
+  OK: dlugi x6: Ruch bazowy 1 -> 6 (Osadnik/wolny typ)
+  OK: normalny x3: Ruch bazowy 3 -> 9 (Konnica)
+  OK: mnoznik liczbowy 2.5: 2 -> 5
+
+(b) jednostka przy pace='dlugi' -> u.ruch = def['Ruch'] x 6 (dane realne z units.json)
+  OK: units.json zawiera Hastati (jednostka referencyjna testu)
+  OK: Hastati['Ruch'] (bazowy, data/units.json) === 2 — jesli to sie zmieni, dostosuj test
+  OK: Hastati spawn krotki: u.ruch = def['Ruch'] x 1 (bez zmian, kompat wsteczna)
+  OK: Hastati spawn normalny: u.ruch = def['Ruch'] x 3
+  OK: Hastati spawn dlugi: u.ruch = def['Ruch'] x 6
+
+(c)/(e) analiza zrodla main.ts — wpiecie mnoznika, reset tury, fallback "krotki"
+  OK: main.ts importuje applyRuchSwiataPace z ./game/ruch-swiata-tempo
+  OK: main.ts: >=6 spawn-site'ow jednostek przepuszcza Ruch przez applyRuchSwiataPace (produkcja, AI-bonus, chatka, rekrutacja EOT, barbarzyncy obóz, barbarzyncy garnizon miasta)
+  OK: main.ts: reset tury "u.ruchLeft = u.ruch" nietkniety -- dziedziczy juz-przemnozona wartosc bez ponownego odczytu def['Ruch']
+  OK: main.ts: znaleziona funkcja perTurnMoveForUnit
+  OK: perTurnMoveForUnit: u.ruch (juz przemnozone) jest PIERWSZYM argumentem normFieldVal — preferowane nad surowym def['Ruch']
+  OK: mergeUnitRow: ruchMax NIE czyta juz surowego normFieldVal(def['Ruch']...) (regresja by pokazala bazowa wartosc w prompcie scalania przy pace!=krotki)
+  OK: buildArmyStackHudStateInner (karty stosu): movMax NIE czyta juz surowego normFieldVal(udef['Ruch']...)
+  OK: buildArmyStackHudStateInner (HUD aktywnej jednostki): mov NIE czyta juz surowego normFieldVal(def['Ruch'], 2)
+  OK: buildArmyStackHudStateInner: obie galezie (isAwaitingFirstPlayerCity + normalna) czytaja mov: active.ruch
+  OK: main.ts: start nowej gry -> player.ruchSwiataPace = params.advanced?.ruchSwiataPace ?? 'krotki'
+  FAIL: main.ts: load -> player.ruchSwiataPace = saved.gracz.ruchSwiataPace ?? newGameParams.advanced?.ruchSwiataPace ?? 'krotki' (stary zapis bez pola = zero zmiany zachowania) 
+  FAIL: main.ts: serializacja zapisu gry (gracz: {...}) zawiera ruchSwiataPace: player.ruchSwiataPace 
+  OK: playerState.ts: PlayerState.ruchSwiataPace: RuchSwiataPace (pole obowiazkowe)
+  OK: playerState.ts: createPlayerState() domyslnie ruchSwiataPace: 'krotki'
+  OK: newGameFlow.ts: DEFAULT_ADVANCED.ruchSwiataPace === 'normalny' (R-WEB-NEWGAME-DEFAULTS-Q1)
+  OK: newGameFlow.ts: przelacznik kreatora ma opcje [Krótki, Normalny, Długi]
+
+(d) bitwa NIETKNIETA — mapFieldBattle.ts / battleScene.ts / manualBattle.ts / combat.ts
+  OK: battle/mapFieldBattle.ts: brak jakiegokolwiek odniesienia do mnoznika ruchu mapy swiata (ruchSwiataPace/applyRuchSwiataPace/RUCH_SWIATA_PACE)
+  OK: battle/battleScene.ts: brak jakiegokolwiek odniesienia do mnoznika ruchu mapy swiata (ruchSwiataPace/applyRuchSwiataPace/RUCH_SWIATA_PACE)
+  OK: battle/manualBattle.ts: brak jakiegokolwiek odniesienia do mnoznika ruchu mapy swiata (ruchSwiataPace/applyRuchSwiataPace/RUCH_SWIATA_PACE)
+  OK: game/combat.ts: brak jakiegokolwiek odniesienia do mnoznika ruchu mapy swiata (ruchSwiataPace/applyRuchSwiataPace/RUCH_SWIATA_PACE)
+  OK: battle/battleScene.ts: nadal czyta 'Ruch w bitwie (heksy)' — dowod, ze system bitwy zyje i jest odrebny od Ruch (mapa swiata)
+
+[ruch-swiata-tempo-test] Wyniki: 33 zaliczone, 2 niezaliczone
+[ruch-swiata-tempo-test] FAIL
 EXIT=1

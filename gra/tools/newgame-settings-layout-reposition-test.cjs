@@ -131,7 +131,10 @@ window.__openWizard();
     assert.strictEqual(params.dealsEndTurnGate, false, 'diplomacy gate value reaches game-start params');
     assert.strictEqual(params.playerEpochWarEnabled, false, 'epoch-war toggle reaches game-start params');
     assert.strictEqual(params.advanced.cityStateDifficultyOverride, 'hard', 'city-state difficulty reaches game-start params');
-    assert.strictEqual(params.advanced.battleAlwaysManual, true, 'selected battle mode reaches game-start params alongside relocated settings');
+    // Domyślna po R-WEB-NEWGAME-DEFAULTS-Q1 = „Bitwa ręczna i automatyczna" (battleAlwaysManual=true); tu wybrano jedną zmianę,
+    // więc oczekiwana wartość wynika z etykiety wybranej w teście (true tylko dla „ręczna i automatyczna").
+    const expectedBattleAlwaysManual = selectedBattleMode === 'Bitwa ręczna i automatyczna';
+    assert.strictEqual(params.advanced.battleAlwaysManual, expectedBattleAlwaysManual, 'selected battle mode reaches game-start params alongside relocated settings');
     console.log('newgame-settings-layout-reposition-test: PASS — Chromium placement, retained controls, persistence and game-start params verified');
   } finally {
     if (browser) await browser.close();
