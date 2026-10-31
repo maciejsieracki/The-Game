@@ -537,6 +537,10 @@ interface TreatyFormState {
   techOfferId: string;
   bribeGold: number;
   targetOwnerId: number;
+  /** R-WEB-TRUCE-Q1 (N5): akcja '10' - 'pokoj' (domyslnie) albo 'rozejm' na `truceTurns` tur. */
+  peaceKind: 'pokoj' | 'rozejm';
+  /** R-WEB-TRUCE-Q1 (N5): dlugosc rozejmu 5/10/15 tur (uzywana tylko gdy peaceKind === 'rozejm'). */
+  truceTurns: number;
 }
 
 /**
@@ -634,6 +638,8 @@ function defaultTreatyState(actionId: string, initial?: TradeBasketInitial, ctx?
     techOfferId: initial?.techOfferId ?? offerTechs[0]?.id ?? '',
     bribeGold: initial?.bribeGold ?? 30,
     targetOwnerId: initial?.targetOwnerId ?? rivals[0]?.ownerId ?? -1,
+    peaceKind: initial?.peaceKind === 'rozejm' ? 'rozejm' : 'pokoj',
+    truceTurns: initial?.truceTurns === 5 || initial?.truceTurns === 15 ? initial.truceTurns : 10,
   };
 }
 
@@ -839,7 +845,27 @@ function treatySectionHtml(actionId: string, ctx: NegotiationModalContext, state
       // odsyłające do koszyka byłoby martwym, mylącym tekstem. Zdanie identyczne w case '5'
       // ZOSTAJE bez zmian — ta ścieżka jest martwa (akcja 5 nie otwiera tego modala, patrz
       // diplomacyAudience.ts), poza zakresem tej naprawy.
-      body = '<p class="cdb-sub">Zakończenie wojny. Wymagane PW traktatu zależą od Relacji (baza ~500 PW, modyfikator ±90%).</p>';
+      {
+        // R-WEB-TRUCE-Q1 (N5): przełącznik pokój/rozejm + wybór 5/10/15 tur (tylko rozejm).
+        const isTruce = state.peaceKind === 'rozejm';
+        const kindChips = (['pokoj', 'rozejm'] as const).map(k =>
+          '<button type="button" class="cdb-chip cdb-chip-peacekind' + (state.peaceKind === k ? ' selected' : '')
+          + '" data-kind="' + k + '">' + (k === 'pokoj' ? 'Pokój' : 'Rozejm') + '</button>',
+        ).join('');
+        const truceChips = [5, 10, 15].map(t =>
+          '<button type="button" class="cdb-chip cdb-chip-truceturns' + (state.truceTurns === t ? ' selected' : '')
+          + '" data-turns="' + t + '">' + t + ' tur</button>',
+        ).join('');
+        body = '<label>Rodzaj</label>'
+          + '<div class="cdb-chip-row">' + kindChips + '</div>'
+          + '<input type="hidden" id="cdb-treaty-peacekind" class="cdb-treaty-peacekind" value="' + state.peaceKind + '" />'
+          + (isTruce
+            ? '<label>Czas rozejmu</label>'
+              + '<div class="cdb-chip-row cdb-turn-presets">' + truceChips + '</div>'
+              + '<input type="hidden" id="cdb-treaty-truceturns" class="cdb-treaty-truceturns" value="' + state.truceTurns + '" />'
+              + '<p class="cdb-sub">Rozejm: po wygaśnięciu wojna wraca bez kary. Wypowiedzenie wojny w jego trakcie = złamanie (kara jak za pakt). Baza ~200 PW.</p>'
+            : '<p class="cdb-sub">Zakończenie wojny. Wymagane PW traktatu zależą od Relacji (baza ~500 PW, modyfikator ±90%).</p>');
+      }
       break;
     default:
       body = '<p class="cdb-sub">Brak dodatkowych warunków traktatu.</p>';
@@ -854,6 +880,12 @@ function readTreatyStateFromDom(actionId: string, prev: TreatyFormState, ctx?: N
   if (actionId === '2') {
     const turns = parseInt((document.querySelector('.cdb-treaty-turns') as HTMLInputElement)?.value ?? '15', 10);
     state.turns = turns <= 0 ? 0 : Math.max(10, Math.min(20, turns));
+  } else if (actionId === '10') {
+    // R-WEB-TRUCE-Q1 (N5): brak pola w DOM (przed pierwszym renderem) = zachowaj `prev`.
+    const k = (document.querySelector('.cdb-treaty-peacekind') as HTMLInputElement | null)?.value;
+    if (k === 'pokoj' || k === 'rozejm') state.peaceKind = k;
+    const t = parseInt((document.querySelector('.cdb-treaty-truceturns') as HTMLInputElement | null)?.value ?? '', 10);
+    if (t === 5 || t === 10 || t === 15) state.truceTurns = t;
   } else if (actionId === '3') {
     const v = (document.querySelector('.cdb-treaty-alliance') as HTMLSelectElement)?.value;
     state.allianceKind = v === 'defensywny' ? 'defensywny' : 'pelny';
@@ -1169,6 +1201,14 @@ function buildTreatyPayload(
   //     `umowa_szlakow` transferuje koszyk JEDNORAZOWO, i rozjeżdżało podgląd koszyka
   //     (`givePn` liczone z `dealTurns`) z tym, co silnik przelicza przy akceptacji.
   switch (actionId) {
+    case '10':
+      // R-WEB-TRUCE-Q1 (N5): rozejm niesie `rodzaj` i dlugosc w `turns` (5/10/15, jak w
+      // main.ts applyProposalOutcome -> normalizeTruceDuration); pokoj - bez zmian.
+      if (state.peaceKind === 'rozejm') {
+        payload.rodzaj = 'rozejm';
+        payload.turns = state.truceTurns;
+      }
+      break;
     case '2':
       payload.turns = state.turns;
       payload.treatyTurns = state.turns;
@@ -1286,7 +1326,9 @@ function validateBasketForm(
   if (blocked) {
     return { valid: false, reason: 'Nie spełniasz progu Relacji dla tej akcji' };
   }
-  const propActionId = proposalActionIdFromUi(actionId, mode, treatyState?.tributeMode);
+  const propActionId = actionId === '10' && treatyState?.peaceKind === 'rozejm'
+    ? 'rozejm'
+    : proposalActionIdFromUi(actionId, mode, treatyState?.tributeMode);
   const currencyPayload = {
     goldOnce: treatyState?.tributeMode === 'offer' ? treatyState.goldPerTurn : undefined,
     goldPerTurn: treatyState?.goldPerTurn,
@@ -2460,6 +2502,9 @@ export interface TradeBasketModalOptions {
 }
 
 export interface TradeBasketInitial {
+  /** R-WEB-TRUCE-Q1 (N5): prefill rodzaju akcji '10' (pokoj/rozejm) i dlugosci rozejmu. */
+  peaceKind?: 'pokoj' | 'rozejm';
+  truceTurns?: number;
   giveItems?: readonly BasketItem[];
   receiveItems?: readonly BasketItem[];
   /**
@@ -2545,6 +2590,8 @@ export function showTradeBasketModal(
     readDealTurnsFromDom();
     readResourceTradeModeFromDom();
     if (mode === 'treaty') treatyState = readTreatyStateFromDom(action.id, treatyState, ctx);
+    // R-WEB-TRUCE-Q1 (N5): podglad PW dla rozejmu liczony jak akcja 'rozejm' (baza 200).
+    if (action.id === '10') ctx = { ...ctx, basketActionId: treatyState.peaceKind === 'rozejm' ? 'rozejm' : 'pokoj' };
     renderBasket(box, mode, action, ctx, giveItems, receiveItems, dealTurns, resourceTradeMode, treatyState, warThreat, editingItem, modalOpts);
     const indefiniteBtn = box.querySelector('.cdb-duration-indefinite') as HTMLButtonElement | null;
     if (indefiniteBtn) {
@@ -2808,6 +2855,24 @@ export function showTradeBasketModal(
         const inp = box.querySelector('.cdb-treaty-barbturns') as HTMLInputElement | null;
         if (inp) inp.value = String(val);
         box.querySelectorAll('.cdb-chip-barbturns').forEach(c => c.classList.toggle('selected', c === btn));
+        refresh();
+      });
+    });
+
+    // R-WEB-TRUCE-Q1 (N5): przelacznik pokoj/rozejm i wybor dlugosci rozejmu (klasy dedykowane,
+    // poza wspolnym klampem `.cdb-chip-turn`).
+    box.querySelectorAll('.cdb-chip-peacekind').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const inp = box.querySelector('.cdb-treaty-peacekind') as HTMLInputElement | null;
+        if (inp) inp.value = btn.getAttribute('data-kind') === 'rozejm' ? 'rozejm' : 'pokoj';
+        refresh();
+      });
+    });
+    box.querySelectorAll('.cdb-chip-truceturns').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const t = parseInt(btn.getAttribute('data-turns') ?? '10', 10);
+        const inp = box.querySelector('.cdb-treaty-truceturns') as HTMLInputElement | null;
+        if (inp) inp.value = String(t === 5 || t === 15 ? t : 10);
         refresh();
       });
     });

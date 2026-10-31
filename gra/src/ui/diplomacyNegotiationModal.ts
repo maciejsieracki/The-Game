@@ -11,6 +11,8 @@ import { TRAKTAT_HANDLOWY_LABEL } from '../game/diplomacy-display';
 
 export interface NegotiationPayload {
   actionId: string;
+  /** R-WEB-TRUCE-Q1 (N5): 'rozejm' dla akcji '10' wybranej jako rozejm (dlugosc w `turns`). */
+  rodzaj?: 'rozejm';
   /**
    * Czas/częstotliwość WYMIANY z koszyka („Co ile tur trwa wymiana" — `dealTurns`).
    * To JEDNOCZEŚNIE mnożnik wyceny PN cyklicznego słodzika
@@ -560,6 +562,7 @@ export function hideNegotiationModal(): void {
 /** Mapowanie payload UI → actionId CYW evaluateProposal */
 export function proposalActionIdFromPayload(payload: NegotiationPayload): string {
   if (payload.isGift === true || payload.actionId === '13') return 'handel';
+  if (payload.actionId === '10') return payload.rodzaj === 'rozejm' ? 'rozejm' : 'pokoj';
   if (payload.actionId === '3') {
     return payload.allianceKind === 'defensywny' ? 'sojusz_defensywny' : 'sojusz_pelny';
   }

@@ -11352,6 +11352,8 @@ async function boot(): Promise<void> {
     const barbParams = loadBarbParams(data);
     /** Flag: game ended (victory or defeat). Prevents repeated end-game messages. */
     let gameOver = false;
+    /** R-WEB-TRUCE-Q1 (r5): wyłącznie hak live `__truceTestDebug.suppressVictoryForTest` — mapa testowa ma 2 miasta i kończy grę zwycięstwem przy pierwszym EOT. Domyślnie false. */
+    let truceTestSuppressVictory = false;
     let endTurnInProgress = false;
     /** True only while endActiveHumanTurn's async world-EOT pipeline is alive. */
     let activeWorldEndTurnPipeline = false;
@@ -19187,8 +19189,10 @@ async function boot(): Promise<void> {
       }
       // action === 'accept' — DOKŁADNIE ta sama gałąź akceptacji co resolvePendingDiplomacy()
       // dla AI, z jawną parą (p.fromOwnerId, p.toOwnerId) zamiast niejawnego (p.ownerId, ME()).
-      // R-WEB-TRUCE-Q1 r4 (N4): rozejm AI nie jest pokojem — idzie ścieżką rozejmu (applyProposalOutcome).
-      if (p.cmd.type === 'zaproponuj_pokoj' && p.cmd.rodzaj !== 'rozejm') {
+      // R-WEB-TRUCE-Q1 r5 (N4 fix): gałąź bez warunku `rodzaj` — interHumanCmdFromFields nigdy nie
+      // ustawia `rodzaj`, a rozejm AI idzie stołem (enqueueNegotiationFromAiCmd → applyProposalOutcome),
+      // nie tą ścieżką; warunek `rodzaj !== 'rozejm'` był więc martwy i usunięty.
+      if (p.cmd.type === 'zaproponuj_pokoj') {
         finalizePeaceTreatyBetween(p.fromOwnerId, p.toOwnerId);
         return true;
       }
@@ -25966,6 +25970,60 @@ async function boot(): Promise<void> {
         applyProposalOutcome(ownerId, ME(), result, pending.payload, pending.actionId);
         return { converted: true, accepted: !!result.accepted, reason: result.reason ?? null };
       },
+    };
+
+    // R-WEB-TRUCE-Q1 (r5, N5/N7 live): hak WYŁĄCZNIE do tools/diplo-truce-live-test.cjs.
+    // Nie reimplementuje logiki: akceptacja idzie REALNĄ ścieżką (aiCommandToPendingProposal →
+    // resolvePlayerAcceptsAiPending → applyProposalOutcome), wypowiedzenie wojny REALNYM
+    // ownerDeclareWarOn, tura — REALNYM endTurn (__eraTestDebug). Hak tylko czyta stan.
+    (window as any).__truceTestDebug = {
+      turn: (): number => turn,
+      pairState: (aId: number, bId: number): Record<string, unknown> => {
+        const m = getDiploPairMeta(aId, bId);
+        return {
+          status: getDiploRelation(aId, bId).status,
+          truceUntilTurn: m.truceUntilTurn ?? null,
+          peaceUntilTurn: m.peaceUntilTurn ?? null,
+          turn,
+        };
+      },
+      /** Ustawia wiek wojny (warunek czasu wojny dla pokoju/rozejmu) — SETUP, nie temat testu. */
+      setWarAge: (aiId: number, turnsAtWar: number): void => {
+        setDiploRelation(ME(), aiId, applyDiploEventTracked(ME(), aiId, getDiploRelation(ME(), aiId), 'wojna_wypowiedziana'));
+        const key = diploPairKey(ME(), aiId);
+        const meta = (diplomacyPairMeta.get(key) ?? {}) as Record<string, unknown>;
+        diplomacyPairMeta.set(key, { ...meta, wojnaStartTura: turn - turnsAtWar } as any);
+      },
+      /** REALNE wypowiedzenie wojny (ownerDeclareWarOn), bez skrótów. */
+      declareWar: (attackerId: number, defenderId: number): void => {
+        ownerDeclareWarOn(attackerId, defenderId);
+      },
+      /** REALNA akceptacja rozejmu AI->gracz (ta sama ścieżka co stół). `turns` = długość 5/10/15. */
+      acceptTruceForTest: (ownerId: number, turns: number): { accepted: boolean; reason: string | null } => {
+        const cmd: AIDiplomacyCommand = { type: 'zaproponuj_pokoj', targetId: String(ME()), powod: 'test', rodzaj: 'rozejm' };
+        const pending = aiCommandToPendingProposal(cmd, ownerId, ME(), turn);
+        if (!pending) return { accepted: false, reason: 'nie skonwertowano' };
+        pending.payload = { ...pending.payload, turns };
+        const result = resolvePlayerAcceptsAiPending(pending, turn, undefined, { hasTradeTech: ownerHasTradeTech });
+        applyProposalOutcome(ownerId, ME(), result, pending.payload, pending.actionId);
+        return { accepted: !!result.accepted, reason: result.reason ?? null };
+      },
+      /** Wpisy stołu negocjacyjnego (do weryfikacji payloadu wysłanego z UI). */
+      negotiationEntries: (): Array<Record<string, unknown>> => negotiationTable.map(e => ({
+        actionId: e.actionId,
+        proposerOwnerId: e.proposerOwnerId,
+        responderOwnerId: e.responderOwnerId,
+        rodzaj: (e.payload as Record<string, unknown>)?.rodzaj ?? null,
+        turns: (e.payload as Record<string, unknown>)?.turns ?? null,
+      })),
+      /** Zdarzenia wiarygodności właściciela (złamanie rozejmu = 'zlamanie_paktu_nap'). */
+      credibilityEvents: (ownerId: number): unknown[] => (wiarygodnoscZdarzeniaByOwner.get(ownerId) ?? []).map(e => ({ ...e })),
+      aggressorFlags: (): Record<string, number> => ({ ...pobierzStanAgresorow() }),
+      /** Otwiera audiencję dyplomatyczną AI (ten sam wpis co klik w kartę AI). */
+      openAudience: (ownerId: number): void => { openDiplomacyAudience(ownerId); },
+      closeAudience: (): void => { hideDiplomacyAudience(); },
+      /** SETUP testu: mapa playtest kończy grę zwycięstwem w pierwszym EOT; hak wyłącza tylko ten warunek. */
+      suppressVictoryForTest: (): void => { truceTestSuppressVictory = true; },
     };
 
     // R-MIASTA-PANSTWA-STARTOWE-JEDNOSTKI-Q1 (Operator obrona runda 1, Evaluator zarzut 1):
@@ -38743,7 +38801,7 @@ async function boot(): Promise<void> {
               rakietaWystrzelona: player.rakietaWystrzelona,
               victoryMode: _menuAdvanced?.victoryMode ?? 'moc_i_dominacja',
             };
-            const vResult = checkVictory(vInput);
+            const vResult = truceTestSuppressVictory ? null : checkVictory(vInput);
             if (vResult !== null) {
               gameOver = true;
               const isVictory2 = vResult.rodzaj !== 'przegrana';

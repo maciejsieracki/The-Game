@@ -111,6 +111,11 @@ async function runSuite(bundle, label, expectFailures) {
   results.pBrak = mod.aiCommandToPendingProposal(
     { type: 'zaproponuj_pokoj', targetId: 'gracz', powod: 'x' }, 1, 0, 100,
   );
+  // R-WEB-TRUCE-Q1 r5 (N4): brzegi wejścia — NaN, ujemne, ±Infinity (jawny kontrakt zamiast ciszy).
+  results.kNaN = mod.aiPeaceProposalKind(NaN);
+  results.kNeg = mod.aiPeaceProposalKind(-5);
+  results.kNegInf = mod.aiPeaceProposalKind(-Infinity);
+  results.kInf = mod.aiPeaceProposalKind(Infinity);
   results.baseRozejm = mod.treatyBasePnFromConfig('rozejm', { turns: 10 });
   results.basePokoj = mod.treatyBasePnFromConfig('pokoj', {});
 
@@ -120,6 +125,11 @@ async function runSuite(bundle, label, expectFailures) {
   check(`[${label}] helper: 19 tur (N-1) → rozejm`, results.k19 === 'rozejm', results.k19);
   check(`[${label}] helper: 20 tur (N) → pokój`, results.k20 === 'pokoj', results.k20);
   check(`[${label}] helper: 21 tur (N+1) → pokój`, results.k21 === 'pokoj', results.k21);
+  // NaN: brak danej o wojnie → 'pokoj' (historyczny default: brak pola = pokój), jawnie, nie przypadkiem.
+  check(`[${label}] helper: NaN → pokój (kontrakt: brak danej = dawne zachowanie)`, results.kNaN === 'pokoj', results.kNaN);
+  check(`[${label}] helper: −5 tur → rozejm (sufit 0)`, results.kNeg === 'rozejm', results.kNeg);
+  check(`[${label}] helper: −Infinity → rozejm (sufit 0)`, results.kNegInf === 'rozejm', results.kNegInf);
+  check(`[${label}] helper: +Infinity → pokój`, results.kInf === 'pokoj', results.kInf);
   check(`[${label}] AI 19 tur wojny → zaproponuj_pokoj z rodzaj=rozejm`,
     !!results.c19 && results.c19.rodzaj === 'rozejm', results.c19 && results.c19.rodzaj);
   check(`[${label}] AI 20 tur wojny → zaproponuj_pokoj z rodzaj=pokoj`,
@@ -172,6 +182,17 @@ async function main() {
     console.log('FAIL: wyjątek — ' + (err && err.stack ? err.stack : err));
   } finally {
     cleanup();
+  }
+  // R-WEB-TRUCE-Q1 r5 (N4): wiązanie w main.ts — baza PW rozejmu AI (200, nie 500) i gałąź
+  // akceptacji rozejmu. Asercja strukturalna (main.ts nie da się załadować w node); pokrycie
+  // behawioralne: tools/diplo-truce-live-test.cjs (akceptacja/okno/złamanie) i
+  // tools/diplo-truce-ai-table-live-test.cjs (pomiar AI na stole).
+  {
+    const mainSrc = fs.readFileSync(path.resolve(GRA, 'src', 'main.ts'), 'utf8');
+    check('main.ts: baza PW AI rozejmu wiązana ternarą rodzaj===rozejm (200 vs 500)',
+      /workingCmd\.rodzaj === 'rozejm' \? 'rozejm' : 'pokoj'/.test(mainSrc));
+    check('main.ts: akceptacja AI rozejmu idzie gałęzią cywAction===rozejm (długość z payloadu)',
+      /cywAction === 'rozejm'[\s\S]{0,400}normalizeTruceDuration\(payload\.turns/.test(mainSrc));
   }
   console.log(`\ndiplo-truce-r4-ai-test: ${pass} pass / ${fail} fail`);
   process.exit(fail === 0 ? 0 : 1);
