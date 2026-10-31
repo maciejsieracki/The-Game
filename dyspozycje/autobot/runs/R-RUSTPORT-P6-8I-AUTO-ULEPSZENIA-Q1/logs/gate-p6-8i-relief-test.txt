@@ -1,17 +1,15 @@
-   Compiling civ-engine v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_c905b58d-ae6-1/rust-port/engine)
-    Finished `test` profile [unoptimized] target(s) in 36.07s
-     Running tests/p6_8i_relief.rs (/dev/shm/p6-8i-relief/debug/deps/p6_8i_relief-ab7cb582fff7302f)
-
+    Updating crates.io index
+     Locking 17 packages to latest compatible versions
+    Finished `test` profile [unoptimized] target(s) in 55.65s
+     Running tests/p6_8i_relief.rs (/dev/shm/p6-8i-r2/debug/deps/p6_8i_relief-ab7cb582fff7302f)
 running 8 tests
-test key_predicate_matches_pinned_web_vectors ... ok
-test layers_predicate_matches_pinned_web_vectors ... ok
 test empty_layers_is_false ... ok
-test one_non_preserving_layer_breaks_all ... ok
-test prefix_boundaries ... ok
 test exact_match_no_trim_no_case_fold ... ok
 test explicit_keys_and_legacy_kopalnia ... ok
+test key_predicate_matches_pinned_web_vectors ... ok
+test prefix_boundaries ... ok
 test vectors_pin_is_91dc998a ... ok
-
+test layers_predicate_matches_pinned_web_vectors ... ok
+test one_non_preserving_layer_breaks_all ... ok
 test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
-
 EXIT=0
