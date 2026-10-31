@@ -1059,6 +1059,22 @@ function pickAutoImprovementsSinglePass(opts: PickAutoImprovementsOpts): AutoImp
         // juz post-factum wolajacy gracz (`prevLayers.includes(pick.key)` w main.ts) — tu jest
         // egzekwowany w samym pickerze, wiec obie sciezki dostaja go tak samo.
         if ((workingPlaced.get(hexKey) ?? []).includes(key)) continue;
+        // R-WEB-AUTOIMPROVE-PRIORITY-Q1 (Objaw A, zmierzone: gra/tools/wyrab-rzeka-krok0-test.cjs):
+        // KROK 0 wycinki na heksie rzeka+las idzie PRZED tartakiem/obozem na tym heksie.
+        // Bez tej bramki tartak+obóz wchodziły na heks rzeki w FAZIE 1 (FOREST_COEXIST),
+        // a straznik KROKU 0 („nie ma tartaku/obozu na heksie") blokował wycinkę tam na zawsze.
+        // Skutek zmierzony: heks rzeki zostaje lasem, a `rzekiDoZagospodarowania` = true
+        // blokuje wycinkę lasów poza rzeką. Heks tylko wstrzymany dla tartak/oboz, gdy KROK 0
+        // jest dopuszczony (ta sama reguła co w KROKU 0 minus bramek bez wpływu na kolejność).
+        if (
+          (key === 'tartak' || key === 'oboz_lowiecki')
+          && wyrabWlaczony
+          && riverHexKeys.has(hexKey)
+          && map.hexes[hexKey]?.nakladka === Nakladka.Las
+          && !scheduledWyrabHexes.has(hexKey)
+          && (riverForestClearingOnly || forestLeftInRadius >= WYRAB_MIN_FOREST_IN_RADIUS)
+          && hexAllowsKey(q, r, 'wyrab')
+        ) continue;
         // ZASADA 2: heks bez obywateli przechodzi tylko jako ZŁOŻE i tylko dla ulepszenia,
         // które to złoże konsumuje.
         if (!hexAllowsKey(q, r, key)) continue;
