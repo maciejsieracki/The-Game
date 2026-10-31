@@ -385,21 +385,21 @@
       "normal": 25,
       "hard": 25,
       "jednostka": "Ceramika/turę",
-      "opis": "PYTANIE-84-B6 (Maciej 2026-07-27): Spichlerz I zużywa Ceramikę ze skarbca państwa co turę; brak surowca → brak bonusów ludności (U-24=B, U-25B). ⚠️ MARTWY KLUCZ (Operator R-EKONOMIA-SUROWCE-SKALA-5X-Q1, Maciej 2026-08-13): żaden kod nie czyta tego pola JSON — wartość realna to hardkodowana stała SPICHLERZ_DRAIN_CERAMIKA_PER_TURN w building-resource-gate.ts (zaktualizowana ×5 w tym samym zadaniu, 5→25). Wpis tu zaktualizowany WYŁĄCZNIE dla spójności dokumentacji, zero wpływu na grę."
+      "opis": "PYTANIE-84-B6 (Maciej 2026-07-27): Spichlerz I zużywa Ceramikę ze skarbca państwa co turę; brak surowca → brak bonusów ludności (U-24=B, U-25B). Czytane przez loadSpichlerzDrainParams (building-resource-gate.ts:357, klucz ceramikaI) → paySpichlerzDrainForCity (building-resource-gate.ts:431) oraz turn-economy.ts:1375, :1407, :1548, :2479. R-WEB-SPICHLERZ-DRAIN-KEYS-Q1 (Operator, 2026-10-31)."
     },
     "budynek_spichlerz_ii_zuzywa_sol": {
       "easy": 25,
       "normal": 25,
       "hard": 25,
       "jednostka": "Sól/turę",
-      "opis": "PYTANIE-84-B7/U-2 (Maciej 2026-07-27): Spichlerz II zużywa Sól ze skarbca × każdy działający Spichlerz II płacący Sól; brak Soli → brak bonusu wojska (imperium-wide). ⚠️ MARTWY KLUCZ (Operator R-EKONOMIA-SUROWCE-SKALA-5X-Q1, Maciej 2026-08-13): żaden kod nie czyta tego pola JSON — wartość realna to hardkodowana stała SPICHLERZ_DRAIN_SOL_PER_TURN w building-resource-gate.ts (zaktualizowana ×5 w tym samym zadaniu, 5→25). Wpis tu zaktualizowany WYŁĄCZNIE dla spójności dokumentacji, zero wpływu na grę."
+      "opis": "PYTANIE-84-B7/U-2 (Maciej 2026-07-27): Spichlerz II zużywa Sól ze skarbca × każdy działający Spichlerz II płacący Sól; brak Soli → brak bonusu wojska (imperium-wide). Czytane przez loadSpichlerzDrainParams (building-resource-gate.ts:357, klucz solII) → paySpichlerzDrainForCity (building-resource-gate.ts:431, gałąź sol). R-WEB-SPICHLERZ-DRAIN-KEYS-Q1 (Operator, 2026-10-31)."
     },
     "budynek_spichlerz_ii_zuzywa_ceramika": {
       "easy": 25,
       "normal": 25,
       "hard": 25,
       "jednostka": "Ceramika/turę",
-      "opis": "PYTANIE-84-B8 (Maciej 2026-07-27): Spichlerz II zużywa Ceramikę ze skarbca co turę (obok Soli); brak Ceramiki → brak bonusu ludności w mieście. ⚠️ MARTWY KLUCZ (Operator R-EKONOMIA-SUROWCE-SKALA-5X-Q1, Maciej 2026-08-13): żaden kod nie czyta tego pola JSON — wartość realna to hardkodowana stała SPICHLERZ_DRAIN_CERAMIKA_PER_TURN w building-resource-gate.ts (współdzielona z Spichlerz I, zaktualizowana ×5 w tym samym zadaniu). Wpis tu zaktualizowany WYŁĄCZNIE dla spójności dokumentacji, zero wpływu na grę."
+      "opis": "PYTANIE-84-B8 (Maciej 2026-07-27): Spichlerz II zużywa Ceramikę ze skarbca co turę (obok Soli); brak Ceramiki → brak bonusu ludności w mieście. Czytane przez loadSpichlerzDrainParams (building-resource-gate.ts:357, klucz ceramikaII; używany gdy miasto ma Spichlerz II) → paySpichlerzDrainForCity (building-resource-gate.ts:431) oraz turn-economy.ts:1375, :1407, :1548, :2479. R-WEB-SPICHLERZ-DRAIN-KEYS-Q1 (Operator, 2026-10-31)."
     },
     "utrzymanie_budynek": {
       "easy": 1,
