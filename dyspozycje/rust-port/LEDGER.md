@@ -419,3 +419,5 @@ Cel końcowy i bieżący zapisane w `GOAL-RUST-PORT-20261020.md` (§"CEL PĘTLI 
 - Decyzja orkiestratora: pozostałe 30 symboli → Q2 (15: sanitizeRiverTurnWindow, markery krawędzi/tranzytu, walkRiverHexPerimeter, riverCornersAlongHexEdges, simplifyRiverRenderPath, findRiverMeanderStep, collect*/growRiverFromCoastInland), Q3 (8), Q4 (7: m.in. traceRiver, aStarRiverToSea, cap). Szczegóły podziału: dossier `P6-M07B-RZEKI-B-TRACE.md` §Podział zakresu.
 
 - 2026-10-31 06:12 UTC — kontrola cykliczna: 8H r1, WEB TRUCE r4, M07B-Q2 r1 biegną; brak PASS do integracji.
+
+- 2026-10-31 07:12 UTC — kontrola cykliczna: 8H r1, WEB TRUCE r4, M07B-Q2 r1 wciąż biegną; brak PASS do integracji.
