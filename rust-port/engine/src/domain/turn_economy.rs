@@ -1092,7 +1092,12 @@ pub mod economy_upkeep_p1 {
     }
 
     /// Web `readNum`: skonczona liczba z wiersza dla trudnosci, inaczej `fallback`.
-    fn read_num(group: Option<&RawGroup>, key: &str, difficulty: Difficulty, fallback: f64) -> f64 {
+    pub fn read_num(
+        group: Option<&RawGroup>,
+        key: &str,
+        difficulty: Difficulty,
+        fallback: f64,
+    ) -> f64 {
         let cell = group
             .and_then(|g| g.get(key))
             .and_then(|row| row.get(difficulty.key()));
@@ -1547,4 +1552,617 @@ pub mod economy_upkeep_p1 {
         zywnosc_mnoznik_terytorium: 1.0,
         zywnosc_mnoznik_poza_terytorium: 2.0,
     };
+}
+
+/// P6.8E-P2 - `economy-upkeep.ts` (web pin 91dc998a), czesc P2: utrzymanie budynkow (gold i surowce),
+/// utrzymanie jednostek (surowce, gold), zywnosc wojska i saldo skarbca (sekcja B).
+/// Reuse istniejacych symboli: `p6_7b` (koszty/stock/era), `r_stawki` (FALA1xFALA2 / FALA2),
+/// `scale_cost_by_epoch`, `unit_stock_cost` (klucz surowca przez `strip_diacritics_lower` webu).
+pub mod economy_upkeep_p2 {
+    use std::collections::BTreeMap;
+
+    use super::economy_upkeep_p1::{read_num, Difficulty, RawEconParamsForUpkeep, UpkeepParams};
+    use super::js_max;
+    use crate::domain::building_costs::p6_7b::{
+        building_era_cost_multiplier, can_afford_building_stock, missing_stock_for,
+        scale_cost_by_epoch, unit_stock_cost, EpochInput, StockRecord, UnitStockCostSource,
+    };
+    use crate::domain::city_growth::p6_7a::r_stawki::{
+        r_stawki_fala1_fala2_mult, r_stawki_fala2_mult,
+    };
+
+    /// `Number.isFinite` na `Option<f64>` (brak / NaN / Inf -> None).
+    fn finite(v: Option<f64>) -> Option<f64> {
+        v.filter(|x| x.is_finite())
+    }
+
+    /// Web `Math.max(1, Math.floor(level))` + `buildingEffectAtLevel`.
+    pub fn building_effect_at_level(baza: f64, przyrost: f64, level: f64) -> f64 {
+        let n = js_max(1.0, level.floor());
+        baza + przyrost * (n - 1.0)
+    }
+
+    /// Web `BuildingRecord` (pola czytane przez ten modul). `None` = pole nieobecne / nie-liczba.
+    #[derive(Debug, Clone, Default, PartialEq)]
+    pub struct BuildingRecord {
+        pub id: String,
+        pub utrzymanie: Option<f64>,
+        pub przyrost_utrzymania: Option<f64>,
+        pub epoka_wejscia: Option<f64>,
+        /// Web `koszt_surowce`: wartosc `None` = nie-liczba.
+        pub koszt_surowce: Option<BTreeMap<String, Option<f64>>>,
+    }
+
+    /// Web `BuildingInstanceLike`.
+    #[derive(Debug, Clone, PartialEq)]
+    pub struct BuildingInstanceLike {
+        pub record: BuildingRecord,
+        pub level: f64,
+    }
+
+    /// Web `loadUpkeepParams`.
+    pub fn load_upkeep_params(
+        raw: &RawEconParamsForUpkeep,
+        difficulty: Difficulty,
+    ) -> UpkeepParams {
+        let em = raw.ekonomia_miasta.as_ref();
+        let bu = raw.budynki.as_ref();
+        let g = raw.globalne.as_ref();
+        UpkeepParams {
+            budynek_utrzymanie_flat: Some(read_num(bu, "utrzymanie_budynek", difficulty, 1.0)),
+            jednostka_utrzymanie_std: read_num(g, "utrzymanie_jednostka_standard", difficulty, 1.0),
+            zywnosc_jednostka_ruch: read_num(em, "zywnosc_jednostka_ruch", difficulty, 1.0),
+            zywnosc_jednostka_oboz: read_num(em, "zywnosc_jednostka_oboz", difficulty, 0.5),
+            zywnosc_mnoznik_terytorium: read_num(
+                em,
+                "zywnosc_mnoznik_terytorium_wlasne",
+                difficulty,
+                1.0,
+            ),
+            zywnosc_mnoznik_poza_terytorium: read_num(
+                em,
+                "zywnosc_mnoznik_poza_terytorium",
+                difficulty,
+                2.0,
+            ),
+        }
+    }
+
+    /// Web `buildingUpkeep`: utrzymanie zlota budynku na poziomie (FALA2, potem mnoznik ery raz).
+    pub fn building_upkeep(
+        building: &BuildingRecord,
+        level: f64,
+        flat_override: Option<f64>,
+    ) -> f64 {
+        let lvl = if level >= 1.0 { level } else { 1.0 };
+        let raw = match finite(building.utrzymanie) {
+            None => finite(flat_override).unwrap_or(0.0),
+            Some(base) => {
+                let wzrost = finite(building.przyrost_utrzymania).unwrap_or(0.0);
+                building_effect_at_level(base, wzrost, lvl).floor()
+            }
+        };
+        let fala2_upkeep = (raw * r_stawki_fala2_mult()).floor();
+        (fala2_upkeep * building_era_cost_multiplier(building.epoka_wejscia)).floor()
+    }
+
+    /// Web `totalBuildingUpkeep`.
+    pub fn total_building_upkeep(
+        buildings: &[BuildingInstanceLike],
+        flat_override: Option<f64>,
+    ) -> f64 {
+        let mut sum = 0.0;
+        for b in buildings {
+            sum += building_upkeep(&b.record, b.level, flat_override);
+        }
+        sum
+    }
+
+    /// Web `BUILDING_RESOURCE_UPKEEP_UNITS_PER_TYPE` (R-EKONOMIA-SUROWCE-SKALA-5X-Q1: 5).
+    pub const BUILDING_RESOURCE_UPKEEP_UNITS_PER_TYPE: f64 = 5.0;
+
+    /// Web `addResourceCosts`: dodaje tylko skonczone wartosci > 0 (mutuje `acc`).
+    pub fn add_resource_costs(acc: &mut BTreeMap<String, f64>, add: &BTreeMap<String, f64>) {
+        for (k, &v) in add {
+            if v.is_finite() && v > 0.0 {
+                *acc.entry(k.clone()).or_insert(0.0) += v;
+            }
+        }
+    }
+
+    /// Web `buildingResourceUpkeep`: 5 jednostek na KAZDY typ surowca z `koszt_surowce` (wartosc > 0).
+    pub fn building_resource_upkeep(building: Option<&BuildingRecord>) -> BTreeMap<String, f64> {
+        let mut out = BTreeMap::new();
+        let Some(raw) = building.and_then(|b| b.koszt_surowce.as_ref()) else {
+            return out;
+        };
+        for (k, v) in raw {
+            if let Some(x) = v {
+                if x.is_finite() && *x > 0.0 {
+                    out.insert(k.clone(), BUILDING_RESOURCE_UPKEEP_UNITS_PER_TYPE);
+                }
+            }
+        }
+        out
+    }
+
+    /// Web `totalBuildingResourceUpkeep`.
+    pub fn total_building_resource_upkeep(
+        buildings: &[BuildingInstanceLike],
+    ) -> BTreeMap<String, f64> {
+        let mut out = BTreeMap::new();
+        for b in buildings {
+            add_resource_costs(&mut out, &building_resource_upkeep(Some(&b.record)));
+        }
+        out
+    }
+
+    /// Web `buildingResourceUpkeepForBuiltIds` (pierwszy budynek o danym id w katalogu).
+    pub fn building_resource_upkeep_for_built_ids(
+        built_ids: &[String],
+        catalog: &[BuildingRecord],
+    ) -> BTreeMap<String, f64> {
+        let mut out = BTreeMap::new();
+        for bid in built_ids {
+            if let Some(bdef) = catalog.iter().find(|b| &b.id == bid) {
+                add_resource_costs(&mut out, &building_resource_upkeep(Some(bdef)));
+            }
+        }
+        out
+    }
+
+    /// Web `{ id, ownerId }` miasta (dla podgladu per owner).
+    #[derive(Debug, Clone, PartialEq)]
+    pub struct CityRef {
+        pub id: String,
+        pub owner_id: i64,
+    }
+
+    /// Web `previewOwnerBuildingResourceUpkeep`.
+    pub fn preview_owner_building_resource_upkeep(
+        owner_id: i64,
+        cities: &[CityRef],
+        catalog: &[BuildingRecord],
+        built_by_city: &BTreeMap<String, Vec<String>>,
+    ) -> BTreeMap<String, f64> {
+        let mut out = BTreeMap::new();
+        for city in cities {
+            if city.owner_id != owner_id {
+                continue;
+            }
+            let built: &[String] = built_by_city.get(&city.id).map_or(&[], |v| v.as_slice());
+            add_resource_costs(
+                &mut out,
+                &building_resource_upkeep_for_built_ids(built, catalog),
+            );
+        }
+        out
+    }
+
+    /// Web `unitDef` dla utrzymania surowcowego (`Epoka`, `Utrzymanie surowiec`, `... (ilość)`).
+    #[derive(Debug, Clone, PartialEq)]
+    pub struct UnitResourceUpkeepSource {
+        pub epoka: EpochInput,
+        pub utrzymanie_surowiec: Option<String>,
+        pub utrzymanie_surowiec_ilosc: Option<f64>,
+    }
+
+    /// Web `unitResourceUpkeep`. Klucz = `stripDiacriticsLower(nazwa)`; sciezka przez `unit_stock_cost`
+    /// (ta sama normalizacja i ten sam `scaleCostByEpoch`; bez pola `Typ` = bez konia).
+    pub fn unit_resource_upkeep(unit: Option<&UnitResourceUpkeepSource>) -> BTreeMap<String, f64> {
+        let Some(u) = unit else {
+            return BTreeMap::new();
+        };
+        let src = UnitStockCostSource {
+            jednostka: None,
+            typ: None,
+            epoka: u.epoka.clone(),
+            surowiec: u.utrzymanie_surowiec.clone(),
+            surowiec_ilosc: u.utrzymanie_surowiec_ilosc,
+        };
+        unit_stock_cost(Some(&src))
+    }
+
+    /// Web `UNIT_RECRUIT_UPKEEP_RESERVE_TURNS`.
+    pub const UNIT_RECRUIT_UPKEEP_RESERVE_TURNS: f64 = 1.0;
+
+    /// Web `UNIT_RECRUIT_STOCK_ONLY_HINT`.
+    pub const UNIT_RECRUIT_STOCK_ONLY_HINT: &str = "Za mało surowca w magazynie państwa";
+
+    /// Web `unitRecruitUpkeepReserve` (heurystyka AI, nie bramka).
+    pub fn unit_recruit_upkeep_reserve(
+        unit: Option<&UnitResourceUpkeepSource>,
+        turns: f64,
+    ) -> BTreeMap<String, f64> {
+        let upkeep = unit_resource_upkeep(unit);
+        if turns == 1.0 {
+            return upkeep;
+        }
+        let mut out = BTreeMap::new();
+        for (k, v) in upkeep {
+            if v > 0.0 {
+                out.insert(k, v * turns);
+            }
+        }
+        out
+    }
+
+    /// Definicja jednostki dla bramki rekrutacji (web: `UnitResourceUpkeepSource & UnitStockCostSource`).
+    #[derive(Debug, Clone, PartialEq)]
+    pub struct UnitRecruitSource {
+        pub jednostka: Option<String>,
+        pub typ: Option<String>,
+        pub epoka: EpochInput,
+        pub surowiec: Option<String>,
+        pub surowiec_ilosc: Option<f64>,
+        pub utrzymanie_surowiec: Option<String>,
+        pub utrzymanie_surowiec_ilosc: Option<f64>,
+    }
+
+    fn recruit_stock_source(u: &UnitRecruitSource) -> UnitStockCostSource {
+        UnitStockCostSource {
+            jednostka: u.jednostka.clone(),
+            typ: u.typ.clone(),
+            epoka: u.epoka.clone(),
+            surowiec: u.surowiec.clone(),
+            surowiec_ilosc: u.surowiec_ilosc,
+        }
+    }
+
+    /// Web `canAffordUnitRecruitStock`: bramka = wylacznie jednorazowy koszt zakupu.
+    pub fn can_afford_unit_recruit_stock(
+        pool: Option<&StockRecord>,
+        unit: Option<&UnitRecruitSource>,
+    ) -> bool {
+        let cost = unit_stock_cost(unit.map(recruit_stock_source).as_ref());
+        can_afford_building_stock(pool, &cost)
+    }
+
+    /// Web `canAffordUnitRecruitFull` (alias historyczny `canAffordUnitRecruitStock`).
+    pub fn can_afford_unit_recruit_full(
+        pool: Option<&StockRecord>,
+        unit: Option<&UnitRecruitSource>,
+    ) -> bool {
+        can_afford_unit_recruit_stock(pool, unit)
+    }
+
+    /// Web `isUnitRecruitStockChipMissing`.
+    pub fn is_unit_recruit_stock_chip_missing(
+        pool: Option<&StockRecord>,
+        unit: Option<&UnitRecruitSource>,
+        resource_key: &str,
+    ) -> bool {
+        let cost = unit_stock_cost(unit.map(recruit_stock_source).as_ref());
+        let missing = missing_stock_for(pool, &cost);
+        missing.get(resource_key).copied().unwrap_or(0.0) > 0.0
+    }
+
+    /// Web `pickUnitRecruitHint`.
+    pub fn pick_unit_recruit_hint(
+        pool: Option<&StockRecord>,
+        unit: Option<&UnitRecruitSource>,
+    ) -> Option<&'static str> {
+        if can_afford_unit_recruit_stock(pool, unit) {
+            None
+        } else {
+            Some(UNIT_RECRUIT_STOCK_ONLY_HINT)
+        }
+    }
+
+    /// Web `UnitResourceUpkeepLike`: typ jednostki (`units.json Jednostka`).
+    #[derive(Debug, Clone, PartialEq)]
+    pub struct UnitTypeRef {
+        pub type_id: String,
+    }
+
+    /// Web `totalUnitResourceUpkeep`.
+    pub fn total_unit_resource_upkeep(
+        units: &[UnitTypeRef],
+        resolve_def: impl Fn(&str) -> Option<UnitResourceUpkeepSource>,
+    ) -> BTreeMap<String, f64> {
+        let mut out = BTreeMap::new();
+        for u in units {
+            let def = resolve_def(&u.type_id);
+            add_resource_costs(&mut out, &unit_resource_upkeep(def.as_ref()));
+        }
+        out
+    }
+
+    /// Web `previewOwnerTotalResourceUpkeep`: budynki + jednostki wlasciciela.
+    pub fn preview_owner_total_resource_upkeep(
+        owner_id: i64,
+        cities: &[CityRef],
+        catalog: &[BuildingRecord],
+        built_by_city: &BTreeMap<String, Vec<String>>,
+        units: &[(i64, UnitTypeRef)],
+        resolve_unit_def: impl Fn(&str) -> Option<UnitResourceUpkeepSource>,
+    ) -> BTreeMap<String, f64> {
+        let mut out =
+            preview_owner_building_resource_upkeep(owner_id, cities, catalog, built_by_city);
+        let owner_units: Vec<UnitTypeRef> = units
+            .iter()
+            .filter(|(o, _)| *o == owner_id)
+            .map(|(_, u)| u.clone())
+            .collect();
+        add_resource_costs(
+            &mut out,
+            &total_unit_resource_upkeep(&owner_units, resolve_unit_def),
+        );
+        out
+    }
+
+    /// Web `DEFAULT_UNIT_UPKEEP_BY_CATEGORY` (kolejnosc jak w webie).
+    pub const DEFAULT_UNIT_UPKEEP_BY_CATEGORY: [(&str, f64); 17] = [
+        ("osadnik", 0.0),
+        ("robotnik", 0.0),
+        ("zwiadowca", 0.0),
+        ("procarz", 1.0),
+        ("oszczepnik", 1.0),
+        ("lucznik", 1.0),
+        ("wlocznik", 2.0),
+        ("miecznik", 2.0),
+        ("falanga", 2.0),
+        ("legionista", 2.0),
+        ("maczuga", 2.0),
+        ("topor", 2.0),
+        ("konnica", 3.0),
+        ("rydwan", 3.0),
+        ("galera", 3.0),
+        ("super", 0.0),
+        ("domyslny", 1.0),
+    ];
+
+    /// Web `DEFAULT_UNIT_UPKEEP_BY_CATEGORY[category]` (`None` = brak wpisu).
+    pub fn default_unit_upkeep_by_category(category: &str) -> Option<f64> {
+        DEFAULT_UNIT_UPKEEP_BY_CATEGORY
+            .iter()
+            .find(|(c, _)| *c == category)
+            .map(|(_, v)| *v)
+    }
+
+    /// Web `UnitUpkeepTable` (typeId -> zloto/ture).
+    pub type UnitUpkeepTable = BTreeMap<String, f64>;
+
+    /// Web `UnitUpkeepLike`.
+    #[derive(Debug, Clone, PartialEq)]
+    pub struct UnitUpkeepLike {
+        pub type_id: String,
+        pub category: String,
+    }
+
+    /// Web `unitUpkeep`: typeId -> kategoria -> standard; potem FALA1xFALA2 i zaokraglenie.
+    pub fn unit_upkeep(
+        unit: &UnitUpkeepLike,
+        table: &UnitUpkeepTable,
+        standard_upkeep: f64,
+    ) -> f64 {
+        let by_cat = default_unit_upkeep_by_category(&unit.category);
+        if by_cat == Some(0.0) {
+            return 0.0;
+        }
+        let base = match table.get(&unit.type_id) {
+            Some(v) if v.is_finite() => *v,
+            _ => match by_cat {
+                Some(c) if c.is_finite() => c,
+                _ => {
+                    if standard_upkeep.is_finite() {
+                        standard_upkeep
+                    } else {
+                        0.0
+                    }
+                }
+            },
+        };
+        if base <= 0.0 {
+            return 0.0;
+        }
+        (base * r_stawki_fala1_fala2_mult()).round()
+    }
+
+    /// Web `totalUnitUpkeep`.
+    pub fn total_unit_upkeep(
+        units: &[UnitUpkeepLike],
+        table: &UnitUpkeepTable,
+        standard_upkeep: f64,
+    ) -> f64 {
+        let mut sum = 0.0;
+        for u in units {
+            sum += unit_upkeep(u, table, standard_upkeep);
+        }
+        sum
+    }
+
+    /// Komorka wiersza units.json. `Null` = JSON null (dla `??`); brak klucza = brak wpisu w wierszu.
+    #[derive(Debug, Clone, PartialEq)]
+    pub enum UnitCell {
+        Num(f64),
+        Text(String),
+        Null,
+        Other,
+    }
+
+    /// Wiersz units.json z ZACHOWANA kolejnoscia kluczy (web `Object.keys` = kolejnosc wstawiania).
+    pub type UnitRow = Vec<(String, UnitCell)>;
+
+    fn row_cell<'a>(row: &'a UnitRow, key: &str) -> Option<&'a UnitCell> {
+        row.iter().find(|(k, _)| k == key).map(|(_, c)| c)
+    }
+
+    /// Web `typeof rawEpoch === 'number' || 'string' ? rawEpoch : undefined`.
+    fn epoch_of(cell: Option<&UnitCell>) -> EpochInput {
+        match cell {
+            Some(UnitCell::Num(n)) => EpochInput::Number(*n),
+            Some(UnitCell::Text(s)) => EpochInput::Text(s.clone()),
+            _ => EpochInput::Other,
+        }
+    }
+
+    /// Web `buildUnitUpkeepTable` (nazwa + utrzymanie zlota; pierwszy klucz `Utrzymanie*` z liczba).
+    pub fn build_unit_upkeep_table(rows: &[UnitRow]) -> UnitUpkeepTable {
+        let mut out = UnitUpkeepTable::new();
+        for row in rows {
+            let name = match row_cell(row, "Jednostka") {
+                Some(UnitCell::Text(s)) if !s.is_empty() => s.clone(),
+                _ => continue,
+            };
+            let direct = match row_cell(row, "Utrzymanie (Pieniadz/ture)") {
+                Some(UnitCell::Num(v)) if v.is_finite() => Some(*v),
+                _ => None,
+            };
+            let upkeep = direct.or_else(|| {
+                row.iter().find_map(|(k, c)| match c {
+                    UnitCell::Num(v) if k.starts_with("Utrzymanie") && v.is_finite() => Some(*v),
+                    _ => None,
+                })
+            });
+            if let Some(u) = upkeep {
+                out.insert(
+                    name,
+                    scale_cost_by_epoch(u, &epoch_of(row_cell(row, "Epoka"))),
+                );
+            }
+        }
+        out
+    }
+
+    /// Web `UnitFoodTable` (typeId -> zywnosc/ture).
+    pub type UnitFoodTable = BTreeMap<String, f64>;
+
+    /// Web `UnitFoodLike`. `on_own_territory` = `None` -> web domyslnie `true`.
+    #[derive(Debug, Clone, PartialEq)]
+    pub struct UnitFoodLike {
+        pub type_id: Option<String>,
+        pub camping: bool,
+        pub on_own_territory: Option<bool>,
+    }
+
+    /// Web `p.zywnoscJednostkaRuch || 1` (NaN, 0 i -0 -> 1).
+    fn or_one(v: f64) -> f64 {
+        if v.is_nan() || v == 0.0 {
+            1.0
+        } else {
+            v
+        }
+    }
+
+    /// Web `unitFoodPerTurn`: stawka ruchu/oboz x mnoznik terytorium x FALA1xFALA2.
+    pub fn unit_food_per_turn(
+        unit: &UnitFoodLike,
+        p: &UpkeepParams,
+        food_table: &UnitFoodTable,
+    ) -> f64 {
+        let mut base = p.zywnosc_jednostka_ruch;
+        if let Some(t) = unit.type_id.as_deref().filter(|t| !t.is_empty()) {
+            if let Some(v) = food_table.get(t) {
+                base = *v;
+            }
+        }
+        if base <= 0.0 {
+            return 0.0;
+        }
+        if unit.camping {
+            let ratio = p.zywnosc_jednostka_oboz / or_one(p.zywnosc_jednostka_ruch);
+            base *= ratio;
+        }
+        let own = unit.on_own_territory.unwrap_or(true);
+        let mnoznik = if own {
+            p.zywnosc_mnoznik_terytorium
+        } else {
+            p.zywnosc_mnoznik_poza_terytorium
+        };
+        let food = base * mnoznik;
+        if food <= 0.0 {
+            return 0.0;
+        }
+        food * r_stawki_fala1_fala2_mult()
+    }
+
+    /// Web `buildUnitFoodTable`: `żywność/turę` (fallback `zywnosc/ture` gdy brak lub null).
+    pub fn build_unit_food_table(rows: &[UnitRow]) -> UnitFoodTable {
+        let mut out = UnitFoodTable::new();
+        for row in rows {
+            let name = match row_cell(row, "Jednostka") {
+                Some(UnitCell::Text(s)) if !s.is_empty() => s.clone(),
+                _ => continue,
+            };
+            let direct_cell = match row_cell(row, "żywność/turę") {
+                None | Some(UnitCell::Null) => row_cell(row, "zywnosc/ture"),
+                other => other,
+            };
+            if let Some(UnitCell::Num(v)) = direct_cell {
+                if v.is_finite() {
+                    out.insert(
+                        name,
+                        scale_cost_by_epoch(*v, &epoch_of(row_cell(row, "Epoka"))),
+                    );
+                }
+            }
+        }
+        out
+    }
+
+    /// Web `militaryFoodConsumption`.
+    pub fn military_food_consumption(
+        units: &[UnitFoodLike],
+        p: &UpkeepParams,
+        food_table: &UnitFoodTable,
+    ) -> f64 {
+        let mut sum = 0.0;
+        for u in units {
+            sum += unit_food_per_turn(u, p, food_table);
+        }
+        sum
+    }
+
+    /// Web `UpkeepBalance`.
+    #[derive(Debug, Clone, Copy, PartialEq)]
+    pub struct UpkeepBalance {
+        pub utrzymanie_budynki: f64,
+        pub utrzymanie_jednostki: f64,
+        pub utrzymanie_razem: f64,
+        pub saldo: f64,
+        pub deficyt: bool,
+    }
+
+    /// Web `upkeepBalance`: saldo = dochod - (budynki + jednostki); deficyt gdy saldo < 0.
+    pub fn upkeep_balance(
+        income: f64,
+        buildings: &[BuildingInstanceLike],
+        units: &[UnitUpkeepLike],
+        unit_upkeep_tbl: &UnitUpkeepTable,
+        p: &UpkeepParams,
+    ) -> UpkeepBalance {
+        let utrzymanie_budynki = total_building_upkeep(buildings, p.budynek_utrzymanie_flat);
+        let utrzymanie_jednostki =
+            total_unit_upkeep(units, unit_upkeep_tbl, p.jednostka_utrzymanie_std);
+        let utrzymanie_razem = utrzymanie_budynki + utrzymanie_jednostki;
+        let inc = if income.is_finite() { income } else { 0.0 };
+        let saldo = inc - utrzymanie_razem;
+        UpkeepBalance {
+            utrzymanie_budynki,
+            utrzymanie_jednostki,
+            utrzymanie_razem,
+            saldo,
+            deficyt: saldo < 0.0,
+        }
+    }
+
+    /// Web `buildingUpkeepForBuiltIds`: poziom z `level_for` (wywolany dla kazdego znalezionego budynku).
+    pub fn building_upkeep_for_built_ids(
+        built_ids: &[String],
+        catalog: &[BuildingRecord],
+        level_for: impl Fn(&BuildingRecord) -> f64,
+        flat_override: Option<f64>,
+    ) -> f64 {
+        let mut instances = Vec::new();
+        for bid in built_ids {
+            if let Some(bdef) = catalog.iter().find(|b| &b.id == bid) {
+                instances.push(BuildingInstanceLike {
+                    record: bdef.clone(),
+                    level: level_for(bdef),
+                });
+            }
+        }
+        total_building_upkeep(&instances, flat_override)
+    }
 }
