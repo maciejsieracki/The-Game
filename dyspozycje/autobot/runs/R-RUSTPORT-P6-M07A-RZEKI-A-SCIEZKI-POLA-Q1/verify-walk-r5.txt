@@ -1,0 +1,2 @@
+{"checked": {"dirs": 25, "dirDelta": 43, "sameDir": 37, "reconstruct": 40, "reliefSource": 8, "dims": 36, "centroidSeed": 216, "centroidMouth": 216, "scoreCentroid": 200, "scoreLandCenter": 144}, "fails": 0}
+EXIT=0

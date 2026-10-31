@@ -1,0 +1,4 @@
+W41	ZABITY	reconstruct_river_path: galaz key_qr	test reconstruct_matches_web ... FAILED
+W42	ZABITY	centroid: galaz odczytu heksu	test cap_sweep_matches_web ... FAILED; test big_map_cap_6000_discriminates_and_matches_web ... FAILED; test grow_matches_web ... FAILED
+W43	ZABITY	audit: petla po startach	test audit_matches_web ... FAILED
+W44	ZABITY-TIMEOUT	centroid: sprawdzenie seen (zawieszenie BFS = zabity przez limit)
