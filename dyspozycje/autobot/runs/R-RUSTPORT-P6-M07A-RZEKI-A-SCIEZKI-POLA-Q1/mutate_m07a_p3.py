@@ -101,6 +101,11 @@ MUT = [
     ("P02", PROF, "let river_ms = s.generate_rivers_ms + s.top_up_ms;", "let river_ms = s.generate_rivers_ms;", "profil: subtotal", T_PROF),
     ("P03", PROF, "if denom > 0.0 {", "if denom >= 0.0 {", "profil: denom 0", T_PROF),
     ("P04", PROF, "std::env::var(\"CIV_RIVER_PROFILE\").as_deref() == Ok(\"1\")", "std::env::var(\"CIV_RIVER_PROFILE\").is_ok()", "profil: flaga (wartosc inna niz 1 - poza wektorami)", T_PROF),
+    # (r5, dopisane po przegladzie pokrycia galezi walk.rs: galezie niezmutowane w pierwszej serii)
+    ("W41", WALK, "if let Some((q, r)) = key_qr(k) {\n            path.push(RiverCoord::new(q, r));", "if let Some((q, r)) = key_qr(k).filter(|_| false) {\n            path.push(RiverCoord::new(q, r));", "reconstruct_river_path: galaz key_qr", T_WALK),
+    ("W42", WALK, "if let Some(h) = hexes.get(&k) {", "if let Some(h) = hexes.get(&k).filter(|_| false) {", "centroid: galaz odczytu heksu", T_WALK),
+    ("W43", WALK, "for start in &inland {", "for start in inland.iter().take(0) {", "audit: petla po startach", T_WALK),
+    ("W44", WALK, "if seen.contains(&nk) {", "if false && seen.contains(&nk) {", "centroid: sprawdzenie seen (zawieszenie BFS = zabity przez limit)", T_WALK),
 ]
 
 
