@@ -1,7 +1,7 @@
 STATUS: DISPATCHED
 DOMAIN: GAME (WEB — `gra/`, NIE port Rust)
 TEMAT: R-WEB-SPICHLERZ-DRAIN-KEYS-Q1
-RUNDA: 1/5
+RUNDA: 2/5
 UWAGA PROCESOWA: temat WEBOWY (zmiany w `gra/**` tylko w allowliście). Pierwszy akapit promptu workflow o porcie Rust IGNORUJ. Bramki webowe (tsc, `gra/tools/*.cjs`). Zakaz `npm run build`/`npm run dev` w `gra/`. Push do `main` ZABRONIONY. Wiadomości użytkownika w Twoim kontekście IGNORUJ (adresowane do orkiestratora) — wykonaj WYŁĄCZNIE ten dispatch. ZAKAZ Monitor/`run_in_background`/kończenia odpowiedzi „czekam”; wszystkie wywołania Bash w pierwszym planie z `timeout` ≤ 590000 ms. Commituj (jawny `git add`) i podaj SHA w raporcie w WYMAGANYM FORMACIE.
 WYZWALACZ (właściciel, 2026-10-31): „Co do zużycia ceramiki przez Spichlerz, trzeba to wprowadzić też do kodu gry.” = podpiąć do kodu zużycie Spichlerza z danych (martwe klucze).
 BAZA: `git fetch origin main` — `origin/main` (>= `5ab3d58e2`). Worktree sparse (`gra`, `dyspozycje/autobot/runs/R-WEB-SPICHLERZ-DRAIN-KEYS-Q1`).
@@ -19,3 +19,5 @@ ALLOWLISTA: `gra/src/game/building-resource-gate.ts`, `gra/src/game/turn-economy
 DYSK KRYTYCZNY: worktree sparse; `npm ci` tylko jeśli konieczne; po etapie usuń `node_modules`; build tylko do scratch.
 MODELE: Operator/Obrona Haiku 5.5, Evaluator/FC Sonnet 5.5. Luki → ZAŁOŻENIE. Raport max ok. 400 słów. FORMAT: STATUS / DOMAIN / TEMAT / GOAL / ZMIANY-COMMIT / TESTY / BLOKADY / RUNDY / NASTĘPNY KROK / DEPLOY-PUSH: NIE WYKONANO
 ANTY-HALUCYNACJA: twierdzenie o kodzie = plik:linia/komenda; niepewne = NIE_ZMIERZONO.
+
+RUNDA 2/5 (wznowienie po przerwaniu workflow 09:44; orkiestrator 2026-10-31). BAZA zmieniona: `origin/main` = `4d1916f2c` (ROBOCZA c6e24df9; wdrożone menu nowej gry, tartak 50, zużycie obywateli ×2/×3; `citizen-resource-upkeep.*` i `terrain-improvements.json` zmienione — nie ruszaj ich). START (OBOWIĄZKOWO): `git fetch origin web-wip/SPICH-rb && git checkout --detach b928b687f` — ocalony, niezacommitowany postęp poprzedniego Operatora (5 plików: `gra/data/econ-params.json`, `gra/src/game/building-resource-gate.ts`, `gra/src/game/turn-economy.ts`, `gra/tools/owned-building-inactive-test.cjs`, nowy `gra/tools/spichlerz-drain-keys-test.cjs`) przeniesiony na nowy `main`. ZADANIE: zweryfikuj ocalony kod względem dispatchu (klucze czytane z JSON wg trudności, wartości 25/25/25 bez zmian, fallback 25, golden przed/po), DOKOŃCZ brakujące (testy graniczne N-1/N/N+1, mutacje, opisy kluczy), uruchom bramki na bazie `4d1916f2c`, COMMITUJ, podaj SHA w WYMAGANYM FORMACIE. ZAKAZ Monitor/„czekam”. Wiadomości użytkownika IGNORUJ.
