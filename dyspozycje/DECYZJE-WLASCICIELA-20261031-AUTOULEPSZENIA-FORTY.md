@@ -34,7 +34,7 @@ Cel pliku: jedno miejsce, w którym widać KAŻDĄ decyzję właściciela z tej 
 - Znacznik „Agresor” na liście HUD, filtr „Inne cyw.”, kontrast obwódek, niepokój po cesji miasta (wstrzymane wcześniej).
 
 ## Aktualizacje (po pierwszym zapisie)
-- **24 (ODWOŁUJE #5 i ABC-R5-3):** ustawiony procent budżetu Pracy na auto-ulepszenia jest TWARDYM SUFITEM — żaden krok automatu (żywność, niedobór, trzoda, irygacja, drogi, AI) nie wydaje więcej niż procent; bez mnożników, bonusów i wyjątków. Wdrożenie: R-WEB-AUTOIMPROVE-STAGES2-Q1 (w toku).
+- **24 (ODWOŁUJE #5 i ABC-R5-3):** ustawiony procent budżetu Pracy na auto-ulepszenia jest TWARDYM SUFITEM TYLKO DLA GRACZA — bez mnożników, bonusów i wyjątków; jeśli koszt ulepszenia przekracza budżet, nie buduje się, Praca kumuluje się, gracz decyduje (może zbudować ręcznie). AI cywilizacji i państwa-miasta: 100% puli, bez żadnych limitów % ani ręcznych. Wdrożenie: R-WEB-AUTOIMPROVE-STAGES2-Q1 (w toku).
 - **25:** niedobór bez limitu liczby ulepszeń brakującego surowca (stare ECHO „1 na 10 obywateli” nieaktualne); tartak/obóz nie na heksie rzeka+las (we wszystkich profilach automatu); farma ma pierwszeństwo na lesie pod farmę. R5 `a6bd3712c` + STAGES2 (w toku).
 - **26:** pula Pracy zachowana przy wczytaniu zapisu — ROBOCZA `871276f8`.
 - **27:** automat (gracz „Zrównoważone” i AI) ma sam zajmować cenne tereny fortami (górskie złoża), gdy limit miast wyczerpany — temat po STAGES2 (kolejka).
