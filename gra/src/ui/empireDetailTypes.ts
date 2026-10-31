@@ -108,6 +108,12 @@ export interface EmpireResourceRow {
    */
   citizenRequired?: boolean;
   /**
+   * R-WEB-CITIZEN-UPKEEP-ERA-MULT-Q1: stawka zużycia tej epoki (sztuk surowca / obywatela / turę),
+   * z której silnik policzył drenaż (`citizen-resource-upkeep.ts` `citizenUpkeepRateForEra`).
+   * Gdy `citizenRequired`. Brak → panel przyjmuje 1,0 (fallback).
+   */
+  citizenRatePerCitizen?: number;
+  /**
    * Gdy `citizenRequired` — czy magazyn centralny akurat TERAZ ma > 0 tego surowca (pokrycie)
    * czy 0 (kara aktywna — Szczęście −1, Rozwój −1% w każdym mieście imperium).
    */
