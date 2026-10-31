@@ -1,0 +1,757 @@
+{
+ "pin": "91dc998a5f1b51ad29e0f4785edfd45655445c53",
+ "society": {
+  "resolveOwnCultureShare": [
+   {
+    "city": {},
+    "out": 1
+   },
+   {
+    "city": {
+     "ownCultureShare": 0.5
+    },
+    "out": 0.5
+   },
+   {
+    "city": {
+     "kulturaOwnShare": 0.25
+    },
+    "out": 0.25
+   },
+   {
+    "city": {
+     "ownCultureShare": 0.7,
+     "kulturaOwnShare": 0.1
+    },
+    "out": 0.7
+   },
+   {
+    "city": {
+     "ownCultureShare": "NaN"
+    },
+    "out": 1
+   },
+   {
+    "city": {
+     "ownCultureShare": "Infinity"
+    },
+    "out": 1
+   },
+   {
+    "city": {
+     "ownCultureShare": "-Infinity"
+    },
+    "out": 1
+   },
+   {
+    "city": {
+     "ownCultureShare": 1.5
+    },
+    "out": 1
+   },
+   {
+    "city": {
+     "ownCultureShare": -0.2
+    },
+    "out": 0
+   },
+   {
+    "city": {
+     "ownCultureShare": 0
+    },
+    "out": 0
+   },
+   {
+    "city": {
+     "ownCultureShare": 1
+    },
+    "out": 1
+   },
+   {
+    "city": {
+     "ownCultureShare": "NaN",
+     "kulturaOwnShare": 0.3
+    },
+    "out": 1
+   },
+   {
+    "city": {
+     "ownCultureShare": null,
+     "kulturaOwnShare": 0.4
+    },
+    "out": 0.4
+   },
+   {
+    "city": {
+     "ownCultureShare": 0.125
+    },
+    "out": 0.125
+   },
+   {
+    "city": {
+     "ownCultureShare": 0.375
+    },
+    "out": 0.375
+   },
+   {
+    "city": {
+     "ownCultureShare": 0.9999
+    },
+    "out": 0.9999
+   }
+  ],
+  "cityCultureMixActive": [
+   {
+    "city": {},
+    "out": false
+   },
+   {
+    "city": {
+     "ownCultureShare": 0.5
+    },
+    "out": true
+   },
+   {
+    "city": {
+     "kulturaOwnShare": 0.25
+    },
+    "out": true
+   },
+   {
+    "city": {
+     "ownCultureShare": 0.7,
+     "kulturaOwnShare": 0.1
+    },
+    "out": true
+   },
+   {
+    "city": {
+     "ownCultureShare": "NaN"
+    },
+    "out": true
+   },
+   {
+    "city": {
+     "ownCultureShare": "Infinity"
+    },
+    "out": true
+   },
+   {
+    "city": {
+     "ownCultureShare": "-Infinity"
+    },
+    "out": true
+   },
+   {
+    "city": {
+     "ownCultureShare": 1.5
+    },
+    "out": true
+   },
+   {
+    "city": {
+     "ownCultureShare": -0.2
+    },
+    "out": true
+   },
+   {
+    "city": {
+     "ownCultureShare": 0
+    },
+    "out": true
+   },
+   {
+    "city": {
+     "ownCultureShare": 1
+    },
+    "out": true
+   },
+   {
+    "city": {
+     "ownCultureShare": "NaN",
+     "kulturaOwnShare": 0.3
+    },
+    "out": true
+   },
+   {
+    "city": {
+     "ownCultureShare": null,
+     "kulturaOwnShare": 0.4
+    },
+    "out": true
+   },
+   {
+    "city": {
+     "ownCultureShare": 0.125
+    },
+    "out": true
+   },
+   {
+    "city": {
+     "ownCultureShare": 0.375
+    },
+    "out": true
+   },
+   {
+    "city": {
+     "ownCultureShare": 0.9999
+    },
+    "out": true
+   }
+  ],
+  "clearCityCultureMix": [
+   {
+    "city": {},
+    "out": {
+     "ownCultureShare": null,
+     "kulturaOwnShare": null
+    }
+   },
+   {
+    "city": {
+     "ownCultureShare": 0.5
+    },
+    "out": {
+     "ownCultureShare": null,
+     "kulturaOwnShare": null
+    }
+   },
+   {
+    "city": {
+     "kulturaOwnShare": 0.25
+    },
+    "out": {
+     "ownCultureShare": null,
+     "kulturaOwnShare": null
+    }
+   },
+   {
+    "city": {
+     "ownCultureShare": 0.7,
+     "kulturaOwnShare": 0.1
+    },
+    "out": {
+     "ownCultureShare": null,
+     "kulturaOwnShare": null
+    }
+   },
+   {
+    "city": {
+     "ownCultureShare": "NaN"
+    },
+    "out": {
+     "ownCultureShare": null,
+     "kulturaOwnShare": null
+    }
+   },
+   {
+    "city": {
+     "ownCultureShare": "Infinity"
+    },
+    "out": {
+     "ownCultureShare": null,
+     "kulturaOwnShare": null
+    }
+   },
+   {
+    "city": {
+     "ownCultureShare": "-Infinity"
+    },
+    "out": {
+     "ownCultureShare": null,
+     "kulturaOwnShare": null
+    }
+   },
+   {
+    "city": {
+     "ownCultureShare": 1.5
+    },
+    "out": {
+     "ownCultureShare": null,
+     "kulturaOwnShare": null
+    }
+   },
+   {
+    "city": {
+     "ownCultureShare": -0.2
+    },
+    "out": {
+     "ownCultureShare": null,
+     "kulturaOwnShare": null
+    }
+   },
+   {
+    "city": {
+     "ownCultureShare": 0
+    },
+    "out": {
+     "ownCultureShare": null,
+     "kulturaOwnShare": null
+    }
+   },
+   {
+    "city": {
+     "ownCultureShare": 1
+    },
+    "out": {
+     "ownCultureShare": null,
+     "kulturaOwnShare": null
+    }
+   },
+   {
+    "city": {
+     "ownCultureShare": "NaN",
+     "kulturaOwnShare": 0.3
+    },
+    "out": {
+     "ownCultureShare": null,
+     "kulturaOwnShare": null
+    }
+   },
+   {
+    "city": {
+     "ownCultureShare": null,
+     "kulturaOwnShare": 0.4
+    },
+    "out": {
+     "ownCultureShare": null,
+     "kulturaOwnShare": null
+    }
+   },
+   {
+    "city": {
+     "ownCultureShare": 0.125
+    },
+    "out": {
+     "ownCultureShare": null,
+     "kulturaOwnShare": null
+    }
+   },
+   {
+    "city": {
+     "ownCultureShare": 0.375
+    },
+    "out": {
+     "ownCultureShare": null,
+     "kulturaOwnShare": null
+    }
+   },
+   {
+    "city": {
+     "ownCultureShare": 0.9999
+    },
+    "out": {
+     "ownCultureShare": null,
+     "kulturaOwnShare": null
+    }
+   }
+  ],
+  "cultureMixBreakdown": [
+   {
+    "label": "Kultura właściciela",
+    "share": 0,
+    "active": false,
+    "out": [
+     {
+      "label": "Kultura właściciela",
+      "pct": 100,
+      "isOwner": true
+     }
+    ]
+   },
+   {
+    "label": "Kultura właściciela",
+    "share": 0,
+    "active": true,
+    "out": [
+     {
+      "label": "Kultura właściciela",
+      "pct": 0,
+      "isOwner": true
+     },
+     {
+      "label": "Obca kultura",
+      "pct": 100,
+      "isOwner": false
+     }
+    ]
+   },
+   {
+    "label": "Kultura właściciela",
+    "share": 0.125,
+    "active": false,
+    "out": [
+     {
+      "label": "Kultura właściciela",
+      "pct": 100,
+      "isOwner": true
+     }
+    ]
+   },
+   {
+    "label": "Kultura właściciela",
+    "share": 0.125,
+    "active": true,
+    "out": [
+     {
+      "label": "Kultura właściciela",
+      "pct": 13,
+      "isOwner": true
+     },
+     {
+      "label": "Obca kultura",
+      "pct": 87,
+      "isOwner": false
+     }
+    ]
+   },
+   {
+    "label": "Kultura właściciela",
+    "share": 0.25,
+    "active": false,
+    "out": [
+     {
+      "label": "Kultura właściciela",
+      "pct": 100,
+      "isOwner": true
+     }
+    ]
+   },
+   {
+    "label": "Kultura właściciela",
+    "share": 0.25,
+    "active": true,
+    "out": [
+     {
+      "label": "Kultura właściciela",
+      "pct": 25,
+      "isOwner": true
+     },
+     {
+      "label": "Obca kultura",
+      "pct": 75,
+      "isOwner": false
+     }
+    ]
+   },
+   {
+    "label": "Kultura właściciela",
+    "share": 0.5,
+    "active": false,
+    "out": [
+     {
+      "label": "Kultura właściciela",
+      "pct": 100,
+      "isOwner": true
+     }
+    ]
+   },
+   {
+    "label": "Kultura właściciela",
+    "share": 0.5,
+    "active": true,
+    "out": [
+     {
+      "label": "Kultura właściciela",
+      "pct": 50,
+      "isOwner": true
+     },
+     {
+      "label": "Obca kultura",
+      "pct": 50,
+      "isOwner": false
+     }
+    ]
+   },
+   {
+    "label": "Kultura właściciela",
+    "share": 0.6,
+    "active": false,
+    "out": [
+     {
+      "label": "Kultura właściciela",
+      "pct": 100,
+      "isOwner": true
+     }
+    ]
+   },
+   {
+    "label": "Kultura właściciela",
+    "share": 0.6,
+    "active": true,
+    "out": [
+     {
+      "label": "Kultura właściciela",
+      "pct": 60,
+      "isOwner": true
+     },
+     {
+      "label": "Obca kultura",
+      "pct": 40,
+      "isOwner": false
+     }
+    ]
+   },
+   {
+    "label": "Kultura właściciela",
+    "share": 0.75,
+    "active": false,
+    "out": [
+     {
+      "label": "Kultura właściciela",
+      "pct": 100,
+      "isOwner": true
+     }
+    ]
+   },
+   {
+    "label": "Kultura właściciela",
+    "share": 0.75,
+    "active": true,
+    "out": [
+     {
+      "label": "Kultura właściciela",
+      "pct": 75,
+      "isOwner": true
+     },
+     {
+      "label": "Obca kultura",
+      "pct": 25,
+      "isOwner": false
+     }
+    ]
+   },
+   {
+    "label": "Kultura właściciela",
+    "share": 0.999,
+    "active": false,
+    "out": [
+     {
+      "label": "Kultura właściciela",
+      "pct": 100,
+      "isOwner": true
+     }
+    ]
+   },
+   {
+    "label": "Kultura właściciela",
+    "share": 0.999,
+    "active": true,
+    "out": [
+     {
+      "label": "Kultura właściciela",
+      "pct": 100,
+      "isOwner": true
+     }
+    ]
+   },
+   {
+    "label": "Kultura właściciela",
+    "share": 1,
+    "active": false,
+    "out": [
+     {
+      "label": "Kultura właściciela",
+      "pct": 100,
+      "isOwner": true
+     }
+    ]
+   },
+   {
+    "label": "Kultura właściciela",
+    "share": 1,
+    "active": true,
+    "out": [
+     {
+      "label": "Kultura właściciela",
+      "pct": 100,
+      "isOwner": true
+     }
+    ]
+   },
+   {
+    "label": "Kultura właściciela",
+    "share": 1.5,
+    "active": false,
+    "out": [
+     {
+      "label": "Kultura właściciela",
+      "pct": 100,
+      "isOwner": true
+     }
+    ]
+   },
+   {
+    "label": "Kultura właściciela",
+    "share": 1.5,
+    "active": true,
+    "out": [
+     {
+      "label": "Kultura właściciela",
+      "pct": 100,
+      "isOwner": true
+     }
+    ]
+   },
+   {
+    "label": "Kultura właściciela",
+    "share": -0.5,
+    "active": false,
+    "out": [
+     {
+      "label": "Kultura właściciela",
+      "pct": 100,
+      "isOwner": true
+     }
+    ]
+   },
+   {
+    "label": "Kultura właściciela",
+    "share": -0.5,
+    "active": true,
+    "out": [
+     {
+      "label": "Kultura właściciela",
+      "pct": 0,
+      "isOwner": true
+     },
+     {
+      "label": "Obca kultura",
+      "pct": 100,
+      "isOwner": false
+     }
+    ]
+   },
+   {
+    "label": "Kultura właściciela",
+    "share": "NaN",
+    "active": false,
+    "out": [
+     {
+      "label": "Kultura właściciela",
+      "pct": 100,
+      "isOwner": true
+     }
+    ]
+   },
+   {
+    "label": "Kultura właściciela",
+    "share": "NaN",
+    "active": true,
+    "out": [
+     {
+      "label": "Kultura właściciela",
+      "pct": "NaN",
+      "isOwner": true
+     }
+    ]
+   },
+   {
+    "label": "Kultura właściciela",
+    "share": "Infinity",
+    "active": false,
+    "out": [
+     {
+      "label": "Kultura właściciela",
+      "pct": 100,
+      "isOwner": true
+     }
+    ]
+   },
+   {
+    "label": "Kultura właściciela",
+    "share": "Infinity",
+    "active": true,
+    "out": [
+     {
+      "label": "Kultura właściciela",
+      "pct": 100,
+      "isOwner": true
+     }
+    ]
+   },
+   {
+    "label": "Kultura właściciela",
+    "share": "-Infinity",
+    "active": false,
+    "out": [
+     {
+      "label": "Kultura właściciela",
+      "pct": 100,
+      "isOwner": true
+     }
+    ]
+   },
+   {
+    "label": "Kultura właściciela",
+    "share": "-Infinity",
+    "active": true,
+    "out": [
+     {
+      "label": "Kultura właściciela",
+      "pct": 0,
+      "isOwner": true
+     },
+     {
+      "label": "Obca kultura",
+      "pct": 100,
+      "isOwner": false
+     }
+    ]
+   },
+   {
+    "label": "Kultura właściciela",
+    "share": 0.0049,
+    "active": false,
+    "out": [
+     {
+      "label": "Kultura właściciela",
+      "pct": 100,
+      "isOwner": true
+     }
+    ]
+   },
+   {
+    "label": "Kultura właściciela",
+    "share": 0.0049,
+    "active": true,
+    "out": [
+     {
+      "label": "Kultura właściciela",
+      "pct": 0,
+      "isOwner": true
+     },
+     {
+      "label": "Obca kultura",
+      "pct": 100,
+      "isOwner": false
+     }
+    ]
+   },
+   {
+    "label": "Kultura właściciela",
+    "share": 0.9951,
+    "active": false,
+    "out": [
+     {
+      "label": "Kultura właściciela",
+      "pct": 100,
+      "isOwner": true
+     }
+    ]
+   },
+   {
+    "label": "Kultura właściciela",
+    "share": 0.9951,
+    "active": true,
+    "out": [
+     {
+      "label": "Kultura właściciela",
+      "pct": 100,
+      "isOwner": true
+     }
+    ]
+   }
+  ]
+ }
+}

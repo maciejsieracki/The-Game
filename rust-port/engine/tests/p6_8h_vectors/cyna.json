@@ -1,0 +1,3546 @@
+{
+ "pin": "91dc998a5f1b51ad29e0f4785edfd45655445c53",
+ "cyna": {
+  "empireHasKopalniaNaZlozuCyny": [
+   {
+    "placed": [],
+    "hexes": {
+     "0,0": {
+      "zloze": "cyna"
+     },
+     "1,0": {
+      "zloze": "cyna"
+     },
+     "2,0": {
+      "zloze": "miedz"
+     },
+     "5,5": {
+      "zloze": "cyna"
+     }
+    },
+    "out": false
+   },
+   {
+    "placed": [],
+    "hexes": {
+     "0,0": {
+      "zloze": "zelazo"
+     },
+     "1,0": {
+      "zloze": "zelazo"
+     }
+    },
+    "out": false
+   },
+   {
+    "placed": [],
+    "hexes": {
+     "0,0": {
+      "zloze": " CYNA "
+     },
+     "1,0": {
+      "zloze": "Zelazo\t"
+     },
+     "2,0": {
+      "zloze": ""
+     }
+    },
+    "out": false
+   },
+   {
+    "placed": [],
+    "hexes": {
+     "0,0": {},
+     "1,0": {}
+    },
+    "out": false
+   },
+   {
+    "placed": [],
+    "hexes": {},
+    "out": false
+   },
+   {
+    "placed": [],
+    "hexes": null,
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "1,0",
+      "kopalnia_zlota"
+     ]
+    ],
+    "hexes": {
+     "0,0": {
+      "zloze": "cyna"
+     },
+     "1,0": {
+      "zloze": "cyna"
+     },
+     "2,0": {
+      "zloze": "miedz"
+     },
+     "5,5": {
+      "zloze": "cyna"
+     }
+    },
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "1,0",
+      "kopalnia_zlota"
+     ]
+    ],
+    "hexes": {
+     "0,0": {
+      "zloze": "zelazo"
+     },
+     "1,0": {
+      "zloze": "zelazo"
+     }
+    },
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "1,0",
+      "kopalnia_zlota"
+     ]
+    ],
+    "hexes": {
+     "0,0": {
+      "zloze": " CYNA "
+     },
+     "1,0": {
+      "zloze": "Zelazo\t"
+     },
+     "2,0": {
+      "zloze": ""
+     }
+    },
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "1,0",
+      "kopalnia_zlota"
+     ]
+    ],
+    "hexes": {
+     "0,0": {},
+     "1,0": {}
+    },
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "1,0",
+      "kopalnia_zlota"
+     ]
+    ],
+    "hexes": {},
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "1,0",
+      "kopalnia_zlota"
+     ]
+    ],
+    "hexes": null,
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "1,0",
+      [
+       "kopalnia_zlota",
+       "tartak"
+      ]
+     ],
+     [
+      "2,0",
+      [
+       "kopalnia_zlota"
+      ]
+     ]
+    ],
+    "hexes": {
+     "0,0": {
+      "zloze": "cyna"
+     },
+     "1,0": {
+      "zloze": "cyna"
+     },
+     "2,0": {
+      "zloze": "miedz"
+     },
+     "5,5": {
+      "zloze": "cyna"
+     }
+    },
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "1,0",
+      [
+       "kopalnia_zlota",
+       "tartak"
+      ]
+     ],
+     [
+      "2,0",
+      [
+       "kopalnia_zlota"
+      ]
+     ]
+    ],
+    "hexes": {
+     "0,0": {
+      "zloze": "zelazo"
+     },
+     "1,0": {
+      "zloze": "zelazo"
+     }
+    },
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "1,0",
+      [
+       "kopalnia_zlota",
+       "tartak"
+      ]
+     ],
+     [
+      "2,0",
+      [
+       "kopalnia_zlota"
+      ]
+     ]
+    ],
+    "hexes": {
+     "0,0": {
+      "zloze": " CYNA "
+     },
+     "1,0": {
+      "zloze": "Zelazo\t"
+     },
+     "2,0": {
+      "zloze": ""
+     }
+    },
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "1,0",
+      [
+       "kopalnia_zlota",
+       "tartak"
+      ]
+     ],
+     [
+      "2,0",
+      [
+       "kopalnia_zlota"
+      ]
+     ]
+    ],
+    "hexes": {
+     "0,0": {},
+     "1,0": {}
+    },
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "1,0",
+      [
+       "kopalnia_zlota",
+       "tartak"
+      ]
+     ],
+     [
+      "2,0",
+      [
+       "kopalnia_zlota"
+      ]
+     ]
+    ],
+    "hexes": {},
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "1,0",
+      [
+       "kopalnia_zlota",
+       "tartak"
+      ]
+     ],
+     [
+      "2,0",
+      [
+       "kopalnia_zlota"
+      ]
+     ]
+    ],
+    "hexes": null,
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      "kopalnia_zlota"
+     ],
+     [
+      "0,1",
+      "kopalnia_zlota"
+     ]
+    ],
+    "hexes": {
+     "0,0": {
+      "zloze": "cyna"
+     },
+     "1,0": {
+      "zloze": "cyna"
+     },
+     "2,0": {
+      "zloze": "miedz"
+     },
+     "5,5": {
+      "zloze": "cyna"
+     }
+    },
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      "kopalnia_zlota"
+     ],
+     [
+      "0,1",
+      "kopalnia_zlota"
+     ]
+    ],
+    "hexes": {
+     "0,0": {
+      "zloze": "zelazo"
+     },
+     "1,0": {
+      "zloze": "zelazo"
+     }
+    },
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      "kopalnia_zlota"
+     ],
+     [
+      "0,1",
+      "kopalnia_zlota"
+     ]
+    ],
+    "hexes": {
+     "0,0": {
+      "zloze": " CYNA "
+     },
+     "1,0": {
+      "zloze": "Zelazo\t"
+     },
+     "2,0": {
+      "zloze": ""
+     }
+    },
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      "kopalnia_zlota"
+     ],
+     [
+      "0,1",
+      "kopalnia_zlota"
+     ]
+    ],
+    "hexes": {
+     "0,0": {},
+     "1,0": {}
+    },
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      "kopalnia_zlota"
+     ],
+     [
+      "0,1",
+      "kopalnia_zlota"
+     ]
+    ],
+    "hexes": {},
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      "kopalnia_zlota"
+     ],
+     [
+      "0,1",
+      "kopalnia_zlota"
+     ]
+    ],
+    "hexes": null,
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      "kopalnia_cyny"
+     ]
+    ],
+    "hexes": {
+     "0,0": {
+      "zloze": "cyna"
+     },
+     "1,0": {
+      "zloze": "cyna"
+     },
+     "2,0": {
+      "zloze": "miedz"
+     },
+     "5,5": {
+      "zloze": "cyna"
+     }
+    },
+    "out": true
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      "kopalnia_cyny"
+     ]
+    ],
+    "hexes": {
+     "0,0": {
+      "zloze": "zelazo"
+     },
+     "1,0": {
+      "zloze": "zelazo"
+     }
+    },
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      "kopalnia_cyny"
+     ]
+    ],
+    "hexes": {
+     "0,0": {
+      "zloze": " CYNA "
+     },
+     "1,0": {
+      "zloze": "Zelazo\t"
+     },
+     "2,0": {
+      "zloze": ""
+     }
+    },
+    "out": true
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      "kopalnia_cyny"
+     ]
+    ],
+    "hexes": {
+     "0,0": {},
+     "1,0": {}
+    },
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      "kopalnia_cyny"
+     ]
+    ],
+    "hexes": {},
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      "kopalnia_cyny"
+     ]
+    ],
+    "hexes": null,
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      [
+       "tartak",
+       "kopalnia_cyny"
+      ]
+     ]
+    ],
+    "hexes": {
+     "0,0": {
+      "zloze": "cyna"
+     },
+     "1,0": {
+      "zloze": "cyna"
+     },
+     "2,0": {
+      "zloze": "miedz"
+     },
+     "5,5": {
+      "zloze": "cyna"
+     }
+    },
+    "out": true
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      [
+       "tartak",
+       "kopalnia_cyny"
+      ]
+     ]
+    ],
+    "hexes": {
+     "0,0": {
+      "zloze": "zelazo"
+     },
+     "1,0": {
+      "zloze": "zelazo"
+     }
+    },
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      [
+       "tartak",
+       "kopalnia_cyny"
+      ]
+     ]
+    ],
+    "hexes": {
+     "0,0": {
+      "zloze": " CYNA "
+     },
+     "1,0": {
+      "zloze": "Zelazo\t"
+     },
+     "2,0": {
+      "zloze": ""
+     }
+    },
+    "out": true
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      [
+       "tartak",
+       "kopalnia_cyny"
+      ]
+     ]
+    ],
+    "hexes": {
+     "0,0": {},
+     "1,0": {}
+    },
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      [
+       "tartak",
+       "kopalnia_cyny"
+      ]
+     ]
+    ],
+    "hexes": {},
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      [
+       "tartak",
+       "kopalnia_cyny"
+      ]
+     ]
+    ],
+    "hexes": null,
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      "kopalnia_cyny"
+     ],
+     [
+      "1,0",
+      "tartak"
+     ]
+    ],
+    "hexes": {
+     "0,0": {
+      "zloze": "cyna"
+     },
+     "1,0": {
+      "zloze": "cyna"
+     },
+     "2,0": {
+      "zloze": "miedz"
+     },
+     "5,5": {
+      "zloze": "cyna"
+     }
+    },
+    "out": true
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      "kopalnia_cyny"
+     ],
+     [
+      "1,0",
+      "tartak"
+     ]
+    ],
+    "hexes": {
+     "0,0": {
+      "zloze": "zelazo"
+     },
+     "1,0": {
+      "zloze": "zelazo"
+     }
+    },
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      "kopalnia_cyny"
+     ],
+     [
+      "1,0",
+      "tartak"
+     ]
+    ],
+    "hexes": {
+     "0,0": {
+      "zloze": " CYNA "
+     },
+     "1,0": {
+      "zloze": "Zelazo\t"
+     },
+     "2,0": {
+      "zloze": ""
+     }
+    },
+    "out": true
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      "kopalnia_cyny"
+     ],
+     [
+      "1,0",
+      "tartak"
+     ]
+    ],
+    "hexes": {
+     "0,0": {},
+     "1,0": {}
+    },
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      "kopalnia_cyny"
+     ],
+     [
+      "1,0",
+      "tartak"
+     ]
+    ],
+    "hexes": {},
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      "kopalnia_cyny"
+     ],
+     [
+      "1,0",
+      "tartak"
+     ]
+    ],
+    "hexes": null,
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      " kopalnia_cyny "
+     ]
+    ],
+    "hexes": {
+     "0,0": {
+      "zloze": "cyna"
+     },
+     "1,0": {
+      "zloze": "cyna"
+     },
+     "2,0": {
+      "zloze": "miedz"
+     },
+     "5,5": {
+      "zloze": "cyna"
+     }
+    },
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      " kopalnia_cyny "
+     ]
+    ],
+    "hexes": {
+     "0,0": {
+      "zloze": "zelazo"
+     },
+     "1,0": {
+      "zloze": "zelazo"
+     }
+    },
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      " kopalnia_cyny "
+     ]
+    ],
+    "hexes": {
+     "0,0": {
+      "zloze": " CYNA "
+     },
+     "1,0": {
+      "zloze": "Zelazo\t"
+     },
+     "2,0": {
+      "zloze": ""
+     }
+    },
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      " kopalnia_cyny "
+     ]
+    ],
+    "hexes": {
+     "0,0": {},
+     "1,0": {}
+    },
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      " kopalnia_cyny "
+     ]
+    ],
+    "hexes": {},
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      " kopalnia_cyny "
+     ]
+    ],
+    "hexes": null,
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      "Kopalnia_Cyny"
+     ]
+    ],
+    "hexes": {
+     "0,0": {
+      "zloze": "cyna"
+     },
+     "1,0": {
+      "zloze": "cyna"
+     },
+     "2,0": {
+      "zloze": "miedz"
+     },
+     "5,5": {
+      "zloze": "cyna"
+     }
+    },
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      "Kopalnia_Cyny"
+     ]
+    ],
+    "hexes": {
+     "0,0": {
+      "zloze": "zelazo"
+     },
+     "1,0": {
+      "zloze": "zelazo"
+     }
+    },
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      "Kopalnia_Cyny"
+     ]
+    ],
+    "hexes": {
+     "0,0": {
+      "zloze": " CYNA "
+     },
+     "1,0": {
+      "zloze": "Zelazo\t"
+     },
+     "2,0": {
+      "zloze": ""
+     }
+    },
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      "Kopalnia_Cyny"
+     ]
+    ],
+    "hexes": {
+     "0,0": {},
+     "1,0": {}
+    },
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      "Kopalnia_Cyny"
+     ]
+    ],
+    "hexes": {},
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      "Kopalnia_Cyny"
+     ]
+    ],
+    "hexes": null,
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      "kopalnia_zelaza"
+     ]
+    ],
+    "hexes": {
+     "0,0": {
+      "zloze": "cyna"
+     },
+     "1,0": {
+      "zloze": "cyna"
+     },
+     "2,0": {
+      "zloze": "miedz"
+     },
+     "5,5": {
+      "zloze": "cyna"
+     }
+    },
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      "kopalnia_zelaza"
+     ]
+    ],
+    "hexes": {
+     "0,0": {
+      "zloze": "zelazo"
+     },
+     "1,0": {
+      "zloze": "zelazo"
+     }
+    },
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      "kopalnia_zelaza"
+     ]
+    ],
+    "hexes": {
+     "0,0": {
+      "zloze": " CYNA "
+     },
+     "1,0": {
+      "zloze": "Zelazo\t"
+     },
+     "2,0": {
+      "zloze": ""
+     }
+    },
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      "kopalnia_zelaza"
+     ]
+    ],
+    "hexes": {
+     "0,0": {},
+     "1,0": {}
+    },
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      "kopalnia_zelaza"
+     ]
+    ],
+    "hexes": {},
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      "kopalnia_zelaza"
+     ]
+    ],
+    "hexes": null,
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      "kopalnia"
+     ]
+    ],
+    "hexes": {
+     "0,0": {
+      "zloze": "cyna"
+     },
+     "1,0": {
+      "zloze": "cyna"
+     },
+     "2,0": {
+      "zloze": "miedz"
+     },
+     "5,5": {
+      "zloze": "cyna"
+     }
+    },
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      "kopalnia"
+     ]
+    ],
+    "hexes": {
+     "0,0": {
+      "zloze": "zelazo"
+     },
+     "1,0": {
+      "zloze": "zelazo"
+     }
+    },
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      "kopalnia"
+     ]
+    ],
+    "hexes": {
+     "0,0": {
+      "zloze": " CYNA "
+     },
+     "1,0": {
+      "zloze": "Zelazo\t"
+     },
+     "2,0": {
+      "zloze": ""
+     }
+    },
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      "kopalnia"
+     ]
+    ],
+    "hexes": {
+     "0,0": {},
+     "1,0": {}
+    },
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      "kopalnia"
+     ]
+    ],
+    "hexes": {},
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      "kopalnia"
+     ]
+    ],
+    "hexes": null,
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      [
+       "kopalnia",
+       "tartak"
+      ]
+     ]
+    ],
+    "hexes": {
+     "0,0": {
+      "zloze": "cyna"
+     },
+     "1,0": {
+      "zloze": "cyna"
+     },
+     "2,0": {
+      "zloze": "miedz"
+     },
+     "5,5": {
+      "zloze": "cyna"
+     }
+    },
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      [
+       "kopalnia",
+       "tartak"
+      ]
+     ]
+    ],
+    "hexes": {
+     "0,0": {
+      "zloze": "zelazo"
+     },
+     "1,0": {
+      "zloze": "zelazo"
+     }
+    },
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      [
+       "kopalnia",
+       "tartak"
+      ]
+     ]
+    ],
+    "hexes": {
+     "0,0": {
+      "zloze": " CYNA "
+     },
+     "1,0": {
+      "zloze": "Zelazo\t"
+     },
+     "2,0": {
+      "zloze": ""
+     }
+    },
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      [
+       "kopalnia",
+       "tartak"
+      ]
+     ]
+    ],
+    "hexes": {
+     "0,0": {},
+     "1,0": {}
+    },
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      [
+       "kopalnia",
+       "tartak"
+      ]
+     ]
+    ],
+    "hexes": {},
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      [
+       "kopalnia",
+       "tartak"
+      ]
+     ]
+    ],
+    "hexes": null,
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      "kopalnia"
+     ]
+    ],
+    "hexes": {
+     "0,0": {
+      "zloze": "cyna"
+     },
+     "1,0": {
+      "zloze": "cyna"
+     },
+     "2,0": {
+      "zloze": "miedz"
+     },
+     "5,5": {
+      "zloze": "cyna"
+     }
+    },
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      "kopalnia"
+     ]
+    ],
+    "hexes": {
+     "0,0": {
+      "zloze": "zelazo"
+     },
+     "1,0": {
+      "zloze": "zelazo"
+     }
+    },
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      "kopalnia"
+     ]
+    ],
+    "hexes": {
+     "0,0": {
+      "zloze": " CYNA "
+     },
+     "1,0": {
+      "zloze": "Zelazo\t"
+     },
+     "2,0": {
+      "zloze": ""
+     }
+    },
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      "kopalnia"
+     ]
+    ],
+    "hexes": {
+     "0,0": {},
+     "1,0": {}
+    },
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      "kopalnia"
+     ]
+    ],
+    "hexes": {},
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      "kopalnia"
+     ]
+    ],
+    "hexes": null,
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      "kopalnia_zelaza"
+     ]
+    ],
+    "hexes": {
+     "0,0": {
+      "zloze": "cyna"
+     },
+     "1,0": {
+      "zloze": "cyna"
+     },
+     "2,0": {
+      "zloze": "miedz"
+     },
+     "5,5": {
+      "zloze": "cyna"
+     }
+    },
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      "kopalnia_zelaza"
+     ]
+    ],
+    "hexes": {
+     "0,0": {
+      "zloze": "zelazo"
+     },
+     "1,0": {
+      "zloze": "zelazo"
+     }
+    },
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      "kopalnia_zelaza"
+     ]
+    ],
+    "hexes": {
+     "0,0": {
+      "zloze": " CYNA "
+     },
+     "1,0": {
+      "zloze": "Zelazo\t"
+     },
+     "2,0": {
+      "zloze": ""
+     }
+    },
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      "kopalnia_zelaza"
+     ]
+    ],
+    "hexes": {
+     "0,0": {},
+     "1,0": {}
+    },
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      "kopalnia_zelaza"
+     ]
+    ],
+    "hexes": {},
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      "kopalnia_zelaza"
+     ]
+    ],
+    "hexes": null,
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      "brak"
+     ],
+     [
+      "1,0",
+      ""
+     ]
+    ],
+    "hexes": {
+     "0,0": {
+      "zloze": "cyna"
+     },
+     "1,0": {
+      "zloze": "cyna"
+     },
+     "2,0": {
+      "zloze": "miedz"
+     },
+     "5,5": {
+      "zloze": "cyna"
+     }
+    },
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      "brak"
+     ],
+     [
+      "1,0",
+      ""
+     ]
+    ],
+    "hexes": {
+     "0,0": {
+      "zloze": "zelazo"
+     },
+     "1,0": {
+      "zloze": "zelazo"
+     }
+    },
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      "brak"
+     ],
+     [
+      "1,0",
+      ""
+     ]
+    ],
+    "hexes": {
+     "0,0": {
+      "zloze": " CYNA "
+     },
+     "1,0": {
+      "zloze": "Zelazo\t"
+     },
+     "2,0": {
+      "zloze": ""
+     }
+    },
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      "brak"
+     ],
+     [
+      "1,0",
+      ""
+     ]
+    ],
+    "hexes": {
+     "0,0": {},
+     "1,0": {}
+    },
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      "brak"
+     ],
+     [
+      "1,0",
+      ""
+     ]
+    ],
+    "hexes": {},
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      "brak"
+     ],
+     [
+      "1,0",
+      ""
+     ]
+    ],
+    "hexes": null,
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      "foo"
+     ],
+     [
+      "1,0",
+      [
+       "bar",
+       "constructor"
+      ]
+     ]
+    ],
+    "hexes": {
+     "0,0": {
+      "zloze": "cyna"
+     },
+     "1,0": {
+      "zloze": "cyna"
+     },
+     "2,0": {
+      "zloze": "miedz"
+     },
+     "5,5": {
+      "zloze": "cyna"
+     }
+    },
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      "foo"
+     ],
+     [
+      "1,0",
+      [
+       "bar",
+       "constructor"
+      ]
+     ]
+    ],
+    "hexes": {
+     "0,0": {
+      "zloze": "zelazo"
+     },
+     "1,0": {
+      "zloze": "zelazo"
+     }
+    },
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      "foo"
+     ],
+     [
+      "1,0",
+      [
+       "bar",
+       "constructor"
+      ]
+     ]
+    ],
+    "hexes": {
+     "0,0": {
+      "zloze": " CYNA "
+     },
+     "1,0": {
+      "zloze": "Zelazo\t"
+     },
+     "2,0": {
+      "zloze": ""
+     }
+    },
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      "foo"
+     ],
+     [
+      "1,0",
+      [
+       "bar",
+       "constructor"
+      ]
+     ]
+    ],
+    "hexes": {
+     "0,0": {},
+     "1,0": {}
+    },
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      "foo"
+     ],
+     [
+      "1,0",
+      [
+       "bar",
+       "constructor"
+      ]
+     ]
+    ],
+    "hexes": {},
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      "foo"
+     ],
+     [
+      "1,0",
+      [
+       "bar",
+       "constructor"
+      ]
+     ]
+    ],
+    "hexes": null,
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      "pastwisko"
+     ],
+     [
+      "1,0",
+      "bydlo"
+     ]
+    ],
+    "hexes": {
+     "0,0": {
+      "zloze": "cyna"
+     },
+     "1,0": {
+      "zloze": "cyna"
+     },
+     "2,0": {
+      "zloze": "miedz"
+     },
+     "5,5": {
+      "zloze": "cyna"
+     }
+    },
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      "pastwisko"
+     ],
+     [
+      "1,0",
+      "bydlo"
+     ]
+    ],
+    "hexes": {
+     "0,0": {
+      "zloze": "zelazo"
+     },
+     "1,0": {
+      "zloze": "zelazo"
+     }
+    },
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      "pastwisko"
+     ],
+     [
+      "1,0",
+      "bydlo"
+     ]
+    ],
+    "hexes": {
+     "0,0": {
+      "zloze": " CYNA "
+     },
+     "1,0": {
+      "zloze": "Zelazo\t"
+     },
+     "2,0": {
+      "zloze": ""
+     }
+    },
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      "pastwisko"
+     ],
+     [
+      "1,0",
+      "bydlo"
+     ]
+    ],
+    "hexes": {
+     "0,0": {},
+     "1,0": {}
+    },
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      "pastwisko"
+     ],
+     [
+      "1,0",
+      "bydlo"
+     ]
+    ],
+    "hexes": {},
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      "pastwisko"
+     ],
+     [
+      "1,0",
+      "bydlo"
+     ]
+    ],
+    "hexes": null,
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "5,5",
+      "kopalnia_zlota"
+     ]
+    ],
+    "hexes": {
+     "0,0": {
+      "zloze": "cyna"
+     },
+     "1,0": {
+      "zloze": "cyna"
+     },
+     "2,0": {
+      "zloze": "miedz"
+     },
+     "5,5": {
+      "zloze": "cyna"
+     }
+    },
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "5,5",
+      "kopalnia_zlota"
+     ]
+    ],
+    "hexes": {
+     "0,0": {
+      "zloze": "zelazo"
+     },
+     "1,0": {
+      "zloze": "zelazo"
+     }
+    },
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "5,5",
+      "kopalnia_zlota"
+     ]
+    ],
+    "hexes": {
+     "0,0": {
+      "zloze": " CYNA "
+     },
+     "1,0": {
+      "zloze": "Zelazo\t"
+     },
+     "2,0": {
+      "zloze": ""
+     }
+    },
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "5,5",
+      "kopalnia_zlota"
+     ]
+    ],
+    "hexes": {
+     "0,0": {},
+     "1,0": {}
+    },
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "5,5",
+      "kopalnia_zlota"
+     ]
+    ],
+    "hexes": {},
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "5,5",
+      "kopalnia_zlota"
+     ]
+    ],
+    "hexes": null,
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      [
+       "kopalnia_zlota",
+       "kopalnia_zlota",
+       "kopalnia_zlota"
+      ]
+     ]
+    ],
+    "hexes": {
+     "0,0": {
+      "zloze": "cyna"
+     },
+     "1,0": {
+      "zloze": "cyna"
+     },
+     "2,0": {
+      "zloze": "miedz"
+     },
+     "5,5": {
+      "zloze": "cyna"
+     }
+    },
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      [
+       "kopalnia_zlota",
+       "kopalnia_zlota",
+       "kopalnia_zlota"
+      ]
+     ]
+    ],
+    "hexes": {
+     "0,0": {
+      "zloze": "zelazo"
+     },
+     "1,0": {
+      "zloze": "zelazo"
+     }
+    },
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      [
+       "kopalnia_zlota",
+       "kopalnia_zlota",
+       "kopalnia_zlota"
+      ]
+     ]
+    ],
+    "hexes": {
+     "0,0": {
+      "zloze": " CYNA "
+     },
+     "1,0": {
+      "zloze": "Zelazo\t"
+     },
+     "2,0": {
+      "zloze": ""
+     }
+    },
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      [
+       "kopalnia_zlota",
+       "kopalnia_zlota",
+       "kopalnia_zlota"
+      ]
+     ]
+    ],
+    "hexes": {
+     "0,0": {},
+     "1,0": {}
+    },
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      [
+       "kopalnia_zlota",
+       "kopalnia_zlota",
+       "kopalnia_zlota"
+      ]
+     ]
+    ],
+    "hexes": {},
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      [
+       "kopalnia_zlota",
+       "kopalnia_zlota",
+       "kopalnia_zlota"
+      ]
+     ]
+    ],
+    "hexes": null,
+    "out": false
+   },
+   {
+    "placed": null,
+    "hexes": {
+     "0,0": {
+      "zloze": "cyna"
+     },
+     "1,0": {
+      "zloze": "cyna"
+     },
+     "2,0": {
+      "zloze": "miedz"
+     },
+     "5,5": {
+      "zloze": "cyna"
+     }
+    },
+    "out": false
+   },
+   {
+    "placed": null,
+    "hexes": {
+     "0,0": {
+      "zloze": "zelazo"
+     },
+     "1,0": {
+      "zloze": "zelazo"
+     }
+    },
+    "out": false
+   },
+   {
+    "placed": null,
+    "hexes": null,
+    "out": false
+   }
+  ],
+  "cityHasOdlewniaForCyna": [
+   {
+    "built": [],
+    "out": false
+   },
+   {
+    "built": [
+     "odlewnia_brazu"
+    ],
+    "out": true
+   },
+   {
+    "built": [
+     "odlewnia_zelaza"
+    ],
+    "out": true
+   },
+   {
+    "built": [
+     "wielka_odlewnia"
+    ],
+    "out": true
+   },
+   {
+    "built": [
+     "tartak",
+     "odlewnia_brazu_stara"
+    ],
+    "out": false
+   },
+   {
+    "built": [
+     "odlewnia_brazu",
+     "odlewnia_zelaza",
+     "wielka_odlewnia"
+    ],
+    "out": true
+   }
+  ],
+  "hasCynaAccess": [
+   {
+    "stock": null,
+    "built": null,
+    "out": false
+   },
+   {
+    "stock": null,
+    "built": [],
+    "out": false
+   },
+   {
+    "stock": null,
+    "built": [
+     "odlewnia_brazu"
+    ],
+    "out": false
+   },
+   {
+    "stock": null,
+    "built": [
+     "odlewnia_zelaza"
+    ],
+    "out": false
+   },
+   {
+    "stock": null,
+    "built": [
+     "wielka_odlewnia"
+    ],
+    "out": false
+   },
+   {
+    "stock": null,
+    "built": [
+     "tartak",
+     "odlewnia_brazu_stara"
+    ],
+    "out": false
+   },
+   {
+    "stock": null,
+    "built": [
+     "odlewnia_brazu",
+     "odlewnia_zelaza",
+     "wielka_odlewnia"
+    ],
+    "out": false
+   },
+   {
+    "stock": {
+     "bool": true
+    },
+    "built": null,
+    "out": false
+   },
+   {
+    "stock": {
+     "bool": true
+    },
+    "built": [],
+    "out": false
+   },
+   {
+    "stock": {
+     "bool": true
+    },
+    "built": [
+     "odlewnia_brazu"
+    ],
+    "out": false
+   },
+   {
+    "stock": {
+     "bool": true
+    },
+    "built": [
+     "odlewnia_zelaza"
+    ],
+    "out": false
+   },
+   {
+    "stock": {
+     "bool": true
+    },
+    "built": [
+     "wielka_odlewnia"
+    ],
+    "out": false
+   },
+   {
+    "stock": {
+     "bool": true
+    },
+    "built": [
+     "tartak",
+     "odlewnia_brazu_stara"
+    ],
+    "out": false
+   },
+   {
+    "stock": {
+     "bool": true
+    },
+    "built": [
+     "odlewnia_brazu",
+     "odlewnia_zelaza",
+     "wielka_odlewnia"
+    ],
+    "out": false
+   },
+   {
+    "stock": {
+     "bool": false
+    },
+    "built": null,
+    "out": false
+   },
+   {
+    "stock": {
+     "bool": false
+    },
+    "built": [],
+    "out": false
+   },
+   {
+    "stock": {
+     "bool": false
+    },
+    "built": [
+     "odlewnia_brazu"
+    ],
+    "out": false
+   },
+   {
+    "stock": {
+     "bool": false
+    },
+    "built": [
+     "odlewnia_zelaza"
+    ],
+    "out": false
+   },
+   {
+    "stock": {
+     "bool": false
+    },
+    "built": [
+     "wielka_odlewnia"
+    ],
+    "out": false
+   },
+   {
+    "stock": {
+     "bool": false
+    },
+    "built": [
+     "tartak",
+     "odlewnia_brazu_stara"
+    ],
+    "out": false
+   },
+   {
+    "stock": {
+     "bool": false
+    },
+    "built": [
+     "odlewnia_brazu",
+     "odlewnia_zelaza",
+     "wielka_odlewnia"
+    ],
+    "out": false
+   },
+   {
+    "stock": {},
+    "built": null,
+    "out": false
+   },
+   {
+    "stock": {},
+    "built": [],
+    "out": false
+   },
+   {
+    "stock": {},
+    "built": [
+     "odlewnia_brazu"
+    ],
+    "out": false
+   },
+   {
+    "stock": {},
+    "built": [
+     "odlewnia_zelaza"
+    ],
+    "out": false
+   },
+   {
+    "stock": {},
+    "built": [
+     "wielka_odlewnia"
+    ],
+    "out": false
+   },
+   {
+    "stock": {},
+    "built": [
+     "tartak",
+     "odlewnia_brazu_stara"
+    ],
+    "out": false
+   },
+   {
+    "stock": {},
+    "built": [
+     "odlewnia_brazu",
+     "odlewnia_zelaza",
+     "wielka_odlewnia"
+    ],
+    "out": false
+   },
+   {
+    "stock": {
+     "zloto": 1
+    },
+    "built": null,
+    "out": false
+   },
+   {
+    "stock": {
+     "zloto": 1
+    },
+    "built": [],
+    "out": false
+   },
+   {
+    "stock": {
+     "zloto": 1
+    },
+    "built": [
+     "odlewnia_brazu"
+    ],
+    "out": false
+   },
+   {
+    "stock": {
+     "zloto": 1
+    },
+    "built": [
+     "odlewnia_zelaza"
+    ],
+    "out": false
+   },
+   {
+    "stock": {
+     "zloto": 1
+    },
+    "built": [
+     "wielka_odlewnia"
+    ],
+    "out": false
+   },
+   {
+    "stock": {
+     "zloto": 1
+    },
+    "built": [
+     "tartak",
+     "odlewnia_brazu_stara"
+    ],
+    "out": false
+   },
+   {
+    "stock": {
+     "zloto": 1
+    },
+    "built": [
+     "odlewnia_brazu",
+     "odlewnia_zelaza",
+     "wielka_odlewnia"
+    ],
+    "out": false
+   },
+   {
+    "stock": {
+     "zloto": 0.5
+    },
+    "built": null,
+    "out": false
+   },
+   {
+    "stock": {
+     "zloto": 0.5
+    },
+    "built": [],
+    "out": false
+   },
+   {
+    "stock": {
+     "zloto": 0.5
+    },
+    "built": [
+     "odlewnia_brazu"
+    ],
+    "out": false
+   },
+   {
+    "stock": {
+     "zloto": 0.5
+    },
+    "built": [
+     "odlewnia_zelaza"
+    ],
+    "out": false
+   },
+   {
+    "stock": {
+     "zloto": 0.5
+    },
+    "built": [
+     "wielka_odlewnia"
+    ],
+    "out": false
+   },
+   {
+    "stock": {
+     "zloto": 0.5
+    },
+    "built": [
+     "tartak",
+     "odlewnia_brazu_stara"
+    ],
+    "out": false
+   },
+   {
+    "stock": {
+     "zloto": 0.5
+    },
+    "built": [
+     "odlewnia_brazu",
+     "odlewnia_zelaza",
+     "wielka_odlewnia"
+    ],
+    "out": false
+   },
+   {
+    "stock": {
+     "zloto": 0
+    },
+    "built": null,
+    "out": false
+   },
+   {
+    "stock": {
+     "zloto": 0
+    },
+    "built": [],
+    "out": false
+   },
+   {
+    "stock": {
+     "zloto": 0
+    },
+    "built": [
+     "odlewnia_brazu"
+    ],
+    "out": false
+   },
+   {
+    "stock": {
+     "zloto": 0
+    },
+    "built": [
+     "odlewnia_zelaza"
+    ],
+    "out": false
+   },
+   {
+    "stock": {
+     "zloto": 0
+    },
+    "built": [
+     "wielka_odlewnia"
+    ],
+    "out": false
+   },
+   {
+    "stock": {
+     "zloto": 0
+    },
+    "built": [
+     "tartak",
+     "odlewnia_brazu_stara"
+    ],
+    "out": false
+   },
+   {
+    "stock": {
+     "zloto": 0
+    },
+    "built": [
+     "odlewnia_brazu",
+     "odlewnia_zelaza",
+     "wielka_odlewnia"
+    ],
+    "out": false
+   },
+   {
+    "stock": {
+     "zloto": 2
+    },
+    "built": null,
+    "out": false
+   },
+   {
+    "stock": {
+     "zloto": 2
+    },
+    "built": [],
+    "out": false
+   },
+   {
+    "stock": {
+     "zloto": 2
+    },
+    "built": [
+     "odlewnia_brazu"
+    ],
+    "out": false
+   },
+   {
+    "stock": {
+     "zloto": 2
+    },
+    "built": [
+     "odlewnia_zelaza"
+    ],
+    "out": false
+   },
+   {
+    "stock": {
+     "zloto": 2
+    },
+    "built": [
+     "wielka_odlewnia"
+    ],
+    "out": false
+   },
+   {
+    "stock": {
+     "zloto": 2
+    },
+    "built": [
+     "tartak",
+     "odlewnia_brazu_stara"
+    ],
+    "out": false
+   },
+   {
+    "stock": {
+     "zloto": 2
+    },
+    "built": [
+     "odlewnia_brazu",
+     "odlewnia_zelaza",
+     "wielka_odlewnia"
+    ],
+    "out": false
+   },
+   {
+    "stock": {
+     "zloto": -3
+    },
+    "built": null,
+    "out": false
+   },
+   {
+    "stock": {
+     "zloto": -3
+    },
+    "built": [],
+    "out": false
+   },
+   {
+    "stock": {
+     "zloto": -3
+    },
+    "built": [
+     "odlewnia_brazu"
+    ],
+    "out": false
+   },
+   {
+    "stock": {
+     "zloto": -3
+    },
+    "built": [
+     "odlewnia_zelaza"
+    ],
+    "out": false
+   },
+   {
+    "stock": {
+     "zloto": -3
+    },
+    "built": [
+     "wielka_odlewnia"
+    ],
+    "out": false
+   },
+   {
+    "stock": {
+     "zloto": -3
+    },
+    "built": [
+     "tartak",
+     "odlewnia_brazu_stara"
+    ],
+    "out": false
+   },
+   {
+    "stock": {
+     "zloto": -3
+    },
+    "built": [
+     "odlewnia_brazu",
+     "odlewnia_zelaza",
+     "wielka_odlewnia"
+    ],
+    "out": false
+   },
+   {
+    "stock": {
+     "zloto": "NaN"
+    },
+    "built": null,
+    "out": false
+   },
+   {
+    "stock": {
+     "zloto": "NaN"
+    },
+    "built": [],
+    "out": false
+   },
+   {
+    "stock": {
+     "zloto": "NaN"
+    },
+    "built": [
+     "odlewnia_brazu"
+    ],
+    "out": false
+   },
+   {
+    "stock": {
+     "zloto": "NaN"
+    },
+    "built": [
+     "odlewnia_zelaza"
+    ],
+    "out": false
+   },
+   {
+    "stock": {
+     "zloto": "NaN"
+    },
+    "built": [
+     "wielka_odlewnia"
+    ],
+    "out": false
+   },
+   {
+    "stock": {
+     "zloto": "NaN"
+    },
+    "built": [
+     "tartak",
+     "odlewnia_brazu_stara"
+    ],
+    "out": false
+   },
+   {
+    "stock": {
+     "zloto": "NaN"
+    },
+    "built": [
+     "odlewnia_brazu",
+     "odlewnia_zelaza",
+     "wielka_odlewnia"
+    ],
+    "out": false
+   },
+   {
+    "stock": {
+     "zloto": "Infinity"
+    },
+    "built": null,
+    "out": false
+   },
+   {
+    "stock": {
+     "zloto": "Infinity"
+    },
+    "built": [],
+    "out": false
+   },
+   {
+    "stock": {
+     "zloto": "Infinity"
+    },
+    "built": [
+     "odlewnia_brazu"
+    ],
+    "out": false
+   },
+   {
+    "stock": {
+     "zloto": "Infinity"
+    },
+    "built": [
+     "odlewnia_zelaza"
+    ],
+    "out": false
+   },
+   {
+    "stock": {
+     "zloto": "Infinity"
+    },
+    "built": [
+     "wielka_odlewnia"
+    ],
+    "out": false
+   },
+   {
+    "stock": {
+     "zloto": "Infinity"
+    },
+    "built": [
+     "tartak",
+     "odlewnia_brazu_stara"
+    ],
+    "out": false
+   },
+   {
+    "stock": {
+     "zloto": "Infinity"
+    },
+    "built": [
+     "odlewnia_brazu",
+     "odlewnia_zelaza",
+     "wielka_odlewnia"
+    ],
+    "out": false
+   },
+   {
+    "stock": {
+     "zloto": "-Infinity"
+    },
+    "built": null,
+    "out": false
+   },
+   {
+    "stock": {
+     "zloto": "-Infinity"
+    },
+    "built": [],
+    "out": false
+   },
+   {
+    "stock": {
+     "zloto": "-Infinity"
+    },
+    "built": [
+     "odlewnia_brazu"
+    ],
+    "out": false
+   },
+   {
+    "stock": {
+     "zloto": "-Infinity"
+    },
+    "built": [
+     "odlewnia_zelaza"
+    ],
+    "out": false
+   },
+   {
+    "stock": {
+     "zloto": "-Infinity"
+    },
+    "built": [
+     "wielka_odlewnia"
+    ],
+    "out": false
+   },
+   {
+    "stock": {
+     "zloto": "-Infinity"
+    },
+    "built": [
+     "tartak",
+     "odlewnia_brazu_stara"
+    ],
+    "out": false
+   },
+   {
+    "stock": {
+     "zloto": "-Infinity"
+    },
+    "built": [
+     "odlewnia_brazu",
+     "odlewnia_zelaza",
+     "wielka_odlewnia"
+    ],
+    "out": false
+   },
+   {
+    "stock": {
+     "zelazo": 5,
+     "ruda_cyny": 4
+    },
+    "built": null,
+    "out": true
+   },
+   {
+    "stock": {
+     "zelazo": 5,
+     "ruda_cyny": 4
+    },
+    "built": [],
+    "out": false
+   },
+   {
+    "stock": {
+     "zelazo": 5,
+     "ruda_cyny": 4
+    },
+    "built": [
+     "odlewnia_brazu"
+    ],
+    "out": true
+   },
+   {
+    "stock": {
+     "zelazo": 5,
+     "ruda_cyny": 4
+    },
+    "built": [
+     "odlewnia_zelaza"
+    ],
+    "out": true
+   },
+   {
+    "stock": {
+     "zelazo": 5,
+     "ruda_cyny": 4
+    },
+    "built": [
+     "wielka_odlewnia"
+    ],
+    "out": true
+   },
+   {
+    "stock": {
+     "zelazo": 5,
+     "ruda_cyny": 4
+    },
+    "built": [
+     "tartak",
+     "odlewnia_brazu_stara"
+    ],
+    "out": false
+   },
+   {
+    "stock": {
+     "zelazo": 5,
+     "ruda_cyny": 4
+    },
+    "built": [
+     "odlewnia_brazu",
+     "odlewnia_zelaza",
+     "wielka_odlewnia"
+    ],
+    "out": true
+   },
+   {
+    "stock": {
+     "zloto": 1000,
+     "zelazo": 7
+    },
+    "built": null,
+    "out": false
+   },
+   {
+    "stock": {
+     "zloto": 1000,
+     "zelazo": 7
+    },
+    "built": [],
+    "out": false
+   },
+   {
+    "stock": {
+     "zloto": 1000,
+     "zelazo": 7
+    },
+    "built": [
+     "odlewnia_brazu"
+    ],
+    "out": false
+   },
+   {
+    "stock": {
+     "zloto": 1000,
+     "zelazo": 7
+    },
+    "built": [
+     "odlewnia_zelaza"
+    ],
+    "out": false
+   },
+   {
+    "stock": {
+     "zloto": 1000,
+     "zelazo": 7
+    },
+    "built": [
+     "wielka_odlewnia"
+    ],
+    "out": false
+   },
+   {
+    "stock": {
+     "zloto": 1000,
+     "zelazo": 7
+    },
+    "built": [
+     "tartak",
+     "odlewnia_brazu_stara"
+    ],
+    "out": false
+   },
+   {
+    "stock": {
+     "zloto": 1000,
+     "zelazo": 7
+    },
+    "built": [
+     "odlewnia_brazu",
+     "odlewnia_zelaza",
+     "wielka_odlewnia"
+    ],
+    "out": false
+   },
+   {
+    "stock": {
+     "ruda_cyny": 0
+    },
+    "built": null,
+    "out": false
+   },
+   {
+    "stock": {
+     "ruda_cyny": 0
+    },
+    "built": [],
+    "out": false
+   },
+   {
+    "stock": {
+     "ruda_cyny": 0
+    },
+    "built": [
+     "odlewnia_brazu"
+    ],
+    "out": false
+   },
+   {
+    "stock": {
+     "ruda_cyny": 0
+    },
+    "built": [
+     "odlewnia_zelaza"
+    ],
+    "out": false
+   },
+   {
+    "stock": {
+     "ruda_cyny": 0
+    },
+    "built": [
+     "wielka_odlewnia"
+    ],
+    "out": false
+   },
+   {
+    "stock": {
+     "ruda_cyny": 0
+    },
+    "built": [
+     "tartak",
+     "odlewnia_brazu_stara"
+    ],
+    "out": false
+   },
+   {
+    "stock": {
+     "ruda_cyny": 0
+    },
+    "built": [
+     "odlewnia_brazu",
+     "odlewnia_zelaza",
+     "wielka_odlewnia"
+    ],
+    "out": false
+   },
+   {
+    "stock": {
+     "ruda_cyny": 0.5
+    },
+    "built": null,
+    "out": true
+   },
+   {
+    "stock": {
+     "ruda_cyny": 0.5
+    },
+    "built": [],
+    "out": false
+   },
+   {
+    "stock": {
+     "ruda_cyny": 0.5
+    },
+    "built": [
+     "odlewnia_brazu"
+    ],
+    "out": true
+   },
+   {
+    "stock": {
+     "ruda_cyny": 0.5
+    },
+    "built": [
+     "odlewnia_zelaza"
+    ],
+    "out": true
+   },
+   {
+    "stock": {
+     "ruda_cyny": 0.5
+    },
+    "built": [
+     "wielka_odlewnia"
+    ],
+    "out": true
+   },
+   {
+    "stock": {
+     "ruda_cyny": 0.5
+    },
+    "built": [
+     "tartak",
+     "odlewnia_brazu_stara"
+    ],
+    "out": false
+   },
+   {
+    "stock": {
+     "ruda_cyny": 0.5
+    },
+    "built": [
+     "odlewnia_brazu",
+     "odlewnia_zelaza",
+     "wielka_odlewnia"
+    ],
+    "out": true
+   },
+   {
+    "stock": {
+     "ruda_cyny": 1
+    },
+    "built": null,
+    "out": true
+   },
+   {
+    "stock": {
+     "ruda_cyny": 1
+    },
+    "built": [],
+    "out": false
+   },
+   {
+    "stock": {
+     "ruda_cyny": 1
+    },
+    "built": [
+     "odlewnia_brazu"
+    ],
+    "out": true
+   },
+   {
+    "stock": {
+     "ruda_cyny": 1
+    },
+    "built": [
+     "odlewnia_zelaza"
+    ],
+    "out": true
+   },
+   {
+    "stock": {
+     "ruda_cyny": 1
+    },
+    "built": [
+     "wielka_odlewnia"
+    ],
+    "out": true
+   },
+   {
+    "stock": {
+     "ruda_cyny": 1
+    },
+    "built": [
+     "tartak",
+     "odlewnia_brazu_stara"
+    ],
+    "out": false
+   },
+   {
+    "stock": {
+     "ruda_cyny": 1
+    },
+    "built": [
+     "odlewnia_brazu",
+     "odlewnia_zelaza",
+     "wielka_odlewnia"
+    ],
+    "out": true
+   },
+   {
+    "stock": {
+     "ruda_cyny": "NaN"
+    },
+    "built": null,
+    "out": false
+   },
+   {
+    "stock": {
+     "ruda_cyny": "NaN"
+    },
+    "built": [],
+    "out": false
+   },
+   {
+    "stock": {
+     "ruda_cyny": "NaN"
+    },
+    "built": [
+     "odlewnia_brazu"
+    ],
+    "out": false
+   },
+   {
+    "stock": {
+     "ruda_cyny": "NaN"
+    },
+    "built": [
+     "odlewnia_zelaza"
+    ],
+    "out": false
+   },
+   {
+    "stock": {
+     "ruda_cyny": "NaN"
+    },
+    "built": [
+     "wielka_odlewnia"
+    ],
+    "out": false
+   },
+   {
+    "stock": {
+     "ruda_cyny": "NaN"
+    },
+    "built": [
+     "tartak",
+     "odlewnia_brazu_stara"
+    ],
+    "out": false
+   },
+   {
+    "stock": {
+     "ruda_cyny": "NaN"
+    },
+    "built": [
+     "odlewnia_brazu",
+     "odlewnia_zelaza",
+     "wielka_odlewnia"
+    ],
+    "out": false
+   },
+   {
+    "stock": {
+     "ruda_cyny": "Infinity"
+    },
+    "built": null,
+    "out": true
+   },
+   {
+    "stock": {
+     "ruda_cyny": "Infinity"
+    },
+    "built": [],
+    "out": false
+   },
+   {
+    "stock": {
+     "ruda_cyny": "Infinity"
+    },
+    "built": [
+     "odlewnia_brazu"
+    ],
+    "out": true
+   },
+   {
+    "stock": {
+     "ruda_cyny": "Infinity"
+    },
+    "built": [
+     "odlewnia_zelaza"
+    ],
+    "out": true
+   },
+   {
+    "stock": {
+     "ruda_cyny": "Infinity"
+    },
+    "built": [
+     "wielka_odlewnia"
+    ],
+    "out": true
+   },
+   {
+    "stock": {
+     "ruda_cyny": "Infinity"
+    },
+    "built": [
+     "tartak",
+     "odlewnia_brazu_stara"
+    ],
+    "out": false
+   },
+   {
+    "stock": {
+     "ruda_cyny": "Infinity"
+    },
+    "built": [
+     "odlewnia_brazu",
+     "odlewnia_zelaza",
+     "wielka_odlewnia"
+    ],
+    "out": true
+   },
+   {
+    "stock": {
+     "ruda_cyny": -1
+    },
+    "built": null,
+    "out": false
+   },
+   {
+    "stock": {
+     "ruda_cyny": -1
+    },
+    "built": [],
+    "out": false
+   },
+   {
+    "stock": {
+     "ruda_cyny": -1
+    },
+    "built": [
+     "odlewnia_brazu"
+    ],
+    "out": false
+   },
+   {
+    "stock": {
+     "ruda_cyny": -1
+    },
+    "built": [
+     "odlewnia_zelaza"
+    ],
+    "out": false
+   },
+   {
+    "stock": {
+     "ruda_cyny": -1
+    },
+    "built": [
+     "wielka_odlewnia"
+    ],
+    "out": false
+   },
+   {
+    "stock": {
+     "ruda_cyny": -1
+    },
+    "built": [
+     "tartak",
+     "odlewnia_brazu_stara"
+    ],
+    "out": false
+   },
+   {
+    "stock": {
+     "ruda_cyny": -1
+    },
+    "built": [
+     "odlewnia_brazu",
+     "odlewnia_zelaza",
+     "wielka_odlewnia"
+    ],
+    "out": false
+   },
+   {
+    "stock": {
+     "zelazo": 0
+    },
+    "built": null,
+    "out": false
+   },
+   {
+    "stock": {
+     "zelazo": 0
+    },
+    "built": [],
+    "out": false
+   },
+   {
+    "stock": {
+     "zelazo": 0
+    },
+    "built": [
+     "odlewnia_brazu"
+    ],
+    "out": false
+   },
+   {
+    "stock": {
+     "zelazo": 0
+    },
+    "built": [
+     "odlewnia_zelaza"
+    ],
+    "out": false
+   },
+   {
+    "stock": {
+     "zelazo": 0
+    },
+    "built": [
+     "wielka_odlewnia"
+    ],
+    "out": false
+   },
+   {
+    "stock": {
+     "zelazo": 0
+    },
+    "built": [
+     "tartak",
+     "odlewnia_brazu_stara"
+    ],
+    "out": false
+   },
+   {
+    "stock": {
+     "zelazo": 0
+    },
+    "built": [
+     "odlewnia_brazu",
+     "odlewnia_zelaza",
+     "wielka_odlewnia"
+    ],
+    "out": false
+   },
+   {
+    "stock": {
+     "zelazo": 0.5
+    },
+    "built": null,
+    "out": false
+   },
+   {
+    "stock": {
+     "zelazo": 0.5
+    },
+    "built": [],
+    "out": false
+   },
+   {
+    "stock": {
+     "zelazo": 0.5
+    },
+    "built": [
+     "odlewnia_brazu"
+    ],
+    "out": false
+   },
+   {
+    "stock": {
+     "zelazo": 0.5
+    },
+    "built": [
+     "odlewnia_zelaza"
+    ],
+    "out": false
+   },
+   {
+    "stock": {
+     "zelazo": 0.5
+    },
+    "built": [
+     "wielka_odlewnia"
+    ],
+    "out": false
+   },
+   {
+    "stock": {
+     "zelazo": 0.5
+    },
+    "built": [
+     "tartak",
+     "odlewnia_brazu_stara"
+    ],
+    "out": false
+   },
+   {
+    "stock": {
+     "zelazo": 0.5
+    },
+    "built": [
+     "odlewnia_brazu",
+     "odlewnia_zelaza",
+     "wielka_odlewnia"
+    ],
+    "out": false
+   },
+   {
+    "stock": {
+     "zelazo": 1
+    },
+    "built": null,
+    "out": false
+   },
+   {
+    "stock": {
+     "zelazo": 1
+    },
+    "built": [],
+    "out": false
+   },
+   {
+    "stock": {
+     "zelazo": 1
+    },
+    "built": [
+     "odlewnia_brazu"
+    ],
+    "out": false
+   },
+   {
+    "stock": {
+     "zelazo": 1
+    },
+    "built": [
+     "odlewnia_zelaza"
+    ],
+    "out": false
+   },
+   {
+    "stock": {
+     "zelazo": 1
+    },
+    "built": [
+     "wielka_odlewnia"
+    ],
+    "out": false
+   },
+   {
+    "stock": {
+     "zelazo": 1
+    },
+    "built": [
+     "tartak",
+     "odlewnia_brazu_stara"
+    ],
+    "out": false
+   },
+   {
+    "stock": {
+     "zelazo": 1
+    },
+    "built": [
+     "odlewnia_brazu",
+     "odlewnia_zelaza",
+     "wielka_odlewnia"
+    ],
+    "out": false
+   },
+   {
+    "stock": {
+     "zelazo": "NaN"
+    },
+    "built": null,
+    "out": false
+   },
+   {
+    "stock": {
+     "zelazo": "NaN"
+    },
+    "built": [],
+    "out": false
+   },
+   {
+    "stock": {
+     "zelazo": "NaN"
+    },
+    "built": [
+     "odlewnia_brazu"
+    ],
+    "out": false
+   },
+   {
+    "stock": {
+     "zelazo": "NaN"
+    },
+    "built": [
+     "odlewnia_zelaza"
+    ],
+    "out": false
+   },
+   {
+    "stock": {
+     "zelazo": "NaN"
+    },
+    "built": [
+     "wielka_odlewnia"
+    ],
+    "out": false
+   },
+   {
+    "stock": {
+     "zelazo": "NaN"
+    },
+    "built": [
+     "tartak",
+     "odlewnia_brazu_stara"
+    ],
+    "out": false
+   },
+   {
+    "stock": {
+     "zelazo": "NaN"
+    },
+    "built": [
+     "odlewnia_brazu",
+     "odlewnia_zelaza",
+     "wielka_odlewnia"
+    ],
+    "out": false
+   }
+  ]
+ }
+}

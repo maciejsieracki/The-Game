@@ -1,0 +1,2058 @@
+{
+ "pin": "91dc998a5f1b51ad29e0f4785edfd45655445c53",
+ "zloto": {
+  "countKopalnieZlota": [
+   {
+    "placed": [],
+    "out": 0
+   },
+   {
+    "placed": [
+     [
+      "1,0",
+      "kopalnia_zlota"
+     ]
+    ],
+    "out": 1
+   },
+   {
+    "placed": [
+     [
+      "1,0",
+      [
+       "kopalnia_zlota",
+       "tartak"
+      ]
+     ],
+     [
+      "2,0",
+      [
+       "kopalnia_zlota"
+      ]
+     ]
+    ],
+    "out": 2
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      "kopalnia_zlota"
+     ],
+     [
+      "0,1",
+      "kopalnia_zlota"
+     ]
+    ],
+    "out": 2
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      "kopalnia_cyny"
+     ]
+    ],
+    "out": 0
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      [
+       "tartak",
+       "kopalnia_cyny"
+      ]
+     ]
+    ],
+    "out": 0
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      "kopalnia_cyny"
+     ],
+     [
+      "1,0",
+      "tartak"
+     ]
+    ],
+    "out": 0
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      " kopalnia_cyny "
+     ]
+    ],
+    "out": 0
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      "Kopalnia_Cyny"
+     ]
+    ],
+    "out": 0
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      "kopalnia_zelaza"
+     ]
+    ],
+    "out": 0
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      "kopalnia"
+     ]
+    ],
+    "out": 0
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      [
+       "kopalnia",
+       "tartak"
+      ]
+     ]
+    ],
+    "out": 0
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      "kopalnia"
+     ]
+    ],
+    "out": 0
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      "kopalnia_zelaza"
+     ]
+    ],
+    "out": 0
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      "brak"
+     ],
+     [
+      "1,0",
+      ""
+     ]
+    ],
+    "out": 0
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      "foo"
+     ],
+     [
+      "1,0",
+      [
+       "bar",
+       "constructor"
+      ]
+     ]
+    ],
+    "out": 0
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      "pastwisko"
+     ],
+     [
+      "1,0",
+      "bydlo"
+     ]
+    ],
+    "out": 0
+   },
+   {
+    "placed": [
+     [
+      "5,5",
+      "kopalnia_zlota"
+     ]
+    ],
+    "out": 1
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      [
+       "kopalnia_zlota",
+       "kopalnia_zlota",
+       "kopalnia_zlota"
+      ]
+     ]
+    ],
+    "out": 3
+   },
+   {
+    "placed": null,
+    "out": 0
+   }
+  ],
+  "empireHasKopalniaZlota": [
+   {
+    "placed": [],
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "1,0",
+      "kopalnia_zlota"
+     ]
+    ],
+    "out": true
+   },
+   {
+    "placed": [
+     [
+      "1,0",
+      [
+       "kopalnia_zlota",
+       "tartak"
+      ]
+     ],
+     [
+      "2,0",
+      [
+       "kopalnia_zlota"
+      ]
+     ]
+    ],
+    "out": true
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      "kopalnia_zlota"
+     ],
+     [
+      "0,1",
+      "kopalnia_zlota"
+     ]
+    ],
+    "out": true
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      "kopalnia_cyny"
+     ]
+    ],
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      [
+       "tartak",
+       "kopalnia_cyny"
+      ]
+     ]
+    ],
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      "kopalnia_cyny"
+     ],
+     [
+      "1,0",
+      "tartak"
+     ]
+    ],
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      " kopalnia_cyny "
+     ]
+    ],
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      "Kopalnia_Cyny"
+     ]
+    ],
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      "kopalnia_zelaza"
+     ]
+    ],
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      "kopalnia"
+     ]
+    ],
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      [
+       "kopalnia",
+       "tartak"
+      ]
+     ]
+    ],
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      "kopalnia"
+     ]
+    ],
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      "kopalnia_zelaza"
+     ]
+    ],
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      "brak"
+     ],
+     [
+      "1,0",
+      ""
+     ]
+    ],
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      "foo"
+     ],
+     [
+      "1,0",
+      [
+       "bar",
+       "constructor"
+      ]
+     ]
+    ],
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      "pastwisko"
+     ],
+     [
+      "1,0",
+      "bydlo"
+     ]
+    ],
+    "out": false
+   },
+   {
+    "placed": [
+     [
+      "5,5",
+      "kopalnia_zlota"
+     ]
+    ],
+    "out": true
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      [
+       "kopalnia_zlota",
+       "kopalnia_zlota",
+       "kopalnia_zlota"
+      ]
+     ]
+    ],
+    "out": true
+   },
+   {
+    "placed": null,
+    "out": false
+   }
+  ],
+  "empireZlotoStock": [
+   {
+    "stock": null,
+    "out": 0
+   },
+   {
+    "stock": {},
+    "out": 0
+   },
+   {
+    "stock": {
+     "zloto": 1
+    },
+    "out": 1
+   },
+   {
+    "stock": {
+     "zloto": 0.5
+    },
+    "out": 0.5
+   },
+   {
+    "stock": {
+     "zloto": 0
+    },
+    "out": 0
+   },
+   {
+    "stock": {
+     "zloto": 2
+    },
+    "out": 2
+   },
+   {
+    "stock": {
+     "zloto": -3
+    },
+    "out": 0
+   },
+   {
+    "stock": {
+     "zloto": "NaN"
+    },
+    "out": 0
+   },
+   {
+    "stock": {
+     "zloto": "Infinity"
+    },
+    "out": 0
+   },
+   {
+    "stock": {
+     "zloto": "-Infinity"
+    },
+    "out": 0
+   },
+   {
+    "stock": {
+     "zelazo": 5,
+     "ruda_cyny": 4
+    },
+    "out": 0
+   },
+   {
+    "stock": {
+     "zloto": 1000,
+     "zelazo": 7
+    },
+    "out": 1000
+   },
+   {
+    "stock": {
+     "ruda_cyny": 0
+    },
+    "out": 0
+   },
+   {
+    "stock": {
+     "ruda_cyny": 0.5
+    },
+    "out": 0
+   },
+   {
+    "stock": {
+     "ruda_cyny": 1
+    },
+    "out": 0
+   },
+   {
+    "stock": {
+     "ruda_cyny": "NaN"
+    },
+    "out": 0
+   },
+   {
+    "stock": {
+     "ruda_cyny": "Infinity"
+    },
+    "out": 0
+   },
+   {
+    "stock": {
+     "ruda_cyny": -1
+    },
+    "out": 0
+   },
+   {
+    "stock": {
+     "zelazo": 0
+    },
+    "out": 0
+   },
+   {
+    "stock": {
+     "zelazo": 0.5
+    },
+    "out": 0
+   },
+   {
+    "stock": {
+     "zelazo": 1
+    },
+    "out": 0
+   },
+   {
+    "stock": {
+     "zelazo": "NaN"
+    },
+    "out": 0
+   }
+  ],
+  "ownerHasZlotoStock": [
+   {
+    "stock": null,
+    "out": false
+   },
+   {
+    "stock": {},
+    "out": false
+   },
+   {
+    "stock": {
+     "zloto": 1
+    },
+    "out": true
+   },
+   {
+    "stock": {
+     "zloto": 0.5
+    },
+    "out": true
+   },
+   {
+    "stock": {
+     "zloto": 0
+    },
+    "out": false
+   },
+   {
+    "stock": {
+     "zloto": 2
+    },
+    "out": true
+   },
+   {
+    "stock": {
+     "zloto": -3
+    },
+    "out": false
+   },
+   {
+    "stock": {
+     "zloto": "NaN"
+    },
+    "out": false
+   },
+   {
+    "stock": {
+     "zloto": "Infinity"
+    },
+    "out": false
+   },
+   {
+    "stock": {
+     "zloto": "-Infinity"
+    },
+    "out": false
+   },
+   {
+    "stock": {
+     "zelazo": 5,
+     "ruda_cyny": 4
+    },
+    "out": false
+   },
+   {
+    "stock": {
+     "zloto": 1000,
+     "zelazo": 7
+    },
+    "out": true
+   },
+   {
+    "stock": {
+     "ruda_cyny": 0
+    },
+    "out": false
+   },
+   {
+    "stock": {
+     "ruda_cyny": 0.5
+    },
+    "out": false
+   },
+   {
+    "stock": {
+     "ruda_cyny": 1
+    },
+    "out": false
+   },
+   {
+    "stock": {
+     "ruda_cyny": "NaN"
+    },
+    "out": false
+   },
+   {
+    "stock": {
+     "ruda_cyny": "Infinity"
+    },
+    "out": false
+   },
+   {
+    "stock": {
+     "ruda_cyny": -1
+    },
+    "out": false
+   },
+   {
+    "stock": {
+     "zelazo": 0
+    },
+    "out": false
+   },
+   {
+    "stock": {
+     "zelazo": 0.5
+    },
+    "out": false
+   },
+   {
+    "stock": {
+     "zelazo": 1
+    },
+    "out": false
+   },
+   {
+    "stock": {
+     "zelazo": "NaN"
+    },
+    "out": false
+   }
+  ],
+  "ownerCanFeedMennica": [
+   {
+    "stock": null,
+    "grace": false,
+    "out": false
+   },
+   {
+    "stock": null,
+    "grace": true,
+    "out": true
+   },
+   {
+    "stock": {},
+    "grace": false,
+    "out": false
+   },
+   {
+    "stock": {},
+    "grace": true,
+    "out": true
+   },
+   {
+    "stock": {
+     "zloto": 1
+    },
+    "grace": false,
+    "out": true
+   },
+   {
+    "stock": {
+     "zloto": 1
+    },
+    "grace": true,
+    "out": true
+   },
+   {
+    "stock": {
+     "zloto": 0.5
+    },
+    "grace": false,
+    "out": false
+   },
+   {
+    "stock": {
+     "zloto": 0.5
+    },
+    "grace": true,
+    "out": true
+   },
+   {
+    "stock": {
+     "zloto": 0
+    },
+    "grace": false,
+    "out": false
+   },
+   {
+    "stock": {
+     "zloto": 0
+    },
+    "grace": true,
+    "out": true
+   },
+   {
+    "stock": {
+     "zloto": 2
+    },
+    "grace": false,
+    "out": true
+   },
+   {
+    "stock": {
+     "zloto": 2
+    },
+    "grace": true,
+    "out": true
+   },
+   {
+    "stock": {
+     "zloto": -3
+    },
+    "grace": false,
+    "out": false
+   },
+   {
+    "stock": {
+     "zloto": -3
+    },
+    "grace": true,
+    "out": true
+   },
+   {
+    "stock": {
+     "zloto": "NaN"
+    },
+    "grace": false,
+    "out": false
+   },
+   {
+    "stock": {
+     "zloto": "NaN"
+    },
+    "grace": true,
+    "out": true
+   },
+   {
+    "stock": {
+     "zloto": "Infinity"
+    },
+    "grace": false,
+    "out": false
+   },
+   {
+    "stock": {
+     "zloto": "Infinity"
+    },
+    "grace": true,
+    "out": true
+   },
+   {
+    "stock": {
+     "zloto": "-Infinity"
+    },
+    "grace": false,
+    "out": false
+   },
+   {
+    "stock": {
+     "zloto": "-Infinity"
+    },
+    "grace": true,
+    "out": true
+   },
+   {
+    "stock": {
+     "zelazo": 5,
+     "ruda_cyny": 4
+    },
+    "grace": false,
+    "out": false
+   },
+   {
+    "stock": {
+     "zelazo": 5,
+     "ruda_cyny": 4
+    },
+    "grace": true,
+    "out": true
+   },
+   {
+    "stock": {
+     "zloto": 1000,
+     "zelazo": 7
+    },
+    "grace": false,
+    "out": true
+   },
+   {
+    "stock": {
+     "zloto": 1000,
+     "zelazo": 7
+    },
+    "grace": true,
+    "out": true
+   },
+   {
+    "stock": {
+     "ruda_cyny": 0
+    },
+    "grace": false,
+    "out": false
+   },
+   {
+    "stock": {
+     "ruda_cyny": 0
+    },
+    "grace": true,
+    "out": true
+   },
+   {
+    "stock": {
+     "ruda_cyny": 0.5
+    },
+    "grace": false,
+    "out": false
+   },
+   {
+    "stock": {
+     "ruda_cyny": 0.5
+    },
+    "grace": true,
+    "out": true
+   },
+   {
+    "stock": {
+     "ruda_cyny": 1
+    },
+    "grace": false,
+    "out": false
+   },
+   {
+    "stock": {
+     "ruda_cyny": 1
+    },
+    "grace": true,
+    "out": true
+   },
+   {
+    "stock": {
+     "ruda_cyny": "NaN"
+    },
+    "grace": false,
+    "out": false
+   },
+   {
+    "stock": {
+     "ruda_cyny": "NaN"
+    },
+    "grace": true,
+    "out": true
+   },
+   {
+    "stock": {
+     "ruda_cyny": "Infinity"
+    },
+    "grace": false,
+    "out": false
+   },
+   {
+    "stock": {
+     "ruda_cyny": "Infinity"
+    },
+    "grace": true,
+    "out": true
+   },
+   {
+    "stock": {
+     "ruda_cyny": -1
+    },
+    "grace": false,
+    "out": false
+   },
+   {
+    "stock": {
+     "ruda_cyny": -1
+    },
+    "grace": true,
+    "out": true
+   },
+   {
+    "stock": {
+     "zelazo": 0
+    },
+    "grace": false,
+    "out": false
+   },
+   {
+    "stock": {
+     "zelazo": 0
+    },
+    "grace": true,
+    "out": true
+   },
+   {
+    "stock": {
+     "zelazo": 0.5
+    },
+    "grace": false,
+    "out": false
+   },
+   {
+    "stock": {
+     "zelazo": 0.5
+    },
+    "grace": true,
+    "out": true
+   },
+   {
+    "stock": {
+     "zelazo": 1
+    },
+    "grace": false,
+    "out": false
+   },
+   {
+    "stock": {
+     "zelazo": 1
+    },
+    "grace": true,
+    "out": true
+   },
+   {
+    "stock": {
+     "zelazo": "NaN"
+    },
+    "grace": false,
+    "out": false
+   },
+   {
+    "stock": {
+     "zelazo": "NaN"
+    },
+    "grace": true,
+    "out": true
+   }
+  ],
+  "resolveOwnerZlotoFromStock": [
+   {
+    "ownerId": 0,
+    "stock": null,
+    "resolver": "absent",
+    "out": false
+   },
+   {
+    "ownerId": 0,
+    "stock": null,
+    "resolver": "true",
+    "out": true
+   },
+   {
+    "ownerId": 0,
+    "stock": null,
+    "resolver": "false",
+    "out": false
+   },
+   {
+    "ownerId": 0,
+    "stock": {},
+    "resolver": "absent",
+    "out": false
+   },
+   {
+    "ownerId": 0,
+    "stock": {},
+    "resolver": "true",
+    "out": true
+   },
+   {
+    "ownerId": 0,
+    "stock": {},
+    "resolver": "false",
+    "out": false
+   },
+   {
+    "ownerId": 0,
+    "stock": {
+     "zloto": 1
+    },
+    "resolver": "absent",
+    "out": true
+   },
+   {
+    "ownerId": 0,
+    "stock": {
+     "zloto": 1
+    },
+    "resolver": "true",
+    "out": true
+   },
+   {
+    "ownerId": 0,
+    "stock": {
+     "zloto": 1
+    },
+    "resolver": "false",
+    "out": true
+   },
+   {
+    "ownerId": 0,
+    "stock": {
+     "zloto": 0.5
+    },
+    "resolver": "absent",
+    "out": false
+   },
+   {
+    "ownerId": 0,
+    "stock": {
+     "zloto": 0.5
+    },
+    "resolver": "true",
+    "out": true
+   },
+   {
+    "ownerId": 0,
+    "stock": {
+     "zloto": 0.5
+    },
+    "resolver": "false",
+    "out": false
+   },
+   {
+    "ownerId": 0,
+    "stock": {
+     "zloto": 0
+    },
+    "resolver": "absent",
+    "out": false
+   },
+   {
+    "ownerId": 0,
+    "stock": {
+     "zloto": 0
+    },
+    "resolver": "true",
+    "out": true
+   },
+   {
+    "ownerId": 0,
+    "stock": {
+     "zloto": 0
+    },
+    "resolver": "false",
+    "out": false
+   },
+   {
+    "ownerId": 0,
+    "stock": {
+     "zloto": 2
+    },
+    "resolver": "absent",
+    "out": true
+   },
+   {
+    "ownerId": 0,
+    "stock": {
+     "zloto": 2
+    },
+    "resolver": "true",
+    "out": true
+   },
+   {
+    "ownerId": 0,
+    "stock": {
+     "zloto": 2
+    },
+    "resolver": "false",
+    "out": true
+   },
+   {
+    "ownerId": 0,
+    "stock": {
+     "zloto": -3
+    },
+    "resolver": "absent",
+    "out": false
+   },
+   {
+    "ownerId": 0,
+    "stock": {
+     "zloto": -3
+    },
+    "resolver": "true",
+    "out": true
+   },
+   {
+    "ownerId": 0,
+    "stock": {
+     "zloto": -3
+    },
+    "resolver": "false",
+    "out": false
+   },
+   {
+    "ownerId": 0,
+    "stock": {
+     "zloto": "NaN"
+    },
+    "resolver": "absent",
+    "out": false
+   },
+   {
+    "ownerId": 0,
+    "stock": {
+     "zloto": "NaN"
+    },
+    "resolver": "true",
+    "out": true
+   },
+   {
+    "ownerId": 0,
+    "stock": {
+     "zloto": "NaN"
+    },
+    "resolver": "false",
+    "out": false
+   },
+   {
+    "ownerId": 0,
+    "stock": {
+     "zloto": "Infinity"
+    },
+    "resolver": "absent",
+    "out": false
+   },
+   {
+    "ownerId": 0,
+    "stock": {
+     "zloto": "Infinity"
+    },
+    "resolver": "true",
+    "out": true
+   },
+   {
+    "ownerId": 0,
+    "stock": {
+     "zloto": "Infinity"
+    },
+    "resolver": "false",
+    "out": false
+   },
+   {
+    "ownerId": 0,
+    "stock": {
+     "zloto": "-Infinity"
+    },
+    "resolver": "absent",
+    "out": false
+   },
+   {
+    "ownerId": 0,
+    "stock": {
+     "zloto": "-Infinity"
+    },
+    "resolver": "true",
+    "out": true
+   },
+   {
+    "ownerId": 0,
+    "stock": {
+     "zloto": "-Infinity"
+    },
+    "resolver": "false",
+    "out": false
+   },
+   {
+    "ownerId": 0,
+    "stock": {
+     "zelazo": 5,
+     "ruda_cyny": 4
+    },
+    "resolver": "absent",
+    "out": false
+   },
+   {
+    "ownerId": 0,
+    "stock": {
+     "zelazo": 5,
+     "ruda_cyny": 4
+    },
+    "resolver": "true",
+    "out": true
+   },
+   {
+    "ownerId": 0,
+    "stock": {
+     "zelazo": 5,
+     "ruda_cyny": 4
+    },
+    "resolver": "false",
+    "out": false
+   },
+   {
+    "ownerId": 0,
+    "stock": {
+     "zloto": 1000,
+     "zelazo": 7
+    },
+    "resolver": "absent",
+    "out": true
+   },
+   {
+    "ownerId": 0,
+    "stock": {
+     "zloto": 1000,
+     "zelazo": 7
+    },
+    "resolver": "true",
+    "out": true
+   },
+   {
+    "ownerId": 0,
+    "stock": {
+     "zloto": 1000,
+     "zelazo": 7
+    },
+    "resolver": "false",
+    "out": true
+   },
+   {
+    "ownerId": 0,
+    "stock": {
+     "ruda_cyny": 0
+    },
+    "resolver": "absent",
+    "out": false
+   },
+   {
+    "ownerId": 0,
+    "stock": {
+     "ruda_cyny": 0
+    },
+    "resolver": "true",
+    "out": true
+   },
+   {
+    "ownerId": 0,
+    "stock": {
+     "ruda_cyny": 0
+    },
+    "resolver": "false",
+    "out": false
+   },
+   {
+    "ownerId": 0,
+    "stock": {
+     "ruda_cyny": 0.5
+    },
+    "resolver": "absent",
+    "out": false
+   },
+   {
+    "ownerId": 0,
+    "stock": {
+     "ruda_cyny": 0.5
+    },
+    "resolver": "true",
+    "out": true
+   },
+   {
+    "ownerId": 0,
+    "stock": {
+     "ruda_cyny": 0.5
+    },
+    "resolver": "false",
+    "out": false
+   },
+   {
+    "ownerId": 0,
+    "stock": {
+     "ruda_cyny": 1
+    },
+    "resolver": "absent",
+    "out": false
+   },
+   {
+    "ownerId": 0,
+    "stock": {
+     "ruda_cyny": 1
+    },
+    "resolver": "true",
+    "out": true
+   },
+   {
+    "ownerId": 0,
+    "stock": {
+     "ruda_cyny": 1
+    },
+    "resolver": "false",
+    "out": false
+   },
+   {
+    "ownerId": 0,
+    "stock": {
+     "ruda_cyny": "NaN"
+    },
+    "resolver": "absent",
+    "out": false
+   },
+   {
+    "ownerId": 0,
+    "stock": {
+     "ruda_cyny": "NaN"
+    },
+    "resolver": "true",
+    "out": true
+   },
+   {
+    "ownerId": 0,
+    "stock": {
+     "ruda_cyny": "NaN"
+    },
+    "resolver": "false",
+    "out": false
+   },
+   {
+    "ownerId": 0,
+    "stock": {
+     "ruda_cyny": "Infinity"
+    },
+    "resolver": "absent",
+    "out": false
+   },
+   {
+    "ownerId": 0,
+    "stock": {
+     "ruda_cyny": "Infinity"
+    },
+    "resolver": "true",
+    "out": true
+   },
+   {
+    "ownerId": 0,
+    "stock": {
+     "ruda_cyny": "Infinity"
+    },
+    "resolver": "false",
+    "out": false
+   },
+   {
+    "ownerId": 0,
+    "stock": {
+     "ruda_cyny": -1
+    },
+    "resolver": "absent",
+    "out": false
+   },
+   {
+    "ownerId": 0,
+    "stock": {
+     "ruda_cyny": -1
+    },
+    "resolver": "true",
+    "out": true
+   },
+   {
+    "ownerId": 0,
+    "stock": {
+     "ruda_cyny": -1
+    },
+    "resolver": "false",
+    "out": false
+   },
+   {
+    "ownerId": 0,
+    "stock": {
+     "zelazo": 0
+    },
+    "resolver": "absent",
+    "out": false
+   },
+   {
+    "ownerId": 0,
+    "stock": {
+     "zelazo": 0
+    },
+    "resolver": "true",
+    "out": true
+   },
+   {
+    "ownerId": 0,
+    "stock": {
+     "zelazo": 0
+    },
+    "resolver": "false",
+    "out": false
+   },
+   {
+    "ownerId": 0,
+    "stock": {
+     "zelazo": 0.5
+    },
+    "resolver": "absent",
+    "out": false
+   },
+   {
+    "ownerId": 0,
+    "stock": {
+     "zelazo": 0.5
+    },
+    "resolver": "true",
+    "out": true
+   },
+   {
+    "ownerId": 0,
+    "stock": {
+     "zelazo": 0.5
+    },
+    "resolver": "false",
+    "out": false
+   },
+   {
+    "ownerId": 0,
+    "stock": {
+     "zelazo": 1
+    },
+    "resolver": "absent",
+    "out": false
+   },
+   {
+    "ownerId": 0,
+    "stock": {
+     "zelazo": 1
+    },
+    "resolver": "true",
+    "out": true
+   },
+   {
+    "ownerId": 0,
+    "stock": {
+     "zelazo": 1
+    },
+    "resolver": "false",
+    "out": false
+   },
+   {
+    "ownerId": 0,
+    "stock": {
+     "zelazo": "NaN"
+    },
+    "resolver": "absent",
+    "out": false
+   },
+   {
+    "ownerId": 0,
+    "stock": {
+     "zelazo": "NaN"
+    },
+    "resolver": "true",
+    "out": true
+   },
+   {
+    "ownerId": 0,
+    "stock": {
+     "zelazo": "NaN"
+    },
+    "resolver": "false",
+    "out": false
+   }
+  ],
+  "deductMennicaZlotoDrain": [
+   {
+    "stock": {},
+    "out": {}
+   },
+   {
+    "stock": {
+     "zloto": 1
+    },
+    "out": {
+     "zloto": 0
+    }
+   },
+   {
+    "stock": {
+     "zloto": 0.5
+    },
+    "out": {
+     "zloto": 0.5
+    }
+   },
+   {
+    "stock": {
+     "zloto": 0
+    },
+    "out": {
+     "zloto": 0
+    }
+   },
+   {
+    "stock": {
+     "zloto": 2
+    },
+    "out": {
+     "zloto": 1
+    }
+   },
+   {
+    "stock": {
+     "zloto": -3
+    },
+    "out": {
+     "zloto": -3
+    }
+   },
+   {
+    "stock": {
+     "zloto": "NaN"
+    },
+    "out": {
+     "zloto": "NaN"
+    }
+   },
+   {
+    "stock": {
+     "zloto": "Infinity"
+    },
+    "out": {
+     "zloto": "Infinity"
+    }
+   },
+   {
+    "stock": {
+     "zloto": "-Infinity"
+    },
+    "out": {
+     "zloto": "-Infinity"
+    }
+   },
+   {
+    "stock": {
+     "zelazo": 5,
+     "ruda_cyny": 4
+    },
+    "out": {
+     "zelazo": 5,
+     "ruda_cyny": 4
+    }
+   },
+   {
+    "stock": {
+     "zloto": 1000,
+     "zelazo": 7
+    },
+    "out": {
+     "zloto": 999,
+     "zelazo": 7
+    }
+   },
+   {
+    "stock": {
+     "ruda_cyny": 0
+    },
+    "out": {
+     "ruda_cyny": 0
+    }
+   },
+   {
+    "stock": {
+     "ruda_cyny": 0.5
+    },
+    "out": {
+     "ruda_cyny": 0.5
+    }
+   },
+   {
+    "stock": {
+     "ruda_cyny": 1
+    },
+    "out": {
+     "ruda_cyny": 1
+    }
+   },
+   {
+    "stock": {
+     "ruda_cyny": "NaN"
+    },
+    "out": {
+     "ruda_cyny": "NaN"
+    }
+   },
+   {
+    "stock": {
+     "ruda_cyny": "Infinity"
+    },
+    "out": {
+     "ruda_cyny": "Infinity"
+    }
+   },
+   {
+    "stock": {
+     "ruda_cyny": -1
+    },
+    "out": {
+     "ruda_cyny": -1
+    }
+   },
+   {
+    "stock": {
+     "zelazo": 0
+    },
+    "out": {
+     "zelazo": 0
+    }
+   },
+   {
+    "stock": {
+     "zelazo": 0.5
+    },
+    "out": {
+     "zelazo": 0.5
+    }
+   },
+   {
+    "stock": {
+     "zelazo": 1
+    },
+    "out": {
+     "zelazo": 1
+    }
+   },
+   {
+    "stock": {
+     "zelazo": "NaN"
+    },
+    "out": {
+     "zelazo": "NaN"
+    }
+   }
+  ],
+  "placedImprovementsWithZlotoTradeGrant": [
+   {
+    "placed": [],
+    "grant": true,
+    "out": []
+   },
+   {
+    "placed": [
+     [
+      "1,0",
+      "kopalnia_zlota"
+     ]
+    ],
+    "grant": true,
+    "out": [
+     [
+      "1,0",
+      "kopalnia_zlota"
+     ]
+    ]
+   },
+   {
+    "placed": [
+     [
+      "1,0",
+      [
+       "kopalnia_zlota",
+       "tartak"
+      ]
+     ],
+     [
+      "2,0",
+      [
+       "kopalnia_zlota"
+      ]
+     ]
+    ],
+    "grant": true,
+    "out": [
+     [
+      "1,0",
+      [
+       "kopalnia_zlota",
+       "tartak"
+      ]
+     ],
+     [
+      "2,0",
+      [
+       "kopalnia_zlota"
+      ]
+     ]
+    ]
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      "kopalnia_zlota"
+     ],
+     [
+      "0,1",
+      "kopalnia_zlota"
+     ]
+    ],
+    "grant": true,
+    "out": [
+     [
+      "0,0",
+      "kopalnia_zlota"
+     ],
+     [
+      "0,1",
+      "kopalnia_zlota"
+     ]
+    ]
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      "kopalnia_cyny"
+     ]
+    ],
+    "grant": true,
+    "out": [
+     [
+      "0,0",
+      "kopalnia_cyny"
+     ]
+    ]
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      [
+       "tartak",
+       "kopalnia_cyny"
+      ]
+     ]
+    ],
+    "grant": true,
+    "out": [
+     [
+      "0,0",
+      [
+       "tartak",
+       "kopalnia_cyny"
+      ]
+     ]
+    ]
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      "kopalnia_cyny"
+     ],
+     [
+      "1,0",
+      "tartak"
+     ]
+    ],
+    "grant": true,
+    "out": [
+     [
+      "0,0",
+      "kopalnia_cyny"
+     ],
+     [
+      "1,0",
+      "tartak"
+     ]
+    ]
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      " kopalnia_cyny "
+     ]
+    ],
+    "grant": true,
+    "out": [
+     [
+      "0,0",
+      " kopalnia_cyny "
+     ]
+    ]
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      "Kopalnia_Cyny"
+     ]
+    ],
+    "grant": true,
+    "out": [
+     [
+      "0,0",
+      "Kopalnia_Cyny"
+     ]
+    ]
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      "kopalnia_zelaza"
+     ]
+    ],
+    "grant": true,
+    "out": [
+     [
+      "0,0",
+      "kopalnia_zelaza"
+     ]
+    ]
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      "kopalnia"
+     ]
+    ],
+    "grant": true,
+    "out": [
+     [
+      "0,0",
+      "kopalnia"
+     ]
+    ]
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      [
+       "kopalnia",
+       "tartak"
+      ]
+     ]
+    ],
+    "grant": true,
+    "out": [
+     [
+      "0,0",
+      [
+       "kopalnia",
+       "tartak"
+      ]
+     ]
+    ]
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      "kopalnia"
+     ]
+    ],
+    "grant": true,
+    "out": [
+     [
+      "0,0",
+      "kopalnia"
+     ]
+    ]
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      "kopalnia_zelaza"
+     ]
+    ],
+    "grant": true,
+    "out": [
+     [
+      "0,0",
+      "kopalnia_zelaza"
+     ]
+    ]
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      "brak"
+     ],
+     [
+      "1,0",
+      ""
+     ]
+    ],
+    "grant": true,
+    "out": [
+     [
+      "0,0",
+      "brak"
+     ],
+     [
+      "1,0",
+      ""
+     ]
+    ]
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      "foo"
+     ],
+     [
+      "1,0",
+      [
+       "bar",
+       "constructor"
+      ]
+     ]
+    ],
+    "grant": true,
+    "out": [
+     [
+      "0,0",
+      "foo"
+     ],
+     [
+      "1,0",
+      [
+       "bar",
+       "constructor"
+      ]
+     ]
+    ]
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      "pastwisko"
+     ],
+     [
+      "1,0",
+      "bydlo"
+     ]
+    ],
+    "grant": true,
+    "out": [
+     [
+      "0,0",
+      "pastwisko"
+     ],
+     [
+      "1,0",
+      "bydlo"
+     ]
+    ]
+   },
+   {
+    "placed": [
+     [
+      "5,5",
+      "kopalnia_zlota"
+     ]
+    ],
+    "grant": true,
+    "out": [
+     [
+      "5,5",
+      "kopalnia_zlota"
+     ]
+    ]
+   },
+   {
+    "placed": [
+     [
+      "0,0",
+      [
+       "kopalnia_zlota",
+       "kopalnia_zlota",
+       "kopalnia_zlota"
+      ]
+     ]
+    ],
+    "grant": true,
+    "out": [
+     [
+      "0,0",
+      [
+       "kopalnia_zlota",
+       "kopalnia_zlota",
+       "kopalnia_zlota"
+      ]
+     ]
+    ]
+   }
+  ]
+ }
+}
