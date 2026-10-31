@@ -2,19 +2,29 @@ import os
 import re
 import subprocess
 import sys
+import signal
+import tempfile
 
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from mutants import M  # noqa: E402
+HERE = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, HERE)
+from mutants_r2 import M  # noqa: E402
 
-ENGINE = "/home/user/The-Game/.claude/worktrees/wf_340cae56-806-1/rust-port/engine"
-SRC = ENGINE + "/src/domain/resource_access.rs"
-SCRATCH = "/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/p6-8h/mut"
-OUT = SCRATCH + "/results_" + os.environ.get("RUN_TAG", "main") + ".txt"
+# Sciezki wzgledne do korzenia repo: mutacje -> run -> runs -> autobot -> dyspozycje -> korzen.
+ENGINE = os.environ.get("P6_8H_ENGINE") or os.path.normpath(
+    os.path.join(HERE, "..", "..", "..", "..", "..", "rust-port", "engine"))
+SRC = os.path.join(ENGINE, "src", "domain", "resource_access.rs")
+# Kopia oryginalu i wynik poza repo (wynik przenoszony do runu przez commit).
+SCRATCH = tempfile.mkdtemp(prefix="p6-8h-mut-")
+OUT = os.path.join(HERE, "wynik-4-" + os.environ.get("RUN_TAG", "main") + ".txt")
 
 lo, hi = int(sys.argv[1]), int(sys.argv[2])
+# SIGTERM (np. timeout) ma przejsc przez finally, zeby zrodlo zawsze wrocilo do oryginalu.
+signal.signal(signal.SIGTERM, lambda s, f: sys.exit(143))
 with open(SRC, encoding="utf-8") as f:
     orig = f.read()
-with open(SCRATCH + "/resource_access.rs.orig", "w", encoding="utf-8") as f:
+if "    if !mix_active || foreign_pct <= 0.0 {" not in orig:
+    sys.exit("ZRODLO NIE JEST STANEM BAZOWYM - przerwano przed mutacjami")
+with open(os.path.join(SCRATCH, "resource_access.rs.orig"), "w", encoding="utf-8") as f:
     f.write(orig)
 
 env = dict(os.environ)

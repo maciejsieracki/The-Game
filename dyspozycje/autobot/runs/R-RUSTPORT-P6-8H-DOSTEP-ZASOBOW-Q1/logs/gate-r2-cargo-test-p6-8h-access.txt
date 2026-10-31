@@ -1,0 +1,21 @@
+   Compiling civ-engine v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_340cae56-806-4/rust-port/engine)
+    Finished `test` profile [unoptimized] target(s) in 32.92s
+     Running tests/p6_8h_access.rs (/dev/shm/p6-8h-r2/debug/deps/p6_8h_access-00a51b06651064b5)
+
+running 13 tests
+test culture_share_clamp_boundaries_and_negative_zero ... ok
+test culture_share_and_mix_match_web ... ok
+test cyna_kopalnia_on_deposit_matches_web ... ok
+test has_access_matches_web ... ok
+test odlewnia_predicates_match_web ... ok
+test zelazo_kopalnia_on_deposit_matches_web ... ok
+test zloto_deduct_matches_web ... ok
+test vector_files_are_not_empty ... ok
+test zloto_resolve_grace_matches_web ... ok
+test zloto_count_and_has_match_web ... ok
+test zloto_trade_grant_is_identity ... ok
+test zloto_stock_predicates_match_web ... ok
+test js_trim_set_matches_v8_for_all_code_points ... ok
+
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.98s
+EXIT=0

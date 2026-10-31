@@ -1,5 +1,6 @@
+import os
 import sys
-sys.path.insert(0, "/home/user/The-Game/.claude/worktrees/wf_340cae56-806-2/dyspozycje/autobot/runs/R-RUSTPORT-P6-8H-DOSTEP-ZASOBOW-Q1/mutacje")
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from mutants import M as BASE
 
 M = []
