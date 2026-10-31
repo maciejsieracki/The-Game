@@ -250,3 +250,27 @@ Commit kodu badany: `b443131af` (kod Q2 = `687d39563`; tracked pliki czyste, `gi
 - **SURVIVED z oczekiwaniem K = LUKI TESTOWE (otwarte, NIE zamknięte)**: C12 (`center_step > 8`→`> 7`), C21 (`sea_dist(cur)` default), G05 i G06 (filtr `visited` w przebiegach), G11 (oznaczenie wybranego heksa), G12 (oznaczenie ujścia), M03 (filtr kierunku celu), M11 (`sea_dist(cur)` default 999), W05 (break przy cięciu na końcu), W08 (naprawa sąsiedztwa okna), E13, E14, E17, E18, E19 (gałęzie parzystości i fallback w `river_corners_along_hex_edges`), E25 (deduplikacja w `river_transit_edge_indices`), E35 (parzystość heksa w `mark_river_transit_edges_on_path`). Razem 17.
 - **Tabela niezmutowanych konstrukcji plik:linia**: NIE ZREALIZOWANA w tej rundzie. Mutanty są opisane w linii web (`:NNNN`), brak mapowania na linie Rust; wymagane w następnej rundzie razem z zamknięciem 17 luk.
 - **Wniosek dla bramki**: lekcja (d) NIE spełniona (17 luk K + brak tabeli). Lekcje (c) i gate fmt/clippy/test — spełnione.
+
+### Runda 3 — Operator (częściowe domknięcie 17 luk K; start `66425c633`)
+
+Stan: rozstrzygnięte TYLKO dowodami plik:linia dla 5 z 17 mutantów K (poniżej). Pozostałe 12 K i 16 E/L: NIE ZAMKNIĘTE w tej rundzie (patrz „Otwarte"). Numeracja linii = Rust (`rust-port/engine/src/domain/mapgen/`), web = pin `edb8fb56`.
+
+| Mutant | Status | Dowód (Rust plik:linia; web) |
+|---|---|---|
+| C12 (`centerStep > 8` → `> 7`) | EKWIWALENT | `rivers_b/coast_grow.rs:89` gałąź `center_step > 8`; wartości `score_river_step_toward_centroid` ∈ {22, -12, 3, 0} (`rivers_a/walk.rs:238-250`), `score_river_step_toward_center_square` ∈ {40, 32, -22, 4, 0} (`walk.rs:262-276`). Żadna wartość nie równa się 7 ani 8, więc progi 7 i 8 dają ten sam wynik dla wszystkich wejść. Web `:6118`. |
+| C21 (`seaDist(cur)` default 0 → 1) | EKWIWALENT | `coast_grow.rs:48` (`cur_d`); `collect` wywoływane zawsze z `path.len() >= 1` (`is_river_window_turn_allowed` panikuje dla pustej trasy, `rivers_a/grow.rs:84`, zanim użyty zostanie `cur_d`). Kandydat przechodzi filtr `coast_grow.rs:70-72` (`nd < RIVER_MIN_INLAND_FROM_SEA`, = 2, `rivers_a.rs:55`), więc `nd >= 2` > `cur_d` ∈ {0, 1}: gałęzie `nd > cur_d`, `nd == cur_d`, `nd < cur_d` dają ten sam wynik dla obu wartości. Web `:6100`. |
+| M03 (filtr `same_river_dir` w meandrze usunięty) | EKWIWALENT | `rivers_b/meander.rs:37` (filtr `nk == tgt_k`) przed `meander.rs:40` (filtr kierunku). `to_target = target - cur` (`walk.rs:130-132`). Równość z jednostkowym wektorem kierunku oznacza `nk == target`, czyli kandydat jest już odrzucony filtrem `nk == tgt_k`. Gdy `to_target` nie jest jednostkowy, równość nie zachodzi. Web `:6504`. |
+| W05 (`cut_at >= len-1` usunięte) | EKWIWALENT | `rivers_b/window.rs:32` pętla `for i in 0..deltas.len()`, `cut_at = i+1`; warunek `window.rs:46`. `deltas.len() <= dirs.len()-1 <= out.len()-2`, więc `cut_at <= out.len()-2 < out.len()-1`: warunek nigdy nie zachodzi. Web `:7114`. |
+| W08 (`repair_river_path_adjacency` po cięciu pominięte) | EKWIWALENT | `rivers_b/window.rs:52-53` (`sanitize_river_path`, potem `repair`); `rivers_a.rs:260-279` (`sanitize_river_path`: pomija duplikaty i punkty niesąsiednie, więc wynik jest ciągły i bez powtórzeń). `rivers_a.rs:317-345`: dla ciągłej ścieżki każdy `target` ma `d == 1` i jest dopisywany bez zmian, czyli `repair` jest tożsamością. Web `:7116`. |
+
+**Weryfikacja dowodów (skrypty w repo, `tests/p6_m07b2_vectors/`)**:
+- W08: sprawdzono niezależnie w Pythonie (port weryfikatora): 3000/3000 przypadków `sanitize_window` daje wynik bez `repair` identyczny z wektorem webu (0 rozbieżności). Zgodne z dowodem.
+- G05, G06, G11, G12 (filtr `visited` / oznaczenie w `grow`): wyczerpujący DFS po ścieżkach (`loop_window_dfs_m07b2_q2.py`, długość ≤ 18) nie znajduje kandydata-pętli dopuszczalnego oknem skrętu. Losowe przeszukiwanie (`loop_window_probe_m07b2_q2.py`, 60 000 prób, długość ≤ 60) ZNAJDUJE 6 takich kandydatów przy długości > 18. Zatem NIE są one równoważne ogólnie; zabicie wymaga wektora `grow` z taką geometrią (NIE ZREALIZOWANE).
+
+**Otwarte (NIE zamknięte w tej rundzie)**:
+- G05, G06, G11, G12: wymagany wektor `grow` z pętlą dopuszczalną oknem (długość > 18), wygenerowany z weba pinu (wyszukanie przez port Python, potem generacja z weba).
+- M11 (`cur_d` meandru: default 999 → 0): ZABIJALNY wektorem: przypadki `findRiverMeanderStep`, w których `cur` nie występuje w `seaDist` (usunięcie klucza z mapy wejściowej; web `:6494`). Nie wykonano.
+- E13, E14, E17, E18, E19, E25, E35 (`river_corners_along_hex_edges`, `river_transit_edge_indices`, `mark_river_transit_edges_on_path`): NIE analizowane w tej rundzie.
+- 16 mutantów E/L z rundy 2 (C05, M02, M06, M13, E01, E03, E06, E07, E10, E24, E27, E31, G13, G14, W06, E28): dowody plik:linia / wektory NIE dodane.
+- Tabela niezmutowanych konstrukcji plik:linia (N3): NIE wykonana.
+- Logi bramek z linią `EXIT=` (N4): NIE ponowione; `mutate-m07b2-q2-r2.txt` nadal bez `EXIT=`.
