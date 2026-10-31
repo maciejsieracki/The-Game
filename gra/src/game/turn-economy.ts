@@ -126,7 +126,6 @@ import {
   spichlerzHealthBonus,
   loadSpichlerzDrainParams,
   spichlerzCeramikaDrainAmount,
-  SPICHLERZ_DRAIN_DEFAULT_PARAMS,
   type BuildingRuntimeGateOptions,
   type SpichlerzCityBonusState,
   type SpichlerzDrainParams,
@@ -1706,10 +1705,10 @@ function tickEmpireResourcePipeline(
    */
   converterThroughputsForOwner: (ownerId: number) => Record<string, number>,
   ownerResourceCapFor: (ownerId: number) => number,
-  resolveOwnerActiveLabels?: OwnerActiveLabelsResolver,
-  resolveOwnerZlotoAccess?: OwnerZlotoAccessResolver,
-  /** R-WEB-SPICHLERZ-DRAIN-KEYS-Q1: zużycie Spichlerza z econ-params (wg trudności). */
-  spichlerzDrainParams: SpichlerzDrainParams = SPICHLERZ_DRAIN_DEFAULT_PARAMS,
+  resolveOwnerActiveLabels: OwnerActiveLabelsResolver | undefined,
+  resolveOwnerZlotoAccess: OwnerZlotoAccessResolver | undefined,
+  /** R-WEB-SPICHLERZ-DRAIN-KEYS-Q1: zużycie Spichlerza z econ-params (wg trudności). Wymagane — bez domyślnej wartości. */
+  spichlerzDrainParams: SpichlerzDrainParams,
 ): Map<string, SpichlerzCityBonusState> {
   const ownerIds = new Set(cities.map(c => c.ownerId));
 

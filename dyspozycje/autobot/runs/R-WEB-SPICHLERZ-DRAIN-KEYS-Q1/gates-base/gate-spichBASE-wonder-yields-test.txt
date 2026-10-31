@@ -1,4 +1,18 @@
+wonder-yields-test (CUDA-EKON-01)
+
+PASS: piramidy istnieje w wonders.json
+PASS: piramidy era1 -> pieniadz=3,praca=3 (got {"pieniadz":3,"zywnosc":0,"nauka":0,"kultura":0,"zadowolenie":0,"praca":3,"obrona":0})
+PASS: piramidy era7 (po absolut) -> 0 (got {"pieniadz":0,"zywnosc":0,"nauka":0,"kultura":0,"zadowolenie":0,"praca":0,"obrona":0})
+PASS: piramidy+ziggurat era1 -> kultura=6,pieniadz=3,nauka=3 (got {"pieniadz":3,"zywnosc":0,"nauka":3,"kultura":6,"zadowolenie":0,"praca":3,"obrona":0})
+PASS: hasAnyWonderCityYield true gdy niezerowe
+PASS: hasAnyWonderCityYield false gdy wszystko 0
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=4 terrain=17 landSea=171 relief=133 coast=20 riversMain=1727 riversFill=2886 forest=8 deposits=19 starts=101 total=5086
+PASS: 3 tickle znalezione w obu przebiegach
+PASS: miasto1 gracza: +3 pieniadz z Piramid (got delta=3)
+PASS: miasto2 gracza: +3 pieniadz z Piramid TEZ (x kazde miasto ownera, got delta=3)
 PASS: miasto1 gracza: +3 praca z Piramid (got delta=3)
 PASS: miasto AI (owner 1, bez cudu) bez zmian (got delta=0)
+
 11 passed, 0 failed
 EXIT=0

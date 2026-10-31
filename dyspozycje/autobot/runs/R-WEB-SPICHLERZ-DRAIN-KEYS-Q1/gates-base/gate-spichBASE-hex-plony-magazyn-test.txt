@@ -1,4 +1,20 @@
+
+-- R-HEX-PLONY-MAGAZYN B: tileYield z 👤 → magazyn + ulepszenia addytywnie --
+
+PASS: Równina centrum: worked drewno=5 kamien=2 glina=0
+PASS: magazyn: Równina bez Tartaku → 5 drewna (got 5, want 5)
+PASS: magazyn: Równina bez Kamieniołomu → 2 kamień (got 2, want 2)
+PASS: magazyn: Równina bez rzeki → 0 gliny (got 0, want 0)
+PASS: Tartak terrYield = 50
+PASS: Las na centrum: worked drewno > 0
+PASS: Tartak + las: suma > sam Tartak
+PASS: magazyn: Tartak + plony lasu addytywnie (got 65, want 65)
+FAIL: Rzeka na centrum Łąki: worked drewno=0 kamien=0 glina=15 (5 baza + 10 rzeka)
+FAIL: magazyn: heks przy rzece → 15 glin/t (5 baza + 10 rzeka) (got 7, want 15)
+FAIL: centrum Równina + 👤 Łąka: drewno 5+0=5, kamien 2+0=2, glina 0+5=5
+PASS: magazyn: plony z obrabianego sąsiada — Drewno addytywnie (got 5, want 5)
 PASS: magazyn: plony z obrabianego sąsiada — Kamień addytywnie (got 2, want 2)
 FAIL: magazyn: plony z obrabianego sąsiada — Glina addytywnie (got 2, want 5)
+
 10 passed, 4 failed
 EXIT=1

@@ -1,4 +1,57 @@
+PASS: stone-house: production item exists
+PASS: stone-house: catalog item exists
+PASS: stone-house: effective Work cost table
+PASS: stone-house: catalog cost equals queued cost
+PASS: stone-house: itemCost uses one era multiplier
+PASS: stone-house: stock cost table
+PASS: bronze-house: production item exists
+PASS: bronze-house: catalog item exists
+PASS: bronze-house: effective Work cost table
+PASS: bronze-house: catalog cost equals queued cost
+PASS: bronze-house: itemCost uses one era multiplier
+PASS: bronze-house: stock cost table
+PASS: iron-house: production item exists
+PASS: iron-house: catalog item exists
+PASS: iron-house: effective Work cost table
+PASS: iron-house: catalog cost equals queued cost
+PASS: iron-house: itemCost uses one era multiplier
+PASS: iron-house: stock cost table
+PASS: negative control catalog/queue cost link rejected the mutation
+PASS: partial production stores active progress
+PASS: partial production keeps queued cost
+PASS: completion returns exactly the front building
+PASS: completion removes exactly one completed item
+PASS: completion adds one built id, replay does not duplicate it
+PASS: owner pool can afford the queued building
+PASS: enqueue deduction occurs exactly once across owner cities
+PASS: cancellation refunds exactly the deducted stock cost
+PASS: other owner stock is untouched
+PASS: cancellation removes the queued item
+PASS: cancellation banks only that item progress
+PASS: queued/build definition resource upkeep basis
+PASS: queued item has no built upkeep
+PASS: completed building has one resource upkeep
+PASS: upkeep aggregation is explicit per built instance
+PASS: completed building gold upkeep uses canonical value
+PASS: gold upkeep is charged once for one built instance
+PASS: AI preview selects the available building
+PASS: AI preview Work cost equals queued cost
+PASS: AI charge uses the same stock cost definition
+PASS: save/load preserves queue progress and cost
+PASS: save/load preserves completed building state
+PASS: save/load preserves the completed building upkeep basis
+PASS: negative control save/load disconnected queue progress rejected the mutation
+PASS: city panel imports/uses engine rushCost
+FAIL: city panel displays the canonical rush cost
+PASS: city panel has no divergent rush multiplier
+PASS: engine rush cost table
+PASS: negative control rush UI multiplier disconnected from engine rejected the mutation
+PASS: save snapshot carries the full city production object
+PASS: load restores the full city production object
+PASS: load restores production without charging the stock cost again
+PASS: turn economy computes building upkeep from built instances
 PASS: turn economy sources upkeep from completed building ids
+
 PASSED: 52 / FAILED: 1 / TOTAL: 53
 SOME TESTS FAILED
 EXIT=1

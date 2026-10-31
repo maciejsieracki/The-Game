@@ -1,4 +1,14 @@
+PASS: data/econ-params.json: zywnosc_zuzytka_populacja.normal = 1 (jak w zgloszeniu Macieja) (got 1, want 1)
+PASS: cityYieldPerTurn: zywnoscBrutto (produkcja brutto, przed konsumpcja) = 33 -- zgadza sie z tabela MIASTA w Spichlerzu centralnym ze zgloszenia (got 33, want 33)
+PASS: cityYieldPerTurn: y.zywnosc (martwy flat model, NIE uzywany juz przez panel) = 29 -- to byla blednie czytana wartosc sprzed naprawy (got 29, want 29)
+PASS: roznica zywnoscBrutto - y.zywnosc = populacja x zywnosc_zuzytka_populacja (4x1=4) -- dokladnie ta sama roznica 33 vs 29, ktora zglosil Maciej (got 4, want 4)
+PASS: getCityRationLevel: poziom Wyzywienia miasta = 4 (got 4, want 4)
+PASS: computeCityRationCost: koszt Racji = 32 -- zgadza sie z "Koszt racji" w tabeli MIASTA ze zgloszenia (got 32, want 32)
+PASS: PARYTET: Produkcja panelu miasta (zywnoscBrutto) == Produkcja w tabeli MIASTA silnika (Spichlerz centralny) dla tego samego miasta/tury (got 33, want 33)
+PASS: Bilans panelu miasta PO naprawie = +1 (zgodny znak z silnikiem, nie -3 jak przed naprawa) (got 1, want 1)
+PASS: DOWOD BLEDU (przed naprawa): gdyby panel dalej czytal y.zywnosc, Bilans wyszedlby -3 -- dokladnie to, co pokazywal zrzut ekranu Macieja (got -3, want -3)
 PASS: cityPanel.ts: znaleziono linie "const zywnoscBrutto = y.<pole>;" (wzorzec bugu P-SPICHLERZ-PANEL-VS-SILNIK-ROZJAZD-BILANS)
 PASS: cityPanel.ts: "const zywnoscBrutto = y.zywnoscBrutto;" (NAPRAWIONE -- nie y.zywnosc) -- jesli to FAIL, naprawa zostala cofnieta (got "zywnoscBrutto", want "zywnoscBrutto")
+
 11 passed, 0 failed
 EXIT=0

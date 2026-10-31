@@ -1,4 +1,7 @@
+FAIL: znaleziono buildHudState w main.ts
+FAIL: buildHudState czyta getLastEmpireFoodTick(0) — SAM tick co buildEmpireFoodSnap (panel imperium), zero rozjazdu cross-surface
 FAIL: buildHudState zwraca pole zywnoscMiastNiedokarmionych w HudState
 FAIL: zywnoscMiastNiedokarmionych: gdy tick DOSTĘPNY liczy dokładnie jak dotychczas (nakarmione===false z ticku, zero zmiany zachowania); gdy tick PUSTY/undefined — żywy fallback z foodProj.unfedCityCount (nie fałszywe 0)
+
 spichlerz-deficyt-scalenie-test: 54 pass, 4 fail
 EXIT=1

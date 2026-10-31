@@ -1,2 +1,9 @@
+
+-- A. renderBuildingsOwned: detailSide liczony z mount.closest --
+
+-- B. appendOwnedBuildingRow: zero zahardkodowanych 'left' w wywołaniach detail --
+
+-- C. Mutacja: przywrócenie zahardkodowanego 'left' w attachHoverDetail --
+
 owned-building-detail-side-test: 17 pass, 0 fail
 EXIT=0

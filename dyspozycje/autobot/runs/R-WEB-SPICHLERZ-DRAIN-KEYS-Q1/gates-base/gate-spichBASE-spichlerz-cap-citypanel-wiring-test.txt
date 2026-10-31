@@ -1,2 +1,3 @@
+
 spichlerz-cap-citypanel-wiring-test: 12 pass, 0 fail
 EXIT=0

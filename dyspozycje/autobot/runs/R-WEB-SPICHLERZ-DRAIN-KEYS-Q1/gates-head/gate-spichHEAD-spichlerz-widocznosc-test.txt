@@ -1,4 +1,11 @@
+  FAIL: Spichlerz eraBuildingCatalog status='ready' z 16 drewna w magazynie państwa (koszt_surowce.drewno=8 ×2 FALA2=16)
+  FAIL: garncarnia: eraBuildingCatalog ready z etykietą glina + pełnym koszt_surowce ×2 FALA2 w magazynie państwa
+  FAIL: stolarnia: eraBuildingCatalog ready z etykietą drewno + pełnym koszt_surowce ×2 FALA2 w magazynie państwa
+  FAIL: kamieniarski: eraBuildingCatalog ready z etykietą kamien + pełnym koszt_surowce ×2 FALA2 w magazynie państwa
+  FAIL: cegielnia: catalog ready z Gliną + drewnem(12)+kamieniem(12) w magazynie (koszt_surowce {6,6} ×2 FALA2)
+  FAIL: kuznia: catalog ready z Rudą + drewnem(12)+kamieniem(12) w magazynie (koszt_surowce {6,6} ×2 FALA2)
   FAIL: mennica: catalog ready z Targowiskiem + Złotem + drewnem(12)+kamieniem(16) w magazynie (koszt_surowce {6,8} ×2 FALA2)
   FAIL: odlewnia_brazu: catalog ready z Rudą + drewnem(12)+kamieniem(16) w magazynie (koszt_surowce {6,8} ×2 FALA2)
+
 spichlerz-widocznosc-test: 37 pass, 8 fail
 EXIT=1
