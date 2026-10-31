@@ -60,6 +60,7 @@ import {
   trimProposalForZeroBalance,
 } from './diplomacy-ai-offer-balance';
 import { BARBARIAN_COOPERATION_TURNS } from './diplomacy-barbarian-cooperation';
+import { normalizeTruceDuration, TRUCE_DEFAULT_TURNS } from './diplomacy-peace-lock';
 
 export { AI_TRADE_GOLD_MAX, AI_TRIBUTE_PEACE_MAX, capAiGoldOffer } from './diplomacy-economy';
 
@@ -89,7 +90,9 @@ export type ProposalActionId =
   /** R-GRACZ-WCHLONIECIE: wchłonięcie miasta-państwa po wasalu (gracz→MP, v1). */
   | 'wchloniecie'
   /** Zakończenie wojny — stoł negocjacyjny, PN bazowe 500 (Maciej 2026-07-29). */
-  | 'pokoj';
+  | 'pokoj'
+  /** R-WEB-TRUCE-Q1: rozejm 5/10/15 tur — te same bramki co pokój, PN baza z acceptance-points. */
+  | 'rozejm';
 
 export interface ProposalPayload {
   /** NAP: 10–20 tur (terminowy); 0 lub brak po UI „bezterminowy” → wygasaTura null */
@@ -1065,7 +1068,10 @@ export function evaluateProposal(
   if (actionId === 'pokoj' && !stanWojny) {
     return { accepted: false, reason: 'Pokój — brak trwającej wojny' };
   }
-  if (stanWojny && actionId !== 'trybut_oferta' && actionId !== 'ultimatum' && actionId !== 'pokoj') {
+  if (actionId === 'rozejm' && !stanWojny) {
+    return { accepted: false, reason: 'Rozejm — brak trwającej wojny' };
+  }
+  if (stanWojny && actionId !== 'trybut_oferta' && actionId !== 'ultimatum' && actionId !== 'pokoj' && actionId !== 'rozejm') {
     return { accepted: false, reason: 'Trwa wojna — ta akcja jest niedostępna' };
   }
   if (stanWojny && isCurrencyProposalForbiddenDuringWar(actionId, payload, true)) {
@@ -1236,7 +1242,13 @@ export function evaluateProposal(
       return { accepted: true, pwBalance: 0, reason: `Trybut ${perTurn} ¤/turę`, deal };
     }
 
-    case 'pokoj': {
+    case 'pokoj':
+    case 'rozejm': {
+      // R-WEB-TRUCE-Q1: rozejm dzieli CAŁĄ gałąź pokoju (bramki czasu wojny, siły, PW);
+      // różni się wyłącznie bazą PW (klucz actionId) i poprawnością długości 5/10/15.
+      if (actionId === 'rozejm' && normalizeTruceDuration(payload.turns ?? TRUCE_DEFAULT_TURNS) == null) {
+        return { accepted: false, reason: 'Rozejm: dozwolone długości to 5, 10 lub 15 tur' };
+      }
       // R-DYPLO-FAIRNESS-GATE-ZAKRES-Q1=A, wymóg #2 (ostrożność „darmowy pokój"):
       // peaceProposalOfferPn ma samospełniający się warunek przy pustym koszyku
       // (offerPn = required + max(0, 0-0) = required, więc offerPn < required
@@ -1246,7 +1258,7 @@ export function evaluateProposal(
       // z dedykowanym komunikatem, żeby pokój dalej wymagał albo Relacji bliskiej
       // neutralnej, albo dopłaty koszykiem pokrywającej różnicę.
       const { givePn, receivePn } = resolveProposalPn(payload, pnOpts);
-      const basePnCfg = treatyBasePnFromConfig('pokoj', payload);
+      const basePnCfg = treatyBasePnFromConfig(actionId, payload);
       // R-WEB-PEACE-RULES-Q1 R5: gdy GRACZ jest autorem warunków, a respondentem jest AI (nie
       // miasto-państwo), bramka AI: minimalny czas wojny, „czuje się silniejsze" i mnożnik ceny.
       const r5AuthorOwnerId = ctx.authorOwnerId ?? proposerOwnerId;
@@ -2071,7 +2083,7 @@ const NEGOTIATION_PEACE_REQUIRED: ReadonlySet<ProposalActionId> = new Set([
  * bez progów (gracz już się zgodził ręcznie — jak reszta tej funkcji).
  */
 const PEACE_ACTIONS_DURING_WAR: ReadonlySet<ProposalActionId> = new Set([
-  'pokoj', 'trybut_oferta', 'ultimatum',
+  'pokoj', 'rozejm', 'trybut_oferta', 'ultimatum',
 ]);
 
 export function resolvePlayerAcceptsAiPending(
@@ -2131,6 +2143,8 @@ export function resolvePlayerAcceptsAiPending(
     }
     case 'pokoj':
       return { accepted: true, reason: 'Pokój zawarty', oneShotTrade: true };
+    case 'rozejm':
+      return { accepted: true, reason: 'Rozejm zawarty', oneShotTrade: true };
     case 'granice': {
       if (payload.barbarianCooperation && !payload.borderMilitary) {
         return { accepted: false, reason: 'Wspólna walka z barbarzyńcami wymaga wariantu wojskowego' };
