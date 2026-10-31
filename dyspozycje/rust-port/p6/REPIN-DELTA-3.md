@@ -102,7 +102,38 @@ Rekomendowana kolejność aktualizacji (od najmniejszego ryzyka i najbardziej de
 - Właściciel (tag R-/ABC/PYTANIE/K/R3) występuje bezpośrednio w 257 hunkach; w 284 hunkach nie ma tagu w samej treści. Dla nich w appendix podano dominujący tag pliku oznaczony `(wg pliku)` (przybliżenie, nie dowód właściciela hunka). Hunki bez żadnego tagu w swoim pliku (21 hunków: `render/unitOwnerEmblem.ts` 14, `ui/hexContextTooltip.ts` 5, `data/tech.json` 1, `data/ui-params.json` 1) mają właściciela **NIEPRZYPISANY** — wymaga decyzji orkiestratora. Kryterium „zero symboli bez właściciela” NIE jest spełnione dla tych 21 hunków.
 - Testy/bramki: nie uruchamiano (pomiar dokumentacyjny, zgodnie z dispatchem; brak zmian kodu). `git diff --check` — patrz raport operatora.
 
-## 6. Appendix — wszystkie 541 hunków (plik:linia | klasa | -usunięte/+dodane | właściciel | pierwsza dodana linia)
+## 7. Runda 2 — odpowiedzi na zarzuty (R-RUSTPORT-REPIN-DELTA-3-Q1, 2/5)
+
+**Baza:** commit Operatora r1 `2decddaf5`. **Dane per hunk (nadpisują §5–6 tam, gdzie się różnią):** `dyspozycje/autobot/runs/R-RUSTPORT-REPIN-DELTA-3-Q1/hunki-r2.tsv` (541 wierszy: plik, linia w `4bbef081d`, n, klasa, właściciel z blame, linie kodu, pierwsza zmieniona linia). **Narzędzia:** `dyspozycje/autobot/runs/R-RUSTPORT-REPIN-DELTA-3-Q1/tools/` (`git archive` z `dc8a3adc`, `4bbef081d`, `edb8fb56` do katalogów poza repo; `final.mjs` liczy poniższe liczby).
+
+**Zarzut 1 — 21 hunków bez właściciela: PRZYJMUJĘ.** Właściciel z `git blame` (commit wprowadzający linię) zamiast braku tagu:
+- `render/unitOwnerEmblem.ts` (14) i `ui/hexContextTooltip.ts` (5): commity `883afa6da` i `4f0e92ec6`, bez tagu R-. **Proponowany NOWY temat `R-WEB-UI-EMBLEM-TOOLTIP-Q1`** (UI, brak modułu Rust, poza zakresem portu; decyzja orkiestratora).
+- `data/tech.json` (1): `f10d80b0d` → `R-WEB-OUTPOST-FORT-TERRITORY-Q1`.
+- `data/ui-params.json` (1): `877f6d5fa` → `R-WEB-NEWGAME-MENU-REORDER-Q1`.
+- Wynik: **NIEPRZYPISANY = 0.**
+
+**Zarzut 2 — właściciel „wg pliku” jako przybliżenie: PRZYJMUJĘ.** Właściciel hunka = commit, który wprowadził większość jego nowych linii (`classify3.mjs`). Stary dominujący tag pliku wycofany. Przykład: `ai.ts:2689` (komentarz cytuje `R-WEB-AUTOIMPROVE-STAGES-Q1 R4`) dostaje `R-WEB-AUTOIMPROVE`, a nie `PEACE-RULES`. Hunki, których linie pochodzą z commitów sprzed `dc8a3adc` scalonych po nim (4 hunki, np. `ai.ts:2632`), mają właściciela wg tego commita (temat w `hunki-r2.tsv`). Stan: 384 hunki mają tag R- w temacie commita, 53 są dopasowane po słowach kluczowych tematu (oznaczone `(bez-R-tagu)` w TSV), 4 hunki należą do commitów sprzed dc8 scalonych po nim (tematy w TSV), a **100 hunków należy do commitów bez tagu R- i bez dopasowania słów kluczowych**. Ich proponowany temat wg pliku: `citizen-resource-upkeep.ts` + `.json` (25) → `R-WEB-CITIZEN-UPKEEP-ERA-MULT-Q1`; `auto-improvements.ts` (11) → `R-WEB-AUTOIMPROVE-STAGES-Q1`; `building-resource-gate.ts` (8) + `turn-economy.ts` (14) → `R-WEB-SPICHLERZ-DRAIN-KEYS-Q1`; `newGameFlow.ts` (10) i `empireDetailPanel.ts`/`empireDetailTypes.ts` (5) → UI; `main.ts` (8) → do decyzji orkiestratora; emblemat/tooltip (19) → NOWY temat z zarzutu 1. Te propozycje są zaleceniem, nie ustaleniem.
+
+**Zarzut 3 — klasyfikacja i lista behawioralna: PRZYJMUJĘ.** Komentarze i docblocki są rozdzielone od kodu. Klasy (suma 541): `kod` czysty 229; `kod+komentarz` 194 (linie kodu wypisane w TSV); `nazwa/tekst` 30; `komentarz` 52; `import` 13; `typ` 2; `bez-kodu` (docblock + pole typu, np. `ai.ts:410`) 20; `pusty` 1. Hunki z przynajmniej jedną linią kodu: **453** (wcześniej 418 — liczba ze starej heurystyki, która traktowała mieszane hunki jako czysty komentarz lub kod). Lista plik:linia dla każdego hunka: TSV.
+
+**Zarzut 4 — K01–K09 i kopie frontend-v2: PRZYJMUJĘ (pomiar wykonany, nie NIE_ZMIERZONO).** Narzędzia z `parity-v2` (`db102531`, pobrane z `origin/rust-port/parity-v2`):
+- `measure-k08d-drift` pin `dc8a3adc` → `4bbef081d`: **11/11 IDENTYCZNA**. Pin `edb8fb56` → `4bbef081d`: 2/11 ZMIENIONA (`buildHandelDetailCard`, `buildWealthDetailCard`), wynik jak w REPIN-DELTA-2.
+- `measure-k08e-drift` edb → main: 11 SAME, 1 DRIFT(1) `buildTopBarRekruciDetailCard` (jak w DELTA-2); kopie 0/12 rozjechane. Uruchomienie z pinem dc8 **nieważne**: narzędzie ma zakresy linii zakodowane z `edb8fb56`; zastąpione pomiarem po nazwie (poniżej).
+- `measure-k09a-drift` edb → main: **9/9 SAME**. Pin dc8 — **nieważny** z tego samego powodu.
+- Pomiar po nazwie funkcji `cityPanel.ts` (`copies.mjs`): **dc8 → main: 2 zmienione funkcje z 306**: `computeView` (K03) i `appendOwnedBuildingRow` (K06B). Żadna z 9 jednostek K09A ani 11 jednostek K08D i 12 jednostek K08E nie dryfuje w tym kroku. Bloki K01–K07 i K08A–C: brak narzędzia blokowego, więc tylko stwierdzenie „funkcja zmieniona” dla dwóch wyżej.
+- Kopie frontend-v2 (`manifest.mjs`, 435 wpisów, sha256 vs `gra/` w `4bbef081d` i `dc8a3adc`): **431 identycznych, 2 rozjechane** (`src/ui/armyMergePanel.ts`, `src/ui/unitActionBarHtml.ts`) — **identyczny wynik dla obu pinów**, więc żaden hunk delty `dc8→main` nie dotyczy tych kopii; ich dryf powstał wcześniej (`edb→dc8`). 2 wpisy poza `src/`/`data/` nieporównane.
+
+**Zarzut 5 — wpływ na 8H2, 8A, 8G: PRZYJMUJĘ (ID ustalone).** Zakresy z `GOAL` dispatchy na gałęzi (`e73e88b3a` 8G, `eecf85585` 8A+8J, `edb9bdd24` 8H2+8I, `a068167c9` 8H2 r3, `ce0d40717` 8I2). Liczenie hunków delty na zakres symboli (`impact.mjs`, wartości w `main`):
+- **8G** `okolica.ts`: plik poza deltą → **0 hunków**.
+- **8A** `production.ts` (`epochNumber`, `itemCost`, `buildingProductionItem`, `unitProductionItem`, `buildingLocationAllowed`), `building-upgrades.ts`, `pending-improvements.ts`: **0 hunków**.
+- **8H2** `resource-access.ts` (cały plik) i `society-inputs.ts` (`isForeignReligionDominant`, `isPlayerCapitalCity`, `stolicaEasyBonusActive`): **0 hunków**; `placedImprovementsWithZlotoTradeGrant` w `main.ts` (odwołania: 620, 5152, 5166): **0 hunków**.
+- **8I** (P1: typy, stałe, helpery, 14 symboli) `auto-improvements.ts`: **4 hunki** (75, 130, 171, 407). **8I2** (P2 `pickAutoImprovements`): **11 hunków** (765–988). Razem **15 hunków** — to jedyny wpływ na tematy w toku; rekomendacja §3 (8I/8I2 najwcześniej) pozostaje.
+
+**Zarzut 6 — liczba hunków wojna/pokój: PRZYJMUJĘ (dokładna).** Owner-tagi `PEACE`, `TRUCE`, `WAR-AGGRESSOR`, `ERA-WAR`, `AGGRESSOR-MARKER`, `WYMUSZONA-WOJNA`, `DIPLO-TICK-WAR-BRAKE`: **236 hunków**, z tego **204 z linią kodu** (`final.mjs`). Wyłączone: `SAVELOAD`/`E2E` (6), `NEWGAME` i `BATTLE`/`RELEASE-ROBOCZA` (2). Liczba z §3 „ok. 150–200” była przybliżeniem i zostaje zastąpiona tą wartością.
+
+**Pozostałe ograniczenia:** bloki K01–K07 i K08A–C nie mają narzędzia pomiarowego na pinie dc8 (wiersz NIE_ZMIERZONO blokowo). Klasyfikacja jest nadal heurystyczna (regex na pierwszych liniach), ale wypisana w TSV i odtwarzalna. Symbole 8A/8H2/8G mierzone wg nazw w `main`, nie wg zakresów z gałęzi dispatchu sprzed zmian.
+
+## 6. Appendix — wszystkie 541 hunków (klasyfikacja i właściciel z §5 r1: superseded przez §7 i `hunki-r2.tsv`) (plik:linia | klasa | -usunięte/+dodane | właściciel | pierwsza dodana linia)
 
 ```text
 gra/data/ai-params.json:285 | opis-dane | -1/+1 | R-WEB-PEACE-RULES-Q1 | "opis": "NIEAKTYWNY (R-WEB-PEACE-RULES-Q1 R10): nieczytany w kodzie; zastapiony progiem wo

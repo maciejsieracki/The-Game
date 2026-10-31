@@ -1,0 +1,542 @@
+plik	linia_w_main	n_linii	klasa	wlasciciel_blame	linie_kodu	pierwsza_zmieniona_linia
+gra/data/ai-params.json	285	1	nazwa/tekst	R-WEB-PEACE-RULES	2	"opis": "NIEAKTYWNY (R-WEB-PEACE-RULES-Q1 R10): nieczytany w kodzie; zastapiony progiem wo
+gra/data/ai-params.json	290	1	nazwa/tekst	R-WEB-PEACE-RULES	2	"opis": "NIEPODLACZONY (R-WEB-PEACE-RULES-Q1 R10): brak limitu propozycji AI na ture w gra
+gra/data/ai-params.json	295	1	nazwa/tekst	R-WEB-PEACE-RULES	2	"opis": "Próg zdrowia armii AI (Σ hp / Σ hpMax jednostek bojowych) poniżej którego AI szuk
+gra/data/citizen-resource-upkeep.json	2	1	nazwa/tekst	BEZ-TAGU	2	"_opis": "R-WEB-CITIZEN-UPKEEP-ERA-MULT-Q1 (Maciej 2026-10-31, decyzja „co do wymagań suro
+gra/data/citizen-resource-upkeep.json	10	3	kod	BEZ-TAGU	6	{ "epoka": 1, "nazwa": "Kamień", "stawkaNaObywatela": 1, "surowce": ["drewno", "glina"] },
+gra/data/diplomacy-acceptance-points.json	5	1	kod	R-WEB-TRUCE	1	"rozejm": { "punkty": 200, "jednostka": "umowa", "uwaga": "R-WEB-TRUCE-Q1 ZAŁOŻENIE: rozej
+gra/data/diplomacy-aggressor-params.json	1	16	kod	R-WEB-WAR-AGGRESSOR-FLAG	16	{
+gra/data/diplomacy-war-peace-params.json	1	97	kod	R-WEB-PEACE-RULES	97	{
+gra/data/econ-params.json	388	1	nazwa/tekst	R-WEB-SPICHLERZ-DRAIN-KEYS	2	"opis": "PYTANIE-84-B6 (Maciej 2026-07-27): Spichlerz I zużywa Ceramikę ze skarbca państwa
+gra/data/econ-params.json	395	1	nazwa/tekst	R-WEB-SPICHLERZ-DRAIN-KEYS	2	"opis": "PYTANIE-84-B7/U-2 (Maciej 2026-07-27): Spichlerz II zużywa Sól ze skarbca × każdy
+gra/data/econ-params.json	402	1	nazwa/tekst	R-WEB-SPICHLERZ-DRAIN-KEYS	2	"opis": "PYTANIE-84-B8 (Maciej 2026-07-27): Spichlerz II zużywa Ceramikę ze skarbca co tur
+gra/data/tech.json	360	1	nazwa/tekst	R-WEB-OUTPOST-FORT-TERRITORY	2	"Uwagi": "Fort = NOWY budynek (obrona terenu, zasięg 5, +100% obrona przy obozowaniu — zob
+gra/data/terrain-improvements.json	8	1	nazwa/tekst	R-WEB-OUTPOST-FORT-TERRITORY	2	"decyzje_EKONOMIA": "surowiecOdblokowany = klucz ASCII surowca (lub null) wg modelu dostep
+gra/data/terrain-improvements.json	54	3	nazwa/tekst	R-WEB-AUTOIMPROVE-STAGES	6	"surowiecOdblokowany_uwaga": "R-WEB-AUTOIMPROVE-STAGES-Q1 (Q1 właściciela 2026-10-31): trz
+gra/data/terrain-improvements.json	60	1	nazwa/tekst	R-WEB-AUTOIMPROVE-STAGES	2	"uwagi": "R-TECH-KARTA-BOCZNA-KLIK-WIERSZ-REGRES-Q1 (2026-09-03): tekst gracza w `warunek`
+gra/data/terrain-improvements.json	72	3	nazwa/tekst	R-WEB-AUTOIMPROVE-STAGES	6	"surowiecOdblokowany_uwaga": "solo na wzgórzu; bez farmy/bydła; NIE wymaga złoża owiec (Q1
+gra/data/terrain-improvements.json	78	1	nazwa/tekst	R-WEB-AUTOIMPROVE-STAGES	2	"uwagi": "R-TECH-KARTA-BOCZNA-KLIK-WIERSZ-REGRES-Q1 (2026-09-03): tekst gracza w `warunek`
+gra/data/terrain-improvements.json	91	1	nazwa/tekst	R-WEB-AUTOIMPROVE-STAGES	2	"surowiecOdblokowany_uwaga": "TYLKO Inkowie; solo — bez innych ulepszen na heksie; NIE wym
+gra/data/terrain-improvements.json	93	1	nazwa/tekst	R-WEB-AUTOIMPROVE-STAGES	2	"warunek": "tylko cywilizacja Inków; wzgórza i góry, także z nakładką Lasu; bez złoża i be
+gra/data/terrain-improvements.json	145	2	kod	R-WEB-AUTOIMPROVE(bez-R-tagu)	4	"surowiecOdblokowany_uwaga": "klucz 'kamien' wg Surowiec='Kamień' w resources.json; produk
+gra/data/terrain-improvements.json	203	2	kod	R-WEB-AUTOIMPROVE(bez-R-tagu)	4	"surowiecOdblokowany_uwaga": "SUROW-TERYT-01 (Maciej 2026-07-23): produkcja per ulepszenie
+gra/data/terrain-improvements.json	277	3	kod	R-WEB-OUTPOST-FORT-TERRITORY	6	"zasieg_pol": 5,
+gra/data/terrain-improvements.json	281	1	nazwa/tekst	R-WEB-OUTPOST-FORT-TERRITORY	2	"warunek": "+100% Obrony jednostkom obozującym na polu fortu (bez plonów); tworzy teren za
+gra/data/terrain-improvements.json	285	1	nazwa/tekst	R-WEB-OUTPOST-FORT-TERRITORY	2	"uwagi": "ABC-10 Maciej 2026-07-04: Fort (mapa) ≠ Cytadela (miasto). Żelazo ep.3; zasięg 5
+gra/data/terrain-improvements.json	401	2	kod	R-WEB-OUTPOST-FORT-TERRITORY	4	"zasieg_pol": 3,
+gra/data/terrain-improvements.json	404	1	nazwa/tekst	R-WEB-OUTPOST-FORT-TERRITORY	2	"warunek": "NIE miasto, BEZ plonów; tworzy teren zabezpieczony pod Twoją cywilizację w pro
+gra/data/terrain-improvements.json	409	1	nazwa/tekst	R-WEB-OUTPOST-FORT-TERRITORY	2	"uwagi": "Brąz (epoka 2); zasieg_terytorium=3 (od 2026-10-31, było 5); +50% Obrona w trybi
+gra/data/ui-params.json	178	1	nazwa/tekst	R-WEB-NEWGAME-MENU-REORDER	2	"label": "Wojna epoki",
+gra/data/war-rules-params.json	2	1	nazwa/tekst	R-WEB-ERA-WAR-COUNTER	2	"_opis": "R-WEB-WAR-RULES-MULTIWAR-Q1 r3 (regula TYMCZASOWA, flaga WAR_RULES_MULTIWAR_ENAB
+gra/data/war-rules-params.json	6	3	kod	R-WEB-ERA-WAR-COUNTER	4	"maxEraForcedWarsPerEra": null,
+gra/src/battle/battleScene.ts	3465	7	kod+komentarz	R-WEB-BATTLE-STANDOFF-TWO-WARRIORS	2	// R-WEB-BATTLE-STANDOFF-TWO-WARRIORS-Q1 (R3): ZAWSZE true. `_kickoffBattleTurn` (niżej, d
+gra/src/data/wikiBundle.json	1	1	nazwa/tekst	R-WEB-OUTPOST-FORT-TERRITORY(bez-R-tagu)	2	{"version":"rev-civpedia-2026-08-05","generated":"2026-09-05","poradnik":[{"id":"00-jak-cz
+gra/src/game/ai.ts	41	1	import	R-WEB-AUTOIMPROVE(bez-R-tagu)	0	import { canFoundCity, MAX_PROCENT_NAUKA, AI_FIXED_PROCENT_BUDYNKI, AI_FIXED_PROCENT_NAUKA
+gra/src/game/ai.ts	69	1	import	R-WEB-PEACE-RULES	0	import { resolveWarPeaceProfile, aiPeaceSignals, isFeelingStronger, type WarPeaceProfile }
+gra/src/game/ai.ts	72	3	kod	R-WEB-AUTOIMPROVE-STAGES	3	IMPROVEMENT_FOR_DEFICIT,
+gra/src/game/ai.ts	410	6	bez-kodu(komentarz/typ/import)	R-WEB-AUTO-FORT-CLAIM	0	/**
+gra/src/game/ai.ts	2419	1	kod	R-WEB-AUTOIMPROVE-STAGES	9	export const AI_IMPROVEMENT_FOR_DEFICIT: Readonly<Record<string, readonly ImprovementKey[]
+gra/src/game/ai.ts	2601	1	komentarz	R-WEB-AUTOIMPROVE(bez-R-tagu)	0	// dozwolony udzial puli: 100% (R-WEB-AUTOIMPROVE-STAGES2-Q1, wlasciciel 2026-10-31: AI i
+gra/src/game/ai.ts	2604	1	kod	R-WEB-AUTOIMPROVE(bez-R-tagu)	2	: Math.floor(Math.max(0, pracaAvailable)); // AI/państwa-miasta: 100% puli, BEZ limitu % (
+gra/src/game/ai.ts	2632	0	kod	SCALONY-SPRZED-DC8(bez-tagu)	3	const resourcePriority = fullPriority.filter(
+gra/src/game/ai.ts	2644	2	kod+komentarz	R-WEB-AUTOIMPROVE-STAGES	2	// K3 = K2: tylko niedobory, na ktore istnieje ulepszenie terenu (zloto/stal nie otwieraja
+gra/src/game/ai.ts	2655	4	kod+komentarz	R-WEB-AUTOIMPROVE-STAGES	1	// R-WEB-AUTOIMPROVE-STAGES-Q1 R3, ABC-D=B (właściciel 2026-10-31): AI BEZ limitu jednej s
+gra/src/game/ai.ts	2662	4	kod+komentarz	R-WEB-AUTO-FORT-CLAIM	2	// R-WEB-AUTO-FORT-CLAIM-Q1 (K3 = K2): fort na cennym terenie dopiero przy WYCZERPANYM lim
+gra/src/game/ai.ts	2686	2	kod+komentarz	R-WEB-AUTOIMPROVE-STAGES	1	// K3 = K2 (jedna logika w pickerze): brakujący surowiec idzie na przód, surowce wszędzie
+gra/src/game/ai.ts	2689	7	kod+komentarz	R-WEB-AUTOIMPROVE(bez-R-tagu)	25	// R-WEB-AUTOIMPROVE-STAGES-Q1 R4 (właściciel 2026-10-31: „Niedobór ma tylko otwierać ulep
+gra/src/game/ai.ts	2769	1	komentarz	R-WEB-AUTOIMPROVE(bez-R-tagu)	0	// dozwolony udzial puli: 100% (R-WEB-AUTOIMPROVE-STAGES2-Q1, wlasciciel 2026-10-31: AI i
+gra/src/game/ai.ts	2772	1	kod	R-WEB-AUTOIMPROVE(bez-R-tagu)	2	: Math.floor(Math.max(0, pracaAvailable)); // AI/państwa-miasta: 100% puli, BEZ limitu % (
+gra/src/game/ai.ts	5079	2	import	R-WEB-WAR-AGGRESSOR-FLAG	0	import { deltaRelacjiSojusz } from './diplomacy';
+gra/src/game/ai.ts	5135	12	kod+komentarz	R-WEB-TRUCE	4	/**
+gra/src/game/ai.ts	5186	2	bez-kodu(komentarz/typ/import)	R-WEB-WAR-AGGRESSOR-FLAG	0	/** R-WEB-WAR-AGGRESSOR-FLAG-Q1: partner ma aktywną flagę agresora (main.ts: czyAgresorAkt
+gra/src/game/ai.ts	5267	29	kod+komentarz	R-WEB-PEACE-CITY-CESSION	1	/**
+gra/src/game/ai.ts	5337	7	bez-kodu(komentarz/typ/import)	R-WEB-PEACE-CITY-CESSION	0	/**
+gra/src/game/ai.ts	5394	62	kod+komentarz	R-WEB-PEACE-CITY-CESSION	38	/** R-WEB-PEACE-CITY-CESSION-Q1 r3: bazowy próg słabości AI do oddania miasta (rw). */
+gra/src/game/ai.ts	5458	11	kod+komentarz	R-WEB-PEACE-CITY-CESSION	4	/**
+gra/src/game/ai.ts	5817	7	kod+komentarz	R-WEB-PEACE-RULES	4	// R-WEB-PEACE-RULES-Q1 R6: profil wojny/pokoju właściciela decyzji (brak danych = wartośc
+gra/src/game/ai.ts	5838	2	kod+komentarz	R-WEB-PEACE-RULES	1	// R-WEB-PEACE-RULES-Q1 R1: realny czas wojny z pary (dawniej stała 5 = martwa heurystyka)
+gra/src/game/ai.ts	5844	1	kod	R-WEB-PEACE-RULES	2	turnsAtWar:   turnsAtWarRel,
+gra/src/game/ai.ts	5846	2	kod+komentarz	R-WEB-WAR-AGGRESSOR-FLAG	1	// R-WEB-WAR-AGGRESSOR-FLAG-Q1: partner (druga strona stance) z aktywną flagą agresora.
+gra/src/game/ai.ts	5859	2	kod+komentarz	R-WEB-PEACE-RULES	2	// R-WEB-PEACE-RULES-Q1 R6: próg wojny per cywilizacja z macierzy (zastępuje globalne 30).
+gra/src/game/ai.ts	5874	62	kod+komentarz	R-WEB-PEACE-CITY-CESSION	47	// R-WEB-PEACE-CITY-CESSION-Q1 r4 (zarzut 4 Evaluatora): bramki czasu wojny i „czuje się
+gra/src/game/ai.ts	5951	22	kod+komentarz	R-WEB-PEACE-RULES	14	// ---- Priorytet 2: zaproponuj_pokoj (słaby w trakcie wojny; R-WEB-PEACE-RULES-Q1 R3) ---
+gra/src/game/ai.ts	5976	2	kod	R-WEB-TRUCE	3	rodzaj:   aiPeaceProposalKind(turnsAtWarRel),
+gra/src/game/ai.ts	6089	1	kod	R-WEB-WAR-AGGRESSOR-FLAG	2	&& score >= dipP.progNapRelacja - bias.napScoreEase + deltaRelacjiSojusz(rel.celAgresorAkt
+gra/src/game/ai.ts	6146	1	komentarz	R-WEB-WAR-AGGRESSOR-FLAG	0	// R-WEB-WAR-AGGRESSOR-FLAG-Q1: partner z aktywną flagą agresora — wyższy próg Relacji na
+gra/src/game/ai.ts	6148	2	kod	R-WEB-WAR-AGGRESSOR-FLAG	3	dipP.progSojuszRelacja - sojuszAdj.ease.scoreThresholdDelta + sojuszAdj.penaltyScore
+gra/src/game/auto-improvements.ts	9	1	import	R-WEB-AUTOIMPROVE(bez-R-tagu)	0	import { Nakladka, TerenBazowy } from '../types/hex';
+gra/src/game/auto-improvements.ts	12	1	import	R-WEB-AUTO-FORT-CLAIM	0	import { axialDistance, cityTerritoryRadius, territoryOwnerAt } from '../map/territory';
+gra/src/game/auto-improvements.ts	17	1	kod	R-WEB-AUTOIMPROVE(bez-R-tagu)	1	isFarmBaseTerrain,
+gra/src/game/auto-improvements.ts	75	18	kod+komentarz	R-WEB-AUTOIMPROVE-STAGES	6	'farma', 'bydlo', 'owce', 'lama', 'tarasy', 'lodzie_rybackie', 'irygacja',
+gra/src/game/auto-improvements.ts	130	1	kod	R-WEB-AUTOIMPROVE-STAGES	2	new Set<ImprovementKey>(ULEPSZENIA_FOOD_ONLY_ZROWNOWAZONE);
+gra/src/game/auto-improvements.ts	171	10	komentarz	R-WEB-AUTOIMPROVE(bez-R-tagu)	0	* Dzielnik „1 na 10 obywateli" (dawne ECHO właściciela 2026-08-27: „jeden tartak i obóz; a
+gra/src/game/auto-improvements.ts	407	41	kod+komentarz	BEZ-TAGU	2	/**
+gra/src/game/auto-improvements.ts	483	52	kod+komentarz	BEZ-TAGU	11	/**
+gra/src/game/auto-improvements.ts	537	195	kod+komentarz	R-WEB-AUTO-FORT-CLAIM	135	/** D3: ulepszenia, których wykonanie na heksie rzeki oznacza „zagospodarowaną rzekę” (wyc
+gra/src/game/auto-improvements.ts	738	11	kod+komentarz	R-WEB-AUTOIMPROVE-STAGES	3	* Niedobory, na które istnieje ulepszenie terenu (K2/K3). Niedobór surowca bez ulepszenia
+gra/src/game/auto-improvements.ts	751	7	komentarz	R-WEB-AUTOIMPROVE-STAGES	0	*
+gra/src/game/auto-improvements.ts	765	59	kod+komentarz	R-WEB-AUTOIMPROVE-STAGES	57	const clearingSeed = new Set<string>(opts.clearingHexKeys ?? []);
+gra/src/game/auto-improvements.ts	826	10	kod	R-WEB-AUTOIMPROVE-STAGES	19	for (const stage of foodCities.length === 0 ? [] : FOOD_STAGES) {
+gra/src/game/auto-improvements.ts	842	5	kod+komentarz	BEZ-TAGU	5	// Do not skip a stage just because its valid targets are currently blocked by the Work
+gra/src/game/auto-improvements.ts	848	0	kod	SCALONY-SPRZED-DC8(bez-tagu)	1	unlockedTechs: probeTechs,
+gra/src/game/auto-improvements.ts	851	2	kod	BEZ-TAGU	2	pracaBudgetPercent: 100,
+gra/src/game/auto-improvements.ts	862	2	kod	R-WEB-AUTOIMPROVE-STAGES	2	record(stagedPicks);
+gra/src/game/auto-improvements.ts	867	79	kod+komentarz	R-WEB-AUTOIMPROVE(bez-R-tagu)	66	// farm/livestock/irrigation phase is waiting on the Work budget.
+gra/src/game/auto-improvements.ts	947	13	kod	R-WEB-AUTO-FORT-CLAIM	13	fortPicks = pickAutoImprovementsSinglePass(fortOpts);
+gra/src/game/auto-improvements.ts	961	1	kod	R-WEB-AUTO-FORT-CLAIM	1	const fortSpent = fallbackSpent + sum(fortPicks);
+gra/src/game/auto-improvements.ts	963	23	kod	R-WEB-AUTOIMPROVE(bez-R-tagu)	23	if (
+gra/src/game/auto-improvements.ts	988	2	kod+komentarz	R-WEB-AUTOIMPROVE-STAGES	13	const normalPicks = pickAutoImprovementsSinglePass(after(sideSpent, { cities: otherCities
+gra/src/game/auto-improvements.ts	1017	6	kod	BEZ-TAGU	6	riverHexesOnly = false,
+gra/src/game/auto-improvements.ts	1031	4	kod+komentarz	R-WEB-AUTOIMPROVE(bez-R-tagu)	3	// R4: ulepszenia BRAKUJĄCYCH surowców (tylko z nich niedobór może coś „otworzyć” w K2/K3)
+gra/src/game/auto-improvements.ts	1147	28	kod+komentarz	R-WEB-AUTOIMPROVE(bez-R-tagu)	21	// R-WEB-AUTOIMPROVE-STAGES3-Q1, S3-1 (właściciel 2026-10-31): „DOSTĘP DO WODY” dla tartak
+gra/src/game/auto-improvements.ts	1177	2	kod+komentarz	BEZ-TAGU	2	// R5: wycinka w toku / zaplanowana wcześniej w tym wywołaniu liczy się jak już zaplanowan
+gra/src/game/auto-improvements.ts	1189	19	kod+komentarz	R-WEB-AUTOIMPROVE(bez-R-tagu)	13	// R-WEB-AUTOIMPROVE-STAGES2-Q1 (właściciel 2026-10-31, przycisk „Wolno wycinać las"): GRA
+gra/src/game/auto-improvements.ts	1209	9	kod+komentarz	R-WEB-AUTOIMPROVE(bez-R-tagu)	6	// R4 KOREKTA F (właściciel 2026-10-31): heks centrum miasta jest ZWYKŁYM heksem dla autom
+gra/src/game/auto-improvements.ts	1229	0	kod	R-AI-WYRAB-PRZY-RZECE-FARMY	2	const demandActive = demandDriven && focus === 'zrownowazone';
+gra/src/game/auto-improvements.ts	1307	3	komentarz	R-WEB-AUTOIMPROVE(bez-R-tagu)	0	// R4 KOREKTA F (właściciel 2026-10-31): zniesiony filtr R3 „centrum miasta wyłączone” — h
+gra/src/game/auto-improvements.ts	1338	4	kod+komentarz	BEZ-TAGU	4	const orderedHexes = [...candidateHexes]
+gra/src/game/auto-improvements.ts	1358	1	kod	R-WEB-AUTOIMPROVE(bez-R-tagu)	3	&& !ZERO_YIELD_IMPROVEMENTS.has(k),
+gra/src/game/auto-improvements.ts	1360	1	kod	R-WEB-AUTOIMPROVE(bez-R-tagu)	2	const defensePriority = demandActive
+gra/src/game/auto-improvements.ts	1473	32	kod+komentarz	BEZ-TAGU	19	// R-WEB-AUTOIMPROVE-PRIORITY-Q1 (runda 2, zarzut 1 i 3 Obrony): KROK 0 NA HEKSIE RZEKA+LA
+gra/src/game/auto-improvements.ts	1513	8	kod+komentarz	BEZ-TAGU	2	// R-WEB-AUTOIMPROVE-PRIORITY-Q1 (R5, D3 właściciela 2026-10-31): „rzeka zagospodarowana”
+gra/src/game/auto-improvements.ts	1524	2	kod+komentarz	BEZ-TAGU	3	if (map.hexes[hk]?.nakladka === Nakladka.Las && riverKrok0Ok(q, r)) return true;
+gra/src/game/auto-improvements.ts	1528	8	kod	BEZ-TAGU	9	const placedHere = workingPlaced.get(hk) ?? [];
+gra/src/game/auto-improvements.ts	1538	4	komentarz	R-WEB-AUTOIMPROVE(bez-R-tagu)	0	// MINIMUM LEŚNE MIASTA — [NIEAKTUALNE w K2/K3 (`demandActive`): właściciel 2026-10-31 „Te
+gra/src/game/auto-improvements.ts	1556	5	kod+komentarz	R-WEB-AUTOIMPROVE-STAGES	1	// R3, ABC-B=B (K2/K3): tartak powstaje WYŁĄCZNIE przy niedoborze drewna. Bez niego minimu
+gra/src/game/auto-improvements.ts	1562	1	kod	R-WEB-AUTOIMPROVE(bez-R-tagu)	2	.filter(k => !demandActive && tartakDozwolony && hexPhasePriority.includes(k))
+gra/src/game/auto-improvements.ts	1581	3	komentarz	R-WEB-AUTOIMPROVE-STAGES	0	// ABC-3=B (właściciel 2026-10-31): w etapie E5 (`offRiverClearing`) wycinka poza rzeką NI
+gra/src/game/auto-improvements.ts	1585	49	kod+komentarz	R-WEB-AUTOIMPROVE(bez-R-tagu)	31	&& !rzekiDoZagospodarowania && (offRiverClearing || lesneMinSpelnione);
+gra/src/game/auto-improvements.ts	1643	2	komentarz	R-WEB-AUTOIMPROVE-PRIORITY	0	// KROK 0 heksa: wyrąb, gdy heks ma rzekę I las (bez lesneMin i progu lasu — patrz wyżej),
+gra/src/game/auto-improvements.ts	1646	14	kod+komentarz	R-WEB-AUTOIMPROVE-PRIORITY	21	riverKrok0Ok(q, r)
+gra/src/game/auto-improvements.ts	1688	7	kod+komentarz	R-WEB-AUTOIMPROVE(bez-R-tagu)	6	// R-WEB-AUTOIMPROVE-STAGES2-Q1 (właściciel 2026-10-31, budżet sztywno): koszt ponad dostę
+gra/src/game/auto-improvements.ts	1707	8	kod+komentarz	R-WEB-AUTOIMPROVE(bez-R-tagu)	1	// R-WEB-AUTOIMPROVE-PRIORITY-Q1 (Objaw A, zmierzone: gra/tools/wyrab-rzeka-krok0-test.cjs
+gra/src/game/auto-improvements.ts	1718	2	kod+komentarz	R-WEB-AUTOIMPROVE-STAGES	1	// Wspólne bramki rodzaju ulepszenia na heksie (te same w SONDZIE nadwyżki, ZASADA 3).
+gra/src/game/auto-improvements.ts	1745	1	kod	R-WEB-AUTOIMPROVE(bez-R-tagu)	2	&& !cityBudgetExhausted && !demandActive && !citySkipWyrab && basePriority.includes('wyrab
+gra/src/game/auto-improvements.ts	1764	1	kod	R-WEB-AUTOIMPROVE(bez-R-tagu)	1	if (!wyrabMaSens(q, r)) continue;
+gra/src/game/auto-improvements.ts	1805	1	kod	R-WEB-AUTOIMPROVE-STAGES	1	if (keyBlockedOnHex(key, hexKey)) continue;
+gra/src/game/building-resource-gate.ts	38	5	kod	BEZ-TAGU	2	import {
+gra/src/game/building-resource-gate.ts	330	44	kod+komentarz	BEZ-TAGU	28	/** Klucze JSON (gra/data/econ-params.json → budynki) czytane przez loadSpichlerzDrainPara
+gra/src/game/building-resource-gate.ts	415	2	kod	R-WEB-SPICHLERZ-HUD-PARAMS	3	dryRun: boolean,
+gra/src/game/building-resource-gate.ts	424	1	kod	BEZ-TAGU	1	const ceramikaAmount = spichlerzCeramikaDrainAmount(builtIds, params);
+gra/src/game/building-resource-gate.ts	426	1	kod	BEZ-TAGU	2	if (ownerResourceStock(cities, ownerId, 'ceramika') >= ceramikaAmount) {
+gra/src/game/building-resource-gate.ts	429	1	kod	BEZ-TAGU	2	ceramika: ceramikaAmount,
+gra/src/game/building-resource-gate.ts	435	1	kod	BEZ-TAGU	2	if (hasII && ownerResourceStock(cities, ownerId, 'sol') >= params.solII) {
+gra/src/game/building-resource-gate.ts	438	1	kod	BEZ-TAGU	2	sol: params.solII,
+gra/src/game/building-resource-gate.ts	614	2	bez-kodu(komentarz/typ/import)	R-WEB-SPICHLERZ-HUD-PARAMS	0	/** Parametry drain Spichlerza z econ-params (wg trudności) — WYMAGANE (R-WEB-SPICHLERZ-HU
+gra/src/game/building-resource-gate.ts	627	1	kod	BEZ-TAGU	1	opts.drainParams,
+gra/src/game/citizen-resource-upkeep.ts	24	3	komentarz	BEZ-TAGU	0	*     0,2 2026-08-12, PRZYWRÓCONA 1,0 2026-08-13, patrz niżej): stawka BIEŻĄCA per epoka *
+gra/src/game/citizen-resource-upkeep.ts	41	1	komentarz	BEZ-TAGU	0	* nie luka; STAWKA 2026-08-13 = 1,0 (od 2026-10-31 zależna od epoki, patrz `citizenUpkeepR
+gra/src/game/citizen-resource-upkeep.ts	81	1	komentarz	BEZ-TAGU	0	* REAL drain (current rate: per era via `citizenUpkeepRateForEra` — Kamień 1.0 / Brąz 2.0
+gra/src/game/citizen-resource-upkeep.ts	83	1	komentarz	BEZ-TAGU	0	* `citizenUpkeepRateForEra(era)` (Kamień 1.0 / Brąz 2.0 / Żelazo 3.0), `required = Math.fl
+gra/src/game/citizen-resource-upkeep.ts	107	6	bez-kodu(komentarz/typ/import)	BEZ-TAGU	0	/**
+gra/src/game/citizen-resource-upkeep.ts	136	1	komentarz	BEZ-TAGU	0	* FALLBACK (realna stawka per epoka: `citizenUpkeepRateForEra`). Stawka zużycia: sztuk sur
+gra/src/game/citizen-resource-upkeep.ts	156	3	komentarz	BEZ-TAGU	0	// R-WEB-CITIZEN-UPKEEP-ERA-MULT-Q1 (Maciej 2026-10-31): powyższa stała to już TYLKO FALLB
+gra/src/game/citizen-resource-upkeep.ts	161	4	komentarz	BEZ-TAGU	0	* Wiersz tabeli dla danej epoki — ta sama reguła wyboru co lista surowców: `era` < 1 / NaN
+gra/src/game/citizen-resource-upkeep.ts	166	1	kod	BEZ-TAGU	2	function citizenUpkeepRowForEra(era: number): CitizenUpkeepEraRow | undefined {
+gra/src/game/citizen-resource-upkeep.ts	168	1	kod	BEZ-TAGU	2	if (!first) return undefined;
+gra/src/game/citizen-resource-upkeep.ts	171	1	kod	BEZ-TAGU	2	if (exact) return exact;
+gra/src/game/citizen-resource-upkeep.ts	173	24	kod+komentarz	BEZ-TAGU	9	return below ?? first;
+gra/src/game/citizen-resource-upkeep.ts	202	6	bez-kodu(komentarz/typ/import)	BEZ-TAGU	0	/**
+gra/src/game/citizen-resource-upkeep.ts	234	1	kod	R-WEB-CITIZEN-UPKEEP-ERA-MULT	1	population?: number,
+gra/src/game/citizen-resource-upkeep.ts	240	10	kod+komentarz	R-WEB-CITIZEN-UPKEEP-ERA-MULT	4	// R-WEB-CITIZEN-UPKEEP-ERA-MULT-Q1: gdy podano populację (opcjonalny 3. argument), bramka
+gra/src/game/citizen-resource-upkeep.ts	252	3	kod	R-WEB-CITIZEN-UPKEEP-ERA-MULT	4	const haveOk = typeof have === 'number' && Number.isFinite(have) && have > 0 ? have : 0;
+gra/src/game/citizen-resource-upkeep.ts	264	4	kod	BEZ-TAGU	5	return {
+gra/src/game/citizen-resource-upkeep.ts	285	1	komentarz	BEZ-TAGU	0	* **`citizenUpkeepRateForEra(era)` (per epoka: Kamień 1,0 / Brąz 2,0 / Żelazo 3,0 sztuki s
+gra/src/game/citizen-resource-upkeep.ts	290	1	komentarz	BEZ-TAGU	0	* Math.floor(population × citizenUpkeepRateForEra(era))` — zaokrąglone W DÓŁ do sztuk
+gra/src/game/citizen-resource-upkeep.ts	309	1	kod	BEZ-TAGU	1	const ratePerCitizen = citizenUpkeepRateForEra(era);
+gra/src/game/citizen-resource-upkeep.ts	321	2	kod+komentarz	BEZ-TAGU	2	// Stawka ZALEŻY OD EPOKI (R-WEB-CITIZEN-UPKEEP-ERA-MULT-Q1) — ta sama dla podglądu i dren
+gra/src/game/citizen-resource-upkeep.ts	337	3	kod	BEZ-TAGU	4	return {
+gra/src/game/citizen-resource-upkeep.ts	348	1	komentarz	BEZ-TAGU	0	* (`Math.floor(cityPopulation × stawka_epoki)`, stawka = `coverage.ratePerCitizen`), NIE s
+gra/src/game/citizen-resource-upkeep.ts	401	1	kod	BEZ-TAGU	2	coverage: Pick<CitizenUpkeepCoverage, 'available' | 'missing' | 'ratePerCitizen'>,
+gra/src/game/citizen-resource-upkeep.ts	405	2	kod+komentarz	BEZ-TAGU	1	// Stawka epoki niesiona przez werdykt silnika (`coverage.ratePerCitizen`); brak → fallbac
+gra/src/game/citizen-resource-upkeep.ts	409	1	kod	BEZ-TAGU	2	const qty = Math.floor(pop * rate);
+gra/src/game/city-hex-clear.ts	41	19	kod+komentarz	R-WEB-CITY-CLEARS-FOREST	8	/**
+gra/src/game/city-hex-clear.ts	65	1	kod	R-WEB-CITY-CLEARS-FOREST	1	clearForestFromHex(hex);
+gra/src/game/city-hex-clear.ts	74	1	kod	R-WEB-CITY-CLEARS-FOREST	4	if (hex.nakladka !== Nakladka.Brak && !isKeptDeposit(hex.nakladka)) {
+gra/src/game/diplomacy-peace-lock.ts	58	50	kod+komentarz	R-WEB-TRUCE	25	// ---------------------------------------------------------------------------
+gra/src/game/diplomacy-pn-engine.ts	35	2	bez-kodu(komentarz/typ/import)	R-WEB-PEACE-CITY-CESSION	0	/** R-WEB-PEACE-CITY-CESSION-Q1 r2: akcja propozycji (bramka pozycji 'miasto'). */
+gra/src/game/diplomacy-pn-engine.ts	41	1	kod	R-WEB-PEACE-CITY-CESSION	1	actionId: opts?.actionId,
+gra/src/game/diplomacy-pn-engine.ts	90	6	bez-kodu(komentarz/typ/import)	R-WEB-TRUCE	0	/**
+gra/src/game/diplomacy-pn-engine.ts	121	6	bez-kodu(komentarz/typ/import)	R-WEB-PEACE-CITY-CESSION	0	/** R-WEB-PEACE-CITY-CESSION-Q1 r2: wycena miasta (PW, `diplomacyPnMiasto`) — tylko typ 'm
+gra/src/game/diplomacy-pn-engine.ts	233	1	typ	R-WEB-PEACE-CITY-CESSION	0	actionId?: string;
+gra/src/game/diplomacy-pn-engine.ts	239	1	kod	R-WEB-PEACE-CITY-CESSION	2	const sumBase = buildProposalPnSumOpts({ ...opts, actionId: payload.actionId ?? opts?.acti
+gra/src/game/diplomacy-proposals.ts	28	2	import	R-WEB-WAR-AGGRESSOR-FLAG	0	import { czyAgresorAktywny, deltaRelacjiSojusz } from './diplomacy';
+gra/src/game/diplomacy-proposals.ts	63	1	import	R-WEB-TRUCE	0	import { normalizeTruceDuration, TRUCE_DEFAULT_TURNS } from './diplomacy-peace-lock';
+gra/src/game/diplomacy-proposals.ts	93	3	kod+komentarz	R-WEB-TRUCE	3	| 'pokoj'
+gra/src/game/diplomacy-proposals.ts	189	11	kod+komentarz	R-WEB-PEACE-RULES	2	/**
+gra/src/game/diplomacy-proposals.ts	379	4	kod	R-WEB-WAR-AGGRESSOR-FLAG	5	function stanceForEval(
+gra/src/game/diplomacy-proposals.ts	392	4	kod+komentarz	R-WEB-PEACE-RULES	3	// R-WEB-PEACE-RULES-Q1 R1: realny czas wojny (dawna stała 5 usunięta).
+gra/src/game/diplomacy-proposals.ts	733	2	kod+komentarz	R-WEB-TRUCE	2	// R-WEB-TRUCE-Q1 (runda 2): rozejm dzieli bramkę PW pokoju (ta sama formuła i komunikat).
+gra/src/game/diplomacy-proposals.ts	1059	3	kod+komentarz	R-WEB-PEACE-CITY-CESSION	1	// R-WEB-PEACE-CITY-CESSION-Q1 r3 (N2 defekt r2): bez actionId pozycja 'miasto' wyceniana
+gra/src/game/diplomacy-proposals.ts	1065	3	kod+komentarz	R-WEB-WAR-AGGRESSOR-FLAG	3	// R-WEB-WAR-AGGRESSOR-FLAG-Q1: proponent z aktywną flagą agresora → gorszy próg/chęć (JSO
+gra/src/game/diplomacy-proposals.ts	1072	4	kod	R-WEB-TRUCE	5	if (actionId === 'rozejm' && !stanWojny) {
+gra/src/game/diplomacy-proposals.ts	1116	4	kod	R-WEB-WAR-AGGRESSOR-FLAG	5	const napThreshold = Math.max(
+gra/src/game/diplomacy-proposals.ts	1165	2	kod	R-WEB-WAR-AGGRESSOR-FLAG	3	p.progSojuszRelacja - adj.ease.scoreThresholdDelta + adj.penaltyScore - sojuszEase
+gra/src/game/diplomacy-proposals.ts	1246	7	kod+komentarz	R-WEB-TRUCE	6	case 'pokoj':
+gra/src/game/diplomacy-proposals.ts	1262	24	kod+komentarz	R-WEB-PEACE-RULES	23	const basePnCfg = treatyBasePnFromConfig(actionId, payload);
+gra/src/game/diplomacy-proposals.ts	1892	3	kod	R-WEB-TRUCE	4	return cmd.rodzaj === 'rozejm'
+gra/src/game/diplomacy-proposals.ts	1899	4	kod	R-WEB-PEACE-CITY-CESSION	4	case 'oferuj_miasto_za_pokoj':
+gra/src/game/diplomacy-proposals.ts	1954	10	kod+komentarz	R-WEB-TRUCE	8	// R-WEB-TRUCE-Q1 r4 (N4): rozejm proponowany przez AI idzie tą samą ścieżką co pokój
+gra/src/game/diplomacy-proposals.ts	1970	20	kod+komentarz	R-WEB-PEACE-CITY-CESSION	18	case 'oferuj_miasto_za_pokoj':
+gra/src/game/diplomacy-proposals.ts	2099	1	kod	R-WEB-TRUCE	2	'pokoj', 'rozejm', 'trybut_oferta', 'ultimatum',
+gra/src/game/diplomacy-proposals.ts	2159	2	kod	R-WEB-TRUCE	2	case 'rozejm':
+gra/src/game/diplomacy-proposals.ts	2612	1	komentarz	R-WEB-TRUCE	0	// R-WEB-TRUCE-Q1 r3 (N3): rozejm ma ten sam słodzik kontrprzeciwny co pokój (ta sama bram
+gra/src/game/diplomacy-proposals.ts	2614	1	kod	R-WEB-TRUCE	2	'nap', 'sojusz_defensywny', 'sojusz_pelny', 'granice', 'wasal', 'pokoj', 'rozejm',
+gra/src/game/diplomacy-tick-war-brake.ts	172	23	kod+komentarz	R-WEB-PEACE-RULES	10	/**
+gra/src/game/diplomacy-value-catalog.ts	26	2	kod	R-WEB-PEACE-CITY-CESSION	3	| 'zywnosc'
+gra/src/game/diplomacy-value-catalog.ts	448	6	bez-kodu(komentarz/typ/import)	R-WEB-PEACE-CITY-CESSION	0	/**
+gra/src/game/diplomacy-value-catalog.ts	479	15	kod+komentarz	R-WEB-PEACE-CITY-CESSION	3	items: Array<{
+gra/src/game/diplomacy-value-catalog.ts	527	13	kod+komentarz	R-WEB-PEACE-CITY-CESSION	10	case 'miasto': {
+gra/src/game/diplomacy-value-catalog.ts	546	1	kod	R-WEB-PEACE-CITY-CESSION	1	|| item.typ === 'miasto'
+gra/src/game/diplomacy-value-catalog.ts	767	231	kod+komentarz	R-WEB-PEACE-CITY-CESSION	126	// ---------------------------------------------------------------------------
+gra/src/game/diplomacy-war-gates.ts	10	2	kod+komentarz	R-WEB-TRUCE	2	// R-WEB-TRUCE-Q1 r3 (N2): rozejm ma te same bramki walutowe w wojnie co pokój.
+gra/src/game/diplomacy-war-gates.ts	13	1	komentarz	R-WEB-TRUCE	0	/** Waluta w wojnie dozwolona dla pokoju i rozejmu (wspólna bramka, R-WEB-TRUCE-Q1 r3 N2).
+gra/src/game/diplomacy-war-peace-profile.ts	1	364	kod+komentarz	R-WEB-PEACE-RULES	225	// R-WEB-PEACE-RULES-Q1 (runda 1) — czyste reguły wojny i pokoju per cywilizacja.
+gra/src/game/diplomacy.ts	24	2	bez-kodu(komentarz/typ/import)	R-WEB-WAR-AGGRESSOR-FLAG	0	// R-WEB-WAR-AGGRESSOR-FLAG-Q1: parametry flagi agresora (sekcja na końcu pliku).
+gra/src/game/diplomacy.ts	35	1	import	R-WEB-PEACE-RULES	0	import { resolveWarPeaceProfile, warWearinessShare } from './diplomacy-war-peace-profile';
+gra/src/game/diplomacy.ts	1108	5	bez-kodu(komentarz/typ/import)	R-WEB-WAR-AGGRESSOR-FLAG	0	/**
+gra/src/game/diplomacy.ts	1300	6	kod+komentarz	R-WEB-PEACE-RULES	5	// R-WEB-PEACE-RULES-Q1 R4: zmęczenie = min(0.5, turnsAtWar / T(civ)), T ≤ 20 (D4).
+gra/src/game/diplomacy.ts	1337	2	kod+komentarz	R-WEB-WAR-AGGRESSOR-FLAG	1	// R-WEB-WAR-AGGRESSOR-FLAG-Q1: wobec agresora (flaga aktywna) próg sojuszu wyżej o deltę
+gra/src/game/diplomacy.ts	1340	1	kod	R-WEB-WAR-AGGRESSOR-FLAG	2	p.progSojuszRelacja - adj.ease.scoreThresholdDelta + adj.penaltyScore + agresorDeltaSojusz
+gra/src/game/diplomacy.ts	1368	3	kod+komentarz	R-WEB-WAR-AGGRESSOR-FLAG	1	// R-WEB-WAR-AGGRESSOR-FLAG-Q1: gorsza chęć sojuszu wobec agresora (mnożnik z JSON; 1 bez
+gra/src/game/diplomacy.ts	1785	172	kod+komentarz	R-WEB-WAR-AGGRESSOR-FLAG	100	// R-WEB-WAR-AGGRESSOR-FLAG-Q1 — flaga agresora i casus belli.
+gra/src/game/forced-war-bronze.ts	5	0	kod	R-WEB-PEACE/WAR(bez-R-tagu)	1	shouldEndForcedWarByCityCount,
+gra/src/game/forced-war-bronze.ts	92	4	komentarz	R-WEB-PEACE-RULES-R8R9	0	// R-WEB-PEACE-RULES-R8R9-Q1 R9: NIEUŻYWANA w runtime -- automatyczny koniec po czasie usu
+gra/src/game/forced-war-bronze.ts	171	0	kod+komentarz	R-WEB-OUTPOST-FORT-TERRITORY(bez-R-tagu)	11	/**
+gra/src/game/forced-war-bronze.ts	183	0	kod+komentarz	R-WEB-OUTPOST-FORT-TERRITORY(bez-R-tagu)	7	/**
+gra/src/game/forced-war-common.ts	12	5	komentarz	R-WEB-PEACE-RULES-R8R9	0	/**
+gra/src/game/forced-war-common.ts	201	11	kod+komentarz	R-WEB-PEACE-RULES-R8R9	4	/**
+gra/src/game/forced-war-common.ts	213	6	kod+komentarz	R-WEB-PEACE-RULES-R8R9	1	/**
+gra/src/game/forced-war-common.ts	221	7	kod+komentarz	R-WEB-ERA-WAR-COUNTER	1	/**
+gra/src/game/forced-war-common.ts	307	7	kod+komentarz	R-WEB-PEACE-RULES-R8R9	4	// R-WEB-PEACE-RULES-R8R9-Q1 R8: jedyny predykat blokady pary w tej funkcji = NAP/peaceLoc
+gra/src/game/forced-war-common.ts	317	1	kod	R-WEB-ERA-WAR-COUNTER	2	.filter(s => opts.totalActiveForcedWarsByOwner(s.ownerId) === 0 && !exhausted(s.ownerId))
+gra/src/game/forced-war-common.ts	339	2	kod	R-WEB-ERA-WAR-COUNTER	3	if (exhausted(cand.ownerId)) continue;
+gra/src/game/forced-war-common.ts	401	1	kod	R-WEB-PEACE-RULES-R8R9	2	const blockedIdx: boolean[][] = ids.map(a => ids.map(b => a !== b && pairBlocked(a, b)));
+gra/src/game/forced-war-common.ts	468	1	kod	R-WEB-PEACE-RULES-R8R9	2	const blocked = new Set(remaining.filter(id => pairBlocked(seekerId, id)));
+gra/src/game/forced-war-common.ts	498	2	kod	R-WEB-PEACE-RULES-R8R9	4	const attackerBlocked = pairBlocked(leftoverId, pair.attackerId);
+gra/src/game/forced-war-common.ts	501	3	kod+komentarz	R-WEB-ERA-WAR-COUNTER	1	// R-WEB-ERA-WAR-COUNTER-Q1: obie strony pary muszą mieć wolny licznik wojen epoki —
+gra/src/game/forced-war-iron.ts	5	0	kod	R-EPOKA-ZELAZO-WYMUSZONA-WOJNA	1	shouldEndForcedWarByCityCount,
+gra/src/game/forced-war-iron.ts	89	3	komentarz	R-WEB-PEACE-RULES-R8R9	0	// R-WEB-PEACE-RULES-R8R9-Q1 R9: NIEUŻYWANA w runtime -- automatyczny koniec po czasie usu
+gra/src/game/forced-war-iron.ts	214	0	kod+komentarz	R-EPOKA-ZELAZO-WYMUSZONA-WOJNA	18	/**
+gra/src/game/forced-war-stone.ts	5	0	kod	R-WEB-PEACE/WAR(bez-R-tagu)	1	shouldEndForcedWarByCityCount,
+gra/src/game/forced-war-stone.ts	28	3	komentarz	R-WEB-PEACE-RULES-R8R9	0	// R-WEB-PEACE-RULES-R8R9-Q1 R9: NIEUŻYWANA w runtime -- automatyczny koniec po czasie usu
+gra/src/game/forced-war-stone.ts	74	0	kod+komentarz	R-WEB-PEACE/WAR(bez-R-tagu)	18	export function shouldEndStoneForcedWarByCityCount(
+gra/src/game/fort-territory.ts	8	10	komentarz	R-WEB-OUTPOST-FORT-TERRITORY	0	* ZASTAPIONE decyzja wlasciciela 2026-10-31 (R-WEB-OUTPOST-FORT-TERRITORY-Q1):
+gra/src/game/fort-territory.ts	36	1	import	R-WEB-OUTPOST-FORT-TERRITORY	0	import { axialDistance, cityTerritoryRadius, territoryOwnerAt, type CityNode, type Territo
+gra/src/game/fort-territory.ts	58	31	kod+komentarz	R-WEB-OUTPOST-FORT-TERRITORY(bez-R-tagu)	16	/**
+gra/src/game/fort-territory.ts	103	40	kod+komentarz	R-WEB-OUTPOST-FORT-TERRITORY	26	/**
+gra/src/game/fort-territory.ts	296	54	kod+komentarz	R-WEB-OUTPOST-FORT-TERRITORY(bez-R-tagu)	24	/** Minimalny opis jednostki do rozstrzygania zdobycia fortu przez wejscie wojska. */
+gra/src/game/terrain-improvements.ts	204	3	komentarz	R-WEB-AUTOIMPROVE(bez-R-tagu)	0	// Tartak i Kamieniolom: baza 50/ture (epoka 1), skalowana x1,5 za epoke (50/75/113).
+gra/src/game/terrain-improvements.ts	209	1	komentarz	R-WEB-AUTOIMPROVE(bez-R-tagu)	0	// tartak/kamieniolom restored to 50 on 2026-10-31 (see above);
+gra/src/game/turn-economy.ts	127	2	kod	BEZ-TAGU	4	loadSpichlerzDrainParams,
+gra/src/game/turn-economy.ts	131	1	typ	BEZ-TAGU	0	type SpichlerzDrainParams,
+gra/src/game/turn-economy.ts	1356	1	kod	BEZ-TAGU	1	drainParams: SpichlerzDrainParams,
+gra/src/game/turn-economy.ts	1358	1	kod	BEZ-TAGU	2	const drain = paySpichlerzDrainForCity(cities, ownerId, builtIds, dryRun, drainParams);
+gra/src/game/turn-economy.ts	1367	1	kod	BEZ-TAGU	1	drainParams: SpichlerzDrainParams,
+gra/src/game/turn-economy.ts	1374	3	kod	BEZ-TAGU	5	const ceramikaAmount = spichlerzCeramikaDrainAmount(builtIds, drainParams);
+gra/src/game/turn-economy.ts	1406	1	kod	BEZ-TAGU	1	const spichlerzDrainParams = loadSpichlerzDrainParams(raw, difficulty);
+gra/src/game/turn-economy.ts	1547	5	kod	BEZ-TAGU	9	const ceramikaAmount = spichlerzCeramikaDrainAmount(builtIds, spichlerzDrainParams);
+gra/src/game/turn-economy.ts	1567	2	kod	BEZ-TAGU	3	stockAlreadyDrained: boolean,
+gra/src/game/turn-economy.ts	1583	1	kod	BEZ-TAGU	2	: simulateCeramikaAfterSpichlerzDrains(cities, ownerId, builtByCity, drainParams);
+gra/src/game/turn-economy.ts	1708	4	kod+komentarz	R-WEB-SPICHLERZ-DRAIN-KEYS	5	resolveOwnerActiveLabels: OwnerActiveLabelsResolver | undefined,
+gra/src/game/turn-economy.ts	1797	1	kod	BEZ-TAGU	2	const drain = paySpichlerzDrainForCity(cities, city.ownerId, builtIds, false, spichlerzDra
+gra/src/game/turn-economy.ts	2477	5	kod+komentarz	BEZ-TAGU	4	// R-WEB-SPICHLERZ-DRAIN-KEYS-Q1: zużycie Spichlerza z econ-params wg trudności (jedno źró
+gra/src/game/turn-economy.ts	2495	1	kod	BEZ-TAGU	1	spichlerzDrainParams,
+gra/src/game/turn-economy.ts	2499	1	kod	BEZ-TAGU	2	cities, builtByCity, true, spichlerzDrainParams,
+gra/src/game/victory.ts	14	5	komentarz	R-WEB-DEFEAT-LAST-CITY-BARBARIANS	0	*   3. 'przegrana' — brak miast gracza po tym, jak kiedykolwiek miał miasto.
+gra/src/game/victory.ts	95	3	komentarz	R-WEB-DEFEAT-LAST-CITY-BARBARIANS	0	/** @deprecated Bez wpływu na przegraną (R-WEB-DEFEAT-LAST-CITY-BARBARIANS-Q1):
+gra/src/game/victory.ts	102	3	bez-kodu(komentarz/typ/import)	R-WEB-DEFEAT-LAST-CITY-BARBARIANS	0	/** Wejście dla samej reguły przegranej (patrz `checkDefeat`). */
+gra/src/game/victory.ts	208	14	kod+komentarz	R-WEB-DEFEAT-LAST-CITY-BARBARIANS	7	/**
+gra/src/game/victory.ts	225	1	komentarz	R-WEB-DEFEAT-LAST-CITY-BARBARIANS	0	*   2. Przegrana (brak miast gracza, bez względu na osadników)
+gra/src/game/victory.ts	247	2	kod	R-WEB-DEFEAT-LAST-CITY-BARBARIANS	7	const defeat = checkDefeat(input);
+gra/src/game/war-rules-multiwar.ts	22	1	komentarz	R-WEB-ERA-WAR-COUNTER	0	/** R3 (r3, właściciel 2026-10-25): najwyżej N wojen epoki na epokę w skali świata (`null`
+gra/src/game/war-rules-multiwar.ts	24	4	bez-kodu(komentarz/typ/import)	R-WEB-ERA-WAR-COUNTER	0	/** R-WEB-ERA-WAR-COUNTER-Q1: najwyżej N wojen epoki na JEDNĄ cywilizację (także gracza, n
+gra/src/game/war-rules-multiwar.ts	37	2	kod	R-WEB-ERA-WAR-COUNTER	2	maxEraForcedWarsPerCivPerEra: warRulesParamsRaw.maxEraForcedWarsPerCivPerEra,
+gra/src/game/war-rules-multiwar.ts	163	138	kod+komentarz	R-WEB-ERA-WAR-COUNTER	84	/**
+gra/src/main.ts	227	3	kod	R-WEB-OUTPOST-FORT-TERRITORY(bez-R-tagu)	3	nextFortSeq,
+gra/src/main.ts	233	2	kod	R-WEB-OUTPOST-FORT-TERRITORY	2	fortTerritoryNodes,
+gra/src/main.ts	266	1	import	R-WEB-CITY-CLEARS-FOREST	0	import { applyCityFoundingToHex, cityKeepsImprovement, clearForestUnderCity } from './game
+gra/src/main.ts	866	1	kod	R-WEB-PEACE-RULES	2	parseCrisisCounters, brakeWarOutcome, sortCrisisQueue, tradeTrustBonusPerTura,
+gra/src/main.ts	1194	1	import	R-WEB-PEACE-CITY-CESSION	0	import type { AITurnOpts, RelacjaWejscie, DiplomacjaInputs, AIDiplomacyCommand, MiastoWyce
+gra/src/main.ts	1205	0	kod	R-WEB-OUTPOST-FORT-TERRITORY(bez-R-tagu)	1	WOJNA_WYMUSZONA_MAX_CZAS_TRWANIA_TUR,
+gra/src/main.ts	1207	0	kod	R-WEB-OUTPOST-FORT-TERRITORY(bez-R-tagu)	2	shouldEndBronzeForcedWarByCityCount,
+gra/src/main.ts	1216	0	kod	R-WEB-PEACE/WAR(bez-R-tagu)	1	WOJNA_KAMIEN_WYMUSZONA_MAX_CZAS_TRWANIA_TUR,
+gra/src/main.ts	1217	0	kod	R-WEB-PEACE/WAR(bez-R-tagu)	2	shouldEndStoneForcedWarByCityCount,
+gra/src/main.ts	1226	0	kod	R-EPOKA-ZELAZO-WYMUSZONA-WOJNA	2	shouldEndIronForcedWarByDuration,
+gra/src/main.ts	1228	0	kod	R-EPOKA-ZELAZO-WYMUSZONA-WOJNA	1	shouldEndIronForcedWarByCityCount,
+gra/src/main.ts	1242	1	kod	R-WEB-PEACE-RULES-R8R9	1	isForcedWarRelationBlocked,
+gra/src/main.ts	1254	1	import	R-WEB-DEFEAT-LAST-CITY-BARBARIANS	0	import { checkVictory, checkDefeat, techIdsInGameScope, allTechInScopeResearched, OSTATNIA
+gra/src/main.ts	1280	2	kod	R-WEB-ERA-WAR-COUNTER	3	canCivJoinEraForcedWar,
+gra/src/main.ts	1284	1	kod	R-WEB-ERA-WAR-COUNTER	1	isForcedEraWarEnabled,
+gra/src/main.ts	1288	3	kod	R-WEB-ERA-WAR-COUNTER	3	pickPlayerReferenceCity,
+gra/src/main.ts	1318	1	kod	R-WEB-AUTO-FORT-CLAIM	1	isCityLimitExhausted,
+gra/src/main.ts	1396	16	kod+komentarz	R-WEB-WAR-AGGRESSOR-FLAG	13	// R-WEB-WAR-AGGRESSOR-FLAG-Q1: flaga agresora + casus belli (stan modułu, zapis w meta).
+gra/src/main.ts	1441	1	import	R-WEB-PEACE-RULES	0	import { resolveWarPeaceProfile, brakeRelationThreshold, recordWarCityLoss, warStateFromRe
+gra/src/main.ts	1446	5	kod	R-WEB-TRUCE	5	truceUntilTurn as truceUntilTurnFor,
+gra/src/main.ts	1510	4	kod	R-WEB-PEACE-CITY-CESSION	4	planCityCession,
+gra/src/main.ts	1515	1	pusty	R-WEB-PEACE-CITY-CESSION	0
+gra/src/main.ts	2159	4	kod+komentarz	R-WEB-ERA-WAR-COUNTER	1	// R-WEB-ERA-WAR-COUNTER-Q1: licznik wojen epoki PER (cywilizacja, epoka) — klucz `eraWarC
+gra/src/main.ts	2257	2	kod+komentarz	R-WEB-ERA-WAR-COUNTER	2	// R-WEB-ERA-WAR-COUNTER-Q1 (zarzut FC r1 nr 3): Brąz wyłączony flagą → brak pending.
+gra/src/main.ts	2274	2	kod+komentarz	R-WEB-ERA-WAR-COUNTER	2	// R-WEB-ERA-WAR-COUNTER-Q1 (zarzut FC r1 nr 3): Żelazo wyłączone flagą → brak pending.
+gra/src/main.ts	2424	1	kod	R-WEB-OUTPOST-FORT-TERRITORY	2	const nodes = statsTerritoryNodesForOwner(ownerId);
+gra/src/main.ts	2539	1	kod	R-WEB-OUTPOST-FORT-TERRITORY	2	heksyTerytorium: countTerritoryHexes(statsTerritoryNodesForOwner(ownerId)),
+gra/src/main.ts	2594	1	kod	R-WEB-OUTPOST-FORT-TERRITORY	2	heksyTerytorium: countTerritoryHexes(statsTerritoryNodesForOwner(ownerId)),
+gra/src/main.ts	3699	5	kod	BEZ-TAGU	6	? {
+gra/src/main.ts	3785	10	kod+komentarz	BEZ-TAGU	3	/**
+gra/src/main.ts	4973	4	kod+komentarz	R-WEB-OUTPOST-FORT-TERRITORY	1	/** Rejestr fortow/posterunkow (R-FORT-STRAZNICA krok 2). Od 2026-10-31 tworzy TWARDE tery
+gra/src/main.ts	4981	5	kod+komentarz	R-WEB-OUTPOST-FORT-TERRITORY	3	/** Wezly terytorium wlasciciela do STATYSTYK (miasta + wlasne forty/posterunki, R-WEB-OUT
+gra/src/main.ts	4993	1	kod	R-WEB-OUTPOST-FORT-TERRITORY	2	const cityNodes: TerritoryNode[] = cities.map(c => ({
+gra/src/main.ts	5000	3	kod+komentarz	R-WEB-OUTPOST-FORT-TERRITORY	1	// R-WEB-OUTPOST-FORT-TERRITORY-Q1 (decyzja wlasciciela 2026-10-31, zastepuje Q2=B
+gra/src/main.ts	5472	1	kod	R-WEB-OUTPOST-FORT-TERRITORY	2	const nodes = statsTerritoryNodesForOwner(oid);
+gra/src/main.ts	7350	2	kod+komentarz	R-WEB-AGGRESSOR-MARKER	1	// R-WEB-AGGRESSOR-MARKER-Q1: znacznik „Agresor (N)" — N = pozostałe tury aktywnej flagi.
+gra/src/main.ts	9162	3	kod	BEZ-TAGU	3	ringHex: isBarbarian(ownerId) || portraitForceCultureIcon(ownerId)
+gra/src/main.ts	9516	12	kod+komentarz	R-WEB-ERA-WAR-COUNTER	7	/** R-WEB-ERA-WAR-COUNTER-Q1 (6): etykieta epoki wojny wymuszonej w komunikatach dla gracz
+gra/src/main.ts	9536	1	kod	R-WEB-ERA-WAR-COUNTER	2	const baseTitle = isMe(declarerId)
+gra/src/main.ts	9539	1	kod	R-WEB-ERA-WAR-COUNTER	1	const title = reasonLabel ? reasonLabel + ' — ' + baseTitle : baseTitle;
+gra/src/main.ts	10207	94	kod+komentarz	R-WEB-PEACE-RULES	60	/**
+gra/src/main.ts	10307	21	kod+komentarz	R-WEB-PEACE-RULES	11	/** R-WEB-PEACE-RULES-Q1 R6: profil wojny/pokoju strony (gracz = brak wiersza macierzy = w
+gra/src/main.ts	10330	3	kod	R-WEB-PEACE-RULES	4	const relacja = relationScore(getDiploRelation(a, b));
+gra/src/main.ts	10399	0	kod	R-WEB-DIPLO-TICK-WAR-BRAKE	2	const n = diploTickP6.kryzysTurDoWojny;
+gra/src/main.ts	10401	1	kod	R-WEB-PEACE-RULES	1	if (diplomacyCrisisCounters.size > 0) refreshObjectivePowerCache();
+gra/src/main.ts	10410	11	kod+komentarz	R-WEB-PEACE-RULES	9	// R-WEB-PEACE-RULES-Q1 R7: N per para (wyższy progWojnyRelacji), ostrzeżenie 2 tury przed
+gra/src/main.ts	10423	1	kod	R-WEB-PEACE-RULES	2	'Ryzyko wojny z ' + ownerDiploLabel(other) + ': ' + (nPair - counter) + ' tur do wypowiedz
+gra/src/main.ts	10427	1	kod	R-WEB-PEACE-RULES	2	if (counter >= nPair) ready.push({ ownerA: sa, ownerB: sb, counter });
+gra/src/main.ts	10429	0	kod	R-WEB-DIPLO-TICK-WAR-BRAKE	1	refreshObjectivePowerCache();
+gra/src/main.ts	10437	1	kod	R-WEB-PEACE-RULES	2	const outcome = brakeWarOutcome(
+gra/src/main.ts	10440	1	kod	R-WEB-PEACE-RULES	1	(o) => isMe(o),
+gra/src/main.ts	10442	5	kod+komentarz	R-WEB-PEACE-RULES	4	// D7 (właściciel 2026-10-30): gracz NIGDY nie wypowiada wojny automatycznie z hamulca.
+gra/src/main.ts	10461	2	kod+komentarz	R-WEB-WAR-AGGRESSOR-FLAG	1	// R-WEB-WAR-AGGRESSOR-FLAG-Q1: wojna z progu (hamulec) NIE nadaje flagi agresora.
+gra/src/main.ts	10464	2	kod+komentarz	R-WEB-ERA-WAR-COUNTER	2	// R-WEB-ERA-WAR-COUNTER-Q1 (6): wojna z progu (hamulec) — powód widoczny w karcie zdarzeń
+gra/src/main.ts	10491	1	kod	R-WEB-PEACE-RULES	2	diploBrakeCrisisStep(a, b);
+gra/src/main.ts	10637	1	kod	R-WEB-TRUCE	1	truceTurns?: number,
+gra/src/main.ts	10655	23	kod+komentarz	R-WEB-TRUCE	29	if (truceTurns != null) {
+gra/src/main.ts	10778	25	kod+komentarz	R-WEB-TRUCE	17	/**
+gra/src/main.ts	10841	2	kod	R-WEB-TRUCE	4	): boolean {
+gra/src/main.ts	10846	3	kod+komentarz	R-WEB-TRUCE	1	// R-WEB-TRUCE-Q1 r3 (N1): wypowiedzenie wojny w oknie aktywnego rozejmu = złamanie,
+gra/src/main.ts	10859	3	kod	R-WEB-TRUCE	3	if (truceBreach) {
+gra/src/main.ts	10867	1	kod	R-WEB-TRUCE	1	truceUntilTurn: undefined,
+gra/src/main.ts	10881	1	kod	R-WEB-TRUCE	1	return truceBreach;
+gra/src/main.ts	11297	11	kod+komentarz	R-WEB-PEACE-CITY-CESSION	6	case 'miasto': {
+gra/src/main.ts	11377	2	kod+komentarz	R-WEB-TRUCE	1	/** R-WEB-TRUCE-Q1 (r5): wyłącznie hak live `__truceTestDebug.suppressVictoryForTest` — ma
+gra/src/main.ts	11506	3	komentarz	R-WEB-OUTPOST-FORT-TERRITORY	0	* forty/posterunki (foundingNodesForOwner, game/fort-territory.ts). Q2=B ("granice sie nie
+gra/src/main.ts	11520	3	kod+komentarz	R-WEB-OUTPOST-FORT-TERRITORY	3	// R-WEB-OUTPOST-FORT-TERRITORY-Q1: obcy fort/posterunek = terytorium zabezpieczone.
+gra/src/main.ts	11713	1	kod	R-WEB-TRUCE	2	const truceBreachPlayer = chargeWarDeclarationCredibility(ME(), ownerId);
+gra/src/main.ts	11721	2	kod+komentarz	R-WEB-WAR-AGGRESSOR-FLAG	1	// R-WEB-WAR-AGGRESSOR-FLAG-Q1: wypowiedzenie gracza — flaga tylko bez casus belli.
+gra/src/main.ts	11742	1	kod	R-WEB-WAR-AGGRESSOR-FLAG	2	function ownerDeclareWarOn(attackerId: number, defenderId: number, force = false, cause?:
+gra/src/main.ts	11749	2	kod+komentarz	R-WEB-TRUCE	2	// R-WEB-TRUCE-Q1 r3 (N1): złamanie rozejmu — czytane PRZED chargeWarDeclarationCredibilit
+gra/src/main.ts	11763	11	kod+komentarz	R-WEB-WAR-AGGRESSOR-FLAG	8	// R-WEB-WAR-AGGRESSOR-FLAG-Q1: flaga agresora tylko dla przyczyny 'bez_powodu' (domyślnie
+gra/src/main.ts	11807	1	kod	R-WEB-WAR-AGGRESSOR-FLAG	2	ownerDeclareWarOn(newOwner, rebelPrevOwnerId, true, 'wymuszona_inna');
+gra/src/main.ts	12697	22	kod+komentarz	R-WEB-SAVELOAD-PRACA-POOL	11	/**
+gra/src/main.ts	13506	1	kod	R-WEB-OUTPOST-FORT-TERRITORY(bez-R-tagu)	1	sweepFortCaptures(); // R3 Q-A=A: rozdzielenie armii na heks fortu = wejscie wojska
+gra/src/main.ts	14268	1	kod+komentarz	R-WEB-OUTPOST-FORT-TERRITORY	1	// (deklaracja `fortNodes` przeniesiona przed buildAllTerritoryNodes — R-WEB-OUTPOST-FORT-
+gra/src/main.ts	14325	4	kod+komentarz	R-WEB-OUTPOST-FORT-TERRITORY(bez-R-tagu)	3	// R3 Q-B=B: znacznik kolejnosci budowy (wczesniejszy fort wygrywa sporny heks).
+gra/src/main.ts	14337	4	kod	R-WEB-OUTPOST-FORT-TERRITORY	5	if (idx !== -1) {
+gra/src/main.ts	14409	27	kod+komentarz	R-WEB-OUTPOST-FORT-TERRITORY(bez-R-tagu)	19	/**
+gra/src/main.ts	14473	26	kod+komentarz	R-WEB-CITY-CLEARS-FOREST	15	/**
+gra/src/main.ts	14500	1	kod	R-WEB-CITY-CLEARS-FOREST	1	enforceNoForestUnderCities('wczytanie/preset');
+gra/src/main.ts	15936	3	kod+komentarz	R-WEB-PEACE-RULES-R8R9	3	// R-WEB-PEACE-RULES-R8R9-Q1 R9: wojny wymuszone Kamienia/Brązu/Żelaza NIE kończą się
+gra/src/main.ts	15940	1	kod	R-WEB-PEACE-RULES	1	recordWarCityLossForPair(oldOwner, newOwner); // R-WEB-PEACE-RULES-Q1 R2
+gra/src/main.ts	18068	2	kod	R-WEB-PEACE-CITY-CESSION	2	case 'oferuj_miasto_za_pokoj': return 'Miasto za pokój';
+gra/src/main.ts	18119	2	kod	R-WEB-PEACE-CITY-CESSION	2	&& cmd.type !== 'oferuj_miasto_za_pokoj'
+gra/src/main.ts	18194	7	kod+komentarz	R-WEB-TRUCE-E2E-SAVELOAD-MEASURE	1	// R-WEB-TRUCE-E2E-SAVELOAD-MEASURE-Q1 (część A, pomiar → naprawa): gdy bilans AI jest w
+gra/src/main.ts	18204	4	kod+komentarz	R-WEB-TRUCE	4	// R-WEB-TRUCE-Q1 r4 (N4): rozejm AI ma własną bazę PW (200), nie bazę pokoju (500).
+gra/src/main.ts	18220	7	kod+komentarz	R-WEB-TRUCE-E2E-SAVELOAD-MEASURE	5	// Zakres: WYŁĄCZNIE rozejm (pokój zostaje bit w bit — ten sam ubytek zmierzony w kontroli
+gra/src/main.ts	18229	3	kod	R-WEB-TRUCE-E2E-SAVELOAD-MEASURE	4	const clampedPayload = peaceBareAllowed
+gra/src/main.ts	18239	2	kod+komentarz	R-WEB-PEACE-CITY-CESSION	1	// R-WEB-PEACE-CITY-CESSION-Q1 r3: akcja propozycji — bramka pozycji 'miasto' (pokój/wasal
+gra/src/main.ts	18263	2	kod	R-WEB-TRUCE-E2E-SAVELOAD-MEASURE	3	!peaceBareAllowed
+gra/src/main.ts	18361	2	komentarz	R-WEB-TRUCE	0	// R-WEB-TRUCE-Q1 r5 (N3): 'rozejm' ma WŁASNĄ bramkę PW (ta sama co pokój, baza 200) — jak
+gra/src/main.ts	18364	1	kod	R-WEB-TRUCE	2	'pokoj', 'rozejm', 'umowa_szlakow', 'umowa_handlowa',
+gra/src/main.ts	18499	9	kod+komentarz	R-WEB-WAR-AGGRESSOR-FLAG	7	// R-WEB-WAR-AGGRESSOR-FLAG-Q1: odmowa trybutu/ultimatum przez ADRESATA (awaitingId) daje
+gra/src/main.ts	18652	7	kod+komentarz	R-WEB-WAR-AGGRESSOR-FLAG	6	// R-WEB-WAR-AGGRESSOR-FLAG-Q1: odmowa gracza (adresata) trybutu/ultimatum daje żądającemu
+gra/src/main.ts	18857	5	kod+komentarz	R-WEB-TRUCE-E2E-SAVELOAD-MEASURE	1	// R-WEB-TRUCE-E2E-SAVELOAD-MEASURE-Q1 (r3, pomiar Chromium): rozejm AI na stole wpadal w
+gra/src/main.ts	18905	1	kod	R-WEB-TRUCE-E2E-SAVELOAD-MEASURE	1	case 'rozejm': return basketDetail || `Rozejm na ${p.turns ?? 10} tur`;
+gra/src/main.ts	19325	3	komentarz	R-WEB-TRUCE	0	// R-WEB-TRUCE-Q1 r5 (N4 fix): gałąź bez warunku `rodzaj` — interHumanCmdFromFields nigdy
+gra/src/main.ts	21535	2	kod+komentarz	R-WEB-WAR-AGGRESSOR-FLAG	1	// R-WEB-WAR-AGGRESSOR-FLAG-Q1: obowiązek sojuszniczy — wejście w wojnę NIE nadaje flagi a
+gra/src/main.ts	21984	1	kod	R-WEB-TRUCE	1	tickTruceExpiries();
+gra/src/main.ts	22037	1	kod	R-WEB-PEACE-RULES	2	diploBrakeCrisisStep(ME(), oid);
+gra/src/main.ts	22165	6	kod+komentarz	R-WEB-PEACE-RULES	5	// R-WEB-PEACE-RULES-Q1 R5: bramka pokoju AI (gracz proponuje, AI respondent).
+gra/src/main.ts	22341	9	kod+komentarz	R-WEB-PEACE-CITY-CESSION	6	// R-WEB-PEACE-CITY-CESSION-Q1 r4 (zarzut 3 Evaluatora): cesja miasta sprawdzana PRZED
+gra/src/main.ts	22389	5	kod+komentarz	R-WEB-TRUCE	4	} else if (cywAction === 'rozejm') {
+gra/src/main.ts	23187	9	kod+komentarz	R-WEB-PEACE-CITY-CESSION	7	// R-WEB-PEACE-CITY-CESSION-Q1 r3 (N2): miasta GRACZA do oddania w pokoju z wyceną PW;
+gra/src/main.ts	24885	1	kod	R-WEB-ERA-WAR-COUNTER	2	if (isForcedEraWarEnabled('bronze')) bronzeForceWarPendingOwners.add(attackerId); // R-WEB
+gra/src/main.ts	24902	52	kod+komentarz	R-WEB-ERA-WAR-COUNTER	38	// R-WEB-ERA-WAR-COUNTER-Q1 (zarzut FC r1 nr 1): lustro `forceBronzeForcedWarOnPlayer` dla
+gra/src/main.ts	24986	1	kod	R-WEB-ERA-WAR-COUNTER	2	if (isForcedEraWarEnabled('bronze')) bronzeForceWarPendingOwners.add(attackerId); // R-WEB
+gra/src/main.ts	25068	1	kod	R-WEB-ERA-WAR-COUNTER	2	if (isForcedEraWarEnabled('iron')) ironForceWarPendingOwners.add(attackerId); // R-WEB-ERA
+gra/src/main.ts	25320	114	kod+komentarz	R-WEB-OUTPOST-FORT-TERRITORY	104	// R-WEB-OUTPOST-FORT-TERRITORY-Q1: hak testowy WYLACZNIE dla Playwright
+gra/src/main.ts	25939	69	kod+komentarz	R-WEB-DEFEAT-LAST-CITY-BARBARIANS	55	// R-WEB-DEFEAT-LAST-CITY-BARBARIANS-Q1: hak testowy WYŁĄCZNIE do
+gra/src/main.ts	26083	309	kod+komentarz	R-WEB-PEACE-RULES	247	// R-WEB-PEACE-RULES-R8R9-Q1 R9 (kryteria 2 i 4: żywy test wojny wymuszonej). Pomocnicze
+gra/src/main.ts	26500	98	kod+komentarz	R-WEB-CITY-CLEARS-FOREST	77	// R-WEB-CITY-CLEARS-FOREST-Q1 — hak testowy WYŁĄCZNIE dla `tools/city-clears-forest-live-
+gra/src/main.ts	30749	37	kod+komentarz	R-WEB-DEFEAT-LAST-CITY-BARBARIANS	20	/* R-WEB-DEFEAT-LAST-CITY-BARBARIANS-Q1: przegrana po utracie OSTATNIEGO miasta
+gra/src/main.ts	31278	1	kod	R-WEB-OUTPOST-FORT-TERRITORY(bez-R-tagu)	1	sweepFortCaptures(); // R3 Q-A=A: po bitwie obroncy zgineli, atakujacy stoi na forcie
+gra/src/main.ts	32278	6	kod+komentarz	R-WEB-PEACE-RULES-R8R9	132	// R-WEB-PEACE-RULES-R8R9-Q1 R9: USUNIĘTO automatyczny koniec wojen wymuszonych Kamienia,
+gra/src/main.ts	32391	1	kod+komentarz	R-WEB-PEACE-RULES-R8R9	3	// R-WEB-PEACE-RULES-R8R9-Q1 R9: brak auto-końca wojen wymuszonych po zdobyciu miast.
+gra/src/main.ts	32393	1	kod	R-WEB-PEACE-RULES	1	recordWarCityLossForPair(oldOwner, atkOwner); // R-WEB-PEACE-RULES-Q1 R2
+gra/src/main.ts	32670	137	kod+komentarz	R-WEB-PEACE-CITY-CESSION	104	/**
+gra/src/main.ts	33494	4	kod+komentarz	R-WEB-SAVELOAD-HOTSEAT-PRACA	1	// R-WEB-SAVELOAD-HOTSEAT-PRACA-Q1 (decyzja wlasciciela A, 2026-10-31): pula Pracy KAZDEGO
+gra/src/main.ts	33610	7	kod+komentarz	R-WEB-ERA-WAR-COUNTER	5	// R-WEB-ERA-WAR-COUNTER-Q1 (7): licznik wojen epoki per (cywilizacja, epoka).
+gra/src/main.ts	34336	1	kod	R-WEB-OUTPOST-FORT-TERRITORY(bez-R-tagu)	1	sweepFortCaptures(); // R3 Q-A=A: jednostki stojace na wrogim forcie (koniec tury)
+gra/src/main.ts	34365	2	kod+komentarz	R-WEB-CITY-CLEARS-FOREST	1	// R-WEB-CITY-CLEARS-FOREST-Q1: pod miastem nigdy las (siatka na każdej granicy tury).
+gra/src/main.ts	35372	2	komentarz	BEZ-TAGU	0	// stawka epoki szt. surowca na 1 obywatela na turę (R-WEB-CITIZEN-UPKEEP-ERA-MULT-Q1:
+gra/src/main.ts	35600	1	komentarz	BEZ-TAGU	0	// N2 (2026-08-11): realny drenaż (stawka per epoka citizenUpkeepRateForEra
+gra/src/main.ts	36017	1	komentarz	BEZ-TAGU	0	// stawka per epoka (citizenUpkeepRateForEra) szt. surowca/obywatela/turę — patrz kanon w
+gra/src/main.ts	36248	6	kod+komentarz	R-WEB-AUTOIMPROVE-STAGES	2	// R-WEB-AUTOIMPROVE-STAGES-Q1 (audyt P25/E5, zmierzone A8 vs A9): bez `playerEra`
+gra/src/main.ts	36273	5	komentarz	R-WEB-AUTOIMPROVE-STAGES	0	// R-WEB-AUTOIMPROVE-STAGES-Q1 (ABC-1, K1/K2): etapy E1-E6 dla profili „Zywnosc” (K1)
+gra/src/main.ts	36280	1	kod	BEZ-TAGU	4	return policy.focus === 'zywnosc' || policy.focus === 'zrownowazone';
+gra/src/main.ts	36282	2	kod+komentarz	BEZ-TAGU	1	// Wycinka w toku (wieloturowa) - picker nie moze jej emitowac drugi raz (exec-wycinka-in-
+gra/src/main.ts	36451	1	kod+komentarz	R-WEB-PEACE-RULES-R8R9	1	// R-WEB-PEACE-RULES-R8R9-Q1 R9: brak limitu czasu wojny wymuszonej (dawny limit usunięty)
+gra/src/main.ts	36519	1	kod	R-WEB-TRUCE	2	const truceBreachCluster = chargeWarDeclarationCredibility(csOwnerId, ME());
+gra/src/main.ts	36526	2	kod+komentarz	R-WEB-WAR-AGGRESSOR-FLAG	1	// R-WEB-WAR-AGGRESSOR-FLAG-Q1: klaster państw-miast wypowiada wojnę bez powodu (lub z cas
+gra/src/main.ts	36594	2	kod+komentarz	R-WEB-ERA-WAR-COUNTER	2	// R-WEB-ERA-WAR-COUNTER-Q1: Brąz wyłączony flagą — nie wchodzi do puli parowania.
+gra/src/main.ts	36652	2	kod+komentarz	R-WEB-ERA-WAR-COUNTER	2	// R-WEB-ERA-WAR-COUNTER-Q1: Żelazo wyłączone flagą — nie wchodzi do puli parowania.
+gra/src/main.ts	36682	3	kod+komentarz	R-WEB-ERA-WAR-COUNTER	2	// R-WEB-ERA-WAR-COUNTER-Q1 (5): odległość partnera gracza liczona od STOLICY gracza
+gra/src/main.ts	36720	2	kod+komentarz	R-WEB-PEACE-RULES-R8R9	1	// R-WEB-PEACE-RULES-R8R9-Q1 R8 (D1): Relacja (relationScore) >= próg blokuje wojnę epoki.
+gra/src/main.ts	36725	2	kod	R-WEB-PEACE-RULES-R8R9	3	|| allianceFormalKindBetween(activeDeals, a, b) !== null
+gra/src/main.ts	36761	4	kod+komentarz	R-WEB-ERA-WAR-COUNTER	2	// R-WEB-ERA-WAR-COUNTER-Q1 (3): podmiot z zużytym licznikiem wojen epoki (w tej epoce,
+gra/src/main.ts	36770	1	kod	R-WEB-PEACE-RULES-R8R9	1	pairRelationScore: pairRelationOfR8,
+gra/src/main.ts	36773	1	kod	R-WEB-ERA-WAR-COUNTER	1	isEraWarExhausted: isWarRulesMultiwarEnabled() ? isEraWarExhausted : undefined,
+gra/src/main.ts	37071	1	kod	R-WEB-AUTO-FORT-CLAIM	1	cityLimitBase: _menuCityLimitBase, // R-WEB-AUTO-FORT-CLAIM-Q1
+gra/src/main.ts	37301	1	kod	R-WEB-PEACE-RULES	2	turnsAtWar: diploWarStateFor(ownerId, ME()).turnsAtWar, // R-WEB-PEACE-RULES-Q1 R1
+gra/src/main.ts	37386	2	kod+komentarz	R-WEB-WAR-AGGRESSOR-FLAG	1	// R-WEB-WAR-AGGRESSOR-FLAG-Q1: gracz jako partner — flaga agresora (u innych AI).
+gra/src/main.ts	37395	4	kod+komentarz	R-WEB-PEACE-CITY-CESSION	3	...diploRelWarFields(ownerId, ME()), // R-WEB-PEACE-RULES-Q1 R1/R3(d)
+gra/src/main.ts	37428	2	kod+komentarz	R-WEB-WAR-AGGRESSOR-FLAG	1	// R-WEB-WAR-AGGRESSOR-FLAG-Q1: partner AI — flaga agresora wpływa na sojusz/pakt.
+gra/src/main.ts	37453	1	kod	R-WEB-PEACE-RULES	1	...diploRelWarFields(ownerId, otherId), // R-WEB-PEACE-RULES-Q1 R1/R3(d)
+gra/src/main.ts	37738	3	kod+komentarz	R-WEB-PEACE-CITY-CESSION	2	// R-WEB-PEACE-CITY-CESSION-Q1 r3 (N1a): miasta TEGO AI do oddania w pokoju.
+gra/src/main.ts	37821	20	kod+komentarz	R-WEB-ERA-WAR-COUNTER	14	// R-WEB-ERA-WAR-COUNTER-Q1: wojna epoki wyłączonej epoki (Brąz/Żelazo, flaga
+gra/src/main.ts	37841	0	kod+komentarz	R-WEB-WAR-RULES-RELEASE-ROBOCZA	7	const gateForcedTag = forcedEraTagFromPowod(cmd.powod);
+gra/src/main.ts	37879	1	kod	R-WEB-TRUCE	2	const truceBreachAi = chargeWarDeclarationCredibility(ownerId, targetId);
+gra/src/main.ts	37886	7	kod+komentarz	R-WEB-WAR-AGGRESSOR-FLAG	5	// R-WEB-WAR-AGGRESSOR-FLAG-Q1: wojna wymuszona epoki NIE nadaje flagi agresora;
+gra/src/main.ts	37900	8	kod+komentarz	R-WEB-ERA-WAR-COUNTER	6	// R-WEB-ERA-WAR-COUNTER-Q1 (1, 2): zużycie licznika per cywilizacja i epoka —
+gra/src/main.ts	37990	5	kod+komentarz	R-WEB-ERA-WAR-COUNTER	4	// R-WEB-ERA-WAR-COUNTER-Q1 (6): powód wojny epoki widoczny dla gracza (hint + karta zdarz
+gra/src/main.ts	37997	1	kod	R-WEB-ERA-WAR-COUNTER	2	recordWarDeclarationEvent(ownerId, targetId, eraWarReasonLabel);
+gra/src/main.ts	38001	6	kod	R-WEB-ERA-WAR-COUNTER	7	showHintMessage(
+gra/src/main.ts	38933	4	kod+komentarz	R-WEB-OUTPOST-FORT-TERRITORY(bez-R-tagu)	1	// R3 Q-A=A (obrona zarzut 4): wejscie wojska AI-cywilizacji na heks fortu = zdobycie od r
+gra/src/main.ts	39252	1	kod	R-WEB-DEFEAT-LAST-CITY-BARBARIANS	2	onBarbarianCityBattleResolved,
+gra/src/main.ts	39274	1	kod	R-WEB-OUTPOST-FORT-TERRITORY(bez-R-tagu)	1	sweepFortCaptures(); // R3 Q-A=A: po ruchach AI/barbarzyncow w tej turze
+gra/src/main.ts	39327	1	kod	R-WEB-TRUCE	2	const vResult = truceTestSuppressVictory ? null : checkVictory(vInput);
+gra/src/main.ts	39500	1	kod	R-WEB-OUTPOST-FORT-TERRITORY(bez-R-tagu)	1	sweepFortCaptures(); // R3 Q-A=A: koniec ruchu na heksie fortu (animacja ucieta)
+gra/src/main.ts	39964	1	kod	R-WEB-OUTPOST-FORT-TERRITORY(bez-R-tagu)	1	sweepFortCaptures(); // R3 Q-A=A: koniec ruchu (gracz i AI) na heksie fortu
+gra/src/main.ts	40929	4	kod+komentarz	R-WEB-ERA-WAR-COUNTER	2	// R-WEB-ERA-WAR-COUNTER-Q1: nowa gra zaczyna z zerowym licznikiem wojen epoki.
+gra/src/main.ts	42520	17	kod+komentarz	R-WEB-ERA-WAR-COUNTER	13	// R-WEB-ERA-WAR-COUNTER-Q1 (7): licznik wojen epoki per (cywilizacja, epoka). Zapis bez p
+gra/src/main.ts	42727	3	kod+komentarz	R-WEB-SAVELOAD-PRACA-POOL	3	// R-WEB-SAVELOAD-PRACA-POOL-Q1 (decyzja wlasciciela A, 2026-10-31): wczytanie ZACHOWUJE p
+gra/src/main.ts	42734	0	kod	R-LISTA-NAZWANA	8	const playerCityCountOnLoad = cities.filter(c => c.ownerId === 0).length;
+gra/src/main.ts	42736	18	kod+komentarz	R-WEB-SAVELOAD-HOTSEAT-PRACA	15	// R-WEB-SAVELOAD-HOTSEAT-PRACA-Q1: pule foteli 2+ (fotel 0 = `playerPracaPool` wyzej, ali
+gra/src/main.ts	42775	14	kod+komentarz	R-WEB-HOTSEAT-HUD-CACHE	8	// R-WEB-HOTSEAT-HUD-CACHE-Q1 (decyzja wlasciciela A, 2026-10-31): wartosci pomocnicze HUD
+gra/src/main.ts	42964	20	kod+komentarz	R-WEB-OUTPOST-FORT-TERRITORY	15	// R-WEB-OUTPOST-FORT-TERRITORY-Q1 (2026-10-31): stare zapisy ze starymi fortami/posterunk
+gra/src/map/improvement-build.ts	428	7	komentarz	R-WEB-AUTOIMPROVE-STAGES	0	* właściciela „Tak, odwracamy — wszystkie trzy", uchyla zakaz z 2026-07-29).
+gra/src/map/improvement-build.ts	462	2	komentarz	R-WEB-AUTOIMPROVE-STAGES	0	// dla rzeczywistej ścieżki applyBuildRequest poza panelem. ABC-2 (właściciel 2026-10-31):
+gra/src/map/improvement-build.ts	465	1	komentarz	R-WEB-AUTOIMPROVE-STAGES	0	// Owce zachowują istniejącą blokadę budowy na lesie (ABC-2: blokada zostaje).
+gra/src/map/newGameMapDefaults.ts	464	6	komentarz	R-WEB-NEWGAME-DEFAULTS	0	/**
+gra/src/map/newGameMapDefaults.ts	471	1	kod	R-WEB-NEWGAME-DEFAULTS	1	if (typ !== 'ziemia') return 30;
+gra/src/map/territory.ts	5	2	komentarz	R-WEB-OUTPOST-FORT-TERRITORY	0	* Posterunek r=3, fort r=5 (stałe; decyzja właściciela 2026-10-31, R-WEB-OUTPOST-FORT-TERR
+gra/src/map/territory.ts	38	10	kod+komentarz	R-WEB-OUTPOST-FORT-TERRITORY(bez-R-tagu)	2	export type TerritoryNode = CityNode & {
+gra/src/map/territory.ts	74	5	kod+komentarz	R-WEB-OUTPOST-FORT-TERRITORY	2	/** Promień terytorium fortu (decyzja właściciela 2026-10-31). / EN: fort territory radius
+gra/src/map/territory.ts	85	2	komentarz	R-WEB-OUTPOST-FORT-TERRITORY	0	*   - FORT:      r = 5  (stały; R-WEB-OUTPOST-FORT-TERRITORY-Q1, było 10)
+gra/src/map/territory.ts	90	2	kod	R-WEB-OUTPOST-FORT-TERRITORY	4	if (node.isFort)    return FORT_TERRITORY_RADIUS;
+gra/src/map/territory.ts	119	2	komentarz	R-WEB-OUTPOST-FORT-TERRITORY	0	* węzeł w tablicy `nodes`. Węzły miast mają pierwszeństwo przed fortami/posterunkami.
+gra/src/map/territory.ts	127	5	kod	R-WEB-OUTPOST-FORT-TERRITORY	7	let bestCityOwner: number | null = null;
+gra/src/map/territory.ts	137	13	kod+komentarz	R-WEB-OUTPOST-FORT-TERRITORY(bez-R-tagu)	15	if (node.isFort || node.isOutpost) {
+gra/src/map/territory.ts	153	7	kod+komentarz	R-WEB-OUTPOST-FORT-TERRITORY	3	// ZALOZENIE (R-WEB-OUTPOST-FORT-TERRITORY-Q1 R2, zarzut 1): heks w promieniu
+gra/src/render/unitOwnerEmblem.ts	100	7	bez-kodu(komentarz/typ/import)	BEZ-TAGU	0	/**
+gra/src/render/unitOwnerEmblem.ts	248	17	kod+komentarz	BEZ-TAGU	9	/** `#rrggbb` (bez skrótu i bez przezroczystości) → ten sam zapis lowercase; inaczej `null
+gra/src/render/unitOwnerEmblem.ts	266	1	kod	BEZ-TAGU	2	function drawDisc(ctx: CanvasRenderingContext2D, ringColor: string): void {
+gra/src/render/unitOwnerEmblem.ts	273	1	kod	BEZ-TAGU	2	ctx.strokeStyle = ringColor;
+gra/src/render/unitOwnerEmblem.ts	281	1	kod	BEZ-TAGU	2	function drawFallbackGlyph(ctx: CanvasRenderingContext2D, variant: EmblemVariant, ringColo
+gra/src/render/unitOwnerEmblem.ts	283	1	kod	BEZ-TAGU	2	ctx.fillStyle = ringColor;
+gra/src/render/unitOwnerEmblem.ts	335	4	kod+komentarz	BEZ-TAGU	3	// Barwa obwódki wchodzi do klucza: dwie pełne cywilizacje o różnych kolorach
+gra/src/render/unitOwnerEmblem.ts	373	3	kod	BEZ-TAGU	5	const ringColor = ringColorFor(variant, octx.ringHex);
+gra/src/render/unitOwnerEmblem.ts	397	1	kod	BEZ-TAGU	2	drawDisc(ctx, ringColor);
+gra/src/render/unitOwnerEmblem.ts	407	1	kod	BEZ-TAGU	2	drawDisc(ctx, ringColor);
+gra/src/render/unitOwnerEmblem.ts	417	1	kod	BEZ-TAGU	2	drawDisc(ctx, ringColor);
+gra/src/render/unitOwnerEmblem.ts	420	1	komentarz	BEZ-TAGU	0	// Barwa = barwa obwódki tej cywilizacji (ten sam pierścień co na tarczy).
+gra/src/render/unitOwnerEmblem.ts	422	1	kod	BEZ-TAGU	2	ctx.strokeStyle = ringColor;
+gra/src/render/unitOwnerEmblem.ts	437	1	kod	BEZ-TAGU	2	drawDisc(ctx, ringColor);
+gra/src/ui/cityPanel.ts	164	1	kod	R-WEB-SPICHLERZ-HUD-PARAMS	1	loadSpichlerzDrainParams,
+gra/src/ui/cityPanel.ts	1282	8	kod+komentarz	R-WEB-SPICHLERZ-HUD-PARAMS	8	// R-WEB-SPICHLERZ-HUD-PARAMS-Q1: te same parametry zużycia co silnik (econ-params wg trud
+gra/src/ui/cityPanel.ts	9294	5	kod+komentarz	R-WEB-SPICHLERZ-HUD-PARAMS	4	// R-WEB-SPICHLERZ-HUD-PARAMS-Q1: parametry zużycia Spichlerza jak w silniku.
+gra/src/ui/diplomacyNegotiationModal.ts	14	2	bez-kodu(komentarz/typ/import)	R-WEB-TRUCE	0	/** R-WEB-TRUCE-Q1 (N5): 'rozejm' dla akcji '10' wybranej jako rozejm (dlugosc w `turns`).
+gra/src/ui/diplomacyNegotiationModal.ts	103	10	kod+komentarz	R-WEB-PEACE-CITY-CESSION	1	/**
+gra/src/ui/diplomacyNegotiationModal.ts	565	1	kod	R-WEB-TRUCE	1	if (payload.actionId === '10') return payload.rodzaj === 'rozejm' ? 'rozejm' : 'pokoj';
+gra/src/ui/diplomacyPanel.ts	34	2	bez-kodu(komentarz/typ/import)	R-WEB-AGGRESSOR-MARKER	0	/** R-WEB-AGGRESSOR-MARKER-Q1: pozostałe tury aktywnej flagi agresora (doTury - turn, >= 1
+gra/src/ui/diplomacyPanel.ts	220	16	kod+komentarz	R-WEB-AGGRESSOR-MARKER	10	/**
+gra/src/ui/diplomacyPanel.ts	266	1	kod	R-WEB-AGGRESSOR-MARKER	1	agresorBadgeHtml(rel.agresorPozostaleTury) +
+gra/src/ui/diplomacyTradeBasket.ts	19	1	kod	R-WEB-PEACE-CITY-CESSION	1	diplomacyMiastoAkcjaDozwolona,
+gra/src/ui/diplomacyTradeBasket.ts	42	1	kod	R-WEB-PEACE-CITY-CESSION	2	renderBasketItemValueHtml as renderBasketItemValueBaseHtml,
+gra/src/ui/diplomacyTradeBasket.ts	70	1	kod	R-WEB-PEACE-CITY-CESSION	1	miasto: 'Miasto (tylko pokój)',
+gra/src/ui/diplomacyTradeBasket.ts	215	2	kod+komentarz	R-WEB-PEACE-CITY-CESSION	1	// R-WEB-PEACE-CITY-CESSION-Q1 r3 (N2): bez actionId pozycja 'miasto' = null (fail-safe).
+gra/src/ui/diplomacyTradeBasket.ts	234	18	kod+komentarz	R-WEB-PEACE-CITY-CESSION	11	// R-WEB-PEACE-CITY-CESSION-Q1 r3 (N2 defekt r2): cityPn/cityWeight muszą dojść do sumy PN
+gra/src/ui/diplomacyTradeBasket.ts	540	4	bez-kodu(komentarz/typ/import)	R-WEB-TRUCE	0	/** R-WEB-TRUCE-Q1 (N5): akcja '10' - 'pokoj' (domyslnie) albo 'rozejm' na `truceTurns` tu
+gra/src/ui/diplomacyTradeBasket.ts	641	2	kod	R-WEB-TRUCE	2	peaceKind: initial?.peaceKind === 'rozejm' ? 'rozejm' : 'pokoj',
+gra/src/ui/diplomacyTradeBasket.ts	848	21	kod+komentarz	R-WEB-TRUCE	21	{
+gra/src/ui/diplomacyTradeBasket.ts	883	6	kod+komentarz	R-WEB-TRUCE	5	} else if (actionId === '10') {
+gra/src/ui/diplomacyTradeBasket.ts	1204	8	kod+komentarz	R-WEB-TRUCE	6	case '10':
+gra/src/ui/diplomacyTradeBasket.ts	1329	3	kod	R-WEB-TRUCE	4	const propActionId = actionId === '10' && treatyState?.peaceKind === 'rozejm'
+gra/src/ui/diplomacyTradeBasket.ts	1546	8	kod+komentarz	R-WEB-PEACE-CITY-CESSION	6	// R-WEB-PEACE-CITY-CESSION-Q1 r3 (N2): miasto tylko po stronie „Daję", tylko w akcji
+gra/src/ui/diplomacyTradeBasket.ts	1651	25	kod+komentarz	R-WEB-PEACE-CITY-CESSION	22	// R-WEB-PEACE-CITY-CESSION-Q1 r3 (N2): wybór miasta do oddania (lista PW). Miasto już dod
+gra/src/ui/diplomacyTradeBasket.ts	1752	5	kod	R-WEB-PEACE-CITY-CESSION	5	+ '<div class="cdb-fields-extra" data-extra="' + prefix + '-miasto">'
+gra/src/ui/diplomacyTradeBasket.ts	1773	34	kod+komentarz	R-WEB-PEACE-CITY-CESSION	26	/**
+gra/src/ui/diplomacyTradeBasket.ts	2200	8	kod+komentarz	R-WEB-PEACE-CITY-CESSION	7	case 'miasto': {
+gra/src/ui/diplomacyTradeBasket.ts	2243	1	kod	R-WEB-PEACE-CITY-CESSION	2	const extras = ['qty', 'city', 'tech', 'resqty', 'miasto'];
+gra/src/ui/diplomacyTradeBasket.ts	2249	1	kod	R-WEB-PEACE-CITY-CESSION	2	zloto: 'qty', praca: 'qty', zywnosc: 'city', tech: 'tech', surowiec_ilosc: 'resqty', miast
+gra/src/ui/diplomacyTradeBasket.ts	2363	2	kod+komentarz	R-WEB-PEACE-CITY-CESSION	1	// R-WEB-PEACE-CITY-CESSION-Q1 r3 (N2): blok wyboru miasta (tylko pokój/wasal, nie gdy blo
+gra/src/ui/diplomacyTradeBasket.ts	2368	1	kod	R-WEB-PEACE-CITY-CESSION	2	+ '<div class="cdb-land-main">' + treatyHtml + cityPickHtml + '</div>'
+gra/src/ui/diplomacyTradeBasket.ts	2506	3	bez-kodu(komentarz/typ/import)	R-WEB-TRUCE	0	/** R-WEB-TRUCE-Q1 (N5): prefill rodzaju akcji '10' (pokoj/rozejm) i dlugosci rozejmu. */
+gra/src/ui/diplomacyTradeBasket.ts	2555	3	kod+komentarz	R-WEB-PEACE-CITY-CESSION	1	// R-WEB-PEACE-CITY-CESSION-Q1 r3 (N2): akcja koszyka trafia do ctx → basketPnOpts (bramka
+gra/src/ui/diplomacyTradeBasket.ts	2594	2	kod+komentarz	R-WEB-TRUCE	1	// R-WEB-TRUCE-Q1 (N5): podglad PW dla rozejmu liczony jak akcja 'rozejm' (baza 200).
+gra/src/ui/diplomacyTradeBasket.ts	2642	22	kod+komentarz	R-WEB-PEACE-CITY-CESSION	19	// R-WEB-PEACE-CITY-CESSION-Q1 r3 (N2): wybór miasta do oddania w pokoju.
+gra/src/ui/diplomacyTradeBasket.ts	2863	18	kod+komentarz	R-WEB-TRUCE	15	// R-WEB-TRUCE-Q1 (N5): przelacznik pokoj/rozejm i wybor dlugosci rozejmu (klasy dedykowan
+gra/src/ui/empireDetailPanel.ts	2433	8	kod+komentarz	BEZ-TAGU	5	// R-WEB-CITIZEN-UPKEEP-ERA-MULT-Q1: stawka BIEŻĄCEJ epoki — ta sama, którą silnik użył do
+gra/src/ui/empireDetailPanel.ts	2627	1	kod	BEZ-TAGU	2	const z = Math.floor(c.ludki * citizenRate);
+gra/src/ui/empireDetailPanel.ts	2637	1	nazwa/tekst	BEZ-TAGU	2	h += `<div class="civ-emp-foot">${formatLiczbaPl(citizenRate, 1)} szt. surowca `
+gra/src/ui/empireDetailPanel.ts	3155	1	komentarz	BEZ-TAGU	0	// ZASPOKAJA CAŁĄ populację imperium tego ownera (stawka per epoka citizenUpkeepRateForEra
+gra/src/ui/empireDetailTypes.ts	111	6	bez-kodu(komentarz/typ/import)	BEZ-TAGU	0	* R-WEB-CITIZEN-UPKEEP-ERA-MULT-Q1: stawka zużycia tej epoki (sztuk surowca / obywatela /
+gra/src/ui/hexContextTooltip.ts	699	2	kod+komentarz	BEZ-TAGU	1	/** Rola jednostki dowodzącej, odróżniana od zwykłej jednostki tego samego typu. */
+gra/src/ui/hexContextTooltip.ts	772	5	kod	BEZ-TAGU	6	const isCommander = c.commanderTitle === 'Wódz' || c.commanderTitle === 'Generał';
+gra/src/ui/hexContextTooltip.ts	778	3	kod	BEZ-TAGU	4	+ (isCommander
+gra/src/ui/hexContextTooltip.ts	889	3	kod	BEZ-TAGU	3	.sp-unit-stack-card.commander{border-color:rgba(232,216,138,.78);background:linear-gradien
+gra/src/ui/hexContextTooltip.ts	924	4	kod	BEZ-TAGU	5	const activeName = active.commanderTitle
+gra/src/ui/newGameFlow.ts	243	5	komentarz	R-WEB-NEWGAME-DEFAULTS	0	/**
+gra/src/ui/newGameFlow.ts	250	1	kod	R-WEB-NEWGAME-DEFAULTS	2	battleAlwaysManual: true,
+gra/src/ui/newGameFlow.ts	252	4	nazwa/tekst	R-WEB-NEWGAME-DEFAULTS	8	buildingCostPace: 'normalny',
+gra/src/ui/newGameFlow.ts	258	1	kod	R-WEB-NEWGAME-DEFAULTS	2	cityStateDifficultyOverride: 'normal',
+gra/src/ui/newGameFlow.ts	670	1	kod	R-WEB-NEWGAME-MENU-REORDER	1	cityStateDifficulty: 'TM',
+gra/src/ui/newGameFlow.ts	673	4	kod	R-WEB-NEWGAME-MENU-REORDER	4	barbariansLevel: 'Ba',
+gra/src/ui/newGameFlow.ts	687	5	kod+komentarz	R-WEB-NEWGAME-MENU-REORDER	3	/** Klucze mające dedykowaną ikonę SVG (setting-icon-map.json); pozostałe → glif tekstowy.
+gra/src/ui/newGameFlow.ts	693	4	kod	R-WEB-NEWGAME-MENU-REORDER	6	if (SETTING_SVG_KEYS.has(key)) {
+gra/src/ui/newGameFlow.ts	982	4	kod	BEZ-TAGU	4	.civ-newgame .civ-matrix-cell>summary{cursor:pointer;list-style:none;}
+gra/src/ui/newGameFlow.ts	1128	3	kod	R-WEB-NEWGAME-ADV-APPLY-BTN	4	.civ-newgame .adv-close{background:rgba(201,168,76,.1);border:1.5px solid var(--bd-strong)
+gra/src/ui/newGameFlow.ts	1234	2	kod	BEZ-TAGU	3	const row = document.createElement('details');
+gra/src/ui/newGameFlow.ts	1246	3	kod	BEZ-TAGU	4	const summary = document.createElement('summary');
+gra/src/ui/newGameFlow.ts	1254	6	kod	BEZ-TAGU	6	const chevron = el('span', 'civ-matrix-cell-chevron', '⌄');
+gra/src/ui/newGameFlow.ts	1266	1	kod	BEZ-TAGU	2	body.appendChild(meta);
+gra/src/ui/newGameFlow.ts	1271	1	kod	BEZ-TAGU	2	body.appendChild(status);
+gra/src/ui/newGameFlow.ts	1275	2	kod	BEZ-TAGU	3	body.appendChild(explanation);
+gra/src/ui/newGameFlow.ts	1282	1	komentarz	BEZ-TAGU	0	* Pełny profil parametrów w kroku wyboru cywilizacji; liczba pól pochodzi z danych macierz
+gra/src/ui/newGameFlow.ts	1284	4	komentarz	BEZ-TAGU	0	* Każdy parametr ma własny natywny `<details>` i jest domyślnie zwinięty;
+gra/src/ui/newGameFlow.ts	1300	1	nazwa/tekst	BEZ-TAGU	2	`${profile.parameterCount} wskaźników · mediana wszystkich 15 cywilizacji · aktywne domyśl
+gra/src/ui/newGameFlow.ts	1633	2	kod+komentarz	R-WEB-NEWGAME-DEFAULTS	1	// R-WEB-NEWGAME-DEFAULTS-Q1: typ Ziemia = szablon bez suwaka udziału lądu (decyzja właści
+gra/src/ui/newGameFlow.ts	1637	2	kod	R-WEB-NEWGAME-MENU-REORDER	4	{
+gra/src/ui/newGameFlow.ts	1641	1	kod	R-WEB-NEWGAME-MENU-REORDER	2	row.innerHTML = '<div class="srow-hdr"><div class="srow-ic">' + settingIcon(key) + '</div>
+gra/src/ui/newGameFlow.ts	1710	3	kod+komentarz	R-WEB-NEWGAME-MENU-REORDER	2	/** Pozycje głównej siatki kroku 4 spoza SETT (ui-params). Kolejność bez znaczenia —
+gra/src/ui/newGameFlow.ts	1713	0	kod	SCALONY-SPRZED-DC8(bez-tagu)	16	advRowFromSett('map_quality', 'Jakość renderu mapy 3D — niska / średnia / wysoka (GPU).'),
+gra/src/ui/newGameFlow.ts	1717	1	nazwa/tekst	R-WEB-NEWGAME-DEFAULTS	2	hint: 'Reszta to morze. Domyślnie: 30% lądu we wszystkich typach świata z suwakiem (Kontyn
+gra/src/ui/newGameFlow.ts	1745	1	nazwa/tekst	R-WEB-NEWGAME-DEFAULTS	2	hint: 'Zaufanie startowe, próg sojuszu sióstr i posiłki obronne miast-państw — niezależnie
+gra/src/ui/newGameFlow.ts	1759	0	kod	SCALONY-SPRZED-DC8(bez-tagu)	8	advRowFromSett(
+gra/src/ui/newGameFlow.ts	1775	5	kod	R-WEB-NEWGAME-MENU-REORDER	4	];
+gra/src/ui/newGameFlow.ts	1781	4	kod	R-WEB-NEWGAME-MENU-REORDER	16	key: 'ruchSwiataPace',
+gra/src/ui/newGameFlow.ts	1786	2	kod	R-WEB-NEWGAME-MENU-REORDER	4	if (advOpts.ruchSwiataPace === 'normalny') return 1;
+gra/src/ui/newGameFlow.ts	1791	1	kod	R-WEB-NEWGAME-MENU-REORDER	2	advOpts.ruchSwiataPace = i === 1 ? 'normalny' : i === 2 ? 'dlugi' : 'krotki';
+gra/src/ui/newGameFlow.ts	1795	4	nazwa/tekst	R-WEB-NEWGAME-MENU-REORDER	8	key: 'cityLimitBase',
+gra/src/ui/newGameFlow.ts	1800	3	kod	R-WEB-NEWGAME-MENU-REORDER	6	const limits = [10, 15, 20];
+gra/src/ui/newGameFlow.ts	1805	2	kod	R-WEB-NEWGAME-MENU-REORDER	3	const limits = [10, 15, 20];
+gra/src/ui/newGameFlow.ts	1809	12	kod	R-WEB-NEWGAME-MENU-REORDER	12	{
+gra/src/ui/newGameFlow.ts	1836	4	nazwa/tekst	R-WEB-NEWGAME-MENU-REORDER	8	key: 'buildingCostPace',
+gra/src/ui/newGameFlow.ts	1841	2	kod	R-WEB-NEWGAME-MENU-REORDER	4	if (advOpts.buildingCostPace === 'normalny') return 1;
+gra/src/ui/newGameFlow.ts	1846	1	kod	R-WEB-NEWGAME-MENU-REORDER	2	advOpts.buildingCostPace = i === 1 ? 'normalny' : i === 2 ? 'wysoki' : 'niski';
+gra/src/ui/newGameFlow.ts	1850	4	nazwa/tekst	R-WEB-NEWGAME-MENU-REORDER	8	key: 'kosztJednostekPace',
+gra/src/ui/newGameFlow.ts	1855	3	kod	R-WEB-NEWGAME-MENU-REORDER	6	if (advOpts.kosztJednostekPace === 'normalny') return 1;
+gra/src/ui/newGameFlow.ts	1860	1	kod	R-WEB-NEWGAME-MENU-REORDER	3	advOpts.kosztJednostekPace = i === 1 ? 'normalny' : i === 2 ? 'wysoki' : 'niski';
+gra/src/ui/newGameFlow.ts	1863	15	kod	R-WEB-NEWGAME-MENU-REORDER	15	advRowFromSett('map_quality', 'Jakość renderu mapy 3D — niska / średnia / wysoka (GPU).'),
+gra/src/ui/newGameFlow.ts	1907	3	kod+komentarz	R-WEB-NEWGAME-MENU-REORDER	2	// Pozycje przeniesione do głównej siatki kroku 4 nie są już w tej liście
+gra/src/ui/newGameFlow.ts	1942	3	kod+komentarz	R-WEB-NEWGAME-ADV-APPLY-BTN	3	// „Zastosuj” = zapis wartości (saveNewGamePrefs w hideAdvancedModal) + zamknięcie okna.
+gra/src/ui/newGameFlow.ts	2030	3	komentarz	R-WEB-NEWGAME-MENU-REORDER	0	// Siatka 2 kolumny, wypełniana rzędami: [lewa1, prawa1, lewa2, prawa2, …].
+gra/src/ui/newGameFlow.ts	2034	6	kod	R-WEB-NEWGAME-MENU-REORDER	8	'map_size', 'civ_types_count',
