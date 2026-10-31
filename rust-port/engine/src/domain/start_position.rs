@@ -24,6 +24,7 @@ use std::{error::Error, fmt};
 
 use super::diplomacy::{Relation, RelationStatus};
 use super::hex::HexCoord;
+use super::improvement_build::hex_disk_offsets;
 use super::map_generator::Terrain;
 use super::rng::Mulberry32;
 use super::PlayerId;
@@ -592,18 +593,11 @@ pub fn hex_keys_within_radius(
     map: &BTreeMap<HexCoord, StartMapHex>,
 ) -> Vec<HexCoord> {
     let radius = i32::try_from(radius).expect("promien miesci sie w i32");
-    let mut out = Vec::new();
-    for dq in -radius..=radius {
-        let lo = (-radius).max(-dq - radius);
-        let hi = radius.min(-dq + radius);
-        for dr in lo..=hi {
-            let hex = HexCoord::new(center.q + dq, center.r + dr);
-            if map.contains_key(&hex) {
-                out.push(hex);
-            }
-        }
-    }
-    out
+    hex_disk_offsets(radius)
+        .into_iter()
+        .map(|(dq, dr)| HexCoord::new(center.q + dq, center.r + dr))
+        .filter(|hex| map.contains_key(hex))
+        .collect()
 }
 
 /// Web `seedIncaLlamaDeposits` (`inca-llama-seed.ts:35`): dosiewa `ZlozeLamy` na wzgorzach i

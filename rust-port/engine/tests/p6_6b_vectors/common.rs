@@ -211,6 +211,7 @@ pub fn city_from(v: &Value) -> City {
         okolica_focus: s("okolicaFocus").map(|x| OkolicaFocus::from_web(&x).expect("okolicaFocus")),
         okolica_focus_override: b("okolicaFocusOverride"),
         okolica_tryb: s("okolicaTryb").map(|x| OkolicaTryb::from_web(&x).expect("okolicaTryb")),
+        okolica_reczne: None,
         budowa_focus: s("budowaFocus").map(|x| BudowaFocus::from_web(&x).expect("budowaFocus")),
         budowa_tryb: s("budowaTryb").map(|x| BudowaTryb::from_web(&x).expect("budowaTryb")),
         budowa_focus_override: b("budowaFocusOverride"),

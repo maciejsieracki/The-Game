@@ -32,6 +32,7 @@ pub mod improvements;
 pub mod map_generator;
 pub mod map_snapshot;
 pub mod mapgen;
+pub mod okolica;
 pub mod pathfinding;
 pub mod playable;
 pub mod player;

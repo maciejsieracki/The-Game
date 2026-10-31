@@ -1703,6 +1703,9 @@ pub mod p6_6b {
             pub okolica_focus: Option<OkolicaFocus>,
             pub okolica_focus_override: Option<bool>,
             pub okolica_tryb: Option<OkolicaTryb>,
+            /// Web `okolicaReczne?: Record<string, number>` (`cities.ts:955`): tryb reczny z zachowana
+            /// kolejnoscia wstawiania (`Reczne`). `None` = pole nieobecne. P6.8G r4 (N1, hak rebalansu).
+            pub okolica_reczne: Option<crate::domain::okolica::Reczne>,
             pub budowa_focus: Option<BudowaFocus>,
             pub budowa_tryb: Option<BudowaTryb>,
             pub budowa_focus_override: Option<bool>,

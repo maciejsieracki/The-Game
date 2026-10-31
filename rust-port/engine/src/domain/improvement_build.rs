@@ -812,25 +812,34 @@ pub fn is_improvement_visible_in_build_panel(
 // Zaleznosc: game/okolica.ts::hexKeysWithinRadius (P6.8)
 // ---------------------------------------------------------------------------------------------
 
+/// Jedyne jadro enumeracji dysku hex (kolejnosc petli web `hexKeysWithinRadius`, `okolica.ts:66`):
+/// przesuniecia `(dq, dr)` z `dq` zewnetrzna i `dr` wewnetrzna petla, bez filtra istnienia heksu.
+/// Wspolne dla `hex_keys_within_radius`, `terrain::hexes_within_radius` i
+/// `start_position::hex_keys_within_radius` (P6.8G, deduplikacja bez zmiany zachowania).
+pub fn hex_disk_offsets(radius: i32) -> Vec<(i32, i32)> {
+    let mut out = Vec::new();
+    for dq in -radius..=radius {
+        let lo = (-radius).max(-dq - radius);
+        let hi = radius.min(-dq + radius);
+        for dr in lo..=hi {
+            out.push((dq, dr));
+        }
+    }
+    out
+}
+
 /// Web `hexKeysWithinRadius` (`okolica.ts:66`): klucze ISTNIEJACYCH heksow w dysku hex.
 pub fn hex_keys_within_radius(cq: i32, cr: i32, rad: f64, map: &BuildMap) -> Vec<String> {
-    let mut out = Vec::new();
     let r = if rad.is_finite() && rad > 0.0 {
         rad.floor() as i32
     } else {
         0
     };
-    for dq in -r..=r {
-        let lo = (-r).max(-dq - r);
-        let hi = r.min(-dq + r);
-        for dr in lo..=hi {
-            let key = hex_key(cq + dq, cr + dr);
-            if map.hex(&key).is_some() {
-                out.push(key);
-            }
-        }
-    }
-    out
+    hex_disk_offsets(r)
+        .into_iter()
+        .map(|(dq, dr)| hex_key(cq + dq, cr + dr))
+        .filter(|key| map.hex(key).is_some())
+        .collect()
 }
 
 // ---------------------------------------------------------------------------------------------
