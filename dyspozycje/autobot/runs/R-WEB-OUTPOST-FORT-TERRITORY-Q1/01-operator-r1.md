@@ -50,7 +50,7 @@ Brak twardych. Uwagi: (1) teksty poza allowlistą (Q-D); (2) skutek AI w długie
 1/5
 
 ## ZMIANY/COMMIT
-Allowlista przestrzegana: `gra/src/game/fort-territory.ts`, `gra/src/map/territory.ts`, `gra/src/main.ts`, `gra/data/terrain-improvements.json`, `gra/tools/*-test.cjs` (nowe: fort-outpost-hard-territory-test, fort-outpost-territory-live-test; zmieniony: fort-strazniaca-zasieg-zakladania-test), `dyspozycje/autobot/runs/R-WEB-OUTPOST-FORT-TERRITORY-Q1/**`. Brak zmian: auto-improvements.ts, gra-robocza, WERSJE.md, rust-port, src-tauri. node_modules i scratch (dist, zrzuty poza repo) usunięte. Branch roboczy: `op-fort-territory-q1` (z `origin/claude/sprawdzenie-funkcjonalnosci-ek4ra0`, b60cd4623). SHA commitu: patrz sekcja poniżej (uzupełniona po commicie).
+Allowlista przestrzegana: `gra/src/game/fort-territory.ts`, `gra/src/map/territory.ts`, `gra/src/main.ts`, `gra/data/terrain-improvements.json`, `gra/tools/*-test.cjs` (nowe: fort-outpost-hard-territory-test, fort-outpost-territory-live-test; zmieniony: fort-strazniaca-zasieg-zakladania-test), `dyspozycje/autobot/runs/R-WEB-OUTPOST-FORT-TERRITORY-Q1/**`. Brak zmian: auto-improvements.ts, gra-robocza, WERSJE.md, rust-port, src-tauri. node_modules i scratch (dist, zrzuty poza repo) usunięte. Branch roboczy: `op-fort-territory-q1` (z `origin/claude/sprawdzenie-funkcjonalnosci-ek4ra0`, b60cd4623). SHA commitu implementacji: 070e6dc6202d68e45d45e1b7200896b94d7193c1 (branch op-fort-territory-q1; raport dopisany osobnym commitem docs).
 
 ## NASTĘPNY KROK
 Evaluator (R1) → Obrona → Final Control; orkiestrator zadaje ABC Q-A..Q-D właścicielowi.
