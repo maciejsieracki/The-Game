@@ -211,9 +211,15 @@ console.log('2. Praca niewystarczajaca -- throttling');
 {
   const city = makeCity('city0', PLAYER_ID, 15, 15);
   const opts = baseOpts(city);
-  opts.pracaAvailable = 25; // <= próg (dokumentowany w ai.ts jako 30)
+  // R-WEB-AUTOIMPROVE-STAGES2-Q1 (wlasciciel 2026-10-31): AI i panstwa-miasta maja 100% puli (zadnego capu 50%).
+  // Dawne oczekiwanie „Praca=25 -> 0" opieralo sie na capie 50% (floor(25*50%)=12 < koszt farmy 20) — USUNIETE;
+  // teraz 0 daje dopiero pula mniejsza niz koszt farmy (15 < 20), a 25 starcza na farme.
+  opts.pracaAvailable = 15;
   const cmds = decideAITurn(PLAYER_ID, [], [city], map, data, opts);
-  eq(buildImprovementCmds(cmds).length, 0, 'Praca=25 (ponizej progu) -> zero buildImprovement');
+  eq(buildImprovementCmds(cmds).length, 0, 'Praca=15 (pula < koszt farmy 20) -> zero buildImprovement');
+  opts.pracaAvailable = 25;
+  eq(buildImprovementCmds(decideAITurn(PLAYER_ID, [], [city], map, data, opts)).length, 1,
+    'Praca=25 (100% puli >= koszt farmy 20; brak capu 50%) -> 1 buildImprovement');
 
   const optsZero = baseOpts(city);
   delete optsZero.pracaAvailable; // domyslnie 0 gdy silnik nie poda (zero regresji)
@@ -340,21 +346,21 @@ console.log('9. defensiveCopy -- ta sama intensywnosc co zwykle AI');
 }
 
 // ===========================================================================
-// 10. P-PRACA-BUDYNKI-ULEPSZENIA-SPLIT-50-Q1: AI respektuje nadrzędny cap 50%
-// całej puli. Przy puli 20 budżet ulepszeń wynosi 10, więc farma (koszt 20
-// po stawkach FALA2 ×2 i koszcie Kamienia ×0.5) nie może zostać wybrana; przy puli 40 budżet wynosi 20.
+// 10. R-WEB-AUTOIMPROVE-STAGES2-Q1 (wlasciciel 2026-10-31, zastepuje P-PRACA-BUDYNKI-ULEPSZENIA-SPLIT-50-Q1
+// dla AI): AI/panstwa-miasta wydaja do 100% puli ulepszen (dawny fallback 50% = MAX_PROCENT_PULI_IMPERIUM
+// w ai.ts USUNIETY). Pula 15 -> 0 (ponizej bramki wejscia 30 kopii obronnej); pula 40 -> 2 farmy (cala pula).
 // ===========================================================================
-console.log('10. AI: cap 50% całej puli (20 -> 0, 40 -> 1)');
+console.log('10. AI: 100% puli, bez capu 50% (15 -> 0, 40 -> 2 farmy; wejscie AI_IMPROVEMENT_PRACA_SURPLUS=30 to rezerwa techniczna, nie %)');
 {
   const city = makeCity('city0', PLAYER_ID, 15, 15);
   const opts = baseOpts(city);
-  opts.pracaAvailable = 20;
+  opts.pracaAvailable = 15;
   opts.defensiveCopy = true;
   const cmds = buildImprovementCmds(decideAITurn(PLAYER_ID, [], [city], map, data, opts));
-  eq(cmds.length, 0, 'praca=20 -> 0 (budżet ulepszeń 10 < koszt farmy 20)');
+  eq(cmds.length, 0, 'praca=15 -> 0 (budżet ulepszeń 15 < koszt farmy 20)');
   opts.pracaAvailable = 40;
   const cmds80 = buildImprovementCmds(decideAITurn(PLAYER_ID, [], [city], map, data, opts));
-  eq(cmds80.length, 1, 'praca=40 -> 1 (budżet ulepszeń 20 = koszt farmy 20)');
+  eq(cmds80.length, 2, 'praca=40 -> 2 farmy (100% puli; brak capu 50%)');
   eq(cmds80[0].key, 'farma', 'praca=40 -> farma');
 }
 
@@ -363,7 +369,7 @@ console.log('10. AI: cap 50% całej puli (20 -> 0, 40 -> 1)');
 // wymuszamy oba legalne rozkazy na dużej puli, a dopiero potem sprawdzamy
 // wspólny cap; farma + posterunek nie mogą razem wydać ponad 40 z puli 80.
 // ===========================================================================
-console.log('11. combined AI + defensive copy: city improvements + posterunek <= 50%');
+console.log('11. combined AI + defensive copy: city improvements + posterunek <= 100% puli (bez capu 50%)');
 {
   const combinedMap = makeFlatMap(60, 60);
   const city = makeCity('combined-city', PLAYER_ID, 15, 15, 3);
@@ -429,7 +435,8 @@ console.log('11. combined AI + defensive copy: city improvements + posterunek <=
     (sum, cmd) => sum + getImprovementMeta(cmd.key).kosztPraca,
     0,
   );
-  assert(normalSpent <= Math.floor(80 * 0.5), 'combined normal: suma kosztow <= floor(80*50%)');
+  assert(normalSpent <= 80, 'combined normal: suma kosztow <= 100% puli 80 (AI bez capu %, STAGES2-Q1)');
+  assert(normalSpent > Math.floor(80 * 0.5), 'combined normal: wydatek > 50% puli 80 — dowod braku capu 50% (zarzut Evaluator R1 3a: asercja <= 80 sama byla tautologia)');
   eq(normalSpent, farmCost * normalFarm.length, 'combined normal: wydane sa wylacznie koszty farm (ABC-D=B: kilka farm/ture), nie nieistotna komenda');
 
   const defensiveOpts = { ...combinedOpts, pracaAvailable: 80, defensiveCopy: true };
@@ -455,7 +462,8 @@ console.log('11. combined AI + defensive copy: city improvements + posterunek <=
     (sum, cmd) => sum + getImprovementMeta(cmd.key).kosztPraca,
     0,
   );
-  assert(defensiveSpent <= Math.floor(80 * 0.5), 'combined defensiveCopy: suma kosztow <= floor(80*50%)');
+  assert(defensiveSpent <= 80, 'combined defensiveCopy: suma kosztow <= 100% puli 80 (AI bez capu %, STAGES2-Q1)');
+  assert(defensiveSpent > Math.floor(80 * 0.5), 'combined defensiveCopy: wydatek > 50% puli 80 — dowod braku capu 50% (zarzut Evaluator R1 3a)');
   eq(defensiveSpent, farmCost * defensiveFarm.length, 'combined defensiveCopy: wydane sa wylacznie koszty farm (ABC-D=B)');
 }
 

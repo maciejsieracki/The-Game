@@ -1,0 +1,32 @@
+M1-wyjatek-E3E4-od-limitu-procentu: EXIT=1 autoimprove-stages-q1-test: 244 passed, 11 failed
+    [FAIL] [K1] limit 20% (40 < 60), bez przychodu: 0 budow, pula nietknieta (2 szt., pula 80)
+    [FAIL] [K1] pula kumuluje sie 200->...: irygacja startuje w t=0 przy puli 200 (20% >= 60), nie wczesniej
+    [FAIL] [K1] kazda tura: wydatek <= 20% skumulowanej puli (tolerancja 0)
+    [FAIL] [K2] limit 20% (40 < 60), bez przychodu: 0 budow, pula nietknieta (2 szt., pula 80)
+    [FAIL] [K2] pula kumuluje sie 200->...: irygacja startuje w t=0 przy puli 200 (20% >= 60), nie wczesniej
+    [FAIL] [K2] kazda tura: wydatek <= 20% skumulowanej puli (tolerancja 0)
+M2-limit-50proc-dla-AI-przywrocony: EXIT=1 autoimprove-stages-q1-test: 253 passed, 2 failed
+    [FAIL] [AI cywilizacji] pula 60: wydano 20 (3 farmy = 60) > 50% puli — brak capu %
+    [FAIL] [panstwo-miasto / kopia obronna] pula 72: wydano 20 (3 farmy = 60) > 50% puli — brak capu %
+M3-przycisk-ignorowany-przy-rzece: EXIT=1 autoimprove-stages-q1-test: 247 passed, 8 failed
+    [FAIL] [K1] OFF: 0 wycinek (rzeka + poza rzeka), jest 3
+    [FAIL] [K1] OFF: brak wyrebu na rzece (dawny pin c3: 2 wycinki — poprawiony decyzja wlasciciela)
+    [FAIL] [K1] OFF: las przy rzece nietkniety
+    [FAIL] [K2] OFF: 0 wycinek (rzeka + poza rzeka), jest 3
+    [FAIL] [K2] OFF: brak wyrebu na rzece (dawny pin c3: 2 wycinki — poprawiony decyzja wlasciciela)
+    [FAIL] [K2] OFF: las przy rzece nietkniety
+M4-zakaz-rzeka-las-tylko-w-K2K3: EXIT=1 autoimprove-stages-q1-test: 253 passed, 2 failed
+    [FAIL] [S „surowce”] 0 tartakow/obozow na rzece+las (tartak@12,10,tartak@13,10,tartak@12,9)
+    [FAIL] auto-improvements.ts: zakaz tartak/oboz na rzece nie jest warunkowany `demandActive`
+M5-farma-nie-ma-pierwszenstwa-na-lesie: EXIT=1 autoimprove-stages-q1-test: 251 passed, 4 failed
+    [FAIL] [K2] D-R5-1: ZERO tartakow na lesie pod farme (rownina)
+    [FAIL] [K2] D-R5-1: las pod farme -> wyrab -> farma
+    [FAIL] [K3] D-R5-1: ZERO tartakow na lesie pod farme (rownina)
+    [FAIL] [K3] D-R5-1: las pod farme -> wyrab -> farma
+M6-brak-sprawdzenia-capu-w-FAZIE1: EXIT=1 autoimprove-stages-q1-test: 245 passed, 10 failed
+    [FAIL] [K1] limit 20% (40 < 60), bez przychodu: 0 budow, pula nietknieta (2 szt., pula 80)
+    [FAIL] [K1] pula kumuluje sie 200->...: irygacja startuje w t=0 przy puli 200 (20% >= 60), nie wczesniej
+    [FAIL] [K1] kazda tura: wydatek <= 20% skumulowanej puli (tolerancja 0)
+    [FAIL] [K2] limit 20% (40 < 60), bez przychodu: 0 budow, pula nietknieta (2 szt., pula 80)
+    [FAIL] [K2] pula kumuluje sie 200->...: irygacja startuje w t=0 przy puli 200 (20% >= 60), nie wczesniej
+    [FAIL] [K2] kazda tura: wydatek <= 20% skumulowanej puli (tolerancja 0)

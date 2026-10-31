@@ -1,0 +1,5 @@
+# POMIAR GRACZA PRZED (baza 77e554803, bez zmian STAGES2)
+K1 bez niedoboru (33%, pula0 200, +40/ture, 40 tur): bydlo=3 farma=10 irygacja=3 wyrab=2 | pierwsza tura: irygacja=2 bydlo=1 tartak=- | max wydatek/pula=75.0% | wydano 445 | tury bez wydatku 31/40 | pula koncowa 1355
+K1 niedobor drewna (33%, pula0 200, +40/ture, 40 tur): bydlo=3 farma=10 irygacja=3 wyrab=2 | pierwsza tura: irygacja=2 bydlo=1 tartak=- | max wydatek/pula=75.0% | wydano 445 | tury bez wydatku 31/40 | pula koncowa 1355
+K2 bez niedoboru (33%, pula0 200, +40/ture, 40 tur): bydlo=3 droga=5 droga_brukowana=5 farma=10 irygacja=3 wyrab=2 | pierwsza tura: irygacja=2 bydlo=1 tartak=- | max wydatek/pula=75.0% | wydano 1020 | tury bez wydatku 24/40 | pula koncowa 780
+K2 niedobor drewna (33%, pula0 200, +40/ture, 40 tur): bydlo=3 droga=5 droga_brukowana=5 farma=8 irygacja=3 oboz_lowiecki=4 tartak=4 | pierwsza tura: irygacja=5 bydlo=4 tartak=0 | max wydatek/pula=66.7% | wydano 1147 | tury bez wydatku 20/40 | pula koncowa 653
