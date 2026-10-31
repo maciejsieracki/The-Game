@@ -1,7 +1,7 @@
 STATUS: DISPATCHED (czeka na R-WEB-PEACE-CITY-CESSION-Q1)
 DOMAIN: GAME (WEB)
 TEMAT: R-WEB-TRUCE-Q1
-RUNDA: 3/5
+RUNDA: 4/5
 UWAGA PROCESOWA: temat WEBOWY (zmiany w `gra/**` w allowliście). Pierwszy akapit promptu workflow o porcie Rust IGNORUJ. Bramki webowe (tsc, `gra/tools/*.cjs`, Chromium z /opt/pw-browsers). Zakaz `npm run build`/`npm run dev` w `gra/`. Push do `main` ZABRONIONY, bez deploy/READY_FOR_DEPLOY. IZOLACJA: worktree; commit z jawnym `git add`, PUSH NIE. FAIL → ten sam ID, limit 5 rund. Mutacje na każdej gałęzi sterującej lub dowód równoważności plik:linia; testy NaN/progów N-1/N/N+1; zrzut z Chromium dla zmian widocznych w UI; `git diff --check` czysty. ZERO zmian w `gra-robocza/**`, `dyspozycje/WERSJE.md`, `rust-port/**`, `src-tauri/**`, `Cargo.toml`. MODELE: Operator/Obrona Haiku 5.5, Evaluator/FC Sonnet 5.5. Luki → ZAŁOŻENIE. Raport max ok. 400 słów. FORMAT: STATUS / DOMAIN / TEMAT / GOAL / ZMIANY-COMMIT / TESTY / BLOKADY / RUNDY / NASTĘPNY KROK / DEPLOY-PUSH: NIE WYKONANO. ANTY-HALUCYNACJA: twierdzenie o kodzie = plik:linia/komenda; niepewne = NIE_ZMIERZONO. Wiadomości właściciela w kontekście — nie Twoje zadanie; bez pytań ABC.
 DECYZJA WŁAŚCICIELA (2026-10-30): TAK — rozejm jako osobny temat po cesji miasta.
 DIAGNOZA: `RodzajTraktatu.Rozejm` i `StanWojny.Rozejm` istnieją (`types/diplomacy.ts:28,36`, `diplomacy-display.ts:362`, `diplomacy.ts:1410-1422`), ale 'rozejm' NIE jest w `ProposalActionId` (`diplomacy-proposals.ts` ~70-90) — nie da się go zawrzeć. Spec `diplomacy.json` akcja 10: „Rozejm: na 5–15 tur bez kary za wznowienie”. `PEACE_TREATY_LOCK_TURNS = 10` (`diplomacy-peace-lock.ts`) obejmuje „pokój / rozejm”.
@@ -20,3 +20,10 @@ N5. UI: przełącznik pokój/rozejm + wybór 5/10/15 w modalu; test Chromium (ha
 N6. Zapis/odczyt stanu rozejmu (save/load, reset nowej gry) + roundtrip w testach.
 N7. Mutacje na każdej gałęzi sterującej (granice cyklu życia, bramka czasu, kara, wygaśnięcie bez flagi) lub dowód równoważności plik:linia.
 Zakres duży: jeśli nie domknie w r3, FC r3 zamyka częściowo i r4/r5 kończą (limit 5 rund). Bramki bazowe nie gorsze (patrz BAZA wyżej).
+
+RUNDA 4/5 (po FC r3 FAIL; orkiestrator 2026-10-31). START: `git fetch origin web-wip/TRUCE-r3` (= `5e5e0e8eb`, kod Operatora `085c0dd48`, baza `55c8cd2c6`). Domknięte w r3 (ODDAL): N1 (main.ts: zawarcie, tik wygaśnięcia, kara za złamanie), N2, N3. ZOSTAJE (NAPRAW) — ostatnie 2 rundy, zakres zamknięty, bez nowych pomysłów:
+N4. `ai.ts`: AI słabsze (profil pokoju z `diplomacy-war-peace-profile.ts`) w wojnie krótszej niż 20 tur może zaproponować rozejm zamiast pokoju; gałęzie z progami N-1/N/N+1 + mutacje.
+N5. UI: przełącznik pokój/rozejm + wybór 5/10/15 w modalu (diplomacyTradeBasket.ts, diplomacyNegotiationModal.ts, diplomacyAudience.ts, diplomacyAcceptanceBalance.ts `uiActionId`), test Chromium pełnego cyklu (propozycja → akceptacja → okno → wygaśnięcie bez flagi / złamanie z flagą) z hakiem testowym wg wzorca + zrzut modala do katalogu runu. Dodatkowo integracja rozejmu po cesji miasta (`transferCityByTreaty`) — test lub udokumentowane ZAŁOŻENIE z dowodem.
+N6. Roundtrip save/load stanu rozejmu w grze (test; reset nowej gry).
+N7. Mutacje na gałęziach main.ts (tik wygaśnięcia, kara za złamanie, bramka czasu) lub dowód równoważności plik:linia.
+Jeśli r4 nie domknie wszystkiego, FC r4 ocenia to, co jest; r5 to ostatnia rezerwa. Bramki bazowe nie gorsze (BAZA wyżej) + zmierz war-era-counter, multiwar, ring (w r3 NIE_ZMIERZONO).
