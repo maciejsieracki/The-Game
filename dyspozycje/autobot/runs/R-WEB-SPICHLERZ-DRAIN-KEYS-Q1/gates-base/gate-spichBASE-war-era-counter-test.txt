@@ -1,0 +1,3 @@
+WYNIK: 37 OK / 0 FAIL
+war-era-counter-test: 82 pass / 0 fail
+EXIT=0

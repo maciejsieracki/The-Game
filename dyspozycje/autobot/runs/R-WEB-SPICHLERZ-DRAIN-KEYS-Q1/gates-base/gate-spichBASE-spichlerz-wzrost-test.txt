@@ -1,0 +1,4 @@
+  [FAIL] bez Spichlerza: 50% netto round((30−1)×50%)=15 (got 96, want 15)
+  [FAIL] ze Spichlerzem: zapasy kumulują (30-1) (got 96, want 29)
+spichlerz-wzrost-test: 2 passed, 7 failed
+EXIT=1

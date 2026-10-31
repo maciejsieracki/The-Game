@@ -1,0 +1,4 @@
+  [FAIL] 2b: epoka 2 — komplet to 23 budynki (nie 26) -- got 24, want 23
+  [FAIL] 2b: epoka 3 — komplet to 31 budynkow (nie 39) -- got 32, want 31
+[szczescie-przebudowa-skali-test] 515 OK, 4 FAIL
+EXIT=1

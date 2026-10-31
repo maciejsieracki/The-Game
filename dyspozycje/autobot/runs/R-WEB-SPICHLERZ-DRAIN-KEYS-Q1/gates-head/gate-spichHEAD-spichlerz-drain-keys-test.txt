@@ -1,0 +1,4 @@
+  PASS: SPICHLERZ_DRAIN_DEFAULT_PARAMS = fallback 25/25/25
+  PASS: SPICHLERZ_DRAIN_FALLBACK_PER_TURN = 25
+spichlerz-drain-keys-test: 44 pass, 0 fail
+EXIT=0

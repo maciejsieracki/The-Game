@@ -1,0 +1,2 @@
+owned-building-detail-side-test: 17 pass, 0 fail
+EXIT=0

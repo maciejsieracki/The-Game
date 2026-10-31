@@ -1,0 +1,4 @@
+  FAIL: mennica: catalog ready z Targowiskiem + Złotem + drewnem(12)+kamieniem(16) w magazynie (koszt_surowce {6,8} ×2 FALA2)
+  FAIL: odlewnia_brazu: catalog ready z Rudą + drewnem(12)+kamieniem(16) w magazynie (koszt_surowce {6,8} ×2 FALA2)
+spichlerz-widocznosc-test: 37 pass, 8 fail
+EXIT=1

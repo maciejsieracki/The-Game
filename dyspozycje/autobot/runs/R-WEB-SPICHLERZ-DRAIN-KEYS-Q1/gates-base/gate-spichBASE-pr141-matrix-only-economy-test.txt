@@ -1,0 +1,2 @@
+AssertionError [ERR_ASSERTION]: grecy: gross trade uses only matrix, not poison civ multiplier
+EXIT=1

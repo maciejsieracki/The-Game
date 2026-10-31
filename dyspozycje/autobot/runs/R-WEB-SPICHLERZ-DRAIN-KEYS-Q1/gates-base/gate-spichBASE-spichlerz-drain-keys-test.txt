@@ -1,0 +1,2 @@
+Error: Cannot find module '/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/spich-base/gra/tools/spichlerz-drain-keys-test.cjs'
+EXIT=1

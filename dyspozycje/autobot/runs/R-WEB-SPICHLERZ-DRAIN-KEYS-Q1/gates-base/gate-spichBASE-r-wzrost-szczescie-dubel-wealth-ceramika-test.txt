@@ -1,0 +1,2 @@
+[r-wzrost-szczescie-dubel] 59 pass, 0 fail
+EXIT=0

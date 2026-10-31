@@ -1,0 +1,4 @@
+PASS: fixture: perCity ma wpis dla miasta
+PASS: per-miasto: do skarbca nie jest myślnikiem gdy pieniadz > 0
+empire-skarbiec-bilans-test: 11 passed, 0 failed
+EXIT=0

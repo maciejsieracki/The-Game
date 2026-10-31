@@ -1,0 +1,2 @@
+TypeError: computeMajorArchetypeMilitaryFraction is not a function
+EXIT=1

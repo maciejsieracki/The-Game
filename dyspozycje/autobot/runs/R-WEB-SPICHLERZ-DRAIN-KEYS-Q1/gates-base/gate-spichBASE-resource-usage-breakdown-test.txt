@@ -1,0 +1,4 @@
+FAIL: D3: gracz -- buildingResourceUpkeepByOwner.set(0, ...) czyta WPROST econ.resourceUpkeepBuildingsByOwner.get(0), zero przeliczenia
+FAIL: D4: gracz -- unitResourceUpkeepByOwner.set(0, ...) czyta WPROST econ.resourceUpkeepUnitsByOwner.get(0)
+resource-usage-breakdown-test: 98 passed, 2 failed
+EXIT=1

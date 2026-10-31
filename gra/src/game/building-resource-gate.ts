@@ -376,7 +376,7 @@ export function spichlerzCeramikaDrainAmount(
   builtIds: readonly string[],
   params: SpichlerzDrainParams,
 ): number {
-  return builtIds.includes('spichlerz_ii') ? params.ceramikaI : params.ceramikaII; // MUTACJA-B (I↔II)
+  return builtIds.includes('spichlerz_ii') ? params.ceramikaII : params.ceramikaI;
 }
 
 export interface SpichlerzDrainPayResult {

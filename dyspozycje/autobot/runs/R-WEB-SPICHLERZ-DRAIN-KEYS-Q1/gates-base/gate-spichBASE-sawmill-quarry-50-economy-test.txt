@@ -1,0 +1,4 @@
+PASS: start: magazyn drewna po turze = 50 + 20 = 70 (got 70, want 70)
+PASS: kamieniołom na centrum epoka 1 = kamień +50 (got 50, want 50)
+7 PASS, 0 FAIL
+EXIT=0

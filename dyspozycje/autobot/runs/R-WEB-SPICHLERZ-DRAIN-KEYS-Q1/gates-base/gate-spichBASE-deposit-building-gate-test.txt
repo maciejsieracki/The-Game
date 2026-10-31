@@ -1,0 +1,4 @@
+  PASS: runtime filter: spichlerz I bez bramki Ceramiki (U-24) — zawsze aktywny
+  PASS: runtime filter: garncarnia+spichlerz przy zapasie Gliny w magazynie państwa
+deposit-building-gate: 46 pass, 1 fail
+EXIT=1

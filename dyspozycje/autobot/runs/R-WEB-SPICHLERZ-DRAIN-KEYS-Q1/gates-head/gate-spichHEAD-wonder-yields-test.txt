@@ -1,0 +1,4 @@
+PASS: miasto1 gracza: +3 praca z Piramid (got delta=3)
+PASS: miasto AI (owner 1, bez cudu) bez zmian (got delta=0)
+11 passed, 0 failed
+EXIT=0

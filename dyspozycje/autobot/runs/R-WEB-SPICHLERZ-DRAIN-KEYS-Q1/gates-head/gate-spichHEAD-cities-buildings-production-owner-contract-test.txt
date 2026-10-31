@@ -1,0 +1,4 @@
+PASS: turn economy sources upkeep from completed building ids
+PASSED: 52 / FAILED: 1 / TOTAL: 53
+SOME TESTS FAILED
+EXIT=1

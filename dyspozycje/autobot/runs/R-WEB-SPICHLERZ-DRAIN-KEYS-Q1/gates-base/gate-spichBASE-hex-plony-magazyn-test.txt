@@ -1,0 +1,4 @@
+PASS: magazyn: plony z obrabianego sąsiada — Kamień addytywnie (got 2, want 2)
+FAIL: magazyn: plony z obrabianego sąsiada — Glina addytywnie (got 2, want 5)
+10 passed, 4 failed
+EXIT=1

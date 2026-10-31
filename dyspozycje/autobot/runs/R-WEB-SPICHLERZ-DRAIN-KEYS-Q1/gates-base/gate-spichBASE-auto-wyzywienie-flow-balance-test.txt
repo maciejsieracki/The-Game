@@ -1,0 +1,2 @@
+auto-wyzywienie-flow-balance-test: 17 pass, 0 fail
+EXIT=0
