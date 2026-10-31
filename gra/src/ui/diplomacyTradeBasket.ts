@@ -66,6 +66,7 @@ const TYP_LABELS: Record<WartoscPozycjaTyp, string> = {
   jednostka: 'Jednostka',
   surowiec_boolean: 'Dostęp do surowca',
   surowiec_ilosc: 'Surowiec (sztuki)',
+  miasto: 'Miasto (tylko pokój)',
 };
 
 /** Krótkie etykiety chipów (te same ikony co HUD / magazyn). */

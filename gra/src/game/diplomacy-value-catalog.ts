@@ -23,7 +23,8 @@ export type WartoscPozycjaTyp =
   | 'jednostka'
   | 'surowiec_boolean'
   | 'surowiec_ilosc'
-  | 'zywnosc';
+  | 'zywnosc'
+  | 'miasto';
 
 export type WartoscKatalogReguly = {
   pn_zloto?: { skala?: number };
@@ -469,7 +470,15 @@ function applyBasketSideDifficultyPn(
 
 /** Suma PN pozycji w koszyku (null jeśli któraś pozycja nieznana). */
 export function diplomacySumPn(
-  items: Array<{ typ: WartoscPozycjaTyp; id: string; ilosc?: number; level?: number; tempo?: TempoGry | number }>,
+  items: Array<{
+    typ: WartoscPozycjaTyp;
+    id: string;
+    ilosc?: number;
+    level?: number;
+    tempo?: TempoGry | number;
+    /** R-WEB-PEACE-CITY-CESSION-Q1: wycena miasta (`diplomacyPnMiasto`) — tylko dla typ 'miasto'. */
+    cityPn?: number;
+  }>,
   opts?: DiplomacySumPnOptions,
 ): number | null {
   let sum = 0;
@@ -503,12 +512,19 @@ export function diplomacySumPn(
         // diplomacyPnSurowiecIlosc już mnoży przez qty (sztuki) — jak zloto/praca/zywnosc.
         pn = diplomacyPnSurowiecIlosc(item.id, qty);
         break;
+      case 'miasto':
+        // R-WEB-PEACE-CITY-CESSION-Q1: wartość miasta policzona przez wołającego (dane miasta).
+        pn = typeof item.cityPn === 'number' && Number.isFinite(item.cityPn) && item.cityPn >= 0
+          ? Math.round(item.cityPn)
+          : null;
+        break;
       default:
         return null;
     }
     if (pn == null) return null;
     const qtyMult =
       item.typ === 'zloto' || item.typ === 'praca' || item.typ === 'zywnosc' || item.typ === 'surowiec_ilosc'
+        || item.typ === 'miasto'
         ? 1
         : qty;
     let linePn = applyBasketSideDifficultyPn(pn * qtyMult, opts);
@@ -728,4 +744,99 @@ export function diplomacyProgDarRelacja(
 export function diplomacyHandelZaufaniePerTura(): number {
   const P = getBaseDiplomacyParams();
   return P.handel_zaufanie_perTura;
+}
+
+// ---------------------------------------------------------------------------
+// R-WEB-PEACE-CITY-CESSION-Q1 (Maciej 2026-10-30): miasto jako pozycja koszyka pokoju.
+// Pozycja 'miasto' wchodzi WYŁĄCZNIE do propozycji pokoju (i wasalizacji) — nie do handlu
+// zwykłego. Wycena PW: 400 + 120·populacja + 2·Σ(kosztBudowy·1.10^(poziom−1)) budynków
+// + 500 za cud świata + cena bazowa złóż w obrębie miasta. Zakaz: stolica i ostatnie miasto.
+// / EN: city as a peace-basket item. Price = 400 + 120·pop + 2·Σ building PW + 500/wonder +
+// deposit base prices. Capital and last city are not cedable.
+// ---------------------------------------------------------------------------
+
+/** Baza wyceny miasta (PW). */
+export const MIASTO_PN_BAZA = 400;
+/** PW za każdego obywatela (populacja). */
+export const MIASTO_PN_NA_OBYWATELA = 120;
+/** Mnożnik sumy PW budynków w wycenie miasta. */
+export const MIASTO_PN_MNOZNIK_BUDYNKOW = 2;
+/** PW za cud świata w mieście. */
+export const MIASTO_PN_NA_CUD = 500;
+/** Waga strony ODDAJĄCEJ miasto w bilansie pokoju. */
+export const MIASTO_WAGA_ODDAJACEGO = 1.5;
+/** Współczynnik ekspansywności AI w wadze oddawanego miasta: ×(1 + 0.1·(eks−3)). */
+export const MIASTO_AI_EKSPANSYWNOSC_KROK = 0.1;
+export const MIASTO_AI_EKSPANSYWNOSC_BAZA = 3;
+
+export interface MiastoWycenaBudynek {
+  id: string;
+  /** Poziom budynku (domyślnie 1). */
+  level?: number;
+}
+
+export interface MiastoWycenaInput {
+  populacja: number;
+  budynki: ReadonlyArray<MiastoWycenaBudynek>;
+  /** Liczba cudów świata w mieście. */
+  cudy?: number;
+  /** Suma cen bazowych złóż w obrębie miasta (PW, `diplomacyPnZloze`). */
+  zlozaPn?: number;
+}
+
+/**
+ * Wycena miasta w PW (1 PW = 1 ¤). Budynek bez wpisu w buildings.json wnosi 0 PW.
+ * Przykład: 4 obywateli + 3 budynki kosztu 30 → 400 + 480 + 2·90 = 1060 PW.
+ */
+export function diplomacyPnMiasto(input: MiastoWycenaInput): number {
+  const pop = Math.max(0, Math.floor(Number.isFinite(input.populacja) ? input.populacja : 0));
+  let sumaBudynkow = 0;
+  for (const b of input.budynki) {
+    const pn = diplomacyPnBudynek(b.id, b.level ?? 1);
+    if (pn != null) sumaBudynkow += pn;
+  }
+  const cudy = Math.max(0, Math.floor(input.cudy ?? 0));
+  const zloza = Math.max(0, input.zlozaPn ?? 0);
+  return Math.round(
+    MIASTO_PN_BAZA
+      + MIASTO_PN_NA_OBYWATELA * pop
+      + MIASTO_PN_MNOZNIK_BUDYNKOW * sumaBudynkow
+      + MIASTO_PN_NA_CUD * cudy
+      + zloza,
+  );
+}
+
+/**
+ * Zakaz oddania miasta: stolica i ostatnie miasto właściciela są nienaruszalne.
+ * Zwraca powód odmowy albo null, gdy oddanie jest dozwolone.
+ */
+export function diplomacyMiastoZakaz(input: {
+  cityId: string;
+  capitalCityId: string | null | undefined;
+  ownerCityIds: ReadonlyArray<string>;
+}): string | null {
+  if (input.capitalCityId && input.cityId === input.capitalCityId) {
+    return 'Stolicy nie można oddać w pokoju';
+  }
+  if (!input.ownerCityIds.includes(input.cityId)) {
+    return 'Miasto nie należy do oddającego';
+  }
+  if (input.ownerCityIds.length <= 1) {
+    return 'Nie można oddać ostatniego miasta';
+  }
+  return null;
+}
+
+/**
+ * Waga pozycji „miasto" w bilansie pokoju. Strona oddająca: ×1.5. Gdy oddaje AI,
+ * dodatkowo ×(1 + 0.1·(ai_ekspansywnosc − 3)) — ekspansywne AI wyżej ceni swoje miasta.
+ */
+export function diplomacyMiastoWagaBilansu(opts: {
+  oddajacyJestAI: boolean;
+  aiEkspansywnosc?: number;
+}): number {
+  if (!opts.oddajacyJestAI) return 1;
+  const eks = opts.aiEkspansywnosc ?? MIASTO_AI_EKSPANSYWNOSC_BAZA;
+  const mnoznikAI = 1 + MIASTO_AI_EKSPANSYWNOSC_KROK * (eks - MIASTO_AI_EKSPANSYWNOSC_BAZA);
+  return MIASTO_WAGA_ODDAJACEGO * mnoznikAI;
 }
