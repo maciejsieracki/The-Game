@@ -249,7 +249,7 @@ try {
   }
   // D4 (R5): E1 > E2 — kazdy wyciety heks rzeki dostaje farme ZANIM zostanie wyciety nastepny las na rzece;
   // trzoda/irygacja (E3/E4) dopiero gdy na rzece nie ma juz wycinki ani farmy do zrobienia.
-  // R3, ABC-D=B: AI bez limitu 1/miasto/ture (jak gracz) — etap E2 tnie obie rzeki w jednej turze (<=3 na etap),
+  // R3, ABC-D=B: AI bez limitu 1/miasto/ture (jak gracz) — etap E2 tnie obie rzeki w jednej turze (brak limitu etapu — S3-2),
   // potem E1 stawia obie farmy; trzoda/irygacja dopiero po nich (E1 > E2 > E3 > E4 zachowane).
   assert.deepEqual(aiTrace.slice(0, 4), ['wyrab', 'wyrab', 'farma', 'farma'],
     `decideAITurn (bez limitu AI, ABC-D=B): wycinka rzek -> farmy przed trzoda/irygacja (got ${aiTrace.join(',')})`);

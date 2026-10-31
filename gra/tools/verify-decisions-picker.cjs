@@ -211,7 +211,7 @@ for (const pop of [12, 30]) {
     civType: 'grecy', poziomTrudnosci: 2, defensiveCopy: false, cityBuildings: {}, territoryNodes: [{ q: CQ, r: CR, ownerId: 0, cityId: 'c0', pop: 12, level: 1 }],
     placedImprovements: new Map(), improvementTechs: new Set(FULL), pracaAvailable: 6000, civEra: 3, resourceDeficitKeys: [], improvementBudgetCap: 6000,
   }).filter(c => c.type === 'buildImprovement');
-  verdict('M10-K3', 'AI: więcej niż 1 ulepszenie/miasto/turę (brak limitu maxItemsPerCity:1; etap ograniczony do FOOD_STAGE_MAX_ITEMS_PER_CITY=3)',
+  verdict('M10-K3', 'AI: więcej niż 1 ulepszenie/miasto/turę (brak limitu maxItemsPerCity:1; limit etapu zdjęty (S3-2), ogranicza tylko budżet)',
     cmds.length > 1, '>1 rozkaz w turze 1', `rozkazów=${cmds.length}: ${cmds.map(c => c.key + '@' + c.q + ',' + c.r).join(' ')}`);
 }
 

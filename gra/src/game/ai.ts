@@ -2648,6 +2648,7 @@ function planCityImprovements(
     // R-WEB-AUTOIMPROVE-STAGES-Q1 R3, ABC-D=B (właściciel 2026-10-31): AI BEZ limitu jednej sztuki na miasto (pole maxItemsPerCity usuniete z wywolania) —
     // tyle etapów/budów na miasto na turę co gracz (K2=K3; picker i tak ogranicza etap do
     // `FOOD_STAGE_MAX_ITEMS_PER_CITY`). Poprzednio: limit 1 sztuka/miasto/ture.
+    // R-WEB-AUTOIMPROVE-STAGES3-Q1 S3-2=C (2026-10-31): i ten limit etapu (3) ZDJETY — ogranicza tylko budzet (AI: 100% puli).
     skipWyrab: false,
     civArchetype: opts.civType,
     playerEra: opts.civEra ?? 1,

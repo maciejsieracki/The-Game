@@ -6,7 +6,7 @@
  */
 
 import type { GameMap } from '../types/map';
-import { Nakladka } from '../types/hex';
+import { Nakladka, TerenBazowy } from '../types/hex';
 import type { ImprovementKey } from '../render/improvements';
 import type { TerritoryNode } from '../map/territory';
 import { cityTerritoryRadius } from '../map/territory';
@@ -476,8 +476,12 @@ const FOOD_LIVESTOCK_STAGE_KEYS: readonly ImprovementKey[] = [
  * zamkniętego tematu R-AI-WYRAB-PRZY-RZECE-FARMY-Q1 („nie rób 15 heksów naraz niekompleksowo”),
  * zachowana mimo przejścia z „heks po heksie” na etapy globalne. Dotyczy rozkazów jednego etapu
  * na jedno miasto w jednym wywołaniu (AI: `maxItemsPerCity: 1` jest ostrzejszy i zostaje).
+ *
+ * R-WEB-AUTOIMPROVE-STAGES3-Q1, S3-2=C (właściciel 2026-10-31): LIMIT ZDJĘTY dla WSZYSTKICH (gracz K1/K2, AI K3,
+ * miasta-państwa) — stała = `Infinity` (eksport zostaje wyłącznie dla narzędzi pomiarowych). Liczbę budów w turze
+ * ogranicza już tylko budżet Pracy (gracz: sztywny sufit % puli; AI/miasta-państwa: 100% puli).
  */
-export const FOOD_STAGE_MAX_ITEMS_PER_CITY = 3;
+export const FOOD_STAGE_MAX_ITEMS_PER_CITY = Infinity;
 
 interface FoodStageDef {
   /** Etap właściciela (E1…E6) — tylko opis do diagnostyki. */
@@ -595,7 +599,7 @@ export function pickAutoImprovements(opts: PickAutoImprovementsOpts): AutoImprov
   const otherCities = opts.cities.filter(city => !isFoodStageCity(opts, city));
   const clearingSeed = new Set<string>(opts.clearingHexKeys ?? []);
   const maxItems = opts.maxItemsPerCity ?? Infinity;
-  const maxItemsStage = Math.min(maxItems, FOOD_STAGE_MAX_ITEMS_PER_CITY);
+  const maxItemsStage = Math.min(maxItems, FOOD_STAGE_MAX_ITEMS_PER_CITY); // S3-2: = maxItems (stała = Infinity)
   const totalBudget = Number.isFinite(opts.improvementBudgetCap)
     ? Math.max(0, opts.improvementBudgetCap as number)
     : Math.floor(Math.max(0, opts.pracaAvailable)
@@ -929,6 +933,25 @@ function pickAutoImprovementsSinglePass(opts: PickAutoImprovementsOpts): AutoImp
   for (const path of map.riverPaths ?? []) {
     for (const p of path) riverHexKeys.add(`${p.q},${p.r}`);
   }
+
+  // R-WEB-AUTOIMPROVE-STAGES3-Q1, S3-1 (właściciel 2026-10-31): „DOSTĘP DO WODY” dla tartaku/obozu = heks NA rzece
+  // albo SĄSIADUJĄCY z heksem rzeki — TA SAMA definicja co irygacja (`isRiverAdjacent`, map/improvement-build.ts:~940:
+  // własny `rzeka.obecna` LUB heks w `riverPaths` LUB sąsiad w `riverPaths`). Jezioro/morze NIE wchodzą do definicji
+  // (ZAŁOŻENIE do potwierdzenia ABC — dispatch kazał zapytać, gdyby miały się liczyć). Liczone RAZ na wywołanie.
+  const riverNeighborKeys = (hk: string): string[] => {
+    const [qs, rs] = hk.split(',');
+    const q = Number(qs); const r = Number(rs);
+    return [`${q + 1},${r}`, `${q - 1},${r}`, `${q},${r + 1}`, `${q},${r - 1}`, `${q + 1},${r - 1}`, `${q - 1},${r + 1}`];
+  };
+  const riverAccessMemo = new Map<string, boolean>();
+  const hasRiverAccess = (hk: string): boolean => {
+    const hit = riverAccessMemo.get(hk);
+    if (hit !== undefined) return hit;
+    let v = riverHexKeys.has(hk) || map.hexes[hk]?.rzeka?.obecna === true;
+    if (!v) v = riverNeighborKeys(hk).some(n => riverHexKeys.has(n));
+    riverAccessMemo.set(hk, v);
+    return v;
+  };
 
   const orderedCities = [...cities].sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
   const picks: AutoImprovementPick[] = [];
@@ -1349,13 +1372,26 @@ function pickAutoImprovementsSinglePass(opts: PickAutoImprovementsOpts): AutoImp
     //  • R5 (właściciel 2026-10-31): w K2/K3 BRAK LIMITU liczby tartaków/obozów (dawne `ceil(pop/10)` =
     //    NIEAKTUALNE ECHO 2026-08-27) — ale tartak i obóz NIGDY na heksie z rzeką (rzeka+las jest zarezerwowany
     //    pod wycinkę i farmę/trzodę/irygację); tartak wyłącznie na lesie BEZ rzeki.
-    const farmWouldClaimForest = (hexKey: string): boolean => {
-      if (citySkipWyrab) return false;
-      const hx = map.hexes[hexKey];
-      if (!hx || !isFarmBaseTerrain(hx.terenBazowy, Nakladka.Brak)) return false;
-      const farmOW = opts.farmPriorityOnlyWorked ?? getOnlyWorked;
-      if (!farmOW(city) || !getWorkedHexKeys) return true;
-      return hexKey === `${city.q},${city.r}` || getWorkedHexKeys(city).has(hexKey);
+    let hillMemoAt = -1;
+    let hillMemoVal = false;
+    const hillTartakPending = (): boolean => {
+      if (hillMemoAt === picks.length) return hillMemoVal;
+      let found = false;
+      for (const { q, r } of orderedHexes) {
+        const hk = `${q},${r}`;
+        const hx = map.hexes[hk];
+        if (!hx || hx.terenBazowy !== TerenBazowy.Wzgorza || hx.nakladka !== Nakladka.Las) continue;
+        if (hasRiverAccess(hk)) continue;
+        if ((workingPlaced.get(hk) ?? []).includes('tartak')) continue;
+        if (scheduledWyrabHexes.has(hk)) continue;
+        if (!hexAllowsKey(q, r, 'tartak')) continue;
+        if (!qualifies('tartak', q, r)) continue;
+        found = true;
+        break;
+      }
+      hillMemoAt = picks.length;
+      hillMemoVal = found;
+      return found;
     };
     const keyBlockedOnHex = (key: ImprovementKey, hexKey: string): boolean => {
       if ((key === 'bydlo' || key === 'owce' || key === 'lama') && !riverHexKeys.has(hexKey)) return true;
@@ -1363,18 +1399,17 @@ function pickAutoImprovementsSinglePass(opts: PickAutoImprovementsOpts): AutoImp
       // R3, ABC-B=B: w K2/K3 (`demandActive`) tartak tylko przy niedoborze drewna; obóz bez nowego tartaku
       // (wymóg tartaku na heksie egzekwuje `qualifies`, improvement-build.ts:641).
       if (key === 'tartak' && !tartakDozwolony) return true;
-      // D-R5-2 (właściciel 2026-10-31): tartak i obóz NIGDY na heksie rzeka+las — we WSZYSTKICH profilach AUTOMATU
-      // (Żywność/Zrównoważone/Surowce/Infrastruktura, AI, państwa-miasta). Dawny wyjątek FOREST_COEXIST usunięty.
+      // S3-1 (właściciel 2026-10-31, ZASTĘPUJE D-R5-1 i D-R5-2): tartak i obóz NIGDY na heksie z rzeką ORAZ NIGDY na
+      // heksie Z DOSTĘPEM do rzeki (sąsiadującym z rzeką, `hasRiverAccess`) — we WSZYSTKICH profilach AUTOMATU
+      // (Żywność/Zrównoważone/Surowce/Infrastruktura, AI, państwa-miasta): te tereny są dla farm i żywności.
       // RĘCZNA budowa gracza nie przechodzi przez ten picker i NIE jest zmieniana.
-      if ((key === 'tartak' || key === 'oboz_lowiecki') && riverHexKeys.has(hexKey)) return true;
-      // D-R5-1 (właściciel 2026-10-31, K2 i K3): FARMA MA PIERWSZEŃSTWO na lesie nadającym się pod farmę
-      // (Łąka/Równina po wycince — `isFarmBaseTerrain`): taki las zostaje wycince E2/E5 (potem farma).
-      // Tartak w kroku niedoboru tylko na lesie, na którym farma jest niemożliwa (Wzgórza itp.).
-      // ZAŁOŻENIE (luka dispatchu, do potwierdzenia w ABC): „farma możliwa" = teren nadaje się pod farmę ORAZ
-      // wycinka jest dla miasta włączona (przycisk gracza ON; AI zawsze) ORAZ heks jest w zasięgu wycinki/farmy
-      // tego miasta (`farmPriorityOnlyWorked` + `getWorkedHexKeys`). Gracz z wycinką WYŁĄCZONĄ nie dojdzie do
-      // farmy na lesie, więc tartak go nie wyprzedza (inaczej niedobór drewna byłby nierozwiązywalny).
-      if (demandActive && key === 'tartak' && farmWouldClaimForest(hexKey)) return true;
+      // Blokada D-R5-1 (`farmWouldClaimForest`: farma pierwsza na lesie pod farmę) USUNIĘTA — tartak może stać na
+      // lesie nadającym się pod farmę, jeśli heks nie ma dostępu do rzeki.
+      if ((key === 'tartak' || key === 'oboz_lowiecki') && hasRiverAccess(hexKey)) return true;
+      // S3-1(c): PREFERENCJA miejsca tartaku — najpierw WZGÓRZA (las na wzgórzu), dopiero potem pozostałe heksy z lasem
+      // bez dostępu do rzeki. Tartak na heksie nie-wzgórzowym czeka, dopóki w zasięgu miasta jest kandydat na wzgórzu
+      // (ten sam koszt, te same bramki — czekanie nie grozi zastojem budżetu).
+      if (key === 'tartak' && map.hexes[hexKey]?.terenBazowy !== TerenBazowy.Wzgorza && hillTartakPending()) return true;
       return false;
     };
 
