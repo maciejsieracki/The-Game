@@ -9,7 +9,7 @@
  *   [K2] gracz, profil „zrownowazone" — zywnosc, niedobor surowca idzie NA PRZOD, po zaspokojeniu powrot;
  *   [K3] AI cywilizacji (zawsze zrownowazone) — TA SAMA logika co K2.
  * Scenariusze kryteriow koncowych: (a)..(f) + ABC-5 (g), starvation/Q2=B (h), cykl niedoboru (i),
- * parytet K2<->K3 (j), minimum lesne tartaku (k).
+ * parytet K2<->K3 (j), profile „surowce"/„infrastruktura" bez zmian wzgl. bazy (k).
  *
  * Run z gra/:  node tools/autoimprove-stages-q1-test.cjs
  * Mutacje:     STAGES_Q1_SRC_DIR=<kopia gra/src z mutacja> node tools/autoimprove-stages-q1-test.cjs
@@ -69,6 +69,7 @@ const TN = [{ q: CQ, r: CR, ownerId: 0, cityId: 'c0', pop: 12, level: 1 }];
  * Symulacja tura po turze. profil: 'K1' | 'K2' | 'K3'.
  * Wyrab konczy sie w tej samej turze (silnik AI commituje od razu; dla gracza tick wycinki jest osobny).
  */
+const FOCUS_OF = { K1: 'zywnosc', K2: 'zrownowazone', K3: 'zrownowazone', S: 'surowce', I: 'infrastruktura' };
 function sim({
   map, worked, profil = 'K2', turns = 30, techsByTurn = () => FULL, deficitFn = () => [], pool0 = 5000, income = 60,
   pct = 100, civ = 'grecy', era = 3, placed0 = new Map(), maxItems, reserve = 30, wolnoWycinac = true,
@@ -91,14 +92,14 @@ function sim({
       picks = cmds.map(c => ({ q: c.q, r: c.r, key: c.key, kosztPraca: (c.key === 'wyrab' ? 2.5 : c.key === 'irygacja' ? 60 : 20) }));
     } else {
       picks = pickAutoImprovements({
-        cities: [{ ...CITY, ulepszeniaFocus: profil === 'K1' ? 'zywnosc' : 'zrownowazone' }], ownerId: 0, map, territoryNodes: TN,
+        cities: [{ ...CITY, ulepszeniaFocus: FOCUS_OF[profil] }], ownerId: 0, map, territoryNodes: TN,
         placedImprovements: placed, pracaAvailable: pool, unlockedTechs: techs,
         pracaSurplusThreshold: reserve, skipWyrab: !wolnoWycinac,
         demandDriven: true, resourceDeficitKeys: deficit,
-        getFocus: () => (profil === 'K1' ? 'zywnosc' : 'zrownowazone'),
+        getFocus: () => FOCUS_OF[profil],
         getOnlyWorked: () => true, getWorkedHexKeys: () => workedSet,
         pracaBudgetPercent: pct, civArchetype: civ, playerEra: era,
-        foodImprovementStages: true, ...(maxItems ? { maxItemsPerCity: maxItems } : {}),
+        foodImprovementStages: () => FOCUS_OF[profil] === 'zywnosc' || FOCUS_OF[profil] === 'zrownowazone', ...(maxItems ? { maxItemsPerCity: maxItems } : {}),
       });
     }
     for (const p of picks) {
@@ -323,7 +324,19 @@ console.log('(j) parytet K2 <-> K3: ten sam stan => ta sama kolejnosc i zestaw b
   }
 }
 
-console.log('(k) [K2/K3] tartak tylko do minimum lesnego ceil(pop/10) (nie na kazdym lesie), przy niedoborze drewna');
+console.log('(k) profile gracza „surowce" (S) i „infrastruktura" (I) BEZ ZMIAN wzgledem bazy 4d1916f2c (zarzut FC R1 nr 1)');
+{
+  // Baza 4d1916f2c (zmierzone przez FC na tej samej mapie: miasto pop 12, 6 lasow, 10 tur, bez niedoboru): tartak = 6.
+  const FOR = [[14, 12], [11, 11], [13, 11], [11, 13], [12, 13], [13, 12]];
+  const mk = () => makeMap({ forest: FOR });
+  const s = sim({ map: mk(), worked: FOR, profil: 'S', turns: 10 });
+  ok(count(s.log, 'tartak') === 6, `[S] profil „surowce": tartak ${count(s.log, 'tartak')} == 6 (baza; bez limitu ceil(pop/10)=2)`);
+  ok(count(s.log, 'oboz_lowiecki') === 0, `[S] profil „surowce": obozy ${count(s.log, 'oboz_lowiecki')} (poza lista profilu)`);
+  const i = sim({ map: mk(), worked: FOR, profil: 'I', turns: 10 });
+  ok(count(i.log, 'tartak') === 0 && count(i.log, 'farma') === 0, `[I] profil „infrastruktura": tylko infrastruktura (tartak ${count(i.log, 'tartak')}, farma ${count(i.log, 'farma')})`);
+}
+
+console.log('(k2) [K2/K3] tartak/obóz w minimum lesnym ceil(pop/10) (nie na kazdym lesie) — TYLKO przebiegi K1/K2/K3; ABC-B czeka');
 for (const profil of ['K2', 'K3']) {
   const FOR = [[14, 12], [11, 11], [13, 11], [11, 13], [12, 13], [13, 12]];
   const map = makeMap({ forest: FOR });
@@ -331,6 +344,14 @@ for (const profil of ['K2', 'K3']) {
   const lesneMin = Math.ceil(CITY.population / 10);
   ok(count(log, 'tartak') >= 1 && count(log, 'tartak') <= lesneMin, `[${profil}] tartaki ${count(log, 'tartak')} w granicach 1..${lesneMin} (nie ${FOR.length})`);
   ok(count(log, 'oboz_lowiecki') <= lesneMin, `[${profil}] obozy ${count(log, 'oboz_lowiecki')} <= ${lesneMin}`);
+}
+
+console.log('(k3) POMIAR (informacyjny, zarzut FC R1 nr 7): tartak na heksie CENTRUM MIASTA z lasem — czy picker go stawia?');
+for (const profil of ['K2', 'K3']) {
+  const map = makeMap({ forest: [[CQ, CR]] });
+  const { log } = sim({ map, worked: [[CQ, CR]], profil, turns: 6, deficitFn: () => ['drewno'] });
+  const naCentrum = log.filter(e => e.hk === K(CQ, CR)).map(e => e.key);
+  console.log(`  [POMIAR] [${profil}] heks centrum miasta z lasem + niedobor drewna: rozkazy na centrum = [${naCentrum.join(',')}] (NIE asercja; pytanie ABC-F do wlasciciela)`);
 }
 
 console.log('(l) [K2/K3] niedobor surowca bez ulepszenia terenu (zloto) NIE zmienia kolejnosci');

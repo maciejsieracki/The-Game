@@ -396,6 +396,12 @@ export interface PickAutoImprovementsOpts {
    * i blokował farmy/trzodę/irygację (zmierzone: main.ts exec-wycinka-in-progress).
    */
   clearingHexKeys?: ReadonlySet<string>;
+  /**
+   * Internal (R2): przebiegi K1/K2/K3 (niedobor, etapy, fallback miast zywnosciowych) trzymaja tartak i oboz
+   * w minimum lesnym `ceil(pop/10)` na miasto. Profile „surowce”/„infrastruktura” i miasta spoza etapow
+   * tej flagi NIE dostaja — zachowanie bazy 4d1916f2c.
+   */
+  limitForestKeysToMinimum?: boolean;
   /** Internal stage E1: only river hexes are candidates (farm on river first, everywhere). */
   riverHexesOnly?: boolean;
   /** Internal stage E5: the river stages E1-E4 are exhausted — off-river clearing is not blocked by river hexes. */
@@ -607,6 +613,7 @@ export function pickAutoImprovements(opts: PickAutoImprovementsOpts): AutoImprov
       riverForestClearingOnly: false,
       riverHexesOnly: false,
       offRiverClearing: false,
+      limitForestKeysToMinimum: true,
     }));
     record(deficitPicks);
   }
@@ -628,6 +635,7 @@ export function pickAutoImprovements(opts: PickAutoImprovementsOpts): AutoImprov
       offRiverClearing: stage.offRiverClearing === true,
       reserveBudgetForMostExpensive: true,
       irrigationNeedsFarm: true,
+      limitForestKeysToMinimum: true,
       maxItemsPerCity: maxItemsStage,
       ...(stage.exemptPercentCap === true
         ? { pracaBudgetPercent: 100, getPracaBudgetPercent: undefined, improvementBudgetCap: undefined }
@@ -668,7 +676,7 @@ export function pickAutoImprovements(opts: PickAutoImprovementsOpts): AutoImprov
   // farm/livestock/irrigation phase is waiting on the Work budget.
   let fallbackPicks: AutoImprovementPick[] = [];
   if (stagedPicks.length === 0 && !earlierStageIsPending && foodCities.length > 0) {
-    fallbackPicks = pickAutoImprovementsSinglePass(after(stageSpent, { cities: foodCities }));
+    fallbackPicks = pickAutoImprovementsSinglePass(after(stageSpent, { cities: foodCities, limitForestKeysToMinimum: true }));
     record(fallbackPicks);
   }
   const sideSpent = stageSpent + sum(fallbackPicks);
@@ -710,6 +718,7 @@ function pickAutoImprovementsSinglePass(opts: PickAutoImprovementsOpts): AutoImp
     clearingHexKeys,
     reserveBudgetForMostExpensive = false,
     irrigationNeedsFarm = false,
+    limitForestKeysToMinimum = false,
   } = opts;
 
   if (cities.length === 0 || !territoryNodes) return [];
@@ -1208,12 +1217,13 @@ function pickAutoImprovementsSinglePass(opts: PickAutoImprovementsOpts): AutoImp
     //  • R-WEB-AUTOIMPROVE-PRIORITY-Q1 (E3, wiążąca specyfikacja właściciela): hodowla (bydło/owce/lama)
     //    TYLKO na heksach przy rzece — „Innych terenów nie rozpatrujemy” (ta sama funkcja dla gracza i AI);
     //  • etapy: irygacja po farmie na TYM heksie (wycinka→farma→trzoda→irygacja);
-    //  • ABC-3 / audyt P10,P15: tartak i obóz tylko do minimum leśnego `ceil(pop/10)` na miasto
-    //    (reguła „1 na 10 obywateli”, ECHO 2026-08-27) — nie na każdym lesie z obywatelem.
+    //  • tartak/obóz: limit minimum leśnego `ceil(pop/10)` (reguła „1 na 10 obywateli”, ECHO 2026-08-27,
+    //    ta sama co `lesneMin`) WYŁĄCZNIE w przebiegach K1/K2/K3 (`limitForestKeysToMinimum`); profile
+    //    „surowce”/„infrastruktura” = zachowanie bazy 4d1916f2c (R2, zarzut FC nr 1). Pytanie ABC-B czeka.
     const keyBlockedOnHex = (key: ImprovementKey, hexKey: string): boolean => {
       if ((key === 'bydlo' || key === 'owce' || key === 'lama') && !riverHexKeys.has(hexKey)) return true;
       if (key === 'irygacja' && irrigationNeedsFarm && !(workingPlaced.get(hexKey) ?? []).includes('farma')) return true;
-      if (key === 'tartak' || key === 'oboz_lowiecki') {
+      if (limitForestKeysToMinimum && (key === 'tartak' || key === 'oboz_lowiecki')) {
         let haveForest = 0;
         for (const { q: rq, r: rr } of radiusHexes) {
           if ((workingPlaced.get(`${rq},${rr}`) ?? []).includes(key)) haveForest++;
