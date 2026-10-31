@@ -14,9 +14,9 @@
  *      `droga` kwalifikowala sie w kolko: 37 drog na jednym heksie w 40 turach).
  *
  * Plus trzy straznikie zakresu, ktore NIE moga byc tautologiami:
- *   D. AI CYWILIZACJI ma nadal `maxItemsPerCity: 1` (ECHO wlasciciela: „Zostaw limit,
- *      zmien kolejnosc") — sprawdzane DWOMA niezaleznymi sposobami: tekstem `ai.ts`
- *      ORAZ zachowaniem `decideAITurn` (max 1 rozkaz buildImprovement na miasto na ture);
+ *   D. AI CYWILIZACJI NIE ma juz `maxItemsPerCity: 1` (R-WEB-AUTOIMPROVE-STAGES-Q1 R3, ABC-D=B
+ *      wlasciciela 2026-10-31; zastapilo ECHO „Zostaw limit") — sprawdzane DWOMA niezaleznymi
+ *      sposobami: tekstem `ai.ts` ORAZ zachowaniem `decideAITurn` (>1, najwyzej 3 rozkazy na miasto na ture);
  *   E. AI CYWILIZACJI faktycznie buduje `tartak` (przed runda 2: 0 na 183 kwalifikujacych
  *      sie heksach) — pomiar zachowania przez `decideAITurn`, nie regex;
  *   F. straznik tekstowy `main.ts`: konfiguracja wywolania pickera na sciezce AI GRACZA
@@ -166,7 +166,9 @@ console.log('C. brak duplikatu tego samego ulepszenia na tym samym heksie');
       placed.set(hk, [...cur, p.key]);
     }
   }
-  ok(dubel === null, `20 tur x maxItemsPerCity=1: zero duplikatow warstwy${dubel ? ' (znaleziony: ' + dubel + ')' : ''}`);
+  // Uwaga: limit `maxItemsPerCity: 1` jest tu podany JAWNIE bezposrednio pickerowi (test straznika duplikatow na poziomie
+  // pickera, niezalezny od konfiguracji AI w ai.ts — po ABC-D=B AI sam juz tego limitu nie przekazuje; sekcja D).
+  ok(dubel === null, `20 tur x maxItemsPerCity=1 (jawnie w pickerze): zero duplikatow warstwy${dubel ? ' (znaleziony: ' + dubel + ')' : ''}`);
 }
 
 console.log('D. AI CYWILIZACJI — BEZ limitu maxItemsPerCity: 1 (R-WEB-AUTOIMPROVE-STAGES-Q1 R3, ABC-D=B wlasciciela 2026-10-31; zastepuje ECHO „Zostaw limit")');

@@ -251,7 +251,7 @@ console.log('4. Praca + tech -> 1 buildImprovement (farma)');
 // ===========================================================================
 // 5. Throttle w 1 miescie: cala mapa kwalifikuje farme -> nadal 1 rozkaz
 // ===========================================================================
-console.log('5. throttle 1/miasto/ture (wiele kwalifikujacych heksow)');
+console.log('5. limit etapu zywnosciowego na miasto/ture, bez limitu 1 (wiele kwalifikujacych heksow; ABC-D=B)');
 {
   const city = makeCity('city0', PLAYER_ID, 15, 15, 5); // pop wyzsza -> wiekszy promien
   const opts = baseOpts(city);
@@ -265,7 +265,7 @@ console.log('5. throttle 1/miasto/ture (wiele kwalifikujacych heksow)');
 // ===========================================================================
 // 6. 2 miasta tego samego AI -> maks. 1 rozkaz NA MIASTO
 // ===========================================================================
-console.log('6. 2 miasta -- 1 rozkaz na miasto (2 lacznie)');
+console.log('6. 2 miasta -- do 3 rozkazow na miasto, bez limitu 1 (ABC-D=B)');
 {
   const cityA = makeCity('city0', PLAYER_ID, 8, 8);
   const cityB = makeCity('city1', PLAYER_ID, 22, 22);
