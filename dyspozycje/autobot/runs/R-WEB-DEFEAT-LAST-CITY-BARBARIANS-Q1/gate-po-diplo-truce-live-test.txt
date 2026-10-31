@@ -1,0 +1,31 @@
+[truce-live] vite build do katalogu tymczasowego: /tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/bDTLU/outg
+U1 UI: modal pokoj/rozejm
+  OK  U1a domyślnie rodzaj = pokoj
+  OK  U1b w trybie pokoju brak chipów rozejmu
+  OK  U1c przełącznik na rozejm zmienia pole
+  OK  U1d rozejm pokazuje 3 chipy 5/10/15
+  OK  U1e chip 5 tur zapisuje długość
+  OK  U1f przycisk wyślij aktywny
+  OK  U1g wysłanie z UI trafia na stół jako rozejm 5 tur
+  OK  U1h modal koszyka zamknięty po wysłaniu
+L1 akceptacja rozejmu
+  OK  L1a akceptacja przechodzi (accepted)
+  OK  L1b status pary = pokoj po rozejmie
+  OK  L1c truceUntilTurn = tura + 5
+  OK  L1d rozejm nie zakłada peaceUntilTurn
+L2 okno rozejmu i wygaśnięcie
+  OK  L2a w oknie (tura < until) status nadal pokoj
+  OK  L2b w turze wygaśnięcia wojna wraca
+  OK  L2c truceUntilTurn wyczyszczony
+  OK  L2d brak flagi agresora po wygaśnięciu
+  OK  L2e brak kary zlamanie_paktu_nap po wygaśnięciu
+L3 złamanie rozejmu
+  OK  L3a ponowna akceptacja rozejmu
+  OK  L3b wypowiedzenie w oknie zrywa rozejm, wojna
+  OK  L3c kara zlamanie_paktu_nap za złamanie rozejmu
+  OK  L3d flaga agresora dla złamania rozejmu (mimo casus belli)
+  OK  L3e zdarzenia Wiarygodności przybyły po złamaniu
+  OK  C zero pageerror/console.error
+
+23 pass / 0 fail
+EXIT=0

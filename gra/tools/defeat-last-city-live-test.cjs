@@ -10,8 +10,11 @@
  *  S1. Gracz z JEDNYM miastem i OSADNIKIEM; barbarzyńcy zdobywają miasto -> po endTurn
  *      ekran przegranej (`.vsc-overlay.lose`), gameOver=true; kolejny endTurn nie rusza tury.
  *  S2. Gracz z JEDNYM miastem, bez osadnika; barbarzyńcy zdobywają miasto -> j.w.
- *  S3. Kontrola: gracz z DWOMA miastami; barbarzyńcy zdobywają jedno -> BEZ ekranu przegranej,
+ *  S3. Kontrola: gracz z DWOMA miastami; REALNA bitwa barbarzyńców (Auto) zdobywa jedno -> BEZ ekranu przegranej,
  *      gameOver=false, endTurn przesuwa turę.
+ *  S4. REALNA ścieżka bitwy barbarzyńców (`launchIncomingMapFieldBattle` -> przycisk Auto -> podsumowanie
+ *      -> `onResolved`) na jedynym mieście gracza, BEZ endTurn: ekran przegranej musi się pojawić od razu
+ *      po zamknięciu podsumowania (dowód poprawki kolejności faz, H2).
  *  C.  Zero pageerror / console.error w scenariuszach.
  *
  * Zrzuty: <evidenceDir>/defeat-S*.png
@@ -39,6 +42,9 @@ function assert(label, cond, detail) {
     console.error(` FAIL ${label}` + (detail !== undefined ? ' -- ' + JSON.stringify(detail) : ''));
   }
 }
+/** Opcjonalny filtr scenariuszy do mutacji: DEFEAT_ONLY=S4 (domyślnie wszystkie). */
+const ONLY = process.env.DEFEAT_ONLY ? process.env.DEFEAT_ONLY.split(',') : null;
+const want = (n) => !ONLY || ONLY.includes(n);
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 
 function buildBundle() {
@@ -134,7 +140,7 @@ async function main() {
   const errors = [];
   try {
     // ---- S1: jedno miasto + osadnik; barbarzyńcy zdobywają miasto ----
-    {
+    if (want('S1')) {
       console.log('\n-- S1: jedno miasto + osadnik, barbarzyńcy zdobywają miasto --');
       const page = await openFresh(browser, errors);
       const cities0 = await page.evaluate((o) => window.__defeatTestDebug.ownerCityIds(o), PLAYER);
@@ -156,7 +162,7 @@ async function main() {
     }
 
     // ---- S2: jedno miasto, bez osadnika; barbarzyńcy zdobywają miasto ----
-    {
+    if (want('S2')) {
       console.log('\n-- S2: jedno miasto, bez osadnika, barbarzyńcy zdobywają miasto --');
       const page = await openFresh(browser, errors);
       const cities0 = await page.evaluate((o) => window.__defeatTestDebug.ownerCityIds(o), PLAYER);
@@ -172,20 +178,56 @@ async function main() {
       await page.close();
     }
 
-    // ---- S3: kontrola — dwa miasta, barbarzyńcy zdobywają jedno ----
-    {
-      console.log('\n-- S3 (kontrola): dwa miasta, barbarzyńcy zdobywają jedno --');
+    // ---- S4: bitwa barbarzyńców (async) zdobywa jedyne miasto; przegrana BEZ endTurn ----
+    if (want('S4')) {
+      console.log('\n-- S4: realna bitwa barbarzyńców (Auto) na jedynym mieście, bez endTurn --');
+      const page = await openFresh(browser, errors);
+      const cities0 = await page.evaluate((o) => window.__defeatTestDebug.ownerCityIds(o), PLAYER);
+      assert('S4 gracz ma dokładnie 1 miasto', cities0.length === 1, cities0);
+      const l = await page.evaluate((cid) => window.__defeatTestDebug.launchBarbarianBattleOnCity(cid, 14), cities0[0]);
+      assert('S4 bitwa uruchomiona (są obrońcy i atakujący)', l.defenders >= 1 && l.attackers === 14, l);
+      await page.waitForSelector('.pb-btn[data-act="auto"]', { timeout: 20000 });
+      assert('S4 przed Auto brak ekranu przegranej', (await page.locator(OVERLAY_SEL).count()) === 0);
+      await page.click('.pb-btn[data-act="auto"]');
+      const cont = page.getByRole('button', { name: 'Kontynuuj' });
+      await cont.waitFor({ timeout: 20000 });
+      assert('S4 podsumowanie bitwy widoczne, przegranej jeszcze nie ma (onResolved po Kontynuuj)',
+        (await page.locator(OVERLAY_SEL).count()) === 0);
+      await cont.click();
+      await page.waitForSelector(OVERLAY_SEL, { timeout: 15000 });
+      const own = await page.evaluate((o) => window.__defeatTestDebug.ownerCityIds(o), PLAYER);
+      assert('S4 gracz nie ma już miast (miasto zdobyte w bitwie)', own.length === 0, own);
+      assert('S4 ekran przegranej BEZ endTurn', (await page.locator(OVERLAY_SEL).count()) === 1);
+      assert('S4 gameOver=true', (await page.evaluate(() => window.__defeatTestDebug.isGameOver())) === true);
+      assert('S4 tura nie przesunęła się (brak endTurn)', (await page.evaluate(() => window.__defeatTestDebug.getTurn())) === 1);
+      const r2 = await endTurnAndSettle(page, 15000);
+      assert('S4 kolejny endTurn nie rusza tury', r2.turnAfter === r2.turnBefore, r2);
+      await page.screenshot({ path: path.join(EVIDENCE, 'defeat-S4-bitwa-barbarzyncow-bez-endturn.png') });
+      await page.close();
+    }
+
+    // ---- S3: kontrola — dwa miasta; bitwa barbarzyńców (Auto) zdobywa jedno; potem endTurn ----
+    if (want('S3')) {
+      console.log('\n-- S3 (kontrola): dwa miasta, bitwa barbarzyńców zdobywa jedno --');
       const page = await openFresh(browser, errors);
       const extra = await setupTwoCities(page);
       const owned = await page.evaluate((o) => window.__defeatTestDebug.ownerCityIds(o), PLAYER);
       assert('S3 gracz ma 2 miasta przed utratą', owned.length === 2, owned);
-      const cap = await page.evaluate((cid) => window.__defeatTestDebug.captureCityByBarbarians(cid), extra);
-      assert('S3 jedno miasto przejęte przez barbarzyńców', cap.ownerIdAfter === -1, cap);
+      const first = owned.find((x) => x !== extra);
+      const l = await page.evaluate((cid) => window.__defeatTestDebug.launchBarbarianBattleOnCity(cid, 14), first);
+      assert('S3 bitwa uruchomiona', l.defenders >= 1, l);
+      await page.waitForSelector('.pb-btn[data-act="auto"]', { timeout: 20000 });
+      await page.click('.pb-btn[data-act="auto"]');
+      const cont = page.getByRole('button', { name: 'Kontynuuj' });
+      await cont.waitFor({ timeout: 20000 });
+      await cont.click();
+      await wait(1500);
+      const left = await page.evaluate((o) => window.__defeatTestDebug.ownerCityIds(o), PLAYER);
+      assert('S3 gracz stracił jedno miasto w bitwie (zostało 1)', left.length === 1, left);
+      assert('S3 BRAK ekranu przegranej (gracz ma jeszcze miasto)', (await page.locator(OVERLAY_SEL).count()) === 0);
+      assert('S3 gameOver=false', (await page.evaluate(() => window.__defeatTestDebug.isGameOver())) === false);
       const r = await endTurnAndSettle(page);
-      console.log('      S3 po endTurn:', JSON.stringify(r));
-      assert('S3 BRAK ekranu przegranej (gracz ma jeszcze miasto)', !r.overlay, r);
-      assert('S3 gameOver=false', r.gameOver === false, r);
-      assert('S3 endTurn przesunął turę', r.turnAfter > r.turnBefore, r);
+      assert('S3 endTurn przesunął turę, gra trwa', r.turnAfter > r.turnBefore && !r.overlay && !r.gameOver, r);
       await page.close();
     }
 

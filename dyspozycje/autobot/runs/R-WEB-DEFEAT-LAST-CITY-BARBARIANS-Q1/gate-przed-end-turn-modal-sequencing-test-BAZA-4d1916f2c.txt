@@ -1,0 +1,13 @@
+FAIL: [A5] function openPlayerMapUnitAttackCore(: showPreBattle kończy się dokładnie { defaultAction: 'manual' } -- BEZ auto:true (ręczna akcja gracza, nigdy nie odraczana)
+FAIL: [A5] function launchSiegeStormFromMap(: showPreBattle kończy się dokładnie { defaultAction: 'manual' } -- BEZ auto:true (ręczna akcja gracza, nigdy nie odraczana)
+FAIL: [A6] configurePreBattle wpięte DOKŁADNIE w 2 miejscach (init + reset nowej gry) z hookiem isOtherEndTurnModalOpen (got 0)
+FAIL: [A7] znaleziono blok finally triggerPlayerEndTurn
+FAIL: [A7] finally woła flushDeferredPlayerUnitReveals() -> flushDeferredMergePrompts() -> flushDeferredAutoPreBattle() w tej kolejności
+ReferenceError: ResizeObserver is not defined
+    at showArmyMergePanel (/home/user/The-Game/.claude/worktrees/wf_33d847bd-330-3/gra/tools/.end-turn-modal-sequencing-bundle.cjs:962:5)
+    at promptMergeIfCoLocatedMirror (/home/user/The-Game/.claude/worktrees/wf_33d847bd-330-3/gra/tools/end-turn-modal-sequencing-test.cjs:383:5)
+    at flushDeferredMergeMirror (/home/user/The-Game/.claude/worktrees/wf_33d847bd-330-3/gra/tools/end-turn-modal-sequencing-test.cjs:389:5)
+    at runUiPart (/home/user/The-Game/.claude/worktrees/wf_33d847bd-330-3/gra/tools/end-turn-modal-sequencing-test.cjs:426:3)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async main (/home/user/The-Game/.claude/worktrees/wf_33d847bd-330-3/gra/tools/end-turn-modal-sequencing-test.cjs:439:3)
+EXIT=1

@@ -8,7 +8,7 @@ ZMIANY/COMMIT: baza `4d1916f2c`; start `e613d2e8f` (ocalone zmiany); commit Oper
  - `gra/tools/defeat-last-city-test.cjs` (jednostkowy 14/0), `gra/tools/defeat-last-city-live-test.cjs` (Chromium; R3: izolacja epoki, `endTurnAndSettle` timeout 45 s).
  - dowody: `evidence/defeat-S1-osadnik-utrata-miasta.png`, `gate-*.txt` (jedna linia `EXIT=` na końcu).
  - Hak z wip1 (`__...barbarians-live`) NIE przenoszony: jeden hak, scenariusze S1-S3 pokryte.
-DIAGNOZA (zmierzone): 
+DIAGNOZA (zmierzone):
  - H1 potwierdzona: `victory.ts` (baza) `isEliminated && osadnicy===0 && kiedysMial` - osadnik blokował przegraną (main.ts ~38866 przekazuje `liczbaOsadnikow`). `kiedysMial` NIE blokował: w S1/S2 `playerEverOwnedCityByOwner` ustawione po starcie (przegrana wykryta).
  - H2 potwierdzona: atak barbarzyńców na bronione miasto -> async bitwa, onResolved po bloku VICTORY CHECK (main.ts ~38833+) -> przegrana dopiero w następnej turze; naprawione wywołaniem po bitwie. Ścieżka `captureCityWithoutBattle` (S1/S2) jest wykrywana przez końcowy check tej samej tury.
  - H3: `ownerId=-1` po zdobyciu (S1 `ownerIdAfter=-1`), `isEliminated` liczy `ownerId===0` poprawnie.

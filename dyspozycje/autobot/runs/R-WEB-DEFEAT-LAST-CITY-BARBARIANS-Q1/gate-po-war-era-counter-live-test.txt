@@ -1,0 +1,39 @@
+[war-era-counter-live-test] budowanie bundla (vite build, wyłącznie dozwolona komenda z CLAUDE.md)...
+[war-era-counter-live-test] build OK.
+[war-era-counter-live-test] domyślny Chromium niedostępny, fallback na /opt/pw-browsers/chromium-1194/chrome-linux/chrome
+
+-- A. Bootstrap ?playtest=mapa dobiega końca (miasta+jednostki, tura=1) --
+  OK  bootstrap zakończony: citiesLen>0
+  OK  bootstrap zakończony: unitsLen>0
+  OK  bootstrap zakończony: turn===1
+
+-- A2. Fast-forward do tury 39 (próg R1 = 40; gracz od tury 25, R-WOJNA-WYMUSZONA-PROG-TURY-GRACZ-Q1) --
+  OK  fast-forward zakończony: turn===39 (tuż przed progiem R1 = 40)
+
+-- B. forceStoneForcedWarOnPlayer(): realny AI owner wybrany, wojny wyzerowane --
+  OK  attackerId zwrócony i > 0 (realny AI, nie gracz/barbarzyńca)
+  OK  przed turą: attacker i gracz NIE są w wojnie
+
+-- C. Realny triggerPlayerEndTurn() (ta sama funkcja co przycisk "Zakończ turę") --
+  OK  endTurnInProgress zaobserwowane true -> false (przejście tury faktycznie się wykonało)
+
+-- D. SEDNO kryterium 4: gracz ZOSTAŁ WYBRANY jako cel — relacja attacker<->gracz to teraz "wojna" --
+  OK  po turze: attacker wypowiedział wojnę graczowi (relacja==="wojna")
+
+-- E. SEDNO kryterium 6 (i WYZWALACZA dispatchu "nic nie widzę"): DOW widoczny w UI i w dzienniku --
+  OK  toast istnieje w DOM
+  OK  warEventLog ma co najmniej 1 wpis po DOW
+  OK  warEventLog zawiera wpis o wypowiedzeniu wojny (title lub subtitle; enemy albo info, zależnie od ścieżki odroczenia EOT)
+  OK  karta zdarzeń niesie powód "Wojna epoki (Kamień)" (kryterium 5/6)
+   toast: {"display":"none","html":"PLAYTEST MAPA: 3× Hastati · Ateny: Łucznik · szturm = preBattle · Ctrl+F5 = restart · ?density=low|medium|high (E2 gęstość).","zIndex":"320"}
+   karta: {"id":"eot-hint-40-1","icon":"ℹ️","title":"","subtitle":"⚔ Wojna epoki (Kamień): Grecy wypowiada wojnę","kind":"info"}
+  OK  brak modalu preBattle nad panelem przed zrzutem
+  OK  powód "Wojna epoki (Kamień)" widoczny w DOM (panel Wydarzeń, nie tylko dane)
+  OK  zrzut Chromium po wypowiedzeniu zapisany
+   zrzut: /tmp/war-era-counter-hint.png
+
+-- F. Konsola czysta --
+  OK  zero console.error / pageerror w całym scenariuszu
+
+16 pass · 0 fail
+EXIT=0

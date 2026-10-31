@@ -25720,6 +25720,34 @@ async function boot(): Promise<void> {
       },
       countSettlersForOwner: (owner: number): number =>
         units.filter(u => u.ownerId === owner && u.category === 'osadnik').length,
+      /** Realna ścieżka bitwy barbarzyńców: `launchIncomingMapFieldBattle` z tym samym `onResolved`
+       *  (`onBarbarianCityBattleResolved`) co produkcyjny call site fazy barbarzyńców. Resztę (przycisk Auto,
+       *  podsumowanie) przechodzi test w UI. Bez endTurn. */
+      launchBarbarianBattleOnCity: (cityId: string, attackers: number): { defenders: number; attackers: number } => {
+        const c = cities.find(x => x.id === cityId);
+        if (!c) throw new Error('launchBarbarianBattleOnCity: city not found: ' + cityId);
+        const template = units.find(u => !isCivilianUnit(u));
+        if (!template) throw new Error('launchBarbarianBattleOnCity: no military unit template');
+        const defRoster = units.filter(u => u.ownerId === 0 && u.q === c.q && u.r === c.r && !isCivilianUnit(u));
+        if (defRoster.length === 0) throw new Error('launchBarbarianBattleOnCity: no player defenders in city');
+        const adj = [[1, 0], [-1, 0], [0, 1], [0, -1], [1, -1], [-1, 1]].map(([dq, dr]) => ({ q: c.q + dq!, r: c.r + dr! }))
+          .find(h => map.hexes[keyOf(h.q, h.r)] && mapHexPassableForUnit(h.q, h.r) && !isOccupiedHex(h.q, h.r)) ?? { q: c.q, r: c.r };
+        const atkRoster: RuntimeUnit[] = [];
+        for (let i = 0; i < attackers; i++) {
+          const a: RuntimeUnit = { ...template, id: template.id + '_defeatBattleBarb' + i, ownerId: BARBARIAN_OWNER_ID, q: adj.q, r: adj.r };
+          units.push(a);
+          atkRoster.push(a);
+        }
+        const hexObj = map.hexes[keyOf(c.q, c.r)];
+        // Etykieta w zmiennej (nie literał z przecinkiem): testy tekstowe main.ts szukają PIERWSZEGO literału produkcyjnego call site.
+        const barbBattleLabelForTest = 'Atak barbarzyńców';
+        launchIncomingMapFieldBattle(
+          atkRoster, defRoster, c.q, c.r,
+          hexObj ? (hexObj.terenBazowy as string) : 'Rownina', 0, barbBattleLabelForTest,
+          onBarbarianCityBattleResolved, worldTerrainFromHex(hexObj), true,
+        );
+        return { defenders: defRoster.length, attackers: atkRoster.length };
+      },
       /** Barbarzyńcy zdobywają miasto: REALNA `captureCityWithoutBattle`. */
       captureCityByBarbarians: (cityId: string): { ownerIdAfter: number } => {
         const c = cities.find(x => x.id === cityId);
@@ -30330,6 +30358,43 @@ async function boot(): Promise<void> {
         allowCityCapture,
       });
       return powerRes;
+    }
+
+    /* R-WEB-DEFEAT-LAST-CITY-BARBARIANS-Q1: przegrana po utracie OSTATNIEGO miasta
+     * gracza w bitwie, która rozstrzyga się POZA blokiem VICTORY CHECK na końcu tury.
+     * Atak barbarzyńców na bronione miasto idzie przez launchIncomingMapFieldBattle
+     * (bitwa z UI, asynchroniczna): jej onResolved przychodzi już po tym, jak końcowy
+     * check tury się wykonał, więc bez tego wywołania przegrana wypadała do następnej
+     * tury (i wcale, gdy gracz miał osadnika). Ta sama reguła co w bloku końca tury
+     * (checkDefeat), ten sam ekran; dominacja i nauka zostają na końcu tury.
+     * / EN: defeat after losing the LAST city of the player in a battle that resolves
+     * outside the end-of-turn VICTORY CHECK block (barbarian attack on a defended city
+     * goes through the async launchIncomingMapFieldBattle; its onResolved runs after the
+     * end-of-turn check already ran). Same rule (checkDefeat) and screen; dominance and
+     * science stay in the end-of-turn block. */
+    function sprawdzPrzegranaPoUtracieMiasta(): void {
+      if (gameOver || truceTestSuppressVictory || rebelProtectionTestSkipVictoryCheck) return;
+      const defeat = checkDefeat({
+        cities,
+        gracz: 0,
+        graczKiedysMialMiasto: playerEverOwnedCityByOwner.has(HUMAN_OWNER_PRIMARY),
+      });
+      if (defeat === null) return;
+      gameOver = true;
+      const eraLabelsDefeat = ['', 'Kamień', 'Brąz', 'Żelazo'];
+      showVictoryScreen(buildVictoryScreenData(defeat, {
+        turn,
+        eraLabel: eraLabelsDefeat[player.era] ?? ('Epoka ' + player.era),
+        civLabel: player.civType,
+      }), () => location.reload());
+      console.log('[Victory] ' + formatVictoryTitle(defeat.rodzaj, turn) + ' gracz=0 rodzaj=' + defeat.rodzaj + ' (po bitwie)');
+    }
+
+    /** R-WEB-DEFEAT-LAST-CITY-BARBARIANS-Q1: JEDNO wspólne `onResolved` bitwy barbarzyńców z miastem gracza
+     *  (wołane przez produkcyjny call site w fazie barbarzyńców ORAZ przez hak testowy `__defeatTestDebug`). */
+    function onBarbarianCityBattleResolved(): void {
+      // Reszta tury już poszła (VICTORY CHECK wykonany) — sprawdź przegraną, gdyby ta bitwa zdobyła ostatnie miasto gracza.
+      sprawdzPrzegranaPoUtracieMiasta();
     }
 
     /**
@@ -38677,35 +38742,6 @@ async function boot(): Promise<void> {
             // defending unit -- see the updated `difficulty` comment on
             // decideBarbarianMoves, barbarians.ts). easy/normal: unchanged (an empty city
             // still blocks barbarian entry, exactly as today).
-            /* R-WEB-DEFEAT-LAST-CITY-BARBARIANS-Q1: przegrana po utracie OSTATNIEGO miasta
-             * gracza w bitwie, która rozstrzyga się POZA blokiem VICTORY CHECK na końcu tury.
-             * Atak barbarzyńców na bronione miasto idzie przez launchIncomingMapFieldBattle
-             * (bitwa z UI, asynchroniczna): jej onResolved przychodzi już po tym, jak końcowy
-             * check tury się wykonał, więc bez tego wywołania przegrana wypadała do następnej
-             * tury (i wcale, gdy gracz miał osadnika). Ta sama reguła co w bloku końca tury
-             * (checkDefeat), ten sam ekran; dominacja i nauka zostają na końcu tury.
-             * / EN: defeat after losing the LAST city of the player in a battle that resolves
-             * outside the end-of-turn VICTORY CHECK block (barbarian attack on a defended city
-             * goes through the async launchIncomingMapFieldBattle; its onResolved runs after the
-             * end-of-turn check already ran). Same rule (checkDefeat) and screen; dominance and
-             * science stay in the end-of-turn block. */
-            function sprawdzPrzegranaPoUtracieMiasta(): void {
-              if (gameOver || truceTestSuppressVictory || rebelProtectionTestSkipVictoryCheck) return;
-              const defeat = checkDefeat({
-                cities,
-                gracz: 0,
-                graczKiedysMialMiasto: playerEverOwnedCityByOwner.has(HUMAN_OWNER_PRIMARY),
-              });
-              if (defeat === null) return;
-              gameOver = true;
-              const eraLabelsDefeat = ['', 'Kamień', 'Brąz', 'Żelazo'];
-              showVictoryScreen(buildVictoryScreenData(defeat, {
-                turn,
-                eraLabel: eraLabelsDefeat[player.era] ?? ('Epoka ' + player.era),
-                civLabel: player.civType,
-              }), () => location.reload());
-              console.log('[Victory] ' + formatVictoryTitle(defeat.rodzaj, turn) + ' gracz=0 rodzaj=' + defeat.rodzaj + ' (po bitwie)');
-            }
             const barbAllowCityCapture = shouldAllowBarbCityCapture(_menuDifficulty);
             // R-WEB-AI-MOVE-RANGE-Q1 r5: zajetosc heksow prowadzona PER TURA. Snapshot `occupied`
             // z decideBarbarianMoves nie widzi ruchow wykonanych wczesniej w tej samej turze, wiec
@@ -38803,11 +38839,7 @@ async function boot(): Promise<void> {
                       teren2,
                       structBonusBarb,
                       'Atak barbarzyńców',
-                      () => {
-                        // Reszta tury już poszła (VICTORY CHECK wykonany) — odśwież mapę i
-                        // sprawdź przegraną, gdyby ta bitwa zdobyła ostatnie miasto gracza.
-                        sprawdzPrzegranaPoUtracieMiasta();
-                      },
+                      onBarbarianCityBattleResolved,
                       worldTerrainFromHex(hexObj2),
                       barbAllowCityCapture,
                     );
