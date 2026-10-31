@@ -179,85 +179,6 @@ fn js_cmp_diff(d: f64) -> Ordering {
     }
 }
 
-/// Stabilne sortowanie przez scalanie. Nie panikuje dla niespójnych komparatorów (NaN),
-/// w odróżnieniu od `slice::sort_by`, który od Rust 1.81 może zgłosić panikę.
-fn stable_sort_by<T>(items: Vec<T>, cmp: &impl Fn(&T, &T) -> Ordering) -> Vec<T> {
-    if items.len() <= 1 {
-        return items;
-    }
-    let mut left = items;
-    let right = left.split_off(left.len() / 2);
-    let left = stable_sort_by(left, cmp);
-    let right = stable_sort_by(right, cmp);
-    let mut out = Vec::with_capacity(left.len() + right.len());
-    let mut li = left.into_iter().peekable();
-    let mut ri = right.into_iter().peekable();
-    loop {
-        let take_right = match (li.peek(), ri.peek()) {
-            (Some(a), Some(b)) => cmp(b, a) == Ordering::Less,
-            (Some(_), None) => false,
-            (None, Some(_)) => true,
-            (None, None) => break,
-        };
-        if take_right {
-            out.extend(ri.next());
-        } else {
-            out.extend(li.next());
-        }
-    }
-    out
-}
-
-/// Sortowanie jak V8 `Array.prototype.sort` (TimSort, `array-sort.tq`) dla `n < 64`: przy takim
-/// rozmiarze minrun = n, wiec caly array to jeden run: `CountAndMakeRun` (ewentualne odwrocenie
-/// malejacego prefiksu) + `BinaryInsertionSort` (porownanie `cmp(pivot, a[mid])`, `< 0` = w lewo).
-/// Dla niespojnych komparatorow (NaN -> remis) wynik zalezy od tej dokladnej sciezki (P6.8G, B6).
-/// Dla `n >= 64` (brak wektora) zostaje `stable_sort_by`; patrz dokument tematu (ZALOZENIE B6).
-fn v8_sort_by<T>(items: Vec<T>, cmp: &impl Fn(&T, &T) -> Ordering) -> Vec<T> {
-    let n = items.len();
-    if n >= 64 {
-        return stable_sort_by(items, cmp);
-    }
-    if n < 2 {
-        return items;
-    }
-    let mut a = items;
-    // CountAndMakeRun(0, n): kolejnosc porownan jak w V8 (current = a[idx], previous = a[idx-1]).
-    let descending = cmp(&a[1], &a[0]) == Ordering::Less;
-    let mut run = 2;
-    while run < n {
-        let order = cmp(&a[run], &a[run - 1]);
-        let breaks = if descending {
-            order != Ordering::Less
-        } else {
-            order == Ordering::Less
-        };
-        if breaks {
-            break;
-        }
-        run += 1;
-    }
-    if descending {
-        a[..run].reverse();
-    }
-    // BinaryInsertionSort(0, run, n).
-    for start in run..n {
-        let pivot = a.remove(start);
-        let mut left = 0;
-        let mut right = start;
-        while left < right {
-            let mid = left + ((right - left) >> 1);
-            if cmp(&pivot, &a[mid]) == Ordering::Less {
-                right = mid;
-            } else {
-                left = mid + 1;
-            }
-        }
-        a.insert(left, pivot);
-    }
-    a
-}
-
 /// Web `pickDeterministicIndex`: `((seed % length) + length) % length`.
 fn pick_deterministic_index(seed: i64, length: usize) -> usize {
     if length == 0 {
@@ -492,9 +413,13 @@ fn terrain_and_territory_filter<'a>(
 }
 
 mod auto;
+mod hook;
 mod manual;
 mod sasiedztwo;
+mod sort;
 
 pub use auto::*;
+pub use hook::OkolicaPopulationHook;
 pub use manual::*;
 pub use sasiedztwo::*;
+use sort::v8_sort_by;

@@ -48,6 +48,8 @@ const MAPS = {
   full: disk(0, 0, 4),
   // dysk z dziurami + dysk promienia 3 wokol (2,-1) (nachodzace okolice dwoch miast)
   holes: [...disk(0, 0, 4).filter(([q, r]) => !HOLES.has(`${q},${r}`)), ...disk(2, -1, 3)],
+  // duzy dysk promienia 12 (r4): okolice o n >= 64 kandydatow (test sortowania NaN, sekcja 11)
+  big: disk(0, 0, 12),
 };
 
 const buildMap = (cells) => {
@@ -62,15 +64,15 @@ const buildMap = (cells) => {
   }
   return { szerokoscQ: 40, wysokoscR: 40, hexes };
 };
-const MAPOBJ = { full: buildMap(MAPS.full), holes: buildMap(MAPS.holes) };
-const MAP_CELLS = { full: MAPS.full.map(([q, r]) => [q, r, terrainAt(q, r)]), holes: MAPS.holes.map(([q, r]) => [q, r, terrainAt(q, r)]) };
+const MAPOBJ = { full: buildMap(MAPS.full), holes: buildMap(MAPS.holes), big: buildMap(MAPS.big) };
+const MAP_CELLS = { full: MAPS.full.map(([q, r]) => [q, r, terrainAt(q, r)]), holes: MAPS.holes.map(([q, r]) => [q, r, terrainAt(q, r)]), big: MAPS.big.map(([q, r]) => [q, r, terrainAt(q, r)]) };
 // Map.set semantyka: ostatni zapis wygrywa (zgodnie z buildMap); lista unikalnych heksow:
 const uniqueCells = (name) => {
   const seen = new Map();
   for (const [q, r, t] of MAP_CELLS[name]) seen.set(`${q},${r}`, [q, r, t]);
   return [...seen.values()];
 };
-const CELLS = { full: uniqueCells('full'), holes: uniqueCells('holes') };
+const CELLS = { full: uniqueCells('full'), holes: uniqueCells('holes'), big: uniqueCells('big') };
 
 // ---- sekcja 1: skalary ----------------------------------------------------------------------
 const POPS = [-3, -1, -0.5, -0, 0, 0.5, 0.9, 1, 2.7, 4, 4.999, 5, 5.5, 10, 14.9, 15, 15.5, 16, 100, NaN, Infinity, -Infinity];
@@ -136,14 +138,14 @@ for (const a of LKEYS) for (const b of LKEYS) {
 
 // ---- sekcja 4: plony (tabela z prawdziwego yieldOfMapHex) ------------------------------------
 const yieldTable = {};
-for (const mname of ['full', 'holes'])
+for (const mname of ['full', 'holes', 'big'])
   for (const [q, r] of MAPS[mname]) {
     const y = O.yieldOfMapHex(MAPOBJ[mname], q, r);
     yieldTable[`${mname}|${q},${r}`] = { zywnosc: enc(y.zywnosc), praca: enc(y.praca), handel: enc(y.handel) };
   }
 // wariant NaN: co piaty heks ma zywnosc NaN (wejscie testowe komparatora; nie z weba)
 const yieldNanTable = {};
-for (const mname of ['full', 'holes'])
+for (const mname of ['full', 'holes', 'big'])
   for (const [q, r] of MAPS[mname]) {
     const base = yieldTable[`${mname}|${q},${r}`];
     yieldNanTable[`${mname}|${q},${r}`] = (q + 2 * r) % 5 === 0 ? { ...base, zywnosc: 'NaN' } : base;
@@ -203,6 +205,141 @@ for (const pb of [1, 3]) {
   rebalRows.push({ map: 'full', cq: 0, cr: 0, focus: 'zywnosc', popBefore: enc(pb), popAfter: 5, init: 'auto', initReczne: [['1,0', 1]], yields: 'web', out: Object.entries(city.okolicaReczne).map(([k, v]) => [k, enc(v)]) });
 }
 
+// ---- sekcja 7 (r4): reczny adjust/toggle; terytorium (terrainAndTerritoryFilter), excludeHexKeys ----
+// Wejscia terytorium w ksztalcie webowym (TerritoryNode = CityNode & {ownerId}); `outpost` = posterunek (nie centrum).
+const TERR = {
+  none: null,
+  two: [
+    { q: 0, r: 0, pop: 5, level: 1, ownerId: 1 },
+    { q: 2, r: -1, pop: 3, level: 1, ownerId: 2 },
+  ],
+  outpost: [
+    { q: 0, r: 0, pop: 5, level: 1, ownerId: 1 },
+    { q: 2, r: -1, pop: 3, level: 1, ownerId: 2 },
+    { q: 4, r: -2, pop: 1, level: 1, ownerId: 2, isOutpost: true },
+  ],
+};
+const terrOf = (name) => (TERR[name] === null ? undefined : TERR[name]);
+const EXCL = { none: null, some: ['1,0', '-1,1', '2,-1'] };
+const exclSet = (name) => (EXCL[name] === null ? undefined : new Set(EXCL[name]));
+const COMBOS = [['none', 'none'], ['two', 'none'], ['two', 'some'], ['outpost', 'some']];
+const pairsOf = (o) => (o === undefined || o === null ? null : Object.entries(o).map(([k, v]) => [k, enc(v)]));
+const byKey = (a, b) => (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0);
+
+const ADJ = [];
+for (const mname of ['full', 'holes'])
+  for (const [cq, cr] of [[0, 0], [2, -1]])
+    for (const pop of [0, 2, 6])
+      for (const tryb of ['reczny', 'auto'])
+        for (const init of ['none', 'empty', 'mixed'])
+          for (const [tn, en] of COMBOS) {
+            const allTiles = O.okolicaTiles(cq, cr, 5, MAPOBJ[mname]).map((t) => t.key);
+            const reczneInit =
+              init === 'none' ? undefined : init === 'empty' ? {} : { [allTiles[1]]: 1, [allTiles[3]]: 1, '99,99': 1, [allTiles[5]]: 0 };
+            const targets = ['0,0', '2,-1', allTiles[0], allTiles[2], allTiles[4], allTiles[1], '1,0', '99,99', '-2,1', '3,-1', '5,5'];
+            for (const tk of targets) {
+              const [tq, tr] = tk.split(',').map(Number);
+              const mk = () => ({
+                id: `c${cq}_${cr}`, ownerId: 1, q: cq, r: cr, population: pop, okolicaFocus: 'zywnosc',
+                okolicaTryb: tryb, okolicaReczne: reczneInit === undefined ? undefined : { ...reczneInit },
+              });
+              const terr = terrOf(tn);
+              const excl = exclSet(en);
+              const base = { map: mname, cq, cr, pop: enc(pop), tryb, init: pairsOf(reczneInit), target: tk, terr: tn, excl: en };
+              for (const delta of [1, -1]) {
+                const res = O.adjustTileWorker(mk(), MAPOBJ[mname], tq, tr, delta, undefined, terr, excl);
+                ADJ.push({ ...base, op: 'adjust', delta, ok: res.ok, reason: res.reason ?? null, out: pairsOf(res.reczne) });
+              }
+              const resT = O.toggleTileWorker(mk(), MAPOBJ[mname], tq, tr, undefined, terr, excl);
+              ADJ.push({ ...base, op: 'toggle', delta: null, ok: resT.ok, reason: resT.reason ?? null, out: pairsOf(resT.reczne) });
+            }
+          }
+
+// ---- sekcja 8 (r4): computeLostToNearerSiblingByCity, collectWorkedHexKeysForOwner, collectWorkedHexOwnerMap ----
+const CITY_SETS = {
+  A: [
+    { id: 'a', ownerId: 1, q: 0, r: 0, population: 5, okolicaFocus: 'zywnosc', okolicaTryb: 'auto' },
+    { id: 'b', ownerId: 1, q: 3, r: 0, population: 5, okolicaFocus: 'produkcja', okolicaTryb: 'auto' },
+    { id: 'c', ownerId: 2, q: 1, r: 1, population: 6, okolicaFocus: 'zywnosc', okolicaTryb: 'auto' },
+    { id: 'd', ownerId: 1, q: -4, r: 2, population: 9, okolicaFocus: 'zywnosc', okolicaTryb: 'auto' },
+  ],
+  B: [
+    { id: 'x', ownerId: 1, q: 2, r: -1, population: 12, okolicaFocus: 'zywnosc', okolicaTryb: 'auto' },
+    { id: 'y', ownerId: 1, q: 0, r: 0, population: 3, okolicaFocus: 'podatki', okolicaTryb: 'auto' },
+    { id: 'z', ownerId: 1, q: 5, r: -5, population: 1, okolicaFocus: 'zywnosc', okolicaTryb: 'reczny', okolicaReczne: { '4,-4': 1 } },
+    { id: 'w', ownerId: 2, q: 2, r: -1, population: 4, okolicaFocus: 'zywnosc', okolicaTryb: 'auto' },
+  ],
+  C: [
+    { id: 'p', ownerId: 3, q: 0, r: 0, population: 7, okolicaFocus: 'zywnosc', okolicaTryb: 'auto' },
+    { id: 'q', ownerId: 3, q: 2, r: -2, population: 7, okolicaFocus: 'produkcja', okolicaTryb: 'auto' },
+    { id: 'r', ownerId: 4, q: 1, r: -1, population: 4, okolicaFocus: 'zywnosc', okolicaTryb: 'reczny', okolicaReczne: { '0,-1': 1, '1,-2': 1 } },
+  ],
+};
+const LOST = [];
+const COLLECT = [];
+for (const [sname, cities] of Object.entries(CITY_SETS))
+  for (const mname of ['full', 'holes', 'big']) {
+    const lost = O.computeLostToNearerSiblingByCity(cities, MAPOBJ[mname]);
+    LOST.push({
+      set: sname, map: mname,
+      out: [...lost.entries()].sort(byKey).map(([cid, s]) => [cid, [...s].sort()]),
+    });
+    for (const tn of ['none', 'two']) {
+      const terr = terrOf(tn);
+      for (const owner of [1, 2, 3, 4])
+        COLLECT.push({
+          kind: 'keys', set: sname, map: mname, terr: tn, owner,
+          out: [...O.collectWorkedHexKeysForOwner(cities, MAPOBJ[mname], owner, { territoryNodes: terr })].sort(),
+        });
+      COLLECT.push({
+        kind: 'owner', set: sname, map: mname, terr: tn, owner: null,
+        out: [...O.collectWorkedHexOwnerMap(cities, MAPOBJ[mname], { territoryNodes: terr })].sort(byKey),
+      });
+    }
+  }
+
+// ---- sekcja 9 (r4): resolveWorkedTiles - tryb reczny (kolejnosc wstawiania, obciecie do pop) i auto z terytorium ----
+const RESOLVE = [];
+for (const mname of ['full', 'holes'])
+  for (const [cq, cr] of [[0, 0], [2, -1]])
+    for (const pop of [0, 1, 3, 6])
+      for (const [tn, en] of COMBOS) {
+        const allTiles = O.okolicaTiles(cq, cr, 5, MAPOBJ[mname]).map((t) => t.key);
+        const variants = {
+          auto: { tryb: 'auto', reczne: undefined },
+          empty: { tryb: 'reczny', reczne: {} },
+          few: { tryb: 'reczny', reczne: { [allTiles[0]]: 1, [allTiles[2]]: 0, '99,99': 1, '1,0': 1 } },
+          over: { tryb: 'reczny', reczne: Object.fromEntries([0, 1, 2, 3, 4, 5, 6, 7].map((i) => [allTiles[i], 1])) },
+        };
+        for (const [vn, v] of Object.entries(variants)) {
+          const city = {
+            id: `c${cq}_${cr}`, ownerId: 1, q: cq, r: cr, population: pop, okolicaFocus: 'zywnosc',
+            okolicaTryb: v.tryb, okolicaReczne: v.reczne === undefined ? undefined : { ...v.reczne },
+          };
+          const init = pairsOf(city.okolicaReczne);
+          const out = O.resolveWorkedTiles(city, MAPOBJ[mname], yieldOfFrom(yieldTable, mname), {
+            territoryNodes: terrOf(tn), ownerId: 1, excludeHexKeys: exclSet(en),
+          });
+          RESOLVE.push({ map: mname, cq, cr, pop: enc(pop), variant: vn, tryb: v.tryb, init, terr: tn, excl: en, out: out.map((t) => t.key) });
+        }
+      }
+
+// ---- sekcja 11 (r4): sortowanie z NaN dla n >= 64 kandydatow (mapa big, zasieg 7/12/15 -> n >> 64) ----
+const NAN_BIG = [];
+for (const [cq, cr] of [[0, 0], [3, -2]])
+  for (const pop of [7, 12, 22])
+    for (const focus of FOCI) {
+      const rad = O.cityRangeForPopulation(pop);
+      const candidates = O.okolicaTiles(cq, cr, rad, MAPOBJ.big).length;
+      const out = O.resolveWorkedTiles(
+        { q: cq, r: cr, population: pop, okolicaFocus: focus, okolicaTryb: 'auto', ownerId: 1 },
+        MAPOBJ.big,
+        yieldOfFrom(yieldNanTable, 'big'),
+        {},
+      );
+      NAN_BIG.push({ cq, cr, pop: enc(pop), focus, radius: enc(rad), candidates, out: out.map((t) => t.key) });
+    }
+
 const meta = {
   pin: PIN,
   generator: 'gen-p6-8g-okolica-vectors.mjs',
@@ -210,6 +347,7 @@ const meta = {
     cityRange: cityRange.length, surroundingCap: surroundingCap.length, score: scoreRows.length, assignScore: assignRows.length,
     wagiFocus: wagiFocus.length, keys: keysRows.length, tiles: tilesRows.length, edge: EDGE.length, locale: locale.length,
     auto: autoRows.length, rebalance: rebalRows.length,
+    adjust: ADJ.length, lost: LOST.length, collect: COLLECT.length, resolve: RESOLVE.length, nanBig: NAN_BIG.length,
   },
 };
 const doc = {
@@ -228,6 +366,15 @@ const doc = {
   locale,
   auto: autoRows,
   rebalance: rebalRows,
+  // r4
+  terrNodes: { two: TERR.two, outpost: TERR.outpost },
+  exclSets: EXCL,
+  citySets: CITY_SETS,
+  adjust: ADJ,
+  lost: LOST,
+  collect: COLLECT,
+  resolve: RESOLVE,
+  nanBig: NAN_BIG,
 };
 writeFileSync(join(outDir, 'okolica.json'), JSON.stringify(doc) + '\n');
 console.log(JSON.stringify(meta.counts));
