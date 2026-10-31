@@ -43,7 +43,11 @@ fn layers_predicate_matches_pinned_web_vectors() {
             .map(|v| v.as_str().expect("layer").to_string())
             .collect();
         let expected = c["expected"].as_bool().expect("expected");
-        assert_eq!(preserves_hill_relief(&layers), expected, "layers={layers:?}");
+        assert_eq!(
+            preserves_hill_relief(&layers),
+            expected,
+            "layers={layers:?}"
+        );
     }
 }
 
@@ -52,7 +56,15 @@ fn explicit_keys_and_legacy_kopalnia() {
     for k in ["bydlo", "owce", "lama", "kamieniolom", "tartak", "kopalnia"] {
         assert!(preserves_hill_relief_key(k), "{k}");
     }
-    for k in ["farma", "wyrab", "droga", "fort", "glinianka", "stadnina", "oboz_lowiecki"] {
+    for k in [
+        "farma",
+        "wyrab",
+        "droga",
+        "fort",
+        "glinianka",
+        "stadnina",
+        "oboz_lowiecki",
+    ] {
         assert!(!preserves_hill_relief_key(k), "{k}");
     }
 }
@@ -71,7 +83,16 @@ fn prefix_boundaries() {
 /// Porownanie dokladne: wielkosc liter, spacje i pusty string nie sa trafieniem.
 #[test]
 fn exact_match_no_trim_no_case_fold() {
-    for k in ["Bydlo", " bydlo", "bydlo ", "BYDLO", "", "Kopalnia_miedzi", "KOPALNIA", "kopalnia-miedzi"] {
+    for k in [
+        "Bydlo",
+        " bydlo",
+        "bydlo ",
+        "BYDLO",
+        "",
+        "Kopalnia_miedzi",
+        "KOPALNIA",
+        "kopalnia-miedzi",
+    ] {
         assert!(!preserves_hill_relief_key(k), "{k:?}");
     }
 }

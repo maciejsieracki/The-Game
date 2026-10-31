@@ -6,7 +6,8 @@
 //! UTF-8 (odpowiednik `Set.has` i `String.prototype.startsWith` dla tych danych).
 
 /// Jawne klucze BEZ prefiksu "kopalnia" (pin 91dc998a: hodowla solo, kamieniolom, tartak).
-const PRESERVES_HILL_RELIEF_EXPLICIT_KEYS: [&str; 5] = ["bydlo", "owce", "lama", "kamieniolom", "tartak"];
+const PRESERVES_HILL_RELIEF_EXPLICIT_KEYS: [&str; 5] =
+    ["bydlo", "owce", "lama", "kamieniolom", "tartak"];
 
 const KOPALNIA_PREFIX: &str = "kopalnia_";
 /// Legacy uniwersalna "kopalnia" (stare zapisy/migracje).
