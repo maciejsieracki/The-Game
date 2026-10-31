@@ -42768,6 +42768,20 @@ async function boot(): Promise<void> {
       _lastNaukaRate = 0;
       _lastKulturaRate = 0;
       _lastLudnoscRate = 0;
+      // R-WEB-HOTSEAT-HUD-CACHE-Q1 (decyzja wlasciciela A, 2026-10-31): wartosci pomocnicze HUD
+      // (cache `_last*`: Praca rate, utrzymanie, koszt auto-ulepszen, koszt cudow, kultura,
+      // kultura rate) zerujemy dla KAZDEGO fotela hot-seat -- wczesniej TYLKO fotel 0 (surowe
+      // zmienne wyzej; fotel 0 = alias komorki slotu), wiec fotel 2+ po wczytaniu w trakcie
+      // sesji pokazywal stara liczbe z poprzedniej gry. `_lastPraca` (pula) NIE jest tu ruszane:
+      // odtworzone wyzej z zapisu (`setOwnerLastPraca`).
+      for (const oid of humanSeats.humanOwnerIds) {
+        setOwnerLastPracaRate(oid, 0);
+        setOwnerLastPracaUpkeep(oid, 0);
+        setOwnerLastPracaAutoUlepszeniaKoszt(oid, 0);
+        setOwnerLastPracaCudaKoszt(oid, 0);
+        setOwnerLastKultura(oid, 0);
+        setOwnerLastKulturaRate(oid, 0);
+      }
       siegeTurnByCity.clear();
       siegeBesiegerByCity.clear();
       siegeAiStateByKey.clear();
