@@ -7,6 +7,15 @@ WYZWALACZ (właściciel, 2026-10-31): „Sprawdzić, dlaczego podczas automatycz
 BAZA: `git fetch origin main`; worktree z `origin/main` (>= `914daa502`), sparse (`gra`, katalog runu).
 ZASADY WŁAŚCICIELA (zachować; źródło: ECHO 2026-08-27, testy `gra/tools/*auto-improv*`, `*wyrab*`): budowanie napędzane popytem (`demandDriven`), minimum leśne miasta `ceil(pop/10)`, farma działa bez wycinki lasu, wycinka na heksie rzeka+las jako KROK 0 heksa, obrona posterunek/fort na granicy zasięgu. Priorytety: `AI_IMPROVEMENT_PRIORITY` (`gra/src/game/auto-improvements.ts` ~56), `ULEPSZENIA_FOCUS_ZYWNOSC` (~71), `ULEPSZENIA_ZYWNOSCIOWE` (~109), `foodOnly` (~588, ~712), wyrąb (~973).
 
+
+=== WIĄŻĄCA SPECYFIKACJA PRIORYTETÓW WŁAŚCICIELA (2026-10-31, doprecyzowanie; ma pierwszeństwo nad wcześniejszym opisem kolejności w tym pliku) ===
+Auto-ulepszenia żywnościowe, ETAPAMI GLOBALNIE (nie heks po heksie): 
+E1. Farma na heksach z rzeką, na których NIE MA lasu — pierwszy priorytet, wszędzie, zanim cokolwiek z E2+.
+E2. Wycięcie lasu na heksach przy rzece, potem farma na wyciętym heksie; cel: zagospodarować WSZYSTKIE rzeki pod farmy (najpierw wyciąć, potem postawić farmę).
+E3. Gdy tereny przy rzekach są zagospodarowane: hodowla (bydło/owce/lama) — TYLKO na heksach przy rzece, gdzie są mieszkańcy (👤; w tym heksy po wycince). „Innych terenów nie rozpatrujemy.”
+E4. Gdy hodowla jest już wszędzie (we wszystkich kwalifikujących się miejscach z E3): irygacja.
+Obowiązuje ZARÓWNO dla gracza (`main.ts:32186`), JAK I dla AI cywilizacji (ten sam `pickAutoImprovements`; ustal wywołanie AI i jego opcje, np. `maxItemsPerCity`) — jedna implementacja, jedna prawda. Etap wyższy ma pierwszeństwo przed niższym w całym zasięgu miasta (jeśli gdziekolwiek zostaje heks E1, nie robimy E2/E3/E4 gdzie indziej).
+NIEJASNOŚĆ do zgłoszenia, NIE do zgadywania: co po E1–E2, gdy rzeki zagospodarowane — czy dalej wycinamy lasy poza rzeką pod farmy (stara reguła ECHO 2026-08-27, `wolnoKarczowacPozaRzeka`), i czy farma poza rzeką jest nadal budowana. Do czasu decyzji ZACHOWAJ obecne zachowanie dla terenów poza rzeką (nie usuwaj), ale opisz je w raporcie jako DECISION_REQUIRED z propozycją. Zmierz, czy obecna FAZA 1 (heks po heksie, `auto-improvements.ts:~897-960`) łamie E1–E4 (np. irygacja na heksie 1 przed farmą na heksie 2) i przebuduj kolejność do etapów (test czerwony PRZED, zielony PO, mutacja). Jeśli przebudowa narusza istniejące zamknięte testy tematu R-AI-WYRAB-PRZY-RZECE-FARMY-Q1 (ECHO 2026-08-27 „kompleksowość heksa”: skarga „robi 15 heksów naraz niekompleksowo”) — nie wyłączaj ich po cichu: opisz konflikt i zaproponuj minimalne rozstrzygnięcie.
 FAKTY ZWERYFIKOWANE W KODZIE PRZEZ ORKIESTRATORA (potwierdź lub obal pomiarem, nie przepisuj):
 F1. Automat gracza (`gra/src/main.ts:32186`) NIE przekazuje `maxItemsPerCity` ⇒ Infinity (`auto-improvements.ts:430`). Limit 1 dotyczy tylko AI. Limitu na miasto u gracza nie szukaj.
 F2. Właściciel POTWIERDZIŁ: miał włączone „Wolno wycinać las” (`wolnoWycinacLas`, domyślnie false: `cities.ts:226`; per miasto `getSkipWyrab` main.ts:32199). Więc przełącznik NIE jest przyczyną.
