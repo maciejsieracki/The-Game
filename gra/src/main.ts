@@ -224,6 +224,9 @@ import {
 } from './game/cities';
 import {
   type FortNode,
+  nextFortSeq,
+  backfillFortOrder,
+  applyFortCaptureByOccupation,
   type FortTakeoverEvent,
   fortNodeAsCityNode,
   foundingNodesForOwner,
@@ -13477,6 +13480,7 @@ async function boot(): Promise<void> {
           // ONLY) let a sub-stack land on a camp that keeps spawning units
           // underneath it.
           const campDestroyed = checkBarbCampDestroyedAt(destQ, destR);
+          sweepFortCaptures(); // R3 Q-A=A: rozdzielenie armii na heks fortu = wejscie wojska
           if (tryAutoCaptureEmptyCityAt(destQ, destR, splitArrivals)) {
             refreshD1bHud();
             return;
@@ -14295,7 +14299,8 @@ async function boot(): Promise<void> {
       if (key !== 'fort' && key !== 'posterunek') return;
       const type = key as 'fort' | 'posterunek';
       const contestedUseless = isHexReservedByRivalFort(q, r, ownerId, fortNodes);
-      fortNodes.push({ q, r, ownerId, type, contestedUseless });
+      // R3 Q-B=B: znacznik kolejnosci budowy (wczesniejszy fort wygrywa sporny heks).
+      fortNodes.push({ q, r, ownerId, type, contestedUseless, builtAtTurn: turn, seq: nextFortSeq(fortNodes) });
       // R-WEB-OUTPOST-FORT-TERRITORY-Q1: fort/posterunek przesuwa granice — odswiez pas granic.
       if (territoryBorderVisible) refreshTerritoryBorderOverlay();
     }
@@ -14376,6 +14381,33 @@ async function boot(): Promise<void> {
         }
       }
       if (moved) syncUnitsRender();
+    }
+
+    /**
+     * R3 Q-A=A (wlasciciel 2026-10-31): zdobycie fortu/posterunka przez WEJSCIE WOJSKA na heks —
+     * wspolny sweep dla gracza i AI (wolany po ruchu, po bitwie i na koncu tury dla stojacych).
+     * Logika w game/fort-territory.ts (applyFortCaptureByOccupation); tu: odswiezenie granic,
+     * komunikat dla obu stron. Zwraca liczbe zdobytych fortow.
+     * / EN: capture sweep shared by player and AI.
+     */
+    function sweepFortCaptures(): number {
+      if (fortNodes.length === 0) return 0;
+      const evs = applyFortCaptureByOccupation(
+        fortNodes,
+        units.map(u => ({ ownerId: u.ownerId, q: u.q, r: u.r, military: !isCivilianUnit(u) })),
+        areEnemyOwners,
+        isBarbarian,
+      );
+      if (evs.length === 0) return 0;
+      if (territoryBorderVisible) refreshTerritoryBorderOverlay();
+      for (const ev of evs) {
+        const nm = ev.type === 'fort' ? 'Fort' : 'Posterunek';
+        console.log(`[Fort] ${nm} (${ev.q},${ev.r}) zdobyty: ${ev.prevOwnerId} -> ${ev.newOwnerId} (razem z terytorium)`);
+        if (isMe(ev.newOwnerId)) showHintMessage(`${nm} zdobyty razem z terytorium (${ev.q},${ev.r}).`, 4500);
+        else if (isMe(ev.prevOwnerId)) showHintMessage(`Utracono ${nm.toLowerCase()} (${ev.q},${ev.r}) wraz z terytorium — zdobyty przez wroga.`, 4500);
+      }
+      markCityStateDirty();
+      return evs.length;
     }
 
     /** F-CITY-HEX: wyczyść hex + ukryj dekoracje terenu pod miastem. */
@@ -25287,13 +25319,59 @@ async function boot(): Promise<void> {
         spawnImprovementMesh(hexKey);
       },
       ownerAt: (q: number, r: number): number | null => territoryOwnerAtLive(q, r),
+      // R3: hak testowy zdobycia fortu (Q-A) i kolejnosci (Q-B) — te same REALNE funkcje co gra.
+      fortOwner: (q: number, r: number): number | null => fortNodes.find(f => f.q === q && f.r === r)?.ownerId ?? null,
+      fortOrder: (q: number, r: number): { builtAtTurn?: number; seq?: number } | null => {
+        const f = fortNodes.find(x => x.q === q && x.r === r);
+        return f ? { builtAtTurn: f.builtAtTurn, seq: f.seq } : null;
+      },
+      setWar: (a: number, b: number): void => {
+        const rel = getDiploRelation(a, b);
+        rel.status = 'wojna';
+      },
+      placeUnitAt: (ownerId: number, q: number, r: number, civilian = false): string | null => {
+        const tpl = units.find(u => u.ownerId === ownerId && isCivilianUnit(u) === civilian)
+          ?? units.find(u => isCivilianUnit(u) === civilian);
+        if (!tpl) return null;
+        const id = `fortcap-${ownerId}-${q}-${r}-${units.length}`;
+        units.push({ ...tpl, id, ownerId, q, r, inGarnizon: false } as RuntimeUnit);
+        syncUnitsRender();
+        return id;
+      },
+      removeUnit: (id: string): void => {
+        const i = units.findIndex(u => u.id === id);
+        if (i >= 0) units.splice(i, 1);
+        syncUnitsRender();
+      },
+      sweepCaptures: (): number => sweepFortCaptures(),
+      // Obrona R3: REALNY ruch gracza o 1 heks (startAnimatedMove -> petla renderu -> koniec animacji -> sweepFortCaptures).
+      moveStep: (id: string, q: number, r: number): boolean => {
+        const u = units.find(x => x.id === id);
+        if (!u || isAnimating) return false;
+        u.ruchLeft = Math.max(u.ruchLeft ?? 0, 2);
+        startAnimatedMove(u, [{ q, r }], q, r, 1);
+        return true;
+      },
+      isAnimating: (): boolean => isAnimating,
+      landNeighbor: (cq: number, cr: number): { q: number; r: number } | null => {
+        for (const h of hexNeighborCoords(cq, cr)) {
+          const hx = map.hexes[keyOf(h.q, h.r)];
+          if (hx && !isWaterTerrain(hx.terenBazowy) && hx.terenBazowy !== TerenBazowy.Gory
+            && !units.some(x => x.q === h.q && x.r === h.r)) return { q: h.q, r: h.r };
+        }
+        return null;
+      },
+      unitPos: (id: string): { q: number; r: number } | null => {
+        const u = units.find(x => x.id === id);
+        return u ? { q: u.q, r: u.r } : null;
+      },
       hexesWithin: (q: number, r: number, rad: number): Array<{ q: number; r: number }> =>
         hexKeysWithinRadius(q, r, rad, map).map(k => {
           const [a, b] = k.split(',');
           return { q: Number(a), r: Number(b) };
         }),
       /** Heks lądowy (bez wody/gór) w dokładnej odległości `d` od (cq,cr), z pełnym kręgiem r=5 na mapie. */
-      landHexAtDistance: (cq: number, cr: number, d: number, skip = 0): { q: number; r: number } | null => {
+      landHexAtDistance: (cq: number, cr: number, d: number, skip = 0, loose = false): { q: number; r: number } | null => {
         let seen = 0;
         for (const k of Object.keys(map.hexes)) {
           const [a, b] = k.split(',');
@@ -25301,9 +25379,9 @@ async function boot(): Promise<void> {
           if (hexDistance(q, r, cq, cr) !== d) continue;
           const h = map.hexes[k]!;
           if (isWaterTerrain(h.terenBazowy) || h.terenBazowy === TerenBazowy.Gory) continue;
-          if (cities.some(c => hexDistance(q, r, c.q, c.r) <= 7)) continue;
+          if (cities.some(c => hexDistance(q, r, c.q, c.r) <= (loose ? 2 : 7))) continue;
           if (territoryOwnerAtLive(q, r) !== null) continue;
-          if (hexKeysWithinRadius(q, r, 5, map).length < 91) continue;
+          if (!loose && hexKeysWithinRadius(q, r, 5, map).length < 91) continue;
           if (seen++ < skip) continue;
           return { q, r };
         }
@@ -31137,6 +31215,7 @@ async function boot(): Promise<void> {
           if (attackerNowOnBattleHex) checkBarbCampDestroyedAt(battleQ, battleR);
         }
       }
+      sweepFortCaptures(); // R3 Q-A=A: po bitwie obroncy zgineli, atakujacy stoi na forcie
 
       let battleLoot: BattleLoot | null = null;
       if (mapWinner === 'atakujacy' || mapWinner === 'obronca') {
@@ -34190,6 +34269,7 @@ async function boot(): Promise<void> {
           if (st.bunt) st.bunt = undefined;
         }
         evictForeignUnitsFromCityHexes();
+        sweepFortCaptures(); // R3 Q-A=A: jednostki stojace na wrogim forcie (koniec tury)
         // Restore movement for all units
         movedByPlayerThisTurn.clear();
         for (const u of units) {
@@ -38783,6 +38863,10 @@ async function boot(): Promise<void> {
         // transition can paint or the player regains control, including errors
         // and resumed AI phases after a battle.
         flushAiCityRenderBatch();
+        // R3 Q-A=A (obrona zarzut 4): wejscie wojska AI-cywilizacji na heks fortu = zdobycie od razu po
+        // fazie AI (bezwarunkowo; sweep przy barbarzyncach jest w bloku warunkowym, a koniec tury
+        // sprawdzalby dopiero w nastepnej turze).
+        try { sweepFortCaptures(); } catch (eFortSweepAi) { console.error('[Fort] Blad sweepu po fazie AI:', eFortSweepAi); }
 
         // ===================================================================
         // BARBARIANS TICK: spawn camps + move barbarian units
@@ -39120,6 +39204,7 @@ async function boot(): Promise<void> {
               }
             }
             evictForeignUnitsFromCityHexes();
+            sweepFortCaptures(); // R3 Q-A=A: po ruchach AI/barbarzyncow w tej turze
             syncUnitsRender();
           }
         } catch (eBarb) {
@@ -39345,6 +39430,7 @@ async function boot(): Promise<void> {
               if (bonusChanged) syncUnitsRender();
             }
             tryAutoCaptureEmptyCityAt(anim.destQ, anim.destR, stack);
+            sweepFortCaptures(); // R3 Q-A=A: koniec ruchu na heksie fortu (animacja ucieta)
           }
           anim = null;
           isAnimating = false;
@@ -39808,6 +39894,7 @@ async function boot(): Promise<void> {
           if (!hutCollected && !campDestroyed) refreshFog();
 
           if (u) tryAutoCaptureEmptyCityAt(destQ, destR, stack);
+          sweepFortCaptures(); // R3 Q-A=A: koniec ruchu (gracz i AI) na heksie fortu
           promptMergeIfCoLocated(
             movedStackIds.length > 0 ? movedStackIds : [finishedId],
             fromQ,
@@ -42800,6 +42887,8 @@ async function boot(): Promise<void> {
           }
         }
       }
+      // R3 Q-B=B: stare zapisy bez znacznika kolejnosci -> backfill wg kolejnosci w tablicy (builtAtTurn=0).
+      backfillFortOrder(fortNodes);
       clearAllHexClearing();
       pendingImprovementsTurn = PendingImprovementsTurn.fromSave(
         saved.meta?.pendingImprovementsTurn as PendingImprovementEntry[] | undefined,

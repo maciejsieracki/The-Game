@@ -35,7 +35,16 @@ export interface CityNode {
 }
 
 /** Węzeł terytorium z właścicielem — do skanów dyplomacji (P5 przemarsz). */
-export type TerritoryNode = CityNode & { ownerId: number };
+export type TerritoryNode = CityNode & {
+  ownerId: number;
+  /**
+   * R-WEB-OUTPOST-FORT-TERRITORY-Q1 R3 (Q-B=B, wlasciciel 2026-10-31): znacznik kolejnosci budowy
+   * fortu/posterunku — sporny heks miedzy fortami roznych cywilizacji nalezy do WCZESNIEJSZEGO
+   * (mniejsze `turn`, przy remisie mniejsze `seq`). Brak = rozstrzyga odleglosc (stary mechanizm).
+   * / EN: build-order stamp; the earlier fort wins a hex contested by forts of different civs.
+   */
+  order?: { turn: number; seq: number };
+};
 
 // ============================================================
 // ODLEGŁOŚĆ AKSJALNA (kostka)
@@ -108,6 +117,7 @@ export function isInTerritory(q: number, r: number, nodes: CityNode[]): boolean 
  * Gdy kilka węzłów obejmuje ten sam heks — wygrywa **najbliższy** w promieniu
  * (mniejszy axialDistance do centrum węzła). Przy remisie odległości — **pierwszy**
  * węzeł w tablicy `nodes`. Węzły miast mają pierwszeństwo przed fortami/posterunkami.
+ * Spór fortów (R3, Q-B=B): gdy oba węzły fortu mają `order` — wygrywa WCZEŚNIEJ zbudowany.
  */
 export function territoryOwnerAt(
   q: number,
@@ -118,13 +128,22 @@ export function territoryOwnerAt(
   let bestCityDist = Infinity;
   let bestFortOwner: number | null = null;
   let bestFortDist = Infinity;
+  let bestFortOrder: { turn: number; seq: number } | undefined;
 
   for (const node of nodes) {
     const radius = cityTerritoryRadius(node);
     const dist = axialDistance(q, r, node.q, node.r);
     if (dist > radius) continue;
     if (node.isFort || node.isOutpost) {
-      if (dist < bestFortDist) { bestFortDist = dist; bestFortOwner = node.ownerId; }
+      // Q-B=B (R3): oba wezly z `order` -> wygrywa wczesniejszy fort; inaczej najblizszy (stary mechanizm).
+      const o = node.order;
+      let better: boolean;
+      if (bestFortOwner !== null && o && bestFortOrder) {
+        better = o.turn !== bestFortOrder.turn ? o.turn < bestFortOrder.turn : o.seq < bestFortOrder.seq;
+      } else {
+        better = dist < bestFortDist;
+      }
+      if (better) { bestFortDist = dist; bestFortOwner = node.ownerId; bestFortOrder = o; }
     } else if (dist < bestCityDist) {
       bestCityDist = dist;
       bestCityOwner = node.ownerId;

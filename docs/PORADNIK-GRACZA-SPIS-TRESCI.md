@@ -333,10 +333,10 @@ Panel miasta · Warstwa kultury na mapie · Kreator nowej gry · Zapis gry · Sk
 
 ### 9. Terytorium
 
-**9.1.** Zasięg miasta (10 heksów) · posterunek (5) · fort (10)
+**9.1.** Zasięg miasta (10 heksów) · posterunek (3) · fort (5)
 - **Miasto** — rośczenie do ok. **10 heksów** wokół centrum (model v1)
-- **Posterunek (Strażnica)** — mniejszy zasięg, ok. **5 heksów**
-- **Fort** — większy zasięg, ok. **10 heksów** jak miasto
+- **Posterunek (Strażnica)** — teren zabezpieczony w promieniu **3 heksów**
+- **Fort** — teren zabezpieczony w promieniu **5 heksów** (jak miasto: obca cywilizacja nie może tam budować)
 - Tylko **twój** terytorium — budowa i plony z twoich pól
 
 **9.2.** Zakładanie kolejnego miasta (Strażnica LUB zasięg istniejącego miasta)
@@ -780,7 +780,7 @@ Panel miasta · Warstwa kultury na mapie · Kreator nowej gry · Zapis gry · Sk
 
 **28.4.** **Infrastruktura:** Droga, Posterunek (Strażnica), Fort, Łodzie
 - **Droga** — tańszy ruch wojska i handel (§31.2)
-- **Posterunek** — małe terytorium (+5 heksów — Część II §9.1)
+- **Posterunek** — małe terytorium (promień 3 heksów — Część II §9.1)
 - **Fort** — większe terytorium, obrona
 - **Łódź rybacka** — wybrzeże w terytorium miasta (§13.2)
 
@@ -2247,8 +2247,8 @@ Panel miasta · Warstwa kultury na mapie · Kreator nowej gry · Zapis gry · Sk
 - AI — często odmawia w niskiej relacji
 
 **80.3.** Terytorium a posterunki i forty
-- Twój posterunek — **twoje** terytorium (5 heksów)
-- Fort — 10 heksów (Część II §9)
+- Twój posterunek — **twoje** terytorium (promień 3 heksów)
+- Fort — 5 heksów (Część II §9)
 - Wrogie terytorium — tylko w wojnie lub z przemarszem
 - Zakończenie tury na cudzym hexie — liczy się kara
 
