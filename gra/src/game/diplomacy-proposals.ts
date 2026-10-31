@@ -730,7 +730,8 @@ function treatyPnGate(
   const proposerIsPlayer = (pnOpts?.proposerOwnerId ?? 0) === (pnOpts?.playerOwnerId ?? 0);
   const relTotal = treatyEvalRelationTotal(relation);
 
-  if (actionId === 'pokoj') {
+  // R-WEB-TRUCE-Q1 (runda 2): rozejm dzieli bramkę PW pokoju (ta sama formuła i komunikat).
+  if (actionId === 'pokoj' || actionId === 'rozejm') {
     const { offerPn, required } = peaceProposalOfferPn(givePn, receivePn, basePn, relation, proposerIsPlayer);
     if (offerPn < required) {
       return {

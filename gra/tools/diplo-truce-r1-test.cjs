@@ -16,7 +16,11 @@ const ENTRY = path.resolve(GRA, 'src', '.dip-truce-r1-entry.ts');
 const BUNDLE_OK = path.resolve(__dirname, '.dip-truce-r1-ok.cjs');
 const BUNDLE_M1 = path.resolve(__dirname, '.dip-truce-r1-m1.cjs');
 const BUNDLE_M2 = path.resolve(__dirname, '.dip-truce-r1-m2.cjs');
+const BUNDLE_M3 = path.resolve(__dirname, '.dip-truce-r1-m3.cjs');
+const BUNDLE_M4 = path.resolve(__dirname, '.dip-truce-r1-m4.cjs');
+const BUNDLE_M5 = path.resolve(__dirname, '.dip-truce-r1-m5.cjs');
 const PROPOSALS = path.resolve(GRA, 'src', 'game', 'diplomacy-proposals.ts');
+const PEACE_LOCK = path.resolve(GRA, 'src', 'game', 'diplomacy-peace-lock.ts');
 
 let pass = 0;
 let fail = 0;
@@ -36,15 +40,16 @@ const ENTRY_SRC = [
   '',
 ].join('\n');
 
-function mutantPlugin(from, to) {
+function mutantPlugin(from, to, target = PROPOSALS) {
   const info = { applied: 0 };
+  const filter = new RegExp(path.basename(target).replace(/[.]/g, '\\.') + '$');
   return {
     info,
     plugin: {
       name: 'mutant-truce-r1',
       setup(build) {
-        build.onLoad({ filter: /diplomacy-proposals\.ts$/ }, async () => {
-          const src = fs.readFileSync(PROPOSALS, 'utf8');
+        build.onLoad({ filter }, async () => {
+          const src = fs.readFileSync(target, 'utf8');
           info.applied = src.split(from).length - 1;
           return { contents: src.split(from).join(to), loader: 'ts' };
         });
@@ -70,7 +75,7 @@ async function buildBundle(outfile, plugins) {
 
 function cleanup() {
   try { fs.unlinkSync(ENTRY); } catch (_) { /* ok */ }
-  for (const p of [BUNDLE_OK, BUNDLE_M1, BUNDLE_M2]) {
+  for (const p of [BUNDLE_OK, BUNDLE_M1, BUNDLE_M2, BUNDLE_M3, BUNDLE_M4, BUNDLE_M5]) {
     try { fs.unlinkSync(p); } catch (_) { /* ok */ }
   }
 }
@@ -141,8 +146,26 @@ async function main() {
       "const basePnCfg = treatyBasePnFromConfig('pokoj', payload);",
     );
     await buildBundle(BUNDLE_M2, [m2.plugin]);
-    check('(0) mutanty zmieniły źródło dokładnie raz (M1, M2)', m1.info.applied === 1 && m2.info.applied === 1,
-      [m1.info, m2.info]);
+    const m3 = mutantPlugin(
+      "  if (actionId === 'pokoj' || actionId === 'rozejm') {\n    const { offerPn, required }",
+      "  if (actionId === 'pokoj') {\n    const { offerPn, required }",
+    );
+    await buildBundle(BUNDLE_M3, [m3.plugin]);
+    const m4 = mutantPlugin(
+      "return currentTurn >= until ? 'revert_to_war' : 'none';",
+      "return currentTurn > until ? 'revert_to_war' : 'none';",
+      PEACE_LOCK,
+    );
+    await buildBundle(BUNDLE_M4, [m4.plugin]);
+    const m5 = mutantPlugin(
+      'export function isTruceActive(until: number | null | undefined, currentTurn: number): boolean {\n  if (until == null || !Number.isFinite(until)) return false;\n  return currentTurn < until;',
+      'export function isTruceActive(until: number | null | undefined, currentTurn: number): boolean {\n  if (until == null || !Number.isFinite(until)) return false;\n  return currentTurn <= until;',
+      PEACE_LOCK,
+    );
+    await buildBundle(BUNDLE_M5, [m5.plugin]);
+    check('(0) mutanty zmieniły źródło dokładnie raz (M1..M5)',
+      [m1, m2, m3, m4, m5].every(m => m.info.applied === 1),
+      [m1.info, m2.info, m3.info, m4.info, m5.info]);
 
     const life = require(BUNDLE_OK);
     // (1) cykl życia — start 20, czas 5 → wygasa w 25
@@ -160,6 +183,20 @@ async function main() {
       life.truceExpiryAction(null, 99) === 'none' && !life.isTruceBreach(undefined, 99));
     check('L9: wypowiedzenie w oknie (24) = złamanie; po oknie (25) = nie',
       life.isTruceBreach(25, 24) && !life.isTruceBreach(25, 25));
+    check('L10: granica start+5/+10/+15 (N-1/N/N+1) dla każdej długości',
+      [5, 10, 15].every(d => {
+        const u = life.truceUntilTurn(20, d);
+        return life.isTruceActive(u, u - 1) && !life.isTruceActive(u, u)
+          && life.truceExpiryAction(u, u - 1) === 'none'
+          && life.truceExpiryAction(u, u) === 'revert_to_war';
+      }));
+    check('N1: NaN/Infinity/undefined w helperach cyklu życia nie aktywują rozejmu ani nie wywołują wygaśnięcia',
+      life.truceUntilTurn(NaN, 5) === null && life.truceUntilTurn(20, NaN) === null
+      && life.truceUntilTurn(Infinity, 5) === null && life.normalizeTruceDuration(Infinity) === null
+      && life.isTruceActive(NaN, 5) === false && life.isTruceActive(undefined, 5) === false
+      && life.isTruceActive(25, NaN) === false
+      && life.truceExpiryAction(NaN, 99) === 'none' && life.truceExpiryAction(25, NaN) === 'none'
+      && life.truceExpiryAction(undefined, 25) === 'none' && life.isTruceBreach(NaN, 5) === false);
 
     // (2)-(5) propozycje
     const ok = run(require(BUNDLE_OK));
@@ -191,6 +228,20 @@ async function main() {
       ? mod.resolvePlayerAcceptsAiPending
       : null;
     check('P9: eksport resolvePlayerAcceptsAiPending dostępny (ścieżka akceptacji gracza)', typeof resolved === 'function');
+    // P10: bramka PW rozejmu = bramka PW pokoju (ta sama gałąź treatyPnGate, ten sam komunikat)
+    const pnShort = { givePn: 0, receivePn: 1000 };
+    const rzPn = mod.evaluateProposal(propose(mod, 'rozejm', pnShort), ctxFor({ warState: WAR_LONG }));
+    const pkPn = mod.evaluateProposal(propose(mod, 'pokoj', pnShort), ctxFor({ warState: WAR_LONG }));
+    const PN_GATE_REASON = /uczciwej oferty pokoju|Oferta za niska na pokój/;
+    check('P10: rozejm z za niską ofertą PW odrzucony bramką PW pokoju (jak pokój, ujemny pwBalance)',
+      rzPn.accepted === false && pkPn.accepted === false
+      && PN_GATE_REASON.test(rzPn.reason || '') && PN_GATE_REASON.test(pkPn.reason || '')
+      && typeof rzPn.pwBalance === 'number' && rzPn.pwBalance < 0,
+      { rozejm: rzPn, pokoj: pkPn });
+    // NaN w turach: walidacja długości odrzuca (nie przepuszcza)
+    const rzNaN = mod.evaluateProposal(propose(mod, 'rozejm', { turns: NaN }), ctxFor({ warState: WAR_LONG }));
+    check('P11: rozejm z turns=NaN odrzucony walidacją długości', rzNaN.accepted === false
+      && /5, 10 lub 15/.test(rzNaN.reason || ''), rzNaN);
 
     // mutacje
     const m1r = run(require(BUNDLE_M1));
@@ -200,6 +251,19 @@ async function main() {
     check('M2 (baza rozejmu = baza pokoju): pwBalance równy pokojowi — mutacja wykrywalna',
       !(typeof m2r.rozejmLong.pwBalance === 'number' && m2r.rozejmLong.pwBalance > m2r.pokojLong.pwBalance),
       { rozejm: m2r.rozejmLong.pwBalance, pokoj: m2r.pokojLong.pwBalance });
+    // M3: bramka PW pokoju NIE obejmuje rozejmu → P10 wykrywa (komunikat różni się od pokoju)
+    const m3mod = require(BUNDLE_M3);
+    const m3rz = m3mod.evaluateProposal(propose(m3mod, 'rozejm', pnShort), ctxFor({ warState: WAR_LONG }));
+    check('M3 (bramka PW pokoju bez rozejmu): P10 wykrywa różnicę',
+      !(m3rz.accepted === false && PN_GATE_REASON.test(m3rz.reason || '')), { m3rz });
+    // M4: wygaśnięcie o turę za późno (N+1) → L7/L10 wykrywają
+    const life4 = require(BUNDLE_M4);
+    check('M4 (wygaśnięcie w N+1 zamiast N): L7/L10 wykrywają',
+      !(life4.truceExpiryAction(25, 25) === 'revert_to_war'), life4.truceExpiryAction(25, 25));
+    // M5: rozejm aktywny także w N (<= zamiast <) → L6/L10 wykrywają
+    const life5 = require(BUNDLE_M5);
+    check('M5 (aktywny w N zamiast tylko przed N): L6/L10 wykrywają',
+      life5.isTruceActive(25, 25) === true, life5.isTruceActive(25, 25));
   } finally {
     cleanup();
   }
