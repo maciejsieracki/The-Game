@@ -9,6 +9,8 @@ jest domknięta wektorami, mutacjami i niezależnym weryfikatorem Python (§3). 
 mutacje M1-M10 wykryte, weryfikator Python `verify_m07a_walk.py` PASS). Zostają 3 pozycje (§2): `TraceRiverOpts`,
 `growRiverInlandBeforeDrainage` oraz profiler (ZAŁOŻENIE: poza zakresem wyniku). Dossier nie deklaruje zakończenia tematu.
 
+**Pomiar niezależny (Operator-pomiary, kontynuacja r4; §9):** wektory partii 2 zregenerowane z pinu `edb8fb56` są bajt-identyczne z plikiem w repo (`cmp`); weryfikator Python PASS (965 przypadków, 0 błędów); mutacje M1-M10 10/10 wykryte (wzorzec M8 w skrypcie był nieaktualny - naprawiony); cap sweep 1..40 i 6000 wobec weba: 8856/8856 (plik `web-rivers-a-cap.json`, test `p6_m07a_cap`). Zakres nadal NIEKOMPLETNY (2 pozycje, §2).
+
 ## 1. Pliki
 
 | Plik | Rola | Linie |
@@ -19,6 +21,9 @@ mutacje M1-M10 wykryte, weryfikator Python `verify_m07a_walk.py` PASS). Zostają
 | `rust-port/engine/tests/p6_m07a_rivers_a_caps.rs` | testy wektorowe galezi i capow r3 (4) | 166 |
 | `rust-port/engine/src/domain/mapgen/rivers_a/walk.rs` | port partii 2 (audyt terenu, kroki/kierunki, drenaż, centroid, scoring) | - |
 | `rust-port/engine/tests/p6_m07a_walk.rs` | testy wektorowe partii 2 (14) | - |
+| `rust-port/engine/tests/p6_m07a_cap.rs` | sweep capa `estimateLandCentroidFromSeed` 1..40 i 6000 wobec weba (1 test) | - |
+| `rust-port/engine/tests/p6_m07a_vectors/web-rivers-a-cap.json` | wektory capa z uruchomionego weba (216 startów x 41 capów = 8856; 0,73 MB) | - |
+| `.../R-RUSTPORT-P6-M07A-RZEKI-A-SCIEZKI-POLA-Q1/gen-m07a-cap.mjs` | generator wektorów capa (sidecar pomiarowy r4) | - |
 | `rust-port/engine/tests/p6_m07a_vectors/web-rivers-a-walk.json` | wektory partii 2 z uruchomionego weba | - |
 | `dyspozycje/autobot/runs/R-RUSTPORT-P6-M07A-RZEKI-A-SCIEZKI-POLA-Q1/gen-m07a-walk.mjs` | generator wektorów partii 2 | - |
 | `dyspozycje/autobot/runs/R-RUSTPORT-P6-M07A-RZEKI-A-SCIEZKI-POLA-Q1/verify_m07a_walk.py` | niezależny weryfikator Python partii 2 (stdlib, od zera z TS) | - |
@@ -87,7 +92,7 @@ Legenda: PORTOWANE = funkcja Rust + wektor z weba + testy; NIE = jeszcze nie por
 | `reconstructRiverPath` (prywatna) | 5887 | `reconstruct_river_path` (`walk.rs`) | PORTOWANE (partia 2) | `reconstruct`: 40 (łańcuchy pełne i urwane) |
 | `growRiverInlandBeforeDrainage` (prywatna) | 5903 | - | NIE (partia 3) | - |
 | `riverHexDirDelta` (prywatna) | 5975 | `river_hex_dir_delta` (`walk.rs`) | PORTOWANE (partia 2) | `dirDelta`: 43 (0..5 x 0..5 + wartości spoza zakresu, ujemne modulo) |
-| `estimateLandCentroidFromSeed` (prywatna) | 5982 | `estimate_land_centroid_from_seed` (`walk.rs`) | PORTOWANE (partia 2) | `centroidSeed`: 216 (capy 1,2,3,5,6000; allow relief tak/nie); test `centroid_cap_discriminates` |
+| `estimateLandCentroidFromSeed` (prywatna) | 5982 | `estimate_land_centroid_from_seed` (`walk.rs`) | PORTOWANE (partia 2) | `centroidSeed`: 216 (capy 1,2,3,5,6000 - każdy start jednym capem; allow relief tak/nie); test `centroid_cap_discriminates`; sweep `p6_m07a_cap`: cap 1..40 i 6000 na 216 startach, 8856/8856 zgodne z webem |
 | `estimateLandCentroidFromMouth` (prywatna) | 6016 | `estimate_land_centroid_from_mouth` (`walk.rs`) | PORTOWANE (partia 2) | `centroidMouth`: 216 |
 | `scoreRiverStepTowardCentroid` (prywatna) | 6026 | `score_river_step_toward_centroid` (`walk.rs`) | PORTOWANE (partia 2) | `scoreCentroid`: 200 (22 / -12 / 3 / 0) |
 | `scoreRiverStepTowardCenterSquare` (prywatna) | 6041 | `score_river_step_toward_center_square` (`walk.rs`) | PORTOWANE (partia 2) | `scoreSquare`: 504 (40 / 32 / -22 / 4 / brak kwadratu) |
@@ -108,7 +113,7 @@ wraz z ich portem (decyzja zakresu dla FC - nie DECISION_REQUIRED).
 
 - (a) wektory z nakładkami na heksach wodnych i lądowych: TAK. `render_vectors_exercise_water_and_land_overlays`
   sprawdza `las`, `zloze`, `rzeka` (woda i ląd); `flow` ma heksy wodne i lądowe z nakładkami i rzekami.
-- (b) cap pętli z wektorem N-1/N/N+1 na mapach rozróżniających cap: TAK (r3).
+- (b) cap pętli z wektorem N-1/N/N+1 na mapach rozróżniających cap: TAK (r3). Partia 2 (pomiar r4): wektory `web-rivers-a-walk.json` mają capy 1,2,3,5,6000 na RÓŻNYCH startach (bez trójki N-1/N/N+1 na tym samym starcie); domknięte plikiem `web-rivers-a-cap.json` (cap 1..40 i 6000 na tym samym starcie, wszystkie 216 startów rozróżnia cap). Cap 6000 nie jest rozróżnialny na mapach z wektorów (maks. 1008 heksów) - granica 6000 pokryta tylko logicznie (ZAŁOŻENIE).
   `repair` (guard<64): mapa 70x70 Laka, D=62,63,64,65,66,67 w dwóch osiach; D<=64 domyka cel (długość D+1),
   D>=65 ucina przed celem (długość 65). `coastalRiverRenderPath` (guard<4): mapa 12x12 bez Morza, L=1,2,3;
   wynik 6/5/5 zależy od capu 4 (mutacje M9 cap 3 i M10 cap 5 wykryte).
@@ -150,6 +155,23 @@ ale lista czerwonych testów była skrócona. M9/M10 przebiegnięto ponownie z `
 - r1 deklarowała "7/7 wykryte" dla innego zestawu (tie-break repair, `Polar` w `is_river_land_terrain`, próg pustyni,
   tie coastal, bufor morza, cap wybrzeża 0..4→0..3, sanityzacja). Zestaw r1 NIE został odtworzony przez r2 ani r3.
 - r2 wykryła 5/7 z innym zestawem; niewykryte były `block_existing` i gałąź 'mala' - obie zamknięte w r3 (M1, M6).
+
+### 4.3 Partia 2 (`mutate_m07a_walk.py`, pomiar r4: 10/10)
+
+| Mutacja | Gałąź | Wynik | Wykryta przez |
+|---|---|---|---|
+| M1 `nd >= MIN` → `nd > MIN` | `can_river_drain_step`, faza lądowa | WYKRYTA | `drain_step_matches_web` |
+| M2 `od <= TAIL` → `<` | korytarz ujścia | WYKRYTA | `drain_step_matches_web` |
+| M3 pominięty warunek sąsiada oceanu | `is_river_drainage_goal` | WYKRYTA | `drainage_goal_matches_web` |
+| M4 brak `+6` (modulo ujemne) | `river_hex_dir_delta` | WYKRYTA | `step_dirs_match_web` |
+| M5 zbliżenie `22` → `21` | `score_river_step_toward_centroid` | WYKRYTA | `score_centroid_matches_web` |
+| M6 trafienie kwadratu `40` → `39` | `score_river_step_toward_center_square` | WYKRYTA | `score_center_square_matches_web` |
+| M7 cap `<` → `<=` | BFS centroidu | WYKRYTA | `centroid_seed_and_mouth_match_web`, `cap_sweep_matches_web` |
+| M8 `allow_relief_traversal` → `false` | BFS centroidu (wywołanie wieloliniowe) | WYKRYTA | `centroid_seed_and_mouth_match_web` |
+| M9 brak odwrócenia | `reconstruct_river_path` | WYKRYTA | `reconstruct_matches_web` |
+| M10 brak liczenia składowych | `audit_map_terrain_data` | WYKRYTA | `audit_matches_web` |
+
+Pomiar r4: pierwszy przebieg skryptu dał 9/10 - wzorzec M8 nie pasował do wieloliniowego wywołania, mutacja została pominięta (nie zaliczona). Wzorzec poprawiono i M8 potwierdzono ręcznie (test czerwony); przebieg po poprawce: 10/10.
 
 ## 5. Odstępstwa i zastrzeżenia (do decyzji orkiestratora / FC)
 
@@ -194,3 +216,13 @@ ale lista czerwonych testów była skrócona. M9/M10 przebiegnięto ponownie z `
 - Z8 (brak P6-25-MAPA-GAP.md): ZAŁOŻENIE z dowodem: §5.4 (30 wierszy M07A w historii vs skan 52).
 - Z1 (zakres 18 symboli nieportowanych): PRZYJĘTE jako otwarte. Partie 2-4 NIE są wykonane w r3; ten temat NIE jest
   PASS i nie jest READY_FOR_DEPLOY. Nie zamykam go w tej rundzie.
+
+## 9. Pomiar niezależny r4 (Operator-pomiary)
+
+- Wektory `web-rivers-a-walk.json`: regeneracja `gen-m07a-walk.mjs` z `git archive edb8fb56 gra/src gra/data` - `cmp` IDENTYCZNE.
+- Wektory `web-rivers-a-cap.json`: `gen-m07a-cap.mjs` z pinu - 8856 przypadków; Rust `cap_sweep_matches_web` 8856/8856 zgodne.
+- Pokrycie nakładek (lekcja a): walk - 1044 heksów lądowych i 187 wodnych z nakładką `las` (z 11 340 wierszy łącznie).
+- Weryfikator `verify_m07a_walk.py` (stdlib, `python3 -I`): PASS, 965 przypadków, 0 błędów. Nie pokrywa drainStep/drainGoal/pathSea/scoreSquare/audit - te pokryte wektorami web i testami Rust.
+- Mutacje `mutate_m07a_walk.py`: 10/10 (§4.3). Test `p6_m07a_cap` zabija dodatkowo M7 (sprawdzone ręcznie).
+- Rozmiary: `walk.rs` 359 LOC, `rivers_a.rs` 532 LOC, `fields.rs` 145 LOC; wektory 0,57 / 0,73 MB; wszystkie <= 600 LOC / <= 6 MB.
+- Zakres: 49/52 PORTOWANE; NIE: `TraceRiverOpts` (partia 3), `growRiverInlandBeforeDrainage` (partia 3), profiler `CIV_RIVER_PROFILE` (ZAŁOŻENIE: bez wpływu na wynik). Status: ZAKRES NIEKOMPLETNY.
