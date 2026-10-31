@@ -1,0 +1,67 @@
+A. limit wyczerpany -> fort na gorze NA GRANICY (max zysk), nie na bliskiej
+  [OK] dokladnie 1 pick (got 1: ["fort@27,22"])
+  [OK] klucz = fort (r=5 preferowany)
+  [OK] heks na granicy zasiegu (q=27), nie blizszy (got 27,22)
+  [OK] koszt Pracy fortu = 100 (z danych)
+  [OK] zloze na granicy (q=17) wygrywa ze zlozem blizej (got 17)
+B. limit NIE wyczerpany -> 0 fortow
+  [OK] cityLimitExhausted=false -> 0 fortow
+  [OK] brak flagi -> 0 fortow (domyslnie wylaczone)
+C. brak zloz/gor -> 0
+  [OK] mapa bez zloz i gor, limit wyczerpany -> 0 pickow
+  [OK] sam las nie jest cennym terenem -> 0 fortow
+D. nie nakłada zasiegow
+  [OK] 3 gory (2 sasiednie), wielokrotne wywolania -> 2 forty (got 2)
+  [info] forty: ["fort@17,22","posterunek@27,22"]
+  [OK] okregi zadnych dwoch fortow/posterunkow nie zachodza na siebie (odleglosc > suma promieni; fort r=5, posterunek r=3)
+  [OK] cudzy fort w odleglosci 3 (okregi zachodza) blokuje kandydata
+  [OK] WLASNY fort w odleglosci 5 blokuje kandydata (jeden fort na obszar)
+E. budzet: gracz sztywny %, rezerwa; AI 100%
+  [OK] gracz 9% z 1000 = 90 < 100 -> 0 (sztywny sufit)
+  [OK] gracz 11% z 1000 = 110 >= 100 -> 1 fort
+  [OK] rezerwa 30: pula-koszt < 30 -> 0
+  [OK] pula = koszt + rezerwa -> 1
+  [OK] override miasta 1% zaciska pulap -> 0
+  [OK] 0% -> brak pickow
+F. K3 (decideAITurn)
+  [OK] AI 1 miasto, era 1, base 1 (limit 1) -> fort na gorze na granicy (got ["fort@27,22"])
+  [OK] AI bez cityLimitBase -> 0 fortow (krok nieaktywny)
+  [OK] AI 1 miasto, limit 2 (nie wyczerpany) -> 0 fortow
+  [OK] AI era 3 -> limit 11 > 1 miasto -> 0 fortow (parytet z canFoundCity)
+  [OK] miasto-panstwo (defensiveCopy) -> 0 fortow (jak planExpansionFortBuilding)
+  [OK] AI pula 180 (100% puli, bez sufitu %) -> fort stawiany
+  [OK] AI pula < koszt -> 0
+G. parytet K2 <-> K3 (te same wspolrzedne i klucz)
+  [OK] gora na granicy: K2 == K3 (fort@27,22 vs fort@27,22)
+  [OK] gora na granicy: K2 (1 miasto) tez wybiera fort
+  [OK] zloze + gora, wybor wg zysku: K2 == K3 (fort@22,17 vs fort@22,17)
+  [OK] zloze + gora, wybor wg zysku: K2 (1 miasto) tez wybiera fort
+  [OK] trzy kandydaty: K2 == K3 (fort@17,22 vs fort@17,22)
+  [OK] trzy kandydaty: K2 (1 miasto) tez wybiera fort
+H. kolejnosc: zywnosc -> fort -> drogi
+  [OK] rzeka z kandydatem farmy: farma TAK, fort NIE w tej samej turze
+  [OK] po zagospodarowaniu rzeki (farma/trzoda/irygacja) -> fort (got ["fort"])
+  [info] niedobor kamien -> ["kamieniolom@22,22","kamieniolom@23,22","kamieniolom@27,22"]
+  [OK] niedobor kamienia z celem: kamieniolom NA PRZOD, fort dopiero w kolejnej turze (nie w tej samej)
+  [OK] po zaspokojeniu celu niedoboru (kamieniolom stoi) -> fort
+  [OK] bez limitu (brak fortow) droga JEST budowana (kontrola fixtury; got ["droga","droga_brukowana"])
+  [OK] z limitem: fort jest
+  [FAIL] w turze z fortem drogi NIE sa budowane (fort przed drogami)
+  [FAIL] fort czeka na Prace (sufit % < koszt) -> drogi tez wstrzymane
+  [OK] fort stoi, brak innych kandydatow -> drogi ruszaja (najnizszy priorytet)
+I. K1 / surowce / infrastruktura: flaga nic nie zmienia
+  [OK] [zywnosc] picki identyczne z flaga i bez (0 vs 0)
+  [OK] [surowce] picki identyczne z flaga i bez (0 vs 0)
+  [OK] [infrastruktura] picki identyczne z flaga i bez (0 vs 0)
+  [OK] [K1] zero fortow
+J. zysk = NOWE heksy (wolne, ladowe); fort przed posterunkiem
+  [OK] zysk fortu na granicy liczony jako heksy wolne: 55 (< 91 calych)
+  [info] bez technologii -> []
+  [OK] bez technologii fortu nie ma fortu (tech-gate szanowany)
+  [OK] FORT_CLAIM_MIN_NEW_HEXES = 1
+P. parytet isCityLimitExhausted z canFoundCity
+  [OK] isCityLimitExhausted == (canFoundCity odrzuca z powodu limitu) dla base 10/15/20 x era 0..5 x granica +-1
+  [OK] miasta zdobyte (foundedByOwner=false) nie licza sie do limitu — parytet
+  [OK] brak cityLimitBase -> false
+
+auto-fort-claim-test: 49 passed, 2 failed
