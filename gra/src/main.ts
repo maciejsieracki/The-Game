@@ -220,6 +220,8 @@ import {
   type FortTakeoverEvent,
   fortNodeAsCityNode,
   foundingNodesForOwner,
+  fortTerritoryNodes,
+  isHexInForeignFortTerritory,
   isHexReservedByRivalFort,
   applyFortTakeoverOnCityFounded,
   findEvacuationHexOutsideCity,
@@ -4568,6 +4570,10 @@ async function boot(): Promise<void> {
     const aiWonderStuckTurnsByOwner = new Map<number, number>();
     let powerSnapshotsForTurn: PowerOwnerSnapshot[] = [];
 
+    /** Rejestr fortow/posterunkow (R-FORT-STRAZNICA krok 2). Od 2026-10-31 tworzy TWARDE terytorium
+     * (buildAllTerritoryNodes). Zapis: meta.fortNodes. */
+    const fortNodes: FortNode[] = [];
+
     function territoryOwnerAtLive(q: number, r: number): number | null {
       return territoryOwnerAt(q, r, buildAllTerritoryNodes());
     }
@@ -4579,13 +4585,16 @@ async function boot(): Promise<void> {
     }
 
     function buildAllTerritoryNodes(): TerritoryNode[] {
-      return cities.map(c => ({
+      const cityNodes: TerritoryNode[] = cities.map(c => ({
         q: c.q,
         r: c.r,
         pop: c.population,
         level: 1,
         ownerId: c.ownerId,
       }));
+      // R-WEB-OUTPOST-FORT-TERRITORY-Q1 (decyzja wlasciciela 2026-10-31, zastepuje Q2=B
+      // z 2026-08-09): posterunek (r=3) i fort (r=5) = TWARDE terytorium jak miasto.
+      return fortNodes.length > 0 ? cityNodes.concat(fortTerritoryNodes(fortNodes)) : cityNodes;
     }
 
     /**
@@ -10023,8 +10032,9 @@ async function boot(): Promise<void> {
      * Krok 2 (Maciej 2026-08-09, ECHO Q1=B/Q2=B): `nodes` (WYŁĄCZNIE własne miasta,
      * literalne wywołanie cityNodesForOwner(ownerId) — pilnowane tekstowym strażnikiem
      * ai-founding-territory-test.cjs, sekcja B) rozszerzone o WŁASNE, nie-skontestowane
-     * forty/posterunki (foundingNodesForOwner, game/fort-territory.ts) — Q2=B: fort daje
-     * WYŁĄCZNIE dodatkowe węzły do tej listy, żadnego innego skutku terytorialnego.
+     * forty/posterunki (foundingNodesForOwner, game/fort-territory.ts). Q2=B ("granice sie nie
+     * przesuwaja") ZASTAPIONE decyzja wlasciciela 2026-10-31 (R-WEB-OUTPOST-FORT-TERRITORY-Q1): fort/posterunek
+     * to TWARDE terytorium (buildAllTerritoryNodes); obcy nie zaklada miasta w jego zasiegu.
      */
     function foundingTerritoryOpts(ownerId: number): { withinTerritory?: (q: number, r: number) => boolean } {
       // R-HOTSEAT-DRUGI-FOTEL-NIE-DOSTAJE-TURY-Q1 (Przyczyna 3): literalny `ownerId===0`
@@ -10036,7 +10046,9 @@ async function boot(): Promise<void> {
       const extendedNodes = foundingNodesForOwner(ownerId, nodes, fortNodes);
       if (extendedNodes.length === 0) return {};
       return {
-        withinTerritory: (fq: number, fr: number) => isInTerritory(fq, fr, extendedNodes),
+        // R-WEB-OUTPOST-FORT-TERRITORY-Q1: obcy fort/posterunek = terytorium zabezpieczone.
+        withinTerritory: (fq: number, fr: number) => isInTerritory(fq, fr, extendedNodes)
+          && !isHexInForeignFortTerritory(fq, fr, ownerId, fortNodes, buildAllTerritoryNodes()),
       };
     }
 
@@ -12711,7 +12723,7 @@ async function boot(): Promise<void> {
      * 23028/29825-26 przesunely sie przez pozniejsze commity, patrz
      * PYTANIA-OTWARTE.md "Fort/straznica krok2 (45f673af)".)
      */
-    const fortNodes: FortNode[] = [];
+    // (deklaracja `fortNodes` przeniesiona przed buildAllTerritoryNodes — R-WEB-OUTPOST-FORT-TERRITORY-Q1, TDZ)
     const improvementMeshes = new Map<string, THREE.Group>();
     /**
      * R-DROGA-WZOR-6-RAMION: heksy, dla których OSTATNIO wyrenderowano drogę. Służy wyłącznie do
@@ -12769,6 +12781,8 @@ async function boot(): Promise<void> {
       const type = key as 'fort' | 'posterunek';
       const contestedUseless = isHexReservedByRivalFort(q, r, ownerId, fortNodes);
       fortNodes.push({ q, r, ownerId, type, contestedUseless });
+      // R-WEB-OUTPOST-FORT-TERRITORY-Q1: fort/posterunek przesuwa granice — odswiez pas granic.
+      if (territoryBorderVisible) refreshTerritoryBorderOverlay();
     }
 
     /** Cofniecie budowy (undo w tej samej turze, gracz) — usuwa wpis rejestru fortu. */
@@ -12777,7 +12791,10 @@ async function boot(): Promise<void> {
       const idx = fortNodes.findIndex(
         f => f.q === q && f.r === r && f.ownerId === ownerId && f.type === key,
       );
-      if (idx !== -1) fortNodes.splice(idx, 1);
+      if (idx !== -1) {
+        fortNodes.splice(idx, 1);
+        if (territoryBorderVisible) refreshTerritoryBorderOverlay(); // R-WEB-OUTPOST-FORT-TERRITORY-Q1
+      }
     }
 
     /**
@@ -22990,6 +23007,74 @@ async function boot(): Promise<void> {
     // `hexHasDepositReserve` — nie zgadywanie), (b) odblokowanie wszystkich technologii i
     // puli Pracy, żeby test mierzył WYŁĄCZNIE zachowanie `applyBuildRequest`, nie inne,
     // niezwiązane bramki (koszt/technologia) które i tak stoją PRZED nim w kodzie.
+    // R-WEB-OUTPOST-FORT-TERRITORY-Q1: hak testowy WYLACZNIE dla Playwright
+    // (tools/fort-outpost-territory-live-test.cjs). Woła te same REALNE funkcje co ścieżka
+    // budowy AI (placedImprovements + registerFortNodeIfNeeded) i REALNE bramki
+    // (territoryOwnerAtLive, canFoundCity+foundingTerritoryOpts, buildImprovementQualifier).
+    (window as any).__fortTerritoryTestDebug = {
+      state: () => {
+        const mine = cities.find(c => isMe(c.ownerId));
+        const foreign = cities.find(c => !isMe(c.ownerId) && c.ownerId !== BARBARIAN_OWNER_ID);
+        return {
+          citiesLen: cities.length, turn,
+          myOwnerId: ME(),
+          myCity: mine ? { q: mine.q, r: mine.r, pop: mine.population } : null,
+          foreignOwnerId: foreign ? foreign.ownerId : null,
+          fortNodes: fortNodes.length,
+        };
+      },
+      placeFort: (key: 'fort' | 'posterunek', q: number, r: number, ownerId: number): void => {
+        const hexKey = keyOf(q, r);
+        const nextLayers: PlacedLayers = [...(placedImprovements.get(hexKey) ?? []), key];
+        placedImprovements.set(hexKey, nextLayers);
+        syncHexUlepszenieFields(hexKey, nextLayers);
+        registerFortNodeIfNeeded(key, q, r, ownerId);
+        spawnImprovementMesh(hexKey);
+      },
+      ownerAt: (q: number, r: number): number | null => territoryOwnerAtLive(q, r),
+      hexesWithin: (q: number, r: number, rad: number): Array<{ q: number; r: number }> =>
+        hexKeysWithinRadius(q, r, rad, map).map(k => {
+          const [a, b] = k.split(',');
+          return { q: Number(a), r: Number(b) };
+        }),
+      /** Heks lądowy (bez wody/gór) w dokładnej odległości `d` od (cq,cr), z pełnym kręgiem r=5 na mapie. */
+      landHexAtDistance: (cq: number, cr: number, d: number, skip = 0): { q: number; r: number } | null => {
+        let seen = 0;
+        for (const k of Object.keys(map.hexes)) {
+          const [a, b] = k.split(',');
+          const q = Number(a), r = Number(b);
+          if (hexDistance(q, r, cq, cr) !== d) continue;
+          const h = map.hexes[k]!;
+          if (isWaterTerrain(h.terenBazowy) || h.terenBazowy === TerenBazowy.Gory) continue;
+          if (cities.some(c => hexDistance(q, r, c.q, c.r) <= 7)) continue;
+          if (territoryOwnerAtLive(q, r) !== null) continue;
+          if (hexKeysWithinRadius(q, r, 5, map).length < 91) continue;
+          if (seen++ < skip) continue;
+          return { q, r };
+        }
+        return null;
+      },
+      canFoundAs: (q: number, r: number, ownerId: number): { ok: boolean; reason: string } =>
+        canFoundCity(q, r, cities, map, {
+          ...foundingTerritoryOpts(ownerId),
+          ownerId, ownerEra: 1, gameConfig: { cityLimitBase: 99 },
+        }),
+      // Bramka budowy ulepszen (ta sama co AI `buildImprovement` i gracza: wlasnosc terytorium).
+      canBuildAs: (q: number, r: number, ownerId: number): boolean =>
+        isTerritoryHexOwnedBy(q, r, ownerId, buildAllTerritoryNodes()),
+      showBorders: (q: number, r: number): void => {
+        territoryBorderVisible = true;
+        refreshTerritoryBorderOverlay();
+        const { x, z } = axialToWorld(q, r, HEX_R);
+        camCtrl.focusAt(x, z, 28);
+      },
+      saveRoundTripFortNodes: (): number => {
+        // serializacja identyczna jak zapis (fortNodes.slice()) -> JSON -> odczyt
+        const copy = JSON.parse(JSON.stringify(fortNodes.slice())) as FortNode[];
+        return copy.length;
+      },
+    };
+
     (window as any).__buildRequestTestDebug = {
       findTestHexes: (): {
         workedHex: { q: number; r: number } | null;
@@ -38282,6 +38367,24 @@ async function boot(): Promise<void> {
       fortNodes.length = 0;
       const savedFortNodes = saved.meta?.fortNodes as FortNode[] | undefined;
       if (savedFortNodes?.length) fortNodes.push(...savedFortNodes);
+      // R-WEB-OUTPOST-FORT-TERRITORY-Q1 (2026-10-31): stare zapisy ze starymi fortami/posterunkami —
+      // forty postawione PRZED rejestrem (brak wpisu w meta.fortNodes) dostaja wlasciciela wg
+      // terytorium MIAST (nearest city) i od razu tworza twarde terytorium po wczytaniu.
+      // Forty bez wlasciciela do ustalenia (poza kazdym zasiegiem miasta) zostaja bez terytorium.
+      {
+        const cityOnly: TerritoryNode[] = cities.map(c => ({
+          q: c.q, r: c.r, pop: c.population, level: 1, ownerId: c.ownerId,
+        }));
+        for (const [hk, layers] of placedImprovements) {
+          for (const k of layers) {
+            if (k !== 'fort' && k !== 'posterunek') continue;
+            const [hq, hr] = hk.split(',').map(Number) as [number, number];
+            if (fortNodes.some(f => f.q === hq && f.r === hr && f.type === k)) continue;
+            const o = territoryOwnerAt(hq, hr, cityOnly);
+            if (o !== null) fortNodes.push({ q: hq, r: hr, ownerId: o, type: k, contestedUseless: false });
+          }
+        }
+      }
       clearAllHexClearing();
       pendingImprovementsTurn = PendingImprovementsTurn.fromSave(
         saved.meta?.pendingImprovementsTurn as PendingImprovementEntry[] | undefined,

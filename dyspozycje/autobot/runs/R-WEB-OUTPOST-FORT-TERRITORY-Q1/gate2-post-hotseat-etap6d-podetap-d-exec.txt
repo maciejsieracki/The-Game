@@ -1,0 +1,57 @@
+hotseat-etap6d-podetap-d-exec-test (R-HOTSEAT-ETAP6D-PODETAP-D-Q1, runda 2)
+
+  FAIL: Blok A: substring po liniach 31620-31675 === wycięcie kotwica+brace-matching (zero rozjazdu)
+  FAIL: Blok B: substring po liniach 32232-32330 === wycięcie kotwica+brace-matching (zero rozjazdu)
+  OK: Blok A: dokładnie 13 wystąpień ME() (potwierdzone rundą 2 Evaluatora/Obrony), otrzymano 13
+  OK: Blok B: dokładnie 21 wystąpień ME() (korekta liczby z rundy 1: 20->21), otrzymano 21
+BLOK A — DOW klastra PM na gracza — realne wykonanie
+
+[Dyplomacja] PM101 wypowiada wojne graczowi (trudnosc PM=hard, klaster 60%)
+  OK: PRAWDZIWY ME()=7: filtr diplomaticallyDiscoveredOwners poprawnie ograniczył klaster do csA=101 (csB=102 nieodkryty pominięty), otrzymano [{"ownerId":101,"atWarWithPlayer":false,"hasTradeOrResourceTreatyWithPlayer":false,"peaceLockedWithPlayer":false,"hasNapWithPlayer":false}]
+  OK: PRAWDZIWY ME(): getDiploRelation(csOwnerId, ME()=7) -- WSZYSTKIE 2 wywołania z drugim argumentem = 7, otrzymano [[101,7],[101,7]]
+  OK: PRAWDZIWY ME(): dealInvolvesOwners(d, ME()=7, csOwnerId) -- pierwszy arg = 7, otrzymano []
+  OK: PRAWDZIWY ME(): hasActiveResourceTradeDealForPair(ME()=7, csOwnerId), otrzymano [[7,101]]
+  OK: PRAWDZIWY ME(): isPeaceLockedBetween(csOwnerId, ME()=7), otrzymano [[101,7]]
+  OK: PRAWDZIWY ME(): hasTreaty(..., csOwnerId, ME()=7, ...), otrzymano [[101,7]]
+  OK: PRAWDZIWY ME(): chargeWarDeclarationCredibility(csOwnerId, ME()=7), otrzymano [[101,7]]
+  OK: PRAWDZIWY ME(): breakTreatiesOnWar(csOwnerId, ME()=7, false), otrzymano [[101,7]]
+  OK: PRAWDZIWY ME(): applyAllianceObligationsOnWar(csOwnerId, ME()=7), otrzymano [[101,7]]
+  OK: PRAWDZIWY ME(): applyDiploEventTracked(csOwnerId, ME()=7, ...), otrzymano [[101,7]]
+  OK: PRAWDZIWY ME(): setDiploRelation(csOwnerId, ME()=7, newRel), otrzymano [[101,7]]
+  OK: PRAWDZIWY ME(): pruneTributeNegotiationsBetween(csOwnerId, ME()=7), otrzymano [[101,7]]
+  OK: PRAWDZIWY ME(): recordWarDeclarationEvent(csOwnerId, ME()=7), otrzymano [[101,7]]
+[Dyplomacja] PM101 wypowiada wojne graczowi (trudnosc PM=hard, klaster 60%)
+  OK (mutacja realnie zmieniła wynik -- asercja teraz fałszywa): MUTACJA ME()=>0: getDiploRelation drugi arg POWINIEN być 0, nie 7 -- czerwieni się poprawnie, otrzymano [[101,0],[101,0]]
+  OK (mutacja realnie zmieniła wynik -- asercja teraz fałszywa): MUTACJA ME()=>0: setDiploRelation drugi arg POWINIEN być 0, nie 7 -- czerwieni się poprawnie, otrzymano [[101,0]]
+
+BLOK B — per-AI-owner tick dyplomacji — realne wykonanie
+
+  OK: PRAWDZIWY ME()=7: relacjeDip.push({partnerId: String(ME())}) -- partnerId="7", otrzymano ["7"]
+  OK: PRAWDZIWY ME(): sumArmyMForOwner(ME()) drugi arg militaryRatioFromArmyM wynikł z ME()=7 (mock zwraca 50 dla ME()), otrzymano [30,50]
+  OK: PRAWDZIWY ME(): getDiploRelation(ME()=7, ownerId), otrzymano [[7,4]]
+  OK: PRAWDZIWY ME(): humanStub={ownerId: ME()=7}, otrzymano {"ownerId":7,"typCywilizacji":"rzymianie"}
+  OK: PRAWDZIWY ME(): dealInvolvesOwners(d, ME()=7, ownerId), otrzymano [[7,4]]
+  OK: PRAWDZIWY ME(): resolvePokojTrustTier(deals, ME()=7, ownerId, ...), otrzymano [7,4]
+  OK: PRAWDZIWY ME(): sameCultureCircle(civKeyForOwner(ME()), ...) -- civKeyForOwner(ME()=7)="rzymianie", otrzymano ["rzymianie","grecy"]
+  OK: PRAWDZIWY ME(): pierwsze wywołanie ownerReligionForOwnerId(ME()=7), otrzymano [7,4]
+  OK: PRAWDZIWY ME(): ownersShareLandBorderLive(ownerId, ME()=7), otrzymano [4,7]
+  OK: PRAWDZIWY ME(): getWiarygodnosc(ME()=7), otrzymano [7]
+  OK: PRAWDZIWY ME(): hasActiveResourceTradeDealForPair(ME()=7, ownerId) x2, otrzymano [[7,4],[7,4]]
+  OK: PRAWDZIWY ME(): hasTreaty(deals, ownerId, ME()=7, ...), otrzymano [[4,7]]
+  OK: PRAWDZIWY ME(): isPeaceLockedBetween(ownerId, ME()=7), otrzymano [[4,7]]
+  OK (mutacja realnie zmieniła wynik -- asercja teraz fałszywa): MUTACJA ME()=>0: partnerId POWINIEN być "0", nie "7" -- czerwieni się poprawnie, otrzymano ["0"]
+  OK (mutacja realnie zmieniła wynik -- asercja teraz fałszywa): MUTACJA ME()=>0: getDiploRelation pierwszy arg POWINIEN być 0, nie 7 -- czerwieni się poprawnie, otrzymano [[0,4]]
+  OK (mutacja realnie zmieniła wynik -- asercja teraz fałszywa): MUTACJA ME()=>0: getWiarygodnosc arg POWINIEN być 0, nie 7 -- czerwieni się poprawnie, otrzymano [0]
+
+MUTACJA NA DYSKU (main.ts) -- Blok A i Blok B, jedno cofnięcie ME()->0 każdy
+
+  OK: Blok A: needle mutacyjny występuje dokładnie 1x w main.ts (bezpieczne cofnięcie)
+  OK: Blok B: needle mutacyjny występuje dokładnie 1x w main.ts (bezpieczne cofnięcie)
+[Dyplomacja] PM101 wypowiada wojne graczowi (trudnosc PM=hard, klaster 60%)
+  OK (mutacja realnie zmieniła wynik -- asercja teraz fałszywa): MUTACJA main.ts NA DYSKU (Blok A, getDiploRelation(csOwnerId, ME()) -> (csOwnerId, 0)): świeżo wycięty tekst przez ten sam ekstraktor daje getDiploRelation drugi arg=0 (literał), NIE 7 (ME()) -- czerwieni się poprawnie, otrzymano [[101,0],[101,7]]
+  OK: main.ts PRZYWRÓCONY bajt w bajt po mutacji Bloku A (weryfikacja przez porównanie stringów)
+  OK (mutacja realnie zmieniła wynik -- asercja teraz fałszywa): MUTACJA main.ts NA DYSKU (Blok B, getDiploRelation(ME(), ownerId) -> (0, ownerId)): świeżo wycięty tekst daje getDiploRelation pierwszy arg=0 (literał), NIE 7 (ME()) -- czerwieni się poprawnie, otrzymano [[0,4]]
+  OK: main.ts PRZYWRÓCONY bajt w bajt po mutacji Bloku B (weryfikacja przez porównanie stringów)
+
+hotseat-etap6d-podetap-d-exec-test: 39 PASS, 2 FAIL
+EXIT=1
