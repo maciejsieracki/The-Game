@@ -5,7 +5,7 @@ GOAL: Zapis/odczyt puli Pracy KAZDEGO fotela hot-seat (decyzja wlasciciela A, 20
 
 ## ZMIANY/COMMIT
 
-SHA: patrz commit zawierajacy ten plik (`git log -1 -- dyspozycje/autobot/runs/R-WEB-SAVELOAD-HOTSEAT-PRACA-Q1/01-operator-r1.md`); SHA wpisany w drugiej linii "SHA-COMMIT" ponizej po commicie.
+SHA-COMMIT: 1545269a05e0bd10eb13aa45a88a92439d37011f (commit funkcjonalny; ten raport dopisany w commicie poprawkowym na tej samej galezi worktree-wf_99334725-a8b-1)
 
 Allowlista (jawny `git add`):
 - `gra/src/main.ts` (+42 linii, tylko pula Pracy per fotel):
