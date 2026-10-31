@@ -398,3 +398,8 @@ Cel końcowy i bieżący zapisane w `GOAL-RUST-PORT-20261020.md` (§"CEL PĘTLI 
 - Decyzja orkiestratora: zmiana `tests/p6_6b_vectors/common.rs` (`okolica_reczne: None`) i pole `City::okolica_reczne` w `state.rs` zatwierdzone administracyjnie (wymuszone kompilacją, bez zmiany zachowania).
 - Dług: hak `OkolicaPopulationHook` zaimplementowany i testowany, ale bez produkcyjnego wywołującego (`apply_central_food_population_growth`/`apply_post_central_population_growth` nie są wołane w żywej ścieżce — zależność od P6.7A / tick miasta). Tabela symboli 8G: `runs/R-RUSTPORT-P6-8G-OKOLICA-Q1/04-operator-r4.md` (przenieść do dokumentu P6-8 przy okazji).
 - Odblokowane: 8H, 8I (po 8G).
+
+## 2026-10-31 — R-WEB-PEACE-CITY-CESSION-Q1 PASS-WITH-NOTES (r4) zintegrowane na gałęzi web
+- FC r4 `ad2bc6e3c` (kod `0534eacb3`). Scalone do `web/integration-20261030` (`ad2bc6e3c`). Bramki: tsc 0; cession 79/0 + r3 73/0; value-catalog 82; counter 82; multiwar 57+21; relation-gate 14; stone 31, iron 54; profile 198, gate 11, sim 22, main-guard 28, d7 8; diplomacy 148; peace-lock 9; ring 15; picker-ui (Chromium) 13/0; cession-live (Chromium: AI oddaje, AI żąda, stolica odrzucona) 17/0. Znane czerwone w bazie: civ-matrix-ai-diplomacy-wiring 42/1.
+- Dług: niepokój 5 tur po cesji NIE wdrożony (brak mechaniki w modelu miasta; decyzja administracyjna); wasalizacja z miastem bez preflightu; live test wstrzykuje komendę AI przez konwerter, nie pętlę tury AI; guard >1 miasta bez testu live.
+- Push do `main`: NIE WYKONANO.
