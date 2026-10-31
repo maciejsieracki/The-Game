@@ -1,0 +1,15 @@
+  [OK] current candidate BattleScene prototype bundles
+  [OK] Atak moves the front infantry one forward tile
+  [OK] Atak keeps the archer behind infantry when the front tile is occupied
+  [OK] Blocked Atak archer does not take a lateral detour or overtake
+  [OK] After first attack step, infantry leads and archer remains behind in same lane
+  [OK] Atak advances the archer into the tile vacated by the infantry on the next step
+  [OK] Second attack step preserves infantry lead and ranged rear rank without sideways movement
+  [OK] Obrona holds without an adjacent enemy
+  [OK] Production Szturm target selector chooses attacker A nearest enemy
+  [OK] Production Szturm target selector chooses attacker B different nearest enemy
+  [OK] Production _chargeMoveDest returns independent first steps toward each selected Szturm target
+  [OK] Each production Szturm destination strictly reduces distance to that attacker’s selected target
+
+Current-candidate AUTO multi-unit evaluation: 12 passed, 0 failed
+EXIT=0

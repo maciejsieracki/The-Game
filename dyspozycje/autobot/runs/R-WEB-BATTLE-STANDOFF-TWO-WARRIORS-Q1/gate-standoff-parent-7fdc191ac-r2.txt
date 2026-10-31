@@ -1,0 +1,8 @@
+EXIT=1
+Parent 7fdc191ac: gra/src checked out from 7fdc191ac, harness from c8f30d562 (threshold AUTO 2v2 gap3 hits>=10).
+PASS AUTO 1v1 gap 0: blows (hits 13)
+PASS AUTO 1v1 gap 1: blows (hits 12)
+PASS AUTO 1v1 gap 3: blows (hits 8)
+FAIL AUTO 2v2 gap 3: blows and contact (hits 6, minDist 1: contact reached, slow not zero)
+PASS manual 2 rounds -> AUTO 2v2 gap 3: blows and contact (hits 20)
+PASS manual 2 rounds -> AUTO 1v1 gap 3: blows and contact (hits 11)

@@ -1,0 +1,2 @@
+PASS: front ranks, mounted wings, Attack line pacing, and same-activation ranged fire
+EXIT=0
