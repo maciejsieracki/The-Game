@@ -1,0 +1,3 @@
+EXIT=0
+PLAYWRIGHT_CHROMIUM_EXECUTABLE=/opt/pw-browsers/chromium-1194/chrome-linux/chrome node tools/newgame-settings-layout-reposition-test.cjs
+newgame-settings-layout-reposition-test: PASS — Chromium placement, retained controls, persistence and game-start params verified

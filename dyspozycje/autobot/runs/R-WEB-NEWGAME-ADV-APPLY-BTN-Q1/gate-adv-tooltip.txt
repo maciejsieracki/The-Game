@@ -1,0 +1,2 @@
+EXIT=1
+node tools/newgame-adv-tooltip-test.cjs: NIE ZMIERZONO. Test buduje własny bundle (vite build); proces zabity sygnałem SIGKILL (OOM, maszyna współdzielona, ~1 GB wolnej RAM) przy 2 próbach z rzędu. Infra, nie wynik testu.

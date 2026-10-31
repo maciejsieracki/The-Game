@@ -1,0 +1,7 @@
+EXIT=0
+node tools/newgame-adv-apply-btn-test.cjs (NEWGAME_ADV_DIST = bundle zbudowany z poprawką R1)
+[scenariusz] 1280x720 @100%: 12 OK + klik w tło OK + brak błędów JS (OK)
+[scenariusz] 1280x600 @100% (niski viewport): wszystkie OK
+[scenariusz] 1280x720 @150% (viewport 853x480, DPR 1.5): wszystkie OK
+WYNIK: 42 OK, 0 FAIL
+Mutacja (etykieta Zastosuj -> Zamknij w kopii bundla): WYNIK: 36 OK, 6 FAIL, EXIT=1 (test pada).

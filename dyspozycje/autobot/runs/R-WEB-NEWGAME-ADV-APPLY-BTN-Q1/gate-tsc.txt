@@ -1,0 +1,2 @@
+EXIT=0
+Komenda: node ./node_modules/typescript/bin/tsc --noEmit (w gra/, worktree na 5ab3d58e2 + zmiany R1). Brak wyjścia = brak błędów.
