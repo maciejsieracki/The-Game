@@ -231,14 +231,27 @@ export interface CitizenUpkeepCoverage {
 export function resolveCitizenResourceCoverage(
   era: number,
   empireStock: Readonly<Record<string, number>> | null | undefined,
+  population?: number,
 ): CitizenUpkeepCoverage {
   const required = citizenRequiredResourcesForEra(era);
   const stock = empireStock ?? {};
   const available: string[] = [];
   const missing: string[] = [];
+  // R-WEB-CITIZEN-UPKEEP-ERA-MULT-Q1: gdy podano populację (opcjonalny 3. argument), bramka jest
+  // TĄ SAMĄ co w `computeCitizenResourceDrain` (magazyn ≥ floor(populacja × stawka epoki)), więc
+  // podgląd i realny drenaż dają identyczny werdykt dla tych samych wejść. Bez populacji —
+  // dotychczasowa bramka „magazyn > 0" (zgodność wsteczna, wołający bez populacji).
+  // / EN: with population the gate equals computeCitizenResourceDrain's (have >= floor(pop*rate));
+  // without it the legacy "stock > 0" gate is kept for backward compatibility.
+  const rate = citizenUpkeepRateForEra(era);
+  const hasPop = typeof population === 'number' && Number.isFinite(population);
+  const pop = hasPop && population > 0 ? Math.floor(population) : 0;
+  const need = Math.floor(pop * rate);
   for (const key of required) {
     const have = stock[key];
-    if (typeof have === 'number' && Number.isFinite(have) && have > 0) {
+    const haveOk = typeof have === 'number' && Number.isFinite(have) && have > 0 ? have : 0;
+    const covered = hasPop ? haveOk >= need : haveOk > 0;
+    if (covered) {
       available.push(key);
     } else {
       missing.push(key);
