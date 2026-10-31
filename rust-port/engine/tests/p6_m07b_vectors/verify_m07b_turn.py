@@ -6,6 +6,7 @@ Logika odtworzona z TS gra/src/map/gen-helpers.ts @ edb8fb56:
   signedRiverDirDelta / pathSegmentDirs / pathSignedTurnDeltas (7003-7025),
   riverSegmentUnitVector (7051), riverPathHasSharpUTurn (7064), riverPathViolatesTurnWindow (7075).
 Sprawdza wszystkie wektory z web-rivers-b-turn.json (kazdy przypadek) i zgodnosc statystyk.
+Format v2: sciezka = plaski, parzysty ciag [q0,r0,q1,r1,...] w polu "p".
 Uruchom: python3 -I verify_m07b_turn.py <sciezka do web-rivers-b-turn.json>
 """
 import json
@@ -103,7 +104,8 @@ def main():
             if err > 1e-12:
                 fails.append(("unit", v))
             continue
-        path = [tuple(p) for p in v["path"]]
+        flat = v["p"]
+        path = [(flat[i], flat[i + 1]) for i in range(0, len(flat), 2)]
         if kind == "uturn":
             res = has_sharp_u_turn(path)
         else:

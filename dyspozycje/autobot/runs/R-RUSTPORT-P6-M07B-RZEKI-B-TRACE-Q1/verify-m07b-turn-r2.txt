@@ -1,0 +1,2 @@
+{"vectors": 36200, "fails": 0, "stats_ok": true, "max_unit_err": 2.220446049250313e-16, "uturnTrue": 3330, "violTrue": 16780}
+EXIT=0

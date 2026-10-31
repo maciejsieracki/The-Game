@@ -1,7 +1,7 @@
 //! P6.M07B partia 1 - `rivers_b/turn.rs` wzgledem wektorow z URUCHOMIONEGO weba
 //! (pin `edb8fb56`, gen-helpers.ts:7051-7086). Wektory: `p6_m07b_vectors/web-rivers-b-turn.json`
-//! (generator: scratch, wywolanie `gen-turn-vectors.mjs` pod `node --experimental-strip-types`,
-//! ktory wyciaga funkcje z kopii pinu i je uruchamia).
+//! (generator w repo: `p6_m07b_vectors/gen_turn_vectors.mjs`, uruchomiony pod
+//! `node --experimental-strip-types` na kopii pinu; weryfikator: `verify_m07b_turn.py`).
 
 use civ_engine::domain::mapgen::rivers_a::RiverCoord;
 use civ_engine::domain::mapgen::rivers_b::turn::{
@@ -11,12 +11,17 @@ use serde_json::Value;
 
 const WEB_TURN: &str = include_str!("p6_m07b_vectors/web-rivers-b-turn.json");
 
-fn path_of(v: &Value, key: &str) -> Vec<RiverCoord> {
-    v[key]
+/// Format v2: plaski, parzysty ciag `[q0, r0, q1, r1, ...]` w polu `p`.
+fn path_of(v: &Value) -> Vec<RiverCoord> {
+    let flat: Vec<i64> = v["p"]
         .as_array()
         .expect("path")
         .iter()
-        .map(|p| RiverCoord::new(p[0].as_i64().unwrap(), p[1].as_i64().unwrap()))
+        .map(|x| x.as_i64().unwrap())
+        .collect();
+    assert_eq!(flat.len() % 2, 0, "nieparzysta liczba wspolrzednych");
+    flat.chunks(2)
+        .map(|c| RiverCoord::new(c[0], c[1]))
         .collect()
 }
 
@@ -44,12 +49,12 @@ fn turn_vectors_match_web() {
             }
             "uturn" => {
                 n_uturn += 1;
-                let got = river_path_has_sharp_u_turn(&path_of(v, "path"));
+                let got = river_path_has_sharp_u_turn(&path_of(v));
                 assert_eq!(got, v["out"].as_bool().unwrap(), "uturn {v}");
             }
             "viol" => {
                 n_viol += 1;
-                let path = path_of(v, "path");
+                let path = path_of(v);
                 let (wh, ms) = match (v.get("windowHex"), v.get("maxSum")) {
                     (Some(w), Some(m)) => (w.as_u64().unwrap() as usize, m.as_i64().unwrap()),
                     _ => (6usize, 1i64),
