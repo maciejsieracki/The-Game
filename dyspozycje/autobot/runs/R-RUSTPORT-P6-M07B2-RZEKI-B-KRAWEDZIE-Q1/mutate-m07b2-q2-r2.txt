@@ -1,0 +1,100 @@
+C01 | KILLED | oczek=K | collect: filtr okna skrętu usuniety (:6106) | test coast_grow_vectors_match_web ... FAILED | panic | RESTORED=True
+C02 | KILLED | oczek=K | collect: filtr przechodnosci odwrocony (:6107) | test coast_grow_vectors_match_web ... FAILED | panic | RESTORED=True
+C03 | KILLED | oczek=K | collect: allowReliefTraversal -> false (:6107) | test coast_grow_vectors_match_web ... FAILED | panic | RESTORED=True
+C04 | KILLED | oczek=K | collect: filtr sep odwrocony (:6108) | test coast_grow_vectors_match_web ... FAILED | panic | RESTORED=True
+C05 | SURVIVED | oczek=E | collect: guard path>=1 usuniety (:6110) - E: Rust panikuje wczesniej w is_river_window_turn_allowed (expect), web TypeError | all green | RESTORED=True
+C06 | KILLED | oczek=K | collect: prog MIN_INLAND <= zamiast < (:6110) | test coast_grow_vectors_match_web ... FAILED | panic | RESTORED=True
+C07 | KILLED | oczek=K | collect: relaxHardMeander ignorowany (:6111) | test coast_grow_vectors_match_web ... FAILED | panic | RESTORED=True
+C08 | KILLED | oczek=K | collect: hardMeander ignorowany (:6111) | test coast_grow_vectors_match_web ... FAILED | panic | RESTORED=True
+C09 | KILLED | oczek=K | collect: mnoznik 28 -> 27 (:6115) | test coast_grow_vectors_match_web ... FAILED | panic | RESTORED=True
+C10 | KILLED | oczek=K | collect: gałąź nd>curD -> >= (:6116) | test coast_grow_vectors_match_web ... FAILED | panic | RESTORED=True
+C11 | KILLED | oczek=K | collect: bonus +18 -> +17 (:6116) | test coast_grow_vectors_match_web ... FAILED | panic | RESTORED=True
+C12 | SURVIVED | oczek=K | collect: prog centerStep > 8 -> 7 (:6118) | all green | RESTORED=True
+C13 | KILLED | oczek=K | collect: +22 -> +21 (:6118) | test coast_grow_vectors_match_web ... FAILED | panic | RESTORED=True
+C14 | KILLED | oczek=K | collect: -36 -> -35 (:6118) | test coast_grow_vectors_match_web ... FAILED | panic | RESTORED=True
+C15 | KILLED | oczek=K | collect: +2 -> +3 (:6118) | test coast_grow_vectors_match_web ... FAILED | panic | RESTORED=True
+C16 | KILLED | oczek=K | collect: gałąź nd==curD wylaczona (:6117) | test coast_grow_vectors_match_web ... FAILED | panic | RESTORED=True
+C17 | KILLED | oczek=K | collect: waga centerStep 6.5 -> 6.0 (:6121) | test coast_grow_vectors_match_web ... FAILED | panic | RESTORED=True
+C18 | KILLED | oczek=K | collect: kara centerStep < 0 -> <= 0 (:6122) | test coast_grow_vectors_match_web ... FAILED | panic | RESTORED=True
+C19 | KILLED | oczek=K | collect: kara -18 -> -17 (:6122) | test coast_grow_vectors_match_web ... FAILED | panic | RESTORED=True
+C20 | KILLED | oczek=K | collect: szum rand*0.35 -> 0.36 (:6123) | test coast_grow_vectors_match_web ... FAILED | panic | RESTORED=True
+C21 | SURVIVED | oczek=K | collect: brak seaDist(cur) -> 1 zamiast 0 (:6100) | all green | RESTORED=True
+G01 | KILLED | oczek=K | grow: cap stepCap N -> N+1 (:6204) | test coast_grow_vectors_match_web ... FAILED | panic | RESTORED=True
+G02 | KILLED | oczek=K | grow: hardMeanderLen granica (:6206) | test coast_grow_vectors_match_web ... FAILED | panic | RESTORED=True
+G03 | KILLED | oczek=K | grow: fallback relaxHardMeander pominiety (:6215) | test coast_grow_vectors_match_web ... FAILED | panic | RESTORED=True
+G04 | KILLED | oczek=K | grow: relaxed przebieg bez relaksu (:6216) | test coast_grow_vectors_match_web ... FAILED | panic | RESTORED=True
+G05 | SURVIVED | oczek=K | grow: filtr visited (przebieg 1) usuniety (:6214) | all green | RESTORED=True
+G06 | SURVIVED | oczek=K | grow: filtr visited (przebieg relaxed) usuniety (:6217) | all green | RESTORED=True
+G07 | KILLED | oczek=K | grow: break przy braku kandydatow usuniety (:6219) - panika zamiast konca | test coast_grow_vectors_match_web ... FAILED | panic | RESTORED=True
+G08 | KILLED | oczek=K | grow: sortowanie kandydatow usuniete (:6221) | test coast_grow_vectors_match_web ... FAILED | panic | RESTORED=True
+G09 | KILLED | oczek=K | grow: okno losowania min(3,len) -> min(4,len) (:6222) | test coast_grow_vectors_match_web ... FAILED | panic | RESTORED=True
+G10 | KILLED | oczek=K | grow: indeks wyboru +1 (:6222) | test coast_grow_vectors_match_web ... FAILED | panic | RESTORED=True
+G11 | SURVIVED | oczek=K | grow: oznaczenie wybranego heksa jako odwiedzony usuniete (:6225) | all green | RESTORED=True
+G12 | SURVIVED | oczek=K | grow: ujscie nieoznaczone jako odwiedzone (:6199) | all green | RESTORED=True
+G13 | SURVIVED | oczek=L | grow: galaz landCenterSquare (centroid kwadratu) usunieta (:6201) | all green | RESTORED=True
+G14 | SURVIVED | oczek=L | grow: visitCap estimateLandCentroidFromMouth 6000 -> 3000 (:6202) - L: cap nieosiagalny na mapach <=127 hexow | all green | RESTORED=True
+M01 | KILLED | oczek=K | meander: pominiecie 'used' usuniete (:6503) | test coast_grow_vectors_match_web ... FAILED | panic | RESTORED=True
+M02 | SURVIVED | oczek=E | meander: pominiecie celu usuniete (:6503) - E: sasiad==cel nie dotyka celu (touches=false) | all green | RESTORED=True
+M03 | SURVIVED | oczek=K | meander: filtr kierunku celu usuniety (:6504) | all green | RESTORED=True
+M04 | KILLED | oczek=K | meander: przechodnosc odwrocona (:6507) | test coast_grow_vectors_match_web ... FAILED | panic | RESTORED=True
+M05 | KILLED | oczek=K | meander: blockExisting=false (:6507) | test coast_grow_vectors_match_web ... FAILED | panic | RESTORED=True
+M06 | SURVIVED | oczek=E | meander: brak seaDist(nk) -> 0 zamiast pominiecia (:6509) - E: 0 < RIVER_MIN_INLAND (2) odrzuca | all green | RESTORED=True
+M07 | KILLED | oczek=K | meander: nd > curD -> >= (:6509) | test coast_grow_vectors_match_web ... FAILED | panic | RESTORED=True
+M08 | KILLED | oczek=K | meander: prog MIN_INLAND <= (:6510) | test coast_grow_vectors_match_web ... FAILED | panic | RESTORED=True
+M09 | KILLED | oczek=K | meander: filtr dotykania celu odwrocony (:6514) | test coast_grow_vectors_match_web ... FAILED | panic | RESTORED=True
+M10 | KILLED | oczek=K | meander: warunek dotykania && -> || (:6512) | test coast_grow_vectors_match_web ... FAILED | panic | RESTORED=True
+M11 | SURVIVED | oczek=K | meander: brak seaDist(cur) -> 0 zamiast 999 (:6494) | all green | RESTORED=True
+M12 | KILLED | oczek=K | meander: zwrot null przy pustych opcjach usuniety (:6518) - panika | test coast_grow_vectors_match_web ... FAILED | panic | RESTORED=True
+M13 | SURVIVED | oczek=E | meander: klamra indeksu usunieta (:6519) - E: rand()<1, floor(rand*len)<len | all green | RESTORED=True
+M14 | KILLED | oczek=L | meander: rand() zuzyte takze przy pustych opcjach (wywolanie pojedyncze w harnessie) - L: harness nie testuje wspoldzielonego rand | test coast_grow_vectors_match_web ... FAILED | panic | RESTORED=True
+M15 | KILLED | oczek=K | meander: warunek dotykania (drugi operand) zanegowany (:6512) | test coast_grow_vectors_match_web ... FAILED | panic | RESTORED=True
+W01 | KILLED | oczek=K | window: prog |delta| > 1 -> 2 (:7105) | test edges_vectors_match_web ... FAILED | panic | RESTORED=True
+W02 | KILLED | oczek=K | window: granica okna (i+1 >= 6) -> > 6 (:7106) | test edges_vectors_match_web ... FAILED | panic | RESTORED=True
+W03 | KILLED | oczek=K | window: |suma| > 1 -> >= 1 (:7108) | test edges_vectors_match_web ... FAILED | panic | RESTORED=True
+W04 | KILLED | oczek=K | window: indeks ciecia okna -1 (:7109) | test edges_vectors_match_web ... FAILED | panic | RESTORED=True
+W05 | SURVIVED | oczek=K | window: break przy ciecie na koncu usuniety (:7114) | all green | RESTORED=True
+W06 | SURVIVED | oczek=L | window: cap 48 -> 47 (N-1) (:7100) - L: maks. iteracji w wektorach ponizej 47 (zmierzono w dossier) | all green | RESTORED=True
+W07 | KILLED | oczek=K | window: negacja warunku 'brak naruszen' (:7101) | test edges_vectors_match_web ... FAILED | panic | RESTORED=True
+W08 | SURVIVED | oczek=K | window: naprawa sasiedztwa pominieta (:7116) | all green | RESTORED=True
+W09 | KILLED | oczek=K | window: sanityzacja po cieciu pominieta (:7115) | test edges_vectors_match_web ... FAILED | panic | RESTORED=True
+E01 | SURVIVED | oczek=E | canReceive: brak zwrotu dla Morza (:7123) - E: is_dry(Sea)=false i Sea != ShallowSea | all green | RESTORED=True
+E02 | KILLED | oczek=K | canReceive: PlytkieMorze pominiete (:7124) | test edges_vectors_match_web ... FAILED | panic | RESTORED=True
+E03 | SURVIVED | oczek=E | markRiverEdge: edgeIdx<0 guard usuniety (:7128) - E: u8::try_from(-1) zwraca Err | all green | RESTORED=True
+E04 | KILLED | oczek=K | markRiverEdge: guard canReceive usuniety (:7130) | test edges_vectors_match_web ... FAILED | panic | RESTORED=True
+E05 | KILLED | oczek=K | markRiverEdge: deduplikacja krawedzi usunieta (:7132) | test edges_vectors_match_web ... FAILED | panic | RESTORED=True
+E06 | SURVIVED | oczek=E | markRiverEdge: obecna = true zamiast !empty (:7133) - E: po push krawedzie zawsze niepuste | all green | RESTORED=True
+E07 | SURVIVED | oczek=E | markRiverEdgePair: guard edgeIdx<0 usuniety (:7138) - E: mark_river_edge(-1) no-op, get(usize) None | all green | RESTORED=True
+E08 | KILLED | oczek=K | markRiverEdgePair: przeciwna krawedz (+3) -> (+2) (:7142) | test edges_vectors_match_web ... FAILED | panic | RESTORED=True
+E09 | KILLED | oczek=K | riverHexCornerStep: kierunek odwrocony (:7147) | test edges_point_cases_match_contract ... FAILED; test edges_vectors_match_web ... FAILED | panic | RESTORED=True
+E10 | SURVIVED | oczek=E | walkRiverHexPerimeter: wczesny zwrot dla from==to usuniety (:7151) - E: petla zwraca to samo | all green | RESTORED=True
+E11 | KILLED | oczek=K | walkRiverHexPerimeter: cap 7 -> 5 (N-1) (:7154) - zabija przypadki 6-wpisowe | test edges_vectors_match_web ... FAILED | panic | RESTORED=True
+E12 | KILLED | oczek=K | riverCornersAlongHexEdges: wczesny zwrot a==b usuniety (:7169) | test edges_point_cases_match_contract ... FAILED; test edges_vectors_match_web ... FAILED | panic | RESTORED=True
+E13 | SURVIVED | oczek=K | riverCornersAlongHexEdges: parzystosc odwrocona (:7183) | all green | RESTORED=True
+E14 | SURVIVED | oczek=K | riverCornersAlongHexEdges: tie-break parzystosci cw/ccw zamieniony (:7183) | all green | RESTORED=True
+E15 | KILLED | oczek=K | riverCornersAlongHexEdges: prog MIN_BOKI <= (:7186) | test edges_vectors_match_web ... FAILED | panic | RESTORED=True
+E16 | KILLED | oczek=K | riverCornersAlongHexEdges: remis nadpisuje best (:7187) | test edges_vectors_match_web ... FAILED | panic | RESTORED=True
+E17 | SURVIVED | oczek=K | riverCornersAlongHexEdges: remis nadpisuje fallback (:7185) | all green | RESTORED=True
+E18 | SURVIVED | oczek=K | riverCornersAlongHexEdges: wybor fallback usuniety (:7191) | all green | RESTORED=True
+E19 | SURVIVED | oczek=K | riverCornersAlongHexEdges: kolejnosc cw/ccw odwrocona (:7179) | all green | RESTORED=True
+E20 | KILLED | oczek=K | riverCornersAlongHexEdges: kolejnosc wejsc (:7170) | test edges_vectors_match_web ... FAILED | panic | RESTORED=True
+E21 | KILLED | oczek=K | riverEdgeBetweenCorners: galaz +1 (:7196) | test edges_vectors_match_web ... FAILED | panic | RESTORED=True
+E22 | KILLED | oczek=K | riverEdgeBetweenCorners: wynik galezi +1 (:7196) | test edges_vectors_match_web ... FAILED | panic | RESTORED=True
+E23 | KILLED | oczek=K | riverEdgeBetweenCorners: galaz -1 (:7197) | test edges_vectors_match_web ... FAILED | panic | RESTORED=True
+E24 | SURVIVED | oczek=E | riverTransitEdgeIndices: prog len<2 -> <1 (:7204) - E: petla 0..0 pusta | all green | RESTORED=True
+E25 | SURVIVED | oczek=K | riverTransitEdgeIndices: deduplikacja usunieta (:7208) | all green | RESTORED=True
+E26 | KILLED | oczek=K | riverTransitEdgeIndices: krawedz 0 odrzucana (:7208) | test edges_vectors_match_web ... FAILED | panic | RESTORED=True
+E27 | SURVIVED | oczek=E | simplifyRiverRenderPath: prog len<3 -> <2 (:7216) - E: petla i in 1..len-1 pusta dla len 2 | all green | RESTORED=True
+E28 | SURVIVED | oczek=L | simplifyRiverRenderPath: cap 4000 -> 3999 (N-1) - L: nieosiagalny (iteracje <= len sciezki <=15) | all green | RESTORED=True
+E29 | KILLED | oczek=K | simplifyRiverRenderPath: powrot a==c nieusuwany (:7224) | test edges_vectors_match_web ... FAILED | panic | RESTORED=True
+E30 | KILLED | oczek=K | simplifyRiverRenderPath: zbedny heks - warunek sasiedztwa odwrocony (:7225) | test edges_vectors_match_web ... FAILED | panic | RESTORED=True
+E31 | SURVIVED | oczek=E | markRiverTransitEdgesOnPath: prog len<2 -> <1 (:7234) - E: petla bez krawedzi | all green | RESTORED=True
+E32 | KILLED | oczek=K | markRiverTransitEdgesOnPath: warunek pominiecia heksa (:7243) | test edges_vectors_match_web ... FAILED | panic | RESTORED=True
+E33 | KILLED | oczek=K | markRiverTransitEdgesOnPath: kierunek wejscia dla i=1 (:7237) | test edges_vectors_match_web ... FAILED | panic | RESTORED=True
+E34 | KILLED | oczek=K | markRiverTransitEdgesOnPath: kierunek wyjscia (:7240) | test edges_vectors_match_web ... FAILED | panic | RESTORED=True
+E35 | SURVIVED | oczek=K | markRiverTransitEdgesOnPath: parzystosc heksa przesunieta (:7244) | all green | RESTORED=True
+G15 | KILLED | oczek=K | grow: estimateLandCentroidFromMouth z odwroconym allowReliefTraversal (:6202) | test coast_grow_vectors_match_web ... FAILED | panic | RESTORED=True
+G16 | KILLED | oczek=K | grow: hardMeander w bazowym przebiegu wylaczony (:6209) | test coast_grow_vectors_match_web ... FAILED | panic | RESTORED=True
+E36 | KILLED | oczek=K | riverCornersAlongHexEdges: normalizacja ((d%6)+6)%6 zastapiona %6 (:7167) | test edges_vectors_match_web ... FAILED | panic | RESTORED=True
+E37 | KILLED | oczek=K | walkRiverHexPerimeter: wczesne wyjscie na rogu docelowym usuniete (:7157) | test edges_vectors_match_web ... FAILED | panic | RESTORED=True
+E38 | KILLED | oczek=K | canReceiveRiverYieldMark: brak heksa -> true zamiast false (:7123) | test edges_vectors_match_web ... FAILED | panic | RESTORED=True
+W10 | KILLED | oczek=K | sanitizeRiverTurnWindow: wstepna sanityzacja pominieta (:7099) | test edges_vectors_match_web ... FAILED | panic | RESTORED=True

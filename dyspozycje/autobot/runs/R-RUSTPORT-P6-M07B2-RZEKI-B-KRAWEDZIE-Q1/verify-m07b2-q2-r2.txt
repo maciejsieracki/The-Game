@@ -1,0 +1,17 @@
+canreceive: 3000/3000
+collect: 3000/3000
+corner_step: 12/12
+corners: 1250/1250
+edge_between: 36/36
+grow: 1500/1500
+mark_edge: 2500/2500
+mark_pair: 2500/2500
+mark_transit: 3000/3000
+meander: 2000/2000
+sanitize_window: 3000/3000
+simplify: 3000/3000
+transit_idx: 722/722
+walk: 72/72
+input_sea_mismatch_maps: 0
+TOTAL: 25592/25592 zgodne
+EXIT=0

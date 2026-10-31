@@ -226,8 +226,8 @@ Podsumowanie Q2: 15/15 symboli zakresu ma kod; wektory z weba: 19092 (edges) + 6
 
 ### Luki (NIE WYKONANO w tej rundzie)
 
-- **Mutanty (lekcja d)**: NIE WYKONANO. Brak skryptu mutacji w repo i brak tabeli niezmutowanych konstrukcji plik:linia dla Q2. Przeniesione do Evaluatora/kolejnej rundy.
-- **Weryfikator Python od zera (lekcja c)**: NIE WYKONANO dla Q2.
+- **Mutanty (lekcja d)**: WYKONANO w rundzie 2 (patrz „Runda 2 — Operator-pomiary" niżej): 100 mutantów, 67 KILLED, 33 SURVIVED; 17 SURVIVED z oczekiwaniem K to LUKI TESTOWE (otwarte). Tabela niezmutowanych konstrukcji plik:linia NIE ZREALIZOWANA w tej rundzie (luka).
+- **Weryfikator Python od zera (lekcja c)**: WYKONANO w rundzie 2 — 25 592/25 592 zgodne, EXIT=0 (`verify-m07b2-q2-r2.txt`).
 - **Długie pomiary**: nie wykonywano (zgodnie z rolą Operator-impl w dispatchu).
 
 ### Bramki (worktree `wf_4f4325d0-462-1`, gałąź `r-rustport-m07b2-q2`)
@@ -239,3 +239,14 @@ Podsumowanie Q2: 15/15 symboli zakresu ma kod; wektory z weba: 19092 (edges) + 6
 - `git diff --check`: sprawdzane przed commitem.
 - `Cargo.lock` w `rust-port/engine/` jest niesledzony i NIE jest częścią commitów.
 - Target Cargo: `/dev/shm/m07b2-q2-target` (do usunięcia po etapie).
+
+### Runda 2 — Operator-pomiary (weryfikator, mutanty)
+
+Commit kodu badany: `b443131af` (kod Q2 = `687d39563`; tracked pliki czyste, `git diff` pusty). Logi: `runs/R-RUSTPORT-P6-M07B2-RZEKI-B-KRAWEDZIE-Q1/`.
+
+- **Weryfikator Python od zera**: `tests/p6_m07b2_vectors/verify_m07b2_q2.py` (implementacja z TS pinu, nie z Rust/.mjs). Wynik: `TOTAL: 25592/25592 zgodne`, `EXIT=0` (`verify-m07b2-q2-r2.txt`; ponowne uruchomienie tej rundy daje identyczny wynik). Pokrycie: canreceive 3000, collect 3000, grow 1500, meander 2000, mark_edge 2500, mark_pair 2500, mark_transit 3000, sanitize_window 3000, simplify 3000, corner_step 12, corners 1250, edge_between 36, transit_idx 722, walk 72, input_sea_mismatch_maps 0.
+- **Mutanty**: `tests/p6_m07b2_vectors/mutate_m07b2_q2.py` (100 mutantów: C01–C21, G01–G16, M01–M13, W01–W10, E01–E38; każdy = jedno asercyjne podstawienie, przywrócenie pliku z kontrolą sha256). Log: `mutate-m07b2-q2-r2.txt`, 100/100 wpisów, wszystkie `RESTORED=True`. Wynik: **67 KILLED, 33 SURVIVED**.
+- **SURVIVED z oczekiwaniem E/L (równoważność lub nieosiągalność; ZAŁOŻENIE z uzasadnieniem w logu, do weryfikacji przez Evaluatora)**: C05, M02, M06, M13, E01, E03, E06, E07, E10, E24, E27, E31 (E); G13, G14, W06, E28 (L).
+- **SURVIVED z oczekiwaniem K = LUKI TESTOWE (otwarte, NIE zamknięte)**: C12 (`center_step > 8`→`> 7`), C21 (`sea_dist(cur)` default), G05 i G06 (filtr `visited` w przebiegach), G11 (oznaczenie wybranego heksa), G12 (oznaczenie ujścia), M03 (filtr kierunku celu), M11 (`sea_dist(cur)` default 999), W05 (break przy cięciu na końcu), W08 (naprawa sąsiedztwa okna), E13, E14, E17, E18, E19 (gałęzie parzystości i fallback w `river_corners_along_hex_edges`), E25 (deduplikacja w `river_transit_edge_indices`), E35 (parzystość heksa w `mark_river_transit_edges_on_path`). Razem 17.
+- **Tabela niezmutowanych konstrukcji plik:linia**: NIE ZREALIZOWANA w tej rundzie. Mutanty są opisane w linii web (`:NNNN`), brak mapowania na linie Rust; wymagane w następnej rundzie razem z zamknięciem 17 luk.
+- **Wniosek dla bramki**: lekcja (d) NIE spełniona (17 luk K + brak tabeli). Lekcje (c) i gate fmt/clippy/test — spełnione.
