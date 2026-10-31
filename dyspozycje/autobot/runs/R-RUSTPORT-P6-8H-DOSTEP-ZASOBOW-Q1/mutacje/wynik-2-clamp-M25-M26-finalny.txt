@@ -1,0 +1,2 @@
+M25 KILLED klasa=zabic exit=101 wynik=test result: FAILED. 10 passed; 1 failed padle=culture_share_and_mix_match_web
+M26 KILLED klasa=zabic exit=101 wynik=test result: FAILED. 10 passed; 1 failed padle=culture_share_and_mix_match_web

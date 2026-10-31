@@ -1,0 +1,9 @@
+M03 SURVIVED klasa=rownowazny exit=0 wynik=test result: ok. 13 passed; 0 failed padle=
+M30 SURVIVED klasa=rownowazny exit=0 wynik=test result: ok. 13 passed; 0 failed padle=
+M31 KILLED klasa=zabic exit=101 wynik=test result: FAILED. 12 passed; 1 failed padle=culture_share_and_mix_match_web
+M32 SURVIVED klasa=rownowazny exit=0 wynik=test result: ok. 13 passed; 0 failed padle=
+M33 SURVIVED klasa=rownowazny exit=0 wynik=test result: ok. 13 passed; 0 failed padle=
+M49 KILLED klasa=zabic exit=101 wynik=test result: FAILED. 10 passed; 3 failed padle=cyna_kopalnia_on_deposit_matches_web,js_trim_set_matches_v8_for_all_code_points,zelazo_kopalnia_on_deposit_matches_web
+M50 KILLED klasa=zabic exit=101 wynik=test result: FAILED. 11 passed; 2 failed padle=cyna_kopalnia_on_deposit_matches_web,js_trim_set_matches_v8_for_all_code_points
+M51 KILLED klasa=zabic exit=101 wynik=test result: FAILED. 11 passed; 2 failed padle=js_trim_set_matches_v8_for_all_code_points,zelazo_kopalnia_on_deposit_matches_web
+M52 KILLED klasa=zabic exit=101 wynik=test result: FAILED. 12 passed; 1 failed padle=culture_share_clamp_boundaries_and_negative_zero

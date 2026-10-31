@@ -911,7 +911,7 @@ pub mod p6_7b {
     // ---------------------------------------------------------------------------------------
 
     /// Web `zloto-access.ts` `empireZlotoStock`: zapas Zlota w puli (nie-skonczony lub <= 0 => 0).
-    fn empire_zloto_stock(empire_stock: Option<&StockRecord>) -> f64 {
+    pub fn empire_zloto_stock(empire_stock: Option<&StockRecord>) -> f64 {
         let key = &building_cost_params()
             .wejscia_z_innych_modulow_weba
             .zloto_stock_klucz;
