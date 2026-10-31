@@ -1,3 +1,12 @@
+## ROBOCZA 8bad46d9 -- 2026-10-31 -- auto-ulepszenia: etapy żywnościowe, wycinka przy rzece; podgląd Spichlerza (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`93a6aba1d` + dwa tematy) i commit wdrożenia bundla; stała zgoda właściciela 2026-10-31.
+- Bundle MD5 `8bad46d95da161129239e1ebe68671fe`, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, outDir poza repo, stempel ROBOCZA; `verify-robocza-bundle.cjs` VERIFY OK.
+- Zakres: (1) `R-WEB-AUTOIMPROVE-STAGES-Q1` — auto-ulepszenia: kolejność etapów (farma na rzece bez lasu → wycinka + farma → trzoda → irygacja, potem wycinka i farmy poza rzeką); niedobór surowca nie wyłącza etapów żywności (profil zrównoważone gracza i AI: brakujący surowiec idzie na przód, po zaspokojeniu powrót do żywności); profil „Żywność” bez odwołań do niedoborów; wycinka bez minimum leśnego i progu lasu, heks z tartakiem/obozem nie jest wycinany; brak technologii nie blokuje kolejnych etapów; trzoda i irygacja poza limitem % puli Pracy; naprawiony brak epoki w wywołaniu gracza; (2) `R-WEB-SPICHLERZ-HUD-PARAMS-Q1` — podgląd zużycia Spichlerza w panelu miasta z parametrów silnika.
+- Testy po scaleniu: tsc PASS; autoimprove-stages-q1 111/0, wyrab-rzeka-krok0 3/0, r2 10/0, d1 2/0, auto-improvements 45/0, ai-improvements 53/0, ai-food-improvement-priority-stages 13/0, ai2-heks-po-heksie 36/0, hodowla-las 113/0, spichlerz-hud-params-parity 66/0, spichlerz-drain-keys 44/0, battle-standoff 9/9, diplomacy 148, war-era-counter 82.
+- Ograniczenia: NIE_ZMIERZONO niedobór surowca na żywej grze i wieloturowa wycinka gracza w Chromium; otwarte pytania ABC (tartak/obóz w profilu „Żywność”, kiedy powstaje tartak, próg niedoboru <10, limit AI, lama na lesie, heks centrum miasta) — stare reguły zostają; czerwone także na bazie: ai4-popyt-obywatele (Z1a/Z1d/Z1g/Q2o), ai-test, civ-matrix-ai-diplomacy-wiring 42/1.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `765163444226f14cda2554986898a095`, 70,088,220 bajtów.
+
 ## ROBOCZA 76516344 -- 2026-10-31 -- bitwa dwóch wojowników bez wodza, zużycie Spichlerza z JSON (testowa)
 
 - **STATUS: DEPLOYED** — merge do `origin/main` (`4d1916f2c` + trzy tematy) i commit wdrożenia bundla; stała zgoda właściciela 2026-10-31: scalanie do main i deploy do roboczej.
