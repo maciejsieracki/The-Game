@@ -427,3 +427,7 @@ Cel końcowy i bieżący zapisane w `GOAL-RUST-PORT-20261020.md` (§"CEL PĘTLI 
 - Efekt: rozejm 5/10/15 tur (baza 200 PW, te same bramki co pokój i ta sama waluta w wojnie), AI proponuje rozejm gdy wojna krótsza niż 20 tur, wygaśnięcie bez kary i bez flagi agresora, wypowiedzenie w oknie = kara + flaga; przełącznik pokój/rozejm w modalu; zapis/odczyt; picker miasta ukryty dla rozejmu.
 - Dług (NIE_ZMIERZONO): E2E AI→stół (harness w repo, przekracza 400 s przy obciążeniu), żywy roundtrip pliku zapisu, forced-war-r9 live; ai-test 274/20 (znane, bez zmian); civ-matrix-ai-diplomacy-wiring 42/1 (baza).
 - Gałąź `web/integration-20261030` zawiera: ring + licznik wojen epoki + PEACE-RULES r3 + R8/R9 + CITY-CESSION + AGGRESSOR-FLAG + TRUCE. Push do `main`: NIE WYKONANO — czeka na zgodę właściciela.
+
+## 2026-10-31 — 8H partia A zintegrowana; reszta → nowy temat 8H2
+- `R-RUSTPORT-P6-8H-DOSTEP-ZASOBOW-Q1` PASS-WITH-NOTES, partia A (złoto, cyna, żelazo, kultura miasta; `domain/resource_access.rs`). FC r2 `0ffffa123`. Merge na `parity-v2` `44a3e9ccf`: fmt OK, clippy OK, test 1940/0. Wektory z pinu 91dc998a bajt-identyczne, 48 mutacji (44 zabite + 4 równoważne z dowodem), `trim` zgodny z JS dla wszystkich code pointów.
+- Decyzja orkiestratora: zamknięcie administracyjne partii A; reszta 8H (`resource-access.ts`: etykiety, collectActiveAccess, getCityResourceAccessForCity, getResourceAccessForCity; isForeignReligionDominant, isPlayerCapitalCity, stolicaEasyBonusActive; wywołujący) → `R-RUSTPORT-P6-8H2-DOSTEP-ZASOBOW-B-Q1`.
