@@ -261,6 +261,23 @@ for (let j = 0; j < 40; j++) {
   cases.reconstruct.push({ pairs: cameFromPairs, end: endK, ret });
 }
 
+// ---------- (r5) dopisek: brzegowe przypadki pathEndsAtSea (bez losowania - nie zmienia wczesniejszych wektorow) ----------
+// Mapa 6x6 laka z jednym morzem na brzegu (0,0) - morze izolowane (zadnego sasiada w oceanie).
+const edgeHexes = {};
+for (let r = 0; r < 6; r++) for (let q = 0; q < 6; q++) {
+  edgeHexes[keyOf(q, r)] = { coords: { q, r }, terenBazowy: (q === 0 && r === 0) ? TB.Morze : TB.Laka, nakladka: NK.Brak, rzeka: { obecna: false, krawedzie: [] } };
+}
+const edgeIdx = addMap(6, 6, edgeHexes);
+cases.pathSeaEdge = [];
+for (const path of [[], [[0, 0]], [[1, 0]], [[1, 1]], [[2, 2]], [[-1, 0]], [[0, 0], [1, 0]], [[3, 3], [0, 0]]]) {
+  for (const dims of [[6, 6], null]) {
+    const ret = dims
+      ? G.pathEndsAtSea(mkCase(edgeIdx), path.map(([a, b]) => ({ q: a, r: b })), dims[0], dims[1])
+      : G.pathEndsAtSea(mkCase(edgeIdx), path.map(([a, b]) => ({ q: a, r: b })));
+    cases.pathSeaEdge.push({ map: edgeIdx, path, dims, ret });
+  }
+}
+
 const doc = {
   maps,
   cases,

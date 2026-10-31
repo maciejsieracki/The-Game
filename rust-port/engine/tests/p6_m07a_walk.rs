@@ -140,6 +140,26 @@ fn path_ends_at_sea_matches_web() {
     }
 }
 
+/// Brzegi (r5): pusta trasa -> false; morze izolowane na brzegu jako koniec -> true (galaz ostatniego heksu).
+#[test]
+fn path_ends_at_sea_edge_cases_match_web() {
+    let r = root();
+    let cs = cases(&r, "pathSeaEdge");
+    assert_eq!(cs.len(), 16);
+    for c in cs {
+        let idx = c["map"].as_u64().unwrap() as usize;
+        let hexes = build_map(&r, idx);
+        let path: Vec<RiverCoord> = path_of(&c["path"]);
+        let d = if c["dims"].is_null() {
+            None
+        } else {
+            Some(pair(&c["dims"]))
+        };
+        let got = path_ends_at_sea(&hexes, &path, d, None);
+        assert_eq!(got, c["ret"].as_bool().unwrap(), "pathSeaEdge {c}");
+    }
+}
+
 #[test]
 fn infer_dims_matches_web() {
     let r = root();

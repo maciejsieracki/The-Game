@@ -1,0 +1,13 @@
+    Checking serde_core v1.0.229
+    Checking once_cell v1.21.4
+    Checking zmij v1.0.23
+    Checking memchr v2.8.3
+    Checking tracing-core v0.1.36
+    Checking pin-project-lite v0.2.17
+    Checking itoa v1.0.18
+    Checking tracing v0.1.44
+    Checking serde_json v1.0.154
+    Checking serde v1.0.229
+    Checking civ-engine v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_b5423e64-95e-4/rust-port/engine)
+    Finished `dev` profile [unoptimized] target(s) in 52.58s
+EXIT=0

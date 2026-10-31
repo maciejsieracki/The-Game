@@ -1,0 +1,2 @@
+{"checked": {"drainStep": 504, "drainGoal": 360, "pathSea": 288, "pathSeaEdge": 16, "scoreSquare": 504, "scoreLandCenter": 288, "audit": 36, "grow": 1296, "collect": 496, "nearestIndexSize": 268, "nearestBrute": 268, "nearestIndexed": 268, "sep": 200, "sepIndexed": 200, "indexAdd": 40, "window": 2240, "segDirs": 320, "turnDeltas": 320, "neighborDir": 25, "signedDelta": 41, "bigMapSize": 1, "bigCap": 24, "toFixed": 48, "profile": 7}, "fails": 0, "fails_per_kind": {}}
+EXIT=0

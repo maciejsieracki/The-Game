@@ -1,0 +1,4 @@
+W11	ZABITY	path_ends_at_sea: pusta trasa	test path_ends_at_sea_edge_cases_match_web ... FAILED
+W13	ZABITY	path_ends_at_sea: ostatni heks	test path_ends_at_sea_edge_cases_match_web ... FAILED
+G28	ZABITY	collect: kara -10	test collect_candidates_match_web_scores ... FAILED
+P04	ZABITY	profil: flaga (wartosc inna niz 1 - poza wektorami)	test profile_flag_is_exact_one_and_hook_is_gated ... FAILED

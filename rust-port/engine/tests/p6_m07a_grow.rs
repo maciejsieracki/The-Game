@@ -24,7 +24,9 @@ use civ_engine::domain::mapgen::rivers_a::grow::{
 use civ_engine::domain::mapgen::rivers_a::profile::{
     format_river_profile_text, js_to_fixed, river_profile_hook, RiverProfileStats,
 };
-use civ_engine::domain::mapgen::rivers_a::walk::estimate_land_centroid_from_seed;
+use civ_engine::domain::mapgen::rivers_a::walk::{
+    estimate_land_centroid_from_seed, CENTROID_VISIT_CAP,
+};
 use civ_engine::domain::mapgen::rivers_a::RiverCoord;
 use civ_engine::domain::mapgen::terrain_class::HexRecord;
 use civ_engine::domain::rng::Mulberry32;
@@ -144,7 +146,11 @@ fn grow_matches_web() {
 fn collect_candidates_match_web_scores() {
     let root = doc();
     let cs = cases(&root, "collect");
-    assert_eq!(cs.len(), 400);
+    assert_eq!(
+        cs.len(),
+        496,
+        "400 losowych + 96 brzegowych (cur poza mapa)"
+    );
     let mut with_candidates = 0usize;
     for c in cs {
         let idx = c["map"].as_u64().expect("map") as usize;
@@ -330,6 +336,8 @@ fn window_and_directions_match_web() {
 
 #[test]
 fn big_map_cap_6000_discriminates_and_matches_web() {
+    // Web `visitCap = 6000` (gen-helpers.ts:5988); stala uzywana przez grow (domyslny cap centroidu).
+    assert_eq!(CENTROID_VISIT_CAP, 6000);
     let root = doc();
     let big = root["meta"]["bigMapIndex"].as_u64().expect("bigMapIndex") as usize;
     let hexes = build_map(&root, big);
@@ -379,11 +387,33 @@ fn profile_format_and_to_fixed_match_web() {
             "profil: {c}"
         );
     }
-    // Hook bez flagi srodowiska nie zmienia stanu (wynik generatora nietkniety).
-    if std::env::var("CIV_RIVER_PROFILE").as_deref() != Ok("1") {
-        river_profile_hook(|s| s.trace_river_calls += 1);
-        assert!(civ_engine::domain::mapgen::rivers_a::profile::get_river_profile_stats().is_none());
-    }
+}
+
+/// Flaga: tylko wartosc "1" wlacza profiler (web `process.env.CIV_RIVER_PROFILE === '1'`).
+/// Wylaczony hook nic nie zapisuje (wynik generatora nietkniety). Jedyny test czytajacy/ustawiajacy env.
+#[test]
+fn profile_flag_is_exact_one_and_hook_is_gated() {
+    use civ_engine::domain::mapgen::rivers_a::profile::{
+        get_river_profile_stats, reset_river_profile_stats, river_profile_on,
+    };
+    std::env::set_var("CIV_RIVER_PROFILE", "0");
+    assert!(!river_profile_on());
+    river_profile_hook(|s| s.trace_river_calls += 1);
+    assert!(
+        get_river_profile_stats().is_none(),
+        "wylaczony hook nic nie zapisuje"
+    );
+    std::env::set_var("CIV_RIVER_PROFILE", "true");
+    assert!(!river_profile_on(), "'true' != '1'");
+    std::env::set_var("CIV_RIVER_PROFILE", "1");
+    assert!(river_profile_on());
+    river_profile_hook(|s| s.trace_river_calls += 2);
+    assert_eq!(
+        get_river_profile_stats().map(|s| s.trace_river_calls),
+        Some(2)
+    );
+    reset_river_profile_stats();
+    std::env::remove_var("CIV_RIVER_PROFILE");
 }
 
 fn stats_from(s: &Value) -> RiverProfileStats {

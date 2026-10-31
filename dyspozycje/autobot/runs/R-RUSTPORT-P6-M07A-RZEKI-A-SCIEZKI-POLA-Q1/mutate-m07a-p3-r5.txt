@@ -1,0 +1,85 @@
+W01	ZABITY	can_river_drain_step: wejscie oceaniczne	test drain_step_matches_web ... FAILED
+W02	ZABITY	can_river_drain_step: faza	test drain_step_matches_web ... FAILED
+W03	ZABITY	can_river_drain_step: granica nd (r4 M1)	test drain_step_matches_web ... FAILED
+W04	ZABITY	can_river_drain_step: korytarz (r4 M2)	test drain_step_matches_web ... FAILED
+W05	ZABITY	is_river_drainage_goal: cel oceaniczny	test drainage_goal_matches_web ... FAILED
+W06	ZABITY	is_river_drainage_goal: sasiad oceanu	test drainage_goal_matches_web ... FAILED
+W07	ZABITY	is_river_drainage_goal: negacja przejscia	test drainage_goal_matches_web ... FAILED
+W08	ZABITY	is_river_drainage_goal: block_existing	test drainage_goal_matches_web ... FAILED
+W09	PRZETRWAL	infer dims: ekwiwalent (przypisanie tej samej wartosci)
+W10	PRZETRWAL	infer dims: ekwiwalent
+W11	PRZETRWAL	path_ends_at_sea: pusta trasa
+W12	ZABITY	path_ends_at_sea: wymiary z inferencji	test path_ends_at_sea_matches_web ... FAILED
+W13	PRZETRWAL	path_ends_at_sea: ostatni heks
+W14	ZABITY	path_ends_at_sea: sasiad	test path_ends_at_sea_matches_web ... FAILED
+W15	ZABITY	reconstruct_river_path: odwrocenie	test reconstruct_matches_web ... FAILED
+W16	ZABITY	centroid: cap < -> <=	test cap_sweep_matches_web ... FAILED; test big_map_cap_6000_discriminates_and_matches_web ... FAILED; test centroid_seed_and_mouth_match_web ... FAILED
+W17	PRZETRWAL	centroid: galaz key_qr (ekwiwalent: klucze zawsze poprawne)
+W18	ZABITY	centroid: liczenie ladu	test cap_sweep_matches_web ... FAILED; test grow_matches_web ... FAILED; test big_map_cap_6000_discriminates_and_matches_web ... FAILED
+W19	ZABITY	centroid: block_existing w BFS	test cap_sweep_matches_web ... FAILED; test grow_matches_web ... FAILED; test centroid_seed_and_mouth_match_web ... FAILED
+W20	ZABITY	centroid: brak ladu	test cap_sweep_matches_web ... FAILED; test big_map_cap_6000_discriminates_and_matches_web ... FAILED; test centroid_seed_and_mouth_match_web ... FAILED
+W21	ZABITY	scoreCentroid: brak centroidu	test collect_candidates_match_web_scores ... FAILED; test score_centroid_matches_web ... FAILED; test score_land_center_matches_web ... FAILED
+W22	ZABITY	scoreCentroid: zblizenie <=	test collect_candidates_match_web_scores ... FAILED; test grow_matches_web ... FAILED; test score_land_center_matches_web ... FAILED
+W23	ZABITY	scoreCentroid: oddalenie >=	test collect_candidates_match_web_scores ... FAILED; test grow_matches_web ... FAILED; test score_centroid_matches_web ... FAILED
+W24	ZABITY	scoreSquare: brak kwadratu	test score_center_square_matches_web ... FAILED
+W25	ZABITY	scoreSquare: krok na kwadrat (40)	test collect_candidates_match_web_scores ... FAILED; test grow_matches_web ... FAILED; test score_center_square_matches_web ... FAILED
+W26	ZABITY	scoreSquare: zblizenie <=	test grow_matches_web ... FAILED; test collect_candidates_match_web_scores ... FAILED; test score_center_square_matches_web ... FAILED
+W27	ZABITY	scoreSquare: oddalenie >=	test grow_matches_web ... FAILED; test collect_candidates_match_web_scores ... FAILED; test score_center_square_matches_web ... FAILED
+W28	ZABITY	scoreLandCenter: galaz kwadratu	test grow_matches_web ... FAILED; test collect_candidates_match_web_scores ... FAILED; test score_land_center_matches_web ... FAILED
+W29	ZABITY	audit: nazwa terenu	test audit_matches_web ... FAILED
+W30	ZABITY	audit: licznik	test audit_matches_web ... FAILED
+W31	ZABITY	audit: pomijanie odwiedzonych startow	test audit_matches_web ... FAILED
+W32	ZABITY	audit: filtr wewnetrznego morza	test audit_matches_web ... FAILED (sprawdzone osobno: ~4 min, asercja, rc=101)
+W33	PRZETRWAL	audit: galaz key_qr (ekwiwalent)
+W34	ZABITY	river_hex_dir_delta: modulo	test grow_matches_web ... FAILED; test collect_candidates_match_web_scores ... FAILED; test window_and_directions_match_web ... FAILED
+W35	ZABITY	same_river_dir: porownanie	test step_dirs_match_web ... FAILED
+W36	ZABITY	is_relief_river_source: wzgorza	test relief_river_source_matches_web ... FAILED
+W37	ZABITY	infer dims: wynik	test infer_dims_matches_web ... FAILED; test path_ends_at_sea_matches_web ... FAILED
+W38	ZABITY	cap centroidu (domyslny)	test big_map_cap_6000_discriminates_and_matches_web ... FAILED; test constants_match_web ... FAILED
+W39	ZABITY	centroid mouth: cap przekazywany	test centroid_seed_and_mouth_match_web ... FAILED
+W40	PRZETRWAL	hex_axial_distance_f: odleglosc
+G01	ZABITY	signed_river_dir_delta: granica 3	test collect_candidates_match_web_scores ... FAILED; test window_and_directions_match_web ... FAILED
+G02	ZABITY	okno: krok +-60	test grow_matches_web ... FAILED; test collect_candidates_match_web_scores ... FAILED; test window_and_directions_match_web ... FAILED
+G03	ZABITY	okno: trasa jednoheksowa	test collect_candidates_match_web_scores ... FAILED; test grow_matches_web ... FAILED; test window_and_directions_match_web ... FAILED
+G04	ZABITY	okno: krok nie-sasiedni	test window_and_directions_match_web ... FAILED
+G05	ZABITY	okno: suma <= 1	test collect_candidates_match_web_scores ... FAILED; test grow_matches_web ... FAILED; test window_and_directions_match_web ... FAILED
+G06	ZABITY	okno: dlugosc slice	test grow_matches_web ... FAILED; test window_and_directions_match_web ... FAILED
+G07	ZABITY	okno: stala 6	test grow_matches_web ... FAILED; test window_and_directions_match_web ... FAILED
+G08	ZABITY	neighbor_dir_index: indeks	test window_and_directions_match_web ... FAILED
+G09	ZABITY	path_segment_dirs: kierunek 0 pominiety	test collect_candidates_match_web_scores ... FAILED; test grow_matches_web ... FAILED; test window_and_directions_match_web ... FAILED
+G10	PRZETRWAL	nearest: skan pierscienia (ekwiwalent: min bez zmian)
+G11	PRZETRWAL	nearest: remis (ekwiwalent: ta sama wartosc)
+G12	PRZETRWAL	nearest: warunek przerwania
+G13	PRZETRWAL	nearest: pusty indeks (ekwiwalent)
+G14	ZABITY	nearest: granica pierscieni N-1	test nearest_distance_and_index_match_web ... FAILED
+G15	ZABITY	nearest: uzycie indeksu dla 1 heksu	test nearest_distance_and_index_match_web ... FAILED
+G16	PRZETRWAL	sep: pusty blok (ekwiwalent)
+G17	ZABITY	sep: granica >=	test collect_candidates_match_web_scores ... FAILED; test grow_matches_web ... FAILED; test river_sep_matches_web ... FAILED
+G18	ZABITY	sep: brak bloku	test grow_matches_web ... FAILED; test collect_candidates_match_web_scores ... FAILED
+G19	ZABITY	collect: okno skretu	test collect_candidates_match_web_scores ... FAILED; test grow_matches_web ... FAILED
+G20	ZABITY	collect: przejscie rzeki	test grow_matches_web ... FAILED; test collect_candidates_match_web_scores ... FAILED
+G21	ZABITY	collect: separacja	test grow_matches_web ... FAILED; test collect_candidates_match_web_scores ... FAILED
+G22	ZABITY	collect: bufor morza	test collect_candidates_match_web_scores ... FAILED; test grow_matches_web ... FAILED
+G23	ZABITY	collect: twardy meander	test grow_matches_web ... FAILED; test collect_candidates_match_web_scores ... FAILED
+G24	PRZETRWAL	collect: kara od (ekwiwalent dla calkowitych)
+G25	ZABITY	collect: kara nd	test collect_candidates_match_web_scores ... FAILED; test grow_matches_web ... FAILED
+G26	ZABITY	collect: bonus +8	test grow_matches_web ... FAILED; test collect_candidates_match_web_scores ... FAILED
+G27	ZABITY	collect: kara -18	test collect_candidates_match_web_scores ... FAILED
+G28	PRZETRWAL	collect: kara -10
+G29	ZABITY	collect: bonus +8 wartosc	test collect_candidates_match_web_scores ... FAILED
+G30	ZABITY	collect: wzor score	test collect_candidates_match_web_scores ... FAILED
+G31	ZABITY	collect: szum score	test collect_candidates_match_web_scores ... FAILED
+G32	PRZETRWAL	grow: centroid z kwadratu
+G33	PRZETRWAL	grow: cap krokow N+1
+G34	ZABITY	grow: granica meandru	test grow_matches_web ... FAILED
+G35	PRZETRWAL	grow: galaz miekka (ekwiwalent: hard == len<H)
+G36	ZABITY	grow: losowanie z 3 najlepszych	test grow_matches_web ... FAILED
+G37	PRZETRWAL	grow: sortowanie galezi miekkiej
+G38	ZABITY	grow: sortowanie kandydatow	test grow_matches_web ... FAILED
+G39	ZABITY	komparator: kierunek	test grow_matches_web ... FAILED
+G40	ZABITY	grow: inlandGrowthMax	test grow_matches_web ... FAILED
+G41	ZABITY-TIMEOUT	grow: pusta galaz miekka (zawieszenie = zabity przez limit)
+P01	ZABITY	toFixed: remis w gore	test profile_format_and_to_fixed_match_web ... FAILED
+P02	ZABITY	profil: subtotal	test profile_format_and_to_fixed_match_web ... FAILED
+P03	ZABITY	profil: denom 0	test profile_format_and_to_fixed_match_web ... FAILED
+P04	PRZETRWAL	profil: flaga (wartosc inna niz 1 - poza wektorami)

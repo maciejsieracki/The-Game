@@ -1,0 +1,14 @@
+quota: 166/166 OK
+constants: 4/4 OK
+mouthGap: 324/324 OK
+sanitize: 400/400 OK
+revisited: 400/400 OK
+adjacent: 400/400 OK
+split: 400/400 OK
+flow: 5760/5760 OK
+repair: 240/240 OK
+repairCap: 12/12 OK
+seaBuffer: 240/240 OK
+fields.seaDist: 40/40 OK
+RESULT: PASS (bledy=0)
+EXIT=0

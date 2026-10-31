@@ -196,6 +196,26 @@ for (let j = 0; j < 400; j++) {
   });
 }
 
+// ---------- (r5) dopisek: cur poza mapa (klucz spoza seaDist -> 0): skok odleglosci > 1 (kara -10) ----------
+for (let m = 0; m < NMAPS; m++) {
+  const { w, h } = maps[m];
+  const keys0 = Object.keys(mkCase(m));
+  for (const [cq, cr] of [[-1, 0], [w, 0], [0, -1], [0, h]]) {
+    const seed = seedCounter++;
+    const ret = G.collectInlandDrainGrowCandidates({
+      hexes: mkCase(m), path: [{ q: cq, r: cr }], cur: { q: cq, r: cr }, srcKey: keys0[0],
+      seaDist: fields[m].sea, openOceanDist: fields[m].od, landCentroid: null, landCenterSquare: null,
+      rand: G.mulberry32(seed), blockRiverKeys: undefined, minPathSep: 0,
+      allowReliefTraversal: false, hardMeander: false, relaxHardMeander: false, relaxSeaBuffer: false,
+    });
+    collectCases.push({
+      map: m, path: [[cq, cr]], srcKey: keys0[0], hardMeander: false, relaxHard: false, relaxSea: false,
+      allowRelief: false, block: null, minSep: 0, centroid: null, square: false, seed,
+      ret: ret.map((c) => [c.q, c.r, numS(c.score)]),
+    });
+  }
+}
+
 // ---------- nearestRiverHexDistance + RiverHexSpatialIndex + riverGrowStepPassesSep ----------
 const nearestCases = [];
 const sepCases = [];
@@ -213,6 +233,18 @@ for (let j = 0; j < 260; j++) {
     keys: list, sq, sr,
     brute: numS(G.nearestRiverHexDistance(sq, sr, set, null)),
     indexed: numS(G.nearestRiverHexDistance(sq, sr, set, idx)),
+    indexSize: idx.size,
+  });
+}
+// Granica maxRing (24 pierscienie komorek = 144 heksy): klucze na pierscieniach 23/24/25.
+for (const [qk, rk] of [[138, 0], [143, 0], [144, 0], [149, 0], [150, 0], [-144, 0], [-150, 0], [0, 150]]) {
+  const list = [keyOf(qk, rk)];
+  const set = new Set(list);
+  const idx = G.RiverHexSpatialIndex.fromKeys(list);
+  nearestCases.push({
+    keys: list, sq: 0, sr: 0,
+    brute: numS(G.nearestRiverHexDistance(0, 0, set, null)),
+    indexed: numS(G.nearestRiverHexDistance(0, 0, set, idx)),
     indexSize: idx.size,
   });
 }
