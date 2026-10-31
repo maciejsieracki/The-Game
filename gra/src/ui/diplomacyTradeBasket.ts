@@ -1548,7 +1548,7 @@ export function computeAvailableTypes(
       if (t === 'miasto') {
         return side === 'give'
           && mode !== 'gift'
-          && diplomacyMiastoAkcjaDozwolona(proposalActionIdFromUi(actionId, mode))
+          && diplomacyMiastoAkcjaDozwolona(ctx.basketActionId ?? proposalActionIdFromUi(actionId, mode))
           && (ctx.miastoOptions?.length ?? 0) > 0;
       }
       if (mode === 'gift') return true;
@@ -1777,7 +1777,8 @@ export function buildAddForm(
  * Miasta już w koszyku znikają z listy. Pusta lista / inna akcja → ''.
  */
 function miastoPickerHtml(ctx: NegotiationModalContext, actionId: string, giveItems: readonly BasketItem[]): string {
-  if (!diplomacyMiastoAkcjaDozwolona(proposalActionIdFromUi(actionId, 'treaty'))) return '';
+  // R-WEB-TRUCE-Q1 r5 (N5): rozejm (basketActionId='rozejm') nie oddaje miast — picker ukryty.
+  if (!diplomacyMiastoAkcjaDozwolona(ctx.basketActionId ?? proposalActionIdFromUi(actionId, 'treaty'))) return '';
   const all = ctx.miastoOptions ?? [];
   if (all.length === 0) return '';
   const inBasket = new Set(giveItems.filter(it => it.typ === 'miasto').map(it => it.id));

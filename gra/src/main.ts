@@ -18233,8 +18233,10 @@ async function boot(): Promise<void> {
      * traktatu. `pokoj` NIE jest dziś objęty samą naprawą Q2 (poza zakresem zlecenia), ale
      * zostaje w tym zbiorze wykluczeń z tego właśnie powodu.
      */
+    // R-WEB-TRUCE-Q1 r5 (N3): 'rozejm' ma WŁASNĄ bramkę PW (ta sama co pokój, baza 200) — jak pokój
+    // musi być wykluczony z sumy PW innych pozycji stołu, inaczej rozejm zasilał próg umowy handlowej.
     const TREATY_GATED_NEGOTIATION_ACTIONS: ReadonlySet<string> = new Set([
-      'pokoj', 'umowa_szlakow', 'umowa_handlowa',
+      'pokoj', 'rozejm', 'umowa_szlakow', 'umowa_handlowa',
     ]);
 
     function isTreatyBaseFairnessAction(actionId: string): boolean {

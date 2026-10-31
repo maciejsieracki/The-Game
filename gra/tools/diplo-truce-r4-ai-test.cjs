@@ -191,6 +191,8 @@ async function main() {
     const mainSrc = fs.readFileSync(path.resolve(GRA, 'src', 'main.ts'), 'utf8');
     check('main.ts: baza PW AI rozejmu wiązana ternarą rodzaj===rozejm (200 vs 500)',
       /workingCmd\.rodzaj === 'rozejm' \? 'rozejm' : 'pokoj'/.test(mainSrc));
+    check('main.ts: TREATY_GATED_NEGOTIATION_ACTIONS zawiera rozejm (własna bramka PW, nie sumowana z innymi)',
+      /TREATY_GATED_NEGOTIATION_ACTIONS: ReadonlySet<string> = new Set\(\[\s*'pokoj', 'rozejm'/.test(mainSrc));
     check('main.ts: akceptacja AI rozejmu idzie gałęzią cywAction===rozejm (długość z payloadu)',
       /cywAction === 'rozejm'[\s\S]{0,400}normalizeTruceDuration\(payload\.turns/.test(mainSrc));
   }
