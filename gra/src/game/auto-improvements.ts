@@ -71,7 +71,24 @@ export const AI_IMPROVEMENT_PRIORITY: readonly ImprovementKey[] = [
  * pod tym profilem na zawsze (0/18 zamiast 18/18 w symulacji Final Control).
  */
 export const ULEPSZENIA_FOCUS_ZYWNOSC: readonly ImprovementKey[] = [
-  'farma', 'bydlo', 'owce', 'lama', 'tarasy', 'tartak', 'oboz_lowiecki', 'lodzie_rybackie', 'irygacja',
+  'farma', 'bydlo', 'owce', 'lama', 'tarasy', 'lodzie_rybackie', 'irygacja',
+];
+
+/**
+ * R-WEB-AUTOIMPROVE-STAGES-Q1 R3, ABC-A=C (właściciel 2026-10-31, K1 gracz „Żywność”): z profilu „Żywność”
+ * ZNIKAJĄ `tartak` i `oboz_lowiecki` — K1 to wyłącznie farma/trzoda/irygacja/wycinka (wg etapów), zero tartaków
+ * i obozów. Stała służy jako filtr bezpieczeństwa także dla ścieżek z `priorityOverride` (etap E6).
+ */
+const FOREST_BUILDING_KEYS: ReadonlySet<ImprovementKey> = new Set<ImprovementKey>(['tartak', 'oboz_lowiecki']);
+
+/**
+ * R3, ABC-B=B (K2/K3, jedna wspólna logika): lista „samej żywności” przy braku niedoboru = żywność K1 +
+ * `oboz_lowiecki`. Tartak NIE jest żywnością i powstaje wyłącznie przy niedoborze drewna (krok „brakujący
+ * surowiec”); obóz łowiecki `qualifies()` dopuszcza tylko na heksie z JUŻ istniejącym tartakiem
+ * (improvement-build.ts:641), więc nie powoduje budowy nowego tartaku.
+ */
+const ULEPSZENIA_FOOD_ONLY_ZROWNOWAZONE: readonly ImprovementKey[] = [
+  ...ULEPSZENIA_FOCUS_ZYWNOSC, 'oboz_lowiecki',
 ];
 
 /**
@@ -109,7 +126,7 @@ export const ULEPSZENIA_FOCUS_ZYWNOSC: readonly ImprovementKey[] = [
  * allowlisty poza tę definicję.
  */
 export const ULEPSZENIA_ZYWNOSCIOWE: ReadonlySet<ImprovementKey> =
-  new Set<ImprovementKey>(ULEPSZENIA_FOCUS_ZYWNOSC.filter(k => k !== 'tartak'));
+  new Set<ImprovementKey>(ULEPSZENIA_FOOD_ONLY_ZROWNOWAZONE);
 
 const ULEPSZENIA_FOCUS_SUROWCE: readonly ImprovementKey[] = [
   'tartak', 'kamieniolom', 'glinianka', 'kopalnia_miedzi', 'kopalnia_zelaza', 'kopalnia_cyny',
@@ -859,7 +876,9 @@ function pickAutoImprovementsSinglePass(opts: PickAutoImprovementsOpts): AutoImp
     const citySkipWyrab = riverForestClearingOnly
       ? false
       : (getSkipWyrab ? getSkipWyrab(city) : skipWyrab);
-    const basePriority = priorityOverride ?? prioritiesForUlepszeniaFocus(focus, citySkipWyrab);
+    // R3, ABC-A=C: K1 (profil „Żywność”) nigdy nie stawia tartaku ani obozu — także przy `priorityOverride` (E6).
+    const basePriority = (priorityOverride ?? prioritiesForUlepszeniaFocus(focus, citySkipWyrab))
+      .filter(k => focus !== 'zywnosc' || !FOREST_BUILDING_KEYS.has(k));
     const onlyWorked = getOnlyWorked(city);
     const workedKeys = onlyWorked && getWorkedHexKeys ? getWorkedHexKeys(city) : null;
 
@@ -953,6 +972,12 @@ function pickAutoImprovementsSinglePass(opts: PickAutoImprovementsOpts): AutoImp
       });
     }
 
+    // R3, ABC-F=A (K2/K3): heks CENTRUM MIASTA nie przyjmuje ulepszeń (w tym tartaku w kroku „brakujący
+    // surowiec”). `radiusHexes` (liczniki stanu) zostaje pełny — to wyłącznie lista kandydatów do budowy.
+    if (focus === 'zrownowazone') {
+      candidateHexes = candidateHexes.filter(({ q, r }) => !(q === city.q && r === city.r));
+    }
+
     let placedThisCity = 0;
 
     // R-AI-WYRAB-PRZY-RZECE-FARMY-Q1 (runda 2) — ODWRÓCENIE PĘTLI: HEKS-PO-HEKSIE.
@@ -1002,7 +1027,7 @@ function pickAutoImprovementsSinglePass(opts: PickAutoImprovementsOpts): AutoImp
     const hexPhasePriority = basePriority.filter(
       k => k !== 'wyrab'
         && !ZERO_YIELD_IMPROVEMENTS.has(k)
-        && (!foodOnly || ULEPSZENIA_FOCUS_ZYWNOSC.includes(k)),
+        && (!foodOnly || ULEPSZENIA_FOOD_ONLY_ZROWNOWAZONE.includes(k)),
     );
     const defensePriority = foodOnly
       ? []
@@ -1187,8 +1212,11 @@ function pickAutoImprovementsSinglePass(opts: PickAutoImprovementsOpts): AutoImp
     // zabrania: „Zasada 1 zmienia PROGI budowy, nie usuwa mechanizmu wyrębu przy rzece").
     // Gdy `tartak` jest na liście (niedobór / profile nieobjęte Zasadą 1), bramka działa
     // dokładnie jak w rundzie 3.
+    // R3, ABC-B=B (K2/K3): tartak powstaje WYŁĄCZNIE przy niedoborze drewna. Bez niego minimum leśne nie
+    // jest wymaganiem (inaczej deadlock: tartak nigdy nie powstaje, więc wyrąb poza rzeką nigdy nie rusza).
+    const tartakDozwolony = !demandActive || (resourceDeficitKeys ?? []).includes('drewno');
     const lesneWymagane: ImprovementKey[] = (['tartak', 'oboz_lowiecki'] as ImprovementKey[])
-      .filter(k => hexPhasePriority.includes(k))
+      .filter(k => tartakDozwolony && hexPhasePriority.includes(k))
       // ... i tak samo: wymagac wolno tylko tego, co jest ODBLOKOWANE. Bez tego warunku
       // AI bez technologii (`improvementTechs` puste — jedyny bezwarunkowo dostepny typ to
       // `wyrab`) czekaloby w nieskonczonosc na tartak/oboz, ktorych nie wolno mu zbudowac
@@ -1223,6 +1251,9 @@ function pickAutoImprovementsSinglePass(opts: PickAutoImprovementsOpts): AutoImp
     const keyBlockedOnHex = (key: ImprovementKey, hexKey: string): boolean => {
       if ((key === 'bydlo' || key === 'owce' || key === 'lama') && !riverHexKeys.has(hexKey)) return true;
       if (key === 'irygacja' && irrigationNeedsFarm && !(workingPlaced.get(hexKey) ?? []).includes('farma')) return true;
+      // R3, ABC-B=B: w K2/K3 (`demandActive`) tartak tylko przy niedoborze drewna; obóz bez nowego tartaku
+      // (wymóg tartaku na heksie egzekwuje `qualifies`, improvement-build.ts:641).
+      if (key === 'tartak' && !tartakDozwolony) return true;
       if (limitForestKeysToMinimum && (key === 'tartak' || key === 'oboz_lowiecki')) {
         let haveForest = 0;
         for (const { q: rq, r: rr } of radiusHexes) {

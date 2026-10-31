@@ -268,17 +268,21 @@ console.log('\n--- (4) automat miasta + AI CYWILIZACJI: pickAutoImprovements ---
 const KON_Q = 99, KON_R = 99;
 function pickOn(hex, key, civ, era) {
   const konHex = mkHex(KON_Q, KON_R, T.Laka, N.ZlozeKonia);
+  // R3, ABC-F=A (K2/K3): heks CENTRUM miasta nie przyjmuje ulepszen, wiec miasto stoi na SASIEDNIM heksie
+  // (CQ,CR), a testowany heks jest jego sasiadem — kontrola dotyczy reguly lasu, nie centrum.
+  const CQ = hex.coords.q + 1, CR = hex.coords.r;
   const one = {
-    hexes: { [`${hex.coords.q},${hex.coords.r}`]: hex, [`${KON_Q},${KON_R}`]: konHex },
+    hexes: { [`${hex.coords.q},${hex.coords.r}`]: hex, [`${CQ},${CR}`]: mkHex(CQ, CR, T.Laka, N.Brak), [`${KON_Q},${KON_R}`]: konHex },
     // R-WEB-AUTOIMPROVE-PRIORITY-Q1 (E3, wiazaca specyfikacja wlasciciela): hodowla auto tylko na heksach przy
     // rzece — heks testowy lezy wiec na sciezce rzeki, zeby kontrola dotyczyla reguly lasu, nie rzeki.
     riverPaths: [[{ q: hex.coords.q, r: hex.coords.r }]], startPositions: [],
   };
   const picks = M.pickAutoImprovements({
-    cities: [{ id: 'c0', ownerId: 0, q: hex.coords.q, r: hex.coords.r, population: 1 }],
+    cities: [{ id: 'c0', ownerId: 0, q: CQ, r: CR, population: 1 }],
     ownerId: 0,
     map: one,
     territoryNodes: [
+      { q: CQ, r: CR, ownerId: 0, cityId: 'c0' },
       { q: hex.coords.q, r: hex.coords.r, ownerId: 0, cityId: 'c0' },
       { q: KON_Q, r: KON_R, ownerId: 0, cityId: 'c0' },
     ],

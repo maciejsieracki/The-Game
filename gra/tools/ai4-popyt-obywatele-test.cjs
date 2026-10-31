@@ -475,8 +475,8 @@ console.log('Q2. R4-Q2 — przelacznik „wolno wycinac las" automatu GRACZA');
   const blok = i2 >= 0 ? mainSrc.slice(i2, i2 + 3000) : '';
   ok(/getSkipWyrab:\s*c\s*=>\s*!effectiveUlepszeniaForCity\(c as City\)\.wolnoWycinacLas/.test(blok),
     'Q2n: main.ts (AI GRACZA) podaje `getSkipWyrab` z przelacznika, nie stala');
-  ok(/demandDriven:\s*true/.test(blok) && /resourceDeficitKeys:\s*resourceDeficitKeysForOwner\(0\)/.test(blok),
-    'Q2o: main.ts (AI GRACZA) podaje Zasade 1 i realne niedobory panstwa');
+  ok(/demandDriven:\s*true/.test(blok) && /resourceDeficitKeys:\s*resourceDeficitKeysForOwner\((0|hOid)\)/.test(blok),
+    'Q2o: main.ts (AI GRACZA) podaje Zasade 1 i realne niedobory panstwa (R3: per fotel hOid zamiast stalej 0 — wielu graczy, main.ts)');
   ok(/typ\s*===\s*'wycinka'/.test(mainSrc.slice(i2, i2 + 6000)),
     'Q2p: main.ts (AI GRACZA) obsluguje `wyrab` sciezka wycinki, nie jako warstwe ulepszenia');
 }

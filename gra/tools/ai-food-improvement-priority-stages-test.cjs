@@ -240,8 +240,11 @@ try {
   }
   // D4 (R5): E1 > E2 — kazdy wyciety heks rzeki dostaje farme ZANIM zostanie wyciety nastepny las na rzece;
   // trzoda/irygacja (E3/E4) dopiero gdy na rzece nie ma juz wycinki ani farmy do zrobienia.
-  assert.deepEqual(aiTrace.slice(0, 4), ['wyrab', 'farma', 'wyrab', 'farma'],
-    `decideAITurn must develop river hexes one by one (clear -> farm) before livestock/irrigation (got ${aiTrace.join(',')})`);
+  // R3, ABC-D=B: AI bez limitu 1/miasto/ture (jak gracz) — etap E2 tnie obie rzeki w jednej turze (<=3 na etap),
+  // potem E1 stawia obie farmy; trzoda/irygacja dopiero po nich (E1 > E2 > E3 > E4 zachowane).
+  assert.deepEqual(aiTrace.slice(0, 4), ['wyrab', 'wyrab', 'farma', 'farma'],
+    `decideAITurn (bez limitu AI, ABC-D=B): wycinka rzek -> farmy przed trzoda/irygacja (got ${aiTrace.join(',')})`);
+  assert.ok(aiTrace.indexOf('bydlo') > 3 && aiTrace.indexOf('irygacja') > 3, 'trzoda/irygacja dopiero po farmach na rzece');
   const lastWyrab = aiTrace.lastIndexOf('wyrab');
   const firstLater = aiTrace.findIndex(k => k === 'bydlo' || k === 'irygacja');
   assert.ok(firstLater > lastWyrab, `E3/E4 start only after the river clearing is finished (got ${aiTrace.join(',')})`);

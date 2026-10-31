@@ -25,14 +25,14 @@ const SRC = process.env.STAGES_Q1_SRC_DIR || path.resolve(GRA_ROOT, 'src');
 const temp = fs.mkdtempSync(path.join(os.tmpdir(), 'stages-q1-'));
 const entry = path.join(temp, 'entry.ts');
 const bundle = path.join(temp, 'bundle.cjs');
-fs.writeFileSync(entry, `export { pickAutoImprovements } from ${JSON.stringify(SRC + '/game/auto-improvements')};\nexport { decideAITurn } from ${JSON.stringify(SRC + '/game/ai')};\n`);
+fs.writeFileSync(entry, `export { pickAutoImprovements, prioritiesForUlepszeniaFocus } from ${JSON.stringify(SRC + '/game/auto-improvements')};\nexport { decideAITurn } from ${JSON.stringify(SRC + '/game/ai')};\n`);
 esbuild.buildSync({
   entryPoints: [entry], bundle: true, platform: 'node', format: 'cjs', target: 'node18',
   outfile: bundle, loader: { '.ts': 'ts', '.json': 'json' },
   absWorkingDir: GRA_ROOT, logLevel: 'error',
   nodePaths: [path.resolve(GRA_ROOT, 'node_modules')],
 });
-const { pickAutoImprovements, decideAITurn } = require(bundle);
+const { pickAutoImprovements, prioritiesForUlepszeniaFocus, decideAITurn } = require(bundle);
 
 let passed = 0, failed = 0;
 function ok(cond, msg) {
@@ -307,7 +307,7 @@ console.log('(i) [K2] cykl: niedobor -> ulepszenie surowca NA PRZOD -> zaspokoje
   ok(wrocil, '[K2] po ponownym niedoborze brak zakleszczenia: zywnosc nadal budowana (brak histerezy)');
 }
 
-console.log('(j) parytet K2 <-> K3: ten sam stan => ta sama kolejnosc i zestaw budow (poza maxItemsPerCity AI)');
+console.log('(j) parytet K2 <-> K3: ten sam stan => ta sama kolejnosc i zestaw budow (R3 ABC-D=B: BEZ limitu maxItemsPerCity AI)');
 {
   const FOR = [[14, 12], [11, 13]];
   const scenariusze = [
@@ -317,7 +317,7 @@ console.log('(j) parytet K2 <-> K3: ten sam stan => ta sama kolejnosc i zestaw b
   for (const [nazwa, deficitFn] of scenariusze) {
     const mk = () => makeMap({ river: RIVER, forest: [...RIVER, ...FOR], hills: [[11, 11], [13, 11]] });
     const worked = [...WORKED_ALL, ...FOR];
-    const k2 = sim({ map: mk(), worked, profil: 'K2', turns: 14, maxItems: 1, deficitFn });
+    const k2 = sim({ map: mk(), worked, profil: 'K2', turns: 14, deficitFn }); // R3 ABC-D=B: bez maxItems (wczesniej 1)
     const k3 = sim({ map: mk(), worked, profil: 'K3', turns: 14, deficitFn });
     ok(seqOf(k2.log) === seqOf(k3.log), `[K2=K3] ${nazwa}: identyczna sekwencja (K2: ${seqOf(k2.log).slice(0, 90)}…)`);
     if (seqOf(k2.log) !== seqOf(k3.log)) { console.error('K2: ' + seqOf(k2.log)); console.error('K3: ' + seqOf(k3.log)); }
@@ -360,6 +360,105 @@ for (const profil of ['K2', 'K3']) {
   const a = sim({ map: mk(), worked: WORKED_ALL, profil, turns: 20 });
   const b = sim({ map: mk(), worked: WORKED_ALL, profil, turns: 20, deficitFn: () => ['zloto', 'stal'] });
   ok(seqOf(a.log) === seqOf(b.log), `[${profil}] niedobor {zloto,stal} (brak ulepszenia) == brak niedoboru`);
+}
+
+console.log('(m) [K1] R3 ABC-A=C: profil „Zywnosc" BEZ tartaku i obozu (zero tartakow/obozow nawet przy lesie, obozie na tartaku i niedoborze)');
+{
+  const lista = prioritiesForUlepszeniaFocus('zywnosc');
+  ok(!lista.includes('tartak') && !lista.includes('oboz_lowiecki'),
+    `[K1] lista profilu „Zywnosc" nie zawiera tartaku ani obozu (${lista.join(',')})`);
+  const FOR = [[14, 12], [11, 11], [13, 11], [11, 13], [12, 13]];
+  for (const [nazwa, deficitFn] of [['bez niedoboru', () => []], ['z niedoborem drewna', () => ['drewno']]]) {
+    const map = makeMap({ river: RIVER, forest: FOR });
+    // heks 14,12 ma JUZ tartak (zbudowany wczesniej) — w K1 obozu na nim i tak nie wolno stawiac
+    const placed0 = new Map([['14,12', ['tartak']]]);
+    const { log } = sim({ map, worked: [...WORKED_ALL, ...FOR], profil: 'K1', turns: 40, deficitFn, placed0 });
+    ok(count(log, 'tartak') === 0 && count(log, 'oboz_lowiecki') === 0,
+      `[K1] ${nazwa}: tartak ${count(log, 'tartak')}, oboz ${count(log, 'oboz_lowiecki')} (== 0)`);
+    ok(count(log, 'farma') > 0, `[K1] ${nazwa}: zywnosc nadal budowana (farm ${count(log, 'farma')})`);
+  }
+}
+
+console.log('(n) [K2/K3] R3 ABC-B=B: tartak WYLACZNIE przy niedoborze drewna; obóz tylko na heksie z ISTNIEJACYM tartakiem');
+for (const profil of ['K2', 'K3']) {
+  const FOR = [[14, 12], [11, 11], [13, 11], [11, 13], [12, 13], [13, 12]];
+  const mk = () => makeMap({ forest: FOR });
+  const bez = sim({ map: mk(), worked: FOR, profil, turns: 30 });
+  ok(count(bez.log, 'tartak') === 0 && count(bez.log, 'oboz_lowiecki') === 0,
+    `[${profil}] bez niedoboru drewna: tartak ${count(bez.log, 'tartak')}, oboz ${count(bez.log, 'oboz_lowiecki')} (== 0, zniesienie „1 na 10” jako reguly budowy)`);
+  ok(count(bez.log, 'wyrab') > 0, `[${profil}] bez niedoboru wycinka nadal rusza (${count(bez.log, 'wyrab')} szt.)`);
+  const inny = sim({ map: mk(), worked: FOR, profil, turns: 30, deficitFn: () => ['kamien'] });
+  ok(count(inny.log, 'tartak') === 0, `[${profil}] niedobor INNEGO surowca (kamien) nie otwiera tartaku (${count(inny.log, 'tartak')})`);
+  const z = sim({ map: mk(), worked: FOR, profil, turns: 30, deficitFn: () => ['drewno'] });
+  ok(count(z.log, 'tartak') >= 1, `[${profil}] z niedoborem drewna tartak powstaje (${count(z.log, 'tartak')})`);
+  // obóz: tylko na heksie z JUZ istniejacym tartakiem, bez budowy nowego tartaku
+  const map2 = mk();
+  const placed0 = new Map([['14,12', ['tartak']]]);
+  const o = sim({ map: map2, worked: FOR, profil, turns: 30, placed0 });
+  const obozy = o.log.filter(e => e.key === 'oboz_lowiecki');
+  ok(count(o.log, 'tartak') === 0, `[${profil}] istniejacy tartak + brak niedoboru: zadnego NOWEGO tartaku (${count(o.log, 'tartak')})`);
+  ok(obozy.length === 1 && obozy[0].hk === '14,12',
+    `[${profil}] oboz powstaje TYLKO na heksie z istniejacym tartakiem 14,12 (${obozy.map(e => e.hk).join(',') || 'brak'})`);
+}
+
+console.log('(n2) [K2/K3] R3 ABC-B=B: sciezka BEZ wycinki (K2: „wolno wycinac las”=OFF; K3: las poza obrabianymi) — tartak nadal tylko przy niedoborze drewna');
+{
+  const FOR = [[14, 12], [11, 11], [13, 11], [11, 13], [12, 13], [13, 12]];
+  const mk = () => makeMap({ forest: FOR });
+  for (const [profil, worked, wolnoWycinac] of [['K2', FOR, false], ['K3', [[12, 11]], true]]) {
+    for (const [nazwa, deficitFn] of [['bez niedoboru', () => []], ['niedobor kamienia', () => ['kamien']]]) {
+      const r = sim({ map: mk(), worked, profil, turns: 12, deficitFn, wolnoWycinac });
+      ok(count(r.log, 'tartak') === 0 && count(r.log, 'oboz_lowiecki') === 0,
+        `[${profil}] ${nazwa}: tartak ${count(r.log, 'tartak')}, oboz ${count(r.log, 'oboz_lowiecki')} (== 0)`);
+    }
+    const z = sim({ map: mk(), worked, profil, turns: 12, deficitFn: () => ['drewno'], wolnoWycinac });
+    ok(count(z.log, 'tartak') >= 1, `[${profil}] niedobor drewna: tartak powstaje (${count(z.log, 'tartak')})`);
+  }
+}
+
+console.log('(o) [K3] R3 ABC-D=B: AI bez limitu 1/miasto/ture (jak gracz) — wiecej niz 1 rozkaz na miasto w jednej turze');
+{
+  const FOR = [];
+  const map = makeMap({ river: RIVER });
+  const k3 = sim({ map, worked: WORKED_ALL, profil: 'K3', turns: 12 });
+  const perTurn = new Map();
+  for (const e of k3.log) perTurn.set(e.t, (perTurn.get(e.t) ?? 0) + 1);
+  const maxPerTurn = Math.max(0, ...perTurn.values());
+  void FOR;
+  ok(maxPerTurn > 1, `[K3] max rozkazow na miasto w jednej turze = ${maxPerTurn} (> 1; limit etapu = 3)`);
+  ok(maxPerTurn <= 3 + 2, `[K3] ... nadal w granicach limitu etapu (${maxPerTurn})`);
+}
+
+console.log('(p) [K2/K3] R3 ABC-F=A: heks CENTRUM miasta nie dostaje zadnego ulepszenia (nawet las + niedobor drewna / farma)');
+for (const profil of ['K2', 'K3']) {
+  for (const [nazwa, mkMap, deficitFn] of [
+    ['las w centrum + niedobor drewna', () => makeMap({ forest: [[CQ, CR]] }), () => ['drewno']],
+    ['laka w centrum, farma mozliwa', () => makeMap({ river: [[CQ, CR], [CQ, CR - 1]] }), () => []],
+  ]) {
+    const { log } = sim({ map: mkMap(), worked: [[CQ, CR], [CQ, CR - 1], [CQ + 1, CR]], profil, turns: 8, deficitFn });
+    const naCentrum = log.filter(e => e.hk === K(CQ, CR)).map(e => e.key);
+    ok(naCentrum.length === 0, `[${profil}] ${nazwa}: rozkazy na centrum = [${naCentrum.join(',')}] (== brak)`);
+  }
+}
+
+console.log('(i2) [K3] cykl niedobor -> surowiec NA PRZOD -> zaspokojenie -> powrot do zywnosci (ta sama logika co K2)');
+{
+  const run = profil => {
+    const map = makeMap({ river: RIVER, hills: [[11, 11]] });
+    const deficitFn = (t, placed) => {
+      const has = (placed.get('11,11') ?? []).includes('kamieniolom');
+      const kamien = (has ? 100 : 0) - (t >= 12 ? 100 : 0);
+      return kamien < 10 ? ['kamien'] : [];
+    };
+    return sim({ map, worked: WORKED_ALL, profil, turns: 20, deficitFn, techsByTurn: () => FULL });
+  };
+  const k2 = run('K2'), k3 = run('K3');
+  ok(k3.log[0] && k3.log[0].key === 'kamieniolom' && k3.log[0].t === 0, `[K3] niedobor w t0 -> kamieniolom PRZED zywnoscia (${k3.log.slice(0, 2).map(e => e.key).join(',')})`);
+  const po = k3.log.filter(e => e.t >= 1 && e.t < 12);
+  ok(po.length > 0 && po.every(e => e.key !== 'kamieniolom') && po.some(e => e.key === 'farma'), '[K3] po zaspokojeniu powrot do zywnosci (farma), zero kamieniolomu');
+  // t>=12 (ponowny niedobor, zywnosc wyczerpana): K3 buduje infrastrukture „wszedzie” (ECHO 2026-09-08 zostaje, odp. D),
+  // K2 tylko przy obywatelach — porownujemy cykl niedobor->surowiec->zywnosc, czyli t<12 (calosc zywnosci i kamieniolom).
+  ok(seqOf(k2.log.filter(e => e.t < 12)) === seqOf(k3.log.filter(e => e.t < 12)), '[K2=K3] cykl niedoboru (t<12): identyczna sekwencja');
 }
 
 console.log(`\nautoimprove-stages-q1-test: ${passed} passed, ${failed} failed`);
