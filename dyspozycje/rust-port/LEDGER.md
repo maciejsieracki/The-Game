@@ -462,3 +462,5 @@ Cel końcowy i bieżący zapisane w `GOAL-RUST-PORT-20261020.md` (§"CEL PĘTLI 
 ## 2026-10-31 — REPIN-DELTA-3 PASS (r3) zintegrowane (docs)
 - FC `80325319c`: `p6/REPIN-DELTA-3.md` — delta weba `dc8a3adc` → `4bbef081d`: 47 plików, 541 hunków (453 z kodem), wojna/pokój 236; wpływ: 8G/8A/8H2 = 0 hunków, 8I = 4, 8I2 = 11. Luki: 100 hunków bez tagu R- „wg pliku, bez ustalenia”; K01–K07, K08A–C NIE_ZMIERZONO blokowo; propozycja `R-WEB-UI-EMBLEM-TOOLTIP-Q1` bez startu.
 - Następny krok: 8I/8I2 przepiąć na nowy pin po zwolnieniu slotu kodu; 8H2 r3 i M07B2 r4 w toku.
+
+- 2026-10-31 23:12 UTC — kontrola cykliczna: 8H2 r3 i M07B2 r4 wciąż biegną (sloty kodu zajęte); DELTA-3 zintegrowane; brak PASS do integracji. Dysk 7,2 GB wolnego.
