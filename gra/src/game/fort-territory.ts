@@ -5,6 +5,16 @@
  * WYLACZNIE prawo do zalozenia miasta w promieniu, nic wiecej — granice
  * terytorium sie nie przesuwaja). PURE — bez DOM/main.ts.
  *
+ * ZASTAPIONE decyzja wlasciciela 2026-10-31 (R-WEB-OUTPOST-FORT-TERRITORY-Q1):
+ * Q2=B ("granice sie nie przesuwaja") NIE OBOWIAZUJE. Posterunek (r=3) i fort
+ * (r=5) tworza TWARDE terytorium wlasciciela jak miasto — wchodza do
+ * `territoryOwnerAt` (fortTerritoryNodes nizej; main.ts buildAllTerritoryNodes),
+ * obcy nie buduje tam ulepszen ani miast (isHexInForeignFortTerritory), a
+ * wlasciciel buduje i rezerwuje pod przyszle miasta (poza limitem cityLimitBase —
+ * fort nie jest miastem). Reguly 3/4 (kontestacja, przejecie) zostaja jako
+ * rozstrzyganie sporow o ten sam heks. / EN: Q2=B superseded — forts/outposts
+ * are HARD territory like cities.
+ *
  * Rejestr wlasciciela per-hex trzymany OSOBNO od `placedImprovements`
  * (main.ts): `territoryOwnerAt` nie moze rozstrzygnac wlasciciela fortu
  * zbudowanego POZA istniejacym terytorium (Q1=B) — to byloby kolo zamkniete
@@ -23,7 +33,7 @@
  * 4 — takeover on city founding) and isHexReservedByRivalFort (rule 3 —
  * contestation on build).
  */
-import { axialDistance, cityTerritoryRadius, type CityNode } from '../map/territory';
+import { axialDistance, cityTerritoryRadius, territoryOwnerAt, type CityNode, type TerritoryNode } from '../map/territory';
 import { hexKeysWithinRadius } from './okolica';
 import type { GameMap } from '../types/map';
 
@@ -57,6 +67,44 @@ export function fortNodeAsCityNode(f: Pick<FortNode, 'q' | 'r' | 'type'>): CityN
     isFort: f.type === 'fort',
     isOutpost: f.type === 'posterunek',
   };
+}
+
+/**
+ * R-WEB-OUTPOST-FORT-TERRITORY-Q1 (decyzja 2026-10-31): wezly TWARDEGO terytorium z
+ * fortow/posterunkow (z wlascicielem) — dopisywane do wezlow miast w
+ * `buildAllTerritoryNodes` (main.ts). `contestedUseless` (regula 3) NIE tworzy
+ * terytorium. / EN: hard-territory nodes from forts/outposts.
+ */
+export function fortTerritoryNodes(forts: readonly FortNode[]): TerritoryNode[] {
+  const out: TerritoryNode[] = [];
+  for (const f of forts) {
+    if (f.contestedUseless) continue;
+    out.push({ ...fortNodeAsCityNode(f), ownerId: f.ownerId });
+  }
+  return out;
+}
+
+/**
+ * Czy hex (q,r) jest TERYTORIUM obcego fortu/posterunku (w jego promieniu i
+ * rozstrzygniety na jego korzysc wg `territoryOwnerAt` na `allNodes`) — obcy
+ * (`ownerId`) nie zaklada tam miasta. Blokuje WYLACZNIE terytorium z fortow
+ * (terytorium obcych miast: bez zmian). / EN: foreign fort territory blocks city founding.
+ */
+export function isHexInForeignFortTerritory(
+  q: number,
+  r: number,
+  ownerId: number,
+  forts: readonly FortNode[],
+  allNodes: readonly TerritoryNode[],
+): boolean {
+  let inForeignFortRadius = false;
+  for (const f of forts) {
+    if (f.ownerId === ownerId || f.contestedUseless) continue;
+    if (axialDistance(q, r, f.q, f.r) <= cityTerritoryRadius(fortNodeAsCityNode(f))) { inForeignFortRadius = true; break; }
+  }
+  if (!inForeignFortRadius) return false;
+  const owner = territoryOwnerAt(q, r, allNodes);
+  return owner !== null && owner !== ownerId;
 }
 
 /**

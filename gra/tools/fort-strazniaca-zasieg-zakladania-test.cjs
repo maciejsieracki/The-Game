@@ -112,8 +112,9 @@ console.log('\n--- A1: fortNodeAsCityNode + cityTerritoryRadius (fort=10, poster
 {
   const fort = fortNodeAsCityNode({ q: 0, r: 0, type: 'fort' });
   const post = fortNodeAsCityNode({ q: 0, r: 0, type: 'posterunek' });
-  eq(cityTerritoryRadius(fort), 10, 'A1a: fort radius = 10');
-  eq(cityTerritoryRadius(post), 5, 'A1b: posterunek radius = 5');
+  // Decyzja wlasciciela 2026-10-31 (R-WEB-OUTPOST-FORT-TERRITORY-Q1): fort r=5 (bylo 10).
+  eq(cityTerritoryRadius(fort), 5, 'A1a: fort radius = 5');
+  eq(cityTerritoryRadius(post), 3, 'A1b: posterunek radius = 3 (bylo 5)');
 }
 
 console.log('\n--- A2: foundingNodesForOwner — wlasne miasta + wlasne, nie-skontestowane forty ---');
@@ -434,7 +435,7 @@ console.log('\n--- C2: planCityFounding Z wlasnym fortem AI -- rozszerza zasieg 
   const cityRadius = cityTerritoryRadius({ q: 30, r: 30, pop: srcPop, level: 1 });
   // Fort AI daleko poza zasiegiem miasta -- otwiera nowy klaster zakladania.
   const fortQ = 30, fortR = 30 + cityRadius + 8;
-  const fortRadius = 10; // fort=10
+  const fortRadius = 5; // fort=5 (decyzja 2026-10-31, bylo 10)
   assert(hexDistance(fortQ, fortR, city.q, city.r) > cityRadius,
     'C2-sanity: fort faktycznie POZA zasiegiem samego miasta');
 

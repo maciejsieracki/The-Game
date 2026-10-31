@@ -2,7 +2,8 @@
  * map/territory.ts
  * Kontrakt dla SILNIK: isInTerritory(q,r,nodes) bramkuje zakładanie miast/ulepszeń.
  * Zasięg MIASTA = max(5, pop) cap 15 (okolica+terytorium, Maciej 2026-06-27).
- * Posterunek +5, fort +10 (stałe). Formuła: EKONOMIA okolica.ts.
+ * Posterunek r=3, fort r=5 (stałe; decyzja właściciela 2026-10-31, R-WEB-OUTPOST-FORT-TERRITORY-Q1,
+ * zastępuje 5/10 z 2026-06-25). Formuła miasta: EKONOMIA okolica.ts.
  * EKONOMIA owns formułę/cap; MAPA egzekwuje + rysuje linię.
  *
  * Ten moduł NIE ma żadnych zależności od Three.js ani warstwy renderowania.
@@ -61,19 +62,24 @@ export {
   CITY_RANGE_MIN,
 } from '../game/okolica';
 
+/** Promień terytorium fortu (decyzja właściciela 2026-10-31). / EN: fort territory radius. */
+export const FORT_TERRITORY_RADIUS = 5;
+/** Promień terytorium posterunku (decyzja właściciela 2026-10-31). / EN: outpost territory radius. */
+export const OUTPOST_TERRITORY_RADIUS = 3;
+
 // ============================================================
 // PROMIEŃ TERYTORIUM WĘZŁA
 // ============================================================
 
 /**
  * Zwraca promień terytorium (w heksach) dla danego węzła:
- *   - FORT:      r = 10  (stały)
- *   - POSTERUNEK: r = 5  (stały)
+ *   - FORT:      r = 5  (stały; R-WEB-OUTPOST-FORT-TERRITORY-Q1, było 10)
+ *   - POSTERUNEK: r = 3  (stały; R-WEB-OUTPOST-FORT-TERRITORY-Q1, było 5)
  *   - MIASTO:    r = max(5, pop), cap 15
  */
 export function cityTerritoryRadius(node: CityNode): number {
-  if (node.isFort)    return 10;
-  if (node.isOutpost) return 5;
+  if (node.isFort)    return FORT_TERRITORY_RADIUS;
+  if (node.isOutpost) return OUTPOST_TERRITORY_RADIUS;
   return cityRangeForPopulation(node.pop);
 }
 

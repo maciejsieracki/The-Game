@@ -1,0 +1,46 @@
+city-defense-terrain-gate-test (C-COMBAT-Q2)
+
+--- A. cityGatedTerrainMultiplier (game/city-defense.ts) ---
+  [OK] Miasto bez budynku obronnego, plasko: bonus terenu = +0% (oczekiwano +0%), mult=1
+  [OK] Miasto bez budynku obronnego, na wzgorzu: bonus terenu = +0% (oczekiwano +0%), mult=1
+  [OK] Miasto z Murami, plasko: bonus terenu = +0% (oczekiwano +0%), mult=1
+  [OK] Miasto z Murami, na wzgorzu: bonus terenu = +50% (oczekiwano +50%), mult=1.5
+  [OK] Mury+Cytadela+Baszta, na wzgorzu: bonus terenu = +50% (oczekiwano +50%), mult=1.5
+  [OK] Brak muru: Wzgorza/Gory dalej daja mult=1.0 (zero bonusu terenu bez budynku obronnego)
+  [OK] Mur + Gory (teoretyczny): cityGatedTerrainMultiplier (1.75) == terrainDefenseMultiplier pelny (1.75)
+  [OK] Mur + Las: mult=1.0 (Las nie chroni miasta, tylko wzniesienie liczy sie)
+  [OK] Mur + Rzeka: mult=1.0 (Rzeka nie chroni miasta, tylko wzniesienie liczy sie)
+
+--- B. Sciezka Auto (effectiveDefenderM, obrona MIASTA) ---
+  [OK] Konnica ma niezerowy Atak i Obrone w rozbiciu M
+  [OK] Miasto bez budynku obronnego, plasko: structPct (0) == oczekiwany (0)
+  [OK] Miasto bez budynku obronnego, plasko (Auto): Razem = +0% (oczekiwano +0%)
+  [OK] Miasto bez budynku obronnego, na wzgorzu: structPct (0) == oczekiwany (0)
+  [OK] Miasto bez budynku obronnego, na wzgorzu (Auto): Razem = +0% (oczekiwano +0%)
+  [OK] Miasto z Murami, plasko: structPct (200) == oczekiwany (200)
+  [OK] Miasto z Murami, plasko (Auto): Razem = +200% (oczekiwano +200%)
+  [OK] Miasto z Murami, na wzgorzu: structPct (200) == oczekiwany (200)
+  [OK] Miasto z Murami, na wzgorzu (Auto): Razem = +250% (oczekiwano +250%)
+  [OK] Mury+Cytadela+Baszta, na wzgorzu: structPct (400) == oczekiwany (400)
+  [OK] Mury+Cytadela+Baszta, na wzgorzu (Auto): Razem = +450% (oczekiwano +450%)
+  [OK] KONTROLA (a): bitwa w polu na wzgorzu (73.5) > plasko (49) -- bonus terenu w polu dziala jak dzis
+  [OK] KONTROLA (a): przyrost M w polu na wzgorzu (24.5) == oczekiwane +50% na calym M, atak+obrona (24.5)
+  [OK] KONTROLA (a): fort terenowy (+100%) na wzgorzu w polu MNOZY sie z terenem (bez zmian z ta decyzja)
+
+--- C. Fundament Taktyczna/"Pomin" (resolveCombat + override) ---
+  [OK] Miasto bez budynku obronnego, plasko (Taktyczna/Pomin): Razem = +0% (oczekiwano +0%)
+  [OK] Miasto bez budynku obronnego, na wzgorzu (Taktyczna/Pomin): Razem = +0% (oczekiwano +0%)
+  [OK] Miasto z Murami, plasko (Taktyczna/Pomin): Razem = +200% (oczekiwano +200%)
+  [OK] Miasto z Murami, na wzgorzu (Taktyczna/Pomin): Razem = +250% (oczekiwano +250%)
+  [OK] Mury+Cytadela+Baszta, na wzgorzu (Taktyczna/Pomin): Razem = +450% (oczekiwano +450%)
+  [OK] KONTROLA (b): Miasto z Murami, na wzgorzu -- Auto Razem (+250%) == Taktyczna/Pomin Razem (+250%)
+  [OK] KONTROLA (b): hitChanceTw(atak, Obrona*(1+Razem/100)) (35%) == resolveCombat z override (35%)
+  [OK] KONTROLA (a), Taktyczna/Pomin: bitwa w polu na wzgorzu (hitPct atakujacego 39% < plasko 40%) -- bonus terenu w polu bez zmian (brak override/gate)
+
+--- D. Zrodlo main.ts (effectiveDefenderM, galaz isCity, REALNA bitwa) ---
+  [OK] effectiveDefenderM() znaleziona w main.ts (funkcja produkcyjna realnej bitwy)
+  [OK] effectiveDefenderM() (galaz isCity, REALNA bitwa) liczy combinedDefPct = structBonusPct + (cityTerrMult - 1) * 100 -- ta sama ADDYTYWNA formula co Czesc B wyzej (reimplementacja) -- lapie dryf/wyzerowanie bonusu muru w produkcyjnym kodzie
+  [OK] effectiveDefenderM() stosuje combinedDefPct WYLACZNIE na czesc Obrony (terrAdjDefense = split.defense * (1 + combinedDefPct / 100))
+
+=== city-defense-terrain-gate-test: 34 pass, 0 fail ===
+EXIT=0
