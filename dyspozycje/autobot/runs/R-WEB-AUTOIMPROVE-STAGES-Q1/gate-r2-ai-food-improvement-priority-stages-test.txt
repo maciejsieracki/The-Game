@@ -1,0 +1,15 @@
+[PASS] 0. E1 river farm (no forest) precedes river forest clearing; AI throttle intact
+[PASS] 0a. E2 river forest clearing is isolated from farms/livestock and respects AI throttle
+[PASS] 0b. river hexes are developed one by one: clear -> farm (E1 > E2), all river forests prepared before E3+
+[PASS] 2. E3 livestock (river hexes) follows the river farms and precedes farms off the river
+[PASS] 3. E4 irrigation/terraces precede the off-river farms (E5)
+[PASS] 3b. E5 farms outside the river follow E4
+[PASS] 1b. AI keeps the E5 farm stage active until all eligible off-river farms are placed
+[PASS] 3c. salt works (E6) stay available and do not block the earlier stages
+[PASS] edge. a stage without unlocked technology is not a target and does not block later stages (D4)
+[PASS] negative. no worked/eligible fields means no food improvement
+[PASS] wiring. AI civilization and player auto-build use staged planning
+[PASS] parity. real AI turn planner develops river hexes clear -> farm (E1 > E2), then E3/E4
+[PASS] mutation. disabling stage selection makes the behavioral gate fail
+ai-food-improvement-priority-stages-test: 13 passed, 0 failed
+EXIT=0

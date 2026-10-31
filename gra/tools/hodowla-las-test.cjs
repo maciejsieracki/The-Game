@@ -270,7 +270,9 @@ function pickOn(hex, key, civ, era) {
   const konHex = mkHex(KON_Q, KON_R, T.Laka, N.ZlozeKonia);
   const one = {
     hexes: { [`${hex.coords.q},${hex.coords.r}`]: hex, [`${KON_Q},${KON_R}`]: konHex },
-    riverPaths: [], startPositions: [],
+    // R-WEB-AUTOIMPROVE-PRIORITY-Q1 (E3, wiazaca specyfikacja wlasciciela): hodowla auto tylko na heksach przy
+    // rzece — heks testowy lezy wiec na sciezce rzeki, zeby kontrola dotyczyla reguly lasu, nie rzeki.
+    riverPaths: [[{ q: hex.coords.q, r: hex.coords.r }]], startPositions: [],
   };
   const picks = M.pickAutoImprovements({
     cities: [{ id: 'c0', ownerId: 0, q: hex.coords.q, r: hex.coords.r, population: 1 }],

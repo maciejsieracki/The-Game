@@ -69,6 +69,8 @@ import { hexKeysWithinRadius } from './okolica';
 import { resolveWarPeaceProfile, aiPeaceSignals, isFeelingStronger, type WarPeaceProfile } from './diplomacy-war-peace-profile';
 import {
   AI_IMPROVEMENT_PRIORITY,
+  IMPROVEMENT_FOR_DEFICIT,
+  actionableDeficitKeys,
   pickAutoImprovements,
   type AutoImprovementSurplusReport,
 } from './auto-improvements';
@@ -2407,14 +2409,7 @@ export function decideAiWonderBuild(
  */
 
 /** P-AI-011: ulepszenie terenu pod brakujący surowiec (priorytet po handlu). */
-export const AI_IMPROVEMENT_FOR_DEFICIT: Readonly<Record<string, readonly ImprovementKey[]>> = {
-  drewno: ['tartak', 'wyrab'],
-  kamien: ['kamieniolom'],
-  glina: ['glinianka'],
-  ruda: ['kopalnia_miedzi'],
-  ruda_zelaza: ['kopalnia_zelaza'],
-  ruda_cyny: ['kopalnia_cyny'],
-};
+export const AI_IMPROVEMENT_FOR_DEFICIT: Readonly<Record<string, readonly ImprovementKey[]>> = IMPROVEMENT_FOR_DEFICIT;
 
 /** P-AI-011: budynki miejskie pod brakujący surowiec. */
 const AI_BUILDING_FOR_DEFICIT: Readonly<Record<string, readonly string[]>> = {
@@ -2642,7 +2637,8 @@ function planCityImprovements(
     // ZASADA 1 (runda 4): AI CYWILIZACJI buduje domyślnie samą żywność; pełna lista
     // otwiera się dopiero na czas niedoboru surowca (`resourceDeficitKeys`).
     demandDriven: true,
-    resourceDeficitKeys: opts.resourceDeficitKeys,
+    // K3 = K2: tylko niedobory, na ktore istnieje ulepszenie terenu (zloto/stal nie otwieraja listy).
+    resourceDeficitKeys: actionableDeficitKeys(opts.resourceDeficitKeys),
     // ZASADA 3 (runda 4): diagnostyka nadwyżki dla silnika (main.ts). Dzielona przez OBA
     // wywołania niżej -- wszystkie pola tego raportu są ustawiane WYŁĄCZNIE na `true`
     // (nigdy resetowane z powrotem na `false`), więc dwa kolejne wywołania na TYM SAMYM
@@ -2676,6 +2672,8 @@ function planCityImprovements(
     priorityOverride: foodPriority,
     // Keep the same empire-wide sequence as Food automation for the player.
     foodImprovementStages: true,
+    // K3 = K2 (jedna logika w pickerze): brakujący surowiec idzie na przód, surowce wszędzie (ECHO 2026-09-08).
+    getResourcePassOnlyWorked: () => false,
   });
   const foodSpent = foodPicks.reduce((s, p) => s + p.kosztPraca, 0);
 

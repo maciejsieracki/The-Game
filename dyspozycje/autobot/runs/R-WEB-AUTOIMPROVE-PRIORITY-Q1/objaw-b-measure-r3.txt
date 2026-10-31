@@ -1,0 +1,60 @@
+A. farma juz na rzece (13,12), bez lasu, obywatel na rzece
+  t1: bydlo@13,12(R), irygacja@13,12(R), farma@12,12, irygacja@12,12
+  t2: farma@11,12, farma@11,13, farma@12,11, irygacja@12,11, farma@12,13
+  t3: irygacja@12,13
+  stan R: ["farma","bydlo","irygacja"]
+B. farma na rzece + sasiedni wolny heks z obywatelem
+  t1: bydlo@13,12(R), irygacja@13,12(R), farma@12,12, irygacja@12,12
+  t2: farma@11,12, farma@11,13, farma@12,11, irygacja@12,11, farma@12,13, farma@12,10
+  t3: irygacja@12,13
+  stan R: ["farma","bydlo","irygacja"]
+C. jak A, ale onlyWorked=false
+  t1: farma@13,11, bydlo@13,11, irygacja@13,11, bydlo@13,12(R), farma@14,11, bydlo@14,11
+  t2: irygacja@13,12(R), irygacja@14,11, farma@12,12, farma@11,12
+  t3: irygacja@12,12, farma@11,13, farma@12,11, irygacja@12,11
+  t4: farma@12,13, irygacja@12,13, farma@10,12, farma@10,13, farma@10,14, farma@11,11
+  t5: farma@11,14, farma@12,10, farma@12,14, farma@13,10, irygacja@13,10, farma@13,13
+  t6: irygacja@13,13, farma@14,10, irygacja@14,10, farma@14,12
+  t7: irygacja@14,12, farma@9,12, farma@9,13, farma@9,14, farma@9,15, farma@10,11
+  t8: farma@10,15, farma@11,10, farma@11,15, farma@12,9, farma@12,15, farma@13,9, farma@13,14, farma@14,9
+  stan R: ["farma","bydlo","irygacja"]
+D. brak farmy, rzeka bez lasu, obywatel na rzece
+  t1: farma@13,12(R), bydlo@13,12(R), irygacja@13,12(R), farma@12,12, farma@11,12, farma@11,13
+  t2: irygacja@12,12, farma@12,11, irygacja@12,11, farma@12,13
+  t3: irygacja@12,13
+  stan R: ["farma","bydlo","irygacja"]
+--- budzet domyslny 33% (DEFAULT_ULEPSZENIA_PRACA_PERCENT), pula 100/tura ---
+E. jak A, pula 100, pct 33
+  t1: bydlo@13,12(R)
+  t2: farma@12,12
+  t3: farma@11,12
+  t4: farma@11,13
+  t5: farma@12,11
+  t6: farma@12,13
+  stan R: ["farma","bydlo"]
+F. brak farmy, pula 100, pct 33
+  t1: farma@13,12(R)
+  t2: bydlo@13,12(R)
+  t3: farma@12,12
+  t4: farma@11,12
+  t5: farma@11,13
+  t6: farma@12,11
+  t7: farma@12,13
+  stan R: ["farma","bydlo"]
+G. jak A, pula 60, pct 33
+  (brak pickow)
+  stan R: ["farma"]
+H. jak E, pula 200, pct 33 (irygacja koszt 60 wymaga cap >= 60)
+  t1: bydlo@13,12(R), farma@12,12, farma@11,12
+  t2: irygacja@13,12(R)
+  t3: irygacja@12,12
+  t4: farma@11,13, farma@12,11, farma@12,13
+  t5: irygacja@12,11
+  t6: irygacja@12,13
+  stan R: ["farma","bydlo","irygacja"]
+I. jak E, pula 150, pct 33
+  t1: bydlo@13,12(R), farma@12,12
+  t2: farma@11,12, farma@11,13
+  t3: farma@12,11, farma@12,13
+  stan R: ["farma","bydlo"]
+EXIT=0

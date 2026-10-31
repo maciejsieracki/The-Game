@@ -51,13 +51,13 @@
       "handel": 3
     },
     "surowiecOdblokowany": "bydlo",
-    "surowiecOdblokowany_uwaga": "ABC-18: dostęp dopiero po postawieniu na złożu trzody",
-    "teren": "Łąka, Równina (także z nakładką Las)",
-    "warunek": "płaski ląd poza Pustynią; pierwsze pastwisko wymaga złoża bydła, po odblokowaniu bez złoża; nakładka Lasu nie przeszkadza.",
+    "surowiecOdblokowany_uwaga": "R-WEB-AUTOIMPROVE-STAGES-Q1 (Q1 właściciela 2026-10-31): trzoda NIE wymaga złoża ani żadnych zasobów (kod: livestock-unlock.ts `isLivestockUnlockedForPlacement`). Stary zapis ABC-18 („dopiero po postawieniu na złożu trzody”) jest przestarzały.",
+    "teren": "Łąka, Równina (bez nakładki Las — najpierw wycinka)",
+    "warunek": "płaski ląd poza Pustynią, bez nakładki Lasu (najpierw wycinka); bez złoża i bez żadnych zasobów.",
     "koszt_praca": 20,
     "tech": "Oswojenie zwierząt",
     "odblokowuje": "Trzoda (Rydwan po odblokowaniu)",
-    "uwagi": "R-TECH-KARTA-BOCZNA-KLIK-WIERSZ-REGRES-Q1 (2026-09-03): tekst gracza w `warunek` skrócony z surowej notatki deweloperskiej — pełna historia decyzji zachowana tu. Oryginał: plaski ląd; pierwsze: złoże bydła; potem po odblokowaniu — bez złoża; + farma lub solo; NIE na Pustyni; nakładka Las NIE przeszkadza — zakaz z 2026-07-29 COFNIĘTY 2026-08-27 (R-ULEPSZENIA-HODOWLA-LAS-ODBLOKOWANA-Q1, ECHO właściciela: „Tak, odwracamy — wszystkie trzy”)",
+    "uwagi": "R-TECH-KARTA-BOCZNA-KLIK-WIERSZ-REGRES-Q1 (2026-09-03): tekst gracza w `warunek` skrócony z surowej notatki deweloperskiej — pełna historia decyzji zachowana tu. Oryginał: plaski ląd; pierwsze: złoże bydła; potem po odblokowaniu — bez złoża; + farma lub solo; NIE na Pustyni; nakładka Las NIE przeszkadza — zakaz z 2026-07-29 COFNIĘTY 2026-08-27 (R-ULEPSZENIA-HODOWLA-LAS-ODBLOKOWANA-Q1, ECHO właściciela: „Tak, odwracamy — wszystkie trzy”). AKTUALNIE (R-WEB-AUTOIMPROVE-STAGES-Q1, ABC-2 właściciela 2026-10-31): trzoda i owce NA LESIE NIE — blokada zostaje („konieczność wycinania lasu; nie ściągamy blokad”), kod `improvement-build.ts` `FOREST_BLOCKED_IMPROVEMENT_KEYS`; trzoda nie wymaga złoża (Q1).",
     "historia": "Udomowienie zwierząt hodowlanych — kóz i owiec na Bliskim Wschodzie, bydła w Afryce i Azji, świń w Chinach i Europie — przebiegało mniej więcej równolegle z udomowieniem roślin, tworząc razem podstawę neolitycznej rewolucji rolniczej. Zwierzęta hodowlane dawały nie tylko mięso, ale też mleko, skóry, wełnę i nawóz użyźniający pola, a z czasem także siłę pociągową. W przeciwieństwie do polowania, hodowla pozwalała trzymać zapas żywca na czas nieurodzaju czy suszy, działając jak bufor bezpieczeństwa całej wspólnoty. Archeolodzy odróżniają udomowione stada od dzikich populacji po zmianach w budowie kości i strukturze wieku ubijanych zwierząt, co pozwala datować pierwsze zagrody na kontynentach niezależnie od siebie. Trzoda hodowlana uczyniła też ludzi bardziej osiadłymi niż sami myśliwi-zbieracze, bo stada trzeba było paść i pilnować blisko osady. To właśnie bliski kontakt człowieka ze zwierzętami hodowlanymi uczynił z niego również nosiciela — i czasem ofiarę — chorób odzwierzęcych, które później odmieniły bieg historii."
   },
   "owce": {
@@ -69,13 +69,13 @@
       "handel": 2
     },
     "surowiecOdblokowany": "owce",
-    "surowiecOdblokowany_uwaga": "pierwsze na zlozu owiec; solo na wzgorzu; bez farmy/bydla",
-    "teren": "Wzgórza (także z nakładką Las)",
-    "warunek": "wzgórze, także z nakładką Lasu; pierwsze pastwisko wymaga złoża owiec, po odblokowaniu bez złoża.",
+    "surowiecOdblokowany_uwaga": "solo na wzgórzu; bez farmy/bydła; NIE wymaga złoża owiec (Q1 właściciela 2026-10-31, R-WEB-AUTOIMPROVE-STAGES-Q1)",
+    "teren": "Wzgórza (bez nakładki Las — najpierw wycinka)",
+    "warunek": "wzgórze, bez nakładki Lasu (najpierw wycinka); bez złoża i bez żadnych zasobów.",
     "koszt_praca": 20,
     "tech": "Oswojenie zwierząt",
     "odblokowuje": "Owce (wełna / jedzenie)",
-    "uwagi": "R-TECH-KARTA-BOCZNA-KLIK-WIERSZ-REGRES-Q1 (2026-09-03): tekst gracza w `warunek` skrócony z surowej notatki deweloperskiej — pełna historia decyzji zachowana tu. Oryginał: solo wzgórze — otwarte LUB z nakładką Las; pierwsze: złoże owiec; potem wzgórze bez złoża po odblokowaniu; zakaz „nakładka Las zabroniona” (Maciej 2026-07-29) COFNIĘTY 2026-08-27 — R-ULEPSZENIA-HODOWLA-LAS-ODBLOKOWANA-Q1, ECHO właściciela: „Tak, odwracamy — wszystkie trzy” (owce, bydło, lama); historia decyzji zostaje, nie jest wymazywana",
+    "uwagi": "R-TECH-KARTA-BOCZNA-KLIK-WIERSZ-REGRES-Q1 (2026-09-03): tekst gracza w `warunek` skrócony z surowej notatki deweloperskiej — pełna historia decyzji zachowana tu. Oryginał: solo wzgórze — otwarte LUB z nakładką Las; pierwsze: złoże owiec; potem wzgórze bez złoża po odblokowaniu; zakaz „nakładka Las zabroniona” (Maciej 2026-07-29) COFNIĘTY 2026-08-27 — R-ULEPSZENIA-HODOWLA-LAS-ODBLOKOWANA-Q1, ECHO właściciela: „Tak, odwracamy — wszystkie trzy” (owce, bydło, lama); historia decyzji zostaje, nie jest wymazywana. AKTUALNIE (R-WEB-AUTOIMPROVE-STAGES-Q1, ABC-2 właściciela 2026-10-31): owce NA LESIE NIE — blokada zostaje (kod `FOREST_BLOCKED_IMPROVEMENT_KEYS`); owce nie wymagają złoża (Q1).",
     "historia": "Owca była jednym z pierwszych zwierząt udomowionych przez człowieka, prawdopodobnie już około 10 000 lat temu na terenach dzisiejszej Anatolii i Iranu, gdzie żyły ich dzikie przodkinie, muflony. Początkowo hodowano je głównie dla mięsa i skóry, lecz z czasem — wraz z selekcją osobników o gęstszym runie — owca stała się też kluczowym źródłem wełny, surowca, który zrewolucjonizował włókiennictwo w całej Eurazji. Pasterstwo owiec dobrze sprawdzało się na terenach zbyt jałowych lub zbyt stromych pod uprawę, jak wzgórza czy stepy, co czyniło je uzupełnieniem, a nie konkurencją dla rolnictwa. W wielu kulturach, od starożytnej Mezopotamii po średniowieczną Europę, handel wełną i tkaninami wełnianymi stał się fundamentem bogactwa całych regionów i miast. Pasterze owiec, prowadzący stada między pastwiskami sezonowymi, ukształtowali też charakterystyczny, na wpół koczowniczy styl życia zwany transhumancją, praktykowany do dziś w wielu górzystych regionach świata."
   },
   "lama": {
@@ -88,9 +88,9 @@
       "handel": 3
     },
     "surowiecOdblokowany": "lama",
-    "surowiecOdblokowany_uwaga": "TYLKO Inkowie; solo — bez innych ulepszen na heksie; pierwsze na zlozu lamy",
+    "surowiecOdblokowany_uwaga": "TYLKO Inkowie; solo — bez innych ulepszen na heksie; NIE wymaga złoża lamy (Q1 właściciela 2026-10-31, R-WEB-AUTOIMPROVE-STAGES-Q1)",
     "teren": "Wzgórza, Góry (także z nakładką Las)",
-    "warunek": "tylko cywilizacja Inków; wzgórza i góry, także z nakładką Lasu; pierwsze wymaga złoża lamy.",
+    "warunek": "tylko cywilizacja Inków; wzgórza i góry, także z nakładką Lasu; bez złoża i bez żadnych zasobów.",
     "koszt_praca": 20,
     "tech": "Oswojenie zwierząt",
     "odblokowuje": "Lama (transport / żywność)",
