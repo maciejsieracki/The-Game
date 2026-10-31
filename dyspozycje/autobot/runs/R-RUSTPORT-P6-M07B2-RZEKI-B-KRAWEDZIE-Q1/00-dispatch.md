@@ -15,3 +15,5 @@ N3. Tabela niezmutowanych konstrukcji z plik:linia (RUST, nie tylko linie weba) 
 N4. Logi: JEDNA linia `EXIT=` na plik; `mutate-m07b2-q2-r*.txt` ma mieć `EXIT=` na końcu; przebiegi `cargo test` pełne bez timeoutu (poprzednio EXIT=124 w gate-test-full-r2); target na `/dev/shm`.
 N5. `rust-port/engine/Cargo.lock` zostaje nieśledzony i NIE jest commitowany (decyzja administracyjna, nie jest zarzutem).
 Nie przejmuj sie tym, co robią inne tematy (8H2, 8I mają rozłączne allowlisty). Zakres zamknięty — nie dodawaj nowych funkcji.
+
+RUNDA 4/5 (orkiestrator 2026-10-31, wznowienie po przerwaniu workflow; Operator r3 ocalił postęp). START (OBOWIĄZKOWO): `git fetch origin rust-port-wip/M07B2-r4-op && git checkout --detach 69613ecf8`. Przeczytaj `03-operator-r3.md`, `04-operator-r3-pomiary.md` i ostatni werdykt FC (r2 FAIL, zarzuty N1–N5 wyżej). Dokończ N1–N5: brakujące mutanty K z wektorami z pinu `edb8fb56`, dowody dla E/L, tabela mutant→linia Rust→status w dossierze, logi z jedną linią `EXIT=` (pełny `cargo test` bez timeoutu), target na `/dev/shm`. Zakres zamknięty — bez nowych funkcji. Po zakończeniu raport z SHA końcowym.
