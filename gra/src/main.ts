@@ -18750,6 +18750,11 @@ async function boot(): Promise<void> {
     /** C-DYP-Q1=A: ProposalActionId (CYW) → id formularza negocjacji UI ('2'..'13', diplomacyNegotiationModal.ts). */
     const CYW_ACTION_TO_UI_ID: Record<string, string> = {
       nap: '2', sojusz_defensywny: '3', sojusz_pelny: '3', granice: '4', pokoj: '10',
+      // R-WEB-TRUCE-E2E-SAVELOAD-MEASURE-Q1 (r3, pomiar Chromium): rozejm AI na stole wpadal w fallback
+      // '5' („Traktat handlowy", baza 200 PW) i ujemny bilans (-138) blokowal Przyjmij; rozejm to akcja
+      // '10' (pokoj/zawieszenie broni) jak w kreatorze (diplomacyTradeBasket peaceKind) — wyjatek „pokoj
+      // bez bramki PW" (diplomacyAcceptanceBalance.ts, uiActionId '10') obejmuje wiec tez rozejm.
+      rozejm: '10',
       handel: '14', umowa_handlowa: '5', umowa_szlakow: '5', tech: '6', namow_wojne: '7',
       trybut_zadanie: '8', trybut_oferta: '8', ultimatum: '9', wasal: '12', wchloniecie: '15',
     };
@@ -18793,6 +18798,7 @@ async function boot(): Promise<void> {
         case 'trybut_zadanie': return `Żądanie trybutu ${p.goldPerTurn ?? 0} ¤/turę`;
         case 'trybut_oferta': return p.goldOnce ? `Trybut jednorazowy ${p.goldOnce} ¤` : `Trybut ${p.goldPerTurn ?? 0} ¤/turę`;
         case 'pokoj': return basketDetail || 'Propozycja pokoju (PW baza 500)';
+        case 'rozejm': return basketDetail || `Rozejm na ${p.turns ?? 10} tur`;
         case 'ultimatum': return `Ultimatum — ${p.goldOnce ?? 0} ¤`;
         case 'wasal': return `Wasalizacja — ${p.goldPerTurn ?? 0} ¤/turę`;
         case 'wchloniecie': return `Wchłonięcie — ${p.goldOnce ?? 0} ¤`;

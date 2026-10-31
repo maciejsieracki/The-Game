@@ -48,6 +48,7 @@ const SLOT_MAIN = 'truce-roundtrip-main';
 const SLOT_LEGACY = 'truce-roundtrip-legacy';
 const TRUCE_TURNS = 5; // najkrótszy dozwolony rozejm — mniej tur EOT w fazie expire
 const PHASE_LIMIT_MS = Number(process.env.PHASE_LIMIT_MS) || 150000;
+const SCENARIO_LIMIT_MS = Number(process.env.SCENARIO_LIMIT_MS) || 60000;
 const T0 = Date.now();
 const elapsed = () => ((Date.now() - T0) / 1000).toFixed(1) + 's';
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -254,7 +255,14 @@ async function runPhase(name) {
   try {
     ctx = await launchContext(chromium);
     const page = await openGame(ctx, errors);
+    const tWorld = Date.now();
     await PHASES[name](page);
+    // Strażnik czasu SCENARIUSZA (po wygenerowaniu świata). Samo generowanie świata (~70-90 s CPU
+    // Chromium, niezależne od testu) zjada większość limitu 120 s z kryterium, więc osobno mierzymy
+    // i pilnujemy część, na którą test ma wpływ; limit całej fazy (PHASE_LIMIT_MS) zostaje jawnym ZAŁOŻENIEM.
+    const scenarioMs = Date.now() - tWorld;
+    console.log(`[saveload:${name}] scenariusz po wygenerowaniu swiata: ${(scenarioMs / 1000).toFixed(1)}s (strażnik ${SCENARIO_LIMIT_MS / 1000}s)`);
+    check(`${name}: scenariusz po swiecie <= ${SCENARIO_LIMIT_MS / 1000}s`, () => assert.ok(scenarioMs <= SCENARIO_LIMIT_MS, `${scenarioMs} ms`));
     check(`${name}: zero pageerror`, () => assert.equal(errors.length, 0, errors.slice(0, 3).join(' | ')));
     const failed = results.filter(r => !r.ok);
     console.log(`[saveload:${name}] wynik: ${results.length - failed.length} pass / ${failed.length} fail (${elapsed()})`);

@@ -45,6 +45,8 @@ const TURNS_TO_RUN = 1; // jedna realna tura EOT wystarcza: decyzja AI i wpis st
 const T0 = Date.now();
 const elapsed = () => ((Date.now() - T0) / 1000).toFixed(1) + 's';
 
+let tWorld = 0;
+const SCENARIO_LIMIT_MS = 60000; // budzet PO wygenerowaniu swiata (generowanie ~70-80 s CPU nie zalezy od testu)
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 
 function buildIfNeeded() {
@@ -73,6 +75,7 @@ async function main() {
   let exitCode = 1;
   try {
     browser = await launchBrowser(chromium);
+    const tLaunch = ((Date.now() - T0) / 1000).toFixed(1);
     const page = await browser.newPage({ viewport: { width: 1400, height: 900 } });
     page.on('pageerror', (e) => errors.push('pageerror: ' + e.message));
     page.on('console', (m) => {
@@ -87,7 +90,8 @@ async function main() {
       undefined,
       { timeout: 300000 },
     );
-    console.log(`[ai-table] świat gotowy po ${elapsed()} (tryb ${MODE})`);
+    tWorld = Date.now();
+    console.log(`[ai-table] świat gotowy po ${elapsed()} (tryb ${MODE}); start przeglądarki ${tLaunch}s`);
 
     await page.evaluate(() => window.__truceTestDebug.suppressVictoryForTest());
     await page.evaluate(([ai, b]) => window.__peaceRulesTestDebug.setAiPowerBonusForTest(ai, b), [AI, AI_POWER_BONUS]);
@@ -127,39 +131,82 @@ async function main() {
     const wantedAction = MODE === 'rozejm' ? 'rozejm' : 'pokoj';
     const found = [...aiEntries.values()].find(e => e.actionId === wantedAction);
     let domHit = null;
+    let domOk = true;
     if (found) {
-      // Karta na stole = wiersz „Dyplomacja: <kraj> · Rozpatrz →" w panelu bocznym (DOM).
-      const kartaLicznik = await page.locator('text=Rozpatrz').count();
-      const kartaTekst = await page.evaluate(() => {
-        const t = (document.body && document.body.innerText) || '';
-        return { dyplomacjaRozpatrz: /Dyplomacja:[^\n]*\n?[^\n]*Rozpatrz/.test(t) };
-      });
       fs.mkdirSync(EVIDENCE, { recursive: true });
+      const rel = (p) => path.relative(REPO_ROOT, p).split(path.sep).join('/');
+      // Karta na stole = wiersz „Dyplomacja: <kraj> · Rozpatrz →" w panelu bocznym (DOM). Modal bitwy „Wróg atakuje"
+      // (EOT 1→2 w sandboxie, skrót w modalu: Esc = Wycofaj) przechwytuje klik w panel — zamykamy go realnym
+      // klawiszem Escape (pomiar: klik przycisku „Wycofaj" przez Playwright wygasa, Escape działa).
+      let bitwaEsc = 0;
+      for (let i = 0; i < 4; i++) {
+        const bitwa = await page.evaluate(() => /wróg atakuje/i.test((document.body && document.body.innerText) || ''));
+        if (!bitwa) break;
+        await page.keyboard.press('Escape');
+        bitwaEsc++;
+        await wait(400);
+      }
+      const bitwaPozostala = await page.evaluate(() => /wróg atakuje/i.test((document.body && document.body.innerText) || ''));
+      const karta = page.locator('.sp-event[data-id]', { hasText: 'Dyplomacja' }).first();
+      const kartaLicznik = await page.locator('.sp-event[data-id]', { hasText: 'Dyplomacja' }).count();
+      const kartaWidoczna = kartaLicznik > 0 && await karta.isVisible().catch(() => false);
       const shotKarta = path.join(EVIDENCE, `ai-table-${MODE}-karta-stol.png`);
       await page.screenshot({ path: shotKarta, fullPage: false });
-      // Otwórz kartę („Rozpatrz") i sprawdź treść propozycji w DOM.
+      // Otwórz kartę (klik) i sprawdź, że audiencja z propozycją AI faktycznie się otwarła.
       let otwarto = false;
+      let przyciskPrzyjmij = 0;
+      let przyciskStan = null;
+      let kolumnyTekst = null;
+      let tekstRozejm = false;
       try {
-        await page.locator('text=Rozpatrz').first().click({ timeout: 5000 });
+        await karta.click({ timeout: 8000 });
+        await page.waitForSelector('[data-negot-act="accept-package"]', { state: 'attached', timeout: 10000 });
         otwarto = true;
-        await wait(800);
+        przyciskPrzyjmij = await page.locator('[data-negot-act="accept-package"]').count();
+        przyciskStan = await page.evaluate(() => [...document.querySelectorAll('[data-negot-act]')].map(b => ({
+          act: b.getAttribute('data-negot-act'), disabled: !!b.disabled, title: b.getAttribute('title'), text: (b.textContent || '').trim() })));
+        kolumnyTekst = await page.evaluate(() => [...document.querySelectorAll('.da-card, .da-neg-card, [class*="da-"][class*="card"]')]
+          .slice(0, 12).map(e => (e.innerText || '').replace(/\s+/g, ' ').slice(0, 200)));
+        // Karta propozycji AI w kolumnie „Oni oferują" ma etykietę akcji '10' („Propozycja pokoju / zawieszenia
+        // broni") — NIE „Traktat handlowy" (regresja: rozejm bez wpisu w CYW_ACTION_TO_UI_ID, main.ts).
+        tekstRozejm = await page.evaluate(() => {
+          const t = [...document.querySelectorAll('.da-negot.incoming')].map(e => e.innerText || '').join(' ');
+          return /zawieszenia broni/i.test(t) && !/traktat handlowy/i.test(t);
+        });
       } catch (e) { otwarto = false; }
-      const modalTekst = await page.evaluate((w) => {
-        const t = (document.body && document.body.innerText) || '';
-        return { zawiera: t.toLowerCase().includes(w), dlugosc: t.length };
-      }, wantedAction);
       const shotModal = path.join(EVIDENCE, `ai-table-${MODE}-karta-otwarta.png`);
       await page.screenshot({ path: shotModal, fullPage: false });
-      domHit = { kartaLicznik, ...kartaTekst, otwarto, modalTekst };
-      console.log('[ai-table] DOM karty:', JSON.stringify(domHit), '| zrzuty:', shotKarta, shotModal);
+      // Akceptacja KLIKIEM (handler stołu: handleNegotiationAccept) → status rozejmu w meta pary.
+      let akceptacja = null;
+      if (otwarto) {
+        const zablokowany = przyciskStan.find(b => b.act === 'accept-package')?.disabled === true;
+        if (!zablokowany) await page.locator('[data-negot-act="accept-package"]').first().click({ timeout: 8000 });
+        await wait(800);
+        akceptacja = {
+          para: await page.evaluate(([p, a]) => window.__truceTestDebug.pairState(p, a), [PLAYER, AI]),
+          przyjmijZablokowany: zablokowany,
+          wpisyPoAkceptacji: (await page.evaluate(() => window.__truceTestDebug.negotiationEntries())).length,
+        };
+        const shotPo = path.join(EVIDENCE, `ai-table-${MODE}-po-akceptacji.png`);
+        await page.screenshot({ path: shotPo, fullPage: false });
+        console.log('[ai-table] zrzut po akceptacji:', rel(shotPo));
+      }
+      const akceptOk = !!akceptacja && akceptacja.para.truceUntilTurn != null && akceptacja.wpisyPoAkceptacji === 0;
+      domOk = kartaWidoczna && otwarto && tekstRozejm && przyciskPrzyjmij > 0 && akceptOk;
+      domHit = { kartaLicznik, kartaWidoczna, bitwaEscape: bitwaEsc, bitwaPozostala,
+        otwarto, tekstRozejm, przyciskPrzyjmij, przyciskStan, kolumnyTekst, akceptacja, akceptOk };
+      console.log('[ai-table] DOM karty:', JSON.stringify(domHit), '| zrzuty:', rel(shotKarta), rel(shotModal));
     }
     console.log('[ai-table] stołWpisów(ostatnia tura)=' + stolaWpisow);
     console.log(found
-      ? `[ai-table] PASS (${MODE}) — AI wstawiło ${wantedAction} na stół (tura ${found.tura})`
+      ? `[ai-table] ${domOk ? 'PASS' : 'FAIL'} (${MODE}) — AI wstawiło ${wantedAction} na stół (tura ${found.tura}); karta otwarta+zaakceptowana klikiem: ${domOk}`
       : `[ai-table] FAIL (${MODE}) — AI nie wstawiło ${wantedAction} na stół; decyzja AI: ${decisionLogs.length ? 'zapisana' : 'brak'}`);
     console.log('[ai-table] błędy strony:', errors.length ? JSON.stringify(errors.slice(0, 5)) : 'brak');
-    console.log('[ai-table] czas całkowity:', elapsed());
-    exitCode = found && errors.length === 0 ? 0 : 1;
+    console.log('[ai-table] czas całkowity:', elapsed(), '(limit kryterium 120 s:', (Date.now() - T0) <= 120000 ? 'spełniony' : 'PRZEKROCZONY', ')');
+    const scenarioMs = Date.now() - tWorld;
+    const scenarioOk = scenarioMs <= SCENARIO_LIMIT_MS;
+    console.log(`[ai-table] scenariusz po wygenerowaniu swiata: ${(scenarioMs / 1000).toFixed(1)}s (strażnik ${SCENARIO_LIMIT_MS / 1000}s: ${scenarioOk ? 'OK' : 'PRZEKROCZONY'})`);
+    exitCode = found && domOk && scenarioOk && errors.length === 0 ? 0 : 1;
   } finally {
     if (browser) await browser.close().catch(() => {});
   }

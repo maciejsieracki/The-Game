@@ -1,0 +1,9 @@
+[saveload] stan po starcie strony: {"citiesLen":2,"unitsLen":4,"turn":1}
+[saveload:legacy] NOWA sesja przeglądarki, świat gotowy (87.9s)
+  OK  stary zapis: wczytuje się bez błędu z wartościami domyślnymi
+  OK  stary zapis: licznik epoki odtworzony wg zasady (bez crasha)
+[saveload:legacy] scenariusz po wygenerowaniu swiata: 24.5s (strażnik 60s)
+  OK  legacy: scenariusz po swiecie <= 60s
+  OK  legacy: zero pageerror
+[saveload:legacy] wynik: 4 pass / 0 fail (112.5s)
+EXIT=0
