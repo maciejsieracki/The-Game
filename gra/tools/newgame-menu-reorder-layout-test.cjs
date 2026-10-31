@@ -56,16 +56,37 @@ window.__openWizard();
       build.onResolve({ filter: /data\/loader$/ }, () => ({ path: 'loader', namespace: 'stub' }));
       build.onLoad({ filter: /.*/, namespace: 'stub' }, args => {
         if (args.path === 'loader') return { contents: 'export const loadGameData=()=>null;', loader: 'js' };
-        if (args.path === 'brands') return { contents: 'export const civIconSvg=()=>""; export const epochIconSvg=()=>""; export const newGameIntroEmblemSvg=()=>""; export const settingIconSvg=()=>"";', loader: 'js' };
-        if (args.path === 'tokens') return { contents: 'export const CIV_BRAND_SCOPE_VARS=""; export const ensureBrandRootTokens=()=>{};', loader: 'js' };
-        if (args.path === 'tooltip') return { contents: 'export const installHudTitleTooltips=()=>{};', loader: 'js' };
         return null;
       });
-      build.onResolve({ filter: /icons\/brandAssets$/ }, () => ({ path: 'brands', namespace: 'stub' }));
-      build.onResolve({ filter: /brandTokenVars$/ }, () => ({ path: 'tokens', namespace: 'stub' }));
+      // Ikony SVG (icons/brandAssets) idą z realnego modułu — zrzuty pokazują prawdziwy wygląd kart
+      // (ustalenie Evaluatora: stuby ikon w evidence). Tokeny marki i tooltip idą z realnych modułów.
+      // icons/brandAssets.ts używa import.meta.glob('./brand/**/*.svg', { query: '?raw', eager: true }) —
+      // esbuild tego nie zna, więc wstawiamy ten sam słownik ścieżka→treść SVG odczytany z dysku.
+      build.onLoad({ filter: /icons[\\/]brandAssets\.ts$/ }, args => {
+        const dir = path.dirname(args.path);
+        const walk = d => fs.readdirSync(d, { withFileTypes: true }).flatMap(e => {
+          const p = path.join(d, e.name);
+          return e.isDirectory() ? walk(p) : (e.name.endsWith('.svg') ? [p] : []);
+        });
+        const entries = walk(path.join(dir, 'brand')).map(f => {
+          const key = './' + path.relative(dir, f).split(path.sep).join('/');
+          return JSON.stringify(key) + ': ' + JSON.stringify(fs.readFileSync(f, 'utf8'));
+        });
+        let src = fs.readFileSync(args.path, 'utf8');
+        const before = src;
+        src = src.replace(/import\.meta\.glob\('\.\/brand\/\*\*\/\*\.svg'[\s\S]*?\}\)/, '({' + entries.join(',') + '})');
+        if (src === before) throw new Error('brandAssets: import.meta.glob pattern not found');
+        return { contents: src, loader: 'ts', resolveDir: dir };
+      });
+      // Importy `*.svg?raw` (ikony marki): zwykły tekst pliku, jak w bundlerze Vite.
+      build.onResolve({ filter: /\?raw$/ }, args => ({
+        path: path.resolve(path.dirname(args.importer), args.path.replace(/\?raw$/, '')), namespace: 'raw-file',
+      }));
+      build.onLoad({ filter: /.*/, namespace: 'raw-file' }, args => ({
+        contents: 'export default ' + JSON.stringify(fs.readFileSync(args.path, 'utf8')) + ';', loader: 'js',
+      }));
       build.onResolve({ filter: /hero-intro\.png\?url$/ }, () => ({ path: 'hero', namespace: 'asset-stub' }));
       build.onLoad({ filter: /.*/, namespace: 'asset-stub' }, () => ({ contents: 'export default "";', loader: 'js' }));
-      build.onResolve({ filter: /hudTitleTooltip$/ }, () => ({ path: 'tooltip', namespace: 'stub' }));
     } }],
   });
 }
