@@ -125,9 +125,12 @@ pub fn empire_has_kopalnia_na_zlozu_cyny(
 
 /// Web `cityHasOdlewniaForCyna`: Odlewnia brazu lub dowolny upgrade lancucha.
 pub fn city_has_odlewnia_for_cyna(built_ids: &[String]) -> bool {
-    built_ids
-        .iter()
-        .any(|id| matches!(id.as_str(), "odlewnia_brazu" | "odlewnia_zelaza" | "wielka_odlewnia"))
+    built_ids.iter().any(|id| {
+        matches!(
+            id.as_str(),
+            "odlewnia_brazu" | "odlewnia_zelaza" | "wielka_odlewnia"
+        )
+    })
 }
 
 /// Web `hasCynaAccess(empireStock, builtIds)`. Legacy `boolean` z TS = `None` (jak brak stocku).
@@ -244,10 +247,7 @@ pub fn deduct_mennica_zloto_drain(empire_stock: &StockRecord) -> StockRecord {
     if current < MENNICA_ZLOTO_DRAIN_PER_TURN {
         return out;
     }
-    out.insert(
-        "zloto".to_owned(),
-        current - MENNICA_ZLOTO_DRAIN_PER_TURN,
-    );
+    out.insert("zloto".to_owned(), current - MENNICA_ZLOTO_DRAIN_PER_TURN);
     out
 }
 
