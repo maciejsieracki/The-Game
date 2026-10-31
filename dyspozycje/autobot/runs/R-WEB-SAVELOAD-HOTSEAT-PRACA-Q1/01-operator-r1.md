@@ -13,13 +13,13 @@ Allowlista (jawny `git add`):
   - odczyt: w `restoreGameFromSave`, zaraz po `_lastPraca = playerPracaPool;`: (a) kasuje wpisy fotelow != 0 w `pracaPoolByHuman`, (b) zaklada `{praca:0}` dla KAZDEGO fotela z `humanSeats.humanOwnerIds` (bez tego `ownerPracaPool` rzuca, patrz pomiar), (c) wczytuje pary z zapisu przez `sanitizeLoadedPracaPool`, ignorujac wpisy smieciowe (nie-tablica, ownerId nie-liczba, owner nie bedacy fotelem, brak wartosci) oraz pare fotela 0 (autorytatywny pozostaje `playerPracaPool`, komorka-alias fotela 0 nietknieta), (d) `setOwnerLastPraca(oid, pula)` dla kazdego fotela (symetria z `_lastPraca = playerPracaPool` fotela 0).
   - hak testowy `__pracaPoolSaveLoadTestDebug`: dodane `roundTripMeta`, `seatPoolRaw`, `seatLastPraca`, `savedSeatPools`, `writeLegacySlot` (tylko do nowego testu; zero logiki decyzyjnej).
 - `gra/tools/saveload-praca-pool-hotseat-live-test.cjs` (NOWY, realny Chromium + realny vite build do `os.tmpdir()`).
-- `dyspozycje/autobot/runs/R-WEB-SAVELOAD-HOTSEAT-PRACA-Q1/**` (raport, logi `gate-*.txt`, `pomiar-red.json`, `pomiar-green.json`).
+- `dyspozycje/autobot/runs/R-WEB-SAVELOAD-HOTSEAT-PRACA-Q1/**` (raport, logi `gate-*.txt`, `pomiar-green.json`; pomiaru czerwonego dowodzi `gate-hotseat-red.txt`, osobnego `pomiar-red.json` NIE MA).
 - `gra/src/game/save.ts`: BEZ zmian (`meta` jest przekazywane bez filtrowania: `save.ts` `meta: obj.meta`), `SAVE_VERSION` bez bumpu (pole opcjonalne).
 Zero zmian: `gra-robocza/**`, `dyspozycje/WERSJE.md`, `rust-port/**`, `auto-improvements.ts`.
 
 ## TESTY
 
-### (1) Pomiar CZERWONY na zywej grze PRZED zmiana (`gate-hotseat-red.txt`, `pomiar-red.json`)
+### (1) Pomiar CZERWONY na zywej grze PRZED zmiana (`gate-hotseat-red.txt`; surowy log, bez pliku JSON)
 Scenariusz: nowa gra, stolica, `seedSecondSeat(1)`, pula fotela 0 = 405, fotela 1 = 77, REALNY zapis do slotu IndexedDB (`persistSaveToSlot`), PELNE `page.reload`, REALNE `loadGameFromSlot`.
 - snapshot nie zawiera pola: `savedSeatPools() = null` (FAIL H5).
 - fotel 0 po swiezym wczytaniu = 405 (OK).
