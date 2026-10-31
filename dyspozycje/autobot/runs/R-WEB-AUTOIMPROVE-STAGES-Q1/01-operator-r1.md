@@ -46,4 +46,4 @@ BLOKADY
 RUNDY: 1/5 (licznik workflow; dispatch R4 + KOREKTA F + KOREKTA DROG wykonane w jednym przebiegu). Zuzyte: 1. Ostatni werdykt: brak (to pierwszy raport Operatora tego przebiegu). Decyzja wymagana: nieblokujaca (pytanie ABC „Obrona" wyzej).
 NASTEPNY KROK: Evaluator (ta sama ID) — niezalezny przebieg bramek gate-r4-* i mutacji, przeglad zmian oczekiwan (lista wyzej), ocena zalozen Z1-Z4 i pytania ABC; potem Obrona/Final Control; integracja orkiestratora; READY_FOR_DEPLOY dopiero po niej.
 DEPLOY/PUSH: NIE WYKONANO
-COMMIT SHA: (uzupelniony ponizej po commicie)
+COMMIT SHA: 552537fe8dfd1ea4f0e25aaf4ef904a2fced214f (kod + testy + logi + raport); kolejny commit docs dopisuje tylko te linie (git log -2).
