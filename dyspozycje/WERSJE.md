@@ -1,3 +1,12 @@
+## ROBOCZA bdd45872 -- 2026-10-31 -- auto-ulepszenia wg decyzji właściciela A–F; miasto bez lasu także po wczytaniu zapisu (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`ac952c567` + dwa tematy) i commit wdrożenia bundla; stała zgoda właściciela 2026-10-31.
+- Bundle MD5 `bdd458723cd82b928a89fe09fe638a42`, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, outDir poza repo, stempel ROBOCZA; `verify-robocza-bundle.cjs` VERIFY OK.
+- Zakres: (1) `R-WEB-AUTOIMPROVE-STAGES-Q1` runda 3 — profil „Żywność” gracza bez tartaku i obozu; w „Zrównoważone” (gracz i AI) tartak tylko przy niedoborze drewna, obóz tylko na heksie z tartakiem; AI bez limitu jednej budowy na miasto (do 3 na etap); centrum miasta wyłączone z ulepszeń w „Zrównoważone”; próg niedoboru <10 bez zmian; (2) `R-WEB-CITY-CLEARS-FOREST-Q1` — heks miasta nigdy nie ma lasu (wspólna funkcja także przy wczytaniu zapisu, w presetach i na granicy tury).
+- Testy po scaleniu: tsc PASS; autoimprove-stages-q1 143/0, city-clears-forest 18/0, wyrab-rzeka 3/0, 10/0, 2/0, auto-improvements 45/0, ai-improvements 53/0, ai-food-stages 13/0, ai2-heks-po-heksie 37/0, hodowla-las 113/0, ai4-popyt-obywatele 50/0, spichlerz-hud-params-parity 66/0, defeat-last-city 14/0, battle-standoff 9/9, diplomacy 148, war-era-counter 82, ring 15.
+- Ograniczenia: pomiar na żywej grze — niedobór surowca aktywny w 100% tur gracza (2 ziarna, wczesna gra), więc krok „brakujący surowiec” prawie zawsze poprzedza żywność w „Zrównoważone”; pytania ABC o definicję niedoboru otwarte; NIE_ZMIERZONO: wieloturowa wycinka gracza na żywo, niedobór i las pod miastem AI na żywo; znane czerwone w bazie: civ-matrix-ai-diplomacy-wiring 42/1, ai-test 274/20.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `dcbf2d10f7d146c620c362c2351cd99c`, 70,096,547 bajtów.
+
 ## ROBOCZA dcbf2d10 -- 2026-10-31 -- przegrana po utracie ostatniego miasta; rozejm AI na stole i zapis gry (testowa)
 
 - **STATUS: DEPLOYED** — merge do `origin/main` (`4d9ed1810` + dwa tematy) i commit wdrożenia bundla; stała zgoda właściciela 2026-10-31.
