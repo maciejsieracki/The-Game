@@ -5817,14 +5817,18 @@ export function decideAIDiplomacy(
         )
       : { wantsPeace: false, reasons: [] as string[] };
     // Spójność (R5 ↔ R3): AI NIE proponuje pokoju, gdy sama odrzuciłaby pokój od gracza jako
-    // „czuje się silniejsze" (isFeelingStronger = bramka R5b). Bramka R5 dotyczy wyłącznie
-    // propozycji GRACZA (ZAŁOŻENIE F2), więc minTurWojny nie blokuje propozycji AI.
+    // „czuje się silniejsze" (isFeelingStronger = bramka R5b) ANI gdy odrzuciłaby go jako
+    // „za wcześnie" (turnsAtWar < minTurWojny = bramka R5a). Obie bramki są stosowane przez
+    // evaluatePeaceAiGate do propozycji gracza; AI składa propozycję dopiero, gdy spełnia te same
+    // warunki czasu wojny i nie czuje się silniejsza (ZAMIANA ZAŁOŻENIA F2 z rundy 3, zarzut 2:
+    // poprzednio minTurWojny nie blokował propozycji AI, co dawało propozycję już w turze 1).
     const aiFeelsStronger = rel.stanWojny && isFeelingStronger({
       rw,
       turnsAtWar: turnsAtWarRel,
       lostCitiesInWar: Math.max(0, rel.lostCitiesInWar ?? 0),
     });
-    if (rel.stanWojny && !aiFeelsStronger && (rw <= progPokojSlabosc || peaceSignals.wantsPeace)) {
+    const aiPeaceTimeOk = turnsAtWarRel >= warProfile.minTurWojny;
+    if (rel.stanWojny && !aiFeelsStronger && aiPeaceTimeOk && (rw <= progPokojSlabosc || peaceSignals.wantsPeace)) {
       komendy.push({
         type:     'zaproponuj_pokoj',
         targetId: rel.partnerId,

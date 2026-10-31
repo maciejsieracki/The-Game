@@ -81,7 +81,7 @@ check('R3: priorytet 2 używa sygnałów (aiPeaceSignals)', AI.includes('aiPeace
 check('R6: priorytet 4 używa progu wojny per cywilizacja', AI.includes('const progMinimalnyRelacja = warProfile.progWojnyRelacji;'));
 // mutacja R3: usunięcie sygnałów z priorytetu 2
 {
-  const mutR3 = AI.replace('rel.stanWojny && !aiFeelsStronger && (rw <= progPokojSlabosc || peaceSignals.wantsPeace)', 'rel.stanWojny && !aiFeelsStronger && (rw <= progPokojSlabosc)');
+  const mutR3 = AI.replace('rel.stanWojny && !aiFeelsStronger && aiPeaceTimeOk && (rw <= progPokojSlabosc || peaceSignals.wantsPeace)', 'rel.stanWojny && !aiFeelsStronger && aiPeaceTimeOk && (rw <= progPokojSlabosc)');
   check('mutacja R3 (sygnały wyłączone) jest wykrywalna: warunek zmieniony i brak sygnałów w priorytecie 2',
     mutR3 !== AI && !mutR3.includes('|| peaceSignals.wantsPeace)'));
 }
@@ -89,9 +89,9 @@ check('R6: priorytet 4 używa progu wojny per cywilizacja', AI.includes('const p
 check('R3(c): zdrowie armii liczone w main (diploArmyHealthShare) i podane do ai.ts',
   count(MAIN, 'diploArmyHealthShare(a)') === 1 && AI.includes('armyHealthShare: rel.armyHealthShare'));
 check('R3 spojnosc: AI nie proponuje pokoju gdy czuje sie silniejsze (isFeelingStronger)',
-  AI.includes('const aiFeelsStronger = rel.stanWojny && isFeelingStronger({') && AI.includes('!aiFeelsStronger && (rw <= progPokojSlabosc'));
+  AI.includes('const aiFeelsStronger = rel.stanWojny && isFeelingStronger({') && AI.includes('!aiFeelsStronger && aiPeaceTimeOk && (rw <= progPokojSlabosc') && AI.includes('const aiPeaceTimeOk = turnsAtWarRel >= warProfile.minTurWojny;'));
 {
-  const mutSpojn = AI.replace('rel.stanWojny && !aiFeelsStronger && (rw', 'rel.stanWojny && (rw');
+  const mutSpojn = AI.replace('rel.stanWojny && !aiFeelsStronger && aiPeaceTimeOk && (rw', 'rel.stanWojny && aiPeaceTimeOk && (rw');
   check('mutacja spojnosci R3 (AI proponuje mimo czucia sily) jest wykrywalna', mutSpojn !== AI);
 }
 

@@ -13,6 +13,7 @@
  *   M_FEEL   — ai.ts: AI proponuje pokój mimo „czuje się silniejsze" (brak !aiFeelsStronger)
  *   M_WEAR   — profile: zmęczenie stałe 0.5 (powrót do martwej heurystyki)
  *   M_HEALTH — profile: sygnał (c) zdrowia armii wyłączony
+ *   M_TUR    — ai.ts: AI składa propozycję pokoju bez bramki minTurWojny (R5a ↔ propozycje AI)
  * Run: node tools/diplo-war-peace-sim-test.cjs
  */
 const fs = require('fs');
@@ -29,6 +30,7 @@ const BUNDLES = {
   feel: path.resolve(__dirname, '.dip-warpeace-sim-mfeel.cjs'),
   wear: path.resolve(__dirname, '.dip-warpeace-sim-mwear.cjs'),
   health: path.resolve(__dirname, '.dip-warpeace-sim-mhealth.cjs'),
+  tur: path.resolve(__dirname, '.dip-warpeace-sim-mtur.cjs'),
 };
 
 let pass = 0;
@@ -151,8 +153,8 @@ function runSuite(mod) {
   if (r.midFirstT !== null) {
     r.midReasonAtFirst = aiTurn(mod, r.midFirstT, SREDNI).find(c => c.type === 'zaproponuj_pokoj').powod;
   }
-  r.healthLow = aiWantsPeaceAt(mod, 3, { rw: 0.5, typ: 'zulusi', health: 0.1 });
-  r.healthHigh = aiWantsPeaceAt(mod, 3, { rw: 0.5, typ: 'zulusi', health: 0.9 });
+  r.healthLow = aiWantsPeaceAt(mod, 7, { rw: 0.5, typ: 'zulusi', health: 0.1 });
+  r.healthHigh = aiWantsPeaceAt(mod, 7, { rw: 0.5, typ: 'zulusi', health: 0.9 });
   // gracz proponuje pokój silnej AI (bez utraty miasta) w każdej turze
   r.playerVsStrong = [];
   for (let t = 1; t <= 30; t++) r.playerVsStrong.push(playerPeaceProposal(mod, t, SILNY));
@@ -162,6 +164,7 @@ function runSuite(mod) {
     r.playerVsStrongLoss.push(playerPeaceProposal(mod, t, { rw: 0.7, typ: 'zulusi', lost: t >= 5 ? 1 : 0 }));
   }
   // spójność: AI nie proponuje pokoju w stanie, który sama odrzuciłaby od gracza jako „silniejsze"
+  r.earlyViolations = [];
   r.consistencyViolations = [];
   const rws = [0.2, 0.5, 0.56, 0.6, 0.7, 0.9];
   for (const rw of rws) {
@@ -169,7 +172,9 @@ function runSuite(mod) {
       for (let t = 1; t <= 30; t++) {
         const o = { rw: rw, lost: lost, typ: 'zulusi', health: 0.9 };
         if (!aiWantsPeaceAt(mod, t, o)) continue;
-        if (isStronger(playerPeaceProposal(mod, t, o))) r.consistencyViolations.push({ rw: rw, lost: lost, t: t });
+        const verdict = playerPeaceProposal(mod, t, o);
+        if (isStronger(verdict)) r.consistencyViolations.push({ rw: rw, lost: lost, t: t });
+        if (isTooEarly(verdict)) r.earlyViolations.push({ rw: rw, lost: lost, t: t });
       }
     }
   }
@@ -186,19 +191,24 @@ async function main() {
     await buildBundle(BUNDLES.feel, [mFeel.plugin]);
     const mWear = mutantPlugin(PROFILE, 'return Math.min(1, turns / zmeczenieT);', 'return 0.5;');
     await buildBundle(BUNDLES.wear, [mWear.plugin]);
+    const mTur = mutantPlugin(AI_FILE, 'const aiPeaceTimeOk = turnsAtWarRel >= warProfile.minTurWojny;', 'const aiPeaceTimeOk = true;');
+    await buildBundle(BUNDLES.tur, [mTur.plugin]);
     const mHealth = mutantPlugin(PROFILE, 'input.armyHealthShare !== undefined && input.armyHealthShare < profile.progZdrowia', 'false');
     await buildBundle(BUNDLES.health, [mHealth.plugin]);
     check('(0) każdy mutant podmienił dokładnie 1 miejsce',
-      [mSig, mFeel, mWear, mHealth].every(m => m.info.applied === 1), [mSig.info, mFeel.info, mWear.info, mHealth.info]);
+      [mSig, mFeel, mWear, mHealth, mTur].every(m => m.info.applied === 1), [mSig.info, mFeel.info, mWear.info, mHealth.info, mTur.info]);
 
     const ok = runSuite(require(BUNDLES.ok));
 
-    // kryterium 1: AI słabsze proponuje co 3 tury
+    // kryterium 1: AI słabsze proponuje co 3 tury, ale dopiero od minTurWojny (R5a ↔ propozycje AI)
+    const minTurZulusi = require(BUNDLES.ok).resolveWarPeaceProfile('zulusi').minTurWojny;
     const ts = ok.weakSchedule.map(x => x.t);
     const expected = [];
-    for (let t = 1; t <= 30; t += 3) expected.push(t);
-    check('S1: AI słabsze (rw 0.2) proponuje pokój co 3 tury (tury 1,4,…,28)',
-      JSON.stringify(ts) === JSON.stringify(expected), ts);
+    for (let t = minTurZulusi; t <= 30; t += 3) expected.push(t);
+    check('S1: AI słabsze (rw 0.2) proponuje pokój co 3 tury od minTurWojny (zulusi: tury ' + expected.join(',') + ')',
+      JSON.stringify(ts) === JSON.stringify(expected), { ts, minTurZulusi });
+    check('S1a: AI słabsze nie proponuje pokoju przed minTurWojny (zarzut 2: spójność z R5a)',
+      ok.weakSchedule.every(x => x.t >= minTurZulusi), ts);
     check('S1b: propozycje AI słabszej niosą powód sygnału (a)',
       ok.weakSchedule.length > 0 && ok.weakSchedule.every(x => /sygnaly=a/.test(x.powod)), ok.weakSchedule[0]);
 
@@ -229,12 +239,14 @@ async function main() {
       ok.midReasonAtFirst !== null && /sygnaly=e/.test(ok.midReasonAtFirst), ok.midReasonAtFirst);
 
     // zdrowie armii (sygnał c)
-    check('S6: zdrowie armii 0.1 (< progZdrowia) → AI chce pokoju (sygnał c)', ok.healthLow === true, ok.healthLow);
-    check('S6b: zdrowie armii 0.9 → brak chęci pokoju w turze 3', ok.healthHigh === false, ok.healthHigh);
+    check('S6: zdrowie armii 0.1 (< progZdrowia) → AI chce pokoju w turze 7 (sygnał c, po minTurWojny)', ok.healthLow === true, ok.healthLow);
+    check('S6b: zdrowie armii 0.9 → brak chęci pokoju w turze 7 (minTurWojny zulusi)', ok.healthHigh === false, ok.healthHigh);
 
     // spójność: AI nie proponuje pokoju, którego sama by odrzuciła
     check('S7: spójność — AI nigdy nie proponuje pokoju w stanie „czuje się silniejsze" (0 naruszeń)',
       ok.consistencyViolations.length === 0, ok.consistencyViolations.slice(0, 5));
+    check('S7b: spójność — AI nigdy nie proponuje pokoju w stanie „za wcześnie" (R5a, 0 naruszeń)',
+      ok.earlyViolations.length === 0, ok.earlyViolations.slice(0, 5));
 
     // mutanty: każdy musi być wykryty przez zachowanie
     const mSigR = runSuite(require(BUNDLES.sig));
@@ -246,6 +258,10 @@ async function main() {
     const mWearR = runSuite(require(BUNDLES.wear));
     check('M_WEAR wykryty: stałe zmęczenie 0.5 daje chęć pokoju AI średniej już w turze 1',
       mWearR.midFirstT !== 8, mWearR.midFirstT);
+    const mTurR = runSuite(require(BUNDLES.tur));
+    check('M_TUR wykryty: bez bramki minTurWojny AI składa propozycję w turze 1 (S1/S7b padają)',
+      mTurR.weakSchedule.length > 0 && mTurR.weakSchedule[0].t === 1 && mTurR.earlyViolations.length > 0,
+      { first: mTurR.weakSchedule[0], early: mTurR.earlyViolations.length });
     const mHealthR = runSuite(require(BUNDLES.health));
     check('M_HEALTH wykryty: zdrowie armii 0.1 nie daje chęci pokoju (sygnał c off)',
       mHealthR.healthLow === false, mHealthR.healthLow);

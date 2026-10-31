@@ -25588,6 +25588,26 @@ async function boot(): Promise<void> {
       getBrakeParams: (aiId: number): { prog: number; n: number } => diploBrakeWarParams(ME(), aiId),
       getRelationTotal: (aiId: number): number => relationScore(getDiploRelation(ME(), aiId)),
       getStatus: (aiId: number): string => getDiploRelation(ME(), aiId).status,
+      // R-WEB-PEACE-RULES-Q1 r4 (zarzut 1 Evaluatora): ścieżka WYSŁANIA propozycji pokoju z
+      // ekranu negocjacji, bez klikania: ten sam handler co modal negocjacji (`applyAudienceAction`
+      // → `handleNegotiatedProposal`), potem ten sam handler co przycisk „Przyjmij w Punkty wymiany"
+      // (`onAcceptNegotiation` → `handleNegotiationAccept`). Odmowa idzie przez REALNE
+      // `previewNegotiationEntry` → `#civ-hint-toast` („Nie można wysłać — …"). Czyści stare wpisy
+      // „pokoj" tej pary, żeby kolejne wywołania nie blokowały się na „już na stole".
+      sendPeaceProposalForTest: (aiId: number): { entryFound: boolean; tableLen: number } => {
+        for (let i = negotiationTable.length - 1; i >= 0; i--) {
+          const n = negotiationTable[i]!;
+          if (n.actionId === 'pokoj' && n.proposerOwnerId === ME() && n.responderOwnerId === aiId) {
+            negotiationTable.splice(i, 1);
+          }
+        }
+        handleNegotiatedProposal(aiId, { actionId: '10', givePn: 0, receivePn: 0 } as any);
+        const entry = negotiationTable.find(n =>
+          n.actionId === 'pokoj' && n.proposerOwnerId === ME() && n.responderOwnerId === aiId);
+        if (!entry) return { entryFound: false, tableLen: negotiationTable.length };
+        handleNegotiationAccept(entry.id);
+        return { entryFound: true, tableLen: negotiationTable.length };
+      },
     };
 
     // R-MIASTA-PANSTWA-STARTOWE-JEDNOSTKI-Q1 (Operator obrona runda 1, Evaluator zarzut 1):

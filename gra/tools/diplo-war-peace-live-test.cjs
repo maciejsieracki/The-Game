@@ -7,11 +7,16 @@
  * `window.__peaceRulesTestDebug` (main.ts) — WYŁĄCZNIE stan wejściowy; logikę wykonuje realny silnik:
  *  A1. Wojna gracz↔AI (turnsAtWar=5), AI silniejsza (rw ≥ 0.55), bez utraty miasta:
  *      REALNE evaluateProposal('pokoj') zwraca odmowę „AI czuje się silniejsze" (R5b).
+ *      + DOM (zarzut 1 Evaluatora r3): ścieżka WYSŁANIA z ekranu negocjacji (handleNegotiatedProposal →
+ *      handleNegotiationAccept, ten sam handler co przycisk „Przyjmij w Punkty wymiany") pokazuje w
+ *      #civ-hint-toast „Nie można wysłać — AI czuje się silniejsze…"; zrzut z tym komunikatem.
  *  A2. Ta sama para, turnsAtWar=10 (poza oknem R5b, <10 nie spełnione): odmowa „silniejsze"
- *      NIE występuje (dowód, że bramka jest wiekowa, a nie stała).
+ *      NIE występuje (dowód, że bramka jest wiekowa, a nie stała) — także w DOM.
  *  B1. Hamulec wojny (D2/R7): para gracz↔AI bez wojny, ŁĄCZNA Relacja ≤ próg, licznik tuż przed
  *      ostrzeżeniem, AI silniejsza (mayDeclare) → REALNY endTurn → w DOM (#civ-hint-toast)
  *      widoczne „Ryzyko wojny z …: N tur do wypowiedzenia (łączna Relacja ≤ P)".
+ *      Wiring (zarzut 3 Evaluatora r3): prog = 15 i N = 6 (profil grecy: progWojnyRelacji 30 − 15, hamulecN 6),
+ *      tekst dokładny „Ryzyko wojny z Grecy: 2 tur do wypowiedzenia (łączna Relacja ≤ 15)".
  *  B2. D7: ten sam scenariusz, ale GRACZ silniejszy → ostrzeżenie NIE pojawia się.
  *  C.  Zero pageerror / console.error w całym scenariuszu.
  * Zrzuty: dyspozycje/autobot/runs/R-WEB-PEACE-RULES-Q1/evidence/
@@ -125,22 +130,44 @@ async function main() {
     const powersA = await d('getPowers', AI_WAR);
     const warA = await d('getWarTurns', AI_WAR);
     const evA1 = await d('evaluatePeaceFromPlayer', AI_WAR);
+    const sendA1 = await page.evaluate(() => window.__peaceRulesTestDebug.sendPeaceProposalForTest(2));
+    await wait(200);
+    const hintA1 = await page.evaluate(() => {
+      const t = document.getElementById('civ-hint-toast');
+      return { shown: !!t && t.style.display !== 'none', text: t ? (t.textContent || '') : '' };
+    });
+    await page.screenshot({ path: path.join(EVIDENCE, 'live-A-odmowa-pokoju-komunikat.png') });
+    console.log('      wysłanie z ekranu negocjacji:', JSON.stringify(sendA1), 'komunikat DOM:', JSON.stringify(hintA1));
     console.log('      powers', JSON.stringify(powersA), 'war', JSON.stringify(warA), 'eval', JSON.stringify(evA1));
     assert('A1 AI silniejsza: rw ≥ 0.55', evA1.rw !== null && evA1.rw >= 0.55, evA1);
     assert('A1 pokój odrzucony', evA1.accepted === false, evA1);
     assert('A1 powód „AI czuje się silniejsze"', typeof evA1.reason === 'string' && evA1.reason.includes('czuje się silniejsze'), evA1);
     assert('A1 brak utraconego miasta', warA.lostCities === 0, warA);
+    assert('A1 DOM: wpis pokoju wysłany realnym handlerem negocjacji', sendA1.entryFound === true, sendA1);
+    assert('A1 DOM: #civ-hint-toast widoczny z odmową „Nie można wysłać — … czuje się silniejsze"',
+      hintA1.shown && /Nie można wysłać — .*czuje się silniejsze/.test(hintA1.text), hintA1);
 
     await page.evaluate(() => window.__peaceRulesTestDebug.setPlayerWarWithAi(2, 10));
     const evA2 = await d('evaluatePeaceFromPlayer', AI_WAR);
     const warA2 = await d('getWarTurns', AI_WAR);
     console.log('      po 10 turach eval', JSON.stringify(evA2), 'war', JSON.stringify(warA2));
     assert('A2 po 10 turach odmowa „silniejsze" nieobowiązuje', !(evA2.reason || '').includes('czuje się silniejsze'), evA2);
+    await page.evaluate(() => {
+      const t = document.getElementById('civ-hint-toast');
+      if (t) { t.textContent = ''; t.style.display = 'none'; }
+    });
+    const sendA2 = await page.evaluate(() => window.__peaceRulesTestDebug.sendPeaceProposalForTest(2));
+    await wait(200);
+    const hintA2 = await page.evaluate(() => {
+      const t = document.getElementById('civ-hint-toast');
+      return { shown: !!t && t.style.display !== 'none', text: t ? (t.textContent || '') : '' };
+    });
+    assert('A2 DOM: po 10 turach komunikat „czuje się silniejsze" NIE pojawia się na ekranie',
+      sendA2.entryFound === true && !hintA2.text.includes('czuje się silniejsze'), { sendA2, hintA2 });
 
     await page.evaluate(() => window.__peaceRulesTestDebug.setPlayerWarWithAi(2, 5));
     const evA3 = await d('evaluatePeaceFromPlayer', AI_WAR);
-    await page.screenshot({ path: path.join(EVIDENCE, 'live-A-stan-silnika.png') });
-    console.log('      zrzut A (stan silnika po odmowie):', evA3.reason);
+    console.log('      stan po przywróceniu 5 tur wojny:', evA3.reason);
     await pageA.close();
 
     // ---- B: hamulec wojny — ostrzeżenie gdy AI silniejsza; brak gdy gracz silniejszy (D7) ----
@@ -179,6 +206,9 @@ async function main() {
     assert('B1 ostrzeżenie widoczne w panelu wydarzeń (DOM, po włączeniu chipu „Inne cyw.")', domB1.hit, domB1);
     assert('B1 ostrzeżenie „Ryzyko wojny z …" w dzienniku wydarzeń (realny endTurn)',
       logB1.found && /Ryzyko wojny z .*tur do wypowiedzenia.*łączna Relacja ≤/.test(logB1.texts.join(' ')), logB1);
+    assert('B1 wiring hamulca: prog = 15 i N = 6 (profil grecy) + tekst dokładny w DOM',
+      brake.prog === 15 && brake.n === 6 && (domB1.txt || '').includes('Ryzyko wojny z Grecy: 2 tur do wypowiedzenia (łączna Relacja ≤ 15)'),
+      { brake, dom: (domB1.txt || '').slice(0, 200) });
     await pageB1.close();
 
     console.log('[peace-live] B2 (D7): gracz silniejszy → brak ostrzeżenia');
