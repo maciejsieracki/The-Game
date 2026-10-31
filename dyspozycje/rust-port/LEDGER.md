@@ -439,3 +439,5 @@ Cel końcowy i bieżący zapisane w `GOAL-RUST-PORT-20261020.md` (§"CEL PĘTLI 
 - Kontener zrestartowano w trakcie; workflow M07B-Q2, 8H2, 8I wznowione (`resumeFromRunId`).
 
 - 2026-10-31 08:12 UTC — kontrola cykliczna: M07B-Q2 r3, 8H2 r1, 8I r1 biegną; brak PASS do integracji.
+
+- 2026-10-31 09:12 UTC — kontrola cykliczna: M07B-Q2 r3, 8H2 r1, 8I2 r1, WEB E2E/DEFEAT/MENU-REORDER/DEFAULTS/ADV-APPLY biegną; brak PASS do integracji. Analizy drewno/ceramika zakończone (czekają decyzje balansowe właściciela).
