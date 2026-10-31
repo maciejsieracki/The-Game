@@ -241,7 +241,9 @@ console.log('4. Praca + tech -> 1 buildImprovement (farma)');
   const city = makeCity('city0', PLAYER_ID, 15, 15);
   const opts = baseOpts(city);
   const cmds = buildImprovementCmds(decideAITurn(PLAYER_ID, [], [city], map, data, opts));
-  eq(cmds.length, 1, 'dokladnie 1 buildImprovement');
+  // R-WEB-AUTOIMPROVE-STAGES-Q1 R3, ABC-D=B (wlasciciel 2026-10-31): AI BEZ limitu maxItemsPerCity:1 (ai.ts ~2651) —
+  // etap zywnosciowy: do FOOD_STAGE_MAX_ITEMS_PER_CITY=3 rozkazow/miasto/ture (jak gracz). Poprzednio: dokladnie 1.
+  assert(cmds.length >= 1 && cmds.length <= 3, `1..3 buildImprovement (ABC-D=B), got ${cmds.length}`);
   eq(cmds[0].key, 'farma', 'typ = farma (najwyzszy priorytet, plaska mapa)');
   eq(cmds[0].ownerId, PLAYER_ID, 'ownerId = AI');
 }
@@ -255,7 +257,9 @@ console.log('5. throttle 1/miasto/ture (wiele kwalifikujacych heksow)');
   const opts = baseOpts(city);
   opts.territoryNodes = [{ q: city.q, r: city.r, pop: city.population, level: 1, ownerId: city.ownerId }];
   const cmds = buildImprovementCmds(decideAITurn(PLAYER_ID, [], [city], map, data, opts));
-  eq(cmds.length, 1, 'maks. 1 buildImprovement mimo dziesiatek kwalifikujacych heksow');
+  // R-WEB-AUTOIMPROVE-STAGES-Q1 R3, ABC-D=B (wlasciciel 2026-10-31): AI BEZ limitu maxItemsPerCity:1 (ai.ts ~2651) —
+  // etap zywnosciowy: do FOOD_STAGE_MAX_ITEMS_PER_CITY=3 rozkazow/miasto/ture (jak gracz). Poprzednio: dokladnie 1.
+  assert(cmds.length >= 2 && cmds.length <= 3, `wiecej niz 1 (brak limitu 1), najwyzej FOOD_STAGE_MAX_ITEMS_PER_CITY=3 mimo dziesiatek kwalifikujacych heksow (ABC-D=B), got ${cmds.length}`);
 }
 
 // ===========================================================================
@@ -280,9 +284,11 @@ console.log('6. 2 miasta -- 1 rozkaz na miasto (2 lacznie)');
     civEra: 1,
   };
   const cmds = buildImprovementCmds(decideAITurn(PLAYER_ID, [], [cityA, cityB], map, data, opts));
-  eq(cmds.length, 2, '2 miasta -> lacznie 2 buildImprovement (1 kazde)');
+  // R-WEB-AUTOIMPROVE-STAGES-Q1 R3, ABC-D=B (wlasciciel 2026-10-31): AI BEZ limitu maxItemsPerCity:1 (ai.ts ~2651) —
+  // etap zywnosciowy: do FOOD_STAGE_MAX_ITEMS_PER_CITY=3 rozkazow/miasto/ture (jak gracz). Poprzednio: dokladnie 1.
+  assert(cmds.length > 2 && cmds.length <= 6, `2 miasta -> wiecej niz 2, najwyzej 3 na miasto (ABC-D=B), got ${cmds.length}`);
   const hexKeys = new Set(cmds.map(c => `${c.q},${c.r}`));
-  eq(hexKeys.size, 2, 'dwa rozne heksy (po jednym na miasto)');
+  eq(hexKeys.size, cmds.length, 'kazdy rozkaz na innym heksie');
 }
 
 // ===========================================================================
@@ -295,8 +301,10 @@ console.log('7. wyrab na mapie lasu gdy brak innych tech');
   const opts = baseOpts(city);
   opts.improvementTechs = new Set(); // pusty zbior -- TYLKO wyrab jest bezwarunkowo odblokowany
   const cmds = buildImprovementCmds(decideAITurn(PLAYER_ID, [], [city], forestMap, data, opts));
-  eq(cmds.length, 1, 'AI buduje wyrab gdy tylko ten typ jest dostepny');
-  eq(cmds[0].key, 'wyrab', 'mapa lasu + brak tech -> wyrab');
+  // R-WEB-AUTOIMPROVE-STAGES-Q1 R3, ABC-D=B (wlasciciel 2026-10-31): AI BEZ limitu maxItemsPerCity:1 (ai.ts ~2651) —
+  // etap zywnosciowy: do FOOD_STAGE_MAX_ITEMS_PER_CITY=3 rozkazow/miasto/ture (jak gracz). Poprzednio: dokladnie 1.
+  assert(cmds.length >= 1 && cmds.length <= 3, `AI buduje wyrab gdy tylko ten typ jest dostepny (1..3), got ${cmds.length}`);
+  assert(cmds.every(c => c.key === 'wyrab'), 'mapa lasu + brak tech -> wylacznie wyrab');
 }
 
 // ===========================================================================
@@ -325,7 +333,9 @@ console.log('9. defensiveCopy -- ta sama intensywnosc co zwykle AI');
   const opts = baseOpts(city);
   opts.defensiveCopy = true;
   const cmds = buildImprovementCmds(decideAITurn(PLAYER_ID, [], [city], map, data, opts));
-  eq(cmds.length, 1, 'defensiveCopy=true -> nadal 1 buildImprovement (zero specjalnego throttlingu)');
+  // R-WEB-AUTOIMPROVE-STAGES-Q1 R3, ABC-D=B (wlasciciel 2026-10-31): AI BEZ limitu maxItemsPerCity:1 (ai.ts ~2651) —
+  // etap zywnosciowy: do FOOD_STAGE_MAX_ITEMS_PER_CITY=3 rozkazow/miasto/ture (jak gracz). Poprzednio: dokladnie 1.
+  assert(cmds.length >= 1 && cmds.length <= 3, `defensiveCopy=true -> ta sama intensywnosc co zwykle AI (1..3), got ${cmds.length}`);
   eq(cmds[0].key, 'farma', 'defensiveCopy -- ten sam wybor typu co zwykle AI');
 }
 
@@ -420,7 +430,7 @@ console.log('11. combined AI + defensive copy: city improvements + posterunek <=
     0,
   );
   assert(normalSpent <= Math.floor(80 * 0.5), 'combined normal: suma kosztow <= floor(80*50%)');
-  eq(normalSpent, farmCost, 'combined normal: wydany jest koszt farmy, nie zero/nieistotna komenda');
+  eq(normalSpent, farmCost * normalFarm.length, 'combined normal: wydane sa wylacznie koszty farm (ABC-D=B: kilka farm/ture), nie nieistotna komenda');
 
   const defensiveOpts = { ...combinedOpts, pracaAvailable: 80, defensiveCopy: true };
   const defensiveCityCommands = decideAITurn(
@@ -446,7 +456,7 @@ console.log('11. combined AI + defensive copy: city improvements + posterunek <=
     0,
   );
   assert(defensiveSpent <= Math.floor(80 * 0.5), 'combined defensiveCopy: suma kosztow <= floor(80*50%)');
-  eq(defensiveSpent, farmCost, 'combined defensiveCopy: wydany jest tylko koszt farmy');
+  eq(defensiveSpent, farmCost * defensiveFarm.length, 'combined defensiveCopy: wydane sa wylacznie koszty farm (ABC-D=B)');
 }
 
 // ===========================================================================
@@ -463,7 +473,7 @@ console.log('11. egzekucja wyrab (AI) — refundacja idzie do Drewna, nie Pracy'
   const wyrabCmds = buildImprovementCmds(
     decideAITurn(PLAYER_ID, [], [city], forestMap, data, opts),
   );
-  eq(wyrabCmds.length, 1, 'sanity: decideAITurn emituje 1 komende wyrab');
+  assert(wyrabCmds.length >= 1 && wyrabCmds.length <= 3, `sanity: decideAITurn emituje 1..3 komendy wyrab (ABC-D=B), got ${wyrabCmds.length}`);
   eq(wyrabCmds[0].key, 'wyrab', 'sanity: komenda to key=wyrab');
 
   // 11b. Symulacja egzekucji IDENTYCZNA z main.ts (cmd.type==='buildImprovement',

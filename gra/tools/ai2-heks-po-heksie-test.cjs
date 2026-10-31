@@ -169,7 +169,7 @@ console.log('C. brak duplikatu tego samego ulepszenia na tym samym heksie');
   ok(dubel === null, `20 tur x maxItemsPerCity=1: zero duplikatow warstwy${dubel ? ' (znaleziony: ' + dubel + ')' : ''}`);
 }
 
-console.log('D. AI CYWILIZACJI — limit maxItemsPerCity: 1 NIETKNIETY (ECHO: „Zostaw limit, zmien kolejnosc")');
+console.log('D. AI CYWILIZACJI — BEZ limitu maxItemsPerCity: 1 (R-WEB-AUTOIMPROVE-STAGES-Q1 R3, ABC-D=B wlasciciela 2026-10-31; zastepuje ECHO „Zostaw limit")');
 {
   const aiSrc = fs.readFileSync(path.resolve(SRC, 'game', 'ai.ts'), 'utf8');
   const i = aiSrc.indexOf('function planCityImprovements');
@@ -178,8 +178,8 @@ console.log('D. AI CYWILIZACJI — limit maxItemsPerCity: 1 NIETKNIETY (ECHO: �
   // wypadlo poza stare okno — straznik czerwienil sie MIMO ze pilnowany kod jest na miejscu.
   // To jest zmiana SZEROKOSCI OKNA straznika, nie zmiana asercji.
   const blok = i >= 0 ? aiSrc.slice(i, i + 8000) : '';
-  ok(/maxItemsPerCity:\s*1\b/.test(blok),
-    'ai.ts / planCityImprovements nadal przekazuje `maxItemsPerCity: 1` do pickera');
+  ok(!/maxItemsPerCity:\s*1\b/.test(blok),
+    'ai.ts / planCityImprovements NIE przekazuje juz `maxItemsPerCity: 1` do pickera (ABC-D=B)');
   ok(/pracaBudgetPercent:\s*100\b/.test(blok),
     'ai.ts / planCityImprovements nadal przekazuje `pracaBudgetPercent: 100`');
   // dowod behawioralny — nie regex
@@ -194,8 +194,14 @@ console.log('D. AI CYWILIZACJI — limit maxItemsPerCity: 1 NIETKNIETY (ECHO: �
     territoryNodes: tn, placedImprovements: new Map(), improvementTechs: TECHS,
     pracaAvailable: 100000, civEra: 3,
   }).filter(c => c.type === 'buildImprovement');
-  ok(cmds.length === cities.length,
-    `decideAITurn: dokladnie 1 ulepszenie na miasto na ture (${cmds.length} rozkazow przy ${cities.length} miastach)`);
+  // ABC-D=B: AI jak gracz — wiecej niz 1 rozkaz na miasto na ture, najwyzej FOOD_STAGE_MAX_ITEMS_PER_CITY (3).
+  const perCity = new Map();
+  for (const c of cmds) {
+    const own = Math.abs(c.q - 5) + Math.abs(c.r - 5) <= Math.abs(c.q - 14) + Math.abs(c.r - 14) ? 'c0' : 'c1';
+    perCity.set(own, (perCity.get(own) ?? 0) + 1);
+  }
+  ok(cmds.length > cities.length && [...perCity.values()].every(n => n >= 1 && n <= 3),
+    `decideAITurn: wiecej niz 1 ulepszenie na miasto na ture, <=3 na miasto (${cmds.length} rozkazow przy ${cities.length} miastach: ${JSON.stringify([...perCity])})`);
 }
 
 console.log('E. AI CYWILIZACJI buduje TARTAK (przed runda 2: 0 na wszystkich ziarnach)');
@@ -337,10 +343,8 @@ console.log('H. W-B: posterunek/fort NIE domykaja heksa i maja pulap ceil(pop/10
 console.log('I. WYRAB: AI CYWILIZACJI faktycznie wycina las na heksie z rzeka (GOAL tematu)');
 {
   const map = makeMap(16, 16, { nakladka: 'las', riverAt: [[7, 5], [7, 6], [7, 7], [7, 8]] });
-  // R-WEB-AUTOIMPROVE-STAGES-Q1 (K3): heks centrum miasta nie jest lasem (realna mapa tak nie wyglada).
-  // Przy niedoborze drewna krok „brakujacy surowiec” idzie NA PRZOD i (surowce wszedzie) trafialby
-  // z lasu-centrum w tartak na heksie miasta, na ktorym obozu postawic sie nie da.
-  map.hexes['7,7'].nakladka = 'brak';
+  // R3, ABC-F=A: obejscie `nakladka='brak'` na heksie centrum USUNIETE — test sprawdza kod:
+  // centrum miasta (7,7) jest lasem i NIE moze dostac zadnego ulepszenia (sprawdzenie nizej).
   // RUNDA 4, ZASADA 2: automat buduje wylacznie na heksach OBRABIANYCH przez obywateli
   // (poza zlozami). Zeby ten scenariusz nadal testowal to, co testowal w rundzie 3
   // („pierwszy wyrab trafia na heks Z RZEKA"), obywatele musza te heksy z rzeka realnie
@@ -395,6 +399,9 @@ console.log('I. WYRAB: AI CYWILIZACJI faktycznie wycina las na heksie z rzeka (G
   const zTartakiem = new Set(slad.filter(e => e.key === 'tartak' || e.key === 'oboz_lowiecki').map(e => e.hk));
   ok(!wyreby.some(e => zTartakiem.has(e.hk)),
     'zaden heks z tartakiem albo obozem nie zostal wyciety');
+  // ABC-F=A (K3): heks centrum miasta (las pod miastem) nie dostaje zadnego rozkazu budowy.
+  ok(!slad.some(e => e.hk === '7,7'),
+    `ABC-F=A: zero rozkazow na heksie centrum miasta 7,7 (${slad.filter(e => e.hk === '7,7').map(e => e.key).join(',') || 'brak'})`);
   // K — obrona nadal powstaje przez decideAITurn, w granicach pulapu
   const post = slad.filter(e => e.key === 'posterunek').length;
   const fort = slad.filter(e => e.key === 'fort').length;

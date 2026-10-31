@@ -2648,7 +2648,9 @@ function planCityImprovements(
     // absolutnemu splitowi całej puli co gracz. Picker nie może wykonać
     // drugiego, procentowego podziału na już wydzielonym budżecie.
     pracaBudgetPercent: 100,
-    maxItemsPerCity: 1,
+    // R-WEB-AUTOIMPROVE-STAGES-Q1 R3, ABC-D=B (właściciel 2026-10-31): AI BEZ limitu jednej sztuki na miasto (pole maxItemsPerCity usuniete z wywolania) —
+    // tyle etapów/budów na miasto na turę co gracz (K2=K3; picker i tak ogranicza etap do
+    // `FOOD_STAGE_MAX_ITEMS_PER_CITY`). Poprzednio: limit 1 sztuka/miasto/ture.
     skipWyrab: false,
     civArchetype: opts.civType,
     playerEra: opts.civEra ?? 1,
@@ -2695,7 +2697,7 @@ function planCityImprovements(
   }
 
   // P-AI-ULEPSZENIA-BUDOWA-ZNIKOMA-Q1 (runda 2, Evaluator/Operator znalezisko własne przy
-  // testowaniu): bez tego wykluczenia dwa NIEZALEŻNE wywołania `maxItemsPerCity: 1` (jedno
+  // testowaniu): bez tego wykluczenia dwa NIEZALEŻNE wywołania pickera z limitem jednej sztuki na miasto (jedno
   // na żywność, jedno na surowce) dają miastu do DWÓCH ulepszeń/turę zamiast dotychczasowego
   // JEDNEGO -- co w symulacji PRZED/PO windowało też liczbę ŻYWNOŚCIOWYCH ulepszeń (bo
   // wcześniej dzieliły z surowcowymi TEN SAM jeden slot na hex-po-hexie, teraz każda
