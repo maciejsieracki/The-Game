@@ -1,0 +1,22 @@
+[city-clears-forest-live] vite build -> /tmp/civ-city-clears-forest-5aD6XI
+  [info] lasy na mapie przed zalozeniem: 1373, Las="las"
+  OK  L1.0 fixture: playerStartHex ma Las przed zalozeniem
+  OK  L1.1 REALNE zalozenie stolicy gracza zwrocilo true
+  OK  L1.2 stolica gracza: brak Las i brak tartaku
+  OK  L1.3 miasta-panstwa/klastry istnieja (n=12) i zadne nie stoi na Las
+  OK  L1.4 ZADNE miasto na mapie (n=15) nie stoi na Las
+  OK  L2.0 jest kandydat na drugie miasto (REALNA canFoundPlayerCityAt)
+  OK  L2.1 fixture: kandydat ma Las
+  OK  L2.2 REALNE zalozenie drugiego miasta zwrocilo true
+  OK  L2.3 drugie miasto: brak Las i brak tartaku
+  OK  L3 lasy bez miasta zostaja: 1373 -> 1359 (spadek <= liczba miast 16 + fixture)
+  OK  L4.0 fixture „stary zapis": las+tartak pod KAZDYM z 16 miast
+ FAIL L4.1 po wczytaniu: zadne miasto nie stoi na Las -- 16
+ FAIL L4.2 po wczytaniu: tartak pod miastem zniknal
+  OK  L4.3 idempotencja: drugie wczytanie nie zmienia liczby lasow (1375 == 1375)
+  OK  L5.0 REALNY endTurn przesunal ture (1 -> 2)
+ FAIL L5.1 las wstawiony pod miasto zniknal po granicy tury -- "las"
+  OK  C zero pageerror/console.error (n=0)
+
+city-clears-forest-live-test: 14 pass / 3 fail
+EXIT=1

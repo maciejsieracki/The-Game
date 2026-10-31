@@ -258,7 +258,7 @@ import {
   broadcastAutoWyzywienieToOwnerCities,
   resolveCityPoziomRacji,
 } from './game/empire-city-defaults';
-import { applyCityFoundingToHex, cityKeepsImprovement } from './game/city-hex-clear';
+import { applyCityFoundingToHex, cityKeepsImprovement, clearForestUnderCity } from './game/city-hex-clear';
 import {
   executeManualWorkTaxConversion,
   ownerCanConvertWorkToTax,
@@ -14393,7 +14393,34 @@ async function boot(): Promise<void> {
       applyFortTakeoverAndEvacuation(c); // regula 4+5/Q3=A: przejęcie cudzych fortów + ewakuacja
     }
 
+    /**
+     * R-WEB-CITY-CLEARS-FOREST-Q1 — SIATKA BEZPIECZEŃSTWA reguły „pod miastem nie ma lasu".
+     * Główna ścieżka to `finalizeCityFounding` (każde założenie miasta czyści Las przez
+     * `applyCityFoundingToHex`). Ta funkcja domyka STAN: stary zapis z lasem pod miastem
+     * (sprzed reguły / z innej wersji), preset playtestu, ewentualna nieznana ścieżka.
+     * Natychmiastowa, bez kosztu Pracy; tartak/obóz łowiecki zależne od lasu znikają
+     * (`stripForestDependentImprovements`); pozostałe ulepszenia heksa NIETKNIĘTE (to zakres
+     * macierzy B przy założeniu, nie tej migracji); `centerWorkedTile` NIETKNIĘTY (snapshot
+     * plonów z chwili założenia). Idempotentna: bez lasu pod miastem = zero zmian.
+     */
+    function enforceNoForestUnderCities(reason: string): number {
+      let n = 0;
+      for (const c of cities) {
+        if (!clearForestUnderCity(map, c.q, c.r)) continue;
+        const hk = keyOf(c.q, c.r);
+        stripForestDependentImprovements(hk);
+        hexClearingStates.delete(hk);
+        removeClearingMesh(hk);
+        hideDecorAtHex(hk);
+        syncResourceOverlayAtHex(hk);
+        n++;
+      }
+      if (n > 0) diagInfo('migracja', `las pod miastem usuniety (${reason}): ${n} heks(ow)`);
+      return n;
+    }
+
     function reapplyCityHexDecorHides(): void {
+      enforceNoForestUnderCities('wczytanie/preset');
       for (const c of cities) hideDecorAtHex(keyOf(c.q, c.r));
     }
 
@@ -26279,6 +26306,67 @@ async function boot(): Promise<void> {
       },
     };
 
+    // R-WEB-CITY-CLEARS-FOREST-Q1 — hak testowy WYŁĄCZNIE dla `tools/city-clears-forest-live-test.cjs`
+    // (wołany tylko z Playwright). Setery to FIXTURE stanu (las/tartak pod miastem = stan starego
+    // zapisu); zakładanie miasta i wczytanie idą REALNYMI funkcjami (`tryFoundPlayerCityAt`,
+    // `buildSaveGameSnapshot` -> `restoreGameFromSave` -> `reapplyCityHexDecorHides`, ta sama
+    // sekwencja co `loadGameFromSlot`). Zero logiki decyzyjnej — tylko odczyt i ustawienie pól.
+    (window as any).__cityForestTestDebug = {
+      /** Stan heksa pod KAŻDYM miastem: nakładka, warstwy ulepszeń. */
+      citiesHexState: () => cities.map(c => {
+        const hk = keyOf(c.q, c.r);
+        const h = map.hexes[hk];
+        return {
+          id: c.id, ownerId: c.ownerId, q: c.q, r: c.r, startCityState: !!c.startCityState,
+          nakladka: h ? String(h.nakladka) : null,
+          layers: [...(placedImprovements.get(hk) ?? [])] as string[],
+        };
+      }),
+      forestHexCount: (): number => Object.values(map.hexes).filter(h => h.nakladka === Nakladka.Las).length,
+      hexNakladka: (q: number, r: number): string | null => {
+        const h = map.hexes[keyOf(q, r)];
+        return h ? String(h.nakladka) : null;
+      },
+      lasValue: (): string => String(Nakladka.Las),
+      playerStartHex: (): { q: number; r: number } | null =>
+        playerStartHex ? { q: playerStartHex.q, r: playerStartHex.r } : null,
+      /** FIXTURE: wstaw las (opcjonalnie tartak) na heks (q,r) — jak w starym zapisie. */
+      plantForest: (q: number, r: number, withTartak: boolean): boolean => {
+        const hk = keyOf(q, r);
+        const h = map.hexes[hk];
+        if (!h) return false;
+        h.nakladka = Nakladka.Las;
+        if (withTartak) {
+          const layers = [...(placedImprovements.get(hk) ?? []), 'tartak'] as PlacedLayers;
+          placedImprovements.set(hk, layers);
+          syncHexUlepszenieFields(hk, layers);
+        }
+        return true;
+      },
+      /** Kandydaci na kolejne miasto gracza wg REALNEJ `canFoundPlayerCityAt`. */
+      foundCandidates: (limit: number): Array<{ q: number; r: number }> => {
+        const out: Array<{ q: number; r: number }> = [];
+        for (const h of Object.values(map.hexes)) {
+          if (out.length >= limit) break;
+          if (canFoundPlayerCityAt(h.coords.q, h.coords.r).ok) out.push({ q: h.coords.q, r: h.coords.r });
+        }
+        return out;
+      },
+      /** REALNE założenie miasta gracza (jak klik) z wystarczającą Pracą. */
+      foundPlayerCity: (q: number, r: number): boolean => {
+        playerPracaPool = Math.max(playerPracaPool, 1_000_000);
+        // FIXTURE kosztu: miasto-zrodlo musi miec ludnosc (koszt zalozenia kolejnego miasta).
+        for (const c of cities) if (c.ownerId === ME()) c.population = Math.max(c.population, 10);
+        return tryFoundPlayerCityAt(q, r);
+      },
+      /** REALNA sekwencja wczytania zapisu: snapshot -> restore -> reapplyCityHexDecorHides. */
+      reloadLikeLoad: (): void => {
+        const snap = buildSaveGameSnapshot('city-forest-test');
+        restoreGameFromSave(snap);
+        reapplyCityHexDecorHides();
+      },
+    };
+
     // R-HOTSEAT-ETAP5-SWITCH-HUMAN-Q1 — hak testowy WYŁĄCZNIE dla
     // `tools/hotseat-etap5-no-leak-test.cjs`, wzorzec identyczny do
     // `__sidePanelLinkTestDebug`/`__eraTestDebug`/`__musicEraTestDebug` (wołany WYŁĄCZNIE z
@@ -34040,6 +34128,8 @@ async function boot(): Promise<void> {
         // Idempotentne, więc w ustabilizowanej partii to przebieg bez żadnej zmiany
         // (pętla po heksach z natychmiastowym odrzuceniem wszystkiego, co nie jest lasem).
         sweepLegacyFarmsOnForest('granica tury');
+        // R-WEB-CITY-CLEARS-FOREST-Q1: pod miastem nigdy las (siatka na każdej granicy tury).
+        enforceNoForestUnderCities('granica tury');
 
         // Chatki: nagroda już przyznana — wpis w WYDARZENIACH tylko do końca tury bieżącej.
         villageEventLog.length = 0;
