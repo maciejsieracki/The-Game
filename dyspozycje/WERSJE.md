@@ -1,3 +1,12 @@
+## ROBOCZA c415f278 -- 2026-10-31 -- diplomacja i wojny: licznik wojen epoki, zasady pokoju, cesja miasta, flaga agresora, rozejm, obwódki cywilizacji (testowa)
+
+- **STATUS: DEPLOYED** — merge fast-forward `origin/main` (`7164f7ca1` → `5f5ad5a3c`, 46 commitów, gałąź `web/integration-20261030`) i commit wdrożenia bundla; polecenie właściciela 2026-10-31: merge main, deploy Robocza, git push. Odczyt GitHub Raw po pushu: patrz niżej.
+- Bundle SHA-256 `06ae666b626811a1c367db30e2d01d27b6ade2a3b0bba0f082b593a5429722eb`, MD5 `c415f278d71bd4d3d66c164b83ef33c2`, 70,086,171 bajtów. Vite direct build, outDir poza repo, stempel ROBOCZA; `verify-robocza-bundle.cjs` VERIFY OK.
+- Zakres: obwódka armii w kolorze cywilizacji; licznik wojen epoki (1 na cywilizację i epokę, także gracz); wspólne zasady pokoju (zmęczenie wojną po 20 turach, progi z macierzy cywilizacji, minimalna liczba tur, hamulec wojny wg Relacji); blokada wojny epoki przy Relacji ≥ 100 i brak automatycznego końca wojen wymuszonych; cesja miasta za pokój (AI oddaje/żąda, wybór w UI); flaga agresora (20 tur) i casus belli (15 tur); rozejm 5/10/15 tur.
+- Testy: tsc PASS; Chromium city-cession-live 17/0, city-picker-ui 13/0, truce-live 23/0; aggressor 73+15, truce 30+8+24, cession 79+73, war-era-counter 82, multiwar 57+21, relation-gate 14, peace profile 198/gate 11/sim 22/main-guard 28/d7 8, diplomacy 148, peace-lock 9, ring 15. Każdy temat: Operator → Evaluator → Obrona → Final Control (PASS / PASS-WITH-NOTES).
+- Ograniczenia: znane czerwone w bazie `civ-matrix-ai-diplomacy-wiring` 42/1 i `ai-test` 274/20; NIE_ZMIERZONO: E2E AI→stół dla rozejmu, żywy roundtrip pliku zapisu, forced-war-r9 live, war-rules-multiwar-live-test; niepokój po cesji miasta niewdrożony (brak mechaniki w modelu miasta); znacznik „Agresor” tylko w panelu dyplomacji (nie na liście HUD); ostrzeżenie hamulca wojny ukryte domyślnym filtrem „Inne cyw.”.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `e666ecb6020b55c68f0c2d3d5067ad54`, SHA-256 `e5acc382cf8210d913bda9c57d82dc42e5ae1b9097be0d8c3315aa09537bfe81`, 70,046,987 bajtów.
+
 ## ROBOCZA 00f76663 -- 2026-10-28 -- tartak na zalesionym wzgórzu + nawigacja kreatora (testowa)
 
 - **STATUS: DEPLOYED** — product commit `b3cc4c5d`, release commit `eb6e0824`, fast-forward `origin/main`; GitHub Raw bundle/manifest/START HTTP 200, hash i rozmiar zgodne.
