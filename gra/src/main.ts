@@ -1480,7 +1480,9 @@ import {
   diplomacyPnSurowiecIlosc,
   diplomacyNormalizeSurowiecIlosc,
   diplomacySumPn,
+  planCityCession,
 } from './game/diplomacy-value-catalog';
+
 import {
   collectUnauthorizedBorderPairs,
   defaultIsMilitaryUnit,
@@ -11192,6 +11194,13 @@ async function boot(): Promise<void> {
                 cities[i]!.surowce = after.surowce;
               }
             }
+            break;
+          }
+          case 'miasto': {
+            // R-WEB-PEACE-CITY-CESSION-Q1 r2: cesja miasta w pokoju/wasalizacji. Walidacja
+            // akcji (`diplomacyMiastoAkcjaDozwolona`) i wycena stoją wyżej; tu tylko
+            // wykonanie z ponowną kontrolą zakazów w `transferCityByTreaty`.
+            transferCityByTreaty(item.id, fromOwnerId, toOwnerId);
             break;
           }
           case 'jednostka': {
@@ -31878,6 +31887,68 @@ async function boot(): Promise<void> {
           reportRows: captureResult.reportRows,
         });
       }
+    }
+
+    /**
+     * R-WEB-PEACE-CITY-CESSION-Q1 r2: przeniesienie własności miasta w ramach pokoju.
+     * Wzór: podbój bez bitwy, ALE bez skutków wojennych (brak `applyCityCaptureToMap`,
+     * brak `recordWarCityLossForPair` / `maybeResolveRegularWarOnCityCapture` /
+     * `triggerRebelProtectionWarConsequence`, brak `applyPostCaptureLawOnCapture`).
+     * Plan (zakazy stolica/ostatnie miasto, ruchy jednostek ODDAJĄCEGO z heksu miasta) —
+     * `planCityCession` (game/diplomacy-value-catalog.ts, ZAŁOŻENIA Z1/Z2).
+     * Zwraca true, gdy przeniesiono; false = odrzucone (log).
+     */
+    function transferCityByTreaty(cityId: string, fromOwnerId: number, toOwnerId: number): boolean {
+      const city = cities.find(c => c.id === cityId);
+      if (!city) {
+        console.warn(`[Dyplomacja] cesja miasta: nieznane miasto ${cityId}`);
+        return false;
+      }
+      const plan = planCityCession({
+        cityId,
+        cityOwnerId: city.ownerId,
+        fromOwnerId,
+        toOwnerId,
+        cityQ: city.q,
+        cityR: city.r,
+        ownerCityIds: cities.filter(c => c.ownerId === fromOwnerId).map(c => c.id),
+        capitalCityId: capitalCityIdForOwner(fromOwnerId),
+        units: units.map(u => ({ id: u.id, ownerId: u.ownerId, q: u.q, r: u.r })),
+        neighborsOf: (q, r) => hexNeighborCoords(q, r),
+        isFreeHex: (q, r) => !!map.hexes[keyOf(q, r)]
+          && !units.some(u => u.q === q && u.r === r)
+          && !cities.some(c => c.q === q && c.r === r),
+      });
+      if (!plan.ok) {
+        console.warn(`[Dyplomacja] cesja miasta ${cityId} odrzucona: ${plan.reason}`);
+        return false;
+      }
+      for (const mv of plan.unitMoves) {
+        const u = units.find(x => x.id === mv.unitId);
+        if (u) {
+          u.q = mv.q;
+          u.r = mv.r;
+        }
+      }
+      // Produkcja: jak przy podboju — legacy Praca wraca do DAWCY, kolejka przechodzi
+      // sanityzowana pod nowego właściciela (ZAŁOŻENIE: bez utraty budowy).
+      const prodCession = cityProd.get(city.id);
+      if (prodCession) {
+        const migrated = sanitizeBuildQueue(prodCession);
+        if (migrated.refundedPraca > 0) {
+          setOwnerPracaPool(fromOwnerId, ownerPracaPool(fromOwnerId) + migrated.refundedPraca);
+        }
+        cityProd.set(city.id, sanitizeProductionQueue(toOwnerId, migrated.prod));
+      }
+      city.ownerId = toOwnerId;
+      seedCityOwnerDefaults(city);
+      applyLiveSafeRationForCity(city.id);
+      if (clearCityStateFlagOnCapture(city)) markCityStateDirty();
+      _maxSafeRationCache.clear();
+      refreshFog();
+      updateHud();
+      console.log(`[Dyplomacja] R-WEB-PEACE-CITY-CESSION-Q1: miasto ${cityId} ${fromOwnerId}→${toOwnerId} (jednostki przesunięte: ${plan.unitMoves.length})`);
+      return true;
     }
 
     function clearMapBattleUiState(): void {
