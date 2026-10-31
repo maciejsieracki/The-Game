@@ -129,7 +129,9 @@ pub fn zloze_label(zloze: &str) -> Option<&'static str> {
 /// Web `CITY_PANEL_RANGE_DEPOSIT_LABELS` + `filterCityPanelRangeLabels`: z etykiet zostaja tylko
 /// `Koń`, `Sól`, `Złoto`; wynik posortowany. Dla tego zamknietego zbioru porzadek bajtowy UTF-8
 /// (`Koń` < `Sól` < `Złoto`) = `localeCompare(_, 'pl')`, wiec pelnego collatora nie portujemy.
-pub fn city_panel_range_deposit_labels<'a>(labels: impl IntoIterator<Item = &'a str>) -> Vec<String> {
+pub fn city_panel_range_deposit_labels<'a>(
+    labels: impl IntoIterator<Item = &'a str>,
+) -> Vec<String> {
     const ALLOWED: [&str; 3] = ["Koń", "Sól", "Złoto"];
     let mut out: Vec<String> = labels
         .into_iter()
