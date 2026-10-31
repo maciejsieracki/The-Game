@@ -340,14 +340,87 @@ console.log('(k) profile gracza „surowce" (S) i „infrastruktura" (I) BEZ ZMI
   ok(count(i.log, 'tartak') === 0 && count(i.log, 'farma') === 0, `[I] profil „infrastruktura": tylko infrastruktura (tartak ${count(i.log, 'tartak')}, farma ${count(i.log, 'farma')})`);
 }
 
-console.log('(k2) [K2/K3] tartak/obóz w minimum lesnym ceil(pop/10) (nie na kazdym lesie) — TYLKO przebiegi K1/K2/K3; ABC-B czeka');
-for (const profil of ['K2', 'K3']) {
+console.log('(k2) [K2/K3] R5 (wlasciciel 2026-10-31): BRAK LIMITU tartakow przy niedoborze drewna — zamiast dawnego ceil(pop/10)');
+{
   const FOR = [[14, 12], [11, 11], [13, 11], [11, 13], [12, 13], [13, 12]];
-  const map = makeMap({ forest: FOR });
-  const { log } = sim({ map, worked: FOR, profil, turns: 30, deficitFn: () => ['drewno'] });
-  const lesneMin = Math.ceil(CITY.population / 10);
-  ok(count(log, 'tartak') >= 1 && count(log, 'tartak') <= lesneMin, `[${profil}] tartaki ${count(log, 'tartak')} w granicach 1..${lesneMin} (nie ${FOR.length})`);
-  ok(count(log, 'oboz_lowiecki') <= lesneMin, `[${profil}] obozy ${count(log, 'oboz_lowiecki')} <= ${lesneMin}`);
+  for (const profil of ['K2', 'K3']) {
+    // niedobor TRWA: tartak na KAZDYM dostepnym lesie (6), nie ceil(pop/10)=2.
+    const { log } = sim({ map: makeMap({ forest: FOR }), worked: FOR, profil, turns: 30, deficitFn: () => ['drewno'] });
+    ok(count(log, 'tartak') === FOR.length, `[${profil}] R5 niedobor drewna trwa: tartaki ${count(log, 'tartak')} == ${FOR.length} (wszystkie lasy; bez ceil(pop/10)=${Math.ceil(CITY.population / 10)})`);
+    ok(FOR.every(([q, r]) => idx(log, 'tartak', K(q, r)) >= 0), `[${profil}] R5 tartak na kazdym z ${FOR.length} lasow bez rzeki`);
+    // niedobor ZASPOKOJONY (tylko t<2): po zaspokojeniu zadnych nowych tartakow, wraca zywnosc/wyrab.
+    const k = sim({ map: makeMap({ forest: FOR }), worked: FOR, profil, turns: 30, deficitFn: t => (t < 2 ? ['drewno'] : []) });
+    ok(k.log.filter(e => e.key === 'tartak').every(e => e.t < 2) && count(k.log, 'tartak') === FOR.length,
+      `[${profil}] R5 niedobor zaspokojony (t>=2): tartaki ${count(k.log, 'tartak')} powstaly tylko w oknie niedoboru`);
+    // BEZ niedoboru: zero tartakow (ABC-B=B bez zmian).
+    const b = sim({ map: makeMap({ forest: FOR }), worked: FOR, profil, turns: 30 });
+    ok(count(b.log, 'tartak') === 0, `[${profil}] R5 bez niedoboru: tartaki ${count(b.log, 'tartak')} == 0`);
+  }
+}
+
+console.log('(r5-river) [K2/K3] R5: tartak/obóz NIE na heksie rzeka+las (zarezerwowany pod wycinke i farme); tartak tylko na lesie BEZ rzeki');
+{
+  const FOR = [[14, 12], [11, 11], [13, 11]];
+  for (const profil of ['K2', 'K3']) {
+    const map = makeMap({ river: RIVER, forest: [...RIVER, ...FOR] });
+    const { log } = sim({ map, worked: [...WORKED_ALL, ...FOR], profil, turns: 40, deficitFn: () => ['drewno'] });
+    const naRzece = log.filter(e => (e.key === 'tartak' || e.key === 'oboz_lowiecki') && RIVER.some(([q, r]) => K(q, r) === e.hk));
+    ok(naRzece.length === 0, `[${profil}] R5 niedobor drewna: 0 tartakow/obozow na rzece+las (${naRzece.map(e => e.key + '@' + e.hk).join(',') || '-'})`);
+    ok(FOR.every(([q, r]) => idx(log, 'tartak', K(q, r)) >= 0), `[${profil}] R5 tartak POWSTAJE na lesie bez rzeki (${FOR.length}/${FOR.length})`);
+    ok(RIVER.every(([q, r]) => idx(log, 'wyrab', K(q, r)) >= 0 && idx(log, 'farma', K(q, r)) > idx(log, 'wyrab', K(q, r))),
+      `[${profil}] R5 heks rzeka+las dostaje wyrab -> farma (nie tartak)`);
+    // wylacznie lasy z rzeka, niedobor trwa: tartak NIE powstaje (niedobor zostaje), farma/wycinka idzie dalej.
+    const only = sim({ map: makeMap({ river: RIVER, forest: RIVER }), worked: WORKED_ALL, profil, turns: 40, deficitFn: () => ['drewno'] });
+    ok(count(only.log, 'tartak') === 0 && count(only.log, 'oboz_lowiecki') === 0, `[${profil}] R5 tylko lasy z rzeka + niedobor drewna: tartak 0 (niedobor zostaje), obozy 0`);
+    ok(count(only.log, 'wyrab') === RIVER.length && count(only.log, 'farma') >= RIVER.length, `[${profil}] R5 ... a wyrab (${count(only.log, 'wyrab')}) i farmy (${count(only.log, 'farma')}) ida normalnie`);
+  }
+}
+
+console.log('(r5-wyrab) [K1/K2/K3] R5: wycinka TYLKO pod farmy (Laka/Rownina), nigdy las na Wzgorzach; heks z tartakiem nie jest wycinany');
+{
+  const FLATF = [[14, 12], [11, 13]];
+  const HILLF = [[11, 11], [13, 11]];
+  for (const profil of ['K1', 'K2', 'K3']) {
+    const map = makeMap({ forest: [...FLATF, ...HILLF], hills: HILLF });
+    const { log } = sim({ map, worked: [...WORKED_ALL, ...FLATF, ...HILLF], profil, turns: 40 });
+    ok(FLATF.every(([q, r]) => idx(log, 'wyrab', K(q, r)) >= 0 && idx(log, 'farma', K(q, r)) > idx(log, 'wyrab', K(q, r))),
+      `[${profil}] R5 las na rowninie pod farme: wyrab -> farma`);
+    ok(HILLF.every(([q, r]) => idx(log, 'wyrab', K(q, r)) < 0), `[${profil}] R5 las na Wzgorzach NIE jest wycinany (farma tam niemozliwa — wyrab nie na zapas)`);
+    ok(HILLF.every(([q, r]) => map.hexes[K(q, r)].nakladka === 'las'), `[${profil}] R5 las na Wzgorzach nietkniety`);
+  }
+  // rzeka + las na Wzgorzach: ani wyrab, ani tartak (K2/K3), a nie blokuje wyrebu poza rzeka.
+  for (const profil of ['K2', 'K3']) {
+    const map = makeMap({ river: RIVER, forest: [[12, 9], [14, 12]], hills: [[12, 9]] });
+    const placed0 = new Map([[K(12, 10), ['farma', 'bydlo', 'irygacja']], [K(13, 10), ['farma', 'bydlo', 'irygacja']]]);
+    const { log } = sim({ map, worked: [...WORKED_ALL, [14, 12]], profil, turns: 30, placed0, deficitFn: () => ['drewno'] });
+    ok(idx(log, 'wyrab', '12,9') < 0 && idx(log, 'tartak', '12,9') < 0, `[${profil}] R5 rzeka+las na Wzgorzach: zero wyrebu i zero tartaku`);
+    ok(idx(log, 'tartak', '14,12') >= 0, `[${profil}] R5 niedobor drewna: tartak na lesie bez rzeki 14,12`);
+  }
+}
+
+console.log('(r5-drogi) [K2/K3] R5: drogi dopiero gdy NIE MA kandydata dla zywnosci ani dla brakujacego surowca (bez limitu)');
+{
+  const FOR = [[14, 12], [11, 11], [13, 11], [11, 13], [12, 13], [13, 12]];
+  for (const profil of ['K2', 'K3']) {
+    const { log } = sim({ map: makeMap({ forest: FOR }), worked: FOR, profil, turns: 30, deficitFn: () => ['drewno'] });
+    const roads = log.filter(e => e.key === 'droga' || e.key === 'droga_brukowana');
+    const rest = log.filter(e => !(e.key === 'droga' || e.key === 'droga_brukowana'));
+    const lastRest = Math.max(...rest.map(e => e.t));
+    ok(roads.length > 0, `[${profil}] R5 po zbudowaniu tartakow na wszystkich lasach drogi startuja (${roads.length})`);
+    ok(roads.every(e => e.t > lastRest), `[${profil}] R5 zadna droga przed ostatnim tartakiem/zywnoscia (droga najwczesniej t=${Math.min(...roads.map(e => e.t))} > ostatnie nie-drogi t=${lastRest})`);
+    ok(count(log, 'tartak') === FOR.length, `[${profil}] R5 tartakow ${count(log, 'tartak')} == ${FOR.length} PRZED drogami (brak limitu => drogi nie startuja po „limicie tartakow”)`);
+  }
+}
+
+console.log('(r5-parytet) [K2=K3] R5: ta sama kolejnosc i zestaw budow przy niedoborze drewna, rzece+lesie i lesie bez rzeki');
+{
+  const FOR = [[14, 12], [11, 13], [13, 11]];
+  const mk = () => makeMap({ river: RIVER, forest: [...RIVER, ...FOR] });
+  const worked = [...WORKED_ALL, ...FOR];
+  const k2 = sim({ map: mk(), worked, profil: 'K2', turns: 30, deficitFn: () => ['drewno'] });
+  const k3 = sim({ map: mk(), worked, profil: 'K3', turns: 30, deficitFn: () => ['drewno'] });
+  ok(seqOf(k2.log) === seqOf(k3.log), `[K2=K3] R5 niedobor drewna + rzeka+las: identyczna sekwencja (${k2.log.length} rozkazow)`);
+  if (seqOf(k2.log) !== seqOf(k3.log)) { console.error('K2: ' + seqOf(k2.log)); console.error('K3: ' + seqOf(k3.log)); }
 }
 
 console.log('(k3) [K2/K3] KOREKTA F: heks CENTRUM z lasem jest ZWYKLYM heksem — brak filtra centrum (zarzut Evaluatora R4 nr 4: asercja zamiast pomiaru)');

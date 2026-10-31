@@ -14,6 +14,7 @@ import {
   buildImprovementQualifier,
   depositAllowsPlayerImprovement,
   hexHasDepositReserve,
+  isFarmBaseTerrain,
   type ImprovementBuildState,
 } from '../map/improvement-build';
 import { hexKeysWithinRadius } from './okolica';
@@ -173,7 +174,8 @@ export const ZERO_YIELD_IMPROVEMENTS: ReadonlySet<ImprovementKey> = new Set<Impr
  *    minimum 1. Bez pułapu FAZA 0 zjadałaby przy `maxItemsPerCity: 1` tyle samo tur co
  *    wariant W-A (193 z 600 rozkazów); z pułapem AI CYWILIZACJI stawia posterunek i fort
  *    na granicy zasięgu miasta i wraca do plonu.
- *  • minimum LEŚNE miasta przed wyrębem POZA heksami z rzeką — dopóki miasto nie ma
+ *  • [R5: NIEAKTUALNE w K2/K3 — właściciel 2026-10-31; zostaje tylko dla profili „surowce”/„infrastruktura”]
+ *    minimum LEŚNE miasta przed wyrębem POZA heksami z rzeką — dopóki miasto nie ma
  *    `ceil(pop / 10)` tartaków i tyluż obozów łowieckich, wyrąb poza rzeką jest zamknięty.
  *    Bez tego warunku zmierzono `tartak` 69 → **0**: wyrąb wchodził na heks przed tartakiem
  *    i kasował las, na którym tartak stoi (regres wyniku rundy 2).
@@ -414,12 +416,6 @@ export interface PickAutoImprovementsOpts {
    */
   clearingHexKeys?: ReadonlySet<string>;
   /**
-   * Internal (R2): przebiegi K1/K2/K3 (niedobor, etapy, fallback miast zywnosciowych) trzymaja tartak i oboz
-   * w minimum lesnym `ceil(pop/10)` na miasto. Profile „surowce”/„infrastruktura” i miasta spoza etapow
-   * tej flagi NIE dostaja — zachowanie bazy 4d1916f2c.
-   */
-  limitForestKeysToMinimum?: boolean;
-  /**
    * Internal (R4, korekta dróg właściciela 2026-10-31): przebieg „drogi” K2/K3 — jedyny, w którym profil
    * zrównoważony pod popytem (`demandDriven`) może postawić `droga`/`droga_brukowana`. Ustawia go WYŁĄCZNIE
    * `pickAutoImprovements`, gdy etapy żywności E1–E6 i ścieżka zapasowa nie mają nic do zrobienia ORAZ nie
@@ -510,8 +506,8 @@ interface FoodStageDef {
  *      (`lesneMinSpelnione`) i BEZ progu `WYRAB_MIN_FOREST_IN_RADIUS`; tartak/obóz NIE są częścią tego
  *      etapu (nie stawiamy ich na każdym lesie kosztem wycinki); heks z tartakiem/obozem NIE idzie pod
  *      topór (strażnik per heks zostaje);
- *   E6 pozostałe ulepszenia żywnościowe (obóz łowiecki — wymaga tartaku na heksie, w granicach minimum
- *      leśnego `ceil(pop/10)`; łodzie rybackie, warzelnia soli).
+ *   E6 pozostałe ulepszenia żywnościowe (obóz łowiecki — wymaga tartaku na heksie, w K2/K3 BEZ limitu
+ *      liczby (R5: dawne `ceil(pop/10)` nieaktualne) i nigdy na heksie rzeka+las; łodzie rybackie, warzelnia soli).
  * Etap niższy rusza dopiero, gdy wyższy nie ma NIC do zrobienia w zasięgu miasta (z uwzględnieniem
  * technologii i `onlyWorked`): etap, któremu brakuje technologii, NIE jest celem (D4), natomiast etap
  * z celem czekającym na samą Pracę/limit wstrzymuje niższe (kolejność nie jest omijana).
@@ -646,7 +642,6 @@ export function pickAutoImprovements(opts: PickAutoImprovementsOpts): AutoImprov
       riverForestClearingOnly: false,
       riverHexesOnly: false,
       offRiverClearing: false,
-      limitForestKeysToMinimum: true,
     }));
     record(deficitPicks);
   }
@@ -668,7 +663,6 @@ export function pickAutoImprovements(opts: PickAutoImprovementsOpts): AutoImprov
       offRiverClearing: stage.offRiverClearing === true,
       reserveBudgetForMostExpensive: true,
       irrigationNeedsFarm: true,
-      limitForestKeysToMinimum: true,
       maxItemsPerCity: maxItemsStage,
       ...(stage.exemptPercentCap === true
         ? { pracaBudgetPercent: 100, getPracaBudgetPercent: undefined, improvementBudgetCap: undefined }
@@ -712,7 +706,7 @@ export function pickAutoImprovements(opts: PickAutoImprovementsOpts): AutoImprov
   let fallbackPicks: AutoImprovementPick[] = [];
   let fallbackIsPending = false;
   if (stagedPicks.length === 0 && !earlierStageIsPending && foodCities.length > 0) {
-    const fallbackOpts = after(stageSpent, { cities: foodCities, limitForestKeysToMinimum: true });
+    const fallbackOpts = after(stageSpent, { cities: foodCities });
     fallbackPicks = pickAutoImprovementsSinglePass(fallbackOpts);
     record(fallbackPicks);
     if (fallbackPicks.length === 0) {
@@ -756,7 +750,6 @@ export function pickAutoImprovements(opts: PickAutoImprovementsOpts): AutoImprov
       riverForestClearingOnly: false,
       riverHexesOnly: false,
       offRiverClearing: false,
-      limitForestKeysToMinimum: true,
       pracaAvailable: Number.MAX_SAFE_INTEGER,
       improvementBudgetCap: Number.MAX_SAFE_INTEGER,
       pracaBudgetPercent: 100,
@@ -774,8 +767,7 @@ export function pickAutoImprovements(opts: PickAutoImprovementsOpts): AutoImprov
         riverForestClearingOnly: false,
         riverHexesOnly: false,
         offRiverClearing: false,
-        limitForestKeysToMinimum: false,
-        maxItemsPerCity: maxItemsStage,
+          maxItemsPerCity: maxItemsStage,
       }));
       record(roadPicks);
     }
@@ -819,7 +811,6 @@ function pickAutoImprovementsSinglePass(opts: PickAutoImprovementsOpts): AutoImp
     clearingHexKeys,
     reserveBudgetForMostExpensive = false,
     irrigationNeedsFarm = false,
-    limitForestKeysToMinimum = false,
     roadsPass = false,
   } = opts;
 
@@ -1253,9 +1244,20 @@ function pickAutoImprovementsSinglePass(opts: PickAutoImprovementsOpts): AutoImp
     // Warunki = dokładnie to, co wyrąb na rzece faktycznie wymaga (bez budżetu — budżet
     // jest przejściowy, a bramka nie może blokować tartaku na stałe).
     const wyrabMetaRzeka = getImprovementMeta('wyrab');
+    // R5 (właściciel 2026-10-31, K1/K2/K3): „wycinka tylko pod farmy” — wyrąb nigdy na zapas. Farma stoi wyłącznie na
+    // Łące/Równinie bez lasu (`isFarmBaseTerrain`, improvement-build.ts:387), więc las na Wzgórzach/Górach/innym terenie
+    // NIE jest karczowany przez automat żywnościowy (wyrąb tam nie prowadzi do farmy). Profile „surowce”/
+    // „infrastruktura” (wyrąb jako zbiór drewna — wybór gracza) bez zmian.
+    const wyrabTylkoPodFarme = demandActive || focus === 'zywnosc';
+    const wyrabMaSens = (q: number, r: number): boolean => {
+      if (!wyrabTylkoPodFarme) return true;
+      const hx = map.hexes[`${q},${r}`];
+      return !!hx && isFarmBaseTerrain(hx.terenBazowy, Nakladka.Brak);
+    };
     const riverKrok0Ok = (q: number, r: number): boolean => {
       const hk = `${q},${r}`;
       if (!wyrabWlaczony || !wyrabMetaRzeka) return false;
+      if (!wyrabMaSens(q, r)) return false;
       if (!riverHexKeys.has(hk)) return false;
       if (scheduledWyrabHexes.has(hk)) return false;
       if (map.hexes[hk]?.nakladka !== Nakladka.Las) return false;
@@ -1317,8 +1319,10 @@ function pickAutoImprovementsSinglePass(opts: PickAutoImprovementsOpts): AutoImp
     // R3, ABC-B=B (K2/K3): tartak powstaje WYŁĄCZNIE przy niedoborze drewna. Bez niego minimum leśne nie
     // jest wymaganiem (inaczej deadlock: tartak nigdy nie powstaje, więc wyrąb poza rzeką nigdy nie rusza).
     const tartakDozwolony = !demandActive || (resourceDeficitKeys ?? []).includes('drewno');
+    // R5 (właściciel 2026-10-31): „Te ustalenia są już kompletnie nieaktualne” — w K2/K3 minimum leśne
+    // (`ceil(pop/10)`) NIE jest wymaganiem wycinki (wycinka tylko pod farmy, E2/E5; tartak tylko przy niedoborze).
     const lesneWymagane: ImprovementKey[] = (['tartak', 'oboz_lowiecki'] as ImprovementKey[])
-      .filter(k => tartakDozwolony && hexPhasePriority.includes(k))
+      .filter(k => !demandActive && tartakDozwolony && hexPhasePriority.includes(k))
       // ... i tak samo: wymagac wolno tylko tego, co jest ODBLOKOWANE. Bez tego warunku
       // AI bez technologii (`improvementTechs` puste — jedyny bezwarunkowo dostepny typ to
       // `wyrab`) czekaloby w nieskonczonosc na tartak/oboz, ktorych nie wolno mu zbudowac
@@ -1347,22 +1351,16 @@ function pickAutoImprovementsSinglePass(opts: PickAutoImprovementsOpts): AutoImp
     //  • R-WEB-AUTOIMPROVE-PRIORITY-Q1 (E3, wiążąca specyfikacja właściciela): hodowla (bydło/owce/lama)
     //    TYLKO na heksach przy rzece — „Innych terenów nie rozpatrujemy” (ta sama funkcja dla gracza i AI);
     //  • etapy: irygacja po farmie na TYM heksie (wycinka→farma→trzoda→irygacja);
-    //  • tartak/obóz: limit minimum leśnego `ceil(pop/10)` (reguła „1 na 10 obywateli”, ECHO 2026-08-27,
-    //    ta sama co `lesneMin`) WYŁĄCZNIE w przebiegach K1/K2/K3 (`limitForestKeysToMinimum`); profile
-    //    „surowce”/„infrastruktura” = zachowanie bazy 4d1916f2c (R2, zarzut FC nr 1). Pytanie ABC-B czeka.
+    //  • R5 (właściciel 2026-10-31): w K2/K3 BRAK LIMITU liczby tartaków/obozów (dawne `ceil(pop/10)` =
+    //    NIEAKTUALNE ECHO 2026-08-27) — ale tartak i obóz NIGDY na heksie z rzeką (rzeka+las jest zarezerwowany
+    //    pod wycinkę i farmę/trzodę/irygację); tartak wyłącznie na lesie BEZ rzeki.
     const keyBlockedOnHex = (key: ImprovementKey, hexKey: string): boolean => {
       if ((key === 'bydlo' || key === 'owce' || key === 'lama') && !riverHexKeys.has(hexKey)) return true;
       if (key === 'irygacja' && irrigationNeedsFarm && !(workingPlaced.get(hexKey) ?? []).includes('farma')) return true;
       // R3, ABC-B=B: w K2/K3 (`demandActive`) tartak tylko przy niedoborze drewna; obóz bez nowego tartaku
       // (wymóg tartaku na heksie egzekwuje `qualifies`, improvement-build.ts:641).
       if (key === 'tartak' && !tartakDozwolony) return true;
-      if (limitForestKeysToMinimum && (key === 'tartak' || key === 'oboz_lowiecki')) {
-        let haveForest = 0;
-        for (const { q: rq, r: rr } of radiusHexes) {
-          if ((workingPlaced.get(`${rq},${rr}`) ?? []).includes(key)) haveForest++;
-        }
-        if (haveForest >= lesneMin) return true;
-      }
+      if (demandActive && (key === 'tartak' || key === 'oboz_lowiecki') && riverHexKeys.has(hexKey)) return true;
       return false;
     };
 
@@ -1385,6 +1383,7 @@ function pickAutoImprovementsSinglePass(opts: PickAutoImprovementsOpts): AutoImp
           && !riverHexKeys.has(hexKey)
           && !scheduledWyrabHexes.has(hexKey)
           && map.hexes[hexKey]?.nakladka === Nakladka.Las
+          && wyrabMaSens(q, r)
           && (offRiverClearing || forestLeftInRadius >= WYRAB_MIN_FOREST_IN_RADIUS)
           && !(workingPlaced.get(hexKey) ?? []).some(k => k === 'tartak' || k === 'oboz_lowiecki')
           // ZASADA 2: wyrąb NIE jest ulepszeniem złożowym — poza heksami z obywatelami stoi.
