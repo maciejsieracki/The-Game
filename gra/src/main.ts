@@ -2228,7 +2228,7 @@ async function boot(): Promise<void> {
     }
 
     function countImprovementsForOwner(ownerId: number): number {
-      const nodes = cityNodesForOwner(ownerId);
+      const nodes = statsTerritoryNodesForOwner(ownerId);
       if (nodes.length === 0) return 0;
       // D9: lokalna enumeracja (jak countTerritoryHexes) zamiast skanu całej mapy — wynik 1:1.
       const seen = new Set<string>();
@@ -2343,7 +2343,7 @@ async function boot(): Promise<void> {
         sumaLudkow: pobor.sumaLudkow,
         rekrutEkw: rekrutUnitEquivalents(pobor.rekruci, epoka, mpMults.maxMult),
         miasta: ownerCities.length,
-        heksyTerytorium: countTerritoryHexes(cityNodesForOwner(ownerId)),
+        heksyTerytorium: countTerritoryHexes(statsTerritoryNodesForOwner(ownerId)),
         budynki: countBuildingsForOwner(ownerId),
         techZbadane: countTechForOwner(ownerId),
         ulepszeniaTerenu: countImprovementsForOwner(ownerId),
@@ -2398,7 +2398,7 @@ async function boot(): Promise<void> {
         sumaLudkow: pobor.sumaLudkow,
         rekrutEkw: rekrutUnitEquivalents(pobor.rekruci, epoka, mpMults.maxMult),
         miasta: ownerCities.length,
-        heksyTerytorium: countTerritoryHexes(cityNodesForOwner(ownerId)),
+        heksyTerytorium: countTerritoryHexes(statsTerritoryNodesForOwner(ownerId)),
         budynki: countBuildingsForOwner(ownerId),
         techZbadane: countTechForOwner(ownerId),
         ulepszeniaTerenu: countImprovementsForOwner(ownerId),
@@ -4578,6 +4578,11 @@ async function boot(): Promise<void> {
       return territoryOwnerAt(q, r, buildAllTerritoryNodes());
     }
 
+    /** Wezly terytorium wlasciciela do STATYSTYK (miasta + wlasne forty/posterunki, R-WEB-OUTPOST-FORT-TERRITORY-Q1 R2). */
+    function statsTerritoryNodesForOwner(ownerId: number): CityNode[] {
+      return foundingNodesForOwner(ownerId, cityNodesForOwner(ownerId), fortNodes);
+    }
+
     function cityNodesForOwner(ownerId: number): CityNode[] {
       return cities
         .filter(c => c.ownerId === ownerId)
@@ -5059,7 +5064,7 @@ async function boot(): Promise<void> {
       const rows: PowerOwnerSnapshot[] = [];
       for (const oid of ownerIds) {
         const ownerCities = cities.filter(c => c.ownerId === oid);
-        const nodes = cityNodesForOwner(oid);
+        const nodes = statsTerritoryNodesForOwner(oid);
         const ownerEpoka = empireEpochForOwner(oid);
         const mpMults = civManpowerMultsForOwner(oid);
         const pobor = empirePoborTotals(cities, oid, ownerEpoka, mpMults.maxMult);

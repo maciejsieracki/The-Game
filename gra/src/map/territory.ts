@@ -107,27 +107,37 @@ export function isInTerritory(q: number, r: number, nodes: CityNode[]): boolean 
  *
  * Gdy kilka węzłów obejmuje ten sam heks — wygrywa **najbliższy** w promieniu
  * (mniejszy axialDistance do centrum węzła). Przy remisie odległości — **pierwszy**
- * węzeł w tablicy `nodes`.
+ * węzeł w tablicy `nodes`. Węzły miast mają pierwszeństwo przed fortami/posterunkami.
  */
 export function territoryOwnerAt(
   q: number,
   r: number,
   nodes: readonly TerritoryNode[],
 ): number | null {
-  let bestOwner: number | null = null;
-  let bestDist = Infinity;
+  let bestCityOwner: number | null = null;
+  let bestCityDist = Infinity;
+  let bestFortOwner: number | null = null;
+  let bestFortDist = Infinity;
 
   for (const node of nodes) {
     const radius = cityTerritoryRadius(node);
     const dist = axialDistance(q, r, node.q, node.r);
     if (dist > radius) continue;
-    if (dist < bestDist) {
-      bestDist = dist;
-      bestOwner = node.ownerId;
+    if (node.isFort || node.isOutpost) {
+      if (dist < bestFortDist) { bestFortDist = dist; bestFortOwner = node.ownerId; }
+    } else if (dist < bestCityDist) {
+      bestCityDist = dist;
+      bestCityOwner = node.ownerId;
     }
   }
 
-  return bestOwner;
+  // ZALOZENIE (R-WEB-OUTPOST-FORT-TERRITORY-Q1 R2, zarzut 1): heks w promieniu
+  // KTOREGOKOLWIEK miasta rozstrzygaja wylacznie miasta (najblizsze); fort/posterunek
+  // zajmuje tylko teren wolny od miast — nie odbiera heksow sasiedniemu miastu.
+  // / EN: a hex inside any city radius is decided by cities only; forts/outposts
+  // claim only city-free land.
+  if (bestCityOwner !== null) return bestCityOwner;
+  return bestFortOwner;
 }
 
 /**

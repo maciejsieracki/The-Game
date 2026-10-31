@@ -1,0 +1,43 @@
+
+--- A1: fortNodeAsCityNode + cityTerritoryRadius (fort=10, posterunek=5) ---
+
+--- A2: foundingNodesForOwner — wlasne miasta + wlasne, nie-skontestowane forty ---
+
+--- A3: isHexReservedByRivalFort — regula 1/3 kontestacja ---
+
+--- A4: applyFortTakeoverOnCityFounded — regula 4 przejecie ---
+
+--- A4b: applyFortTakeoverOnCityFounded (F1) — fort DOKLADNIE na hexie nowego miasta znika CALKOWICIE ---
+
+--- A5: findEvacuationHexOutsideCity — regula 5/Q3=A ewakuacja ---
+
+--- A5b: findEvacuationHexOutsideCity + canUnitOccupyCityHex (F2a) -- ewakuacja NIE lqduje na hexie CUDZEGO miasta ---
+
+--- B1: fort/posterunek POZA wlasnym terytorium -- wymog wlasnej jednostki (Q1=B) ---
+
+--- B2: fort/posterunek na terenie CUDZEGO miasta -- zawsze zablokowane (regula 1) ---
+
+--- B3: fort/posterunek WEWNATRZ wlasnego terytorium -- BEZ wymogu jednostki (regresja auto-ulepszen) ---
+
+--- B4: fort/posterunek na terenie NIECZYIM (poza kazdym terytorium), z jednostka -- kwalifikuje ---
+
+--- C1: planCityFounding BEZ fortNodes (domyslne []) -- zachowanie IDENTYCZNE jak krok 1 (regresja) ---
+
+--- C2: planCityFounding Z wlasnym fortem AI -- rozszerza zasieg zakladania (parytet z graczem) ---
+
+--- C3: planCityFounding -- CUDZY (kontestowany) fort AI NIE liczy sie do zasiegu ---
+
+--- C4: planExpansionFortBuilding (F3) -- heks z JUZ postawionym fortem/posterunkiem odrzucony, ale AI probuje KOLEJNA jednostke ---
+
+--- C5: planExpansionFortBuilding (F4) -- Miasto-Panstwo (opts.defensiveCopy) NIE buduje fortow ekspansyjnych ---
+
+--- D1: main.ts applyFortTakeoverAndEvacuation (F2) -- straznik tekstowy dla obu zabezpieczen ---
+
+--- E: applyFortTakeoverAndEvacuation (F2) -- test BEHAWIORALNY: ewakuacja NA zywy oboz barbarzynski niszczy go naprawde ---
+
+--- D2: main.ts foundingTerritoryOpts (F1) -- straznik tekstowy dla wpiecia realnego rozszerzenia zasiegu przez forty ---
+
+--- D3: main.ts registerFortNodeIfNeeded (F7) -- straznik tekstowy dla kontestacji cudzym fortem w chwili budowy ---
+
+=== fort-strazniaca-zasieg-zakladania-test: 85 passed, 0 failed ===
+EXIT=0

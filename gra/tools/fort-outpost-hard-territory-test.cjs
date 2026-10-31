@@ -116,7 +116,8 @@ console.log('\n--- D: spor o ten sam heks ---');
   const useless = fortTerritoryNodes([{ q: 0, r: 0, ownerId: 1, type: 'fort', contestedUseless: true }]);
   eq(useless.length, 0, 'D3: contestedUseless nie tworzy terytorium');
   const cityAndFort = [{ q: 0, r: 0, pop: 5, level: 1, ownerId: 1 }, ...fortTerritoryNodes([{ q: 7, r: 0, ownerId: 2, type: 'fort' }])];
-  eq(territoryOwnerAt(5, 0, cityAndFort), 2, 'D4: fort (dist 2) wygrywa z miastem (dist 5) o heks na styku');
+  // R2 (zarzut 1, ZALOZENIE): heks w promieniu miasta rozstrzyga miasto, nawet gdy cudzy fort jest blizej.
+  eq(territoryOwnerAt(5, 0, cityAndFort), 1, 'D4: miasto (dist 5) ma pierwszenstwo przed cudzym fortem (dist 2) w swoim promieniu');
 }
 
 console.log('\n--- E: straznik main.ts ---');
@@ -137,5 +138,54 @@ console.log('\n--- E: straznik main.ts ---');
 
 try { fs.unlinkSync(ENTRY); } catch (e) { /* noop */ }
 try { fs.unlinkSync(BUNDLE); } catch (e) { /* noop */ }
+console.log('\n--- F: fort NIE odbiera heksow sasiedniemu miastu (R2, zarzut 1) ---');
+{
+  // miasto A (0,0) pop5, miasto B (9,0) pop5, fort A w (4,0) (w terytorium A)
+  const cA = { q: 0, r: 0, pop: 5, level: 1, ownerId: 1 };
+  const cB = { q: 9, r: 0, pop: 5, level: 1, ownerId: 2 };
+  const fA = fortTerritoryNodes([{ q: 4, r: 0, ownerId: 1, type: 'fort' }]);
+  const base = [cA, cB];
+  const withFort = base.concat(fA);
+  let lostB = 0, changedInCityRadius = 0;
+  for (const k of Object.keys(map.hexes)) {
+    const [q, r] = k.split(',').map(Number);
+    const before = territoryOwnerAt(q, r, base);
+    const after = territoryOwnerAt(q, r, withFort);
+    if (before === 2 && after !== 2) lostB++;
+    const inAnyCity = base.some(n => M.axialDistance(q, r, n.q, n.r) <= cityTerritoryRadius(n));
+    if (inAnyCity && before !== after) changedInCityRadius++;
+  }
+  eq(lostB, 0, 'F1: fort A nie odbiera zadnego heksu miastu B');
+  eq(changedInCityRadius, 0, 'F2: fort nie zmienia wlasciciela zadnego heksu w promieniu jakiegokolwiek miasta');
+  // wolny teren (poza miastami) fort nadal zajmuje
+  const free = [{ q: 0, r: 0, pop: 5, level: 1, ownerId: 1 }];
+  eq(territoryOwnerAt(9, 0, free.concat(fortTerritoryNodes([{ q: 9, r: 0, ownerId: 1, type: 'fort' }]))), 1, 'F3: fort zajmuje wolny teren poza miastami');
+  // dwa forty roznych cywilizacji bez miast: najblizszy wygrywa
+  eq(territoryOwnerAt(3, 0, fortTerritoryNodes([{ q: 0, r: 0, ownerId: 1, type: 'fort' }, { q: 5, r: 0, ownerId: 2, type: 'fort' }])), 2, 'F4: spor fort-fort: najblizszy');
+  // strazniki tekstowe
+  const terr = fs.readFileSync(path.resolve(__dirname, '..', 'src', 'map', 'territory.ts'), 'utf8');
+  assert(/statsTerritoryNodesForOwner\(oid\)/.test(fs.readFileSync(path.resolve(__dirname, '..', 'src', 'main.ts'), 'utf8')), 'F7: statystyki mocy licza terytorium fortow');
+  assert(/bestCityOwner/.test(terr) && /bestFortOwner/.test(terr), 'F5: territoryOwnerAt ma pierwszenstwo miast przed fortami');
+  // F6 (zarzut 3, wzorzec AI): fort/posterunek na GRANICY zasiegu miasta (FAZA 0 obrony AI),
+  // dwa sasiednie miasta -> przyrost wylacznie z wolnego terenu, zero strat sasiada.
+  for (const [ftype, rad] of [['fort', 5], ['posterunek', 3]]) {
+    for (const gap of [9, 11, 12]) {
+      const a = { q: 0, r: 0, pop: 5, level: 1, ownerId: 1 };
+      const b = { q: gap, r: 0, pop: 5, level: 1, ownerId: 2 };
+      const nodesBase = [a, b];
+      const nodesF = nodesBase.concat(fortTerritoryNodes([{ q: 5, r: 0, ownerId: 1, type: ftype }]));
+      let lost = 0, gained = 0;
+      for (const k of Object.keys(map.hexes)) {
+        const [q, r] = k.split(',').map(Number);
+        const o0 = territoryOwnerAt(q, r, nodesBase), o1 = territoryOwnerAt(q, r, nodesF);
+        if (o0 === 2 && o1 !== 2) lost++;
+        if (o0 !== 1 && o1 === 1) gained++;
+      }
+      eq(lost, 0, `F6: ${ftype} AI na granicy miasta, sasiad w odl. ${gap}: strata sasiada`);
+      assert(gained >= 0, 'F6: przyrost nieujemny');
+    }
+  }
+}
+
 console.log(`\n=== fort-outpost-hard-territory-test: ${passed} passed, ${failed} failed ===`);
 process.exit(failed > 0 ? 1 : 0);

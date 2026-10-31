@@ -104,7 +104,7 @@ Czytaj **rozpiskę plusów i minusów** w panelu — naprawiaj największy minus
 
 Domyślnie **3 heksy** od centrum miasta — tylko we **własnym** terytorium. Centrum miasta nie przyjmuje farmy; ulepszenia stawiasz na sąsiadach.
 
-Zasięg rośnie z **posterunek** (+5) i **fort** (+10) na mapie (Część V §28).
+Zasięg rośnie z **posterunek** (+3) i **fort** (+5) na mapie (Część V §28).
 
 ### 44.2. Profile automatyczne
 
