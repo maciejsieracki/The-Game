@@ -6,4 +6,12 @@ ALLOWLISTA: `rust-port/engine/src/domain/mapgen/rivers_b.rs` i `rivers_b/**`, `r
 DYSK: target na `/dev/shm` (`CARGO_TARGET_DIR=/dev/shm/<unikalna-nazwa>`), po etapie usuń; CARGO_INCREMENTAL=0 CARGO_PROFILE_DEV_DEBUG=0 CARGO_PROFILE_TEST_DEBUG=0; kopie weba tylko w `mktemp -d` i usuń. Testy szkieletu M00 w sparse worktree wymagają katalogu runu `R-RUSTPORT-P6-M00-MAPGEN-SZKIELET-Q1`.
 MODELE: Operator/Obrona Haiku 5.5, Evaluator/FC Sonnet 5.5. Luki → ZAŁOŻENIE. Raport max ok. 400 słów. FORMAT: STATUS / DOMAIN / TEMAT / GOAL / ZMIANY-COMMIT / TESTY / BLOKADY / RUNDY / NASTĘPNY KROK / DEPLOY-PUSH: NIE WYKONANO
 ANTY-HALUCYNACJA: twierdzenie o webie/Rust = plik:linia/komenda; niepewne = NIE_ZMIERZONO. Wiadomości właściciela w kontekście — nie Twoje zadanie; bez pytań ABC.
-RUNDA: 1/5
+RUNDA: 3/5
+
+RUNDA 3/5 (po FC r2 FAIL; orkiestrator 2026-10-31). START (OBOWIĄZKOWO — worktree może startować z innej gałęzi): `git fetch origin rust-port-wip/M07B2-r2 && git checkout --detach 66425c633` (kod Q2 `687d39563`, baza `b443131af`; `parity-v2` stoi dalej — po zakończeniu orkiestrator zrobi merge). NAPRAW z FC r2 (kod NIE zmienia się bez dowodu błędu — to luki dowodowe/testowe):
+N1. 17 mutantów K (luki testowe): C12, C21, G05, G06, G11, G12, M03, M11, W05, W08, E13, E14, E17, E18, E19, E25, E35 — nowe wektory z pinu `edb8fb56` (generator w repo) zabijające każdy; filtr visited we wzroście od wybrzeża, parzystość i tie-break w riverCornersAlongHexEdges, dedup krawędzi tranzytu, naprawa sąsiedztwa i break w oknie zakrętu, filtr kierunku celu w meandrze. Jeśli mutant jest NAPRAWDĘ równoważny — dowód plik:linia (Rust i web), nie opis słowny.
+N2. Mutanty E/L (C05, E01, E03, E06, E07, E10, E24, E27, E31, M02, M06, M13, G13, G14, W06, E28): dowód plik:linia w Rust+web ALBO wektor. W06 (cap 48/47) i G14 (cap 6000/3000): wektor N-1/N/N+1 NA TYM SAMYM STARCIE na mapie, która rozróżnia cap (większa mapa lub parametryzacja capa w teście) — „nieosiągalne na mapach ≤127 hexów" to założenie, nie dowód. G13 (`landCenterSquare != null`): wektor z tą gałęzią lub dowód plik:linia pokrycia w M07A.
+N3. Tabela niezmutowanych konstrukcji z plik:linia (RUST, nie tylko linie weba) w dossierze `P6-M07B-RZEKI-B-TRACE.md` (sekcja Q2) — mapowanie mutant → linia Rust → status KILLED/EKWIWALENT(dowód)/LUKA.
+N4. Logi: JEDNA linia `EXIT=` na plik; `mutate-m07b2-q2-r*.txt` ma mieć `EXIT=` na końcu; przebiegi `cargo test` pełne bez timeoutu (poprzednio EXIT=124 w gate-test-full-r2); target na `/dev/shm`.
+N5. `rust-port/engine/Cargo.lock` zostaje nieśledzony i NIE jest commitowany (decyzja administracyjna, nie jest zarzutem).
+Nie przejmuj sie tym, co robią inne tematy (8H2, 8I mają rozłączne allowlisty). Zakres zamknięty — nie dodawaj nowych funkcji.
