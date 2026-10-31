@@ -9,6 +9,11 @@
 export interface ForcedWarPairState {
   attackerId: number;
   targetId: number;
+  /**
+   * R-WEB-PEACE-RULES-R8R9-Q1 R9: pola liczników miast NIE są już inkrementowane dla wojen
+   * wymuszonych (brak auto-końca po 2 miastach). Zostają w typie i w zapisie gry wyłącznie dla
+   * zgodności formatu zapisu (serializacja/restore); zapis zawsze 0/0 dla nowych wojen.
+   */
   capturedByAttacker: number;
   capturedByDefender: number;
   /**

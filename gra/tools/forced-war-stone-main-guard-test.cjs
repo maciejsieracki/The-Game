@@ -37,7 +37,6 @@ const siegeSurrender = functionSlice(
   'function resolveSiegeSurrender(cityId: string): void {',
   '\n    function endMapSiege(cityId: string): void {',
 );
-const stoneSurrenderHook = 'maybeResolveStoneForcedWarOnCityCapture(oldOwner, newOwner);';
 
 console.log('R-EPOKA-KAMIEN-WYMUSZONA-WOJNA — main.ts guards');
 
@@ -78,20 +77,15 @@ check(
   'udany DOW mutuje active/cycle i konsumuje pending Stone',
   /if \(stoneForceWarTargetId != null && targetId === stoneForceWarTargetId\) \{[\s\S]{0,500}stoneForceWarActiveByPairKey\.set[\s\S]{0,500}stoneForceWarCycleOwners\.add\(ownerId\)[\s\S]{0,500}stoneForceWarPendingOwners\.delete\(ownerId\)/.test(main),
 );
+// R-WEB-PEACE-RULES-R8R9-Q1 R9: jedyna asercja negatywna auto-końca Kamienia (hak licznika
+// miast i limit czasu usunięte z main.ts). Żywy dowód zachowania: forced-war-r9-no-auto-end-live-test.cjs.
 check(
   'R-WEB-PEACE-RULES-R8R9-Q1 R9: wojna epoki NIE kończy się automatycznie (brak maybeResolve*/shouldEnd*/resolveForcedWarDurationLimits w main.ts)',
   !/maybeResolve(Bronze|Stone|Iron)ForcedWarOnCityCapture|resolveForcedWarDurationLimits|shouldEnd(Bronze|Stone|Iron)ForcedWarBy/.test(main),
 );
 check(
-  'R-WEB-PEACE-RULES-R8R9-Q1 R9: wojna epoki NIE kończy się automatycznie (brak maybeResolve*/shouldEnd*/resolveForcedWarDurationLimits w main.ts)',
-  !/maybeResolve(Bronze|Stone|Iron)ForcedWarOnCityCapture|resolveForcedWarDurationLimits|shouldEnd(Bronze|Stone|Iron)ForcedWarBy/.test(main),
-);
-// R-WEB-PEACE-RULES-R8R9-Q1 R9: asercja haka licznika miast usunięta (hak nie istnieje, patrz blok R9 wyżej).
-// R-WEB-PEACE-RULES-R8R9-Q1 R9: asercja haka licznika miast usunięta (hak nie istnieje, patrz blok R9 wyżej).
-// R-WEB-PEACE-RULES-R8R9-Q1 R9: asercja haka licznika miast usunięta (hak nie istnieje, patrz blok R9 wyżej).
-check(
-  'R-WEB-PEACE-RULES-R8R9-Q1 R9: wojna epoki NIE kończy się automatycznie (brak maybeResolve*/shouldEnd*/resolveForcedWarDurationLimits w main.ts)',
-  !/maybeResolve(Bronze|Stone|Iron)ForcedWarOnCityCapture|resolveForcedWarDurationLimits|shouldEnd(Bronze|Stone|Iron)ForcedWarBy/.test(main),
+  'resolveSiegeSurrender nadal przypisuje city.ownerId = newOwner (funnel kapitulacji bez zmian poza R9)',
+  siegeSurrender.includes('city.ownerId = newOwner;'),
 );
 check(
   'finalizePeaceTreatyBetween ustawia Stone rest timer',
@@ -115,8 +109,10 @@ check(
     && count('stoneForceWarActiveByPairKey\\.clear\\(\\)') >= 2,
 );
 check(
-  'R-WEB-PEACE-RULES-R8R9-Q1 R9: wojna epoki NIE kończy się automatycznie (brak maybeResolve*/shouldEnd*/resolveForcedWarDurationLimits w main.ts)',
-  !/maybeResolve(Bronze|Stone|Iron)ForcedWarOnCityCapture|resolveForcedWarDurationLimits|shouldEnd(Bronze|Stone|Iron)ForcedWarBy/.test(main),
+  'Kamień zachowuje własny moduł i rejestry (przywrócone po R9: nie zastąpione przez Brąz/Żelazo)',
+  main.includes("from './game/forced-war-stone';")
+    && main.includes('stoneForceWarActiveByPairKey')
+    && main.includes('stoneForceWarRestUntilByOwner'),
 );
 
 // ---------------------------------------------------------------------------

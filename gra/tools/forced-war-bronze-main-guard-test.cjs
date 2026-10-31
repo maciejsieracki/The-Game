@@ -45,22 +45,13 @@ console.log('===================================================================
 // ---------------------------------------------------------------------------
 // B1: hak licznika wołany z OBU miejsc, gdzie city.ownerId zmienia się w wyniku wojny.
 // ---------------------------------------------------------------------------
-console.log('1. B1 -- maybeResolveBronzeForcedWarOnCityCapture wołany z OBU funnel-i przejęcia miasta');
+console.log('1. R9 (R-WEB-PEACE-RULES-R8R9-Q1) -- wojna Brązu NIE kończy się automatycznie');
 
 check(
   'R-WEB-PEACE-RULES-R8R9-Q1 R9: wojna epoki NIE kończy się automatycznie (brak maybeResolve*/shouldEnd*/resolveForcedWarDurationLimits w main.ts)',
   !/maybeResolve(Bronze|Stone|Iron)ForcedWarOnCityCapture|resolveForcedWarDurationLimits|shouldEnd(Bronze|Stone|Iron)ForcedWarBy/.test(mainSrc),
 );
 
-check(
-  'R-WEB-PEACE-RULES-R8R9-Q1 R9: wojna epoki NIE kończy się automatycznie (brak maybeResolve*/shouldEnd*/resolveForcedWarDurationLimits w main.ts)',
-  !/maybeResolve(Bronze|Stone|Iron)ForcedWarOnCityCapture|resolveForcedWarDurationLimits|shouldEnd(Bronze|Stone|Iron)ForcedWarBy/.test(mainSrc),
-);
-
-check(
-  'R-WEB-PEACE-RULES-R8R9-Q1 R9: wojna epoki NIE kończy się automatycznie (brak maybeResolve*/shouldEnd*/resolveForcedWarDurationLimits w main.ts)',
-  !/maybeResolve(Bronze|Stone|Iron)ForcedWarOnCityCapture|resolveForcedWarDurationLimits|shouldEnd(Bronze|Stone|Iron)ForcedWarBy/.test(mainSrc),
-);
 
 console.log('');
 
@@ -223,16 +214,6 @@ console.log('');
 console.log('6. RUNDA 3 (B6a) -- 4 nowe asercje łapiące M19/M7/M12/M16, które przeżyły rundę 2');
 
 check(
-  'R-WEB-PEACE-RULES-R8R9-Q1 R9: wojna epoki NIE kończy się automatycznie (brak maybeResolve*/shouldEnd*/resolveForcedWarDurationLimits w main.ts)',
-  !/maybeResolve(Bronze|Stone|Iron)ForcedWarOnCityCapture|resolveForcedWarDurationLimits|shouldEnd(Bronze|Stone|Iron)ForcedWarBy/.test(mainSrc),
-);
-
-check(
-  'R-WEB-PEACE-RULES-R8R9-Q1 R9: wojna epoki NIE kończy się automatycznie (brak maybeResolve*/shouldEnd*/resolveForcedWarDurationLimits w main.ts)',
-  !/maybeResolve(Bronze|Stone|Iron)ForcedWarOnCityCapture|resolveForcedWarDurationLimits|shouldEnd(Bronze|Stone|Iron)ForcedWarBy/.test(mainSrc),
-);
-
-check(
   'finalizePeaceTreatyBetween(): zawiera blok sprzątający stan wojny wymuszonej Brązu -- '
     + 'bronzeForceWarActiveByPairKey.delete(bronzePairKey) + uzbrojenie odpoczynku napastnika '
     + '(bronzeForceWarRestUntilByOwner.set) -- WEWNĄTRZ CIAŁA TEJ FUNKCJI, nie tylko wywoływane '
@@ -241,11 +222,6 @@ check(
     + 'bronzeForceWarActiveByPairKey -- napastnik trwale i cicho wypadałby z cyklu (ta sama klasa '
     + 'błędu co B4 z rundy 1)',
   /function finalizePeaceTreatyBetween\([\s\S]{0,3000}?const bronzePairKey = diploPairKey\(proposerId, responderId\);\s*\n\s*const bronzeSt = bronzeForceWarActiveByPairKey\.get\(bronzePairKey\);\s*\n\s*if \(bronzeSt\) \{\s*\n\s*bronzeForceWarActiveByPairKey\.delete\(bronzePairKey\);\s*\n\s*forcedWarWavesByPairKey\.delete\(bronzePairKey\);\s*\n\s*bronzeForceWarRestUntilByOwner\.set\(bronzeSt\.attackerId, turn \+ WOJNA_WYMUSZONA_ODPOCZYNEK_TUR\);\s*\n\s*\}\s*\n\s*\}/.test(mainSrc),
-);
-
-check(
-  'R-WEB-PEACE-RULES-R8R9-Q1 R9: wojna epoki NIE kończy się automatycznie (brak maybeResolve*/shouldEnd*/resolveForcedWarDurationLimits w main.ts)',
-  !/maybeResolve(Bronze|Stone|Iron)ForcedWarOnCityCapture|resolveForcedWarDurationLimits|shouldEnd(Bronze|Stone|Iron)ForcedWarBy/.test(mainSrc),
 );
 
 console.log('');
@@ -274,11 +250,6 @@ check(
     + 'parowania), nie z usuniętego pickBronzeForcedWarTargetIdCoordinated',
   mainSrc.includes("forcedWarOwnAssignment?.era === 'bronze' ? forcedWarOwnAssignment.targetId : undefined")
     && !mainSrc.includes('pickBronzeForcedWarTargetIdCoordinated'),
-);
-
-check(
-  'R-WEB-PEACE-RULES-R8R9-Q1 R9: wojna epoki NIE kończy się automatycznie (brak maybeResolve*/shouldEnd*/resolveForcedWarDurationLimits w main.ts)',
-  !/maybeResolve(Bronze|Stone|Iron)ForcedWarOnCityCapture|resolveForcedWarDurationLimits|shouldEnd(Bronze|Stone|Iron)ForcedWarBy/.test(mainSrc),
 );
 
 check(

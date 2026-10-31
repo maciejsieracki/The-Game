@@ -25,6 +25,9 @@ export const WOJNA_KAMIEN_WYMUSZONA_COOLDOWN_TA_SAMA_CYWILIZACJA_TUR = 20;
  * ZDOBYTE_LUB_STRACONE`, który zostaje jako DODATKOWY, zwykle wcześniejszy warunek
  * zakończenia — który z dwóch warunków spełni się pierwszy, kończy wojnę).
  */
+// R-WEB-PEACE-RULES-R8R9-Q1 R9: NIEUŻYWANA w runtime -- automatyczny koniec po czasie usunięty
+// (wojna wymuszona kończy się wyłącznie pokojem). Zostaje jako parametr dla testów
+// (tools/forced-war-stone-test.cjs, forced-war-reguly-multi-turn-simulation-test.cjs).
 export const WOJNA_KAMIEN_WYMUSZONA_MAX_CZAS_TRWANIA_TUR = 20;
 
 export interface StoneForcedWarEligibilityInput {

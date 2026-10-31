@@ -25605,6 +25605,17 @@ async function boot(): Promise<void> {
       },
     };
 
+    // R-WEB-PEACE-RULES-R8R9-Q1 R9 (kryteria 2 i 4: żywy test wojny wymuszonej). Pomocnicze
+    // wybory rejestru epoki dla haka testowego `__peaceRulesTestDebug` (niżej). Test-only.
+    function forcedWarRegForTestEra(era: 'bronze' | 'stone' | 'iron') {
+      return era === 'stone' ? stoneForceWarActiveByPairKey
+        : era === 'bronze' ? bronzeForceWarActiveByPairKey : ironForceWarActiveByPairKey;
+    }
+    function forcedWarRestForTestEra(era: 'bronze' | 'stone' | 'iron') {
+      return era === 'stone' ? stoneForceWarRestUntilByOwner
+        : era === 'bronze' ? bronzeForceWarRestUntilByOwner : ironForceWarRestUntilByOwner;
+    }
+
     // R-WEB-PEACE-RULES-Q1 r3 (kryterium 9: żywa weryfikacja w Chromium). Hak WYŁĄCZNIE do
     // `tools/diplo-war-peace-live-test.cjs`. NIE reimplementuje logiki: `evaluatePeaceFromPlayer`
     // woła REALNE `evaluateProposal` z REALNYM `buildProposalEvalContext` (ta sama ścieżka co
@@ -25688,6 +25699,42 @@ async function boot(): Promise<void> {
         if (!entry) return { entryFound: false, tableLen: negotiationTable.length };
         handleNegotiationAccept(entry.id);
         return { entryFound: true, tableLen: negotiationTable.length };
+      },
+      // R-WEB-PEACE-RULES-R8R9-Q1 R9: stan wejściowy wojny wymuszonej epoki — wpis w REALNYM
+      // rejestrze epoki + relacja 'wojna' (REALNY applyDiploEventTracked). Logikę miast, tury i pokoju
+      // wykonują REALNE ścieżki: applyCityCaptureToMap, endTurn, finalizePeaceTreatyBetween.
+      startForcedWarForTest: (era: 'bronze' | 'stone' | 'iron', attackerId: number, targetId: number, startTurn: number): void => {
+        const cur = getDiploRelation(attackerId, targetId);
+        setDiploRelation(attackerId, targetId, applyDiploEventTracked(attackerId, targetId, cur, 'wojna_wypowiedziana'));
+        forcedWarRegForTestEra(era).set(diploPairKey(attackerId, targetId), {
+          attackerId, targetId, capturedByAttacker: 0, capturedByDefender: 0, startTurn,
+        });
+      },
+      getForcedWarForTest: (era: 'bronze' | 'stone' | 'iron', a: number, b: number): {
+        active: boolean; startTurn: number | null; capturedByAttacker: number | null;
+        capturedByDefender: number | null; status: string; restUntil: number | null; turn: number;
+      } => {
+        const st = forcedWarRegForTestEra(era).get(diploPairKey(a, b));
+        return {
+          active: !!st,
+          startTurn: st?.startTurn ?? null,
+          capturedByAttacker: st ? st.capturedByAttacker : null,
+          capturedByDefender: st ? st.capturedByDefender : null,
+          status: getDiploRelation(a, b).status,
+          restUntil: forcedWarRestForTestEra(era).get(a) ?? null,
+          turn,
+        };
+      },
+      listOwnerCityIdsForTest: (ownerId: number): string[] =>
+        cities.filter(c => c.ownerId === ownerId).map(c => String(c.id)),
+      captureCityForTest: (cityId: string, newOwner: number): boolean => {
+        const city = cities.find(c => String(c.id) === cityId);
+        if (!city) return false;
+        applyCityCaptureToMap(city, [], newOwner);
+        return city.ownerId === newOwner;
+      },
+      endWarByPeaceForTest: (a: number, b: number): void => {
+        finalizePeaceTreatyBetween(a, b, 10);
       },
     };
 
@@ -31444,8 +31491,9 @@ async function boot(): Promise<void> {
     // R-WEB-PEACE-RULES-R8R9-Q1 R9: USUNIĘTO automatyczny koniec wojen wymuszonych Kamienia,
     // Brązu i Żelaza (po zdobyciu 2 miast oraz po upływie limitu czasu) -- wspólne reguły
     // pokoju: wojna wymuszona kończy się wyłącznie pokojem (propozycja/akceptacja).
-    // Funkcje maybeResolve{Bronze,Stone,Iron}ForcedWarOnCityCapture oraz
-    // oraz dawny limit czasu wojny wymuszonej zostały usunięte; cleanup*ForcedWarOnPeace działa jak dotąd.
+    // Funkcje licznika miast (po jednej na epokę) oraz pętla limitu czasu wojny wymuszonej
+    // zostały usunięte; cleanup*ForcedWarOnPeace działa jak dotąd.
+    // Żywy dowód: tools/forced-war-r9-no-auto-end-live-test.cjs.
 
     /**
      * R-AI-WOJNY-ZWYKLE-CAP-DWA-MIASTA-Q1: bezpiecznik dla ZWYKŁYCH (niewymuszonych epoki)

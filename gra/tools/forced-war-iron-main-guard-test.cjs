@@ -44,7 +44,6 @@ const siegeSurrender = functionSlice(
   'function resolveSiegeSurrender(cityId: string): void {',
   '\n    function endMapSiege(cityId: string): void {',
 );
-const ironSurrenderHook = 'maybeResolveIronForcedWarOnCityCapture(oldOwner, newOwner);';
 
 console.log('R-EPOKA-ZELAZO-WYMUSZONA-WOJNA-Q1 — main.ts + ai.ts guards\n');
 
@@ -176,30 +175,21 @@ check(
 );
 
 // ---------------------------------------------------------------------------
-// 6. Auto-pokój po 2 miastach — hak z OBU funnel-i zmiany city.ownerId.
+// 6. R9 (R-WEB-PEACE-RULES-R8R9-Q1): brak auto-pokoju wojny Żelaza po 2 miastach / limicie czasu.
 // ---------------------------------------------------------------------------
+// Jedyna asercja negatywna R9 dla Żelaza. Dowód zachowania (nie tylko tekstu źródła) daje
+// `tools/forced-war-r9-no-auto-end-live-test.cjs` (żywy Chromium: 2 miasta + tura po limicie).
 check(
   'R-WEB-PEACE-RULES-R8R9-Q1 R9: wojna epoki NIE kończy się automatycznie (brak maybeResolve*/shouldEnd*/resolveForcedWarDurationLimits w main.ts)',
   !/maybeResolve(Bronze|Stone|Iron)ForcedWarOnCityCapture|resolveForcedWarDurationLimits|shouldEnd(Bronze|Stone|Iron)ForcedWarBy/.test(main),
 );
 check(
-  'R-WEB-PEACE-RULES-R8R9-Q1 R9: wojna epoki NIE kończy się automatycznie (brak maybeResolve*/shouldEnd*/resolveForcedWarDurationLimits w main.ts)',
-  !/maybeResolve(Bronze|Stone|Iron)ForcedWarOnCityCapture|resolveForcedWarDurationLimits|shouldEnd(Bronze|Stone|Iron)ForcedWarBy/.test(main),
+  'resolveSiegeSurrender nadal przypisuje city.ownerId = newOwner (funnel kapitulacji bez zmian poza R9)',
+  siegeSurrender.includes('city.ownerId = newOwner;'),
 );
 check(
-  'R-WEB-PEACE-RULES-R8R9-Q1 R9: wojna epoki NIE kończy się automatycznie (brak maybeResolve*/shouldEnd*/resolveForcedWarDurationLimits w main.ts)',
-  !/maybeResolve(Bronze|Stone|Iron)ForcedWarOnCityCapture|resolveForcedWarDurationLimits|shouldEnd(Bronze|Stone|Iron)ForcedWarBy/.test(main),
-);
-// R-WEB-PEACE-RULES-R8R9-Q1 R9: asercja haka licznika miast usunięta (hak nie istnieje, patrz blok R9 wyżej).
-// UWAGA: świadomie NIE ma tu meta-asercji „usunięcie haka jest wykrywalne" (taka, jaką
-// niesie bramka Kamienia) — jest tautologiczna: `replace(hook,'').includes(hook)` jest
-// fałszem z definicji, więc asercja nie może się zaczerwienić pod żadną mutacją źródła.
-// Dowód nietautologiczności tej bramki robi ZEWNĘTRZNA sonda
-// `tools/forced-war-iron-mutant-probe.cjs`, która czerwieni KAŻDĄ asercję obu bramek
-// Żelaza celowaną mutacją źródła.
-check(
-  'R-WEB-PEACE-RULES-R8R9-Q1 R9: wojna epoki NIE kończy się automatycznie (brak maybeResolve*/shouldEnd*/resolveForcedWarDurationLimits w main.ts)',
-  !/maybeResolve(Bronze|Stone|Iron)ForcedWarOnCityCapture|resolveForcedWarDurationLimits|shouldEnd(Bronze|Stone|Iron)ForcedWarBy/.test(main),
+  'zwykła wojna AI↔AI nietknięta: maybeResolveRegularWarOnCityCapture nadal zdefiniowana w main.ts',
+  /function maybeResolveRegularWarOnCityCapture\(oldOwner: number, newOwner: number\): void \{/.test(main),
 );
 check(
   'finalizePeaceTreatyBetween uzbraja odpoczynek Żelaza (cleanupIronForcedWarOnPeace)',
@@ -265,8 +255,13 @@ check(
 // 8. Zero regresji Kamienia i Brązu — osobne moduły i osobne rejestry.
 // ---------------------------------------------------------------------------
 check(
-  'R-WEB-PEACE-RULES-R8R9-Q1 R9: wojna epoki NIE kończy się automatycznie (brak maybeResolve*/shouldEnd*/resolveForcedWarDurationLimits w main.ts)',
-  !/maybeResolve(Bronze|Stone|Iron)ForcedWarOnCityCapture|resolveForcedWarDurationLimits|shouldEnd(Bronze|Stone|Iron)ForcedWarBy/.test(main),
+  'Kamień i Brąz zachowują własne moduły i rejestry (przywrócone po R9)',
+  main.includes("from './game/forced-war-stone';")
+    && main.includes("from './game/forced-war-bronze';")
+    && main.includes('stoneForceWarActiveByPairKey')
+    && main.includes('bronzeForceWarActiveByPairKey')
+    && main.includes('stoneForceWarRestUntilByOwner')
+    && main.includes('bronzeForceWarRestUntilByOwner'),
 );
 check(
   'rejestry Żelaza są ROZŁĄCZNE z Kamieniem i Brązem (żadne pole nie jest współdzielone)',

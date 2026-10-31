@@ -89,6 +89,10 @@ export const WOJNA_WYMUSZONA_START_TURY_OD_EPOKI = 25;
  * LUB_STRACONE` wyżej, który zostaje jako DODATKOWY, zwykle wcześniejszy warunek
  * zakończenia — który z dwóch warunków spełni się pierwszy, kończy wojnę).
  */
+// R-WEB-PEACE-RULES-R8R9-Q1 R9: NIEUŻYWANA w runtime -- automatyczny koniec po czasie usunięty
+// (wojna wymuszona kończy się wyłącznie pokojem). Stała zostaje jako parametr/dokumentacja dla
+// testów (tools/forced-war-bronze-test.cjs, forced-war-reguly-multi-turn-simulation-test.cjs,
+// praca-podzial-staly-50-50-test.cjs); nie wolno jej ponownie podłączać do auto-końca.
 export const WOJNA_WYMUSZONA_MAX_CZAS_TRWANIA_TUR = 20;
 
 export interface BronzeForcedWarEligibilityInput {

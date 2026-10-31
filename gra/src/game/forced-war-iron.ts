@@ -86,6 +86,9 @@ export const EPOKA_ZELAZO_NUMER = 3;
 /** Próg zdobytych/utraconych miast kończący wojnę wymuszoną Żelaza automatycznym pokojem. / EN: city-count threshold (either side) that auto-ends an Iron forced war. */
 export const WOJNA_ZELAZO_WYMUSZONA_MAX_MIASTA_ZDOBYTE_LUB_STRACONE = 2;
 /** Maksymalny czas wojny wymuszonej Żelaza; po 20 turach silnik zawiera automatyczny pokój. */
+// R-WEB-PEACE-RULES-R8R9-Q1 R9: NIEUŻYWANA w runtime -- automatyczny koniec po czasie usunięty
+// (wojna wymuszona kończy się wyłącznie pokojem). Zostaje jako parametr dla testów
+// (tools/forced-war-iron-test.cjs, forced-war-reguly-multi-turn-simulation-test.cjs).
 export const WOJNA_ZELAZO_WYMUSZONA_MAX_CZAS_TRWANIA_TUR = 20;
 
 /**
