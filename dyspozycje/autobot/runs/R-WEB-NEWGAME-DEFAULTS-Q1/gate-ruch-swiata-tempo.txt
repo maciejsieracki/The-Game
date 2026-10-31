@@ -1,0 +1,4 @@
+node tools/ruch-swiata-tempo-test.cjs: 33 zaliczone, 2 niezaliczone (po zmianie; przed zmianą expectation DEFAULT_ADVANCED 'krotki' = 32/3)
+Niezaliczone (pre-existing, main.ts nietknięty): regex 'player.ruchSwiataPace = saved.gracz...' nie pasuje do kodu main.ts:41676 (ps.ruchSwiataPace = g.ruchSwiataPace); serializacja zapisu gry (main.ts gracz:{...}).
+Jedyna zmieniona oczekiwana wartość: tools/ruch-swiata-tempo-test.cjs:189-193 'krotki' -> 'normalny' (decyzja właściciela; newGameFlow.ts:255).
+EXIT=1

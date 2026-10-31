@@ -1,0 +1,2 @@
+node tools/newgame-defaults-test.cjs (świeży profil, Kontynenty/Pangea/Wyspy/Ziemia, krok 4, okno Zaawansowane, krok Start): 39 pass · 0 fail
+EXIT=0

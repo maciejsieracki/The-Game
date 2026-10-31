@@ -1,0 +1,2 @@
+node tools/newgame-adv-tooltip-test.cjs (po zmianach): 31 pass · 0 fail (baseline przed zmianą: 31 pass)
+EXIT=0

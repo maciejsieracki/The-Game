@@ -461,7 +461,14 @@ export const LAND_FRACTION_PERCENT_OPTS = [80, 70, 60, 50, 40, 30, 20] as const;
 
 export type LandFractionPercent = (typeof LAND_FRACTION_PERCENT_OPTS)[number];
 
+/**
+ * Domyślny udział lądu w suwaku kreatora (R-WEB-NEWGAME-DEFAULTS-Q1, Maciej 2026-10-31):
+ * 30% dla Kontynenty / Pangea / Wyspy (wszystkie z suwakiem). Ziemia = szablon kontynentów
+ * (~21%, bez suwaka) — zachowuje dotychczasowe zaokrąglenie do najbliższej opcji (20).
+ * / EN: slider default land %, 30 for kontynenty/pangea/wyspy; ziemia keeps the template rounding.
+ */
 export function defaultLandFractionPercentForTyp(typ: TypSwiata): LandFractionPercent {
+  if (typ !== 'ziemia') return 30;
   const pct = Math.round(defaultLandFractionForTyp(typ) * 100);
   const opts = LAND_FRACTION_PERCENT_OPTS as readonly number[];
   if (opts.includes(pct)) return pct as LandFractionPercent;

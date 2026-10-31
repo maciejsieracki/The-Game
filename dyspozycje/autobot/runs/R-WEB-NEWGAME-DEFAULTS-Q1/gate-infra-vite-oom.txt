@@ -1,0 +1,3 @@
+INFRA: newgame-bottom-navigation-test, newgame-sett-grid-layout-test, battle-mode-choice-labels-test (buduja vite bundle w gra/).
+Vite build ginie sygnałem SIGKILL (exit 137, "Killed") pod presją pamięci hosta (współdzielona maszyna, ~2-3 GB wolne). Bottom-navigation przed zmianą: desktop OK, "mały ekran" Page crashed. Po zmianie: build ubity przed startem testu (NIE_ZMIERZONO).
+EXIT=1

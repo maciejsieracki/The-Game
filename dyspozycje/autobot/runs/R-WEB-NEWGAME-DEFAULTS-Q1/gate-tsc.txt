@@ -1,0 +1,2 @@
+npx tsc --noEmit (gra/, po zmianach): brak błędów
+EXIT=0
