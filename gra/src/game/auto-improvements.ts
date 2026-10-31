@@ -767,7 +767,7 @@ export function pickAutoImprovements(opts: PickAutoImprovementsOpts): AutoImprov
         riverForestClearingOnly: false,
         riverHexesOnly: false,
         offRiverClearing: false,
-          maxItemsPerCity: maxItemsStage,
+        maxItemsPerCity: maxItemsStage,
       }));
       record(roadPicks);
     }
@@ -1500,6 +1500,7 @@ function pickAutoImprovementsSinglePass(opts: PickAutoImprovementsOpts): AutoImp
             for (const { q, r } of orderedHexes) {
               const hexKey = `${q},${r}`;
               if (scheduledWyrabHexes.has(hexKey)) continue;
+              if (!wyrabMaSens(q, r)) continue;
               if (!hexAllowsKey(q, r, key)) continue;
               // RUNDA 4: ten sam straznik co w KROKU 0 — heks z tartakiem albo obozem
               // NIE idzie pod topor (wycinka skasowalaby ulepszenie stojace na lesie,
