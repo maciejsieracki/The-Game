@@ -25,6 +25,7 @@ import {
   normalizeTreatyKind,
 } from './diplomacy-treaties';
 import { RodzajTraktatu } from '../types/diplomacy';
+import { resolveWarPeaceProfile, evaluatePeaceAiGate } from './diplomacy-war-peace-profile';
 import type { Player } from '../types/player';
 import { TypCywilizacji } from '../types/player';
 import {
@@ -181,6 +182,17 @@ export interface ProposalEvalContext {
   militaryRatio?: number;
   /** Frakcja siły respondenta 0..1 (jak decideAIDiplomacy respektWzgledny) */
   respektWzgledny?: number;
+  /**
+   * R-WEB-PEACE-RULES-Q1 R1/R5: stan wojny pary (tylko gdy stanWojny). `responderRw` = udział
+   * siły RESPONDENTA (AI) 0..1; `lostCitiesResponder` = miasta utracone przez respondenta w tej wojnie.
+   * Brak pola = brak bramki pokoju R5 (zachowanie sprzed rundy).
+   */
+  warState?: {
+    turnsAtWar: number;
+    lostCitiesResponder: number;
+    turnsSinceCityChange?: number;
+    responderRw: number;
+  };
   /** Realne sąsiedztwo terytorialne (granica lądowa) + obie strony >2 miasta. */
   karaWspolnaGranica?: boolean;
   /** Benchmark wartości handlu (fair value) */
@@ -370,7 +382,8 @@ function stanceForEval(ctx: ProposalEvalContext): ReturnType<typeof aiDiplomacyS
     isMinorCiv: ctx.isMinorCiv ?? false,
     militaryRatio: responderMilRatio,
     currentTurn: ctx.turn,
-    turnsAtWar: ctx.stanWojny ? 5 : 0,
+    // R-WEB-PEACE-RULES-Q1 R1: realny czas wojny (dawna stała 5 usunięta).
+    turnsAtWar: ctx.stanWojny ? Math.max(0, ctx.warState?.turnsAtWar ?? 0) : 0,
   };
   return aiDiplomacyStance(responder, proposer, ctx.relation, dipCtx);
 }
@@ -1218,7 +1231,30 @@ export function evaluateProposal(
       // z dedykowanym komunikatem, żeby pokój dalej wymagał albo Relacji bliskiej
       // neutralnej, albo dopłaty koszykiem pokrywającej różnicę.
       const { givePn, receivePn } = resolveProposalPn(payload, pnOpts);
-      const basePn = treatyBasePnFromConfig('pokoj', payload);
+      const basePnCfg = treatyBasePnFromConfig('pokoj', payload);
+      // R-WEB-PEACE-RULES-Q1 R5: gdy GRACZ jest autorem warunków, a respondentem jest AI (nie
+      // miasto-państwo), bramka AI: minimalny czas wojny, „czuje się silniejsze" i mnożnik ceny.
+      const r5AuthorOwnerId = ctx.authorOwnerId ?? proposerOwnerId;
+      const r5PlayerAuthors = r5AuthorOwnerId === (pnOpts.playerOwnerId ?? 0);
+      const r5RespondentIsAi = responderOwnerId !== (pnOpts.playerOwnerId ?? 0);
+      let basePn = basePnCfg;
+      if (ctx.warState && r5PlayerAuthors && r5RespondentIsAi && !ctx.responderIsCityState) {
+        const r5Profile = resolveWarPeaceProfile(
+          typeof ctx.responderPlayer?.typCywilizacji === 'string' ? ctx.responderPlayer.typCywilizacji : undefined,
+        );
+        const r5Gate = evaluatePeaceAiGate(
+          {
+            rw: ctx.warState.responderRw,
+            turnsAtWar: Math.max(0, ctx.warState.turnsAtWar),
+            lostCitiesInWar: Math.max(0, ctx.warState.lostCitiesResponder),
+          },
+          r5Profile,
+        );
+        if (r5Gate.verdict !== 'ok') {
+          return { accepted: false, reason: r5Gate.reason ?? 'AI odrzuca pokój' };
+        }
+        basePn = Math.round(basePnCfg * r5Gate.priceMultiplier);
+      }
       const proposerIsPlayer = proposerOwnerId === (pnOpts.playerOwnerId ?? 0);
       const relTotal = treatyEvalRelationTotal(relation);
       // OBRONA runda 2 (P-DYPLO-BILANS-GATE-NIESPOJNY-N-E1-REPRODUKCJA, zarzut 1 Evaluatora,

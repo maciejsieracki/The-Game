@@ -170,6 +170,29 @@ export function pickWarDeclarer(
 }
 
 /**
+ * R-WEB-PEACE-RULES-Q1 D7 (właściciel 2026-10-30): wynik hamulca wojny dla pary, którego jednym
+ * źródłem prawdy są testy. Silniejsza strona wypowiada (pickWarDeclarer), ALE gdy tą stroną jest
+ * GRACZ, wojna z hamulca nie wybucha (mayDeclare = false) i nie pokazujemy ostrzeżenia o niej.
+ * Para AI↔AI: mayDeclare zawsze true.
+ */
+export interface BrakeWarOutcome {
+  declarer: number;
+  victim: number;
+  /** false = strona silniejsza to gracz: brak automatycznej deklaracji i brak ostrzeżenia. */
+  mayDeclare: boolean;
+}
+
+export function brakeWarOutcome(
+  a: { ownerId: number; power: number },
+  b: { ownerId: number; power: number },
+  isPlayer: (ownerId: number) => boolean,
+): BrakeWarOutcome {
+  const declarer = pickWarDeclarer(a, b);
+  const victim = declarer === a.ownerId ? b.ownerId : a.ownerId;
+  return { declarer, victim, mayDeclare: !isPlayer(declarer) };
+}
+
+/**
  * P6 (r3): krok histerezy z uwzglednieniem stanu wojny. Para juz w wojnie nie liczy kryzysu
  * (licznik 0, brak wpisu w mapie) — inaczej w save zostawalby smiec `1` co ture.
  */

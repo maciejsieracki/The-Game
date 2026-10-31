@@ -30,6 +30,7 @@ import {
 } from './civ-ai-data';
 import { isBarbarian } from './barbarians';
 import { applyWiarygodnoscTempoDoDelty, zaufanieDryfOdWiarygodnosci } from './diplomacy-credibility';
+import { resolveWarPeaceProfile, warWearinessShare } from './diplomacy-war-peace-profile';
 
 // ---------------------------------------------------------------------------
 // Re-exported Relation interface (spec-aligned alias over RelacjaDyplomatyczna)
@@ -1289,7 +1290,12 @@ export function aiDiplomacyStance(
   // High when: weaker militarily, war drags on, or moderate goodwill.
   let peaceW: number;
   if (rel.status === 'wojna') {
-    const warWeariness     = clamp(context.turnsAtWar / 20, 0, 0.50);
+    // R-WEB-PEACE-RULES-Q1 R4: zmęczenie = min(0.5, turnsAtWar / T(civ)), T ≤ 20 (D4).
+    // Wcześniej clamp(turnsAtWar/20) z turnsAtWar podawanym jako stała (ai.ts 5/main 1) = martwe.
+    const warWeariness     = warWearinessShare(
+      context.turnsAtWar,
+      resolveWarPeaceProfile(aiPlayer.typCywilizacji).zmeczenieT,
+    );
     const militaryPressure = context.militaryRatio < 1
       ? (1 - context.militaryRatio) * 0.40
       : 0;

@@ -66,6 +66,7 @@ import {
   type ResearchBuildingGate,
 } from './research';
 import { hexKeysWithinRadius } from './okolica';
+import { resolveWarPeaceProfile, aiPeaceSignals, isFeelingStronger, type WarPeaceProfile } from './diplomacy-war-peace-profile';
 import {
   AI_IMPROVEMENT_PRIORITY,
   pickAutoImprovements,
@@ -5277,6 +5278,17 @@ export interface RelacjaWejscie {
    * Ustawiane przez silnik z DiploPairMeta.peaceUntilTurn.
    */
   peaceLocked?: boolean;
+  /**
+   * R-WEB-PEACE-RULES-Q1 R1: realne tury trwania wojny w tej parze (od wojnaOdTury). 0 poza wojną.
+   * Brak pola przy stanWojny = 0 (dawna stała 5 usunięta).
+   */
+  turnsAtWar?: number;
+  /** R-WEB-PEACE-RULES-Q1 R2/R3: miasta utracone przez AI (właściciela decyzji) w TEJ wojnie. */
+  lostCitiesInWar?: number;
+  /** R-WEB-PEACE-RULES-Q1 R3(d): tury od ostatniej zmiany posiadania miast w tej wojnie. */
+  turnsSinceCityChange?: number;
+  /** R-WEB-PEACE-RULES-Q1 R3(c): zdrowie armii AI 0..1 (Σ health / Σ hpMax jednostek bojowych). */
+  armyHealthShare?: number;
 }
 
 /**
@@ -5719,6 +5731,13 @@ export function decideAIDiplomacy(
     inp.tolerancjaRyzyka,
   );
 
+  // R-WEB-PEACE-RULES-Q1 R6: profil wojny/pokoju właściciela decyzji (brak danych = wartości bazowe).
+  const warProfile: WarPeaceProfile = resolveWarPeaceProfile(inp.myTypCywilizacji);
+  // Próg słabości do pokoju: jawny override z params wygrywa, inaczej wartość per cywilizacja.
+  const progPokojSlabosc = params?.progPokojSlabosc !== undefined
+    ? p.progPokojSlabosc
+    : warProfile.progPokojSlabosc;
+
   const komendy: AIDiplomacyCommand[] = [];
   const knownCivTypes = new Set<string>(Object.values(TypCywilizacji));
   const normalizeCivType = (value?: string): TypCywilizacji | undefined =>
@@ -5733,11 +5752,13 @@ export function decideAIDiplomacy(
     const rw = rel.respektWzgledny;
     const militaryRatio = rw >= 1 ? 99 : rw <= 0 ? 0.01 : rw / (1 - rw);
 
+    // R-WEB-PEACE-RULES-Q1 R1: realny czas wojny z pary (dawniej stała 5 = martwa heurystyka).
+    const turnsAtWarRel = rel.stanWojny ? Math.max(0, rel.turnsAtWar ?? 0) : 0;
     const ctx: AIDiplomacyContext = {
       isMinorCiv:   false,   // decyzja o minor civ leży po stronie silnika; tu zakładamy główną cyw.
       militaryRatio,
       currentTurn:  0,       // nie wpływa na logikę v0.1
-      turnsAtWar:   rel.stanWojny ? 5 : 0,  // heurystyka – wystarczy do oceny peaceW
+      turnsAtWar:   turnsAtWarRel,
       civMatrixDifficulty: difficulty,
     };
 
@@ -5750,7 +5771,8 @@ export function decideAIDiplomacy(
 
     const stance = aiDiplomacyStance(stubAIPlayer, stubOtherPlayer, rel.relation, ctx);
     const score  = relationScore(rel.relation);
-    const { progMinimalnyRelacja } = getEffectiveDiplomacyParams(difficulty);
+    // R-WEB-PEACE-RULES-Q1 R6: próg wojny per cywilizacja z macierzy (zastępuje globalne 30).
+    const progMinimalnyRelacja = warProfile.progWojnyRelacji;
     // Efektywna agresja z uwzglednieniem mnoznika trudnosci (T4=B: spryt AI)
     const effAgresja = Math.min(1, inp.agresja * agresjaMnoznik);
     // C-AI-MOC-Q1: wysoka sklonnoscDoPodboju → łatwiej wypowiada wojnę
@@ -5779,12 +5801,38 @@ export function decideAIDiplomacy(
       }
     }
 
-    // ---- Priorytet 2: zaproponuj_pokoj (słaby w trakcie wojny) ----
-    if (rel.stanWojny && rw <= p.progPokojSlabosc) {
+    // ---- Priorytet 2: zaproponuj_pokoj (słaby w trakcie wojny; R-WEB-PEACE-RULES-Q1 R3) ----
+    // Sygnały: (a) rw <= progPokojSlabosc(civ); (b) utracone miasto i rw <= 0.5; (d) pat;
+    // (e) zmęczenie wojną >= próg. Sygnał (c) zdrowie armii — NIEZAIMPLEMENTOWANY (brak HP armii).
+    const peaceSignals = rel.stanWojny
+      ? aiPeaceSignals(
+          {
+            rw,
+            turnsAtWar: turnsAtWarRel,
+            lostCitiesInWar: Math.max(0, rel.lostCitiesInWar ?? 0),
+            turnsSinceCityChange: rel.turnsSinceCityChange,
+            armyHealthShare: rel.armyHealthShare,
+          },
+          { ...warProfile, progPokojSlabosc },
+        )
+      : { wantsPeace: false, reasons: [] as string[] };
+    // Spójność (R5 ↔ R3): AI NIE proponuje pokoju, gdy sama odrzuciłaby pokój od gracza jako
+    // „czuje się silniejsze" (isFeelingStronger = bramka R5b) ANI gdy odrzuciłaby go jako
+    // „za wcześnie" (turnsAtWar < minTurWojny = bramka R5a). Obie bramki są stosowane przez
+    // evaluatePeaceAiGate do propozycji gracza; AI składa propozycję dopiero, gdy spełnia te same
+    // warunki czasu wojny i nie czuje się silniejsza (ZAMIANA ZAŁOŻENIA F2 z rundy 3, zarzut 2:
+    // poprzednio minTurWojny nie blokował propozycji AI, co dawało propozycję już w turze 1).
+    const aiFeelsStronger = rel.stanWojny && isFeelingStronger({
+      rw,
+      turnsAtWar: turnsAtWarRel,
+      lostCitiesInWar: Math.max(0, rel.lostCitiesInWar ?? 0),
+    });
+    const aiPeaceTimeOk = turnsAtWarRel >= warProfile.minTurWojny;
+    if (rel.stanWojny && !aiFeelsStronger && aiPeaceTimeOk && (rw <= progPokojSlabosc || peaceSignals.wantsPeace)) {
       komendy.push({
         type:     'zaproponuj_pokoj',
         targetId: rel.partnerId,
-        powod:    `slabszy w wojnie (respektWzgledny=${rw.toFixed(2)} <= prog=${p.progPokojSlabosc}): proponujemy pokoj`,
+        powod:    `slabszy w wojnie (respektWzgledny=${rw.toFixed(2)} <= prog=${progPokojSlabosc}; sygnaly=${peaceSignals.reasons.join(',') || '-'}; tury wojny=${turnsAtWarRel}): proponujemy pokoj`,
       });
       continue;
     }
