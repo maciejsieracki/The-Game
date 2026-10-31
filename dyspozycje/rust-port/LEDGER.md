@@ -437,3 +437,5 @@ Cel końcowy i bieżący zapisane w `GOAL-RUST-PORT-20261020.md` (§"CEL PĘTLI 
 - Deploy ROBOCZEJ: Vite direct build poza repo, stempel ROBOCZA, bundle MD5 `c415f278d71bd4d3d66c164b83ef33c2`, 70,086,171 B, `verify-robocza-bundle` VERIFY OK; commit wdrożenia `291b20f71`; wpis w `dyspozycje/WERSJE.md`. Odczyt GitHub Raw (bundle, manifest, START) HTTP 200, MD5 i rozmiar zgodne.
 - Decyzje właściciela nadal otwarte: znacznik „Agresor” na liście HUD; filtr „Inne cyw.” (ostrzeżenie hamulca ukryte); kontrast obwódek chinczycy/barbarzyńcy/Asyria; niepokój po cesji miasta.
 - Kontener zrestartowano w trakcie; workflow M07B-Q2, 8H2, 8I wznowione (`resumeFromRunId`).
+
+- 2026-10-31 08:12 UTC — kontrola cykliczna: M07B-Q2 r3, 8H2 r1, 8I r1 biegną; brak PASS do integracji.
