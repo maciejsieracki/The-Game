@@ -411,3 +411,5 @@ Cel końcowy i bieżący zapisane w `GOAL-RUST-PORT-20261020.md` (§"CEL PĘTLI 
 - Efekt: wypowiedzenie wojny bez casus belli = flaga agresora 20 tur (hamulec, wojna epoki, sojusz/ochrona rebelii bez flagi); casus belli 15 tur po odmowie trybutu/ultimatum; flaga podnosi próg sojuszu/paktu o +15 (mnożnik 0,7); znacznik „Agresor” w panelu dyplomacji.
 - Do decyzji właściciela (UX, drobne): znacznik „Agresor” NIE jest na liście HUD (`gra/src/ui/diploListHud.ts` poza allowlistą). Osobny mały temat, jeśli chcesz.
 - Push do `main`: NIE WYKONANO. Następne web: R-WEB-TRUCE-Q1.
+
+- 2026-10-31 05:12 UTC — kontrola cykliczna: M07B r1, 8H r1, WEB TRUCE r3 biegną; brak PASS do integracji.
