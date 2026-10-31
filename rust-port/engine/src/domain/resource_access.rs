@@ -16,6 +16,7 @@
 
 use std::collections::HashMap;
 
+pub mod active_access;
 pub mod capital_labels;
 
 use super::building_costs::p6_7b::{empire_zloto_stock, owner_can_feed_mennica, StockRecord};
