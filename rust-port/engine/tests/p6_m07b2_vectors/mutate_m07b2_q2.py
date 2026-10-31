@@ -2,14 +2,14 @@
 """P6.M07B-Q2 - skrypt mutacji (lekcja d). Mutuje kod Rust zakresu Q2 i uruchamia testy.
 
 Kazda mutacja: dokladnie jedno wystapienie `old` w pliku (asercja), podmiana na `new`,
-`cargo test --test p6_m07b2_coast --test p6_m07b2_edges`, przywrocenie pliku (sha256 sprawdzone).
+`cargo test --test p6_m07b2_coast --test p6_m07b2_edges --test p6_m07b2_q2r4`, przywrocenie pliku (sha256 sprawdzone).
 Wynik: KILLED (test padl / panika / blad kompilacji mutanta liczy sie jako zabicie), SURVIVED
 (wszystkie testy zielone). Dowody rownowaznosci dla SURVIVED sa w dossier (tabela mutantow).
 
 Uzycie (cwd dowolny; katalog silnika wyliczany z lokalizacji skryptu):
   python3 -I mutate_m07b2_q2.py <od> <do>      # indeksy [od, do) z listy MUTANTS
   python3 -I mutate_m07b2_q2.py list           # lista mutantow
-Log dopisywany do runu: dyspozycje/autobot/runs/R-RUSTPORT-P6-M07B2-RZEKI-B-KRAWEDZIE-Q1/mutate-m07b2-q2-r3.txt
+Log dopisywany do runu: dyspozycje/autobot/runs/R-RUSTPORT-P6-M07B2-RZEKI-B-KRAWEDZIE-Q1/mutate-m07b2-q2-r4.txt (MUT_LOG nadpisuje)
   python3 -I mutate_m07b2_q2.py ids C12 C21 ...  # runda 3: wskazane ID
 """
 import hashlib
@@ -21,7 +21,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 ENGINE = os.path.abspath(os.path.join(HERE, "..", ".."))
 ROOT = os.path.abspath(os.path.join(HERE, "..", "..", "..", ".."))
 LOG = os.environ.get("MUT_LOG") or os.path.join(ROOT, "dyspozycje", "autobot", "runs",
-                   "R-RUSTPORT-P6-M07B2-RZEKI-B-KRAWEDZIE-Q1", "mutate-m07b2-q2-r3.txt")
+                   "R-RUSTPORT-P6-M07B2-RZEKI-B-KRAWEDZIE-Q1", "mutate-m07b2-q2-r4.txt")
 CG = "src/domain/mapgen/rivers_b/coast_grow.rs"
 MN = "src/domain/mapgen/rivers_b/meander.rs"
 ED = "src/domain/mapgen/rivers_b/edges.rs"
@@ -107,9 +107,9 @@ MUTANTS = [
     ("G12", CG, "visited.insert(mouth_key.clone());", "let _ = 0;",
      "grow: ujscie nieoznaczone jako odwiedzone (:6199)", "K"),
     ("G13", CG, "        .or_else(|| p.land_center_square.map(|s| s.centroid))\n", "",
-     "grow: galaz landCenterSquare (centroid kwadratu) usunieta (:6201)", "L"),
+     "grow: galaz landCenterSquare (centroid kwadratu) usunieta (:6201) - E: przy kwadracie != null centroid nieuzywany (walk.rs:281-291, web :6057)", "E"),
     ("G14", CG, "                CENTROID_VISIT_CAP,\n            )", "                CENTROID_VISIT_CAP / 2,\n            )",
-     "grow: visitCap estimateLandCentroidFromMouth 6000 -> 3000 (:6202) - L: cap nieosiagalny na mapach <=127 hexow", "L"),
+     "grow: visitCap estimateLandCentroidFromMouth 6000 -> 3000 (:6202) - r4: zabity wektorem na duzej mapie (6487 hexow)", "K"),
     # --- coast_grow.rs: meander/ edges - meander.rs (web :6485-6519)
     ("M01", MN, "if nk == tgt_k || used.contains(&nk) {", "if nk == tgt_k {",
      "meander: pominiecie 'used' usuniete (:6503)", "K"),
@@ -162,7 +162,7 @@ MUTANTS = [
     ("W05", WD, "if cut_at <= 0 || cut_at >= out.len() as i64 - 1 {", "if cut_at <= 0 {",
      "window: break przy ciecie na koncu usuniety (:7114)", "K"),
     ("W06", WD, "while guard < 48 && out.len() >= 3 {", "while guard < 47 && out.len() >= 3 {",
-     "window: cap 48 -> 47 (N-1) (:7100) - L: maks. iteracji w wektorach ponizej 47 (zmierzono w dossier)", "L"),
+     "window: cap 48 -> 47 (N-1) (:7100) - r4: zabity wektorem zygzaka (>=49 obrotow)", "K"),
     ("W07", WD, "if !river_path_violates_turn_window(", "if river_path_violates_turn_window(",
      "window: negacja warunku 'brak naruszen' (:7101)", "K"),
     ("W08", WD, "out = repair_river_path_adjacency(&out, hexes, source_key);", "let _ = hexes;",
@@ -228,7 +228,7 @@ MUTANTS = [
     ("E27", ED, "    if p.len() < 3 {\n        return p;", "    if p.len() < 2 {\n        return p;",
      "simplifyRiverRenderPath: prog len<3 -> <2 (:7216) - E: petla i in 1..len-1 pusta dla len 2", "E"),
     ("E28", ED, "while changed && guard < 4000 {", "while changed && guard < 3999 {",
-     "simplifyRiverRenderPath: cap 4000 -> 3999 (N-1) - L: nieosiagalny (iteracje <= len sciezki <=15)", "L"),
+     "simplifyRiverRenderPath: cap 4000 -> 3999 (N-1) - r4: zabity wektorem sciezki A,B,A,B... dl. 8002", "K"),
     ("E29", ED, "            if a == c {", "            if false {",
      "simplifyRiverRenderPath: powrot a==c nieusuwany (:7224)", "K"),
     ("E30", ED, "if neighbor_dir_index(a.q, a.r, c.q, c.r) >= 0 {", "if neighbor_dir_index(a.q, a.r, c.q, c.r) < 0 {",
@@ -259,6 +259,18 @@ MUTANTS = [
      "canReceiveRiverYieldMark: brak heksa -> true zamiast false (:7123)", "K"),
     ("W10", WD, "let mut out = sanitize_river_path(path);", "let mut out = path.to_vec();",
      "sanitizeRiverTurnWindow: wstepna sanityzacja pominieta (:7099)", "K"),
+    # --- runda 4: N-1/N/N+1 i pokrycie kwadratu centrum
+    ("G14b", CG, "                CENTROID_VISIT_CAP,\n            )", "                CENTROID_VISIT_CAP - 1,\n            )",
+     "grow: visitCap 6000 -> 5999 (N-1) (:6202)", "K"),
+    ("G14c", CG, "                CENTROID_VISIT_CAP,\n            )", "                CENTROID_VISIT_CAP + 1,\n            )",
+     "grow: visitCap 6000 -> 6001 (N+1) (:6202)", "K"),
+    ("G17", CG, "land_centroid: centroid,\n            land_center_square: p.land_center_square,",
+     "land_centroid: centroid,\n            land_center_square: None,",
+     "grow: kwadrat centrum nieprzekazany do opcji bazowych (:6208)", "K"),
+    ("W06b", WD, "while guard < 48 && out.len() >= 3 {", "while guard < 49 && out.len() >= 3 {",
+     "window: cap 48 -> 49 (N+1) (:7100)", "K"),
+    ("E28b", ED, "while changed && guard < 4000 {", "while changed && guard < 4001 {",
+     "simplifyRiverRenderPath: cap 4000 -> 4001 (N+1) (:7219)", "K"),
 ]
 
 
@@ -276,11 +288,11 @@ def log(line):
 
 def run_tests():
     env = dict(os.environ)
-    env.update({"CARGO_TARGET_DIR": "/dev/shm/m07b2-r3-target", "CARGO_INCREMENTAL": "0",
+    env.update({"CARGO_TARGET_DIR": "/dev/shm/m07b2-r4-target", "CARGO_INCREMENTAL": "0",
                 "CARGO_PROFILE_DEV_DEBUG": "0", "CARGO_PROFILE_TEST_DEBUG": "0"})
     try:
         p = subprocess.run(
-            ["cargo", "test", "--no-fail-fast", "--test", "p6_m07b2_coast", "--test", "p6_m07b2_edges"],
+            ["cargo", "test", "--no-fail-fast", "--test", "p6_m07b2_coast", "--test", "p6_m07b2_edges", "--test", "p6_m07b2_q2r4"],
             cwd=ENGINE, env=env, capture_output=True, text=True, timeout=420)
     except subprocess.TimeoutExpired:
         return "TIMEOUT", "timeout 420s"
