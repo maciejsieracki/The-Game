@@ -1,0 +1,68 @@
+Mutacje: turn.rs M1-M35 i M38-M46; grow.rs M36-M37 i M47-M49. Przebieg r2 w tym worktree: 49 mutantow, 44 KILLED, 5 SURVIVED (EQUIV: M1, M3, M5, M33, M37).
+Komenda: CARGO_TARGET_DIR=/dev/shm/m07b-r2-target python3 -I rust-port/engine/tests/p6_m07b_vectors/mutate_m07b_turn.py <IDs>
+Kazda mutacja: jedna podmiana tekstu, cargo test --test p6_m07b_turn, przywrocenie pliku, RESTORED=True.
+M1 | progi sharp: < -0.01 -> <= -0.01 | SURVIVED | rc=0 | oczekiwano=EQUIV | RESTORED=True
+M2 | progi sharp: -0.01 -> 0.0 | KILLED | rc=101 | oczekiwano=KILL | RESTORED=True
+M3 | guard has_sharp: len<3 -> len<2 | SURVIVED | rc=0 | oczekiwano=EQUIV | RESTORED=True
+M4 | has_sharp: usuniety wczesny return w violates | KILLED | rc=101 | oczekiwano=KILL | RESTORED=True
+M5 | guard violates: len<3 -> len<2 | SURVIVED | rc=0 | oczekiwano=EQUIV | RESTORED=True
+M6 | unit: usuniety guard len<1e-9 | KILLED | rc=101 | oczekiwano=KILL | RESTORED=True
+M7 | delta: |d|>1 -> |d|>2 | KILLED | rc=101 | oczekiwano=KILL | RESTORED=True
+M8 | okno: i+1<w -> i+1<=w | KILLED | rc=101 | oczekiwano=KILL | RESTORED=True
+RAZEM uruchomiono=8 KILLED=5 SURVIVED=3
+EXIT=0
+M9 | suma: > maxSum -> >= maxSum | KILLED | rc=101 | oczekiwano=KILL | RESTORED=True
+M10 | okno: poczatek wycinka +1 | KILLED | rc=101 | oczekiwano=KILL | RESTORED=True
+M11 | unit: sqrt3 usuniete z x1 | KILLED | rc=101 | oczekiwano=KILL | RESTORED=True
+M12 | unit: skala y 1.5 -> 1.4 (a) | KILLED | rc=101 | oczekiwano=KILL | RESTORED=True
+M13 | violates: usuniety return dla |d|>1 | KILLED | rc=101 | oczekiwano=KILL | RESTORED=True
+M14 | violates: usuniety return dla |suma|>maxSum | KILLED | rc=101 | oczekiwano=KILL | RESTORED=True
+M15 | sharp predykat: < -> > (y2) | KILLED | rc=101 | oczekiwano=KILL | RESTORED=True
+M16 | okno: koniec wycinka bez biezacej delty | KILLED | rc=101 | oczekiwano=KILL | RESTORED=True
+RAZEM uruchomiono=8 KILLED=8 SURVIVED=0
+EXIT=0
+M17 | unit: dy znak odwrocony | KILLED | rc=101 | oczekiwano=KILL | RESTORED=True
+M18 | unit: y2 liczone z a.r | KILLED | rc=101 | oczekiwano=KILL | RESTORED=True
+M19 | unit: axial r/2 -> r/3 (x1) | KILLED | rc=101 | oczekiwano=KILL | RESTORED=True
+M20 | sharp: petla pomija ostatnia trojke | KILLED | rc=101 | oczekiwano=KILL | RESTORED=True
+M21 | unit: sqrt3 usuniete z x2 | KILLED | rc=101 | oczekiwano=KILL | RESTORED=True
+M22 | unit: dx znak odwrocony | KILLED | rc=101 | oczekiwano=KILL | RESTORED=True
+M23 | unit: dlugosc L2 -> L1 | KILLED | rc=101 | oczekiwano=KILL | RESTORED=True
+M24 | unit: x zwracane z dy | KILLED | rc=101 | oczekiwano=KILL | RESTORED=True
+RAZEM uruchomiono=8 KILLED=8 SURVIVED=0
+EXIT=0
+M25 | violates: guard len<3 -> len<4 | KILLED | rc=101 | oczekiwano=KILL | RESTORED=True
+M26 | sharp: guard len<3 -> len<4 | KILLED | rc=101 | oczekiwano=KILL | RESTORED=True
+M27 | violates: petla delt pomija ostatnia | KILLED | rc=101 | oczekiwano=KILL | RESTORED=True
+M28 | okno: usuniety continue dla i+1<w | KILLED | rc=101 | oczekiwano=KILL | RESTORED=True
+M29 | unit: zerowy wektor -> nie {0,0} (x=1) | KILLED | rc=101 | oczekiwano=KILL | RESTORED=True
+M30 | sharp: porownanie dot z sumy zamiast iloczynu y (v1.y*v2.x) | KILLED | rc=101 | oczekiwano=KILL | RESTORED=True
+M31 | unit: stala sqrt3 zmieniona o 1e-4 | KILLED | rc=101 | oczekiwano=KILL | RESTORED=True
+M32 | unit: skala y 1.5 -> 1.4 (b) | KILLED | rc=101 | oczekiwano=KILL | RESTORED=True
+RAZEM uruchomiono=8 KILLED=8 SURVIVED=0
+EXIT=0
+M33 | unit: prog zerowego wektora 1e-9 -> 1e-3 (EQUIV: len>=sqrt3 dla niezerowego) | SURVIVED | rc=0 | oczekiwano=EQUIV | RESTORED=True
+M34 | unit: y zwracane z dx | KILLED | rc=101 | oczekiwano=KILL | RESTORED=True
+M35 | violates: segmenty z path[1..] zamiast path | KILLED | rc=101 | oczekiwano=KILL | RESTORED=True
+M36 | grow.rs path_segment_dirs: d>=0 -> d>=1 (kierunek 0 pominiety) | KILLED | rc=101 | oczekiwano=KILL | RESTORED=True
+M37 | grow.rs signed_river_dir_delta: raw<=3 -> raw<3 (EQUIV dla turn.rs: |d|=3 zatrzymuje petle przed suma) | SURVIVED | rc=0 | oczekiwano=EQUIV | RESTORED=True
+RAZEM uruchomiono=5 KILLED=3 SURVIVED=2
+EXIT=0
+M38 | unit: axial r/2 -> r/3 (x2, b) | KILLED | rc=101 | oczekiwano=KILL | RESTORED=True
+M39 | sharp: guard len<3 zwraca true | KILLED | rc=101 | oczekiwano=KILL | RESTORED=True
+M40 | sharp: v1 odwrocone (b->a) | KILLED | rc=101 | oczekiwano=KILL | RESTORED=True
+M41 | sharp: v2 zaczyna od path[i] | KILLED | rc=101 | oczekiwano=KILL | RESTORED=True
+M42 | sharp: trafienie zwraca false | KILLED | rc=101 | oczekiwano=KILL | RESTORED=True
+M43 | sharp: koncowy return false -> true | KILLED | rc=101 | oczekiwano=KILL | RESTORED=True
+RAZEM uruchomiono=6 KILLED=6 SURVIVED=0
+EXIT=0
+M44 | violates: guard len<3 zwraca true | KILLED | rc=101 | oczekiwano=KILL | RESTORED=True
+M45 | violates: wczesny return z sharp -> false | KILLED | rc=101 | oczekiwano=KILL | RESTORED=True
+M46 | violates: koncowy return false -> true | KILLED | rc=101 | oczekiwano=KILL | RESTORED=True
+M47 | grow.rs neighbor_dir_index: && -> || | KILLED | rc=101 | oczekiwano=KILL | RESTORED=True
+RAZEM uruchomiono=4 KILLED=4 SURVIVED=0
+EXIT=0
+M48 | grow.rs signed_river_dir_delta: gałąź raw-6 -> raw-5 | KILLED | rc=101 | oczekiwano=KILL | RESTORED=True
+M49 | grow.rs path_signed_turn_deltas: windows(2) -> windows(3) | KILLED | rc=101 | oczekiwano=KILL | RESTORED=True
+RAZEM uruchomiono=2 KILLED=2 SURVIVED=0
+EXIT=0
