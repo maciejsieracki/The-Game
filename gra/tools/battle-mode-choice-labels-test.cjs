@@ -50,18 +50,20 @@ async function main() {
     assert.equal(await row.count(), 1, 'one battle setting is present');
     const value = row.locator('.sv');
     const info = row.locator('.ng-info');
-    assert.equal((await value.textContent()).trim(), 'Bitwa automatyczna', 'default is labelled as auto-only');
+    // Domyślna po R-WEB-NEWGAME-DEFAULTS-Q1: battleAlwaysManual=true (newGameFlow.ts DEFAULT_ADVANCED ~l.250),
+    // więc etykieta startowa to „Bitwa ręczna i automatyczna" (dawniej „Bitwa automatyczna").
+    assert.equal((await value.textContent()).trim(), 'Bitwa ręczna i automatyczna', 'default is labelled as manual-enabled');
     assert.match(await info.getAttribute('title'), /Bitwa ręczna i automatyczna[\s\S]*wybierasz[\s\S]*automatycznie/, 'help distinguishes both modes');
-
-    await row.locator('button.arr').nth(1).click();
-    assert.equal((await value.textContent()).trim(), 'Bitwa ręczna i automatyczna', 'manual-enabled option has accurate label');
     const fits = await value.evaluate(el => el.scrollWidth <= el.clientWidth + 1
       && el.parentElement.scrollWidth <= el.parentElement.clientWidth + 1);
     assert.equal(fits, true, 'longer label fits the settings control without horizontal overflow');
+
     await row.locator('button.arr').nth(1).click();
-    assert.equal((await value.textContent()).trim(), 'Bitwa automatyczna', 'choice cycles back to auto-only');
+    assert.equal((await value.textContent()).trim(), 'Bitwa automatyczna', 'choice cycles to auto-only');
     await row.locator('button.arr').nth(1).click();
-    assert.equal((await value.textContent()).trim(), 'Bitwa ręczna i automatyczna', 'choice can be selected again');
+    assert.equal((await value.textContent()).trim(), 'Bitwa ręczna i automatyczna', 'choice cycles back to manual-enabled');
+    await row.locator('button.arr').nth(1).click();
+    assert.equal((await value.textContent()).trim(), 'Bitwa automatyczna', 'manual-enabled choice can be selected again as auto-only');
 
     await page.locator('.adv-modal .adv-close').click();
     const source = fs.readFileSync(path.join(GRA, 'src/ui/newGameFlow.ts'), 'utf8');

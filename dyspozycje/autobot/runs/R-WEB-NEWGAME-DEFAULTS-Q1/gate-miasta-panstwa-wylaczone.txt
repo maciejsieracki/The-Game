@@ -1,0 +1,97 @@
+miasta-panstwa-wylaczone-test (P-USTAWIENIA-MIASTA-PANSTWA-WYLACZONE-Q1)
+
+-- A) clampMiastaPanstwaCount: regresja allowZero=false (domyślne) + nowa galaz allowZero=true --
+  PASS: clamp(-5) [default/allowZero=false] PO === PRZED (origin/main): 1 === 1
+  PASS: clamp(-5, false) jawne === clamp(-5) domyślne (parametr nie zmienia domyślnego zachowania)
+  PASS: clamp(-1) [default/allowZero=false] PO === PRZED (origin/main): 1 === 1
+  PASS: clamp(-1, false) jawne === clamp(-1) domyślne (parametr nie zmienia domyślnego zachowania)
+  PASS: clamp(0) [default/allowZero=false] PO === PRZED (origin/main): 1 === 1
+  PASS: clamp(0, false) jawne === clamp(0) domyślne (parametr nie zmienia domyślnego zachowania)
+  PASS: clamp(0.6) [default/allowZero=false] PO === PRZED (origin/main): 1 === 1
+  PASS: clamp(0.6, false) jawne === clamp(0.6) domyślne (parametr nie zmienia domyślnego zachowania)
+  PASS: clamp(1) [default/allowZero=false] PO === PRZED (origin/main): 1 === 1
+  PASS: clamp(1, false) jawne === clamp(1) domyślne (parametr nie zmienia domyślnego zachowania)
+  PASS: clamp(2) [default/allowZero=false] PO === PRZED (origin/main): 2 === 2
+  PASS: clamp(2, false) jawne === clamp(2) domyślne (parametr nie zmienia domyślnego zachowania)
+  PASS: clamp(3) [default/allowZero=false] PO === PRZED (origin/main): 3 === 3
+  PASS: clamp(3, false) jawne === clamp(3) domyślne (parametr nie zmienia domyślnego zachowania)
+  PASS: clamp(5) [default/allowZero=false] PO === PRZED (origin/main): 5 === 5
+  PASS: clamp(5, false) jawne === clamp(5) domyślne (parametr nie zmienia domyślnego zachowania)
+  PASS: clamp(9) [default/allowZero=false] PO === PRZED (origin/main): 9 === 9
+  PASS: clamp(9, false) jawne === clamp(9) domyślne (parametr nie zmienia domyślnego zachowania)
+  PASS: clamp(10) [default/allowZero=false] PO === PRZED (origin/main): 9 === 9
+  PASS: clamp(10, false) jawne === clamp(10) domyślne (parametr nie zmienia domyślnego zachowania)
+  PASS: clamp(15) [default/allowZero=false] PO === PRZED (origin/main): 9 === 9
+  PASS: clamp(15, false) jawne === clamp(15) domyślne (parametr nie zmienia domyślnego zachowania)
+  PASS: clamp(50) [default/allowZero=false] PO === PRZED (origin/main): 9 === 9
+  PASS: clamp(50, false) jawne === clamp(50) domyślne (parametr nie zmienia domyślnego zachowania)
+  PASS: clamp(NaN) [default/allowZero=false] PO === PRZED (origin/main): 1 === 1
+  PASS: clamp(NaN, false) jawne === clamp(NaN) domyślne (parametr nie zmienia domyślnego zachowania)
+  PASS: clamp(Infinity) [default/allowZero=false] PO === PRZED (origin/main): 1 === 1
+  PASS: clamp(Infinity, false) jawne === clamp(Infinity) domyślne (parametr nie zmienia domyślnego zachowania)
+  PASS: clamp(-Infinity) [default/allowZero=false] PO === PRZED (origin/main): 1 === 1
+  PASS: clamp(-Infinity, false) jawne === clamp(-Infinity) domyślne (parametr nie zmienia domyślnego zachowania)
+  PASS: MAX_MIAST_PANSTWA niezmienione (9)
+
+-- A2) clampMiastaPanstwaCount: nowa gałąź allowZero=true (WYŁĄCZNIE dla "Wyłączone") --
+  PASS: clamp(0, true) === 0 (dokładnie to, czego main.ts potrzebuje dla "Wyłączone")
+  PASS: clamp(-5, true) === 0 (nie ujemne)
+  PASS: clamp(NaN, true) === 0 (bezpieczny fallback)
+  PASS: clamp(15, true) === 9 (górny sufit MAX_MIAST_PANSTWA nadal obowiązuje)
+  PASS: clamp(3, true) === 3 (wartości w środku zakresu bez zmian)
+
+-- D) Dowód niemutacyjności testu A2: allowZero faktycznie zmienia wynik (nie tautologia) --
+  PASS: źródło zawiera oczekiwany fragment (punkt zaczepienia mutacji)
+  PASS: kontrola: bundel ZMUTOWANY (allowZero zignorowany) daje clamp(0,true)===1, różne od prawdziwego 0 — dowód, że test A2 nie jest tautologią
+
+-- B) Żywa generacja świata (generateMap + buildClusterStartPlan) z rywaleNaKlaster=0 --
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=3 terrain=27 landSea=281 relief=271 coast=47 riversMain=3526 riversFill=3589 forest=11 deposits=23 starts=123 total=7900
+  PASS: generacja z rywaleNaKlaster=0 kończy się BEZ wyjątku (brak crasha)
+  PASS: plan.pendingSameTypeRivals === 0 (got 0)
+  PASS: plan.pendingSameTypeRivalHexes.length === 0 (got 0)
+  PASS: plan.pendingSameTypeRivalOwnerIds.length === 0 (got 0)
+  PASS: simplifiedDiplomacyOwners.size === 0 (zero rywali "tego samego typu" = zero miast-państw gracza)
+  PASS: stolica gracza nadal poprawnie generowana (cywilizacje NIE dotknięte)
+  PASS: obce cywilizacje AI nadal generowane normalnie (mapa ma WYŁĄCZNIE cywilizacje, zgodnie z GOAL 4)
+
+-- C) PRE/PO na TYM SAMYM SEEDZIE dla 3 reprezentatywnych poziomów pozostałych 3 opcji trudności --
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=2 terrain=22 landSea=280 relief=250 coast=64 riversMain=924 riversFill=1325 forest=19 deposits=22 starts=131 total=3039
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=2 terrain=18 landSea=271 relief=218 coast=40 riversMain=943 riversFill=3485 forest=7 deposits=15 starts=96 total=5095
+  PASS: n=1: plan PRZED (origin/main) === plan PO (biezacy worktree), seed=4242, byte-identyczne
+  PASS: n=1: pendingSameTypeRivals === 1 (parametr trafia bez zmian, jak w cluster-start-test.cjs)
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=1 terrain=11 landSea=214 relief=167 coast=29 riversMain=738 riversFill=1349 forest=7 deposits=16 starts=81 total=2613
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=1 terrain=14 landSea=175 relief=171 coast=38 riversMain=953 riversFill=3368 forest=6 deposits=28 starts=118 total=4871
+  PASS: n=5: plan PRZED (origin/main) === plan PO (biezacy worktree), seed=4242, byte-identyczne
+  PASS: n=5: pendingSameTypeRivals === 5 (parametr trafia bez zmian, jak w cluster-start-test.cjs)
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=1 terrain=16 landSea=176 relief=176 coast=36 riversMain=787 riversFill=1287 forest=6 deposits=16 starts=77 total=2579
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=1 terrain=9 landSea=151 relief=159 coast=27 riversMain=951 riversFill=3348 forest=19 deposits=19 starts=93 total=4777
+  PASS: n=9: plan PRZED (origin/main) === plan PO (biezacy worktree), seed=4242, byte-identyczne
+  PASS: n=9: pendingSameTypeRivals === 9 (parametr trafia bez zmian, jak w cluster-start-test.cjs)
+
+-- E) generator.ts:659 (expectedStartCityCount/gęstość chatek) przez generateMap(genOpts) --
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=1 terrain=10 landSea=168 relief=177 coast=32 riversMain=1020 riversFill=3288 forest=6 deposits=14 starts=92 total=4808
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=1 terrain=12 landSea=150 relief=162 coast=28 riversMain=948 riversFill=3340 forest=6 deposits=13 starts=85 total=4745
+  info: chatki cityStatesCount=0 -> 10, cityStatesCount=1 -> 20
+  PASS: chatki nadal generowane przy "Wyłączone" (villageRewardsEnabled:true), got 10
+  PASS: chatki dla cityStatesCount=0 wyraźnie mniej niż dla cityStatesCount=1 (10 < 20 * 0.65 = 13.0)
+  PASS: źródło zawiera oczekiwany fragment (punkt zaczepienia mutacji, call-site generator.ts:659)
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=5 terrain=19 landSea=240 relief=231 coast=42 riversMain=862 riversFill=1422 forest=9 deposits=31 starts=164 total=3022
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=3 terrain=15 landSea=203 relief=172 coast=28 riversMain=856 riversFill=1272 forest=8 deposits=32 starts=138 total=2727
+  info (MUT, allowZero cofnięty): chatki cityStatesCount=0 -> 20, cityStatesCount=1 -> 20
+  PASS: kontrola: bundel ZMUTOWANY (allowZero cofnięty w generator.ts:659) NIE przechodzi progu <0.65 (20 vs 20) — dowód, że test E nie jest tautologią
+
+========================================
+miasta-panstwa-wylaczone-test: 55 pass, 0 fail
+
+EXIT=0

@@ -240,17 +240,22 @@ export interface NewGameAdvancedOptions {
   cityLimitBase: number;
 }
 
+/**
+ * Domyślne „Zaawansowane opcje" nowej gry (R-WEB-NEWGAME-DEFAULTS-Q1, Maciej 2026-10-31).
+ * Świeży profil / „przywróć domyślne" = te wartości. Zapisane prefs gracza nie są nadpisywane.
+ * / EN: new-game advanced defaults (owner decision 2026-10-31). Saved player prefs are not overwritten.
+ */
 const DEFAULT_ADVANCED: NewGameAdvancedOptions = {
   barbariansLevel: 'normalny',
-  battleAlwaysManual: false,
+  battleAlwaysManual: true,
   victoryMode: 'moc_i_dominacja',
-  buildingCostPace: 'niski',
-  kosztJednostekPace: 'niski',
-  wzrostLudnosciPace: 'wysoki',
-  ruchSwiataPace: 'krotki',
+  buildingCostPace: 'normalny',
+  kosztJednostekPace: 'normalny',
+  wzrostLudnosciPace: 'normalny',
+  ruchSwiataPace: 'normalny',
   landFractionPercent: 30,
   landFractionCustom: false,
-  cityStateDifficultyOverride: null,
+  cityStateDifficultyOverride: 'normal',
   cityLimitBase: 10, // R-MIASTA-LIMIT-PER-EPOKA-Q1 / EN: city limit base
 };
 
@@ -1625,6 +1630,8 @@ function renderEpochStep(host: HTMLElement): void {
 function renderSettingRows(host: HTMLElement, keys: string[]): void {
   const grid = el('div', 'sett-grid');
   for (const key of keys) {
+    // R-WEB-NEWGAME-DEFAULTS-Q1: typ Ziemia = szablon bez suwaka udziału lądu (decyzja właściciela).
+    if (key === 'landFraction' && typSwiataFromMenuLabel(settingValue('world_type') || 'Kontynenty') === 'ziemia') continue;
     const s = SETT.find(x => x.key === key);
     if (!s) {
       {
@@ -1707,7 +1714,7 @@ function mainGridExtraRows(): AdvSettingRow[] {
     {
       key: 'landFraction',
       lbl: 'Udział lądu na mapie',
-      hint: 'Reszta to morze. Domyślnie: Pangea 60%, Kontynenty 30%, Wyspy 50%. Typ Ziemia = szablon kontynentów (~21%, bez suwaka).',
+      hint: 'Reszta to morze. Domyślnie: 30% lądu we wszystkich typach świata z suwakiem (Kontynenty, Pangea, Wyspy). Typ Ziemia = szablon kontynentów (~21%, bez suwaka).',
       opts: landFractionOptLabels(),
       getIdx: () => {
         const i = LAND_FRACTION_PERCENT_OPTS.indexOf(advOpts.landFractionPercent);
@@ -1735,7 +1742,7 @@ function mainGridExtraRows(): AdvSettingRow[] {
     {
       key: 'cityStateDifficulty',
       lbl: 'Trudność miast-państw',
-      hint: 'Zaufanie startowe, próg sojuszu sióstr i posiłki obronne miast-państw — niezależnie od głównej trudności gry. Domyślnie = główna trudność. Wyłączone = pełne wyłączenie generacji miast-państw, mapa ma tylko cywilizacje.',
+      hint: 'Zaufanie startowe, próg sojuszu sióstr i posiłki obronne miast-państw — niezależnie od głównej trudności gry. Domyślnie: Normalny. Wyłączone = pełne wyłączenie generacji miast-państw, mapa ma tylko cywilizacje.',
       opts: ['Łatwy', 'Normalny', 'Trudny', 'Wyłączone'],
       getIdx: () => {
         if (advOpts.cityStateDifficultyOverride === 'easy') return 0;
