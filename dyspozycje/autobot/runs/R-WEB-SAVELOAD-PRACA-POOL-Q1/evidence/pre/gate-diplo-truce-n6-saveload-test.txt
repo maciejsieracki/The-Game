@@ -1,0 +1,4 @@
+PASS: reset nowej gry: applyClusterStartPlan czyści diplomacyPairMeta (main.ts ~9714)
+
+8 pass / 0 fail
+EXIT=0

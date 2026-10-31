@@ -1,0 +1,4 @@
+OK weighted result is identical for ownerId=0 and major-AI ownerId=1
+OK weighted reverse-order result remains identical for ownerId=0 and major-AI ownerId=1
+[r-manpower-uzupelnienie-hp-niezapisuje-q1-test] 17 OK, 0 FAIL
+EXIT=0

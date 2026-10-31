@@ -1,0 +1,4 @@
+    at node:internal/main/run_main_module:36:49
+
+Node.js v22.22.0
+EXIT=1
