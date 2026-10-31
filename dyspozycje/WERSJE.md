@@ -1,3 +1,12 @@
+## ROBOCZA c6e24df9 -- 2026-10-31 -- produkcja tartaka/kamieniołomu 50 i zużycie surowców przez obywateli ×1/×2/×3 (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (źródło `914daa502` + dwa tematy) i commit wdrożenia bundla; polecenie właściciela 2026-10-31: deploy do roboczej, posprzątać piaskownicę.
+- Bundle MD5 `c6e24df9b5055e83d1d7ca8600d81368`, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`, 70,088,261 bajtów. Vite direct build, outDir poza repo, stempel ROBOCZA; `verify-robocza-bundle.cjs` VERIFY OK.
+- Zakres: (1) `R-WEB-SAWMILL-QUARRY-PRODUCTION-50-Q1` — tartak i kamieniołom 50/turę w epoce 1 (50/75/113 z skalowaniem epoką); (2) `R-WEB-CITIZEN-UPKEEP-ERA-MULT-Q1` — stawka zużycia na obywatela: Kamień ×1, Brąz ×2, Żelazo ×3, listy surowców bez zmian.
+- Testy po scaleniu: tsc PASS; sawmill-quarry-50-economy 7/0, kamieniolom-kamien-epoka 37/0, improvement-adapter-resource-note 75/0, tartak-glinianka-rate-Q1 1281/0, citizen-upkeep-era-mult 663/0, diplomacy 148/0, war-era-counter 82/0. Każdy temat: Operator → Evaluator → (Obrona) → Final Control (PASS-WITH-NOTES).
+- Ograniczenia: nieaktualne komentarze „1,0 szt.” poza zakresem zostają; NIE_ZMIERZONO pełna tura end-to-end z drenażem w `main.ts`; znane czerwone w bazie: civ-matrix-ai-diplomacy-wiring 42/1, ai-test 274/20.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `d9408b27ad23b88d3c936138e166bc13`, 70,086,441 bajtów.
+
 ## ROBOCZA d9408b27 -- 2026-10-31 -- menu nowej gry: układ, wartości domyślne, przycisk „Zastosuj” (testowa)
 
 - **STATUS: DEPLOYED** — merge do `origin/main` (źródło `5ab3d58e2` + trzy tematy) i commit wdrożenia bundla; polecenie właściciela 2026-10-31: merge main, deploy Robocza, git push.
