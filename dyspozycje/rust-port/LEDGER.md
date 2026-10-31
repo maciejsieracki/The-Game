@@ -382,3 +382,5 @@ Cel końcowy i bieżący zapisane w `GOAL-RUST-PORT-20261020.md` (§"CEL PĘTLI 
 - Do decyzji właściciela (UX): ostrzeżenie hamulca wojny trafia do panelu Wydarzeń, ale filtr „Inne cyw." jest domyślnie OFF → gracz nie widzi ostrzeżenia, dopóki nie włączy chipu.
 - Następne: PEACE-RULES r2 (R8 blokada wojny epoki przy Relacji ≥100, R9 usunięcie auto-końca wojen wymuszonych) → CITY-CESSION → AGGRESSOR-FLAG → TRUCE, sekwencyjnie na tej gałęzi.
 - Push do `main`: NIE WYKONANO.
+
+- 2026-10-31 02:12 UTC — kontrola cykliczna: M07A r2, 8G r1, WEB R8R9 r1 biegną; brak PASS do integracji.
