@@ -1,280 +1,313 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA; push do origin/main wykonany na wyraźne polecenie właściciela (2026-10-31)",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "c6e24df9b5055e83d1d7ca8600d81368",
-  "bundleSha256": "b997db51238f35a300b721383782201bdf7c8cde651cb4684ee0d8e3c31ce1d7",
-  "bundleBytes": 70088261,
+  "bundleMd5": "765163444226f14cda2554986898a095",
+  "bundleSha256": "af05615b70a2c276dacd75a8e81769688c5abe79cbea8961280ccb171c4ad2cd",
+  "bundleBytes": 70088220,
   "sourceSnapshot": {
-    "source": "main 914daa502 + R-WEB-SAWMILL-QUARRY-PRODUCTION-50-Q1 (bfe8bf563) + R-WEB-CITIZEN-UPKEEP-ERA-MULT-Q1 (a92179286)",
+    "source": "main 4d1916f2c + R-WEB-SPICHLERZ-DRAIN-KEYS-Q1 (37148c80a) + R-WEB-BATTLE-STANDOFF-TWO-WARRIORS-Q1 (4bbf752f9) + R-WEB-AUTOIMPROVE-BLOCKERS-AUDIT-Q1 (de497a721, tylko dokumentacja i skrypt audytu)",
     "build": "Vite 5.4.x direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "R-WEB-SAWMILL-QUARRY-PRODUCTION-50-Q1: tartak i kamieniołom 50/turę w epoce 1 (skalowanie epoką ×1,5 bez zmian: 50/75/113)",
-    "R-WEB-CITIZEN-UPKEEP-ERA-MULT-Q1: zużycie surowców przez obywateli — stawka na obywatela: Kamień ×1, Brąz ×2, Żelazo ×3 (listy surowców bez zmian; drenaż i podgląd na tej samej stawce)"
+    "R-WEB-BATTLE-STANDOFF-TWO-WARRIORS-Q1: naprawa bitwy, w której dwóch Wojowników gracza bez Wodza/Generała stało w miejscu (tura 0, bez ataku) — `_startBattle` ustawia `_battleAwaitingOrders = true` (battleScene.ts:3471); regresja z e06ad53c8",
+    "R-WEB-SPICHLERZ-DRAIN-KEYS-Q1: zużycie Spichlerza (ceramika I/II, sól II) czytane z econ-params.json wg trudności; wartości 25/25/25 bez zmian, zachowanie gry identyczne; naprawiono zamieniony warunek I/II",
+    "R-WEB-AUTOIMPROVE-BLOCKERS-AUDIT-Q1: audyt bramek auto-ulepszeń (dokumentacja + gra/tools/audit-*.cjs), bez zmian w grze"
   ],
   "verification": [
-    "tsc --noEmit PASS (po scaleniu obu tematów)",
-    "sawmill-quarry-50-economy 7/0, kamieniolom-kamien-epoka 37/0, improvement-adapter-resource-note 75/0, tartak-glinianka-rate-Q1 1281/0, citizen-upkeep-era-mult 663/0, diplomacy 148/0, war-era-counter 82/0",
+    "tsc --noEmit PASS (po scaleniu)",
+    "battle-standoff-two-warriors 9/9, battle-melee-attack-doctrine, bitwa-auto-atak-wielojednostkowy 12/12, battle-formation-rules PASS",
+    "spichlerz-drain-keys 44/0, spichlerz-drain-pipeline 21/0, owned-building-inactive 4/0",
+    "regresja: sawmill-quarry-50 7/0, citizen-upkeep-era-mult 663/0, diplomacy 148/0, war-era-counter 82/0",
     "Build Vite PASS, verify-robocza-bundle"
   ],
   "limits": [
-    "Tematy po Final Control PASS-WITH-NOTES; nieaktualne komentarze „1,0 szt.” poza zakresem (resource-usage-breakdown.ts, main.ts) zostają na osobną paczkę",
-    "NIE_ZMIERZONO: pełna tura end-to-end z drenażem w main.ts (test pokrywa ścieżkę tury na funkcjach); ai-test 274/20 i civ-matrix 42/1 przyjęte z raportów Operatora",
-    "Znane czerwone w bazie: civ-matrix-ai-diplomacy-wiring 42/1, ai-test 274/20, citizen-resource-upkeep 107/2, szczescie-przebudowa-skali 515/4"
+    "NIE_ZMIERZONO live: bitwa z Generałem i 2v2 w Chromium (pokryte testem jednostkowym)",
+    "Auto-ulepszenia (farma/trzoda/irygacja/wycinka) NIE są naprawione w tym wydaniu — temat R-WEB-AUTOIMPROVE-STAGES-Q1 w toku",
+    "Podgląd zużycia Spichlerza w panelu miasta (cityPanel) nadal używa 25 — R-WEB-SPICHLERZ-HUD-PARAMS-Q1 w toku",
+    "Znane czerwone w bazie: civ-matrix-ai-diplomacy-wiring 42/1, ai-test 274/20"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
-    "notes": "Dwa tematy: Operator → Evaluator → Obrona → Final Control; integracja orkiestratora bez konfliktów."
+    "notes": "Trzy tematy: Operator → Evaluator → (Obrona) → Final Control; integracja orkiestratora bez konfliktów."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-10-31T11:22:02",
+  "hubGeneratedAt": "2026-10-31T13:29:25",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "c6e24df9b5055e83d1d7ca8600d81368",
-      "sizeBytes": 70088261
+      "md5": "765163444226f14cda2554986898a095",
+      "sizeBytes": 70088220
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "c6e24df9b5055e83d1d7ca8600d81368",
-      "sizeBytes": 70088261
+      "md5": "765163444226f14cda2554986898a095",
+      "sizeBytes": 70088220
     }
   ],
-  "md5": "c6e24df9b5055e83d1d7ca8600d81368",
-  "sizeBytes": 70088261,
-  "publisher": "Claude Code orkiestrator — polecenie właściciela 2026-10-31: deploy do roboczej (tartak, zużycie obywateli)",
-  "source": "gra/src; main 914daa502 + merge bfe8bf563 + a92179286",
+  "md5": "765163444226f14cda2554986898a095",
+  "sizeBytes": 70088220,
+  "publisher": "Claude Code orkiestrator — stała zgoda właściciela 2026-10-31: merge do main i deploy do roboczej",
+  "source": "gra/src; main 4d1916f2c + merge 37148c80a, 4bbf752f9, de497a721",
   "immediatePreviousRelease": {
-    "bundleMd5": "d9408b27ad23b88d3c936138e166bc13"
+    "bundleMd5": "c6e24df9b5055e83d1d7ca8600d81368"
   },
   "rollbackPlan": {
-    "method": "git revert commitu wdrożenia; poprzedni bundel MD5 d9408b27ad23b88d3c936138e166bc13, 70086441 bajtów."
+    "method": "git revert commitu wdrożenia; poprzedni bundel MD5 c6e24df9b5055e83d1d7ca8600d81368, 70088261 bajtów."
   },
   "previousRelease": {
     "releaseState": "DEPLOYED TO ROBOCZA; push do origin/main wykonany na wyraźne polecenie właściciela (2026-10-31)",
     "bundle": "Gra-ROBOCZA.html",
-    "bundleMd5": "d9408b27ad23b88d3c936138e166bc13",
-    "bundleSha256": "a938d633e69df72d7f7c1e5458127b0c2a16fcc2b863c42752a981eb71e1b44e",
-    "bundleBytes": 70086441,
+    "bundleMd5": "c6e24df9b5055e83d1d7ca8600d81368",
+    "bundleSha256": "b997db51238f35a300b721383782201bdf7c8cde651cb4684ee0d8e3c31ce1d7",
+    "bundleBytes": 70088261,
     "sourceSnapshot": {
-      "source": "main 5ab3d58e2 + R-WEB-NEWGAME-MENU-REORDER-Q1 (c094d2429) + R-WEB-NEWGAME-ADV-APPLY-BTN-Q1 (f4e0da1ee) + R-WEB-NEWGAME-DEFAULTS-Q1 (9e52df647)",
+      "source": "main 914daa502 + R-WEB-SAWMILL-QUARRY-PRODUCTION-50-Q1 (bfe8bf563) + R-WEB-CITIZEN-UPKEEP-ERA-MULT-Q1 (a92179286)",
       "build": "Vite 5.4.x direct, outDir poza repo; ROBOCZA stamp"
     },
     "scope": [
-      "R-WEB-NEWGAME-MENU-REORDER-Q1: układ ustawień nowej gry (12 kart w 2 kolumnach, 13 pozycji w „Zaawansowanych”, etykieta „Wojna epoki”)",
-      "R-WEB-NEWGAME-DEFAULTS-Q1: nowe wartości domyślne (30% lądu dla Kontynentów/Pangei/Wysp; Normalny: trudność miast-państw, zasięg ruchu, wzrost ludności, koszty budynków i jednostek; bitwy ręczne i automatyczne)",
-      "R-WEB-NEWGAME-ADV-APPLY-BTN-Q1: przycisk „Zastosuj” (aktywny) w oknie Zaawansowane opcje"
+      "R-WEB-SAWMILL-QUARRY-PRODUCTION-50-Q1: tartak i kamieniołom 50/turę w epoce 1 (skalowanie epoką ×1,5 bez zmian: 50/75/113)",
+      "R-WEB-CITIZEN-UPKEEP-ERA-MULT-Q1: zużycie surowców przez obywateli — stawka na obywatela: Kamień ×1, Brąz ×2, Żelazo ×3 (listy surowców bez zmian; drenaż i podgląd na tej samej stawce)"
     ],
     "verification": [
-      "tsc --noEmit PASS",
-      "Chromium: newgame-menu-reorder-layout 6 konfiguracji PASS, newgame-adv-apply-btn 87/0, newgame-defaults 60/0, settings-layout-reposition PASS",
-      "newgame-adv-tooltip 30, bottom-navigation 270, sett-grid-layout 74, battle-mode-choice-labels PASS, battle-mode-save-reload-contract PASS, diplo-truce-r1 30, diplomacy 148, war-era-counter 82",
-      "Build Vite PASS, verify-robocza-bundle VERIFY OK"
+      "tsc --noEmit PASS (po scaleniu obu tematów)",
+      "sawmill-quarry-50-economy 7/0, kamieniolom-kamien-epoka 37/0, improvement-adapter-resource-note 75/0, tartak-glinianka-rate-Q1 1281/0, citizen-upkeep-era-mult 663/0, diplomacy 148/0, war-era-counter 82/0",
+      "Build Vite PASS, verify-robocza-bundle"
     ],
     "limits": [
-      "Zapisane preferencje kreatora (localStorage civ-new-game-prefs-v1) NIE są nadpisywane — nowe domyślne widać po wyczyszczeniu preferencji",
-      "NIE_ZMIERZONO: zasłonięcie przycisku „Zastosuj” w pełnej aplikacji (test na harnessie), land-sea-ratio-test (timeout)",
-      "main.ts startNewGame ma stare wartości domyślne poza kreatorem (poza zakresem)",
-      "Znane czerwone w bazie: civ-matrix-ai-diplomacy-wiring 42/1, ai-test 274/20"
+      "Tematy po Final Control PASS-WITH-NOTES; nieaktualne komentarze „1,0 szt.” poza zakresem (resource-usage-breakdown.ts, main.ts) zostają na osobną paczkę",
+      "NIE_ZMIERZONO: pełna tura end-to-end z drenażem w main.ts (test pokrywa ścieżkę tury na funkcjach); ai-test 274/20 i civ-matrix 42/1 przyjęte z raportów Operatora",
+      "Znane czerwone w bazie: civ-matrix-ai-diplomacy-wiring 42/1, ai-test 274/20, citizen-resource-upkeep 107/2, szczescie-przebudowa-skali 515/4"
     ],
     "finalControl": {
       "status": "PASS-WITH-NOTES",
-      "notes": "Trzy tematy: Operator → Evaluator → Obrona → Final Control; integracja orkiestratora z poprawką oczekiwań testów po scaleniu."
+      "notes": "Dwa tematy: Operator → Evaluator → Obrona → Final Control; integracja orkiestratora bez konfliktów."
     },
     "previousRelease": {
-      "releaseState": "DEPLOYED — testowa ROBOCZA; zatwierdzony subset wodza/rekrutacji i szyku/doktryn bitwy; GitHub Raw readback PASS.",
+      "releaseState": "DEPLOYED TO ROBOCZA; push do origin/main wykonany na wyraźne polecenie właściciela (2026-10-31)",
       "bundle": "Gra-ROBOCZA.html",
-      "bundleMd5": "03d8d29e4714204bff62a27823e946ee",
-      "bundleSha256": "f379b328b1f7c63f1e860a76f3310a98b189ebcb16ed5a444e3f7ebd4a41b452",
-      "bundleBytes": 70019132,
+      "bundleMd5": "d9408b27ad23b88d3c936138e166bc13",
+      "bundleSha256": "a938d633e69df72d7f7c1e5458127b0c2a16fcc2b863c42752a981eb71e1b44e",
+      "bundleBytes": 70086441,
       "sourceSnapshot": {
-        "baseCommit": "0b28d67fe6fae0bfbf9be39bd0ec84130080fb4d",
-        "productCommit": "f48894231b7dfeb3d1726ac7a3deba11a8c7a3f0",
-        "source": "origin/main + approved leader roster and Army commander recruitment card + battle default formation and Atak/Obrona/Szturm doctrine fixes",
-        "build": "Vite 5.4.21; single-file ROBOCZA bundle; 916 modules; stamped",
-        "publicationCommit": "f6f63dc839449d8e08a7e2509ec72796757867af"
+        "source": "main 5ab3d58e2 + R-WEB-NEWGAME-MENU-REORDER-Q1 (c094d2429) + R-WEB-NEWGAME-ADV-APPLY-BTN-Q1 (f4e0da1ee) + R-WEB-NEWGAME-DEFAULTS-Q1 (9e52df647)",
+        "build": "Vite 5.4.x direct, outDir poza repo; ROBOCZA stamp"
       },
       "scope": [
-        "Wódz/generał ma zatwierdzony model jednostki zależny od epoki i technologii: kamień Wojownik przed Kołem, Rydwan (woły) po Kole; brąz zatwierdzony rydwan lub najlepsza dostępna piechota/konnica; żelazo najlepsza dostępna konnica.",
-        "Karta wodza/generała jest widoczna na górze panelu rekrutacji Armii i w widoku rekrutacji stolicy; nie dubluje się w wierszu miasta.",
-        "Domyślne ustawienie bitwy: piechota z przodu, dystans za nią, konnica i rydwany na skrzydłach. Atak idzie uporządkowaną linią, Obrona utrzymuje pozycję, Szturm wybiera najbliższe cele indywidualnie."
+        "R-WEB-NEWGAME-MENU-REORDER-Q1: układ ustawień nowej gry (12 kart w 2 kolumnach, 13 pozycji w „Zaawansowanych”, etykieta „Wojna epoki”)",
+        "R-WEB-NEWGAME-DEFAULTS-Q1: nowe wartości domyślne (30% lądu dla Kontynentów/Pangei/Wysp; Normalny: trudność miast-państw, zasięg ruchu, wzrost ludności, koszty budynków i jednostek; bitwy ręczne i automatyczne)",
+        "R-WEB-NEWGAME-ADV-APPLY-BTN-Q1: przycisk „Zastosuj” (aktywny) w oknie Zaawansowane opcje"
       ],
       "verification": [
-        "general-eligible-unit-roster-test.cjs — 137/137; general-capital-recruitment-order-test.cjs — PASS, zakup w Chromium; empire-mass-recruitment-test.cjs — 30/30 w Chromium.",
-        "battle-formation-rules-test.cjs — PASS; bitwa-auto-atak-wielojednostkowy-evaluation-test.cjs — 12/12.",
-        "TypeScript — PASS; Vite 5.4.21 production build — PASS, 916 modules; focused Final Control PASS-WITH-NOTES."
+        "tsc --noEmit PASS",
+        "Chromium: newgame-menu-reorder-layout 6 konfiguracji PASS, newgame-adv-apply-btn 87/0, newgame-defaults 60/0, settings-layout-reposition PASS",
+        "newgame-adv-tooltip 30, bottom-navigation 270, sett-grid-layout 74, battle-mode-choice-labels PASS, battle-mode-save-reload-contract PASS, diplo-truce-r1 30, diplomacy 148, war-era-counter 82",
+        "Build Vite PASS, verify-robocza-bundle VERIFY OK"
       ],
       "limits": [
-        "AI morska kampania nadal nie schodzi na ląd ani nie wznawia marszu po zaokrętowaniu; pozostaje poza tym wydaniem.",
-        "Odznaka generała i 4× symbol cywilizacji na mapie są poza tym wydaniem.",
-        "Test wydajności dużego imperium zostaje odłożony do końca, zgodnie z poleceniem właściciela.",
-        "Final Control nie przeprowadził pełnej gry bitwy przez macierz widoków; ograniczenia testów browserowych zapisano w raporcie."
+        "Zapisane preferencje kreatora (localStorage civ-new-game-prefs-v1) NIE są nadpisywane — nowe domyślne widać po wyczyszczeniu preferencji",
+        "NIE_ZMIERZONO: zasłonięcie przycisku „Zastosuj” w pełnej aplikacji (test na harnessie), land-sea-ratio-test (timeout)",
+        "main.ts startNewGame ma stare wartości domyślne poza kreatorem (poza zakresem)",
+        "Znane czerwone w bazie: civ-matrix-ai-diplomacy-wiring 42/1, ai-test 274/20"
       ],
-      "previousRelease": {
-        "releaseState": "DEPLOYED — testowa ROBOCZA; poprzedni pakiet przed ready subset 2026-10-28.",
-        "bundle": "Gra-ROBOCZA.html",
-        "bundleMd5": "00f7666343c2247dfdb21ee1e6ed27aa",
-        "bundleSha256": "5c10865a5e1b9b29c8dae6c2c09a73ca46d55cf7b3090a5566a029116bdc7d3e",
-        "bundleBytes": 70015515,
-        "sourceSnapshot": {
-          "baseCommit": "39d020ae",
-          "productCommit": "b3cc4c5d",
-          "publicationCommit": "eb6e08245de0e15832f783f87dec76300c5f0601"
-        },
-        "archivedOlderRelease": {
-          "releaseState": "DEPLOYED — testowa ROBOCZA; R-PERF-CAPTURE-EVENT-RETENTION-Q1 + R-PERF-UNIT-ICON-SYNC-CHURN-Q1; Final Control PASS WITH NOTES; długosesyjna diagnoza pozostaje otwarta.",
-          "bundle": "Gra-ROBOCZA.html",
-          "bundleMd5": "e4c3643d35ba88f9823373ac9419477c",
-          "bundleSha256": "d918fb1c5dfd221106c41aa6ec0c74450fbd5ddff1cdcad22c06ba8cf595fc9b",
-          "bundleBytes": 70013155,
-          "sourceSnapshot": {
-            "baseCommit": "a1d8621290d107adc3ece82978d64aa6b7c4c0dc",
-            "productCommit": "a4d7bc30 + 782c9b34",
-            "source": "origin/main + zwalnianie szczegółów usuniętych kart przejęć + ponowne użycie niezmienionych ikon jednostek",
-            "build": "Vite 5.4.21; 916 modules; single-file ROBOCZA bundle; stamped",
-            "publicationCommit": "17c1ba2a0314c63a67442acb2d2500d2e546b639"
-          },
-          "scope": [
-            "Po usunięciu karty przejęcia z ograniczonego dziennika zwalniane są jej szczegóły; widoczne karty nadal zachowują dane raportu.",
-            "Niezmienione badge stosów i ikony głodu/deficytu jednostek zachowują swoje sprite’y i tekstury między synchronizacjami; przy zmianie stanu nakładki są aktualizowane i zwalniane."
-          ],
-          "verification": [
-            "node gra/tools/capture-event-retention-test.cjs — 20 asercji PASS;",
-            "node gra/tools/unit-renderer-overlay-sync-test.cjs — 17/17;",
-            "node gra/tools/web-memory-leaks-test.cjs — 55/55;",
-            "powiązane testy raportów przejęcia/eliminacji i panelu wydarzeń — PASS wg niezależnego Evaluatora;",
-            "npm run typecheck --prefix gra — PASS wg niezależnych przebiegów kandydatów;",
-            "npm run build --prefix gra — PASS, Vite 916 modules;",
-            "niezależny Evaluator i Final Control PASS WITH NOTES dla wąskich zakresów obu zmian."
-          ],
-          "limits": [
-            "Te poprawki usuwają potwierdzoną retencję szczegółów zdarzeń i zbędne ponowne tworzenie ikon; nie dowodzą, że wyjaśniają wzrost pamięci do 2 GB ani wszystkie opóźnienia.",
-            "Próba 100 tur zakończyła się po 38 turach, gdy zakończenie tury przekroczyło limit 60 s (70,2 s). Dalszy pomiar mapy został przerwany po zamknięciu Chromium. Pełny test dużego imperium pozostaje otwarty.",
-            "W 20 cyklach panelu miasta po wymuszonym GC DOM i listenery ustabilizowały się; heap miał niewielki, nieliniowy przyrost 1,70 MB, którego pomiar nie przypisał do obiektu."
-          ],
-          "finalControl": {
-            "status": "PASS WITH NOTES — exact local Robocza bundle; long-session diagnosis remains open",
-            "reportPath": "dyspozycje/autobot/runs/R-PERF-MEMORY-IMPROVEMENTS-ROBOCZA-Q1/02-final-control.md"
-          },
-          "previousRelease": {
-            "releaseState": "candidate R-WEB-WAR-EPOCH-RELEASE-ROBOCZA-Q1 (wydanie nr 7, ROBOCZA testowa, lokalny commit, NIE opublikowane; runda 2 Operatora: dopisane odkrycie strony przy wypowiedzeniu wojny epoki; push/deploy po Final Control i osobnej autoryzacji przez orkiestratora)",
-            "bundle": "Gra-ROBOCZA.html",
-            "bundleMd5": "f491c3a2188d0d5ccea9bc715927a070",
-            "bundleSha256": "f0f9f18429a0cc2e19b15165f6c0eaf9f214dd8bff9fdc7c9b4e9d06f369aaa7",
-            "bundleBytes": 69993111,
-            "sourceSnapshot": {
-              "baseCommit": "origin/main b3349709 (ROBOCZA 16d42d7a, wydanie nr 6)",
-              "productCommitSource": "R-WEB-WAR-EPOCH-PLAYER-FIRST-Q1 runda 2: cherry-pick c69b9b90 d1e28913 7a2c3863 (bez haka testowego, bez dyspozycje/**) -> 545a8306 3b52d69a 70bbc00c; poprawka Operatora r2 (zarzut FC r1 nr 1): odkrycie nieodkrytej strony AI przy wypowiedzeniu wojny epoki z graczem (main.ts, wypowiedz_wojne) + bramka main-guard i mutacja; flaga WAR_EPOCH_PLAYER_FIRST_ENABLED=true (gra/data/ui-params.json)"
-            },
-            "scope": [
-              "origin/main b3349709 + R-WEB-WAR-EPOCH-PLAYER-FIRST-Q1 runda 2 (kod 7a2c3863):",
-              "(1) gracz jest PIERWSZA para fali wojny epoki z NAJBLIZSZA cywilizacja AI (major); pary AI-AI dopiero potem wg R1/R2/R3;",
-              "(2) wojna epoki omija mgle wojny i odkrycie wszedzie, takze dla gracza (nieodkryta strona zostaje odkryta w chwili wypowiedzenia);",
-              "(3) opcja nowej gry \"Wojna epoki z udzialem gracza\" (domyslnie Wlaczona, zapis w save, stary zapis = Wylaczona), wiersz zawsze widoczny;",
-              "(4) kolejnosc: deklaracja pary gracza zapada pierwsza; flaga WAR_EPOCH_PLAYER_FIRST_ENABLED = true."
-            ],
-            "verification": [
-              "npm ci --ignore-scripts EXIT=0; tsc --noEmit EXIT=0 (runda 2);",
-              "vite build do scratch EXIT=0 (runda 2, /tmp scratchpad, po posprzataniu); inject-build-stamp ROBOCZA OK md5=f491c3a2;",
-              "war-epoch-player-first-test 33/0 + main-guard 34/0 (runda 2: +odkrycie przy wypowiedzeniu, +mutacja);",
-              "pozostale bramki rundy 1 (war-rules-multiwar 55/0 + main-guard 21/0; forced-war-stone 38/0 + main-guard 19/0; forced-war-bronze 56/0; forced-war-iron 55/0 + main-guard 37/0; forced-war-trojstronna 23/0 + main-guard 14/0; war-allin-capital 95/0; army-consolidation 6/6 KILLED + e2e 6/0; ai-move-range 46/0; diplo-tick-war-brake 69/0 + 51/0 + 17/0; sensible-deals 63/0 + 22/0; diplomacy 148/0 + war-gates 19/0; logic 213/213; ai-test 276/18 (znane); endturn 38/0 + exec 46/0; load-game-regression 34/0; barbarzyncy 249/0; barb-city 178/0) - patrz raport Operatora r2 i wyniki w dyspozycje/autobot/runs/R-WEB-WAR-EPOCH-RELEASE-ROBOCZA-Q1/",
-              "znane czerwone nie gorzej: forced-war-waves 16/1, forced-war-bronze-main-guard 27/1, forced-war-bronze-new-game-reset (crash), recruitment-no-upkeep 22/14, deposit-building 46/1, load-game-blockers-exec (ReferenceError), diplomacy audience-close-flush/lista-podglad/negotiation-table/package-ai-counter-actionable/proposal, koniec-tury f1-f4/g1-g2."
-            ],
-            "limits": [
-              "Wydanie ROBOCZE testowe na wyrazne polecenie wlasciciela; brak pelnej akceptacji rozgrywki.",
-              "NIE_ZMIERZONO (do WERSJE.md, decyzja orkiestratora): pelna seria pomiarow rundy 2 (>=5 seedow x 70 tur; partner = najblizsza cywilizacja; kolejnosc gracz-przed-AI; scenariusze nieodkrytych cywilizacji; zapis/odczyt opcji i stary zapis w przegladarce).",
-              "NIE_ZMIERZONO: smoke >=46 tur (pokoj i wojna) i pomiar czasu tury kandydat/baza (x1,10) na tym bundlu; pomiar wojny gracza w T40-T42 w >=3 seedach (flaga ON). Patrz raport Operatora r2 i Evaluator r2.",
-              "Zrzut wiersza opcji „Wojna epoki z udzialem gracza” w ekranie nowej gry: patrz wynik smoke Operatora r2 (raport); bez tego zrzutu wiersz uznaje sie za NIE_ZMIERZONO."
-            ],
-            "finalControl": {
-              "status": "PENDING",
-              "reportPath": "dyspozycje/autobot/runs/R-WEB-WAR-EPOCH-RELEASE-ROBOCZA-Q1/"
-            },
-            "previousRelease": {
-              "releaseState": "candidate R-WEB-UI-ARMY-RELEASE-ROBOCZA-Q1 (wydanie nr 6, lokalny commit, nie opublikowane; publish po Final Control przez orkiestratora)",
-              "bundle": "Gra-ROBOCZA.html",
-              "bundleMd5": "16d42d7a1d2dbaf790eab54c550df002",
-              "bundleSha256": "50c3b6a4a5e5fba39663722cd8ea90340862c645da5abdb98b4714f27ac5fc12",
-              "bundleBytes": 69990763,
-              "publicationCommit": "origin/main b3349709 (ROBOCZA 16d42d7a, wydanie nr 6)"
-            },
-            "rollbackPlan": {
-              "method": "przywrocenie gra-robocza/Gra-ROBOCZA.html z wydania nr 6 (ROBOCZA 16d42d7a, commit 6aff28ff/b3349709; pelny manifest w previousReleaseManifest) albo revert commitow wydania nr 7 (545a8306..70bbc00c oraz commitow poprawki i wydania)",
-              "previousBundleMd5": "16d42d7a1d2dbaf790eab54c550df002",
-              "previousBundleSha256": "50c3b6a4a5e5fba39663722cd8ea90340862c645da5abdb98b4714f27ac5fc12",
-              "previousBundleBytes": 69990763
-            }
-          },
-          "rollbackPlan": {
-            "method": "Revert source/release commits; prior Robocza bundle and checksums are recorded in immediatePreviousRelease.",
-            "previousBundleMd5": "31c64f6545b9e30ab0171bc105143fbe",
-            "previousBundleSha256": "3b90ffbee14db98171494cf434f4e711fb2d325e27341d55bf54317e84c2d383",
-            "previousBundleBytes": 70012553
-          }
-        }
-      },
-      "rollbackPlan": {
-        "method": "Revert source and Robocza artifact commits; prior bundle and source publication are recorded in previousRelease.",
-        "previousBundleMd5": "00f7666343c2247dfdb21ee1e6ed27aa",
-        "previousBundleSha256": "5c10865a5e1b9b29c8dae6c2c09a73ca46d55cf7b3090a5566a029116bdc7d3e",
-        "previousBundleBytes": 70015515
-      },
       "finalControl": {
-        "status": "PASS-WITH-NOTES — exact ready subset; see FINAL-CONTROL-READY-SUBSET-20261028/01-final-control.md",
-        "notes": "Browser recruitment coverage is focused; no fresh full-game battle interaction or viewport matrix was run."
+        "status": "PASS-WITH-NOTES",
+        "notes": "Trzy tematy: Operator → Evaluator → Obrona → Final Control; integracja orkiestratora z poprawką oczekiwań testów po scaleniu."
       },
-      "startHub": "START.html",
-      "hubGeneratedAt": "2026-10-28T21:20:26",
-      "bundles": [
-        {
-          "file": "Gra-ROBOCZA.html",
-          "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
-          "label": "Pełna gra ROBOCZA",
-          "md5": "03d8d29e4714204bff62a27823e946ee",
-          "sizeBytes": 70019132
-        },
-        {
-          "file": "Gra-ROBOCZA.html",
-          "href": "Gra-ROBOCZA.html",
-          "label": "Pełna gra (z menu)",
-          "md5": "03d8d29e4714204bff62a27823e946ee",
-          "sizeBytes": 70019132
-        }
-      ],
-      "publishPlan": {
-        "status": "PUBLISHED to origin/main at f6f63dc839449d8e08a7e2509ec72796757867af; Robocza only; no KANON/FINALNA promotion.",
-        "target": "origin/main"
-      },
-      "md5": "03d8d29e4714204bff62a27823e946ee",
-      "publisher": "Codex AutoBot — owner authorized Robocza publish and main push",
-      "source": "gra/src; source integration commit f48894231b7dfeb3d1726ac7a3deba11a8c7a3f0 based on main 0b28d67f",
-      "sizeBytes": 70013155,
-      "releaseScope": "Wódz/generał roster and visible capital/Army recruitment card; battle default formation and Atak/Obrona/Szturm doctrine.",
-      "immediatePreviousRelease": {
-        "publicationCommit": "a1d8621290d107adc3ece82978d64aa6b7c4c0dc",
-        "bundleMd5": "31c64f6545b9e30ab0171bc105143fbe",
-        "bundleSha256": "3b90ffbee14db98171494cf434f4e711fb2d325e27341d55bf54317e84c2d383",
-        "bundleBytes": 70012553
-      },
-      "remoteReadback": {
-        "status": "PASS",
-        "remote": "origin/main",
-        "commit": "f6f63dc839449d8e08a7e2509ec72796757867af",
-        "bundleUrl": "https://raw.githubusercontent.com/maciejsieracki/The-Game/f6f63dc839449d8e08a7e2509ec72796757867af/gra-robocza/Gra-ROBOCZA.html",
-        "manifestUrl": "https://raw.githubusercontent.com/maciejsieracki/The-Game/f6f63dc839449d8e08a7e2509ec72796757867af/gra-robocza/ROBOCZA-MANIFEST.json",
-        "startUrl": "https://raw.githubusercontent.com/maciejsieracki/The-Game/f6f63dc839449d8e08a7e2509ec72796757867af/gra-robocza/START.html",
-        "httpStatus": 200,
+      "previousRelease": {
+        "releaseState": "DEPLOYED — testowa ROBOCZA; zatwierdzony subset wodza/rekrutacji i szyku/doktryn bitwy; GitHub Raw readback PASS.",
+        "bundle": "Gra-ROBOCZA.html",
         "bundleMd5": "03d8d29e4714204bff62a27823e946ee",
         "bundleSha256": "f379b328b1f7c63f1e860a76f3310a98b189ebcb16ed5a444e3f7ebd4a41b452",
         "bundleBytes": 70019132,
-        "checks": "GitHub Raw bundle, manifest and START returned HTTP 200; fetched bundle MD5/SHA-256/size match manifest top-level fields and both bundles[] rows; START links display the current MD5 prefix."
-      },
-      "publishedAt": "2026-10-28",
-      "publicationCommit": "f6f63dc839449d8e08a7e2509ec72796757867af"
+        "sourceSnapshot": {
+          "baseCommit": "0b28d67fe6fae0bfbf9be39bd0ec84130080fb4d",
+          "productCommit": "f48894231b7dfeb3d1726ac7a3deba11a8c7a3f0",
+          "source": "origin/main + approved leader roster and Army commander recruitment card + battle default formation and Atak/Obrona/Szturm doctrine fixes",
+          "build": "Vite 5.4.21; single-file ROBOCZA bundle; 916 modules; stamped",
+          "publicationCommit": "f6f63dc839449d8e08a7e2509ec72796757867af"
+        },
+        "scope": [
+          "Wódz/generał ma zatwierdzony model jednostki zależny od epoki i technologii: kamień Wojownik przed Kołem, Rydwan (woły) po Kole; brąz zatwierdzony rydwan lub najlepsza dostępna piechota/konnica; żelazo najlepsza dostępna konnica.",
+          "Karta wodza/generała jest widoczna na górze panelu rekrutacji Armii i w widoku rekrutacji stolicy; nie dubluje się w wierszu miasta.",
+          "Domyślne ustawienie bitwy: piechota z przodu, dystans za nią, konnica i rydwany na skrzydłach. Atak idzie uporządkowaną linią, Obrona utrzymuje pozycję, Szturm wybiera najbliższe cele indywidualnie."
+        ],
+        "verification": [
+          "general-eligible-unit-roster-test.cjs — 137/137; general-capital-recruitment-order-test.cjs — PASS, zakup w Chromium; empire-mass-recruitment-test.cjs — 30/30 w Chromium.",
+          "battle-formation-rules-test.cjs — PASS; bitwa-auto-atak-wielojednostkowy-evaluation-test.cjs — 12/12.",
+          "TypeScript — PASS; Vite 5.4.21 production build — PASS, 916 modules; focused Final Control PASS-WITH-NOTES."
+        ],
+        "limits": [
+          "AI morska kampania nadal nie schodzi na ląd ani nie wznawia marszu po zaokrętowaniu; pozostaje poza tym wydaniem.",
+          "Odznaka generała i 4× symbol cywilizacji na mapie są poza tym wydaniem.",
+          "Test wydajności dużego imperium zostaje odłożony do końca, zgodnie z poleceniem właściciela.",
+          "Final Control nie przeprowadził pełnej gry bitwy przez macierz widoków; ograniczenia testów browserowych zapisano w raporcie."
+        ],
+        "previousRelease": {
+          "releaseState": "DEPLOYED — testowa ROBOCZA; poprzedni pakiet przed ready subset 2026-10-28.",
+          "bundle": "Gra-ROBOCZA.html",
+          "bundleMd5": "00f7666343c2247dfdb21ee1e6ed27aa",
+          "bundleSha256": "5c10865a5e1b9b29c8dae6c2c09a73ca46d55cf7b3090a5566a029116bdc7d3e",
+          "bundleBytes": 70015515,
+          "sourceSnapshot": {
+            "baseCommit": "39d020ae",
+            "productCommit": "b3cc4c5d",
+            "publicationCommit": "eb6e08245de0e15832f783f87dec76300c5f0601"
+          },
+          "archivedOlderRelease": {
+            "releaseState": "DEPLOYED — testowa ROBOCZA; R-PERF-CAPTURE-EVENT-RETENTION-Q1 + R-PERF-UNIT-ICON-SYNC-CHURN-Q1; Final Control PASS WITH NOTES; długosesyjna diagnoza pozostaje otwarta.",
+            "bundle": "Gra-ROBOCZA.html",
+            "bundleMd5": "e4c3643d35ba88f9823373ac9419477c",
+            "bundleSha256": "d918fb1c5dfd221106c41aa6ec0c74450fbd5ddff1cdcad22c06ba8cf595fc9b",
+            "bundleBytes": 70013155,
+            "sourceSnapshot": {
+              "baseCommit": "a1d8621290d107adc3ece82978d64aa6b7c4c0dc",
+              "productCommit": "a4d7bc30 + 782c9b34",
+              "source": "origin/main + zwalnianie szczegółów usuniętych kart przejęć + ponowne użycie niezmienionych ikon jednostek",
+              "build": "Vite 5.4.21; 916 modules; single-file ROBOCZA bundle; stamped",
+              "publicationCommit": "17c1ba2a0314c63a67442acb2d2500d2e546b639"
+            },
+            "scope": [
+              "Po usunięciu karty przejęcia z ograniczonego dziennika zwalniane są jej szczegóły; widoczne karty nadal zachowują dane raportu.",
+              "Niezmienione badge stosów i ikony głodu/deficytu jednostek zachowują swoje sprite’y i tekstury między synchronizacjami; przy zmianie stanu nakładki są aktualizowane i zwalniane."
+            ],
+            "verification": [
+              "node gra/tools/capture-event-retention-test.cjs — 20 asercji PASS;",
+              "node gra/tools/unit-renderer-overlay-sync-test.cjs — 17/17;",
+              "node gra/tools/web-memory-leaks-test.cjs — 55/55;",
+              "powiązane testy raportów przejęcia/eliminacji i panelu wydarzeń — PASS wg niezależnego Evaluatora;",
+              "npm run typecheck --prefix gra — PASS wg niezależnych przebiegów kandydatów;",
+              "npm run build --prefix gra — PASS, Vite 916 modules;",
+              "niezależny Evaluator i Final Control PASS WITH NOTES dla wąskich zakresów obu zmian."
+            ],
+            "limits": [
+              "Te poprawki usuwają potwierdzoną retencję szczegółów zdarzeń i zbędne ponowne tworzenie ikon; nie dowodzą, że wyjaśniają wzrost pamięci do 2 GB ani wszystkie opóźnienia.",
+              "Próba 100 tur zakończyła się po 38 turach, gdy zakończenie tury przekroczyło limit 60 s (70,2 s). Dalszy pomiar mapy został przerwany po zamknięciu Chromium. Pełny test dużego imperium pozostaje otwarty.",
+              "W 20 cyklach panelu miasta po wymuszonym GC DOM i listenery ustabilizowały się; heap miał niewielki, nieliniowy przyrost 1,70 MB, którego pomiar nie przypisał do obiektu."
+            ],
+            "finalControl": {
+              "status": "PASS WITH NOTES — exact local Robocza bundle; long-session diagnosis remains open",
+              "reportPath": "dyspozycje/autobot/runs/R-PERF-MEMORY-IMPROVEMENTS-ROBOCZA-Q1/02-final-control.md"
+            },
+            "previousRelease": {
+              "releaseState": "candidate R-WEB-WAR-EPOCH-RELEASE-ROBOCZA-Q1 (wydanie nr 7, ROBOCZA testowa, lokalny commit, NIE opublikowane; runda 2 Operatora: dopisane odkrycie strony przy wypowiedzeniu wojny epoki; push/deploy po Final Control i osobnej autoryzacji przez orkiestratora)",
+              "bundle": "Gra-ROBOCZA.html",
+              "bundleMd5": "f491c3a2188d0d5ccea9bc715927a070",
+              "bundleSha256": "f0f9f18429a0cc2e19b15165f6c0eaf9f214dd8bff9fdc7c9b4e9d06f369aaa7",
+              "bundleBytes": 69993111,
+              "sourceSnapshot": {
+                "baseCommit": "origin/main b3349709 (ROBOCZA 16d42d7a, wydanie nr 6)",
+                "productCommitSource": "R-WEB-WAR-EPOCH-PLAYER-FIRST-Q1 runda 2: cherry-pick c69b9b90 d1e28913 7a2c3863 (bez haka testowego, bez dyspozycje/**) -> 545a8306 3b52d69a 70bbc00c; poprawka Operatora r2 (zarzut FC r1 nr 1): odkrycie nieodkrytej strony AI przy wypowiedzeniu wojny epoki z graczem (main.ts, wypowiedz_wojne) + bramka main-guard i mutacja; flaga WAR_EPOCH_PLAYER_FIRST_ENABLED=true (gra/data/ui-params.json)"
+              },
+              "scope": [
+                "origin/main b3349709 + R-WEB-WAR-EPOCH-PLAYER-FIRST-Q1 runda 2 (kod 7a2c3863):",
+                "(1) gracz jest PIERWSZA para fali wojny epoki z NAJBLIZSZA cywilizacja AI (major); pary AI-AI dopiero potem wg R1/R2/R3;",
+                "(2) wojna epoki omija mgle wojny i odkrycie wszedzie, takze dla gracza (nieodkryta strona zostaje odkryta w chwili wypowiedzenia);",
+                "(3) opcja nowej gry \"Wojna epoki z udzialem gracza\" (domyslnie Wlaczona, zapis w save, stary zapis = Wylaczona), wiersz zawsze widoczny;",
+                "(4) kolejnosc: deklaracja pary gracza zapada pierwsza; flaga WAR_EPOCH_PLAYER_FIRST_ENABLED = true."
+              ],
+              "verification": [
+                "npm ci --ignore-scripts EXIT=0; tsc --noEmit EXIT=0 (runda 2);",
+                "vite build do scratch EXIT=0 (runda 2, /tmp scratchpad, po posprzataniu); inject-build-stamp ROBOCZA OK md5=f491c3a2;",
+                "war-epoch-player-first-test 33/0 + main-guard 34/0 (runda 2: +odkrycie przy wypowiedzeniu, +mutacja);",
+                "pozostale bramki rundy 1 (war-rules-multiwar 55/0 + main-guard 21/0; forced-war-stone 38/0 + main-guard 19/0; forced-war-bronze 56/0; forced-war-iron 55/0 + main-guard 37/0; forced-war-trojstronna 23/0 + main-guard 14/0; war-allin-capital 95/0; army-consolidation 6/6 KILLED + e2e 6/0; ai-move-range 46/0; diplo-tick-war-brake 69/0 + 51/0 + 17/0; sensible-deals 63/0 + 22/0; diplomacy 148/0 + war-gates 19/0; logic 213/213; ai-test 276/18 (znane); endturn 38/0 + exec 46/0; load-game-regression 34/0; barbarzyncy 249/0; barb-city 178/0) - patrz raport Operatora r2 i wyniki w dyspozycje/autobot/runs/R-WEB-WAR-EPOCH-RELEASE-ROBOCZA-Q1/",
+                "znane czerwone nie gorzej: forced-war-waves 16/1, forced-war-bronze-main-guard 27/1, forced-war-bronze-new-game-reset (crash), recruitment-no-upkeep 22/14, deposit-building 46/1, load-game-blockers-exec (ReferenceError), diplomacy audience-close-flush/lista-podglad/negotiation-table/package-ai-counter-actionable/proposal, koniec-tury f1-f4/g1-g2."
+              ],
+              "limits": [
+                "Wydanie ROBOCZE testowe na wyrazne polecenie wlasciciela; brak pelnej akceptacji rozgrywki.",
+                "NIE_ZMIERZONO (do WERSJE.md, decyzja orkiestratora): pelna seria pomiarow rundy 2 (>=5 seedow x 70 tur; partner = najblizsza cywilizacja; kolejnosc gracz-przed-AI; scenariusze nieodkrytych cywilizacji; zapis/odczyt opcji i stary zapis w przegladarce).",
+                "NIE_ZMIERZONO: smoke >=46 tur (pokoj i wojna) i pomiar czasu tury kandydat/baza (x1,10) na tym bundlu; pomiar wojny gracza w T40-T42 w >=3 seedach (flaga ON). Patrz raport Operatora r2 i Evaluator r2.",
+                "Zrzut wiersza opcji „Wojna epoki z udzialem gracza” w ekranie nowej gry: patrz wynik smoke Operatora r2 (raport); bez tego zrzutu wiersz uznaje sie za NIE_ZMIERZONO."
+              ],
+              "finalControl": {
+                "status": "PENDING",
+                "reportPath": "dyspozycje/autobot/runs/R-WEB-WAR-EPOCH-RELEASE-ROBOCZA-Q1/"
+              },
+              "previousRelease": {
+                "releaseState": "candidate R-WEB-UI-ARMY-RELEASE-ROBOCZA-Q1 (wydanie nr 6, lokalny commit, nie opublikowane; publish po Final Control przez orkiestratora)",
+                "bundle": "Gra-ROBOCZA.html",
+                "bundleMd5": "16d42d7a1d2dbaf790eab54c550df002",
+                "bundleSha256": "50c3b6a4a5e5fba39663722cd8ea90340862c645da5abdb98b4714f27ac5fc12",
+                "bundleBytes": 69990763,
+                "publicationCommit": "origin/main b3349709 (ROBOCZA 16d42d7a, wydanie nr 6)"
+              },
+              "rollbackPlan": {
+                "method": "przywrocenie gra-robocza/Gra-ROBOCZA.html z wydania nr 6 (ROBOCZA 16d42d7a, commit 6aff28ff/b3349709; pelny manifest w previousReleaseManifest) albo revert commitow wydania nr 7 (545a8306..70bbc00c oraz commitow poprawki i wydania)",
+                "previousBundleMd5": "16d42d7a1d2dbaf790eab54c550df002",
+                "previousBundleSha256": "50c3b6a4a5e5fba39663722cd8ea90340862c645da5abdb98b4714f27ac5fc12",
+                "previousBundleBytes": 69990763
+              }
+            },
+            "rollbackPlan": {
+              "method": "Revert source/release commits; prior Robocza bundle and checksums are recorded in immediatePreviousRelease.",
+              "previousBundleMd5": "31c64f6545b9e30ab0171bc105143fbe",
+              "previousBundleSha256": "3b90ffbee14db98171494cf434f4e711fb2d325e27341d55bf54317e84c2d383",
+              "previousBundleBytes": 70012553
+            }
+          }
+        },
+        "rollbackPlan": {
+          "method": "Revert source and Robocza artifact commits; prior bundle and source publication are recorded in previousRelease.",
+          "previousBundleMd5": "00f7666343c2247dfdb21ee1e6ed27aa",
+          "previousBundleSha256": "5c10865a5e1b9b29c8dae6c2c09a73ca46d55cf7b3090a5566a029116bdc7d3e",
+          "previousBundleBytes": 70015515
+        },
+        "finalControl": {
+          "status": "PASS-WITH-NOTES — exact ready subset; see FINAL-CONTROL-READY-SUBSET-20261028/01-final-control.md",
+          "notes": "Browser recruitment coverage is focused; no fresh full-game battle interaction or viewport matrix was run."
+        },
+        "startHub": "START.html",
+        "hubGeneratedAt": "2026-10-28T21:20:26",
+        "bundles": [
+          {
+            "file": "Gra-ROBOCZA.html",
+            "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
+            "label": "Pełna gra ROBOCZA",
+            "md5": "03d8d29e4714204bff62a27823e946ee",
+            "sizeBytes": 70019132
+          },
+          {
+            "file": "Gra-ROBOCZA.html",
+            "href": "Gra-ROBOCZA.html",
+            "label": "Pełna gra (z menu)",
+            "md5": "03d8d29e4714204bff62a27823e946ee",
+            "sizeBytes": 70019132
+          }
+        ],
+        "publishPlan": {
+          "status": "PUBLISHED to origin/main at f6f63dc839449d8e08a7e2509ec72796757867af; Robocza only; no KANON/FINALNA promotion.",
+          "target": "origin/main"
+        },
+        "md5": "03d8d29e4714204bff62a27823e946ee",
+        "publisher": "Codex AutoBot — owner authorized Robocza publish and main push",
+        "source": "gra/src; source integration commit f48894231b7dfeb3d1726ac7a3deba11a8c7a3f0 based on main 0b28d67f",
+        "sizeBytes": 70013155,
+        "releaseScope": "Wódz/generał roster and visible capital/Army recruitment card; battle default formation and Atak/Obrona/Szturm doctrine.",
+        "immediatePreviousRelease": {
+          "publicationCommit": "a1d8621290d107adc3ece82978d64aa6b7c4c0dc",
+          "bundleMd5": "31c64f6545b9e30ab0171bc105143fbe",
+          "bundleSha256": "3b90ffbee14db98171494cf434f4e711fb2d325e27341d55bf54317e84c2d383",
+          "bundleBytes": 70012553
+        },
+        "remoteReadback": {
+          "status": "PASS",
+          "remote": "origin/main",
+          "commit": "f6f63dc839449d8e08a7e2509ec72796757867af",
+          "bundleUrl": "https://raw.githubusercontent.com/maciejsieracki/The-Game/f6f63dc839449d8e08a7e2509ec72796757867af/gra-robocza/Gra-ROBOCZA.html",
+          "manifestUrl": "https://raw.githubusercontent.com/maciejsieracki/The-Game/f6f63dc839449d8e08a7e2509ec72796757867af/gra-robocza/ROBOCZA-MANIFEST.json",
+          "startUrl": "https://raw.githubusercontent.com/maciejsieracki/The-Game/f6f63dc839449d8e08a7e2509ec72796757867af/gra-robocza/START.html",
+          "httpStatus": 200,
+          "bundleMd5": "03d8d29e4714204bff62a27823e946ee",
+          "bundleSha256": "f379b328b1f7c63f1e860a76f3310a98b189ebcb16ed5a444e3f7ebd4a41b452",
+          "bundleBytes": 70019132,
+          "checks": "GitHub Raw bundle, manifest and START returned HTTP 200; fetched bundle MD5/SHA-256/size match manifest top-level fields and both bundles[] rows; START links display the current MD5 prefix."
+        },
+        "publishedAt": "2026-10-28",
+        "publicationCommit": "f6f63dc839449d8e08a7e2509ec72796757867af"
+      }
     }
   },
   "publishPlan": {
