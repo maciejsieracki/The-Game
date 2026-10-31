@@ -1,3 +1,12 @@
+## ROBOCZA d205f607 -- 2026-10-31 -- forty i posterunki z automatu ulepszeń (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`a07e6916f` + `R-WEB-AUTO-FORT-CLAIM-Q1` `0e93c3d6b` + wiązanie `main.ts`) i commit wdrożenia bundla; stała zgoda właściciela 2026-10-31.
+- Bundle MD5 `d205f607cba1ed97e3e7ef441ce5e288`, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, outDir poza repo, stempel ROBOCZA; `verify-robocza-bundle.cjs` VERIFY OK.
+- Zakres: automat (gracz „Zrównoważone”, AI) stawia fort/posterunek na złożach i górach, na granicy dostępnej budowy (maks. nowych hexów), po żywności i surowcach, tylko gdy limit miast wyczerpany; okręgi fortów rozłączne; drogi na końcu.
+- Testy po scaleniu: tsc PASS; auto-fort-claim 63/0, auto-improvements 46/0, ai-improvements 56/0, autoimprove-stages-q1 302/0, fort-outpost-hard-territory 80/0, saveload-praca-pool-live 13/0, diplomacy 304/0.
+- Ograniczenia: NIE_ZMIERZONO przebieg w pełnej grze w Chromium (pomiar AI tylko w uproszczonej symulacji); miasta-państwa wyłączone z kroku fortów (założenie).
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `79a5ca16c766bdb736ea851746ae6962`, 70,106,346 bajtów.
+
 ## ROBOCZA 79a5ca16 -- 2026-10-31 -- tartak nie przy rzece, bez limitu etapu, znacznik „Agresor (N)”, zerowanie HUD foteli hot-seat (testowa)
 
 - **STATUS: DEPLOYED** — merge do `origin/main` (`1b6dc1c08` + trzy tematy) i commit wdrożenia bundla; stała zgoda właściciela 2026-10-31.
