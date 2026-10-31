@@ -27,3 +27,5 @@ EXIT=1
   [FAIL] [K3] S3-1: heks NA rzece (bez sasiada rzeki) i jego sasiedzi — zero tartaku/obozu (1/1)
 autoimprove-stages-q1-test: 296 passed, 2 failed
 EXIT=1
+
+M4-bis (obrona R1): usuniecie oboz_lowiecki z zakazu hasRiverAccess w keyBlockedOnHex -> 300/2 (ZABITA nowa asercja M4-bis: reczny tartak gracza na heksie z dostepem do rzeki nie otwiera automatowi obozu). Kontrola pozytywna: reczny tartak na heksie bez dostepu -> oboz powstaje. Zrodlo przywrocone, 302/0.

@@ -551,7 +551,8 @@ console.log('(o) [K3] R3 ABC-D=B: AI bez limitu 1/miasto/ture (jak gracz) — wi
   void FOR;
   ok(maxPerTurn > 1, `[K3] max rozkazow na miasto w jednej turze = ${maxPerTurn} (> 1; limit etapu = 3)`);
   // S3-2: limit etapu (3) ZDJETY — brak gornego limitu liczby rozkazow poza budzetem (patrz (s7))
-  ok(Number.isFinite(maxPerTurn), `[K3] max rozkazow na miasto w turze = ${maxPerTurn} (limit etapu zdjety; ogranicza tylko budzet)`);
+  // S3-2: zamiast tautologii — gorna granica = liczba heksow obrabianych (kazdy heks max 1 rozkaz/ture na klucz; budzet ogranicza reszte)
+  ok(maxPerTurn <= WORKED_ALL.length * 4, `[K3] max rozkazow na miasto w turze = ${maxPerTurn} <= ${WORKED_ALL.length * 4} (obrabiane heksy x 4 klucze; limit etapu zdjety, ogranicza budzet)`);
 }
 
 console.log('(p) KOREKTA F (R4): heks CENTRUM miasta to ZWYKLY heks — farma, trzoda, irygacja takze w centrum (K1, K2, K3)');
@@ -961,6 +962,17 @@ console.log('(s6) S3-1: tartak/oboz NIGDY na heksie z rzeka ANI na heksie z DOST
     const s = sim({ map, worked: [...WORKED_ALL, ...ACC_H, ...ACC_P, ...FAR_P], profil: 'S', turns: 20 });
     ok(keysOn(s.log, [...ACC_H, ...ACC_P], 'tartak').length === 0, '[S „surowce”] ZERO tartakow na lesie z dostepem do rzeki');
     ok(FAR_P.every(([q, r]) => idx(s.log, 'tartak', K(q, r)) >= 0), '[S „surowce”] tartak na lesie bez dostepu do rzeki');
+  }
+  // M4-bis: RECZNY tartak gracza (placed0) na heksie z dostepem do rzeki NIE otwiera automatowi obozu na tym heksie;
+  // kontrola pozytywna: reczny tartak na heksie BEZ dostepu dopuszcza oboz (test nie jest pusty).
+  for (const profil of ['K2', 'K3']) {
+    const forest = [...ACC_P, ...FAR_P];
+    const mk = () => makeMap({ river: RIVER, forest });
+    const w = [...WORKED_ALL, ...forest];
+    const acc = sim({ map: mk(), worked: w, profil, turns: 20, deficitFn: () => ['drewno'], placed0: new Map([[K(12, 11), ['tartak']]]) });
+    ok(keysOn(acc.log, ACC_P, 'oboz_lowiecki').length === 0, `[${profil}] M4-bis: reczny tartak na heksie z dostepem do rzeki — automat NIE stawia obozu (${keysOn(acc.log, ACC_P, 'oboz_lowiecki').length})`);
+    const far = sim({ map: mk(), worked: w, profil, turns: 20, deficitFn: () => ['drewno'], placed0: new Map([[K(14, 13), ['tartak']]]) });
+    ok(keysOn(far.log, [[14, 13]], 'oboz_lowiecki').length >= 1, `[${profil}] M4-bis kontrola: reczny tartak na heksie BEZ dostepu — oboz powstaje (${keysOn(far.log, [[14, 13]], 'oboz_lowiecki').length})`);
   }
   // K1: bez tartaku i obozu (bez zmian)
   {
