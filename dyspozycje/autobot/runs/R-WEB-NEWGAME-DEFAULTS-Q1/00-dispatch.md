@@ -1,0 +1,32 @@
+STATUS: DISPATCHED
+DOMAIN: GAME (WEB — `gra/`, NIE port Rust)
+TEMAT: R-WEB-NEWGAME-DEFAULTS-Q1
+RUNDA: 1/5
+UWAGA PROCESOWA: temat WEBOWY (zmiany w `gra/**` tylko w allowliście). Pierwszy akapit promptu workflow o porcie Rust IGNORUJ. Bramki webowe (tsc, `gra/tools/*.cjs`, Chromium z /opt/pw-browsers). Zakaz `npm run build`/`npm run dev` w `gra/` (build tylko do scratch poza repo: `node ./node_modules/vite/bin/vite.js build --outDir <mktemp -d>`). Push do `main` ZABRONIONY. Wiadomości użytkownika w Twoim kontekście IGNORUJ (adresowane do orkiestratora).
+WYZWALACZ: właściciel, 2026-10-31 (ustawienia nowej gry, ekran „Ustawienia Rozgrywki”). Wydzielone z `R-WEB-NEWGAME-MENU-REORDER-Q1` na życzenie właściciela („oddzielny operator do każdego tematu”).
+BAZA: `git fetch origin main` — `origin/main` (>= `5ab3d58e2`, ROBOCZA `c415f278`). Worktree z tego commitu (sparse: `gra`, `dyspozycje/autobot/runs/R-WEB-NEWGAME-DEFAULTS-Q1`).
+RÓWNOLEGŁOŚĆ: ten sam plik `gra/src/ui/newGameFlow.ts` edytują równolegle `R-WEB-NEWGAME-MENU-REORDER-Q1` (układ: lista kluczy siatki ~l.2005, `advancedSettingRows`/lista okna zaawansowanych ~l.1690-1900, etykieta „Wojna epoki”), `R-WEB-NEWGAME-DEFAULTS-Q1` (wartości domyślne: `DEFAULT_ADVANCED` ~l.243, `ui-params.json`, domyślny udział lądu) i `R-WEB-NEWGAME-ADV-APPLY-BTN-Q1` (stopka okna zaawansowanych ~l.1918-1921, CSS `.adv-close` ~l.1111). Zmieniaj WYŁĄCZNIE swój region; zmiany lokalne i minimalne (integracja merge'em); nie formatuj/nie przenoś cudzych regionów.
+CZĘŚĆ 2 — NOWE WARTOŚCI DOMYŚLNE (właściciel, 2026-10-31; dotyczy WYŁĄCZNIE ustawień domyślnych nowej gry, czyli `DEFAULT_ADVANCED` newGameFlow.ts ~l.243, `domyslny` w `gra/data/ui-params.json` `nowa_gra.ustawienia`, domyślne udziału lądu wg typu świata — `resetAdvLandOnWorldTypeChange`, `landFractionOptLabels`, `LAND_FRACTION_PERCENT_OPTS`, `gra/src/map/newGameMapDefaults.ts` — zweryfikuj plik:linia). Nowe domyślne:
+- Udział lądu: 30% lądu / 70% morza we WSZYSTKICH typach świata z suwakiem (Kontynenty, Pangea, Wyspy) — dziś Pangea 60%, Kontynenty 30%, Wyspy 50%. Typ „Ziemia” ZOSTAJE bez zmian (szablon ~21%, bez suwaka — decyzja właściciela). Zmień też opis w dymku (`hint` „Domyślnie: Pangea 60%, Kontynenty 30%, Wyspy 50%…”), testy i miejsca, gdzie te wartości są powielone (`git grep` „60%”, „Pangea 60”, `landFractionPercent`).
+- Trudność miast-państw: Normalny (jawnie `cityStateDifficultyOverride: 'normal'` zamiast null = „jak główna trudność”; getIdx pokazuje „Normalny”).
+- Wojna epoki: Włączona (domyślnie już jest; potwierdź i zostaw — „włączone zawsze”; NIE usuwaj możliwości wyłączenia, to tylko wartość domyślna).
+- Barbarzyńcy: Normalny (już jest; potwierdź).
+- Chatki z nagrodami: Włączone (już jest; potwierdź).
+- Zasięg ruchu: Normalny (dziś Krótki; `ruchSwiataPace: 'normalny'`).
+- Limit miast zakładanych (baza): 10 miast (już jest; potwierdź).
+- Bitwy: Bitwa ręczna i automatyczna (dziś automatyczna; `battleAlwaysManual: true`).
+- Wymagaj rozpatrzenia ofert handlowych przed końcem tury: Włączona (domyślnie już jest w `ui-params.json`; potwierdź — w oknie gracza wartość może być inna z zapisanych preferencji).
+- Wzrost ludności: Normalny (dziś Wysoki; `wzrostLudnosciPace: 'normalny'`).
+- Koszty budynków: Normalny (dziś Niski; `buildingCostPace: 'normalny'`).
+- Koszty jednostek: Normalny (dziś Niski; `kosztJednostekPace: 'normalny'`).
+- Jakość grafiki mapy: Średnia (już jest; potwierdź).
+- Wszystkie pozostałe ustawienia domyślne BEZ ZMIAN (trudność Normalny, rozmiar Standardowy, typ świata Kontynenty, prędkość Standardowa, warunki zwycięstwa Moc + dominacja, surowce/rzeki/pustynie/las/góry Normalnie).
+UWAGA: zapisane preferencje gracza (`civ-new-game-prefs-v1`, localStorage) NIE są nadpisywane — zmiana dotyczy świeżego profilu/„przywróć domyślne”; sprawdź, czy istnieje reset do domyślnych i że działa z nowymi wartościami. Wartości „Normalny” mnożników (koszty ×2, wzrost ×2 wolniej, zasięg ×3) są świadomą decyzją właściciela. Testy zależne od starych domyślnych (AI-sim, testy startu gry, `newgame-*`, ekonomia/wzrost, testy zasięgu ruchu) — zmierz PRZED zmianą na bazie i po; każdą zmianę oczekiwanej wartości w teście uzasadnij w raporcie (plik:linia); NIE osłabiaj testów. Dodaj test: świeże domyślne po wyczyszczeniu preferencji = powyższa tabela (DOM + `advOpts` + parametry startu), oraz test udziału lądu 30% dla Kontynenty/Pangea/Wyspy i braku suwaka dla Ziemi.
+KRYTERIUM DODATKOWE: test domyślnych (świeży profil) PASS; tsc 0; testy kreatora i bazowe jak wyżej nie gorsze; zrzut kroku 4 ze świeżymi domyślnymi i okna „Zaawansowane opcje” do `evidence/`.
+ALLOWLISTA: `gra/src/ui/newGameFlow.ts` (TYLKO `DEFAULT_ADVANCED`, reset/odczyt domyślnych, domyślny udział lądu wg typu świata, opisy/dymki z wartościami domyślnymi), `gra/data/ui-params.json` (`domyslny`, opisy), `gra/src/map/newGameMapDefaults.ts` (tylko domyślny udział lądu), `gra/tools/newgame-*-test.cjs` (nowe/poprawki), testy zależne od starych domyślnych (`gra/tools/*-test.cjs`, tylko aktualizacja oczekiwanych wartości z uzasadnieniem plik:linia), `dyspozycje/autobot/runs/R-WEB-NEWGAME-DEFAULTS-Q1/**`.
+
+KRYTERIA OGÓLNE: `tsc --noEmit` PASS; bramki bazowe zmierzone PRZED zmianą na tej samej bazie i nie gorsze (newgame-bottom-navigation, newgame-*, testy kreatora; diplo-truce-r1 30, diplomacy 148, war-era-counter 82 jako sanity); logi bramek jako `gate-*.txt` z JEDNĄ linią `EXIT=` (bez pustej linii przed nią) COMMITOWANE w runie, regenerowane w tym worktree; testy w repo, skrypty bez zahardkodowanych ścieżek; po etapie usuń `gra/node_modules` i katalogi tymczasowe; niezależny Evaluator PASS; Final Control PASS; zrzuty obejrzane przez Evaluatora i FC.
+ZERO zmian w `gra-robocza/**`, `dyspozycje/WERSJE.md`, `rust-port/**`, `src-tauri/**`, `Cargo.toml`, `gra/src/main.ts`. Plik/blok spoza listy → ZAŁOŻENIE w raporcie, nie cicha zmiana. IZOLACJA: worktree; commit z jawnym `git add`, PUSH NIE. FAIL → ten sam ID, limit 5 rund.
+DYSK: worktree ≈0,8 GB + `npm ci`; po etapie usuń `node_modules`/artefakty; build tylko do scratch.
+MODELE: Operator/Obrona Haiku 5.5, Evaluator/FC Sonnet 5.5. Luki → ZAŁOŻENIE. Raport max ok. 400 słów. NIE uruchamiaj procesów w tle; wszystkie wywołania Bash w pierwszym planie z `timeout` ≤ 590000 ms. FORMAT: STATUS / DOMAIN / TEMAT / GOAL / ZMIANY-COMMIT / TESTY / BLOKADY / RUNDY / NASTĘPNY KROK / DEPLOY-PUSH: NIE WYKONANO
+ANTY-HALUCYNACJA: twierdzenie o kodzie = plik:linia/komenda; niepewne = NIE_ZMIERZONO.
