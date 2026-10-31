@@ -21,6 +21,13 @@
  * Parent 7fdc191ac: AUTO 1v1 passes; AUTO 2v2 gap 3 makes contact with 6 blows (< 10 threshold):
  * slow, not zero, so that check is red there for a threshold reason only.
  *
+ * R3 (owner's latest-build report, reproduced in real Chromium on the ROBOCZA bundle): scenario C drives the
+ * production START WALKI entry (_startBattle). Without a general/commander (manualControlAllowed=false, e.g. two
+ * Wojownik) _startBattle picks AUTO but set _battleAwaitingOrders = _manualMode (false), so _kickoffBattleTurn
+ * returned at once and round 1 never began ("Tura 0", armies facing each other). Introduced by e06ad53c8,
+ * fixed in battleScene.ts _startBattle (_battleAwaitingOrders = true). Stubs here are rendering/UI only; the
+ * turn gate itself (_startBattle -> _kickoffBattleTurn -> _beginTurn) is the production code.
+ *
  * Run from gra/: node tools/battle-standoff-two-warriors-test.cjs
  */
 const assert = require('node:assert/strict');
@@ -69,7 +76,7 @@ function unit(id, side, q, r) {
   };
 }
 
-async function runBattle(BattleScene, { n, gap, manual, maxRounds = 6, switchToAutoAfter = null }) {
+async function runBattle(BattleScene, { n, gap, manual, maxRounds = 6, switchToAutoAfter = null, viaStart = null }) {
   const atk = Array.from({ length: n }, (_, i) => unit(`atk-warrior-${i + 1}`, 'atk', 10, 5 + i));
   const def = Array.from({ length: n }, (_, i) => unit(`def-warrior-${i + 1}`, 'def', 10 + gap + 1, 5 + i));
   const events = [];
@@ -77,7 +84,7 @@ async function runBattle(BattleScene, { n, gap, manual, maxRounds = 6, switchToA
   let limit = switchToAutoAfter != null ? switchToAutoAfter : maxRounds;
   const scene = Object.create(BattleScene.prototype);
   Object.assign(scene, {
-    atk, def, finished: false, started: true, busy: false, _battleAwaitingOrders: false,
+    atk, def, finished: false, started: !viaStart, busy: false, _battleAwaitingOrders: false,
     _manualMode: manual, siegeWallCol: -1, roundNo: 0, activeSide: 'atk', turnOrder: [], turnIdx: 0,
     _deployPlayerSideOpt: 'atk', _autoBattleSuspended: false, _stallTurns: 0, _stallSig: '',
     _counterBudget: { beginTurn() {}, canCounter() { return true; }, spend() {}, consume() {} },
@@ -92,6 +99,12 @@ async function runBattle(BattleScene, { n, gap, manual, maxRounds = 6, switchToA
     _refreshQueuedOrderVisuals() {}, _updateBattlePhaseBanner() {}, _updateStallWatch() {},
     _disposeQueuedOrderArrows() {}, _syncAllGroupFrameMarkers() {}, hint: { textContent: '' },
     _priorityScore() { return 0; },
+    // R3: UI-only collaborators of the real _startBattle (no game logic; the turn gate is NOT stubbed).
+    vNow: 0, _battleStartVNow: 0, _manualCommanderGate: !!viaStart, _manualBtn: null, _rosterBar: null,
+    _orderLinesGroup: null, _applyStartingMoralePowerPenalty() {}, _disposeAllOrderLines() {},
+    _syncManualRailHighlight() {}, _buildRosterBar() {}, _initDeployGhostLayer() {}, _ensureGroupSelectorBar() {},
+    _updateBattleRosterHeader() {}, _updateBattleQuickSelectBar() {}, _rebuildBattleRosterGrid() {},
+    _syncMinimapPosition() {}, _syncBattleToolbarMode() {}, _clearOrderPreview() {},
     _destAllowedByBlockade() { return true; },
     _checkEnd() { return this.roundNo > limit; },
     // Production _schedule runs planning continuations synchronously; mirror that.
@@ -114,7 +127,14 @@ async function runBattle(BattleScene, { n, gap, manual, maxRounds = 6, switchToA
       done();
     },
   });
-  queue.push(() => scene._beginTurn());
+  if (viaStart) {
+    // Production entry (START WALKI): _startBattle decides manual vs AUTO from the commander gate and,
+    // for AUTO, must kick the first turn off itself (_kickoffBattleTurn -> _beginTurn).
+    atk[0].isArmyCommander = !!viaStart.commander;
+    scene._startBattle();
+  } else {
+    queue.push(() => scene._beginTurn());
+  }
   let steps = 0;
   const drain = () => { while (queue.length && steps < 200000) { steps++; queue.shift()(); } };
   drain();
@@ -131,7 +151,7 @@ async function runBattle(BattleScene, { n, gap, manual, maxRounds = 6, switchToA
   const hits = events.filter(e => e.type === 'melee-attack').length;
   const moves = events.filter(e => e.type === 'move').length;
   const minDist = Math.min(...atk.flatMap(a => def.map(d => Math.abs(a.q - d.q) + Math.abs(a.r - d.r))));
-  return { n, gap, manual, switchToAutoAfter, rounds: scene.roundNo, hits, moves, minDist };
+  return { n, gap, manual, switchToAutoAfter, viaStart, rounds: scene.roundNo, hits, moves, minDist, sceneManual: scene._manualMode, awaiting: scene._battleAwaitingOrders };
 }
 
 async function main() {
@@ -152,6 +172,20 @@ async function main() {
   const switchedOne = await runBattle(BattleScene, { n: 1, gap: 3, manual: true, switchToAutoAfter: 2 });
   rows.push(switchedOne);
   checks.push(['manual 2 rounds -> AUTO 1v1 gap 3: blows and contact', switchedOne.hits >= 5 && switchedOne.minDist === 1]);
+
+  // C. Production start without a commander/general (the owner's two Wojownik case): manualControlAllowed=false
+  //    forces AUTO in _startBattle; the first turn must begin on its own (regression: round 0 forever).
+  for (const n of [1, 2]) {
+    const noCmd = await runBattle(BattleScene, { n, gap: 3, manual: false, viaStart: { commander: false } });
+    rows.push(noCmd);
+    checks.push([`_startBattle without commander ${n}v${n} gap 3: auto turn begins, blows and contact`,
+      noCmd.rounds >= 1 && noCmd.hits >= 5 * n && noCmd.minDist === 1]);
+  }
+  // C2. With a commander the battle starts MANUAL and waits for orders (no turn until the player kicks it off).
+  const withCmd = await runBattle(BattleScene, { n: 1, gap: 3, manual: true, viaStart: { commander: true } });
+  rows.push(withCmd);
+  checks.push(['_startBattle with commander: stays manual, waits for orders (round 0, no blows)',
+    withCmd.sceneManual === true && withCmd.awaiting === true && withCmd.rounds === 0 && withCmd.hits === 0]);
 
   console.log(JSON.stringify(rows, null, 1));
   let failed = 0;

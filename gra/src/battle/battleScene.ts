@@ -3462,7 +3462,13 @@ export class BattleScene {
     const hasCommander = (playerSide === 'atk' ? this.atk : this.def)
       .some(u => u.isArmyCommander && !u.dead && !u.routed);
     this._manualMode = !this._manualCommanderGate || (this._manualCommanderGate && hasCommander);
-    this._battleAwaitingOrders = this._manualMode;
+    // R-WEB-BATTLE-STANDOFF-TWO-WARRIORS-Q1 (R3): ZAWSZE true. `_kickoffBattleTurn` (niżej, dla
+    // AUTO bez dowódcy) wychodzi od razu przy `!_battleAwaitingOrders`, więc wcześniejsze
+    // `= this._manualMode` (false w AUTO) zostawiało pierwszą turę nigdy nie rozpoczętą:
+    // armie stały naprzeciw siebie w „Tura 0" bez ataku (e06ad53c8).
+    // / EN: always true; kickoff clears it itself. `= _manualMode` made AUTO-without-commander
+    // return early from kickoff, so round 1 never began (armies stood facing each other).
+    this._battleAwaitingOrders = true;
     this._queuedOrderUnitIds.clear();
     this._disposeAllOrderLines();
     if (this._orderLinesGroup) this._orderLinesGroup.visible = true;
