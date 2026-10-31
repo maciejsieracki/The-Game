@@ -371,3 +371,8 @@ Cel końcowy i bieżący zapisane w `GOAL-RUST-PORT-20261020.md` (§"CEL PĘTLI 
 - Kolejne tematy web (PEACE-RULES r2, CITY-CESSION, AGGRESSOR-FLAG, TRUCE) startują na tej bazie po PEACE-RULES r3.
 
 - 2026-10-31 00:12 UTC — kontrola cykliczna: PEACE-RULES r3, M07A r2, 8E r1 wciąż biegną; brak PASS do integracji; dysk wolny ok. 5,8 GB.
+
+## 2026-10-31 — 8E zintegrowane
+- `R-RUSTPORT-P6-8E-UTRZYMANIE-EKONOMII-Q1` PASS-WITH-NOTES (FC r1, `72491e442`; ff na `rust-port/parity-v2`). Bramki w integracji: fmt OK, clippy -D warnings OK, test 1840/0 (5 testów M00 wymaga w sparse worktree katalogu `R-RUSTPORT-P6-M00-MAPGEN-SZKIELET-Q1`).
+- Decyzja orkiestratora: NOTA-1 (`magazynEraMultiplier`, 1 ulp dla ułamkowych er, `powf` vs `Math.pow`, `city_growth.rs` P6.7A) → dług techniczny, osobny temat po P6.8; epoki całkowite bitowo zgodne. NOTA-2 (`stripDiacriticsLower` → `pub` w `building_costs::p6_7b`) → follow-up.
+- Wolny slot Rust; kolejny: 8G (po REPIN-B3), 8H/8I — sprawdzić zależności przy następnej kontroli.
