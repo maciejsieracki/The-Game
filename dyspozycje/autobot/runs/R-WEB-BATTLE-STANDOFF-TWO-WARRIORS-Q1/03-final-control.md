@@ -29,3 +29,36 @@ BLOKADY: Zgloszenie wlasciciela nie odtworzone na HEAD; potrzebne dokladne kroki
 RUNDY: 2/5 (FC), brak FAIL
 NASTEPNY KROK: orkiestrator: zapytac wlasciciela o kroki/build albo zamknac temat; integracja testu regresyjnego.
 DEPLOY/PUSH: NIE WYKONANO
+
+---
+
+# Final Control -- RUNDA 3/5
+
+STATUS: PASS-WITH-NOTES
+DOMAIN: GAME (WEB, gra/src/battle)
+TEMAT: R-WEB-BATTLE-STANDOFF-TWO-WARRIORS-Q1
+GOAL: Naprawic zgloszony standoff dwoch Wojownikow (nie atakuja sie nawzajem) na realnej sciezce _startBattle.
+BADANY SHA: 8ce953831 (rodzic 4f68d98c4 = fix; baza 26cd2d17b)
+
+## Werdykty zarzutow
+Zarzuty Evaluatora: [] (brak). Obrona: null. Zero NAPRAW -> PASS.
+
+## Weryfikacja wlasna (swiezy worktree, npm ci)
+- Allowlista: poza katalogiem runu zmienione tylko gra/src/battle/battleScene.ts (jedna linia kodu :3471 + komentarz) i gra/tools/battle-standoff-two-warriors-test.cjs. Brak gra-robocza, WERSJE.md, rust-port, src-tauri, auto-improvements.ts. git diff --check czysty.
+- Przyczyna potwierdzona w kodzie: _kickoffBattleTurn (:3507) wychodzi na !_battleAwaitingOrders, wiec przy _manualMode=false _beginTurn nigdy nie startowal. Dla _manualMode=true wartosc bez zmian (true).
+- Bramki (EXIT=0 kazda): battle-standoff-two-warriors (PASS), melee-attack-doctrine, bitwa-auto-atak-wielojednostkowy 12/12, formation-rules, manual-orders-routing, attack-move-order, dead-unit-disappearance, diplomacy 148/0, war-era-counter 82/0, unit-owner-emblem-ring-civ-color 15/0, tsc --noEmit EXIT=0.
+- Mutacja (:3471 -> = this._manualMode): standoff-test EXIT=1, 2 FAIL; plik przywrocony, status czysty. gra/node_modules usuniete.
+
+## Uwagi (bez zarzutow)
+1. Chromium/live nie powtorzony przeze mnie; opieram sie na live-BEFORE/AFTER w runie (przed: runda 0, 31/36 bez ruchu; po: runda 1+, kontakt 34/35), spojnych z testem i kodem.
+2. Test stubuje UI/render i _doMove/_doAttack; bramka tury _startBattle->_kickoffBattleTurn->_beginTurn jest produkcyjna.
+3. NIE_ZMIERZONO live: bitwa z Generalem i 2v2 (pokryte testem jednostkowym).
+4. Zalozenie (nie potwierdzenie wlasciciela): scenariusz = gracz bez Wodza/Generala (manualControlAllowed:false). Wprowadzone przez e06ad53c8.
+5. gra-robocza zawiera blad do czasu deployu (osobna autoryzacja).
+
+## Integracja
+SHA koncowy do integracji: 8ce953831 (kod: 4f68d98c4) plus commit tego raportu FC. Galaz zrodlowa to potomek bazy 4d1916f2c (merge-base z origin/rust-port/parity-v2 = f4c89d0), rownolegla do parity-v2 (44a3e9ccf, 773 commity przed). Zmiana dotyka tylko gra/src/battle i gra/tools, wiec nie koliduje z rust-port/src-tauri; kolejnosc wzgledem parity-v2 dowolna, przy cherry-pick sprawdzic konflikt w battleScene.ts :3465-3475.
+
+DEPLOY/PUSH: NIE WYKONANO
+RUNDY: 3/5
+NASTEPNY KROK: integracja orkiestratora, potem READY_FOR_DEPLOY, osobna autoryzacja deploy.
