@@ -19,7 +19,6 @@ export {
   paySpichlerzDrainForCity,
   loadSpichlerzDrainParams,
   spichlerzCeramikaDrainAmount,
-  SPICHLERZ_DRAIN_DEFAULT_PARAMS,
   SPICHLERZ_DRAIN_FALLBACK_PER_TURN,
   SPICHLERZ_DRAIN_JSON_KEY_CERAMIKA_I,
   SPICHLERZ_DRAIN_JSON_KEY_CERAMIKA_II,
@@ -40,6 +39,7 @@ const K_I = M.SPICHLERZ_DRAIN_JSON_KEY_CERAMIKA_I;
 const K_II = M.SPICHLERZ_DRAIN_JSON_KEY_CERAMIKA_II;
 const K_SOL = M.SPICHLERZ_DRAIN_JSON_KEY_SOL_II;
 const DIFFS = ['easy', 'normal', 'hard'];
+const P25 = { ceramikaI: 25, ceramikaII: 25, solII: 25 };
 
 let pass = 0, fail = 0;
 function ok(c, m) { if (c) { pass++; console.log('  PASS:', m); } else { fail++; console.error('  FAIL:', m); } }
@@ -56,10 +56,11 @@ function runOne(builtIds, cer, sol, params) {
 // ---------------------------------------------------------------------------
 console.log('[1] golden 25/25/25 — stany po turze identyczne jak przed zmianą');
 {
-  const P25 = { ceramikaI: 25, ceramikaII: 25, solII: 25 };
   const loaded = M.loadSpichlerzDrainParams(ECON, 'normal');
-  for (const params of [undefined, P25, loaded]) {
-    const tag = params === undefined ? 'default' : (params === loaded ? 'JSON' : 'literal');
+  const FB = M.SPICHLERZ_DRAIN_FALLBACK_PER_TURN;
+  const fromFallback = { ceramikaI: FB, ceramikaII: FB, solII: FB };
+  for (const params of [fromFallback, P25, loaded]) {
+    const tag = params === fromFallback ? 'fallback-const' : (params === loaded ? 'JSON' : 'literal');
     let allOk = true;
     for (const cer of [24, 25, 26]) {
       for (const sol of [24, 25, 26]) {
@@ -89,22 +90,22 @@ console.log('[1] golden 25/25/25 — stany po turze identyczne jak przed zmianą
     const d2 = M.paySpichlerzDrainForCity(cities, 0, ['spichlerz'], false, params);
     return { paid: [d1.ceramikaPaid, d2.ceramikaPaid], stocks: cities.map(c => c.surowce.ceramika) };
   };
-  const g49 = twoCities(49, undefined);
+  const g49 = twoCities(49, P25);
   ok(g49.paid[0] === true && g49.paid[1] === false && g49.stocks[0] === 24 && g49.stocks[1] === 0,
     'golden dwa miasta I, pula 49 → 1 wypłata (24 zostaje)');
-  const g50 = twoCities(50, undefined);
+  const g50 = twoCities(50, P25);
   ok(g50.paid[0] === true && g50.paid[1] === true && g50.stocks[0] === 0 && g50.stocks[1] === 0,
     'golden dwa miasta I, pula 50 → 2 wypłaty (0/0)');
-  const g51 = twoCities(51, undefined);
+  const g51 = twoCities(51, P25);
   ok(g51.paid[0] === true && g51.paid[1] === true && g51.stocks[0] === 0 && g51.stocks[1] === 1,
     'golden dwa miasta I, pula 51 → 2 wypłaty (0/1)');
   // Miasto z I+II płaci JEDNĄ wypłatę ceramiki (tak jak dotąd) — 25, nie 50.
-  const both = runOne(['spichlerz', 'spichlerz_ii'], 50, 0, undefined);
+  const both = runOne(['spichlerz', 'spichlerz_ii'], 50, 0, P25);
   ok(both.drain.ceramikaPaid && both.cer === 25, 'miasto z I+II: jedna wypłata ceramiki (50→25), jak dotąd');
   // Podgląd (dryRun) nie mutuje stanu.
-  const dry = runOne(['spichlerz_ii'], 26, 26, undefined);
+  const dry = runOne(['spichlerz_ii'], 26, 26, P25);
   const cities = [{ ownerId: 0, surowce: { ceramika: 26, sol: 26 } }];
-  const dryRes = M.paySpichlerzDrainForCity(cities, 0, ['spichlerz_ii'], true, undefined);
+  const dryRes = M.paySpichlerzDrainForCity(cities, 0, ['spichlerz_ii'], true, P25);
   ok(dryRes.ceramikaPaid && dryRes.solPaid && cities[0].surowce.ceramika === 26 && cities[0].surowce.sol === 26,
     'dryRun: wynik jak runtime, bez mutacji magazynu');
   ok(dry.cer === 1 && dry.sol === 1, 'II przy 26/26: ceramika 26→1, sól 26→1 (runtime)');
@@ -172,8 +173,7 @@ console.log('[3] fallback 25 (brak klucza / NaN / ujemny / brak danych)');
   delete perDiff.budynki[K_I].hard;
   ok(M.loadSpichlerzDrainParams(perDiff, 'hard').ceramikaI === 25, 'brak wartości tylko dla hard → 25 dla hard');
   ok(M.loadSpichlerzDrainParams(perDiff, 'easy').ceramikaI === 25, 'brak wartości hard nie wpływa na easy');
-  ok(M.SPICHLERZ_DRAIN_DEFAULT_PARAMS.ceramikaI === 25 && M.SPICHLERZ_DRAIN_DEFAULT_PARAMS.ceramikaII === 25
-    && M.SPICHLERZ_DRAIN_DEFAULT_PARAMS.solII === 25, 'SPICHLERZ_DRAIN_DEFAULT_PARAMS = fallback 25/25/25');
+  ok(M.SPICHLERZ_DRAIN_DEFAULT_PARAMS === undefined, 'R-WEB-SPICHLERZ-HUD-PARAMS-Q1: brak drugiego źródła prawdy (SPICHLERZ_DRAIN_DEFAULT_PARAMS usunięty)');
   ok(M.SPICHLERZ_DRAIN_FALLBACK_PER_TURN === 25, 'SPICHLERZ_DRAIN_FALLBACK_PER_TURN = 25');
 }
 

@@ -161,6 +161,7 @@ import {
   cityHasSpichlerzBuilding,
   filterRuntimeActiveBuiltIds,
   paySpichlerzDrainForCity,
+  loadSpichlerzDrainParams,
   resolveOwnedBuildingInactiveStatus,
   resolveSpichlerzCityBonusState,
 } from '../game/building-resource-gate';
@@ -1278,7 +1279,14 @@ function computeView(city: City, map: GameMap, data: GameData): CityView | null 
     const rationParams = buildRationParams(data.econParams, cfg.difficulty ?? 'normal');
     const poziomRacji = getCityRationLevel(city);
     const allCities = cfg.getCities?.() ?? [];
-    const spichlerzDrain = paySpichlerzDrainForCity(allCities, city.ownerId, built, true);
+    // R-WEB-SPICHLERZ-HUD-PARAMS-Q1: te same parametry zużycia co silnik (econ-params wg trudności).
+    const spichlerzDrain = paySpichlerzDrainForCity(
+      allCities,
+      city.ownerId,
+      built,
+      true,
+      loadSpichlerzDrainParams(data.econParams as unknown as RawConverterParamsJson, cfg.difficulty ?? 'normal'),
+    );
     const spichlerzState = resolveSpichlerzCityBonusState(built, spichlerzDrain);
     const kosztRacji = computeCityRationCost(
       city.population,
@@ -9283,6 +9291,11 @@ function appendOwnedBuildingRow(
       empireStock,
       building: def,
       resolveOwnerZlotoAccess: cfg.getOwnerHasZlotoAccess,
+      // R-WEB-SPICHLERZ-HUD-PARAMS-Q1: parametry zużycia Spichlerza jak w silniku.
+      drainParams: loadSpichlerzDrainParams(
+        data.econParams as unknown as RawConverterParamsJson,
+        cfg.difficulty ?? 'normal',
+      ),
     });
     if (inactiveStatus.inactive) {
       bn.classList.add('bld-owned-name--inactive');

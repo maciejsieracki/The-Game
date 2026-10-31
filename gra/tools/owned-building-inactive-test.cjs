@@ -41,6 +41,7 @@ function resolveSpichlerz(buildingId, builtIds, surowce) {
     ownerId,
     runtimeActiveBuiltIds: [],
     empireStock: surowce,
+    drainParams: { ceramikaI: CER, ceramikaII: CER, solII: SOL },
   });
 }
 
