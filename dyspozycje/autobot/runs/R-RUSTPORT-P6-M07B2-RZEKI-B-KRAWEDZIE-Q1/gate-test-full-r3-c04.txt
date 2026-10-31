@@ -1,0 +1,147 @@
+   Compiling civ-engine v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_03b689c0-51d-2/rust-port/engine)
+    Finished `test` profile [unoptimized] target(s) in 5.48s
+     Running tests/resource_production.rs (/dev/shm/m07b2-r3-target/debug/deps/resource_production-10735877f5f8510b)
+
+running 5 tests
+test lumber_mill_and_quarry_follow_the_200_300_450_era_vector ... ok
+test multiple_layers_stack_additively_per_resource ... ok
+test resolver_rejects_non_producers_and_accepts_legacy_aliases ... ok
+test invalid_or_missing_era_is_safe_and_other_improvements_stay_flat ... ok
+test era_scaling_rounds_like_the_typescript_resolver_and_saturates ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/rng.rs (/dev/shm/m07b2-r3-target/debug/deps/rng-044cb5e0327fdca7)
+
+running 4 tests
+test seeded_stream_matches_the_typescript_lcg_and_repeats ... ok
+test serialized_state_round_trip_resumes_the_exact_stream ... ok
+test copied_state_and_forks_reproduce_independent_streams ... ok
+test ranges_reject_empty_or_reversed_bounds_and_stay_inside_exclusive_end ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/road_movement_multipliers.rs (/dev/shm/m07b2-r3-target/debug/deps/road_movement_multipliers-10cca6a7ed28e576)
+
+running 3 tests
+test road_movement_table_covers_each_constant_once ... ok
+test road_divisors_are_integers_read_from_the_table ... ok
+test road_floor_row_is_readable_and_positive ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/save_load.rs (/dev/shm/m07b2-r3-target/debug/deps/save_load-db71f01fd33c5619)
+
+running 6 tests
+test invalid_state_is_rejected_during_snapshot_deserialization ... ok
+test snapshot_parts_can_be_moved_into_a_runtime_restore ... ok
+test future_and_incomplete_versions_are_rejected_without_silent_defaults ... ok
+test version_one_snapshot_migrates_by_adding_an_empty_queue ... ok
+test explicit_v1_constructor_uses_the_same_migration_contract ... ok
+test current_snapshot_round_trips_with_state_queue_rng_and_version ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/smoke.rs (/dev/shm/m07b2-r3-target/debug/deps/smoke-adce5cc2d2d8a90e)
+
+running 2 tests
+test engine_state_can_be_created_advanced_and_round_tripped ... ok
+test one_based_turn_invariant_is_enforced_on_construction_and_deserialization ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/state_dto.rs (/dev/shm/m07b2-r3-target/debug/deps/state_dto-327fd3dbeed98a1f)
+
+running 10 tests
+test civilization_rejects_empty_names_and_duplicate_entity_references ... ok
+test invalid_entity_reference_is_rejected_by_state_constructor ... ok
+test invalid_one_based_turn_is_rejected_during_state_deserialization ... ok
+test canonical_state_round_trips_through_serde ... ok
+test map_rejects_invalid_dimensions_tile_count_duplicate_and_out_of_bounds ... ok
+test state_rejects_city_and_unit_positions_outside_the_map ... ok
+test city_rejects_empty_names_and_zero_population ... ok
+test state_rejects_unknown_and_mismatched_entity_owners ... ok
+test state_rejects_unknown_unit_reference ... ok
+test state_rejects_duplicate_civilization_city_and_unit_ids ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/steam_adapter.rs (/dev/shm/m07b2-r3-target/debug/deps/steam_adapter-f6b655412f549c74)
+
+running 5 tests
+test missing_cloud_save_key_is_reported_without_fabricating_data ... ok
+test production_adapter_is_explicitly_disconnected_and_side_effect_free ... ok
+test unavailable_mock_rejects_every_steam_operation ... ok
+test in_memory_adapter_round_trips_cloud_save_bytes_exactly ... ok
+test in_memory_adapter_unlocks_achievements_and_reports_overlay_status ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/structure_defense_max.rs (/dev/shm/m07b2-r3-target/debug/deps/structure_defense_max-97cd066d284c179b)
+
+running 3 tests
+test structures_are_ignored_outside_siege ... ok
+test no_structure_gives_neutral_multiplier ... ok
+test combined_structures_equal_the_strongest_single_structure ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/terrain_movement_fix.rs (/dev/shm/m07b2-r3-target/debug/deps/terrain_movement_fix-125ac22589e46124)
+
+running 9 tests
+test barbarian_camps_never_spawn_on_tundra ... ok
+test barbarian_camps_spawn_on_passable_land_next_to_tundra ... ok
+test barbarians_treat_tundra_as_impassable_land ... ok
+test land_route_bfs_crosses_desert_field ... ok
+test land_route_bfs_is_blocked_by_tundra_field ... ok
+test owners_land_border_ignores_tundra_neighbour ... ok
+test trade_routes_do_not_cross_tundra ... ok
+test ai_turn_movement_costs_agree_with_terrain_module_for_shared_terrains ... ok
+test ai_turn_desert_movement_cost_matches_web_and_pathfinder ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/trade.rs (/dev/shm/m07b2-r3-target/debug/deps/trade-4501c2b50cea3ce6)
+
+running 12 tests
+test diff_and_serialization_preserve_route_contract ... ok
+test grants_are_symmetric_and_disappear_with_inactive_routes ... ok
+test income_curve_is_clamped_and_sea_total_is_scaled_like_the_canonical_rule ... ok
+test diagonal_path_uses_the_canonical_hex_neighbor_order ... ok
+test map_and_resource_dtos_use_json_safe_camel_case_contracts ... ok
+test connection_result_and_tile_helpers_are_small_and_stable ... ok
+test land_and_sea_connection_follow_physical_terrain_without_distance_cap ... ok
+test land_border_is_required_only_when_territory_data_is_supplied ... ok
+test route_identity_construction_and_building_limits_are_deterministic ... ok
+test route_income_building_and_sea_bonuses_are_aggregated_per_city ... ok
+test resource_flow_moves_only_surplus_and_uses_deterministic_ledger ... ok
+test refresh_requires_treaty_and_war_free_route_but_allows_internal_trade ... ok
+
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/turn_economy.rs (/dev/shm/m07b2-r3-target/debug/deps/turn_economy-ecc7aeae80031bf5)
+
+running 7 tests
+test pure_preview_does_not_mutate_input_balances ... ok
+test resource_costs_are_paid_independently_and_never_underflow ... ok
+test settlement_and_balances_round_trip_through_serde ... ok
+test invalid_and_overflow_turn_boundaries_are_rejected_without_mutation ... ok
+test flow_helpers_are_deterministic_and_saturating ... ok
+test settlement_credits_income_before_paying_expenses ... ok
+test unused_work_is_reset_but_persistent_balances_carry_forward ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/unit_epoch.rs (/dev/shm/m07b2-r3-target/debug/deps/unit_epoch-c52a04b91f6d1f56)
+
+running 6 tests
+test non_scout_from_current_epoch_is_available_but_future_unit_is_not ... ok
+test p6_1_civ_entry_api_is_exercised ... ok
+test scout_is_available_in_every_epoch ... ok
+test epoch_labels_round_trip_and_reject_unknown_values ... ok
+test current_and_previous_epochs_are_available ... ok
+test units_older_than_the_previous_epoch_are_rejected ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+EXIT=0

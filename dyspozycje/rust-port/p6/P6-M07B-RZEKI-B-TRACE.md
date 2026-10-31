@@ -274,3 +274,138 @@ Stan: rozstrzygnięte TYLKO dowodami plik:linia dla 5 z 17 mutantów K (poniżej
 - 16 mutantów E/L z rundy 2 (C05, M02, M06, M13, E01, E03, E06, E07, E10, E24, E27, E31, G13, G14, W06, E28): dowody plik:linia / wektory NIE dodane.
 - Tabela niezmutowanych konstrukcji plik:linia (N3): NIE wykonana.
 - Logi bramek z linią `EXIT=` (N4): NIE ponowione; `mutate-m07b2-q2-r2.txt` nadal bez `EXIT=`.
+
+
+### Runda 3 — Operator-pomiary (kontynuacja: weryfikacja dowodów, mutacje, bramki; kod `687d39563`)
+
+Start: `b1088d1f8` (detach; kod nie zmieniany, zmiany tylko w testach/dossier). Log: `runs/R-RUSTPORT-P6-M07B2-RZEKI-B-KRAWEDZIE-Q1/`, raport `04-operator-r3-pomiary.md`.
+
+**Bramki (surowe logi z `EXIT=`, cargo z `CARGO_TARGET_DIR=/dev/shm/m07b2-r3-target`):**
+- `cargo fmt --check`: EXIT=0 (`gate-fmt-r3.txt`).
+- `cargo clippy --all-targets`: EXIT=0, 0 ostrzeżeń (`gate-clippy-r3.txt`).
+- `cargo test --test p6_m07b2_coast --test p6_m07b2_edges`: EXIT=0, 2+3 testów zielonych (`gate-test-m07b2-r3.txt`).
+- Pełny `cargo test`: `--lib` 22 passed EXIT=0 (`gate-test-full-r3-lib.txt`); 252 cele integracyjne w 5 partiach po ≤60 celów (`gate-test-full-r3-c00..c04.txt`), każda EXIT=0, 0 FAILED. Partiowanie = ZAŁOŻENIE (r2: jedno wywołanie = EXIT=124 przez limit czasu).
+
+**Weryfikator Python (ponownie):** `verify-m07b2-q2-r3.txt`: `TOTAL: 25592/25592 zgodne`, EXIT=0 (ten sam weryfikator co R2; nie jest niezależny od Operatora R2 — ZAŁOŻENIE do oceny Evaluatora).
+
+**Mutanty K — ponowny przebieg 33 SURVIVED (`ids`, log `mutate-m07b2-q2-r3.txt`):** wszystkie 33 reprodukują SURVIVED, `RESTORED=True` dla każdego. Kod zakresu niezmieniony, więc 67 KILLED z R2 nie było ponawiane. UWAGA: wywołanie przez `| cut` — kod wyjścia skryptu nie został zachowany; brak linii `EXIT=` w logu R3 (NIE_ZMIERZONO, do uzupełnienia przy następnym przebiegu). Log R2 (`mutate-m07b2-q2-r2.txt`) nadal bez `EXIT=` (historia, nie edytowana).
+
+**Zamknięte dowody (K → EKWIWALENT):**
+- Potwierdzono zarzuty R3 dla C12, C21, M03, W05, W08 (plik:linia w tabeli poniżej; sprawdzono treść mutantów w `mutate_m07b2_q2.py`).
+- C21: wywołanie `collect` ma `path` zawsze niepustą (`coast_grow.rs:138` — `path = vec![mouth]`), więc filtr `coast_grow.rs:71` działa i `nd >= 2 = RIVER_MIN_INLAND_FROM_SEA` (`rivers_a.rs:55`).
+- W05: `window.rs:46` clause `cut_at >= len-1` jest nieosiągalna, bo `cut_at <= len-2`.
+- W08: `sanitize_river_path` (`rivers_a.rs:264-277`) zwraca ścieżkę o kolejnych sąsiadach; `repair` (`rivers_a.rs:328-342`, gałąź `d == 1`) jest wtedy tożsamością.
+- E13, E14, E17, E18, E19, E25, E35 (`edges.rs:100-146`, `162-175`, `231`): dowód wyczerpujący modelu Python `tests/p6_m07b2_vectors/corners_exhaustive_m07b2_q2.py` (log `corners-exhaustive-r3.txt`, EXIT=0). Model walidowany na 1250/1250 wektorach weba `corners`. Dziedzina: a,b in 0..5 (rem_euclid 6), parzystość w {-2..3}: 216 przypadków na mutant, roznic 0 dla E13, E14, E17, E18, E19, E35 (transit par vs par+1). E25: 0/216 przypadków z duplikatem krawędzi. Uzasadnienie ogólne: `walk_river_hex_perimeter` (`edges.rs:81-95`) zwraca prostą ścieżkę po 6-cyklu, więc pary kolejnych rogów mają różne krawędzie; korekta parzystości zmienia wynik tylko przy `score == best_score`, a wtedy nie zmienia wyboru; gałąź fallback jest nieosiągalna, bo dla a != b istnieje para wejście/wyjście o długości >= 2 (E18: 0 przypadków).
+
+**Otwarte po R3:**
+- K (LUKA, wymagany wektor `grow` z pętlą > 18 z weba pinu): G05, G06, G11, G12.
+- K (LUKA, wymagany wektor meandru z `cur` poza `seaDist`): M11 (`meander.rs:27`, default 999 → 0 — nie wykonano).
+- L: G13, G14, W06, E28 — nieosiągalność na mapach ≤127 nadal ZAŁOŻENIE, bez dowodu i bez wektora N-1/N/N+1 na tym samym starcie.
+- E (analiza R3, do weryfikacji): C05, M02, M06, E06, E07, E10, E24, E27, E31 (plik:linia w tabeli). E01, E03, M13 — zalozenie R2, nie re-analizowane w R3.
+
+**Tabela niezmutowanych konstrukcji (N3) — mutant → linia Rust → status** (linia = pierwsze wystąpienie `old` w pliku; generator: `/tmp/.../scratchpad/n3_table.py`, nie w repo):
+
+| ID | oczek. | plik | linia Rust | wynik r2 | status R3 |
+|---|---|---|---|---|---|
+| C01 | K | coast_grow.rs | 54 | KILLED | KILLED (test) |
+| C02 | K | coast_grow.rs | 57 | KILLED | KILLED (test) |
+| C03 | K | coast_grow.rs | 63 | KILLED | KILLED (test) |
+| C04 | K | coast_grow.rs | 67 | KILLED | KILLED (test) |
+| C05 | E | coast_grow.rs | 71 | SURVIVED | EKWIWALENT (analiza R3 plik:linia, do weryfikacji Evaluatora) |
+| C06 | K | coast_grow.rs | 71 | KILLED | KILLED (test) |
+| C07 | K | coast_grow.rs | 74 | KILLED | KILLED (test) |
+| C08 | K | coast_grow.rs | 74 | KILLED | KILLED (test) |
+| C09 | K | coast_grow.rs | 85 | KILLED | KILLED (test) |
+| C10 | K | coast_grow.rs | 86 | KILLED | KILLED (test) |
+| C11 | K | coast_grow.rs | 87 | KILLED | KILLED (test) |
+| C12 | K | coast_grow.rs | 89 | SURVIVED | EKWIWALENT (dowod R3) |
+| C13 | K | coast_grow.rs | 90 | KILLED | KILLED (test) |
+| C14 | K | coast_grow.rs | 92 | KILLED | KILLED (test) |
+| C15 | K | coast_grow.rs | 93 | KILLED | KILLED (test) |
+| C16 | K | coast_grow.rs | 88 | KILLED | KILLED (test) |
+| C17 | K | coast_grow.rs | 98 | KILLED | KILLED (test) |
+| C18 | K | coast_grow.rs | 99 | KILLED | KILLED (test) |
+| C19 | K | coast_grow.rs | 100 | KILLED | KILLED (test) |
+| C20 | K | coast_grow.rs | 102 | KILLED | KILLED (test) |
+| C21 | K | coast_grow.rs | 48 | SURVIVED | EKWIWALENT (dowod R3) |
+| G01 | K | coast_grow.rs | 154 | KILLED | KILLED (test) |
+| G02 | K | coast_grow.rs | 156 | KILLED | KILLED (test) |
+| G03 | K | coast_grow.rs | 177 | KILLED | KILLED (test) |
+| G04 | K | coast_grow.rs | 179 | KILLED | KILLED (test) |
+| G05 | K | coast_grow.rs | 173 | SURVIVED | LUKA K |
+| G06 | K | coast_grow.rs | 182 | SURVIVED | LUKA K |
+| G07 | K | coast_grow.rs | 187 | KILLED | KILLED (test) |
+| G08 | K | coast_grow.rs | 191 | KILLED | KILLED (test) |
+| G09 | K | coast_grow.rs | 192 | KILLED | KILLED (test) |
+| G10 | K | coast_grow.rs | 194 | KILLED | KILLED (test) |
+| G11 | K | coast_grow.rs | 197 | SURVIVED | LUKA K |
+| G12 | K | coast_grow.rs | 140 | SURVIVED | LUKA K |
+| G13 | L | coast_grow.rs | 143 | SURVIVED | LUKA L |
+| G14 | L | coast_grow.rs | 150 | SURVIVED | LUKA L |
+| M01 | K | meander.rs | 37 | KILLED | KILLED (test) |
+| M02 | E | meander.rs | 37 | SURVIVED | EKWIWALENT (analiza R3 plik:linia, do weryfikacji Evaluatora) |
+| M03 | K | meander.rs | 40 | SURVIVED | EKWIWALENT (dowod R3) |
+| M04 | K | meander.rs | 44 | KILLED | KILLED (test) |
+| M05 | K | meander.rs | 44 | KILLED | KILLED (test) |
+| M06 | E | meander.rs | 47 | SURVIVED | EKWIWALENT (analiza R3 plik:linia, do weryfikacji Evaluatora) |
+| M07 | K | meander.rs | 50 | KILLED | KILLED (test) |
+| M08 | K | meander.rs | 53 | KILLED | KILLED (test) |
+| M09 | K | meander.rs | 59 | KILLED | KILLED (test) |
+| M10 | K | meander.rs | 58 | KILLED | KILLED (test) |
+| M11 | K | meander.rs | 27 | SURVIVED | LUKA K |
+| M12 | K | meander.rs | 65 | KILLED | KILLED (test) |
+| M13 | E | meander.rs | 68 | SURVIVED | E (zalozenie R2, bez weryfikacji R3) |
+| M14 | L | meander.rs | 65 | KILLED | KILLED (test) |
+| M15 | K | meander.rs | 58 | KILLED | KILLED (test) |
+| W01 | K | window.rs | 33 | KILLED | KILLED (test) |
+| W02 | K | window.rs | 37 | KILLED | KILLED (test) |
+| W03 | K | window.rs | 40 | KILLED | KILLED (test) |
+| W04 | K | window.rs | 40 | KILLED | KILLED (test) |
+| W05 | K | window.rs | 46 | SURVIVED | EKWIWALENT (dowod R3) |
+| W06 | L | window.rs | 24 | SURVIVED | LUKA L |
+| W07 | K | window.rs | 26 | KILLED | KILLED (test) |
+| W08 | K | window.rs | 53 | SURVIVED | EKWIWALENT (dowod R3) |
+| W09 | K | window.rs | 52 | KILLED | KILLED (test) |
+| E01 | E | edges.rs | 19 | SURVIVED | E (zalozenie R2, bez weryfikacji R3) |
+| E02 | K | edges.rs | 22 | KILLED | KILLED (test) |
+| E03 | E | edges.rs | 28 | SURVIVED | E (zalozenie R2, bez weryfikacji R3) |
+| E04 | K | edges.rs | 35 | KILLED | KILLED (test) |
+| E05 | K | edges.rs | 42 | KILLED | KILLED (test) |
+| E06 | E | edges.rs | 45 | SURVIVED | EKWIWALENT (analiza R3 plik:linia, do weryfikacji Evaluatora) |
+| E07 | E | edges.rs | 51 | SURVIVED | EKWIWALENT (analiza R3 plik:linia, do weryfikacji Evaluatora) |
+| E08 | K | edges.rs | 66 | KILLED | KILLED (test) |
+| E09 | K | edges.rs | 72 | KILLED | KILLED (test) |
+| E10 | E | edges.rs | 82 | SURVIVED | EKWIWALENT (analiza R3 plik:linia, do weryfikacji Evaluatora) |
+| E11 | K | edges.rs | 87 | KILLED | KILLED (test) |
+| E12 | K | edges.rs | 104 | KILLED | KILLED (test) |
+| E13 | K | edges.rs | 122 | SURVIVED | EKWIWALENT (model wyczerp. R3) |
+| E14 | K | edges.rs | 123 | SURVIVED | EKWIWALENT (model wyczerp. R3) |
+| E15 | K | edges.rs | 131 | KILLED | KILLED (test) |
+| E16 | K | edges.rs | 134 | KILLED | KILLED (test) |
+| E17 | K | edges.rs | 127 | SURVIVED | EKWIWALENT (model wyczerp. R3) |
+| E18 | K | edges.rs | 141 | SURVIVED | EKWIWALENT (model wyczerp. R3) |
+| E19 | K | edges.rs | 116 | SURVIVED | EKWIWALENT (model wyczerp. R3) |
+| E20 | K | edges.rs | 107 | KILLED | KILLED (test) |
+| E21 | K | edges.rs | 151 | KILLED | KILLED (test) |
+| E22 | K | edges.rs | 152 | KILLED | KILLED (test) |
+| E23 | K | edges.rs | 154 | KILLED | KILLED (test) |
+| E24 | E | edges.rs | 164 | SURVIVED | EKWIWALENT (analiza R3 plik:linia, do weryfikacji Evaluatora) |
+| E25 | K | edges.rs | 170 | SURVIVED | EKWIWALENT (model wyczerp. R3) |
+| E26 | K | edges.rs | 170 | KILLED | KILLED (test) |
+| E27 | E | edges.rs | 181 | SURVIVED | EKWIWALENT (analiza R3 plik:linia, do weryfikacji Evaluatora) |
+| E28 | L | edges.rs | 186 | SURVIVED | LUKA L |
+| E29 | K | edges.rs | 193 | KILLED | KILLED (test) |
+| E30 | K | edges.rs | 198 | KILLED | KILLED (test) |
+| E31 | E | edges.rs | 213 | SURVIVED | EKWIWALENT (analiza R3 plik:linia, do weryfikacji Evaluatora) |
+| E32 | K | edges.rs | 228 | KILLED | KILLED (test) |
+| E33 | K | edges.rs | 218 | KILLED | KILLED (test) |
+| E34 | K | edges.rs | 223 | KILLED | KILLED (test) |
+| E35 | K | edges.rs | 231 | SURVIVED | EKWIWALENT (model wyczerp. R3) |
+| G15 | K | coast_grow.rs | 149 | KILLED | KILLED (test) |
+| G16 | K | coast_grow.rs | 169 | KILLED | KILLED (test) |
+| E36 | K | edges.rs | 102 | KILLED | KILLED (test) |
+| E37 | K | edges.rs | 89 | KILLED | KILLED (test) |
+| E38 | K | edges.rs | 18 | KILLED | KILLED (test) |
+| W10 | K | window.rs | 22 | KILLED | KILLED (test) |
+
+**Podsumowanie R3:** 100 mutantów: KILLED 67 (R2, bez zmian kodu), EKWIWALENT dowodem 12, E zanalizowane 9 (do weryfikacji), LUKA K 5, LUKA L 4, E bez analizy 3 (E01, E03, M13). Status tematu: BLOCK, zakres niezamknięty (N1: 5 K; N2: 4 L + 3 E bez dowodu).

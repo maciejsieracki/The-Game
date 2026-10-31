@@ -9,7 +9,8 @@ Wynik: KILLED (test padl / panika / blad kompilacji mutanta liczy sie jako zabic
 Uzycie (cwd dowolny; katalog silnika wyliczany z lokalizacji skryptu):
   python3 -I mutate_m07b2_q2.py <od> <do>      # indeksy [od, do) z listy MUTANTS
   python3 -I mutate_m07b2_q2.py list           # lista mutantow
-Log dopisywany do runu: dyspozycje/autobot/runs/R-RUSTPORT-P6-M07B2-RZEKI-B-KRAWEDZIE-Q1/mutate-m07b2-q2-r2.txt
+Log dopisywany do runu: dyspozycje/autobot/runs/R-RUSTPORT-P6-M07B2-RZEKI-B-KRAWEDZIE-Q1/mutate-m07b2-q2-r3.txt
+  python3 -I mutate_m07b2_q2.py ids C12 C21 ...  # runda 3: wskazane ID
 """
 import hashlib
 import os
@@ -20,7 +21,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 ENGINE = os.path.abspath(os.path.join(HERE, "..", ".."))
 ROOT = os.path.abspath(os.path.join(HERE, "..", "..", "..", ".."))
 LOG = os.path.join(ROOT, "dyspozycje", "autobot", "runs",
-                   "R-RUSTPORT-P6-M07B2-RZEKI-B-KRAWEDZIE-Q1", "mutate-m07b2-q2-r2.txt")
+                   "R-RUSTPORT-P6-M07B2-RZEKI-B-KRAWEDZIE-Q1", "mutate-m07b2-q2-r3.txt")
 CG = "src/domain/mapgen/rivers_b/coast_grow.rs"
 MN = "src/domain/mapgen/rivers_b/meander.rs"
 ED = "src/domain/mapgen/rivers_b/edges.rs"
@@ -275,7 +276,7 @@ def log(line):
 
 def run_tests():
     env = dict(os.environ)
-    env.update({"CARGO_TARGET_DIR": "/dev/shm/m07b2-r2-target", "CARGO_INCREMENTAL": "0",
+    env.update({"CARGO_TARGET_DIR": "/dev/shm/m07b2-r3-target", "CARGO_INCREMENTAL": "0",
                 "CARGO_PROFILE_DEV_DEBUG": "0", "CARGO_PROFILE_TEST_DEBUG": "0"})
     try:
         p = subprocess.run(
@@ -298,8 +299,18 @@ def main(argv):
         for i, m in enumerate(MUTANTS):
             print(i, m[0], m[1], m[5], m[4])
         return 0
-    lo, hi = int(argv[1]), int(argv[2])
-    for idx in range(lo, min(hi, len(MUTANTS))):
+    if argv[1] == "ids":
+        # r3: uruchom tylko wskazane ID mutantow, np. `ids C12 C21 G05`
+        wanted = argv[2:]
+        indices = [i for i, m in enumerate(MUTANTS) if m[0] in wanted]
+        missing = set(wanted) - {MUTANTS[i][0] for i in indices}
+        if missing:
+            print("BRAK ID:", sorted(missing))
+            return 3
+    else:
+        lo, hi = int(argv[1]), int(argv[2])
+        indices = range(lo, min(hi, len(MUTANTS)))
+    for idx in indices:
         mid, rel, old, new, desc, exp = MUTANTS[idx]
         path = os.path.join(ENGINE, rel)
         orig = open(path, "rb").read()

@@ -1,0 +1,33 @@
+C12 | SURVIVED | oczek=K | collect: prog centerStep > 8 -> 7 (:6118) | all green | RESTORED=True
+C21 | SURVIVED | oczek=K | collect: brak seaDist(cur) -> 1 zamiast 0 (:6100) | all green | RESTORED=True
+G05 | SURVIVED | oczek=K | grow: filtr visited (przebieg 1) usuniety (:6214) | all green | RESTORED=True
+G06 | SURVIVED | oczek=K | grow: filtr visited (przebieg relaxed) usuniety (:6217) | all green | RESTORED=True
+G11 | SURVIVED | oczek=K | grow: oznaczenie wybranego heksa jako odwiedzony usuniete (:6225) | all green | RESTORED=True
+G12 | SURVIVED | oczek=K | grow: ujscie nieoznaczone jako odwiedzone (:6199) | all green | RESTORED=True
+M03 | SURVIVED | oczek=K | meander: filtr kierunku celu usuniety (:6504) | all green | RESTORED=True
+M11 | SURVIVED | oczek=K | meander: brak seaDist(cur) -> 0 zamiast 999 (:6494) | all green | RESTORED=True
+W05 | SURVIVED | oczek=K | window: break przy ciecie na koncu usuniety (:7114) | all green | RESTORED=True
+W08 | SURVIVED | oczek=K | window: naprawa sasiedztwa pominieta (:7116) | all green | RESTORED=True
+E13 | SURVIVED | oczek=K | riverCornersAlongHexEdges: parzystosc odwrocona (:7183) | all green | RESTORED=True
+E14 | SURVIVED | oczek=K | riverCornersAlongHexEdges: tie-break parzystosci cw/ccw zamieniony (:7183) | all green | RESTORED=True
+E17 | SURVIVED | oczek=K | riverCornersAlongHexEdges: remis nadpisuje fallback (:7185) | all green | RESTORED=True
+E18 | SURVIVED | oczek=K | riverCornersAlongHexEdges: wybor fallback usuniety (:7191) | all green | RESTORED=True
+E19 | SURVIVED | oczek=K | riverCornersAlongHexEdges: kolejnosc cw/ccw odwrocona (:7179) | all green | RESTORED=True
+E25 | SURVIVED | oczek=K | riverTransitEdgeIndices: deduplikacja usunieta (:7208) | all green | RESTORED=True
+E35 | SURVIVED | oczek=K | markRiverTransitEdgesOnPath: parzystosc heksa przesunieta (:7244) | all green | RESTORED=True
+C05 | SURVIVED | oczek=E | collect: guard path>=1 usuniety (:6110) - E: Rust panikuje wczesniej w is_river_window_turn_allowed (expect), web TypeError | all green | RESTORED=True
+G13 | SURVIVED | oczek=L | grow: galaz landCenterSquare (centroid kwadratu) usunieta (:6201) | all green | RESTORED=True
+G14 | SURVIVED | oczek=L | grow: visitCap estimateLandCentroidFromMouth 6000 -> 3000 (:6202) - L: cap nieosiagalny na mapach <=127 hexow | all green | RESTORED=True
+M02 | SURVIVED | oczek=E | meander: pominiecie celu usuniete (:6503) - E: sasiad==cel nie dotyka celu (touches=false) | all green | RESTORED=True
+M06 | SURVIVED | oczek=E | meander: brak seaDist(nk) -> 0 zamiast pominiecia (:6509) - E: 0 < RIVER_MIN_INLAND (2) odrzuca | all green | RESTORED=True
+M13 | SURVIVED | oczek=E | meander: klamra indeksu usunieta (:6519) - E: rand()<1, floor(rand*len)<len | all green | RESTORED=True
+W06 | SURVIVED | oczek=L | window: cap 48 -> 47 (N-1) (:7100) - L: maks. iteracji w wektorach ponizej 47 (zmierzono w dossier) | all green | RESTORED=True
+E01 | SURVIVED | oczek=E | canReceive: brak zwrotu dla Morza (:7123) - E: is_dry(Sea)=false i Sea != ShallowSea | all green | RESTORED=True
+E03 | SURVIVED | oczek=E | markRiverEdge: edgeIdx<0 guard usuniety (:7128) - E: u8::try_from(-1) zwraca Err | all green | RESTORED=True
+E06 | SURVIVED | oczek=E | markRiverEdge: obecna = true zamiast !empty (:7133) - E: po push krawedzie zawsze niepuste | all green | RESTORED=True
+E07 | SURVIVED | oczek=E | markRiverEdgePair: guard edgeIdx<0 usuniety (:7138) - E: mark_river_edge(-1) no-op, get(usize) None | all green | RESTORED=True
+E10 | SURVIVED | oczek=E | walkRiverHexPerimeter: wczesny zwrot dla from==to usuniety (:7151) - E: petla zwraca to samo | all green | RESTORED=True
+E24 | SURVIVED | oczek=E | riverTransitEdgeIndices: prog len<2 -> <1 (:7204) - E: petla 0..0 pusta | all green | RESTORED=True
+E27 | SURVIVED | oczek=E | simplifyRiverRenderPath: prog len<3 -> <2 (:7216) - E: petla i in 1..len-1 pusta dla len 2 | all green | RESTORED=True
+E28 | SURVIVED | oczek=L | simplifyRiverRenderPath: cap 4000 -> 3999 (N-1) - L: nieosiagalny (iteracje <= len sciezki <=15) | all green | RESTORED=True
+E31 | SURVIVED | oczek=E | markRiverTransitEdgesOnPath: prog len<2 -> <1 (:7234) - E: petla bez krawedzi | all green | RESTORED=True

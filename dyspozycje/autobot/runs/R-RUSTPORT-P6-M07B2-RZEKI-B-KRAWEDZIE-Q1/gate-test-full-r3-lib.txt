@@ -1,0 +1,31 @@
+   Compiling civ-engine v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_03b689c0-51d-2/rust-port/engine)
+    Finished `test` profile [unoptimized] target(s) in 23.40s
+     Running unittests src/lib.rs (/dev/shm/m07b2-r3-target/debug/deps/civ_engine-16aabb0664806a8f)
+
+running 22 tests
+test domain::economy_city_fns::tests::city_entries_duplicate_catalog_ids_use_first_entry ... ok
+test domain::economy_city_fns::tests::city_entries_skip_unknown_and_keep_order ... ok
+test domain::economy_city_fns::tests::corruption_rate_caps_and_scales ... ok
+test domain::economy_city_fns::tests::corruption_rate_nan_cap_propagates ... ok
+test domain::economy_city_fns::tests::corruption_reduction_each_building_and_ceiling ... ok
+test domain::economy_city_fns::tests::happiness_entries_sum_and_nan_level_propagates ... ok
+test domain::economy_city_fns::tests::happiness_from_built_ids_empty_is_zero ... ok
+test domain::economy_city_fns::tests::happiness_from_built_ids_skips_unknown_and_uses_first_match ... ok
+test domain::economy_city_fns::tests::production_progress_branches ... ok
+test domain::economy_city_terrain::tests::build_skips_unknown_label_and_last_duplicate_wins ... ok
+test domain::economy_city_terrain::tests::js_number_from_str_edges ... ok
+test domain::economy_city_terrain::tests::row_nullish_falls_back_to_handel_and_zero ... ok
+test domain::map_generator::tests::axial_distance_and_neighbours_match_hex_contract ... ok
+test domain::map_generator::tests::canonical_climate_band_vectors_match_typescript ... ok
+test domain::economy_city_fns::tests::happiness_from_built_ids_duplicate_catalog_ids_use_first_entry ... ok
+test domain::map_generator::tests::mulberry32_matches_typescript_first_values ... ok
+test domain::map_generator::tests::terrain_bias_and_classification_match_typescript_golden_vectors ... ok
+test domain::okolica::sort::tests::js_cmp_diff_nan_is_equal_like_v8_compare ... ok
+test domain::map_generator::tests::value_noise_and_fbm_match_typescript_golden_vectors ... ok
+test domain::okolica::sort::tests::compare_scored_nan_score_is_tie_without_further_criteria ... ok
+test domain::map_generator::tests::canonical_mask_vectors_match_typescript ... ok
+test domain::okolica::sort::tests::v8_sort_matches_node_v8_on_nan_ties_and_runs ... ok
+
+test result: ok. 22 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+EXIT=0
