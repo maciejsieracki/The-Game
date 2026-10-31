@@ -859,5 +859,55 @@ console.log('(s4) D-R5-2: tartak i oboz NIGDY na heksie rzeka+las we WSZYSTKICH 
   ok(!/demandActive\s*&&\s*\(key === 'tartak' \|\| key === 'oboz_lowiecki'\)\s*&&\s*riverHexKeys/.test(picker), 'auto-improvements.ts: zakaz tartak/oboz na rzece nie jest warunkowany `demandActive`');
 }
 
+console.log('(s5) BUDZET SZTYWNO — kazdy KROK z osobna: KROK 0 wyrabu (rzeka+las), FAZA 2 wyrabu, FAZA 0 obrony; niskie % (1-3) i pula na granicy kosztu');
+{
+  const FOCUS5 = { K1: 'zywnosc', K2: 'zrownowazone', S: 'surowce', I: 'infrastruktura' };
+  const direct = (profil, map, pool, pct, { placed = new Map(), worked = WORKED_ALL, dd = false, deficit = [] } = {}) => {
+    const ws = new Set(worked.map(([q, r]) => K(q, r)));
+    return pickAutoImprovements({
+      cities: [{ ...CITY, ulepszeniaFocus: FOCUS5[profil] }], ownerId: 0, map, territoryNodes: TN, placedImprovements: placed,
+      pracaAvailable: pool, unlockedTechs: new Set(FULL), pracaSurplusThreshold: 30, demandDriven: dd, resourceDeficitKeys: deficit,
+      getFocus: () => FOCUS5[profil], getOnlyWorked: () => true, getWorkedHexKeys: () => ws,
+      pracaBudgetPercent: pct, civArchetype: 'grecy', playerEra: 3, foodImprovementStages: () => profil === 'K1' || profil === 'K2',
+    });
+  };
+  const sum = picks => picks.reduce((n, p) => n + p.kosztPraca, 0);
+  const wyrabKoszt = getImprovementMeta('wyrab').kosztPraca;
+  const FOR5 = [[14, 12], [11, 11], [13, 11], [11, 13], [14, 13]];
+  const scen = {
+    'KROK 0 (rzeka+las)': { profile: ['K1', 'K2'], mk: () => makeMap({ river: RIVER, forest: RIVER }), worked: WORKED_ALL, dd: true, key: 'wyrab' },
+    'FAZA 2 (wyrab)': { profile: ['K1'], mk: () => makeMap({ forest: FOR5 }), worked: [...WORKED_ALL, ...FOR5], dd: false, key: 'wyrab' },
+  };
+  for (const [nazwa, s] of Object.entries(scen)) {
+    for (const profil of s.profile) {
+      let naruszen = 0, zbudowano = 0;
+      for (const pct of [1, 2, 3]) {
+        const picks = direct(profil, s.mk(), 100, pct, { worked: s.worked, dd: s.dd });
+        if (sum(picks) * 100 > pct * 100) naruszen++;
+        zbudowano += picks.filter(p => p.key === s.key).length;
+      }
+      ok(naruszen === 0, `[${profil}] ${nazwa}: pct 1/2/3 x pula 100 (sufit 1/2/3 < koszt wyrabu ${wyrabKoszt}): wydatek <= sufit`);
+      ok(direct(profil, s.mk(), 100, 2, { worked: s.worked, dd: s.dd }).filter(p => p.key === s.key).length === 0, `[${profil}] ${nazwa}: pct 2 x pula 100 = 2 < ${wyrabKoszt}: 0 wyrabow`);
+      // granica: sufit calkowity zaokraglany W DOL (totalBudget = floor, auto-improvements.ts ~599) — pula 300 x 1% = 3 >= 2.5 => wyrab wolno,
+      // ale tylko 1 szt. (2 x 2.5 = 5 > 3); pula 200 x 1% = 2 < 2.5 => 0
+      const naGranicy = direct(profil, s.mk(), 300, 1, { worked: s.worked, dd: s.dd });
+      ok(naGranicy.filter(p => p.key === s.key).length === 1 && sum(naGranicy) * 100 <= 1 * 300, `[${profil}] ${nazwa}: pula 300 x 1% = 3 >= ${wyrabKoszt}: dokladnie 1 wyrab, wydatek <= sufit (${sum(naGranicy)})`);
+      const podGranica = direct(profil, s.mk(), 200, 1, { worked: s.worked, dd: s.dd });
+      ok(sum(podGranica) === 0, `[${profil}] ${nazwa}: pula 200 x 1% = 2 < ${wyrabKoszt}: wydatek ${sum(podGranica)} == 0`);
+    }
+  }
+  for (const profil of ['I']) {
+    const placed = () => new Map(WORKED_ALL.map(([q, r]) => [K(q, r), ['farma', 'bydlo']]));
+    let widziano = false, naruszen = 0;
+    for (const pct of [1, 5, 10, 20, 100]) {
+      const picks = direct(profil, makeMap({}), 400, pct, { placed: placed() });
+      if (sum(picks) * 100 > pct * 400) naruszen++;
+      if (picks.some(p => p.key === 'posterunek' || p.key === 'fort')) widziano = true;
+    }
+    ok(naruszen === 0, `[${profil}] FAZA 0 (obrona): pct 1/5/10/20/100 x pula 400: wydatek <= sufit`);
+    ok(widziano, `[${profil}] FAZA 0: test nie jest prozny — obrona (posterunek/fort) powstaje przy wysokim %`);
+  }
+}
+
 console.log(`\nautoimprove-stages-q1-test: ${passed} passed, ${failed} failed`);
 process.exit(failed ? 1 : 0);

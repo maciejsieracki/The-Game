@@ -1,0 +1,13 @@
+M7_krok0_wyrab   [FAIL] [K1] KROK 0 (rzeka+las): pct 1/2/3 x pula 100 (sufit 1/2/3 < koszt wyrabu 2.5): wydatek <= sufit
+  [FAIL] [K1] KROK 0 (rzeka+las): pct 2 x pula 100 = 2 < 2.5: 0 wyrabow
+  [FAIL] [K1] KROK 0 (rzeka+las): pula 300 x 1% = 3 >= 2.5: dokladnie 1 wyrab, wydatek <= sufit (5)
+  [FAIL] [K1] KROK 0 (rzeka+las): pula 200 x 1% = 2 < 2.5: wydatek 2.5 == 0
+  [FAIL] [K2] KROK 0 (rzeka+las): pct 1/2/3 x pula 100 (sufit 1/2/3 < koszt wyrabu 2.5): wydatek <= sufit
+  [FAIL] [K2] KROK 0 (rzeka+las): pct 2 x pula 100 = 2 < 2.5: 0 wyrabow
+M8_faza2   [FAIL] [K1] FAZA 2 (wyrab): pct 1/2/3 x pula 100 (sufit 1/2/3 < koszt wyrabu 2.5): wydatek <= sufit
+  [FAIL] [K1] FAZA 2 (wyrab): pct 2 x pula 100 = 2 < 2.5: 0 wyrabow
+  [FAIL] [K1] FAZA 2 (wyrab): pula 300 x 1% = 3 >= 2.5: dokladnie 1 wyrab, wydatek <= sufit (7.5)
+  [FAIL] [K1] FAZA 2 (wyrab): pula 200 x 1% = 2 < 2.5: wydatek 7.5 == 0
+autoimprove-stages-q1-test: 265 passed, 4 failed
+M9_faza0   [FAIL] [I] FAZA 0 (obrona): pct 1/5/10/20/100 x pula 400: wydatek <= sufit
+autoimprove-stages-q1-test: 268 passed, 1 failed

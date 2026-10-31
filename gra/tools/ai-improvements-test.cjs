@@ -436,6 +436,7 @@ console.log('11. combined AI + defensive copy: city improvements + posterunek <=
     0,
   );
   assert(normalSpent <= 80, 'combined normal: suma kosztow <= 100% puli 80 (AI bez capu %, STAGES2-Q1)');
+  assert(normalSpent > Math.floor(80 * 0.5), 'combined normal: wydatek > 50% puli 80 — dowod braku capu 50% (zarzut Evaluator R1 3a: asercja <= 80 sama byla tautologia)');
   eq(normalSpent, farmCost * normalFarm.length, 'combined normal: wydane sa wylacznie koszty farm (ABC-D=B: kilka farm/ture), nie nieistotna komenda');
 
   const defensiveOpts = { ...combinedOpts, pracaAvailable: 80, defensiveCopy: true };
@@ -462,6 +463,7 @@ console.log('11. combined AI + defensive copy: city improvements + posterunek <=
     0,
   );
   assert(defensiveSpent <= 80, 'combined defensiveCopy: suma kosztow <= 100% puli 80 (AI bez capu %, STAGES2-Q1)');
+  assert(defensiveSpent > Math.floor(80 * 0.5), 'combined defensiveCopy: wydatek > 50% puli 80 — dowod braku capu 50% (zarzut Evaluator R1 3a)');
   eq(defensiveSpent, farmCost * defensiveFarm.length, 'combined defensiveCopy: wydane sa wylacznie koszty farm (ABC-D=B)');
 }
 
