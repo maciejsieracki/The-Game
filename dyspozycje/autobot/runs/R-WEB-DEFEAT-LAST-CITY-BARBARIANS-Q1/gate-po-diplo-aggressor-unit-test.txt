@@ -1,0 +1,2 @@
+diplo-aggressor-unit-test: 73 PASS, 0 FAIL
+EXIT=0

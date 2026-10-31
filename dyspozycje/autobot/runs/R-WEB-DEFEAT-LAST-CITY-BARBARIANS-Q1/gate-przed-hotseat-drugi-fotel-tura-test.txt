@@ -1,0 +1,6 @@
+[2m  - waiting for locator('.civ-newgame .start')[22m
+
+    at runScenarioMain (/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/defeat-base-4d1916/gra/tools/hotseat-drugi-fotel-tura-test.cjs:177:47)
+    at async runWithRetry (/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/defeat-base-4d1916/gra/tools/hotseat-drugi-fotel-tura-test.cjs:708:14)
+    at async main (/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/defeat-base-4d1916/gra/tools/hotseat-drugi-fotel-tura-test.cjs:736:15)
+EXIT=2

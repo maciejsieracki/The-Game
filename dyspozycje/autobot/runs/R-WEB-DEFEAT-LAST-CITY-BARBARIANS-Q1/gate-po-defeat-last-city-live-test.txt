@@ -1,0 +1,42 @@
+[defeat-last-city-live] vite build do katalogu tymczasowego: /tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/bDTLU/outf
+
+-- S1: jedno miasto + osadnik, barbarzyńcy zdobywają miasto --
+  OK  S1 gracz ma dokładnie 1 miasto na starcie
+  OK  S1 osadnik gracza dodany
+  OK  S1 gracz ma osadnika przed utratą miasta
+  OK  S1 miasto przejęte przez barbarzyńców (ownerId=-1)
+      S1 po endTurn: {"turnBefore":1,"turnAfter":2,"overlay":true,"gameOver":true}
+  OK  S1 ekran przegranej po realnym endTurn
+  OK  S1 gameOver=true
+  OK  S1 kolejny endTurn nie przesuwa tury po przegranej
+
+-- S2: jedno miasto, bez osadnika, barbarzyńcy zdobywają miasto --
+  OK  S2 gracz ma dokładnie 1 miasto na starcie
+  OK  S2 miasto przejęte przez barbarzyńców (ownerId=-1)
+      S2 po endTurn: {"turnBefore":1,"turnAfter":2,"overlay":true,"gameOver":true}
+  OK  S2 ekran przegranej po realnym endTurn
+  OK  S2 gameOver=true
+  OK  S2 kolejny endTurn nie przesuwa tury po przegranej
+
+-- S4: realna bitwa barbarzyńców (Auto) na jedynym mieście, bez endTurn --
+  OK  S4 gracz ma dokładnie 1 miasto
+  OK  S4 bitwa uruchomiona (są obrońcy i atakujący)
+  OK  S4 przed Auto brak ekranu przegranej
+  OK  S4 podsumowanie bitwy widoczne, przegranej jeszcze nie ma (onResolved po Kontynuuj)
+  OK  S4 gracz nie ma już miast (miasto zdobyte w bitwie)
+  OK  S4 ekran przegranej BEZ endTurn
+  OK  S4 gameOver=true
+  OK  S4 tura nie przesunęła się (brak endTurn)
+  OK  S4 kolejny endTurn nie rusza tury
+
+-- S3 (kontrola): dwa miasta, bitwa barbarzyńców zdobywa jedno --
+  OK  S3 gracz ma 2 miasta przed utratą
+  OK  S3 bitwa uruchomiona
+  OK  S3 gracz stracił jedno miasto w bitwie (zostało 1)
+  OK  S3 BRAK ekranu przegranej (gracz ma jeszcze miasto)
+  OK  S3 gameOver=false
+  OK  S3 endTurn przesunął turę, gra trwa
+  OK  C. zero pageerror / console.error w scenariuszach
+
+[defeat-last-city-live] 28 passed, 0 failed
+EXIT=0
