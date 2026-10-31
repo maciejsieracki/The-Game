@@ -6,7 +6,7 @@
  * (`vite build --outDir`, bez `npm run build`). Scenariusz:
  *  T1. AI 1 wypowiada wojnę graczowi 0 BEZ casus belli (realne ownerDeclareWarOn):
  *      flaga agresora 1 aktywna do tury T+20; w panelu dyplomacji wiersz AI 1 ma znacznik „Agresor"
- *      z tooltipem „Wypowiedział wojnę bez powodu (do tury N)".
+ *      z tekstem „Agresor (N)" i tooltipem „Wypowiedział wojnę — konsekwencje dyplomatyczne przez N tur".
  *  T2. AI 2 dostaje casus belli wobec gracza (odmowa trybutu/ultimatum: zarejestrujCasusBelli 2>0),
  *      potem wypowiada wojnę: BRAK flagi i BRAK znacznika w wierszu AI 2.
  *  C.  Zero pageerror w całym scenariuszu.
@@ -106,7 +106,8 @@ async function main() {
     const badge1 = await page.locator(`.civ-diplo [data-owner="${AI_A}"] .cd-agresor`);
     assert('T1: znacznik „Agresor" w wierszu AI1', (await badge1.count()) === 1);
     const title1 = (await badge1.count()) === 1 ? await badge1.first().getAttribute('title') : null;
-    assert('T1: tooltip „do tury N" zgodny z flagą', title1 === `Wypowiedział wojnę bez powodu (do tury ${s1.turn + 20})`, title1);
+    // R-WEB-AGGRESSOR-MARKER-Q1: licznik pozostałych tur (flaga - tura) zamiast „do tury N".
+    assert('T1: tooltip „konsekwencje przez N tur" zgodny z flagą', title1 === 'Wypowiedział wojnę — konsekwencje dyplomatyczne przez 20 tur', title1);
     const panel = page.locator('.civ-diplo').first();
     await panel.screenshot({ path: path.join(EVIDENCE, 'aggressor-panel.png') });
 
