@@ -1,58 +1,54 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA; push do origin/main wykonany na wyraźne polecenie właściciela (2026-10-31)",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "c415f278d71bd4d3d66c164b83ef33c2",
-  "bundleSha256": "06ae666b626811a1c367db30e2d01d27b6ade2a3b0bba0f082b593a5429722eb",
-  "bundleBytes": 70086171,
+  "bundleMd5": "d9408b27ad23b88d3c936138e166bc13",
+  "bundleSha256": "a938d633e69df72d7f7c1e5458127b0c2a16fcc2b863c42752a981eb71e1b44e",
+  "bundleBytes": 70086441,
   "sourceSnapshot": {
-    "source": "web/integration-20261030 5f5ad5a3c (ff na origin/main 7164f7ca1)",
-    "buildCommit": "5f5ad5a3c",
+    "source": "main 5ab3d58e2 + R-WEB-NEWGAME-MENU-REORDER-Q1 (c094d2429) + R-WEB-NEWGAME-ADV-APPLY-BTN-Q1 (f4e0da1ee) + R-WEB-NEWGAME-DEFAULTS-Q1 (9e52df647)",
     "build": "Vite 5.4.x direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "R-WEB-ARMY-EMBLEM-RING-CIV-COLOR-Q1: obwódka armii w kolorze cywilizacji",
-    "R-WEB-ERA-WAR-COUNTER-Q1: licznik wojen epoki (1 na cywilizację i epokę, także gracz)",
-    "R-WEB-PEACE-RULES-Q1: wspólne zasady pokoju (zmęczenie 20 tur, progi z macierzy cywilizacji, bramki R3–R5, hamulec wojny wg Relacji)",
-    "R-WEB-PEACE-RULES-R8R9-Q1: blokada wojny epoki przy Relacji >= 100; brak automatycznego końca wojen wymuszonych",
-    "R-WEB-PEACE-CITY-CESSION-Q1: miasto jako pozycja koszyka pokoju (AI oddaje/żąda, wybór w UI)",
-    "R-WEB-WAR-AGGRESSOR-FLAG-Q1: flaga agresora (20 tur) i casus belli (15 tur)",
-    "R-WEB-TRUCE-Q1: rozejm 5/10/15 tur"
+    "R-WEB-NEWGAME-MENU-REORDER-Q1: układ ustawień nowej gry (12 kart w 2 kolumnach, 13 pozycji w „Zaawansowanych”, etykieta „Wojna epoki”)",
+    "R-WEB-NEWGAME-DEFAULTS-Q1: nowe wartości domyślne (30% lądu dla Kontynentów/Pangei/Wysp; Normalny: trudność miast-państw, zasięg ruchu, wzrost ludności, koszty budynków i jednostek; bitwy ręczne i automatyczne)",
+    "R-WEB-NEWGAME-ADV-APPLY-BTN-Q1: przycisk „Zastosuj” (aktywny) w oknie Zaawansowane opcje"
   ],
   "verification": [
     "tsc --noEmit PASS",
-    "Chromium: city-cession-live 17/0, city-picker-ui 13/0, truce-live 23/0, peace-rules-live 17/0",
-    "Testy: aggressor 73+15, truce 30+8+24, cession 79+73, war-era-counter 82, multiwar 57+21, relation-gate 14, peace profile 198/gate 11/sim 22/main-guard 28/d7 8, diplomacy 148, peace-lock 9, ring 15",
+    "Chromium: newgame-menu-reorder-layout 6 konfiguracji PASS, newgame-adv-apply-btn 87/0, newgame-defaults 60/0, settings-layout-reposition PASS",
+    "newgame-adv-tooltip 30, bottom-navigation 270, sett-grid-layout 74, battle-mode-choice-labels PASS, battle-mode-save-reload-contract PASS, diplo-truce-r1 30, diplomacy 148, war-era-counter 82",
     "Build Vite PASS, verify-robocza-bundle VERIFY OK"
   ],
   "limits": [
-    "Znane czerwone w bazie: civ-matrix-ai-diplomacy-wiring 42/1; ai-test 274/20",
-    "NIE_ZMIERZONO: E2E AI→stół (rozejm), żywy roundtrip pliku zapisu, forced-war-r9 live, war-rules-multiwar-live-test",
-    "Niepokój po cesji miasta nie wdrożony (brak mechaniki w modelu miasta)"
+    "Zapisane preferencje kreatora (localStorage civ-new-game-prefs-v1) NIE są nadpisywane — nowe domyślne widać po wyczyszczeniu preferencji",
+    "NIE_ZMIERZONO: zasłonięcie przycisku „Zastosuj” w pełnej aplikacji (test na harnessie), land-sea-ratio-test (timeout)",
+    "main.ts startNewGame ma stare wartości domyślne poza kreatorem (poza zakresem)",
+    "Znane czerwone w bazie: civ-matrix-ai-diplomacy-wiring 42/1, ai-test 274/20"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
-    "notes": "Każdy temat: Operator → Evaluator → Obrona → Final Control; integracja orkiestratora z bramkami po scaleniu."
+    "notes": "Trzy tematy: Operator → Evaluator → Obrona → Final Control; integracja orkiestratora z poprawką oczekiwań testów po scaleniu."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-10-31T07:46:29",
+  "hubGeneratedAt": "2026-10-31T10:55:08",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "c415f278d71bd4d3d66c164b83ef33c2",
-      "sizeBytes": 70086171
+      "md5": "d9408b27ad23b88d3c936138e166bc13",
+      "sizeBytes": 70086441
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "c415f278d71bd4d3d66c164b83ef33c2",
-      "sizeBytes": 70086171
+      "md5": "d9408b27ad23b88d3c936138e166bc13",
+      "sizeBytes": 70086441
     }
   ],
-  "md5": "c415f278d71bd4d3d66c164b83ef33c2",
-  "sizeBytes": 70086171,
+  "md5": "d9408b27ad23b88d3c936138e166bc13",
+  "sizeBytes": 70086441,
   "publisher": "Claude Code orkiestrator — polecenie właściciela 2026-10-31: merge main, deploy Robocza, git push",
   "source": "gra/src; main 4f0e92ec6c9ef53f653bb807b17c1c10d3a70f89",
   "immediatePreviousRelease": {
