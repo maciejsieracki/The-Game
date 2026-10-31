@@ -9,7 +9,7 @@ pin `edb8fb56` (uruchamiany kod TS, `git archive edb8fb56 gra/src gra/data`). Ba
 `CIV_RIVER_PROFILE`. Dossier NIE deklaruje PASS ani READY_FOR_DEPLOY - to decyzja Evaluatora/Final Control.
 
 **Pomiar niezależny r5:** weryfikator `verify_m07a_p3.py` (stdlib, od zera z TS) PASS na wszystkich sekcjach partii 2-3
-(§3c); mutacje `mutate_m07a_p3.py`: 85 mutantów, 70 zabitych, 15 ekwiwalentnych z dowodem (§4.4); bramki
+(§3c); mutacje `mutate_m07a_p3.py`: 89 mutantów, 74 zabite, 15 ekwiwalentnych z dowodem (§4.4); bramki
 `cargo test` 1827 passed / 0 failed (EXIT=0), `clippy -D warnings` EXIT=0, `fmt --check` EXIT=0 (pliki `gate-*-r5.txt`).
 
 **Otwarte ograniczenia (jawnie, nie PASS):** (1) weryfikator Python NIE obejmuje `purge*`, `render*`, `coastalRender`
