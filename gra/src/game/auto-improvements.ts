@@ -997,6 +997,27 @@ function pickAutoImprovementsSinglePass(opts: PickAutoImprovementsOpts): AutoImp
     const wolnoKarczowacPozaRzeka = !riverForestClearingOnly
       && !rzekiDoZagospodarowania && lesneMinSpelnione;
 
+    // R-WEB-AUTOIMPROVE-PRIORITY-Q1 (runda 2, zarzut 1 i 3 Obrony): KROK 0 NA HEKSIE RZEKA+LAS
+    // (etap E2 właściciela: „najpierw wyciąć, potem farma" — wiążące) NIE zależy od
+    // `lesneMinSpelnione` ani od progu `WYRAB_MIN_FOREST_IN_RADIUS`. Zależność od tartaku
+    // i obozu, których jeszcze nie ma, była DEADLOCKIEM: tartak/obóz zablokowane na rzece,
+    // a wycinka zablokowana brakiem tartaku. Ta sama funkcja steruje bramką tartak/obóz
+    // poniżej, więc obie strony zgadzają się co do tego, kiedy wyrąb na rzece dojdzie.
+    // Warunki = dokładnie to, co wyrąb na rzece faktycznie wymaga (bez budżetu — budżet
+    // jest przejściowy, a bramka nie może blokować tartaku na stałe).
+    const wyrabMetaRzeka = getImprovementMeta('wyrab');
+    const riverKrok0Ok = (q: number, r: number): boolean => {
+      const hk = `${q},${r}`;
+      if (!wyrabWlaczony || !wyrabMetaRzeka) return false;
+      if (!riverHexKeys.has(hk)) return false;
+      if (scheduledWyrabHexes.has(hk)) return false;
+      if (map.hexes[hk]?.nakladka !== Nakladka.Las) return false;
+      if ((workingPlaced.get(hk) ?? []).some(k => k === 'tartak' || k === 'oboz_lowiecki')) return false;
+      if (!hexAllowsKey(q, r, 'wyrab')) return false;
+      if (!isImprovementTechUnlocked('wyrab', unlockedTechs) || !civGate('wyrab', civArchetype)) return false;
+      return qualifies('wyrab', q, r);
+    };
+
     // FAZA 1 — heks po heksie.
     for (const { q, r } of orderedHexes) {
       if (globalSpent >= effectiveCityCap || placedThisCity >= maxItemsPerCity || pracaLeft <= reserve) {
@@ -1005,17 +1026,22 @@ function pickAutoImprovementsSinglePass(opts: PickAutoImprovementsOpts): AutoImp
       }
       const hexKey = `${q},${r}`;
 
-      // KROK 0 heksa: wyrąb, gdy heks ma rzekę I las.
+      // KROK 0 heksa: wyrąb, gdy heks ma rzekę I las (bez lesneMin i progu lasu — patrz wyżej),
+      // albo wyrąb poza rzeką (dalej z bramkami lesneMin i progu).
       if (
-        wyrabWlaczony
-        && lesneMinSpelnione
-        && (riverHexKeys.has(hexKey) || wolnoKarczowacPozaRzeka)
-        && !scheduledWyrabHexes.has(hexKey)
-        && map.hexes[hexKey]?.nakladka === Nakladka.Las
-        && (riverForestClearingOnly || forestLeftInRadius >= WYRAB_MIN_FOREST_IN_RADIUS)
-        && !(workingPlaced.get(hexKey) ?? []).some(k => k === 'tartak' || k === 'oboz_lowiecki')
-        // ZASADA 2: wyrąb NIE jest ulepszeniem złożowym — poza heksami z obywatelami stoi.
-        && hexAllowsKey(q, r, 'wyrab')
+        riverKrok0Ok(q, r)
+        || (
+          wyrabWlaczony
+          && lesneMinSpelnione
+          && wolnoKarczowacPozaRzeka
+          && !riverHexKeys.has(hexKey)
+          && !scheduledWyrabHexes.has(hexKey)
+          && map.hexes[hexKey]?.nakladka === Nakladka.Las
+          && forestLeftInRadius >= WYRAB_MIN_FOREST_IN_RADIUS
+          && !(workingPlaced.get(hexKey) ?? []).some(k => k === 'tartak' || k === 'oboz_lowiecki')
+          // ZASADA 2: wyrąb NIE jest ulepszeniem złożowym — poza heksami z obywatelami stoi.
+          && hexAllowsKey(q, r, 'wyrab')
+        )
       ) {
         const wyrabMeta = getImprovementMeta('wyrab');
         if (
@@ -1066,18 +1092,15 @@ function pickAutoImprovementsSinglePass(opts: PickAutoImprovementsOpts): AutoImp
         // Skutek zmierzony: heks rzeki zostaje lasem, a `rzekiDoZagospodarowania` = true
         // blokuje wycinkę lasów poza rzeką. Heks tylko wstrzymany dla tartak/oboz, gdy KROK 0
         // jest dopuszczony (ta sama reguła co w KROKU 0 minus bramek bez wpływu na kolejność).
-        if (
-          (key === 'tartak' || key === 'oboz_lowiecki')
-          && wyrabWlaczony
-          && riverHexKeys.has(hexKey)
-          && map.hexes[hexKey]?.nakladka === Nakladka.Las
-          && !scheduledWyrabHexes.has(hexKey)
-          && (riverForestClearingOnly || forestLeftInRadius >= WYRAB_MIN_FOREST_IN_RADIUS)
-          && hexAllowsKey(q, r, 'wyrab')
-        ) continue;
+        if ((key === 'tartak' || key === 'oboz_lowiecki') && riverKrok0Ok(q, r)) continue;
         // ZASADA 2: heks bez obywateli przechodzi tylko jako ZŁOŻE i tylko dla ulepszenia,
         // które to złoże konsumuje.
         if (!hexAllowsKey(q, r, key)) continue;
+        // R-WEB-AUTOIMPROVE-PRIORITY-Q1 (runda 2, pomiar E3): hodowla (bydło/owce/lama) TYLKO na
+        // heksach przy rzece — „Innych terenów nie rozpatrujemy" (wiążąca specyfikacja właściciela,
+        // etap E3). Pomiar przed zmianą: `tools/wyrab-r2-kolejnosc-measure.cjs` stawiał bydło na
+        // 4 heksach bez rzeki w jednej turze. Stosowane wspólnie dla gracza i AI (ta sama funkcja).
+        if ((key === 'bydlo' || key === 'owce' || key === 'lama') && !riverHexKeys.has(hexKey)) continue;
         if (!qualifies(key, q, r)) continue;
 
         if (surplusReport) surplusReport.anyCandidate = true;
