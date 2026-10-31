@@ -119,7 +119,7 @@ check(
   'ECHO 2 (sojusz KTÓREJKOLWIEK strony blokuje CAŁĄ parę): isForcedWarPairBlocked sprawdza NAP, '
     + 'blokadę pokoju (w tym cooldown tej samej pary) i sojusz -- symetryczny predykat dla '
     + 'WSZYSTKICH par (nowych i dołączeń do istniejących), nie tylko względem gracza',
-  /const isForcedWarPairBlocked = \(a: number, b: number\): boolean =>\s*\n\s*hasTreaty\(activeDeals, a, b, RodzajTraktatu\.PaktNieagresji\)\s*\n\s*\|\| isPeaceLockedBetween\(a, b\)\s*\n\s*\|\| allianceFormalKindBetween\(activeDeals, a, b\) !== null;/.test(main),
+  /const isForcedWarPairBlocked = \(a: number, b: number\): boolean =>\s*\n\s*hasTreaty\(activeDeals, a, b, RodzajTraktatu\.PaktNieagresji\)\s*\n\s*\|\| isPeaceLockedBetween\(a, b\)\s*\n\s*\|\| allianceFormalKindBetween\(activeDeals, a, b\) !== null\s*\n\s*\|\| isForcedWarRelationBlocked\(pairRelationOfR8\(a, b\)\);/.test(main),
 );
 
 // Regresja mutacyjna (dowód nietautologiczności): usunięcie odczytu Brązu z assignmentu jest

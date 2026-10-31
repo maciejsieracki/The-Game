@@ -21,8 +21,6 @@ export {
   WOJNA_KAMIEN_WYMUSZONA_MAX_CZAS_TRWANIA_TUR,
   isEligibleForStoneForcedWar,
   pickStoneForcedWarTargetId,
-  shouldEndStoneForcedWarByCityCount,
-  shouldEndStoneForcedWarByDuration,
   isRestingFromStoneForcedWar,
   serializeStoneForcedWarState,
   restoreStoneForcedWarState,
@@ -66,8 +64,6 @@ try {
     WOJNA_KAMIEN_WYMUSZONA_MAX_CZAS_TRWANIA_TUR: maxDurationTurns,
     isEligibleForStoneForcedWar,
     pickStoneForcedWarTargetId,
-    shouldEndStoneForcedWarByCityCount,
-    shouldEndStoneForcedWarByDuration,
     isRestingFromStoneForcedWar,
     serializeStoneForcedWarState,
     restoreStoneForcedWarState,
@@ -96,15 +92,12 @@ try {
   assert(!eligibility(25, { isAlreadyAtWarAnyRole: true }), 'brak dla ownera już w wojnie');
   assert(!eligibility(25, { isStoneEra: false }), 'brak dla ownera poza epoką Kamienia');
 
-  console.log('--- R-WOJNA-WYMUSZONA-REGULY-Q1 (Część C): shouldEndStoneForcedWarByDuration ---');
-  assert(!shouldEndStoneForcedWarByDuration(19, 0), 'tura 19, start 0 -> wojna trwa (< 20 tur)');
-  assert(shouldEndStoneForcedWarByDuration(20, 0), 'tura 20, start 0 -> limit osiągnięty, koniec');
-  assert(shouldEndStoneForcedWarByDuration(50, 30), 'tura 50, start 30 -> 20 tur, limit osiągnięty (>= wystarczy)');
-  assert(!shouldEndStoneForcedWarByDuration(40, 30), 'tura 40, start 30 -> 10 tur, wojna trwa');
-  assert(
-    !shouldEndStoneForcedWarByDuration(500, undefined),
-    'startTurn undefined (stary zapis) -> currentTurn - currentTurn === 0, NIGDY nie kończy samym tym wywołaniem',
-  );
+  console.log('--- R-WEB-PEACE-RULES-R8R9-Q1 R9: brak automatycznego końca wojny Kamienia (czas / 2 miasta) ---');
+  {
+    // R-WEB-PEACE-RULES-R8R9-Q1 R9: helper auto-końca usunięty z modułu (kontrakt źródła).
+    const srcTxt = require('fs').readFileSync(require('path').resolve(__dirname, '..', 'src', 'game', 'forced-war-stone.ts'), 'utf8');
+    assert(!/shouldEnd\w*ForcedWarBy(CityCount|Duration)/.test(srcTxt), 'R9: brak shouldEnd*ForcedWarBy(CityCount|Duration) w forced-war-stone.ts');
+  }
 
   console.log('--- target guard: najbliższy i wykluczenia ---');
   const distance = (aq, ar, bq, br) => (
@@ -147,10 +140,7 @@ try {
     'remis dystansu rozstrzyga niższy ownerId',
   );
 
-  console.log('--- 2 miasta, odpoczynek i cooldown ---');
-  assert(!shouldEndStoneForcedWarByCityCount(1, 1), '1 zdobyte i 1 utracone nie kończy wojny');
-  assert(shouldEndStoneForcedWarByCityCount(2, 0), '2 zdobyte kończą wojnę pokojem');
-  assert(shouldEndStoneForcedWarByCityCount(0, 2), '2 utracone kończą wojnę pokojem');
+  console.log('--- R9: 2 miasta, odpoczynek i cooldown (brak auto-końca po miastach) ---');
   assert(isRestingFromStoneForcedWar(100, 120), 'odpoczynek działa przed restUntil');
   assert(!isRestingFromStoneForcedWar(120, 120), 'odpoczynek kończy się na restUntil');
   eq(

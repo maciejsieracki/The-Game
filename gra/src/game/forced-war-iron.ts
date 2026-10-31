@@ -3,7 +3,6 @@ import {
   pickForcedWarTargetId,
   restoreForcedWarState,
   serializeForcedWarState,
-  shouldEndForcedWarByCityCount,
   type ForcedWarPairState,
   type ForcedWarSaveState,
 } from './forced-war-common';
@@ -208,32 +207,6 @@ export function pickIronForcedWarTargetId(
     hexDistanceFn,
     opts?.blockedOwnerIds ?? new Set<number>(),
   );
-}
-
-/**
- * Czy wojna wymuszona Żelaza kończy się TERAZ automatycznym pokojem — jedna ze stron
- * zdobyła LUB straciła `threshold` miast na rzecz drugiej (co pierwsze nastąpi).
- * EN: whether the Iron forced war auto-resolves into peace RIGHT NOW.
- */
-export function shouldEndIronForcedWarByCityCount(
-  citiesCapturedByAttacker: number,
-  citiesCapturedByDefender: number,
-  threshold: number = WOJNA_ZELAZO_WYMUSZONA_MAX_MIASTA_ZDOBYTE_LUB_STRACONE,
-): boolean {
-  return shouldEndForcedWarByCityCount(
-    citiesCapturedByAttacker,
-    citiesCapturedByDefender,
-    threshold,
-  );
-}
-
-/** Kończy aktywną parę wojny Żelaza po upływie limitu, nawet bez zdobyczy miast. */
-export function shouldEndIronForcedWarByDuration(
-  currentTurn: number,
-  startTurn: number | undefined,
-  maxDurationTurns: number = WOJNA_ZELAZO_WYMUSZONA_MAX_CZAS_TRWANIA_TUR,
-): boolean {
-  return currentTurn - (startTurn ?? currentTurn) >= maxDurationTurns;
 }
 
 /**

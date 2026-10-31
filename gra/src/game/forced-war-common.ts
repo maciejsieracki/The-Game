@@ -193,7 +193,24 @@ export interface ForcedWarPairingExistingPair {
   era: ForcedWarEraTag;
 }
 
+/**
+ * R-WEB-PEACE-RULES-R8R9-Q1 R8 (decyzja właściciela D1, 2026-10-30): wojna epoki jest
+ * BLOKOWANA wobec partnera, z którym Relacja (relationScore: Zaufanie + Respekt, 0–200)
+ * wynosi co najmniej ten próg. Próg 99 nie blokuje, 100 blokuje.
+ */
+export const FORCED_WAR_EPOCH_RELATION_BLOCK_THRESHOLD = 100;
+
+export function isForcedWarRelationBlocked(relationScore: number): boolean {
+  return relationScore >= FORCED_WAR_EPOCH_RELATION_BLOCK_THRESHOLD;
+}
+
 export interface ForcedWarPairingOpts {
+  /**
+   * R-WEB-PEACE-RULES-R8R9-Q1 R8: Relacja (relationScore 0–200) pary a↔b. Gdy podana i
+   * >= FORCED_WAR_EPOCH_RELATION_BLOCK_THRESHOLD, para jest zablokowana dla wojny epoki
+   * (dotyczy kandydatów gracza-pierwszego, parowania 1v1, dołączania trzeciego). Brak = brak bramki.
+   */
+  pairRelationScore?: (a: number, b: number) => number;
   /** Symetryczny predykat: NAP / peaceLocked (w tym cooldown tej samej pary) / aktywny sojusz MIĘDZY a i b — main.ts ta sama trójka warunków co dawne blockedOwnerIds, teraz jeden predykat zamiast osobnego zbioru per owner. */
   isPairBlocked: (a: number, b: number) => boolean;
   /**
@@ -282,6 +299,11 @@ export function assignForcedWarPairings(
 ): ForcedWarPairingResult {
   const assignments: ForcedWarPairingAssignment[] = [];
   const unresolvedOwnerIds: number[] = [];
+  // R-WEB-PEACE-RULES-R8R9-Q1 R8: jedyny predykat blokady pary w tej funkcji = NAP/peaceLock/
+  // sojusz (opts.isPairBlocked) LUB Relacja >= próg (opts.pairRelationScore).
+  const pairBlocked = (a: number, b: number): boolean =>
+    opts.isPairBlocked(a, b)
+    || (opts.pairRelationScore !== undefined && isForcedWarRelationBlocked(opts.pairRelationScore(a, b)));
   // R-WEB-ERA-WAR-COUNTER-Q1: podmiot z zużytym licznikiem wojen epoki nie wchodzi do puli.
   const exhausted = (ownerId: number): boolean => opts.isEraWarExhausted?.(ownerId) === true;
 
@@ -310,7 +332,7 @@ export function assignForcedWarPairings(
         if (cand.ownerId === playerFirst.playerOwnerId || cand.era == null) continue;
         if (opts.totalActiveForcedWarsByOwner(cand.ownerId) !== 0) continue;
         if (exhausted(cand.ownerId)) continue;
-        if (opts.isPairBlocked(playerFirst.playerOwnerId, cand.ownerId)) continue;
+        if (pairBlocked(playerFirst.playerOwnerId, cand.ownerId)) continue;
         if (!playerFirst.isPlayerPairGateOpen(cand.ownerId)) continue;
         const dist = opts.hexDistanceFn(playerSubject.q, playerSubject.r, cand.q, cand.r);
         if (dist < bestDist) {
@@ -371,7 +393,7 @@ export function assignForcedWarPairings(
   if (remaining.length <= MAX_EXACT_MATCHING_N) {
     const ids = remaining.slice();
     const n = ids.length;
-    const blockedIdx: boolean[][] = ids.map(a => ids.map(b => a !== b && opts.isPairBlocked(a, b)));
+    const blockedIdx: boolean[][] = ids.map(a => ids.map(b => a !== b && pairBlocked(a, b)));
     const memo = new Map<number, number>();
     const lowestBitIndex = (mask: number): number => {
       let i = 0;
@@ -438,7 +460,7 @@ export function assignForcedWarPairings(
       if (remaining.length === 0) { leftovers.push(seekerId); break; }
       const seeker = byId.get(seekerId)!;
       const candidates: ForcedWarNeighborCandidate[] = remaining.map(id => byId.get(id)!);
-      const blocked = new Set(remaining.filter(id => opts.isPairBlocked(seekerId, id)));
+      const blocked = new Set(remaining.filter(id => pairBlocked(seekerId, id)));
       const partnerId = pickForcedWarTargetId(
         candidates,
         { q: seeker.q, r: seeker.r },
@@ -468,8 +490,8 @@ export function assignForcedWarPairings(
       // domino: "sojusz KTÓREJKOLWIEK ze stron blokuje CAŁĄ parę"), nie tylko tę jedną
       // zablokowaną stronę. Obie strony muszą być niezablokowane, żeby para w ogóle
       // kwalifikowała się do dołączenia.
-      const attackerBlocked = opts.isPairBlocked(leftoverId, pair.attackerId);
-      const targetBlocked = opts.isPairBlocked(leftoverId, pair.targetId);
+      const attackerBlocked = pairBlocked(leftoverId, pair.attackerId);
+      const targetBlocked = pairBlocked(leftoverId, pair.targetId);
       if (attackerBlocked || targetBlocked) continue;
       // R-WEB-ERA-WAR-COUNTER-Q1: obie strony pary muszą mieć wolny licznik wojen epoki —
       // strona z zużytym licznikiem nie dostaje drugiej wojny w tej epoce (także jako cel).

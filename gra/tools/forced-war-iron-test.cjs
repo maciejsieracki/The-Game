@@ -24,8 +24,6 @@ export {
   isEligibleForIronForcedWar,
   isIronEraEntry,
   pickIronForcedWarTargetId,
-  shouldEndIronForcedWarByCityCount,
-  shouldEndIronForcedWarByDuration,
   isRestingFromIronForcedWar,
   serializeIronForcedWarState,
   restoreIronForcedWarState,
@@ -82,8 +80,6 @@ try {
     isEligibleForIronForcedWar,
     isIronEraEntry,
     pickIronForcedWarTargetId,
-    shouldEndIronForcedWarByCityCount,
-    shouldEndIronForcedWarByDuration,
     isRestingFromIronForcedWar,
     serializeIronForcedWarState,
     restoreIronForcedWarState,
@@ -224,11 +220,12 @@ try {
   );
 
   console.log('--- 2 miasta, odpoczynek i cooldown ---');
-  assert(!shouldEndIronForcedWarByCityCount(1, 1), '1 zdobyte i 1 utracone nie kończy wojny');
-  assert(shouldEndIronForcedWarByCityCount(2, 0), '2 zdobyte kończą wojnę pokojem');
-  assert(shouldEndIronForcedWarByCityCount(0, 2), '2 utracone kończą wojnę pokojem');
-  assert(!shouldEndIronForcedWarByDuration(19, 0), 'wojna trwa przed upływem 20 tur');
-  assert(shouldEndIronForcedWarByDuration(20, 0), 'wojna bez zdobyczy kończy się po 20 turach');
+  // R-WEB-PEACE-RULES-R8R9-Q1 R9: wojna Żelaza NIE kończy się automatycznie (ani po 2 miastach, ani po 20 turach).
+  {
+    // R-WEB-PEACE-RULES-R8R9-Q1 R9: helper auto-końca usunięty z modułu (kontrakt źródła).
+    const srcTxt = require('fs').readFileSync(require('path').resolve(__dirname, '..', 'src', 'game', 'forced-war-iron.ts'), 'utf8');
+    assert(!/shouldEnd\w*ForcedWarBy(CityCount|Duration)/.test(srcTxt), 'R9: brak shouldEnd*ForcedWarBy(CityCount|Duration) w forced-war-iron.ts');
+  }
   assert(isRestingFromIronForcedWar(100, 120), 'odpoczynek działa przed restUntil');
   assert(!isRestingFromIronForcedWar(120, 120), 'odpoczynek kończy się na restUntil');
   assert(!isRestingFromIronForcedWar(100, undefined), 'brak wpisu restUntil = brak odpoczynku');

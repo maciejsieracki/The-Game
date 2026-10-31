@@ -1198,11 +1198,8 @@ import {
 import {
   WOJNA_WYMUSZONA_ODPOCZYNEK_TUR,
   WOJNA_WYMUSZONA_COOLDOWN_TA_SAMA_CYWILIZACJA_TUR,
-  WOJNA_WYMUSZONA_MAX_CZAS_TRWANIA_TUR,
   WOJNA_WYMUSZONA_MAX_MIASTA_ZDOBYTE_LUB_STRACONE,
   isEligibleForBronzeForcedWar,
-  shouldEndBronzeForcedWarByCityCount,
-  shouldEndBronzeForcedWarByDuration,
   isRestingFromBronzeForcedWar,
   serializeBronzeForcedWarState,
   restoreBronzeForcedWarState,
@@ -1212,10 +1209,7 @@ import {
   WOJNA_KAMIEN_WYMUSZONA_START_TURY,
   WOJNA_KAMIEN_WYMUSZONA_ODPOCZYNEK_TUR,
   WOJNA_KAMIEN_WYMUSZONA_COOLDOWN_TA_SAMA_CYWILIZACJA_TUR,
-  WOJNA_KAMIEN_WYMUSZONA_MAX_CZAS_TRWANIA_TUR,
   isEligibleForStoneForcedWar,
-  shouldEndStoneForcedWarByCityCount,
-  shouldEndStoneForcedWarByDuration,
   isRestingFromStoneForcedWar,
   serializeStoneForcedWarState,
   restoreStoneForcedWarState,
@@ -1225,11 +1219,8 @@ import {
   WOJNA_ZELAZO_WYMUSZONA_ODPOCZYNEK_TUR,
   WOJNA_ZELAZO_WYMUSZONA_COOLDOWN_TA_SAMA_CYWILIZACJA_TUR,
   isEligibleForIronForcedWar,
-  shouldEndIronForcedWarByDuration,
-  WOJNA_ZELAZO_WYMUSZONA_MAX_CZAS_TRWANIA_TUR,
   isIronEraEntry,
   pickIronForcedWarTargetId,
-  shouldEndIronForcedWarByCityCount,
   isRestingFromIronForcedWar,
   serializeIronForcedWarState,
   restoreIronForcedWarState,
@@ -1243,6 +1234,7 @@ import {
   restoreForcedEraPeaceLocks,
   type ForcedEraPeaceLock,
   assignForcedWarPairings,
+  isForcedWarRelationBlocked,
   shouldEndForcedWarByCityCount,
   type ForcedWarPairingSubject,
   type ForcedWarPairingExistingPair,
@@ -15728,9 +15720,9 @@ async function boot(): Promise<void> {
         // where city.ownerId changes due to war — for AI↔AI pairs this is TODAY the only
         // path to end a forced war outside this counter (peace negotiations only handle
         // targetId===0), so skipping this hook here means an AI↔AI forced war that never ends.
-        maybeResolveBronzeForcedWarOnCityCapture(oldOwner, newOwner);
-        maybeResolveStoneForcedWarOnCityCapture(oldOwner, newOwner);
-        maybeResolveIronForcedWarOnCityCapture(oldOwner, newOwner);
+        // R-WEB-PEACE-RULES-R8R9-Q1 R9: wojny wymuszone Kamienia/Brązu/Żelaza NIE kończą się
+        // już automatycznie po zdobyciu miast (usunięte maybeResolve*ForcedWarOnCityCapture) --
+        // kończą się wyłącznie pokojem. Wojny zwykłe: bez zmian.
         maybeResolveRegularWarOnCityCapture(oldOwner, newOwner);
         recordWarCityLossForPair(oldOwner, newOwner); // R-WEB-PEACE-RULES-Q1 R2
         // P-REKRUTACJA-JEDNOSTEK-TYLKO-SKARBIEC-Q1=B: kapitulacja głodowa
@@ -31449,193 +31441,11 @@ async function boot(): Promise<void> {
       return (newOwner === 0 && !isTriumph) ? { eliminatedCivLabel, eliminatedDetails } : null;
     }
 
-    /**
-     * R-EPOKA-BRAZU-WYMUSZONA-WOJNA: licznik miast zdobytych/straconych dla WOJNY WYMUSZONEJ
-     * między tą konkretną parą (jeśli aktywna) — przy progu `WOJNA_WYMUSZONA_MAX_MIASTA_
-     * ZDOBYTE_LUB_STRACONE` w dowolną stronę zawiera automatyczny pokój (reużywa
-     * finalizePeaceTreatyBetween z niestandardowym cooldownem tej pary) i uzbraja odpoczynek
-     * napastnika (`bronzeForceWarRestUntilByOwner`) przed szukaniem kolejnego celu. Wojny
-     * NIEwymuszone (para spoza bronzeForceWarActiveByPairKey) — no-op, bez zmiany zachowania.
-     * B1 (Evaluator FAIL runda 1): jedyny WSPÓLNY punkt liczenia — wołany z OBU miejsc, które
-     * mutują city.ownerId w wyniku wojny (applyCityCaptureToMap I resolveSiegeSurrender), żeby
-     * kapitulacja głodowa AI↔AI nie gubiła licznika (bez tego wojna wymuszona AI↔AI nigdy się
-     * nie kończy — negocjacje pokojowe obsługują wyłącznie targetId===0).
-     * EN: city capture/loss counter for THIS specific forced-war pair (if active) — hitting
-     * the threshold either way auto-concludes peace (custom per-pair cooldown) and arms the
-     * attacker's rest timer. Non-forced wars (pair absent from the map): no-op. B1: the single
-     * SHARED point — called from BOTH places that mutate city.ownerId due to war
-     * (applyCityCaptureToMap AND resolveSiegeSurrender), so starvation surrender between two
-     * AI civs doesn't lose the counter (peace negotiations only handle targetId===0).
-     */
-    function maybeResolveBronzeForcedWarOnCityCapture(oldOwner: number, newOwner: number): void {
-      if (oldOwner === newOwner) return;
-      const pairKey = diploPairKey(oldOwner, newOwner);
-      const st = bronzeForceWarActiveByPairKey.get(pairKey);
-      if (!st) return;
-      if (newOwner === st.attackerId) st.capturedByAttacker++;
-      else if (newOwner === st.targetId) st.capturedByDefender++;
-      else return;
-      if (!shouldEndBronzeForcedWarByCityCount(st.capturedByAttacker, st.capturedByDefender)) return;
-      if (getDiploRelation(st.attackerId, st.targetId).status !== 'wojna') {
-        // Relacja już nie 'wojna' (np. rozstrzygnięta inaczej wcześniej w tej samej turze)
-        // finalizePeaceTreatyBetween nie ma czego kończyć, sprzątamy stan bezpośrednio.
-        bronzeForceWarActiveByPairKey.delete(pairKey);
-        forcedWarWavesByPairKey.delete(pairKey);
-        bronzeForceWarRestUntilByOwner.set(st.attackerId, turn + WOJNA_WYMUSZONA_ODPOCZYNEK_TUR);
-        return;
-      }
-      console.log(
-        `[Dyplomacja] R-EPOKA-BRAZU-WYMUSZONA-WOJNA: auto-pokój AI${st.attackerId}↔AI${st.targetId} `
-        + `(zdobyte ${st.capturedByAttacker}/stracone ${st.capturedByDefender})`,
-      );
-      // finalizePeaceTreatyBetween sprząta bronzeForceWarActiveByPairKey + uzbraja
-      // bronzeForceWarRestUntilByOwner centralnie (patrz definicja funkcji wyżej).
-      finalizePeaceTreatyBetween(
-        st.attackerId, st.targetId, WOJNA_WYMUSZONA_COOLDOWN_TA_SAMA_CYWILIZACJA_TUR,
-      );
-    }
-
-    /**
-     * R-EPOKA-KAMIEN-WYMUSZONA-WOJNA: wspólny punkt rozliczenia przejęcia/
-     * utraty miasta dla wojny wymuszonej Kamienia. Wywoływany z obu funnel-i
-     * zmiany city.ownerId, tak jak mechanizm Brązu.
-     */
-    function maybeResolveStoneForcedWarOnCityCapture(oldOwner: number, newOwner: number): void {
-      if (oldOwner === newOwner) return;
-      const pairKey = diploPairKey(oldOwner, newOwner);
-      const st = stoneForceWarActiveByPairKey.get(pairKey);
-      if (!st) return;
-      if (newOwner === st.attackerId) st.capturedByAttacker++;
-      else if (newOwner === st.targetId) st.capturedByDefender++;
-      else return;
-      if (!shouldEndStoneForcedWarByCityCount(st.capturedByAttacker, st.capturedByDefender)) return;
-      if (getDiploRelation(st.attackerId, st.targetId).status !== 'wojna') {
-        stoneForceWarActiveByPairKey.delete(pairKey);
-        forcedWarWavesByPairKey.delete(pairKey);
-        stoneForceWarRestUntilByOwner.set(
-          st.attackerId,
-          turn + WOJNA_KAMIEN_WYMUSZONA_ODPOCZYNEK_TUR,
-        );
-        return;
-      }
-      console.log(
-        `[Dyplomacja] R-EPOKA-KAMIEN-WYMUSZONA-WOJNA: auto-pokój AI${st.attackerId}`
-        + `↔AI${st.targetId} (zdobyte ${st.capturedByAttacker}/stracone ${st.capturedByDefender})`,
-      );
-      finalizePeaceTreatyBetween(
-        st.attackerId,
-        st.targetId,
-        WOJNA_KAMIEN_WYMUSZONA_COOLDOWN_TA_SAMA_CYWILIZACJA_TUR,
-      );
-    }
-
-    /**
-     * R-WOJNA-WYMUSZONA-REGULY-Q1 (Część C, WYZWALACZ: "Wojna może trwać do 25 tur, potem
-     * ustaje i cywilizacje pomiędzy sobą zawierają pokój, niezależnie od tego, czy zdobędą
-     * jakieś tereny, czy nie"): limit czasu trwania KAŻDEJ aktywnej pary wojny wymuszonej
-     * Kamienia/Brązu/Żelaza — niezależny od progu miast (`maybeResolve*ForcedWarOnCityCapture`
-     * wyżej, NIETKNIĘTE — który z dwóch warunków spełni się pierwszy, kończy wojnę). Wołane
-     * RAZ na świeżą turę (main.ts, obok `pruneInvalidNegotiations`/
-     * `reconcileAllOwnerErasFromResearch`, `if (!aiCmdResume)`) — NIE przy wznowieniu tej
-     * samej tury po przerwie async (animacja bitwy), żeby nie liczyć dwa razy. Iteruje po
-     * SNAPSHOCIE (`Array.from`), bo `finalizePeaceTreatyBetween` mutuje (usuwa z) samą mapę,
-     * po której inaczej iterowalibyśmy. Po wymuszonym pokoju blokada pary obowiązuje do
-     * wejścia napastnika w następną epokę; zwykła blokada traktatowa nadal wynosi 10 tur.
-     */
-    function resolveForcedWarDurationLimits(): void {
-      for (const st of Array.from(stoneForceWarActiveByPairKey.values())) {
-        if (!shouldEndStoneForcedWarByDuration(turn, st.startTurn)) continue;
-        const pairKey = diploPairKey(st.attackerId, st.targetId);
-        if (getDiploRelation(st.attackerId, st.targetId).status !== 'wojna') {
-          // Relacja już nie 'wojna' (rozstrzygnięte inaczej wcześniej w tej samej turze) —
-          // finalizePeaceTreatyBetween nie ma czego kończyć, sprzątamy stan bezpośrednio
-          // (ten sam wzorzec co maybeResolveStoneForcedWarOnCityCapture wyżej).
-          stoneForceWarActiveByPairKey.delete(pairKey);
-          forcedWarWavesByPairKey.delete(pairKey);
-          stoneForceWarRestUntilByOwner.set(st.attackerId, turn + WOJNA_KAMIEN_WYMUSZONA_ODPOCZYNEK_TUR);
-          continue;
-        }
-        console.log(
-          `[Dyplomacja] R-WOJNA-WYMUSZONA-REGULY-Q1: limit czasu (${WOJNA_KAMIEN_WYMUSZONA_MAX_CZAS_TRWANIA_TUR} `
-          + `tur) — auto-pokój Kamień AI${st.attackerId}↔AI${isHuman(st.targetId) ? 'gracz' : `AI${st.targetId}`}`,
-        );
-        finalizePeaceTreatyBetween(
-          st.attackerId, st.targetId, WOJNA_KAMIEN_WYMUSZONA_COOLDOWN_TA_SAMA_CYWILIZACJA_TUR,
-        );
-      }
-      for (const st of Array.from(bronzeForceWarActiveByPairKey.values())) {
-        if (!shouldEndBronzeForcedWarByDuration(turn, st.startTurn)) continue;
-        const pairKey = diploPairKey(st.attackerId, st.targetId);
-        if (getDiploRelation(st.attackerId, st.targetId).status !== 'wojna') {
-          bronzeForceWarActiveByPairKey.delete(pairKey);
-          forcedWarWavesByPairKey.delete(pairKey);
-          bronzeForceWarRestUntilByOwner.set(st.attackerId, turn + WOJNA_WYMUSZONA_ODPOCZYNEK_TUR);
-          continue;
-        }
-        console.log(
-          `[Dyplomacja] R-WOJNA-WYMUSZONA-REGULY-Q1: limit czasu (${WOJNA_WYMUSZONA_MAX_CZAS_TRWANIA_TUR} `
-          + `tur) — auto-pokój Brąz AI${st.attackerId}↔AI${isHuman(st.targetId) ? 'gracz' : `AI${st.targetId}`}`,
-        );
-        finalizePeaceTreatyBetween(
-          st.attackerId, st.targetId, WOJNA_WYMUSZONA_COOLDOWN_TA_SAMA_CYWILIZACJA_TUR,
-        );
-      }
-      for (const st of Array.from(ironForceWarActiveByPairKey.values())) {
-        if (!shouldEndIronForcedWarByDuration(turn, st.startTurn)) continue;
-        const pairKey = diploPairKey(st.attackerId, st.targetId);
-        if (getDiploRelation(st.attackerId, st.targetId).status !== 'wojna') {
-          ironForceWarActiveByPairKey.delete(pairKey);
-          forcedWarWavesByPairKey.delete(pairKey);
-          ironForceWarRestUntilByOwner.set(st.attackerId, turn + WOJNA_ZELAZO_WYMUSZONA_ODPOCZYNEK_TUR);
-          continue;
-        }
-        console.log(
-          `[Dyplomacja] Limit czasu (${WOJNA_ZELAZO_WYMUSZONA_MAX_CZAS_TRWANIA_TUR} tur) — auto-pokój Żelazo `
-          + `AI${st.attackerId}↔AI${isHuman(st.targetId) ? 'gracz' : st.targetId}`,
-        );
-        finalizePeaceTreatyBetween(
-          st.attackerId, st.targetId, WOJNA_ZELAZO_WYMUSZONA_COOLDOWN_TA_SAMA_CYWILIZACJA_TUR,
-        );
-      }
-    }
-
-    /**
-     * R-EPOKA-ZELAZO-WYMUSZONA-WOJNA-Q1: wspólny punkt rozliczenia przejęcia/utraty miasta
-     * dla wojny wymuszonej Żelaza. Wywoływany z OBU funnel-i zmiany `city.ownerId` w wyniku
-     * wojny (`applyCityCaptureToMap` I `resolveSiegeSurrender`), tak jak mechanizmy Kamienia
-     * i Brązu — bez haka w kapitulacji głodowej wojna wymuszona AI↔AI nigdy by się nie
-     * kończyła (negocjacje pokojowe obsługują wyłącznie targetId===0).
-     * EN: single shared capture/loss counter for the Iron forced-war pair, called from both
-     * places that mutate city.ownerId because of war.
-     */
-    function maybeResolveIronForcedWarOnCityCapture(oldOwner: number, newOwner: number): void {
-      if (oldOwner === newOwner) return;
-      const pairKey = diploPairKey(oldOwner, newOwner);
-      const st = ironForceWarActiveByPairKey.get(pairKey);
-      if (!st) return;
-      if (newOwner === st.attackerId) st.capturedByAttacker++;
-      else if (newOwner === st.targetId) st.capturedByDefender++;
-      else return;
-      if (!shouldEndIronForcedWarByCityCount(st.capturedByAttacker, st.capturedByDefender)) return;
-      if (getDiploRelation(st.attackerId, st.targetId).status !== 'wojna') {
-        ironForceWarActiveByPairKey.delete(pairKey);
-        forcedWarWavesByPairKey.delete(pairKey);
-        ironForceWarRestUntilByOwner.set(
-          st.attackerId,
-          turn + WOJNA_ZELAZO_WYMUSZONA_ODPOCZYNEK_TUR,
-        );
-        return;
-      }
-      console.log(
-        `[Dyplomacja] R-EPOKA-ZELAZO-WYMUSZONA-WOJNA: auto-pokój AI${st.attackerId}`
-        + `↔AI${st.targetId} (zdobyte ${st.capturedByAttacker}/stracone ${st.capturedByDefender})`,
-      );
-      finalizePeaceTreatyBetween(
-        st.attackerId,
-        st.targetId,
-        WOJNA_ZELAZO_WYMUSZONA_COOLDOWN_TA_SAMA_CYWILIZACJA_TUR,
-      );
-    }
+    // R-WEB-PEACE-RULES-R8R9-Q1 R9: USUNIĘTO automatyczny koniec wojen wymuszonych Kamienia,
+    // Brązu i Żelaza (po zdobyciu 2 miast oraz po upływie limitu czasu) -- wspólne reguły
+    // pokoju: wojna wymuszona kończy się wyłącznie pokojem (propozycja/akceptacja).
+    // Funkcje maybeResolve{Bronze,Stone,Iron}ForcedWarOnCityCapture oraz
+    // oraz dawny limit czasu wojny wymuszonej zostały usunięte; cleanup*ForcedWarOnPeace działa jak dotąd.
 
     /**
      * R-AI-WOJNY-ZWYKLE-CAP-DWA-MIASTA-Q1: bezpiecznik dla ZWYKŁYCH (niewymuszonych epoki)
@@ -31743,9 +31553,7 @@ async function boot(): Promise<void> {
         },
       );
       triggerRebelProtectionWarConsequence(wasProtectedRebel, rebelPrevOwnerSnapshot, atkOwner);
-      maybeResolveBronzeForcedWarOnCityCapture(oldOwner, atkOwner);
-      maybeResolveStoneForcedWarOnCityCapture(oldOwner, atkOwner);
-      maybeResolveIronForcedWarOnCityCapture(oldOwner, atkOwner);
+      // R-WEB-PEACE-RULES-R8R9-Q1 R9: brak auto-końca wojen wymuszonych po zdobyciu miast.
       maybeResolveRegularWarOnCityCapture(oldOwner, atkOwner);
       recordWarCityLossForPair(oldOwner, atkOwner); // R-WEB-PEACE-RULES-Q1 R2
       // Domknięcie luki temat 8 batcha 7-10 (miasta barbarzyńskie -- zob. wpięcie
@@ -35647,9 +35455,7 @@ async function boot(): Promise<void> {
             // NIE przy wznowieniu po animacji bitwy (aiCmdResume wtedy niepuste).
             if (!aiCmdResume) {
               try { pruneInvalidNegotiations(); } catch (ePrune) { console.error('[Dyplomacja] Blad sprzatania stolu negocjacyjnego:', ePrune); }
-              // R-WOJNA-WYMUSZONA-REGULY-Q1 (Część C): limit czasu trwania 25 tur, RAZ na
-              // świeżą turę (nie przy wznowieniu po przerwie async) — patrz komentarz funkcji.
-              try { resolveForcedWarDurationLimits(); } catch (eForcedWarDuration) { console.error('[Dyplomacja] Blad limitu czasu wojny wymuszonej:', eForcedWarDuration); }
+              // R-WEB-PEACE-RULES-R8R9-Q1 R9: brak limitu czasu wojny wymuszonej (dawny limit usunięty).
             }
             reconcileAllOwnerErasFromResearch();
             // R-WEB-WAR-EPOCH-PLAYER-FIRST-Q1 (D2): lista zapisana przy wznowieniu (null = świeża tura).
@@ -35916,10 +35722,13 @@ async function boot(): Promise<void> {
             // symetryczny predykat, ta sama trójka warunków co dawne bronze/stoneBlockedOwnerIds
             // (i domina, ECHO 2: KTÓRAKOLWIEK strona blokuje CAŁĄ parę), teraz jeden predykat
             // zamiast osobnego zbioru per owner.
+            // R-WEB-PEACE-RULES-R8R9-Q1 R8 (D1): Relacja (relationScore) >= próg blokuje wojnę epoki.
+            const pairRelationOfR8 = (x: number, y: number): number => relationScore(getDiploRelation(x, y));
             const isForcedWarPairBlocked = (a: number, b: number): boolean =>
               hasTreaty(activeDeals, a, b, RodzajTraktatu.PaktNieagresji)
               || isPeaceLockedBetween(a, b)
-              || allianceFormalKindBetween(activeDeals, a, b) !== null;
+              || allianceFormalKindBetween(activeDeals, a, b) !== null
+              || isForcedWarRelationBlocked(pairRelationOfR8(a, b));
 
             // R-WEB-WAR-EPOCH-PLAYER-FIRST-Q1 (Z1/Z4/K1): gracz pierwszy; bramka R1/R2 po stronie
             // AI (targetIsPlayer=true). Pusty obiekt gdy flaga OFF = wywołanie jak dotąd.
@@ -35963,6 +35772,7 @@ async function boot(): Promise<void> {
               existingActivePairsForJoin,
               {
                 isPairBlocked: isForcedWarPairBlocked,
+                pairRelationScore: pairRelationOfR8,
                 hexDistanceFn: hexDistance,
                 totalActiveForcedWarsByOwner,
                 isEraWarExhausted: isWarRulesMultiwarEnabled() ? isEraWarExhausted : undefined,

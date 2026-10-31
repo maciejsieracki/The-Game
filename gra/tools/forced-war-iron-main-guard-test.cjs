@@ -118,13 +118,13 @@ check(
 check(
   'isForcedWarPairBlocked (NAP, blokada pokoju, sojusz) -- ten sam symetryczny predykat dla '
     + 'WSZYSTKICH trzech epok, zastępuje dawne ironBlockedOwnerIds/bronzeBlockedOwnerIds/stoneBlockedOwnerIds',
-  /const isForcedWarPairBlocked = \(a: number, b: number\): boolean =>\s*\n\s*hasTreaty\(activeDeals, a, b, RodzajTraktatu\.PaktNieagresji\)\s*\n\s*\|\| isPeaceLockedBetween\(a, b\)\s*\n\s*\|\| allianceFormalKindBetween\(activeDeals, a, b\) !== null;/.test(main),
+  /const isForcedWarPairBlocked = \(a: number, b: number\): boolean =>\s*\n\s*hasTreaty\(activeDeals, a, b, RodzajTraktatu\.PaktNieagresji\)\s*\n\s*\|\| isPeaceLockedBetween\(a, b\)\s*\n\s*\|\| allianceFormalKindBetween\(activeDeals, a, b\) !== null\s*\n\s*\|\| isForcedWarRelationBlocked\(pairRelationOfR8\(a, b\)\);/.test(main),
 );
 check(
   'wybór celu (wszystkich trzech epok naraz, w tym Żelaza) przechodzi przez assignForcedWarPairings '
     + 'z isForcedWarPairBlocked i hexDistanceFn: hexDistance',
   // R-WEB-ERA-WAR-COUNTER-Q1: dodana opcja isEraWarExhausted (licznik wojen epoki per cywilizacja).
-  /const forcedWarPairingResult = assignForcedWarPairings\(\s*\n\s*triggeredSubjects,\s*\n\s*existingActivePairsForJoin,\s*\n\s*\{\s*\n\s*isPairBlocked: isForcedWarPairBlocked,\s*\n\s*hexDistanceFn: hexDistance,\s*\n\s*totalActiveForcedWarsByOwner,\s*\n\s*(isEraWarExhausted: [^\n]*,\s*\n\s*)?(\.\.\.forcedWarPlayerFirstOpt,\s*\n\s*)?\},\s*\n\s*\);/.test(main),
+  /const forcedWarPairingResult = assignForcedWarPairings\(\s*\n\s*triggeredSubjects,\s*\n\s*existingActivePairsForJoin,\s*\n\s*\{\s*\n\s*isPairBlocked: isForcedWarPairBlocked,\s*\n\s*pairRelationScore: pairRelationOfR8,\s*\n\s*hexDistanceFn: hexDistance,\s*\n\s*totalActiveForcedWarsByOwner,\s*\n\s*(isEraWarExhausted: [^\n]*,\s*\n\s*)?(\.\.\.forcedWarPlayerFirstOpt,\s*\n\s*)?\},\s*\n\s*\);/.test(main),
 );
 check(
   'wynik przydziału Żelaza czytany z forcedWarAssignmentByOwner (nie z usuniętego pickIronForcedWarTargetId w pętli)',
@@ -179,24 +179,18 @@ check(
 // 6. Auto-pokój po 2 miastach — hak z OBU funnel-i zmiany city.ownerId.
 // ---------------------------------------------------------------------------
 check(
-  'maybeResolveIronForcedWarOnCityCapture() zdefiniowana w main.ts',
-  /function maybeResolveIronForcedWarOnCityCapture\(oldOwner: number, newOwner: number\): void \{/.test(main),
+  'R-WEB-PEACE-RULES-R8R9-Q1 R9: wojna epoki NIE kończy się automatycznie (brak maybeResolve*/shouldEnd*/resolveForcedWarDurationLimits w main.ts)',
+  !/maybeResolve(Bronze|Stone|Iron)ForcedWarOnCityCapture|resolveForcedWarDurationLimits|shouldEnd(Bronze|Stone|Iron)ForcedWarBy/.test(main),
 );
 check(
-  'automatyczny pokój po 2 miastach używa cooldownu Żelaza',
-  /function maybeResolveIronForcedWarOnCityCapture[\s\S]{0,1400}shouldEndIronForcedWarByCityCount[\s\S]{0,1400}finalizePeaceTreatyBetween\([\s\S]{0,250}WOJNA_ZELAZO_WYMUSZONA_COOLDOWN_TA_SAMA_CYWILIZACJA_TUR/.test(main),
+  'R-WEB-PEACE-RULES-R8R9-Q1 R9: wojna epoki NIE kończy się automatycznie (brak maybeResolve*/shouldEnd*/resolveForcedWarDurationLimits w main.ts)',
+  !/maybeResolve(Bronze|Stone|Iron)ForcedWarOnCityCapture|resolveForcedWarDurationLimits|shouldEnd(Bronze|Stone|Iron)ForcedWarBy/.test(main),
 );
 check(
-  'capture battle funnel rozlicza Żelazo',
-  /applyCityCaptureAfterBattle[\s\S]{0,1000}maybeResolveIronForcedWarOnCityCapture\(oldOwner, atkOwner\);/.test(main),
+  'R-WEB-PEACE-RULES-R8R9-Q1 R9: wojna epoki NIE kończy się automatycznie (brak maybeResolve*/shouldEnd*/resolveForcedWarDurationLimits w main.ts)',
+  !/maybeResolve(Bronze|Stone|Iron)ForcedWarOnCityCapture|resolveForcedWarDurationLimits|shouldEnd(Bronze|Stone|Iron)ForcedWarBy/.test(main),
 );
-check(
-  'siege surrender funnel rozlicza Żelazo PO zmianie city.ownerId',
-  siegeSurrender.includes('city.ownerId = newOwner;')
-    && siegeSurrender.includes(ironSurrenderHook)
-    && siegeSurrender.indexOf(ironSurrenderHook)
-      > siegeSurrender.indexOf('city.ownerId = newOwner;'),
-);
+// R-WEB-PEACE-RULES-R8R9-Q1 R9: asercja haka licznika miast usunięta (hak nie istnieje, patrz blok R9 wyżej).
 // UWAGA: świadomie NIE ma tu meta-asercji „usunięcie haka jest wykrywalne" (taka, jaką
 // niesie bramka Kamienia) — jest tautologiczna: `replace(hook,'').includes(hook)` jest
 // fałszem z definicji, więc asercja nie może się zaczerwienić pod żadną mutacją źródła.
@@ -204,8 +198,8 @@ check(
 // `tools/forced-war-iron-mutant-probe.cjs`, która czerwieni KAŻDĄ asercję obu bramek
 // Żelaza celowaną mutacją źródła.
 check(
-  'zwykła wojna bez zmian: licznik Żelaza działa tylko dla aktywnej pary wymuszonej',
-  /function maybeResolveIronForcedWarOnCityCapture\(oldOwner: number, newOwner: number\): void \{[\s\S]{0,350}?const st = ironForceWarActiveByPairKey\.get\(pairKey\);\s*\n\s*if \(!st\) return;/.test(main),
+  'R-WEB-PEACE-RULES-R8R9-Q1 R9: wojna epoki NIE kończy się automatycznie (brak maybeResolve*/shouldEnd*/resolveForcedWarDurationLimits w main.ts)',
+  !/maybeResolve(Bronze|Stone|Iron)ForcedWarOnCityCapture|resolveForcedWarDurationLimits|shouldEnd(Bronze|Stone|Iron)ForcedWarBy/.test(main),
 );
 check(
   'finalizePeaceTreatyBetween uzbraja odpoczynek Żelaza (cleanupIronForcedWarOnPeace)',
@@ -271,13 +265,8 @@ check(
 // 8. Zero regresji Kamienia i Brązu — osobne moduły i osobne rejestry.
 // ---------------------------------------------------------------------------
 check(
-  'Kamień i Brąz zachowują własne moduły, rejestry i haki',
-  main.includes("from './game/forced-war-stone';")
-    && main.includes("from './game/forced-war-bronze';")
-    && main.includes('stoneForceWarActiveByPairKey')
-    && main.includes('bronzeForceWarActiveByPairKey')
-    && main.includes('maybeResolveStoneForcedWarOnCityCapture')
-    && main.includes('maybeResolveBronzeForcedWarOnCityCapture'),
+  'R-WEB-PEACE-RULES-R8R9-Q1 R9: wojna epoki NIE kończy się automatycznie (brak maybeResolve*/shouldEnd*/resolveForcedWarDurationLimits w main.ts)',
+  !/maybeResolve(Bronze|Stone|Iron)ForcedWarOnCityCapture|resolveForcedWarDurationLimits|shouldEnd(Bronze|Stone|Iron)ForcedWarBy/.test(main),
 );
 check(
   'rejestry Żelaza są ROZŁĄCZNE z Kamieniem i Brązem (żadne pole nie jest współdzielone)',

@@ -48,32 +48,18 @@ console.log('===================================================================
 console.log('1. B1 -- maybeResolveBronzeForcedWarOnCityCapture wołany z OBU funnel-i przejęcia miasta');
 
 check(
-  'maybeResolveBronzeForcedWarOnCityCapture() zdefiniowana jako funkcja w main.ts',
-  /function maybeResolveBronzeForcedWarOnCityCapture\(oldOwner: number, newOwner: number\): void \{/.test(mainSrc),
+  'R-WEB-PEACE-RULES-R8R9-Q1 R9: wojna epoki NIE kończy się automatycznie (brak maybeResolve*/shouldEnd*/resolveForcedWarDurationLimits w main.ts)',
+  !/maybeResolve(Bronze|Stone|Iron)ForcedWarOnCityCapture|resolveForcedWarDurationLimits|shouldEnd(Bronze|Stone|Iron)ForcedWarBy/.test(mainSrc),
 );
 
 check(
-  'applyCityCaptureToMap: woła maybeResolveBronzeForcedWarOnCityCapture(oldOwner, atkOwner) '
-    + 'PO applyCityCaptureAfterBattle',
-  // Budżet {0,600} (zamiast {0,300}): applyCityCaptureAfterBattle w aktualnym main.ts przyjmuje
-  // dodatkowo onOwnerChanged: seedCityOwnerDefaults + komentarz B2 (Evaluator RUNDA 1: FAIL,
-  // pre-istniejący fix tego samego tematu, poza zakresem tej rundy) -- realna długość wywołania
-  // to ok. 463 znaki treści; 600 daje margines bez utraty czułości na usunięcie wywołania.
-  // Budżet {0,1500} (zamiast dawnego {0,800}) od nagłówka funkcji do wywołania: PRE-ISTNIEJĄCE
-  // (spoza tego dispatchu) integracje R-MIASTA-REBELIA-OCHRONA-20-TUR-Q1 i
-  // R-MIASTA-ZDOBYCIE-RAPORT-TROFEA-Q1 rozrosły komentarz/sygnaturę zwrotną funkcji ponad
-  // dawny budżet. Budżet {0,400} (zamiast dawnego {0,250}) między zamknięciem wywołania a
-  // hakiem: ta sama integracja dołożyła `triggerRebelProtectionWarConsequence(...)` między
-  // applyCityCaptureAfterBattle a tym hakiem -- czułość na usunięcie SAMEGO wywołania hooka
-  // zostaje, budżet tylko wchłania nieistotny dla tej bramki sąsiedni kod.
-  /function applyCityCaptureToMap\([\s\S]{0,1500}?applyCityCaptureAfterBattle\([\s\S]{0,2000}?\);\s*[\s\S]{0,400}?maybeResolveBronzeForcedWarOnCityCapture\(oldOwner, atkOwner\);/.test(mainSrc),
+  'R-WEB-PEACE-RULES-R8R9-Q1 R9: wojna epoki NIE kończy się automatycznie (brak maybeResolve*/shouldEnd*/resolveForcedWarDurationLimits w main.ts)',
+  !/maybeResolve(Bronze|Stone|Iron)ForcedWarOnCityCapture|resolveForcedWarDurationLimits|shouldEnd(Bronze|Stone|Iron)ForcedWarBy/.test(mainSrc),
 );
 
 check(
-  'resolveSiegeSurrender (kapitulacja głodowa): woła maybeResolveBronzeForcedWarOnCityCapture'
-    + '(oldOwner, newOwner) PO city.ownerId = newOwner -- bez tego wojna wymuszona AI<->AI '
-    + 'nigdy się nie kończy (negocjacje pokojowe obsługują wyłącznie targetId===0)',
-  /function resolveSiegeSurrender\(cityId: string\): void \{[\s\S]{0,4000}?city\.ownerId = newOwner;[\s\S]{0,9000}?maybeResolveBronzeForcedWarOnCityCapture\(oldOwner, newOwner\);/.test(mainSrc),
+  'R-WEB-PEACE-RULES-R8R9-Q1 R9: wojna epoki NIE kończy się automatycznie (brak maybeResolve*/shouldEnd*/resolveForcedWarDurationLimits w main.ts)',
+  !/maybeResolve(Bronze|Stone|Iron)ForcedWarOnCityCapture|resolveForcedWarDurationLimits|shouldEnd(Bronze|Stone|Iron)ForcedWarBy/.test(mainSrc),
 );
 
 console.log('');
@@ -91,7 +77,7 @@ console.log('2. B3 -- aktywny sojusz z celem wyklucza go z puli wymuszonej wojny
 check(
   'main.ts: sojusz (obok NAP i blokady pokoju) blokuje wybór pary WSZĘDZIE -- przez '
     + 'isForcedWarPairBlocked, wspólny predykat zastępujący dawne bronzeBlockedOwnerIds',
-  /const isForcedWarPairBlocked = \(a: number, b: number\): boolean =>\s*\n\s*hasTreaty\(activeDeals, a, b, RodzajTraktatu\.PaktNieagresji\)\s*\n\s*\|\| isPeaceLockedBetween\(a, b\)\s*\n\s*\|\| allianceFormalKindBetween\(activeDeals, a, b\) !== null;/.test(mainSrc)
+  /const isForcedWarPairBlocked = \(a: number, b: number\): boolean =>\s*\n\s*hasTreaty\(activeDeals, a, b, RodzajTraktatu\.PaktNieagresji\)\s*\n\s*\|\| isPeaceLockedBetween\(a, b\)\s*\n\s*\|\| allianceFormalKindBetween\(activeDeals, a, b\) !== null\s*\n\s*\|\| isForcedWarRelationBlocked\(pairRelationOfR8\(a, b\)\);/.test(mainSrc)
     && !mainSrc.includes('bronzeBlockedOwnerIds'),
 );
 
@@ -237,22 +223,13 @@ console.log('');
 console.log('6. RUNDA 3 (B6a) -- 4 nowe asercje łapiące M19/M7/M12/M16, które przeżyły rundę 2');
 
 check(
-  'maybeResolveBronzeForcedWarOnCityCapture(): woła finalizePeaceTreatyBetween(st.attackerId, '
-    + 'st.targetId, WOJNA_WYMUSZONA_COOLDOWN_TA_SAMA_CYWILIZACJA_TUR) -- Z ARGUMENTEM COOLDOWNU. '
-    + 'Łapie DWIE mutacje jedną asercją: M19 (usunięcie SAMEGO wywołania auto-pokoju z wnętrza '
-    + 'haka -- licznik nadal liczy, wojna AI<->AI nigdy się nie kończy) ORAZ M16 (utrata TEGO '
-    + 'argumentu -- finalizePeaceTreatyBetween spada na domyślny PEACE_TREATY_LOCK_TURNS=10 '
-    + 'zamiast WOJNA_WYMUSZONA_COOLDOWN_TA_SAMA_CYWILIZACJA_TUR=20, cooldown cicho spada z 20 na 10)',
-  /finalizePeaceTreatyBetween\(\s*st\.attackerId, st\.targetId, WOJNA_WYMUSZONA_COOLDOWN_TA_SAMA_CYWILIZACJA_TUR,\s*\);/.test(mainSrc),
+  'R-WEB-PEACE-RULES-R8R9-Q1 R9: wojna epoki NIE kończy się automatycznie (brak maybeResolve*/shouldEnd*/resolveForcedWarDurationLimits w main.ts)',
+  !/maybeResolve(Bronze|Stone|Iron)ForcedWarOnCityCapture|resolveForcedWarDurationLimits|shouldEnd(Bronze|Stone|Iron)ForcedWarBy/.test(mainSrc),
 );
 
 check(
-  'maybeResolveBronzeForcedWarOnCityCapture(): wyszukuje stan pary przez diploPairKey(oldOwner, '
-    + 'newOwner) -- NIE przez prostą interpolację stringów bez sortowania (M7: zamiana na np. '
-    + '`${oldOwner}-${newOwner}` sprawia, że licznik działa TYLKO gdy oldOwner<newOwner, po cichu '
-    + 'gubiąc połowę zdobyczy -- para (5,3) szuka innego klucza niż zapisana przy wypowiedzeniu '
-    + 'wojny jako (3,5))',
-  /const pairKey = diploPairKey\(oldOwner, newOwner\);/.test(mainSrc),
+  'R-WEB-PEACE-RULES-R8R9-Q1 R9: wojna epoki NIE kończy się automatycznie (brak maybeResolve*/shouldEnd*/resolveForcedWarDurationLimits w main.ts)',
+  !/maybeResolve(Bronze|Stone|Iron)ForcedWarOnCityCapture|resolveForcedWarDurationLimits|shouldEnd(Bronze|Stone|Iron)ForcedWarBy/.test(mainSrc),
 );
 
 check(
@@ -267,12 +244,8 @@ check(
 );
 
 check(
-  'maybeResolveBronzeForcedWarOnCityCapture(): woła shouldEndBronzeForcedWarByCityCount(...) '
-    + 'i wraca wcześnie (return) gdy próg NIE jest osiągnięty -- PRZED jakimkolwiek wywołaniem '
-    + 'finalizePeaceTreatyBetween niżej w tej samej funkcji. Usunięcie tego warunku kończyłoby '
-    + 'wojnę wymuszoną automatycznym pokojem po KAŻDYM pojedynczym przejęciu miasta między parą, '
-    + 'nie dopiero po osiągnięciu progu WOJNA_WYMUSZONA_MAX_MIASTA_ZDOBYTE_LUB_STRACONE',
-  /if \(!shouldEndBronzeForcedWarByCityCount\(st\.capturedByAttacker, st\.capturedByDefender\)\) return;[\s\S]{0,1300}?finalizePeaceTreatyBetween\(/.test(mainSrc),
+  'R-WEB-PEACE-RULES-R8R9-Q1 R9: wojna epoki NIE kończy się automatycznie (brak maybeResolve*/shouldEnd*/resolveForcedWarDurationLimits w main.ts)',
+  !/maybeResolve(Bronze|Stone|Iron)ForcedWarOnCityCapture|resolveForcedWarDurationLimits|shouldEnd(Bronze|Stone|Iron)ForcedWarBy/.test(mainSrc),
 );
 
 console.log('');
@@ -304,13 +277,8 @@ check(
 );
 
 check(
-  'main.ts: resolveForcedWarDurationLimits() faktycznie WOŁANE w pętli tury AI -- wewnątrz '
-    + '"if (!aiCmdResume) {" OBOK pruneInvalidNegotiations(), PRZED reconcileAllOwnerErasFromResearch() '
-    + '-- nie tylko zdefiniowane. Część C (limit trwania 25 tur, Kamień+Brąz) bez tego wywołania '
-    + 'funkcja nigdy się nie uruchamia i żadna wojna wymuszona nie kończy się z powodu czasu. '
-    + 'Zweryfikowano mutacyjnie: usunięcie SAMEJ linii wywołania (definicja funkcji nietknięta) '
-    + 'czerwieni tę asercję.',
-  /if \(!aiCmdResume\) \{\s*\n\s*try \{ pruneInvalidNegotiations\(\); \} catch \(ePrune\)[\s\S]{0,400}?try \{ resolveForcedWarDurationLimits\(\); \} catch \(eForcedWarDuration\) \{ console\.error\('\[Dyplomacja\] Blad limitu czasu wojny wymuszonej:', eForcedWarDuration\); \}\s*\n\s*\}\s*\n\s*reconcileAllOwnerErasFromResearch\(\);/.test(mainSrc),
+  'R-WEB-PEACE-RULES-R8R9-Q1 R9: wojna epoki NIE kończy się automatycznie (brak maybeResolve*/shouldEnd*/resolveForcedWarDurationLimits w main.ts)',
+  !/maybeResolve(Bronze|Stone|Iron)ForcedWarOnCityCapture|resolveForcedWarDurationLimits|shouldEnd(Bronze|Stone|Iron)ForcedWarBy/.test(mainSrc),
 );
 
 check(

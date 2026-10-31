@@ -3,7 +3,6 @@ import {
   pickForcedWarTargetId,
   restoreForcedWarState,
   serializeForcedWarState,
-  shouldEndForcedWarByCityCount,
   type ForcedWarNeighborCandidate,
   type ForcedWarPairState,
   type ForcedWarSaveState,
@@ -68,37 +67,6 @@ export function pickStoneForcedWarTargetId(
     hexDistanceFn,
     opts?.blockedOwnerIds ?? new Set<number>(),
   );
-}
-
-export function shouldEndStoneForcedWarByCityCount(
-  citiesCapturedByAttacker: number,
-  citiesCapturedByDefender: number,
-  threshold: number = WOJNA_KAMIEN_WYMUSZONA_MAX_MIASTA_ZDOBYTE_LUB_STRACONE,
-): boolean {
-  return shouldEndForcedWarByCityCount(
-    citiesCapturedByAttacker,
-    citiesCapturedByDefender,
-    threshold,
-  );
-}
-
-/**
- * R-WOJNA-WYMUSZONA-REGULY-Q1 (Część C): czy TA KONKRETNA para wojny wymuszonej Kamienia
- * kończy się TERAZ automatycznym pokojem, bo minęło `maxDurationTurns` tur od jej
- * rozpoczęcia — NIEZALEŻNIE od liczby zdobytych/straconych miast (próg miastowy zostaje
- * jako dodatkowy, zwykle wcześniejszy warunek — `shouldEndStoneForcedWarByCityCount`
- * wyżej, niezmieniona). `startTurn === undefined` (stary zapis sprzed tego pola,
- * `ForcedWarPairState.startTurn` jest opcjonalne) → `currentTurn - currentTurn === 0`,
- * więc NIGDY nie kończy wojny samym tym wywołaniem — main.ts backfilluje brakujące
- * `startTurn` PRZY WCZYTANIU zapisu (`restoreGameFromSave`), więc ten fallback w
- * praktyce nie jest długotrwały (patrz raport Operatora).
- */
-export function shouldEndStoneForcedWarByDuration(
-  currentTurn: number,
-  startTurn: number | undefined,
-  maxDurationTurns: number = WOJNA_KAMIEN_WYMUSZONA_MAX_CZAS_TRWANIA_TUR,
-): boolean {
-  return currentTurn - (startTurn ?? currentTurn) >= maxDurationTurns;
 }
 
 export function isRestingFromStoneForcedWar(

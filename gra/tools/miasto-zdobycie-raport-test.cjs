@@ -249,7 +249,7 @@ console.log('5. Trzy lejki przejęcia — każdy zapisuje wpis w panelu WYDARZEN
     {
       nazwa: 'runCapitalCapturePlunder (ścieżka stolicy / eliminacji)',
       start: '    function runCapitalCapturePlunder(',
-      end: '\n    function maybeResolveBronzeForcedWarOnCityCapture(',
+      end: '\n    // R-WEB-PEACE-RULES-R8R9-Q1 R9: USUNIĘTO automatyczny koniec',
       klucz: '5c',
     },
   ];
@@ -265,7 +265,7 @@ console.log('5. Trzy lejki przejęcia — każdy zapisuje wpis w panelu WYDARZEN
   const recCount = (stripComments(mainSrc).match(/recordCityCaptureEvent\(\{/g) || []).length;
   eq(recCount, 4, '5d: cztery wywołania rejestratora — 1 + 1 + 2 (lejek stołeczny ma dwa zdarzenia)');
   const kapitalBody = stripComments(sliceBetween(mainSrc, '    function runCapitalCapturePlunder(',
-    '\n    function maybeResolveBronzeForcedWarOnCityCapture(') || '');
+    '\n    // R-WEB-PEACE-RULES-R8R9-Q1 R9: USUNIĘTO automatyczny koniec') || '');
   eq((kapitalBody.match(/recordCityCaptureEvent\(\{/g) || []).length, 2,
     '5e: lejek stołeczny rejestruje OBA swoje zdarzenia (przejęcie stolicy ORAZ eliminację)');
 }
@@ -428,7 +428,7 @@ console.log('10. Ekonomia przejęcia nietknięta (ten temat zmienia tylko to, co
     '10a: blok raportu nie dotyka żadnego akcesora zasobów — tylko opisuje');
   ok(!/zdobyczePowerByOwner\.set/.test(pure), '10b: blok raportu nie przyznaje Mocy');
   const elim = sliceBetween(mainSrc, '    function runCapitalCapturePlunder(',
-    '\n    function maybeResolveBronzeForcedWarOnCityCapture(') || '';
+    '\n    // R-WEB-PEACE-RULES-R8R9-Q1 R9: USUNIĘTO automatyczny koniec') || '';
   ok(elim.includes('const powerGain = barbarianCapturedPowerGain(lostPower, barbCaptor);'),
     '10c: reguła dziedziczenia Mocy przez barbarzyńców bez zmian');
   ok(elim.includes('moc: powerGain,'),
