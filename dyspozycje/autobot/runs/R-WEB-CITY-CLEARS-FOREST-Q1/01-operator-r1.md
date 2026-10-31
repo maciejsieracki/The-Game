@@ -42,3 +42,6 @@ LUKI (zmierzone czerwone PRZED):
 
 ## 4. Uwaga dla Evaluatora
 Stary test `oboz-lowiecki-fc-r2-nowa-sciezka.cjs` (C1: wczytanie zapisu nie przepuszcza warstw przez strip) dotyczy `restorePlacedImprovementsFromSave` — niezmieniona; nowa siatka działa tylko na heksach pod miastem.
+
+## COMMIT
+c1bc0443546c0f50520122c7ab5c1f5a1bfe40bc (kod, testy, logi); ten wpis SHA dodany kolejnym commitem dokumentacyjnym.
