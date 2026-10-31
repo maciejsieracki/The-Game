@@ -1,7 +1,110 @@
 EXIT=0
-node tools/newgame-adv-apply-btn-test.cjs (NEWGAME_ADV_DIST = bundle zbudowany z poprawką R1)
-[scenariusz] 1280x720 @100%: 12 OK + klik w tło OK + brak błędów JS (OK)
-[scenariusz] 1280x600 @100% (niski viewport): wszystkie OK
-[scenariusz] 1280x720 @150% (viewport 853x480, DPR 1.5): wszystkie OK
-WYNIK: 42 OK, 0 FAIL
-Mutacja (etykieta Zastosuj -> Zamknij w kopii bundla): WYNIK: 36 OK, 6 FAIL, EXIT=1 (test pada).
+
+[scenariusz] 1280x720 @100%
+  OK   domyślna wartość „Barbarzyńcy” = „Normalny” (zmierzone: Normalny)
+  OK   wartość zmieniona w oknie na „Trudny” (zmierzone: Trudny)
+  OK   przycisk stopki ma tekst „Zastosuj” (zmierzone: „Zastosuj”)
+  OK   przycisk ma type="button" (zmierzone: button)
+  OK   przycisk nie jest disabled
+  OK   przycisk w całości widoczny w viewportcie (zmierzone rect: 1114,655,112,30)
+  OK   przycisk trafiony myszą (elementFromPoint, nie zasłonięty)
+  OK   pointer-events nie blokuje kliku (zmierzone: auto)
+  OK   tło przycisku nieprzezroczyste / aktywne (zmierzone: rgba(201, 168, 76, 0.1))
+  zrzut: /home/user/The-Game/.claude/worktrees/wf_44082ded-1ae-2/dyspozycje/autobot/runs/R-WEB-NEWGAME-ADV-APPLY-BTN-Q1/evidence/adv-zastosuj-1280x720-100.png
+  OK   klik „Zastosuj” zamyka okno
+  OK   prefs zapisane: advanced.barbariansLevel === 'trudny' (zmierzone: trudny)
+  OK   po ponownym otwarciu okna wartość „Trudny” (zmierzone: Trudny)
+  OK   parametry startu: advanced.barbariansLevel === 'trudny' (zmierzone: trudny)
+  OK   brak błędów JS na stronie
+
+[scenariusz] 1280x720 @150%
+  OK   domyślna wartość „Barbarzyńcy” = „Normalny” (zmierzone: Normalny)
+  OK   wartość zmieniona w oknie na „Trudny” (zmierzone: Trudny)
+  OK   przycisk stopki ma tekst „Zastosuj” (zmierzone: „Zastosuj”)
+  OK   przycisk ma type="button" (zmierzone: button)
+  OK   przycisk nie jest disabled
+  OK   przycisk w całości widoczny w viewportcie (zmierzone rect: 1114,655,112,30)
+  OK   przycisk trafiony myszą (elementFromPoint, nie zasłonięty)
+  OK   pointer-events nie blokuje kliku (zmierzone: auto)
+  OK   tło przycisku nieprzezroczyste / aktywne (zmierzone: rgba(201, 168, 76, 0.1))
+  zrzut: /home/user/The-Game/.claude/worktrees/wf_44082ded-1ae-2/dyspozycje/autobot/runs/R-WEB-NEWGAME-ADV-APPLY-BTN-Q1/evidence/adv-zastosuj-1280x720-150.png
+  OK   klik „Zastosuj” zamyka okno
+  OK   prefs zapisane: advanced.barbariansLevel === 'trudny' (zmierzone: trudny)
+  OK   po ponownym otwarciu okna wartość „Trudny” (zmierzone: Trudny)
+  OK   parametry startu: advanced.barbariansLevel === 'trudny' (zmierzone: trudny)
+  OK   brak błędów JS na stronie
+
+[scenariusz] 1280x600 @100%
+  OK   domyślna wartość „Barbarzyńcy” = „Normalny” (zmierzone: Normalny)
+  OK   wartość zmieniona w oknie na „Trudny” (zmierzone: Trudny)
+  OK   przycisk stopki ma tekst „Zastosuj” (zmierzone: „Zastosuj”)
+  OK   przycisk ma type="button" (zmierzone: button)
+  OK   przycisk nie jest disabled
+  OK   przycisk w całości widoczny w viewportcie (zmierzone rect: 1114,535,112,30)
+  OK   przycisk trafiony myszą (elementFromPoint, nie zasłonięty)
+  OK   pointer-events nie blokuje kliku (zmierzone: auto)
+  OK   tło przycisku nieprzezroczyste / aktywne (zmierzone: rgba(201, 168, 76, 0.1))
+  zrzut: /home/user/The-Game/.claude/worktrees/wf_44082ded-1ae-2/dyspozycje/autobot/runs/R-WEB-NEWGAME-ADV-APPLY-BTN-Q1/evidence/adv-zastosuj-1280x600-100.png
+  OK   klik „Zastosuj” zamyka okno
+  OK   prefs zapisane: advanced.barbariansLevel === 'trudny' (zmierzone: trudny)
+  OK   po ponownym otwarciu okna wartość „Trudny” (zmierzone: Trudny)
+  OK   parametry startu: advanced.barbariansLevel === 'trudny' (zmierzone: trudny)
+  OK   brak błędów JS na stronie
+
+[scenariusz] 1280x600 @150%
+  OK   domyślna wartość „Barbarzyńcy” = „Normalny” (zmierzone: Normalny)
+  OK   wartość zmieniona w oknie na „Trudny” (zmierzone: Trudny)
+  OK   przycisk stopki ma tekst „Zastosuj” (zmierzone: „Zastosuj”)
+  OK   przycisk ma type="button" (zmierzone: button)
+  OK   przycisk nie jest disabled
+  OK   przycisk w całości widoczny w viewportcie (zmierzone rect: 1114,535,112,30)
+  OK   przycisk trafiony myszą (elementFromPoint, nie zasłonięty)
+  OK   pointer-events nie blokuje kliku (zmierzone: auto)
+  OK   tło przycisku nieprzezroczyste / aktywne (zmierzone: rgba(201, 168, 76, 0.1))
+  zrzut: /home/user/The-Game/.claude/worktrees/wf_44082ded-1ae-2/dyspozycje/autobot/runs/R-WEB-NEWGAME-ADV-APPLY-BTN-Q1/evidence/adv-zastosuj-1280x600-150.png
+  OK   klik „Zastosuj” zamyka okno
+  OK   prefs zapisane: advanced.barbariansLevel === 'trudny' (zmierzone: trudny)
+  OK   po ponownym otwarciu okna wartość „Trudny” (zmierzone: Trudny)
+  OK   parametry startu: advanced.barbariansLevel === 'trudny' (zmierzone: trudny)
+  OK   brak błędów JS na stronie
+
+[scenariusz] 853x480 @100%
+  OK   domyślna wartość „Barbarzyńcy” = „Normalny” (zmierzone: Normalny)
+  OK   wartość zmieniona w oknie na „Trudny” (zmierzone: Trudny)
+  OK   przycisk stopki ma tekst „Zastosuj” (zmierzone: „Zastosuj”)
+  OK   przycisk ma type="button" (zmierzone: button)
+  OK   przycisk nie jest disabled
+  OK   przycisk w całości widoczny w viewportcie (zmierzone rect: 687,415,112,30)
+  OK   przycisk trafiony myszą (elementFromPoint, nie zasłonięty)
+  OK   pointer-events nie blokuje kliku (zmierzone: auto)
+  OK   tło przycisku nieprzezroczyste / aktywne (zmierzone: rgba(201, 168, 76, 0.1))
+  zrzut: /home/user/The-Game/.claude/worktrees/wf_44082ded-1ae-2/dyspozycje/autobot/runs/R-WEB-NEWGAME-ADV-APPLY-BTN-Q1/evidence/adv-zastosuj-853x480-100.png
+  OK   klik „Zastosuj” zamyka okno
+  OK   prefs zapisane: advanced.barbariansLevel === 'trudny' (zmierzone: trudny)
+  OK   po ponownym otwarciu okna wartość „Trudny” (zmierzone: Trudny)
+  OK   parametry startu: advanced.barbariansLevel === 'trudny' (zmierzone: trudny)
+  OK   brak błędów JS na stronie
+
+[scenariusz] 853x480 @150%
+  OK   domyślna wartość „Barbarzyńcy” = „Normalny” (zmierzone: Normalny)
+  OK   wartość zmieniona w oknie na „Trudny” (zmierzone: Trudny)
+  OK   przycisk stopki ma tekst „Zastosuj” (zmierzone: „Zastosuj”)
+  OK   przycisk ma type="button" (zmierzone: button)
+  OK   przycisk nie jest disabled
+  OK   przycisk w całości widoczny w viewportcie (zmierzone rect: 687,415,112,30)
+  OK   przycisk trafiony myszą (elementFromPoint, nie zasłonięty)
+  OK   pointer-events nie blokuje kliku (zmierzone: auto)
+  OK   tło przycisku nieprzezroczyste / aktywne (zmierzone: rgba(201, 168, 76, 0.1))
+  zrzut: /home/user/The-Game/.claude/worktrees/wf_44082ded-1ae-2/dyspozycje/autobot/runs/R-WEB-NEWGAME-ADV-APPLY-BTN-Q1/evidence/adv-zastosuj-853x480-150.png
+  OK   klik „Zastosuj” zamyka okno
+  OK   prefs zapisane: advanced.barbariansLevel === 'trudny' (zmierzone: trudny)
+  OK   po ponownym otwarciu okna wartość „Trudny” (zmierzone: Trudny)
+  OK   parametry startu: advanced.barbariansLevel === 'trudny' (zmierzone: trudny)
+  OK   brak błędów JS na stronie
+
+[scenariusz] klik w tło zamyka i zapisuje (zachowanie bez zmian)
+  OK   wartość zmieniona w oknie na „Brak” (zmierzone: Brak)
+  OK   klik w tło zamyka okno
+  OK   klik w tło zapisuje: advanced.barbariansLevel === 'brak' (zmierzone: brak)
+
+WYNIK: 87 OK, 0 FAIL

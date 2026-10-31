@@ -12,8 +12,8 @@
  * Harness: realny kod `gra/src/ui/newGameFlow.ts` (esbuild, IIFE, te same stuby zasobów co
  * `newgame-settings-layout-reposition-test.cjs`), headless Chromium, prawdziwe kliki myszą
  * (Playwright). Bez pełnego builda gry — mniejsze zużycie pamięci (maszyna współdzielona).
- * Trzy konfiguracje okna: 1280x720 @100%, 1280x600 @100% (niski viewport),
- * 1280x720 @150% (viewport 853x480, DPR 1.5). W każdej: przycisk ma tekst „Zastosuj”,
+ * Macierz: viewport CSS 1280x720 / 1280x600 / 853x480 × DPR 1 (100%) i 1.5 (150%) — 6 konfiguracji,
+ * każda zapisuje zrzut do evidence/. W każdej: przycisk ma tekst „Zastosuj”,
  * jest widoczny w viewportcie, trafiony myszą (elementFromPoint), ma tło niebędące
  * przezroczystym, klik zamyka okno i zapisuje dokładną wartość. Osobny przebieg:
  * klik w tło (overlay) nadal zamyka i zapisuje wartość.
@@ -78,14 +78,13 @@ window.__openWizard();
 }
 
 async function launchBrowser() {
+  // Bez zahardkodowanych ścieżek: domyślny Chromium Playwrighta, a gdy go brak — ścieżka z env
+  // PLAYWRIGHT_CHROMIUM_EXECUTABLE (np. /opt/pw-browsers/chromium-1194/chrome-linux/chrome).
   const args = ['--no-sandbox', '--disable-dev-shm-usage'];
-  try { return await chromium.launch({ headless: true, args }); }
-  catch (_e) {
-    return await chromium.launch({
-      executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE || '/usr/bin/chromium',
-      headless: true, args,
-    });
-  }
+  const exe = process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE;
+  return exe
+    ? chromium.launch({ executablePath: exe, headless: true, args })
+    : chromium.launch({ headless: true, args });
 }
 
 async function enterSettings(page) {
@@ -229,30 +228,42 @@ async function runBackgroundScenario(browser, origin, bundle) {
   }
 }
 
+/** Macierz: rozmiary okna (viewport CSS) × zoom/DPR 100% i 150%. Zrzut każdej konfiguracji. */
+const MATRIX = [];
+for (const [w, h] of [[1280, 720], [1280, 600], [853, 480]]) {
+  for (const dpr of [1, 1.5]) {
+    MATRIX.push({ w, h, dpr, label: `${w}x${h} @${Math.round(dpr * 100)}%`, screenshot: `adv-zastosuj-${w}x${h}-${Math.round(dpr * 100)}.png` });
+  }
+}
+
 (async () => {
   const bundle = path.join(TMP, 'bundle.js');
-  await buildBundle(bundle);
   const server = http.createServer((_req, res) => {
     res.writeHead(200, { 'content-type': 'text/html; charset=utf-8' });
     res.end('<!doctype html><html><head></head><body></body></html>');
   });
-  await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));
-  const origin = `http://127.0.0.1:${server.address().port}/`;
-  const browser = await launchBrowser();
-  const guarded = async (name, fn) => {
-    try { await fn(); }
-    catch (e) { check(`scenariusz „${name}” przerwany wyjątkiem: ${String(e.message).split('\n')[0]}`, false); }
-  };
+  let browser = null;
   try {
-    await guarded('1280x720 @100%', () => runApplyScenario(browser, origin, { label: '1280x720 @100%', w: 1280, h: 720, dpr: 1, bundle, screenshot: 'adv-zastosuj-1280x720-100.png' }));
-    await guarded('1280x600 @100%', () => runApplyScenario(browser, origin, { label: '1280x600 @100% (niski viewport)', w: 1280, h: 600, dpr: 1, bundle }));
-    await guarded('1280x720 @150%', () => runApplyScenario(browser, origin, { label: '1280x720 @150% (viewport 853x480, DPR 1.5)', w: 853, h: 480, dpr: 1.5, bundle, screenshot: 'adv-zastosuj-1280x720-150.png' }));
+    await buildBundle(bundle);
+    await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));
+    const origin = `http://127.0.0.1:${server.address().port}/`;
+    browser = await launchBrowser();
+    const guarded = async (name, fn) => {
+      try { await fn(); }
+      catch (e) { check(`scenariusz „${name}” przerwany wyjątkiem: ${String(e.message).split('\n')[0]}`, false); }
+    };
+    for (const cfg of MATRIX) {
+      await guarded(cfg.label, () => runApplyScenario(browser, origin, { ...cfg, bundle }));
+    }
     await guarded('klik w tło', () => runBackgroundScenario(browser, origin, bundle));
+  } catch (e) {
+    console.error('FATAL', e);
+    fail++;
   } finally {
-    await browser.close();
-    await new Promise((resolve) => server.close(resolve));
+    if (browser) await browser.close().catch(() => {});
+    await new Promise((resolve) => server.close(() => resolve())).catch(() => {});
     fs.rmSync(TMP, { recursive: true, force: true });
   }
   console.log(`\nWYNIK: ${pass} OK, ${fail} FAIL`);
-  if (fail !== 0) process.exitCode = 1;
-})().catch((e) => { console.error('FATAL', e); process.exitCode = 1; });
+  process.exitCode = fail !== 0 ? 1 : 0;
+})();

@@ -1,2 +1,43 @@
-EXIT=1
-node tools/newgame-adv-tooltip-test.cjs: NIE ZMIERZONO. Test buduje własny bundle (vite build); proces zabity sygnałem SIGKILL (OOM, maszyna współdzielona, ~1 GB wolnej RAM) przy 2 próbach z rzędu. Infra, nie wynik testu.
+EXIT=0
+[newgame-adv-tooltip-test] budowanie bundla (vite build, wyłącznie dozwolona komenda z CLAUDE.md)...
+[newgame-adv-tooltip-test] build OK.
+[newgame-adv-tooltip-test] domyślny Chromium niedostępny, fallback na /opt/pw-browsers/chromium-1194/chrome-linux/chrome
+
+-- Scenariusz 1: hover PEŁNY (>380ms) na WSZYSTKICH 8 ustawień z realnego zgłoszenia --
+  OK  [układ] trudność miast-państw jest w Zaawansowanych
+  OK  [układ] bramka ofert handlowych nie jest zdublowana w Zaawansowanych
+  OK  [Warunki zwycięstwa] wiersz + ikona (i) znalezione w .adv-modal
+  OK  [Warunki zwycięstwa] tooltip display:block po hover >380ms
+  OK  [Warunki zwycięstwa] tooltip ma niepusty tekst
+  OK  [Trudność miast-państw] wiersz + ikona (i) znalezione w .adv-modal
+  OK  [Trudność miast-państw] tooltip display:block po hover >380ms
+  OK  [Trudność miast-państw] tooltip ma niepusty tekst
+  OK  [Barbarzyńcy] wiersz + ikona (i) znalezione w .adv-modal
+  OK  [Barbarzyńcy] tooltip display:block po hover >380ms
+  OK  [Barbarzyńcy] tooltip ma niepusty tekst
+  OK  [Bitwy] wiersz + ikona (i) znalezione w .adv-modal
+  OK  [Bitwy] tooltip display:block po hover >380ms
+  OK  [Bitwy] tooltip ma niepusty tekst
+  OK  [Koszty budynków] wiersz + ikona (i) znalezione w .adv-modal
+  OK  [Koszty budynków] tooltip display:block po hover >380ms
+  OK  [Koszty budynków] tooltip ma niepusty tekst
+  OK  [Koszty jednostek] wiersz + ikona (i) znalezione w .adv-modal
+  OK  [Koszty jednostek] tooltip display:block po hover >380ms
+  OK  [Koszty jednostek] tooltip ma niepusty tekst
+  OK  [Wzrost ludności] wiersz + ikona (i) znalezione w .adv-modal
+  OK  [Wzrost ludności] tooltip display:block po hover >380ms
+  OK  [Wzrost ludności] tooltip ma niepusty tekst
+  OK  [Zasięg ruchu] wiersz + ikona (i) znalezione w .adv-modal
+  OK  [Zasięg ruchu] tooltip display:block po hover >380ms
+  OK  [Zasięg ruchu] tooltip ma niepusty tekst
+  OK  [konsola] zero console.error / pageerror w całym scenariuszu 1
+
+-- Scenariusz 2: hover KRÓTKI (<380ms) — throttling zamierzony, tooltip NIE POWINIEN się pokazać --
+  OK  [krótki hover] ikona znaleziona
+  OK  [krótki hover] tooltip NIE pokazuje się przed upływem SHOW_DELAY_MS (throttling zamierzony)
+
+-- Dowód mutacyjny: usunięcie zasięgu .civ-newgame z resolveTarget NA ŻYWO musi zabić tooltip --
+  OK  [mutacja scope] ikona nadal fizycznie znaleziona (kontrola sensu scenariusza)
+  OK  [mutacja scope] po wyjęciu spod .civ-newgame tooltip PRZESTAJE się pokazywać (dowód, że resolveTarget/SCOPE_SELECTOR ma znaczenie, test nie jest tautologią)
+
+31 pass · 0 fail

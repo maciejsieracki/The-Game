@@ -1,0 +1,98 @@
+EXIT=1
+
+[scenariusz] 1280x720 @100%
+  OK   domyślna wartość „Barbarzyńcy” = „Normalny” (zmierzone: Normalny)
+  OK   wartość zmieniona w oknie na „Trudny” (zmierzone: Trudny)
+  OK   przycisk stopki ma tekst „Zastosuj” (zmierzone: „Zastosuj”)
+  OK   przycisk ma type="button" (zmierzone: button)
+  OK   przycisk nie jest disabled
+  OK   przycisk w całości widoczny w viewportcie (zmierzone rect: 1114,655,112,30)
+  OK   przycisk trafiony myszą (elementFromPoint, nie zasłonięty)
+  OK   pointer-events nie blokuje kliku (zmierzone: auto)
+  OK   tło przycisku nieprzezroczyste / aktywne (zmierzone: rgba(201, 168, 76, 0.1))
+  zrzut: /tmp/claude-0/scratch-mut/evidence/adv-zastosuj-1280x720-100.png
+  FAIL klik „Zastosuj” zamyka okno
+  OK   prefs zapisane: advanced.barbariansLevel === 'trudny' (zmierzone: trudny)
+  FAIL scenariusz „1280x720 @100%” przerwany wyjątkiem: locator.click: Timeout 30000ms exceeded.
+
+[scenariusz] 1280x720 @150%
+  OK   domyślna wartość „Barbarzyńcy” = „Normalny” (zmierzone: Normalny)
+  OK   wartość zmieniona w oknie na „Trudny” (zmierzone: Trudny)
+  OK   przycisk stopki ma tekst „Zastosuj” (zmierzone: „Zastosuj”)
+  OK   przycisk ma type="button" (zmierzone: button)
+  OK   przycisk nie jest disabled
+  OK   przycisk w całości widoczny w viewportcie (zmierzone rect: 1114,655,112,30)
+  OK   przycisk trafiony myszą (elementFromPoint, nie zasłonięty)
+  OK   pointer-events nie blokuje kliku (zmierzone: auto)
+  OK   tło przycisku nieprzezroczyste / aktywne (zmierzone: rgba(201, 168, 76, 0.1))
+  zrzut: /tmp/claude-0/scratch-mut/evidence/adv-zastosuj-1280x720-150.png
+  FAIL klik „Zastosuj” zamyka okno
+  OK   prefs zapisane: advanced.barbariansLevel === 'trudny' (zmierzone: trudny)
+  FAIL scenariusz „1280x720 @150%” przerwany wyjątkiem: locator.click: Timeout 30000ms exceeded.
+
+[scenariusz] 1280x600 @100%
+  OK   domyślna wartość „Barbarzyńcy” = „Normalny” (zmierzone: Normalny)
+  OK   wartość zmieniona w oknie na „Trudny” (zmierzone: Trudny)
+  OK   przycisk stopki ma tekst „Zastosuj” (zmierzone: „Zastosuj”)
+  OK   przycisk ma type="button" (zmierzone: button)
+  OK   przycisk nie jest disabled
+  OK   przycisk w całości widoczny w viewportcie (zmierzone rect: 1114,535,112,30)
+  OK   przycisk trafiony myszą (elementFromPoint, nie zasłonięty)
+  OK   pointer-events nie blokuje kliku (zmierzone: auto)
+  OK   tło przycisku nieprzezroczyste / aktywne (zmierzone: rgba(201, 168, 76, 0.1))
+  zrzut: /tmp/claude-0/scratch-mut/evidence/adv-zastosuj-1280x600-100.png
+  FAIL klik „Zastosuj” zamyka okno
+  OK   prefs zapisane: advanced.barbariansLevel === 'trudny' (zmierzone: trudny)
+  FAIL scenariusz „1280x600 @100%” przerwany wyjątkiem: locator.click: Timeout 30000ms exceeded.
+
+[scenariusz] 1280x600 @150%
+  OK   domyślna wartość „Barbarzyńcy” = „Normalny” (zmierzone: Normalny)
+  OK   wartość zmieniona w oknie na „Trudny” (zmierzone: Trudny)
+  OK   przycisk stopki ma tekst „Zastosuj” (zmierzone: „Zastosuj”)
+  OK   przycisk ma type="button" (zmierzone: button)
+  OK   przycisk nie jest disabled
+  OK   przycisk w całości widoczny w viewportcie (zmierzone rect: 1114,535,112,30)
+  OK   przycisk trafiony myszą (elementFromPoint, nie zasłonięty)
+  OK   pointer-events nie blokuje kliku (zmierzone: auto)
+  OK   tło przycisku nieprzezroczyste / aktywne (zmierzone: rgba(201, 168, 76, 0.1))
+  zrzut: /tmp/claude-0/scratch-mut/evidence/adv-zastosuj-1280x600-150.png
+  FAIL klik „Zastosuj” zamyka okno
+  OK   prefs zapisane: advanced.barbariansLevel === 'trudny' (zmierzone: trudny)
+  FAIL scenariusz „1280x600 @150%” przerwany wyjątkiem: locator.click: Timeout 30000ms exceeded.
+
+[scenariusz] 853x480 @100%
+  OK   domyślna wartość „Barbarzyńcy” = „Normalny” (zmierzone: Normalny)
+  OK   wartość zmieniona w oknie na „Trudny” (zmierzone: Trudny)
+  OK   przycisk stopki ma tekst „Zastosuj” (zmierzone: „Zastosuj”)
+  OK   przycisk ma type="button" (zmierzone: button)
+  OK   przycisk nie jest disabled
+  OK   przycisk w całości widoczny w viewportcie (zmierzone rect: 687,415,112,30)
+  OK   przycisk trafiony myszą (elementFromPoint, nie zasłonięty)
+  OK   pointer-events nie blokuje kliku (zmierzone: auto)
+  OK   tło przycisku nieprzezroczyste / aktywne (zmierzone: rgba(201, 168, 76, 0.1))
+  zrzut: /tmp/claude-0/scratch-mut/evidence/adv-zastosuj-853x480-100.png
+  FAIL klik „Zastosuj” zamyka okno
+  OK   prefs zapisane: advanced.barbariansLevel === 'trudny' (zmierzone: trudny)
+  FAIL scenariusz „853x480 @100%” przerwany wyjątkiem: locator.click: Timeout 30000ms exceeded.
+
+[scenariusz] 853x480 @150%
+  OK   domyślna wartość „Barbarzyńcy” = „Normalny” (zmierzone: Normalny)
+  OK   wartość zmieniona w oknie na „Trudny” (zmierzone: Trudny)
+  OK   przycisk stopki ma tekst „Zastosuj” (zmierzone: „Zastosuj”)
+  OK   przycisk ma type="button" (zmierzone: button)
+  OK   przycisk nie jest disabled
+  OK   przycisk w całości widoczny w viewportcie (zmierzone rect: 687,415,112,30)
+  OK   przycisk trafiony myszą (elementFromPoint, nie zasłonięty)
+  OK   pointer-events nie blokuje kliku (zmierzone: auto)
+  OK   tło przycisku nieprzezroczyste / aktywne (zmierzone: rgba(201, 168, 76, 0.1))
+  zrzut: /tmp/claude-0/scratch-mut/evidence/adv-zastosuj-853x480-150.png
+  FAIL klik „Zastosuj” zamyka okno
+  OK   prefs zapisane: advanced.barbariansLevel === 'trudny' (zmierzone: trudny)
+  FAIL scenariusz „853x480 @150%” przerwany wyjątkiem: locator.click: Timeout 30000ms exceeded.
+
+[scenariusz] klik w tło zamyka i zapisuje (zachowanie bez zmian)
+  OK   wartość zmieniona w oknie na „Brak” (zmierzone: Brak)
+  OK   klik w tło zamyka okno
+  OK   klik w tło zapisuje: advanced.barbariansLevel === 'brak' (zmierzone: brak)
+
+WYNIK: 63 OK, 12 FAIL
