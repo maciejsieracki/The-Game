@@ -25704,6 +25704,10 @@ async function boot(): Promise<void> {
       BARBARIAN_OWNER_ID,
       isGameOver: (): boolean => gameOver,
       getTurn: (): number => turn,
+      /** Test izolujący regułę przegranej: playtest startuje w ostatniej epoce, gdzie samotny gracz
+       *  wygrywa DOMINACJĄ już w 1. turze (wyprzedza przegraną w checkVictory) — zbijamy epokę. */
+      setPlayerEraForTest: (era: number): void => { player.zbadane = new Set(); player.badana = null; player.era = era; },
+      getPlayerEra: (): number => player.era,
       ownerCityIds: (owner: number): string[] => cities.filter(c => c.ownerId === owner).map(c => c.id),
       /** Dodaje osadnika właściciela (klon jednostki wojskowej tego właściciela, typ/kategoria `osadnik`) na hexie jego miasta. */
       addSettlerForOwner: (owner: number): string | null => {

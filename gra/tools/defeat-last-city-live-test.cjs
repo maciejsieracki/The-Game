@@ -75,11 +75,13 @@ async function gotoPlaytestMapa(page) {
     undefined,
     { timeout: 900000 },
   );
+  // Playtest startuje w ostatniej epoce -> dominacja w 1. turze wyprzedza przegraną; izolujemy regułę przegranej.
+  await page.evaluate(() => window.__defeatTestDebug.setPlayerEraForTest(1));
   await wait(300);
 }
 
 /** Realny endTurn; czeka aż tura się przesunie albo ekran przegranej się pojawi. */
-async function endTurnAndSettle(page, timeoutMs = 120000) {
+async function endTurnAndSettle(page, timeoutMs = 45000) {
   const before = await page.evaluate(() => window.__eraTestDebug.getWorldState().turn);
   await page.evaluate(() => window.__eraTestDebug.endTurn());
   const t0 = Date.now();

@@ -1,0 +1,18 @@
+PASS: main.ts podaje rezolwerowi barwę cywilizacji (ringHex) z tej samej funkcji co obwódka heksu
+PASS: dwie pełne cywilizacje o różnych barwach mają różne klucze emblematu
+PASS: ta sama cywilizacja z tą samą barwą ma ten sam klucz (jedna tekstura)
+PASS: dwie różne barwy obwódki → dwie różne tekstury medalionu
+PASS: ten sam kolor → jedna tekstura (cache)
+PASS: obwódka cywilizacji rysowana jest jej własną barwą (1. barwa na kanwie)
+PASS: druga cywilizacja rysuje swoją barwę, nie barwę pierwszej
+PASS: brak barwy → fallback mosiądz (dotychczasowe zachowanie)
+PASS: nieprawidłowa barwa → fallback mosiądz
+PASS: miasto-państwo ma stałe srebro, mimo podanej barwy cywilizacji
+PASS: barbarzyńcy mają stałą czerwień, mimo podanej barwy cywilizacji
+PASS: klucz miasta-państwa i barbarzyńców nie zależy od barwy cywilizacji
+PASS: ciemna barwa cywilizacji jest zapisana bez zmian (czytelność sprawdzana zrzutem)
+PASS: barwa z wielkich liter jest normalizowana do lowercase (ten sam klucz)
+PASS: applyUnitOwnerEmblem nadal tworzy sprite dla pełnej cywilizacji
+
+unit-owner-emblem-ring-civ-color-test: 15 passed, 0 failed
+EXIT=0
