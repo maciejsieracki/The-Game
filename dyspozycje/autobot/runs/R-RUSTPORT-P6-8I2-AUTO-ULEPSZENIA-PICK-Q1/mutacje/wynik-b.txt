@@ -1,0 +1,5 @@
+M06 KILLED rc=101 panics=1 (KROK0: brak bramki rzeka/poza-rzeka (wolno_karczowac=true))
+M07 COMPILE_ERROR rc=101 panics=0 (foodOnly wylaczone)
+M08 COMPILE_ERROR rc=101 panics=0 (demandActive bez warunku profilu zrownowazone)
+M09 KILLED rc=101 panics=1 (effectiveCityCap bez pulapu imperium)
+M10 COMPILE_ERROR rc=101 panics=0 (KROK0: prog lasu > zamiast >=)

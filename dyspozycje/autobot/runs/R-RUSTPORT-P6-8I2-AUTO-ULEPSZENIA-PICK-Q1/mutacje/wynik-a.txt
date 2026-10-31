@@ -1,0 +1,6 @@
+M01 KILLED rc=101 failed_tests=0 (FAZA0: prog plonowych >= pop -> >)
+M02 KILLED rc=101 failed_tests=2 (lesneMin: ceil -> floor)
+M03 KILLED rc=101 failed_tests=2 (FAZA0 defenseCap: ceil -> floor)
+M04 KILLED rc=101 failed_tests=3 (kolejnosc heksow: rzeka odwrocona)
+M05 KILLED rc=101 failed_tests=3 (kolejnosc heksow: odleglosc odwrocona)
+RESTORED OK
