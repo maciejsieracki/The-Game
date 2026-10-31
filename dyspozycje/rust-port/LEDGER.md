@@ -384,3 +384,9 @@ Cel końcowy i bieżący zapisane w `GOAL-RUST-PORT-20261020.md` (§"CEL PĘTLI 
 - Push do `main`: NIE WYKONANO.
 
 - 2026-10-31 02:12 UTC — kontrola cykliczna: M07A r2, 8G r1, WEB R8R9 r1 biegną; brak PASS do integracji.
+
+## 2026-10-31 — M07A (Rust) i R-WEB-PEACE-RULES-R8R9-Q1 (web) zintegrowane; 8G r4 biegnie
+- `R-RUSTPORT-P6-M07A-RZEKI-A-SCIEZKI-POLA-Q1` PASS-WITH-NOTES (FC `dba2c8faa`; 52/52 symboli; 89 mutantów: 74 zabite, 15 równoważnych z dowodem). Merge na `rust-port/parity-v2` `2f35f68bc`: fmt OK, clippy OK, test 1885/0. Długi: weryfikator Python bez purge*/render*, wariant `earlyExitBelow`, hooki profilera generatora.
+- `R-WEB-PEACE-RULES-R8R9-Q1` PASS-WITH-NOTES (FC r2 `0083aed43`; R8 blokada wojny epoki przy Relacji ≥100, R9 usunięty auto-koniec wojen wymuszonych). Scalone na `web/integration-20261030` (`0083aed43`): tsc 0; relation-gate 14/0; counter 82/0; multiwar 57/0+21/0; stone 31/0, iron 54/0; main-guardy stone/iron/bronze zielone; profile 198, sim 22, main-guard 28; diplomacy 148; peace-lock 9; ring 15. NIE_ZMIERZONO: war-rules-multiwar-live-test (>580 s także na bazie). Znane czerwone w bazie bez zmian: forced-war-waves 16/1, bronze-new-game-reset.
+- Push do `main`: NIE WYKONANO. Następne web: CITY-CESSION → AGGRESSOR-FLAG → TRUCE.
+- 8G: FC r3 FAIL → r4 (hak rebalansu + state.rs, wektory, mutacje) biegnie.
