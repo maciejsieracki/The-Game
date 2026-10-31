@@ -1,0 +1,4 @@
+  OK triangle cluster has at least 1 loop
+  OK loop vertices cover boundary
+territory-border-test: 9 pass, 0 fail
+EXIT=0

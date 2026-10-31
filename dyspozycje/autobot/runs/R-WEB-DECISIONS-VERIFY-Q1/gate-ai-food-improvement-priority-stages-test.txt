@@ -1,0 +1,5 @@
+[PASS] wiring. AI civilization and player auto-build use staged planning
+[PASS] parity. real AI turn planner develops river hexes clear -> farm (E1 > E2), then E3/E4
+[PASS] mutation. disabling stage selection makes the behavioral gate fail
+ai-food-improvement-priority-stages-test: 13 passed, 0 failed
+EXIT=0

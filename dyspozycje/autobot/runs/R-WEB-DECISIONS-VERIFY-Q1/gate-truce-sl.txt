@@ -1,0 +1,5 @@
+  OK  legacy: zero pageerror
+[saveload:legacy] wynik: 4 pass / 0 fail (84.1s)
+[saveload] FAZA legacy: exit=0 czas=84.3s (<=limit)
+[saveload] PASS (fazy: save,load,expire,legacy)
+EXIT=0

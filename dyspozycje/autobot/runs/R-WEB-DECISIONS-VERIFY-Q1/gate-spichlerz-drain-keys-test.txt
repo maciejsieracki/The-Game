@@ -1,0 +1,5 @@
+  PASS: brak wartości hard nie wpływa na easy
+  PASS: R-WEB-SPICHLERZ-HUD-PARAMS-Q1: brak drugiego źródła prawdy (SPICHLERZ_DRAIN_DEFAULT_PARAMS usunięty)
+  PASS: SPICHLERZ_DRAIN_FALLBACK_PER_TURN = 25
+spichlerz-drain-keys-test: 44 pass, 0 fail
+EXIT=0

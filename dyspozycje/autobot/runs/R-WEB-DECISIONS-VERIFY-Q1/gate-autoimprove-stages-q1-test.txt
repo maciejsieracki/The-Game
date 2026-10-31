@@ -1,0 +1,4 @@
+  [OK] [K2=K3] niedobor drewna, brak zywnosci (tartak -> drogi): identyczna sekwencja (12 rozkazow)
+  [OK] [K2=K3] niedobor {zloto,kamien} bez ulepszenia/miejsca: identyczna sekwencja (31 rozkazow)
+autoimprove-stages-q1-test: 184 passed, 0 failed
+EXIT=0
