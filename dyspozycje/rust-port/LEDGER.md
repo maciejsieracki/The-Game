@@ -431,3 +431,9 @@ Cel końcowy i bieżący zapisane w `GOAL-RUST-PORT-20261020.md` (§"CEL PĘTLI 
 ## 2026-10-31 — 8H partia A zintegrowana; reszta → nowy temat 8H2
 - `R-RUSTPORT-P6-8H-DOSTEP-ZASOBOW-Q1` PASS-WITH-NOTES, partia A (złoto, cyna, żelazo, kultura miasta; `domain/resource_access.rs`). FC r2 `0ffffa123`. Merge na `parity-v2` `44a3e9ccf`: fmt OK, clippy OK, test 1940/0. Wektory z pinu 91dc998a bajt-identyczne, 48 mutacji (44 zabite + 4 równoważne z dowodem), `trim` zgodny z JS dla wszystkich code pointów.
 - Decyzja orkiestratora: zamknięcie administracyjne partii A; reszta 8H (`resource-access.ts`: etykiety, collectActiveAccess, getCityResourceAccessForCity, getResourceAccessForCity; isForeignReligionDominant, isPlayerCapitalCity, stolicaEasyBonusActive; wywołujący) → `R-RUSTPORT-P6-8H2-DOSTEP-ZASOBOW-B-Q1`.
+
+## 2026-10-31 — WDROŻENIE ROBOCZEJ: merge do main + deploy + push (na wyraźne polecenie właściciela)
+- `web/integration-20261030` (46 commitów, 66 plików: obwódki, licznik wojen epoki, zasady pokoju, R8/R9, cesja miasta, flaga agresora, rozejm) scalone fast-forwardem do `origin/main` (`7164f7ca1` → `5ab3d58e2`).
+- Deploy ROBOCZEJ: Vite direct build poza repo, stempel ROBOCZA, bundle MD5 `c415f278d71bd4d3d66c164b83ef33c2`, 70,086,171 B, `verify-robocza-bundle` VERIFY OK; commit wdrożenia `291b20f71`; wpis w `dyspozycje/WERSJE.md`. Odczyt GitHub Raw (bundle, manifest, START) HTTP 200, MD5 i rozmiar zgodne.
+- Decyzje właściciela nadal otwarte: znacznik „Agresor” na liście HUD; filtr „Inne cyw.” (ostrzeżenie hamulca ukryte); kontrast obwódek chinczycy/barbarzyńcy/Asyria; niepokój po cesji miasta.
+- Kontener zrestartowano w trakcie; workflow M07B-Q2, 8H2, 8I wznowione (`resumeFromRunId`).
