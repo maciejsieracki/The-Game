@@ -28,7 +28,7 @@ export async function load(url, context, nextLoad) {
     const source = readFileSync(fileURLToPath(url), 'utf8');
     return {
       format: 'module-typescript',
-      source: `${source}\nexport { canRiverFlowThrough, canRiverDrainStep, isRiverDrainageGoal, inferMapDimsFromHexes, isReliefRiverSource, riverStepDir, sameRiverDir, riverHexDirDelta, reconstructRiverPath, estimateLandCentroidFromSeed, estimateLandCentroidFromMouth, scoreRiverStepTowardCentroid, scoreRiverStepTowardCenterSquare, scoreRiverStepTowardLandCenter };\n`,
+      source: `${source}\nexport { canRiverFlowThrough, canRiverDrainStep, isRiverDrainageGoal, inferMapDimsFromHexes, isReliefRiverSource, riverStepDir, sameRiverDir, riverHexDirDelta, reconstructRiverPath, estimateLandCentroidFromSeed, estimateLandCentroidFromMouth, scoreRiverStepTowardCentroid, scoreRiverStepTowardCenterSquare, scoreRiverStepTowardLandCenter, growRiverInlandBeforeDrainage, collectInlandDrainGrowCandidates, neighborDirIndex, signedRiverDirDelta, pathSegmentDirs, pathSignedTurnDeltas, isRiverWindowTurnAllowed, rpEnsure };\n`,
       shortCircuit: true,
     };
   }

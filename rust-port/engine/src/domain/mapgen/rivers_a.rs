@@ -18,6 +18,8 @@ use crate::domain::mapgen::prims::{
 use crate::domain::mapgen::terrain_class::{set_hex_to_morze, HexRecord, Nakladka, TerrainHex};
 
 pub mod fields;
+pub mod grow;
+pub mod profile;
 pub mod walk;
 pub use self::fields::{
     build_open_ocean_distance_field, build_river_field_cache, build_sea_distance_field,
