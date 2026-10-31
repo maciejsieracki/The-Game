@@ -38,7 +38,7 @@ dotychczasowe `_doMove/_doAttack` bo to animacje; bramka tury NIE jest stubowana
   battle-melee-attack-doctrine EXIT=0/0, bitwa-auto-atak-wielojednostkowy 12/12 -> 12/12, battle-formation-rules EXIT=0/0, diplomacy 148/148,
   war-era-counter 82/82, ring 15/15, battle-manual-orders-routing, attack-move-order, dead-unit-disappearance EXIT=0/0; tsc --noEmit EXIT=0/0.
 
-ZMIANY/COMMIT: gra/src/battle/battleScene.ts (1 linia + komentarz), gra/tools/battle-standoff-two-warriors-test.cjs, run dir (raport, gate-r3-*, live/). SHA: patrz git log (commit "fix(battle): R3 ..."); gra-robocza, WERSJE.md, rust-port, src-tauri nietkniete.
+ZMIANY/COMMIT: gra/src/battle/battleScene.ts (1 linia + komentarz), gra/tools/battle-standoff-two-warriors-test.cjs, run dir (raport, gate-r3-*, live/). SHA: 4f68d98c4; gra-robocza, WERSJE.md, rust-port, src-tauri nietkniete.
 BLOKADY: brak. Uwaga dla Evaluatora: `0d31bc4ec` doctrine "dead end" nietkniete; po integracji potrzebny deploy ROBOCZEJ (osobna autoryzacja), bundle w gra-robocza nadal ma defekt.
 RUNDY: 3/5
 NASTEPNY KROK: Evaluator -> Final Control -> integracja orkiestratora.
