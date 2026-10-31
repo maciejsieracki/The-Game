@@ -1,10 +1,14 @@
-[saveload] strona 1 — zapis (74.0s)
-[saveload] świat gotowy po 182.6s
-[saveload] przed zapisem: tura 2, para {"status":"pokoj","truceUntilTurn":11,"peaceUntilTurn":null,"turn":2}
-[saveload] zapis OK (202.1s)
-[saveload] strona 2 — NOWA sesja gry w tej samej przeglądarce, wczytanie (202.1s)
-[saveload] świat gotowy po 305.8s
-[saveload] po wczytaniu: tura 2, para {"status":"pokoj","truceUntilTurn":11,"peaceUntilTurn":null,"turn":2}
+[saveload] stan po starcie strony: {"citiesLen":2,"unitsLen":4,"turn":1}
+[saveload:save] świat gotowy (90.7s)
+[saveload:save] akceptacja rozejmu: {"accepted":true,"reason":"Rozejm zawarty"}
+[saveload:save] przed zapisem: tura 2, para {"status":"pokoj","truceUntilTurn":6,"peaceUntilTurn":null,"turn":2}
+  OK  save: zapis do slotu i kopia legacy zapisane, rozejm aktywny
+  OK  save: zero pageerror
+[saveload:save] wynik: 2 pass / 0 fail (106.9s)
+[saveload] FAZA save: exit=0 czas=107.1s (<=limit)
+[saveload] stan po starcie strony: {"citiesLen":2,"unitsLen":4,"turn":1}
+[saveload:load] NOWA sesja przeglądarki, świat gotowy (89.2s)
+[saveload:load] po wczytaniu: tura 2, para {"status":"pokoj","truceUntilTurn":6,"peaceUntilTurn":null,"turn":2}
   OK  wczytanie: tura zgodna z zapisem
   OK  wczytanie: status pary i truceUntilTurn zgodne (rozejm trwa)
   OK  wczytanie: flaga agresora (aggressorFlagUntilByOwner) zgodna
@@ -12,13 +16,24 @@
   OK  wczytanie: licznik wojen epoki (per owner, epoka) zgodny
   OK  wczytanie: meta pary (diplomacyPairMeta) zgodna, bez duplikatów kluczy
   OK  wczytanie: zdarzenia Wiarygodności zgodne (brak utraty/duplikacji)
-  OK  po wczytaniu: w turze U-1 (10) rozejm nadal aktywny
-  OK  po wczytaniu: w turze U (11) rozejm wygasa do wojny
+  OK  load: zero pageerror
+[saveload:load] wynik: 8 pass / 0 fail (122.6s)
+[saveload] FAZA load: exit=0 czas=122.9s (<=limit)
+[saveload] stan po starcie strony: {"citiesLen":2,"unitsLen":4,"turn":1}
+[saveload:expire] NOWA sesja przeglądarki, świat gotowy (81.6s)
+  OK  po wczytaniu: w turze U-1 (5) rozejm nadal aktywny
+  OK  po wczytaniu: w turze U (6) rozejm wygasa do wojny
   OK  po wygaśnięciu: BEZ kary (brak nowego zlamanie_paktu_nap u gracza)
   OK  po wygaśnięciu: BEZ nowej flagi agresora (brak nowych kluczy i wzrostu wartości)
-[saveload] stary zapis (360.8s)
+  OK  expire: zero pageerror
+[saveload:expire] wynik: 5 pass / 0 fail (128.3s)
+[saveload] FAZA expire: exit=0 czas=128.9s (<=limit)
+[saveload] stan po starcie strony: {"citiesLen":2,"unitsLen":4,"turn":1}
+[saveload:legacy] NOWA sesja przeglądarki, świat gotowy (104.3s)
   OK  stary zapis: wczytuje się bez błędu z wartościami domyślnymi
   OK  stary zapis: licznik epoki odtworzony wg zasady (bez crasha)
-  OK  strona: zero pageerror w całym scenariuszu
-[saveload] wynik: 14 pass / 0 fail (373.3s)
+  OK  legacy: zero pageerror
+[saveload:legacy] wynik: 3 pass / 0 fail (139.7s)
+[saveload] FAZA legacy: exit=0 czas=140.0s (<=limit)
+[saveload] PASS (fazy: save,load,expire,legacy)
 EXIT=0

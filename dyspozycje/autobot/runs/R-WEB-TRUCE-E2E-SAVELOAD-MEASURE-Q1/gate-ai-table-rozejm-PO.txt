@@ -1,12 +1,12 @@
-[ai-table] świat gotowy po 97.0s (tryb rozejm)
+[ai-table] świat gotowy po 84.5s (tryb rozejm)
 [ai-table] setup: moc {"player":2847,"ai":1275} tury wojny {"turnsAtWar":5,"lostCities":0} rw AI 0.309315866084425
 [ai-table] tura 2: wpisy stołu 1 [{"actionId":"rozejm","proposerOwnerId":1,"responderOwnerId":0,"rodzaj":null,"turns":10}]
 [ai-table] tury 1 -> 2 | stan pary {"status":"wojna","truceUntilTurn":null,"peaceUntilTurn":null,"turn":2}
 [ai-table] decyzje AI (console): [Dyplomacja] AI1 zaproponuj_pokoj: slabszy w wojnie (respektWzgledny=0.31 <= prog=0.48000000000000004; sygnaly=a; tury wojny=6): proponujemy rozejm
 [ai-table] wpisy AI na stole (unikalne): [{"actionId":"rozejm","proposerOwnerId":1,"responderOwnerId":0,"rodzaj":null,"turns":10,"tura":2}]
-[ai-table] DOM karty: {"kartaLicznik":1,"dyplomacjaRozpatrz":true,"otwarto":false,"modalTekst":{"zawiera":false,"dlugosc":1018}} | zrzuty: /home/user/The-Game/.claude/worktrees/wf_ac5bcdf0-eae-1/dyspozycje/autobot/runs/R-WEB-TRUCE-E2E-SAVELOAD-MEASURE-Q1/evidence/ai-table-rozejm-karta-stol.png /home/user/The-Game/.claude/worktrees/wf_ac5bcdf0-eae-1/dyspozycje/autobot/runs/R-WEB-TRUCE-E2E-SAVELOAD-MEASURE-Q1/evidence/ai-table-rozejm-karta-otwarta.png
+[ai-table] DOM karty: {"kartaLicznik":1,"dyplomacjaRozpatrz":true,"otwarto":false,"modalTekst":{"zawiera":false,"dlugosc":1018}} | zrzuty: /home/user/The-Game/.claude/worktrees/wf_66d5cfa9-2af-1/dyspozycje/autobot/runs/R-WEB-TRUCE-E2E-SAVELOAD-MEASURE-Q1/evidence/ai-table-rozejm-karta-stol.png /home/user/The-Game/.claude/worktrees/wf_66d5cfa9-2af-1/dyspozycje/autobot/runs/R-WEB-TRUCE-E2E-SAVELOAD-MEASURE-Q1/evidence/ai-table-rozejm-karta-otwarta.png
 [ai-table] stołWpisów(ostatnia tura)=1
 [ai-table] PASS (rozejm) — AI wstawiło rozejm na stół (tura 2)
 [ai-table] błędy strony: brak
-[ai-table] czas całkowity: 132.9s
+[ai-table] czas całkowity: 122.0s
 EXIT=0
