@@ -141,6 +141,7 @@ pub const fn can_found_city_on(terrain: TerrainType) -> bool {
 // ---------------------------------------------------------------------------
 
 use super::hex::HexCoord;
+use super::improvement_build::hex_disk_offsets;
 use crate::data::derived::teren_ruch_reguly;
 use crate::data::economy_society::parse_miasto_params;
 use crate::data::terrain_map::parse_terrain_improvements;
@@ -396,18 +397,11 @@ fn hexes_within_radius(
     has_hex: &dyn Fn(HexCoord) -> bool,
 ) -> Vec<HexCoord> {
     let radius = i32::try_from(radius).expect("promien miesci sie w i32");
-    let mut out = Vec::new();
-    for dq in -radius..=radius {
-        let lo = (-radius).max(-dq - radius);
-        let hi = radius.min(-dq + radius);
-        for dr in lo..=hi {
-            let hex = HexCoord::new(center.q + dq, center.r + dr);
-            if has_hex(hex) {
-                out.push(hex);
-            }
-        }
-    }
-    out
+    hex_disk_offsets(radius)
+        .into_iter()
+        .map(|(dq, dr)| HexCoord::new(center.q + dq, center.r + dr))
+        .filter(|hex| has_hex(*hex))
+        .collect()
 }
 
 /// Web `findEvacuationHexOutsideCity` (`fort-territory.ts:185`): najblizszy heks POZA zasiegiem
