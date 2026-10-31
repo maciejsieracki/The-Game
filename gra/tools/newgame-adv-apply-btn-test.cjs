@@ -4,9 +4,9 @@
  * przycisk stopki okna „Zaawansowane opcje” (klasa `.adv-close`) ma nazywać się „Zastosuj”
  * i być aktywną akcją główną. Klik = zapis wartości (`saveNewGamePrefs` przez
  * `hideAdvancedModal`) + zamknięcie okna. Wartość z okna ma trafić do:
- *   - prefs w localStorage (`advanced.barbariansLevel`, dokładna wartość 'trudny'),
+ *   - prefs w localStorage (`advanced.buildingCostPace`, dokładna wartość 'wysoki'),
  *   - ponownie otwartego okna (`.sv` = „Trudny”),
- *   - parametrów startu (`onStart(params).advanced.barbariansLevel === 'trudny'`),
+ *   - parametrów startu (`onStart(params).advanced.buildingCostPace === 'wysoki'`),
  *     które są budowane z `advOpts` przez `buildParams()` (`advanced: { ...advOpts }`).
  *
  * Harness: realny kod `gra/src/ui/newGameFlow.ts` (esbuild, IIFE, te same stuby zasobów co
@@ -35,7 +35,8 @@ const TMP = fs.mkdtempSync(path.join(os.tmpdir(), 'newgame-adv-apply-'));
 const EVIDENCE_DIR = process.env.ADV_EVIDENCE_DIR
   || path.resolve(__dirname, '..', '..', 'dyspozycje', 'autobot', 'runs', 'R-WEB-NEWGAME-ADV-APPLY-BTN-Q1', 'evidence');
 const PREFS_KEY = 'civ-new-game-prefs-v1';
-const BARB_LABEL_RE = /Barbarzyńcy/;
+// Po R-WEB-NEWGAME-MENU-REORDER-Q1 „Barbarzyńcy” są w głównej siatce; test używa opcji, która ZOSTAJE w oknie Zaawansowane („Koszty budynków”, domyślnie Normalny po R-WEB-NEWGAME-DEFAULTS-Q1).
+const BARB_LABEL_RE = /Koszty budynków/;
 
 let pass = 0;
 let fail = 0;
@@ -109,7 +110,7 @@ async function readPrefsBarb(page) {
   return page.evaluate((k) => {
     try {
       const raw = localStorage.getItem(k);
-      return raw ? (JSON.parse(raw).advanced?.barbariansLevel ?? null) : null;
+      return raw ? (JSON.parse(raw).advanced?.buildingCostPace ?? null) : null;
     } catch (_e) { return null; }
   }, PREFS_KEY);
 }
@@ -135,11 +136,11 @@ async function runApplyScenario(browser, origin, cfg) {
     await wait(200);
 
     const before = await readBarbValue(page);
-    check(`domyślna wartość „Barbarzyńcy” = „Normalny” (zmierzone: ${before})`, before === 'Normalny', before);
+    check(`domyślna wartość „Koszty budynków” = „Normalny” (zmierzone: ${before})`, before === 'Normalny', before);
     await barbRow(page).locator('button.arr').nth(1).click();
     await wait(120);
     const changed = await readBarbValue(page);
-    check(`wartość zmieniona w oknie na „Trudny” (zmierzone: ${changed})`, changed === 'Trudny', changed);
+    check(`wartość zmieniona w oknie na „Wysoki” (zmierzone: ${changed})`, changed === 'Wysoki', changed);
 
     const btn = page.locator('.civ-newgame .adv-modal .adv-close');
     const btnText = ((await btn.textContent()) ?? '').trim();
@@ -178,23 +179,23 @@ async function runApplyScenario(browser, origin, cfg) {
     await wait(200);
     check('klik „Zastosuj” zamyka okno', !(await overlayIsOpen(page)));
     const savedAfterApply = await readPrefsBarb(page);
-    check(`prefs zapisane: advanced.barbariansLevel === 'trudny' (zmierzone: ${savedAfterApply})`,
-      savedAfterApply === 'trudny', savedAfterApply);
+    check(`prefs zapisane: advanced.buildingCostPace === 'wysoki' (zmierzone: ${savedAfterApply})`,
+      savedAfterApply === 'wysoki', savedAfterApply);
 
     await page.locator('.civ-newgame .btn-adv').click();
     await page.waitForSelector('.civ-newgame .adv-overlay.open');
     await wait(200);
     const reopened = await readBarbValue(page);
-    check(`po ponownym otwarciu okna wartość „Trudny” (zmierzone: ${reopened})`, reopened === 'Trudny', reopened);
+    check(`po ponownym otwarciu okna wartość „Wysoki” (zmierzone: ${reopened})`, reopened === 'Wysoki', reopened);
     await btn.click();
     await wait(150);
 
     await page.locator('.civ-newgame .nav .next').click();
     await page.waitForFunction(() => window.__params !== undefined, null, { timeout: 10000 });
     const params = await page.evaluate(() => window.__params);
-    const startBarb = params?.advanced?.barbariansLevel;
-    check(`parametry startu: advanced.barbariansLevel === 'trudny' (zmierzone: ${startBarb})`,
-      startBarb === 'trudny', startBarb);
+    const startBarb = params?.advanced?.buildingCostPace;
+    check(`parametry startu: advanced.buildingCostPace === 'wysoki' (zmierzone: ${startBarb})`,
+      startBarb === 'wysoki', startBarb);
     check('brak błędów JS na stronie', jsErrors.length === 0, jsErrors.slice(0, 3));
   } finally {
     await ctx.close();
@@ -217,12 +218,12 @@ async function runBackgroundScenario(browser, origin, bundle) {
     await barbRow(page).locator('button.arr').nth(1).click();
     await wait(120);
     const changed = await readBarbValue(page);
-    check(`wartość zmieniona w oknie na „Brak” (zmierzone: ${changed})`, changed === 'Brak', changed);
+    check(`wartość zmieniona w oknie na „Niski” (zmierzone: ${changed})`, changed === 'Niski', changed);
     await page.mouse.click(5, 5);
     await wait(200);
     check('klik w tło zamyka okno', !(await overlayIsOpen(page)));
     const saved = await readPrefsBarb(page);
-    check(`klik w tło zapisuje: advanced.barbariansLevel === 'brak' (zmierzone: ${saved})`, saved === 'brak', saved);
+    check(`klik w tło zapisuje: advanced.buildingCostPace === 'niski' (zmierzone: ${saved})`, saved === 'niski', saved);
   } finally {
     await ctx.close();
   }

@@ -26,27 +26,29 @@ const TMP = fs.mkdtempSync(path.join(os.tmpdir(), 'newgame-defaults-'));
 const PREFS_KEY = 'civ-new-game-prefs-v1';
 const EVIDENCE = path.resolve(GRA, '..', 'dyspozycje', 'autobot', 'runs', 'R-WEB-NEWGAME-DEFAULTS-Q1', 'evidence');
 
+// Po scaleniu z R-WEB-NEWGAME-MENU-REORDER-Q1: siatka kroku 4 ma 12 kart (warunki zwycięstwa, trudność miast-państw,
+// barbarzyńcy, „Wojna epoki”, chatki z nagrodami przeszły z „Zaawansowanych” do siatki).
 const EXPECTED_GRID = {
   'Rozmiar mapy': 'Standardowy',
   'Typ świata': 'Kontynenty',
   'Poziom trudności': 'Normalny',
   'Prędkość gry': 'Standardowa',
-  'Wymagaj rozpatrzenia ofert handlowych przed końcem tury': 'Włączona',
   'Udział lądu na mapie': '30% lądu / 70% morze',
-};
-
-const EXPECTED_ADV = {
   'Warunki zwycięstwa': 'Moc + dominacja',
   'Trudność miast-państw': 'Normalny',
   'Barbarzyńcy': 'Normalny',
+  'Wojna epoki': 'Włączona',
+  'Chatki z nagrodami': 'Włączone',
+};
+
+const EXPECTED_ADV = {
+  'Wymagaj rozpatrzenia ofert handlowych przed końcem tury': 'Włączona',
   'Bitwy': 'Bitwa ręczna i automatyczna',
   'Koszty budynków': 'Normalny',
   'Koszty jednostek': 'Normalny',
   'Wzrost ludności': 'Normalny',
   'Zasięg ruchu': 'Normalny',
   'Limit miast zakładanych (baza)': '10 miast',
-  'Wojna epoki z udziałem gracza': 'Włączona',
-  'Chatki z nagrodami': 'Włączone',
   'Jakość grafiki mapy': 'Średnia',
   'Surowce na mapie': 'Normalnie',
   'Rzeki': 'Normalnie',
