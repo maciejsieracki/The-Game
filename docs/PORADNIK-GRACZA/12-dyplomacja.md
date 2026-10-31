@@ -316,7 +316,7 @@ Akcja w audiencji — akceptacja usuwa karę na trasę/okres. Odmowa — omijaj 
 
 ### 80.3. Terytorium a posterunki
 
-Twój **posterunek** (5 heksów) i **fort** (10 heksów) — własne terytorium. Koniec tury na cudzym hexie bez zgody — liczy się kara.
+Twój **posterunek** (3 heksy) i **fort** (5 heksów) — własne terytorium. Koniec tury na cudzym hexie bez zgody — liczy się kara.
 
 ### 80.4. Barbarzyńcy
 

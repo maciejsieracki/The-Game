@@ -106,6 +106,56 @@ async function main() {
     });
     if (SHOT) { await page.screenshot({ path: SHOT }); console.log('zrzut: ' + SHOT); }
     ok('E: zrzut mapy z granica wykonany', !SHOT || fs.existsSync(SHOT) || hasBorder);
+
+    // --- R3: Q-B (wczesniejszy fort wygrywa sporny heks) + Q-A (zdobycie fortu przez wejscie wojska) ---
+    {
+      const far = (a, b) => dist(a, b) >= 14;
+      let A = null, B = null;
+      for (let skip = 0; skip < 400 && !A; skip++) {
+        const c = await T('landHexAtDistance', st.myCity.q, st.myCity.r, 24, skip);
+        if (!c) break;
+        if (far(c, fortHex) && (!postHex || far(c, postHex))) A = c;
+      }
+      ok('R3: znaleziono heks pod fort A (obcy, wczesniejszy)', !!A, A);
+      if (A) {
+        for (let skip = 0; skip < 400 && !B; skip++) {
+          const c = await T('landHexAtDistance', A.q, A.r, 8, skip, true);
+          if (!c) break;
+          B = c;
+        }
+        ok('R3: znaleziono heks pod fort B (gracz, pozniejszy, dist 8 od A)', !!B, B);
+      }
+      if (A && B) {
+        await T('placeFort', 'fort', A.q, A.r, foreign);
+        await T('placeFort', 'fort', B.q, B.r, me);
+        const oa = await T('fortOrder', A.q, A.r), ob = await T('fortOrder', B.q, B.r);
+        ok('Q-B: oba forty maja znacznik kolejnosci (seq A < seq B)', oa && ob && typeof oa.seq === 'number' && oa.seq < ob.seq, { oa, ob });
+        const ringA = await T('hexesWithin', A.q, A.r, 5);
+        let contested = null;
+        for (const h of ringA) { if (dist(h, B) <= 5 && dist(h, A) > dist(h, B)) { contested = h; break; } }
+        ok('Q-B: istnieje sporny heks (blizej B, w zasiegu obu)', !!contested, contested);
+        if (contested) ok('Q-B: sporny heks nalezy do WCZESNIEJSZEGO fortu A (obcy), mimo ze blizej B', (await T('ownerAt', contested.q, contested.r)) === foreign, await T('ownerAt', contested.q, contested.r));
+
+        // Q-A: gracz (wojna z obcym) wchodzi wojskiem na heks fortu A -> zdobywa fort z terytorium
+        await T('setWar', me, foreign);
+        const swept0 = await T('sweepCaptures');
+        ok('Q-A: bez wejscia wojska fort nie jest zdobywany', swept0 === 0 && (await T('fortOwner', A.q, A.r)) === foreign, swept0);
+        const uid = await T('placeUnitAt', me, A.q, A.r, false);
+        ok('Q-A: jednostka wojskowa gracza stoi na forcie A', !!uid, uid);
+        const ownedBefore = (await Promise.all(ringA.map(h => T('ownerAt', h.q, h.r)))).filter(o => o === foreign).length;
+        await T('sweepCaptures');
+        ok('Q-A: fort A zdobyty (ownerId = gracz)', (await T('fortOwner', A.q, A.r)) === me, await T('fortOwner', A.q, A.r));
+        const ownedAfter = (await Promise.all(ringA.map(h => T('ownerAt', h.q, h.r)))).filter(o => o === me).length;
+        ok('Q-A: terytorium przeszlo razem z fortem (heksy A: obcy -> gracz)', ownedBefore > 0 && ownedAfter >= ownedBefore, { ownedBefore, ownedAfter });
+        ok('Q-A: stary wlasciciel nie ma juz zadnego heksu fortu A', (await Promise.all(ringA.map(h => T('ownerAt', h.q, h.r)))).filter(o => o === foreign).length === 0);
+        ok('Q-A: znacznik kolejnosci zostal po zdobyciu', (await T('fortOrder', A.q, A.r)).seq === oa.seq);
+        await T('removeUnit', uid);
+        await T('showBorders', A.q, A.r);
+        await wait(1500);
+        const SHOT2 = SHOT ? SHOT.replace(/\.png$/, '-captured.png') : null;
+        if (SHOT2) { await page.screenshot({ path: SHOT2 }); console.log('zrzut: ' + SHOT2); }
+      }
+    }
     ok('F: zero console.error/pageerror', errors.length === 0, errors.slice(0, 3));
   } finally {
     await browser.close();

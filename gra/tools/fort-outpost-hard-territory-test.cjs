@@ -187,5 +187,70 @@ console.log('\n--- F: fort NIE odbiera heksow sasiedniemu miastu (R2, zarzut 1) 
   }
 }
 
+console.log('\n--- G: R3 Q-B=B — sporny heks nalezy do WCZESNIEJSZEGO fortu ---');
+{
+  const mk = (a, b) => fortTerritoryNodes([
+    { q: 0, r: 0, ownerId: 1, type: 'fort', builtAtTurn: a[0], seq: a[1] },
+    { q: 8, r: 0, ownerId: 2, type: 'fort', builtAtTurn: b[0], seq: b[1] },
+  ]);
+  eq(territoryOwnerAt(5, 0, mk([3, 0], [7, 1])), 1, 'G1: wczesniejszy fort (tura 3) wygrywa sporny heks mimo wiekszej odleglosci (5 vs 3)');
+  eq(territoryOwnerAt(5, 0, mk([9, 1], [2, 0])), 2, 'G2: wczesniejszy jest drugi fort -> jego');
+  eq(territoryOwnerAt(4, 0, mk([9, 1], [2, 0])), 2, 'G3: remis odleglosci 4:4 -> wczesniejszy (drugi), nie "pierwszy w tablicy"');
+  eq(territoryOwnerAt(3, 0, mk([9, 1], [2, 0])), 2, 'G4: heks blizej pozniejszego fortu (3 vs 5) -> wczesniejszy (drugi)');
+  eq(territoryOwnerAt(2, 0, mk([9, 1], [2, 0])), 1, 'G5: heks w zasiegu tylko jednego fortu -> ten fort');
+  eq(territoryOwnerAt(5, 0, mk([4, 0], [4, 1])), 1, 'G6: ta sama tura -> mniejszy seq');
+  eq(territoryOwnerAt(5, 0, mk([4, 1], [4, 0])), 2, 'G7: ta sama tura, seq odwrotnie');
+  const cityF = [{ q: 0, r: 0, pop: 5, level: 1, ownerId: 1 }].concat(fortTerritoryNodes([{ q: 7, r: 0, ownerId: 2, type: 'fort', builtAtTurn: 1, seq: 0 }]));
+  eq(territoryOwnerAt(5, 0, cityF), 1, 'G8: miasto nadal wygrywa w swoim promieniu (fort wczesniejszy)');
+  const old = [{ q: 0, r: 0, ownerId: 1, type: 'fort' }, { q: 8, r: 0, ownerId: 2, type: 'fort' }];
+  const backfill = FT.backfillFortOrder || (() => -1);
+  eq(backfill(old), 2, 'G9: backfill uzupelnia 2 wpisy');
+  assert(old[0].seq === 0 && old[1].seq === 1 && old[0].builtAtTurn === 0, 'G10: backfill wg kolejnosci w tablicy');
+  eq(territoryOwnerAt(5, 0, fortTerritoryNodes(old)), 1, 'G11: po backfillu starszy (indeks 0) wygrywa sporny heks (5 vs 3)');
+  eq((FT.nextFortSeq || (() => -1))(old), 2, 'G12: nextFortSeq = max+1');
+  eq(backfill(old), 0, 'G13: backfill idempotentny');
+  const mixed = [{ q: 0, r: 0, ownerId: 1, type: 'fort', builtAtTurn: 5, seq: 7 }, { q: 8, r: 0, ownerId: 2, type: 'fort' }];
+  backfill(mixed);
+  eq(mixed[1].seq, 8, 'G14: backfill nie koliduje z istniejacym seq');
+}
+
+console.log('\n--- H: R3 Q-A=A — zdobycie fortu przez wejscie wojska ---');
+{
+  const war = (a, b) => (a === 1 && b === 2) || (a === 2 && b === 1);
+  const mkF = () => [{ q: 0, r: 0, ownerId: 1, type: 'fort', builtAtTurn: 1, seq: 0 }];
+  const U = (ownerId, q, r, military = true) => ({ ownerId, q, r, military });
+  const cap = FT.applyFortCaptureByOccupation || (() => []);
+  let f = mkF();
+  let ev = cap(f, [U(2, 0, 0)], war);
+  eq(ev.length, 1, 'H1: wrog (wojna) wchodzi na pusty fort -> zdobyty');
+  eq(f[0].ownerId, 2, 'H2: ownerId fortu = zdobywca');
+  eq(countOwned(map, fortTerritoryNodes(f), 2), 91, 'H3: zdobywca dostaje CALE terytorium fortu (91 heksow)');
+  eq(countOwned(map, fortTerritoryNodes(f), 1), 0, 'H4: dotychczasowy wlasciciel traci terytorium');
+  eq(f[0].seq, 0, 'H5: znacznik kolejnosci zostaje po zdobyciu');
+  f = [{ q: 0, r: 0, ownerId: 1, type: 'posterunek' }];
+  cap(f, [U(2, 0, 0)], war);
+  eq(countOwned(map, fortTerritoryNodes(f), 2), 37, 'H6: posterunek zdobyty -> 37 heksow');
+  f = mkF(); eq(cap(f, [], war).length, 0, 'H7: pusty fort bez wojsk wroga nie jest zdobywany');
+  f = mkF(); eq(cap(f, [U(3, 0, 0)], war).length, 0, 'H8: pokoj/sojusz (brak wojny) -> brak zdobycia');
+  f = mkF(); eq(cap(f, [U(2, 0, 0), U(1, 0, 0)], war).length, 0, 'H9: wlasciciel ma jednostke na heksie -> brak zdobycia');
+  f = mkF(); eq(cap(f, [U(2, 0, 0, false)], war).length, 0, 'H10: cywil wroga nie zdobywa');
+  f = mkF(); eq(cap(f, [U(2, 1, 0)], war).length, 0, 'H11: wrog na sasiednim heksie nie zdobywa (wejscie NA heks)');
+  f = mkF(); eq(cap(f, [U(2, 0, 0)], () => true, (o) => o === 2).length, 0, 'H12: barbarzynca nie zdobywa fortu (zalozenie)');
+  f = mkF(); eq(cap(f, [U(2, 0, 0), U(3, 0, 0)], () => true).length, 0, 'H13: heks z jednostkami roznych stron -> brak zdobycia (Q-E, stary mechanizm)');
+  f = mkF(); cap(f, [U(2, 0, 0)], war); eq(cap(f, [U(2, 0, 0)], war).length, 0, 'H14: zdobycie idempotentne (ten sam wlasciciel)');
+  f = mkF(); cap(f, [U(2, 0, 0)], war);
+  eq(cap(f, [U(1, 0, 0)], war).length, 1, 'H15: poprzedni wlasciciel moze odbic fort tym samym torem');
+}
+
+console.log('\n--- I: straznik main.ts R3 ---');
+{
+  const main = fs.readFileSync(path.join(SRC, 'main.ts'), 'utf8');
+  assert(/builtAtTurn: turn, seq: nextFortSeq\(fortNodes\)/.test(main), 'I1: rejestracja fortu stempluje builtAtTurn+seq');
+  assert(/backfillFortOrder\(fortNodes\)/.test(main), 'I2: wczytanie zapisu robi backfill kolejnosci');
+  const calls = (main.match(/sweepFortCaptures\(\)/g) || []).length;
+  assert(calls >= 6, `I3: sweepFortCaptures wolany w ruchu/bitwie/koncu tury (${calls} wywolan)`);
+  assert(/function sweepFortCaptures/.test(main) && /applyFortCaptureByOccupation\(/.test(main), 'I4: sweep uzywa applyFortCaptureByOccupation');
+}
+
 console.log(`\n=== fort-outpost-hard-territory-test: ${passed} passed, ${failed} failed ===`);
 process.exit(failed > 0 ? 1 : 0);
