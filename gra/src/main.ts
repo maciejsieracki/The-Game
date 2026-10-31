@@ -3690,7 +3690,11 @@ async function boot(): Promise<void> {
           ...(diploIn > 0 ? { rateDiploInPerTurn: diploIn } : {}),
           cap, capBase, capBonusPerMagazyn, zrodlo,
           ...(citizenRequired
-            ? { citizenRequired: true, citizenCovered: citizenAvailableSet.has(c.id) }
+            ? {
+              citizenRequired: true,
+              citizenCovered: citizenAvailableSet.has(c.id),
+              citizenRatePerCitizen: citizenUpkeep.ratePerCitizen,
+            }
             : {}),
           ...(resourceUsageHasAny(usage) ? { usage } : {}),
         });
@@ -34865,8 +34869,8 @@ async function boot(): Promise<void> {
             // ownerId-agnostyczne, dotyczy gracza, dużej AI i Państw-Miast jednakowo (ECHO Q2=A).
             const citizenUpkeepEmpireStock = makeOwnerEmpireStockResolver();
             // R-ZUZYCIE-SUROWCOW-OBYWATELE N2 (Maciej 2026-08-11): realny drenaż magazynu,
-            // stawka CITIZEN_UPKEEP_RATE_PER_CITIZEN szt. surowca na 1 obywatela na turę
-            // (kanon: citizen-resource-upkeep.ts -- wartość NIE powtórzona tu jako liczba,
+            // stawka epoki szt. surowca na 1 obywatela na turę (R-WEB-CITIZEN-UPKEEP-ERA-MULT-Q1:
+            // citizenUpkeepRateForEra, Kamień ×1 / Brąz ×2 / Żelazo ×3; kanon: citizen-resource-upkeep.ts -- wartość NIE powtórzona tu jako liczba,
             // żeby komentarz nie starzał się przy kolejnych zmianach stawki). Liczony RAZ per
             // owner per turę (suma populacji WSZYSTKICH miast tego ownera --
             // computeCitizenResourceDrain wymaga tego, inaczej kilka miast tego samego ownera
