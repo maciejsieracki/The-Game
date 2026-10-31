@@ -46,6 +46,10 @@ export {
   citizenUpkeepDisplayLines,
   CITIZEN_UPKEEP_RATE_PER_CITIZEN,
 } from '../src/game/citizen-resource-upkeep';
+export {
+  ownerResourceStockAll,
+  deductBuildingStockCostAcrossCities,
+} from '../src/game/building-stock-cost';
 `, 'utf8');
 
 try {
@@ -226,6 +230,63 @@ console.log('-- G. wyświetlanie stawki epoki --');
   eq(lines3.every(l => l.value === -30 && l.available === false), true, 'G3: Żelazo brak zapasu -> -30 na wiersz');
   const legacy = M.citizenUpkeepDisplayLines({ available: ['drewno'], missing: [] }, 10);
   eq(legacy[0].value, 10, 'G4: werdykt bez stawki (legacy) -> fallback 1,0 -> 10');
+}
+
+// --- H. Integracja tury: jeden drenaż na owner (suma pop miast) + odjęcie po miastach ------
+// Ścieżka jak w main.ts citizenUpkeepDrainForOwner: pop = Σ miast ownera, stock = ownerResourceStockAll,
+// computeCitizenResourceDrain RAZ, deductBuildingStockCostAcrossCities na miastach ownera.
+console.log('-- H. integracja tury (3 miasta, jeden owner) --');
+function turnDrain(era, cities, ownerId) {
+  const pop = cities.filter(c => c.ownerId === ownerId).reduce((s, c) => s + c.population, 0);
+  const stock = M.ownerResourceStockAll(cities, ownerId);
+  const d = M.computeCitizenResourceDrain(era, pop, stock);
+  M.deductBuildingStockCostAcrossCities(cities, ownerId, d.deductions);
+  return { d, pop };
+}
+function mkCities(stockEach, keys) {
+  return [4, 3, 3].map((p, i) => {
+    const surowce = {};
+    for (const k of keys) surowce[k] = stockEach;
+    return { id: 'c' + i, ownerId: 1, population: p, surowce };
+  });
+}
+{
+  const keys2 = ['drewno', 'glina', 'kamien', 'ceramika'];
+  const cities = mkCities(100, keys2);
+  const before = M.ownerResourceStockAll(cities, 1);
+  const { pop } = turnDrain(2, cities, 1);
+  eq(pop, 10, 'H1: Σ populacji 3 miast ownera = 10');
+  const after = M.ownerResourceStockAll(cities, 1);
+  const spent = keys2.reduce((s, k) => s + (before[k] - after[k]), 0);
+  eq(spent, 80, 'H2: Brąz, pop 10 (4+3+3) -> razem odjęte 80 (20 × 4 surowce)');
+  eq(keys2.every(k => after[k] === 300 - 20), true, 'H3: Brąz -> każdy z 4 surowców -20 w imperium (300→280 per key w sumie imperium)');
+  eq(cities.every(c => Object.values(c.surowce).every(v => v >= 0)), true, 'H4: żadne miasto nie schodzi poniżej zera');
+}
+{
+  const keys3 = ['drewno', 'glina', 'kamien', 'ceramika', 'cegla'];
+  const cities = mkCities(100, keys3);
+  const before = M.ownerResourceStockAll(cities, 1);
+  turnDrain(3, cities, 1);
+  const after = M.ownerResourceStockAll(cities, 1);
+  const spent = keys3.reduce((s, k) => s + (before[k] - after[k]), 0);
+  eq(spent, 150, 'H5: Żelazo, pop 10 -> razem odjęte 150 (30 × 5 surowców)');
+}
+{
+  const keys1 = ['drewno', 'glina'];
+  const cities = mkCities(100, keys1);
+  const before = M.ownerResourceStockAll(cities, 1);
+  turnDrain(1, cities, 1);
+  const after = M.ownerResourceStockAll(cities, 1);
+  const spent = keys1.reduce((s, k) => s + (before[k] - after[k]), 0);
+  eq(spent, 20, 'H6: Kamień, pop 10 -> razem odjęte 20 (10 × 2 surowce)');
+}
+{
+  // Magazyn 5 na miasto (15 razem) przy zapotrzebowaniu 20 -> drenuje 15, nie schodzi poniżej zera.
+  const keys2 = ['drewno'];
+  const cities = mkCities(5, keys2);
+  const { d } = turnDrain(2, cities, 1);
+  eq(d.deductions.drewno, 15, 'H7: Brąz pop 10, magazyn 15 razem -> odjęte 15');
+  eq(M.ownerResourceStockAll(cities, 1).drewno, 0, 'H8: magazyn po turze = 0 (nie ujemny)');
 }
 
 console.log(`\ncitizen-upkeep-era-mult-test: ${passed} passed, ${failed} failed`);

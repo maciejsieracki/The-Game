@@ -21,9 +21,9 @@
  *     odejmuje). Używana tam, gdzie liczy się tylko podgląd (np. UI podglądu miasta przed turą) —
  *     zostaje jako jest, celowo NIE zamieniona.
  *   • `computeCitizenResourceDrain()` — REALNY DRENAŻ (Maciej 2026-08-11; historia stawki —
- *     0,2 2026-08-12, PRZYWRÓCONA 1,0 2026-08-13, patrz niżej): stawka BIEŻĄCA **1,0 sztuki
- *     surowca na 1 obywatela na turę** (`CITIZEN_UPKEEP_RATE_PER_CITIZEN`), per wymagany
- *     surowiec epoki. `required = Math.floor(population × 1,0)`, `drained = min(required,
+ *     0,2 2026-08-12, PRZYWRÓCONA 1,0 2026-08-13, patrz niżej): stawka BIEŻĄCA per epoka **1,0 / 2,0 / 3,0 sztuki
+ *     surowca na 1 obywatela na turę** (`citizenUpkeepRateForEra(era)`, fallback `CITIZEN_UPKEEP_RATE_PER_CITIZEN`), per wymagany
+ *     surowiec epoki. `required = Math.floor(population × stawka_epoki)`, `drained = min(required,
  *     stock[key] ?? 0)` — magazyn NIGDY nie schodzi poniżej zera, przy
  *     niedoborze drenuje się ile jest, NIE blokuje się całkowicie. Zwraca też `deductions` —
  *     mapę do realnego odjęcia z magazynu przez wołającego. Kara nadal BINARNA (ECHO Q3=A,
@@ -38,7 +38,7 @@
  *     turę, tak jak `makeOwnerEmpireStockResolver()`).
  *
  * ⚠️ ZAOKRĄGLENIE `required` W DÓŁ DO SZTUK CAŁKOWITYCH (Maciej 2026-08-12, decyzja świadoma,
- * nie luka; STAWKA OD 2026-08-13 = 1,0, patrz `CITIZEN_UPKEEP_RATE_PER_CITIZEN` niżej —
+ * nie luka; STAWKA 2026-08-13 = 1,0 (od 2026-10-31 zależna od epoki, patrz `citizenUpkeepRateForEra`) —
  * poniższy opis mechanizmu floor pozostaje aktualny, ale PRZYKŁAD LICZBOWY jest HISTORYCZNY,
  * z okresu gdy stawka wynosiła 0,2, PRZED `R-EKONOMIA-SUROWCE-SKALA-5X-Q1`): przy stawce 0,2
  * suma `population × 0,2` była z reguły ułamkowa (np. 53 obywateli → 10,6). Sprawdzono resztę
@@ -78,9 +78,9 @@
  * TWO FUNCTIONS, TWO DIFFERENT CONTRACTS: `resolveCitizenResourceCoverage()` is a PURE PREVIEW
  * (no side effects, binary "stock > 0 → available" gate, no real per-capita demand, no
  * deduction) — kept as-is for UI preview use elsewhere. `computeCitizenResourceDrain()` is the
- * REAL drain (current rate: 1.0 units of resource per citizen per turn — reduced to 0.2 on
+ * REAL drain (current rate: per era via `citizenUpkeepRateForEra` — Kamień 1.0 / Brąz 2.0 / Żelazo 3.0 units of resource per citizen per turn; formerly flat 1.0 — reduced to 0.2 on
  * 2026-08-12, RESTORED to 1.0 on 2026-08-13 as part of `R-EKONOMIA-SUROWCE-SKALA-5X-Q1` —
- * `CITIZEN_UPKEEP_RATE_PER_CITIZEN`), `required = Math.floor(population × 1.0)`,
+ * `citizenUpkeepRateForEra(era)` (Kamień 1.0 / Brąz 2.0 / Żelazo 3.0), `required = Math.floor(population × stawka_epoki)`,
  * `drained = min(required, stock)`, never goes below zero, and returns a `deductions` map for
  * the caller to actually mutate the stockpile. The binary penalty is unchanged (ECHO Q3=A):
  * "available" means demand was FULLY covered, "missing" otherwise — still not scaled by the
@@ -133,7 +133,7 @@ export const CITIZEN_UPKEEP_HAPPINESS_PER_MISSING = TABLE._kara?.szczescieZaBrak
 export const CITIZEN_UPKEEP_GROWTH_PCT_PER_MISSING = TABLE._kara?.rozwojPctZaBrakujacy ?? -1;
 
 /**
- * Stawka zużycia: sztuk surowca / 1 obywatela / turę, per wymagany surowiec epoki.
+ * FALLBACK (realna stawka per epoka: `citizenUpkeepRateForEra`). Stawka zużycia: sztuk surowca / 1 obywatela / turę, per wymagany surowiec epoki.
  * PRZYWRÓCONA **1,0** (Maciej 2026-08-13, `R-EKONOMIA-SUROWCE-SKALA-5X-Q1`, punkt 1 —
  * `dyspozycje/PYTANIA-OTWARTE.md`) — była **0,2** (Maciej 2026-08-12, „DECYZJA: STAWKA
  * 1→0,2"), przed tym **1,0** (Maciej 2026-08-11). Powrót do 1,0 jest częścią pełnego
@@ -282,12 +282,12 @@ export interface CitizenResourceDrainResult extends CitizenUpkeepCoverage {
  * Realny drenaż magazynu centralnego imperium przez obywateli (Maciej 2026-08-11; historia
  * stawki: zmniejszona 2026-08-12 „DECYZJA: STAWKA 1→0,2" punkt 1, PRZYWRÓCONA 2026-08-13
  * `R-EKONOMIA-SUROWCE-SKALA-5X-Q1`): stawka BIEŻĄCA
- * **`CITIZEN_UPKEEP_RATE_PER_CITIZEN` (1,0 sztuki surowca na 1 obywatela na turę)**, per
+ * **`citizenUpkeepRateForEra(era)` (per epoka: Kamień 1,0 / Brąz 2,0 / Żelazo 3,0 sztuki surowca na 1 obywatela na turę; fallback 1,0)**, per
  * wymagany surowiec danej epoki.
  *
  * `population` MUSI być sumą populacji WSZYSTKICH miast ownera (nie populacją jednego miasta z
  * osobna) — patrz ostrzeżenie w JSDoc modułu o wielu miastach tego samego ownera. `required =
- * Math.floor(population × CITIZEN_UPKEEP_RATE_PER_CITIZEN)` — zaokrąglone W DÓŁ do sztuk
+ * Math.floor(population × citizenUpkeepRateForEra(era))` — zaokrąglone W DÓŁ do sztuk
  * całkowitych, SPÓJNIE z resztą silnika (`City.surowce` magazynowane wyłącznie w sztukach
  * całkowitych — patrz `⚠️ ZAOKRĄGLENIE...` w JSDoc modułu na górze pliku, precedensy
  * `turn-economy.ts`/`trade-routes.ts`); `drained = min(required, stock[key] ?? 0)` (nigdy
@@ -345,7 +345,7 @@ export interface CitizenUpkeepDisplayLine {
   key: string;
   /**
    * Łączne zużycie tego surowca przez WSZYSTKICH obywateli TEGO miasta na turę
-   * (`Math.floor(cityPopulation × CITIZEN_UPKEEP_RATE_PER_CITIZEN)`), NIE stawka per capita. Znak koduje
+   * (`Math.floor(cityPopulation × stawka_epoki)`, stawka = `coverage.ratePerCitizen`), NIE stawka per capita. Znak koduje
    * WYŁĄCZNIE kolor UI (dodatni = pokryty w pełni, ujemny = niedobór) — wartość bezwzględna to
    * zawsze łączne zapotrzebowanie tego miasta, niezależnie od statusu pokrycia.
    */

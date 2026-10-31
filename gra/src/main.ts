@@ -35097,7 +35097,7 @@ async function boot(): Promise<void> {
               const ownerEraForUpkeep = empireEpochForOwner(city.ownerId);
               // R-ZUZYCIE-SUROWCOW-OBYWATELE: ownerId-agnostyczne — dotyczy gracza, dużej AI
               // i Państw-Miast jednakowo (ECHO Q2=A), magazyn CENTRALNY, nie lokalny (ECHO Q1).
-              // N2 (2026-08-11): realny drenaż (stawka CITIZEN_UPKEEP_RATE_PER_CITIZEN
+              // N2 (2026-08-11): realny drenaż (stawka per epoka citizenUpkeepRateForEra
               // szt./obywatel, citizen-resource-upkeep.ts), nie tylko podgląd obecności —
               // citizenUpkeepDrainForOwner cache'uje i mutuje magazyn RAZ per owner per turę.
               const citizenUpkeep = citizenUpkeepDrainForOwner(city.ownerId);
@@ -35514,7 +35514,7 @@ async function boot(): Promise<void> {
               // miasto — czytana z tego samego cityOrderState (już policzona w pętli Porządku
               // wyżej). `st.citizenUpkeep` to TERAZ wynik REALNEGO drenażu magazynu
               // (citizenUpkeepDrainForOwner / computeCitizenResourceDrain, stawka
-              // CITIZEN_UPKEEP_RATE_PER_CITIZEN szt. surowca/obywatela/turę — patrz kanon w
+              // stawka per epoka (citizenUpkeepRateForEra) szt. surowca/obywatela/turę — patrz kanon w
               // citizen-resource-upkeep.ts, cache'owany RAZ per owner per turę), nie sam podgląd
               // obecności surowca w magazynie jak przed N2.
               // EN: `st.citizenUpkeep` now comes from the REAL drain
