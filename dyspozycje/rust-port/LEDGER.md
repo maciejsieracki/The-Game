@@ -405,3 +405,9 @@ Cel końcowy i bieżący zapisane w `GOAL-RUST-PORT-20261020.md` (§"CEL PĘTLI 
 - Push do `main`: NIE WYKONANO.
 
 - 2026-10-31 04:12 UTC — kontrola cykliczna: M07B r1, 8H r1, WEB AGGRESSOR-FLAG r1 biegną; brak PASS do integracji.
+
+## 2026-10-31 — R-WEB-WAR-AGGRESSOR-FLAG-Q1 PASS-WITH-NOTES (r2) zintegrowane na gałęzi web
+- FC `39a2cfe8e` (kod `7e3d6bc6b`, ff). `web/integration-20261030` = `39a2cfe8e`. Bramki: tsc 0; aggressor unit 73/0, mutation 19/19, wiring 15/0, UI live 7/0 (u FC); cession 79+73; counter 82; multiwar 57; relation-gate 14; profile 198, sim 22, main-guard 28; diplomacy 148; peace-lock 9; ring 15. Znane czerwone w bazie: civ-matrix-ai-diplomacy-wiring 42/1.
+- Efekt: wypowiedzenie wojny bez casus belli = flaga agresora 20 tur (hamulec, wojna epoki, sojusz/ochrona rebelii bez flagi); casus belli 15 tur po odmowie trybutu/ultimatum; flaga podnosi próg sojuszu/paktu o +15 (mnożnik 0,7); znacznik „Agresor” w panelu dyplomacji.
+- Do decyzji właściciela (UX, drobne): znacznik „Agresor” NIE jest na liście HUD (`gra/src/ui/diploListHud.ts` poza allowlistą). Osobny mały temat, jeśli chcesz.
+- Push do `main`: NIE WYKONANO. Następne web: R-WEB-TRUCE-Q1.
