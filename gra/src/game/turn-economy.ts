@@ -124,10 +124,11 @@ import {
   resolveSpichlerzCityBonusState,
   spichlerzArmyFoodCostMultiplier,
   spichlerzHealthBonus,
-  SPICHLERZ_DRAIN_CERAMIKA_PER_TURN,
-  SPICHLERZ_DRAIN_SOL_PER_TURN,
+  loadSpichlerzDrainParams,
+  spichlerzCeramikaDrainAmount,
   type BuildingRuntimeGateOptions,
   type SpichlerzCityBonusState,
+  type SpichlerzDrainParams,
 } from './building-resource-gate';
 import {
   deductMennicaZlotoDrain,
@@ -1352,8 +1353,9 @@ function resolveSpichlerzForCity(
   ownerId: number,
   builtIds: readonly string[],
   dryRun: boolean,
+  drainParams: SpichlerzDrainParams,
 ): SpichlerzCityBonusState {
-  const drain = paySpichlerzDrainForCity(cities, ownerId, builtIds, dryRun);
+  const drain = paySpichlerzDrainForCity(cities, ownerId, builtIds, dryRun, drainParams);
   return resolveSpichlerzCityBonusState(builtIds, drain);
 }
 
@@ -1362,14 +1364,16 @@ function simulateCeramikaAfterSpichlerzDrains(
   cities: ReadonlyArray<City>,
   ownerId: number,
   builtByCity: ReadonlyMap<string, readonly string[]>,
+  drainParams: SpichlerzDrainParams,
 ): number {
   let ceramika = ownerResourceStock(cities, ownerId, 'ceramika');
   for (const city of cities) {
     if (city.ownerId !== ownerId) continue;
     const builtIds = builtByCity.get(city.id) ?? [];
     const hasSpichlerz = cityHasSpichlerzBuilding(builtIds);
-    if (hasSpichlerz && ceramika >= SPICHLERZ_DRAIN_CERAMIKA_PER_TURN) {
-      ceramika -= SPICHLERZ_DRAIN_CERAMIKA_PER_TURN;
+    const ceramikaAmount = spichlerzCeramikaDrainAmount(builtIds, drainParams);
+    if (hasSpichlerz && ceramika >= ceramikaAmount) {
+      ceramika -= ceramikaAmount;
     }
   }
   return ceramika;
@@ -1399,6 +1403,7 @@ function simulateResourcePipelineForPreview(
   ceramikaByOwner: Map<number, number>;
 } {
   const raw = data.econParams as unknown as RawConverterParamsJson;
+  const spichlerzDrainParams = loadSpichlerzDrainParams(raw, difficulty);
   const ownerIds = new Set(cities.map(city => city.ownerId));
   const storageParams = loadOwnerStorageParams(
     raw as unknown as Parameters<typeof loadOwnerStorageParams>[0],
@@ -1539,10 +1544,11 @@ function simulateResourcePipelineForPreview(
         }));
         continue;
       }
-      const ceramikaPaid = (pool.ceramika ?? 0) >= SPICHLERZ_DRAIN_CERAMIKA_PER_TURN;
-      const solPaid = hasII && (pool.sol ?? 0) >= SPICHLERZ_DRAIN_SOL_PER_TURN;
-      if (ceramikaPaid) pool.ceramika = (pool.ceramika ?? 0) - SPICHLERZ_DRAIN_CERAMIKA_PER_TURN;
-      if (solPaid) pool.sol = (pool.sol ?? 0) - SPICHLERZ_DRAIN_SOL_PER_TURN;
+      const ceramikaAmount = spichlerzCeramikaDrainAmount(builtIds, spichlerzDrainParams);
+      const ceramikaPaid = (pool.ceramika ?? 0) >= ceramikaAmount;
+      const solPaid = hasII && (pool.sol ?? 0) >= spichlerzDrainParams.solII;
+      if (ceramikaPaid) pool.ceramika = (pool.ceramika ?? 0) - ceramikaAmount;
+      if (solPaid) pool.sol = (pool.sol ?? 0) - spichlerzDrainParams.solII;
       spichlerzByCity.set(city.id, resolveSpichlerzCityBonusState(builtIds, {
         ceramikaPaid,
         solPaid,
@@ -1558,7 +1564,8 @@ export function computeGarncarniaSurplusZadowolenieByOwner(
   cities: ReadonlyArray<City>,
   builtByCity: ReadonlyMap<string, readonly string[]>,
   /** true po tickEmpireResourcePipeline (drain już w puli); false w podglądzie HUD. */
-  stockAlreadyDrained = false,
+  stockAlreadyDrained: boolean,
+  drainParams: SpichlerzDrainParams,
 ): Map<number, number> {
   const out = new Map<number, number>();
   const ownerIds = new Set(cities.map(c => c.ownerId));
@@ -1573,7 +1580,7 @@ export function computeGarncarniaSurplusZadowolenieByOwner(
     }
     const ceramikaAfter = stockAlreadyDrained
       ? ownerResourceStock(cities, ownerId, 'ceramika')
-      : simulateCeramikaAfterSpichlerzDrains(cities, ownerId, builtByCity);
+      : simulateCeramikaAfterSpichlerzDrains(cities, ownerId, builtByCity, drainParams);
     const { zadowolenieBonus } = computeGarncarniaSurplusBonus({
       ceramikaPoDrainSpichlerza: ceramikaAfter,
       maGarncarnie,
@@ -1698,8 +1705,10 @@ function tickEmpireResourcePipeline(
    */
   converterThroughputsForOwner: (ownerId: number) => Record<string, number>,
   ownerResourceCapFor: (ownerId: number) => number,
-  resolveOwnerActiveLabels?: OwnerActiveLabelsResolver,
-  resolveOwnerZlotoAccess?: OwnerZlotoAccessResolver,
+  resolveOwnerActiveLabels: OwnerActiveLabelsResolver | undefined,
+  resolveOwnerZlotoAccess: OwnerZlotoAccessResolver | undefined,
+  /** R-WEB-SPICHLERZ-DRAIN-KEYS-Q1: zużycie Spichlerza z econ-params (wg trudności). Wymagane — bez domyślnej wartości. */
+  spichlerzDrainParams: SpichlerzDrainParams,
 ): Map<string, SpichlerzCityBonusState> {
   const ownerIds = new Set(cities.map(c => c.ownerId));
 
@@ -1785,7 +1794,7 @@ function tickEmpireResourcePipeline(
   _spichlerzSolCityIdsByOwner.clear();
   for (const city of cities) {
     const builtIds = builtByCity.get(city.id) ?? [];
-    const drain = paySpichlerzDrainForCity(cities, city.ownerId, builtIds, false);
+    const drain = paySpichlerzDrainForCity(cities, city.ownerId, builtIds, false, spichlerzDrainParams);
     const state = resolveSpichlerzCityBonusState(builtIds, drain);
     spichlerzByCity.set(city.id, state);
     if (state.solActive) {
@@ -2465,6 +2474,11 @@ export function advanceCityEconomy(
 
   // PYTANIE-84 R2: wpływ mapy → konwertery → drain Spichlerza PRZED plonami miast.
   const workedMagazynByCity = computeWorkedMagazynYieldsByCity(cities, map, territoryNodes, lostToSiblingByCity);
+  // R-WEB-SPICHLERZ-DRAIN-KEYS-Q1: zużycie Spichlerza z econ-params wg trudności (jedno źródło prawdy).
+  const spichlerzDrainParams = loadSpichlerzDrainParams(
+    data.econParams as unknown as RawConverterParamsJson,
+    difficulty,
+  );
   const spichlerzByCity = tickEmpireResourcePipeline(
     cities,
     builtByCity,
@@ -2478,10 +2492,11 @@ export function advanceCityEconomy(
     ownerResourceCapFor,
     resolveOwnerActiveLabels,
     resolveOwnerZlotoAccess,
+    spichlerzDrainParams,
   );
 
   const garncarniaSurplusZadowolenieByOwner = computeGarncarniaSurplusZadowolenieByOwner(
-    cities, builtByCity, true,
+    cities, builtByCity, true, spichlerzDrainParams,
   );
 
   for (const city of cities) {

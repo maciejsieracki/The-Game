@@ -35,6 +35,11 @@ import {
   ownerCanFeedMennica,
   ZLOTO_LABEL,
 } from './zloto-access';
+import {
+  loadThroughput,
+  type Difficulty,
+  type RawConverterParamsJson,
+} from './converters';
 
 const LABEL_BY_ASCII: Record<string, string> = {
   drewno: 'Drewno',
@@ -322,14 +327,57 @@ export { MENNICA_ZLOTO_DRAIN_PER_TURN };
 // Drain B6/B7/B8 ze skarbca państwa po wpływie surowców w tej samej turze (R2).
 // ---------------------------------------------------------------------------
 
-/** B6/B8 — Spichlerz I i II (tor ludności). R-EKONOMIA-SUROWCE-SKALA-5X-Q1 (Maciej
- *  2026-08-13): ×5, było 5 (utrzymanie surowcowe budynków — Ceramika to surowiec
- *  fizyczny, nie waluta). / EN: ×5, was 5 (building resource upkeep — Ceramika is a
- *  physical resource, not currency). */
-export const SPICHLERZ_DRAIN_CERAMIKA_PER_TURN = 25;
-/** B7 — Spichlerz II (tor wojska, imperium-wide gdy ≥1 płaci). R-EKONOMIA-SUROWCE-SKALA-5X-Q1
- *  (Maciej 2026-08-13): ×5, było 5. */
-export const SPICHLERZ_DRAIN_SOL_PER_TURN = 25;
+/** Klucze JSON (gra/data/econ-params.json → budynki) czytane przez loadSpichlerzDrainParams.
+ *  R-WEB-SPICHLERZ-DRAIN-KEYS-Q1: wcześniej martwe; wartości w JSON = 25 (bez zmian). */
+export const SPICHLERZ_DRAIN_JSON_KEY_CERAMIKA_I = 'budynek_spichlerz_zuzywa_ceramika';
+export const SPICHLERZ_DRAIN_JSON_KEY_CERAMIKA_II = 'budynek_spichlerz_ii_zuzywa_ceramika';
+export const SPICHLERZ_DRAIN_JSON_KEY_SOL_II = 'budynek_spichlerz_ii_zuzywa_sol';
+
+/** Fallback (25) gdy klucz JSON brakuje, nie jest liczbą skończoną lub jest ujemny.
+ *  R-EKONOMIA-SUROWCE-SKALA-5X-Q1 (Maciej 2026-08-13): ×5, było 5 (utrzymanie surowcowe
+ *  budynków — Ceramika to surowiec fizyczny, nie waluta). / EN: ×5, was 5. */
+export const SPICHLERZ_DRAIN_FALLBACK_PER_TURN = 25;
+
+/** Zużycie Spichlerza na turę (B6 Ceramika I, B8 Ceramika II, B7 Sól II) — z JSON wg trudności. */
+export interface SpichlerzDrainParams {
+  ceramikaI: number;
+  ceramikaII: number;
+  solII: number;
+}
+
+/** Wartości fallback (25/25/25). Użyte TYLKO gdy wywołujący nie podał `params`. */
+export const SPICHLERZ_DRAIN_DEFAULT_PARAMS: SpichlerzDrainParams = {
+  ceramikaI: SPICHLERZ_DRAIN_FALLBACK_PER_TURN,
+  ceramikaII: SPICHLERZ_DRAIN_FALLBACK_PER_TURN,
+  solII: SPICHLERZ_DRAIN_FALLBACK_PER_TURN,
+};
+
+/** Czyta 3 klucze Spichlerza z econ-params (wzorzec loadThroughput z converters.ts).
+ *  Brak klucza / NaN / ujemny → SPICHLERZ_DRAIN_FALLBACK_PER_TURN. */
+export function loadSpichlerzDrainParams(
+  raw: RawConverterParamsJson | null | undefined,
+  difficulty: Difficulty,
+): SpichlerzDrainParams {
+  const read = (key: string): number => {
+    if (!raw) return SPICHLERZ_DRAIN_FALLBACK_PER_TURN;
+    const v = loadThroughput(raw, key, difficulty, SPICHLERZ_DRAIN_FALLBACK_PER_TURN);
+    return v >= 0 ? v : SPICHLERZ_DRAIN_FALLBACK_PER_TURN;
+  };
+  return {
+    ceramikaI: read(SPICHLERZ_DRAIN_JSON_KEY_CERAMIKA_I),
+    ceramikaII: read(SPICHLERZ_DRAIN_JSON_KEY_CERAMIKA_II),
+    solII: read(SPICHLERZ_DRAIN_JSON_KEY_SOL_II),
+  };
+}
+
+/** Ceramika płacona przez JEDNO miasto z Spichlerzem (jedna wypłata na miasto, także gdy ma I i II —
+ *  tak jak dotąd). Gdy jest II → klucz II, inaczej I. */
+export function spichlerzCeramikaDrainAmount(
+  builtIds: readonly string[],
+  params: SpichlerzDrainParams,
+): number {
+  return builtIds.includes('spichlerz_ii') ? params.ceramikaII : params.ceramikaI;
+}
 
 export interface SpichlerzDrainPayResult {
   ceramikaPaid: boolean;
@@ -372,6 +420,7 @@ export function paySpichlerzDrainForCity<T extends StockCitySource>(
   ownerId: number,
   builtIds: readonly string[],
   dryRun = false,
+  params: SpichlerzDrainParams = SPICHLERZ_DRAIN_DEFAULT_PARAMS,
 ): SpichlerzDrainPayResult {
   const hasI = builtIds.includes('spichlerz');
   const hasII = builtIds.includes('spichlerz_ii');
@@ -379,20 +428,21 @@ export function paySpichlerzDrainForCity<T extends StockCitySource>(
 
   let ceramikaPaid = false;
   let solPaid = false;
+  const ceramikaAmount = spichlerzCeramikaDrainAmount(builtIds, params);
 
-  if (ownerResourceStock(cities, ownerId, 'ceramika') >= SPICHLERZ_DRAIN_CERAMIKA_PER_TURN) {
+  if (ownerResourceStock(cities, ownerId, 'ceramika') >= ceramikaAmount) {
     if (!dryRun) {
       deductBuildingStockCostAcrossCities(cities, ownerId, {
-        ceramika: SPICHLERZ_DRAIN_CERAMIKA_PER_TURN,
+        ceramika: ceramikaAmount,
       });
     }
     ceramikaPaid = true;
   }
 
-  if (hasII && ownerResourceStock(cities, ownerId, 'sol') >= SPICHLERZ_DRAIN_SOL_PER_TURN) {
+  if (hasII && ownerResourceStock(cities, ownerId, 'sol') >= params.solII) {
     if (!dryRun) {
       deductBuildingStockCostAcrossCities(cities, ownerId, {
-        sol: SPICHLERZ_DRAIN_SOL_PER_TURN,
+        sol: params.solII,
       });
     }
     solPaid = true;
@@ -568,6 +618,8 @@ export function resolveOwnedBuildingInactiveStatus(
     empireStock?: Readonly<Record<string, number>>;
     building?: Pick<BuildingDef, 'id' | 'epokaWejscia'> & { wymaganySurowiec?: string | null };
     resolveOwnerZlotoAccess?: (ownerId: number) => boolean;
+    /** Parametry drain Spichlerza z econ-params (wg trudności). Brak → fallback 25. */
+    drainParams?: SpichlerzDrainParams;
   },
 ): OwnedBuildingInactiveStatus {
   const empty: OwnedBuildingInactiveStatus = { inactive: false, missingLabels: [], tooltip: '' };
@@ -579,6 +631,7 @@ export function resolveOwnedBuildingInactiveStatus(
       opts.ownerId,
       opts.builtIds,
       true,
+      opts.drainParams,
     );
     if (buildingId === 'spichlerz') {
       const missingI = !drain.ceramikaPaid ? ['Ceramika'] : [];
