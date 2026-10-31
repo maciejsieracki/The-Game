@@ -8333,3 +8333,9 @@ crash `P-HOTSEAT-ETAP6E-ZEPSUTY-GALAZ-CRASH-Q1` (patrz wyżej).
 - **Status:** zarejestrowane, dispatch gotowy (`dyspozycje/autobot/runs/R-WEB-DEFEAT-LAST-CITY-BARBARIANS-Q1/00-dispatch.md`).
 - **Podejrzane miejsca (HIPOTEZY, NIE_ZMIERZONO):** `gra/src/game/victory.ts:222-226` (`isEliminated && osadnicy === 0 && kiedysMial`) — warunek wymaga braku osadników i `graczKiedysMialMiasto`; sprawdzenie tylko na końcu tury w `gra/src/main.ts` ~38770-38830 (`playerEverOwnedCityByOwner` ustawiany m.in. w ~14690, 15906, 32021, 40902).
 - **Pipeline:** Operator → Evaluator → Obrona → Final Control → integracja gałąź web → osobna zgoda na deploy.
+
+## R-WEB-BATTLE-STANDOFF-TWO-WARRIORS-Q1 — walka dwóch wojowników stoi w miejscu (2026-10-31)
+- **Zgłoszenie (właściciel):** w walce naprzeciwko siebie stało dwóch wojowników i walka nie szła do przodu — stali w miejscu.
+- **Status:** zarejestrowane, BEZ dispatchu (czeka na dane odtworzenia i kolejkę: priorytet właściciela to R-WEB-AUTOIMPROVE-PRIORITY-Q1).
+- **Brak danych (NIE_ZMIERZONO):** tryb bitwy (automatyczny/ręczny — ustawienie „battleAlwaysManual”), czy ruch/atak był zablokowany (tura, punkty ruchu, strona), czy to bitwa gracz–AI/barbarzyńcy, zrzut/zapis gry.
+- **Pipeline po zwolnieniu:** Operator (odtworzenie w symulacji/Chromium, diagnoza plik:linia) → Evaluator → Obrona → Final Control → integracja.
