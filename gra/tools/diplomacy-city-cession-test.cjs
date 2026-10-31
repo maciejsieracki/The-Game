@@ -208,7 +208,11 @@ eq(D.planCityCession({
   ]) {
     ok(!body.includes(forbidden), `ścieżka pokojowa nie woła ${forbidden}`);
   }
-  ok(body.includes('planCityCession('), 'ścieżka pokojowa używa planu cesji');
+  // r4: plan cesji wyniesiony do cityCessionPlanFor (wspólny z pre-kontrolą propozycji pokoju).
+  ok(body.includes('cityCessionPlanFor('), 'ścieżka pokojowa używa planu cesji (cityCessionPlanFor)');
+  const planStart = mainSrc.indexOf('function cityCessionPlanFor(');
+  const planEnd = mainSrc.indexOf('function cityCessionPayloadBlockReason(', planStart);
+  ok(planStart > 0 && planEnd > planStart && mainSrc.slice(planStart, planEnd).includes('planCityCession('), 'cityCessionPlanFor woła planCityCession');
 }
 
 console.log(`diplomacy-city-cession-test: ${pass} pass, ${fail} fail`);

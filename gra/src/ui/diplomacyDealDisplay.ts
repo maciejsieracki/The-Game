@@ -75,12 +75,6 @@ export function renderBasketItemValueHtml(item: BasketItem, ctx: BasketItemForma
     }
     case 'zloze':
       return `<span class="da-deal-amt">dostęp do złoża: ${esc(item.id)}</span><span class="da-deal-once">(nieaktualne)</span>`;
-    case 'miasto': {
-      // R-WEB-PEACE-CITY-CESSION-Q1 r3: miasto w koszyku pokoju (1 sztuka, wycena PW).
-      const name = item.cityLabel ?? item.id;
-      const pn = item.cityPn != null ? ` · ${Math.round(item.cityPn)} PW` : '';
-      return `<span class="da-deal-amt">miasto: ${esc(name)}${pn}</span><span class="da-deal-once">(pokój)</span>`;
-    }
     case 'praca':
       return `<span class="da-deal-amt">${item.ilosc ?? 0} Pracy${perTurn ? ' na turę' : ' (jednorazowo)'}</span>`;
     case 'zywnosc':

@@ -5883,15 +5883,27 @@ export function decideAIDiplomacy(
       p.progWojnaAgresja - podbojBoost * 0.5 + bias.warAgresjaBonus,
     );
 
+    // R-WEB-PEACE-CITY-CESSION-Q1 r4 (zarzut 4 Evaluatora): bramki czasu wojny i „czuje się
+    // silniejsze" z R5a/R5b (ta sama definicja co zaproponuj_pokoj niżej) obowiązują także dla
+    // oddania miasta (N1a) i żądania miasta (N1b). Przeniesione wyżej, przed bloki miast.
+    const aiFeelsStronger = rel.stanWojny && isFeelingStronger({
+      rw,
+      turnsAtWar: turnsAtWarRel,
+      lostCitiesInWar: Math.max(0, rel.lostCitiesInWar ?? 0),
+    });
+    const aiPeaceTimeOk = turnsAtWarRel >= warProfile.minTurWojny;
+
     // ---- R-WEB-PEACE-CITY-CESSION-Q1 r3 (N1a): AI ODDAJE miasto zamiast trybutu ----
     // Warunki: wojna z graczem, rw <= 0.15 − 0.01·(agresywność − 5), ≥ 3 miasta, a niezakazane
     // miasto AI pokrywa cenę pokoju (najtańsze z pokrywających). Brak takiego miasta →
-    // przechodzimy do priorytetu 1 (trybut), jak dotąd.
+    // przechodzimy do priorytetu 1 (trybut), jak dotąd. r4: + bramki czasu wojny (R5a/R5b).
     const csBlocksCession = inp.isMinorCivSelf === true || rel.isMinorCivPartner === true;
     if (
       rel.stanWojny
       && rel.partnerId === '0'
       && !csBlocksCession
+      && !aiFeelsStronger
+      && aiPeaceTimeOk
       && rw <= aiMiastoPrzekazRwProg(inp.agresywnoscRaw)
     ) {
       const pick = aiPickMiastoDoOddania(inp.miastaAI ?? [], inp.ekspansywnosc);
@@ -5910,10 +5922,13 @@ export function decideAIDiplomacy(
 
     // ---- R-WEB-PEACE-CITY-CESSION-Q1 r3 (N1b): AI ŻĄDA miasta gracza (kontroferta pokoju) ----
     // Warunki: wojna z graczem, rw >= 0.7 ORAZ (tury wojny >= 20 LUB AI zdobyło miasto gracza
-    // w tej wojnie) i gracz ma niezakazane miasto pokrywające cenę pokoju.
+    // w tej wojnie) i gracz ma niezakazane miasto pokrywające cenę pokoju. r4: + bramka
+    // czasu wojny (R5a, aiPeaceTimeOk); „czuje się silniejsze" (R5b) NIE — żądanie to właśnie
+    // sytuacja silnego AI.
     if (
       rel.stanWojny
       && rel.partnerId === '0'
+      && aiPeaceTimeOk
       && rw >= AI_MIASTO_ZADANIE_RW
       && (turnsAtWarRel >= AI_MIASTO_ZADANIE_TURY_WOJNY || (rel.zdobyteMiastaPartnera ?? 0) > 0)
     ) {
@@ -5966,12 +5981,6 @@ export function decideAIDiplomacy(
     // evaluatePeaceAiGate do propozycji gracza; AI składa propozycję dopiero, gdy spełnia te same
     // warunki czasu wojny i nie czuje się silniejsza (ZAMIANA ZAŁOŻENIA F2 z rundy 3, zarzut 2:
     // poprzednio minTurWojny nie blokował propozycji AI, co dawało propozycję już w turze 1).
-    const aiFeelsStronger = rel.stanWojny && isFeelingStronger({
-      rw,
-      turnsAtWar: turnsAtWarRel,
-      lostCitiesInWar: Math.max(0, rel.lostCitiesInWar ?? 0),
-    });
-    const aiPeaceTimeOk = turnsAtWarRel >= warProfile.minTurWojny;
     if (rel.stanWojny && !aiFeelsStronger && aiPeaceTimeOk && (rw <= progPokojSlabosc || peaceSignals.wantsPeace)) {
       komendy.push({
         type:     'zaproponuj_pokoj',

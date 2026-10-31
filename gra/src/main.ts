@@ -11203,7 +11203,11 @@ async function boot(): Promise<void> {
             // R-WEB-PEACE-CITY-CESSION-Q1 r2: cesja miasta w pokoju/wasalizacji. Walidacja
             // akcji (`diplomacyMiastoAkcjaDozwolona`) i wycena stoją wyżej; tu tylko
             // wykonanie z ponowną kontrolą zakazów w `transferCityByTreaty`.
-            transferCityByTreaty(item.id, fromOwnerId, toOwnerId);
+            // r4: wynik sprawdzony — po pre-kontroli w applyProposalOutcome nie powinien paść;
+            // gdyby padł, jest to błąd stanu (log), a nie ciche pominięcie.
+            if (!transferCityByTreaty(item.id, fromOwnerId, toOwnerId)) {
+              console.error(`[Dyplomacja] BŁĄD: cesja miasta ${item.id} ${fromOwnerId}→${toOwnerId} nie wykonana po pre-kontroli`);
+            }
             break;
           }
           case 'jednostka': {
@@ -22087,6 +22091,15 @@ async function boot(): Promise<void> {
         }
       }
       if (result.oneShotTrade) {
+        // R-WEB-PEACE-CITY-CESSION-Q1 r4 (zarzut 3 Evaluatora): cesja miasta sprawdzana PRZED
+        // jakimkolwiek przelewem i PRZED zawarciem pokoju. Gdy padnie — nic się nie przenosi,
+        // pokój nie jest zawierany, gracz dostaje komunikat (zamiast cichego pokoju bez miasta).
+        const cityBlock = cityCessionPayloadBlockReason(payload, proposerId, responderId);
+        if (cityBlock) {
+          console.warn(`[Dyplomacja] pokój odrzucony — cesja miasta: ${cityBlock}`);
+          showHintMessage('Pokój nie zawarty — ' + cityBlock, 4500);
+          return;
+        }
         executePnDealTransfer(proposerId, responderId, payload);
         const turnsOptsOne = proposalPnTurnsMultiplier(payload);
         const { givePn, receivePn } = resolveProposalPn(payload, {
@@ -25762,6 +25775,62 @@ async function boot(): Promise<void> {
       },
       endWarByPeaceForTest: (a: number, b: number): void => {
         finalizePeaceTreatyBetween(a, b, 10);
+      },
+    };
+
+    // R-WEB-PEACE-CITY-CESSION-Q1 r4 (zarzut 2 Evaluatora): hak testowy do
+    // `tools/diplomacy-city-cession-live-test.cjs`. `acceptAiCommandForTest` wykonuje DOKŁADNIE tę
+    // sekwencję co gałąź akceptacji `resolvePendingDiplomacy` (aiCommandToPendingProposal →
+    // resolvePlayerAcceptsAiPending → applyProposalOutcome), z REALNYM konwerterem komend AI i REALNYM
+    // transferem w applyProposalOutcome/executePnDealTransfer/transferBasketItems. Hak nie liczy
+    // żadnej wartości miasta ani kierunku — tylko podaje komendę i odczytuje stan.
+    (window as any).__cityCessionTestDebug = {
+      cityOwner: (cityId: string): number | null => cities.find(c => c.id === cityId)?.ownerId ?? null,
+      ownerCityIds: (ownerId: number): string[] => cities.filter(c => c.ownerId === ownerId).map(c => c.id),
+      capitalOf: (ownerId: number): string | null => capitalCityIdForOwner(ownerId),
+      // Realna wycena PW miasta (ta sama funkcja, którą liczy ścieżka AI/UI pokoju).
+      cityPnOf: (cityId: string): number | null => {
+        const c = cities.find(x => x.id === cityId);
+        return c ? diploCityPnPeace(c) : null;
+      },
+      // SETUP (nie tematu testu): `?playtest=mapa` ma 1 miasto na właściciela — zakładamy kolejne
+      // miasta tym samym realnym wzorcem co `ensureSecondCityForOwner` (foundCityAt + finalizeCityFounding).
+      foundExtraCityForTest: (ownerId: number): string | null => {
+        const anchor = cities.find(c => c.ownerId === ownerId);
+        if (!anchor) return null;
+        for (let ring = 15; ring <= 60; ring++) {
+          for (let dq = -ring; dq <= ring; dq++) {
+            for (let dr = -ring; dr <= ring; dr++) {
+              if (Math.max(Math.abs(dq), Math.abs(dr), Math.abs(dq + dr)) !== ring) continue;
+              const q = anchor.q + dq;
+              const r = anchor.r + dr;
+              if (cities.some(c => c.q === q && c.r === r)) continue;
+              const found = foundCityAt(q, r, ownerId, cities, map, 'Miasto Test Cesji', false, true);
+              if (!found) continue;
+              cities.push(found);
+              finalizeCityFounding(found, found.q, found.r);
+              seedCityOwnerDefaults(found);
+              if (!empireFoodStates.has(ownerId)) empireFoodStates.set(ownerId, freshEmpireFoodState());
+              if (!goldDeficitStates.has(ownerId)) goldDeficitStates.set(ownerId, freshGoldDeficitState());
+              return found.id;
+            }
+          }
+        }
+        return null;
+      },
+      // SETUP: jawna stolica właściciela (ten sam zapis co ustawienie stolicy w grze).
+      setCapitalForTest: (ownerId: number, cityId: string): void => {
+        capitalCityIdByOwner.set(ownerId, cityId);
+      },
+      acceptAiCommandForTest: (ownerId: number, cmd: AIDiplomacyCommand): { converted: boolean; accepted: boolean; reason: string | null } => {
+        const pending = aiCommandToPendingProposal(cmd, ownerId, ME(), turn);
+        if (!pending) return { converted: false, accepted: false, reason: 'nie skonwertowano' };
+        const result = resolvePlayerAcceptsAiPending(
+          pending, turn, undefined,
+          { hasTradeTech: ownerHasTradeTech },
+        );
+        applyProposalOutcome(ownerId, ME(), result, pending.payload, pending.actionId);
+        return { converted: true, accepted: !!result.accepted, reason: result.reason ?? null };
       },
     };
 
@@ -31916,13 +31985,19 @@ async function boot(): Promise<void> {
      * `planCityCession` (game/diplomacy-value-catalog.ts, ZAŁOŻENIA Z1/Z2).
      * Zwraca true, gdy przeniesiono; false = odrzucone (log).
      */
-    function transferCityByTreaty(cityId: string, fromOwnerId: number, toOwnerId: number): boolean {
+    /**
+     * R-WEB-PEACE-CITY-CESSION-Q1 r4 (zarzut 3 Evaluatora): plan cesji miasta (`planCityCession`)
+     * z aktualnego stanu gry, BEZ mutacji. Ta sama funkcja wykonuje `transferCityByTreaty` i
+     * pre-kontrolę `cityCessionPayloadBlockReason` — pokój nie zostaje zawarty, gdy cesja by padła.
+     */
+    function cityCessionPlanFor(
+      cityId: string,
+      fromOwnerId: number,
+      toOwnerId: number,
+    ): ReturnType<typeof planCityCession> {
       const city = cities.find(c => c.id === cityId);
-      if (!city) {
-        console.warn(`[Dyplomacja] cesja miasta: nieznane miasto ${cityId}`);
-        return false;
-      }
-      const plan = planCityCession({
+      if (!city) return { ok: false, reason: `nieznane miasto ${cityId}` };
+      return planCityCession({
         cityId,
         cityOwnerId: city.ownerId,
         fromOwnerId,
@@ -31937,6 +32012,36 @@ async function boot(): Promise<void> {
           && !units.some(u => u.q === q && u.r === r)
           && !cities.some(c => c.q === q && c.r === r),
       });
+    }
+
+    /**
+     * R-WEB-PEACE-CITY-CESSION-Q1 r4: pre-kontrola propozycji pokoju z pozycjami 'miasto'.
+     * `giveItems` = oddaje `proposerId`, `receiveItems` = oddaje `responderId` (ta sama konwencja
+     * co executePnDealTransfer). Null = wszystko wykonalne. Max 1 miasto na propozycję.
+     */
+    function cityCessionPayloadBlockReason(
+      payload: ProposalPayload,
+      proposerId: number,
+      responderId: number,
+    ): string | null {
+      const giveCities = (payload.giveItems ?? []).filter(i => i.typ === 'miasto');
+      const recvCities = (payload.receiveItems ?? []).filter(i => i.typ === 'miasto');
+      const total = giveCities.length + recvCities.length;
+      if (total === 0) return null;
+      if (total > 1) return 'w propozycji pokoju może być tylko jedno miasto';
+      const plan = giveCities[0]
+        ? cityCessionPlanFor(giveCities[0].id, proposerId, responderId)
+        : cityCessionPlanFor(recvCities[0]!.id, responderId, proposerId);
+      return plan.ok ? null : plan.reason;
+    }
+
+    function transferCityByTreaty(cityId: string, fromOwnerId: number, toOwnerId: number): boolean {
+      const city = cities.find(c => c.id === cityId);
+      if (!city) {
+        console.warn(`[Dyplomacja] cesja miasta: nieznane miasto ${cityId}`);
+        return false;
+      }
+      const plan = cityCessionPlanFor(cityId, fromOwnerId, toOwnerId);
       if (!plan.ok) {
         console.warn(`[Dyplomacja] cesja miasta ${cityId} odrzucona: ${plan.reason}`);
         return false;

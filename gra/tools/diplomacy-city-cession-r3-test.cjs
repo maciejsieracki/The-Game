@@ -95,7 +95,8 @@ eq(M.aiPickMiastoDoZadania(gracz(501))?.cityId, 'g', 'miasto gracza 501 → żą
 eq(M.aiPickMiastoDoZadania([{ cityId: 'k', cityPn: 9999, zakazane: true }]), null, 'stolica gracza nie jest żądana');
 
 // --- decideAIDiplomacy: oddanie i żądanie w wojnie ---
-function runAI({ rw, agr = 5, eks = 3, miastaAI = [], miastaPartnera = [], turnsAtWar = 0, zdobyte = 0, war = true }) {
+// r4: domyślne 10 tur wojny = powyżej minTurWojny (≤ 8, R5a) — bramka czasu nie gasi testów progów.
+function runAI({ rw, agr = 5, eks = 3, miastaAI = [], miastaPartnera = [], turnsAtWar = 10, zdobyte = 0, war = true }) {
   const rel = {
     partnerId: '0',
     relation: { zaufanie: 5, respekt: 5, status: war ? 'wojna' : 'pokoj' },
@@ -157,7 +158,11 @@ ok(demand(runAI({ rw: 0.70, turnsAtWar: 25, miastaPartnera: GRACZ_OK })) !== und
 ok(demand(runAI({ rw: 0.71, turnsAtWar: 25, miastaPartnera: GRACZ_OK })) !== undefined, 'żądanie: rw 0.71 (N+1) → żąda');
 ok(demand(runAI({ rw: 0.80, turnsAtWar: 19, zdobyte: 0, miastaPartnera: GRACZ_OK })) === undefined, 'żądanie: tury 19 (N-1), brak zdobyczy → NIE');
 ok(demand(runAI({ rw: 0.80, turnsAtWar: 20, zdobyte: 0, miastaPartnera: GRACZ_OK })) !== undefined, 'żądanie: tury 20 (N) → żąda');
-ok(demand(runAI({ rw: 0.80, turnsAtWar: 0, zdobyte: 1, miastaPartnera: GRACZ_OK })) !== undefined, 'żądanie: zdobyte miasto gracza (1) → żąda');
+ok(demand(runAI({ rw: 0.80, turnsAtWar: 10, zdobyte: 1, miastaPartnera: GRACZ_OK })) !== undefined, 'żądanie: zdobyte miasto gracza (1), 10 tur → żąda');
+// r4 (zarzut 4 Evaluatora): bramka czasu wojny R5a obowiązuje także żądanie i oddanie miasta.
+ok(demand(runAI({ rw: 0.80, turnsAtWar: 0, zdobyte: 1, miastaPartnera: GRACZ_OK })) === undefined, 'żądanie r4: zdobyte miasto, 0 tur wojny → NIE (R5a)');
+ok(cession(runAI({ rw: 0.10, turnsAtWar: 0, miastaAI: CITIES_OK })) === undefined, 'oddanie r4: 0 tur wojny → NIE (R5a)');
+ok(cession(runAI({ rw: 0.10, turnsAtWar: 20, miastaAI: CITIES_OK })) !== undefined, 'oddanie r4: 20 tur wojny → oddaje');
 ok(demand(runAI({ rw: 0.80, turnsAtWar: 0, zdobyte: 0, miastaPartnera: GRACZ_OK })) === undefined, 'żądanie: 0 tur i 0 zdobyczy → NIE');
 ok(demand(runAI({ rw: 0.80, turnsAtWar: 25, miastaPartnera: [{ cityId: 'g1', cityPn: 499, zakazane: false }] })) === undefined, 'żądanie: miasto gracza 499 → NIE (N-1)');
 ok(demand(runAI({ rw: 0.80, turnsAtWar: 25, miastaPartnera: [{ cityId: 'g1', cityPn: 500, zakazane: false }] })) !== undefined, 'żądanie: miasto gracza 500 → żąda (N)');

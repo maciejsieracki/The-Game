@@ -39,7 +39,7 @@ import { pushOverlay, popOverlay } from './escapeOverlayStack';
 import { DIPLO_1E_SHARED_CSS, ensureDiploBrandScope } from './diploUiSkin';
 import { brandIconSvg, mapResourceIconSvg } from './icons/brandAssets';
 import {
-  renderBasketItemValueHtml,
+  renderBasketItemValueHtml as renderBasketItemValueBaseHtml,
 } from './diplomacyDealDisplay';
 import type { BasketItemFormatCtx } from '../game/diplomacy-display';
 import { formatBasketListBrief, resourceDisplayLabel } from '../game/diplomacy-display';
@@ -237,6 +237,18 @@ function toPnItems(items: BasketItem[], ctx: NegotiationModalContext): PnItem[] 
     typ: i.typ, id: i.id, ilosc: i.ilosc, tempo,
     cityPn: i.cityPn, cityWeight: i.cityWeight,
   }));
+}
+
+/**
+ * R-WEB-PEACE-CITY-CESSION-Q1 r4 (zarzut 2 Evaluatora — allowlista): renderowanie pozycji 'miasto'
+ * (1 sztuka, wycena PW, „(pokój)") żyje w pliku z allowlisty, a nie w diplomacyDealDisplay.ts.
+ * Pozostałe typy — bez zmian, przez renderBasketItemValueBaseHtml.
+ */
+function renderBasketItemValueHtml(item: BasketItem, fmtCtx: BasketItemFormatCtx): string {
+  if (item.typ !== 'miasto') return renderBasketItemValueBaseHtml(item, fmtCtx);
+  const name = item.cityLabel ?? item.id;
+  const pn = item.cityPn != null ? ' · ' + Math.round(item.cityPn) + ' PW' : '';
+  return '<span class="da-deal-amt">miasto: ' + esc(name) + pn + '</span><span class="da-deal-once">(pokój)</span>';
 }
 
 function ensureStyles(): void {
