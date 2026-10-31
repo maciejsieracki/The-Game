@@ -5106,6 +5106,7 @@ import {
   relationScore,
 } from './diplomacy';
 import type { Relation, AIDiplomacyContext } from './diplomacy';
+import { diplomacyMiastoWagaBilansu } from './diplomacy-value-catalog';
 import {
   shouldHonorAllianceWarObligation,
   type AllianceWarObligationInput,
@@ -5289,6 +5290,24 @@ export interface RelacjaWejscie {
   turnsSinceCityChange?: number;
   /** R-WEB-PEACE-RULES-Q1 R3(c): zdrowie armii AI 0..1 (Σ health / Σ hpMax jednostek bojowych). */
   armyHealthShare?: number;
+  /**
+   * R-WEB-PEACE-CITY-CESSION-Q1 r3 (N1b): miasta PARTNERA (gracza) z wyceną PW — kandydaci do
+   * żądania w kontrofercie pokoju. Pusto = brak żądania miasta.
+   */
+  miastaPartnera?: ReadonlyArray<MiastoWycenaWejscie>;
+  /**
+   * R-WEB-PEACE-CITY-CESSION-Q1 r3 (N1b): miasta, które AI zdobyło od partnera w TEJ wojnie
+   * (= lostCities partnera). Warunek „zdobyło miasto gracza" z kryterium (5).
+   */
+  zdobyteMiastaPartnera?: number;
+}
+
+/** Miasto w wycenie pokoju (R-WEB-PEACE-CITY-CESSION-Q1 r3). `cityPn` = diplomacyPnMiasto. */
+export interface MiastoWycenaWejscie {
+  cityId: string;
+  cityPn: number;
+  /** Stolica lub ostatnie miasto właściciela — nie można oddać (diplomacyMiastoZakaz). */
+  zakazane: boolean;
 }
 
 /**
@@ -5330,6 +5349,13 @@ export interface DiplomacjaInputs {
   agresywnoscRaw?: number;
   /** Tolerancja ryzyka 1–10 z civ-ai.json (niższa = ostrożniejsza dyplomacja). */
   tolerancjaRyzyka?: number;
+  /**
+   * R-WEB-PEACE-CITY-CESSION-Q1 r3 (N1a): miasta TEGO AI z wyceną PW — kandydaci do oddania
+   * w pokoju (zamiast trybutu). Mniej niż AI_MIASTO_PRZEKAZ_MIN_MIAST miast = brak oddania.
+   */
+  miastaAI?: ReadonlyArray<MiastoWycenaWejscie>;
+  /** R-WEB-PEACE-CITY-CESSION-Q1 r3: ekspansywność AI z civ-ai.json (waga oddawanego miasta). Domyślnie 3. */
+  ekspansywnosc?: number;
   /** Pełna warstwa dyplomacji (nie miasto-państwo) — paki/sojusze wielostronne. */
   fullDiplomacyLayer?: boolean;
   /** To AI jest miastem-państwem (częstszy handel przy deficycie). */
@@ -5380,8 +5406,79 @@ export interface DiplomacjaInputs {
  * v0.1 zakres: wojna / pokój / trybut.
  * v0.2 TODO: 'zaproponuj_sojusz', 'zaproponuj_handel' (wieloturowe).
  */
+/** R-WEB-PEACE-CITY-CESSION-Q1 r3: bazowy próg słabości AI do oddania miasta (rw). */
+export const AI_MIASTO_PRZEKAZ_RW_BAZA = 0.15;
+/** Minimalna liczba miast AI, by mogło oddać miasto. */
+export const AI_MIASTO_PRZEKAZ_MIN_MIAST = 3;
+/** Próg siły AI (rw), od którego AI żąda miasta gracza w kontrofercie pokoju. */
+export const AI_MIASTO_ZADANIE_RW = 0.7;
+/** Tury wojny, po których silne AI żąda miasta (alternatywnie: zdobycie miasta gracza). */
+export const AI_MIASTO_ZADANIE_TURY_WOJNY = 20;
+/**
+ * Cena bazowa pokoju w PW = traktaty.pokoj.punkty z diplomacy-acceptance-points.json (500).
+ * Stała lustrzana — test r3 pilnuje zgodności z `treatyBasePnFromConfig('pokoj')`.
+ */
+export const AI_MIASTO_CENA_POKOJU_PN = 500;
+
+/** Próg rw oddania miasta: 0.15 − 0.01·(agresywność − 5); brak danych = agresywność 5. */
+export function aiMiastoPrzekazRwProg(agresywnoscRaw?: number): number {
+  const agr = agresywnoscRaw ?? 5;
+  // Arytmetyka w setnych (bez błędu zmiennoprzecinkowego: 0.15 − 0.01·5 ≠ 0.10 w IEEE754).
+  return (AI_MIASTO_PRZEKAZ_RW_BAZA * 100 - (agr - 5)) / 100;
+}
+
+/** Waga oddawanego przez AI miasta w bilansie (×1.5 × (1+0.1·(eks−3))), zaokrąglona do 0.001. */
+export function aiMiastoWagaOddawanego(ekspansywnosc?: number): number {
+  const w = diplomacyMiastoWagaBilansu({ oddajacyJestAI: true, aiEkspansywnosc: ekspansywnosc ?? 3 });
+  return Math.round(w * 1000) / 1000;
+}
+
+/**
+ * Najtańsze miasto AI (niezakazane), którego ważona wycena pokrywa cenę pokoju.
+ * Null, gdy AI ma < AI_MIASTO_PRZEKAZ_MIN_MIAST miast lub żadne miasto nie pokrywa ceny.
+ */
+export function aiPickMiastoDoOddania(
+  miasta: ReadonlyArray<MiastoWycenaWejscie>,
+  ekspansywnosc?: number,
+): MiastoWycenaWejscie | null {
+  if (miasta.length < AI_MIASTO_PRZEKAZ_MIN_MIAST) return null;
+  const waga = aiMiastoWagaOddawanego(ekspansywnosc);
+  let best: MiastoWycenaWejscie | null = null;
+  for (const m of miasta) {
+    if (m.zakazane) continue;
+    if (!(m.cityPn * waga >= AI_MIASTO_CENA_POKOJU_PN)) continue;
+    if (best === null || m.cityPn < best.cityPn) best = m;
+  }
+  return best;
+}
+
+/**
+ * Najtańsze miasto gracza (niezakazane), którego wycena PW pokrywa brakującą cenę pokoju
+ * (strona przyjmująca liczy wagę 1, jak w diplomacySumPn). Null gdy żadne nie pokrywa.
+ */
+export function aiPickMiastoDoZadania(
+  miastaPartnera: ReadonlyArray<MiastoWycenaWejscie>,
+): MiastoWycenaWejscie | null {
+  let best: MiastoWycenaWejscie | null = null;
+  for (const m of miastaPartnera) {
+    if (m.zakazane) continue;
+    if (!(m.cityPn >= AI_MIASTO_CENA_POKOJU_PN)) continue;
+    if (best === null || m.cityPn < best.cityPn) best = m;
+  }
+  return best;
+}
+
 export type AIDiplomacyCommand =
   | { type: 'wypowiedz_wojne';       targetId: string; powod: string }
+  /**
+   * R-WEB-PEACE-CITY-CESSION-Q1 r3 (N1a): AI oddaje własne miasto w pokoju (zamiast trybutu).
+   * `cityWeight` = waga oddającego (diplomacyMiastoWagaBilansu z ekspansywnością AI).
+   */
+  | { type: 'oferuj_miasto_za_pokoj'; targetId: string; powod: string; cityId: string; cityPn: number; cityWeight: number }
+  /**
+   * R-WEB-PEACE-CITY-CESSION-Q1 r3 (N1b): AI żąda miasta gracza w kontrofercie pokoju.
+   */
+  | { type: 'zada_miasto_za_pokoj';  targetId: string; powod: string; cityId: string; cityPn: number }
   | { type: 'zaproponuj_pokoj';      targetId: string; powod: string }
   | { type: 'zadaj_trybut';          targetId: string; powod: string }
   | { type: 'oferuj_trybut_za_pokoj'; targetId: string; powod: string; goldOnce?: number }
@@ -5785,6 +5882,53 @@ export function decideAIDiplomacy(
       0.15,
       p.progWojnaAgresja - podbojBoost * 0.5 + bias.warAgresjaBonus,
     );
+
+    // ---- R-WEB-PEACE-CITY-CESSION-Q1 r3 (N1a): AI ODDAJE miasto zamiast trybutu ----
+    // Warunki: wojna z graczem, rw <= 0.15 − 0.01·(agresywność − 5), ≥ 3 miasta, a niezakazane
+    // miasto AI pokrywa cenę pokoju (najtańsze z pokrywających). Brak takiego miasta →
+    // przechodzimy do priorytetu 1 (trybut), jak dotąd.
+    const csBlocksCession = inp.isMinorCivSelf === true || rel.isMinorCivPartner === true;
+    if (
+      rel.stanWojny
+      && rel.partnerId === '0'
+      && !csBlocksCession
+      && rw <= aiMiastoPrzekazRwProg(inp.agresywnoscRaw)
+    ) {
+      const pick = aiPickMiastoDoOddania(inp.miastaAI ?? [], inp.ekspansywnosc);
+      if (pick) {
+        komendy.push({
+          type:       'oferuj_miasto_za_pokoj',
+          targetId:   rel.partnerId,
+          powod:      `krytyczna slabosc w wojnie (respektWzgledny=${rw.toFixed(2)}): oddajemy miasto ${pick.cityId} (${pick.cityPn} PW) za pokoj`,
+          cityId:     pick.cityId,
+          cityPn:     pick.cityPn,
+          cityWeight: aiMiastoWagaOddawanego(inp.ekspansywnosc),
+        });
+        continue;
+      }
+    }
+
+    // ---- R-WEB-PEACE-CITY-CESSION-Q1 r3 (N1b): AI ŻĄDA miasta gracza (kontroferta pokoju) ----
+    // Warunki: wojna z graczem, rw >= 0.7 ORAZ (tury wojny >= 20 LUB AI zdobyło miasto gracza
+    // w tej wojnie) i gracz ma niezakazane miasto pokrywające cenę pokoju.
+    if (
+      rel.stanWojny
+      && rel.partnerId === '0'
+      && rw >= AI_MIASTO_ZADANIE_RW
+      && (turnsAtWarRel >= AI_MIASTO_ZADANIE_TURY_WOJNY || (rel.zdobyteMiastaPartnera ?? 0) > 0)
+    ) {
+      const pick = aiPickMiastoDoZadania(rel.miastaPartnera ?? []);
+      if (pick) {
+        komendy.push({
+          type:     'zada_miasto_za_pokoj',
+          targetId: rel.partnerId,
+          powod:    `silni w wojnie (respektWzgledny=${rw.toFixed(2)}, tury wojny=${turnsAtWarRel}): zadamy miasta ${pick.cityId} (${pick.cityPn} PW) za pokoj`,
+          cityId:   pick.cityId,
+          cityPn:   pick.cityPn,
+        });
+        continue;
+      }
+    }
 
     // ---- Priorytet 1: oferuj_trybut_za_pokoj (b. słaby w trakcie wojny) ----
     const csBlocksTribute = inp.isMinorCivSelf === true || rel.isMinorCivPartner === true;

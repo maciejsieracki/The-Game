@@ -98,6 +98,16 @@ export interface NegotiationModalContext {
   cityOptions?: ReadonlyArray<{ id: string; label: string; spichlerz?: number }>;
   /** Miasta partnera (żywność ze spichlerza — strona „Co dostaję") */
   receiveCityOptions?: ReadonlyArray<{ id: string; label: string; spichlerz?: number }>;
+  /**
+   * R-WEB-PEACE-CITY-CESSION-Q1 r3 (N2): miasta gracza do oddania w pokoju/wasalizacji (strona
+   * „Daję"), z wyceną PW (`diplomacyPnMiasto`). Bez stolicy i bez ostatniego miasta (main.ts).
+   */
+  miastoOptions?: ReadonlyArray<{ id: string; label: string; pn: number }>;
+  /**
+   * R-WEB-PEACE-CITY-CESSION-Q1 r3 (N2): id akcji PROPOZYCJI (`proposalActionIdFromUi`, np. '10' → 'pokoj')
+   * — bramka pozycji 'miasto' w `diplomacySumPn`. Ustawiane przez showTradeBasketModal, nie przez main.ts.
+   */
+  basketActionId?: string;
   /** Dostępne złoża do handlu */
   zlozeOptions?: ReadonlyArray<{ id: string; label: string }>;
   /** Jednostki gracza do oddania */

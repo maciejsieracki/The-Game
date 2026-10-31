@@ -16,6 +16,7 @@ import type { TempoGry } from '../game/tech-tempo';
 import type { GameDifficulty } from '../game/difficulty-cost';
 import {
   diplomacySumPn,
+  diplomacyMiastoAkcjaDozwolona,
   diplomacyFairGivePn,
   diplomacyTradeTrustFromDeal,
   diplomacyGiftTrustFromPn,
@@ -211,6 +212,8 @@ function basketPnOpts(
     tempo: resolveTempo(ctx),
     perTurn,
     turnsMultiplier: perTurn ? Math.max(1, dealTurns) : 1,
+    // R-WEB-PEACE-CITY-CESSION-Q1 r3 (N2): bez actionId pozycja 'miasto' = null (fail-safe).
+    actionId: ctx.basketActionId,
   };
 }
 
@@ -228,7 +231,12 @@ type PnItem = Parameters<typeof diplomacySumPn>[0][number];
 
 function toPnItems(items: BasketItem[], ctx: NegotiationModalContext): PnItem[] {
   const tempo = resolveTempo(ctx);
-  return items.map(i => ({ typ: i.typ, id: i.id, ilosc: i.ilosc, tempo }));
+  // R-WEB-PEACE-CITY-CESSION-Q1 r3 (N2 defekt r2): cityPn/cityWeight muszą dojść do sumy PN,
+  // inaczej pozycja 'miasto' w UI wycenia się na null (fail-safe) i waga nie wchodzi do bilansu.
+  return items.map(i => ({
+    typ: i.typ, id: i.id, ilosc: i.ilosc, tempo,
+    cityPn: i.cityPn, cityWeight: i.cityWeight,
+  }));
 }
 
 function ensureStyles(): void {
@@ -1481,6 +1489,14 @@ export function computeAvailableTypes(
       if (WITHDRAWN_BASKET_ACCESS_TYPES.has(t)) return false;
       if (t === 'jednostka') return false;
       if (!allowWarCurrency && (t === 'zloto' || t === 'praca')) return false;
+      // R-WEB-PEACE-CITY-CESSION-Q1 r3 (N2): miasto tylko po stronie „Daję", tylko w akcji
+      // pokoju/wasalizacji (MIASTO_AKCJE_DOZWOLONE) i tylko gdy są miasta do oddania.
+      if (t === 'miasto') {
+        return side === 'give'
+          && mode !== 'gift'
+          && diplomacyMiastoAkcjaDozwolona(proposalActionIdFromUi(actionId, mode))
+          && (ctx.miastoOptions?.length ?? 0) > 0;
+      }
       if (mode === 'gift') return true;
       if (t === 'tech' && side === 'receive') {
         const rel = ctx.relacjaTotal ?? 0;
@@ -1578,6 +1594,31 @@ export function buildAddForm(
     ).join('')
     : '<span class="cdb-sub">— brak technologii (SILNIK) —</span>';
 
+  // R-WEB-PEACE-CITY-CESSION-Q1 r3 (N2): wybór miasta do oddania (lista PW). Miasto już dodane
+  // do koszyka znika z listy, poza edytowanym (jak technologia wyżej). Pusta lista = placeholder.
+  const editMiastoId = editTyp === 'miasto' ? editItem!.item.id : undefined;
+  const miastoIdsInBasket = new Set(
+    existingItems.filter(it => it.typ === 'miasto' && it.id !== editMiastoId).map(it => it.id),
+  );
+  const miastoAll = availableTypes.includes('miasto') ? (ctx.miastoOptions ?? []) : [];
+  const miastoOpts = miastoAll.filter(m => !miastoIdsInBasket.has(m.id));
+  const defaultMiasto = (editMiastoId != null && miastoOpts.some(m => m.id === editMiastoId))
+    ? editMiastoId
+    : (miastoOpts[0]?.id ?? '');
+  const miastoChips = miastoOpts.length > 0
+    ? miastoOpts.map(m =>
+      buildChipBtn(
+        'cdb-chip-miasto',
+        m.id,
+        prefix,
+        m.id === defaultMiasto,
+        typChipIconHtml('miasto'),
+        m.label + ' · ' + m.pn + ' PW',
+        ' title="' + esc(m.label + ' — wycena ' + m.pn + ' PW') + '"',
+      ),
+    ).join('')
+    : '<span class="cdb-sub">— brak miast do oddania (stolica i ostatnie miasto są wyłączone) —</span>';
+
   const qtyResources = side === 'give'
     ? (ctx.giveQuantityResourceOptions ?? defaultQuantityResourceOptions())
     : (ctx.receiveQuantityResourceOptions ?? defaultQuantityResourceOptions());
@@ -1654,6 +1695,11 @@ export function buildAddForm(
     + '<div class="cdb-chip-grid cdb-tech-chips">' + techChips + '</div>'
     + '<input type="hidden" class="cdb-tech" data-side="' + prefix + '" value="' + esc(defaultTech) + '" />'
     + '</div>'
+    + '<div class="cdb-fields-extra" data-extra="' + prefix + '-miasto">'
+    + '<label>Miasto do oddania <span style="color:#7a8494">(wycena PW)</span></label>'
+    + '<div class="cdb-chip-grid cdb-miasto-chips">' + miastoChips + '</div>'
+    + '<input type="hidden" class="cdb-miasto" data-side="' + prefix + '" value="' + esc(defaultMiasto) + '" />'
+    + '</div>'
     + '<div class="cdb-fields-extra" data-extra="' + prefix + '-resqty">'
     + '<label>Surowiec</label>'
     + '<div class="cdb-chip-grid cdb-resqty-chips">' + qtyResChips + '</div>'
@@ -1666,6 +1712,39 @@ export function buildAddForm(
     + '<button type="button" class="dip-gold-btn cdb-add-btn" data-side="' + prefix + '"' + editAttrs + '>' + esc(submitLabel) + '</button>'
     + cancelBtn
     + '</div>'
+    + '</div>'
+  );
+}
+
+/**
+ * R-WEB-PEACE-CITY-CESSION-Q1 r3 (N2): wybór miasta do oddania w formularzu traktatu pokoju/wasala
+ * (formularze „tylko traktat" nie mają koszyka „Dodaj", więc miasto dokłada się osobnym blokiem).
+ * Klik → pozycja 'miasto' w giveItems (ta sama lista co słodzik traktatu, widoczna w podsumowaniu).
+ * Miasta już w koszyku znikają z listy. Pusta lista / inna akcja → ''.
+ */
+function miastoPickerHtml(ctx: NegotiationModalContext, actionId: string, giveItems: readonly BasketItem[]): string {
+  if (!diplomacyMiastoAkcjaDozwolona(proposalActionIdFromUi(actionId, 'treaty'))) return '';
+  const all = ctx.miastoOptions ?? [];
+  if (all.length === 0) return '';
+  const inBasket = new Set(giveItems.filter(it => it.typ === 'miasto').map(it => it.id));
+  const opts = all.filter(m => !inBasket.has(m.id));
+  const chips = opts.length > 0
+    ? opts.map(m =>
+      buildChipBtn(
+        'cdb-city-pick',
+        m.id,
+        'give',
+        false,
+        typChipIconHtml('miasto'),
+        m.label + ' · ' + m.pn + ' PW',
+        ' title="' + esc(m.label + ' — wycena ' + m.pn + ' PW') + '"',
+      ),
+    ).join('')
+    : '<span class="cdb-sub">— wszystkie miasta do oddania są już w propozycji —</span>';
+  return (
+    '<div class="cdb-basket-opt cdb-city-pick-block">'
+    + '<div class="cdb-basket-opt-title">Miasto do oddania (wycena PW; tylko w pokoju)</div>'
+    + '<div class="cdb-chip-grid cdb-city-pick-chips">' + chips + '</div>'
     + '</div>'
   );
 }
@@ -2063,6 +2142,14 @@ export function readItemFromForm(side: 'give' | 'receive', box: Element, ctx: Ne
       if (!id) return null;
       return { typ, id };
     }
+    case 'miasto': {
+      // R-WEB-PEACE-CITY-CESSION-Q1 r3 (N2): miasto = 1 sztuka, wycena PW z opcji (ctx.miastoOptions).
+      const id = (box.querySelector('.cdb-miasto[data-side="' + prefix + '"]') as HTMLInputElement)?.value;
+      if (!id) return null;
+      const opt = ctx.miastoOptions?.find(m => m.id === id);
+      if (!opt || !(opt.pn >= 0)) return null;
+      return { typ, id, ilosc: 1, cityPn: opt.pn, cityLabel: opt.label };
+    }
     case 'jednostka': {
       const id = (box.querySelector('.cdb-unit[data-side="' + prefix + '"]') as HTMLInputElement)?.value;
       if (!id) return null;
@@ -2098,13 +2185,13 @@ export function readItemFromForm(side: 'give' | 'receive', box: Element, ctx: Ne
 function updateTypFields(box: Element, side: 'give' | 'receive'): void {
   const prefix = side === 'give' ? 'give' : 'recv';
   const typ = (box.querySelector('.cdb-typ[data-side="' + prefix + '"]') as HTMLInputElement)?.value ?? 'zloto';
-  const extras = ['qty', 'city', 'tech', 'resqty'];
+  const extras = ['qty', 'city', 'tech', 'resqty', 'miasto'];
   for (const ex of extras) {
     const el = box.querySelector('[data-extra="' + prefix + '-' + ex + '"]');
     if (el) el.classList.remove('visible');
   }
   const map: Record<string, string> = {
-    zloto: 'qty', praca: 'qty', zywnosc: 'city', tech: 'tech', surowiec_ilosc: 'resqty',
+    zloto: 'qty', praca: 'qty', zywnosc: 'city', tech: 'tech', surowiec_ilosc: 'resqty', miasto: 'miasto',
   };
   const show = map[typ];
   if (show) {
@@ -2218,10 +2305,12 @@ function renderBasket(
       + '<button type="button" class="dip-gold-btn cdb-submit"' + (blocked || !validation.valid ? ' disabled' : '') + '>'
       + esc(modalOpts?.submitLabel ?? 'Zaproponuj') + '</button>'
       + '</div>';
+    // R-WEB-PEACE-CITY-CESSION-Q1 r3 (N2): blok wyboru miasta (tylko pokój/wasal, nie gdy blocked).
+    const cityPickHtml = blocked ? '' : miastoPickerHtml(ctx, action.id, giveItems);
     const scrollBody = blocked
       ? blocked
       : '<div class="cdb-landscape">'
-        + '<div class="cdb-land-main">' + treatyHtml + '</div>'
+        + '<div class="cdb-land-main">' + treatyHtml + cityPickHtml + '</div>'
         + '<div class="cdb-land-side">' + summaryBlock + '</div>'
         + '</div>';
     box.className = 'civ-diplo-basket cdb-treaty-mode cdb-treaty-only-mode cdb-landscape-mode';
@@ -2405,6 +2494,9 @@ export function showTradeBasketModal(
   closeModal();
   ensureStyles();
   activeOnCancel = onCancel;
+  // R-WEB-PEACE-CITY-CESSION-Q1 r3 (N2): akcja koszyka trafia do ctx → basketPnOpts (bramka 'miasto').
+  // (UI '10' → 'pokoj', '12' → 'wasal': ten sam mapping co przy wysyłce propozycji.)
+  ctx = { ...ctx, basketActionId: proposalActionIdFromUi(action.id, mode) };
 
   // Zaległość #1 (SZYBKA UMOWA) — koszyk może otwierać się WYPEŁNIONY propozycją
   // (computeQuickDealBasket), użytkownik dalej może edytować/usuwać pozycje normalnie.
@@ -2484,6 +2576,28 @@ export function showTradeBasketModal(
     box.querySelectorAll('.cdb-chip-tech').forEach(btn => {
       btn.addEventListener('click', () => {
         selectChipInGroup(btn, 'cdb-chip-tech', '.cdb-tech');
+      });
+    });
+
+    // R-WEB-PEACE-CITY-CESSION-Q1 r3 (N2): wybór miasta do oddania w pokoju.
+    box.querySelectorAll('.cdb-chip-miasto').forEach(btn => {
+      btn.addEventListener('click', () => {
+        selectChipInGroup(btn, 'cdb-chip-miasto', '.cdb-miasto');
+      });
+    });
+    // Formularz traktatu pokoju/wasala: klik miasta = dołożenie pozycji 'miasto' do giveItems.
+    box.querySelectorAll('.cdb-city-pick').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = btn.getAttribute('data-value') ?? '';
+        const opt = ctx.miastoOptions?.find(m => m.id === id);
+        if (!opt) return;
+        giveItems = addOrMergeBasketItem(
+          giveItems,
+          { typ: 'miasto', id, ilosc: 1, cityPn: opt.pn, cityLabel: opt.label },
+          'give',
+          ctx,
+        );
+        refresh();
       });
     });
 

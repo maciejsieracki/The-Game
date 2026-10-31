@@ -1186,7 +1186,7 @@ import { isTechDiscoveryNoticeOpen, showTechDiscoveryNotice } from './ui/techDis
 import { showCivElimNotice } from './ui/civElimNotice';
 import { decideAITurn, chooseAIResearch, decideAIDiplomacy, loadDifficultyParams, RESUP_TIERS, shouldAIPurchaseUnit, decideAIEconomySliders, loadAiSliderParams, aiHonorsAllianceWarObligation, resolveDiplomacyCivBias, computeMajorAiEarlyGame, pickExecutableCandidate, buildCandidateIds, type AICommand, type AiSliderSettings, type AllianceWarObligationCtx, type ExecutableCandidateChecks } from './game/ai';
 import { aiCityCaptureAllowed, aiTargetVisibleForAction, rememberVisibleAiTargets, rememberedAiTargets, restoreAiTargetMemory, snapshotAiTargetMemory, type AiTargetMemoryByOwner } from './game/ai-fog';
-import type { AITurnOpts, RelacjaWejscie, DiplomacjaInputs, AIDiplomacyCommand } from './game/ai';
+import type { AITurnOpts, RelacjaWejscie, DiplomacjaInputs, AIDiplomacyCommand, MiastoWycenaWejscie } from './game/ai';
 import {
   decideAiWonderBuild,
   loadAiWonderParams,
@@ -1481,6 +1481,9 @@ import {
   diplomacyNormalizeSurowiecIlosc,
   diplomacySumPn,
   planCityCession,
+  diplomacyPnMiasto,
+  diplomacyPnZlozaMiasta,
+  diplomacyMiastoZakaz,
 } from './game/diplomacy-value-catalog';
 
 import {
@@ -17861,6 +17864,8 @@ async function boot(): Promise<void> {
         case 'zaproponuj_handel_surowiec': return 'Propozycja handlu surowcem';
         case 'zadaj_trybut': return 'Żądanie trybutu';
         case 'oferuj_trybut_za_pokoj': return 'Trybut za pokój';
+        case 'oferuj_miasto_za_pokoj': return 'Miasto za pokój';
+        case 'zada_miasto_za_pokoj': return 'Żądanie miasta za pokój';
         default: return 'Propozycja dyplomatyczna';
       }
     }
@@ -17910,6 +17915,8 @@ async function boot(): Promise<void> {
         atWarWithPlayer
         && cmd.type !== 'zaproponuj_pokoj'
         && cmd.type !== 'oferuj_trybut_za_pokoj'
+        && cmd.type !== 'oferuj_miasto_za_pokoj'
+        && cmd.type !== 'zada_miasto_za_pokoj'
       ) {
         return;
       }
@@ -18009,6 +18016,8 @@ async function boot(): Promise<void> {
         difficulty: difficultyForBalance,
         proposerOwnerId: ownerId,
         playerOwnerId: ME(),
+        // R-WEB-PEACE-CITY-CESSION-Q1 r3: akcja propozycji — bramka pozycji 'miasto' (pokój/wasal).
+        actionId: converted.actionId,
       };
       // R-DYPLOMACJA-BILANS-UNIFIKACJA-Q1 (GOAL b, recon jawny w raporcie Operatora):
       // generator dostał opcjonalny 5. param `fairness` (multiplier/treatyBasePn) — patrz
@@ -22910,6 +22919,15 @@ async function boot(): Promise<void> {
             receiveCityOptions: cities
               .filter(c => c.ownerId === ownerId)
               .map(c => ({ id: c.id, label: c.name, spichlerz: c.magazynZywnosci ?? 0 })),
+            // R-WEB-PEACE-CITY-CESSION-Q1 r3 (N2): miasta GRACZA do oddania w pokoju z wyceną PW;
+            // stolica i ostatnie miasto wyłączone (diplomacyMiastoZakaz → zakazane).
+            miastoOptions: diploMiastaWycenaDla(ME())
+              .filter(m => !m.zakazane)
+              .map(m => ({
+                id: m.cityId,
+                label: cities.find(c => c.id === m.cityId)?.name ?? m.cityId,
+                pn: m.cityPn,
+              })),
             // Zaległość #3 (2026-07-23): resourceOptions PER STRONA — realnie posiadane dobra
             // (diplomacy-goods.ts), nie globalny katalog identyczny po obu stronach.
             resourceOptions: priceableTradableGoodOptions(ME()),
@@ -31951,6 +31969,45 @@ async function boot(): Promise<void> {
       return true;
     }
 
+    /**
+     * R-WEB-PEACE-CITY-CESSION-Q1 r3: wycena PW miasta właściciela `ownerId` (diplomacyPnMiasto):
+     * populacja + budynki z `cityBuilt` + złoża (`hex.zloze`) w promieniu DIPLO_MIASTO_ZASIEG_ZLOZ.
+     * ZAŁOŻENIA: cudy świata = 0 (brak mapowania cud→miasto w danych), złoża liczone po id
+     * z hexa bez filtra mgły; złoże w zasięgu dwóch miast liczone w obu (podwójne liczenie).
+     */
+    const DIPLO_MIASTO_ZASIEG_ZLOZ = 2;
+    function diploCityPnPeace(city: City): number {
+      const budynki = (cityBuilt.get(city.id) ?? []).map(id => ({ id }));
+      const zlozaIds: string[] = [];
+      for (let dq = -DIPLO_MIASTO_ZASIEG_ZLOZ; dq <= DIPLO_MIASTO_ZASIEG_ZLOZ; dq++) {
+        for (let dr = -DIPLO_MIASTO_ZASIEG_ZLOZ; dr <= DIPLO_MIASTO_ZASIEG_ZLOZ; dr++) {
+          const q = city.q + dq;
+          const r = city.r + dr;
+          if (hexDistance(city.q, city.r, q, r) > DIPLO_MIASTO_ZASIEG_ZLOZ) continue;
+          const hex = map.hexes[keyOf(q, r)] as { zloze?: string } | undefined;
+          if (hex?.zloze) zlozaIds.push(hex.zloze);
+        }
+      }
+      return diplomacyPnMiasto({
+        populacja: city.population,
+        budynki,
+        cudy: 0,
+        zlozaPn: diplomacyPnZlozaMiasta(zlozaIds),
+      });
+    }
+
+    /** R-WEB-PEACE-CITY-CESSION-Q1 r3: miasta właściciela z wyceną i flagą zakazu (stolica / ostatnie). */
+    function diploMiastaWycenaDla(ownerId: number): MiastoWycenaWejscie[] {
+      const owned = cities.filter(c => c.ownerId === ownerId);
+      const ownerCityIds = owned.map(c => c.id);
+      const capitalId = capitalCityIdForOwner(ownerId);
+      return owned.map(c => ({
+        cityId: c.id,
+        cityPn: diploCityPnPeace(c),
+        zakazane: diplomacyMiastoZakaz({ cityId: c.id, capitalCityId: capitalId, ownerCityIds }) !== null,
+      }));
+    }
+
     function clearMapBattleUiState(): void {
       clearPlayerUnitSelection();
       refreshFog();
@@ -36514,6 +36571,9 @@ async function boot(): Promise<void> {
                   lastAudienceRequestTurn: aiAudienceLastRequestTurn.get(ownerId),
                   peaceLocked: isPeaceLockedBetween(ownerId, ME()),
                   ...diploRelWarFields(ownerId, ME()), // R-WEB-PEACE-RULES-Q1 R1/R3(d)
+                  // R-WEB-PEACE-CITY-CESSION-Q1 r3 (N1b): miasta gracza do żądania + zdobycze AI.
+                  miastaPartnera: diploMiastaWycenaDla(ME()),
+                  zdobyteMiastaPartnera: diploWarStateFor(ME(), ownerId).lostCities,
                 });
               }
 
@@ -36851,6 +36911,9 @@ async function boot(): Promise<void> {
                   isMinorCivSelf: isOwnerClusterCityState(ownerId, ownerCityStateOpts()),
                   clusterForceWarTargetId,
                   bronzeForceWarTargetId,
+                  // R-WEB-PEACE-CITY-CESSION-Q1 r3 (N1a): miasta TEGO AI do oddania w pokoju.
+                  miastaAI: diploMiastaWycenaDla(ownerId),
+                  ekspansywnosc: civAiProf?.ekspansywnosc,
                 };
                 diploInp.stoneForceWarTargetId = stoneForceWarTargetId;
                 diploInp.ironForceWarTargetId = ironForceWarTargetId;

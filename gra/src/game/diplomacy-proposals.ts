@@ -1046,6 +1046,9 @@ export function evaluateProposal(
     difficulty: ctx.difficulty ?? 'normal',
     proposerOwnerId,
     playerOwnerId: 0,
+    // R-WEB-PEACE-CITY-CESSION-Q1 r3 (N2 defekt r2): bez actionId pozycja 'miasto' wyceniana
+    // jako null (fail-safe) → cesja miasta nie wchodziła do bilansu PW propozycji.
+    actionId,
     ...proposalPnTurnsMultiplier(payload),
   };
   const score = relationScore(relation);
@@ -1866,6 +1869,10 @@ export function formatAiDiplomacyPlayerMessage(cmd: AIDiplomacyCommand): string 
       return `Żądamy trybut: ${AI_TRIBUTE_PER_TURN} ¤ co turę na rzecz naszego państwa.`;
     case 'oferuj_trybut_za_pokoj':
       return `Oferujemy jednorazową zapłatę ${cmd.goldOnce ?? 0} ¤ w zamian za pokój.`;
+    case 'oferuj_miasto_za_pokoj':
+      return 'Oferujemy pokój w zamian za przekazanie jednego z naszych miast.';
+    case 'zada_miasto_za_pokoj':
+      return 'Warunkiem pokoju jest przekazanie jednego z twoich miast.';
     case 'wypowiedz_wojne':
       return 'Wypowiadamy wojnę — nasze wojska są gotowe do walki.';
     case 'zaproponuj_handel_surowiec': {
@@ -1922,6 +1929,26 @@ export function aiCommandToPendingProposal(
         id: makeDealId('pending-pokoj', turn, fromOwnerId, toOwnerId),
         actionId: 'pokoj',
         payload: {},
+      };
+    case 'oferuj_miasto_za_pokoj':
+      // R-WEB-PEACE-CITY-CESSION-Q1 r3 (N1a): AI (proponent) oddaje swoje miasto → giveItems.
+      return {
+        ...base,
+        id: makeDealId('pending-pokoj-miasto', turn, fromOwnerId, toOwnerId),
+        actionId: 'pokoj',
+        payload: {
+          giveItems: [{ typ: 'miasto', id: cmd.cityId, ilosc: 1, cityPn: cmd.cityPn, cityWeight: cmd.cityWeight }],
+        },
+      };
+    case 'zada_miasto_za_pokoj':
+      // R-WEB-PEACE-CITY-CESSION-Q1 r3 (N1b): AI żąda miasta gracza → receiveItems (strona gracza).
+      return {
+        ...base,
+        id: makeDealId('pending-pokoj-zadanie', turn, fromOwnerId, toOwnerId),
+        actionId: 'pokoj',
+        payload: {
+          receiveItems: [{ typ: 'miasto', id: cmd.cityId, ilosc: 1, cityPn: cmd.cityPn }],
+        },
       };
     case 'zaproponuj_handel': {
       const goldOnce = cmd.goldOnce ?? 0;

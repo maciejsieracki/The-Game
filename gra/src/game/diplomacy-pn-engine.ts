@@ -116,6 +116,8 @@ export interface BasketItem {
   cityPn?: number;
   /** Waga miasta po stronie oddającej (`diplomacyMiastoWagaBilansu`). */
   cityWeight?: number;
+  /** R-WEB-PEACE-CITY-CESSION-Q1 r3: czytelna nazwa miasta (tylko UI; typ 'miasto'). */
+  cityLabel?: string;
 }
 
 export function diploPairKey(a: number, b: number): string {
