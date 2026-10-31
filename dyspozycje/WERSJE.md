@@ -1,3 +1,12 @@
+## ROBOCZA 871276f8 -- 2026-10-31 -- pula Pracy zachowana przy wczytaniu zapisu (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`9e54b96f8` + dwa tematy) i commit wdrożenia bundla; stała zgoda właściciela 2026-10-31.
+- Bundle MD5 `871276f834ef658f7a4a060799017956`, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, outDir poza repo, stempel ROBOCZA; `verify-robocza-bundle.cjs` VERIFY OK.
+- Zakres: (1) `R-WEB-SAVELOAD-PRACA-POOL-Q1` — wczytanie zapisu zachowuje pulę Pracy gracza (dawniej zerowana powyżej max(50, 100×miasta): 405 → 0); ograniczona tylko wartość nierealna (powyżej 1 000 000); (2) `R-WEB-LIVE-MEASURE-CLEARING-DEFICIT-Q1` — pomiary na żywej grze (wycinka gracza kończy się w 1 turze, bez błędu; niedobór „<10 szt.” aktywny w 100% z 366 tur), tylko narzędzia i raporty.
+- Testy po scaleniu: tsc PASS; saveload-praca-pool-live 13/0 (mutacja starego warunku 6/7 FAIL); autoimprove-stages-q1 184/0, auto-improvements 46/0, ai-improvements 53/0, city-clears-forest 18/0, fort-outpost-hard-territory 80/0, defeat-last-city 14/0, spichlerz-hud-params-parity 66/0, diplomacy 148, war-era-counter 82, ring 15.
+- Ograniczenia: NIE_ZMIERZONO pula Pracy fotela 2+ w hot-seat po świeżym załadowaniu (nie trafia do zapisu — osobny temat); próg 1 000 000 bez pomiaru; w toku: auto-ulepszenia runda 5 i weryfikacja decyzji; znane czerwone w bazie: civ-matrix-ai-diplomacy-wiring 42/1, ai-test 291/4, 6 testów zapisu/wczytania czerwonych tak samo przed zmianą.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `e20eea75cc1b77db80f3c4456c0733e8`, 70,104,417 bajtów.
+
 ## ROBOCZA e20eea75 -- 2026-10-31 -- zdobycie fortu wejściem wojska, kolejność fortów, opisy zasięgu 3/5 (testowa)
 
 - **STATUS: DEPLOYED** — merge do `origin/main` (`18bbf0cf6` + temat) i commit wdrożenia bundla; stała zgoda właściciela 2026-10-31.
