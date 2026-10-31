@@ -9,7 +9,7 @@ import type { GameMap } from '../types/map';
 import { Nakladka, TerenBazowy } from '../types/hex';
 import type { ImprovementKey } from '../render/improvements';
 import type { TerritoryNode } from '../map/territory';
-import { cityTerritoryRadius } from '../map/territory';
+import { axialDistance, cityTerritoryRadius, territoryOwnerAt } from '../map/territory';
 import {
   buildImprovementQualifier,
   depositAllowsPlayerImprovement,
@@ -419,6 +419,16 @@ export interface PickAutoImprovementsOpts {
    * ma aktywnego niedoboru z możliwym do zbudowania ulepszeniem (najniższy priorytet).
    */
   roadsPass?: boolean;
+  /**
+   * R-WEB-AUTO-FORT-CLAIM-Q1 (E-FORT): limit miast właściciela jest WYCZERPANY (`canFoundCity` nie pozwoli założyć
+   * kolejnego miasta). Gdy `true` (i `demandDriven`, profil „zrównoważone” = K2/K3), po etapach żywności i kroku
+   * niedoboru, a PRZED drogami, picker może postawić fort/posterunek na cennym heksie (złoże/góry) na granicy
+   * dostępnej budowy. Domyślnie brak/`false` = krok E-FORT wyłączony (zero zmian dla wołających nieświadomych).
+   * Wylicza go wołający (`isCityLimitExhausted`): gracz — main.ts, AI — `planCityImprovements` w ai.ts.
+   */
+  cityLimitExhausted?: boolean;
+  /** Internal (E-FORT): przebieg „forty” — ustawia go WYŁĄCZNIE `pickAutoImprovements`. */
+  fortClaimPass?: boolean;
   /** Internal stage E1: only river hexes are candidates (farm on river first, everywhere). */
   riverHexesOnly?: boolean;
   /** Internal stage E5: the river stages E1-E4 are exhausted — off-river clearing is not blocked by river hexes. */
@@ -562,6 +572,161 @@ export function deficitImprovementKeys(deficitKeys?: readonly string[]): Improve
     for (const imp of IMPROVEMENT_FOR_DEFICIT[key] ?? []) if (imp !== 'wyrab' && !out.includes(imp)) out.push(imp);
   }
   return out;
+}
+
+/**
+ * R-WEB-AUTO-FORT-CLAIM-Q1: czy limit zakładania miast właściciela jest wyczerpany. ZAŁOŻENIE: ten sam wzór co
+ * `canFoundCity` (cities.ts: `base + (era-1)*5`, era >= 1, liczą się miasta z `countsTowardCityFoundingLimit` =
+ * `foundedByOwner !== false`) — cities.ts jest poza allowlistą tematu, więc wzór jest TU powielony i przypięty
+ * testem parytetu z realnym `canFoundCity` (tools/auto-fort-claim-test.cjs, sekcja P).
+ */
+export function isCityLimitExhausted(
+  ownerCities: readonly { foundedByOwner?: boolean }[],
+  cityLimitBase: number | undefined,
+  ownerEra: number | undefined,
+): boolean {
+  if (cityLimitBase === undefined || !Number.isFinite(cityLimitBase)) return false;
+  const limit = cityLimitBase + (Math.max(1, ownerEra ?? 1) - 1) * 5;
+  const founded = ownerCities.filter(c => c.foundedByOwner !== false).length;
+  return founded >= limit;
+}
+
+/** Minimalny przyrost NOWYCH heksów terytorium, by fort/posterunek w ogóle był kandydatem (ZAŁOŻENIE: dosłownie „>=1”). */
+export const FORT_CLAIM_MIN_NEW_HEXES = 1;
+
+/** Klucze E-FORT: fort (r=5) preferowany, posterunek (r=3) gdy fort niedostępny (tech/cywilizacja). */
+const FORT_CLAIM_KEYS: readonly ImprovementKey[] = ['fort', 'posterunek'];
+
+interface FortClaimArgs {
+  opts: PickAutoImprovementsOpts;
+  cities: readonly AutoImprovementCity[];
+  workingPlaced: Map<string, string[]>;
+  qualifies: (key: ImprovementKey, q: number, r: number) => boolean;
+  unlockedTechs: ReadonlySet<string>;
+  civGate: (key: ImprovementKey, civ?: string) => boolean;
+  pracaLeft: number;
+  reserve: number;
+  imperiumBudgetCap: number;
+  globalPracaPulaAtEntry: number;
+  pracaBudgetPercent: number;
+  getPracaBudgetPercent?: (city: AutoImprovementCity) => number;
+  maxItemsPerCity: number;
+}
+
+/**
+ * E-FORT (R-WEB-AUTO-FORT-CLAIM-Q1, decyzje właściciela 2026-10-31): gdy limit miast wyczerpany, fort/posterunek
+ * zabezpiecza CENNY teren (złoże albo góry) NA GRANICY dostępnej budowy, tak by jego twarde terytorium dało
+ * MAKSIMUM nowych heksów. „Granica dostępnej budowy” = najdalszy heks własnego terytorium, na którym kwalifikator
+ * (`qualifies`) jeszcze pozwala postawić fort (własne terytorium; heksy obce odpadają same). Skan idzie wokół
+ * WSZYSTKICH własnych węzłów (miasta + własne forty/posterunki z `territoryNodes`), żeby granica mogła rosnąć.
+ * Wybór: najwięcej NOWYCH heksów (lądowych, dziś bez właściciela wg `territoryOwnerAt`), remis → dalej od najbliższego
+ * własnego węzła, potem (q,r). Reguła „jeden fort na obszar”: promień kandydata nie może zachodzić na promień
+ * ŻADNEGO istniejącego/zaplanowanego fortu lub posterunku (dowolnego właściciela; z miastami zachodzić MOŻE —
+ * zysk liczy tylko heksy wolne). Budżet: te same pułapy co reszta pickera (sufit % gracza, AI 100%, rezerwa).
+ * Jeden pick na miasto na wywołanie; kolejne w tej turze widzą wcześniejsze (brak nakładania).
+ * Filtr `onlyWorked` (Zasada 2) tu NIE obowiązuje: cenny teren na granicy z definicji nie jest pracowany.
+ */
+function pickFortClaims(a: FortClaimArgs): AutoImprovementPick[] {
+  const { opts, workingPlaced, qualifies } = a;
+  const { map, ownerId } = opts;
+  const territoryNodes = opts.territoryNodes ?? [];
+  const picks: AutoImprovementPick[] = [];
+  const radiusOf = (key: ImprovementKey): number => cityTerritoryRadius(
+    { q: 0, r: 0, pop: 0, level: 1, isFort: key === 'fort', isOutpost: key === 'posterunek' },
+  );
+  // Okręgi fortów/posterunków: z węzłów terytorium + z warstw (wpisy bez węzła, np. postawione w tym wywołaniu).
+  const fortCircles: { q: number; r: number; rad: number }[] = [];
+  for (const n of territoryNodes) {
+    if (n.isFort || n.isOutpost) fortCircles.push({ q: n.q, r: n.r, rad: cityTerritoryRadius(n) });
+  }
+  for (const [hk, layers] of workingPlaced) {
+    const [qs, rs] = hk.split(',');
+    for (const l of layers) {
+      if (l === 'fort' || l === 'posterunek') {
+        const q = Number(qs); const r = Number(rs);
+        if (!fortCircles.some(f => f.q === q && f.r === r)) fortCircles.push({ q, r, rad: radiusOf(l) });
+      }
+    }
+  }
+  const cityHexes = new Set<string>();
+  for (const n of territoryNodes) if (!n.isFort && !n.isOutpost) cityHexes.add(`${n.q},${n.r}`);
+  const ownNodes: { q: number; r: number; rad: number }[] = territoryNodes
+    .filter(n => n.ownerId === ownerId)
+    .map(n => ({ q: n.q, r: n.r, rad: cityTerritoryRadius(n) }));
+  for (const c of a.cities) {
+    if (!ownNodes.some(n => n.q === c.q && n.r === c.r)) {
+      ownNodes.push({ q: c.q, r: c.r, rad: cityTerritoryRadius({ q: c.q, r: c.r, pop: c.population, level: 1 }) });
+    }
+  }
+  let pracaLeft = a.pracaLeft;
+  let globalSpent = 0;
+  const nodesNow: TerritoryNode[] = [...territoryNodes];
+  const keys = FORT_CLAIM_KEYS.filter(k => !!getImprovementMeta(k)
+    && isImprovementTechUnlocked(k, a.unlockedTechs) && a.civGate(k, opts.civArchetype));
+  if (keys.length === 0) return picks;
+  const orderedCities = [...a.cities].sort((x, y) => (x.id < y.id ? -1 : x.id > y.id ? 1 : 0));
+  for (const city of orderedCities) {
+    if (pracaLeft <= a.reserve) break;
+    const cityPercent = Math.max(0, Math.min(100, a.getPracaBudgetPercent?.(city) ?? a.pracaBudgetPercent));
+    const effectiveCityCap = Math.min((cityPercent / 100) * a.globalPracaPulaAtEntry, a.imperiumBudgetCap);
+    type Best = { q: number; r: number; key: ImprovementKey; gain: number; dist: number; kosztPraca: number };
+    let best: Best | null = null;
+    const seen = new Set<string>();
+    for (const node of ownNodes) {
+      for (const hk of hexKeysWithinRadius(node.q, node.r, node.rad, map)) {
+        if (seen.has(hk)) continue;
+        seen.add(hk);
+        const hex = map.hexes[hk];
+        if (!hex) continue;
+        // CENNY teren: góry albo złoże (`hexHasDepositReserve`: złoże/nakładka złożowa; sam Las i Brak nie).
+        if (!(hex.terenBazowy === TerenBazowy.Gory || hexHasDepositReserve(hex))) continue;
+        if (cityHexes.has(hk)) continue;
+        const [qs, rs] = hk.split(',');
+        const q = Number(qs); const r = Number(rs);
+        if ((workingPlaced.get(hk) ?? []).some(k => k === 'fort' || k === 'posterunek')) continue;
+        for (const key of keys) {
+          const meta = getImprovementMeta(key);
+          if (!meta) continue;
+          const rad = radiusOf(key);
+          // „Jeden fort na obszar, bez nakładania zasięgów”: okręgi fortów/posterunków rozłączne.
+          if (fortCircles.some(f => axialDistance(q, r, f.q, f.r) <= rad + f.rad)) continue;
+          if (!qualifies(key, q, r)) continue;
+          let gain = 0;
+          for (const nk of hexKeysWithinRadius(q, r, rad, map)) {
+            const nh = map.hexes[nk];
+            if (!nh || nh.terenBazowy === TerenBazowy.Morze || nh.terenBazowy === TerenBazowy.PlytkieMorze) continue;
+            const [nqs, nrs] = nk.split(',');
+            if (territoryOwnerAt(Number(nqs), Number(nrs), nodesNow) === null) gain++;
+          }
+          if (gain < FORT_CLAIM_MIN_NEW_HEXES) continue;
+          let dist = Infinity;
+          for (const n of ownNodes) dist = Math.min(dist, axialDistance(q, r, n.q, n.r));
+          const better = best === null
+            || gain > best.gain
+            || (gain === best.gain && dist > best.dist)
+            || (gain === best.gain && dist === best.dist && (q < best.q || (q === best.q && r < best.r)));
+          if (better) best = { q, r, key, gain, dist, kosztPraca: meta.kosztPraca };
+          break; // pierwszy dostępny klucz (fort przed posterunkiem): fort daje zawsze >= zysk posterunku
+        }
+      }
+    }
+    if (best === null) continue;
+    if (best.kosztPraca > pracaLeft) continue;
+    if (pracaLeft - best.kosztPraca < a.reserve) continue;
+    if (globalSpent + best.kosztPraca > effectiveCityCap) continue;
+    picks.push({ ownerId, cityId: city.id, q: best.q, r: best.r, key: best.key, kosztPraca: best.kosztPraca });
+    pracaLeft -= best.kosztPraca;
+    globalSpent += best.kosztPraca;
+    const hk = `${best.q},${best.r}`;
+    workingPlaced.set(hk, [...(workingPlaced.get(hk) ?? []), best.key]);
+    fortCircles.push({ q: best.q, r: best.r, rad: radiusOf(best.key) });
+    ownNodes.push({ q: best.q, r: best.r, rad: radiusOf(best.key) });
+    nodesNow.push({
+      q: best.q, r: best.r, pop: 0, level: 1, ownerId,
+      isFort: best.key === 'fort', isOutpost: best.key === 'posterunek',
+    });
+  }
+  return picks;
 }
 
 function isFoodStageCity(opts: PickAutoImprovementsOpts, city: AutoImprovementCity): boolean {
@@ -735,13 +900,13 @@ export function pickAutoImprovements(opts: PickAutoImprovementsOpts): AutoImprov
   const roadCities = opts.demandDriven === true
     ? foodCities.filter(c => (opts.getFocus?.(c) ?? c.ulepszeniaFocus ?? DEFAULT_ULEPSZENIA_FOCUS) === 'zrownowazone')
     : [];
-  if (
-    roadCities.length > 0
-    && stagedPicks.length === 0 && !earlierStageIsPending
+  const foodAndFallbackDone = stagedPicks.length === 0 && !earlierStageIsPending
     && fallbackPicks.length === 0 && !fallbackIsPending
-    && deficitPicks.length === 0
-  ) {
-    const deficitIsPending = deficitCities.length > 0 && pickAutoImprovementsSinglePass(after(0, {
+    && deficitPicks.length === 0;
+  let deficitPendingMemo: boolean | undefined;
+  const deficitIsPendingNow = (): boolean => {
+    if (deficitPendingMemo !== undefined) return deficitPendingMemo;
+    deficitPendingMemo = deficitCities.length > 0 && pickAutoImprovementsSinglePass(after(0, {
       cities: deficitCities,
       priorityOverride: deficitKeys,
       getOnlyWorked: opts.getResourcePassOnlyWorked ?? opts.getOnlyWorked,
@@ -757,8 +922,52 @@ export function pickAutoImprovements(opts: PickAutoImprovementsOpts): AutoImprov
       pracaSurplusThreshold: 0,
       surplusReport: undefined,
     })).length > 0;
+    return deficitPendingMemo;
+  };
+
+  // KROK 2b — E-FORT (R-WEB-AUTO-FORT-CLAIM-Q1, właściciel 2026-10-31): fort/posterunek na cennym terenie
+  // (złoże/góry) na granicy dostępnej budowy, ale TYLKO gdy limit miast jest wyczerpany (`cityLimitExhausted`),
+  // PO żywności (E1–E6 + zapasowa) i PO kroku niedoboru, PRZED drogami (drogi zostają najniższym priorytetem —
+  // czekają także na cel fortu czekający na Pracę). K2/K3 (`demandDriven` + „zrównoważone”); K1 i profile
+  // „surowce”/„infrastruktura” bez zmian. Budżet: te same pułapy co reszta (gracz sztywny %, AI 100%).
+  let fortPicks: AutoImprovementPick[] = [];
+  let fortIsPending = false;
+  if (
+    opts.cityLimitExhausted === true && roadCities.length > 0 && foodAndFallbackDone
+    && !deficitIsPendingNow()
+  ) {
+    const fortOpts = after(fallbackSpent, {
+      cities: roadCities,
+      fortClaimPass: true,
+      surplusReport: undefined,
+      riverForestClearingOnly: false,
+      riverHexesOnly: false,
+      offRiverClearing: false,
+    });
+    fortPicks = pickAutoImprovementsSinglePass(fortOpts);
+    record(fortPicks);
+    if (fortPicks.length === 0) {
+      fortIsPending = pickAutoImprovementsSinglePass({
+        ...fortOpts,
+        pracaAvailable: Number.MAX_SAFE_INTEGER,
+        improvementBudgetCap: Number.MAX_SAFE_INTEGER,
+        pracaBudgetPercent: 100,
+        getPracaBudgetPercent: undefined,
+        maxItemsPerCity: Infinity,
+        pracaSurplusThreshold: 0,
+      }).length > 0;
+    }
+  }
+  const fortSpent = fallbackSpent + sum(fortPicks);
+
+  if (
+    roadCities.length > 0
+    && foodAndFallbackDone
+    && fortPicks.length === 0 && !fortIsPending
+  ) {
+    const deficitIsPending = deficitIsPendingNow();
     if (!deficitIsPending) {
-      roadPicks = pickAutoImprovementsSinglePass(after(fallbackSpent, {
+      roadPicks = pickAutoImprovementsSinglePass(after(fortSpent, {
         cities: roadCities,
         priorityOverride: ROAD_KEYS,
         roadsPass: true,
@@ -771,13 +980,13 @@ export function pickAutoImprovements(opts: PickAutoImprovementsOpts): AutoImprov
       record(roadPicks);
     }
   }
-  const sideSpent = fallbackSpent + sum(roadPicks);
+  const sideSpent = fortSpent + sum(roadPicks);
 
-  if (otherCities.length === 0) return [...deficitPicks, ...stagedPicks, ...fallbackPicks, ...roadPicks];
+  if (otherCities.length === 0) return [...deficitPicks, ...stagedPicks, ...fallbackPicks, ...fortPicks, ...roadPicks];
   // Selected non-food profiles remain active in the same call. Charge their picks
   // against the same empire envelope, after the currently active food phase.
   const normalPicks = pickAutoImprovementsSinglePass(after(sideSpent, { cities: otherCities }));
-  return [...deficitPicks, ...stagedPicks, ...fallbackPicks, ...roadPicks, ...normalPicks];
+  return [...deficitPicks, ...stagedPicks, ...fallbackPicks, ...fortPicks, ...roadPicks, ...normalPicks];
 }
 
 function pickAutoImprovementsSinglePass(opts: PickAutoImprovementsOpts): AutoImprovementPick[] {
@@ -810,6 +1019,7 @@ function pickAutoImprovementsSinglePass(opts: PickAutoImprovementsOpts): AutoImp
     clearingHexKeys,
     irrigationNeedsFarm = false,
     roadsPass = false,
+    fortClaimPass = false,
   } = opts;
 
   if (cities.length === 0 || !territoryNodes) return [];
@@ -952,6 +1162,15 @@ function pickAutoImprovementsSinglePass(opts: PickAutoImprovementsOpts): AutoImp
     riverAccessMemo.set(hk, v);
     return v;
   };
+
+  // E-FORT (R-WEB-AUTO-FORT-CLAIM-Q1): osobny przebieg z tymi samymi pułapami budżetu co reszta pickera.
+  if (fortClaimPass) {
+    return pickFortClaims({
+      opts, cities, workingPlaced, qualifies, unlockedTechs, civGate, pracaLeft, reserve,
+      imperiumBudgetCap, globalPracaPulaAtEntry, pracaBudgetPercent, getPracaBudgetPercent,
+      maxItemsPerCity,
+    });
+  }
 
   const orderedCities = [...cities].sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
   const picks: AutoImprovementPick[] = [];
