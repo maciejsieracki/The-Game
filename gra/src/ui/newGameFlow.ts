@@ -1120,7 +1120,9 @@ function ensureStyles(): void {
 .civ-newgame .adv-lbl{font-size:10px;letter-spacing:.28em;text-transform:uppercase;color:var(--tx2);font-family:Arial,sans-serif;}
 .civ-newgame .adv-modal-foot{flex-shrink:0;padding:.85rem 1.4rem 1.2rem;border-top:1px solid var(--bd-sub);background:#12121A;}
 .civ-newgame .adv-btns{display:flex;justify-content:flex-end;}
-.civ-newgame .adv-close{background:transparent;border:1px solid var(--bd-mid);color:var(--tx2);padding:8px 20px;border-radius:var(--radius);cursor:pointer;font-family:Arial,sans-serif;font-size:12px;letter-spacing:.1em;text-transform:uppercase;}
+.civ-newgame .adv-close{background:rgba(201,168,76,.1);border:1.5px solid var(--bd-strong);color:var(--gold-light);padding:8px 20px;border-radius:var(--radius);cursor:pointer;font-family:Arial,sans-serif;font-size:12px;letter-spacing:.1em;text-transform:uppercase;}
+.civ-newgame .adv-close:hover{background:rgba(201,168,76,.2);border-color:var(--gold);color:#fff;}
+.civ-newgame .adv-close:focus-visible{outline:2px solid var(--gold);outline-offset:2px;}
 `;
   const s = document.createElement('style');
   s.id = STYLE_ID;
@@ -1930,7 +1932,9 @@ function showAdvancedModal(): void {
   }
   modal.appendChild(body);
   const foot = el('div', 'adv-modal-foot adv-btns');
-  const close = el('button', 'adv-close', 'Zamknij');
+  // „Zastosuj” = zapis wartości (saveNewGamePrefs w hideAdvancedModal) + zamknięcie okna.
+  const close = el('button', 'adv-close', 'Zastosuj');
+  close.setAttribute('type', 'button');
   close.addEventListener('click', hideAdvancedModal);
   foot.appendChild(close);
   modal.appendChild(foot);
