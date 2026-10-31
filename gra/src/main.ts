@@ -1315,6 +1315,7 @@ import {
 } from './game/human-owners';
 import {
   pickAutoImprovements,
+  isCityLimitExhausted,
   hasNonFoodResourceDeficit,
   AUTO_ULEPSZENIA_PRACA_RESERVE,
   freshSurplusReport,
@@ -36248,6 +36249,8 @@ async function boot(): Promise<void> {
                   // picker liczyl `state.playerEra ?? 1`, wiec dla cywilizacji Nowego Swiata
                   // (era < 3) `isLivestockAllowed` odrzucal trzode na stale. Jak `ai.ts:2658`.
                   playerEra: empireEpochForOwner(hOid),
+                  // R-WEB-AUTO-FORT-CLAIM-Q1: forty/posterunki z automatu dopiero po wyczerpaniu limitu miast.
+                  cityLimitExhausted: isCityLimitExhausted(cities.filter(c => c.ownerId === hOid), _menuCityLimitBase, empireEpochForOwner(hOid)),
                   isImprovementAllowedForCiv: (key, civ) => isImprovementAllowedForCiv(key, civ),
                   getFocus: c => effectiveUlepszeniaForCity(c as City).focus,
                   getOnlyWorked: c => effectiveUlepszeniaForCity(c as City).onlyWorked,
@@ -37065,6 +37068,7 @@ async function boot(): Promise<void> {
                 return rep;
               })(),
               civEra: empireEpochForOwner(ownerId),
+              cityLimitBase: _menuCityLimitBase, // R-WEB-AUTO-FORT-CLAIM-Q1
               vassalizedCityStateOwnerIds: vassalizedCsOwnerIds,
               // D-START posiłki v2: setup „Wsparcie miast-państw" -> RESUP_TIERS (ai.ts).
               citySupportLevel: _menuCitySupport,
