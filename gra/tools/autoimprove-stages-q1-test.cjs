@@ -1,6 +1,11 @@
 'use strict';
 
 /**
+ * R-WEB-AUTOIMPROVE-STAGES3-Q1 (2026-10-31, decyzje wlasciciela, WIAZACE — ZASTEPUJA D-R5-1 i czesc D-R5-2):
+ *   S3-1 tartak/oboz NIGDY na heksie z rzeka ORAZ NIGDY na heksie Z DOSTEPEM do rzeki (sasiadujacym z rzeka — ta sama
+ *        definicja co irygacja: `isRiverAdjacent`); blokada D-R5-1 (`farmWouldClaimForest`) USUNIETA — tartak moze stac na
+ *        lesie pod farme, jesli heks nie ma dostepu do rzeki; preferencja: najpierw WZGORZA, potem reszta lasu bez rzeki;
+ *   S3-2 limit „3 budowle na etap na miasto na ture” (FOOD_STAGE_MAX_ITEMS_PER_CITY) ZDJETY dla wszystkich; ogranicza tylko budzet.
  * R-WEB-AUTOIMPROVE-STAGES2-Q1 (2026-10-31, decyzje wlasciciela, WIAZACE — nadpisuja czesc oczekiwan R5):
  *   B$ budzet SZTYWNO: procent budzetu Pracy gracza (K1/K2) to TWARDY SUFIT, bez wyjatkow (Q2=B z R3 i D-R5-3 ODWOLANE);
  *       AI cywilizacji i panstwa-miasta = 100% puli, bez limitu %;
@@ -386,9 +391,9 @@ console.log('(k2) [K2/K3] R5 + D-R5-1: BRAK LIMITU tartakow przy niedoborze drew
   }
 }
 
-console.log('(r5-river) [K2/K3] R5: tartak/obóz NIE na heksie rzeka+las (zarezerwowany pod wycinke i farme); tartak tylko na lesie BEZ rzeki');
+console.log('(r5-river) [K2/K3] R5: tartak/obóz NIE na heksie rzeka+las (zarezerwowany pod wycinke i farme); tartak tylko na lesie BEZ dostepu do rzeki (S3-1)');
 {
-  const FOR = [[14, 12], [11, 11], [13, 11]];
+  const FOR = [[14, 12], [11, 13], [12, 13]]; // S3-1: bez dostepu do rzeki ((11,11),(13,11) sasiaduja z rzeka — patrz (s6))
   for (const profil of ['K2', 'K3']) {
     const map = makeMap({ river: RIVER, forest: [...RIVER, ...FOR], hills: FOR });
     const { log } = sim({ map, worked: [...WORKED_ALL, ...FOR], profil, turns: 40, deficitFn: () => ['drewno'] });
@@ -545,7 +550,8 @@ console.log('(o) [K3] R3 ABC-D=B: AI bez limitu 1/miasto/ture (jak gracz) — wi
   const maxPerTurn = Math.max(0, ...perTurn.values());
   void FOR;
   ok(maxPerTurn > 1, `[K3] max rozkazow na miasto w jednej turze = ${maxPerTurn} (> 1; limit etapu = 3)`);
-  ok(maxPerTurn <= 3 + 2, `[K3] ... nadal w granicach limitu etapu (${maxPerTurn})`);
+  // S3-2: limit etapu (3) ZDJETY — brak gornego limitu liczby rozkazow poza budzetem (patrz (s7))
+  ok(Number.isFinite(maxPerTurn), `[K3] max rozkazow na miasto w turze = ${maxPerTurn} (limit etapu zdjety; ogranicza tylko budzet)`);
 }
 
 console.log('(p) KOREKTA F (R4): heks CENTRUM miasta to ZWYKLY heks — farma, trzoda, irygacja takze w centrum (K1, K2, K3)');
@@ -809,41 +815,40 @@ console.log('(s2) AI cywilizacji i PANSTWA-MIASTA: budzet = 100% puli (brak limi
   ok(mkPick(33) * 100 <= 33 * 2000, 'picker gracza 33%: wydatek <= 33% puli');
 }
 
-console.log('(s3) D-R5-1 [K2/K3]: FARMA ma pierwszenstwo na lesie pod farme; tartak (niedobor) tylko na lesie, gdzie farma niemozliwa i NIE na rzece');
+console.log('(s3) S3-1 [K2/K3] (ZASTEPUJE D-R5-1): tartak (niedobor) MOZE stac na lesie pod farme, jesli heks nie ma dostepu do rzeki');
 {
-  const FP = [[14, 12], [11, 13], [13, 13]];   // las na rowninie — nadaje sie pod farme po wycince
-  const FH = [[11, 11], [13, 11]];             // las na Wzgorzach — farma niemozliwa
+  const FP = [[14, 12], [11, 13], [13, 13]];   // las na rowninie — nadaje sie pod farme po wycince, BEZ dostepu do rzeki
+  const FH = [[11, 12], [13, 12]];             // las na Wzgorzach, BEZ dostepu do rzeki ((11,12),(13,12) nie sasiaduja z rzeka)
   for (const profil of ['K2', 'K3']) {
-    const map = makeMap({ forest: [...FP, ...FH], hills: FH });
+    const map = makeMap({ river: RIVER, forest: [...FP, ...FH], hills: FH });
     const { log } = sim({ map, worked: [...WORKED_ALL, ...FP, ...FH], profil, turns: 40, deficitFn: () => ['drewno'] });
-    ok(FP.every(([q, r]) => idx(log, 'tartak', K(q, r)) < 0), `[${profil}] D-R5-1: ZERO tartakow na lesie pod farme (rownina)`);
-    ok(FP.every(([q, r]) => idx(log, 'wyrab', K(q, r)) >= 0 && idx(log, 'farma', K(q, r)) > idx(log, 'wyrab', K(q, r))), `[${profil}] D-R5-1: las pod farme -> wyrab -> farma`);
-    ok(FH.every(([q, r]) => idx(log, 'tartak', K(q, r)) >= 0), `[${profil}] D-R5-1: tartak na lesie bez mozliwosci farmy (Wzgorza) ${FH.length}/${FH.length}`);
+    ok(FP.every(([q, r]) => idx(log, 'tartak', K(q, r)) >= 0), `[${profil}] S3-1: tartak NA lesie rownina pod farme bez dostepu do rzeki (${FP.length}/${FP.length}) — D-R5-1 usunieta`);
+    ok(FH.every(([q, r]) => idx(log, 'tartak', K(q, r)) >= 0), `[${profil}] S3-1: tartak na lesie na Wzgorzach bez dostepu do rzeki ${FH.length}/${FH.length}`);
   }
-  // ZALOZENIE: gracz z wycinka WYLACZONA nie dojdzie do farmy na lesie => tartak go nie wyprzedza (inaczej niedobor nierozwiazywalny)
+  // przycisk „Wolno wycinac las” OFF: tartak tak samo (nic go nie wyprzedza)
   {
     const map = makeMap({ forest: [...FP, ...FH], hills: FH });
     const { log } = sim({ map, worked: [...WORKED_ALL, ...FP, ...FH], profil: 'K2', turns: 40, deficitFn: () => ['drewno'], wolnoWycinac: false });
-    ok(count(log, 'wyrab') === 0 && count(log, 'tartak') === FP.length + FH.length, `[K2] przycisk OFF: wyrab 0, tartak ${count(log, 'tartak')} == ${FP.length + FH.length} (zalozenie: farma niemozliwa bez wycinki)`);
+    ok(count(log, 'wyrab') === 0 && count(log, 'tartak') === FP.length + FH.length, `[K2] przycisk OFF: wyrab 0, tartak ${count(log, 'tartak')} == ${FP.length + FH.length}`);
   }
-  // ZALOZENIE: las na rowninie POZA obrabianymi heksami (onlyWorked) nie jest „przejety” przez farme
+  // las na rowninie POZA obrabianymi heksami
   {
-    const FPU = [[14, 12], [13, 13], [15, 12]]; // poza pierscieniem obrabianych heksow
+    const FPU = [[14, 12], [13, 13], [15, 12]];
     const map = makeMap({ forest: FPU });
     const { log } = sim({ map, worked: WORKED_ALL, profil: 'K3', turns: 20, deficitFn: () => ['drewno'] });
-    ok(count(log, 'tartak') === FPU.length, `[K3] las na rowninie poza heksami obywateli (farma tam nie dojdzie): tartak ${count(log, 'tartak')} == ${FPU.length}`);
+    ok(count(log, 'tartak') === FPU.length, `[K3] las na rowninie poza heksami obywateli: tartak ${count(log, 'tartak')} == ${FPU.length}`);
   }
-  // rzeka + las na Wzgorzach: zero tartaku (D-R5-2) mimo ze farma niemozliwa (D-R5-1)
+  // rzeka + las na Wzgorzach: zero tartaku mimo ze farma niemozliwa
   for (const profil of ['K2', 'K3']) {
     const map = makeMap({ river: RIVER, forest: RIVER, hills: RIVER });
     const { log } = sim({ map, worked: WORKED_ALL, profil, turns: 20, deficitFn: () => ['drewno'] });
-    ok(count(log, 'tartak') === 0 && count(log, 'oboz_lowiecki') === 0, `[${profil}] rzeka+las na Wzgorzach + niedobor: zero tartaku/obozu (D-R5-2)`);
+    ok(count(log, 'tartak') === 0 && count(log, 'oboz_lowiecki') === 0, `[${profil}] rzeka+las na Wzgorzach + niedobor: zero tartaku/obozu`);
   }
 }
 
 console.log('(s4) D-R5-2: tartak i oboz NIGDY na heksie rzeka+las we WSZYSTKICH profilach automatu (takze „surowce”); lasy poza rzeka bez zmian');
 {
-  const FOR = [[14, 12], [11, 11], [13, 13]];
+  const FOR = [[14, 12], [11, 13], [13, 13]]; // bez dostepu do rzeki (S3-1)
   const mk = () => makeMap({ river: RIVER, forest: [...RIVER, ...FOR] });
   const worked = [...WORKED_ALL, ...FOR];
   const s = sim({ map: mk(), worked, profil: 'S', turns: 20 });
@@ -856,7 +861,8 @@ console.log('(s4) D-R5-2: tartak i oboz NIGDY na heksie rzeka+las we WSZYSTKICH 
     ok(bad.length === 0, `[${profil}] 0 tartakow/obozow na rzece+las`);
   }
   const picker = fs.readFileSync(path.resolve(SRC, 'game/auto-improvements.ts'), 'utf8');
-  ok(!/demandActive\s*&&\s*\(key === 'tartak' \|\| key === 'oboz_lowiecki'\)\s*&&\s*riverHexKeys/.test(picker), 'auto-improvements.ts: zakaz tartak/oboz na rzece nie jest warunkowany `demandActive`');
+  ok(!/demandActive\s*&&\s*\(key === 'tartak' \|\| key === 'oboz_lowiecki'\)\s*&&\s*(riverHexKeys|hasRiverAccess)/.test(picker), 'auto-improvements.ts: zakaz tartak/oboz na rzece/dostepie do rzeki nie jest warunkowany `demandActive`');
+  ok(!/farmWouldClaimForest/.test(picker.replace(/\/\/.*$/gm, '')), 'auto-improvements.ts: blokada D-R5-1 `farmWouldClaimForest` usunieta (S3-1b)');
 }
 
 console.log('(s5) BUDZET SZTYWNO — kazdy KROK z osobna: KROK 0 wyrabu (rzeka+las), FAZA 2 wyrabu, FAZA 0 obrony; niskie % (1-3) i pula na granicy kosztu');
@@ -907,6 +913,97 @@ console.log('(s5) BUDZET SZTYWNO — kazdy KROK z osobna: KROK 0 wyrabu (rzeka+l
     ok(naruszen === 0, `[${profil}] FAZA 0 (obrona): pct 1/5/10/20/100 x pula 400: wydatek <= sufit`);
     ok(widziano, `[${profil}] FAZA 0: test nie jest prozny — obrona (posterunek/fort) powstaje przy wysokim %`);
   }
+}
+
+console.log('(s6) S3-1: tartak/oboz NIGDY na heksie z rzeka ANI na heksie z DOSTEPEM do rzeki (sasiad rzeki); preferencja WZGORZ; las-rownina bez dostepu dopuszczony');
+{
+  // RIVER = (12,9),(12,10),(13,10). Sasiedzi rzeki (dostep): m.in. (11,11),(12,11),(13,11),(11,10),(14,10),(13,9),(14,9)...
+  const ACC_H = [[11, 11], [13, 11]];   // las na Wzgorzach, SASIADUJE z rzeka (dostep do wody)
+  const ACC_P = [[12, 11]];             // las na rowninie, sasiaduje z rzeka
+  const FAR_P = [[14, 13], [11, 13]];   // las na rowninie, bez dostepu
+  const FAR_H = [[13, 12], [11, 12]];   // las na Wzgorzach, bez dostepu
+  const keysOn = (log, list, key) => log.filter(e => e.key === key && list.some(([q, r]) => K(q, r) === e.hk));
+  for (const profil of ['K2', 'K3']) {
+    const map = makeMap({ river: RIVER, forest: [...RIVER, ...ACC_H, ...ACC_P, ...FAR_P, ...FAR_H], hills: [...ACC_H, ...FAR_H] });
+    const { log } = sim({ map, worked: [...WORKED_ALL, ...ACC_H, ...ACC_P, ...FAR_P, ...FAR_H], profil, turns: 40, deficitFn: () => ['drewno'] });
+    ok(keysOn(log, [...ACC_H, ...ACC_P], 'tartak').length === 0, `[${profil}] S3-1: ZERO tartakow na lesie SASIADUJACYM z rzeka (wzgorza i rownina)`);
+    ok(keysOn(log, [...ACC_H, ...ACC_P, ...RIVER], 'oboz_lowiecki').length === 0, `[${profil}] S3-1: ZERO obozow na rzece i na heksie z dostepem do rzeki`);
+    ok(keysOn(log, RIVER, 'tartak').length === 0, `[${profil}] S3-1: ZERO tartakow na rzece`);
+    ok([...FAR_P, ...FAR_H].every(([q, r]) => idx(log, 'tartak', K(q, r)) >= 0), `[${profil}] S3-1: tartak na lesie BEZ dostepu do rzeki (wzgorza i rownina) ${FAR_P.length + FAR_H.length}/${FAR_P.length + FAR_H.length}`);
+    const tOf = (q, r) => { const i = idx(log, 'tartak', K(q, r)); return i < 0 ? 1e9 : log[i].t; };
+    const tH = Math.max(...FAR_H.map(([q, r]) => tOf(q, r)));
+    const tP = Math.min(...FAR_P.map(([q, r]) => tOf(q, r)));
+    const iH = Math.max(...FAR_H.map(([q, r]) => idx(log, 'tartak', K(q, r))));
+    const iP = Math.min(...FAR_P.map(([q, r]) => idx(log, 'tartak', K(q, r))));
+    ok(iH < iP && tH <= tP, `[${profil}] S3-1(c): tartaki na WZGORZACH (ost. tura ${tH}) przed tartakami na rowninie (pierwsza tura ${tP})`);
+  }
+  // preferencja wzgorz takze gdy rownina jest BLIZEJ miasta: pierwszy tartak = wzgorze
+  for (const profil of ['K2', 'K3']) {
+    const PL = [[12, 13]];             // rownina, blizej centrum, bez dostepu
+    const HL = [[14, 13]];             // wzgorze, dalej
+    const map = makeMap({ river: RIVER, forest: [...PL, ...HL], hills: HL });
+    const { log } = sim({ map, worked: [...WORKED_ALL, ...PL, ...HL], profil, turns: 10, deficitFn: () => ['drewno'] });
+    const first = log.find(e => e.key === 'tartak');
+    ok(first && first.hk === K(14, 13), `[${profil}] S3-1(c): pierwszy tartak na wzgorzu ${K(14, 13)} mimo blizszej rowniny (${first && first.hk})`);
+    ok(idx(log, 'tartak', K(12, 13)) >= 0, `[${profil}] S3-1(c): las-rownina bez dostepu dopuszczony PO wzgorzach`);
+  }
+  // heks NA rzece bez sasiada rzeki (jednoheksowa „rzeka”): tartak tez zablokowany (wlasny heks rzeki), sasiedzi tez
+  for (const profil of ['K2', 'K3']) {
+    const SOLO = [[12, 9]];
+    const NB = [[13, 9], [11, 10]]; // sasiedzi solo-rzeki, las na Wzgorzach
+    const map = makeMap({ river: SOLO, forest: [...SOLO, ...NB], hills: [...SOLO, ...NB] });
+    const { log } = sim({ map, worked: [...WORKED_ALL, ...SOLO, ...NB], profil, turns: 20, deficitFn: () => ['drewno'] });
+    ok(count(log, 'tartak') === 0 && count(log, 'oboz_lowiecki') === 0, `[${profil}] S3-1: heks NA rzece (bez sasiada rzeki) i jego sasiedzi — zero tartaku/obozu (${count(log, 'tartak')}/${count(log, 'oboz_lowiecki')})`);
+  }
+  // profil „surowce” (bez demandDriven): ta sama definicja dostepu do rzeki
+  {
+    const map = makeMap({ river: RIVER, forest: [...ACC_H, ...ACC_P, ...FAR_P], hills: ACC_H });
+    const s = sim({ map, worked: [...WORKED_ALL, ...ACC_H, ...ACC_P, ...FAR_P], profil: 'S', turns: 20 });
+    ok(keysOn(s.log, [...ACC_H, ...ACC_P], 'tartak').length === 0, '[S „surowce”] ZERO tartakow na lesie z dostepem do rzeki');
+    ok(FAR_P.every(([q, r]) => idx(s.log, 'tartak', K(q, r)) >= 0), '[S „surowce”] tartak na lesie bez dostepu do rzeki');
+  }
+  // K1: bez tartaku i obozu (bez zmian)
+  {
+    const map = makeMap({ river: RIVER, forest: [...FAR_P, ...FAR_H], hills: FAR_H });
+    const r = sim({ map, worked: [...WORKED_ALL, ...FAR_P, ...FAR_H], profil: 'K1', turns: 30, deficitFn: () => ['drewno'] });
+    ok(count(r.log, 'tartak') === 0 && count(r.log, 'oboz_lowiecki') === 0, '[K1] bez tartaku i obozu (bez zmian)');
+  }
+  // bez niedoboru K2/K3: tartak nadal NIE powstaje
+  for (const profil of ['K2', 'K3']) {
+    const map = makeMap({ river: RIVER, forest: [...FAR_P, ...FAR_H], hills: FAR_H });
+    const r = sim({ map, worked: [...WORKED_ALL, ...FAR_P, ...FAR_H], profil, turns: 30 });
+    ok(count(r.log, 'tartak') === 0, `[${profil}] S3-1(d): bez niedoboru tartak NIE powstaje (${count(r.log, 'tartak')})`);
+  }
+  const src = fs.readFileSync(path.resolve(SRC, 'map/improvement-build.ts'), 'utf8');
+  ok(/function isRiverAdjacent[\s\S]{0,400}riverHexSet\.has\(`\$\{nb\.q\},\$\{nb\.r\}`\)/.test(src), 'definicja dostepu do rzeki = improvement-build.ts isRiverAdjacent (heks na rzece LUB sasiad rzeki)');
+}
+
+console.log('(s7) S3-2: LIMIT „3 budowle na etap na miasto na ture” ZDJETY (gracz K1/K2, AI K3); ogranicza tylko budzet; parytet K2<->K3; budzet gracza sztywny');
+{
+  const HEXES = [];
+  for (let q = 8; q <= 16; q++) for (let r = 8; r <= 16; r++) if (!(q === CQ && r === CR)) HEXES.push([q, r]);
+  const perTurnMax = log => { const m = new Map(); for (const e of log) m.set(e.t, (m.get(e.t) ?? 0) + 1); return Math.max(0, ...m.values()); };
+  const res = {};
+  for (const profil of ['K1', 'K2', 'K3']) {
+    const r = sim({ map: makeMap({}), worked: HEXES, profil, turns: 6, pool0: 9000, income: 0 });
+    res[profil] = r;
+    ok(perTurnMax(r.log) > 3, `[${profil}] S3-2: wiecej niz 3 rozkazy/miasto/ture przy duzej puli (${perTurnMax(r.log)}) — limit etapu zdjety`);
+  }
+  // parytet K2<->K3 (ta sama logika, brak osobnego limitu AI): AI obrabia `population`=12 heksow (assignWorkedTiles), gracz K2 ma tu 80,
+  // wiec rownosc liczb nie jest wlasciwa; parytet sekwencji na tym samym stanie pilnuje (j). Tu: K3 <= obrabiane heksy AI + centrum.
+  ok(perTurnMax(res.K3.log) <= CITY.population + 1, `parytet K2<->K3: K3 max/ture ${perTurnMax(res.K3.log)} <= obrabiane heksy AI (pop ${CITY.population}) + centrum`);
+  {
+    const r = sim({ map: makeMap({}), worked: HEXES, profil: 'K2', turns: 1, pool0: 300, income: 0, pct: 33 });
+    const spent = r.turnSpend[0].spent;
+    ok(spent * 100 <= 33 * 300, `[K2] S3-2: budzet gracza 33% x 300 sztywny (wydatek ${spent} <= ${Math.floor(0.33 * 300)})`);
+    ok(spent > 0, '[K2] S3-2: budzet niezerowy (test niepusty)');
+  }
+  {
+    const r = sim({ map: makeMap({}), worked: HEXES, profil: 'K3', turns: 1, pool0: 300, income: 0 });
+    ok(r.turnSpend[0].spent <= 300, `[K3] S3-2: AI nie wydaje wiecej niz 100% puli (${r.turnSpend[0].spent} <= 300)`);
+  }
+  const picker = fs.readFileSync(path.resolve(SRC, 'game/auto-improvements.ts'), 'utf8');
+  ok(/export const FOOD_STAGE_MAX_ITEMS_PER_CITY = Infinity;/.test(picker), 'auto-improvements.ts: FOOD_STAGE_MAX_ITEMS_PER_CITY = Infinity (limit zdjety)');
 }
 
 console.log(`\nautoimprove-stages-q1-test: ${passed} passed, ${failed} failed`);

@@ -265,7 +265,8 @@ console.log('5. limit etapu zywnosciowego na miasto/ture, bez limitu 1 (wiele kw
   const cmds = buildImprovementCmds(decideAITurn(PLAYER_ID, [], [city], map, data, opts));
   // R-WEB-AUTOIMPROVE-STAGES-Q1 R3, ABC-D=B (wlasciciel 2026-10-31): AI BEZ limitu maxItemsPerCity:1 (ai.ts ~2651) —
   // etap zywnosciowy: do FOOD_STAGE_MAX_ITEMS_PER_CITY=3 rozkazow/miasto/ture (jak gracz). Poprzednio: dokladnie 1.
-  assert(cmds.length >= 2 && cmds.length <= 3, `wiecej niz 1 (brak limitu 1), najwyzej FOOD_STAGE_MAX_ITEMS_PER_CITY=3 mimo dziesiatek kwalifikujacych heksow (ABC-D=B), got ${cmds.length}`);
+  // R-WEB-AUTOIMPROVE-STAGES3-Q1 S3-2=C (wlasciciel 2026-10-31): limit 3/etap ZDJETY — liczbe rozkazow ogranicza tylko budzet (i obrabiane heksy).
+  assert(cmds.length > 3, `S3-2: brak limitu 3 budowli na etap na miasto na ture — wiecej niz 3 rozkazy przy duzej puli, got ${cmds.length}`);
 }
 
 // ===========================================================================

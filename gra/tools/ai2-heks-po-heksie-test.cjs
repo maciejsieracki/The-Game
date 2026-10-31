@@ -202,8 +202,9 @@ console.log('D. AI CYWILIZACJI — BEZ limitu maxItemsPerCity: 1 (R-WEB-AUTOIMPR
     const own = Math.abs(c.q - 5) + Math.abs(c.r - 5) <= Math.abs(c.q - 14) + Math.abs(c.r - 14) ? 'c0' : 'c1';
     perCity.set(own, (perCity.get(own) ?? 0) + 1);
   }
-  ok(cmds.length > cities.length && [...perCity.values()].every(n => n >= 1 && n <= 3),
-    `decideAITurn: wiecej niz 1 ulepszenie na miasto na ture, <=3 na miasto (${cmds.length} rozkazow przy ${cities.length} miastach: ${JSON.stringify([...perCity])})`);
+  // R-WEB-AUTOIMPROVE-STAGES3-Q1 S3-2=C: limit 3/etap ZDJETY — brak gornego limitu na miasto (ogranicza tylko budzet).
+  ok(cmds.length > cities.length && [...perCity.values()].every(n => n >= 1) && [...perCity.values()].some(n => n > 3),
+    `decideAITurn: wiecej niz 1 ulepszenie na miasto na ture, brak limitu 3 na miasto (${cmds.length} rozkazow przy ${cities.length} miastach: ${JSON.stringify([...perCity])})`);
 }
 
 console.log('E. AI CYWILIZACJI buduje TARTAK (przed runda 2: 0 na wszystkich ziarnach)');
