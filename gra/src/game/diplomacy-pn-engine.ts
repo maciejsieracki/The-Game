@@ -88,6 +88,12 @@ export interface DiploPairMeta {
    */
   peaceUntilTurn?: number;
   /**
+   * R-WEB-TRUCE-Q1 r3 (N1/N6) — rozejm: tura, w której rozejm przestaje obowiązywać (wyłącznie).
+   * Ustawiany przy akceptacji rozejmu (długość 5/10/15 tur); po osiągnięciu tury silnik
+   * przywraca wojnę BEZ kary Wiarygodności i bez flagi agresora. Brak pola = brak rozejmu.
+   */
+  truceUntilTurn?: number;
+  /**
    * Odwet (C-WIAR-ODWET=A) — ostatnie przewinienie w TEJ parze otwierające prawo
    * do bezkarnej (bez N1/N2) wojny odwetowej w oknie `wiarygodnoscOdwetOknoTur`
    * tur. `byOwnerId` = kto zawinił, `againstOwnerId` = wobec kogo (tylko TA strona
