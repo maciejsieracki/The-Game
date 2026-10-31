@@ -1,0 +1,17 @@
+PASS main: wszystkie produkcyjne wypowiedzenia maja rejestracje | wojna_wypowiedziana=11 (testowe=4, wygasniecie rozejmu=1), zarejestrujWypowiedzenie=6
+PASS main: rejestracja gracza (bez powodu lub casus belli)
+PASS main: ownerDeclareWarOn rejestruje (przyczyna jawna lub z casus belli)
+PASS main: hamulec nie nadaje flagi
+PASS main: wymuszona inna (sojusz/rebelia) nie nadaje flagi
+PASS main: AI wypowiedz_wojne — wymuszona epoka z powodu R-EPOKA-*
+PASS main: odmowa trybutu/ultimatum rejestruje casus belli (oba kierunki)
+PASS main: save zapisuje flage i casus belli
+PASS main: load odtwarza flage i casus belli (brak pola = pusty stan)
+PASS main: nowa gra czysci stan agresora
+PASS main: relacje gracza i AI niosa flage (celAgresorAktywny)
+PASS ai.ts: prog sojuszu/paktu i kontekst stance
+PASS diplomacy.ts: prog i mnoznik willingnessAlly w aiDiplomacyStance
+PASS diplomacy-proposals.ts: prog sojuszu, paktu i stance proponenta
+PASS UI panel: znacznik Agresor z tooltipem „do tury N"
+diplo-aggressor-wiring-test: 15 PASS, 0 FAIL
+EXIT=0

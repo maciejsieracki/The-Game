@@ -63,7 +63,7 @@ check('main: load odtwarza flage i casus belli (brak pola = pusty stan)',
   && main.includes('ustawStanCasusBelli(wczytajMape(saved.meta?.casusBelliUntilByPair));'));
 check('main: nowa gra czysci stan agresora', count(main, 'resetStanAgresora();') === 1);
 check('main: relacje gracza i AI niosa flage (celAgresorAktywny)',
-  count(main, 'celAgresorAktywny: czyAgresorAktywny(') === 2 && main.includes('agresorDoTury: doTuryFlagiAgresora(otherId, turn),'));
+  count(main, 'celAgresorAktywny: czyAgresorAktywny(') === 2 && main.includes('agresorPozostaleTury: (doTuryFlagiAgresora(otherId, turn) ?? turn) - turn || undefined,'));
 check('ai.ts: prog sojuszu/paktu i kontekst stance',
   ai.includes('+ deltaRelacjiSojusz(rel.celAgresorAktywny === true, undefined)')
   && count(ai, 'deltaRelacjiSojusz(rel.celAgresorAktywny === true, undefined)') === 2
@@ -73,8 +73,8 @@ check('diplomacy.ts: prog i mnoznik willingnessAlly w aiDiplomacyStance',
 check('diplomacy-proposals.ts: prog sojuszu, paktu i stance proponenta',
   prop.includes('deltaRelacjiSojusz(proponentAgresor)') && count(prop, 'deltaRelacjiSojusz(proponentAgresor)') === 2
   && prop.includes('const proponentAgresor = czyAgresorAktywny(proposerOwnerId, ctx.turn);'));
-check('UI panel: znacznik Agresor z tooltipem „do tury N"',
-  panel.includes('Wypowiedział wojnę bez powodu (do tury ') && panel.includes('agresorBadgeHtml(rel.agresorDoTury)'));
+check('UI panel: znacznik Agresor (N) z tooltipem konsekwencji',
+  panel.includes('konsekwencje dyplomatyczne przez ') && panel.includes('agresorBadgeHtml(rel.agresorPozostaleTury)'));
 
 console.log(`diplo-aggressor-wiring-test: ${pass} PASS, ${fail} FAIL`);
 process.exit(fail === 0 ? 0 : 1);

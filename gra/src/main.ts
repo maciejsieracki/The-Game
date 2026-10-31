@@ -7346,8 +7346,8 @@ async function boot(): Promise<void> {
           contactEstablished: diplomaticContactEstablishedSet().has(otherId),
           activeTreaties: activeTreatyLabelsForPair(activeDeals, ME(), otherId),
           wiarygodnosc: getWiarygodnosc(otherId),
-          // R-WEB-WAR-AGGRESSOR-FLAG-Q1: znacznik „Agresor" (tura końca flagi, gdy aktywna).
-          agresorDoTury: doTuryFlagiAgresora(otherId, turn),
+          // R-WEB-AGGRESSOR-MARKER-Q1: znacznik „Agresor (N)" — N = pozostałe tury aktywnej flagi.
+          agresorPozostaleTury: (doTuryFlagiAgresora(otherId, turn) ?? turn) - turn || undefined,
         });
       }
       rels.sort((x, y) => x.civ.localeCompare(y.civ, 'pl'));
