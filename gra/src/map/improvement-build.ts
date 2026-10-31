@@ -425,11 +425,13 @@ export function isStadninaBlockedOnForest(_key: string, _nakladka: Nakladka): bo
  * i przeszła do `FOREST_BLOCKED_IMPROVEMENT_KEYS` niżej.
  *
  * `owce`/`bydlo`/`lama` DOPISANE 2026-08-27 (R-ULEPSZENIA-HODOWLA-LAS-ODBLOKOWANA-Q1, ECHO
- * właściciela „Tak, odwracamy — wszystkie trzy", uchyla zakaz z 2026-07-29). Wpis jest tu
- * jawny, a nie „przez brak w zbiorze zakazanych", żeby ten zbiór pozostał czytelnym kanonem
- * tego, co wolno postawić w lesie. Zachowanie `isImprovementBlockedOnForest` jest dla tych
- * trzech kluczy identyczne w obu wariantach (przed dopisaniem wpadały w końcowe
- * `FOREST_BLOCKED_IMPROVEMENT_KEYS.has(key) === false`).
+ * właściciela „Tak, odwracamy — wszystkie trzy", uchyla zakaz z 2026-07-29).
+ * STAN OBOWIĄZUJĄCY (R-WEB-AUTOIMPROVE-STAGES-Q1, ABC-2 właściciela 2026-10-31: „konieczność
+ * wycinania lasu; nie ściągamy blokad"): `bydlo` i `owce` są w `FOREST_BLOCKED_IMPROVEMENT_KEYS`
+ * (NA LESIE NIE — najpierw wycinka) i ta blokada ZOSTAJE; z trzech wpisów tylko `lama` realnie
+ * współistnieje z lasem. Wpisy `bydlo`/`owce` w tym zbiorze są martwe: `isImprovementBlockedOnForest`
+ * sprawdza najpierw `FOREST_BLOCKED_IMPROVEMENT_KEYS`, więc blokada wygrywa (kod bez zmian).
+ * Trzoda NIE wymaga złoża ani żadnych zasobów (Q1 tego samego dnia).
  *
  * `stadnina` DOPISANA 2026-09-03 (P-STADNINA-LAS-NIEROZSTRZYGNIETE-Q1, ECHO właściciela:
  * „Stadnina […] jest ulepszeniem surowcowym, więc nie może podlegać takim samym zasadom jak
@@ -457,9 +459,10 @@ const FOREST_BLOCKED_IMPROVEMENT_KEYS = new Set<string>([
   // ta dziura, którą temat obozu łowieckiego znalazł jako P7).
   'farma',
   // Trzoda wymaga najpierw usunięcia lasu; ten wpis jest także drugim gate'em
-  // dla rzeczywistej ścieżki applyBuildRequest poza panelem.
+  // dla rzeczywistej ścieżki applyBuildRequest poza panelem. ABC-2 (właściciel 2026-10-31):
+  // blokada ZOSTAJE („konieczność wycinania lasu; nie ściągamy blokad”).
   'bydlo',
-  // Owce zachowują istniejącą blokadę budowy na lesie.
+  // Owce zachowują istniejącą blokadę budowy na lesie (ABC-2: blokada zostaje).
   'owce',
 ]);
 

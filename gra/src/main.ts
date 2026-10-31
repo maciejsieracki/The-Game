@@ -35745,6 +35745,10 @@ async function boot(): Promise<void> {
                   resourceDeficitKeys: resourceDeficitKeysForOwner(hOid),
                   surplusReport: playerSurplusReport,
                   civArchetype: playerCivArch,
+                  // R-WEB-AUTOIMPROVE-STAGES-Q1 (audyt P25/E5, zmierzone A8 vs A9): bez `playerEra`
+                  // picker liczyl `state.playerEra ?? 1`, wiec dla cywilizacji Nowego Swiata
+                  // (era < 3) `isLivestockAllowed` odrzucal trzode na stale. Jak `ai.ts:2658`.
+                  playerEra: empireEpochForOwner(hOid),
                   isImprovementAllowedForCiv: (key, civ) => isImprovementAllowedForCiv(key, civ),
                   getFocus: c => effectiveUlepszeniaForCity(c as City).focus,
                   getOnlyWorked: c => effectiveUlepszeniaForCity(c as City).onlyWorked,
@@ -35764,10 +35768,11 @@ async function boot(): Promise<void> {
                     );
                     return new Set(coords.map(({ q, r }) => `${q},${r}`));
                   },
-                  // R-WEB-AUTOIMPROVE-PRIORITY-Q1 (R5): etapy E1-E6 obowiazuja takze przy niedoborze
-                  // surowca (zmierzone na realnej grze: bez tego picker wracal do "heks po heksie",
-                  // a ulepszenia surowcowe zjadaly limit % puli przed irygacja). Picker sam dolicza
-                  // reszte listy z pozostalego budzetu PO etapie zywnosci (patrz pickAutoImprovements).
+                  // R-WEB-AUTOIMPROVE-STAGES-Q1 (ABC-1, K1/K2): etapy E1-E6 dla profili „Zywnosc” (K1)
+                  // i „zrownowazone” (K2). Niedobor surowca czyta WYLACZNIE picker i tylko dla
+                  // „zrownowazone” (K2, ta sama logika co AI = K3): ulepszenie brakujacego surowca
+                  // idzie NA PRZOD, po zaspokojeniu automat wraca do zywnosci. K1 nie odwoluje sie
+                  // do niedoborow (picker pomija `resourceDeficitKeys` dla profilu zywnosc).
                   foodImprovementStages: city => {
                     const policy = effectiveUlepszeniaForCity(city as City);
                     return policy.focus === 'zywnosc' || policy.focus === 'zrownowazone';

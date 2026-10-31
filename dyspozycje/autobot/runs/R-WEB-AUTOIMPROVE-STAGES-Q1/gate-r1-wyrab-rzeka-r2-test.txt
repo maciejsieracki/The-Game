@@ -1,0 +1,19 @@
+1. ZARZUT 1 (deadlock): rzeka+las z obywatelem, BRAK innego lasu, tartak/obóz jeszcze nie stoją
+  PASS: wycinka heksu rzeki = 1 w 12 turach (got 1)
+  PASS: przed wycinką na heksie rzeki nic nie stawiamy (got [])
+  PASS: heks rzeki nie ma Lasu po 12 turach
+2. ZARZUT 3 (wariant właściciela): mało lasu w promieniu (rzeka + 1 inny las = 2 < próg 3)
+  PASS: wycinka heksu rzeki przy 2 lasach w promieniu = 1 (got 1)
+  PASS: brak tartaku/obozu na rzece przed wycinką (got [])
+3. REGRESJA: rzeka+las, 5 innych lasów w promieniu (scenariusz rundy 3)
+  PASS: wycinka heksu rzeki = 1 (got 1)
+  PASS: brak budowy na rzece przed wycinką (got [])
+4. OBJAW B: farma na rzece 13,12 (bez lasu) z obywatelem → trzoda na tym heksie (E3)
+  PASS: z „Oswojenie zwierząt”: bydło na rzece po farmie (builtOn 13,12=["bydlo"])
+  PASS: bez „Oswojenia zwierząt”: bydło NIE powstaje (przyczyna: tech) (got [])
+5. E3: hodowla TYLKO na heksach przy rzece (bydło nie wchodzi na heksy bez rzeki)
+  PASS: brak hodowli na heksach bez rzeki (got [])
+
+Wynik: 10 PASS / 0 FAIL
+
+EXIT=0

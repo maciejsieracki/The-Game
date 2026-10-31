@@ -239,7 +239,7 @@ console.log('F. straznik tekstowy main.ts — konfiguracja wywolania pickera na 
 {
   const mainSrc = fs.readFileSync(path.resolve(SRC, 'main.ts'), 'utf8');
   const i = mainSrc.indexOf('const picks = pickAutoImprovements({');
-  const blok = i >= 0 ? mainSrc.slice(i, i + 2500) : '';
+  const blok = i >= 0 ? mainSrc.slice(i, i + 5000) : '';
   ok(i >= 0, 'main.ts zawiera wywolanie `pickAutoImprovements` auto-ulepszen gracza');
   ok(/skipWyrab:\s*true/.test(blok), 'main.ts (AI GRACZA): `skipWyrab: true` — gracz nie karczuje automatem');
   ok(/pracaBudgetPercent:\s*playerUlepszeniaPolicy\.pracaAutoPercent/.test(blok),
@@ -337,6 +337,10 @@ console.log('H. W-B: posterunek/fort NIE domykaja heksa i maja pulap ceil(pop/10
 console.log('I. WYRAB: AI CYWILIZACJI faktycznie wycina las na heksie z rzeka (GOAL tematu)');
 {
   const map = makeMap(16, 16, { nakladka: 'las', riverAt: [[7, 5], [7, 6], [7, 7], [7, 8]] });
+  // R-WEB-AUTOIMPROVE-STAGES-Q1 (K3): heks centrum miasta nie jest lasem (realna mapa tak nie wyglada).
+  // Przy niedoborze drewna krok „brakujacy surowiec” idzie NA PRZOD i (surowce wszedzie) trafialby
+  // z lasu-centrum w tartak na heksie miasta, na ktorym obozu postawic sie nie da.
+  map.hexes['7,7'].nakladka = 'brak';
   // RUNDA 4, ZASADA 2: automat buduje wylacznie na heksach OBRABIANYCH przez obywateli
   // (poza zlozami). Zeby ten scenariusz nadal testowal to, co testowal w rundzie 3
   // („pierwszy wyrab trafia na heks Z RZEKA"), obywatele musza te heksy z rzeka realnie
