@@ -376,3 +376,9 @@ Cel końcowy i bieżący zapisane w `GOAL-RUST-PORT-20261020.md` (§"CEL PĘTLI 
 - `R-RUSTPORT-P6-8E-UTRZYMANIE-EKONOMII-Q1` PASS-WITH-NOTES (FC r1, `72491e442`; ff na `rust-port/parity-v2`). Bramki w integracji: fmt OK, clippy -D warnings OK, test 1840/0 (5 testów M00 wymaga w sparse worktree katalogu `R-RUSTPORT-P6-M00-MAPGEN-SZKIELET-Q1`).
 - Decyzja orkiestratora: NOTA-1 (`magazynEraMultiplier`, 1 ulp dla ułamkowych er, `powf` vs `Math.pow`, `city_growth.rs` P6.7A) → dług techniczny, osobny temat po P6.8; epoki całkowite bitowo zgodne. NOTA-2 (`stripDiacriticsLower` → `pub` w `building_costs::p6_7b`) → follow-up.
 - Wolny slot Rust; kolejny: 8G (po REPIN-B3), 8H/8I — sprawdzić zależności przy następnej kontroli.
+
+## 2026-10-31 — R-WEB-PEACE-RULES-Q1 PASS (r3) zintegrowane na gałęzi web
+- FC r3 PASS (`7975b2899`, kod `9618dba47`); scalone do `web/integration-20261030` bez konfliktów. Bramki po scaleniu: tsc 0; profile-unit 198/0; gate 11/0; main-guard 28/0; sim 22/0; d7 8/0; brake 51/0 + unit 69/0; peace-lock 9/0; diplomacy 148/0; war-era-counter 82/0; multiwar 57/0 + main-guard 21/0; ring 15/0.
+- Do decyzji właściciela (UX): ostrzeżenie hamulca wojny trafia do panelu Wydarzeń, ale filtr „Inne cyw." jest domyślnie OFF → gracz nie widzi ostrzeżenia, dopóki nie włączy chipu.
+- Następne: PEACE-RULES r2 (R8 blokada wojny epoki przy Relacji ≥100, R9 usunięcie auto-końca wojen wymuszonych) → CITY-CESSION → AGGRESSOR-FLAG → TRUCE, sekwencyjnie na tej gałęzi.
+- Push do `main`: NIE WYKONANO.
