@@ -1,0 +1,16 @@
+{
+  "_opis": "R-WEB-WAR-AGGRESSOR-FLAG-Q1 — parametry flagi agresora i casus belli. Wartości w tym pliku, nie w kodzie. ZAŁOŻENIA oznaczone w polach _zalozenie.",
+  "flagaAgresora": {
+    "_zalozenie": "Flaga od tury wypowiedzenia T jest aktywna dla tur T..T+trwaTur-1 (do tury T+trwaTur wyłącznie).",
+    "trwaTur": 20
+  },
+  "wplywNaAI": {
+    "_zalozenie": "Delta progu Relacji dla sojuszu/paktu (ujemna = łatwiej odrzucić) i mnożnik willingnessAlly wobec agresora u INNYCH AI.",
+    "relacjaDeltaSojusz": -15,
+    "willingnessAllyMnoznik": 0.7
+  },
+  "casusBelli": {
+    "_zalozenie": "Odmowa trybutu lub ultimatum po stronie adresata daje żądającemu casus belli wobec adresata na N tur; wypowiedzenie z casus belli NIE nadaje flagi agresora.",
+    "trwaTur": 15
+  }
+}
