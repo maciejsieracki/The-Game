@@ -124,8 +124,9 @@ async function main() {
   check('"tartak": "Odblokowuje surowiec" === "drewno" (bez notatki)',
     !!tartakResourceRow && tartakResourceRow.value === 'drewno', tartakResourceRow && tartakResourceRow.value);
   const tartakProdRow = tartakResources && tartakResources.rows.find((r) => r.label === 'Produkcja surowca');
-  check('"tartak": "Produkcja surowca" nietknięta — nadal "200 / turę"',
-    !!tartakProdRow && tartakProdRow.value === '200 / turę', tartakProdRow && tartakProdRow.value);
+  // R-WEB-SAWMILL-QUARRY-PRODUCTION-50-Q1 (2026-10-31): baza 50 (przywrócona z regresu 200)
+  check('"tartak": "Produkcja surowca" nietknięta — "50 / turę" (baza epoki 1)',
+    !!tartakProdRow && tartakProdRow.value === '50 / turę', tartakProdRow && tartakProdRow.value);
 
   const farmCard = improvementAdapter(terrainImprovements.farma, {});
   const farmRequirements = farmCard.sections.find((s) => s.key === 'requirements');

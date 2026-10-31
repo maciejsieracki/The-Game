@@ -65,23 +65,29 @@ function territoryTotal(keys, era) {
 }
 
 console.log('-- Dane bazowe --');
-eq(data.kamieniolom.surowiec_ilosc_tura, 200, 'Kamieniołom ma bazę 200');
-eq(data.tartak.surowiec_ilosc_tura, 200, 'Tartak ma bazę 200');
+// R-WEB-SAWMILL-QUARRY-PRODUCTION-50-Q1 (2026-10-31): baza 50 przywrócona decyzją
+// właściciela (regres 200 z commita 9175f031f). Skalowanie epoką x1,5 bez zmian: 50/75/113.
+eq(data.kamieniolom.surowiec_ilosc_tura, 50, 'Kamieniołom ma bazę 50');
+eq(data.tartak.surowiec_ilosc_tura, 50, 'Tartak ma bazę 50');
 
 console.log('-- Resolver: epoki 1–3, niepoprawna epoka --');
-for (const [era, expected] of [[1, 200], [2, 300], [3, 450]]) {
+for (const [era, expected] of [[1, 50], [2, 75], [3, 113]]) {
   eq(M.territoryResourceYieldForImprovement('kamieniolom', null, era)?.amount,
     expected, `Kamieniołom epoka ${era}`);
   eq(M.territoryResourceYieldForImprovement('tartak', null, era)?.amount,
     expected, `Tartak regresja epoka ${era}`);
 }
-eq(M.territoryResourceYieldForImprovement('kamieniolom', null, 0)?.amount, 200,
+eq(M.territoryResourceYieldForImprovement('kamieniolom', null, 0)?.amount, 50,
   'epoka 0 używa bezpiecznie epoki 1');
-eq(M.territoryResourceYieldForImprovement('kamieniolom', null, 99)?.amount, 200,
+eq(M.territoryResourceYieldForImprovement('kamieniolom', null, 99)?.amount, 50,
   'niepoprawna epoka używa bezpiecznie epoki 1');
+eq(M.territoryResourceYieldForImprovement('kamieniolom', null, undefined)?.amount, 50,
+  'epoka undefined używa bezpiecznie epoki 1');
+eq(M.territoryResourceYieldForImprovement('kamieniolom', null, NaN)?.amount, 50,
+  'epoka NaN używa bezpiecznie epoki 1');
 
 console.log('-- Rzeczywiste naliczanie terytorialne --');
-for (const [era, expected] of [[1, 200], [2, 300], [3, 450]]) {
+for (const [era, expected] of [[1, 50], [2, 75], [3, 113]]) {
   eq(territoryTotal(['kamieniolom'], era), expected,
     `jeden Kamieniołom epoka ${era}`);
   eq(territoryTotal(['kamieniolom', 'kamieniolom'], era), expected * 2,
@@ -89,8 +95,26 @@ for (const [era, expected] of [[1, 200], [2, 300], [3, 450]]) {
   eq(territoryTotal([], era), 0, `brak Kamieniołomu epoka ${era}`);
 }
 
+console.log('-- Granice formuły i bazy 50 (R-WEB-SAWMILL-QUARRY-PRODUCTION-50-Q1) --');
+for (const era of [undefined, 0, 4, NaN]) {
+  eq(M.resourceProductionAmountForEra('tartak', 50, era), 50,
+    `resourceProductionAmountForEra tartak era=${String(era)} → 50`);
+  eq(M.resourceProductionAmountForEra('kamieniolom', 50, era), 50,
+    `resourceProductionAmountForEra kamieniolom era=${String(era)} → 50`);
+}
+eq(M.resourceProductionAmountForEra('tartak', 50, 1), 50, 'tartak era 1 → 50');
+eq(M.resourceProductionAmountForEra('tartak', 50, 2), 75, 'tartak era 2 → 75');
+eq(M.resourceProductionAmountForEra('tartak', 50, 3), 113, 'tartak era 3 → 113');
+eq(M.resourceProductionAmountForEra('glinianka', 50, 3), 50, 'glinianka bez skalowania epoką: era 3 → 50');
+eq(M.territoryResourceYieldForImprovement('glinianka', null, 3)?.amount, 50,
+  'glinianka bez skalowania (resolver, era 3) = 50');
+eq(M.territoryResourceYieldForImprovement('tartak', null, 1)?.amount, 50,
+  'tartak epoka 1 = 50 (wartość startowa)');
+eq(territoryTotal(['kamieniolom', 'kamieniolom'], 1), 100,
+  'dwa Kamieniołomy w epoce 1 = 100 (stawka per ulepszenie)');
+
 console.log('-- Mutacja formuły --');
-eq(M.resourceProductionAmountForEra('kamieniolom', 200, 2), 300,
+eq(M.resourceProductionAmountForEra('kamieniolom', 50, 2), 75,
   'mutacja samej formuły/mnożnika epoki (MUTATE_FORMULA=1) musi zaczerwienić test');
 
 console.log(`\n${passed} PASS, ${failed} FAIL`);

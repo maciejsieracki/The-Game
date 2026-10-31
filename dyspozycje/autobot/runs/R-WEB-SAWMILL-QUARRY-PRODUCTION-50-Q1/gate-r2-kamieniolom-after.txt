@@ -1,0 +1,45 @@
+-- Dane bazowe --
+PASS: Kamieniołom ma bazę 50 (got 50, want 50)
+PASS: Tartak ma bazę 50 (got 50, want 50)
+-- Resolver: epoki 1–3, niepoprawna epoka --
+PASS: Kamieniołom epoka 1 (got 50, want 50)
+PASS: Tartak regresja epoka 1 (got 50, want 50)
+PASS: Kamieniołom epoka 2 (got 75, want 75)
+PASS: Tartak regresja epoka 2 (got 75, want 75)
+PASS: Kamieniołom epoka 3 (got 113, want 113)
+PASS: Tartak regresja epoka 3 (got 113, want 113)
+PASS: epoka 0 używa bezpiecznie epoki 1 (got 50, want 50)
+PASS: niepoprawna epoka używa bezpiecznie epoki 1 (got 50, want 50)
+PASS: epoka undefined używa bezpiecznie epoki 1 (got 50, want 50)
+PASS: epoka NaN używa bezpiecznie epoki 1 (got 50, want 50)
+-- Rzeczywiste naliczanie terytorialne --
+PASS: jeden Kamieniołom epoka 1 (got 50, want 50)
+PASS: dwa Kamieniołomy epoka 1 (got 100, want 100)
+PASS: brak Kamieniołomu epoka 1 (got 0, want 0)
+PASS: jeden Kamieniołom epoka 2 (got 75, want 75)
+PASS: dwa Kamieniołomy epoka 2 (got 150, want 150)
+PASS: brak Kamieniołomu epoka 2 (got 0, want 0)
+PASS: jeden Kamieniołom epoka 3 (got 113, want 113)
+PASS: dwa Kamieniołomy epoka 3 (got 226, want 226)
+PASS: brak Kamieniołomu epoka 3 (got 0, want 0)
+-- Granice formuły i bazy 50 (R-WEB-SAWMILL-QUARRY-PRODUCTION-50-Q1) --
+PASS: resourceProductionAmountForEra tartak era=undefined → 50 (got 50, want 50)
+PASS: resourceProductionAmountForEra kamieniolom era=undefined → 50 (got 50, want 50)
+PASS: resourceProductionAmountForEra tartak era=0 → 50 (got 50, want 50)
+PASS: resourceProductionAmountForEra kamieniolom era=0 → 50 (got 50, want 50)
+PASS: resourceProductionAmountForEra tartak era=4 → 50 (got 50, want 50)
+PASS: resourceProductionAmountForEra kamieniolom era=4 → 50 (got 50, want 50)
+PASS: resourceProductionAmountForEra tartak era=NaN → 50 (got 50, want 50)
+PASS: resourceProductionAmountForEra kamieniolom era=NaN → 50 (got 50, want 50)
+PASS: tartak era 1 → 50 (got 50, want 50)
+PASS: tartak era 2 → 75 (got 75, want 75)
+PASS: tartak era 3 → 113 (got 113, want 113)
+PASS: glinianka bez skalowania epoką: era 3 → 50 (got 50, want 50)
+PASS: glinianka bez skalowania (resolver, era 3) = 50 (got 50, want 50)
+PASS: tartak epoka 1 = 50 (wartość startowa) (got 50, want 50)
+PASS: dwa Kamieniołomy w epoce 1 = 100 (stawka per ulepszenie) (got 100, want 100)
+-- Mutacja formuły --
+PASS: mutacja samej formuły/mnożnika epoki (MUTATE_FORMULA=1) musi zaczerwienić test (got 75, want 75)
+
+37 PASS, 0 FAIL
+EXIT=0
