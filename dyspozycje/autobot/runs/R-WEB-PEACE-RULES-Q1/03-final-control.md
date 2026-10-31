@@ -1,24 +1,18 @@
-STATUS: FAIL
+STATUS: PASS
 DOMAIN: GAME (WEB, gra/)
 TEMAT: R-WEB-PEACE-RULES-Q1
-GOAL: Runda 1 (R1-R7, R10, D7); R8/R9 odlozone do rundy 2.
-ZMIANY/COMMIT: oceniany f61db5cc9 (baza 7164f7ca1; 44a4de5fd + obrona). Allowlista: 14 plikow, wylacznie gra/ (src/game, src/main.ts, data, tools); brak gra-robocza, WERSJE.md, forced-war-*, rust-port. git diff --check czysty. Brak push/deploy.
-TESTY (odtworzone samodzielnie na f61db5cc9): tsc --noEmit PASS; profile-unit 153/0; gate 11/0; main-guard 28/0; sim 19/0; d7 8/0; brake 51/0, unit 69/0, mutacje 17/0; diplomacy-test 148/0; peace-lock 9/0; war-rules-multiwar 55/0, main-guard 21/0. Nie odtworzono: ai-test, civ-matrix-wiring, forced-war-*, ai-wojny-zwykle-cap (wartosci Obrony, bez regresji wzgledem bazy wg jej pomiaru).
+GOAL: Final Control r3 po obronie Operatora (baza oceny 9618dba47, nad e0b82d85b i 6650dc0c9).
+ZMIANY/COMMIT: oceniany kod 9618dba472b9080ef65716670f909ba0f58673ac; ten raport dodany osobnym commitem (SHA w odpowiedzi orkiestratorowi). Diff 6650dc0c9..9618dba w allowliscie: gra/src/game/ai.ts (+7/-3), gra/src/main.ts (+86/-0, tylko hak testowy __peaceRulesTestDebug), gra/data/diplomacy-war-peace-params.json, 4 testy w gra/tools, raporty i 2 PNG w runie. Brak zmian w gra-robocza, WERSJE.md, rust-port, src-tauri, forced-war-*. git diff --check OK.
 
-ROZSTRZYGNIECIE ZARZUTOW
-1 symulacja wielotur: ODDAL (sim-test 19/0 wola realne decideAIDiplomacy/evaluateProposal, 30 tur, 4 mutanty wykrywane; poziom regul akceptowalny).
-2 zrzut Chromium (kryt. 9): NAPRAW. R-PROC-AUTOBOT par. 9 pkt 6: brak zywej weryfikacji = FAIL bezwarunkowo. Wykonalne: node ./node_modules/vite/bin/vite.js build --outDir /tmp/... + Playwright/Chromium z /opt/pw-browsers; pokazac komunikat "AI czuje sie silniejsze..." (diplomacy-war-peace-profile.ts:357, uzyty w diplomacy-proposals.ts) oraz ostrzezenie hamulca "Ryzyko wojny ... (laczna Relacja <= N)"; plus dowod nietautologicznosci (mutacja zrodla -> test czerwony).
-3 R3(c) zdrowie armii: ODDAL (zaimplementowane: diploArmyHealthShare w main.ts, klucz podlaczony; testy S6/M_HEALTH).
-4 test zachowania decideAIDiplomacy: ODDAL (S1-S7, M_SIG/M_FEEL/M_WEAR).
-5 D7 i hamulec wg Relacji: ODDAL (brakeWarOutcome wydzielone i testowane + mutant M_D7; crisisStepForPair z progiem/N testowane w unit/mutation 69/17). Uwaga: okablowanie diploBrakeWarParams w main to nadal test zrodlowy.
-6 oslabiona asercja brake: ODDAL (przywrocona dokladna asercja, brake 51/0).
-7 sygnal (e) vs R5(b): ODDAL (AI nie proponuje pokoju gdy isFeelingStronger; saturacja naprawiona: maks*min(1,t/T)).
-8 premiaProfilObronny=0: DO DECYZJI CZLOWIEKA/orkiestratora. Sprzecznosc w dispatchu (+0.05 vs Zulusi 0.28 i Chinczycy 0.49 przy profilu=1). Udokumentowane ZALOZENIE w JSON, jedna liczba do zmiany. Nie blokuje.
-9 migracja starych zapisow / round-trip: ODDAL (round-trip testowany; opoznienie <= minTurWojny, ZALOZENIE).
-10 bramki: ODDAL (potwierdzone powyzej).
+WERDYKT ZARZUTOW (Evaluator r3):
+1. Odmowa "silniejsze" na ekranie: ODDAL. Hak sendPeaceProposalForTest wola realne handleNegotiatedProposal + handleNegotiationAccept; zrzut live-A-odmowa-pokoju-komunikat.png (obejrzany) pokazuje w #civ-hint-toast "Nie można wysłać — AI czuje się silniejsze — odrzuca pokój, dopóki nie straci miasta lub nie minie więcej tur wojny". Asercje DOM A1 (pozytywna) i A2 (negatywna po 10 turach). Mutacja M1 (if (false && isFeelingStronger...), diplomacy-war-peace-profile.ts:353) powtórzona przeze mnie: live 15/2 FAIL (powód + DOM), przywrócono. Uwaga: hak nie symuluje kliknięcia myszą (udokumentowane, zgodne z wzorcem haków testowych repo).
+2. Spójność z R5(a) / minTurWojny: ODDAL. ai.ts: aiPeaceTimeOk = turnsAtWarRel >= warProfile.minTurWojny w warunku zaproponuj_pokoj; ZAŁOŻENIE F2 zmienione i opisane w kodzie i w 02-operator-obrona-r3.md. Sim 22/0 z S1a, S7b (0 naruszeń "za wcześnie"), mutant M_TUR wykryty.
+3. Okablowanie diploBrakeWarParams: ODDAL. Live B1 asercje prog=15, N=6 oraz dokładny tekst "Ryzyko wojny z Grecy: 2 tur do wypowiedzenia (łączna Relacja ≤ 15)" w DOM (realny endTurn).
+4. Niespójność liczby zrzutów: ODDAL. W runie 2 PNG; 01-operator-r1.md to historyczny raport rundy ("3 zrzuty", BLOKADA 1), skorygowany przez 02-operator-obrona-r3.md; nie defekt produktu.
+DO DECYZJI CZŁOWIEKA (nie zarzut, nie blokuje): ostrzeżenie hamulca jest domyślnie ukryte filtrem "Inne cyw." (OFF) — decyzja UX poza allowlistą.
 
-POWOD FAIL: jeden NAPRAW (zarzut 2 / kryterium 9).
-BLOKADY: kryterium 9; R8, R9 (runda 2 wg dispatchu); decyzja pkt 8.
-RUNDY: 2/5 zuzyte (R1 Operator+Evaluator FAIL, R2 Obrona). Nastepna: runda 3 (Operator), wylacznie zrzut Chromium + mutacja; bez zmian logiki.
-NASTEPNY KROK: Operator (ten sam ID) -> Evaluator -> Final Control. Kolejnosc integracji: po PASS cherry-pick f61db5cc9 (+ ewentualne commity r3) na origin/rust-port/parity-v2 dopiero po zintegrowaniu R-WEB-ERA-WAR-COUNTER-Q1 (ten sam main.ts; konflikt blokow rozwiazuje orkiestrator), przed R8/R9 i R-WEB-PEACE-CITY-CESSION-Q1.
+TESTY (samodzielnie, detached 9618dba47, npm ci): tsc --noEmit rc 0; profile-unit 198/0; gate 11/0; main-guard 28/0; sim 22/0; d7 8/0; brake 51/0; brake-unit 69/0; brake-mutation 17/0; peace-lock 9/0; diplomacy-test 148/0; multiwar-main-guard 21/0; live Chromium 17/0 (vite build do scratch poza repo). NIE_ZMIERZONO: forced-war-*, endturn, load-game (zmiany r3 ich nie dotyczą: ai.ts propozycje pokoju AI + hak testowy). gra/node_modules usunięty.
+BLOKADY: brak
+RUNDY: 3/5 (ten sam ID); R8/R9 pozostają na rundę 2 po integracji licznika wojen epoki.
+NASTĘPNY KROK: integracja orkiestratora (cherry-pick na wspólną bazę). Względem origin/rust-port/parity-v2 (72491e442): temat WEBOWY, dotyka wyłącznie gra/ i runs/R-WEB-PEACE-RULES-Q1; brak wspólnych plików z portem Rust, kolejność dowolna; integrować na gałąź webową, nie na parity-v2. Konflikty main.ts z R-WEB-ERA-WAR-COUNTER-Q1 (blok haków testowych) rozwiązuje orkiestrator.
 DEPLOY/PUSH: NIE WYKONANO
