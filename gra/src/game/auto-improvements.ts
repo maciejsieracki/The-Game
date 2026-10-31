@@ -419,6 +419,13 @@ export interface PickAutoImprovementsOpts {
    * tej flagi NIE dostaja — zachowanie bazy 4d1916f2c.
    */
   limitForestKeysToMinimum?: boolean;
+  /**
+   * Internal (R4, korekta dróg właściciela 2026-10-31): przebieg „drogi” K2/K3 — jedyny, w którym profil
+   * zrównoważony pod popytem (`demandDriven`) może postawić `droga`/`droga_brukowana`. Ustawia go WYŁĄCZNIE
+   * `pickAutoImprovements`, gdy etapy żywności E1–E6 i ścieżka zapasowa nie mają nic do zrobienia ORAZ nie
+   * ma aktywnego niedoboru z możliwym do zbudowania ulepszeniem (najniższy priorytet).
+   */
+  roadsPass?: boolean;
   /** Internal stage E1: only river hexes are candidates (farm on river first, everywhere). */
   riverHexesOnly?: boolean;
   /** Internal stage E5: the river stages E1-E4 are exhausted — off-river clearing is not blocked by river hexes. */
@@ -532,7 +539,16 @@ export const IMPROVEMENT_FOR_DEFICIT: Readonly<Record<string, readonly Improveme
   ruda: ['kopalnia_miedzi'],
   ruda_zelaza: ['kopalnia_zelaza'],
   ruda_cyny: ['kopalnia_cyny'],
+  // R4 (właściciel 2026-10-31: „niedobór ma tylko otwierać ulepszenia brakującego surowca”): dopisane
+  // sól → warzelnia i koń → stadnina (klucze magazynu `sol`/`kon`, terrain-improvements.ts:284). Bez nich
+  // nowa zasada (lista = żywność + WYŁĄCZNIE brakujący surowiec) nigdy nie postawiłaby warzelni/stadniny.
+  sol: ['warzelnia_soli'],
+  kon: ['stadnina'],
 };
+
+/** Klucze dróg (terrain-improvements.json: `droga`, `droga_brukowana`) — najniższy priorytet K2/K3. */
+export const ROAD_KEYS: readonly ImprovementKey[] = ['droga', 'droga_brukowana'];
+const ROAD_KEY_SET: ReadonlySet<ImprovementKey> = new Set<ImprovementKey>(ROAD_KEYS);
 
 /**
  * Ulepszenia produkujące BRAKUJĄCE surowce (kolejność = kolejność niedoborów, największa luka pierwsza).
@@ -691,18 +707,86 @@ export function pickAutoImprovements(opts: PickAutoImprovementsOpts): AutoImprov
   // Preserve ordinary forestry fallback only after no food stage has any eligible
   // target. In particular, never let this fallback cut a non-river forest while a
   // farm/livestock/irrigation phase is waiting on the Work budget.
+  // R4: dla K2/K3 (`demandDriven`) lista tej sciezki to NADAL tylko zywnosc + ulepszenie brakujacego
+  // surowca (picker zawęza `basePriority` — niedobor NIE otwiera reszty listy).
   let fallbackPicks: AutoImprovementPick[] = [];
+  let fallbackIsPending = false;
   if (stagedPicks.length === 0 && !earlierStageIsPending && foodCities.length > 0) {
-    fallbackPicks = pickAutoImprovementsSinglePass(after(stageSpent, { cities: foodCities, limitForestKeysToMinimum: true }));
+    const fallbackOpts = after(stageSpent, { cities: foodCities, limitForestKeysToMinimum: true });
+    fallbackPicks = pickAutoImprovementsSinglePass(fallbackOpts);
     record(fallbackPicks);
+    if (fallbackPicks.length === 0) {
+      // Jak w etapach: cel czekajacy tylko na Prace wstrzymuje nizszy priorytet (drogi).
+      fallbackIsPending = pickAutoImprovementsSinglePass({
+        ...fallbackOpts,
+        pracaAvailable: Number.MAX_SAFE_INTEGER,
+        improvementBudgetCap: Number.MAX_SAFE_INTEGER,
+        pracaBudgetPercent: 100,
+        getPracaBudgetPercent: undefined,
+        maxItemsPerCity: Infinity,
+        pracaSurplusThreshold: 0,
+        surplusReport: undefined,
+        reserveBudgetForMostExpensive: false,
+      }).length > 0;
+    }
   }
-  const sideSpent = stageSpent + sum(fallbackPicks);
+  const fallbackSpent = stageSpent + sum(fallbackPicks);
 
-  if (otherCities.length === 0) return [...deficitPicks, ...stagedPicks, ...fallbackPicks];
+  // KROK 3 (K2/K3, korekta dróg właściciela 2026-10-31): „Drogi powinny być budowane dopiero wtedy, kiedy
+  // zaspokoi się wszystkie potrzeby związane z ulepszeniami żywności oraz wszystkie potrzeby związane
+  // z surowcami.” Drogi = NAJNIŻSZY priorytet: (1) żaden etap E1–E6 ani ścieżka zapasowa nie ma celu
+  // (ani do postawienia teraz, ani czekającego na Pracę), (2) niedobór surowca z możliwym do zbudowania
+  // ulepszeniem jest zaspokojony: brak picków kroku 1 w tej turze ORAZ brak celu czekającego na Pracę.
+  // ZAŁOŻENIE: niedobór bez ulepszenia terenu (złoto, stal) albo bez miejsca/technologii dla ulepszenia
+  // NIE blokuje dróg w nieskończoność — `actionable` odfiltrowuje pierwsze, a probe niżej drugie.
+  let roadPicks: AutoImprovementPick[] = [];
+  const roadCities = opts.demandDriven === true
+    ? foodCities.filter(c => (opts.getFocus?.(c) ?? c.ulepszeniaFocus ?? DEFAULT_ULEPSZENIA_FOCUS) === 'zrownowazone')
+    : [];
+  if (
+    roadCities.length > 0
+    && stagedPicks.length === 0 && !earlierStageIsPending
+    && fallbackPicks.length === 0 && !fallbackIsPending
+    && deficitPicks.length === 0
+  ) {
+    const deficitIsPending = deficitCities.length > 0 && pickAutoImprovementsSinglePass(after(0, {
+      cities: deficitCities,
+      priorityOverride: deficitKeys,
+      getOnlyWorked: opts.getResourcePassOnlyWorked ?? opts.getOnlyWorked,
+      riverForestClearingOnly: false,
+      riverHexesOnly: false,
+      offRiverClearing: false,
+      limitForestKeysToMinimum: true,
+      pracaAvailable: Number.MAX_SAFE_INTEGER,
+      improvementBudgetCap: Number.MAX_SAFE_INTEGER,
+      pracaBudgetPercent: 100,
+      getPracaBudgetPercent: undefined,
+      maxItemsPerCity: Infinity,
+      pracaSurplusThreshold: 0,
+      surplusReport: undefined,
+    })).length > 0;
+    if (!deficitIsPending) {
+      roadPicks = pickAutoImprovementsSinglePass(after(fallbackSpent, {
+        cities: roadCities,
+        priorityOverride: ROAD_KEYS,
+        roadsPass: true,
+        surplusReport: undefined,
+        riverForestClearingOnly: false,
+        riverHexesOnly: false,
+        offRiverClearing: false,
+        limitForestKeysToMinimum: false,
+        maxItemsPerCity: maxItemsStage,
+      }));
+      record(roadPicks);
+    }
+  }
+  const sideSpent = fallbackSpent + sum(roadPicks);
+
+  if (otherCities.length === 0) return [...deficitPicks, ...stagedPicks, ...fallbackPicks, ...roadPicks];
   // Selected non-food profiles remain active in the same call. Charge their picks
   // against the same empire envelope, after the currently active food phase.
   const normalPicks = pickAutoImprovementsSinglePass(after(sideSpent, { cities: otherCities }));
-  return [...deficitPicks, ...stagedPicks, ...fallbackPicks, ...normalPicks];
+  return [...deficitPicks, ...stagedPicks, ...fallbackPicks, ...roadPicks, ...normalPicks];
 }
 
 function pickAutoImprovementsSinglePass(opts: PickAutoImprovementsOpts): AutoImprovementPick[] {
@@ -736,6 +820,7 @@ function pickAutoImprovementsSinglePass(opts: PickAutoImprovementsOpts): AutoImp
     reserveBudgetForMostExpensive = false,
     irrigationNeedsFarm = false,
     limitForestKeysToMinimum = false,
+    roadsPass = false,
   } = opts;
 
   if (cities.length === 0 || !territoryNodes) return [];
@@ -744,6 +829,10 @@ function pickAutoImprovementsSinglePass(opts: PickAutoImprovementsOpts): AutoImp
   // jest polityką PAŃSTWA (magazyn surowców jest państwowy), nie miasta.
   const deficitActive = hasNonFoodResourceDeficit(resourceDeficitKeys);
   if (surplusReport) surplusReport.deficitActive = deficitActive;
+  // R4: ulepszenia BRAKUJĄCYCH surowców (tylko z nich niedobór może coś „otworzyć” w K2/K3).
+  const deficitOpenKeys: ReadonlySet<ImprovementKey> = deficitActive
+    ? new Set<ImprovementKey>(deficitImprovementKeys(resourceDeficitKeys))
+    : new Set<ImprovementKey>();
 
   let pracaLeft = opts.pracaAvailable;
   const reserve = opts.pracaSurplusThreshold ?? 0;
@@ -877,10 +966,29 @@ function pickAutoImprovementsSinglePass(opts: PickAutoImprovementsOpts): AutoImp
       ? false
       : (getSkipWyrab ? getSkipWyrab(city) : skipWyrab);
     // R3, ABC-A=C: K1 (profil „Żywność”) nigdy nie stawia tartaku ani obozu — także przy `priorityOverride` (E6).
+    // R4 (właściciel 2026-10-31, K2 gracz „Zrównoważone” i K3 AI — jedna logika): „Niedobór ma tylko otwierać
+    // ulepszenia brakującego surowca, nic więcej.” Pod popytem lista = ŻYWNOŚĆ + ulepszenia WYŁĄCZNIE
+    // brakujących surowców (`deficitImprovementKeys`, jedno źródło prawdy: `IMPROVEMENT_FOR_DEFICIT`)
+    // + (tylko przebieg `roadsPass`) drogi. Fort/posterunek (FAZA 0) i reszta listy są tu zamknięte zawsze.
+    // Profile „Żywność” (K1), „surowce” i „infrastruktura” oraz wywołania bez `demandDriven` — bez zmian.
+    const demandActive = demandDriven && focus === 'zrownowazone';
     const basePriority = (priorityOverride ?? prioritiesForUlepszeniaFocus(focus, citySkipWyrab))
-      .filter(k => focus !== 'zywnosc' || !FOREST_BUILDING_KEYS.has(k));
+      .filter(k => focus !== 'zywnosc' || !FOREST_BUILDING_KEYS.has(k))
+      .filter(k => !demandActive
+        || k === 'wyrab'
+        || ULEPSZENIA_FOOD_ONLY_ZROWNOWAZONE.includes(k)
+        || deficitOpenKeys.has(k)
+        || (roadsPass && ROAD_KEY_SET.has(k)));
     const onlyWorked = getOnlyWorked(city);
-    const workedKeys = onlyWorked && getWorkedHexKeys ? getWorkedHexKeys(city) : null;
+    // R4 KOREKTA F (właściciel 2026-10-31): heks centrum miasta jest ZWYKŁYM heksem dla automatu (farma, trzoda,
+    // irygacja i inne wg zwykłych reguł). `workedHexCoordsForCity` WYKLUCZA centrum (okolica.ts:276), bo centrum
+    // daje plony bez obywatela (okolica.ts:626 — jest zawsze pracowane), więc dla profili żywnościowych centrum
+    // dopisujemy do zbioru „pracowanych”; profile „surowce”/„infrastruktura” bez zmian.
+    const workedKeys = onlyWorked && getWorkedHexKeys
+      ? ((focus === 'zywnosc' || focus === 'zrownowazone')
+        ? new Set<string>([...getWorkedHexKeys(city), `${city.q},${city.r}`])
+        : getWorkedHexKeys(city))
+      : null;
 
     // ---------------------------------------------------------------------
     // ZASADA 1 (runda 4) — BUDOWANIE NAPĘDZANE POPYTEM.
@@ -893,8 +1001,6 @@ function pickAutoImprovementsSinglePass(opts: PickAutoImprovementsOpts): AutoImp
     // `zrownowazone`); trzy pozostałe profile automatu gracza są jawnym wyborem gracza
     // i zostają nietknięte (kryterium 5 dispatchu rundy 4).
     // ---------------------------------------------------------------------
-    const demandActive = demandDriven && focus === 'zrownowazone';
-    const foodOnly = demandActive && !deficitActive;
     if (surplusReport && demandActive) surplusReport.demandActive = true;
     // cityBudgetCap = pułap TEGO miasta na WSPÓLNY, dzielony licznik globalSpent (nie osobna
     // koperta — patrz komentarz przy globalSpent wyżej). Przy jednakowym % dla wszystkich miast
@@ -972,11 +1078,8 @@ function pickAutoImprovementsSinglePass(opts: PickAutoImprovementsOpts): AutoImp
       });
     }
 
-    // R3, ABC-F=A (K2/K3): heks CENTRUM MIASTA nie przyjmuje ulepszeń (w tym tartaku w kroku „brakujący
-    // surowiec”). `radiusHexes` (liczniki stanu) zostaje pełny — to wyłącznie lista kandydatów do budowy.
-    if (focus === 'zrownowazone') {
-      candidateHexes = candidateHexes.filter(({ q, r }) => !(q === city.q && r === city.r));
-    }
+    // R4 KOREKTA F (właściciel 2026-10-31): zniesiony filtr R3 „centrum miasta wyłączone” — heks centrum jest
+    // zwykłym kandydatem (patrz `workedKeys` wyżej); tartak nie powstanie, bo centrum nie ma lasu.
 
     let placedThisCity = 0;
 
@@ -1026,10 +1129,9 @@ function pickAutoImprovementsSinglePass(opts: PickAutoImprovementsOpts): AutoImp
     // poza żywnością, której wymaga kryterium 2 dispatchu.
     const hexPhasePriority = basePriority.filter(
       k => k !== 'wyrab'
-        && !ZERO_YIELD_IMPROVEMENTS.has(k)
-        && (!foodOnly || ULEPSZENIA_FOOD_ONLY_ZROWNOWAZONE.includes(k)),
+        && !ZERO_YIELD_IMPROVEMENTS.has(k),
     );
-    const defensePriority = foodOnly
+    const defensePriority = demandActive
       ? []
       : basePriority.filter(k => ZERO_YIELD_IMPROVEMENTS.has(k));
 
@@ -1380,7 +1482,7 @@ function pickAutoImprovementsSinglePass(opts: PickAutoImprovementsOpts): AutoImp
     // rzece żyje w KROKU 0 wyżej i tam zostaje niezależnie od niedoboru.
     if (
       !riverForestClearingOnly
-      && !cityBudgetExhausted && !foodOnly && !citySkipWyrab && basePriority.includes('wyrab')
+      && !cityBudgetExhausted && !demandActive && !citySkipWyrab && basePriority.includes('wyrab')
     ) {
       const key: ImprovementKey = 'wyrab';
       const meta = getImprovementMeta(key);

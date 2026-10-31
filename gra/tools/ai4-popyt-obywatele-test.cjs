@@ -77,6 +77,14 @@ const TECHS = new Set(['Łowiectwo', 'Rolnictwo', 'Oswojenie zwierząt', 'Obrób
   'Waluta', 'Wojskowość', 'Żegluga', 'Gospodarka wodna', 'Drogi brukowane', 'Matematyka']);
 const DATA = { units: [], buildings: [], aiParams: {}, terrainYields: { terrain_types: [] } };
 const ZYWNOSCIOWE = new Set(['farma', 'bydlo', 'owce', 'lama', 'tarasy', 'oboz_lowiecki', 'lodzie_rybackie', 'irygacja']);
+// R4 (wlasciciel 2026-10-31, korekta drog): drogi sa NAJNIZSZYM priorytetem — pojawiaja sie dopiero po wyczerpaniu
+// zywnosci i zaspokojeniu surowcow. Dla asercji „zero rozkazow poza zywnoscia” traktujemy je osobno (Z1a2).
+const DROGI = new Set(['droga', 'droga_brukowana']);
+const poza = (log, dozw = ZYWNOSCIOWE) => log.filter(e => !dozw.has(e.key) && e.key !== 'wyrab' && !DROGI.has(e.key));
+const drogiPrzedZywnoscia = log => {
+  const ostZyw = Math.max(-1, ...log.filter(e => ZYWNOSCIOWE.has(e.key) || e.key === 'wyrab').map(e => e.t));
+  return log.filter(e => DROGI.has(e.key) && e.t <= ostZyw).length;
+};
 
 /** Przebieg AI CYWILIZACJI przez PRAWDZIWE wejscie `decideAITurn`. */
 function przebiegCiv(map, cities, tn, tury, deficit, rep) {
@@ -117,21 +125,32 @@ console.log('Z1. BUDOWANIE NAPEDZANE POPYTEM — AI CYWILIZACJI (decideAITurn)')
   const b = mk();
   const zDef = przebiegCiv(b.map, b.cities, b.tn, 20, ['drewno']);
 
-  const nieZywBez = bezDef.filter(e => !ZYWNOSCIOWE.has(e.key) && e.key !== 'wyrab');
+  const nieZywBez = poza(bezDef);
   ok(nieZywBez.length === 0,
-    `Z1a: BEZ niedoboru ZERO rozkazow poza zywnoscia (poza wyrebem = krok 0 farmy): `
+    `Z1a: BEZ niedoboru ZERO rozkazow poza zywnoscia i (najnizszym priorytetem) drogami: `
     + `${nieZywBez.length} (${[...new Set(nieZywBez.map(e => e.key))].join(',') || '-'})`);
+  ok(drogiPrzedZywnoscia(bezDef) === 0,
+    `Z1a2: R4 drogi dopiero PO ostatnim rozkazie zywnosciowym (${drogiPrzedZywnoscia(bezDef)} drog przed/w turze zywnosci; drog razem ${bezDef.filter(e => DROGI.has(e.key)).length})`);
   ok(bezDef.length > 0, `Z1b: BEZ niedoboru automat i tak buduje (zywnosc): ${bezDef.length} rozkazow`);
 
   const surowceZ = zDef.filter(e => !ZYWNOSCIOWE.has(e.key) && e.key !== 'wyrab');
   ok(surowceZ.length > 0,
     `Z1c: PRZY niedoborze rozkazy niezywnosciowe SA: ${surowceZ.length} `
     + `(${[...new Set(surowceZ.map(e => e.key))].slice(0, 5).join(',')})`);
+  // R4: niedobor drewna otwiera WYLACZNIE tartak (+ drogi na samym koncu) — nic wiecej
+  const obceZ = zDef.filter(e => !ZYWNOSCIOWE.has(e.key) && e.key !== 'wyrab' && e.key !== 'tartak' && !DROGI.has(e.key));
+  ok(obceZ.length === 0,
+    `Z1c2: R4 niedobor drewna otwiera TYLKO tartak (obce klucze: ${[...new Set(obceZ.map(e => e.key))].join(',') || '-'})`);
+  ok(zDef.some(e => e.key === 'tartak'), `Z1c3: tartak powstaje przy niedoborze drewna (${zDef.filter(e => e.key === 'tartak').length})`);
+  const ostTartak = Math.max(-1, ...zDef.filter(x => x.key === 'tartak').map(x => x.t));
+  ok(drogiPrzedZywnoscia(zDef) === 0 && !zDef.some(e => DROGI.has(e.key) && e.t <= ostTartak),
+    'Z1c4: R4 drogi dopiero po zywnosci I po tartaku (brakujacy surowiec)');
+  ok(!zDef.some(e => e.key === 'fort' || e.key === 'posterunek'), 'Z1c5: R4 zero fortu/posterunku z pickera AI (niedobor nie otwiera obrony)');
 
   // niedobor TYLKO zywnosci NIE otwiera listy (zywnosc jest wykluczona z testu niedoboru)
   const c = mk();
   const zZywnoscia = przebiegCiv(c.map, c.cities, c.tn, 20, ['zywnosc']);
-  const nieZywZyw = zZywnoscia.filter(e => !ZYWNOSCIOWE.has(e.key) && e.key !== 'wyrab');
+  const nieZywZyw = poza(zZywnoscia);
   ok(nieZywZyw.length === 0,
     `Z1d: niedobor SAMEJ zywnosci NIE otwiera budowy surowcow/infrastruktury (${nieZywZyw.length})`);
   ok(AUTO.hasNonFoodResourceDeficit(['zywnosc']) === false
@@ -160,8 +179,8 @@ console.log('Z1. BUDOWANIE NAPEDZANE POPYTEM — AI CYWILIZACJI (decideAITurn)')
     }
   }
   const wT5 = slad.filter(e => e.t === 5 && !ZYWNOSCIOWE.has(e.key) && e.key !== 'wyrab');
-  const pozaT5 = slad.filter(e => e.t !== 5 && !ZYWNOSCIOWE.has(e.key) && e.key !== 'wyrab');
-  ok(wT5.length > 0, `Z1f: rozkaz niezywnosciowy pojawia sie W TEJ SAMEJ turze co niedobor (t5: ${wT5.map(e => e.key).join(',') || 'brak'})`);
+  const pozaT5 = poza(slad.filter(e => e.t !== 5));
+  ok(wT5.length > 0 && wT5.every(e => e.key === 'glinianka'), `Z1f: rozkaz niezywnosciowy pojawia sie W TEJ SAMEJ turze co niedobor (t5: ${wT5.map(e => e.key).join(',') || 'brak'}; R4: niedobor gliny otwiera TYLKO glinianke)`);
   ok(pozaT5.length === 0, `Z1g: ... i znika, gdy niedobor ustaje (poza t5: ${pozaT5.length})`);
 }
 
@@ -221,7 +240,8 @@ console.log('Z2. BUDOWA TYLKO PRZY OBYWATELACH — z wyjatkiem zloz');
     getOnlyWorked: () => true,
     getWorkedHexKeys: () => worked,
   });
-  const pozaObywatelami = picks.filter(p => !worked.has(`${p.q},${p.r}`));
+  // R4 KOREKTA F: centrum miasta jest zwyklym, ZAWSZE pracowanym heksem (okolica.ts:626) — nie jest „poza obywatelami”.
+  const pozaObywatelami = picks.filter(p => !worked.has(`${p.q},${p.r}`) && !(p.q === city.q && p.r === city.r));
   const nieZlozowePoza = pozaObywatelami.filter(p => p.key !== 'warzelnia_soli');
   ok(picks.length > 0, `Z2b: picker cos zbudowal (${picks.length})`);
   ok(nieZlozowePoza.length === 0,
@@ -251,11 +271,11 @@ console.log('Z2i. AI CYWILIZACJI faktycznie ma wpiety filtr obywateli (decideAIT
   const tn = territory(7, 7, 3, 'c0');
   const worked = new Set(M.workedHexCoordsForCity(cities[0], map, tn).map(({ q, r }) => `${q},${r}`));
   const slad = przebiegCiv(map, cities, tn, 25, []);
-  const poza = slad.filter(e => !worked.has(e.hk));
+  const pozaOb = slad.filter(e => !worked.has(e.hk) && e.hk !== '7,7'); // 7,7 = centrum miasta (KOREKTA F: zawsze pracowane)
   ok(slad.length > 0, `Z2i: AI cywilizacji cos zbudowala (${slad.length} rozkazow)`);
-  ok(poza.length === 0,
-    `Z2j: AI CYWILIZACJI nie postawila nic poza polami z obywatelami (${poza.length}: `
-    + `${poza.slice(0, 4).map(e => e.key + '@' + e.hk).join(' ')})`);
+  ok(pozaOb.length === 0,
+    `Z2j: AI CYWILIZACJI nie postawila nic poza polami z obywatelami i centrum (${pozaOb.length}: `
+    + `${pozaOb.slice(0, 4).map(e => e.key + '@' + e.hk).join(' ')})`);
 }
 
 console.log('Z3. NADWYZKA — raport pickera i przekierowanie na budynki');

@@ -159,11 +159,16 @@ console.log('2. onlyWorked=true — pomija nieobrabiane');
   });
   const opts = baseOpts(city, map);
   opts.getOnlyWorked = c => c.ulepszeniaOnlyWorked ?? false;
-  opts.getWorkedHexKeys = () => new Set(['11,10']); // tylko jeden hex worked, nie (10,10) centrum
+  opts.getWorkedHexKeys = () => new Set(['11,10']); // jeden zwykly heks worked (centrum 10,10 NIE jest w zbiorze, jak w produkcji)
   const picks = pickAutoImprovements(opts);
+  // R4 KOREKTA F (wlasciciel 2026-10-31): centrum miasta jest ZWYKLYM heksem i jest zawsze pracowane
+  // (okolica.ts:626), wiec picker dopisuje je do „pracowanych” dla profili zywnosciowych: centrum (10,10)
+  // jest najblizszym kandydatem. Niezmienione: heks NIEobrabiany (12,10, 10,11...) nadal jest pomijany.
   eq(picks.length, 1, 'znajduje ulepszenie na worked');
-  eq(picks[0].q, 11, 'wybiera worked hex 11,10');
-  eq(picks[0].r, 10, 'wybiera worked hex 11,10');
+  eq(picks[0].q === 10 && picks[0].r === 10, true, 'centrum (zawsze pracowane) jest zwyklym kandydatem');
+  const wszystkie = pickAutoImprovements({ ...opts, maxItemsPerCity: 50, pracaAvailable: 100000 });
+  eq(wszystkie.every(p => (p.q === 10 && p.r === 10) || (p.q === 11 && p.r === 10)), true, 'onlyWorked: tylko centrum i worked 11,10 (zadnego nieobrabianego heksu)');
+  eq(wszystkie.some(p => p.q === 11 && p.r === 10), true, 'worked hex 11,10 tez dostaje ulepszenie');
 }
 
 // 3. onlyWorked=false can pick unworked
