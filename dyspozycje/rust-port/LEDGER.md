@@ -441,3 +441,5 @@ Cel końcowy i bieżący zapisane w `GOAL-RUST-PORT-20261020.md` (§"CEL PĘTLI 
 - 2026-10-31 08:12 UTC — kontrola cykliczna: M07B-Q2 r3, 8H2 r1, 8I r1 biegną; brak PASS do integracji.
 
 - 2026-10-31 09:12 UTC — kontrola cykliczna: M07B-Q2 r3, 8H2 r1, 8I2 r1, WEB E2E/DEFEAT/MENU-REORDER/DEFAULTS/ADV-APPLY biegną; brak PASS do integracji. Analizy drewno/ceramika zakończone (czekają decyzje balansowe właściciela).
+
+- 2026-10-31 10:12 UTC — kontrola cykliczna: wstrzymano wszystkie tematy poza trzema menu (polecenie właściciela). Biegną Evaluator/FC: MENU-REORDER, DEFAULTS, ADV-APPLY-BTN. Wstrzymane z postępem na GitHubie (web-wip/*, rust-port-wip/*): DEFEAT, PROD50, CITIZEN, SPICH, E2E, M07B-Q2, 8I2, 8H2. Po deployu menu: wznowić w kolejności PROD50, CITIZEN, SPICH, DEFEAT, E2E, Rust.
