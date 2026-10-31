@@ -198,8 +198,8 @@ Czytaj **rozpiskę plusów i minusów** w panelu — naprawiaj największy minus
 | Ulepszenie | Efekt poza plonami |
 |------------|-------------------|
 | **Droga** | Tańszy ruch wojska i handel na tym heksie |
-| **Posterunek** | +50% obrona obozu; **+5 heksów** terytorium |
-| **Fort** | +100% obrona obozu; **+10 heksów** terytorium |
+| **Posterunek** | +50% obrona obozu; **+3 heksy** terytorium |
+| **Fort** | +100% obrona obozu; **+5 heksów** terytorium |
 
 Infrastruktura może mieć **utrzymanie** w danych balansu — sprawdź tooltip ulepszenia w grze. Posterunek na granicy = wczesny alarm i pole pod tartak poza zasięgiem stolicy.
 
