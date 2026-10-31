@@ -1,3 +1,12 @@
+## ROBOCZA 76516344 -- 2026-10-31 -- bitwa dwóch wojowników bez wodza, zużycie Spichlerza z JSON (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`4d1916f2c` + trzy tematy) i commit wdrożenia bundla; stała zgoda właściciela 2026-10-31: scalanie do main i deploy do roboczej.
+- Bundle MD5 `765163444226f14cda2554986898a095`, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, outDir poza repo, stempel ROBOCZA; `verify-robocza-bundle.cjs` VERIFY OK.
+- Zakres: (1) `R-WEB-BATTLE-STANDOFF-TWO-WARRIORS-Q1` — bitwa gracza bez Wodza/Generała (np. dwóch Wojowników) nie startowała tury (stali w miejscu, „Tura 0”); poprawka `battleScene.ts:3471`; przyczyna: regresja z `e06ad53c8`, odtworzona w prawdziwym Chromium; (2) `R-WEB-SPICHLERZ-DRAIN-KEYS-Q1` — zużycie Spichlerza z `econ-params.json` wg trudności, wartości 25/25/25 bez zmian; (3) `R-WEB-AUTOIMPROVE-BLOCKERS-AUDIT-Q1` — audyt bramek auto-ulepszeń (dokumentacja, bez zmian w grze).
+- Testy po scaleniu: tsc PASS; battle-standoff 9/9, bitwa-auto-atak-wielojednostkowy 12/12, spichlerz-drain-keys 44/0, spichlerz-drain-pipeline 21/0, owned-building-inactive 4/0, citizen-upkeep-era-mult 663/0, sawmill-quarry-50 7/0, diplomacy 148, war-era-counter 82.
+- Ograniczenia: auto-ulepszenia (farma/trzoda/irygacja/wycinka) NIE naprawione (temat w toku); podgląd Spichlerza w panelu miasta nadal 25; NIE_ZMIERZONO live: bitwa z Generałem i 2v2; znane czerwone w bazie: civ-matrix-ai-diplomacy-wiring 42/1, ai-test 274/20.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `c6e24df9b5055e83d1d7ca8600d81368`, 70,088,261 bajtów.
+
 ## ROBOCZA c6e24df9 -- 2026-10-31 -- produkcja tartaka/kamieniołomu 50 i zużycie surowców przez obywateli ×1/×2/×3 (testowa)
 
 - **STATUS: DEPLOYED** — merge do `origin/main` (źródło `914daa502` + dwa tematy) i commit wdrożenia bundla; polecenie właściciela 2026-10-31: deploy do roboczej, posprzątać piaskownicę.
