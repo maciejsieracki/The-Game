@@ -417,3 +417,5 @@ Cel końcowy i bieżący zapisane w `GOAL-RUST-PORT-20261020.md` (§"CEL PĘTLI 
 ## 2026-10-31 — M07B partia 1 zintegrowana; zakres podzielony Q2–Q4
 - `R-RUSTPORT-P6-M07B-RZEKI-B-TRACE-Q1` PASS-WITH-NOTES (FC r2 `768804e4a`; zamknięcie administracyjne partii 1: `rivers_b/turn.rs`, 3 symbole + 11 reuse z M07A). Merge na `parity-v2` `6a7d41906`: fmt OK, clippy OK, test 1927/0. Wektory 36200 (generator w repo), mutacje 49 (44 zabite, 5 równoważnych z dowodem).
 - Decyzja orkiestratora: pozostałe 30 symboli → Q2 (15: sanitizeRiverTurnWindow, markery krawędzi/tranzytu, walkRiverHexPerimeter, riverCornersAlongHexEdges, simplifyRiverRenderPath, findRiverMeanderStep, collect*/growRiverFromCoastInland), Q3 (8), Q4 (7: m.in. traceRiver, aStarRiverToSea, cap). Szczegóły podziału: dossier `P6-M07B-RZEKI-B-TRACE.md` §Podział zakresu.
+
+- 2026-10-31 06:12 UTC — kontrola cykliczna: 8H r1, WEB TRUCE r4, M07B-Q2 r1 biegną; brak PASS do integracji.
