@@ -5163,6 +5163,18 @@ export const PROG_TRYBUT       = 0.7;
 export const PROG_POKOJ_SLABOSC = 0.4;
 
 /**
+ * R-WEB-TRUCE-Q1 r4 (N4): wojna krótsza niż ten próg tur → słabsze AI proponuje ROZEJM
+ * (5/10/15 tur, wojna wraca bez kary); od tego progu wzwyż → POKÓJ. Rozstrzygnięcie ZAŁOŻENIE
+ * z dispatchu: „AI proponuje rozejm gdy słabsze i wojna < 20 tur, pokój po 20 turach".
+ */
+export const AI_ROZEJM_DO_TUR = 20;
+
+/** R-WEB-TRUCE-Q1 r4 (N4): rodzaj propozycji pokoju AI wg realnych tur wojny (19 → rozejm, 20 → pokój). */
+export function aiPeaceProposalKind(turnsAtWar: number): 'pokoj' | 'rozejm' {
+  return Math.max(0, turnsAtWar) < AI_ROZEJM_DO_TUR ? 'rozejm' : 'pokoj';
+}
+
+/**
  * Minimalne willingnessAlly (0..1) wymagane do zaproponowania sojuszu.
  * 0.6 = wysokie zaufanie + dobra relacja; partner musi być „równy" (rw w [0.4,0.7]).
  */
@@ -5482,7 +5494,8 @@ export type AIDiplomacyCommand =
    * R-WEB-PEACE-CITY-CESSION-Q1 r3 (N1b): AI żąda miasta gracza w kontrofercie pokoju.
    */
   | { type: 'zada_miasto_za_pokoj';  targetId: string; powod: string; cityId: string; cityPn: number }
-  | { type: 'zaproponuj_pokoj';      targetId: string; powod: string }
+  /** R-WEB-TRUCE-Q1 r4 (N4): 'rozejm' gdy wojna < AI_ROZEJM_DO_TUR; brak pola = pokój (dawne zachowanie). */
+  | { type: 'zaproponuj_pokoj';      targetId: string; powod: string; rodzaj?: 'pokoj' | 'rozejm' }
   | { type: 'zadaj_trybut';          targetId: string; powod: string }
   | { type: 'oferuj_trybut_za_pokoj'; targetId: string; powod: string; goldOnce?: number }
   | { type: 'zaproponuj_sojusz'; targetId: string; powod: string; allianceKind?: 'defensywny' | 'pelny' }
@@ -5990,7 +6003,8 @@ export function decideAIDiplomacy(
       komendy.push({
         type:     'zaproponuj_pokoj',
         targetId: rel.partnerId,
-        powod:    `slabszy w wojnie (respektWzgledny=${rw.toFixed(2)} <= prog=${progPokojSlabosc}; sygnaly=${peaceSignals.reasons.join(',') || '-'}; tury wojny=${turnsAtWarRel}): proponujemy pokoj`,
+        rodzaj:   aiPeaceProposalKind(turnsAtWarRel),
+        powod:    `slabszy w wojnie (respektWzgledny=${rw.toFixed(2)} <= prog=${progPokojSlabosc}; sygnaly=${peaceSignals.reasons.join(',') || '-'}; tury wojny=${turnsAtWarRel}): proponujemy ${aiPeaceProposalKind(turnsAtWarRel) === 'rozejm' ? 'rozejm' : 'pokoj'}`,
       });
       continue;
     }

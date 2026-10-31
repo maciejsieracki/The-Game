@@ -18084,7 +18084,10 @@ async function boot(): Promise<void> {
       if (workingCmd.type === 'zaproponuj_pokoj') {
         const relForPeace = getDiploRelation(ownerId, ME());
         const difficultyForPeace = effectiveGameDifficultyForOwner(ownerId);
-        const basePnPeace = treatyBasePnFromConfig('pokoj', converted.payload);
+        // R-WEB-TRUCE-Q1 r4 (N4): rozejm AI ma własną bazę PW (200), nie bazę pokoju (500).
+        const basePnPeace = treatyBasePnFromConfig(
+          workingCmd.rodzaj === 'rozejm' ? 'rozejm' : 'pokoj', converted.payload,
+        );
         // givePn/receivePn AI = 0/0 — payload dziś zawsze goły w tym miejscu (żaden branch
         // wyżej nie dotyczy 'zaproponuj_pokoj'); gdyby to się kiedyś zmieniło, resolveProposalPn
         // czytałby realne wartości, ale dziś jest to poza zakresem (payload:{} zawsze).
@@ -19184,7 +19187,8 @@ async function boot(): Promise<void> {
       }
       // action === 'accept' — DOKŁADNIE ta sama gałąź akceptacji co resolvePendingDiplomacy()
       // dla AI, z jawną parą (p.fromOwnerId, p.toOwnerId) zamiast niejawnego (p.ownerId, ME()).
-      if (p.cmd.type === 'zaproponuj_pokoj') {
+      // R-WEB-TRUCE-Q1 r4 (N4): rozejm AI nie jest pokojem — idzie ścieżką rozejmu (applyProposalOutcome).
+      if (p.cmd.type === 'zaproponuj_pokoj' && p.cmd.rodzaj !== 'rozejm') {
         finalizePeaceTreatyBetween(p.fromOwnerId, p.toOwnerId);
         return true;
       }

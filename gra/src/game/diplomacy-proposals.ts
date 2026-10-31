@@ -1889,7 +1889,9 @@ export function formatAiDiplomacyPlayerMessage(cmd: AIDiplomacyCommand): string 
         ? 'Proponujemy bezterminowy pakt nieagresji — żadna strona nie zaatakuje drugiej.'
         : `Proponujemy pakt nieagresji na ${cmd.turns ?? 15} tur — żadna strona nie zaatakuje drugiej.`;
     case 'zaproponuj_pokoj':
-      return 'Proponujemy zawarcie pokoju i zakończenie wojny.';
+      return cmd.rodzaj === 'rozejm'
+        ? 'Proponujemy rozejm — na czas ustalony w propozycji wstrzymujemy działania wojenne.'
+        : 'Proponujemy zawarcie pokoju i zakończenie wojny.';
     case 'zadaj_trybut':
       return `Żądamy trybut: ${AI_TRIBUTE_PER_TURN} ¤ co turę na rzecz naszego państwa.`;
     case 'oferuj_trybut_za_pokoj':
@@ -1949,6 +1951,16 @@ export function aiCommandToPendingProposal(
         payload: { turns: cmd.turns ?? 15 },
       };
     case 'zaproponuj_pokoj':
+      // R-WEB-TRUCE-Q1 r4 (N4): rozejm proponowany przez AI idzie tą samą ścieżką co pokój
+      // (stół → applyProposalOutcome 'rozejm'), z domyślną długością okna.
+      if (cmd.rodzaj === 'rozejm') {
+        return {
+          ...base,
+          id: makeDealId('pending-rozejm', turn, fromOwnerId, toOwnerId),
+          actionId: 'rozejm',
+          payload: { turns: TRUCE_DEFAULT_TURNS },
+        };
+      }
       return {
         ...base,
         id: makeDealId('pending-pokoj', turn, fromOwnerId, toOwnerId),
