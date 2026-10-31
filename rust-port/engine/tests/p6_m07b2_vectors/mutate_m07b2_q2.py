@@ -20,7 +20,7 @@ import sys
 HERE = os.path.dirname(os.path.abspath(__file__))
 ENGINE = os.path.abspath(os.path.join(HERE, "..", ".."))
 ROOT = os.path.abspath(os.path.join(HERE, "..", "..", "..", ".."))
-LOG = os.path.join(ROOT, "dyspozycje", "autobot", "runs",
+LOG = os.environ.get("MUT_LOG") or os.path.join(ROOT, "dyspozycje", "autobot", "runs",
                    "R-RUSTPORT-P6-M07B2-RZEKI-B-KRAWEDZIE-Q1", "mutate-m07b2-q2-r3.txt")
 CG = "src/domain/mapgen/rivers_b/coast_grow.rs"
 MN = "src/domain/mapgen/rivers_b/meander.rs"
@@ -285,8 +285,12 @@ def run_tests():
     except subprocess.TimeoutExpired:
         return "TIMEOUT", "timeout 420s"
     out = p.stdout + p.stderr
+    real_errs = [l for l in out.splitlines() if l.startswith("error") and "could not compile" not in l]
+    if "could not compile" in out and " error[" not in out and not real_errs:
+        return "INFRA", "could not compile bez linii error[ (przerwany rustc/infra; powtorzyc)"
     if " error[" in out or "could not compile" in out:
-        return "BUILD-FAIL", "compile error"
+        errs = [l.strip() for l in out.splitlines() if l.strip().startswith("error")][:2]
+        return "BUILD-FAIL", "compile error: " + " / ".join(errs)
     if p.returncode == 0:
         return "SURVIVED", "all green"
     failed = [l.strip() for l in out.splitlines() if l.strip().startswith("test ") and l.strip().endswith("FAILED")]
@@ -295,6 +299,13 @@ def run_tests():
 
 
 def main(argv):
+    rc = _main(argv)
+    if rc is not None and argv[1] != "list":
+        log(f"EXIT={rc}")  # r4: jedna linia EXIT= na koncu logu (lekcja g)
+    return rc
+
+
+def _main(argv):
     if len(argv) >= 2 and argv[1] == "list":
         for i, m in enumerate(MUTANTS):
             print(i, m[0], m[1], m[5], m[4])
@@ -336,4 +347,10 @@ def main(argv):
 
 
 if __name__ == "__main__":
+    import signal
+
+    def _term(signum, frame):  # r4: SIGTERM -> wyjatek, aby `finally` przywrocilo plik mutowany
+        raise KeyboardInterrupt
+
+    signal.signal(signal.SIGTERM, _term)
     sys.exit(main(sys.argv))

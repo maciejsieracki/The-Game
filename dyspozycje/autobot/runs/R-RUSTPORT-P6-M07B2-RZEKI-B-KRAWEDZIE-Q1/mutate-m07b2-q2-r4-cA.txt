@@ -1,0 +1,8 @@
+C12 | INFRA | oczek=K | collect: prog centerStep > 8 -> 7 (:6118) | could not compile bez linii error[ (przerwany rustc/infra; powtorzyc) | RESTORED=True
+C21 | SURVIVED | oczek=K | collect: brak seaDist(cur) -> 1 zamiast 0 (:6100) | all green | RESTORED=True
+G05 | SURVIVED | oczek=K | grow: filtr visited (przebieg 1) usuniety (:6214) | all green | RESTORED=True
+G06 | SURVIVED | oczek=K | grow: filtr visited (przebieg relaxed) usuniety (:6217) | all green | RESTORED=True
+G11 | SURVIVED | oczek=K | grow: oznaczenie wybranego heksa jako odwiedzony usuniete (:6225) | all green | RESTORED=True
+G12 | SURVIVED | oczek=K | grow: ujscie nieoznaczone jako odwiedzone (:6199) | all green | RESTORED=True
+M03 | INFRA | oczek=K | meander: filtr kierunku celu usuniety (:6504) | could not compile bez linii error[ (przerwany rustc/infra; powtorzyc) | RESTORED=True
+EXIT=0

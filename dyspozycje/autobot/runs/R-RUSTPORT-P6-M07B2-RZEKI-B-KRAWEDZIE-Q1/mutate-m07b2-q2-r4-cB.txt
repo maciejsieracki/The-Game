@@ -1,0 +1,4 @@
+C12 | INFRA | oczek=K | collect: prog centerStep > 8 -> 7 (:6118) | could not compile bez linii error[ (przerwany rustc/infra; powtorzyc) | RESTORED=True
+M03 | INFRA | oczek=K | meander: filtr kierunku celu usuniety (:6504) | could not compile bez linii error[ (przerwany rustc/infra; powtorzyc) | RESTORED=True
+M11 | INFRA | oczek=K | meander: brak seaDist(cur) -> 0 zamiast 999 (:6494) | could not compile bez linii error[ (przerwany rustc/infra; powtorzyc) | RESTORED=True
+W05 | SURVIVED | oczek=K | window: break przy ciecie na koncu usuniety (:7114) | all green | RESTORED=True
