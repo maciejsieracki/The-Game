@@ -1,3 +1,12 @@
+## ROBOCZA 44416e98 -- 2026-11-01 -- cywilizacje dalej od siebie (stolice min. 25 hexów na Standardzie) (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`22acd3542` + `R-WEB-CAPITAL-SPACING-TUNE-Q1` `1485a943d` + przegenerowany wzorzec testu startów) i commit wdrożenia bundla; stała zgoda właściciela (usterki z testów na żywo, 2026-11-01).
+- Bundle MD5 `44416e983b69617dc799ed1583e83c56`, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, outDir poza repo, stempel ROBOCZA; `verify-robocza-bundle.cjs` VERIFY OK.
+- Zakres: minimalny dystans stolic = 0,21 × krótszy bok mapy (Standard: 25 hexów, było 18), sufit wykonalności czynnik 0,8. Żywa gra, 10 map Standardowy, 7 cywilizacji: najbliższa para 25–33 hexów (mediana 25,5), par poniżej 25: 0/10 (było 7/10; pierwotnie 10/10). Wszystkie cywilizacje umieszczone. Start gracza przesuwa się razem ze stolicami.
+- Testy po scaleniu: tsc PASS; capital-sep-unit 44/0, capital-spacing-prop PASS, capital-sep-pangea 3/0, cluster-spread 5/0, cluster-start-q2-smoke 16/0, mp-spawn-ration 16/0, parity startów gracza 30/30 (wzorzec przegenerowany), pangea-land-determinism PASS, ai-city-yield 42/0, followups 9/0, autoclear 60/0, auto-improvements 46/0, ai-improvements 56/0.
+- Ograniczenia: `cluster-start-test` 478/3 (seaDist stolic obcych typów, czerwone też na bazie; sumer 8 → 6); przy 8 typach cywilizacji efektywny dystans 23; par poniżej 30 hexów nadal 8/10 w żywej grze; ostrzeżenia generatora w żywej grze NIE_ZMIERZONO.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `10307fe6d985c9dc6735083a0c3aba1c`, 70,115,380 bajtów.
+
 ## ROBOCZA 10307fe6 -- 2026-11-01 -- Pangea 60% lądu, AI nie zakłada miast na biegunach w ekspansji (testowa)
 
 - **STATUS: DEPLOYED** — merge do `origin/main` (`57cc8aded` + `R-WEB-PANGEA-LAND-FRACTION-Q1` `9ae6a5554` + `R-WEB-AI-POLAR-FALLBACK-Q1` `7fbf906ec`) i commit wdrożenia bundla; stała zgoda właściciela (usterki z testów na żywo, 2026-11-01).
