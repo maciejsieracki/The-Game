@@ -3,9 +3,9 @@
  * node tools/capital-spacing-prop-test.cjs — R-WEB-CAPITAL-SPACING-FIX-Q1
  *
  * Regresja: Standard 168x120 (Kontynenty, domyslny udzial ladu 0.30, 5 ziaren, bez rzek):
- *   - najblizsza para stolic roznych civ >= progu proporcjonalnego (capitalMinSep z placement = 0,15 x 120 = 18),
+ *   - najblizsza para stolic roznych civ >= progu proporcjonalnego (capitalMinSep z placement = 0,21 x 120 = 25; R-WEB-CAPITAL-SPACING-TUNE-Q1, dawniej 0,15 -> 18),
  *   - liczba umieszczonych civ == zadana (brak regresu "tylko N/M").
- * Mutacja: ten sam test z wspolczynnikiem 0 (sama tabela, podloga 15) MUSI zlamac prog (>=1 mapa z para < 18),
+ * Mutacja: ten sam test z wspolczynnikiem 0 (sama tabela, podloga 15) MUSI zlamac prog (>=1 mapa z para < 25),
  * czyli test faktycznie wykrywa regres do starego zachowania.
  * Bundle w mkdtemp poza repo; bez npm run build/dev.
  */
@@ -17,7 +17,7 @@ const esbuild = require('esbuild');
 const GRA = path.resolve(__dirname, '..');
 const SEEDS = [1, 2, 3, 4, 5];
 const MUT_SEEDS = [1, 2, 3];
-const THRESHOLD = Math.round(0.15 * 120); // 18
+const THRESHOLD = Math.round(0.21 * 120); // 25 (TUNE-Q1; dawniej 0,15 -> 18)
 
 async function makeBundle(coefOverride) {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'capspacing-'));
