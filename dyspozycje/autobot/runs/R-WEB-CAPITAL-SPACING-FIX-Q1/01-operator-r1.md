@@ -33,3 +33,5 @@ BLOKADY / UWAGI DLA EVALUATORA:
 RUNDY: 1/5
 NASTĘPNY KROK: Evaluator r1 (decyzje do 1-3).
 DEPLOY/PUSH: NIE WYKONANO
+
+COMMIT: df32bf05a86fcb3c0db4b1f954698e77722d3cfc (gałąź worktree-wf_b59c474e-a26-1, bez push)
