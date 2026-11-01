@@ -8374,3 +8374,6 @@ Przejrzano cały kontekst rozmowy: WSZYSTKIE zgłoszenia właściciela z ostatni
 ### Aktualizacja 2026-11-01 (popołudnie)
 - Zgłoszenie 2 (cywilizacje na kupie) + poz. 7 (FOLLOWUPS): **ZROBIONE, ROBOCZA `02d13477`** (main `f8d7b55ea`). Wariant A+B; Standard: pary stolic <25 hexów 73,3% → 13,3% map; Pangea 30% lądu bez poprawy (sufit wykonalności). `cluster-start-test` 477/3 (seaDist stolic obcych, baza 2) → ewentualny temat `R-WEB-CAPITAL-SEADIST-Q1`. Do sprawdzenia przez właściciela w żywej grze.
 - Poz. 12 (`R-WEB-AI-CITY-YIELD-FIX-Q1`) W TOKU.
+
+### STAŁA ZGODA WŁAŚCICIELA (2026-11-01)
+„Jeżeli w samych testach znajdziesz coś, co należy poprawić, po prostu to zrób i wykonaj jako oddzielne poprawki bez autoryzacji. Później wprowadź do roboczej, scal do main i zrób git push.” — dotyczy usterek webowych wykrytych w testach na żywo (R-WEB-LIVE-VERIFY-ROBOCZA-2-Q1, R-WEB-AI-CITY-YIELD-LIVE-Q1 i kolejnych): każda jako osobny temat R-WEB-* (Operator → Evaluator → Obrona → Final Control), merge do main, deploy TYLKO do ROBOCZEJ, `git push`, odczyt GitHub Raw, `WERSJE.md`, sprzątanie. Decyzje produktowe (ABC) zgłaszane właścicielowi nadal. Prompt cyklicznej kontroli zaktualizowany.

@@ -515,3 +515,5 @@ Cel końcowy i bieżący zapisane w `GOAL-RUST-PORT-20261020.md` (§"CEL PĘTLI 
 - 2026-11-01 12:28 UTC — kontrola cykliczna: aktywne SPACING-FIX (zapis 12:23) i AI-CITY-YIELD-FIX (zapis 12:27); do wspólnego deployu czekają FOLLOWUPS (FC `ce830e0a1`), po FC: SPACING-FIX, YIELD-FIX (po pomiarze). Rust wstrzymany (priorytet web); parity-v2 = `fd8585daf` (2013/0). Dysk 8,1 GB.
 
 - 2026-11-01 (polecenie właściciela: „możesz puścić pięć testów rzeczy w żywej grze”) — uruchomiono `R-WEB-LIVE-VERIFY-ROBOCZA-2-Q1` (T1–T5 na ROBOCZEJ `02d13477`: rozproszenie stolic, farma obok rzeki, udział lądu, bieguny, smoke 40 tur z zapisem) oraz `R-WEB-AI-CITY-YIELD-LIVE-Q1` (pomiar pełnej gry PRE vs POST dla oceny miejsc AI; ABC-B). Oba z odczepionymi biegami (zgoda orkiestratora). FC YIELD-FIX `7ec22faa7`/`8ce134b81` bez wdrożenia do czasu pomiaru.
+
+- 2026-11-01 — STAŁA ZGODA: usterki wykryte w testach na żywo poprawiać bez pytania, jako osobne tematy, potem main + ROBOCZA + push (szczegóły w REJESTR-PROSB-I-ZADAN.md).
