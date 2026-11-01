@@ -18,6 +18,7 @@ use std::collections::HashMap;
 
 pub mod active_access;
 pub mod capital_labels;
+pub mod society_inputs;
 
 use super::building_costs::p6_7b::{empire_zloto_stock, owner_can_feed_mennica, StockRecord};
 use super::improvements::{migrate_legacy_kopalnia_key, normalize_improvement_key};

@@ -14,17 +14,23 @@
 //! - `start_position::{has_braz_access, EmpireStockArg, Overlay}` (`hasBrazAccess`).
 //!
 //! ZAŁOŻENIA (luki, nie cicha zmiana):
-//! - Z1: `computeEmpireLivestockUnlocks` (`livestock-unlock.ts:113`) NIE jest w Rust
-//!   (`grep -rn computeEmpireLivestockUnlocks rust-port/engine/src` = brak). Gałąź web
-//!   `options.empireLivestockUnlocks ?? compute(...)` jest wejściem: wywołujący podaje
-//!   `empire_livestock_unlocks` (`None` = web `undefined` bez obliczania). NASTĘPNA-PARTIA.
+//! - Z1 (ZAMKNIĘTE r4): `computeEmpireLivestockUnlocks` (`livestock-unlock.ts:113`) portowane
+//!   jako `compute_empire_livestock_unlocks`. Domyślna gałąź web `options.empireLivestockUnlocks
+//!   ?? (placed ? compute(...) : undefined)` jest w `collect_active_access`. Właściciel heksu
+//!   z `ResourceAccessOptions::hex_owners` (brak wpisu = web `wlasciciel` undefined).
+//! - Z5 (r4): klucze prototypu JS `constructor` / `__proto__` (po `trim().toLowerCase()`) to w
+//!   webie wartości z `Object.prototype`. Rust traktuje je jak złoże nieistniejące:
+//!   `labelForHex` = None, `hexHiddenDepositHint` = None. Web: display null (zgodnie), hint =
+//!   artefakt JS (`function Object() {...}` / `[object Object]`), pinowany w wektorach jako
+//!   jawna rozbieżność (testy `hex_labels_match_pinned_web_vectors_*`).
+//! - Z6 (r4): `dominantReligion` / `isForeignReligionDominant` w `resource_access/society_inputs.rs`.
 //! - Z2: `cityBorderRadius` (P6.16) wstrzykiwane jako `border_radius` (jak w `territory.rs`).
 //! - Z3: `zlozeMinEra` pola heksu nieobecne w `BuildHex`: `zlozeMinEraFor` spada na tabelę
 //!   metali / domyślną, co daje ten sam wynik co `ensureDepositEraMeta` (deposit-era.ts:30).
 //! - Z4: `sortLabels` (`localeCompare(_, 'pl')`) przybliżone `pl_collation_cmp`; zweryfikowane
 //!   wektorami z pinu dla całego uniwersum etykiet (`tests/p6_8h2_vectors/`).
 
-use std::collections::{BTreeSet, HashSet};
+use std::collections::{BTreeSet, HashMap, HashSet};
 
 use super::super::building_costs::p6_7b::StockRecord;
 use super::super::improvement_build::{
@@ -56,6 +62,12 @@ pub fn zloze_trim_lower(zloze: Option<&str>) -> Option<String> {
     zloze.map(|z| z.trim_matches(is_js_trim_char).to_lowercase())
 }
 
+/// Klucze `Object.prototype`, które po `toLowerCase()` trafiają w `ZLOZE_LABEL` / `METAL_DEPOSIT_MIN_ERA`
+/// jako wartości prototypu (Z5). Jedyne nazwy `Object.prototype` równe swojej formie małymi literami.
+pub fn is_js_prototype_key(z: &str) -> bool {
+    matches!(z, "constructor" | "__proto__")
+}
+
 /// Web `charAt(0).toUpperCase() + slice(1)` (BMP; pierwszy `char` zamiast jednostki UTF-16).
 fn capitalize_first(s: &str) -> String {
     let mut chars = s.chars();
@@ -83,7 +95,7 @@ fn zloze_name_or_capitalized(z: &str) -> String {
 /// Zob. `dyspozycje/rust-port/p6/P6-8H2-DOSTEP-ZASOBOW-B.md` (rozbieżność `constructor`/`toString`).
 pub fn label_for_hex(hex: &BuildHex, era: i64) -> Option<String> {
     if let Some(z) = zloze_trim_lower(hex.zloze.as_deref()).filter(|z| !z.is_empty()) {
-        if !deposit_visible(hex, era) {
+        if is_js_prototype_key(&z) || !deposit_visible(hex, era) {
             return None;
         }
         return Some(zloze_name_or_capitalized(&z));
@@ -104,7 +116,7 @@ pub fn hex_deposit_display_label(hex: &BuildHex, era: i64) -> Option<String> {
 /// Web `hexHiddenDepositHint` (eksport): złoże na mapie, ale epoka nie pozwala rozpoznać typu.
 pub fn hex_hidden_deposit_hint(hex: &BuildHex, era: i64) -> Option<String> {
     let z = zloze_trim_lower(hex.zloze.as_deref()).filter(|z| !z.is_empty())?;
-    if deposit_visible(hex, era) {
+    if is_js_prototype_key(&z) || deposit_visible(hex, era) {
         return None;
     }
     let name = zloze_name_or_capitalized(&z);
@@ -232,11 +244,22 @@ fn active_labels_for_improvement_on_hex(improvement_key: &str, hex: &BuildHex) -
 }
 
 /// Web `sortLabels` = `localeCompare(b, 'pl')` (przybliżenie, Z4).
+/// Znaki ignorowane przez `localeCompare` (ICU) w uniwersum etykiet: miękki myślnik, ZWSP/ZWNJ/ZWJ,
+/// joiner słów, BOM. ZAŁOŻENIE Z4r4: zakres ograniczony do tych znaków (zweryfikowane wektorami
+/// `plPairs` z pinu); pełna tabela ICU nie jest portowana.
+fn is_collation_ignorable(c: char) -> bool {
+    matches!(
+        c,
+        '\u{00AD}' | '\u{200B}'..='\u{200D}' | '\u{2060}' | '\u{FEFF}'
+    )
+}
+
 /// Polski alfabet ma osobne litery z ogonkami tuż za podstawową: Ą za A, Ć za C, Ę za E, Ł za L,
 /// Ń za N, Ó za O, Ś za S, Ź i Ż za Z (w tej kolejności). Wagi: litery `0x100 + 4*baza + k`,
 /// pozostałe znaki (spacja, nawiasy, cyfry) wagą kodu Unicode (< 0x100, czyli przed literami).
 fn pl_primary_key(s: &str) -> Vec<u32> {
     s.chars()
+        .filter(|c| !is_collation_ignorable(*c))
         .flat_map(char::to_lowercase)
         .map(|c| {
             let letter = |base: char, k: u32| 0x100 + 4 * (base as u32 - 'a' as u32) + k;
@@ -257,18 +280,21 @@ fn pl_primary_key(s: &str) -> Vec<u32> {
         .collect()
 }
 
-/// Porządek: pierwszorzędny (`pl_primary_key`), potem wielkość liter (małe przed dużymi), potem bajty.
+/// Porządek jak `localeCompare(_, 'pl')` na uniwersum etykiet: pierwszorzędny (`pl_primary_key`),
+/// potem wielkość liter (małe przed dużymi). Pełny remis = `Equal` (web: 0), bez tiebreaku bajtowego.
 pub fn pl_collation_cmp(a: &str, b: &str) -> std::cmp::Ordering {
     use std::cmp::Ordering;
     match pl_primary_key(a).cmp(&pl_primary_key(b)) {
         Ordering::Equal => {}
         other => return other,
     }
-    let cases = |s: &str| -> Vec<bool> { s.chars().map(char::is_uppercase).collect() };
-    match cases(a).cmp(&cases(b)) {
-        Ordering::Equal => a.cmp(b),
-        other => other,
-    }
+    let cases = |s: &str| -> Vec<bool> {
+        s.chars()
+            .filter(|c| !is_collation_ignorable(*c))
+            .map(char::is_uppercase)
+            .collect()
+    };
+    cases(a).cmp(&cases(b))
 }
 
 fn sort_labels<I: IntoIterator<Item = String>>(labels: I) -> Vec<String> {
@@ -296,6 +322,40 @@ pub struct ResourceAccessOptions<'a> {
     pub empire_livestock_unlocks: Option<&'a HashSet<String>>,
     /// Web `empireStock` (`None` = brak / legacy `boolean`).
     pub empire_stock: Option<&'a StockRecord>,
+    /// Web `ownerId` (`None` = `null`/`undefined`: bez filtra właściciela w `computeEmpireLivestockUnlocks`).
+    pub owner_id: Option<&'a str>,
+    /// Web `hex.wlasciciel` po kluczu "q,r" (brak wpisu = pole `undefined`).
+    pub hex_owners: Option<&'a HashMap<String, String>>,
+}
+
+/// Web `computeEmpireLivestockUnlocks` (`livestock-unlock.ts:113`, Model B): jedyny odblokowany
+/// surowiec hodowlany to `kon` — stadnina (`stadnina`) na heksie z nakładką złoża konia.
+pub fn compute_empire_livestock_unlocks(
+    placed: &PlacedMap<'_>,
+    map: &BuildMap,
+    owner_id: Option<&str>,
+    hex_owners: Option<&HashMap<String, String>>,
+) -> HashSet<String> {
+    let mut unlocked = HashSet::new();
+    for (hex_key, imp) in placed {
+        let Some(hex) = map.hex(hex_key) else {
+            continue;
+        };
+        if let Some(owner) = owner_id {
+            let hex_owner = hex_owners
+                .and_then(|owners| owners.get(*hex_key))
+                .map(String::as_str);
+            if hex_owner != Some(owner) {
+                continue;
+            }
+        }
+        for key in keys_normalized_only(*imp) {
+            if key == "stadnina" && hex.overlay == Overlay::ZlozeKonia {
+                unlocked.insert("kon".to_owned());
+            }
+        }
+    }
+    unlocked
 }
 
 /// Web `CityResourceAccess`.
@@ -363,7 +423,17 @@ fn collect_active_access(
         }
     }
 
-    if let Some(unlocks) = options.empire_livestock_unlocks {
+    // Web: `options.empireLivestockUnlocks ?? (placed ? computeEmpireLivestockUnlocks(...) : undefined)`.
+    let computed = match (options.empire_livestock_unlocks, placed) {
+        (None, Some(placed)) => Some(compute_empire_livestock_unlocks(
+            placed,
+            map,
+            options.owner_id,
+            options.hex_owners,
+        )),
+        _ => None,
+    };
+    if let Some(unlocks) = options.empire_livestock_unlocks.or(computed.as_ref()) {
         if unlocks.contains("kon") {
             found.insert(surowiec_label_or_capitalized("kon"));
         }

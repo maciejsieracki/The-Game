@@ -1,0 +1,48 @@
+# cargo test --test p6_8h2_active_access --test p6_8h2_capital_labels --test p6_8h2_society_inputs
+   Compiling civ-engine v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_897f8549-fe0-3/rust-port/engine)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 36.46s
+     Running tests/p6_8h2_active_access.rs (/dev/shm/civ-r4/debug/deps/p6_8h2_active_access-2371bd16a02cd3ba)
+
+running 11 tests
+test active_label_removes_same_label_from_potential ... ok
+test livestock_unlock_kon_gate_branch ... ok
+test labels_for_improvement_unlock_match_pinned_web_vectors ... ok
+test potential_sight_boundary_n_minus_1_n_n_plus_1 ... ok
+test sight_boundary_n_minus_1_n_n_plus_1 ... ok
+test surowiec_parse_branches ... ok
+test polish_collation_matches_locale_compare_over_label_universe ... ok
+test zero_sight_disables_access_and_potential ... ok
+test hex_labels_match_pinned_web_vectors_except_documented_prototype_keys ... ok
+test unlock_activity_matches_pinned_web_vectors ... ok
+test city_access_matches_pinned_web_vectors ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.35s
+
+     Running tests/p6_8h2_capital_labels.rs (/dev/shm/civ-r4/debug/deps/p6_8h2_capital_labels-3e8ec12b7aa2b1b7)
+
+running 11 tests
+test designated_none_falls_back_to_oldest_owner_city ... ok
+test designated_some_overrides_fallback ... ok
+test non_easy_difficulty_disables_bonus ... ok
+test stolica_bonus_honours_designated_capital ... ok
+test panel_range_filter_keeps_only_three_and_sorts ... ok
+test surowiec_fallback_capitalizes_and_empty_is_empty ... ok
+test non_human_owner_is_never_capital ... ok
+test surowiec_labels_full_table ... ok
+test tie_keeps_first_in_array_and_nan_keeps_first ... ok
+test turn_bounds_n_minus_1_n_n_plus_1 ... ok
+test zloze_labels_table ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/p6_8h2_society_inputs.rs (/dev/shm/civ-r4/debug/deps/p6_8h2_society_inputs-1247c6915da6d28c)
+
+running 5 tests
+test foreign_owner_religion_variants ... ok
+test clamp_and_nan_threshold ... ok
+test threshold_boundaries_n_minus_1_n_n_plus_1 ... ok
+test tie_break_and_non_finite_counts ... ok
+test religion_matches_pinned_web_vectors ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.23s
+EXIT=0

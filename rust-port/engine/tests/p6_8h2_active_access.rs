@@ -2,7 +2,7 @@
 //! Wektory z pinu `91dc998a` (bundle esbuild, generator w `tests/p6_8h2_vectors/` i w runie).
 //! Dokument tematu: `dyspozycje/rust-port/p6/P6-8H2-DOSTEP-ZASOBOW-B.md`.
 
-use std::collections::{BTreeMap, HashSet};
+use std::collections::{BTreeMap, HashMap, HashSet};
 
 use civ_engine::domain::improvement_build::{BuildHex, BuildMap};
 use civ_engine::domain::improvements::TerrainType;
@@ -140,6 +140,19 @@ fn strings(v: &Value) -> Vec<String> {
         .collect()
 }
 
+/// Mapa `wlasciciel` po kluczu "q,r" (web `hex.wlasciciel`; brak pola = brak wpisu).
+fn hex_owners_of(hexes: &Value) -> HashMap<String, String> {
+    hexes
+        .as_array()
+        .unwrap()
+        .iter()
+        .filter_map(|h| {
+            let key = format!("{},{}", h["q"].as_i64()?, h["r"].as_i64()?);
+            Some((key, h["wlasciciel"].as_str()?.to_owned()))
+        })
+        .collect()
+}
+
 /// Web `Object.prototype`-klucze z małych liter, które trafiają do `ZLOZE_LABEL` /
 /// `METAL_DEPOSIT_MIN_ERA` jako funkcje (rozbieżność udokumentowana w dokumencie tematu).
 const PROTOTYPE_ZLOZE_KEYS: [&str; 2] = ["constructor", "__proto__"];
@@ -191,10 +204,14 @@ fn city_access_matches_pinned_web_vectors() {
             kultura,
         };
         let border = border_fn(&vectors["borderTable"]);
+        let owner_id: Option<String> = case["options"]["ownerId"].as_str().map(str::to_owned);
+        let hex_owners = hex_owners_of(&maps[case["mapIdx"].as_u64().unwrap() as usize]);
         let options = ResourceAccessOptions {
             built_ids: built.as_deref(),
             empire_livestock_unlocks: livestock.as_ref(),
             empire_stock: stock.as_ref(),
+            owner_id: owner_id.as_deref(),
+            hex_owners: Some(&hex_owners),
         };
         let got = get_city_resource_access_for_city(
             city,
@@ -228,17 +245,37 @@ fn hex_labels_match_pinned_web_vectors_except_documented_prototype_keys() {
     let hex_cases = cases["hex"].as_array().unwrap();
     let hex_vectors = vectors["hexLabel"].as_array().unwrap();
     assert_eq!(hex_cases.len(), hex_vectors.len());
-    let mut prototype_skipped = 0usize;
+    let mut prototype_checked = 0usize;
     for (case, expected) in hex_cases.iter().zip(hex_vectors) {
-        if is_prototype_zloze(&case["hex"]) {
-            // Web: `ZLOZE_LABEL['constructor']` = funkcja Object; `METAL_DEPOSIT_MIN_ERA` j.w.
-            // Rozbieznosc udokumentowana (ZAŁOŻENIE Z5), nie testowana tu wartosciowo.
-            prototype_skipped += 1;
-            continue;
-        }
         let hex = hex_from_case(&case["hex"]);
         let era = case["era"].as_i64().unwrap();
         let display = expected["display"].as_str().map(str::to_owned);
+        if is_prototype_zloze(&case["hex"]) {
+            // Z5: web zwraca wartosc z Object.prototype jako hint (artefakt JS, pinowany w wektorze).
+            // Rust: klucz prototypu = zloze nieistniejace -> brak etykiety i brak hintu.
+            let web_hint = expected["hint"].as_str().unwrap_or_default();
+            assert!(
+                web_hint.starts_with("function Object()")
+                    || web_hint.starts_with("[object Object]"),
+                "web hint prototypu: {web_hint:?} ({})",
+                case["name"]
+            );
+            assert_eq!(display, None, "web display prototypu: {}", case["name"]);
+            assert_eq!(
+                label_for_hex(&hex, era),
+                None,
+                "labelForHex: {}",
+                case["name"]
+            );
+            assert_eq!(
+                hex_hidden_deposit_hint(&hex, era),
+                None,
+                "hint: {}",
+                case["name"]
+            );
+            prototype_checked += 1;
+            continue;
+        }
         let hint = expected["hint"].as_str().map(str::to_owned);
         assert_eq!(
             hex_deposit_display_label(&hex, era),
@@ -259,9 +296,10 @@ fn hex_labels_match_pinned_web_vectors_except_documented_prototype_keys() {
             case["name"]
         );
     }
+    // 2 klucze prototypu (constructor, __proto__) x eras x terrain/nakladka: liczba pinowana z generatora.
     assert_eq!(
-        prototype_skipped, 72,
-        "liczba przypadkow 'constructor' w wektorach"
+        prototype_checked, 270,
+        "liczba przypadkow prototypu w wektorach"
     );
 }
 
@@ -303,7 +341,7 @@ fn labels_for_improvement_unlock_match_pinned_web_vectors() {
 fn polish_collation_matches_locale_compare_over_label_universe() {
     let vectors = parse(VECTORS);
     let pairs = vectors["plPairs"].as_array().unwrap();
-    assert_eq!(pairs.len(), 900);
+    assert_eq!(pairs.len(), 2601);
     for pair in pairs {
         let a = pair[0].as_str().unwrap();
         let b = pair[1].as_str().unwrap();
@@ -444,6 +482,7 @@ fn active_label_removes_same_label_from_potential() {
             built_ids: None,
             empire_livestock_unlocks: None,
             empire_stock: Some(&stock),
+            ..Default::default()
         },
     );
     assert_eq!(after.active, ["Brąz", "Koń"]);
@@ -473,6 +512,7 @@ fn livestock_unlock_kon_gate_branch() {
             built_ids: None,
             empire_livestock_unlocks: Some(&unlocks),
             empire_stock: None,
+            ..Default::default()
         },
     );
     assert_eq!(with.active, ["Koń"]);
@@ -488,6 +528,7 @@ fn livestock_unlock_kon_gate_branch() {
             built_ids: None,
             empire_livestock_unlocks: Some(&other),
             empire_stock: None,
+            ..Default::default()
         },
     );
     assert!(without.active.is_empty());
