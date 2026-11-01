@@ -1,0 +1,7 @@
+F15 src/domain/fort_territory.rs
+- 'if !in_foreign_fort_radius {'
++ 'if in_foreign_fort_radius {'
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 15.55s
+test foreign_fort_territory_matches_web ... FAILED
+test result: FAILED. 5 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.30s
+RESULT=KILLED

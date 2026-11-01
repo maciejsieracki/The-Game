@@ -1,0 +1,7 @@
+F1 src/domain/fort_territory.rs
+- 'let mut m = -1;'
++ 'let mut m = 0;'
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 17.14s
+test next_seq_and_backfill_match_web ... FAILED
+test result: FAILED. 5 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.71s
+RESULT=KILLED

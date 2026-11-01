@@ -1,0 +1,10 @@
+D1 data/terrain-improvements.json
+- '"zasieg_terytorium": 5,'
++ '"zasieg_terytorium": 6,'
+test pick_auto_improvements_matches_pinned_web_vectors ... FAILED
+test result: FAILED. 4 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.28s
+test foreign_fort_territory_matches_web ... FAILED
+test territory_owner_at_matches_web ... FAILED
+test radii_and_boundaries_match_web ... FAILED
+test result: FAILED. 3 passed; 3 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.35s
+RESULT=KILLED

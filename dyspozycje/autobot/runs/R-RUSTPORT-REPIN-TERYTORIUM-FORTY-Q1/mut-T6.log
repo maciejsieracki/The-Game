@@ -1,0 +1,6 @@
+T6 src/domain/territory.rs
+- '(Some(_), Some(o), Some(b))'
++ '(_, Some(o), Some(b))'
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 16.03s
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.65s
+RESULT=SURVIVED

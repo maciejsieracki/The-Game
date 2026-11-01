@@ -1,0 +1,9 @@
+T11 src/domain/territory.rs
+- ' || tn.node.is_outpost == Some(true)'
++ ''
+test pick_auto_improvements_matches_pinned_web_vectors ... FAILED
+test result: FAILED. 4 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 16.30s
+test foreign_fort_territory_matches_web ... FAILED
+test territory_owner_at_matches_web ... FAILED
+test result: FAILED. 4 passed; 2 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.78s
+RESULT=KILLED

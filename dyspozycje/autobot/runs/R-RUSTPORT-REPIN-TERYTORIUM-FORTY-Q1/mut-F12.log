@@ -1,0 +1,7 @@
+F12 src/domain/fort_territory.rs
+- 'f.fort.owner_id != owner_id\n'
++ 'f.fort.owner_id == owner_id\n'
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 15.95s
+test foreign_fort_territory_matches_web ... FAILED
+test result: FAILED. 5 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.50s
+RESULT=KILLED

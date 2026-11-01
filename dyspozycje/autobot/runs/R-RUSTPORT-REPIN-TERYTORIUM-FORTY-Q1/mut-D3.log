@@ -1,0 +1,6 @@
+D3 data/terrain-improvements.json
+- '"zasieg_pol": 5,'
++ '"zasieg_pol": 6,'
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 17.10s
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.40s
+RESULT=SURVIVED

@@ -1,0 +1,7 @@
+F23 src/domain/fort_territory.rs
+- 'let new_owner_id = attackers[0].owner_id;'
++ 'let new_owner_id = f.fort.owner_id;'
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 16.70s
+test capture_by_occupation_matches_web ... FAILED
+test result: FAILED. 5 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.40s
+RESULT=KILLED

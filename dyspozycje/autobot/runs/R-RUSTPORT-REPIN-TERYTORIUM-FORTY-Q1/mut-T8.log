@@ -1,0 +1,9 @@
+T8 src/domain/territory.rs
+- '} else if dist < best_city_dist {'
++ '} else if dist <= best_city_dist {'
+test pick_auto_improvements_matches_pinned_web_vectors ... FAILED
+test result: FAILED. 4 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 15.73s
+test foreign_fort_territory_matches_web ... FAILED
+test territory_owner_at_matches_web ... FAILED
+test result: FAILED. 4 passed; 2 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.57s
+RESULT=KILLED

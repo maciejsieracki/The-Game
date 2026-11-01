@@ -1,0 +1,7 @@
+F18 src/domain/fort_territory.rs
+- 'u.military\n                    && !is_barbarian_owner'
++ 'true\n                    && !is_barbarian_owner'
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 16.02s
+test capture_by_occupation_matches_web ... FAILED
+test result: FAILED. 5 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.68s
+RESULT=KILLED

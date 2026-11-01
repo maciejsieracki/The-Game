@@ -1,0 +1,7 @@
+F24 src/domain/fort_territory.rs
+- '        f.fort.owner_id = new_owner_id;\n'
++ '        let _ = new_owner_id;\n'
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 16.67s
+test capture_by_occupation_matches_web ... FAILED
+test result: FAILED. 5 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.44s
+RESULT=KILLED

@@ -1,0 +1,8 @@
+F11 src/domain/fort_territory.rs
+- 'turn: f.built_at_turn.unwrap_or(0),'
++ 'turn: f.built_at_turn.unwrap_or(1),'
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 15.62s
+test foreign_fort_territory_matches_web ... FAILED
+test fort_territory_nodes_match_web ... FAILED
+test result: FAILED. 4 passed; 2 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.45s
+RESULT=KILLED

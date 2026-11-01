@@ -1,0 +1,6 @@
+# liczniki scenariuszy p6_8i_pick (zarzut 3), python3 -I na rust-port/engine/tests/p6_8i_vectors/pick.json
+pin 4bbef081d
+scenarios 2227
+scenarios_with_nonempty_fortNodes 107
+log trybu ostrego: gate-8i-teren.txt (p6_8i_pick 5/5 ok, brak tolerancji dryfu)
+EXIT=0

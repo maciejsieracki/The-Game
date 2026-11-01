@@ -1,0 +1,7 @@
+F21 src/domain/fort_territory.rs
+- 'attacker_owners.len() != 1'
++ 'attacker_owners.len() == 1'
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 17.14s
+test capture_by_occupation_matches_web ... FAILED
+test result: FAILED. 5 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.71s
+RESULT=KILLED

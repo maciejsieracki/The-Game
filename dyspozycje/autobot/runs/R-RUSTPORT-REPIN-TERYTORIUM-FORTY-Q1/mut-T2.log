@@ -1,0 +1,8 @@
+T2 src/domain/territory.rs
+- 'o.turn < b.turn'
++ 'o.turn > b.turn'
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 15.86s
+test foreign_fort_territory_matches_web ... FAILED
+test territory_owner_at_matches_web ... FAILED
+test result: FAILED. 4 passed; 2 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.11s
+RESULT=KILLED
