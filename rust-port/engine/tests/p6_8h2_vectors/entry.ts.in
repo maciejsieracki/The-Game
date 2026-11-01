@@ -1,0 +1,86 @@
+import * as fs from 'fs';
+import {
+  getCityResourceAccessForCity,
+  hexDepositDisplayLabel,
+  hexHiddenDepositHint,
+  improvementUnlockActiveOnHex,
+  labelsForImprovementUnlock,
+} from '__PIN__/game/resource-access';
+import { cityBorderRadius, dominantReligion } from '__PIN__/game/culture-religion';
+import { isForeignReligionDominant } from '__PIN__/game/society-inputs';
+
+const cases = JSON.parse(fs.readFileSync(process.argv[2], 'utf8'));
+const numOrUndef = (v: any) => (v === null || v === undefined ? undefined : v === 'NaN' ? NaN : v);
+const numish = (v: any) => (v === 'NaN' ? NaN : v === 'Inf' ? Infinity : v);
+
+function buildMap(hexList: any[]): any {
+  const hexes: Record<string, any> = {};
+  for (const h of hexList) {
+    const obj: any = { coords: { q: h.q, r: h.r } };
+    if (h.teren !== null && h.teren !== undefined) obj.terenBazowy = h.teren;
+    if (h.nakladka !== null && h.nakladka !== undefined) obj.nakladka = h.nakladka;
+    if (h.zloze !== null && h.zloze !== undefined) obj.zloze = h.zloze;
+    if (h.zlozeMinEra !== null && h.zlozeMinEra !== undefined) obj.zlozeMinEra = h.zlozeMinEra;
+    if (h.wlasciciel !== null && h.wlasciciel !== undefined) obj.wlasciciel = h.wlasciciel;
+    hexes[`${h.q},${h.r}`] = obj;
+  }
+  return { hexes };
+}
+
+const out: any = { city: [], hexLabel: [], unlock: [], labelsUnlock: [], borderTable: {}, plPairs: [], religion: [] };
+
+for (const c of cases.city) {
+  const map = buildMap(cases.maps[c.mapIdx]);
+  const placed = c.placed === null ? null : new Map(c.placed.map((p: any) => [p[0], p[1]]));
+  const options: any = {};
+  if (c.options.builtIds !== null) options.builtIds = c.options.builtIds;
+  // Z1: 'UNDEF' = brak pola `empireLivestockUnlocks` -> web liczy computeEmpireLivestockUnlocks.
+  if (c.options.livestock !== 'UNDEF') options.empireLivestockUnlocks = new Set(c.options.livestock);
+  if (c.options.stock !== null) options.empireStock = Object.fromEntries(Object.entries(c.options.stock).map(([k, v]: any) => [k, numOrUndef(v)]));
+  if (c.options.ownerId !== null && c.options.ownerId !== undefined) options.ownerId = c.options.ownerId;
+  const kult = numOrUndef(c.kultura);
+  const city = { id: 'c', q: c.q, r: c.r, population: numOrUndef(c.population), kulturaSkumulowana: kult };
+  const res = getCityResourceAccessForCity(city as any, map, placed as any, c.era, options);
+  if (kult !== undefined) out.borderTable[String(kult)] = cityBorderRadius(kult);
+  out.city.push({ name: c.name, potential: res.potential, active: res.active });
+}
+for (const hc of cases.hex) {
+  const map = buildMap([hc.hex]);
+  const hex = map.hexes[`${hc.hex.q},${hc.hex.r}`];
+  out.hexLabel.push({
+    name: hc.name,
+    display: hexDepositDisplayLabel(hex, hc.era),
+    hint: hexHiddenDepositHint(hex, hc.era),
+  });
+}
+for (const uc of cases.unlock) {
+  const map = buildMap([uc.hex]);
+  const hex = map.hexes[`${uc.hex.q},${uc.hex.r}`];
+  out.unlock.push({ key: uc.key, hex: uc.hex.name, active: improvementUnlockActiveOnHex(uc.key, hex) });
+}
+for (const key of cases.labelKeys) {
+  out.labelsUnlock.push({ key, labels: labelsForImprovementUnlock(key) });
+}
+for (const a of cases.labelUniverse) {
+  for (const b of cases.labelUniverse) {
+    out.plPairs.push([a, b, Math.sign(a.localeCompare(b, 'pl'))]);
+  }
+}
+// Z6: dominantReligion + isForeignReligionDominant (society-inputs.ts:11).
+for (const rc of cases.religion) {
+  const counts: Record<string, any> = {};
+  for (const [k, v] of Object.entries(rc.counts)) counts[k] = numish(v);
+  const state: any = { counts };
+  const params: any = { progDominacjiPct: numish(rc.prog) };
+  const dom = dominantReligion(state, params);
+  out.religion.push({
+    name: rc.name,
+    status: dom.status,
+    religion: dom.religion === undefined ? null : dom.religion,
+    share: dom.share === undefined || Number.isNaN(dom.share) ? null : dom.share,
+    foreign: isForeignReligionDominant(state, rc.own, params),
+  });
+}
+const san = (v: any): any => (typeof v === 'function' ? `<<fn:${v.name}>>` : v === undefined ? null : v);
+for (const row of out.hexLabel) { row.display = san(row.display); row.hint = san(row.hint); }
+fs.writeFileSync(process.argv[3], JSON.stringify(out));

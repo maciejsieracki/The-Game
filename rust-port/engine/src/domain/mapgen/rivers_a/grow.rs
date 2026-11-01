@@ -287,7 +287,7 @@ pub struct GrowCandidate {
 
 /// Porzadek kandydatow jak web `sort((a, b) => b.score - a.score)`: NaN traktowany jak
 /// równość (V8), sortowanie stabilne (Rust `sort_by` jest stabilne).
-fn cmp_candidates_desc(a: &GrowCandidate, b: &GrowCandidate) -> std::cmp::Ordering {
+pub(crate) fn cmp_candidates_desc(a: &GrowCandidate, b: &GrowCandidate) -> std::cmp::Ordering {
     use std::cmp::Ordering;
     let d = b.score - a.score;
     if d.is_nan() {

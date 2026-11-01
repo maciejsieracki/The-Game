@@ -1,0 +1,18 @@
+    Finished `test` profile [unoptimized] target(s) in 0.02s
+     Running tests/p6_8h2_capital_labels.rs (/dev/shm/p6-8h2-b-target/debug/deps/p6_8h2_capital_labels-563bfca85dc5ec6d)
+
+running 11 tests
+test non_easy_difficulty_disables_bonus ... ok
+test non_human_owner_is_never_capital ... ok
+test designated_some_overrides_fallback ... ok
+test designated_none_falls_back_to_oldest_owner_city ... ok
+test panel_range_filter_keeps_only_three_and_sorts ... ok
+test surowiec_fallback_capitalizes_and_empty_is_empty ... ok
+test turn_bounds_n_minus_1_n_n_plus_1 ... ok
+test stolica_bonus_honours_designated_capital ... ok
+test tie_keeps_first_in_array_and_nan_keeps_first ... ok
+test surowiec_labels_full_table ... ok
+test zloze_labels_table ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+EXIT=0

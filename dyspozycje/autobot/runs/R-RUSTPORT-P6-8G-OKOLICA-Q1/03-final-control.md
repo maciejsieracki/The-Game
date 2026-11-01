@@ -43,3 +43,25 @@ BLOKADY: brak technicznych.
 RUNDY: 5/5 zuzyte; ostatni werdykt PASS-WITH-NOTES; decyzja wymagana: NIE.
 NASTEPNY KROK: integracja orkiestratora. Kolejnosc wzgledem origin/rust-port/parity-v2 (2f35f68bc): merge-base = f4c89d008; zmiany parity-v2 od 72491e442 to wylacznie mapgen/rivers_a, testy p6_m07a_* i docs, rozlaczne z plikami 8G, wiec merge/cherry-pick `baca6b222` (i poprzedzajace commity galezi p6-8g-okolica-r5) bez konfliktow; po merge powtorzyc fmt/clippy/test.
 DEPLOY/PUSH: NIE WYKONANO
+
+---
+
+# Final Control r4 (po Evaluatorze r4 PASS-WITH-NOTES i Obronie r4, baza `7bae96eb8` na `448e62600`)
+
+STATUS: PASS-WITH-NOTES
+DOMAIN: GAME
+TEMAT: R-RUSTPORT-P6-8G-OKOLICA-Q1
+GOAL: Port okolica.ts (pin 91dc998a) do rust-port/engine/src/domain/okolica.rs; werdykt po zarzutach Evaluatora r4 i Obronie r4.
+ZMIANY/COMMIT: oceniany `7bae96eb8` (jedyny diff wzgledem `448e62600` = 04-operator-r4.md, 3+/3-, korekta statusu M12). Kod nie zmieniony. `git diff --check` wzgledem `448e62600`: czysty wg Obrony (EXIT=0).
+TESTY (samodzielnie, CARGO_INCREMENTAL=0, target /dev/shm): cargo fmt --check EXIT=0; p6_8g_okolica 19/0; p6_8g_web_vectors 10/0; p6_8g_web_vectors_r4 4/0; p6_8g_hook 4/0; cargo test --lib okolica 3/0. Mutant M12 (okolica.rs:175 `d > 0.0` -> `>= 0.0`): `--lib okolica` EXIT=101 (FAIL js_cmp_diff_nan_is_equal_like_v8_compare) -> ZABITA; po przywroceniu 3/0 EXIT=0; git status czysty. Pelny cargo test/clippy: NIE_ZMIERZONO przeze mnie (Operator 1878/0; orkiestrator 1974/0 na `448e62600`).
+ZARZUTY -> ocena:
+1. Proces (67176970e lokalny, r4/r5 w parity-v2 przed werdyktem): ODDAL orkiestratorowi. Kod r4/r5 jest w `448e62600`, FC r5 (`54dd7e307`) PASS-WITH-NOTES juz istnieje; brak zmiany kodu. ZALOZENIE: ta runda = FC r4 po Evaluatorze r4; kod r5 (`baca6b222`) wliczony.
+2. Hak `OkolicaPopulationHook` bez zywego wolajacego: ODDAL / NASTEPNA-PARTIA. Dispatch N1 wymagal implementacji `PopulationChangeHooks` z pamiecia `okolica_reczne` i testu, ze zmiana populacji wola rebalans - spelnione (p6_8g_hook 4/0). Funkcje `apply_*_population_growth` nie maja zywego wolajacego w Rust niezaleznie od 8G.
+3. `okolica_reczne` nie w zapisie JSON: ODDAL / NASTEPNA-PARTIA (dispatch wyklucza zmiane zapisu; ta sama luka dla okolica_focus/okolica_tryb).
+4. Tabela M12 nieaktualna: NAPRAWIONE w `7bae96eb8`, zweryfikowane mutacja.
+5. `tests/p6_6b_vectors/common.rs` (`okolica_reczne: None`): ODDAL. Wymuszone kompilacja po dodaniu pola dozwolonego rozszerzeniem allowlisty; ZALOZENIE: rozszerzenie ex post o ten wiersz. Cargo.lock niesledzony, niedodany - poprawnie.
+NAPRAW: brak. DO DECYZJI CZLOWIEKA: brak.
+BLOKADY: brak technicznych.
+RUNDY: 4/5. Decyzja wymagana: NIE
+NASTEPNY KROK: integracja orkiestratora. `7bae96eb8` jest bezposrednim potomkiem `448e62600` (diff = 1 dokument), wiec kolejnosc wzgledem origin/rust-port/parity-v2: fast-forward/cherry-pick dokumentow; kod 8G juz w parity-v2. NASTEPNA-PARTIA: wpiecie haka w petle gry oraz zapis/odczyt pol okolica (focus, tryb, reczne). `67176970e` (raport bez kodu) niewymagany.
+DEPLOY/PUSH: NIE WYKONANO

@@ -1,0 +1,10 @@
+M11 | gorna granica tury: > -> >= | KILLED exit=101 failed=2 [turn_bounds_n_minus_1_n_n_plus_1;result:]
+M12 | owner literal [0] -> [1] | KILLED exit=101 failed=3 [turn_bounds_n_minus_1_n_n_plus_1;stolica_bonus_honours_designated_capital;result:]
+M13 | stolica pomija designated (None) | KILLED exit=101 failed=2 [stolica_bonus_honours_designated_capital;result:]
+M14 | filtr etykiet: negacja | KILLED exit=101 failed=2 [panel_range_filter_keeps_only_three_and_sorts;result:]
+M15 | usuniecie sort | KILLED exit=101 failed=2 [panel_range_filter_keeps_only_three_and_sorts;result:]
+M16 | fallback pusty -> niepusty | KILLED exit=101 failed=2 [surowiec_fallback_capitalizes_and_empty_is_empty;result:]
+M17 | fallback bez uppercase | KILLED exit=101 failed=2 [surowiec_fallback_capitalizes_and_empty_is_empty;result:]
+M18 | tabela zloze: cyna -> Cyna | KILLED exit=101 failed=2 [zloze_labels_table;result:]
+M19 | tabela surowcow: kon -> Kon | KILLED exit=101 failed=3 [surowiec_labels_full_table;surowiec_fallback_capitalizes_and_empty_is_empty;result:]
+EXIT=0

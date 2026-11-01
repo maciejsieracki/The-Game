@@ -1,0 +1,8 @@
+BASE rc=0 (OK)
+C01 KILLED rc=101 surowiec_label_or_capitalized: gałąź `if let Some(label)` -> nigdy
+C02 KILLED rc=101 tabela SUROWIEC: `zloto` -> `ZLOTO`
+C03 KILLED rc=101 tabela SUROWIEC: `kon` -> spacja na końcu
+C04 KILLED rc=101 tabela SUROWIEC: `braz` -> `Braz`
+C05 KILLED rc=101 tabela ZLOZE: `miedz` -> `Miedź`
+C06 KILLED rc=101 tabela ZLOZE: `sol` -> `Sol`
+C07 KILLED rc=101 tabela ZLOZE: `wegiel` -> `Węgiel!`
