@@ -1,0 +1,8 @@
+SCRATCH /tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/mut
+R2-01 KILLED EXIT=101 results= [('13', '1')] FAILED= ['suppressed_only_when_strictly_true']
+R2-02 KILLED EXIT=101 results= [('10', '4')] FAILED= ['chain_is_oldest_first_and_stops_at_root', 'chain_duplicate_ids_last_entry_wins_like_js_map', 'chain_cycle_guard_terminates', 'composition_lines_empty_for_root_two_lines_for_chain']
+R2-03 KILLED EXIT=101 results= [('12', '2')] FAILED= ['structural_defense_keys_and_percent_rules', 'structural_defense_lines_per_building']
+R2-04 KILLED EXIT=101 results= [('13', '1')] FAILED= ['palac_tier_takes_highest_and_none_when_absent']
+R2-05 KILLED EXIT=101 results= [('13', '1')] FAILED= ['city_building_line_predicates']
+R2-06 PATTERN_COUNT 2 - POMINIETY
+DONE

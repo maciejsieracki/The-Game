@@ -1,0 +1,5 @@
+SCRATCH /tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/mut
+R3-19 KILLED EXIT=101 results= [('14', '0'), ('7', '0'), ('9', '0'), ('11', '1')] FAILED= ['vectors_building_stat_summary_lines_match_web']
+R3-20 KILLED EXIT=101 results= [('14', '0'), ('7', '0'), ('9', '0'), ('11', '1')] FAILED= ['vectors_building_stat_summary_lines_match_web']
+R3-21 KILLED EXIT=101 results= [('14', '0'), ('7', '0'), ('9', '0'), ('11', '1')] FAILED= ['vectors_building_stat_summary_lines_match_web']
+DONE
