@@ -1,3 +1,12 @@
+## ROBOCZA 83f64d3f -- 2026-11-01 -- AI poprawnie ocenia teren pod miasta (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`f8d7b55ea` + `R-WEB-AI-CITY-YIELD-FIX-Q1` `7ec22faa7` + `R-WEB-AI-CITY-YIELD-LIVE-Q1` `050bd69ba`) i commit wdrożenia bundla; stała zgoda właściciela 2026-10-31; wdrożenie PO pomiarze pełnej gry (decyzja ABC-B właściciela).
+- Bundle MD5 `83f64d3fdba933db58c4319c53e7e3f0`, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, outDir poza repo, stempel ROBOCZA; `verify-robocza-bundle.cjs` VERIFY OK.
+- Zakres: ocena miejsca pod miasto AI liczyła plon terenu jako 0 (dopasowanie nazwy z diakrytykami do id); teraz plon jest liczony, z wagą 0,3, tak by nie zmieniać tempa ekspansji. Pomiar w pełnej grze (Chromium, Standardowy 168×120, ziarno 4242, 100 tur, 5 AI): miasta AI T100 Kontynenty 93 → 93 (0,0%), Pangea 92 → 90 (−2,2%); 0 miast na biegunach.
+- Testy po scaleniu: tsc PASS; ai-city-yield 42/0, ai-early-city-founding-pace 2/0, capital-sep-unit 44/0, capital-spacing-prop PASS, ai-avoid-polar-pick 16/0, followups 9/0, autoclear 60/0, stages 302/0, auto-improvements 46/0, ai-improvements 56/0.
+- Ograniczenia: jedno ziarno na typ, bez Wysp; wąskie plateau wagi (0,35 daje +27% na Wyspach w symulacji); w toku: pięć testów w żywej grze.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `02d1347767bd6067449b9c2e19c4c65d`, 70,113,050 bajtów.
+
 ## ROBOCZA 02d13477 -- 2026-11-01 -- rozproszenie cywilizacji (stolice dalej od siebie), drobne poprawki kreatora i AI (testowa)
 
 - **STATUS: DEPLOYED** — merge do `origin/main` (`c99ac58cd` + `R-WEB-CAPITAL-SPACING-FIX-Q1` `44108d7a1` + `R-WEB-FOLLOWUPS-LAND-AI-Q1` `ce830e0a1`) i commit wdrożenia bundla; stała zgoda właściciela 2026-10-31.
