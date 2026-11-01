@@ -1231,14 +1231,97 @@ pub mod p6_7b {
         pub ma_spichlerz_ii_pop: bool,
     }
 
-    /// Web `SPICHLERZ_DRAIN_CERAMIKA_PER_TURN`.
-    pub fn spichlerz_drain_ceramika_per_turn() -> f64 {
-        building_cost_params().spichlerz.drain_ceramika_na_ture
+    // REPIN-EKONOMIA-E (pin weba 4bbef081d, R-WEB-SPICHLERZ-DRAIN-KEYS-Q1): web usunal stale
+    // `SPICHLERZ_DRAIN_CERAMIKA_PER_TURN` / `SPICHLERZ_DRAIN_SOL_PER_TURN`; zuzycie Spichlerza
+    // czytane jest z `econ-params.json` (grupa `budynki`, wg trudnosci) przez
+    // `load_spichlerz_drain_params`. Rust: odpowiedniki `spichlerz_drain_{ceramika,sol}_per_turn()`
+    // usuniete (brak wolajacych poza testem p6_7b_spichlerz, zaktualizowanym).
+
+    /// Klucze JSON (`econ-params.json` -> `budynki`) czytane przez `load_spichlerz_drain_params`
+    /// (web `SPICHLERZ_DRAIN_JSON_KEY_*`, `building-resource-gate.ts:332-334`).
+    pub const SPICHLERZ_DRAIN_JSON_KEY_CERAMIKA_I: &str = "budynek_spichlerz_zuzywa_ceramika";
+    pub const SPICHLERZ_DRAIN_JSON_KEY_CERAMIKA_II: &str = "budynek_spichlerz_ii_zuzywa_ceramika";
+    pub const SPICHLERZ_DRAIN_JSON_KEY_SOL_II: &str = "budynek_spichlerz_ii_zuzywa_sol";
+
+    /// Fallback (25) gdy klucz JSON brakuje, nie jest skonczona liczba lub jest ujemny
+    /// (web `SPICHLERZ_DRAIN_FALLBACK_PER_TURN`, `building-resource-gate.ts:339`).
+    pub const SPICHLERZ_DRAIN_FALLBACK_PER_TURN: f64 = 25.0;
+
+    /// Zuzycie Spichlerza na ture (B6 Ceramika I, B8 Ceramika II, B7 Sol II) - web `SpichlerzDrainParams`.
+    #[derive(Debug, Clone, Copy, PartialEq)]
+    pub struct SpichlerzDrainParams {
+        pub ceramika_i: f64,
+        pub ceramika_ii: f64,
+        pub sol_ii: f64,
     }
 
-    /// Web `SPICHLERZ_DRAIN_SOL_PER_TURN`.
-    pub fn spichlerz_drain_sol_per_turn() -> f64 {
-        building_cost_params().spichlerz.drain_sol_na_ture
+    impl SpichlerzDrainParams {
+        /// Wszystkie trzy wartosci = fallback 25 (rownowazne `loadSpichlerzDrainParams(null, d)`).
+        pub const FALLBACK: SpichlerzDrainParams = SpichlerzDrainParams {
+            ceramika_i: SPICHLERZ_DRAIN_FALLBACK_PER_TURN,
+            ceramika_ii: SPICHLERZ_DRAIN_FALLBACK_PER_TURN,
+            sol_ii: SPICHLERZ_DRAIN_FALLBACK_PER_TURN,
+        };
+    }
+
+    /// Web `loadThroughput(raw, paramKey, difficulty, fallback)` (`converters.ts:35-45`):
+    /// `row = (raw.budynki ?? {})[paramKey]`, `v = row ? row[difficulty] : undefined`; wynik `v` gdy
+    /// `typeof v === 'number' && Number.isFinite(v)`, inaczej `fallback`. Wiersz/grupa nie-obiekt
+    /// (liczba, tekst, tablica, null) = brak wartosci (w JS indeksowanie dawaloby `undefined`).
+    pub fn load_throughput(
+        raw: &serde_json::Value,
+        param_key: &str,
+        difficulty: &str,
+        fallback: f64,
+    ) -> f64 {
+        raw.get("budynki")
+            .and_then(serde_json::Value::as_object)
+            .and_then(|group| group.get(param_key))
+            .and_then(serde_json::Value::as_object)
+            .and_then(|row| row.get(difficulty))
+            .and_then(serde_json::Value::as_f64)
+            .filter(|v| v.is_finite())
+            .unwrap_or(fallback)
+    }
+
+    /// Web `loadSpichlerzDrainParams(raw, difficulty)` (`building-resource-gate.ts:350-364`):
+    /// `raw` brak (`None`, web `null | undefined`) -> trzy fallbacki; inaczej kazdy z 3 kluczy przez
+    /// `load_throughput`, a wartosc ujemna -> fallback (`v >= 0 ? v : FALLBACK`).
+    pub fn load_spichlerz_drain_params(
+        raw: Option<&serde_json::Value>,
+        difficulty: &str,
+    ) -> SpichlerzDrainParams {
+        let read = |key: &str| -> f64 {
+            let Some(raw) = raw else {
+                return SPICHLERZ_DRAIN_FALLBACK_PER_TURN;
+            };
+            let v = load_throughput(raw, key, difficulty, SPICHLERZ_DRAIN_FALLBACK_PER_TURN);
+            if v >= 0.0 {
+                v
+            } else {
+                SPICHLERZ_DRAIN_FALLBACK_PER_TURN
+            }
+        };
+        SpichlerzDrainParams {
+            ceramika_i: read(SPICHLERZ_DRAIN_JSON_KEY_CERAMIKA_I),
+            ceramika_ii: read(SPICHLERZ_DRAIN_JSON_KEY_CERAMIKA_II),
+            sol_ii: read(SPICHLERZ_DRAIN_JSON_KEY_SOL_II),
+        }
+    }
+
+    /// Web `spichlerzCeramikaDrainAmount` (`building-resource-gate.ts:368-373`): Ceramika placona
+    /// przez JEDNO miasto z Spichlerzem (jedna wyplata na miasto, tez gdy ma I i II). Jest II ->
+    /// stawka II, inaczej I.
+    pub fn spichlerz_ceramika_drain_amount(
+        built_ids: &[String],
+        params: &SpichlerzDrainParams,
+    ) -> f64 {
+        let building_ii = &building_cost_params().spichlerz.budynek_ii;
+        if built_ids.contains(building_ii) {
+            params.ceramika_ii
+        } else {
+            params.ceramika_i
+        }
     }
 
     /// Web `SPICHLERZ_EMPIRE_CAP_I`.
@@ -1266,6 +1349,7 @@ pub mod p6_7b {
         owner_id: i64,
         built_ids: &[String],
         dry_run: bool,
+        drain_params: &SpichlerzDrainParams,
     ) -> SpichlerzDrainPayResult {
         let params = &building_cost_params().spichlerz;
         let has_i = built_ids.contains(&params.budynek_i);
@@ -1279,26 +1363,21 @@ pub mod p6_7b {
 
         let mut ceramika_paid = false;
         let mut sol_paid = false;
+        let ceramika_amount = spichlerz_ceramika_drain_amount(built_ids, drain_params);
 
-        if owner_resource_stock(cities, owner_id, &params.klucz_ceramika)
-            >= params.drain_ceramika_na_ture
-        {
+        if owner_resource_stock(cities, owner_id, &params.klucz_ceramika) >= ceramika_amount {
             if !dry_run {
-                let cost = StockRecord::from([(
-                    params.klucz_ceramika.clone(),
-                    params.drain_ceramika_na_ture,
-                )]);
+                let cost = StockRecord::from([(params.klucz_ceramika.clone(), ceramika_amount)]);
                 deduct_building_stock_cost_across_cities(cities, owner_id, &cost);
             }
             ceramika_paid = true;
         }
 
         if has_ii
-            && owner_resource_stock(cities, owner_id, &params.klucz_sol) >= params.drain_sol_na_ture
+            && owner_resource_stock(cities, owner_id, &params.klucz_sol) >= drain_params.sol_ii
         {
             if !dry_run {
-                let cost =
-                    StockRecord::from([(params.klucz_sol.clone(), params.drain_sol_na_ture)]);
+                let cost = StockRecord::from([(params.klucz_sol.clone(), drain_params.sol_ii)]);
                 deduct_building_stock_cost_across_cities(cities, owner_id, &cost);
             }
             sol_paid = true;
@@ -1316,6 +1395,7 @@ pub mod p6_7b {
         cities: &[T],
         owner_id: i64,
         built_ids: &[String],
+        drain_params: &SpichlerzDrainParams,
     ) -> SpichlerzDrainPayResult {
         let params = &building_cost_params().spichlerz;
         let has_i = built_ids.contains(&params.budynek_i);
@@ -1326,12 +1406,12 @@ pub mod p6_7b {
                 sol_paid: false,
             };
         }
+        let ceramika_amount = spichlerz_ceramika_drain_amount(built_ids, drain_params);
         SpichlerzDrainPayResult {
             ceramika_paid: owner_resource_stock(cities, owner_id, &params.klucz_ceramika)
-                >= params.drain_ceramika_na_ture,
+                >= ceramika_amount,
             sol_paid: has_ii
-                && owner_resource_stock(cities, owner_id, &params.klucz_sol)
-                    >= params.drain_sol_na_ture,
+                && owner_resource_stock(cities, owner_id, &params.klucz_sol) >= drain_params.sol_ii,
         }
     }
 
@@ -1514,6 +1594,9 @@ pub mod p6_7b {
         pub empire_stock: Option<&'a StockRecord>,
         pub building: Option<&'a GateBuilding>,
         pub resolve_owner_zloto_access: Option<&'a dyn Fn(i64) -> bool>,
+        /// Parametry drain Spichlerza z econ-params wg trudnosci - WYMAGANE (web `drainParams`,
+        /// `building-resource-gate.ts:615`, R-WEB-SPICHLERZ-HUD-PARAMS-Q1).
+        pub drain_params: SpichlerzDrainParams,
     }
 
     /// Web `resolveOwnedBuildingInactiveStatus`.
@@ -1532,7 +1615,12 @@ pub mod p6_7b {
             if !opts.built_ids.iter().any(|id| id == building_id) {
                 return empty;
             }
-            let drain = spichlerz_drain_dry_run(opts.all_cities, opts.owner_id, opts.built_ids);
+            let drain = spichlerz_drain_dry_run(
+                opts.all_cities,
+                opts.owner_id,
+                opts.built_ids,
+                &opts.drain_params,
+            );
             let mut missing: Vec<String> = Vec::new();
             if !drain.ceramika_paid {
                 missing.push(params.etykieta_ceramika.clone());

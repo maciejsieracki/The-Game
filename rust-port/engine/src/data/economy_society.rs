@@ -743,6 +743,15 @@ pub struct CitizenResourceUpkeepEpoki {
     pub epoka: i64,
     #[serde(rename = "nazwa")]
     pub nazwa: String,
+    /// Stawka zuzycia tej epoki: sztuk KAZDEGO wymaganego surowca / obywatela / ture
+    /// (web `CitizenUpkeepEraRow.stawkaNaObywatela?`, pin 4bbef081d; Kamien 1 / Braz 2 / Zelazo 3).
+    /// Brak pola = `None` (web: `undefined` -> fallback 1,0 w `citizen_upkeep_rate_for_era`).
+    #[serde(
+        rename = "stawkaNaObywatela",
+        default,
+        skip_serializing_if = "Option::is_none"
+    )]
+    pub stawka_na_obywatela: Option<f64>,
     #[serde(rename = "surowce")]
     pub surowce: Vec<String>,
 }

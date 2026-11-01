@@ -1,0 +1,17 @@
+{
+ "pin": "4bbef081dc3ee4f29d24a42479cb280a5876354e",
+ "citizenCases": 2270,
+ "branchRateFallback": 1470,
+ "branchRatePerEra": 800,
+ "popGate": 516,
+ "deductions": 672,
+ "partial": 314,
+ "pay": 2870,
+ "paid": 610,
+ "solPaid": 381,
+ "inactive": 2870,
+ "inactiveTrue": 637,
+ "params": 92,
+ "thr": 144,
+ "amount": 42
+}

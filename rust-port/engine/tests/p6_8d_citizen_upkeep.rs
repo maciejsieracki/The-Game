@@ -16,8 +16,16 @@ use serde_json::Value;
 
 const VECTORS: &str = include_str!("p6_8d_vectors/citizen_upkeep.json");
 
+/// Tabela w wersji HISTORYCZNEJ (pin edb8fb56): stawka jednolita 1,0 dla wszystkich epok.
+/// REPIN-EKONOMIA-E (pin 4bbef081d) dodal `stawkaNaObywatela` per epoka (1/2/3); tu pole jest
+/// zerowane, wiec `citizen_upkeep_rate_for_era` zwraca fallback 1,0 i stare wektory (policzone przy
+/// stawce jednolitej) pozostaja regresja sciezki fallback. Stawki per epoka: `p6_repin_ekonomia_e_citizen.rs`.
 fn table() -> CitizenResourceUpkeep {
-    parse_citizen_resource_upkeep().expect("citizen-resource-upkeep.json")
+    let mut t = parse_citizen_resource_upkeep().expect("citizen-resource-upkeep.json");
+    for row in &mut t.epoki {
+        row.stawka_na_obywatela = None;
+    }
+    t
 }
 
 fn vectors() -> Value {
@@ -151,7 +159,7 @@ fn coverage_preview_matches_web() {
     for case in cases {
         let era = num(&case["era"]);
         let st = stock(&case["stock"]);
-        let got = resolve_citizen_resource_coverage(&t, era, st.as_ref());
+        let got = resolve_citizen_resource_coverage(&t, era, st.as_ref(), None);
         assert_cov(
             &format!("coverage era={era:?} stock={}", case["stockName"]),
             &got,
@@ -209,7 +217,7 @@ fn display_lines_match_web() {
     for case in cases {
         let era = case["era"].as_f64().expect("era");
         let st = stock(&case["stock"]);
-        let cov = resolve_citizen_resource_coverage(&t, era, st.as_ref());
+        let cov = resolve_citizen_resource_coverage(&t, era, st.as_ref(), None);
         assert_eq!(cov.available, strings(&case["available"]));
         assert_eq!(cov.missing, strings(&case["missing"]));
         let pop = num(&case["population"]);
@@ -299,7 +307,7 @@ fn population_nonfinite_or_nonpositive_means_zero_demand() {
 #[test]
 fn display_negative_zero_for_missing_zero_quantity() {
     let t = table();
-    let cov = resolve_citizen_resource_coverage(&t, 1.0, None);
+    let cov = resolve_citizen_resource_coverage(&t, 1.0, None, None);
     let lines = citizen_upkeep_display_lines(&cov, 0.0);
     assert_eq!(lines.len(), 2);
     for line in lines {

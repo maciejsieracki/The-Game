@@ -9,12 +9,11 @@ mod common;
 use civ_engine::domain::building_costs::p6_7b::{
     built_ids_for_spichlerz_yields, city_has_spichlerz_building, pay_spichlerz_drain_for_city,
     resolve_owned_building_inactive_status, resolve_spichlerz_city_bonus_state,
-    spichlerz_army_food_cost_multiplier, spichlerz_drain_ceramika_per_turn,
-    spichlerz_drain_dry_run, spichlerz_drain_sol_per_turn, spichlerz_empire_cap_i,
+    spichlerz_army_food_cost_multiplier, spichlerz_drain_dry_run, spichlerz_empire_cap_i,
     spichlerz_empire_cap_ii_full, spichlerz_growth_bonus_percent,
     spichlerz_happiness_bonus_from_json, spichlerz_health_bonus,
     spichlerz_ration_food_cost_multiplier, InactiveStatusOptions, SpichlerzCityBonusState,
-    SpichlerzDrainPayResult,
+    SpichlerzDrainParams, SpichlerzDrainPayResult, SPICHLERZ_DRAIN_FALLBACK_PER_TURN,
 };
 use common::*;
 use serde_json::Value;
@@ -43,14 +42,16 @@ fn bonus_state(v: &Value) -> SpichlerzCityBonusState {
 fn constants_match_running_web() {
     let d = data();
     let s = &d["constants"]["spichlerz"];
+    // REPIN-EKONOMIA-E: stale drain usuniete (web 4bbef081d); wartosc 25 z pinu edb8fb56 = fallback
+    // `SPICHLERZ_DRAIN_FALLBACK_PER_TURN` (stare wektory licza drain z parametrami fallback).
     assert_bits(
-        "drain ceramika",
-        spichlerz_drain_ceramika_per_turn(),
+        "drain ceramika (fallback)",
+        SPICHLERZ_DRAIN_FALLBACK_PER_TURN,
         num(&s["drainCeramika"]),
     );
     assert_bits(
-        "drain sol",
-        spichlerz_drain_sol_per_turn(),
+        "drain sol (fallback)",
+        SPICHLERZ_DRAIN_FALLBACK_PER_TURN,
         num(&s["drainSol"]),
     );
     assert_bits("cap I", spichlerz_empire_cap_i(), num(&s["capI"]));
@@ -73,8 +74,15 @@ fn pay_drain_matches_running_web() {
         let owner = c["owner"].as_i64().expect("owner");
         let built = strings(&c["built"]);
         let dry = c["dry"].as_bool().unwrap_or(false);
-        let dry_preview = spichlerz_drain_dry_run(&cities, owner, &built);
-        let got = pay_spichlerz_drain_for_city(&mut cities, owner, &built, dry);
+        let dry_preview =
+            spichlerz_drain_dry_run(&cities, owner, &built, &SpichlerzDrainParams::FALLBACK);
+        let got = pay_spichlerz_drain_for_city(
+            &mut cities,
+            owner,
+            &built,
+            dry,
+            &SpichlerzDrainParams::FALLBACK,
+        );
         let want = drain_result(&c["out"]);
         assert_eq!(got, want, "spDrain #{i}");
         if dry {
@@ -203,6 +211,7 @@ fn inactive_status_matches_running_web() {
                 empire_stock: stock.as_ref(),
                 building: building.as_ref(),
                 resolve_owner_zloto_access: options.and_then(|o| o.resolve_owner_zloto_access),
+                drain_params: SpichlerzDrainParams::FALLBACK,
             };
             resolve_owned_building_inactive_status(&id, &opts)
         });

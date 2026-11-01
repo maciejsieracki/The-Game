@@ -2,7 +2,7 @@ use std::collections::BTreeMap;
 
 use serde::{Deserialize, Serialize};
 
-use crate::data::economy_society::CitizenResourceUpkeep;
+use crate::data::economy_society::{CitizenResourceUpkeep, CitizenResourceUpkeepEpoki};
 
 /// A resource produced by a terrain improvement.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
@@ -174,14 +174,18 @@ where
 //
 // Dwa rozdzielne kontrakty, jak w webie:
 // - `resolve_citizen_resource_coverage` - czysty podglad, bramka binarna „magazyn > 0";
-// - `compute_citizen_resource_drain` - realny drenaz: `required = floor(pop * 1.0)`,
+// - `compute_citizen_resource_drain` - realny drenaz: `required = floor(pop * stawka_epoki)`,
 //   `drained = min(required, stock)`, kara binarna per surowiec.
+// REPIN-EKONOMIA-E (pin weba 4bbef081d, R-WEB-CITIZEN-UPKEEP-ERA-MULT-Q1): stawka zalezy od epoki
+// (`citizen_upkeep_rate_for_era`: Kamien 1,0 / Braz 2,0 / Zelazo 3,0; pole `stawkaNaObywatela`
+// wiersza epoki; brak / NaN / niefinitowa / ujemna -> `CITIZEN_UPKEEP_RATE_PER_CITIZEN`).
 // Wolajacy MUSI zsumowac populacje wszystkich miast ownera i wywolac raz per owner per tura.
 // Liczby (populacja, magazyn) sa f64 jak w JS; wartosci niefinite/niedodatnie traktowane
 // tak samo jak w webie (`Number.isFinite` / `> 0`).
 // ---------------------------------------------------------------------------
 
-/// Stawka zuzycia: sztuk surowca / 1 obywatel / ture (web `CITIZEN_UPKEEP_RATE_PER_CITIZEN`).
+/// FALLBACK stawki (web `CITIZEN_UPKEEP_RATE_PER_CITIZEN`, `citizen-resource-upkeep.ts:155`): uzywany, gdy
+/// wiersz epoki nie niesie poprawnej `stawkaNaObywatela`. Realna stawka: `citizen_upkeep_rate_for_era`.
 pub const CITIZEN_UPKEEP_RATE_PER_CITIZEN: f64 = 1.0;
 
 /// Wynik pokrycia (web `CitizenUpkeepCoverage`).
@@ -189,6 +193,9 @@ pub const CITIZEN_UPKEEP_RATE_PER_CITIZEN: f64 = 1.0;
 pub struct CitizenUpkeepCoverage {
     /// Surowce wymagane w tej epoce (z tabeli, kumulatywne).
     pub required: Vec<String>,
+    /// Stawka epoki uzyta do wyliczenia tego obiektu (web `ratePerCitizen?`, brak -> 1,0 w
+    /// `citizen_upkeep_display_lines`). Oba konstruktory (`resolve_*`, `compute_*`) zawsze ustawiaja `Some`.
+    pub rate_per_citizen: Option<f64>,
     /// Surowce z `required`, ktorych magazyn ma wartosc > 0 (podglad) / pokryte w pelni (drenaz).
     pub available: Vec<String>,
     /// Pozostale surowce z `required`.
@@ -216,28 +223,50 @@ pub struct CitizenUpkeepDisplayLine {
     pub available: bool,
 }
 
-/// Lista surowcow wymaganych w epoce (web `citizenRequiredResourcesForEra`).
-/// `era` niefinite -> 1; `era` < 1 -> 1; brak dokladnego wpisu -> najblizsza epoka <= `era`,
-/// a gdy brak takiej - pierwsza epoka z tabeli.
-pub fn citizen_required_resources_for_era(table: &CitizenResourceUpkeep, era: f64) -> &[String] {
+/// Wiersz tabeli dla epoki (web `citizenUpkeepRowForEra`, `citizen-resource-upkeep.ts:166-174`):
+/// `era` niefinite -> 1; `era` < 1 -> 1; dokladny wpis (pierwszy o tym `epoka`); inaczej wiersz o
+/// najwyzszej `epoka` <= `era`; gdy brak takiego - pierwszy wiersz tabeli; pusta tabela -> `None`.
+/// Jedno zrodlo prawdy dla listy surowcow i stawki (jak w webie).
+fn citizen_upkeep_row_for_era(
+    table: &CitizenResourceUpkeep,
+    era: f64,
+) -> Option<&CitizenResourceUpkeepEpoki> {
     let rows = &table.epoki;
-    let Some(first) = rows.first() else {
-        return &[];
-    };
+    let first = rows.first()?;
     let wanted: i64 = if era.is_finite() {
         era.floor().max(1.0) as i64
     } else {
         1
     };
     if let Some(exact) = rows.iter().find(|row| row.epoka == wanted) {
-        return &exact.surowce;
+        return Some(exact);
     }
-    rows.iter()
-        .filter(|row| row.epoka <= wanted)
-        .max_by_key(|row| row.epoka)
-        .unwrap_or(first)
-        .surowce
-        .as_slice()
+    Some(
+        rows.iter()
+            .filter(|row| row.epoka <= wanted)
+            .max_by_key(|row| row.epoka)
+            .unwrap_or(first),
+    )
+}
+
+/// Lista surowcow wymaganych w epoce (web `citizenRequiredResourcesForEra`).
+/// `era` niefinite -> 1; `era` < 1 -> 1; brak dokladnego wpisu -> najblizsza epoka <= `era`,
+/// a gdy brak takiej - pierwsza epoka z tabeli.
+pub fn citizen_required_resources_for_era(table: &CitizenResourceUpkeep, era: f64) -> &[String] {
+    citizen_upkeep_row_for_era(table, era)
+        .map(|row| row.surowce.as_slice())
+        .unwrap_or(&[])
+}
+
+/// Stawka zuzycia epoki (web `citizenUpkeepRateForEra`, `citizen-resource-upkeep.ts:194-197`):
+/// sztuk KAZDEGO wymaganego surowca / obywatela / ture. Wiersz wybierany jak w
+/// `citizen_required_resources_for_era`. Brak pola / NaN / +-Inf / wartosc ujemna (oraz pusta
+/// tabela) -> `CITIZEN_UPKEEP_RATE_PER_CITIZEN`. Zero jest poprawne (`v >= 0`).
+pub fn citizen_upkeep_rate_for_era(table: &CitizenResourceUpkeep, era: f64) -> f64 {
+    match citizen_upkeep_row_for_era(table, era).and_then(|row| row.stawka_na_obywatela) {
+        Some(v) if v.is_finite() && v >= 0.0 => v,
+        _ => CITIZEN_UPKEEP_RATE_PER_CITIZEN,
+    }
 }
 
 /// Dodatni, skonczony stan magazynu; wszystko inne (brak, NaN, <= 0) to 0.
@@ -257,18 +286,31 @@ fn penalty_deltas(table: &CitizenResourceUpkeep, available: usize, missing: usiz
     (happiness, growth)
 }
 
-/// Czysty podglad pokrycia (web `resolveCitizenResourceCoverage`): bramka „magazyn > 0".
-/// Nie odejmuje niczego; do realnego zuzycia sluzy `compute_citizen_resource_drain`.
+/// Czysty podglad pokrycia (web `resolveCitizenResourceCoverage`, 3. argument `population?` od
+/// 4bbef081d). Bez populacji (`None`) - dotychczasowa bramka „magazyn > 0". Z populacja
+/// (`Some(x)`, `x` skonczone) bramka jest TA SAMA co w `compute_citizen_resource_drain`:
+/// magazyn >= `floor(floor(pop) * stawka_epoki)` (pop <= 0 -> 0). `Some(NaN/Inf)` = brak populacji
+/// (web `hasPop = typeof === 'number' && Number.isFinite`). Nie odejmuje niczego.
 pub fn resolve_citizen_resource_coverage(
     table: &CitizenResourceUpkeep,
     era: f64,
     empire_stock: Option<&BTreeMap<String, f64>>,
+    population: Option<f64>,
 ) -> CitizenUpkeepCoverage {
     let required = citizen_required_resources_for_era(table, era);
+    let rate = citizen_upkeep_rate_for_era(table, era);
+    let has_pop = population.is_some_and(f64::is_finite);
+    let pop = match population {
+        Some(p) if has_pop && p > 0.0 => p.floor(),
+        _ => 0.0,
+    };
+    let need = (pop * rate).floor();
     let mut available = Vec::new();
     let mut missing = Vec::new();
     for key in required {
-        if positive_stock(empire_stock, key) > 0.0 {
+        let have = positive_stock(empire_stock, key);
+        let covered = if has_pop { have >= need } else { have > 0.0 };
+        if covered {
             available.push(key.clone());
         } else {
             missing.push(key.clone());
@@ -277,6 +319,7 @@ pub fn resolve_citizen_resource_coverage(
     let (happiness_delta, growth_pct_delta) = penalty_deltas(table, available.len(), missing.len());
     CitizenUpkeepCoverage {
         required: required.to_vec(),
+        rate_per_citizen: Some(rate),
         available,
         missing,
         happiness_delta,
@@ -285,7 +328,8 @@ pub fn resolve_citizen_resource_coverage(
 }
 
 /// Realny drenaz magazynu centralnego przez obywateli (web `computeCitizenResourceDrain`).
-/// `population` = suma populacji WSZYSTKICH miast ownera. `required = floor(pop * stawka)`,
+/// `population` = suma populacji WSZYSTKICH miast ownera. `required = floor(pop * stawka_epoki)`
+/// (`citizen_upkeep_rate_for_era`; stawka niesiona w wyniku jako `rate_per_citizen`),
 /// `drained = min(required, stock)`; kara binarna: „dostepny" wtedy i tylko wtedy, gdy
 /// `drained >= required`. Funkcja nie mutuje magazynu.
 pub fn compute_citizen_resource_drain(
@@ -300,7 +344,8 @@ pub fn compute_citizen_resource_drain(
     } else {
         0.0
     };
-    let need = (pop * CITIZEN_UPKEEP_RATE_PER_CITIZEN).floor();
+    let rate = citizen_upkeep_rate_for_era(table, era);
+    let need = (pop * rate).floor();
     let mut available = Vec::new();
     let mut missing = Vec::new();
     let mut deductions = BTreeMap::new();
@@ -320,6 +365,7 @@ pub fn compute_citizen_resource_drain(
     CitizenResourceDrainResult {
         coverage: CitizenUpkeepCoverage {
             required: required.to_vec(),
+            rate_per_citizen: Some(rate),
             available,
             missing,
             happiness_delta,
@@ -330,7 +376,8 @@ pub fn compute_citizen_resource_drain(
 }
 
 /// Wiersze panelu „Zaopatrzenie obywateli" (web `citizenUpkeepDisplayLines`): dostepne
-/// najpierw, potem brakujace. Wartosc = `floor(floor(pop) * stawka)` dla danego miasta;
+/// najpierw, potem brakujace. Wartosc = `floor(floor(pop) * stawka)` dla danego miasta, stawka =
+/// `coverage.rate_per_citizen` (stawka epoki z werdyktu silnika), brak (`None`) -> 1,0;
 /// brakujace maja wartosc ujemna (`-qty`, takze `-0` gdy qty = 0 - zgodnie z webem).
 /// Znany rozjazd panel-vs-silnik (web) zachowany swiadomie.
 pub fn citizen_upkeep_display_lines(
@@ -342,7 +389,10 @@ pub fn citizen_upkeep_display_lines(
     } else {
         0.0
     };
-    let qty = (pop * CITIZEN_UPKEEP_RATE_PER_CITIZEN).floor();
+    let rate = coverage
+        .rate_per_citizen
+        .unwrap_or(CITIZEN_UPKEEP_RATE_PER_CITIZEN);
+    let qty = (pop * rate).floor();
     let mut lines = Vec::with_capacity(coverage.available.len() + coverage.missing.len());
     lines.extend(
         coverage
