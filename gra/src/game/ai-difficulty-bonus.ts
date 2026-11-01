@@ -201,9 +201,18 @@ export function pickBonusCityHex(
     }
   }
   candidates.sort((a, b) => a.d - b.d);
+  // R-WEB-FOLLOWUPS-LAND-AI-Q1 (3a): ta sama reguła co dla osadników AI (R-WEB-AI-AVOID-POLAR-CITIES-Q1) —
+  // heks Polarny tylko jako ostatni fallback, gdy w promieniu nie ma legalnego heksu niepolarnego.
+  let polarFallback: { q: number; r: number } | null = null;
   for (const c of candidates) {
     const { ok } = canFoundCity(c.q, c.r, cities, map);
-    if (ok) return { q: c.q, r: c.r };
+    if (!ok) continue;
+    const hx = map.hexes[`${c.q},${c.r}`];
+    if (hx !== undefined && (hx.terenBazowy as string) === 'polarny') {
+      if (polarFallback === null) polarFallback = { q: c.q, r: c.r };
+      continue;
+    }
+    return { q: c.q, r: c.r };
   }
-  return null;
+  return polarFallback;
 }
