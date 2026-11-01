@@ -535,6 +535,13 @@ for (let i = 0; i < N_FIN; i++) {
   cases.push(c);
   bump(c.out.length > c.p.length ? 'fin_grew' : 'fin_same');
 }
+// puste sciezki (guardy `path.length === 0`) i jednoelementowe
+for (let i = 0; i < 6; i++) {
+  const mi = i % maps.length;
+  cases.push(wybCase(mi, maps[mi], []));
+  cases.push(finCase(mi, maps[mi], [], '0,0'));
+  bump('empty_path_cases', 2);
+}
 // korytarze: N-1/N/N+1 wokol capow ogona (RIVER_MOUTH_TAIL_LEN = 5 oraz +2 = 7)
 for (let ci = 0; ci < corridors.length; ci++) {
   const mi = maps.length + ci;
