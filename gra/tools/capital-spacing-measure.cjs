@@ -155,6 +155,25 @@ for (const sizeLabel of SIZES) {
           pairs.push(d);
           if (d < minPairD) { minPairD = d; minPairPlayer = i === 0; }
         }
+        // Klasyfikacja par miast różnych cywilizacji (zarzut Evaluatora): stolica-stolica,
+        // stolica-MP (bufor bryły ceil(S/2) dotyczy WYŁĄCZNIE MP wokół obcej stolicy), MP-MP.
+        // Pozycja 0 grupy = stolica, reszta = miasta-państwa klastra; MP gracza = pendingSameTypeRivalHexes.
+        const grp = [{ id: 'player', cap: caps[0], mps: (plan.pendingSameTypeRivalHexes || []).map((p) => ({ q: p.q, r: p.r })) }];
+        for (const fc of plan.foreignTypeClusters) {
+          grp.push({ id: fc.typ, cap: { q: fc.positions[0].q, r: fc.positions[0].r }, mps: fc.positions.slice(1).map((p) => ({ q: p.q, r: p.r })) });
+        }
+        const bufR = M.clusterBodyBufferRadius(M.clusterBodySeparationForMap(rozKl, cw, ch));
+        let capMpMin = Infinity, mpMpMin = Infinity, bufViol = 0, bufViolMin = Infinity, mpTotal = 0;
+        for (let i = 0; i < grp.length; i++) for (let j = 0; j < grp.length; j++) {
+          if (i === j) continue;
+          for (const m of grp[i].mps) {
+            const dc = D(m, grp[j].cap);
+            capMpMin = Math.min(capMpMin, dc);
+            if (bufR > 0 && dc < bufR) { bufViol++; bufViolMin = Math.min(bufViolMin, dc); }
+            if (j > i) for (const m2 of grp[j].mps) mpMpMin = Math.min(mpMpMin, D(m, m2));
+          }
+        }
+        for (const g of grp) mpTotal += g.mps.length;
         // Stolice surowego computeClusters (przed relokacją gracza / HARD apply).
         const rawCaps = (plan.placement.klastry || []).map((k) => {
           const c = (k.miasta || []).find((m) => m.isCapital) || (k.miasta || [])[0];
@@ -217,6 +236,8 @@ for (const sizeLabel of SIZES) {
           pairsLt2Sep: pairs.filter((d) => d < 2 * minSep).length,
           pairsTotal: pairs.length,
           cityMinDiffCiv: Number.isFinite(cityMin) ? cityMin : null,
+          capMpMin: Number.isFinite(capMpMin) ? capMpMin : null, mpMpMin: Number.isFinite(mpMpMin) ? mpMpMin : null,
+          bufR, bufViol, bufViolMin: Number.isFinite(bufViolMin) ? bufViolMin : null, mpTotal,
           warnClusters: warns.filter((x) => x.includes('[clusters]')).length,
           warnSpawn: warns.filter((x) => x.includes('[cluster-spawn]')).length,
           warnSample: warns.slice(0, 2),
@@ -260,6 +281,10 @@ for (const [k, rs] of groups) {
     pairsLt2Sep: rs.reduce((a, r) => a + r.pairsLt2Sep, 0),
     mapsLt25: rs.filter((r) => r.capMin != null && r.capMin < 25).length,
     mapsLt30: rs.filter((r) => r.capMin != null && r.capMin < 30).length,
+    bufR: r0.bufR, mpTotalAvg: +(rs.reduce((a, r) => a + r.mpTotal, 0) / rs.length).toFixed(1),
+    capMpMinOfMin: Math.min(...rs.map((r) => (r.capMpMin == null ? 999 : r.capMpMin))),
+    mpMpMinOfMin: Math.min(...rs.map((r) => (r.mpMpMin == null ? 999 : r.mpMpMin))),
+    mapsBufViol: rs.filter((r) => r.bufViol > 0).length, bufViolTotal: rs.reduce((a, r) => a + r.bufViol, 0),
     cityMinDiffCivMin: Math.min(...rs.map((r) => (r.cityMinDiffCiv == null ? 999 : r.cityMinDiffCiv))),
     warnClusters: rs.reduce((a, r) => a + r.warnClusters, 0),
     warnSpawn: rs.reduce((a, r) => a + r.warnSpawn, 0),
