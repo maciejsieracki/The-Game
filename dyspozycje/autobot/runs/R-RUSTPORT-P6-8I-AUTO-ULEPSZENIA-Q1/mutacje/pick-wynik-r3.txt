@@ -1,0 +1,17 @@
+C74_fin_lesnereq_inprio: KILLED
+C76_fin_lesnereq_dropciv: KILLED
+C82_fin_wolno_dropoff: KILLED
+C84_popornan: KILLED
+S02_river_drop_n1: KILLED
+S10_cap_nonfinite: KILLED
+F01_nodes_dropoutpost: KILLED
+F02_nodes_dropfort: KILLED
+F40_no_ownnode: SURVIVED
+P22_fallback_record_off: KILLED
+C86_rtd_drop_scheduled: KILLED
+P40_fort_spent: KILLED
+P41_road_cond_fort_picks: KILLED
+P42_road_cond_fort_pending: KILLED
+A16_jsmax_nan: SURVIVED
+A17_jsmin_nan: KILLED
+P43_road_cond_deficit: KILLED

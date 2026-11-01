@@ -1,0 +1,9 @@
+MUTANT M1_drop_legacy_kopalnia: KILLED
+MUTANT M2_prefix_contains: KILLED
+MUTANT M3_all_to_any: KILLED
+MUTANT M4_drop_nonempty: KILLED
+MUTANT M5_drop_tartak: KILLED
+MUTANT M6_drop_explicit_return: KILLED
+MUTANT M7_legacy_to_prefix_only: KILLED
+MUTANT M8_negate_all: KILLED
+RESTORED OK
