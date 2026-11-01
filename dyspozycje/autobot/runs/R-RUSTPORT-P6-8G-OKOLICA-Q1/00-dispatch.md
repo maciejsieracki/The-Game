@@ -19,3 +19,5 @@ N2. Wektory z uruchomionego pinu `91dc998a` dla: adjustTileWorker, toggleTileWor
 N3. Mutacje na pozostałych gałęziach sterujących (rebalance, toggle, adjust, collect, computeLost, resolve ręczny, js_cmp_diff) lub dowód równoważności plik:linia.
 N4. Zaktualizować tabelę symboli w dokumencie tematu (statusy po domknięciu), `git diff --check` względem bazy.
 Pozostałe punkty r3 (M3, podział ≤600 LOC, dedup hex_disk_offsets, localeCompare, wektory brzegów) uznane za ODDAL.
+
+AKTUALIZACJA BAZY (orkiestrator 2026-11-01): 8H2 zintegrowane, `parity-v2` = `448e62600` (test 1974/0). Rozszerzenie allowlisty o `rust-port/engine/src/domain/state.rs` (pole `okolica_reczne` w `City`, hak `PopulationChangeHooks`) obowiązuje; nic innego nie dotyka `state.rs` równolegle (biegnie tylko M07B3: `mapgen/rivers_b/**`). START RUNDY 4: `git fetch origin rust-port-wip/8G-r3 && git checkout --detach 81d10a2ae`, potem `git merge origin/rust-port/parity-v2` (ew. konflikty w `resource_access*` rozwiąż na korzyść parity-v2; w raporcie wpisz SHA merge). Pin wektorów: `91dc998a` zostaje (DELTA-3: 8G ma 0 hunków do `4bbef081d`).
