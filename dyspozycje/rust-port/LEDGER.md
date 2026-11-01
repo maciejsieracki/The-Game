@@ -482,3 +482,5 @@ Cel końcowy i bieżący zapisane w `GOAL-RUST-PORT-20261020.md` (§"CEL PĘTLI 
 ## 2026-11-01 — korekta kolejki: 8A, 8B/8B2, 8C, 8D, 8E, 8F, 8G, 8H/8H2, 8J już na `parity-v2`
 - Redispatch `8A` (wf_7e66138d-aba) niepotrzebny: cały zakres był już zintegrowany (FC r3 `3d7a08132`); r1 = weryfikacja stanu, 4 targety 8A 14/7/9/12 zielone, wektory odtworzone bajt w bajt z pinu `91dc998a`, fmt/clippy OK. Evaluator wskazał sprostowanie DELTA-3: `building-resource-gate.ts` ma +59/−13 (drain Spichlerza, `R-WEB-SPICHLERZ-DRAIN-KEYS-Q1`) — wpływ na symbole 8A zerowy, ale dotyczy ewentualnego re-pinu tematu utrzymania. Lekcja procesu: kolejkę z tabeli GOAL weryfikować względem `git ls-tree` runów na `parity-v2` przed dispatchem.
 - Start `8I` r4 z NOWYM pinem `4bbef081d` (decyzja administracyjna; powód: auto-ulepszenia weba zmienione masowo, port starego zachowania byłby nieaktualny). Biegną: `M07B3` (mapgen rivers_b) i `8I` (auto_improvements) — rozłączne.
+
+- 2026-11-01 02:12 UTC — kontrola cykliczna: M07B3 r1 (Operator pracuje, ostatni commit 19 minutes ago) i 8I r4 (nowy pin 4bbef081d) biegną; brak PASS do integracji. Dysk 8,7 GB.
