@@ -29,3 +29,5 @@ BLOKADY: brak. ZALOZENIA (pliki/decyzje poza allowlista, szczegoly w dokumencie 
 RUNDY: 1/5
 NASTĘPNY KROK: Evaluator (niezalezne odtworzenie bramek, weryfikatora i wybranych mutacji; ocena ZALOZEN B i C), potem Obrona, Final Control.
 DEPLOY/PUSH: NIE WYKONANO
+
+Commit (kod, testy, dokument, logi): 33ca78668d6cf5220dd84b44a3819584f3956764 na galezi rust-port/repin-terytorium-forty-q1 (baza fd8585daf). Commit raportu: nastepny po tym SHA.
