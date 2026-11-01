@@ -1,0 +1,20 @@
+cluster-spread-test (FALA 186: sep brył ≥S + twardy spread ćwiartek)
+
+[Mini Pangea 120×90 N=7] seed=42 typy=7 … [civ] riverGenPhase: main (tylko główne; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=3 terrain=125 landSea=1614 relief=1323 coast=469 riversMain=4581 riversFill=267 forest=52 deposits=149 starts=685 total=9268
+PASS S=12 caps=7/7 Q=4/3 spanQ=65 spanR=53 minBody=12
+[Mini Pangea 120×90 N=7] seed=4242 typy=7 … [civ] riverGenPhase: main (tylko główne; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=74 landSea=773 relief=1194 coast=466 riversMain=4261 riversFill=255 forest=56 deposits=95 starts=585 total=7758
+PASS S=12 caps=7/7 Q=4/3 spanQ=69 spanR=53 minBody=12
+[Mini Pangea 120×90 N=7] seed=7777 typy=7 … [civ] riverGenPhase: main (tylko główne; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=134 landSea=1089 relief=1197 coast=540 riversMain=3398 riversFill=211 forest=49 deposits=134 starts=394 total=7146
+PASS S=12 caps=7/7 Q=4/3 spanQ=70 spanR=52 minBody=6
+[Standard Pangea 168×120 N=7] seed=4242 typy=7 … [civ] riverGenPhase: main (tylko główne; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=141 landSea=1814 relief=3238 coast=1133 riversMain=16585 riversFill=838 forest=135 deposits=177 starts=1028 total=25092
+PASS S=15 caps=7/7 Q=4/3 spanQ=98 spanR=73 minBody=14
+[Standard Pangea 168×120 N=7] seed=7777 typy=7 … [civ] riverGenPhase: main (tylko główne; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=149 landSea=1558 relief=3167 coast=1083 riversMain=23592 riversFill=448 forest=113 deposits=236 starts=838 total=31184
+PASS S=15 caps=7/7 Q=4/3 spanQ=99 spanR=81 minBody=13
+
+5 passed, 0 failed
+EXIT=0

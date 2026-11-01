@@ -3695,6 +3695,58 @@ export function rebalanceLandFractionPangea(
 }
 
 /**
+ * R-WEB-PANGEA-LAND-FRACTION-Q1: dosyp lądu Pangei do celu PO etapach, które go tną
+ * (progi `fillMinScore` maski w rebalance/enforce zatrzymują wzrost ~4 pp przed celem).
+ * Rośnie WYŁĄCZNIE przy istniejącym lądzie (kontakt >= minLandNeighbors suchych sąsiadów
+ * -> brak nowych wysp/zatok/korytarzy), warstwami, wg wyniku maski; omija margines mapy
+ * i bufor szerokościowy. Woda = Morze lub PlytkieMorze (pierścień wybrzeża odtwarza
+ * `applyCoastRing` wołany po tej funkcji). Tylko Pangea.
+ */
+export function topUpPangeaLandFraction(
+  hexes: Record<string, Hex>,
+  landScores: Map<string, number>,
+  targetLandFraction: number,
+  width: number,
+  height: number,
+  minLandNeighbors = 3,
+  maxRounds = 12,
+): number {
+  const clamped = Math.max(0.15, Math.min(0.85, targetLandFraction));
+  const keys = Object.keys(hexes);
+  const targetLand = Math.round(keys.length * clamped);
+  let { land } = countLandSeaHexes(hexes);
+  if (land >= targetLand) return 0;
+  const buf = latitudinalOceanBufferRows(height, false);
+  let added = 0;
+  for (let round = 0; round < maxRounds && land < targetLand; round++) {
+    const cands: string[] = [];
+    for (const k of keys) {
+      const h = hexes[k]!;
+      if (!isWaterTerrainLocal(h.terenBazowy)) continue;
+      const { q, r } = parseHexKey(k);
+      if (isInMapBorder(q, r, width, height)) continue;
+      if (hexBorderDistance(q, r, width, height) <= MAP_MARGIN_LAND_ZONE_HEXES) continue;
+      if (r < buf || r >= height - buf) continue;
+      if (countLandNeighbors(hexes, q, r) < minLandNeighbors) continue;
+      cands.push(k);
+    }
+    if (cands.length === 0) break;
+    cands.sort((a, b) => {
+      const d = (landScores.get(b) ?? 0) - (landScores.get(a) ?? 0);
+      return Math.abs(d) > 1e-9 ? d : a.localeCompare(b);
+    });
+    for (const k of cands) {
+      if (land >= targetLand) break;
+      // Kandydaci odfiltrowani przed pętlą (>=3 suche sąsiady); dopiski tej rundy tylko zwiększają sąsiedztwo, więc bez ponownego sprawdzenia.
+      setHexToLaka(hexes[k]!);
+      land++;
+      added++;
+    }
+  }
+  return added;
+}
+
+/**
  * Dopasowuje udział lądu per kontynent — budżet wg potencjału maski w strefie centrum.
  * Kończy globalną rekonsyliacją (zaokrąglenia).
  */
