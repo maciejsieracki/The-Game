@@ -1,0 +1,15 @@
+MUTANT S-M07-load-zero-invalid file=src/domain/building_costs.rs
+OLD:
+            if v >= 0.0 {
+                v
+            } else {
+NEW:
+            if v > 0.0 {
+                v
+            } else {
+
+FAILED TESTS:
+test load_params_matches_running_web ... FAILED
+test result: FAILED. 6 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.86s
+VERDICT=KILLED
+EXIT=101

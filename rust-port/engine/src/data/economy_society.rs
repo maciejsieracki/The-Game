@@ -736,6 +736,21 @@ pub struct CitizenResourceUpkeepKara {
     pub rozwoj_pct_za_brakujacy: i64,
 }
 
+/// Zapis stawki epoki: wartosc calkowita jako liczba calkowita JSON (`2`, nie `2.0`), zeby round-trip
+/// pliku `citizen-resource-upkeep.json` zachowal rozroznienie int/float (test `data_compliance`).
+fn serialize_rate_keep_integer<S: serde::Serializer>(
+    value: &Option<f64>,
+    serializer: S,
+) -> Result<S::Ok, S::Error> {
+    match value {
+        Some(x) if x.is_finite() && x.fract() == 0.0 && x.abs() < 9.0e15 => {
+            serializer.serialize_i64(*x as i64)
+        }
+        Some(x) => serializer.serialize_f64(*x),
+        None => serializer.serialize_none(),
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct CitizenResourceUpkeepEpoki {
@@ -749,7 +764,8 @@ pub struct CitizenResourceUpkeepEpoki {
     #[serde(
         rename = "stawkaNaObywatela",
         default,
-        skip_serializing_if = "Option::is_none"
+        skip_serializing_if = "Option::is_none",
+        serialize_with = "serialize_rate_keep_integer"
     )]
     pub stawka_na_obywatela: Option<f64>,
     #[serde(rename = "surowce")]

@@ -1,0 +1,13 @@
+MUTANT S-M14-fallback-24 file=src/domain/building_costs.rs
+OLD:
+pub const SPICHLERZ_DRAIN_FALLBACK_PER_TURN: f64 = 25.0;
+NEW:
+pub const SPICHLERZ_DRAIN_FALLBACK_PER_TURN: f64 = 24.0;
+
+FAILED TESTS:
+test load_params_matches_running_web ... FAILED
+test real_econ_params_keys_match_pin_and_resolve_to_25 ... FAILED
+test constants_and_keys_match_web ... FAILED
+test result: FAILED. 4 passed; 3 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.39s
+VERDICT=KILLED
+EXIT=101

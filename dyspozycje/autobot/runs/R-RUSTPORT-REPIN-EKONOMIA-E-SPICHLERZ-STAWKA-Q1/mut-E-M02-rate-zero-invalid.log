@@ -1,0 +1,13 @@
+MUTANT E-M02-rate-zero-invalid file=src/domain/resource_production.rs
+OLD:
+Some(v) if v.is_finite() && v >= 0.0 => v,
+NEW:
+Some(v) if v.is_finite() && v > 0.0 => v,
+
+FAILED TESTS:
+test nonfinite_and_negative_row_rates_fall_back ... FAILED
+test coverage_drain_lines_match_running_web ... FAILED
+test rate_and_required_grid_match_web ... FAILED
+test result: FAILED. 4 passed; 3 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.85s
+VERDICT=KILLED
+EXIT=101

@@ -154,6 +154,12 @@ fn missing_rate_field_parses_as_none_and_round_trips() {
     let t2: CitizenResourceUpkeep = serde_json::from_str(&with).expect("nowy format");
     assert_eq!(t2.epoki[0].stawka_na_obywatela, Some(2.0));
     assert_eq!(citizen_upkeep_rate_for_era(&t2, 1.0), 2.0);
+    // round-trip zachowuje calkowitosc (data_compliance liczy int vs float): `2`, nie `2.0`.
+    let back2 = serde_json::to_string(&t2).expect("ser");
+    assert!(
+        back2.contains(r#""stawkaNaObywatela":2,"#),
+        "stawka calkowita serializowana jako int: {back2}"
+    );
 }
 
 #[test]
