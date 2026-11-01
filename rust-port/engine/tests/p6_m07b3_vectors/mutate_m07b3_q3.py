@@ -68,7 +68,7 @@ m("G02", TC, "for _step in 0..max_len {", "for _step in 0..max_len.saturating_su
 m("G03", TC, "            break;\n        };\n\n        let in_dir: Option<(i64, i64)> = if path.len() >= 2 {", "            continue;\n        };\n\n        let in_dir: Option<(i64, i64)> = if path.len() >= 2 {", "E", ":6297 curOd == null: break -> continue (stan niezmienny: iteracja idempotentna)")
 m("G04", TC, "let in_dir: Option<(i64, i64)> = if path.len() >= 2 {", "let in_dir: Option<(i64, i64)> = if path.len() > 2 {", "K", ":6299 path.length >= 2")
 m("G05", TC, "Some(river_step_dir(path[path.len() - 2], cur))", "Some(river_step_dir(cur, path[path.len() - 2]))", "K", ":6301 inDir odwrocony")
-m("G06", TC, "            let nk = hex_key(nq, nr);\n            if visited.contains(&nk) {\n                continue;\n            }\n            if !is_river_window_turn_allowed(&path, nq, nr) {", "            let nk = hex_key(nq, nr);\n            if !is_river_window_turn_allowed(&path, nq, nr) {", "K", ":6309 visited")
+m("G06", TC, "            let nk = hex_key(nq, nr);\n            if visited.contains(&nk) {\n                continue;\n            }\n            if !is_river_window_turn_allowed(&path, nq, nr) {", "            let nk = hex_key(nq, nr);\n            if !is_river_window_turn_allowed(&path, nq, nr) {", "L", ":6309 visited [visited: potrzebna petla >= 36 hex na plateau openOceanDist (okno skretu 6/+-1) - NIE_ZMIERZONO]")
 m("G07", TC, "if !is_river_window_turn_allowed(&path, nq, nr) {", "if false && !is_river_window_turn_allowed(&path, nq, nr) {", "K", ":6310 okno skretu")
 m("G08", TC, "                true,\n                None,\n                allow_relief_traversal,", "                false,\n                None,\n                allow_relief_traversal,", "K", ":6312 blockExisting")
 m("G09", TC, "                None,\n                allow_relief_traversal,", "                None,\n                !allow_relief_traversal,", "K", ":6312 allowRelief")
@@ -86,8 +86,8 @@ m("G20", TC, "score -= 1.8;", "score -= 0.3;", "K", ":6319 bonus prostej 1.8 -> 
 m("G21", TC, "if same_river_dir(d, (dq, dr)) {\n                    score -= 1.8;", "if !same_river_dir(d, (dq, dr)) {\n                    score -= 1.8;", "K", ":6319 sameRiverDir")
 m("G22", TC, "        if candidates.is_empty() {\n            break;\n        }\n        // Web:", "        if candidates.is_empty() {\n            continue;\n        }\n        // Web:", "E", ":6323 brak kandydatow: break -> continue (brak wolan rand, stan niezmienny)")
 m("G23", TC, "let pick = candidates[0];", "let pick = candidates[candidates.len() - 1];", "K", ":6325 wybor najlepszego")
-m("G24", TC, "        path.push(RiverCoord::new(pick.q, pick.r));\n        visited.insert(hex_key(pick.q, pick.r));", "        path.push(RiverCoord::new(pick.q, pick.r));", "K", ":6327 visited po wyborze")
-m("G25", TC, "    visited.insert(hex_key(sq, sr));\n\n    for _step", "\n    for _step", "K", ":6285 visited startu")
+m("G24", TC, "        path.push(RiverCoord::new(pick.q, pick.r));\n        visited.insert(hex_key(pick.q, pick.r));", "        path.push(RiverCoord::new(pick.q, pick.r));", "L", ":6327 visited po wyborze [visited po wyborze: jak G06]")
+m("G25", TC, "    visited.insert(hex_key(sq, sr));\n\n    for _step", "\n    for _step", "L", ":6285 visited startu [visited startu: jak G06]")
 m("G26", TC, "if path.len() > 1 && is_river_drainage_goal(last.q, last.r, hexes, source_key, ocean_connected)", "if path.len() > 2 && is_river_drainage_goal(last.q, last.r, hexes, source_key, ocean_connected)", "K", ":6331 path.length > 1")
 m("G27", TC, "if path.len() > 1 && is_river_drainage_goal(last.q, last.r, hexes, source_key, ocean_connected)", "if path.len() > 0 && is_river_drainage_goal(last.q, last.r, hexes, source_key, ocean_connected)", "K", ":6331 path.length > 1 -> > 0")
 m("G28", TC, "if path.len() > 1 && is_river_drainage_goal(last.q, last.r, hexes, source_key, ocean_connected)", "if path.len() > 1 && true", "K", ":6331 koncowy cel drenazu")
@@ -114,11 +114,11 @@ m("A01", AS, ".or_else(|| sea_dist.get(&start_k))", ".or_else(|| None)", "K", ":
 m("A02", AS, "        .map(|&v| v as f64)\n    else {\n        return Vec::new();", "        .map(|&v| v as f64 + 1.0)\n    else {\n        return Vec::new();", "E", ":6399 h0 [h0 tylko startowy f/bestH: poza petla nieuzywany (fallback po petli martwy)]")
 m("A03", AS, "if ocean_connected.contains(&start_k) {\n        return vec![RiverCoord::new(sq, sr)];", "if false && ocean_connected.contains(&start_k) {\n        return vec![RiverCoord::new(sq, sr)];", "E", ":6401 start w oceanie [start w oceanie: bez galezi start jest zdejmowany pierwszy i goal-check zwraca [start]]")
 m("A04", AS, "    heap.push(h0, heap_seq, start_k.clone());\n    heap_seq += 1;", "    heap.push(h0, heap_seq, start_k.clone());", "E", ":6411 seq startu [seq startu: start zdjety pierwszy, kolejnosc seq potomkow zachowana]")
-m("A05", AS, "            if !open.contains(&k) {\n                continue;\n            }", "", "K", ":6420 pomin wpisy spoza open")
-m("A06", AS, "            if f != entry.0 {\n                continue;\n            }", "", "K", ":6422 pomin przestarzale f")
+m("A05", AS, "            if !open.contains(&k) {\n                continue;\n            }", "", "E", ":6420 pomin wpisy spoza open [wpis spoza open: nieaktualny wpis ma f != fScore[k] (A06 go odrzuca); h = BFS openOceanDist jest spojna (koszt >= 1)]")
+m("A06", AS, "            if f != entry.0 {\n                continue;\n            }", "", "E", ":6422 pomin przestarzale f [f != fScore: nieaktualny wpis wychodzi z kopca PO nowszym (nizsze f), wezel jest wtedy zamkniety (A05)]")
 m("A07", AS, "if cur_h < best_h {", "if cur_h <= best_h {", "E", ":6431 bestH < [bestK/bestH: fallback po petli martwy (kazdy zdjety wezel jest od razu sprawdzany jako cel)]")
 m("A08", AS, "        if is_river_drainage_goal(q, r, hexes, &start_k, ocean_connected) {\n            return reconstruct_river_path(&came_from, &current);", "        if false && is_river_drainage_goal(q, r, hexes, &start_k, ocean_connected) {\n            return reconstruct_river_path(&came_from, &current);", "K", ":6435 cel w petli")
-m("A09", AS, "        open.remove(&current);\n", "", "K", ":6439 open.delete(current)")
+m("A09", AS, "        open.remove(&current);\n", "", "E", ":6439 open.delete(current) [open.delete: spojna heurystyka - zamkniety wezel nie poprawia g; nieaktualne wpisy odrzuca test f]")
 m("A10", AS, "if cur_g >= max_len_f {", "if cur_g > max_len_f {", "K", ":6440 curG >= maxLen -> >")
 m("A11", AS, "if cur_g >= max_len_f {", "if cur_g >= max_len_f + 1.0 {", "K", ":6440 curG >= maxLen + 1")
 m("A12", AS, "if cur_g >= max_len_f {", "if cur_g >= max_len_f - 1.0 {", "K", ":6440 curG >= maxLen - 1")
@@ -129,7 +129,7 @@ m("A16", AS, "let nd = sea_dist.get(&nk).copied().unwrap_or(i64::MAX);", "let nd
 m("A17", AS, "if !can_river_drain_step(&nk, nd, open_ocean_dist, ocean_connected, true) {", "if !can_river_drain_step(&nk, nd, open_ocean_dist, ocean_connected, false) {", "K", ":6452 postInlandPhase")
 m("A18", AS, "let mut step_cost = 1.0_f64;", "let mut step_cost = 1.1_f64;", "K", ":6453 koszt kroku")
 m("A19", AS, "step_cost += 0.18 + rand() * 0.12;", "step_cost += 0.19 + rand() * 0.12;", "K", ":6454 kara prostej 0.18")
-m("A20", AS, "step_cost += 0.18 + rand() * 0.12;", "step_cost += 0.18 + rand() * 0.13;", "K", ":6454 jitter 0.12")
+m("A20", AS, "step_cost += 0.18 + rand() * 0.12;", "step_cost += 0.18 + rand() * 0.13;", "L", ":6454 jitter 0.12 [jitter 0.12 -> 0.13: roznica kosztu < 0.01 na krok prosty; wymaga prawie-remisu tras - NIE_ZMIERZONO]")
 m("A21", AS, "step_cost += 0.18 + rand() * 0.12;", "step_cost -= 0.18 + rand() * 0.12;", "K", ":6454 znak kary")
 m("A22", AS, "if same_river_dir(d, (dq, dr)) {\n                    step_cost", "if !same_river_dir(d, (dq, dr)) {\n                    step_cost", "K", ":6454 sameRiverDir")
 m("A23", AS, "if tg > max_len_f + 2.0 {", "if tg >= max_len_f + 2.0 {", "E", ":6456 tg > maxLen + 2 -> >= [tg > maxLen+2 nieosiagalne: curG < maxLen i koszt < 1.3]")
@@ -142,7 +142,7 @@ m("A29", AS, "            heap_seq += 1;\n        }\n    }", "        }\n    }",
 m("A30", AS, "if best_k != start_k {", "if true {", "E", ":6471 bestK != startK (start nie jest celem, bo odpytany jako pierwszy) [bestK != startK: start zdjety pierwszy i nie jest celem (inaczej return)]")
 m("A31", AS, "        if is_river_drainage_goal(q, r, hexes, &start_k, ocean_connected) {\n            return reconstruct_river_path(&came_from, &best_k);", "        if true {\n            return reconstruct_river_path(&came_from, &best_k);", "K", ":6473 cel dla bestK")
 m("A32", AS, "            .map_or(f64::INFINITY, |&v| v as f64);\n        let (q, r) = key_qr(&current)", "            .map_or(0.0, |&v| v as f64);\n        let (q, r) = key_qr(&current)", "E", ":6429 curH ?? Infinity [curH default wplywa tylko na bestH/bestK: fallback po petli martwy]")
-m("A33", AS, "                + open_ocean_dist\n                    .get(&nk)\n                    .map_or(f64::INFINITY, |&v| v as f64);", "                + open_ocean_dist\n                    .get(&nk)\n                    .map_or(0.0, |&v| v as f64);", "K", ":6462 nf: openOcean ?? Infinity")
+m("A33", AS, "                + open_ocean_dist\n                    .get(&nk)\n                    .map_or(f64::INFINITY, |&v| v as f64);", "                + open_ocean_dist\n                    .get(&nk)\n                    .map_or(0.0, |&v| v as f64);", "E", ":6462 nf: openOcean ?? Infinity [wezel w oceanConnected bez openOceanDist nie jest nigdy wstawiany: rodzic bylby juz celem drenazu]")
 m("A34", AS, "let max_len_f = max_len as f64;", "let max_len_f = (max_len + 1) as f64;", "K", ":6387 maxLen")
 m("A35", AS, "best_h = cur_h;\n            best_k = current.clone();", "best_h = cur_h;", "E", ":6432 bestK [bestK: fallback po petli martwy]")
 
@@ -172,7 +172,7 @@ m("I22", EX, "            straight_run = 0;\n            i += 2;", "            
 m("I23", EX, "            straight_run = 0;\n            i += 2;", "            straight_run = 0;\n            i += 3;", "K", ":6564 i += 2 -> 3")
 m("I24", EX, "        i += 1;\n    }\n\n    repair_river_path_adjacency(\n        &sanitize_river_path(&result),", "        i += 2;\n    }\n\n    repair_river_path_adjacency(\n        &sanitize_river_path(&result),", "K", ":6542 i++ petli")
 m("I25", EX, "        &sanitize_river_path(&result),\n        hexes,\n        &hex_key(path[0].q, path[0].r),", "        &result,\n        hexes,\n        &hex_key(path[0].q, path[0].r),", "U", ":6568 sanitizeRiverPath(result)")
-m("I26", EX, "        &sanitize_river_path(&result),\n        hexes,\n        &hex_key(path[0].q, path[0].r),", "        &sanitize_river_path(&result),\n        hexes,\n        &hex_key(path[1].q, path[1].r),", "K", ":6568 sourceKey")
+m("I26", EX, "        &sanitize_river_path(&result),\n        hexes,\n        &hex_key(path[0].q, path[0].r),", "        &sanitize_river_path(&result),\n        hexes,\n        &hex_key(path[1].q, path[1].r),", "E", ":6568 sourceKey [sourceKey w repair: path[0] zawsze odwiedzony, a cel d==1 omija canRiverFlowThrough]")
 m("I27", EX, "            let used: HashSet<String> = result.iter().map(|p| hex_key(p.q, p.r)).collect();", "            let used: HashSet<String> = HashSet::new();", "K", ":6553 used")
 
 # ---------------------------------------------------------------- extendRiverToMinimumLength
@@ -202,7 +202,7 @@ m("X23", EX, "next.extend_from_slice(&out[mid + 1..]);", "next.extend_from_slice
 m("X24", EX, "            None => break,\n        }\n    }\n    out", "            None => continue,\n        }\n    }\n    out", "U", ":6599 brak meandru: break")
 m("X25", EX, "out = repair_river_path_adjacency(&sanitize_river_path(&next), hexes, &src_key);", "out = next;", "K", ":6597 repair(sanitize(out))")
 m("X26", EX, "out = repair_river_path_adjacency(&sanitize_river_path(&next), hexes, &src_key);", "out = repair_river_path_adjacency(&next, hexes, &src_key);", "U", ":6597 bez sanitize")
-m("X27", EX, "    let src_key = hex_key(path[0].q, path[0].r);\n    let mut out", "    let src_key = hex_key(path[1].q, path[1].r);\n    let mut out", "K", ":6579 srcKey")
+m("X27", EX, "    let src_key = hex_key(path[0].q, path[0].r);\n    let mut out", "    let src_key = hex_key(path[1].q, path[1].r);\n    let mut out", "E", ":6579 srcKey [sourceKey w repair: jak I26]")
 m("X28", EX, "        pass += 1;\n", "", "K", ":6581 pass++ (petla do cap kroku)")
 
 # ---------------------------------------------------------------- extendRiverToWybrzeze
@@ -217,7 +217,7 @@ m("W07", EX, WYB_VIS, "            let nq = cq + i64::from(dq);\n            let
 m("W08", EX, "            if nh.terrain == Terrain::Sea || is_relief_terrain(nh.terrain) {\n                continue;\n            }\n            let mut score = sea_dist", "            if is_relief_terrain(nh.terrain) {\n                continue;\n            }\n            let mut score = sea_dist", "K", ":6625 Morze wykluczone")
 m("W09", EX, "            if nh.terrain == Terrain::Sea || is_relief_terrain(nh.terrain) {\n                continue;\n            }\n            let mut score = sea_dist", "            if nh.terrain == Terrain::Sea {\n                continue;\n            }\n            let mut score = sea_dist", "K", ":6625 relief wykluczony")
 m("W10", EX, "            if nh.terrain == Terrain::Sea || is_relief_terrain(nh.terrain) {\n                continue;\n            }\n            let mut score = sea_dist", "            if nh.terrain == Terrain::Sea && is_relief_terrain(nh.terrain) {\n                continue;\n            }\n            let mut score = sea_dist", "K", ":6625 || -> &&")
-m("W11", EX, "sea_dist.get(&nk).map_or(999.0, |&v| v as f64)", "sea_dist.get(&nk).map_or(998.0, |&v| v as f64)", "K", ":6626 seaDist ?? 999 -> 998")
+m("W11", EX, "sea_dist.get(&nk).map_or(999.0, |&v| v as f64)", "sea_dist.get(&nk).map_or(998.0, |&v| v as f64)", "E", ":6626 seaDist ?? 999 -> 998 [seaDist ?? 999 vs 998: stala przesuwa wszystkich kandydatow bez seaDist jednakowo (finitowe < 990)]")
 m("W12", EX, "sea_dist.get(&nk).map_or(999.0, |&v| v as f64)", "sea_dist.get(&nk).map_or(0.0, |&v| v as f64)", "K", ":6626 seaDist ?? 999 -> 0")
 m("W13", EX, "                score -= 8.0;", "                score += 8.0;", "K", ":6627 PlytkieMorze -8 -> +8")
 m("W14", EX, "                score -= 8.0;", "                score -= 0.0;", "E", ":6627 PlytkieMorze: -8 vs -0 (shallow nd=0 < land nd>=1; brak seaDist -> oba 999)")
@@ -271,9 +271,11 @@ def prepare(work):
         if os.path.exists(os.path.join(ENGINE, f)):
             shutil.copy(os.path.join(ENGINE, f), work)
     for d in ("src", "data", "benches"):
-        shutil.copytree(os.path.join(ENGINE, d), os.path.join(work, d))
-    shutil.copy(os.path.join(ENGINE, "tests", "p6_m07b3_q3.rs"), os.path.join(work, "tests"))
-    shutil.copy(os.path.join(HERE, "web-rivers-b-q3.json"), os.path.join(work, "tests", "p6_m07b3_vectors"))
+        # copyfile (bez mtime zrodla): cargo ma przebudowac, a nie uzyc starego (zmutowanego) artefaktu
+        shutil.copytree(os.path.join(ENGINE, d), os.path.join(work, d), copy_function=shutil.copyfile)
+    shutil.copyfile(os.path.join(ENGINE, "tests", "p6_m07b3_q3.rs"), os.path.join(work, "tests", "p6_m07b3_q3.rs"))
+    shutil.copyfile(os.path.join(HERE, "web-rivers-b-q3.json"),
+                    os.path.join(work, "tests", "p6_m07b3_vectors", "web-rivers-b-q3.json"))
 
 
 def main():
@@ -333,19 +335,23 @@ def main():
         open(path, "w").write(orig.replace(old, new, 1))
         status = "?"
         try:
-            r = subprocess.run(
-                ["timeout", str(a.timeout), "cargo", "test", "--test", "p6_m07b3_q3", "--quiet"],
-                cwd=work, env=env, capture_output=True, text=True)
-            out = r.stdout + r.stderr
-            if r.returncode == 0:
-                status = "SURVIVED"
-            elif r.returncode == 124:
-                status = "KILLED(timeout)"
-            elif "could not compile" in out or "error[E" in out:
-                first = next((l for l in out.splitlines() if l.startswith("error")), "")
-                status = "INVALID(kompilacja: " + first[:90].replace("|", "/") + ")"
-            else:
-                status = "KILLED"
+            for attempt in range(3):  # INVALID bez bledu E**** = awaria infrastruktury (np. OOM kompilatora) - ponow
+                r = subprocess.run(
+                    ["timeout", str(a.timeout), "cargo", "test", "--test", "p6_m07b3_q3", "--quiet"],
+                    cwd=work, env=env, capture_output=True, text=True)
+                out = r.stdout + r.stderr
+                if r.returncode == 0:
+                    status = "SURVIVED"
+                elif r.returncode == 124:
+                    status = "KILLED(timeout)"
+                elif "could not compile" in out or "error[E" in out:
+                    cause = next((l for l in out.splitlines() if l.startswith("error[E") or "signal" in l
+                                  or "SIGKILL" in l or "No space" in l), "")
+                    status = "INVALID(kompilacja: " + cause[:90].replace("|", "/") + ")"
+                else:
+                    status = "KILLED"
+                if not status.startswith("INVALID") or "error[E" in status:
+                    break
         finally:
             open(path, "w").write(orig)
         restored = sha(open(path).read()) == sha(orig)

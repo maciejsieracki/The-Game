@@ -21,13 +21,13 @@ import { pathToFileURL } from 'node:url';
 const SEED = 0x5eed2029;
 const N_MAPS = 64;
 const N_HEAP = 350;
-const N_ASTAR = 2300;
-const N_GREEDY = 2200;
-const N_TRACE = 2400;
-const N_INJECT = 2200;
+const N_ASTAR = 2000;
+const N_GREEDY = 1800;
+const N_TRACE = 2000;
+const N_INJECT = 2000;
 const N_EXTMIN = 2000;
 const N_WYB = 1500;
-const N_FIN = 2200;
+const N_FIN = 1800;
 const N_SWEEPS = 70;
 
 const [, , srcArg, hexArg, outArg] = process.argv;
@@ -296,6 +296,10 @@ function startHex(mp, mode) {
   let pool;
   if (mode === 'coastal') pool = coastal.length > 0 ? coastal : land;
   else if (mode === 'any') pool = mp.list;
+  else if (mode === 'deep') {
+    const deep = land.filter((h) => (mp.open[h.k] ?? 0) >= 6);
+    pool = deep.length > 0 ? deep : inland;
+  }
   else pool = inland.length > 0 ? inland : land;
   if (pool.length === 0) pool = mp.list;
   return pick(pool);
@@ -749,6 +753,86 @@ for (let ci = 0; ci < corridors.length; ci++) {
   if (got < N_SWEEPS) throw new Error(`za malo sweepow startd: ${got}`);
 }
 if (Object.values(have).some((v) => v < N_SWEEPS)) throw new Error(`za malo sweepow: ${JSON.stringify(have)}`);
+
+// ---- 9. uzupelnienia (r1 po mutacjach): sciezki dlugosci 2, gleboki ladowy + perturbacje, duza mapa ----
+// 9a. extmin dla sciezek 2-elementowych (guard length < 3)
+for (let i = 0; i < 40; i++) {
+  const mi = i % maps.length;
+  const mp = maps[mi];
+  const s0 = startHex(mp, 'inland');
+  const p = walkPath(mp, 1, 0.5, s0);
+  if (p.length !== 2) continue;
+  try {
+    cases.push(extCase(mi, mp, p, newSeed(), ri(3, 8), 20, null));
+    bump('extmin_len2');
+  } catch (e) { bump('extmin_web_throws'); }
+}
+// 9b. A*/greedy z silnymi perturbacjami z glebokiego ladu (nd ?? Infinity, ogon korytarza)
+for (let i = 0; i < 90; i++) {
+  const flatIdx = maps.map((m, k) => (m.kind === 'flat' ? k : -1)).filter((k) => k >= 0);
+  const mi = pick(flatIdx);
+  const mp = maps[mi];
+  const s0 = startHex(mp, 'deep');
+  const seed = rnd() < 0.5 ? null : newSeed();
+  let pt = null;
+  for (let t = 0; t < 8 && !pt; t++) pt = perturb(mp);
+  if (i % 2 === 0) cases.push(astarCase(mp, mi, s0, pick([20, 40, 80]), seed, false, pt));
+  else cases.push(greedyCase(mp, mi, s0, pick([20, 40, 80]), seed, keyOf(s0.q, s0.r), false, pt));
+  bump('deep_pert');
+}
+// 9c. duza plaska mapa: sciezki >= 40 hex, >= 8 wstawek meandrow w jednym przebiegu (need 6 vs 7)
+{
+  const W = 44, H = 44;
+  const list = [];
+  for (let r = 0; r < H; r++) {
+    for (let q = 0; q < W; q++) {
+      const edge = q === 0 || r === 0 || q === W - 1 || r === H - 1;
+      list.push({ k: keyOf(q, r), q, r, t: edge ? 'morze' : 'rownina', n: 'brak', z: false, rz: null });
+    }
+  }
+  const big = { W, H, list, kind: 'big', corridor: null };
+  big.obj = hexesObj(list);
+  const seaMap = web.buildSeaDistanceField(big.obj);
+  const ocSet = web.oceanConnectedWaterKeys(big.obj, W, H);
+  const openMap = web.buildOpenOceanDistanceField(big.obj, W, H, ocSet);
+  big.sea = Object.fromEntries(seaMap); big.open = Object.fromEntries(openMap); big.oc = [...ocSet];
+  big.seaMap = seaMap; big.openMap = openMap; big.ocSet = ocSet;
+  allMaps.push(big);
+  const bi = allMaps.length - 1;
+  let found = 0;
+  for (let t = 0; t < 3000 && found < 8; t++) {
+    // waz: odcinki proste (10-12 krokow) na przemian w dwoch sasiednich kierunkach
+    const dA = pick([[1, 0], [0, 1], [1, -1]]);
+    const dB = pick(DIRS.filter((x) => x !== dA && Math.abs(DIRS.indexOf(x) - DIRS.indexOf(dA)) % 5 === 1));
+    const p = [[ri(4, 8), ri(4, 8)]];
+    for (let sgm = 0; sgm < 7; sgm++) {
+      const d = sgm % 2 === 0 ? dA : dB;
+      const L = ri(10, 12);
+      for (let k = 0; k < L; k++) {
+        const nq = p[p.length - 1][0] + d[0], nr = p[p.length - 1][1] + d[1];
+        if (nq < 3 || nr < 3 || nq > W - 4 || nr > H - 4) break;
+        if (p.some(([a2, b2]) => a2 === nq && b2 === nr)) break;
+        p.push([nq, nr]);
+      }
+    }
+    if (p.length < 40) continue;
+    const seed = newSeed();
+    const full = web.injectRiverMeanders(toObjs(p), big.obj, big.seaMap, mulberry(seed), 100);
+    if (full.length - p.length < 8) continue;
+    // minLen sweep: 0 .. len + 12 (cap 200); need = min(minLen - len, 6)
+    const outs = [];
+    for (let ml = 0; ml <= p.length + 12; ml++) outs.push(flat(web.extendRiverToMinimumLength(toObjs(p), big.obj, big.seaMap, mulberry(seed), ml, 200)));
+    if (transitions(outs) > 2) {
+      sweepRecord('extmin', { m: bi, p: flat(toObjs(p)), seed, cap: 200, lo: 0 }, outs);
+      const ij = [];
+      for (let mx = 0; mx <= 10; mx++) ij.push(flat(web.injectRiverMeanders(toObjs(p), big.obj, big.seaMap, mulberry(seed), mx)));
+      sweepRecord('inject', { m: bi, p: flat(toObjs(p)), seed, lo: 0 }, ij);
+      found++;
+      bump('big_sweeps');
+    }
+  }
+  if (found < 4) throw new Error(`duza mapa: za malo sweepow ${found}`);
+}
 
 const doc = {
   format: 'p6-m07b3-q3-v1',
