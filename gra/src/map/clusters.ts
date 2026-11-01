@@ -361,8 +361,34 @@ export function regionMassDominance(
 }
 
 function isSpawnHabitableTerrain(teren: TerenBazowy | string): boolean {
+  // R-WEB-AI-AVOID-POLAR-CITIES-Q1: Polarny (snieg) nie jest zamieszkiwalny — nie liczy sie do lokalnego ladu.
   return teren !== TerenBazowy.Morze && teren !== TerenBazowy.Gory &&
-    teren !== TerenBazowy.PlytkieMorze && teren !== 'morze' && teren !== 'gory' && teren !== 'plytkie_morze';
+    teren !== TerenBazowy.PlytkieMorze && teren !== TerenBazowy.Polarny &&
+    teren !== 'morze' && teren !== 'gory' && teren !== 'plytkie_morze' && teren !== 'polarny';
+}
+
+/**
+ * R-WEB-AI-AVOID-POLAR-CITIES-Q1: poziom polarnosci kandydata na stolice/MP AI:
+ * 3 = sam heks Polarny, 2 = Polarny w promieniu 1, 1 = w promieniu 2, 0 = brak.
+ * Uzywany jako PIERWSZY klucz sortowania kandydatow (kara) oraz twardy zakaz tieru 3.
+ */
+export function polarProximityTier(map: GameMap, q: number, r: number): number {
+  const self = map.hexes[`${q},${r}`];
+  if (self && self.terenBazowy === TerenBazowy.Polarny) return 3;
+  let tier = 0;
+  for (let dq = -2; dq <= 2; dq++) {
+    for (let dr = -2; dr <= 2; dr++) {
+      if (dq === 0 && dr === 0) continue;
+      const d = hexDistanceAxial(q, r, q + dq, r + dr);
+      if (d > 2) continue;
+      const nb = map.hexes[`${q + dq},${r + dr}`];
+      if (nb && nb.terenBazowy === TerenBazowy.Polarny) {
+        const t = d <= 1 ? 2 : 1;
+        if (t > tier) tier = t;
+      }
+    }
+  }
+  return tier;
 }
 
 /**
@@ -586,6 +612,8 @@ type SpawnLandCandidate = {
   land: ReturnType<typeof localLandFraction>;
   dev: number;
   sea: number;
+  /** R-WEB-AI-AVOID-POLAR-CITIES-Q1: poziom polarnosci (polarProximityTier); brak = 0. */
+  polar?: number;
 };
 
 function sortSpawnLandCandidates(
@@ -596,6 +624,8 @@ function sortSpawnLandCandidates(
   maxSeaDist = 0,
 ): void {
   candidates.sort((a, b) => {
+    const pol = (a.polar ?? 0) - (b.polar ?? 0);
+    if (pol !== 0) return pol;
     const da = hexDistanceAxial(a.h.q, a.h.r, mapCenter.q, mapCenter.r);
     const db = hexDistanceAxial(b.h.q, b.h.r, mapCenter.q, mapCenter.r);
     // seaFirst = drabinka ratunkowa: szukaj głębiej w lądzie gdy brak hexów przy minSeaDist.
@@ -644,6 +674,8 @@ function sortSpawnCandidatesWithSpreadBias(
   }
 
   pool.sort((a, b) => {
+    const pol = (a.polar ?? 0) - (b.polar ?? 0);
+    if (pol !== 0) return pol;
     if (b.minExist !== a.minExist) return b.minExist - a.minExist;
     const qa = quadCounts[a.quad] ?? 0;
     const qb = quadCounts[b.quad] ?? 0;
@@ -663,7 +695,7 @@ function sortSpawnCandidatesWithSpreadBias(
 
   candidates.length = 0;
   for (const e of pool) {
-    candidates.push({ h: e.h, land: e.land, dev: e.dev, sea: e.sea });
+    candidates.push({ h: e.h, land: e.land, dev: e.dev, sea: e.sea, polar: e.polar });
   }
 }
 
@@ -1722,8 +1754,12 @@ export function pickSpawnHexWithCapitalGates(
     ? seaDistRescueLadder(minSeaDist)
     : [minSeaDist];
 
+  // R-WEB-AI-AVOID-POLAR-CITIES-Q1: stolice/MP AI (nie gracz) — heks Polarny zakazany, o ile pula ma
+  // jakikolwiek niepolarny; sasiedztwo polarne = kara w sortowaniu (polarProximityTier).
+  const avoidPolar = !requirePlayerMassGate && pool.some(h => polarProximityTier(map, h.q, h.r) < 3);
   for (const seaMin of seaSteps) {
     const passes = (h: { q: number; r: number }): boolean => {
+      if (avoidPolar && map.hexes[`${h.q},${h.r}`]?.terenBazowy === TerenBazowy.Polarny) return false;
       if (requireLocalLand && !passesLocalLandGate(map, h.q, h.r)) return false;
       if (requirePlayerMassGate && !passesPlayerStartMassGate(map, h.q, h.r, landCache)) return false;
       if (seaDist && seaMin > 0 && !passesMinSeaDistGate(seaDist, h.q, h.r, seaMin)) return false;
@@ -1745,6 +1781,7 @@ export function pickSpawnHexWithCapitalGates(
         land: localLandFraction(map, h.q, h.r),
         dev: developmentSpaceScore(map, h.q, h.r, landCache),
         sea: seaDist ? seaDistAt(seaDist, h.q, h.r) : seaMin,
+        polar: avoidPolar ? polarProximityTier(map, h.q, h.r) : 0,
       }));
     if (candidates.length === 0) continue;
 
@@ -3436,12 +3473,22 @@ export function computeClusters(
   // --- Pola lądowe (zamieszkiwalne — bez Morza, Gór i Wybrzeża) ---
   // Wybrzeze wykluczone, bo canFoundCity je odrzuca (cities.ts) — trzymanie go w
   // puli kandydatów dawało "ciche" odrzucenia przy faktycznym zakładaniu miast.
+  // R-WEB-AI-AVOID-POLAR-CITIES-Q1: Polarny (snieg) poza pula; fallback do pelnej puli tylko gdy caly lad polarny.
   const ladowe: Array<{ q: number; r: number }> = [];
   for (const h of allHexes) {
     if (h.terenBazowy !== TerenBazowy.Morze && h.terenBazowy !== TerenBazowy.Gory &&
-        h.terenBazowy !== TerenBazowy.PlytkieMorze) {
+        h.terenBazowy !== TerenBazowy.PlytkieMorze && h.terenBazowy !== TerenBazowy.Polarny) {
       ladowe.push({ q: h.coords.q, r: h.coords.r });
     }
+  }
+  if (ladowe.length === 0) {
+    for (const h of allHexes) {
+      if (h.terenBazowy !== TerenBazowy.Morze && h.terenBazowy !== TerenBazowy.Gory &&
+          h.terenBazowy !== TerenBazowy.PlytkieMorze) {
+        ladowe.push({ q: h.coords.q, r: h.coords.r });
+      }
+    }
+    console.warn('[clusters] polar-fallback: caly lad polarny, pula startowa zawiera heksy Polarny');
   }
 
   if (ladowe.length === 0) {

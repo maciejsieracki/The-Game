@@ -4733,6 +4733,29 @@ function decideDefensiveCopyTurn(
 // ---------------------------------------------------------------------------
 
 /**
+ * R-WEB-AI-AVOID-POLAR-CITIES-Q1: AI unika terenu polarnego przy zakladaniu miast.
+ * Zwraca kare rankingowa (>= 0) za polarne sasiedztwo kandydata: pelna kara, gdy heks Polarny lezy w
+ * promieniu 1; polowa, gdy najblizszy lezy w promieniu 2; 0 gdy brak. Kara wchodzi TYLKO do rankingu
+ * (nie do progu `ekspansja_min_score_hex`), zeby nie zmniejszac liczby zakladanych miast.
+ */
+export function aiPolarNeighbourhoodPenalty(map: GameMap, q: number, r: number, penalty: number): number {
+  if (penalty <= 0) return 0;
+  let nearest = Infinity;
+  for (let dq = -2; dq <= 2; dq++) {
+    for (let dr = -2; dr <= 2; dr++) {
+      if (dq === 0 && dr === 0) continue;
+      const d = hexDistance(q, r, q + dq, r + dr);
+      if (d > 2 || d >= nearest) continue;
+      const nb = map.hexes[`${q + dq},${r + dr}`];
+      if (nb !== undefined && (nb.terenBazowy as string) === 'polarny') nearest = d;
+    }
+  }
+  if (nearest <= 1) return penalty;
+  if (nearest === 2) return penalty / 2;
+  return 0;
+}
+
+/**
  * Scans map hexes and returns the highest-scoring land hex for city founding.
  * Must be >= minCityDist from all existing cities.
  * (Dawniej findSettlerTarget — reuse heurystyki bez jednostki osadnika.)
@@ -4768,6 +4791,11 @@ function findCityFoundingHex(
   const excludeSet = new Set(
     (hexOpts.excludeHexes ?? []).map(h => `${h.q},${h.r}`),
   );
+  // R-WEB-AI-AVOID-POLAR-CITIES-Q1: heks Polarny = twardy zakaz, o ile istnieje jakikolwiek
+  // kandydat niepolarny; ostatni fallback (mapa/okolica prawie cala polarna) z logiem.
+  const polarPenalty = getAiParam(data, 'ekspansja_kara_polarna_sasiedztwo', 8);
+  let bestPolarScore = -Infinity;
+  let bestPolarHex: { q: number; r: number } | null = null;
 
   for (const key of Object.keys(map.hexes)) {
     const hex = map.hexes[key];
@@ -4775,6 +4803,7 @@ function findCityFoundingHex(
 
     const t = hex.terenBazowy as string;
     if (t === 'morze' || t === 'plytkie_morze' || t === 'gory') continue;
+    const isPolarHex = t === 'polarny';
 
     const { q, r } = hex.coords;
     if (excludeSet.has(`${q},${r}`)) continue;
@@ -4806,14 +4835,28 @@ function findCityFoundingHex(
 
     if (score < minScore) continue;
 
-    if (score > bestScore) {
-      bestScore = score;
+    if (isPolarHex) {
+      if (score > bestPolarScore) {
+        bestPolarScore = score;
+        bestPolarHex = { q, r };
+      }
+      continue;
+    }
+
+    // Kara za polarne sasiedztwo — tylko ranking (po progu minScore).
+    const rankScore = score - aiPolarNeighbourhoodPenalty(map, q, r, polarPenalty);
+    if (rankScore > bestScore) {
+      bestScore = rankScore;
       bestHex = { q, r };
     }
   }
 
-  if (bestHex !== null && bestScore < minScore) return null;
-  return bestHex;
+  if (bestHex !== null) return bestHex;
+  if (bestPolarHex !== null) {
+    console.warn(`[ai] polar-fallback: brak kandydata niepolarnego, miasto AI na heksie polarnym (${bestPolarHex.q},${bestPolarHex.r})`);
+    return bestPolarHex;
+  }
+  return null;
 }
 
 // ---------------------------------------------------------------------------
