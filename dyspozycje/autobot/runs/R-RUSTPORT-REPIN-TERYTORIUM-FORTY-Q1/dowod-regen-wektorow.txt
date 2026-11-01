@@ -43,7 +43,7 @@ inputs identical (outputs stripped: ['after', 'changed', 'events', 'expected', '
 outputs differ in ['meta', 'cases']
 == p6_m16_vectors/qualifier
 cases list 320 ['state', 'queries', 'qual', 'api', 'clicks', 'reasons']
-keys list 33 
+keys list 33
 inputs identical (outputs stripped: ['forest', 'qual', 'reason']): False
 outputs differ in ['cases']
 == p6_m16 qualifier: wejscia (state, queries) IDENTYCZNE (inputs identical True, wyjscia qual/api/clicks/reasons stripped); p6_23 fort: cases-wejscia identyczne (porownanie vs swieza generacja: inputs identical True), roznica tylko meta.pin_web (celowa)
