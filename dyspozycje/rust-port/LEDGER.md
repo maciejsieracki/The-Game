@@ -473,3 +473,8 @@ Cel końcowy i bieżący zapisane w `GOAL-RUST-PORT-20261020.md` (§"CEL PĘTLI 
 ## 2026-11-01 — 8H2 (dostęp zasobów B) PASS-WITH-NOTES (r4) zintegrowane na parity-v2
 - FC `4f0b90d96` (kod `9b158a55a`); merge `448e62600a7d155beb649b1a727af8579e63a0c0`: fmt OK, clippy OK, test 1974/0. 16/16 funkcji resource-access.ts + isForeignReligionDominant; mutacje 44 (41 KILLED + 3 ekw.) i 11 (7 + 4 ekw.). Dług: hak placed_improvements_with_zloto_trade_grant bez wywołującego, duplikat clear_city_culture_mix, rozbieżność prototypu `constructor` w mapgen/params.rs:1340.
 - Sloty kodu: M07B3 (wf_ae47afd3-f36) biegnie; drugi slot wolny — kolejny: 8G r4 (state.rs już wolny).
+
+## 2026-11-01 — 8G (okolica) PASS-WITH-NOTES zamknięte (FC r4/r5 `5f618f748`)
+- Kod 8G był już na `parity-v2` (r4 `b765170cb`/`4bbe0b60e`, r5 `baca6b222`, FC r5 `54dd7e307`) — integracja poprzedziła werdykt; runda 4 sprowadziła się do weryfikacji stanu i korekty tabeli M12 (ZABITA po r5). Dokumenty FC `5f618f748` wypchnięte fast-forwardem na `parity-v2`. Testy 8G: 19+10+4+4 zielone, M12 zabity.
+- Dług (następna partia): hak `OkolicaPopulationHook` niewpięty w żywą pętlę (brak wywołującego `city_growth` w Rust); `City::okolica_reczne`, `okolica_focus`, `okolica_tryb` nie są ładowane z zapisu JSON (`CityDto` bez pól okolica).
+- Slot kodu wolny; M07B3 biegnie. Następne: 8A (produkcja koszty), 8I/8I2 po przepięciu pinu, REPIN-WOJNA-2 r3.
