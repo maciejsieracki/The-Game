@@ -254,10 +254,11 @@ export function buildClusterSpawnPlan(input: BuildClusterSpawnInput): ClusterSpa
     map.szerokoscQ,
     map.wysokoscR,
   );
-  const minCapitalSep = capitalMinSeparationForMap(
+  const minCapitalSep = placement.capitalMinSep ?? capitalMinSeparationForMap(
     placement.rozmiarMapy,
     map.szerokoscQ,
     map.wysokoscR,
+    placement.requestedTypy,
   );
 
   /** Stolice obcych typów z computeClusters — do bramki sep przy relokacji gracza. */
