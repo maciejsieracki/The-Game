@@ -1,0 +1,7 @@
+evid gen2-pangea1001.json turn 31 aiCities 59 polarAI ["egipt#22@61,108"] logs [ai] polar-fallback: brak kandydata niepolarnego, miasto AI  err  stall 
+evid-post gen2-kontynenty4242.json turn 51 aiCities 78 polarAI [] logs  err  stall 
+evid-post gen2-pangea1001.json turn 31 aiCities 60 polarAI [] logs [ai] polar-null turn=25|[ai] polar-null turn=26|[ai] polar-null turn=27|[ai] polar-null turn=29|[ai] polar-null turn=30|[ai] polar-null turn=31 err  stall 
+evid-post gen2-pangea4242.json turn 51 aiCities 83 polarAI [] logs  err  stall 
+evid-post gen2-wyspy1001.json turn 31 aiCities 60 polarAI [] logs  err  stall 
+evid-post gen2-wyspy3333.json turn 31 aiCities 61 polarAI [] logs  err  stall 
+EXIT=0

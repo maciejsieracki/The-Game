@@ -1,0 +1,22 @@
+R2 pomiary (obrona). PRE = ai.ts z 57cc8aded / bundle ROBOCZA bez poprawki; POST = ai.ts z 81a8e76a7 / bundle ROBOCZA + poprawka.
+
+== ENGINE SIM (ai-city-count-sim.cjs --engine, 100 tur, realny generator, wspolny mapcache); T50 i T100 identyczne PRE=POST
+[pre] kontynenty 4242 majors=5 t50=13 t100=13 foundedHigh/Low@100=7/1
+[post] kontynenty 4242 majors=5 t50=13 t100=13 foundedHigh/Low@100=7/1
+[pre] pangea 4242 majors=5 t50=8 t100=8 foundedHigh/Low@100=2/1
+[post] pangea 4242 majors=5 t50=8 t100=8 foundedHigh/Low@100=2/1
+[pre] pangea 1001 majors=5 t50=8 t100=8 foundedHigh/Low@100=3/0
+[post] pangea 1001 majors=5 t50=8 t100=8 foundedHigh/Low@100=3/0
+(uwaga: sim silnikowy ma atrapy ekonomii; nie odtwarza sciezki polar-null z zywej gry — dowodzi tylko braku regresji w sciezkach niepolarnych)
+
+== ZYWA GRA (live-verify-robocza-2-gen.cjs, Chromium, turn T51/T31)
+PRE  pangea 4242      T51 aiCities=83 polarAI=0 logs=0
+POST pangea 4242      T51 aiCities=83 polarAI=0 logs=0
+PRE  kontynenty 4242  T51 aiCities=87 polarAI=0 logs=0
+POST kontynenty 4242  T51 aiCities=78 polarAI=0 logs=0  (galaz null NIE odpalona w zadnym z dwoch => 87 vs 78 to szum zywej gry, nie skutek poprawki)
+PRE  pangea 1001      T31 aiCities=59 polarAI=1 (egipt#22@61,108) log polar-fallback
+POST pangea 1001 bieg A (R1)   T31 aiCities=60 polarAI=0 polar-null T25,26,27,29,30,31
+POST pangea 1001 bieg B (R2)   T31 aiCities=56 polarAI=0 polar-null T25,26,27,29,30,31
+Wniosek: poprawka powtarzalna w 2 biegach (0 miast polarnych, te same tury polar-null); rozrzut liczby miast miedzy biegami tej samej konfiguracji (56..60, 78..87) przewyzsza rozrzut PRE/POST.
+NIE_ZMIERZONO: T100 w zywej grze (czas ~35+ min na bieg T50 przy 4 rdzeniach; zastapione sim silnikowym T100 wyzej).
+EXIT=0

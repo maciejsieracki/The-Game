@@ -1,0 +1,12 @@
+s=open('/tmp/claude-0/scr/Gra-DIAG.html',encoding='utf8').read()
+a='return I!==null?I:k!==null?(console.warn('
+assert s.count(a)==1
+s=s.replace(a,'return I!==null?I:k!==null&&!(E.myCities!==void 0&&E.myCities.length>0)?(console.warn(')
+b='bestPolarScore:c}))'
+assert s.count(b)==1
+i=s.index(b)
+# after ",k):null}" following b
+tail=',k):null}'
+j=s.index(tail,i)
+s=s[:j]+',k):(k!==null&&console.warn("[ai] polar-null turn="+g.currentTurn),null)}'+s[j+len(tail):]
+open('/tmp/claude-0/scr/Gra-POST.html','w',encoding='utf8').write(s)
