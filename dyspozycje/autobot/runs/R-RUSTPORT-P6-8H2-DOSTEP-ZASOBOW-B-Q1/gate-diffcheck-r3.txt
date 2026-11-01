@@ -1,0 +1,2 @@
+# git diff --cached --check (zestaw przed commitem kodu 0b918c971; pusty wynik = czysto)
+EXIT=0

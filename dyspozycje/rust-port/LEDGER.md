@@ -469,3 +469,7 @@ Cel końcowy i bieżący zapisane w `GOAL-RUST-PORT-20261020.md` (§"CEL PĘTLI 
 
 ## 2026-11-01 — M07B-Q2 (rzeki B krawędzie) PASS-WITH-NOTES (r4) zintegrowane na parity-v2
 - FC `f10829e9d` (kod `6a596c987`); merge `4dbd4cff45abb7e8d5560c4cfc915d3620c51c32` na `parity-v2`: fmt OK, clippy OK, test 1947/0. 105 mutantów: 80 KILLED, 25 EKWIWALENT z dowodem, 0 LUK; weryfikator 25592/25592. Notatka: weryfikator Python nie obejmuje wektorów q2r4 (NIE_ZMIERZONO niezależność). Pozostałe symbole rzek B → Q3/Q4.
+
+## 2026-11-01 — 8H2 (dostęp zasobów B) PASS-WITH-NOTES (r4) zintegrowane na parity-v2
+- FC `4f0b90d96` (kod `9b158a55a`); merge `448e62600a7d155beb649b1a727af8579e63a0c0`: fmt OK, clippy OK, test 1974/0. 16/16 funkcji resource-access.ts + isForeignReligionDominant; mutacje 44 (41 KILLED + 3 ekw.) i 11 (7 + 4 ekw.). Dług: hak placed_improvements_with_zloto_trade_grant bez wywołującego, duplikat clear_city_culture_mix, rozbieżność prototypu `constructor` w mapgen/params.rs:1340.
+- Sloty kodu: M07B3 (wf_ae47afd3-f36) biegnie; drugi slot wolny — kolejny: 8G r4 (state.rs już wolny).
