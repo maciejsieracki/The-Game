@@ -1,3 +1,4 @@
+> KOREKTA RUNDY 2: statusy i liczby w tym pliku sprostowano w `02-operator-r2-obrona.md` (obowiązuje 02).
 STATUS: PASS-WITH-NOTES
 DOMAIN: GAME (WEB) — weryfikacja na żywo, zero zmian w gra/src
 TEMAT: R-WEB-LIVE-VERIFY-ROBOCZA-Q1

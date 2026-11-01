@@ -1,0 +1,2 @@
+newgame-settings-layout-reposition-test: PASS — 12-card grid order, 13-row advanced order, persistence and game-start params verified
+EXIT=0
