@@ -56,7 +56,7 @@ import { loadGameData } from './data/loader';
 import { generateMap, DEFAULT_WIDTH, DEFAULT_HEIGHT, rozmiarFromMenuLabel } from './map/generator';
 import { generujSwiatAsync } from './map/mapGenAsync';
 import type { TypSwiata } from './map/gen-helpers';
-import { typSwiataFromMenuLabel, aktywneTypyFromMapLabel, defaultCivTypesFromMapLabel, defaultMiastaPanstwaFromMapLabel, clampMiastaPanstwaCount, type WorldGenerationPreset, DEFAULT_WORLD_DENSITY } from './map/newGameMapDefaults';
+import { typSwiataFromMenuLabel, defaultLandFractionPercentForTyp, aktywneTypyFromMapLabel, defaultCivTypesFromMapLabel, defaultMiastaPanstwaFromMapLabel, clampMiastaPanstwaCount, type WorldGenerationPreset, DEFAULT_WORLD_DENSITY } from './map/newGameMapDefaults';
 import { buildScene, getLastSetFogMs, type SceneBuildTimings, type SceneResult } from './render/scene';
 import { showMapLoadingOverlay, type MapLoadingOverlayHandle, formatCaughtError } from './ui/mapLoadingOverlay';
 import { showSceneTimingReport } from './ui/sceneTimingReport';
@@ -40550,7 +40550,7 @@ async function boot(): Promise<void> {
         worldDensityLabels: {
           resources: 'Średnia', rivers: 'Średnia', desert: 'Średnia', forest: 'Średnia', relief: 'Średnia',
         },
-        landFractionPercent: (meta?.loadLandFraction as number) ?? 30,
+        landFractionPercent: (meta?.loadLandFraction as number) ?? defaultLandFractionPercentForTyp(typ),
         villageRewardsEnabled: true,
       };
     }
@@ -40633,7 +40633,7 @@ async function boot(): Promise<void> {
         const { map: loadedMap, usedSnapshot } = await loadMapForSave(saved, () => generujSwiatAsync(seed, rozmiar, _menuTypSwiata, {
           worldDensity: _menuWorldDensity,
           mapSizeMenuLabel: _menuMapSize,
-          landFraction: (params.landFractionPercent ?? 30) / 100,
+          landFraction: (params.landFractionPercent ?? defaultLandFractionPercentForTyp(_menuTypSwiata)) / 100,
           difficulty: _menuDifficulty,
           civTypesCount: _menuCivTypesCount,
           cityStatesCount: _menuCityStates,

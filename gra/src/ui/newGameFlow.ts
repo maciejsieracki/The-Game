@@ -2219,7 +2219,10 @@ function renderGenStep(host: HTMLElement): void {
     ['Liczba cywilizacji', String(p.civTypesCount) + ' na mapie'],
     ['Predkosc', p.speed],
     ['Surowce', p.worldDensityLabels.resources],
-    ['Ląd / morze', p.landFractionPercent + '% / ' + (100 - p.landFractionPercent) + '%'],
+    // R-WEB-FOLLOWUPS-LAND-AI-Q1 (1): Ziemia = stały szablon kontynentów (bez suwaka) — nie pokazuj sztucznego 20% / 80%.
+    ['Ląd / morze', p.typSwiata === 'ziemia'
+      ? 'szablon kontynentów (bez suwaka)'
+      : p.landFractionPercent + '% / ' + (100 - p.landFractionPercent) + '%'],
     ['Rzeki / pustynie / las / góry', p.worldDensityLabels.rivers + ' · ' + p.worldDensityLabels.desert + ' · ' + p.worldDensityLabels.forest + ' · ' + p.worldDensityLabels.relief],
     ['Jakosc grafiki', p.mapQualityLabel],
   ];
