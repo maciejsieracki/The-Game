@@ -484,3 +484,5 @@ Cel końcowy i bieżący zapisane w `GOAL-RUST-PORT-20261020.md` (§"CEL PĘTLI 
 - Start `8I` r4 z NOWYM pinem `4bbef081d` (decyzja administracyjna; powód: auto-ulepszenia weba zmienione masowo, port starego zachowania byłby nieaktualny). Biegną: `M07B3` (mapgen rivers_b) i `8I` (auto_improvements) — rozłączne.
 
 - 2026-11-01 02:12 UTC — kontrola cykliczna: M07B3 r1 (Operator pracuje, ostatni commit 19 minutes ago) i 8I r4 (nowy pin 4bbef081d) biegną; brak PASS do integracji. Dysk 8,7 GB.
+
+- 2026-11-01 03:12 UTC — kontrola cykliczna: M07B3 r1 (commit 26 min temu: wektory v3, etykiety mutacji) i 8I r4 (commit 60 min temu: porty P1, P2a–P2c; Operator w toku) biegną; brak PASS do integracji. Dysk 8,7 GB.
