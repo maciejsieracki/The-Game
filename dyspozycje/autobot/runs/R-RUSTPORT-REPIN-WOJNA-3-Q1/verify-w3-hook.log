@@ -1,0 +1,2 @@
+verify-w3-hook: cases=700 fails=0
+EXIT=0

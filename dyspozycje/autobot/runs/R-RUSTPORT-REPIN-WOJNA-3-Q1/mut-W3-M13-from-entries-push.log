@@ -1,0 +1,4 @@
+MUTANT W3-M13-from-entries-push in src/domain/general_quick_follow.rs
+test march_map_from_entries_behaves_like_js_map_set ... FAILED
+restore_clean=yes
+EXIT=101
