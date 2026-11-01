@@ -702,13 +702,17 @@ def run_case(maps, hx, c):
 
 
 def main():
-    with open(os.path.join(HERE, "web-rivers-b-q3.json")) as fh:
+    # opcjonalny argument: plik wektorow (domyslnie glowny; `web-rivers-b-q3-closure.json` = wektory
+    # domykajace r2 na mapach RZADKICH z polami sea/open/oc zadanymi wprost - bez kontroli pol)
+    fname = sys.argv[1] if len(sys.argv) > 1 else "web-rivers-b-q3.json"
+    with open(os.path.join(HERE, fname)) as fh:
         doc = json.load(fh)
+    custom_fields = doc.get("format", "").startswith("p6-m07b3-q3-closure")
     maps = doc["maps"]
     hx = [q2.load_hexes(m["hexes"]) for m in maps]
     # wejscia: sea/open/oc z JSON musza byc rowne policzonym od zera
     mism = 0
-    for m, h in zip(maps, hx):
+    for m, h in ([] if custom_fields else zip(maps, hx)):
         oc = ocean_connected(h, m["w"], m["h"])
         if build_sea(h) != m["sea"] or oc != set(m["oc"]) or build_open(h, oc) != m["open"]:
             mism += 1

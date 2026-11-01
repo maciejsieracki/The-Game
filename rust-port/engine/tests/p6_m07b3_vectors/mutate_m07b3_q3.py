@@ -68,7 +68,7 @@ m("G02", TC, "for _step in 0..max_len {", "for _step in 0..max_len.saturating_su
 m("G03", TC, "            break;\n        };\n\n        let in_dir: Option<(i64, i64)> = if path.len() >= 2 {", "            continue;\n        };\n\n        let in_dir: Option<(i64, i64)> = if path.len() >= 2 {", "E", ":6297 curOd == null: break -> continue (stan niezmienny: iteracja idempotentna)")
 m("G04", TC, "let in_dir: Option<(i64, i64)> = if path.len() >= 2 {", "let in_dir: Option<(i64, i64)> = if path.len() > 2 {", "K", ":6299 path.length >= 2")
 m("G05", TC, "Some(river_step_dir(path[path.len() - 2], cur))", "Some(river_step_dir(cur, path[path.len() - 2]))", "K", ":6301 inDir odwrocony")
-m("G06", TC, "            let nk = hex_key(nq, nr);\n            if visited.contains(&nk) {\n                continue;\n            }\n            if !is_river_window_turn_allowed(&path, nq, nr) {", "            let nk = hex_key(nq, nr);\n            if !is_river_window_turn_allowed(&path, nq, nr) {", "L", ":6309 visited [visited: potrzebna petla >= 36 hex na plateau openOceanDist (okno skretu 6/+-1) - NIE_ZMIERZONO]")
+m("G06", TC, "            let nk = hex_key(nq, nr);\n            if visited.contains(&nk) {\n                continue;\n            }\n            if !is_river_window_turn_allowed(&path, nq, nr) {", "            let nk = hex_key(nq, nr);\n            if !is_river_window_turn_allowed(&path, nq, nr) {", "K", ":6309 visited [domkniete r2: petla 36 heks. na plateau, web-rivers-b-q3-closure.json]")
 m("G07", TC, "if !is_river_window_turn_allowed(&path, nq, nr) {", "if false && !is_river_window_turn_allowed(&path, nq, nr) {", "K", ":6310 okno skretu")
 m("G08", TC, "                true,\n                None,\n                allow_relief_traversal,", "                false,\n                None,\n                allow_relief_traversal,", "K", ":6312 blockExisting")
 m("G09", TC, "                None,\n                allow_relief_traversal,", "                None,\n                !allow_relief_traversal,", "K", ":6312 allowRelief")
@@ -86,8 +86,8 @@ m("G20", TC, "score -= 1.8;", "score -= 0.3;", "K", ":6319 bonus prostej 1.8 -> 
 m("G21", TC, "if same_river_dir(d, (dq, dr)) {\n                    score -= 1.8;", "if !same_river_dir(d, (dq, dr)) {\n                    score -= 1.8;", "K", ":6319 sameRiverDir")
 m("G22", TC, "        if candidates.is_empty() {\n            break;\n        }\n        // Web:", "        if candidates.is_empty() {\n            continue;\n        }\n        // Web:", "E", ":6323 brak kandydatow: break -> continue (brak wolan rand, stan niezmienny)")
 m("G23", TC, "let pick = candidates[0];", "let pick = candidates[candidates.len() - 1];", "K", ":6325 wybor najlepszego")
-m("G24", TC, "        path.push(RiverCoord::new(pick.q, pick.r));\n        visited.insert(hex_key(pick.q, pick.r));", "        path.push(RiverCoord::new(pick.q, pick.r));", "L", ":6327 visited po wyborze [visited po wyborze: jak G06]")
-m("G25", TC, "    visited.insert(hex_key(sq, sr));\n\n    for _step", "\n    for _step", "L", ":6285 visited startu [visited startu: jak G06]")
+m("G24", TC, "        path.push(RiverCoord::new(pick.q, pick.r));\n        visited.insert(hex_key(pick.q, pick.r));", "        path.push(RiverCoord::new(pick.q, pick.r));", "K", ":6327 visited po wyborze [domkniete r2: lasso (start na ogonie), web-rivers-b-q3-closure.json]")
+m("G25", TC, "    visited.insert(hex_key(sq, sr));\n\n    for _step", "\n    for _step", "K", ":6285 visited startu [domkniete r2: start na pierscieniu z ostroga, web-rivers-b-q3-closure.json]")
 m("G26", TC, "if path.len() > 1 && is_river_drainage_goal(last.q, last.r, hexes, source_key, ocean_connected)", "if path.len() > 2 && is_river_drainage_goal(last.q, last.r, hexes, source_key, ocean_connected)", "K", ":6331 path.length > 1")
 m("G27", TC, "if path.len() > 1 && is_river_drainage_goal(last.q, last.r, hexes, source_key, ocean_connected)", "if path.len() > 0 && is_river_drainage_goal(last.q, last.r, hexes, source_key, ocean_connected)", "K", ":6331 path.length > 1 -> > 0")
 m("G28", TC, "if path.len() > 1 && is_river_drainage_goal(last.q, last.r, hexes, source_key, ocean_connected)", "if path.len() > 1 && true", "K", ":6331 koncowy cel drenazu")
@@ -129,7 +129,7 @@ m("A16", AS, "let nd = sea_dist.get(&nk).copied().unwrap_or(i64::MAX);", "let nd
 m("A17", AS, "if !can_river_drain_step(&nk, nd, open_ocean_dist, ocean_connected, true) {", "if !can_river_drain_step(&nk, nd, open_ocean_dist, ocean_connected, false) {", "K", ":6452 postInlandPhase")
 m("A18", AS, "let mut step_cost = 1.0_f64;", "let mut step_cost = 1.1_f64;", "K", ":6453 koszt kroku")
 m("A19", AS, "step_cost += 0.18 + rand() * 0.12;", "step_cost += 0.19 + rand() * 0.12;", "K", ":6454 kara prostej 0.18")
-m("A20", AS, "step_cost += 0.18 + rand() * 0.12;", "step_cost += 0.18 + rand() * 0.13;", "L", ":6454 jitter 0.12 [jitter 0.12 -> 0.13: roznica kosztu < 0.01 na krok prosty; wymaga prawie-remisu tras - NIE_ZMIERZONO]")
+m("A20", AS, "step_cost += 0.18 + rand() * 0.12;", "step_cost += 0.18 + rand() * 0.13;", "K", ":6454 jitter 0.12 [domkniete r2: prawie-remis tras prosta/zygzak, web-rivers-b-q3-closure.json]")
 m("A21", AS, "step_cost += 0.18 + rand() * 0.12;", "step_cost -= 0.18 + rand() * 0.12;", "K", ":6454 znak kary")
 m("A22", AS, "if same_river_dir(d, (dq, dr)) {\n                    step_cost", "if !same_river_dir(d, (dq, dr)) {\n                    step_cost", "K", ":6454 sameRiverDir")
 m("A23", AS, "if tg > max_len_f + 2.0 {", "if tg >= max_len_f + 2.0 {", "E", ":6456 tg > maxLen + 2 -> >= [tg > maxLen+2 nieosiagalne: curG < maxLen i koszt < 1.3]")
@@ -274,8 +274,8 @@ def prepare(work):
         # copyfile (bez mtime zrodla): cargo ma przebudowac, a nie uzyc starego (zmutowanego) artefaktu
         shutil.copytree(os.path.join(ENGINE, d), os.path.join(work, d), copy_function=shutil.copyfile)
     shutil.copyfile(os.path.join(ENGINE, "tests", "p6_m07b3_q3.rs"), os.path.join(work, "tests", "p6_m07b3_q3.rs"))
-    shutil.copyfile(os.path.join(HERE, "web-rivers-b-q3.json"),
-                    os.path.join(work, "tests", "p6_m07b3_vectors", "web-rivers-b-q3.json"))
+    for vf in ("web-rivers-b-q3.json", "web-rivers-b-q3-closure.json"):
+        shutil.copyfile(os.path.join(HERE, vf), os.path.join(work, "tests", "p6_m07b3_vectors", vf))
 
 
 def main():

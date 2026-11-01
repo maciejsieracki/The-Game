@@ -21,6 +21,8 @@ use civ_engine::domain::mapgen::terrain_class::{HexRecord, Nakladka, TerrainHex}
 use serde_json::Value;
 
 const WEB_Q3: &str = include_str!("p6_m07b3_vectors/web-rivers-b-q3.json");
+/// Wektory domykajace mutanty G06/G24/G25/A20 (generator: `gen_q3_closure_vectors.mjs`).
+const WEB_Q3_CLOSURE: &str = include_str!("p6_m07b3_vectors/web-rivers-b-q3-closure.json");
 
 fn mulberry(seed: u32) -> impl FnMut() -> f64 {
     let mut st = seed;
@@ -302,7 +304,31 @@ fn trace_run(mp: &Map, c: &Value, ml: usize) -> Vec<RiverCoord> {
 
 #[test]
 fn q3_vectors_match_web() {
-    let root: Value = serde_json::from_str(WEB_Q3).expect("parse");
+    check_vectors(WEB_Q3);
+}
+
+/// Wektory domykajace (r2): petla greedy na plateau (`visited`) i prawie-remis tras A* (jitter).
+#[test]
+fn q3_closure_vectors_match_web_and_cover_mutants() {
+    check_vectors(WEB_Q3_CLOSURE);
+    let root: Value = serde_json::from_str(WEB_Q3_CLOSURE).expect("parse");
+    let mut kills = std::collections::BTreeMap::<String, usize>::new();
+    for c in root["cases"].as_array().unwrap() {
+        *kills
+            .entry(c["kills"].as_str().unwrap().to_string())
+            .or_default() += 1;
+    }
+    for m in ["G06", "G24", "G25"] {
+        assert!(kills.get(m).copied().unwrap_or(0) >= 3, "brak wektorow {m}");
+    }
+    assert!(
+        kills.get("A20").copied().unwrap_or(0) >= 6,
+        "brak wektorow A20"
+    );
+}
+
+fn check_vectors(raw: &str) {
+    let root: Value = serde_json::from_str(raw).expect("parse");
     let maps: Vec<Map> = root["maps"]
         .as_array()
         .unwrap()
