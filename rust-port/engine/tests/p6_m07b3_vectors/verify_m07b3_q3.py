@@ -624,6 +624,8 @@ def pert_fields(mp, pt):
     if not pt:
         return mp["sea"], mp["open"], set(mp["oc"])
     srm, orm, ocrm = set(pt["srm"]), set(pt["orm"]), set(pt["ocrm"])
+    if "csea" in pt:
+        srm |= {k for k, v in mp["sea"].items() if v <= pt["csea"]}
     if "dsea" in pt:
         srm |= {k for k, v in mp["open"].items() if v >= pt["dsea"]}
     return ({k: v for k, v in mp["sea"].items() if k not in srm},

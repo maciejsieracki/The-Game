@@ -282,6 +282,7 @@ function applyPert(mp, pt) {
   if (!pt) return mp;
   const orm = new Set(pt.orm), srm = new Set(pt.srm), ocrm = new Set(pt.ocrm);
   if (pt.dsea !== undefined) for (const [k, v] of Object.entries(mp.open)) if (v >= pt.dsea) srm.add(k);
+  if (pt.csea !== undefined) for (const [k, v] of Object.entries(mp.sea)) if (v <= pt.csea) srm.add(k);
   return {
     ...mp,
     seaMap: new Map([...mp.seaMap].filter(([k]) => !srm.has(k))),
@@ -862,6 +863,23 @@ function deepSeaPert(mp) {
     got++;
   }
   if (got < 60) throw new Error(`deepsea: ${got}`);
+}
+
+// 10b. ogon ujscia (wybrzeze) przy braku seaDist na pasie przybrzeznym (`csea`: seaDist <= prog usuniete)
+{
+  let got = 0;
+  for (let i = 0; i < 6000 && got < 80; i++) {
+    const mi = i % maps.length;
+    const mp = maps[mi];
+    const s0 = startHex(mp, 'coastal');
+    const p = walkPath(mp, ri(0, 4), 0.7, s0);
+    const pt = { orm: [], srm: [], ocrm: [], csea: pick([1, 2]) };
+    const c = wybCase(mi, mp, p, pt);
+    if (c.out.length === c.p.length) continue;
+    cases.push(c);
+    bump('csea_wyb');
+    got++;
+  }
 }
 
 const doc = {
