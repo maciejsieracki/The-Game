@@ -33,6 +33,7 @@
  *           AI ekspanduje rywali wewnątrz regionu swojego typu.
  */
 
+import { mapGenCapitalSepShortSideCoef } from '../data/map-gen-params-loader';
 import { mulberry32, hexDistanceAxial, HEX_DIRECTIONS, buildSeaDistanceField, hexKey } from './gen-helpers';
 
 /**
@@ -131,6 +132,8 @@ export interface ClusterPlacement {
   aktywneTypy: number;
   /** Żądana liczba typów z kreatora (może być > aktywneTypy gdy mapa za ciasna). */
   requestedTypy?: number;
+  /** Efektywny min. dystans stolic (R-WEB-CAPITAL-SPACING-FIX-Q1) — spojny dla clusters i cluster-spawn. */
+  capitalMinSep?: number;
   /** min odległość miast-państw w klastrze gracza (start). */
   minDystansMiastaPanstwa: number;
   /** max promień skupiska miast-państw od rdzenia klastra (start). */
@@ -1524,17 +1527,60 @@ export function capitalMinSeparation(rozmiar: RozmiarKlaster): number {
 }
 
 /**
- * Clamp sep stolic do rozmiaru mapy.
- * short&lt;80 (harness): bez bramki. Inaczej tabela capitalMinSeparation — bez ścinania short/12.
+ * R-WEB-CAPITAL-SPACING-FIX-Q1 (B): sep stolic proporcjonalny do krotszego boku mapy,
+ * z podloga = tabela capitalMinSeparation. Bez liczby cywilizacji (civCount) — czysta wersja.
  */
-export function capitalMinSeparationForMap(
+export function capitalMinSeparationProportional(
   rozmiar: RozmiarKlaster,
   mapW: number,
   mapH: number,
 ): number {
   const short = Math.min(mapW, mapH);
-  if (short < 80) return 0;
-  return capitalMinSeparation(rozmiar);
+  const table = capitalMinSeparation(rozmiar);
+  const prop = Math.round(mapGenCapitalSepShortSideCoef() * short);
+  return Math.max(table, prop);
+}
+
+/** Sufit wykonalnosci (pole mapy / liczba civ), by proporcjonalny sep nie wywrocil generacji. */
+function capitalSepFeasibleCap(mapW: number, mapH: number, civCount: number, landCount?: number): number {
+  const n = Math.max(1, civCount);
+  const factor = Math.min(mapW, mapH) < 80 ? CAPITAL_SEP_AREA_FACTOR_SMALL : CAPITAL_SEP_AREA_FACTOR;
+  const area = landCount && landCount > 0 ? landCount : mapW * mapH;
+  return Math.floor(Math.sqrt((area * factor) / n));
+}
+/** Udzial POWIERZCHNI LADU (bez landCount: pola mapy) przypadajacy na krag o srednicy sep; ostrozniej na malych mapach. */
+const CAPITAL_SEP_AREA_FACTOR = 0.5;
+const CAPITAL_SEP_AREA_FACTOR_SMALL = 0.25;
+
+/**
+ * Sep stolic dla mapy. short>=80: max(tabela, wsp x short) ograniczone sufitem wykonalnosci
+ * (podloga tabeli wygrywa, gdy sufit < tabela — jak dotad). short<80 (harness): proporcjonalna
+ * wersja tylko gdy znana liczba civ i miesci sie w sufitcie; inaczej 0 (bez bramki).
+ * civCount opcjonalne: bez niego (stare wywolania) short>=80 = tabela proporcjonalna bez sufitu.
+ */
+export function capitalMinSeparationForMap(
+  rozmiar: RozmiarKlaster,
+  mapW: number,
+  mapH: number,
+  civCount?: number,
+  landCount?: number,
+): number {
+  const short = Math.min(mapW, mapH);
+  const table = capitalMinSeparation(rozmiar);
+  const prop = capitalMinSeparationProportional(rozmiar, mapW, mapH);
+  if (short < 80) {
+    if (!civCount || civCount < 2) return 0;
+    const cap = capitalSepFeasibleCap(mapW, mapH, civCount, landCount);
+    const v = Math.min(prop, cap);
+    return v >= 4 ? v : 0;
+  }
+  if (!civCount || civCount < 2) return prop;
+  const cap = capitalSepFeasibleCap(mapW, mapH, civCount, landCount);
+  const v = Math.max(table, Math.min(prop, cap));
+  if (v < prop && typeof console !== 'undefined') {
+    console.warn(`[clusters] capital-sep: ${prop} niewykonalne dla ${civCount} civ na ${mapW}x${mapH}, obnizono do ${v}`);
+  }
+  return v;
 }
 
 /**
@@ -1554,6 +1600,18 @@ export function clusterCenterPlacementSep(rozmiar: RozmiarKlaster): number {
   return capitalMinSeparation(rozmiar) + 2;
 }
 
+/** Placement sep dla mapy = nowy sep stolic + 2 (0 gdy bramka wylaczona). */
+export function clusterCenterPlacementSepForMap(
+  rozmiar: RozmiarKlaster,
+  mapW: number,
+  mapH: number,
+  civCount?: number,
+  landCount?: number,
+): number {
+  const sep = capitalMinSeparationForMap(rozmiar, mapW, mapH, civCount, landCount);
+  return sep > 0 ? sep + 2 : 0;
+}
+
 export function clusterBodySeparationForMap(
   rozmiar: RozmiarKlaster,
   mapW: number,
@@ -1562,16 +1620,6 @@ export function clusterBodySeparationForMap(
   const short = Math.min(mapW, mapH);
   if (short < 80) return 0;
   return clusterBodySeparation(rozmiar);
-}
-
-export function clusterCenterPlacementSepForMap(
-  rozmiar: RozmiarKlaster,
-  mapW: number,
-  mapH: number,
-): number {
-  const short = Math.min(mapW, mapH);
-  if (short < 80) return 0;
-  return clusterCenterPlacementSep(rozmiar);
 }
 
 /** Promień bufora obcego klastra wokół stolicy — MP nie mogą tu wejść (FALA 185). */
@@ -2309,7 +2357,7 @@ function pickCapitalHexInRegion(
     const da = hexDistanceAxial(a.q, a.r, blobCenter.q, blobCenter.r);
     const db = hexDistanceAxial(b.q, b.r, blobCenter.q, blobCenter.r);
     const jitter = rand() * 0.01;
-    return (db + jitter) - (da + jitter) || a.q - b.q || a.r - b.r;
+    return (da + jitter) - (db + jitter) || a.q - b.q || a.r - b.r;
   });
   return seaPool[0]!;
 }
@@ -3476,8 +3524,12 @@ export function computeClusters(
   );
   // FALA 182/188: środki klastrów — ta sama twarda sep co stolice; short<80: miękki
   // fallback (nie sztywne 12 — inaczej harness 80×60 zostawia 3/7 środków).
-  const minCapitalSepEarly = capitalMinSeparationForMap(rozmiarMapy, W, H);
-  const centerPlacementSep = clusterCenterPlacementSepForMap(rozmiarMapy, W, H);
+  // Powierzchnia zamieszkiwalnego ladu (jak ladowePlayer) — baza sufitu wykonalnosci sep.
+  const landCountForSep = allHexes.reduce(
+    (n, h) => n + (h.terenBazowy !== TerenBazowy.Morze && h.terenBazowy !== TerenBazowy.Gory &&
+      h.terenBazowy !== TerenBazowy.PlytkieMorze ? 1 : 0), 0);
+  const minCapitalSepEarly = capitalMinSeparationForMap(rozmiarMapy, W, H, nTypy, landCountForSep);
+  const centerPlacementSep = clusterCenterPlacementSepForMap(rozmiarMapy, W, H, nTypy, landCountForSep);
   const shortSide = Math.min(W, H);
   const minDystKlastrow = opts?.minDystansKlastrow
     ?? (centerPlacementSep > 0
@@ -3526,7 +3578,7 @@ export function computeClusters(
   const seaDist = buildSeaDistanceField(map.hexes);
   const minSeaDist = capitalMinSeaDistForMap(rozmiarMapy, W, H);
   const maxSeaDist = capitalMaxSeaDistForMap(rozmiarMapy, W, H);
-  const minCapitalSep = capitalMinSeparationForMap(rozmiarMapy, W, H);
+  const minCapitalSep = capitalMinSeparationForMap(rozmiarMapy, W, H, nTypy, landCountForSep);
   const sCluster = clusterBodySeparationForMap(rozmiarMapy, W, H);
   const bodyBufferRadius = clusterBodyBufferRadius(sCluster);
   const landCache = createMassLandCache(ladowePlayer);
@@ -4306,6 +4358,7 @@ export function computeClusters(
     rozmiarMapy,
     aktywneTypy: placedTypy,
     requestedTypy: nTypy,
+    capitalMinSep: minCapitalSep,
     minDystansMiastaPanstwa: minDystMiastaPanstwa,
     maxDystansMiastaPanstwa: CLUSTER_CITY_STATE_MAX_HEX,
     minDystansObcyOdGracza: minDystObcyOdGracza,
