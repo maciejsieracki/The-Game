@@ -1,9 +1,11 @@
 /**
  * game/fort-territory.ts
- * R-FORT-STRAZNICA-ROZSZERZA-ZASIEG-ZAKLADANIA, krok 2 (Maciej 2026-08-09/13):
- * Fort/Posterunek jako "miekka rezerwacja" zasiegu zakladania miast (Q2=B:
- * WYLACZNIE prawo do zalozenia miasta w promieniu, nic wiecej — granice
- * terytorium sie nie przesuwaja). PURE — bez DOM/main.ts.
+ * AKTUALNIE (decyzja wlasciciela 2026-10-31, rejestr #15-#17, R-WEB-OUTPOST-FORT-TERRITORY-Q1):
+ * Posterunek (promien 3) i fort (promien 5) to TWARDE terytorium wlasciciela jak miasto
+ * (nie "miekka rezerwacja"; stary promien 10 i Q2=B "granice sie nie przesuwaja" NIEAKTUALNE).
+ * HISTORIA: R-FORT-STRAZNICA-ROZSZERZA-ZASIEG-ZAKLADANIA, krok 2 (Maciej 2026-08-09/13) —
+ * "miekka rezerwacja" zasiegu zakladania miast (Q2=B: WYLACZNIE prawo do zalozenia miasta
+ * w promieniu). PURE — bez DOM/main.ts.
  *
  * ZASTAPIONE decyzja wlasciciela 2026-10-31 (R-WEB-OUTPOST-FORT-TERRITORY-Q1):
  * Q2=B ("granice sie nie przesuwaja") NIE OBOWIAZUJE. Posterunek (r=3) i fort

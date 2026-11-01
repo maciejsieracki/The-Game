@@ -120,18 +120,18 @@ for (const p of ['K2', 'K3']) {
     'tartak=0, oboz=0', `tartak=${count(log, 'tartak')} oboz=${count(log, 'oboz_lowiecki')} wyrab=${count(log, 'wyrab')} farma=${count(log, 'farma')}`);
 }
 
-// ---- M3: niedobór drewna: tartak na lasach (bez rzeki) — LIMIT liczby (R5: stary limit 1/10 obywateli), K2/K3 ----
+// ---- M3: niedobór drewna: tartak na lasach (bez rzeki) — BRAK limitu liczby (decyzja 25; stary limit 1/10 obywateli nieaktualny), K2/K3 ----
 for (const pop of [12, 30]) {
   for (const p of ['K2', 'K3']) {
     const { log } = sim({ map: makeMap({ forest: FOREST }), worked: WORKED_FOREST, profil: p, pop, turns: 40, deficitFn: () => ['drewno'] });
     const lim = Math.max(1, Math.ceil(pop / 10));
     const n = count(log, 'tartak');
     verdict(`M3-${p}-pop${pop}`, `niedobór drewna: brak LIMITU liczby tartaków (właściciel R5: „żadnego limitu”) [${p}]`,
-      n > lim, `tartaków > ceil(pop/10)=${lim} (jest ${FOREST.length} lasów z obywatelami)`, `tartak=${n}, oboz=${count(log, 'oboz_lowiecki')}, wyrab=${count(log, 'wyrab')} (limit stary 1/10 NADAL aktywny jeśli tartak==${lim}) | R5 W TOKU`);
+      n > lim, `tartaków > ceil(pop/10)=${lim} (jest ${FOREST.length} lasów z obywatelami)`, `tartak=${n}, oboz=${count(log, 'oboz_lowiecki')}, wyrab=${count(log, 'wyrab')} (stary limit 1/10 obywateli nieaktualny — decyzja 25)`);
   }
 }
 
-// ---- M4: tartak na heksie rzeka+las przy niedoborze drewna (R5 nowa reguła: NIE) ----
+// ---- M4: tartak na heksie rzeka+las przy niedoborze drewna (decyzja 25: NIE, we wszystkich profilach) ----
 {
   const RIV = [[CQ, CR - 2], [CQ, CR - 3], [CQ + 1, CR - 3]];
   for (const p of ['K2', 'K3']) {
@@ -139,7 +139,7 @@ for (const pop of [12, 30]) {
     const { log } = sim({ map, worked: [...RIV], profil: p, turns: 30, deficitFn: () => ['drewno'], techs: FULL.filter(t => true), wolnoWycinac: false });
     const onRiver = log.filter(e => e.key === 'tartak' && RIV.some(([q, r]) => K(q, r) === e.hk)).length;
     verdict(`M4-${p}`, `tartak NIE na heksie rzeka+las przy niedoborze drewna (R5, wycinka wyłączona) [${p}]`, onRiver === 0,
-      'tartak@rzeka+las = 0', `tartak@rzeka+las=${onRiver}, wszystkie=${JSON.stringify(log.map(e => e.key + '@' + e.hk))} | R5 W TOKU`);
+      'tartak@rzeka+las = 0', `tartak@rzeka+las=${onRiver}, wszystkie=${JSON.stringify(log.map(e => e.key + '@' + e.hk))} (decyzja 25)`);
   }
 }
 
@@ -215,41 +215,49 @@ for (const pop of [12, 30]) {
     cmds.length > 1, '>1 rozkaz w turze 1', `rozkazów=${cmds.length}: ${cmds.map(c => c.key + '@' + c.q + ',' + c.r).join(' ')}`);
 }
 
-// ---- M12: trzoda i irygacja poza limitem % puli Pracy (decyzja 5) — pct=10, pula 400, bez przychodu ----
+// ---- M12: sufit % budżetu Pracy TYLKO dla gracza (decyzja 24, ODWOŁUJE #5 „trzoda i irygacja poza limitem %”) ----
+// R-WEB-STALE-RULES-CLEANUP-Q1: stare oczekiwanie M12/M12b („trzoda/irygacja budowane mimo 10% puli”) wynikało z
+// decyzji 5 / ABC-R5-3 odwołanej przez 24: „ustawiony procent budżetu Pracy ... TWARDYM SUFITEM TYLKO DLA GRACZA —
+// bez mnożników, bonusów i wyjątków; jeśli koszt przekracza budżet, nie buduje się”. pct=10%, pula 400 => budżet 40:
+// trzoda (koszt 20) mieści się, irygacja (koszt 60) NIE; przy pct=100 irygacja jest budowana.
 {
   const RIV = [[CQ, CR - 2], [CQ, CR - 3], [CQ + 1, CR - 3]];
   const map = makeMap({ river: RIV });
   const ALL = [...RIV, ...ring(CQ, CR, 2)];
   const city = { id: 'c0', ownerId: 0, q: CQ, r: CR, name: 'A', population: 12, ulepszeniaFocus: 'zrownowazone' };
   const tn = [{ q: CQ, r: CR, ownerId: 0, cityId: 'c0', pop: 12, level: 1 }];
-  const placed = new Map(RIV.map(([q, r]) => [K(q, r), ['farma']]));
-  const picks = M.pickAutoImprovements({
+  const run = (placed, pct) => M.pickAutoImprovements({
     cities: [city], ownerId: 0, map, territoryNodes: tn, placedImprovements: placed, pracaAvailable: 400,
     unlockedTechs: new Set(FULL), pracaSurplusThreshold: 30, demandDriven: true, resourceDeficitKeys: [],
     getFocus: () => 'zrownowazone', getOnlyWorked: () => true, getWorkedHexKeys: () => new Set(ALL.map(([q, r]) => K(q, r))),
-    pracaBudgetPercent: 10, civArchetype: 'grecy', playerEra: 3, foodImprovementStages: () => true,
+    pracaBudgetPercent: pct, civArchetype: 'grecy', playerEra: 3, foodImprovementStages: () => true,
   });
-  verdict('M12-K2', 'trzoda (E3) poza limitem % puli (pct=10% z 400 = 40 < koszt trzody)', picks.some(p => p.key === 'bydlo' || p.key === 'owce' || p.key === 'lama'),
-    'bydlo/owce/lama > 0 mimo 10%', `picks=${picks.map(p => p.key + '@' + p.q + ',' + p.r + '(' + p.kosztPraca + ')').join(' ')}`);
+  const fmt = ps => ps.map(p => p.key + '@' + p.q + ',' + p.r + '(' + p.kosztPraca + ')').join(' ');
+  const picks = run(new Map(RIV.map(([q, r]) => [K(q, r), ['farma']])), 10);
+  const spent = picks.reduce((a, p) => a + p.kosztPraca, 0);
+  verdict('M12-K2', 'trzoda (E3) w ramach sufitu % gracza (pct=10% z 400 = 40; koszt trzody 20) i suma wydatków <= 40 (decyzja 24)',
+    picks.some(p => ['bydlo', 'owce', 'lama'].includes(p.key)) && spent <= 40,
+    'bydlo/owce/lama > 0 i suma kosztów <= 40', `suma=${spent}, picks=${fmt(picks)}`);
   const placed2 = new Map(RIV.map(([q, r]) => [K(q, r), ['farma', 'bydlo']]));
-  const picks2 = M.pickAutoImprovements({
-    cities: [city], ownerId: 0, map, territoryNodes: tn, placedImprovements: placed2, pracaAvailable: 400,
-    unlockedTechs: new Set(FULL), pracaSurplusThreshold: 30, demandDriven: true, resourceDeficitKeys: [],
-    getFocus: () => 'zrownowazone', getOnlyWorked: () => true, getWorkedHexKeys: () => new Set(ALL.map(([q, r]) => K(q, r))),
-    pracaBudgetPercent: 10, civArchetype: 'grecy', playerEra: 3, foodImprovementStages: () => true,
-  });
-  verdict('M12b-K2', 'irygacja (E4) poza limitem % puli (10%)', picks2.some(p => p.key === 'irygacja'),
-    'irygacja > 0 mimo 10%', `picks=${picks2.map(p => p.key + '@' + p.q + ',' + p.r + '(' + p.kosztPraca + ')').join(' ')}`);
+  const picks2 = run(placed2, 10);
+  verdict('M12b-K2', 'irygacja (koszt 60) NIE jest budowana przy sufitie 10% (budżet 40) — brak wyjątku od sufitu (decyzja 24)',
+    !picks2.some(p => p.key === 'irygacja'), 'irygacja = 0 przy 10%', `picks=${fmt(picks2)}`);
+  const picks3 = run(new Map(RIV.map(([q, r]) => [K(q, r), ['farma', 'bydlo']])), 100);
+  verdict('M12c-K2', 'kontrola dodatnia: przy sufitie 100% irygacja jest budowana (decyzja 24: budżet, nie zakaz)',
+    picks3.some(p => p.key === 'irygacja'), 'irygacja > 0 przy 100%', `picks=${fmt(picks3)}`);
 }
 
 // ---- M13: niedobór przestawia priorytet i wraca do żywności (decyzja 7), K2 i K3 ----
+// R-WEB-STALE-RULES-CLEANUP-Q1: okno niedoboru przesunięte z t4-7 na t0-3. Stary scenariusz zakładał, że
+// do t4 las nadal stoi; wg decyzji 25 (farma ma pierwszeństwo na lesie pod farmę) i decyzji 1/3 (wycinka
+// + farma) automat w t0-1 wycina las pod farmy, więc w t4 nie było już czego obsadzić tartakiem.
 for (const p of ['K2', 'K3']) {
-  const { log } = sim({ map: makeMap({ forest: FOREST }), worked: WORKED_FOREST, profil: p, pop: 60, turns: 16, deficitFn: t => (t >= 4 && t < 8 ? ['drewno'] : []) });
+  const { log } = sim({ map: makeMap({ forest: FOREST }), worked: WORKED_FOREST, profil: p, pop: 60, turns: 16, deficitFn: t => (t < 4 ? ['drewno'] : []) });
   const tartakTurns = log.filter(e => e.key === 'tartak').map(e => e.t);
-  const nonTartakAfter = log.filter(e => e.t >= 8).map(e => e.key);
-  verdict(`M13-${p}`, `niedobór drewna t4-7: tartak tylko w oknie niedoboru (t4..7); po zaspokojeniu zero tartaków (zero histerezy) [${p}]`,
-    tartakTurns.length > 0 && tartakTurns.every(t => t >= 4 && t < 8) && !log.some(e => e.t >= 8 && e.key === 'tartak'),
-    'tartak@t∈[4,8) i brak tartaku po t>=8', `tartakTurns=${JSON.stringify(tartakTurns)}, picki po t>=8=${JSON.stringify(nonTartakAfter)} (żywność wyczerpana wcześniej => brak nowych celów)`);
+  const nonTartakAfter = log.filter(e => e.t >= 4).map(e => e.key);
+  verdict(`M13-${p}`, `niedobór drewna t0-3: tartak tylko w oknie niedoboru (t0..3); po zaspokojeniu zero tartaków (zero histerezy) [${p}]`,
+    tartakTurns.length > 0 && tartakTurns.every(t => t >= 0 && t < 4) && !log.some(e => e.t >= 4 && e.key === 'tartak'),
+    'tartak@t∈[0,4) i brak tartaku po t>=4', `tartakTurns=${JSON.stringify(tartakTurns)}, picki po t>=4=${JSON.stringify(nonTartakAfter)}`);
 }
 
 // ---- M14: parytet K2=K3 (decyzja 7) — ta sama sekwencja per tura (pop 60, wszystkie heksy pracowane) ----

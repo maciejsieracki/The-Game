@@ -208,7 +208,7 @@ const ULEPSZENIA_FOCUS_TITLES: Record<UlepszeniaFocus, string> = {
   zywnosc: 'Żywność — farma, hodowla, irygacja',
   surowce: 'Surowce — tartak, kamieniołom, kopalnie',
   infrastruktura: 'Infrastruktura — drogi, fort',
-  zrownowazone: 'Zrównoważone — żywność, surowce, infra',
+  zrownowazone: 'Zrównoważone — żywność; przy niedoborze tylko brakujący surowiec; drogi na końcu',
 };
 
 const ULEPSZENIA_PROFILES: UlepszeniaFocus[] = [
