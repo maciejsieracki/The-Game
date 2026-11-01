@@ -18,7 +18,7 @@ C17_krok0_qualifies_true: KILLED
 C18_hill_memo_stale: KILLED
 C19_hill_terrain_and: KILLED
 C20_hill_drop_riveraccess: KILLED
-C21_hill_drop_tartakhere: EKWIWALENT (SURVIVED) - qualifies() odrzuca klucz juz obecny na heksie (improvement_build.rs:1152) - guard w hill_tartak_pending redundantny
+C21_hill_drop_tartakhere: EKWIWALENT (SURVIVED) - qualifies() odrzuca klucz juz obecny na heksie (improvement_build.rs:1155) - guard w hill_tartak_pending redundantny
 C22_hill_drop_scheduled: KILLED
 C23_hill_drop_hexallows: KILLED
 C24_hill_qualifies_true: KILLED
@@ -86,7 +86,7 @@ C85_rtd_drop_river: KILLED
 C86_rtd_drop_scheduled: KILLED
 C87_rtd_krok0_or: KILLED
 C88_rtd_drop_devkeys: KILLED
-C89_rtd_drop_placedhere: EKWIWALENT (SURVIVED) - qualifies() odrzuca klucz juz obecny (improvement_build.rs:1152); RIVER_DEVELOPMENT_KEYS nie zawiera droga
+C89_rtd_drop_placedhere: EKWIWALENT (SURVIVED) - qualifies() odrzuca klucz juz obecny (improvement_build.rs:1155); RIVER_DEVELOPMENT_KEYS nie zawiera droga
 C90_rtd_drop_tech: KILLED
 C91_rtd_drop_civ: KILLED
 C92_rtd_and_to_or: KILLED
@@ -271,7 +271,7 @@ F36_reserve_le: KILLED
 F37_cap_ge: KILLED
 F38_no_layer: EKWIWALENT (SURVIVED) - okrag nowego fortu juz wyklucza ten heks i qualifies nie jest potrzebne dla kolejnych miast
 F39_no_circle: KILLED
-F40_no_ownnode: NIE_ZABITY (SURVIVED) - tie-break dist po dopisaniu nowego fortu do own_nodes: brak scenariusza z remisem zysku (NASTEPNA-PARTIA)
+F40_no_ownnode: KILLED
 F41_no_nodesnow: EKWIWALENT (SURVIVED) - rozlacznosc okregow gwarantuje brak nakladania sie obszaru zysku
 F42_no_spend: KILLED
 F43_no_globalspent: KILLED
@@ -300,7 +300,7 @@ P20_fallback_cond_staged: KILLED
 P21_fallback_cond_pending: KILLED
 P22_fallback_record_off: KILLED
 P23_fallback_probe_off: KILLED
-P24_roadcities_demand: NIE_ZABITY (SURVIVED) - sciezka non-demand z cityLimitExhausted: wymaga mapy bez celow zapasowych, osiagalnej tylko przy blokadzie techow (NIE_ZMIERZONO)
+P24_roadcities_demand: KILLED
 P25_roadcities_focus: KILLED
 P26_done_drop_staged: KILLED
 P27_done_drop_pending: KILLED
@@ -314,7 +314,7 @@ P34_fort_cond_roadcities: EKWIWALENT (SURVIVED) - pass fortow na pustych miastac
 P35_fort_cond_done: KILLED
 P36_fort_cond_deficit: NIE_ZABITY (SURVIVED) - wymaga kosztu fortu < kosztu ulepszenia niedoboru (dane: fort/posterunek >= 60 > kamieniolom 22/tartak 25) - nieosiagalne w danych pinu
 P37_fort_pass_flag: KILLED
-P38_fort_record_off: NIE_ZABITY (SURVIVED) - propagacja pickow fortu do przebiegu innych miast: wymaga geometrii fort->heks obronny innego miasta (NIE_ZMIERZONO)
+P38_fort_record_off: KILLED
 P39_fort_probe_off: KILLED
 P40_fort_spent: KILLED
 P41_road_cond_fort_picks: KILLED
@@ -364,4 +364,4 @@ A14_territory_outpost_radius: KILLED
 A15_territory_fort_flag: KILLED
 A16_jsmax_nan: EKWIWALENT (SURVIVED) - NaN zawsze jako 2. argument js_max w kodzie (wynik identyczny bez jawnego sprawdzenia)
 A17_jsmin_nan: KILLED
-SUMA: 366 mutantow; KILLED=306 EKWIWALENT=56 NIE_ZABITY=4 NIESKLASYFIKOWANE=0
+SUMA: 366 mutantow; KILLED=309 EKWIWALENT=56 NIE_ZABITY=1 NIESKLASYFIKOWANE=0

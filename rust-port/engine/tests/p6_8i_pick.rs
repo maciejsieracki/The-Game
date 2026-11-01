@@ -312,7 +312,7 @@ fn pick_auto_improvements_matches_pinned_web_vectors() {
         .collect();
     let scenarios = d["scenarios"].as_array().unwrap();
     assert!(
-        scenarios.len() >= 2150,
+        scenarios.len() >= 2227,
         "za malo scenariuszy: {}",
         scenarios.len()
     );
@@ -365,13 +365,18 @@ fn pick_auto_improvements_matches_pinned_web_vectors() {
             ));
         }
     }
+    if std::env::var("P6_8I_LIST").is_ok() {
+        for b in &bad {
+            eprintln!("BAD {}", b.split(':').next().unwrap());
+        }
+    }
     println!(
         "DRYF fortNodes (niezgodne, poza ostrym zakresem): {}",
         drift.len()
     );
     assert!(
-        drift.len() <= 60,
-        "dryf wiekszy niz zmierzony (40): {}",
+        drift.len() <= 40,
+        "dryf wiekszy niz zmierzony (40, nie wolno rosnac): {}",
         drift.len()
     );
     assert!(

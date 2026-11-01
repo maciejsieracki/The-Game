@@ -594,6 +594,73 @@ add(mkSpec('r4b-access-e', M_ACCESS, { cities: [{ id: 'c1', ownerId: 1, q: 0, r:
 add(mkSpec('r4b-cap-nan-pct-single', SPECIAL_BASE, { praca: 300, opts: { pracaBudgetPercent: 20, improvementBudgetCap: 'NaN' } }));
 add(mkSpec('r4b-cap-inf-pct-single', SPECIAL_BASE, { praca: 300, opts: { pracaBudgetPercent: 20, improvementBudgetCap: 'Infinity' } }));
 
+// ---- runda 5 (obrona): wektory celowane na mutanty F40 / P24 / P38 ---------------------------------------------
+// P24: `demandDriven` wylaczony przy `cityLimitExhausted` -> brak fortow i drog (road_cities puste).
+add(mkSpec('r5-nodemand-limit-staged', M_GORY, { cities: [cityG], praca: 6000, opts: { foodImprovementStages: true, cityLimitExhausted: true } }));
+add(mkSpec('r5-nodemand-false-limit-staged', M_GORY, { cities: [cityG], praca: 6000, opts: { foodImprovementStages: true, cityLimitExhausted: true, demandDriven: false } }));
+add(mkSpec('r5-nodemand-staged-roads', M_GORY, { cities: [cityG], praca: 6000, opts: { foodImprovementStages: true, demandDriven: false } }));
+// Rodziny losowe (wlasny PRNG, nie dotyka `rnd`): F40 = wiele duzych miast, E-FORT stawia >= 2 forty w jednym przebiegu;
+// P38 = miasto A (etapy) stawia fort, miasto B (zwykla sciezka) widzi zapisany fort. Do generatora trafiaja wylacznie
+// indeksy z KILLERS (znalezione wyszukiwaniem: `SEARCH=1` dopisuje WSZYSTKICH kandydatow `srch-*`; nazwy zabijajace mutanta: `MUT_NAMES=<plik>` w mutate-8i-pick.py).
+const r5 = mulberry32(0x5eed0f40);
+const r5i = (a, b) => a + Math.floor(r5() * (b - a + 1));
+const r5pick = (arr) => arr[Math.floor(r5() * arr.length)];
+const KILLERS = { f40: [33, 66, 152], p38: [6, 8, 9] };
+const SEARCH = process.env.SEARCH === '1';
+const r5spec = (kind, i, build) => {
+  const sp = build();
+  if (SEARCH || KILLERS[kind].includes(i)) add({ ...sp, name: `${SEARCH ? 'srch' : 'r5'}-${kind}-${i}` });
+};
+for (let i = 0; i < 400; i++) r5spec('f40', i, () => {
+  const n = r5i(2, 3);
+  const cs = [];
+  for (let k = 0; k < n; k++) cs.push({ id: `c${k + 1}`, ownerId: 1, q: r5i(-9, 9), r: r5i(-9, 9), population: r5pick([3, 8, 10, 12, 15]) });
+  return mkSpec('x', r5pick([M_GORY2, M_GORY2, M_GORY]), { cities: cs, praca: 6000, opts: fortOpts() });
+});
+// P38: miasto B (zwykla sciezka) lezy tuz przy forcie, ktory E-FORT postawil dla A (pozycja fortu z przebiegu weba tylko
+// dla A); kwalifikator odrzuca ten sam klucz (`fort`) na heksie z zapisana warstwa, wiec pominiecie `record(&fort_picks)` zmienia picki B.
+for (let i = 0; i < (SEARCH ? 200 : 60); i++) r5spec('p38', i, () => {
+  const map = r5pick([M_GORY, M_GORY2]);
+  const stOpts = { foodImprovementStages: { cities: ['A'] }, demandDriven: true, cityLimitExhausted: true };
+  const a = { id: 'A', ownerId: 1, q: 0, r: 0, population: r5pick([3, 3, 6]) };
+  // `territoryNodes` tylko z wezlem A: miasto B nie przesuwa wyboru fortu (brak wlasnego wezla), a lezy w terytorium A.
+  const nodesA = [{ q: 0, r: 0, pop: a.population, level: 1, ownerId: 1 }];
+  const hexDist = (q1, r1, q2, r2) => Math.max(Math.abs(q1 - q2), Math.abs(r1 - r2), Math.abs(q1 - q2 + r1 - r2));
+  const only = runWeb(mkSpec('x', map, { cities: [a], territoryNodes: nodesA, praca: 6000, opts: stOpts }));
+  const f = only.picks.find(p => p[0] === 'A' && (p[3] === 'fort' || p[3] === 'posterunek')) ?? ['A', 3, 0];
+  let bq, br;
+  do { bq = f[1] + r5i(-2, 2); br = f[2] + r5i(-2, 2); } while (hexDist(bq, br, f[1], f[2]) > 2 || (bq === 0 && br === 0));
+  const b = { id: 'B', ownerId: 1, q: bq, r: br, population: r5pick([0, 0, 1, 3]), focus: 'infrastruktura' };
+  return mkSpec('x', map, { cities: [a, b], territoryNodes: nodesA, praca: 6000, opts: stOpts });
+});
+// P24: wszystko poza fort/posterunek zablokowane przez cywilizacje -> zapasowa sciezka pusta, a E-FORT osiagalny tylko
+// przy `demandDriven` (kontrola); bez `demandDriven` brak fortow (road_cities puste).
+const DENY_NON_FORT = [...new Set([...A.AI_IMPROVEMENT_PRIORITY, ...A.ROAD_KEYS, 'wyrab', 'stadnina', 'tartak', 'oboz_lowiecki'])].filter(k => k !== 'fort' && k !== 'posterunek');
+add(mkSpec('r5-nodemand-onlyfort', M_GORY, { cities: [cityG], praca: 6000, fn: { civDeny: DENY_NON_FORT }, opts: { foodImprovementStages: true, cityLimitExhausted: true } }));
+add(mkSpec('r5-nodemand-false-onlyfort', M_GORY, { cities: [cityG], praca: 6000, fn: { civDeny: DENY_NON_FORT }, opts: { foodImprovementStages: true, cityLimitExhausted: true, demandDriven: false } }));
+add(mkSpec('r5-demand-onlyfort-control', M_GORY, { cities: [cityG], praca: 6000, fn: { civDeny: DENY_NON_FORT }, opts: { foodImprovementStages: true, cityLimitExhausted: true, demandDriven: true } }));
+// P36 (probe, NIE zabija mutanta - patrz dokument tematu): niedobor `ruda_zelaza` (kopalnia 88 > posterunek 60) czeka na Prace, a sciezka zapasowa jest pusta, bo miasto liczy
+// tylko pracowane heksy (`ulepszeniaOnlyWorked`), podczas gdy przebieg niedoboru ma wlasna flage (resourcePassOnlyWorked=false):
+// bez warunku `!deficit_is_pending_now` E-FORT zabralby Prace posterunkiem sprzed kopalni (K2/K3: niedobor ma pierwszenstwo).
+// (jak M_MIX z P43: pracowany heks `1,0` = pustynia, wiec zapasowa sciezka nie widzi celu, a przebieg niedoboru tak)
+const M_MIXZ = addMap(pureMap((q, r) => ({
+  teren: (q === 0 && r === 0) || (q === 1 && r === 0) ? TB.Pustynia : TB.Gory,
+  zloze: dist3(q, r) >= 3 && ((q * 5 + r * 3) % 7 + 7) % 7 === 0 ? 'zelazo' : null,
+}), 9, []));
+const deficitOnlyWorkedFn = { onlyWorkedByCity: { c1: true }, workedKeysByCity: { c1: ['1,0'] }, resourcePassOnlyWorkedByCity: { c1: false } };
+add(mkSpec('r5-fort-deficit-onlyworked-wait', M_MIXZ, {
+  cities: [cityG], praca: Math.floor((COST_POST + COST_ZEL) / 2), techs: T_NO_WOJ, fn: deficitOnlyWorkedFn,
+  opts: { foodImprovementStages: true, demandDriven: true, cityLimitExhausted: true, resourceDeficitKeys: ['ruda_zelaza'] },
+}));
+add(mkSpec('r5-fort-deficit-onlyworked-rich', M_MIXZ, {
+  cities: [cityG], praca: 6000, techs: T_NO_WOJ, fn: deficitOnlyWorkedFn,
+  opts: { foodImprovementStages: true, demandDriven: true, cityLimitExhausted: true, resourceDeficitKeys: ['ruda_zelaza'] },
+}));
+add(mkSpec('r5-fort-nodeficit-onlyworked-control', M_MIXZ, {
+  cities: [cityG], praca: Math.floor((COST_POST + COST_ZEL) / 2), techs: T_NO_WOJ, fn: deficitOnlyWorkedFn,
+  opts: { foodImprovementStages: true, demandDriven: true, cityLimitExhausted: true },
+}));
+
 // ---- helpery (P1) --------------------------------------------------------------------------
 const helpers = {
   constants: {

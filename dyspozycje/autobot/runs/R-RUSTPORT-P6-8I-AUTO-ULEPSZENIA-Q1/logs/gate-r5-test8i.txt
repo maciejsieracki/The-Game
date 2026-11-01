@@ -1,6 +1,6 @@
    Compiling civ-engine v0.1.0 (<WORKTREE>/rust-port/engine)
-    Finished `test` profile [unoptimized] target(s) in 34.28s
-     Running tests/p6_8i_pick.rs (/dev/shm/p6-8i-r4/debug/deps/p6_8i_pick-079fe40eb9aa777a)
+    Finished `test` profile [unoptimized] target(s) in 31.80s
+     Running tests/p6_8i_pick.rs (/dev/shm/p6-8i-r5/debug/deps/p6_8i_pick-079fe40eb9aa777a)
 
 running 5 tests
 test helper_constants_match_web ... ok
@@ -10,19 +10,19 @@ test vectors_pin_is_4bbef081d ... ok
 DRYF fortNodes (niezgodne, poza ostrym zakresem): 40
 test pick_auto_improvements_matches_pinned_web_vectors ... ok
 
-test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 15.92s
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 16.80s
 
-     Running tests/p6_8i_relief.rs (/dev/shm/p6-8i-r4/debug/deps/p6_8i_relief-ab7cb582fff7302f)
+     Running tests/p6_8i_relief.rs (/dev/shm/p6-8i-r5/debug/deps/p6_8i_relief-ab7cb582fff7302f)
 
 running 8 tests
 test empty_layers_is_false ... ok
 test exact_match_no_trim_no_case_fold ... ok
+test key_predicate_matches_pinned_web_vectors ... ok
 test explicit_keys_and_legacy_kopalnia ... ok
 test one_non_preserving_layer_breaks_all ... ok
 test prefix_boundaries ... ok
 test vectors_pin_is_91dc998a ... ok
 test layers_predicate_matches_pinned_web_vectors ... ok
-test key_predicate_matches_pinned_web_vectors ... ok
 
 test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
 EXIT=0

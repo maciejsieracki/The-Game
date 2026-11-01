@@ -9,18 +9,18 @@ Uzycie: python3 merge-wyniki.py   (w katalogu mutacje/)
 import os
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-FILES = ['pick-wynik.txt', 'pick-wynik-r2.txt', 'pick-wynik-r3.txt']
+FILES = ['pick-wynik.txt', 'pick-wynik-r2.txt', 'pick-wynik-r3.txt', 'pick-wynik-r5.txt']
 
 # Mutanty ekwiwalentne: klucz = prefiks ID, wartosc = skrot dowodu (pelny dowod plik:linia w dokumencie tematu).
 EKWIWALENTY = {
     'C15': 'wyrab: kazdy pick wyrab ma bramke civ w hex_phases (step0, FAZA2); river_krok0_ok tylko steruje bramkami, ktore koncza sie na picku',
     'C16': 'wyrab nie ma bramki technologicznej (test wyrab_has_no_tech_gate_like_web)',
-    'C21': 'qualifies() odrzuca klucz juz obecny na heksie (improvement_build.rs:1152) - guard w hill_tartak_pending redundantny',
+    'C21': 'qualifies() odrzuca klucz juz obecny na heksie (improvement_build.rs:1155) - guard w hill_tartak_pending redundantny',
     'C49': 'effective_city_cap = min(city_cap, imperium_cap), imperium_cap <= pula => gorny clamp procentu redundantny',
     'C60': 'pod demand_active base_priority nie zawiera fort/posterunek (filtr demand w build_city_env) => defense_priority puste',
     'C69': 'step0 i tak wymaga wyrab_wlaczony w obu galeziach; rzeki_do_zagospodarowania steruje tylko step0',
     'C73': 'tartak_dozwolony == true gdy !demand_active; koniunkcja !demand_active && tartak_dozwolony redundantna',
-    'C89': 'qualifies() odrzuca klucz juz obecny (improvement_build.rs:1152); RIVER_DEVELOPMENT_KEYS nie zawiera droga',
+    'C89': 'qualifies() odrzuca klucz juz obecny (improvement_build.rs:1155); RIVER_DEVELOPMENT_KEYS nie zawiera droga',
     'C97': 'hex_dist uzywane wylacznie w komparatorach sortowania; skalowanie stala zachowuje porzadek',
     'H02': 'pusta defense_priority => petla for bez iteracji',
     'H06': 'koszt > 0: wewnetrzny warunek global_spent + koszt > cap lapie rownosc',
@@ -71,10 +71,7 @@ EKWIWALENTY = {
     'A16': 'NaN zawsze jako 2. argument js_max w kodzie (wynik identyczny bez jawnego sprawdzenia)',
 }
 NIE_ZABITE = {
-    'F40': 'tie-break dist po dopisaniu nowego fortu do own_nodes: brak scenariusza z remisem zysku (NASTEPNA-PARTIA)',
-    'P24': 'sciezka non-demand z cityLimitExhausted: wymaga mapy bez celow zapasowych, osiagalnej tylko przy blokadzie techow (NIE_ZMIERZONO)',
     'P36': 'wymaga kosztu fortu < kosztu ulepszenia niedoboru (dane: fort/posterunek >= 60 > kamieniolom 22/tartak 25) - nieosiagalne w danych pinu',
-    'P38': 'propagacja pickow fortu do przebiegu innych miast: wymaga geometrii fort->heks obronny innego miasta (NIE_ZMIERZONO)',
 }
 
 

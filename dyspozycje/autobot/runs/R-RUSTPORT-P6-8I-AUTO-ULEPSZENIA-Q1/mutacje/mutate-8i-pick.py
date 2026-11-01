@@ -438,7 +438,7 @@ def run(idx):
         return 'NOOP(same)'
     env = dict(os.environ)
     env.update({'CARGO_TARGET_DIR': TARGET, 'CARGO_INCREMENTAL': '1',
-                'CARGO_PROFILE_DEV_DEBUG': '0', 'CARGO_PROFILE_TEST_DEBUG': '0'})
+                'CARGO_PROFILE_DEV_DEBUG': '0', 'CARGO_PROFILE_TEST_DEBUG': '0', 'P6_8I_LIST': '1'})
     try:
         with open(path, 'w', encoding='utf-8') as f:
             f.write(mutated)
@@ -456,6 +456,10 @@ def run(idx):
                 with open(os.path.join(HERE, 'compile-error-debug.txt'), 'a', encoding='utf-8') as dbg:
                     dbg.write(f'--- {mid}\n{out[-1500:]}\n')
                 return 'COMPILE_ERROR'
+            names = [l.split(' ', 1)[1].strip() for l in out.splitlines() if l.startswith('BAD ')]
+            if os.environ.get('MUT_NAMES'):  # runda 5: nazwy scenariuszy zabijajacych mutanta (wyszukiwanie killerow)
+                with open(os.environ['MUT_NAMES'], 'a', encoding='utf-8') as nf:
+                    nf.write(f'{mid}: ' + ' '.join(names) + '\n')
             return 'KILLED'
         except subprocess.TimeoutExpired:
             return 'KILLED(TIMEOUT)'

@@ -1,11 +1,11 @@
 # P6.8I - auto-ulepszenia (port `gra/src/game/auto-improvements.ts` + `relief-preserving-improvements.ts`)
 
-Temat: R-RUSTPORT-P6-8I-AUTO-ULEPSZENIA-Q1. Stan na runde 4 (Operator).
+Temat: R-RUSTPORT-P6-8I-AUTO-ULEPSZENIA-Q1. Stan na runde 5 (Operator, obrona po Evaluatorze r4).
 **Pin wektorow: `4bbef081d`** (zmiana pinu z `91dc998a` - decyzja administracyjna orkiestratora 2026-11-01, DELTA-3).
 Baza kodu: `a56a4370d` + merge `origin/rust-port/parity-v2` (`d977ad560`, parity-v2 >= `5f618f748`).
 
 STATUS tematu: **PASS-WITH-NOTES do oceny FC** (kod P1+P2+P3 sportowany, bramki zielone; niedomkniecia jawnie nizej:
-4 mutanty NIE_ZABITE, dryf zaleznosci `territory.rs`).
+1 mutant NIE_ZABITY (P36), dryf zaleznosci `territory.rs` (40 scenariuszy, limit testu zaostrzony do 40)).
 
 ## Relief (P3, C5 zamkniete - NIE RUSZANE)
 
@@ -44,7 +44,7 @@ Legenda: PORTED+TESTED = port + wektory z weba + mutacje (patrz sekcja Mutacje);
 | `FORT_CLAIM_MIN_NEW_HEXES`, `FORT_CLAIM_KEYS`, `FortClaimArgs` | PORTED+TESTED, NOWE | `fort_claim.rs` (`FortBudget`) | F29 KILLED |
 | `pickFortClaims` (E-FORT) | PORTED+TESTED (z dryfem, niżej), NOWE | `fort_claim::pick_fort_claims` | 80 pickow fort + 83 posterunek; F01-F45 (patrz Mutacje) |
 | `isFoodStageCity` | PORTED+TESTED, NOWE | `pick.rs` | P67/P68 KILLED |
-| `pickAutoImprovementsSinglePass` (wewn.) | PORTED+TESTED, NOWE (podzial) | `single_pass.rs` + `city_phases.rs` + `hex_phases.rs` | 2212 scenariuszy; C*, H*, S* |
+| `pickAutoImprovementsSinglePass` (wewn.) | PORTED+TESTED, NOWE (podzial) | `single_pass.rs` + `city_phases.rs` + `hex_phases.rs` | 2227 scenariuszy; C*, H*, S* |
 | `pickAutoImprovements` (P2) | PORTED+TESTED | `pick.rs::pick_auto_improvements` | jw.; P* |
 | `preservesHillReliefKey`, `preservesHillRelief`, `PRESERVES_HILL_RELIEF_EXPLICIT_KEYS` (P3) | PORTED+TESTED (zamkniete) | `relief_preserving.rs` | 8 testow, 15/15 mutantow |
 
@@ -68,6 +68,12 @@ city_range_for_population}`, `territory::TerritoryNode`, `start_position::Overla
    weba -> 40 scenariuszy `fortNodes` (poza ostrym zakresem; 5 recznych `fort-wlasny-*`/`fort-obcy-*` x2 sa ostre i zgodne).
    Test staje sie ostry dla WSZYSTKICH automatycznie, gdy `city_territory_radius(fort)==5 && (posterunek)==3` (flaga `repinned`).
    **Ryzyko integracji R-DELTA3-TERRITORY.**
+   Runda 5: limit dryfu w tescie zaostrzony z `<= 60` do `<= 40` (zmierzone; nie moze rosnac). Evaluator r4 zmierzyl niezaleznie, ze po
+   tymczasowej lacie `terrain.rs`/`territory.rs` (fort 5, posterunek 3, miasto przed fortem) dryf spada do 0 i wszystkie scenariusze
+   sa zgodne z webem - potwierdza, ze dryf pochodzi z zaleznosci, nie z kodu pickera. Do repinu `territory.rs` te 40 scenariuszy nie
+   jest asercja zgodnosci (ryzyko integracji pozostaje jawne).
+   Liczby w komunikatach commitow `cc2823204` (1980) i `d1bb4339f` (2210) sa historyczne; stan faktyczny: 2227 scenariuszy
+   (test: `scenarios.len() >= 2227`).
 2. `farmPriorityOnlyWorked`: pole ustawiane w `pickAutoImprovements`, brak konsumenta w pojedynczym przebiegu (grep na pinie) -
    portowane jako martwe pole (`opts.rs`).
 3. `map` w opcjach to `Option<&BuildMap>` (web: wymagane); brak = pusty wynik (nieosiagalne dla wolajacych).
@@ -85,8 +91,8 @@ Generator W REPO: `dyspozycje/autobot/runs/R-RUSTPORT-P6-8I-AUTO-ULEPSZENIA-Q1/g
 `repin-b-loader-*.mjs`, jedyny wyjatek od "zero stubow": `render/improvements.ts` -> wycinek typ+tablica `IMPROVEMENTS`, bez `three`).
 Uruchomienie: `git archive 4bbef081d gra/src gra/data` do `mktemp -d`, potem
 `node --experimental-transform-types --no-warnings --import ./repin-b-loader-register.mjs ./gen-p6-8i-pick-vectors.mjs <WEB_ROOT> <OUT>`
-(zakaz buildu w `gra/`). Pliki: `tests/p6_8i_vectors/pick.json` (2212 scenariuszy, 1273 niepuste, 46 map; losowe `rnd-*`, etapowe
-`stg-*`, fort `fort-*`, gorskie `fortg-*`, reczne celowane `r4b-*` i brzegowe: NaN/Infinity/ujemne pule, procenty, rezerwa,
+(zakaz buildu w `gra/`). Pliki: `tests/p6_8i_vectors/pick.json` (2227 scenariuszy, 1285 niepustych, 47 map; losowe `rnd-*`, etapowe
+`stg-*`, fort `fort-*`, gorskie `fortg-*`, reczne celowane `r4b-*`, `r5-*` (obrona r5: F40/P24/P38/P36) i brzegowe: NaN/Infinity/ujemne pule, procenty, rezerwa,
 populacja NaN/ujemna/Infinity, sort id UTF-16, brak miast/territoryNodes) i `helpers.json` (stale, priorytety, niedobory,
 `isCityLimitExhausted` 480 przypadkow, `wyrabTechUnlockedEmpty`).
 Testy: `tests/p6_8i_pick.rs` (5 testow) + `tests/p6_8i_relief.rs` (8, bez zmian).
@@ -95,8 +101,10 @@ Testy: `tests/p6_8i_pick.rs` (5 testow) + `tests/p6_8i_relief.rs` (8, bez zmian)
 
 Skrypt W REPO: `mutacje/mutate-8i-pick.py` (366 mutantow; podmiana n-tego wystapienia tekstu, `cargo test --test p6_8i_pick`,
 przywrocenie pliku), scalenie wynikow `mutacje/merge-wyniki.py` -> `mutacje/pick-wynik-final.txt`
-(przebieg 1: `pick-wynik.txt`; rerun po wektorach celowanych: `pick-wynik-r2.txt`, `pick-wynik-r3.txt`).
-**Wynik: 366 mutantow = 306 KILLED + 56 EKWIWALENT + 4 NIE_ZABITY, 0 nieskategoryzowanych.**
+(przebieg 1: `pick-wynik.txt`; rerun po wektorach celowanych: `pick-wynik-r2.txt`, `pick-wynik-r3.txt`, `pick-wynik-r5.txt`).
+**Wynik: 366 mutantow = 309 KILLED + 56 EKWIWALENT + 1 NIE_ZABITY (P36), 0 nieskategoryzowanych.**
+Skrypt przyjmuje `MUT_NAMES=<plik>` (lista scenariuszy zabijajacych mutanta; test czyta `P6_8I_LIST=1`); generator wektorow ma tryb
+`SEARCH=1` (400 kandydatow `srch-f40-*`, 200 `srch-p38-*`), z ktorego wybrano killery (stala `KILLERS` w generatorze).
 Pokrycie: kazda galez sterujaca `hex_allows_key`, `river_krok0_ok`, `hill_tartak_pending`, `key_blocked_on_hex`, `build_city_env`
 (filtry priorytetow, budzet, sortowanie), `finish_env`, `river_to_develop`, FAZA 0, KROK 0, FAZA 1, FAZA 2, sonda, `single_pass`
 (budzet, imperium cap, horse stock, report), `fort_claim` (okregi, zysk, remisy, budzet), `pick` (etapy E1-E6, zapasowa, fort, drogi,
@@ -106,19 +114,26 @@ Pokrycie: kazda galez sterujaca `hex_allows_key`, `river_krok0_ok`, `hill_tartak
 
 Pelna lista z dowodami: `mutacje/merge-wyniki.py` (tablica `EKWIWALENTY`; kazdy wpis = skrot dowodu plik:linia/regula) i
 `mutacje/pick-wynik-final.txt`. Grupy: (a) `wyrab` nie ma bramki technologicznej (C16, H25, H69 - test `wyrab_has_no_tech_gate_like_web`);
-(b) `qualifies()` odrzuca klucz obecny na heksie (`improvement_build.rs:1152`) - guardy warstwy redundantne (C21, C89, F21);
+(b) `qualifies()` odrzuca klucz obecny na heksie (`improvement_build.rs:1155`) - guardy warstwy redundantne (C21, C89, F21);
 (c) podwojne straznik budzetu (rownosc przy koszcie > 0): H06-H08, H12, H21, H22, H34, H49, H50, H65, H74, S09, S11-S14, F13;
 (d) kolejnosc/idempotencja: C97, F09, F16, F34, F38, F41; (e) martwe/redundantne: C15, C49, C60, C69, C73, H02, H42, H43, H53,
 H55, H88, H89, S20, F06, F07, F12, P03, P09, P31, P32, P34, P46, P48, P61, P62, P66, A16.
+
+### Mutanty zabite w rundzie 5 (zarzut Evaluatora r4, pkt 1)
+
+| Mutant | Zabijajace scenariusze (generator `gen-p6-8i-pick-vectors.mjs`) |
+|---|---|
+| F40 (`own_nodes.push` w `fort_claim.rs`) | `r5-f40-33`, `r5-f40-66`, `r5-f40-152` (2-3 duze miasta pop 8-15, E-FORT stawia kilka fortow; kandydaci i `dist` zalezne od wezla nowego fortu; uzasadnienie: promien miasta do 15 > fort 5, `miasto-params.json` `zasieg_okolicy_max`) |
+| P24 (`road_cities` przy `demandDriven=false`) | `r5-nodemand-onlyfort`, `r5-nodemand-false-onlyfort` (civDeny wszystkiego poza fort/posterunek -> zapasowa pusta; kontrola `r5-demand-onlyfort-control` daje fort); wczesniejsze `r5-nodemand-*-staged` nie zabijaly, bo sciezka zapasowa przy `demandDriven=false` sama stawia drogi |
+| P38 (`run.record(&fort_picks)`) | `r5-p38-6`, `r5-p38-8`, `r5-p38-9` (miasto B zwyklej sciezki lezy tuz przy forcie A; `territoryNodes` tylko z wezlem A, zeby B nie przesuwal fortu; `qualifies` odrzuca ten sam klucz na heksie z warstwa, `improvement_build.rs:1155`) |
+
+Weryfikacja: `MUT_TARGET=/dev/shm/p6-8i-r5 python3 mutacje/mutate-8i-pick.py ids <plik> F40_no_ownnode P24_roadcities_demand P38_fort_record_off` -> 3x KILLED (`mutacje/pick-wynik-r5.txt`).
 
 ### Konstrukcje NIE zabite / niezmutowane (tabela, N2)
 
 | Konstrukcja | Powod |
 |---|---|
-| F40 (`own_nodes.push` nowego fortu w `pick_fort_claims`) | wplyw tylko na tie-break `dist`; brak scenariusza z remisem zysku (NASTEPNA-PARTIA) |
-| P24 (`road_cities` przy `demandDriven=false`) | wymaga mapy bez celow zapasowych przy `cityLimitExhausted`; osiagalne tylko blokada technologii (NIE_ZMIERZONO) |
-| P36 (warunek `!deficit_is_pending_now` przed fortem) | wymaga kosztu fortu < kosztu ulepszenia niedoboru; w danych pinu fort/posterunek >= 60 > kamieniolom 22/tartak 25 - nieosiagalne |
-| P38 (`record(&fort_picks)` dla przebiegu innych miast) | wymaga geometrii fort -> heks obronny innego miasta (NIE_ZMIERZONO) |
+| P36 (warunek `!deficit_is_pending_now` przed fortem) | NIE ZABITY. Poprzedni argument ("koszt fortu >= 60 > kamieniolom 22/tartak 25") byl niepelny: `kopalnia_zelaza` kosztuje 88 > posterunek 60 (`r4b-fort-deficit-wait`, `COST_POST < COST_ZEL`). Pomiar r5 (diagnostyka `eprintln` w `pick.rs`, cofnieta): w scenariuszach `r5-fort-deficit-onlyworked-*` (mapa `M_MIXZ`, praca 74, niedobor `ruda_zelaza`) sonda sciezki zapasowej tez widzi kopalnie (`fbp=true`), wiec `food_and_fallback_done=false` i warunek fortu nie jest osiagany - dla zelaza niedobor oczekujacy implikuje zapasowa-oczekujaca. Pelnego dowodu rownowaznosci dla kazdego niedoboru NIE MAM (nie rozstrzygnieto, czemu `r4b-roads-wait-deficit` (P43, `kamien`) ma `fbp=false`); dodane wektory `r5-fort-deficit-onlyworked-{wait,rich}` i kontrola `r5-fort-nodeficit-onlyworked-control` zgodne z webem, lecz mutanta nie zabijaja. NASTEPNA-PARTIA / FC. |
 | `if !placed_one { break; }` w FAZIE 2 (`hex_phases.rs`) | usuniecie = petla nieskonczona (nie mutowane; warunek konieczny terminacji) |
 | Wezly fortu/posterunku w `territoryNodes` (F01/F02 zabite na scenariuszach ostrych; reszta pokrycia wezlow w dryfie) | zob. ZALOZENIE 1 |
 
