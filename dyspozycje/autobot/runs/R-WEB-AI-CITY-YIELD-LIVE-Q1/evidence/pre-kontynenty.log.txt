@@ -1,0 +1,14 @@
+15:17:52 pre kontynenty worldgen ms 1321647
+15:30:08 pre kontynenty T10 aiMajor=- lastTurnMs=76607
+15:42:59 pre kontynenty T20 aiMajor=- lastTurnMs=75927
+15:47:33 pre kontynenty T25 aiMajor=31 lastTurnMs=48633
+15:51:05 pre kontynenty T30 aiMajor=- lastTurnMs=41899
+15:58:21 pre kontynenty T40 aiMajor=- lastTurnMs=48918
+16:06:44 pre kontynenty T50 aiMajor=72 lastTurnMs=46935
+16:14:13 pre kontynenty T60 aiMajor=- lastTurnMs=36479
+16:20:52 pre kontynenty T70 aiMajor=- lastTurnMs=44403
+16:24:32 pre kontynenty T75 aiMajor=78 lastTurnMs=40789
+16:28:20 pre kontynenty T80 aiMajor=- lastTurnMs=43661
+16:37:16 pre kontynenty T90 aiMajor=- lastTurnMs=55080
+16:47:12 pre kontynenty T100 aiMajor=93 lastTurnMs=48995
+16:47:12 pre kontynenty DONE
