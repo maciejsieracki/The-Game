@@ -1,0 +1,13 @@
+MUTANT S-M16-throughput-row-not-object-ok file=src/domain/building_costs.rs
+OLD:
+            .and_then(|group| group.get(param_key))
+            .and_then(serde_json::Value::as_object)
+            .and_then(|row| row.get(difficulty))
+NEW:
+            .and_then(|group| group.get(param_key))
+            .and_then(|row| row.get(difficulty))
+
+FAILED TESTS:
+
+VERDICT=SURVIVED
+EXIT=0

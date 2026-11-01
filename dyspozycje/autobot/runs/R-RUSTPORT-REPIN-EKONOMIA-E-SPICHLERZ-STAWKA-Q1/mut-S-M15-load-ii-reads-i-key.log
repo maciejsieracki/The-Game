@@ -1,0 +1,11 @@
+MUTANT S-M15-load-ii-reads-i-key file=src/domain/building_costs.rs
+OLD:
+ceramika_ii: read(SPICHLERZ_DRAIN_JSON_KEY_CERAMIKA_II),
+NEW:
+ceramika_ii: read(SPICHLERZ_DRAIN_JSON_KEY_CERAMIKA_I),
+
+FAILED TESTS:
+test load_params_matches_running_web ... FAILED
+test result: FAILED. 6 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.48s
+VERDICT=KILLED
+EXIT=101

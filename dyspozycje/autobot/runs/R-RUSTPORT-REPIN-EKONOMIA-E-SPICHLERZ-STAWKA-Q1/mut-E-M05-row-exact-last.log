@@ -1,0 +1,12 @@
+MUTANT E-M05-row-exact-last file=src/domain/resource_production.rs
+OLD:
+rows.iter().find(|row| row.epoka == wanted)
+NEW:
+rows.iter().rev().find(|row| row.epoka == wanted)
+
+FAILED TESTS:
+test rate_and_required_grid_match_web ... FAILED
+test coverage_drain_lines_match_running_web ... FAILED
+test result: FAILED. 5 passed; 2 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.82s
+VERDICT=KILLED
+EXIT=101

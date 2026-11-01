@@ -504,3 +504,7 @@ Cel końcowy i bieżący zapisane w `GOAL-RUST-PORT-20261020.md` (§"CEL PĘTLI 
 - Incydent infra: restarty kontenera i dysk 100% zatrzymały 5 workflow; postęp zabezpieczony na `rust-port-wip/*`, `web-wip/*`, wznowione z pamięci podręcznej. Web `main` = `97dbcb416` (POLAR scalone, bez deployu). Aktywne: 8I r4, EKONOMIA-E, AUTOCLEAR r2, SPACING-FIX.
 
 - 2026-11-01 — POLECENIE WŁAŚCICIELA: pierwszeństwo zawsze mają naprawy WEBOWE; Rust biegnie, gdy są wolne zasoby. Zastosowano: M07B4 (Rust) zatrzymany zaraz po starcie (dispatch zostaje, bez straty); nowe tematy Rust tylko gdy brak otwartych tematów webowych, dysk >= 8 GB i < 2 aktywnych Rust; 8I r4 i EKONOMIA-E dokończą bieżące rundy. Prompt cyklicznej kontroli zaktualizowany o ten priorytet.
+
+## 2026-11-01 — REPIN-EKONOMIA-E PASS-WITH-NOTES (r1) zintegrowane na parity-v2
+- FC `f77993c27`; merge `4b843a8a9` na `parity-v2` (`ffaf8407a`): fmt OK, clippy -D warnings OK, test 2000/0. Spichlerz z JSON (`SpichlerzDrainParams`, `spichlerz_ceramika_drain_amount`), stawka utrzymania obywateli per epoka (1/2/3), wspólny wybór wiersza epoki; mutacje 45/48 (+3 równoważne). Dług: pipeline zasobów `turn-economy.ts` (15 hunków) nie zportowany — `load_spichlerz_drain_params` bez wywołującego; `terrain-improvements.json` (forty/terytorium) → osobny temat.
+- Aktywne Rust: tylko 8I r4 (priorytet web). Web: SPACING-FIX, LIVE-VERIFY, FOLLOWUPS.

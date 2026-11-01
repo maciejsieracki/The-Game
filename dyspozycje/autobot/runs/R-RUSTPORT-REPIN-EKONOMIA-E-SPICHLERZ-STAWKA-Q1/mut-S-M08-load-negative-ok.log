@@ -1,0 +1,19 @@
+MUTANT S-M08-load-negative-ok file=src/domain/building_costs.rs
+OLD:
+            if v >= 0.0 {
+                v
+            } else {
+                SPICHLERZ_DRAIN_FALLBACK_PER_TURN
+            }
+NEW:
+            if true {
+                v
+            } else {
+                SPICHLERZ_DRAIN_FALLBACK_PER_TURN
+            }
+
+FAILED TESTS:
+test load_params_matches_running_web ... FAILED
+test result: FAILED. 6 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.44s
+VERDICT=KILLED
+EXIT=101

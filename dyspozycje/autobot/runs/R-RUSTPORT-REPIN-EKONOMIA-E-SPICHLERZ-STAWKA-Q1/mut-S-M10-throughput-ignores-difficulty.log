@@ -1,0 +1,12 @@
+MUTANT S-M10-throughput-ignores-difficulty file=src/domain/building_costs.rs
+OLD:
+.and_then(|row| row.get(difficulty))
+NEW:
+.and_then(|row| row.get("normal"))
+
+FAILED TESTS:
+test load_params_matches_running_web ... FAILED
+test load_throughput_matches_running_web ... FAILED
+test result: FAILED. 5 passed; 2 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.98s
+VERDICT=KILLED
+EXIT=101
