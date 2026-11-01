@@ -488,3 +488,5 @@ Cel końcowy i bieżący zapisane w `GOAL-RUST-PORT-20261020.md` (§"CEL PĘTLI 
 - 2026-11-01 03:12 UTC — kontrola cykliczna: M07B3 r1 (commit 26 min temu: wektory v3, etykiety mutacji) i 8I r4 (commit 60 min temu: porty P1, P2a–P2c; Operator w toku) biegną; brak PASS do integracji. Dysk 8,7 GB.
 
 - 2026-11-01 (polecenie właściciela: „puść więcej operatorów”) — uruchomiono: `R-RUSTPORT-REPIN-WOJNA-3-Q1` (wf_0e5d6e60-794, trzeci slot kodu Rust, sparse worktree, pin 4bbef081d; pliki rozłączne z 8I i M07B3) i `R-WEB-STALE-RULES-CLEANUP-Q1` (web, tylko komentarze/opisy/testy). Aktywne: M07B3, 8I r4, WOJNA-3, CLEANUP. Limit 3 worktree kodu Rust tymczasowo, targety na /dev/shm; dysk 7,9 GB — pilnować.
+
+- 2026-11-01 — zgłoszenie właściciela: „normalna mapa mniejsza, muszę dać Duży” → przyczyna: domyślny udział lądu 30% dla Pangea/Wyspy (commit 9c3d921db, R-WEB-NEWGAME-DEFAULTS-Q1; było Pangea 60, Wyspy 50, Kontynenty 30); rozmiary map i przekazanie udziału lądu do generatora bez zmian. Właściciel potwierdził: chodziło o procent lądu; ABC-A = przywrócić stare domyślne. Uruchomiono `R-WEB-LAND-FRACTION-RESTORE-Q1`. Dysk 5,4 GB — pilnować.
