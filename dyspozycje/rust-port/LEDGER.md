@@ -517,3 +517,5 @@ Cel końcowy i bieżący zapisane w `GOAL-RUST-PORT-20261020.md` (§"CEL PĘTLI 
 - 2026-11-01 (polecenie właściciela: „możesz puścić pięć testów rzeczy w żywej grze”) — uruchomiono `R-WEB-LIVE-VERIFY-ROBOCZA-2-Q1` (T1–T5 na ROBOCZEJ `02d13477`: rozproszenie stolic, farma obok rzeki, udział lądu, bieguny, smoke 40 tur z zapisem) oraz `R-WEB-AI-CITY-YIELD-LIVE-Q1` (pomiar pełnej gry PRE vs POST dla oceny miejsc AI; ABC-B). Oba z odczepionymi biegami (zgoda orkiestratora). FC YIELD-FIX `7ec22faa7`/`8ce134b81` bez wdrożenia do czasu pomiaru.
 
 - 2026-11-01 — STAŁA ZGODA: usterki wykryte w testach na żywo poprawiać bez pytania, jako osobne tematy, potem main + ROBOCZA + push (szczegóły w REJESTR-PROSB-I-ZADAN.md).
+
+- 2026-11-02 — webowe tematy zakończone (ROBOCZA `44416e98`), Rust wznowiony: `R-RUSTPORT-P6-M07B4-RZEKI-B-ZRODLA-QUOTAS-Q1` (wf_4876ec18-cae, ostatnia partia rzek B) i `R-RUSTPORT-REPIN-TERYTORIUM-FORTY-Q1` (wf_8f980a94-130, promienie fortu 3/5, spór wcześniejszy fort, usunięcie tolerancji dryfu w p6_8i_pick). parity-v2 = `fd8585daf` (2013/0). Dysk 9,1 GB.
