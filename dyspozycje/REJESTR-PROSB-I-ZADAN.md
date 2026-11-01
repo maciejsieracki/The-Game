@@ -8355,3 +8355,7 @@ crash `P-HOTSEAT-ETAP6E-ZEPSUTY-GALAZ-CRASH-Q1` (patrz wyżej).
 4. **R-WEB-AI-AVOID-POLAR-CITIES-Q1 — AI zakłada miasta na terenach polarnych (zrzut: Umma, Nippur).** Oczekiwanie: AI unika terenów polarnych, zwłaszcza heksu polarnego, jeśli są znacznie lepsze tereny; gracz nie ograniczany. **Status: DISPATCH GOTOWY, start po zwolnieniu zasobów (dysk ~7 GB; slot web).**
 5. **R-WEB-STALE-RULES-CLEANUP-Q1 — sprzątanie starych reguł w komentarzach/opisach/testach.** **Status: ZROBIONE, ROBOCZA `20ebabc7`.**
 6. **Infra (nie produktowe):** usuwanie zdalnych gałęzi `web-wip/*` z tego środowiska zrywa połączenie (43 scalone gałęzie do usunięcia ręcznie na GitHubie; lista w LEDGER); `newgame-defaults-test.cjs` i inne testy Chromium NIE URUCHOMIONE (brak przeglądarki w środowisku Operatorów) — osobny temat „środowisko Chromium dla bramek webowych”.
+
+### Aktualizacja 2026-11-01 (wieczór)
+- Zgłoszenia 3 (AUTOCLEAR: farma/trzoda, Korynt i Rodos) i 4 (AI na terenach polarnych): **ZROBIONE, ROBOCZA `fc1af150`** (main `c99ac58cd`). Decyzja ABC-B: heks sąsiadujący z rzeką liczy się jak heks nad rzeką. Pozostaje NIE_ZMIERZONO w żywej grze (brak Chromium w środowisku Operatorów) — do sprawdzenia przez właściciela.
+- Zgłoszenie 2 (cywilizacje na kupie): pomiar zakończony (FC `71bac6e9d`), wariant A+B wybrany przez właściciela; **`R-WEB-CAPITAL-SPACING-FIX-Q1` W TOKU**.
