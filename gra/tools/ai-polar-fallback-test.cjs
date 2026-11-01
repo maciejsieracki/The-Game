@@ -15,10 +15,9 @@ const esbuild = require(path.resolve(GRA, 'node_modules', 'esbuild'));
 const entry = path.join(__dirname, '.ai-polar-fb-entry.ts');
 const bundle = path.join(__dirname, '.ai-polar-fb-bundle.cjs');
 fs.writeFileSync(entry, `
-export { planCityFounding, aiPolarNeighbourhoodPenalty } from '../src/game/ai';
+export { planCityFounding } from '../src/game/ai';
 export { MIN_CITY_DISTANCE } from '../src/game/cities';
 export { AI_FOUNDING_SOURCE_MIN_POP } from '../src/game/city-founding';
-export { polarProximityTier } from '../src/map/clusters';
 `, 'utf8');
 esbuild.buildSync({ entryPoints: [entry], bundle: true, platform: 'node', format: 'cjs', target: 'node18',
   loader: { '.ts': 'ts', '.json': 'json' }, outfile: bundle, absWorkingDir: GRA, logLevel: 'silent' });
@@ -54,9 +53,7 @@ const origWarn = console.warn; let warns = 0;
 console.warn = (...a) => { warns++; if (process.env.VERBOSE) origWarn(...a); };
 
 
-const OPTS2 = OPTS;
 const MS = v => data({ ekspansja_min_score_hex: { wartosc: v, sekcja: 't', opis: '' } });
-const MIN_HI = Number(10);
 function polarHot(map, q, r) {
   const h = map.hexes[`${q},${r}`]; h.terenBazowy = 'polarny'; h.rzeka.obecna = true; h.nakladka = 'zloze_gliny';
 }
@@ -64,7 +61,7 @@ console.log('--- F1: polarny wysoki, niepolarne < minScore -> null ---');
 {
   const map = makeMap(40, 40); const c = city('c1', 1, 20, 20, SRC_POP);
   polarHot(map, 20, 24); warns = 0;
-  const cmd = M.planCityFounding(1, [c], map, MS(MIN_HI), { ...OPTS2, resourceDeficitKeys: ['glina'] }, M.MIN_CITY_DISTANCE);
+  const cmd = M.planCityFounding(1, [c], map, MS(10), { ...OPTS, resourceDeficitKeys: ['glina'] }, M.MIN_CITY_DISTANCE);
   assert(cmd === null, `F1a: brak zalozenia (got ${JSON.stringify(cmd)})`);
   assert(warns === 0, 'F1b: brak logu polar-fallback');
 }
@@ -72,14 +69,14 @@ console.log('--- F2: + niepolarny ponad progiem -> niepolarny ---');
 {
   const map = makeMap(40, 40); const c = city('c1', 1, 20, 20, SRC_POP);
   polarHot(map, 20, 24); map.hexes['20,16'].rzeka.obecna = true;
-  const cmd = M.planCityFounding(1, [c], map, MS(MIN_HI), { ...OPTS2, resourceDeficitKeys: ['glina'] }, M.MIN_CITY_DISTANCE);
+  const cmd = M.planCityFounding(1, [c], map, MS(10), { ...OPTS, resourceDeficitKeys: ['glina'] }, M.MIN_CITY_DISTANCE);
   assert(cmd && cmd.q === 20 && cmd.r === 16, `F2: wybrano niepolarny (20,16) (got ${JSON.stringify(cmd)})`);
 }
 console.log('--- F3: caly lad polarny, brak miast -> fallback ---');
 {
   const map = makeMap(12, 12); for (const k of Object.keys(map.hexes)) map.hexes[k].terenBazowy = 'polarny';
   warns = 0;
-  const cmd = M.planCityFounding(1, [], map, data(), OPTS2, M.MIN_CITY_DISTANCE);
+  const cmd = M.planCityFounding(1, [], map, data(), OPTS, M.MIN_CITY_DISTANCE);
   assert(cmd && cmd.type === 'foundCityAt', 'F3a: pierwsze miasto zalozone na polarnym');
   assert(warns >= 1, 'F3b: log polar-fallback');
 }
@@ -87,7 +84,7 @@ console.log('--- F4: caly lad polarny, AI ma miasto -> null ---');
 {
   const map = makeMap(30, 30); for (const k of Object.keys(map.hexes)) map.hexes[k].terenBazowy = 'polarny';
   const c = city('c1', 1, 15, 15, SRC_POP); warns = 0;
-  const cmd = M.planCityFounding(1, [c], map, data(), OPTS2, M.MIN_CITY_DISTANCE);
+  const cmd = M.planCityFounding(1, [c], map, data(), OPTS, M.MIN_CITY_DISTANCE);
   assert(cmd === null, `F4a: null (got ${JSON.stringify(cmd)})`);
   assert(warns === 0, 'F4b: brak logu');
 }
@@ -95,7 +92,7 @@ console.log('--- F5: bonus klastra na polarnym, niepolarne < minScore -> null --
 {
   const map = makeMap(40, 40); const c = city('c1', 1, 20, 20, SRC_POP);
   polarHot(map, 20, 24); warns = 0;
-  const cmd = M.planCityFounding(1, [c], map, MS(MIN_HI), { ...OPTS2, clusterCenter: { q: 20, r: 24 }, clusterRadius: 0 }, M.MIN_CITY_DISTANCE);
+  const cmd = M.planCityFounding(1, [c], map, MS(10), { ...OPTS, clusterCenter: { q: 20, r: 24 }, clusterRadius: 0 }, M.MIN_CITY_DISTANCE);
   assert(cmd === null, `F5: null mimo bonusu klastra (got ${JSON.stringify(cmd)})`);
 }
 
