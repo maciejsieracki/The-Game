@@ -6,7 +6,11 @@
  * rywaleNaKlaster 6, aktywneTypy 8, epoka kamien) dla 30 map (3 typy x 10 ziaren).
  * Asercja: identyczny hex na >= 28/30 map i zawsze odleglosc <= 12 od bazy; dopuszczone wyjatki to mapy,
  * gdzie stolice AI zeszly z polarnych i bramka separacji gracza (stolice obcych typow) widzi inny uklad.
- * Znane odchylenia (zmierzone): wyspy1001 100,48 -> 101,48; wyspy3333 95,49 -> 85,58.
+ * R-WEB-CAPITAL-SPACING-FIX-Q1 (obrona r1, zarzut 1): zmiana A (stolica regionu NAJBLIZEJ centroidu) i B (sep proporcjonalny)
+ * celowo przesuwaja start gracza (stolica klastra) — fixture BASE PRZEGENEROWANY na HEAD tego tematu (clusters.ts po A+B),
+ * te same 30 map/ziarna/parametry. Strazniczy sens testu zachowany: kolejne zmiany AI/POLAR nie moga ruszyc startu gracza
+ * wzgledem nowej bazy (>=28/30, maxDist<=12). Stare znane odchylenia (wyspy1001, wyspy3333) dotyczyly poprzedniej bazy.
+ * Znane odchylenia poprzedniej bazy (zmierzone): wyspy1001 100,48 -> 101,48; wyspy3333 95,49 -> 85,58.
  */
 const path = require('path');
 const fs = require('fs');
@@ -26,7 +30,7 @@ const M = require(bundle);
 M.setRiverGenPhaseOverride('main');
 M.setRiverGenEnabledOverride(false);
 const civs = require('../data/civs.json');
-const BASE = {"kontynenty4242":"134,33","kontynenty7777":"84,45","kontynenty1001":"87,66","kontynenty2024":"80,59","kontynenty31337":"90,54","pangea4242":"38,45","pangea7777":"52,90","pangea1001":"52,90","pangea2024":"121,95","pangea31337":"98,20","wyspy4242":"138,47","wyspy7777":"86,66","wyspy1001":"100,48","wyspy2024":"95,67","wyspy31337":"87,65","kontynenty11":"30,29","kontynenty222":"114,74","kontynenty3333":"43,60","kontynenty4444":"85,52","kontynenty5555":"126,59","pangea11":"36,58","pangea222":"57,96","pangea3333":"59,95","pangea4444":"101,18","pangea5555":"88,97","wyspy11":"55,76","wyspy222":"79,57","wyspy3333":"95,49","wyspy4444":"62,69","wyspy5555":"89,64"};
+const BASE = {"kontynenty4242":"130,34","kontynenty7777":"98,57","kontynenty1001":"90,49","kontynenty2024":"83,61","kontynenty31337":"78,61","pangea4242":"38,66","pangea7777":"67,98","pangea1001":"47,83","pangea2024":"90,94","pangea31337":"70,18","wyspy4242":"139,58","wyspy7777":"87,68","wyspy1001":"95,67","wyspy2024":"97,68","wyspy31337":"87,65","kontynenty11":"37,29","kontynenty222":"107,81","kontynenty3333":"43,60","kontynenty4444":"96,60","kontynenty5555":"126,59","pangea11":"41,37","pangea222":"69,97","pangea3333":"73,100","pangea4444":"61,22","pangea5555":"105,96","wyspy11":"72,44","wyspy222":"84,65","wyspy3333":"86,68","wyspy4444":"76,65","wyspy5555":"89,63"};
 let same = 0, total = 0, maxD = 0; const diffs = [];
 for (const key of Object.keys(BASE)) {
   const m = key.match(/^([a-z]+)(\d+)$/); const typ = m[1], seed = Number(m[2]);

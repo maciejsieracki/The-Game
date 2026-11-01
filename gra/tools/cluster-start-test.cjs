@@ -765,10 +765,13 @@ for (const fcl of stdPlan.foreignTypeClusters) {
 // BUG-SPAWN-ODLEGLOSC-STOLICE: pary stolic różnych cywilizacji ≥ minSep na Standard
 const minSepStd = M.capitalMinSeparation(stdPlan.placement.rozmiarMapy);
 assert(minSepStd === 15, 'Standard (duza): minCapitalSep=15 (got ' + minSepStd + ')');
-assert(M.capitalMinSeparationForMap(stdPlan.placement.rozmiarMapy, 168, 120) === 15,
-  'Standard map 168×120: minCapitalSepForMap=15');
-assert(stdPlan.placement.minDystansObcyOdGracza === 17,
-  'Standard: minDystansObcyOdGracza=17 (got ' + stdPlan.placement.minDystansObcyOdGracza + ')');
+// R-WEB-CAPITAL-SPACING-FIX-Q1 (B): sep proporcjonalny = max(tabela 15, round(wsp 0,15 x krotszy bok 120)=18) = 18
+// (clusters.ts capitalMinSeparationProportional; wsp = map-gen-params.json generator.capital_sep_short_side_coef).
+// Podloga tabeli (minSepStd=15) bez zmian; minDystansObcyOdGracza = sep + 2 = 20 (clusterCenterPlacementSepForMap).
+assert(M.capitalMinSeparationForMap(stdPlan.placement.rozmiarMapy, 168, 120) === 18,
+  'Standard map 168×120: minCapitalSepForMap=18 (proporcjonalny, podloga tabeli 15)');
+assert(stdPlan.placement.minDystansObcyOdGracza === 20,
+  'Standard: minDystansObcyOdGracza=20 (got ' + stdPlan.placement.minDystansObcyOdGracza + ')');
 const stdCapitals = [{ q: stdPlan.playerStartHex.q, r: stdPlan.playerStartHex.r }];
 for (const fcl of stdPlan.foreignTypeClusters) {
   const capPos = fcl.positions[0];
@@ -794,7 +797,7 @@ for (const fcl of stdPlan.foreignTypeClusters) {
   }
 }
 
-// BUG-SPAWN-ODLEGLOSC-STOLICE / FALA 182: Duża (ogromna) 240×168 — minSep=16, obcy od gracza ≥16
+// BUG-SPAWN-ODLEGLOSC-STOLICE / FALA 182 / R-WEB-CAPITAL-SPACING-FIX-Q1: Duża (ogromna) 240×168 — minSep=25 (podloga tabeli 16), obcy od gracza ≥27
 const largeMap = M.generateMap(240, 168, 4242, 'kontynenty');
 const largePlan = M.buildClusterStartPlan({
   map: largeMap,
@@ -804,14 +807,15 @@ const largePlan = M.buildClusterStartPlan({
   rywaleNaKlaster: 6,
   startEpochId: 'zelazo',
 });
+// R-WEB-CAPITAL-SPACING-FIX-Q1 (B): round(0,15 x 168)=25 (podloga tabeli 16); obcy od gracza = 25 + 2 = 27.
 assert(
-  M.capitalMinSeparationForMap(largePlan.placement.rozmiarMapy, 240, 168) === 16,
-  'Duża 240×168: minCapitalSepForMap=16 (got ' +
+  M.capitalMinSeparationForMap(largePlan.placement.rozmiarMapy, 240, 168) === 25,
+  'Duża 240×168: minCapitalSepForMap=25 (got ' +
     M.capitalMinSeparationForMap(largePlan.placement.rozmiarMapy, 240, 168) + ')',
 );
 assert(
-  largePlan.placement.minDystansObcyOdGracza === 16,
-  'Duża: minDystansObcyOdGracza=16 (got ' + largePlan.placement.minDystansObcyOdGracza + ')',
+  largePlan.placement.minDystansObcyOdGracza === 27,
+  'Duża: minDystansObcyOdGracza=27 (got ' + largePlan.placement.minDystansObcyOdGracza + ')',
 );
 const minSepLarge = M.capitalMinSeparationForMap(largePlan.placement.rozmiarMapy, 240, 168);
 const largeCapitals = [{ q: largePlan.playerStartHex.q, r: largePlan.playerStartHex.r }];

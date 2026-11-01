@@ -78,10 +78,13 @@ assert(M.passesMinCapitalSeparationGate({ q: 0, r: 0 }, [], 15) === true, 'brak 
 // FALA 182 + Maciej 2026-08-02: Mała/Średnia 12, Standard 15, Duża 16, Super 19
 assert(M.capitalMinSeparation('duza') === 15, 'FALA182+: Standard (duza) sep=15');
 assert(M.capitalMinSeparation('ogromna') === 16, 'FALA182: Duża (ogromna) sep=16');
-assert(M.capitalMinSeparationForMap('ogromna', 240, 168) >= 16, 'FALA182: Duża map sep >= podłoga 16');
+// ADNOTACJA (R-WEB-CAPITAL-SPACING-FIX-Q1, obrona r1 zarzut 5): dawne `=== 16` zastapione DOKLADNA asercja `=== 25`
+// (0,15 x 168, podloga tabeli 16 jest osobno sprawdzona w :79 capitalMinSeparation('ogromna') === 16) + zachowana semantyka >= 16.
+assert(M.capitalMinSeparationForMap('ogromna', 240, 168) === 25, 'FALA182: Duża map sep = 25 (>= podłoga 16)');
+assert(M.capitalMinSeparationForMap('ogromna', 240, 168) >= M.capitalMinSeparation('ogromna'), 'FALA182: Duża map sep >= podłoga tabeli');
 // minDystObcyOdGracza = max(12 floor, minDystKlastrow) → na Dużej 16, nie hardcode 12
-assert(Math.max(12, M.capitalMinSeparationForMap('ogromna', 240, 168)) >= 16,
-  'FALA182: obcy od gracza na Dużej ≥16 (nie 12)');
+assert(Math.max(12, M.capitalMinSeparationForMap('ogromna', 240, 168)) === 25,
+  'FALA182: obcy od gracza na Dużej = 25 (>=16, nie 12; dawniej === 16)');
 
 // R-WEB-CAPITAL-SPACING-FIX-Q1: proporcjonalny sep, podłoga = tabela, sufit wykonalności, short<80
 assert(M.capitalMinSeparationForMap('duza', 168, 120, 5) === 18, 'sep 168×120 civ=5 → 18');

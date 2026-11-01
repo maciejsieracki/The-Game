@@ -1576,11 +1576,9 @@ export function capitalMinSeparationForMap(
   }
   if (!civCount || civCount < 2) return prop;
   const cap = capitalSepFeasibleCap(mapW, mapH, civCount, landCount);
-  const v = Math.max(table, Math.min(prop, cap));
-  if (v < prop && typeof console !== 'undefined') {
-    console.warn(`[clusters] capital-sep: ${prop} niewykonalne dla ${civCount} civ na ${mapW}x${mapH}, obnizono do ${v}`);
-  }
-  return v;
+  // Funkcja CZYSTA (bez logowania): wolana wielokrotnie w computeClusters; ostrzezenie o obnizeniu
+  // jest emitowane RAZ na obliczenie w computeClusters (obrona r1, zarzut 4: spam logu).
+  return Math.max(table, Math.min(prop, cap));
 }
 
 /**
@@ -3579,6 +3577,12 @@ export function computeClusters(
   const minSeaDist = capitalMinSeaDistForMap(rozmiarMapy, W, H);
   const maxSeaDist = capitalMaxSeaDistForMap(rozmiarMapy, W, H);
   const minCapitalSep = capitalMinSeparationForMap(rozmiarMapy, W, H, nTypy, landCountForSep);
+  {
+    const propSep = capitalMinSeparationProportional(rozmiarMapy, W, H);
+    if (minCapitalSep < propSep && typeof console !== 'undefined') {
+      console.warn(`[clusters] capital-sep: ${propSep} niewykonalne dla ${nTypy} civ na ${W}x${H}, obnizono do ${minCapitalSep}`);
+    }
+  }
   const sCluster = clusterBodySeparationForMap(rozmiarMapy, W, H);
   const bodyBufferRadius = clusterBodyBufferRadius(sCluster);
   const landCache = createMassLandCache(ladowePlayer);
