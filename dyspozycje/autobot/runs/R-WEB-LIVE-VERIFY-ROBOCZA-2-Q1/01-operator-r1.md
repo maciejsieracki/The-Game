@@ -1,0 +1,27 @@
+STATUS: PASS-WITH-NOTES
+DOMAIN: GAME (WEB) — weryfikacja na żywo (Chromium), zero zmian w kodzie gry
+TEMAT: R-WEB-LIVE-VERIFY-ROBOCZA-2-Q1
+GOAL: ~5 testów rzeczy już naprawionych w żywej grze (bundle `gra-robocza/Gra-ROBOCZA.html`, MD5 `02d1347767bd6067449b9c2e19c4c65d`, baza `f8d7b55ea`): T1 rozproszenie stolic, T2 farma przed trzodą, T3 udział lądu, T4 AI na biegunach, T5 smoke rozgrywki.
+ZMIANY/COMMIT: tylko allowlista: `gra/tools/live-verify-robocza-2-{common,gen,farm,farm-analyze,smoke,report}.cjs` + `dyspozycje/autobot/runs/R-WEB-LIVE-VERIFY-ROBOCZA-2-Q1/**` (evidence 9,1 MB). SHA: wpisany w odpowiedzi orkiestratora (commit zawierający ten plik; SHA nie może być wpisany do własnego pliku). Bez pushu, bez buildu.
+
+METODA (ważna dla wiarygodności): teren (T3, T4) pochodzi z ŻYWEGO stanu gry — snapshot `buildSaveGameSnapshot` przechwycony przy hooku `__pracaPoolSaveLoadTestDebug.roundTrip()` (`mapSnapshot`: teren per heks), nie z odtworzenia offline. Miasta z `dumpState()`. Mapy: kreator DOM, Standardowy 168x120 (20160 heksów), domyślny udział lądu, jawne ziarno (`seedSeen` zgodne). Stolice = gracz + pierwsze miasto każdego właściciela AI bez `startCityState` (jak w -Q1).
+
+WYNIKI
+| T | Wynik | Liczby (evidence) |
+|---|---|---|
+| T1 | NIEZGODNE z celem (jest poprawa) | `liveCapMin` 10 map: 18,18,19,20,20,21,22,26,32,33; mediana 20,5 (PRZED: 15,15,15,15,15,16,17,17,17,18; mediana 15,5). Każda mapa wyższa niż przed. <25 hexów: 7/10 = 70% (przed 100%; cel „znacząco poniżej”, ~13% wg generatora). Pangea 32/22/33; Kontynenty 19/26/18/20/20 (2024/31337/4242/7777/1001); Wyspy 18/21. `podsumowanie-T1-T5.json` |
+| T2 | ZGODNE (farma przed trzodą) | 5 biegów × 25 tur, 0 błędów, start 1 obywatel. Rodos (trawa obok rzeki, nie na rzece, heks 29,50): K2 farma t2/t4 → bydło t5/t9; K1 farma t1 → bydło t2. Na rzece (31,49): K2 farma t2 → bydło t4; K1 farma t1 → bydło t2. Dla KAŻDEGO heksa ze zbudowanym bydłem farma była wcześniej (14/14 heksów w 4 wariantach rzeka/Rodos). Las (14–22 heksów lasu w R3, „Wolno wycinać las” ON): 0 wycinek, wynik identyczny z OFF (`gate-farma2-las*`). Przyczyny braku wycinki NIE_ZMIERZONO (picker nie loguje; w bundlu brak logu); obserwacja: ulepszenia stawiane na wolnych łąkach, a część (glinianka/kopalnia/warzelnia) na heksach z lasem bez wycinki. |
+| T3 | Kontynenty ZGODNE, Wyspy ZGODNE, Pangea NIEZGODNE | Żywy stan: Kontynenty 30,00% (6048/20160, 5 map), Wyspy 50,00% (10080/20160, 2 mapy), Pangea 56,20/56,14/55,99% (cel 60%, −3,8…−4,0 pp; stałe). Woda = morze+plytkie_morze. |
+| T4 | Pangea ziarno 1001 NIEZGODNE; reszta ZGODNE | Start (6 map): 0 stolic/miast AI/MP na polarnym, gracz nie polarny. Po 30 turach: Pangea 4242 0, Wyspy 1001 0 (567 heksów polarnych), Wyspy 3333 0 (375), Kontynenty 1001/2024 0 (0 heksów polarnych — test nie rozstrzyga). Pangea 1001: 1 miasto AI na polarnym (`egipt#22@61,108`, tura 31), powtarzalne w 2 biegach; log gry: `[ai] polar-fallback: brak kandydata niepolarnego, miasto AI na heksie polarnym (61,108)`. |
+| T5 | ZGODNE | Kontynenty 1001, 40 tur: 0 `pageerror`/`console.error`; zapis→wczytanie w t20 (snapshot→JSON→`restoreGameFromSave`): tura 21, miasta 49, jednostki 123 przed i po, tura 21–41 dalej bez błędów; miasta AI: 48 start, t40 = 71; czas tury mediana 58,6 s (min 28, max 110; maszyna obciążona, load 17–30). Stolice capMin 20 (jak T1). Auto-ulepszenia (tryb auto, tech odblokowane): w turach 0–10 brak ulepszeń (pula Pracy), pierwsza farma t15 (na hexie stolicy), kopalnia cyny t19. |
+
+DIAGNOZA NIEZGODNYCH (bez poprawek kodu)
+- T1: sep stolic = max(tabela, round(0,15 × krótszy bok)) = 18 przy 120 (`gra/data/map-gen-params.json:98-101`, `gra/src/map/clusters.ts:1533-1542`); sufit wykonalności floor(sqrt(ląd·0,5/7)) ≈ 20 dla Kontynentów (`clusters.ts:1545-1553`, wynik `clusters.ts:1581`). Obserwowane min 18–20 to dokładnie ta dolna granica — poprawka gwarantuje ≥18, nie rozprasza dalej. Propozycja: podnieść współczynnik (np. 0,21 → 25) i `CAPITAL_SEP_AREA_FACTOR` (1552), bo na lądzie 30% sufit blokuje.
+- T3 Pangea: generator daje ~56% przy żądanym 60%; diagnoza wymaga `generateMap` z landFraction 0,60 (nie badane tu; ta sama wartość co w -Q1, obecnie niezmienione).
+- T4: `gra/src/game/ai.ts:4851-4855` — polarny heks jest dopuszczony jako „ostatni fallback”, gdy brak niepolarnego kandydata po filtrach `tooClose`/`isHexWithinAnyCityReach`/`minScore` (`ai.ts:4811-4836`). Propozycja: zwracać `null` (AI nie zakłada miasta) zamiast fallbacku, albo ograniczyć fallback do braku jakichkolwiek wolnych niepolarnych heksów na mapie.
+
+TESTY: `gate-farma2-*.txt` (EXIT=0, merytorycznie 0 błędów strony, wyniki powyżej), `gate-gen-smoke-logi.txt` (EXIT=0 = ukończenie skryptów; wyniki merytoryczne w tabeli). Nie uruchamiano `npm run build/dev`.
+BLOKADY: brak. Uwagi: (1) pierwsze podejście 30-turowe zatrzymało się w turze 2, bo sterownik nie czekał na „DONE tura” (błąd harnessu, naprawiony w `-2-common.cjs`; dane z tego podejścia odrzucone); (2) Wyspy 1001 w pierwszej próbie przekroczyły timeout kreatora przy przeciążonej maszynie, powtórzone poprawnie; (3) zapis→wczytanie przez hook, nie przez UI slotów; (4) fixture T2/T5: `unlockAllTech` oraz pula Pracy 300 (tylko T2), polityka przez `restoreGameFromSave`; (5) bieg Pangea 1001 powtórzony, pierwszy bieg zachowany jako `run1-gen2-pangea1001.json`.
+RUNDY: 1/5
+NASTĘPNY KROK: Evaluator (weryfikacja T1/T4 NIEZGODNE i metody), potem osobne tematy poprawek (T1 sep stolic, T3 Pangea 60%, T4 polar-fallback).
+DEPLOY/PUSH: NIE WYKONANO
