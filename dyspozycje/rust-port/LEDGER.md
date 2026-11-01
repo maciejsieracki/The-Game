@@ -466,3 +466,6 @@ Cel końcowy i bieżący zapisane w `GOAL-RUST-PORT-20261020.md` (§"CEL PĘTLI 
 - 2026-10-31 23:12 UTC — kontrola cykliczna: 8H2 r3 i M07B2 r4 wciąż biegną (sloty kodu zajęte); DELTA-3 zintegrowane; brak PASS do integracji. Dysk 7,2 GB wolnego.
 
 - 2026-11-01 00:12 UTC — kontrola cykliczna: 8H2 r3 (Operator r3 zakończony 49 min temu, Evaluator/FC w toku) i M07B2 r4 (mutacje 105: 80 KILLED, 25 EKWIWALENT, 0 LUKA; dalsze etapy w toku) biegną; brak PASS do integracji. Sprzątnięto worktree DELTA-3.
+
+## 2026-11-01 — M07B-Q2 (rzeki B krawędzie) PASS-WITH-NOTES (r4) zintegrowane na parity-v2
+- FC `f10829e9d` (kod `6a596c987`); merge `4dbd4cff45abb7e8d5560c4cfc915d3620c51c32` na `parity-v2`: fmt OK, clippy OK, test 1947/0. 105 mutantów: 80 KILLED, 25 EKWIWALENT z dowodem, 0 LUK; weryfikator 25592/25592. Notatka: weryfikator Python nie obejmuje wektorów q2r4 (NIE_ZMIERZONO niezależność). Pozostałe symbole rzek B → Q3/Q4.

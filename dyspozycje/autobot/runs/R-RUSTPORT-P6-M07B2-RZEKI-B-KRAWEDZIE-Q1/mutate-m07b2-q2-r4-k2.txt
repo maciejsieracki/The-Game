@@ -1,0 +1,19 @@
+C01 | KILLED | oczek=K | collect: filtr okna skrętu usuniety (:6106) | test coast_grow_vectors_match_web ... FAILED; test q2r4_vectors_match_web ... FAILED | panic | RESTORED=True
+C02 | KILLED | oczek=K | collect: filtr przechodnosci odwrocony (:6107) | test coast_grow_vectors_match_web ... FAILED; test q2r4_vectors_match_web ... FAILED | panic | RESTORED=True
+C03 | KILLED | oczek=K | collect: allowReliefTraversal -> false (:6107) | test coast_grow_vectors_match_web ... FAILED; test q2r4_vectors_match_web ... FAILED | panic | RESTORED=True
+C04 | KILLED | oczek=K | collect: filtr sep odwrocony (:6108) | test coast_grow_vectors_match_web ... FAILED; test q2r4_vectors_match_web ... FAILED | panic | RESTORED=True
+C06 | KILLED | oczek=K | collect: prog MIN_INLAND <= zamiast < (:6110) | test coast_grow_vectors_match_web ... FAILED; test q2r4_vectors_match_web ... FAILED | panic | RESTORED=True
+C07 | KILLED | oczek=K | collect: relaxHardMeander ignorowany (:6111) | test coast_grow_vectors_match_web ... FAILED; test q2r4_vectors_match_web ... FAILED | panic | RESTORED=True
+C08 | KILLED | oczek=K | collect: hardMeander ignorowany (:6111) | test coast_grow_vectors_match_web ... FAILED; test q2r4_vectors_match_web ... FAILED | panic | RESTORED=True
+C09 | KILLED | oczek=K | collect: mnoznik 28 -> 27 (:6115) | test coast_grow_vectors_match_web ... FAILED | panic | RESTORED=True
+C10 | KILLED | oczek=K | collect: gałąź nd>curD -> >= (:6116) | test coast_grow_vectors_match_web ... FAILED; test q2r4_vectors_match_web ... FAILED | panic | RESTORED=True
+C11 | KILLED | oczek=K | collect: bonus +18 -> +17 (:6116) | test coast_grow_vectors_match_web ... FAILED | panic | RESTORED=True
+C13 | KILLED | oczek=K | collect: +22 -> +21 (:6118) | test coast_grow_vectors_match_web ... FAILED | panic | RESTORED=True
+C14 | KILLED | oczek=K | collect: -36 -> -35 (:6118) | test coast_grow_vectors_match_web ... FAILED | panic | RESTORED=True
+C15 | KILLED | oczek=K | collect: +2 -> +3 (:6118) | test coast_grow_vectors_match_web ... FAILED | panic | RESTORED=True
+C16 | KILLED | oczek=K | collect: gałąź nd==curD wylaczona (:6117) | test coast_grow_vectors_match_web ... FAILED; test q2r4_vectors_match_web ... FAILED | panic | RESTORED=True
+C17 | KILLED | oczek=K | collect: waga centerStep 6.5 -> 6.0 (:6121) | test coast_grow_vectors_match_web ... FAILED | panic | RESTORED=True
+C18 | KILLED | oczek=K | collect: kara centerStep < 0 -> <= 0 (:6122) | test coast_grow_vectors_match_web ... FAILED | panic | RESTORED=True
+C19 | KILLED | oczek=K | collect: kara -18 -> -17 (:6122) | test coast_grow_vectors_match_web ... FAILED | panic | RESTORED=True
+C20 | KILLED | oczek=K | collect: szum rand*0.35 -> 0.36 (:6123) | test coast_grow_vectors_match_web ... FAILED | panic | RESTORED=True
+EXIT=0

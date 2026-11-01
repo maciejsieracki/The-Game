@@ -1,0 +1,15 @@
+G05 | KILLED | oczek=K | grow: filtr visited (przebieg 1) usuniety (:6214) | test q2r4_vectors_match_web ... FAILED | panic | RESTORED=True
+G06 | KILLED | oczek=K | grow: filtr visited (przebieg relaxed) usuniety (:6217) | test q2r4_vectors_match_web ... FAILED | panic | RESTORED=True
+G11 | KILLED | oczek=K | grow: oznaczenie wybranego heksa jako odwiedzony usuniete (:6225) | test q2r4_vectors_match_web ... FAILED | panic | RESTORED=True
+G12 | KILLED | oczek=K | grow: ujscie nieoznaczone jako odwiedzone (:6199) | test q2r4_vectors_match_web ... FAILED | panic | RESTORED=True
+G14 | KILLED | oczek=K | grow: visitCap estimateLandCentroidFromMouth 6000 -> 3000 (:6202) - r4: zabity wektorem na duzej mapie (6487 hexow) | test q2r4_vectors_match_web ... FAILED | panic | RESTORED=True
+M11 | KILLED | oczek=K | meander: brak seaDist(cur) -> 0 zamiast 999 (:6494) | test q2r4_vectors_match_web ... FAILED | panic | RESTORED=True
+W06 | KILLED | oczek=K | window: cap 48 -> 47 (N-1) (:7100) - r4: zabity wektorem zygzaka (>=49 obrotow) | test q2r4_vectors_match_web ... FAILED | panic | RESTORED=True
+E28 | KILLED | oczek=K | simplifyRiverRenderPath: cap 4000 -> 3999 (N-1) - r4: zabity wektorem sciezki A,B,A,B... dl. 8002 | test q2r4_vectors_match_web ... FAILED | panic | RESTORED=True
+W10 | KILLED | oczek=K | sanitizeRiverTurnWindow: wstepna sanityzacja pominieta (:7099) | test edges_vectors_match_web ... FAILED; test q2r4_vectors_match_web ... FAILED | panic | RESTORED=True
+G14b | KILLED | oczek=K | grow: visitCap 6000 -> 5999 (N-1) (:6202) | test q2r4_vectors_match_web ... FAILED | panic | RESTORED=True
+G14c | KILLED | oczek=K | grow: visitCap 6000 -> 6001 (N+1) (:6202) | test q2r4_vectors_match_web ... FAILED | panic | RESTORED=True
+G17 | KILLED | oczek=K | grow: kwadrat centrum nieprzekazany do opcji bazowych (:6208) | test q2r4_vectors_match_web ... FAILED | panic | RESTORED=True
+W06b | KILLED | oczek=K | window: cap 48 -> 49 (N+1) (:7100) | test q2r4_vectors_match_web ... FAILED | panic | RESTORED=True
+E28b | KILLED | oczek=K | simplifyRiverRenderPath: cap 4000 -> 4001 (N+1) (:7219) | test q2r4_vectors_match_web ... FAILED | panic | RESTORED=True
+EXIT=0

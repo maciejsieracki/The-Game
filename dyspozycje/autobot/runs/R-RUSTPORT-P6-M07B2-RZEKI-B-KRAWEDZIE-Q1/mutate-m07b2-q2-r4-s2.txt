@@ -1,0 +1,12 @@
+E10 | SURVIVED | oczek=E | walkRiverHexPerimeter: wczesny zwrot dla from==to usuniety (:7151) - E: petla zwraca to samo | all green | RESTORED=True
+E13 | SURVIVED | oczek=K | riverCornersAlongHexEdges: parzystosc odwrocona (:7183) | all green | RESTORED=True
+E14 | SURVIVED | oczek=K | riverCornersAlongHexEdges: tie-break parzystosci cw/ccw zamieniony (:7183) | all green | RESTORED=True
+E17 | SURVIVED | oczek=K | riverCornersAlongHexEdges: remis nadpisuje fallback (:7185) | all green | RESTORED=True
+E18 | SURVIVED | oczek=K | riverCornersAlongHexEdges: wybor fallback usuniety (:7191) | all green | RESTORED=True
+E19 | SURVIVED | oczek=K | riverCornersAlongHexEdges: kolejnosc cw/ccw odwrocona (:7179) | all green | RESTORED=True
+E24 | SURVIVED | oczek=E | riverTransitEdgeIndices: prog len<2 -> <1 (:7204) - E: petla 0..0 pusta | all green | RESTORED=True
+E25 | SURVIVED | oczek=K | riverTransitEdgeIndices: deduplikacja usunieta (:7208) | all green | RESTORED=True
+E27 | SURVIVED | oczek=E | simplifyRiverRenderPath: prog len<3 -> <2 (:7216) - E: petla i in 1..len-1 pusta dla len 2 | all green | RESTORED=True
+E31 | SURVIVED | oczek=E | markRiverTransitEdgesOnPath: prog len<2 -> <1 (:7234) - E: petla bez krawedzi | all green | RESTORED=True
+E35 | SURVIVED | oczek=K | markRiverTransitEdgesOnPath: parzystosc heksa przesunieta (:7244) | all green | RESTORED=True
+EXIT=0
