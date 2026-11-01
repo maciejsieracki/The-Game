@@ -502,3 +502,5 @@ Cel końcowy i bieżący zapisane w `GOAL-RUST-PORT-20261020.md` (§"CEL PĘTLI 
 ## 2026-11-01 — M07B-Q3 (rzeki B trasowanie) PASS (r2) zintegrowane na parity-v2
 - FC `c3ea6eb8f` (kod `b068272a3`); merge `ffaf8407a` na `parity-v2` (`a6f1149cc`): fmt OK, clippy OK, test 1984/0. 8 symboli portu A*/trasowania; mutanty 205 (168 KILLED, 37 równoważnych), weryfikator 14589/14589. Dalej: M07B-Q4 (traceRiver, capRiverQuotas, źródła).
 - Incydent infra: restarty kontenera i dysk 100% zatrzymały 5 workflow; postęp zabezpieczony na `rust-port-wip/*`, `web-wip/*`, wznowione z pamięci podręcznej. Web `main` = `97dbcb416` (POLAR scalone, bez deployu). Aktywne: 8I r4, EKONOMIA-E, AUTOCLEAR r2, SPACING-FIX.
+
+- 2026-11-01 — POLECENIE WŁAŚCICIELA: pierwszeństwo zawsze mają naprawy WEBOWE; Rust biegnie, gdy są wolne zasoby. Zastosowano: M07B4 (Rust) zatrzymany zaraz po starcie (dispatch zostaje, bez straty); nowe tematy Rust tylko gdy brak otwartych tematów webowych, dysk >= 8 GB i < 2 aktywnych Rust; 8I r4 i EKONOMIA-E dokończą bieżące rundy. Prompt cyklicznej kontroli zaktualizowany o ten priorytet.
