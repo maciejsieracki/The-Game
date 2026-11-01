@@ -135,6 +135,18 @@ fn fields(mp: &Map, pt: &Value) -> Fields {
     }
 }
 
+/// Nadpisania seaDist `sov` = lista `[klucz, wartosc]` (`null` = brak) - jak `seaWithSov` w generatorze.
+fn fields_sov(mp: &Map, c: &Value) -> Fields {
+    let mut fl = fields(mp, &c["pt"]);
+    if let Some(list) = c["sov"].as_array() {
+        for e in list {
+            fl.sea
+                .insert(e[0].as_str().unwrap().to_string(), e[1].as_i64().unwrap());
+        }
+    }
+    fl
+}
+
 fn pairs(v: &Value) -> Vec<RiverCoord> {
     let flat: Vec<i64> = v
         .as_array()
@@ -292,7 +304,7 @@ fn tier_of(s: &str) -> DensityTier {
 }
 
 fn run_pick(mp: &Map, c: &Value) -> Vec<(i64, i64)> {
-    let fl = fields(mp, &c["pt"]);
+    let fl = fields_sov(mp, c);
     let srcs = pairs_t(&c["srcs"]);
     let used = str_set(&c["used"]).unwrap_or_default();
     let mut rand = rand_for(&c["seed"]);
@@ -356,7 +368,7 @@ fn q4_vectors_match_web() {
             }
             "foothill" => {
                 let mp = mp.unwrap();
-                let fl = fields(mp, &c["pt"]);
+                let fl = fields_sov(mp, c);
                 let got = collect_foothill_river_sources(
                     &mp.rec,
                     c["w"].as_i64().unwrap(),
@@ -373,7 +385,7 @@ fn q4_vectors_match_web() {
             }
             "spring" => {
                 let mp = mp.unwrap();
-                let fl = fields(mp, &c["pt"]);
+                let fl = fields_sov(mp, c);
                 let mut rand = rand_for(&c["seed"]);
                 let got = collect_plain_spring_sources(
                     &mp.rec,
@@ -516,7 +528,7 @@ fn q4_vectors_match_web() {
         "{cnt:?}"
     );
     assert!(
-        g("sweep") >= 480 && g("sweep") == g("sweep_with_transition"),
+        g("sweep") >= 700 && g("sweep_with_transition") >= 650,
         "{cnt:?}"
     );
     for k in [

@@ -284,8 +284,14 @@ for (const [kind, w, h] of [['flat', 28, 22], ['normal', 26, 24], ['rivers', 24,
   m.seaMap = seaMap; m.openMap = openMap; m.ocSet = ocSet;
   bigMaps.push(m);
 }
-const allMaps = [...maps, ...corridors, ...bigMaps];
+const longCorridors = [];
+for (let L = 14; L <= 44; L++) {
+  longCorridors.push(corridorMap(L, 'plytkie_morze', 'morze'));
+  longCorridors.push(corridorMap(L, 'morze', 'morze'));
+}
+const allMaps = [...maps, ...corridors, ...bigMaps, ...longCorridors];
 const bigBase = maps.length + corridors.length;
+const longBase = bigBase + bigMaps.length;
 
 // ---- pomocnicze -----------------------------------------------------------------------------
 const stats = {};
@@ -496,10 +502,11 @@ for (let i = 0; i < N_SRC; i++) {
   const margin = pick([0, 0, 1, 1, 2, 3, -1]);
   const pt = perturb(mp);
   const f = applyPert(mp, pt);
+  const sea = f.seaMap;
   const tier = pick(['low', 'medium', 'high']);
   const seed = newSeed();
-  const outF = web.collectFoothillRiverSources(mp.obj, w, h, margin, f.seaMap);
-  const outS = web.collectPlainSpringSources(mp.obj, w, h, margin, f.seaMap, mulberry(seed), tier);
+  const outF = web.collectFoothillRiverSources(mp.obj, w, h, margin, sea);
+  const outS = web.collectPlainSpringSources(mp.obj, w, h, margin, sea, mulberry(seed), tier);
   const outR = web.collectRiverSources(mp.obj, w, h, margin);
   cases.push({ fn: 'foothill', m: mi, w, h, margin, pt, out: flat(toObjs(outF)) });
   cases.push({ fn: 'spring', m: mi, w, h, margin, pt, tier, seed, out: flat(toObjs(outS)) });
@@ -641,6 +648,62 @@ for (let i = 0; i < N_SWEEPS; i++) {
     }
   }
   if (Object.values(have).some((v) => v < 20)) throw new Error(`trace sweeps ${JSON.stringify(have)}`);
+}
+
+// ---- 6b. nadpisania seaDist (`sov`) na losowych heksach (takze wodnych) wartosciami wokol progow zrodel
+// (2/3, 65, 120): mutanty progow i filtra lad/woda. DEDYKOWANY generator `rnd2` - strumien glowny
+// (przypadki 1-6) nie zmienia sie wzgledem poprzedniej wersji wektorow (nadzbior). ---------------------
+{
+  const rnd2 = mulberry(0x50faced1);
+  const ri2 = (lo, hi) => lo + Math.floor(rnd2() * (hi - lo + 1));
+  const pick2 = (arr) => arr[Math.floor(rnd2() * arr.length)];
+  const SOV_VALUES = [0, 1, 2, 3, 4, 63, 64, 65, 66, 67, 118, 119, 120, 121, 122, 130];
+  const mkSov = (mp) => Array.from({ length: ri2(10, 40) }, () => [pick2(mp.list).k, pick2(SOV_VALUES)]);
+  const withSov = (mp, sov) => {
+    const m = new Map(mp.seaMap);
+    for (const [k, v] of sov) m.set(k, v);
+    return m;
+  };
+  for (let i = 0; i < 400; i++) {
+    const mi = i % nSmall;
+    const mp = allMaps[mi];
+    const margin = pick2([0, 0, 1, 2]);
+    const sov = mkSov(mp);
+    const sea = withSov(mp, sov);
+    const tier = pick2(['low', 'medium', 'high']);
+    const seed = Math.floor(rnd2() * 4294967296) >>> 0;
+    const base = { m: mi, w: mp.W, h: mp.H, margin, pt: null, sov };
+    cases.push({ fn: 'foothill', ...base, out: flat(toObjs(web.collectFoothillRiverSources(mp.obj, mp.W, mp.H, margin, sea))) });
+    cases.push({ fn: 'spring', ...base, tier, seed, out: flat(toObjs(web.collectPlainSpringSources(mp.obj, mp.W, mp.H, margin, sea, mulberry(seed), tier))) });
+    const srcs = mp.list.filter(() => rnd2() < 0.5).map((h) => [h.q, h.r]);
+    const count = pick2([2, 3, 5, 8, 40]);
+    const ms = pick2([0, 1, 2, 3]);
+    cases.push({
+      fn: 'pick', m: mi, srcs: flat(toObjs(srcs)), count, ms, used: [], seed, pt: null, sov,
+      out: flat(toObjs(web.pickSpreadRiverSources(srcs, count, ms, sea, new Set(), mulberry(seed)))),
+    });
+    bump('sov_cases', 3);
+  }
+}
+
+// ---- 7. dlugie korytarze: traceRiver od konca korytarza, sweep maxLen N-1/N/N+1 (obciecie do stepCap,
+// budzet drenazu, A*/zjazd na granicy) ----------------------------------------------------------
+{
+  let got = 0;
+  for (let ci = 0; ci < longCorridors.length; ci++) {
+    const mi = longBase + ci;
+    const mp = allMaps[mi];
+    for (const seed of [null, 4242 + ci]) {
+      for (const rel of [null, true]) {
+        const bc = { fn: 'trace', m: mi, sq: 0, sr: 1, ...BASE, mode: 1, seed, rel };
+        const outs = [];
+        for (let ml = 0; ml <= mp.corridor + 28; ml++) outs.push(flat(runTrace(mp, { ...bc, ml })));
+        sweepRecord('trace_maxlen', { ...bc, lo: 0 }, outs);
+        got++;
+      }
+    }
+  }
+  bump('long_corridor_sweeps', got);
 }
 
 const doc = {
