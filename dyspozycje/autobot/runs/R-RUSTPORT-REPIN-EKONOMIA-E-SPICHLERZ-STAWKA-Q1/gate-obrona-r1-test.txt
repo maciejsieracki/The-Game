@@ -1,0 +1,2 @@
+263 binaria, passed=1997, failed=0 (cargo test -j 2 --no-fail-fast)
+EXIT=0

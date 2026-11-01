@@ -324,9 +324,22 @@ def pin(path):
 for f in ('econ-params.json', 'citizen-resource-upkeep.json', 'ai-params.json'):
     if open(DATA + '/' + f, 'rb').read() != pin(f):
         err('data %s != pin 4bbef081d' % f)
-# terrain-improvements.json NIE jest przepinany (zakres: forty/terytorium/8I poza tematem) - ma pozostac == dc8a3adc.
-if open(DATA + '/terrain-improvements.json', 'rb').read() != subprocess.check_output(['git', '-C', ROOT, 'show', 'dc8a3adc:gra/data/terrain-improvements.json']):
-    err('terrain-improvements.json zmieniony wbrew zakresowi')
+# terrain-improvements.json (obrona r1, zarzut 1): przepiete WYLACZNIE `surowiec_ilosc_tura` (ekonomia, tartak/kamieniolom 200->50);
+# zasiegi fortu/posterunku, opisy i warunki (forty/terytorium/8I) zostaja == dc8a3adc.
+_dc = json.loads(subprocess.check_output(['git', '-C', ROOT, 'show', 'dc8a3adc:gra/data/terrain-improvements.json']))
+_pin = json.loads(pin('terrain-improvements.json'))
+_rs = json.load(open(DATA + '/terrain-improvements.json', encoding='utf-8'))
+for _k in _pin:
+    if _k == '_meta':
+        if _rs[_k] != _dc[_k]:
+            err('terrain _meta zmieniony wbrew zakresowi')
+        continue
+    if _rs[_k].get('surowiec_ilosc_tura') != _pin[_k].get('surowiec_ilosc_tura'):
+        err('terrain %s.surowiec_ilosc_tura != pin' % _k)
+    _a = {f: v for f, v in _rs[_k].items() if f != 'surowiec_ilosc_tura'}
+    _b = {f: v for f, v in _dc[_k].items() if f != 'surowiec_ilosc_tura'}
+    if _a != _b:
+        err('terrain %s zmieniony poza surowiec_ilosc_tura' % _k)
 
 print(json.dumps({'citizenCases': len(cit['cases']), 'display': len(cit['display']), 'rateGrid': len(cit['rateGrid']), 'params': len(sp['params']), 'throughput': len(sp['throughput']), 'amount': len(sp['amount']), 'pay': len(sp['pay']), 'errors': errors}))
 sys.exit(1 if errors else 0)
