@@ -1,0 +1,360 @@
+{
+ "city": {
+  "id": "city0",
+  "q": 47,
+  "r": 24,
+  "population": 1
+ },
+ "policy": [
+  [
+   0,
+   {
+    "focus": "zrownowazone",
+    "tryb": "auto",
+    "onlyWorked": true,
+    "wolnoWycinacLas": false,
+    "pracaAutoPercent": 33
+   }
+  ],
+  [
+   1,
+   {
+    "focus": "zrownowazone",
+    "tryb": "reczny",
+    "onlyWorked": true,
+    "pracaAutoPercent": 100,
+    "wolnoWycinacLas": false
+   }
+  ],
+  [
+   2,
+   {
+    "focus": "zrownowazone",
+    "tryb": "reczny",
+    "onlyWorked": true,
+    "pracaAutoPercent": 100,
+    "wolnoWycinacLas": false
+   }
+  ],
+  [
+   3,
+   {
+    "focus": "zrownowazone",
+    "tryb": "reczny",
+    "onlyWorked": true,
+    "pracaAutoPercent": 100,
+    "wolnoWycinacLas": false
+   }
+  ],
+  [
+   4,
+   {
+    "focus": "zrownowazone",
+    "tryb": "reczny",
+    "onlyWorked": true,
+    "pracaAutoPercent": 100,
+    "wolnoWycinacLas": false
+   }
+  ],
+  [
+   5,
+   {
+    "focus": "zrownowazone",
+    "tryb": "reczny",
+    "onlyWorked": true,
+    "pracaAutoPercent": 100,
+    "wolnoWycinacLas": false
+   }
+  ]
+ ],
+ "log": [
+  {
+   "turnFrom": 1,
+   "turnTo": 2,
+   "poolBefore": 300,
+   "poolAfter": 262,
+   "added": [
+    {
+     "hex": "47,24",
+     "key": "farma"
+    },
+    {
+     "hex": "49,24",
+     "key": "farma"
+    }
+   ]
+  },
+  {
+   "turnFrom": 2,
+   "turnTo": 3,
+   "poolBefore": 262,
+   "poolAfter": 223,
+   "added": [
+    {
+     "hex": "47,24",
+     "key": "bydlo"
+    },
+    {
+     "hex": "49,24",
+     "key": "bydlo"
+    }
+   ]
+  },
+  {
+   "turnFrom": 3,
+   "turnTo": 4,
+   "poolBefore": 223,
+   "poolAfter": 165,
+   "added": [
+    {
+     "hex": "47,24",
+     "key": "irygacja"
+    }
+   ]
+  },
+  {
+   "turnFrom": 4,
+   "turnTo": 5,
+   "poolBefore": 165,
+   "poolAfter": 173,
+   "added": []
+  },
+  {
+   "turnFrom": 5,
+   "turnTo": 6,
+   "poolBefore": 173,
+   "poolAfter": 128,
+   "added": [
+    {
+     "hex": "49,24",
+     "key": "irygacja"
+    }
+   ]
+  },
+  {
+   "turnFrom": 6,
+   "turnTo": 7,
+   "poolBefore": 128,
+   "poolAfter": 144,
+   "added": []
+  },
+  {
+   "turnFrom": 7,
+   "turnTo": 8,
+   "poolBefore": 144,
+   "poolAfter": 160,
+   "added": []
+  },
+  {
+   "turnFrom": 8,
+   "turnTo": 9,
+   "poolBefore": 160,
+   "poolAfter": 176,
+   "added": []
+  },
+  {
+   "turnFrom": 9,
+   "turnTo": 10,
+   "poolBefore": 176,
+   "poolAfter": 192,
+   "added": []
+  },
+  {
+   "turnFrom": 10,
+   "turnTo": 11,
+   "poolBefore": 192,
+   "poolAfter": 208,
+   "added": []
+  },
+  {
+   "turnFrom": 11,
+   "turnTo": 12,
+   "poolBefore": 208,
+   "poolAfter": 224,
+   "added": [
+    {
+     "hex": "42,27",
+     "key": "kamieniolom"
+    }
+   ]
+  },
+  {
+   "turnFrom": 12,
+   "turnTo": 13,
+   "poolBefore": 224,
+   "poolAfter": 220,
+   "added": [
+    {
+     "hex": "49,25",
+     "key": "farma"
+    }
+   ]
+  },
+  {
+   "turnFrom": 13,
+   "turnTo": 14,
+   "poolBefore": 220,
+   "poolAfter": 221,
+   "added": [
+    {
+     "hex": "49,25",
+     "key": "bydlo"
+    }
+   ]
+  },
+  {
+   "turnFrom": 14,
+   "turnTo": 15,
+   "poolBefore": 221,
+   "poolAfter": 185,
+   "added": [
+    {
+     "hex": "49,25",
+     "key": "irygacja"
+    }
+   ]
+  },
+  {
+   "turnFrom": 15,
+   "turnTo": 16,
+   "poolBefore": 185,
+   "poolAfter": 209,
+   "added": []
+  },
+  {
+   "turnFrom": 16,
+   "turnTo": 17,
+   "poolBefore": 209,
+   "poolAfter": 233,
+   "added": []
+  },
+  {
+   "turnFrom": 17,
+   "turnTo": 18,
+   "poolBefore": 233,
+   "poolAfter": 257,
+   "added": []
+  },
+  {
+   "turnFrom": 18,
+   "turnTo": 19,
+   "poolBefore": 257,
+   "poolAfter": 281,
+   "added": [
+    {
+     "hex": "42,28",
+     "key": "farma"
+    }
+   ]
+  },
+  {
+   "turnFrom": 19,
+   "turnTo": 20,
+   "poolBefore": 281,
+   "poolAfter": 305,
+   "added": []
+  },
+  {
+   "turnFrom": 20,
+   "turnTo": 21,
+   "poolBefore": 305,
+   "poolAfter": 269,
+   "added": [
+    {
+     "hex": "49,22",
+     "key": "warzelnia_soli"
+    },
+    {
+     "hex": "49,22",
+     "key": "lodzie_rybackie"
+    }
+   ]
+  },
+  {
+   "turnFrom": 21,
+   "turnTo": 22,
+   "poolBefore": 269,
+   "poolAfter": 298,
+   "added": []
+  },
+  {
+   "turnFrom": 22,
+   "turnTo": 23,
+   "poolBefore": 298,
+   "poolAfter": 327,
+   "added": [
+    {
+     "hex": "42,29",
+     "key": "farma"
+    }
+   ]
+  },
+  {
+   "turnFrom": 23,
+   "turnTo": 24,
+   "poolBefore": 327,
+   "poolAfter": 356,
+   "added": []
+  },
+  {
+   "turnFrom": 24,
+   "turnTo": 25,
+   "poolBefore": 356,
+   "poolAfter": 385,
+   "added": []
+  },
+  {
+   "turnFrom": 25,
+   "turnTo": 26,
+   "poolBefore": 385,
+   "poolAfter": 414,
+   "added": [
+    {
+     "hex": "42,28",
+     "key": "bydlo"
+    }
+   ]
+  },
+  {
+   "turnFrom": 26,
+   "turnTo": 27,
+   "poolBefore": 414,
+   "poolAfter": 443,
+   "added": []
+  },
+  {
+   "turnFrom": 27,
+   "turnTo": 28,
+   "poolBefore": 443,
+   "poolAfter": 452,
+   "added": [
+    {
+     "hex": "49,23",
+     "key": "lodzie_rybackie"
+    }
+   ]
+  },
+  {
+   "turnFrom": 28,
+   "turnTo": 29,
+   "poolBefore": 452,
+   "poolAfter": 487,
+   "added": []
+  },
+  {
+   "turnFrom": 29,
+   "turnTo": 30,
+   "poolBefore": 487,
+   "poolAfter": 522,
+   "added": []
+  },
+  {
+   "turnFrom": 30,
+   "turnTo": 31,
+   "poolBefore": 522,
+   "poolAfter": 557,
+   "added": []
+  }
+ ],
+ "errors": []
+}
