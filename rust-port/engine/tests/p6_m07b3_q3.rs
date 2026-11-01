@@ -130,7 +130,16 @@ fn fields(mp: &Map, pt: &Value) -> Fields {
             .map(|a| a.iter().map(|k| k.as_str().unwrap().to_string()).collect())
             .unwrap_or_default()
     };
-    let (orm, srm, ocrm) = (rm("orm"), rm("srm"), rm("ocrm"));
+    let (orm, mut srm, ocrm) = (rm("orm"), rm("srm"), rm("ocrm"));
+    // `dsea`: brak seaDist dla wszystkich heksow o openOceanDist >= prog (glebokie wnetrze ladu)
+    if let Some(th) = pt["dsea"].as_i64() {
+        srm.extend(
+            mp.open
+                .iter()
+                .filter(|(_, v)| **v >= th)
+                .map(|(k, _)| k.clone()),
+        );
+    }
     Fields {
         sea: mp
             .sea

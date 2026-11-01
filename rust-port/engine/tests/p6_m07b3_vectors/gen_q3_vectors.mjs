@@ -281,6 +281,7 @@ function perturb(mp) {
 function applyPert(mp, pt) {
   if (!pt) return mp;
   const orm = new Set(pt.orm), srm = new Set(pt.srm), ocrm = new Set(pt.ocrm);
+  if (pt.dsea !== undefined) for (const [k, v] of Object.entries(mp.open)) if (v >= pt.dsea) srm.add(k);
   return {
     ...mp,
     seaMap: new Map([...mp.seaMap].filter(([k]) => !srm.has(k))),
@@ -787,7 +788,7 @@ for (let i = 0; i < 90; i++) {
   for (let r = 0; r < H; r++) {
     for (let q = 0; q < W; q++) {
       const edge = q === 0 || r === 0 || q === W - 1 || r === H - 1;
-      list.push({ k: keyOf(q, r), q, r, t: edge ? 'morze' : 'rownina', n: 'brak', z: false, rz: null });
+      list.push({ k: keyOf(q, r), q, r, t: edge ? 'plytkie_morze' : 'rownina', n: 'brak', z: false, rz: null });
     }
   }
   const big = { W, H, list, kind: 'big', corridor: null };
@@ -832,6 +833,35 @@ for (let i = 0; i < 90; i++) {
     }
   }
   if (found < 4) throw new Error(`duza mapa: za malo sweepow ${found}`);
+}
+
+// ---- 10. uzupelnienia r1 (dopisane NA KONCU strumienia losowego - wczesniejsze przypadki bez zmian) ----
+// 10a. perturbacja `deepsea`: brak seaDist dla WSZYSTKICH heksow o openOceanDist >= 6 (nd ?? Infinity w drenazie)
+function deepSeaPert(mp) {
+  return { orm: [], srm: [], ocrm: [], dsea: 6 };
+}
+{
+  const flatIdx = maps.map((m, k) => (m.kind === 'flat' ? k : -1)).filter((k) => k >= 0);
+  const bigIdx = allMaps.length - 1;
+  let got = 0;
+  for (let i = 0; i < 8000 && got < 90; i++) {
+    const mi = i % 2 === 0 ? bigIdx : pick(flatIdx);
+    const mp = allMaps[mi];
+    const s0 = startHex(mp, 'deep');
+    if ((mp.open[keyOf(s0.q, s0.r)] ?? 0) < 6) continue;
+    const pt = deepSeaPert(mp);
+    const seed = rnd() < 0.5 ? null : newSeed();
+    if (got % 3 === 0) cases.push(astarCase(mp, mi, s0, pick([20, 60]), seed, false, pt));
+    else if (got % 3 === 1) cases.push(greedyCase(mp, mi, s0, pick([20, 60]), seed, keyOf(s0.q, s0.r), false, pt));
+    else {
+      // ogon ujscia (finish) od glebokiego konca trasy
+      const p = walkPath(mp, ri(0, 3), 0.7, s0);
+      cases.push(finCase(mi, mp, p, keyOf(p[0][0], p[0][1]), pt));
+    }
+    bump('deepsea_pert');
+    got++;
+  }
+  if (got < 60) throw new Error(`deepsea: ${got}`);
 }
 
 const doc = {
