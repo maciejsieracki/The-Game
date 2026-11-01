@@ -1,3 +1,12 @@
+## ROBOCZA fc1af150 -- 2026-11-01 -- farma przed trzodą także przy rzece, AI unika biegunów (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`97dbcb416` = `50edcc264` + `R-WEB-AI-AVOID-POLAR-CITIES-Q1` `a4f702785`, potem `R-WEB-AUTOCLEAR-PRIORITY-LIVE-Q1` `f2f2e9d05`) i commit wdrożenia bundla; stała zgoda właściciela 2026-10-31.
+- Bundle MD5 `fc1af15093852a9f221f75a44c86296e`, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, outDir poza repo, stempel ROBOCZA; `verify-robocza-bundle.cjs` VERIFY OK.
+- Zakres: (1) automat ulepszeń: farma PRZED trzodą także na heksie sąsiadującym z rzeką (zgłoszenia Korynt, Rodos); kolejność E1 farma → E2 wycinka+farma → E3 trzoda → E4 irygacja; dotyczy też AI (wspólny picker); (2) AI nie zakłada miast (stolice, miasta-państwa, osadnicy) na heksie polarnym ani w jego sąsiedztwie, gdy są lepsze tereny; gracz bez ograniczeń.
+- Testy po scaleniu: tsc PASS; autoclear-priority 60/0, autoimprove-stages-q1 302/0, auto-improvements 46/0, ai-improvements 56/0, ai-food-stages 13/0, wyrab-rzeka-r2 10/0, ai-avoid-polar-pick 16/0, capital-sep-unit 36/0, fort-outpost 80/0, auto-fort-claim 63/0, food-hodowla 24/0.
+- Ograniczenia: NIE_ZMIERZONO w żywej grze (Chromium); sweep na mapie: trzoda przed farmą 37/200 → 10/200 (reszta: heksy daleko od rzeki, zgodnie z decyzją #1); w toku: rozproszenie stolic (wariant A+B).
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `20ebabc77b5003f42c550294ec0a3b23`, 70,109,819 bajtów.
+
 ## ROBOCZA 20ebabc7 -- 2026-11-01 -- udział lądu przywrócony per typ świata, sprzątanie starych reguł (testowa)
 
 - **STATUS: DEPLOYED** — merge do `origin/main` (`4bbef081d` + `R-WEB-LAND-FRACTION-RESTORE-Q1` `bfd7f59d3` + `R-WEB-STALE-RULES-CLEANUP-Q1` `dec01c31d`) i commit wdrożenia bundla; stała zgoda właściciela 2026-10-31.
