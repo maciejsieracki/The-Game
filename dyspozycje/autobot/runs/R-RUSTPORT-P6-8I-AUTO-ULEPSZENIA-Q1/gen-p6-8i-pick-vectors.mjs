@@ -118,13 +118,13 @@ MAPS.push(pureMap(() => ({ teren: TB.Rownina, nak: NK.Las }), 6, [RIVER_A]));   
 MAPS.push(pureMap((q, r) => ({ teren: (q + r) % 2 === 0 ? TB.Wzgorza : TB.Laka, nak: NK.Las }), 6, []));  // +2 wzgorza+las bez rzeki
 MAPS.push(pureMap((q, r) => ({ teren: Math.abs(q) + Math.abs(r) > 4 ? TB.Gory : TB.Rownina, zloze: Math.abs(q) + Math.abs(r) > 5 ? 'zelazo' : null }), 9, [])); // +3 gory ze zlozem na obrzezu
 MAPS.push(pureMap((q, r) => ({ teren: TB.Rownina, nak: (q * 7 + r * 3) % 5 === 0 ? NK.Las : NK.Brak, rzeka: q === 1 && r === 1 }), 6, [[[1, 1], [1, 2], [0, 3]]])); // +4 rzeka krotka
-const mapOut = MAPS.map(m => ({
+const buildMapOut = () => MAPS.map(m => ({
   hexes: m.hexes.map(h => [h.q, h.r, h.teren, h.nak, h.zloze, h.rzeka ? 1 : 0, h.ulepszenie, h.ulepszenia]),
   riverPaths: m.riverPaths,
 }));
 
 // ---- budowa obiektow weba ----------------------------------------------------------------
-const webMaps = MAPS.map(m => {
+const toWebMap = (m) => {
   const hexes = {};
   for (const h of m.hexes) {
     const hex = {
@@ -136,7 +136,10 @@ const webMaps = MAPS.map(m => {
     hexes[`${h.q},${h.r}`] = hex;
   }
   return { hexes, riverPaths: m.riverPaths.map(p => p.map(([q, r]) => ({ q, r }))) };
-});
+};
+const webMaps = MAPS.map(toWebMap);
+// Mapy DOPISYWANE po scenariuszach losowych (nie zmieniaja ciagu PRNG ani indeksow wczesniejszych map).
+const addMap = (m) => { MAPS.push(m); webMaps.push(toWebMap(m)); return MAPS.length - 1; };
 
 // ---- puli technologii ---------------------------------------------------------------------
 const techPool = new Set();
@@ -381,6 +384,206 @@ for (let i = 0; i < 150; i++) {
   add(s);
 }
 
+// ---- runda 4b: scenariusze celowane w gałęzie wykryte przez mutacje (DOPISANE na końcu: ciąg PRNG i
+// indeksy wcześniejszych scenariuszy/map bez zmian) ----------------------------------------------------
+const cost = (k) => IT.getImprovementMeta(k).kosztPraca;
+const COST_FORT = cost('fort');
+const COST_POST = cost('posterunek');
+const COST_ZEL = cost('kopalnia_zelaza');
+const T_NO_WOJ = T_ALL.filter(t => t !== 'Wojskowość');
+const dist3 = (q, r) => Math.max(Math.abs(q), Math.abs(r), Math.abs(q + r));
+const mkSpec = (name, map, o = {}) => {
+  const cities = o.cities ?? [{ id: 'c1', ownerId: 1, q: 0, r: 0, population: 5 }];
+  return {
+    name, map, ownerId: 1, cities,
+    territoryNodes: o.territoryNodes === undefined ? cities.map(c => ({ q: c.q, r: c.r, pop: typeof c.population === 'number' ? c.population : 5, level: 1, ownerId: c.ownerId })) : o.territoryNodes,
+    placed: o.placed ?? {}, praca: o.praca ?? 5000, techs: o.techs ?? T_ALL, opts: o.opts ?? {}, fn: o.fn ?? {},
+  };
+};
+// M_RIVER: rzeka r=0, |q|<=2; las tylko na 5 heksach WEWNATRZ terytorium miasta (pop 6 -> promien 6), zeby prog
+// `WYRAB_MIN_FOREST_IN_RADIUS` (>= 3 lasu w promieniu) realnie wiazal (las poza terytorium nie wchodzi do zliczen picka).
+const M_FOREST_SPOTS = new Set(['0,3', '1,3', '-1,3', '0,-3', '1,-3']);
+const M_RIVER = addMap(pureMap((q, r) => ({ teren: TB.Rownina, nak: M_FOREST_SPOTS.has(`${q},${r}`) ? NK.Las : NK.Brak, rzeka: r === 0 && Math.abs(q) <= 2 }), 8,
+  [[[-2, 0], [-1, 0], [0, 0], [1, 0], [2, 0]]]));
+const M_GORY = addMap(pureMap((q, r) => ({ teren: TB.Gory, zloze: dist3(q, r) >= 3 && ((q * 5 + r * 3) % 7 + 7) % 7 === 0 ? 'zelazo' : null }), 9, []));
+const M_GORY2 = addMap(pureMap((q, r) => ({ teren: TB.Gory, zloze: ((q * 5 + r * 3) % 11 + 11) % 11 === 0 ? 'zelazo' : null }), 18, []));
+const M_G1 = addMap({ hexes: [...disk(0, 0, 6).map(([q, r]) => ({ q, r, teren: TB.Gory, nak: NK.Brak, zloze: null, rzeka: false, ulepszenie: null, ulepszenia: null })),
+  { q: 7, r: 0, teren: TB.Rownina, nak: NK.Brak, zloze: null, rzeka: false, ulepszenie: null, ulepszenia: null }], riverPaths: [] });
+const M_SORT = addMap(pureMap(() => ({ teren: TB.Rownina }), 14, [[[-11, 0], [-11, 1]], [[11, 0], [11, -1]], [[0, 11], [1, 11]]]));
+const M_PROBE = addMap(pureMap(() => ({ teren: TB.Rownina }), 4, []));
+const M_PROBE2 = addMap(pureMap((q, r) => ({ teren: TB.Rownina, zloze: q === 1 && r === 0 ? 'miedz' : null }), 4, []));
+const DEV_KEYS = ['farma', 'irygacja', 'bydlo', 'owce', 'lama', 'tarasy'];
+const riverDevPlaced = (extra = {}) => {
+  const p = { ...extra };
+  for (const q of [-2, -1, 0, 1, 2]) p[`${q},0`] = [...DEV_KEYS];
+  return p;
+};
+const forestAids = { '0,4': ['tartak'], '1,4': ['oboz_lowiecki'] };
+
+add(mkSpec('r4b-hill-tartak-layer', SPECIAL_BASE + 2, {
+  cities: [{ id: 'c1', ownerId: 1, q: 0, r: 0, population: 5, focus: 'surowce' }],
+  placed: Object.fromEntries(disk(0, 0, 7).filter(([q, r]) => (q + r) % 2 === 0).map(([q, r]) => [`${q},${r}`, ['tartak']])),
+}));
+add(mkSpec('r4b-override-wyrab-threshold', M_RIVER, { cities: [{ id: 'c1', ownerId: 1, q: 0, r: 0, population: 6 }], opts: { priorityOverride: ['wyrab'] } }));
+add(mkSpec('r4b-civdeny-tartak-wyrab', M_RIVER, { cities: [{ id: 'c1', ownerId: 1, q: 0, r: 0, population: 6, focus: 'surowce' }], opts: { priorityOverride: ['wyrab', 'tartak'] }, fn: { civDeny: ['tartak'] } }));
+add(mkSpec('r4b-offriver-surowce', M_RIVER, { cities: [{ id: 'c1', ownerId: 1, q: 0, r: 0, population: 6, focus: 'surowce' }], opts: { offRiverClearing: true, priorityOverride: ['wyrab', 'tartak'] } }));
+// populacja NaN -> promien okolicy 0 (+1 w pickerze): las musi lezec przy samym miescie
+const M_NAN = addMap(pureMap((q, r) => ({ teren: TB.Rownina, nak: ['1,0', '0,1', '-1,1'].includes(`${q},${r}`) ? NK.Las : NK.Brak }), 4, []));
+add(mkSpec('r4b-popnan-lesne', M_NAN, {
+  cities: [{ id: 'c1', ownerId: 1, q: 0, r: 0, population: 'NaN', focus: 'surowce' }],
+  territoryNodes: [{ q: 0, r: 0, pop: 6, level: 1, ownerId: 1 }], placed: { '1,-1': ['tartak'] },
+  opts: { priorityOverride: ['wyrab', 'tartak'] },
+}));
+add(mkSpec('r4b-popnan-defense', M_GORY, {
+  cities: [{ id: 'c1', ownerId: 1, q: 0, r: 0, population: 'NaN', focus: 'infrastruktura' }],
+  territoryNodes: [{ q: 0, r: 0, pop: 6, level: 1, ownerId: 1 }], placed: { '-2,3': ['posterunek'] },
+}));
+add(mkSpec('r4b-rzeki-scheduled', M_RIVER, {
+  cities: [{ id: 'c1', ownerId: 1, q: 0, r: 0, population: 6 }],
+  placed: riverDevPlaced({ ...forestAids, '2,0': [] }), opts: { clearingHexKeys: ['2,0'] },
+}));
+add(mkSpec('r4b-rzeki-devkeys', M_RIVER, { cities: [{ id: 'c1', ownerId: 1, q: 0, r: 0, population: 6 }], placed: riverDevPlaced(forestAids) }));
+add(mkSpec('r4b-rzeki-devkeys-nodev', M_RIVER, { cities: [{ id: 'c1', ownerId: 1, q: 0, r: 0, population: 6 }], placed: riverDevPlaced(forestAids), techs: [] }));
+add(mkSpec('r4b-probe-dup', M_PROBE, {
+  cities: [{ id: 'c1', ownerId: 1, q: 0, r: 0, population: 2 }], praca: 10,
+  placed: Object.fromEntries([[1, 0], [-1, 0], [0, 1], [0, -1], [1, -1], [-1, 1]].map(([q, r]) => [`${q},${r}`, ['droga']])),
+  opts: { priorityOverride: ['droga'], withSurplusReport: true },
+}));
+add(mkSpec('r4b-probe-hexallows', M_PROBE2, {
+  cities: [{ id: 'c1', ownerId: 1, q: 0, r: 0, population: 2, focus: 'surowce' }], praca: 10,
+  opts: { priorityOverride: ['droga'], withSurplusReport: true }, fn: { onlyWorkedByCity: { c1: true }, workedKeysByCity: { c1: [] } },
+}));
+add(mkSpec('r4b-probe-hexallows-worked', M_PROBE2, {
+  cities: [{ id: 'c1', ownerId: 1, q: 0, r: 0, population: 2, focus: 'surowce' }], praca: 10,
+  opts: { priorityOverride: ['droga'], withSurplusReport: true }, fn: { onlyWorkedByCity: { c1: true }, workedKeysByCity: { c1: ['1,0'] } },
+}));
+add(mkSpec('r4b-cap-nan-pct', SPECIAL_BASE, { praca: 300, opts: { foodImprovementStages: true, pracaBudgetPercent: 20, improvementBudgetCap: 'NaN' } }));
+add(mkSpec('r4b-cap-inf-pct', SPECIAL_BASE, { praca: 300, opts: { foodImprovementStages: true, pracaBudgetPercent: 20, improvementBudgetCap: 'Infinity' } }));
+add(mkSpec('r4b-pct-nan-cap', SPECIAL_BASE, { praca: 300, opts: { foodImprovementStages: true, pracaBudgetPercent: 'NaN', improvementBudgetCap: 100 } }));
+add(mkSpec('r4b-pct-nan-cap-single', SPECIAL_BASE, { praca: 300, opts: { pracaBudgetPercent: 'NaN', improvementBudgetCap: 100 } }));
+add(mkSpec('r4b-empty-cities-deficit-report', SPECIAL_BASE, { cities: [], territoryNodes: [], opts: { withSurplusReport: true, demandDriven: true, resourceDeficitKeys: ['kamien'] } }));
+add(mkSpec('r4b-id-sort-far', M_SORT, {
+  cities: [{ id: 'b', ownerId: 1, q: -12, r: 0, population: 1 }, { id: '\u{1F600}', ownerId: 1, q: 12, r: 0, population: 1 }, { id: 'Ａ', ownerId: 1, q: 0, r: 12, population: 1 }],
+  opts: { foodImprovementStages: true },
+}));
+add(mkSpec('r4b-id-sort-far-single', M_SORT, {
+  cities: [{ id: 'b', ownerId: 1, q: -12, r: 0, population: 1 }, { id: '\u{1F600}', ownerId: 1, q: 12, r: 0, population: 1 }, { id: 'Ａ', ownerId: 1, q: 0, r: 12, population: 1 }],
+}));
+const fortOpts = (extra = {}) => ({ fortClaimPass: true, demandDriven: true, ...extra });
+const cityG = { id: 'c1', ownerId: 1, q: 0, r: 0, population: 3 };
+add(mkSpec('r4b-fort-pct-cap', M_GORY, { cities: [cityG], praca: 6000, opts: fortOpts({ pracaBudgetPercent: Math.max(0.1, (COST_FORT / 6000) * 50), improvementBudgetCap: 100000 }) }));
+add(mkSpec('r4b-fort-city-hex', M_GORY, { cities: [{ id: 'c1', ownerId: 1, q: 2, r: 0, population: 0 }], praca: 6000, opts: fortOpts() }));
+add(mkSpec('r4b-fort-gain-one', M_G1, { cities: [{ id: 'c1', ownerId: 1, q: 0, r: 0, population: 6 }], praca: 6000, opts: fortOpts() }));
+const twoFar = [{ id: 'c1', ownerId: 1, q: -12, r: 0, population: 3 }, { id: 'c2', ownerId: 1, q: 12, r: 0, population: 3 }];
+add(mkSpec('r4b-fort-two-far', M_GORY2, { cities: twoFar, praca: 6000, opts: fortOpts() }));
+add(mkSpec('r4b-fort-reserve-two', M_GORY2, { cities: twoFar, praca: 1000, opts: fortOpts({ pracaSurplusThreshold: 1000 - 1.5 * COST_FORT }) }));
+add(mkSpec('r4b-fort-cap-two', M_GORY2, { cities: twoFar, praca: 3 * COST_FORT, opts: fortOpts({ pracaBudgetPercent: 50 }) }));
+add(mkSpec('r4b-fort-pool-two', M_GORY2, { cities: twoFar, praca: 1.5 * COST_FORT, opts: fortOpts() }));
+add(mkSpec('r4b-fort-wait-roads', M_GORY, { cities: [cityG], praca: COST_FORT - 1, opts: { foodImprovementStages: true, demandDriven: true, cityLimitExhausted: true } }));
+add(mkSpec('r4b-fort-then-roads', M_GORY, { cities: [cityG], praca: 6000, opts: { foodImprovementStages: true, demandDriven: true, cityLimitExhausted: true } }));
+add(mkSpec('r4b-roads-only', M_GORY, { cities: [cityG], praca: 6000, opts: { foodImprovementStages: true, demandDriven: true } }));
+if (COST_POST < COST_ZEL) {
+  add(mkSpec('r4b-fort-deficit-wait', M_GORY, {
+    cities: [cityG], praca: Math.floor((COST_POST + COST_ZEL) / 2), techs: T_NO_WOJ,
+    opts: { foodImprovementStages: true, demandDriven: true, cityLimitExhausted: true, resourceDeficitKeys: ['ruda_zelaza'] },
+  }));
+}
+add(mkSpec('r4b-fort-posterunek-control', M_GORY, {
+  cities: [cityG], praca: 6000, techs: T_NO_WOJ, opts: { foodImprovementStages: true, demandDriven: true, cityLimitExhausted: true },
+}));
+add(mkSpec('r4b-fort-posterunek-pool', M_GORY, {
+  cities: [cityG], praca: Math.floor((COST_POST + COST_ZEL) / 2), techs: T_NO_WOJ, opts: { foodImprovementStages: true, demandDriven: true, cityLimitExhausted: true },
+}));
+add(mkSpec('r4b-fort-deficit-pass', M_GORY, {
+  cities: [cityG], praca: 6000,
+  opts: { foodImprovementStages: true, demandDriven: true, cityLimitExhausted: true, resourceDeficitKeys: ['ruda_zelaza'] },
+}));
+add(mkSpec('r4b-fallback-record', M_GORY, {
+  cities: [{ id: 'A', ownerId: 1, q: 0, r: 0, population: 6 }, { id: 'B', ownerId: 1, q: 3, r: 0, population: 6 }],
+  opts: { foodImprovementStages: { cities: ['A'] } },
+}));
+add(mkSpec('r4b-fallback-record-close', M_GORY, {
+  cities: [{ id: 'A', ownerId: 1, q: 0, r: 0, population: 6 }, { id: 'B', ownerId: 1, q: 1, r: 0, population: 6 }],
+  opts: { foodImprovementStages: { cities: ['A'] }, maxItemsPerCity: 3 },
+}));
+add(mkSpec('r4b-fort-record-other', M_GORY, {
+  cities: [{ id: 'A', ownerId: 1, q: 0, r: 0, population: 3 }, { id: 'B', ownerId: 1, q: -4, r: 4, population: 0, focus: 'infrastruktura' }],
+  praca: 6000, opts: { foodImprovementStages: { cities: ['A'] }, demandDriven: true, cityLimitExhausted: true },
+}));
+add(mkSpec('r4b-fort-other-city', M_GORY2, {
+  cities: [{ id: 'A', ownerId: 1, q: 0, r: 0, population: 3 }, { id: 'B', ownerId: 1, q: 4, r: 0, population: 0, focus: 'infrastruktura' }],
+  praca: COST_FORT + COST_POST - 1, opts: { foodImprovementStages: { cities: ['A'] }, demandDriven: true, cityLimitExhausted: true },
+}));
+add(mkSpec('r4b-fort-other-city-rich', M_GORY2, {
+  cities: [{ id: 'A', ownerId: 1, q: 0, r: 0, population: 3 }, { id: 'B', ownerId: 1, q: 4, r: 0, population: 0, focus: 'infrastruktura' }],
+  praca: 6000, opts: { foodImprovementStages: { cities: ['A'] }, demandDriven: true, cityLimitExhausted: true },
+}));
+add(mkSpec('r4b-wyrab-budget-floor', SPECIAL_BASE + 1, { praca: 8, opts: { foodImprovementStages: true, pracaBudgetPercent: 33, demandDriven: true } }));
+add(mkSpec('r4b-wyrab-budget-floor-single', SPECIAL_BASE + 1, { praca: 8, opts: { pracaBudgetPercent: 33, demandDriven: true, priorityOverride: ['wyrab'] } }));
+
+// rodzina `fortg-*`: mapy gorskie bez ziemi uprawnej -> etapy zywnosci i sciezka zapasowa puste, osiagalne E-FORT i drogi
+for (let i = 0; i < 160; i++) {
+  const big = chance(0.4);
+  const mapIdx = big ? M_GORY2 : M_GORY;
+  const nC = ri(1, 3);
+  const spots = big ? [[-12, 0], [12, 0], [0, 12], [0, -12], [-9, 9], [9, -9]] : [[0, 0], [3, 0], [-3, 2], [2, -3], [0, 4], [4, -4]];
+  const cities = [];
+  const usedSpot = new Set();
+  for (let j = 0; j < nC; j++) {
+    const sp = pick(spots);
+    if (usedSpot.has(sp.join(','))) continue;
+    usedSpot.add(sp.join(','));
+    const c = { id: pick(['A', 'B', 'c' + j, 'z' + j]) + j, ownerId: 1, q: sp[0], r: sp[1], population: pick([0, 1, 2, 3, 4, 6]) };
+    if (chance(0.3)) c.focus = pick(['infrastruktura', 'surowce', 'zywnosc', 'zrownowazone']);
+    cities.push(c);
+  }
+  const o = { foodImprovementStages: chance(0.7) ? true : { cities: subset(cities.map(c => c.id), 0.5) }, demandDriven: chance(0.9) };
+  if (chance(0.85)) o.cityLimitExhausted = true;
+  if (chance(0.4)) o.resourceDeficitKeys = subset(['ruda_zelaza', 'kamien', 'ruda', 'sol', 'zywnosc'], 0.4);
+  if (chance(0.3)) o.pracaBudgetPercent = pick([100, 50, 20, 5]);
+  if (chance(0.2)) o.maxItemsPerCity = pick([1, 2]);
+  if (chance(0.2)) o.pracaSurplusThreshold = pick([10, 100, 300]);
+  const specG = mkSpec(`fortg-${i}`, mapIdx, {
+    cities, praca: pick([30, COST_POST + 5, COST_FORT - 1, COST_FORT + 5, 2 * COST_FORT, 600, 3000, 8000]),
+    techs: chance(0.7) ? T_ALL : T_NO_WOJ, opts: o,
+  });
+  add(specG);
+}
+
+// morze w promieniu fortu nie liczy sie do zysku; terytorium wlasne w calosci = zysk 0 (mapy dopisane po rodzinie fortg)
+const gorySea = (seaTerrain) => addMap({
+  hexes: [...disk(0, 0, 6).map(([q, r]) => ({ q, r, teren: TB.Gory, nak: NK.Brak, zloze: null, rzeka: false, ulepszenie: null, ulepszenia: null })),
+    { q: 7, r: 0, teren: seaTerrain, nak: NK.Brak, zloze: null, rzeka: false, ulepszenie: null, ulepszenia: null }],
+  riverPaths: [],
+});
+const M_G1M = gorySea(TB.Morze);
+const M_G1P = gorySea(TB.PlytkieMorze);
+const M_G0 = addMap({ hexes: disk(0, 0, 6).map(([q, r]) => ({ q, r, teren: TB.Gory, nak: NK.Brak, zloze: null, rzeka: false, ulepszenie: null, ulepszenia: null })), riverPaths: [] });
+const city6 = { id: 'c1', ownerId: 1, q: 0, r: 0, population: 6 };
+add(mkSpec('r4b-fort-sea-morze', M_G1M, { cities: [city6], praca: 6000, opts: fortOpts() }));
+add(mkSpec('r4b-fort-sea-plytkie', M_G1P, { cities: [city6], praca: 6000, opts: fortOpts() }));
+add(mkSpec('r4b-fort-all-owned', M_G0, { cities: [city6], praca: 6000, opts: fortOpts() }));
+add(mkSpec('r4b-fort-gain-one-staged', M_G1, { cities: [city6], praca: 6000, opts: { foodImprovementStages: true, demandDriven: true, cityLimitExhausted: true } }));
+
+// wezly fortu/posterunku w territoryNodes na mapie gorskiej (E-FORT osiagalny); `strict` (nazwa `fort-wlasny-`/`fort-obcy-`)
+const nodeCity = { q: 0, r: 0, pop: 3, level: 1, ownerId: 1 };
+const fortStaged = { foodImprovementStages: true, demandDriven: true, cityLimitExhausted: true };
+for (const [nm, nodes] of [
+  ['fort-wlasny-gory-posterunek', [{ q: -3, r: 2, pop: 0, level: 1, ownerId: 1, isOutpost: true }]],
+  ['fort-wlasny-gory-fort', [{ q: 3, r: -2, pop: 0, level: 1, ownerId: 1, isFort: true }]],
+  ['fort-wlasny-gory-oba', [{ q: -3, r: 2, pop: 0, level: 1, ownerId: 1, isOutpost: true }, { q: 2, r: 2, pop: 0, level: 1, ownerId: 1, isFort: true }]],
+  ['fort-obcy-gory-fort', [{ q: 6, r: -8, pop: 0, level: 1, ownerId: 2, isFort: true }]],
+  ['fort-obcy-gory-posterunek', [{ q: -7, r: 7, pop: 0, level: 1, ownerId: 2, isOutpost: true }]],
+]) {
+  add(mkSpec(nm, M_GORY, { cities: [cityG], territoryNodes: [nodeCity, ...nodes], praca: 6000, opts: fortStaged }));
+  add(mkSpec(nm + '-direct', M_GORY, { cities: [cityG], territoryNodes: [nodeCity, ...nodes], praca: 6000, opts: fortOpts() }));
+}
+// S3-1: dostep do wody = sasiedztwo heksu rzeki (kierunek (+1,0) tylko ten): las z rzeka obok nie dostaje tartaku
+const M_ACCESS = addMap(pureMap((q, r) => ({ teren: TB.Rownina, nak: q === -1 && r === 1 ? NK.Las : NK.Brak }), 5, [[[0, 1]]]));
+add(mkSpec('r4b-access-e', M_ACCESS, { cities: [{ id: 'c1', ownerId: 1, q: 0, r: 0, population: 5, focus: 'surowce' }], opts: { priorityOverride: ['tartak'] }, praca: 500 }));
+add(mkSpec('r4b-cap-nan-pct-single', SPECIAL_BASE, { praca: 300, opts: { pracaBudgetPercent: 20, improvementBudgetCap: 'NaN' } }));
+add(mkSpec('r4b-cap-inf-pct-single', SPECIAL_BASE, { praca: 300, opts: { pracaBudgetPercent: 20, improvementBudgetCap: 'Infinity' } }));
+
 // ---- helpery (P1) --------------------------------------------------------------------------
 const helpers = {
   constants: {
@@ -396,6 +599,8 @@ const helpers = {
     ROAD_KEYS: [...A.ROAD_KEYS],
     FORT_CLAIM_MIN_NEW_HEXES: A.FORT_CLAIM_MIN_NEW_HEXES,
   },
+  // `wyrab` nie ma bramki technologicznej (dowod rownowaznosci mutantow "drop tech wyrab" w pickerze).
+  wyrabTechUnlockedEmpty: IT.isImprovementTechUnlocked('wyrab', new Set()),
   priorities: ['zywnosc', 'surowce', 'infrastruktura', 'zrownowazone', 'xyz', '', 'ZYWNOSC'].flatMap(f =>
     [false, true].map(skip => ({ focus: f, skipWyrab: skip, out: [...A.prioritiesForUlepszeniaFocus(f, skip)] }))),
   hasNonFood: [undefined, [], ['zywnosc'], ['zywnosc', 'zywnosc'], ['drewno'], ['zywnosc', 'drewno'], [''], ['Zywnosc']].map(d => ({
@@ -422,7 +627,7 @@ const helpers = {
   })(),
 };
 
-writeFileSync(join(outDir, 'pick.json'), JSON.stringify({ pin: PIN, source: 'gra/src/game/auto-improvements.ts', techs: TECHS, maps: mapOut, scenarios }) + '\n');
+writeFileSync(join(outDir, 'pick.json'), JSON.stringify({ pin: PIN, source: 'gra/src/game/auto-improvements.ts', techs: TECHS, maps: buildMapOut(), scenarios }) + '\n');
 writeFileSync(join(outDir, 'helpers.json'), JSON.stringify({ pin: PIN, ...helpers }) + '\n');
 const nonEmpty = scenarios.filter(s => s.expected.picks.length > 0).length;
 const kinds = {};

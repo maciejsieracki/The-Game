@@ -312,7 +312,7 @@ fn pick_auto_improvements_matches_pinned_web_vectors() {
         .collect();
     let scenarios = d["scenarios"].as_array().unwrap();
     assert!(
-        scenarios.len() >= 1900,
+        scenarios.len() >= 2150,
         "za malo scenariuszy: {}",
         scenarios.len()
     );
@@ -326,6 +326,16 @@ fn pick_auto_improvements_matches_pinned_web_vectors() {
         && city_territory_radius(&fort_probe(false)) == 3.0;
     for s in scenarios {
         let (got, report) = run_scenario(s, &maps);
+        if let Ok(prefix) = std::env::var("P6_8I_DUMP") {
+            if s["name"].as_str().unwrap().starts_with(&prefix) {
+                eprintln!(
+                    "DUMP {} got={} want={}",
+                    s["name"],
+                    got.len(),
+                    s["expected"]["picks"].as_array().unwrap().len()
+                );
+            }
+        }
         let want = expected_picks(&s["expected"]);
         if !want.is_empty() {
             nonempty += 1;
@@ -470,4 +480,17 @@ fn helper_priorities_deficits_and_city_limit_match_web() {
         let got = is_city_limit_exhausted(&cities, opt_num(&c["base"]), opt_num(&c["era"]));
         assert_eq!(got, c["out"].as_bool().unwrap(), "case={c}");
     }
+}
+
+#[test]
+fn wyrab_has_no_tech_gate_like_web() {
+    // Dowod rownowaznosci mutantow "drop tech wyrab" (C16, H25, H69): `wyrab` jest odblokowany bez techow.
+    let h: Value = serde_json::from_str(HELPERS).unwrap();
+    let web = h["wyrabTechUnlockedEmpty"].as_bool().unwrap();
+    let none = BTreeSet::new();
+    assert!(web);
+    assert_eq!(
+        civ_engine::domain::improvement_build::is_improvement_tech_unlocked("wyrab", &none),
+        web
+    );
 }

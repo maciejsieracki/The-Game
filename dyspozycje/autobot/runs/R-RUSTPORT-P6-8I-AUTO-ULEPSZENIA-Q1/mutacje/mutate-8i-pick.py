@@ -172,7 +172,7 @@ m('H28_hex_wyrab_reserve_gt', HP, '&& acc.praca_left - meta.koszt_praca >= env.r
 m('H29_hex_wyrab_cap_lt', HP, '&& acc.global_spent + meta.koszt_praca <= env.effective_city_cap\n                    && sh.qualifies("wyrab", q, r)', '&& acc.global_spent + meta.koszt_praca < env.effective_city_cap\n                    && sh.qualifies("wyrab", q, r)')
 m('H30_hex_wyrab_qualifies_true', HP, '&& sh.qualifies("wyrab", q, r)\n                {', '&& true\n                {')
 m('H31_hex_wyrab_forest_dec', HP, 'acc.forest_left -= 1.0;\n                    continue;', 'continue;')
-m('H32_hex_wyrab_no_continue', HP, 'acc.forest_left -= 1.0;\n                    continue;', 'acc.forest_left -= 1.0;')
+m('H32_hex_wyrab_no_continue', HP, 'acc.scheduled_wyrab.insert(hex_key);\n                    acc.forest_left -= 1.0;\n                    continue;', 'acc.scheduled_wyrab.insert(hex_key.clone());\n                    acc.forest_left -= 1.0;')
 m('H33_hex_wyrab_no_schedule', HP, 'acc.scheduled_wyrab.insert(hex_key);\n                    acc.forest_left', 'acc.forest_left')
 m('H34_hex_key_top_spent_gt', HP, 'if acc.global_spent >= env.effective_city_cap || acc.placed_this_city >= env.max_items {', 'if acc.global_spent > env.effective_city_cap || acc.placed_this_city >= env.max_items {', occ=2)
 m('H35_hex_key_top_placed_gt', HP, 'if acc.global_spent >= env.effective_city_cap || acc.placed_this_city >= env.max_items {', 'if acc.global_spent >= env.effective_city_cap || acc.placed_this_city > env.max_items {', occ=2)
@@ -298,7 +298,7 @@ m('F10_keys_tech', FC, '&& sh.tech_ok(k)', '&& true')
 m('F11_keys_civ', FC, '&& sh.civ_ok(k)', '&& true')
 m('F12_keys_empty_return', FC, 'if keys.is_empty() {\n        return picks;', 'if false {\n        return picks;')
 m('F13_reserve_lt', FC, 'if praca_left <= budget.reserve {\n            break;', 'if praca_left < budget.reserve {\n            break;')
-m('F14_cap_drop_imperium', FC, 'js_min((pct / 100.0) * budget.global_pula_at_entry, budget.imperium_budget_cap)', '(pct / 100.0) * budget.global_pula_at_entry')
+m('F14_cap_drop_imperium', FC, 'js_min(\n            (pct / 100.0) * budget.global_pula_at_entry,\n            budget.imperium_budget_cap,\n        )', '(pct / 100.0) * budget.global_pula_at_entry')
 m('F15_pct_default', FC, 'None => budget.praca_budget_percent,', 'None => 100.0,')
 m('F16_seen_off', FC, 'if !seen.insert(hk.clone()) {\n                    continue;', 'if false {\n                    continue;')
 m('F17_valuable_or_to_and', FC, 'if !(hex.terrain == TerrainType::Gory || hex_has_deposit_reserve(hex)) {', 'if !(hex.terrain == TerrainType::Gory && hex_has_deposit_reserve(hex)) {')
@@ -309,10 +309,10 @@ m('F21_existing_fort_skip_off', FC, 'if sh\n                    .placed(&hk)\n  
 m('F22_circle_overlap_le', FC, '.any(|f| axial_distance(q, r, f.q, f.r) <= rad + f.rad)', '.any(|f| axial_distance(q, r, f.q, f.r) < rad + f.rad)')
 m('F23_circle_overlap_off', FC, '.any(|f| axial_distance(q, r, f.q, f.r) <= rad + f.rad)', '.any(|f| false && f.q == q)')
 m('F24_qualifies_off', FC, 'if !sh.qualifies(key, q, r) {\n                        continue;', 'if false {\n                        continue;')
-m('F25_gain_sea_morze', FC, 'if nh.terrain == TerrainType::Morze || nh.terrain == TerrainType::PlytkieMorze {', 'if nh.terrain == TerrainType::PlytkieMorze {')
-m('F26_gain_sea_plytkie', FC, 'if nh.terrain == TerrainType::Morze || nh.terrain == TerrainType::PlytkieMorze {', 'if nh.terrain == TerrainType::Morze {')
+m('F25_gain_sea_morze', FC, 'if nh.terrain == TerrainType::Morze\n                            || nh.terrain == TerrainType::PlytkieMorze\n                        {', 'if nh.terrain == TerrainType::PlytkieMorze\n                        {')
+m('F26_gain_sea_plytkie', FC, 'if nh.terrain == TerrainType::Morze\n                            || nh.terrain == TerrainType::PlytkieMorze\n                        {', 'if nh.terrain == TerrainType::Morze\n                        {')
 m('F27_gain_owner_gt', FC, '.all(|n| axial_distance(nq, nr, n.q, n.r) > n.rad)', '.all(|n| axial_distance(nq, nr, n.q, n.r) >= n.rad)')
-m('F28_gain_owner_off', FC, 'if nodes_now.iter().all(|n| axial_distance(nq, nr, n.q, n.r) > n.rad) {', 'if true {')
+m('F28_gain_owner_off', FC, 'if nodes_now\n                            .iter()\n                            .all(|n| axial_distance(nq, nr, n.q, n.r) > n.rad)\n                        {', 'if true {')
 m('F29_gain_min', FC, 'if gain < FORT_CLAIM_MIN_NEW_HEXES {', 'if gain <= FORT_CLAIM_MIN_NEW_HEXES {')
 m('F30_better_gain', FC, 'gain > b.gain\n', 'gain < b.gain\n')
 m('F31_better_dist', FC, '|| (gain == b.gain && dist > b.dist)', '|| (gain == b.gain && dist < b.dist)')
@@ -483,7 +483,7 @@ def main():
         outp = sys.argv[2]
         wanted = sys.argv[3:]
         for i, row in enumerate(M):
-            if row[0] in wanted:
+            if row[0] in wanted or row[0].split('_')[0] in wanted:
                 res = run(i)
                 line = f'{row[0]}: {res}'
                 print(line, flush=True)
