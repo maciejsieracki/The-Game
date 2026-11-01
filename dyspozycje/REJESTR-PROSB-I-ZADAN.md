@@ -8377,3 +8377,7 @@ Przejrzano cały kontekst rozmowy: WSZYSTKIE zgłoszenia właściciela z ostatni
 
 ### STAŁA ZGODA WŁAŚCICIELA (2026-11-01)
 „Jeżeli w samych testach znajdziesz coś, co należy poprawić, po prostu to zrób i wykonaj jako oddzielne poprawki bez autoryzacji. Później wprowadź do roboczej, scal do main i zrób git push.” — dotyczy usterek webowych wykrytych w testach na żywo (R-WEB-LIVE-VERIFY-ROBOCZA-2-Q1, R-WEB-AI-CITY-YIELD-LIVE-Q1 i kolejnych): każda jako osobny temat R-WEB-* (Operator → Evaluator → Obrona → Final Control), merge do main, deploy TYLKO do ROBOCZEJ, `git push`, odczyt GitHub Raw, `WERSJE.md`, sprzątanie. Decyzje produktowe (ABC) zgłaszane właścicielowi nadal. Prompt cyklicznej kontroli zaktualizowany.
+
+### Aktualizacja 2026-11-01 (wieczór)
+- Poz. 12 (`R-WEB-AI-CITY-YIELD-FIX-Q1`) i pomiar `R-WEB-AI-CITY-YIELD-LIVE-Q1`: **ZROBIONE, ROBOCZA `83f64d3f`** (main `57cc8aded`) — po pomiarze pełnej gry (T100: Kontynenty 0,0%, Pangea −2,2%, próg −10…+25%). Ograniczenia: jedno ziarno, bez Wysp. Osobny temat do rozważenia: `R-WEB-TERRAIN-ID-NAME-MAP-UNIFY-Q1` (czwarta kopia mapy id↔nazwa terenu).
+- W toku: `R-WEB-LIVE-VERIFY-ROBOCZA-2-Q1` (pięć testów na żywo; poprawki z testów — stała zgoda).

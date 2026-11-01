@@ -1,0 +1,671 @@
+[
+ {
+  "typ": "kontynenty",
+  "seed": 1,
+  "majors": 5,
+  "start": 5,
+  "snaps": {
+   "t50": {
+    "majorCities": 5,
+    "medianPerCiv": 1,
+    "perMajor": {
+     "1": 1,
+     "8": 1,
+     "15": 1,
+     "22": 1,
+     "29": 1
+    },
+    "founded": 0,
+    "foundedHigh": 0,
+    "foundedLow": 0,
+    "foundedByTerrain": {}
+   },
+   "t100": {
+    "majorCities": 5,
+    "medianPerCiv": 1,
+    "perMajor": {
+     "1": 1,
+     "8": 1,
+     "15": 1,
+     "22": 1,
+     "29": 1
+    },
+    "founded": 0,
+    "foundedHigh": 0,
+    "foundedLow": 0,
+    "foundedByTerrain": {}
+   }
+  },
+  "planMs": 2814,
+  "planCalls": 500,
+  "wallMs": 3440
+ },
+ {
+  "typ": "kontynenty",
+  "seed": 2,
+  "majors": 5,
+  "start": 5,
+  "snaps": {
+   "t50": {
+    "majorCities": 5,
+    "medianPerCiv": 1,
+    "perMajor": {
+     "1": 1,
+     "8": 1,
+     "15": 1,
+     "22": 1,
+     "29": 1
+    },
+    "founded": 0,
+    "foundedHigh": 0,
+    "foundedLow": 0,
+    "foundedByTerrain": {}
+   },
+   "t100": {
+    "majorCities": 5,
+    "medianPerCiv": 1,
+    "perMajor": {
+     "1": 1,
+     "8": 1,
+     "15": 1,
+     "22": 1,
+     "29": 1
+    },
+    "founded": 0,
+    "foundedHigh": 0,
+    "foundedLow": 0,
+    "foundedByTerrain": {}
+   }
+  },
+  "planMs": 2943,
+  "planCalls": 500,
+  "wallMs": 3659
+ },
+ {
+  "typ": "kontynenty",
+  "seed": 3,
+  "majors": 5,
+  "start": 5,
+  "snaps": {
+   "t50": {
+    "majorCities": 8,
+    "medianPerCiv": 2,
+    "perMajor": {
+     "1": 2,
+     "8": 2,
+     "15": 2,
+     "22": 1,
+     "29": 1
+    },
+    "founded": 3,
+    "foundedHigh": 3,
+    "foundedLow": 0,
+    "foundedByTerrain": {
+     "laka": 3
+    }
+   },
+   "t100": {
+    "majorCities": 8,
+    "medianPerCiv": 2,
+    "perMajor": {
+     "1": 2,
+     "8": 2,
+     "15": 2,
+     "22": 1,
+     "29": 1
+    },
+    "founded": 3,
+    "foundedHigh": 3,
+    "foundedLow": 0,
+    "foundedByTerrain": {
+     "laka": 3
+    }
+   }
+  },
+  "planMs": 2802,
+  "planCalls": 500,
+  "wallMs": 3232
+ },
+ {
+  "typ": "kontynenty",
+  "seed": 4,
+  "majors": 5,
+  "start": 5,
+  "snaps": {
+   "t50": {
+    "majorCities": 9,
+    "medianPerCiv": 1,
+    "perMajor": {
+     "1": 3,
+     "8": 1,
+     "15": 1,
+     "22": 1,
+     "29": 3
+    },
+    "founded": 4,
+    "foundedHigh": 4,
+    "foundedLow": 0,
+    "foundedByTerrain": {
+     "laka": 3,
+     "rownina": 1
+    }
+   },
+   "t100": {
+    "majorCities": 9,
+    "medianPerCiv": 1,
+    "perMajor": {
+     "1": 3,
+     "8": 1,
+     "15": 1,
+     "22": 1,
+     "29": 3
+    },
+    "founded": 4,
+    "foundedHigh": 4,
+    "foundedLow": 0,
+    "foundedByTerrain": {
+     "laka": 3,
+     "rownina": 1
+    }
+   }
+  },
+  "planMs": 2512,
+  "planCalls": 500,
+  "wallMs": 2890
+ },
+ {
+  "typ": "kontynenty",
+  "seed": 5,
+  "majors": 5,
+  "start": 5,
+  "snaps": {
+   "t50": {
+    "majorCities": 8,
+    "medianPerCiv": 2,
+    "perMajor": {
+     "1": 2,
+     "8": 1,
+     "15": 1,
+     "22": 2,
+     "29": 2
+    },
+    "founded": 3,
+    "foundedHigh": 3,
+    "foundedLow": 0,
+    "foundedByTerrain": {
+     "rownina": 2,
+     "laka": 1
+    }
+   },
+   "t100": {
+    "majorCities": 8,
+    "medianPerCiv": 2,
+    "perMajor": {
+     "1": 2,
+     "8": 1,
+     "15": 1,
+     "22": 2,
+     "29": 2
+    },
+    "founded": 3,
+    "foundedHigh": 3,
+    "foundedLow": 0,
+    "foundedByTerrain": {
+     "rownina": 2,
+     "laka": 1
+    }
+   }
+  },
+  "planMs": 2655,
+  "planCalls": 500,
+  "wallMs": 3147
+ },
+ {
+  "typ": "pangea",
+  "seed": 1,
+  "majors": 5,
+  "start": 5,
+  "snaps": {
+   "t50": {
+    "majorCities": 5,
+    "medianPerCiv": 1,
+    "perMajor": {
+     "1": 1,
+     "8": 1,
+     "15": 1,
+     "22": 1,
+     "29": 1
+    },
+    "founded": 0,
+    "foundedHigh": 0,
+    "foundedLow": 0,
+    "foundedByTerrain": {}
+   },
+   "t100": {
+    "majorCities": 5,
+    "medianPerCiv": 1,
+    "perMajor": {
+     "1": 1,
+     "8": 1,
+     "15": 1,
+     "22": 1,
+     "29": 1
+    },
+    "founded": 0,
+    "foundedHigh": 0,
+    "foundedLow": 0,
+    "foundedByTerrain": {}
+   }
+  },
+  "planMs": 3476,
+  "planCalls": 500,
+  "wallMs": 4488
+ },
+ {
+  "typ": "pangea",
+  "seed": 2,
+  "majors": 5,
+  "start": 5,
+  "snaps": {
+   "t50": {
+    "majorCities": 5,
+    "medianPerCiv": 1,
+    "perMajor": {
+     "1": 1,
+     "8": 1,
+     "15": 1,
+     "22": 1,
+     "29": 1
+    },
+    "founded": 0,
+    "foundedHigh": 0,
+    "foundedLow": 0,
+    "foundedByTerrain": {}
+   },
+   "t100": {
+    "majorCities": 5,
+    "medianPerCiv": 1,
+    "perMajor": {
+     "1": 1,
+     "8": 1,
+     "15": 1,
+     "22": 1,
+     "29": 1
+    },
+    "founded": 0,
+    "foundedHigh": 0,
+    "foundedLow": 0,
+    "foundedByTerrain": {}
+   }
+  },
+  "planMs": 3588,
+  "planCalls": 500,
+  "wallMs": 4503
+ },
+ {
+  "typ": "pangea",
+  "seed": 3,
+  "majors": 5,
+  "start": 5,
+  "snaps": {
+   "t50": {
+    "majorCities": 5,
+    "medianPerCiv": 1,
+    "perMajor": {
+     "1": 1,
+     "8": 1,
+     "15": 1,
+     "22": 1,
+     "29": 1
+    },
+    "founded": 0,
+    "foundedHigh": 0,
+    "foundedLow": 0,
+    "foundedByTerrain": {}
+   },
+   "t100": {
+    "majorCities": 5,
+    "medianPerCiv": 1,
+    "perMajor": {
+     "1": 1,
+     "8": 1,
+     "15": 1,
+     "22": 1,
+     "29": 1
+    },
+    "founded": 0,
+    "foundedHigh": 0,
+    "foundedLow": 0,
+    "foundedByTerrain": {}
+   }
+  },
+  "planMs": 3661,
+  "planCalls": 500,
+  "wallMs": 4808
+ },
+ {
+  "typ": "pangea",
+  "seed": 4,
+  "majors": 5,
+  "start": 5,
+  "snaps": {
+   "t50": {
+    "majorCities": 10,
+    "medianPerCiv": 2,
+    "perMajor": {
+     "1": 2,
+     "8": 2,
+     "15": 2,
+     "22": 2,
+     "29": 2
+    },
+    "founded": 5,
+    "foundedHigh": 4,
+    "foundedLow": 1,
+    "foundedByTerrain": {
+     "laka": 4,
+     "wzgorza": 1
+    }
+   },
+   "t100": {
+    "majorCities": 10,
+    "medianPerCiv": 2,
+    "perMajor": {
+     "1": 2,
+     "8": 2,
+     "15": 2,
+     "22": 2,
+     "29": 2
+    },
+    "founded": 5,
+    "foundedHigh": 4,
+    "foundedLow": 1,
+    "foundedByTerrain": {
+     "laka": 4,
+     "wzgorza": 1
+    }
+   }
+  },
+  "planMs": 3518,
+  "planCalls": 500,
+  "wallMs": 4995
+ },
+ {
+  "typ": "pangea",
+  "seed": 5,
+  "majors": 5,
+  "start": 5,
+  "snaps": {
+   "t50": {
+    "majorCities": 5,
+    "medianPerCiv": 1,
+    "perMajor": {
+     "1": 1,
+     "8": 1,
+     "15": 1,
+     "22": 1,
+     "29": 1
+    },
+    "founded": 0,
+    "foundedHigh": 0,
+    "foundedLow": 0,
+    "foundedByTerrain": {}
+   },
+   "t100": {
+    "majorCities": 5,
+    "medianPerCiv": 1,
+    "perMajor": {
+     "1": 1,
+     "8": 1,
+     "15": 1,
+     "22": 1,
+     "29": 1
+    },
+    "founded": 0,
+    "foundedHigh": 0,
+    "foundedLow": 0,
+    "foundedByTerrain": {}
+   }
+  },
+  "planMs": 3811,
+  "planCalls": 500,
+  "wallMs": 4893
+ },
+ {
+  "typ": "wyspy",
+  "seed": 1,
+  "majors": 5,
+  "start": 5,
+  "snaps": {
+   "t50": {
+    "majorCities": 8,
+    "medianPerCiv": 2,
+    "perMajor": {
+     "1": 2,
+     "8": 2,
+     "15": 1,
+     "22": 2,
+     "29": 1
+    },
+    "founded": 3,
+    "foundedHigh": 3,
+    "foundedLow": 0,
+    "foundedByTerrain": {
+     "laka": 2,
+     "rownina": 1
+    }
+   },
+   "t100": {
+    "majorCities": 8,
+    "medianPerCiv": 2,
+    "perMajor": {
+     "1": 2,
+     "8": 2,
+     "15": 1,
+     "22": 2,
+     "29": 1
+    },
+    "founded": 3,
+    "foundedHigh": 3,
+    "foundedLow": 0,
+    "foundedByTerrain": {
+     "laka": 2,
+     "rownina": 1
+    }
+   }
+  },
+  "planMs": 3370,
+  "planCalls": 500,
+  "wallMs": 5115
+ },
+ {
+  "typ": "wyspy",
+  "seed": 2,
+  "majors": 5,
+  "start": 5,
+  "snaps": {
+   "t50": {
+    "majorCities": 29,
+    "medianPerCiv": 7,
+    "perMajor": {
+     "1": 7,
+     "8": 1,
+     "15": 7,
+     "22": 7,
+     "29": 7
+    },
+    "founded": 24,
+    "foundedHigh": 22,
+    "foundedLow": 2,
+    "foundedByTerrain": {
+     "laka": 16,
+     "wzgorza": 2,
+     "rownina": 6
+    }
+   },
+   "t100": {
+    "majorCities": 29,
+    "medianPerCiv": 7,
+    "perMajor": {
+     "1": 7,
+     "8": 1,
+     "15": 7,
+     "22": 7,
+     "29": 7
+    },
+    "founded": 24,
+    "foundedHigh": 22,
+    "foundedLow": 2,
+    "foundedByTerrain": {
+     "laka": 16,
+     "wzgorza": 2,
+     "rownina": 6
+    }
+   }
+  },
+  "planMs": 4206,
+  "planCalls": 500,
+  "wallMs": 5484
+ },
+ {
+  "typ": "wyspy",
+  "seed": 3,
+  "majors": 5,
+  "start": 5,
+  "snaps": {
+   "t50": {
+    "majorCities": 9,
+    "medianPerCiv": 1,
+    "perMajor": {
+     "1": 1,
+     "8": 1,
+     "15": 3,
+     "22": 3,
+     "29": 1
+    },
+    "founded": 4,
+    "foundedHigh": 4,
+    "foundedLow": 0,
+    "foundedByTerrain": {
+     "laka": 4
+    }
+   },
+   "t100": {
+    "majorCities": 9,
+    "medianPerCiv": 1,
+    "perMajor": {
+     "1": 1,
+     "8": 1,
+     "15": 3,
+     "22": 3,
+     "29": 1
+    },
+    "founded": 4,
+    "foundedHigh": 4,
+    "foundedLow": 0,
+    "foundedByTerrain": {
+     "laka": 4
+    }
+   }
+  },
+  "planMs": 3555,
+  "planCalls": 500,
+  "wallMs": 4796
+ },
+ {
+  "typ": "wyspy",
+  "seed": 4,
+  "majors": 5,
+  "start": 5,
+  "snaps": {
+   "t50": {
+    "majorCities": 30,
+    "medianPerCiv": 9,
+    "perMajor": {
+     "1": 1,
+     "8": 9,
+     "15": 1,
+     "22": 9,
+     "29": 10
+    },
+    "founded": 25,
+    "foundedHigh": 23,
+    "foundedLow": 2,
+    "foundedByTerrain": {
+     "laka": 16,
+     "wzgorza": 2,
+     "rownina": 7
+    }
+   },
+   "t100": {
+    "majorCities": 35,
+    "medianPerCiv": 11,
+    "perMajor": {
+     "1": 1,
+     "8": 11,
+     "15": 1,
+     "22": 11,
+     "29": 11
+    },
+    "founded": 30,
+    "foundedHigh": 28,
+    "foundedLow": 2,
+    "foundedByTerrain": {
+     "laka": 19,
+     "wzgorza": 2,
+     "rownina": 9
+    }
+   }
+  },
+  "planMs": 3867,
+  "planCalls": 500,
+  "wallMs": 5454
+ },
+ {
+  "typ": "wyspy",
+  "seed": 5,
+  "majors": 5,
+  "start": 5,
+  "snaps": {
+   "t50": {
+    "majorCities": 8,
+    "medianPerCiv": 2,
+    "perMajor": {
+     "1": 2,
+     "8": 2,
+     "15": 1,
+     "22": 2,
+     "29": 1
+    },
+    "founded": 3,
+    "foundedHigh": 3,
+    "foundedLow": 0,
+    "foundedByTerrain": {
+     "laka": 2,
+     "rownina": 1
+    }
+   },
+   "t100": {
+    "majorCities": 8,
+    "medianPerCiv": 2,
+    "perMajor": {
+     "1": 2,
+     "8": 2,
+     "15": 1,
+     "22": 2,
+     "29": 1
+    },
+    "founded": 3,
+    "foundedHigh": 3,
+    "foundedLow": 0,
+    "foundedByTerrain": {
+     "laka": 2,
+     "rownina": 1
+    }
+   }
+  },
+  "planMs": 3204,
+  "planCalls": 500,
+  "wallMs": 4718
+ }
+]
