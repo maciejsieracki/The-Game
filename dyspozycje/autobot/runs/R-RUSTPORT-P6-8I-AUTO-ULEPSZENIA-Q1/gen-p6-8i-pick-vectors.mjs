@@ -440,7 +440,7 @@ add(mkSpec('r4b-popnan-defense', M_GORY, {
 }));
 add(mkSpec('r4b-rzeki-scheduled', M_RIVER, {
   cities: [{ id: 'c1', ownerId: 1, q: 0, r: 0, population: 6 }],
-  placed: riverDevPlaced({ ...forestAids, '2,0': [] }), opts: { clearingHexKeys: ['2,0'] },
+  placed: (() => { const p = riverDevPlaced(forestAids); delete p['2,0']; return p; })(), opts: { clearingHexKeys: ['2,0'] },
 }));
 add(mkSpec('r4b-rzeki-devkeys', M_RIVER, { cities: [{ id: 'c1', ownerId: 1, q: 0, r: 0, population: 6 }], placed: riverDevPlaced(forestAids) }));
 add(mkSpec('r4b-rzeki-devkeys-nodev', M_RIVER, { cities: [{ id: 'c1', ownerId: 1, q: 0, r: 0, population: 6 }], placed: riverDevPlaced(forestAids), techs: [] }));
@@ -564,6 +564,16 @@ add(mkSpec('r4b-fort-sea-morze', M_G1M, { cities: [city6], praca: 6000, opts: fo
 add(mkSpec('r4b-fort-sea-plytkie', M_G1P, { cities: [city6], praca: 6000, opts: fortOpts() }));
 add(mkSpec('r4b-fort-all-owned', M_G0, { cities: [city6], praca: 6000, opts: fortOpts() }));
 add(mkSpec('r4b-fort-gain-one-staged', M_G1, { cities: [city6], praca: 6000, opts: { foodImprovementStages: true, demandDriven: true, cityLimitExhausted: true } }));
+
+// drogi czekaja na niedobor (P43): sciezka zapasowa NIE widzi celu (onlyWorked miasta), przebieg niedoboru widzi (surowce wszedzie)
+const M_MIX = addMap(pureMap((q, r) => ({ teren: (q === 0 && r === 0) || (q === 1 && r === 0) ? TB.Pustynia : TB.Gory }), 9, []));
+const mixSpec = (name, praca) => mkSpec(name, M_MIX, {
+  cities: [{ id: 'c1', ownerId: 1, q: 0, r: 0, population: 3 }], praca,
+  opts: { foodImprovementStages: true, demandDriven: true, resourceDeficitKeys: ['kamien'] },
+  fn: { onlyWorkedByCity: { c1: true }, workedKeysByCity: { c1: ['1,0'] }, resourcePassOnlyWorkedByCity: { c1: false } },
+});
+add(mixSpec('r4b-roads-wait-deficit', cost('kamieniolom') - 4));
+add(mixSpec('r4b-roads-deficit-affordable', 5000));
 
 // wezly fortu/posterunku w territoryNodes na mapie gorskiej (E-FORT osiagalny); `strict` (nazwa `fort-wlasny-`/`fort-obcy-`)
 const nodeCity = { q: 0, r: 0, pop: 3, level: 1, ownerId: 1 };
