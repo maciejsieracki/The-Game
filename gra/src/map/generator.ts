@@ -60,6 +60,7 @@ import {
   applyMarginalLandZoneCaps,
   rebalanceLandFractionWithMargins,
   rebalanceLandFractionPangea,
+  topUpPangeaLandFraction,
   enforceMapBorderOcean,
   isInMapBorder,
   type ReliefDensityTier,
@@ -464,6 +465,9 @@ export function generateMap(
       fillPangeaAnnularSeaCorridors(hexes, width, height);
       ensurePangeaSingleContinent(hexes, width, height);
       snapPangeaBagelAudit('08_po_ensure_B', hexes, width, height);
+      // R-WEB-PANGEA-LAND-FRACTION-Q1: dosyp lądu do celu (progi maski tną ~4 pp) — przed pierścieniem wybrzeża.
+      topUpPangeaLandFraction(hexes, landScores, landFraction, width, height);
+      snapPangeaBagelAudit('08b_po_topUp', hexes, width, height);
       enforceMapBorderOcean(hexes, width, height);
       applyCoastRing(hexes);
     }
