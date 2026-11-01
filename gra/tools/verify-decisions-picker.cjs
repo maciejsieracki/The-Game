@@ -260,6 +260,20 @@ for (const p of ['K2', 'K3']) {
     'tartak@t∈[0,4) i brak tartaku po t>=4', `tartakTurns=${JSON.stringify(tartakTurns)}, picki po t>=4=${JSON.stringify(nonTartakAfter)}`);
 }
 
+// ---- M13c (K2): scenariusz „niedobór wraca PO wcześniejszej pracy nad żywnością” (decyzja 7), oryginalne okno t4-7 ----
+// Dodane w obronie R-WEB-STALE-RULES-CLEANUP-Q1 (zarzut 2): przy wolnoWycinac:false las nie jest wycinany pod farmy,
+// więc w t4 jest jeszcze czego obsadzić. Pomiar: t0 farmy (żywność najpierw), niedobór t4-7 => tartak/obóz tylko w t4,
+// po oknie zero nowych tartaków (zero histerezy). K3 (AI) ścieżki wolnoWycinac:false nie przyjmuje, więc tylko K2.
+{
+  const map = makeMap({ forest: FOREST });
+  const { log } = sim({ map, worked: [...FOREST, ...ring(CQ, CR, 1)], wolnoWycinac: false, profil: 'K2', pop: 60, turns: 16, deficitFn: t => (t >= 4 && t < 8 ? ['drewno'] : []) });
+  const tartakTurns = log.filter(e => e.key === 'tartak').map(e => e.t);
+  const farmaTurns = log.filter(e => e.key === 'farma').map(e => e.t);
+  verdict('M13c-K2', 'niedobór wraca w t4-7 po pracy nad żywnością: farmy przed oknem, tartak tylko w oknie, po oknie zero tartaków [K2]',
+    farmaTurns.length > 0 && Math.max(...farmaTurns) < 4 && tartakTurns.length > 0 && tartakTurns.every(t => t >= 4 && t < 8),
+    'farma@t<4, tartak@t∈[4,8) i brak tartaku po t>=8', `farmaTurns=${JSON.stringify(farmaTurns)}, tartakTurns=${JSON.stringify(tartakTurns)}`);
+}
+
 // ---- M14: parytet K2=K3 (decyzja 7) — ta sama sekwencja per tura (pop 60, wszystkie heksy pracowane) ----
 {
   const ALL = ring(CQ, CR, 4);
