@@ -409,3 +409,136 @@ Start: `b1088d1f8` (detach; kod nie zmieniany, zmiany tylko w testach/dossier). 
 | W10 | K | window.rs | 22 | KILLED | KILLED (test) |
 
 **Podsumowanie R3:** 100 mutantów: KILLED 67 (R2, bez zmian kodu), EKWIWALENT dowodem 12, E zanalizowane 9 (do weryfikacji), LUKA K 5, LUKA L 4, E bez analizy 3 (E01, E03, M13). Status tematu: BLOCK, zakres niezamknięty (N1: 5 K; N2: 4 L + 3 E bez dowodu).
+
+
+### Runda 4 — domknięcie N1–N5 (kod Rust zakresu bez zmian: `git diff 66425c633 HEAD -- rust-port/engine/src` puste)
+
+Start: `69613ecf8` (detach). Uwaga: commit `wip` `69613ecf8` zawierał ZEROWY `rivers_b/window.rs` (przerwana mutacja) — plik przywrócony z `66425c633` (kod bez zmian względem `687d39563`). Częściowe logi `mutate-m07b2-q2-r4-cA/cB.txt` (wyniki INFRA z przerwanego przebiegu) usunięte jako nieważne.
+
+**N1/N2 — nowe wektory z uruchomionego weba pinu `edb8fb56`** (generator w repo: `tests/p6_m07b2_vectors/gen_q2_r4_vectors.mjs`, deterministyczny — ponowne uruchomienie daje plik bajt-w-bajt identyczny, sha256 `13981cfff283…b9cfad`; wektory `web-rivers-b-q2r4.json` 4 095 814 B ≤ 6 MB; test `tests/p6_m07b2_q2r4.rs`, 2 testy). Pole `kills` = które WARIANTY WEBA (kopia funkcji z pinu z jedną podmianą tekstową = mutant Rust) dają INNE wyjście niż oryginał; `out` zawsze z NIEZMIENIONEJ funkcji weba:
+- **G05/G06/G11/G12** (visited): mapy kołowe R=14..26 (nakładki las/złoże także na wodzie, rzeki, relief, jeziora), `stepCap` 60–200; rzeka okrąża centroid i wchodzi na własny ślad (długość ścieżki do 142). Wektory rozróżniające: G05 41, G06 39, G11 40, G12 3 (ujście inland, powrót do ujścia). G12 wymaga ujścia z `seaDist >= 2` (dla ujścia przybrzeżnego `nd < 2` w `coast_grow.rs:71` odrzuca powrót) — wektory mają takie ujścia.
+- **G13/G17 (`landCenterSquare != null`)**: 80 przypadków `grow` z kwadratem `continentCenterSquare` (web `:1472`, Rust `continent_center_square`); 54 rozróżnia wariant „kwadrat nieprzekazany” (G17). G13 jest EKWIWALENTEM (dowód w tabeli), G17 ZABITY.
+- **G14 (visitCap 6000)**: dwie mapy kołowe R=46 (6487 heksów, ląd 6013/6022 > 6001), centroid z `estimateLandCentroidFromMouth` dla cap 3000/5999/6001/6000. 25 przypadków `grow` z `landCentroid=null` (centroid liczony wewnątrz, cap 6000): 14 rozróżnia cap 3000, 6 cap 5999, 8 cap 6001; 2 starty rozróżniają WSZYSTKIE trzy (N-1/N/N+1 na TYM SAMYM starcie). Zabite mutanty: G14 (3000), G14b (5999), G14c (6001).
+- **M11**: 1200 przypadków meandru, z czego 817 z `cur` usuniętym z `seaDist` (pole `drop`, web `?? 999`): 517 `Some`, 300 `None`.
+- **W06 (cap 48)**: ścieżki zygzaka (naprzemienne kierunki `d0`, `d0±2`: każdy ząb łamie okno skrętu, jedno cięcie naprawia jeden ząb), 44–66 zębów; 10 przypadków, w tym 8 gdzie caps 47 i 49 dają inny wynik niż 48 (N-1/N/N+1 na tym samym starcie; maks. długość wejścia 138). Zabite: W06 (47), W06b (49).
+- **E28 (cap 4000)**: ścieżki `A,B,A,B,…` długości 7998…8006 (każdy przebieg usuwa 2 wpisy; L=8002 wymaga dokładnie 4000 przebiegów, L=8004 zostawia 4 wpisy). Zabite: E28 (3999), E28b (4001).
+- **Pełna dziedzina `corners`**: dodatkowo `i,o ∈ 0..5`, `par ∈ −3..3` (252 przypadki) obok istniejących 1250 (`i,o ∈ −12..12`, `par ∈ {0,1}`).
+
+**N3 — tabela mutant → linia Rust → status** (generator tabeli w repo: `tests/p6_m07b2_vectors/n3_table_m07b2_q2.py`, kod wyjścia 1 przy jakiejkolwiek LUCE lub braku wyniku; wynik poniżej z EXIT=0). Linie Rust = stan HEAD; dowody EKWIWALENT podają plik:linia Rust i web pinu. Dla E13/E14/E17/E18/E19/E35 dowód obejmuje CAŁĄ skończoną dziedzinę (wejścia redukują się do `(a,b) ∈ 0..5², parzystość ∈ {parzysta, nieparzysta}`), którą pokrywają wektory `corners`/`transit_idx` weba, a mutanty je przechodzą — czyli są funkcyjnie równe oryginałowi na każdym możliwym wejściu.
+
+| ID | oczek. | linia Rust | wynik r4 (log) | status | dowod rownowaznosci (plik:linia Rust + web) |
+|---|---|---|---|---|---|
+| C01 | K | coast_grow.rs:54 | KILLED (mutate-m07b2-q2-r4-k2.txt) | KILLED |  |
+| C02 | K | coast_grow.rs:57 | KILLED (mutate-m07b2-q2-r4-k2.txt) | KILLED |  |
+| C03 | K | coast_grow.rs:63 | KILLED (mutate-m07b2-q2-r4-k2.txt) | KILLED |  |
+| C04 | K | coast_grow.rs:67 | KILLED (mutate-m07b2-q2-r4-k2.txt) | KILLED |  |
+| C05 | E | coast_grow.rs:71 | SURVIVED (mutate-m07b2-q2-r4-s1.txt) | EKWIWALENT | coast_grow.rs:54 wola `is_river_window_turn_allowed`, a ta robi `expect` na pustej sciezce (rivers_a/grow.rs:84; web :7026 TypeError) PRZED guardem :71 - dla pustej sciezki oryginal i mutant panikuja w tym samym miejscu; dla niepustej guard jest prawdziwy w obu |
+| C06 | K | coast_grow.rs:71 | KILLED (mutate-m07b2-q2-r4-k2.txt) | KILLED |  |
+| C07 | K | coast_grow.rs:74 | KILLED (mutate-m07b2-q2-r4-k2.txt) | KILLED |  |
+| C08 | K | coast_grow.rs:74 | KILLED (mutate-m07b2-q2-r4-k2.txt) | KILLED |  |
+| C09 | K | coast_grow.rs:85 | KILLED (mutate-m07b2-q2-r4-k2.txt) | KILLED |  |
+| C10 | K | coast_grow.rs:86 | KILLED (mutate-m07b2-q2-r4-k2.txt) | KILLED |  |
+| C11 | K | coast_grow.rs:87 | KILLED (mutate-m07b2-q2-r4-k2.txt) | KILLED |  |
+| C12 | K | coast_grow.rs:89 | SURVIVED (mutate-m07b2-q2-r4-s1.txt) | EKWIWALENT | `center_step` pochodzi wylacznie z walk.rs:232-251 {22,-12,3} i :255-279 {40,32,-22,4,0} (web :6036-6038, :6041-6056); zadna wartosc nie lezy w (7,8], wiec `> 8` == `> 7` (coast_grow.rs:89) |
+| C13 | K | coast_grow.rs:90 | KILLED (mutate-m07b2-q2-r4-k2.txt) | KILLED |  |
+| C14 | K | coast_grow.rs:92 | KILLED (mutate-m07b2-q2-r4-k2.txt) | KILLED |  |
+| C15 | K | coast_grow.rs:93 | KILLED (mutate-m07b2-q2-r4-k2.txt) | KILLED |  |
+| C16 | K | coast_grow.rs:88 | KILLED (mutate-m07b2-q2-r4-k2.txt) | KILLED |  |
+| C17 | K | coast_grow.rs:98 | KILLED (mutate-m07b2-q2-r4-k2.txt) | KILLED |  |
+| C18 | K | coast_grow.rs:99 | KILLED (mutate-m07b2-q2-r4-k2.txt) | KILLED |  |
+| C19 | K | coast_grow.rs:100 | KILLED (mutate-m07b2-q2-r4-k2.txt) | KILLED |  |
+| C20 | K | coast_grow.rs:102 | KILLED (mutate-m07b2-q2-r4-k2.txt) | KILLED |  |
+| C21 | K | coast_grow.rs:48 | SURVIVED (mutate-m07b2-q2-r4-s1.txt) | EKWIWALENT | `cur_d` (coast_grow.rs:48) jest czytane tylko w :74, :86, :88; do tych linii dochodza kandydaci z `nd >= 2` (:71, sciezka niepusta :54; brak klucza -> nd=0 odpada) wiec `nd > cur_d` dla cur_d 0 i 1 jednakowo (:74 falsz, :86 prawda); web :6100,:6110-6117 |
+| G01 | K | coast_grow.rs:154 | KILLED (mutate-m07b2-q2-r4-k3.txt) | KILLED |  |
+| G02 | K | coast_grow.rs:156 | KILLED (mutate-m07b2-q2-r4-k3.txt) | KILLED |  |
+| G03 | K | coast_grow.rs:177 | KILLED (mutate-m07b2-q2-r4-k3.txt) | KILLED |  |
+| G04 | K | coast_grow.rs:179 | KILLED (mutate-m07b2-q2-r4-k3.txt) | KILLED |  |
+| G05 | K | coast_grow.rs:173 | KILLED (mutate-m07b2-q2-r4-k1.txt) | KILLED |  |
+| G06 | K | coast_grow.rs:182 | KILLED (mutate-m07b2-q2-r4-k1.txt) | KILLED |  |
+| G07 | K | coast_grow.rs:187 | KILLED (mutate-m07b2-q2-r4-k3.txt) | KILLED |  |
+| G08 | K | coast_grow.rs:191 | KILLED (mutate-m07b2-q2-r4-k3.txt) | KILLED |  |
+| G09 | K | coast_grow.rs:192 | KILLED (mutate-m07b2-q2-r4-k3.txt) | KILLED |  |
+| G10 | K | coast_grow.rs:194 | KILLED (mutate-m07b2-q2-r4-k3.txt) | KILLED |  |
+| G11 | K | coast_grow.rs:197 | KILLED (mutate-m07b2-q2-r4-k1.txt) | KILLED |  |
+| G12 | K | coast_grow.rs:140 | KILLED (mutate-m07b2-q2-r4-k1.txt) | KILLED |  |
+| G13 | E | coast_grow.rs:143 | SURVIVED (mutate-m07b2-q2-r4-s1.txt) | EKWIWALENT | po `.or_else(square.centroid)` (coast_grow.rs:143) centroid trafia tylko do `score_river_step_toward_land_center` (walk.rs:281-291, web :6057-6063), ktora przy kwadracie != null IGNORUJE centroid; przy kwadracie == null galaz zwraca None (to samo co usuniecie). Estymator jest bez efektow ubocznych (walk.rs:168-215). Kwadrat != null pokryty wektorami q2r4 (grow sq=true, mutant G17) |
+| G14 | K | coast_grow.rs:150 | KILLED (mutate-m07b2-q2-r4-k1.txt) | KILLED |  |
+| M01 | K | meander.rs:37 | KILLED (mutate-m07b2-q2-r4-k3.txt) | KILLED |  |
+| M02 | E | meander.rs:37 | SURVIVED (mutate-m07b2-q2-r4-s1.txt) | EKWIWALENT | sasiad rowny celowi nie ma sasiada rownego sobie (prims.rs:32, brak (0,0)) -> `touches_target` falsz (meander.rs:56-59) -> continue; dodatkowo odrzuca go filtr kierunku :40 (patrz M03); web :6503,:6512-6514 |
+| M03 | K | meander.rs:40 | SURVIVED (mutate-m07b2-q2-r4-s1.txt) | EKWIWALENT | `river_step_dir` = (to-from) (walk.rs:130-132), `same_river_dir` = rownosc krotek (walk.rs:135-137): prawda tylko gdy offset sasiada == cel-cur, czyli nk == cel, co odrzuca juz meander.rs:37; web :5879,:5883,:6503-6504 |
+| M04 | K | meander.rs:44 | KILLED (mutate-m07b2-q2-r4-k3.txt) | KILLED |  |
+| M05 | K | meander.rs:44 | KILLED (mutate-m07b2-q2-r4-k3.txt) | KILLED |  |
+| M06 | E | meander.rs:47 | SURVIVED (mutate-m07b2-q2-r4-s1.txt) | EKWIWALENT | brak klucza seaDist -> nd=0, a `nd < RIVER_MIN_INLAND_FROM_SEA` (=2, rivers_a.rs:55) w meander.rs:53 daje `continue` jak w oryginale (`nd > cur_d` :50 jest falszem dla nd=0 i cur_d >= 0); web :6509-6510 |
+| M07 | K | meander.rs:50 | KILLED (mutate-m07b2-q2-r4-k3.txt) | KILLED |  |
+| M08 | K | meander.rs:53 | KILLED (mutate-m07b2-q2-r4-k4.txt) | KILLED |  |
+| M09 | K | meander.rs:59 | KILLED (mutate-m07b2-q2-r4-k4.txt) | KILLED |  |
+| M10 | K | meander.rs:58 | KILLED (mutate-m07b2-q2-r4-k4.txt) | KILLED |  |
+| M11 | K | meander.rs:27 | KILLED (mutate-m07b2-q2-r4-k1.txt) | KILLED |  |
+| M12 | K | meander.rs:65 | KILLED (mutate-m07b2-q2-r4-k4.txt) | KILLED |  |
+| M13 | E | meander.rs:68 | SURVIVED (mutate-m07b2-q2-r4-s1.txt) | EKWIWALENT | `rand()` in [0,1) (web mulberry32 /2^32, gen-helpers.ts:57; Rust prims.rs mulberry32_step), a `opts.len() <= 6`, wiec `floor(rand*len) <= len-1`; clamp meander.rs:68 jest nieosiagalny; web :6519 nie ma clampu |
+| M14 | L | meander.rs:65 | KILLED (mutate-m07b2-q2-r4-k4.txt) | KILLED |  |
+| M15 | K | meander.rs:58 | KILLED (mutate-m07b2-q2-r4-k4.txt) | KILLED |  |
+| W01 | K | window.rs:33 | KILLED (mutate-m07b2-q2-r4-k4.txt) | KILLED |  |
+| W02 | K | window.rs:37 | KILLED (mutate-m07b2-q2-r4-k4.txt) | KILLED |  |
+| W03 | K | window.rs:40 | KILLED (mutate-m07b2-q2-r4-k4.txt) | KILLED |  |
+| W04 | K | window.rs:40 | KILLED (mutate-m07b2-q2-r4-k4.txt) | KILLED |  |
+| W05 | K | window.rs:46 | SURVIVED (mutate-m07b2-q2-r4-s1.txt) | EKWIWALENT | `cut_at = i+1`, `i < deltas.len() = out.len()-2` (wyjscie `sanitize_river_path` ma kolejne sasiady: rivers_a.rs:264-277, wiec `path_segment_dirs` zwraca n-1 kierunkow (grow.rs:62-71), `path_signed_turn_deltas` n-2 (grow.rs:74-79)); stad `cut_at <= n-2` i klauzula `>= n-1` (window.rs:46) jest falszem; web :7104-7114 |
+| W06 | K | window.rs:24 | KILLED (mutate-m07b2-q2-r4-k1.txt) | KILLED |  |
+| W07 | K | window.rs:26 | KILLED (mutate-m07b2-q2-r4-k4.txt) | KILLED |  |
+| W08 | K | window.rs:53 | SURVIVED (mutate-m07b2-q2-r4-s1.txt) | EKWIWALENT | po `sanitize_river_path` (window.rs:52) kroki sa sasiednie (rivers_a.rs:264-277: odleglosc == 1), a `repair_river_path_adjacency` (rivers_a.rs:328-342, galaz `d == 1`) dla sasiednich krokow dokleja tylko `target` -> zwraca wejscie bez zmian; web :5440-5466, :7115-7116 |
+| W09 | K | window.rs:52 | KILLED (mutate-m07b2-q2-r4-k4.txt) | KILLED |  |
+| E01 | E | edges.rs:19 | SURVIVED (mutate-m07b2-q2-r4-s1.txt) | EKWIWALENT | `is_dry_land_terrain(Sea)` = `!Sea.is_water()` = falsz (landsea.rs:77-79, :53-55) i `Sea != ShallowSea` -> linia edges.rs:22 zwraca falsz dla Morza tak samo jak :19; web :7123-7124 |
+| E02 | K | edges.rs:22 | KILLED (mutate-m07b2-q2-r4-k5.txt) | KILLED |  |
+| E03 | E | edges.rs:28 | SURVIVED (mutate-m07b2-q2-r4-s1.txt) | EKWIWALENT | dla `edge_idx < 0` `u8::try_from` zwraca Err (edges.rs:39-41) -> `return` bez zmian stanu; kod pomiedzy :28 a :39 (`hex_key`, `get_mut`, `can_receive...`) nie ma efektow ubocznych; web :7128 |
+| E04 | K | edges.rs:35 | KILLED (mutate-m07b2-q2-r4-k5.txt) | KILLED |  |
+| E05 | K | edges.rs:42 | KILLED (mutate-m07b2-q2-r4-k5.txt) | KILLED |  |
+| E06 | E | edges.rs:45 | SURVIVED (mutate-m07b2-q2-r4-s1.txt) | EKWIWALENT | po `contains`/`push` (edges.rs:42-44) `river_edges` jest niepuste, wiec `!is_empty()` (:45) == `true` zawsze; web :7133 |
+| E07 | E | edges.rs:51 | SURVIVED (mutate-m07b2-q2-r4-s1.txt) | EKWIWALENT | dla `edge_idx < 0` `mark_river_edge(-1)` jest no-op (edges.rs:28/39), a `usize::try_from(-1)` daje Err -> `return` (edges.rs:56-60) przed drugim oznaczeniem; web :7138-7144 |
+| E08 | K | edges.rs:66 | KILLED (mutate-m07b2-q2-r4-k5.txt) | KILLED |  |
+| E09 | K | edges.rs:72 | KILLED (mutate-m07b2-q2-r4-k5.txt) | KILLED |  |
+| E10 | E | edges.rs:82 | SURVIVED (mutate-m07b2-q2-r4-s2.txt) | EKWIWALENT | dla from == to petla (edges.rs:87-93) wpisuje `from`, widzi `c == to` i przerywa -> `[from]`, identycznie jak wczesny zwrot :82-84; web :7151-7164 |
+| E11 | K | edges.rs:87 | KILLED (mutate-m07b2-q2-r4-k5.txt) | KILLED |  |
+| E12 | K | edges.rs:104 | KILLED (mutate-m07b2-q2-r4-k5.txt) | KILLED |  |
+| E13 | K | edges.rs:122 | SURVIVED (mutate-m07b2-q2-r4-s2.txt) | EKWIWALENT | parzystosc wchodzi tylko przez `hex_parity % 2 == 0` (edges.rs:122) i dodaje do `score` +0 albo +0.01 (>= 0), wiec po korekcie `score < best_score` (:134) nie moze byc prawdziwe tam, gdzie `score == best_score`; korekta wplywa tylko na `fallback_score` (:127), a fallback jest nieosiagalny (patrz E18). Wektory `corners` (i,o in -12..12, par 0/1; q2r4: i,o in 0..5, par -3..3) pokrywaja CALA dziedzine (36 par x 2 klasy parzystosci) i mutant je przechodzi; model wyczerpujacy: corners-exhaustive-r3.txt (0/216); web :7166-7194 |
+| E14 | K | edges.rs:123 | SURVIVED (mutate-m07b2-q2-r4-s2.txt) | EKWIWALENT | jak E13: zamiana +0/+0.01 miedzy cw/ccw (edges.rs:122-126) nie moze zmienic `best` (korekta >= 0, :134 strict), tylko `fallback_score` (nieosiagalny); wektory pokrywaja cala dziedzine; web :7183 |
+| E15 | K | edges.rs:131 | KILLED (mutate-m07b2-q2-r4-k5.txt) | KILLED |  |
+| E16 | K | edges.rs:134 | KILLED (mutate-m07b2-q2-r4-k5.txt) | KILLED |  |
+| E17 | K | edges.rs:127 | SURVIVED (mutate-m07b2-q2-r4-s2.txt) | EKWIWALENT | `<=` vs `<` dotyczy tylko `fallback` (edges.rs:127), uzywanego wylacznie gdy `best` puste (:141); `best` puste jest niemozliwe dla a != b (patrz E18); wektory pokrywaja cala dziedzine; web :7185 |
+| E18 | K | edges.rs:141 | SURVIVED (mutate-m07b2-q2-r4-s2.txt) | EKWIWALENT | `best` puste wymaga, by kazda kombinacja wejscie/wyjscie dawala `walked.len()-1 < MIN_BOKI` (edges.rs:131), czyli entry == exit dla wszystkich 4 par; `entry_opts` (:107) ma 2 rozne wartosci, wiec istnieje para z entry != exit (a != b; a == b zwraca [] w :104). Fallback nieosiagalny; model: 0 przypadkow (corners-exhaustive-r3.txt); web :7191 |
+| E19 | K | edges.rs:116 | SURVIVED (mutate-m07b2-q2-r4-s2.txt) | EKWIWALENT | kolejnosc cw/ccw zmienia wynik tylko przy remisie `score` w jednej kombinacji, a remis cw/ccw w obrebie kombinacji wymaga luku dlugosci 3 (k=3, obie drogi po 4 rogi), co nie jest minimum: sasiednie kombinacje maja k in {d-1,d,d+1}, wiec zawsze istnieje luk <= 3 rogi krotszy; remisy miedzy kombinacjami rozstrzyga kolejnosc entry/exit (edges.rs:114-115), nie cw/ccw. Wektory pokrywaja cala dziedzine i mutant je przechodzi; web :7179 |
+| E20 | K | edges.rs:107 | KILLED (mutate-m07b2-q2-r4-k5.txt) | KILLED |  |
+| E21 | K | edges.rs:151 | KILLED (mutate-m07b2-q2-r4-k5.txt) | KILLED |  |
+| E22 | K | edges.rs:152 | KILLED (mutate-m07b2-q2-r4-k5.txt) | KILLED |  |
+| E23 | K | edges.rs:154 | KILLED (mutate-m07b2-q2-r4-k5.txt) | KILLED |  |
+| E24 | E | edges.rs:164 | SURVIVED (mutate-m07b2-q2-r4-s2.txt) | EKWIWALENT | dla `corners.len() == 1` petla `0..0` (edges.rs:168) nie dodaje krawedzi; dla 0 oba warianty zwracaja pusty wektor (:164) - wynik identyczny; web :7204 |
+| E25 | K | edges.rs:170 | SURVIVED (mutate-m07b2-q2-r4-s2.txt) | EKWIWALENT | `walk_river_hex_perimeter` (edges.rs:81-96) daje proste przejscie po 6-cyklu bez powtorzen rogow; kolejne pary rogow sa rozne, a pary sasiednich rogow odwzorowuja sie na krawedzie wzajemnie jednoznacznie (`river_edge_between_corners`, edges.rs:147-158), wiec `edges.contains` (:170) nigdy nie jest prawdziwe; `ei >= 0` zawsze prawda dla sasiednich rogow. Model: 0/216 duplikatow (corners-exhaustive-r3.txt); web :7208 |
+| E26 | K | edges.rs:170 | KILLED (mutate-m07b2-q2-r4-k5.txt) | KILLED |  |
+| E27 | E | edges.rs:181 | SURVIVED (mutate-m07b2-q2-r4-s2.txt) | EKWIWALENT | dla len == 2 petla `while i + 1 < p.len()` (edges.rs:190, i=1) nie wchodzi, `changed` zostaje falszem -> zwrot `p` jak przy wczesnym zwrocie :181; web :7216 |
+| E28 | K | edges.rs:186 | KILLED (mutate-m07b2-q2-r4-k1.txt) | KILLED |  |
+| E29 | K | edges.rs:193 | KILLED (mutate-m07b2-q2-r4-k6.txt) | KILLED |  |
+| E30 | K | edges.rs:198 | KILLED (mutate-m07b2-q2-r4-k6.txt) | KILLED |  |
+| E31 | E | edges.rs:213 | SURVIVED (mutate-m07b2-q2-r4-s2.txt) | EKWIWALENT | dla len == 1 jedyny obrot (i=0) ma dir_in=-1 i dir_out=-1 (edges.rs:216-227) -> `continue` (:228); dla 0 petla `0..0` pusta i `rp.len()-1` nie jest liczone; web :7234 |
+| E32 | K | edges.rs:228 | KILLED (mutate-m07b2-q2-r4-k6.txt) | KILLED |  |
+| E33 | K | edges.rs:218 | KILLED (mutate-m07b2-q2-r4-k6.txt) | KILLED |  |
+| E34 | K | edges.rs:223 | KILLED (mutate-m07b2-q2-r4-k6.txt) | KILLED |  |
+| E35 | K | edges.rs:231 | SURVIVED (mutate-m07b2-q2-r4-s2.txt) | EKWIWALENT | parzystosc nie ma wplywu na wynik `river_corners_along_hex_edges` (patrz E13/E14), wiec `river_transit_edge_indices` (edges.rs:162-175) nie zalezy od 3. argumentu; przesuniecie o +1 w edges.rs:231 jest bez efektu; web :7244 |
+| G15 | K | coast_grow.rs:149 | KILLED (mutate-m07b2-q2-r4-k6.txt) | KILLED |  |
+| G16 | K | coast_grow.rs:169 | KILLED (mutate-m07b2-q2-r4-k6.txt) | KILLED |  |
+| E36 | K | edges.rs:102 | KILLED (mutate-m07b2-q2-r4-k6.txt) | KILLED |  |
+| E37 | K | edges.rs:89 | KILLED (mutate-m07b2-q2-r4-k6.txt) | KILLED |  |
+| E38 | K | edges.rs:18 | KILLED (mutate-m07b2-q2-r4-k6.txt) | KILLED |  |
+| W10 | K | window.rs:22 | KILLED (mutate-m07b2-q2-r4-k1.txt) | KILLED |  |
+| G14b | K | coast_grow.rs:150 | KILLED (mutate-m07b2-q2-r4-k1.txt) | KILLED |  |
+| G14c | K | coast_grow.rs:150 | KILLED (mutate-m07b2-q2-r4-k1.txt) | KILLED |  |
+| G17 | K | coast_grow.rs:163 | KILLED (mutate-m07b2-q2-r4-k1.txt) | KILLED |  |
+| W06b | K | window.rs:24 | KILLED (mutate-m07b2-q2-r4-k1.txt) | KILLED |  |
+| E28b | K | edges.rs:186 | KILLED (mutate-m07b2-q2-r4-k1.txt) | KILLED |  |
+
+Podsumowanie: mutantow 105; KILLED 80; EKWIWALENT 25; LUKA 0; BRAK wyniku 0.
+
+
+**Mutacje r4 (skrypt w repo `tests/p6_m07b2_vectors/mutate_m07b2_q2.py`, 105 mutantów: 100 z r2 + 5 nowych G14b, G14c, G17, W06b, E28b; testy `p6_m07b2_coast`, `p6_m07b2_edges`, `p6_m07b2_q2r4`).** Logi `mutate-m07b2-q2-r4-{k1..k6,s1,s2}.txt`, każdy z JEDNĄ linią `EXIT=0` na końcu, każdy mutant `RESTORED=True`. Wynik: KILLED 80, EKWIWALENT (dowód plik:linia) 25, LUKA 0. Wszystkie 17 mutantów K z FC r2 rozstrzygnięte: ZABITE wektorami — G05, G06, G11, G12, M11; EKWIWALENTY z dowodem plik:linia Rust+web — C12, C21, M03, W05, W08, E13, E14, E17, E18, E19, E25, E35. Mutanty E/L: G14, W06, E28 ZABITE wektorami (N-1/N/N+1 na tym samym starcie), G13 EKWIWALENT (dowód + pokrycie G17), pozostałe 12 (C05, E01, E03, E06, E07, E10, E24, E27, E31, M02, M06, M13) EKWIWALENTY z dowodem w tabeli. Uwaga: `s1/s2` (25 survivorów) uruchomione przed kosmetyczną zmianą testu pokrycia `q2r4_vectors_cover_mutant_kills` (clippy `len_zero`); funkcjonalnie mutanty nie zależą od testu pokrycia. Logi nieważne/zastąpione usunięte z runu: `mutate-m07b2-q2-r2.txt`, `mutate-m07b2-q2-r3.txt` (bez `EXIT=`), `gate-test-full-r2.txt` (4× `EXIT=`, w tym 124).
+
+**Bramki r4 (cargo z `CARGO_TARGET_DIR=/dev/shm/m07b2-r4-target`, `CARGO_INCREMENTAL=0`; każdy log ma jedną linię `EXIT=`):** `cargo fmt --check` EXIT=0 (`gate-fmt-r4.txt`); `cargo clippy --all-targets` EXIT=0, 0 ostrzeżeń (`gate-clippy-r4.txt`); `cargo test --test p6_m07b2_coast --test p6_m07b2_edges --test p6_m07b2_q2r4` EXIT=0, 2+3+2 (`gate-test-m07b2-r4.txt`); PEŁNY `cargo test --no-fail-fast` w JEDNYM przebiegu bez timeoutu: 1934 passed / 0 failed, EXIT=0 (`gate-test-full-r4.txt`; 1932 z r1 + 2 nowe testy). Weryfikator Python `verify_m07b2_q2.py`: 25592/25592, EXIT=0 (`verify-m07b2-q2-r4.txt`; NIE obejmuje wektorów q2r4 i nie jest niezależny od Operatora — niezależność NIE_ZMIERZONO), wyczerpujący model `corners_exhaustive_m07b2_q2.py` EXIT=0 (`corners-exhaustive-r4.txt`). `Cargo.lock` nieśledzony, NIE commitowany (N5).
+
+**Ograniczenia / ZAŁOŻENIA r4:** (1) G12 ma tylko 3 wektory rozróżniające (wystarcza do zabicia, mutant ZABITY); (2) rozróżnienie cap 5999/6001 (G14b/c) w generatorze oparte na wynikach weba z jawnym centroidem(cap) równoważnym zmianie stałej — sprawdzone kontrolą `centroid(6000) == domyślny` w generatorze oraz faktycznym zabiciem mutantów Rust; (3) dowody EKWIWALENT są argumentami z kodu plus (dla E13–E35) pokryciem całej skończonej dziedziny wektorami weba; do oceny Evaluatora.

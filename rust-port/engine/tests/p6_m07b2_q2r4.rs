@@ -257,7 +257,13 @@ fn q2r4_vectors_cover_mutant_kills() {
         }
         match c["fn"].as_str().unwrap() {
             "grow" if c["sq"].as_bool().unwrap() => grow_square += 1,
-            "meander" if c["drop"].as_array().unwrap().len() >= 1 => {
+            "meander"
+                if c["drop"]
+                    .as_array()
+                    .unwrap()
+                    .iter()
+                    .any(|k| k.as_str() == Some(&format!("{},{}", c["c"][0], c["c"][1]))) =>
+            {
                 if c["out"].is_null() {
                     meander_nocur_none += 1;
                 } else {
