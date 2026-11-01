@@ -8392,3 +8392,7 @@ Przejrzano cały kontekst rozmowy: WSZYSTKIE zgłoszenia właściciela z ostatni
 ### Aktualizacja 2026-11-01 (noc)
 - **R-WEB-PANGEA-LAND-FRACTION-Q1 i R-WEB-AI-POLAR-FALLBACK-Q1: ZROBIONE, ROBOCZA `10307fe6`** (main `22acd3542`). Pangea 60% → 59,2–59,9%; AI bez biegunów w ekspansji (żywa gra: 0 miast AI na polarnym). Dług: Pangea 50% → 43–45%, 20% → 10,5% (osobny temat `R-WEB-PANGEA-LAND-FRACTION-OTHER-Q1`); liczba miast AI w T100 w żywej grze NIE_ZMIERZONO; osobny temat loga pickera (brak informacji, czemu wycinka nie zachodzi).
 - **R-WEB-CAPITAL-SPACING-TUNE-Q1: W TOKU.**
+
+### Aktualizacja 2026-11-02 (po północy)
+- **R-WEB-CAPITAL-SPACING-TUNE-Q1: ZROBIONE, ROBOCZA `44416e98`** (main `38f309b41`). Żywa gra, 10 map: najbliższa para stolic 25–33 hexów (mediana 25,5), poniżej 25: 0/10 (było 7/10). Dług: `cluster-start-test` 478/3 (seaDist stolic obcych typów: sumer 8 → 6) → temat `R-WEB-CAPITAL-SEADIST-Q1`; przy 8 typach cywilizacji efektywny dystans 23; par poniżej 30 nadal 8/10.
+- **Stan zgłoszeń webowych:** wszystkie zarejestrowane zgłoszenia właściciela są zrobione i wdrożone do ROBOCZEJ (`44416e98`). Otwarte dopalenia (niskie): `R-WEB-CAPITAL-SEADIST-Q1`, `R-WEB-PANGEA-LAND-FRACTION-OTHER-Q1` (Pangea 50%/20%), log pickera wycinki, `R-WEB-TERRAIN-ID-NAME-MAP-UNIFY-Q1`, testy fortów z automatu i E2/E3 (wymagają hooków w `main.ts`). Otwarte pytania ABC do właściciela: „dostęp do wody” (jezioro/morze), awaryjny tartak przy rzece.
