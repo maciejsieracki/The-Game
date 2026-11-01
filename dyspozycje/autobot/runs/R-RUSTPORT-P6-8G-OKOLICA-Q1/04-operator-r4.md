@@ -28,7 +28,7 @@ MUTACJE (jedna naraz; po kazdej przywrocenie; wynik = EXIT cargo test, zestaw 8G
 - M9 computeLost promien `d > sib.radius` -> `>=`: ZABITA.
 - M10 computeLost remis `d < winner_dist` -> `<=`: ZABITA.
 - M11 collect filtr wlasciciela `==` -> `!=`: ZABITA.
-- M12 js_cmp_diff `d > 0.0` -> `d >= 0.0`: PRZEZYLA - RÓWNOWAZNA. Dowod: wszystkie 4 wywolania (okolica.rs:318, 322, 325, 329) sa chronione guardem `!=` na tych samych operandach (okolica.rs:317, 321, 324, 328); dla roznych doubli a-b != 0 (IEEE 754, underflow stopniowy), wiec d == 0 jest nieosiagalne; NaN daje false w obu wariantach -> Equal.
+- M12 js_cmp_diff `d > 0.0` -> `d >= 0.0` (okolica.rs:175): ZABITA na HEAD po r5 (baca6b222; `cargo test --lib okolica` EXIT=101, FAIL `js_cmp_diff_nan_is_equal_like_v8_compare` tests.rs:49, asercja `js_cmp_diff(-0.0) == Equal`). Wcześniejsza klasyfikacja RÓWNOWAŻNA (r4) jest NIEAKTUALNA. Dodatkowy argument (wywołania): PRZEZYLA - RÓWNOWAZNA na poziomie wywołań. Dowod: wszystkie 4 wywolania (okolica.rs:318, 322, 325, 329) sa chronione guardem `!=` na tych samych operandach (okolica.rs:317, 321, 324, 328); dla roznych doubli a-b != 0 (IEEE 754, underflow stopniowy), wiec d == 0 jest nieosiagalne; NaN daje false w obu wariantach -> Equal.
 - M13 minrun `r |= n & 1` -> `r |= 0`: ZABITA.
 - M14 TimSort galop `wins_b >= min_gallop` -> `>` (sort.rs merge_low): PRZEZYLA na wektorach nanBig; ZABITA po dodaniu v8sort.json (node/V8).
 - M15 resolve reczny `count <= 0.0` -> `< 0.0` (auto.rs:97): ZABITA.
@@ -61,7 +61,7 @@ TABELA SYMBOLI (TS okolica.ts linia -> Rust; status):
 | tileScore (176) | okolica::tile_score | WEKTOR PASS (500) |
 | tileAssignScore (184) | okolica::tile_assign_score | WEKTOR PASS (2000) |
 | AssignOptions (192), ScoredOkolicaTile (211) | okolica::AssignOptions, ScoredTile | PORT (typy) |
-| compareScoredOkolicaTiles (218) | okolica::compare_scored | WEKTOR PASS (auto), M1/M2/M4 (r2), M12 rownowazna |
+| compareScoredOkolicaTiles (218) | okolica::compare_scored | WEKTOR PASS (auto), M1/M2/M4 (r2), M12 ZABITA po r5 (js_cmp_diff) |
 | scoreOkolicaTile (230) | okolica/auto.rs | WEKTOR PASS (auto 320) |
 | foodPotentialOfMapHex (250) | okolica::food_potential_of_map_hex | WEKTOR posredni (auto focus zywnosc) |
 | assignOptionsForFocus (257) | okolica/auto.rs::with_focus_potential | WEKTOR posredni |
@@ -82,7 +82,7 @@ TABELA SYMBOLI (TS okolica.ts linia -> Rust; status):
 | collectWorkedHexKeysForOwner (694) | okolica/sasiedztwo.rs | WEKTOR PASS (r4: 90 wierszy), M11 ZABITA |
 | collectWorkedHexOwnerMap (721) | okolica/sasiedztwo.rs | WEKTOR PASS (r4), - |
 | computeLostToNearerSiblingByCity (767) | okolica/sasiedztwo.rs | WEKTOR PASS (r4: 9 wierszy), M9/M10 ZABITE |
-| js_cmp_diff (wewnetrzne, dla compare_scored) | okolica.rs:172 | M12 RÓWNOWAZNA (dowod: guardy okolica.rs:317-329) |
+| js_cmp_diff (wewnetrzne, dla compare_scored) | okolica.rs:172 | M12 ZABITA po r5 (tests.rs:49, -0.0 == Equal); dodatkowo guardy okolica.rs:317-329 |
 | v8 sort (wewnetrzne, TS Array.sort) | okolica/sort.rs | TimSort pelny; WEKTOR node/V8 (138 przypadkow) + nanBig n >= 64 PASS; M13/M14 ZABITE |
 | localeCompare kluczy (wewnetrzne) | okolica::compare_scored (porzadek bajtowy) | WEKTOR PASS (3136 par) |
 NASTEPNY KROK: Evaluator (niezalezna weryfikacja: uruchomic pin/generator i testy z galezi p6-8g-okolica-r4 ponownie, zweryfikowac mutacje M1-M19 i dowod M12), potem Final Control. Otwarte dla integracji: wpiecie haka w zywa petle gry (nota 1) i loader okolica_reczne ze stanu (nota 2) - do decyzji orkiestratora (NASTEPNA-PARTIA lub r5).
