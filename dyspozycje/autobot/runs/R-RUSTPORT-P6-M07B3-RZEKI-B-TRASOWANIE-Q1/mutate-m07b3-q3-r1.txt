@@ -1,0 +1,211 @@
+# P6.M07B-Q3 r1: log mutacji (skrypt tests/p6_m07b3_vectors/mutate_m07b3_q3.py, 205 mutantow, mutacje na KOPII roboczej, repo nietkniete).
+# Wektory v3 (sha256 9456076ca8fe85197837fadb2d3ead1d4ce2eb851eb07aeaa28efa4fa4ea0b76, 14419 przypadkow) dla 201 mutantow;
+# A16, F06, G10 powtorzone na wektorach v5 (14509 = v3 + 90 przypadkow deepsea na koncu strumienia), W14 na v6 (sha256 8aa5dba819a12bb53f5cd2bb653078c01b5394e9281433533e9f36627a925ff4, 14589 = v5 + 80 przypadkow csea).
+# Wektory v6 sa nadzbiorem v5 i v3 (przypadki dopisane wylacznie na koncu strumienia; prefiks 14419 identyczny, sprawdzone), wiec zabicia na v3 obowiazuja.
+T01 | KILLED | trace_coast.rs | oczek=K | :6251 startD > 2 -> 3 | RESTORED=True | wektory=v3
+T02 | KILLED | trace_coast.rs | oczek=K | :6251 startD > 2 -> >=2 | RESTORED=True | wektory=v3
+T03 | KILLED | trace_coast.rs | oczek=K | :6251 startD == null | RESTORED=True | wektory=v3
+T04 | KILLED | trace_coast.rs | oczek=K | :6240 jawne wymiary zamienione | RESTORED=True | wektory=v3
+T05 | KILLED | trace_coast.rs | oczek=K | :6240 wymiary wnioskowane | RESTORED=True | wektory=v3
+T06 | KILLED | trace_coast.rs | oczek=K | :6254 domyslna hardMeanderLen | RESTORED=True | wektory=v3
+T07 | KILLED | trace_coast.rs | oczek=K | :6255 domyslne allowRelief | RESTORED=True | wektory=v3
+T08 | KILLED | trace_coast.rs | oczek=K | :6259 domyslne minPathSep | RESTORED=True | wektory=v3
+T09 | KILLED | trace_coast.rs | oczek=K | :6257 growthCap +1 | RESTORED=True | wektory=v3
+T10 | KILLED | trace_coast.rs | oczek=K | :6257 growthCap -1 | RESTORED=True | wektory=v3
+T11 | KILLED | trace_coast.rs | oczek=K | :6275 len < 2 -> 3 | RESTORED=True | wektory=v3
+T12 | KILLED | trace_coast.rs | oczek=K | :6275 len < 2 -> 1 | RESTORED=True | wektory=v3
+T13 | KILLED | trace_coast.rs | oczek=K | :6277 odwrocenie trasy | RESTORED=True | wektory=v3
+T14 | SURVIVED | trace_coast.rs | oczek=E | :6278 pathEndsAtSea bez wymiarow (ocean dany -> wymiary nieuzyte) [wymiary w pathEndsAtSea nieuzyte gdy oceanConnected podany] | RESTORED=True | wektory=v3
+T15 | KILLED | trace_coast.rs | oczek=K | :6278 pathEndsAtSea bez oceanConnected | RESTORED=True | wektory=v3
+T16 | KILLED | trace_coast.rs | oczek=K | :6278 negacja pathEndsAtSea | RESTORED=True | wektory=v3
+T17 | KILLED | trace_coast.rs | oczek=K | :6269 landCentroid | RESTORED=True | wektory=v3
+T18 | KILLED | trace_coast.rs | oczek=K | :6270 landCenterSquare | RESTORED=True | wektory=v3
+T19 | SURVIVED | trace_coast.rs | oczek=E | :6271 indeks sep = optymalizacja (rowny brute force) | RESTORED=True | wektory=v3
+T20 | KILLED | trace_coast.rs | oczek=K | :6267 blockRiverKeys | RESTORED=True | wektory=v3
+T21 | SURVIVED | trace_coast.rs | oczek=E | :6243 openOcean z oceanConnected [openOceanDist przekazany do growRiverFromCoastInland jest tam nieczytany] | RESTORED=True | wektory=v3
+T22 | KILLED | trace_coast.rs | oczek=K | :6246 domyslny rand | RESTORED=True | wektory=v3
+T23 | KILLED | trace_coast.rs | oczek=K | :6248 mouthKey | RESTORED=True | wektory=v3
+T24 | KILLED | trace_coast.rs | oczek=K | :6237 domyslny seaDist | RESTORED=True | wektory=v3
+T25 | KILLED | trace_coast.rs | oczek=K | :6246 oceanConnected domyslny | RESTORED=True | wektory=v3
+G01 | KILLED | trace_coast.rs | oczek=K | :6290 petla step < maxLen -> <= | RESTORED=True | wektory=v3
+G02 | KILLED | trace_coast.rs | oczek=K | :6290 petla maxLen-1 | RESTORED=True | wektory=v3
+G03 | SURVIVED | trace_coast.rs | oczek=E | :6297 curOd == null: break -> continue (stan niezmienny: iteracja idempotentna) | RESTORED=True | wektory=v3
+G04 | KILLED | trace_coast.rs | oczek=K | :6299 path.length >= 2 | RESTORED=True | wektory=v3
+G05 | KILLED | trace_coast.rs | oczek=K | :6301 inDir odwrocony | RESTORED=True | wektory=v3
+G06 | SURVIVED | trace_coast.rs | oczek=L | :6309 visited [visited: potrzebna petla >= 36 hex na plateau openOceanDist (okno skretu 6/+-1) - NIE_ZMIERZONO] | RESTORED=True | wektory=v3
+G07 | KILLED | trace_coast.rs | oczek=K | :6310 okno skretu | RESTORED=True | wektory=v3
+G08 | KILLED | trace_coast.rs | oczek=K | :6312 blockExisting | RESTORED=True | wektory=v3
+G09 | KILLED | trace_coast.rs | oczek=K | :6312 allowRelief | RESTORED=True | wektory=v3
+G10 | KILLED | trace_coast.rs | oczek=K | :6313 nd ?? Infinity | RESTORED=True | wektory=v5
+G11 | KILLED | trace_coast.rs | oczek=K | :6314 postInlandPhase | RESTORED=True | wektory=v3
+G12 | KILLED | trace_coast.rs | oczek=K | :6316 od > curOd + 0.5 -> +1.5 | RESTORED=True | wektory=v3
+G13 | KILLED | trace_coast.rs | oczek=K | :6316 od > curOd + 0.5 -> -0.5 | RESTORED=True | wektory=v3
+G14 | SURVIVED | trace_coast.rs | oczek=E | :6316 > vs >= przy calkowitym od i polowkowym progu | RESTORED=True | wektory=v3
+G15 | SURVIVED | trace_coast.rs | oczek=E | :6316 prog 0.5 vs 0 przy calkowitych od | RESTORED=True | wektory=v3
+G16 | KILLED | trace_coast.rs | oczek=K | :6318 waga od | RESTORED=True | wektory=v3
+G17 | SURVIVED | trace_coast.rs | oczek=E | :6318 waga 12 -> 13 (kolejnosc ta sama: od dominuje, bonus < 12) | RESTORED=True | wektory=v3
+G18 | SURVIVED | trace_coast.rs | oczek=E | :6318 jitter 0.35 -> 0.34 [jitter 0.35 vs 0.34: kolejnosc kandydatow ta sama (skala jittera < premia 1.8 i < 12)] | RESTORED=True | wektory=v3
+G19 | KILLED | trace_coast.rs | oczek=K | :6319 bonus prostej | RESTORED=True | wektory=v3
+G20 | KILLED | trace_coast.rs | oczek=K | :6319 bonus prostej 1.8 -> 0.3 | RESTORED=True | wektory=v3
+G21 | KILLED | trace_coast.rs | oczek=K | :6319 sameRiverDir | RESTORED=True | wektory=v3
+G22 | SURVIVED | trace_coast.rs | oczek=E | :6323 brak kandydatow: break -> continue (brak wolan rand, stan niezmienny) | RESTORED=True | wektory=v3
+G23 | KILLED | trace_coast.rs | oczek=K | :6325 wybor najlepszego | RESTORED=True | wektory=v3
+G24 | SURVIVED | trace_coast.rs | oczek=L | :6327 visited po wyborze [visited po wyborze: jak G06] | RESTORED=True | wektory=v3
+G25 | SURVIVED | trace_coast.rs | oczek=L | :6285 visited startu [visited startu: jak G06] | RESTORED=True | wektory=v3
+G26 | KILLED | trace_coast.rs | oczek=K | :6331 path.length > 1 | RESTORED=True | wektory=v3
+G27 | KILLED | trace_coast.rs | oczek=K | :6331 path.length > 1 -> > 0 | RESTORED=True | wektory=v3
+G28 | KILLED | trace_coast.rs | oczek=K | :6331 koncowy cel drenazu | RESTORED=True | wektory=v3
+G29 | KILLED | trace_coast.rs | oczek=K | :6293 wczesny cel drenazu | RESTORED=True | wektory=v3
+H01 | KILLED | astar.rs | oczek=K | :6381 less: f<= (przy rownym f decyduje seq, wynik taki sam) [etykieta E z r1 skorygowana: mutant ZABITY - f<= psuje porzadek kopca] | RESTORED=True | wektory=v3
+H02 | KILLED | astar.rs | oczek=K | :6381 remis: seq malejaco | RESTORED=True | wektory=v3
+H03 | KILLED | astar.rs | oczek=K | :6381 brak tie-break seq | RESTORED=True | wektory=v3
+H04 | KILLED | astar.rs | oczek=K | :6381 odwrocone f | RESTORED=True | wektory=v3
+H05 | KILLED | astar.rs | oczek=K | :6347 rodzic | RESTORED=True | wektory=v3
+H06 | KILLED | astar.rs | oczek=K | :6349 sift-up porownanie | RESTORED=True | wektory=v3
+H07 | KILLED | astar.rs | oczek=K | :6346 sift-up do korzenia | RESTORED=True | wektory=v3
+H08 | KILLED | astar.rs | oczek=K | :6361 pop ostatniego elementu | RESTORED=True | wektory=v3
+H09 | KILLED | astar.rs | oczek=K | :6367 lewe dziecko | RESTORED=True | wektory=v3
+H10 | KILLED | astar.rs | oczek=K | :6369 sift-down lewe | RESTORED=True | wektory=v3
+H11 | KILLED | astar.rs | oczek=K | :6370 sift-down prawe | RESTORED=True | wektory=v3
+H12 | KILLED | astar.rs | oczek=K | :6370 prawe dziecko pominiete | RESTORED=True | wektory=v3
+H13 | KILLED | astar.rs | oczek=K | :6369 lewe dziecko pominiete | RESTORED=True | wektory=v3
+H14 | SURVIVED | astar.rs | oczek=E | :6363 top/last: przypisanie rownowazne mem::replace | RESTORED=True | wektory=v3
+A01 | KILLED | astar.rs | oczek=K | :6399 h0 = openOceanDist ?? seaDist | RESTORED=True | wektory=v3
+A02 | SURVIVED | astar.rs | oczek=E | :6399 h0 [h0 tylko startowy f/bestH: poza petla nieuzywany (fallback po petli martwy)] | RESTORED=True | wektory=v3
+A03 | SURVIVED | astar.rs | oczek=E | :6401 start w oceanie [start w oceanie: bez galezi start jest zdejmowany pierwszy i goal-check zwraca [start]] | RESTORED=True | wektory=v3
+A04 | SURVIVED | astar.rs | oczek=E | :6411 seq startu [seq startu: start zdjety pierwszy, kolejnosc seq potomkow zachowana] | RESTORED=True | wektory=v3
+A05 | SURVIVED | astar.rs | oczek=E | :6420 pomin wpisy spoza open [wpis spoza open: nieaktualny wpis ma f != fScore[k] (A06 go odrzuca); h = BFS openOceanDist jest spojna (koszt >= 1)] | RESTORED=True | wektory=v3
+A06 | SURVIVED | astar.rs | oczek=E | :6422 pomin przestarzale f [f != fScore: nieaktualny wpis wychodzi z kopca PO nowszym (nizsze f), wezel jest wtedy zamkniety (A05)] | RESTORED=True | wektory=v3
+A07 | SURVIVED | astar.rs | oczek=E | :6431 bestH < [bestK/bestH: fallback po petli martwy (kazdy zdjety wezel jest od razu sprawdzany jako cel)] | RESTORED=True | wektory=v3
+A08 | KILLED | astar.rs | oczek=K | :6435 cel w petli | RESTORED=True | wektory=v3
+A09 | SURVIVED | astar.rs | oczek=E | :6439 open.delete(current) [open.delete: spojna heurystyka - zamkniety wezel nie poprawia g; nieaktualne wpisy odrzuca test f] | RESTORED=True | wektory=v3
+A10 | KILLED | astar.rs | oczek=K | :6440 curG >= maxLen -> > | RESTORED=True | wektory=v3
+A11 | KILLED | astar.rs | oczek=K | :6440 curG >= maxLen + 1 | RESTORED=True | wektory=v3
+A12 | KILLED | astar.rs | oczek=K | :6440 curG >= maxLen - 1 | RESTORED=True | wektory=v3
+A13 | KILLED | astar.rs | oczek=K | :6446 inDir odwrocony | RESTORED=True | wektory=v3
+A14 | KILLED | astar.rs | oczek=K | :6450 blockExisting | RESTORED=True | wektory=v3
+A15 | KILLED | astar.rs | oczek=K | :6450 allowRelief | RESTORED=True | wektory=v3
+A16 | KILLED | astar.rs | oczek=K | :6451 nd ?? Infinity | RESTORED=True | wektory=v5
+A17 | KILLED | astar.rs | oczek=K | :6452 postInlandPhase | RESTORED=True | wektory=v3
+A18 | KILLED | astar.rs | oczek=K | :6453 koszt kroku | RESTORED=True | wektory=v3
+A19 | KILLED | astar.rs | oczek=K | :6454 kara prostej 0.18 | RESTORED=True | wektory=v3
+A20 | SURVIVED | astar.rs | oczek=L | :6454 jitter 0.12 [jitter 0.12 -> 0.13: roznica kosztu < 0.01 na krok prosty; wymaga prawie-remisu tras - NIE_ZMIERZONO] | RESTORED=True | wektory=v3
+A21 | KILLED | astar.rs | oczek=K | :6454 znak kary | RESTORED=True | wektory=v3
+A22 | KILLED | astar.rs | oczek=K | :6454 sameRiverDir | RESTORED=True | wektory=v3
+A23 | SURVIVED | astar.rs | oczek=E | :6456 tg > maxLen + 2 -> >= [tg > maxLen+2 nieosiagalne: curG < maxLen i koszt < 1.3] | RESTORED=True | wektory=v3
+A24 | SURVIVED | astar.rs | oczek=E | :6456 tg > maxLen + 3 [tg > maxLen+3 nieosiagalne: curG < maxLen i koszt < 1.3] | RESTORED=True | wektory=v3
+A25 | KILLED | astar.rs | oczek=K | :6456 tg > maxLen + 1 | RESTORED=True | wektory=v3
+A26 | KILLED | astar.rs | oczek=K | :6457 tg >= gScore -> > | RESTORED=True | wektory=v3
+A27 | KILLED | astar.rs | oczek=K | :6458 cameFrom | RESTORED=True | wektory=v3
+A28 | KILLED | astar.rs | oczek=K | :6465 f wpisu kopca | RESTORED=True | wektory=v3
+A29 | KILLED | astar.rs | oczek=K | :6466 heapSeq++ | RESTORED=True | wektory=v3
+A30 | SURVIVED | astar.rs | oczek=E | :6471 bestK != startK (start nie jest celem, bo odpytany jako pierwszy) [bestK != startK: start zdjety pierwszy i nie jest celem (inaczej return)] | RESTORED=True | wektory=v3
+A31 | KILLED | astar.rs | oczek=K | :6473 cel dla bestK | RESTORED=True | wektory=v3
+A32 | SURVIVED | astar.rs | oczek=E | :6429 curH ?? Infinity [curH default wplywa tylko na bestH/bestK: fallback po petli martwy] | RESTORED=True | wektory=v3
+A33 | SURVIVED | astar.rs | oczek=E | :6462 nf: openOcean ?? Infinity [wezel w oceanConnected bez openOceanDist nie jest nigdy wstawiany: rodzic bylby juz celem drenazu] | RESTORED=True | wektory=v3
+A34 | KILLED | astar.rs | oczek=K | :6387 maxLen | RESTORED=True | wektory=v3
+A35 | SURVIVED | astar.rs | oczek=E | :6432 bestK [bestK: fallback po petli martwy] | RESTORED=True | wektory=v3
+I01 | KILLED | extend.rs | oczek=K | :6535 path.length < 5 -> 4 | RESTORED=True | wektory=v3
+I02 | KILLED | extend.rs | oczek=K | :6535 path.length < 5 -> 6 | RESTORED=True | wektory=v3
+I03 | KILLED | extend.rs | oczek=K | :6535 maxExtraSteps <= 0 | RESTORED=True | wektory=v3
+I04 | KILLED | extend.rs | oczek=K | :6535 || -> && |  | wektory=v3
+I05 | KILLED | extend.rs | oczek=K | :6542 i < len - 2 -> len - 3 | RESTORED=True | wektory=v3
+I06 | KILLED | extend.rs | oczek=K | :6542 i < len - 2 -> len - 1 | RESTORED=True | wektory=v3
+I07 | KILLED | extend.rs | oczek=K | :6542 extra < max -> <= | RESTORED=True | wektory=v3
+I08 | KILLED | extend.rs | oczek=K | :6542 extra < max - 1 | RESTORED=True | wektory=v3
+I09 | KILLED | extend.rs | oczek=K | :6544 sameRiverDir(lastDir, d) | RESTORED=True | wektory=v3
+I10 | KILLED | extend.rs | oczek=K | :6546 straightRun = 1 | RESTORED=True | wektory=v3
+I11 | KILLED | extend.rs | oczek=K | :6547 lastDir = d | RESTORED=True | wektory=v3
+I12 | KILLED | extend.rs | oczek=K | :6550 straightRun < 4 -> 3 | RESTORED=True | wektory=v3
+I13 | KILLED | extend.rs | oczek=K | :6550 straightRun < 4 -> 5 | RESTORED=True | wektory=v3
+I14 | SURVIVED | extend.rs | oczek=E | :6551 rand() >= 0.34: mulberry32 daje wielokrotnosci 2^-32, 0.34 nie jest wielokrotnoscia | RESTORED=True | wektory=v3
+I15 | KILLED | extend.rs | oczek=K | :6551 prog 0.34 -> 0.35 | RESTORED=True | wektory=v3
+I16 | KILLED | extend.rs | oczek=K | :6551 prog 0.34 -> 0.33 | RESTORED=True | wektory=v3
+I17 | KILLED | extend.rs | oczek=K | :6551 negacja | RESTORED=True | wektory=v3
+I18 | KILLED | extend.rs | oczek=K | :6555 argumenty findRiverMeanderStep | RESTORED=True | wektory=v3
+I19 | KILLED | extend.rs | oczek=K | :6561 splice(i + 2) | RESTORED=True | wektory=v3
+I20 | KILLED | extend.rs | oczek=K | :6562 extra++ | RESTORED=True | wektory=v3
+I21 | KILLED | extend.rs | oczek=K | :6563 straightRun = 0 | RESTORED=True | wektory=v3
+I22 | KILLED | extend.rs | oczek=K | :6564 i += 2 -> 1 | RESTORED=True | wektory=v3
+I23 | KILLED | extend.rs | oczek=K | :6564 i += 2 -> 3 | RESTORED=True | wektory=v3
+I24 | KILLED | extend.rs | oczek=K | :6542 i++ petli | RESTORED=True | wektory=v3
+I25 | KILLED | extend.rs | oczek=U | :6568 sanitizeRiverPath(result) | RESTORED=True | wektory=v3
+I26 | SURVIVED | extend.rs | oczek=E | :6568 sourceKey [sourceKey w repair: path[0] zawsze odwiedzony, a cel d==1 omija canRiverFlowThrough] | RESTORED=True | wektory=v3
+I27 | KILLED | extend.rs | oczek=K | :6553 used | RESTORED=True | wektory=v3
+X01 | SURVIVED | extend.rs | oczek=E | :6578 length >= minLen -> > [length == minLen: petla while i tak sie nie wykonuje, wynik = path] | RESTORED=True | wektory=v3
+X02 | KILLED | extend.rs | oczek=K | :6578 length < 3 -> 2 | RESTORED=True | wektory=v3
+X03 | KILLED | extend.rs | oczek=K | :6578 length < 3 -> 4 | RESTORED=True | wektory=v3
+X04 | KILLED | extend.rs | oczek=K | :6578 || -> && |  | wektory=v3
+X05 | KILLED | extend.rs | oczek=K | :6581 pass < 12 -> 11 | RESTORED=True | wektory=v3
+X06 | KILLED | extend.rs | oczek=K | :6581 pass < 12 -> 13 | RESTORED=True | wektory=v3
+X07 | KILLED | extend.rs | oczek=K | :6581 length < minLen -> <= | RESTORED=True | wektory=v3
+X08 | KILLED | extend.rs | oczek=K | :6581 length < stepCap -> <= | RESTORED=True | wektory=v3
+X09 | KILLED | extend.rs | oczek=K | :6582 min(.., 6) -> 5 | RESTORED=True | wektory=v3
+X10 | KILLED | extend.rs | oczek=K | :6582 min(.., 6) -> 7 | RESTORED=True | wektory=v3
+X11 | KILLED | extend.rs | oczek=K | :6582 bez stepCap | RESTORED=True | wektory=v3
+X12 | KILLED | extend.rs | oczek=K | :6582 bez minLen | RESTORED=True | wektory=v3
+X13 | KILLED | extend.rs | oczek=K | :6584 meandered.length > out.length | RESTORED=True | wektory=v3
+X14 | KILLED | extend.rs | oczek=K | :6586 continue po meandrach | RESTORED=True | wektory=v3
+X15 | KILLED | extend.rs | oczek=K | :6589 0.45 -> 0.5 | RESTORED=True | wektory=v3
+X16 | KILLED | extend.rs | oczek=K | :6589 0.45 -> 0.4 | RESTORED=True | wektory=v3
+X17 | KILLED | extend.rs | oczek=K | :6589 max(1, ..) -> 2 | RESTORED=True | wektory=v3
+X18 | KILLED | extend.rs | oczek=K | :6589 max(1, ..) -> 0: len>=3 daje floor(0.45*3)=1 [etykieta E z r1 skorygowana: mutant ZABITY - wejscia po skroceniu sanitize/repair do dl. 2] | RESTORED=True | wektory=v3
+X19 | KILLED | extend.rs | oczek=K | :6592 min(len-1, mid+1): mid+1 <= len-1 dla len>=3 [etykieta E z r1 skorygowana: mutant ZABITY - wejscia po skroceniu sanitize/repair do dl. 2] | RESTORED=True | wektory=v3
+X20 | KILLED | extend.rs | oczek=K | :6592 b = out[mid] | RESTORED=True | wektory=v3
+X21 | KILLED | extend.rs | oczek=K | :6591 a = out[mid] | RESTORED=True | wektory=v3
+X22 | KILLED | extend.rs | oczek=K | :6595 slice(0, mid + 1) | RESTORED=True | wektory=v3
+X23 | SURVIVED | extend.rs | oczek=E | :6595 slice(mid + 1) [duplikat out[mid] usuwa sanitize_river_path (seen) przed repair - wynik ten sam] | RESTORED=True | wektory=v3
+X24 | KILLED | extend.rs | oczek=U | :6599 brak meandru: break | RESTORED=True | wektory=v3
+X25 | KILLED | extend.rs | oczek=K | :6597 repair(sanitize(out)) | RESTORED=True | wektory=v3
+X26 | KILLED | extend.rs | oczek=U | :6597 bez sanitize | RESTORED=True | wektory=v3
+X27 | SURVIVED | extend.rs | oczek=E | :6579 srcKey [sourceKey w repair: jak I26] | RESTORED=True | wektory=v3
+X28 | KILLED | extend.rs | oczek=K | :6581 pass++ (petla do cap kroku) | RESTORED=True | wektory=v3
+W01 | KILLED | extend.rs | oczek=K | :6604 path.length === 0 (panika przy pustej) | RESTORED=True | wektory=v3
+W02 | KILLED | extend.rs | oczek=K | :6612 extra < RIVER_MOUTH_TAIL_LEN -> +1 | RESTORED=True | wektory=v3
+W03 | KILLED | extend.rs | oczek=K | :6612 extra < RIVER_MOUTH_TAIL_LEN -> -1 | RESTORED=True | wektory=v3
+W04 | SURVIVED | extend.rs | oczek=E | :6613 brak heksu konca: break -> continue (stan niezmienny, iteracje idempotentne) | RESTORED=True | wektory=v3
+W05 | KILLED | extend.rs | oczek=K | :6615 isWaterTerrainLocal -> tylko Morze | RESTORED=True | wektory=v3
+W06 | KILLED | extend.rs | oczek=K | :6615 koniec na wodzie | RESTORED=True | wektory=v3
+W07 | KILLED | extend.rs | oczek=K | :6623 visited | RESTORED=True | wektory=v3
+W08 | KILLED | extend.rs | oczek=K | :6625 Morze wykluczone | RESTORED=True | wektory=v3
+W09 | KILLED | extend.rs | oczek=K | :6625 relief wykluczony | RESTORED=True | wektory=v3
+W10 | KILLED | extend.rs | oczek=K | :6625 || -> && |  | wektory=v3
+W11 | SURVIVED | extend.rs | oczek=E | :6626 seaDist ?? 999 -> 998 [seaDist ?? 999 vs 998: stala przesuwa wszystkich kandydatow bez seaDist jednakowo (finitowe < 990)] | RESTORED=True | wektory=v3
+W12 | KILLED | extend.rs | oczek=K | :6626 seaDist ?? 999 -> 0 | RESTORED=True | wektory=v3
+W13 | KILLED | extend.rs | oczek=K | :6627 PlytkieMorze -8 -> +8 | RESTORED=True | wektory=v3
+W14 | KILLED | extend.rs | oczek=K | :6627 PlytkieMorze: -8 vs -0 (shallow nd=0 < land nd>=1; brak seaDist -> oba 999) [etykieta E z r1 skorygowana: ZABITY wektorami `csea` (brak seaDist na pasie przybrzeznym: 991 vs 999 -> remis przy -0)] | RESTORED=True | wektory=v6
+W15 | KILLED | extend.rs | oczek=K | :6628 score < bestScore -> <= | RESTORED=True | wektory=v3
+W16 | KILLED | extend.rs | oczek=K | :6628 score < bestScore -> > | RESTORED=True | wektory=v3
+W17 | SURVIVED | extend.rs | oczek=E | :6633 brak kandydata: break -> continue (stan niezmienny) | RESTORED=True | wektory=v3
+W18 | KILLED | extend.rs | oczek=K | :6636 visited.add | RESTORED=True | wektory=v3
+W19 | KILLED | extend.rs | oczek=K | :6637 cq = best[0] | RESTORED=True | wektory=v3
+W20 | KILLED | extend.rs | oczek=K | :6638 cr = best[1] | RESTORED=True | wektory=v3
+W21 | KILLED | extend.rs | oczek=K | :6635 path.push | RESTORED=True | wektory=v3
+F01 | KILLED | extend.rs | oczek=K | :6657 mouthReady | RESTORED=True | wektory=v3
+F02 | SURVIVED | extend.rs | oczek=E | :6661 wczesny return: petla sprawdza mouthReady(cur) w 1. iteracji | RESTORED=True | wektory=v3
+F03 | KILLED | extend.rs | oczek=K | :6666 step < TAIL + 2 -> +3 | RESTORED=True | wektory=v3
+F04 | KILLED | extend.rs | oczek=K | :6666 step < TAIL + 2 -> +1 | RESTORED=True | wektory=v3
+F05 | KILLED | extend.rs | oczek=K | :6667 mouthReady w petli | RESTORED=True | wektory=v3
+F06 | KILLED | extend.rs | oczek=K | :6679 nd ?? Infinity | RESTORED=True | wektory=v5
+F07 | KILLED | extend.rs | oczek=K | :6680 wyjatek PlytkieMorze (drain) | RESTORED=True | wektory=v3
+F08 | KILLED | extend.rs | oczek=K | :6680 postInlandPhase | RESTORED=True | wektory=v3
+F09 | KILLED | extend.rs | oczek=K | :6680 !shallow && -> shallow || |  | wektory=v3
+F10 | KILLED | extend.rs | oczek=K | :6682 && -> || |  | wektory=v3
+F11 | SURVIVED | extend.rs | oczek=E | :6682 wyjatek PlytkieMorze (flow) [canRiverFlowThrough dla PlytkieMorze zawsze true (nie Morze, nie relief)] | RESTORED=True | wektory=v3
+F12 | KILLED | extend.rs | oczek=K | :6682 blockExisting domyslnie false | RESTORED=True | wektory=v3
+F13 | SURVIVED | extend.rs | oczek=E | :6682 allowRelief: relief odrzucony wczesniej (:6677) | RESTORED=True | wektory=v3
+F14 | KILLED | extend.rs | oczek=K | :6684 openOceanDist ?? nd | RESTORED=True | wektory=v3
+F15 | KILLED | extend.rs | oczek=K | :6684 nd = Infinity | RESTORED=True | wektory=v3
+F16 | KILLED | extend.rs | oczek=K | :6686 PlytkieMorze -15 -> +15 | RESTORED=True | wektory=v3
+F17 | SURVIVED | extend.rs | oczek=E | :6686 PlytkieMorze -15 -> -14: shallow o=0 vs land o>=1 (w obu wypadkach shallow wygrywa) | RESTORED=True | wektory=v3
+F18 | KILLED | extend.rs | oczek=K | :6688 score < bestScore -> <= | RESTORED=True | wektory=v3
+F19 | SURVIVED | extend.rs | oczek=E | :6693 brak kandydata: break -> continue (stan niezmienny) | RESTORED=True | wektory=v3
+F20 | KILLED | extend.rs | oczek=K | :6695 visited.add | RESTORED=True | wektory=v3
+F21 | KILLED | extend.rs | oczek=K | :6694 path.push | RESTORED=True | wektory=v3
+F22 | KILLED | extend.rs | oczek=K | :6666 visited poczatkowy | RESTORED=True | wektory=v3
+F23 | KILLED | extend.rs | oczek=K | :6650 path.length === 0 | RESTORED=True | wektory=v3
+F24 | KILLED | extend.rs | oczek=K | :6673 visited | RESTORED=True | wektory=v3
+F25 | SURVIVED | extend.rs | oczek=E | :6677 Morze wykluczone [Morze odrzucane i tak przez canRiverFlowThrough (false dla Morza)] | RESTORED=True | wektory=v3
+F26 | KILLED | extend.rs | oczek=K | :6677 relief wykluczony | RESTORED=True | wektory=v3
+# podsumowanie: KILLED oczek=K=161, KILLED oczek=U=3, SURVIVED oczek=E=37, SURVIVED oczek=L=4
+EXIT=0

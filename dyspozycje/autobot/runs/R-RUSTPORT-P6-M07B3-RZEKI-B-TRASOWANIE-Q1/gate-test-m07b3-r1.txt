@@ -1,0 +1,42 @@
+    Finished `test` profile [unoptimized] target(s) in 0.09s
+     Running tests/p6_m07b2_coast.rs (/dev/shm/m07b3-q3-target/debug/deps/p6_m07b2_coast-9ab32eacc2ea3557)
+
+running 2 tests
+test coast_grow_vectors_cover_outcomes ... ok
+test coast_grow_vectors_match_web ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 4.90s
+
+     Running tests/p6_m07b2_edges.rs (/dev/shm/m07b3-q3-target/debug/deps/p6_m07b2_edges-f024969706f8311d)
+
+running 3 tests
+test edges_point_cases_match_contract ... ok
+test edges_vectors_cover_branches_and_overlays ... ok
+test edges_vectors_match_web ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 3.21s
+
+     Running tests/p6_m07b2_q2r4.rs (/dev/shm/m07b3-q3-target/debug/deps/p6_m07b2_q2r4-a9f1ba95478e7b24)
+
+running 2 tests
+test q2r4_vectors_cover_mutant_kills ... ok
+test q2r4_vectors_match_web ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 4.59s
+
+     Running tests/p6_m07b3_q3.rs (/dev/shm/m07b3-q3-target/debug/deps/p6_m07b3_q3-7de96185f7a29664)
+
+running 2 tests
+test q3_vectors_cover_branches_and_overlays ... ok
+test q3_vectors_match_web ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 12.97s
+
+     Running tests/p6_m07b_turn.rs (/dev/shm/m07b3-q3-target/debug/deps/p6_m07b_turn-90c89d9a5408353a)
+
+running 2 tests
+test turn_vectors_cover_both_outcomes ... ok
+test turn_vectors_match_web ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.21s
+EXIT=0
