@@ -24,6 +24,7 @@ pub mod economy_yield;
 mod error;
 pub mod events;
 pub mod formation_rules;
+pub mod fort_territory;
 pub mod general_quick_follow;
 pub mod generals;
 pub mod hex;

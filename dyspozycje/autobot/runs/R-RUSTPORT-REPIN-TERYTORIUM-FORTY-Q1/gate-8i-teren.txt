@@ -1,0 +1,39 @@
+    Finished `test` profile [unoptimized] target(s) in 0.12s
+     Running tests/p6_8i_pick.rs (/dev/shm/teren-t/debug/deps/p6_8i_pick-079fe40eb9aa777a)
+
+running 5 tests
+test helper_constants_match_web ... ok
+test helper_priorities_deficits_and_city_limit_match_web ... ok
+test wyrab_has_no_tech_gate_like_web ... ok
+test vectors_pin_is_4bbef081d ... ok
+test pick_auto_improvements_matches_pinned_web_vectors ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 16.47s
+
+     Running tests/p6_8i_relief.rs (/dev/shm/teren-t/debug/deps/p6_8i_relief-ab7cb582fff7302f)
+
+running 8 tests
+test explicit_keys_and_legacy_kopalnia ... ok
+test key_predicate_matches_pinned_web_vectors ... ok
+test layers_predicate_matches_pinned_web_vectors ... ok
+test one_non_preserving_layer_breaks_all ... ok
+test prefix_boundaries ... ok
+test exact_match_no_trim_no_case_fold ... ok
+test empty_layers_is_false ... ok
+test vectors_pin_is_91dc998a ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/p6_repin_teren_domain.rs (/dev/shm/teren-t/debug/deps/p6_repin_teren_domain-d424815a0e5724a3)
+
+running 6 tests
+test capture_by_occupation_matches_web ... ok
+test foreign_fort_territory_matches_web ... ok
+test next_seq_and_backfill_match_web ... ok
+test fort_territory_nodes_match_web ... ok
+test radii_and_boundaries_match_web ... ok
+test territory_owner_at_matches_web ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.64s
+
+EXIT=0

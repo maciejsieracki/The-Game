@@ -1,0 +1,426 @@
+    Finished `test` profile [unoptimized] target(s) in 0.04s
+     Running tests/bridge_add_player.rs (/dev/shm/teren-t/debug/deps/bridge_add_player-29d21d45c2674db3)
+
+running 1 test
+test bridge::add_player_atomicity_tests::add_player_leaves_mock_state_untouched_when_the_game_rejects_it ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/data_civilizations.rs (/dev/shm/teren-t/debug/deps/data_civilizations-c9a95e0d071840a4)
+
+running 7 tests
+test civ_ai_json_parses_and_spot_checks ... ok
+test city_names_pools_json_parses_and_spot_checks ... ok
+test civ_params_json_parses_and_spot_checks ... ok
+test diplomacy_acceptance_points_json_parses_and_spot_checks ... ok
+test civs_json_parses_and_spot_checks ... ok
+test diplomacy_json_parses_and_spot_checks ... ok
+test civ_matrix_json_parses_and_spot_checks ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/economy_city_vectors.rs (/dev/shm/teren-t/debug/deps/economy_city_vectors-7ee12cbf946e9bb9)
+
+running 1 test
+test vectors_match_pinned_web_economy ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.14s
+
+     Running tests/p6_1_civ_entry_epoch.rs (/dev/shm/teren-t/debug/deps/p6_1_civ_entry_epoch-c29112b12d237024)
+
+running 8 tests
+test civ_entry_epoch_matches_web_vectors ... ok
+test civ_entry_label_matches_web_vectors ... ok
+test civ_availability_matches_web_vectors_for_every_game_epoch ... ok
+test civ_ids_available_match_web_roster_vectors ... ok
+test strict_epoch_ids_reject_non_canonical_spellings ... ok
+test game_epoch_hud_label_matches_web_vectors ... ok
+test game_epoch_index_matches_web_for_every_probe ... ok
+test game_epoch_order_matches_web ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/p6_1c_tables.rs (/dev/shm/teren-t/debug/deps/p6_1c_tables-2a37790854995833)
+
+running 4 tests
+test start_tables_parse_with_deny_unknown_fields ... ok
+test cluster_table_has_sane_shape ... ok
+test llama_table_has_sane_shape ... ok
+test braz_table_has_sane_shape_and_consistent_references ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/p6_1e_tables.rs (/dev/shm/teren-t/debug/deps/p6_1e_tables-9dc9ef20c17d92b2)
+
+running 7 tests
+test parameter_label_dictionary_has_nonempty_entries_and_suffix_rule ... ok
+test semantic_table_has_text_for_every_status_and_placeholder ... ok
+test modules_contain_no_balance_or_data_literals ... ok
+test semantic_neutral_band_rules_cover_every_parameter_definition ... ok
+test params_table_is_consistent_with_matrix_and_civs ... ok
+test semantic_table_sets_reference_existing_parameters_and_are_disjoint ... ok
+test tables_parse_and_are_cached ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests/p6_4_march.rs (/dev/shm/teren-t/debug/deps/p6_4_march-bae7bfc63cf555d2)
+
+running 6 tests
+test fog_frontier_and_fog_plan_match_web ... ok
+test save_validation_and_round_trip_match_web ... ok
+test truncate_path_to_budget_matches_web_including_min_move ... ok
+test plan_path_turns_matches_web ... ok
+test should_stop_at_obstacle_matches_web ... ok
+test execute_march_step_matches_web ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.65s
+
+     Running tests/p6_5a_tables.rs (/dev/shm/teren-t/debug/deps/p6_5a_tables-c73c4ca1005ab433)
+
+running 2 tests
+test tempo_table_parses_and_has_distinct_keys_with_positive_multipliers ... ok
+test army_params_parse_and_have_sane_shape ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/p6_6a_hexclear.rs (/dev/shm/teren-t/debug/deps/p6_6a_hexclear-98167207530960b3)
+
+running 4 tests
+test clearing_follows_the_editable_table_but_forest_and_mountain_rules_are_fixed ... ok
+test clear_hex_for_city_center_matches_web ... ok
+test keep_set_and_predicate_match_web ... ok
+test apply_city_founding_to_hex_matches_web ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+
+     Running tests/p6_6b_percent.rs (/dev/shm/teren-t/debug/deps/p6_6b_percent-1f6b6df5d7367a50)
+
+running 10 tests
+test budowa_priority_helpers_match_web ... ok
+test adjust_handel_split_matches_web ... ok
+test constants_match_running_web ... ok
+test clamp_functions_match_web ... ok
+test normalize_podzial_handlu_matches_web ... ok
+test resolve_praca_percent_from_raw_matches_web ... ok
+test snap_and_migrate_match_web ... ok
+test podzial_pracy_z_procentu_puli_matches_web ... ok
+test resolve_effective_ulepszenia_matches_web ... ok
+test ulepszenia_policy_and_caps_match_web ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.52s
+
+     Running tests/p6_7b_gate.rs (/dev/shm/teren-t/debug/deps/p6_7b_gate-63a70dd300e51d76)
+
+running 12 tests
+test constants_match_running_web ... ok
+test access_only_labels_match_running_web ... ok
+test filter_runtime_active_built_ids_matches_running_web ... ok
+test city_building_prereq_met_matches_running_web ... ok
+test filter_runtime_active_built_ids_varied_labels_matches_running_web ... ok
+test missing_runtime_labels_match_running_web ... ok
+test label_satisfied_matches_running_web ... ok
+test has_deposit_runtime_gate_matches_running_web ... ok
+test owner_can_feed_mennica_matches_running_web ... ok
+test resource_gate_matches_running_web ... ok
+test required_active_labels_match_running_web ... ok
+test runtime_gate_matches_running_web ... ok
+
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.90s
+
+     Running tests/p6_8a_vectors.rs (/dev/shm/teren-t/debug/deps/p6_8a_vectors-01a8cd8390790de7)
+
+running 12 tests
+test vectors_building_upgrades_composition_match_web ... ok
+test vectors_building_upgrades_chain_match_web ... ok
+test vectors_building_groups_match_web ... ok
+test vectors_building_stat_summary_lines_match_web ... ok
+test vectors_building_upgrades_display_name_match_web ... ok
+test vectors_building_upgrades_suppressed_match_web ... ok
+test vectors_building_upgrades_presence_and_palac_tier_match_web ... ok
+test vectors_structural_defense_realny_match_web ... ok
+test vectors_structural_defense_napis_null_brak_match_web ... ok
+test vectors_structural_defense_zero_ujemna_ulamek_match_web ... ok
+test vectors_pending_id_helpers_match_web ... ok
+test vectors_pending_scenarios_match_web ... ok
+
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.44s
+
+     Running tests/p6_8c_vectors.rs (/dev/shm/teren-t/debug/deps/p6_8c_vectors-2917562851ba301e)
+
+running 13 tests
+test advance_completes_at_threshold_and_pauses ... ok
+test advance_speed_bonus_applies_to_buildings_only ... ok
+test bank_ignores_units_and_proto_key ... ok
+test bank_overwrites_and_withdraw_consumes ... ok
+test eta_turns_threshold_and_nan ... ok
+test dequeue_front_forfeits_own_and_new_front_regains_banked ... ok
+test enqueue_unit_is_gated_and_banked_progress_restored ... ok
+test promote_to_front_moves_progress_per_item ... ok
+test sanitize_refunds_legacy_units_front_and_waiting ... ok
+test unit_capacity_min_one_and_no_carry ... ok
+test p8c_vectors_front_eta_work_capacity ... ok
+test p8c_vectors_enqueue_forfeit_bank_withdraw ... ok
+test p8c_vectors_queue_ops ... ok
+
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.34s
+
+     Running tests/p6_8g_okolica.rs (/dev/shm/teren-t/debug/deps/p6_8g_okolica-b8fd7aba352be577)
+
+running 19 tests
+test city_range_matches_web_params ... ok
+test land_workable_excludes_ocean_and_mountains_only ... ok
+test lost_map_empty_for_other_owners ... ok
+test lost_to_nearer_sibling_tie_and_closer ... ok
+test adjust_is_directional_not_toggle ... ok
+test assign_tie_break_distance_then_key ... ok
+test nan_score_is_treated_as_tie_without_panic ... ok
+test negative_population_clamps_worker_cap_to_zero ... ok
+test other_city_centre_and_exclude_are_removed ... ok
+test negative_population_rebalance_empties_manual_workers ... ok
+test rebalance_auto_mode_is_noop ... ok
+test okolica_tiles_radius_one_order_excludes_center ... ok
+test rebalance_grow_seeds_when_empty_and_adds_when_partial ... ok
+test okolica_tiles_radius_quirks ... ok
+test rebalance_shrink_budget_is_exact_and_illegal_first ... ok
+test rebalance_shrink_removes_lowest_score_tile ... ok
+test wagi_for_focus_values ... ok
+test toggle_reasons_and_limit ... ok
+test zywnosc_focus_tie_break_prefers_higher_food ... ok
+
+test result: ok. 19 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/p6_8i_relief.rs (/dev/shm/teren-t/debug/deps/p6_8i_relief-ab7cb582fff7302f)
+
+running 8 tests
+test key_predicate_matches_pinned_web_vectors ... ok
+test empty_layers_is_false ... ok
+test one_non_preserving_layer_breaks_all ... ok
+test layers_predicate_matches_pinned_web_vectors ... ok
+test explicit_keys_and_legacy_kopalnia ... ok
+test prefix_boundaries ... ok
+test exact_match_no_trim_no_case_fold ... ok
+test vectors_pin_is_91dc998a ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/p6_m01_prims.rs (/dev/shm/teren-t/debug/deps/p6_m01_prims-963d8aed92ec098f)
+
+running 14 tests
+test hex_directions_match_web_in_every_implementation ... ok
+test all_three_mulberry32_implementations_match_web_for_every_seed_and_step ... ok
+test hex_distance_matches_web_on_the_full_grid_in_every_implementation ... ok
+test cos_lerp_matches_web_bit_for_bit ... ok
+test js_cos_matches_v8_math_cos_bit_for_bit_in_the_supported_range ... ok
+test fbm_matches_web_bit_for_bit_for_all_octave_counts ... ok
+test js_to_int32_follows_ecmascript_to_int32 ... ok
+test hex_key_matches_web_format ... ok
+test mulberry32_state_is_the_seed_until_first_draw ... ok
+test hex_distance_matches_web_for_large_coordinates ... ok
+test js_cos_outside_the_medium_range_stays_within_one_ulp_and_keeps_special_values ... ok
+test perm_table_matches_web_for_all_256_entries ... ok
+test vectors_come_from_the_pinned_web_run ... ok
+test value_noise_matches_web_bit_for_bit_including_huge_and_negative_coordinates ... ok
+
+test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.13s
+
+     Running tests/p6_m03_earth.rs (/dev/shm/teren-t/debug/deps/p6_m03_earth-527455072c339731)
+
+running 5 tests
+test heights_polar_rows_and_land_rows_match_web_for_every_height ... ok
+test subsample_grid_and_land_fraction_threshold_match_web_for_all_tier_edges ... ok
+test constants_match_web ... ok
+test bit_at_matches_web_including_clamped_out_of_range_coordinates ... ok
+test widths_inner_width_matches_web_for_every_width ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests/p6_m04_reapply.rs (/dev/shm/teren-t/debug/deps/p6_m04_reapply-8accc2cf3c58125d)
+
+running 4 tests
+test reapply_land_terrain_matches_web ... ok
+test reapply_forest_overlay_targeted_inland_cases_match_web ... ok
+test forest_replay_hooks_reject_wrong_arguments ... ok
+test reapply_forest_overlay_matches_web ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.72s
+
+     Running tests/p6_m05b_tables.rs (/dev/shm/teren-t/debug/deps/p6_m05b_tables-275899ffb2e83dd2)
+
+running 5 tests
+test relief_b_table_has_no_non_finite_numbers ... ok
+test relief_b_table_has_web_source_for_every_leaf ... ok
+test relief_b_table_parses_with_deny_unknown_fields ... ok
+test damaged_json_variants_match_web_fallbacks ... ok
+test real_json_mountain_range_params_match_web ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.43s
+
+     Running tests/p6_m06a5_landfrac_edge.rs (/dev/shm/teren-t/debug/deps/p6_m06a5_landfrac_edge-692696f7ee46702b)
+
+running 7 tests
+test apply_score_tolerance_boundary_matches_web ... ok
+test apply_missing_score_defaults_to_zero_like_web ... ok
+test apply_nan_target_changes_nothing ... ok
+test rebalance_nan_target_matches_web ... ok
+test sort_center_tolerance_window_matches_web ... ok
+test sort_missing_score_defaults_to_zero_like_web ... ok
+test apply_clamp_thresholds_match_web ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.14s
+
+     Running tests/p6_m06b1_boundary.rs (/dev/shm/teren-t/debug/deps/p6_m06b1_boundary-3ecc78c543fffc63)
+
+running 3 tests
+test boundary_finalize_pool2_p1_differs_from_p2_in_web ... ok
+test boundary_thicken_natural_25_passes_cap12_matches_web ... ok
+test boundary_finalize_pool2_maxpasses_1_to_5_matches_web ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests/p6_m06b2_specks.rs (/dev/shm/teren-t/debug/deps/p6_m06b2_specks-9712a81a902bdf8c)
+
+running 3 tests
+test specks_vectors_include_removals ... ok
+test count_open_ocean_land_specks_matches_web ... ok
+test purge_open_ocean_land_specks_matches_web ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.09s
+
+     Running tests/p6_m07b2_edges.rs (/dev/shm/teren-t/debug/deps/p6_m07b2_edges-f024969706f8311d)
+
+running 3 tests
+test edges_point_cases_match_contract ... ok
+test edges_vectors_cover_branches_and_overlays ... ok
+test edges_vectors_match_web ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.02s
+
+     Running tests/p6_m10_start_scoring.rs (/dev/shm/teren-t/debug/deps/p6_m10_start_scoring-a1f4519e6663b8a9)
+
+running 4 tests
+test reveal_radius_matches_web ... ok
+test score_city_start_hex_over_whole_maps_matches_web ... ok
+test score_city_start_hex_matches_web ... ok
+test find_best_player_start_hex_matches_web ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.56s
+
+     Running tests/p6_m12_compute.rs (/dev/shm/teren-t/debug/deps/p6_m12_compute-41ff7fbaf89e52c7)
+
+running 12 tests
+test compute_clusters_is_deterministic ... ok
+test compute_clusters_default_opts_matches_web_defaults ... ok
+test compute_clusters_matches_web_maps_1101_to_2500_hexes ... ok
+test compute_clusters_matches_web_maps_501_to_1100_hexes ... ok
+test compute_vectors_cover_the_edge_paths_of_computeclusters ... ok
+test no_land_returns_empty_structure_without_cache ... ok
+test sea_distance_field_basic_shape ... ok
+test sea_distance_field_matches_web ... ok
+test web_diagnostic_log_type_error_is_reproduced_on_every_thrown_vector ... ok
+test compute_clusters_matches_web_maps_2501_to_5000_hexes ... ok
+test compute_clusters_matches_web_maps_up_to_500_hexes ... ok
+test compute_clusters_matches_web_maps_over_5000_hexes has been running for over 60 seconds
+test compute_clusters_matches_web_maps_over_5000_hexes ... ok
+
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 75.89s
+
+     Running tests/p6_m15_roads.rs (/dev/shm/teren-t/debug/deps/p6_m15_roads-00c1796d2d44aacd)
+
+running 8 tests
+test has_road_matches_web ... ok
+test constants_match_web ... ok
+test collect_road_keys_matches_web_order ... ok
+test is_road_key_matches_web ... ok
+test road_table_shape_and_key_names ... ok
+test roads_source_has_no_numeric_data_literals ... ok
+test apply_modifier_matches_web_bitwise ... ok
+test p64_ruch_modifier_agrees_with_roads_module ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.12s
+
+     Running tests/p6_m17_serialize.rs (/dev/shm/teren-t/debug/deps/p6_m17_serialize-bc527bf55aa676f5)
+
+running 5 tests
+test js_num_writes_integers_without_fraction_and_non_finite_as_null ... ok
+test snapshot_shape_invariants_hold_for_every_vector ... ok
+test serialize_vectors_touch_every_branch ... ok
+test serialize_text_is_byte_identical_to_web_json_stringify ... ok
+test serialize_matches_web_structurally ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.16s
+
+     Running tests/p6_repin_c_construction.rs (/dev/shm/teren-t/debug/deps/p6_repin_c_construction-0fbfe8ea6e68f358)
+
+running 4 tests
+test construction_multiplier_missing_or_invalid_era_is_stone ... ok
+test scale_work_cost_uses_construction_rates_at_boundaries ... ok
+test construction_is_separated_from_upkeep_multiplier ... ok
+test construction_multiplier_stone_bronze_iron_boundaries ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/p6_repin_ekonomia_e_citizen.rs (/dev/shm/teren-t/debug/deps/p6_repin_ekonomia_e_citizen-dc5ea319f4e2dbf3)
+
+running 7 tests
+test missing_rate_field_parses_as_none_and_round_trips ... ok
+test edge_n_minus_1_n_plus_1_real_table_bronze ... ok
+test nonfinite_and_negative_row_rates_fall_back ... ok
+test rate_and_required_grid_match_web ... ok
+test real_file_has_era_rates_one_two_three ... ok
+test display_lines_use_rate_from_coverage_like_web ... ok
+test coverage_drain_lines_match_running_web ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.29s
+
+     Running tests/p6_repin_wojna_2_r3_planned_march.rs (/dev/shm/teren-t/debug/deps/p6_repin_wojna_2_r3_planned_march-f18d7955fbd96bcf)
+
+running 3 tests
+test general_target_edge_cases_are_explicit ... ok
+test planned_marches_to_save_with_general_target_matches_web ... ok
+test planned_marches_from_save_with_general_target_matches_web ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
+
+     Running tests/p6_repin_wojna_c_move_range.rs (/dev/shm/teren-t/debug/deps/p6_repin_wojna_c_move_range-d6c1e444bd4e40ba)
+
+running 12 tests
+test claim_rejects_occupied_target_and_moves_counter ... ok
+test budget_nan_or_zero_or_negative_returns_empty ... ok
+test farthest_target_blocked_steps_back_one ... ok
+test min_move_first_step_enters_even_if_over_budget ... ok
+test missing_key_or_infinity_stops_prefix ... ok
+test nan_cost_is_not_a_stop ... ok
+test farthest_step_matches_web_with_blocked_keys ... ok
+test occupancy_matches_web ... ok
+test farthest_step_matches_web_default_terrain_costs ... ok
+test claim_sequences_match_web ... ok
+test truncate_path_matches_web_default_terrain_costs ... ok
+test truncate_path_matches_web_custom_costs ... ok
+
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.29s
+
+     Running tests/recruitment.rs (/dev/shm/teren-t/debug/deps/recruitment-10fa19ca5709d7f0)
+
+running 8 tests
+test empty_purchase_cost_is_affordable_and_keeps_stock_unchanged ... ok
+test canonical_unit_record_keeps_purchase_and_upkeep_separate ... ok
+test failed_recruitment_is_atomic_and_reports_the_missing_resource ... ok
+test recruitment_affordability_checks_only_the_one_time_purchase_stock ... ok
+test canonical_catalog_contains_all_unit_rows_and_round_trips ... ok
+test upkeep_totals_are_grouped_by_resource_and_ignore_unknown_units ... ok
+test successful_recruitment_spends_purchase_stock_but_not_future_upkeep ... ok
+test canonical_catalog_matches_units_json_for_all_75_rows ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests/steam_adapter.rs (/dev/shm/teren-t/debug/deps/steam_adapter-f6b655412f549c74)
+
+running 5 tests
+test missing_cloud_save_key_is_reported_without_fabricating_data ... ok
+test in_memory_adapter_round_trips_cloud_save_bytes_exactly ... ok
+test in_memory_adapter_unlocks_achievements_and_reports_overlay_status ... ok
+test production_adapter_is_explicitly_disconnected_and_side_effect_free ... ok
+test unavailable_mock_rejects_every_steam_operation ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+EXIT=0

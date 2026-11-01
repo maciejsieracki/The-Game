@@ -317,13 +317,10 @@ fn pick_auto_improvements_matches_pinned_web_vectors() {
         scenarios.len()
     );
     let mut bad: Vec<String> = Vec::new();
-    let mut drift: Vec<String> = Vec::new();
     let mut nonempty = 0;
-    // Dryf zaleznosci: `terrain::city_territory_radius` czyta jeszcze stare 10/5 (repin territory.rs poza
-    // allowlista 8I). Scenariusze z wezlami fortu/posterunku w `territoryNodes` (`fortNodes`, poza `strict`)
-    // sa liczone osobno; po repinie (promienie 5/3) test staje sie ostry dla WSZYSTKICH.
-    let repinned = city_territory_radius(&fort_probe(true)) == 5.0
-        && city_territory_radius(&fort_probe(false)) == 3.0;
+    // Tryb OSTRY (REPIN-TERYTORIUM-FORTY): bez tolerancji dryfu; promienie fort/posterunek = 5/3 (pin 4bbef081d).
+    assert_eq!(city_territory_radius(&fort_probe(true)), 5.0);
+    assert_eq!(city_territory_radius(&fort_probe(false)), 3.0);
     for s in scenarios {
         let (got, report) = run_scenario(s, &maps);
         if let Ok(prefix) = std::env::var("P6_8I_DUMP") {
@@ -348,14 +345,6 @@ fn pick_auto_improvements_matches_pinned_web_vectors() {
                 && r.any_candidate == b("anyCandidate")
                 && r.surplus == b("surplus");
         }
-        if !ok
-            && s["fortNodes"].as_bool() == Some(true)
-            && s["strict"].as_bool() != Some(true)
-            && !repinned
-        {
-            drift.push(s["name"].as_str().unwrap().to_owned());
-            continue;
-        }
         if !ok {
             bad.push(format!(
                 "{}: rust={:?} web={:?}",
@@ -370,15 +359,6 @@ fn pick_auto_improvements_matches_pinned_web_vectors() {
             eprintln!("BAD {}", b.split(':').next().unwrap());
         }
     }
-    println!(
-        "DRYF fortNodes (niezgodne, poza ostrym zakresem): {}",
-        drift.len()
-    );
-    assert!(
-        drift.len() <= 40,
-        "dryf wiekszy niz zmierzony (40, nie wolno rosnac): {}",
-        drift.len()
-    );
     assert!(
         nonempty >= 1000,
         "za malo niepustych scenariuszy: {nonempty}"

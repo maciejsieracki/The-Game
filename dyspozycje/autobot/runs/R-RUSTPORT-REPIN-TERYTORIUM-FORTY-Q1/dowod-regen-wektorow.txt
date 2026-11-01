@@ -1,0 +1,49 @@
+# Dowod: zregenerowane wektory (pin 4bbef081d) maja IDENTYCZNE wejscia, zmienione tylko wyjscia
+# stare wersje pobrane z HEAD (fd8585daf) przez 'git show' do /dev/shm/oldvec
+== p6_m14_vectors/territory
+radius list 160 ['node', 'out']
+axial list 200 ['a', 'b', 'out']
+range_for_pop list 31 ['pop', 'out']
+sight list 414 ['pop', 'kultura', 'out']
+owner_at list 460 ['q', 'r', 'nodes', 'out']
+in_territory list 400 ['q', 'r', 'nodes', 'out']
+player_hex list 400 ['q', 'r', 'playerNodes', 'allNodes', 'out']
+constants dict 2 ['CITY_RANGE_CAP', 'CITY_RANGE_MIN']
+border list 17 ['kultura', 'ring']
+inputs identical (outputs stripped: ['after', 'changed', 'events', 'expected', 'hex', 'ids', 'list', 'out', 'result']): True
+outputs differ in ['radius', 'owner_at', 'in_territory', 'player_hex']
+== p6_m14_vectors/work
+build list 60 ['cities', 'out']
+owned_by list 400 ['q', 'r', 'ownerId', 'nodes', 'out']
+filter list 120 ['nodes', 'ownerId', 'blocked', 'queries', 'out']
+center_keys list 40 ['cities', 'out']
+reczne_legal list 1680 ['key', 'ownerId', 'nodes', 'centers', 'lost', 'out']
+reconcile_owner list 120 ['cities', 'nodes', 'ownerId', 'lost', 'changed', 'after']
+reconcile_all list 100 ['cities', 'nodes', 'lost', 'after']
+inputs identical (outputs stripped: ['after', 'changed', 'events', 'expected', 'hex', 'ids', 'list', 'out', 'result']): True
+outputs differ in ['owned_by', 'filter', 'reczne_legal', 'reconcile_owner', 'reconcile_all']
+== p6_m14_vectors/wonder
+city list 80 ['hexes', 'city', 'occupiedWonderHexes', 'cityHexes', 'out']
+pick list 80 ['hexes', 'city', 'occupiedWonderHexes', 'cityHexes', 'out']
+owner list 80 ['hexes', 'playerCities', 'occupiedWonderHexes', 'buildingWonderHexes', 'cityHexes', 'out']
+inputs identical (outputs stripped: ['after', 'changed', 'events', 'expected', 'hex', 'ids', 'list', 'out', 'result']): True
+outputs differ in ['city', 'owner']
+== p6_m14_vectors/range
+by_owner list 40 ['keys', 'nodes', 'filter', 'out']
+culture list 60 ['keys', 'cities', 'ownerId', 'out']
+religion list 144 ['keys', 'cities', 'relig', 'stateReligion', 'szerzenieMaxDystans', 'progDominacjiPct', 'out']
+dominant list 195 ['counts', 'progDominacjiPct', 'result']
+border list 18 ['kultura', 'ring']
+inputs identical (outputs stripped: ['after', 'changed', 'events', 'expected', 'hex', 'ids', 'list', 'out', 'result']): True
+outputs differ in ['by_owner', 'religion']
+== p6_23_vectors/fort
+meta dict 3 ['pin_web', 'plik', 'generator']
+cases dict 8 ['cityRangeForPopulation', 'cityTerritoryRadius', 'axialDistance', 'fortNodeAsCityNode', 'isHexReservedByRivalFort', 'foundingNodesForOwner', 'applyFortTakeoverOnCityFounded', 'findEvacuationHexOutsideCity']
+inputs identical (outputs stripped: ['after', 'changed', 'events', 'expected', 'hex', 'ids', 'list', 'out', 'result']): False
+outputs differ in ['meta', 'cases']
+== p6_m16_vectors/qualifier
+cases list 320 ['state', 'queries', 'qual', 'api', 'clicks', 'reasons']
+keys list 33 
+inputs identical (outputs stripped: ['forest', 'qual', 'reason']): False
+outputs differ in ['cases']
+== p6_m16 qualifier: wejscia (state, queries) IDENTYCZNE (inputs identical True, wyjscia qual/api/clicks/reasons stripped); p6_23 fort: cases-wejscia identyczne (porownanie vs swieza generacja: inputs identical True), roznica tylko meta.pin_web (celowa)

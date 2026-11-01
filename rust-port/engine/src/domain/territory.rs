@@ -158,16 +158,39 @@ fn js_max(a: f64, b: f64) -> f64 {
 // territory.ts
 // ---------------------------------------------------------------------------------------------
 
-/// Web `TerritoryNode` (`territory.ts:37`): `CityNode & { ownerId: number }`.
+/// Web `TerritoryNode.order` (`territory.ts:44`, pin 4bbef081d): znacznik kolejnosci budowy
+/// fortu/posterunku (Q-B=B). ZALOZENIE: `turn`/`seq` to liczby calkowite (web: `number`).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct TerritoryOrder {
+    pub turn: i64,
+    pub seq: i64,
+}
+
+/// Web `TerritoryNode` (`territory.ts:38-47`, pin 4bbef081d): `CityNode & { ownerId, order? }`.
 #[derive(Debug, Clone, PartialEq)]
 pub struct TerritoryNode {
     pub node: CityNode,
     pub owner_id: i64,
+    /// `None` = brak `order` (rozstrzyga odleglosc, stary mechanizm).
+    pub order: Option<TerritoryOrder>,
 }
 
 impl TerritoryNode {
     pub fn new(node: CityNode, owner_id: i64) -> Self {
-        Self { node, owner_id }
+        Self {
+            node,
+            owner_id,
+            order: None,
+        }
+    }
+
+    /// Wezel fortu/posterunku ze znacznikiem kolejnosci budowy (`order`).
+    pub fn with_order(node: CityNode, owner_id: i64, order: Option<TerritoryOrder>) -> Self {
+        Self {
+            node,
+            owner_id,
+            order,
+        }
     }
 }
 
@@ -204,27 +227,51 @@ pub fn is_in_territory(q: impl Into<f64>, r: impl Into<f64>, nodes: &[CityNode])
     })
 }
 
-/// Web `territoryOwnerAt` (`territory.ts:106`): najblizszy wezel w promieniu; remis -> pierwszy.
+/// Web `territoryOwnerAt` (`territory.ts:123-160`, pin 4bbef081d). Miasta: najblizsze w promieniu,
+/// remis -> pierwsze. Forty/posterunki (`is_fort`/`is_outpost`): gdy biezacy najlepszy fort I wezel
+/// maja `order` -> wygrywa wczesniejszy (`turn`, przy remisie `seq`), inaczej najblizszy (remis ->
+/// pierwszy). Heks w promieniu KTOREGOKOLWIEK miasta rozstrzygaja wylacznie miasta
+/// (`territory.ts:153-160`); fort zajmuje tylko teren wolny od miast.
 pub fn territory_owner_at(
     q: impl Into<f64>,
     r: impl Into<f64>,
     nodes: &[TerritoryNode],
 ) -> Option<i64> {
     let (q, r) = (q.into(), r.into());
-    let mut best_owner: Option<i64> = None;
-    let mut best_dist = f64::INFINITY;
+    let mut best_city_owner: Option<i64> = None;
+    let mut best_city_dist = f64::INFINITY;
+    let mut best_fort_owner: Option<i64> = None;
+    let mut best_fort_dist = f64::INFINITY;
+    let mut best_fort_order: Option<TerritoryOrder> = None;
     for tn in nodes {
         let radius = city_territory_radius(&tn.node);
         let dist = axial_distance_f64(q, r, f64::from(tn.node.q), f64::from(tn.node.r));
         if dist > radius {
             continue;
         }
-        if dist < best_dist {
-            best_dist = dist;
-            best_owner = Some(tn.owner_id);
+        if tn.node.is_fort == Some(true) || tn.node.is_outpost == Some(true) {
+            // `territory.ts:140-148`: `bestFortOwner !== null && o && bestFortOrder`.
+            let better = match (best_fort_owner, tn.order, best_fort_order) {
+                (Some(_), Some(o), Some(b)) => {
+                    if o.turn != b.turn {
+                        o.turn < b.turn
+                    } else {
+                        o.seq < b.seq
+                    }
+                }
+                _ => dist < best_fort_dist,
+            };
+            if better {
+                best_fort_dist = dist;
+                best_fort_owner = Some(tn.owner_id);
+                best_fort_order = tn.order;
+            }
+        } else if dist < best_city_dist {
+            best_city_dist = dist;
+            best_city_owner = Some(tn.owner_id);
         }
     }
-    best_owner
+    best_city_owner.or(best_fort_owner)
 }
 
 /// Web `isPlayerTerritoryHex` (`territory.ts:133`); web domyslnie `playerOwnerId = 0`.
