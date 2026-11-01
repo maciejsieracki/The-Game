@@ -1,0 +1,20 @@
+kandydaci lacznie 125 po filtrze wariantu 11 start domyslny {"q":30,"r":50}
+wybrany heks {"q":31,"r":49,"teren":"laka","naRzece":true,"obokRzeki":true,"lasR1":2,"lasR3":8,"distOdDomyslnegoStartu":1}
+foundPlayerCity -> true
+city {"id":"city0","q":31,"r":49,"population":1} policy [[0,{"focus":"zywnosc","tryb":"auto","onlyWorked":true,"wolnoWycinacLas":false,"pracaAutoPercent":33}],[1,{"focus":"zrownowazone","tryb":"reczny","onlyWorked":true,"pracaAutoPercent":100,"wolnoWycinacLas":false}],[2,{"focus":"zrownowazone","tryb":"reczny","onlyWorked":true,"pracaAutoPercent":100,"wolnoWycinacLas":false}],[3,{"focus":"zrownowazone","tryb":"reczny","onlyWorked":true,"pracaAutoPercent":100,"wolnoWycinacLas":false}],[4,{"focus":"zrownowazone","tryb":"reczny","onlyWorked":true,"pracaAutoPercent":100,"wolnoWycinacLas":false}],[5,{"focus":"zrownowazone","tryb":"reczny","onlyWorked":true,"pracaAutoPercent":100,"wolnoWycinacLas":false}]]
+turns 25 adds 16 errors 0 popEnd [3]
+t1 pool 300->262 farma@30,51 farma@31,49
+t2 pool 262->223 bydlo@30,51 bydlo@31,49
+t3 pool 223->165 irygacja@31,49
+t5 pool 173->128 irygacja@30,51
+t6 pool 128->104 warzelnia_soli@30,48
+t8 pool 118->92 warzelnia_soli@27,48
+t12 pool 128->120 farma@30,52
+t13 pool 120->117 bydlo@30,52
+t17 pool 177->137 irygacja@30,52
+t18 pool 137->157 tartak@34,50
+t20 pool 177->177 farma@27,52
+t21 pool 177->182 bydlo@27,52
+t22 pool 182->150 irygacja@27,52
+t24 pool 178->206 farma@33,52
+EXIT=0

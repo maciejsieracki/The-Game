@@ -1,0 +1,16 @@
+kandydaci lacznie 125 po filtrze wariantu 11 start domyslny {"q":30,"r":50}
+wybrany heks {"q":31,"r":49,"teren":"laka","naRzece":true,"obokRzeki":true,"lasR1":2,"lasR3":8,"distOdDomyslnegoStartu":1}
+foundPlayerCity -> true
+city {"id":"city0","q":31,"r":49,"population":1} policy [[0,{"focus":"zrownowazone","tryb":"auto","onlyWorked":true,"wolnoWycinacLas":false,"pracaAutoPercent":33}],[1,{"focus":"zrownowazone","tryb":"reczny","onlyWorked":true,"pracaAutoPercent":100,"wolnoWycinacLas":false}],[2,{"focus":"zrownowazone","tryb":"reczny","onlyWorked":true,"pracaAutoPercent":100,"wolnoWycinacLas":false}],[3,{"focus":"zrownowazone","tryb":"reczny","onlyWorked":true,"pracaAutoPercent":100,"wolnoWycinacLas":false}],[4,{"focus":"zrownowazone","tryb":"reczny","onlyWorked":true,"pracaAutoPercent":100,"wolnoWycinacLas":false}],[5,{"focus":"zrownowazone","tryb":"reczny","onlyWorked":true,"pracaAutoPercent":100,"wolnoWycinacLas":false}]]
+turns 25 adds 14 errors 0 popEnd [2]
+t1 pool 300->214 kopalnia_cyny@28,54 kopalnia_miedzi@32,49
+t2 pool 214->152 warzelnia_soli@30,48 farma@31,49
+t3 pool 152->128 farma@30,51
+t4 pool 128->83 bydlo@30,51 bydlo@31,49
+t16 pool 181->171 farma@30,52
+t17 pool 171->166 bydlo@30,52
+t18 pool 166->124 irygacja@31,49 tartak@34,50
+t22 pool 178->136 irygacja@30,51
+t24 pool 154->172 farma@33,52
+t25 pool 172->130 irygacja@30,52
+EXIT=0

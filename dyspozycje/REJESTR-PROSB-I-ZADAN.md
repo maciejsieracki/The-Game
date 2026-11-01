@@ -8381,3 +8381,10 @@ Przejrzano cały kontekst rozmowy: WSZYSTKIE zgłoszenia właściciela z ostatni
 ### Aktualizacja 2026-11-01 (wieczór)
 - Poz. 12 (`R-WEB-AI-CITY-YIELD-FIX-Q1`) i pomiar `R-WEB-AI-CITY-YIELD-LIVE-Q1`: **ZROBIONE, ROBOCZA `83f64d3f`** (main `57cc8aded`) — po pomiarze pełnej gry (T100: Kontynenty 0,0%, Pangea −2,2%, próg −10…+25%). Ograniczenia: jedno ziarno, bez Wysp. Osobny temat do rozważenia: `R-WEB-TERRAIN-ID-NAME-MAP-UNIFY-Q1` (czwarta kopia mapy id↔nazwa terenu).
 - W toku: `R-WEB-LIVE-VERIFY-ROBOCZA-2-Q1` (pięć testów na żywo; poprawki z testów — stała zgoda).
+
+### Wyniki testów na żywo 2026-11-01 (R-WEB-LIVE-VERIFY-ROBOCZA-2-Q1, FC `893902af5`) — usterki wg stałej zgody
+- **T1 rozproszenie stolic:** w żywej grze poprawa (mediana 15,5 → 20,5), ale 7/10 map nadal <25 hexów (cel ≤ ~13–20%). → **R-WEB-CAPITAL-SPACING-TUNE-Q1** (start).
+- **T3 udział lądu:** Kontynenty 30,00%, Wyspy 50,00% dokładne; Pangea 56,0–56,2% przy 60%. → **R-WEB-PANGEA-LAND-FRACTION-Q1** (start; bez ryzykownych zmian generatora).
+- **T4 bieguny:** Pangea 1001: 1 miasto AI na heksie polarnym (`polar-fallback`, `ai.ts:4851-4855`). → **R-WEB-AI-POLAR-FALLBACK-Q1** (start).
+- **T2 farma przed trzodą:** ZGODNE (14/14 w czterech wariantach, tylko w warunkach fixture `unlockAllTech`); przyczyna braku wycinki lasu przy „Wolno wycinać las” ON NIE_ZMIERZONO (picker nie loguje) — do rozważenia w osobnym temacie loga pickera.
+- **T5 rozgrywka:** ZGODNE (40 tur, 0 błędów, zapis→wczytanie w t20 bez zmian; 48 → 71 miast AI); farmy/auto-ulepszenia w t0–10 NIE_ZMIERZONO (fixture).

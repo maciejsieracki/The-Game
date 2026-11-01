@@ -1,0 +1,56 @@
+{
+  "typ": "pangea",
+  "seedWanted": 7777,
+  "okType": true,
+  "uiLand": "60% lądu / 40% morze",
+  "uiSize": "Standardowy",
+  "seedSeen": 7777,
+  "mapLog": "[NewGame] Mapa: 168x120 seed=7777 typ=pangea rywale=6 typy=7",
+  "genMs": 85639,
+  "turnsPlanned": 0,
+  "ok": true,
+  "turnLog": [],
+  "start": {
+    "turn": 1,
+    "hexes": 20160,
+    "landHexes": 11287,
+    "waterHexes": 8873,
+    "landPct": 55.99,
+    "landNoCoastPct": 55.99,
+    "terrainCounts": {
+      "morze": 6792,
+      "plytkie_morze": 2081,
+      "polarny": 154,
+      "laka": 6404,
+      "wzgorza": 1309,
+      "gory": 746,
+      "rownina": 2422,
+      "pustynia": 252
+    },
+    "polarHexes": 154,
+    "citiesTotal": 49,
+    "aiCitiesTotal": 48,
+    "capsCount": 7,
+    "capMin": 33,
+    "capPair": [
+      "grecy#1",
+      "sumer#29"
+    ],
+    "caps": [
+      "gracz@66,97",
+      "grecy#1@40,36",
+      "zulusi#8@114,28",
+      "inkowie#15@130,53",
+      "egipt#22@45,77",
+      "sumer#29@73,25",
+      "chinczycy#36@109,97"
+    ],
+    "polarCaps": [],
+    "polarAiCities": [],
+    "playerPolar": false,
+    "cityTerrainResolved": "48/48"
+  },
+  "menuCivId": "rzymianie",
+  "pageErrors": [],
+  "totalMs": 146064
+}

@@ -1,0 +1,15 @@
+kandydaci lacznie 125 po filtrze wariantu 10 start domyslny {"q":30,"r":50}
+wybrany heks {"q":29,"r":50,"teren":"rownina","naRzece":false,"obokRzeki":true,"lasR1":2,"lasR3":14,"distOdDomyslnegoStartu":1}
+foundPlayerCity -> true
+city {"id":"city0","q":29,"r":50,"population":1} policy [[0,{"focus":"zrownowazone","tryb":"auto","onlyWorked":true,"wolnoWycinacLas":false,"pracaAutoPercent":33}],[1,{"focus":"zrownowazone","tryb":"reczny","onlyWorked":true,"pracaAutoPercent":100,"wolnoWycinacLas":false}],[2,{"focus":"zrownowazone","tryb":"reczny","onlyWorked":true,"pracaAutoPercent":100,"wolnoWycinacLas":false}],[3,{"focus":"zrownowazone","tryb":"reczny","onlyWorked":true,"pracaAutoPercent":100,"wolnoWycinacLas":false}],[4,{"focus":"zrownowazone","tryb":"reczny","onlyWorked":true,"pracaAutoPercent":100,"wolnoWycinacLas":false}],[5,{"focus":"zrownowazone","tryb":"reczny","onlyWorked":true,"pracaAutoPercent":100,"wolnoWycinacLas":false}]]
+turns 25 adds 11 errors 0 popEnd [2]
+t1 pool 300->221 glinianka@30,49 glinianka@30,51
+t2 pool 221->154 kopalnia_miedzi@27,51 farma@27,52
+t3 pool 154->109 warzelnia_soli@30,48
+t4 pool 109->82 farma@29,50
+t5 pool 82->55 bydlo@27,52
+t9 pool 60->44 bydlo@29,50
+t13 pool 65->72 kamieniolom@28,54
+t21 pool 121->108 farma@30,51
+t22 pool 108->101 bydlo@30,51
+EXIT=0
