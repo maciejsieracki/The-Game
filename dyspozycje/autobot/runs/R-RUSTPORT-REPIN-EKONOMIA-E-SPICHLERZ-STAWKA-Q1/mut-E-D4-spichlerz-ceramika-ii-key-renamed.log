@@ -1,0 +1,11 @@
+MUTANT E-D4-spichlerz-ceramika-ii-key-renamed file=data/econ-params.json
+OLD:
+"budynek_spichlerz_ii_zuzywa_ceramika": {
+NEW:
+"budynek_spichlerz_ii_zuzywa_ceramika_X": {
+
+FAILED TESTS:
+test real_econ_params_keys_match_pin_and_resolve_to_25 ... FAILED
+test result: FAILED. 6 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.58s
+VERDICT=KILLED
+EXIT=101

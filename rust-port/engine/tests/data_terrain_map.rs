@@ -26,8 +26,9 @@ fn terrain_improvements_parses_and_spot_checks() {
         f.tartak.bonus.praca,
         f.kamieniolom.bonus.praca
     );
-    assert_eq!(tartak_rate, Some(200));
-    assert_eq!(kamieniolom_rate, Some(200));
+    // REPIN-EKONOMIA-E obrona r1: pin weba 4bbef081d (200 -> 50).
+    assert_eq!(tartak_rate, Some(50));
+    assert_eq!(kamieniolom_rate, Some(50));
     assert_eq!(f.tartak.bonus.praca, Some(3));
 }
 

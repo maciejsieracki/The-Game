@@ -1,0 +1,18 @@
+{
+ "pin": "4bbef081dc3ee4f29d24a42479cb280a5876354e",
+ "citizenCases": 2480,
+ "branchRateIsOne": 1320,
+ "branchRateNotOne": 1160,
+ "realEraRateAboveOne": 320,
+ "popGate": 658,
+ "deductions": 698,
+ "partial": 316,
+ "pay": 2870,
+ "paid": 610,
+ "solPaid": 381,
+ "inactive": 2870,
+ "inactiveTrue": 637,
+ "params": 92,
+ "thr": 144,
+ "amount": 42
+}

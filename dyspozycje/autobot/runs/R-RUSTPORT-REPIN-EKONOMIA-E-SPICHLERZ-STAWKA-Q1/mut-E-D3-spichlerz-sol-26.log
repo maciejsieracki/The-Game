@@ -1,0 +1,13 @@
+MUTANT E-D3-spichlerz-sol-26 file=data/econ-params.json
+OLD:
+    "budynek_spichlerz_ii_zuzywa_sol": {
+      "easy": 25,
+NEW:
+    "budynek_spichlerz_ii_zuzywa_sol": {
+      "easy": 26,
+
+FAILED TESTS:
+test real_econ_params_keys_match_pin_and_resolve_to_25 ... FAILED
+test result: FAILED. 6 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.70s
+VERDICT=KILLED
+EXIT=101

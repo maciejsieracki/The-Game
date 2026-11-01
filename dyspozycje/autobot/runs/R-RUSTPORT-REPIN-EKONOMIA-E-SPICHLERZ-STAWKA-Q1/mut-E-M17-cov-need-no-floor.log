@@ -1,0 +1,19 @@
+MUTANT E-M17-cov-need-no-floor file=src/domain/resource_production.rs
+OLD:
+    let need = (pop * rate).floor();
+    let mut available = Vec::new();
+    let mut missing = Vec::new();
+    for key in required {
+        let have = positive_stock(empire_stock, key);
+NEW:
+    let need = pop * rate;
+    let mut available = Vec::new();
+    let mut missing = Vec::new();
+    for key in required {
+        let have = positive_stock(empire_stock, key);
+
+FAILED TESTS:
+test coverage_drain_lines_match_running_web ... FAILED
+test result: FAILED. 6 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.72s
+VERDICT=KILLED
+EXIT=101
