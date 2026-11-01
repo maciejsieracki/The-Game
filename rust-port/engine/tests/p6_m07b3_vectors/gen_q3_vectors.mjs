@@ -260,6 +260,24 @@ const stats = {};
 const bump = (k, n = 1) => { stats[k] = (stats[k] ?? 0) + n; };
 const cases = [];
 
+// Perturbacje pol (gałęzie `?? Infinity` / `?? 999` / `?? 0` / brak w oceanConnected): usuniete klucze.
+function perturb(mp) {
+  if (rnd() < 0.7) return null;
+  const sub = (keys, p) => keys.filter(() => rnd() < p);
+  const pt = { orm: sub(Object.keys(mp.open), 0.1), srm: sub(Object.keys(mp.sea), 0.08), ocrm: sub(mp.oc, 0.1) };
+  return pt.orm.length + pt.srm.length + pt.ocrm.length === 0 ? null : pt;
+}
+function applyPert(mp, pt) {
+  if (!pt) return mp;
+  const orm = new Set(pt.orm), srm = new Set(pt.srm), ocrm = new Set(pt.ocrm);
+  return {
+    ...mp,
+    seaMap: new Map([...mp.seaMap].filter(([k]) => !srm.has(k))),
+    openMap: new Map([...mp.openMap].filter(([k]) => !orm.has(k))),
+    ocSet: new Set([...mp.ocSet].filter((k) => !ocrm.has(k))),
+  };
+}
+
 function startHex(mp, mode) {
   const land = mp.list.filter((h) => isLandT(h.t));
   const coastal = land.filter((h) => (mp.sea[h.k] ?? 0) <= 2);
@@ -338,13 +356,14 @@ for (let i = 0; i < N_HEAP; i++) {
 }
 
 // ---- 2. A* ----------------------------------------------------------------------------------
-function runAStar(mp, s, maxLen, seedOrZero, rel) {
+function runAStar(mp0, s, maxLen, seedOrZero, rel, pt = null) {
+  const mp = applyPert(mp0, pt);
   const rand = seedOrZero === null ? () => 0 : mulberry(seedOrZero);
   return web.aStarRiverToSea(mp.obj, s.q, s.r, mp.seaMap, mp.openMap, mp.ocSet, maxLen, rand, rel);
 }
-function astarCase(mp, mi, s, maxLen, seedOrZero, rel) {
-  const out = runAStar(mp, s, maxLen, seedOrZero, rel);
-  return { fn: 'astar', m: mi, s: [s.q, s.r], ml: maxLen, seed: seedOrZero, rel, out: flat(out) };
+function astarCase(mp, mi, s, maxLen, seedOrZero, rel, pt) {
+  const out = runAStar(mp, s, maxLen, seedOrZero, rel, pt);
+  return { fn: 'astar', m: mi, s: [s.q, s.r], ml: maxLen, seed: seedOrZero, rel, pt, out: flat(out) };
 }
 for (let i = 0; i < N_ASTAR; i++) {
   const mi = i % maps.length;
@@ -352,7 +371,7 @@ for (let i = 0; i < N_ASTAR; i++) {
   const s = startHex(mp, pick(['any', 'inland', 'inland', 'coastal']));
   const maxLen = pick([0, 1, 2, 3, ri(4, 12), ri(8, 40), ri(8, 40), 60]);
   const seed = i % 3 === 0 ? null : newSeed();
-  const c = astarCase(mp, mi, s, maxLen, seed, rnd() < 0.3);
+  const c = astarCase(mp, mi, s, maxLen, seed, rnd() < 0.3, perturb(mp));
   cases.push(c);
   const L = c.out.length / 2;
   bump(L === 1 ? 'astar_single' : 'astar_path');
@@ -360,13 +379,14 @@ for (let i = 0; i < N_ASTAR; i++) {
 }
 
 // ---- 3. greedy ------------------------------------------------------------------------------
-function runGreedy(mp, s, maxLen, seedOrZero, srcKey, rel) {
+function runGreedy(mp0, s, maxLen, seedOrZero, srcKey, rel, pt = null) {
+  const mp = applyPert(mp0, pt);
   const rand = seedOrZero === null ? () => 0 : mulberry(seedOrZero);
   return web.greedyRiverDrainToSea(mp.obj, s.q, s.r, mp.seaMap, mp.openMap, mp.ocSet, maxLen, rand, srcKey, rel);
 }
-function greedyCase(mp, mi, s, maxLen, seedOrZero, srcKey, rel) {
-  const out = runGreedy(mp, s, maxLen, seedOrZero, srcKey, rel);
-  return { fn: 'greedy', m: mi, s: [s.q, s.r], ml: maxLen, seed: seedOrZero, sk: srcKey, rel, out: flat(out) };
+function greedyCase(mp, mi, s, maxLen, seedOrZero, srcKey, rel, pt) {
+  const out = runGreedy(mp, s, maxLen, seedOrZero, srcKey, rel, pt);
+  return { fn: 'greedy', m: mi, s: [s.q, s.r], ml: maxLen, seed: seedOrZero, sk: srcKey, rel, pt, out: flat(out) };
 }
 for (let i = 0; i < N_GREEDY; i++) {
   const mi = i % maps.length;
@@ -375,7 +395,7 @@ for (let i = 0; i < N_GREEDY; i++) {
   const maxLen = pick([0, 1, 2, 3, ri(4, 12), ri(8, 40), 60]);
   const seed = i % 3 === 0 ? null : newSeed();
   const srcKey = rnd() < 0.8 ? keyOf(s.q, s.r) : keyOf(ri(0, 5), ri(0, 5));
-  const c = greedyCase(mp, mi, s, maxLen, seed, srcKey, rnd() < 0.3);
+  const c = greedyCase(mp, mi, s, maxLen, seed, srcKey, rnd() < 0.3, perturb(mp));
   cases.push(c);
   bump(c.out.length === 0 ? 'greedy_empty' : 'greedy_path');
   if (c.out.length >= 8) bump('greedy_ge4');
@@ -398,6 +418,10 @@ function runTrace(mp, c) {
     o.oceanConnected = oc;
   }
   if (c.mode === 3) { delete o.mapHeight; }
+  if (c.mode === 4) {
+    delete o.seaDist;
+    o.mapWidth = mp.W + c.dw; o.mapHeight = mp.H + c.dh;
+  }
   if (c.seed !== null) o.rand = mulberry(c.seed);
   if (c.hl !== null) o.hardMeanderLen = c.hl;
   if (c.rel !== null) o.allowReliefTraversal = c.rel;
@@ -409,7 +433,7 @@ function runTrace(mp, c) {
   return web.traceRiverFromCoast(mp.obj, c.mq, c.mr, c.ml, o);
 }
 function traceCase(mi, mp, base) {
-  const c = { fn: 'trace', m: mi, mode: 0, seed: null, hl: null, rel: null, bl: null, msep: null, lc: null, sq: null, ix: false, ocrm: [], ...base };
+  const c = { fn: 'trace', m: mi, mode: 0, seed: null, hl: null, rel: null, bl: null, msep: null, lc: null, sq: null, ix: false, ocrm: [], dw: 0, dh: 0, ...base };
   const out = runTrace(mp, c);
   c.out = flat(out);
   return c;
@@ -418,7 +442,7 @@ for (let i = 0; i < N_TRACE; i++) {
   const mi = i % maps.length;
   const mp = maps[mi];
   const s = startHex(mp, pick(['coastal', 'coastal', 'any', 'inland']));
-  const mode = i % 4;
+  const mode = i % 5;
   const bl = rnd() < 0.2 ? Array.from({ length: ri(1, 10) }, () => pick(mp.list).k) : null;
   const base = {
     mq: s.q, mr: s.r, ml: pick([0, 1, 2, 3, ri(4, 12), ri(8, 30), ri(8, 30)]), mode,
@@ -431,6 +455,7 @@ for (let i = 0; i < N_TRACE; i++) {
     sq: rnd() < 0.3 ? ri(3, 7) : null,
     ix: bl !== null && rnd() < 0.4,
     ocrm: mode === 2 ? mp.oc.filter(() => rnd() < 0.15) : [],
+    dw: ri(-2, 2), dh: ri(-2, 2),
   };
   const c = traceCase(mi, mp, base);
   cases.push(c);
@@ -444,55 +469,59 @@ function W_OF(mp) { return mp.W; }
 function H_OF(mp) { return mp.H; }
 
 // ---- 5. inject ------------------------------------------------------------------------------
-function injectCase(mi, mp, p, seed, maxExtra) {
+function injectCase(mi, mp0, p, seed, maxExtra, pt) {
+  const mp = applyPert(mp0, pt);
   const out = web.injectRiverMeanders(toObjs(p), mp.obj, mp.seaMap, mulberry(seed), maxExtra);
-  return { fn: 'inject', m: mi, p: flat(toObjs(p)), seed, mx: maxExtra, out: flat(out) };
+  return { fn: 'inject', m: mi, p: flat(toObjs(p)), seed, mx: maxExtra, pt, out: flat(out) };
 }
 for (let i = 0; i < N_INJECT; i++) {
   const mi = i % maps.length;
   const mp = maps[mi];
   const s = startHex(mp, pick(['inland', 'inland', 'any', 'coastal']));
   const p = walkPath(mp, ri(3, 20), pick([0.5, 0.8, 0.9, 0.95]), s);
-  const c = injectCase(mi, mp, p, newSeed(), pick([-1, 0, 1, 2, 3, ri(1, 8)]));
+  const c = injectCase(mi, mp, p, newSeed(), pick([-1, 0, 1, 2, 3, ri(1, 8)]), perturb(mp));
   cases.push(c);
   const grew = c.out.length > c.p.length;
   bump(grew ? 'inject_grew' : 'inject_same');
 }
 
 // ---- 6. extendMin ---------------------------------------------------------------------------
-function extCase(mi, mp, p, seed, minLen, stepCap) {
+function extCase(mi, mp0, p, seed, minLen, stepCap, pt) {
+  const mp = applyPert(mp0, pt);
   const out = web.extendRiverToMinimumLength(toObjs(p), mp.obj, mp.seaMap, mulberry(seed), minLen, stepCap);
-  return { fn: 'extmin', m: mi, p: flat(toObjs(p)), seed, min: minLen, cap: stepCap, out: flat(out) };
+  return { fn: 'extmin', m: mi, p: flat(toObjs(p)), seed, min: minLen, cap: stepCap, pt, out: flat(out) };
 }
 for (let i = 0; i < N_EXTMIN; i++) {
   const mi = i % maps.length;
   const mp = maps[mi];
   const s = startHex(mp, pick(['inland', 'inland', 'any']));
   const p = walkPath(mp, ri(2, 16), pick([0.6, 0.85, 0.95]), s);
-  const c = extCase(mi, mp, p, newSeed(), pick([0, 2, 3, ri(3, 12), ri(8, 30)]), pick([0, 3, ri(3, 12), ri(8, 30), 40]));
+  const c = extCase(mi, mp, p, newSeed(), pick([0, 2, 3, ri(3, 12), ri(8, 30)]), pick([0, 3, ri(3, 12), ri(8, 30), 40]), perturb(mp));
   cases.push(c);
   bump(c.out.length > c.p.length ? 'extmin_grew' : 'extmin_same');
 }
 
 // ---- 7. wybrzeze i ujscie ------------------------------------------------------------------
-function wybCase(mi, mp, p) {
+function wybCase(mi, mp0, p, pt = null) {
+  const mp = applyPert(mp0, pt);
   const arr = toObjs(p);
   const out = web.extendRiverToWybrzeze(mp.obj, arr, mp.seaMap);
   if (out !== arr) throw new Error('web nie zwrocil tej samej sciezki');
-  return { fn: 'wyb', m: mi, p: flat(toObjs(p)), out: flat(out) };
+  return { fn: 'wyb', m: mi, p: flat(toObjs(p)), pt, out: flat(out) };
 }
-function finCase(mi, mp, p, srcKey) {
+function finCase(mi, mp0, p, srcKey, pt = null) {
+  const mp = applyPert(mp0, pt);
   const arr = toObjs(p);
   const out = web.finishRiverMouthAtSea(mp.obj, arr, mp.seaMap, mp.openMap, mp.ocSet, srcKey);
   if (out !== arr) throw new Error('web nie zwrocil tej samej sciezki');
-  return { fn: 'fin', m: mi, p: flat(toObjs(p)), sk: srcKey, out: flat(out) };
+  return { fn: 'fin', m: mi, p: flat(toObjs(p)), sk: srcKey, pt, out: flat(out) };
 }
 for (let i = 0; i < N_WYB; i++) {
   const mi = i % maps.length;
   const mp = maps[mi];
   const s = startHex(mp, pick(['coastal', 'inland', 'any']));
   const p = walkPath(mp, ri(0, 8), 0.7, s);
-  const c = wybCase(mi, mp, p);
+  const c = wybCase(mi, mp, p, perturb(mp));
   cases.push(c);
   bump(c.out.length > c.p.length ? 'wyb_grew' : 'wyb_same');
 }
@@ -502,7 +531,7 @@ for (let i = 0; i < N_FIN; i++) {
   const s = startHex(mp, pick(['coastal', 'inland', 'any']));
   const p = walkPath(mp, ri(0, 8), 0.7, s);
   const sk = rnd() < 0.8 ? keyOf(p[0][0], p[0][1]) : keyOf(ri(0, 5), ri(0, 5));
-  const c = finCase(mi, mp, p, sk);
+  const c = finCase(mi, mp, p, sk, perturb(mp));
   cases.push(c);
   bump(c.out.length > c.p.length ? 'fin_grew' : 'fin_same');
 }
@@ -562,7 +591,7 @@ while (tries++ < 20000 && Object.values(have).some((v) => v < N_SWEEPS)) {
   }
   if (have.trace < N_SWEEPS) {
     const s = startHex(mp, 'coastal');
-    const base = { mq: s.q, mr: s.r, mode: tries % 3 === 0 ? 1 : 0, seed: newSeed(), hl: rnd() < 0.5 ? ri(2, 10) : null, rel: null, bl: null, msep: null, lc: null, sq: rnd() < 0.3 ? 5 : null, ix: false, ocrm: [] };
+    const base = { mq: s.q, mr: s.r, mode: [0, 1, 4][tries % 3], seed: newSeed(), hl: rnd() < 0.5 ? ri(2, 10) : null, rel: null, bl: null, msep: null, lc: null, sq: rnd() < 0.3 ? 5 : null, ix: false, ocrm: [], dw: 0, dh: 0 };
     const big = runTrace(mp, { ...base, ml: 60 });
     if (big.length >= 4) {
       const outs = [];

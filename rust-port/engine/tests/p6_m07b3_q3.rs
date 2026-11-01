@@ -116,6 +116,43 @@ fn build_map(m: &Value) -> Map {
     }
 }
 
+struct Fields {
+    sea: HashMap<String, i64>,
+    open: HashMap<String, i64>,
+    oc: HashSet<String>,
+}
+
+/// Pola mapy pomniejszone o klucze z `pt` (`null` = bez zmian) - jak `applyPert` w generatorze.
+fn fields(mp: &Map, pt: &Value) -> Fields {
+    let rm = |key: &str| -> HashSet<String> {
+        pt[key]
+            .as_array()
+            .map(|a| a.iter().map(|k| k.as_str().unwrap().to_string()).collect())
+            .unwrap_or_default()
+    };
+    let (orm, srm, ocrm) = (rm("orm"), rm("srm"), rm("ocrm"));
+    Fields {
+        sea: mp
+            .sea
+            .iter()
+            .filter(|(k, _)| !srm.contains(*k))
+            .map(|(k, v)| (k.clone(), *v))
+            .collect(),
+        open: mp
+            .open
+            .iter()
+            .filter(|(k, _)| !orm.contains(*k))
+            .map(|(k, v)| (k.clone(), *v))
+            .collect(),
+        oc: mp
+            .oc
+            .iter()
+            .filter(|k| !ocrm.contains(*k))
+            .cloned()
+            .collect(),
+    }
+}
+
 fn pairs(v: &Value) -> Vec<RiverCoord> {
     let flat: Vec<i64> = v
         .as_array()
@@ -208,6 +245,11 @@ fn trace_run(mp: &Map, c: &Value, ml: usize) -> Vec<RiverCoord> {
     if mode == 3 {
         o.map_height = None;
     }
+    if mode == 4 {
+        o.sea_dist = None;
+        o.map_width = Some(mp.w + c["dw"].as_i64().unwrap());
+        o.map_height = Some(mp.h + c["dh"].as_i64().unwrap());
+    }
     if !c["seed"].is_null() {
         o.rand = Some(&mut *rand);
     }
@@ -288,15 +330,16 @@ fn q3_vectors_match_web() {
             }
             "astar" => {
                 let mp = &maps[c["m"].as_u64().unwrap() as usize];
+                let fl = fields(mp, &c["pt"]);
                 let (sq, sr) = coord(&c["s"]);
                 let mut rand = rand_for(&c["seed"]);
                 let got = a_star_river_to_sea(
                     &mp.rec,
                     sq,
                     sr,
-                    &mp.sea,
-                    &mp.open,
-                    &mp.oc,
+                    &fl.sea,
+                    &fl.open,
+                    &fl.oc,
                     c["ml"].as_u64().unwrap() as usize,
                     &mut *rand,
                     c["rel"].as_bool().unwrap(),
@@ -305,15 +348,16 @@ fn q3_vectors_match_web() {
             }
             "greedy" => {
                 let mp = &maps[c["m"].as_u64().unwrap() as usize];
+                let fl = fields(mp, &c["pt"]);
                 let (sq, sr) = coord(&c["s"]);
                 let mut rand = rand_for(&c["seed"]);
                 let got = greedy_river_drain_to_sea(
                     &mp.rec,
                     sq,
                     sr,
-                    &mp.sea,
-                    &mp.open,
-                    &mp.oc,
+                    &fl.sea,
+                    &fl.open,
+                    &fl.oc,
                     c["ml"].as_u64().unwrap() as usize,
                     &mut *rand,
                     c["sk"].as_str().unwrap(),
@@ -328,11 +372,12 @@ fn q3_vectors_match_web() {
             }
             "inject" => {
                 let mp = &maps[c["m"].as_u64().unwrap() as usize];
+                let fl = fields(mp, &c["pt"]);
                 let mut rand = rand_for(&c["seed"]);
                 let got = inject_river_meanders(
                     &pairs(&c["p"]),
                     &mp.rec,
-                    &mp.sea,
+                    &fl.sea,
                     &mut *rand,
                     c["mx"].as_i64().unwrap(),
                 );
@@ -340,11 +385,12 @@ fn q3_vectors_match_web() {
             }
             "extmin" => {
                 let mp = &maps[c["m"].as_u64().unwrap() as usize];
+                let fl = fields(mp, &c["pt"]);
                 let mut rand = rand_for(&c["seed"]);
                 let got = extend_river_to_minimum_length(
                     &pairs(&c["p"]),
                     &mp.rec,
-                    &mp.sea,
+                    &fl.sea,
                     &mut *rand,
                     c["min"].as_u64().unwrap() as usize,
                     c["cap"].as_u64().unwrap() as usize,
@@ -353,19 +399,21 @@ fn q3_vectors_match_web() {
             }
             "wyb" => {
                 let mp = &maps[c["m"].as_u64().unwrap() as usize];
+                let fl = fields(mp, &c["pt"]);
                 let mut p = pairs(&c["p"]);
-                extend_river_to_wybrzeze(&mp.rec, &mut p, &mp.sea);
+                extend_river_to_wybrzeze(&mp.rec, &mut p, &fl.sea);
                 assert_eq!(flat_out(&p), c["out"], "wyb {c}");
             }
             "fin" => {
                 let mp = &maps[c["m"].as_u64().unwrap() as usize];
+                let fl = fields(mp, &c["pt"]);
                 let mut p = pairs(&c["p"]);
                 finish_river_mouth_at_sea(
                     &mp.rec,
                     &mut p,
-                    &mp.sea,
-                    &mp.open,
-                    &mp.oc,
+                    &fl.sea,
+                    &fl.open,
+                    &fl.oc,
                     c["sk"].as_str().unwrap(),
                 );
                 assert_eq!(flat_out(&p), c["out"], "fin {c}");
@@ -453,6 +501,15 @@ fn q3_vectors_cover_branches_and_overlays() {
     for c in cases {
         let f = c["fn"].as_str().unwrap();
         let out_len = c["out"].as_array().map_or(0, Vec::len) / 2;
+        if !c["pt"].is_null() && c.get("pt").is_some() {
+            add("perturbed");
+        }
+        if f == "trace" && c["mode"].as_i64() == Some(4) {
+            add("trace_mode4");
+            if out_len > 0 {
+                add("trace_mode4_path");
+            }
+        }
         match f {
             "heap" => {
                 add("heap");
@@ -501,6 +558,10 @@ fn q3_vectors_cover_branches_and_overlays() {
         }
     }
     let g = |k: &str| cnt.get(k).copied().unwrap_or(0);
+    assert!(
+        g("perturbed") >= 1500 && g("trace_mode4") >= 400 && g("trace_mode4_path") >= 30,
+        "{cnt:?}"
+    );
     assert!(g("heap") >= 600 && g("heap_pops_ge3") >= 500, "{cnt:?}");
     assert!(
         g("astar_single") >= 500
