@@ -4885,7 +4885,13 @@ function findCityFoundingHex(
   }
 
   if (bestHex !== null) return bestHex;
-  if (bestPolarHex !== null) {
+  // R-WEB-AI-POLAR-FALLBACK-Q1: fallback na heks Polarny TYLKO gdy AI nie ma jeszcze zadnego wlasnego
+  // miasta (pierwsze miasto na mapie calkiem polarnej — inaczej AI nie zaistnieje). Ekspansja (>=1
+  // wlasne miasto): brak kandydata niepolarnego ponad progiem => null (AI nie zaklada miasta).
+  // Przyczyna zrodlowa (Pangea 1001, T24): jedyne niepolarne heksy w zasiegu mialy wynik < minScore
+  // (max -5,76), a polarny dostawal +50 z bonusu klastra i wygrywal jako "ostatni fallback".
+  const hasOwnCity = hexOpts.myCities !== undefined && hexOpts.myCities.length > 0;
+  if (bestPolarHex !== null && !hasOwnCity) {
     console.warn(`[ai] polar-fallback: brak kandydata niepolarnego, miasto AI na heksie polarnym (${bestPolarHex.q},${bestPolarHex.r})`);
     return bestPolarHex;
   }

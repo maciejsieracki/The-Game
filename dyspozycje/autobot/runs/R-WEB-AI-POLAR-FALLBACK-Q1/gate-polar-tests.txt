@@ -1,0 +1,137 @@
+--- P1: polarny heks najlepszy, ale istnieje niepolarny -> niepolarny ---
+--- P2: rowny wynik, jeden przy polarnym -> daleki od polarnego ---
+--- P3: jedyny kandydat przy polarnym nadal zakladany (kara tylko w rankingu) ---
+--- P4: caly dostepny lad polarny -> ostatni fallback (pierwsze miasto) ---
+--- P5: kara = 0 wylacza ranking sasiedztwa ---
+--- P6: polarProximityTier ---
+
+16 passed, 0 failed
+[civ] riverGen: WYŁĄCZONE (kill-switch FALA 160 — ?riverGen=1 / localStorage civ-river-gen)
+[civ] mapGen ms | prep=2 terrain=452 landSea=8726 relief=12941 coast=6028 riversMain=91 riversFill=816 forest=966 deposits=1016 starts=3979 total=35018
+[pangea 4242] sites=56 onPolar=0 r<=1=0 r<=2=0 
+[civ] riverGen: WYŁĄCZONE (kill-switch FALA 160 — ?riverGen=1 / localStorage civ-river-gen)
+[civ] mapGen ms | prep=0 terrain=735 landSea=3998 relief=9854 coast=3166 riversMain=8 riversFill=874 forest=286 deposits=497 starts=2037 total=21455
+[pangea 7777] sites=56 onPolar=0 r<=1=0 r<=2=0 
+[civ] riverGen: WYŁĄCZONE (kill-switch FALA 160 — ?riverGen=1 / localStorage civ-river-gen)
+[civ] mapGen ms | prep=17 terrain=355 landSea=4033 relief=11181 coast=2033 riversMain=8 riversFill=434 forest=245 deposits=488 starts=2252 total=21047
+[wyspy 4242] sites=56 onPolar=0 r<=1=2 r<=2=4 aiStart@62,106:d2:laka aiStart@66,107:d1:laka aiStart@52,106:d2:laka aiStart@23,108:d1:wzgorza
+[civ] riverGen: WYŁĄCZONE (kill-switch FALA 160 — ?riverGen=1 / localStorage civ-river-gen)
+[civ] mapGen ms | prep=8 terrain=275 landSea=4072 relief=4300 coast=858 riversMain=14 riversFill=823 forest=166 deposits=647 starts=2064 total=13227
+[wyspy 7777] sites=56 onPolar=0 r<=1=4 r<=2=6 aiStart@72,9:d1:wzgorza aiStart@25,106:d2:laka aiStart@29,107:d1:laka aiStart@26,112:d1:wzgorza aiStart@52,107:d1:rownina aiStart@57,107:d2:laka
+SUMA sites=224 (AI/MP=220) onPolar=0 (AI/MP=0) r<=1=6 r<=2=10
+[civ] riverGen: WYŁĄCZONE (kill-switch FALA 160 — ?riverGen=1 / localStorage civ-river-gen)
+[civ] mapGen ms | prep=21 terrain=510 landSea=6917 relief=10814 coast=1746 riversMain=52 riversFill=267 forest=358 deposits=449 starts=4114 total=25248
+[civ] riverGen: WYŁĄCZONE (kill-switch FALA 160 — ?riverGen=1 / localStorage civ-river-gen)
+[civ] mapGen ms | prep=29 terrain=285 landSea=5141 relief=7300 coast=2686 riversMain=11 riversFill=769 forest=228 deposits=515 starts=2190 total=19154
+[civ] riverGen: WYŁĄCZONE (kill-switch FALA 160 — ?riverGen=1 / localStorage civ-river-gen)
+[civ] mapGen ms | prep=29 terrain=212 landSea=6168 relief=5919 coast=1621 riversMain=10 riversFill=186 forest=266 deposits=346 starts=2548 total=17305
+[civ] riverGen: WYŁĄCZONE (kill-switch FALA 160 — ?riverGen=1 / localStorage civ-river-gen)
+[civ] mapGen ms | prep=11 terrain=103 landSea=2595 relief=6334 coast=1662 riversMain=17 riversFill=143 forest=99 deposits=838 starts=2269 total=14072
+[civ] riverGen: WYŁĄCZONE (kill-switch FALA 160 — ?riverGen=1 / localStorage civ-river-gen)
+[civ] mapGen ms | prep=24 terrain=183 landSea=4885 relief=4499 coast=667 riversMain=211 riversFill=147 forest=98 deposits=650 starts=2415 total=13778
+[civ] riverGen: WYŁĄCZONE (kill-switch FALA 160 — ?riverGen=1 / localStorage civ-river-gen)
+[civ] mapGen ms | prep=1 terrain=207 landSea=7188 relief=9704 coast=4793 riversMain=16 riversFill=494 forest=555 deposits=515 starts=2057 total=25529
+[civ] riverGen: WYŁĄCZONE (kill-switch FALA 160 — ?riverGen=1 / localStorage civ-river-gen)
+[civ] mapGen ms | prep=0 terrain=670 landSea=5808 relief=8279 coast=2116 riversMain=20 riversFill=320 forest=325 deposits=913 starts=2298 total=20748
+[civ] riverGen: WYŁĄCZONE (kill-switch FALA 160 — ?riverGen=1 / localStorage civ-river-gen)
+[civ] mapGen ms | prep=0 terrain=314 landSea=5182 relief=9445 coast=1873 riversMain=9 riversFill=789 forest=174 deposits=703 starts=1948 total=20438
+[civ] riverGen: WYŁĄCZONE (kill-switch FALA 160 — ?riverGen=1 / localStorage civ-river-gen)
+[civ] mapGen ms | prep=0 terrain=886 landSea=5247 relief=10833 coast=3021 riversMain=12 riversFill=412 forest=254 deposits=515 starts=1586 total=22766
+[civ] riverGen: WYŁĄCZONE (kill-switch FALA 160 — ?riverGen=1 / localStorage civ-river-gen)
+[civ] mapGen ms | prep=0 terrain=263 landSea=6552 relief=11843 coast=3326 riversMain=6 riversFill=219 forest=380 deposits=560 starts=1969 total=25117
+[civ] riverGen: WYŁĄCZONE (kill-switch FALA 160 — ?riverGen=1 / localStorage civ-river-gen)
+[civ] mapGen ms | prep=11 terrain=244 landSea=4566 relief=4746 coast=807 riversMain=7 riversFill=593 forest=877 deposits=888 starts=2053 total=14792
+[civ] riverGen: WYŁĄCZONE (kill-switch FALA 160 — ?riverGen=1 / localStorage civ-river-gen)
+[civ] mapGen ms | prep=8 terrain=765 landSea=5341 relief=9585 coast=894 riversMain=7 riversFill=421 forest=440 deposits=578 starts=2726 total=20765
+[civ] riverGen: WYŁĄCZONE (kill-switch FALA 160 — ?riverGen=1 / localStorage civ-river-gen)
+[civ] mapGen ms | prep=17 terrain=240 landSea=5635 relief=7954 coast=1091 riversMain=13 riversFill=250 forest=533 deposits=349 starts=2501 total=18582
+[civ] riverGen: WYŁĄCZONE (kill-switch FALA 160 — ?riverGen=1 / localStorage civ-river-gen)
+[civ] mapGen ms | prep=5 terrain=178 landSea=4659 relief=5782 coast=546 riversMain=17 riversFill=1008 forest=775 deposits=686 starts=2226 total=15882
+[civ] riverGen: WYŁĄCZONE (kill-switch FALA 160 — ?riverGen=1 / localStorage civ-river-gen)
+[civ] mapGen ms | prep=3 terrain=382 landSea=5105 relief=4458 coast=1045 riversMain=13 riversFill=918 forest=506 deposits=338 starts=1883 total=14651
+[civ] riverGen: WYŁĄCZONE (kill-switch FALA 160 — ?riverGen=1 / localStorage civ-river-gen)
+[civ] mapGen ms | prep=46 terrain=265 landSea=3909 relief=5924 coast=1299 riversMain=13 riversFill=144 forest=147 deposits=403 starts=2456 total=14606
+[civ] riverGen: WYŁĄCZONE (kill-switch FALA 160 — ?riverGen=1 / localStorage civ-river-gen)
+[civ] mapGen ms | prep=23 terrain=361 landSea=8716 relief=6966 coast=918 riversMain=47 riversFill=275 forest=81 deposits=264 starts=2084 total=19737
+[civ] riverGen: WYŁĄCZONE (kill-switch FALA 160 — ?riverGen=1 / localStorage civ-river-gen)
+[civ] mapGen ms | prep=11 terrain=1088 landSea=5591 relief=6255 coast=902 riversMain=15 riversFill=241 forest=156 deposits=484 starts=2104 total=16847
+[civ] riverGen: WYŁĄCZONE (kill-switch FALA 160 — ?riverGen=1 / localStorage civ-river-gen)
+[civ] mapGen ms | prep=16 terrain=240 landSea=5730 relief=7629 coast=887 riversMain=11 riversFill=264 forest=345 deposits=585 starts=3957 total=19665
+[civ] riverGen: WYŁĄCZONE (kill-switch FALA 160 — ?riverGen=1 / localStorage civ-river-gen)
+[civ] mapGen ms | prep=7 terrain=160 landSea=3702 relief=6258 coast=1000 riversMain=15 riversFill=173 forest=149 deposits=270 starts=1421 total=13155
+[civ] riverGen: WYŁĄCZONE (kill-switch FALA 160 — ?riverGen=1 / localStorage civ-river-gen)
+[civ] mapGen ms | prep=0 terrain=240 landSea=4942 relief=8170 coast=3077 riversMain=6 riversFill=479 forest=214 deposits=564 starts=2614 total=20305
+[civ] riverGen: WYŁĄCZONE (kill-switch FALA 160 — ?riverGen=1 / localStorage civ-river-gen)
+[civ] mapGen ms | prep=0 terrain=307 landSea=8569 relief=7651 coast=2895 riversMain=10 riversFill=560 forest=288 deposits=393 starts=1526 total=22200
+[civ] riverGen: WYŁĄCZONE (kill-switch FALA 160 — ?riverGen=1 / localStorage civ-river-gen)
+[civ] mapGen ms | prep=0 terrain=850 landSea=4562 relief=10778 coast=3588 riversMain=6 riversFill=604 forest=967 deposits=358 starts=1219 total=22933
+[civ] riverGen: WYŁĄCZONE (kill-switch FALA 160 — ?riverGen=1 / localStorage civ-river-gen)
+[civ] mapGen ms | prep=0 terrain=363 landSea=7580 relief=14324 coast=3755 riversMain=21 riversFill=515 forest=196 deposits=836 starts=2263 total=29854
+[civ] riverGen: WYŁĄCZONE (kill-switch FALA 160 — ?riverGen=1 / localStorage civ-river-gen)
+[civ] mapGen ms | prep=0 terrain=686 landSea=7438 relief=12506 coast=4314 riversMain=16 riversFill=539 forest=305 deposits=403 starts=2701 total=28907
+[civ] riverGen: WYŁĄCZONE (kill-switch FALA 160 — ?riverGen=1 / localStorage civ-river-gen)
+[civ] mapGen ms | prep=8 terrain=428 landSea=3951 relief=4023 coast=1190 riversMain=7 riversFill=386 forest=229 deposits=255 starts=2922 total=13401
+[civ] riverGen: WYŁĄCZONE (kill-switch FALA 160 — ?riverGen=1 / localStorage civ-river-gen)
+[civ] mapGen ms | prep=5 terrain=140 landSea=3734 relief=6431 coast=1904 riversMain=13 riversFill=627 forest=537 deposits=367 starts=2435 total=16193
+[civ] riverGen: WYŁĄCZONE (kill-switch FALA 160 — ?riverGen=1 / localStorage civ-river-gen)
+[civ] mapGen ms | prep=4 terrain=547 landSea=5472 relief=7915 coast=970 riversMain=6 riversFill=283 forest=130 deposits=318 starts=2406 total=18052
+[civ] riverGen: WYŁĄCZONE (kill-switch FALA 160 — ?riverGen=1 / localStorage civ-river-gen)
+[civ] mapGen ms | prep=5 terrain=224 landSea=3305 relief=5948 coast=633 riversMain=7 riversFill=238 forest=115 deposits=437 starts=2222 total=13135
+[civ] riverGen: WYŁĄCZONE (kill-switch FALA 160 — ?riverGen=1 / localStorage civ-river-gen)
+[civ] mapGen ms | prep=4 terrain=125 landSea=3387 relief=4933 coast=613 riversMain=6 riversFill=353 forest=385 deposits=729 starts=2795 total=13329
+PARITY same=30/30 maxDist=0
+PASS
+[civ] riverGen: WYŁĄCZONE (kill-switch FALA 160 — ?riverGen=1 / localStorage civ-river-gen)
+[civ] mapGen ms | prep=19 terrain=270 landSea=7851 relief=7950 coast=1874 riversMain=10 riversFill=311 forest=496 deposits=552 starts=3874 total=23205
+[kontynenty 4242] startAI=49 founded=0 aiCitiesT15=49 onPolar=0 r<=1=0 r<=2=0 foundedOnPolar=0 foundedR<=1=0 foundedR<=1_zLegalnaAlternatywa=0 (2s)
+[civ] riverGen: WYŁĄCZONE (kill-switch FALA 160 — ?riverGen=1 / localStorage civ-river-gen)
+[civ] mapGen ms | prep=439 terrain=168 landSea=4292 relief=5768 coast=2050 riversMain=29 riversFill=318 forest=150 deposits=440 starts=1833 total=15486
+[kontynenty 7777] startAI=49 founded=0 aiCitiesT15=49 onPolar=0 r<=1=0 r<=2=0 foundedOnPolar=0 foundedR<=1=0 foundedR<=1_zLegalnaAlternatywa=0 (1s)
+[civ] riverGen: WYŁĄCZONE (kill-switch FALA 160 — ?riverGen=1 / localStorage civ-river-gen)
+[civ] mapGen ms | prep=30 terrain=275 landSea=3278 relief=5219 coast=1136 riversMain=7 riversFill=405 forest=222 deposits=1046 starts=1888 total=13505
+[kontynenty 1001] startAI=49 founded=0 aiCitiesT15=49 onPolar=0 r<=1=0 r<=2=0 foundedOnPolar=0 foundedR<=1=0 foundedR<=1_zLegalnaAlternatywa=0 (1s)
+[civ] riverGen: WYŁĄCZONE (kill-switch FALA 160 — ?riverGen=1 / localStorage civ-river-gen)
+[civ] mapGen ms | prep=11 terrain=214 landSea=3623 relief=7376 coast=908 riversMain=12 riversFill=217 forest=220 deposits=818 starts=2033 total=15432
+[kontynenty 2024] startAI=49 founded=0 aiCitiesT15=49 onPolar=0 r<=1=0 r<=2=0 foundedOnPolar=0 foundedR<=1=0 foundedR<=1_zLegalnaAlternatywa=0 (0s)
+[civ] riverGen: WYŁĄCZONE (kill-switch FALA 160 — ?riverGen=1 / localStorage civ-river-gen)
+[civ] mapGen ms | prep=31 terrain=295 landSea=5376 relief=7429 coast=1361 riversMain=7 riversFill=341 forest=140 deposits=695 starts=2482 total=18156
+[kontynenty 31337] startAI=49 founded=0 aiCitiesT15=49 onPolar=0 r<=1=0 r<=2=0 foundedOnPolar=0 foundedR<=1=0 foundedR<=1_zLegalnaAlternatywa=0 (1s)
+[civ] riverGen: WYŁĄCZONE (kill-switch FALA 160 — ?riverGen=1 / localStorage civ-river-gen)
+[civ] mapGen ms | prep=1 terrain=677 landSea=5055 relief=10807 coast=3305 riversMain=7 riversFill=1388 forest=219 deposits=492 starts=2155 total=24106
+[pangea 4242] startAI=49 founded=0 aiCitiesT15=49 onPolar=0 r<=1=0 r<=2=0 foundedOnPolar=0 foundedR<=1=0 foundedR<=1_zLegalnaAlternatywa=0 (2s)
+[civ] riverGen: WYŁĄCZONE (kill-switch FALA 160 — ?riverGen=1 / localStorage civ-river-gen)
+[civ] mapGen ms | prep=0 terrain=1871 landSea=5232 relief=9893 coast=2401 riversMain=7 riversFill=400 forest=304 deposits=238 starts=2411 total=22756
+[pangea 7777] startAI=49 founded=0 aiCitiesT15=49 onPolar=0 r<=1=0 r<=2=0 foundedOnPolar=0 foundedR<=1=0 foundedR<=1_zLegalnaAlternatywa=0 (2s)
+[civ] riverGen: WYŁĄCZONE (kill-switch FALA 160 — ?riverGen=1 / localStorage civ-river-gen)
+[civ] mapGen ms | prep=0 terrain=1400 landSea=6972 relief=10596 coast=3088 riversMain=7 riversFill=495 forest=369 deposits=196 starts=2339 total=25463
+[pangea 1001] startAI=49 founded=0 aiCitiesT15=49 onPolar=0 r<=1=0 r<=2=0 foundedOnPolar=0 foundedR<=1=0 foundedR<=1_zLegalnaAlternatywa=0 (1s)
+[civ] riverGen: WYŁĄCZONE (kill-switch FALA 160 — ?riverGen=1 / localStorage civ-river-gen)
+[civ] mapGen ms | prep=0 terrain=616 landSea=5936 relief=11887 coast=3391 riversMain=10 riversFill=390 forest=313 deposits=350 starts=2114 total=25008
+[pangea 2024] startAI=49 founded=0 aiCitiesT15=49 onPolar=0 r<=1=0 r<=2=0 foundedOnPolar=0 foundedR<=1=0 foundedR<=1_zLegalnaAlternatywa=0 (1s)
+[civ] riverGen: WYŁĄCZONE (kill-switch FALA 160 — ?riverGen=1 / localStorage civ-river-gen)
+[civ] mapGen ms | prep=0 terrain=524 landSea=5903 relief=10098 coast=4105 riversMain=6 riversFill=218 forest=406 deposits=206 starts=1390 total=22856
+[pangea 31337] startAI=49 founded=0 aiCitiesT15=49 onPolar=0 r<=1=0 r<=2=0 foundedOnPolar=0 foundedR<=1=0 foundedR<=1_zLegalnaAlternatywa=0 (1s)
+[civ] riverGen: WYŁĄCZONE (kill-switch FALA 160 — ?riverGen=1 / localStorage civ-river-gen)
+[civ] mapGen ms | prep=353 terrain=580 landSea=4237 relief=5545 coast=1298 riversMain=6 riversFill=895 forest=119 deposits=280 starts=2610 total=15922
+[wyspy 4242] startAI=49 founded=0 aiCitiesT15=49 onPolar=0 r<=1=2 r<=2=4 foundedOnPolar=0 foundedR<=1=0 foundedR<=1_zLegalnaAlternatywa=0 (1s)
+[civ] riverGen: WYŁĄCZONE (kill-switch FALA 160 — ?riverGen=1 / localStorage civ-river-gen)
+[civ] mapGen ms | prep=23 terrain=193 landSea=3397 relief=5673 coast=709 riversMain=9 riversFill=744 forest=437 deposits=612 starts=2285 total=14081
+[wyspy 7777] startAI=49 founded=0 aiCitiesT15=49 onPolar=0 r<=1=4 r<=2=6 foundedOnPolar=0 foundedR<=1=0 foundedR<=1_zLegalnaAlternatywa=0 (2s)
+[civ] riverGen: WYŁĄCZONE (kill-switch FALA 160 — ?riverGen=1 / localStorage civ-river-gen)
+[civ] mapGen ms | prep=5 terrain=292 landSea=4339 relief=5246 coast=1309 riversMain=13 riversFill=202 forest=250 deposits=746 starts=2062 total=14465
+[wyspy 1001] startAI=49 founded=0 aiCitiesT15=49 onPolar=0 r<=1=2 r<=2=2 foundedOnPolar=0 foundedR<=1=0 foundedR<=1_zLegalnaAlternatywa=0 (1s)
+[civ] riverGen: WYŁĄCZONE (kill-switch FALA 160 — ?riverGen=1 / localStorage civ-river-gen)
+[civ] mapGen ms | prep=3 terrain=777 landSea=4874 relief=6088 coast=616 riversMain=6 riversFill=307 forest=245 deposits=1013 starts=1902 total=15831
+[wyspy 2024] startAI=49 founded=0 aiCitiesT15=49 onPolar=0 r<=1=7 r<=2=8 foundedOnPolar=0 foundedR<=1=0 foundedR<=1_zLegalnaAlternatywa=0 (1s)
+[civ] riverGen: WYŁĄCZONE (kill-switch FALA 160 — ?riverGen=1 / localStorage civ-river-gen)
+[civ] mapGen ms | prep=7 terrain=791 landSea=4167 relief=7811 coast=1221 riversMain=8 riversFill=388 forest=325 deposits=298 starts=2370 total=17384
+[wyspy 31337] startAI=49 founded=0 aiCitiesT15=49 onPolar=0 r<=1=2 r<=2=6 foundedOnPolar=0 foundedR<=1=0 foundedR<=1_zLegalnaAlternatywa=0 (1s)
+RESULT {"runs":15,"aiCities":735,"onPolar":0,"r1":17,"r2":26,"aiStart":735,"founded":0,"foundedOnPolar":0,"foundedR1":0,"foundedR1WithAlt":0}
+--- F1: polarny wysoki, niepolarne < minScore -> null ---
+--- F2: + niepolarny ponad progiem -> niepolarny ---
+--- F3: caly lad polarny, brak miast -> fallback ---
+--- F4: caly lad polarny, AI ma miasto -> null ---
+--- F5: bonus klastra na polarnym, niepolarne < minScore -> null ---
+
+8 passed, 0 failed
+EXIT=0
