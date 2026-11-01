@@ -511,3 +511,5 @@ Cel końcowy i bieżący zapisane w `GOAL-RUST-PORT-20261020.md` (§"CEL PĘTLI 
 
 ## 2026-11-01 — 8I (auto-ulepszenia) PASS-WITH-NOTES (r5) zintegrowane na parity-v2
 - FC `e8a2cacb2`; merge `fd8585daf69b70ba6d3898275a0a33d265c16d68` na `parity-v2` (`4b843a8a9`): fmt OK, clippy -D warnings OK, test 2013/0. Port `auto_improvements*` z pinu `4bbef081d` (2227 scenariuszy z uruchomionego weba), mutanty 366 (309 killed + 56 ekw. + 1 niezabity P36), relief 15/15. Dług: dryf `territory.rs` (Rust: promienie fort/posterunek 10/5 vs pin 5/3 → 40 scenariuszy w trybie tolerancji), brak produkcyjnego wywołującego `pick_auto_improvements`, P36. Kolejny temat Rust: port terytorium/fortów (`territory.rs`), potem pipeline zasobów (`turn-economy`), M07B4. Rust wstrzymany do końca tematów webowych (priorytet właściciela).
+
+- 2026-11-01 12:28 UTC — kontrola cykliczna: aktywne SPACING-FIX (zapis 12:23) i AI-CITY-YIELD-FIX (zapis 12:27); do wspólnego deployu czekają FOLLOWUPS (FC `ce830e0a1`), po FC: SPACING-FIX, YIELD-FIX (po pomiarze). Rust wstrzymany (priorytet web); parity-v2 = `fd8585daf` (2013/0). Dysk 8,1 GB.
