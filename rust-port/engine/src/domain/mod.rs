@@ -5,6 +5,7 @@ pub mod ai_general_war_campaign;
 pub mod ai_move_range;
 pub mod army_consolidation;
 pub mod army_leadership;
+pub mod auto_improvements;
 pub mod barbarians;
 pub mod battle_mode;
 pub mod building_costs;
