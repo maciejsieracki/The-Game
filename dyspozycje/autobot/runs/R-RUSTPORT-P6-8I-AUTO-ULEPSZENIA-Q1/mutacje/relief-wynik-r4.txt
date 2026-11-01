@@ -1,0 +1,16 @@
+MUTANT M1_drop_legacy_kopalnia: KILLED
+MUTANT M2_prefix_contains: KILLED
+MUTANT M3_all_to_any: KILLED
+MUTANT M4_drop_nonempty: KILLED
+MUTANT M5_drop_tartak: KILLED
+MUTANT M6_drop_explicit_return: KILLED
+MUTANT M7_legacy_to_prefix_only: KILLED
+MUTANT M8_negate_all: KILLED
+MUTANT X1_prefix_no_underscore: KILLED
+MUTANT X2_drop_bydlo: KILLED
+MUTANT X3_drop_owce: KILLED
+MUTANT X4_drop_lama: KILLED
+MUTANT X5_drop_kamieniolom: KILLED
+MUTANT X6_explicit_starts_with: KILLED
+MUTANT X7_legacy_starts_with: KILLED
+RESTORED OK
