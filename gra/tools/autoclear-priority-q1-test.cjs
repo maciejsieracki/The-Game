@@ -161,6 +161,18 @@ for (const profil of ['K1', 'K2']) {
   ok(bFirst < 0 || (fC < bFirst && fF < bFirst && fR < bFirst), `[${profil}] Rodos: wszystkie 3 farmy PRZED pierwsza trzoda (${bFirst})`);
 }
 
+console.log('(n) r3 (zarzut Evaluatora r2 #2): sasiad TYLKO przez rzeka.obecna (BEZ riverPaths) — farma PRZED trzoda');
+for (const profil of ['K1', 'K2']) {
+  const RIVF = [[12, 11], [13, 11]];
+  const map = makeMap({ flagRiver: RIVF });   // riverPaths puste: rzeka widoczna wylacznie jako rzeka.obecna
+  const { log } = sim({ map, worked: [[12, 11], [11, 12]], profil, turns: 12 });
+  ok(log[0] && log[0].key === 'farma', `[${profil}] pierwsza budowa to farma (jest: ${log[0] && log[0].key}@${log[0] && log[0].hk})`);
+  const bFirst = firstIdx(log, 'bydlo');
+  const fC = idx(log, 'farma', K(CQ, CR)), fF = idx(log, 'farma', K(11, 12));
+  ok(fC >= 0 && fF >= 0, `[${profil}] farma na centrum (${fC}) i na trawie przy rzece rzeka.obecna (${fF})`);
+  ok(bFirst < 0 || (fC < bFirst && fF < bFirst), `[${profil}] obie farmy PRZED pierwsza trzoda (${bFirst})`);
+}
+
 console.log('(e) tylko „Oswojenie zwierzat” (brak Rolnictwa): trzoda moze byc pierwsza (ABC-5=A — technologia nie blokuje nizszych etapow)');
 {
   const map = makeMap({ pathRiver: PATH, flagRiver: FLAG });

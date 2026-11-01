@@ -1184,7 +1184,11 @@ function pickAutoImprovementsSinglePass(opts: PickAutoImprovementsOpts): AutoImp
   // (`riverPaths` albo własne `rzeka.obecna`) LUB SĄSIADUJĄCY z rzeką — dokładnie `hasRiverAccess` (jedno źródło definicji,
   // bez duplikacji). Samo `riverPaths` pomijało część rzek (nowa gra, ziarno 778899: 1961 heksów `rzeka.obecna`, 1173 w `riverPaths`),
   // a heks przy rzece dostawał farmę dopiero w E5, za trzodą i irygacją.
-  const onRiverHex = hasRiverAccess;
+  // r3 (zarzut Evaluatora r2 #1): sąsiad z własnym `rzeka.obecna` (rzeka WIDOCZNA na mapie, bez wpisu w `riverPaths`) też liczy się
+  // jako „przy rzece” DLA PICKERA FOOD (E1–E3). Celowo NIE zmieniamy `hasRiverAccess` (tartak/obóz, `isRiverAdjacent`/irygacja
+  // zostają bez zmian — osobny temat), tylko rozszerzamy `onRiverHex`. Sweep 778899: 11/200 układów wcześniej miało trzodę przed farmą.
+  const onRiverHex = (hk: string): boolean =>
+    hasRiverAccess(hk) || riverNeighborKeys(hk).some(n => map.hexes[n]?.rzeka?.obecna === true);
 
   // E-FORT (R-WEB-AUTO-FORT-CLAIM-Q1): osobny przebieg z tymi samymi pułapami budżetu co reszta pickera.
   if (fortClaimPass) {
