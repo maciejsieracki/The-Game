@@ -4,7 +4,7 @@
  *
  * Real-browser test of the NEW-GAME wizard defaults (esbuild harness, jak newgame-settings-layout-reposition-test):
  *   1. świeży profil (pusty localStorage): siatka kroku 4 + okno „Zaawansowane opcje" = tabela domyślnych,
- *   2. udział lądu 30% dla Pangea / Wyspy (suwak obecny), brak suwaka dla Ziemi,
+ *   2. udział lądu per typ: Kontynenty 30% / Pangea 60% / Wyspy 50% (suwak obecny), brak suwaka dla Ziemi,
  *   3. krok Start: DOM podsumowania oraz window.__params (parametry startu gry = domyślne),
  *   4. zapisane preferencje gracza NIE są nadpisywane nowymi domyślnymi (po przeładowaniu),
  *   5. wyczyszczenie preferencji (reset) przywraca tabelę domyślnych.
@@ -226,16 +226,16 @@ async function main() {
     await a.page.screenshot({ path: path.join(EVIDENCE, 'zaawansowane-domyslne.png') });
     await closeAdv(a.page);
 
-    // --- 2. Udział lądu 30%: Kontynenty -> Pangea -> Wyspy; Ziemia bez suwaka ---
-    console.log('== 2. udział lądu 30% (Pangea/Wyspy), Ziemia bez suwaka');
+    // --- 2. Udział lądu per typ (R-WEB-LAND-FRACTION-RESTORE-Q1): Kontynenty 30, Pangea 60, Wyspy 50; Ziemia bez suwaka ---
+    console.log('== 2. udział lądu per typ (Pangea 60 / Wyspy 50), Ziemia bez suwaka');
     check('Kontynenty -> Pangea', await clickGridArrow(a.page, 'Typ świata', 1));
     let rows = await gridRows(a.page);
     check('Pangea: typ = Pangea', valueOf(rows, 'Typ świata') === 'Pangea');
-    check('Pangea: udział lądu = 30%', valueOf(rows, 'Udział lądu na mapie') === '30% lądu / 70% morze');
+    check('Pangea: udział lądu = 60%', valueOf(rows, 'Udział lądu na mapie') === '60% lądu / 40% morze');
     check('Pangea -> Wyspy', await clickGridArrow(a.page, 'Typ świata', 1));
     rows = await gridRows(a.page);
     check('Wyspy: typ = Wyspy', valueOf(rows, 'Typ świata') === 'Wyspy');
-    check('Wyspy: udział lądu = 30%', valueOf(rows, 'Udział lądu na mapie') === '30% lądu / 70% morze');
+    check('Wyspy: udział lądu = 50%', valueOf(rows, 'Udział lądu na mapie') === '50% lądu / 50% morze');
     check('Wyspy -> Ziemia', await clickGridArrow(a.page, 'Typ świata', 1));
     rows = await gridRows(a.page);
     check('Ziemia: typ = Ziemia', valueOf(rows, 'Typ świata') === 'Ziemia');
@@ -245,7 +245,7 @@ async function main() {
     await closeAdv(a.page);
     check('Ziemia -> Wyspy', await clickGridArrow(a.page, 'Typ świata', -1));
     rows = await gridRows(a.page);
-    check('Wyspy po powrocie: udział lądu = 30%', valueOf(rows, 'Udział lądu na mapie') === '30% lądu / 70% morze');
+    check('Wyspy po powrocie: udział lądu = 50%', valueOf(rows, 'Udział lądu na mapie') === '50% lądu / 50% morze');
 
     // --- 3. Krok Start: DOM podsumowania + window.__params ---
     console.log('== 3. krok Start: podsumowanie + parametry startu');
@@ -257,7 +257,7 @@ async function main() {
     // Krok 5 (Start) sam wywołuje onStart(params) przy renderze (newGameFlow.ts ~l.2271) — nie ma już przycisku nav.
     await a.page.waitForFunction(() => !!window.__params, null, { timeout: 15000 });
     const params = await a.page.evaluate(() => window.__params);
-    check('__params: landFractionPercent = 30 (Wyspy)', !!params && params.landFractionPercent === 30);
+    check('__params: landFractionPercent = 50 (Wyspy)', !!params && params.landFractionPercent === 50);
     check('__params: dealsEndTurnGate = true', !!params && params.dealsEndTurnGate === true);
     check('__params: playerEpochWarEnabled = true', !!params && params.playerEpochWarEnabled === true);
     for (const [key, expected] of Object.entries(EXPECTED_PARAMS_ADVANCED)) {
