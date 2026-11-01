@@ -765,13 +765,16 @@ for (const fcl of stdPlan.foreignTypeClusters) {
 // BUG-SPAWN-ODLEGLOSC-STOLICE: pary stolic różnych cywilizacji ≥ minSep na Standard
 const minSepStd = M.capitalMinSeparation(stdPlan.placement.rozmiarMapy);
 assert(minSepStd === 15, 'Standard (duza): minCapitalSep=15 (got ' + minSepStd + ')');
-// R-WEB-CAPITAL-SPACING-FIX-Q1 (B): sep proporcjonalny = max(tabela 15, round(wsp 0,15 x krotszy bok 120)=18) = 18
-// (clusters.ts capitalMinSeparationProportional; wsp = map-gen-params.json generator.capital_sep_short_side_coef).
-// Podloga tabeli (minSepStd=15) bez zmian; minDystansObcyOdGracza = sep + 2 = 20 (clusterCenterPlacementSepForMap).
-assert(M.capitalMinSeparationForMap(stdPlan.placement.rozmiarMapy, 168, 120) === 18,
-  'Standard map 168×120: minCapitalSepForMap=18 (proporcjonalny, podloga tabeli 15)');
-assert(stdPlan.placement.minDystansObcyOdGracza === 20,
-  'Standard: minDystansObcyOdGracza=20 (got ' + stdPlan.placement.minDystansObcyOdGracza + ')');
+// R-WEB-CAPITAL-SPACING-FIX-Q1 (B): sep proporcjonalny = max(tabela 15, round(wsp x krotszy bok 120)).
+// R-WEB-CAPITAL-SPACING-TUNE-Q1: wsp 0,15 -> 0,21 => round(0,21 x 120) = 25 (dawniej 18); sufit wykonalnosci
+// (CAPITAL_SEP_AREA_FACTOR 0,5 -> 0,8) nie obniza go dla Standardu ze startEpochId=kamien (clusters.ts capitalMinSeparationProportional).
+// Podloga tabeli (minSepStd=15) bez zmian; minDystansObcyOdGracza = sep efektywny + 2 (clusterCenterPlacementSepForMap).
+assert(M.capitalMinSeparationForMap(stdPlan.placement.rozmiarMapy, 168, 120) === 25,
+  'Standard map 168×120: minCapitalSepForMap=25 (proporcjonalny 0,21 x 120, podloga tabeli 15)');
+// Ten plan ma 8 typow (aktywneTypy: 8) => sufit wykonalnosci floor(sqrt(lad x 0,8 / 8)) obniza sep efektywny 25 -> 23
+// (zmierzone: placement.capitalMinSep=23), wiec obcy od gracza = 23 + 2 = 25 (dawniej bez obnizki 18 + 2 = 20).
+assert(stdPlan.placement.capitalMinSep === 23 && stdPlan.placement.minDystansObcyOdGracza === 25,
+  'Standard (8 typow): capitalMinSep=23, minDystansObcyOdGracza=25 (got ' + stdPlan.placement.capitalMinSep + '/' + stdPlan.placement.minDystansObcyOdGracza + ')');
 const stdCapitals = [{ q: stdPlan.playerStartHex.q, r: stdPlan.playerStartHex.r }];
 for (const fcl of stdPlan.foreignTypeClusters) {
   const capPos = fcl.positions[0];
@@ -807,17 +810,23 @@ const largePlan = M.buildClusterStartPlan({
   rywaleNaKlaster: 6,
   startEpochId: 'zelazo',
 });
-// R-WEB-CAPITAL-SPACING-FIX-Q1 (B): round(0,15 x 168)=25 (podloga tabeli 16); obcy od gracza = 25 + 2 = 27.
+// R-WEB-CAPITAL-SPACING-TUNE-Q1: round(0,21 x 168)=35 (podloga tabeli 16) to sep BEZ liczby civ (czysta wersja);
+// przy 10 typach (zelazo) sufit wykonalnosci obniza go na mapie (placement.capitalMinSep, dawniej 25 = prop bez obnizki);
+// obcy od gracza = sep efektywny + 2. Progi par stolic liczone od sep EFEKTYWNEGO (to on jest egzekwowany przy generacji).
 assert(
-  M.capitalMinSeparationForMap(largePlan.placement.rozmiarMapy, 240, 168) === 25,
-  'Duża 240×168: minCapitalSepForMap=25 (got ' +
+  M.capitalMinSeparationForMap(largePlan.placement.rozmiarMapy, 240, 168) === 35,
+  'Duża 240×168: minCapitalSepForMap=35 (got ' +
     M.capitalMinSeparationForMap(largePlan.placement.rozmiarMapy, 240, 168) + ')',
 );
 assert(
-  largePlan.placement.minDystansObcyOdGracza === 27,
-  'Duża: minDystansObcyOdGracza=27 (got ' + largePlan.placement.minDystansObcyOdGracza + ')',
+  largePlan.placement.capitalMinSep >= 25 && largePlan.placement.capitalMinSep <= 35,
+  'Duża: capitalMinSep efektywny w [25,35] (got ' + largePlan.placement.capitalMinSep + ')',
 );
-const minSepLarge = M.capitalMinSeparationForMap(largePlan.placement.rozmiarMapy, 240, 168);
+assert(
+  largePlan.placement.minDystansObcyOdGracza === largePlan.placement.capitalMinSep + 2,
+  'Duża: minDystansObcyOdGracza = capitalMinSep + 2 (got ' + largePlan.placement.minDystansObcyOdGracza + ')',
+);
+const minSepLarge = largePlan.placement.capitalMinSep;
 const largeCapitals = [{ q: largePlan.playerStartHex.q, r: largePlan.playerStartHex.r }];
 for (const fcl of largePlan.foreignTypeClusters) {
   const capPos = fcl.positions[0];

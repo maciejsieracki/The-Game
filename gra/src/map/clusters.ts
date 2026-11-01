@@ -1549,7 +1549,7 @@ function capitalSepFeasibleCap(mapW: number, mapH: number, civCount: number, lan
   return Math.floor(Math.sqrt((area * factor) / n));
 }
 /** Udzial POWIERZCHNI LADU (bez landCount: pola mapy) przypadajacy na krag o srednicy sep; ostrozniej na malych mapach. */
-const CAPITAL_SEP_AREA_FACTOR = 0.5;
+const CAPITAL_SEP_AREA_FACTOR = 0.8;
 const CAPITAL_SEP_AREA_FACTOR_SMALL = 0.25;
 
 /**
