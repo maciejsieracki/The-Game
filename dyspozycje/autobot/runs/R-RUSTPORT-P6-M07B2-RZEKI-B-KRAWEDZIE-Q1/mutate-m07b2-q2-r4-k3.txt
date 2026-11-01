@@ -1,0 +1,13 @@
+G01 | KILLED | oczek=K | grow: cap stepCap N -> N+1 (:6204) | test coast_grow_vectors_match_web ... FAILED; test q2r4_vectors_match_web ... FAILED | panic | RESTORED=True
+G02 | KILLED | oczek=K | grow: hardMeanderLen granica (:6206) | test coast_grow_vectors_match_web ... FAILED; test q2r4_vectors_match_web ... FAILED | panic | RESTORED=True
+G03 | KILLED | oczek=K | grow: fallback relaxHardMeander pominiety (:6215) | test coast_grow_vectors_match_web ... FAILED; test q2r4_vectors_match_web ... FAILED | panic | RESTORED=True
+G04 | KILLED | oczek=K | grow: relaxed przebieg bez relaksu (:6216) | test coast_grow_vectors_match_web ... FAILED; test q2r4_vectors_match_web ... FAILED | panic | RESTORED=True
+G07 | KILLED | oczek=K | grow: break przy braku kandydatow usuniety (:6219) - panika zamiast konca | test coast_grow_vectors_match_web ... FAILED; test q2r4_vectors_match_web ... FAILED | panic | RESTORED=True
+G08 | KILLED | oczek=K | grow: sortowanie kandydatow usuniete (:6221) | test coast_grow_vectors_match_web ... FAILED; test q2r4_vectors_match_web ... FAILED | panic | RESTORED=True
+G09 | KILLED | oczek=K | grow: okno losowania min(3,len) -> min(4,len) (:6222) | test coast_grow_vectors_match_web ... FAILED; test q2r4_vectors_match_web ... FAILED | panic | RESTORED=True
+G10 | KILLED | oczek=K | grow: indeks wyboru +1 (:6222) | test coast_grow_vectors_match_web ... FAILED; test q2r4_vectors_match_web ... FAILED | panic | RESTORED=True
+M01 | KILLED | oczek=K | meander: pominiecie 'used' usuniete (:6503) | test coast_grow_vectors_match_web ... FAILED | panic | RESTORED=True
+M04 | KILLED | oczek=K | meander: przechodnosc odwrocona (:6507) | test coast_grow_vectors_match_web ... FAILED; test q2r4_vectors_match_web ... FAILED | panic | RESTORED=True
+M05 | KILLED | oczek=K | meander: blockExisting=false (:6507) | test coast_grow_vectors_match_web ... FAILED | panic | RESTORED=True
+M07 | KILLED | oczek=K | meander: nd > curD -> >= (:6509) | test coast_grow_vectors_match_web ... FAILED; test q2r4_vectors_match_web ... FAILED | panic | RESTORED=True
+EXIT=0

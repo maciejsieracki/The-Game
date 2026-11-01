@@ -1,0 +1,15 @@
+E02 | KILLED | oczek=K | canReceive: PlytkieMorze pominiete (:7124) | test edges_vectors_match_web ... FAILED | panic | RESTORED=True
+E04 | KILLED | oczek=K | markRiverEdge: guard canReceive usuniety (:7130) | test edges_vectors_match_web ... FAILED | panic | RESTORED=True
+E05 | KILLED | oczek=K | markRiverEdge: deduplikacja krawedzi usunieta (:7132) | test edges_vectors_match_web ... FAILED | panic | RESTORED=True
+E08 | KILLED | oczek=K | markRiverEdgePair: przeciwna krawedz (+3) -> (+2) (:7142) | test edges_vectors_match_web ... FAILED | panic | RESTORED=True
+E09 | KILLED | oczek=K | riverHexCornerStep: kierunek odwrocony (:7147) | test edges_point_cases_match_contract ... FAILED; test edges_vectors_match_web ... FAILED | panic | RESTORED=True
+E11 | KILLED | oczek=K | walkRiverHexPerimeter: cap 7 -> 5 (N-1) (:7154) - zabija przypadki 6-wpisowe | test edges_vectors_match_web ... FAILED | panic | RESTORED=True
+E12 | KILLED | oczek=K | riverCornersAlongHexEdges: wczesny zwrot a==b usuniety (:7169) | test edges_point_cases_match_contract ... FAILED; test edges_vectors_match_web ... FAILED; test q2r4_vectors_match_web ... FAILED | panic | RESTORED=True
+E15 | KILLED | oczek=K | riverCornersAlongHexEdges: prog MIN_BOKI <= (:7186) | test edges_vectors_match_web ... FAILED; test q2r4_vectors_match_web ... FAILED | panic | RESTORED=True
+E16 | KILLED | oczek=K | riverCornersAlongHexEdges: remis nadpisuje best (:7187) | test edges_vectors_match_web ... FAILED; test q2r4_vectors_match_web ... FAILED | panic | RESTORED=True
+E20 | KILLED | oczek=K | riverCornersAlongHexEdges: kolejnosc wejsc (:7170) | test edges_vectors_match_web ... FAILED; test q2r4_vectors_match_web ... FAILED | panic | RESTORED=True
+E21 | KILLED | oczek=K | riverEdgeBetweenCorners: galaz +1 (:7196) | test edges_vectors_match_web ... FAILED | panic | RESTORED=True
+E22 | KILLED | oczek=K | riverEdgeBetweenCorners: wynik galezi +1 (:7196) | test edges_vectors_match_web ... FAILED | panic | RESTORED=True
+E23 | KILLED | oczek=K | riverEdgeBetweenCorners: galaz -1 (:7197) | test edges_vectors_match_web ... FAILED | panic | RESTORED=True
+E26 | KILLED | oczek=K | riverTransitEdgeIndices: krawedz 0 odrzucana (:7208) | test edges_vectors_match_web ... FAILED | panic | RESTORED=True
+EXIT=0

@@ -1,0 +1,15 @@
+C05 | SURVIVED | oczek=E | collect: guard path>=1 usuniety (:6110) - E: Rust panikuje wczesniej w is_river_window_turn_allowed (expect), web TypeError | all green | RESTORED=True
+C12 | SURVIVED | oczek=K | collect: prog centerStep > 8 -> 7 (:6118) | all green | RESTORED=True
+C21 | SURVIVED | oczek=K | collect: brak seaDist(cur) -> 1 zamiast 0 (:6100) | all green | RESTORED=True
+G13 | SURVIVED | oczek=E | grow: galaz landCenterSquare (centroid kwadratu) usunieta (:6201) - E: przy kwadracie != null centroid nieuzywany (walk.rs:281-291, web :6057) | all green | RESTORED=True
+M02 | SURVIVED | oczek=E | meander: pominiecie celu usuniete (:6503) - E: sasiad==cel nie dotyka celu (touches=false) | all green | RESTORED=True
+M03 | SURVIVED | oczek=K | meander: filtr kierunku celu usuniety (:6504) | all green | RESTORED=True
+M06 | SURVIVED | oczek=E | meander: brak seaDist(nk) -> 0 zamiast pominiecia (:6509) - E: 0 < RIVER_MIN_INLAND (2) odrzuca | all green | RESTORED=True
+M13 | SURVIVED | oczek=E | meander: klamra indeksu usunieta (:6519) - E: rand()<1, floor(rand*len)<len | all green | RESTORED=True
+W05 | SURVIVED | oczek=K | window: break przy ciecie na koncu usuniety (:7114) | all green | RESTORED=True
+W08 | SURVIVED | oczek=K | window: naprawa sasiedztwa pominieta (:7116) | all green | RESTORED=True
+E01 | SURVIVED | oczek=E | canReceive: brak zwrotu dla Morza (:7123) - E: is_dry(Sea)=false i Sea != ShallowSea | all green | RESTORED=True
+E03 | SURVIVED | oczek=E | markRiverEdge: edgeIdx<0 guard usuniety (:7128) - E: u8::try_from(-1) zwraca Err | all green | RESTORED=True
+E06 | SURVIVED | oczek=E | markRiverEdge: obecna = true zamiast !empty (:7133) - E: po push krawedzie zawsze niepuste | all green | RESTORED=True
+E07 | SURVIVED | oczek=E | markRiverEdgePair: guard edgeIdx<0 usuniety (:7138) - E: mark_river_edge(-1) no-op, get(usize) None | all green | RESTORED=True
+EXIT=0

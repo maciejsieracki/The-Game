@@ -1,0 +1,11 @@
+WALIDACJA portu vs web corners: 1250/1250 zgodne
+dziedzina: a,b in 0..5 (a==b pomijane przez funkcje), parzystosci [-2, -1, 0, 1, 2, 3]
+E13 corners: roznic 0/216
+E14 corners: roznic 0/216
+E17 corners: roznic 0/216
+E18 corners: roznic 0/216
+E19 corners: roznic 0/216
+E35 transit (par vs par+1): roznic 0/216
+E25 transit bez dedup: przypadki z duplikatem krawedzi 0/216
+E18 fallback potrzebny (best pusty, a!=b): 0 przypadkow
+EXIT=0
