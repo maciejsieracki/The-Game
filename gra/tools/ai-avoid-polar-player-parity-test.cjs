@@ -33,7 +33,8 @@ const M = require(bundle);
 M.setRiverGenPhaseOverride('main');
 M.setRiverGenEnabledOverride(false);
 const civs = require('../data/civs.json');
-const BASE = {"kontynenty4242":"130,34","kontynenty7777":"98,57","kontynenty1001":"90,49","kontynenty2024":"83,61","kontynenty31337":"78,61","pangea4242":"33,56","pangea7777":"84,96","pangea1001":"40,85","pangea2024":"34,66","pangea31337":"90,18","wyspy4242":"139,58","wyspy7777":"87,68","wyspy1001":"95,67","wyspy2024":"97,68","wyspy31337":"87,65","kontynenty11":"37,29","kontynenty222":"107,81","kontynenty3333":"43,60","kontynenty4444":"96,60","kontynenty5555":"126,59","pangea11":"40,30","pangea222":"113,96","pangea3333":"90,22","pangea4444":"94,18","pangea5555":"125,95","wyspy11":"72,44","wyspy222":"84,65","wyspy3333":"86,68","wyspy4444":"76,65","wyspy5555":"89,63"};
+// R-WEB-CAPITAL-SPACING-TUNE-Q1 (integracja 2026-11-01): wzorzec startow gracza przegenerowany po zmianie wyboru stolicy (A+B, wspolczynnik 0,21) i dosypywaniu ladu Pangei — start gracza przesunal sie z zalozenia (stolica blizej srodka regionu), nie przez zmiane AI.
+const BASE = {"kontynenty4242":"130,33","kontynenty7777":"94,56","kontynenty1001":"91,51","kontynenty2024":"83,61","kontynenty31337":"77,60","pangea4242":"33,62","pangea7777":"97,97","pangea1001":"39,83","pangea2024":"34,67","pangea31337":"96,19","wyspy4242":"139,58","wyspy7777":"86,68","wyspy1001":"93,64","wyspy2024":"96,68","wyspy31337":"87,65","kontynenty11":"38,29","kontynenty222":"106,82","kontynenty3333":"44,60","kontynenty4444":"91,66","kontynenty5555":"126,59","pangea11":"36,36","pangea222":"114,96","pangea3333":"90,22","pangea4444":"77,18","pangea5555":"116,96","wyspy11":"71,44","wyspy222":"84,65","wyspy3333":"86,68","wyspy4444":"74,68","wyspy5555":"89,64"};
 let same = 0, total = 0, maxD = 0; const diffs = []; const dump = {};
 for (const key of Object.keys(BASE)) {
   const m = key.match(/^([a-z]+)(\d+)$/); const typ = m[1], seed = Number(m[2]);
