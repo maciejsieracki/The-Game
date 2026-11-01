@@ -1,3 +1,12 @@
+## ROBOCZA 02d13477 -- 2026-11-01 -- rozproszenie cywilizacji (stolice dalej od siebie), drobne poprawki kreatora i AI (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`c99ac58cd` + `R-WEB-CAPITAL-SPACING-FIX-Q1` `44108d7a1` + `R-WEB-FOLLOWUPS-LAND-AI-Q1` `ce830e0a1`) i commit wdrożenia bundla; stała zgoda właściciela 2026-10-31.
+- Bundle MD5 `02d1347767bd6067449b9c2e19c4c65d`, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, outDir poza repo, stempel ROBOCZA; `verify-robocza-bundle.cjs` VERIFY OK.
+- Zakres: (1) rozproszenie cywilizacji (wariant A+B): stolica regionu najbliżej jego środka; minimalny dystans stolic proporcjonalny do krótszego boku mapy (współczynnik 0,15, podłoga = dotychczasowa tabela). Standard: pary stolic <25 hexów 73,3% → 13,3% map, <30: 73,3% → 26,7%; Mały/Duży/Ogromny → 0%; wszystkie cywilizacje umieszczone. (2) kreator: Ziemia „szablon kontynentów”; stare zapisy dostają domyślny udział lądu typu; (3) AI: miasto z bonusu unika biegunów.
+- Testy po scaleniu: tsc PASS; capital-sep-unit 44/0, capital-spacing-prop PASS, capital-sep-pangea 3/0, cluster-spread 5/0, cluster-start-q2-smoke 16/0, mp-spawn-ration 16/0, ai-avoid-polar 16/0 i parity 30/30, followups 9/0, autoclear 60/0, stages 302/0, auto-improvements 46/0, ai-improvements 56/0.
+- Ograniczenia: Pangea 30% lądu bez poprawy (sufit wykonalności); cluster-start-test 477/3 (3 asercje seaDist stolic obcych, baza miała 2); nie zmierzono w żywej grze; w toku: ocena plonu terenu przy wyborze miejsca na miasto AI (wdrożenie po pomiarze).
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `fc1af15093852a9f221f75a44c86296e`, 70,111,912 bajtów.
+
 ## ROBOCZA fc1af150 -- 2026-11-01 -- farma przed trzodą także przy rzece, AI unika biegunów (testowa)
 
 - **STATUS: DEPLOYED** — merge do `origin/main` (`97dbcb416` = `50edcc264` + `R-WEB-AI-AVOID-POLAR-CITIES-Q1` `a4f702785`, potem `R-WEB-AUTOCLEAR-PRIORITY-LIVE-Q1` `f2f2e9d05`) i commit wdrożenia bundla; stała zgoda właściciela 2026-10-31.
