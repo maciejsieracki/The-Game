@@ -1,0 +1,2 @@
+pick 16 passed, 0 failed; plan (5 ziaren x 2 typy 168x120) AI/MP onPolar=0; parity 28/30 identyczny maxDist=10; tsc --noEmit ok
+EXIT=0

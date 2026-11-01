@@ -1,9 +1,14 @@
 'use strict';
 /**
  * node tools/ai-avoid-polar-sim-test.cjs [--measure]
- * R-WEB-AI-AVOID-POLAR-CITIES-Q1: zywa symulacja tura-po-turze (decideAITurn + buildClusterStartPlan + canFoundCity,
- * jak main.ts) — liczy miasta AI/MP na heksie Polarny i w jego sasiedztwie (promien 1/2) oraz liczbe miast AI.
- * Env: GRA_ROOT (domyslnie ..), SEEDS, TYPES, TURNS (domyslnie 100), W, H (domyslnie 168x120).
+ * R-WEB-AI-AVOID-POLAR-CITIES-Q1: SYMULACJA ZASTEPCZA kolonizacji (NIE decideAITurn): buildClusterStartPlan +
+ * petla TURNS iteracji `planCityFounding` (+ canFoundCity), zakladajaca miasta AI/MP bez gospodarki, wojen i
+ * czasu tury. Liczy miasta AI/MP na heksie Polarny i w jego sasiedztwie (promien 1/2) oraz liczbe miast AI.
+ * UWAGA: domyslnie TURNS=15 iteracji, to NIE jest "tura 100" gry. Prawdziwy pomiar liczby miast AI w turze 100
+ * przez decideAITurn = NIE_ZMIERZONO (harness w sandboxie nie zalozyl zadnego miasta).
+ * Ponadto plon w hexCityScore jest zerowy w realnych danych (diakrytyki), wiec test normalizuje nazwy tereni
+ * po swojej stronie (FOLD) — wynik dotyczy znormalizowanej punktacji, nie realnego tempa ekspansji.
+ * Env: GRA_ROOT (domyslnie ..), SEEDS, TYPES, TURNS (domyslnie 15), W, H (domyslnie 168x120).
  * Bez --measure: twarda asercja — zero miast AI/MP na heksie Polarny (exit 1 inaczej).
  * Wynik koncowy: linia "RESULT {json}" (do porownania PRZED/PO).
  */
@@ -55,7 +60,7 @@ function polarDist(map, q, r, maxR) {
   return best;
 }
 
-const total = { runs: 0, aiCities: 0, onPolar: 0, r1: 0, r2: 0, aiStart: 0, founded: 0, foundedOnPolar: 0, foundedR1: 0 };
+const total = { runs: 0, aiCities: 0, onPolar: 0, r1: 0, r2: 0, aiStart: 0, founded: 0, foundedOnPolar: 0, foundedR1: 0, foundedR1WithAlt: 0 };
 for (const typ of TYPES) for (const seed of SEEDS) {
   const map = M.generateMap(W, H, seed, typ);
   const plan = M.buildClusterStartPlan({ map, civs: data.civs, seed, playerCivId: 'grecy', rywaleNaKlaster: 6,
@@ -67,7 +72,7 @@ for (const typ of TYPES) for (const seed of SEEDS) {
   for (const sc of plan.spawnCities) cities.push(mk(sc.q, sc.r, sc.ownerId, 8));
   const aiOwners = [...new Set(cities.map(c => c.ownerId))].filter(o => o !== 0);
   const startCount = cities.length;
-  let foundedHere = 0, foundedPolar = 0, foundedR1 = 0;
+  let foundedHere = 0, foundedPolar = 0, foundedR1 = 0, foundedR1WithAlt = 0;
   const t0 = Date.now();
   // Picker-sim: planCityFounding (ten sam kod co decideAITurn dla kolonizacji) w petli: kazda AI zaklada
   // kolejne miasta, az planCityFounding zwroci null albo wyczerpie sie TURNS iteracji (1 miasto/tura/AI).
@@ -86,10 +91,26 @@ for (const typ of TYPES) for (const seed of SEEDS) {
         ownerId, ownerEra: 1, gameConfig: { cityLimitBase: 10 },
       });
       if (!res.ok) continue;
+      const pd = polarDist(map, cmd.q, cmd.r, 2);
+      if (pd <= 1) {
+        // Dowod dostepnosci alternatywy: czy ISTNIAL legalny (canFoundCity) lad poza polarnym i poza promieniem 1.
+        let alt = false;
+        for (const key of Object.keys(map.hexes)) {
+          const hx = map.hexes[key];
+          const tb = hx.terenBazowy;
+          if (tb === 'morze' || tb === 'plytkie_morze' || tb === 'gory' || tb === 'polarny') continue;
+          if (polarDist(map, hx.coords.q, hx.coords.r, 1) <= 1) continue;
+          const ok = M.canFoundCity(hx.coords.q, hx.coords.r, cities, map, {
+            withinTerritory: nodes.length ? (fq, fr) => M.isInTerritory(fq, fr, nodes) : undefined,
+            ownerId, ownerEra: 1, gameConfig: { cityLimitBase: 10 },
+          });
+          if (ok.ok) { alt = true; break; }
+        }
+        if (alt) foundedR1WithAlt++;
+      }
       cities.push(mk(cmd.q, cmd.r, ownerId, 8));
       any = true;
       foundedHere++;
-      const pd = polarDist(map, cmd.q, cmd.r, 2);
       if (pd === 0) foundedPolar++;
       if (pd <= 1) foundedR1++;
     }
@@ -103,9 +124,9 @@ for (const typ of TYPES) for (const seed of SEEDS) {
     if (d <= 1) r1++;
     if (d <= 2) r2++;
   }
-  console.log(`[${typ} ${seed}] startAI=${startCount - 1} founded=${foundedHere} aiCitiesT${TURNS}=${ai.length} onPolar=${onP} r<=1=${r1} r<=2=${r2} foundedOnPolar=${foundedPolar} foundedR<=1=${foundedR1} (${Math.round((Date.now() - t0) / 1000)}s)`);
+  console.log(`[${typ} ${seed}] startAI=${startCount - 1} founded=${foundedHere} aiCitiesT${TURNS}=${ai.length} onPolar=${onP} r<=1=${r1} r<=2=${r2} foundedOnPolar=${foundedPolar} foundedR<=1=${foundedR1} foundedR<=1_zLegalnaAlternatywa=${foundedR1WithAlt} (${Math.round((Date.now() - t0) / 1000)}s)`);
   total.runs++; total.aiCities += ai.length; total.onPolar += onP; total.r1 += r1; total.r2 += r2;
-  total.aiStart += startCount - 1; total.founded += foundedHere; total.foundedOnPolar += foundedPolar; total.foundedR1 += foundedR1;
+  total.aiStart += startCount - 1; total.founded += foundedHere; total.foundedOnPolar += foundedPolar; total.foundedR1 += foundedR1; total.foundedR1WithAlt += foundedR1WithAlt;
 }
 console.log('RESULT ' + JSON.stringify(total));
 try { fs.unlinkSync(entry); fs.unlinkSync(bundle); } catch (e) { /* ignore */ }
