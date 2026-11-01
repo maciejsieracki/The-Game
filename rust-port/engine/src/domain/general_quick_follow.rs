@@ -20,6 +20,10 @@
 use crate::domain::generals::{
     general_follow_destination, hex_distance, nearest_living_general, oblega_truthy, GeneralUnit,
 };
+use crate::domain::pathfinding::ruch_jednostek::{
+    march_follows_general, march_has_general_target, planned_marches_to_save, PlannedMarchDest,
+    PlannedMarchesSaveOut,
+};
 use std::collections::{HashMap, HashSet};
 
 /// Web `FollowCommanderTitle` (`generalQuickFollow.ts:4`).
@@ -56,10 +60,27 @@ pub fn plan_enabled_general_follow_marches(
     has_march: impl Fn(&str) -> bool,
     mut plan_march: impl FnMut(&GeneralUnit, (f64, f64), &str) -> bool,
 ) -> Vec<String> {
+    plan_enabled_general_follow_marches_with(
+        roster,
+        &mut (),
+        |_, unit_id| has_march(unit_id),
+        |_, unit, point, target_id| plan_march(unit, point, target_id),
+    )
+}
+
+/// Ta sama petla co [`plan_enabled_general_follow_marches`], ze wspolnym stanem `state`
+/// (web: `has` i `planMarch` czytaja/zapisuja ta sama `Map` `plannedMarches`; w Rust wspolna
+/// mutowalna mapa nie moze byc zlapana przez dwa domkniecia naraz).
+pub fn plan_enabled_general_follow_marches_with<S>(
+    roster: &[GeneralUnit],
+    state: &mut S,
+    has_march: impl Fn(&S, &str) -> bool,
+    mut plan_march: impl FnMut(&mut S, &GeneralUnit, (f64, f64), &str) -> bool,
+) -> Vec<String> {
     let mut planned = Vec::new();
     for unit in roster {
         if !unit.follow_general
-            || has_march(&unit.id)
+            || has_march(state, &unit.id)
             || unit.is_general
             || unit.in_garnizon
             || oblega_truthy(&unit.oblega_city_id)
@@ -72,7 +93,7 @@ pub fn plan_enabled_general_follow_marches(
         if hex_distance(unit.q, unit.r, follow.q, follow.r) == 0.0 {
             continue;
         }
-        if plan_march(unit, (follow.q, follow.r), &follow.general_target_id) {
+        if plan_march(state, unit, (follow.q, follow.r), &follow.general_target_id) {
             planned.push(unit.id.clone());
         }
     }
@@ -139,14 +160,10 @@ pub fn issue_general_quick_follow(
     GeneralQuickFollowResult::Issued
 }
 
-/// Cel marszu (web `PlannedMarchDest`, `planned-march.ts:14-21`, wariant z `generalTargetId`).
-#[derive(Debug, Clone, PartialEq)]
-pub struct TrackedMarchDest {
-    pub dest_q: f64,
-    pub dest_r: f64,
-    pub attack_unit_id: Option<String>,
-    pub general_target_id: Option<String>,
-}
+/// Cel marszu: JEDEN typ z `planned-march.ts:14-21` (web `generalQuickFollow.ts:2` importuje
+/// `PlannedMarchDest` z `planned-march`). REPIN-WOJNA-3: dawny lokalny odpowiednik zastapiony
+/// aliasem na `pathfinding::ruch_jednostek::PlannedMarchDest` (te same pola, ten sam kontrakt zapisu).
+pub type TrackedMarchDest = PlannedMarchDest;
 
 /// Mapa marszow z semantyka `Map` JS (kolejnosc wstawiania; `set` na istniejacym kluczu nie zmienia pozycji).
 #[derive(Debug, Clone, Default, PartialEq)]
@@ -157,6 +174,33 @@ pub struct MarchMap {
 impl MarchMap {
     pub fn new() -> Self {
         Self::default()
+    }
+
+    /// Mapa z wpisow w kolejnosci `Map` (np. wynik `planned_marches_from_save`, web
+    /// `new Map(...)` / `plannedMarchesFromSave`, `main.ts:42052`). Powtorzony klucz: `set`.
+    pub fn from_entries(entries: Vec<(String, PlannedMarchDest)>) -> Self {
+        let mut map = Self::new();
+        for (unit_id, dest) in entries {
+            map.set(&unit_id, dest);
+        }
+        map
+    }
+
+    /// Zapis mapy marszow (web `plannedMarchesToSave(plannedMarches)`, `main.ts:33399`).
+    pub fn to_save(&self) -> PlannedMarchesSaveOut {
+        planned_marches_to_save(&self.entries)
+    }
+
+    /// Web `plannedMarches.get(unitId)?.generalTargetId` jako wartosc logiczna (`if (...)`):
+    /// przelaczenie "Idz do wodza" na OFF kasuje marsz tylko wtedy (`main.ts:23497`).
+    pub fn follow_off_clears(&self, unit_id: &str) -> bool {
+        self.get(unit_id).is_some_and(march_has_general_target)
+    }
+
+    /// Web `plannedMarches.get(unitId)?.generalTargetId != null` (`main.ts:13393`,
+    /// `afterPlayerUnitSpawned` przy `generalMarchPreplanned`).
+    pub fn is_general_follow(&self, unit_id: &str) -> bool {
+        self.get(unit_id).is_some_and(march_follows_general)
     }
 
     pub fn set(&mut self, unit_id: &str, dest: TrackedMarchDest) {
@@ -319,6 +363,38 @@ pub fn sync_tracked_general_follow_marches(
             moved.dest_q = commander.q;
             moved.dest_r = commander.r;
             marches.set(&unit_id, moved);
+        }
+    }
+}
+
+/// Web `syncGeneralMarchTargets` (`main.ts:28237-28250` @ 4bbef081d), czesc czysta: najpierw
+/// `syncTrackedGeneralFollowMarches`, potem `planEnabledGeneralFollowMarches` (`has_march` =
+/// `plannedMarches.has`), a jednostki nowo zaplanowane trafiaja do kolejki wykonania, gdy maja
+/// ruch i nie sa juz w kolejce (`main.ts:28241-28246`; `ruch_left` = `planningStackRuchLeft`).
+///
+/// `plan_march` odpowiada `planGeneralFollowMarch(unit, point, targetId, false)` i dostaje ta
+/// sama mape marszy (`plannedMarches`), do ktorej zapisuje.
+pub fn sync_general_march_targets(
+    units: &[GeneralUnit],
+    marches: &mut MarchMap,
+    mut clear_attack_target: impl FnMut(&str),
+    plan_march: impl FnMut(&mut MarchMap, &GeneralUnit, (f64, f64), &str) -> bool,
+    ruch_left: impl Fn(&GeneralUnit) -> f64,
+    exec_queue: &mut Vec<String>,
+) {
+    sync_tracked_general_follow_marches(units, marches, &mut clear_attack_target);
+    let newly = plan_enabled_general_follow_marches_with(
+        units,
+        marches,
+        |map, unit_id| map.get(unit_id).is_some(),
+        plan_march,
+    );
+    for unit_id in newly {
+        let Some(unit) = units.iter().find(|candidate| candidate.id == unit_id) else {
+            continue;
+        };
+        if ruch_left(unit) > 0.0 && !exec_queue.contains(&unit_id) {
+            exec_queue.push(unit_id);
         }
     }
 }

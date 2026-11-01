@@ -1724,6 +1724,21 @@ pub mod ruch_jednostek {
         pub general_target_id: Option<String>,
     }
 
+    /// Web `if (plannedMarches.get(id)?.generalTargetId)` (prawdziwosc, `main.ts:23497`): cel marszu
+    /// jest ruchomym generalem tylko dla niepustego napisu (REPIN-WOJNA-3, hook generalQuickFollow).
+    pub fn march_has_general_target(dest: &PlannedMarchDest) -> bool {
+        dest.general_target_id
+            .as_ref()
+            .is_some_and(|id| !id.is_empty())
+    }
+
+    /// Web `plannedMarches.get(id)?.generalTargetId != null` (`main.ts:13393`): `Some(_)` (takze
+    /// `Some("")`, bo `'' != null` jest prawdziwe w JS); brak pola = `None`. Roznica wzgledem
+    /// [`march_has_general_target`] jest zmierzona wektorem `p6_repin_wojna_3_hook` (wpisy z `''`).
+    pub fn march_follows_general(dest: &PlannedMarchDest) -> bool {
+        dest.general_target_id.is_some()
+    }
+
     /// Web `MarchStopReason` (`planned-march.ts:31`).
     #[derive(Debug, Clone, Copy, PartialEq, Eq)]
     pub enum MarchStopReason {

@@ -258,23 +258,109 @@ where
 /// `plannedMarches` in either shape: the Rust list form (`[{unitId, ...}]`) or the web object
 /// form (`{uid: {destQ, destR, attackUnitId?, generalTargetId?} | null}`, `planned-march.ts:440-462`).
 /// Web skips `null` entries; other malformed entries are dropped here or filtered by the caller.
+///
+/// The object form is read with a map visitor (NOT through `serde_json::Value`, whose default
+/// map is key-sorted): web `Object.entries` yields insertion order, so the entry order (which
+/// drives the march planning order) must survive loading (REPIN-WOJNA-3, order vector
+/// `p6_repin_wojna_3_hook`). JS puts array-index keys (canonical `0..2^32-2`) first, ascending
+/// (`Object.keys({b:1,"7":2,a:3})` = `["7","b","a"]`, measured on node v22); that is reproduced.
 fn lenient_planned_marches<'de, D>(
     deserializer: D,
 ) -> Result<Option<Vec<SavedPlannedMarch>>, D::Error>
 where
     D: Deserializer<'de>,
 {
-    Ok(Some(match Option::<Value>::deserialize(deserializer)? {
-        Some(Value::Array(items)) => items
-            .into_iter()
-            .filter_map(|item| serde_json::from_value::<SavedPlannedMarch>(item).ok())
-            .collect(),
-        Some(Value::Object(entries)) => entries
-            .into_iter()
-            .filter_map(|(unit_id, dest)| web_planned_march(unit_id, &dest))
-            .collect(),
-        _ => Vec::new(),
-    }))
+    deserializer.deserialize_any(PlannedMarchesVisitor)
+}
+
+struct PlannedMarchesVisitor;
+
+impl<'de> de::Visitor<'de> for PlannedMarchesVisitor {
+    type Value = Option<Vec<SavedPlannedMarch>>;
+
+    fn expecting(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        formatter.write_str("a plannedMarches list or object (any other value reads as empty)")
+    }
+
+    fn visit_seq<A>(self, mut seq: A) -> Result<Self::Value, A::Error>
+    where
+        A: de::SeqAccess<'de>,
+    {
+        let mut out = Vec::new();
+        while let Some(item) = seq.next_element::<Value>()? {
+            if let Ok(march) = serde_json::from_value::<SavedPlannedMarch>(item) {
+                out.push(march);
+            }
+        }
+        Ok(Some(out))
+    }
+
+    fn visit_map<A>(self, mut map: A) -> Result<Self::Value, A::Error>
+    where
+        A: de::MapAccess<'de>,
+    {
+        // `(unit_id, entry)` in text order; a repeated key keeps its first position and the
+        // last value (JSON.parse semantics); `null`/non-object values are skipped later.
+        let mut raw: Vec<(String, Value)> = Vec::new();
+        while let Some((unit_id, dest)) = map.next_entry::<String, Value>()? {
+            if let Some(slot) = raw.iter_mut().find(|(key, _)| *key == unit_id) {
+                slot.1 = dest;
+            } else {
+                raw.push((unit_id, dest));
+            }
+        }
+        // Stable: array-index keys first (ascending), the rest in insertion order.
+        raw.sort_by_key(|(key, _)| array_index_key(key).map_or((1, 0), |index| (0, index)));
+        Ok(Some(
+            raw.into_iter()
+                .filter_map(|(unit_id, dest)| web_planned_march(unit_id, &dest))
+                .collect(),
+        ))
+    }
+
+    fn visit_some<D>(self, deserializer: D) -> Result<Self::Value, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        deserializer.deserialize_any(self)
+    }
+
+    fn visit_unit<E>(self) -> Result<Self::Value, E> {
+        Ok(Some(Vec::new()))
+    }
+
+    fn visit_none<E>(self) -> Result<Self::Value, E> {
+        Ok(Some(Vec::new()))
+    }
+
+    fn visit_bool<E>(self, _: bool) -> Result<Self::Value, E> {
+        Ok(Some(Vec::new()))
+    }
+
+    fn visit_i64<E>(self, _: i64) -> Result<Self::Value, E> {
+        Ok(Some(Vec::new()))
+    }
+
+    fn visit_u64<E>(self, _: u64) -> Result<Self::Value, E> {
+        Ok(Some(Vec::new()))
+    }
+
+    fn visit_f64<E>(self, _: f64) -> Result<Self::Value, E> {
+        Ok(Some(Vec::new()))
+    }
+
+    fn visit_str<E>(self, _: &str) -> Result<Self::Value, E> {
+        Ok(Some(Vec::new()))
+    }
+}
+
+/// ECMAScript array-index property key: canonical decimal of an integer in `0..=2^32-2`.
+fn array_index_key(key: &str) -> Option<u32> {
+    let canonical = key == "0" || (!key.starts_with('0') && !key.is_empty());
+    if !canonical || !key.bytes().all(|byte| byte.is_ascii_digit()) {
+        return None;
+    }
+    key.parse::<u32>().ok().filter(|index| *index != u32::MAX)
 }
 
 fn web_planned_march(unit_id: String, dest: &Value) -> Option<SavedPlannedMarch> {
