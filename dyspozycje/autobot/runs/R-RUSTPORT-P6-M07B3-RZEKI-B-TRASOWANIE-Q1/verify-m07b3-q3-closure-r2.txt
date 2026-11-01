@@ -1,0 +1,5 @@
+input_field_mismatch_maps: 0
+astar: 6/6 zgodne
+greedy: 9/9 zgodne
+TOTAL: 15/15 zgodne
+EXIT=0
