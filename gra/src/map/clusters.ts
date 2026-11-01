@@ -361,8 +361,34 @@ export function regionMassDominance(
 }
 
 function isSpawnHabitableTerrain(teren: TerenBazowy | string): boolean {
+  // R-WEB-AI-AVOID-POLAR-CITIES-Q1 (obrona r1): bramka lokalnego lądu jest WSPÓLNA z graczem — bez zmian
+  // (Polarny nadal liczy się jako ląd); AI unika polarnych przez polarProximityTier + zakaz w pickSpawnHexWithCapitalGates.
   return teren !== TerenBazowy.Morze && teren !== TerenBazowy.Gory &&
     teren !== TerenBazowy.PlytkieMorze && teren !== 'morze' && teren !== 'gory' && teren !== 'plytkie_morze';
+}
+
+/**
+ * R-WEB-AI-AVOID-POLAR-CITIES-Q1: poziom polarnosci kandydata na stolice/MP AI:
+ * 3 = sam heks Polarny, 2 = Polarny w promieniu 1, 1 = w promieniu 2, 0 = brak.
+ * Uzywany jako PIERWSZY klucz sortowania kandydatow (kara) oraz twardy zakaz tieru 3.
+ */
+export function polarProximityTier(map: GameMap, q: number, r: number): number {
+  const self = map.hexes[`${q},${r}`];
+  if (self && self.terenBazowy === TerenBazowy.Polarny) return 3;
+  let tier = 0;
+  for (let dq = -2; dq <= 2; dq++) {
+    for (let dr = -2; dr <= 2; dr++) {
+      if (dq === 0 && dr === 0) continue;
+      const d = hexDistanceAxial(q, r, q + dq, r + dr);
+      if (d > 2) continue;
+      const nb = map.hexes[`${q + dq},${r + dr}`];
+      if (nb && nb.terenBazowy === TerenBazowy.Polarny) {
+        const t = d <= 1 ? 2 : 1;
+        if (t > tier) tier = t;
+      }
+    }
+  }
+  return tier;
 }
 
 /**
@@ -586,6 +612,8 @@ type SpawnLandCandidate = {
   land: ReturnType<typeof localLandFraction>;
   dev: number;
   sea: number;
+  /** R-WEB-AI-AVOID-POLAR-CITIES-Q1: poziom polarnosci (polarProximityTier); brak = 0. */
+  polar?: number;
 };
 
 function sortSpawnLandCandidates(
@@ -596,6 +624,8 @@ function sortSpawnLandCandidates(
   maxSeaDist = 0,
 ): void {
   candidates.sort((a, b) => {
+    const pol = (a.polar ?? 0) - (b.polar ?? 0);
+    if (pol !== 0) return pol;
     const da = hexDistanceAxial(a.h.q, a.h.r, mapCenter.q, mapCenter.r);
     const db = hexDistanceAxial(b.h.q, b.h.r, mapCenter.q, mapCenter.r);
     // seaFirst = drabinka ratunkowa: szukaj głębiej w lądzie gdy brak hexów przy minSeaDist.
@@ -644,6 +674,8 @@ function sortSpawnCandidatesWithSpreadBias(
   }
 
   pool.sort((a, b) => {
+    const pol = (a.polar ?? 0) - (b.polar ?? 0);
+    if (pol !== 0) return pol;
     if (b.minExist !== a.minExist) return b.minExist - a.minExist;
     const qa = quadCounts[a.quad] ?? 0;
     const qb = quadCounts[b.quad] ?? 0;
@@ -663,7 +695,7 @@ function sortSpawnCandidatesWithSpreadBias(
 
   candidates.length = 0;
   for (const e of pool) {
-    candidates.push({ h: e.h, land: e.land, dev: e.dev, sea: e.sea });
+    candidates.push({ h: e.h, land: e.land, dev: e.dev, sea: e.sea, polar: e.polar });
   }
 }
 
@@ -744,6 +776,16 @@ export function pickPlayerClusterCenter(
   return fallback[0]?.h ?? null;
 }
 
+/**
+ * R-WEB-AI-AVOID-POLAR-CITIES-Q1 (obrona r1): zakaz heksu Polarny dla srodkow klastrow/stolic AI/MP.
+ * Zwraca kandydatow bez Polarny, o ile taki istnieje (inaczej bez zmian — ostatni fallback). Uzywane TYLKO w
+ * sciezkach AI (pickBestLocalLandSpawn, pickCenterInMassSpread); start gracza (pickPlayerClusterCenter) go nie uzywa.
+ */
+function dropPolarHexCandidates<T extends { h: { q: number; r: number } }>(map: GameMap, cands: T[]): T[] {
+  const nonPolar = cands.filter(c => map.hexes[`${c.h.q},${c.h.r}`]?.terenBazowy !== TerenBazowy.Polarny);
+  return nonPolar.length > 0 ? nonPolar : cands;
+}
+
 /** Najlepszy hex spawnu z puli — minDist od istniejących + bramka lokalnego lądu ≥70%. */
 function pickBestLocalLandSpawn(
   map: GameMap,
@@ -767,6 +809,7 @@ function pickBestLocalLandSpawn(
   let candidates = base.filter(x => !seaDist || passesMinSeaDistGate(seaDist, x.h.q, x.h.r, minSeaDist));
   const seaFirst = candidates.length === 0 && seaDist != null && minSeaDist > 0;
   if (seaFirst) candidates = base.slice();
+  candidates = dropPolarHexCandidates(map, candidates);
   candidates.sort((a, b) => {
     if (seaFirst && b.sea !== a.sea) return b.sea - a.sea;
     const core = b.dev - a.dev || b.land.ratio - a.land.ratio;
@@ -948,6 +991,7 @@ function pickCenterInMassSpread(
     candidates = base.slice();
   }
   if (candidates.length === 0) return null;
+  candidates = dropPolarHexCandidates(map, candidates);
 
   // FALA 186: twardy filtr ćwiartek PRZED farthest-point (nie tylko tie-break).
   if (landBBox && quadCounts && spreadOpts && spreadOpts.nNeeded >= 5) {
@@ -1155,13 +1199,14 @@ function placeClusterCentersAcrossLandmasses(
   bounds: { minQ: number; maxQ: number; minR: number; maxR: number },
   seaDist?: Map<string, number>,
   minSeaDist = 0,
+  ladowePlayer: Array<{ q: number; r: number }> = ladowe,
 ): Array<{ q: number; r: number }> {
   const { minQ, maxQ, minR, maxR } = bounds;
   const landBBox = {
-    minQ: Math.min(...ladowe.map(h => h.q)),
-    maxQ: Math.max(...ladowe.map(h => h.q)),
-    minR: Math.min(...ladowe.map(h => h.r)),
-    maxR: Math.max(...ladowe.map(h => h.r)),
+    minQ: Math.min(...ladowePlayer.map(h => h.q)),
+    maxQ: Math.max(...ladowePlayer.map(h => h.q)),
+    minR: Math.min(...ladowePlayer.map(h => h.r)),
+    maxR: Math.max(...ladowePlayer.map(h => h.r)),
   };
   const masses = landCache.masses;
   const hexIndex = landCache.hexIndex;
@@ -1212,7 +1257,7 @@ function placeClusterCentersAcrossLandmasses(
   const spreadOpts: ClusterSpreadOpts = { nNeeded };
 
   // Faza 0: gracz ZAWSZY na największej masie spełniającej bramki (MAP-SPAWN-Q1 B).
-  const playerCenter = pickPlayerClusterCenter(map, landCache, ladowe, mapCenter, rand, seaDist, minSeaDist);
+  const playerCenter = pickPlayerClusterCenter(map, landCache, ladowePlayer, mapCenter, rand, seaDist, minSeaDist);
   if (playerCenter) {
     centers.push(playerCenter);
   }
@@ -1722,8 +1767,12 @@ export function pickSpawnHexWithCapitalGates(
     ? seaDistRescueLadder(minSeaDist)
     : [minSeaDist];
 
+  // R-WEB-AI-AVOID-POLAR-CITIES-Q1: stolice/MP AI (nie gracz) — heks Polarny zakazany, o ile pula ma
+  // jakikolwiek niepolarny; sasiedztwo polarne = kara w sortowaniu (polarProximityTier).
+  const avoidPolar = !requirePlayerMassGate && pool.some(h => polarProximityTier(map, h.q, h.r) < 3);
   for (const seaMin of seaSteps) {
     const passes = (h: { q: number; r: number }): boolean => {
+      if (avoidPolar && map.hexes[`${h.q},${h.r}`]?.terenBazowy === TerenBazowy.Polarny) return false;
       if (requireLocalLand && !passesLocalLandGate(map, h.q, h.r)) return false;
       if (requirePlayerMassGate && !passesPlayerStartMassGate(map, h.q, h.r, landCache)) return false;
       if (seaDist && seaMin > 0 && !passesMinSeaDistGate(seaDist, h.q, h.r, seaMin)) return false;
@@ -1745,6 +1794,7 @@ export function pickSpawnHexWithCapitalGates(
         land: localLandFraction(map, h.q, h.r),
         dev: developmentSpaceScore(map, h.q, h.r, landCache),
         sea: seaDist ? seaDistAt(seaDist, h.q, h.r) : seaMin,
+        polar: avoidPolar ? polarProximityTier(map, h.q, h.r) : 0,
       }));
     if (candidates.length === 0) continue;
 
@@ -2330,6 +2380,7 @@ function buildClusterCities(
   minSeaDist = 0,
   priorCapitals: Array<{ q: number; r: number }> = [],
   minCapitalSep = 0,
+  isPlayerLayout = false,
 ): { cities: ClusterCity[]; pendingStateSlots: Array<{ q: number; r: number }>; growthSlot: { q: number; r: number } | null } {
   const layout = buildClusterLayoutWithEdgeCapital(
     region, centrum, stateCityCount, minDist, rand, anchor, CLUSTER_GROWTH_RESERVE, map, seed ?? 42,
@@ -2464,6 +2515,7 @@ function enforceLocalLandDominance(
   mapCenter: { q: number; r: number },
   seaDist?: Map<string, number>,
   minSeaDist = 0,
+  ladowePlayer: Array<{ q: number; r: number }> = ladowe,
 ): {
   centrumy: Array<{ q: number; r: number }>;
   regiony: Array<Array<{ q: number; r: number }>>;
@@ -2483,7 +2535,7 @@ function enforceLocalLandDominance(
     const others = centrumy.filter((_, i) => i !== ci);
     let newCenter: { q: number; r: number } | null = null;
     if (ci === 0) {
-      newCenter = pickPlayerClusterCenter(map, landCache, ladowe, mapCenter, rand, seaDist, minSeaDist);
+      newCenter = pickPlayerClusterCenter(map, landCache, ladowePlayer, mapCenter, rand, seaDist, minSeaDist);
     } else {
       newCenter = pickBestLocalLandSpawn(map, region, others, minDist, landCache, rand, seaDist, minSeaDist);
       if (!newCenter) {
@@ -2515,10 +2567,10 @@ function enforceLocalLandDominance(
   });
 
   const landBBox = {
-    minQ: Math.min(...ladowe.map(h => h.q)),
-    maxQ: Math.max(...ladowe.map(h => h.q)),
-    minR: Math.min(...ladowe.map(h => h.r)),
-    maxR: Math.max(...ladowe.map(h => h.r)),
+    minQ: Math.min(...ladowePlayer.map(h => h.q)),
+    maxQ: Math.max(...ladowePlayer.map(h => h.q)),
+    minR: Math.min(...ladowePlayer.map(h => h.r)),
+    maxR: Math.max(...ladowePlayer.map(h => h.r)),
   };
   const spreadOpts: ClusterSpreadOpts = { nNeeded: centrumy.length };
   const dominanceSpreadGate = { landBBox, spreadN: centrumy.length };
@@ -2559,7 +2611,7 @@ function enforceLocalLandDominance(
 
   if (!passesLocalLandGate(map, centrumy[0]!.q, centrumy[0]!.r)
     || !passesPlayerStartMassGate(map, centrumy[0]!.q, centrumy[0]!.r, landCache)) {
-    const forced = pickPlayerClusterCenter(map, landCache, ladowe, mapCenter, rand, seaDist, minSeaDist);
+    const forced = pickPlayerClusterCenter(map, landCache, ladowePlayer, mapCenter, rand, seaDist, minSeaDist);
     if (forced) {
       centrumy[0] = forced;
       const newRegiony = assignVoronoiRegions(ladowe, centrumy);
@@ -2610,6 +2662,7 @@ function buildClusterCitiesWithLandGate(
   minSeaDist = 0,
   priorCapitals: Array<{ q: number; r: number }> = [],
   minCapitalSep = 0,
+  isPlayerLayout = false,
 ): { cities: ClusterCity[]; pendingStateSlots: Array<{ q: number; r: number }>; growthSlot: { q: number; r: number } | null; centrum: { q: number; r: number } } | null {
   const masses = landCache.masses;
   let activeCentrum = centrum;
@@ -2629,7 +2682,8 @@ function buildClusterCitiesWithLandGate(
       minCapitalSep,
     );
     const cap = clusterCapitalPos(layout, activeCentrum);
-    const landOk = passesLocalLandGate(map, cap.q, cap.r);
+    const landOk = passesLocalLandGate(map, cap.q, cap.r)
+      && (isPlayerLayout || map.hexes[`${cap.q},${cap.r}`]?.terenBazowy !== TerenBazowy.Polarny);
     const seaOk = !seaDist || minSeaDist <= 0 || passesMinSeaDistGate(seaDist, cap.q, cap.r, minSeaDist);
     const sepOk = passesMinCapitalSeparationGate(cap, priorCapitals, minCapitalSep);
     if (landOk && seaOk && sepOk) {
@@ -3436,12 +3490,20 @@ export function computeClusters(
   // --- Pola lądowe (zamieszkiwalne — bez Morza, Gór i Wybrzeża) ---
   // Wybrzeze wykluczone, bo canFoundCity je odrzuca (cities.ts) — trzymanie go w
   // puli kandydatów dawało "ciche" odrzucenia przy faktycznym zakładaniu miast.
-  const ladowe: Array<{ q: number; r: number }> = [];
+  // R-WEB-AI-AVOID-POLAR-CITIES-Q1 (obrona r1): DWIE pule. `ladowePlayer` = pula oryginalna (z Polarny) —
+  // masy, bramki i start gracza liczone jak przed zmiana (gracz NIE jest ograniczany). `ladowe` = pula
+  // dla AI/MP (bez Polarny; fallback do pelnej, gdy caly lad polarny, z console.warn).
+  const ladowePlayer: Array<{ q: number; r: number }> = [];
   for (const h of allHexes) {
     if (h.terenBazowy !== TerenBazowy.Morze && h.terenBazowy !== TerenBazowy.Gory &&
         h.terenBazowy !== TerenBazowy.PlytkieMorze) {
-      ladowe.push({ q: h.coords.q, r: h.coords.r });
+      ladowePlayer.push({ q: h.coords.q, r: h.coords.r });
     }
+  }
+  let ladowe = ladowePlayer.filter(h => map.hexes[`${h.q},${h.r}`]?.terenBazowy !== TerenBazowy.Polarny);
+  if (ladowe.length === 0 && ladowePlayer.length > 0) {
+    ladowe = ladowePlayer;
+    console.warn('[clusters] polar-fallback: caly lad polarny, pula startowa zawiera heksy Polarny');
   }
 
   if (ladowe.length === 0) {
@@ -3456,7 +3518,7 @@ export function computeClusters(
   }
 
   // Tasowanie lądowych pól (dla fallbacku)
-  const shuffledLad = ladowe.slice();
+  const shuffledLad = ladowePlayer.slice(); // pula gracza: zachowuje strumien rand() jak przed zmiana
   shuffleInPlace(shuffledLad, rand);
 
   const mapCenter = { q: (minQ + maxQ) / 2, r: (minR + maxR) / 2 };
@@ -3467,13 +3529,13 @@ export function computeClusters(
   const minCapitalSep = capitalMinSeparationForMap(rozmiarMapy, W, H);
   const sCluster = clusterBodySeparationForMap(rozmiarMapy, W, H);
   const bodyBufferRadius = clusterBodyBufferRadius(sCluster);
-  const landCache = createMassLandCache(ladowe);
+  const landCache = createMassLandCache(ladowePlayer);
   const masses = landCache.masses;
   const landBBox = {
-    minQ: Math.min(...ladowe.map(h => h.q)),
-    maxQ: Math.max(...ladowe.map(h => h.q)),
-    minR: Math.min(...ladowe.map(h => h.r)),
-    maxR: Math.max(...ladowe.map(h => h.r)),
+    minQ: Math.min(...ladowePlayer.map(h => h.q)),
+    maxQ: Math.max(...ladowePlayer.map(h => h.q)),
+    minR: Math.min(...ladowePlayer.map(h => h.r)),
+    maxR: Math.max(...ladowePlayer.map(h => h.r)),
   };
   const spreadGateOpts = { landBBox, spreadN: nTypy };
 
@@ -3490,6 +3552,7 @@ export function computeClusters(
     { minQ, maxQ, minR, maxR },
     seaDist,
     minSeaDist,
+    ladowePlayer,
   );
 
   // FALA 188: dopełnij brakujące środki — twarda sep + seaDist + lokalny ląd (bez luzowania sep).
@@ -3544,6 +3607,7 @@ export function computeClusters(
     mapCenter,
     seaDist,
     minSeaDist,
+    ladowePlayer,
   );
   activeCentrumy = dominanceResult.centrumy;
   regiony = dominanceResult.regiony;
@@ -3651,6 +3715,7 @@ export function computeClusters(
     minSeaDist,
     placedCapitals,
     minCapitalSep,
+    true,
   );
 
   let playerCentrumFinal = playerCentrum;
@@ -3664,7 +3729,7 @@ export function computeClusters(
     playerLayout = playerLayoutResult;
     playerCentrumFinal = playerLayoutResult.centrum;
   } else {
-    const forced = pickPlayerClusterCenter(map, landCache, ladowe, mapCenter, rand, seaDist, minSeaDist);
+    const forced = pickPlayerClusterCenter(map, landCache, ladowePlayer, mapCenter, rand, seaDist, minSeaDist);
     if (forced) {
       playerCentrumFinal = forced;
       playerLayout = {
@@ -3752,6 +3817,7 @@ export function computeClusters(
         minSeaDist,
         placedCapitals,
         minCapitalSep,
+        true,
       );
       if (
         relocatedLayout
@@ -4245,6 +4311,6 @@ export function computeClusters(
     minDystansObcyOdGracza: minDystObcyOdGracza,
     playerTypIndex: 0,
     klastry,
-    spawnCache: { seaDist, landCache, ladowe },
+    spawnCache: { seaDist, landCache, ladowe: ladowePlayer },
   };
 }

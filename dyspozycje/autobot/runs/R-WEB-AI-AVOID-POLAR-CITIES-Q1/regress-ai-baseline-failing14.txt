@@ -1,0 +1,14 @@
+tools/ai-balans-step3-test.cjs kod=1
+tools/ai-buduje-budynki-test.cjs kod=1
+tools/ai-city-render-batch-test.cjs kod=1
+tools/ai-dlug-porzadki-q1-test.cjs kod=1
+tools/ai-fog-test.cjs kod=1
+tools/ai-general-war-campaign-live-test.cjs kod=1
+tools/ai-home-defense-vs-barbarians-test.cjs kod=1
+tools/ai-major-economy-test.cjs kod=1
+tools/ai-praca-split-parity-test.cjs kod=1
+tools/ai-wojny-zwykle-cap-dwa-miasta-test.cjs kod=1
+tools/ai-zdobycie-miasta-adiacencja-test.cjs kod=1
+tools/capital-sep-pangea-test.cjs kod=124
+tools/civ-matrix-ai-diplomacy-wiring-test.cjs kod=1
+tools/cluster-start-test.cjs kod=124
