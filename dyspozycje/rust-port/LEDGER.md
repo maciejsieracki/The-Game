@@ -521,3 +521,5 @@ Cel końcowy i bieżący zapisane w `GOAL-RUST-PORT-20261020.md` (§"CEL PĘTLI 
 - 2026-11-02 — webowe tematy zakończone (ROBOCZA `44416e98`), Rust wznowiony: `R-RUSTPORT-P6-M07B4-RZEKI-B-ZRODLA-QUOTAS-Q1` (wf_4876ec18-cae, ostatnia partia rzek B) i `R-RUSTPORT-REPIN-TERYTORIUM-FORTY-Q1` (wf_8f980a94-130, promienie fortu 3/5, spór wcześniejszy fort, usunięcie tolerancji dryfu w p6_8i_pick). parity-v2 = `fd8585daf` (2013/0). Dysk 9,1 GB.
 
 - 2026-11-01 23:12 UTC — kontrola cykliczna: M07B4 i TERYTORIUM-FORTY biegną (zapisy 23:11/23:12); brak PASS do integracji; dysk 5,5 GB (< 8 GB — brak nowych tematów Rust).
+
+- 2026-11-01 — R-RUSTPORT-REPIN-TERYTORIUM-FORTY-Q1: PASS-WITH-NOTES (FC), zintegrowano fast-forward na rust-port/parity-v2 → `5bee9c1a2` (2019/0 wg FC; promienie fortu 3/5, spór fortów, zdobycie wejściem, p6_8i_pick bez tolerancji dryfu). Zastrzeżenie: wektory 6 plików starego pinu zregenerowane z weba 4bbef081d (wejścia identyczne). Worktree zwolnione.
