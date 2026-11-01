@@ -34,6 +34,7 @@ Ostrzezenia w zywej grze: NIE_ZMIERZONO (sterownik nie zapisuje logow konsoli po
 3. Offline Mały (108x74) nie zalezy od tej zmiany (sciezka short<80).
 4. Uruchomilem raz test pre w tle (run_in_background) przez pomylke; zakonczony, bez wplywu na wynik.
 
+ZMIANY/COMMIT: 6233c19a9 (worktree-wf_2e79df3f-9c5-1, baza 57cc8aded; PUSH NIE)
 RUNDY: 1/5
 NASTEPNY KROK: Evaluator (reprodukcja: `capital-spacing-measure.cjs --max-types` oraz live 10 map na bundlu z poprawka).
 DEPLOY/PUSH: NIE WYKONANO
