@@ -291,9 +291,15 @@ function runWeb(spec) {
 }
 
 const scenarios = [];
+// `fortNodes`: territoryNodes zawieraja wezel fortu/posterunku -> kwalifikator Rust (territory.rs, stare promienie 10/5
+// z data/terrain-improvements.json, stara semantyka wlasciciela) rozni sie od pinu 4bbef081d (5/3, miasto przed fortem).
+// To dryf ZALEZNOSCI poza allowlista tematu (repin terytorium) - parytet takich scenariuszy sprawdzany ostro dopiero po repinie;
+// `strict`: scenariusze reczne z wezlami fortu, ktore dzis zgadzaja sie 1:1 i musza zgadzac sie zawsze.
 const add = (spec) => {
   const res = runWeb(spec);
-  scenarios.push({ ...spec, expected: res });
+  const fortNodes = !!spec.territoryNodes?.some(n => n.isFort || n.isOutpost);
+  const strict = fortNodes && /^fort-(wlasny|obcy)-/.test(spec.name);
+  scenarios.push({ ...spec, fortNodes, strict, expected: res });
 };
 
 // --- reczne scenariusze celowane (pelne wersje parametrow, deterministyczne) ---
@@ -339,6 +345,19 @@ add(withOpts('id-sort-utf16', 0, { foodImprovementStages: true }, {
   cities: [{ id: 'b', ownerId: 1, q: 0, r: 0, population: 4 }, { id: '\u{1F600}', ownerId: 1, q: 3, r: 0, population: 4 }, { id: 'Ａ', ownerId: 1, q: -3, r: 0, population: 4 }, { id: 'a10', ownerId: 1, q: 0, r: 3, population: 3 }, { id: 'a9', ownerId: 1, q: 0, r: -3, population: 3 }],
   territoryNodes: [{ q: 0, r: 0, pop: 4, level: 1, ownerId: 1 }, { q: 3, r: 0, pop: 4, level: 1, ownerId: 1 }, { q: -3, r: 0, pop: 4, level: 1, ownerId: 1 }, { q: 0, r: 3, pop: 3, level: 1, ownerId: 1 }, { q: 0, r: -3, pop: 3, level: 1, ownerId: 1 }],
 }));
+add(withOpts('brak-miast-raport', 0, { withSurplusReport: true, demandDriven: true }, { cities: [], territoryNodes: [] }));
+add(withOpts('brak-territory-raport', 0, { withSurplusReport: true, demandDriven: true, resourceDeficitKeys: ['kamien'] }, { territoryNodes: null }));
+add(withOpts('praca-0-raport', 0, { withSurplusReport: true, demandDriven: true, resourceDeficitKeys: ['kamien'] }, { praca: 0 }));
+add(withOpts('fort-wlasny-posterunek-wezel', 3, { demandDriven: true, cityLimitExhausted: true, foodImprovementStages: true }, { cities: [{ id: 'c1', ownerId: 1, q: 0, r: 0, population: 3 }], territoryNodes: [{ q: 0, r: 0, pop: 3, level: 1, ownerId: 1 }, { q: -3, r: 2, pop: 0, level: 1, ownerId: 1, isOutpost: true }] }));
+add(withOpts('fort-obcy-fort-wezel', 3, { demandDriven: true, cityLimitExhausted: true, foodImprovementStages: true }, { cities: [{ id: 'c1', ownerId: 1, q: 0, r: 0, population: 3 }], territoryNodes: [{ q: 0, r: 0, pop: 3, level: 1, ownerId: 1 }, { q: 4, r: -5, pop: 0, level: 1, ownerId: 2, isFort: true }] }));
+add(withOpts('fort-warstwa-fort-na-heksie', 3, { fortClaimPass: true, demandDriven: true }, { cities: [{ id: 'c1', ownerId: 1, q: 0, r: 0, population: 3 }], placed: { '-3,-3': ['fort'], '3,-6': 'posterunek' }, territoryNodes: [{ q: 0, r: 0, pop: 3, level: 1, ownerId: 1 }] }));
+add(withOpts('fort-budzet-za-maly', 3, { fortClaimPass: true, demandDriven: true }, { praca: 1 }));
+add(withOpts('fort-budzet-percent-0', 3, { fortClaimPass: true, demandDriven: true, pracaBudgetPercent: 0 }, {}));
+add(withOpts('fort-rezerwa', 3, { fortClaimPass: true, demandDriven: true, pracaSurplusThreshold: 4000 }, { praca: 4100 }));
+add(withOpts('fort-per-miasto-percent', 3, { fortClaimPass: true, demandDriven: true, pracaBudgetPercent: 50 }, { cities: [{ id: 'c1', ownerId: 1, q: 0, r: 0, population: 3 }, { id: 'c2', ownerId: 1, q: 2, r: -1, population: 2 }], territoryNodes: [{ q: 0, r: 0, pop: 3, level: 1, ownerId: 1 }, { q: 2, r: -1, pop: 2, level: 1, ownerId: 1 }], fn: { pracaPercentByCity: { c1: 0, c2: 80 } } }));
+add(withOpts('fort-civ-deny-fort', 3, { fortClaimPass: true, demandDriven: true }, { fn: { civDeny: ['fort'] } }));
+add(withOpts('fort-civ-deny-oba', 3, { fortClaimPass: true, demandDriven: true }, { fn: { civDeny: ['fort', 'posterunek'] } }));
+add(withOpts('fort-bez-techow', 3, { fortClaimPass: true, demandDriven: true }, { techs: [] }));
 add(withOpts('stadnina-kon-magazyn', 1, { priorityOverride: ['stadnina'] }, { cities: [{ id: 'c1', ownerId: 1, q: 0, r: 0, population: 5, kon: 60 }, { id: 'c2', ownerId: 9, q: 2, r: 0, population: 5, kon: 500 }], territoryNodes: [{ q: 0, r: 0, pop: 5, level: 1, ownerId: 1 }, { q: 2, r: 0, pop: 5, level: 1, ownerId: 9 }] }));
 
 // --- scenariusze losowe ---
@@ -351,6 +370,14 @@ for (let i = 0; i < 150; i++) {
   s.opts.demandDriven = true; s.opts.cityLimitExhausted = true; s.opts.foodImprovementStages = true;
   for (const c of s.cities) { c.ownerId = 1; delete c.focus; }
   s.territoryNodes = s.territoryNodes?.filter(n => n.ownerId === 1) ?? null;
+  if (s.territoryNodes && chance(0.6)) {
+    const lh = landHexes(SPECIAL_BASE + 3);
+    for (let j = ri(1, 3); j > 0; j--) {
+      const h = pick(lh);
+      const isFort = chance(0.5);
+      s.territoryNodes.push({ q: h.q, r: h.r, pop: 0, level: 1, ownerId: chance(0.6) ? 1 : 2, ...(isFort ? { isFort: true } : { isOutpost: true }) });
+    }
+  }
   add(s);
 }
 
