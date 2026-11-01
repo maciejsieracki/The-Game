@@ -1208,8 +1208,37 @@ function planScoutExploreStep(
 // Terrain yield heuristic (city founding -- Spec-AI §3.3)
 // ---------------------------------------------------------------------------
 
+/**
+ * R-WEB-AI-CITY-YIELD-FIX-Q1: id terenu (TerenBazowy: 'laka', 'rownina', ...) -> wiersz plonow z
+ * terrain-yields.json, ktorego `Teren` to etykieta z diakrytykami ('Łąka', 'Równina', ...).
+ * Wczesniej `t.Teren === hex.terenBazowy` nigdy nie zachodzilo (plon kazdego terenu = 0).
+ * Porownanie po znormalizowanej nazwie (bez diakrytykow, male litery) + jawny alias etykiety
+ * 'Wybrzeże' -> 'plytkie_morze' (patrz TERRAIN_NAME_TO_ENUM w economy.ts). Dopasowuje tez wpis
+ * rowny id dosłownie (stare/testowe dane).
+ */
+function normalizeTerrainLabel(s: string): string {
+  const folded = s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/ł/g, 'l').replace(/Ł/g, 'L').toLowerCase();
+  return folded === 'wybrzeze' ? 'plytkie_morze' : folded;
+}
+export function terrainYieldRowForId(
+  data: GameData,
+  terrainId: string,
+): GameData['terrainYields']['terrain_types'][number] | undefined {
+  const rows = data.terrainYields.terrain_types;
+  const exact = rows.find(t => t.Teren === terrainId);
+  if (exact !== undefined) return exact;
+  const want = normalizeTerrainLabel(terrainId);
+  return rows.find(t => normalizeTerrainLabel(t.Teren) === want);
+}
+
+/**
+ * Fallback wagi czesci plonu w hexCityScore, gdy `ekspansja_waga_plonu_heksu` nie ma w danych: 1 = BRAK skalowania
+ * (neutralne dla fixture'ow testowych). Produkcyjna wartosc strojona pomiarem siedzi w ai-params.json (0,3).
+ */
+const AI_HEX_YIELD_WEIGHT_DEFAULT = 1;
+
 /** Score a candidate hex for city founding per ai-params.json §3.3 heuristic. */
-function hexCityScore(
+export function hexCityScore(
   hex: Hex,
   q: number,
   r: number,
@@ -1227,7 +1256,7 @@ function hexCityScore(
   // Get terrain yields from data
   let food = 0; let work = 0; let trade = 0;
   const terrainName = hex.terenBazowy as string;
-  const tyRow = data.terrainYields.terrain_types.find(t => t.Teren === terrainName);
+  const tyRow = terrainYieldRowForId(data, terrainName);
   if (tyRow !== undefined) {
     // TerrainTypeDef fields use Polish names with diacritics in the JSON;
     // we access via bracket notation to handle both encodings
@@ -1237,10 +1266,14 @@ function hexCityScore(
     trade = (rawRow['Podatek'] as number | null) ?? (rawRow['Handel'] as number | null) ?? 0;
   }
 
-  let score = 0;
-  if (food  >= 3) score += foodPts;
-  if (work  >= 2) score += workPts;
-  if (trade >= 1) score += tradePts;
+  // R-WEB-AI-CITY-YIELD-FIX-Q1: waga czesci "plon terenu" (zywnosc/praca/handel) w ocenie heksu — skala
+  // tempa ekspansji po naprawie dopasowania terenu (ai-params.json `ekspansja_waga_plonu_heksu`).
+  const yieldWeight = getAiParam(data, 'ekspansja_waga_plonu_heksu', AI_HEX_YIELD_WEIGHT_DEFAULT);
+  let yieldScore = 0;
+  if (food  >= 3) yieldScore += foodPts;
+  if (work  >= 2) yieldScore += workPts;
+  if (trade >= 1) yieldScore += tradePts;
+  let score = yieldScore * yieldWeight;
   if (hex.rzeka.obecna) score += riverPts;
 
   const deficits = opts?.resourceDeficitKeys ?? [];
