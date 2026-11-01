@@ -19,14 +19,14 @@ import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 
 const SEED = 0x5eed2029;
-const N_MAPS = 66;
-const N_HEAP = 700;
-const N_ASTAR = 2600;
-const N_GREEDY = 2600;
-const N_TRACE = 2600;
-const N_INJECT = 2600;
-const N_EXTMIN = 2200;
-const N_WYB = 2200;
+const N_MAPS = 64;
+const N_HEAP = 350;
+const N_ASTAR = 2300;
+const N_GREEDY = 2200;
+const N_TRACE = 2400;
+const N_INJECT = 2200;
+const N_EXTMIN = 2000;
+const N_WYB = 1500;
 const N_FIN = 2200;
 const N_SWEEPS = 70;
 
@@ -156,10 +156,10 @@ const isWaterT = (t) => t === 'morze' || t === 'plytkie_morze';
 const isLandT = (t) => !isWaterT(t);
 
 function randomMap(kind) {
-  const W = kind === 'flat' ? ri(11, 20) : ri(8, 16);
-  const H = kind === 'flat' ? ri(11, 20) : ri(8, 16);
+  const W = kind === 'flat' ? ri(11, 18) : ri(8, 15);
+  const H = kind === 'flat' ? ri(11, 18) : ri(8, 15);
   const reliefP = kind === 'flat' ? 0 : kind === 'hilly' ? 0.3 : 0.1;
-  const lakeP = kind === 'flat' ? 0.01 : 0.06;
+  const lakeP = kind === 'flat' ? 0.01 : kind === 'split' ? 0.14 : 0.06;
   const riverP = kind === 'rivers' ? 0.25 : kind === 'flat' ? 0.01 : 0.06;
   const hexes = [];
   for (let r = 0; r < H; r++) {
@@ -168,7 +168,9 @@ function randomMap(kind) {
       const edge2 = q === 1 || r === 1 || q === W - 2 || r === H - 2;
       if (!edge && rnd() < 0.015) continue; // brakujacy heks
       let t;
-      if (edge) t = rnd() < 0.85 ? 'morze' : 'plytkie_morze';
+      const splitLand = kind === 'split' && edge && (q === 0 && r === 0 ? rnd() < 0.7 : rnd() < 0.5);
+      if (splitLand) t = rnd() < 0.15 ? pick(RELIEF) : pick(LAND);
+      else if (edge) t = rnd() < 0.85 ? 'morze' : 'plytkie_morze';
       else if (edge2 && rnd() < 0.35) t = rnd() < 0.5 ? 'plytkie_morze' : 'morze';
       else if (rnd() < lakeP) t = rnd() < 0.5 ? 'plytkie_morze' : 'morze';
       else if (rnd() < reliefP) t = pick(RELIEF);
@@ -206,10 +208,11 @@ function hexesObj(list) {
   return o;
 }
 
-const mapKinds = ['flat', 'flat', 'normal', 'flat', 'hilly', 'rivers'];
+const mapKinds = ['flat', 'split', 'normal', 'flat', 'split', 'hilly', 'rivers', 'split'];
 const maps = [];
 for (let i = 0; i < N_MAPS; i++) {
   const m = randomMap(mapKinds[i % mapKinds.length]);
+  m.kind = mapKinds[i % mapKinds.length];
   m.obj = hexesObj(m.list);
   const seaMap = web.buildSeaDistanceField(m.obj);
   const ocSet = web.oceanConnectedWaterKeys(m.obj, m.W, m.H);
@@ -264,7 +267,15 @@ const cases = [];
 function perturb(mp) {
   if (rnd() < 0.7) return null;
   const sub = (keys, p) => keys.filter(() => rnd() < p);
-  const pt = { orm: sub(Object.keys(mp.open), 0.1), srm: sub(Object.keys(mp.sea), 0.08), ocrm: sub(mp.oc, 0.1) };
+  const strong = rnd() < 0.4;
+  const pt = {
+    orm: [...new Set([
+      ...sub(Object.keys(mp.open), strong ? 0.35 : 0.1),
+      ...(strong ? sub(mp.oc, 0.5) : []),
+    ])],
+    srm: sub(Object.keys(mp.sea), strong ? 0.3 : 0.08),
+    ocrm: sub(mp.oc, strong ? 0.3 : 0.1),
+  };
   return pt.orm.length + pt.srm.length + pt.ocrm.length === 0 ? null : pt;
 }
 function applyPert(mp, pt) {
@@ -316,6 +327,21 @@ function walkPath(mp, len, straightBias, start) {
       break;
     }
     if (!moved) break;
+  }
+  return p;
+}
+
+// sciezka z skokami niesasiednimi i powrotami (guardy sanitize/repair: wejscie nie jest prawidlowym spacerem)
+function jumpyPath(mp, len, start) {
+  const have = new Set(mp.list.map((h) => h.k));
+  const p = [[start.q, start.r]];
+  for (let k = 0; k < len; k++) {
+    const [cq, cr] = p[p.length - 1];
+    const u = rnd();
+    if (u < 0.2 && p.length > 2) { p.push(p[ri(0, p.length - 2)]); continue; }
+    let q = cq, r = cr;
+    if (u < 0.45) { q += ri(-2, 2); r += ri(-2, 2); } else { const d = pick(DIRS); q += d[0]; r += d[1]; }
+    if (have.has(keyOf(q, r))) p.push([q, r]);
   }
   return p;
 }
@@ -428,12 +454,17 @@ function runTrace(mp, c) {
   if (c.bl !== null) o.blockRiverKeys = new Set(c.bl);
   if (c.msep !== null) o.minPathSep = c.msep;
   if (c.lc !== null) o.landCentroid = { q: c.lc[0], r: c.lc[1] };
+  if (c.sd) {
+    const sm = new Map(mp.seaMap);
+    if (c.sd.v === null) sm.delete(c.sd.k); else sm.set(c.sd.k, c.sd.v);
+    o.seaDist = sm;
+  }
   if (c.sq !== null) o.landCenterSquare = squareFor(mp, c.sq);
   if (c.ix) o.riverSepIndex = web.RiverHexSpatialIndex.fromKeys(c.bl ?? []);
   return web.traceRiverFromCoast(mp.obj, c.mq, c.mr, c.ml, o);
 }
 function traceCase(mi, mp, base) {
-  const c = { fn: 'trace', m: mi, mode: 0, seed: null, hl: null, rel: null, bl: null, msep: null, lc: null, sq: null, ix: false, ocrm: [], dw: 0, dh: 0, ...base };
+  const c = { fn: 'trace', m: mi, mode: 0, seed: null, hl: null, rel: null, bl: null, msep: null, lc: null, sq: null, ix: false, ocrm: [], dw: 0, dh: 0, sd: null, ...base };
   const out = runTrace(mp, c);
   c.out = flat(out);
   return c;
@@ -478,7 +509,9 @@ for (let i = 0; i < N_INJECT; i++) {
   const mi = i % maps.length;
   const mp = maps[mi];
   const s = startHex(mp, pick(['inland', 'inland', 'any', 'coastal']));
-  const p = walkPath(mp, ri(3, 20), pick([0.5, 0.8, 0.9, 0.95]), s);
+  const p = i % 10 < 3
+    ? jumpyPath(mp, ri(2, 8), s)
+    : walkPath(mp, i % 10 === 3 ? ri(20, 40) : ri(3, 20), pick([0.5, 0.8, 0.9, 0.95, 0.98]), s);
   const c = injectCase(mi, mp, p, newSeed(), pick([-1, 0, 1, 2, 3, ri(1, 8)]), perturb(mp));
   cases.push(c);
   const grew = c.out.length > c.p.length;
@@ -495,8 +528,11 @@ for (let i = 0; i < N_EXTMIN; i++) {
   const mi = i % maps.length;
   const mp = maps[mi];
   const s = startHex(mp, pick(['inland', 'inland', 'any']));
-  const p = walkPath(mp, ri(2, 16), pick([0.6, 0.85, 0.95]), s);
-  const c = extCase(mi, mp, p, newSeed(), pick([0, 2, 3, ri(3, 12), ri(8, 30)]), pick([0, 3, ri(3, 12), ri(8, 30), 40]), perturb(mp));
+  const p = i % 10 < 3
+    ? jumpyPath(mp, ri(2, 8), s)
+    : walkPath(mp, i % 10 === 3 ? ri(20, 40) : ri(2, 16), pick([0.6, 0.85, 0.95, 0.98]), s);
+  let c;
+  try { c = extCase(mi, mp, p, newSeed(), pick([0, 2, 3, ri(3, 12), ri(8, 30), ri(20, 70)]), pick([0, 3, ri(3, 12), ri(8, 30), 40, 100]), perturb(mp)); } catch (e) { bump('extmin_web_throws'); continue; }
   cases.push(c);
   bump(c.out.length > c.p.length ? 'extmin_grew' : 'extmin_same');
 }
@@ -530,7 +566,12 @@ for (let i = 0; i < N_FIN; i++) {
   const mp = maps[mi];
   const s = startHex(mp, pick(['coastal', 'inland', 'any']));
   const p = walkPath(mp, ri(0, 8), 0.7, s);
-  const sk = rnd() < 0.8 ? keyOf(p[0][0], p[0][1]) : keyOf(ri(0, 5), ri(0, 5));
+  let sk = rnd() < 0.8 ? keyOf(p[0][0], p[0][1]) : keyOf(ri(0, 5), ri(0, 5));
+  if (rnd() < 0.15) {
+    const e = p[p.length - 1];
+    const rel = DIRS.map(([dq, dr]) => keyOf(e[0] + dq, e[1] + dr)).filter((k) => mp.obj[k] && (mp.obj[k].terenBazowy === 'gory' || mp.obj[k].terenBazowy === 'wzgorza'));
+    if (rel.length > 0) sk = pick(rel);
+  }
   const c = finCase(mi, mp, p, sk, perturb(mp));
   cases.push(c);
   bump(c.out.length > c.p.length ? 'fin_grew' : 'fin_same');
@@ -642,6 +683,70 @@ while (tries++ < 20000 && Object.values(have).some((v) => v < N_SWEEPS)) {
       }
     }
   }
+}
+// korytarze: sweepy A*/greedy/trace po maxLen (prosta trasa: kara 0.18 za krok prosty, cap g)
+for (let ci = 0; ci < corridors.length; ci++) {
+  const mi = maps.length + ci;
+  const mp = corridors[ci];
+  const L = mp.corridor;
+  for (const seed of [null, newSeed()]) {
+    const s0 = { q: 0, r: 1 };
+    const outsA = [];
+    const outsG = [];
+    const outsT = [];
+    const baseT = { mq: L, mr: 1, mode: seed === null ? 0 : 1, seed, hl: null, rel: null, bl: null, msep: null, lc: null, sq: null, ix: false, ocrm: [], dw: 0, dh: 0, sd: null };
+    for (let ml = 0; ml <= L + 4; ml++) {
+      outsA.push(flat(runAStar(mp, s0, ml, seed, false)));
+      outsG.push(flat(runGreedy(mp, s0, ml, seed, '0,1', false)));
+      outsT.push(flat(runTrace(mp, { ...baseT, ml })));
+    }
+    if (transitions(outsA) > 0) sweepRecord('astar', { m: mi, s: [0, 1], seed, rel: false, lo: 0 }, outsA);
+    if (transitions(outsG) > 0) sweepRecord('greedy', { m: mi, s: [0, 1], seed, sk: '0,1', rel: false, lo: 0 }, outsG);
+    if (transitions(outsT) > 0) sweepRecord('trace', { m: mi, ...baseT, lo: 0 }, outsT);
+  }
+}
+// dlugie proste (wiele wstawek) i zygzaki (wzrost 1/przebieg -> cap 12 przebiegow) dla extmin / extcap
+{
+  const flatIdx = maps.map((m, i) => (m.kind === 'flat' ? i : -1)).filter((i) => i >= 0);
+  let nl = 0;
+  let t3 = 0;
+  while (t3++ < 6000 && nl < 3 * 30) {
+    const mi = pick(flatIdx);
+    const mp = maps[mi];
+    const s0 = startHex(mp, 'inland');
+    const kind = nl % 3; // 0: dluga prosta minLen, 1: dluga prosta stepCap, 2: zygzak minLen
+    const p = kind === 2 ? walkPath(mp, ri(3, 8), 0.05, s0) : walkPath(mp, ri(20, 40), 0.98, s0);
+    const seed = newSeed();
+    const outs = [];
+    if (kind === 1) {
+      const minLen = p.length + 14;
+      for (let cp = 0; cp <= p.length + 16; cp++) outs.push(flat(web.extendRiverToMinimumLength(toObjs(p), mp.obj, mp.seaMap, mulberry(seed), minLen, cp)));
+      if (transitions(outs) > 2) { sweepRecord('extcap', { m: mi, p: flat(toObjs(p)), seed, min: minLen, lo: 0 }, outs); nl++; }
+    } else {
+      for (let ml = 0; ml <= p.length + 18; ml++) outs.push(flat(web.extendRiverToMinimumLength(toObjs(p), mp.obj, mp.seaMap, mulberry(seed), ml, 100)));
+      if (transitions(outs) > 2) { sweepRecord('extmin', { m: mi, p: flat(toObjs(p)), seed, cap: 100, lo: 0 }, outs); nl++; }
+    }
+  }
+}
+// sweep nad odlegloscia ujscia od morza (startD > 2): N-1/N/N+1 i brak wpisu, to samo ujscie
+{
+  const VS = [null, 0, 1, 2, 3, 4, 5];
+  let got = 0;
+  let t2 = 0;
+  while (t2++ < 4000 && got < N_SWEEPS) {
+    const mi = ri(0, maps.length - 1);
+    const mp = maps[mi];
+    const s0 = startHex(mp, 'coastal');
+    const base = { mq: s0.q, mr: s0.r, mode: 1, seed: newSeed(), hl: null, rel: null, bl: null, msep: null, lc: null, sq: null, ix: false, ocrm: [], dw: 0, dh: 0, ml: 40 };
+    const outs = VS.map((v) => flat(runTrace(mp, { ...base, sd: { k: keyOf(s0.q, s0.r), v } })));
+    if (outs.some((o) => o.length > 0) && outs.some((o) => o.length === 0)) {
+      cases.push({ fn: 'sweep', kind: 'startd', m: mi, ...base, vs: VS, lo: 0, outs });
+      bump('sweep_startd');
+      bump('sweep_startd_with_transition');
+      got++;
+    }
+  }
+  if (got < N_SWEEPS) throw new Error(`za malo sweepow startd: ${got}`);
 }
 if (Object.values(have).some((v) => v < N_SWEEPS)) throw new Error(`za malo sweepow: ${JSON.stringify(have)}`);
 

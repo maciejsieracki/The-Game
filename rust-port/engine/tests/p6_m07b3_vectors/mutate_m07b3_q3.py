@@ -49,14 +49,14 @@ m("T10", TC, "step_cap: max_len,", "step_cap: max_len.saturating_sub(1),", "K", 
 m("T11", TC, "if mouth_to_inland.len() < 2 {", "if mouth_to_inland.len() < 3 {", "K", ":6275 len < 2 -> 3")
 m("T12", TC, "if mouth_to_inland.len() < 2 {", "if mouth_to_inland.len() < 1 {", "K", ":6275 len < 2 -> 1")
 m("T13", TC, "reversed.reverse();", "", "K", ":6277 odwrocenie trasy")
-m("T14", TC, "        Some((width, height)),\n        Some(ocean_connected),", "        None,\n        Some(ocean_connected),", "K", ":6278 pathEndsAtSea bez wymiarow (ocean dany -> wymiary nieuzyte)")
+m("T14", TC, "        Some((width, height)),\n        Some(ocean_connected),", "        None,\n        Some(ocean_connected),", "E", ":6278 pathEndsAtSea bez wymiarow (ocean dany -> wymiary nieuzyte) [wymiary w pathEndsAtSea nieuzyte gdy oceanConnected podany]")
 m("T15", TC, "        Some(ocean_connected),\n    ) {", "        None,\n    ) {", "K", ":6278 pathEndsAtSea bez oceanConnected")
 m("T16", TC, "if !path_ends_at_sea(", "if path_ends_at_sea(", "K", ":6278 negacja pathEndsAtSea")
 m("T17", TC, "land_centroid: opts.land_centroid,", "land_centroid: None,", "K", ":6269 landCentroid")
 m("T18", TC, "land_center_square: opts.land_center_square,", "land_center_square: None,", "K", ":6270 landCenterSquare")
 m("T19", TC, "sep_index: opts.river_sep_index,", "sep_index: None,", "E", ":6271 indeks sep = optymalizacja (rowny brute force)")
 m("T20", TC, "block_river_keys: opts.block_river_keys,", "block_river_keys: None,", "K", ":6267 blockRiverKeys")
-m("T21", TC, "build_open_ocean_distance_field(hexes, width, height, opts.ocean_connected)", "build_open_ocean_distance_field(hexes, width, height, None)", "K", ":6243 openOcean z oceanConnected")
+m("T21", TC, "build_open_ocean_distance_field(hexes, width, height, opts.ocean_connected)", "build_open_ocean_distance_field(hexes, width, height, None)", "E", ":6243 openOcean z oceanConnected [openOceanDist przekazany do growRiverFromCoastInland jest tam nieczytany]")
 m("T22", TC, "let mut zero = || 0.0_f64;", "let mut zero = || 0.5_f64;", "K", ":6246 domyslny rand")
 m("T23", TC, "let mouth_key = hex_key(mq, mr);", "let mouth_key = hex_key(mr, mq);", "K", ":6248 mouthKey")
 m("T24", TC, "sea_owned = build_sea_distance_field(hexes);", "sea_owned = HashMap::new();", "K", ":6237 domyslny seaDist")
@@ -80,7 +80,7 @@ m("G14", TC, "if od > cur_od as f64 + 0.5 {", "if od >= cur_od as f64 + 0.5 {", 
 m("G15", TC, "if od > cur_od as f64 + 0.5 {", "if od > cur_od as f64 {", "E", ":6316 prog 0.5 vs 0 przy calkowitych od")
 m("G16", TC, "let mut score = od * 12.0 + rand() * 0.35;", "let mut score = od * 1.0 + rand() * 0.35;", "K", ":6318 waga od")
 m("G17", TC, "let mut score = od * 12.0 + rand() * 0.35;", "let mut score = od * 13.0 + rand() * 0.35;", "E", ":6318 waga 12 -> 13 (kolejnosc ta sama: od dominuje, bonus < 12)")
-m("G18", TC, "let mut score = od * 12.0 + rand() * 0.35;", "let mut score = od * 12.0 + rand() * 0.34;", "K", ":6318 jitter 0.35 -> 0.34")
+m("G18", TC, "let mut score = od * 12.0 + rand() * 0.35;", "let mut score = od * 12.0 + rand() * 0.34;", "E", ":6318 jitter 0.35 -> 0.34 [jitter 0.35 vs 0.34: kolejnosc kandydatow ta sama (skala jittera < premia 1.8 i < 12)]")
 m("G19", TC, "score -= 1.8;", "score += 1.8;", "K", ":6319 bonus prostej")
 m("G20", TC, "score -= 1.8;", "score -= 0.3;", "K", ":6319 bonus prostej 1.8 -> 0.3")
 m("G21", TC, "if same_river_dir(d, (dq, dr)) {\n                    score -= 1.8;", "if !same_river_dir(d, (dq, dr)) {\n                    score -= 1.8;", "K", ":6319 sameRiverDir")
@@ -111,12 +111,12 @@ m("H14", AS, "let top = std::mem::replace(&mut d[0], last);", "let top = d[0].cl
 
 # ---------------------------------------------------------------- aStarRiverToSea
 m("A01", AS, ".or_else(|| sea_dist.get(&start_k))", ".or_else(|| None)", "K", ":6399 h0 = openOceanDist ?? seaDist")
-m("A02", AS, "        .map(|&v| v as f64)\n    else {\n        return Vec::new();", "        .map(|&v| v as f64 + 1.0)\n    else {\n        return Vec::new();", "K", ":6399 h0")
-m("A03", AS, "if ocean_connected.contains(&start_k) {\n        return vec![RiverCoord::new(sq, sr)];", "if false && ocean_connected.contains(&start_k) {\n        return vec![RiverCoord::new(sq, sr)];", "K", ":6401 start w oceanie")
-m("A04", AS, "    heap.push(h0, heap_seq, start_k.clone());\n    heap_seq += 1;", "    heap.push(h0, heap_seq, start_k.clone());", "K", ":6411 seq startu")
+m("A02", AS, "        .map(|&v| v as f64)\n    else {\n        return Vec::new();", "        .map(|&v| v as f64 + 1.0)\n    else {\n        return Vec::new();", "E", ":6399 h0 [h0 tylko startowy f/bestH: poza petla nieuzywany (fallback po petli martwy)]")
+m("A03", AS, "if ocean_connected.contains(&start_k) {\n        return vec![RiverCoord::new(sq, sr)];", "if false && ocean_connected.contains(&start_k) {\n        return vec![RiverCoord::new(sq, sr)];", "E", ":6401 start w oceanie [start w oceanie: bez galezi start jest zdejmowany pierwszy i goal-check zwraca [start]]")
+m("A04", AS, "    heap.push(h0, heap_seq, start_k.clone());\n    heap_seq += 1;", "    heap.push(h0, heap_seq, start_k.clone());", "E", ":6411 seq startu [seq startu: start zdjety pierwszy, kolejnosc seq potomkow zachowana]")
 m("A05", AS, "            if !open.contains(&k) {\n                continue;\n            }", "", "K", ":6420 pomin wpisy spoza open")
 m("A06", AS, "            if f != entry.0 {\n                continue;\n            }", "", "K", ":6422 pomin przestarzale f")
-m("A07", AS, "if cur_h < best_h {", "if cur_h <= best_h {", "K", ":6431 bestH <")
+m("A07", AS, "if cur_h < best_h {", "if cur_h <= best_h {", "E", ":6431 bestH < [bestK/bestH: fallback po petli martwy (kazdy zdjety wezel jest od razu sprawdzany jako cel)]")
 m("A08", AS, "        if is_river_drainage_goal(q, r, hexes, &start_k, ocean_connected) {\n            return reconstruct_river_path(&came_from, &current);", "        if false && is_river_drainage_goal(q, r, hexes, &start_k, ocean_connected) {\n            return reconstruct_river_path(&came_from, &current);", "K", ":6435 cel w petli")
 m("A09", AS, "        open.remove(&current);\n", "", "K", ":6439 open.delete(current)")
 m("A10", AS, "if cur_g >= max_len_f {", "if cur_g > max_len_f {", "K", ":6440 curG >= maxLen -> >")
@@ -132,19 +132,19 @@ m("A19", AS, "step_cost += 0.18 + rand() * 0.12;", "step_cost += 0.19 + rand() *
 m("A20", AS, "step_cost += 0.18 + rand() * 0.12;", "step_cost += 0.18 + rand() * 0.13;", "K", ":6454 jitter 0.12")
 m("A21", AS, "step_cost += 0.18 + rand() * 0.12;", "step_cost -= 0.18 + rand() * 0.12;", "K", ":6454 znak kary")
 m("A22", AS, "if same_river_dir(d, (dq, dr)) {\n                    step_cost", "if !same_river_dir(d, (dq, dr)) {\n                    step_cost", "K", ":6454 sameRiverDir")
-m("A23", AS, "if tg > max_len_f + 2.0 {", "if tg >= max_len_f + 2.0 {", "K", ":6456 tg > maxLen + 2 -> >=")
-m("A24", AS, "if tg > max_len_f + 2.0 {", "if tg > max_len_f + 3.0 {", "K", ":6456 tg > maxLen + 3")
+m("A23", AS, "if tg > max_len_f + 2.0 {", "if tg >= max_len_f + 2.0 {", "E", ":6456 tg > maxLen + 2 -> >= [tg > maxLen+2 nieosiagalne: curG < maxLen i koszt < 1.3]")
+m("A24", AS, "if tg > max_len_f + 2.0 {", "if tg > max_len_f + 3.0 {", "E", ":6456 tg > maxLen + 3 [tg > maxLen+3 nieosiagalne: curG < maxLen i koszt < 1.3]")
 m("A25", AS, "if tg > max_len_f + 2.0 {", "if tg > max_len_f + 1.0 {", "K", ":6456 tg > maxLen + 1")
 m("A26", AS, "if tg >= g_score.get(&nk).copied().unwrap_or(f64::INFINITY) {", "if tg > g_score.get(&nk).copied().unwrap_or(f64::INFINITY) {", "K", ":6457 tg >= gScore -> >")
 m("A27", AS, "            came_from.insert(nk.clone(), current.clone());\n", "", "K", ":6458 cameFrom")
 m("A28", AS, "heap.push(nf, heap_seq, nk);", "heap.push(tg, heap_seq, nk);", "K", ":6465 f wpisu kopca")
 m("A29", AS, "            heap_seq += 1;\n        }\n    }", "        }\n    }", "K", ":6466 heapSeq++")
-m("A30", AS, "if best_k != start_k {", "if true {", "E", ":6471 bestK != startK (start nie jest celem, bo odpytany jako pierwszy)")
+m("A30", AS, "if best_k != start_k {", "if true {", "E", ":6471 bestK != startK (start nie jest celem, bo odpytany jako pierwszy) [bestK != startK: start zdjety pierwszy i nie jest celem (inaczej return)]")
 m("A31", AS, "        if is_river_drainage_goal(q, r, hexes, &start_k, ocean_connected) {\n            return reconstruct_river_path(&came_from, &best_k);", "        if true {\n            return reconstruct_river_path(&came_from, &best_k);", "K", ":6473 cel dla bestK")
-m("A32", AS, "            .map_or(f64::INFINITY, |&v| v as f64);\n        let (q, r) = key_qr(&current)", "            .map_or(0.0, |&v| v as f64);\n        let (q, r) = key_qr(&current)", "K", ":6429 curH ?? Infinity")
+m("A32", AS, "            .map_or(f64::INFINITY, |&v| v as f64);\n        let (q, r) = key_qr(&current)", "            .map_or(0.0, |&v| v as f64);\n        let (q, r) = key_qr(&current)", "E", ":6429 curH ?? Infinity [curH default wplywa tylko na bestH/bestK: fallback po petli martwy]")
 m("A33", AS, "                + open_ocean_dist\n                    .get(&nk)\n                    .map_or(f64::INFINITY, |&v| v as f64);", "                + open_ocean_dist\n                    .get(&nk)\n                    .map_or(0.0, |&v| v as f64);", "K", ":6462 nf: openOcean ?? Infinity")
 m("A34", AS, "let max_len_f = max_len as f64;", "let max_len_f = (max_len + 1) as f64;", "K", ":6387 maxLen")
-m("A35", AS, "best_h = cur_h;\n            best_k = current.clone();", "best_h = cur_h;", "K", ":6432 bestK")
+m("A35", AS, "best_h = cur_h;\n            best_k = current.clone();", "best_h = cur_h;", "E", ":6432 bestK [bestK: fallback po petli martwy]")
 
 # ---------------------------------------------------------------- injectRiverMeanders
 m("I01", EX, "if path.len() < 5 || max_extra_steps <= 0 {", "if path.len() < 4 || max_extra_steps <= 0 {", "K", ":6535 path.length < 5 -> 4")
@@ -176,7 +176,7 @@ m("I26", EX, "        &sanitize_river_path(&result),\n        hexes,\n        &h
 m("I27", EX, "            let used: HashSet<String> = result.iter().map(|p| hex_key(p.q, p.r)).collect();", "            let used: HashSet<String> = HashSet::new();", "K", ":6553 used")
 
 # ---------------------------------------------------------------- extendRiverToMinimumLength
-m("X01", EX, "if path.len() >= min_len || path.len() < 3 {", "if path.len() > min_len || path.len() < 3 {", "K", ":6578 length >= minLen -> >")
+m("X01", EX, "if path.len() >= min_len || path.len() < 3 {", "if path.len() > min_len || path.len() < 3 {", "E", ":6578 length >= minLen -> > [length == minLen: petla while i tak sie nie wykonuje, wynik = path]")
 m("X02", EX, "if path.len() >= min_len || path.len() < 3 {", "if path.len() >= min_len || path.len() < 2 {", "K", ":6578 length < 3 -> 2")
 m("X03", EX, "if path.len() >= min_len || path.len() < 3 {", "if path.len() >= min_len || path.len() < 4 {", "K", ":6578 length < 3 -> 4")
 m("X04", EX, "if path.len() >= min_len || path.len() < 3 {", "if path.len() >= min_len && path.len() < 3 {", "K", ":6578 || -> &&")
@@ -240,7 +240,7 @@ m("F07", EX, "if !shallow && !can_river_drain_step(&nk, nd, open_ocean_dist, oce
 m("F08", EX, "if !shallow && !can_river_drain_step(&nk, nd, open_ocean_dist, ocean_connected, true) {", "if !shallow && !can_river_drain_step(&nk, nd, open_ocean_dist, ocean_connected, false) {", "K", ":6680 postInlandPhase")
 m("F09", EX, "if !shallow && !can_river_drain_step(&nk, nd, open_ocean_dist, ocean_connected, true) {", "if shallow || !can_river_drain_step(&nk, nd, open_ocean_dist, ocean_connected, true) {", "K", ":6680 !shallow && -> shallow ||")
 m("F10", EX, "if !can_river_flow_through(Some(nh), &nk, source_key, false, None, false) && !shallow {", "if !can_river_flow_through(Some(nh), &nk, source_key, false, None, false) || !shallow {", "K", ":6682 && -> ||")
-m("F11", EX, "if !can_river_flow_through(Some(nh), &nk, source_key, false, None, false) && !shallow {", "if !can_river_flow_through(Some(nh), &nk, source_key, false, None, false) {", "K", ":6682 wyjatek PlytkieMorze (flow)")
+m("F11", EX, "if !can_river_flow_through(Some(nh), &nk, source_key, false, None, false) && !shallow {", "if !can_river_flow_through(Some(nh), &nk, source_key, false, None, false) {", "E", ":6682 wyjatek PlytkieMorze (flow) [canRiverFlowThrough dla PlytkieMorze zawsze true (nie Morze, nie relief)]")
 m("F12", EX, "if !can_river_flow_through(Some(nh), &nk, source_key, false, None, false) && !shallow {", "if !can_river_flow_through(Some(nh), &nk, source_key, true, None, false) && !shallow {", "K", ":6682 blockExisting domyslnie false")
 m("F13", EX, "if !can_river_flow_through(Some(nh), &nk, source_key, false, None, false) && !shallow {", "if !can_river_flow_through(Some(nh), &nk, source_key, false, None, true) && !shallow {", "E", ":6682 allowRelief: relief odrzucony wczesniej (:6677)")
 m("F14", EX, "            let mut score = open_ocean_dist\n                .get(&nk)\n                .map_or_else(|| nd_opt.map_or(f64::INFINITY, |v| v as f64), |&v| v as f64);", "            let mut score = nd_opt.map_or(f64::INFINITY, |v| v as f64);", "K", ":6684 openOceanDist ?? nd")
@@ -255,7 +255,7 @@ m("F22", EX, "    let mut visited: HashSet<String> = path.iter().map(|p| hex_key
 m("F23", EX, "    if path.is_empty() {\n        return;\n    }\n    let mouth_ready", "    let mouth_ready", "K", ":6650 path.length === 0")
 FIN_VIS = "            let nq = cur.q + i64::from(dq);\n            let nr = cur.r + i64::from(dr);\n            let nk = hex_key(nq, nr);\n            if visited.contains(&nk) {\n                continue;\n            }\n"
 m("F24", EX, FIN_VIS, "            let nq = cur.q + i64::from(dq);\n            let nr = cur.r + i64::from(dr);\n            let nk = hex_key(nq, nr);\n", "K", ":6673 visited")
-m("F25", EX, "            if nh.terrain == Terrain::Sea || is_relief_terrain(nh.terrain) {\n                continue;\n            }\n            let nd_opt", "            if is_relief_terrain(nh.terrain) {\n                continue;\n            }\n            let nd_opt", "K", ":6677 Morze wykluczone")
+m("F25", EX, "            if nh.terrain == Terrain::Sea || is_relief_terrain(nh.terrain) {\n                continue;\n            }\n            let nd_opt", "            if is_relief_terrain(nh.terrain) {\n                continue;\n            }\n            let nd_opt", "E", ":6677 Morze wykluczone [Morze odrzucane i tak przez canRiverFlowThrough (false dla Morza)]")
 m("F26", EX, "            if nh.terrain == Terrain::Sea || is_relief_terrain(nh.terrain) {\n                continue;\n            }\n            let nd_opt", "            if nh.terrain == Terrain::Sea {\n                continue;\n            }\n            let nd_opt", "K", ":6677 relief wykluczony")
 
 
@@ -284,6 +284,7 @@ def main():
     ap.add_argument("--work", default="")
     ap.add_argument("--check", action="store_true")
     ap.add_argument("--timeout", type=int, default=300)
+    ap.add_argument("--show", action="store_true", help="wypisz koncowke wyjscia cargo (diagnostyka, bez logu)")
     a = ap.parse_args()
     si, sn = (int(x) for x in a.shard.split("/"))
 
@@ -315,6 +316,13 @@ def main():
     prepare(work)
     env = dict(os.environ, CARGO_TARGET_DIR=target, CARGO_INCREMENTAL="0",
                CARGO_PROFILE_DEV_DEBUG="0", CARGO_PROFILE_TEST_DEBUG="0")
+    if not a.show:
+        r0 = subprocess.run(["cargo", "test", "--test", "p6_m07b3_q3", "--quiet"], cwd=work, env=env,
+                            capture_output=True, text=True)
+        if r0.returncode != 0:
+            print("BASELINE CZERWONY - przerwano", (r0.stdout + r0.stderr)[-1500:])
+            sys.exit(4)
+        print("BASELINE ZIELONY", flush=True)
     mine = [x for k, x in enumerate(M) if k % sn == si and (not want or x[0] in want)]
     for mid, f, old, new, exp, note in mine:
         if mid in done:
@@ -333,13 +341,17 @@ def main():
                 status = "SURVIVED"
             elif r.returncode == 124:
                 status = "KILLED(timeout)"
-            elif "could not compile" in out or "error[E" in out or "error: " in out and "test result" not in out:
-                status = "INVALID(kompilacja)"
+            elif "could not compile" in out or "error[E" in out:
+                first = next((l for l in out.splitlines() if l.startswith("error")), "")
+                status = "INVALID(kompilacja: " + first[:90].replace("|", "/") + ")"
             else:
                 status = "KILLED"
         finally:
             open(path, "w").write(orig)
         restored = sha(open(path).read()) == sha(orig)
+        if a.show:
+            print(mid, status, out[-1800:], flush=True)
+            continue
         with open(log, "a") as fh:
             fh.write(f"{mid} | {status} | {os.path.basename(f)} | oczek={exp} | {note} | RESTORED={restored}\n")
         print(mid, status, f"RESTORED={restored}", flush=True)

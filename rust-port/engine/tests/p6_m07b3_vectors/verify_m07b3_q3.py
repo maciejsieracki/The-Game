@@ -578,6 +578,13 @@ def trace(mp, hexes, c, ml):
     else:  # tryby 0 i 3: wymiary wnioskowane z mapy (mapHeight brak w trybie 3)
         w, h = infer_dims(hexes)
     sea = mp["sea"] if mode in (1, 2, 3) else build_sea(hexes)
+    sd = c.get("sd")
+    if sd:
+        sea = dict(sea)
+        if sd["v"] is None:
+            sea.pop(sd["k"], None)
+        else:
+            sea[sd["k"]] = sd["v"]
     if mode == 1:
         oc = set(mp["oc"])
         open_ = mp["open"]
@@ -672,6 +679,10 @@ def run_case(maps, hx, c):
                 got = greedy(hexes, tuple(c["s"]), mp["sea"], mp["open"], set(mp["oc"]), n, rand_of(c["seed"]), c["sk"], False)
             elif kind == "trace":
                 got = trace(mp, hexes, c, n)
+            elif kind == "startd":
+                c2 = dict(c)
+                c2["sd"] = {"k": f'{c["mq"]},{c["mr"]}', "v": c["vs"][i]}
+                got = trace(mp, hexes, c2, c["ml"])
             elif kind == "inject":
                 got = inject(q2.flat_pairs(c["p"]), hexes, mp["sea"], rand_of(c["seed"]), n)
             elif kind == "extmin":

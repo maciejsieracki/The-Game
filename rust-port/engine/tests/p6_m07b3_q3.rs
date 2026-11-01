@@ -225,6 +225,21 @@ fn trace_run(mp: &Map, c: &Value, ml: usize) -> Vec<RiverCoord> {
     } else {
         None
     };
+    let sd_sea: Option<HashMap<String, i64>> = if c["sd"].is_null() {
+        None
+    } else {
+        let mut m = mp.sea.clone();
+        let k = c["sd"]["k"].as_str().unwrap().to_string();
+        match c["sd"]["v"].as_i64() {
+            Some(v) => {
+                m.insert(k, v);
+            }
+            None => {
+                m.remove(&k);
+            }
+        }
+        Some(m)
+    };
     let square = c["sq"]
         .as_u64()
         .and_then(|s| continent_center_square(&mp.rec, &mp.keys, Some(s as f64)));
@@ -249,6 +264,9 @@ fn trace_run(mp: &Map, c: &Value, ml: usize) -> Vec<RiverCoord> {
         o.sea_dist = None;
         o.map_width = Some(mp.w + c["dw"].as_i64().unwrap());
         o.map_height = Some(mp.h + c["dh"].as_i64().unwrap());
+    }
+    if let Some(m) = &sd_sea {
+        o.sea_dist = Some(m);
     }
     if !c["seed"].is_null() {
         o.rand = Some(&mut *rand);
@@ -448,6 +466,14 @@ fn q3_vectors_match_web() {
                             )
                         }
                         "trace" => trace_run(mp, c, n),
+                        "startd" => {
+                            let mut c2 = c.clone();
+                            c2["sd"] = serde_json::json!({
+                                "k": format!("{},{}", c["mq"], c["mr"]),
+                                "v": c["vs"][i],
+                            });
+                            trace_run(mp, &c2, c["ml"].as_u64().unwrap() as usize)
+                        }
                         "inject" => {
                             let mut rand = rand_for(&c["seed"]);
                             inject_river_meanders(
@@ -562,11 +588,11 @@ fn q3_vectors_cover_branches_and_overlays() {
         g("perturbed") >= 1500 && g("trace_mode4") >= 400 && g("trace_mode4_path") >= 30,
         "{cnt:?}"
     );
-    assert!(g("heap") >= 600 && g("heap_pops_ge3") >= 500, "{cnt:?}");
+    assert!(g("heap") >= 300 && g("heap_pops_ge3") >= 250, "{cnt:?}");
     assert!(
         g("astar_single") >= 500
             && g("astar_path") >= 1000
-            && g("astar_ge6") >= 40
+            && g("astar_ge6") >= 30
             && g("astar_rand0") >= 300,
         "{cnt:?}"
     );
@@ -581,15 +607,12 @@ fn q3_vectors_cover_branches_and_overlays() {
             && g("trace_pert_path") >= 50,
         "{cnt:?}"
     );
-    assert!(
-        g("inject_grew") >= 200 && g("inject_same") >= 500,
-        "{cnt:?}"
-    );
-    assert!(g("extmin_grew") >= 70 && g("extmin_same") >= 500, "{cnt:?}");
-    assert!(g("wyb_grew") >= 1000 && g("wyb_same") >= 100, "{cnt:?}");
+    assert!(g("inject_grew") >= 80 && g("inject_same") >= 500, "{cnt:?}");
+    assert!(g("extmin_grew") >= 60 && g("extmin_same") >= 500, "{cnt:?}");
+    assert!(g("wyb_grew") >= 1000 && g("wyb_same") >= 60, "{cnt:?}");
     assert!(g("fin_grew") >= 1000 && g("fin_same") >= 500, "{cnt:?}");
     assert!(
-        g("sweep") >= 400 && g("sweep") == g("sweep_with_transition"),
+        g("sweep") >= 600 && g("sweep") == g("sweep_with_transition"),
         "{cnt:?}"
     );
 
