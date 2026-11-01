@@ -23,15 +23,15 @@ NIE (poza tym tematem; przypisany nowy temat). Linie = pin `edb8fb56`.
 | 4 | InlandDrainGrowOpts (typ) | 6129 | REUSE | parametry `rivers_a/grow.rs` (bez osobnego typu) |
 | 5 | collectInlandDrainGrowCandidates | 6148 | REUSE | `rivers_a/grow.rs:306` `collect_inland_drain_grow_candidates` |
 | 6 | growRiverFromCoastInland | 6181 | NIE | Q2 |
-| 7 | traceRiverFromCoast | 6233 | NIE | Q3 |
-| 8 | greedyRiverDrainToSea | 6276 | NIE | Q3 |
-| 9 | RiverAStarOpenHeap (klasa) | 6341 | NIE | Q3 |
-| 10 | aStarRiverToSea | 6387 | NIE | Q3 |
+| 7 | traceRiverFromCoast | 6233 | PORTOWANE-Q3 | `rivers_b/trace_coast.rs:30` `trace_river_from_coast` |
+| 8 | greedyRiverDrainToSea | 6276 | PORTOWANE-Q3 | `rivers_b/trace_coast.rs:116` `greedy_river_drain_to_sea` |
+| 9 | RiverAStarOpenHeap (klasa) | 6341 | PORTOWANE-Q3 | `rivers_b/astar.rs:24` `RiverAStarOpenHeap` |
+| 10 | aStarRiverToSea | 6387 | PORTOWANE-Q3 | `rivers_b/astar.rs:104` `a_star_river_to_sea` |
 | 11 | findRiverMeanderStep | 6485 | NIE | Q2 |
-| 12 | injectRiverMeanders | 6526 | NIE | Q3 |
-| 13 | extendRiverToMinimumLength | 6569 | NIE | Q3 |
-| 14 | extendRiverToWybrzeze | 6602 | NIE | Q3 |
-| 15 | finishRiverMouthAtSea | 6647 | NIE | Q3 |
+| 12 | injectRiverMeanders | 6526 | PORTOWANE-Q3 | `rivers_b/extend.rs:26` `inject_river_meanders` |
+| 13 | extendRiverToMinimumLength | 6569 | PORTOWANE-Q3 | `rivers_b/extend.rs:82` `extend_river_to_minimum_length` |
+| 14 | extendRiverToWybrzeze | 6602 | PORTOWANE-Q3 | `rivers_b/extend.rs:126` `extend_river_to_wybrzeze` |
+| 15 | finishRiverMouthAtSea | 6647 | PORTOWANE-Q3 | `rivers_b/extend.rs:184` `finish_river_mouth_at_sea` |
 | 16 | traceRiver (export) | 6707 | NIE | Q4 |
 | 17 | traceRiverForGridFill | 6821 | NIE | Q4 |
 | 18 | isRiverLandTerrain | 6854 | REUSE | `rivers_a.rs:120` `is_river_land_terrain` (pub(crate)) |
@@ -542,3 +542,152 @@ Podsumowanie: mutantow 105; KILLED 80; EKWIWALENT 25; LUKA 0; BRAK wyniku 0.
 **Bramki r4 (cargo z `CARGO_TARGET_DIR=/dev/shm/m07b2-r4-target`, `CARGO_INCREMENTAL=0`; każdy log ma jedną linię `EXIT=`):** `cargo fmt --check` EXIT=0 (`gate-fmt-r4.txt`); `cargo clippy --all-targets` EXIT=0, 0 ostrzeżeń (`gate-clippy-r4.txt`); `cargo test --test p6_m07b2_coast --test p6_m07b2_edges --test p6_m07b2_q2r4` EXIT=0, 2+3+2 (`gate-test-m07b2-r4.txt`); PEŁNY `cargo test --no-fail-fast` w JEDNYM przebiegu bez timeoutu: 1934 passed / 0 failed, EXIT=0 (`gate-test-full-r4.txt`; 1932 z r1 + 2 nowe testy). Weryfikator Python `verify_m07b2_q2.py`: 25592/25592, EXIT=0 (`verify-m07b2-q2-r4.txt`; NIE obejmuje wektorów q2r4 i nie jest niezależny od Operatora — niezależność NIE_ZMIERZONO), wyczerpujący model `corners_exhaustive_m07b2_q2.py` EXIT=0 (`corners-exhaustive-r4.txt`). `Cargo.lock` nieśledzony, NIE commitowany (N5).
 
 **Ograniczenia / ZAŁOŻENIA r4:** (1) G12 ma tylko 3 wektory rozróżniające (wystarcza do zabicia, mutant ZABITY); (2) rozróżnienie cap 5999/6001 (G14b/c) w generatorze oparte na wynikach weba z jawnym centroidem(cap) równoważnym zmianie stałej — sprawdzone kontrolą `centroid(6000) == domyślny` w generatorze oraz faktycznym zabiciem mutantów Rust; (3) dowody EKWIWALENT są argumentami z kodu plus (dla E13–E35) pokryciem całej skończonej dziedziny wektorami weba; do oceny Evaluatora.
+
+---
+
+## Sekcja Q3 — temat R-RUSTPORT-P6-M07B3-RZEKI-B-TRASOWANIE-Q1 (runda 1/5, Operator)
+
+Pin web: **`4bbef081d`** (origin/main), `gra/src/map/gen-helpers.ts`. Baza Rust: `origin/rust-port/parity-v2` @ `4dbd4cff4` (Q1, Q2 zamkniete). Zakres: 8 symboli (wiersze 7-10, 12-15).
+
+### Diff pinu `edb8fb56` -> `4bbef081d` (przed portem)
+
+`git diff edb8fb56 4bbef081d -- gra/src/map/gen-helpers.ts`: 24 dodan, 16 usuniec, 8 hunkow — wszystkie zamieniaja `queue.shift()` na indeks glowy kolejki (`queueHead++`) w BFS-ach: `estimateLandCentroidFromSeed` (:5992), `buildOceanReachableRiverHexKeys`, `bfsNearestRiverHexOnLowland`, `bfsLowlandRiverPath`, `maxDryLowlandPatchSize`, `fillDryLowlandPatches`, `findAllOversizedDryLandPatches`, `findLargestDryLowlandPatch`. **Zaden z 8 symboli Q3 nie jest zmieniony**; numeracja linii w zakresie 6233+ przesunieta o +1 (hunk :5992 dodaje 1 linie). Zmiana jest czysto wydajnosciowa (ta sama kolejnosc FIFO). Jedyna zalezna sciezka Q3 — domyslny centroid w `traceRiverFromCoast` -> `growRiverFromCoastInland` -> `estimateLandCentroidFromSeed` — jest pokryta wektorami z pinu `4bbef081d` (przypadki `trace` bez `landCentroid`/kwadratu; wynik rowny reuse Q2 `estimate_land_centroid_from_seed`). Linie web w tabelach nizej: pin `edb8fb56` (jak w tabeli glownej); w `4bbef081d` o 1 wiecej.
+
+### Tabela symboli per status (Q3)
+
+| # | Symbol | Linia web (`4bbef081d`) | Status | Rust (plik:linia) | Wektory (`fn`) |
+|---|---|---|---|---|---|
+| 7 | traceRiverFromCoast | 6234 | PORTOWANE-Q3 | `rivers_b/trace_coast.rs:30` `trace_river_from_coast` | `trace` 2000 + sweepy `trace`, `startd` |
+| 8 | greedyRiverDrainToSea | 6277 | PORTOWANE-Q3 | `rivers_b/trace_coast.rs:116` `greedy_river_drain_to_sea` | `greedy` 1800+ + sweepy `greedy` |
+| 9 | RiverAStarOpenHeap | 6342 | PORTOWANE-Q3 | `rivers_b/astar.rs:24` (`push`, `pop`, `len`, `as_slice`) | `heap` 350 (117 z remisami f; uklad tablicy po operacjach bit-w-bit) |
+| 10 | aStarRiverToSea | 6388 | PORTOWANE-Q3 | `rivers_b/astar.rs:104` `a_star_river_to_sea` | `astar` 2000+75 + sweepy `astar` |
+| 12 | injectRiverMeanders | 6527 | PORTOWANE-Q3 | `rivers_b/extend.rs:26` `inject_river_meanders` | `inject` 2000 + sweepy `inject` |
+| 13 | extendRiverToMinimumLength | 6570 | PORTOWANE-Q3 | `rivers_b/extend.rs:82` `extend_river_to_minimum_length` | `extmin` 2000+ + sweepy `extmin`, `extcap` |
+| 14 | extendRiverToWybrzeze | 6603 | PORTOWANE-Q3 | `rivers_b/extend.rs:126` `extend_river_to_wybrzeze` | `wyb` 1500+80 + korytarze |
+| 15 | finishRiverMouthAtSea | 6648 | PORTOWANE-Q3 | `rivers_b/extend.rs:184` `finish_river_mouth_at_sea` | `fin` 1800+30 + korytarze |
+
+Podsumowanie: **8/8 PORTOWANE-Q3, 0 NIE**. Pliki: `trace_coast.rs` 214 LOC, `astar.rs` 235 LOC, `extend.rs` 251 LOC (kazdy <= 600). `rivers_b.rs` rejestruje moduly `astar`, `extend`, `trace_coast`. Reuse bez duplikatow (sprawdzone `git grep` przed portem): `rivers_a/walk.rs` (`can_river_drain_step`, `is_river_drainage_goal`, `path_ends_at_sea`, `infer_map_dims_from_hexes`, `reconstruct_river_path`, `river_step_dir`, `same_river_dir`), `rivers_a/grow.rs` (`TraceRiverOpts`, `is_river_window_turn_allowed`, `GrowCandidate`), `rivers_a.rs` (`can_river_flow_through`, `sanitize_river_path`, `repair_river_path_adjacency`, `is_relief_terrain`, pola odleglosci), `rivers_b/coast_grow.rs` (`grow_river_from_coast_inland`), `rivers_b/meander.rs` (`find_river_meander_step`). **Zero zmian w `rivers_a/**`, `relief.rs`, `landsea.rs`, `coast.rs`, `bridge.rs`, `Cargo.toml`, `gra/**`** (allowlista; widocznosc bez zmian).
+
+### Artefakty (w repo, sciezki wzgledne od `rust-port/engine/`)
+
+- Generator wektorow z URUCHOMIONEGO weba: `tests/p6_m07b3_vectors/gen_q3_vectors.mjs` (ziarno `0x5eed2029`, deterministyczny; dwukrotne uruchomienie daje ten sam plik). Zaleznosci wyciagane DOSLOWNIE z pinu po nazwie; profiler rzek (`RIVER_PROFILE_ON`, `rpNow`, `rpEnsure`) zastapiony atrapami (wylaczony, bez wplywu na wynik). Odtworzenie: `git show 4bbef081d:gra/src/map/gen-helpers.ts > $D/gen-helpers.ts`, `git show 4bbef081d:gra/src/types/hex.ts > $D/hex.ts` (w `mktemp -d`/`/dev/shm`, bez buildu w `gra/`), `node --experimental-strip-types tests/p6_m07b3_vectors/gen_q3_vectors.mjs $D/gen-helpers.ts $D/hex.ts tests/p6_m07b3_vectors/web-rivers-b-q3.json` (Node v22.22.0).
+- Wektory: `tests/p6_m07b3_vectors/web-rivers-b-q3.json` (format `p6-m07b3-q3-v1`, 14 589 przypadkow, 89 map, 5 787 693 B <= 6 MB).
+- Test zgodnosci: `tests/p6_m07b3_q3.rs` (2 testy: `q3_vectors_match_web` — wszystkie przypadki i sweepy; `q3_vectors_cover_branches_and_overlays` — progi pokrycia i nakladki).
+- Weryfikator niezalezny OD ZERA (Python, z zrodla TS pinu, nie z Rust i nie z .mjs): `tests/p6_m07b3_vectors/verify_m07b3_q3.py` — 14 589/14 589 zgodne, `input_field_mismatch_maps: 0` (pola odleglosci/ocean z JSON rowne policzonym od zera). Zaleznosci Q2 (sanitize/repair/okno/meander/centroid) importowane z niezaleznego weryfikatora Q2 (`../p6_m07b2_vectors/verify_m07b2_q2.py`); kopiec, A*, greedy, inject, extend, wybrzeze, ujscie, trace (z kwadratem centrum), kwadrat centrum i punktacja kwadratu — zaimplementowane tu od zera.
+- Mutacje: `tests/p6_m07b3_vectors/mutate_m07b3_q3.py` (205 mutantow; mutacje stosowane na KOPII roboczej w `/dev/shm`, nie w drzewie repo — przerwanie nie zostawia pustych plikow; `git status` po etapie czysty z wyjatkiem nowych artefaktow; kontrola sha256 po kazdym mutancie, `RESTORED=True`). Log: `runs/<ID>/mutate-m07b3-q3-r1.txt`.
+
+### Pokrycie wektorow (stats z generatora; zgodnie z lekcjami a-e)
+
+- (a) nakladki: kazda mapa ma las/zloze (kopalina)/rzeke na heksach wodnych (Morze, PlytkieMorze) i ladowych; asercje w `q3_vectors_cover_branches_and_overlays` (>100 nakladek na wodzie i ladzie, >20 zloz na wodzie, >20 rzek na ladzie). Typy map: `flat` (otwarta nizina), `split` (brzeg z ladem na krawedziach, jeziora srodladowe, wiele skladowych oceanu), `normal`, `hilly`, `rivers` (25% heksow z rzeka), korytarze (24), duza mapa 44x44.
+- Perturbacje pol (galezie `?? Infinity`, `?? 999`, `?? 0`, brak w `oceanConnected`): `pt` {`orm` usuniete klucze openOceanDist, `srm` seaDist, `ocrm` oceanConnected, `dsea` seaDist dla openOcean >= 6, `csea` seaDist <= prog} w ok. 3500+ przypadkow A*/greedy/inject/extmin/wybrzeze/ujscie.
+- Remisy kolejnosci kopca A*: 117 przypadkow `heap` z silnymi remisami f (f z {1,2,3}) + 233 zroznicowanych; porownanie WYNIKU KAZDEGO `pop` oraz UKLADU TABLICY kopca po sekwencji operacji bit-w-bit (`snap`); `less`/sift-up/sift-down portowane 1:1 (kopiec jest kodem gry, nie V8: kolejnosc remisow wynika wylacznie z algorytmu). A* dodatkowo: 400+ przypadkow `rand` = 0 (maksimum remisow) i mapy otwarte (`flat`).
+- N-1/N/N+1 NA TYM SAMYM STARCIE (sweepy; test wymaga, by KAZDY sweep mial przejscie wyniku): `astar` 164 (maxLen 0..L+3; zero-rand i ziarno; w tym korytarze prostych tras dl. 1-12, ktore wymuszaja granice `curG >= maxLen` i kare 0.18 za krok prosty), `greedy` 94 (maxLen), `trace` 118 (growthCap), `startd` 70 (odleglosc ujscia od morza: brak/0/1/2/3/4/5 na tym samym ujsciu -> `startD > 2`), `inject` 78 (maxExtraSteps 0..10; w tym duza mapa: >= 8 wstawek w jednym przebiegu), `extmin` 138 (minLen 0..len+18; dlugie proste, zygzaki dajace wzrost 1/przebieg -> cap 12 przebiegow), `extcap` 100 (stepCap 0..len+16 przy minLen = len+14). Cap ogona ujscia: korytarze 24 map (lad dl. 1-12, woda od L+1; Plytkie/Morze) x {wybrzeze, ujscie z 2 i 1 hexa} = 72 przypadki wokol `RIVER_MOUTH_TAIL_LEN` = 5 oraz +2 = 7.
+- Sciezki wejsciowe z lukami i powrotami (`jumpyPath`) dla inject/extmin (guardy sanitize/repair), sciezki puste/1-/2-elementowe, wejscia deepsea na duzych mapach.
+- Statystyki (pole `stats` w JSON): astar 1162 tras + 838 `[start]`; greedy 980 niepustych + 820 pustych; trace 265 niepustych (84 z kwadratem centrum, 54 z perturbacja oceanu) + 1735 pustych; inject 87 wzrostow + 1913 bez zmiany; extmin 76 wzrostow + 1917 bez zmiany (+40 sciezek 2-elementowych); wyb 1396 wzrostow + 104; fin 1188 wzrostow + 612; sweepy N-1/N/N+1: 762 (kazdy z przejsciem wyniku).
+
+### Mutacje (205) — wynik
+
+Skrypt `mutate_m07b3_q3.py`, kazdy mutant = jedna podmiana (liczba wystapien `old` = 1, `--check` bez bledow). Wynik: **[stan r1; po r2 patrz sekcja "Q3 r2": KILLED 168, SURVIVED 37 (same E), 0 luk]** KILLED 164 (161 oczekiwanych K + 3 oczekiwane U), SURVIVED 41: 37 EKWIWALENT z dowodem, 4 LUKA udokumentowana (NIE_ZMIERZONO), 0 SURVIVED z oczekiwaniem K, 0 INVALID. Historia: pierwszy przebieg dal 60 survivorow i 19 INVALID; przyczyny: (1) INVALID = SIGKILL kompilatora (pamiec, rownolegle shardy) — powtorzone pojedynczo, wszystkie sklasyfikowane; (2) luki wektorow zamkniete dopisaniem: sweepow `startd`, map `split`, korytarzy, perturbacji (`csea`, `dsea`, silnych), sciezek z lukami, len-2, duzej mapy, zagadniec `deepsea`; (3) etykiety E z r1 skorygowane (H01, X18, X19, W14: ZABITE). Pulapka procesu (zapisana): `cargo` uzywa mtime — kopia robocza kopiowana `copyfile` (nowy mtime), baseline sprawdzany przed kazdym przebiegiem (`BASELINE ZIELONY`), by nie uzyc zmutowanego artefaktu.
+
+Wektory: 201 mutantow uruchomionych na v3 (sha256 `9456076c...0b76`, 14 419 przypadkow); A16, F06, G10 powtorzone na v5, W14 na v6 (`8aa5dba8...5ff4`, 14 589); v6 jest NADZBIOREM v3 (dopisane wylacznie na koncu strumienia losowego; prefiks 14 419 identyczny — sprawdzone), wiec zabicia na v3 obowiazuja. Final: test i weryfikator na v6.
+
+Konstrukcje ZABITE (id): T01, T02, T03, T04, T05, T06, T07, T08, T09, T10, T11, T12, T13, T15, T16, T17, T18, T20, T22, T23, T24, T25, G01, G02, G04, G05, G07, G08, G09, G10, G11, G12, G13, G16, G19, G20, G21, G23, G26, G27, G28, G29, H01, H02, H03, H04, H05, H06, H07, H08, H09, H10, H11, H12, H13, A01, A08, A10, A11, A12, A13, A14, A15, A16, A17, A18, A19, A21, A22, A25, A26, A27, A28, A29, A31, A34, I01, I02, I03, I04, I05, I06, I07, I08, I09, I10, I11, I12, I13, I15, I16, I17, I18, I19, I20, I21, I22, I23, I24, I25, I27, X02, X03, X04, X05, X06, X07, X08, X09, X10, X11, X12, X13, X14, X15, X16, X17, X18, X19, X20, X21, X22, X24, X25, X26, X28, W01, W02, W03, W05, W06, W07, W08, W09, W10, W12, W13, W14, W15, W16, W18, W19, W20, W21, F01, F03, F04, F05, F06, F07, F08, F09, F10, F12, F14, F15, F16, F18, F20, F21, F22, F23, F24, F26.
+
+Konstrukcje NIE zabite (tabela plik:linia, EKWIWALENT = dowod w kolumnie, LUKA = NIE_ZMIERZONO):
+
+| ID | oczek. | Rust plik:linia | wynik | uwaga / dowod |
+|---|---|---|---|---|
+| T14 | E | trace_coast.rs:104 | SURVIVED | :6278 pathEndsAtSea bez wymiarow (ocean dany -> wymiary nieuzyte) [wymiary w pathEndsAtSea nieuzyte gdy oceanConnected podany] |
+| T19 | E | trace_coast.rs:86 | SURVIVED | :6271 indeks sep = optymalizacja (rowny brute force) |
+| T21 | E | trace_coast.rs:54 | SURVIVED | :6243 openOcean z oceanConnected [openOceanDist przekazany do growRiverFromCoastInland jest tam nieczytany] |
+| G03 | E | trace_coast.rs:140 | SURVIVED | :6297 curOd == null: break -> continue (stan niezmienny: iteracja idempotentna) |
+| G06 | K (r2) | trace_coast.rs:154 | r1: SURVIVED; r2: KILLED (`mutate-m07b3-q3-r2.txt`) | :6309 visited [domkniete wektorami `web-rivers-b-q3-closure.json`, patrz sekcja Q3 r2] |
+| G14 | E | trace_coast.rs:179 | SURVIVED | :6316 > vs >= przy calkowitym od i polowkowym progu |
+| G15 | E | trace_coast.rs:179 | SURVIVED | :6316 prog 0.5 vs 0 przy calkowitych od |
+| G17 | E | trace_coast.rs:182 | SURVIVED | :6318 waga 12 -> 13 (kolejnosc ta sama: od dominuje, bonus < 12) |
+| G18 | E | trace_coast.rs:182 | SURVIVED | :6318 jitter 0.35 -> 0.34 [jitter 0.35 vs 0.34: kolejnosc kandydatow ta sama (skala jittera < premia 1.8 i < 12)] |
+| G22 | E | trace_coast.rs:194 | SURVIVED | :6323 brak kandydatow: break -> continue (brak wolan rand, stan niezmienny) |
+| G24 | K (r2) | trace_coast.rs:204 | r1: SURVIVED; r2: KILLED (`mutate-m07b3-q3-r2.txt`) | :6327 visited po wyborze [domkniete wektorami `web-rivers-b-q3-closure.json`, patrz sekcja Q3 r2] |
+| G25 | K (r2) | trace_coast.rs:131 | r1: SURVIVED; r2: KILLED (`mutate-m07b3-q3-r2.txt`) | :6285 visited startu [domkniete wektorami `web-rivers-b-q3-closure.json`, patrz sekcja Q3 r2] |
+| H14 | E | astar.rs:63 | SURVIVED | :6363 top/last: przypisanie rownowazne mem::replace |
+| A02 | E | astar.rs:119 | SURVIVED | :6399 h0 [h0 tylko startowy f/bestH: poza petla nieuzywany (fallback po petli martwy)] |
+| A03 | E | astar.rs:123 | SURVIVED | :6401 start w oceanie [start w oceanie: bez galezi start jest zdejmowany pierwszy i goal-check zwraca [start]] |
+| A04 | E | astar.rs:137 | SURVIVED | :6411 seq startu [seq startu: start zdjety pierwszy, kolejnosc seq potomkow zachowana] |
+| A05 | E | astar.rs:148 | SURVIVED | :6420 pomin wpisy spoza open [wpis spoza open: nieaktualny wpis ma f != fScore[k] (A06 go odrzuca); h = BFS openOceanDist jest spojna (koszt >= 1)] |
+| A06 | E | astar.rs:152 | SURVIVED | :6422 pomin przestarzale f [f != fScore: nieaktualny wpis wychodzi z kopca PO nowszym (nizsze f), wezel jest wtedy zamkniety (A05)] |
+| A07 | E | astar.rs:167 | SURVIVED | :6431 bestH < [bestK/bestH: fallback po petli martwy (kazdy zdjety wezel jest od razu sprawdzany jako cel)] |
+| A09 | E | astar.rs:175 | SURVIVED | :6439 open.delete(current) [open.delete: spojna heurystyka - zamkniety wezel nie poprawia g; nieaktualne wpisy odrzuca test f] |
+| A20 | K (r2) | astar.rs:205 | r1: SURVIVED; r2: KILLED (`mutate-m07b3-q3-r2.txt`) | :6454 jitter 0.12 [domkniete wektorami `web-rivers-b-q3-closure.json`, patrz sekcja Q3 r2] |
+| A23 | E | astar.rs:209 | SURVIVED | :6456 tg > maxLen + 2 -> >= [tg > maxLen+2 nieosiagalne: curG < maxLen i koszt < 1.3] |
+| A24 | E | astar.rs:209 | SURVIVED | :6456 tg > maxLen + 3 [tg > maxLen+3 nieosiagalne: curG < maxLen i koszt < 1.3] |
+| A30 | E | astar.rs:228 | SURVIVED | :6471 bestK != startK (start nie jest celem, bo odpytany jako pierwszy) [bestK != startK: start zdjety pierwszy i nie jest celem (inaczej return)] |
+| A32 | E | astar.rs:165 | SURVIVED | :6429 curH ?? Infinity [curH default wplywa tylko na bestH/bestK: fallback po petli martwy] |
+| A33 | E | astar.rs:218 | SURVIVED | :6462 nf: openOcean ?? Infinity [wezel w oceanConnected bez openOceanDist nie jest nigdy wstawiany: rodzic bylby juz celem drenazu] |
+| A35 | E | astar.rs:168 | SURVIVED | :6432 bestK [bestK: fallback po petli martwy] |
+| I14 | E | extend.rs:55 | SURVIVED | :6551 rand() >= 0.34: mulberry32 daje wielokrotnosci 2^-32, 0.34 nie jest wielokrotnoscia |
+| I26 | E | extend.rs:73 | SURVIVED | :6568 sourceKey [sourceKey w repair: path[0] zawsze odwiedzony, a cel d==1 omija canRiverFlowThrough] |
+| X01 | E | extend.rs:90 | SURVIVED | :6578 length >= minLen -> > [length == minLen: petla while i tak sie nie wykonuje, wynik = path] |
+| X23 | E | extend.rs:113 | SURVIVED | :6595 slice(mid + 1) [duplikat out[mid] usuwa sanitize_river_path (seen) przed repair - wynik ten sam] |
+| X27 | E | extend.rs:93 | SURVIVED | :6579 srcKey [sourceKey w repair: jak I26] |
+| W04 | E | extend.rs:139 | SURVIVED | :6613 brak heksu konca: break -> continue (stan niezmienny, iteracje idempotentne) |
+| W11 | E | extend.rs:160 | SURVIVED | :6626 seaDist ?? 999 -> 998 [seaDist ?? 999 vs 998: stala przesuwa wszystkich kandydatow bez seaDist jednakowo (finitowe < 990)] |
+| W17 | E | extend.rs:169 | SURVIVED | :6633 brak kandydata: break -> continue (stan niezmienny) |
+| F02 | E | extend.rs:199 | SURVIVED | :6661 wczesny return: petla sprawdza mouthReady(cur) w 1. iteracji |
+| F11 | E | extend.rs:230 | SURVIVED | :6682 wyjatek PlytkieMorze (flow) [canRiverFlowThrough dla PlytkieMorze zawsze true (nie Morze, nie relief)] |
+| F13 | E | extend.rs:230 | SURVIVED | :6682 allowRelief: relief odrzucony wczesniej (:6677) |
+| F17 | E | extend.rs:237 | SURVIVED | :6686 PlytkieMorze -15 -> -14: shallow o=0 vs land o>=1 (w obu wypadkach shallow wygrywa) |
+| F19 | E | extend.rs:244 | SURVIVED | :6693 brak kandydata: break -> continue (stan niezmienny) |
+| F25 | E | extend.rs:221 | SURVIVED | :6677 Morze wykluczone [Morze odrzucane i tak przez canRiverFlowThrough (false dla Morza)] |
+
+Dowody ekwiwalencji (skrot; numeracja Rust, numery linii web w nawiasach):
+
+- **Fallback po petli A\*** (A02, A07, A30, A32, A35; `astar.rs:228-233`, web :6471-6476): kazdy zdjety z kopca wezel jest od razu sprawdzany `is_river_drainage_goal` z tymi samymi argumentami (`astar.rs:171`), a `bestK` to zdjety wezel — gdyby byl celem, petla juz by zwrocila trase. Zatem po petli `is_river_drainage_goal(bestK)` jest zawsze falszem i wynik = `[start]`; `bestH/bestK/h0` nie wplywaja na wynik.
+- **Spojna heurystyka** (A05, A06, A09): `h` = BFS `openOceanDist` (|h(a)-h(b)| <= 1 dla sasiadow), koszt kroku >= 1, wiec zamkniety wezel nigdy nie poprawia `g`; nieaktualny wpis ma `f` > `fScore[k]` i wychodzi z kopca PO nowszym (nizsze f), gdy wezel jest juz zamkniety. Kazdy z dwoch testow (`!open.contains`, `f != entry.0`) osobno odrzuca takie wpisy; `open.remove` nie zmienia wyniku, bo nieaktualne wpisy odrzuca test f.
+- **A23/A24** (`astar.rs:209`): ekspansja tylko dla `curG < maxLen` (`astar.rs:176`), koszt kroku < 1.3 (`0.18 + rand()*0.12`, `rand()<1`), wiec `tg < maxLen + 1.3` i gałąź `tg > maxLen + 2` jest NIEOSIAGALNA (tak samo `+3`, `>=`).
+- **A33** (`astar.rs:217`): wezel w `oceanConnected` bez wpisu w `openOceanDist` nie jest wstawiany, bo jego rodzic (sasiad wezla oceanu, przechodniego, bo nie-Morze) byl juz celem drenazu i funkcja zwrocila trase przy jego zdjeciu.
+- **A03** (`astar.rs:123`): start w oceanie: bez galezi start jest zdjety pierwszy i `is_river_drainage_goal` (oc zawiera klucz) zwraca `reconstruct([start]) = [start]`. **A04**: `seq` startu — start zdjety przed jakimkolwiek potomkiem; kolejnosc seq potomkow zachowana.
+- **T14** (`trace_coast.rs:104`): wymiary w `path_ends_at_sea` nieuzywane, gdy `ocean` podany (`rivers_a/walk.rs:110-116`). **T21** (`trace_coast.rs:54`): `openOceanDist` trafia do `grow_river_from_coast_inland` jako `_open_ocean_dist` — nieczytany (`coast_grow.rs:133`, web :6181). **T19**: indeks sep = optymalizacja; przypadki `ix` w wektorach (weryfikator Python liczy brute force i zgadza sie z webem z indeksem).
+- **G03, G22, W04, W17, F19** (`break` -> `continue`): stan petli niezmieniony (brak push, brak wolan `rand()` gdy brak kandydatow/ heksu), kazda kolejna iteracja identyczna; koniec petli `for` daje ten sam wynik. **F02**: wczesny `return` powtarza sprawdzenie `mouth_ready(cur)` z 1. iteracji.
+- **G14, G15** (`trace_coast.rs:179`): `od` i `curOd` calkowite — `od > curOd + 0.5` <=> `od >= curOd + 1` <=> `od > curOd`. **G17**: kandydaci maja `od <= curOd`; wagi 12 vs 13 nie zmieniaja kolejnosci (roznica poziomu >= 12 > jitter 0.35 + premia 1.8). **G18**: skala jittera 0.35 vs 0.34 jest monotoniczna, premia 1.8 > roznica jittera.
+- **H14**: `d[0].clone(); d[0]=last` = `mem::replace`.
+- **I14**: `rand()` z mulberry32 to wielokrotnosc 2^-32; 0.34 nie jest — `>=` vs `>` nierozroznialne.
+- **I26, X27** (`sourceKey` w `repair_river_path_adjacency`): `path[0]` jest od poczatku odwiedzony (pomijany jako kandydat), a przypadek `d == 1` dopisuje cel BEZ `canRiverFlowThrough`; zrodlo jest sprawdzane tylko dla heksu-kandydata, ktorym nie moze byc `path[0]` ani (przed dopisaniem) `path[1]`.
+- **X01**: `len == minLen`: petla `while out.len() < min_len` sie nie wykonuje, wynik = kopia `path`. **X23**: duplikat `out[mid]` usuwa `sanitize_river_path` (zbior `seen`) przed `repair`.
+- **W11**: `seaDist ?? 999` vs 998 — stala przesuwa jednakowo wszystkich kandydatow bez `seaDist` (finitowe < 990). **F13**: `allowRelief` w `can_river_flow_through` nieobserwowalne, bo relief odrzucony wczesniej (`extend.rs:221`). **F11**: PlytkieMorze zawsze przechodnie (nie Morze, nie relief). **F25**: Morze odrzucane i tak przez `can_river_flow_through`. **F17**: `-15` vs `-14` — PlytkieMorze ma `od <= 8`, wiec `od-15 < 1 <= od_lad` w obu wersjach.
+- **LUKI (stan r1; ZAMKNIETE w r2 wektorami domykajacymi)**: G06, G24, G25 (`visited` w greedy): powtorna wizyta wymaga petli zamknietej na plateau `openOceanDist` (kandydat musi miec `od == curOd`) z lagodnymi skretami; okno skretu (6 heksow, suma |delta| <= 1, kazdy skret <= 60 stopni) wymaga co najmniej ~30 heksow petli, a zjazd w dol (nizsze `od`) ma nizszy wynik — wektory nie zawieraja plateau >= 30 heksow wymuszajacego petle. A20 (jitter 0.12 -> 0.13): zmiana kosztu < 0.01 na krok prosty; rozroznienie wymaga prawie-remisu dwoch tras A* (np. prosta 12 krokow vs zygzak) — brak takiego wektora. Propozycja domkniecia: zaprojektowane mapy (plateau-pierscien z blokada w dol; para korytarzy prosty/zygzak).
+
+### Q3 r2 — domkniecie 4 luk L (zarzuty Evaluatora r1)
+
+Zarzuty: (1) G06/G24/G25/A20 bez dowodu i bez zabicia; (2) brak realizacji domkniecia; (3) pelny `cargo test` nieodtworzony przez Evaluatora (timeout), brak bazy liczby testow; (4) mutacje na trzech wersjach wektorow, brak jednego przebiegu na finalnych.
+
+- **Wektory domykajace** (zarzuty 1-2): generator `tests/p6_m07b3_vectors/gen_q3_closure_vectors.mjs` (w repo, sciezki wzgledne) uruchamia kod weba z pinu `4bbef081d` (te same dosłowne ekstrakcje funkcji co `gen_q3_vectors.mjs`) ORAZ jego mutanty (ten sam tekst z pinu + dokladnie ta sama podmiana tekstowa co w `mutate_m07b3_q3.py`), i zasiane PRNG (`SEED 0x2c10517e`) SZUKA wejsc, na ktorych wynik weba != wynik mutanta. Do `web-rivers-b-q3-closure.json` (49 KB, sha256 w logu bramek; razem z glownym 5,79 MB + 0,05 MB < 6 MB) trafiaja wylacznie wejscia rozrozniajace; `out` = wynik ORYGINALNEGO weba (pole `kills` = id mutanta; reszta schematu jak wektor glowny, ten sam runner `check_vectors`).
+  - **greedy G06/G24/G25** (9 wektorow, po 3): mapa rzadka z plateau `openOceanDist = 9` w postaci PIERSCIENIA promienia 6 (36 heksow; okno skretu 6/+-1 pozwala zamknac petle dopiero przy >= 36 heksach) + ostroga 0-3 heksow z jeziorem-celem (`plytkie_morze`, w `oceanConnected`; `seaDist` 5 na ladzie). Baseline: `visited` blokuje powrot, rzeka obiega pierscien i ugrzezla albo schodzi ostroga; bez `visited` (G06), bez wpisu po wyborze (G24: start na OGONIE-lasso dolaczonym do pierscienia, powrot na heks zlaczenia) albo bez wpisu startu (G25: start na pierscieniu z ostroga, powrot na start) wynik sie zmienia (druga okrazenie / inna galaz ostrogi, zalezne od kolejnych losowan jittera). 1541 prob do znalezienia 3+3+3.
+  - **A* A20** (6 wektorow): mapa rzadka z DWIEMA trasami od startu do osobnych jezior: A = nA heksow prosto (nA-1 krokow prostych o koszcie 1+0.18+J*rand), B = nB krokow zygzakiem (koszt = nB). Kryterium wyboru: S = suma nA-1 losowan, prog S* = (nB-nA-0.18(nA-1))/J; dla J=0.12 i 0.13 progi sie roznia, a ziarno z S miedzy nimi daje inna trase (897 prob do znalezienia 6; we wszystkich 6 web wybiera trase prosta, mutant zygzak).
+- **Wynik mutacji**: test `q3_closure_vectors_match_web_and_cover_mutants` (+ asercja >= 3 wektorow na G06/G24/G25 i >= 6 na A20). G06, G24, G25, A20: **KILLED** (r1: SURVIVED — wektory glowne ich nie rozrozniaja; zabija je WYLACZNIE plik domykajacy). Weryfikator Python (niezalezny, z zrodla TS): glowny 14 589/14 589, domykajacy 15/15 (`verify_m07b3_q3.py <plik>`; dla mapy rzadkiej pola `sea/open/oc` zadane wprost, bez kontroli policzenia z terenu — `format p6-m07b3-q3-closure-v1`).
+- **Zarzut 4 (jeden przebieg na finalnych wektorach)**: PELNY przebieg wszystkich 205 mutantow na finalnym stanie (glowny v6 + domykajacy; skrypt kopiuje oba pliki do kopii roboczej) w 4 shardach: **KILLED 168 (165 oczek. K + 3 oczek. U), SURVIVED 37 (wszystkie oczek. E, dowody w sekcji wyzej), 0 SURVIVED z oczekiwaniem K, 0 INVALID, RESTORED=True 205/205** (`mutate-m07b3-q3-r2.txt`, jedna linia `EXIT=0`). Zastepuje rozproszone wyniki z v3/v5/v6; po r2 NIE zostaje zadna luka L.
+- **Zarzut 3 (pelny cargo test)**: `cargo test --no-fail-fast` w jednym przebiegu: 1950 passed / 0 failed, EXIT=0 (`gate-test-full-r2.txt`); dwa przebiegi w r2 (przed i po `rustfmt` pliku testu), czas pojedynczego przebiegu < 575 s (`timeout 575`) na 4 rdzeniach, suma czasow binariow testowych 239 s. Baza liczby testow: w diffie `4dbd4cff4..HEAD` NIE ma zadnego `#[test]` w `src/**`, a testy dodaje tylko `tests/p6_m07b3_q3.rs` (3 funkcje po r2), wiec baza przed tematem = 1950 - 3 = **1947** (wyliczenie z diffu, nie osobny przebieg; wartosc 1934 z Q2 r4 jest starsza). Wolne testy wskazane przez Evaluatora (np. `build_cluster_spawn_plan_matches_web_maps_over_2500_hexes`, `p6_m12_integration`) przechodza; timeout Evaluatora = wolniejsze srodowisko, nie wada kodu.
+- **Nowe pliki r2**: `tests/p6_m07b3_vectors/gen_q3_closure_vectors.mjs`, `web-rivers-b-q3-closure.json`; zmienione: `p6_m07b3_q3.rs` (refaktor `check_vectors(raw)` + nowy test), `mutate_m07b3_q3.py` (G06/G24/G25/A20 -> K, kopiowanie 2. pliku wektorow), `verify_m07b3_q3.py` (argument pliku). Kod portu (`rivers_b/**`) BEZ zmian. Logi r2: `gate-{fmt,clippy,test-m07b3,test-full}-r2.txt`, `verify-m07b3-q3-r2.txt`, `verify-m07b3-q3-closure-r2.txt`, `mutate-m07b3-q3-r2.txt` (kazdy: jedna linia `EXIT=`).
+- Poza paritetem (bez zmian, ZALOZENIE 5): 7 wejsc `extmin` skracajacych trase do < 2 heksow (web `TypeError`, Rust panika) — wykluczone, udokumentowane.
+
+### ZAŁOŻENIA
+
+1. `maxLen`/`stepCap`/`minLen`/`max_len` w Rust to `usize` (web `number`), `maxExtraSteps` to `i64`; wartosci ulamkowe/ujemne NIE_ZMIERZONO (wektory: calkowite >= 0, `maxExtraSteps` takze ujemne). `Infinity` weba jako `i64::MAX` tylko w porownaniach `nd >= 2` (`can_river_drain_step`); wyniki punktacji (`score`) w `f64` z `f64::INFINITY` (bez zmiany kolejnosci porownan).
+2. `rand` w `trace_river_from_coast` domyslnie `|| 0.0` (web `() => 0`); w pozostalych funkcjach `rand` jest argumentem (`&mut dyn FnMut() -> f64`).
+3. Profiler `CIV_RIVER_PROFILE` (`aStarCalls`/`aStarMs`) NIE jest portowany (nie wplywa na wynik, jak w M07A); mapa `stepDir` weba jest tylko zapisywana — pominieta.
+4. `extend_river_to_wybrzeze` i `finish_river_mouth_at_sea` MUTUJA przekazana sciezke (web: `path.push` + `return path`) — Rust `&mut Vec<RiverCoord>`, wynik = zmieniona sciezka; generator sprawdza tozsamosc referencji (`out === arr`).
+5. **Web rzuca `TypeError` tam, gdzie Rust panikuje** (`extend_river_to_minimum_length`, gdy po `sanitize/repair` trasa wewnatrz petli skroci sie do < 2 heksow: web `out[mid]` -> `undefined` -> `findRiverMeanderStep` czyta `.q`; Rust: indeks poza zakresem). 7 takich przypadkow wejsc z lukami wykluczono z wektorow (`extmin_web_throws`); dla wejsc prawidlowych (sasiedzi, bez powtorzen) sytuacja nie wystepuje.
+6. `is_river_window_turn_allowed` ma precondycje niepustej trasy (jak web: TypeError przy pustej); w `greedy_river_drain_to_sea` trasa zawsze zawiera start.
+7. `landCentroid` w Rust to `Option<(f64, f64)>` (web `{q,r}|null`); `landCenterSquare` — `Option<&ContinentCenterSquare>`; kwadrat w wektorach budowany z weba `continentCenterSquare(hexes, wszystkieKlucze, rozmiar 3..7)` i w Rust przez `continent_center_square` (M05; to zamyka ZALOZENIE Q2 nr 1 dla sciezki `traceRiverFromCoast`: 84+ przypadkow z niepustym wynikiem i kwadratem).
+8. Wymiary mapy w testach prostokatne `[0,W) x [0,H)` (krawedz = ocean) — `oceanConnectedWaterKeys` zalezy od wymiarow; tryby `trace`: 0 domyslne, 1 pola jawne, 2 oceanConnected pomniejszony (open liczony z niego), 3 tylko `mapWidth`, 4 jawne wymiary (inne niz mapa) bez pol.
+9. serde_json: wyniki to calkowite — brak problemu 1 ulp z Q2 (wektory nie zawieraja ulamkow; wejscia f kopca maja <= 2 miejsca po przecinku).
+
+### Bramki (worktree `wf_ae47afd3-f36-1`, `CARGO_TARGET_DIR=/dev/shm/m07b3-q3-target`, `CARGO_INCREMENTAL=0`, debug off; kazdy log ma JEDNA linie `EXIT=`, bez pustej linii przed nia)
+
+- `cargo fmt --check`: EXIT=0 (`gate-fmt-r1.txt`).
+- `cargo clippy --all-targets`: 0 ostrzezen, EXIT=0 (`gate-clippy-r1.txt`).
+- `cargo test --test p6_m07b3_q3 --test p6_m07b_turn --test p6_m07b2_coast --test p6_m07b2_edges --test p6_m07b2_q2r4`: 2+2+2+3+2 OK, EXIT=0 (`gate-test-m07b3-r1.txt`).
+- PELNY `cargo test --no-fail-fast` w jednym przebiegu bez timeoutu: 1949 passed / 0 failed, EXIT=0 (`gate-test-full-r1.txt`; baza przed tematem NIE_ZMIERZONO osobnym uruchomieniem — Q2 r4 podawal 1934; w Q3 doszly 2 testy).
+- Weryfikator Python: 14 589/14 589 zgodne, EXIT=0 (`verify-m07b3-q3-r1.txt`).
+- Mutacje: 205 mutantow (patrz wyzej), `mutate-m07b3-q3-r1.txt` EXIT=0 (brak SURVIVED z oczekiwaniem K i brak INVALID).
+- `git diff --check`: czysty przed kazdym commitem.
+- `Cargo.lock` w `rust-port/engine/` nieslediony, NIE commitowany. Target usuniety po etapie.
