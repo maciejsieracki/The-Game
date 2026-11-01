@@ -3737,7 +3737,7 @@ export function topUpPangeaLandFraction(
     });
     for (const k of cands) {
       if (land >= targetLand) break;
-      // Sprawdź ponownie: wcześniejsze dopiski tej rundy mogły zmienić sąsiedztwo (tylko w górę).
+      // Kandydaci odfiltrowani przed pętlą (>=3 suche sąsiady); dopiski tej rundy tylko zwiększają sąsiedztwo, więc bez ponownego sprawdzenia.
       setHexToLaka(hexes[k]!);
       land++;
       added++;
