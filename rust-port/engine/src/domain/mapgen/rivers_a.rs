@@ -130,7 +130,7 @@ pub(crate) const fn is_river_land_terrain(t: Terrain) -> bool {
 }
 
 /// Web `hexAxialDistance` (:5405): `(|dq| + |dr| + |dq + dr|) / 2` (zawsze parzysta suma).
-fn hex_axial_distance(q1: i64, r1: i64, q2: i64, r2: i64) -> i64 {
+pub(crate) fn hex_axial_distance(q1: i64, r1: i64, q2: i64, r2: i64) -> i64 {
     let dq = q1 - q2;
     let dr = r1 - r2;
     (dq.abs() + dr.abs() + (dq + dr).abs()) / 2

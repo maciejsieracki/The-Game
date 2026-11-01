@@ -12,6 +12,12 @@ pub mod edges;
 pub mod extend;
 /// P6.M07B-Q2 partia 2: krok meandru ku celowi (gen-helpers.ts:6485-6519).
 pub mod meander;
+/// P6.M07B-Q4 partia 4c: limit kwot rzek (gen-helpers.ts:6943-6958).
+pub mod quotas;
+/// P6.M07B-Q4 partia 4b: zrodla rzek (gen-helpers.ts:6866-6987).
+pub mod sources;
+/// P6.M07B-Q4 partia 4a: pelne trasowanie rzeki (gen-helpers.ts:6707-6853).
+pub mod trace;
 /// P6.M07B-Q3 partia 3a: trasowanie od wybrzeza i zjazd zachlanny (gen-helpers.ts:6233-6340).
 pub mod trace_coast;
 /// P6.M07B partia 1: geometria okna skretu (gen-helpers.ts:7051-7086).
