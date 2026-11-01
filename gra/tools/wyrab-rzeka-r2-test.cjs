@@ -114,10 +114,14 @@ console.log('4. OBJAW B: farma na rzece 13,12 (bez lasu) z obywatelem → trzoda
   assert(!bydloWithout.includes('bydlo'), `bez „Oswojenia zwierząt”: bydło NIE powstaje (przyczyna: tech) (got ${JSON.stringify(bydloWithout)})`);
 }
 
-console.log('5. E3: hodowla TYLKO na heksach przy rzece (bydło nie wchodzi na heksy bez rzeki)');
+console.log('5. E3: hodowla TYLKO na heksach przy rzece (na rzece lub sasiadujacych; bydło nie wchodzi na heksy bez dostepu do rzeki)');
 {
   const r = simulate({ forest: [], worked: WORKED, techs: ALL, turns: 6, placed0: [[RIVER, 'farma']], riverForest: false });
-  const offRiver = Object.entries(r.builtOn).filter(([hk, keys]) => hk !== RIVER && keys.some(k => k === 'bydlo' || k === 'owce' || k === 'lama'));
+  // R-WEB-AUTOCLEAR-PRIORITY-LIVE-Q1 r2 (ABC-B): „przy rzece” = NA rzece LUB SASIADUJACY z heksem rzeki (`hasRiverAccess`);
+  // bydlo nadal NIE wchodzi na heksy bez dostepu do rzeki (ani na rzece, ani obok).
+  const RIV = new Set(['13,12', '13,11']);
+  const nearRiver = hk => { const [q, r] = hk.split(',').map(Number); return RIV.has(hk) || [[1, 0], [-1, 0], [0, 1], [0, -1], [1, -1], [-1, 1]].some(([a, b]) => RIV.has(`${q + a},${r + b}`)); };
+  const offRiver = Object.entries(r.builtOn).filter(([hk, keys]) => !nearRiver(hk) && keys.some(k => k === 'bydlo' || k === 'owce' || k === 'lama'));
   assert(offRiver.length === 0, `brak hodowli na heksach bez rzeki (got ${JSON.stringify(offRiver)})`);
 }
 

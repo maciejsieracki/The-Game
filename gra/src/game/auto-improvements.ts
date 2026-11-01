@@ -524,7 +524,7 @@ interface FoodStageDef {
  * WIĄŻĄCA SPECYFIKACJA WŁAŚCICIELA (2026-10-31), globalnie po etapach, nie heks po heksie:
  *   E1 farma na heksach z rzeką BEZ lasu — pierwszy priorytet, wszędzie;
  *   E2 wycinka lasu na heksach przy rzece (potem farma na wyciętym heksie = E1 w kolejnej turze);
- *   E3 hodowla (bydło/owce/lama) — wyłącznie przy rzece (picker: `riverHexKeys`); MIEŚCI SIĘ w limicie % puli
+ *   E3 hodowla (bydło/owce/lama) — wyłącznie przy rzece (picker: `onRiverHex` = `hasRiverAccess`: na rzece albo sąsiadująco); MIEŚCI SIĘ w limicie % puli
  *      (decyzja #24: dawny wyjątek Q2=B / #5 „poza limitem %” ODWOŁANY — budżet gracza jest twardym sufitem);
  *   E4 irygacja (+tarasy) — jak E3, bez wyjątku od limitu % (koszt ponad budżet = nie budujemy w tej turze,
  *      pula Pracy się kumuluje, procent liczony od skumulowanej puli);
@@ -1168,15 +1168,27 @@ function pickAutoImprovementsSinglePass(opts: PickAutoImprovementsOpts): AutoImp
     const q = Number(qs); const r = Number(rs);
     return [`${q + 1},${r}`, `${q - 1},${r}`, `${q},${r + 1}`, `${q},${r - 1}`, `${q + 1},${r - 1}`, `${q - 1},${r + 1}`];
   };
+  // Heks NA rzece (`riverPaths` albo własne `rzeka.obecna`) — pierwszy człon `hasRiverAccess` i klucz sortowania „rzeka przed sąsiadem”.
+  const isOnRiver = (hk: string): boolean => riverHexKeys.has(hk) || map.hexes[hk]?.rzeka?.obecna === true;
   const riverAccessMemo = new Map<string, boolean>();
   const hasRiverAccess = (hk: string): boolean => {
     const hit = riverAccessMemo.get(hk);
     if (hit !== undefined) return hit;
-    let v = riverHexKeys.has(hk) || map.hexes[hk]?.rzeka?.obecna === true;
+    let v = isOnRiver(hk);
     if (!v) v = riverNeighborKeys(hk).some(n => riverHexKeys.has(n));
     riverAccessMemo.set(hk, v);
     return v;
   };
+  // R-WEB-AUTOCLEAR-PRIORITY-LIVE-Q1 (zgłoszenie właściciela 2026-11-01, Rodos: „system mógł budować farmę, a robi trzodę”;
+  // r2: decyzja orkiestratora ABC-B): heks „Z RZEKĄ” w etapach E1–E3 (farma / wycinka / trzoda) = heks NA rzece
+  // (`riverPaths` albo własne `rzeka.obecna`) LUB SĄSIADUJĄCY z rzeką — dokładnie `hasRiverAccess` (jedno źródło definicji,
+  // bez duplikacji). Samo `riverPaths` pomijało część rzek (nowa gra, ziarno 778899: 1961 heksów `rzeka.obecna`, 1173 w `riverPaths`),
+  // a heks przy rzece dostawał farmę dopiero w E5, za trzodą i irygacją.
+  // r3 (zarzut Evaluatora r2 #1): sąsiad z własnym `rzeka.obecna` (rzeka WIDOCZNA na mapie, bez wpisu w `riverPaths`) też liczy się
+  // jako „przy rzece” DLA PICKERA FOOD (E1–E3). Celowo NIE zmieniamy `hasRiverAccess` (tartak/obóz, `isRiverAdjacent`/irygacja
+  // zostają bez zmian — osobny temat), tylko rozszerzamy `onRiverHex`. Sweep 778899: 11/200 układów wcześniej miało trzodę przed farmą.
+  const onRiverHex = (hk: string): boolean =>
+    hasRiverAccess(hk) || riverNeighborKeys(hk).some(n => map.hexes[n]?.rzeka?.obecna === true);
 
   // E-FORT (R-WEB-AUTO-FORT-CLAIM-Q1): osobny przebieg z tymi samymi pułapami budżetu co reszta pickera.
   if (fortClaimPass) {
@@ -1352,10 +1364,16 @@ function pickAutoImprovementsSinglePass(opts: PickAutoImprovementsOpts): AutoImp
       (Math.abs(q - city.q) + Math.abs(r - city.r) + Math.abs((q - city.q) + (r - city.r))) / 2;
     const orderedHexes = [...candidateHexes]
       // R5 etap E1: farma najpierw na heksach z rzeką (wszędzie), więc kandydaci to tylko rzeka.
-      .filter(h => !riverHexesOnly || riverHexKeys.has(`${h.q},${h.r}`))
+      .filter(h => !riverHexesOnly || onRiverHex(`${h.q},${h.r}`))
       .sort((a, b) => {
-      const ar = riverHexKeys.has(`${a.q},${a.r}`) ? 0 : 1;
-      const br = riverHexKeys.has(`${b.q},${b.r}`) ? 0 : 1;
+      // 3 stopnie: heks NA rzece (0) < heks tylko SĄSIADUJĄCY z rzeką (1) < reszta (2). Oba pierwsze to „heks z rzeką” (E1–E3),
+      // ale przy równych etapach rzeka właściwa idzie pierwsza (zachowuje dotychczasową kolejność wewnątrz E1/E2).
+      const rank = (h: { q: number; r: number }): number => {
+        const k = `${h.q},${h.r}`;
+        return isOnRiver(k) ? 0 : onRiverHex(k) ? 1 : 2;
+      };
+      const ar = rank(a);
+      const br = rank(b);
       return (ar - br) || (hexDist(a.q, a.r) - hexDist(b.q, b.r)) || (a.q - b.q) || (a.r - b.r);
     });
 
@@ -1508,7 +1526,7 @@ function pickAutoImprovementsSinglePass(opts: PickAutoImprovementsOpts): AutoImp
       const hk = `${q},${r}`;
       if (!wyrabWlaczony || !wyrabMetaRzeka) return false;
       if (!wyrabMaSens(q, r)) return false;
-      if (!riverHexKeys.has(hk)) return false;
+      if (!onRiverHex(hk)) return false;
       if (scheduledWyrabHexes.has(hk)) return false;
       if (map.hexes[hk]?.nakladka !== Nakladka.Las) return false;
       if ((workingPlaced.get(hk) ?? []).some(k => k === 'tartak' || k === 'oboz_lowiecki')) return false;
@@ -1534,7 +1552,7 @@ function pickAutoImprovementsSinglePass(opts: PickAutoImprovementsOpts): AutoImp
     // (`offRiverClearing`, etap E5) wyższe etapy E1-E4 są już wyczerpane, więc ta bramka nie obowiązuje.
     const rzekiDoZagospodarowania = !offRiverClearing && wyrabWlaczony && candidateHexes.some(({ q, r }) => {
       const hk = `${q},${r}`;
-      if (!riverHexKeys.has(hk)) return false;
+      if (!onRiverHex(hk)) return false;
       if (scheduledWyrabHexes.has(hk)) return false;
       if (map.hexes[hk]?.nakladka === Nakladka.Las && riverKrok0Ok(q, r)) return true;
       // ZASADA 1/2: „czym zagospodarować” liczy się na TEJ SAMEJ, zawężonej liście
@@ -1544,7 +1562,7 @@ function pickAutoImprovementsSinglePass(opts: PickAutoImprovementsOpts): AutoImp
       return hexPhasePriority.some(k => {
         if (!RIVER_DEVELOPMENT_KEYS.includes(k)) return false;
         if (placedHere.includes(k)) return false;
-        if ((k === 'bydlo' || k === 'owce' || k === 'lama') && !riverHexKeys.has(hk)) return false;
+        if ((k === 'bydlo' || k === 'owce' || k === 'lama') && !onRiverHex(hk)) return false;
         if (!isImprovementTechUnlocked(k, unlockedTechs) || !civGate(k, civArchetype)) return false;
         return hexAllowsKey(q, r, k) && qualifies(k, q, r);
       });
@@ -1628,7 +1646,7 @@ function pickAutoImprovementsSinglePass(opts: PickAutoImprovementsOpts): AutoImp
       return found;
     };
     const keyBlockedOnHex = (key: ImprovementKey, hexKey: string): boolean => {
-      if ((key === 'bydlo' || key === 'owce' || key === 'lama') && !riverHexKeys.has(hexKey)) return true;
+      if ((key === 'bydlo' || key === 'owce' || key === 'lama') && !onRiverHex(hexKey)) return true;
       if (key === 'irygacja' && irrigationNeedsFarm && !(workingPlaced.get(hexKey) ?? []).includes('farma')) return true;
       // R3, ABC-B=B: w K2/K3 (`demandActive`) tartak tylko przy niedoborze drewna; obóz bez nowego tartaku
       // (wymóg tartaku na heksie egzekwuje `qualifies`, improvement-build.ts:641).
@@ -1663,7 +1681,7 @@ function pickAutoImprovementsSinglePass(opts: PickAutoImprovementsOpts): AutoImp
           wyrabWlaczony
           && (offRiverClearing || lesneMinSpelnione)
           && wolnoKarczowacPozaRzeka
-          && !riverHexKeys.has(hexKey)
+          && !onRiverHex(hexKey)
           && !scheduledWyrabHexes.has(hexKey)
           && map.hexes[hexKey]?.nakladka === Nakladka.Las
           && wyrabMaSens(q, r)
