@@ -496,3 +496,5 @@ Cel końcowy i bieżący zapisane w `GOAL-RUST-PORT-20261020.md` (§"CEL PĘTLI 
 ## 2026-11-01 — REPIN-WOJNA-3 PASS-WITH-NOTES (r1) zintegrowane na parity-v2
 - FC `a6f1149cc` (kod `51b791180`); fast-forward `5f618f748` → `a6f1149cc` (baza niezmieniona, bramki FC: fmt/clippy OK, test 1981/0, weryfikator 700 przypadków 0 rozbieżności, mutanty 16/16). Delta weba dla generałów: tylko `battleScene.ts:3471` (NIE-DOTYCZY silnika); poprawka kolejności wczytania `plannedMarches` w `save_load.rs`. Dług: `planGeneralFollowMarch` z prawdziwym plannerem i NaN w łańcuchu hooka (NIE_ZMIERZONO).
 - Start `R-RUSTPORT-REPIN-EKONOMIA-E-SPICHLERZ-STAWKA-Q1` (kroki 1–2 DELTA-3 §3a: dane + Spichlerz + stawka per epoka). Aktywne Rust: M07B3, 8I r4, EKONOMIA-E. Web: AUTOCLEAR, SPACING, AI-POLAR.
+
+- 2026-11-01 05:12 UTC — kontrola cykliczna: wszystkie aktywne biegną ze świeżymi zapisami (Rust: M07B3, 8I r4, EKONOMIA-E r1; web: AUTOCLEAR, SPACING, AI-POLAR); brak PASS do integracji. Dysk 5,9 GB — nie dokładać tematów.
