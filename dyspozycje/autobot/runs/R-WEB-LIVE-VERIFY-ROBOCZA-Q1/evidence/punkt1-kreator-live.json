@@ -1,0 +1,152 @@
+{
+  "bundle": "/home/user/The-Game/.claude/worktrees/wf_ae1df185-e52-1/gra-robocza/Gra-ROBOCZA.html",
+  "pass": 14,
+  "fail": 0,
+  "results": [
+    {
+      "label": "menu: przycisk \"Rozpocznij grę\" -> kreator",
+      "ok": true
+    },
+    {
+      "label": "domyślnie: Rozmiar mapy = Standardowy",
+      "ok": true,
+      "detail": [
+        {
+          "lbl": "Rozmiar mapy",
+          "val": "Standardowy"
+        },
+        {
+          "lbl": "Liczba cywilizacji",
+          "val": "7"
+        },
+        {
+          "lbl": "Typ świata",
+          "val": "Kontynenty"
+        },
+        {
+          "lbl": "Miasta-państwa",
+          "val": "6"
+        },
+        {
+          "lbl": "Udział lądu na mapie",
+          "val": "30% lądu / 70% morze"
+        },
+        {
+          "lbl": "Trudność miast-państw",
+          "val": "Normalny"
+        },
+        {
+          "lbl": "Prędkość gry",
+          "val": "Standardowa"
+        },
+        {
+          "lbl": "Wojna epoki",
+          "val": "Włączona"
+        },
+        {
+          "lbl": "Poziom trudności",
+          "val": "Normalny"
+        },
+        {
+          "lbl": "Barbarzyńcy",
+          "val": "Normalny"
+        },
+        {
+          "lbl": "Warunki zwycięstwa",
+          "val": "Moc + dominacja"
+        },
+        {
+          "lbl": "Chatki z nagrodami",
+          "val": "Włączone"
+        }
+      ]
+    },
+    {
+      "label": "domyślnie: Typ świata = Kontynenty",
+      "ok": true
+    },
+    {
+      "label": "Kontynenty: udział lądu = 30%",
+      "ok": true,
+      "detail": "30% lądu / 70% morze"
+    },
+    {
+      "label": "Pangea: typ = Pangea, udział lądu = 60%",
+      "ok": true,
+      "detail": [
+        {
+          "lbl": "Rozmiar mapy",
+          "val": "Standardowy"
+        },
+        {
+          "lbl": "Liczba cywilizacji",
+          "val": "7"
+        },
+        {
+          "lbl": "Typ świata",
+          "val": "Pangea"
+        },
+        {
+          "lbl": "Miasta-państwa",
+          "val": "6"
+        },
+        {
+          "lbl": "Udział lądu na mapie",
+          "val": "60% lądu / 40% morze"
+        },
+        {
+          "lbl": "Trudność miast-państw",
+          "val": "Normalny"
+        }
+      ]
+    },
+    {
+      "label": "Wyspy: typ = Wyspy, udział lądu = 50%",
+      "ok": true
+    },
+    {
+      "label": "Ziemia: typ = Ziemia, brak wiersza udziału lądu",
+      "ok": true
+    },
+    {
+      "label": "powrót do Wyspy: udział lądu = 50% (reset do domyślnego typu)",
+      "ok": true,
+      "detail": {
+        "afterWrap": "Kontynenty"
+      }
+    },
+    {
+      "label": "Wyspy: strzałka zmienia udział lądu (ręczna zmiana, pomiar)",
+      "ok": true,
+      "detail": "40% lądu / 60% morze"
+    },
+    {
+      "label": "ręczna zmiana lądu + zmiana typu na Pangea => 60% (reset)",
+      "ok": true,
+      "detail": "60% lądu / 40% morze"
+    },
+    {
+      "label": "brak błędów strony (kreator)",
+      "ok": true,
+      "detail": []
+    },
+    {
+      "label": "prefs zapisane w localStorage po zmianach (pomiar)",
+      "ok": true,
+      "detail": "{\"v\":4,\"selEpoch\":\"kamien\",\"selCiv\":\"rzymianie\",\"settings\":{\"difficulty\":1,\"map_size\":2,\"world_type\":1,\"game_speed\":0,\"city_states_count\":1,\"deals_end_turn_gate\":0,\"player_epoch_war\":0,\"civ_types_coun"
+    },
+    {
+      "label": "zmiana Bitwy -> \"Bitwa automatyczna\"",
+      "ok": true,
+      "detail": "Bitwa automatyczna"
+    },
+    {
+      "label": "po przeładowaniu zapisane \"Bitwa automatyczna\" nie nadpisane domyślnym",
+      "ok": true,
+      "detail": {
+        "prefsSaved": true,
+        "bitwy": "Bitwa automatyczna"
+      }
+    }
+  ]
+}

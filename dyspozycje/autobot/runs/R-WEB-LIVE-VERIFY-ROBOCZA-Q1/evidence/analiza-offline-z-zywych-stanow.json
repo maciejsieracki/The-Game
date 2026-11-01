@@ -1,0 +1,325 @@
+{
+  "note": "teren z deterministycznej regeneracji mapy (ziarno z logu zywej gry); zgodnosc potwierdza capsMatchPlan",
+  "rows": [
+    {
+      "file": "live-gen-kontynenty1001.json",
+      "typ": "kontynenty",
+      "seed": 1001,
+      "lf": 0.3,
+      "landPct": 30,
+      "landNoCoastPct": 30,
+      "hexes": 20160,
+      "polarHexes": 0,
+      "liveCapMin": 16,
+      "liveCapPair": [
+        "egipt#1",
+        "zulusi#8"
+      ],
+      "planCapMin": 16,
+      "liveCaps": [
+        "gracz@82,54",
+        "egipt#1@45,89",
+        "zulusi#8@31,87",
+        "grecy#15@134,29",
+        "sumer#22@134,90",
+        "chinczycy#29@41,29",
+        "inkowie#36@127,60"
+      ],
+      "capsMatchPlan": "6/7",
+      "mapMatches": false,
+      "polarCaps": [],
+      "polarAiCityCount": 0,
+      "playerPolar": false,
+      "cityMinDiffCiv": 9,
+      "liveCitiesN": 49
+    },
+    {
+      "file": "live-gen-kontynenty2024.json",
+      "typ": "kontynenty",
+      "seed": 2024,
+      "lf": 0.3,
+      "landPct": 30,
+      "landNoCoastPct": 30,
+      "hexes": 20160,
+      "polarHexes": 0,
+      "liveCapMin": 18,
+      "liveCapPair": [
+        "gracz",
+        "zulusi#1"
+      ],
+      "planCapMin": 17,
+      "liveCaps": [
+        "gracz@82,65",
+        "zulusi#1@74,55",
+        "egipt#8@123,82",
+        "sumer#15@137,31",
+        "grecy#22@28,90",
+        "chinczycy#29@43,28",
+        "inkowie#36@116,25"
+      ],
+      "capsMatchPlan": "6/7",
+      "mapMatches": false,
+      "polarCaps": [],
+      "polarAiCityCount": 0,
+      "playerPolar": false,
+      "cityMinDiffCiv": 8,
+      "liveCitiesN": 49
+    },
+    {
+      "file": "live-gen-kontynenty31337.json",
+      "typ": "kontynenty",
+      "seed": 31337,
+      "lf": 0.3,
+      "landPct": 30,
+      "landNoCoastPct": 30,
+      "hexes": 20160,
+      "polarHexes": 0,
+      "liveCapMin": 17,
+      "liveCapPair": [
+        "gracz",
+        "zulusi#1"
+      ],
+      "planCapMin": 15,
+      "liveCaps": [
+        "gracz@82,62",
+        "zulusi#1@99,58",
+        "egipt#8@43,29",
+        "grecy#15@128,88",
+        "sumer#22@137,54",
+        "chinczycy#29@70,55",
+        "inkowie#36@29,91"
+      ],
+      "capsMatchPlan": "2/7",
+      "mapMatches": false,
+      "polarCaps": [],
+      "polarAiCityCount": 0,
+      "playerPolar": false,
+      "cityMinDiffCiv": 9,
+      "liveCitiesN": 49
+    },
+    {
+      "file": "live-gen-kontynenty4242.json",
+      "typ": "kontynenty",
+      "seed": 4242,
+      "lf": 0.3,
+      "landPct": 30,
+      "landNoCoastPct": 30,
+      "hexes": 20160,
+      "polarHexes": 0,
+      "liveCapMin": 15,
+      "liveCapPair": [
+        "inkowie#1",
+        "sumer#29"
+      ],
+      "planCapMin": 15,
+      "liveCaps": [
+        "gracz@134,33",
+        "inkowie#1@76,52",
+        "grecy#8@34,85",
+        "egipt#15@133,87",
+        "chinczycy#22@95,66",
+        "sumer#29@80,63",
+        "zulusi#36@91,48"
+      ],
+      "capsMatchPlan": "3/7",
+      "mapMatches": false,
+      "polarCaps": [],
+      "polarAiCityCount": 0,
+      "playerPolar": false,
+      "cityMinDiffCiv": 6,
+      "liveCitiesN": 49
+    },
+    {
+      "file": "live-gen-kontynenty7777.json",
+      "typ": "kontynenty",
+      "seed": 7777,
+      "lf": 0.3,
+      "landPct": 30,
+      "landNoCoastPct": 30,
+      "hexes": 20160,
+      "polarHexes": 0,
+      "liveCapMin": 17,
+      "liveCapPair": [
+        "gracz",
+        "zulusi#1"
+      ],
+      "planCapMin": 17,
+      "liveCaps": [
+        "gracz@77,65",
+        "zulusi#1@89,48",
+        "egipt#8@33,86",
+        "sumer#15@47,32",
+        "grecy#22@135,87",
+        "chinczycy#29@104,63",
+        "inkowie#36@65,55"
+      ],
+      "capsMatchPlan": "4/7",
+      "mapMatches": false,
+      "polarCaps": [],
+      "polarAiCityCount": 0,
+      "playerPolar": false,
+      "cityMinDiffCiv": 7,
+      "liveCitiesN": 49
+    },
+    {
+      "file": "live-gen-pangea1001.json",
+      "typ": "pangea",
+      "seed": 1001,
+      "lf": 0.6,
+      "landPct": 56.2,
+      "landNoCoastPct": 56.2,
+      "hexes": 20160,
+      "polarHexes": 169,
+      "liveCapMin": 15,
+      "liveCapPair": [
+        "egipt#1",
+        "sumer#29"
+      ],
+      "planCapMin": 15,
+      "liveCaps": [
+        "gracz@40,75",
+        "egipt#1@129,45",
+        "chinczycy#8@119,31",
+        "zulusi#15@70,21",
+        "grecy#22@63,100",
+        "sumer#29@114,46",
+        "inkowie#36@35,49"
+      ],
+      "capsMatchPlan": "7/7",
+      "mapMatches": true,
+      "polarCaps": [],
+      "polarAiCityCount": 0,
+      "playerPolar": false,
+      "cityMinDiffCiv": 10,
+      "liveCitiesN": 49
+    },
+    {
+      "file": "live-gen-pangea4242.json",
+      "typ": "pangea",
+      "seed": 4242,
+      "lf": 0.6,
+      "landPct": 56.1,
+      "landNoCoastPct": 56.1,
+      "hexes": 20160,
+      "polarHexes": 138,
+      "liveCapMin": 15,
+      "liveCapPair": [
+        "chinczycy#15",
+        "sumer#36"
+      ],
+      "planCapMin": 15,
+      "liveCaps": [
+        "gracz@57,96",
+        "zulusi#1@96,102",
+        "inkowie#8@102,21",
+        "chinczycy#15@73,17",
+        "grecy#22@71,99",
+        "egipt#29@132,72",
+        "sumer#36@81,24"
+      ],
+      "capsMatchPlan": "7/7",
+      "mapMatches": true,
+      "polarCaps": [],
+      "polarAiCityCount": 0,
+      "playerPolar": false,
+      "cityMinDiffCiv": 6,
+      "liveCitiesN": 49
+    },
+    {
+      "file": "live-gen-pangea7777.json",
+      "typ": "pangea",
+      "seed": 7777,
+      "lf": 0.6,
+      "landPct": 56,
+      "landNoCoastPct": 56,
+      "hexes": 20160,
+      "polarHexes": 154,
+      "liveCapMin": 15,
+      "liveCapPair": [
+        "chinczycy#1",
+        "zulusi#22"
+      ],
+      "planCapMin": 15,
+      "liveCaps": [
+        "gracz@52,90",
+        "chinczycy#1@36,60",
+        "grecy#8@99,21",
+        "inkowie#15@131,76",
+        "zulusi#22@40,71",
+        "sumer#29@61,22",
+        "egipt#36@91,95"
+      ],
+      "capsMatchPlan": "7/7",
+      "mapMatches": true,
+      "polarCaps": [],
+      "polarAiCityCount": 0,
+      "playerPolar": false,
+      "cityMinDiffCiv": 10,
+      "liveCitiesN": 49
+    },
+    {
+      "file": "live-gen-wyspy1001.json",
+      "typ": "wyspy",
+      "seed": 1001,
+      "lf": 0.5,
+      "landPct": 50,
+      "landNoCoastPct": 50,
+      "hexes": 20160,
+      "polarHexes": 567,
+      "liveCapMin": 17,
+      "liveCapPair": [
+        "gracz",
+        "inkowie#1"
+      ],
+      "planCapMin": 17,
+      "liveCaps": [
+        "gracz@100,48",
+        "inkowie#1@83,55",
+        "sumer#8@103,64",
+        "egipt#15@66,104",
+        "zulusi#22@24,44",
+        "grecy#29@148,102",
+        "chinczycy#36@62,46"
+      ],
+      "capsMatchPlan": "4/7",
+      "mapMatches": false,
+      "polarCaps": [],
+      "polarAiCityCount": 0,
+      "playerPolar": false,
+      "cityMinDiffCiv": 7,
+      "liveCitiesN": 49
+    },
+    {
+      "file": "live-gen-wyspy3333.json",
+      "typ": "wyspy",
+      "seed": 3333,
+      "lf": 0.5,
+      "landPct": 50,
+      "landNoCoastPct": 50,
+      "hexes": 20160,
+      "polarHexes": 376,
+      "liveCapMin": 15,
+      "liveCapPair": [
+        "gracz",
+        "sumer#1"
+      ],
+      "planCapMin": 15,
+      "liveCaps": [
+        "gracz@92,50",
+        "sumer#1@77,53",
+        "grecy#8@29,75",
+        "chinczycy#15@59,73",
+        "egipt#22@109,18",
+        "zulusi#29@25,102",
+        "inkowie#36@150,102"
+      ],
+      "capsMatchPlan": "3/7",
+      "mapMatches": false,
+      "polarCaps": [],
+      "polarAiCityCount": 0,
+      "playerPolar": false,
+      "cityMinDiffCiv": 5,
+      "liveCitiesN": 49
+    }
+  ]
+}

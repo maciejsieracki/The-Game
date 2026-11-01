@@ -1,0 +1,983 @@
+[
+  {
+    "file": "farma-zrownowazone-wolnoON.json",
+    "policy": {
+      "focus": "zrownowazone",
+      "tryb": "auto",
+      "onlyWorked": true,
+      "wolnoWycinacLas": true,
+      "pracaAutoPercent": 33
+    },
+    "city": {
+      "id": "city0",
+      "q": 47,
+      "r": 24,
+      "population": 1
+    },
+    "cityNaRzece": true,
+    "cityObokRzeki": true,
+    "errors": [],
+    "turns": 25,
+    "rows": [
+      {
+        "turn": 1,
+        "key": "farma",
+        "hex": "47,24",
+        "teren": "laka",
+        "nakladka": "brak",
+        "naRzece": true,
+        "obokRzeki": true,
+        "distCity": 0,
+        "poolBefore": 300
+      },
+      {
+        "turn": 1,
+        "key": "farma",
+        "hex": "49,24",
+        "teren": "laka",
+        "nakladka": "zloze_gliny",
+        "naRzece": true,
+        "obokRzeki": true,
+        "distCity": 2,
+        "poolBefore": 300
+      },
+      {
+        "turn": 2,
+        "key": "bydlo",
+        "hex": "47,24",
+        "teren": "laka",
+        "nakladka": "brak",
+        "naRzece": true,
+        "obokRzeki": true,
+        "distCity": 0,
+        "poolBefore": 262
+      },
+      {
+        "turn": 2,
+        "key": "bydlo",
+        "hex": "49,24",
+        "teren": "laka",
+        "nakladka": "zloze_gliny",
+        "naRzece": true,
+        "obokRzeki": true,
+        "distCity": 2,
+        "poolBefore": 262
+      },
+      {
+        "turn": 3,
+        "key": "irygacja",
+        "hex": "47,24",
+        "teren": "laka",
+        "nakladka": "brak",
+        "naRzece": true,
+        "obokRzeki": true,
+        "distCity": 0,
+        "poolBefore": 223
+      },
+      {
+        "turn": 5,
+        "key": "irygacja",
+        "hex": "49,24",
+        "teren": "laka",
+        "nakladka": "zloze_gliny",
+        "naRzece": true,
+        "obokRzeki": true,
+        "distCity": 2,
+        "poolBefore": 173
+      },
+      {
+        "turn": 12,
+        "key": "farma",
+        "hex": "49,25",
+        "teren": "laka",
+        "nakladka": "zloze_gliny",
+        "naRzece": true,
+        "obokRzeki": true,
+        "distCity": 3,
+        "poolBefore": 224
+      },
+      {
+        "turn": 13,
+        "key": "bydlo",
+        "hex": "49,25",
+        "teren": "laka",
+        "nakladka": "zloze_gliny",
+        "naRzece": true,
+        "obokRzeki": true,
+        "distCity": 3,
+        "poolBefore": 220
+      },
+      {
+        "turn": 14,
+        "key": "irygacja",
+        "hex": "49,25",
+        "teren": "laka",
+        "nakladka": "zloze_gliny",
+        "naRzece": true,
+        "obokRzeki": true,
+        "distCity": 3,
+        "poolBefore": 221
+      },
+      {
+        "turn": 18,
+        "key": "farma",
+        "hex": "42,28",
+        "teren": "laka",
+        "nakladka": "brak",
+        "naRzece": true,
+        "obokRzeki": true,
+        "distCity": 5,
+        "poolBefore": 257
+      },
+      {
+        "turn": 20,
+        "key": "warzelnia_soli",
+        "hex": "49,22",
+        "teren": "plytkie_morze",
+        "nakladka": "brak",
+        "naRzece": true,
+        "obokRzeki": true,
+        "distCity": 2,
+        "poolBefore": 305
+      },
+      {
+        "turn": 20,
+        "key": "lodzie_rybackie",
+        "hex": "49,22",
+        "teren": "plytkie_morze",
+        "nakladka": "brak",
+        "naRzece": true,
+        "obokRzeki": true,
+        "distCity": 2,
+        "poolBefore": 305
+      },
+      {
+        "turn": 22,
+        "key": "farma",
+        "hex": "42,29",
+        "teren": "laka",
+        "nakladka": "brak",
+        "naRzece": true,
+        "obokRzeki": true,
+        "distCity": 5,
+        "poolBefore": 298
+      }
+    ],
+    "firstFarm": {
+      "turn": 1,
+      "key": "farma",
+      "hex": "47,24",
+      "teren": "laka",
+      "nakladka": "brak",
+      "naRzece": true,
+      "obokRzeki": true,
+      "distCity": 0,
+      "poolBefore": 300
+    },
+    "firstHerd": {
+      "turn": 2,
+      "key": "bydlo",
+      "hex": "47,24",
+      "teren": "laka",
+      "nakladka": "brak",
+      "naRzece": true,
+      "obokRzeki": true,
+      "distCity": 0,
+      "poolBefore": 262
+    },
+    "wyrabCount": 0,
+    "farmBeforeHerdPerHex": [
+      {
+        "hex": "47,24",
+        "teren": "laka",
+        "nakladka": "brak",
+        "farmTurn": 1,
+        "herdTurn": 2
+      },
+      {
+        "hex": "49,24",
+        "teren": "laka",
+        "nakladka": "zloze_gliny",
+        "farmTurn": 1,
+        "herdTurn": 2
+      },
+      {
+        "hex": "49,25",
+        "teren": "laka",
+        "nakladka": "zloze_gliny",
+        "farmTurn": 12,
+        "herdTurn": 13
+      }
+    ],
+    "forestInR3": [
+      {
+        "hex": "45,26",
+        "naRzece": false,
+        "obokRzeki": true,
+        "d": 2
+      },
+      {
+        "hex": "46,22",
+        "naRzece": true,
+        "obokRzeki": true,
+        "d": 3
+      },
+      {
+        "hex": "46,23",
+        "naRzece": true,
+        "obokRzeki": true,
+        "d": 2
+      },
+      {
+        "hex": "46,24",
+        "naRzece": true,
+        "obokRzeki": true,
+        "d": 1
+      },
+      {
+        "hex": "46,25",
+        "naRzece": true,
+        "obokRzeki": true,
+        "d": 1
+      },
+      {
+        "hex": "46,26",
+        "naRzece": true,
+        "obokRzeki": true,
+        "d": 2
+      },
+      {
+        "hex": "46,27",
+        "naRzece": false,
+        "obokRzeki": true,
+        "d": 3
+      },
+      {
+        "hex": "47,21",
+        "naRzece": true,
+        "obokRzeki": true,
+        "d": 3
+      },
+      {
+        "hex": "47,22",
+        "naRzece": true,
+        "obokRzeki": true,
+        "d": 2
+      },
+      {
+        "hex": "47,23",
+        "naRzece": true,
+        "obokRzeki": true,
+        "d": 1
+      },
+      {
+        "hex": "47,25",
+        "naRzece": true,
+        "obokRzeki": true,
+        "d": 1
+      },
+      {
+        "hex": "47,26",
+        "naRzece": true,
+        "obokRzeki": true,
+        "d": 2
+      },
+      {
+        "hex": "47,27",
+        "naRzece": true,
+        "obokRzeki": true,
+        "d": 3
+      },
+      {
+        "hex": "48,21",
+        "naRzece": true,
+        "obokRzeki": true,
+        "d": 3
+      },
+      {
+        "hex": "48,22",
+        "naRzece": true,
+        "obokRzeki": true,
+        "d": 2
+      },
+      {
+        "hex": "48,23",
+        "naRzece": true,
+        "obokRzeki": true,
+        "d": 1
+      },
+      {
+        "hex": "48,24",
+        "naRzece": true,
+        "obokRzeki": true,
+        "d": 1
+      },
+      {
+        "hex": "48,25",
+        "naRzece": true,
+        "obokRzeki": true,
+        "d": 2
+      },
+      {
+        "hex": "48,26",
+        "naRzece": true,
+        "obokRzeki": true,
+        "d": 3
+      }
+    ]
+  },
+  {
+    "file": "farma-zrownowazone-wolnoOFF.json",
+    "policy": {
+      "focus": "zrownowazone",
+      "tryb": "auto",
+      "onlyWorked": true,
+      "wolnoWycinacLas": false,
+      "pracaAutoPercent": 33
+    },
+    "city": {
+      "id": "city0",
+      "q": 47,
+      "r": 24,
+      "population": 1
+    },
+    "cityNaRzece": true,
+    "cityObokRzeki": true,
+    "errors": [],
+    "turns": 25,
+    "rows": [
+      {
+        "turn": 1,
+        "key": "farma",
+        "hex": "47,24",
+        "teren": "laka",
+        "nakladka": "brak",
+        "naRzece": true,
+        "obokRzeki": true,
+        "distCity": 0,
+        "poolBefore": 300
+      },
+      {
+        "turn": 1,
+        "key": "farma",
+        "hex": "49,24",
+        "teren": "laka",
+        "nakladka": "zloze_gliny",
+        "naRzece": true,
+        "obokRzeki": true,
+        "distCity": 2,
+        "poolBefore": 300
+      },
+      {
+        "turn": 2,
+        "key": "bydlo",
+        "hex": "47,24",
+        "teren": "laka",
+        "nakladka": "brak",
+        "naRzece": true,
+        "obokRzeki": true,
+        "distCity": 0,
+        "poolBefore": 262
+      },
+      {
+        "turn": 2,
+        "key": "bydlo",
+        "hex": "49,24",
+        "teren": "laka",
+        "nakladka": "zloze_gliny",
+        "naRzece": true,
+        "obokRzeki": true,
+        "distCity": 2,
+        "poolBefore": 262
+      },
+      {
+        "turn": 3,
+        "key": "irygacja",
+        "hex": "47,24",
+        "teren": "laka",
+        "nakladka": "brak",
+        "naRzece": true,
+        "obokRzeki": true,
+        "distCity": 0,
+        "poolBefore": 223
+      },
+      {
+        "turn": 5,
+        "key": "irygacja",
+        "hex": "49,24",
+        "teren": "laka",
+        "nakladka": "zloze_gliny",
+        "naRzece": true,
+        "obokRzeki": true,
+        "distCity": 2,
+        "poolBefore": 173
+      },
+      {
+        "turn": 12,
+        "key": "farma",
+        "hex": "49,25",
+        "teren": "laka",
+        "nakladka": "zloze_gliny",
+        "naRzece": true,
+        "obokRzeki": true,
+        "distCity": 3,
+        "poolBefore": 224
+      },
+      {
+        "turn": 13,
+        "key": "bydlo",
+        "hex": "49,25",
+        "teren": "laka",
+        "nakladka": "zloze_gliny",
+        "naRzece": true,
+        "obokRzeki": true,
+        "distCity": 3,
+        "poolBefore": 220
+      },
+      {
+        "turn": 14,
+        "key": "irygacja",
+        "hex": "49,25",
+        "teren": "laka",
+        "nakladka": "zloze_gliny",
+        "naRzece": true,
+        "obokRzeki": true,
+        "distCity": 3,
+        "poolBefore": 221
+      },
+      {
+        "turn": 18,
+        "key": "farma",
+        "hex": "42,28",
+        "teren": "laka",
+        "nakladka": "brak",
+        "naRzece": true,
+        "obokRzeki": true,
+        "distCity": 5,
+        "poolBefore": 257
+      },
+      {
+        "turn": 20,
+        "key": "warzelnia_soli",
+        "hex": "49,22",
+        "teren": "plytkie_morze",
+        "nakladka": "brak",
+        "naRzece": true,
+        "obokRzeki": true,
+        "distCity": 2,
+        "poolBefore": 305
+      },
+      {
+        "turn": 20,
+        "key": "lodzie_rybackie",
+        "hex": "49,22",
+        "teren": "plytkie_morze",
+        "nakladka": "brak",
+        "naRzece": true,
+        "obokRzeki": true,
+        "distCity": 2,
+        "poolBefore": 305
+      },
+      {
+        "turn": 22,
+        "key": "farma",
+        "hex": "42,29",
+        "teren": "laka",
+        "nakladka": "brak",
+        "naRzece": true,
+        "obokRzeki": true,
+        "distCity": 5,
+        "poolBefore": 298
+      }
+    ],
+    "firstFarm": {
+      "turn": 1,
+      "key": "farma",
+      "hex": "47,24",
+      "teren": "laka",
+      "nakladka": "brak",
+      "naRzece": true,
+      "obokRzeki": true,
+      "distCity": 0,
+      "poolBefore": 300
+    },
+    "firstHerd": {
+      "turn": 2,
+      "key": "bydlo",
+      "hex": "47,24",
+      "teren": "laka",
+      "nakladka": "brak",
+      "naRzece": true,
+      "obokRzeki": true,
+      "distCity": 0,
+      "poolBefore": 262
+    },
+    "wyrabCount": 0,
+    "farmBeforeHerdPerHex": [
+      {
+        "hex": "47,24",
+        "teren": "laka",
+        "nakladka": "brak",
+        "farmTurn": 1,
+        "herdTurn": 2
+      },
+      {
+        "hex": "49,24",
+        "teren": "laka",
+        "nakladka": "zloze_gliny",
+        "farmTurn": 1,
+        "herdTurn": 2
+      },
+      {
+        "hex": "49,25",
+        "teren": "laka",
+        "nakladka": "zloze_gliny",
+        "farmTurn": 12,
+        "herdTurn": 13
+      }
+    ],
+    "forestInR3": [
+      {
+        "hex": "45,26",
+        "naRzece": false,
+        "obokRzeki": true,
+        "d": 2
+      },
+      {
+        "hex": "46,22",
+        "naRzece": true,
+        "obokRzeki": true,
+        "d": 3
+      },
+      {
+        "hex": "46,23",
+        "naRzece": true,
+        "obokRzeki": true,
+        "d": 2
+      },
+      {
+        "hex": "46,24",
+        "naRzece": true,
+        "obokRzeki": true,
+        "d": 1
+      },
+      {
+        "hex": "46,25",
+        "naRzece": true,
+        "obokRzeki": true,
+        "d": 1
+      },
+      {
+        "hex": "46,26",
+        "naRzece": true,
+        "obokRzeki": true,
+        "d": 2
+      },
+      {
+        "hex": "46,27",
+        "naRzece": false,
+        "obokRzeki": true,
+        "d": 3
+      },
+      {
+        "hex": "47,21",
+        "naRzece": true,
+        "obokRzeki": true,
+        "d": 3
+      },
+      {
+        "hex": "47,22",
+        "naRzece": true,
+        "obokRzeki": true,
+        "d": 2
+      },
+      {
+        "hex": "47,23",
+        "naRzece": true,
+        "obokRzeki": true,
+        "d": 1
+      },
+      {
+        "hex": "47,25",
+        "naRzece": true,
+        "obokRzeki": true,
+        "d": 1
+      },
+      {
+        "hex": "47,26",
+        "naRzece": true,
+        "obokRzeki": true,
+        "d": 2
+      },
+      {
+        "hex": "47,27",
+        "naRzece": true,
+        "obokRzeki": true,
+        "d": 3
+      },
+      {
+        "hex": "48,21",
+        "naRzece": true,
+        "obokRzeki": true,
+        "d": 3
+      },
+      {
+        "hex": "48,22",
+        "naRzece": true,
+        "obokRzeki": true,
+        "d": 2
+      },
+      {
+        "hex": "48,23",
+        "naRzece": true,
+        "obokRzeki": true,
+        "d": 1
+      },
+      {
+        "hex": "48,24",
+        "naRzece": true,
+        "obokRzeki": true,
+        "d": 1
+      },
+      {
+        "hex": "48,25",
+        "naRzece": true,
+        "obokRzeki": true,
+        "d": 2
+      },
+      {
+        "hex": "48,26",
+        "naRzece": true,
+        "obokRzeki": true,
+        "d": 3
+      }
+    ]
+  },
+  {
+    "file": "farma-zywnosc-wolnoON.json",
+    "policy": {
+      "focus": "zywnosc",
+      "tryb": "auto",
+      "onlyWorked": true,
+      "wolnoWycinacLas": true,
+      "pracaAutoPercent": 33
+    },
+    "city": {
+      "id": "city0",
+      "q": 47,
+      "r": 24,
+      "population": 1
+    },
+    "cityNaRzece": true,
+    "cityObokRzeki": true,
+    "errors": [],
+    "turns": 25,
+    "rows": [
+      {
+        "turn": 1,
+        "key": "farma",
+        "hex": "47,24",
+        "teren": "laka",
+        "nakladka": "brak",
+        "naRzece": true,
+        "obokRzeki": true,
+        "distCity": 0,
+        "poolBefore": 300
+      },
+      {
+        "turn": 1,
+        "key": "farma",
+        "hex": "49,24",
+        "teren": "laka",
+        "nakladka": "zloze_gliny",
+        "naRzece": true,
+        "obokRzeki": true,
+        "distCity": 2,
+        "poolBefore": 300
+      },
+      {
+        "turn": 2,
+        "key": "bydlo",
+        "hex": "47,24",
+        "teren": "laka",
+        "nakladka": "brak",
+        "naRzece": true,
+        "obokRzeki": true,
+        "distCity": 0,
+        "poolBefore": 262
+      },
+      {
+        "turn": 2,
+        "key": "bydlo",
+        "hex": "49,24",
+        "teren": "laka",
+        "nakladka": "zloze_gliny",
+        "naRzece": true,
+        "obokRzeki": true,
+        "distCity": 2,
+        "poolBefore": 262
+      },
+      {
+        "turn": 3,
+        "key": "irygacja",
+        "hex": "47,24",
+        "teren": "laka",
+        "nakladka": "brak",
+        "naRzece": true,
+        "obokRzeki": true,
+        "distCity": 0,
+        "poolBefore": 223
+      },
+      {
+        "turn": 5,
+        "key": "irygacja",
+        "hex": "49,24",
+        "teren": "laka",
+        "nakladka": "zloze_gliny",
+        "naRzece": true,
+        "obokRzeki": true,
+        "distCity": 2,
+        "poolBefore": 173
+      },
+      {
+        "turn": 12,
+        "key": "farma",
+        "hex": "49,25",
+        "teren": "laka",
+        "nakladka": "zloze_gliny",
+        "naRzece": true,
+        "obokRzeki": true,
+        "distCity": 3,
+        "poolBefore": 224
+      },
+      {
+        "turn": 13,
+        "key": "bydlo",
+        "hex": "49,25",
+        "teren": "laka",
+        "nakladka": "zloze_gliny",
+        "naRzece": true,
+        "obokRzeki": true,
+        "distCity": 3,
+        "poolBefore": 220
+      },
+      {
+        "turn": 14,
+        "key": "irygacja",
+        "hex": "49,25",
+        "teren": "laka",
+        "nakladka": "zloze_gliny",
+        "naRzece": true,
+        "obokRzeki": true,
+        "distCity": 3,
+        "poolBefore": 221
+      },
+      {
+        "turn": 18,
+        "key": "farma",
+        "hex": "42,28",
+        "teren": "laka",
+        "nakladka": "brak",
+        "naRzece": true,
+        "obokRzeki": true,
+        "distCity": 5,
+        "poolBefore": 257
+      },
+      {
+        "turn": 20,
+        "key": "lodzie_rybackie",
+        "hex": "49,22",
+        "teren": "plytkie_morze",
+        "nakladka": "brak",
+        "naRzece": true,
+        "obokRzeki": true,
+        "distCity": 2,
+        "poolBefore": 305
+      },
+      {
+        "turn": 20,
+        "key": "warzelnia_soli",
+        "hex": "49,22",
+        "teren": "plytkie_morze",
+        "nakladka": "brak",
+        "naRzece": true,
+        "obokRzeki": true,
+        "distCity": 2,
+        "poolBefore": 305
+      },
+      {
+        "turn": 22,
+        "key": "farma",
+        "hex": "42,29",
+        "teren": "laka",
+        "nakladka": "brak",
+        "naRzece": true,
+        "obokRzeki": true,
+        "distCity": 5,
+        "poolBefore": 298
+      }
+    ],
+    "firstFarm": {
+      "turn": 1,
+      "key": "farma",
+      "hex": "47,24",
+      "teren": "laka",
+      "nakladka": "brak",
+      "naRzece": true,
+      "obokRzeki": true,
+      "distCity": 0,
+      "poolBefore": 300
+    },
+    "firstHerd": {
+      "turn": 2,
+      "key": "bydlo",
+      "hex": "47,24",
+      "teren": "laka",
+      "nakladka": "brak",
+      "naRzece": true,
+      "obokRzeki": true,
+      "distCity": 0,
+      "poolBefore": 262
+    },
+    "wyrabCount": 0,
+    "farmBeforeHerdPerHex": [
+      {
+        "hex": "47,24",
+        "teren": "laka",
+        "nakladka": "brak",
+        "farmTurn": 1,
+        "herdTurn": 2
+      },
+      {
+        "hex": "49,24",
+        "teren": "laka",
+        "nakladka": "zloze_gliny",
+        "farmTurn": 1,
+        "herdTurn": 2
+      },
+      {
+        "hex": "49,25",
+        "teren": "laka",
+        "nakladka": "zloze_gliny",
+        "farmTurn": 12,
+        "herdTurn": 13
+      }
+    ],
+    "forestInR3": [
+      {
+        "hex": "45,26",
+        "naRzece": false,
+        "obokRzeki": true,
+        "d": 2
+      },
+      {
+        "hex": "46,22",
+        "naRzece": true,
+        "obokRzeki": true,
+        "d": 3
+      },
+      {
+        "hex": "46,23",
+        "naRzece": true,
+        "obokRzeki": true,
+        "d": 2
+      },
+      {
+        "hex": "46,24",
+        "naRzece": true,
+        "obokRzeki": true,
+        "d": 1
+      },
+      {
+        "hex": "46,25",
+        "naRzece": true,
+        "obokRzeki": true,
+        "d": 1
+      },
+      {
+        "hex": "46,26",
+        "naRzece": true,
+        "obokRzeki": true,
+        "d": 2
+      },
+      {
+        "hex": "46,27",
+        "naRzece": false,
+        "obokRzeki": true,
+        "d": 3
+      },
+      {
+        "hex": "47,21",
+        "naRzece": true,
+        "obokRzeki": true,
+        "d": 3
+      },
+      {
+        "hex": "47,22",
+        "naRzece": true,
+        "obokRzeki": true,
+        "d": 2
+      },
+      {
+        "hex": "47,23",
+        "naRzece": true,
+        "obokRzeki": true,
+        "d": 1
+      },
+      {
+        "hex": "47,25",
+        "naRzece": true,
+        "obokRzeki": true,
+        "d": 1
+      },
+      {
+        "hex": "47,26",
+        "naRzece": true,
+        "obokRzeki": true,
+        "d": 2
+      },
+      {
+        "hex": "47,27",
+        "naRzece": true,
+        "obokRzeki": true,
+        "d": 3
+      },
+      {
+        "hex": "48,21",
+        "naRzece": true,
+        "obokRzeki": true,
+        "d": 3
+      },
+      {
+        "hex": "48,22",
+        "naRzece": true,
+        "obokRzeki": true,
+        "d": 2
+      },
+      {
+        "hex": "48,23",
+        "naRzece": true,
+        "obokRzeki": true,
+        "d": 1
+      },
+      {
+        "hex": "48,24",
+        "naRzece": true,
+        "obokRzeki": true,
+        "d": 1
+      },
+      {
+        "hex": "48,25",
+        "naRzece": true,
+        "obokRzeki": true,
+        "d": 2
+      },
+      {
+        "hex": "48,26",
+        "naRzece": true,
+        "obokRzeki": true,
+        "d": 3
+      }
+    ]
+  }
+]

@@ -1,0 +1,13 @@
+city {"id":"city0","q":47,"r":24,"population":1} policy [[0,{"focus":"zywnosc","tryb":"auto","onlyWorked":true,"wolnoWycinacLas":true,"pracaAutoPercent":33}],[1,{"focus":"zrownowazone","tryb":"reczny","onlyWorked":true,"pracaAutoPercent":100,"wolnoWycinacLas":false}],[2,{"focus":"zrownowazone","tryb":"reczny","onlyWorked":true,"pracaAutoPercent":100,"wolnoWycinacLas":false}],[3,{"focus":"zrownowazone","tryb":"reczny","onlyWorked":true,"pracaAutoPercent":100,"wolnoWycinacLas":false}],[4,{"focus":"zrownowazone","tryb":"reczny","onlyWorked":true,"pracaAutoPercent":100,"wolnoWycinacLas":false}],[5,{"focus":"zrownowazone","tryb":"reczny","onlyWorked":true,"pracaAutoPercent":100,"wolnoWycinacLas":false}]]
+turns 25 adds 13 errors 0
+t1 pool 300->262 farma@47,24 farma@49,24
+t2 pool 262->223 bydlo@47,24 bydlo@49,24
+t3 pool 223->165 irygacja@47,24
+t5 pool 173->128 irygacja@49,24
+t12 pool 224->220 farma@49,25
+t13 pool 220->221 bydlo@49,25
+t14 pool 221->185 irygacja@49,25
+t18 pool 257->281 farma@42,28
+t20 pool 305->269 lodzie_rybackie@49,22 warzelnia_soli@49,22
+t22 pool 298->327 farma@42,29
+EXIT=0

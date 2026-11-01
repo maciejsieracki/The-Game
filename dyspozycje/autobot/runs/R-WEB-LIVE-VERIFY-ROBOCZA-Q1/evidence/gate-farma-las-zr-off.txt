@@ -1,0 +1,12 @@
+FIXTURE las posadzony na 6 heksach
+city {"id":"city0","q":47,"r":24,"population":1} policy [[0,{"focus":"zrownowazone","tryb":"auto","onlyWorked":true,"wolnoWycinacLas":false,"pracaAutoPercent":33}],[1,{"focus":"zrownowazone","tryb":"reczny","onlyWorked":true,"pracaAutoPercent":100,"wolnoWycinacLas":false}],[2,{"focus":"zrownowazone","tryb":"reczny","onlyWorked":true,"pracaAutoPercent":100,"wolnoWycinacLas":false}],[3,{"focus":"zrownowazone","tryb":"reczny","onlyWorked":true,"pracaAutoPercent":100,"wolnoWycinacLas":false}],[4,{"focus":"zrownowazone","tryb":"reczny","onlyWorked":true,"pracaAutoPercent":100,"wolnoWycinacLas":false}],[5,{"focus":"zrownowazone","tryb":"reczny","onlyWorked":true,"pracaAutoPercent":100,"wolnoWycinacLas":false}]]
+las: posadzono 6 zostalo 6
+turns 20 adds 9 errors 0
+t1 pool 300->222 glinianka@47,24 glinianka@48,24
+t2 pool 222->160 farma@47,24 warzelnia_soli@49,22
+t3 pool 160->136 bydlo@47,24
+t11 pool 176->124 irygacja@47,24
+t12 pool 124->112 lodzie_rybackie@49,22
+t16 pool 142->132 lodzie_rybackie@49,23
+t18 pool 148->164 farma@42,28
+EXIT=0

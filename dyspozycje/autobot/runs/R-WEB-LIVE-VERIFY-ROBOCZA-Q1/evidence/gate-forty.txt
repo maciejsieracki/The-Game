@@ -1,0 +1,5 @@
+miasta gracza po zakladaniu: 10 proby: [{"q":48,"r":20,"ok":true},{"q":40,"r":22,"ok":true},{"q":40,"r":17,"ok":true},{"q":40,"r":12,"ok":true},{"q":36,"r":11,"ok":true},{"q":31,"r":11,"ok":true},{"q":44,"r":11,"ok":true},{"q":21,"r":12,"ok":true},{"q":25,"r":12,"ok":true}]
+turns 2 snaps 2 errors 1
+start turn 1 forty 0 pula 4000
+final turn 2 forty 0 pula 2946
+EXIT=0

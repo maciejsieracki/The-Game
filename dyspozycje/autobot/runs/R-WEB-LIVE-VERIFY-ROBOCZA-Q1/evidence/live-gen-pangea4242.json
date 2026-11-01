@@ -1,0 +1,462 @@
+{
+  "typ": "pangea",
+  "seedWanted": 4242,
+  "okType": true,
+  "grid": [
+    {
+      "lbl": "Rozmiar mapy",
+      "val": "Standardowy"
+    },
+    {
+      "lbl": "Liczba cywilizacji",
+      "val": "7"
+    },
+    {
+      "lbl": "Typ świata",
+      "val": "Pangea"
+    },
+    {
+      "lbl": "Miasta-państwa",
+      "val": "6"
+    },
+    {
+      "lbl": "Udział lądu na mapie",
+      "val": "60% lądu / 40% morze"
+    },
+    {
+      "lbl": "Trudność miast-państw",
+      "val": "Normalny"
+    },
+    {
+      "lbl": "Prędkość gry",
+      "val": "Standardowa"
+    },
+    {
+      "lbl": "Wojna epoki",
+      "val": "Włączona"
+    },
+    {
+      "lbl": "Poziom trudności",
+      "val": "Normalny"
+    },
+    {
+      "lbl": "Barbarzyńcy",
+      "val": "Normalny"
+    },
+    {
+      "lbl": "Warunki zwycięstwa",
+      "val": "Moc + dominacja"
+    },
+    {
+      "lbl": "Chatki z nagrodami",
+      "val": "Włączone"
+    }
+  ],
+  "seedSeen": 4242,
+  "mapLog": "[NewGame] Mapa: 168x120 seed=4242 typ=pangea rywale=6 typy=7",
+  "genMs": 60929,
+  "ok": true,
+  "playerStartHex": {
+    "q": 57,
+    "r": 96
+  },
+  "menuCivId": "rzymianie",
+  "turn": 1,
+  "cities": [
+    {
+      "id": "city0",
+      "ownerId": 0,
+      "startCityState": false,
+      "q": 57,
+      "r": 96,
+      "civTypeId": null
+    },
+    {
+      "id": "city1",
+      "ownerId": 43,
+      "startCityState": true,
+      "q": 56,
+      "r": 92,
+      "civTypeId": "rzymianie"
+    },
+    {
+      "id": "city2",
+      "ownerId": 44,
+      "startCityState": true,
+      "q": 60,
+      "r": 98,
+      "civTypeId": "rzymianie"
+    },
+    {
+      "id": "city3",
+      "ownerId": 45,
+      "startCityState": true,
+      "q": 61,
+      "r": 91,
+      "civTypeId": "rzymianie"
+    },
+    {
+      "id": "city4",
+      "ownerId": 46,
+      "startCityState": true,
+      "q": 52,
+      "r": 91,
+      "civTypeId": "rzymianie"
+    },
+    {
+      "id": "city5",
+      "ownerId": 47,
+      "startCityState": true,
+      "q": 57,
+      "r": 87,
+      "civTypeId": "rzymianie"
+    },
+    {
+      "id": "city6",
+      "ownerId": 48,
+      "startCityState": true,
+      "q": 63,
+      "r": 100,
+      "civTypeId": "rzymianie"
+    },
+    {
+      "id": "city7",
+      "ownerId": 1,
+      "startCityState": false,
+      "q": 96,
+      "r": 102,
+      "civTypeId": "zulusi"
+    },
+    {
+      "id": "city8",
+      "ownerId": 2,
+      "startCityState": true,
+      "q": 94,
+      "r": 107,
+      "civTypeId": "zulusi"
+    },
+    {
+      "id": "city9",
+      "ownerId": 3,
+      "startCityState": true,
+      "q": 99,
+      "r": 97,
+      "civTypeId": "zulusi"
+    },
+    {
+      "id": "city10",
+      "ownerId": 4,
+      "startCityState": true,
+      "q": 99,
+      "r": 104,
+      "civTypeId": "zulusi"
+    },
+    {
+      "id": "city11",
+      "ownerId": 5,
+      "startCityState": true,
+      "q": 89,
+      "r": 112,
+      "civTypeId": "zulusi"
+    },
+    {
+      "id": "city12",
+      "ownerId": 6,
+      "startCityState": true,
+      "q": 94,
+      "r": 112,
+      "civTypeId": "zulusi"
+    },
+    {
+      "id": "city13",
+      "ownerId": 7,
+      "startCityState": true,
+      "q": 102,
+      "r": 92,
+      "civTypeId": "zulusi"
+    },
+    {
+      "id": "city14",
+      "ownerId": 8,
+      "startCityState": false,
+      "q": 102,
+      "r": 21,
+      "civTypeId": "inkowie"
+    },
+    {
+      "id": "city15",
+      "ownerId": 9,
+      "startCityState": true,
+      "q": 100,
+      "r": 26,
+      "civTypeId": "inkowie"
+    },
+    {
+      "id": "city16",
+      "ownerId": 10,
+      "startCityState": true,
+      "q": 105,
+      "r": 23,
+      "civTypeId": "inkowie"
+    },
+    {
+      "id": "city17",
+      "ownerId": 11,
+      "startCityState": true,
+      "q": 106,
+      "r": 16,
+      "civTypeId": "inkowie"
+    },
+    {
+      "id": "city18",
+      "ownerId": 12,
+      "startCityState": true,
+      "q": 102,
+      "r": 29,
+      "civTypeId": "inkowie"
+    },
+    {
+      "id": "city19",
+      "ownerId": 13,
+      "startCityState": true,
+      "q": 107,
+      "r": 26,
+      "civTypeId": "inkowie"
+    },
+    {
+      "id": "city20",
+      "ownerId": 14,
+      "startCityState": true,
+      "q": 109,
+      "r": 18,
+      "civTypeId": "inkowie"
+    },
+    {
+      "id": "city21",
+      "ownerId": 15,
+      "startCityState": false,
+      "q": 73,
+      "r": 17,
+      "civTypeId": "chinczycy"
+    },
+    {
+      "id": "city22",
+      "ownerId": 16,
+      "startCityState": true,
+      "q": 68,
+      "r": 17,
+      "civTypeId": "chinczycy"
+    },
+    {
+      "id": "city23",
+      "ownerId": 17,
+      "startCityState": true,
+      "q": 68,
+      "r": 22,
+      "civTypeId": "chinczycy"
+    },
+    {
+      "id": "city24",
+      "ownerId": 18,
+      "startCityState": true,
+      "q": 74,
+      "r": 12,
+      "civTypeId": "chinczycy"
+    },
+    {
+      "id": "city25",
+      "ownerId": 19,
+      "startCityState": true,
+      "q": 63,
+      "r": 17,
+      "civTypeId": "chinczycy"
+    },
+    {
+      "id": "city26",
+      "ownerId": 20,
+      "startCityState": true,
+      "q": 63,
+      "r": 22,
+      "civTypeId": "chinczycy"
+    },
+    {
+      "id": "city27",
+      "ownerId": 21,
+      "startCityState": true,
+      "q": 68,
+      "r": 12,
+      "civTypeId": "chinczycy"
+    },
+    {
+      "id": "city28",
+      "ownerId": 22,
+      "startCityState": false,
+      "q": 71,
+      "r": 99,
+      "civTypeId": "grecy"
+    },
+    {
+      "id": "city29",
+      "ownerId": 23,
+      "startCityState": true,
+      "q": 66,
+      "r": 104,
+      "civTypeId": "grecy"
+    },
+    {
+      "id": "city30",
+      "ownerId": 24,
+      "startCityState": true,
+      "q": 71,
+      "r": 104,
+      "civTypeId": "grecy"
+    },
+    {
+      "id": "city31",
+      "ownerId": 25,
+      "startCityState": true,
+      "q": 74,
+      "r": 94,
+      "civTypeId": "grecy"
+    },
+    {
+      "id": "city32",
+      "ownerId": 26,
+      "startCityState": true,
+      "q": 76,
+      "r": 98,
+      "civTypeId": "grecy"
+    },
+    {
+      "id": "city33",
+      "ownerId": 27,
+      "startCityState": true,
+      "q": 64,
+      "r": 109,
+      "civTypeId": "grecy"
+    },
+    {
+      "id": "city34",
+      "ownerId": 28,
+      "startCityState": true,
+      "q": 69,
+      "r": 109,
+      "civTypeId": "grecy"
+    },
+    {
+      "id": "city35",
+      "ownerId": 29,
+      "startCityState": false,
+      "q": 132,
+      "r": 72,
+      "civTypeId": "egipt"
+    },
+    {
+      "id": "city36",
+      "ownerId": 30,
+      "startCityState": true,
+      "q": 127,
+      "r": 72,
+      "civTypeId": "egipt"
+    },
+    {
+      "id": "city37",
+      "ownerId": 31,
+      "startCityState": true,
+      "q": 132,
+      "r": 67,
+      "civTypeId": "egipt"
+    },
+    {
+      "id": "city38",
+      "ownerId": 32,
+      "startCityState": true,
+      "q": 137,
+      "r": 67,
+      "civTypeId": "egipt"
+    },
+    {
+      "id": "city39",
+      "ownerId": 33,
+      "startCityState": true,
+      "q": 122,
+      "r": 72,
+      "civTypeId": "egipt"
+    },
+    {
+      "id": "city40",
+      "ownerId": 34,
+      "startCityState": true,
+      "q": 127,
+      "r": 67,
+      "civTypeId": "egipt"
+    },
+    {
+      "id": "city41",
+      "ownerId": 35,
+      "startCityState": true,
+      "q": 132,
+      "r": 62,
+      "civTypeId": "egipt"
+    },
+    {
+      "id": "city42",
+      "ownerId": 36,
+      "startCityState": false,
+      "q": 81,
+      "r": 24,
+      "civTypeId": "sumer"
+    },
+    {
+      "id": "city43",
+      "ownerId": 37,
+      "startCityState": true,
+      "q": 76,
+      "r": 24,
+      "civTypeId": "sumer"
+    },
+    {
+      "id": "city44",
+      "ownerId": 38,
+      "startCityState": true,
+      "q": 76,
+      "r": 29,
+      "civTypeId": "sumer"
+    },
+    {
+      "id": "city45",
+      "ownerId": 39,
+      "startCityState": true,
+      "q": 81,
+      "r": 19,
+      "civTypeId": "sumer"
+    },
+    {
+      "id": "city46",
+      "ownerId": 40,
+      "startCityState": true,
+      "q": 81,
+      "r": 29,
+      "civTypeId": "sumer"
+    },
+    {
+      "id": "city47",
+      "ownerId": 41,
+      "startCityState": true,
+      "q": 86,
+      "r": 19,
+      "civTypeId": "sumer"
+    },
+    {
+      "id": "city48",
+      "ownerId": 42,
+      "startCityState": true,
+      "q": 71,
+      "r": 25,
+      "civTypeId": "sumer"
+    }
+  ],
+  "units": 56,
+  "totalMs": 86304,
+  "pageErrors": []
+}

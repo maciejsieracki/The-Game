@@ -1,0 +1,17 @@
+  OK  menu: przycisk "Rozpocznij grę" -> kreator
+  OK  domyślnie: Rozmiar mapy = Standardowy
+  OK  domyślnie: Typ świata = Kontynenty
+  OK  Kontynenty: udział lądu = 30%
+  OK  Pangea: typ = Pangea, udział lądu = 60%
+  OK  Wyspy: typ = Wyspy, udział lądu = 50%
+  OK  Ziemia: typ = Ziemia, brak wiersza udziału lądu
+  OK  powrót do Wyspy: udział lądu = 50% (reset do domyślnego typu)
+  OK  Wyspy: strzałka zmienia udział lądu (ręczna zmiana, pomiar)
+  OK  ręczna zmiana lądu + zmiana typu na Pangea => 60% (reset)
+  OK  brak błędów strony (kreator)
+  OK  prefs zapisane w localStorage po zmianach (pomiar)
+  OK  zmiana Bitwy -> "Bitwa automatyczna"
+  OK  po przeładowaniu zapisane "Bitwa automatyczna" nie nadpisane domyślnym
+
+14 pass · 0 fail
+EXIT=0

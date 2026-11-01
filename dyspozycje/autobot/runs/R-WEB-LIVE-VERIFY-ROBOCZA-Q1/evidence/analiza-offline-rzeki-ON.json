@@ -1,0 +1,69 @@
+{
+  "note": "teren z deterministycznej regeneracji mapy (ziarno z logu zywej gry); zgodnosc potwierdza capsMatchPlan",
+  "rows": [
+    {
+      "file": "live-gen-kontynenty4242.json",
+      "typ": "kontynenty",
+      "seed": 4242,
+      "lf": 0.3,
+      "landPct": 30,
+      "landNoCoastPct": 30,
+      "hexes": 20160,
+      "polarHexes": 0,
+      "liveCapMin": 15,
+      "liveCapPair": [
+        "inkowie#1",
+        "sumer#29"
+      ],
+      "planCapMin": 15,
+      "liveCaps": [
+        "gracz@134,33",
+        "inkowie#1@76,52",
+        "grecy#8@34,85",
+        "egipt#15@133,87",
+        "chinczycy#22@95,66",
+        "sumer#29@80,63",
+        "zulusi#36@91,48"
+      ],
+      "capsMatchPlan": "3/7",
+      "mapMatches": false,
+      "polarCaps": [],
+      "polarAiCityCount": 0,
+      "playerPolar": false,
+      "cityMinDiffCiv": 6,
+      "liveCitiesN": 49
+    },
+    {
+      "file": "live-gen-wyspy1001.json",
+      "typ": "wyspy",
+      "seed": 1001,
+      "lf": 0.5,
+      "landPct": 50,
+      "landNoCoastPct": 50,
+      "hexes": 20160,
+      "polarHexes": 567,
+      "liveCapMin": 17,
+      "liveCapPair": [
+        "gracz",
+        "inkowie#1"
+      ],
+      "planCapMin": 17,
+      "liveCaps": [
+        "gracz@100,48",
+        "inkowie#1@83,55",
+        "sumer#8@103,64",
+        "egipt#15@66,104",
+        "zulusi#22@24,44",
+        "grecy#29@148,102",
+        "chinczycy#36@62,46"
+      ],
+      "capsMatchPlan": "4/7",
+      "mapMatches": false,
+      "polarCaps": [],
+      "polarAiCityCount": 0,
+      "playerPolar": false,
+      "cityMinDiffCiv": 7,
+      "liveCitiesN": 49
+    }
+  ]
+}
