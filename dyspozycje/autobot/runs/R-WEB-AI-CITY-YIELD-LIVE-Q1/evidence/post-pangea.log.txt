@@ -1,0 +1,14 @@
+14:57:22 post pangea worldgen ms 100988
+15:06:10 post pangea T10 aiMajor=- lastTurnMs=46128
+15:14:35 post pangea T20 aiMajor=- lastTurnMs=50819
+15:18:02 post pangea T25 aiMajor=24 lastTurnMs=36636
+15:20:46 post pangea T30 aiMajor=- lastTurnMs=27633
+15:25:51 post pangea T40 aiMajor=- lastTurnMs=29644
+15:31:19 post pangea T50 aiMajor=64 lastTurnMs=36297
+15:38:02 post pangea T60 aiMajor=- lastTurnMs=39386
+15:45:28 post pangea T70 aiMajor=- lastTurnMs=54043
+15:49:31 post pangea T75 aiMajor=76 lastTurnMs=49197
+15:54:00 post pangea T80 aiMajor=- lastTurnMs=48961
+16:02:15 post pangea T90 aiMajor=- lastTurnMs=45916
+16:10:49 post pangea T100 aiMajor=90 lastTurnMs=60321
+16:10:49 post pangea DONE

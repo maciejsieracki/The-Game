@@ -3,7 +3,7 @@ DOMAIN: GAME
 TEMAT: R-WEB-AI-CITY-YIELD-LIVE-Q1
 GOAL: Jeden realny pomiar w pełnej grze (Chromium, realne doStartGame i endTurn): PRE (`c99ac58cd`) vs POST (`8ce134b81`, waga 0,3). Mapa Standardowy 168×120, ziarno 4242, 100 tur, Kontynenty (30%) oraz Pangea (60%). Wniosek względem progu T100 −10% … +25%.
 
-ZMIANY/COMMIT: tylko allowlista: `gra/tools/ai-city-live-measure.cjs`, `gra/tools/ai-city-live-summarize.cjs`, ten raport, `evidence/` (JSON stanu, logi, `summary.txt`, ok. 50 KB), `gate-node-check.txt`. Zero zmian w `gra/src`, `gra/data`, `rust-port`, `WERSJE.md`. SHA: patrz końcowa linia "COMMIT" poniżej / `git log -1`.
+ZMIANY/COMMIT: tylko allowlista: `gra/tools/ai-city-live-measure.cjs`, `gra/tools/ai-city-live-summarize.cjs`, ten raport, `evidence/` (JSON stanu, logi, `summary.txt`, ok. 50 KB), `gate-node-check.txt`. Zero zmian w `gra/src`, `gra/data`, `rust-port`, `WERSJE.md`. SHA: `be87dc75f` (runda 1). Korekty po zarzutach: `02-operator-obrona-r1.md`.
 
 METODA: kopie `git archive` PRE i POST w `mktemp -d` (/tmp), `npm ci` poza repo, patch KOPII main.ts (hook `__aiCityCountDebug.dump`, `startNewGame` z mapSize/typSwiata; ta sama logika co `--prepare` z `ai-city-count-sim.cjs`), `vite build --outDir` poza repo. Cztery odczepione procesy równolegle (PRE/POST × Kontynenty/Pangea), ziarnowany Math.random (`0x9e3779b9 ^ seed`), 5 cywilizacji AI, gracz kończy turę bez akcji, wyłączony check zwycięstwa. Migawki T1/25/50/75/100.
 

@@ -1,0 +1,14 @@
+15:17:31 post kontynenty worldgen ms 1302671
+15:30:30 post kontynenty T10 aiMajor=- lastTurnMs=82187
+15:43:00 post kontynenty T20 aiMajor=- lastTurnMs=83128
+15:47:26 post kontynenty T25 aiMajor=31 lastTurnMs=44262
+15:50:53 post kontynenty T30 aiMajor=- lastTurnMs=38890
+15:58:31 post kontynenty T40 aiMajor=- lastTurnMs=51728
+16:06:40 post kontynenty T50 aiMajor=71 lastTurnMs=47402
+16:13:57 post kontynenty T60 aiMajor=- lastTurnMs=35859
+16:20:52 post kontynenty T70 aiMajor=- lastTurnMs=42793
+16:24:31 post kontynenty T75 aiMajor=79 lastTurnMs=43446
+16:28:19 post kontynenty T80 aiMajor=- lastTurnMs=42005
+16:36:07 post kontynenty T90 aiMajor=- lastTurnMs=47328
+16:45:03 post kontynenty T100 aiMajor=93 lastTurnMs=58289
+16:45:03 post kontynenty DONE
