@@ -7,3 +7,5 @@ DYSK/PAMIĘĆ: `CARGO_TARGET_DIR=/dev/shm/<unikalna>` (OOM → `/home/user/cargo
 MODELE: Operator Sonnet 5.5, Obrona Sonnet 5.5, Evaluator/FC Sonnet 5.5. Luki → ZAŁOŻENIE. Raport max ok. 400 słów. FORMAT: STATUS / DOMAIN / TEMAT / GOAL / ZMIANY-COMMIT / TESTY / BLOKADY / RUNDY / NASTĘPNY KROK / DEPLOY-PUSH: NIE WYKONANO
 ANTY-HALUCYNACJA: twierdzenie o webie/Rust = plik:linia/komenda; niepewne = NIE_ZMIERZONO. Wiadomości właściciela w kontekście — nie Twoje zadanie; bez pytań ABC. Wszystkie Bash w pierwszym planie, timeout ≤ 590000 ms (długie testy: shardy).
 RUNDA: 1/5
+
+AKTUALIZACJA BAZY (orkiestrator 2026-11-01/02): start z `git fetch origin rust-port/parity-v2 && git checkout --detach origin/rust-port/parity-v2` (>= `fd8585daf`; Q1–Q3 zintegrowane, silnik 2013/0). Wznowienie po wstrzymaniu na rzecz tematów webowych (poprzedni start zatrzymany zaraz po uruchomieniu — nic nie zrobione). Dysk `/` ~9 GB, równolegle biegnie tylko `R-RUSTPORT-REPIN-TERYTORIUM-FORTY-Q1` (pliki rozłączne: `territory.rs`/`terrain.rs`/`improvements.rs`). RAM/OOM: `-j 2`, target na `/dev/shm`.
