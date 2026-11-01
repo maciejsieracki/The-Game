@@ -8388,3 +8388,7 @@ Przejrzano cały kontekst rozmowy: WSZYSTKIE zgłoszenia właściciela z ostatni
 - **T4 bieguny:** Pangea 1001: 1 miasto AI na heksie polarnym (`polar-fallback`, `ai.ts:4851-4855`). → **R-WEB-AI-POLAR-FALLBACK-Q1** (start).
 - **T2 farma przed trzodą:** ZGODNE (14/14 w czterech wariantach, tylko w warunkach fixture `unlockAllTech`); przyczyna braku wycinki lasu przy „Wolno wycinać las” ON NIE_ZMIERZONO (picker nie loguje) — do rozważenia w osobnym temacie loga pickera.
 - **T5 rozgrywka:** ZGODNE (40 tur, 0 błędów, zapis→wczytanie w t20 bez zmian; 48 → 71 miast AI); farmy/auto-ulepszenia w t0–10 NIE_ZMIERZONO (fixture).
+
+### Aktualizacja 2026-11-01 (noc)
+- **R-WEB-PANGEA-LAND-FRACTION-Q1 i R-WEB-AI-POLAR-FALLBACK-Q1: ZROBIONE, ROBOCZA `10307fe6`** (main `22acd3542`). Pangea 60% → 59,2–59,9%; AI bez biegunów w ekspansji (żywa gra: 0 miast AI na polarnym). Dług: Pangea 50% → 43–45%, 20% → 10,5% (osobny temat `R-WEB-PANGEA-LAND-FRACTION-OTHER-Q1`); liczba miast AI w T100 w żywej grze NIE_ZMIERZONO; osobny temat loga pickera (brak informacji, czemu wycinka nie zachodzi).
+- **R-WEB-CAPITAL-SPACING-TUNE-Q1: W TOKU.**

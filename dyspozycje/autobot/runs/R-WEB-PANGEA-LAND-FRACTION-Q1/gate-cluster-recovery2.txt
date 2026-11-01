@@ -1,0 +1,38 @@
+cluster-start-recovery2-test
+
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=5 terrain=29 landSea=364 relief=273 coast=80 riversMain=3760 riversFill=4173 forest=11 deposits=27 starts=163 total=8885
+[clusters] capital-sep: 12 niewykonalne dla 5 civ na 50x50, obnizono do 5
+PASS: runtime candidates are bounded but non-empty (9)
+PASS: runtime candidates never use water or mountains
+PASS: runtime candidates preserve minimum distance from capital and each other
+PASS: runtime candidates preserve ring-then-nearest hub-chain order
+PASS: batch pack accepts requested city-state count on wide land (got 4, want 4)
+PASS: batch pack reserves one growth slot
+PASS: accepted city-states and reserved growth slot share the hard minimum
+PASS: accepted batch has no duplicate positions
+PASS: nearest-legal fallback fills a sparse legal-land chain (got 2, want 2)
+PASS: nearest-legal fallback returns a first legal land slot
+PASS: nearest-legal fallback chooses the closest legal land first (got 6, want 6)
+PASS: nearest-legal fallback keeps minimum distance
+PASS: short rescue ring falls back to a legal slot (got 1, want 1)
+PASS: short rescue ring never weakens the minimum distance contract (got 6, want 6)
+[clusters] capital-sep: 12 niewykonalne dla 5 civ na 50x50, obnizono do 5
+PASS: batch plan order equals sequential accepted order
+PASS: rejected slots leave no owner or metadata ghost
+PASS: major-first group chinczycy has an accepted capital
+PASS: civilization chinczycy preserves capital-then-city-state order
+PASS: major-first group zulusi has an accepted capital
+PASS: civilization zulusi preserves capital-then-city-state order
+PASS: major-first group rzymianie has an accepted capital
+PASS: civilization rzymianie preserves capital-then-city-state order
+PASS: major-first group inkowie has an accepted capital
+PASS: civilization inkowie preserves capital-then-city-state order
+PASS: mutation control catches swapped accepted order
+PASS: fixture includes water for the placement mutation control
+PASS: mutation control catches water placement
+PASS: mutation control catches ghost owner metadata
+PASS: mutation control catches non-equivalent batch order
+
+29 passed, 0 failed
+EXIT=0
