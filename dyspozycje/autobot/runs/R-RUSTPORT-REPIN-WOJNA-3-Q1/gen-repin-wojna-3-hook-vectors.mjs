@@ -1,7 +1,7 @@
 // Generator wektorow REPIN-WOJNA-3 (hook marszu generala: generalQuickFollow <-> planned-march <-> zapis).
 // PIN weba: 4bbef081d. Kod weba URUCHAMIANY BEZ ZMIAN (node --experimental-strip-types):
 //   gra/src/game/generals.ts, generalQuickFollow.ts (jedyna zmiana: `from './generals'` -> `'./generals.ts'`,
-//   bo strip-types wymaga rozszerzenia), planned-march.ts linie 13-31 + 425-490 (wyciete dosłownie, jak w
+//   bo strip-types wymaga rozszerzenia; generator robi te podmiane SAM na kopii w <WORK_DIR>, bez recznego sed), planned-march.ts linie 13-31 + 425-490 (wyciete dosłownie, jak w
 //   R-RUSTPORT-REPIN-WOJNA-2-Q1/gen-repin-wojna-2-r3-planned-march.mjs; reszta pliku importuje caly lancuch gry).
 // Zero buildu w gra/: zrodla pochodza z `git archive 4bbef081d` do katalogu poza repo.
 //
@@ -29,7 +29,14 @@ writeFileSync(
   ['type RuntimeUnit = { id: string; ownerId: number; q: number; r: number };', lineRange(13, 31), fnBlock, ''].join('\n'),
 );
 const PM = await import(pathToFileURL(join(workDir, 'pm-save.ts')).href);
-const GQ = await import(pathToFileURL(join(game, 'generalQuickFollow.ts')).href);
+// Kopia generals.ts + generalQuickFollow.ts do WORK_DIR z jedyna podmiana importu (strip-types wymaga rozszerzenia).
+// Oryginaly w PIN_ROOT pozostaja nietkniete; podmiana jest asertowana (brak = blad, nie cicha zmiana pinu).
+const gqSrc = readFileSync(join(game, 'generalQuickFollow.ts'), 'utf8');
+const gqImport = "from './generals';";
+if (gqSrc.split(gqImport).length !== 2) throw new Error("generalQuickFollow.ts: oczekiwano dokladnie 1x " + gqImport);
+writeFileSync(join(workDir, 'generalQuickFollow.ts'), gqSrc.replace(gqImport, "from './generals.ts';"));
+writeFileSync(join(workDir, 'generals.ts'), readFileSync(join(game, 'generals.ts'), 'utf8'));
+const GQ = await import(pathToFileURL(join(workDir, 'generalQuickFollow.ts')).href);
 
 // Kontrola pinu: wyrazenia glue z main.ts (jesli podano main.ts w PIN_ROOT) - opcjonalne.
 let mainChecks = null;
