@@ -1,3 +1,12 @@
+## ROBOCZA 10307fe6 -- 2026-11-01 -- Pangea 60% lądu, AI nie zakłada miast na biegunach w ekspansji (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`57cc8aded` + `R-WEB-PANGEA-LAND-FRACTION-Q1` `9ae6a5554` + `R-WEB-AI-POLAR-FALLBACK-Q1` `7fbf906ec`) i commit wdrożenia bundla; stała zgoda właściciela (usterki z testów na żywo, 2026-11-01).
+- Bundle MD5 `10307fe6d985c9dc6735083a0c3aba1c`, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, outDir poza repo, stempel ROBOCZA; `verify-robocza-bundle.cjs` VERIFY OK.
+- Zakres: (1) Pangea przy deklarowanych 60% lądu daje 59,2–59,9% (było 56%); Kontynenty/Wyspy/Ziemia bez zmian (identyczne hashe map); mapy Pangei dla tych samych ziaren wyglądają inaczej; (2) AI nie zakłada miasta na heksie polarnym w ekspansji (fallback na biegun tylko gdy AI nie ma jeszcze żadnego miasta); żywa gra: Pangea 1001 → 0 miast AI na polarnym (było 1).
+- Testy po scaleniu: tsc PASS; ai-polar-fallback 8/0, ai-avoid-polar-pick 16/0, parity 30/30, pangea-land-determinism PASS, pangea-land-fraction PASS, capital-sep-unit 44/0, capital-sep-pangea 3/0, cluster-spread 5/0, ai-city-yield 42/0, followups 9/0, autoclear 60/0, stages 302/0, auto-improvements 46/0, ai-improvements 56/0.
+- Ograniczenia: Pangea 50% → 43–45%, 20% → 10,5% (poza zakresem); liczba miast AI w T100 w żywej grze NIE_ZMIERZONO (rozrzut ±4); w toku: większe rozproszenie stolic (`R-WEB-CAPITAL-SPACING-TUNE-Q1`).
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `83f64d3fdba933db58c4319c53e7e3f0`, 70,114,029 bajtów.
+
 ## ROBOCZA 83f64d3f -- 2026-11-01 -- AI poprawnie ocenia teren pod miasta (testowa)
 
 - **STATUS: DEPLOYED** — merge do `origin/main` (`f8d7b55ea` + `R-WEB-AI-CITY-YIELD-FIX-Q1` `7ec22faa7` + `R-WEB-AI-CITY-YIELD-LIVE-Q1` `050bd69ba`) i commit wdrożenia bundla; stała zgoda właściciela 2026-10-31; wdrożenie PO pomiarze pełnej gry (decyzja ABC-B właściciela).
