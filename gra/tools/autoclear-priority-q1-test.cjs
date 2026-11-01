@@ -13,7 +13,8 @@
  *   (a) centrum na rzece z `rzeka.obecna` BEZ wpisu w `riverPaths`: pierwsza budowa = farma NA CENTRUM, zanim padnie jakakolwiek trzoda;
  *   (b) pole obywatela na rzece z `rzeka.obecna` poza `riverPaths`: farma przed jakakolwiek trzoda;
  *   (c) trzoda dopiero PO farmie na tym samym heksie, irygacja po trzodzie (kolejnosc E1 < E3 < E4 zachowana);
- *   (d) heks TYLKO sasiadujacy z rzeka (bez wlasnej rzeki) NIE jest E1 — farma dopiero po E3/E4 (E5), bez zmiany;
+ *   (d) r2 (ABC-B): heks TYLKO sasiadujacy z rzeka (bez wlasnej rzeki) = E1 — farma przed trzoda (E3) i irygacja (E4);
+ *   (m) r2 Rodos: 1 obywatel, trawa bez lasu przy rzece, centrum przy rzece — pierwsza budowa farma, przed trzoda (K1 i K2);
  *   (e) tylko „Oswojenie zwierzat” (bez Rolnictwa): trzoda moze byc pierwsza (ABC-5=A, technologia nie blokuje nizszych etapow);
  *   (f) K1 „Zywnosc” i K2 „Zrownowazone” — ta sama kolejnosc.
  *
@@ -130,17 +131,34 @@ for (const profil of ['K1', 'K2']) {
   }
 }
 
-console.log('(d) heks TYLKO sasiadujacy z rzeka (bez wlasnej rzeki) nie jest E1 — farma po E3/E4 (E5), bez zmiany');
-{
+console.log('(d) r2 (decyzja orkiestratora ABC-B): heks SASIADUJACY z rzeka (bez wlasnej rzeki) = E1 — farma PRZED trzoda (E3) i irygacja (E4)');
+for (const profil of ['K1', 'K2']) {
   const map = makeMap({ pathRiver: PATH });
-  // (11,11) i (13,11) sasiaduja z (12,10)? (12,10)->(11,11),(12,11),(13,10),(11,10),(13,9),(12,9): (11,11) i (12,11) sasiaduja z rzeka.
+  // (12,11) sasiaduje z (12,10) z riverPaths, nie ma wlasnej rzeki — dawniej farma dopiero w E5 (po E3/E4).
   const NEAR = [[12, 11]];
-  const { log } = sim({ map, worked: [...PATH, ...NEAR], profil: 'K2', turns: 40, pool0: 600 });
+  const { log } = sim({ map, worked: [...PATH, ...NEAR], profil, turns: 40, pool0: 600 });
   const fRiver = idx(log, 'farma', K(12, 10));
   const fNear = idx(log, 'farma', K(12, 11));
-  const iRiver = idx(log, 'irygacja', K(12, 10));
-  ok(fRiver >= 0 && fNear > fRiver, `heks przy rzece (12,11): farma(${fNear}) po farmie na rzece (${fRiver})`);
-  ok(iRiver >= 0 && fNear > iRiver, `heks przy rzece (12,11): farma(${fNear}) dopiero po irygacji na rzece (${iRiver}) — E5 po E1-E4`);
+  const bFirst = firstIdx(log, 'bydlo'), iFirst = firstIdx(log, 'irygacja');
+  ok(fRiver >= 0 && fNear >= 0, `[${profil}] farma na rzece (${fRiver}) i na heksie przy rzece (12,11) (${fNear})`);
+  ok(fNear < bFirst && fNear < iFirst, `[${profil}] farma przy rzece (${fNear}) PRZED pierwsza trzoda (${bFirst}) i irygacja (${iFirst}) — E1 < E3 < E4`);
+  const bNear = idx(log, 'bydlo', K(12, 11));
+  ok(bNear < 0 || bNear > fNear, `[${profil}] trzoda na heksie przy rzece (${bNear}) dopiero po farmie (${fNear})`);
+}
+
+console.log('(m) RODOS (zgloszenie wlasciciela 2026-11-01): 1 obywatel, trawa BEZ lasu przy rzece, centrum na trawie przy rzece — pierwsza budowa = farma, przed trzoda');
+for (const profil of ['K1', 'K2']) {
+  // rzeka (12,11),(13,11) w riverPaths; centrum (12,12) SASIADUJE z nia (nie ma wlasnej rzeki); obywatel stoi na (12,11) (na rzece),
+  // a (11,12) to wolny, otwarty heks trawiasty przy rzece (tez sasiaduje z (12,11)).
+  const RIV = [[12, 11], [13, 11]];
+  const map = makeMap({ pathRiver: RIV });
+  const { log } = sim({ map, worked: [[12, 11], [11, 12]], profil, turns: 12 });
+  const first = log[0];
+  ok(first && first.key === 'farma', `[${profil}] Rodos: pierwsza budowa to farma (jest: ${first && first.key}@${first && first.hk})`);
+  const bFirst = firstIdx(log, 'bydlo');
+  const fC = idx(log, 'farma', K(CQ, CR)), fF = idx(log, 'farma', K(11, 12)), fR = idx(log, 'farma', K(12, 11));
+  ok(fC >= 0 && fF >= 0 && fR >= 0, `[${profil}] Rodos: farma na centrum (${fC}), na trawie przy rzece (${fF}) i na polu obywatela (${fR})`);
+  ok(bFirst < 0 || (fC < bFirst && fF < bFirst && fR < bFirst), `[${profil}] Rodos: wszystkie 3 farmy PRZED pierwsza trzoda (${bFirst})`);
 }
 
 console.log('(e) tylko „Oswojenie zwierzat” (brak Rolnictwa): trzoda moze byc pierwsza (ABC-5=A — technologia nie blokuje nizszych etapow)');

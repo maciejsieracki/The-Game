@@ -136,6 +136,19 @@ const count = (log, key) => log.filter(e => e.key === key).length;
 const RIVER = [[12, 9], [12, 10], [13, 10]];
 const RING = [[11, 11], [13, 11], [11, 12], [13, 12], [12, 13], [11, 13]];
 const WORKED_ALL = [...RIVER, ...RING];
+// R-WEB-AUTOCLEAR-PRIORITY-LIVE-Q1 r2 (decyzja orkiestratora ABC-B, 2026-11-01): heks SASIADUJACY z rzeka (nie tylko NA rzece)
+// liczy sie jak heks nad rzeka — farma w E1 (`onRiverHex` = `hasRiverAccess`, auto-improvements.ts ~:1180), PRZED E2/E3/E4.
+// Scenariusze kontraktu BUDZETU/E4 ponizej zakladaja „E1 juz wykonane”: ten sam stan wyjsciowy co dawniej (farma+trzoda na RIVER),
+// plus te same ulepszenia (E1 farma + E3 trzoda) na kazdym pracowanym heksie sasiadujacym z rzeka (inaczej E1/E3 na sasiadach — slusznie — wyprzedzaja E4 i wstrzymuje
+// nizsze etapy do czasu zebrania puli; to zmiana KONTRAKTU E4, nie osłabienie asercji budzetu).
+const NEIGH6 = (q, r) => [[q + 1, r], [q - 1, r], [q, r + 1], [q, r - 1], [q + 1, r - 1], [q - 1, r + 1]];
+const RIVER_KEYS = new Set(RIVER.map(([q, r]) => K(q, r)));
+const nearRiver = (q, r) => RIVER_KEYS.has(K(q, r)) || NEIGH6(q, r).some(([a, b]) => RIVER_KEYS.has(K(a, b)));
+function placedE1Done(riverKeys = ['farma', 'bydlo']) {
+  const m = new Map(RIVER.map(([q, r]) => [K(q, r), [...riverKeys]]));
+  for (const [q, r] of WORKED_ALL) if (!RIVER_KEYS.has(K(q, r)) && nearRiver(q, r)) m.set(K(q, r), [...riverKeys]);
+  return m;
+}
 
 // ===========================================================================
 for (const profil of ['K1', 'K2', 'K3']) {
@@ -298,7 +311,7 @@ console.log('(h) BUDZET SZTYWNO (wlasciciel 2026-10-31): koszt > budzet => 0 bud
 for (const profil of ['K1', 'K2']) {
   // 20% puli 200 = 40 < koszt irygacji 60 — BEZ wyjatku od limitu: irygacja NIE powstaje; pula rosnie; procent liczony od skumulowanej puli.
   const m0 = makeMap({ river: RIVER });
-  const placed0 = new Map(RIVER.map(([q, r]) => [K(q, r), ['farma', 'bydlo']]));
+  const placed0 = placedE1Done();
   const r0 = sim({ map: m0, worked: WORKED_ALL, profil, turns: 6, pool0: 200, income: 0, pct: 20, placed0 });
   ok(count(r0.log, 'irygacja') === 0 && r0.log.length === 0, `[${profil}] limit 20% (40 < 60), bez przychodu: 0 budow, pula nietknieta (${r0.log.length} szt., pula ${r0.pool})`);
   const m1 = makeMap({ river: RIVER });
@@ -661,7 +674,7 @@ for (const profil of ['K2', 'K3']) {
 {
   // (a2) K2: zywnosc CZEKA NA PRACE (irygacja 60 przy rezerwie 30) => zadnych drog w tym czasie
   const map = makeMap({ river: RIVER });
-  const placed0 = new Map(RIVER.map(([q, r]) => [K(q, r), ['farma', 'bydlo']]));
+  const placed0 = placedE1Done();
   const { log } = sim({ map, worked: WORKED_ALL, profil: 'K2', turns: 8, pool0: 50, income: 8, placed0 });
   const firstIrr = log.findIndex(e => e.key === 'irygacja');
   const roadsBefore = log.slice(0, firstIrr < 0 ? log.length : firstIrr).filter(e => ROADS.has(e.key)).length;
@@ -758,7 +771,7 @@ console.log('(s1) BUDZET SZTYWNO — test globalny: procent 10/33/50/100 x pule 
     `[K1/K2] test nie jest prozny: wydatek > 0 i powstaly farma/wyrab/bydlo(E3)/irygacja(E4) (${[...widziane].sort().join(',')})`);
   // wprost kluczowy przypadek: irygacja 60 przy 10% puli 400 = 40 — NIE powstaje, nawet z E4 (dawny wyjatek Q2=B)
   for (const profil of ['K1', 'K2']) {
-    const placed0 = new Map(RIVER.map(([q, r]) => [K(q, r), ['farma', 'bydlo']]));
+    const placed0 = placedE1Done();
     const r = sim({ map: makeMap({ river: RIVER }), worked: WORKED_ALL, profil, turns: 1, pool0: 400, income: 0, pct: 10, placed0 });
     ok(r.log.length === 0, `[${profil}] 10% x 400 = 40 < irygacja 60: 0 budow w turze (dawny wyjatek E4 usuniety), jest ${r.log.length}`);
     const placedF = new Map(RIVER.map(([q, r2]) => [K(q, r2), ['farma']]));
@@ -882,24 +895,25 @@ console.log('(s5) BUDZET SZTYWNO — kazdy KROK z osobna: KROK 0 wyrabu (rzeka+l
   const wyrabKoszt = getImprovementMeta('wyrab').kosztPraca;
   const FOR5 = [[14, 12], [11, 11], [13, 11], [11, 13], [14, 13]];
   const scen = {
-    'KROK 0 (rzeka+las)': { profile: ['K1', 'K2'], mk: () => makeMap({ river: RIVER, forest: RIVER }), worked: WORKED_ALL, dd: true, key: 'wyrab' },
+    'KROK 0 (rzeka+las)': { profile: ['K1', 'K2'], mk: () => makeMap({ river: RIVER, forest: RIVER }), worked: WORKED_ALL, dd: true, key: 'wyrab',
+      placed: () => new Map([...placedE1Done()].filter(([k]) => !RIVER_KEYS.has(k))) },
     'FAZA 2 (wyrab)': { profile: ['K1'], mk: () => makeMap({ forest: FOR5 }), worked: [...WORKED_ALL, ...FOR5], dd: false, key: 'wyrab' },
   };
   for (const [nazwa, s] of Object.entries(scen)) {
     for (const profil of s.profile) {
       let naruszen = 0, zbudowano = 0;
       for (const pct of [1, 2, 3]) {
-        const picks = direct(profil, s.mk(), 100, pct, { worked: s.worked, dd: s.dd });
+        const picks = direct(profil, s.mk(), 100, pct, { worked: s.worked, dd: s.dd, placed: s.placed ? s.placed() : new Map() });
         if (sum(picks) * 100 > pct * 100) naruszen++;
         zbudowano += picks.filter(p => p.key === s.key).length;
       }
       ok(naruszen === 0, `[${profil}] ${nazwa}: pct 1/2/3 x pula 100 (sufit 1/2/3 < koszt wyrabu ${wyrabKoszt}): wydatek <= sufit`);
-      ok(direct(profil, s.mk(), 100, 2, { worked: s.worked, dd: s.dd }).filter(p => p.key === s.key).length === 0, `[${profil}] ${nazwa}: pct 2 x pula 100 = 2 < ${wyrabKoszt}: 0 wyrabow`);
+      ok(direct(profil, s.mk(), 100, 2, { worked: s.worked, dd: s.dd, placed: s.placed ? s.placed() : new Map() }).filter(p => p.key === s.key).length === 0, `[${profil}] ${nazwa}: pct 2 x pula 100 = 2 < ${wyrabKoszt}: 0 wyrabow`);
       // granica: sufit calkowity zaokraglany W DOL (totalBudget = floor, auto-improvements.ts ~599) — pula 300 x 1% = 3 >= 2.5 => wyrab wolno,
       // ale tylko 1 szt. (2 x 2.5 = 5 > 3); pula 200 x 1% = 2 < 2.5 => 0
-      const naGranicy = direct(profil, s.mk(), 300, 1, { worked: s.worked, dd: s.dd });
+      const naGranicy = direct(profil, s.mk(), 300, 1, { worked: s.worked, dd: s.dd, placed: s.placed ? s.placed() : new Map() });
       ok(naGranicy.filter(p => p.key === s.key).length === 1 && sum(naGranicy) * 100 <= 1 * 300, `[${profil}] ${nazwa}: pula 300 x 1% = 3 >= ${wyrabKoszt}: dokladnie 1 wyrab, wydatek <= sufit (${sum(naGranicy)})`);
-      const podGranica = direct(profil, s.mk(), 200, 1, { worked: s.worked, dd: s.dd });
+      const podGranica = direct(profil, s.mk(), 200, 1, { worked: s.worked, dd: s.dd, placed: s.placed ? s.placed() : new Map() });
       ok(sum(podGranica) === 0, `[${profil}] ${nazwa}: pula 200 x 1% = 2 < ${wyrabKoszt}: wydatek ${sum(podGranica)} == 0`);
     }
   }

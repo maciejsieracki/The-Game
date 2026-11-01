@@ -1,3 +1,12 @@
+## ROBOCZA 20ebabc7 -- 2026-11-01 -- udział lądu przywrócony per typ świata, sprzątanie starych reguł (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`4bbef081d` + `R-WEB-LAND-FRACTION-RESTORE-Q1` `bfd7f59d3` + `R-WEB-STALE-RULES-CLEANUP-Q1` `dec01c31d`) i commit wdrożenia bundla; stała zgoda właściciela 2026-10-31.
+- Bundle MD5 `20ebabc77b5003f42c550294ec0a3b23`, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, outDir poza repo, stempel ROBOCZA; `verify-robocza-bundle.cjs` VERIFY OK.
+- Zakres: (1) domyślny udział lądu: Pangea 60% (generator ok. 56%), Wyspy 50%, Kontynenty 30%, Ziemia szablon bez suwaka — naprawa regresu „normalna mapa mniejsza” (30% dla wszystkich typów od `9c3d921db`); zapisane ustawienia suwaka nie są nadpisywane; (2) sprzątanie komentarzy/opisów/testów ze starych reguł (zmiana widoczna: podpowiedź profilu „Zrównoważone”).
+- Testy po scaleniu: tsc PASS; auto-improvements 46/0, ai-improvements 56/0, autoimprove-stages-q1 302/0, fort-outpost-hard-territory 80/0, auto-fort-claim 63/0, food-hodowla 24/0. Pomiar generatora Standardowy: Kontynenty 30,0%, Pangea ok. 56%, Wyspy 50,0%, Ziemia 15,6% lądu.
+- Ograniczenia: NIE_URUCHOMIONO testy Chromium (newgame-defaults-test i in.); w toku: priorytet farma/trzoda przy rzece, odległości stolic, AI na terenach polarnych.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `d205f607cba1ed97e3e7ef441ce5e288`, 70,109,841 bajtów.
+
 ## ROBOCZA d205f607 -- 2026-10-31 -- forty i posterunki z automatu ulepszeń (testowa)
 
 - **STATUS: DEPLOYED** — merge do `origin/main` (`a07e6916f` + `R-WEB-AUTO-FORT-CLAIM-Q1` `0e93c3d6b` + wiązanie `main.ts`) i commit wdrożenia bundla; stała zgoda właściciela 2026-10-31.

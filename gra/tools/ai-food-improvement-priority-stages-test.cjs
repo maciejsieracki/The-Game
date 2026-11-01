@@ -95,7 +95,10 @@ try {
   map.hexes['5,4'].rzeka = { obecna: true, krawedzie: [] };
   map.hexes['5,4'].zloze = 'sol';
   map.hexes['14,3'].nakladka = 'zloze_bydla';
-  const placed = new Map();
+  // R-WEB-AUTOCLEAR-PRIORITY-LIVE-Q1 r2 (ABC-B): heks SASIADUJACY z rzeka liczy sie jak heks nad rzeka (E1 farma przed E2).
+  // Centrum (4,4) i pracowane (4,5),(5,5) sasiaduja z rzeka — stan wyjsciowy: ich farmy (E1) juz stoja, zeby ten test dalej mierzyl
+  // izolacje etapow na heksach NA rzece (kontrakt sasiedztwa: autoclear-priority-q1-test.cjs (d),(m)).
+  const placed = new Map([['4,4', ['farma']], ['4,5', ['farma']], ['5,5', ['farma']]]);
 
   // R-WEB-AUTOIMPROVE-PRIORITY-Q1 R5 (D4 wlasciciela 2026-10-31, etapy E1..E6): farma na heksie z rzeka
   // BEZ lasu (5,4) ma PIERWSZENSTWO przed wycinka lasu na rzece (E1 > E2) — wczesniej wycinka byla
@@ -251,9 +254,11 @@ try {
   // trzoda/irygacja (E3/E4) dopiero gdy na rzece nie ma juz wycinki ani farmy do zrobienia.
   // R3, ABC-D=B: AI bez limitu 1/miasto/ture (jak gracz) — etap E2 tnie obie rzeki w jednej turze (brak limitu etapu — S3-2),
   // potem E1 stawia obie farmy; trzoda/irygacja dopiero po nich (E1 > E2 > E3 > E4 zachowane).
-  assert.deepEqual(aiTrace.slice(0, 4), ['wyrab', 'wyrab', 'farma', 'farma'],
-    `decideAITurn (bez limitu AI, ABC-D=B): wycinka rzek -> farmy przed trzoda/irygacja (got ${aiTrace.join(',')})`);
-  assert.ok(aiTrace.indexOf('bydlo') > 3 && aiTrace.indexOf('irygacja') > 3, 'trzoda/irygacja dopiero po farmach na rzece');
+  // R-WEB-AUTOCLEAR-PRIORITY-LIVE-Q1 r2 (ABC-B): centrum (7,7) i pole (6,7) SASIADUJA z rzeka (7,6) => ich farmy to E1 i wyprzedzaja
+  // wycinke E2 (2 farmy), potem wycinka obu lasow rzeki, potem farmy na wyciętych heksach rzeki; trzoda/irygacja po wszystkich farmach.
+  assert.deepEqual(aiTrace.slice(0, 6), ['farma', 'farma', 'wyrab', 'wyrab', 'farma', 'farma'],
+    `decideAITurn (bez limitu AI, ABC-D=B): farmy przy rzece (E1) -> wycinka rzek (E2) -> farmy na wycietych -> trzoda/irygacja (got ${aiTrace.join(',')})`);
+  assert.ok(aiTrace.indexOf('bydlo') > 5 && aiTrace.indexOf('irygacja') > 5, 'trzoda/irygacja dopiero po farmach na rzece');
   const lastWyrab = aiTrace.lastIndexOf('wyrab');
   const firstLater = aiTrace.findIndex(k => k === 'bydlo' || k === 'irygacja');
   assert.ok(firstLater > lastWyrab, `E3/E4 start only after the river clearing is finished (got ${aiTrace.join(',')})`);

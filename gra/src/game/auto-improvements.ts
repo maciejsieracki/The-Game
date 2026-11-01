@@ -3,6 +3,19 @@
  * Wspólny picker auto-ulepszeń terenu (gracz + AI).
  * Kwalifikacja heksów = buildImprovementQualifier (map/improvement-build.ts).
  * PURE — bez DOM, bez THREE.
+ *
+ * STAN ZASAD (R-WEB-STALE-RULES-CLEANUP-Q1, 2026-11-01; rejestr decyzji właściciela
+ * `dyspozycje/DECYZJE-WLASCICIELA-20261031-AUTOULEPSZENIA-FORTY.md`) — komentarze poniżej, które
+ * mówią inaczej, są historią:
+ *  • #24: % budżetu Pracy = TWARDY SUFIT TYLKO DLA GRACZA (bez mnożników/bonusów/wyjątków; koszt ponad
+ *    budżet = nie budujemy, Praca się kumuluje); AI i państwa-miasta: 100% puli. ODWOŁUJE #5 (trzoda/
+ *    irygacja „poza limitem %”);
+ *  • #10: AI bez limitu 1 budowa/miasto (`maxItemsPerCity: 1` zdjęty z `planCityImprovements`);
+ *    limit etapu „max 3 na etap” zdjęty (S3-2=C, `FOOD_STAGE_MAX_ITEMS_PER_CITY = Infinity`);
+ *  • #25: niedobór bez limitu liczby ulepszeń brakującego surowca („1 na 10 obywateli” nieaktualne dla
+ *    K2/K3); tartak/obóz nigdy na heksie rzeka+las; #8: tartak tylko przy niedoborze drewna;
+ *  • #12: centrum miasta = zwykły heks (nie jest już wyłączone z automatu);
+ *  • #11/#13: niedobór otwiera TYLKO ulepszenia brakującego surowca; drogi na końcu.
  */
 
 import type { GameMap } from '../types/map';
@@ -287,8 +300,8 @@ export interface PickAutoImprovementsOpts {
    * (`UlepszeniaEmpirePolicy.pracaAutoPercent` w cities.ts, świeża polityka startuje od
    * DEFAULT_ULEPSZENIA_PRACA_PERCENT=33%, NIE od tego domyślnego parametru funkcji) — koncept,
    * który dla AI nie ma odpowiednika (AI nie ma "gracza", dla którego miałoby zostawiać Pracę).
-   * ZASTĘPUJE dawny `maxPerCity` (limit sztuk) jako mechanizm WYBORU GRACZA; AI ma swój OSOBNY,
-   * niezależny throttle — patrz `maxItemsPerCity`.
+   * ZASTĘPUJE dawny `maxPerCity` (limit sztuk) jako mechanizm WYBORU GRACZA; AI nie ma
+   * już własnego throttle (`maxItemsPerCity: 1` zdjęty, decyzja #10) — patrz `maxItemsPerCity`.
    * / EN: flat % (0-100) of the Work budget for THIS ENTIRE CALL (when no
    * getPracaBudgetPercent) — ONE SHARED budget across ALL cities together, not a separate
    * budget per city. Total spend across every city in this call is capped at `pct% × pool`
@@ -302,8 +315,8 @@ export interface PickAutoImprovementsOpts {
    * (`UlepszeniaEmpirePolicy.pracaAutoPercent` in cities.ts, a fresh policy starts at
    * DEFAULT_ULEPSZENIA_PRACA_PERCENT=33%, NOT this function parameter's default) — a concept
    * that has no AI equivalent (AI has no "player" to leave Work for). REPLACES the old
-   * `maxPerCity` (item-count cap) as the PLAYER'S choice mechanism; AI has its OWN, independent
-   * throttle — see `maxItemsPerCity`.
+   * `maxPerCity` (item-count cap) as the PLAYER'S choice mechanism; AI no longer has its own
+   * throttle (`maxItemsPerCity: 1` removed, decision #10) — see `maxItemsPerCity`.
    *
    * R-AUTO-PRACA-BUDZET-PROCENT-Q3=B (2026-08-14, decyzja właściciela): to jest RÓWNIEŻ
    * źródło NADRZĘDNEGO pułapu całego imperium (`imperiumBudgetCap` niżej), liczonego RAZ z TEJ
@@ -363,15 +376,16 @@ export interface PickAutoImprovementsOpts {
    * Throttle LICZBY ulepszeń/miasto/turę, NIEZALEŻNY od %-budżetu Pracy (oba limity działają
    * RÓWNOLEGLE — obowiązuje ciaśniejszy). Domyślnie bez limitu (Infinity). To NIE jest część
    * R-AUTO-PRACA-BUDZET-PROCENT-Q1=B (który dotyczy WYŁĄCZNIE gracza) — to PRZEDWCZEŚNIEJSZY,
-   * osobny mechanizm wydajności/determinizmu AI (`planCityImprovements` w ai.ts jawnie ustawia
-   * 1 — dawniej to był NIEJAWNY skutek uboczny domyślnej wartości usuniętego `maxPerCity=1`,
-   * teraz jawny i udokumentowany tu). Gracz go NIE ustawia.
+   * osobny mechanizm wydajności/determinizmu AI. AKTUALNIE (decyzja #10, ABC-D=B, 2026-10-31):
+   * `planCityImprovements` w ai.ts NIE ustawia już tego pola (dawne `1` zdjęte — AI buduje tyle co gracz,
+   * ogranicza ją tylko budżet = 100% puli). Gracz go też NIE ustawia; pole zostaje dla testów/narzędzi.
    * / EN: item-COUNT throttle per city per turn, INDEPENDENT of the %-budget (both limits apply
    * in PARALLEL — whichever is tighter wins). Unlimited (Infinity) by default. This is NOT part
    * of R-AUTO-PRACA-BUDZET-PROCENT-Q1=B (which is player-only) — it's a PRE-EXISTING, separate
-   * AI performance/determinism throttle (`planCityImprovements` in ai.ts sets it to 1 explicitly
-   * — previously an IMPLICIT side effect of the removed `maxPerCity=1` default, now explicit and
-   * documented here). The player never sets this.
+   * AI performance/determinism throttle. CURRENTLY (decision #10, ABC-D=B, 2026-10-31):
+   * `planCityImprovements` in ai.ts no longer sets this field (the old `1` was removed — AI builds as
+   * much as the player, limited only by the budget = 100% of the pool). The player never sets it
+   * either; the field remains for tests/tools.
    */
   maxItemsPerCity?: number;
   pracaSurplusThreshold?: number;
@@ -460,8 +474,9 @@ export interface PickAutoImprovementsOpts {
  * konkretne ulepszenia się zmieszczą w budżecie (pierwsze miasto w kolejności ma pierwszeństwo do
  * wspólnej puli) — NIE na łączną wydaną sumę, która jest deterministyczna niezależnie od
  * kolejności (patrz test 12 w auto-improvements-test.cjs). RÓWNOLEGLE, niezależnie od %-budżetu,
- * obowiązuje też `maxItemsPerCity` sztuk/miasto (domyślnie bez limitu; AI ustawia jawnie 1 —
- * throttle wydajności/determinizmu AI, niezwiązany z %-budżetem — patrz opis pola wyżej). Flat-
+ * obowiązuje też `maxItemsPerCity` sztuk/miasto (domyślnie bez limitu; AI NIE ustawia go już na 1 —
+ * decyzja #10, ABC-D=B 2026-10-31 — patrz opis pola wyżej). Decyzja #24 (2026-10-31): % jest TWARDYM SUFITEM
+ * TYLKO DLA GRACZA (bez wyjątków); AI i państwa-miasta wołają z 100% puli. Flat-
  * rezerwa `pracaSurplusThreshold` (np. AUTO_ULEPSZENIA_PRACA_RESERVE) to DODATKOWY dolny próg
  * bezpieczeństwa na CAŁEJ puli imperium — auto-manager nigdy nie schodzi poniżej niej, niezależnie
  * od %/liczby miast.
@@ -485,7 +500,7 @@ const FOOD_LIVESTOCK_STAGE_KEYS: readonly ImprovementKey[] = [
  * R-WEB-AUTOIMPROVE-PRIORITY-Q1 (R5, D4 właściciela 2026-10-31): limit jednego etapu na turę — intencja
  * zamkniętego tematu R-AI-WYRAB-PRZY-RZECE-FARMY-Q1 („nie rób 15 heksów naraz niekompleksowo”),
  * zachowana mimo przejścia z „heks po heksie” na etapy globalne. Dotyczy rozkazów jednego etapu
- * na jedno miasto w jednym wywołaniu (AI: `maxItemsPerCity: 1` jest ostrzejszy i zostaje).
+ * na jedno miasto w jednym wywołaniu (AI: dawny `maxItemsPerCity: 1` ZDJĘTY — decyzja #10, ABC-D=B).
  *
  * R-WEB-AUTOIMPROVE-STAGES3-Q1, S3-2=C (właściciel 2026-10-31): LIMIT ZDJĘTY dla WSZYSTKICH (gracz K1/K2, AI K3,
  * miasta-państwa) — stała = `Infinity` (eksport zostaje wyłącznie dla narzędzi pomiarowych). Liczbę budów w turze
@@ -509,8 +524,8 @@ interface FoodStageDef {
  * WIĄŻĄCA SPECYFIKACJA WŁAŚCICIELA (2026-10-31), globalnie po etapach, nie heks po heksie:
  *   E1 farma na heksach z rzeką BEZ lasu — pierwszy priorytet, wszędzie;
  *   E2 wycinka lasu na heksach przy rzece (potem farma na wyciętym heksie = E1 w kolejnej turze);
- *   E3 hodowla (bydło/owce/lama) — wyłącznie przy rzece (picker: `onRiverHex` = `riverPaths` albo `rzeka.obecna`); MIEŚCI SIĘ w limicie % puli
- *      (R-WEB-AUTOIMPROVE-STAGES2-Q1: wyjątek Q2=B z R3 ODWOŁANY — budżet gracza jest twardym sufitem);
+ *   E3 hodowla (bydło/owce/lama) — wyłącznie przy rzece (picker: `onRiverHex` = `hasRiverAccess`: na rzece albo sąsiadująco); MIEŚCI SIĘ w limicie % puli
+ *      (decyzja #24: dawny wyjątek Q2=B / #5 „poza limitem %” ODWOŁANY — budżet gracza jest twardym sufitem);
  *   E4 irygacja (+tarasy) — jak E3, bez wyjątku od limitu % (koszt ponad budżet = nie budujemy w tej turze,
  *      pula Pracy się kumuluje, procent liczony od skumulowanej puli);
  *   E5 poza rzeką: wycinka + farmy (D3). ABC-3=B (właściciel 2026-10-31): BEZ minimum leśnego
@@ -1143,33 +1158,33 @@ function pickAutoImprovementsSinglePass(opts: PickAutoImprovementsOpts): AutoImp
   for (const path of map.riverPaths ?? []) {
     for (const p of path) riverHexKeys.add(`${p.q},${p.r}`);
   }
-  // R-WEB-AUTOCLEAR-PRIORITY-LIVE-Q1 (zgłoszenie właściciela 2026-11-01, Rodos: „system mógł budować farmę, a robi
-  // trzodę”): heks „Z RZEKĄ” w etapach E1–E3 (farma / wycinka / trzoda) = heks NA rzece, czyli w `riverPaths` ALBO z własnym
-  // `rzeka.obecna` (to jest rzeka widoczna na mapie). Samo `riverPaths` pomijało część rzek: na realnej mapie (nowa gra,
-  // ziarno 778899) 1961 heksów `rzeka.obecna`, tylko 1173 w `riverPaths`. Skutek zmierzony na 60 próbkach miast (1 obywatel,
-  // pełne technologie): w 36 centrum/pole obywatela na rzece poza `riverPaths` nie dostawało farmy w E1, a trzoda (E3)
-  // stawała wcześniej na innym heksie ścieżki rzeki; farma czekała do E5, za trzodą i irygacją (koszt irygacji ponad % budżetu
-  // wstrzymuje E5). Sąsiedztwo rzeki (heks przy rzece, nie na niej) NIE wchodzi do tej definicji (zostaje E5) — ABC w raporcie.
-  const onRiverHex = (hk: string): boolean => riverHexKeys.has(hk) || map.hexes[hk]?.rzeka?.obecna === true;
 
   // R-WEB-AUTOIMPROVE-STAGES3-Q1, S3-1 (właściciel 2026-10-31): „DOSTĘP DO WODY” dla tartaku/obozu = heks NA rzece
   // albo SĄSIADUJĄCY z heksem rzeki — TA SAMA definicja co irygacja (`isRiverAdjacent`, map/improvement-build.ts:~940:
   // własny `rzeka.obecna` LUB heks w `riverPaths` LUB sąsiad w `riverPaths`). Jezioro/morze NIE wchodzą do definicji
-  // (ZAŁOŻENIE do potwierdzenia ABC — dispatch kazał zapytać, gdyby miały się liczyć). Liczone RAZ na wywołanie.
+  // (ZAŁOŻENIE: jezioro/morze nie liczą się jako „dostęp do wody”; brak decyzji właściciela w rejestrze). Liczone RAZ na wywołanie.
   const riverNeighborKeys = (hk: string): string[] => {
     const [qs, rs] = hk.split(',');
     const q = Number(qs); const r = Number(rs);
     return [`${q + 1},${r}`, `${q - 1},${r}`, `${q},${r + 1}`, `${q},${r - 1}`, `${q + 1},${r - 1}`, `${q - 1},${r + 1}`];
   };
+  // Heks NA rzece (`riverPaths` albo własne `rzeka.obecna`) — pierwszy człon `hasRiverAccess` i klucz sortowania „rzeka przed sąsiadem”.
+  const isOnRiver = (hk: string): boolean => riverHexKeys.has(hk) || map.hexes[hk]?.rzeka?.obecna === true;
   const riverAccessMemo = new Map<string, boolean>();
   const hasRiverAccess = (hk: string): boolean => {
     const hit = riverAccessMemo.get(hk);
     if (hit !== undefined) return hit;
-    let v = riverHexKeys.has(hk) || map.hexes[hk]?.rzeka?.obecna === true;
+    let v = isOnRiver(hk);
     if (!v) v = riverNeighborKeys(hk).some(n => riverHexKeys.has(n));
     riverAccessMemo.set(hk, v);
     return v;
   };
+  // R-WEB-AUTOCLEAR-PRIORITY-LIVE-Q1 (zgłoszenie właściciela 2026-11-01, Rodos: „system mógł budować farmę, a robi trzodę”;
+  // r2: decyzja orkiestratora ABC-B): heks „Z RZEKĄ” w etapach E1–E3 (farma / wycinka / trzoda) = heks NA rzece
+  // (`riverPaths` albo własne `rzeka.obecna`) LUB SĄSIADUJĄCY z rzeką — dokładnie `hasRiverAccess` (jedno źródło definicji,
+  // bez duplikacji). Samo `riverPaths` pomijało część rzek (nowa gra, ziarno 778899: 1961 heksów `rzeka.obecna`, 1173 w `riverPaths`),
+  // a heks przy rzece dostawał farmę dopiero w E5, za trzodą i irygacją.
+  const onRiverHex = hasRiverAccess;
 
   // E-FORT (R-WEB-AUTO-FORT-CLAIM-Q1): osobny przebieg z tymi samymi pułapami budżetu co reszta pickera.
   if (fortClaimPass) {
@@ -1329,10 +1344,10 @@ function pickAutoImprovementsSinglePass(opts: PickAutoImprovementsOpts): AutoImp
     // wszystko, co się kwalifikuje (w kolejności profilu), dopiero potem przechodzi do
     // następnego. Ta zmiana jest WSPÓLNA dla obu ścieżek wołających ten picker:
     // AI GRACZA (auto-ulepszenia EOT, main.ts) i AI CYWILIZACJI (`planCityImprovements`
-    // w ai.ts). Limit `maxItemsPerCity` (AI CYWILIZACJI: 1) jest NIETKNIĘTY — ECHO
-    // właściciela: „Zostaw limit, zmień kolejność"; przy limicie 1 AI cywilizacji nadal
-    // stawia jedno ulepszenie na miasto na turę, ale kolejne tury trafiają na TEN SAM
-    // heks aż do jego domknięcia, zamiast skakać po mapie.
+    // w ai.ts). [HISTORIA — NIEAKTUALNE: limit
+    // `maxItemsPerCity: 1` AI CYWILIZACJI zdjęty decyzją #10 (ABC-D=B, 2026-10-31); wtedy ECHO właściciela
+    // brzmiało „Zostaw limit, zmień kolejność".] Teraz AI stawia tyle ulepszeń na miasto na turę, ile
+    // pozwala budżet (100% puli), na TYM SAMYM heksie aż do jego domknięcia, zamiast skakać po mapie.
     //
     // KOLEJNOŚĆ HEKSÓW: najpierw heksy z rzeką NA heksie (największy plon żywności —
     // ECHO właściciela „Priorytetem są heksy z rzekami"), potem reszta; w obu grupach
@@ -1347,8 +1362,14 @@ function pickAutoImprovementsSinglePass(opts: PickAutoImprovementsOpts): AutoImp
       // R5 etap E1: farma najpierw na heksach z rzeką (wszędzie), więc kandydaci to tylko rzeka.
       .filter(h => !riverHexesOnly || onRiverHex(`${h.q},${h.r}`))
       .sort((a, b) => {
-      const ar = onRiverHex(`${a.q},${a.r}`) ? 0 : 1;
-      const br = onRiverHex(`${b.q},${b.r}`) ? 0 : 1;
+      // 3 stopnie: heks NA rzece (0) < heks tylko SĄSIADUJĄCY z rzeką (1) < reszta (2). Oba pierwsze to „heks z rzeką” (E1–E3),
+      // ale przy równych etapach rzeka właściwa idzie pierwsza (zachowuje dotychczasową kolejność wewnątrz E1/E2).
+      const rank = (h: { q: number; r: number }): number => {
+        const k = `${h.q},${h.r}`;
+        return isOnRiver(k) ? 0 : onRiverHex(k) ? 1 : 2;
+      };
+      const ar = rank(a);
+      const br = rank(b);
       return (ar - br) || (hexDist(a.q, a.r) - hexDist(b.q, b.r)) || (a.q - b.q) || (a.r - b.r);
     });
 
@@ -1379,14 +1400,14 @@ function pickAutoImprovementsSinglePass(opts: PickAutoImprovementsOpts): AutoImp
     // (odwrotna kolejność niż w FAZIE 1, która idzie od centrum na zewnątrz — dzięki temu
     // obrona i praca na plon nie biją się o te same heksy).
     // Pułap `ceil(pop / JEDEN_NA_ILU_OBYWATELI)` na klucz i na miasto trzyma wydatek na
-    // poziomie kilku procent rozkazów zamiast 32 % (W-A). Faza idzie PRZED FAZĄ 1, bo przy
-    // `maxItemsPerCity: 1` (AI CYWILIZACJI) faza ustawiona PO niej nigdy by nie ruszyła —
+    // poziomie kilku procent rozkazów zamiast 32 % (W-A). Faza idzie PRZED FAZĄ 1, bo w czasach
+    // `maxItemsPerCity: 1` (AI CYWILIZACJI; limit zdjęty — decyzja #10) faza ustawiona PO niej nigdy by nie ruszyła —
     // FAZA 1 stawia coś w każdej turze, więc „po wyczerpaniu heksów plonowych" znaczyłoby
     // w praktyce „nigdy" (zmierzone: 600 na 600 rozkazów).
     // ---------------------------------------------------------------------
     // Obrona rusza dopiero, gdy miasto ma w promieniu co najmniej `population` ulepszeń
     // PLONOWYCH — „najpierw wykarm obywateli, potem strażnica". Bez tej zwłoki FAZA 0
-    // zabierała przy `maxItemsPerCity: 1` turę 0 i 1, więc PIERWSZE ulepszenie miasta
+    // zabierała (przy dawnym `maxItemsPerCity: 1`, zdjętym decyzją #10) turę 0 i 1, więc PIERWSZE ulepszenie miasta
     // trafiało na heks graniczny zamiast na heks z rzeką — a priorytet rzeki jest
     // wynikiem rundy 2, którego ta runda nie podważa (bramka tematu, test B).
     const plonoweWPromieniu = radiusHexes.reduce((n, { q, r }) => {
@@ -1442,7 +1463,7 @@ function pickAutoImprovementsSinglePass(opts: PickAutoImprovementsOpts): AutoImp
     // R-AI-WYRAB-PRZY-RZECE-FARMY-Q1 (runda 3, część B) — WYRĄB NA HEKSACH RZEKA+LAS.
     // GOAL tematu („AI ma samo wycinać lasy przy rzekach i stawiać tam farmy") był po
     // rundzie 2 STRUKTURALNIE nieosiągalny: `wyrab` żył wyłącznie w FAZIE 2, która rusza
-    // tylko gdy FAZA 1 nic nie postawiła — a przy `maxItemsPerCity: 1` FAZA 1 stawiała coś
+    // tylko gdy FAZA 1 nic nie postawiła — a przy dawnym `maxItemsPerCity: 1` (zdjęty, decyzja #10) FAZA 1 stawiała coś
     // w 600 na 600 rozkazów AI CYWILIZACJI (zmierzone, runda 2, 5 ziaren × 40 tur).
     // Dlatego wyrąb dostaje własny krok NA POCZĄTKU sekwencji heksa — ale WYŁĄCZNIE na
     // heksie, który ma rzekę I nakładkę Las.
@@ -1774,7 +1795,7 @@ function pickAutoImprovementsSinglePass(opts: PickAutoImprovementsOpts): AutoImp
               // RUNDA 4: ten sam straznik co w KROKU 0 — heks z tartakiem albo obozem
               // NIE idzie pod topor (wycinka skasowalaby ulepszenie stojace na lesie,
               // `stripImprovementsWhenForestRemoved`). W rundzie 3 FAZA 2 tego warunku
-              // nie miala; przy `maxItemsPerCity: 1` prawie nigdy nie ruszala, wiec luka
+              // nie miala; przy dawnym `maxItemsPerCity: 1` (zdjety, decyzja #10) prawie nigdy nie ruszala, wiec luka
               // nie ujawniala sie w pomiarze. Bramka tematu (test I) lapie ja teraz wprost.
               if ((workingPlaced.get(hexKey) ?? []).some(k => k === 'tartak' || k === 'oboz_lowiecki')) continue;
               if (!qualifies(key, q, r)) continue;

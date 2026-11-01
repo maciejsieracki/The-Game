@@ -1714,7 +1714,7 @@ function mainGridExtraRows(): AdvSettingRow[] {
     {
       key: 'landFraction',
       lbl: 'Udział lądu na mapie',
-      hint: 'Reszta to morze. Domyślnie: 30% lądu we wszystkich typach świata z suwakiem (Kontynenty, Pangea, Wyspy). Typ Ziemia = szablon kontynentów (~21%, bez suwaka).',
+      hint: 'Reszta to morze. Domyślnie: Pangea 60%, Kontynenty 30%, Wyspy 50%. Typ Ziemia = szablon kontynentów (~21%, bez suwaka).',
       opts: landFractionOptLabels(),
       getIdx: () => {
         const i = LAND_FRACTION_PERCENT_OPTS.indexOf(advOpts.landFractionPercent);
