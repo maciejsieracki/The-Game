@@ -4,8 +4,9 @@
   "okType": true,
   "uiLand": "30% lądu / 70% morze",
   "uiSize": "Standardowy",
-  "seedSeen": null,
-  "genMs": 480388,
+  "seedSeen": 4242,
+  "mapLog": "[NewGame] Mapa: 168x120 seed=4242 typ=kontynenty rywale=6 typy=7",
+  "genMs": 232839,
   "turnsPlanned": 0,
   "ok": true,
   "turnLog": [],
@@ -49,6 +50,7 @@
     "cityTerrainResolved": "48/48"
   },
   "menuCivId": "rzymianie",
+  "polarFallbackLogs": [],
   "pageErrors": [],
-  "totalMs": 811369
+  "totalMs": 251921
 }
