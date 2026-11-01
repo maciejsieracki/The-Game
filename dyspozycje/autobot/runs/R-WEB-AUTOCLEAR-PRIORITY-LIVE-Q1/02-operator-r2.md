@@ -36,3 +36,6 @@ Brak.
 ## RUNDY: 2/5
 ## NASTĘPNY KROK: Evaluator (diff `auto-improvements.ts`, mutacje, ocena zmian poza allowlista, zywy build z poprawka).
 ## DEPLOY/PUSH: NIE WYKONANO
+
+## COMMIT
+Kod + testy + dowody (merge z origin/main): `fcf956e14`. Ten raport dopisany kolejnym commitem.
