@@ -72,10 +72,11 @@ const VARIANTS = [
   { id: 'bad-types', rows: [row(1, 'K', { k: 'str', v: '2' }, S1), row(2, 'B', { k: 'null' }, S2), row(3, 'Z', { k: 'bool' }, S3)] },
   { id: 'empty', rows: [] },
   { id: 'unsorted-dup', rows: [row(2, 'B1', N(5), S2), row(1, 'K', N(4), S1), row(2, 'B2', N(9), S3), row(3, 'Z', N(-0), S3)] },
+  { id: 'dup-below', rows: [row(1, 'K', N(4), S1), row(2, 'B1', N(5), S2), row(2, 'B2', N(9), S3)] },
   { id: 'only-high', rows: [row(2, 'B', N(3), S2), row(3, 'Z', N(2), S3)] },
 ];
 const rateSrc = (r) => (r.k === 'num' ? `stawkaNaObywatela: ${js(r.v)}, ` : r.k === 'null' ? 'stawkaNaObywatela: null, ' : r.k === 'str' ? `stawkaNaObywatela: ${JSON.stringify(r.v)}, ` : r.k === 'bool' ? 'stawkaNaObywatela: true, ' : '');
-const tableSrcOf = (rows) => `{ _opis: 'wariant', _kara: ${JSON.stringify(realTable._kara)}, epoki: [${rows.map((r) => `{ epoka: ${r.epoka}, nazwa: ${JSON.stringify(r.nazwa)}, ${rateSrc(r)}surowce: ${JSON.stringify(r.surowce)} }`).join(', ')}] }`;
+const tableSrcOf = (rows) => `{ _opis: 'wariant', _kara: ${JSON.stringify(realTable._kara)}, epoki: [${rows.map((r) => `{ epoka: ${r.epoka}, nazwa: ${JSON.stringify(r.nazwa)}, ${rateSrc(r.rate)}surowce: ${JSON.stringify(r.surowce)} }`).join(', ')}] }`;
 const rateWire = (r) => (r.k === 'num' ? { t: 'n', v: enc(r.v) } : { t: 'x', kind: r.k }); // 'x' = nie-liczba => None w Rust
 
 const mods = [];
@@ -112,7 +113,8 @@ function makeStock(kind, need) {
 const stockWire = (st) => (st === null ? null : Object.fromEntries(Object.entries(st).map(([k, x]) => [k, enc(x)])));
 const covWire = (c) => ({ required: c.required, rate: c.ratePerCitizen === undefined ? null : enc(c.ratePerCitizen), available: c.available, missing: c.missing, happ: enc(c.happinessDelta), growth: enc(c.growthPctDelta) });
 
-const stats = { citizenCases: 0, branchRateFallback: 0, branchRatePerEra: 0, popGate: 0, deductions: 0, partial: 0 };
+const num2 = (e) => (typeof e === 'number' ? e : e === '-0' ? -0 : e === 'NaN' ? NaN : e === 'Infinity' ? Infinity : e === '-Infinity' ? -Infinity : Number(String(e).replace('~', '')));
+const stats = { citizenCases: 0, branchRateIsOne: 0, branchRateNotOne: 0, realEraRateAboveOne: 0, popGate: 0, deductions: 0, partial: 0 };
 const citizenCases = [];
 for (let vi = 0; vi < VARIANTS.length; vi++) {
   const M = mods[vi];
@@ -143,7 +145,7 @@ for (let vi = 0; vi < VARIANTS.length; vi++) {
     }
   }
 }
-for (const c of citizenCases) { const r = Number(String(c.rate).replace('~', '')); if (VARIANTS[c.v].id === 'real' && [1, 2, 3].includes(r)) stats.branchRatePerEra++; else stats.branchRateFallback++; }
+for (const c of citizenCases) { const r = num2(c.rate); if (r === 1) stats.branchRateIsOne++; else stats.branchRateNotOne++; if (VARIANTS[c.v].id === 'real' && r !== 1) stats.realEraRateAboveOne++; }
 
 // display niezalezny od tabeli: coverage z recznie zadana stawka (Option<f64>: undefined/NaN/0/ujemna/ulamek)
 const displayCases = [];
@@ -171,7 +173,7 @@ for (let vi = 0; vi < VARIANTS.length; vi++) for (const era of ERAS_FULL.concat(
 
 writeFileSync(join(outDir, 'citizen.json'), JSON.stringify({
   pin: PIN,
-  variants: VARIANTS.map((v) => ({ id: v.id, rows: v.rows === null ? null : v.rows.map((r) => ({ epoka: r.epoka, nazwa: r.nazwa, rate: rateWire(r), surowce: r.surowce })) })),
+  variants: VARIANTS.map((v) => ({ id: v.id, rows: v.rows === null ? null : v.rows.map((r) => ({ epoka: r.epoka, nazwa: r.nazwa, rate: rateWire(r.rate), surowce: r.surowce })) })),
   realRates: realTable.epoki.map((r) => ({ epoka: r.epoka, stawka: r.stawkaNaObywatela })),
   cases: citizenCases, display: displayCases, rateGrid,
 }) + '\n');

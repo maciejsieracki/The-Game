@@ -184,7 +184,8 @@ fn coverage_drain_lines_match_running_web() {
     let ts = tables(&v);
     let cases = v["cases"].as_array().expect("cases");
     assert!(cases.len() >= 2200, "przypadkow {}", cases.len());
-    let (mut per_era, mut fallback, mut gate_differs, mut deds, mut partial) = (0, 0, 0, 0, 0);
+    let (mut per_era, mut fallback, mut custom, mut gate_differs, mut deds, mut partial) =
+        (0, 0, 0, 0, 0, 0);
     for (i, c) in cases.iter().enumerate() {
         let vi = c["v"].as_u64().expect("v") as usize;
         let t = &ts[vi];
@@ -250,8 +251,10 @@ fn coverage_drain_lines_match_running_web() {
 
         if vi == 0 && [1.0, 2.0, 3.0].contains(&rate) {
             per_era += 1;
-        } else {
+        } else if vi != 0 && rate == 1.0 {
             fallback += 1;
+        } else if vi != 0 {
+            custom += 1;
         }
         deds += usize::from(!want_ded.is_empty());
         partial +=
@@ -263,6 +266,7 @@ fn coverage_drain_lines_match_running_web() {
         "za malo przypadkow ze stawka epoki: {per_era}"
     );
     assert!(fallback > 500, "za malo przypadkow fallback: {fallback}");
+    assert!(custom > 300, "za malo przypadkow z wlasna stawka: {custom}");
     assert!(
         gate_differs > 100,
         "bramka z populacja rzadko rozni sie od legacy: {gate_differs}"

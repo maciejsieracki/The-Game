@@ -241,12 +241,16 @@ fn citizen_upkeep_row_for_era(
     if let Some(exact) = rows.iter().find(|row| row.epoka == wanted) {
         return Some(exact);
     }
-    Some(
-        rows.iter()
-            .filter(|row| row.epoka <= wanted)
-            .max_by_key(|row| row.epoka)
-            .unwrap_or(first),
-    )
+    // Web: `[...ROWS].filter(epoka <= e).sort((a, b) => b.epoka - a.epoka)[0]` - sort stabilny, wiec przy
+    // remisie (duplikat `epoka`) wygrywa PIERWSZY wiersz; `Iterator::max_by_key` zwraca OSTATNI.
+    let mut best: Option<&CitizenResourceUpkeepEpoki> = None;
+    for row in rows.iter().filter(|row| row.epoka <= wanted) {
+        best = match best {
+            Some(current) if row.epoka <= current.epoka => Some(current),
+            _ => Some(row),
+        };
+    }
+    Some(best.unwrap_or(first))
 }
 
 /// Lista surowcow wymaganych w epoce (web `citizenRequiredResourcesForEra`).
