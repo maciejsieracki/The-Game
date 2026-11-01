@@ -498,3 +498,7 @@ Cel końcowy i bieżący zapisane w `GOAL-RUST-PORT-20261020.md` (§"CEL PĘTLI 
 - Start `R-RUSTPORT-REPIN-EKONOMIA-E-SPICHLERZ-STAWKA-Q1` (kroki 1–2 DELTA-3 §3a: dane + Spichlerz + stawka per epoka). Aktywne Rust: M07B3, 8I r4, EKONOMIA-E. Web: AUTOCLEAR, SPACING, AI-POLAR.
 
 - 2026-11-01 05:12 UTC — kontrola cykliczna: wszystkie aktywne biegną ze świeżymi zapisami (Rust: M07B3, 8I r4, EKONOMIA-E r1; web: AUTOCLEAR, SPACING, AI-POLAR); brak PASS do integracji. Dysk 5,9 GB — nie dokładać tematów.
+
+## 2026-11-01 — M07B-Q3 (rzeki B trasowanie) PASS (r2) zintegrowane na parity-v2
+- FC `c3ea6eb8f` (kod `b068272a3`); merge `ffaf8407a` na `parity-v2` (`a6f1149cc`): fmt OK, clippy OK, test 1984/0. 8 symboli portu A*/trasowania; mutanty 205 (168 KILLED, 37 równoważnych), weryfikator 14589/14589. Dalej: M07B-Q4 (traceRiver, capRiverQuotas, źródła).
+- Incydent infra: restarty kontenera i dysk 100% zatrzymały 5 workflow; postęp zabezpieczony na `rust-port-wip/*`, `web-wip/*`, wznowione z pamięci podręcznej. Web `main` = `97dbcb416` (POLAR scalone, bez deployu). Aktywne: 8I r4, EKONOMIA-E, AUTOCLEAR r2, SPACING-FIX.

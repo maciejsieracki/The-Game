@@ -1,0 +1,18 @@
+input_field_mismatch_maps: 0
+astar: 2075/2075 zgodne
+extmin: 2033/2033 zgodne
+fin: 1884/1884 zgodne
+greedy: 1875/1875 zgodne
+heap: 350/350 zgodne
+inject: 2000/2000 zgodne
+sweep_astar: 164/164 zgodne
+sweep_extcap: 100/100 zgodne
+sweep_extmin: 138/138 zgodne
+sweep_greedy: 94/94 zgodne
+sweep_inject: 78/78 zgodne
+sweep_startd: 70/70 zgodne
+sweep_trace: 118/118 zgodne
+trace: 2000/2000 zgodne
+wyb: 1610/1610 zgodne
+TOTAL: 14589/14589 zgodne
+EXIT=0
