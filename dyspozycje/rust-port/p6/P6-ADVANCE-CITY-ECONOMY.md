@@ -21,9 +21,9 @@ jeszcze wejsc terenowych ani reszty `advanceCityEconomy`, wiec wpiecie samej faz
 | # | Plaster | Web (`turn-economy.ts`) | Rust | Status Q1 |
 |---|---|---|---|---|
 | P0 | parametry ekonomii `buildEconParams` | `:2293` | brak | DLUG Q2 |
-| P1 | wezly terytorium `buildTerritoryNodesFromCities` | `:2296` | `territory.rs:309 build_territory_nodes_from_cities(&[WorkCity])` | istnieje; NIE wolane - DLUG Q2a, powod zmierzony w sek. 4a |
-| P2 | spor sasiadow `computeLostToNearerSiblingByCity` + `reconcileAllWorkedTiles` | `:2305-2306` | `okolica/sasiedztwo.rs:13 compute_lost_to_nearer_sibling_by_city(&[OkolicaCity], &BuildMap)`, `territory.rs:422 reconcile_all_worked_tiles(&mut [WorkCity], ..)` | istnieja; NIE wolane - DLUG Q2a, powod zmierzony w sek. 4a |
-| P3 | `computeTerritoryResourceYieldByCity` | `:2310` (def. `:738`) | BRAK | DLUG Q2a (parametr `territory_resource_by_city`) |
+| P1 | wezly terytorium `buildTerritoryNodesFromCities` | `:2296` | `territory.rs:309 build_territory_nodes_from_cities(&[WorkCity])` | istnieje; WOLANE przez adapter `turn_economy_territory::territory_nodes_of` (`-Q2a`, `P6-ADVANCE-CITY-ECONOMY-Q2A.md`) |
+| P2 | spor sasiadow `computeLostToNearerSiblingByCity` + `reconcileAllWorkedTiles` | `:2305-2306` | `okolica/sasiedztwo.rs:13 compute_lost_to_nearer_sibling_by_city(&[OkolicaCity], &BuildMap)`, `territory.rs:422 reconcile_all_worked_tiles(&mut [WorkCity], ..)` | istnieja; WOLANE przez adaptery `okolica_city_of`/`reconcile_city_worked_tiles` (`-Q2a`) |
+| P3 | `computeTerritoryResourceYieldByCity` | `:2310` (def. `:738`) | `turn_economy_territory.rs compute_territory_resource_yield_by_city` (`-Q2a`) | ZAPORTOWANE (`-Q2a`); wariant `advance_city_economy_resources_with_map` liczy je z `&[state::City]` + mapy |
 | P4 | `computePracaUpkeepByOwner` | `:2320` | BRAK | DLUG Q3 |
 | P5 | `loadUpkeepParams`/`loadStorageParams`/`buildRationParams`/`buildUnitUpkeepTable` | `:2323-2329` | istnieja (`turn_economy.rs`, `city_growth.rs`) | wolane przez petle -> Q3 |
 | P6 | przepustowosci konwerterow per owner `converterThroughputsForOwner` | `:2338-2360` | `converter_throughputs_for_era` | **ZAPORTOWANE (S2)** |
@@ -33,7 +33,7 @@ jeszcze wejsc terenowych ani reszty `advanceCityEconomy`, wiec wpiecie samej faz
 | P10 | `loadHealthParams`, `loadWealthParams` | `:2421-2431` | `load_wealth_params` istnieje; `load_health_params` BRAK | DLUG Q3 |
 | P11 | `ownersWithMennica` (`:240`) | `:2437` | `owners_with_mennica` | **ZAPORTOWANE (S1)** |
 | P12 | stolica/liczba miast per owner (korupcja) | `:2444-2454` | BRAK (wymaga petli) | DLUG Q4 |
-| P13 | `computeWorkedMagazynYieldsByCity` | `:2476` (def. `:824`) | BRAK | DLUG Q2a (parametr `worked_magazyn_by_city`) |
+| P13 | `computeWorkedMagazynYieldsByCity` | `:2476` (def. `:824`) | `turn_economy_territory.rs compute_worked_magazyn_yields_by_city` (`-Q2a`) | ZAPORTOWANE (`-Q2a`); wariant `_with_map` jak wyzej |
 | P14 | faza zasobow (`loadSpichlerzDrainParams` -> tick -> Garncarnia) | `:2482-2500` | `run_city_economy_resource_phase` (e0c0a9ac5) | **WOLANE produkcyjnie (S5)** |
 | P15 | pola `CityEconomyTick` ze stanu Spichlerza/Garncarni | `:2514-2523`, `:2535-2538`, `:2592-2597`, krotka `tick` | `CityResourceView` | **ZAPORTOWANE (S6)** |
 | P16 | zdrowie `computeCityHealth`, dostep do wody | `:2524-2531` | BRAK (`compute_city_health`, `city_has_water_access`) | DLUG Q3 |
@@ -84,6 +84,7 @@ Funkcje P1/P2 istnieja, ale nie maja jak byc wolane z `advance_city_economy_reso
 * wyniki P1/P2 maja konsumentow tylko w P3/P13 (`:2310`, `:2476`; w Q1 to parametry) i w petli plonow
   (P17, `cityWorkedTilesForEconomy` `:2506`); bez nich wolanie byloby martwym obliczeniem.
 Wniosek: P1/P2 laczy sie z P3/P13 w temacie `-Q2a` (adapter typow + mapa + `worked_tiles`), nie osobno.
+STATUS `-Q2a` (R-RUSTPORT-P6-ADVANCE-CITY-ECONOMY-Q2A-Q1): ZAMKNIETE - adaptery, mapa i P3/P13 w `turn_economy_territory.rs`; korekta: `reconcileAllWorkedTiles` w pinie mutuje `okolicaReczne` (nie `workedTiles`), a `state::City` MA `okolica_reczne` - zapis wykonywany przez `reconcile_city_worked_tiles`. Szczegoly: `P6-ADVANCE-CITY-ECONOMY-Q2A.md`.
 Wczesniejsze uzasadnienie tabeli ("poza allowlista wolajacego") bylo bledne (wolajacy jest w allowliscie) - wycofane.
 
 ## 4. Dlug i propozycja podzialu (kolejne tematy)
@@ -91,6 +92,7 @@ Wczesniejsze uzasadnienie tabeli ("poza allowlista wolajacego") bylo bledne (wol
 * `-Q2a` wejscia terenowe: `computeTerritoryResourceYieldByCity` (`:738`) + `computeWorkedMagazynYieldsByCity`
   (`:824`) + wpiecie `build_territory_nodes_from_cities`/spor sasiadow/`reconcile_all_worked_tiles`. Zaleznosci
   P1/P2 istnieja; brakuje samych dwoch funkcji mapowych. Po nim `AdvanceCityEconomyInput` traci dwa parametry.
+  STATUS: ZROBIONE w `-Q2a` jako osobny wariant `advance_city_economy_resources_with_map` (struktura `AdvanceCityEconomyInput` i funkcja bazowa BEZ zmian; dwa pola wejsciowe sa w wariancie ignorowane).
 * `-Q2b` zdrowie i woda: `loadHealthParams`, `computeCityHealth`, `cityHasWaterAccess` (P10, P16).
 * `-Q3` plony miasta: `toEconomyCity`, `cityYieldPerTurn` (czesciowo istnieje), `applyOrderYieldMults`,
   `applyWonderCityYields`, korupcja (P12, P17) + Wealth/`splitPraca`/handel/podatek (P18).

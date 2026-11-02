@@ -58,6 +58,10 @@ use crate::domain::turn_economy_resources::{
     ResourceTickResolvers, TerritoryResourceYield, WorkedMagazynYield,
 };
 
+use crate::domain::turn_economy_territory::{
+    compute_terrain_inputs, TerrainContext, TerrainInputs,
+};
+
 /// Resolvery weba uzywane przez plastry zasobowe (`resolveOwnerEra`, `resolveOwnerTech`,
 /// `resolveOwnerZlotoAccess`, `resolveOwnerActiveLabels`, `resolveOwnerEmpireStock`).
 /// `None` = `undefined` w webie.
@@ -390,6 +394,38 @@ pub fn advance_city_economy_resources(
         kamieniarski_bonus_kamienia_civ: kamieniarski_bonus,
         per_city,
     }
+}
+
+/// WARIANT -Q2a: jak [`advance_city_economy_resources`], ale wejscia terenowe (`territoryResourceByCity`,
+/// `workedMagazynByCity`) liczy SAM z `cities` + mapy (`:2296-2310`, `:2476`), a nie z parametrow.
+/// Pola `territory_resource_by_city` / `worked_magazyn_by_city` w `input` sa IGNOROWANE. Reconcile
+/// `okolica_reczne` (`:2306`) mutuje `cities` PRZED faza zasobow, jak w webie. Zwraca tez wejscia
+/// terenowe (do porownania z webem).
+pub fn advance_city_economy_resources_with_map(
+    cities: &mut [City],
+    terrain: &TerrainContext<'_>,
+    input: &AdvanceCityEconomyInput<'_>,
+) -> (AdvanceResourceOutcome, TerrainInputs) {
+    let era = |o: i64| owner_era_for(input, o);
+    let inputs = compute_terrain_inputs(cities, terrain, &era);
+    let own = AdvanceCityEconomyInput {
+        built_by_city: input.built_by_city,
+        econ_params: input.econ_params,
+        difficulty: input.difficulty,
+        player_era: input.player_era,
+        player_zbadane: input.player_zbadane,
+        resolvers: AdvanceResolvers {
+            owner_era: input.resolvers.owner_era,
+            owner_tech: input.resolvers.owner_tech,
+            owner_zloto_access: input.resolvers.owner_zloto_access,
+            owner_active_labels: input.resolvers.owner_active_labels,
+            owner_empire_stock: input.resolvers.owner_empire_stock,
+        },
+        territory_resource_by_city: &inputs.territory_resource_by_city,
+        worked_magazyn_by_city: &inputs.worked_magazyn_by_city,
+    };
+    let out = advance_city_economy_resources(cities, &own);
+    (out, inputs)
 }
 
 /// Wejscia plastra `manpowerHeal` (`turn-economy.ts:2280-2284`, `:2887-2909`).

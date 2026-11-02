@@ -1,0 +1,3 @@
+checked {'terr': 526, 'terr_nonempty': 513, 'lost': 526, 'lost_nonempty': 319, 'reczne': 1518, 'reczne_cut': 752, 'worked': 526, 'worked_nonempty': 508, 'pool': 537, 'pool_nonempty_stock': 336, 'direct': 90, 'direct_fort_order': 121}
+mismatches 0
+VERIFY OK
