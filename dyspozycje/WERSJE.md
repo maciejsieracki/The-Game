@@ -1,3 +1,12 @@
+## ROBOCZA e3f08be6 -- 2026-11-02 -- automat: posterunek nie w kole własnego fortu (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`a02d6bd30` + `R-WEB-AUTO-FORT-DIAG-Q1` `a13d97694`) i commit wdrożenia bundla; stała zgoda właściciela (usterka z testów na żywo U-3).
+- Bundle MD5 `e3f08be6b0dcc31e55c45234dcb92d78`, 70,125,616 B, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, outDir poza repo, stempel ROBOCZA; `verify-robocza-bundle.cjs` manifest match OK.
+- Zakres: FAZA 0 automatu nie stawia fortu/posterunku, którego koło jest w całości w kole własnego fortu (kandydat dający ≥1 nowy heks nadal powstaje; posterunek obejmowany przez fort z tego samego wywołania jest cofany). Dodany opcjonalny log etapu E-FORT (domyślnie wyłączony).
+- Testy: tsc PASS; auto-fort-diag 17/0, auto-fort-claim 63/0, autoimprove-stages-q1 302/0, auto-improvements 46/0, ai-improvements 56/0, autoimprove-live-hooks 37/0.
+- Ograniczenia: U-2 (0 fortów gracza w profilu „zrównoważone”) — przyczyna NIE_ZMIERZONO (żywy bieg z logiem E-FORT); FAZA 0 dopuszcza częściowo nakładające się koła.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `8f59c5c22da274f1b64ca6a0bac53b44`, 70,122,731 bajtów.
+
 ## ROBOCZA 8f59c5c2 -- 2026-11-02 -- log pickera automatu i hooki testowe ?civTest=1 (testowa)
 
 - **STATUS: DEPLOYED** — merge do `origin/main` (`e1b0bae86` + `R-WEB-AUTOIMPROVE-LIVE-HOOKS-Q1` `3e2540a57`) i commit wdrożenia bundla; stała zgoda właściciela (dopalenia po testach na żywo).
