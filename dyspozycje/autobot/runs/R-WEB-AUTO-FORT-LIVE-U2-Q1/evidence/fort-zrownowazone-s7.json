@@ -1,0 +1,4782 @@
+{
+  "scenario": "D",
+  "seed": 7,
+  "focus": "zrownowazone",
+  "turns": [
+    {
+      "end": {
+        "before": 1,
+        "after": 2,
+        "ms": 15285,
+        "ok": true
+      },
+      "nDec": 133,
+      "fortDec": [
+        {
+          "cityId": "city0",
+          "scope": "fort",
+          "reason": "e-fort bramka: limit miast NIE wyczerpany (cityLimitExhausted!==true)",
+          "detail": {
+            "cityLimitExhausted": false
+          }
+        }
+      ],
+      "forts": [],
+      "turn": 2
+    },
+    {
+      "end": {
+        "before": 2,
+        "after": 3,
+        "ms": 11091,
+        "ok": true
+      },
+      "nDec": 265,
+      "fortDec": [
+        {
+          "cityId": "city0",
+          "scope": "fort",
+          "reason": "e-fort bramka: limit miast NIE wyczerpany (cityLimitExhausted!==true)",
+          "detail": {
+            "cityLimitExhausted": false
+          }
+        }
+      ],
+      "forts": [],
+      "turn": 3
+    },
+    {
+      "end": {
+        "before": 3,
+        "after": 4,
+        "ms": 13251,
+        "ok": true
+      },
+      "nDec": 638,
+      "fortDec": [
+        {
+          "cityId": "city0",
+          "scope": "fort",
+          "reason": "e-fort bramka: limit miast NIE wyczerpany (cityLimitExhausted!==true)",
+          "detail": {
+            "cityLimitExhausted": false
+          }
+        }
+      ],
+      "forts": [],
+      "turn": 4
+    },
+    {
+      "end": {
+        "before": 4,
+        "after": 5,
+        "ms": 11087,
+        "ok": true
+      },
+      "nDec": 3739,
+      "fortDec": [
+        {
+          "cityId": "city0",
+          "scope": "fort",
+          "reason": "e-fort bramka: limit miast NIE wyczerpany (cityLimitExhausted!==true)",
+          "detail": {
+            "cityLimitExhausted": false
+          }
+        }
+      ],
+      "forts": [],
+      "turn": 5
+    },
+    {
+      "end": {
+        "before": 5,
+        "after": 6,
+        "ms": 10093,
+        "ok": true
+      },
+      "nDec": 3459,
+      "fortDec": [
+        {
+          "cityId": "city0",
+          "scope": "fort",
+          "reason": "e-fort bramka: limit miast NIE wyczerpany (cityLimitExhausted!==true)",
+          "detail": {
+            "cityLimitExhausted": false
+          }
+        }
+      ],
+      "forts": [],
+      "turn": 6
+    },
+    {
+      "end": {
+        "before": 6,
+        "after": 7,
+        "ms": 11829,
+        "ok": true
+      },
+      "nDec": 2638,
+      "fortDec": [
+        {
+          "cityId": "city0",
+          "scope": "fort",
+          "reason": "e-fort bramka: limit miast NIE wyczerpany (cityLimitExhausted!==true)",
+          "detail": {
+            "cityLimitExhausted": false
+          }
+        }
+      ],
+      "forts": [],
+      "turn": 7
+    },
+    {
+      "end": {
+        "before": 7,
+        "after": 8,
+        "ms": 13020,
+        "ok": true
+      },
+      "nDec": 1000,
+      "fortDec": [
+        {
+          "cityId": "city0",
+          "scope": "fort",
+          "reason": "e-fort bramka: limit miast NIE wyczerpany (cityLimitExhausted!==true)",
+          "detail": {
+            "cityLimitExhausted": false
+          }
+        }
+      ],
+      "forts": [],
+      "turn": 8
+    },
+    {
+      "end": {
+        "before": 8,
+        "after": 9,
+        "ms": 12731,
+        "ok": true
+      },
+      "nDec": 6554,
+      "fortDec": [
+        {
+          "cityId": "city0",
+          "scope": "fort",
+          "reason": "e-fort bramka: limit miast NIE wyczerpany (cityLimitExhausted!==true)",
+          "detail": {
+            "cityLimitExhausted": false
+          }
+        }
+      ],
+      "forts": [],
+      "turn": 9
+    },
+    {
+      "end": {
+        "before": 9,
+        "after": 10,
+        "ms": 12525,
+        "ok": true
+      },
+      "nDec": 8596,
+      "fortDec": [
+        {
+          "cityId": "city0",
+          "scope": "fort",
+          "reason": "e-fort bramka: limit miast NIE wyczerpany (cityLimitExhausted!==true)",
+          "detail": {
+            "cityLimitExhausted": false
+          }
+        }
+      ],
+      "forts": [],
+      "turn": 10
+    },
+    {
+      "end": {
+        "before": 10,
+        "after": 11,
+        "ms": 12637,
+        "ok": true
+      },
+      "nDec": 10084,
+      "fortDec": [
+        {
+          "cityId": "city0",
+          "scope": "fort",
+          "reason": "e-fort bramka: limit miast NIE wyczerpany (cityLimitExhausted!==true)",
+          "detail": {
+            "cityLimitExhausted": false
+          }
+        }
+      ],
+      "forts": [],
+      "turn": 11
+    },
+    {
+      "end": {
+        "before": 11,
+        "after": 12,
+        "ms": 12781,
+        "ok": true
+      },
+      "nDec": 11919,
+      "fortDec": [
+        {
+          "cityId": "city0",
+          "scope": "fort",
+          "reason": "e-fort bramka: limit miast NIE wyczerpany (cityLimitExhausted!==true)",
+          "detail": {
+            "cityLimitExhausted": false
+          }
+        }
+      ],
+      "forts": [],
+      "turn": 12
+    },
+    {
+      "end": {
+        "before": 12,
+        "after": 13,
+        "ms": 11578,
+        "ok": true
+      },
+      "nDec": 12901,
+      "fortDec": [
+        {
+          "cityId": "city0",
+          "scope": "fort",
+          "reason": "e-fort bramka: limit miast NIE wyczerpany (cityLimitExhausted!==true)",
+          "detail": {
+            "cityLimitExhausted": false
+          }
+        }
+      ],
+      "forts": [],
+      "turn": 13
+    },
+    {
+      "end": {
+        "before": 13,
+        "after": 14,
+        "ms": 12276,
+        "ok": true
+      },
+      "nDec": 12092,
+      "fortDec": [
+        {
+          "cityId": "city0",
+          "scope": "fort",
+          "reason": "e-fort bramka: limit miast NIE wyczerpany (cityLimitExhausted!==true)",
+          "detail": {
+            "cityLimitExhausted": false
+          }
+        }
+      ],
+      "forts": [],
+      "turn": 14
+    },
+    {
+      "end": {
+        "before": 14,
+        "after": 15,
+        "ms": 9073,
+        "ok": true
+      },
+      "nDec": 11897,
+      "fortDec": [
+        {
+          "cityId": "city0",
+          "scope": "fort",
+          "reason": "e-fort bramka: limit miast NIE wyczerpany (cityLimitExhausted!==true)",
+          "detail": {
+            "cityLimitExhausted": false
+          }
+        }
+      ],
+      "forts": [],
+      "turn": 15
+    },
+    {
+      "end": {
+        "before": 15,
+        "after": 16,
+        "ms": 10420,
+        "ok": true
+      },
+      "nDec": 13330,
+      "fortDec": [
+        {
+          "cityId": "city0",
+          "scope": "fort",
+          "reason": "e-fort bramka: limit miast NIE wyczerpany (cityLimitExhausted!==true)",
+          "detail": {
+            "cityLimitExhausted": false
+          }
+        }
+      ],
+      "forts": [],
+      "turn": 16
+    },
+    {
+      "end": {
+        "before": 16,
+        "after": 17,
+        "ms": 9613,
+        "ok": true
+      },
+      "nDec": 12060,
+      "fortDec": [
+        {
+          "cityId": "city0",
+          "scope": "fort",
+          "reason": "e-fort bramka: limit miast NIE wyczerpany (cityLimitExhausted!==true)",
+          "detail": {
+            "cityLimitExhausted": false
+          }
+        }
+      ],
+      "forts": [],
+      "turn": 17
+    },
+    {
+      "end": {
+        "before": 17,
+        "after": 18,
+        "ms": 9976,
+        "ok": true
+      },
+      "nDec": 12113,
+      "fortDec": [
+        {
+          "cityId": "city0",
+          "scope": "fort",
+          "reason": "e-fort bramka: limit miast NIE wyczerpany (cityLimitExhausted!==true)",
+          "detail": {
+            "cityLimitExhausted": false
+          }
+        }
+      ],
+      "forts": [],
+      "turn": 18
+    },
+    {
+      "end": {
+        "before": 18,
+        "after": 19,
+        "ms": 10017,
+        "ok": true
+      },
+      "nDec": 14988,
+      "fortDec": [
+        {
+          "cityId": "city0",
+          "scope": "fort",
+          "reason": "e-fort bramka: limit miast NIE wyczerpany (cityLimitExhausted!==true)",
+          "detail": {
+            "cityLimitExhausted": false
+          }
+        }
+      ],
+      "forts": [],
+      "turn": 19
+    },
+    {
+      "end": {
+        "before": 19,
+        "after": 20,
+        "ms": 9463,
+        "ok": true
+      },
+      "nDec": 16340,
+      "fortDec": [
+        {
+          "cityId": "city0",
+          "scope": "fort",
+          "reason": "e-fort bramka: limit miast NIE wyczerpany (cityLimitExhausted!==true)",
+          "detail": {
+            "cityLimitExhausted": false
+          }
+        }
+      ],
+      "forts": [],
+      "turn": 20
+    },
+    {
+      "end": {
+        "before": 20,
+        "after": 21,
+        "ms": 9963,
+        "ok": true
+      },
+      "nDec": 13888,
+      "fortDec": [
+        {
+          "cityId": "city0",
+          "scope": "fort",
+          "reason": "e-fort bramka: limit miast NIE wyczerpany (cityLimitExhausted!==true)",
+          "detail": {
+            "cityLimitExhausted": false
+          }
+        }
+      ],
+      "forts": [],
+      "turn": 21
+    },
+    {
+      "end": {
+        "before": 21,
+        "after": 22,
+        "ms": 8474,
+        "ok": true
+      },
+      "nDec": 5000,
+      "fortDec": [
+        {
+          "cityId": "city0",
+          "scope": "fort",
+          "reason": "e-fort bramka: limit miast NIE wyczerpany (cityLimitExhausted!==true)",
+          "detail": {
+            "cityLimitExhausted": false
+          }
+        }
+      ],
+      "forts": [],
+      "turn": 22
+    },
+    {
+      "end": {
+        "before": 22,
+        "after": 23,
+        "ms": 6504,
+        "ok": true
+      },
+      "nDec": 4154,
+      "fortDec": [
+        {
+          "cityId": "city0",
+          "scope": "fort",
+          "reason": "e-fort bramka: limit miast NIE wyczerpany (cityLimitExhausted!==true)",
+          "detail": {
+            "cityLimitExhausted": false
+          }
+        }
+      ],
+      "forts": [],
+      "turn": 23
+    },
+    {
+      "end": {
+        "before": 23,
+        "after": 24,
+        "ms": 7191,
+        "ok": true
+      },
+      "nDec": 4411,
+      "fortDec": [
+        {
+          "cityId": "city0",
+          "scope": "fort",
+          "reason": "e-fort bramka: limit miast NIE wyczerpany (cityLimitExhausted!==true)",
+          "detail": {
+            "cityLimitExhausted": false
+          }
+        }
+      ],
+      "forts": [],
+      "turn": 24
+    },
+    {
+      "end": {
+        "before": 24,
+        "after": 25,
+        "ms": 7277,
+        "ok": true
+      },
+      "nDec": 9613,
+      "fortDec": [
+        {
+          "cityId": "city0",
+          "scope": "fort",
+          "reason": "e-fort bramka: limit miast NIE wyczerpany (cityLimitExhausted!==true)",
+          "detail": {
+            "cityLimitExhausted": false
+          }
+        }
+      ],
+      "forts": [],
+      "turn": 25
+    },
+    {
+      "end": {
+        "before": 25,
+        "after": 26,
+        "ms": 7957,
+        "ok": true
+      },
+      "nDec": 11156,
+      "fortDec": [
+        {
+          "cityId": "city0",
+          "scope": "fort",
+          "reason": "e-fort bramka: limit miast NIE wyczerpany (cityLimitExhausted!==true)",
+          "detail": {
+            "cityLimitExhausted": false
+          }
+        }
+      ],
+      "forts": [],
+      "turn": 26
+    },
+    {
+      "end": {
+        "before": 26,
+        "after": 27,
+        "ms": 7731,
+        "ok": true
+      },
+      "nDec": 14350,
+      "fortDec": [
+        {
+          "cityId": "city0",
+          "scope": "fort",
+          "reason": "e-fort bramka: limit miast NIE wyczerpany (cityLimitExhausted!==true)",
+          "detail": {
+            "cityLimitExhausted": false
+          }
+        }
+      ],
+      "forts": [
+        {
+          "q": 68,
+          "r": 13,
+          "ownerId": 6,
+          "type": "posterunek",
+          "builtAtTurn": 27,
+          "seq": 0
+        },
+        {
+          "q": 46,
+          "r": 27,
+          "ownerId": 16,
+          "type": "posterunek",
+          "builtAtTurn": 27,
+          "seq": 1
+        }
+      ],
+      "turn": 27
+    },
+    {
+      "end": {
+        "before": 27,
+        "after": 28,
+        "ms": 7718,
+        "ok": true
+      },
+      "nDec": 16594,
+      "fortDec": [
+        {
+          "cityId": "city0",
+          "scope": "fort",
+          "reason": "e-fort bramka: limit miast NIE wyczerpany (cityLimitExhausted!==true)",
+          "detail": {
+            "cityLimitExhausted": false
+          }
+        }
+      ],
+      "forts": [
+        {
+          "q": 68,
+          "r": 13,
+          "ownerId": 6,
+          "type": "posterunek",
+          "builtAtTurn": 27,
+          "seq": 0
+        },
+        {
+          "q": 46,
+          "r": 27,
+          "ownerId": 16,
+          "type": "posterunek",
+          "builtAtTurn": 27,
+          "seq": 1
+        },
+        {
+          "q": 30,
+          "r": 10,
+          "ownerId": 1,
+          "type": "posterunek",
+          "builtAtTurn": 28,
+          "seq": 2
+        },
+        {
+          "q": 64,
+          "r": 38,
+          "ownerId": 11,
+          "type": "posterunek",
+          "builtAtTurn": 28,
+          "seq": 3
+        },
+        {
+          "q": 25,
+          "r": 25,
+          "ownerId": 16,
+          "type": "posterunek",
+          "builtAtTurn": 28,
+          "seq": 4
+        }
+      ],
+      "turn": 28
+    },
+    {
+      "end": {
+        "before": 28,
+        "after": 29,
+        "ms": 9073,
+        "ok": true
+      },
+      "nDec": 20136,
+      "fortDec": [
+        {
+          "cityId": "city0",
+          "scope": "fort",
+          "reason": "e-fort bramka: limit miast NIE wyczerpany (cityLimitExhausted!==true)",
+          "detail": {
+            "cityLimitExhausted": false
+          }
+        }
+      ],
+      "forts": [
+        {
+          "q": 68,
+          "r": 13,
+          "ownerId": 6,
+          "type": "posterunek",
+          "builtAtTurn": 27,
+          "seq": 0
+        },
+        {
+          "q": 46,
+          "r": 27,
+          "ownerId": 16,
+          "type": "posterunek",
+          "builtAtTurn": 27,
+          "seq": 1
+        },
+        {
+          "q": 30,
+          "r": 10,
+          "ownerId": 1,
+          "type": "posterunek",
+          "builtAtTurn": 28,
+          "seq": 2
+        },
+        {
+          "q": 64,
+          "r": 38,
+          "ownerId": 11,
+          "type": "posterunek",
+          "builtAtTurn": 28,
+          "seq": 3
+        },
+        {
+          "q": 25,
+          "r": 25,
+          "ownerId": 16,
+          "type": "posterunek",
+          "builtAtTurn": 28,
+          "seq": 4
+        },
+        {
+          "q": 23,
+          "r": 19,
+          "ownerId": 1,
+          "type": "posterunek",
+          "builtAtTurn": 29,
+          "seq": 5
+        },
+        {
+          "q": 50,
+          "r": 9,
+          "ownerId": 6,
+          "type": "posterunek",
+          "builtAtTurn": 29,
+          "seq": 6
+        }
+      ],
+      "turn": 29
+    },
+    {
+      "end": {
+        "before": 29,
+        "after": 30,
+        "ms": 7884,
+        "ok": true
+      },
+      "nDec": 17439,
+      "fortDec": [
+        {
+          "cityId": "city0",
+          "scope": "fort",
+          "reason": "e-fort bramka: limit miast NIE wyczerpany (cityLimitExhausted!==true)",
+          "detail": {
+            "cityLimitExhausted": false
+          }
+        }
+      ],
+      "forts": [
+        {
+          "q": 68,
+          "r": 13,
+          "ownerId": 6,
+          "type": "posterunek",
+          "builtAtTurn": 27,
+          "seq": 0
+        },
+        {
+          "q": 46,
+          "r": 27,
+          "ownerId": 16,
+          "type": "posterunek",
+          "builtAtTurn": 27,
+          "seq": 1
+        },
+        {
+          "q": 30,
+          "r": 10,
+          "ownerId": 1,
+          "type": "posterunek",
+          "builtAtTurn": 28,
+          "seq": 2
+        },
+        {
+          "q": 64,
+          "r": 38,
+          "ownerId": 11,
+          "type": "posterunek",
+          "builtAtTurn": 28,
+          "seq": 3
+        },
+        {
+          "q": 25,
+          "r": 25,
+          "ownerId": 16,
+          "type": "posterunek",
+          "builtAtTurn": 28,
+          "seq": 4
+        },
+        {
+          "q": 23,
+          "r": 19,
+          "ownerId": 1,
+          "type": "posterunek",
+          "builtAtTurn": 29,
+          "seq": 5
+        },
+        {
+          "q": 50,
+          "r": 9,
+          "ownerId": 6,
+          "type": "posterunek",
+          "builtAtTurn": 29,
+          "seq": 6
+        }
+      ],
+      "turn": 30
+    },
+    {
+      "end": {
+        "before": 30,
+        "after": 31,
+        "ms": 8849,
+        "ok": true
+      },
+      "nDec": 17140,
+      "fortDec": [
+        {
+          "cityId": "city0",
+          "scope": "fort",
+          "reason": "e-fort bramka: limit miast NIE wyczerpany (cityLimitExhausted!==true)",
+          "detail": {
+            "cityLimitExhausted": false
+          }
+        }
+      ],
+      "forts": [
+        {
+          "q": 68,
+          "r": 13,
+          "ownerId": 6,
+          "type": "posterunek",
+          "builtAtTurn": 27,
+          "seq": 0
+        },
+        {
+          "q": 46,
+          "r": 27,
+          "ownerId": 16,
+          "type": "posterunek",
+          "builtAtTurn": 27,
+          "seq": 1
+        },
+        {
+          "q": 30,
+          "r": 10,
+          "ownerId": 1,
+          "type": "posterunek",
+          "builtAtTurn": 28,
+          "seq": 2
+        },
+        {
+          "q": 64,
+          "r": 38,
+          "ownerId": 11,
+          "type": "posterunek",
+          "builtAtTurn": 28,
+          "seq": 3
+        },
+        {
+          "q": 25,
+          "r": 25,
+          "ownerId": 16,
+          "type": "posterunek",
+          "builtAtTurn": 28,
+          "seq": 4
+        },
+        {
+          "q": 23,
+          "r": 19,
+          "ownerId": 1,
+          "type": "posterunek",
+          "builtAtTurn": 29,
+          "seq": 5
+        },
+        {
+          "q": 50,
+          "r": 9,
+          "ownerId": 6,
+          "type": "posterunek",
+          "builtAtTurn": 29,
+          "seq": 6
+        }
+      ],
+      "turn": 31
+    },
+    {
+      "end": {
+        "before": 31,
+        "after": 32,
+        "ms": 8719,
+        "ok": true
+      },
+      "nDec": 20731,
+      "fortDec": [
+        {
+          "cityId": "city0",
+          "scope": "fort",
+          "reason": "e-fort bramka: limit miast NIE wyczerpany (cityLimitExhausted!==true)",
+          "detail": {
+            "cityLimitExhausted": false
+          }
+        }
+      ],
+      "forts": [
+        {
+          "q": 68,
+          "r": 13,
+          "ownerId": 6,
+          "type": "posterunek",
+          "builtAtTurn": 27,
+          "seq": 0
+        },
+        {
+          "q": 46,
+          "r": 27,
+          "ownerId": 16,
+          "type": "posterunek",
+          "builtAtTurn": 27,
+          "seq": 1
+        },
+        {
+          "q": 30,
+          "r": 10,
+          "ownerId": 1,
+          "type": "posterunek",
+          "builtAtTurn": 28,
+          "seq": 2
+        },
+        {
+          "q": 64,
+          "r": 38,
+          "ownerId": 11,
+          "type": "posterunek",
+          "builtAtTurn": 28,
+          "seq": 3
+        },
+        {
+          "q": 25,
+          "r": 25,
+          "ownerId": 16,
+          "type": "posterunek",
+          "builtAtTurn": 28,
+          "seq": 4
+        },
+        {
+          "q": 23,
+          "r": 19,
+          "ownerId": 1,
+          "type": "posterunek",
+          "builtAtTurn": 29,
+          "seq": 5
+        },
+        {
+          "q": 50,
+          "r": 9,
+          "ownerId": 6,
+          "type": "posterunek",
+          "builtAtTurn": 29,
+          "seq": 6
+        },
+        {
+          "q": 64,
+          "r": 45,
+          "ownerId": 11,
+          "type": "posterunek",
+          "builtAtTurn": 32,
+          "seq": 7
+        },
+        {
+          "q": 52,
+          "r": 39,
+          "ownerId": 11,
+          "type": "posterunek",
+          "builtAtTurn": 32,
+          "seq": 8
+        }
+      ],
+      "turn": 32
+    },
+    {
+      "end": {
+        "before": 32,
+        "after": 33,
+        "ms": 9990,
+        "ok": true
+      },
+      "nDec": 17261,
+      "fortDec": [
+        {
+          "cityId": "city0",
+          "scope": "fort",
+          "reason": "e-fort bramka: limit miast NIE wyczerpany (cityLimitExhausted!==true)",
+          "detail": {
+            "cityLimitExhausted": false
+          }
+        }
+      ],
+      "forts": [
+        {
+          "q": 68,
+          "r": 13,
+          "ownerId": 6,
+          "type": "posterunek",
+          "builtAtTurn": 27,
+          "seq": 0
+        },
+        {
+          "q": 46,
+          "r": 27,
+          "ownerId": 16,
+          "type": "posterunek",
+          "builtAtTurn": 27,
+          "seq": 1
+        },
+        {
+          "q": 30,
+          "r": 10,
+          "ownerId": 1,
+          "type": "posterunek",
+          "builtAtTurn": 28,
+          "seq": 2
+        },
+        {
+          "q": 64,
+          "r": 38,
+          "ownerId": 11,
+          "type": "posterunek",
+          "builtAtTurn": 28,
+          "seq": 3
+        },
+        {
+          "q": 25,
+          "r": 25,
+          "ownerId": 16,
+          "type": "posterunek",
+          "builtAtTurn": 28,
+          "seq": 4
+        },
+        {
+          "q": 23,
+          "r": 19,
+          "ownerId": 1,
+          "type": "posterunek",
+          "builtAtTurn": 29,
+          "seq": 5
+        },
+        {
+          "q": 50,
+          "r": 9,
+          "ownerId": 6,
+          "type": "posterunek",
+          "builtAtTurn": 29,
+          "seq": 6
+        },
+        {
+          "q": 64,
+          "r": 45,
+          "ownerId": 11,
+          "type": "posterunek",
+          "builtAtTurn": 32,
+          "seq": 7
+        },
+        {
+          "q": 52,
+          "r": 39,
+          "ownerId": 11,
+          "type": "posterunek",
+          "builtAtTurn": 32,
+          "seq": 8
+        }
+      ],
+      "turn": 33
+    },
+    {
+      "end": {
+        "before": 33,
+        "after": 34,
+        "ms": 9197,
+        "ok": true
+      },
+      "nDec": 12795,
+      "fortDec": [
+        {
+          "cityId": "city0",
+          "scope": "fort",
+          "reason": "e-fort bramka: limit miast NIE wyczerpany (cityLimitExhausted!==true)",
+          "detail": {
+            "cityLimitExhausted": false
+          }
+        }
+      ],
+      "forts": [
+        {
+          "q": 68,
+          "r": 13,
+          "ownerId": 6,
+          "type": "posterunek",
+          "builtAtTurn": 27,
+          "seq": 0
+        },
+        {
+          "q": 46,
+          "r": 27,
+          "ownerId": 16,
+          "type": "posterunek",
+          "builtAtTurn": 27,
+          "seq": 1
+        },
+        {
+          "q": 30,
+          "r": 10,
+          "ownerId": 1,
+          "type": "posterunek",
+          "builtAtTurn": 28,
+          "seq": 2
+        },
+        {
+          "q": 64,
+          "r": 38,
+          "ownerId": 11,
+          "type": "posterunek",
+          "builtAtTurn": 28,
+          "seq": 3
+        },
+        {
+          "q": 25,
+          "r": 25,
+          "ownerId": 16,
+          "type": "posterunek",
+          "builtAtTurn": 28,
+          "seq": 4
+        },
+        {
+          "q": 23,
+          "r": 19,
+          "ownerId": 1,
+          "type": "posterunek",
+          "builtAtTurn": 29,
+          "seq": 5
+        },
+        {
+          "q": 50,
+          "r": 9,
+          "ownerId": 6,
+          "type": "posterunek",
+          "builtAtTurn": 29,
+          "seq": 6
+        },
+        {
+          "q": 64,
+          "r": 45,
+          "ownerId": 11,
+          "type": "posterunek",
+          "builtAtTurn": 32,
+          "seq": 7
+        },
+        {
+          "q": 52,
+          "r": 39,
+          "ownerId": 11,
+          "type": "posterunek",
+          "builtAtTurn": 32,
+          "seq": 8
+        },
+        {
+          "q": 39,
+          "r": 32,
+          "ownerId": 16,
+          "type": "posterunek",
+          "builtAtTurn": 34,
+          "seq": 9
+        }
+      ],
+      "turn": 34
+    },
+    {
+      "end": {
+        "before": 34,
+        "after": 35,
+        "ms": 10380,
+        "ok": true
+      },
+      "nDec": 17026,
+      "fortDec": [
+        {
+          "cityId": "city0",
+          "scope": "fort",
+          "reason": "e-fort bramka: limit miast NIE wyczerpany (cityLimitExhausted!==true)",
+          "detail": {
+            "cityLimitExhausted": false
+          }
+        }
+      ],
+      "forts": [
+        {
+          "q": 68,
+          "r": 13,
+          "ownerId": 6,
+          "type": "posterunek",
+          "builtAtTurn": 27,
+          "seq": 0
+        },
+        {
+          "q": 46,
+          "r": 27,
+          "ownerId": 16,
+          "type": "posterunek",
+          "builtAtTurn": 27,
+          "seq": 1
+        },
+        {
+          "q": 30,
+          "r": 10,
+          "ownerId": 1,
+          "type": "posterunek",
+          "builtAtTurn": 28,
+          "seq": 2
+        },
+        {
+          "q": 64,
+          "r": 38,
+          "ownerId": 11,
+          "type": "posterunek",
+          "builtAtTurn": 28,
+          "seq": 3
+        },
+        {
+          "q": 25,
+          "r": 25,
+          "ownerId": 16,
+          "type": "posterunek",
+          "builtAtTurn": 28,
+          "seq": 4
+        },
+        {
+          "q": 23,
+          "r": 19,
+          "ownerId": 1,
+          "type": "posterunek",
+          "builtAtTurn": 29,
+          "seq": 5
+        },
+        {
+          "q": 50,
+          "r": 9,
+          "ownerId": 6,
+          "type": "posterunek",
+          "builtAtTurn": 29,
+          "seq": 6
+        },
+        {
+          "q": 64,
+          "r": 45,
+          "ownerId": 11,
+          "type": "posterunek",
+          "builtAtTurn": 32,
+          "seq": 7
+        },
+        {
+          "q": 52,
+          "r": 39,
+          "ownerId": 11,
+          "type": "posterunek",
+          "builtAtTurn": 32,
+          "seq": 8
+        },
+        {
+          "q": 39,
+          "r": 32,
+          "ownerId": 16,
+          "type": "posterunek",
+          "builtAtTurn": 34,
+          "seq": 9
+        }
+      ],
+      "turn": 35
+    },
+    {
+      "end": {
+        "before": 35,
+        "after": 36,
+        "ms": 9914,
+        "ok": true
+      },
+      "nDec": 24611,
+      "fortDec": [
+        {
+          "cityId": "city0",
+          "scope": "fort",
+          "reason": "e-fort bramka: limit miast NIE wyczerpany (cityLimitExhausted!==true)",
+          "detail": {
+            "cityLimitExhausted": false
+          }
+        }
+      ],
+      "forts": [
+        {
+          "q": 68,
+          "r": 13,
+          "ownerId": 6,
+          "type": "posterunek",
+          "builtAtTurn": 27,
+          "seq": 0
+        },
+        {
+          "q": 46,
+          "r": 27,
+          "ownerId": 16,
+          "type": "posterunek",
+          "builtAtTurn": 27,
+          "seq": 1
+        },
+        {
+          "q": 30,
+          "r": 10,
+          "ownerId": 1,
+          "type": "posterunek",
+          "builtAtTurn": 28,
+          "seq": 2
+        },
+        {
+          "q": 64,
+          "r": 38,
+          "ownerId": 11,
+          "type": "posterunek",
+          "builtAtTurn": 28,
+          "seq": 3
+        },
+        {
+          "q": 25,
+          "r": 25,
+          "ownerId": 16,
+          "type": "posterunek",
+          "builtAtTurn": 28,
+          "seq": 4
+        },
+        {
+          "q": 23,
+          "r": 19,
+          "ownerId": 1,
+          "type": "posterunek",
+          "builtAtTurn": 29,
+          "seq": 5
+        },
+        {
+          "q": 50,
+          "r": 9,
+          "ownerId": 6,
+          "type": "posterunek",
+          "builtAtTurn": 29,
+          "seq": 6
+        },
+        {
+          "q": 64,
+          "r": 45,
+          "ownerId": 11,
+          "type": "posterunek",
+          "builtAtTurn": 32,
+          "seq": 7
+        },
+        {
+          "q": 52,
+          "r": 39,
+          "ownerId": 11,
+          "type": "posterunek",
+          "builtAtTurn": 32,
+          "seq": 8
+        },
+        {
+          "q": 39,
+          "r": 32,
+          "ownerId": 16,
+          "type": "posterunek",
+          "builtAtTurn": 34,
+          "seq": 9
+        }
+      ],
+      "turn": 36
+    },
+    {
+      "end": {
+        "before": 36,
+        "after": 37,
+        "ms": 8432,
+        "ok": true
+      },
+      "nDec": 20395,
+      "fortDec": [
+        {
+          "cityId": "city0",
+          "scope": "fort",
+          "reason": "e-fort bramka: limit miast NIE wyczerpany (cityLimitExhausted!==true)",
+          "detail": {
+            "cityLimitExhausted": false
+          }
+        }
+      ],
+      "forts": [
+        {
+          "q": 68,
+          "r": 13,
+          "ownerId": 6,
+          "type": "posterunek",
+          "builtAtTurn": 27,
+          "seq": 0
+        },
+        {
+          "q": 46,
+          "r": 27,
+          "ownerId": 16,
+          "type": "posterunek",
+          "builtAtTurn": 27,
+          "seq": 1
+        },
+        {
+          "q": 30,
+          "r": 10,
+          "ownerId": 1,
+          "type": "posterunek",
+          "builtAtTurn": 28,
+          "seq": 2
+        },
+        {
+          "q": 64,
+          "r": 38,
+          "ownerId": 11,
+          "type": "posterunek",
+          "builtAtTurn": 28,
+          "seq": 3
+        },
+        {
+          "q": 25,
+          "r": 25,
+          "ownerId": 16,
+          "type": "posterunek",
+          "builtAtTurn": 28,
+          "seq": 4
+        },
+        {
+          "q": 23,
+          "r": 19,
+          "ownerId": 1,
+          "type": "posterunek",
+          "builtAtTurn": 29,
+          "seq": 5
+        },
+        {
+          "q": 50,
+          "r": 9,
+          "ownerId": 6,
+          "type": "posterunek",
+          "builtAtTurn": 29,
+          "seq": 6
+        },
+        {
+          "q": 64,
+          "r": 45,
+          "ownerId": 11,
+          "type": "posterunek",
+          "builtAtTurn": 32,
+          "seq": 7
+        },
+        {
+          "q": 52,
+          "r": 39,
+          "ownerId": 11,
+          "type": "posterunek",
+          "builtAtTurn": 32,
+          "seq": 8
+        },
+        {
+          "q": 39,
+          "r": 32,
+          "ownerId": 16,
+          "type": "posterunek",
+          "builtAtTurn": 34,
+          "seq": 9
+        }
+      ],
+      "turn": 37
+    },
+    {
+      "end": {
+        "before": 37,
+        "after": 38,
+        "ms": 10594,
+        "ok": true
+      },
+      "nDec": 24170,
+      "fortDec": [
+        {
+          "cityId": "city0",
+          "scope": "fort",
+          "reason": "e-fort bramka: limit miast NIE wyczerpany (cityLimitExhausted!==true)",
+          "detail": {
+            "cityLimitExhausted": false
+          }
+        }
+      ],
+      "forts": [
+        {
+          "q": 68,
+          "r": 13,
+          "ownerId": 6,
+          "type": "posterunek",
+          "builtAtTurn": 27,
+          "seq": 0
+        },
+        {
+          "q": 46,
+          "r": 27,
+          "ownerId": 16,
+          "type": "posterunek",
+          "builtAtTurn": 27,
+          "seq": 1
+        },
+        {
+          "q": 30,
+          "r": 10,
+          "ownerId": 1,
+          "type": "posterunek",
+          "builtAtTurn": 28,
+          "seq": 2
+        },
+        {
+          "q": 64,
+          "r": 38,
+          "ownerId": 11,
+          "type": "posterunek",
+          "builtAtTurn": 28,
+          "seq": 3
+        },
+        {
+          "q": 25,
+          "r": 25,
+          "ownerId": 16,
+          "type": "posterunek",
+          "builtAtTurn": 28,
+          "seq": 4
+        },
+        {
+          "q": 23,
+          "r": 19,
+          "ownerId": 1,
+          "type": "posterunek",
+          "builtAtTurn": 29,
+          "seq": 5
+        },
+        {
+          "q": 50,
+          "r": 9,
+          "ownerId": 6,
+          "type": "posterunek",
+          "builtAtTurn": 29,
+          "seq": 6
+        },
+        {
+          "q": 64,
+          "r": 45,
+          "ownerId": 11,
+          "type": "posterunek",
+          "builtAtTurn": 32,
+          "seq": 7
+        },
+        {
+          "q": 52,
+          "r": 39,
+          "ownerId": 11,
+          "type": "posterunek",
+          "builtAtTurn": 32,
+          "seq": 8
+        },
+        {
+          "q": 39,
+          "r": 32,
+          "ownerId": 16,
+          "type": "posterunek",
+          "builtAtTurn": 34,
+          "seq": 9
+        }
+      ],
+      "turn": 38
+    },
+    {
+      "end": {
+        "before": 38,
+        "after": 39,
+        "ms": 10731,
+        "ok": true
+      },
+      "nDec": 23341,
+      "fortDec": [
+        {
+          "cityId": "city0",
+          "scope": "fort",
+          "reason": "e-fort bramka: limit miast NIE wyczerpany (cityLimitExhausted!==true)",
+          "detail": {
+            "cityLimitExhausted": false
+          }
+        }
+      ],
+      "forts": [
+        {
+          "q": 68,
+          "r": 13,
+          "ownerId": 6,
+          "type": "posterunek",
+          "builtAtTurn": 27,
+          "seq": 0
+        },
+        {
+          "q": 46,
+          "r": 27,
+          "ownerId": 16,
+          "type": "posterunek",
+          "builtAtTurn": 27,
+          "seq": 1
+        },
+        {
+          "q": 30,
+          "r": 10,
+          "ownerId": 1,
+          "type": "posterunek",
+          "builtAtTurn": 28,
+          "seq": 2
+        },
+        {
+          "q": 64,
+          "r": 38,
+          "ownerId": 11,
+          "type": "posterunek",
+          "builtAtTurn": 28,
+          "seq": 3
+        },
+        {
+          "q": 25,
+          "r": 25,
+          "ownerId": 16,
+          "type": "posterunek",
+          "builtAtTurn": 28,
+          "seq": 4
+        },
+        {
+          "q": 23,
+          "r": 19,
+          "ownerId": 1,
+          "type": "posterunek",
+          "builtAtTurn": 29,
+          "seq": 5
+        },
+        {
+          "q": 50,
+          "r": 9,
+          "ownerId": 6,
+          "type": "posterunek",
+          "builtAtTurn": 29,
+          "seq": 6
+        },
+        {
+          "q": 64,
+          "r": 45,
+          "ownerId": 11,
+          "type": "posterunek",
+          "builtAtTurn": 32,
+          "seq": 7
+        },
+        {
+          "q": 52,
+          "r": 39,
+          "ownerId": 11,
+          "type": "posterunek",
+          "builtAtTurn": 32,
+          "seq": 8
+        },
+        {
+          "q": 39,
+          "r": 32,
+          "ownerId": 16,
+          "type": "posterunek",
+          "builtAtTurn": 34,
+          "seq": 9
+        }
+      ],
+      "turn": 39
+    }
+  ],
+  "snaps": [
+    {
+      "turn": 11,
+      "me": 0,
+      "forts": [],
+      "cities": [
+        {
+          "id": "city0",
+          "o": 0,
+          "q": 18,
+          "r": 37,
+          "pop": 2
+        },
+        {
+          "id": "city1",
+          "o": 21,
+          "q": 17,
+          "r": 33,
+          "pop": 2
+        },
+        {
+          "id": "city2",
+          "o": 22,
+          "q": 21,
+          "r": 39,
+          "pop": 2
+        },
+        {
+          "id": "city3",
+          "o": 23,
+          "q": 23,
+          "r": 34,
+          "pop": 1
+        },
+        {
+          "id": "city4",
+          "o": 24,
+          "q": 22,
+          "r": 43,
+          "pop": 2
+        },
+        {
+          "id": "city5",
+          "o": 1,
+          "q": 18,
+          "r": 12,
+          "pop": 3
+        },
+        {
+          "id": "city6",
+          "o": 2,
+          "q": 13,
+          "r": 12,
+          "pop": 2
+        },
+        {
+          "id": "city7",
+          "o": 3,
+          "q": 15,
+          "r": 17,
+          "pop": 3
+        },
+        {
+          "id": "city8",
+          "o": 4,
+          "q": 18,
+          "r": 7,
+          "pop": 1
+        },
+        {
+          "id": "city9",
+          "o": 5,
+          "q": 20,
+          "r": 15,
+          "pop": 1
+        },
+        {
+          "id": "city10",
+          "o": 6,
+          "q": 58,
+          "r": 12,
+          "pop": 2
+        },
+        {
+          "id": "city11",
+          "o": 7,
+          "q": 53,
+          "r": 15,
+          "pop": 2
+        },
+        {
+          "id": "city12",
+          "o": 8,
+          "q": 56,
+          "r": 9,
+          "pop": 1
+        },
+        {
+          "id": "city13",
+          "o": 9,
+          "q": 59,
+          "r": 16,
+          "pop": 1
+        },
+        {
+          "id": "city14",
+          "o": 10,
+          "q": 61,
+          "r": 7,
+          "pop": 1
+        },
+        {
+          "id": "city15",
+          "o": 11,
+          "q": 59,
+          "r": 40,
+          "pop": 1
+        },
+        {
+          "id": "city16",
+          "o": 12,
+          "q": 54,
+          "r": 42,
+          "pop": 1
+        },
+        {
+          "id": "city17",
+          "o": 13,
+          "q": 56,
+          "r": 45,
+          "pop": 1
+        },
+        {
+          "id": "city18",
+          "o": 14,
+          "q": 57,
+          "r": 37,
+          "pop": 1
+        },
+        {
+          "id": "city19",
+          "o": 15,
+          "q": 61,
+          "r": 43,
+          "pop": 1
+        },
+        {
+          "id": "city20",
+          "o": 16,
+          "q": 36,
+          "r": 25,
+          "pop": 1
+        },
+        {
+          "id": "city21",
+          "o": 17,
+          "q": 31,
+          "r": 25,
+          "pop": 1
+        },
+        {
+          "id": "city22",
+          "o": 18,
+          "q": 31,
+          "r": 30,
+          "pop": 2
+        },
+        {
+          "id": "city23",
+          "o": 19,
+          "q": 36,
+          "r": 20,
+          "pop": 2
+        },
+        {
+          "id": "city24",
+          "o": 20,
+          "q": 36,
+          "r": 30,
+          "pop": 1
+        }
+      ],
+      "overlaps": [],
+      "parity": {
+        "compared": 0,
+        "expectedOwned": 0,
+        "mismatches": 0,
+        "sample": []
+      }
+    },
+    {
+      "turn": 21,
+      "me": 0,
+      "forts": [],
+      "cities": [
+        {
+          "id": "city0",
+          "o": 0,
+          "q": 18,
+          "r": 37,
+          "pop": 6
+        },
+        {
+          "id": "city1",
+          "o": 21,
+          "q": 17,
+          "r": 33,
+          "pop": 4
+        },
+        {
+          "id": "city2",
+          "o": 22,
+          "q": 21,
+          "r": 39,
+          "pop": 4
+        },
+        {
+          "id": "city3",
+          "o": 23,
+          "q": 23,
+          "r": 34,
+          "pop": 4
+        },
+        {
+          "id": "city4",
+          "o": 24,
+          "q": 22,
+          "r": 43,
+          "pop": 4
+        },
+        {
+          "id": "city5",
+          "o": 1,
+          "q": 18,
+          "r": 12,
+          "pop": 7
+        },
+        {
+          "id": "city6",
+          "o": 2,
+          "q": 13,
+          "r": 12,
+          "pop": 7
+        },
+        {
+          "id": "city7",
+          "o": 3,
+          "q": 15,
+          "r": 17,
+          "pop": 7
+        },
+        {
+          "id": "city8",
+          "o": 4,
+          "q": 18,
+          "r": 7,
+          "pop": 5
+        },
+        {
+          "id": "city9",
+          "o": 5,
+          "q": 20,
+          "r": 15,
+          "pop": 3
+        },
+        {
+          "id": "city10",
+          "o": 6,
+          "q": 58,
+          "r": 12,
+          "pop": 5
+        },
+        {
+          "id": "city11",
+          "o": 7,
+          "q": 53,
+          "r": 15,
+          "pop": 4
+        },
+        {
+          "id": "city12",
+          "o": 8,
+          "q": 56,
+          "r": 9,
+          "pop": 4
+        },
+        {
+          "id": "city13",
+          "o": 9,
+          "q": 59,
+          "r": 16,
+          "pop": 3
+        },
+        {
+          "id": "city14",
+          "o": 10,
+          "q": 61,
+          "r": 7,
+          "pop": 4
+        },
+        {
+          "id": "city15",
+          "o": 11,
+          "q": 59,
+          "r": 40,
+          "pop": 2
+        },
+        {
+          "id": "city16",
+          "o": 12,
+          "q": 54,
+          "r": 42,
+          "pop": 2
+        },
+        {
+          "id": "city17",
+          "o": 13,
+          "q": 56,
+          "r": 45,
+          "pop": 1
+        },
+        {
+          "id": "city18",
+          "o": 14,
+          "q": 57,
+          "r": 37,
+          "pop": 1
+        },
+        {
+          "id": "city19",
+          "o": 15,
+          "q": 61,
+          "r": 43,
+          "pop": 2
+        },
+        {
+          "id": "city20",
+          "o": 16,
+          "q": 36,
+          "r": 25,
+          "pop": 4
+        },
+        {
+          "id": "city21",
+          "o": 17,
+          "q": 31,
+          "r": 25,
+          "pop": 1
+        },
+        {
+          "id": "city22",
+          "o": 18,
+          "q": 31,
+          "r": 30,
+          "pop": 4
+        },
+        {
+          "id": "city23",
+          "o": 19,
+          "q": 36,
+          "r": 20,
+          "pop": 4
+        },
+        {
+          "id": "city24",
+          "o": 20,
+          "q": 36,
+          "r": 30,
+          "pop": 1
+        }
+      ],
+      "overlaps": [],
+      "parity": {
+        "compared": 0,
+        "expectedOwned": 0,
+        "mismatches": 0,
+        "sample": []
+      }
+    },
+    {
+      "turn": 27,
+      "me": 0,
+      "forts": [
+        {
+          "q": 68,
+          "r": 13,
+          "ownerId": 6,
+          "type": "posterunek",
+          "builtAtTurn": 27,
+          "seq": 0,
+          "rad": 3,
+          "nHex": 37,
+          "water": 23,
+          "ownerCounts": {
+            "6": 37
+          },
+          "citiesIn": [],
+          "onHex": {
+            "teren": "laka",
+            "nakladka": "las",
+            "layers": [
+              "posterunek"
+            ],
+            "owner": 6
+          }
+        },
+        {
+          "q": 46,
+          "r": 27,
+          "ownerId": 16,
+          "type": "posterunek",
+          "builtAtTurn": 27,
+          "seq": 1,
+          "rad": 3,
+          "nHex": 37,
+          "water": 20,
+          "ownerCounts": {
+            "16": 37
+          },
+          "citiesIn": [],
+          "onHex": {
+            "teren": "wzgorza",
+            "nakladka": "brak",
+            "layers": [
+              "posterunek"
+            ],
+            "owner": 16
+          }
+        }
+      ],
+      "cities": [
+        {
+          "id": "city0",
+          "o": 0,
+          "q": 18,
+          "r": 37,
+          "pop": 8
+        },
+        {
+          "id": "city1",
+          "o": 21,
+          "q": 17,
+          "r": 33,
+          "pop": 5
+        },
+        {
+          "id": "city2",
+          "o": 22,
+          "q": 21,
+          "r": 39,
+          "pop": 6
+        },
+        {
+          "id": "city3",
+          "o": 23,
+          "q": 23,
+          "r": 34,
+          "pop": 6
+        },
+        {
+          "id": "city4",
+          "o": 24,
+          "q": 22,
+          "r": 43,
+          "pop": 6
+        },
+        {
+          "id": "city5",
+          "o": 1,
+          "q": 18,
+          "r": 12,
+          "pop": 10
+        },
+        {
+          "id": "city6",
+          "o": 1,
+          "q": 13,
+          "r": 12,
+          "pop": 10
+        },
+        {
+          "id": "city7",
+          "o": 1,
+          "q": 15,
+          "r": 17,
+          "pop": 7
+        },
+        {
+          "id": "city8",
+          "o": 1,
+          "q": 18,
+          "r": 7,
+          "pop": 7
+        },
+        {
+          "id": "city9",
+          "o": 1,
+          "q": 20,
+          "r": 15,
+          "pop": 7
+        },
+        {
+          "id": "city10",
+          "o": 6,
+          "q": 58,
+          "r": 12,
+          "pop": 8
+        },
+        {
+          "id": "city11",
+          "o": 6,
+          "q": 53,
+          "r": 15,
+          "pop": 6
+        },
+        {
+          "id": "city12",
+          "o": 6,
+          "q": 56,
+          "r": 9,
+          "pop": 6
+        },
+        {
+          "id": "city13",
+          "o": 6,
+          "q": 59,
+          "r": 16,
+          "pop": 5
+        },
+        {
+          "id": "city14",
+          "o": 6,
+          "q": 61,
+          "r": 7,
+          "pop": 6
+        },
+        {
+          "id": "city15",
+          "o": 11,
+          "q": 59,
+          "r": 40,
+          "pop": 4
+        },
+        {
+          "id": "city16",
+          "o": 11,
+          "q": 54,
+          "r": 42,
+          "pop": 3
+        },
+        {
+          "id": "city17",
+          "o": 11,
+          "q": 56,
+          "r": 45,
+          "pop": 2
+        },
+        {
+          "id": "city18",
+          "o": 11,
+          "q": 57,
+          "r": 37,
+          "pop": 2
+        },
+        {
+          "id": "city19",
+          "o": 11,
+          "q": 61,
+          "r": 43,
+          "pop": 3
+        },
+        {
+          "id": "city20",
+          "o": 16,
+          "q": 36,
+          "r": 25,
+          "pop": 6
+        },
+        {
+          "id": "city21",
+          "o": 16,
+          "q": 31,
+          "r": 25,
+          "pop": 3
+        },
+        {
+          "id": "city22",
+          "o": 16,
+          "q": 31,
+          "r": 30,
+          "pop": 6
+        },
+        {
+          "id": "city23",
+          "o": 16,
+          "q": 36,
+          "r": 20,
+          "pop": 6
+        },
+        {
+          "id": "city24",
+          "o": 16,
+          "q": 36,
+          "r": 30,
+          "pop": 1
+        }
+      ],
+      "overlaps": [],
+      "parity": {
+        "compared": 254,
+        "expectedOwned": 115,
+        "mismatches": 0,
+        "sample": []
+      }
+    },
+    {
+      "turn": 28,
+      "me": 0,
+      "forts": [
+        {
+          "q": 68,
+          "r": 13,
+          "ownerId": 6,
+          "type": "posterunek",
+          "builtAtTurn": 27,
+          "seq": 0,
+          "rad": 3,
+          "nHex": 37,
+          "water": 23,
+          "ownerCounts": {
+            "6": 37
+          },
+          "citiesIn": [],
+          "onHex": {
+            "teren": "laka",
+            "nakladka": "las",
+            "layers": [
+              "posterunek"
+            ],
+            "owner": 6
+          }
+        },
+        {
+          "q": 46,
+          "r": 27,
+          "ownerId": 16,
+          "type": "posterunek",
+          "builtAtTurn": 27,
+          "seq": 1,
+          "rad": 3,
+          "nHex": 37,
+          "water": 20,
+          "ownerCounts": {
+            "16": 37
+          },
+          "citiesIn": [],
+          "onHex": {
+            "teren": "wzgorza",
+            "nakladka": "brak",
+            "layers": [
+              "posterunek"
+            ],
+            "owner": 16
+          }
+        },
+        {
+          "q": 30,
+          "r": 10,
+          "ownerId": 1,
+          "type": "posterunek",
+          "builtAtTurn": 28,
+          "seq": 2,
+          "rad": 3,
+          "nHex": 37,
+          "water": 26,
+          "ownerCounts": {
+            "1": 37
+          },
+          "citiesIn": [],
+          "onHex": {
+            "teren": "laka",
+            "nakladka": "brak",
+            "layers": [
+              "posterunek"
+            ],
+            "owner": 1
+          }
+        },
+        {
+          "q": 64,
+          "r": 38,
+          "ownerId": 11,
+          "type": "posterunek",
+          "builtAtTurn": 28,
+          "seq": 3,
+          "rad": 3,
+          "nHex": 37,
+          "water": 7,
+          "ownerCounts": {
+            "11": 37
+          },
+          "citiesIn": [],
+          "onHex": {
+            "teren": "wzgorza",
+            "nakladka": "las",
+            "layers": [
+              "posterunek"
+            ],
+            "owner": 11
+          }
+        },
+        {
+          "q": 25,
+          "r": 25,
+          "ownerId": 16,
+          "type": "posterunek",
+          "builtAtTurn": 28,
+          "seq": 4,
+          "rad": 3,
+          "nHex": 37,
+          "water": 13,
+          "ownerCounts": {
+            "16": 33,
+            "21": 1,
+            "23": 3
+          },
+          "citiesIn": [],
+          "onHex": {
+            "teren": "pustynia",
+            "nakladka": "zloze_gliny",
+            "layers": [
+              "posterunek"
+            ],
+            "owner": 16
+          }
+        }
+      ],
+      "cities": [
+        {
+          "id": "city0",
+          "o": 0,
+          "q": 18,
+          "r": 37,
+          "pop": 8
+        },
+        {
+          "id": "city1",
+          "o": 21,
+          "q": 17,
+          "r": 33,
+          "pop": 5
+        },
+        {
+          "id": "city2",
+          "o": 22,
+          "q": 21,
+          "r": 39,
+          "pop": 7
+        },
+        {
+          "id": "city3",
+          "o": 23,
+          "q": 23,
+          "r": 34,
+          "pop": 6
+        },
+        {
+          "id": "city4",
+          "o": 24,
+          "q": 22,
+          "r": 43,
+          "pop": 7
+        },
+        {
+          "id": "city5",
+          "o": 1,
+          "q": 18,
+          "r": 12,
+          "pop": 10
+        },
+        {
+          "id": "city6",
+          "o": 1,
+          "q": 13,
+          "r": 12,
+          "pop": 10
+        },
+        {
+          "id": "city7",
+          "o": 1,
+          "q": 15,
+          "r": 17,
+          "pop": 7
+        },
+        {
+          "id": "city8",
+          "o": 1,
+          "q": 18,
+          "r": 7,
+          "pop": 7
+        },
+        {
+          "id": "city9",
+          "o": 1,
+          "q": 20,
+          "r": 15,
+          "pop": 7
+        },
+        {
+          "id": "city10",
+          "o": 6,
+          "q": 58,
+          "r": 12,
+          "pop": 9
+        },
+        {
+          "id": "city11",
+          "o": 6,
+          "q": 53,
+          "r": 15,
+          "pop": 6
+        },
+        {
+          "id": "city12",
+          "o": 6,
+          "q": 56,
+          "r": 9,
+          "pop": 6
+        },
+        {
+          "id": "city13",
+          "o": 6,
+          "q": 59,
+          "r": 16,
+          "pop": 6
+        },
+        {
+          "id": "city14",
+          "o": 6,
+          "q": 61,
+          "r": 7,
+          "pop": 6
+        },
+        {
+          "id": "city15",
+          "o": 11,
+          "q": 59,
+          "r": 40,
+          "pop": 4
+        },
+        {
+          "id": "city16",
+          "o": 11,
+          "q": 54,
+          "r": 42,
+          "pop": 3
+        },
+        {
+          "id": "city17",
+          "o": 11,
+          "q": 56,
+          "r": 45,
+          "pop": 2
+        },
+        {
+          "id": "city18",
+          "o": 11,
+          "q": 57,
+          "r": 37,
+          "pop": 2
+        },
+        {
+          "id": "city19",
+          "o": 11,
+          "q": 61,
+          "r": 43,
+          "pop": 3
+        },
+        {
+          "id": "city20",
+          "o": 16,
+          "q": 36,
+          "r": 25,
+          "pop": 7
+        },
+        {
+          "id": "city21",
+          "o": 16,
+          "q": 31,
+          "r": 25,
+          "pop": 3
+        },
+        {
+          "id": "city22",
+          "o": 16,
+          "q": 31,
+          "r": 30,
+          "pop": 7
+        },
+        {
+          "id": "city23",
+          "o": 16,
+          "q": 36,
+          "r": 20,
+          "pop": 6
+        },
+        {
+          "id": "city24",
+          "o": 16,
+          "q": 36,
+          "r": 30,
+          "pop": 1
+        }
+      ],
+      "overlaps": [],
+      "parity": {
+        "compared": 635,
+        "expectedOwned": 369,
+        "mismatches": 0,
+        "sample": []
+      }
+    },
+    {
+      "turn": 29,
+      "me": 0,
+      "forts": [
+        {
+          "q": 68,
+          "r": 13,
+          "ownerId": 6,
+          "type": "posterunek",
+          "builtAtTurn": 27,
+          "seq": 0,
+          "rad": 3,
+          "nHex": 37,
+          "water": 23,
+          "ownerCounts": {
+            "6": 37
+          },
+          "citiesIn": [],
+          "onHex": {
+            "teren": "laka",
+            "nakladka": "las",
+            "layers": [
+              "posterunek"
+            ],
+            "owner": 6
+          }
+        },
+        {
+          "q": 46,
+          "r": 27,
+          "ownerId": 16,
+          "type": "posterunek",
+          "builtAtTurn": 27,
+          "seq": 1,
+          "rad": 3,
+          "nHex": 37,
+          "water": 20,
+          "ownerCounts": {
+            "16": 37
+          },
+          "citiesIn": [],
+          "onHex": {
+            "teren": "wzgorza",
+            "nakladka": "brak",
+            "layers": [
+              "posterunek"
+            ],
+            "owner": 16
+          }
+        },
+        {
+          "q": 30,
+          "r": 10,
+          "ownerId": 1,
+          "type": "posterunek",
+          "builtAtTurn": 28,
+          "seq": 2,
+          "rad": 3,
+          "nHex": 37,
+          "water": 26,
+          "ownerCounts": {
+            "1": 37
+          },
+          "citiesIn": [],
+          "onHex": {
+            "teren": "laka",
+            "nakladka": "brak",
+            "layers": [
+              "posterunek"
+            ],
+            "owner": 1
+          }
+        },
+        {
+          "q": 64,
+          "r": 38,
+          "ownerId": 11,
+          "type": "posterunek",
+          "builtAtTurn": 28,
+          "seq": 3,
+          "rad": 3,
+          "nHex": 37,
+          "water": 7,
+          "ownerCounts": {
+            "11": 37
+          },
+          "citiesIn": [],
+          "onHex": {
+            "teren": "wzgorza",
+            "nakladka": "las",
+            "layers": [
+              "posterunek"
+            ],
+            "owner": 11
+          }
+        },
+        {
+          "q": 25,
+          "r": 25,
+          "ownerId": 16,
+          "type": "posterunek",
+          "builtAtTurn": 28,
+          "seq": 4,
+          "rad": 3,
+          "nHex": 37,
+          "water": 13,
+          "ownerCounts": {
+            "16": 30,
+            "21": 1,
+            "23": 6
+          },
+          "citiesIn": [],
+          "onHex": {
+            "teren": "pustynia",
+            "nakladka": "zloze_gliny",
+            "layers": [
+              "posterunek"
+            ],
+            "owner": 16
+          }
+        },
+        {
+          "q": 23,
+          "r": 19,
+          "ownerId": 1,
+          "type": "posterunek",
+          "builtAtTurn": 29,
+          "seq": 5,
+          "rad": 3,
+          "nHex": 37,
+          "water": 5,
+          "ownerCounts": {
+            "1": 37
+          },
+          "citiesIn": [],
+          "onHex": {
+            "teren": "wzgorza",
+            "nakladka": "las",
+            "layers": [
+              "posterunek"
+            ],
+            "owner": 1
+          }
+        },
+        {
+          "q": 50,
+          "r": 9,
+          "ownerId": 6,
+          "type": "posterunek",
+          "builtAtTurn": 29,
+          "seq": 6,
+          "rad": 3,
+          "nHex": 37,
+          "water": 17,
+          "ownerCounts": {
+            "6": 37
+          },
+          "citiesIn": [],
+          "onHex": {
+            "teren": "gory",
+            "nakladka": "brak",
+            "layers": [
+              "posterunek"
+            ],
+            "owner": 6
+          }
+        }
+      ],
+      "cities": [
+        {
+          "id": "city0",
+          "o": 0,
+          "q": 18,
+          "r": 37,
+          "pop": 8
+        },
+        {
+          "id": "city1",
+          "o": 21,
+          "q": 17,
+          "r": 33,
+          "pop": 5
+        },
+        {
+          "id": "city2",
+          "o": 22,
+          "q": 21,
+          "r": 39,
+          "pop": 7
+        },
+        {
+          "id": "city3",
+          "o": 23,
+          "q": 23,
+          "r": 34,
+          "pop": 7
+        },
+        {
+          "id": "city4",
+          "o": 24,
+          "q": 22,
+          "r": 43,
+          "pop": 7
+        },
+        {
+          "id": "city5",
+          "o": 1,
+          "q": 18,
+          "r": 12,
+          "pop": 10
+        },
+        {
+          "id": "city6",
+          "o": 1,
+          "q": 13,
+          "r": 12,
+          "pop": 10
+        },
+        {
+          "id": "city7",
+          "o": 1,
+          "q": 15,
+          "r": 17,
+          "pop": 7
+        },
+        {
+          "id": "city8",
+          "o": 1,
+          "q": 18,
+          "r": 7,
+          "pop": 7
+        },
+        {
+          "id": "city9",
+          "o": 1,
+          "q": 20,
+          "r": 15,
+          "pop": 7
+        },
+        {
+          "id": "city10",
+          "o": 6,
+          "q": 58,
+          "r": 12,
+          "pop": 9
+        },
+        {
+          "id": "city11",
+          "o": 6,
+          "q": 53,
+          "r": 15,
+          "pop": 6
+        },
+        {
+          "id": "city12",
+          "o": 6,
+          "q": 56,
+          "r": 9,
+          "pop": 6
+        },
+        {
+          "id": "city13",
+          "o": 6,
+          "q": 59,
+          "r": 16,
+          "pop": 7
+        },
+        {
+          "id": "city14",
+          "o": 6,
+          "q": 61,
+          "r": 7,
+          "pop": 7
+        },
+        {
+          "id": "city15",
+          "o": 11,
+          "q": 59,
+          "r": 40,
+          "pop": 4
+        },
+        {
+          "id": "city16",
+          "o": 11,
+          "q": 54,
+          "r": 42,
+          "pop": 3
+        },
+        {
+          "id": "city17",
+          "o": 11,
+          "q": 56,
+          "r": 45,
+          "pop": 2
+        },
+        {
+          "id": "city18",
+          "o": 11,
+          "q": 57,
+          "r": 37,
+          "pop": 3
+        },
+        {
+          "id": "city19",
+          "o": 11,
+          "q": 61,
+          "r": 43,
+          "pop": 3
+        },
+        {
+          "id": "city20",
+          "o": 16,
+          "q": 36,
+          "r": 25,
+          "pop": 8
+        },
+        {
+          "id": "city21",
+          "o": 16,
+          "q": 31,
+          "r": 25,
+          "pop": 3
+        },
+        {
+          "id": "city22",
+          "o": 16,
+          "q": 31,
+          "r": 30,
+          "pop": 7
+        },
+        {
+          "id": "city23",
+          "o": 16,
+          "q": 36,
+          "r": 20,
+          "pop": 6
+        },
+        {
+          "id": "city24",
+          "o": 16,
+          "q": 36,
+          "r": 30,
+          "pop": 2
+        }
+      ],
+      "overlaps": [],
+      "parity": {
+        "compared": 830,
+        "expectedOwned": 517,
+        "mismatches": 0,
+        "sample": []
+      }
+    },
+    {
+      "turn": 31,
+      "me": 0,
+      "forts": [
+        {
+          "q": 68,
+          "r": 13,
+          "ownerId": 6,
+          "type": "posterunek",
+          "builtAtTurn": 27,
+          "seq": 0,
+          "rad": 3,
+          "nHex": 37,
+          "water": 23,
+          "ownerCounts": {
+            "6": 37
+          },
+          "citiesIn": [],
+          "onHex": {
+            "teren": "laka",
+            "nakladka": "las",
+            "layers": [
+              "posterunek"
+            ],
+            "owner": 6
+          }
+        },
+        {
+          "q": 46,
+          "r": 27,
+          "ownerId": 16,
+          "type": "posterunek",
+          "builtAtTurn": 27,
+          "seq": 1,
+          "rad": 3,
+          "nHex": 37,
+          "water": 20,
+          "ownerCounts": {
+            "16": 37
+          },
+          "citiesIn": [],
+          "onHex": {
+            "teren": "wzgorza",
+            "nakladka": "brak",
+            "layers": [
+              "posterunek"
+            ],
+            "owner": 16
+          }
+        },
+        {
+          "q": 30,
+          "r": 10,
+          "ownerId": 1,
+          "type": "posterunek",
+          "builtAtTurn": 28,
+          "seq": 2,
+          "rad": 3,
+          "nHex": 37,
+          "water": 26,
+          "ownerCounts": {
+            "1": 37
+          },
+          "citiesIn": [],
+          "onHex": {
+            "teren": "laka",
+            "nakladka": "brak",
+            "layers": [
+              "posterunek"
+            ],
+            "owner": 1
+          }
+        },
+        {
+          "q": 64,
+          "r": 38,
+          "ownerId": 11,
+          "type": "posterunek",
+          "builtAtTurn": 28,
+          "seq": 3,
+          "rad": 3,
+          "nHex": 37,
+          "water": 7,
+          "ownerCounts": {
+            "11": 37
+          },
+          "citiesIn": [],
+          "onHex": {
+            "teren": "wzgorza",
+            "nakladka": "las",
+            "layers": [
+              "posterunek"
+            ],
+            "owner": 11
+          }
+        },
+        {
+          "q": 25,
+          "r": 25,
+          "ownerId": 16,
+          "type": "posterunek",
+          "builtAtTurn": 28,
+          "seq": 4,
+          "rad": 3,
+          "nHex": 37,
+          "water": 13,
+          "ownerCounts": {
+            "16": 29,
+            "21": 4,
+            "23": 4
+          },
+          "citiesIn": [],
+          "onHex": {
+            "teren": "pustynia",
+            "nakladka": "zloze_gliny",
+            "layers": [
+              "posterunek"
+            ],
+            "owner": 16
+          }
+        },
+        {
+          "q": 23,
+          "r": 19,
+          "ownerId": 1,
+          "type": "posterunek",
+          "builtAtTurn": 29,
+          "seq": 5,
+          "rad": 3,
+          "nHex": 37,
+          "water": 5,
+          "ownerCounts": {
+            "1": 37
+          },
+          "citiesIn": [],
+          "onHex": {
+            "teren": "wzgorza",
+            "nakladka": "las",
+            "layers": [
+              "posterunek"
+            ],
+            "owner": 1
+          }
+        },
+        {
+          "q": 50,
+          "r": 9,
+          "ownerId": 6,
+          "type": "posterunek",
+          "builtAtTurn": 29,
+          "seq": 6,
+          "rad": 3,
+          "nHex": 37,
+          "water": 17,
+          "ownerCounts": {
+            "6": 37
+          },
+          "citiesIn": [],
+          "onHex": {
+            "teren": "gory",
+            "nakladka": "brak",
+            "layers": [
+              "posterunek"
+            ],
+            "owner": 6
+          }
+        }
+      ],
+      "cities": [
+        {
+          "id": "city0",
+          "o": 0,
+          "q": 18,
+          "r": 37,
+          "pop": 9
+        },
+        {
+          "id": "city1",
+          "o": 21,
+          "q": 17,
+          "r": 33,
+          "pop": 6
+        },
+        {
+          "id": "city2",
+          "o": 22,
+          "q": 21,
+          "r": 39,
+          "pop": 7
+        },
+        {
+          "id": "city3",
+          "o": 23,
+          "q": 23,
+          "r": 34,
+          "pop": 7
+        },
+        {
+          "id": "city4",
+          "o": 24,
+          "q": 22,
+          "r": 43,
+          "pop": 7
+        },
+        {
+          "id": "city5",
+          "o": 1,
+          "q": 18,
+          "r": 12,
+          "pop": 10
+        },
+        {
+          "id": "city6",
+          "o": 1,
+          "q": 13,
+          "r": 12,
+          "pop": 10
+        },
+        {
+          "id": "city7",
+          "o": 1,
+          "q": 15,
+          "r": 17,
+          "pop": 7
+        },
+        {
+          "id": "city8",
+          "o": 1,
+          "q": 18,
+          "r": 7,
+          "pop": 7
+        },
+        {
+          "id": "city9",
+          "o": 1,
+          "q": 20,
+          "r": 15,
+          "pop": 7
+        },
+        {
+          "id": "city10",
+          "o": 6,
+          "q": 58,
+          "r": 12,
+          "pop": 9
+        },
+        {
+          "id": "city11",
+          "o": 6,
+          "q": 53,
+          "r": 15,
+          "pop": 7
+        },
+        {
+          "id": "city12",
+          "o": 6,
+          "q": 56,
+          "r": 9,
+          "pop": 6
+        },
+        {
+          "id": "city13",
+          "o": 6,
+          "q": 59,
+          "r": 16,
+          "pop": 8
+        },
+        {
+          "id": "city14",
+          "o": 6,
+          "q": 61,
+          "r": 7,
+          "pop": 9
+        },
+        {
+          "id": "city15",
+          "o": 11,
+          "q": 59,
+          "r": 40,
+          "pop": 5
+        },
+        {
+          "id": "city16",
+          "o": 11,
+          "q": 54,
+          "r": 42,
+          "pop": 3
+        },
+        {
+          "id": "city17",
+          "o": 11,
+          "q": 56,
+          "r": 45,
+          "pop": 2
+        },
+        {
+          "id": "city18",
+          "o": 11,
+          "q": 57,
+          "r": 37,
+          "pop": 3
+        },
+        {
+          "id": "city19",
+          "o": 11,
+          "q": 61,
+          "r": 43,
+          "pop": 4
+        },
+        {
+          "id": "city20",
+          "o": 16,
+          "q": 36,
+          "r": 25,
+          "pop": 9
+        },
+        {
+          "id": "city21",
+          "o": 16,
+          "q": 31,
+          "r": 25,
+          "pop": 4
+        },
+        {
+          "id": "city22",
+          "o": 16,
+          "q": 31,
+          "r": 30,
+          "pop": 9
+        },
+        {
+          "id": "city23",
+          "o": 16,
+          "q": 36,
+          "r": 20,
+          "pop": 6
+        },
+        {
+          "id": "city24",
+          "o": 16,
+          "q": 36,
+          "r": 30,
+          "pop": 2
+        }
+      ],
+      "overlaps": [],
+      "parity": {
+        "compared": 830,
+        "expectedOwned": 545,
+        "mismatches": 0,
+        "sample": []
+      }
+    },
+    {
+      "turn": 32,
+      "me": 0,
+      "forts": [
+        {
+          "q": 68,
+          "r": 13,
+          "ownerId": 6,
+          "type": "posterunek",
+          "builtAtTurn": 27,
+          "seq": 0,
+          "rad": 3,
+          "nHex": 37,
+          "water": 23,
+          "ownerCounts": {
+            "6": 37
+          },
+          "citiesIn": [],
+          "onHex": {
+            "teren": "laka",
+            "nakladka": "las",
+            "layers": [
+              "posterunek"
+            ],
+            "owner": 6
+          }
+        },
+        {
+          "q": 46,
+          "r": 27,
+          "ownerId": 16,
+          "type": "posterunek",
+          "builtAtTurn": 27,
+          "seq": 1,
+          "rad": 3,
+          "nHex": 37,
+          "water": 20,
+          "ownerCounts": {
+            "16": 37
+          },
+          "citiesIn": [],
+          "onHex": {
+            "teren": "wzgorza",
+            "nakladka": "brak",
+            "layers": [
+              "posterunek"
+            ],
+            "owner": 16
+          }
+        },
+        {
+          "q": 30,
+          "r": 10,
+          "ownerId": 1,
+          "type": "posterunek",
+          "builtAtTurn": 28,
+          "seq": 2,
+          "rad": 3,
+          "nHex": 37,
+          "water": 26,
+          "ownerCounts": {
+            "1": 37
+          },
+          "citiesIn": [],
+          "onHex": {
+            "teren": "laka",
+            "nakladka": "brak",
+            "layers": [
+              "posterunek"
+            ],
+            "owner": 1
+          }
+        },
+        {
+          "q": 64,
+          "r": 38,
+          "ownerId": 11,
+          "type": "posterunek",
+          "builtAtTurn": 28,
+          "seq": 3,
+          "rad": 3,
+          "nHex": 37,
+          "water": 7,
+          "ownerCounts": {
+            "11": 37
+          },
+          "citiesIn": [],
+          "onHex": {
+            "teren": "wzgorza",
+            "nakladka": "las",
+            "layers": [
+              "posterunek"
+            ],
+            "owner": 11
+          }
+        },
+        {
+          "q": 25,
+          "r": 25,
+          "ownerId": 16,
+          "type": "posterunek",
+          "builtAtTurn": 28,
+          "seq": 4,
+          "rad": 3,
+          "nHex": 37,
+          "water": 13,
+          "ownerCounts": {
+            "16": 29,
+            "21": 4,
+            "23": 4
+          },
+          "citiesIn": [],
+          "onHex": {
+            "teren": "pustynia",
+            "nakladka": "zloze_gliny",
+            "layers": [
+              "posterunek"
+            ],
+            "owner": 16
+          }
+        },
+        {
+          "q": 23,
+          "r": 19,
+          "ownerId": 1,
+          "type": "posterunek",
+          "builtAtTurn": 29,
+          "seq": 5,
+          "rad": 3,
+          "nHex": 37,
+          "water": 5,
+          "ownerCounts": {
+            "1": 37
+          },
+          "citiesIn": [],
+          "onHex": {
+            "teren": "wzgorza",
+            "nakladka": "las",
+            "layers": [
+              "posterunek"
+            ],
+            "owner": 1
+          }
+        },
+        {
+          "q": 50,
+          "r": 9,
+          "ownerId": 6,
+          "type": "posterunek",
+          "builtAtTurn": 29,
+          "seq": 6,
+          "rad": 3,
+          "nHex": 37,
+          "water": 17,
+          "ownerCounts": {
+            "6": 37
+          },
+          "citiesIn": [],
+          "onHex": {
+            "teren": "gory",
+            "nakladka": "brak",
+            "layers": [
+              "posterunek"
+            ],
+            "owner": 6
+          }
+        },
+        {
+          "q": 64,
+          "r": 45,
+          "ownerId": 11,
+          "type": "posterunek",
+          "builtAtTurn": 32,
+          "seq": 7,
+          "rad": 3,
+          "nHex": 37,
+          "water": 21,
+          "ownerCounts": {
+            "11": 37
+          },
+          "citiesIn": [],
+          "onHex": {
+            "teren": "gory",
+            "nakladka": "brak",
+            "layers": [
+              "posterunek"
+            ],
+            "owner": 11
+          }
+        },
+        {
+          "q": 52,
+          "r": 39,
+          "ownerId": 11,
+          "type": "posterunek",
+          "builtAtTurn": 32,
+          "seq": 8,
+          "rad": 3,
+          "nHex": 37,
+          "water": 15,
+          "ownerCounts": {
+            "11": 37
+          },
+          "citiesIn": [],
+          "onHex": {
+            "teren": "wzgorza",
+            "nakladka": "las",
+            "layers": [
+              "posterunek"
+            ],
+            "owner": 11
+          }
+        }
+      ],
+      "cities": [
+        {
+          "id": "city0",
+          "o": 0,
+          "q": 18,
+          "r": 37,
+          "pop": 9
+        },
+        {
+          "id": "city1",
+          "o": 21,
+          "q": 17,
+          "r": 33,
+          "pop": 6
+        },
+        {
+          "id": "city2",
+          "o": 22,
+          "q": 21,
+          "r": 39,
+          "pop": 7
+        },
+        {
+          "id": "city3",
+          "o": 23,
+          "q": 23,
+          "r": 34,
+          "pop": 7
+        },
+        {
+          "id": "city4",
+          "o": 24,
+          "q": 22,
+          "r": 43,
+          "pop": 7
+        },
+        {
+          "id": "city5",
+          "o": 1,
+          "q": 18,
+          "r": 12,
+          "pop": 10
+        },
+        {
+          "id": "city6",
+          "o": 1,
+          "q": 13,
+          "r": 12,
+          "pop": 9
+        },
+        {
+          "id": "city7",
+          "o": 1,
+          "q": 15,
+          "r": 17,
+          "pop": 7
+        },
+        {
+          "id": "city8",
+          "o": 1,
+          "q": 18,
+          "r": 7,
+          "pop": 7
+        },
+        {
+          "id": "city9",
+          "o": 1,
+          "q": 20,
+          "r": 15,
+          "pop": 7
+        },
+        {
+          "id": "city10",
+          "o": 6,
+          "q": 58,
+          "r": 12,
+          "pop": 9
+        },
+        {
+          "id": "city11",
+          "o": 6,
+          "q": 53,
+          "r": 15,
+          "pop": 7
+        },
+        {
+          "id": "city12",
+          "o": 6,
+          "q": 56,
+          "r": 9,
+          "pop": 6
+        },
+        {
+          "id": "city13",
+          "o": 6,
+          "q": 59,
+          "r": 16,
+          "pop": 9
+        },
+        {
+          "id": "city14",
+          "o": 6,
+          "q": 61,
+          "r": 7,
+          "pop": 9
+        },
+        {
+          "id": "city15",
+          "o": 11,
+          "q": 59,
+          "r": 40,
+          "pop": 5
+        },
+        {
+          "id": "city16",
+          "o": 11,
+          "q": 54,
+          "r": 42,
+          "pop": 4
+        },
+        {
+          "id": "city17",
+          "o": 11,
+          "q": 56,
+          "r": 45,
+          "pop": 2
+        },
+        {
+          "id": "city18",
+          "o": 11,
+          "q": 57,
+          "r": 37,
+          "pop": 3
+        },
+        {
+          "id": "city19",
+          "o": 11,
+          "q": 61,
+          "r": 43,
+          "pop": 4
+        },
+        {
+          "id": "city20",
+          "o": 16,
+          "q": 36,
+          "r": 25,
+          "pop": 9
+        },
+        {
+          "id": "city21",
+          "o": 16,
+          "q": 31,
+          "r": 25,
+          "pop": 4
+        },
+        {
+          "id": "city22",
+          "o": 16,
+          "q": 31,
+          "r": 30,
+          "pop": 9
+        },
+        {
+          "id": "city23",
+          "o": 16,
+          "q": 36,
+          "r": 20,
+          "pop": 6
+        },
+        {
+          "id": "city24",
+          "o": 16,
+          "q": 36,
+          "r": 30,
+          "pop": 2
+        },
+        {
+          "id": "city25",
+          "o": 1,
+          "q": 12,
+          "r": 9,
+          "pop": 1
+        }
+      ],
+      "overlaps": [],
+      "parity": {
+        "compared": 1046,
+        "expectedOwned": 676,
+        "mismatches": 0,
+        "sample": []
+      }
+    },
+    {
+      "turn": 34,
+      "me": 0,
+      "forts": [
+        {
+          "q": 68,
+          "r": 13,
+          "ownerId": 6,
+          "type": "posterunek",
+          "builtAtTurn": 27,
+          "seq": 0,
+          "rad": 3,
+          "nHex": 37,
+          "water": 23,
+          "ownerCounts": {
+            "6": 37
+          },
+          "citiesIn": [],
+          "onHex": {
+            "teren": "laka",
+            "nakladka": "las",
+            "layers": [
+              "posterunek"
+            ],
+            "owner": 6
+          }
+        },
+        {
+          "q": 46,
+          "r": 27,
+          "ownerId": 16,
+          "type": "posterunek",
+          "builtAtTurn": 27,
+          "seq": 1,
+          "rad": 3,
+          "nHex": 37,
+          "water": 20,
+          "ownerCounts": {
+            "6": 4,
+            "16": 33
+          },
+          "citiesIn": [],
+          "onHex": {
+            "teren": "wzgorza",
+            "nakladka": "brak",
+            "layers": [
+              "posterunek"
+            ],
+            "owner": 16
+          }
+        },
+        {
+          "q": 30,
+          "r": 10,
+          "ownerId": 1,
+          "type": "posterunek",
+          "builtAtTurn": 28,
+          "seq": 2,
+          "rad": 3,
+          "nHex": 37,
+          "water": 26,
+          "ownerCounts": {
+            "1": 37
+          },
+          "citiesIn": [],
+          "onHex": {
+            "teren": "laka",
+            "nakladka": "brak",
+            "layers": [
+              "posterunek"
+            ],
+            "owner": 1
+          }
+        },
+        {
+          "q": 64,
+          "r": 38,
+          "ownerId": 11,
+          "type": "posterunek",
+          "builtAtTurn": 28,
+          "seq": 3,
+          "rad": 3,
+          "nHex": 37,
+          "water": 7,
+          "ownerCounts": {
+            "11": 37
+          },
+          "citiesIn": [],
+          "onHex": {
+            "teren": "wzgorza",
+            "nakladka": "las",
+            "layers": [
+              "posterunek"
+            ],
+            "owner": 11
+          }
+        },
+        {
+          "q": 25,
+          "r": 25,
+          "ownerId": 16,
+          "type": "posterunek",
+          "builtAtTurn": 28,
+          "seq": 4,
+          "rad": 3,
+          "nHex": 37,
+          "water": 13,
+          "ownerCounts": {
+            "16": 26,
+            "21": 4,
+            "23": 7
+          },
+          "citiesIn": [],
+          "onHex": {
+            "teren": "pustynia",
+            "nakladka": "zloze_gliny",
+            "layers": [
+              "posterunek"
+            ],
+            "owner": 16
+          }
+        },
+        {
+          "q": 23,
+          "r": 19,
+          "ownerId": 1,
+          "type": "posterunek",
+          "builtAtTurn": 29,
+          "seq": 5,
+          "rad": 3,
+          "nHex": 37,
+          "water": 5,
+          "ownerCounts": {
+            "1": 37
+          },
+          "citiesIn": [],
+          "onHex": {
+            "teren": "wzgorza",
+            "nakladka": "las",
+            "layers": [
+              "posterunek"
+            ],
+            "owner": 1
+          }
+        },
+        {
+          "q": 50,
+          "r": 9,
+          "ownerId": 6,
+          "type": "posterunek",
+          "builtAtTurn": 29,
+          "seq": 6,
+          "rad": 3,
+          "nHex": 37,
+          "water": 17,
+          "ownerCounts": {
+            "6": 37
+          },
+          "citiesIn": [],
+          "onHex": {
+            "teren": "gory",
+            "nakladka": "brak",
+            "layers": [
+              "posterunek"
+            ],
+            "owner": 6
+          }
+        },
+        {
+          "q": 64,
+          "r": 45,
+          "ownerId": 11,
+          "type": "posterunek",
+          "builtAtTurn": 32,
+          "seq": 7,
+          "rad": 3,
+          "nHex": 37,
+          "water": 21,
+          "ownerCounts": {
+            "11": 37
+          },
+          "citiesIn": [],
+          "onHex": {
+            "teren": "gory",
+            "nakladka": "brak",
+            "layers": [
+              "posterunek"
+            ],
+            "owner": 11
+          }
+        },
+        {
+          "q": 52,
+          "r": 39,
+          "ownerId": 11,
+          "type": "posterunek",
+          "builtAtTurn": 32,
+          "seq": 8,
+          "rad": 3,
+          "nHex": 37,
+          "water": 15,
+          "ownerCounts": {
+            "11": 37
+          },
+          "citiesIn": [],
+          "onHex": {
+            "teren": "wzgorza",
+            "nakladka": "las",
+            "layers": [
+              "posterunek"
+            ],
+            "owner": 11
+          }
+        },
+        {
+          "q": 39,
+          "r": 32,
+          "ownerId": 16,
+          "type": "posterunek",
+          "builtAtTurn": 34,
+          "seq": 9,
+          "rad": 3,
+          "nHex": 37,
+          "water": 4,
+          "ownerCounts": {
+            "16": 37
+          },
+          "citiesIn": [],
+          "onHex": {
+            "teren": "wzgorza",
+            "nakladka": "brak",
+            "layers": [
+              "posterunek"
+            ],
+            "owner": 16
+          }
+        }
+      ],
+      "cities": [
+        {
+          "id": "city0",
+          "o": 0,
+          "q": 18,
+          "r": 37,
+          "pop": 10
+        },
+        {
+          "id": "city1",
+          "o": 21,
+          "q": 17,
+          "r": 33,
+          "pop": 6
+        },
+        {
+          "id": "city2",
+          "o": 22,
+          "q": 21,
+          "r": 39,
+          "pop": 7
+        },
+        {
+          "id": "city3",
+          "o": 23,
+          "q": 23,
+          "r": 34,
+          "pop": 8
+        },
+        {
+          "id": "city4",
+          "o": 24,
+          "q": 22,
+          "r": 43,
+          "pop": 9
+        },
+        {
+          "id": "city5",
+          "o": 1,
+          "q": 18,
+          "r": 12,
+          "pop": 10
+        },
+        {
+          "id": "city6",
+          "o": 1,
+          "q": 13,
+          "r": 12,
+          "pop": 10
+        },
+        {
+          "id": "city7",
+          "o": 1,
+          "q": 15,
+          "r": 17,
+          "pop": 7
+        },
+        {
+          "id": "city8",
+          "o": 1,
+          "q": 18,
+          "r": 7,
+          "pop": 7
+        },
+        {
+          "id": "city9",
+          "o": 1,
+          "q": 20,
+          "r": 15,
+          "pop": 7
+        },
+        {
+          "id": "city10",
+          "o": 6,
+          "q": 58,
+          "r": 12,
+          "pop": 9
+        },
+        {
+          "id": "city11",
+          "o": 6,
+          "q": 53,
+          "r": 15,
+          "pop": 9
+        },
+        {
+          "id": "city12",
+          "o": 6,
+          "q": 56,
+          "r": 9,
+          "pop": 7
+        },
+        {
+          "id": "city13",
+          "o": 6,
+          "q": 59,
+          "r": 16,
+          "pop": 9
+        },
+        {
+          "id": "city14",
+          "o": 6,
+          "q": 61,
+          "r": 7,
+          "pop": 9
+        },
+        {
+          "id": "city15",
+          "o": 11,
+          "q": 59,
+          "r": 40,
+          "pop": 6
+        },
+        {
+          "id": "city16",
+          "o": 11,
+          "q": 54,
+          "r": 42,
+          "pop": 4
+        },
+        {
+          "id": "city17",
+          "o": 11,
+          "q": 56,
+          "r": 45,
+          "pop": 3
+        },
+        {
+          "id": "city18",
+          "o": 11,
+          "q": 57,
+          "r": 37,
+          "pop": 4
+        },
+        {
+          "id": "city19",
+          "o": 11,
+          "q": 61,
+          "r": 43,
+          "pop": 4
+        },
+        {
+          "id": "city20",
+          "o": 16,
+          "q": 36,
+          "r": 25,
+          "pop": 9
+        },
+        {
+          "id": "city21",
+          "o": 16,
+          "q": 31,
+          "r": 25,
+          "pop": 5
+        },
+        {
+          "id": "city22",
+          "o": 16,
+          "q": 31,
+          "r": 30,
+          "pop": 9
+        },
+        {
+          "id": "city23",
+          "o": 16,
+          "q": 36,
+          "r": 20,
+          "pop": 6
+        },
+        {
+          "id": "city24",
+          "o": 16,
+          "q": 36,
+          "r": 30,
+          "pop": 3
+        },
+        {
+          "id": "city25",
+          "o": 1,
+          "q": 12,
+          "r": 9,
+          "pop": 1
+        }
+      ],
+      "overlaps": [],
+      "parity": {
+        "compared": 1127,
+        "expectedOwned": 755,
+        "mismatches": 0,
+        "sample": []
+      }
+    }
+  ],
+  "start": {
+    "seedSeen": 7,
+    "mapLog": "[NewGame] Mapa: 76x52 seed=7 typ=kontynenty rywale=4 typy=5",
+    "genMs": 19506
+  },
+  "setup": {
+    "valuables": [
+      [
+        14,
+        40,
+        "laka",
+        "zloze_gliny",
+        0
+      ],
+      [
+        15,
+        40,
+        "laka",
+        "zloze_gliny",
+        0
+      ],
+      [
+        16,
+        35,
+        "laka",
+        "zloze_gliny",
+        21
+      ],
+      [
+        16,
+        39,
+        "gory",
+        "brak",
+        0
+      ],
+      [
+        16,
+        40,
+        "laka",
+        "zloze_gliny",
+        0
+      ],
+      [
+        17,
+        34,
+        "laka",
+        "zloze_gliny",
+        21
+      ],
+      [
+        17,
+        35,
+        "gory",
+        "brak",
+        21
+      ],
+      [
+        17,
+        40,
+        "rownina",
+        "zloze_gliny",
+        0
+      ],
+      [
+        18,
+        35,
+        "laka",
+        "zloze_gliny",
+        0
+      ],
+      [
+        18,
+        41,
+        "gory",
+        "brak",
+        22
+      ],
+      [
+        19,
+        35,
+        "rownina",
+        "zloze_gliny",
+        0
+      ],
+      [
+        19,
+        39,
+        "gory",
+        "brak",
+        22
+      ],
+      [
+        19,
+        41,
+        "wzgorza",
+        "zloze_gliny",
+        22
+      ],
+      [
+        20,
+        39,
+        "gory",
+        "brak",
+        22
+      ],
+      [
+        20,
+        40,
+        "gory",
+        "brak",
+        22
+      ],
+      [
+        21,
+        35,
+        "rownina",
+        "zloze_gliny",
+        23
+      ],
+      [
+        23,
+        33,
+        "gory",
+        "zloze_gliny",
+        23
+      ],
+      [
+        23,
+        35,
+        "gory",
+        "brak",
+        23
+      ]
+    ],
+    "me": [
+      {
+        "id": "city0",
+        "ownerId": 0,
+        "q": 18,
+        "r": 37,
+        "pop": 1,
+        "name": "Rzym"
+      }
+    ],
+    "nearestForeign": [
+      {
+        "id": "city1",
+        "ownerId": 21,
+        "q": 17,
+        "r": 33,
+        "pop": 1,
+        "name": "Ostia",
+        "d": 5
+      },
+      {
+        "id": "city2",
+        "ownerId": 22,
+        "q": 21,
+        "r": 39,
+        "pop": 1,
+        "name": "Kapua",
+        "d": 5
+      },
+      {
+        "id": "city3",
+        "ownerId": 23,
+        "q": 23,
+        "r": 34,
+        "pop": 1,
+        "name": "Pompeje",
+        "d": 5
+      },
+      {
+        "id": "city4",
+        "ownerId": 24,
+        "q": 22,
+        "r": 43,
+        "pop": 1,
+        "name": "Tarent",
+        "d": 10
+      },
+      {
+        "id": "city21",
+        "ownerId": 17,
+        "q": 31,
+        "r": 25,
+        "pop": 1,
+        "name": "Sparta",
+        "d": 13
+      },
+      {
+        "id": "city22",
+        "ownerId": 18,
+        "q": 31,
+        "r": 30,
+        "pop": 1,
+        "name": "Korynt",
+        "d": 13
+      }
+    ],
+    "candidates": [],
+    "tryFoundSecondCityResult": null,
+    "forts0": []
+  },
+  "enemyOwner": 21,
+  "final": {
+    "turn": 39,
+    "me": 0,
+    "forts": [
+      {
+        "q": 68,
+        "r": 13,
+        "ownerId": 6,
+        "type": "posterunek",
+        "builtAtTurn": 27,
+        "seq": 0,
+        "rad": 3,
+        "nHex": 37,
+        "water": 23,
+        "ownerCounts": {
+          "6": 37
+        },
+        "citiesIn": [],
+        "onHex": {
+          "teren": "laka",
+          "nakladka": "las",
+          "layers": [
+            "posterunek"
+          ],
+          "owner": 6
+        }
+      },
+      {
+        "q": 46,
+        "r": 27,
+        "ownerId": 16,
+        "type": "posterunek",
+        "builtAtTurn": 27,
+        "seq": 1,
+        "rad": 3,
+        "nHex": 37,
+        "water": 20,
+        "ownerCounts": {
+          "6": 4,
+          "16": 33
+        },
+        "citiesIn": [],
+        "onHex": {
+          "teren": "wzgorza",
+          "nakladka": "brak",
+          "layers": [
+            "posterunek"
+          ],
+          "owner": 16
+        }
+      },
+      {
+        "q": 30,
+        "r": 10,
+        "ownerId": 1,
+        "type": "posterunek",
+        "builtAtTurn": 28,
+        "seq": 2,
+        "rad": 3,
+        "nHex": 37,
+        "water": 26,
+        "ownerCounts": {
+          "1": 37
+        },
+        "citiesIn": [],
+        "onHex": {
+          "teren": "laka",
+          "nakladka": "brak",
+          "layers": [
+            "posterunek"
+          ],
+          "owner": 1
+        }
+      },
+      {
+        "q": 64,
+        "r": 38,
+        "ownerId": 11,
+        "type": "posterunek",
+        "builtAtTurn": 28,
+        "seq": 3,
+        "rad": 3,
+        "nHex": 37,
+        "water": 7,
+        "ownerCounts": {
+          "11": 37
+        },
+        "citiesIn": [],
+        "onHex": {
+          "teren": "wzgorza",
+          "nakladka": "las",
+          "layers": [
+            "posterunek"
+          ],
+          "owner": 11
+        }
+      },
+      {
+        "q": 25,
+        "r": 25,
+        "ownerId": 16,
+        "type": "posterunek",
+        "builtAtTurn": 28,
+        "seq": 4,
+        "rad": 3,
+        "nHex": 37,
+        "water": 13,
+        "ownerCounts": {
+          "16": 21,
+          "21": 8,
+          "23": 8
+        },
+        "citiesIn": [],
+        "onHex": {
+          "teren": "pustynia",
+          "nakladka": "zloze_gliny",
+          "layers": [
+            "posterunek"
+          ],
+          "owner": 16
+        }
+      },
+      {
+        "q": 23,
+        "r": 19,
+        "ownerId": 1,
+        "type": "posterunek",
+        "builtAtTurn": 29,
+        "seq": 5,
+        "rad": 3,
+        "nHex": 37,
+        "water": 5,
+        "ownerCounts": {
+          "1": 37
+        },
+        "citiesIn": [],
+        "onHex": {
+          "teren": "wzgorza",
+          "nakladka": "las",
+          "layers": [
+            "posterunek"
+          ],
+          "owner": 1
+        }
+      },
+      {
+        "q": 50,
+        "r": 9,
+        "ownerId": 6,
+        "type": "posterunek",
+        "builtAtTurn": 29,
+        "seq": 6,
+        "rad": 3,
+        "nHex": 37,
+        "water": 17,
+        "ownerCounts": {
+          "6": 37
+        },
+        "citiesIn": [],
+        "onHex": {
+          "teren": "gory",
+          "nakladka": "brak",
+          "layers": [
+            "posterunek"
+          ],
+          "owner": 6
+        }
+      },
+      {
+        "q": 64,
+        "r": 45,
+        "ownerId": 11,
+        "type": "posterunek",
+        "builtAtTurn": 32,
+        "seq": 7,
+        "rad": 3,
+        "nHex": 37,
+        "water": 21,
+        "ownerCounts": {
+          "11": 37
+        },
+        "citiesIn": [],
+        "onHex": {
+          "teren": "gory",
+          "nakladka": "brak",
+          "layers": [
+            "posterunek"
+          ],
+          "owner": 11
+        }
+      },
+      {
+        "q": 52,
+        "r": 39,
+        "ownerId": 11,
+        "type": "posterunek",
+        "builtAtTurn": 32,
+        "seq": 8,
+        "rad": 3,
+        "nHex": 37,
+        "water": 15,
+        "ownerCounts": {
+          "11": 37
+        },
+        "citiesIn": [],
+        "onHex": {
+          "teren": "wzgorza",
+          "nakladka": "las",
+          "layers": [
+            "posterunek"
+          ],
+          "owner": 11
+        }
+      },
+      {
+        "q": 39,
+        "r": 32,
+        "ownerId": 16,
+        "type": "posterunek",
+        "builtAtTurn": 34,
+        "seq": 9,
+        "rad": 3,
+        "nHex": 37,
+        "water": 4,
+        "ownerCounts": {
+          "16": 37
+        },
+        "citiesIn": [],
+        "onHex": {
+          "teren": "wzgorza",
+          "nakladka": "brak",
+          "layers": [
+            "posterunek",
+            "kopalnia_miedzi"
+          ],
+          "owner": 16
+        }
+      }
+    ],
+    "cities": [
+      {
+        "id": "city0",
+        "o": 0,
+        "q": 18,
+        "r": 37,
+        "pop": 10
+      },
+      {
+        "id": "city1",
+        "o": 21,
+        "q": 17,
+        "r": 33,
+        "pop": 7
+      },
+      {
+        "id": "city2",
+        "o": 22,
+        "q": 21,
+        "r": 39,
+        "pop": 7
+      },
+      {
+        "id": "city3",
+        "o": 23,
+        "q": 23,
+        "r": 34,
+        "pop": 10
+      },
+      {
+        "id": "city4",
+        "o": 24,
+        "q": 22,
+        "r": 43,
+        "pop": 10
+      },
+      {
+        "id": "city5",
+        "o": 1,
+        "q": 18,
+        "r": 12,
+        "pop": 10
+      },
+      {
+        "id": "city6",
+        "o": 1,
+        "q": 13,
+        "r": 12,
+        "pop": 10
+      },
+      {
+        "id": "city7",
+        "o": 1,
+        "q": 15,
+        "r": 17,
+        "pop": 7
+      },
+      {
+        "id": "city8",
+        "o": 1,
+        "q": 18,
+        "r": 7,
+        "pop": 7
+      },
+      {
+        "id": "city9",
+        "o": 1,
+        "q": 20,
+        "r": 15,
+        "pop": 8
+      },
+      {
+        "id": "city10",
+        "o": 6,
+        "q": 58,
+        "r": 12,
+        "pop": 9
+      },
+      {
+        "id": "city11",
+        "o": 6,
+        "q": 53,
+        "r": 15,
+        "pop": 9
+      },
+      {
+        "id": "city12",
+        "o": 6,
+        "q": 56,
+        "r": 9,
+        "pop": 9
+      },
+      {
+        "id": "city13",
+        "o": 6,
+        "q": 59,
+        "r": 16,
+        "pop": 9
+      },
+      {
+        "id": "city14",
+        "o": 6,
+        "q": 61,
+        "r": 7,
+        "pop": 9
+      },
+      {
+        "id": "city15",
+        "o": 11,
+        "q": 59,
+        "r": 40,
+        "pop": 7
+      },
+      {
+        "id": "city16",
+        "o": 11,
+        "q": 54,
+        "r": 42,
+        "pop": 6
+      },
+      {
+        "id": "city17",
+        "o": 11,
+        "q": 56,
+        "r": 45,
+        "pop": 4
+      },
+      {
+        "id": "city18",
+        "o": 11,
+        "q": 57,
+        "r": 37,
+        "pop": 4
+      },
+      {
+        "id": "city19",
+        "o": 11,
+        "q": 61,
+        "r": 43,
+        "pop": 4
+      },
+      {
+        "id": "city20",
+        "o": 16,
+        "q": 36,
+        "r": 25,
+        "pop": 9
+      },
+      {
+        "id": "city21",
+        "o": 16,
+        "q": 31,
+        "r": 25,
+        "pop": 6
+      },
+      {
+        "id": "city22",
+        "o": 16,
+        "q": 31,
+        "r": 30,
+        "pop": 9
+      },
+      {
+        "id": "city23",
+        "o": 16,
+        "q": 36,
+        "r": 20,
+        "pop": 6
+      },
+      {
+        "id": "city24",
+        "o": 16,
+        "q": 36,
+        "r": 30,
+        "pop": 5
+      },
+      {
+        "id": "city25",
+        "o": 1,
+        "q": 12,
+        "r": 9,
+        "pop": 2
+      },
+      {
+        "id": "city26",
+        "o": 6,
+        "q": 63,
+        "r": 13,
+        "pop": 1
+      },
+      {
+        "id": "city27",
+        "o": 16,
+        "q": 40,
+        "r": 22,
+        "pop": 1
+      }
+    ],
+    "overlaps": [],
+    "parity": {
+      "compared": 1127,
+      "expectedOwned": 781,
+      "mismatches": 0,
+      "sample": []
+    }
+  },
+  "pageErrors": []
+}

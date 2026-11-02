@@ -104,19 +104,19 @@ const PAGE_SNAPSHOT = () => {
       const snap = await s.page.evaluate(() => {
         const T = window.__civTest;
         const d = T.drainDecisions();
-        return { nDec: d.length, fortDec: d.filter((x) => /fort|posterunek/i.test(JSON.stringify(x.scope || '') + JSON.stringify(x.reason || ''))).slice(0, 12), forts: T.forts(), turn: T.state().turn };
+        return { nDec: d.length, fortDec: d.filter((x) => String(x.reason || '').startsWith('e-fort') && x.cityId === 'city0'), forts: T.forts(), turn: T.state().turn };
       });
       out.turns.push({ end: r, ...snap });
       if ((t + 1) % 10 === 0 || snap.forts.length !== (out.turns[out.turns.length - 2] || { forts: [] }).forts.length) {
         out.snaps.push(await s.page.evaluate(PAGE_SNAPSHOT));
       }
-      C.save(`fort-${focus}.json`, out);
+      C.save(`fort-${focus}-s${SEED}.json`, out);
       if (!r.ok) break;
     }
     out.final = await s.page.evaluate(PAGE_SNAPSHOT);
   } catch (e) { out.error = String(e.stack || e); }
   out.pageErrors = s.errors.slice(0, 10);
-  C.save(`fort-${focus}.json`, out);
+  C.save(`fort-${focus}-s${SEED}.json`, out);
   console.log(JSON.stringify({ error: out.error, setup: out.setup && { me: out.setup.me, near: out.setup.nearestForeign.slice(0, 3), tryFound: out.setup.tryFoundSecondCityResult, ncand: out.setup.candidates.length }, enemy: out.enemyOwner, fortsPerTurn: out.turns.map((t) => `${t.turn}:${t.forts.length}`).join(' '), final: out.final && out.final.forts, overlaps: out.final && out.final.overlaps, parity: out.final && out.final.parity, valuables: out.setup && out.setup.valuables }).slice(0, 7000));
   await browser.close();
 })().catch((e) => { console.error(e); process.exit(2); });

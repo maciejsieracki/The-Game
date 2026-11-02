@@ -13,7 +13,7 @@ const REPO = path.resolve(__dirname, '..', '..');
 const BUNDLE = process.env.ROBOCZA_HTML;
 if (!BUNDLE) throw new Error('Ustaw ROBOCZA_HTML=<sciezka do kopii Gra-ROBOCZA.html>');
 const URL = 'file://' + BUNDLE + '?skipMenuRedirect=1&civTest=1';
-const EVID = path.join(REPO, 'dyspozycje', 'autobot', 'runs', 'R-WEB-AUTOIMPROVE-LIVE-SCENARIOS-Q1', 'evidence');
+const EVID = process.env.EVID_DIR || path.join(REPO, 'dyspozycje', 'autobot', 'runs', 'R-WEB-AUTOIMPROVE-LIVE-SCENARIOS-Q1', 'evidence');
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 
 async function launch() {
