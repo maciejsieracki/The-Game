@@ -24,3 +24,4 @@ BLOKADY:
 RUNDY: 1/5
 NASTĘPNY KROK: Evaluator (kontrola diffu, bramek, bajt-w-bajt); orkiestrator buduje bundle i zleca zywe (a)(b)(c) (osobny run); ewentualne usterki gry = nowe wpisy R-WEB-*.
 DEPLOY/PUSH: NIE WYKONANO
+COMMIT-SHA: de2bbff41fa34b40bc73f54139c6a44ebc72b765 (kod+raport; raport dopisany w tym samym commicie, SHA znany po commicie)
