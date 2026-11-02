@@ -9,6 +9,9 @@
  */
 const C = require('./live-verify-autoimprove-common.cjs');
 const SEED = Number(process.env.SEED || 18);
+// FILL_CITIES=N: po 1. turze (era 3 po unlockAllTech => limit 11) zaloz N miast gracza przez T.foundCity (foundCandidates), by limit byl FAKTYCZNIE wyczerpany.
+const FILL = Number(process.env.FILL_CITIES || 0);
+const TAG = (FILL ? `-fill${FILL}` : '') + (process.env.NO_WAR === '1' ? '-nowar' : '');
 
 const PAGE_SNAPSHOT = () => {
   const T = window.__civTest;
@@ -98,9 +101,10 @@ const PAGE_SNAPSHOT = () => {
     // wojna z najblizszym obcym wlascicielem (scenariusz "przy granicy z wrogiem")
     const enemy = out.setup.nearestForeign.find((c) => c.ownerId < 1000) || out.setup.nearestForeign[0];
     out.enemyOwner = enemy ? enemy.ownerId : null;
-    if (enemy) await s.page.evaluate((o) => window.__civTest.setWar(0, o), enemy.ownerId);
+    if (enemy && process.env.NO_WAR !== '1') await s.page.evaluate((o) => window.__civTest.setWar(0, o), enemy.ownerId);
     for (let t = 0; t < turns; t++) {
       const r = await C.endTurnAndWait(s);
+      if (FILL && t === 0) out.fill = await s.page.evaluate((goal) => { const T = window.__civTest; const mine = () => T.state().cities.filter((c) => c.ownerId === T.state().me); for (let i = 0; i < 40 && mine().length < goal; i++) { const cand = T.foundCandidates(40); let did = false; for (const c of cand) { const b = mine().length; T.foundCity(c.q, c.r); if (mine().length > b) { did = true; break; } } if (!did) break; } return { cities: mine().length, pops: mine().map((c) => c.pop) }; }, FILL);
       const snap = await s.page.evaluate(() => {
         const T = window.__civTest;
         const d = T.drainDecisions();
@@ -110,13 +114,13 @@ const PAGE_SNAPSHOT = () => {
       if ((t + 1) % 10 === 0 || snap.forts.length !== (out.turns[out.turns.length - 2] || { forts: [] }).forts.length) {
         out.snaps.push(await s.page.evaluate(PAGE_SNAPSHOT));
       }
-      C.save(`fort-${focus}-s${SEED}.json`, out);
+      C.save(`fort-${focus}-s${SEED}${TAG}.json`, out);
       if (!r.ok) break;
     }
     out.final = await s.page.evaluate(PAGE_SNAPSHOT);
   } catch (e) { out.error = String(e.stack || e); }
   out.pageErrors = s.errors.slice(0, 10);
-  C.save(`fort-${focus}-s${SEED}.json`, out);
+  C.save(`fort-${focus}-s${SEED}${TAG}.json`, out);
   console.log(JSON.stringify({ error: out.error, setup: out.setup && { me: out.setup.me, near: out.setup.nearestForeign.slice(0, 3), tryFound: out.setup.tryFoundSecondCityResult, ncand: out.setup.candidates.length }, enemy: out.enemyOwner, fortsPerTurn: out.turns.map((t) => `${t.turn}:${t.forts.length}`).join(' '), final: out.final && out.final.forts, overlaps: out.final && out.final.overlaps, parity: out.final && out.final.parity, valuables: out.setup && out.setup.valuables }).slice(0, 7000));
   await browser.close();
 })().catch((e) => { console.error(e); process.exit(2); });

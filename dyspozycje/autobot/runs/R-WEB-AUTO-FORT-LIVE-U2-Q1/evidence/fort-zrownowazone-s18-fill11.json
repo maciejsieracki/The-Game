@@ -1,0 +1,535 @@
+{
+  "scenario": "D",
+  "seed": 18,
+  "focus": "zrownowazone",
+  "turns": [
+    {
+      "end": {
+        "before": 1,
+        "after": 2,
+        "ms": 7681,
+        "ok": true
+      },
+      "nDec": 155,
+      "fortDec": [
+        {
+          "cityId": "city0",
+          "scope": "fort",
+          "reason": "e-fort bramka: limit miast NIE wyczerpany (cityLimitExhausted!==true)",
+          "detail": {
+            "cityLimitExhausted": false
+          }
+        }
+      ],
+      "forts": [],
+      "turn": 2
+    },
+    {
+      "end": {
+        "before": 2,
+        "after": 3,
+        "ms": 17033,
+        "ok": true
+      },
+      "nDec": 2494,
+      "fortDec": [
+        {
+          "cityId": "city0",
+          "scope": "fort",
+          "reason": "e-fort bramka: zywnosc E1-E6 w toku",
+          "detail": {
+            "cityLimitExhausted": true,
+            "roadCities": 11,
+            "stagedPicks": 64,
+            "earlierStageIsPending": false,
+            "fallbackPicks": 0,
+            "fallbackIsPending": false,
+            "deficitPicks": 418,
+            "fortPicks": 0,
+            "fortIsPending": false
+          }
+        }
+      ],
+      "forts": [],
+      "turn": 3
+    },
+    {
+      "end": {
+        "before": 3,
+        "after": 3,
+        "ms": 420239,
+        "ok": false,
+        "endTurnLogs": [
+          "[EndTurn] blocked: endTurnInProgress",
+          "[EndTurn] blocked: endTurnInProgress",
+          "[EndTurn] blocked: endTurnInProgress",
+          "[EndTurn] blocked: gameOver",
+          "[EndTurn] blocked: gameOver",
+          "[EndTurn] triggerPlayerEndTurn: DONE tura 3",
+          "[EndTurn] blocked: gameOver",
+          "[EndTurn] blocked: gameOver"
+        ],
+        "visible": [
+          "b-wiki:Civpedia",
+          "b-menu:Menu",
+          "b-util-toggle on:",
+          "b-util-toggle on:",
+          "b-zoom:−",
+          "b-zoom:+",
+          "b-menu:⛶",
+          "mini-tool-btn on:",
+          "mini-tool-btn on:",
+          "sp-toolbar-chip:🌍 Inne cyw.",
+          "sp-toolbar-dismiss-all:Zamknij wszystkie informacyjne",
+          "sp-action-btn tg-btn-primary:Otwórz →",
+          "wykonaj on:Wykonaj5",
+          "end-turn is-disabled:Zakończ turę",
+          "tb:",
+          "tb science:",
+          "tb at-war:1",
+          "tb:",
+          "tb:",
+          "civ-emp-close:",
+          "vsc-new-game:Nowa gra"
+        ]
+      },
+      "nDec": 0,
+      "fortDec": [],
+      "forts": [],
+      "turn": 3
+    }
+  ],
+  "snaps": [],
+  "start": {
+    "seedSeen": 18,
+    "mapLog": "[NewGame] Mapa: 76x52 seed=18 typ=kontynenty rywale=4 typy=5",
+    "genMs": 11636
+  },
+  "setup": {
+    "valuables": [
+      [
+        14,
+        34,
+        "laka",
+        "zloze_gliny",
+        0
+      ],
+      [
+        15,
+        34,
+        "gory",
+        "brak",
+        0
+      ],
+      [
+        16,
+        34,
+        "laka",
+        "zloze_gliny",
+        0
+      ],
+      [
+        17,
+        36,
+        "gory",
+        "brak",
+        0
+      ],
+      [
+        19,
+        27,
+        "gory",
+        "brak",
+        21
+      ],
+      [
+        20,
+        27,
+        "rownina",
+        "zloze_konia",
+        21
+      ],
+      [
+        20,
+        28,
+        "rownina",
+        "zloze_gliny",
+        21
+      ],
+      [
+        21,
+        28,
+        "pustynia",
+        "zloze_gliny",
+        23
+      ],
+      [
+        22,
+        28,
+        "pustynia",
+        "zloze_gliny",
+        23
+      ],
+      [
+        22,
+        30,
+        "rownina",
+        "zloze_gliny",
+        0
+      ],
+      [
+        23,
+        33,
+        "gory",
+        "brak",
+        22
+      ]
+    ],
+    "me": [
+      {
+        "id": "city0",
+        "ownerId": 0,
+        "q": 19,
+        "r": 32,
+        "pop": 1,
+        "name": "Rzym"
+      }
+    ],
+    "nearestForeign": [
+      {
+        "id": "city1",
+        "ownerId": 21,
+        "q": 18,
+        "r": 28,
+        "pop": 1,
+        "name": "Ostia",
+        "d": 5
+      },
+      {
+        "id": "city2",
+        "ownerId": 22,
+        "q": 21,
+        "r": 35,
+        "pop": 1,
+        "name": "Kapua",
+        "d": 5
+      },
+      {
+        "id": "city3",
+        "ownerId": 23,
+        "q": 23,
+        "r": 27,
+        "pop": 1,
+        "name": "Pompeje",
+        "d": 5
+      },
+      {
+        "id": "city4",
+        "ownerId": 24,
+        "q": 17,
+        "r": 24,
+        "pop": 1,
+        "name": "Tarent",
+        "d": 10
+      },
+      {
+        "id": "city9",
+        "ownerId": 5,
+        "q": 20,
+        "r": 20,
+        "pop": 1,
+        "name": "Argos",
+        "d": 12
+      },
+      {
+        "id": "city11",
+        "ownerId": 7,
+        "q": 30,
+        "r": 33,
+        "pop": 1,
+        "name": "Ondini",
+        "d": 12
+      }
+    ],
+    "candidates": [],
+    "tryFoundSecondCityResult": null,
+    "forts0": []
+  },
+  "enemyOwner": 21,
+  "fill": {
+    "cities": 11,
+    "pops": [
+      10,
+      10,
+      10,
+      9,
+      10,
+      10,
+      10,
+      10,
+      10,
+      10,
+      1
+    ]
+  },
+  "final": {
+    "turn": 3,
+    "me": 0,
+    "forts": [],
+    "cities": [
+      {
+        "id": "city0",
+        "o": 0,
+        "q": 19,
+        "r": 32,
+        "pop": 10
+      },
+      {
+        "id": "city1",
+        "o": 21,
+        "q": 18,
+        "r": 28,
+        "pop": 1
+      },
+      {
+        "id": "city2",
+        "o": 22,
+        "q": 21,
+        "r": 35,
+        "pop": 1
+      },
+      {
+        "id": "city3",
+        "o": 23,
+        "q": 23,
+        "r": 27,
+        "pop": 1
+      },
+      {
+        "id": "city4",
+        "o": 24,
+        "q": 17,
+        "r": 24,
+        "pop": 1
+      },
+      {
+        "id": "city5",
+        "o": 1,
+        "q": 19,
+        "r": 16,
+        "pop": 1
+      },
+      {
+        "id": "city6",
+        "o": 2,
+        "q": 14,
+        "r": 16,
+        "pop": 1
+      },
+      {
+        "id": "city7",
+        "o": 3,
+        "q": 14,
+        "r": 21,
+        "pop": 1
+      },
+      {
+        "id": "city8",
+        "o": 4,
+        "q": 19,
+        "r": 11,
+        "pop": 1
+      },
+      {
+        "id": "city9",
+        "o": 5,
+        "q": 20,
+        "r": 20,
+        "pop": 1
+      },
+      {
+        "id": "city10",
+        "o": 6,
+        "q": 35,
+        "r": 31,
+        "pop": 1
+      },
+      {
+        "id": "city11",
+        "o": 7,
+        "q": 30,
+        "r": 33,
+        "pop": 1
+      },
+      {
+        "id": "city12",
+        "o": 8,
+        "q": 32,
+        "r": 36,
+        "pop": 1
+      },
+      {
+        "id": "city13",
+        "o": 9,
+        "q": 33,
+        "r": 28,
+        "pop": 1
+      },
+      {
+        "id": "city14",
+        "o": 10,
+        "q": 37,
+        "r": 34,
+        "pop": 1
+      },
+      {
+        "id": "city15",
+        "o": 11,
+        "q": 57,
+        "r": 37,
+        "pop": 1
+      },
+      {
+        "id": "city16",
+        "o": 12,
+        "q": 52,
+        "r": 37,
+        "pop": 1
+      },
+      {
+        "id": "city17",
+        "o": 13,
+        "q": 52,
+        "r": 42,
+        "pop": 1
+      },
+      {
+        "id": "city18",
+        "o": 14,
+        "q": 58,
+        "r": 41,
+        "pop": 1
+      },
+      {
+        "id": "city19",
+        "o": 15,
+        "q": 60,
+        "r": 32,
+        "pop": 1
+      },
+      {
+        "id": "city20",
+        "o": 16,
+        "q": 57,
+        "r": 14,
+        "pop": 1
+      },
+      {
+        "id": "city21",
+        "o": 17,
+        "q": 52,
+        "r": 14,
+        "pop": 1
+      },
+      {
+        "id": "city22",
+        "o": 18,
+        "q": 59,
+        "r": 17,
+        "pop": 1
+      },
+      {
+        "id": "city23",
+        "o": 19,
+        "q": 62,
+        "r": 11,
+        "pop": 1
+      },
+      {
+        "id": "city24",
+        "o": 20,
+        "q": 50,
+        "r": 11,
+        "pop": 1
+      },
+      {
+        "id": "city25",
+        "o": 0,
+        "q": 24,
+        "r": 29,
+        "pop": 10
+      },
+      {
+        "id": "city26",
+        "o": 0,
+        "q": 20,
+        "r": 23,
+        "pop": 10
+      },
+      {
+        "id": "city27",
+        "o": 0,
+        "q": 23,
+        "r": 18,
+        "pop": 9
+      },
+      {
+        "id": "city28",
+        "o": 0,
+        "q": 23,
+        "r": 13,
+        "pop": 10
+      },
+      {
+        "id": "city29",
+        "o": 0,
+        "q": 22,
+        "r": 9,
+        "pop": 10
+      },
+      {
+        "id": "city30",
+        "o": 0,
+        "q": 27,
+        "r": 9,
+        "pop": 10
+      },
+      {
+        "id": "city31",
+        "o": 0,
+        "q": 31,
+        "r": 9,
+        "pop": 10
+      },
+      {
+        "id": "city32",
+        "o": 0,
+        "q": 35,
+        "r": 9,
+        "pop": 10
+      },
+      {
+        "id": "city33",
+        "o": 0,
+        "q": 12,
+        "r": 10,
+        "pop": 10
+      },
+      {
+        "id": "city34",
+        "o": 0,
+        "q": 16,
+        "r": 10,
+        "pop": 1
+      }
+    ],
+    "overlaps": [],
+    "parity": {
+      "compared": 0,
+      "expectedOwned": 0,
+      "mismatches": 0,
+      "sample": []
+    }
+  },
+  "pageErrors": []
+}

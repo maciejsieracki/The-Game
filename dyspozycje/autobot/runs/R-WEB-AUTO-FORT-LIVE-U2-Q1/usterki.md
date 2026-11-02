@@ -19,3 +19,11 @@
 
 ## NOTA-S18-GAMEOVER (INFORMATIONAL)
 - Seed 18: gra zakończona (`gameOver`) na końcu T33 (wojna `setWar(0,21)` ze skryptu; 0 miast gracza w snapshotcie końcowym; koniec tury #34 zablokowany `gameOver`, 420 s). Dane T2–T33 kompletne.
+
+## OBRONA r1 — uzupelnienia
+- U-HARNESS-ERA-LIMIT: slowo "NIEOSIAGALNY" WYCOFANE. Wariant w allowliscie dziala czesciowo: `FILL_CITIES=11` w `live-verify-autoimprove-fort.cjs`
+  (T.foundCity po 1. turze, era 3 => limit 11) zaklada 11 miast gracza w T2 (`evidence/fort-fill-probe-s18.json`, `fort-zrownowazone-s18-fill11*.json`).
+  Pierwsza zywa obserwacja bramki PO wejsciowej: T3 `e-fort bramka: zywnosc E1-E6 w toku` (cityLimitExhausted=true, roadCities=11, stagedPicks=63, deficitPicks=397, fortPicks=0).
+  Ograniczenie: konczenie tury T3 wisi 420 s, log `blocked: gameOver` (z wojna i bez, `NO_WAR=1`); przyczyna gameOver NIE_ZMIERZONO.
+- U-3 kontrola negatywna: bundel PRZED poprawka 8f59c5c2, ten sam scenariusz, 8 tur: posterunek (14,33) r3 w odleglosci 1 od fortu (14,34) r5, shared=37=nHex.
+  Bundel e3f08be6: posterunek (13,37), d=3, shared=33<37.
