@@ -758,8 +758,33 @@ for (const fcl of stdPlan.foreignTypeClusters) {
   const capPos = fcl.positions[0];
   if (!capPos) continue;
   const capSea = M.seaDistAt(stdSeaDist, capPos.q, capPos.r);
-  assert(capSea >= minSeaStd,
-    `Standard: stolica obcego typu ${fcl.typ} min ${minSeaStd} hex od morza (seaDist=${capSea})`);
+  // R-WEB-CAPITAL-SEADIST-Q1: przy sep stolic 23 (0,21 x 120, sufit 0,8) na tej mapie (seed 4242, 8 typow) tylko ~6 stolic
+  // miesci sie >=10 hex od morza (pomiar: losowy pakunek zachlanny 300 prob, sep 25/23 => max 6; sep 20 => 7; sep 15 => 9).
+  // Drabina ratunkowa (seaDistRescueLadder) miekko schodzi z seaDist TYLKO gdy nie ma wolnego slotu >=10 hex od morza
+  // spelniajacego sep. Asercja: stolica < minSea jest dopuszczalna wylacznie, gdy zaden hex ladu o seaDist >= minSea
+  // nie spelnia sep wzgledem wszystkich INNYCH stolic (brak zmarnowanego slotu srodladowego).
+  // sepGate liczony DOKLADNIE jak runtime (clusters.ts:3517-3529): landCount = hexy nie-Morze/Gory/PlytkieMorze,
+  // civCount = nTypy (8). Bez marginesu -1 (obrona r2, zarzut 4).
+  const inlandFree = (others, sepGate) => Object.values(stdMap.hexes).filter(h =>
+    M.seaDistAt(stdSeaDist, h.coords.q, h.coords.r) >= minSeaStd &&
+    others.every(o => M.hexDistanceAxial(h.coords.q, h.coords.r, o.q, o.r) >= sepGate));
+  let capOk = capSea >= minSeaStd;
+  if (!capOk) {
+    const others = [stdPlan.playerStartHex, ...stdPlan.foreignTypeClusters.map(c => c.positions[0]).filter(p => p && p !== capPos)];
+    const landCountSep = Object.values(stdMap.hexes).filter(h =>
+      h.terenBazowy !== 'morze' && h.terenBazowy !== 'gory' && h.terenBazowy !== 'plytkie_morze').length;
+    const sepGate = M.capitalMinSeparationForMap(stdPlan.placement.rozmiarMapy, 168, 120, 8, landCountSep);
+    const freeInland = inlandFree(others, sepGate);
+    capOk = freeInland.length === 0;
+    console.log(`INFO: stolica ${fcl.typ} seaDist=${capSea} < ${minSeaStd}; sepGate=${sepGate}; wolnych slotow srodladowych=${freeInland.length}`);
+    // Kontrola negatywna (obrona r2, zarzut 2): ten sam warunek MUSI wykryc wolny slot, gdy go sztucznie
+    // odslonic (tylko stolica gracza jako "inna") — inaczej warunek jest martwy i nic nie testuje.
+    const relaxed = inlandFree([stdPlan.playerStartHex], sepGate);
+    assert(relaxed.length > 0,
+      `Standard: kontrola negatywna warunku wolnego slotu srodladowego dla ${fcl.typ} (odslonieto ${relaxed.length} slotow)`);
+  }
+  assert(capOk,
+    `Standard: stolica obcego typu ${fcl.typ} min ${minSeaStd} hex od morza albo brak wolnego slotu srodladowego (seaDist=${capSea})`);
 }
 
 // BUG-SPAWN-ODLEGLOSC-STOLICE: pary stolic różnych cywilizacji ≥ minSep na Standard
