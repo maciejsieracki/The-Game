@@ -525,3 +525,5 @@ Cel końcowy i bieżący zapisane w `GOAL-RUST-PORT-20261020.md` (§"CEL PĘTLI 
 - 2026-11-01 — R-RUSTPORT-REPIN-TERYTORIUM-FORTY-Q1: PASS-WITH-NOTES (FC), zintegrowano fast-forward na rust-port/parity-v2 → `5bee9c1a2` (2019/0 wg FC; promienie fortu 3/5, spór fortów, zdobycie wejściem, p6_8i_pick bez tolerancji dryfu). Zastrzeżenie: wektory 6 plików starego pinu zregenerowane z weba 4bbef081d (wejścia identyczne). Worktree zwolnione.
 
 - 2026-11-02 00:14 UTC — kontrola cykliczna: M07B4 trwa (Operator aktywny, commity c5cc88b4b); TERYTORIUM-FORTY zintegrowany (parity-v2 = 5bee9c1a2); dysk 8,2 GB; brak tematów webowych.
+
+- 2026-11-02 — R-RUSTPORT-P6-M07B4-RZEKI-B-ZRODLA-QUOTAS-Q1: PASS-WITH-NOTES (FC), fast-forward na rust-port/parity-v2 → `bc4c63071` (2015/0; 8728/8728 wektorów; 113/123 mutantów zabitych, 10 równoważnych). Uwaga na Q5: `trace_river_for_grid_fill` mutuje `opts.min_len` wołającego (web używa kopii). Worktree zwolnione.
