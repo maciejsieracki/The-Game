@@ -1,0 +1,16 @@
+plik	linia_w_main	n_linii	klasa	pierwsza_zmieniona_linia
+gra/src/game/turn-economy.ts	127	2	kod	loadSpichlerzDrainParams,
+gra/src/game/turn-economy.ts	131	1	typ	type SpichlerzDrainParams,
+gra/src/game/turn-economy.ts	1356	1	kod	drainParams: SpichlerzDrainParams,
+gra/src/game/turn-economy.ts	1358	1	kod	const drain = paySpichlerzDrainForCity(cities, ownerId, builtIds, dryRun, drainParams);
+gra/src/game/turn-economy.ts	1367	1	kod	drainParams: SpichlerzDrainParams,
+gra/src/game/turn-economy.ts	1374	3	kod	const ceramikaAmount = spichlerzCeramikaDrainAmount(builtIds, drainParams);
+gra/src/game/turn-economy.ts	1406	1	kod	const spichlerzDrainParams = loadSpichlerzDrainParams(raw, difficulty);
+gra/src/game/turn-economy.ts	1547	5	kod	const ceramikaAmount = spichlerzCeramikaDrainAmount(builtIds, spichlerzDrainParams);
+gra/src/game/turn-economy.ts	1567	2	kod	stockAlreadyDrained: boolean,
+gra/src/game/turn-economy.ts	1583	1	kod	: simulateCeramikaAfterSpichlerzDrains(cities, ownerId, builtByCity, drainParams);
+gra/src/game/turn-economy.ts	1708	4	kod+komentarz	resolveOwnerActiveLabels: OwnerActiveLabelsResolver | undefined,
+gra/src/game/turn-economy.ts	1797	1	kod	const drain = paySpichlerzDrainForCity(cities, city.ownerId, builtIds, false, spichlerzDra
+gra/src/game/turn-economy.ts	2477	5	kod+komentarz	// R-WEB-SPICHLERZ-DRAIN-KEYS-Q1: zużycie Spichlerza z econ-params wg trudności (jedno źró
+gra/src/game/turn-economy.ts	2495	1	kod	spichlerzDrainParams,
+gra/src/game/turn-economy.ts	2499	1	kod	cities, builtByCity, true, spichlerzDrainParams,

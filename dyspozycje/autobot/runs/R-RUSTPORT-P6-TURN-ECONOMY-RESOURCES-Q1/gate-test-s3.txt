@@ -1,0 +1,707 @@
+
+running 3 tests
+test specks_vectors_include_removals ... ok
+test count_open_ocean_land_specks_matches_web ... ok
+test purge_open_ocean_land_specks_matches_web ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.07s
+
+
+running 4 tests
+test min_tiny_island_hexes_for_typ_matches_web ... ok
+test tiny_vectors_cover_overlays_rivers_and_deposits_on_water_and_land ... ok
+test tiny_threshold_neighbours_are_discriminated ... ok
+test remove_tiny_land_islands_matches_web ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.29s
+
+
+running 1 test
+test cap_sweep_matches_web ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 4.17s
+
+
+running 8 tests
+test nearest_distance_and_index_match_web ... ok
+test profile_flag_is_exact_one_and_hook_is_gated ... ok
+test profile_format_and_to_fixed_match_web ... ok
+test river_sep_matches_web ... ok
+test window_and_directions_match_web ... ok
+test big_map_cap_6000_discriminates_and_matches_web ... ok
+test collect_candidates_match_web_scores ... ok
+test grow_matches_web ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 3.77s
+
+
+running 17 tests
+test elevation_rank_matches_web_table ... ok
+test constants_match_web ... ok
+test coastal_river_render_path_matches_web ... ok
+test count_medium_inland_land_hexes_matches_web ... ok
+test main_river_coast_mouth_gap_is_standard_outside_mala ... ok
+test field_caches_match_web ... ok
+test land_river_render_path_matches_web ... ok
+test pure_path_vectors_cover_revisits_gaps_and_multichain ... ok
+test pure_path_helpers_match_web ... ok
+test medium_river_render_path_matches_web ... ok
+test purge_ocean_inside_earth_mask_matches_web ... ok
+test purge_stray_land_outside_earth_mask_matches_web ... ok
+test quota_matches_web_including_thresholds ... ok
+test vectors_respect_size_limit ... ok
+test render_vectors_exercise_water_and_land_overlays ... ok
+test repair_river_path_adjacency_matches_web ... ok
+test river_path_respects_sea_buffer_matches_web ... ok
+
+test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.87s
+
+
+running 4 tests
+test coastal_extension_cap_matches_web ... ok
+test main_river_coast_mouth_gap_matches_web_size_labels ... ok
+test repair_loop_cap_matches_web_n_minus_1_n_n_plus_1 ... ok
+test can_river_flow_through_matches_web_all_branches ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.99s
+
+
+running 15 tests
+test constants_match_web ... ok
+test audit_matches_web ... ok
+test centroid_cap_discriminates ... ok
+test infer_dims_matches_web ... ok
+test path_ends_at_sea_edge_cases_match_web ... ok
+test centroid_seed_and_mouth_match_web ... ok
+test drainage_goal_matches_web ... ok
+test reconstruct_matches_web ... ok
+test relief_river_source_matches_web ... ok
+test score_centroid_matches_web ... ok
+test path_ends_at_sea_matches_web ... ok
+test step_dirs_match_web ... ok
+test score_land_center_matches_web ... ok
+test drain_step_matches_web ... ok
+test score_center_square_matches_web ... ok
+
+test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.90s
+
+
+running 2 tests
+test coast_grow_vectors_cover_outcomes ... ok
+test coast_grow_vectors_match_web ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.54s
+
+
+running 3 tests
+test edges_point_cases_match_contract ... ok
+test edges_vectors_cover_branches_and_overlays ... ok
+test edges_vectors_match_web ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.16s
+
+
+running 2 tests
+test q2r4_vectors_cover_mutant_kills ... ok
+test q2r4_vectors_match_web ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.10s
+
+
+running 3 tests
+test q3_closure_vectors_match_web_and_cover_mutants ... ok
+test q3_vectors_cover_branches_and_overlays ... ok
+test q3_vectors_match_web ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 7.34s
+
+
+running 2 tests
+test cap_quotas_hand_cases ... ok
+test q4_vectors_match_web ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 54.58s
+
+
+running 2 tests
+test turn_vectors_cover_both_outcomes ... ok
+test turn_vectors_match_web ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.34s
+
+
+running 19 tests
+test foreign_buffer_gate_matches_web ... ok
+test constants_match_web_and_aliases_are_not_separate_numbers ... ok
+test group_foreign_type_clusters_matches_web ... ok
+test cluster_pack_radius_matches_web ... ok
+test half_plane_axis_matches_web_bitwise ... ok
+test is_in_half_plane_matches_web ... ok
+test land_pool_near_core_matches_web ... ok
+test hexes_at_distance_matches_web ... ok
+test map_helpers_match_web ... ok
+test nearest_legal_land_matches_web ... ok
+test hub_chain_matches_web ... ok
+test hub_chain_result_does_not_depend_on_seed_as_in_web ... ok
+test rival_slots_degenerate_inputs_do_not_panic ... ok
+test pack_rival_cities_matches_web ... ok
+test shuffle_in_place_matches_web ... ok
+test vectors_identify_the_same_maps_as_p6_1c ... ok
+test pack_around_capital_matches_web ... ok
+test rival_slots_match_web_on_real_maps ... ok
+test rival_candidate_hexes_match_web_on_real_maps ... ok
+
+test result: ok. 19 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 3.82s
+
+
+running 3 tests
+test every_value_has_web_source_and_sane_shape ... ok
+test start_city_state_distance_is_not_the_cities_ts_constant ... ok
+test table_parses_with_deny_unknown_fields ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 16 tests
+test alias_constants_are_not_separate_numbers ... ok
+test constants_match_web ... ok
+test local_land_fraction_and_gate_match_web ... ok
+test map_size_label_matches_web_and_params_table ... ok
+test mass_qualifies_and_indices_match_web ... ok
+test allocate_typy_to_masses_matches_web ... ok
+test player_mass_gate_over_whole_maps_matches_web ... ok
+test reorder_roster_by_preference_matches_web ... ok
+test roster_for_start_epoch_matches_web ... ok
+test spawn_habitable_terrain_matches_web ... ok
+test thresholds_and_caps_match_web ... ok
+test types_have_web_shape ... ok
+test vectors_identify_the_maps_used ... ok
+test group_habitable_masses_and_cache_match_web ... ok
+test region_mass_dominance_matches_web ... ok
+test development_space_and_mass_gates_match_web ... ok
+
+test result: ok. 16 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 5.26s
+
+
+running 14 tests
+test hooks_match_web ... ok
+test pick_center_in_mass_matches_web ... ok
+test balance_and_enforce_match_web ... ok
+test pick_best_local_land_spawn_matches_web ... ok
+test pick_center_in_mass_spread_matches_web ... ok
+test pick_tied_spawn_land_candidate_matches_web ... ok
+test pick_center_on_land_pool_spread_matches_web ... ok
+test pick_center_in_mass_with_land_gate_matches_web ... ok
+test sort_spawn_candidates_with_spread_bias_matches_web ... ok
+test sort_spawn_land_candidates_matches_web ... ok
+test voronoi_and_centroid_match_web ... ok
+test place_cluster_centers_across_landmasses_matches_web ... ok
+test player_start_candidates_match_web ... ok
+test pick_player_cluster_center_matches_web ... ok
+
+test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 3.01s
+
+
+running 4 tests
+test reveal_radius_matches_web ... ok
+test score_city_start_hex_over_whole_maps_matches_web ... ok
+test score_city_start_hex_matches_web ... ok
+test find_best_player_start_hex_matches_web ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.46s
+
+
+running 3 tests
+test values_have_sane_shape ... ok
+test every_value_has_a_web_source_with_file_and_line ... ok
+test tables_parse_with_deny_unknown_fields ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 2 tests
+test js_array_sort_is_stable_for_equal_keys ... ok
+test js_array_sort_matches_v8_including_comparator_call_counts ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.28s
+
+
+running 11 tests
+test by_label_matches_web ... ok
+test for_map_matches_web ... ok
+test capital_separation_gate_and_distance_match_web ... ok
+test band_penalty_matches_web ... ok
+test hub_reach_and_body_buffer_match_web ... ok
+test preferred_quadrants_match_web ... ok
+test rescue_ladder_matches_web ... ok
+test quadrant_helpers_match_web ... ok
+test hooks_impl_matches_web ... ok
+test sea_gates_match_web ... ok
+test pick_spawn_hex_matches_web ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.43s
+
+
+running 4 tests
+test m11_hooks_match_m10_web_hook_vectors ... ok
+test m11_hooks_reproduce_m10_candidate_sorting ... ok
+test m11_and_m10_vector_maps_are_identical ... ok
+test m11_hooks_reproduce_m10_center_placement ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.07s
+
+
+running 10 tests
+test capital_pos_matches_web ... ok
+test centroid_and_far_enough_match_web ... ok
+test assign_types_matches_web ... ok
+test build_cluster_cities_matches_web ... ok
+test cities_with_land_gate_match_web ... ok
+test poisson_pick_cities_matches_web ... ok
+test pick_capital_hex_in_region_matches_web ... ok
+test layout_with_edge_capital_matches_web ... ok
+test simple_fallback_matches_web ... ok
+test enforce_local_land_dominance_matches_web ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.52s
+
+
+running 7 tests
+test cluster_helpers_match_web ... ok
+test fixtures_have_web_shape_and_variety ... ok
+test quarter_spread_matches_web ... ok
+test hard_capital_separation_matches_web ... ok
+test repack_one_matches_web ... ok
+test body_separation_matches_web ... ok
+test repack_all_matches_web ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.43s
+
+
+running 4 tests
+test every_value_has_a_web_source_with_file_and_line ... ok
+test derived_constants_are_aliases_of_table_fields ... ok
+test values_have_sane_shape ... ok
+test table_parses_with_deny_unknown_fields ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 12 tests
+test compute_clusters_is_deterministic ... ok
+test compute_clusters_default_opts_matches_web_defaults ... ok
+test compute_clusters_matches_web_maps_501_to_1100_hexes ... ok
+test compute_clusters_matches_web_maps_1101_to_2500_hexes ... ok
+test compute_vectors_cover_the_edge_paths_of_computeclusters ... ok
+test no_land_returns_empty_structure_without_cache ... ok
+test sea_distance_field_basic_shape ... ok
+test sea_distance_field_matches_web ... ok
+test web_diagnostic_log_type_error_is_reproduced_on_every_thrown_vector ... ok
+test compute_clusters_matches_web_maps_2501_to_5000_hexes ... ok
+test compute_clusters_matches_web_maps_up_to_500_hexes ... ok
+test compute_clusters_matches_web_maps_over_5000_hexes ... ok
+
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 52.92s
+
+
+running 4 tests
+test p6_1c_maps_have_the_same_terrain_as_the_m12_maps ... ok
+test r2_vectors_keep_a_case_for_every_closed_gap ... ok
+test shared_maps_are_identical_to_m11_and_sea_field_matches_m11_web_field ... ok
+test compute_on_land_only_map_places_one_cluster_per_region_without_sea ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.50s
+
+
+running 8 tests
+test build_cluster_spawn_plan_matches_web_maps_up_to_500_hexes ... ok
+test rust_spawn_plan_reproduces_p6_1c_web_spawn_plans ... ok
+test spawn_plan_without_land_falls_back_to_origin_and_player_name ... ok
+test spawn_vectors_cover_the_paths_of_buildclusterspawnplan ... ok
+test to_start_plan_keeps_every_field_and_drops_only_placement ... ok
+test build_cluster_spawn_plan_matches_web_maps_501_to_1100_hexes ... ok
+test build_cluster_spawn_plan_matches_web_maps_1101_to_2500_hexes ... ok
+test build_cluster_spawn_plan_matches_web_maps_over_2500_hexes ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 37.54s
+
+
+running 5 tests
+test every_value_has_a_web_source_with_file_and_line ... ok
+test table_parses_with_deny_unknown_fields ... ok
+test values_have_sane_shape ... ok
+test min_cluster_distance_fallback_uses_short_side_divisor_from_table ... ok
+test default_rivals_per_cluster_comes_from_the_table ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.91s
+
+
+running 3 tests
+test territory_keys_by_owner_match_web ... ok
+test culture_range_matches_web ... ok
+test religion_range_matches_web ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.07s
+
+
+running 8 tests
+test city_range_for_population_matches_web ... ok
+test city_territory_radius_matches_web ... ok
+test axial_distance_matches_web_and_integer_variant ... ok
+test owner_tie_goes_to_first_node ... ok
+test city_sight_radius_matches_web ... ok
+test is_player_territory_hex_matches_web ... ok
+test is_in_territory_matches_web ... ok
+test territory_owner_at_matches_web ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.06s
+
+
+running 4 tests
+test list_for_owner_matches_web ... ok
+test shape_candidates_are_sorted_land_and_exclude_center ... ok
+test list_for_city_matches_web ... ok
+test pick_matches_web ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.20s
+
+
+running 8 tests
+test build_territory_nodes_matches_web ... ok
+test is_territory_hex_owned_by_matches_web ... ok
+test reconcile_without_reczne_is_noop ... ok
+test city_center_keys_match_web ... ok
+test reconcile_all_matches_web ... ok
+test reconcile_for_owner_matches_web ... ok
+test workable_filter_matches_web ... ok
+test reczne_key_legal_matches_web ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.15s
+
+
+running 8 tests
+test constants_match_web ... ok
+test is_road_key_matches_web ... ok
+test has_road_matches_web ... ok
+test collect_road_keys_matches_web_order ... ok
+test road_table_shape_and_key_names ... ok
+test roads_source_has_no_numeric_data_literals ... ok
+test p64_ruch_modifier_agrees_with_roads_module ... ok
+test apply_modifier_matches_web_bitwise ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.10s
+
+
+running 1 test
+test web_allows_farm_irrigation_terraces_on_deposit_hexes ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.82s
+
+
+running 1 test
+test document_has_a_status_row_for_every_web_symbol ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 2 tests
+test gallery_terrain_eligible_matches_web ... ok
+test gallery_combo_eligible_and_show_model_match_web ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.06s
+
+
+running 4 tests
+test forest_build_block_reason_matches_web ... ok
+test api_hex_click_and_on_select_match_web ... ok
+test api_qualifying_hexes_and_work_cost_match_web ... ok
+test qualifier_bits_match_web_for_every_key_and_hex ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.73s
+
+
+running 15 tests
+test can_add_food_layer_matches_web ... ok
+test farm_and_owce_base_terrain_match_web ... ok
+test deposit_rules_match_web ... ok
+test forest_blocking_and_hints_match_web ... ok
+test format_impact_list_matches_web ... ok
+test improvement_meta_and_tech_gate_match_web ... ok
+test hex_has_road_matches_web ... ok
+test hex_keys_within_radius_matches_web ... ok
+test livestock_dependency_matches_web ... ok
+test legacy_farm_layer_and_strip_match_web ... ok
+test mine_keys_tarasy_civ_and_food_keys_match_web ... ok
+test plan_and_remove_legacy_farms_match_web ... ok
+test strip_improvements_when_forest_removed_matches_web ... ok
+test replaced_by_build_and_impact_match_web ... ok
+test work_cost_scale_matches_web ... ok
+
+test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.97s
+
+
+running 5 tests
+test food_and_sector_tables_are_consistent ... ok
+test terrain_codes_in_tables_are_valid ... ok
+test livestock_and_tech_tables_are_consistent ... ok
+test rule_keys_are_known_improvements ... ok
+test improvement_build_has_no_balance_number_literals ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+
+running 5 tests
+test js_keyed_map_orders_array_index_keys_first ... ok
+test rebuild_errors_name_the_failing_field ... ok
+test rebuild_error_class_matches_web_failure_class ... ok
+test serialize_rebuild_serialize_is_stable_without_duplicate_coords ... ok
+test rebuild_matches_web ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.07s
+
+
+running 5 tests
+test js_num_writes_integers_without_fraction_and_non_finite_as_null ... ok
+test serialize_vectors_touch_every_branch ... ok
+test serialize_text_is_byte_identical_to_web_json_stringify ... ok
+test snapshot_shape_invariants_hold_for_every_vector ... ok
+test serialize_matches_web_structurally ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.06s
+
+
+running 2 tests
+test is_valid_matches_web_for_all_vectors ... ok
+test every_serialize_vector_snapshot_has_a_web_validity_vector ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.09s
+
+
+running 6 tests
+test scout_is_free_regardless_of_cost_mult ... ok
+test unit_cost_for_type_with_equal_mults_matches_single_mult ... ok
+test unit_cost_for_type_uses_cost_mult_not_max_mult ... ok
+test replenish_cost_uses_cost_mult_not_max_mult ... ok
+test zero_cost_branch_heals_without_spending_manpower ... ok
+test civ_matrix_path_reads_matrix_fields ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 17 tests
+test civ_matrix_cost_discount_uses_first_marker_only ... ok
+test building_work_cost_nan_and_infinity_propagate_like_web ... ok
+test civ_recruitment_discount_impi_rule_and_realizuje ... ok
+test difficulty_multiplier_thresholds_exact ... ok
+test epoch_number_missing_and_unknown_default_to_stone ... ok
+test matrix_discount_floor_and_minimum_one ... ok
+test epoch_number_matches_web_vectors ... ok
+test newest_same_type_unit_missing_keys_and_empty_typ_yield_none ... ok
+test newest_same_type_unit_only_strictly_newer_epoch ... ok
+test newest_same_type_unit_tie_keeps_first_in_units_order ... ok
+test newest_same_type_unit_matches_web_vectors ... ok
+test newest_same_type_unit_trims_current_typ_like_web ... ok
+test newest_same_type_unit_trims_unicode_whitespace_like_js ... ok
+test pace_zero_nan_and_empty_key_are_falsy_like_web ... ok
+test civ_production_cost_markers_match_web_vectors ... ok
+test building_work_cost_matches_web_vectors ... ok
+test unit_money_cost_matches_web_vectors ... ok
+
+test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.27s
+
+
+running 4 tests
+test route_cash_clamps_maritime_to_total_and_non_negative ... ok
+test route_cash_empty_or_missing_civ_key_is_untreated_sea_cash ... ok
+test route_cash_matches_web_vectors_real_matrix ... ok
+test route_cash_matches_web_vectors_modified_matrix ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
+
+
+running 4 tests
+test wealth_owner_without_civ_key_returns_base ... ok
+test wealth_owner_matches_web_vectors_real_matrix ... ok
+test wealth_modifiers_match_web_vectors ... ok
+test wealth_owner_matches_web_vectors_modified_matrix ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+
+running 3 tests
+test era_thresholds_are_exact ... ok
+test era_multiplier_matches_web_grid ... ok
+test ration_cost_with_era_matches_web_bits ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+
+running 2 tests
+test vector_covers_era_2_and_4_with_nonzero_cost ... ok
+test recompute_with_owner_era_matches_web ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.12s
+
+
+running 4 tests
+test construction_multiplier_missing_or_invalid_era_is_stone ... ok
+test construction_multiplier_stone_bronze_iron_boundaries ... ok
+test construction_is_separated_from_upkeep_multiplier ... ok
+test scale_work_cost_uses_construction_rates_at_boundaries ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 14 tests
+test boundary_negative_zero_additional_tax_is_positive_zero_in_trade ... ok
+test parity_full_main_exercises_port_bonus_and_owner_paths ... ok
+test structural_additional_tax_enters_gross_trade_after_matrix ... ok
+test structural_building_value_follows_level_formula ... ok
+test structural_neutral_praca_is_mlyn_then_cegielnia_then_integer ... ok
+test structural_pieniadz_z_pracy_is_always_zero ... ok
+test structural_port_bonus_requires_owner_and_nonzero_param ... ok
+test structural_port_sum_only_counts_id_port_at_level ... ok
+test structural_port_zero_param_is_neutral_and_nan_propagates ... ok
+test structural_praca_integer_rounds_and_zeroes_non_positive ... ok
+test structural_tile_forest_and_river_modifiers_and_unknown_terrain ... ok
+test real_buildings_cover_port_and_port_wielki ... ok
+test aggregates_bit_exact_vs_web_loops ... ok
+test parity_full_main_bit_exact ... ok
+
+test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.39s
+
+
+running 11 tests
+test boundary_port_nan_propagates_into_pieniadz ... ok
+test boundary_port_zero_keeps_negative_zero_bits ... ok
+test boundary_port_zero_skips_bonus_even_for_infinite_port_income ... ok
+test structural_cegielnia_alone_scales_terrain_only ... ok
+test structural_mlyn_then_cegielnia_order ... ok
+test structural_no_mlyn_no_cegielnia_is_identity ... ok
+test structural_port_bonus_needs_owner_and_matrix ... ok
+test synthetic_praca_matrix_applied_to_brutto_sum ... ok
+test synthetic_port_matrix_applied_to_port_income_only ... ok
+test synthetic_praca_matrix_uses_brutto_after_mlyn ... ok
+test parity_head_main_bit_exact ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
+
+
+running 16 tests
+test boundary_unknown_terrain_zero_then_bonus_only ... ok
+test parity_city_terrain_sums_imp_bit_exact ... ok
+test parity_building_happiness_bit_exact ... ok
+test structural_empty_key_is_noop ... ok
+test structural_empty_list_falls_back_to_single_key ... ok
+test structural_forest_adds_wood_river_adds_clay ... ok
+test structural_happiness_branches ... ok
+test parity_tile_yield_full_bit_exact ... ok
+test structural_imp_keys_list_wins_over_single_key ... ok
+test structural_improvement_bonuses_nonnegative_in_data ... ok
+test structural_ore_mines_and_zloze_ignored ... ok
+test structural_pieniadz_bonus_goes_to_handel ... ok
+test structural_unknown_and_legacy_key_no_bonus ... ok
+test parity_full_city_with_improvements_bit_exact ... ok
+test structural_city_uses_improved_tile_sums ... ok
+test structural_happiness_sums_across_buildings_then_floor ... ok
+
+test result: ok. 16 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.63s
+
+
+running 18 tests
+test boundary_nan_strata_reaches_money_but_not_gross_trade ... ok
+test boundary_premia_zero_with_negative_zero_trade_is_positive_zero ... ok
+test boundary_additional_tax_negative_zero_is_positive_zero ... ok
+test structural_additional_tax_clamped_at_zero_and_nan_propagates ... ok
+test structural_biblioteka_and_akademia_are_additive ... ok
+test structural_civ_nauka_mult_without_owner ... ok
+test structural_garncarnia_food_and_consumption ... ok
+test structural_korupcja_cap_limits_strata ... ok
+test structural_legacy_civ_handel_mult_only_without_owner ... ok
+test structural_mint_needs_both_flags ... ok
+test structural_neutral_baseline ... ok
+test structural_poborca_adds_two_each ... ok
+test structural_premia_only_when_positive ... ok
+test synthetic_kultura_matrix_applied_and_floored ... ok
+test synthetic_luksus_matrix_applied_then_floored ... ok
+test synthetic_matrix_ignored_without_owner ... ok
+test synthetic_zywnosc_matrix_applied_to_brutto_and_netto ... ok
+test parity_tail_main_bit_exact ... ok
+
+test result: ok. 18 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.23s
+
+
+running 13 tests
+test boundary_trudnosc_delta_table ... ok
+test parity_civ_economy_yield_multipliers ... ok
+test parity_mnoznik_for_civ_main ... ok
+test structural_empty_or_missing_key_is_unknown ... ok
+test structural_fallback_default_is_web_default_one ... ok
+test structural_key_lookup_is_case_insensitive_across_three_fields ... ok
+test parity_mnoznik_by_difficulty_main ... ok
+test parity_mnoznik_by_difficulty_zero_matrix ... ok
+test structural_non_finite_matrix_value_is_unknown ... ok
+test structural_unknown_key_returns_fallback_without_delta ... ok
+test structural_known_raw_zero_is_authoritative_and_gets_delta ... ok
+test structural_known_row_missing_field_uses_matrix_default ... ok
+test parity_mnoznik_for_civ_zero_matrix ... ok
+
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+
+    Finished `test` profile [unoptimized] target(s) in 0.02s
+     Running tests/p6_m06b2_specks.rs (/dev/shm/p6ter_full/debug/deps/p6_m06b2_specks-9712a81a902bdf8c)
+     Running tests/p6_m06b2_tiny.rs (/dev/shm/p6ter_full/debug/deps/p6_m06b2_tiny-823aea1824dd2d64)
+     Running tests/p6_m07a_cap.rs (/dev/shm/p6ter_full/debug/deps/p6_m07a_cap-9ae2ea3f67a42433)
+     Running tests/p6_m07a_grow.rs (/dev/shm/p6ter_full/debug/deps/p6_m07a_grow-461233005bf523a2)
+     Running tests/p6_m07a_rivers_a.rs (/dev/shm/p6ter_full/debug/deps/p6_m07a_rivers_a-e22389dfccbab1e0)
+     Running tests/p6_m07a_rivers_a_caps.rs (/dev/shm/p6ter_full/debug/deps/p6_m07a_rivers_a_caps-28df17641680196b)
+     Running tests/p6_m07a_walk.rs (/dev/shm/p6ter_full/debug/deps/p6_m07a_walk-c214dcd8efeee491)
+     Running tests/p6_m07b2_coast.rs (/dev/shm/p6ter_full/debug/deps/p6_m07b2_coast-9ab32eacc2ea3557)
+     Running tests/p6_m07b2_edges.rs (/dev/shm/p6ter_full/debug/deps/p6_m07b2_edges-f024969706f8311d)
+     Running tests/p6_m07b2_q2r4.rs (/dev/shm/p6ter_full/debug/deps/p6_m07b2_q2r4-a9f1ba95478e7b24)
+     Running tests/p6_m07b3_q3.rs (/dev/shm/p6ter_full/debug/deps/p6_m07b3_q3-7de96185f7a29664)
+     Running tests/p6_m07b4_q4.rs (/dev/shm/p6ter_full/debug/deps/p6_m07b4_q4-64b13884606e1a01)
+     Running tests/p6_m07b_turn.rs (/dev/shm/p6ter_full/debug/deps/p6_m07b_turn-90c89d9a5408353a)
+     Running tests/p6_m09_rivals.rs (/dev/shm/p6ter_full/debug/deps/p6_m09_rivals-3d2871a7b9753cde)
+     Running tests/p6_m09_tables.rs (/dev/shm/p6ter_full/debug/deps/p6_m09_tables-0380ed37b51ae447)
+     Running tests/p6_m10_masses.rs (/dev/shm/p6ter_full/debug/deps/p6_m10_masses-1406512a25778485)
+     Running tests/p6_m10_placement.rs (/dev/shm/p6ter_full/debug/deps/p6_m10_placement-0ff78516c0b93780)
+     Running tests/p6_m10_start_scoring.rs (/dev/shm/p6ter_full/debug/deps/p6_m10_start_scoring-a1f4519e6663b8a9)
+     Running tests/p6_m10_tables.rs (/dev/shm/p6ter_full/debug/deps/p6_m10_tables-07a2652eafb05f75)
+     Running tests/p6_m10_v8sort.rs (/dev/shm/p6ter_full/debug/deps/p6_m10_v8sort-d4cb86648b856051)
+     Running tests/p6_m11_gates.rs (/dev/shm/p6ter_full/debug/deps/p6_m11_gates-70911875d6c88b8e)
+     Running tests/p6_m11_integration.rs (/dev/shm/p6ter_full/debug/deps/p6_m11_integration-9de8c89dfd74ed60)
+     Running tests/p6_m11_layout.rs (/dev/shm/p6ter_full/debug/deps/p6_m11_layout-cc4df252415db121)
+     Running tests/p6_m11_repair.rs (/dev/shm/p6ter_full/debug/deps/p6_m11_repair-2ea5f9383c7a3744)
+     Running tests/p6_m11_tables.rs (/dev/shm/p6ter_full/debug/deps/p6_m11_tables-c893deff57812197)
+     Running tests/p6_m12_compute.rs (/dev/shm/p6ter_full/debug/deps/p6_m12_compute-41ff7fbaf89e52c7)
+     Running tests/p6_m12_integration.rs (/dev/shm/p6ter_full/debug/deps/p6_m12_integration-54ef2e72c62f0587)
+     Running tests/p6_m12_spawn.rs (/dev/shm/p6ter_full/debug/deps/p6_m12_spawn-fe5bb5d293a900f4)
+     Running tests/p6_m12_tables.rs (/dev/shm/p6ter_full/debug/deps/p6_m12_tables-42ec7e88a5e08fed)
+     Running tests/p6_m14_range.rs (/dev/shm/p6ter_full/debug/deps/p6_m14_range-11a976a1d8c0add9)
+     Running tests/p6_m14_territory.rs (/dev/shm/p6ter_full/debug/deps/p6_m14_territory-ba89cbcff9a8795a)
+     Running tests/p6_m14_wonder.rs (/dev/shm/p6ter_full/debug/deps/p6_m14_wonder-96491650d658ea23)
+     Running tests/p6_m14_work.rs (/dev/shm/p6ter_full/debug/deps/p6_m14_work-1ce45b3a771ecceb)
+     Running tests/p6_m15_roads.rs (/dev/shm/p6ter_full/debug/deps/p6_m15_roads-00c1796d2d44aacd)
+     Running tests/p6_m16_divergence.rs (/dev/shm/p6ter_full/debug/deps/p6_m16_divergence-36f41f9340105fdf)
+     Running tests/p6_m16_doc.rs (/dev/shm/p6ter_full/debug/deps/p6_m16_doc-a783ecb95132fc08)
+     Running tests/p6_m16_gallery.rs (/dev/shm/p6ter_full/debug/deps/p6_m16_gallery-40cbda6184b177cf)
+     Running tests/p6_m16_qualifier.rs (/dev/shm/p6ter_full/debug/deps/p6_m16_qualifier-54c27efc7f24500a)
+     Running tests/p6_m16_rules.rs (/dev/shm/p6ter_full/debug/deps/p6_m16_rules-33e7267e34428bc9)
+     Running tests/p6_m16_tables.rs (/dev/shm/p6ter_full/debug/deps/p6_m16_tables-fd1582fd8a835964)
+     Running tests/p6_m17_rebuild.rs (/dev/shm/p6ter_full/debug/deps/p6_m17_rebuild-60f4b8705aae281a)
+     Running tests/p6_m17_serialize.rs (/dev/shm/p6ter_full/debug/deps/p6_m17_serialize-bc527bf55aa676f5)
+     Running tests/p6_m17_validate.rs (/dev/shm/p6ter_full/debug/deps/p6_m17_validate-f52da1b0e7422d55)
+     Running tests/p6_repin_a_costmult.rs (/dev/shm/p6ter_full/debug/deps/p6_repin_a_costmult-84a633d5940ce98f)
+     Running tests/p6_repin_b2_production.rs (/dev/shm/p6ter_full/debug/deps/p6_repin_b2_production-370faf1d68fbbfa9)
+     Running tests/p6_repin_b3_route.rs (/dev/shm/p6ter_full/debug/deps/p6_repin_b3_route-4dafd35f5ec34a70)
+     Running tests/p6_repin_b3_wealth.rs (/dev/shm/p6ter_full/debug/deps/p6_repin_b3_wealth-5ac6be5ea922b5b5)
+     Running tests/p6_repin_b_ration_era.rs (/dev/shm/p6ter_full/debug/deps/p6_repin_b_ration_era-8f3eff588548f414)
+     Running tests/p6_repin_b_recompute_era.rs (/dev/shm/p6ter_full/debug/deps/p6_repin_b_recompute_era-aaf5d8ca78ff2b7a)
+     Running tests/p6_repin_c_construction.rs (/dev/shm/p6ter_full/debug/deps/p6_repin_c_construction-0fbfe8ea6e68f358)
+     Running tests/p6_repin_d2_full.rs (/dev/shm/p6ter_full/debug/deps/p6_repin_d2_full-924b479502af8de3)
+     Running tests/p6_repin_d2_head.rs (/dev/shm/p6ter_full/debug/deps/p6_repin_d2_head-927d7a6fd5c26b44)
+     Running tests/p6_repin_d2_imp.rs (/dev/shm/p6ter_full/debug/deps/p6_repin_d2_imp-e33724850b6d16e6)
+     Running tests/p6_repin_d2_tail.rs (/dev/shm/p6ter_full/debug/deps/p6_repin_d2_tail-56581f76f4bf4b0c)
+     Running tests/p6_repin_d_economy_mnoznik.rs (/dev/shm/p6ter_full/debug/deps/p6_repin_d_economy_mnoznik-e3e12d28e22d8837)
+EXIT=0
