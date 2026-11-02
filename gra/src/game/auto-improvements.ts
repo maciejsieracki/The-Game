@@ -685,7 +685,11 @@ function pickFortClaims(a: FortClaimArgs): AutoImprovementPick[] {
   const nodesNow: TerritoryNode[] = [...territoryNodes];
   const keys = FORT_CLAIM_KEYS.filter(k => !!getImprovementMeta(k)
     && isImprovementTechUnlocked(k, a.unlockedTechs) && a.civGate(k, opts.civArchetype));
-  if (keys.length === 0) return picks;
+  const sink = resolveDecisionSink(opts.onDecision);
+  if (keys.length === 0) {
+    sink?.({ cityId: a.cities[0]?.id ?? '', scope: 'fort', reason: 'e-fort: brak odblokowanego klucza (tech/cywilizacja)', detail: { klucze: FORT_CLAIM_KEYS } });
+    return picks;
+  }
   const orderedCities = [...a.cities].sort((x, y) => (x.id < y.id ? -1 : x.id > y.id ? 1 : 0));
   for (const city of orderedCities) {
     if (pracaLeft <= a.reserve) break;
@@ -694,15 +698,19 @@ function pickFortClaims(a: FortClaimArgs): AutoImprovementPick[] {
     type Best = { q: number; r: number; key: ImprovementKey; gain: number; dist: number; kosztPraca: number };
     let best: Best | null = null;
     const seen = new Set<string>();
+    // R-WEB-AUTO-FORT-DIAG-Q1: liczniki odrzuceń (tylko do logu; nie wpływają na wynik).
+    const rej = { heksowSkan: 0, cenne: 0, nakladanieOkregu: 0, qualifiesNie: 0, zyskZero: 0, kandydaci: 0 };
     for (const node of ownNodes) {
       for (const hk of hexKeysWithinRadius(node.q, node.r, node.rad, map)) {
         if (seen.has(hk)) continue;
         seen.add(hk);
+        rej.heksowSkan++;
         const hex = map.hexes[hk];
         if (!hex) continue;
         // CENNY teren: góry albo złoże (`hexHasDepositReserve`: złoże/nakładka złożowa; sam Las i Brak nie).
         if (!(hex.terenBazowy === TerenBazowy.Gory || hexHasDepositReserve(hex))) continue;
         if (cityHexes.has(hk)) continue;
+        rej.cenne++;
         const [qs, rs] = hk.split(',');
         const q = Number(qs); const r = Number(rs);
         if ((workingPlaced.get(hk) ?? []).some(k => k === 'fort' || k === 'posterunek')) continue;
@@ -711,8 +719,8 @@ function pickFortClaims(a: FortClaimArgs): AutoImprovementPick[] {
           if (!meta) continue;
           const rad = radiusOf(key);
           // „Jeden fort na obszar, bez nakładania zasięgów”: okręgi fortów/posterunków rozłączne.
-          if (fortCircles.some(f => axialDistance(q, r, f.q, f.r) <= rad + f.rad)) continue;
-          if (!qualifies(key, q, r)) continue;
+          if (fortCircles.some(f => axialDistance(q, r, f.q, f.r) <= rad + f.rad)) { rej.nakladanieOkregu++; continue; }
+          if (!qualifies(key, q, r)) { rej.qualifiesNie++; continue; }
           let gain = 0;
           for (const nk of hexKeysWithinRadius(q, r, rad, map)) {
             const nh = map.hexes[nk];
@@ -720,7 +728,8 @@ function pickFortClaims(a: FortClaimArgs): AutoImprovementPick[] {
             const [nqs, nrs] = nk.split(',');
             if (territoryOwnerAt(Number(nqs), Number(nrs), nodesNow) === null) gain++;
           }
-          if (gain < FORT_CLAIM_MIN_NEW_HEXES) continue;
+          if (gain < FORT_CLAIM_MIN_NEW_HEXES) { rej.zyskZero++; continue; }
+          rej.kandydaci++;
           let dist = Infinity;
           for (const n of ownNodes) dist = Math.min(dist, axialDistance(q, r, n.q, n.r));
           const better = best === null
@@ -732,10 +741,20 @@ function pickFortClaims(a: FortClaimArgs): AutoImprovementPick[] {
         }
       }
     }
-    if (best === null) continue;
-    if (best.kosztPraca > pracaLeft) continue;
-    if (pracaLeft - best.kosztPraca < a.reserve) continue;
-    if (globalSpent + best.kosztPraca > effectiveCityCap) continue;
+    const fortReason = (reason: string): void => {
+      sink?.({
+        cityId: city.id, scope: 'fort', reason,
+        detail: {
+          ...rej, wezlow: ownNodes.length, kluczeDostepne: keys, pracaLeft, rezerwa: a.reserve, limitMiasta: effectiveCityCap,
+          wydane: globalSpent, best: best && { q: best.q, r: best.r, key: best.key, gain: best.gain, koszt: best.kosztPraca },
+        },
+      });
+    };
+    if (best === null) { fortReason('e-fort: brak kandydata'); continue; }
+    if (best.kosztPraca > pracaLeft) { fortReason('e-fort: koszt > pula Pracy'); continue; }
+    if (pracaLeft - best.kosztPraca < a.reserve) { fortReason('e-fort: rezerwa Pracy'); continue; }
+    if (globalSpent + best.kosztPraca > effectiveCityCap) { fortReason('e-fort: sufit % budzetu'); continue; }
+    fortReason('e-fort: wybrany');
     picks.push({ ownerId, cityId: city.id, q: best.q, r: best.r, key: best.key, kosztPraca: best.kosztPraca });
     pracaLeft -= best.kosztPraca;
     globalSpent += best.kosztPraca;
@@ -749,6 +768,11 @@ function pickFortClaims(a: FortClaimArgs): AutoImprovementPick[] {
     });
   }
   return picks;
+}
+
+/** Promień twardego terytorium fortu (5) / posterunku (3) — jak `radiusOf` w `pickFortClaims`. */
+function fortKeyRadius(key: ImprovementKey): number {
+  return cityTerritoryRadius({ q: 0, r: 0, pop: 0, level: 1, isFort: key === 'fort', isOutpost: key === 'posterunek' });
 }
 
 function isFoodStageCity(opts: PickAutoImprovementsOpts, city: AutoImprovementCity): boolean {
@@ -981,6 +1005,27 @@ export function pickAutoImprovements(opts: PickAutoImprovementsOpts): AutoImprov
     }
   }
   const fortSpent = fallbackSpent + sum(fortPicks);
+  // R-WEB-AUTO-FORT-DIAG-Q1: powod wejscia/pominiecia kroku E-FORT (TYLKO log; wynik pickera bez zmian).
+  const fortSink = resolveDecisionSink(opts.onDecision);
+  if (fortSink && opts.cityLimitExhausted === true) {
+    let gate: string;
+    if (roadCities.length === 0) gate = 'brak miasta w profilu zrownowazone / demandDriven=false';
+    else if (stagedPicks.length > 0 || earlierStageIsPending) gate = 'zywnosc E1-E6 w toku';
+    else if (fallbackPicks.length > 0 || fallbackIsPending) gate = 'sciezka zapasowa w toku';
+    else if (deficitPicks.length > 0) gate = 'niedobor: ulepszenie postawione w tej turze';
+    else if (deficitIsPendingNow()) gate = 'niedobor: deficit pending (cel czeka na Prace/budzet)';
+    else gate = 'wejscie';
+    fortSink({
+      cityId: roadCities[0]?.id ?? opts.cities[0]?.id ?? '', scope: 'fort', reason: `e-fort bramka: ${gate}`,
+      detail: {
+        cityLimitExhausted: true, roadCities: roadCities.length, stagedPicks: stagedPicks.length, earlierStageIsPending,
+        fallbackPicks: fallbackPicks.length, fallbackIsPending, deficitPicks: deficitPicks.length,
+        fortPicks: fortPicks.length, fortIsPending,
+      },
+    });
+  } else if (fortSink) {
+    fortSink({ cityId: opts.cities[0]?.id ?? '', scope: 'fort', reason: 'e-fort bramka: limit miast NIE wyczerpany (cityLimitExhausted!==true)', detail: { cityLimitExhausted: opts.cityLimitExhausted ?? null } });
+  }
 
   if (
     roadCities.length > 0
@@ -1014,8 +1059,8 @@ export function pickAutoImprovements(opts: PickAutoImprovementsOpts): AutoImprov
 /** Zdarzenie diagnostyczne pickera (R-WEB-AUTOIMPROVE-LIVE-HOOKS-Q1). */
 export interface AutoImproveDecisionEvent {
   cityId: string;
-  /** `miasto` = podsumowanie bramek miasta; `las` = decyzja dla heksu lasu (wycinka). */
-  scope: 'miasto' | 'las';
+  /** `miasto` = podsumowanie bramek miasta; `las` = decyzja dla heksu lasu (wycinka); `fort` = krok E-FORT (R-WEB-AUTO-FORT-DIAG-Q1). */
+  scope: 'miasto' | 'las' | 'fort';
   hex?: string;
   verdict?: 'wybrany' | 'odrzucony';
   reason: string;
@@ -1244,6 +1289,29 @@ function pickAutoImprovementsSinglePass(opts: PickAutoImprovementsOpts): AutoImp
       maxItemsPerCity,
     });
   }
+
+  // R-WEB-AUTO-FORT-DIAG-Q1 (U-3): okręgi WŁASNYCH fortów/posterunków (węzły terytorium właściciela + warstwy bez węzła,
+  // np. postawione wcześniej w tym wywołaniu — obcy fort zawsze ma węzeł) dla FAZY 0. Liczone leniwie, raz na przebieg.
+  let ownFortCircles: { q: number; r: number; rad: number }[] | null = null;
+  const getOwnFortCircles = (): { q: number; r: number; rad: number }[] => {
+    if (ownFortCircles) return ownFortCircles;
+    const out: { q: number; r: number; rad: number }[] = [];
+    const nodeAt = new Set<string>();
+    for (const n of territoryNodes ?? []) {
+      if (!n.isFort && !n.isOutpost) continue;
+      nodeAt.add(`${n.q},${n.r}`);
+      if (n.ownerId === ownerId) out.push({ q: n.q, r: n.r, rad: cityTerritoryRadius(n) });
+    }
+    for (const [hk, layers] of workingPlaced) {
+      if (nodeAt.has(hk)) continue;
+      const [qs, rs] = hk.split(',');
+      for (const l of layers) {
+        if (l === 'fort' || l === 'posterunek') out.push({ q: Number(qs), r: Number(rs), rad: fortKeyRadius(l) });
+      }
+    }
+    ownFortCircles = out;
+    return out;
+  };
 
   const orderedCities = [...cities].sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
   const picks: AutoImprovementPick[] = [];
@@ -1497,8 +1565,16 @@ function pickAutoImprovementsSinglePass(opts: PickAutoImprovementsOpts): AutoImp
           // ZASADA 2: posterunek/fort to nie ulepszenia złożowe — na heksie bez 👤 nie stają.
           if (!hexAllowsKey(q, r, key)) continue;
           if (!qualifies(key, q, r)) continue;
+          // U-3 (R-WEB-AUTO-FORT-DIAG-Q1): koło kandydata w CAŁOŚCI wewnątrz koła własnego fortu/posterunku (istniejącego
+          // albo zaplanowanego) nie daje ani jednego nowego heksu terytorium — odpada. Inkluzja kół w metryce heksowej:
+          // dist(środki) + promień kandydata <= promień istniejącego. Kandydat wystający poza koło (>=1 nowy heks) zostaje.
+          if (key === 'fort' || key === 'posterunek') {
+            const candRad = fortKeyRadius(key);
+            if (getOwnFortCircles().some(f => axialDistance(q, r, f.q, f.r) + candRad <= f.rad)) continue;
+          }
           if (surplusReport) surplusReport.anyCandidate = true;
           picks.push({ ownerId, cityId: city.id, q, r, key, kosztPraca: meta.kosztPraca });
+          if (key === 'fort' || key === 'posterunek') getOwnFortCircles().push({ q, r, rad: fortKeyRadius(key) });
           pracaLeft -= meta.kosztPraca;
           globalSpent += meta.kosztPraca;
           placedThisCity++;
