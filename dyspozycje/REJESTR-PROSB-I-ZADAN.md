@@ -8400,3 +8400,7 @@ Przejrzano cały kontekst rozmowy: WSZYSTKIE zgłoszenia właściciela z ostatni
 ## 2026-11-02 — DECYZJA WŁAŚCICIELA: „dostęp do wody” = tylko słodka woda na lądzie (rzeka + jezioro), morze NIE
 
 Odpowiedź na pytanie ABC o „dostęp do wody”: „Jezioro, tak, ale nie pamiętam, czy jakieś jeziora w ogóle występują. Morze – nie. Mówimy tylko i wyłącznie o dostępie do słodkiej wody. Czyli na lądzie.” → temat `R-WEB-FRESHWATER-ACCESS-LAKE-Q1` (dispatch w runie). Uwaga Rust: `compute_city_health`/`city_has_water_access` portowane w `R-RUSTPORT-P6-ADVANCE-CITY-ECONOMY-Q3-Q1` według starej semantyki (tylko rzeka) → po wdrożeniu weba konieczny REPIN.
+
+## 2026-11-02 — DECYZJA WŁAŚCICELA: brak awaryjnego tartaku przy rzece
+
+„Jeżeli nie ma innego miejsca niż las przy rzece, to też nie dodajemy tartaków przy rzece. Pamiętaj, że mogą być inne miasta i inne miejsca, gdzie taki tartak można postawić. Wszystkie miejsca przy rzece i na rzece są przeznaczone na żywność. Koniec.” → pytanie ABC o awaryjny tartak ZAMKNIĘTE (odpowiedź: NIE). Weryfikacja i test regresyjny w `R-WEB-FRESHWATER-ACCESS-LAKE-Q1` (pkt 6 dispatchu).
