@@ -30,7 +30,7 @@ korupcja, plony przed/po mnożnikach i cudach).
 | P19 | oblężenie, bilans żywności, wzrost V8.5 | `:2664-2755` | galaza oblezenia + `compute_city_food_balance_v85` + `compute_growth_percent_v85` (istniały) | **ZAPORTOWANE** |
 | P20 | manpower per miasto | `:2750-2773` | `manpower::city_manpower_max`, `tick_manpower_regen`, `civ_manpower_matrix_mults` (istniały) | **WOŁANE** |
 | -Q1 dług | `simulateResourcePipelineForPreview` | `:1389-1560` (hunki `:1406`, `:1547`) | `turn_economy_preview.rs simulate_resource_pipeline_for_preview` (NOWE) | **ZAPORTOWANE w rundzie obrony (-Q4b spłacony)**, sek. 3b |
-| P23 | utrzymanie per owner (`upkeepBalance`) | `:2840-2884` | `upkeep_balance`, `total_*_resource_upkeep` istnieją | DŁUG -Q5 (bez zmian) |
+| P23 | utrzymanie per owner (`upkeepBalance`) | `:2840-2884` | `turn_economy_tick.rs compute_owner_upkeep` | ZAPORTOWANE w -Q5 (`P6-ADVANCE-CITY-ECONOMY-Q5.md`) |
 
 ## 3. Wektory i dowody
 

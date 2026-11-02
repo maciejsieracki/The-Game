@@ -43,7 +43,7 @@ jeszcze wejsc terenowych ani reszty `advanceCityEconomy`, wiec wpiecie samej faz
 | P20 | manpower per miasto (`tickManpowerRegen`) | `:2750-2773` | `recruitment.rs` istnieje | **ZAPORTOWANE (`-Q4`)** |
 | P21 | drenaz Mennicy `applyMennicaZlotoDrainForOwners` | `:1814-1830`, wolane `:2823-2829` | `apply_mennica_zloto_drain_for_owners` | **ZAPORTOWANE (S7)** |
 | P22 | `reconcileOwnerResourceCaps` | `:2832` | `reconcile_city_resource_caps` (nad `economy_upkeep_p1::reconcile_owner_resource_caps`) | **ZAPORTOWANE (S8)** |
-| P23 | utrzymanie per owner (`upkeepBalance`, utrzymanie surowcowe) | `:2840-2884` | `upkeep_balance`, `total_*_resource_upkeep` istnieja | DLUG Q5 |
+| P23 | utrzymanie per owner (`upkeepBalance`, utrzymanie surowcowe) | `:2840-2884` | `turn_economy_tick.rs compute_owner_upkeep` | ZAPORTOWANE w -Q5; wiazanie = DLUG -Q6 (`P6-ADVANCE-CITY-ECONOMY-Q5.md` sek. 4) |
 | P24 | `manpowerHeal` (`tickManpowerUnitReplenishment`) | `:2887-2909` | `recruitment.rs:2654 tick_manpower_unit_replenishment` + `advance_manpower_heal` | **ZAPORTOWANE (S9, obrona R1)**, wektory `heal.json` |
 
 Numeracja linii P6-P9: `:2347` (closure `converterThroughputsForOwner`), `:2364` (`stolarniaBonusDrewnaCiv`), `:2377`

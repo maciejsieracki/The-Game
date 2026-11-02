@@ -239,7 +239,7 @@ pub fn compute_owner_upkeep(
                 type_id: u.type_id.clone(),
             })
             .collect();
-        let units_res = total_unit_resource_upkeep(&[], |t| unit_upkeep_source(unit_rows, t));
+        let units_res = total_unit_resource_upkeep(&refs, |t| unit_upkeep_source(unit_rows, t));
         let mut res = buildings_res.clone();
         add_resource_costs(&mut res, &units_res);
         out.resource_upkeep_by_owner.insert(oid, res);

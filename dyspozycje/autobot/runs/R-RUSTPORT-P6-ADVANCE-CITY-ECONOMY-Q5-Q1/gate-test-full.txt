@@ -1,0 +1,2 @@
+SUMA passed=2055 failed=0
+EXIT=0
