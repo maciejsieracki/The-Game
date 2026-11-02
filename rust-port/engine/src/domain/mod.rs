@@ -56,6 +56,7 @@ pub mod trade;
 pub mod turn_economy;
 pub mod turn_economy_advance;
 pub mod turn_economy_health;
+pub mod turn_economy_loop;
 pub mod turn_economy_resources;
 pub mod turn_economy_territory;
 pub mod turn_economy_upkeep;
