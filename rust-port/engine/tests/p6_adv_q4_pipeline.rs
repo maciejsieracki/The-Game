@@ -13,6 +13,7 @@ use civ_engine::data::civilizations::Num;
 use civ_engine::data::terrain_map::{parse_terrain_yields, TerrainYieldsFile};
 use civ_engine::domain::civ_matrix::load_civ_matrix;
 use civ_engine::domain::improvement_build::{terrain_from_web_value, BuildHex, BuildMap};
+use civ_engine::domain::okolica::Reczne;
 use civ_engine::domain::start_position::Overlay;
 use civ_engine::domain::terrain::city_founding::p6_6b::cities::{
     City, CityPodzialHandlu, CityPodzialPracy, FoodBuffer, OkolicaFocus, OkolicaTryb, WealthState,
@@ -30,6 +31,8 @@ use common::*;
 use serde_json::Value;
 
 const VECTORS: &str = include_str!("p6_adv_q4_vectors/q4.json");
+/// -Q4b: klasa `recz` (tryb reczny z `okolicaReczne`), ten sam format co `q4.json`.
+const VECTORS_RECZ: &str = include_str!("p6_adv_q4_vectors/q4c.json");
 const ECON: &str = include_str!("../data/econ-params.json");
 const SOCIETY: &str = include_str!("../data/society-params.json");
 const UNITS: &str = include_str!("../data/units.json");
@@ -96,6 +99,13 @@ fn city_of(c: &Value) -> City {
             .as_str()
             .map(|s| OkolicaFocus::from_web(s).expect("focus")),
         magazyn_zywnosci: magazyn,
+        okolica_reczne: c.get("reczne").and_then(Value::as_array).map(|pairs| {
+            let mut r = Reczne::new();
+            for p in pairs {
+                r.set(p[0].as_str().unwrap(), num(&p[1]));
+            }
+            r
+        }),
         wzrost_ulamkowy: opt_num(&c["frac"]),
         poziom_racji: opt_num(&c["racja"]),
         procent_rozwoj: opt_num(&c["proc"]),
@@ -155,6 +165,18 @@ fn yield_bits(label: &str, y: &civ_engine::domain::turn_economy_loop::LoopYield,
 #[test]
 fn city_loop_matches_running_web() {
     let d: Value = serde_json::from_str(VECTORS).expect("q4.json");
+    run_fixture(&d, true);
+}
+
+/// -Q4b: tryb RECZNY (`okolicaReczne`) - domyka NIE_ZMIERZONO z -Q1.
+#[test]
+fn city_loop_manual_mode_matches_running_web() {
+    let d: Value = serde_json::from_str(VECTORS_RECZ).expect("q4c.json");
+    run_fixture(&d, false);
+}
+
+#[allow(clippy::cognitive_complexity)]
+fn run_fixture(d: &Value, full: bool) {
     let mut matrix = load_civ_matrix().file.clone();
     for (civ, params) in d["matrixPatch"].as_object().unwrap() {
         let row = matrix
@@ -172,18 +194,23 @@ fn city_loop_matches_running_web() {
             row.params.insert(k.clone(), val);
         }
     }
-    let maps: Vec<BuildMap> = arr(&d, "maps").iter().map(build_map).collect();
+    let maps: Vec<BuildMap> = arr(d, "maps").iter().map(build_map).collect();
     let ty: TerrainYieldsFile = parse_terrain_yields().expect("terrain-yields.json");
     let society: Value = serde_json::from_str(SOCIETY).unwrap();
     let unit_rows = unit_rows_from_json_str(UNITS).expect("units.json");
     let buildings = parse_buildings().expect("buildings.json");
-    let scenarios = arr(&d, "scenarios");
-    assert!(scenarios.len() >= 600, "scenariuszy {}", scenarios.len());
+    let scenarios = arr(d, "scenarios");
+    assert!(
+        scenarios.len() >= if full { 600 } else { 80 },
+        "scenariuszy {}",
+        scenarios.len()
+    );
 
     let (mut n_ticks, mut n_siege, mut n_norm, mut n_capital, mut n_corr, mut n_wonder) =
         (0, 0, 0, 0, 0, 0);
     let (mut n_order, mut n_immun, mut n_mp, mut n_wealth_change, mut n_ph, mut n_pp) =
         (0, 0, 0, 0, 0, 0);
+    let mut n_manual = 0;
     for s in scenarios {
         let name = text(&s["name"]);
         let mut cities: Vec<City> = arr(s, "cities").iter().map(city_of).collect();
@@ -498,6 +525,23 @@ fn city_loop_matches_running_web() {
                 (None, None) => {}
                 (g, x) => panic!("{l} manpower rust={g:?} web={x:?}"),
             }
+            if let Some(wr) = wa.get("reczne") {
+                let got: Vec<(String, f64)> = c
+                    .okolica_reczne
+                    .as_ref()
+                    .map(|r| r.iter().map(|(k, v)| (k.to_owned(), v)).collect())
+                    .unwrap_or_default();
+                let want: Vec<&Value> = wr.as_array().unwrap().iter().collect();
+                assert_eq!(got.len(), want.len(), "{l} okolicaReczne po reconcile");
+                for (k, v) in &got {
+                    let w = want
+                        .iter()
+                        .find(|p| p[0].as_str() == Some(k.as_str()))
+                        .unwrap_or_else(|| panic!("{l} klucz {k} nieobecny w webie"));
+                    assert_bits(&format!("{l} reczne {k}"), *v, num(&w[1]));
+                }
+                n_manual += 1;
+            }
             n_mp += usize::from(ex.manpower.is_some());
             n_immun += usize::from(c.wealth_immunity_remaining.is_some());
             n_wealth_change += usize::from(c.wealth_state.is_some());
@@ -509,6 +553,11 @@ fn city_loop_matches_running_web() {
         "q4: scenariuszy {} ticki {n_ticks} (oblezone {n_siege}, normalne {n_norm}) stolice {n_capital} korupcja>0 {n_corr} cuda {n_wonder} order {n_order} manpower {n_mp} immunitet {n_immun} wealth {n_wealth_change} ph {n_ph} pp {n_pp}",
         scenarios.len()
     );
+    if !full {
+        assert!(n_ticks >= 150, "ticki {n_ticks}");
+        assert!(n_manual >= 100, "tryb reczny {n_manual}");
+        return;
+    }
     assert!(n_ticks >= 1400, "ticki {n_ticks}");
     assert!(
         n_siege >= 200 && n_norm >= 1000,
