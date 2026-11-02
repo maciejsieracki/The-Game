@@ -3,7 +3,7 @@ DOMAIN: GAME
 TEMAT: R-WEB-PANGEA-LAND-FRACTION-OTHER-Q1
 GOAL: Faktyczny udział lądu Pangea w ±2 pp deklaracji dla 30–70% (20% w ±3 pp), bez zmiany hashy Kontynenty/Wyspy/Ziemia i bez regresu Pangea 60%.
 
-ZMIANY/COMMIT: SHA końcowy do integracji `73fd44bda` (baza `fe395c927` -> `420d97ffe`). Diff względem `420d97ffe` mieści się w allowliście: `gra/src/map/gen-helpers.ts` (tylko `topUpPangeaLandFraction` + 2 stałe), nowe `gra/tools/pangea-land-other-*.cjs`, katalog runu. `generator.ts`, `map-gen-params.json`, `newGameMapDefaults.ts` bez zmian. Bez pusha.
+ZMIANY/COMMIT: SHA końcowy do integracji `61b3c1098` (kod `73fd44bda` + ten raport) (baza `fe395c927` -> `420d97ffe`). Diff względem `420d97ffe` mieści się w allowliście: `gra/src/map/gen-helpers.ts` (tylko `topUpPangeaLandFraction` + 2 stałe), nowe `gra/tools/pangea-land-other-*.cjs`, katalog runu. `generator.ts`, `map-gen-params.json`, `newGameMapDefaults.ts` bez zmian. Bez pusha.
 
 WERDYKTY ZARZUTÓW:
 1. Mały 70% poza ±2 pp: ODDAL (naprawione w `73fd44bda`, faza 3). Własny pomiar: 70,27 / 70,16 / 70,31% (ziarna 1/42/99), Mały 20%: 19,99% x3, EXIT=0.
