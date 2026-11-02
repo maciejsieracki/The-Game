@@ -580,3 +580,5 @@ Cel końcowy i bieżący zapisane w `GOAL-RUST-PORT-20261020.md` (§"CEL PĘTLI 
 - 2026-11-02 13:42 UTC — kontrola cykliczna: trwa web FORT-LIVE-U2 (Operator aktywny, zapis 13:41); brak wyników do integracji; dysk 6,0 GB (< 8 GB — brak nowych tematów Rust, -Q4 czeka).
 
 - 2026-11-02 15:00 UTC — web `R-WEB-AUTO-FORT-LIVE-U2-Q1` (FC PASS-WITH-NOTES) zintegrowany FF na main → `420d97ffe` (tylko skrypty `gra/tools` i dokumenty; bez bundla). U-2 = artefakt harnessu (`unlockAllTech` → era 3 → limit miast 11); brak usterek gry; U-3 potwierdzone żywo. Brak aktywnych tematów web. Kolejka web: PANGEA-OTHER, U-5 (opóźnienie farmy po wycince poza rzeką), TERRAIN-ID-NAME-MAP; pytania do właściciela bez odpowiedzi: U-1, U-6, U-4.
+
+- 2026-11-02 — właściciel odpowiedział ABC: U-1 A, U-6 A, U-4 A (wszystko zostaje jak jest, zero zmian w kodzie) — zapisane w REJESTR-PROSB-I-ZADAN.md.
