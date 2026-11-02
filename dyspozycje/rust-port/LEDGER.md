@@ -604,3 +604,5 @@ Cel końcowy i bieżący zapisane w `GOAL-RUST-PORT-20261020.md` (§"CEL PĘTLI 
 - 2026-11-02 17:02 UTC — kontrola cykliczna: trwa Rust Q4 (ten sam Operator od 14:48, zapis 16:58 — długa praca, nie zwis); brak tematów web; dysk 6,3 GB. Drobna nieścisłość: w manifestach ROBOCZEJ `publishedAt`/`buildStamp` dla `1d59a346` (16:40) i `4049e780` (17:30) wpisałem ręcznie, nie zegarem maszyny (faktyczne wdrożenia ok. 16:3x i 16:5x UTC) — bez wpływu na bundle (MD5 zgodne), do ewentualnej korekty przy następnym wdrożeniu.
 
 - 2026-11-02 17:35 UTC — kontrola cykliczna: Rust Q4 trwa (Operator r1 od 14:38, ok. 3 h; zapis 17:28; plik dziennika +25 KB od 17:00 — postęp jest); brak tematów web; dysk 6,3 GB. Jeśli do ok. 19:00 brak raportu Operatora — sprawdzić, czy nie utknął na długiej komendzie.
+
+- 2026-11-02 18:17 UTC — kontrola cykliczna: Rust Q4 trwa (Operator r1 ok. 3,5 h, zapis 18:07); w worktree jest commit `d41279263` (pętla miast P12/P17/P18/P19/P20) + niezacommitowane poprawki i `mutacje-wynik.txt` → etap mutacji. Zabezpieczone: `refs/keep/Q4-wip` → `rust-port-wip/Q4-wip`. Brak tematów web; dysk 6,3 GB.
