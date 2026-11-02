@@ -1,3 +1,12 @@
+## ROBOCZA 8f59c5c2 -- 2026-11-02 -- log pickera automatu i hooki testowe ?civTest=1 (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`e1b0bae86` + `R-WEB-AUTOIMPROVE-LIVE-HOOKS-Q1` `3e2540a57`) i commit wdrożenia bundla; stała zgoda właściciela (dopalenia po testach na żywo).
+- Bundle MD5 `8f59c5c22da274f1b64ca6a0bac53b44`, 70,122,731 B, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, outDir poza repo, stempel ROBOCZA; `verify-robocza-bundle.cjs` manifest match OK.
+- Zakres: BEZ zmiany rozgrywki. Opcjonalny log decyzji pickera automatu (domyślnie wyłączony) + hooki testowe `window.__civTest` wyłącznie przy `?civTest=1` (bez parametru obiekt nie istnieje). Wyniki pickera bajt-w-bajt jak przed zmianą.
+- Testy: tsc PASS; autoimprove-live-hooks-test 37/0, autoimprove-stages-q1 302/0, auto-improvements 46/0, auto-fort-claim 63/0.
+- Ograniczenia: żywe scenariusze fort/E2/E3 i przyczyna braku wycinki w Koryncie NIE_ZMIERZONO (następny run na tym bundlu).
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `f7a69e127b26c25f2ac7e39d8d8e8fd7`, 70,117,015 bajtów.
+
 ## ROBOCZA f7a69e12 -- 2026-11-02 -- słodka woda (rzeka + jezioro) i tartak nie przy rzece (testowa)
 
 - **STATUS: DEPLOYED** — merge do `origin/main` (`38f309b41` + `R-WEB-FRESHWATER-ACCESS-LAKE-Q1` `6ea49414a`) i commit wdrożenia bundla; implementacja dwóch decyzji właściciela z czatu (2026-11-02).
