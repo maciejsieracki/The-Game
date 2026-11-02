@@ -695,3 +695,16 @@ fn unit_rows_duplicate_keys_follow_json_parse_semantics() {
     let p = load_advance_upkeep_params(Some(&base_econ()), "normal", &rows);
     assert_eq!(p.unit_upkeep_table.get("B"), Some(&3.0)); // 2.5 -> round(2.5 * 1) = 3
 }
+
+#[test]
+fn water_access_on_short_and_single_hex_river_paths_matches_web() {
+    let d = data();
+    let mut water = 0;
+    for (i, h) in arr(&d, "hriver").iter().enumerate() {
+        let map = build_map(&h["map"]);
+        let got = city_has_water_access(num(&h["q"]), num(&h["r"]), &map);
+        assert_eq!(got, h["water"].as_bool().unwrap(), "hriver-{i}");
+        water += usize::from(got);
+    }
+    assert!(water >= 10, "woda: {water}");
+}

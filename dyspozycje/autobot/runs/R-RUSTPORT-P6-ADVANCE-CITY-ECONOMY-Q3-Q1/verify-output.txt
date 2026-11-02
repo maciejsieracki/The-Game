@@ -1,2 +1,2 @@
 rozbieznosci: 0
-statystyki: {"directPraca": 90, "directPraca_nonempty": 87, "hdirect": 900, "hdirect_las": 234, "hdirect_water": 68, "hfull": 700, "hparams": 128, "p5": 160, "praca": 666, "praca_nonempty": 544, "unit": 120, "unit_nonempty": 78, "zdrowie": 1187, "zdrowie_skip_spichlerz": 525}
+statystyki: {"directPraca": 90, "directPraca_nonempty": 87, "hdirect": 900, "hdirect_las": 234, "hdirect_water": 68, "hfull": 700, "hparams": 128, "hriver": 80, "p5": 160, "praca": 666, "praca_nonempty": 544, "unit": 120, "unit_nonempty": 78, "zdrowie": 1187, "zdrowie_skip_spichlerz": 525}

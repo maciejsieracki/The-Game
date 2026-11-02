@@ -469,6 +469,27 @@ for (let i = 0; i < 120; i++) {
   unitDirect.push({ rowsJson: JSON.stringify(rows), out: Object.fromEntries(Object.entries(W.buildUnitUpkeepTable(rows)).map(([k, v]) => [k, enc(v)])) });
 }
 
+// ---- hriver: dostep do wody na malych mapach z JEDNOHEKSOWYMI i krotkimi riverPaths (generowane PO wszystkim innym,
+// zeby nie zmieniac strumienia PRNG wczesniejszych klas) -----------------------------------------------------------
+const hriver = [];
+for (let i = 0; i < 80; i++) {
+  const w = 5; const h = 5;
+  const rows = [];
+  for (let q = 0; q < w; q++) for (let r = 0; r < h; r++) rows.push([q, r, 'laka', 'brak', rnd() < 0.08 ? 1 : 0, null, null, null]);
+  const rivers = [];
+  const np = ri(0, 3);
+  for (let k = 0; k < np; k++) {
+    const len = pick([1, 1, 2, 3]);
+    let q = ri(-1, w); let r = ri(-1, h);
+    const path = [[q, r]];
+    for (let j = 1; j < len; j++) { const [dq, dr] = pick(NB); q += dq; r += dr; path.push([q, r]); }
+    rivers.push(path);
+  }
+  const m = { w, h, hexes: rows, rivers };
+  let q = ri(-1, w); let r = ri(-1, h);
+  if (rivers.length && rnd() < 0.6) { [q, r] = pick(pick(rivers)); } // miasto dokladnie na heksie z riverPaths
+  hriver.push({ map: m, q, r, water: W.cityHasWaterAccess({ q, r }, toWebMap(m)) });
+}
 const out = {
   pin: PIN,
   maps: MAPS,
@@ -480,7 +501,7 @@ const out = {
     cities: s.cities.map((c) => ({ id: c.id, owner: c.owner, q: c.q, r: c.r, pop: c.pop, tryb: c.tryb ?? null, focus: c.focus ?? null, surowce: c.surowce === null ? null : encRec(c.surowce), built: c.built })),
     out: s.out,
   })),
-  directPraca, hdirect, hparams, hfull, p5direct, unitDirect,
+  directPraca, hdirect, hparams, hfull, p5direct, unitDirect, hriver,
 };
 mkdirSync(outDir, { recursive: true });
 const text = JSON.stringify(out);

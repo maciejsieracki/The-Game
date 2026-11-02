@@ -1,0 +1,95 @@
+U01-cost-clamp-removed: SURVIVED EKW
+U02-inner-clamp-removed: SURVIVED EKW
+U03-contains-inverted: KILLED
+U04-empty-skip-removed: SURVIVED EKW
+U05-owner-none-default: KILLED
+U06-upkeep-ge-zero: KILLED
+U07-era-mult-fixed: KILLED
+U08-era-for-key-fixed: KILLED
+U09-round-away: SURVIVED EKW
+U10-owner-sum-overwrite: KILLED
+U11-key-sum-overwrite: KILLED
+U12-q-r-swapped: KILLED
+U13-cost-fallback-zero: KILLED
+U14-cost-key-typo: KILLED
+U15-budynki-group-wrong: KILLED
+U16-em-group-wrong: KILLED
+U17-globalne-group-wrong: KILLED
+U18-storage-default-raw: KILLED
+U19-upkeep-default-raw: KILLED
+U20-ration-null: KILLED
+U21-ration-easy-hard: KILLED
+U22-ration-hard-easy: KILLED
+U23-unit-table-empty: KILLED
+U24-cell-number-other: KILLED
+U25-cell-string-other: KILLED
+U26-cell-null-other: SURVIVED EKW
+U27-dup-key-first-wins: KILLED
+U28-dup-key-push: KILLED
+U29-upkeep-diff-enum-fixed: KILLED
+H01-fallback-rzeka: KILLED
+H02-fallback-akwedukt: KILLED
+H03-fallback-studnia: KILLED
+H04-fallback-targowisko: KILLED
+H05-fallback-laznia: KILLED
+H06-fallback-ceramika: KILLED
+H07-fallback-zagesz: KILLED
+H08-fallback-prog: KILLED
+H09-fallback-bagno: KILLED
+H10-fallback-las: KILLED
+H11-fallback-dzungla: KILLED
+H12-fallback-brak-wody: KILLED
+H13-fallback-legacy: KILLED
+H14-legacy-le-lt: KILLED
+H15-osiedle-key-typo: KILLED
+H16-filter-finite-removed: SURVIVED EKW
+H17-zdrowie-is-object-removed: SURVIVED EKW
+H18-osiedle-block-is-object: SURVIVED EKW
+H19-unknown-difficulty-normal: KILLED
+H20-neighbors-entry: KILLED
+H21-river-present-ignored: KILLED
+H22-river-center-removed: KILLED (po rozszerzeniu wektorow hriver; 1. przebieg SURVIVED)
+H23-integral-fract: KILLED
+H24-las-eq-ne: KILLED
+H25-radius-plus1: KILLED
+H26-water-true-false: KILLED
+H27-tiles-any-all: KILLED
+H28-rzeka-sign: KILLED
+H29-akwedukt-sign: KILLED
+H30-studnia-sign: KILLED
+H31-targowisko-sign: KILLED
+H32-laznia-sign: KILLED
+H33-zagesz-ge: SURVIVED EKW
+H34-zagesz-plus1: KILLED
+H35-brak-wody-or: KILLED
+H36-brak-wody-no-studnia: KILLED
+H37-brak-wody-no-akwedukt: KILLED
+H38-las-sign: KILLED
+H39-spichlerz-sign: KILLED
+H40-garncarnia-sign: KILLED
+H41-round-away: KILLED
+H42-truthy-osiedle-removed: SURVIVED EKW
+H43-truthy-spichlerz-removed: KILLED (NaN)
+H44-osiedle-skipped: KILLED
+H45-scan-break-removed: SURVIVED EKW
+W01-nodes-empty: KILLED
+W02-praca-difficulty: KILLED
+W03-praca-econ-none: KILLED
+W04-params-units-empty: KILLED
+W05-params-econ-none: KILLED
+W06-health-society-none: KILLED
+W07-health-difficulty: KILLED
+W08-state-ii-swap: KILLED
+W09-spichlerz-bonus-zero: KILLED
+W10-water-false: KILLED
+W11-water-arg-none: KILLED
+W12-ctx-none: KILLED
+W13-ctx-population-zero: KILLED
+W14-ludnosc-zero: KILLED
+W15-built-ids-empty: KILLED
+W16-runtime-vs-built: SURVIVED EKW
+W17-state-find-first: KILLED
+W18-state-ceramika-sol-unused: SURVIVED EKW
+W19-zdrowie-order: KILLED
+
+PODSUMOWANIE: mutantow 93; zabite 80; rownowazne (EKW) 13; przezyli nierownowazni 0. Brutto 80/93 = 86.0%, netto 80/80 = 100%.

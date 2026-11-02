@@ -1,0 +1,2 @@
+git diff --check (po git add -N nowych plikow): czysto
+EXIT=0

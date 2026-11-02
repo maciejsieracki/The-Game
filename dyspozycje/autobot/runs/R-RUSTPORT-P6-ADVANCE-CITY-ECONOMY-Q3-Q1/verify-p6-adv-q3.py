@@ -449,6 +449,11 @@ def main():
         if not same(float(z), dec(h['out'])):
             bad.append(('hfull', i, z, dec(h['out'])))
 
+    for i, h in enumerate(d['hriver']):
+        stats['hriver'] = stats.get('hriver', 0) + 1
+        if water_access(h['map'], float(h['q']), float(h['r'])) != h['water']:
+            bad.append(('hriver', i))
+
     # ---- P5 params
     for i, s in enumerate(d['p5direct']):
         e = s['econ']
