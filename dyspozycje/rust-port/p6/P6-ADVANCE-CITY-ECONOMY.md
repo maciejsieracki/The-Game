@@ -21,8 +21,8 @@ jeszcze wejsc terenowych ani reszty `advanceCityEconomy`, wiec wpiecie samej faz
 | # | Plaster | Web (`turn-economy.ts`) | Rust | Status Q1 |
 |---|---|---|---|---|
 | P0 | parametry ekonomii `buildEconParams` | `:2293` | brak | DLUG Q2 |
-| P1 | wezly terytorium `buildTerritoryNodesFromCities` | `:2296` | `territory.rs: build_territory_nodes_from_cities` | istnieje, NIE wolane (brak wejscia dla petli) - DLUG Q2 |
-| P2 | spor sasiadow `computeLostToNearerSiblingByCity` + `reconcileAllWorkedTiles` | `:2305-2306` | `okolica/sasiedztwo.rs`, `territory.rs` | istnieja, poza allowlista wolajacego - DLUG Q2 |
+| P1 | wezly terytorium `buildTerritoryNodesFromCities` | `:2296` | `territory.rs:309 build_territory_nodes_from_cities(&[WorkCity])` | istnieje; NIE wolane - DLUG Q2a, powod zmierzony w sek. 4a |
+| P2 | spor sasiadow `computeLostToNearerSiblingByCity` + `reconcileAllWorkedTiles` | `:2305-2306` | `okolica/sasiedztwo.rs:13 compute_lost_to_nearer_sibling_by_city(&[OkolicaCity], &BuildMap)`, `territory.rs:422 reconcile_all_worked_tiles(&mut [WorkCity], ..)` | istnieja; NIE wolane - DLUG Q2a, powod zmierzony w sek. 4a |
 | P3 | `computeTerritoryResourceYieldByCity` | `:2310` (def. `:738`) | BRAK | DLUG Q2a (parametr `territory_resource_by_city`) |
 | P4 | `computePracaUpkeepByOwner` | `:2320` | BRAK | DLUG Q3 |
 | P5 | `loadUpkeepParams`/`loadStorageParams`/`buildRationParams`/`buildUnitUpkeepTable` | `:2323-2329` | istnieja (`turn_economy.rs`, `city_growth.rs`) | wolane przez petle -> Q3 |
@@ -44,7 +44,7 @@ jeszcze wejsc terenowych ani reszty `advanceCityEconomy`, wiec wpiecie samej faz
 | P21 | drenaz Mennicy `applyMennicaZlotoDrainForOwners` | `:1814-1830`, wolane `:2823-2829` | `apply_mennica_zloto_drain_for_owners` | **ZAPORTOWANE (S7)** |
 | P22 | `reconcileOwnerResourceCaps` | `:2832` | `reconcile_city_resource_caps` (nad `economy_upkeep_p1::reconcile_owner_resource_caps`) | **ZAPORTOWANE (S8)** |
 | P23 | utrzymanie per owner (`upkeepBalance`, utrzymanie surowcowe) | `:2840-2884` | `upkeep_balance`, `total_*_resource_upkeep` istnieja | DLUG Q5 |
-| P24 | `manpowerHeal` (`tickManpowerUnitReplenishment`) | `:2887-2909` | `recruitment.rs` istnieje | DLUG Q5 |
+| P24 | `manpowerHeal` (`tickManpowerUnitReplenishment`) | `:2887-2909` | `recruitment.rs:2654 tick_manpower_unit_replenishment` + `advance_manpower_heal` | **ZAPORTOWANE (S9, obrona R1)**, wektory `heal.json` |
 
 Numeracja linii P6-P9: `:2347` (closure `converterThroughputsForOwner`), `:2364` (`stolarniaBonusDrewnaCiv`), `:2377`
 (`magazynCountByOwner`), `:2409` (`ownerResourceCapFor`) - sprawdzone `grep -n` na pinie.
@@ -72,6 +72,20 @@ Numeracja linii P6-P9: `:2347` (closure `converterThroughputsForOwner`), `:2364`
   `happyCases`. NIE liczone niezaleznie (web<->Rust tylko w tescie Rust): rozdzial puli po miastach, konwertery i
   Spichlerz w klasie `full`, liczniki z resolverem etykiet (tabele bramki runtime) - NIE_ZMIERZONO niezaleznie.
 
+## 4a. Powod, dla ktorego P1/P2 nie sa wolane (zmierzony, obrona R1)
+
+Funkcje P1/P2 istnieja, ale nie maja jak byc wolane z `advance_city_economy_resources` w Q1:
+* trzy rozne typy miasta: `WorkCity` (`territory.rs:299`, `q/r: i32`, `okolica_reczne: Option<BTreeMap>`),
+  `OkolicaCity` (`okolica.rs:102`) i produkcyjne `state::City` (`q/r: f64`, `okolica_reczne: Option<Reczne>`);
+  adapter `state::City -> WorkCity/OkolicaCity` nie istnieje (`grep -rn "impl From<.*City" src` - 0 trafien);
+* `computeLostToNearerSiblingByCity(cities, map)` wymaga `BuildMap`; `AdvanceCityEconomyInput` nie ma mapy;
+* `reconcileAllWorkedTiles` mutuje `workedTiles` (`WorkCity`), a `state::City` nie ma pola `worked_tiles`
+  (`grep -c worked_tiles state.rs` = 0), wiec zapisu nie ma gdzie wykonac na produkcyjnym stanie;
+* wyniki P1/P2 maja konsumentow tylko w P3/P13 (`:2310`, `:2476`; w Q1 to parametry) i w petli plonow
+  (P17, `cityWorkedTilesForEconomy` `:2506`); bez nich wolanie byloby martwym obliczeniem.
+Wniosek: P1/P2 laczy sie z P3/P13 w temacie `-Q2a` (adapter typow + mapa + `worked_tiles`), nie osobno.
+Wczesniejsze uzasadnienie tabeli ("poza allowlista wolajacego") bylo bledne (wolajacy jest w allowliscie) - wycofane.
+
 ## 4. Dlug i propozycja podzialu (kolejne tematy)
 
 * `-Q2a` wejscia terenowe: `computeTerritoryResourceYieldByCity` (`:738`) + `computeWorkedMagazynYieldsByCity`
@@ -82,8 +96,32 @@ Numeracja linii P6-P9: `:2347` (closure `converterThroughputsForOwner`), `:2364`
   `applyWonderCityYields`, korupcja (P12, P17) + Wealth/`splitPraca`/handel/podatek (P18).
 * `-Q4` oblezenie, wzrost V8.5, bilans zywnosci, manpower per miasto (P19, P20) - funkcje istnieja
   (`city_growth.rs`, `recruitment.rs`), potrzebna petla.
-* `-Q5` utrzymanie per owner i `manpowerHeal` (P23, P24) + wiazanie z `ai_turn`/`turn_economy.rs`.
+* `-Q5` utrzymanie per owner (P23) + wiazanie z `ai_turn`/`turn_economy.rs` (P24 `manpowerHeal` zaportowane w obronie R1, sek. 4b).
 * `NIE_ZMIERZONO`: wiazanie z petla gry nie sprawdzane (brak testu integracyjnego `ai_turn` w tym temacie).
+
+## 4b. S9 `manpowerHeal` (obrona R1)
+
+`advance_manpower_heal(&mut [ManpowerCity], &mut [ManpowerHealUnit], AdvanceManpowerHealInput)` = blok
+`:2887-2909`: era (`resolveOwnerEra ?? owner 0 -> playerEra, reszta 1`), resolver macierzy (`ownerCivByOwnerId` ->
+`mp_regen_proc`/`mp_max_proc`/`mp_koszt_jednostki_proc` z `civMatrixParam`; brak lub pusty klucz -> `undefined`),
+`getMaxHp(typeId)`, `onUnitHpChanged`. Wynik weba jest odrzucany; Rust zwraca go do testow.
+* Typ: `ManpowerCity` (pula MP), a nie `state::City` - `state::City` nie ma pol `manpower`/`oblegane`
+  (`grep -n "manpower\|oblegane" state.rs`: 3 trafienia, wszystkie to import i komentarz, zadne pole), wiec P24
+  nie moze byc wolany na produkcyjnym `state::City`. Zaleznosc od petli NIE byla powodem: blok czyta tylko pule + jednostki.
+* Wejscie: pule miast TUZ PRZED blokiem (po regenie P20, ktorego Rust jeszcze nie portuje) - zrzut instrumentacja w
+  pamieci (`globalThis.__pre`), wiec test nie zaklada portu P20.
+* Wektory `tests/p6_adv_city_econ_vectors/heal.json` (466 KB; generator `gen-p6-adv-heal-vectors.mjs` z czystego
+  `git archive 4bbef081d`; deterministyczny - 2 przebiegi, ten sam md5): 400 scenariuszy z URUCHOMIONEGO
+  `advanceCityEconomy` (176 lecza, 158 zmienia pule), hp/hpMax NaN/Infinity/ujemne, jednostki cywilne, miasta
+  oblezone, brak/zly klucz cywilizacji, resolver epoki obecny/nieobecny. W prawdziwym `civ-matrix.json`
+  `mp_max_proc` i `mp_koszt_jednostki_proc` = 0 u KAZDEJ cywilizacji, wiec generator podmienia je w pamieci dla 5
+  cywilizacji (`matrixPatch`, zapisany w wektorze; ta sama podmiana w tescie Rust; `matrix` jest wejsciem funkcji).
+* Test `tests/p6_adv_city_econ_heal.rs` 2/2: porownanie BITOWE hp/hpMax, pul miast, wywolan callbacku, wyniku.
+* Mutacje `mutate-heal.py` (`mutacje-heal-wynik.txt`): 13 mutantow wrappera, 12 zabitych, 1 rownowazny (M11: pusty
+  klucz akceptowany -> `civ_matrix_param("")` zwraca `defaults`, a `defaults.mp_*` = 0 w `civ-matrix.json`, wiec
+  `Some(0)` daje mnoznik `1 + 0` = 1 jak `None`, `manpower.ts:435-439`): 100% nierownowaznych zabitych.
+* NIE_ZMIERZONO niezaleznie: weryfikator Python `-I` nie obejmuje S9 (algorytm budzetu leczenia jest w
+  `recruitment.rs` z wlasnymi wektorami); tu sprawdzone tylko web<->Rust.
 
 ## 5. Zalozenia
 
@@ -126,3 +164,11 @@ zabite 37, przezyly 3 - wszystkie rownowazne (100% nierownowaznych zabitych; 92.
   Baza z dispatchu: 2027/0 na `e0c0a9ac5`; roznica +6 = 4 nowe testy tego tematu + 2 testy dodane w obronie
   `8510b112a` (`converter_throughputs_for_era`, `ceramika_happiness_bonus`) - bezposredni przebieg PRZED:
   NIE_ZMIERZONO (pozostale binaria testowe sa zrodlowo identyczne).
+
+## 9. Obrona R1 - bramki PO ostatniej zmianie kodu (logi `gate-r2-*.txt`, kazdy z jedna linia `EXIT=`)
+
+* `cargo fmt --check`, `cargo clippy -j 2 --all-targets -- -D warnings`: EXIT=0.
+* Pelny `cargo test -j 2 --no-fail-fast`: lib 22 + shardy s0-s4 (367/411/474/403/358) = 2035 passed / 0 failed
+  (2033 z R1 + 2 testy S9). Podzial na shardy inny niz w R1 (lista `tests/*.rs` modulo 5), suma zgodna.
+* Baza PRZED (dispatch): 2027/0 na `e0c0a9ac5`; 2035 - 2027 = 8 = 4 (R1) + 2 (`8510b112a`) + 2 (S9). Bezposredni
+  przebieg PRZED nadal NIE_ZMIERZONO.

@@ -1,0 +1,14 @@
+M1 max<-regen KILLED
+M2 koszt<-max KILLED
+M3 max<-koszt KILLED
+M4 owner0->playerEra zamiana KILLED
+M5 era default 1->2 KILLED
+M6 callback odciety KILLED
+M7 getMaxHp stale KILLED
+M8 difficulty Normal KILLED
+M9 brak resolvera macierzy KILLED
+M10 klucz po owner 0 KILLED
+M11 pusty klucz akceptowany SURVIVED
+M12 civ key lowercase pominiety -> zawsze brak KILLED
+M13 era resolver ignorowany KILLED
+killed 12 of 13

@@ -13,7 +13,11 @@
 //!   pola `maSpichlerz`, `maSpichlerzII`, `spichlerzCeramika`, `spichlerzSol`,
 //!   `garncarniaSurplusZadowolenie` krotki `CityEconomyTick`);
 //! * S7 `applyMennicaZlotoDrainForOwners` (`:1814-1830`, wolane `:2823-2829`);
-//! * S8 `reconcileOwnerResourceCaps` (`:2832`).
+//! * S8 `reconcileOwnerResourceCaps` (`:2832`);
+//! * S9 `manpowerHeal` (`:2887-2909`, obrona R1) - `advance_manpower_heal`: wrapper nad
+//!   `tick_manpower_unit_replenishment` (`recruitment.rs`) z resolverami weba (era, macierz
+//!   cywilizacji po `ownerCivByOwnerId`). Dziala na `ManpowerCity` (pula MP), bo `state::City`
+//!   NIE ma pol `manpower`/`oblegane` (grep `state.rs`), wiec nie da sie go wolac na `state::City`.
 //!
 //! NIE portowane (dlug, patrz `dyspozycje/rust-port/p6/P6-ADVANCE-CITY-ECONOMY.md`): wejscia terenowe
 //! (`computeTerritoryResourceYieldByCity`, `computeWorkedMagazynYieldsByCity`) wchodza jako PARAMETRY,
@@ -31,10 +35,16 @@ use std::collections::{BTreeMap, BTreeSet};
 
 use serde_json::Value;
 
+use crate::data::civilizations::CivMatrixFile;
 use crate::domain::building_costs::p6_7b::{
     assign_owner_resource_stock_from_pool, empire_zloto_stock, load_throughput,
     owner_resource_stock_all, resolve_spichlerz_city_bonus_state, SpichlerzDrainParams,
     SpichlerzDrainPayResult, StockRecord,
+};
+use crate::domain::civ_matrix::civ_matrix_param;
+use crate::domain::recruitment::manpower::{
+    tick_manpower_unit_replenishment, HpChangedFn, ManpowerCity, ManpowerDifficulty,
+    ManpowerHealUnit, ManpowerMatrixOverrides, ManpowerReplenishResult,
 };
 use crate::domain::resource_access::{deduct_mennica_zloto_drain, MENNICA_ZLOTO_DRAIN_PER_TURN};
 use crate::domain::terrain::city_founding::p6_6b::cities::City;
@@ -380,4 +390,62 @@ pub fn advance_city_economy_resources(
         kamieniarski_bonus_kamienia_civ: kamieniarski_bonus,
         per_city,
     }
+}
+
+/// Wejscia plastra `manpowerHeal` (`turn-economy.ts:2280-2284`, `:2887-2909`).
+pub struct AdvanceManpowerHealInput<'a> {
+    /// Web `difficulty` (tu `ManpowerDifficulty`).
+    pub difficulty: ManpowerDifficulty,
+    pub player_era: f64,
+    /// Web `resolveOwnerEra` (`None` = `undefined`: owner 0 -> `playerEra`, reszta 1).
+    pub owner_era: Option<&'a dyn Fn(i64) -> f64>,
+    /// Macierz cywilizacji (web: modul-globalny `DATA` w `civ-matrix.ts`; tu jawnie, zeby test mogl
+    /// podac macierz z niezerowymi `mp_*`; produkcyjnie `&load_civ_matrix().file`).
+    pub matrix: &'a CivMatrixFile,
+    /// Web `ownerCivByOwnerId` (ownerId -> klucz cywilizacji).
+    pub owner_civ_by_owner_id: &'a BTreeMap<i64, String>,
+    /// Web `manpowerHeal.getMaxHp(typeId)`.
+    pub get_max_hp: &'a dyn Fn(&str) -> f64,
+    /// Web `manpowerHeal.onUnitHpChanged`.
+    pub on_unit_hp_changed: Option<&'a mut HpChangedFn<'a>>,
+}
+
+/// Port bloku `if (manpowerHeal) { tickManpowerUnitReplenishment(...) }` (`:2887-2909`). Wynik weba
+/// jest odrzucany przez `advanceCityEconomy`; tu zwracany tylko do testow. Resolver macierzy:
+/// brak klucza (`undefined` lub `""`) -> `None`; inaczej trzy pola `mp_*` z `civMatrixParam`.
+pub fn advance_manpower_heal(
+    cities: &mut [ManpowerCity],
+    units: &mut [ManpowerHealUnit],
+    input: AdvanceManpowerHealInput<'_>,
+) -> ManpowerReplenishResult {
+    let player_era = input.player_era;
+    let resolve_era = |oid: i64| -> f64 {
+        match input.owner_era {
+            Some(f) => f(oid),
+            None if oid == 0 => player_era,
+            None => 1.0,
+        }
+    };
+    let matrix = input.matrix;
+    let civ_by_owner = input.owner_civ_by_owner_id;
+    let resolve_matrix = |oid: i64| -> Option<ManpowerMatrixOverrides> {
+        let key = civ_by_owner.get(&oid).filter(|k| !k.is_empty())?;
+        Some(ManpowerMatrixOverrides {
+            mp_regen_proc: Some(civ_matrix_param(matrix, key, "mp_regen_proc")),
+            mp_max_proc: Some(civ_matrix_param(matrix, key, "mp_max_proc")),
+            mp_koszt_jednostki_proc: Some(civ_matrix_param(matrix, key, "mp_koszt_jednostki_proc")),
+        })
+    };
+    let get_max_hp = input.get_max_hp;
+    tick_manpower_unit_replenishment(
+        cities,
+        units,
+        input.difficulty,
+        &resolve_era,
+        &|_| None,
+        Some(&resolve_matrix),
+        &|type_id, _unit| get_max_hp(type_id),
+        None,
+        input.on_unit_hp_changed,
+    )
 }
