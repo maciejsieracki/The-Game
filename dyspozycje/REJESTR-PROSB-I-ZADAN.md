@@ -8408,3 +8408,7 @@ Odpowiedź na pytanie ABC o „dostęp do wody”: „Jezioro, tak, ale nie pami
 ## 2026-11-02 — PRZYPOMNIENIE DLA WŁAŚCICIELA (odłożone na później)
 
 Ręczne usunięcie 43 scalonych gałęzi `web-wip/*` na GitHubie (z tego środowiska zdalne usuwanie nie działa). Właściciel: „zostawiamy na przyszłość, zajmiemy się tym innym razem, przypomnij mi, żeby to kiedyś posprzątać.” → przypominać przy podsumowaniu większego etapu / zakończeniu pracy nad kolejką webową. Nie usuwać na własną rękę. Do skasowania także gałęzie `rust-port-wip/*` po zintegrowaniu odpowiednich tematów (ta sama przeszkoda).
+
+## 2026-11-02 — R-WEB-FRESHWATER-ACCESS-LAKE-Q1: ZROBIONE, ROBOCZA `f7a69e12` (main `943c6afba`)
+
+Dwie decyzje właściciela wdrożone: (1) „dostęp do wody” = słodka woda (rzeka + jezioro, morze NIE) — `hasFreshwaterAccess`; generator NIE tworzy jezior (0/24 map), więc zdrowie bez zmian; zmiana generatora na jeziora = decyzja produktowa (pytanie do właściciela: czy w ogóle dodawać jeziora do generatora?). (2) Heksy na/przy rzece tylko pod żywność — tartak/obóz tam nie powstają (luka `rzeka.obecna` bez `riverPaths` domknięta); skutek: więcej zarezerwowanych lasów (Pangea Mały 1350 → 1611 z 2717), wpływ na drewno w pełnej grze NIE_ZMIERZONO. GitHub Raw: bundle/manifest/START zgodne (MD5 `f7a69e127b26c25f2ac7e39d8d8e8fd7`). Rust: `city_has_water_access` portowane w Q3 wg starej semantyki → REPIN po Q3 (dla map bez jezior wynik identyczny).
