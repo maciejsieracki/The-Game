@@ -1,0 +1,22 @@
+T01-utrzymanie-wrong-field: KILLED
+T02-przyrost-zero: KILLED
+T03-epoka-wejscia-one: KILLED
+T04-koszt-drewno-none: KILLED
+T05-koszt-kamien-none: KILLED
+T06-koszt-cegla-none: KILLED
+T07-epoka-num-other: KILLED
+T08-epoka-text-other: KILLED
+T09-rodzaj-num-none: KILLED
+T10-ilosc-none: KILLED
+T11-owners-no-units: KILLED
+T12-empty-built-not-skipped: SURVIVED EKW
+T13-owner-era-one: KILLED
+T14-tech-default-empty: KILLED
+T15-unlocked-none: KILLED
+T16-gate-none: KILLED
+T17-maks-poziom-one: KILLED
+T18-find-last: KILLED
+T19-income-default-one: KILLED
+T20-category-domyslny: KILLED
+T21-units-gold-empty: KILLED
+T22-res-buildings-empty: KILLED

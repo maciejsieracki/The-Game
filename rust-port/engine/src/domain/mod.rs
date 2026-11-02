@@ -60,6 +60,7 @@ pub mod turn_economy_loop;
 pub mod turn_economy_preview;
 pub mod turn_economy_resources;
 pub mod turn_economy_territory;
+pub mod turn_economy_tick;
 pub mod turn_economy_upkeep;
 pub mod types;
 pub mod unit_epoch;

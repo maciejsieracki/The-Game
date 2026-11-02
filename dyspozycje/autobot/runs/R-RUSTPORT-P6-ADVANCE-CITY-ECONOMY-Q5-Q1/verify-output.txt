@@ -1,0 +1,5 @@
+sprawdzen: 20843, rozbieznosci: 0
+statystyki: {'scen': 680, 'owners': 1117, 'unit_scen': 339, 'deficyt': 762, 'levels_gate': 22, 'res_units': 503}
+Z-Q4-3: {'live': 90, 'first_calls': 328, 'in_phase0_with_labels': 308, 'after_drain': 0, 'post_differs': 18}
+kontrola negatywna: zepsutych wartosci 2, wykrytych rozbieznosci 2
+WYNIK: OK
