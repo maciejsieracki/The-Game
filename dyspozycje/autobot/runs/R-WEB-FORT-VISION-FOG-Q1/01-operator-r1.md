@@ -18,7 +18,7 @@ GOAL: Posterunek (r=3) i fort (r=5) gracza maja odkrywać i oświetlać całe ko
 AI z fortem/posterunkiem teraz "widzi" jego koło (`aiVisibleHexes`, main.ts:~37007). Uzasadnienie: symetria z graczem i z miastem AI. Wpływ NIE_ZMIERZONO w symulacji.
 
 ## ZMIANY/COMMIT
-gra/src/game/fort-territory.ts, gra/src/game/visibility.ts, gra/src/main.ts, gra/tools/fort-vision-test.cjs, katalog runu. Allowlista zachowana; `ai-fog.ts` nietknięty (niepotrzebny). Brak zmian poza listą. SHA: patrz commit "R-WEB-FORT-VISION-FOG-Q1 r1" (git log w worktree).
+gra/src/game/fort-territory.ts, gra/src/game/visibility.ts, gra/src/main.ts, gra/tools/fort-vision-test.cjs, katalog runu. Allowlista zachowana; `ai-fog.ts` nietknięty (niepotrzebny). Brak zmian poza listą. SHA: 1107cf51a (kod+raport; raport bez późniejszej edycji poza tą linią).
 
 ## TESTY (logi gate-*.txt, każdy z linią EXIT=)
 - fort-vision-test.cjs (nowy): 15/0 — PRZED (bez źródeł): 91/91 pól koła fortu poza widokiem; PO: 91/91 widoczne i odkryte; posterunek 37/37, nic poza r=3; fort wroga nie odsłania; contestedUseless bez wzroku; po utracie widoczność znika, explored zostaje.
