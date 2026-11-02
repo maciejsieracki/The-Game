@@ -21,3 +21,5 @@ ZALOZENIA do akceptacji: Z-Q5-1 (Z-Q4-3 snapshot), Z-Q5-2 (`category` puste), Z-
 RUNDY: 1/5
 NASTEPNY KROK: Evaluator R1 (Sonnet 5.5, ten sam ID); po PASS Final Control; -Q6 jako osobny temat po decyzji wlasciciela o kontrakcie wiazania.
 DEPLOY/PUSH: NIE WYKONANO
+
+COMMIT: b1a2fb87351bcb2fd1f04ae31d612cbd722fe25e (worktree wf_dbd18ae1-07c-1, nad WIP 401af127e; niepushowany)
