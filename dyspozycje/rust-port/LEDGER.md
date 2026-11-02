@@ -610,3 +610,5 @@ Cel końcowy i bieżący zapisane w `GOAL-RUST-PORT-20261020.md` (§"CEL PĘTLI 
 - 2026-11-02 19:14 UTC — kontrola cykliczna: Rust Q4 przeszedł do kolejnego etapu (nowy agent od 18:42 — Operator r1 skończył, trwa Evaluator; zapis 19:13); brak tematów web; dysk 4,3 GB (> 3 GB, ale blisko — po FC sprzątnąć worktree).
 
 - 2026-11-02 20:12 UTC — kontrola cykliczna: Rust Q4 — Evaluator pracuje od 18:42 (zapis 20:09, plik dziennika rośnie); brak tematów web; dysk 4,3 GB.
+
+- 2026-11-02 21:12 UTC — kontrola cykliczna: Rust Q4 — ten sam Evaluator od 18:42 (zapis 21:11, dziennik +470 KB od 20:09; 2,5 h, pełne bramki/mutacje); brak tematów web; dysk 4,3 GB. Jeśli do ok. 23:00 brak werdyktu — sprawdzić zwis.
