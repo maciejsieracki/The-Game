@@ -590,3 +590,5 @@ Cel końcowy i bieżący zapisane w `GOAL-RUST-PORT-20261020.md` (§"CEL PĘTLI 
 - 2026-11-02 — ZASADA WŁAŚCICIELA: „robimy wszystko 1:1” — port Rust = web 1:1, bez uproszczeń; odstępstwa tylko za decyzją właściciela. Długi z -Q1…-Q3 (podgląd HUD `simulateResourcePipelineForPreview`, pętla miast, wpięcie `ai_turn`, REPIN `hasFreshwaterAccess`/rezerwacja pod żywność w auto-ulepszeniach) do spłaty, nie do pominięcia. Dodać do dispatchów Rust zdanie „1:1 z webem; odstępstwo = ZAŁOŻENIE do akceptacji właściciela”.
 
 - 2026-11-02 — polecenie właściciela („Dlaczego nad niczym nie pracujesz? Odpalaj operatorów”) — próg dysku 8 GB zdjęty na jego polecenie; uruchomiono równolegle: web `R-WEB-PANGEA-LAND-FRACTION-OTHER-Q1` (Pangea 20–70% ±2 pp) i Rust `R-RUSTPORT-P6-ADVANCE-CITY-ECONOMY-Q4-Q1` (pętla miast P12/P17–P20 + podgląd HUD zasobów, zasada 1:1). Dysk 7,6 GB — pilnować ENOSPC, sprzątać po workflowach.
+
+- 2026-11-02 14:49 UTC — kontrola cykliczna: trwają web PANGEA-OTHER (zapis 14:46) i Rust Q4 (zapis 14:48); brak wyników do integracji; dysk 6,1 GB (pilnować; przy < 4 GB wstrzymać Rust).
