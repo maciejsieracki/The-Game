@@ -3743,8 +3743,58 @@ export function topUpPangeaLandFraction(
       added++;
     }
   }
+  // R-WEB-PANGEA-LAND-FRACTION-OTHER-Q1: faza 2 - przy duzym niedoborze (> PANGEA_TOPUP_DEFICIT_PHASE2_FRACTION
+  // mapy; typowo deklarowane <= 50% oraz Maly 60%) faza 1 wyczerpuje maxRounds (~1 warstwa/runde, tylko
+  // kandydaci z >= 3 suchymi sasiadami, ~30-100 heksow/runde), a baza maski dostarcza tylko ~10-40% mapy.
+  // Sufit: wnetrze (poza strefa brzegowa d<=10 i buforem szerokosci) daje na Malym max ~66,4% - Maly 70% poza zasiegiem.
+  // Faza 2 = dylatacja brzegu: warstwa po warstwie, kandydaci z >= 2 (w ostatecznosci >= 1) suchym sasiadem,
+  // kolejnosc: wynik maski malejaco, potem odleglosc od srodka mapy rosnaco (zwarty obrys, bez
+  // kierunkowego biasu klucza), az do celu. Przy niedoborze <= progu NIC nie robi => mapy Pangea
+  // ze Standardowym 60%/70% pozostaja bajt-w-bajt takie same.
+  const deficitThreshold = Math.round(keys.length * PANGEA_TOPUP_DEFICIT_PHASE2_FRACTION);
+  if (targetLand - land > deficitThreshold) {
+    for (let round = 0; round < PANGEA_TOPUP_PHASE2_MAX_ROUNDS && land < targetLand; round++) {
+      let cands: string[] = [];
+      for (const minNb of [2, 1]) {
+        cands = [];
+        for (const k of keys) {
+          const h = hexes[k]!;
+          if (!isWaterTerrainLocal(h.terenBazowy)) continue;
+          const { q, r } = parseHexKey(k);
+          if (isInMapBorder(q, r, width, height)) continue;
+          if (hexBorderDistance(q, r, width, height) <= MAP_MARGIN_LAND_ZONE_HEXES) continue;
+          if (r < buf || r >= height - buf) continue;
+          if (countLandNeighbors(hexes, q, r) < minNb) continue;
+          cands.push(k);
+        }
+        if (cands.length > 0) break;
+      }
+      if (cands.length === 0) break;
+      const cd = new Map<string, number>();
+      for (const k of cands) {
+        const { q, r } = parseHexKey(k);
+        cd.set(k, mapCenterDistanceNorm(q, r, width, height));
+      }
+      cands.sort((a, b) => {
+        const d = (landScores.get(b) ?? 0) - (landScores.get(a) ?? 0);
+        if (Math.abs(d) > 1e-9) return d;
+        const dc = cd.get(a)! - cd.get(b)!;
+        return Math.abs(dc) > 1e-9 ? dc : a.localeCompare(b);
+      });
+      for (const k of cands) {
+        if (land >= targetLand) break;
+        setHexToLaka(hexes[k]!);
+        land++;
+        added++;
+      }
+    }
+  }
   return added;
 }
+
+/** Faza 2 dosypywania Pangei: wlaczana gdy po fazie 1 brakuje > tego ulamka heksow mapy (1,5 pp). */
+const PANGEA_TOPUP_DEFICIT_PHASE2_FRACTION = 0.015;
+const PANGEA_TOPUP_PHASE2_MAX_ROUNDS = 200;
 
 /**
  * Dopasowuje udział lądu per kontynent — budżet wg potencjału maski w strefie centrum.
