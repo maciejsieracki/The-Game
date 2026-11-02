@@ -14,3 +14,4 @@ BLOKADY: brak.
 RUNDY: 1/5
 NASTĘPNY KROK: Evaluator R1 (zweryfikować mapowanie hunków, równoważność M03/M15/M17/M20/M23/M35-37, brak portu podglądu jako akceptowalny zakres).
 DEPLOY/PUSH: NIE WYKONANO
+COMMIT-PRACY: 439e8674f (kod, testy, wektory, dowody); commit raportu = HEAD tego brancha (worktree-wf_a3087678-639-1).
