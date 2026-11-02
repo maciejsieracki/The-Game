@@ -39,7 +39,7 @@ Parytet terytorium s18: 750/0 niezgodnosci; s7: 1127/0. pageErrors: 0 we wszystk
 ## ZMIANY/COMMIT
 Allowlista: `gra/tools/live-verify-autoimprove-common.cjs` (EVID_DIR z env), `gra/tools/live-verify-autoimprove-fort.cjs` (filtr `e-fort`+city0 zamiast slice(0,12); plik wyniku z ziarnem),
 nowy `gra/tools/live-verify-autoimprove-fort-limit-probe.cjs`, katalog runu. Zero zmian w gra/src, gra/data, gra-robocza, rust-port, WERSJE.md.
-SHA commitu: patrz nizej (uzupelnione po commicie).
+SHA commitu (narzedzia + dowody + raport): aa0004d93b9ad52ef19d5a7f16d34ac0f54e27e0 (gałąź worktree-wf_5da4cc34-15c-1; dopisek SHA w kolejnym commicie).
 
 ## Komendy (odtwarzalne)
 T=$(mktemp -d); cp gra-robocza/Gra-ROBOCZA.html $T/   # MD5 e3f08be6...
