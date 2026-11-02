@@ -3788,9 +3788,57 @@ export function topUpPangeaLandFraction(
         added++;
       }
     }
+    // Faza 3 (Maly 70%): wnetrze wyczerpane (sufit ~66,4%) - dilacja do strefy brzegowej, d >= MIN_D,
+    // z sufitem udzialu lada w pierscieniu (istniejace pierscienie 4-10 nie sa przycinane, tylko nie rosna ponad sufit).
+    if (land < targetLand) {
+      const ringTotal = new Map<number, number>();
+      const ringLand = new Map<number, number>();
+      for (const k of keys) {
+        const { q, r } = parseHexKey(k);
+        const d = hexBorderDistance(q, r, width, height);
+        ringTotal.set(d, (ringTotal.get(d) ?? 0) + 1);
+        if (!isWaterTerrainLocal(hexes[k]!.terenBazowy)) ringLand.set(d, (ringLand.get(d) ?? 0) + 1);
+      }
+      for (let round = 0; round < PANGEA_TOPUP_PHASE2_MAX_ROUNDS && land < targetLand; round++) {
+        const cands: string[] = [];
+        const cd = new Map<string, number>();
+        const dOf = new Map<string, number>();
+        for (const k of keys) {
+          const h = hexes[k]!;
+          if (!isWaterTerrainLocal(h.terenBazowy)) continue;
+          const { q, r } = parseHexKey(k);
+          const d = hexBorderDistance(q, r, width, height);
+          if (d < PANGEA_TOPUP_MARGIN_MIN_D || d > MAP_MARGIN_LAND_ZONE_HEXES) continue;
+          if (r < buf || r >= height - buf) continue;
+          if ((ringLand.get(d) ?? 0) >= (ringTotal.get(d) ?? 0) * PANGEA_TOPUP_MARGIN_RING_CEIL) continue;
+          if (countLandNeighbors(hexes, q, r) < 2) continue;
+          cands.push(k);
+          cd.set(k, mapCenterDistanceNorm(q, r, width, height));
+          dOf.set(k, d);
+        }
+        if (cands.length === 0) break;
+        cands.sort((a, b) => {
+          const dc = cd.get(a)! - cd.get(b)!;
+          return Math.abs(dc) > 1e-9 ? dc : a.localeCompare(b);
+        });
+        for (const k of cands) {
+          if (land >= targetLand) break;
+          const d = dOf.get(k)!;
+          if ((ringLand.get(d) ?? 0) >= (ringTotal.get(d) ?? 0) * PANGEA_TOPUP_MARGIN_RING_CEIL) continue;
+          setHexToLaka(hexes[k]!);
+          ringLand.set(d, (ringLand.get(d) ?? 0) + 1);
+          land++;
+          added++;
+        }
+      }
+    }
   }
   return added;
 }
+
+/** Faza 3: najmniejsza odleglosc od krawedzi (d), do ktorej wolno dosypac lad; pierscien nie przekroczy tego ulamka. */
+const PANGEA_TOPUP_MARGIN_MIN_D = 4;
+const PANGEA_TOPUP_MARGIN_RING_CEIL = 0.6;
 
 /** Faza 2 dosypywania Pangei: wlaczana gdy po fazie 1 brakuje > tego ulamka heksow mapy (1,5 pp). */
 const PANGEA_TOPUP_DEFICIT_PHASE2_FRACTION = 0.015;
