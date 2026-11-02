@@ -594,3 +594,5 @@ Cel końcowy i bieżący zapisane w `GOAL-RUST-PORT-20261020.md` (§"CEL PĘTLI 
 - 2026-11-02 14:49 UTC — kontrola cykliczna: trwają web PANGEA-OTHER (zapis 14:46) i Rust Q4 (zapis 14:48); brak wyników do integracji; dysk 6,1 GB (pilnować; przy < 4 GB wstrzymać Rust).
 
 - 2026-11-02 16:02 UTC — kontrola cykliczna: trwają web PANGEA-OTHER (zapis 16:00) i Rust Q4 (zapis 15:57); brak wyników do integracji; dysk 4,7 GB → po sprzątaniu starych kopii scratchpadu (q3work, ev) ok. 4,9 GB. Próg wstrzymania Rust: < 4 GB.
+
+- 2026-11-02 — NOWE ZGŁOSZENIE WEB (właściciel, zrzut): strażnica/posterunek nie odsłania mgły wojny. Temat `R-WEB-FORT-VISION-FOG-Q1` ma priorytet nad Rustem: Rust Q4 trwa (nie wstrzymuję, dysk ~4,9 GB — jeśli < 4 GB wstrzymać Rust Q4). Rust: zmiana widoczności fortów trafi do REPIN (zasada 1:1) po wdrożeniu weba.

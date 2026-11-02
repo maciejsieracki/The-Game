@@ -8440,3 +8440,7 @@ Odpowiedź „a”: pełny zakres dyplomacji w porcie — rozejmy, pakty o nieag
 ## 2026-11-02 — ZASADA WŁAŚCICIELA (Rust): „robimy wszystko 1:1”
 
 Port Rust ma odtwarzać weba (pin `4bbef081d` i kolejne) 1:1 — zachowanie, kolejność efektów, liczby, także dyplomację, ekonomię, mapgen i UI — bez własnych uproszczeń i „ulepszeń”. Skutki dla procesu: (1) odstępstwa od weba tylko za wyraźną decyzją właściciela; (2) pominięcia z poprzednich tematów traktować jako dług DO SPŁACENIA, nie jako stan docelowy: `simulateResourcePipelineForPreview` (hunki 1406, 1547), pętla miast P12/P17–P20, wpięcie do `ai_turn`, wektory/mutanty z luk FC; (3) każdy temat portu: wektory z URUCHOMIONEGO weba bajt w bajt (jak dotąd), niezależny weryfikator, brak tolerancji dryfu; (4) po zmianach weba (np. ROBOCZA) — REPIN pinu, także gdy wpływ praktyczny zerowy (np. `hasFreshwaterAccess`), żeby 1:1 było dosłowne.
+
+## 2026-11-02 — ZGŁOSZENIE WŁAŚCICIELA (z zrzutem): strażnica/posterunek nie odsłania mgły wojny
+
+„Pierwszy błąd do poprawki. Strażnica rozszerza teren cywilizacji, ale nie rozświetla go tak jak miasto, czyli nie usuwa fog of war. Trzeba to poprawić.” (zrzut: granica terytorium — niebieski pas — biegnie przez czarne, nieodkryte pola; strażnica/posterunek nad nimi). → temat `R-WEB-FORT-VISION-FOG-Q1` (dispatch w runie). Wymaganie: teren należący do cywilizacji dzięki posterunkowi/fortowi ma być odkryty/rozświetlony jak teren miasta.
