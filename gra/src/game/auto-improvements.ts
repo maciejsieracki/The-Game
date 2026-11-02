@@ -1736,6 +1736,8 @@ function pickAutoImprovementsSinglePass(opts: PickAutoImprovementsOpts): AutoImp
           prog: WYRAB_MIN_FOREST_IN_RADIUS, pracaLeft, globalSpent, effectiveCityCap, onlyWorked,
           techOk: isImprovementTechUnlocked('wyrab', unlockedTechs), civOk: civGate('wyrab', civArchetype),
           kosztWyrab: wyrabMetaRzeka?.kosztPraca ?? null,
+          // Werdykty `las` to REKONSTRUKCJA bramek (nie obserwacja picka): nie licza wydatku budzetu po wczesniejszych heksach.
+          rekonstrukcja: true,
         },
       });
       for (const { q, r } of radiusHexes) {

@@ -25,6 +25,7 @@ ok(/installCivTestHooks\(\s*window as unknown as Record<string, unknown>,\s*type
   'main.ts WYWOLUJE installCivTestHooks(window, location.search, ...)');
 const callIdx = mainTs.indexOf('installCivTestHooks(window');
 ok(callIdx > 0 && /triggerPlayerEndTurn\(\)/.test(mainTs.slice(callIdx, callIdx + 4000)), 'hook endTurn deleguje do triggerPlayerEndTurn');
+ok(/civTestOnRiver\(q, r\)/.test(mainTs) && /riverPaths/.test(mainTs.slice(mainTs.indexOf('const civTestOnRiver'), mainTs.indexOf('const civTestOnRiver') + 600)), 'main.ts: hook naRzece uzywa riverPaths + sasiadow (nie tylko rzeka.obecna)');
 ok(/get\('civTest'\) === '1'/.test(hooksTs), 'civ-test-hooks.ts: bramka dokladnie ?civTest=1');
 ok(/if \(!isCivTestEnabled\(search\)\) return false;/.test(hooksTs), 'civ-test-hooks.ts: instalacja za bramka (return false bez parametru)');
 ok(!/__civTest\s*=/.test(mainTs), 'main.ts nie przypisuje __civTest bezposrednio (tylko przez bramkowany modul)');
@@ -102,6 +103,26 @@ for (const wolno of [false, true]) {
   ok(forest.length >= FOREST.length, `wolno=${wolno}: log obejmuje heksy lasu (zdarzen lasu: ${forest.length})`);
   if (!wolno) ok(forest.every(e => e.verdict === 'odrzucony' && e.reason === 'wycinka wylaczona'), 'wolno=OFF: KAZDY las odrzucony z powodem "wycinka wylaczona"');
   else ok(forest.every(e => e.reason.length > 0), 'wolno=ON: kazdy las ma powod: ' + [...new Set(forest.map(e => e.verdict + ':' + e.reason))].join(' | '));
+}
+// Spojnosc logu z realnym pickiem (zarzut Evaluatora #3): log to rekonstrukcja bramek, wiec sprawdzamy ZGODNOSC, nie zakladamy jej.
+// Kazdy realny pick wycinki MUSI miec w logu werdykt 'wybrany' dla tego heksa (log nie moze byc ciasniejszy niz picker).
+{
+  for (const riverCase of [false, true]) {
+    const mk = () => pickAutoImprovements({
+      cities: [{ ...CITY, ulepszeniaFocus: 'zrownowazone' }], ownerId: 0, map: makeMap({ forest: FOREST, river: riverCase ? [[10, 12], [10, 13], [10, 14]] : [] }), territoryNodes: TN,
+      placedImprovements: new Map(), pracaAvailable: 5000, unlockedTechs: new Set(FULL), pracaSurplusThreshold: 30,
+      skipWyrab: false, demandDriven: true, resourceDeficitKeys: [], getFocus: () => 'zrownowazone', getOnlyWorked: () => true,
+      getWorkedHexKeys: () => WORKED, pracaBudgetPercent: 100, civArchetype: 'grecy', playerEra: 3, foodImprovementStages: () => true,
+    });
+    const evs = [];
+    globalThis.__civAutoImproveDebug = e => evs.push(e);
+    let res; try { res = mk(); } finally { delete globalThis.__civAutoImproveDebug; }
+    const picks = (Array.isArray(res) ? res : (res.picks || [])).filter(p => (p.key || p.improvementKey || p.ulepszenie) === 'wyrab');
+    const chosen = new Set(evs.filter(e => e.scope === 'las' && e.verdict === 'wybrany').map(e => e.hex));
+    const missing = picks.filter(p => !chosen.has(K(p.q, p.r)));
+    ok(missing.length === 0, `rzeka=${riverCase}: kazdy realny pick wyrab (${picks.length}) ma werdykt 'wybrany' w logu (brakuje: ${missing.length})`);
+    ok(evs.some(e => e.scope === 'miasto' && e.detail && e.detail.rekonstrukcja === true), `rzeka=${riverCase}: log jawnie oznaczony jako rekonstrukcja`);
+  }
 }
 {
   let calls = 0;

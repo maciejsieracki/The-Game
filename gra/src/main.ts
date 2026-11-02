@@ -26561,6 +26561,16 @@ async function boot(): Promise<void> {
 
     // R-WEB-AUTOIMPROVE-LIVE-HOOKS-Q1: `window.__civTest` — hooki zywych testow automatu ulepszen/fortow.
     // Powstaja WYLACZNIE przy `?civTest=1` (patrz civ-test-hooks.ts); bez parametru zero wplywu.
+    // Ta sama definicja co `onRiverHex` pickera (auto-improvements.ts): heks na rzece (`riverPaths` albo `rzeka.obecna`)
+    // LUB sasiad z rzeka — zeby diagnoza `naRzece` w zywej grze zgadzala sie z decyzja pickera.
+    const civTestOnRiver = (q: number, r: number): boolean => {
+      const inPaths = new Set<string>();
+      for (const path of map.riverPaths ?? []) for (const p of path) inPaths.add(`${p.q},${p.r}`);
+      const on = (a: number, b: number): boolean => inPaths.has(`${a},${b}`) || map.hexes[`${a},${b}`]?.rzeka?.obecna === true;
+      const inPathsNb = (a: number, b: number): boolean => inPaths.has(`${a},${b}`);
+      const nb: Array<[number, number]> = [[q + 1, r], [q - 1, r], [q, r + 1], [q, r - 1], [q + 1, r - 1], [q - 1, r + 1]];
+      return on(q, r) || nb.some(([a, b]) => inPathsNb(a, b) || map.hexes[`${a},${b}`]?.rzeka?.obecna === true);
+    };
     installCivTestHooks(window as unknown as Record<string, unknown>, typeof location !== 'undefined' ? location.search : '', {
       getTurn: () => turn,
       getCities: () => cities,
@@ -26573,7 +26583,7 @@ async function boot(): Promise<void> {
         if (!hx) return null;
         return {
           nakladka: String(hx.nakladka), teren: String(hx.terenBazowy),
-          naRzece: hx.rzeka?.obecna === true, clearing: hexClearingStates.has(keyOf(q, r)),
+          naRzece: civTestOnRiver(q, r), clearing: hexClearingStates.has(keyOf(q, r)),
         };
       },
       hexesWithin: (q, r, rad) => hexKeysWithinRadius(q, r, rad, map).map(k => {

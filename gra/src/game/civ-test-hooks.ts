@@ -8,7 +8,7 @@
  *    zalozenie miasta REALNA sciezka gracza, dodanie jednostki, koniec tury);
  *  - zero logiki gry tutaj: wszystko deleguje do closure'ow podanych z `main.ts` (`CivTestDeps`).
  *
- * Wolany z `main.ts` jednym wywolaniem `installCivTestHooks(...)` (sonda tekstowa: gra/tools/autoimprove-live-hooks-probe-test.cjs).
+ * Wolany z `main.ts` jednym wywolaniem `installCivTestHooks(...)` (sonda tekstowa: gra/tools/autoimprove-live-hooks-test.cjs).
  */
 
 export interface CivTestHexLayers {
