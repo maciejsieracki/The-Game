@@ -1,0 +1,15 @@
+STATUS: PASS-WITH-NOTES
+DOMAIN: GAME
+TEMAT: R-RUSTPORT-P6-ADVANCE-CITY-ECONOMY-Q2A-Q1
+GOAL: Dlug -Q2a z -Q1: wejscia terenowe ticku ekonomii (`computeTerritoryResourceYieldByCity`, `computeWorkedMagazynYieldsByCity`, wiazanie P1/P2) liczone w Rust z `&[state::City]` + mapy, nie z parametrow testu (pin `4bbef081d`).
+
+ZMIANY/COMMIT: praca `929007c29` (baza `28c21a299`, detached; commit raportu = HEAD brancha `worktree-wf_9161e2df-7d1-1`). Nowe: `domain/turn_economy_territory.rs`, `tests/p6_adv_q2a_pipeline.rs`, `tests/p6_adv_q2a_vectors/q2a.json` (1.3 MB, odtwarzalny bajt w bajt z `git archive 4bbef081d`), `dyspozycje/rust-port/p6/P6-ADVANCE-CITY-ECONOMY-Q2A.md`, generator/weryfikator/mutate/logi. Zmiany: `domain/mod.rs` (1 linia `pub mod`), `turn_economy_advance.rs` (nowy wariant `advance_city_economy_resources_with_map`; istniejace sygnatury bez zmian), doc -Q1 (tabela P1-P3, P13, sek. 4a/4). Zero zmian w `territory.rs`, `okolica/**`, `gra/**`, `Cargo.toml`; `Cargo.lock` niecommitowany.
+
+ETAP 1 (rozbieznosc typow): `state::City` (`state.rs:1683`, `q/r: f64`, `okolica_reczne: Option<Reczne>` `:1708`) vs `WorkCity` (`territory.rs:299`, `i32`, `BTreeMap` bez kolejnosci, brak focus/tryb) vs `OkolicaCity` (`okolica.rs:102`, `i32`). Adaptery `work_city_of`/`okolica_city_of`/`reconcile_city_worked_tiles` (widoki; reconcile wraca do `Reczne` przez usuniecie kluczy, zachowuje kolejnosc). Korekta -Q1: reconcile mutuje `okolicaReczne`, nie `workedTiles`.
+
+TESTY: wektory z URUCHOMIONEGO `advanceCityEconomy` (526 scen.: 320 losowych, 18 brzegow promienia pop 0..17, 108 par spor sasiadow d1..6, 24 triple, 56 brzegow capu; + 90 wolan bezposrednich z fortami/posterunkami i `order`). Test Rust 5/5 (terr, worked, lost, reczne po reconcile uporzadkowane, koncowe `City.surowce` bitowo, pola Spichlerza/Garncarni, przekazywanie resolverow). Weryfikator `python3 -I`: 0 rozbieznosci, niezaleznie terytorium/spor/reconcile/wybor pol/sumy oraz ROZDZIAL PULI (537 miast, z capem; luka -Q1 zamknieta dla scen. bez konwerterow/Spichlerza/Mennicy). Mutacje: 65, zabite 56, rownowazne 9 z dowodem plik:linia (sek. 6 doc), nierownowazni przezywajacy 0 (netto 100%, brutto 86.2%; 4 przezyli w 1. przebiegu i zamkniete rozszerzeniem testu). Bramki PO ostatniej zmianie kodu: fmt, clippy `-D warnings --all-targets`, `git diff --check` EXIT=0; pelny `cargo test -j 2`: PO 2040/0 (lib 22 + 389/379/496/396/358), PRZED na czystym `git archive HEAD` (`28c21a299`) 2035/0; +5 = nowe testy.
+
+BLOKADY: brak. Uwagi (NOTES): plony pola `tileYield` i potencjal zywnosci w weryfikatorze pochodza z dumpu weba (nie niezalezne; pokrywa je test Rust); ujemne wspolrzedne heksow w `localeCompare` kluczy NIE_ZMIERZONO; ulamkowe `q/r` miasta NIE_ZMIERZONO; wiazanie z `ai_turn`/`turn_economy.rs` NIE wykonane (NIE_ZMIERZONO); klucze `okolica_reczne` calkowitoliczbowe (kolejnosc JS) poza wektorami; brutto mutacji < 90% przy 100% netto (9 rownowaznych — kod obronny/optymalizacje portu 1:1).
+RUNDY: 1/5
+NASTEPNY KROK: Evaluator R1 (zgodnosc adapterow z pinem, dowody rownowaznosci T13/T17/T18/T24/T27/T31-33/T35, zakres niezaleznego weryfikatora).
+DEPLOY/PUSH: NIE WYKONANO
