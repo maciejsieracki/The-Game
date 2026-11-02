@@ -275,6 +275,12 @@ export function prioritiesForUlepszeniaFocus(
 
 export interface PickAutoImprovementsOpts {
   cities: readonly AutoImprovementCity[];
+  /**
+   * R-WEB-AUTOIMPROVE-LIVE-HOOKS-Q1: OPCJONALNY log diagnostyczny decyzji wycinki (powod wyboru/odrzucenia lasu).
+   * Domyslnie brak = zero kosztu (picker nie liczy niczego dodatkowego). Zastepuje go globalna flaga
+   * `globalThis.__civAutoImproveDebug` (wypisuje `console.debug`). Callback jest TYLKO obserwatorem: nie zmienia wynikow.
+   */
+  onDecision?: (e: AutoImproveDecisionEvent) => void;
   ownerId: number;
   map: GameMap;
   territoryNodes?: readonly TerritoryNode[];
@@ -1005,6 +1011,28 @@ export function pickAutoImprovements(opts: PickAutoImprovementsOpts): AutoImprov
   return [...deficitPicks, ...stagedPicks, ...fallbackPicks, ...fortPicks, ...roadPicks, ...normalPicks];
 }
 
+/** Zdarzenie diagnostyczne pickera (R-WEB-AUTOIMPROVE-LIVE-HOOKS-Q1). */
+export interface AutoImproveDecisionEvent {
+  cityId: string;
+  /** `miasto` = podsumowanie bramek miasta; `las` = decyzja dla heksu lasu (wycinka). */
+  scope: 'miasto' | 'las';
+  hex?: string;
+  verdict?: 'wybrany' | 'odrzucony';
+  reason: string;
+  detail?: Record<string, unknown>;
+}
+
+/** Sink decyzji: jawny callback albo flaga globalna `__civAutoImproveDebug` (console.debug); inaczej undefined. */
+function resolveDecisionSink(
+  explicit: ((e: AutoImproveDecisionEvent) => void) | undefined,
+): ((e: AutoImproveDecisionEvent) => void) | undefined {
+  if (explicit) return explicit;
+  const flag = (globalThis as { __civAutoImproveDebug?: unknown }).__civAutoImproveDebug;
+  if (!flag) return undefined;
+  if (typeof flag === 'function') return flag as (e: AutoImproveDecisionEvent) => void;
+  return (e) => { console.debug('[autoImprove]', JSON.stringify(e)); };
+}
+
 function pickAutoImprovementsSinglePass(opts: PickAutoImprovementsOpts): AutoImprovementPick[] {
   const {
     cities,
@@ -1039,6 +1067,9 @@ function pickAutoImprovementsSinglePass(opts: PickAutoImprovementsOpts): AutoImp
   } = opts;
 
   if (cities.length === 0 || !territoryNodes) return [];
+  const dbg = resolveDecisionSink(opts.onDecision);
+  let passLabel = '';
+  let passIsProbe = false;
 
   // ZASADA 1 (runda 4): stan niedoboru jest WSPÓLNY dla całego wywołania — `resourceDeficitKeys`
   // jest polityką PAŃSTWA (magazyn surowców jest państwowy), nie miasta.
@@ -1685,6 +1716,56 @@ function pickAutoImprovementsSinglePass(opts: PickAutoImprovementsOpts): AutoImp
       if (key === 'tartak' && map.hexes[hexKey]?.terenBazowy !== TerenBazowy.Wzgorza && hillTartakPending()) return true;
       return false;
     };
+
+    // R-WEB-AUTOIMPROVE-LIVE-HOOKS-Q1: log diagnostyczny wycinki (TYLKO gdy `dbg`; czyste odczyty, zero skutkow ubocznych,
+    // zero wplywu na `picks`). Odzwierciedla bramki KROKU 0 / FAZY 2 w tej samej kolejnosci.
+    if (dbg) {
+      // Etykieta przebiegu: pickAutoImprovements wola ten sam przebieg wielokrotnie (etapy E1-E5, fallback, sondy `pending`
+      // z pracaAvailable=MAX_SAFE_INTEGER) — bez niej zdarzenia z roznych przebiegow wygladaja na sprzeczne.
+      passLabel = [
+        riverForestClearingOnly ? 'wycinka-rzeka' : '', offRiverClearing ? 'wycinka-poza-rzeka(E5)' : '', riverHexesOnly ? 'tylko-heksy-rzeki' : '',
+        priorityOverride ? `priorytety=[${priorityOverride.join(',')}]` : 'priorytety-profilu',
+      ].filter(Boolean).join(' ');
+      passIsProbe = opts.pracaAvailable >= Number.MAX_SAFE_INTEGER;
+      dbg({
+        cityId: city.id, scope: 'miasto', reason: 'bramki wycinki',
+        detail: {
+          etap: passLabel, sonda: passIsProbe,
+          focus, demandActive, citySkipWyrab, wyrabWlaczony, wyrabTylkoPodFarme, riverForestClearingOnly, offRiverClearing,
+          rzekiDoZagospodarowania, lesneMinSpelnione, wolnoKarczowacPozaRzeka, forestLeftInRadius,
+          prog: WYRAB_MIN_FOREST_IN_RADIUS, pracaLeft, globalSpent, effectiveCityCap, onlyWorked,
+          techOk: isImprovementTechUnlocked('wyrab', unlockedTechs), civOk: civGate('wyrab', civArchetype),
+          kosztWyrab: wyrabMetaRzeka?.kosztPraca ?? null,
+        },
+      });
+      for (const { q, r } of radiusHexes) {
+        const hk = `${q},${r}`;
+        if (map.hexes[hk]?.nakladka !== Nakladka.Las) continue;
+        const onRiv = onRiverHex(hk);
+        const detail: Record<string, unknown> = { naRzece: onRiv, rezerwaZywnosc: foodReservedHex(hk), kosztWyrab: wyrabMetaRzeka?.kosztPraca ?? null, etap: passLabel, sonda: passIsProbe };
+        const verdict = (v: 'wybrany' | 'odrzucony', reason: string): void => {
+          dbg({ cityId: city.id, scope: 'las', hex: hk, verdict: v, reason, detail });
+        };
+        const placedHere = workingPlaced.get(hk) ?? [];
+        if (scheduledWyrabHexes.has(hk)) { verdict('odrzucony', 'wycinka juz zaplanowana/w toku'); continue; }
+        if (!wyrabWlaczony) { verdict('odrzucony', citySkipWyrab ? 'wycinka wylaczona' : 'wycinka poza priorytetami tego przebiegu (etap bez wyrab)'); continue; }
+        if (!isImprovementTechUnlocked('wyrab', unlockedTechs) || !civGate('wyrab', civArchetype)) { verdict('odrzucony', 'brak tech'); continue; }
+        if (!wyrabMaSens(q, r)) { verdict('odrzucony', 'kandydat E2 odpada: teren nie jest baza pod farme (wycinka tylko pod farme)'); continue; }
+        if (!hexAllowsKey(q, r, 'wyrab')) { verdict('odrzucony', 'kandydat odpada: heks bez obywatela (onlyWorked)'); continue; }
+        if (placedHere.some(k => k === 'tartak' || k === 'oboz_lowiecki')) { verdict('odrzucony', 'kandydat odpada: tartak/oboz stoi na heksie'); continue; }
+        if (!onRiv) {
+          if (riverForestClearingOnly) { verdict('odrzucony', 'etap 0: tylko las przy rzece'); continue; }
+          if (rzekiDoZagospodarowania) { verdict('odrzucony', 'kandydat E5 odpada: rzeka niezagospodarowana (E1-E4 maja jeszcze prace)'); continue; }
+          if (!offRiverClearing && !lesneMinSpelnione) { verdict('odrzucony', 'minimum lesne (tartak/oboz) niespelnione'); continue; }
+          if (!offRiverClearing && forestLeftInRadius < WYRAB_MIN_FOREST_IN_RADIUS) { verdict('odrzucony', 'prog lasu w promieniu miasta'); continue; }
+          if (detail.rezerwaZywnosc) detail.uwaga = 'las zarezerwowany pod zywnosc: blokuje tartak/oboz, NIE wycinke';
+        }
+        const koszt = wyrabMetaRzeka?.kosztPraca ?? Infinity;
+        if (koszt > pracaLeft || pracaLeft - koszt < reserve || globalSpent + koszt > effectiveCityCap) { verdict('odrzucony', 'brak limitu puli %'); continue; }
+        if (!qualifies('wyrab', q, r)) { verdict('odrzucony', onRiv ? 'kandydat E2 odpada: qualifies(wyrab)=false' : 'kandydat E5 odpada: qualifies(wyrab)=false'); continue; }
+        verdict('wybrany', onRiv ? 'E2 wycinka (rzeka+las) spelnia bramki' : 'E5 wycinka poza rzeka spelnia bramki');
+      }
+    }
 
     // FAZA 1 — heks po heksie.
     for (const { q, r } of orderedHexes) {

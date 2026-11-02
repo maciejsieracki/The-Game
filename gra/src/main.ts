@@ -154,6 +154,7 @@ import { trimSidePanelEventLog } from './game/retained-side-panel-events';
 import { fogBrightnessForHex, applyFogDimToObject3D } from './render/fogDim';
 import { CameraController, DRAG_THRESHOLD_PX, type CameraControllerOptions } from './render/camera';
 import { HEX_R, axialToWorld, worldToAxial } from './render/hexutil';
+import { installCivTestHooks } from './game/civ-test-hooks';
 import { computeStartPlacements, computeReachable, computePath, listUnitTypes, pathCost, configureTerrainMovement, hexDistance, hexNeighborCoords, categoryOf, terrainMoveCost, isCivilianUnit } from './units/setup';
 import type { RuntimeUnit } from './units/setup';
 import { UnitRenderer, type UnitRingStance } from './render/units';
@@ -26557,6 +26558,61 @@ async function boot(): Promise<void> {
         reapplyCityHexDecorHides();
       },
     };
+
+    // R-WEB-AUTOIMPROVE-LIVE-HOOKS-Q1: `window.__civTest` — hooki zywych testow automatu ulepszen/fortow.
+    // Powstaja WYLACZNIE przy `?civTest=1` (patrz civ-test-hooks.ts); bez parametru zero wplywu.
+    installCivTestHooks(window as unknown as Record<string, unknown>, typeof location !== 'undefined' ? location.search : '', {
+      getTurn: () => turn,
+      getCities: () => cities,
+      getUnits: () => units,
+      getFortNodes: () => fortNodes,
+      territoryOwnerAt: (q, r) => territoryOwnerAtLive(q, r),
+      getPlacedLayers: (q, r) => placedImprovements.get(keyOf(q, r)) ?? [],
+      getHexInfo: (q, r) => {
+        const hx = map.hexes[keyOf(q, r)];
+        if (!hx) return null;
+        return {
+          nakladka: String(hx.nakladka), teren: String(hx.terenBazowy),
+          naRzece: hx.rzeka?.obecna === true, clearing: hexClearingStates.has(keyOf(q, r)),
+        };
+      },
+      hexesWithin: (q, r, rad) => hexKeysWithinRadius(q, r, rad, map).map(k => {
+        const [a, b] = k.split(',');
+        return { q: Number(a), r: Number(b) };
+      }),
+      unlockAllTech: () => { player.zbadane = new Set(data.tech.map(t => t.Technologia as string)); },
+      setPracaPool: n => { playerPracaPool = n; },
+      getPracaPool: () => playerPracaPool,
+      setUlepszeniaPolicy: (ownerId, patch) => {
+        ulepszeniaEmpireByOwner.set(ownerId, { ...ulepszeniaEmpireForOwner(ownerId), ...patch } as UlepszeniaEmpirePolicy);
+      },
+      getUlepszeniaPolicy: ownerId => ({ ...ulepszeniaEmpireForOwner(ownerId) }),
+      foundCandidates: limit => {
+        const out: Array<{ q: number; r: number }> = [];
+        for (const h of Object.values(map.hexes)) {
+          if (out.length >= limit) break;
+          if (canFoundPlayerCityAt(h.coords.q, h.coords.r).ok) out.push({ q: h.coords.q, r: h.coords.r });
+        }
+        return out;
+      },
+      foundPlayerCity: (q, r) => {
+        playerPracaPool = Math.max(playerPracaPool, 1_000_000);
+        for (const c of cities) if (c.ownerId === ME()) c.population = Math.max(c.population, 10);
+        return tryFoundPlayerCityAt(q, r);
+      },
+      addUnit: (ownerId, q, r, civilian) => {
+        const tpl = units.find(u => u.ownerId === ownerId && isCivilianUnit(u) === civilian)
+          ?? units.find(u => isCivilianUnit(u) === civilian);
+        if (!tpl) return null;
+        const id = `civtest-${ownerId}-${q}-${r}-${units.length}`;
+        units.push({ ...tpl, id, ownerId, q, r, inGarnizon: false } as RuntimeUnit);
+        syncUnitsRender();
+        return id;
+      },
+      setWar: (a, b) => { getDiploRelation(a, b).status = 'wojna'; },
+      endTurn: () => { triggerPlayerEndTurn(); },
+      meOwnerId: () => ME(),
+    });
 
     // R-WEB-SAVELOAD-PRACA-POOL-Q1 — hak testowy WYLACZNIE dla tools/saveload-praca-pool-live-test.cjs.
     // Zero reimplementacji: REALNE buildSaveGameSnapshot -> restoreGameFromSave.
