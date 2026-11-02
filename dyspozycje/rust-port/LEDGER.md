@@ -527,3 +527,5 @@ Cel końcowy i bieżący zapisane w `GOAL-RUST-PORT-20261020.md` (§"CEL PĘTLI 
 - 2026-11-02 00:14 UTC — kontrola cykliczna: M07B4 trwa (Operator aktywny, commity c5cc88b4b); TERYTORIUM-FORTY zintegrowany (parity-v2 = 5bee9c1a2); dysk 8,2 GB; brak tematów webowych.
 
 - 2026-11-02 — R-RUSTPORT-P6-M07B4-RZEKI-B-ZRODLA-QUOTAS-Q1: PASS-WITH-NOTES (FC), fast-forward na rust-port/parity-v2 → `bc4c63071` (2015/0; 8728/8728 wektorów; 113/123 mutantów zabitych, 10 równoważnych). Uwaga na Q5: `trace_river_for_grid_fill` mutuje `opts.min_len` wołającego (web używa kopii). Worktree zwolnione.
+
+- 2026-11-02 — M07B4 zintegrowany przez merge (parity-v2 przesunął się po FORTY): wynik `cfa1d9974`; po merge fmt/clippy EXIT=0, testy q4 2/2, p6_8i_pick 5/5, repin_teren 6/6. Brak aktywnych tematów Rust; dysk 9 GB.
