@@ -8432,3 +8432,7 @@ Pytania ABC U-1/U-6/U-4 ZAMKNIĘTE. Zostają niskie dopalenia: `R-WEB-PANGEA-LAN
 ## 2026-11-02 — DECYZJA WŁAŚCICIELA: NIE dodajemy jezior do generatora map
 
 „Nie, nie dodajemy jezior.” Pytanie o jeziora ZAMKNIĘTE. `hasFreshwaterAccess` (`gra/src/map/freshwater.ts`) zostaje jako gotowa, nieszkodliwa funkcja (jezior brak, więc bez wpływu na grę); „dostęp do wody” w praktyce = rzeka. Nie otwierać tematu jezior.
+
+## 2026-11-02 — DECYZJA WŁAŚCICIELA (Rust): port wojny i pokoju w PEŁNYM zakresie (A)
+
+Odpowiedź „a”: pełny zakres dyplomacji w porcie — rozejmy, pakty o nieagresji, cesje miast, flaga agresora, profil wojny (jak w webie, pin `4bbef081d`, ok. 236 hunków wg REPIN-DELTA-3). Kolejność: wojna zależy od ekonomii i pętli tury, więc najpierw `-Q4`/`-Q5` (pętla miast, wpięcie do `ai_turn`), potem seria tematów dyplomacji (audyt podziału na tematy przez Workflow, potem Q1…Qn sekwencyjnie).

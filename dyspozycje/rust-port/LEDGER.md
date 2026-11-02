@@ -584,3 +584,5 @@ Cel końcowy i bieżący zapisane w `GOAL-RUST-PORT-20261020.md` (§"CEL PĘTLI 
 - 2026-11-02 — właściciel odpowiedział ABC: U-1 A, U-6 A, U-4 A (wszystko zostaje jak jest, zero zmian w kodzie) — zapisane w REJESTR-PROSB-I-ZADAN.md.
 
 - 2026-11-02 — decyzja właściciela: jezior do generatora NIE dodajemy (REJESTR). Rust: REPIN `city_has_water_access` bez znaczenia praktycznego (zostaje rzeka), można zrobić przy okazji auto-ulepszeń.
+
+- 2026-11-02 — DECYZJA WŁAŚCICIELA: dyplomacja/wojna/pokój w porcie Rust w PEŁNYM zakresie (A: rozejmy, pakty o nieagresji, cesje miast, flaga agresora, profil wojny). Plan: najpierw `ADVANCE-CITY-ECONOMY-Q4/Q5`, potem audyt podziału (Workflow, tylko odczyt: grep `truce_until`, `peace_lock`, `forced_war`, `aggressor` w web vs Rust) i seria `R-RUSTPORT-P6-DYPLOMACJA-Qn`. Start gdy dysk >= 8 GB i brak tematów web.
