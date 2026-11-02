@@ -38,8 +38,8 @@ use serde_json::Value;
 use crate::data::civilizations::CivMatrixFile;
 use crate::domain::building_costs::p6_7b::{
     assign_owner_resource_stock_from_pool, empire_zloto_stock, load_throughput,
-    owner_resource_stock_all, resolve_spichlerz_city_bonus_state, SpichlerzDrainParams,
-    SpichlerzDrainPayResult, StockRecord,
+    owner_resource_stock_all, resolve_spichlerz_city_bonus_state, spichlerz_health_bonus,
+    SpichlerzCityBonusState, SpichlerzDrainParams, SpichlerzDrainPayResult, StockRecord,
 };
 use crate::domain::civ_matrix::civ_matrix_param;
 use crate::domain::recruitment::manpower::{
@@ -58,8 +58,16 @@ use crate::domain::turn_economy_resources::{
     ResourceTickResolvers, TerritoryResourceYield, WorkedMagazynYield,
 };
 
+use crate::domain::turn_economy::economy_upkeep_p2::UnitRow;
+use crate::domain::turn_economy_health::{
+    city_has_water_access_in, compute_city_health, load_health_params, river_hex_set,
+    CityHealthMapContext, HealthParams,
+};
 use crate::domain::turn_economy_territory::{
-    compute_terrain_inputs, TerrainContext, TerrainInputs,
+    compute_terrain_inputs, territory_nodes_of, TerrainContext, TerrainInputs,
+};
+use crate::domain::turn_economy_upkeep::{
+    compute_praca_upkeep_by_owner, load_advance_upkeep_params, AdvanceUpkeepParams,
 };
 
 /// Resolvery weba uzywane przez plastry zasobowe (`resolveOwnerEra`, `resolveOwnerTech`,
@@ -142,7 +150,7 @@ pub fn owner_era_for(input: &AdvanceCityEconomyInput<'_>, owner_id: i64) -> f64 
 }
 
 /// Surowy wiersz `econ-params.json` -> `RawRow` (liczba JSON = `Num`, reszta = `Other`).
-fn raw_row_from_value(v: &Value) -> RawRow {
+pub(crate) fn raw_row_from_value(v: &Value) -> RawRow {
     let mut row = RawRow::new();
     if let Some(obj) = v.as_object() {
         for (k, x) in obj {
@@ -173,7 +181,7 @@ pub fn raw_econ_for_storage(econ: Option<&Value>) -> RawEconParamsForUpkeep {
     }
 }
 
-fn difficulty_enum(difficulty: &str) -> Difficulty {
+pub(crate) fn difficulty_enum(difficulty: &str) -> Difficulty {
     match difficulty {
         "easy" => Difficulty::Easy,
         "hard" => Difficulty::Hard,
@@ -484,4 +492,110 @@ pub fn advance_manpower_heal(
         None,
         input.on_unit_hp_changed,
     )
+}
+
+/// Dodatkowe wejscia plastrow utrzymania i zdrowia (-Q3): `data.societyParams` (sekcja `zdrowie`) i
+/// `data.units` (wiersze `units.json` z kolejnoscia kluczy, patrz `turn_economy_upkeep::unit_rows_from_json_str`).
+pub struct UpkeepHealthInput<'a> {
+    /// Web `(data as Record).societyParams` (`:2421-2424`); `None` = `undefined`.
+    pub society_params: Option<&'a Value>,
+    /// Web `data.units` (`:2329`).
+    pub unit_rows: &'a [UnitRow],
+}
+
+/// Wynik plastrow P4/P5/P10/P16.
+#[derive(Debug, Clone, PartialEq)]
+pub struct UpkeepHealthOutcome {
+    /// Web `pracaUpkeepByOwner` (`:2320`, w wyniku ticku `:2469`).
+    pub praca_upkeep_by_owner: BTreeMap<i64, f64>,
+    /// Web `:2323-2329`.
+    pub params: AdvanceUpkeepParams,
+    /// Web `healthParams` (`:2421-2425`).
+    pub health_params: HealthParams,
+    /// Web `zdrowie` per miasto (`:2519-2527`), w kolejnosci `cities`.
+    pub zdrowie_by_city: Vec<(String, f64)>,
+}
+
+/// Plastry utrzymania i zdrowia `advanceCityEconomy` (-Q3), WPIETE ADDYTYWNIE obok
+/// [`advance_city_economy_resources_with_map`]: nie zmienia `cities`, a stan Spichlerza bierze z wyniku
+/// fazy zasobow (`views` = `AdvanceResourceOutcome::per_city`), tak jak petla miast weba czyta
+/// `spichlerzByCity` po `tickEmpireResourcePipeline`.
+/// Kolejnosc weba: P4 (`:2320`) -> P5 (`:2323-2329`) -> P10 (`:2421`) -> P16 per miasto (`:2519-2527`).
+pub fn advance_city_economy_upkeep_health(
+    cities: &[City],
+    terrain: &TerrainContext<'_>,
+    input: &AdvanceCityEconomyInput<'_>,
+    views: &[CityResourceView],
+    extra: &UpkeepHealthInput<'_>,
+) -> UpkeepHealthOutcome {
+    let territory_nodes = territory_nodes_of(cities);
+    let praca_upkeep_by_owner = compute_praca_upkeep_by_owner(
+        terrain.map,
+        &territory_nodes,
+        input.econ_params,
+        input.difficulty,
+    );
+    let params = load_advance_upkeep_params(input.econ_params, input.difficulty, extra.unit_rows);
+    let health_params = load_health_params(extra.society_params, input.difficulty);
+
+    let zloto = input.resolvers.owner_zloto_access;
+    let tick_resolvers = || ResourceTickResolvers {
+        owner_active_labels: input.resolvers.owner_active_labels,
+        owner_zloto_access: Some(zloto),
+    };
+    let rivers = river_hex_set(terrain.map);
+    let mut zdrowie_by_city = Vec::with_capacity(cities.len());
+    for c in cities {
+        let built_ids: &[String] = input
+            .built_by_city
+            .get(&c.id)
+            .map(Vec::as_slice)
+            .unwrap_or(&[]);
+        let stock_override = input.resolvers.owner_empire_stock.map(|f| f(c.owner_id));
+        let runtime = runtime_active_built_ids_for_city(
+            built_ids,
+            c.owner_id,
+            &tick_resolvers(),
+            stock_override.as_ref(),
+        );
+        let state = match views.iter().find(|v| v.city_id == c.id) {
+            Some(v) => SpichlerzCityBonusState {
+                ceramika_active: v.spichlerz_ceramika,
+                sol_active: v.spichlerz_sol,
+                ma_spichlerz_pop: v.ma_spichlerz,
+                ma_spichlerz_ii_pop: v.ma_spichlerz_ii,
+            },
+            None => resolve_spichlerz_city_bonus_state(
+                built_ids,
+                SpichlerzDrainPayResult {
+                    ceramika_paid: false,
+                    sol_paid: false,
+                },
+            ),
+        };
+        let has_water = city_has_water_access_in(c.q, c.r, terrain.map, &rivers);
+        let ctx = CityHealthMapContext {
+            q: c.q,
+            r: c.r,
+            population: c.population,
+            map: terrain.map,
+        };
+        let zdrowie = compute_city_health(
+            c.population,
+            &[],
+            &runtime,
+            &health_params,
+            Some(has_water),
+            Some(&ctx),
+            spichlerz_health_bonus(&state),
+            0.0,
+        );
+        zdrowie_by_city.push((c.id.clone(), zdrowie));
+    }
+    UpkeepHealthOutcome {
+        praca_upkeep_by_owner,
+        params,
+        health_params,
+        zdrowie_by_city,
+    }
 }

@@ -24,19 +24,19 @@ jeszcze wejsc terenowych ani reszty `advanceCityEconomy`, wiec wpiecie samej faz
 | P1 | wezly terytorium `buildTerritoryNodesFromCities` | `:2296` | `territory.rs:309 build_territory_nodes_from_cities(&[WorkCity])` | istnieje; WOLANE przez adapter `turn_economy_territory::territory_nodes_of` (`-Q2a`, `P6-ADVANCE-CITY-ECONOMY-Q2A.md`) |
 | P2 | spor sasiadow `computeLostToNearerSiblingByCity` + `reconcileAllWorkedTiles` | `:2305-2306` | `okolica/sasiedztwo.rs:13 compute_lost_to_nearer_sibling_by_city(&[OkolicaCity], &BuildMap)`, `territory.rs:422 reconcile_all_worked_tiles(&mut [WorkCity], ..)` | istnieja; WOLANE przez adaptery `okolica_city_of`/`reconcile_city_worked_tiles` (`-Q2a`) |
 | P3 | `computeTerritoryResourceYieldByCity` | `:2310` (def. `:738`) | `turn_economy_territory.rs compute_territory_resource_yield_by_city` (`-Q2a`) | ZAPORTOWANE (`-Q2a`); wariant `advance_city_economy_resources_with_map` liczy je z `&[state::City]` + mapy |
-| P4 | `computePracaUpkeepByOwner` | `:2320` | BRAK | DLUG Q3 |
-| P5 | `loadUpkeepParams`/`loadStorageParams`/`buildRationParams`/`buildUnitUpkeepTable` | `:2323-2329` | istnieja (`turn_economy.rs`, `city_growth.rs`) | wolane przez petle -> Q3 |
+| P4 | `computePracaUpkeepByOwner` | `:2320` (def. `:917`) | `turn_economy_upkeep.rs compute_praca_upkeep_by_owner` (`-Q3`) | ZAPORTOWANE (`-Q3`) |
+| P5 | `loadUpkeepParams`/`loadStorageParams`/`buildRationParams`/`buildUnitUpkeepTable` | `:2323-2329` | istnieja (`turn_economy.rs`, `city_growth.rs`); `turn_economy_upkeep.rs load_advance_upkeep_params` | WOLANE (`-Q3`) |
 | P6 | przepustowosci konwerterow per owner `converterThroughputsForOwner` | `:2338-2360` | `converter_throughputs_for_era` | **ZAPORTOWANE (S2)** |
 | P7 | bonusy Stolarni/Kamieniarni (`loadThroughput`) | `:2364-2371` | `load_throughput` | **ZAPORTOWANE (S2)** |
 | P8 | liczniki Stolarni/Kamieniarni/Magazynow per owner | `:2373-2402` | `advance_city_economy_resources` | **ZAPORTOWANE (S3)** |
 | P9 | `ownerResourceCapFor` | `:2404-2418` | `owner_resource_cap_for` | **ZAPORTOWANE (S4)** |
-| P10 | `loadHealthParams`, `loadWealthParams` | `:2421-2431` | `load_wealth_params` istnieje; `load_health_params` BRAK | DLUG Q3 |
+| P10 | `loadHealthParams`, `loadWealthParams` | `:2421-2431` (def. `:377`) | `load_wealth_params` istnieje; `turn_economy_health.rs load_health_params` (`-Q3`) | `loadHealthParams` ZAPORTOWANE (`-Q3`); Wealth: DLUG Q4 |
 | P11 | `ownersWithMennica` (`:240`) | `:2437` | `owners_with_mennica` | **ZAPORTOWANE (S1)** |
 | P12 | stolica/liczba miast per owner (korupcja) | `:2444-2454` | BRAK (wymaga petli) | DLUG Q4 |
 | P13 | `computeWorkedMagazynYieldsByCity` | `:2476` (def. `:824`) | `turn_economy_territory.rs compute_worked_magazyn_yields_by_city` (`-Q2a`) | ZAPORTOWANE (`-Q2a`); wariant `_with_map` jak wyzej |
 | P14 | faza zasobow (`loadSpichlerzDrainParams` -> tick -> Garncarnia) | `:2482-2500` | `run_city_economy_resource_phase` (e0c0a9ac5) | **WOLANE produkcyjnie (S5)** |
 | P15 | pola `CityEconomyTick` ze stanu Spichlerza/Garncarni | `:2514-2523`, `:2535-2538`, `:2592-2597`, krotka `tick` | `CityResourceView` | **ZAPORTOWANE (S6)** |
-| P16 | zdrowie `computeCityHealth`, dostep do wody | `:2524-2531` | BRAK (`compute_city_health`, `city_has_water_access`) | DLUG Q3 |
+| P16 | zdrowie `computeCityHealth`, dostep do wody | `:2524-2531` (def. `:456`, `:420`) | `turn_economy_health.rs compute_city_health`, `city_has_water_access` (`-Q3`) | ZAPORTOWANE (`-Q3`) |
 | P17 | plony miasta `toEconomyCity`/`cityYieldPerTurn`/mnozniki/cuda | `:2536-2621` | `economy_yield.rs` czesciowo; `to_economy_city`, `apply_wonder_city_yields`, `apply_order_yield_mults` BRAK | DLUG Q4 |
 | P18 | Wealth, `splitPraca`, handel/podatek (`manualWorkTaxByCity`, `maritimeTradeIncomeByCity`, `routeCashForCity`) | `:2625-2662` | `advance_wealth`, `split_praca`, `route_cash_for_city` istnieja | DLUG Q4 (wymaga P17) |
 | P19 | oblezenie / wzrost V8.5 (`computeGrowthPercentV85`, bilans zywnosci) | `:2664-2755` | `city_growth.rs` istnieje | DLUG Q4 |
@@ -93,12 +93,18 @@ Wczesniejsze uzasadnienie tabeli ("poza allowlista wolajacego") bylo bledne (wol
   (`:824`) + wpiecie `build_territory_nodes_from_cities`/spor sasiadow/`reconcile_all_worked_tiles`. Zaleznosci
   P1/P2 istnieja; brakuje samych dwoch funkcji mapowych. Po nim `AdvanceCityEconomyInput` traci dwa parametry.
   STATUS: ZROBIONE w `-Q2a` jako osobny wariant `advance_city_economy_resources_with_map` (struktura `AdvanceCityEconomyInput` i funkcja bazowa BEZ zmian; dwa pola wejsciowe sa w wariancie ignorowane).
-* `-Q2b` zdrowie i woda: `loadHealthParams`, `computeCityHealth`, `cityHasWaterAccess` (P10, P16).
-* `-Q3` plony miasta: `toEconomyCity`, `cityYieldPerTurn` (czesciowo istnieje), `applyOrderYieldMults`,
-  `applyWonderCityYields`, korupcja (P12, P17) + Wealth/`splitPraca`/handel/podatek (P18).
-* `-Q4` oblezenie, wzrost V8.5, bilans zywnosci, manpower per miasto (P19, P20) - funkcje istnieja
-  (`city_growth.rs`, `recruitment.rs`), potrzebna petla.
+NUMERACJA (jedna prawda od `-Q3`, zgodna z tabela sek. 2; wczesniejszy opis `-Q2b`/`-Q3`=plony/`-Q4`/`-Q5` byl
+niespojny z tabela i jest wycofany):
+* `-Q3` utrzymanie i zdrowie: P4 `computePracaUpkeepByOwner`, P5 parametry utrzymania/magazynu/racji/tabela jednostek,
+  P10 `loadHealthParams`, P16 `computeCityHealth` + `cityHasWaterAccess`. STATUS: ZROBIONE (`P6-ADVANCE-CITY-ECONOMY-Q3.md`).
+  P16 NIE zalezy od P17: `zdrowie` jest WEJSCIEM `toEconomyCity` (`turn-economy.ts:2524-2527` liczy zdrowie z
+  `city`/`map`/`runtimeBuiltIds`/`spichlerzState`, a `:2536` dopiero je przekazuje do `toEconomyCity`).
+* `-Q4` petla miast (plony): `toEconomyCity`, `cityYieldPerTurn` (czesciowo istnieje), `applyOrderYieldMults`,
+  `applyWonderCityYields`, korupcja (P12, P17), Wealth/`splitPraca`/handel/podatek (P18), oblezenie, wzrost V8.5,
+  bilans zywnosci (P19) i manpower per miasto (P20) - funkcje P18-P20 istnieja (`city_growth.rs`, `recruitment.rs`),
+  potrzebna petla; tabela sek. 2 przypisuje je do Q4 (przy realizacji mozna podzielic na Q4a/Q4b).
 * `-Q5` utrzymanie per owner (P23) + wiazanie z `ai_turn`/`turn_economy.rs` (P24 `manpowerHeal` zaportowane w obronie R1, sek. 4b).
+* Zamkniete w `-Q2a`: P1-P3, P13; w `-Q3`: P4, P5, P10 (bez Wealth), P16.
 * `NIE_ZMIERZONO`: wiazanie z petla gry nie sprawdzane (brak testu integracyjnego `ai_turn` w tym temacie).
 
 ## 4b. S9 `manpowerHeal` (obrona R1)
