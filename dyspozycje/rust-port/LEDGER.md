@@ -620,3 +620,5 @@ Cel końcowy i bieżący zapisane w `GOAL-RUST-PORT-20261020.md` (§"CEL PĘTLI 
 - 2026-11-02 22:12 UTC — kontrola cykliczna: Rust Q5 trwa (Operator od 21:25, zapis 22:07); brak tematów web; dysk 5,9 GB.
 
 - 2026-11-02 ~23:00 UTC — RESTART KONTENERA zatrzymał workflow Rust Q5 (wf_dbd18ae1-07c, Operator r1 od 21:25). Odzyskano: worktree Operatora przetrwał (niezacommitowany: `turn_economy_tick.rs` 343 l., test + wektory, generator, weryfikator, mutacje) → commit WIP `401af127e` zabezpieczony (`refs/keep/Q5-wip` → `rust-port-wip/Q5-wip`). Dispatch Q5 uzupełniony o START z WIP; workflow wznawiany (`resumeFromRunId`). `origin/*` bez zmian (parity-v2 `fb417eebd`, main `23dd158e9`).
+
+- 2026-11-02 23:12 UTC — kontrola cykliczna: Rust Q5 (wznowiony po restarcie) — nowy Operator od 22:53, zapis 23:10, startuje z WIP `401af127e`; brak tematów web; dysk 5,8 GB.
