@@ -490,3 +490,77 @@ fn tick_direct_edges_n_minus_1_n_plus_1() {
         assert_eq!(left, if paid { stock - 25.0 } else { stock });
     }
 }
+
+/// Zarzut Evaluatora R1 nr 2: `converter_throughputs_for_era` (web `turn-economy.ts:1428-1435`) ma wlasny test.
+/// Kazda receptura: `loadThroughput` z `raw` (tu 50 dla wszystkich kluczy) + skalowanie epoka; oczekiwanie
+/// z wektorow `eraCases` z URUCHOMIONEGO weba (receptury spoza wektorow = nieskalowane jak `nieznany`).
+#[test]
+fn converter_throughputs_for_era_match_web_vectors() {
+    use civ_engine::domain::turn_economy_resources::converter_throughputs_for_era;
+    let d = data();
+    let raw = json!({"budynki": {
+        "budynek_cegielnia_przepustowosc": {"normalny": 50},
+        "budynek_garncarnia_przepustowosc": {"normalny": 50},
+        "budynek_huta_przepustowosc": {"normalny": 50},
+        "budynek_odlewnia_zelaza_przepustowosc": {"normalny": 50},
+        "budynek_wielka_odlewnia_przepustowosc": {"normalny": 50},
+    }});
+    let cases = arr(&d, "eraCases");
+    let covered = [
+        "cegielnia",
+        "garncarnia",
+        "huta",
+        "odlewnia_brazu",
+        "wielka_odlewnia__stal",
+    ];
+    let mut scaled_checked = 0;
+    for era_case in cases
+        .iter()
+        .filter(|c| c["id"] == "cegielnia" && num(&c["base"]) == 50.0)
+    {
+        let era = num(&era_case["era"]);
+        let got = converter_throughputs_for_era(&raw, "normalny", era);
+        assert_eq!(got.len(), DEFAULT_CONVERTER_RECIPES.len());
+        for r in DEFAULT_CONVERTER_RECIPES.iter() {
+            let lookup = if covered.contains(&r.id) {
+                r.id
+            } else {
+                "nieznany"
+            };
+            let want = cases
+                .iter()
+                .find(|c| {
+                    c["id"] == lookup && num(&c["base"]) == 50.0 && c["era"] == era_case["era"]
+                })
+                .unwrap_or_else(|| panic!("brak wektora {lookup}/{era}"));
+            same(
+                &format!("throughputs_for_era {}@{}", r.id, era),
+                &enc(got[r.id]),
+                &want["out"],
+            );
+            if (r.id == "cegielnia" || r.id == "garncarnia") && era > 1.0 && era.is_finite() {
+                assert!(got[r.id] > 50.0, "skalowanie epoka {} {}", r.id, era);
+                scaled_checked += 1;
+            }
+        }
+    }
+    assert_eq!(scaled_checked, 6, "era 2,3,4.5 x 2 receptury");
+    // brak wpisu w raw -> fallback receptury (nie 50)
+    let fb = converter_throughputs_for_era(&json!({}), "normalny", 1.0);
+    for r in DEFAULT_CONVERTER_RECIPES.iter() {
+        assert_eq!(fb[r.id], r.throughput_fallback, "fallback {}", r.id);
+    }
+}
+
+/// Zarzut Evaluatora R1 nr 6: `ceramika_happiness_bonus` jako publiczne API, brzeg `> 0` (M23 zabijalny przez API).
+#[test]
+fn ceramika_happiness_bonus_public_edges() {
+    use civ_engine::domain::turn_economy_resources::ceramika_happiness_bonus;
+    assert_eq!(ceramika_happiness_bonus(0.0, true), 0.0);
+    assert_eq!(ceramika_happiness_bonus(1.0, true), 1.0);
+    assert_eq!(ceramika_happiness_bonus(0.5, true), 1.0);
+    assert_eq!(ceramika_happiness_bonus(-1.0, true), 0.0);
+    assert_eq!(ceramika_happiness_bonus(f64::NAN, true), 0.0);
+    assert_eq!(ceramika_happiness_bonus(f64::INFINITY, true), 0.0);
+    assert_eq!(ceramika_happiness_bonus(5.0, false), 0.0);
+}

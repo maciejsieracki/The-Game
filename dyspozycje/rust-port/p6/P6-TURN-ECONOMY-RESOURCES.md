@@ -41,14 +41,18 @@ Wszystkie 15 hunków `turn-economy.ts` z `runs/R-RUSTPORT-REPIN-DELTA-3-Q1/hunki
 
 ## 4. Mutacje (turn_economy_resources.rs): 40 mutantów, 32 zabite, 8 równoważnych (SURVIVED, dowód)
 
-Zabite 32/32 nierównoważnych (100%; 32/40 = 80% brutto). Równoważne:
+Po obronie R1: dodano M41 (`converter_throughputs_for_era`: `converter_throughput_for_era(recipe.id, base, era)` →
+`base`; wcześniej SURVIVED, bez testu; teraz zabity przez `converter_throughputs_for_era_match_web_vectors`) oraz zabito
+M23. Stan: 41 mutantów, 34 zabite, 7 równoważnych bezwzględnie (100% nierównoważnych; 34/41 = 83% brutto).
+Równoważne (7 po obronie; lista niżej, bez M23):
 
 * M03 `raw.is_nan() || raw <= 0.0` → `raw < 0.0` (`turn_economy_resources.rs:443`): przy `raw == 0` / NaN kredyt
   `floor(raw*mult)` ≤ 0 lub NaN i `credit_owner_resource_stock` zwraca bez zmiany (`building_costs.rs:788`).
 * M15 `*per_cykl <= 0.0` → `< 0.0` (`:203`): wszystkie `inputs` receptur > 0 (`:60-137`), gałąź nieosiągalna.
 * M17 `throughput > 0.0` → `>= 0.0` (`:195`): `floor(0)=0`, wynik identyczny.
 * M20 `era > 1.0` → `>= 1.0` (`:154`): dla `era == 1` `e-1 = 0` w obu wariantach.
-* M23 `ceramika_po_drain > 0.0` → `>= 0.0` (`:302`): jedyny wołający (`:605`) wywołuje dla `nadwyzka > 0` (guard `:602-603`).
+* ~~M23~~ (R1 obrona): ekwiwalencja była tylko warunkowa (guard wołającego), nie dla publicznego API; dodano
+  `ceramika_happiness_bonus_public_edges` (0 → 0), M23 jest teraz ZABITY (zweryfikowane mutacją).
 * M35/M36/M37 (`zloto_access`, `owner_id`, ignorowanie resolvera etykiet; `:384-401`): w fazie 2 aktywne są tylko
   budynki konwerterów; bramka dla `garncarnia`/`cegielnia` (Glina) i `odlewnia_brazu` (Ruda) wymaga stanu etykiety > 0
   (`building-cost-params.json:78-85`), a receptura i tak wymaga ≥ 1 sztuki tego samego surowca
@@ -64,3 +68,18 @@ python3 -I dyspozycje/autobot/runs/R-RUSTPORT-P6-TURN-ECONOMY-RESOURCES-Q1/verif
 Generator czyta wyłącznie `git archive 4bbef081d gra/src gra/data` (esbuild w katalogu poza repo; bez buildu w `gra/`).
 Weryfikator Python (`-I`) przelicza niezależnie konwertery/era/inflow i pipeline dla scenariuszy bez resolvera etykiet
 (227 scen.); scenariusze z resolverem (234) potwierdza tylko web↔Rust.
+
+## 6. Rejestr NIE_ZMIERZONO / luk jawnych (obrona R1)
+
+* NIE_ZMIERZONO-1: `simulateResourcePipelineForPreview` (hunki `turn-economy.ts:1406`, `:1547`) NIE PORTOWANE.
+  Rdzeń podglądu bierze te same wejścia co tick, ale hunk 1547 liczy drenaż Soli inline inaczej niż tick; parytet
+  podglądu niezmierzony. Follow-up w osobnym temacie; poza GOAL „tick per turę".
+* NIE_ZMIERZONO-2: brak portu `advanceCityEconomy` w Rust, więc `run_city_economy_resource_phase` (a przez nią
+  `pay_spichlerz_drain_for_city` i `load_spichlerz_drain_params`) nie ma wołającego z pętli tury. Kryterium
+  „produkcyjny wołający" spełnione tylko co do typu produkcyjnego `state::City` i publicznego punktu wejścia.
+* NIE_ZMIERZONO-3: 234 z 461 scenariuszy (z resolverem etykiet / bramką runtime) nie jest niezależnie przeliczone
+  weryfikatorem Python, tylko porównane web↔Rust.
+* `rust-port/engine/Cargo.lock` powstaje po `cargo test` i nie jest śledzony; integracja MUSI go pominąć (nie dodawać
+  do commita; `.gitignore` poza allowlistą, niezmieniony).
+* Korekta bazy PRZED: logi `gate-base-s*.txt` + lib = 2015 passed / 6 failed (razem 2021 testów); 6 padających to
+  testy czytające pliki spoza `rust-port` (częściowy archiwum). Baza 2015/0 z dispatchu jest zgodna; PO bez regresu.
