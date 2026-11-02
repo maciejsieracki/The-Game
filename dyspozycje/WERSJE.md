@@ -1,3 +1,12 @@
+## ROBOCZA 1d59a346 -- 2026-11-02 -- Pangea: faktyczny udział lądu zgodny z deklaracją 20–70% (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`420d97ffe` + `R-WEB-PANGEA-LAND-FRACTION-OTHER-Q1` `c0f54012a`) i commit wdrożenia bundla; stała zgoda właściciela (dopalenie po `R-WEB-PANGEA-LAND-FRACTION-Q1`).
+- Bundle MD5 `1d59a3469fcee88c93c4c380e0867ef6`, 70,128,592 B, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, outDir poza repo, stempel ROBOCZA; `verify-robocza-bundle.cjs` manifest match OK.
+- Zakres: `topUpPangeaLandFraction` — fazy 2–3 dosypywania lądu. Zmierzone (średnia z 3 ziaren): Mały 20/30/40/50/60/70% → 20,0/30,0/40,0/50,0/60,0/70,2; Standardowy 20–50% → dokładnie deklaracja; Standardowy 60% (59,4) i 70% (69,4) bez zmian bajt-w-bajt. Kontynenty, Wyspy, Ziemia — hashe identyczne. Pangea Mały dla wszystkich udziałów wygląda inaczej dla tych samych ziaren.
+- Testy: tsc PASS; pangea-land-determinism, pangea-land-fraction 3/3, capital-sep-pangea 3/0, cluster-spread 5/0, ai-city-yield 42/0, parity startów gracza 30/30, pangea-land-other-measure PASS, pangea-land-shape PASS.
+- Ograniczenia: NIE_ZMIERZONO pełny `map-gen-regression` (rzeki >24 min; Pangea Mały rzeki 462/462 tras OK) i kształt Pangei 20–30% w przeglądarce.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `e3f08be6b0dcc31e55c45234dcb92d78`, 70,125,616 bajtów.
+
 ## ROBOCZA e3f08be6 -- 2026-11-02 -- automat: posterunek nie w kole własnego fortu (testowa)
 
 - **STATUS: DEPLOYED** — merge do `origin/main` (`a02d6bd30` + `R-WEB-AUTO-FORT-DIAG-Q1` `a13d97694`) i commit wdrożenia bundla; stała zgoda właściciela (usterka z testów na żywo U-3).
