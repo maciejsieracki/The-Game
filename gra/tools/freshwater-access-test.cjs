@@ -103,6 +103,12 @@ console.log('(A) hasFreshwaterAccess: jezioro / morze / rzeka / ujscie / brzegi 
   // jezioro dotykajace krawedzi mapy = ocean (brak ukrytego sasiada); mapa bez obwodki
   const m3 = makeMap({ ring: false, lake: [[0, 5]] });
   ok(!isLakeHex(m3, 0, 5), 'woda przy krawedzi mapy (brak sasiada w siatce) = ocean');
+  // zarzut Ev R1 #3: lad na CALYM obwodzie (zadna woda nie dotyka krawedzi) — najwieksza skladowa = ocean, nie jezioro
+  const big = [];
+  for (let q = 8; q <= 11; q++) for (let r = 8; r <= 11; r++) big.push([q, r]);
+  const m4 = makeMap({ ring: false, channel: big, lake: [[3, 3]] });
+  ok(!isLakeHex(m4, 9, 9) && !hasFreshwaterAccess({ q: 7, r: 9 }, m4), 'lad na obwodzie: najwieksze morze nadal ocean (miasto przy nim bez wody)');
+  ok(isLakeHex(m4, 3, 3) && hasFreshwaterAccess({ q: 4, r: 3 }, m4), 'lad na obwodzie: mniejsza zamknieta skladowa = jezioro (woda TAK)');
 }
 
 // ---------------------------------------------------------------- (B)

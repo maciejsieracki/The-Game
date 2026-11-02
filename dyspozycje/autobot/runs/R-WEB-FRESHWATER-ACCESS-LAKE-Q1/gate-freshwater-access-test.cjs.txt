@@ -16,6 +16,8 @@
   [OK] przed mutacja: brak wody
   [OK] po invalidateFreshwaterCache: nowe jezioro widoczne
   [OK] woda przy krawedzi mapy (brak sasiada w siatce) = ocean
+  [OK] lad na obwodzie: najwieksze morze nadal ocean (miasto przy nim bez wody)
+  [OK] lad na obwodzie: mniejsza zamknieta skladowa = jezioro (woda TAK)
 (B) cityHasWaterAccess (zdrowie): regres zero na mapie bez jezior + etykieta
   [OK] mapa bez jezior: cityHasWaterAccess == dawna definicja na 576/576 heksach (rozbieznosci: 0, TAK=26)
   [OK] miasto przy jeziorze: linia „Jezioro”, brak kary „Brak wody” (Jezioro|Zagęszczenie (×1))
@@ -37,6 +39,5 @@
   [OK] [zrownowazone+niedobor drewna] las przy morzu: tartak powstaje
   [OK] [zrownowazone+niedobor drewna] N+1 (2 heksy od rzeki): tartak powstaje
 
-Wynik: 35 PASS / 0 FAIL
-
+Wynik: 37 PASS / 0 FAIL
 EXIT=0

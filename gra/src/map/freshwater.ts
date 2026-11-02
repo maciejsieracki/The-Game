@@ -6,7 +6,8 @@
  *
  * JEZIORO = heks wodny (Morze / PlytkieMorze), który NIE jest połączony wodą (przez sąsiedztwo
  * heksów wodnych) z żadnym heksem wodnym przy krawędzi mapy. Ocean = składowa wody dotykająca
- * krawędzi mapy (heks wodny, który ma sąsiada poza siatką). Generator nie ma osobnego terenu
+ * krawędzi mapy (heks wodny, który ma sąsiada poza siatką). Gdy żadna woda nie dotyka krawędzi (ląd na całym
+ * obwodzie), oceanem jest największa składowa wody; mniejsze zamknięte składowe pozostają jeziorami. Generator nie ma osobnego terenu
  * „jezioro” — jezioro to zwykłe Morze/PlytkieMorze zamknięte w lądzie (gen-helpers.ts: „zamknięte
  * jezioro-morze”, „morze otoczone lądem = jezioro/zatoka”), więc rozpoznajemy je topologią.
  *
@@ -78,6 +79,27 @@ export function getLakeHexSet(map: Pick<GameMap, 'hexes'>): ReadonlySet<string> 
     }
   }
 
+  // Zabezpieczenie (zarzut Evaluatora R1 #3): mapa z lądem na CAŁYM obwodzie (albo wczytana z zapisu bez
+  // wody przy krawędzi) nie ma składowej dotykającej krawędzi → bez tego CAŁY ocean byłby „jeziorem”.
+  // Wtedy za ocean uznajemy NAJWIĘKSZĄ składową wody; mniejsze zamknięte składowe zostają jeziorami.
+  if (ocean.size === 0 && water.size > 0) {
+    const seen = new Set<string>();
+    let largest: string[] = [];
+    for (const start of water) {
+      if (seen.has(start)) continue;
+      const comp: string[] = [start];
+      seen.add(start);
+      for (let i = 0; i < comp.length; i++) {
+        const [q, r] = (comp[i] as string).split(',').map(Number) as [number, number];
+        for (const [dq, dr] of NEIGHBORS) {
+          const nk = `${q + dq},${r + dr}`;
+          if (water.has(nk) && !seen.has(nk)) { seen.add(nk); comp.push(nk); }
+        }
+      }
+      if (comp.length > largest.length) largest = comp;
+    }
+    for (const key of largest) ocean.add(key);
+  }
   const lake = new Set<string>();
   for (const key of water) if (!ocean.has(key)) lake.add(key);
   const result: ReadonlySet<string> = lake.size === 0 ? EMPTY_SET : lake;
