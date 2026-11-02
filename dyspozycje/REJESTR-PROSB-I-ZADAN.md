@@ -8436,3 +8436,7 @@ Pytania ABC U-1/U-6/U-4 ZAMKNIĘTE. Zostają niskie dopalenia: `R-WEB-PANGEA-LAN
 ## 2026-11-02 — DECYZJA WŁAŚCICIELA (Rust): port wojny i pokoju w PEŁNYM zakresie (A)
 
 Odpowiedź „a”: pełny zakres dyplomacji w porcie — rozejmy, pakty o nieagresji, cesje miast, flaga agresora, profil wojny (jak w webie, pin `4bbef081d`, ok. 236 hunków wg REPIN-DELTA-3). Kolejność: wojna zależy od ekonomii i pętli tury, więc najpierw `-Q4`/`-Q5` (pętla miast, wpięcie do `ai_turn`), potem seria tematów dyplomacji (audyt podziału na tematy przez Workflow, potem Q1…Qn sekwencyjnie).
+
+## 2026-11-02 — ZASADA WŁAŚCICIELA (Rust): „robimy wszystko 1:1”
+
+Port Rust ma odtwarzać weba (pin `4bbef081d` i kolejne) 1:1 — zachowanie, kolejność efektów, liczby, także dyplomację, ekonomię, mapgen i UI — bez własnych uproszczeń i „ulepszeń”. Skutki dla procesu: (1) odstępstwa od weba tylko za wyraźną decyzją właściciela; (2) pominięcia z poprzednich tematów traktować jako dług DO SPŁACENIA, nie jako stan docelowy: `simulateResourcePipelineForPreview` (hunki 1406, 1547), pętla miast P12/P17–P20, wpięcie do `ai_turn`, wektory/mutanty z luk FC; (3) każdy temat portu: wektory z URUCHOMIONEGO weba bajt w bajt (jak dotąd), niezależny weryfikator, brak tolerancji dryfu; (4) po zmianach weba (np. ROBOCZA) — REPIN pinu, także gdy wpływ praktyczny zerowy (np. `hasFreshwaterAccess`), żeby 1:1 było dosłowne.
