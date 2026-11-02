@@ -1,3 +1,12 @@
+## ROBOCZA 4049e780 -- 2026-11-02 -- strażnica i fort odsłaniają mgłę wojny (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`9ce1f5e50` + `R-WEB-FORT-VISION-FOG-Q1` `b38f40860`) i commit wdrożenia bundla; zgłoszenie właściciela (2026-11-02, zrzut), stała zgoda na poprawki.
+- Bundle MD5 `4049e7807bdb1508e35f83dd6f7b0d2d`, 70,129,073 B, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, outDir poza repo, stempel ROBOCZA; `verify-robocza-bundle.cjs` manifest match OK.
+- Zakres: posterunek (r=3) i fort (r=5) gracza są źródłami wzroku o promieniu terytorium — całe koło odkryte i widoczne jak przy mieście. Żywy pomiar: koło 91 pól, nieodkrytych PRZED 91/91, PO 0/91 (także po zdobyciu fortu). Po utracie fortu pola zostają odkryte (znika widoczność); fort wroga niczego nie odsłania. AI z fortem widzi jego koło (91 → 182 pola).
+- Testy: tsc PASS; fort-vision 15/0, auto-fort-claim 63/0, auto-fort-diag 17/0, fort-outpost-hard-territory 80/0, river-fog-visibility 31/0, autoimprove-live-hooks 37/0.
+- Ograniczenia: NIE_ZMIERZONO budowa/cofnięcie fortu przez panel (hak testowy omija kod panelu) i wpływ zwiększonej widoczności na AI w pełnej grze; `ai-fog-test` pada też na bazie.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `1d59a3469fcee88c93c4c380e0867ef6`, 70,128,592 bajtów.
+
 ## ROBOCZA 1d59a346 -- 2026-11-02 -- Pangea: faktyczny udział lądu zgodny z deklaracją 20–70% (testowa)
 
 - **STATUS: DEPLOYED** — merge do `origin/main` (`420d97ffe` + `R-WEB-PANGEA-LAND-FRACTION-OTHER-Q1` `c0f54012a`) i commit wdrożenia bundla; stała zgoda właściciela (dopalenie po `R-WEB-PANGEA-LAND-FRACTION-Q1`).
