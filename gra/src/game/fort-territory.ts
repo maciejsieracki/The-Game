@@ -349,3 +349,22 @@ export function applyFortCaptureByOccupation(
   }
   return events;
 }
+
+/**
+ * R-WEB-FORT-VISION-FOG-Q1 (zgloszenie wlasciciela 2026-11-02): fort/posterunek jest ZRODLEM WZROKU
+ * wlasciciela o promieniu rownym promieniowi jego terytorium (fort 5, posterunek 3) — cale kolo
+ * terytorium jest odkryte i widoczne jak przy miescie. `contestedUseless` nie daje terytorium,
+ * wiec nie daje tez wzroku. Fort wroga nie jest zrodlem wzroku `ownerId`. PURE.
+ * / EN: forts/outposts as sight sources with radius == territory radius.
+ */
+export function fortSightSources(
+  forts: readonly FortNode[],
+  ownerId: number,
+): Array<{ q: number; r: number; radius: number }> {
+  const out: Array<{ q: number; r: number; radius: number }> = [];
+  for (const f of forts) {
+    if (f.ownerId !== ownerId || f.contestedUseless) continue;
+    out.push({ q: f.q, r: f.r, radius: cityTerritoryRadius(fortNodeAsCityNode(f)) });
+  }
+  return out;
+}
