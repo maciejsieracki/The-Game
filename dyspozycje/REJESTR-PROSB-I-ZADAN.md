@@ -8404,3 +8404,7 @@ Odpowiedź na pytanie ABC o „dostęp do wody”: „Jezioro, tak, ale nie pami
 ## 2026-11-02 — DECYZJA WŁAŚCICELA: brak awaryjnego tartaku przy rzece
 
 „Jeżeli nie ma innego miejsca niż las przy rzece, to też nie dodajemy tartaków przy rzece. Pamiętaj, że mogą być inne miasta i inne miejsca, gdzie taki tartak można postawić. Wszystkie miejsca przy rzece i na rzece są przeznaczone na żywność. Koniec.” → pytanie ABC o awaryjny tartak ZAMKNIĘTE (odpowiedź: NIE). Weryfikacja i test regresyjny w `R-WEB-FRESHWATER-ACCESS-LAKE-Q1` (pkt 6 dispatchu).
+
+## 2026-11-02 — PRZYPOMNIENIE DLA WŁAŚCICIELA (odłożone na później)
+
+Ręczne usunięcie 43 scalonych gałęzi `web-wip/*` na GitHubie (z tego środowiska zdalne usuwanie nie działa). Właściciel: „zostawiamy na przyszłość, zajmiemy się tym innym razem, przypomnij mi, żeby to kiedyś posprzątać.” → przypominać przy podsumowaniu większego etapu / zakończeniu pracy nad kolejką webową. Nie usuwać na własną rękę. Do skasowania także gałęzie `rust-port-wip/*` po zintegrowaniu odpowiednich tematów (ta sama przeszkoda).
