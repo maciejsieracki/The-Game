@@ -45,6 +45,7 @@ import {
 import type { Hex } from '../types/hex';
 import type { GameMap } from '../types/map';
 import { Nakladka, TerenBazowy } from '../types/hex';
+import { hasFreshwaterAccess, hasRiverWaterAccess } from '../map/freshwater';
 import type { GameData } from '../data/loader';
 import type { City, CityPodzialHandlu, CityPodzialPracy } from './cities';
 import { resolveCityPodzialHandlu } from './empire-handel-split';
@@ -414,34 +415,13 @@ function loadHealthParams(
 }
 
 /**
- * Czy miasto ma dostęp do wody (D17-A): centrum lub sąsiad z rzeką / riverPaths.
+ * Czy miasto ma dostęp do wody (D17-A): SŁODKA woda — rzeka (centrum lub sąsiad z rzeką / riverPaths)
+ * LUB jezioro na heksie miasta/sąsiedzie. Morze/ocean NIE (R-WEB-FRESHWATER-ACCESS-LAKE-Q1, decyzja
+ * właściciela 2026-11-02). Definicja i cache D6 (zbiór rzek per `riverPaths`, zbiór jezior per `map.hexes`)
+ * żyją w `map/freshwater.ts`; dla map bez jezior wynik jest identyczny z dawną wersją rzeka-only.
  */
-const __riverHexSetCache = new WeakMap<object, Set<string>>();
 export function cityHasWaterAccess(city: Pick<City, 'q' | 'r'>, map: GameMap): boolean {
-  // D6: memoizuj zbiór heksów rzek per referencja riverPaths — cityHasWaterAccess leci
-  // per computeView w pętli po miastach, a odbudowa całego zbioru (alokacje stringów) za
-  // każdym razem to koszt + GC na Super Huge. Cache auto-inwaliduje, gdy riverPaths się zmieni.
-  const paths = map.riverPaths ?? [];
-  const riverHexSet: Set<string> = __riverHexSetCache.get(paths as object) ?? (() => {
-    const s = new Set<string>();
-    for (const path of paths) {
-      for (const h of path) s.add(`${h.q},${h.r}`);
-    }
-    __riverHexSetCache.set(paths as object, s);
-    return s;
-  })();
-
-  function hexHasRiver(q: number, r: number): boolean {
-    const hex = map.hexes[`${q},${r}`];
-    if (hex?.rzeka?.obecna) return true;
-    if (riverHexSet.has(`${q},${r}`)) return true;
-    for (const [dq, dr] of HEX_NEIGHBORS) {
-      if (riverHexSet.has(`${q + dq},${r + dr}`)) return true;
-    }
-    return false;
-  }
-
-  return hexHasRiver(city.q, city.r);
+  return hasFreshwaterAccess(city, map);
 }
 
 /**
@@ -547,7 +527,9 @@ export function computeCityHealthBreakdown(
   const maTargowisko = builtIds.includes('targowisko');
   const maAkwedukt   = builtIds.includes('akwedukt');
   const maLaznia     = builtIds.includes('laznia_publiczna');
-  if (maRzeke)      lines.push({ label: 'Rzeka', value: hp.rzeka });
+  // Etykieta: „Rzeka” (jak dotąd) albo „Jezioro”, gdy słodką wodę daje wyłącznie jezioro (FRESHWATER-LAKE-Q1).
+  const wodaEtykieta = mapCtx && !hasRiverWaterAccess(mapCtx.map, mapCtx.city.q, mapCtx.city.r) ? 'Jezioro' : 'Rzeka';
+  if (maRzeke)      lines.push({ label: wodaEtykieta, value: hp.rzeka });
   if (maAkwedukt)   lines.push({ label: 'Akwedukt', value: hp.akwedukt });
   if (maStudnie)    lines.push({ label: 'Studnia', value: hp.studnia });
   if (maTargowisko) lines.push({ label: 'Targowisko', value: hp.targowisko });

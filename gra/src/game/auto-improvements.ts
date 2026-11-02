@@ -35,6 +35,7 @@ import { getImprovementMeta, isImprovementTechUnlocked } from './improvement-tec
 import { isImprovementAllowedForCiv } from './terrain-improvements';
 import type { UlepszeniaFocus } from './cities';
 import { DEFAULT_ULEPSZENIA_FOCUS } from './cities';
+import { isFreshwaterReservedHex } from '../map/freshwater';
 
 /** Minimalny kształt miasta dla pickera (gracz + AI). */
 export interface AutoImprovementCity {
@@ -1161,8 +1162,9 @@ function pickAutoImprovementsSinglePass(opts: PickAutoImprovementsOpts): AutoImp
 
   // R-WEB-AUTOIMPROVE-STAGES3-Q1, S3-1 (właściciel 2026-10-31): „DOSTĘP DO WODY” dla tartaku/obozu = heks NA rzece
   // albo SĄSIADUJĄCY z heksem rzeki — TA SAMA definicja co irygacja (`isRiverAdjacent`, map/improvement-build.ts:~940:
-  // własny `rzeka.obecna` LUB heks w `riverPaths` LUB sąsiad w `riverPaths`). Jezioro/morze NIE wchodzą do definicji
-  // (ZAŁOŻENIE: jezioro/morze nie liczą się jako „dostęp do wody”; brak decyzji właściciela w rejestrze). Liczone RAZ na wywołanie.
+  // własny `rzeka.obecna` LUB heks w `riverPaths` LUB sąsiad w `riverPaths`). Jezioro/morze NIE wchodzą do TEJ definicji
+  // (`hasRiverAccess` = rzeka-only, priorytety E1–E3); od 2026-11-02 (FRESHWATER-LAKE-Q1) rezerwację tartaku/obozu rozszerza
+  // `foodReservedHex` o jezioro i sąsiada z samym `rzeka.obecna`; morze/ocean nigdy. Liczone RAZ na wywołanie.
   const riverNeighborKeys = (hk: string): string[] => {
     const [qs, rs] = hk.split(',');
     const q = Number(qs); const r = Number(rs);
@@ -1189,6 +1191,19 @@ function pickAutoImprovementsSinglePass(opts: PickAutoImprovementsOpts): AutoImp
   // zostają bez zmian — osobny temat), tylko rozszerzamy `onRiverHex`. Sweep 778899: 11/200 układów wcześniej miało trzodę przed farmą.
   const onRiverHex = (hk: string): boolean =>
     hasRiverAccess(hk) || riverNeighborKeys(hk).some(n => map.hexes[n]?.rzeka?.obecna === true);
+
+  // R-WEB-FRESHWATER-ACCESS-LAKE-Q1: heks ZAREZERWOWANY pod żywność = słodka woda (rzeka na heksie/sąsiedzie, także sama
+  // `rzeka.obecna` sąsiada, albo jezioro — `map/freshwater.ts`). Używany WYŁĄCZNIE do blokady tartaku/obozu; priorytety E1–E3
+  // (`onRiverHex`/`hasRiverAccess`) zostają rzeką-only. Memo per wywołanie pickera.
+  const foodReservedMemo = new Map<string, boolean>();
+  const foodReservedHex = (hk: string): boolean => {
+    const hit = foodReservedMemo.get(hk);
+    if (hit !== undefined) return hit;
+    const [qs, rs] = hk.split(',');
+    const v = hasRiverAccess(hk) || isFreshwaterReservedHex(map, Number(qs), Number(rs));
+    foodReservedMemo.set(hk, v);
+    return v;
+  };
 
   // E-FORT (R-WEB-AUTO-FORT-CLAIM-Q1): osobny przebieg z tymi samymi pułapami budżetu co reszta pickera.
   if (fortClaimPass) {
@@ -1633,7 +1648,7 @@ function pickAutoImprovementsSinglePass(opts: PickAutoImprovementsOpts): AutoImp
         const hk = `${q},${r}`;
         const hx = map.hexes[hk];
         if (!hx || hx.terenBazowy !== TerenBazowy.Wzgorza || hx.nakladka !== Nakladka.Las) continue;
-        if (hasRiverAccess(hk)) continue;
+        if (foodReservedHex(hk)) continue;
         if ((workingPlaced.get(hk) ?? []).includes('tartak')) continue;
         if (scheduledWyrabHexes.has(hk)) continue;
         if (!hexAllowsKey(q, r, 'tartak')) continue;
@@ -1657,7 +1672,13 @@ function pickAutoImprovementsSinglePass(opts: PickAutoImprovementsOpts): AutoImp
       // RĘCZNA budowa gracza nie przechodzi przez ten picker i NIE jest zmieniana.
       // Blokada D-R5-1 (`farmWouldClaimForest`: farma pierwsza na lesie pod farmę) USUNIĘTA — tartak może stać na
       // lesie nadającym się pod farmę, jeśli heks nie ma dostępu do rzeki.
-      if ((key === 'tartak' || key === 'oboz_lowiecki') && hasRiverAccess(hexKey)) return true;
+      // R-WEB-FRESHWATER-ACCESS-LAKE-Q1 (właściciel 2026-11-02, DRUGA DECYZJA): „Jeżeli nie ma innego miejsca niż las przy
+      // rzece, to też nie dodajemy tartaków przy rzece … Wszystkie miejsca przy rzece i na rzece są przeznaczone na żywność.
+      // Koniec.” → ZERO awaryjnego tartaku/obozu: brak fallbacku, brak wyjątku „bo nie ma innego lasu” (to jedyna ścieżka
+      // stawiania tartaku/obozu przez automat; FAZA 0 = tylko posterunek/fort, FAZA 2 = tylko wyrąb). `foodReservedHex`
+      // = rzeka (riverPaths / własne `rzeka.obecna` na heksie LUB sąsiedzie) albo jezioro (ZAŁOŻENIE do akceptacji).
+      // E2 (wycinka + farma na rzece) NIE jest tu ruszana — blokada dotyczy wyłącznie tartaku i obozu.
+      if ((key === 'tartak' || key === 'oboz_lowiecki') && foodReservedHex(hexKey)) return true;
       // S3-1(c): PREFERENCJA miejsca tartaku — najpierw WZGÓRZA (las na wzgórzu), dopiero potem pozostałe heksy z lasem
       // bez dostępu do rzeki. Tartak na heksie nie-wzgórzowym czeka, dopóki w zasięgu miasta jest kandydat na wzgórzu
       // (ten sam koszt, te same bramki — czekanie nie grozi zastojem budżetu).

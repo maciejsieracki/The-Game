@@ -1,0 +1,42 @@
+(A) hasFreshwaterAccess: jezioro / morze / rzeka / ujscie / brzegi N-1,N,N+1
+  [OK] zamkniete Morze w ladzie = jezioro
+  [OK] zatoka polaczona z krawedzia i obwodka = ocean, NIE jezioro
+  [OK] zbior jezior = 3 heksy (got 3)
+  [OK] miasto przy jeziorze (odleglosc 1) => woda TAK
+  [OK] miasto sasiadujace z dwoma heksami jeziora => TAK
+  [OK] N+1: odleglosc 2 od jeziora => NIE
+  [OK] miasto przy zatoce/morzu (ocean) => NIE
+  [OK] miasto przy oceanie (obwodka), bez rzeki i jeziora => NIE
+  [OK] miasto przy rzece (N-1 / na rzece / N) => TAK
+  [OK] N+1: odleglosc 2 od rzeki => NIE
+  [OK] przy ujsciu rzeki do morza => TAK przez rzeke
+  [OK] ujscie: heks nad ocean + rzeka => TAK
+  [OK] ta sama linia brzegowa, 3 heksy od ujscia => NIE (morze nie daje wody)
+  [OK] mapa bez jezior: zbior pusty, rzeka-only
+  [OK] przed mutacja: brak wody
+  [OK] po invalidateFreshwaterCache: nowe jezioro widoczne
+  [OK] woda przy krawedzi mapy (brak sasiada w siatce) = ocean
+(B) cityHasWaterAccess (zdrowie): regres zero na mapie bez jezior + etykieta
+  [OK] mapa bez jezior: cityHasWaterAccess == dawna definicja na 576/576 heksach (rozbieznosci: 0, TAK=26)
+  [OK] miasto przy jeziorze: linia „Jezioro”, brak kary „Brak wody” (Jezioro|Zagęszczenie (×1))
+  [OK] miasto przy rzece: linia „Rzeka” (Rzeka|Zagęszczenie (×1))
+  [OK] miasto przy morzu: kara „Brak wody” (Zagęszczenie (×1)|Brak wody)
+  [OK] suma zdrowia: jezioro (1) > morze (-3)
+(C) pickAutoImprovements: ZERO tartaka/obozu na wodzie slodkiej (rzeka, sasiad rzeki, jezioro); poza woda i przy morzu tartak powstaje
+  [OK] [surowce] las tylko przy rzece: tartak/oboz 0 (got -)
+  [OK] [surowce] las przy rzece widocznej tylko jako rzeka.obecna: tartak/oboz 0 (got -)
+  [OK] [surowce] las przy jeziorze: tartak/oboz 0 (got -)
+  [OK] [surowce] las poza woda slodka: tartak powstaje (2/2)
+  [OK] [surowce] las przy morzu: tartak powstaje
+  [OK] [surowce] N+1 (2 heksy od rzeki): tartak powstaje
+  [OK] [zrownowazone+niedobor drewna] las tylko przy rzece: tartak/oboz 0 (got -)
+  [OK] [zrownowazone+niedobor drewna] E2 zostaje: wyrab -> farma na rzece+las
+  [OK] [zrownowazone+niedobor drewna] las przy rzece widocznej tylko jako rzeka.obecna: tartak/oboz 0 (got -)
+  [OK] [zrownowazone+niedobor drewna] las przy jeziorze: tartak/oboz 0 (got -)
+  [OK] [zrownowazone+niedobor drewna] las poza woda slodka: tartak powstaje (2/2)
+  [OK] [zrownowazone+niedobor drewna] las przy morzu: tartak powstaje
+  [OK] [zrownowazone+niedobor drewna] N+1 (2 heksy od rzeki): tartak powstaje
+
+Wynik: 35 PASS / 0 FAIL
+
+EXIT=0
