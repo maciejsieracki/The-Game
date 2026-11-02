@@ -232,6 +232,7 @@ import {
   fortNodeAsCityNode,
   foundingNodesForOwner,
   fortTerritoryNodes,
+  fortSightSources,
   isHexInForeignFortTerritory,
   isHexReservedByRivalFort,
   applyFortTakeoverOnCityFounded,
@@ -11562,6 +11563,10 @@ async function boot(): Promise<void> {
         if (sight <= 0) continue;
         for (const k of computeVisibleAt(c.q, c.r, map, sight)) visible.add(k);
       }
+      // R-WEB-FORT-VISION-FOG-Q1: fort/posterunek = źródło wzroku o promieniu terytorium (5 / 3).
+      for (const fs of fortSightSources(fortNodes, ME())) {
+        for (const k of computeVisibleAt(fs.q, fs.r, map, fs.radius)) visible.add(k);
+      }
       return visible;
     }
 
@@ -11643,6 +11648,7 @@ async function boot(): Promise<void> {
         playerUnits: units.filter(u => u.ownerId === ownerId),
         playerCities: cities.filter(c => c.ownerId === ownerId),
         unitSight,
+        extraSightSources: fortSightSources(fortNodes, ownerId), // R-WEB-FORT-VISION-FOG-Q1
       });
       if (!isMe(ownerId) && allianceFormalKindBetween(activeDeals, ME(), ownerId) !== null) {
         for (const k of ownPlayerVisibleHexes()) visible.add(k);
@@ -14431,6 +14437,8 @@ async function boot(): Promise<void> {
         else if (isMe(ev.prevOwnerId)) showHintMessage(`Utracono ${nm.toLowerCase()} (${ev.q},${ev.r}) wraz z terytorium — zdobyty przez wroga.`, 4500);
       }
       markCityStateDirty();
+      // R-WEB-FORT-VISION-FOG-Q1: zdobycie/utrata fortu gracza zmienia źródła wzroku.
+      if (evs.some(e => isMe(e.newOwnerId) || isMe(e.prevOwnerId))) refreshFog();
       return evs.length;
     }
 
@@ -14864,6 +14872,7 @@ async function boot(): Promise<void> {
         spawnImprovementMesh(req.hexKey);
         syncResourceOverlayAtHex(req.hexKey);
         unregisterFortNodeIfNeeded(req.key, req.q, req.r, 0);
+        if (req.key === 'fort' || req.key === 'posterunek') refreshFog(); // R-WEB-FORT-VISION-FOG-Q1
       }
 
       if (stillExists && pending.kosztPraca > 0) {
@@ -15076,6 +15085,7 @@ async function boot(): Promise<void> {
       placedImprovements.set(req.hexKey, nextLayers);
       syncHexUlepszenieFields(req.hexKey, nextLayers);
       registerFortNodeIfNeeded(req.key, req.q, req.r, 0);
+      if (req.key === 'fort' || req.key === 'posterunek') refreshFog(); // R-WEB-FORT-VISION-FOG-Q1
       pendingImprovementsTurn.add({
         hexKey: req.hexKey,
         key: req.key,
