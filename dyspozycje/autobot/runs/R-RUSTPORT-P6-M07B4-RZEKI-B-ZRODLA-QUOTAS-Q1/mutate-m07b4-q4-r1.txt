@@ -1,0 +1,124 @@
+C01 | KILLED | quotas.rs | oczek=K | :6944 ujemne -> 0 | RESTORED=True
+C02 | SURVIVED | quotas.rs | oczek=E | :6946 sum <= max: przy rownosci petla while nie startuje | RESTORED=True
+C03 | KILLED | quotas.rs | oczek=K | :6948 while sum > max | RESTORED=True
+C04 | KILLED | quotas.rs | oczek=K | :6951 idx: pierwszy max (>) vs ostatni (>=) | RESTORED=True
+C05 | KILLED | quotas.rs | oczek=K | :6953 prog <= 1 -> <= 0 | RESTORED=True
+C06 | KILLED | quotas.rs | oczek=K | :6953 prog <= 1 -> <= 2 | RESTORED=True
+C07 | KILLED | quotas.rs | oczek=K | :6954 dekrement kwoty | RESTORED=True
+C08 | KILLED | quotas.rs | oczek=K | :6955 dekrement sumy | RESTORED=True
+C09 | SURVIVED | quotas.rs | oczek=E | :6950 start petli idx od 0: q[0] > q[0] nigdy prawdziwe | RESTORED=True
+C10 | KILLED | quotas.rs | oczek=K | :6950 start petli od 2 | RESTORED=True
+P01 | KILLED | sources.rs | oczek=K | :6969 uzyte zrodla | RESTORED=True
+P02 | KILLED | sources.rs | oczek=K | :6973 brak seaDist -> 0 | RESTORED=True
+P03 | KILLED | sources.rs | oczek=K | :6978 sort dist malejaco | RESTORED=True
+P04 | KILLED | sources.rs | oczek=K | :6978 remis rosnaco | RESTORED=True
+P05 | KILLED | sources.rs | oczek=K | :6978 remis ignorowany (stabilnie) | RESTORED=True
+P06 | KILLED | sources.rs | oczek=K | :6975 rand() na zrodlo | RESTORED=True
+P07 | KILLED | sources.rs | oczek=K | :6982 count | RESTORED=True
+P08 | KILLED | sources.rs | oczek=K | :6985 minSep scisle | RESTORED=True
+P09 | KILLED | sources.rs | oczek=K | :6986 tooClose | RESTORED=True
+P10 | KILLED | sources.rs | oczek=K | :6985 odleglosc: zamiana q/r | RESTORED=True
+R01 | KILLED | trace.rs | oczek=K | :6834 fastMode | RESTORED=True
+R02 | KILLED | trace.rs | oczek=K | :6834 fast: acceptLen +1 | RESTORED=True
+R03 | KILLED | trace.rs | oczek=K | :6834 fast: 0.75 | RESTORED=True
+R04 | KILLED | trace.rs | oczek=K | :6834 fast: max(3, ..) -> 2 | RESTORED=True
+R05 | KILLED | trace.rs | oczek=K | :6835 catalogMinLen +1 | RESTORED=True
+R06 | KILLED | trace.rs | oczek=K | :6835 0.6 -> 0.5 | RESTORED=True
+R07 | KILLED | trace.rs | oczek=K | :6835 max(acceptLen, ..) -> min | RESTORED=True
+R08 | KILLED | trace.rs | oczek=K | :6835 ostatnia proba 3 -> 4 | RESTORED=True
+R09 | KILLED | trace.rs | oczek=K | :6838 seen - negacja | RESTORED=True
+R10 | KILLED | trace.rs | oczek=E | :6838 seen: powtorka proby = ten sam wynik oprocz rand wspolnego [KILL/EQ wg wektorow] | RESTORED=True
+R11 | KILLED | trace.rs | oczek=K | :6841 minLen proby | RESTORED=True
+R12 | KILLED | trace.rs | oczek=K | :6842 acceptLen <  -> <= | RESTORED=True
+R13 | KILLED | trace.rs | oczek=K | :6843 relaxSeaBuffer gate | RESTORED=True
+R14 | KILLED | trace.rs | oczek=K | :6846 wymiary wnioskowane (grid) | RESTORED=True
+R15 | KILLED | trace.rs | oczek=K | :6849 oceanConnected domyslny (grid) | RESTORED=True
+R16 | KILLED | trace.rs | oczek=K | :6851 pathEndsAtSea (grid) | RESTORED=True
+S10 | KILLED | sources.rs | oczek=K | :6878 podnoze: d >= 2 -> 3 | RESTORED=True
+S11 | KILLED | sources.rs | oczek=K | :6878 podnoze: d >= 2 -> 1 | RESTORED=True
+S12 | KILLED | sources.rs | oczek=E | :6878 podnoze: d <= 120 -> 121 [seaDist <= ~15 na mapach generatora; NIE_ZMIERZONO dla wiekszych] | RESTORED=True
+S13 | KILLED | sources.rs | oczek=K | :6912 zrodliska: d >= 3 -> 2 | RESTORED=True
+S14 | KILLED | sources.rs | oczek=K | :6912 zrodliska: d >= 3 -> 4 | RESTORED=True
+S15 | KILLED | sources.rs | oczek=E | :6912 zrodliska: d <= 65 -> 66 [seaDist <= ~15 na mapach generatora; NIE_ZMIERZONO dla wiekszych] | RESTORED=True
+S16 | KILLED | sources.rs | oczek=K | :6905 high 0.11 -> 0.12 | RESTORED=True
+S17 | KILLED | sources.rs | oczek=K | :6905 low 0.035 -> 0.04 | RESTORED=True
+S18 | KILLED | sources.rs | oczek=K | :6905 medium 0.065 -> 0.07 | RESTORED=True
+S19 | SURVIVED | sources.rs | oczek=E | :6913 rand > rate -> >=: rand() = k/2^32, a progi 0.11/0.035/0.065 nie sa wielokrotnoscia 2^-32 | RESTORED=True
+S1A | KILLED | sources.rs | oczek=K | :6872 foothill: r < h-margin -> <= | RESTORED=True
+S1B | KILLED | sources.rs | oczek=K | :6872 foothill: q < w-margin -> <= | RESTORED=True
+S1C | KILLED | sources.rs | oczek=K | :6872 foothill: r od margin+1 | RESTORED=True
+S1D | KILLED | sources.rs | oczek=K | :6872 foothill: q od margin+1 | RESTORED=True
+S20 | KILLED | sources.rs | oczek=K | :6913 brak losowania | RESTORED=True
+S21 | KILLED | sources.rs | oczek=K | :6874 podnoze: lad rzeczny | RESTORED=True
+S22 | KILLED | sources.rs | oczek=K | :6908 zrodliska: lad rzeczny | RESTORED=True
+S23 | KILLED | sources.rs | oczek=K | :6875 podnoze: wyklucz relief | RESTORED=True
+S24 | KILLED | sources.rs | oczek=K | :6909 zrodliska: wyklucz relief | RESTORED=True
+S25 | KILLED | sources.rs | oczek=K | :6880 sasiad reliefowy: any -> all | RESTORED=True
+S26 | KILLED | sources.rs | oczek=K | :6882 sasiad = relief | RESTORED=True
+S27 | KILLED | sources.rs | oczek=K | :6877 podnoze: brak seaDist -> 0 | RESTORED=True
+S28 | KILLED | sources.rs | oczek=K | :6911 zrodliska: brak seaDist -> 0 | RESTORED=True
+S29 | KILLED | sources.rs | oczek=K | :6933 gory/wzgorza | RESTORED=True
+S2A | KILLED | sources.rs | oczek=K | :6906 spring: r < h-margin -> <= | RESTORED=True
+S2B | KILLED | sources.rs | oczek=K | :6906 spring: q < w-margin -> <= | RESTORED=True
+S2C | KILLED | sources.rs | oczek=K | :6906 spring: r od margin+1 | RESTORED=True
+S2D | KILLED | sources.rs | oczek=K | :6906 spring: q od margin+1 | RESTORED=True
+S30 | KILLED | sources.rs | oczek=K | :6881 klucz sasiada | RESTORED=True
+S3A | KILLED | sources.rs | oczek=K | :6932 sources: r < h-margin -> <= | RESTORED=True
+S3B | KILLED | sources.rs | oczek=K | :6932 sources: q < w-margin -> <= | RESTORED=True
+S3C | KILLED | sources.rs | oczek=K | :6932 sources: r od margin+1 | RESTORED=True
+S3D | KILLED | sources.rs | oczek=K | :6932 sources: q od margin+1 | RESTORED=True
+T01 | KILLED | trace.rs | oczek=K | :6718 jawne wymiary zamienione | RESTORED=True
+T02 | KILLED | trace.rs | oczek=K | :6718 wymiary wnioskowane | RESTORED=True
+T03 | KILLED | trace.rs | oczek=K | :6738 startDist zrodla | RESTORED=True
+T04 | KILLED | trace.rs | oczek=K | :6742 minLen domyslne 4->5 | RESTORED=True
+T05 | KILLED | trace.rs | oczek=K | :6742 minLen domyslne 4->3 | RESTORED=True
+T06 | KILLED | trace.rs | oczek=K | :6743 mouthTailLen domyslne +1 | RESTORED=True
+T07 | KILLED | trace.rs | oczek=K | :6744 hardMeanderLen domyslne +1 | RESTORED=True
+T08 | KILLED | trace.rs | oczek=K | :6745 allowRelief domyslne | RESTORED=True
+T09 | KILLED | trace.rs | oczek=K | :6746 relaxSeaBuffer domyslne | RESTORED=True
+T10 | KILLED | trace.rs | oczek=K | :6747 stepCap dolny prog 12->11 | RESTORED=True
+T11 | KILLED | trace.rs | oczek=K | :6747 stepCap dolny prog 12->13 | RESTORED=True
+T12 | KILLED | trace.rs | oczek=K | :6748 min(maxLen, ..) -> max | RESTORED=True
+T13 | KILLED | trace.rs | oczek=K | :6749 mnoznik 2.5 | RESTORED=True
+T14 | KILLED | trace.rs | oczek=K | :6749 ceil -> floor | RESTORED=True
+T15 | KILLED | trace.rs | oczek=K | :6749 +10 -> +11 | RESTORED=True
+T16 | KILLED | trace.rs | oczek=K | :6749 +10 -> +9 | RESTORED=True
+T17 | KILLED | trace.rs | oczek=K | :6752 inlandGrowthMax -4 -> -3 | RESTORED=True
+T18 | KILLED | trace.rs | oczek=K | :6752 inlandGrowthMax -4 -> -5 | RESTORED=True
+T19 | KILLED | trace.rs | oczek=K | :6753 min(.., maxLen) +1 | RESTORED=True
+T20 | KILLED | trace.rs | oczek=K | :6753 min(.., maxLen) -1 | RESTORED=True
+T21 | KILLED | trace.rs | oczek=K | :6763 minPathSep domyslne 0->3 | RESTORED=True
+T22 | KILLED | trace.rs | oczek=K | :6764 landCentroid | RESTORED=True
+T23 | KILLED | trace.rs | oczek=K | :6765 landCenterSquare | RESTORED=True
+T24 | KILLED | trace.rs | oczek=K | :6762 blockRiverKeys | RESTORED=True
+T25 | KILLED | trace.rs | oczek=K | :6760 relaxSeaBuffer do wzrostu | RESTORED=True
+T26 | KILLED | trace.rs | oczek=K | :6759 allowRelief do wzrostu | RESTORED=True
+T27 | SURVIVED | trace.rs | oczek=K | :6770 drainBudget dolny prog +4 -> +5 | RESTORED=True
+T28 | SURVIVED | trace.rs | oczek=K | :6770 drainBudget dolny prog +4 -> +3 | RESTORED=True
+T29 | KILLED | trace.rs | oczek=K | :6770 drainBudget +1 -> +2 | RESTORED=True
+T30 | KILLED | trace.rs | oczek=K | :6770 drainBudget +1 -> +0 | RESTORED=True
+T31 | KILLED | trace.rs | oczek=K | :6784 fallback zjazdu: <=1 -> <1 | RESTORED=True
+T32 | KILLED | trace.rs | oczek=K | :6784 fallback zjazdu: <=1 -> <=2 | RESTORED=True
+T33 | KILLED | trace.rs | oczek=K | :6797 doklejenie drenazu: >1 -> >2 | RESTORED=True
+T34 | KILLED | trace.rs | oczek=K | :6798 slice(1) | RESTORED=True
+T35 | KILLED | trace.rs | oczek=K | :6799 path<=1 -> <1 | RESTORED=True
+T37 | SURVIVED | trace.rs | oczek=K | :6800 A* od zrodla: budzet stepCap | RESTORED=True
+T38 | KILLED | trace.rs | oczek=K | :6803 fallback greedy od zrodla: <=1 -> <1 | RESTORED=True
+T39 | SURVIVED | trace.rs | oczek=K | :6806 greedy od zrodla: budzet stepCap | RESTORED=True
+T40 | SURVIVED | trace.rs | oczek=E | :6811 slice gdy len > cap: przy len == cap obciecie do cap = bez zmiany | RESTORED=True
+T41 | KILLED | trace.rs | oczek=K | :6811 slice(0, stepCap) -1 | RESTORED=True
+T42 | KILLED | trace.rs | oczek=K | :6812 extendRiverToWybrzeze | RESTORED=True
+T43 | KILLED | trace.rs | oczek=K | :6813 finishRiverMouthAtSea | RESTORED=True
+T44 | SURVIVED | trace.rs | oczek=K | :6814 repairRiverPathAdjacency | RESTORED=True
+T45 | KILLED | trace.rs | oczek=K | :6815 sanitizeRiverTurnWindow | RESTORED=True
+T46 | SURVIVED | trace.rs | oczek=E | :6819 pathEndsAtSea: wymiary nieuzyte gdy oceanConnected podany | RESTORED=True
+T47 | KILLED | trace.rs | oczek=K | :6818 bufor minInland +1 | RESTORED=True
+T48 | KILLED | trace.rs | oczek=K | :6818 bufor mouthTail +1 | RESTORED=True
+T49 | KILLED | trace.rs | oczek=K | :6819 negacja pathEndsAtSea (bufor) | RESTORED=True
+T50 | KILLED | trace.rs | oczek=K | :6822 negacja pathEndsAtSea (relax) | RESTORED=True
+T51 | KILLED | trace.rs | oczek=K | :6817 relaxSeaBuffer gate | RESTORED=True
+T52 | KILLED | trace.rs | oczek=K | :6727 domyslny rand | RESTORED=True
+T53 | KILLED | trace.rs | oczek=K | :6714 domyslny seaDist | RESTORED=True
+T54 | KILLED | trace.rs | oczek=K | :6724 oceanConnected domyslny | RESTORED=True
+T55 | KILLED | trace.rs | oczek=K | :6720 openOcean z oceanConnected opcji | RESTORED=True
+EXIT=0

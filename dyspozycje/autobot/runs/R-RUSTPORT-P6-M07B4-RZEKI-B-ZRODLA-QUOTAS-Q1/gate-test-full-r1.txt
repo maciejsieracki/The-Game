@@ -1,0 +1,9 @@
+lib: 22 passed / 0 failed (cargo test --lib)
+shard tests[1-45]: 442 passed / 0 failed
+shard tests[46-110]: 511 passed / 0 failed
+shard tests[111-175]: 402 passed / 0 failed
+shard tests[176-220]: 283 passed / 0 failed
+shard tests[221-265]: 355 passed / 0 failed
+SUMA: 2015 passed / 0 failed (baza silnika przed tematem 2013 + 2 nowe testy p6_m07b4_q4)
+UWAGA: doc-testy nie uruchamiane (NIE_ZMIERZONO)
+EXIT=0
