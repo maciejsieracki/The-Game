@@ -618,3 +618,5 @@ Cel końcowy i bieżący zapisane w `GOAL-RUST-PORT-20261020.md` (§"CEL PĘTLI 
 - 2026-11-02 — uruchomiono `R-RUSTPORT-P6-ADVANCE-CITY-ECONOMY-Q5-Q1` (baza parity-v2 `fb417eebd`): utrzymanie per owner, końcówka `advanceCityEconomy`, funkcja składająca `advance_city_economy` (wszystkie pola `EconomyTickResult`), wiązanie z `ai_turn`/`turn_economy.rs` albo dług -Q6. Dysk 7,0 GB.
 
 - 2026-11-02 22:12 UTC — kontrola cykliczna: Rust Q5 trwa (Operator od 21:25, zapis 22:07); brak tematów web; dysk 5,9 GB.
+
+- 2026-11-02 ~23:00 UTC — RESTART KONTENERA zatrzymał workflow Rust Q5 (wf_dbd18ae1-07c, Operator r1 od 21:25). Odzyskano: worktree Operatora przetrwał (niezacommitowany: `turn_economy_tick.rs` 343 l., test + wektory, generator, weryfikator, mutacje) → commit WIP `401af127e` zabezpieczony (`refs/keep/Q5-wip` → `rust-port-wip/Q5-wip`). Dispatch Q5 uzupełniony o START z WIP; workflow wznawiany (`resumeFromRunId`). `origin/*` bez zmian (parity-v2 `fb417eebd`, main `23dd158e9`).
