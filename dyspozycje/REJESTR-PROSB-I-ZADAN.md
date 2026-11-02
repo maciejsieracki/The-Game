@@ -8396,3 +8396,7 @@ Przejrzano cały kontekst rozmowy: WSZYSTKIE zgłoszenia właściciela z ostatni
 ### Aktualizacja 2026-11-02 (po północy)
 - **R-WEB-CAPITAL-SPACING-TUNE-Q1: ZROBIONE, ROBOCZA `44416e98`** (main `38f309b41`). Żywa gra, 10 map: najbliższa para stolic 25–33 hexów (mediana 25,5), poniżej 25: 0/10 (było 7/10). Dług: `cluster-start-test` 478/3 (seaDist stolic obcych typów: sumer 8 → 6) → temat `R-WEB-CAPITAL-SEADIST-Q1`; przy 8 typach cywilizacji efektywny dystans 23; par poniżej 30 nadal 8/10.
 - **Stan zgłoszeń webowych:** wszystkie zarejestrowane zgłoszenia właściciela są zrobione i wdrożone do ROBOCZEJ (`44416e98`). Otwarte dopalenia (niskie): `R-WEB-CAPITAL-SEADIST-Q1`, `R-WEB-PANGEA-LAND-FRACTION-OTHER-Q1` (Pangea 50%/20%), log pickera wycinki, `R-WEB-TERRAIN-ID-NAME-MAP-UNIFY-Q1`, testy fortów z automatu i E2/E3 (wymagają hooków w `main.ts`). Otwarte pytania ABC do właściciela: „dostęp do wody” (jezioro/morze), awaryjny tartak przy rzece.
+
+## 2026-11-02 — DECYZJA WŁAŚCICIELA: „dostęp do wody” = tylko słodka woda na lądzie (rzeka + jezioro), morze NIE
+
+Odpowiedź na pytanie ABC o „dostęp do wody”: „Jezioro, tak, ale nie pamiętam, czy jakieś jeziora w ogóle występują. Morze – nie. Mówimy tylko i wyłącznie o dostępie do słodkiej wody. Czyli na lądzie.” → temat `R-WEB-FRESHWATER-ACCESS-LAKE-Q1` (dispatch w runie). Uwaga Rust: `compute_city_health`/`city_has_water_access` portowane w `R-RUSTPORT-P6-ADVANCE-CITY-ECONOMY-Q3-Q1` według starej semantyki (tylko rzeka) → po wdrożeniu weba konieczny REPIN.
