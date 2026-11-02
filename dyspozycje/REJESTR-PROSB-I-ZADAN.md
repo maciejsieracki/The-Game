@@ -8444,3 +8444,7 @@ Port Rust ma odtwarzać weba (pin `4bbef081d` i kolejne) 1:1 — zachowanie, kol
 ## 2026-11-02 — ZGŁOSZENIE WŁAŚCICIELA (z zrzutem): strażnica/posterunek nie odsłania mgły wojny
 
 „Pierwszy błąd do poprawki. Strażnica rozszerza teren cywilizacji, ale nie rozświetla go tak jak miasto, czyli nie usuwa fog of war. Trzeba to poprawić.” (zrzut: granica terytorium — niebieski pas — biegnie przez czarne, nieodkryte pola; strażnica/posterunek nad nimi). → temat `R-WEB-FORT-VISION-FOG-Q1` (dispatch w runie). Wymaganie: teren należący do cywilizacji dzięki posterunkowi/fortowi ma być odkryty/rozświetlony jak teren miasta.
+
+## 2026-11-02 — R-WEB-FORT-VISION-FOG-Q1: ZROBIONE, ROBOCZA `4049e780` (main `23dd158e9`)
+
+Strażnica/posterunek (r=3) i fort (r=5) odsłaniają mgłę wojny jak miasto — całe koło terytorium odkryte i widoczne (żywy pomiar: 91/91 nieodkrytych PRZED → 0/91 PO). Raz odkryte zostaje odkryte po utracie fortu; fort wroga nie odsłania. Uwaga: AI z fortem widzi jego koło (91 → 182 pola) — wpływ na grę AI NIE_ZMIERZONO. NIE_ZMIERZONO: budowa/cofnięcie fortu przez panel gracza (do sprawdzenia przez właściciela w grze). Rust: REPIN widoczności fortów (zasada 1:1) przy portowaniu mgły/UI.
