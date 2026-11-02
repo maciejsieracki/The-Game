@@ -19,8 +19,10 @@ C. U-3: kandydat wystajacy poza koło fortu -> powstaje; fort obcego wlasciciela
   [info] z fortem obcego: ["posterunek@17,23"]
   [OK] fort OBCEGO wlasciciela nie wlacza filtra (regula dotyczy fortow tego samego wlasciciela): posterunek obok nadal powstaje
 D. U-3: pick zaplanowany w TYM wywolaniu tez blokuje (brak kol zagniezdzonych)
-  [info] ["posterunek@17,22","fort@17,23"]
-  [OK] zaden pozniejszy pick nie ma kola w calosci w kole wczesniejszego (nested=0, n=2)
+  [info] ["fort@17,23"]
+  [OK] zaden pick nie ma kola w calosci w kole innego, w obu kolejnosciach (nested=0, n=1)
+  [OK] posterunek wybrany przed fortem, ktory go obejmuje, zostaje cofniety (fort zostaje)
+  [OK] picki maja koszt > 0 (spojna ksiegowosc po cofnieciu)
 
-auto-fort-diag-test: 15 passed, 0 failed
+auto-fort-diag-test: 17 passed, 0 failed
 EXIT=0

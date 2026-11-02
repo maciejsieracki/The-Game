@@ -1534,6 +1534,7 @@ function pickAutoImprovementsSinglePass(opts: PickAutoImprovementsOpts): AutoImp
     }, 0);
 
     if (defensePriority.length > 0 && plonoweWPromieniu >= (city.population || 0)) {
+      const zeroStart = picks.length;
       const defenseCap = Math.max(1, Math.ceil((city.population || 0) / JEDEN_NA_ILU_OBYWATELI));
       const borderHexes = [...candidateHexes].sort((a, b) =>
         (hexDist(b.q, b.r) - hexDist(a.q, a.r)) || (a.q - b.q) || (a.r - b.r));
@@ -1582,6 +1583,25 @@ function pickAutoImprovementsSinglePass(opts: PickAutoImprovementsOpts): AutoImp
           have++;
           break;
         }
+      }
+      // U-3 (R-WEB-AUTO-FORT-DIAG-Q1, obrona): kolejnosc wyboru nie moze decydowac. Posterunek zaplanowany PRZED fortem,
+      // ktorego koło go w calosci obejmuje, nic nie daje — cofamy go (zwrot Pracy, miejsca w miescie i warstwy).
+      const zeroNew = picks.slice(zeroStart).filter(p => p.cityId === city.id && (p.key === 'fort' || p.key === 'posterunek'));
+      for (const pk of zeroNew) {
+        if (pk.key !== 'posterunek') continue;
+        const enclosed = zeroNew.some(o => o !== pk && o.key === 'fort'
+          && axialDistance(pk.q, pk.r, o.q, o.r) + fortKeyRadius('posterunek') <= fortKeyRadius('fort'));
+        if (!enclosed) continue;
+        picks.splice(picks.indexOf(pk), 1);
+        pracaLeft += pk.kosztPraca;
+        globalSpent -= pk.kosztPraca;
+        placedThisCity--;
+        const hk = `${pk.q},${pk.r}`;
+        const left = (workingPlaced.get(hk) ?? []).filter(l => l !== 'posterunek');
+        if (left.length > 0) workingPlaced.set(hk, left); else workingPlaced.delete(hk);
+        const circles = getOwnFortCircles();
+        const ci = circles.findIndex(c => c.q === pk.q && c.r === pk.r && c.rad === fortKeyRadius('posterunek'));
+        if (ci >= 0) circles.splice(ci, 1);
       }
     }
 

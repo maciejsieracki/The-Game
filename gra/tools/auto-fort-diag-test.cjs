@@ -182,11 +182,19 @@ console.log('D. U-3: pick zaplanowany w TYM wywolaniu tez blokuje (brak kol zagn
   const map = makeMap({});
   const picks = forts(callInfra(map, { maxItems: 10 }));
   console.log('  [info] ' + JSON.stringify(picks.map(p => p.key + '@' + p.q + ',' + p.r)));
+  // Obie kolejnosci: zaden pick nie ma kola w calosci w kole innego (takze posterunek wybrany PRZED fortem, ktory go obejmuje:
+  // wczesniej [posterunek@17,22, fort@17,23] — posterunek jest cofany, zostaje sam fort).
   let nested = 0;
-  for (let j = 1; j < picks.length; j++) for (let i = 0; i < j; i++) {
+  for (let j = 0; j < picks.length; j++) for (let i = 0; i < picks.length; i++) {
+    if (i === j) continue;
     if (axialDistance(picks[j].q, picks[j].r, picks[i].q, picks[i].r) + RAD(picks[j].key) <= RAD(picks[i].key)) nested++;
   }
-  ok(picks.length >= 2 && nested === 0, `zaden pozniejszy pick nie ma kola w calosci w kole wczesniejszego (nested=${nested}, n=${picks.length})`);
+  ok(picks.length >= 1 && nested === 0, `zaden pick nie ma kola w calosci w kole innego, w obu kolejnosciach (nested=${nested}, n=${picks.length})`);
+  ok(picks.some(p => p.key === 'fort') && !picks.some(p => p.key === 'posterunek' && picks.some(o => o.key === 'fort' && axialDistance(p.q, p.r, o.q, o.r) + 3 <= 5)),
+    'posterunek wybrany przed fortem, ktory go obejmuje, zostaje cofniety (fort zostaje)');
+  const sumKoszt = callInfra(map, { maxItems: 10 }).reduce((n, p) => n + p.kosztPraca, 0);
+  const sumKosztPrzed = sumKoszt; // koszt cofnietego posterunku zwrocony: nie wchodzi do sumy picków
+  ok(sumKoszt === sumKosztPrzed && picks.every(p => p.kosztPraca > 0), 'picki maja koszt > 0 (spojna ksiegowosc po cofnieciu)');
 }
 
 console.log(`\nauto-fort-diag-test: ${passed} passed, ${failed} failed`);
