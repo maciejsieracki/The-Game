@@ -574,3 +574,5 @@ Cel końcowy i bieżący zapisane w `GOAL-RUST-PORT-20261020.md` (§"CEL PĘTLI 
 - 2026-11-02 12:29 UTC — kontrola cykliczna: trwa tylko web LIVE-SCENARIOS (zapis 12:27); brak wyników do integracji; dysk 7,2 GB (< 8 GB — brak nowych tematów Rust; -Q4 po zwolnieniu).
 
 - 2026-11-02 13:40 UTC — web `R-WEB-AUTOIMPROVE-LIVE-SCENARIOS-Q1` (FC PASS-WITH-NOTES, runda 2/5 FC) zintegrowany FF na main → `a02d6bd30` (tylko skrypty `gra/tools` i dokumenty; bez nowego bundla). Wyniki i usterki U-1…U-6 w REJESTR-PROSB-I-ZADAN.md. Uruchomiono `R-WEB-AUTO-FORT-DIAG-Q1` (U-2, U-3). Pytania do właściciela: U-6, U-4 (+ potwierdzenie interpretacji U-1).
+
+- 2026-11-02 14:10 UTC — web `R-WEB-AUTO-FORT-DIAG-Q1` (FC PASS-WITH-NOTES, 4×ODDAL) zintegrowany i wdrożony: main `fdfe85c34`, ROBOCZA `e3f08be6` (MD5 `e3f08be6b0dcc31e55c45234dcb92d78`), GitHub Raw zgodny, WERSJE.md wpisane. U-3 naprawione (posterunek nie w kole własnego fortu, test 17/0); U-2 (0 fortów gracza „zrównoważone”) NIEROZSTRZYGNIĘTE → uruchomiono `R-WEB-AUTO-FORT-LIVE-U2-Q1` (żywy bieg z logiem E-FORT, 2 ziarna, + potwierdzenie U-3). Dysk 7,3 GB. Rust -Q4 czeka (dysk < 8 GB / temat web aktywny).
