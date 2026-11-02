@@ -1,3 +1,12 @@
+## ROBOCZA f7a69e12 -- 2026-11-02 -- słodka woda (rzeka + jezioro) i tartak nie przy rzece (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`38f309b41` + `R-WEB-FRESHWATER-ACCESS-LAKE-Q1` `6ea49414a`) i commit wdrożenia bundla; implementacja dwóch decyzji właściciela z czatu (2026-11-02).
+- Bundle MD5 `f7a69e127b26c25f2ac7e39d8d8e8fd7`, 70,117,015 B, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, outDir poza repo, stempel ROBOCZA; `verify-robocza-bundle.cjs` manifest match OK.
+- Zakres: „dostęp do wody” = tylko słodka woda (rzeka + jezioro, morze NIE) — `hasFreshwaterAccess` (`gra/src/map/freshwater.ts`), użyte w zdrowiu miasta; generator nie tworzy jezior (0/24 map), więc zdrowie bez zmian. Heksy na rzece i przy rzece są zarezerwowane pod żywność: tartak i obóz łowiecki tam nie powstają (luka: sąsiad z samym `rzeka.obecna`). Skutek: więcej lasów zarezerwowanych (Pangea Mały 1350 → 1611 z 2717). E2 (wycinka+farma) bez zmian.
+- Testy: tsc PASS; freshwater-access-test 37/0; autoimprove-stages-q1 302/0, auto-improvements 46/0, ai-improvements 56/0, farma-nie-w-lesie 138/0, wyrab-rzeka-r2 10/0, oboz-lowiecki-wymaga-tartaku 16/0, hodowla-las 113/0, wire-ekonomia 37/0.
+- Ograniczenia: NIE_ZMIERZONO Chromium/20 tur dla rezerwacji pod żywność i wpływ na drewno; padają też na bazie `naval-water-access-gate`, `ai4-popyt-obywatele`, `tartak-oboz-wyscig-race`.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `44416e983b69617dc799ed1583e83c56`, 70,115,380 bajtów.
+
 ## ROBOCZA 44416e98 -- 2026-11-01 -- cywilizacje dalej od siebie (stolice min. 25 hexów na Standardzie) (testowa)
 
 - **STATUS: DEPLOYED** — merge do `origin/main` (`22acd3542` + `R-WEB-CAPITAL-SPACING-TUNE-Q1` `1485a943d` + przegenerowany wzorzec testu startów) i commit wdrożenia bundla; stała zgoda właściciela (usterki z testów na żywo, 2026-11-01).
