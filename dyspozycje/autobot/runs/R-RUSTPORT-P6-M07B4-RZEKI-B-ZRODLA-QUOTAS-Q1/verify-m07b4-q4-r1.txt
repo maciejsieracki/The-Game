@@ -1,0 +1,18 @@
+input_field_mismatch_maps: 0
+cap: 600/600 zgodne
+foothill: 400/400 zgodne
+grid: 1500/1500 zgodne
+pick: 500/500 zgodne
+sources: 400/400 zgodne
+spring: 400/400 zgodne
+sweep_cap: 60/60 zgodne
+sweep_grid_accept: 60/60 zgodne
+sweep_grid_catalog: 60/60 zgodne
+sweep_pick_count: 60/60 zgodne
+sweep_pick_minsep: 60/60 zgodne
+sweep_trace_maxlen: 60/60 zgodne
+sweep_trace_minlen: 60/60 zgodne
+sweep_trace_tail: 60/60 zgodne
+trace: 3000/3000 zgodne
+TOTAL: 7280/7280 zgodne
+EXIT=0

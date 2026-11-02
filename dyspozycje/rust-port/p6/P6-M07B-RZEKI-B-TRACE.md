@@ -691,3 +691,213 @@ Zarzuty: (1) G06/G24/G25/A20 bez dowodu i bez zabicia; (2) brak realizacji domkn
 - Mutacje: 205 mutantow (patrz wyzej), `mutate-m07b3-q3-r1.txt` EXIT=0 (brak SURVIVED z oczekiwaniem K i brak INVALID).
 - `git diff --check`: czysty przed kazdym commitem.
 - `Cargo.lock` w `rust-port/engine/` nieslediony, NIE commitowany. Target usuniety po etapie.
+
+## Q4 — partia 4 (R-RUSTPORT-P6-M07B4-RZEKI-B-ZRODLA-QUOTAS-Q1, runda 1/5)
+
+Pin web: `4bbef081d` (linie z pinu; w dossierze wyzej linie `edb8fb56`, +1 po zmianie `estimateLandCentroidFromSeed`).
+`git diff edb8fb56 4bbef081d -- gra/src/map/gen-helpers.ts`: 8 hunkow, wszystkie to `queue.shift()` -> indeks glowy
+w BFS (m.in. `estimateLandCentroidFromSeed` :5992, uzywane przez wzrost); kolejnosc wyniku identyczna, zadna z 7 funkcji
+Q4 nie jest zmieniona. Baza Rust: `fd8585daf` (Q1-Q3 zintegrowane, silnik 2013/0).
+
+### Symbole Q4 (wiersze 16-23 tabeli; wiersz 23 `pickSpreadRiverSources` tez Q4 wg tabeli)
+
+| # | Symbol | Linia (pin 4bbef081d) | Status | Rust |
+|---|---|---|---|---|
+| 16 | traceRiver | 6708 | PORTOWANE-Q4 | `rivers_b/trace.rs` `trace_river` |
+| 17 | traceRiverForGridFill | 6822 | PORTOWANE-Q4 | `rivers_b/trace.rs` `trace_river_for_grid_fill` |
+| 18 | isRiverLandTerrain | 6855 | REUSE | `rivers_a.rs:120` `is_river_land_terrain` (bez zmiany) |
+| 19 | collectFoothillRiverSources | 6867 | PORTOWANE-Q4 | `rivers_b/sources.rs` `collect_foothill_river_sources` |
+| 20 | collectPlainSpringSources | 6900 | PORTOWANE-Q4 | `rivers_b/sources.rs` `collect_plain_spring_sources` |
+| 21 | collectRiverSources | 6926 | PORTOWANE-Q4 | `rivers_b/sources.rs` `collect_river_sources` |
+| 22 | capRiverQuotas | 6943 | PORTOWANE-Q4 | `rivers_b/quotas.rs` `cap_river_quotas` |
+| 23 | pickSpreadRiverSources | 6960 | PORTOWANE-Q4 | `rivers_b/sources.rs` `pick_spread_river_sources` |
+
+Po Q4: wszystkie 44 wiersze tabeli maja status inny niz NIE (zakres M07B domkniety w kodzie; wiersz 2/3/6/11/34-44 Q2, 7-10/12-15 Q3).
+Pliki: `trace.rs` 260 LOC, `sources.rs` 169, `quotas.rs` 29; `rivers_b.rs` rejestruje moduly; `rivers_a.rs:133` `hex_axial_distance`
+-> `pub(crate)` (jedyna zmiana w `rivers_a`, TYLKO widocznosc). Reuse bez duplikatow: `grow_river_inland_before_drainage`,
+`a_star_river_to_sea`, `greedy_river_drain_to_sea`, `extend_river_to_wybrzeze`, `finish_river_mouth_at_sea`,
+`repair_river_path_adjacency`, `sanitize_river_turn_window`, `river_path_respects_sea_buffer`, `path_ends_at_sea`,
+`build_*_field`, `ocean_connected_water_keys`, `TraceRiverOpts`, `is_relief_river_source`.
+
+### Decyzje / ZALOZENIA
+
+- `trace_river` i `trace_river_for_grid_fill` biora `&mut TraceRiverOpts` (a nie wartosc): `rand` z opcji jest JEDNA funkcja
+  wspolna dla wszystkich prob `minLen` w gridFill (web: `{...traceOpts, minLen}` kopiuje referencje funkcji) - stan PRNG
+  przechodzi miedzy probami; test (sweepy `grid_*`) to weryfikuje.
+- Profiler rzek (`RIVER_PROFILE_ON`) pominiety (tylko liczniki/czas, bez wplywu na wynik).
+- Nieuzywane w webie `buildSeaDistanceField` w galezi `relaxSeaBuffer` gridFill pominiete (czysta funkcja, brak efektu).
+- `traceOpts.riverSepIndex` nie jest czytane przez `traceRiver` (web tez; wektory z `ix=true` to potwierdzaja).
+- Typy: `max_len`/`minLen`/`tail` `usize` (web: liczby calkowite >= 0); `count`/`minSep`/`maxTotal` `i64`.
+  Ujemny `maxLen` (web dopuszcza) NIE jest reprezentowalny - NIE_ZMIERZONO, poza domena wywolan (stale/dims).
+- `capRiverQuotas`: pusta lista przy `maxTotal < 0` -> web czyta `q[0] ?? 0` -> `break` -> wynik pusty; Rust identycznie (test reczny).
+- Wymiary ujemne/`margin < 0` w zbieraniu zrodel: wektory `margin=-1` (heksy poza mapa -> `None`) zgodne z webem.
+
+### Wektory i weryfikacja
+
+- Generator `tests/p6_m07b4_vectors/gen_q4_vectors.mjs` (zaleznosci wyciagane doslownie z pinu `4bbef081d`, profiler zastapiony atrapami);
+  odtwarzalnosc: `git archive 4bbef081d gra/src/map/gen-helpers.ts gra/src/types/hex.ts` -> generator -> `sha256 9ebe7156...0331c`
+  identyczny z `web-rivers-b-q4.json` (5 901 206 B <= 6 MB, 8 728 przypadkow, 156 map: 64 losowe + 24 korytarze Q3 + 6 duzych + 62 dlugie korytarze L=14..44).
+- Przypadki: trace 3000, grid 1500, foothill 800, spring 800, sources 400, pick 900, cap 600, sweepy N-1/N/N+1 na tym samym starcie:
+  `trace_maxlen` 308 (60 losowych + 248 dlugich korytarzy), `trace_minlen` 60, `trace_tail` 60, `grid_accept` 60, `grid_catalog` 60,
+  `pick_count` 60, `pick_minsep` 60, `cap` 60 (maxTotal od -2 do suma+2). Nadpisania `seaDist` (`sov`: wartosci 0..4, 63..67, 118..122, 130 na
+  losowych heksach, takze wodnych) w 1200 przypadkach zrodel - progi 2/3/65/120 i filtr lad/woda.
+- Wektory runda-1 -> wersja koncowa: poprzednie przypadki (7 280) sa dokladnym PREFIKSEM (kontrola `==` w Pythonie), nowe dopisane na koncu
+  (dedykowany PRNG `rnd2`).
+- Test Rust `tests/p6_m07b4_q4.rs`: 2 testy (wektory + reczne przypadki `cap_river_quotas`), progi pokrycia w tescie.
+- Weryfikator Python od zera `verify_m07b4_q4.py` (`python3 -I`): 8 728/8 728 zgodne, `input_field_mismatch_maps: 0`
+  (reuzywa niezaleznych weryfikatorow Q2/Q3 dla A*/zjazdu/wydluzania/okna; wzrost, traceRiver, gridFill, zrodla, cap, pick - od zera z TS).
+- Logi: `gate-fmt-r1.txt`, `gate-clippy-r1.txt` (`-D warnings`, `--all-targets`), `gate-test-m07b4-r1.txt`, `gate-test-full-r1.txt`
+  (2015 passed / 0 failed w shardach), `verify-m07b4-q4-r1.txt`, `mutate-m07b4-q4-r1.txt`.
+
+### Mutanty (`mutate_m07b4_q4.py`, log `mutate-m07b4-q4-r1.txt`)
+
+123 mutantow (kopia robocza `/dev/shm`, nie repo; `RESTORED=True` 123/123): **113 KILLED, 10 SURVIVED (wszystkie z dowodem rownowaznosci nizej), 0 INVALID**.
+Mutanty zywe po pierwszym przebiegu K: T39, T27, T28, T37, T44, T41, S21, S22 (+S12, S15 jako E); po dopisaniu wektorow `sov` i dlugich korytarzy
+zabite S21, S22, S12, S15, T41 (T41: obciecie `slice(0, stepCap)` wymaga trasy dluzszej niz stepCap; zlapane przez sweepy `trace_maxlen` na dlugich korytarzach
+- dokladny mechanizm NIE_ZMIERZONO).
+
+
+### Dowody rownowaznosci (10 SURVIVED)
+
+- **T27, T28** (`trace.rs:108`, `drainBudget = max(tail+4, stepCap - len + 1)`, web :6770): `len <= growthTarget <= max(inland, stepCap - tail - 4)`
+  (petla wzrostu dodaje po 1 heksie do `len < target`; `inlandGrowthMax = min(stepCap - tail - 4, maxLen)`), a `inland <= stepCap - tail - 12`,
+  wiec `len <= stepCap - tail - 4` i `stepCap - len + 1 >= tail + 5 > tail + 4`. Dolny prog nigdy nie jest aktywny (dla `+5` rowny, dla `+3` nizszy) - mutanty rowne.
+- **T37, T39** (`trace.rs:144`, `:156`, budzet A*/zjazdu od zrodla `stepCap` -> `drain_budget`, web :6800/:6806): galaz `else if path.length <= 1` => `len == 1`
+  => `drainBudget = max(tail+4, stepCap)`, `stepCap >= inland + tail + 12 > tail + 4` => `drainBudget == stepCap`. Mutanty rowne.
+- **T40** (`trace.rs:164`, `len > stepCap` -> `>=`, web :6811): dla `len == stepCap` `slice(0, stepCap)` / `truncate(stepCap)` nic nie zmienia. Rowne.
+- **T44** (`trace.rs:176`, usuniecie `repairRiverPathAdjacency`, web :6814): wszystkie produkty (wzrost, A*, zjazd, `extend`/`finish`) maja kroki sasiednie, a
+  `repair` ma wtedy efekt tylko przez koncowe `sanitize_river_path`; to samo `sanitize_river_path` jest pierwszym krokiem `sanitize_river_turn_window`
+  (`window.rs:17`). Dowod nieformalny po produkcie (7 280->8 728 wektorow bez roznicy); formalny dowod adjacency A*/zjazdu NIE_ZMIERZONO.
+- **T46** (`trace.rs:179`, `path_ends_at_sea(.., None dims, Some(ocean))`, web :6819): przy podanym `oceanConnected` wymiary nie sa czytane (`path_ends_at_sea`, `walk.rs:100`). Rowne.
+- **S19** (`sources.rs:81`, `rand() > rate` -> `>=`, web :6913): `rand()` = `k / 2^32`; progi `0.11 * 2^32 = 472446402.56`, `0.035 * 2^32 = 150323855.36`,
+  `0.065 * 2^32 = 279172874.24` nie sa calkowite, wiec rownosc nie zachodzi. Rowne.
+- **C02** (`quotas.rs:12`, `sum <= max` -> `<`, web :6946): przy `sum == max` petla `while sum > max` nie startuje i zwraca ten sam `q`. Rowne.
+- **C09** (`quotas.rs:17`, petla indeksu max od 0 zamiast 1): `q[0] > q[0]` nigdy; pierwsza iteracja nic nie zmienia. Rowne.
+
+### Tabela mutant -> linia Rust -> status
+
+| Mutant | Plik:linia Rust | Opis (linia web) | Status |
+|---|---|---|---|
+| T01 | `trace.rs:48` | :6718 jawne wymiary zamienione | KILLED |
+| T02 | `trace.rs:49` | :6718 wymiary wnioskowane | KILLED |
+| T03 | `trace.rs:74` | :6738 startDist zrodla | KILLED |
+| T04 | `trace.rs:78` | :6742 minLen domyslne 4->5 | KILLED |
+| T05 | `trace.rs:78` | :6742 minLen domyslne 4->3 | KILLED |
+| T06 | `trace.rs:79` | :6743 mouthTailLen domyslne +1 | KILLED |
+| T07 | `trace.rs:80` | :6744 hardMeanderLen domyslne +1 | KILLED |
+| T08 | `trace.rs:81` | :6745 allowRelief domyslne | KILLED |
+| T09 | `trace.rs:82` | :6746 relaxSeaBuffer domyslne | KILLED |
+| T10 | `trace.rs:84` | :6747 stepCap dolny prog 12->11 | KILLED |
+| T11 | `trace.rs:84` | :6747 stepCap dolny prog 12->13 | KILLED |
+| T12 | `trace.rs:85` | :6748 min(maxLen, ..) -> max | KILLED |
+| T13 | `trace.rs:85` | :6749 mnoznik 2.5 | KILLED |
+| T14 | `trace.rs:85` | :6749 ceil -> floor | KILLED |
+| T15 | `trace.rs:85` | :6749 +10 -> +11 | KILLED |
+| T16 | `trace.rs:85` | :6749 +10 -> +9 | KILLED |
+| T17 | `trace.rs:87` | :6752 inlandGrowthMax -4 -> -3 | KILLED |
+| T18 | `trace.rs:87` | :6752 inlandGrowthMax -4 -> -5 | KILLED |
+| T19 | `trace.rs:87` | :6753 min(.., maxLen) +1 | KILLED |
+| T20 | `trace.rs:87` | :6753 min(.., maxLen) -1 | KILLED |
+| T21 | `trace.rs:101` | :6763 minPathSep domyslne 0->3 | KILLED |
+| T22 | `trace.rs:102` | :6764 landCentroid | KILLED |
+| T23 | `trace.rs:103` | :6765 landCenterSquare | KILLED |
+| T24 | `trace.rs:100` | :6762 blockRiverKeys | KILLED |
+| T25 | `trace.rs:98` | :6760 relaxSeaBuffer do wzrostu | KILLED |
+| T26 | `trace.rs:97` | :6759 allowRelief do wzrostu | KILLED |
+| T27 | `trace.rs:108` | :6770 drainBudget dolny prog +4 -> +5 | SURVIVED (EQ) |
+| T28 | `trace.rs:108` | :6770 drainBudget dolny prog +4 -> +3 | SURVIVED (EQ) |
+| T29 | `trace.rs:108` | :6770 drainBudget +1 -> +2 | KILLED |
+| T30 | `trace.rs:108` | :6770 drainBudget +1 -> +0 | KILLED |
+| T31 | `trace.rs:120` | :6784 fallback zjazdu: <=1 -> <1 | KILLED |
+| T32 | `trace.rs:120` | :6784 fallback zjazdu: <=1 -> <=2 | KILLED |
+| T33 | `trace.rs:134` | :6797 doklejenie drenazu: >1 -> >2 | KILLED |
+| T34 | `trace.rs:135` | :6798 slice(1) | KILLED |
+| T35 | `trace.rs:136` | :6799 path<=1 -> <1 | KILLED |
+| T37 | `trace.rs:144` | :6800 A* od zrodla: budzet stepCap | SURVIVED (EQ) |
+| T38 | `trace.rs:148` | :6803 fallback greedy od zrodla: <=1 -> <1 | KILLED |
+| T39 | `trace.rs:156` | :6806 greedy od zrodla: budzet stepCap | SURVIVED (EQ) |
+| T40 | `trace.rs:164` | :6811 slice gdy len > cap: przy len == cap obciecie do cap = bez zmiany | SURVIVED (EQ) |
+| T41 | `trace.rs:165` | :6811 slice(0, stepCap) -1 | KILLED |
+| T42 | `trace.rs:167` | :6812 extendRiverToWybrzeze | KILLED |
+| T43 | `trace.rs:168` | :6813 finishRiverMouthAtSea | KILLED |
+| T44 | `trace.rs:176` | :6814 repairRiverPathAdjacency | SURVIVED (EQ) |
+| T45 | `trace.rs:177` | :6815 sanitizeRiverTurnWindow | KILLED |
+| T46 | `trace.rs:179` | :6819 pathEndsAtSea: wymiary nieuzyte gdy oceanConnected podany | SURVIVED (EQ) |
+| T47 | `trace.rs:185` | :6818 bufor minInland +1 | KILLED |
+| T48 | `trace.rs:185` | :6818 bufor mouthTail +1 | KILLED |
+| T49 | `trace.rs:187` | :6819 negacja pathEndsAtSea (bufor) | KILLED |
+| T50 | `trace.rs:191` | :6822 negacja pathEndsAtSea (relax) | KILLED |
+| T51 | `trace.rs:180` | :6817 relaxSeaBuffer gate | KILLED |
+| T52 | `trace.rs:68` | :6727 domyslny rand | KILLED |
+| T53 | `trace.rs:43` | :6714 domyslny seaDist | KILLED |
+| T54 | `trace.rs:64` | :6724 oceanConnected domyslny | KILLED |
+| T55 | `trace.rs:55` | :6720 openOcean z oceanConnected opcji | KILLED |
+| R01 | `trace.rs:217` | :6834 fastMode | KILLED |
+| R02 | `trace.rs:218` | :6834 fast: acceptLen +1 | KILLED |
+| R03 | `trace.rs:220` | :6834 fast: 0.75 | KILLED |
+| R04 | `trace.rs:220` | :6834 fast: max(3, ..) -> 2 | KILLED |
+| R05 | `trace.rs:224` | :6835 catalogMinLen +1 | KILLED |
+| R06 | `trace.rs:225` | :6835 0.6 -> 0.5 | KILLED |
+| R07 | `trace.rs:225` | :6835 max(acceptLen, ..) -> min | KILLED |
+| R08 | `trace.rs:226` | :6835 ostatnia proba 3 -> 4 | KILLED |
+| R09 | `trace.rs:232` | :6838 seen - negacja | KILLED |
+| R10 | `trace.rs:232` | :6838 seen: powtorka proby = ten sam wynik oprocz rand wspolnego [KILL/EQ wg wektorow] | KILLED |
+| R11 | `trace.rs:235` | :6841 minLen proby | KILLED |
+| R12 | `trace.rs:237` | :6842 acceptLen <  -> <= | KILLED |
+| R13 | `trace.rs:240` | :6843 relaxSeaBuffer gate | KILLED |
+| R14 | `trace.rs:245` | :6846 wymiary wnioskowane (grid) | KILLED |
+| R15 | `trace.rs:251` | :6849 oceanConnected domyslny (grid) | KILLED |
+| R16 | `trace.rs:255` | :6851 pathEndsAtSea (grid) | KILLED |
+| S1A | `sources.rs:25` | :6872 foothill: r < h-margin -> <= | KILLED |
+| S1B | `sources.rs:25` | :6872 foothill: q < w-margin -> <= | KILLED |
+| S1C | `sources.rs:25` | :6872 foothill: r od margin+1 | KILLED |
+| S1D | `sources.rs:25` | :6872 foothill: q od margin+1 | KILLED |
+| S2A | `sources.rs:69` | :6906 spring: r < h-margin -> <= | KILLED |
+| S2B | `sources.rs:69` | :6906 spring: q < w-margin -> <= | KILLED |
+| S2C | `sources.rs:69` | :6906 spring: r od margin+1 | KILLED |
+| S2D | `sources.rs:69` | :6906 spring: q od margin+1 | KILLED |
+| S3A | `sources.rs:98` | :6932 sources: r < h-margin -> <= | KILLED |
+| S3B | `sources.rs:98` | :6932 sources: q < w-margin -> <= | KILLED |
+| S3C | `sources.rs:98` | :6932 sources: r od margin+1 | KILLED |
+| S3D | `sources.rs:98` | :6932 sources: q od margin+1 | KILLED |
+| S10 | `sources.rs:34` | :6878 podnoze: d >= 2 -> 3 | KILLED |
+| S11 | `sources.rs:34` | :6878 podnoze: d >= 2 -> 1 | KILLED |
+| S12 | `sources.rs:34` | :6878 podnoze: d <= 120 -> 121 [seaDist <= ~15 na mapach generatora; NIE_ZMIERZONO dla wiekszych] | KILLED |
+| S13 | `sources.rs:78` | :6912 zrodliska: d >= 3 -> 2 | KILLED |
+| S14 | `sources.rs:78` | :6912 zrodliska: d >= 3 -> 4 | KILLED |
+| S15 | `sources.rs:78` | :6912 zrodliska: d <= 65 -> 66 [seaDist <= ~15 na mapach generatora; NIE_ZMIERZONO dla wiekszych] | KILLED |
+| S16 | `sources.rs:64` | :6905 high 0.11 -> 0.12 | KILLED |
+| S17 | `sources.rs:65` | :6905 low 0.035 -> 0.04 | KILLED |
+| S18 | `sources.rs:66` | :6905 medium 0.065 -> 0.07 | KILLED |
+| S19 | `sources.rs:81` | :6913 rand > rate -> >=: rand() = k/2^32, a progi 0.11/0.035/0.065 nie sa wielokrotnoscia 2^-32 | SURVIVED (EQ) |
+| S20 | `sources.rs:81` | :6913 brak losowania | KILLED |
+| S21 | `sources.rs:30` | :6874 podnoze: lad rzeczny | KILLED |
+| S22 | `sources.rs:74` | :6908 zrodliska: lad rzeczny | KILLED |
+| S23 | `sources.rs:30` | :6875 podnoze: wyklucz relief | KILLED |
+| S24 | `sources.rs:74` | :6909 zrodliska: wyklucz relief | KILLED |
+| S25 | `sources.rs:37` | :6880 sasiad reliefowy: any -> all | KILLED |
+| S26 | `sources.rs:41` | :6882 sasiad = relief | KILLED |
+| S27 | `sources.rs:33` | :6877 podnoze: brak seaDist -> 0 | KILLED |
+| S28 | `sources.rs:77` | :6911 zrodliska: brak seaDist -> 0 | KILLED |
+| S29 | `sources.rs:103` | :6933 gory/wzgorza | KILLED |
+| S30 | `sources.rs:40` | :6881 klucz sasiada | KILLED |
+| P01 | `sources.rs:132` | :6969 uzyte zrodla | KILLED |
+| P02 | `sources.rs:135` | :6973 brak seaDist -> 0 | KILLED |
+| P03 | `sources.rs:144` | :6978 sort dist malejaco | KILLED |
+| P04 | `sources.rs:145` | :6978 remis rosnaco | KILLED |
+| P05 | `sources.rs:145` | :6978 remis ignorowany (stabilnie) | KILLED |
+| P06 | `sources.rs:140` | :6975 rand() na zrodlo | KILLED |
+| P07 | `sources.rs:157` | :6982 count | KILLED |
+| P08 | `sources.rs:162` | :6985 minSep scisle | KILLED |
+| P09 | `sources.rs:163` | :6986 tooClose | KILLED |
+| P10 | `sources.rs:162` | :6985 odleglosc: zamiana q/r | KILLED |
+| C01 | `quotas.rs:10` | :6944 ujemne -> 0 | KILLED |
+| C02 | `quotas.rs:12` | :6946 sum <= max: przy rownosci petla while nie startuje | SURVIVED (EQ) |
+| C03 | `quotas.rs:15` | :6948 while sum > max | KILLED |
+| C04 | `quotas.rs:18` | :6951 idx: pierwszy max (>) vs ostatni (>=) | KILLED |
+| C05 | `quotas.rs:22` | :6953 prog <= 1 -> <= 0 | KILLED |
+| C06 | `quotas.rs:22` | :6953 prog <= 1 -> <= 2 | KILLED |
+| C07 | `quotas.rs:25` | :6954 dekrement kwoty | KILLED |
+| C08 | `quotas.rs:26` | :6955 dekrement sumy | KILLED |
+| C09 | `quotas.rs:17` | :6950 start petli idx od 0: q[0] > q[0] nigdy prawdziwe | SURVIVED (EQ) |
+| C10 | `quotas.rs:17` | :6950 start petli od 2 | KILLED |
