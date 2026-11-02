@@ -176,7 +176,7 @@ function decorate(c, mode) {
   if (c.racja === undefined) c.racja = rnd() < 0.6 ? pick([0, 0.5, 1, 2, 3, 3.5, 4, 5, 6, 6.25, 7, -1, 2.2]) : undefined;
   if (c.proc === undefined) c.proc = rnd() < 0.5 ? pick([0, 25, 50, 100, 150, -10]) : undefined;
   if (c.wealth === undefined) c.wealth = rnd() < 0.55 ? { poziom: pick([0, 1, 1, 2, 3, 5, 10, 11, 2.7, -1]), pula: pick([0, 3, 4.5, 9, 13.5, 40, 200, -5, NaN]) } : undefined;
-  if (c.immun === undefined) c.immun = rnd() < 0.3 ? pick([0, 1, 2, 3, -1, 5]) : undefined;
+  if (c.immun === undefined) c.immun = rnd() < 0.3 ? pick([0, 1, 2, 3, -1, 5, 0.5, 0.25]) : undefined;
   if (c.obl === undefined) c.obl = rnd() < 0.18;
   if (c.garn === undefined) c.garn = rnd() < 0.6 ? pick([0, 1, 3, 7, -2, NaN]) : undefined;
   if (c.mp === undefined) c.mp = rnd() < 0.5 ? pick([0, 5, 30, 1000, 100000, -3, 7.8]) : undefined;
@@ -225,7 +225,22 @@ function finishScenario(name, cls, mapIdx, cities, extra = {}) {
 
 const scenarios = [];
 for (let i = 0; i < 100; i++) { const mapIdx = ri(0, 5); scenarios.push(finishScenario(`plain-${i}`, 'plain', mapIdx, genCities(mapIdx, ri(1, 5), rnd() < 0.6))); }
-for (let i = 0; i < 175; i++) { const mapIdx = ri(0, 5); scenarios.push(finishScenario(`rich-${i}`, 'rich', mapIdx, genCities(mapIdx, ri(1, 6), rnd() < 0.6))); }
+for (let i = 0; i < 120; i++) { const mapIdx = ri(0, 5); scenarios.push(finishScenario(`rich-${i}`, 'rich', mapIdx, genCities(mapIdx, ri(1, 6), rnd() < 0.6))); }
+// bramka runtime (resolveOwnerActiveLabels + resolveOwnerEmpireStock): budynki zlozowe (cegielnia, garncarnia, stolarnia, kamieniarski, mennica...)
+// spia bez surowca w magazynie panstwa -> zmienia zbior `runtimeBuiltIds` (ma* flagi, plony budynkow, liczniki Stolarni)
+for (let i = 0; i < 70; i++) {
+  const mapIdx = ri(0, 5);
+  const cs = genCities(mapIdx, ri(1, 4), rnd() < 0.6);
+  for (const c of cs) c.built = [...new Set(Array.from({ length: ri(1, 7) }, () => pick(['cegielnia', 'garncarnia', 'stolarnia', 'kamieniarski', 'mennica', 'spichlerz', 'spichlerz_ii', 'sad', 'biblioteka', 'port', 'targowisko', 'kuznia', 'odlewnia_brazu'])))];
+  const sc = finishScenario(`gate-${i}`, 'gate', mapIdx, cs);
+  const owners = [...new Set(cs.map((c) => c.owner))];
+  const SKEYS = ['glina', 'sol', 'drewno', 'kamien', 'ruda', 'zloto', 'ceramika', 'cegla'];
+  sc.om.gate = {
+    labels: Object.fromEntries(owners.map((o) => [o, ['Glina', 'Drewno', 'Kamień', 'Ruda', 'Sól', 'Złoto'].filter(() => rnd() < 0.5)])),
+    stock: Object.fromEntries(owners.map((o) => [o, Object.fromEntries(SKEYS.filter(() => rnd() < 0.6).map((k) => [k, pick([0, 1, 3, 50])]))])),
+  };
+  scenarios.push(sc);
+}
 // korupcja: stolica (20,20), drugie miasto w dystansie 0..30 od stolicy, 1..6 miast (brzeg capu: strata% = d*2 + n*1 vs cap 50)
 for (const difficulty of ['easy', 'normal', 'hard']) for (let d = 0; d <= 30; d += (d < 24 ? 2 : 3)) for (const extraN of (d % 3 === 0 ? [0, 3] : [0])) {
   const cities = [{ id: 'cap', owner: 0, q: 20, r: 20, pop: 4, built: [], surowce: null }, { id: 'far', owner: 0, q: 20 + Math.min(d, 18), r: 20 - Math.max(0, d - 18), pop: 4, built: d % 2 === 0 ? ['sad'] : d % 3 === 0 ? ['sad', 'pretorium', 'palac'] : [], surowce: null }];
@@ -294,6 +309,12 @@ for (let i = 0; i < ECON_VARIANTS.length; i++) {
   scenarios.push(sc);
 }
 
+// korupcja + macierz cywilizacji (sumer: eko_korupcja_proc +1.5): strata po mnozniku macierzy przekracza cap ogona cityYieldPerTurn (korupcjaCap=0.5)
+for (const difficulty of ['easy', 'normal', 'hard']) for (const d of [8, 12, 16, 20, 24, 30]) {
+  const cities = [{ id: 'cap', owner: 0, q: 10, r: 20, pop: 3, built: [], surowce: null }, { id: 'far', owner: 0, q: 10 + d, r: 20, pop: 3, built: [], surowce: null }];
+  scenarios.push(finishScenario(`corrmat-${difficulty}-${d}`, 'corrmat', 6, cities, { difficulty, ownerMaps: { civ: { 0: 'sumer' }, zloto: { 0: true }, tech: null, zbadane: ['Waluta'], era: null, wonder: {}, defH: {}, defP: {} } }));
+}
+
 // ---- uruchomienie weba ---------------------------------------------------------------------------------------------
 function runWeb(s) {
   const cities = s.cities.map((c) => {
@@ -330,7 +351,7 @@ function runWeb(s) {
   const res = W.advanceCityEconomy(
     cities, toWebMap(MAPS[s.mapIdx]), data, s.difficulty, [], new Map(), builtByCity, s.playerEra, new Set(om.zbadane), ownerCiv, orderMap,
     resolveOwnerEra, resolveOwnerTech, 'wysoki', new Map(Object.entries(s.tbonus)), new Map(Object.entries(s.tinc)), new Map(), wonder,
-    (o) => om.zloto[o] ?? true, undefined, undefined, defH, undefined, defP, new Map(Object.entries(s.marit)), new Map(Object.entries(s.mtax)),
+    (o) => om.zloto[o] ?? true, om.gate ? (o) => om.gate.labels[o] ?? [] : undefined, om.gate ? (o) => om.gate.stock[o] : undefined, defH, undefined, defP, new Map(Object.entries(s.marit)), new Map(Object.entries(s.mtax)),
   );
   const num2 = (x) => (typeof x === 'number' ? enc(x) : x === undefined ? null : x);
   const tick = (t) => Object.fromEntries(Object.entries(t).map(([k, v]) => [k, num2(v)]));
@@ -361,6 +382,7 @@ const jsonCities = (s) => s.cities.map((c) => ({
 const outScenarios = scenarios.map((s) => ({
   name: s.name, cls: s.cls, mapIdx: s.mapIdx, difficulty: s.difficulty, playerEra: s.playerEra, cities: jsonCities(s),
   om: {
+    gate: s.om.gate ?? null,
     civ: Object.fromEntries(Object.entries(s.om.civ).map(([k, v]) => [k, v === undefined ? null : v])), zloto: s.om.zloto, tech: s.om.tech, zbadane: s.om.zbadane, era: s.om.era,
     wonder: Object.fromEntries(Object.entries(s.om.wonder).map(([o, b]) => [o, Object.fromEntries(Object.entries(b).filter(([, v]) => v !== undefined).map(([k, v]) => [k, enc(v)]))])),
     defH: Object.fromEntries(Object.entries(s.om.defH).map(([o, v]) => [o, { n: enc(v.n), p: enc(v.p), l: enc(v.l) }])),

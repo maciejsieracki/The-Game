@@ -20,7 +20,7 @@ jeszcze wejsc terenowych ani reszty `advanceCityEconomy`, wiec wpiecie samej faz
 
 | # | Plaster | Web (`turn-economy.ts`) | Rust | Status Q1 |
 |---|---|---|---|---|
-| P0 | parametry ekonomii `buildEconParams` | `:2293` | brak | DLUG Q2 |
+| P0 | parametry ekonomii `buildEconParams` | `:2293` | `economy_city_params.rs:67 load_econ_params` (istnial; korekta -Q4) | WOLANE w petli (`-Q4`, `P6-ADVANCE-CITY-ECONOMY-Q4.md`) |
 | P1 | wezly terytorium `buildTerritoryNodesFromCities` | `:2296` | `territory.rs:309 build_territory_nodes_from_cities(&[WorkCity])` | istnieje; WOLANE przez adapter `turn_economy_territory::territory_nodes_of` (`-Q2a`, `P6-ADVANCE-CITY-ECONOMY-Q2A.md`) |
 | P2 | spor sasiadow `computeLostToNearerSiblingByCity` + `reconcileAllWorkedTiles` | `:2305-2306` | `okolica/sasiedztwo.rs:13 compute_lost_to_nearer_sibling_by_city(&[OkolicaCity], &BuildMap)`, `territory.rs:422 reconcile_all_worked_tiles(&mut [WorkCity], ..)` | istnieja; WOLANE przez adaptery `okolica_city_of`/`reconcile_city_worked_tiles` (`-Q2a`) |
 | P3 | `computeTerritoryResourceYieldByCity` | `:2310` (def. `:738`) | `turn_economy_territory.rs compute_territory_resource_yield_by_city` (`-Q2a`) | ZAPORTOWANE (`-Q2a`); wariant `advance_city_economy_resources_with_map` liczy je z `&[state::City]` + mapy |
@@ -30,17 +30,17 @@ jeszcze wejsc terenowych ani reszty `advanceCityEconomy`, wiec wpiecie samej faz
 | P7 | bonusy Stolarni/Kamieniarni (`loadThroughput`) | `:2364-2371` | `load_throughput` | **ZAPORTOWANE (S2)** |
 | P8 | liczniki Stolarni/Kamieniarni/Magazynow per owner | `:2373-2402` | `advance_city_economy_resources` | **ZAPORTOWANE (S3)** |
 | P9 | `ownerResourceCapFor` | `:2404-2418` | `owner_resource_cap_for` | **ZAPORTOWANE (S4)** |
-| P10 | `loadHealthParams`, `loadWealthParams` | `:2421-2431` (def. `:377`) | `load_wealth_params` istnieje; `turn_economy_health.rs load_health_params` (`-Q3`) | `loadHealthParams` ZAPORTOWANE (`-Q3`); Wealth: DLUG Q4 |
+| P10 | `loadHealthParams`, `loadWealthParams` | `:2421-2431` (def. `:377`) | `load_wealth_params` istnieje; `turn_economy_health.rs load_health_params` (`-Q3`) | `loadHealthParams` ZAPORTOWANE (`-Q3`); Wealth: WOLANE (`-Q4`, `raw_wealth_from_value` + `load_wealth_params`) |
 | P11 | `ownersWithMennica` (`:240`) | `:2437` | `owners_with_mennica` | **ZAPORTOWANE (S1)** |
-| P12 | stolica/liczba miast per owner (korupcja) | `:2444-2454` | BRAK (wymaga petli) | DLUG Q4 |
+| P12 | stolica/liczba miast per owner (korupcja) | `:2444-2454` | `turn_economy_loop.rs capital_and_city_count_by_owner` | **ZAPORTOWANE (`-Q4`)** |
 | P13 | `computeWorkedMagazynYieldsByCity` | `:2476` (def. `:824`) | `turn_economy_territory.rs compute_worked_magazyn_yields_by_city` (`-Q2a`) | ZAPORTOWANE (`-Q2a`); wariant `_with_map` jak wyzej |
 | P14 | faza zasobow (`loadSpichlerzDrainParams` -> tick -> Garncarnia) | `:2482-2500` | `run_city_economy_resource_phase` (e0c0a9ac5) | **WOLANE produkcyjnie (S5)** |
 | P15 | pola `CityEconomyTick` ze stanu Spichlerza/Garncarni | `:2514-2523`, `:2535-2538`, `:2592-2597`, krotka `tick` | `CityResourceView` | **ZAPORTOWANE (S6)** |
 | P16 | zdrowie `computeCityHealth`, dostep do wody | `:2524-2531` (def. `:456`, `:420`) | `turn_economy_health.rs compute_city_health`, `city_has_water_access` (`-Q3`) | ZAPORTOWANE (`-Q3`) |
-| P17 | plony miasta `toEconomyCity`/`cityYieldPerTurn`/mnozniki/cuda | `:2536-2621` | `economy_yield.rs` czesciowo; `to_economy_city`, `apply_wonder_city_yields`, `apply_order_yield_mults` BRAK | DLUG Q4 |
-| P18 | Wealth, `splitPraca`, handel/podatek (`manualWorkTaxByCity`, `maritimeTradeIncomeByCity`, `routeCashForCity`) | `:2625-2662` | `advance_wealth`, `split_praca`, `route_cash_for_city` istnieja | DLUG Q4 (wymaga P17) |
-| P19 | oblezenie / wzrost V8.5 (`computeGrowthPercentV85`, bilans zywnosci) | `:2664-2755` | `city_growth.rs` istnieje | DLUG Q4 |
-| P20 | manpower per miasto (`tickManpowerRegen`) | `:2750-2773` | `recruitment.rs` istnieje | DLUG Q4 |
+| P17 | plony miasta `toEconomyCity`/`cityYieldPerTurn`/mnozniki/cuda | `:2536-2621` | `economy_yield.rs` czesciowo; `to_economy_city`, `apply_wonder_city_yields`, `apply_order_yield_mults` BRAK | **ZAPORTOWANE (`-Q4`)** |
+| P18 | Wealth, `splitPraca`, handel/podatek (`manualWorkTaxByCity`, `maritimeTradeIncomeByCity`, `routeCashForCity`) | `:2625-2662` | `advance_wealth`, `split_praca`, `route_cash_for_city` istnieja | **ZAPORTOWANE (`-Q4`)** |
+| P19 | oblezenie / wzrost V8.5 (`computeGrowthPercentV85`, bilans zywnosci) | `:2664-2755` | `city_growth.rs` istnieje | **ZAPORTOWANE (`-Q4`)** |
+| P20 | manpower per miasto (`tickManpowerRegen`) | `:2750-2773` | `recruitment.rs` istnieje | **ZAPORTOWANE (`-Q4`)** |
 | P21 | drenaz Mennicy `applyMennicaZlotoDrainForOwners` | `:1814-1830`, wolane `:2823-2829` | `apply_mennica_zloto_drain_for_owners` | **ZAPORTOWANE (S7)** |
 | P22 | `reconcileOwnerResourceCaps` | `:2832` | `reconcile_city_resource_caps` (nad `economy_upkeep_p1::reconcile_owner_resource_caps`) | **ZAPORTOWANE (S8)** |
 | P23 | utrzymanie per owner (`upkeepBalance`, utrzymanie surowcowe) | `:2840-2884` | `upkeep_balance`, `total_*_resource_upkeep` istnieja | DLUG Q5 |

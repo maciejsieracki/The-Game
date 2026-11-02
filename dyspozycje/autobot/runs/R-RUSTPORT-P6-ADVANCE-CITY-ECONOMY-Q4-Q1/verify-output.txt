@@ -1,0 +1,4 @@
+scenariusze: 642
+sprawdzenia niezalezne: {"cash": 2964, "corr": 4446, "food": 11175, "income": 806, "mp": 1173, "p12": 5928, "pracapodz": 1482, "siege": 3090, "split": 2964, "sums": 5136, "wealth": 6399, "yield": 15993} razem 61556
+OK: zero rozbieznosci
+EXIT=0

@@ -214,6 +214,28 @@ fn city_loop_matches_running_web() {
         let tech_f = |o: i64| tech.as_ref().unwrap().get(&o).cloned().unwrap_or_default();
         let zloto_map: BTreeMap<i64, bool> = owner_map(&om["zloto"], |v| v.as_bool().unwrap());
         let zloto = |o: i64| zloto_map.get(&o).copied().unwrap_or(true);
+        let gate_labels: Option<BTreeMap<i64, Vec<String>>> = om["gate"]
+            .as_object()
+            .map(|g| owner_map(&g["labels"], strings));
+        let labels_f = |o: i64| {
+            gate_labels
+                .as_ref()
+                .unwrap()
+                .get(&o)
+                .cloned()
+                .unwrap_or_default()
+        };
+        let gate_stock: Option<BTreeMap<i64, BTreeMap<String, f64>>> =
+            om["gate"].as_object().map(|g| {
+                owner_map(&g["stock"], |v| {
+                    v.as_object()
+                        .unwrap()
+                        .iter()
+                        .map(|(k, x)| (k.clone(), num(x)))
+                        .collect()
+                })
+            });
+        let stock_f = |o: i64| gate_stock.as_ref().unwrap()[&o].clone();
         let zbadane: BTreeSet<String> = strings(&om["zbadane"]).into_iter().collect();
         let diff = text(&s["difficulty"]);
         let econ = match &s["econ"] {
@@ -234,8 +256,12 @@ fn city_loop_matches_running_web() {
                     .as_ref()
                     .map(|_| &tech_f as &dyn Fn(i64) -> BTreeSet<String>),
                 owner_zloto_access: &zloto,
-                owner_active_labels: None,
-                owner_empire_stock: None,
+                owner_active_labels: gate_labels
+                    .as_ref()
+                    .map(|_| &labels_f as &dyn Fn(i64) -> Vec<String>),
+                owner_empire_stock: gate_stock
+                    .as_ref()
+                    .map(|_| &stock_f as &dyn Fn(i64) -> BTreeMap<String, f64>),
             },
             territory_resource_by_city: &empty_terr,
             worked_magazyn_by_city: &empty_worked,
