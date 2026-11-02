@@ -592,3 +592,5 @@ Cel końcowy i bieżący zapisane w `GOAL-RUST-PORT-20261020.md` (§"CEL PĘTLI 
 - 2026-11-02 — polecenie właściciela („Dlaczego nad niczym nie pracujesz? Odpalaj operatorów”) — próg dysku 8 GB zdjęty na jego polecenie; uruchomiono równolegle: web `R-WEB-PANGEA-LAND-FRACTION-OTHER-Q1` (Pangea 20–70% ±2 pp) i Rust `R-RUSTPORT-P6-ADVANCE-CITY-ECONOMY-Q4-Q1` (pętla miast P12/P17–P20 + podgląd HUD zasobów, zasada 1:1). Dysk 7,6 GB — pilnować ENOSPC, sprzątać po workflowach.
 
 - 2026-11-02 14:49 UTC — kontrola cykliczna: trwają web PANGEA-OTHER (zapis 14:46) i Rust Q4 (zapis 14:48); brak wyników do integracji; dysk 6,1 GB (pilnować; przy < 4 GB wstrzymać Rust).
+
+- 2026-11-02 16:02 UTC — kontrola cykliczna: trwają web PANGEA-OTHER (zapis 16:00) i Rust Q4 (zapis 15:57); brak wyników do integracji; dysk 4,7 GB → po sprzątaniu starych kopii scratchpadu (q3work, ev) ok. 4,9 GB. Próg wstrzymania Rust: < 4 GB.
