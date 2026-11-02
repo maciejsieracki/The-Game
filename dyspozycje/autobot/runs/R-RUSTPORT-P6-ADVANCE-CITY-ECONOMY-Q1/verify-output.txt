@@ -1,0 +1,3 @@
+checked {'cap': 813, 'mag': 519, 'mennica': 519, 'bonus': 519, 'thr': 7317, 'stolkam': 381, 'plain_totals': 400, 'invariant': 7765, 'thrCases': 360, 'happy': 18, 'drain_seen': 43, 'clamp_seen': 671} skipped_labels_counts 138
+mismatches 0
+VERIFY OK

@@ -381,7 +381,7 @@ pub struct EmpireResourceTickOutcome {
 }
 
 /// Web `runtimeActiveBuiltIdsForCity` (`:1662-1681`).
-fn runtime_active_built_ids_for_city(
+pub(crate) fn runtime_active_built_ids_for_city(
     built_ids: &[String],
     owner_id: i64,
     resolvers: &ResourceTickResolvers<'_>,
