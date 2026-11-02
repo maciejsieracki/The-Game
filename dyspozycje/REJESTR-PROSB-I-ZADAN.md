@@ -8428,3 +8428,7 @@ Usterki/punkty decyzyjne (`usterki.md` w runie): **U-2** (zrównoważone: 0 fort
 - **U-6** (OFF „Wolno wycinać las” blokuje całą wycinkę, także przy rzece): **A — tak, OFF blokuje całą wycinkę.** Zero zmian w kodzie.
 - **U-4** (reguła „fort od strony wroga”): **A — nie, forty wg zasięgu i cennego terenu.** Zero zmian w kodzie.
 Pytania ABC U-1/U-6/U-4 ZAMKNIĘTE. Zostają niskie dopalenia: `R-WEB-PANGEA-LAND-FRACTION-OTHER-Q1`, U-5 (opóźnienie farmy po wycince poza rzeką), `R-WEB-TERRAIN-ID-NAME-MAP-UNIFY-Q1`, hak `setCityLimit` do testu fortów przy wyczerpanym limicie (niski priorytet); pytanie otwarte: czy dodawać jeziora do generatora.
+
+## 2026-11-02 — DECYZJA WŁAŚCICIELA: NIE dodajemy jezior do generatora map
+
+„Nie, nie dodajemy jezior.” Pytanie o jeziora ZAMKNIĘTE. `hasFreshwaterAccess` (`gra/src/map/freshwater.ts`) zostaje jako gotowa, nieszkodliwa funkcja (jezior brak, więc bez wpływu na grę); „dostęp do wody” w praktyce = rzeka. Nie otwierać tematu jezior.
