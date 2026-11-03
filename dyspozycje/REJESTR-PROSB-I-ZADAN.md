@@ -8529,3 +8529,6 @@ Doprecyzowanie właściciela (2026-11-03): pokój AI↔AI — dla przegrywające
 
 ## 2026-11-03 — zgłoszenie: obrona miasta bez wojska (Milicja zależna od ludności) nie działa
 Właściciel: obrona miasta bez wojska miała zależeć od liczby ludności (Milicja), „ale coś tu nie działa”. Stan z kodu: `siegeDefenders.ts` `collectCityDefRoster` wystawia syntetyczną Milicję (~20% ludności, ~½ Wojownika Kamienia, `makeMilitia`) tylko gdy `city.garnizon > 0` — to licznik oddziałów stacjonujących, a NIE budynek Garnizon (ten daje Prawo, nie obronę); więc miasto bez wojska zwykle nie ma obrońców. Temat `R-WEB-CITY-MILITIA-NO-DEFENDERS-Q1`.
+
+## 2026-11-03 — wdrożono ROBOCZA c02b4df4 (main 1247214fd): kolejność rekrutacji wg epok + AUTO-IMPROVE-Q3
+Do osobnych tematów (z notatek FC): zapis w save rejestru wyciętych heksów (Q3); żywa weryfikacja wskaźnika „Budżet niewydany”; pomiar zużycia Pracy przez forty/posterunki bez limitu; `lesneMin` (decyzja czy limit).
