@@ -132,7 +132,11 @@ function territoryResourceIconHtml(key: TerritoryResourceKey): string {
   return `<span class="cp-yield-ic">${mapResourceIconSvg(key, 16)}</span>`;
 }
 
-/** Magazyn państwa z ulepszenia (automatycznie, bez 👤). */
+/**
+ * Produkcja surowca przez ulepszenie (ikona + „+50 Kamień/t"). Działa automatycznie, bez 👤 —
+ * to reguła domyślna, więc nie dopisujemy „automatycznie"/„bez 👤" ani „magazyn państwa"
+ * (R-WEB-HEX-TOOLTIP-IMPROVEMENT-PRODUCTION-TEXT-Q1).
+ */
 function formatTerritoryMagazynPart(key: string, zloze?: string | null): string | null {
   const row = territoryResourceYieldForImprovement(key, zloze);
   if (!row || !(row.amount > 0)) return null;
@@ -177,25 +181,14 @@ function formatImprovementDesc(
   const unlocks = labelsForImprovementUnlock(key);
   let s = `<b>${name}</b>`;
   if (tag) s += ` (${esc(tag)})`;
-  s += ` → plony miasta: ${bonus}`;
   if (mag) {
-    s += `<br><span class="cp-magazyn-line">magazyn państwa: ${mag} · bez 👤</span>`;
+    // Produkcja surowca NAJPIERW (pod nazwą), potem plony miasta.
+    s += `<br><span class="cp-magazyn-line cp-prod-line">${mag}</span><br>→ plony miasta: ${bonus}`;
+  } else {
+    s += ` → plony miasta: ${bonus}`;
   }
   if (unlocks.length) s += ` · ${esc(unlocks.join(', '))}`;
   return s;
-}
-
-/** Podsumowanie wpływu do magazynu państwa z tego heksa (tylko ulepszenia SUROW-TERYT-01). */
-function formatHexMagazynSummary(hex: Hex, esc: (raw: string) => string): string | null {
-  const lines: string[] = [];
-
-  for (const key of builtImprovementKeys(hex)) {
-    const mag = formatTerritoryMagazynPart(key, (hex as { zloze?: string }).zloze);
-    if (!mag) continue;
-    lines.push(`${esc(improvementDisplayName(key))}: ${mag} · automatycznie`);
-  }
-
-  return lines.length ? lines.join('<br>') : null;
 }
 
 function formatCityYieldLine(y: TileYield, empty = '—'): string {
@@ -503,8 +496,7 @@ function listTerrainPossibleImprovements(
     const bonus = formatCityBonusParts(improvementBonusForKey(key));
     const mag = formatTerritoryMagazynPart(key);
     const unlocks = labelsForImprovementUnlock(key);
-    let line = `<b>${improvementDisplayName(key)}</b> → plony miasta: ${bonus}`;
-    if (mag) line += ` · magazyn państwa: ${mag} · bez 👤`;
+    let line = `<b>${improvementDisplayName(key)}</b> → ${mag ? `${mag} · ` : ''}plony miasta: ${bonus}`;
     if (unlocks.length) line += ` · odblok. ${unlocks.join(', ')}`;
     out.push(line);
     if (out.length >= 10) break;
@@ -590,24 +582,19 @@ export function buildHexContextTooltipHtml(input: HexContextTooltipInput): strin
     lines.push(subLine('Ulepszenie', 'brak — goły teren'));
   }
 
-  const magazynSummary = formatHexMagazynSummary(hex, esc);
   const terrainMagazyn = input.hexWorkedForMagazyn
     ? formatTerrainMagazynWorkedNotes(hex)
     : [];
-  if (magazynSummary || terrainMagazyn.length > 0) {
-    lines.push('<div class="cp-yield-head">Do magazynu państwa</div>');
-    const parts: string[] = [];
-    if (magazynSummary) parts.push(magazynSummary);
-    if (terrainMagazyn.length) {
-      parts.push(terrainMagazyn.map(n => `<span class="cp-magazyn-line">${n}</span>`).join('<br>'));
-    }
-    lines.push(`<div class="cp-sub cp-magazyn-block">${parts.join('<br>')}</div>`);
+  // Produkcja ulepszeń jest w ich własnych wierszach (wyżej); tu zostaje tylko teren (przy 👤).
+  if (terrainMagazyn.length > 0) {
+    lines.push('<div class="cp-yield-head">Surowce z terenu (przy 👤)</div>');
+    lines.push(`<div class="cp-sub cp-magazyn-block">${terrainMagazyn.map(n => `<span class="cp-magazyn-line">${n}</span>`).join('<br>')}</div>`);
   }
 
   lines.push('<div class="cp-yield-head">Plony miasta — rozbicie (przy 👤)</div>');
   lines.push(formatCityYieldBreakdownHtml(hex));
   lines.push(`<div class="cp-total">Razem (miasto): ${formatCityYieldLine(cityYieldOnly(fullTileYield(hex)), '0')}</div>`);
-  lines.push('<div class="cp-sub cp-yield-foot">Żywność · Praca · Podatek → ekonomia miasta (przy 👤). Magazyn → ulepszenia (Tartak, Kamieniołom… — auto) + drewno/kamień/glina z terenu (przy 👤 lub centrum).</div>');
+  lines.push('<div class="cp-sub cp-yield-foot">Żywność · Praca · Podatek → ekonomia miasta (przy 👤). Surowce z ulepszeń (Tartak, Kamieniołom…) — w wierszu produkcji przy ulepszeniu; drewno/kamień/glina z terenu — przy 👤 lub centrum.</div>');
 
   if (possible.length > 0) {
     lines.push('<div class="cp-yield-head">Możliwe ulepszenia (teren)</div>');
