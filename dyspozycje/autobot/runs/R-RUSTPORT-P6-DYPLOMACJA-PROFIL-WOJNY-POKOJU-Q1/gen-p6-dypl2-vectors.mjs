@@ -162,6 +162,13 @@ for (let i = 0; i < 6; i++) {
   h.zmeczenie.maksTur = 30; h.zmeczenie.bazaTur = 10;
   PARAMSETS.push(h);
 }
+// zestaw z ujemnymi polowkami w Math.round (JS: polowki w gore, -0.5 -> -0; Rust round(): od zera) i szerokimi clampami
+{
+  const g = JSON.parse(JSON.stringify(REAL_PARAMS));
+  g.hamulecRelacji.bazaN = 0.5; g.hamulecRelacji.wagaProgWojny = 0.5; g.hamulecRelacji.minN = -50; g.hamulecRelacji.maxN = 50;
+  g.minTurWojny.baza = -0.5; g.minTurWojny.min = -20; g.minTurWojny.max = 20; g.minTurWojny.premiaAgresjaWysoka = 1; g.minTurWojny.karaAgresjaNiska = -1; g.minTurWojny.karaProfilObronny = -1;
+  PARAMSETS.push(g);
+}
 const PS_OUT = PARAMSETS.map(stringifyLeaves);
 
 // ======================= profile =======================
@@ -254,7 +261,7 @@ writeFileSync(join(outDir, 'brake.json'), JSON.stringify({ pin: PIN, cases: brak
 
 // ======================= profile pool dla sygnalow / cen =======================
 const profPool = [];
-for (const ps of [0, 1, 4, 7]) {
+for (const ps of [0, 1, 4, 7, 9]) {
   for (const c of REAL_MATRIX.cywilizacje) profPool.push([ps, W.resolveWarPeaceProfile(c.typCywilizacji, PARAMSETS[ps])]);
   profPool.push([ps, W.resolveWarPeaceProfile(null, PARAMSETS[ps])]);
 }
