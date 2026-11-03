@@ -486,12 +486,17 @@ import {
   collectCityDefRoster,
   hasCityDefenders,
   survivorsLiveSet,
+  defenderSideTitle,
+  applyMilitiaPopulationLoss,
+  fallenMilitiaIds,
+  isMilitiaUnit,
+  militiaHeadcount,
 } from './game/siegeDefenders';
 import { getCityFood } from './game/turn-economy';
 import { SiegeMarkerRenderer } from './render/siegeMarker';
 import {
   showSiegeMapPanel, hideSiegeMapPanel, updateSiegeMapPanelTurn, isSiegeMapPanelOpen,
-  getActiveSiegeCityId, setSiegePanelBesiegerCount,
+  getActiveSiegeCityId, setSiegePanelBesiegerCount, setSiegePanelMilitiaEstimator,
 } from './ui/siegeMapPanel';
 import { FORTIFY_OBRONA_PROC_FIELD, type SiegeCity, type SiegeUnit } from './game/siege';
 import {
@@ -878,6 +883,8 @@ import {
   sumRosterFieldM,
   sumRosterFieldMSplit,
   autoBattleWinPct,
+  applyLossPctToRoster,
+  isFieldBattleUnit,
 } from './game/auto-battle-power';
 import {
   applyPostBattleMap,
@@ -31432,6 +31439,32 @@ async function boot(): Promise<void> {
         }
       }
 
+      // R-WEB-CITY-MILITIA-NO-DEFENDERS-Q1 (M4): polegli milicjanci zmniejszaja ludnosc miasta
+      // (min. 1 zostaje). Wirtualni milicjanci nie sa w units[] -- polegli liczeni PRZED
+      // applyPostBattleMap (ten sam rozklad strat z pelnego rosteru i ten sam log zdarzen co
+      // applyAutoLosses/applyManualSurvivors w post-battle-map.ts: czesciowy log to wynik
+      // czesciowy, milicjant bez wpisu w logu NIE jest uznany za poleglego).
+      let fallenMilitia: Set<string> | null = null;
+      if (cityOnHex && defRoster.some(isMilitiaUnit)) {
+        const evLog = opts?.battleEventLog ?? buildBattleEventLog(atkRoster, defRoster);
+        const loggedDef = evLog ? new Set((evLog.defenderUnitIds ?? []).map(String)) : null;
+        const autoDeadIds = new Set<string>();
+        if (survivors === undefined && opts?.lossDefPct != null && opts.lossDefPct > 0) {
+          const rows = defRoster
+            .filter(m => !loggedDef || loggedDef.has(String(m.id)))
+            .map(m => ({ id: String(m.id), typeId: m.typeId, def: unitDefFor(m), hp: m.hp }))
+            .filter(r => isFieldBattleUnit(r.typeId, r.def));
+          for (const row of applyLossPctToRoster(rows, opts.lossDefPct, def => unitHealth(def))) {
+            if (row.dead) autoDeadIds.add(row.id);
+          }
+        }
+        fallenMilitia = fallenMilitiaIds(defRoster, {
+          survivors: survivors?.map(sv => ({ id: String(sv.id), hp: sv.hp })),
+          loggedDefenderIds: loggedDef,
+          autoDeadIds,
+        });
+      }
+
       applyPostBattleMap({
         units,
         map,
@@ -31459,6 +31492,8 @@ async function boot(): Promise<void> {
         cityOnBattleHex: cityOnHex,
         holdPositionAfterWin: fortifiedCaptureBlocked,
       });
+      if (cityOnHex && fallenMilitia) applyMilitiaPopulationLoss(cityOnHex, defRoster, fallenMilitia);
+
 
       // P-BARBARZYNCY-USUWANIE-SEMANTYKA-Q1 (właściciel, 2026-08-12): obóz
       // niszczy WEJŚCIE (najechanie) jednostki na jego heks -- NIE walka /
@@ -31636,8 +31671,16 @@ async function boot(): Promise<void> {
     }
 
     function cityDefenderOptions(city: City) {
-      return { completedBuildingIds: completedBuildingIdsForCity(city.id) };
+      // ownerEra: epoka WŁAŚCICIELA miasta wybiera typy jednostek Milicji (spec 2026-11-03, M3).
+      return {
+        completedBuildingIds: completedBuildingIdsForCity(city.id),
+        ownerEra: empireEpochForOwner(city.ownerId),
+      };
     }
+
+    /** Oszacowanie Milicji dla panelu oblężenia: tylko z ukończonym budynkiem Garnizon. */
+    setSiegePanelMilitiaEstimator((c: City) =>
+      completedBuildingIdsForCity(c.id).includes('garnizon') ? militiaHeadcount(c.population) : 0);
 
     /** C3-ST-1: kanon w siegeDefenders.ts — realne jednostki, licznik garnizonu lub militia. */
     function cityHasDefenders(city: City): boolean {
@@ -33371,9 +33414,7 @@ async function boot(): Promise<void> {
       const dStructBonus = structureDefenseBonusFor(city.q, city.r);
 
       const atkLeadDef = unitDefFor(atkRoster[0]!);
-      const defSideTitle = defRoster[0]!.typeId === 'Milicja'
-        ? 'Milicja (~' + Math.floor((city.population ?? 0) * 0.2) + ')'
-        : (defRoster.length > 1 ? 'Garnizon (' + defRoster.length + ')' : defRoster[0]!.typeId);
+      const defSideTitle = defenderSideTitle(city, defRoster);
       const szanse = preBattleSzanseAtkPct(
         atkRoster,
         defRoster,
@@ -39487,6 +39528,7 @@ async function boot(): Promise<void> {
                       moveDestCity, units, _menuDifficulty,
                       moveDestCity !== undefined
                         && cityIsFortified(moveDestCity.maMur, cityBuilt.get(moveDestCity.id)),
+                      moveDestCity !== undefined ? cityDefenderOptions(moveDestCity) : undefined,
                     );
                   if (!barbCanWalkIntoEmptyCity
                       && !canUnitOccupyCityHex(bu.ownerId, bcmd.toQ, bcmd.toR, cities)) continue;
