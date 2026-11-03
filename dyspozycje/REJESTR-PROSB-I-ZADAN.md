@@ -8555,3 +8555,6 @@ LABOR: złoto dochodziło na koniec tury (zmierzone 0→20 903); błąd = brak o
 11. Zmiana generatora konia zmienia hashe map → repin wektorów mapgen w porcie Rust (po wznowieniu Rusta).
 12. Rust WSTRZYMANY (decyzja właściciela); kolejka: 3 MULTIWAR-ERA-BRAMKI … (LEDGER).
 13. PRZYPOMNIENIE DLA WŁAŚCICIELA: ręczne usunięcie scalonych gałęzi `web-wip/*` i `rust-port-wip/*` na GitHubie (obecnie ~60+, w tym nowe `web-wip/*-fc`); oraz zgoda na kasowanie starych plików w `/tmp` (`esbuild-*.map`, `tmp.*`, ok. 8 GB).
+
+## 2026-11-03 — DECYZJA WŁAŚCICELA: zamiana Pracy na podatek dzielona suwakiem (bez zmian)
+Właściciel: podatek z zamiany Pracy ma iść zależnie od podziału suwaka Skarbiec/Badania/Bogactwo — dzielenie jest OK. Obecne zachowanie (60/20/20 domyślnie, korupcja, Mennica) jest zgodne; brak zmian w kodzie. Backlog pkt 6 ZAMKNIĘTY. Wdrożona ROBOCZA `abb556ee` (podgląd i komunikaty) pozostaje.
