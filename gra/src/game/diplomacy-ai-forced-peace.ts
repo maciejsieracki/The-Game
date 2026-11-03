@@ -23,11 +23,18 @@ export function aiPeaceTurnsAfterRequest(raw: unknown = aiParamsRaw): number {
 export const AI_PEACE_TURNS_AFTER_REQUEST: number = aiPeaceTurnsAfterRequest();
 
 /** Prośba o pokój: `requesterId` = przegrywający (prosi), `otherId` = zwycięzca (musi przyjąć). */
+export type AiPeaceKind = 'pokoj' | 'rozejm';
+
 export interface AiPeaceRequest {
   requesterId: number;
   otherId: number;
   /** Tura złożenia prośby (pierwszej — kolejne prośby tej samej pary jej nie odnawiają). */
   sinceTurn: number;
+  /**
+   * Rodzaj prośby wg `cmd.rodzaj` (ai.ts aiPeaceProposalKind): 'rozejm' (wojna < AI_ROZEJM_DO_TUR) albo 'pokoj'.
+   * Brak pola (stary zapis) = 'pokoj'. Rozejm ma własną bazę PW (200) i skutek (truceTurns), jak ścieżka AI->gracz.
+   */
+  kind?: AiPeaceKind;
 }
 
 export type AiPeaceRequestStore = Map<string, AiPeaceRequest>;
@@ -39,10 +46,27 @@ export function registerAiPeaceRequest(
   requesterId: number,
   otherId: number,
   turn: number,
+  kind: AiPeaceKind = 'pokoj',
 ): boolean {
-  if (store.has(pairKey)) return false;
-  store.set(pairKey, { requesterId, otherId, sinceTurn: turn });
+  const old = store.get(pairKey);
+  if (old) {
+    // Licznik nie jest odnawiany; późniejsza prośba o PEŁNY pokój podnosi rozejm do pokoju (nigdy odwrotnie).
+    if (kind === 'pokoj' && old.kind === 'rozejm') store.set(pairKey, { ...old, kind: 'pokoj' });
+    return false;
+  }
+  store.set(pairKey, { requesterId, otherId, sinceTurn: turn, kind });
   return true;
+}
+
+/**
+ * Prośba pochodzi z decideAIDiplomacy także przy sygnałach pat/zmęczenie wojną (nie tylko „wyraźnie przegrywa").
+ * Przy ticku sprawdzamy udział siły ZWYCIĘZCY (rw): gdy prosząca strona jest wyraźnie SILNIEJSZA
+ * (rw zwycięzcy < 0.4), prośba jest odrzucana i kasowana. ZAŁOŻENIE: w patowym zakresie (0.4 <= rw < 0.5)
+ * prosząca nadal płaci (to ona chce pokoju; drugiej stronie pokój „na minusie").
+ */
+export const AI_PEACE_WINNER_MIN_SHARE = 0.4;
+export function requesterIsNotClearlyStronger(winnerShare: number): boolean {
+  return winnerShare >= AI_PEACE_WINNER_MIN_SHARE;
 }
 
 /** Ile tur minęło od prośby (>= 0). */
@@ -208,4 +232,111 @@ export function decideAiPeaceRequest(inp: AiPeaceDecisionInput): AiPeaceDecision
     return { action: 'accept_paid', reason: 'bilans zwycięzcy ≥ 0 po zapłacie', balanceBefore, balanceAfter, turnsSince };
   }
   return { action: 'wait', reason: 'bilans zwycięzcy < 0 (zapłata za mała)', balanceBefore, balanceAfter, turnsSince };
+}
+
+// ---------------------------------------------------------------------------
+// Cena z istniejącej wyceny propozycji (evaluateProposal, gałąź 'pokoj') + orkiestracja ticka (testowalna)
+// ---------------------------------------------------------------------------
+
+/**
+ * Ile PW przegrany musi dopłacić, aby bilans zwycięzcy (respondenta) = evaluateProposal.pwBalance = -gap
+ * doszedł do >= 0. To DOKŁADNIE matematyka gałęzi 'pokoj' dla AI-proponenta (diplomacy-proposals.ts):
+ * gap = treatyBaseFairnessGap(basePn, 0, 0, relationTotal(relation) SUROWA); pwBalance(pusty koszyk) = -gap.
+ * Zwraca max(0, ceil(gap)); >0 => zwycięzca przed zapłatą na minusie.
+ */
+export function loserRequiredPnFromGap(gapEmptyBasket: number): number {
+  return Math.max(0, Math.ceil(gapEmptyBasket));
+}
+
+export interface PeaceBasketLine {
+  typ: PeaceAssetKind;
+  id: string;
+  ilosc: number;
+  cityPn?: number;
+}
+
+export interface AiPeaceTickDeps {
+  turn: number;
+  requests: AiPeaceRequestStore;
+  eligible(a: number, b: number): boolean;
+  /** Udział siły zwycięzcy 0..1 (pot(w)/(pot(w)+pot(l))). */
+  winnerShare(winner: number, loser: number): number;
+  /** Bramka zwycięzcy (evaluatePeaceAiGate) + mnożnik ceny. */
+  gate(winner: number, loser: number, kind: AiPeaceKind): { verdict: 'ok' | 'too_early' | 'stronger'; priceMultiplier: number };
+  /** Cena w PW wg istniejącej wyceny (bilans zwycięzcy przed zapłatą = -cena). */
+  requiredPn(loser: number, winner: number, kind: AiPeaceKind, priceMultiplier: number): number;
+  assets(loser: number, winner: number, skipCityIds: ReadonlySet<string>): PeaceAsset[];
+  cityCessionOk(cityId: string, loser: number, winner: number): boolean;
+  transfer(loser: number, winner: number, lines: PeaceBasketLine[]): void;
+  finalize(loser: number, winner: number, kind: AiPeaceKind): void;
+  log?(msg: string): void;
+}
+
+export interface AiPeaceTickResult {
+  key: string;
+  loser: number;
+  winner: number;
+  kind: AiPeaceKind;
+  action: 'wait' | 'accept_paid' | 'force' | 'dropped_ineligible' | 'dropped_not_losing';
+  requiredPn: number;
+  coveredPn: number;
+  balanceBefore: number;
+  balanceAfter: number;
+  histogram: { zloto: number; surowiec_ilosc: number; miasto: number };
+  turnsSince: number;
+}
+
+/**
+ * Raz na turę (po fazie AI): rozstrzyga prośby AI<->AI o pokój/rozejm. Kolejność dla zaakceptowanej prośby:
+ * transfer płatności (złoto, surowce, cesja miasta) -> finalize (skutki pokoju/rozejmu bez zmian).
+ * Czysta względem gry: wszystko przez `deps`.
+ */
+export function runAiAiPeaceTick(deps: AiPeaceTickDeps): AiPeaceTickResult[] {
+  const out: AiPeaceTickResult[] = [];
+  for (const [key, req] of Array.from(deps.requests.entries())) {
+    const loser = req.requesterId;
+    const winner = req.otherId;
+    const kind: AiPeaceKind = req.kind ?? 'pokoj';
+    const turnsSince = turnsSincePeaceRequest(req, deps.turn);
+    const base = {
+      key, loser, winner, kind, requiredPn: 0, coveredPn: 0, balanceBefore: 0, balanceAfter: 0,
+      histogram: { zloto: 0, surowiec_ilosc: 0, miasto: 0 }, turnsSince,
+    };
+    if (!deps.eligible(loser, winner)) {
+      deps.requests.delete(key);
+      out.push({ ...base, action: 'dropped_ineligible' });
+      continue;
+    }
+    if (!requesterIsNotClearlyStronger(deps.winnerShare(winner, loser))) {
+      deps.requests.delete(key);
+      out.push({ ...base, action: 'dropped_not_losing' });
+      continue;
+    }
+    const gate = deps.gate(winner, loser, kind);
+    const requiredPn = deps.requiredPn(loser, winner, kind, gate.verdict === 'ok' ? gate.priceMultiplier : 1);
+    const skip = new Set<string>();
+    let plan = planPeacePayment(requiredPn, deps.assets(loser, winner, skip));
+    for (let guard = 0; guard < 8; guard++) {
+      const cityItem = plan.items.find(i => i.kind === 'miasto');
+      if (!cityItem || deps.cityCessionOk(cityItem.id, loser, winner)) break;
+      skip.add(cityItem.id);
+      plan = planPeacePayment(requiredPn, deps.assets(loser, winner, skip));
+    }
+    const d = decideAiPeaceRequest({ req, turn: deps.turn, requiredPn, plan, winnerGateVerdict: gate.verdict });
+    out.push({
+      ...base, action: d.action, requiredPn, coveredPn: plan.coveredPn,
+      balanceBefore: d.balanceBefore, balanceAfter: d.balanceAfter, histogram: plan.histogram,
+    });
+    if (d.action === 'wait') continue;
+    deps.transfer(loser, winner, plan.items.map(i => ({
+      typ: i.kind, id: i.id, ilosc: i.kind === 'miasto' ? 1 : i.amount, ...(i.kind === 'miasto' ? { cityPn: i.pn } : {}),
+    })));
+    deps.log?.(
+      `pokój AI${loser}<->AI${winner} (${kind}, ${d.action}, tury od prośby ${d.turnsSince}); bilans zwycięzcy `
+      + `${d.balanceBefore} -> ${d.balanceAfter}; zapłata zloto=${plan.histogram.zloto} surowce=${plan.histogram.surowiec_ilosc} `
+      + `miasto=${plan.histogram.miasto} (${plan.coveredPn}/${requiredPn} PW)`,
+    );
+    deps.finalize(loser, winner, kind);
+  }
+  return out;
 }

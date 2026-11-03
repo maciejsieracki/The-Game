@@ -34,6 +34,8 @@ function bundle(tag, mutate) {
     has('game/diplomacy-ai-forced-peace')
       ? `export * as peace from ${J('game/diplomacy-ai-forced-peace')};` : '',
     `export * as siegeGate from ${J('game/diplomacy-siege-war-gate')};`,
+    `export { evaluateProposal, treatyBaseFairnessGap, treatyBasePnFromConfig } from ${J('game/diplomacy-proposals')};`,
+    `export { relationTotal } from ${J('game/diplomacy-pn-engine')};`,
   ].join('\n'), 'utf8');
   const plugins = mutate ? [{
     name: 'mutate',
@@ -215,6 +217,99 @@ function suite(E) {
       && P.isForcedPeaceEligiblePair({ ...base, atWar: false }) === false || 'wyjatki';
   });
 
+  // ---- B (R2): rozejm vs pokoj, cena z ISTNIEJACEJ wyceny, tick behawioralny, przegrany, T+2 ----
+  const RAW = {};
+  const relWar = { zaufanie: 30, respekt: 30, status: 'wojna' };
+  const evalCtx = (rel) => ({ relation: rel, stanWojny: true, turn: 50, proposerRespekt: 30, responderRespekt: 60 });
+  const gapFor = (kind, rel) => E.treatyBaseFairnessGap(E.treatyBasePnFromConfig(kind), 0, 0, E.relationTotal(rel));
+  t('B12 baza PW: rozejm (200) != pokoj (500) -- rodzaje rozroznione', () => {
+    const r = E.treatyBasePnFromConfig('rozejm'), p = E.treatyBasePnFromConfig('pokoj');
+    return (r === 200 && p === 500) || `rozejm=${r} pokoj=${p}`;
+  });
+  t('B13 cena = -pwBalance z evaluateProposal (AI-proponent=przegrany, pusty koszyk): zwyciezca < 0 przed zaplata', () => {
+    for (const kind of ['pokoj', 'rozejm']) {
+      const ev = E.evaluateProposal({ actionId: kind, proposerOwnerId: 1, responderOwnerId: 2, payload: {} }, evalCtx(relWar));
+      const need = P.loserRequiredPnFromGap(gapFor(kind, relWar));
+      if (!(typeof ev.pwBalance === 'number' && ev.pwBalance < 0)) return `${kind}: pwBalance=${ev.pwBalance}`;
+      if (need !== Math.ceil(-ev.pwBalance)) return `${kind}: cena ${need} != -pwBalance ${-ev.pwBalance}`;
+    }
+    return true;
+  });
+  t('B14 po zaplacie ceny pwBalance zwyciezcy >= 0 (evaluateProposal z koszykiem zlota od przegranego)', () => {
+    for (const kind of ['pokoj', 'rozejm']) {
+      const need = P.loserRequiredPnFromGap(gapFor(kind, relWar));
+      const ev = E.evaluateProposal({ actionId: kind, proposerOwnerId: 1, responderOwnerId: 2,
+        payload: { giveItems: [{ typ: 'zloto', id: 'zloto', ilosc: need }] } }, evalCtx(relWar));
+      if (!(typeof ev.pwBalance === 'number' && ev.pwBalance >= 0)) return `${kind}: need=${need} pwBalance=${ev.pwBalance} ${ev.reason}`;
+    }
+    return true;
+  });
+  t('B15 rozejm tanszy niz pokoj (inna baza => inna cena)', () =>
+    P.loserRequiredPnFromGap(gapFor('rozejm', relWar)) < P.loserRequiredPnFromGap(gapFor('pokoj', relWar)) || 'ceny');
+  t('B16 rejestr zapamietuje rodzaj; pozniejszy pokoj podnosi rozejm, licznik nie jest odnawiany', () => {
+    const st = new Map();
+    P.registerAiPeaceRequest(st, 'k', 1, 2, 10, 'rozejm');
+    const k1 = st.get('k').kind;
+    P.registerAiPeaceRequest(st, 'k', 1, 2, 12, 'pokoj');
+    P.registerAiPeaceRequest(st, 'k', 1, 2, 13, 'rozejm');
+    return (k1 === 'rozejm' && st.get('k').kind === 'pokoj' && st.get('k').sinceTurn === 10) || JSON.stringify(st.get('k'));
+  });
+
+  // tick behawioralny: te same funkcje, ktore main.ts podpina przez deps (runAiAiPeaceTick)
+  const mkTick = (o) => {
+    const log = [];
+    const store = new Map();
+    const reqs = o.reqs || [{ kind: 'pokoj', since: 10 }];
+    reqs.forEach((r, i) => store.set('p' + i, { requesterId: 1, otherId: 2 + i, sinceTurn: r.since, kind: r.kind }));
+    const deps = {
+      turn: o.turn, requests: store,
+      eligible: o.eligible || (() => true),
+      winnerShare: o.share || (() => 0.8),
+      gate: () => ({ verdict: o.verdict || 'ok', priceMultiplier: 1 }),
+      requiredPn: (l, w, kind) => (kind === 'rozejm' ? 200 : 500),
+      assets: o.assets || (() => []),
+      cityCessionOk: o.cityOk || (() => true),
+      transfer: (l, w, lines) => log.push('transfer:' + lines.map(x => x.typ + ':' + x.id + ':' + x.ilosc).join('|')),
+      finalize: (l, w, kind) => log.push('finalize:' + kind),
+    };
+    const out = P.runAiAiPeaceTick(deps);
+    return { out, log, store };
+  };
+  t('B17 tick: platnosc zlotem przed limitem -> transfer PRZED finalize, pokoj, prosba skonsumowana przez finalize', () => {
+    const { out, log } = mkTick({ turn: 10, assets: () => [gold(700)] });
+    return (out[0].action === 'accept_paid' && log[0] === 'transfer:zloto:zloto:500' && log[1] === 'finalize:pokoj' && log.length === 2) || JSON.stringify([out[0], log]);
+  });
+  t('B18 tick: rozejm -> finalize z rodzajem rozejm i cena z bazy rozejmu (200)', () => {
+    const { out, log } = mkTick({ turn: 10, reqs: [{ kind: 'rozejm', since: 10 }], assets: () => [gold(700)] });
+    return (out[0].requiredPn === 200 && log[0] === 'transfer:zloto:zloto:200' && log[1] === 'finalize:rozejm') || JSON.stringify([out[0], log]);
+  });
+  t('B19 tick: brak majatku -> T i T+1 wait (bez finalize), T+2 force z platnoscia 0', () => {
+    const a = mkTick({ turn: 10 }), b = mkTick({ turn: 11 }), c = mkTick({ turn: 12 });
+    return (a.out[0].action === 'wait' && a.log.length === 0 && b.out[0].action === 'wait' && b.log.length === 0
+      && c.out[0].action === 'force' && c.out[0].coveredPn === 0 && c.log[c.log.length - 1] === 'finalize:pokoj') || JSON.stringify([a.out[0].action, b.out[0].action, c.out[0].action]);
+  });
+  t('B20 tick: cesja miasta (zloto nie wystarcza), kolejnosc cesja->finalize, miasto niewykonalne omijane', () => {
+    const assets = (l, w, skip) => [gold(100), city('c-ok', 450), city('c-bad', 400)].filter(a => !(a.kind === 'miasto' && skip.has(a.id)));
+    const { out, log } = mkTick({ turn: 10, assets, cityOk: (id) => id !== 'c-bad' });
+    const lines = log[0] || '';
+    return (out[0].histogram.miasto === 1 && lines.includes('miasto:c-ok:1') && !lines.includes('c-bad') && log[1] === 'finalize:pokoj') || JSON.stringify([out[0].histogram, log]);
+  });
+  t('B21 tick: T+2 w tej samej turze po odroczeniu (aiTurnAwaitingBattle -> wznowienie) nadal wymusza pokoj', () => {
+    // main.ts: tick siedzi w ogonie runAiPhase; wznowienie po bitwie (onResolved -> runAiPhase) wola go w TEJ SAMEJ turze.
+    const first = mkTick({ turn: 12, assets: () => [] }); // wywolanie po wznowieniu, numer tury bez zmian
+    return (first.out[0].action === 'force' && first.log.includes('finalize:pokoj')) || JSON.stringify(first.out[0]);
+  });
+  t('B22 tick: prosza strona wyraznie SILNIEJSZA (rw zwyciezcy 0.3) -> prosba odrzucona i skasowana; pat (0.45) -> platnosc', () => {
+    const strong = mkTick({ turn: 12, share: () => 0.3 });
+    const pat = mkTick({ turn: 10, share: () => 0.45, assets: () => [gold(700)] });
+    return (strong.out[0].action === 'dropped_not_losing' && strong.log.length === 0 && strong.store.size === 0
+      && pat.out[0].action === 'accept_paid') || JSON.stringify([strong.out[0].action, pat.out[0].action]);
+  });
+  t('B23 tick: para nieuprawniona (gracz / wojna wymuszona) -> brak pokoju, prosba skasowana', () => {
+    const r = mkTick({ turn: 12, eligible: () => false });
+    return (r.out[0].action === 'dropped_ineligible' && r.log.length === 0 && r.store.size === 0) || JSON.stringify(r.out[0]);
+  });
+
   // ---------------- C: zajmowanie miast AI-AI ----------------
   const G = E.siegeGate;
   t('C1 auto-oblezenie: AI oblega obwarowane miasto INNEJ AI (dotad tylko gracza)', () =>
@@ -257,6 +352,13 @@ function suite(E) {
     return into.length > 0 || 'komendy: ' + JSON.stringify(cmds.filter(c => c.type === 'move'));
   });
 
+  t('C7 auto-oblezenie AI-AI end-to-end (funkcje silnika): obwarowane miasto AI + jednostka wroga AI przy murze -> kotwica + zgoda', () => {
+    const ct = mkCity('cw', 2, 6, 4, { maMur: true });
+    const auto = G.detectWarAutoSiegeOnCity(ct, [mkUnit('x1', 1, 5, 4)], () => true);
+    return (auto && auto.oblegajacyOwnerId === 1 && G.aiAutoSiegeAllowed(ct.ownerId, auto.oblegajacyOwnerId, isHuman, isBarb) === true)
+      || 'auto=' + JSON.stringify(auto && { o: auto.oblegajacyOwnerId });
+  });
+
   // ---------------- straznik okablowania main.ts (tekstowy) ----------------
   const main = fs.existsSync(MAIN_TS) ? fs.readFileSync(MAIN_TS, 'utf8') : '';
   const wired = (name, needle) => t('W ' + name, () => main.includes(needle) || 'brak w main.ts: ' + needle.slice(0, 70));
@@ -264,7 +366,11 @@ function suite(E) {
   wired('main.ts: rejestracja prosby AI->AI o pokoj', "cmd.type === 'zaproponuj_pokoj' || cmd.type === 'oferuj_trybut_za_pokoj'");
   wired('main.ts: tick pokoju po prosbie', 'tickAiAiPeaceRequests();');
   wired('main.ts: auto-oblezenie AI-AI', 'aiAutoSiegeAllowed(city.ownerId, auto.oblegajacyOwnerId');
-  wired('main.ts: pokoj konczy sie standardowym finalizePeaceTreatyBetween', 'finalizePeaceTreatyBetween(loser, winner);');
+  wired('main.ts: tick przez runAiAiPeaceTick', 'runAiAiPeaceTick({');
+  wired('main.ts: rodzaj prosby przekazany z cmd.rodzaj', 'cmd.type === \'zaproponuj_pokoj\' ? cmd.rodzaj : undefined');
+  wired('main.ts: rozejm finalizowany z truceTurns', 'finalizePeaceTreatyBetween(l, w, undefined, TRUCE_DEFAULT_TURNS)');
+  wired('main.ts: cena z treatyBaseFairnessGap', 'treatyBaseFairnessGap(basePn, 0, 0, relationTotal(getDiploRelation(l, w)))');
+  wired('main.ts: wznowienie po bitwie wola runAiPhase (T+2 odroczone, nie pominiete)', 'await runAiPhase();');
   return res;
 }
 
@@ -286,6 +392,16 @@ const MUTATIONS = [
     from: 'if (p.eliminated || p.forcedEpochWar) return false;', to: 'if (p.eliminated) return false;' },
   { name: 'cesja stolicy dozwolona', file: 'game/diplomacy-ai-forced-peace.ts',
     from: "a.kind === 'miasto' && !a.forbidden && a.pn > 0", to: "a.kind === 'miasto' && a.pn > 0" },
+  { name: 'rozejm traktowany jak pokoj (rodzaj ignorowany)', file: 'game/diplomacy-ai-forced-peace.ts',
+    from: "const kind: AiPeaceKind = req.kind ?? 'pokoj';", to: "const kind: AiPeaceKind = 'pokoj';" },
+  { name: 'transfer po finalize / brak transferu', file: 'game/diplomacy-ai-forced-peace.ts',
+    from: 'deps.transfer(loser, winner, plan.items.map', to: '(() => {})(loser, winner, plan.items.map' },
+  { name: 'przegrany nie weryfikowany', file: 'game/diplomacy-ai-forced-peace.ts',
+    from: 'return winnerShare >= AI_PEACE_WINNER_MIN_SHARE;', to: 'return true;' },
+  { name: 'cena nie z wyceny (zawsze 0)', file: 'game/diplomacy-ai-forced-peace.ts',
+    from: 'return Math.max(0, Math.ceil(gapEmptyBasket));', to: 'return 0;' },
+  { name: 'cesja bez pre-kontroli wykonalnosci', file: 'game/diplomacy-ai-forced-peace.ts',
+    from: 'if (!cityItem || deps.cityCessionOk(cityItem.id, loser, winner)) break;', to: 'break;' },
   { name: 'auto-oblezenie AI-AI zablokowane', file: 'game/diplomacy-siege-war-gate.ts',
     from: 'return cityOwnerId !== besiegerOwnerId;', to: 'return false;' },
   { name: 'barbarzyncy oblegaja AI', file: 'game/diplomacy-siege-war-gate.ts',
