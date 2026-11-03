@@ -1,3 +1,12 @@
+## ROBOCZA 994a4524 -- 2026-11-03 -- kolejka rekrutacji w panelu armii (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`89b3ee5db` + `R-WEB-ARMY-PANEL-RECRUIT-REMOVE-Q1` `ff6ac152c`) i commit wdrożenia bundla; zgłoszenie właściciela (zrzut), stała zgoda na poprawki.
+- Bundle MD5 `994a452483dcb05e33b71cff9520f738`, 70,130,233 B, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, outDir poza repo, stempel ROBOCZA; `verify-robocza-bundle.cjs` VERIFY OK.
+- Zakres: w panelu armii pod każdym miastem „Kolejka rekrutacji” jak w panelu miasta — usuwanie ✕ (zwrot jak w mieście), ↑ ↓ i przeciąganie; jedna logika, oba panele odświeżają się po zmianie.
+- Testy: tsc PASS; army-panel-recruit-remove 21/0 (PRZED RED); regresje Chromium 4 testy zielone; 16 testów pada tak samo przed i po.
+- Ograniczenia: NIE_ZMIERZONO zwrot MP i surowców przy ✕ w pełnej grze (istniejąca ścieżka anulowania).
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `300a5c5bafa7811a2f044165cbce8939`, 70,129,262 bajtów.
+
 ## ROBOCZA 300a5c5b -- 2026-11-03 -- automat wycina las przy rzekach (testowa)
 
 - **STATUS: DEPLOYED** — merge do `origin/main` (`23dd158e9` + `R-WEB-AUTOCLEAR-RIVER-FOREST-PRIORITY-Q2` `451dacd61`) i commit wdrożenia bundla; zgłoszenie właściciela (2026-11-03, zrzut Mykeny), stała zgoda na poprawki z testów.

@@ -1,115 +1,113 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA; push do origin/main wykonany na polecenie właściciela (2026-10-31)",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "300a5c5bafa7811a2f044165cbce8939",
-  "bundleSha256": "08dc38a91be4ac573b65d3bd14a9930ba3deba0bbe940579028d158ca1821e4b",
-  "bundleBytes": 70129262,
+  "bundleMd5": "994a452483dcb05e33b71cff9520f738",
+  "bundleSha256": "dbabda9c8046028de657eec940dc1823de2ab47652ba34b8b2dcf3efdecf50cb",
+  "bundleBytes": 70130233,
   "sourceSnapshot": {
-    "source": "main 23dd158e9 + R-WEB-AUTOCLEAR-RIVER-FOREST-PRIORITY-Q2 (451dacd61)",
+    "source": "main 89b3ee5db + R-WEB-ARMY-PANEL-RECRUIT-REMOVE-Q1 (ff6ac152c)",
     "build": "Vite 5.4.x direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "R-WEB-AUTOCLEAR-RIVER-FOREST-PRIORITY-Q2 (zgłoszenie właściciela, zrzut Mykeny): w trybie Żywność, przy „Wolno wycinać las” ON, automat wycina las na i przy rzece (pod farmę) także przy włączonym „Tylko pola z obywatelami” (wcześniej filtr odcinał las rzeczny bez obywatela, więc wycinka nie miała celu, a automat budował trzodę/irygację). Żywy pomiar: 0 wycinek w 15 turach → wycinka w t2. OFF nadal blokuje całą wycinkę."
+    "R-WEB-ARMY-PANEL-RECRUIT-REMOVE-Q1 (zgłoszenie właściciela, zrzut): w panelu armii (Imperium → Armia) pod każdym miastem wyświetla się „Kolejka rekrutacji” jak w panelu miasta: usuwanie ✕ (zwrot jak w mieście), zmiana kolejności ↑ ↓ i przeciąganie; jedna wspólna logika, oba panele odświeżają się po zmianie."
   ],
   "verification": [
     "tsc --noEmit PASS",
-    "autoclear-river-forest-priority-test 19/0 (PRZED 9/2), mutacje M1–M3 łamią test",
-    "regresje 13/13 EXIT=0 (ai-food-improvement-priority-stages, ai-improvements, auto-improvements, autoclear-priority-q1, autoimprove-stages-q1, city-clears-forest, farma-nie-w-lesie, food-hodowla, hodowla-las, oboz-lowiecki-wymaga-tartaku, wyrab-rzeka-d1/krok0/r2)",
-    "Żywy pomiar w Chromium: PRZED 0 wycinek / PO wycinka w t2"
+    "army-panel-recruit-remove-test 21/0 (PRZED RED), Chromium + prawdziwy cityPanel.ts i funkcje kolejki",
+    "regresje z Chromium: army-merge-panel-production-mount 9/0, empire-mass-recruitment 30/0, recruit-card-quantity 25/0, recruit-list-visibility-ui 15/0",
+    "zrzuty PRZED/PO w runie"
   ],
   "limits": [
-    "Przy „Tylko pola z obywatelami” ON farma na wyciętym heksie rzeki bez obywatela nadal podlega filtrowi (do czasu obywatela na heksie) — DECYZJA do właściciela",
-    "Poprawka tylko w trybie Żywność (K1); „Zrównoważone” bez zmian — DECYZJA do właściciela",
-    "NIE_ZMIERZONO: etykieta „wycinka (rzeka+las)” w samym UI",
-    "`oboz-lowiecki-las` EXIT=1 także na bazie (wcześniejsza porażka, niezwiązana)"
+    "NIE_ZMIERZONO: faktyczny zwrot MP i surowców przy ✕ w panelu armii w pełnej grze (używa istniejącej ścieżki cancelRecruitmentPurchase)",
+    "16 testów regresji pada tak samo przed i po (m.in. unit-replace 3/15, testy Chromium bez zmiennej środowiskowej)"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES / PASS",
-    "notes": "AUTOCLEAR-RIVER-FOREST (r1): Operator → Evaluator PASS-WITH-NOTES → Obrona → FC PASS."
+    "notes": "ARMY-PANEL-RECRUIT-REMOVE (r1): Operator → Evaluator PASS-WITH-NOTES → FC PASS."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-03T16:03:16",
+  "hubGeneratedAt": "2026-11-03T16:32:17",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "300a5c5bafa7811a2f044165cbce8939",
-      "sizeBytes": 70129262
+      "md5": "994a452483dcb05e33b71cff9520f738",
+      "sizeBytes": 70130233
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "300a5c5bafa7811a2f044165cbce8939",
-      "sizeBytes": 70129262
+      "md5": "994a452483dcb05e33b71cff9520f738",
+      "sizeBytes": 70130233
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "300a5c5bafa7811a2f044165cbce8939",
-      "sizeBytes": 70129262
+      "md5": "994a452483dcb05e33b71cff9520f738",
+      "sizeBytes": 70130233
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "300a5c5bafa7811a2f044165cbce8939",
-      "sizeBytes": 70129262
+      "md5": "994a452483dcb05e33b71cff9520f738",
+      "sizeBytes": 70130233
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "300a5c5bafa7811a2f044165cbce8939",
-      "sizeBytes": 70129262
+      "md5": "994a452483dcb05e33b71cff9520f738",
+      "sizeBytes": 70130233
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "300a5c5bafa7811a2f044165cbce8939",
-      "sizeBytes": 70129262
+      "md5": "994a452483dcb05e33b71cff9520f738",
+      "sizeBytes": 70130233
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "300a5c5bafa7811a2f044165cbce8939",
-      "sizeBytes": 70129262
+      "md5": "994a452483dcb05e33b71cff9520f738",
+      "sizeBytes": 70130233
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "300a5c5bafa7811a2f044165cbce8939",
-      "sizeBytes": 70129262
+      "md5": "994a452483dcb05e33b71cff9520f738",
+      "sizeBytes": 70130233
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "300a5c5bafa7811a2f044165cbce8939",
-      "sizeBytes": 70129262
+      "md5": "994a452483dcb05e33b71cff9520f738",
+      "sizeBytes": 70130233
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "300a5c5bafa7811a2f044165cbce8939",
-      "sizeBytes": 70129262
+      "md5": "994a452483dcb05e33b71cff9520f738",
+      "sizeBytes": 70130233
     }
   ],
-  "md5": "300a5c5bafa7811a2f044165cbce8939",
-  "sizeBytes": 70129262,
+  "md5": "994a452483dcb05e33b71cff9520f738",
+  "sizeBytes": 70130233,
   "publisher": "Claude Code orkiestrator — stała zgoda właściciela 2026-10-31",
   "source": "gra/src; main 9ce1f5e50 + merge b38f40860",
   "immediatePreviousRelease": {
-    "bundleMd5": "4049e7807bdb1508e35f83dd6f7b0d2d"
+    "bundleMd5": "300a5c5bafa7811a2f044165cbce8939"
   },
   "rollbackPlan": {
-    "method": "git revert commitu wdrożenia; poprzedni bundel MD5 4049e7807bdb1508e35f83dd6f7b0d2d, 70129073 bajtów."
+    "method": "git revert commitu wdrożenia; poprzedni bundel MD5 300a5c5bafa7811a2f044165cbce8939, 70129262 bajtów."
   },
   "previousRelease": {
     "releaseState": "DEPLOYED TO ROBOCZA; push do origin/main wykonany na polecenie właściciela (2026-10-31)",
@@ -1285,8 +1283,8 @@
     "sourceCommit": "c46d6c47ff8643fabdcdd58d5c8067e07737326f",
     "publicationCommit": "0e85b43814f503fe34b42c88df4dd07233dbdfb"
   },
-  "publishedAt": "2026-11-03T16:03:28+00:00",
-  "buildStamp": "2026-11-03 16:03",
+  "publishedAt": "2026-11-03T16:32:17+00:00",
+  "buildStamp": "2026-11-03 16:32",
   "battleBundle": {
     "file": "Gra-ROBOCZA-POLE-BITWY.html",
     "md5": "daf66e2423e0f550db70ee41d8cdf12f",
