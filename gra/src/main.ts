@@ -1327,6 +1327,7 @@ import {
   AUTO_ULEPSZENIA_PRACA_RESERVE,
   freshSurplusReport,
   unspentBudgetWarning,
+  disableOnlyWorkedFilterForOwnerCities,
   type UnspentBudgetWarning,
   // R-ULEPSZENIA-OBOZ-LOWIECKI-LAS-ZNIKA-I-TEREN-Q1: kanoniczny zbiór ulepszeń
   // żywnościowych — CZYTANY (nie kopiowany) przez `syncImprovementDecorForHex`,
@@ -24405,6 +24406,8 @@ async function boot(): Promise<void> {
             pol.onlyWorked = false;
             pol.tryb = 'auto';
             ulepszeniaEmpireByOwner.set(0, pol);
+            // Miasta z własnym ustawieniem (override) mają własny filtr — wyłącz go także tam, inaczej budżet dalej nie jest wydawany.
+            disableOnlyWorkedFilterForOwnerCities(cities, 0);
             playerUnspentBudgetWarning = null;
             showHintMessage('Państwo: auto ulepszenia w całym terytorium', 2800);
             refreshD1bHud();

@@ -22,13 +22,14 @@ const SHOT_DIR = process.env.AUTO_Q3_SHOT_DIR || fs.mkdtempSync(path.join(os.tmp
 const temp = fs.mkdtempSync(path.join(os.tmpdir(), 'auto-improve-q3-'));
 const entry = path.join(temp, 'entry.ts');
 const bundle = path.join(temp, 'bundle.cjs');
-fs.writeFileSync(entry, `export * as AIMP from ${JSON.stringify(SRC + '/game/auto-improvements')};\n`);
+fs.writeFileSync(entry, `export * as AIMP from ${JSON.stringify(SRC + '/game/auto-improvements')};\nexport { resolveEffectiveUlepszenia } from ${JSON.stringify(SRC + '/game/cities')};\n`);
 esbuild.buildSync({
   entryPoints: [entry], bundle: true, platform: 'node', format: 'cjs', target: 'node18',
   outfile: bundle, loader: { '.ts': 'ts', '.json': 'json' }, absWorkingDir: GRA_ROOT, logLevel: 'error',
   nodePaths: [path.resolve(GRA_ROOT, 'node_modules')],
 });
-const { pickAutoImprovements, unspentBudgetWarning, freshSurplusReport, AUTO_ULEPSZENIA_PRACA_RESERVE } = require(bundle).AIMP;
+const { pickAutoImprovements, unspentBudgetWarning, freshSurplusReport, AUTO_ULEPSZENIA_PRACA_RESERVE, disableOnlyWorkedFilterForOwnerCities } = require(bundle).AIMP;
+const { resolveEffectiveUlepszenia } = require(bundle);
 
 let passed = 0, failed = 0;
 function ok(cond, msg) {
@@ -316,6 +317,22 @@ const MAXT = 4;
       await browser.close();
     }
     console.log('  [info] zrzuty: ' + SHOT_DIR);
+  }
+
+  // ===== (4b) przycisk „Wyłącz filtr” a miasta z override (runda 2, zarzut 1) ======================================
+  console.log('(4b) „Wyłącz filtr” wyłącza filtr także w miastach z własnym ustawieniem (override)');
+  ok(typeof disableOnlyWorkedFilterForOwnerCities === 'function', 'eksport disableOnlyWorkedFilterForOwnerCities istnieje');
+  if (typeof disableOnlyWorkedFilterForOwnerCities === 'function') {
+    const mk = (id, ownerId, override, onlyWorked) => ({ id, ownerId, ulepszeniaOverride: override, ulepszeniaOnlyWorked: onlyWorked });
+    const cs = [mk('a', 0, true, true), mk('b', 0, false, undefined), mk('c', 0, true, false), mk('d', 1, true, true)];
+    const empire = { focus: 'zrownowazone', tryb: 'auto', onlyWorked: false, pracaAutoPercent: 50, wolnoWycinacLas: true };
+    // Przed: stan jak po starym przycisku (państwo OFF) — miasto 'a' nadal ma filtr ON (to wskaźnik liczył).
+    ok(resolveEffectiveUlepszenia(cs[0], empire).onlyWorked === true, 'PRZED: miasto z override ma efektywnie filtr ON mimo wylaczonego filtra panstwa');
+    const n = disableOnlyWorkedFilterForOwnerCities(cs, 0);
+    ok(n === 1, `zmieniono dokladnie 1 miasto gracza z override+ON (${n})`);
+    ok(cs.filter(c => c.ownerId === 0).every(c => !resolveEffectiveUlepszenia(c, empire).onlyWorked), 'PO: zadne miasto gracza nie ma efektywnie filtra ON (wskaznik nie wroci na nastepnym koncu tury)');
+    ok(cs[3].ulepszeniaOnlyWorked === true, 'miasto innego wlasciciela nietkniete');
+    ok(cs[0].ulepszeniaOverride === true, 'override zachowany (zmieniony tylko filtr)');
   }
 
   console.log(`\n${passed} OK, ${failed} FAIL`);

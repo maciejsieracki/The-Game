@@ -273,6 +273,24 @@ export function unspentBudgetWarning(
   return n > 0 ? { waitingHexes: n } : null;
 }
 
+/**
+ * Przycisk „Wyłącz filtr” przy wskaźniku „Budżet niewydany”: miasta gracza z własnym ustawieniem (override) mają własny
+ * filtr „Tylko pola z obywatelami” i nie dziedziczą wyłączenia z państwa — wyłącz go także tam. Zwraca liczbę zmienionych miast.
+ */
+export function disableOnlyWorkedFilterForOwnerCities(
+  cities: ReadonlyArray<{ ownerId: number; ulepszeniaOverride?: boolean; ulepszeniaOnlyWorked?: boolean }>,
+  ownerId: number,
+): number {
+  let n = 0;
+  for (const c of cities) {
+    if (c.ownerId === ownerId && c.ulepszeniaOverride === true && c.ulepszeniaOnlyWorked === true) {
+      c.ulepszeniaOnlyWorked = false;
+      n++;
+    }
+  }
+  return n;
+}
+
 /** Zwraca listę typów ulepszeń wg profilu focus. */
 export function prioritiesForUlepszeniaFocus(
   focus: UlepszeniaFocus,
