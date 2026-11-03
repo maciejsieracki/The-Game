@@ -1,0 +1,42 @@
+[S] strukturalna + mutacje
+  OK   S: main.ts spelnia wszystkie asercje strukturalne
+  OK   MUTACJA M1 (powrot do enqueueMarchSegments w fazie gracza) — wykryta
+  OK   MUTACJA M2 (ruchy gracza PO swiecie) — wykryta
+  OK   MUTACJA M3 (brak oczekiwania na bitwe) — wykryta
+  OK   MUTACJA M4 (hot-seat: brak dokonczenia ruchow fotela) — wykryta
+[L] zywa (Chromium)
+[L1-L4] jeden fotel: marsze gracza vs faza AI
+  OK   L0 scenariusz: 3 jednostki na roznych heksach i cele znalezione
+  OK   L4a round-trip zapisu przed koncem tury: pozycje i ruch bez zmian (nic nie wykonane w trakcie wczytania)
+  OK   L4b round-trip zapisu: wszystkie 3 plany marszu zachowane
+  log faz: PLAYER_MOVES_START(seat 0)@134527 | PLAYER_MARCH_ANIM_START(civtest-0-47-31-4->45,32)@134531 | PLAYER_MARCH_INSTANT(civtest-0-47-32-5 47,32->45,34)@134585 | PLAYER_MARCH_INSTANT(civtest-0-49-31-6 49,31->48,30)@134728 | PLAYER_MOVES_END@134822 | WORLD_START@135774 | ECONOMY@136536 | ANIM_FINISH(civtest-0-47-31-4->45,32)@136540 | AI_START@137429 | AI_CIV_START(1)@137981 | AI_END@138817 | PLAYER_TURN_BEGIN@140837
+  OK   L1a kolejnosc faz: ruchy gracza < swiat < ekonomia < AI < koniec AI < nowa tura gracza
+  FAIL L1b zadnej animowanej sciezki marszu w koncu tury (PLAYER_MARCH_ANIM_START)
+  FAIL L1c wszystkie 3 marsze wykonane natychmiast PRZED swiatem -- 2
+  FAIL L1d brak ANIM_FINISH po starcie swiata -- [{"k":"ANIM_FINISH","d":"civtest-0-47-31-4->45,32","t":136540,"turn":2,"anim":true,"eot":true,"pos":["47,31","45,34","48,30"]}]
+  FAIL L2a pozycje jednostek gracza przy KAZDYM znaczniku po PLAYER_MOVES_END == pozycje z PLAYER_MOVES_END (faza AI nie dopala ruchow) -- ["PLAYER_MOVES_START:[\"47,31\",\"47,32\",\"49,31\"]","PLAYER_MARCH_ANIM_START:[\"47,31\",\"47,32\",\"49,31\"]","PLAYER_MARCH_INSTANT:[\"47,31\",\"47,32\",\"49,31\"]","PLAYER_MARCH_INSTANT:[\"47,31\",\"45,34\",\"49,31\"]","PLAYER_MOVES_END:[\"47,31\",\"45,34\",\"48,30\"]","WORLD_START:[\"47,31\",\"45,34\",\"48,30\"]","ECONOMY:[\"47,31\",\"45,34\",\"48,30\"]","ANIM_FINISH:[\"47,31\",\"45,34\",\"48,30\"]","AI_START:[\"45,32\",\"45,34\",\"48,30\"]","AI_CIV_START:[\"45,32\",\"45,34\",\"48,30\"]","AI_END:[\"45,32\",\"45,34\",\"48,30\"]","PLAYER_TURN_BEGIN:[\"45,32\",\"45,34\",\"48,30\"]"]
+  OK   L2b jednostki u1,u2 faktycznie poruszone w fazie ruchow gracza
+  FAIL L2c ruch odnowiony na nowa ture (ruchLeft == ruch) dla wszystkich 3 -- [{"q":45,"r":32,"ruchLeft":0,"ruch":2},{"q":45,"r":34,"ruchLeft":2,"ruch":2},{"q":48,"r":30,"ruchLeft":2,"ruch":2}]
+  OK   L4c u3: po 1 turze posuniety o 1..ruch heksow (jeden segment, nie dwa) i plan nadal zakolejkowany
+  OK   L4d round-trip zapisu po turze: pozycje/ruch bez zmian (idempotencja)
+  OK   brak bledow strony
+[L3] marsz z wrogiem na trasie (stan wojny): przerwanie/obejscie w fazie gracza, nie w fazie AI
+  OK   L3a scenariusz z wrogiem na trasie przygotowany
+  log faz: PLAYER_MOVES_START(seat 0):["47,31","45,32"] | PLAYER_MARCH_ANIM_START(civtest-0-47-31-4->45,31):["47,31","45,32"] | PLAYER_MOVES_END:["47,31","45,32"] | WORLD_START:["47,31","45,32"] | ECONOMY:["47,31","45,32"] | ANIM_FINISH(civtest-0-47-31-4->45,31):["47,31","45,32"] | AI_START:["45,31","45,32"] | AI_CIV_START(1):["45,31","45,32"] | AI_END:["45,31","45,32"] | PLAYER_TURN_BEGIN:["45,31","45,32"]
+  FAIL L3b ruchy gracza (lub ich przerwanie) zakonczone PRZED swiatem; zero ANIM po starcie swiata -- ["PLAYER_MOVES_START","PLAYER_MARCH_ANIM_START","PLAYER_MOVES_END","WORLD_START","ECONOMY","ANIM_FINISH","AI_START","AI_CIV_START","AI_END","PLAYER_TURN_BEGIN"]
+  OK   L3c jednostka gracza nigdy nie weszla na heks wroga
+  FAIL L3d pozycja jednostki gracza przy znacznikach AI == pozycja z konca fazy ruchow gracza -- ["47,31","47,31","47,31","47,31","47,31","47,31","45,31","45,31","45,31","45,31"]
+  OK   brak bledow strony (L3)
+[L5] hot-seat: ruchy konczacego fotela dokanczane przed swiatem
+  OK   L5a scenariusz hot-seat przygotowany
+  log faz (fotel 0 konczy): 
+  FAIL L5b fotel 0 skonczyl ture: jego zakolejkowany marsz zostal wykonany (nie przepadl) -- {"before":{"q":48,"r":31,"ruchLeft":2,"ruch":2},"mid":{"q":48,"r":31,"ruchLeft":2,"ruch":2}}
+  FAIL L5c to jeszcze NIE jest swiat (runda niekompletna): brak WORLD_START, jest SEAT_MOVES przed przelaczeniem -- []
+  OK   L5d aktywny jest fotel 1
+  log faz (fotel 1 konczy): PLAYER_MOVES_START(seat 1) | PLAYER_MOVES_END | WORLD_START | ECONOMY | AI_START | AI_END | PLAYER_TURN_BEGIN
+  OK   L5e swiat po ostatnim fotelu: ruchy PRZED swiatem, zadnych zmian pozycji po PLAYER_MOVES_END
+  OK   L5f jednostka fotela 0 nie przesunieta ponownie w tej samej turze (idempotencja: stoi w celu albo dalej)
+  OK   brak bledow strony (hot-seat)
+
+WYNIK: 21 OK, 9 FAIL
+EXIT=1
