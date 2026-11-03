@@ -136,11 +136,87 @@ function mainGuard() {
   return { ok, fail };
 }
 
+// --- BEHAWIORALNY main.ts (obrona Evaluatora, nota 2): PRAWDZIWE validateActiveSieges/endMapSiege/
+// areEnemyOwners wycięte tekstowo z main.ts + PRAWDZIWA bramka (bundle). Mutacja main.ts (usunięcie
+// bramki z validateActiveSieges) musi złamać asercje. ---
+function cutFn(src, sig) {
+  const start = src.indexOf(sig);
+  if (start < 0) return null;
+  let i = src.indexOf('(', start), pd = 0;
+  for (; i < src.length; i++) { if (src[i] === '(') pd++; else if (src[i] === ')') { pd--; if (pd === 0) { i++; break; } } }
+  const b = src.indexOf('{', i);
+  let d = 0, j = b;
+  for (; j < src.length; j++) { if (src[j] === '{') d++; else if (src[j] === '}') { d--; if (d === 0) return src.slice(start, j + 1); } }
+  return null;
+}
+function mainBehavior(mainSrc, label, quiet) {
+  let ok = 0, fail = 0;
+  const assert = (c, msg) => { if (c) { ok++; if (!quiet) console.log('  [OK]', msg); } else { fail++; if (!quiet) console.error('  [FAIL]', msg); } };
+  const M = bundle(GATE_SRC, 'beh-' + label);
+  const parts = [
+    cutFn(mainSrc, 'function endMapSiege(cityId: string): void {'),
+    cutFn(mainSrc, 'function validateActiveSieges(): void {'),
+    cutFn(mainSrc, 'function areEnemyOwners(a: number, b: number): boolean {'),
+  ];
+  if (parts.some(p => !p)) { assert(false, 'wycięcie funkcji z main.ts'); return { ok, fail }; }
+  const js = esbuild.transformSync(parts.join('\n'), { loader: 'ts', target: 'node18' }).code;
+  const rel = new Map();
+  const cities = [], units = [];
+  const BARB = M.BARBARIAN_OWNER_ID;
+  const hexDistance = (aq, ar, bq, br) => { const dq = aq - bq, dr = ar - br; return Math.max(Math.abs(dq), Math.abs(dr), Math.abs(dq + dr)); };
+  const deps = {
+    cities, units, hexDistance, siegeAllowedBetween: M.siegeAllowedBetween, isSiegeStillValid: M.isSiegeStillValid,
+    clearSiegeMachines: () => {}, siegeBesiegerByCity: new Map(), siegeAiStateByKey: new Map(),
+    siegeAiKey: (b, c) => b + '::' + c, siegeTurnByCity: new Map(), refreshSiegeMarkers: () => {},
+    getActiveSiegeCityId: () => null, hideSiegeMapPanel: () => {}, showHintMessage: () => {},
+    isBarbarian: (o) => o === BARB,
+    getDiploRelation: (a, b) => ({ status: rel.get(a < b ? a + '_' + b : b + '_' + a) || 'neutralni' }),
+  };
+  const F = new Function('deps', `
+    const { cities, units, hexDistance, siegeAllowedBetween, isSiegeStillValid, clearSiegeMachines, siegeBesiegerByCity,
+      siegeAiStateByKey, siegeAiKey, siegeTurnByCity, refreshSiegeMarkers, getActiveSiegeCityId, hideSiegeMapPanel,
+      showHintMessage, isBarbarian, getDiploRelation } = deps;
+    ${js}
+    return { validateActiveSieges };`)(deps);
+  const setup = (besieger, status) => {
+    cities.length = 0; units.length = 0; rel.clear();
+    if (status) rel.set('0_' + besieger, status);
+    const c = { id: 'delfy', ownerId: 0, oblegane: true, oblegajacyOwnerId: besieger, q: 0, r: 0, name: 'Delfy' };
+    cities.push(c); deps.siegeBesiegerByCity.clear(); deps.siegeBesiegerByCity.set('delfy', besieger);
+    units.push({ id: 'p', ownerId: 0, q: 0, r: 0 }, { id: 'a', ownerId: besieger, q: 1, r: 0 });
+    return c;
+  };
+  let c = setup(3, 'pokoj'); F.validateActiveSieges();
+  assert(c.oblegane === false, 'main.ts validateActiveSieges: stare oblezenie w pokoju (stos przy murze) zdjete');
+  c = setup(3, 'rozejm'); F.validateActiveSieges();
+  assert(c.oblegane === false, 'main.ts validateActiveSieges: rozejm zdejmuje oblezenie');
+  c = setup(3, 'sojusz'); F.validateActiveSieges();
+  assert(c.oblegane === false, 'main.ts validateActiveSieges: sojusz zdejmuje oblezenie');
+  c = setup(3, 'wojna'); F.validateActiveSieges();
+  assert(c.oblegane === true, 'main.ts validateActiveSieges: wojna + stos przy murze: oblezenie trwa');
+  c = setup(BARB, null); F.validateActiveSieges();
+  assert(c.oblegane === true, 'main.ts validateActiveSieges: barbarzyncy (bez wpisu relacji): oblezenie trwa');
+  return { ok, fail };
+}
+
 console.log('ai-siege-requires-war-test');
 console.log('[real]');
 const real = runSuite(bundle(GATE_SRC, 'real'), 'real', false);
 console.log('[main.ts guard]');
 const guard = mainGuard();
+console.log('[main.ts behavior]');
+const mainSrcReal = fs.readFileSync(path.join(GRA, 'src', 'main.ts'), 'utf8');
+const beh = mainBehavior(mainSrcReal, 'real', false);
+guard.ok += beh.ok; guard.fail += beh.fail;
+{
+  const gateCall = /if \(!siegeAllowedBetween\(bId, city\.ownerId, areEnemyOwners\)\) \{/;
+  const vi = mainSrcReal.indexOf('function validateActiveSieges');
+  const seg = mainSrcReal.slice(vi, vi + 3500);
+  const mutated = mainSrcReal.slice(0, vi) + seg.replace(gateCall, 'if (false) {').replace('isSiegeStillValid(city, bId, units, areEnemyOwners)', 'units.some(u => u.ownerId === bId && hexDistance(u.q, u.r, city.q, city.r) === 1)') + mainSrcReal.slice(vi + 3500);
+  const mb = mutated !== mainSrcReal ? mainBehavior(mutated, 'mut', true) : { ok: 0, fail: 0 };
+  console.log(`  mutant main.ts (bramka + isSiegeStillValid cofniete do starej logiki w validateActiveSieges): ${mb.fail} asercji padlo (oczekiwane > 0)`);
+  if (mb.fail > 0) { guard.ok++; console.log('  [OK] mutacja main.ts zabita'); } else { guard.fail++; console.error('  [FAIL] mutacja main.ts przezyla'); }
+}
 
 // Mutacja: bramka zawsze przepuszcza -> suite MUSI zgłosić porażki.
 console.log('[mutation: siegeAllowedBetween -> return true]');
