@@ -1,3 +1,12 @@
+## ROBOCZA bba4ae4e -- 2026-11-03 -- palisada jako mur, oblężenie wymaga wyłomu, tooltip ulepszeń (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`1a2f1c721` + HEX-TOOLTIP `7e5c4aaca`, PALISADE r1 `ce77ddffa`) i commit wdrożenia bundla; zgłoszenia właściciela, stała zgoda na poprawki.
+- Bundle MD5 `bba4ae4efc75a18c55886ce2abfe934a`, 70,141,011 B, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, outDir poza repo, stempel ROBOCZA.
+- Zakres: (1) tooltip heksu: produkcja ulepszenia na początku, bez „magazynu państwa”; (2) oblężenie: palisada = forma muru; miasto z murem/palisadą nie padnie bez wyłomu (machiny), gracz/AI/barbarzyńcy; melee nie atakuje obrońców na murze/za palisadą, po wyłomie wchodzi.
+- Testy: tsc PASS po scaleniu; testy tematów zielone (52/0, 50/0, 19/0); mutacje łamią testy.
+- Ograniczenia: wieżyczki strzeleckie i model palisady w bitwie (runda 2) jeszcze nie wdrożone; zachowanie w żywej scenie NIE_ZMIERZONO; wieża oblężnicza w bitwie taktycznej nie liczy się jako wyłom (do decyzji).
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `abb556ee80b8583593e480034b1448fa`, 70,139,107 bajtów.
+
 ## ROBOCZA abb556ee -- 2026-11-03 -- skracanie liczb w HUD, widoczna zamiana Pracy na podatek (testowa)
 
 - **STATUS: DEPLOYED** — merge do `origin/main` (`1247214fd` + HUD-NUMBER-ABBREV `65b031ac8`, LABOR-TO-TAX `bcd873fb4`) i commit wdrożenia bundla; zgłoszenia właściciela, stała zgoda na poprawki.

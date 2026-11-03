@@ -1,114 +1,115 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA; push do origin/main wykonany na polecenie właściciela (2026-10-31)",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "abb556ee80b8583593e480034b1448fa",
-  "bundleSha256": "a563b746349ac9b055b2be8a9075839588863ca4ea431512df1353b5058142cd",
-  "bundleBytes": 70139107,
+  "bundleMd5": "bba4ae4efc75a18c55886ce2abfe934a",
+  "bundleSha256": "71ffd26d406639a6933310676031c3961914581566c960eb4fbee29303323a98",
+  "bundleBytes": 70141011,
   "sourceSnapshot": {
-    "source": "main 1247214fd + HUD-NUMBER-ABBREV (65b031ac8) + LABOR-TO-TAX (bcd873fb4)",
+    "source": "main 1a2f1c721 + HEX-TOOLTIP (7e5c4aaca) + PALISADE r1 (ce77ddffa)",
     "build": "Vite 5.4.x direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "R-WEB-HUD-NUMBER-ABBREV-Q1: liczby od 1000 w pasku zasobów i oczywistych miejscach HUD skracane do „k”/„M” (20860 → „20,9k”, 1250 → „1,3k”), jedna wspólna funkcja formatCompactNumber, pełna wartość w title/aria-label; panel Rekrutacja ujednolicony.",
-    "R-WEB-LABOR-TO-TAX-CONVERSION-NO-GOLD-Q1: zamiana Pracy na podatek jest widoczna: podgląd „na koniec tury: +N do Skarbca”, odświeżone „+N/turę” przy Skarbcu zaraz po zamianie, komunikat z wartościami, jasne odmowy. Przyczyna zgłoszenia: brak odświeżenia (empireEconDirty) i komunikatów; złoto dochodziło na koniec tury (zmierzone 0→20 903) — do Skarbca idzie udział „Podatek” suwaka stolicy (60%)."
+    "R-WEB-HEX-TOOLTIP-IMPROVEMENT-PRODUCTION-TEXT-Q1: w tooltipie heksu pod nazwą ulepszenia surowcowego najpierw produkcja („+50 Kamień/t”), potem plony miasta; usunięte teksty „magazyn państwa” i sekcja „Do magazynu państwa”.",
+    "R-WEB-PALISADE-BATTLE-WALL-RULES-Q1 (runda 1, R1–R3): palisada jest formą muru (jedno pojęcie „obwarowanie miasta”, mur ma pierwszeństwo); miasto z murem lub palisadą nie może być zdobyte bez wyłomu (zniszczona brama/mur/palisada, machiny oblężnicze) — gracz, AI i barbarzyńcy; jednostki wręcz nie atakują obrońców na murze/za palisadą, tylko dystansowe i machiny; po wyłomie wręcz wchodzą. Bonusy obrony bez zmian (palisada +100%, mur +200%)."
   ],
   "verification": [
     "tsc --noEmit PASS po scaleniu",
-    "hud-number-abbrev, labor-to-tax-conversion-gold (58/0, RED 23/6 przed), recruit-list-order, auto-improve-q3, work-tax-conversion — EXIT=0 po scaleniu",
-    "żywy pomiar: PRZED „+8/turę” po zamianie 20000, PO podgląd +20901 i chip +20909; HUD układ 1920 px: pasek 779 px zamiast 809"
+    "palisade-battle-wall-rules 52/0, city-siege-wall-rules 50/0, hex-tooltip-production-text 19/0, hud-number-abbrev, auto-improve-q3 — EXIT=0 po scaleniu",
+    "bitwa-obroncy-mur-kolumny (Chromium) 9/0; mutacje łamią testy"
   ],
   "limits": [
-    "Zamiana Pracy na podatek: kurs i udział suwaka bez zmian — decyzja produktowa czy 100% do Skarbca niepodjęta",
-    "HUD: etykieta „Rekruci” z main.ts/manpower.ts nadal „tys./mln”; znaczniki mapy i liczebność kart armii bez skracania",
-    "Wcześniejsze testy hud-obywatele 4 błędy środowiskowe także na bazie"
+    "PALISADE: runda 2 w toku — wieżyczki strzeleckie co 4 heksy (mur i palisada) oraz model palisady w widoku bitwy jeszcze NIE wdrożone",
+    "NIE_ZMIERZONO: zachowanie R2 w żywej scenie bitwy w przeglądarce",
+    "Założenie: w bitwie taktycznej samo wspięcie się wieżą oblężniczą nie liczy się jako wyłom (w Auto/„Pomiń” każda machina daje wyłom) — DO DECYZJI",
+    "Tooltip: etykieta „· Drewno” po plonach miasta nadal dubluje produkcję (osobny temat); ikony na zrzutach testowych puste (atrapa)"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
-    "notes": "HUD-NUMBER-ABBREV (r2) i LABOR-TO-TAX (r1): Operator → Evaluator → Obrona → FC PASS-WITH-NOTES."
+    "notes": "HEX-TOOLTIP (r1) i PALISADE r1: Operator → Evaluator → Obrona → FC PASS-WITH-NOTES."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-03T18:29:06",
+  "hubGeneratedAt": "2026-11-03T19:07:15",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "abb556ee80b8583593e480034b1448fa",
-      "sizeBytes": 70139107
+      "md5": "bba4ae4efc75a18c55886ce2abfe934a",
+      "sizeBytes": 70141011
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "abb556ee80b8583593e480034b1448fa",
-      "sizeBytes": 70139107
+      "md5": "bba4ae4efc75a18c55886ce2abfe934a",
+      "sizeBytes": 70141011
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "abb556ee80b8583593e480034b1448fa",
-      "sizeBytes": 70139107
+      "md5": "bba4ae4efc75a18c55886ce2abfe934a",
+      "sizeBytes": 70141011
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "abb556ee80b8583593e480034b1448fa",
-      "sizeBytes": 70139107
+      "md5": "bba4ae4efc75a18c55886ce2abfe934a",
+      "sizeBytes": 70141011
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "abb556ee80b8583593e480034b1448fa",
-      "sizeBytes": 70139107
+      "md5": "bba4ae4efc75a18c55886ce2abfe934a",
+      "sizeBytes": 70141011
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "abb556ee80b8583593e480034b1448fa",
-      "sizeBytes": 70139107
+      "md5": "bba4ae4efc75a18c55886ce2abfe934a",
+      "sizeBytes": 70141011
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "abb556ee80b8583593e480034b1448fa",
-      "sizeBytes": 70139107
+      "md5": "bba4ae4efc75a18c55886ce2abfe934a",
+      "sizeBytes": 70141011
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "abb556ee80b8583593e480034b1448fa",
-      "sizeBytes": 70139107
+      "md5": "bba4ae4efc75a18c55886ce2abfe934a",
+      "sizeBytes": 70141011
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "abb556ee80b8583593e480034b1448fa",
-      "sizeBytes": 70139107
+      "md5": "bba4ae4efc75a18c55886ce2abfe934a",
+      "sizeBytes": 70141011
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "abb556ee80b8583593e480034b1448fa",
-      "sizeBytes": 70139107
+      "md5": "bba4ae4efc75a18c55886ce2abfe934a",
+      "sizeBytes": 70141011
     }
   ],
-  "md5": "abb556ee80b8583593e480034b1448fa",
-  "sizeBytes": 70139107,
+  "md5": "bba4ae4efc75a18c55886ce2abfe934a",
+  "sizeBytes": 70141011,
   "publisher": "Claude Code orkiestrator — stała zgoda właściciela 2026-10-31",
   "source": "gra/src; main 9ce1f5e50 + merge b38f40860",
   "immediatePreviousRelease": {
-    "bundleMd5": "c02b4df42f1ba9976c959a5faf06929a"
+    "bundleMd5": "abb556ee80b8583593e480034b1448fa"
   },
   "rollbackPlan": {
-    "method": "git revert commitu wdrożenia; poprzedni bundel MD5 c02b4df42f1ba9976c959a5faf06929a, 70136020 bajtów."
+    "method": "git revert commitu wdrożenia; poprzedni bundel MD5 abb556ee80b8583593e480034b1448fa, 70139107 bajtów."
   },
   "previousRelease": {
     "releaseState": "DEPLOYED TO ROBOCZA; push do origin/main wykonany na polecenie właściciela (2026-10-31)",
@@ -1284,8 +1285,8 @@
     "sourceCommit": "c46d6c47ff8643fabdcdd58d5c8067e07737326f",
     "publicationCommit": "0e85b43814f503fe34b42c88df4dd07233dbdfb"
   },
-  "publishedAt": "2026-11-03T18:29:06+00:00",
-  "buildStamp": "2026-11-03 18:29",
+  "publishedAt": "2026-11-03T19:07:15+00:00",
+  "buildStamp": "2026-11-03 19:07",
   "battleBundle": {
     "file": "Gra-ROBOCZA-POLE-BITWY.html",
     "md5": "daf66e2423e0f550db70ee41d8cdf12f",
