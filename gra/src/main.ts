@@ -488,6 +488,9 @@ import {
   survivorsLiveSet,
   defenderSideTitle,
   applyMilitiaPopulationLoss,
+  applyMilitiaDestroyedCooldown,
+  militiaIdsDestroyedForCooldown,
+  militiaRegenTurnsLeft,
   fallenMilitiaIds,
   isMilitiaUnit,
   militiaHeadcount,
@@ -496,7 +499,7 @@ import { getCityFood } from './game/turn-economy';
 import { SiegeMarkerRenderer } from './render/siegeMarker';
 import {
   showSiegeMapPanel, hideSiegeMapPanel, updateSiegeMapPanelTurn, isSiegeMapPanelOpen,
-  getActiveSiegeCityId, setSiegePanelBesiegerCount, setSiegePanelMilitiaEstimator,
+  getActiveSiegeCityId, setSiegePanelBesiegerCount, setSiegePanelMilitiaEstimator, setSiegePanelMilitiaRegenLeft,
 } from './ui/siegeMapPanel';
 import { FORTIFY_OBRONA_PROC_FIELD, type SiegeCity, type SiegeUnit } from './game/siege';
 import {
@@ -31492,7 +31495,20 @@ async function boot(): Promise<void> {
         cityOnBattleHex: cityOnHex,
         holdPositionAfterWin: fortifiedCaptureBlocked,
       });
-      if (cityOnHex && fallenMilitia) applyMilitiaPopulationLoss(cityOnHex, defRoster, fallenMilitia);
+      if (cityOnHex && fallenMilitia) {
+        applyMilitiaPopulationLoss(cityOnHex, defRoster, fallenMilitia);
+        // R-WEB-CITY-MILITIA-REGEN-COOLDOWN-Q1: cala Milicja polegla => okres odnowy (tury globalne).
+        // Auto-bitwa: przegrana obrona = cala Milicja zniszczona (wagi linii nie zabijaja dystansu).
+        applyMilitiaDestroyedCooldown(
+          cityOnHex,
+          defRoster,
+          militiaIdsDestroyedForCooldown(defRoster, fallenMilitia, {
+            isAutoBattle: survivors === undefined,
+            attackerWon: mapWinner === 'atakujacy',
+          }),
+          turn,
+        );
+      }
 
 
       // P-BARBARZYNCY-USUWANIE-SEMANTYKA-Q1 (właściciel, 2026-08-12): obóz
@@ -31675,12 +31691,16 @@ async function boot(): Promise<void> {
       return {
         completedBuildingIds: completedBuildingIdsForCity(city.id),
         ownerEra: empireEpochForOwner(city.ownerId),
+        // R-WEB-CITY-MILITIA-REGEN-COOLDOWN-Q1: tura globalna => okres odnowy Milicji.
+        currentTurn: turn,
       };
     }
 
-    /** Oszacowanie Milicji dla panelu oblężenia: tylko z ukończonym budynkiem Garnizon. */
+    /** Oszacowanie Milicji dla panelu oblężenia: tylko z ukończonym budynkiem Garnizon i poza okresem odnowy. */
     setSiegePanelMilitiaEstimator((c: City) =>
-      completedBuildingIdsForCity(c.id).includes('garnizon') ? militiaHeadcount(c.population) : 0);
+      completedBuildingIdsForCity(c.id).includes('garnizon') && militiaRegenTurnsLeft(c, turn) === 0
+        ? militiaHeadcount(c.population) : 0);
+    setSiegePanelMilitiaRegenLeft((c: City) => militiaRegenTurnsLeft(c, turn));
 
     /** C3-ST-1: kanon w siegeDefenders.ts — realne jednostki, licznik garnizonu lub militia. */
     function cityHasDefenders(city: City): boolean {
