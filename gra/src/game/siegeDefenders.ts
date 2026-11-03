@@ -390,6 +390,24 @@ export function fallenMilitiaIds(
   return fallen;
 }
 
+/**
+ * R-WEB-CITY-MILITIA-REGEN-COOLDOWN-Q1 (runda 2): ids Milicji uznane za ZNISZCZONA na potrzeby okresu odnowy.
+ * Wynik reczny/taktyczny (`survivors` zdefiniowane): dokladnie `fallen` (bez zmian).
+ * Auto-bitwa (Pomin/Auto): wagi linii w applyLossPctToRoster (dystans 0,25) sprawiaja, ze milicjant dystansowy
+ * nigdy nie ginie, wiec "zniszczona" definiujemy WYNIKIEM: przegrana obrony (winner atakujacy) = cala
+ * wirtualna Milicja zniszczona. Remis / wygrana obrony nie uruchamia odnowy. Ludnosc nadal maleje wg `fallen`.
+ */
+export function militiaIdsDestroyedForCooldown(
+  defRoster: readonly RuntimeUnit[],
+  fallen: ReadonlySet<string>,
+  ctx: { isAutoBattle: boolean; attackerWon: boolean },
+): Set<string> {
+  if (!ctx.isAutoBattle || !ctx.attackerWon) return new Set(fallen);
+  const all = new Set<string>(fallen);
+  for (const m of defRoster) if (isMilitiaUnit(m)) all.add(String(m.id));
+  return all;
+}
+
 /** Tytuł strony obrońcy w preBattle (miasto otwarte / szturm). */
 export function defenderSideTitle(city: City, defRoster: readonly RuntimeUnit[]): string {
   if (defRoster.length === 0) return 'Brak';

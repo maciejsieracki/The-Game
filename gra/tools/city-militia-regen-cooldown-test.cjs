@@ -24,6 +24,7 @@ async function bundle(mutation) {
   const entry = path.join(tempDir, 'entry-' + tag + '.ts');
   fs.writeFileSync(entry, `
 export * as SD from '${fwd(path.join(ROOT, 'src/game/siegeDefenders'))}';
+export * as AB from '${fwd(path.join(ROOT, 'src/game/auto-battle-power'))}';
 export * as SV from '${fwd(path.join(ROOT, 'src/game/save'))}';
 `, 'utf8');
   const outfile = path.join(tempDir, 'bundle-' + tag + '.cjs');
@@ -51,12 +52,13 @@ const MUTATIONS = [
   { name: 'cooldown-off-by-one-long', from: 'return Math.max(0, at - currentTurn);', to: 'return Math.max(0, at - currentTurn + 1);' },
   { name: 'cooldown-off-by-one-short', from: 'return Math.max(0, at - currentTurn);', to: 'return Math.max(0, at - currentTurn - 1);' },
   { name: 'partial-triggers-cooldown', from: 'if (!militia.every(m => fallenIds.has(String(m.id)))) return false;', to: 'if (!militia.some(m => fallenIds.has(String(m.id)))) return false;' },
+  { name: 'auto-win-not-destroyed', from: 'if (!ctx.isAutoBattle || !ctx.attackerWon) return new Set(fallen);', to: 'return new Set(fallen);' },
   { name: 'turns-not-applied', from: 'city.militiaRegenAtTurn = currentTurn + MILITIA_REGEN_TURNS;', to: 'city.militiaRegenAtTurn = currentTurn;' },
 ];
 
 function checks(M, rec) {
   const SD = M.SD;
-  const ok = ['collectCityDefRoster', 'hasCityDefenders', 'applyMilitiaDestroyedCooldown', 'militiaRegenTurnsLeft']
+  const ok = ['collectCityDefRoster', 'hasCityDefenders', 'applyMilitiaDestroyedCooldown', 'militiaRegenTurnsLeft', 'militiaIdsDestroyedForCooldown']
     .every((n) => typeof SD[n] === 'function');
   rec(ok, 'API: applyMilitiaDestroyedCooldown / militiaRegenTurnsLeft istnieja');
   if (!ok) return;
@@ -126,6 +128,45 @@ function checks(M, rec) {
   rec(militiaOf(SD.collectCityDefRoster(c5, [], { completedBuildingIds: ['garnizon'] })).length === 5,
     'brak currentTurn w opcjach: zgodnosc wsteczna (bez odnowy)');
 
+  // --- RUNDA 2: sciezka Pomin/Auto z PRAWDZIWYM applyLossPctToRoster (wagi linii) ---
+  if (M.AB && typeof M.AB.applyLossPctToRoster === 'function') {
+    const autoPath = (pop, era, lossPct, attackerWon, turn, isAuto = true) => {
+      const c = mkCity(pop);
+      const r = SD.collectCityDefRoster(c, [], { completedBuildingIds: ['garnizon'], ownerEra: era, currentTurn: turn });
+      const rows = r.roster.map((m) => ({ id: String(m.id), typeId: m.typeId, def: r.militiaDefs.get(String(m.id)) || r.militiaDefs.get(m.typeId) || m, hp: m.hp }));
+      const dead = new Set();
+      try {
+        for (const row of M.AB.applyLossPctToRoster(rows, lossPct, () => 16)) if (row.dead) dead.add(row.id);
+      } catch (_) { /* def shape: fallback ponizej */ }
+      const fallen = SD.fallenMilitiaIds(r.roster, { autoDeadIds: dead });
+      SD.applyMilitiaPopulationLoss(c, r.roster, fallen);
+      const destroyed = SD.militiaIdsDestroyedForCooldown(r.roster, fallen, { isAutoBattle: isAuto, attackerWon });
+      SD.applyMilitiaDestroyedCooldown(c, r.roster, destroyed, turn);
+      return { c, r, fallen };
+    };
+    for (const loss of [0.7, 0.97, 1.0]) {
+      const o = autoPath(10, 3, loss, true, 20);
+      rec(o.c.militiaRegenAtTurn === 25, `Pomin/Auto, atakujacy wygrywa, lossDefPct ${loss}: licznik odnowy = 25 (dystansowi tez zniszczeni)`);
+      rec(SD.collectCityDefRoster(o.c, [], gar(22)).roster.length === 0, `Pomin/Auto ${loss}: tura 22 bez Milicji`);
+      rec(SD.collectCityDefRoster(o.c, [], gar(25)).roster.length === o.c.population, `Pomin/Auto ${loss}: tura 25 Milicja = ludnosc`);
+    }
+    rec(autoPath(10, 3, 0.97, false, 20).c.militiaRegenAtTurn === undefined, 'Pomin/Auto: wygrana obrony (obronca) NIE uruchamia odnowy');
+    // remis = attackerWon false
+    rec(autoPath(10, 3, 0.3, false, 20).c.militiaRegenAtTurn === undefined, 'Pomin/Auto: remis NIE uruchamia odnowy');
+    // reczna bitwa (survivors zdefiniowane) wygrana atakujacego, ocaleni zyja => brak odnowy
+    {
+      const c = mkCity(6);
+      const r = SD.collectCityDefRoster(c, [], gar(20));
+      const surv = r.roster.slice(0, 2).map((m) => ({ id: String(m.id), hp: 5 }));
+      const fallen = SD.fallenMilitiaIds(r.roster, { survivors: surv });
+      const d = SD.militiaIdsDestroyedForCooldown(r.roster, fallen, { isAutoBattle: false, attackerWon: true });
+      rec(!SD.applyMilitiaDestroyedCooldown(c, r.roster, d, 20) && c.militiaRegenAtTurn === undefined,
+        'reczna bitwa, ocaleni zyja: brak odnowy (auto-regula nie dotyczy trybu recznego)');
+    }
+  } else {
+    rec(false, 'auto-battle-power.ts: applyLossPctToRoster niedostepne w bundlu');
+  }
+
   // --- zapis / odczyt ---
   if (M.SV && typeof M.SV.serializeGame === 'function') {
     const base = { wersja: 3, tura: 18, units: [], gracze: [], exploredByHuman: [], humanOwnerIds: [0], activeHumanOwnerId: 0 };
@@ -146,8 +187,8 @@ function checks(M, rec) {
 function sourceChecks(rec) {
   const main = fs.readFileSync(path.join(ROOT, 'src/main.ts'), 'utf8');
   rec(/currentTurn:\s*turn/.test(main), 'main.ts: cityDefenderOptions przekazuje currentTurn: turn (gracz/AI/taktyczna/Pomin)');
-  rec(/applyMilitiaDestroyedCooldown\(cityOnHex,\s*defRoster,\s*fallenMilitia,\s*turn\)/.test(main),
-    'main.ts: applyMapBattleOutcome ustawia licznik po bitwie');
+  rec(/applyMilitiaDestroyedCooldown\(\s*cityOnHex,\s*defRoster,\s*militiaIdsDestroyedForCooldown\(defRoster,\s*fallenMilitia,\s*\{\s*isAutoBattle:\s*survivors === undefined,\s*attackerWon:\s*mapWinner === 'atakujacy'/.test(main),
+    'main.ts: applyMapBattleOutcome ustawia licznik po bitwie (auto: przegrana obrona = zniszczona)');
   const params = JSON.parse(fs.readFileSync(path.join(ROOT, 'data/combat-params.json'), 'utf8'));
   rec(params['oblężenie'] && params['oblężenie'].militia_regen_turns === 5, 'combat-params.json: militia_regen_turns = 5');
 }

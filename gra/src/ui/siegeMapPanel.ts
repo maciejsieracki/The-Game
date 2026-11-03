@@ -271,7 +271,7 @@ function render(): void {
           ? '<div class="full">Milicja przy szturmie: <b>' + milicjaEst + '</b></div>'
           : milicjaRegen > 0
             ? '<div class="full">Milicja odnawia się: za <b>' + milicjaRegen + '</b> '
-              + (milicjaRegen === 1 ? 'turę' : milicjaRegen < 5 ? 'tury' : 'tur') + '</div>'
+              + (milicjaRegen === 1 ? 'turę' : (milicjaRegen % 10 >= 2 && milicjaRegen % 10 <= 4 && (milicjaRegen % 100 < 12 || milicjaRegen % 100 > 14)) ? 'tury' : 'tur') + '</div>'
           : '') +
       '</div>' +
       (city.siegeCapitulationPending

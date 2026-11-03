@@ -489,6 +489,7 @@ import {
   defenderSideTitle,
   applyMilitiaPopulationLoss,
   applyMilitiaDestroyedCooldown,
+  militiaIdsDestroyedForCooldown,
   militiaRegenTurnsLeft,
   fallenMilitiaIds,
   isMilitiaUnit,
@@ -31497,7 +31498,16 @@ async function boot(): Promise<void> {
       if (cityOnHex && fallenMilitia) {
         applyMilitiaPopulationLoss(cityOnHex, defRoster, fallenMilitia);
         // R-WEB-CITY-MILITIA-REGEN-COOLDOWN-Q1: cala Milicja polegla => okres odnowy (tury globalne).
-        applyMilitiaDestroyedCooldown(cityOnHex, defRoster, fallenMilitia, turn);
+        // Auto-bitwa: przegrana obrona = cala Milicja zniszczona (wagi linii nie zabijaja dystansu).
+        applyMilitiaDestroyedCooldown(
+          cityOnHex,
+          defRoster,
+          militiaIdsDestroyedForCooldown(defRoster, fallenMilitia, {
+            isAutoBattle: survivors === undefined,
+            attackerWon: mapWinner === 'atakujacy',
+          }),
+          turn,
+        );
       }
 
 
