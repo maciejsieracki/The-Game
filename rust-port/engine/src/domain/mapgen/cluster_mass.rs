@@ -1408,7 +1408,8 @@ pub struct SpawnLandCandidate {
 /// Web `polarProximityTier` (`clusters.ts:372-395` @23dd158e9, R-WEB-AI-AVOID-POLAR-CITIES-Q1):
 /// 3 = sam heks Polarny, 2 = Polarny w promieniu 1, 1 = w promieniu 2, 0 = brak.
 pub fn polar_proximity_tier(map: &GeneratedMap, q: i32, r: i32) -> i64 {
-    let is_polar = |qq: i32, rr: i32| hex_tile(map, qq, rr).is_some_and(|t| t.terrain == Terrain::Polar);
+    let is_polar =
+        |qq: i32, rr: i32| hex_tile(map, qq, rr).is_some_and(|t| t.terrain == Terrain::Polar);
     if is_polar(q, r) {
         return 3;
     }
@@ -1435,7 +1436,11 @@ pub fn polar_proximity_tier(map: &GeneratedMap, q: i32, r: i32) -> i64 {
 
 /// Web `dropPolarHexCandidates` (`clusters.ts:782-785` @23dd158e9): kandydaci bez heksu Polarny,
 /// o ile taki istnieje (inaczej bez zmian). Zwraca indeksy zachowane z `cands`.
-fn drop_polar_hex_candidates<T>(map: &GeneratedMap, cands: Vec<T>, h_of: impl Fn(&T) -> HexCoord) -> Vec<T> {
+fn drop_polar_hex_candidates<T>(
+    map: &GeneratedMap,
+    cands: Vec<T>,
+    h_of: impl Fn(&T) -> HexCoord,
+) -> Vec<T> {
     let non_polar =
         |c: &T| !hex_tile(map, h_of(c).q, h_of(c).r).is_some_and(|t| t.terrain == Terrain::Polar);
     if cands.iter().any(non_polar) {

@@ -46,11 +46,12 @@ use crate::domain::hex::HexCoord;
 use crate::domain::map_generator::{GeneratedMap, Terrain};
 use crate::domain::mapgen::cluster_layout::{
     assign_types_to_cluster_centers, build_cluster_cities_with_land_gate,
-    capital_min_sea_dist_for_map, capital_min_separation_for_map_pin, cluster_body_buffer_radius,
+    capital_min_sea_dist_for_map, capital_min_separation_for_empty_map,
+    capital_min_separation_for_map_pin, cluster_body_buffer_radius,
     cluster_body_separation_for_map, cluster_capital_hex, cluster_capital_pos,
-    cluster_center_placement_sep_for_map_civ, enforce_cluster_body_separation_on_klastry,
-    enforce_hard_capital_separation_on_klastry, enforce_local_land_dominance,
-    enforce_quarter_spread_on_klastry, foreign_buffers_for_cluster,
+    cluster_center_placement_sep, cluster_center_placement_sep_for_map_civ,
+    enforce_cluster_body_separation_on_klastry, enforce_hard_capital_separation_on_klastry,
+    enforce_local_land_dominance, enforce_quarter_spread_on_klastry, foreign_buffers_for_cluster,
     passes_min_capital_separation_gate, passes_min_sea_dist_gate,
     pick_spawn_hex_with_capital_gates, repack_all_sparse_cluster_state_cities,
     sea_dist_rescue_ladder, ClusterCitiesWithCentrum, PickSpawnHexOpts, SpreadGateOpts, HOOKS,
@@ -464,20 +465,37 @@ pub fn compute_clusters(
     // REPIN-DELTA-4 hunk 23 (`clusters.ts:3525-3530` @23dd158e9): powierzchnia zamieszkiwalnego ladu (jak
     // `ladowePlayer`: bez Morza, Gor i Plytkiego Morza) - baza sufitu wykonalnosci sep stolic.
     let land_count_for_sep = land_pool(map).len() as i64;
-    let min_capital_sep_early = capital_min_separation_for_map_pin(
-        rozmiar_mapy,
-        w,
-        h,
-        Some(n_typy),
-        Some(land_count_for_sep),
-    );
-    let center_placement_sep = cluster_center_placement_sep_for_map_civ(
-        rozmiar_mapy,
-        w,
-        h,
-        Some(n_typy),
-        Some(land_count_for_sep),
-    );
+    // Pusta mapa: `W = H = -Infinity` (patrz `capital_min_separation_for_empty_map`).
+    let sep_for_map = |rozmiar: MapSizeLabel| -> i64 {
+        if empty_map {
+            capital_min_separation_for_empty_map(rozmiar, n_typy)
+        } else {
+            capital_min_separation_for_map_pin(
+                rozmiar,
+                w,
+                h,
+                Some(n_typy),
+                Some(land_count_for_sep),
+            )
+        }
+    };
+    let min_capital_sep_early = sep_for_map(rozmiar_mapy);
+    let center_placement_sep = if empty_map {
+        let sep = min_capital_sep_early;
+        if sep > 0 {
+            cluster_center_placement_sep(rozmiar_mapy)
+        } else {
+            0
+        }
+    } else {
+        cluster_center_placement_sep_for_map_civ(
+            rozmiar_mapy,
+            w,
+            h,
+            Some(n_typy),
+            Some(land_count_for_sep),
+        )
+    };
     let short_side = w.min(h);
     let min_dyst_klastrow: i64 = opts.min_dystans_klastrow.unwrap_or_else(|| {
         if center_placement_sep > 0 {
@@ -548,13 +566,7 @@ pub fn compute_clusters(
     ));
     let sea_dist = build_sea_distance_field(map);
     let min_sea_dist = capital_min_sea_dist_for_map(rozmiar_mapy, w, h) as f64;
-    let min_capital_sep_i = capital_min_separation_for_map_pin(
-        rozmiar_mapy,
-        w,
-        h,
-        Some(n_typy),
-        Some(land_count_for_sep),
-    );
+    let min_capital_sep_i = sep_for_map(rozmiar_mapy);
     let min_capital_sep = min_capital_sep_i as f64;
     let s_cluster = cluster_body_separation_for_map(rozmiar_mapy, w, h) as f64;
     let body_buffer_radius = cluster_body_buffer_radius(s_cluster);
@@ -593,7 +605,7 @@ pub fn compute_clusters(
         },
         Some(&sea_dist),
         min_sea_dist,
-        &ladowe_player,
+        &ladowe,
         &HOOKS,
     );
 

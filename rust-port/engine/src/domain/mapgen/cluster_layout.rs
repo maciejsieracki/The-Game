@@ -33,10 +33,10 @@ use crate::domain::mapgen::cluster_mass::{
     allocate_typy_to_masses, assign_voronoi_regions, development_space_score, js_array_sort_by,
     local_land_fraction, mass_land_cache_from_masses, passes_local_land_gate,
     passes_player_start_mass_gate, pick_best_local_land_spawn, pick_center_in_mass_spread,
-    pick_player_cluster_center, pick_tied_spawn_land_candidate, polar_proximity_tier, qualifying_mass_indices_for_spawn,
-    sort_spawn_candidates_with_spread_bias, sort_spawn_land_candidates, ClusterCity,
-    ClusterLayoutHooks, LandBBox, MassLandCache, MassesOrCache, QuadrantSpread, RandRef, SeaDist,
-    SpawnLandCandidate, TypeCluster,
+    pick_player_cluster_center, pick_tied_spawn_land_candidate, polar_proximity_tier,
+    qualifying_mass_indices_for_spawn, sort_spawn_candidates_with_spread_bias,
+    sort_spawn_land_candidates, ClusterCity, ClusterLayoutHooks, LandBBox, MassLandCache,
+    MassesOrCache, QuadrantSpread, RandRef, SeaDist, SpawnLandCandidate, TypeCluster,
 };
 use crate::domain::mapgen::cluster_rivals::{
     cluster_city_state_max_hex, cluster_growth_reserve, compute_same_type_rival_half_plane_axis,
@@ -354,6 +354,22 @@ pub fn capital_min_separation_for_map_pin(
     }
     let cap = capital_sep_feasible_cap(map_w, map_h, civ, land_count);
     table.max(prop.min(cap))
+}
+
+/// `capitalMinSeparationForMap(rozmiar, W, H, civCount)` dla PUSTEJ mapy (REPIN-DELTA-4 hunk 23): web liczy
+/// `W = H = -Infinity` (`computeClusters` bez heksow), wiec `short < 80`, `prop = max(tabela, round(wsp x -Inf))
+/// = tabela`, `landCount = 0` => pole `W x H = +Infinity` => sufit `floor(sqrt(Inf)) = Infinity`; wynik:
+/// `civCount < 2` -> 0, inaczej `tabela >= 4 ? tabela : 0`. Port (i64) nie reprezentuje nieskonczonosci.
+pub fn capital_min_separation_for_empty_map(rozmiar: MapSizeLabel, civ_count: i64) -> i64 {
+    if civ_count < 2 {
+        return 0;
+    }
+    let v = capital_min_separation(rozmiar);
+    if v >= 4 {
+        v
+    } else {
+        0
+    }
 }
 
 /// Web `clusterBodySeparation` (`clusters.ts:1500`).
@@ -705,9 +721,7 @@ pub fn pick_spawn_hex_with_capital_gates(
     // REPIN-DELTA-4 hunk 25 (`clusters.ts:1816-1819` @23dd158e9, R-WEB-AI-AVOID-POLAR-CITIES-Q1): stolice/MP AI
     // (nie gracz) - heks Polarny zakazany, o ile pula ma jakikolwiek niepolarny; sasiedztwo polarne = kara w sortowaniu.
     let avoid_polar = !opts.require_player_mass_gate
-        && pool
-            .iter()
-            .any(|h| polar_proximity_tier(map, h.q, h.r) < 3);
+        && pool.iter().any(|h| polar_proximity_tier(map, h.q, h.r) < 3);
     for sea_min in sea_steps {
         let passes = |h: HexCoord| -> bool {
             if avoid_polar
