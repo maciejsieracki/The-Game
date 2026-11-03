@@ -71,12 +71,16 @@ fn barbarians_treat_tundra_as_impassable_land() {
     assert!(BarbTerrain::Desert.is_passable_land());
 }
 
+// R-RUSTPORT-P6-TRADE-INCOME-PIN-Q1 (regeneracja z uzasadnieniem): ten test twierdzil, ze trasy handlowe NIE
+// przechodza przez Tundre ("Polarny: 99" to koszt RUCHU jednostek, nie regula tras). Pin weba `4bbef081d`
+// `trade-routes.ts:198-200`: `isLandPassable = !isWaterTerrain(tb) && tb !== TerenBazowy.Gory` -- Polarny JEST
+// przejezdny dla tras; potwierdza to uruchomiony web (`p6_trade_pin.rs`, mapy z 'polarny'). Asercje odwrocone 1:1.
 #[test]
-fn trade_routes_do_not_cross_tundra() {
-    // Web: "Polarny": 99; pathfinding.rs: Tundra is not passable.
-    assert!(!TradeTerrain::Tundra.is_land_passable());
+fn trade_routes_cross_tundra_like_the_web_pin() {
+    assert!(TradeTerrain::Tundra.is_land_passable());
     assert!(!TradeTerrain::Tundra.is_water_passable());
-    // Desert stays land-passable for trade routes.
+    // Mountains remain the only impassable land terrain for trade routes; Desert stays passable.
+    assert!(!TradeTerrain::Mountains.is_land_passable());
     assert!(TradeTerrain::Desert.is_land_passable());
 }
 
@@ -134,7 +138,8 @@ fn trade_disc(filler: TradeTerrain) -> TradeMap {
             tiles.push((coordinate, filler));
         }
     }
-    let mut map = TradeMap::from_tiles(tiles);
+    // Web `computeCityConnection`: BFS budget = max(1, szerokoscQ + wysokoscR) -- real maps always have dimensions.
+    let mut map = TradeMap::from_tiles(tiles).with_dimensions(7, 7);
     // Both cities sit on grassland; the field between them is `filler`.
     map.insert(TradeHex::new(0, 0), TradeTerrain::Grassland);
     map.insert(TradeHex::new(2, 0), TradeTerrain::Grassland);
@@ -142,23 +147,22 @@ fn trade_disc(filler: TradeTerrain) -> TradeMap {
 }
 
 #[test]
-fn land_route_bfs_is_blocked_by_tundra_field() {
-    // Real land-connection BFS (`bfs_path` with `is_land_passable`):
-    // cities two hexes apart, everything between them is Tundra.
+fn land_route_bfs_crosses_tundra_field_like_the_web_pin() {
+    // Real land-connection BFS (`bfs_path` with `is_land_passable`): cities two hexes apart, everything between
+    // them is Tundra ("Polarny"). Pin `trade-routes.ts:198-200`: only mountains/water block -> connected.
     let map = trade_disc(TradeTerrain::Tundra);
     let from = TradeCity::new("a", PlayerId::new(1), 0, 0);
     let to = TradeCity::new("b", PlayerId::new(2), 2, 0);
     let result = find_city_connection(&from, &to, &map, TradeRouteMedium::Land);
     assert!(
-        !result.connected,
-        "land route crossed a Tundra field: {result:?}"
+        result.connected,
+        "land route blocked by a Tundra field: {result:?}"
     );
 }
 
 #[test]
 fn land_route_bfs_crosses_desert_field() {
-    // Control for the test above: identical geometry with Desert (passable)
-    // must connect, so the failure above is caused by Tundra alone.
+    // Control: identical geometry with Desert (passable) also connects.
     let map = trade_disc(TradeTerrain::Desert);
     let from = TradeCity::new("a", PlayerId::new(1), 0, 0);
     let to = TradeCity::new("b", PlayerId::new(2), 2, 0);
@@ -167,7 +171,7 @@ fn land_route_bfs_crosses_desert_field() {
 }
 
 #[test]
-fn owners_land_border_ignores_tundra_neighbour() {
+fn owners_land_border_counts_tundra_neighbour_like_the_web_pin() {
     // Owner 1 holds (0,0), owner 2 holds the adjacent (1,0).
     let nodes = [
         TerritoryNode::new(PlayerId::new(1), 0, 0, 0),
@@ -178,9 +182,20 @@ fn owners_land_border_ignores_tundra_neighbour() {
     tundra_border.insert(TradeHex::new(0, 0), TradeTerrain::Grassland);
     tundra_border.insert(TradeHex::new(1, 0), TradeTerrain::Tundra);
     assert!(
-        !owners_have_shared_land_border(PlayerId::new(1), PlayerId::new(2), &nodes, &tundra_border),
-        "Tundra must not count as a shared passable land border"
+        owners_have_shared_land_border(PlayerId::new(1), PlayerId::new(2), &nodes, &tundra_border),
+        "Tundra is passable land for trade (pin trade-routes.ts:198-200): it counts as a shared border"
     );
+
+    // Mountains (the only impassable land terrain) do not.
+    let mut mountain_border = TradeMap::new(0, 0);
+    mountain_border.insert(TradeHex::new(0, 0), TradeTerrain::Grassland);
+    mountain_border.insert(TradeHex::new(1, 0), TradeTerrain::Mountains);
+    assert!(!owners_have_shared_land_border(
+        PlayerId::new(1),
+        PlayerId::new(2),
+        &nodes,
+        &mountain_border
+    ));
 
     // Control: same owners, neighbour is Grassland -> border exists.
     let mut grass_border = TradeMap::new(0, 0);

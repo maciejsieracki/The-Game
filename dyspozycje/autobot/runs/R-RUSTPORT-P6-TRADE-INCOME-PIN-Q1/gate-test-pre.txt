@@ -1,0 +1,3 @@
+cargo test -j 2 --no-fail-fast na czystym b0057c1c9 (git archive rust-port + dyspozycje; p6_m00_skeleton/p6_m16_doc po dodaniu dyspozycje: 5+1 passed)
+SUMA: passed 2057, failed 0
+EXIT=0

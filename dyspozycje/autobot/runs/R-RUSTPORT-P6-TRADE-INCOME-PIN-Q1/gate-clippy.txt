@@ -1,0 +1,4 @@
+cargo clippy -j 2 --lib --test p6_trade_pin --test trade --test terrain_movement_fix -- -D warnings
+Checking civ-engine v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_50a45cf1-5ed-1/rust-port/engine)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 31.24s
+EXIT=0

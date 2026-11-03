@@ -10,7 +10,7 @@ use trade::{
     refresh_trade_routes, trade_route_pair_key, CityConnectionResult, HexCoord,
     SeaTradeBonusParams, TerrainType, TerritoryNode, TradeCity, TradeMap, TradeRoute,
     TradeRouteIncomeParams, TradeRouteMedium, TradeRouteResourceFlowParams, TradeRouteStatus,
-    TradeTile, DEFAULT_TRADE_ROUTE_INCOME_PARAMS,
+    TradeTile,
 };
 
 fn line_map(length: i32) -> TradeMap {
@@ -109,7 +109,8 @@ fn land_and_sea_connection_follow_physical_terrain_without_distance_cap() {
 
 #[test]
 fn diagonal_path_uses_the_canonical_hex_neighbor_order() {
-    let mut map = TradeMap::new(0, 0);
+    // Web BFS budget = max(1, szerokoscQ + wysokoscR): the 10-step diagonal needs real map dimensions.
+    let mut map = TradeMap::new(6, 6);
     for q in -5..=0 {
         for r in -5..=0 {
             map.insert(HexCoord::new(q, r), TerrainType::Plains);
@@ -258,56 +259,40 @@ fn refresh_requires_treaty_and_war_free_route_but_allows_internal_trade() {
         .any(|r| r.owner_id == PlayerId::new(0) && r.to_owner_id == PlayerId::new(0)));
 }
 
+// R-RUSTPORT-P6-TRADE-INCOME-PIN-Q1: ten test sprawdzal DAWNY wzor (interpolacja `dochod_podloga..dochod_szczyt`,
+// skala morza x2, zaokraglenie /5), ktorego nie ma w pinie weba `4bbef081d`. Zastapiony asercjami na krzywych
+// `handel_szlaki` (`trade-routes.ts:1547-1556`); kazda wartosc sprawdzona tez wektorami z URUCHOMIONEGO weba
+// (`p6_trade_pin.rs`). Asercje NIE zostaly oslabione: ta sama liczba przypadkow (granice 0 / srodek / koniec /
+// dystans poza krzywa / krzywa wlasna), nowe wartosci z pinu.
 #[test]
-fn income_curve_is_clamped_and_sea_total_is_scaled_like_the_canonical_rule() {
-    let params = DEFAULT_TRADE_ROUTE_INCOME_PARAMS;
-    assert_eq!(
-        trade::trade_route_distance_income_with_params(0, TradeRouteMedium::Land, &params),
-        5
-    );
-    assert_eq!(
-        trade::trade_route_distance_income_with_params(6, TradeRouteMedium::Land, &params),
-        22
-    );
-    assert_eq!(
-        trade::trade_route_distance_income_with_params(12, TradeRouteMedium::Land, &params),
-        40
-    );
-    assert_eq!(
-        trade::trade_route_distance_income_with_params(1_000, TradeRouteMedium::Land, &params),
-        40
-    );
-    assert_eq!(
-        trade::trade_route_distance_income_with_params(10, TradeRouteMedium::Sea, &params),
-        22
-    );
-    assert_eq!(
-        trade::trade_route_total_distance_income_with_params(0, TradeRouteMedium::Sea, &params),
-        2
-    );
-    assert_eq!(
-        trade::trade_route_total_distance_income_with_params(20, TradeRouteMedium::Sea, &params),
-        16
-    );
-    assert_eq!(
-        trade::trade_route_total_distance_income_with_params(12, TradeRouteMedium::Land, &params),
-        8
-    );
+fn income_curve_is_clamped_to_the_pin_handel_szlaki_tables() {
+    let params = TradeRouteIncomeParams::default();
+    let land = |d: f64| trade::trade_route_income_by_distance(d, TradeRouteMedium::Land, &params);
+    let sea = |d: f64| trade::trade_route_income_by_distance(d, TradeRouteMedium::Sea, &params);
+    assert_eq!(land(0.0), 1.0);
+    assert_eq!(land(6.0), 4.0);
+    assert_eq!(land(12.0), 8.0);
+    assert_eq!(land(1_000.0), 8.0);
+    assert_eq!(sea(10.0), 9.0);
+    assert_eq!(sea(0.0), 2.0);
+    assert_eq!(sea(20.0), 16.0);
+    assert_eq!(land(-5.0), 1.0);
+    assert_eq!(land(6.9), 4.0);
 
-    let custom = TradeRouteIncomeParams::new(10, 20, 4, 8);
+    let custom = TradeRouteIncomeParams::new(vec![3.0, 7.0], vec![4.0]);
     assert_eq!(
-        trade::trade_route_distance_income_with_params(2, TradeRouteMedium::Land, &custom),
-        15
+        trade::trade_route_income_by_distance(2.0, TradeRouteMedium::Land, &custom),
+        7.0
     );
     assert_eq!(
-        trade::trade_route_distance_income_with_params(100, TradeRouteMedium::Sea, &custom),
-        20
+        trade::trade_route_income_by_distance(100.0, TradeRouteMedium::Sea, &custom),
+        4.0
     );
 }
 
 #[test]
 fn route_income_building_and_sea_bonuses_are_aggregated_per_city() {
-    let params = DEFAULT_TRADE_ROUTE_INCOME_PARAMS;
+    let params = TradeRouteIncomeParams::default();
     let land = route(
         "land",
         "a",
@@ -343,17 +328,18 @@ fn route_income_building_and_sea_bonuses_are_aggregated_per_city() {
     );
     let routes = [land.clone(), sea.clone(), inactive];
 
-    let income = trade::compute_trade_route_income_by_city_with_params(
+    let income = trade::compute_trade_route_income_by_city(
         &routes,
         &params,
         |_owner, _medium| 0.0,
+        |_city| 0.0,
     );
-    assert_eq!(income["a"], 4 + 9);
-    assert_eq!(income["b"], 4);
-    assert_eq!(income["c"], 9);
+    assert_eq!(income["a"], 4.0 + 9.0);
+    assert_eq!(income["b"], 4.0);
+    assert_eq!(income["c"], 9.0);
     assert!(!income.contains_key("d"));
 
-    let with_wonder = trade::compute_trade_route_income_by_city_with_params(
+    let with_wonder = trade::compute_trade_route_income_by_city(
         std::slice::from_ref(&land),
         &params,
         |owner, _| {
@@ -363,21 +349,21 @@ fn route_income_building_and_sea_bonuses_are_aggregated_per_city() {
                 0.0
             }
         },
+        |_city| 0.0,
     );
-    assert_eq!(with_wonder["a"], 6);
-    assert_eq!(with_wonder["b"], 4);
+    assert_eq!(with_wonder["a"], 6.0);
+    assert_eq!(with_wonder["b"], 4.0);
 
-    let building_bonus =
-        trade::compute_trade_route_building_bonus_by_city_with_params(&routes, &params);
+    let building_bonus = trade::compute_trade_route_building_bonus_by_city(&routes, &params);
     assert_eq!(building_bonus["a"], 0.2);
     assert_eq!(building_bonus["b"], 0.2);
     assert!(!building_bonus.contains_key("c"));
     assert_eq!(
-        trade::trade_route_building_bonus_for_route_with_params(&land, &params),
+        trade::trade_route_building_bonus_for_route(&land, &params),
         0.2
     );
     assert_eq!(
-        trade::trade_route_building_bonus_for_route_with_params(&sea, &params),
+        trade::trade_route_building_bonus_for_route(&sea, &params),
         0.0
     );
 
@@ -483,10 +469,10 @@ fn resource_flow_moves_only_surplus_and_uses_deterministic_ledger() {
         ),
     ];
     let stocks = |owner: PlayerId, key: &str| match (owner.get(), key) {
-        (1, "cegla") => 10,
-        (2, "cegla") => 0,
-        (3, "cegla") => 0,
-        _ => 0,
+        (1, "cegla") => 10.0,
+        (2, "cegla") => 0.0,
+        (3, "cegla") => 0.0,
+        _ => 0.0,
     };
     let flows = trade::compute_trade_route_resource_flow_with_options(
         &routes,
@@ -496,7 +482,7 @@ fn resource_flow_moves_only_surplus_and_uses_deterministic_ledger() {
     );
     assert_eq!(flows.len(), 1);
     assert_eq!(flows[0].route_id, "a-route");
-    assert_eq!(flows[0].amount, 8);
+    assert_eq!(flows[0].amount, 8.0);
     assert_eq!(flows[0].from_owner_id, PlayerId::new(1));
     assert_eq!(flows[0].to_owner_id, PlayerId::new(3));
 
@@ -512,7 +498,7 @@ fn resource_flow_moves_only_surplus_and_uses_deterministic_ledger() {
             TradeRouteStatus::Connected,
             false,
         )],
-        |_owner, _key| 2,
+        |_owner, _key| 2.0,
         &TradeRouteResourceFlowParams::default(),
         &["zloto"],
     );
@@ -582,7 +568,7 @@ fn map_and_resource_dtos_use_json_safe_camel_case_contracts() {
         "zloto",
         PlayerId::new(1),
         PlayerId::new(2),
-        3,
+        3.0,
     );
     let encoded_flow = serde_json::to_value(&flow).expect("flow serializes");
     assert_eq!(encoded_flow["resourceKey"], "zloto");
@@ -592,17 +578,17 @@ fn map_and_resource_dtos_use_json_safe_camel_case_contracts() {
     assert_eq!(decoded_flow, flow);
 
     let flow_params = TradeRouteResourceFlowParams {
-        min_stock_reserve: 7,
+        min_stock_reserve: 7.0,
     };
     let encoded_flow_params = serde_json::to_value(flow_params).expect("flow params serialize");
-    assert_eq!(encoded_flow_params["minStockReserve"], 7);
+    assert_eq!(encoded_flow_params["minStockReserve"], 7.0);
     assert!(encoded_flow_params.get("min_stock_reserve").is_none());
 
     let sea_params = SeaTradeBonusParams {
-        bonus_per_extra_route: 4,
+        bonus_per_extra_route: 4.0,
     };
     let encoded_sea_params = serde_json::to_value(sea_params).expect("sea params serialize");
-    assert_eq!(encoded_sea_params["bonusPerExtraRoute"], 4);
+    assert_eq!(encoded_sea_params["bonusPerExtraRoute"], 4.0);
     assert!(encoded_sea_params.get("bonus_per_extra_route").is_none());
 }
 

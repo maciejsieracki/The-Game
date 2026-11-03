@@ -1,0 +1,57 @@
+# Mutacje R-RUSTPORT-P6-TRADE-INCOME-PIN-Q1 (mutate-trade-pin.py; testy: p6_trade_pin + trade + p6_adv_q6_wire)
+M01	KILLED	ceil/2 -> floor/2
+M02	KILLED	brak x2 miedzy ownerami
+M03	KILLED	x2 odwrocone
+M04	KILLED	brak obciecia indeksu krzywej
+M05	KILLED	krzywe lad/morze zamienione
+M06	KILLED	premia cudu ceil
+M07	KILLED	premia Targowiska ceil
+M08	KILLED	podzbior morski odwrocony
+M09	KILLED	premia budynkowa bez budynku
+M10	KILLED	bonus Portu od pierwszej trasy
+M11	KILLED	dochod z niepolaczonych tras
+M12	KILLED	limit liczy unikaty zamiast wpisow
+M13	KILLED	slot istnienia bez bazowego
+M14	KILLED	Tundra nieprzejezdna
+M15	KILLED	budzet BFS min 2
+M16	KILLED	ten sam heks bez skrotu
+M17	KILLED	prefiltr sasiadow
+M18	KILLED	need_path=false uruchamia BFS (ladowy)
+M19	KILLED	brak prefiltra wod
+M20	KILLED	brak prefiltra ladu
+M21	KILLED	fort przed miastem
+M22	KILLED	pozniejszy fort wygrywa
+M23	KILLED	remis miast: ostatni
+M24	KILLED	ten sam owner ma granice
+M25	KILLED	sortowanie rosnaco po dochodzie
+M26	KILLED	nowe przed istniejacymi
+M27	KILLED	tie-break bajtowy zamiast localeCompare
+M28	KILLED	wielkie litery przed malymi
+M29	KILLED	trasy wewnetrzne: sort bajtowy
+M30	KILLED	brama techu dla tras wewnetrznych
+M31	KILLED	brama techu partnera
+M32	KILLED	wojna nie blokuje nowych tras
+M33	KILLED	umowa nie jest wymagana
+M34	KILLED	off-by-one slotu istnienia
+M35	KILLED	slot budynku: LUB zamiast I
+M36	KILLED	brak dedupu istniejacych par
+M37	KILLED	granica wymagana takze dla wewnetrznych
+M38	KILLED	przeplyw ceil
+M39	KILLED	przeplyw bez rezerwy
+M40	KILLED	przeplyw przy rownych zapasach
+M41	KILLED	przeplyw bez sortowania tras
+M42	KILLED	pierwszy grant: ostatni po id
+M43	KILLED	tekst diagnozy granicy
+M44	KILLED	loader krzywej akceptuje pusta tablice
+M45	KILLED	domyslna etykieta partnera
+M46	KILLED	cap odbiorcy pominiety
+M47	KILLED	brak poboru u dawcy
+M48	KILLED	diff: dodane odwrocone
+M49	KILLED	create: budynek LUB
+M50	KILLED	prefiltr ladu bez sasiadow miasta
+M51	KILLED	klucz pary odwrocony
+M52	KILLED	NaN dystansu (semantyka JS Math.min)
+M53	KILLED	premia budynkowa z krzywych trudnosci
+M54	KILLED	bonus Portu nie dopisany do mapy morskiej
+SUMA: 54 mutacji, KILLED 54, SURVIVED 0, COMPILE 0 (brutto 100%)
+EXIT=0
