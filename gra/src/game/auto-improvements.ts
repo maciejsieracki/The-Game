@@ -1421,9 +1421,24 @@ function pickAutoImprovementsSinglePass(opts: PickAutoImprovementsOpts): AutoImp
       if (!hex) return false;
       return hexHasDepositReserve(hex) && depositAllowsPlayerImprovement(key, hex);
     };
+    // R-WEB-AUTOCLEAR-RIVER-FOREST-PRIORITY-Q2 (zgłoszenie właściciela 2026-11-03: „mimo Pracy automat nie wycina lasu
+    // wokół rzek pod farmy”). PRZYCZYNA (zmierzona: gra/tools/autoclear-river-forest-priority-test.cjs, PRZED): las przy
+    // rzece zwykle NIE ma obywatela (obywatele stoją na lepszych polach), więc filtr Zasady 2 („tylko pola z obywatelami”)
+    // wycinał ten heks z kandydatów, a E2 (wycinka przy rzece) nigdy nie dostawał celu — automat schodził do trzody,
+    // irygacji i wycinki poza rzeką. WYJĄTEK: w profilu „Żywność” (K1; K2 „Zrównoważone” poza zakresem tego tematu) wycinka lasu na heksie rzeki/przy rzece,
+    // którego bazą jest teren pod farmę (`isFarmBaseTerrain`), jest PRZYGOTOWANIEM POLA pod farmę (wycinka → farma),
+    // więc filtr „tylko pola z obywatelami” jej nie dotyczy. Filtr zostaje dla pozostałych ulepszeń i dla wycinki poza
+    // rzeką. „Wolno wycinać las” OFF nadal blokuje całą wycinkę (`citySkipWyrab`, decyzja U-6 = A).
+    const riverForestPrepHex = (q: number, r: number): boolean => {
+      if (citySkipWyrab || focus !== 'zywnosc') return false;
+      const hk = `${q},${r}`;
+      const hx = map.hexes[hk];
+      return !!hx && hx.nakladka === Nakladka.Las && onRiverHex(hk) && isFarmBaseTerrain(hx.terenBazowy, Nakladka.Brak);
+    };
     /** Czy na tym heksie wolno postawić TEN klucz, biorąc pod uwagę Zasadę 2. */
     const hexAllowsKey = (q: number, r: number, key: ImprovementKey): boolean => {
       if (!workedKeys) return true;
+      if (key === 'wyrab' && riverForestPrepHex(q, r)) return true;
       if (workedKeys.has(`${q},${r}`)) return true;
       return isDepositHexForKey(q, r, key);
     };
@@ -1440,6 +1455,7 @@ function pickAutoImprovementsSinglePass(opts: PickAutoImprovementsOpts): AutoImp
     if (workedKeys) {
       candidateHexes = candidateHexes.filter(({ q, r }) => {
         if (workedKeys.has(`${q},${r}`)) return true;
+        if (riverForestPrepHex(q, r)) return true;
         const hex = map.hexes[`${q},${r}`];
         return !!hex && hexHasDepositReserve(hex);
       });
