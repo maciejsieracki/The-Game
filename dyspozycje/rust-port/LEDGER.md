@@ -708,3 +708,6 @@ Web naprawił natywny dostęp do żelaza (`ownerHasNativeZelazoAccess`: Kopalnia
 
 ## 2026-11-03 — WZNOWIENIE PORTU (tylko grafika, Opus 5.5) — polecenie właściciela
 Wstrzymanie portu uchylone w zakresie ciężkich prac graficznych: Faza U5 (REPIN-3D) planu `PLAN-AKTUALIZACJI-PORTU-DO-WEBA-20261030.md`, wszystkie role Opus 5.5, pętla autonomiczna do wyczerpania limitu (odnowa jutro). Start: `R-RUSTPORT-REPIN-3D-A-Q1` (pomiar dryfu `battleScene.ts`/`render/*` + partia A1). Fazy U0–U4 (REPIN logiki/UI) nadal wstrzymane. Kolejka grafiki po A: B (kolejne partie wg `P4-REPIN-3D.md`), RR-T1 (GPU — wymaga maszyny właściciela). Web: wdrożono HORSE (ROBOCZA 4cff1d23) — zmienia generator map: REPIN wektorów mapgen (krok `relocate_forest_horses`) czeka w kolejce logiki.
+
+## 2026-11-03 — kontrola cykliczna 23:11
+Nic do integracji. Trwają: web AI-WAR, PLAYER-MOVES, FROZEN-FORTIFIED; Rust REPIN-3D-A (Opus 5.5). Rust-grafika biegnie na jawnym, nowszym poleceniu właściciela z 2026-11-03 (nadrzędnym nad regułą pierwszeństwa weba z triggera); nowe tematy webowe wstrzymane do dokończenia rozpoczętych.
