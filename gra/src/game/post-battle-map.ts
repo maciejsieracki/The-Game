@@ -52,6 +52,8 @@ export interface PostBattleMapInput {
   isUnitAt: (q: number, r: number, exceptId?: string | number) => boolean;
   rng?: () => number;
   cityOnBattleHex?: City | null;
+  /** R1 (obwarowanie bez wylomu): wygrana atakujacego NIE czysci miasta ani nie wchodzi na heks bitwy. */
+  holdPositionAfterWin?: boolean;
 }
 
 export interface PostBattleMapResult {
@@ -410,7 +412,9 @@ export function applyPostBattleMap(input: PostBattleMapInput): PostBattleMapResu
 
   registerVeteranProgressAfterBattle(input);
 
-  if (input.winner === 'atakujacy') {
+  if (input.winner === 'atakujacy' && input.holdPositionAfterWin === true) {
+    // R1: mur/palisada stoi -- atakujacy zostaja pod murami, miasto nie pada.
+  } else if (input.winner === 'atakujacy') {
     if (input.cityOnBattleHex) wipeDefenderOnCityCenter(input);
     retreatDefendersAfterAtkWin(input);
     moveAtkRosterOntoBattleHex(input);
