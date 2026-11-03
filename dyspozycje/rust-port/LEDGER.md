@@ -699,3 +699,6 @@ Właściciel: „Na razie trzymaj pracę z wersją Taur, Rus i Iran, bo jest bar
 
 ## 2026-11-03 — R-RUSTPORT-P6-DYPLOMACJA-PROFIL-WOJNY-POKOJU-Q1 ZINTEGROWANE
 FC PASS-WITH-NOTES (`5f83250c7`, `rust-port-wip/DYPL2-fc`); merge z parity-v2 `6b3882cad` → `e1c040160` (konflikt tylko `domain/mod.rs`, linie `pub mod`, rozwiązany ręcznie). fmt/clippy `-D warnings` EXIT=0, pełny `cargo test -j 2`: 2122 passed / 0 failed. Push na `rust-port/parity-v2`. Zakres: profil wojny/pokoju (wektory z webu `23dd158e9`, 177 275 sprawdzeń, 91/91 mutantów). Pominięte (zależne od stanu sesji): `diploWarProfileOf`, `recordWarCityLossForPair`, `diploBrakeCrisisStep`. PORT RUST WSTRZYMANY decyzją właściciela (wpis wyżej) — nowych tematów nie otwieram.
+
+## 2026-11-03 — kontrola cykliczna 22:11
+Nic do integracji po stronie Rust (port wstrzymany). Pięć workflowów web wznowionych po restarcie kontenera (IRON, HORSE, AI-WAR, PLAYER-MOVES, ARMY-MERGE-PANEL) — trwają. Bez zmian.
