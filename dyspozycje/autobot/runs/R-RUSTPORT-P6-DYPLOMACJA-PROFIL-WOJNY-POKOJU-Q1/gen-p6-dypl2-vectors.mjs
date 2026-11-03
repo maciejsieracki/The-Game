@@ -60,7 +60,7 @@ const VALS = {
 };
 const synRows = [];
 function mkRow(i, params) {
-  return { typCywilizacji: 'syn_typ_' + i, Cywilizacja: 'Syn Cyw ' + i, ikonaId: 'syn_ikona_' + i, tier: 1, params };
+  return { typCywilizacji: 'syn_typ_' + i, Cywilizacja: 'Syn Cyw ' + i, ikonaId: 'Syn_Ikona_' + i, tier: 1, params };
 }
 // siatka: dla kazdego parametru wszystkie wartosci przy pozostalych bazowych
 {
@@ -88,6 +88,9 @@ function mkRow(i, params) {
   const c = mkRow(n++, { ai_agresywnosc: 3 });
   c.Cywilizacja = 'duplikat_x'; // pasuje do b po Cywilizacja bez wielkosci liter
   synRows.push(a, b, c);
+  // wiersz z PUSTYM ikonaId: klucz '' (falsy w webie) nie moze go znalezc
+  const e = mkRow(n++, { ai_agresywnosc: 9 }); e.ikonaId = ''; e.typCywilizacji = 'syn_empty'; e.Cywilizacja = 'Syn Empty';
+  synRows.push(e);
 }
 const SYN_MATRIX = { cywilizacje: synRows.map((r) => ({ ...r, params: Object.fromEntries(Object.entries(r.params).map(([k, v]) => [k, v === 'inf' ? 1e999 : v === 'ninf' ? -1e999 : v])) })) };
 function synMatrixText() {
@@ -185,6 +188,7 @@ for (let ai = 1; ai < AI_VARIANTS.length; ai++) {
 // syntetyczna macierz
 const synKeys = [];
 for (const r of SYN_MATRIX.cywilizacje) synKeys.push(r.typCywilizacji, r.ikonaId, r.Cywilizacja);
+for (const r of SYN_MATRIX.cywilizacje) synKeys.push(r.typCywilizacji.toUpperCase(), r.ikonaId.toUpperCase(), r.Cywilizacja.toUpperCase());
 synKeys.push('DUPLIKAT_X', 'duplikat_x', 'SYN_TYP_0', 'Syn Cyw 3', 'brak', '');
 for (const k of synKeys) { addProfile('S0', 0, k); }
 for (let ps = 1; ps < PARAMSETS.length; ps++) for (const k of synKeys.filter((_, i) => i % 7 === ps % 7)) addProfile('S0', ps, k);
