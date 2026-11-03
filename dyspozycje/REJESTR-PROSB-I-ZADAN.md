@@ -8615,3 +8615,5 @@ Właściciel: przewijanie w panelu łączenia armii działa, ale nie da się spr
 - 2026-11-03 — R-WEB-IRON-NATIVE-ACCESS-FIX-Q1: FC PASS-WITH-NOTES (`c62c1064f`), zdeployowane do ROBOCZEJ `a7b56a71` (main). Notatki: brak pomiaru w symulacji; `zelazo-gate`/`deposit-building-gate` czerwone też na bazie; REPIN Rust po wznowieniu portu.
 
 - 2026-11-03 — ZGŁOSZENIE: Milicja odnawia się w pełni przy każdym ataku. Wymaganie: po zniszczeniu Milicji 5 tur odnowy bez Milicji, potem odnowa → temat R-WEB-CITY-MILITIA-REGEN-COOLDOWN-Q1 (dispatch zapisany; kolejka — sekwencyjnie wg plików siege*/main.ts).
+
+- 2026-11-03 — ZGŁOSZENIE: armie/jednostki zbierane do wodza idą do pierwszego wodza zamiast najbliższego dostępnego → temat R-WEB-ARMY-TO-NEAREST-LEADER-Q1 (dispatch zapisany; kolejka po R-WEB-AI-ARMY-CONCENTRATION-REPLACEMENT-Q1, te same pliki).
