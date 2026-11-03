@@ -1,0 +1,17 @@
+FAIL API: applyCapturePopulationLoss istnieje
+FAIL main.ts: kapitulacja glodowa wola applyCapturePopulationLoss
+FAIL main.ts: applyCityCaptureToMap dodaje wiersz Ludnosc -N
+FAIL main.ts: kapitulacja dodaje wiersz Ludnosc -N
+PASS main.ts: captureCityWithoutBattle -> applyCityCaptureToMap (wspolny punkt)
+PASS main.ts: bitwa o miasto / szturm -> applyCityCaptureToMap
+PASS main.ts: applyCityCaptureToMap -> applyCityCaptureAfterBattle (punkt straty)
+PASS cesja traktatowa: bez straty ludnosci
+PASS aneksja dyplomatyczna: bez straty ludnosci
+FAIL mutacja zlapana: loss-two
+FAIL mutacja zlapana: no-min-one
+FAIL mutacja zlapana: reclaim-not-excluded
+FAIL mutacja zlapana: pb-call-removed
+FAIL mutacja zlapana: rebel-snapshot-ignored
+
+5 PASS, 9 FAIL
+EXIT=1

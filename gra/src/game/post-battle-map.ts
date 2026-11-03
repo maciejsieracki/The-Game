@@ -6,7 +6,7 @@
 
 import type { GameMap } from '../types/map';
 import type { City } from './cities';
-import { wasIndependentCityStateBeforeCapture } from './cities';
+import { wasIndependentCityStateBeforeCapture, applyCapturePopulationLoss } from './cities';
 import { isBarbarian } from './barbarians';
 import { onCityCapturedCulture } from './conquest-stability';
 import { applyPostCaptureLawOnCapture } from './post-capture-law';
@@ -475,6 +475,9 @@ export function applyCityCaptureAfterBattle(
   // (wołane niżej z main.ts przez captureOpts.onOwnerChanged, PO ustawieniu city.ownerId) —
   // patrz cities.ts, wasIndependentCityStateBeforeCapture.
   const wasIndependentCityState = wasIndependentCityStateBeforeCapture(city);
+  // R-WEB-CITY-MILITIA-NO-POPULATION-LOSS-Q1: zdobycie obcego miasta = -1 obywatel (min. 1);
+  // odzyskanie własnego bez straty. Wspólny punkt wszystkich zbrojnych ścieżek zdobycia.
+  applyCapturePopulationLoss(city, atkOwner, prevOwner, city.rebelPreviousOwnerId);
   for (let i = units.length - 1; i >= 0; i--) {
     const u = units[i]!;
     if (u.ownerId === city.ownerId && u.q === city.q && u.r === city.r) {

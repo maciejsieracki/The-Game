@@ -1005,6 +1005,13 @@ export interface City {
   /** Właściciel sprzed buntu (do wykrycia odbicia po rebelii — B-LAW-Q1). */
   rebelPreviousOwnerId?: number;
   /**
+   * R-WEB-CITY-MILITIA-NO-POPULATION-LOSS-Q1: właściciel miasta tuż PRZED ostatnim zdobyciem
+   * (zapisywany przez `applyCapturePopulationLoss`). Zdobycie przez tę samą cywilizację
+   * (odzyskanie własnego miasta) nie zabiera obywatela. Optional/addytywne — brak pola
+   * (stary zapis) = brak odzyskania, zero bumpu SAVE_VERSION.
+   */
+  capturedFromOwnerId?: number;
+  /**
    * R-MIASTA-REBELIA-OCHRONA-20-TUR-Q1: pozostałe tury okna ochrony zbuntowanego miasta
    * (start 20, main.ts `markCityRebellionStarted`/`tickRebelProtectionEndOfTurn`). Dopóki
    * >0 i `rebelState===true`, przejęcie tego miasta przez cywilizację INNĄ niż
@@ -1164,6 +1171,49 @@ export function wasIndependentCityStateBeforeCapture(
   city: Pick<City, 'startCityState'>,
 ): boolean {
   return city.startCityState === true;
+}
+
+/**
+ * R-WEB-CITY-MILITIA-NO-POPULATION-LOSS-Q1 (doprecyzowanie właściciela 2026-11-03): zdobycie
+ * OBCEGO miasta pomniejsza jego ludność o `capture_pop_loss` (dane: miasto-params.json, = 1),
+ * nie schodząc poniżej 1. JEDNO miejsce wspólne dla wszystkich ścieżek zdobycia
+ * (post-battle-map `applyCityCaptureAfterBattle` — bitwa/szturm/puste miasto; main.ts kapitulacja
+ * głodowa). Decyzja o odzyskaniu: zdobywca = poprzedni właściciel (`capturedFromOwnerId`) albo
+ * właściciel sprzed buntu (`rebelPreviousOwnerId`, przekazany jako snapshot, bo
+ * applyPostCaptureLawOnCapture go kasuje) => to NIE jest obce miasto, 0 straty.
+ * ZAŁOŻENIE: miasto o ludności 1 zostaje przy 1 (nie jest niszczone). Zawsze zapisuje
+ * `capturedFromOwnerId = prevOwner`. Wołać PRZED zmianą `city.ownerId` / kasowaniem pól buntu.
+ * Zwraca faktyczną liczbę utraconych obywateli (0 = wyłączone / brak).
+ */
+export const CAPTURE_POP_LOSS: number = Math.max(
+  0,
+  Math.floor(((miastoParams as { capture_pop_loss?: { wartosc?: number } }).capture_pop_loss?.wartosc) ?? 1),
+);
+
+export function applyCapturePopulationLoss(
+  city: City,
+  newOwner: number,
+  prevOwner: number,
+  rebelPrevOwnerSnapshot?: number,
+): number {
+  const reclaim = newOwner === prevOwner
+    || (city.capturedFromOwnerId !== undefined && city.capturedFromOwnerId === newOwner)
+    || (rebelPrevOwnerSnapshot !== undefined && rebelPrevOwnerSnapshot === newOwner);
+  city.capturedFromOwnerId = prevOwner;
+  if (reclaim || CAPTURE_POP_LOSS <= 0) return 0;
+  const before = Number.isFinite(city.population) ? city.population : 0;
+  if (before <= 1) return 0;
+  const after = Math.max(1, before - CAPTURE_POP_LOSS);
+  city.population = after;
+  return before - after;
+}
+
+/** Wiersz raportu zdobycia „Ludność: −N” (null, gdy brak straty). */
+export function capturePopLossReportRow(
+  loss: number,
+): { label: string; value: string; tone: 'loss'; group: 'strata' } | null {
+  if (!(loss > 0)) return null;
+  return { label: 'Ludność', value: '−' + Math.floor(loss) + ' (straty zdobycia)', tone: 'loss', group: 'strata' };
 }
 
 export function canFoundCity(

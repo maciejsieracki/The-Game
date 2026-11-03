@@ -210,6 +210,8 @@ import {
   normalizePodzialHandlu,
   isAutoBudowaTryb,
   wasIndependentCityStateBeforeCapture,
+  applyCapturePopulationLoss,
+  capturePopLossReportRow,
   type City,
   type BudowaFocus,
   type BudowaTryb,
@@ -16012,6 +16014,10 @@ async function boot(): Promise<void> {
           && typeof city.rebelProtectionTurnsRemaining === 'number'
           && city.rebelProtectionTurnsRemaining > 0;
         const rebelPrevOwnerSnapshot = city.rebelPreviousOwnerId;
+        // R-WEB-CITY-MILITIA-NO-POPULATION-LOSS-Q1: kapitulacja głodowa = zdobycie obcego miasta (-1 obywatel).
+        const surrenderPopBefore = city.population;
+        applyCapturePopulationLoss(city, newOwner, oldOwner, rebelPrevOwnerSnapshot);
+        const surrenderPopLoss = Math.max(0, surrenderPopBefore - city.population);
         applyPostCaptureLawOnCapture(city, newOwner, oldOwner);
         triggerRebelProtectionWarConsequence(wasProtectedRebel, rebelPrevOwnerSnapshot, newOwner);
         city.ownerId = newOwner;
@@ -16132,7 +16138,7 @@ async function boot(): Promise<void> {
         const captureOutcome = runCapitalCapturePlunder(city, oldOwner, newOwner);
         // R-MIASTA-ZDOBYCIE-RAPORT-TROFEA-Q1: odczyt szczeliny SYNCHRONICZNIE po wywolaniu.
         const capitalReport = capitalCaptureReportSlot;
-        const surrenderRows = capitalReport?.rows ?? buildCityCaptureReportRows({
+        const surrenderRowsBase = capitalReport?.rows ?? buildCityCaptureReportRows({
           kind: 'zwykle',
           mocEtykieta: mocLabel(),
           ludnosc: Math.max(0, Math.floor(city.population)),
@@ -16145,6 +16151,8 @@ async function boot(): Promise<void> {
           surowce: city.surowce,
           pracaPoolPrzejeta: 0,
         });
+        const surrenderPopLossRow = capturePopLossReportRow(surrenderPopLoss);
+        const surrenderRows = surrenderPopLossRow ? [...surrenderRowsBase, surrenderPopLossRow] : surrenderRowsBase;
         // GOAL 3 -- LEJEK 2 z trzech (recon D): kapitulacja glodowa. No-op, gdy lejek
         // stoleczny zapisal juz bogatszy wpis dla tego miasta w tej turze.
         recordCityCaptureEvent({
@@ -32662,6 +32670,7 @@ async function boot(): Promise<void> {
         && typeof city.rebelProtectionTurnsRemaining === 'number'
         && city.rebelProtectionTurnsRemaining > 0;
       const rebelPrevOwnerSnapshot = city.rebelPreviousOwnerId;
+      const popBeforeCapture = city.population;
       const lead = applyCityCaptureAfterBattle(
         city,
         atkRoster,
@@ -32828,7 +32837,7 @@ async function boot(): Promise<void> {
       // GOAL 4 (ECHO 1): zwykle miasto NADAL nie daje lupu -- raport ma to powiedziec
       // wprost („Lup: brak"), a nie wymyslac zdobycz. Wiersze buduje ta sama czysta
       // funkcja, wiec brak lupu wynika z tej samej reguly co pomijanie zer.
-      const reportRows = capitalReport?.rows ?? buildCityCaptureReportRows({
+      const reportRowsBase = capitalReport?.rows ?? buildCityCaptureReportRows({
         kind: 'zwykle',
         mocEtykieta: mocLabel(),
         ludnosc: Math.max(0, Math.floor(city.population)),
@@ -32843,6 +32852,9 @@ async function boot(): Promise<void> {
         surowce: city.surowce,
         pracaPoolPrzejeta: 0,
       });
+      // R-WEB-CITY-MILITIA-NO-POPULATION-LOSS-Q1: wiersz „Ludność: −1” (wspólny punkt straty: post-battle-map).
+      const capturePopLossRow = capturePopLossReportRow(Math.max(0, popBeforeCapture - city.population));
+      const reportRows = capturePopLossRow ? [...reportRowsBase, capturePopLossRow] : reportRowsBase;
       // GOAL 3 -- LEJEK 1 z trzech (recon D): wspolne wejscie zbrojne (bitwa polowa o miasto,
       // szturm muru, wejscie do pustego miasta). No-op, gdy lejek stoleczny zapisal juz
       // bogatszy wpis dla tego miasta w tej turze.

@@ -648,6 +648,7 @@ Wszędzie w dokumentach, kodzie i arkuszach, gdzie pojawia się „Zadowolenie" 
 - **Parametry milicji:** jednostki wręcz mają **50%** statów odpowiednika, dystansowe **pełne** staty, wszystkie obniżone **morale** (dane: `gra/data/combat-params.json` → `militia_*`, `units.json`).
 - Milicja **nie jest rekrutowana** przez gracza — pojawia się automatycznie przy obronie miasta.
 - Milicja **nie istnieje poza polem bitwy** — nie maszeruje, nie pojawia się na mapie świata.
+- **Zdobycie obcego miasta (2026-11-03):** każde zdobycie obcego miasta (szturm, bitwa o miasto, wejście do pustego miasta, kapitulacja głodowa; gracz, AI, miasta-państwa, barbarzyńcy) pomniejsza jego ludność o dokładnie 1 obywatela (`capture_pop_loss` w `miasto-params.json`), nie niżej niż do 1; bez straty: odzyskanie własnego miasta (też po buncie), cesja w traktacie, aneksja dyplomatyczna. Raport zdobycia pokazuje wiersz „Ludność: −1”.
 - **Odnowa po zniszczeniu (2026-11-03):** gdy cała Milicja miasta zginie w bitwie/szturmie, miasto przez 5 tur (`militia_regen_turns` w `combat-params.json`) nie wystawia Milicji; dopiero potem odnawia się w pełnym składzie (liczba = aktualna ludność).
 
 **Cel projektowy:** każde miasto ma minimalną obronę obywatelską — miasta nie można łatwo zdobyć nawet bez regularnej armii. Wymaga to od atakującego przewagi liczebnej lub jakościowej ponad milicję.
