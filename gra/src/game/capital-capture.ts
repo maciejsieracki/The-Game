@@ -142,6 +142,20 @@ export interface OwnerResourceAccess {
   setNaukaPool(ownerId: number, value: number): void;
   getResearchedTechs(ownerId: number): ReadonlySet<string>;
   addResearchedTechs(ownerId: number, ids: Iterable<string>): void;
+  /**
+   * R-WEB-ELIMINATION-FULL-SPOILS-Q1: zapas zywnosci SPICHLERZA imperium
+   * (`EmpireFoodState.zapasyPanstwa`). OPCJONALNE (wsteczna zgodnosc ze starymi
+   * akcesorami/testami) -- brak = zywnosc nie jest transferowana. Uzywane WYLACZNIE
+   * w Zdarzeniu 2 (eliminacja).
+   */
+  getFoodReserve?(ownerId: number): number;
+  setFoodReserve?(ownerId: number, value: number): void;
+  /**
+   * Pojemnosc spichlerza ZDOBYWCY (maks. zapas). OPCJONALNE: brak / nie-skonczona /
+   * <= 0 = brak znanego limitu (ZALOZENIE: nastepny tick `advanceEmpireFood` i tak
+   * przytnie zapas do limitu, wiec nie wymyslamy limitu, ktorego nie znamy).
+   */
+  getFoodCapacity?(ownerId: number): number;
 }
 
 export type CapitalCaptureEventKind = 'przejecie_stolicy' | 'eliminacja';
@@ -159,6 +173,24 @@ export interface CapitalCaptureOutcome {
   pracaPoolPrzejeta: number;
   /** Id techów skopiowanych zwycięzcy (puste poza Zdarzeniem 2), posortowane. */
   techSkopiowane: string[];
+  /**
+   * R-WEB-ELIMINATION-FULL-SPOILS-Q1: zywnosc Spichlerza ofiary FAKTYCZNIE dopisana
+   * do Spichlerza zwycieskiego (po przycieciu do jego pojemnosci). 0 poza Zdarzeniem 2.
+   */
+  zywnoscPrzejeta: number;
+  /** Zywnosc ofiary, ktora nie zmiescila sie w Spichlerzu zdobywcy (ginie). 0 poza Zdarzeniem 2. */
+  zywnoscUtracona: number;
+  /** Calkowity zapas zywnosci ofiary przed przejeciem (= przejeta + utracona). 0 poza Zdarzeniem 2. */
+  zywnoscOfiaryRazem: number;
+  /**
+   * R-WEB-ELIMINATION-FULL-SPOILS-Q1: WSZYSTKIE surowce magazynu panstwa ofiary
+   * (`City.surowce` przejetego, ostatniego miasta ofiary), tylko
+   * wartosci > 0, klucze w stalej kolejnosci. Magazyn panstwa to suma magazynow miast
+   * (SUROW-CIV-01), a `City.surowce` przechodzi na zdobywce razem z miastem
+   * (ownerId), wiec ten rekord jest lista TEGO, co fizycznie przeszlo. Puste poza
+   * Zdarzeniem 2.
+   */
+  surowcePrzejete: Record<string, number>;
   /** True = Zdarzenie 2 (eliminacja) — caller (main.ts) musi doczyścić rostery/dyplomację. */
   eliminacja: boolean;
   /**
@@ -221,6 +253,37 @@ export function applyCapitalCapturePlunder(
 
   let naukaPrzejeta = 0;
   const techSkopiowane: string[] = [];
+  let zywnoscPrzejeta = 0;
+  let zywnoscUtracona = 0;
+  let zywnoscOfiaryRazem = 0;
+  const surowcePrzejete: Record<string, number> = {};
+
+  if (eliminacja) {
+    // --- Zdarzenie 2 — R-WEB-ELIMINATION-FULL-SPOILS-Q1: caly majatek panstwa ---
+    // Surowce: lista tego, co fizycznie przechodzi z miastem (City.surowce nie jest
+    // zerowane przy zmianie ownerId). Eliminacja => remaining.length === 0, wiec ofiara
+    // nie ma juz innych miast: magazyn panstwa = magazyn TEGO miasta. Wartosci w liscie
+    // sa calkowite (floor) -- miasto zachowuje ulamki; okno pokazuje pelne jednostki.
+    for (const key of Object.keys(city.surowce ?? {})) {
+      const v = Math.floor(city.surowce![key] ?? 0);
+      if (v > 0) surowcePrzejete[key] = v;
+    }
+    // Zywnosc Spichlerza imperium: przejmowana do pojemnosci spichlerza zdobywcy.
+    if (access.getFoodReserve && access.setFoodReserve) {
+      zywnoscOfiaryRazem = Math.max(0, Math.floor(access.getFoodReserve(oldOwner)));
+      if (zywnoscOfiaryRazem > 0) {
+        const winnerFood = access.getFoodReserve(newOwner);
+        const cap = access.getFoodCapacity ? access.getFoodCapacity(newOwner) : Number.POSITIVE_INFINITY;
+        const room = Number.isFinite(cap) && cap > 0
+          ? Math.max(0, Math.floor(cap - winnerFood))
+          : Number.POSITIVE_INFINITY;
+        zywnoscPrzejeta = Math.min(zywnoscOfiaryRazem, room);
+        zywnoscUtracona = zywnoscOfiaryRazem - zywnoscPrzejeta;
+        if (zywnoscPrzejeta > 0) access.setFoodReserve(newOwner, winnerFood + zywnoscPrzejeta);
+      }
+      access.setFoodReserve(oldOwner, 0);
+    }
+  }
 
   if (eliminacja) {
     // --- Zdarzenie 2 — dodatkowo nauka + techy ---
@@ -249,6 +312,10 @@ export function applyCapitalCapturePlunder(
     naukaPrzejeta,
     pracaPoolPrzejeta,
     techSkopiowane,
+    zywnoscPrzejeta,
+    zywnoscUtracona,
+    zywnoscOfiaryRazem,
+    surowcePrzejete,
     newCapitalIdForOldOwner,
     eliminacja,
   };
@@ -291,6 +358,10 @@ export function barbarianCaptorResourceAccess(
     setTreasury: (oid, v) => { if (oid !== newOwner) base.setTreasury(oid, v); },
     setPracaPool: (oid, v) => { if (oid !== newOwner) base.setPracaPool(oid, v); },
     setNaukaPool: (oid, v) => { if (oid !== newOwner) base.setNaukaPool(oid, v); },
+    // R-WEB-ELIMINATION-FULL-SPOILS-Q1: barbarzyncy nie dziedzicza zywnosci (ofiara traci).
+    ...(base.setFoodReserve
+      ? { setFoodReserve: (oid: number, v: number) => { if (oid !== newOwner) base.setFoodReserve!(oid, v); } }
+      : {}),
     addResearchedTechs: (oid, ids) => { if (oid !== newOwner) base.addResearchedTechs(oid, ids); },
   };
 }

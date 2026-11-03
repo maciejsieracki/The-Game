@@ -1,0 +1,125 @@
+1. Eliminacja: zwyciezca przejmuje 100% majatku, ofiara wyzerowana
+  OK: 1a: zdarzenie to eliminacja
+  OK: 1b: skarbiec zdobywcy 50 + 500 (got 550, want 550)
+  OK: 1c: skarbiec ofiary 0 (got 0, want 0)
+  OK: 1d: Praca zdobywcy 10 + 300 (got 310, want 310)
+  OK: 1e: Praca ofiary 0 (got 0, want 0)
+  OK: 1f: Nauka zdobywcy 5 + 900 (got 905, want 905)
+  OK: 1g: Nauka ofiary 0 (got 0, want 0)
+  OK: 1h: Spichlerz zdobywcy 40 + 1200 (got 1240, want 1240)
+  OK: 1i: Spichlerz ofiary 0 (got 0, want 0)
+  OK: 1j: outcome.zywnoscPrzejeta 1200 (got 1200, want 1200)
+  OK: 1k: nic nie ginie przy duzym limicie (got 0, want 0)
+  OK: 1l: outcome.zywnoscOfiaryRazem (got 1200, want 1200)
+  OK: 1m: outcome niesie WSZYSTKIE 8 surowcow (got 8, want 8)
+  OK: 1n: surowiec drewno (got 11, want 11)
+  OK: 1n: surowiec kamien (got 22, want 22)
+  OK: 1n: surowiec glina (got 134, want 134)
+  OK: 1n: surowiec ruda (got 40, want 40)
+  OK: 1n: surowiec ruda_zelaza (got 5, want 5)
+  OK: 1n: surowiec cegla (got 17, want 17)
+  OK: 1n: surowiec sol (got 9, want 9)
+  OK: 1n: surowiec wegiel (got 3, want 3)
+  OK: 1o: magazyn zdobywcy +drewno (got 11, want 11)
+  OK: 1o: magazyn zdobywcy +kamien (got 22, want 22)
+  OK: 1o: magazyn zdobywcy +glina (got 134, want 134)
+  OK: 1o: magazyn zdobywcy +ruda (got 40, want 40)
+  OK: 1o: magazyn zdobywcy +ruda_zelaza (got 5, want 5)
+  OK: 1o: magazyn zdobywcy +cegla (got 17, want 17)
+  OK: 1o: magazyn zdobywcy +sol (got 9, want 9)
+  OK: 1o: magazyn zdobywcy +wegiel (got 3, want 3)
+  OK: 1p: magazyn ofiary pusty (zero miast) (got 0, want 0)
+2. Okno „Bilans zdobycia": komplet pozycji
+  OK: 2a: pozycje glowne Ludnosc/Budynki/Punkty nauki/Moc
+  OK: 2b: Punkty nauki +900 (got "+900", want "+900")
+  OK: 2c: Zloto ze skarbca +500 (got "+500", want "+500")
+  OK: 2d: Zywnosc ze spichlerza +1200 (got "+1200", want "+1200")
+  OK: 2e: Pula pracy +300
+  OK: 2f: 8 surowcow w rozwijanej liscie (got 8, want 8)
+  OK: 2g: Glina +134 (got "+134", want "+134")
+  OK: 2h: zadnej pozycji zerowej
+  OK: 2i: brak falszywego „Lup: brak"
+  OK: 2j: HTML okna zawiera „Ludność"
+  OK: 2j: HTML okna zawiera „Budynki"
+  OK: 2j: HTML okna zawiera „Punkty nauki"
+  OK: 2j: HTML okna zawiera „Moc"
+  OK: 2j: HTML okna zawiera „Pula pracy"
+  OK: 2j: HTML okna zawiera „Złoto ze skarbca"
+  OK: 2j: HTML okna zawiera „Żywność ze spichlerza"
+  OK: 2j: HTML okna zawiera „Drewno"
+  OK: 2j: HTML okna zawiera „Kamień"
+  OK: 2j: HTML okna zawiera „Glina"
+  OK: 2j: HTML okna zawiera „Ruda"
+  OK: 2j: HTML okna zawiera „Cegła"
+  OK: 2j: HTML okna zawiera „Sól"
+  OK: 2j: HTML okna zawiera „Węgiel"
+  OK: 2k: rozwijana sekcja „Pokaz wszystkie surowce (8)"
+  OK: 2l: PRZED okno nie mialo pozycji Spichlerza (potwierdzenie luki)
+3. Zwykle zdobycie / stolica z przezywajaca cywilizacja: bez zmian
+  OK: 3a: Zdarzenie 1 (nie eliminacja)
+  OK: 3b: Spichlerz ofiary NIETKNIETY (cywilizacja przezywa) (got 700, want 700)
+  OK: 3c: Spichlerz zdobywcy bez zmian (got 10, want 10)
+  OK: 3d: zywnoscPrzejeta 0 (got 0, want 0)
+  OK: 3e: lista surowcow pusta (surowce jadą z miastem jak dotad) (got 0, want 0)
+  OK: 3f: skarbiec stolicy jak dotad (Zdarzenie 1) (got 80, want 80)
+  OK: 3g: Praca przepada jak dotad (nie do zwyciezcy) (got 0, want 0)
+  OK: 3h: Nauka bez zmian jak dotad (got 0, want 0)
+  OK: 3i: miasto niestoleczne -> null (got null, want null)
+  OK: 3j: Spichlerz ofiary nietkniety przy niestolecznym (got 500, want 500)
+  OK: 3k: stolica bez eliminacji nie pokazuje Spichlerza
+4. Limit pojemnosci Spichlerza zdobywcy
+  OK: 4a: Spichlerz zdobywcy przyciety do limitu 500 (got 500, want 500)
+  OK: 4b: przejeto 460 (got 460, want 460)
+  OK: 4c: nadwyzka 740 ginie (got 740, want 740)
+  OK: 4d: ofiara miala 1200 (got 1200, want 1200)
+  OK: 4e: ofiara wyzerowana mimo limitu (got 0, want 0)
+  OK: 4f: okno: „przejeto 460 z 1200 (limit pojemnosci)"
+  OK: 4g: pelny spichlerz zdobywcy nie rosnie (got 40, want 40)
+  OK: 4h: przejeto 0 (got 0, want 0)
+  OK: 4i: cale 1200 ginie (got 1200, want 1200)
+  OK: 4j: nieznany limit (0) -> bez przyciecia (ZALOZENIE: tick przytnie) (got 1240, want 1240)
+5. AI jako zwyciezca, AI jako ofiara, hot-seat (drugi czlowiek), barbarzyncy
+  OK: 5a: AI przejmuje Spichlerz AI tak samo (got 310, want 310)
+  OK: 5b: AI-ofiara wyzerowana (got 0, want 0)
+  OK: 5c: AI: komplet surowcow w outcome (got 8, want 8)
+  OK: 5d: ofiara-gracz (fotel 1) traci Spichlerz na rzecz AI (got 900, want 900)
+  OK: 5e: fotel 1 wyzerowany (got 0, want 0)
+  OK: 5f: barbarzyncy: ofiara traci Spichlerz (got 0, want 0)
+  OK: 5g: barbarzyncy NIE dziedzicza zywnosci (got 0, want 0)
+  OK: 5h: eliminacja nadal nastepuje
+  OK: 5i: okno barbarzyncow nie pokazuje „+zywnosc" (przepadla)
+  OK: 5j: barbarzynca-ofiara -> null, nic nie przeniesione (got null, want null)
+  OK: 5k: stan barbarzyncow nietkniety (got 50, want 50)
+6. Idempotencja: powtorne wywolanie nie podwaja lupu
+  OK: 6a: zywnosc zdobywcy nie wzrosla po drugim wywolaniu (got 1240, want 1240)
+  OK: 6b: skarbiec nie wzrosl (got 550, want 550)
+  OK: 6c: Praca nie wzrosla (got 310, want 310)
+  OK: 6d: Nauka nie wzrosla (got 905, want 905)
+  OK: 6e: drugie przejecie zywnosci = 0 (ofiara wyzerowana) (got 0, want 0)
+  OK: 6f: drugi lup finansowy = 0 (got 0, want 0)
+  OK: 6g: stan ofiary po przejeciu = 0 (got 0, want 0)
+7. Wiazanie main.ts -> rdzen (po zrodle, bez komentarzy)
+  OK: 7a: akcesory Spichlerza podpiete pod empireFoodStates + getEmpireFoodMaxCap
+  OK: 7b: Spichlerz dla gracza i AI to ten sam stan empireFoodStates (owner-agnostycznie)
+  OK: 7c: raport eliminacji bierze surowce z outcome.surowcePrzejete (nie tylko city.surowce)
+  OK: 7d: raport eliminacji dostaje zywnosc z outcome
+  OK: 7e: stolica bez eliminacji: surowce jak dotad, zero zywnosci
+  OK: 7f: Praca nadal z outcome
+  OK: 7g: reguly eliminacji nie zmienione w akcesorach
+8. Mutacje rdzenia musza czerwienic test
+  OK: 8-0: niezmutowany rdzen przechodzi (kontrola)
+  OK: 8: mutacja „ofiara nie jest zerowana" ma punkt zaczepienia
+  OK: 8: mutacja „ofiara nie jest zerowana" CZERWIENI test
+  OK: 8: mutacja „zywnosc nie trafia do zdobywcy" ma punkt zaczepienia
+  OK: 8: mutacja „zywnosc nie trafia do zdobywcy" CZERWIENI test
+  OK: 8: mutacja „brak przyciecia do limitu" ma punkt zaczepienia
+  OK: 8: mutacja „brak przyciecia do limitu" CZERWIENI test
+  OK: 8: mutacja „surowce nie sa zbierane" ma punkt zaczepienia
+  OK: 8: mutacja „surowce nie sa zbierane" CZERWIENI test
+  OK: 8: mutacja „zywnosc w ogole pominieta" ma punkt zaczepienia
+  OK: 8: mutacja „zywnosc w ogole pominieta" CZERWIENI test
+  OK: 8: mutacja „zywnosc nadpisuje zapas zdobywcy" ma punkt zaczepienia
+  OK: 8: mutacja „zywnosc nadpisuje zapas zdobywcy" CZERWIENI test
+
+PODSUMOWANIE: 114 passed, 0 failed
+EXIT=0

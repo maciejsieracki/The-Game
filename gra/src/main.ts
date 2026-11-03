@@ -1618,6 +1618,13 @@ interface CityCaptureReportInput {
    *  ZAWSZE 0 (pula tam nadal przepada bez transferu, kanon 2026-08-09 niezmieniony
    *  dla tego podprzypadku) — wywolujacy dla `kind==='stolica'` powinien przekazac 0. */
   pracaPoolPrzejeta: number;
+  /** R-WEB-ELIMINATION-FULL-SPOILS-Q1 — zywnosc ze Spichlerza ofiary FAKTYCZNIE przejeta
+   *  (po przycieciu do pojemnosci zdobywcy); WYLACZNIE `kind==='eliminacja'`, inaczej brak/0. */
+  zywnoscPrzejeta?: number;
+  /** Zywnosc ofiary, ktora nie zmiescila sie w Spichlerzu zdobywcy (ginie). */
+  zywnoscUtracona?: number;
+  /** Caly zapas Spichlerza ofiary przed przejeciem (= przejeta + utracona). */
+  zywnoscOfiaryRazem?: number;
 }
 
 /**
@@ -1666,6 +1673,21 @@ function buildCityCaptureReportRows(input: CityCaptureReportInput): CaptureRepor
   const lup: CaptureReportRow[] = [];
   if (!input.barbarzyncaZdobywca) {
     if (input.zloto > 0) lup.push({ label: 'Złoto ze skarbca', value: '+' + input.zloto, tone: 'gain', group: 'lup' });
+    // R-WEB-ELIMINATION-FULL-SPOILS-Q1: zywnosc ze Spichlerza wyeliminowanej cywilizacji.
+    // Gdy wszystko sie zmiescilo -- samo "+N"; gdy limit pojemnosci zdobywcy uciol
+    // nadwyzke -- "+X — przejęto X z Y (limit pojemności)". Zero nie powstaje.
+    if (input.kind === 'eliminacja' && (input.zywnoscPrzejeta ?? 0) > 0) {
+      const przejeta = input.zywnoscPrzejeta ?? 0;
+      const razem = input.zywnoscOfiaryRazem ?? przejeta;
+      lup.push({
+        label: 'Żywność ze spichlerza',
+        value: '+' + przejeta + ((input.zywnoscUtracona ?? 0) > 0
+          ? ' — przejęto ' + przejeta + ' z ' + razem + ' (limit pojemności)'
+          : ''),
+        tone: 'gain',
+        group: 'lup',
+      });
+    }
     if (input.nauka > 0) lup.push({ label: 'Punkty nauki', value: '+' + input.nauka, tone: 'gain', group: 'lup' });
     if (input.technologie > 0) lup.push({ label: 'Technologie', value: '+' + input.technologie, tone: 'gain', group: 'lup' });
     if (input.moc > 0) lup.push({ label: input.mocEtykieta, value: '+' + input.moc, tone: 'gain', group: 'lup' });
@@ -31977,6 +31999,19 @@ async function boot(): Promise<void> {
       setNaukaPool: setOwnerNaukaPool,
       getResearchedTechs: ownerResearchedTechs,
       addResearchedTechs: addOwnerResearchedTechs,
+      // R-WEB-ELIMINATION-FULL-SPOILS-Q1: Spichlerz (zapas zywnosci imperium) -- ten sam
+      // stan `empireFoodStates` dla gracza i AI; pojemnosc = ostatnio policzony limit
+      // zdobywcy (getEmpireFoodMaxCap; 0 = jeszcze nie policzony -> brak limitu w tej chwili).
+      getFoodReserve: (oid: number) => empireFoodStates.get(oid)?.zapasyPanstwa ?? 0,
+      setFoodReserve: (oid: number, v: number) => {
+        const st = empireFoodStates.get(oid) ?? freshEmpireFoodState();
+        st.zapasyPanstwa = Math.max(0, v);
+        empireFoodStates.set(oid, st);
+        // Mutacja zapasyPanstwa MID-TURN poza markCityStateDirty -- ten sam powod co
+        // tryDeductWonderStartFood: cache maxSafe nie moze zostac z nieaktualnym wpisem.
+        _maxSafeRationCache.clear();
+      },
+      getFoodCapacity: (oid: number) => getEmpireFoodMaxCap(oid),
     };
 
     /** Czy klucz pary dyplomatycznej "min_max" (diploPairKey) dotyczy ownerId. */
@@ -32412,7 +32447,12 @@ async function boot(): Promise<void> {
         // FAKTYCZNIE przejeta, nie utracona przez ofiare.
         moc: powerGain,
         barbarzyncaZdobywca: barbCaptor,
-        surowce: city.surowce,
+        // R-WEB-ELIMINATION-FULL-SPOILS-Q1: WSZYSTKIE surowce magazynu panstwa ofiary
+        // (outcome.surowcePrzejete -- magazyn ostatniego miasta ofiary).
+        surowce: outcome.surowcePrzejete,
+        zywnoscPrzejeta: outcome.zywnoscPrzejeta,
+        zywnoscUtracona: outcome.zywnoscUtracona,
+        zywnoscOfiaryRazem: outcome.zywnoscOfiaryRazem,
         // P-PODBOJ-ELIMINACJA-PULA-PRACY-TRANSFER-Q1 -- pula pracy ofiary FAKTYCZNIE
         // przejeta (capital-capture.ts, `applyCapitalCapturePlunder`); dla zdobywcy-
         // barbarzynca zapis DO newOwner jest no-opowany (barbarianCaptorResourceAccess),
