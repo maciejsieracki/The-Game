@@ -1,0 +1,4 @@
+sprawdzen OK=9684 rozbieznosci=0
+sprawdzen OK=9682 rozbieznosci=2
+ROZBIEZNOSC: s0 braz 0
+ROZBIEZNOSC: civ
