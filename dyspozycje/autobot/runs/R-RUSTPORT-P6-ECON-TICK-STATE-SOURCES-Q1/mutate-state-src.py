@@ -39,7 +39,7 @@ MUT = [
     (N, "Some(view.as_slice()),\n            owner_era,", "None,\n            owner_era,", "etykiety: brak placed"),
     (N, "(self.owner_era)(owner_id) as i64", "(self.owner_era)(0) as i64", "StateSources: epoka ownera 0"),
     # --- civ ---
-    (C, "if !out.contains_key(&HUMAN_OWNER_PRIMARY) {", "if true {", "civ: zawsze nadpisz gracza"),
+    (C, "out.entry(HUMAN_OWNER_PRIMARY).or_insert_with(|| {", "out.insert(HUMAN_OWNER_PRIMARY, \"x\".to_string());\n    out.entry(HUMAN_OWNER_PRIMARY).or_insert_with(|| {", "civ: zawsze nadpisz gracza"),
     (C, "Some(c) if !c.is_empty() => c,", "Some(c) => c,", "civ: pusty ciag nie spada na grecy"),
     (C, "for (oid, civ) in ai_owner_civ_map {\n        out.insert(*oid, civ.clone());\n    }", "for (oid, civ) in ai_owner_civ_map {\n        out.entry(*oid).or_insert_with(|| civ.clone());\n    }", "civ: AI nie nadpisuje"),
     (C, 'pub const DEFAULT_PLAYER_CIV: &str = "grecy";', 'pub const DEFAULT_PLAYER_CIV: &str = "rzymianie";', "civ: zly fallback"),

@@ -1,0 +1,36 @@
+[00] ZABITA    turn_economy_inputs_native.rs :: placed: filtr wlasciciela odwrocony
+[01] ZABITA    turn_economy_inputs_native.rs :: placed: brak filtra terytorium
+[02] ZABITA    turn_economy_inputs_native.rs :: wezly fortow pominiete
+[03] ZABITA    turn_economy_inputs_native.rs :: wezel miasta: pop=1
+[04] ZABITA    turn_economy_inputs_native.rs :: braz: brak bramki miedzi
+[05] ZABITA    turn_economy_inputs_native.rs :: braz: any->all
+[06] PRZEZYLA  turn_economy_inputs_native.rs :: zelazo: brak bramki kopalni
+[07] ZABITA    turn_economy_inputs_native.rs :: zelazo: dostep przez odlewnie zamiast literalnego false
+[08] ZABITA    turn_economy_inputs_native.rs :: cegla: brak bramki gliniank
+[09] ZABITA    turn_economy_inputs_native.rs :: cegla: zly budynek
+[10] ZABITA    turn_economy_inputs_native.rs :: glinianka: zly klucz
+[11] ZABITA    turn_economy_inputs_native.rs :: zloto: negacja
+[12] ZABITA    turn_economy_inputs_native.rs :: kon: brak filtra wlasciciela
+[13] ZABITA    turn_economy_inputs_native.rs :: kon: zly klucz
+[14] ZABITA    turn_economy_inputs_native.rs :: grant: zawsze klucz zloto
+[15] ZABITA    turn_economy_inputs_native.rs :: zloto NT: brak natywnego
+[16] ZABITA    turn_economy_inputs_native.rs :: zloto NT: brak grantu
+[17] ZABITA    turn_economy_inputs_native.rs :: etykiety: brak Cegla
+[18] ZABITA    turn_economy_inputs_native.rs :: etykiety: brak Ceramika
+[19] ZABITA    turn_economy_inputs_native.rs :: etykiety: kultura=0
+[20] PRZEZYLA  turn_economy_inputs_native.rs :: etykiety: epoka=1
+[21] ZABITA    turn_economy_inputs_native.rs :: etykiety: brak ownerId
+[22] PRZEZYLA  turn_economy_inputs_native.rs :: etykiety: brak builtIds
+[23] ZABITA    turn_economy_inputs_native.rs :: etykiety: brak placed
+[24] PRZEZYLA  turn_economy_inputs_native.rs :: StateSources: epoka ownera 0
+[25] ZABITA    turn_economy_inputs_civ.rs :: civ: zawsze nadpisz gracza
+[26] ZABITA    turn_economy_inputs_civ.rs :: civ: pusty ciag nie spada na grecy
+[27] ZABITA    turn_economy_inputs_civ.rs :: civ: AI nie nadpisuje
+[28] ZABITA    turn_economy_inputs_civ.rs :: civ: zly fallback
+[29] ZABITA    turn_economy_inputs_podzial.rs :: podzial: AI nauka = gracza
+[30] ZABITA    turn_economy_inputs_podzial.rs :: podzial: AI praca = 70
+[31] ZABITA    turn_economy_inputs_podzial.rs :: podzial: init handlu wyjatek ownera 0 zmieniony
+[32] ZABITA    turn_economy_inputs_podzial.rs :: podzial: init pracy wyjatek ownera 0 zmieniony
+[33] ZABITA    turn_economy_inputs_podzial.rs :: podzial: seed pracy is_human odwrocony
+[34] ZABITA    turn_economy_inputs_podzial.rs :: podzial: seed handlu is_human odwrocony
+[35] ZABITA    turn_economy_inputs_podzial.rs :: podzial: tylko pierwszy czlowiek (handlu)

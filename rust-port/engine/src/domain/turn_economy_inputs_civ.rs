@@ -18,13 +18,13 @@ pub fn build_owner_civ_map(
     ai_owner_civ_map: &BTreeMap<i64, String>,
 ) -> BTreeMap<i64, String> {
     let mut out: BTreeMap<i64, String> = menu_civ_id_by_owner.clone();
-    if !out.contains_key(&HUMAN_OWNER_PRIMARY) {
-        let civ = match player_civ_type {
+    out.entry(HUMAN_OWNER_PRIMARY).or_insert_with(|| {
+        match player_civ_type {
             Some(c) if !c.is_empty() => c,
             _ => DEFAULT_PLAYER_CIV,
-        };
-        out.insert(HUMAN_OWNER_PRIMARY, civ.to_string());
-    }
+        }
+        .to_string()
+    });
     for (oid, civ) in ai_owner_civ_map {
         out.insert(*oid, civ.clone());
     }
