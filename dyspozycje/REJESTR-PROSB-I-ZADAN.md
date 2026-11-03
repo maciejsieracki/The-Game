@@ -8516,3 +8516,6 @@ Właściciel: wizerunki surowców na mapie (koń, kopalnie/surowce pod kopalnie,
 
 ## 2026-11-03 — zgłoszenie (zrzut: „ELIMINACJA! Xi'an — Bilans zdobycia”): przejęcie ostatniego miasta nie przenosi całego majątku cywilizacji
 Właściciel: przy zdobyciu OSTATNIEGO miasta (eliminacja cywilizacji Chińczyków) okno pokazuje tylko Glinę +134 i Rudę +40 oraz Ludność/Budynki/Punkty nauki/Moc/Pulę pracy +15 — „niemożliwe, żeby tylko ta cywilizacja miała glinę i rudę”. Ma być lista WSZYSTKICH przejmowanych surowców, pula pracy, pula nauki, a także ZŁOTO ZE SKARBCA oraz CAŁA żywność zgromadzona w SPICHLERZU. Temat `R-WEB-ELIMINATION-FULL-SPOILS-Q1` (diagnoza + poprawka, stała zgoda).
+
+## 2026-11-03 — DECYZJA WŁAŚCICIELA: port Rust/Tauri wstrzymany (priorytet: poprawki webowe)
+Szczegóły w `dyspozycje/rust-port/LEDGER.md` (wpis 2026-11-03). Wznowienie wyłącznie na polecenie właściciela.
