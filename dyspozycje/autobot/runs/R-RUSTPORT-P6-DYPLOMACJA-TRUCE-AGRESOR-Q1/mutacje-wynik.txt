@@ -1,0 +1,90 @@
+0 KILLED src/domain/diplomacy_truce.rs :: locked: < -> <=
+1 KILLED src/domain/diplomacy_truce.rs :: truce_active: < -> <=
+2 KILLED src/domain/diplomacy_truce.rs :: locked: guard finite odwrocony
+3 KILLED src/domain/diplomacy_truce.rs :: stala blokady 10 -> 11
+4 KILLED src/domain/diplomacy_truce.rs :: opcje rozejmu 15 -> 20
+5 KILLED src/domain/diplomacy_truce.rs :: domyslny rozejm 10 -> 5
+6 KILLED src/domain/diplomacy_truce.rs :: js_max_1_floor: max(1) -> max(0)
+7 KILLED src/domain/diplomacy_truce.rs :: floor -> ceil
+8 KILLED src/domain/diplomacy_truce.rs :: NaN lockTurns -> 1
+9 KILLED src/domain/diplomacy_truce.rs :: n3 charged false -> true
+10 KILLED src/domain/diplomacy_truce.rs :: n3 typ pokoj -> bezterminowe
+11 KILLED src/domain/diplomacy_truce.rs :: n3 turn = 0
+12 KILLED src/domain/diplomacy_truce.rs :: peaceUntil = turn - turns
+13 KILLED src/domain/diplomacy_truce.rs :: domyslne lockTurns 10 -> 1
+14 KILLED src/domain/diplomacy_truce.rs :: filter: brak negacji
+15 KILLED src/domain/diplomacy_truce.rs :: filter: zamiana argumentow
+16 KILLED src/domain/diplomacy_truce.rs :: filter: puste obowiazki zostaja
+17 SURVIVED src/domain/diplomacy_truce.rs :: normalize: usuniete is_finite (rownowazny?)
+18 KILLED src/domain/diplomacy_truce.rs :: normalize: dowolna dodatnia
+19 KILLED src/domain/diplomacy_truce.rs :: untilTurn: brak guardu start
+20 KILLED src/domain/diplomacy_truce.rs :: untilTurn: start - d
+21 KILLED src/domain/diplomacy_truce.rs :: expiry: >= -> >
+22 KILLED src/domain/diplomacy_truce.rs :: expiry: brak guardu finite
+23 KILLED src/domain/diplomacy_truce.rs :: breach: negacja
+24 KILLED src/domain/diplomacy_truce.rs :: odczyt: pusty klucz
+25 KILLED src/domain/diplomacy_truce.rs :: serde: truceUntilTurn pomijany
+26 KILLED src/domain/diplomacy_war_gates.rs :: gate: brak rozejm
+27 KILLED src/domain/diplomacy_war_gates.rs :: gate: goldOnce >= 0
+28 KILLED src/domain/diplomacy_war_gates.rs :: gate: goldPerTurn >= 0
+29 KILLED src/domain/diplomacy_war_gates.rs :: gate: zloto && praca
+30 KILLED src/domain/diplomacy_war_gates.rs :: gate: bez praca
+31 KILLED src/domain/diplomacy_war_gates.rs :: gate: pusty koszyk = platnosc
+32 KILLED src/domain/diplomacy_war_gates.rs :: gate: domyslne atWar false
+33 KILLED src/domain/diplomacy_war_gates.rs :: gate: brak negacji pokoju
+34 KILLED src/domain/diplomacy_war_gates.rs :: nap: negacja
+35 KILLED src/domain/alliance_war_obligation.rs :: honor: 0.55 -> 0.5
+36 KILLED src/domain/alliance_war_obligation.rs :: honor: 0.75 -> 0.7
+37 KILLED src/domain/alliance_war_obligation.rs :: honor: max wojen 1 -> 2
+38 KILLED src/domain/alliance_war_obligation.rs :: honor: zaufanie 20 -> 19
+39 KILLED src/domain/alliance_war_obligation.rs :: honor: gracz
+40 KILLED src/domain/alliance_war_obligation.rs :: honor: >= -> >
+41 KILLED src/domain/alliance_war_obligation.rs :: honor: && -> ||
+42 KILLED src/domain/alliance_war_obligation.rs :: honor: peaceful < -> <=
+43 KILLED src/domain/alliance_war_obligation.rs :: honor: ratio < -> <=
+44 KILLED src/domain/alliance_war_obligation.rs :: honor: trust < -> <=
+45 KILLED src/domain/alliance_war_obligation.rs :: honor: brak trust = pominiecie nie dziala
+46 KILLED src/domain/alliance_war_obligation.rs :: oblig: declared_war tylko pelny - odwrocone
+47 KILLED src/domain/alliance_war_obligation.rs :: oblig: declared_war takze defensywny
+48 SURVIVED src/domain/alliance_war_obligation.rs :: oblig: martwy kontrolny kind (rownowazny)
+49 KILLED src/domain/alliance_war_obligation.rs :: oblig: tylko nie-sojusze
+50 KILLED src/domain/alliance_war_obligation.rs :: forDecl: zamiana ofiary i agresora
+51 KILLED src/domain/alliance_war_obligation.rs :: refusal: bez negacji
+52 KILLED src/domain/alliance_war_obligation.rs :: refusal: bez deduplikacji
+53 KILLED src/domain/alliance_war_obligation.rs :: break: bez Exchange
+54 KILLED src/domain/alliance_war_obligation.rs :: break: z Vassalization
+55 KILLED src/domain/alliance_war_obligation.rs :: break: bez BarbarianCooperation
+56 KILLED src/domain/alliance_war_obligation.rs :: defensive: ==  -> !=
+57 KILLED src/domain/alliance_war_obligation.rs :: dealsForPair: !=
+58 KILLED src/domain/diplomacy_aggressor.rs :: daje: ==
+59 KILLED src/domain/diplomacy_aggressor.rs :: przyczyna: hamulec/epoka zamienione
+60 KILLED src/domain/diplomacy_aggressor.rs :: przyczyna: bez zlamania rozejmu
+61 KILLED src/domain/diplomacy_aggressor.rs :: przyczyna: zlamanie przed wymuszona_inna
+62 KILLED src/domain/diplomacy_aggressor.rs :: przyczyna: casus negacja
+63 KILLED src/domain/diplomacy_aggressor.rs :: ustawFlage: negacja przyczyny
+64 KILLED src/domain/diplomacy_aggressor.rs :: ustawFlage: || -> &&
+65 KILLED src/domain/diplomacy_aggressor.rs :: ustawFlage: turn - trwa
+66 SURVIVED src/domain/diplomacy_aggressor.rs :: ustawFlage: prev >= -> >
+67 KILLED src/domain/diplomacy_aggressor.rs :: czyAgresor: < -> <=
+68 KILLED src/domain/diplomacy_aggressor.rs :: czyAgresor: brak guardu doTury
+69 KILLED src/domain/diplomacy_aggressor.rs :: mnoznik: else 0
+70 KILLED src/domain/diplomacy_aggressor.rs :: delta: else 1
+71 KILLED src/domain/diplomacy_aggressor.rs :: klucz casus: separator
+72 KILLED src/domain/diplomacy_aggressor.rs :: casus: requester == target
+73 KILLED src/domain/diplomacy_aggressor.rs :: casus: guard || -> &&
+74 KILLED src/domain/diplomacy_aggressor.rs :: casus: trwa z flagi
+75 KILLED src/domain/diplomacy_aggressor.rs :: maCasus: < -> <=
+76 KILLED src/domain/diplomacy_aggressor.rs :: serializuj: bez filtra
+77 KILLED src/domain/diplomacy_aggressor.rs :: wczytaj: tylko dodatnie
+78 KILLED src/domain/diplomacy_aggressor.rs :: wczytaj: tablica nie odrzucana (panic)
+79 KILLED src/domain/diplomacy_aggressor.rs :: doTury: negacja
+80 KILLED src/domain/diplomacy_aggressor.rs :: reset: bez czyszczenia casus
+81 KILLED src/domain/diplomacy_aggressor.rs :: reset: bez czyszczenia flag
+82 KILLED src/domain/diplomacy_aggressor.rs :: zapis: nazwa pola casus
+83 KILLED src/domain/diplomacy_aggressor.rs :: zapis: nazwa pola flagi
+84 KILLED src/domain/diplomacy_aggressor.rs :: js_num: zero
+85 KILLED src/domain/diplomacy_aggressor.rs :: js_num: zakres 1e21
+86 KILLED src/domain/diplomacy_aggressor.rs :: js_num: plus wykladnika
+87 KILLED data/derived/diplomacy-aggressor-params.json :: dane: flaga 20 -> 21
+88 KILLED data/derived/diplomacy-aggressor-params.json :: dane: casus 15 -> 16
+89 KILLED data/derived/diplomacy-aggressor-params.json :: dane: mnoznik 0.7 -> 0.8
