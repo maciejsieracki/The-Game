@@ -643,7 +643,7 @@ Wszędzie w dokumentach, kodzie i arkuszach, gdzie pojawia się „Zadowolenie" 
 > Zasada uzupełnia §5 (Walka) i §8 (Miasta i ludność). Dotyczy każdego miasta w grze.
 
 **Mechanika:**
-- Gdy miasto jest **atakowane** (wróg wchodzi na pole bitwy miasta lub oblęga miasto), **~20% mieszkańców** automatycznie staje do obrony jako jednostki milicji.
+- Gdy miasto z **ukończonym budynkiem Garnizon** jest **atakowane** (wróg wchodzi na pole bitwy miasta lub oblęga miasto), **100% mieszkańców** (1 mieszkaniec = 1 jednostka) staje do obrony jako milicja dołączona do ewentualnych regularnych obrońców — połowa walczy wręcz (Wojownik / Włócznik / Wojownik z mieczem i tarczą, staty ×0,5), połowa dystansowo (Oszczepnik / Łucznik / Procarz, pełne staty), typy wg epoki właściciela, z obniżonym morale; polegli zmniejszają ludność (min. 1 zostaje) (spec właściciela 2026-11-03, R-WEB-CITY-MILITIA-NO-DEFENDERS-Q1).
 - Milicjanci to **chłopi z widłami** (referencja: `Civ/Referencje-jednostek/ref-22.png`).
 - **Parametry milicji:** siła bojowa ~**1/2 Wojownika Epoki Kamienia** (konkretne staty: `Jednostki.xlsx`, wiersz „Milicja / Chłop z widłami").
 - Milicja **nie jest rekrutowana** przez gracza — pojawia się automatycznie przy obronie miasta.

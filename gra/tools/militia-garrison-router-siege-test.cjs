@@ -158,7 +158,7 @@ try {
   assert(
     completedGarrison.length === 1
       && completedGarrison[0].isMilitia === true
-      && completedGarrison[0].militiaCount === 1,
+      && completedGarrison[0].militiaCount === 9,
     'low-level effectiveGarrison + completed Garnizon -> snapshot militia',
   );
 
@@ -169,7 +169,7 @@ try {
   );
   assert(
     completedResult.engagedDefender?.isMilitia === true
-      && completedResult.engagedDefender.militiaCount === 1
+      && completedResult.engagedDefender.militiaCount === 9
       && completedResult.rounds > 0,
     'low-level resolver + completed Garnizon -> engages virtual militia',
   );

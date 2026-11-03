@@ -319,6 +319,7 @@ export function planOpenCityFieldBattle(
   if (city.maMur) return null;
   const defenderOptions = {
     completedBuildingIds: deps.getCompletedBuildingIds?.(city.id),
+    ownerEra: deps.eraForOwnerId?.(city.ownerId),
   };
   if (!hasCityDefenders(city, units, defenderOptions)) return null;
 

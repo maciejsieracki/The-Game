@@ -486,12 +486,16 @@ import {
   collectCityDefRoster,
   hasCityDefenders,
   survivorsLiveSet,
+  defenderSideTitle,
+  applyMilitiaPopulationLoss,
+  isMilitiaUnit,
+  militiaHeadcount,
 } from './game/siegeDefenders';
 import { getCityFood } from './game/turn-economy';
 import { SiegeMarkerRenderer } from './render/siegeMarker';
 import {
   showSiegeMapPanel, hideSiegeMapPanel, updateSiegeMapPanelTurn, isSiegeMapPanelOpen,
-  getActiveSiegeCityId, setSiegePanelBesiegerCount,
+  getActiveSiegeCityId, setSiegePanelBesiegerCount, setSiegePanelMilitiaEstimator,
 } from './ui/siegeMapPanel';
 import { FORTIFY_OBRONA_PROC_FIELD, type SiegeCity, type SiegeUnit } from './game/siege';
 import {
@@ -878,6 +882,7 @@ import {
   sumRosterFieldM,
   sumRosterFieldMSplit,
   autoBattleWinPct,
+  applyLossPctToRoster,
 } from './game/auto-battle-power';
 import {
   applyPostBattleMap,
@@ -31438,6 +31443,29 @@ async function boot(): Promise<void> {
         holdPositionAfterWin: fortifiedCaptureBlocked,
       });
 
+      // R-WEB-CITY-MILITIA-NO-DEFENDERS-Q1 (M4): polegli milicjanci zmniejszają ludność miasta
+      // (min. 1 zostaje). Wirtualni milicjanci nie są w units[] — ocalałych czytamy z wyniku
+      // bitwy (manual) albo z tego samego rozkładu strat co applyAutoLosses (auto).
+      if (cityOnHex && defRoster.some(isMilitiaUnit)) {
+        const fallen = new Set<string>();
+        if (survivors !== undefined) {
+          const live = new Map(survivors.map(sv => [String(sv.id), sv.hp] as const));
+          for (const m of defRoster) {
+            if (!isMilitiaUnit(m)) continue;
+            const hp = live.get(String(m.id));
+            if (hp === undefined || hp <= 0) fallen.add(String(m.id));
+          }
+        } else if (opts?.lossDefPct != null && opts.lossDefPct > 0) {
+          const rows = defRoster.filter(isMilitiaUnit).map(m => ({
+            id: String(m.id), typeId: m.typeId, def: unitDefFor(m),
+          }));
+          for (const row of applyLossPctToRoster(rows, opts.lossDefPct, def => unitHealth(def))) {
+            if (row.dead) fallen.add(row.id);
+          }
+        }
+        applyMilitiaPopulationLoss(cityOnHex, defRoster, fallen);
+      }
+
       // P-BARBARZYNCY-USUWANIE-SEMANTYKA-Q1 (właściciel, 2026-08-12): obóz
       // niszczy WEJŚCIE (najechanie) jednostki na jego heks -- NIE walka /
       // zliczanie garnizonu (poprzednia mechanika tutaj, usunięta -- Evaluator
@@ -31614,8 +31642,16 @@ async function boot(): Promise<void> {
     }
 
     function cityDefenderOptions(city: City) {
-      return { completedBuildingIds: completedBuildingIdsForCity(city.id) };
+      // ownerEra: epoka WŁAŚCICIELA miasta wybiera typy jednostek Milicji (spec 2026-11-03, M3).
+      return {
+        completedBuildingIds: completedBuildingIdsForCity(city.id),
+        ownerEra: empireEpochForOwner(city.ownerId),
+      };
     }
+
+    /** Oszacowanie Milicji dla panelu oblężenia: tylko z ukończonym budynkiem Garnizon. */
+    setSiegePanelMilitiaEstimator((c: City) =>
+      completedBuildingIdsForCity(c.id).includes('garnizon') ? militiaHeadcount(c.population) : 0);
 
     /** C3-ST-1: kanon w siegeDefenders.ts — realne jednostki, licznik garnizonu lub militia. */
     function cityHasDefenders(city: City): boolean {
@@ -33331,9 +33367,7 @@ async function boot(): Promise<void> {
       const dStructBonus = structureDefenseBonusFor(city.q, city.r);
 
       const atkLeadDef = unitDefFor(atkRoster[0]!);
-      const defSideTitle = defRoster[0]!.typeId === 'Milicja'
-        ? 'Milicja (~' + Math.floor((city.population ?? 0) * 0.2) + ')'
-        : (defRoster.length > 1 ? 'Garnizon (' + defRoster.length + ')' : defRoster[0]!.typeId);
+      const defSideTitle = defenderSideTitle(city, defRoster);
       const szanse = preBattleSzanseAtkPct(
         atkRoster,
         defRoster,

@@ -218,8 +218,8 @@ function render(): void {
   const garnizon = city.garnizon ?? 0;
   const zuzycie = city.population + garnizon;
   const atrycjaNext = garnizon > 0 ? Math.max(1, Math.floor(garnizon * 0.08)) : 0;
-  const milicjaEst = garnizon <= 0 ? 0
-    : Math.max(1, Math.floor((city.population ?? 0) * 0.2));
+  // Milicja = 1 mieszkaniec = 1 jednostka, tylko z budynkiem Garnizon (estymator z main.ts).
+  const milicjaEst = militiaEstimator ? Math.max(0, militiaEstimator(city)) : 0;
   const playerCanStorm = oblegajacyOwnerId === 0;
   const sm: SiegeMachinesState | undefined = city.siegeMachines;
   const qLabel = sm?.queue?.length
@@ -266,7 +266,7 @@ function render(): void {
         '<div>Oblegających: <b>' + besiegerUnitCount + '</b></div>' +
         '<div>Atrycja: <b>−' + atrycjaNext + '</b>/turę</div>' +
         (milicjaEst > 0
-          ? '<div class="full">Milicja przy szturmie: ~<b>' + milicjaEst + '</b></div>'
+          ? '<div class="full">Milicja przy szturmie: <b>' + milicjaEst + '</b></div>'
           : '') +
       '</div>' +
       (city.siegeCapitulationPending
@@ -325,6 +325,13 @@ function render(): void {
 
   root.appendChild(box);
   attachKeyboard(city.id);
+}
+
+let militiaEstimator: ((city: City) => number) | null = null;
+
+/** Podpina liczenie Milicji (wymaga wiedzy o budynkach, której panel nie ma). */
+export function setSiegePanelMilitiaEstimator(fn: ((city: City) => number) | null): void {
+  militiaEstimator = fn;
 }
 
 export function setSiegePanelBesiegerCount(n: number): void {
