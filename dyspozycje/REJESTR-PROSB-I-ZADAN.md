@@ -8455,3 +8455,6 @@ Port `ownerHasNativeResourceAccess` (`gra/src/main.ts:5088-5121`, pin `4bbef081d
 
 ## 2026-11-03 — zgłoszenie: brak priorytetu wycinki lasu wokół rzek (zrzuty: Mykeny 12%, panel „Automatyzacja ulepszeń terenu”)
 Właściciel: automat nadal nie daje priorytetu wycince lasu wokół rzek, choć jest dość Pracy — robi inne prace. Ustawienia na zrzucie: tryb **Żywność**, **„Tylko pola z obywatelami” WŁĄCZONE**, **„Wolno wycinać las” WŁĄCZONE**, pula 100%, miasto Ateny. Hipoteza do zbadania: filtr „Tylko pola z obywatelami” odcina las przy rzece (heksy bez obywatela) albo inna ścieżka bierze pierwszeństwo przed wycinką. Temat: `R-WEB-AUTOCLEAR-RIVER-FOREST-PRIORITY-Q2` (stała zgoda na poprawki; pierwszeństwo web). Status: DISPATCH → Workflow.
+
+## 2026-11-03 — zgłoszenie: automat nie wydaje ogromnego budżetu Pracy; wiele pól bez ulepszeń
+Właściciel: sprawdzić, czy nie ma ogranicznika liczby ulepszeń na miasto lub innych parametrów, bo budżet jest ogromny i niewydawany, a wiele pól, które system mógłby zabudować, nie ma ulepszeń. Temat diagnostyczny `R-WEB-AUTO-IMPROVE-BUDGET-UNSPENT-DIAG-Q1` (TYLKO diagnoza + pomiar; poprawka osobnym tematem PO zakończeniu `R-WEB-AUTOCLEAR-RIVER-FOREST-PRIORITY-Q2` — te same pliki, sekwencyjnie). Status: DISPATCH → Workflow.
