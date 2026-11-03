@@ -1,0 +1,42 @@
+ROZBIEZNOSC: profil#5 key=' grecy' pole[14]: py=5.0 web=6.0
+ROZBIEZNOSC: profil#11 key=' rzymianie' pole[14]: py=5.0 web=6.0
+ROZBIEZNOSC: profil#17 key=' chinczycy' pole[14]: py=5.0 web=6.0
+ROZBIEZNOSC: profil#23 key=' inkowie' pole[14]: py=5.0 web=6.0
+ROZBIEZNOSC: profil#24 key='zulusi' pole[14]: py=3.0 web=4.0
+ROZBIEZNOSC: profil#25 key='zulusi' pole[14]: py=3.0 web=4.0
+ROZBIEZNOSC: profil#26 key='Zulusi' pole[14]: py=3.0 web=4.0
+ROZBIEZNOSC: profil#27 key='ZULUSI' pole[14]: py=3.0 web=4.0
+ROZBIEZNOSC: profil#28 key='ZULUSI' pole[14]: py=3.0 web=4.0
+ROZBIEZNOSC: profil#29 key=' zulusi' pole[14]: py=5.0 web=6.0
+ROZBIEZNOSC: profil#35 key=' egipt' pole[14]: py=5.0 web=6.0
+ROZBIEZNOSC: profil#36 key='sumer' pole[14]: py=6.0 web=7.0
+ROZBIEZNOSC: profil#37 key='sumer' pole[14]: py=6.0 web=7.0
+ROZBIEZNOSC: profil#38 key='Sumerowie' pole[14]: py=6.0 web=7.0
+ROZBIEZNOSC: profil#39 key='SUMER' pole[14]: py=6.0 web=7.0
+ROZBIEZNOSC: profil#40 key='SUMEROWIE' pole[14]: py=6.0 web=7.0
+ROZBIEZNOSC: profil#41 key=' sumer' pole[14]: py=5.0 web=6.0
+ROZBIEZNOSC: profil#47 key=' celtowie' pole[14]: py=5.0 web=6.0
+ROZBIEZNOSC: profil#53 key=' germanie' pole[14]: py=5.0 web=6.0
+ROZBIEZNOSC: profil#59 key=' harappa' pole[14]: py=5.0 web=6.0
+ROZBIEZNOSC: profil#60 key='hetyci' pole[14]: py=5.0 web=6.0
+ROZBIEZNOSC: profil#61 key='hetyci' pole[14]: py=5.0 web=6.0
+ROZBIEZNOSC: profil#62 key='Hetyci' pole[14]: py=5.0 web=6.0
+ROZBIEZNOSC: profil#63 key='HETYCI' pole[14]: py=5.0 web=6.0
+ROZBIEZNOSC: profil#64 key='HETYCI' pole[14]: py=5.0 web=6.0
+ROZBIEZNOSC: profil#65 key=' hetyci' pole[14]: py=5.0 web=6.0
+ROZBIEZNOSC: profil#71 key=' slowianie' pole[14]: py=5.0 web=6.0
+ROZBIEZNOSC: profil#77 key=' babilonia' pole[14]: py=5.0 web=6.0
+ROZBIEZNOSC: profil#78 key='asyria' pole[14]: py=3.0 web=4.0
+ROZBIEZNOSC: profil#79 key='asyria' pole[14]: py=3.0 web=4.0
+ROZBIEZNOSC: profil#80 key='Asyria' pole[14]: py=3.0 web=4.0
+ROZBIEZNOSC: profil#81 key='ASYRIA' pole[14]: py=3.0 web=4.0
+ROZBIEZNOSC: profil#82 key='ASYRIA' pole[14]: py=3.0 web=4.0
+ROZBIEZNOSC: profil#83 key=' asyria' pole[14]: py=5.0 web=6.0
+ROZBIEZNOSC: profil#84 key='fenicjanie' pole[14]: py=6.0 web=7.0
+ROZBIEZNOSC: profil#85 key='fenicjanie' pole[14]: py=6.0 web=7.0
+ROZBIEZNOSC: profil#86 key='Fenicjanie' pole[14]: py=6.0 web=7.0
+ROZBIEZNOSC: profil#87 key='FENICJANIE' pole[14]: py=6.0 web=7.0
+ROZBIEZNOSC: profil#88 key='FENICJANIE' pole[14]: py=6.0 web=7.0
+ROZBIEZNOSC: profil#89 key=' fenicjanie' pole[14]: py=5.0 web=6.0
+sprawdzen OK: 174026, rozbieznosci: 3249; werdykty bramki: {'ok': 10424, 'too_early': 2681, 'stronger': 485}
+EXIT=0 (negatywna: 0 = rozbieznosci wykryte)
