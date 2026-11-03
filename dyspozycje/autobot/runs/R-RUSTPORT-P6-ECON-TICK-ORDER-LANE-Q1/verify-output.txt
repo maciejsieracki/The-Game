@@ -1,0 +1,6 @@
+sprawdzen OK=15877 rozbieznosci=0 bunt_total=65
+EXIT=0
+sprawdzen OK=15875 rozbieznosci=2 bunt_total=65
+ROZBIEZNOSC: rng seed=0 #2
+ROZBIEZNOSC: cult0 hap
+EXIT(tamper)=1
