@@ -8486,3 +8486,5 @@ Właściciel: inne cywilizacje nie wykorzystują całego zapasu ruchu — chodz�
 
 ## 2026-11-03 — zgłoszenie: powiadomienia i zdarzenia pojawiają się w trakcie tur innych cywilizacji
 Właściciel: wszystkie informacje, wydarzenia i odkrycia technologii powinny pojawiać się dopiero PO zakończeniu ostatniej tury innych cywilizacji i państw-miast, gdy zaczyna się nowa tura gracza — nie w trakcie ich tur (przykłady: komunikaty o łączeniu armii, odkrycia). Temat `R-WEB-EVENTS-DEFER-TO-TURN-START-Q1`. START po zwolnieniu miejsca.
+
+## 2026-11-03 — AUTOCLEAR-RIVER-FOREST-Q2 zdeployowane: ROBOCZA 300a5c5b (main 89b3ee5db, MD5 zgodny z GitHub Raw). Do decyzji właściciela: farma na wyciętym heksie rzeki bez obywatela (filtr „tylko pola z obywatelami”) oraz rozszerzenie na tryb „Zrównoważone”.
