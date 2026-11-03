@@ -8587,3 +8587,6 @@ Pytania bez odpowiedzi (domyślne założenia obowiązują): Milicja — „garn
 Stan: ufortyfikowany garnizon w mieście dostaje +50% Obrony (jak w polu, `fortify_obrona_proc`) tylko gdy miasto nie ma budynku obronnego (`shouldApplyGarrisonFortifyBonus`, decyzja 2026-07-31); z palisadą/murem/cytadelą/basztą zostaje sam bonus budynku. Stały +2 pkt (`fortify_obrona_bonus`) to starszy parametr. Właściciel wybrał **B: zostawić jak jest**. Brak zmian w kodzie.
 
 ## 2026-11-03 — wdrożono ROBOCZA 4e022fcd (main f832f6223): panel „Rozdziel armię” (przewijanie, siatka 3×5, brandbook)
+
+## 2026-11-03 — wdrożono ROBOCZA 3b1c46da (main 4cd4c35cb): eliminacja cywilizacji — żywność ze Spichlerza w bilansie
+Ustalenie: surowce/Praca/Nauka/złoto były przenoszone wcześniej; brakowało żywności ze Spichlerza i wiersza w oknie. Zrzut „Glina +134, Ruda +40” = magazyn ostatniego miasta. Backlog: wchłonięcie dyplomatyczne państwa-miasta (`annexCityStateToOwner`) nie przenosi majątku — DECYZJA do właściciela.
