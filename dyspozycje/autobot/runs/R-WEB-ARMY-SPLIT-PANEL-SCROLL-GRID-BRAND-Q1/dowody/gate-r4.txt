@@ -1,0 +1,43 @@
+army-merge-panel-scroll-real-render-test (R-ARMY-MERGE-PANEL-INNER-SCROLL-Q1)
+
+PASS: source: overlay ma margines viewport 24 px, box-sizing i overflow hidden
+PASS: source: panel jest montowany poza transformowanym body
+PASS: source: box ma max-height dla viewportu vh/dvh z marginesem 24 px
+PASS: source: box jest flex columnem
+PASS: source: body jest flex itemem z pionowym scrollem i ukrytym overflow poziomym
+PASS: source: roster scrollbar ma kontrastowy kolor i widoczny 12px Chromium thumb
+PASS: source: header/result/footer są flex slotami niezależnymi od scrolla
+PASS: mutant PRZED faktycznie usuwa viewport/flex/scroll contract
+[army-merge-panel-scroll] domyślny Chromium niedostępny, fallback na /opt/pw-browsers/chromium
+-- PO: prawdziwy render Chromium --
+PASS: ułamkowy ruch jest wyświetlany zwięźle i po polsku
+PASS: 1141x1451 / 16 jednostek: panel ma stały odstęp ≥24 px od góry i dołu
+PASS: 1141x1451 / 16 jednostek: panel nie wychodzi poziomo poza viewport
+PASS: 900x620 / 16+ jednostek: panel ma odstęp ≥24 px i mieści się w viewport
+PASS: 900x620 / 16 jednostek: lista mieści się lub przewija w body, ostatnia jednostka jest osiągalna
+PASS: 900x620 / 16+ jednostek: nagłówek, wynik i oba CTA są widoczne po scrollu do końca
+PASS: 900x620 / 16+ jednostek: brak poziomego overflow strony, panelu i body
+PASS: 900x620 / panel: jednostki są układane w trzech kolumnach
+PASS: 900x620 / 59 jednostek: wszystkie 60 wierszy są wyrenderowane i ostatni jest osiągalny
+PASS: 900x620 / 59 jednostek: dokładnie jeden zamierzony scroll container i zero horizontal overflow
+PASS: 900x620 / 59 jednostek: pełny layout spełnia kontrakt bez błędów
+RAW 150% geometry: {"box":{"left":31.72108268737793,"right":568.2789440155029,"top":34.06256866455078,"bottom":386.17859649658203,"width":536.557861328125,"height":352.11602783203125},"innerWidth":600,"innerHeight":413,"dpr":1.5,"topGap":34.06256866455078,"bottomGap":26.82140350341797}
+PASS: 150% skali Chromium: DPR 1.5 i viewport 600x413 CSS px (900x620 px ekranu)
+PASS: 150% rzeczywistego zoomu gry: body jest skalowane, modal jest portalem do html i nie tworzy overflow strony
+PASS: 150% skali / 59 jednostek: lista przewija się do końca, oba CTA pozostają widoczne
+PASS: 150% skali / 59 jednostek: CTA mieszczą się w stopce poniżej rosteru
+PASS: 150% skali / 59 jednostek: scrollbar ma widoczny, nie-systemowy thumb i track
+PASS: 150% skali: widoczny złoty thumb przesuwa się od góry ku dołowi wraz z rosterem
+PASS: 150% skali / 59 jednostek: przeciągnięcie widocznego thumbu osiąga ostatni wiersz
+PASS: 150% skali / 59 jednostek: końcowy wiersz listy istniejących jednostek jest osiągalny w scrollu
+PASS: 150% skali: widoczny przycisk „Połącz armie” jest klikalny i wykonuje callback
+PASS: negatywna kontrola: mount pod transformowanym body przy 150% traci wymagane marginesy viewportu
+PASS: klik myszą „Połącz armie" wywołuje onMerge i zamyka panel
+PASS: klik myszą „Zostaw osobno" wywołuje onSeparate i zamyka panel
+-- PRZED: mutant bez viewport/flex/scroll contract --
+PASS: MUTANT: usunięcie viewport/flex/scroll contract daje czerwony wynik dla 900x620 / 16+
+PASS: MUTANT: stary layout nie ma scrolla body i/lub wypada poza viewport (negative control)
+PASS: brak pageerror/console.error w realnym Chromium
+
+[army-merge-panel-scroll] 34 pass, 0 fail
+EXIT=0
