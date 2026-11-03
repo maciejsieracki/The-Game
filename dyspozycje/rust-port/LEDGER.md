@@ -686,3 +686,5 @@ Zasada: stale 2 tematy Rust równolegle (limit dysku: worktree ≈ 1 GB każdy, 
 - Równolegle w kolejce: -Q8 resolveSiegeSurrender, ORDER-LANE -Q2, pętla per miasto, auto-ulepszenia terenu, wiązanie z pętlą tury, hashe map, ai.ts/pickBonusCityHex, porządek nagłówków pin.
 - Web niskie: U-5, TERRAIN-ID-NAME-MAP-UNIFY, hook setCityLimit.
 - Sprzątanie /tmp/claude-0 (≈5 GB) zablokowane przez klasyfikator — czeka na zgodę/regułę właściciela.
+
+- 2026-11-03 15:14 kontrola: TRUCE-AGRESOR (wf_6b1cca1c-10e) i PROFIL-WOJNY-POKOJU (wf_5f3dd8c7-4cd, powtorka r1) trwaja; nic do integracji.
