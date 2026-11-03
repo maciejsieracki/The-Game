@@ -38,7 +38,7 @@ odświeżeniu tras), a `native_zloto_access(o)` i `empire_active_labels(o)` to d
 
 ## 4. Znalezisko 1:1 (do wiadomości właściciela)
 
-`ownerHasNativeResourceAccess(.,'zelazo')` w webie jest ZAWSZE `false`: `main.ts:5107` wywołuje `hasZelazoAccess(hasKopalniaZelazo, ...)`
+`ownerHasNativeResourceAccess(.,'zelazo')` w webie jest ZAWSZE `false`: `main.ts:5101` wywołuje `hasZelazoAccess(hasKopalniaZelazo, ...)` Ta sama sklejka występuje w `main.ts:3275` (`diplomacyActiveResourceLabelsForOwner`); web zna to zjawisko (komentarz przy `main.ts:3280+`), więc znalezisko nie jest nowe.
 z `boolean` w miejscu `empireStock`; `zelazo-access.ts` (`hasZelazoAccess`) traktuje `boolean` jak brak zapasu => `hasStock=false`.
 Skutek: grant z trasy na żelazo nigdy nie powstaje. Port odtwarza to literalnie (nie „naprawia”); decyzja o poprawce webu poza zakresem.
 

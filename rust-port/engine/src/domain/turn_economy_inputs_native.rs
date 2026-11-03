@@ -19,7 +19,7 @@
 //! `cityBorderRadius` (jak Z2 w `active_access.rs`).
 //!
 //! UWAGA 1:1 (znalezisko): web dla klucza `'zelazo'` wola `hasZelazoAccess(hasKopalniaZelazo, built)` z ARGUMENTEM
-//! `boolean` w miejscu `empireStock` (`main.ts:5107`); `zelazo-access.ts` traktuje `boolean` jak brak zapasu =>
+//! `boolean` w miejscu `empireStock` (`main.ts:5101`); `zelazo-access.ts` traktuje `boolean` jak brak zapasu =>
 //! `hasStock=false` => natywny dostep do zelaza jest w webie ZAWSZE `false`. Port odtwarza to literalnie (nie "naprawia").
 
 use std::collections::{BTreeMap, HashMap};

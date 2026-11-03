@@ -9,7 +9,7 @@ ZMIANY/COMMIT: WIP `49309e3be`; commit końcowy (poprawka clippy `map_entry` w `
 
 TABELA (doc sek. 1, 100%): zaportowane 8 (civ-map, podział Handlu, podział Pracy, `placedImprovementsForOwner`, etykiety aktywne, natywny dostęp 5 kluczy, wywołanie grantów, zło­to natywne OR grant), istniały 2 (`computeEmpireLivestockUnlocks`, no-op `placed_improvements_with_zloto_trade_grant`), ZAŁOŻENIE 1 (stan fortów), DŁUG 1 z dowodem: `orderMultMap` — produkt pętli porządku `main.ts:35400-35800` (econTick, citizenUpkeepDrain, rng buntu, mieszanki kultury/religii; w Rust brak `order_effects_with_civ_matrix`, `citizen_upkeep_drain`, `law_garrison`). Proponowany osobny temat `...ECON-TICK-ORDER-LANE-Q1`. Dług Q6 sek. 9 (natywny złoto / grant z trasy) DOMKNIĘTY.
 
-ZNALEZISKO 1:1: web `ownerHasNativeResourceAccess(.,'zelazo')` jest ZAWSZE false (`main.ts:5107` przekazuje `boolean` jako `empireStock` do `hasZelazoAccess`, `zelazo-access.ts` traktuje to jak brak zapasu). Port odtwarza literalnie; do decyzji właściciela, czy poprawiać web.
+ZNALEZISKO 1:1: web `ownerHasNativeResourceAccess(.,'zelazo')` jest ZAWSZE false (`main.ts:5101` przekazuje `boolean` jako `empireStock` do `hasZelazoAccess`, `zelazo-access.ts` traktuje to jak brak zapasu). Port odtwarza literalnie; do decyzji właściciela, czy poprawiać web.
 
 TESTY:
 * `cargo test --test p6_state_src` 4/4: 260 scenariuszy (placed per owner, 5 kluczy natywnych, granty, złoto NT, etykiety), 120 civ, 80 podział, z URUCHOMIONEGO weba (funkcje modułowe z pinu; sklejka `main.ts` przepisana z numerami linii, Z-SS-8).
