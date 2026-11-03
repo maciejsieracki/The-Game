@@ -75,6 +75,64 @@ export function cityWallDefenseBonusPercent(
 }
 
 /**
+ * R-WEB-WALL-DEFENDERS-BONUS-RANGE-Q1 (decyzja wlasciciela 2026-11-03) --
+ * JEDNA regula "obronca wewnatrz obwarowania", uzywana przez bitwe taktyczna
+ * (battleScene.ts _singleBlow) ORAZ rozstrzygniecie "Pomin" (computeInstantResult).
+ *
+ * Bonus obrony z obwarowania (mur +200%, palisada +100%, Cytadela +100%, Baszta
+ * +100% -- cityWallDefenseBonusPercent) naleza sie KAZDEMU obroncy (side === 'def')
+ * stojacemu:
+ *   (a) NA KORONIE muru/palisady (`onWallWalkway`), albo
+ *   (b) WEWNATRZ linii muru: kolumna sceny `q` STRICTE ZA kolumna muru
+ *       (`q > siegeWallCol`) -- dziedziniec / glab miasta (jazda, machiny, a po
+ *       wylomie piechota, ktora zeszla z korony).
+ * NIE naleza sie: atakujacym (takze tym, ktorzy wspieli sie na korone wieza
+ * obleznicza), obroncom POZA murem (`q < siegeWallCol`) ani stojacym w kaflu
+ * samego muru, ktory nie jest juz korona (`q === siegeWallCol` bez
+ * `onWallWalkway` -- wyburzony kafel / brama: korona znikla, wiec bonus tez).
+ * `siegeWallCol < 0` (brak sceny oblezenia) => tylko flaga korony.
+ */
+export interface FortificationPositionCtx {
+  side: 'atk' | 'def';
+  onWallWalkway?: boolean;
+  /** Kolumna sceny bitwy jednostki. */
+  q: number;
+  /** Kolumna muru w scenie (BattleScene.siegeWallCol); < 0 = brak muru. */
+  siegeWallCol: number;
+}
+
+export function defenderInsideFortification(ctx: FortificationPositionCtx): boolean {
+  if (ctx.side !== 'def') return false;
+  if (ctx.onWallWalkway === true) return true;
+  return ctx.siegeWallCol >= 0 && ctx.q > ctx.siegeWallCol;
+}
+
+/**
+ * Bonus obrony (w %) z obwarowania dla konkretnej jednostki: `wallTotalProc`
+ * (cityWallDefenseBonusPercent) gdy obronca jest wewnatrz obwarowania, inaczej 0.
+ * Czysta funkcja, ownerId-agnostyczna (parytet gracz/AI).
+ */
+export function fortificationDefenseBonusForUnit(
+  ctx: FortificationPositionCtx,
+  wallTotalProc: number,
+): number {
+  return defenderInsideFortification(ctx) ? Math.max(0, wallTotalProc) : 0;
+}
+
+/** Mnoznik zasiegu strzelca stojacego NA koronie muru/palisady (decyzja 2026-11-03). */
+export const WALL_CROWN_RANGE_MULT = 2;
+
+/**
+ * Zasieg strzelca NA koronie: efektywny zasieg (baza + delta terenu) x2, w gore.
+ * Wolajacy decyduje, kogo to dotyczy (obronca-strzelec na koronie, nie machina,
+ * nie wiezyczka -- te maja osobny zasieg).
+ */
+export function wallCrownShooterRange(effectiveRange: number): number {
+  if (!(effectiveRange > 0)) return Math.max(0, effectiveRange || 0);
+  return Math.ceil(effectiveRange * WALL_CROWN_RANGE_MULT);
+}
+
+/**
  * cityGatedTerrainMultiplier (C-COMBAT-Q2, Maciej 2026-07-26 -- decyzja
  * "bonus terenu przy obronie MIASTA dolicza sie WYLACZNIE gdy miasto ma mur"):
  *

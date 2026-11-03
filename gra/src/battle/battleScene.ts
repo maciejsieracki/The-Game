@@ -105,6 +105,8 @@ import {
   cityWallDefenseBonusPercent,
   cityGatedTerrainMultiplier,
   fieldFortifyDefenseBonus,
+  fortificationDefenseBonusForUnit,
+  wallCrownShooterRange,
 } from '../game/city-defense';
 import { meleeBlockedByWall, cityFortificationKind } from '../game/city-fortification';
 import {
@@ -2425,6 +2427,11 @@ export class BattleScene {
    */
   private wallDefenseTotalProc: number = 0;
   /**
+   * R-WEB-WALL-DEFENDERS-BONUS-RANGE-Q1: bonus obwarowania (%) uzyty per obronca
+   * w ostatnim "Pomin" (computeInstantResult) -- czysty odczyt dla testu parytetu.
+   */
+  lastInstantDefBonus: { q: number; r: number; onWall: boolean; pct: number }[] = [];
+  /**
    * C-COMBAT-Q2 (Maciej 2026-07-26): true when the DEFENDER is defending a
    * CITY hex (walled or not) -- see BattleOpts.cityDefense doc for the full
    * rationale. `opts.siege != null` always implies this (every real siege
@@ -3628,7 +3635,9 @@ export class BattleScene {
       this.attackerOwnTerritory,
       this.defenderOwnTerritory,
       this.shallowSea,
+      this.siegeWallCol,
     );
+    this.lastInstantDefBonus = result.defBonus;
     for (const line of result.log) this.log.push(line);
     this._endWinner = result.winner;
     this._endSurvivors = result.survivors;
@@ -4612,6 +4621,8 @@ export class BattleScene {
       this._updateMoraleBar(ru);
       this._updateAmmoBar(ru);
       this.occByKey.set(key, ru);
+      // Zasieg x2 strzelca na koronie widoczny od startu (podswietlenie zasiegu w UI).
+      this._applyTerrainRange(ru);
       result.push(ru);
     }
 
@@ -5981,11 +5992,10 @@ export class BattleScene {
     // enemies at the base or on the walkway. No kiting, no advancing.
     if (ru.onWallWalkway) {
       // Defender CATAPULT (kontrbateria): range already set to 6 in _placeSiegeDefenders.
-      // No additional range boost needed (already includes elevation).
-      const wallRangeBonus = (ru.rangedBase && !this._isCatapult(ru.bu)) ? 1 : 0;
-      // Temporarily boost range for this action (elevation = +1 like hills).
+      // Strzelec na koronie: zasieg x2 jest juz w ru.range (_applyTerrainRange, wolane
+      // na poczatku aktywacji) -- dawny tymczasowy +1 "elewacji" usuniety
+      // (R-WEB-WALL-DEFENDERS-BONUS-RANGE-Q1), zeby nie podwajac bonusu.
       const origRange = ru.range;
-      if (wallRangeBonus > 0) ru.range = origRange + wallRangeBonus;
 
       if (canShoot(ru)) {
         // DEFENDER CATAPULT (kontrbateria): prioritize nearest attacker catapult in range 6.
@@ -7353,6 +7363,28 @@ export class BattleScene {
   }
 
   // -------------------------------------------------------------------------
+  // R-WEB-WALL-DEFENDERS-BONUS-RANGE-Q1 -- obronca wewnatrz obwarowania.
+  // -------------------------------------------------------------------------
+
+  /**
+   * Bonus obrony z obwarowania (%) dla jednostki: this.wallDefenseTotalProc gdy
+   * to OBRONCA na koronie muru/palisady LUB za linia muru (game/city-defense.ts
+   * defenderInsideFortification -- ta sama regula co "Pomin"), inaczej 0.
+   */
+  private _wallBonusProcFor(u: RuntimeBattleUnit): number {
+    return fortificationDefenseBonusForUnit(
+      { side: u.side, onWallWalkway: u.onWallWalkway === true, q: u.q, siegeWallCol: this.siegeWallCol },
+      this.wallDefenseTotalProc,
+    );
+  }
+
+  /** Strzelec-obronca NA koronie muru/palisady (nie machina) -- zasieg x2. */
+  private _isWallCrownShooter(ru: RuntimeBattleUnit): boolean {
+    return ru.side === 'def' && ru.onWallWalkway === true
+      && ru.rangedBase === true && !this._isCatapult(ru.bu) && ru.rangeBase > 0;
+  }
+
+  // -------------------------------------------------------------------------
   // C-TEREN-Q1 ETAP 2 -- terrain-derived ranged-reach delta.
   // -------------------------------------------------------------------------
 
@@ -7378,6 +7410,10 @@ export class BattleScene {
     const terrain = this.terrainMap.combatTerrainName(ru.q, ru.r);
     const delta = terrainRangeDelta(terrain, this.terrainData);
     ru.range = Math.max(0, ru.rangeBase + delta);
+    // R-WEB-WALL-DEFENDERS-BONUS-RANGE-Q1: strzelec na koronie muru/palisady ma
+    // DWUKROTNY zasieg (zamiast dawnego +1 "elewacji"), zaokraglony w gore.
+    // Machiny (katapulty: staly zasieg 6) i wiezyczki (osobny zasieg) nietkniete.
+    if (this._isWallCrownShooter(ru)) ru.range = wallCrownShooterRange(ru.range);
   }
 
   /** Obrażenia vs mur/bramę z units.json TW (`wallAttack`, fallback legacy). */
@@ -7616,6 +7652,7 @@ export class BattleScene {
             }
           }
           u.onWallWalkway = false; // zszedł z muru
+          this._applyTerrainRange(u); // utrata korony => zasieg x2 znika
         }
       }
     }
@@ -8461,8 +8498,10 @@ export class BattleScene {
     const cityTerrMult = this.isCityDefenseBattle
       ? cityGatedTerrainMultiplier(hasMur, cityElevationTerrain, this.terrainData)
       : 1;
+    // R-WEB-WALL-DEFENDERS-BONUS-RANGE-Q1: bonus obwarowania dla KAZDEGO obroncy
+    // wewnatrz obwarowania (korona ALBO za linia muru) -- _wallBonusProcFor.
     const terrDefMult = this.isCityDefenseBattle
-      ? 1 + ((defender.onWallWalkway ? this.wallDefenseTotalProc : 0) + (cityTerrMult - 1) * 100) / 100
+      ? 1 + (this._wallBonusProcFor(defender) + (cityTerrMult - 1) * 100) / 100
       : terrainDefenseMultiplier(defTerrain, cuA.rola, this.terrainData);
     // River-crossing Atak penalty (SS5j, pre-existing): the ATTACKER's own
     // tile decides this -- -25% Atak when it is wading a Ford (river_attack_mult
@@ -19767,8 +19806,15 @@ function computeInstantResult(
   attackerOwnTerritory: boolean = false,
   defenderOwnTerritory: boolean = false,
   shallowSea: boolean = false,
-): { winner: 'atakujacy' | 'obronca'; survivors: BattleUnit[]; log: string[] } {
+  // R-WEB-WALL-DEFENDERS-BONUS-RANGE-Q1: kolumna muru (BattleScene.siegeWallCol,
+  // -1 = brak) -- obronca ZA murem dostaje bonus obwarowania tak jak na koronie.
+  siegeWallCol: number = -1,
+): {
+  winner: 'atakujacy' | 'obronca'; survivors: BattleUnit[]; log: string[];
+  defBonus: { q: number; r: number; onWall: boolean; pct: number }[];
+} {
   const log: string[] = [];
+  const defBonus: { q: number; r: number; onWall: boolean; pct: number }[] = [];
 
   const atkState = aliveAtk.map(u => ({ ru: u, hp: u.bu.hp }));
   const defState = aliveDef.map(u => ({ ru: u, hp: u.bu.hp }));
@@ -19839,7 +19885,12 @@ function computeInstantResult(
       const cityTerrMult = isCityDefense
         ? cityGatedTerrainMultiplier(hasMur, cityElevationTerrain, terrainData)
         : 1;
-      const structBonusPctForPair = (defOnWall ? wallDefenseTotalProc : 0)
+      const wallBonusForDef = fortificationDefenseBonusForUnit(
+        { side: d.ru.side, onWallWalkway: defOnWall, q: d.ru.q, siegeWallCol },
+        wallDefenseTotalProc,
+      );
+      defBonus.push({ q: d.ru.q, r: d.ru.r, onWall: defOnWall, pct: wallBonusForDef });
+      const structBonusPctForPair = wallBonusForDef
         + (isCityDefense ? (cityTerrMult - 1) * 100 : 0);
 
       // C-FORT-POLE-Q1, skip-resolve parity: +50% Obrony gdy fortifiedInField
@@ -19932,7 +19983,7 @@ function computeInstantResult(
   }
 
   log.push('=== Natychmiastowy wynik: ' + (winner === 'atakujacy' ? 'ATAKUJACY' : 'OBRONCA') + ' wygrywa ===');
-  return { winner, survivors, log };
+  return { winner, survivors, log, defBonus };
 }
 
 // ---------------------------------------------------------------------------

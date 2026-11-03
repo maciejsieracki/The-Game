@@ -83,7 +83,11 @@ assert(D.cityWallDefenseBonusPercent(['palisada'], P) === 100, `palisada +${P.pa
 const BS = fs.readFileSync(path.join(GRA, 'src/battle/battleScene.ts'), 'utf8');
 const pins = [
   ['konstruktor: wallDefenseTotalProc z builtBuildingIds (palisada w P)', /cityWallDefenseBonusPercent\(opts\.siege\?\.builtBuildingIds, \{\s*\n\s*mur: murProc, cytadela: cytadelaProc, baszta: basztaProc, palisada: palisadaProc,/],
-  ['_singleBlow: bonus tylko dla obroncy onWallWalkway', /\(defender\.onWallWalkway \? this\.wallDefenseTotalProc : 0\)/],
+  // R-WEB-WALL-DEFENDERS-BONUS-RANGE-Q1 (decyzja wlasciciela 2026-11-03): bonus dla KAZDEGO obroncy
+  // wewnatrz obwarowania (korona ALBO za murem), nie tylko dla stojacych na koronie -- wspolna regula
+  // _wallBonusProcFor -> fortificationDefenseBonusForUnit (city-defense.ts). Pelne pomiary:
+  // tools/wall-defenders-bonus-range-test.cjs.
+  ['_singleBlow: bonus dla obroncy wewnatrz obwarowania (_wallBonusProcFor)', /this\._wallBonusProcFor\(defender\) \+ \(cityTerrMult - 1\) \* 100/],
   ['skip(): computeInstantResult dostaje wallDefenseTotalProc', /this\.wallDefenseTotalProc,\s*\n\s*this\.isCityDefenseBattle,/],
 ];
 for (const [name, re] of pins) {
