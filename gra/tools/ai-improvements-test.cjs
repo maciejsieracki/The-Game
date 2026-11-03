@@ -376,7 +376,7 @@ console.log('11. combined AI + defensive copy: city improvements + posterunek <=
   const city = makeCity('combined-city', PLAYER_ID, 15, 15, 3);
   const unit = { id: 'combined-unit', ownerId: PLAYER_ID, q: 45, r: 45, inGarnizon: false };
   const farmMeta = getImprovementMeta('farma');
-  const outpostMeta = getImprovementMeta('posterunek');
+  const outpostMeta = getImprovementMeta('fort');
   assert(farmMeta && Number.isFinite(farmMeta.kosztPraca), 'combined setup: realne dane farmy istnieja');
   assert(outpostMeta && Number.isFinite(outpostMeta.kosztPraca), 'combined setup: realne dane posterunku istnieja');
   const farmCost = farmMeta.kosztPraca;
@@ -384,7 +384,7 @@ console.log('11. combined AI + defensive copy: city improvements + posterunek <=
   assert(farmCost > 0 && outpostCost > 0, 'combined setup: oba koszty Pracy sa dodatnie');
   const combinedOpts = {
     ...baseOpts(city),
-    improvementTechs: new Set(['Rolnictwo', 'Obróbka drewna', 'Murarstwo']),
+    improvementTechs: new Set(['Rolnictwo', 'Obróbka drewna', 'Murarstwo', 'Wojskowość']),
     placedImprovements: new Map(),
     fortNodes: [],
   };
@@ -397,8 +397,8 @@ console.log('11. combined AI + defensive copy: city improvements + posterunek <=
     // 150-Work envelope, enough for its cost plus the 30-Work reserve.
     { ...combinedOpts, pracaAvailable: 300 },
   );
-  assert(directOutpost && directOutpost.type === 'buildImprovement' && directOutpost.key === 'posterunek',
-    'combined setup: planExpansionFortBuilding wybiera legalny posterunek');
+  assert(directOutpost && directOutpost.type === 'buildImprovement' && directOutpost.key === 'fort',
+    'combined setup: planExpansionFortBuilding wybiera legalny fort ekspansyjny (R-WEB-FORT-OUTPOST-PLACEMENT-RULES-Q1: AI poza terenem = fort, nie posterunek)');
   const beforeCapOpts = { ...combinedOpts, pracaAvailable: 300 };
   const cityCommandsBeforeCap = decideAITurn(
     PLAYER_ID, [unit], [city], combinedMap, data, beforeCapOpts,
@@ -408,7 +408,7 @@ console.log('11. combined AI + defensive copy: city improvements + posterunek <=
   );
   const improvementsBeforeCap = [...cityCommandsBeforeCap, ...(outpostBeforeCapCommand ? [outpostBeforeCapCommand] : [])];
   const farmBeforeCap = improvementsBeforeCap.find(cmd => cmd.key === 'farma');
-  const outpostBeforeCap = improvementsBeforeCap.find(cmd => cmd.key === 'posterunek');
+  const outpostBeforeCap = improvementsBeforeCap.find(cmd => cmd.key === 'fort');
   assert(farmBeforeCap, 'combined setup przed capem: obecna komenda farma');
   assert(outpostBeforeCap, `combined setup przed capem: obecna komenda posterunek (${JSON.stringify(improvementsBeforeCap)})`);
   if (farmBeforeCap) eq(farmBeforeCap.type, 'buildImprovement', 'farma ma typ buildImprovement');
@@ -429,7 +429,7 @@ console.log('11. combined AI + defensive copy: city improvements + posterunek <=
   );
   const normalImprovements = [...normalCityCommands, ...(normalOutpostCommand ? [normalOutpostCommand] : [])];
   const normalFarm = normalImprovements.filter(cmd => cmd.type === 'buildImprovement' && cmd.key === 'farma');
-  const normalOutpost = normalImprovements.filter(cmd => cmd.type === 'buildImprovement' && cmd.key === 'posterunek');
+  const normalOutpost = normalImprovements.filter(cmd => cmd.type === 'buildImprovement' && cmd.key === 'fort');
   assert(normalFarm.length >= 1, 'combined normal: farma pozostaje wybrana pod capem');
   eq(normalOutpost.length, 0, 'combined normal: posterunek odrzucony po odjeciu kosztu farmy');
   const normalSpent = normalImprovements.reduce(
@@ -456,7 +456,7 @@ console.log('11. combined AI + defensive copy: city improvements + posterunek <=
     ...(defensiveOutpostCommand ? [defensiveOutpostCommand] : []),
   ];
   const defensiveFarm = defensiveImprovements.filter(cmd => cmd.type === 'buildImprovement' && cmd.key === 'farma');
-  const defensiveOutpost = defensiveImprovements.filter(cmd => cmd.type === 'buildImprovement' && cmd.key === 'posterunek');
+  const defensiveOutpost = defensiveImprovements.filter(cmd => cmd.type === 'buildImprovement' && cmd.key === 'fort');
   assert(defensiveFarm.length >= 1, 'combined defensiveCopy: farma pozostaje wybrana pod capem');
   eq(defensiveOutpost.length, 0, 'combined defensiveCopy: brak ekspansyjnego posterunku');
   const defensiveSpent = defensiveImprovements.reduce(

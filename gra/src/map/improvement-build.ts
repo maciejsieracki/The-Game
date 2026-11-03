@@ -19,6 +19,7 @@ import {
 } from './territory';
 import { isTerritoryHexOwnedBy } from './territory-work';
 import { hexKeysWithinRadius } from '../game/okolica';
+import { isOutpostPlacementAllowed } from '../game/fort-territory';
 import { isWaterTerrain } from '../units/setup';
 import terrainImprovements from '../../data/terrain-improvements.json';
 import {
@@ -1068,7 +1069,16 @@ function createQualifier(state: ImprovementBuildState) {
       // to another civ's CITY territory; rule 2 — a rival fort there does NOT
       // block), but require the builder's OWN unit physically present on the hex
       // at build time (Q1 clarification — also lifts fog of war by construction).
-      case 'posterunek':
+      // R-WEB-FORT-OUTPOST-PLACEMENT-RULES-Q1 (wlasciciel 2026-11-03): POSTERUNEK tylko na
+      // wlasnym terytorium PRZY GRANICY (wspolny predykat isOutpostPlacementAllowed); NADPISUJE
+      // regule kroku 2 (posterunek poza terenem + jednostka). FORT (nizej) -- bez zmian: gdziekolwiek.
+      case 'posterunek': {
+        const outpostNodes: readonly TerritoryNode[] = territoryNodes.length > 0
+          ? territoryNodes
+          : cityNodes.map(c => ({ ...c, ownerId: playerOwnerIdNum }));
+        terrainOk = TERENY_LADU.has(teren) && isOutpostPlacementAllowed(q, r, playerOwnerIdNum, outpostNodes);
+        break;
+      }
       case 'fort': {
         const owner = territoryNodes.length > 0 ? territoryOwnerAt(q, r, territoryNodes) : null;
         const rivalCityTerritory = owner !== null && owner !== playerOwnerIdNum;

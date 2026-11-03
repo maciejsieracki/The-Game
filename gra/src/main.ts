@@ -234,6 +234,8 @@ import {
   fortTerritoryNodes,
   fortSightSources,
   isHexInForeignFortTerritory,
+  isOutpostPlacementAllowed,
+  OUTPOST_PLACEMENT_DENIED_HINT,
   isHexReservedByRivalFort,
   applyFortTakeoverOnCityFounded,
   findEvacuationHexOutsideCity,
@@ -14905,6 +14907,13 @@ async function boot(): Promise<void> {
 
     function assertPlayerTerritoryForBuild(q: number, r: number, key?: ImprovementKey): boolean {
       const nodes = buildAllTerritoryNodes();
+      // R-WEB-FORT-OUTPOST-PLACEMENT-RULES-Q1 (2026-11-03): posterunek = wlasne terytorium + przyleganie do granicy
+      // (wspolny predykat isOutpostPlacementAllowed; fort bez tego ograniczenia).
+      if (key === 'posterunek') {
+        if (isOutpostPlacementAllowed(q, r, 0, nodes.length > 0 ? nodes : playerCityNodes().map(c => ({ ...c, ownerId: 0 })))) return true;
+        showHintMessage(OUTPOST_PLACEMENT_DENIED_HINT, 3500);
+        return false;
+      }
       if (nodes.length > 0) {
         if (isTerritoryHexOwnedBy(q, r, 0, nodes)) return true;
       } else if (isPlayerTerritoryHex(q, r, playerCityNodes(), nodes, 0)) {
@@ -14916,7 +14925,7 @@ async function boot(): Promise<void> {
       // jednostka (Q1 doprecyzowanie) — ta sama bramka co buildImprovementQualifier
       // (map/improvement-build.ts), duplikowana tu bo ten strażnik jest OSOBNY
       // (drugi, redundantny gate za qualifies()/canBuild).
-      if (key === 'fort' || key === 'posterunek') {
+      if (key === 'fort') {
         const owner = nodes.length > 0 ? territoryOwnerAt(q, r, nodes) : null;
         const rivalCityTerritory = owner !== null && owner !== 0;
         const ownUnitHere = units.some(u => u.ownerId === 0 && u.q === q && u.r === r);
@@ -38866,7 +38875,13 @@ async function boot(): Promise<void> {
                   // ale poza własnym terytorium wymagają fizycznej obecności WŁASNEJ jednostki na
                   // hexie (Q1 doprecyzowanie) -- ta sama bramka co dla gracza (buildImprovementQualifier).
                   const isFortOrOutpost = cmd.key === 'fort' || cmd.key === 'posterunek';
-                  if (isFortOrOutpost) {
+                  if (cmd.key === 'posterunek') {
+                    // R-WEB-FORT-OUTPOST-PLACEMENT-RULES-Q1: posterunek AI = wlasne terytorium + granica (wspolny predykat).
+                    if (!isOutpostPlacementAllowed(cmd.q, cmd.r, ownerId, territoryGate)) {
+                      console.warn(`[AI ${ownerId}] Build skipped (posterunek poza regula granicy): (${cmd.q},${cmd.r})`);
+                      continue;
+                    }
+                  } else if (isFortOrOutpost) {
                     const owner = territoryGate.length > 0
                       ? territoryOwnerAt(cmd.q, cmd.r, territoryGate) : null;
                     const rivalCityTerritory = owner !== null && owner !== ownerId;

@@ -67,6 +67,36 @@ export interface FortNode {
   seq?: number;
 }
 
+/**
+ * R-WEB-FORT-OUTPOST-PLACEMENT-RULES-Q1 (decyzja wlasciciela 2026-11-03) — JEDEN wspolny predykat
+ * lokalizacji POSTERUNKU (gracz: panel + strazniki main.ts; automat; AI):
+ * heks (q,r) musi NALEZEC do terytorium `ownerId` (wg `territoryOwnerAt`) ORAZ przylegac do jego
+ * granicy, tj. miec >= 1 z 6 sasiadow, ktory NIE jest terytorium `ownerId` (wolny, morze, obce).
+ * Posterunek rozszerza teren, ale nie stoi "byle gdzie". FORT nie ma tego ograniczenia
+ * (moze stac gdziekolwiek -- zakladanie miast na innych kontynentach/wyspach).
+ * Brak wezlow terytorium -> false (nie ma czyjego terenu). / EN: single shared outpost predicate.
+ */
+export function isOutpostPlacementAllowed(
+  q: number,
+  r: number,
+  ownerId: number,
+  allNodes: readonly TerritoryNode[],
+): boolean {
+  if (allNodes.length === 0) return false;
+  if (territoryOwnerAt(q, r, allNodes) !== ownerId) return false;
+  const nbs: ReadonlyArray<readonly [number, number]> = [
+    [q + 1, r], [q - 1, r], [q, r + 1], [q, r - 1], [q + 1, r - 1], [q - 1, r + 1],
+  ];
+  for (const [nq, nr] of nbs) {
+    if (territoryOwnerAt(nq, nr, allNodes) !== ownerId) return true;
+  }
+  return false;
+}
+
+/** Komunikat odmowy dla gracza (posterunek poza regula granicy). */
+export const OUTPOST_PLACEMENT_DENIED_HINT =
+  'Posterunek mozna postawic tylko na wlasnym terytorium, przy jego granicy. Fort mozna postawic gdziekolwiek.';
+
 /** Nastepny numer kolejny budowy fortu (max(seq)+1; 0 dla pustego rejestru). */
 export function nextFortSeq(forts: readonly FortNode[]): number {
   let m = -1;

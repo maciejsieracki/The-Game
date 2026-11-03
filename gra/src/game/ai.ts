@@ -2790,7 +2790,11 @@ export function planExpansionFortBuilding(
   if (opts.defensiveCopy) return null;
   if (myCities.length === 0) return null; // brak wlasnego terytorium do rozszerzenia (parytet z founding)
   const pracaAvailable = opts.pracaAvailable ?? 0;
-  const meta = getImprovementMeta('posterunek');
+  // R-WEB-FORT-OUTPOST-PLACEMENT-RULES-Q1 (wlasciciel 2026-11-03): ekspansja poza zasieg (jednostka stoi
+  // POZA terytorium/zasiegiem, np. inna wyspa/kontynent) to wylacznie FORT -- posterunek wolno stawiac tylko
+  // na wlasnym terytorium przy granicy (isOutpostPlacementAllowed), a tu hex z definicji jest poza zasiegiem.
+  const EXPANSION_KEY = 'fort' as const;
+  const meta = getImprovementMeta(EXPANSION_KEY);
   if (!meta) return null;
   if (pracaAvailable < meta.kosztPraca + AI_IMPROVEMENT_PRACA_SURPLUS) return null;
   // Ten sam absolutny budżet obowiązuje także posterunek, aby koszt
@@ -2807,7 +2811,7 @@ export function planExpansionFortBuilding(
     ? Math.max(0, opts.plannedImprovementCost as number)
     : 0;
   if (plannedCost + meta.kosztPraca > improvementBudget) return null;
-  if (!isImprovementTechUnlocked('posterunek', opts.improvementTechs ?? new Set())) return null;
+  if (!isImprovementTechUnlocked(EXPANSION_KEY, opts.improvementTechs ?? new Set())) return null;
 
   const territoryNodes = opts.territoryNodes ?? [];
   const myFortNodes = (opts.fortNodes ?? [])
@@ -2840,7 +2844,7 @@ export function planExpansionFortBuilding(
     if (isHexWithinAnyCityReach(q, r, myCities, myFortNodes)) continue;
     const owner = territoryNodes.length > 0 ? territoryOwnerAt(q, r, territoryNodes) : null;
     if (owner !== null && owner !== playerId) continue; // teren INNEJ cywilizacji (regula 1)
-    return { type: 'buildImprovement', ownerId: playerId, q, r, key: 'posterunek' };
+    return { type: 'buildImprovement', ownerId: playerId, q, r, key: EXPANSION_KEY };
   }
   return null;
 }
