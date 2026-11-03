@@ -745,3 +745,27 @@ fn engine_state_semantics_spot_checks() {
     let m: BTreeMap<String, f64> = BTreeMap::from([("1".to_string(), f64::NAN)]);
     assert!(serializuj_mape(&m).is_empty());
 }
+
+/// Zarzut Evaluatora 4: `allyId` ujemny (np. -1 = barbarzynca) NIE jest graczem (`allyId === 0` w webie,
+/// alliance-war-obligation.ts:39) - przechodzi pelne bramki. Zabija mutant `ally_id <= 0.0`.
+#[test]
+fn honor_negative_ally_id_is_not_player() {
+    let mk = |ally: f64| AllianceWarObligationInput {
+        ally_id: ally,
+        must_declare_war_on: 2.0,
+        attacker_id: 3.0,
+        victim_id: 4.0,
+        military_ratio: 1.0,
+        active_war_count: 5.0, // >= domyslne max 1 -> odmowa dla nie-gracza
+        peaceful_archetype: false,
+        min_ratio_honor: None,
+        min_ratio_honor_peaceful: None,
+        max_wars_before_refuse: None,
+        trust_to_requesting_ally: None,
+        min_trust_honor: None,
+    };
+    assert!(should_honor_alliance_war_obligation(&mk(0.0)));
+    assert!(should_honor_alliance_war_obligation(&mk(-0.0)));
+    assert!(!should_honor_alliance_war_obligation(&mk(-1.0)));
+    assert!(!should_honor_alliance_war_obligation(&mk(1.0)));
+}

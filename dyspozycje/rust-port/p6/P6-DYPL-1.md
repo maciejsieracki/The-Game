@@ -25,10 +25,13 @@ Reużycie 1:1 NIE jest możliwe bez edycji `diplomacy.rs` (poza allowlistą). Is
 * Z-D1-2: `DiploPairMeta` w `diplomacy.rs:1190` ma 2 pola i jest `Copy`; stan pary rozejmu/pokoju to NOWY `PairMetaWeb` (spread `{...meta}` odtworzony przez `#[serde(flatten)] extra`). Włączenie go do `session`/`state` — poza zakresem.
 * Z-D1-3: singleton weba (`stanAgresorow`, `stanCasusBelli`) = wartość `AggressorEngineState` trzymana przez wywołującego.
 * Z-D1-4: `ownerId`/`turn` w flagach agresora to `f64` (web: `Number.isFinite`), klucz mapy = `js_number_to_string` (zgodność z `String(n)` pokryta wektorami `agg.key`: całkowite, 1.5, NaN, ±Infinity, -0, 1e21).
-* Z-D1-5: traktaty używają typów Rust `ActiveDeal`/`TreatyKind`/`PlayerId(u64)`. `rozejm` i `wasal` nie istnieją w `TreatyKind`; `rozejm` nie zrywa się wojną i nie jest sojuszem, więc wynik jest taki sam; `umowa_handlowa` = alias `umowa_szlakow` (oba w `BREAK_ON_WAR`). Pary w wektorach są kanoniczne (web: po `hydrateActiveDeals`).
+* Z-D1-5: traktaty używają typów Rust `ActiveDeal`/`TreatyKind`/`PlayerId(u64)`. `TreatyKind` ma `Vassalization` (alias `wasal`, `diplomacy.rs:1372`; wektory generatora zawierają `wasalizacja`) — wasalizacja słusznie NIE jest w `breaks_on_war`; `rozejm` nie istnieje w `TreatyKind`, nie zrywa się wojną i nie jest sojuszem, więc wynik jest taki sam; `umowa_handlowa` = alias `umowa_szlakow` (oba w `BREAK_ON_WAR`). Pary w wektorach są kanoniczne (web: po `hydrateActiveDeals`).
 * Z-D1-6: `actionId` = `&str`; `BasketItem` zredukowany do `typ`; `atWar = true` = `Option<bool>` (`None` -> `true`).
 * Z-D1-7: pliki traktatów (`diplomacy-treaties.ts`) są portowane do `alliance_war_obligation.rs` (allowlista nie ma osobnego modułu traktatów).
 * Z-D1-8: wektory `honor` nie obejmują `trustToRequestingAlly = null` (w JS `null < 20` = true, odmowa; w Rust `None` = brak warunku) — wejście spoza sygnatury `number | undefined`.
+* Z-D1-9: `pair_meta_from_save` pomija parę, której meta nie pasuje do typów `PairMetaWeb` (np. `trustPnGainedThisTurn: null` z zapisu NaN, `n3Window` bez `turn`); web wczytuje meta dosłownie bez walidacji (`main.ts:42872-42875`). ZAŁOŻENIE: zapis z NaN/null w polach liczbowych jest poza kontraktem 1:1 tego tematu (JSON nie koduje NaN); odporność na takie zapisy należy do tematu podpięcia stanu pary do `session`/`state`.
+* Z-D1-10: duplikat bramki walutowej — `diplomacy_war_gates::is_currency_proposal_forbidden_during_war` (wierna pinowi) współistnieje ze starą funkcją `diplomacy.rs:2726` (używana w `diplomacy.rs:3182`; różni się: `is_finite`, `quantity > 0`, brak `rozejm`). Edycja `diplomacy.rs` jest poza allowlistą; dług przepięcia `evaluate_proposal` przypisany tematowi `POKOJ-ROZEJM-CESJA`, do akceptacji orkiestratora.
+* Z-D1-11: baza PRZED (2093/0) przyjęta z audytu podziału jako ZAŁOŻENIE; PO = 2106 (+13 nowych) + 1 test z tej rundy = 2107, zero zmian istniejących testów.
 
 ## 4. Dowody
 
