@@ -705,3 +705,6 @@ Nic do integracji po stronie Rust (port wstrzymany). Pięć workflowów web wzno
 
 ## 2026-11-03 — web: R-WEB-IRON-NATIVE-ACCESS-FIX-Q1 wdrożone (ROBOCZA a7b56a71)
 Web naprawił natywny dostęp do żelaza (`ownerHasNativeZelazoAccess`: Kopalnia na złożu + zapas żelaza > 0 + Odlewnia; wcześniej `boolean` w miejscu zapasu → zawsze false). Port Rust (pin `4bbef081d`) odtwarza stary błąd 1:1 → **REPIN i poprawka po wznowieniu portu**. Granty z tras mogą migotać przy zapasie 0. Pomiar balansu NIE_ZMIERZONO.
+
+## 2026-11-03 — WZNOWIENIE PORTU (tylko grafika, Opus 5.5) — polecenie właściciela
+Wstrzymanie portu uchylone w zakresie ciężkich prac graficznych: Faza U5 (REPIN-3D) planu `PLAN-AKTUALIZACJI-PORTU-DO-WEBA-20261030.md`, wszystkie role Opus 5.5, pętla autonomiczna do wyczerpania limitu (odnowa jutro). Start: `R-RUSTPORT-REPIN-3D-A-Q1` (pomiar dryfu `battleScene.ts`/`render/*` + partia A1). Fazy U0–U4 (REPIN logiki/UI) nadal wstrzymane. Kolejka grafiki po A: B (kolejne partie wg `P4-REPIN-3D.md`), RR-T1 (GPU — wymaga maszyny właściciela). Web: wdrożono HORSE (ROBOCZA 4cff1d23) — zmienia generator map: REPIN wektorów mapgen (krok `relocate_forest_horses`) czeka w kolejce logiki.
