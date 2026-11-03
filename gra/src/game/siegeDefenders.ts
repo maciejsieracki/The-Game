@@ -11,6 +11,7 @@ import {
   MILITIA_MORALE_FRACTION,
   MILITIA_MORALE_MIN_MARGIN_OVER_FLEE,
   MILITIA_POP_FRACTION,
+  MILITIA_REGEN_TURNS,
   MILITIA_ROSTER,
   MILITIA_STRENGTH_FRACTION,
   type SiegeUnit,
@@ -30,6 +31,8 @@ export interface CityDefRosterOptions {
   builtBuildingIds?: BuildingIdCollection;
   /** Era number (1 Kamien, 2 Braz, 3+ Zelazo) of the CITY OWNER; picks the militia unit types. Default 1. */
   ownerEra?: number;
+  /** Biezaca tura globalna; potrzebna do okresu odnowy Milicji. Brak = bez odnowy (zgodnosc wsteczna). */
+  currentTurn?: number;
   /** Override of the units.json rows (tests); default = data/units.json. */
   unitRows?: readonly Record<string, unknown>[];
 }
@@ -41,6 +44,42 @@ function includesBuilding(
   if (!ids) return false;
   if ('has' in ids) return ids.has(buildingId);
   return ids.includes(buildingId);
+}
+
+/**
+ * R-WEB-CITY-MILITIA-REGEN-COOLDOWN-Q1: ile tur zostalo do odnowy Milicji (0 = dostepna).
+ * Tura odnowy `city.militiaRegenAtTurn`; Milicja zablokowana gdy currentTurn < ta wartosc.
+ */
+export function militiaRegenTurnsLeft(
+  city: Pick<City, 'militiaRegenAtTurn'>,
+  currentTurn: number | undefined,
+): number {
+  const at = city.militiaRegenAtTurn;
+  if (typeof at !== 'number' || !Number.isFinite(at)) return 0;
+  if (typeof currentTurn !== 'number' || !Number.isFinite(currentTurn)) return 0;
+  return Math.max(0, at - currentTurn);
+}
+
+/** Stempluje miasto: cala Milicja zniszczona w turze `currentTurn` => odnowa po MILITIA_REGEN_TURNS turach. */
+export function markMilitiaDestroyed(city: City, currentTurn: number): void {
+  city.militiaRegenAtTurn = currentTurn + MILITIA_REGEN_TURNS;
+}
+
+/**
+ * Po bitwie: jesli WSZYSCY wirtualni milicjanci rosteru polegli (i byl choc jeden) => start okresu odnowy.
+ * Czesciowe straty NIE uruchamiaja odnowy. Zwraca true gdy licznik ustawiono.
+ */
+export function applyMilitiaDestroyedCooldown(
+  city: City,
+  defRoster: readonly RuntimeUnit[],
+  fallenIds: ReadonlySet<string>,
+  currentTurn: number,
+): boolean {
+  const militia = defRoster.filter(isMilitiaUnit);
+  if (militia.length === 0) return false;
+  if (!militia.every(m => fallenIds.has(String(m.id)))) return false;
+  markMilitiaDestroyed(city, currentTurn);
+  return true;
 }
 
 /** True only when the completed-building state contains Garnizon. */
@@ -72,7 +111,9 @@ export function hasCityDefenders(
 ): boolean {
   if ((city.garnizon ?? 0) > 0) return true;
   if (defenderUnitsNearCity(city, units).length > 0) return true;
-  return isGarrisonBuildingCompleted(options) && makeMilitia(city.population ?? 0) !== null;
+  return isGarrisonBuildingCompleted(options)
+    && militiaRegenTurnsLeft(city, options?.currentTurn) === 0
+    && makeMilitia(city.population ?? 0) !== null;
 }
 
 /** C3-ST-2: Szturm może pominąć preBattle / bitwę 3D. */
@@ -263,6 +304,8 @@ export function collectCityDefRoster(
   const roster = defenderUnitsNearCity(city, units);
   const militiaDefs = new Map<string, Record<string, unknown>>();
   if (!isGarrisonBuildingCompleted(options)) return { roster, militiaDefs };
+  // Okres odnowy po zniszczeniu Milicji: we wszystkich sciezkach (taktyczna, Pomin/Auto, oblezenie, AI).
+  if (militiaRegenTurnsLeft(city, options?.currentTurn) > 0) return { roster, militiaDefs };
 
   const squad = buildMilitiaSquad(city.population, options?.ownerEra, options?.unitRows ?? UNIT_ROWS);
   if (squad.length === 0) return { roster, militiaDefs };

@@ -898,6 +898,12 @@ export interface City {
   oblegajacyOwnerId?: number;
   /** C3-Q3=B: zapasy=0 — kapitulacja następnej turze oblężenia / końca tury gracza. */
   siegeCapitulationPending?: boolean;
+  /**
+   * R-WEB-CITY-MILITIA-REGEN-COOLDOWN-Q1: tura globalna, OD KTOREJ Milicja miasta znow walczy.
+   * Ustawiana (zniszczenie + militia_regen_turns) gdy cala Milicja polegla w bitwie/szturmie.
+   * Brak pola (stary zapis) = brak odnowy, Milicja dostepna. Serializowane razem z miastem.
+   */
+  militiaRegenAtTurn?: number;
   /** OBL-S5: kolejka machin oblężniczych (Taran / Wieża). */
   siegeMachines?: SiegeMachinesState;
   /**

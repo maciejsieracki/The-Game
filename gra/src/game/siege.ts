@@ -150,6 +150,9 @@ export const MILITIA_POP_FRACTION = OBL.militia_pop_fraction;
  */
 export const MILITIA_STRENGTH_FRACTION = OBL.militia_strength_fraction;
 
+/** Okres odnowy Milicji (tury globalne) po jej calkowitym zniszczeniu (combat-params.json oblezenie.militia_regen_turns). */
+export const MILITIA_REGEN_TURNS: number = OBL.militia_regen_turns;
+
 /** Morale fraction of a militiaman vs the regular counterpart (spec 2026-11-03; 'Morale bazowe' x this). */
 export const MILITIA_MORALE_FRACTION: number = OBL.militia_morale_fraction;
 

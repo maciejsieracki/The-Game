@@ -220,6 +220,8 @@ function render(): void {
   const atrycjaNext = garnizon > 0 ? Math.max(1, Math.floor(garnizon * 0.08)) : 0;
   // Milicja = 1 mieszkaniec = 1 jednostka, tylko z budynkiem Garnizon (estymator z main.ts).
   const milicjaEst = militiaEstimator ? Math.max(0, militiaEstimator(city)) : 0;
+  // Okres odnowy po zniszczeniu Milicji (R-WEB-CITY-MILITIA-REGEN-COOLDOWN-Q1).
+  const milicjaRegen = militiaRegenLeft ? Math.max(0, militiaRegenLeft(city)) : 0;
   const playerCanStorm = oblegajacyOwnerId === 0;
   const sm: SiegeMachinesState | undefined = city.siegeMachines;
   const qLabel = sm?.queue?.length
@@ -267,6 +269,9 @@ function render(): void {
         '<div>Atrycja: <b>−' + atrycjaNext + '</b>/turę</div>' +
         (milicjaEst > 0
           ? '<div class="full">Milicja przy szturmie: <b>' + milicjaEst + '</b></div>'
+          : milicjaRegen > 0
+            ? '<div class="full">Milicja odnawia się: za <b>' + milicjaRegen + '</b> '
+              + (milicjaRegen === 1 ? 'turę' : milicjaRegen < 5 ? 'tury' : 'tur') + '</div>'
           : '') +
       '</div>' +
       (city.siegeCapitulationPending
@@ -332,6 +337,13 @@ let militiaEstimator: ((city: City) => number) | null = null;
 /** Podpina liczenie Milicji (wymaga wiedzy o budynkach, której panel nie ma). */
 export function setSiegePanelMilitiaEstimator(fn: ((city: City) => number) | null): void {
   militiaEstimator = fn;
+}
+
+let militiaRegenLeft: ((city: City) => number) | null = null;
+
+/** Podpina liczbę tur do odnowy Milicji (0 = brak okresu odnowy). */
+export function setSiegePanelMilitiaRegenLeft(fn: ((city: City) => number) | null): void {
+  militiaRegenLeft = fn;
 }
 
 export function setSiegePanelBesiegerCount(n: number): void {
