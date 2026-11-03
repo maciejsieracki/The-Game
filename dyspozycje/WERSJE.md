@@ -1,3 +1,12 @@
+## ROBOCZA abb556ee -- 2026-11-03 -- skracanie liczb w HUD, widoczna zamiana Pracy na podatek (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`1247214fd` + HUD-NUMBER-ABBREV `65b031ac8`, LABOR-TO-TAX `bcd873fb4`) i commit wdrożenia bundla; zgłoszenia właściciela, stała zgoda na poprawki.
+- Bundle MD5 `abb556ee80b8583593e480034b1448fa`, 70,139,107 B, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, outDir poza repo, stempel ROBOCZA.
+- Zakres: (1) liczby ≥ 1000 w pasku zasobów (Skarbiec, Praca, Spichlerz, Nauka i in.) i panelu Rekrutacja skracane do „k”/„M”, pełna wartość w tooltipie; (2) zamiana Pracy na podatek: podgląd „na koniec tury: +N do Skarbca”, natychmiastowe odświeżenie „+N/turę”, komunikat z wartościami i jasne odmowy. Złoto dochodziło na koniec tury także wcześniej (do Skarbca idzie udział „Podatek” suwaka stolicy, domyślnie 60%).
+- Testy: tsc PASS; testy tematów i regresje zielone; żywy pomiar PRZED/PO.
+- Ograniczenia: kurs/udział suwaka bez zmian; „Rekruci” w HUD i znaczniki mapy bez skracania.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `c02b4df42f1ba9976c959a5faf06929a`, 70,136,020 bajtów.
+
 ## ROBOCZA c02b4df4 -- 2026-11-03 -- kolejność rekrutacji wg epok, automat Q3 (testowa)
 
 - **STATUS: DEPLOYED** — merge do `origin/main` (`57a7ada40` + RECRUIT-LIST-ORDER `6f61f1d70`, AUTO-IMPROVE-Q3 `20bb45c49`) i commit wdrożenia bundla; zgłoszenia właściciela, stała zgoda na poprawki.
