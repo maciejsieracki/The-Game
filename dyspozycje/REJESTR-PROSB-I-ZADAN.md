@@ -8593,3 +8593,6 @@ Ustalenie: surowce/Praca/Nauka/złoto były przenoszone wcześniej; brakowało �
 
 ## 2026-11-03 — DECYZJE WŁAŚCICIELA (ABC): żelazo = A (poprawić od razu); wieża oblężnicza = B (wyłom wszędzie)
 (1) Natywny dostęp do żelaza z własnego złoża (`main.ts:5101`, `:3275` — `hasZelazoAccess` dostaje `boolean` zamiast `empireStock`): POPRAWIĆ web od razu (balans się przesunie); pomiar PRZED/PO w raporcie; Rust po wznowieniu. Temat `R-WEB-IRON-NATIVE-ACCESS-FIX-Q1`. (2) Wieża oblężnicza liczy się jako wyłom WSZĘDZIE (też w bitwie taktycznej, zgodnie z Auto/„Pomiń”): miasto z murem/palisadą można zdobyć po wejściu wieżą na mur bez taranu. Temat `R-WEB-SIEGE-TOWER-BREACH-EVERYWHERE-Q1` (battleScene/city-fortification — SEKWENCYJNIE po `R-WEB-CITY-MILITIA-NO-DEFENDERS-Q1` i `R-WEB-WALL-DEFENDERS-BONUS-RANGE-Q1`).
+
+## 2026-11-03 — wdrożono ROBOCZA acb3c562 (main 1117c6515): Milicja = mieszkańcy, wręcz/dystans wg epoki
+Backlog z FC: oznaczenie modeli milicji jako „Milicja” (osobny temat, bez zmiany `typeId`); testy `barb-city-capture-cluster`, `budynek-garnizon` padają na bazie; pomiar bitwy 3D przy 60 jednostkach; „Wojownik z mieczem i tarczą” zamiast „Miecznika z tarczą” (nazwa w danych).
