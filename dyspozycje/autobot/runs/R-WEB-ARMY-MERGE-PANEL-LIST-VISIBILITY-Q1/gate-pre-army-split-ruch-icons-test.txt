@@ -1,0 +1,10 @@
+  PASS: Rozdziel ma wyraźny rozwidlający się ruch z centrum na zewnątrz
+  PASS: Rozdziel ma groty skierowane ku zewnętrznym końcom
+  PASS: Połącz ma dwa ramiona zbiegające się do wspólnego środka
+  PASS: Połącz ma groty skierowane do wewnątrz
+  PASS: zwykły split oblicza rzeczywisty koszt docelowego pola
+  PASS: zwykły split nie zeruje bezwarunkowo ruchu odchodzących jednostek
+  PASS: koszt splitu jest odejmowany wspólnie od odłączanego stosu
+
+army-split-ruch-icons-test: 7 pass, 0 fail
+EXIT=0

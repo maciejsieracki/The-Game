@@ -1,0 +1,7 @@
+  OK: visibleStackOnHex pomija garnizon
+  OK: coLocatedForMergePrompt: garnizon + widoczna, bez oblegajacej
+  OK: stackHudMergeSplitActions: 2+ units → Rozdziel + Połącz
+  OK: merge enabled when canMerge=true on multi stack
+
+army-merge-colocated-test: 4 pass, 0 fail
+EXIT=0
