@@ -129,7 +129,7 @@ const pins = [
   ['battleScene: szturm odparty gdy pat bez wylomu', BS, /if \(isSiege && !this\.wallEverBreached\) \{/],
   ['main: R1 bramka zdobycia (szturm/AI/puste miasto)', MAIN, /function fortifiedCityCaptureBlocked\(city: City, atkRoster: RuntimeUnit\[\]\): boolean \{\s*\n\s*const fortified = cityIsFortified\(city\.maMur, cityBuilt\.get\(city\.id\)\);/],
   ['main: wejscie do pustego miasta objete R1', MAIN, /if \(fortifiedCityCaptureBlocked\(city, atkRoster\)\) \{\s*\n\s*if \(isMe\(anchor\.ownerId\)\)/],
-  ['main: wygrana bez wylomu nie zdobywa miasta', MAIN, /&& opts\?\.cityCaptureBlocked !== true/],
+  ['main: wygrana bez wylomu nie zdobywa miasta', MAIN, /&& !fortifiedCaptureBlocked\s*\n\s*\) \{\s*\n\s*const atkOwner/],
   ['main: wallKind z jednego pojecia obwarowania', MAIN, /const fk = cityFortificationKind\(built\);/],
   ['post-battle-map: hold po wygranej', PBMS, /input\.winner === 'atakujacy' && input\.holdPositionAfterWin === true/],
 ];

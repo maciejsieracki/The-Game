@@ -60,6 +60,8 @@ export interface MeleeWallContext {
   attackerOnWall: boolean;
   /** Cel stoi na murze / za nienaruszona palisada. */
   defenderOnWall: boolean;
+  /** Brama albo mur/palisada zniszczone (wylom) -- po wylomie melee moze walczyc z kazdym obronca. */
+  wallBreached?: boolean;
 }
 
 /**
@@ -67,6 +69,7 @@ export interface MeleeWallContext {
  * murze/za palisada). Dystansowi i machiny oblezenicze nie sa blokowani.
  */
 export function meleeBlockedByWall(ctx: MeleeWallContext): boolean {
+  if (ctx.wallBreached === true) return false;
   return ctx.attackerIsMelee && !ctx.attackerOnWall && ctx.defenderOnWall;
 }
 

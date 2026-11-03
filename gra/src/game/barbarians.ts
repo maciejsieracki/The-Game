@@ -396,8 +396,15 @@ export function canBarbarianWalkIntoEmptyCity(
   destCity: City | undefined,
   units: readonly RuntimeUnit[],
   difficulty: SeaRaidDifficulty,
+  /**
+   * R-WEB-PALISADE-BATTLE-WALL-RULES-Q1 (R1): miasto z murem/palisada nie pada bez
+   * wylomu, a barbarzyncy nie maja machin oblezniczych => nie wchodza do obwarowanego
+   * pustego miasta (jednostka nie jest nawet przesuwana na heks miasta).
+   */
+  destCityFortified: boolean = false,
 ): boolean {
   return destCity !== undefined
+    && !destCityFortified
     && shouldAllowBarbCityCapture(difficulty)
     && canCaptureCityWithoutBattle(destCity, units);
 }

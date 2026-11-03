@@ -71,6 +71,10 @@ for (const lbl of ['MUR', 'PALISADA']) {
   assert(F.meleeBlockedByWall({ attackerIsMelee: false, attackerOnWall: false, defenderOnWall: true }) === false, `${lbl}: dystansowy/machina moga`);
   assert(F.meleeBlockedByWall({ attackerIsMelee: true, attackerOnWall: false, defenderOnWall: false }) === false, `${lbl}: po wylomie melee wchodzi i walczy`);
 }
+// Runda 2 (zarzut 3): obroncy na koronie muru NIE schodza z niej -- po wylomie
+// blokada musi zniknac takze dla nich (onWallWalkway nadal true).
+assert(F.meleeBlockedByWall({ attackerIsMelee: true, attackerOnWall: false, defenderOnWall: true, wallBreached: false }) === true, 'bez wylomu: melee nadal zablokowane');
+assert(F.meleeBlockedByWall({ attackerIsMelee: true, attackerOnWall: false, defenderOnWall: true, wallBreached: true }) === false, 'PO wylomie: melee bije obroncy nadal stojacego na koronie muru');
 assert(!!luk, 'units.json zawiera lucznika (jednostka dystansowa) do scenariusza');
 
 console.log('\nR3 -- bonus obrony na murze/palisadzie naliczany w bitwie');
@@ -88,15 +92,45 @@ for (const [name, re] of pins) {
   assert(ok && !re.test(BS.replace(re, '/*MUT*/')), 'mutacja lamie: ' + name);
 }
 const MAIN = fs.readFileSync(path.join(GRA, 'src/main.ts'), 'utf8');
+const bsPins = [
+  ['scena przekazuje wallBreached do meleeBlockedByWall', BS, /return meleeBlockedByWall\(\{\s*\n[^\n]*\n[^\n]*\n\s*wallBreached: this\.wallEverBreached,/],
+];
+for (const [name, src, re] of bsPins) {
+  const ok = re.test(src);
+  assert(ok, 'R2 okablowanie -- ' + name);
+  assert(ok && !re.test(src.replace(re, '/*MUT*/')), 'mutacja lamie: ' + name);
+}
 const mainPins = [
   ['AI bez machin nie szturmuje obwarowanego miasta', /if \(fortifiedCityCaptureBlocked\(city, appendReadyMachinesToRoster\(atkRoster, city, anchor\.ownerId, false\)\)\) \{\s*\n\s*if \(!city\.oblegane\) startMapSiege\(ctx\);/],
   ['szturm gracza: puste obwarowane miasto bez machin nie pada', /if \(!cityHasDefenders\(city\) \|\| collectSiegeDefRoster\(city\)\.length === 0\) \{\s*\n\s*if \(fortifiedCityCaptureBlocked\(city, atkRoster\)\)/],
+  ['atak z allowCityCapture (barbarzyncy hard) nie zdobywa obwarowanego miasta bez machin', /opts\?\.allowCityCapture === true\s*\n\s*&& opts\?\.siegeContext !== true\s*\n\s*&& cityOnHex !== null\s*\n\s*&& !canCaptureCity\(/],
+  ['capture w applyMapBattleOutcome respektuje fortifiedCaptureBlocked', /&& !fortifiedCaptureBlocked\s*\n\s*\) \{\s*\n\s*const atkOwner/],
+  ['holdPositionAfterWin z fortifiedCaptureBlocked', /holdPositionAfterWin: fortifiedCaptureBlocked,/],
+  ['ruch barbarzyncy: obwarowanie przekazane do canBarbarianWalkIntoEmptyCity', /moveDestCity, units, _menuDifficulty,\s*\n\s*moveDestCity !== undefined\s*\n\s*&& cityIsFortified\(moveDestCity\.maMur, cityBuilt\.get\(moveDestCity\.id\)\)/],
   ['wynik szturmu: wylom z BattleResult albo machina (Auto)', /res\.wallBreached\s*\n\s*\?\? autoStormBreach\(/],
 ];
 for (const [name, re] of mainPins) {
   const ok = re.test(MAIN);
   assert(ok, 'R1 okablowanie -- ' + name);
   assert(ok && !re.test(MAIN.replace(re, '/*MUT*/')), 'mutacja lamie: ' + name);
+}
+
+console.log('\nR1 -- barbarzyncy (runda 2, zarzuty 1-2)');
+{
+  const B = bundle('src/game/barbarians.ts', 'barb');
+  const emptyCity = { id: 'c1', ownerId: 1, q: 3, r: 3, maMur: true, nazwa: 'X' };
+  const probe = fortified => B.canBarbarianWalkIntoEmptyCity(emptyCity, [], 'hard', fortified);
+  const open = B.canBarbarianWalkIntoEmptyCity({ ...emptyCity, maMur: false }, [], 'hard', false);
+  assert(open === true, 'puste miasto BEZ obwarowania, hard: barbarzynca wchodzi (bez zmian)');
+  assert(probe(true) === false, 'puste miasto Z murem/palisada, hard: barbarzynca NIE wchodzi (jednostka nie jest przesuwana)');
+  assert(B.canBarbarianWalkIntoEmptyCity({ ...emptyCity, maMur: false }, [], 'hard') === true, 'brak 4. argumentu = zachowanie dotychczasowe');
+  const bsrc = fs.readFileSync(path.join(GRA, 'src/game/barbarians.ts'), 'utf8');
+  const mut = bsrc.replace('&& !destCityFortified', '');
+  const mf = path.join(OUT, 'barbmut.cjs');
+  esbuild.buildSync({ stdin: { contents: mut, loader: 'ts', resolveDir: path.join(GRA, 'src/game') }, bundle: true, platform: 'node', format: 'cjs', outfile: mf, logLevel: 'silent', loader: { '.json': 'json' } });
+  assert(mut !== bsrc && require(mf).canBarbarianWalkIntoEmptyCity(emptyCity, [], 'hard', true) === true, 'mutacja (bez !destCityFortified) wpuszcza barbarzynce => asercja by padla');
+  const barbMachines = ul.filter(u => UP.isSiegeUnit(u) && /barbar/i.test(JSON.stringify(u))).length;
+  console.log('  info: jednostki oblezenicze oznaczone jako barbarzynskie w units.json:', barbMachines);
 }
 
 console.log('\nMutacja funkcji: wylom zawsze true => R1 czerwone');

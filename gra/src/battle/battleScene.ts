@@ -7857,12 +7857,15 @@ export class BattleScene {
   /**
    * R2 (R-WEB-PALISADE-BATTLE-WALL-RULES-Q1): jednostka WRECZ nie moze zaatakowac
    * obroncy stojacego NA MURZE / ZA PALISADA (onWallWalkway). Dystansowi i machiny
-   * oblezenicze nie sa blokowani; po wylomie obroncy z wyrwy schodza z muru
-   * (_breachWallTile ustawia onWallWalkway=false), wiec melee moze wejsc i walczyc.
+   * oblezenicze nie sa blokowani; po wylomie (wallEverBreached) blokada znika dla WSZYSTKICH
+   * obroncow na murze, wiec melee moze wejsc i walczyc.
    */
   private _meleeBlockedByWall(ru: RuntimeBattleUnit, e: RuntimeBattleUnit): boolean {
     if (this.siegeWallCol < 0) return false;
     return meleeBlockedByWall({
+      // Po wylomie obroncy na koronie muru nie schodza z niej, wiec blokada musi
+      // zniknac globalnie (inaczej melee wchodzi do miasta i nie ma kogo bic).
+      wallBreached: this.wallEverBreached,
       attackerIsMelee: !canShoot(ru) && !isSiegeUnit(ru.bu),
       attackerOnWall: ru.onWallWalkway === true,
       defenderOnWall: e.onWallWalkway === true,

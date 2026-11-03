@@ -31324,6 +31324,18 @@ async function boot(): Promise<void> {
       const cityOnHex = findCityOnHex(cities, battleQ, battleR) ?? null;
       const cityOwnerBefore = cityOnHex?.ownerId;
       let siegeCaptureSucceeded = false;
+      // R1 (runda 2, zarzut 1): atak z allowCityCapture (barbarzyncy hard) tez nie
+      // zdobywa obwarowanego miasta bez machin oblezniczych w skladzie (barbarzyncy
+      // ich nie maja => mur/palisada blokuje). Szturm (siegeContext) niesie wlasna flage.
+      const fortifiedCaptureBlocked =
+        opts?.cityCaptureBlocked === true
+        || (opts?.allowCityCapture === true
+          && opts?.siegeContext !== true
+          && cityOnHex !== null
+          && !canCaptureCity(
+            cityIsFortified(cityOnHex.maMur, cityBuilt.get(cityOnHex.id)),
+            autoStormBreach(atkRoster.some(u => isSiegeUnit(unitDefFor(u)))),
+          ));
 
       if (mapWinner === 'atakujacy' || mapWinner === 'obronca') {
         const winOid = mapWinner === 'atakujacy' ? atkRoster[0]?.ownerId : defRoster[0]?.ownerId;
@@ -31361,7 +31373,7 @@ async function boot(): Promise<void> {
         isPassableHex: mapHexPassableForUnit,
         isUnitAt: isOccupiedHex,
         cityOnBattleHex: cityOnHex,
-        holdPositionAfterWin: opts?.cityCaptureBlocked === true,
+        holdPositionAfterWin: fortifiedCaptureBlocked,
       });
 
       // P-BARBARZYNCY-USUWANIE-SEMANTYKA-Q1 (właściciel, 2026-08-12): obóz
@@ -31459,7 +31471,7 @@ async function boot(): Promise<void> {
         && atkRoster[0] !== undefined
         && areEnemyOwners(atkRoster[0].ownerId, cityOnHex.ownerId)
         && !barbCaptureBlockedByRemainingDefenders
-        && opts?.cityCaptureBlocked !== true
+        && !fortifiedCaptureBlocked
       ) {
         const atkOwner = atkRoster[0]!.ownerId;
         const captureResult = applyCityCaptureToMap(cityOnHex, atkRoster, atkOwner, atkRoster[0] ?? null);
@@ -39356,7 +39368,11 @@ async function boot(): Promise<void> {
                   // chroniona mutacyjnie przez REALNE wykonanie testu na tej funkcji.
                   const moveDestCity = cities.find(c => c.q === bcmd.toQ && c.r === bcmd.toR);
                   const barbCanWalkIntoEmptyCity =
-                    canBarbarianWalkIntoEmptyCity(moveDestCity, units, _menuDifficulty);
+                    canBarbarianWalkIntoEmptyCity(
+                      moveDestCity, units, _menuDifficulty,
+                      moveDestCity !== undefined
+                        && cityIsFortified(moveDestCity.maMur, cityBuilt.get(moveDestCity.id)),
+                    );
                   if (!barbCanWalkIntoEmptyCity
                       && !canUnitOccupyCityHex(bu.ownerId, bcmd.toQ, bcmd.toR, cities)) continue;
                   // R-WEB-AI-MOVE-RANGE-Q1 r5: nie wchodz na heks zajety przez inna jednostke
