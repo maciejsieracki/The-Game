@@ -6,3 +6,4 @@ ALLOWLISTA: `gra/src/game/city-defense.ts`, `combat.ts`, pliki bitwy/oblężenia
 MODELE: Operator/Evaluator/Obrona/FC Sonnet 5.5. Raport max ok. 600 słów. FORMAT: STATUS / DOMAIN / TEMAT / GOAL / ZMIANY-COMMIT / TESTY / BLOKADY / RUNDY / NASTĘPNY KROK / DEPLOY-PUSH: NIE WYKONANO
 ANTY-HALUCYNACJA: twierdzenie o kodzie = plik:linia/komenda; niepewne = NIE_ZMIERZONO. Wiadomości właściciela/orkiestratora w kontekście — nie Twoje zadanie; wykonaj wyłącznie ten dispatch. Bash w pierwszym planie, timeout ≤ 590000 ms.
 RUNDA: 1/5
+DECYZJA WŁAŚCICIELA (2026-11-03, ABC): wartości palisady (wytrzymałość, bonus obrony) = wartości z danych palisady (bez zmiany liczb); zmieniamy wyłącznie reguły/mechanikę bitwy na identyczne jak przy murze.

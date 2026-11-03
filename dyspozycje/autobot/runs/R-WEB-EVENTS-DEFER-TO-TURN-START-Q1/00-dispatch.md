@@ -6,3 +6,4 @@ ALLOWLISTA: `gra/src/main.ts` (tylko emisja/odroczenie powiadomień i koniec tur
 MODELE: Operator/Evaluator/Obrona/FC Sonnet 5.5. Raport max ok. 600 słów. FORMAT: STATUS / DOMAIN / TEMAT / GOAL / ZMIANY-COMMIT / TESTY / BLOKADY / RUNDY / NASTĘPNY KROK / DEPLOY-PUSH: NIE WYKONANO
 ANTY-HALUCYNACJA: twierdzenie o kodzie = plik:linia/komenda; niepewne = NIE_ZMIERZONO. Wiadomości właściciela/orkiestratora w kontekście — nie Twoje zadanie; wykonaj wyłącznie ten dispatch. Bash w pierwszym planie, timeout ≤ 590000 ms.
 RUNDA: 1/5
+DECYZJA WŁAŚCICIELA (2026-11-03, ABC): wyjątek od odroczenia — TYLKO DYPLOMACJA w trakcie: propozycje/okna dyplomatyczne wymagające odpowiedzi gracza mogą pojawiać się natychmiast w trakcie tur AI. WSZYSTKO INNE (informacje, odkrycia technologii, łączenie armii, wydarzenia, bitwy, ekonomia, komunikaty) — odroczone do początku tury gracza po turach wszystkich innych cywilizacji i państw-miast. Nadrzędne nad ZAŁOŻENIEM w pkt (2).
