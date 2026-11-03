@@ -79,6 +79,7 @@ import {
   ensureDepositGridCoverage,
   ensureForestGridCoverage,
   stripDepositsFromWater,
+  relocateForestHorses,
   stripRiverMarksFromOpenSea,
   computeStartPositions,
   purgeOceanInsideEarthLandMask,
@@ -736,6 +737,9 @@ export function generateMap(
   ensureReliefGridCoverage(
     hexes, terrainScratch, reliefTier, width, height, typ, zoneOf, nZones, rand,
   );
+  // R-WEB-HORSE-RESOURCE-TERRAIN-Q1 (Maciej 2026-11-03): koń nigdy na lesie — przesunięcie na
+  // FINALNYM stanie mapy (po wszystkich przebiegach reliefu/złóż; bez PRNG, reszta mapy bez zmian).
+  relocateForestHorses(hexes);
 
   reportMapGenPhase(onProgress, 10, MAP_GEN_PHASE_LABELS.starts, 100);
   const mapGenTimings = genTimer.finish();

@@ -12096,7 +12096,8 @@ export type HexWithZloze = Hex & { zloze?: string; zlozeMinEra?: number };
  * Regula zloza: jaka Nakladke (lub znacznik `zloze`) i na jakim terenie.
  * - miedz / zelazo -> hex.zloze na Gory (widocznosc per epoka — deposit-era.ts)
  * - glina -> Nakladka.ZlozeGliny na Laka lub ląd z rzeką (NIE woda/wybrzeże)
- * - konie -> Nakladka.ZlozeKonia na Rownina
+ * - konie -> Nakladka.ZlozeKonia na Rownina; NIGDY na lesie — konie wyparte pod las przesuwa na końcu
+ *   generacji relocateForestHorses (R-WEB-HORSE-RESOURCE-TERRAIN-Q1, Maciej 2026-11-03)
  * - owce -> Nakladka.ZlozeOwiec na Wzgórza (złoże = ulepszenie owce)
  * - bydlo -> Nakladka.ZlozeBydla na Łąka/Równina (złoże = ulepszenie bydło)
  * - wegiel-> hex.zloze='wegiel' na Gory
@@ -12614,6 +12615,57 @@ export function stripDepositsFromWater(hexes: Record<string, Hex>): number {
     if (had) n++;
   }
   return n;
+}
+
+/**
+ * R-WEB-HORSE-RESOURCE-TERRAIN-Q1 (decyzja właściciela 2026-11-03): koń NIGDY na lesie.
+ *
+ * placeDeposits (las jest nakładany PRZED złożami) zapisuje konia na heksie z Nakladka.Las jako
+ * `hex.zloze='konie'` (las zostaje) — renderer rysuje wtedy konia, a kwalifikator Stadniny
+ * (nakladka === ZlozeKonia) go nie widzi. Ta funkcja woła się RAZ, na FINALNYM stanie mapy
+ * (generator.ts, po ostatnim przebiegu reliefu/złóż), i PRZESUWA każdego takiego konia na
+ * najbliższy (hexDistanceAxial; remis -> pierwszy wg numerycznej kolejności kluczy q,r) heks
+ * Równiny bez nakładki i bez innego złoża (nie woda). Dlaczego na końcu, a nie w placeDeposits:
+ * późniejsze przebiegi (bootstrap fair-play, cap reliefu) nadpisywały by przesuniętego konia, a
+ * wyniki pozostałych zasobów/terenu MUSZĄ pozostać bitowo identyczne (zero PRNG, zero zmian
+ * poza heksem źródłowym i docelowym). Liczba koni zachowana; brak miejsca = koń zostaje (log 0).
+ * Zwraca liczbę przesuniętych koni. Wczytywane zapisy nie przechodzą przez generator -> nietknięte.
+ */
+export function relocateForestHorses(hexes: Record<string, Hex>): number {
+  const keys = Object.keys(hexes).sort((a, b) => {
+    const [aq, ar] = a.split(',').map(Number);
+    const [bq, br] = b.split(',').map(Number);
+    return aq !== bq ? (aq! - bq!) : (ar! - br!);
+  });
+  const horseRule = DEPOSIT_RULES.find((r) => r.id === 'konie');
+  if (!horseRule) return 0;
+  const displaced: string[] = [];
+  const free: Array<{ key: string; q: number; r: number }> = [];
+  for (const k of keys) {
+    const h = hexes[k] as HexWithZloze;
+    if (h.nakladka === Nakladka.Las && h.zloze === 'konie') { displaced.push(k); continue; }
+    if (h.nakladka !== Nakladka.Brak || h.zloze) continue;
+    if (isWaterTerrainLocal(h.terenBazowy) || !horseRule.allowedOn(h)) continue;
+    const [q, r] = k.split(',').map(Number) as [number, number];
+    free.push({ key: k, q, r });
+  }
+  let moved = 0;
+  for (const from of displaced) {
+    const [fq, fr] = from.split(',').map(Number) as [number, number];
+    let best = -1;
+    let bestD = Infinity;
+    for (let i = 0; i < free.length; i++) {
+      if (free[i]!.key === '') continue; // już zajęty przez wcześniej przesuniętego konia
+      const d = hexDistanceAxial(fq, fr, free[i]!.q, free[i]!.r);
+      if (d < bestD) { bestD = d; best = i; }
+    }
+    if (best < 0) continue; // brak wolnej Równiny — koń zostaje (nie kasujemy złoża)
+    delete (hexes[from] as HexWithZloze).zloze;
+    hexes[free[best]!.key]!.nakladka = Nakladka.ZlozeKonia;
+    free[best]!.key = '';
+    moved++;
+  }
+  return moved;
 }
 
 /** Liczy złoża/nakładki surowcowe na morzu lub wybrzeżu (0 = OK). C-MAP-SOL-ZIEMIA=B: bez wyjątków. */
