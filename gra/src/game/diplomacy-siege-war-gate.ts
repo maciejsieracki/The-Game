@@ -89,3 +89,23 @@ export function aiAutoSiegeAllowed(
   if (isBarbarianOwner(cityOwnerId) || isBarbarianOwner(besiegerOwnerId)) return false;
   return cityOwnerId !== besiegerOwnerId;
 }
+
+/**
+ * Kandydat na auto-oblężenie w skanie po turze AI (scanAutoSiegesAfterAiTurn): miasto z murem, jeszcze nie oblegane,
+ * z wrogą jednostką przy murze, spełniające `aiAutoSiegeAllowed`. Miasta INNYCH foteli człowieka (ownerId != 0) pominięte
+ * jak dotąd (hotseat bez zmian). Zwraca kontekst oblężenia albo null. Wydzielone z main.ts, by test uruchamiał tę samą logikę.
+ */
+export function autoSiegeCandidateForScan(
+  city: City,
+  units: RuntimeUnit[],
+  areEnemies: AreEnemyOwnersFn,
+  isHumanOwner: (ownerId: number) => boolean,
+  isBarbarianOwner: (ownerId: number) => boolean,
+): MapSiegeContext | null {
+  if (city.oblegane || !city.maMur) return null;
+  const auto = detectWarAutoSiegeOnCity(city, units, areEnemies);
+  if (!auto) return null;
+  if (city.ownerId !== 0 && isHumanOwner(city.ownerId)) return null;
+  if (!aiAutoSiegeAllowed(city.ownerId, auto.oblegajacyOwnerId, isHumanOwner, isBarbarianOwner)) return null;
+  return auto;
+}

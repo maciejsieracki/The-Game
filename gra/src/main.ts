@@ -465,7 +465,7 @@ import {
   type MapSiegeContext,
 } from './game/mapSiegeDetect';
 import {
-  siegeAllowedBetween, detectWarAutoSiegeOnCity, isSiegeStillValid, enemyUnitsAdjacentToCity, aiAutoSiegeAllowed,
+  siegeAllowedBetween, isSiegeStillValid, enemyUnitsAdjacentToCity, autoSiegeCandidateForScan,
 } from './game/diplomacy-siege-war-gate';
 import { resolveEnemyCityClick, type MapEnemyCityClickAction } from './map/map-attack-city';
 import { launchFieldBattleFromMap } from './battle/mapFieldBattle';
@@ -1463,8 +1463,8 @@ import {
 import { resolveWarPeaceProfile, brakeRelationThreshold, recordWarCityLoss, warStateFromRecord, evaluatePeaceAiGate, type WarPeaceProfile } from './game/diplomacy-war-peace-profile';
 import { buildWarCityTargets } from './game/ai-war-target-select';
 import {
-  registerAiPeaceRequest, isForcedPeaceEligiblePair, planPeacePayment, decideAiPeaceRequest,
-  type AiPeaceRequest, type PeaceAsset,
+  registerAiPeaceRequest, isForcedPeaceEligiblePair, runAiAiPeaceTick, requesterShare, isClearlyLosing,
+  type AiPeaceRequest, type AiPeaceKind, type PeaceAsset,
 } from './game/diplomacy-ai-forced-peace';
 import {
   isPeaceTreatyLocked,
@@ -1493,7 +1493,7 @@ import {
   trimProposalForZeroBalance,
   // R-DYPLO-POKOJ-KIERUNEK-I-ZADANIE-AI-Q1 CZĘŚĆ B: rozszerzenie generatora AI o 'pokoj'
   // (dotąd wyłącznie handel/traktaty handlowe) — patrz enqueueNegotiationFromAiCmd niżej.
-  peaceOfferAiRequestPn,
+  peaceOfferAiRequestPn, peaceOfferAiOwnBilans, aiOfferPwSurplusTolerance,
   peaceOfferAiRequestBasket,
   aiProposalPlayerBenefitSurplus,
   withZeroPwUndershoot,
@@ -16309,14 +16309,10 @@ async function boot(): Promise<void> {
     function scanAutoSiegesAfterAiTurn(): void {
       validateActiveSieges();
       for (const city of cities) {
-        if (city.oblegane || !city.maMur) continue;
-        const auto = detectWarAutoSiegeOnCity(city, units, areEnemyOwners);
-        if (!auto) continue;
         // R-WEB-AI-WAR-NEAREST-CITY-PEACE-2T-Q1 (C): dotąd tylko miasta gracza (`ownerId !== 0` => continue);
         // teraz także obwarowane miasta innej AI, gdy oblega je główna AI w stanie wojny (barbarzyńcy bez zmian).
-        // (miasta innych foteli człowieka -- jak dotąd pominięte: hotseat bez zmian.)
-        if (city.ownerId !== 0 && isHuman(city.ownerId)) continue;
-        if (!aiAutoSiegeAllowed(city.ownerId, auto.oblegajacyOwnerId, isHuman, isBarbarian)) continue;
+        const auto = autoSiegeCandidateForScan(city, units, areEnemyOwners, isHuman, isBarbarian);
+        if (!auto) continue;
 
         const atkUnits = collectSiegeAtkRoster(city, auto.atakujacy);
         const siegeArmy = atkUnits.map(runtimeUnitToSiegeUnit);
@@ -32530,12 +32526,16 @@ async function boot(): Promise<void> {
       });
     }
 
-    /** Rejestruje prośbę przegrywającej AI (`requesterId`) o pokój do zwycięzcy (`otherId`); start licznika tur. */
-    function registerAiAiPeaceRequest(requesterId: number, otherId: number, cmdType: string): void {
+    /** Rejestruje prośbę przegrywającej AI (`requesterId`) o pokój/rozejm do zwycięzcy (`otherId`); start licznika tur. */
+    function registerAiAiPeaceRequest(requesterId: number, otherId: number, cmdType: string, kind: AiPeaceKind): void {
       if (!aiAiForcedPeacePairEligible(requesterId, otherId)) return;
+      // „Wyraźnie przegrywa": prośby z sygnałów pat/zmęczenia przy równowadze sił nie tworzą przymusu pokoju.
+      refreshObjectivePowerCache();
+      const share = requesterShare(objectivePowerForOwner(requesterId), objectivePowerForOwner(otherId));
+      if (!isClearlyLosing(share)) return;
       const key = diploPairKey(requesterId, otherId);
-      if (registerAiPeaceRequest(aiAiPeaceRequestByPairKey, key, requesterId, otherId, turn)) {
-        console.log(`[Dyplomacja] R-AI-PEACE-2T: prośba AI${requesterId}→AI${otherId} o pokój (${cmdType}) w turze ${turn}`);
+      if (registerAiPeaceRequest(aiAiPeaceRequestByPairKey, key, requesterId, otherId, turn, kind)) {
+        console.log(`[Dyplomacja] R-AI-PEACE-2T: prośba AI${requesterId}→AI${otherId} o ${kind} (${cmdType}) w turze ${turn} (udział siły ${share.toFixed(2)})`);
       }
     }
 
@@ -32559,56 +32559,57 @@ async function boot(): Promise<void> {
     }
 
     /**
-     * R-WEB-AI-WAR-NEAREST-CITY-PEACE-2T-Q1 (B): rozstrzyga prośby AI↔AI o pokój, raz na turę po fazie AI.
-     * Cena pokoju: bilans zwycięzcy przed zapłatą = −(baza PW pokoju × mnożnik bramki zwycięzcy) < 0; przegrany
-     * płaci (złoto -> surowce -> cesja miasta), pokój przechodzi gdy bilans po zapłacie ≥ 0 i bramka zwycięzcy 'ok',
-     * a po `tury_do_pokoju_po_prosbie` turach ZAWSZE (płatność maksymalna możliwa). Skutki pokoju: zwykłe
-     * (`finalizePeaceTreatyBetween` -> blokada PEACE_TREATY_LOCK_TURNS bez zmian).
+     * R-WEB-AI-WAR-NEAREST-CITY-PEACE-2T-Q1 (B): rozstrzyga prośby AI↔AI o pokój/rozejm, raz na turę po fazie AI.
+     * Cena z ISTNIEJĄCEJ wyceny (jak AI→gracz, main.ts ok. :18305): baza PW traktatu wg rodzaju (rozejm 200 / pokój 500),
+     * `peaceOfferAiRequestPn` (relacja zwycięzcy→przegranego, trudność zwycięzcy), cesja miasta przez `cityCessionPlanFor`
+     * (planCityCession) i wycenę `diploMiastaWycenaDla`. Bilans zwycięzcy liczy `peaceOfferAiOwnBilans` (nie konstrukcja).
+     * Skutki: pokój -> `finalizePeaceTreatyBetween` (blokada bez zmian); rozejm -> z `truceTurns`. Logika: runAiAiPeaceTick.
      */
-    function tickAiAiPeaceRequests(): void {
+    function tickAiAiPeaceRequests(battlePending: boolean): void {
       if (aiAiPeaceRequestByPairKey.size === 0) return;
-      for (const [key, req] of Array.from(aiAiPeaceRequestByPairKey.entries())) {
-        const loser = req.requesterId;
-        const winner = req.otherId;
-        if (!aiAiForcedPeacePairEligible(loser, winner)) {
-          aiAiPeaceRequestByPairKey.delete(key);
-          continue;
-        }
-        const pot = (o: number): number => objectivePowerByOwner.get(o)?.power ?? 0;
-        const winnerRw = (pot(winner) + pot(loser)) > 0 ? pot(winner) / (pot(winner) + pot(loser)) : 0.5;
-        const warW = diploWarStateFor(winner, loser);
-        const gate = evaluatePeaceAiGate(
-          { rw: winnerRw, turnsAtWar: warW.turnsAtWar, lostCitiesInWar: warW.lostCities },
-          resolveWarPeaceProfile(civKeyForOwnerId(winner)),
-        );
-        const basePn = treatyBasePnFromConfig('pokoj');
-        const requiredPn = Math.round(basePn * (gate.verdict === 'ok' ? gate.priceMultiplier : 1));
-        const skipCities = new Set<string>();
-        let plan = planPeacePayment(requiredPn, aiPeacePaymentAssets(loser, winner, skipCities));
-        // Cesja musi być wykonalna (pre-kontrola jak w pokoju z udziałem gracza); inaczej planujemy bez tego miasta.
-        for (let guard = 0; guard < 8; guard++) {
-          const cityItem = plan.items.find(i => i.kind === 'miasto');
-          if (!cityItem || cityCessionPlanFor(cityItem.id, loser, winner).ok) break;
-          skipCities.add(cityItem.id);
-          plan = planPeacePayment(requiredPn, aiPeacePaymentAssets(loser, winner, skipCities));
-        }
-        const decision = decideAiPeaceRequest({ req, turn, requiredPn, plan, winnerGateVerdict: gate.verdict });
-        if (decision.action === 'wait') continue;
-        const basket: BasketItem[] = plan.items.map(i => ({
-          typ: i.kind,
-          id: i.id,
-          ilosc: i.kind === 'miasto' ? 1 : i.amount,
-          ...(i.kind === 'miasto' ? { cityPn: i.pn } : {}),
-        }));
-        transferBasketItems(loser, winner, basket);
-        console.log(
-          `[Dyplomacja] R-AI-PEACE-2T: pokój AI${loser}↔AI${winner} (${decision.action}, tury od prośby ${decision.turnsSince}); `
-          + `bilans zwycięzcy przed ${decision.balanceBefore} -> po ${decision.balanceAfter}; zapłata `
-          + `zloto=${plan.histogram.zloto} surowce=${plan.histogram.surowiec_ilosc} miasto=${plan.histogram.miasto} `
-          + `(${plan.coveredPn}/${requiredPn} PW)`,
-        );
-        finalizePeaceTreatyBetween(loser, winner);
-      }
+      refreshObjectivePowerCache();
+      runAiAiPeaceTick({
+        store: aiAiPeaceRequestByPairKey,
+        turn,
+        pairEligible: aiAiForcedPeacePairEligible,
+        requesterShareOf: (rq, ot) => requesterShare(objectivePowerForOwner(rq), objectivePowerForOwner(ot)),
+        gateVerdict: (winner, loser) => {
+          const pot = (o: number): number => objectivePowerForOwner(o);
+          const winnerRw = (pot(winner) + pot(loser)) > 0 ? pot(winner) / (pot(winner) + pot(loser)) : 0.5;
+          const warW = diploWarStateFor(winner, loser);
+          return evaluatePeaceAiGate(
+            { rw: winnerRw, turnsAtWar: warW.turnsAtWar, lostCitiesInWar: warW.lostCities },
+            resolveWarPeaceProfile(civKeyForOwnerId(winner)),
+          ).verdict;
+        },
+        price: (winner, loser, kind) => {
+          const basePn = treatyBasePnFromConfig(kind, kind === 'rozejm' ? { turns: TRUCE_DEFAULT_TURNS } : undefined);
+          const relTotal = treatyEvalRelationTotal(getDiploRelation(winner, loser));
+          const difficulty = effectiveGameDifficultyForOwner(winner);
+          const requiredPn = peaceOfferAiRequestPn(0, 0, relTotal, basePn, difficulty);
+          return {
+            requiredPn,
+            balanceFor: (coveredPn: number) => peaceOfferAiOwnBilans(0, coveredPn, relTotal, basePn),
+            tolerancePn: aiOfferPwSurplusTolerance(difficulty),
+          };
+        },
+        assets: aiPeacePaymentAssets,
+        cityCessionOk: (cityId, loser, winner) => cityCessionPlanFor(cityId, loser, winner).ok,
+        battlePending,
+        pay: (loser, winner, plan) => {
+          const basket: BasketItem[] = plan.items.map(i => ({
+            typ: i.kind,
+            id: i.id,
+            ilosc: i.kind === 'miasto' ? 1 : i.amount,
+            ...(i.kind === 'miasto' ? { cityPn: i.pn } : {}),
+          }));
+          transferBasketItems(loser, winner, basket);
+        },
+        finalize: (loser, winner, kind) => {
+          finalizePeaceTreatyBetween(loser, winner, undefined, kind === 'rozejm' ? TRUCE_DEFAULT_TURNS : undefined);
+        },
+        log: msg => console.log(`[Dyplomacja] R-AI-PEACE-2T: ${msg}`),
+      });
     }
 
     /**
@@ -38424,7 +38425,10 @@ async function boot(): Promise<void> {
                     } else if (cmd.type === 'zaproponuj_pokoj' || cmd.type === 'oferuj_trybut_za_pokoj') {
                       // R-WEB-AI-WAR-NEAREST-CITY-PEACE-2T-Q1 (B): prośba przegrywającej AI o pokój z inną AI
                       // (dotąd gubiona) -- start licznika tur; rozstrzyga tickAiAiPeaceRequests.
-                      registerAiAiPeaceRequest(ownerId, targetId, cmd.type);
+                      registerAiAiPeaceRequest(
+                        ownerId, targetId, cmd.type,
+                        cmd.type === 'zaproponuj_pokoj' && cmd.rodzaj === 'rozejm' ? 'rozejm' : 'pokoj',
+                      );
                     } else if (cmd.type === 'zaproponuj_handel_surowiec') {
                       applyAiAiHandelSurowiecCmd(ownerId, targetId, cmd);
                     }
@@ -39323,12 +39327,14 @@ async function boot(): Promise<void> {
               console.error('[Dyplomacja] Blad Umow Handlowych AI-AI:', eAiAiTrade);
             }
 
+            // Gwarancja „najpóźniej w 2. turze": tick działa także gdy trwa bitwa oczekująca (to bitwa z udziałem gracza;
+            // pokój AI↔AI jej nie dotyczy), tylko wtedy bez cesji miast.
+            try {
+              tickAiAiPeaceRequests(aiTurnAwaitingBattle);
+            } catch (eAiAiPeace) {
+              console.error('[Dyplomacja] Blad pokoju AI-AI po prosbie:', eAiAiPeace);
+            }
             if (!aiTurnAwaitingBattle) {
-              try {
-                tickAiAiPeaceRequests();
-              } catch (eAiAiPeace) {
-                console.error('[Dyplomacja] Blad pokoju AI-AI po prosbie:', eAiAiPeace);
-              }
               scanAutoSiegesAfterAiTurn();
             }
           };
