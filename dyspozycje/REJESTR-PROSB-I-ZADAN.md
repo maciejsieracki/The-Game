@@ -8519,3 +8519,6 @@ Właściciel: przy zdobyciu OSTATNIEGO miasta (eliminacja cywilizacji Chińczyk�
 
 ## 2026-11-03 — DECYZJA WŁAŚCICIELA: port Rust/Tauri wstrzymany (priorytet: poprawki webowe)
 Szczegóły w `dyspozycje/rust-port/LEDGER.md` (wpis 2026-11-03). Wznowienie wyłącznie na polecenie właściciela.
+
+## 2026-11-03 — DECYZJA WŁAŚCICIELA (ABC) + zgłoszenie: wojny AI↔AI — cel, pokój po 2 turach, zajmowanie miast
+Zgłoszenie: (1) gdy jedna cywilizacja AI wyraźnie przegrywa z drugą i prosi o pokój, pokój ma być zawarty w ciągu 2 tur od prośby (inaczej zwycięzca zniszczy wszystko i pokój nie nastąpi; AI nie walczą „do końca”); (2) AI↔AI nie zajmują miast przeciwnika, choć niszczą całe wojska i stoją na jego terytorium — ma to być dopuszczone/działać; (3) cel ataku: zamiast stolicy NAJBLIŻSZE miasto (odpowiedź A: najbliższe), pokój: WYMUSZONY po 2 turach od prośby (odpowiedź A, ze zwykłymi skutkami pokoju). Temat `R-WEB-AI-WAR-NEAREST-CITY-PEACE-2T-Q1` (te same pliki `ai.ts`/`main.ts` co MARCH-AVOID, ARMY-CONCENTRATION, MOVE-FULL-RANGE — SEKWENCYJNIE).
