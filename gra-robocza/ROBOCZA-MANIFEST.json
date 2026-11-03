@@ -1,113 +1,117 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA; push do origin/main wykonany na polecenie właściciela (2026-10-31)",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "994a452483dcb05e33b71cff9520f738",
-  "bundleSha256": "dbabda9c8046028de657eec940dc1823de2ab47652ba34b8b2dcf3efdecf50cb",
-  "bundleBytes": 70130233,
+  "bundleMd5": "12546c5e2abb88ebad3737c9060b98cb",
+  "bundleSha256": "715452ce4778ac1f8d4be9fe50ff31234d78e303da2f35c72262c8cad9a0ac1e",
+  "bundleBytes": 70132826,
   "sourceSnapshot": {
-    "source": "main 89b3ee5db + R-WEB-ARMY-PANEL-RECRUIT-REMOVE-Q1 (ff6ac152c)",
+    "source": "main 1099bdac2 + CAP (a8b953dbe) + FORT-OUTPOST (3f7972629) + SIEGE (e6d4c8f85) + STADNINA (e88103e0d)",
     "build": "Vite 5.4.x direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "R-WEB-ARMY-PANEL-RECRUIT-REMOVE-Q1 (zgłoszenie właściciela, zrzut): w panelu armii (Imperium → Armia) pod każdym miastem wyświetla się „Kolejka rekrutacji” jak w panelu miasta: usuwanie ✕ (zwrot jak w mieście), zmiana kolejności ↑ ↓ i przeciąganie; jedna wspólna logika, oba panele odświeżają się po zmianie."
+    "R-WEB-AI-SIEGE-WITHOUT-WAR-Q1 (zgłoszenie, zrzut Delfy): oblężenie i szturm miasta tylko w stanie wojny; koniec wojny/rozejm/NAP/sojusz zdejmuje oblężenie, także w starych zapisach (jeden predykat siegeAllowedBetween).",
+    "R-WEB-FORT-OUTPOST-PLACEMENT-RULES-Q1: posterunek tylko na własnym terytorium przy granicy (jeden predykat dla panelu, automatu gracza i AI); fort w dowolnym miejscu; AI bez techu stawia posterunek przy granicy.",
+    "R-WEB-STADNINA-NO-HEX-FALSE-NEGATIVE-Q1: kandydaci na ulepszenia uwzględniają terytorium posterunków i fortów (złoże konia w ich terytorium nie jest już pomijane); komunikat odmowy Stadniny podaje prawdziwy powód.",
+    "R-WEB-AUTO-IMPROVE-REMOVE-ITEM-CAP-Q1: usunięty martwy parametr limitu liczby ulepszeń na miasto (maxItemsPerCity); w produkcji limitu już nie było."
   ],
   "verification": [
-    "tsc --noEmit PASS",
-    "army-panel-recruit-remove-test 21/0 (PRZED RED), Chromium + prawdziwy cityPanel.ts i funkcje kolejki",
-    "regresje z Chromium: army-merge-panel-production-mount 9/0, empire-mass-recruitment 30/0, recruit-card-quantity 25/0, recruit-list-visibility-ui 15/0",
-    "zrzuty PRZED/PO w runie"
+    "tsc --noEmit PASS (po scaleniu czterech tematów)",
+    "ai-siege-requires-war 48/0, fort-outpost-placement-rules 40/0, stadnina-hex-candidates 15/0, auto-improve-no-item-cap 15/0, autoclear-river-forest 19/0, auto-improvements 46/0, ai-improvements 56/0 (po scaleniu)",
+    "mutacje bramek łamią testy (siege 24 asercje, fort 5 mutacji, stadnina filtr terytorium)"
   ],
   "limits": [
-    "NIE_ZMIERZONO: faktyczny zwrot MP i surowców przy ✕ w panelu armii w pełnej grze (używa istniejącej ścieżki cancelRecruitmentPurchase)",
-    "16 testów regresji pada tak samo przed i po (m.in. unit-replace 3/15, testy Chromium bez zmiennej środowiskowej)"
+    "NIE_ZMIERZONO: symulacja pełnych gier AI PRZED/PO dla oblężenia; wizualna weryfikacja nakładki oblężenia; relacja AI–gracz w zgłoszeniu Delfy potwierdzona przez właściciela jako „brak wojny”",
+    "NIE_ZMIERZONO: Stadnina w żywym Chromium; przyczyna udowodniona dla scenariusza posterunek/fort (może nie być jedyną przyczyną zgłoszenia „bardzo często”)",
+    "CAP: niewydany budżet Pracy NIE wynika z limitu liczby — przyczyną jest filtr „Tylko pola z obywatelami” (decyzja właściciela: zostaje + ostrzeżenie)",
+    "Testy `oboz-lowiecki-las`, `ai4-popyt-obywatele`, `grupa-b-lane` padają także na bazie"
   ],
   "finalControl": {
-    "status": "PASS-WITH-NOTES / PASS",
-    "notes": "ARMY-PANEL-RECRUIT-REMOVE (r1): Operator → Evaluator PASS-WITH-NOTES → FC PASS."
+    "status": "PASS-WITH-NOTES",
+    "notes": "Cztery tematy: każdy Operator → Evaluator → Obrona → FC PASS/PASS-WITH-NOTES."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-03T16:32:17",
+  "hubGeneratedAt": "2026-11-03T16:51:20",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "994a452483dcb05e33b71cff9520f738",
-      "sizeBytes": 70130233
+      "md5": "12546c5e2abb88ebad3737c9060b98cb",
+      "sizeBytes": 70132826
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "994a452483dcb05e33b71cff9520f738",
-      "sizeBytes": 70130233
+      "md5": "12546c5e2abb88ebad3737c9060b98cb",
+      "sizeBytes": 70132826
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "994a452483dcb05e33b71cff9520f738",
-      "sizeBytes": 70130233
+      "md5": "12546c5e2abb88ebad3737c9060b98cb",
+      "sizeBytes": 70132826
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "994a452483dcb05e33b71cff9520f738",
-      "sizeBytes": 70130233
+      "md5": "12546c5e2abb88ebad3737c9060b98cb",
+      "sizeBytes": 70132826
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "994a452483dcb05e33b71cff9520f738",
-      "sizeBytes": 70130233
+      "md5": "12546c5e2abb88ebad3737c9060b98cb",
+      "sizeBytes": 70132826
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "994a452483dcb05e33b71cff9520f738",
-      "sizeBytes": 70130233
+      "md5": "12546c5e2abb88ebad3737c9060b98cb",
+      "sizeBytes": 70132826
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "994a452483dcb05e33b71cff9520f738",
-      "sizeBytes": 70130233
+      "md5": "12546c5e2abb88ebad3737c9060b98cb",
+      "sizeBytes": 70132826
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "994a452483dcb05e33b71cff9520f738",
-      "sizeBytes": 70130233
+      "md5": "12546c5e2abb88ebad3737c9060b98cb",
+      "sizeBytes": 70132826
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "994a452483dcb05e33b71cff9520f738",
-      "sizeBytes": 70130233
+      "md5": "12546c5e2abb88ebad3737c9060b98cb",
+      "sizeBytes": 70132826
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "994a452483dcb05e33b71cff9520f738",
-      "sizeBytes": 70130233
+      "md5": "12546c5e2abb88ebad3737c9060b98cb",
+      "sizeBytes": 70132826
     }
   ],
-  "md5": "994a452483dcb05e33b71cff9520f738",
-  "sizeBytes": 70130233,
+  "md5": "12546c5e2abb88ebad3737c9060b98cb",
+  "sizeBytes": 70132826,
   "publisher": "Claude Code orkiestrator — stała zgoda właściciela 2026-10-31",
   "source": "gra/src; main 9ce1f5e50 + merge b38f40860",
   "immediatePreviousRelease": {
-    "bundleMd5": "300a5c5bafa7811a2f044165cbce8939"
+    "bundleMd5": "994a452483dcb05e33b71cff9520f738"
   },
   "rollbackPlan": {
-    "method": "git revert commitu wdrożenia; poprzedni bundel MD5 300a5c5bafa7811a2f044165cbce8939, 70129262 bajtów."
+    "method": "git revert commitu wdrożenia; poprzedni bundel MD5 994a452483dcb05e33b71cff9520f738, 70130233 bajtów."
   },
   "previousRelease": {
     "releaseState": "DEPLOYED TO ROBOCZA; push do origin/main wykonany na polecenie właściciela (2026-10-31)",
@@ -1283,8 +1287,8 @@
     "sourceCommit": "c46d6c47ff8643fabdcdd58d5c8067e07737326f",
     "publicationCommit": "0e85b43814f503fe34b42c88df4dd07233dbdfb"
   },
-  "publishedAt": "2026-11-03T16:32:17+00:00",
-  "buildStamp": "2026-11-03 16:32",
+  "publishedAt": "2026-11-03T16:51:20+00:00",
+  "buildStamp": "2026-11-03 16:51",
   "battleBundle": {
     "file": "Gra-ROBOCZA-POLE-BITWY.html",
     "md5": "daf66e2423e0f550db70ee41d8cdf12f",

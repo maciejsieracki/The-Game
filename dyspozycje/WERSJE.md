@@ -1,3 +1,12 @@
+## ROBOCZA 12546c5e -- 2026-11-03 -- oblężenie tylko na wojnie, reguły fortu/posterunku, Stadnina (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`1099bdac2` + SIEGE `e6d4c8f85`, FORT-OUTPOST `3f7972629`, STADNINA `e88103e0d`, CAP `a8b953dbe`) i commit wdrożenia bundla; zgłoszenia właściciela (zrzuty), stała zgoda na poprawki.
+- Bundle MD5 `12546c5e2abb88ebad3737c9060b98cb`, 70,132,826 B, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, outDir poza repo, stempel ROBOCZA.
+- Zakres: (1) oblężenie/szturm miasta tylko w stanie wojny, rozejm/NAP/sojusz/koniec wojny zdejmuje oblężenie, także w zapisach; (2) posterunek tylko na własnym terytorium przy granicy, fort w dowolnym miejscu, AI bez techu stawia posterunek przy granicy; (3) Stadnina: terytorium posterunków/fortów liczone do kandydatów, komunikat odmowy z prawdziwym powodem; (4) martwy parametr limitu liczby ulepszeń usunięty.
+- Testy: tsc PASS po scaleniu; testy tematów 48/0, 40/0, 15/0, 15/0 oraz regresje; mutacje łamią testy.
+- Ograniczenia: NIE_ZMIERZONO symulacji pełnych gier i nakładki oblężenia w przeglądarce; przyczyna Stadniny udowodniona dla posterunku/fortu (nie musi być jedyna).
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `994a452483dcb05e33b71cff9520f738`, 70,130,233 bajtów.
+
 ## ROBOCZA 994a4524 -- 2026-11-03 -- kolejka rekrutacji w panelu armii (testowa)
 
 - **STATUS: DEPLOYED** — merge do `origin/main` (`89b3ee5db` + `R-WEB-ARMY-PANEL-RECRUIT-REMOVE-Q1` `ff6ac152c`) i commit wdrożenia bundla; zgłoszenie właściciela (zrzut), stała zgoda na poprawki.
