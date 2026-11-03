@@ -8622,3 +8622,6 @@ Właściciel: przewijanie w panelu łączenia armii działa, ale nie da się spr
 - 2026-11-03 — R-WEB-ARMY-MERGE-PANEL-LIST-VISIBILITY-Q1 zdeployowane (ROBOCZA f937a3f9). R-WEB-CITY-MILITIA-REGEN-COOLDOWN-Q1: FC PASS-WITH-NOTES (`97e5e9108`), w trakcie deployu.
 
 - 2026-11-03 — ZGŁOSZENIE (zrzut Armia (112,101)): jednostka „zamiera” ufortyfikowana, nieklikalna, po połączeniu zaraża armię (nie da się wybrać/ruszyć/odfortyfikować) → temat R-WEB-UNIT-FROZEN-FORTIFIED-UNSELECTABLE-Q1 (dispatch zapisany; wysoki priorytet — start przy pierwszym wolnym slocie/dysku).
+
+- 2026-11-03 — R-WEB-CITY-MILITIA-REGEN-COOLDOWN-Q1 zdeployowane (ROBOCZA b23f5637); R-WEB-IMPROVEMENT-ERA-SCALING-Q1 zdeployowane (ROBOCZA 7c6b06c7, FC `0c4f6062e`). Backlog: `population-growth-v85.ts:582` rebalanceWorkersAfterPopulationChange bez epoki właściciela (jednolinijkowa poprawka, tryb ręczny); pomiar balansu na prawdziwym planCityImprovements; REPIN Rust po wznowieniu portu.
+- 2026-11-03 — KOREKTA do FROZEN-FORTIFIED: to nie wódz; fortyfikacja armii „zamraża” całość po połączeniu (zapisane w dispatchu).
