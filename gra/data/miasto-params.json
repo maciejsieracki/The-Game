@@ -140,5 +140,10 @@
     "wartosc": 0.1,
     "jednostka": "udzial [0..1]",
     "opis": "Domyslny udzial outputu miasta kierowany do strumienia ROZWOJ. production.DEFAULT_OUTPUT_SHARES / splitOutput."
+  },
+  "capture_pop_loss": {
+    "wartosc": 1,
+    "jednostka": "obywatele",
+    "opis": "Ludnosc tracona przez miasto przy ZDOBYCIU przez obcego (szturm, bitwa o miasto, wejscie do pustego miasta, kapitulacja glodowa; gracz/AI/panstwa-miasta/barbarzyncy). Dokladnie tyle, min. 1 obywatel zostaje. NIE dotyczy: odzyskania wlasnego miasta (zdobywca = poprzedni wlasciciel / wlasciciel sprzed buntu), cesji w traktacie, aneksji dyplomatycznej, zwyklej bitwy bez zdobycia, strat Milicji. cities.applyCapturePopulationLoss (R-WEB-CITY-MILITIA-NO-POPULATION-LOSS-Q1)."
   }
 }

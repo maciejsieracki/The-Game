@@ -3,7 +3,7 @@
  * city-militia-no-defenders-test.cjs — R-WEB-CITY-MILITIA-NO-DEFENDERS-Q1 (spec wlasciciela 2026-11-03).
  *
  * Prawdziwe funkcje (esbuild bundle src/): collectCityDefRoster, buildMilitiaSquad, hasCityDefenders,
- * applyMilitiaPopulationLoss, defenderSideTitle, effectiveGarrison, resolveSiegeAttack.
+ * defenderSideTitle, effectiveGarrison, resolveSiegeAttack.
  *
  * Kontrakt:
  *  M1  liczba milicjantow = ludnosc (1 mieszkaniec = 1 jednostka),
@@ -11,7 +11,7 @@
  *      (licznik city.garnizon nie ma znaczenia),
  *  M3  polowa wrecz / polowa dystans (nieparzysta: dodatkowa wrecz), typy wg EPOKI wlasciciela,
  *      dystans = PELNE staty, wrecz = x0,5 (min 1), morale nizsze (ale ponad progiem ucieczki),
- *  M4  bonusy obrony (teren/mur) dotycza milicji, polegli zmniejszaja ludnosc (min. 1),
+ *  M4  bonusy obrony (teren/mur) dotycza milicji, straty NIE zmieniaja ludnosci (NO-POPULATION-LOSS-Q1 zastapilo dawne 'min. 1'),
  *  mutacje zrodla lamia test.
  *
  * Uzycie: node tools/city-militia-no-defenders-test.cjs
@@ -68,7 +68,6 @@ const MUTATIONS = [
   { name: 'melee-not-scaled', from: "if (kind === 'wrecz') {", to: 'if (false) {' },
   { name: 'ranged-scaled-too', from: "if (kind === 'wrecz') {", to: 'if (true) {' },
   { name: 'era-iron-shifted', from: 'if (e >= 3) return', to: 'if (e >= 4) return' },
-  { name: 'pop-floor-zero', from: 'Math.max(1, before - fallen)', to: 'Math.max(0, before - fallen)' },
   { name: 'replace-not-append', from: 'roster: [...roster, ...virtual]', to: 'roster: virtual' },
   { name: 'barb-ignores-garrison-building', file: 'barbarians', from: 'canCaptureCityWithoutBattle(destCity, units, defenderOptions)', to: 'canCaptureCityWithoutBattle(destCity, units)' },
   { name: 'fallen-partial-log-inferred', from: 'if (logged && !logged.has(id)) continue;', to: '' },
@@ -80,8 +79,8 @@ function checks(M, rec) {
   const SD = M.SD;
   const SG = M.SG;
   const fn = (n) => typeof SD[n] === 'function';
-  rec(fn('buildMilitiaSquad') && fn('collectCityDefRoster') && fn('applyMilitiaPopulationLoss'),
-    'API: buildMilitiaSquad / collectCityDefRoster / applyMilitiaPopulationLoss istnieja');
+  rec(fn('buildMilitiaSquad') && fn('collectCityDefRoster'),
+    'API: buildMilitiaSquad / collectCityDefRoster istnieja');
   if (!fn('buildMilitiaSquad')) return;
 
   const completed = { completedBuildingIds: ['garnizon'] };
@@ -192,21 +191,10 @@ function checks(M, rec) {
     'effectiveGarrison: realny obronca pierwszy + milicja dolaczona');
   rec(SG.effectiveGarrison({ ...siegeCity, garrison: [] }, undefined, []).length === 0, 'effectiveGarrison bez budynku: pusto');
 
-  // ---- M4: straty ludnosci ----------------------------------------------------------------------
-  if (fn('applyMilitiaPopulationLoss')) {
-    const city = mkCity(10);
-    const { roster } = SD.collectCityDefRoster(city, [real('r1')], completed);
-    const ids = roster.filter((u) => u.isMilitia).map((u) => u.id);
-    const lost = SD.applyMilitiaPopulationLoss(city, roster, new Set([...ids.slice(0, 4), 'r1']));
-    rec(lost === 4 && city.population === 6, 'poleglo 4 milicjantow (+1 realny, ignorowany) -> ludnosc 10 -> 6');
-    const city2 = mkCity(10);
-    const r2 = SD.collectCityDefRoster(city2, [], completed).roster;
-    SD.applyMilitiaPopulationLoss(city2, r2, new Set(r2.map((u) => u.id)));
-    rec(city2.population === 1, 'wszyscy polegli -> zostaje minimum 1 mieszkaniec');
-    const city3 = mkCity(10);
-    const r3 = SD.collectCityDefRoster(city3, [], completed).roster;
-    rec(SD.applyMilitiaPopulationLoss(city3, r3, new Set()) === 0 && city3.population === 10, 'brak poleglych -> ludnosc bez zmian');
-  }
+  // ---- M4: straty ludnosci USUNIETE (R-WEB-CITY-MILITIA-NO-POPULATION-LOSS-Q1) ----------------
+  // Dawne asercje (10->6, minimum 1) kodowaly bledne zalozenie; kontrakt 'ludnosc nie maleje'
+  // testuje city-militia-no-population-loss-test.cjs.
+  rec(!fn('applyMilitiaPopulationLoss'), 'M4: applyMilitiaPopulationLoss nie istnieje (ludnosc nie maleje od strat Milicji)');
 
   // ---- zarzut 1 (runda 2): barbarzyncy -- miasto z budynkiem Garnizon NIE jest puste -----------
   if (M.BB && typeof M.BB.canBarbarianWalkIntoEmptyCity === 'function') {

@@ -3,7 +3,7 @@
  * city-militia-regen-cooldown-test.cjs — R-WEB-CITY-MILITIA-REGEN-COOLDOWN-Q1 (zgloszenie wlasciciela 2026-11-03).
  *
  * Prawdziwe funkcje (esbuild bundle src/): collectCityDefRoster, hasCityDefenders,
- * applyMilitiaPopulationLoss, applyMilitiaDestroyedCooldown, militiaRegenTurnsLeft, serializeGame/deserializeGame.
+ * applyMilitiaDestroyedCooldown, militiaRegenTurnsLeft, serializeGame/deserializeGame.
  * Kontrakt: cala Milicja polegla w turze T => tury T+1..T+4 BEZ Milicji, tura T+5 Milicja w pelnej liczbie
  * (aktualna ludnosc); straty czesciowe nie uruchamiaja odnowy; realni obroncy bez zmian; brak Garnizonu bez zmian;
  * zapis/odczyt zachowuje licznik; stary zapis bez pola = brak odnowy; main.ts podpina currentTurn i licznik.
@@ -71,7 +71,7 @@ function checks(M, rec) {
   const battle = (city, turn, deadPredicate) => {
     const r = SD.collectCityDefRoster(city, [], gar(turn));
     const fallen = new Set(r.roster.filter((u) => u.isMilitia && deadPredicate(u)).map((u) => String(u.id)));
-    SD.applyMilitiaPopulationLoss(city, r.roster, fallen);
+    // NO-POPULATION-LOSS-Q1: straty Milicji nie zmieniaja ludnosci (dawne applyMilitiaPopulationLoss usuniete).
     SD.applyMilitiaDestroyedCooldown(city, r.roster, fallen, turn);
     return r;
   };
@@ -80,9 +80,8 @@ function checks(M, rec) {
   const city = mkCity(8);
   const a1 = battle(city, 10, () => true);
   rec(militiaOf(a1).length === 8, 'atak 1 (tura 10): Milicja w pelnym skladzie (8)');
-  rec(city.population === 1, 'atak 1: ludnosc spadla do 1 (min.), a Milicja jest zniszczona');
+  rec(city.population === 8, 'atak 1: ludnosc bez zmian (NO-POPULATION-LOSS-Q1), a Milicja jest zniszczona');
   rec(city.militiaRegenAtTurn === 15, 'atak 1: militiaRegenAtTurn = 10 + 5 = 15');
-  city.population = 8; // miasto urosło (ludnosc aktualna)
   for (const t of [11, 12, 13, 14]) {
     const r = SD.collectCityDefRoster(city, [], gar(t));
     rec(militiaOf(r).length === 0 && r.roster.length === 0 && r.militiaDefs.size === 0,
@@ -99,8 +98,8 @@ function checks(M, rec) {
   const c2 = mkCity(8);
   battle(c2, 10, (u) => Number(String(u.id).split('-').pop()) < 3);
   rec(c2.militiaRegenAtTurn === undefined, 'straty czesciowe (3 z 8): brak odnowy');
-  rec(c2.population === 5, 'straty czesciowe: ludnosc 8 - 3 = 5 (jak dotad)');
-  rec(militiaOf(SD.collectCityDefRoster(c2, [], gar(11))).length === 5, 'straty czesciowe: nastepny atak -> Milicja 5');
+  rec(c2.population === 8, 'straty czesciowe: ludnosc bez zmian (8) — NO-POPULATION-LOSS-Q1 zastapilo 8-3=5');
+  rec(militiaOf(SD.collectCityDefRoster(c2, [], gar(11))).length === 8, 'straty czesciowe: nastepny atak -> Milicja nadal 8');
 
   // --- realni obroncy: w okresie odnowy zostaja, Milicji brak ---
   const c3 = mkCity(6);
@@ -139,7 +138,6 @@ function checks(M, rec) {
         for (const row of M.AB.applyLossPctToRoster(rows, lossPct, () => 16)) if (row.dead) dead.add(row.id);
       } catch (_) { /* def shape: fallback ponizej */ }
       const fallen = SD.fallenMilitiaIds(r.roster, { autoDeadIds: dead });
-      SD.applyMilitiaPopulationLoss(c, r.roster, fallen);
       const destroyed = SD.militiaIdsDestroyedForCooldown(r.roster, fallen, { isAutoBattle: isAuto, attackerWon });
       SD.applyMilitiaDestroyedCooldown(c, r.roster, destroyed, turn);
       return { c, r, fallen };
