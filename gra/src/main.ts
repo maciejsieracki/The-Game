@@ -487,7 +487,6 @@ import {
   hasCityDefenders,
   survivorsLiveSet,
   defenderSideTitle,
-  applyMilitiaPopulationLoss,
   applyMilitiaDestroyedCooldown,
   militiaIdsDestroyedForCooldown,
   militiaRegenTurnsLeft,
@@ -31446,8 +31445,8 @@ async function boot(): Promise<void> {
         }
       }
 
-      // R-WEB-CITY-MILITIA-NO-DEFENDERS-Q1 (M4): polegli milicjanci zmniejszaja ludnosc miasta
-      // (min. 1 zostaje). Wirtualni milicjanci nie sa w units[] -- polegli liczeni PRZED
+      // R-WEB-CITY-MILITIA-NO-POPULATION-LOSS-Q1: polegli milicjanci NIE zmieniaja ludnosci miasta
+      // (tylko odnowa 5 tur nizej). Wirtualni milicjanci nie sa w units[] -- polegli liczeni PRZED
       // applyPostBattleMap (ten sam rozklad strat z pelnego rosteru i ten sam log zdarzen co
       // applyAutoLosses/applyManualSurvivors w post-battle-map.ts: czesciowy log to wynik
       // czesciowy, milicjant bez wpisu w logu NIE jest uznany za poleglego).
@@ -31500,7 +31499,6 @@ async function boot(): Promise<void> {
         holdPositionAfterWin: fortifiedCaptureBlocked,
       });
       if (cityOnHex && fallenMilitia) {
-        applyMilitiaPopulationLoss(cityOnHex, defRoster, fallenMilitia);
         // R-WEB-CITY-MILITIA-REGEN-COOLDOWN-Q1: cala Milicja polegla => okres odnowy (tury globalne).
         // Auto-bitwa: przegrana obrona = cala Milicja zniszczona (wagi linii nie zabijaja dystansu).
         applyMilitiaDestroyedCooldown(

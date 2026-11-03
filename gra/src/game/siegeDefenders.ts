@@ -336,23 +336,11 @@ export function countMilitia(defRoster: readonly RuntimeUnit[]): number {
 }
 
 /**
- * Polegli milicjanci → ludność maleje o ich liczbę (min. 1 mieszkaniec zostaje).
- * `fallenIds` = ids wirtualnych milicjantów, którzy zginęli. Zwraca faktyczny ubytek ludności.
- * Mutuje city.population. PURE poza tą mutacją.
+ * R-WEB-CITY-MILITIA-NO-POPULATION-LOSS-Q1: Milicja to syntetyczne, tymczasowe jednostki bitewne
+ * liczone z ludności w chwili ataku. Jej straty NIE zmieniają city.population (dawny
+ * `applyMilitiaPopulationLoss` z M4 usunięty — założenie było błędne). Jedyną konsekwencją
+ * całkowitego zniszczenia Milicji jest okres odnowy (`applyMilitiaDestroyedCooldown`).
  */
-export function applyMilitiaPopulationLoss(
-  city: City,
-  defRoster: readonly RuntimeUnit[],
-  fallenIds: ReadonlySet<string>,
-): number {
-  const fallen = defRoster.filter(u => isMilitiaUnit(u) && fallenIds.has(String(u.id))).length;
-  if (fallen <= 0) return 0;
-  const before = Math.max(0, city.population ?? 0);
-  const after = Math.max(1, before - fallen);
-  const loss = Math.max(0, before - after);
-  city.population = after;
-  return loss;
-}
 
 export interface FallenMilitiaInput {
   /** Manual 3D result: survivors list (`undefined` = auto battle). */
@@ -395,7 +383,7 @@ export function fallenMilitiaIds(
  * Wynik reczny/taktyczny (`survivors` zdefiniowane): dokladnie `fallen` (bez zmian).
  * Auto-bitwa (Pomin/Auto): wagi linii w applyLossPctToRoster (dystans 0,25) sprawiaja, ze milicjant dystansowy
  * nigdy nie ginie, wiec "zniszczona" definiujemy WYNIKIEM: przegrana obrony (winner atakujacy) = cala
- * wirtualna Milicja zniszczona. Remis / wygrana obrony nie uruchamia odnowy. Ludnosc nadal maleje wg `fallen`.
+ * wirtualna Milicja zniszczona. Remis / wygrana obrony nie uruchamia odnowy. Ludnosc NIE maleje (NO-POPULATION-LOSS-Q1).
  */
 export function militiaIdsDestroyedForCooldown(
   defRoster: readonly RuntimeUnit[],
