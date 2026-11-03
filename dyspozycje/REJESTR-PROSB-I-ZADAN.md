@@ -8617,3 +8617,6 @@ Właściciel: przewijanie w panelu łączenia armii działa, ale nie da się spr
 - 2026-11-03 — ZGŁOSZENIE: Milicja odnawia się w pełni przy każdym ataku. Wymaganie: po zniszczeniu Milicji 5 tur odnowy bez Milicji, potem odnowa → temat R-WEB-CITY-MILITIA-REGEN-COOLDOWN-Q1 (dispatch zapisany; kolejka — sekwencyjnie wg plików siege*/main.ts).
 
 - 2026-11-03 — ZGŁOSZENIE: armie/jednostki zbierane do wodza idą do pierwszego wodza zamiast najbliższego dostępnego → temat R-WEB-ARMY-TO-NEAREST-LEADER-Q1 (dispatch zapisany; kolejka po R-WEB-AI-ARMY-CONCENTRATION-REPLACEMENT-Q1, te same pliki).
+
+- 2026-11-03 — DECYZJA WŁAŚCICIELA (twarda zasada): „Tylko pola z obywatelami” dla ulepszeń żywności obowiązuje bez wyjątków, gracz i AI jednakowo (też ścieżki rzeka/wyrąb). Zapisane w dispatchu R-WEB-AI-FOOD-ONLY-WORKED-HEXES-Q1 (zakres rozszerzony na automat gracza). Zrzut: farmy bez obywateli w automacie gracza — ten sam temat.
+- 2026-11-03 — R-WEB-ARMY-MERGE-PANEL-LIST-VISIBILITY-Q1 zdeployowane (ROBOCZA f937a3f9). R-WEB-CITY-MILITIA-REGEN-COOLDOWN-Q1: FC PASS-WITH-NOTES (`97e5e9108`), w trakcie deployu.
