@@ -26,6 +26,7 @@ GOAL: przy eliminacji cywilizacji zwycięzca przejmuje 100% majątku państwa (s
 - main.ts: konflikt z innymi tematami możliwy (zmiany ograniczone do bloku raportu i `capitalCaptureResourceAccess`, `runCapitalCapturePlunder`).
 - Zero zmian w `gra-robocza/**`, `WERSJE.md`, `rust-port/**`. `node_modules` usunięty.
 
+COMMIT: 2d1bf8a6da96f36af4ad56a81ebe5c57dc3f2e4a (kod+test+raport; ten wiersz dodany kolejnym commitem)
 RUNDY: 1/5
 NASTĘPNY KROK: Evaluator (Sonnet 5.5), zwłaszcza weryfikacja w przeglądarce i decyzja ws. wchłonięcia dyplomatycznego.
 DEPLOY/PUSH: NIE WYKONANO
