@@ -22,7 +22,7 @@ Order-lane: 2 fazy (zrzut econ ticku 1 Rust `P6_OL_ECON_OUT=... cargo test --tes
 | Wektor | Wejscia | Wyjscia vs stary pin | Decyzja |
 |---|---|---|---|
 | `p6_empirefood_vectors/empirefood.json` | identyczne (347 scen., mapy, matrixPatch) | ZMIENIONE w 234/347 scen.: `perCity[].zdrowie` (np. -6 -> -2, 3 -> 7) i `wzrostProcent` (1 -> 2, `~18.5` -> `~19.5`) | REGENEROWANY (zdrowie z jeziorem; wzrost zalezy od zdrowia) |
-| `p6_econ_post_vectors/post_0.json` | identyczne (347 scen.) | ZMIENIONE w 234/347: `post/boundary/ticks[].zdrowie`, `ef[].rows[].wzrostProcent` | REGENEROWANY (ta sama przyczyna, wspolny stan wejsciowy) |
+| `p6_econ_post_vectors/post_0.json` | identyczne (347 scen.) | ZMIENIONE w 234/347: `post/boundary/ticks[].zdrowie`, `ef[].rows[].wzrostProcent` oraz pola POCHODNE od zdrowia (zmierzone cmp przez Evaluatora): `post/growth/cities/[]/frac` (22), `breakdown/total` (30), `breakdown/zdrowie` (34), `magazynPoTurze` (22), `wzrostUlamkowyPo` (22); wejscia bez zmian | REGENEROWANY (ta sama przyczyna, wspolny stan wejsciowy) |
 | `p6_order_lane_vectors/order_lane.json` | identyczne (750 scen., 80 e2e) | 0 roznic | pin podbity (regeneracja = bit-identyczne wyjscia); sciezka porzadku (`main.ts` petla porzadku) nietknieta delta (zdrowie nie wchodzi do `orderMultMap`) |
 | `p6_state_src_vectors/state_src.json` | identyczne (260 scen.) | 0 roznic | pin podbity (dowod: regeneracja) |
 | `p6_trade_pin_vectors/trade.json` | identyczne (62 scen.) | 0 roznic | pin podbity (trade-routes.ts nie w delcie) |
@@ -52,3 +52,10 @@ ocena opiera sie na statycznej analizie sciezek i na tym, ze test pelny przechod
 
 Pelny `cargo test -j 2 --no-fail-fast` w 6 shardach: 2098 passed / 0 failed (`logs/gate-shard-*.txt`, kazdy `EXIT=0`),
 `logs/gate-fmt.txt` EXIT=0, `logs/gate-clippy.txt` (`--all-targets -D warnings`) EXIT=0.
+
+## 4. Poprawki po Evaluatorze (runda 1, obrona)
+
+- Liczba testow `*.rs` ze zmieniona linia 1 to 7 (nie 9): `p6_adv_q6_wire`, `p6_econ_post_e2e`, `p6_empirefood_e2e`, `p6_heal_maxhp_wire`, `p6_order_lane`, `p6_state_src`, `p6_trade_pin`.
+- `p6_adv_q3_pipeline.rs` / `p6_adv_q4_pipeline.rs`: naglowek nadal `pin weba 4bbef081d`, JSON ma `23dd158e9` (po REPIN-DELTA-4). Poza allowlista - pozostalosc do osobnego tematu porzadkowego, nie zmieniana tutaj.
+- `auto-improvements.ts`: jedyny generator w `dyspozycje/autobot/runs/**/*.mjs` importujacy ten modul to `gen-p6-8i-pick-vectors.mjs` (wektory `p6_8i_pick`, juz repinowane w REPIN-DELTA-4). Zaden generator wektorow pinu `4bbef081d` poza allowlista go nie importuje, wiec ich wyjscia od tej zmiany nie zaleza. Regeneracja nadal NIE_ZMIERZONO (poza allowlista).
+- `git diff --check d680c823e 5214966ff` czysty wg Evaluatora (exit 0); fmt exit 0.
