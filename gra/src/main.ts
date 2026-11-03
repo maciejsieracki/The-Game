@@ -11431,6 +11431,13 @@ async function boot(): Promise<void> {
     /** R-WEB-TRUCE-Q1 (r5): wyłącznie hak live `__truceTestDebug.suppressVictoryForTest` — mapa testowa ma 2 miasta i kończy grę zwycięstwem przy pierwszym EOT. Domyślnie false. */
     let truceTestSuppressVictory = false;
     let endTurnInProgress = false;
+    /** R-WEB-PLAYER-MOVES-BEFORE-AI-TURN-Q1: znacznik fazy konca tury (dowod kolejnosci). No-op bez
+     *  `window.__civPhaseLog` (tablica ustawiana wylacznie przez test/Chromium) -- zero wplywu na gre. */
+    function phaseMark(kind: string, detail?: string): void {
+      const log = (window as unknown as { __civPhaseLog?: unknown }).__civPhaseLog;
+      if (!Array.isArray(log)) return;
+      log.push({ k: kind, d: detail ?? '', t: Math.round(performance.now()), turn, anim: isAnimating, eot: endTurnInProgress });
+    }
     /** R-WEB-EVENTS-DEFER-TO-TURN-START-Q1: modale (odkrycie tech., cud, zdobycie miasta) wygenerowane w
      *  fazie EOT (tury innych cywilizacji / PM) czekaja tu do poczatku tury gracza. Dyplomacja = wyjatek. */
     const eventDeferQueue = createEventDeferQueue();
@@ -26770,6 +26777,23 @@ async function boot(): Promise<void> {
       meOwnerId: () => ME(),
     });
 
+    // R-WEB-PLAYER-MOVES-BEFORE-AI-TURN-Q1 — hak testowy WYLACZNIE dla tools/player-moves-before-ai-turn-test.cjs
+    // (tylko przy ?civTest=1). Ustawia zakolejkowany marsz gracza tak jak `planMarchTo` BEZ natychmiastowego
+    // wykonania segmentu i BEZ `markPlayerMovedUnit` (czyli "marsz z poprzednich tur"); reszta idzie REALNYM endTurn.
+    if (typeof location !== 'undefined' && /[?&]civTest=1/.test(location.search)) {
+      (window as any).__playerMovesTestDebug = {
+        queueMarch: (unitId: string, destQ: number, destR: number): boolean => {
+          if (!units.some(x => x.id === unitId)) return false;
+          plannedMarches.set(unitId, { destQ, destR });
+          return true;
+        },
+        hasMarch: (unitId: string): boolean => plannedMarches.has(unitId),
+        isAnimating: (): boolean => isAnimating,
+        refillMove: (unitId: string): void => { const u = units.find(x => x.id === unitId); if (u) u.ruchLeft = u.ruch; },
+        unitState: (unitId: string) => { const u = units.find(x => x.id === unitId); return u ? { q: u.q, r: u.r, ruchLeft: u.ruchLeft, ruch: u.ruch } : null; },
+      };
+    }
+
     // R-WEB-SAVELOAD-PRACA-POOL-Q1 — hak testowy WYLACZNIE dla tools/saveload-praca-pool-live-test.cjs.
     // Zero reimplementacji: REALNE buildSaveGameSnapshot -> restoreGameFromSave.
     (window as any).__pracaPoolSaveLoadTestDebug = {
@@ -28579,6 +28603,7 @@ async function boot(): Promise<void> {
       }
 
       const last = result.movePath[result.movePath.length - 1]!;
+      phaseMark('PLAYER_MARCH_ANIM_START', unitId + '->' + last.q + ',' + last.r);
       pendingMarchHint = {
         unitId,
         dest,
@@ -28620,7 +28645,7 @@ async function boot(): Promise<void> {
     }
 
     /** Zastosuj segment marszu bez animacji (koniec tury gracza — przed odnowieniem MP). */
-    function applyMarchSegmentInstant(unitId: string, humanOwnerId: number): boolean {
+    function applyMarchSegmentInstant(unitId: string, humanOwnerId: number, launchAttack = true): boolean {
       if (isAwaitingFirstPlayerCity()) return false;
       const u = units.find(x => x.id === unitId);
       const dest = plannedMarches.get(unitId);
@@ -28652,6 +28677,7 @@ async function boot(): Promise<void> {
       const fromQ = u.q;
       const fromR = u.r;
       const last = result.movePath[result.movePath.length - 1]!;
+      phaseMark('PLAYER_MARCH_INSTANT', unitId + ' ' + fromQ + ',' + fromR + '->' + last.q + ',' + last.r);
       for (const su of stack) {
         su.q = last.q;
         su.r = last.r;
@@ -28691,7 +28717,7 @@ async function boot(): Promise<void> {
       promptMergeIfCoLocated(stack.map(s => s.id), fromQ, fromR, result.cost, deductedRuchMarch);
 
       const attackTargetId = marchAttackTargets.get(unitId);
-      if (attackTargetId && tryLaunchMarchAttack(u, attackTargetId)) {
+      if (launchAttack && attackTargetId && tryLaunchMarchAttack(u, attackTargetId)) {
         syncGeneralMarchTargets();
         return true;
       }
@@ -28712,12 +28738,26 @@ async function boot(): Promise<void> {
      * Kontynuacja zaplanowanych marszy na KONIEC tury gracza (nie na starcie kolejnej).
      * Zużywa pozostałe MP bieżącej tury; jednostki z rozkazem gracza w tej turze są pomijane.
      */
-    function runPlannedMarchesAtPlayerEndTurn(humanOwnerId: number): void {
-      executePlannedMarchesEndTurn(humanOwnerId);
+    function runPlannedMarchesAtPlayerEndTurn(
+      humanOwnerId: number,
+      opts: { skipUnitIds?: ReadonlySet<string>; launchAttacks?: boolean } = {},
+    ): void {
+      // R-WEB-PLAYER-MOVES-BEFORE-AI-TURN-Q1: faza „dokonczenie ruchow gracza" jest W CALOSCI synchroniczna.
+      // Dawniej tu wolano `executePlannedMarchesEndTurn()` -> `enqueueMarchSegments()` ->
+      // `processMarchQueue()` -> `executeMarchSegmentForUnit()` = ANIMOWANY ruch PIERWSZEJ jednostki
+      // (`startAnimatedMove`), ktorego koniec (odjecie ruchu, mgla, hint) dopalal sie w `renderLoop` juz
+      // PO resecie ruchu i w trakcie fazy AI. Teraz kazdy segment idzie przez `applyMarchSegmentInstant`.
+      syncGeneralMarchTargets();
+      for (const u of units) {
+        if (u.ownerId !== humanOwnerId || !plannedMarches.has(u.id)) continue;
+        if (movedByPlayerThisTurn.has(u.id) || opts.skipUnitIds?.has(u.id)) continue;
+        if (planningStackRuchLeft(playerStackAt(u)) <= 0) continue;
+        if (!marchExecQueue.includes(u.id)) marchExecQueue.push(u.id);
+      }
       while (marchExecQueue.length > 0) {
         const id = marchExecQueue.shift()!;
-        if (!plannedMarches.has(id)) continue;
-        if (!applyMarchSegmentInstant(id, humanOwnerId)) continue;
+        if (!plannedMarches.has(id) || opts.skipUnitIds?.has(id)) continue;
+        if (!applyMarchSegmentInstant(id, humanOwnerId, opts.launchAttacks !== false)) continue;
       }
       syncUnitsRender();
     }
@@ -34661,6 +34701,7 @@ async function boot(): Promise<void> {
     // po tym temacie właśnie dlatego, że dotyka tej samej funkcji.
     async function runWorldEndTurn(humanOwnerId: number): Promise<void> {
       const nextTurnNum = turn + 1;
+        phaseMark('WORLD_START');
         // B2-Q5: wyczyść flagi buntu z poprzedniej tury (chip/ikona do końca tury).
         for (const st of cityOrderState.values()) {
           if (st.bunt) st.bunt = undefined;
@@ -34740,6 +34781,7 @@ async function boot(): Promise<void> {
 
         // --- Per-turn economy tick (task 13B) ---
         setTurnTransition(14, 'Ekonomia imperium…', 'Gracz', nextTurnNum);
+        phaseMark('ECONOMY');
         await yieldTurnTransitionUi();
         // Advance every city's economy: terrain yields -> net food ->
         // population growth/starvation, persisting the food store on the city.
@@ -36770,6 +36812,7 @@ async function boot(): Promise<void> {
         // AI TURN LOOP: execute commands for every AI rival (ownerId > 0)
         // ===================================================================
         setTurnTransition(38, 'Tura przeciwników…', '—', nextTurnNum);
+        phaseMark('AI_START');
         await yieldTurnTransitionUi();
         // AI may found several cities before the next visible progress frame.
         // Keep game state immediate, but defer the expensive full-map model sync
@@ -37147,6 +37190,7 @@ async function boot(): Promise<void> {
               // Bezpiecznik: gdyby lista pochodziła z aiCmdResume sprzed eliminacji
               // (skasowanie w trakcie tej samej fazy AI) — pomiń bez przetwarzania.
               if (eliminatedOwners.has(ownerId)) continue;
+              phaseMark('AI_CIV_START', String(ownerId));
               const aiPct = 38 + Math.round((54 * (oi + 1)) / Math.max(1, ownerLoopList.length));
               setTurnTransition(aiPct, 'Ruchy i decyzje…', ownerDiploLabel(ownerId), nextTurnNum);
               // A full map render can be expensive in late games. Keep updating the
@@ -39273,6 +39317,7 @@ async function boot(): Promise<void> {
             }
           };
           await runAiPhase();
+          phaseMark('AI_END');
         } catch (eAILoop) {
           console.error('[AI] Blad petli AI:', eAILoop);
         }
@@ -39764,6 +39809,7 @@ async function boot(): Promise<void> {
           trimWarEventLog();
           deferredEotHints.length = 0;
         }
+        phaseMark('PLAYER_TURN_BEGIN');
         setTurnTransition(100, `Tura ${turn} — twoja kolej`, 'Gracz', turn);
         await yieldTurnTransitionUi();
     }
@@ -39908,10 +39954,22 @@ async function boot(): Promise<void> {
         }
         // C-RUCH: kontynuacja wieloturowej trasy na KONIEC tury gracza (pozostałe MP),
         // nie na starcie kolejnej — gracz może w tej turze zmienić kierunek.
+        phaseMark('PLAYER_MOVES_START', 'seat ' + humanOwnerId);
         runPlannedMarchesAtPlayerEndTurn(humanOwnerId);
+        phaseMark('PLAYER_MOVES_END');
         clearPlayerUnitSelectionStateOnly();
         setTurnTransition(6, 'Zakończenie ruchów gracza…', 'Gracz', nextTurnNum);
         await yieldTurnTransitionUi();
+        // R-WEB-PLAYER-MOVES-BEFORE-AI-TURN-Q1: marsz-z-atakiem gracza mogl otworzyc okno bitwy (wybor gracza).
+        // Rozstrzygamy je W TEJ fazie -- tury AI/PM startuja dopiero po zamknieciu okna (nie za jego plecami).
+        // Wyjscie tez gdy reset (nowa gra/wczytanie) zgasil potok -- wtedy nie czekamy dalej.
+        if (isPreBattleOpen() || hasPendingAutoPreBattle()) {
+          phaseMark('PLAYER_BATTLE_WAIT_START');
+          while ((isPreBattleOpen() || hasPendingAutoPreBattle()) && endTurnInProgress && activeWorldEndTurnPipeline) {
+            await new Promise<void>(resolve => setTimeout(resolve, 100));
+          }
+          phaseMark('PLAYER_BATTLE_WAIT_END');
+        }
         await runWorldEndTurn(humanOwnerId);
         // R-HOTSEAT-DRUGI-FOTEL-NIE-DOSTAJE-TURY-Q1 (Przyczyna 1): świat/AI właśnie
         // przeszedł (runda była KOMPLETNA -- advanceSeat() woła endActiveHumanTurn()
@@ -40036,6 +40094,16 @@ async function boot(): Promise<void> {
       seatsFinishedThisRound.add(activeId);
       const nextSeat = humanSeats.humanOwnerIds.find(id => !seatsFinishedThisRound.has(id));
       if (nextSeat !== undefined) {
+        // R-WEB-PLAYER-MOVES-BEFORE-AI-TURN-Q1 (hot-seat): ruchy KONCZACEGO fotela dokanczaja sie przy JEGO
+        // koncu tury (zanim kolejny fotel dostanie ture), nie przepadaja -- `endActiveHumanTurn` dostaje
+        // tylko OSTATNI fotel rundy. Jednostka w trakcie animacji pomijana (jej ruch dokonczy renderLoop);
+        // ataki z marszu nie sa tu odpalane (okno bitwy nie moze przeciec na kolejny fotel).
+        phaseMark('SEAT_MOVES_START', 'seat ' + activeId);
+        runPlannedMarchesAtPlayerEndTurn(activeId, {
+          skipUnitIds: new Set(isAnimating && anim !== null ? anim.movingStackIds : []),
+          launchAttacks: false,
+        });
+        phaseMark('SEAT_MOVES_END', 'seat ' + activeId);
         switchActiveHuman(nextSeat);
         // R-HOTSEAT-DRUGI-FOTEL-NIE-DOSTAJE-TURY-Q1 (GOAL): fotel WCHODZĄCY w rundę bez
         // miasta dostaje WŁASNY tryb "załóż pierwsze miasto" -- ten sam punkt wejścia, którym
@@ -40250,6 +40318,7 @@ async function boot(): Promise<void> {
 
         if (anim.seg >= lastSeg && anim.t >= 1) {
           // --- Animation complete ---
+          phaseMark('ANIM_FINISH', anim.id + '->' + anim.destQ + ',' + anim.destR);
           const finishedId = anim.id;
           const destQ = anim.destQ;
           const destR = anim.destR;
