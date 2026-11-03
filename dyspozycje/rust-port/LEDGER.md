@@ -688,3 +688,5 @@ Zasada: stale 2 tematy Rust równolegle (limit dysku: worktree ≈ 1 GB każdy, 
 - Sprzątanie /tmp/claude-0 (≈5 GB) zablokowane przez klasyfikator — czeka na zgodę/regułę właściciela.
 
 - 2026-11-03 15:14 kontrola: TRUCE-AGRESOR (wf_6b1cca1c-10e) i PROFIL-WOJNY-POKOJU (wf_5f3dd8c7-4cd, powtorka r1) trwaja; nic do integracji.
+
+- 2026-11-03 kolejka web: R-WEB-AI-MARCH-AVOID-FOREIGN-TERRITORY-Q1 (dispatch gotowy, start po zwolnieniu slotu/dysku).
