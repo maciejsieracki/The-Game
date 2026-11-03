@@ -8507,3 +8507,6 @@ Właściciel: ruchy niewykorzystane w trakcie tury gracza, które mogą się odb
 
 ## 2026-11-03 — zgłoszenie: zamiana 20 tys. Pracy na podatek nie dała pieniędzy do skarbca
 Właściciel: „Zamieniłem 20 tysięcy pracy na podatek, ale niestety tych pieniędzy nie dostałem do skarbca.” Mechanizm zamiany nie jest w zgłoszeniu nazwany (do ustalenia z kodu: konwerter/przeliczenie Praca→Podatek/Złoto, mennica, handel Praca za złoto, polityka). Temat `R-WEB-LABOR-TO-TAX-CONVERSION-NO-GOLD-Q1` (diagnoza + poprawka, stała zgoda).
+
+## 2026-11-03 — zgłoszenie (zrzut: tooltip heksu „Wzgórza”): kolejność i treść opisu ulepszeń surowcowych
+Właściciel: w opisach ulepszeń powinno być najpierw podane, ile surowca dane ulepszenie daje (np. Kamień), a dopiero potem informacja o magazynie; właściwie informacja „do magazynu państwa” w ogóle nie jest potrzebna — wystarczy ile DODATKOWO produkuje danego surowca. Temat `R-WEB-HEX-TOOLTIP-IMPROVEMENT-PRODUCTION-TEXT-Q1`. Kod: `gra/src/ui/hexContextTooltip.ts` (wiersze „magazyn państwa: +50 Kamień/t · bez 👤 · Kamień”, sekcja „DO MAGAZYNU PAŃSTWA”).
