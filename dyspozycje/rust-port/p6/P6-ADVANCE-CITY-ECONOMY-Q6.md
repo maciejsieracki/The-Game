@@ -82,7 +82,9 @@ Premia budynkowa tras jest liczona z DOMYSLNYCH krzywych (`main.ts:16711` nie po
 * Z-Q6-2 `growthMultByCity`, `wzrostLudnosciPace`, `cityReligionByCityId` to martwe parametry `advanceCityEconomy` - wiazanie ich nie przyjmuje.
 * Z-Q6-3 `ownerHasZlotoAccessNow` = zapas Zlota w skarbcu (liczone) OR `native_zloto_access` (natywny dostep/grant trasy - wejscie wolajacego).
 * Z-Q6-4 `prepare` i resolvery liczone na stanie PRZED ticku, `finalize` na stanie PO ticku (jak web; roznica potwierdzona w Q5 sek. 3).
-* Z-Q6-5 mapy `Map` weba jako `BTreeMap` (Z-Q5-4); kolejnosc iteracji nie wplywa na wyniki (klucze rozne lub sumy addytywne).
+* Z-Q6-5 mapy `Map` weba jako `BTreeMap` (Z-Q5-4). ZAWEZONE (Obrona R1): dodawanie `f64` nie jest laczne, wiec zmiana kolejnosci iteracji
+  moze w ogolnosci zmienic sume. Zgodnosc jest ZMIERZONA na wektorach (295 scenariuszy, 1049 tickow, bit w bit; dochody tras sa calkowite po `ceil`),
+  NIE udowodniona ogolnie. Wejscia nieskonczone/ulamkowe poza wektorami = NIE_ZMIERZONO.
 * Z-Q6-6 ID miast spoza wzorca `city\d+` nie sa "najstarsze" (`cityFoundOrder` = `+Infinity`, scisle `<`), stolica moze byc `None`.
 * Z-Q6-7 `dystans` trasy to `u32` (web `number`); ujemny/NaN dystans nieosiagalny.
 
@@ -112,3 +114,15 @@ Premia budynkowa tras jest liczona z DOMYSLNYCH krzywych (`main.ts:16711` nie po
 3. `R-RUSTPORT-P6-ECON-TICK-STATE-SOURCES-Q1`: zrodla stanu: `ownerCivMap`, `orderMultMap` (lane Porzadku), `ownerDefaultPodzial*`, etykiety aktywne z mapy, natywny dostep do zlota.
 4. `R-RUSTPORT-P6-ECON-TICK-HEAL-MAXHP-Q1`: `effectiveMaxHp`/`unitHealth`/bonusy weterana dla `getMaxHp`.
 5. `R-RUSTPORT-P6-ECON-TICK-POST-Q1`: power snapshots, research po bankowaniu, deficyt Zlota, pula Pracy; decyzja o `settle_turn`.
+
+## 9. Ograniczenia zakresu (Obrona R1)
+
+* Zakres dowodu e2e: ciag "tick -> bankowanie" BEZ posrednich mutacji `cities`. Web miedzy tickiem a bankowaniem wykonuje blok EmpireFood
+  (`main.ts:34594-34850`) i atrycje oblezenia, ktore zmieniaja populacje/zapasy miast; sumy `sumEconomyForPlayerCities` i odjecie utrzymania
+  surowcowego dzialaja tam na stanie zmienionym. Zgodnosc z webem w obecności tych mutacji = NIE_ZMIERZONO, dlug -Q7 pkt 2 i 5.
+* `run_economy_tick_for_game` nie ma jeszcze wolajacego w petli tury Rust (wiazanie = funkcja + test, nie podpiecie do `ai_turn`/petli); podpiecie w -Q7.
+* Natywny dostep do zlota (`ownerHasNativeResourceAccess(.,'zloto')`, `main.ts:5088-5117`) i etykiety aktywne pozostaja wejsciami wolajacego:
+  grant z trasy wymaga `computeTradeRouteResourceGrants(tradeRoutes, ownerHasNativeResourceAccess)` (`main.ts:5125`) dla WSZYSTKICH kluczy
+  (braz, zelazo, cegla, zloto, kon), a te zalezą od `placedImprovementsForOwner`, mapy hexow i `computeEmpireLivestockUnlocks` — brak w Rust
+  (`grep ownerHasNativeResourceAccess|empireActiveResourceLabelsForOwner` = 0). Port czesciowy bez wektorow z weba lamalby kryterium "plaster z wektorami"; -Q7 pkt 3.
+* Mutacje W01/W02 (`wonder_bonus_active`) uruchomiono przed refaktorem; dowod = rownowaznosc tekstu, brutto 94,2% > 90% takze bez tych dwoch.
