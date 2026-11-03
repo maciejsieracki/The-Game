@@ -8483,3 +8483,6 @@ Właściciel: inna cywilizacja oblega miasto gracza (Delfy, czerwona nakładka �
 
 ## 2026-11-03 — zgłoszenie: AI nie wykorzystuje całego zapasu ruchu
 Właściciel: inne cywilizacje nie wykorzystują całego zapasu ruchu — chodzą grupami, ale nie w pełnym zakresie możliwości (poruszają się na krótszy dystans niż pozwalają punkty ruchu). Temat `R-WEB-AI-MOVE-FULL-RANGE-Q1` (diagnoza + poprawka, stała zgoda). Powiązane wcześniejsze: `ai-move-range-test`, koncentracja armii. START po zwolnieniu miejsca.
+
+## 2026-11-03 — zgłoszenie: powiadomienia i zdarzenia pojawiają się w trakcie tur innych cywilizacji
+Właściciel: wszystkie informacje, wydarzenia i odkrycia technologii powinny pojawiać się dopiero PO zakończeniu ostatniej tury innych cywilizacji i państw-miast, gdy zaczyna się nowa tura gracza — nie w trakcie ich tur (przykłady: komunikaty o łączeniu armii, odkrycia). Temat `R-WEB-EVENTS-DEFER-TO-TURN-START-Q1`. START po zwolnieniu miejsca.
