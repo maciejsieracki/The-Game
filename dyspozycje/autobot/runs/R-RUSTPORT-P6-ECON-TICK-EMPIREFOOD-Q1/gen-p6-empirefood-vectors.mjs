@@ -400,6 +400,37 @@ for (let i = 0; i < 30; i++) {
   scenarios.push(sc);
 }
 
+// ---- scenariusze brzegowe (dopisane NA KONCU: nie zmieniaja wczesniejszych scenariuszy, ten sam strumien rnd) ----
+function edgeScenario(sc, how) {
+  const cs = sc.cities.filter((c) => c.owner >= 0);
+  if (cs.length === 0) return sc;
+  const c0 = cs[0];
+  const owners = [...new Set(cs.map((c) => c.owner))];
+  const other = owners.find((o) => o !== c0.owner) ?? c0.owner + 1;
+  for (const o of owners) sc.ef.states[o] = { z: 0, t: 5 };
+  const live = sc.ef.live;
+  const T = pick(FOOD_TYPES);
+  const mkU = (id, ownerId, q, r, extra = {}) => ({ id, ownerId, typeId: T, category: 'piechota', q, r, inGarnizon: false, hp: 1, hpMax: 40, camping: false, onOwn: true, ...extra });
+  if (how === 0) {
+    // garnizon obcego wlasciciela na heksie cudzego miasta: cityAtUnit sprawdza ownerId
+    for (let k = 0; k < 5; k++) live.push(mkU('fg' + k, other, c0.q, c0.r, { inGarnizon: true }));
+    c0.garn = 5;
+  } else if (how === 1) {
+    // przestarzale oblegaCityId na miescie bez oblezenia (oblegane=false)
+    c0.obl = false;
+    for (let k = 0; k < 4; k++) live.push(mkU('fs' + k, other, c0.q + 1, c0.r, { oblegaCityId: c0.id }));
+  } else {
+    // oblezenie konczy sie tylko gdy brak wojsk ODBLEGAJACEGO w odleglosci 1; jednostki w odleglosci 2 nie licza sie
+    c0.obl = true; c0.sOwner = other; c0.sCap = true; c0.sMach = true;
+    sc.ef.bySieger[c0.id] = other;
+    live.push(mkU('fm0', other, c0.q + 1, c0.r, { oblegaCityId: c0.id }));
+    live.push(mkU('fd0', other, c0.q + 1, c0.r + 1, { hp: 90, hpMax: 90 }));
+    live.push(mkU('fd1', other, c0.q - 1, c0.r - 1, { hp: 90, hpMax: 90 }));
+  }
+  return sc;
+}
+for (let i = 0; i < 30; i++) scenarios.push(edgeScenario(mk(`ef-edge-${i}`, 'ef-edge', ri(2, 5), { kind: 'army' }), i % 3));
+
 // ---- uruchomienie weba ---------------------------------------------------------------------------------------------
 const recEnc = (r) => Object.fromEntries(Object.entries(r).map(([k, v]) => [k, enc(v)]));
 const mapOfRec = (m) => Object.fromEntries([...m].map(([o, r]) => [o, recEnc(r)]));

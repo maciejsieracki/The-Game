@@ -823,9 +823,10 @@ fn run_rust(ctx: &Ctx, s: &Value) -> Ran {
             q: num(&c["q"]),
             r: num(&c["r"]),
             oblegane: c["obl"].as_bool().unwrap(),
-            oblegajacy_owner_id: c["sOwner"].as_i64(),
-            siege_capitulation_pending: c["sCap"].as_bool().unwrap(),
-            has_siege_machines: c["sMach"].as_bool().unwrap(),
+            // generator zapisuje pola oblezenia na obiekcie miasta weba TYLKO gdy `obl`
+            oblegajacy_owner_id: if c["obl"].as_bool().unwrap() { c["sOwner"].as_i64() } else { None },
+            siege_capitulation_pending: c["obl"].as_bool().unwrap() && c["sCap"].as_bool().unwrap(),
+            has_siege_machines: c["obl"].as_bool().unwrap() && c["sMach"].as_bool().unwrap(),
             garnizon: opt_num(&c["garn"]),
         })
         .collect();
@@ -1181,7 +1182,7 @@ fn empire_food_block_matches_running_web() {
     let d: Value = serde_json::from_str(VECTORS).expect("empirefood.json");
     let ctx = make_ctx(&d);
     let scenarios = arr(&d, "scenarios");
-    assert!(scenarios.len() >= 280, "scenariuszy {}", scenarios.len());
+    assert!(scenarios.len() >= 310, "scenariuszy {}", scenarios.len());
     let (mut n_ticks, mut n_ef, mut n_adj, mut n_pending, mut n_clamp, mut n_atr) = (0, 0, 0, 0, 0, 0);
     let (mut n_destroyed, mut n_ended, mut n_garn, mut n_glod, mut n_human, mut n_deficyt) = (0, 0, 0, 0, 0, 0);
     for s in scenarios {
@@ -1221,8 +1222,8 @@ fn empire_food_block_matches_running_web() {
     assert!(n_clamp >= 20, "clamp {n_clamp}");
     assert!(n_atr >= 40, "atrycja {n_atr}");
     assert!(n_destroyed >= 30, "zniszczone {n_destroyed}");
-    assert!(n_ended >= 5, "oblezenie zakonczone {n_ended}");
-    assert!(n_garn >= 15, "garnizon {n_garn}");
+    assert!(n_ended >= 9, "oblezenie zakonczone {n_ended}");
+    assert!(n_garn >= 40, "garnizon {n_garn}");
     assert!(n_glod >= 100, "glod {n_glod}");
     assert!(n_human >= 100, "czlowiek {n_human}");
     assert!(n_deficyt >= 80, "deficyt {n_deficyt}");
