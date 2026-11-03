@@ -33,7 +33,12 @@ pub fn owner_zloto_access_for_mennica(
     if has_zloto_access_now(owner_id) {
         return true;
     }
-    state.grace_turns_left.get(&owner_id).copied().unwrap_or(0.0) > 0.0
+    state
+        .grace_turns_left
+        .get(&owner_id)
+        .copied()
+        .unwrap_or(0.0)
+        > 0.0
 }
 
 /// Czesc mutujaca `prepareMennicaZlotoGraceForTick` (`:50-64`); resolver zwracany przez weba to
@@ -64,7 +69,11 @@ pub fn finalize_mennica_zloto_grace_after_tick(
         let now = has_zloto_access_now(owner_id);
         state.had_access_last_turn.insert(owner_id, now);
         if !now {
-            let grace = state.grace_turns_left.get(&owner_id).copied().unwrap_or(0.0);
+            let grace = state
+                .grace_turns_left
+                .get(&owner_id)
+                .copied()
+                .unwrap_or(0.0);
             if grace > 0.0 {
                 state.grace_turns_left.insert(owner_id, grace - 1.0);
             }

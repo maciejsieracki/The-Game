@@ -50,7 +50,10 @@ impl Default for PinTradeIncomeParams {
 
 /// Web `loadTradeRouteIncomeParams` (`:1584-1604`): `raw.handel_szlaki?.[key]?.[difficulty]` musi byc niepusta
 /// tablica liczb skonczonych, inaczej krzywa domyslna.
-pub fn load_pin_trade_income_params(econ: Option<&Value>, difficulty: &str) -> PinTradeIncomeParams {
+pub fn load_pin_trade_income_params(
+    econ: Option<&Value>,
+    difficulty: &str,
+) -> PinTradeIncomeParams {
     let grp = econ.and_then(|e| e.get("handel_szlaki"));
     let read = |key: &str, fallback: &[f64]| -> Vec<f64> {
         let v = grp
@@ -58,7 +61,9 @@ pub fn load_pin_trade_income_params(econ: Option<&Value>, difficulty: &str) -> P
             .and_then(|row| row.get(difficulty))
             .and_then(Value::as_array);
         match v {
-            Some(a) if !a.is_empty() && a.iter().all(|x| x.as_f64().is_some_and(f64::is_finite)) => {
+            Some(a)
+                if !a.is_empty() && a.iter().all(|x| x.as_f64().is_some_and(f64::is_finite)) =>
+            {
                 a.iter().map(|x| x.as_f64().unwrap()).collect()
             }
             _ => fallback.to_vec(),
@@ -144,11 +149,19 @@ pub fn compute_pin_trade_income_breakdown(
         } else {
             (to_after_wonder * (1.0 + to_targ)).floor()
         };
-        *out.total_by_city.entry(route.from_city_id.clone()).or_insert(0.0) += from_income;
-        *out.total_by_city.entry(route.to_city_id.clone()).or_insert(0.0) += to_income;
+        *out.total_by_city
+            .entry(route.from_city_id.clone())
+            .or_insert(0.0) += from_income;
+        *out.total_by_city
+            .entry(route.to_city_id.clone())
+            .or_insert(0.0) += to_income;
         if route.medium == TradeRouteMedium::Sea {
-            *out.maritime_by_city.entry(route.from_city_id.clone()).or_insert(0.0) += from_income;
-            *out.maritime_by_city.entry(route.to_city_id.clone()).or_insert(0.0) += to_income;
+            *out.maritime_by_city
+                .entry(route.from_city_id.clone())
+                .or_insert(0.0) += from_income;
+            *out.maritime_by_city
+                .entry(route.to_city_id.clone())
+                .or_insert(0.0) += to_income;
         }
     }
     out

@@ -21,7 +21,7 @@ faza zasobowa + drenaz Mennicy + reconcile (`advance_city_economy_resources_with
 | P23 | utrzymanie per owner (`upkeepBalance`, 3 mapy utrzymania surowcowego) | `:2834-2884` | `turn_economy_tick.rs compute_owner_upkeep` | **ZAPORTOWANE (-Q5)** |
 | P24 | `manpowerHeal` | `:2887-2909` | `advance_manpower_heal` (-Q4b), wolane z `advance_city_economy` | ZAPORTOWANE |
 | - | `growth`/`starved` | `:2463-2464` (zawsze 0) | stale 0.0 | ZAPORTOWANE (Z-Q5-3) |
-| - | wiazanie z petla gry | `main.ts:34540` | brak konsumenta | **DLUG -Q6** (sek. 4) |
+| - | wiazanie z petla gry | `main.ts:34540` | `turn_economy_wire::run_economy_tick_for_game` | **ZAPORTOWANE w -Q6** (`P6-ADVANCE-CITY-ECONOMY-Q6.md`; reszta = dlug -Q7) |
 
 ## 3. Z-Q4-3 (drenaz Mennicy przed vs po petli) - ZBADANE
 

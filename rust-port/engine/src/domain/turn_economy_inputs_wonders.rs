@@ -58,6 +58,11 @@ fn find_wonder<'a>(w: &'a Wonders, id: &str) -> Option<&'a crate::data::building
     w.cuda.iter().rfind(|c| c.id == id)
 }
 
+/// Web `isWonderBonusActive` (`:176`): `eraImperium <= absolut` (NaN -> nieaktywny).
+fn wonder_bonus_active(owner_era: f64, absolut: i64) -> bool {
+    owner_era <= absolut as f64
+}
+
 /// Web `sumWonderCityYieldsForOwner` (`:216-236`).
 pub fn sum_wonder_city_yields_for_owner(
     wonders: &Wonders,
@@ -70,7 +75,7 @@ pub fn sum_wonder_city_yields_for_owner(
             continue;
         };
         let m = &w.bonusy.miasto;
-        if !(owner_era <= w.absolut as f64) {
+        if !wonder_bonus_active(owner_era, w.absolut) {
             continue;
         }
         let g = |x: Option<i64>| x.map(|v| v as f64).unwrap_or(0.0);
@@ -109,7 +114,7 @@ pub fn sum_wonder_trade_route_bonus_for_owner(
         let Some(w) = find_wonder(wonders, id) else {
             continue;
         };
-        if !(owner_era <= w.absolut as f64) {
+        if !wonder_bonus_active(owner_era, w.absolut) {
             continue;
         }
         for s in &w.bonusy.specjalne {
@@ -139,8 +144,11 @@ pub fn build_wonder_city_yields_by_owner_map(
         if !seen.insert(oid) {
             continue;
         }
-        let bonus =
-            sum_wonder_city_yields_for_owner(wonders, &wonder_ids_owned_by(placed, oid), owner_era(oid));
+        let bonus = sum_wonder_city_yields_for_owner(
+            wonders,
+            &wonder_ids_owned_by(placed, oid),
+            owner_era(oid),
+        );
         if has_any_wonder_city_yield(&bonus) {
             out.insert(oid, bonus.to_loop_bonus());
         }

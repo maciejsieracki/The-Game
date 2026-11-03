@@ -249,7 +249,8 @@ pub fn run_economy_tick_for_game(
             0.0
         }
     };
-    let trade = build_trade_tick_inputs(ctx.trade_routes, &income_params, &wonder_trade, &targowisko);
+    let trade =
+        build_trade_tick_inputs(ctx.trade_routes, &income_params, &wonder_trade, &targowisko);
 
     // ---- reczny podatek z Pracy (:34525-34535) ----
     let manual_tax = build_manual_work_tax_by_city(
@@ -417,7 +418,9 @@ pub fn run_economy_tick_for_game(
         .iter()
         .map(|c| c.owner_id)
         .filter(|&o| {
-            !ctx.human_owner_ids.contains(&o) && o != BARBARIAN_OWNER_ID && o != REBEL_FACTION_OWNER_ID
+            !ctx.human_owner_ids.contains(&o)
+                && o != BARBARIAN_OWNER_ID
+                && o != REBEL_FACTION_OWNER_ID
         })
         .filter(|&o| seen_ai.insert(o))
         .collect();

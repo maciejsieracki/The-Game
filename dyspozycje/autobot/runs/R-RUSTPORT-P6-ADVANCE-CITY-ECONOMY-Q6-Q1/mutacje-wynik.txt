@@ -1,0 +1,67 @@
+M01-idx-no-max0: SURVIVED EKW
+M02-curve-swap: KILLED
+M03-intl-mult-off: KILLED
+M04-ceil-to-floor: KILLED
+M05-from-wonder-ceil: KILLED
+M06-to-wonder-nofloor: KILLED
+M07-from-targ-nofloor: KILLED
+M08-to-targ-nofloor: KILLED
+M09-maritime-all: KILLED
+M10-disconnected-counted: KILLED
+M11-bonus-ignores-building: KILLED
+M12-bonus-rate: KILLED
+M13-sea-count-all: KILLED
+M14-extra-routes: KILLED
+M15-port-bonus: KILLED
+M16-sea-not-in-maritime: KILLED
+M17-bonus-uses-loaded-params: KILLED
+M18-loader-empty-ok: KILLED
+M19-default-lad: KILLED
+W01-city-era-gate-off: KILLED
+W02-trade-era-gate-off: KILLED
+W03-zadowolenie-dropped: KILLED
+W04-obrona-dropped: KILLED
+W05-handel-morski-ignored: KILLED
+W06-typ-not-checked: KILLED
+W07-rfind-to-find: SURVIVED EKW
+W08-dedupe-off: COMPILE EKW
+W09-empty-yield-kept: KILLED
+W10-has-any-no-obrona: KILLED
+W11-loop-praca-zero: KILLED
+W12-trade-total-overwrite: KILLED
+S01-grace-turns: KILLED
+S02-prepare-no-reset: KILLED
+S03-had-access-is-some: KILLED
+S04-finalize-flip: KILLED
+S05-no-decrement: KILLED
+S06-no-snapshot: KILLED
+S07-grace-ge: KILLED
+S08-order-le: KILLED
+S09-capital-no-owner-check: KILLED
+S10-tax-lt: KILLED
+S11-target-last: KILLED
+S12-empty-owner-not-skipped: KILLED
+S13-city-order-nan: KILLED
+R01-sum-owner-eq: KILLED
+R02-sum-ztras-dropped: KILLED
+R03-player-cities-neq: KILLED
+R04-treasury-no-upkeep: KILLED
+R05-science-flip: KILLED
+R06-deficyt-false: KILLED
+R07-humans-as-ai: KILLED
+R08-ai-includes-barbarian: KILLED
+R09-ai-includes-rebel: KILLED
+R10-no-resource-deduct: KILLED
+R11-has-now-no-stock: KILLED
+R12-no-zloto-label: SURVIVED
+R13-no-prepare: KILLED
+R14-finalize-pre-state: KILLED
+R15-manual-tax-wrong-map: KILLED
+R16-building-bonus-wrong-map: KILLED
+R17-wonder-trade-era-one: KILLED
+R18-targowisko-zero: KILLED
+R19-default-income-params: KILLED
+R20-stock-snapshot-empty: KILLED
+R21-labels-dedupe-off: SURVIVED EKW
+R22-wonder-map-loop-era: KILLED
+PODSUMOWANIE: 70 mutantow; COMPILE 1 (W08, nie liczony); KILLED 65; SURVIVED 4, wszystkie EKW (M01 u32 nie bywa ujemne; W07 id cudow unikalne; R12 Mennica omija etykiete Zloto: building-resource-gate.ts:263-264,277-278 gdy podano resolveOwnerZlotoAccess; R21 dedupe etykiet - wynik traktuje etykiety jako zbior). Brutto 65/69 = 94.2%; netto 65/65 (100%).

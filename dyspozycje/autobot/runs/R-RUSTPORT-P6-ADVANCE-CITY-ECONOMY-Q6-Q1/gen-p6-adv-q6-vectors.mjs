@@ -298,7 +298,7 @@ function mk(name, cls, count, opts = {}) {
   if (opts.barb && cs.length < 7) {
     const m = MAPS[mapIdx]; let q; let r; let t = 0;
     do { q = ri(0, m.w - 1); r = ri(0, m.h - 1); t++; } while (cs.some((c) => c.q === q && c.r === r) && t < 30);
-    if (!cs.some((c) => c.q === q && c.r === r)) cs.push({ id: 'barb' + ri(0, 9), owner: -1, q, r, pop: pick([1, 2, 3]) });
+    if (!cs.some((c) => c.q === q && c.r === r)) cs.push({ id: 'barb' + ri(0, 9), owner: rnd() < 0.3 ? -99 : -1, q, r, pop: pick([1, 2, 3]) });
     const ids = new Set(); cs.forEach((c) => { while (ids.has(c.id)) c.id += 'x'; ids.add(c.id); });
   }
   const sc = finishScenario(name, cls, mapIdx, cs, { difficulty: pick(['easy', 'normal', 'hard']) });

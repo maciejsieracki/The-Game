@@ -1,0 +1,3 @@
+cargo test -j 2 --no-fail-fast, pelny worktree, po ostatniej zmianie kodu
+SUMA: passed 2057, failed 0
+EXIT=0

@@ -157,7 +157,6 @@ fn owner_map<T>(v: &Value, f: impl Fn(&Value) -> T) -> BTreeMap<i64, T> {
         .collect()
 }
 
-
 macro_rules! chk {
     ($cond:expr, $($arg:tt)*) => {
         if !$cond {
@@ -179,7 +178,6 @@ fn chk_tick(label: &str, got: f64, w: &Value, key: &str) -> Result<(), String> {
     chk!(w.get(key).is_some(), "{label}: brak pola weba {key}");
     chk_bits(&format!("{label} {key}"), got, num(&w[key]))
 }
-
 
 fn opt_unit_num(v: &Value) -> Option<f64> {
     if v.is_null() {
@@ -204,7 +202,6 @@ fn heal_unit_of(u: &Value) -> ManpowerHealUnit {
         in_garnizon: u["inGarnizon"].as_bool(),
     }
 }
-
 
 fn chk_rec(label: &str, got: &BTreeMap<String, f64>, want: &Value) -> Result<(), String> {
     let w = want
@@ -484,7 +481,6 @@ fn compare(name: &str, s: &Value, ran: &Ran) -> Result<(), String> {
     Ok(())
 }
 
-
 struct Ctx {
     matrix: civ_engine::data::civilizations::CivMatrixFile,
     maps: Vec<BuildMap>,
@@ -628,7 +624,9 @@ fn run_rust(ctx: &Ctx, s: &Value) -> Ran {
     let get_max_hp = |t: &str| max_hp[t];
     let hp_calls: RefCell<Vec<Value>> = RefCell::new(Vec::new());
     let mut on_changed = |id: &str, hp: f64, hp_max: f64| {
-        hp_calls.borrow_mut().push(json!([id, enc(hp), enc(hp_max)]));
+        hp_calls
+            .borrow_mut()
+            .push(json!([id, enc(hp), enc(hp_max)]));
     };
     let heal = if s["heal"].is_object() {
         Some(HealRequest {
@@ -697,8 +695,14 @@ fn compare_q6(ctx: &Ctx, name: &str, s: &Value, ran: &Ran) -> Result<(), String>
 
     // ---- parametry krzywych handlu ----
     let ip = load_pin_trade_income_params(Some(&econ), &diff);
-    let want_lad: Vec<f64> = arr(&w["inputs"]["incomeParams"], "lad").iter().map(num).collect();
-    let want_mor: Vec<f64> = arr(&w["inputs"]["incomeParams"], "morze").iter().map(num).collect();
+    let want_lad: Vec<f64> = arr(&w["inputs"]["incomeParams"], "lad")
+        .iter()
+        .map(num)
+        .collect();
+    let want_mor: Vec<f64> = arr(&w["inputs"]["incomeParams"], "morze")
+        .iter()
+        .map(num)
+        .collect();
     chk!(
         ip.dochody_ladowe.len() == want_lad.len() && ip.dochody_morskie.len() == want_mor.len(),
         "{name} dlugosc krzywych"
@@ -715,7 +719,10 @@ fn compare_q6(ctx: &Ctx, name: &str, s: &Value, ran: &Ran) -> Result<(), String>
     for (o, v) in wt {
         let o: i64 = o.parse().unwrap();
         let ids = wonder_ids_owned_by(&ran.placed, o);
-        for (medium, key) in [(TradeRouteMedium::Land, "lad"), (TradeRouteMedium::Sea, "morze")] {
+        for (medium, key) in [
+            (TradeRouteMedium::Land, "lad"),
+            (TradeRouteMedium::Sea, "morze"),
+        ] {
             let got = sum_wonder_trade_route_bonus_for_owner(&ctx.wonders, &ids, era_f(o), medium);
             chk_bits(&format!("{name} wonderTrade[{o}].{key}"), got, num(&v[key]))?;
         }
@@ -747,7 +754,11 @@ fn compare_q6(ctx: &Ctx, name: &str, s: &Value, ran: &Ran) -> Result<(), String>
         ] {
             chk_bits(&format!("{name} wonder[{o}].{k}"), g, num(&x[k]))?;
         }
-        chk_bits(&format!("{name} wonderLoop[{o}]"), b.praca, num(&x["praca"]))?;
+        chk_bits(
+            &format!("{name} wonderLoop[{o}]"),
+            b.praca,
+            num(&x["praca"]),
+        )?;
     }
 
     // ---- trasy (te same funkcje co w wiazaniu) ----
@@ -766,15 +777,26 @@ fn compare_q6(ctx: &Ctx, name: &str, s: &Value, ran: &Ran) -> Result<(), String>
     let targ_val = civ_engine::domain::economy_city_params::load_econ_params(&econ, &diff)
         .budynek_targowisko_bonus_handlu;
     let targ = |cid: &str| {
-        if built.get(cid).is_some_and(|b| b.iter().any(|x| x == "targowisko")) {
+        if built
+            .get(cid)
+            .is_some_and(|b| b.iter().any(|x| x == "targowisko"))
+        {
             targ_val
         } else {
             0.0
         }
     };
     let ti = build_trade_tick_inputs(&ran.routes, &ip, &era_owner, &targ);
-    chk_rec(&format!("{name} tradeIncome"), &ti.trade_income_by_city, &w["inputs"]["tradeIncome"])?;
-    chk_rec(&format!("{name} maritime"), &ti.maritime_trade_income_by_city, &w["inputs"]["maritime"])?;
+    chk_rec(
+        &format!("{name} tradeIncome"),
+        &ti.trade_income_by_city,
+        &w["inputs"]["tradeIncome"],
+    )?;
+    chk_rec(
+        &format!("{name} maritime"),
+        &ti.maritime_trade_income_by_city,
+        &w["inputs"]["maritime"],
+    )?;
     chk_rec(
         &format!("{name} buildingBonus"),
         &ti.trade_route_building_bonus_by_city,
@@ -830,9 +852,17 @@ fn compare_q6(ctx: &Ctx, name: &str, s: &Value, ran: &Ran) -> Result<(), String>
         ] {
             chk_bits(&format!("{l} sum.{k}"), g, num(&x["sum"][k]))?;
         }
-        chk_bits(&format!("{l} utrzymanie"), b.upkeep_applied, num(&x["upkeepApplied"]))?;
+        chk_bits(
+            &format!("{l} utrzymanie"),
+            b.upkeep_applied,
+            num(&x["upkeepApplied"]),
+        )?;
         chk!(b.deficyt == x["deficyt"].as_bool().unwrap(), "{l} deficyt");
-        chk_rec(&format!("{l} resDeducted"), &b.resource_upkeep_deducted, &x["resDeducted"])?;
+        chk_rec(
+            &format!("{l} resDeducted"),
+            &b.resource_upkeep_deducted,
+            &x["resDeducted"],
+        )?;
         let before = &q["before"][b.owner_id.to_string()];
         let (sk, na) = if before.is_object() {
             (num(&before["sk"]), num(&before["na"]))
@@ -843,8 +873,16 @@ fn compare_q6(ctx: &Ctx, name: &str, s: &Value, ran: &Ran) -> Result<(), String>
             .get(b.owner_id.to_string())
             .map(num)
             .unwrap_or(0.0);
-        chk_bits(&format!("{l} skarbiec po"), b.apply_treasury(sk), num(&x["skarbPo"]))?;
-        chk_bits(&format!("{l} nauka po"), b.apply_science(na, bonus), num(&x["naukaPo"]))?;
+        chk_bits(
+            &format!("{l} skarbiec po"),
+            b.apply_treasury(sk),
+            num(&x["skarbPo"]),
+        )?;
+        chk_bits(
+            &format!("{l} nauka po"),
+            b.apply_science(na, bonus),
+            num(&x["naukaPo"]),
+        )?;
     }
 
     // ---- zapasy miast PO bankowaniu ----
@@ -852,12 +890,16 @@ fn compare_q6(ctx: &Ctx, name: &str, s: &Value, ran: &Ran) -> Result<(), String>
         match (&c.surowce, wa["surowce"].is_null()) {
             (None, true) => {}
             (Some(m), false) => chk_rec(&format!("{name} {} surowce po", c.id), m, &wa["surowce"])?,
-            (g, _) => return Err(format!("{name} {} surowce rust={g:?} web={}", c.id, wa["surowce"])),
+            (g, _) => {
+                return Err(format!(
+                    "{name} {} surowce rust={g:?} web={}",
+                    c.id, wa["surowce"]
+                ))
+            }
         }
     }
     Ok(())
 }
-
 
 fn make_ctx(d: &Value) -> Ctx {
     let mut matrix = load_civ_matrix().file.clone();
@@ -914,14 +956,18 @@ fn game_economy_wiring_matches_running_web() {
                 .iter()
                 .any(|r| r.is_connected() && r.medium == TradeRouteMedium::Sea),
         );
-        n_wonder += usize::from(!s["out"]["q6"]["inputs"]["wonderMap"]
-            .as_object()
-            .unwrap()
-            .is_empty());
-        n_tax += usize::from(!s["out"]["q6"]["inputs"]["manualTax"]
-            .as_object()
-            .unwrap()
-            .is_empty());
+        n_wonder += usize::from(
+            !s["out"]["q6"]["inputs"]["wonderMap"]
+                .as_object()
+                .unwrap()
+                .is_empty(),
+        );
+        n_tax += usize::from(
+            !s["out"]["q6"]["inputs"]["manualTax"]
+                .as_object()
+                .unwrap()
+                .is_empty(),
+        );
         n_deficyt += usize::from(ran.wire.banks.iter().any(|b| b.deficyt));
         n_res += usize::from(
             ran.wire
