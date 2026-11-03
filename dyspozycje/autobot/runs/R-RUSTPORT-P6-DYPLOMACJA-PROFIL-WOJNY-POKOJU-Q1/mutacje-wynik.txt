@@ -1,0 +1,110 @@
+# Mutacje R-RUSTPORT-P6-DYPLOMACJA-PROFIL-WOJNY-POKOJU-Q1 (mutate-dypl2.py, 91 mutacji, jedna zamiana tekstu w diplomacy_war_peace_profile.rs)
+# Wektory doskalowywano po PRZEZYLYCH mutantach ([03] [06] [42] [71]); po kazdej poprawce wektorow dany mutant uruchomiono PONOWNIE i zabito (wpisy nizej).
+# Pozostale mutanty uruchomiono na wektorach z danego etapu (gen1..gen5; gen5 = wektory ostateczne w repo); zmiany gen->gen tylko DODAJA przypadki (pule profili/zestawy parametrow).
+## indeksy 0-3 (gen1)
+[00] ZABITA    zdrowie: brak filtra is_finite
+[01] ZABITA    zdrowie: fallback stala 0.4 zamiast baza z params
+[02] ZABITA    find: bez lowercase klucza
+[03] PRZEZYLA  find: ikona bez lowercase
+## 3-14 (gen2)
+[03] PRZEZYLA  find: ikona bez lowercase
+[04] ZABITA    find: brak dopasowania po Cywilizacja
+[05] ZABITA    find: brak dopasowania po typie
+[06] PRZEZYLA  resolve: pusty klucz szuka wiersza
+[07] ZABITA    clamp: odwrocona kolejnosc min/max
+[08] ZABITA    brak danych: has_data=true
+[09] ZABITA    brak danych: agresywnosc 4
+[10] ZABITA    brak danych: ekspansywnosc 2
+[11] ZABITA    brak danych: podboj 3
+[12] ZABITA    brak danych: tolerancja 4
+[13] ZABITA    brak danych: dipProg 4
+[14] ZABITA    brak danych: prog wojny = baza
+## [03] [06] ponownie po poprawce (gen3), potem 15-23
+[03] ZABITA    find: ikona bez lowercase
+[06] ZABITA    resolve: pusty klucz szuka wiersza
+[15] ZABITA    brak danych: prog pokoju = baza
+[16] ZABITA    brak danych: krytyczny = baza
+[17] ZABITA    brak danych: minTur = baza
+[18] ZABITA    brak danych: zmeczenie T = maksTur
+[19] ZABITA    brak danych: hamulec dip=4
+[20] ZABITA    brak danych: zdrowie bez ai-params
+[21] ZABITA    domyslna dip_prog_wojny 4
+[22] ZABITA    domyslna agresywnosc 4
+[23] ZABITA    domyslna ekspansywnosc 4
+## 24-35
+[24] ZABITA    domyslny podboj 3
+[25] ZABITA    domyslna tolerancja 4
+[26] ZABITA    obronny: >= 1
+[27] ZABITA    obronny: != 0
+[28] ZABITA    obronny: domyslnie 1
+[29] ZABITA    prog wojny: dip -> agr
+[30] ZABITA    prog wojny: eks srodek +
+[31] ZABITA    prog wojny: podboj znak
+[32] ZABITA    prog pokoju: znak agresji
+[33] ZABITA    prog pokoju: znak premii obronnej
+[34] ZABITA    prog pokoju: premia dla nieobronnych
+[35] ZABITA    krytyczny: srodek +
+## 36-44
+[36] ZABITA    zdrowie: risk -> agr
+[37] ZABITA    minTur: >= -> >
+[38] ZABITA    minTur: <= -> <
+[39] ZABITA    minTur: brak kary obronnej
+[40] ZABITA    minTur: brak Math.round
+[41] ZABITA    zmeczenieT: brak min z maksTur
+[42] PRZEZYLA  hamulecN: round() Rust zamiast Math.round
+[43] ZABITA    hamulecN: brak zaokraglenia
+[44] ZABITA    frakcja: brak filtra is_finite
+## [42] ponownie (gen4), potem 45-54
+[42] ZABITA    hamulecN: round() Rust zamiast Math.round
+[45] ZABITA    frakcja: turns<=0 -> <0
+[46] ZABITA    frakcja: T>0 -> T>=0
+[47] ZABITA    frakcja: brak min(1)
+[48] ZABITA    share: brak maksUdzial
+[49] ZABITA    loss: rekord z innej wojny nie jest resetowany
+[50] ZABITA    loss: +2
+[51] ZABITA    loss: brak ostatniaTura
+[52] ZABITA    state: rekord z innej wojny ignorowany
+[53] ZABITA    state: brak max(0, .) dla tur wojny
+[54] ZABITA    state: since bez ostatniaTura
+## 55-63
+[55] ZABITA    brake: prog +1
+[56] ZABITA    sygnal a: <= -> <
+[57] ZABITA    sygnal b: >=1 -> >1
+[58] ZABITA    sygnal b: rw <= -> <
+[59] ZABITA    sygnal d: turns >= -> >
+[60] ZABITA    sygnal d: since >= -> >
+[61] ZABITA    sygnal d: fallback since = 0
+[62] ZABITA    sygnal e: >= -> >
+[63] ZABITA    sygnal c: < -> <=
+## 64-72
+[64] ZABITA    sygnal c: zly powod
+[65] ZABITA    sila: >= -> >
+[66] ZABITA    sila: srodek 0.55
+[67] ZABITA    sila: <= -> <
+[68] ZABITA    cyw: podboj srodek +
+[69] ZABITA    cyw: agresja srodek +
+[70] ZABITA    silniejsze: rw >= -> >
+[71] PRZEZYLA  silniejsze: lost==0 -> <=0
+[72] ZABITA    silniejsze: < -> <=
+## [71] ponownie (gen5 = ostateczne), potem 73-80
+[71] ZABITA    silniejsze: lost==0 -> <=0
+[73] ZABITA    bramka: turns < min -> <=
+[74] ZABITA    bramka: >= 20 -> > 20
+[75] ZABITA    bramka: brak min(1) po 20 turach
+[76] BLAD-KOTWICY (0x) bramka: mnoznik + zamiast *
+[77] ZABITA    bramka: komunikat too_early
+[78] ZABITA    bramka: Display Rust zamiast Number->String
+[79] ZABITA    army: cywilni liczeni
+[80] ZABITA    army: bez filtra wlasciciela
+## [76] po poprawie kotwicy, potem 81-90
+[76] ZABITA    bramka: mnoznik + zamiast *
+[81] ZABITA    army: brak max(0,hp)
+[82] ZABITA    army: brak min(m,hp)
+[83] ZABITA    army: m>0 -> m>=0
+[84] ZABITA    army: max>0 -> >=0
+[85] ZABITA    wsf: stempel ignorowany
+[86] ZABITA    wsf: poza wojna zostaje stempel
+[87] ZABITA    rel: > 0 -> >= 0
+[88] ZABITA    pws: odwrocony at_war
+[89] ZABITA    brake params: >= -> >
+[90] ZABITA    brake params: N zawsze od strony a

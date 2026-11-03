@@ -100,7 +100,7 @@ MUT = [
     ("if turns < min_tur {", "if turns <= min_tur {", "bramka: turns < min -> <="),
     ("if turns >= c.tury_bez_ograniczen_ai {", "if turns > c.tury_bez_ograniczen_ai {", "bramka: >= 20 -> > 20"),
     ("price_multiplier: js_min(1.0, peace_civ_price_multiplier(profile, params)),", "price_multiplier: peace_civ_price_multiplier(profile, params),", "bramka: brak min(1) po 20 turach"),
-    ("* peace_civ_price_multiplier(profile, params),\n    }", "+ peace_civ_price_multiplier(profile, params),\n    }", "bramka: mnoznik + zamiast *"),
+    ("* peace_civ_price_multiplier(profile, params),\n        reason: None,", "+ peace_civ_price_multiplier(profile, params),\n        reason: None,", "bramka: mnoznik + zamiast *"),
     ("AI wymaga co najmniej {} tur wojny", "AI wymaga co najmniej {} tur wojny.", "bramka: komunikat too_early"),
     ("js_number_to_string(turns)", "turns.to_string()", "bramka: Display Rust zamiast Number->String"),
     # --- rdzenie main.ts ---

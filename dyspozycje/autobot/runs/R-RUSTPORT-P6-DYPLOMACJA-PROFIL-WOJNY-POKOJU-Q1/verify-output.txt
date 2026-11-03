@@ -1,2 +1,2 @@
-sprawdzen OK: 137287, rozbieznosci: 0; werdykty bramki: {'ok': 9117, 'too_early': 2632, 'stronger': 571}
+sprawdzen OK: 177275, rozbieznosci: 0; werdykty bramki: {'ok': 10424, 'too_early': 2681, 'stronger': 485}
 EXIT=0

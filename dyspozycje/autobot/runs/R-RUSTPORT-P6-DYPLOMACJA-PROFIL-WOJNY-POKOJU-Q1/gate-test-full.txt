@@ -1,0 +1,10 @@
+SHARD 0/8 targets=36 exit=0 passed=319 failed=0
+SHARD 1/8 targets=36 exit=0 passed=274 failed=0
+SHARD 2/8 targets=36 exit=0 passed=286 failed=0
+SHARD 3/8 targets=36 exit=0 passed=261 failed=0
+SHARD 4/8 targets=36 exit=0 passed=197 failed=0
+SHARD 5/8 targets=36 exit=0 passed=259 failed=0
+SHARD 6/8 targets=36 exit=0 passed=269 failed=0
+SHARD 7/8 targets=35 exit=0 passed=243 failed=0
+SUMA passed=2108 failed=0 (w tym 10 nowych w p6_dyplomacja_profil_wojny_pokoju; PRZED osobnym przebiegiem NIE_ZMIERZONO, PO-10=2098)
+EXIT=0

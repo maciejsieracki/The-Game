@@ -38,5 +38,5 @@ ROZBIEZNOSC: profil#86 key='Fenicjanie' pole[14]: py=6.0 web=7.0
 ROZBIEZNOSC: profil#87 key='FENICJANIE' pole[14]: py=6.0 web=7.0
 ROZBIEZNOSC: profil#88 key='FENICJANIE' pole[14]: py=6.0 web=7.0
 ROZBIEZNOSC: profil#89 key=' fenicjanie' pole[14]: py=5.0 web=6.0
-sprawdzen OK: 135532, rozbieznosci: 1755; werdykty bramki: {'ok': 9117, 'too_early': 2632, 'stronger': 571}
+sprawdzen OK: 174026, rozbieznosci: 3249; werdykty bramki: {'ok': 10424, 'too_early': 2681, 'stronger': 485}
 EXIT=0 (negatywna: 0 = rozbieznosci wykryte)
