@@ -8564,3 +8564,6 @@ Właściciel potwierdził: wieże strzeleckie co 4 heksy powstają automatycznie
 
 ## 2026-11-03 — DECYZJA WŁAŚCICIELA (ABC): Mennica — mnożnik zostaje jak jest
 Mnożnik Mennicy (×2,0 łatwy / ×1,5 normalny / ×1,0 trudny; wymaga Waluty + Mennicy) mnoży cały Handel netto (= Podatek) miasta przed podziałem suwakiem Skarbiec/Badania/Bogactwo. Właściciel: zostawić jak jest. Brak zmian w kodzie.
+
+## 2026-11-03 — wdrożono ROBOCZA bba4ae4e (main e0b20f430): palisada jako mur (runda 1), tooltip ulepszeń
+Palisada r1 (R1–R3) + tooltip. W toku: runda 2 palisady (wieżyczki przy murze i palisadzie, model palisady w bitwie). Do decyzji: czy wieża oblężnicza w bitwie taktycznej ma liczyć się jako wyłom (dziś nie; w Auto/„Pomiń” tak).
