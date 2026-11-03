@@ -193,6 +193,21 @@ pub struct PostGrowthInput<'a> {
     pub exclude_hex_keys_by_city: Option<&'a BTreeMap<String, BTreeSet<String>>>,
 }
 
+/// Mapy wejsciowe wzrostu z wyniku petli Porzadku (`compute_order_lane`, `main.ts:36010-36024`):
+/// `happinessByCityId` (`st.szczescie`) i `citizenGrowthPctByCityId` (`st.citizenUpkeep?.growthPctDelta ?? 0`).
+/// `growthMultMap` to wprost [`crate::domain::order_effects_lane::OrderLaneState::growth_mult_map`].
+pub fn growth_inputs_from_order_lane(
+    out: &crate::domain::order_effects_lane::OrderLaneOutput,
+) -> (BTreeMap<String, f64>, BTreeMap<String, f64>) {
+    let mut happiness = BTreeMap::new();
+    let mut citizen = BTreeMap::new();
+    for r in &out.reports {
+        happiness.insert(r.city_id.clone(), r.szczescie);
+        citizen.insert(r.city_id.clone(), r.citizen_growth_pct_delta);
+    }
+    (happiness, citizen)
+}
+
 /// Wynik wzrostu: miasta, ktorych populacja sie zmienila (kolejnosc wywolan `onCityPopulationChanged`).
 #[derive(Debug, Clone, PartialEq, Default)]
 pub struct PostGrowthOutcome {

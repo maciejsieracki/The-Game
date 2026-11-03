@@ -1,0 +1,6 @@
+scenariuszy=347 sprawdzen=25125 atrycja=216 zniszczone=396 mnoznik!=1=473 zmiany_pop=196 praca>0=246
+ROZBIEZNOSCI=0
+EXIT=0
+scenariuszy=347 sprawdzen=25125 atrycja=216 zniszczone=396 mnoznik!=1=473 zmiany_pop=196 praca>0=246
+NEG: rozbieznosci=2
+EXIT_NEG=0

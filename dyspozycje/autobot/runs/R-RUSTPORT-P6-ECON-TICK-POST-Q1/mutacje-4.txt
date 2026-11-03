@@ -1,0 +1,11 @@
+P40-wzrost-not-saved               KILLED    
+P41-ubytek-not-saved               KILLED    
+P42-wzrost-procent-not-saved       KILLED    
+P43-frac-po-not-saved              KILLED    
+P44-magazyn-po-not-saved           KILLED    
+P45-hooks-bypassed                 SURVIVED  EKW
+P46-changed-not-collected          KILLED    
+P50-upkeep-ge                      SURVIVED  EKW
+P51-ai-owner0-not-skipped          KILLED    
+P52-ai-nonpositive-applied         KILLED    
+P53-ai-default-pool-one            KILLED    

@@ -166,17 +166,22 @@ fn opt_bool_eq(got: bool, want: &Value) -> bool {
 #[derive(Default)]
 struct Hooks {
     changed: Vec<String>,
+    /// (id, populacja przed, populacja po) z `rebalanceWorkersAfterPopulationChange`.
+    rebalance: Vec<(String, f64, f64)>,
 }
 
 impl PopulationChangeHooks for Hooks {
     fn rebalance_workers_after_population_change(
         &mut self,
-        _city: &mut GrowthCity,
-        _pop_before: f64,
-        _pop_after: f64,
+        city: &mut GrowthCity,
+        pop_before: f64,
+        pop_after: f64,
         _exclude: Option<&BTreeSet<String>>,
     ) {
-        // web: `map: {hexes: new Map()}`, `territoryNodes: []` - rebalans bez wplywu na pola porownywane (zob. P6.7A)
+        // web: `map: {hexes: new Map()}`, `territoryNodes: []` - rebalans bez wplywu na pola porownywane (zob. P6.7A);
+        // porownujemy za to kolejnosc i argumenty wywolan.
+        self.rebalance
+            .push((city.city.id.clone(), pop_before, pop_after));
     }
 
     fn on_city_population_changed(&mut self, city_id: &str) {
@@ -459,6 +464,16 @@ fn run_scenario(
         strings(&g["changed"])
     );
     chk!(hooks.changed == outcome.changed_city_ids, "{name} wzrost hooki");
+    chk!(
+        hooks.rebalance.iter().map(|r| r.0.clone()).collect::<Vec<_>>() == outcome.changed_city_ids,
+        "{name} wzrost rebalans kolejnosc"
+    );
+    let pop_before: BTreeMap<String, f64> = str_map(&g["popBefore"], num);
+    for (id, before, after) in &hooks.rebalance {
+        chk_bits(&format!("{name} rebalans {id} przed"), *before, pop_before[id])?;
+        let fin = cities.iter().find(|c| &c.id == id).map(|c| c.population).unwrap();
+        chk_bits(&format!("{name} rebalans {id} po"), *after, fin)?;
+    }
     for (c, w) in cities.iter().zip(arr(g, "cities")) {
         let l = format!("{name} wzrost {}", c.id);
         chk!(c.id == text(&w["id"]), "{l} id");

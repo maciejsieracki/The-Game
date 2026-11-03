@@ -393,6 +393,11 @@ pub struct OrderLaneCityReport {
     pub bunt: bool,
     pub revolt_warning: bool,
     pub revolt_grace_turns_left: Option<f64>,
+    /// `cityOrderState.szczescie` = `Math.round(ordPct.sz.netto * 10) / 10` (`main.ts:35765`); wejscie
+    /// `happinessByCityId` wzrostu po centrali (R-RUSTPORT-P6-ECON-TICK-POST-Q1, Z-POST-4).
+    pub szczescie: f64,
+    /// `cityOrderState.citizenUpkeep.growthPctDelta` (`main.ts:36020-36024`); wejscie `citizenGrowthPctByCityId`.
+    pub citizen_growth_pct_delta: f64,
 }
 
 /// Wynik pętli.
@@ -874,6 +879,8 @@ pub fn compute_order_lane(
             bunt,
             revolt_warning: grace_upd.revolt_warning,
             revolt_grace_turns_left: grace_upd.grace_turns_left,
+            szczescie: crate::domain::society_breakdown::js_round(ord_pct.sz.netto * 10.0) / 10.0,
+            citizen_growth_pct_delta: citizen_upkeep.coverage.growth_pct_delta as f64,
         });
 
         if post_active {

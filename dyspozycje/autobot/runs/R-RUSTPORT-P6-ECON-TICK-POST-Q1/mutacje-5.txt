@@ -1,0 +1,12 @@
+P54-rate-not-reduced               KILLED    
+P55-ai-no-floor                    KILLED    
+P56-player-owner-wrong             KILLED    
+P57-player-no-floor                KILLED    
+G01-factor-not-clamped             KILLED    
+G02-factor-added                   KILLED    
+G03-default-mult-zero              KILLED    
+G04-adjusted-eq-ignored            SURVIVED  EKW
+G05-mp-map-value-ignored           KILLED    
+G06-matrix-fallback-neutral        KILLED    
+G07-legacy-fallback-neutral        KILLED    
+G08-total-replaced-by-base         KILLED    

@@ -1,0 +1,9 @@
+P01-rebel-counted-ai               KILLED    
+P02-barbarian-counted-ai           SURVIVED  
+P08-civilians-hit                  KILLED    
+P09-player-counter-inverted        KILLED    
+P10-player-destroyed-wrong         KILLED    
+P11-hpmax-not-written-back         SURVIVED  
+P12-cleanup-skipped                KILLED    
+P13-hp-frac-from-stat-mult         KILLED    
+P14-state-seed-skipped             SURVIVED  EKW

@@ -839,7 +839,7 @@ function webPost(s, c) {
   for (const o of extraStateOwners) if (o !== -1 && !isHuman(o) && r() < 0.5) treasury.set(o, pk([-2, 8]));
   const ownerTreasury = (o) => (isHuman(o) ? treasury.get(o) : (treasury.get(o) ?? 0));
   const gdStates0 = new Map();
-  for (const o of [0, ...ownersOfCities, ...extraStateOwners]) if (r() < 0.75 && !gdStates0.has(o)) gdStates0.set(o, { turyDeficytuZlota: pk([0, 1, 2, 3, 4, 7]) });
+  for (const o of [0, ...ownersOfCities.filter((x) => x !== -1 && x !== -99), ...extraStateOwners]) if (r() < 0.75 && !gdStates0.has(o)) gdStates0.set(o, { turyDeficytuZlota: pk([0, 1, 2, 3, 4, 7]) });
     // wiersze parametrow deficytu (econ-params.json: ekonomia_miasta.zloto_deficyt_*), czesc z wariantami brzegowymi
   const em = data.econParams.ekonomia_miasta;
   const rows = {
@@ -873,7 +873,7 @@ function webPost(s, c) {
   // praca
   const pracaUp = new Map(res.pracaUpkeepByOwner);
   if (r() < 0.55) for (const o of [0, ...ownersOfCities, 9]) pracaUp.set(o, pk([0, 2.5, 13, 100, -1, 0.1]));
-  const pools = { player: pk([0, 3.5, 40, 1200.25, 7, NaN]), ai: new Map(), rate0: pk([0, 0, 5.5, -3, -0]) };
+  const pools = { player: pk([0, 3.5, 40, 1200.25, 7, NaN, -2.5]), ai: new Map(), rate0: pk([0, 0, 5.5, -3, -0]) };
   for (const o of [...pracaUp.keys()]) if (o !== 0 && r() < 0.7) pools.ai.set(o, pk([0, 1, 9.75, 300, NaN]));
 
   // ---------------- snapshot granicy (po bloku EmpireFood i bankowaniu) ----------------

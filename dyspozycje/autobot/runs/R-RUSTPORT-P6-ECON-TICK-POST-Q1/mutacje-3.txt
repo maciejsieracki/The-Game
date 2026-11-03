@@ -1,0 +1,10 @@
+P30-citizen-dropped                KILLED    
+P31-owner-era-dropped              KILLED    
+P32-built-dropped                  KILLED    
+P33-owner-civ-dropped              KILLED    
+P34-difficulty-forced-normal       KILLED    
+P35-hunger-not-saved               KILLED    
+P36-manpower-not-saved             KILLED    
+P37-growth-total-not-saved         KILLED    
+P38-starved-total-not-saved        KILLED    
+P39-ludnosc-po-not-saved           KILLED    
