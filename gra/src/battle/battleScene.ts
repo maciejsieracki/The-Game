@@ -106,6 +106,7 @@ import {
   cityGatedTerrainMultiplier,
   fieldFortifyDefenseBonus,
 } from '../game/city-defense';
+import { meleeBlockedByWall } from '../game/city-fortification';
 import { buildUnitModel } from '../render/units';
 import { clientRectToNdc, refreshInstancedPickBounds, worldToClientPx } from '../input/picker';
 import {
@@ -570,6 +571,12 @@ export interface BattleResult {
   log: string[];
   /** Every unit present in the radius-1 roster at battle resolution time. */
   eventLog: BattleEventLog;
+  /**
+   * R-WEB-PALISADE-BATTLE-WALL-RULES-Q1 (R1): w oblezeniu -- czy zniszczono brame
+   * albo mur/palisade (wylom). Miasto obwarowane mozna zdobyc WYLACZNIE po wylomie.
+   * Brak pola (bitwa poza oblezeniem) = nie dotyczy.
+   */
+  wallBreached?: boolean;
 }
 
 // ---------------------------------------------------------------------------
@@ -2413,6 +2420,8 @@ export class BattleScene {
   private towerAtWallRows = new Set<number>();
   /** HP per-tile muru (klucz: row). 0 = wyburzony. */
   private wallTileHp = new Map<number, number>();
+  /** R1 (R-WEB-PALISADE-BATTLE-WALL-RULES-Q1): brama lub kafel muru/palisady zniszczony. */
+  private wallEverBreached: boolean = false;
   /** Max HP pojedynczego kafla muru. */
   private static readonly WALL_TILE_HP = 640;
   /** HUD: pasek HP bramy + kafla muru. */
@@ -3572,6 +3581,11 @@ export class BattleScene {
   skip(): void {
     if (this.finished) return;
     this.finished = true;
+    // R1: "Pomin" nie rozgrywa wylomu -- machina oblezenicza w skladzie atakujacego
+    // = zalozony wylom (jak szturm Auto); bez machin miasto obwarowane nie padnie.
+    if (this.siegeWallCol >= 0 && this.atk.some(u => !u.dead && isSiegeUnit(u.bu))) {
+      this.wallEverBreached = true;
+    }
     const result = computeInstantResult(
       this.atk.filter(u => !u.dead),
       this.def.filter(u => !u.dead),
@@ -7358,6 +7372,7 @@ export class BattleScene {
       tiles[idx] = BTerrain.Plains;
     }
     this.wallTileHp.delete(wallRow);
+    this.wallEverBreached = true;
     this._spawnWallLabel(wallCol, wallRow, 'MUR WYBURZONY!', '#ff4400');
 
     // NAPRAWA problem 3: WYRWA — ukryj segment muru (visible=false), dodaj gruz.
@@ -7467,6 +7482,7 @@ export class BattleScene {
    */
   private _breachGate(): void {
     this.gateOpen = true;
+    this.wallEverBreached = true;
     this._updateSiegeHud();
 
     // Update terrain tiles: replace Gate with Plains so pathfinding opens up
@@ -7838,6 +7854,24 @@ export class BattleScene {
    * pick, so behaviour is bit-for-bit unchanged when attackDirection is
    * 'front' (default).
    */
+  /**
+   * R2 (R-WEB-PALISADE-BATTLE-WALL-RULES-Q1): jednostka WRECZ nie moze zaatakowac
+   * obroncy stojacego NA MURZE / ZA PALISADA (onWallWalkway). Dystansowi i machiny
+   * oblezenicze nie sa blokowani; po wylomie (wallEverBreached) blokada znika dla WSZYSTKICH
+   * obroncow na murze, wiec melee moze wejsc i walczyc.
+   */
+  private _meleeBlockedByWall(ru: RuntimeBattleUnit, e: RuntimeBattleUnit): boolean {
+    if (this.siegeWallCol < 0) return false;
+    return meleeBlockedByWall({
+      // Po wylomie obroncy na koronie muru nie schodza z niej, wiec blokada musi
+      // zniknac globalnie (inaczej melee wchodzi do miasta i nie ma kogo bic).
+      wallBreached: this.wallEverBreached,
+      attackerIsMelee: !canShoot(ru) && !isSiegeUnit(ru.bu),
+      attackerOnWall: ru.onWallWalkway === true,
+      defenderOnWall: e.onWallWalkway === true,
+    });
+  }
+
   private _targetInRange(ru: RuntimeBattleUnit): RuntimeBattleUnit | null {
     const enemies = this._enemiesOf(ru);
     const inReach: RuntimeBattleUnit[] = [];
@@ -7854,6 +7888,7 @@ export class BattleScene {
       // they are "adjacent in the vertical sense" even though the tile is BTerrain.Wall.
       // dd === 0: same tile (walkway combat between two units who both climbed) -- treat as melee.
       for (const e of enemies) {
+        if (this._meleeBlockedByWall(ru, e)) continue; // R2: melee nie bije muru/palisady
         const dd = manhattan(ru.q, ru.r, e.q, e.r);
         if (dd === 1 || dd === 0) inReach.push(e);
       }
@@ -7903,6 +7938,7 @@ export class BattleScene {
   private _canAttackFrom(ru: RuntimeBattleUnit, col: number, row: number): boolean {
     const reach = canShoot(ru) ? ru.range : 1;
     for (const e of this._enemiesOf(ru)) {
+      if (this._meleeBlockedByWall(ru, e)) continue; // R2
       const dd = manhattan(col, row, e.q, e.r);
       if (dd >= 1 && dd <= reach) return true;
     }
@@ -7918,6 +7954,7 @@ export class BattleScene {
   private _canStrikeTargetFrom(
     ru: RuntimeBattleUnit, col: number, row: number, target: RuntimeBattleUnit,
   ): boolean {
+    if (this._meleeBlockedByWall(ru, target)) return false; // R2
     const reach = canShoot(ru) ? ru.range : 1;
     const dd = manhattan(col, row, target.q, target.r);
     return dd >= 1 && dd <= reach;
@@ -9460,6 +9497,12 @@ export class BattleScene {
         this.log.push('=== PAT: brak postepu w walce -- rozstrzygniecie po morale armii ===');
         if (ratioA <= ratioD) aliveA = false; else aliveD = false;
       }
+      // R1/R2: w oblezeniu bez wylomu nikt nie moze zadac ciosu (melee nie bije muru/
+      // palisady, brak machin) -- szturm odparty zamiast wiecznego patu.
+      if (isSiege && !this.wallEverBreached) {
+        this.log.push('=== SZTURM ODPARTY: brak wylomu w murze/palisadzie -- atakujacy nie moga dosiegnac obroncow ===');
+        aliveA = false;
+      }
     }
     if (brokenA && aliveA) {
       this.log.push('=== Morale armii ATAKUJACEGO zalamane (' + Math.round(ratioA * 100) + '% < 25%) -- armia w rozsypce! ===');
@@ -9784,6 +9827,7 @@ export class BattleScene {
     if (this.siegeWallCol < 0) return;
     this.gateHp = 400;
     this.gateOpen = false;
+    this.wallEverBreached = false;
     this.towerAtWallRows.clear();
     this.wallTileHp.clear();
     const gateRowLo = this.siegeGateRow - 1;
@@ -9983,6 +10027,7 @@ export class BattleScene {
               this.atk.map(u => u.bu),
               this.def.map(u => u.bu),
             ),
+            ...(this.siegeWallCol >= 0 ? { wallBreached: this.wallEverBreached } : {}),
           });
         }
         this.dispose();

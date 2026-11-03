@@ -959,6 +959,12 @@ import {
   type CityDefenseBonusParams,
 } from './game/city-defense';
 import {
+  autoStormBreach,
+  canCaptureCity,
+  cityFortificationKind,
+  cityIsFortified,
+} from './game/city-fortification';
+import {
   buildDefenseRosterUnits,
   cityDefenseBreakdownLines,
   civBonusUnitShapeFromDef,
@@ -2740,9 +2746,9 @@ async function boot(): Promise<void> {
         getWalls: (cityId: string) => cities.find(c => c.id === cityId)?.maMur === true,
         getWallKind: (cityId: string) => {
           const built = cityBuiltIdsForRender?.(cityId) ?? [];
-          if (built.includes('mury') || built.includes('fort')) return 'stone';
-          if (built.includes('palisada')) return 'palisada';
-          return 'none';
+          // R-WEB-PALISADE-BATTLE-WALL-RULES-Q1: jedno pojecie obwarowania.
+          const fk = cityFortificationKind(built);
+          return fk === 'mur' ? 'stone' : fk;
         },
         getRevolt: (cityId: string) => {
           const st = cityOrderState.get(cityId);
@@ -31319,6 +31325,8 @@ async function boot(): Promise<void> {
         atkStart?: Map<string | number, { q: number; r: number }>;
         /** true = szturm oblężniczy — UI zdobycia obsługuje finishSiegeStormBattle */
         siegeContext?: boolean;
+        /** R1: obwarowane miasto bez wylomu — wygrana atakujacego NIE zdobywa miasta ani nie wchodzi na heks. */
+        cityCaptureBlocked?: boolean;
         /** Jawny atak na miasto (potyczka o miasto / szturm) — inaczej wygrana polowa NIE przejmuje miasta. */
         allowCityCapture?: boolean;
         /** Wołane gdy siegeContext===true i przejęcie się powiodło — patrz komentarz
@@ -31341,6 +31349,18 @@ async function boot(): Promise<void> {
       const cityOnHex = findCityOnHex(cities, battleQ, battleR) ?? null;
       const cityOwnerBefore = cityOnHex?.ownerId;
       let siegeCaptureSucceeded = false;
+      // R1 (runda 2, zarzut 1): atak z allowCityCapture (barbarzyncy hard) tez nie
+      // zdobywa obwarowanego miasta bez machin oblezniczych w skladzie (barbarzyncy
+      // ich nie maja => mur/palisada blokuje). Szturm (siegeContext) niesie wlasna flage.
+      const fortifiedCaptureBlocked =
+        opts?.cityCaptureBlocked === true
+        || (opts?.allowCityCapture === true
+          && opts?.siegeContext !== true
+          && cityOnHex !== null
+          && !canCaptureCity(
+            cityIsFortified(cityOnHex.maMur, cityBuilt.get(cityOnHex.id)),
+            autoStormBreach(atkRoster.some(u => isSiegeUnit(unitDefFor(u)))),
+          ));
 
       if (mapWinner === 'atakujacy' || mapWinner === 'obronca') {
         const winOid = mapWinner === 'atakujacy' ? atkRoster[0]?.ownerId : defRoster[0]?.ownerId;
@@ -31378,6 +31398,7 @@ async function boot(): Promise<void> {
         isPassableHex: mapHexPassableForUnit,
         isUnitAt: isOccupiedHex,
         cityOnBattleHex: cityOnHex,
+        holdPositionAfterWin: fortifiedCaptureBlocked,
       });
 
       // P-BARBARZYNCY-USUWANIE-SEMANTYKA-Q1 (właściciel, 2026-08-12): obóz
@@ -31475,6 +31496,7 @@ async function boot(): Promise<void> {
         && atkRoster[0] !== undefined
         && areEnemyOwners(atkRoster[0].ownerId, cityOnHex.ownerId)
         && !barbCaptureBlockedByRemainingDefenders
+        && !fortifiedCaptureBlocked
       ) {
         const atkOwner = atkRoster[0]!.ownerId;
         const captureResult = applyCityCaptureToMap(cityOnHex, atkRoster, atkOwner, atkRoster[0] ?? null);
@@ -32779,11 +32801,28 @@ async function boot(): Promise<void> {
       if (!canCaptureCityWithoutBattle(city, units, cityDefenderOptions(city))) return false;
 
       const atkRoster = collectAtkRosterNearCity(city, anchor, units);
+      if (fortifiedCityCaptureBlocked(city, atkRoster)) {
+        if (isMe(anchor.ownerId)) {
+          showHintMessage(city.name + ': mur/palisada nienaruszone — potrzebne machiny oblężnicze, by wyłamać bramę lub mur.', 4500);
+        }
+        return false;
+      }
       captureCityWithoutBattle(city, anchor, atkRoster);
       return true;
     }
 
     /** Puste miasto — zdobycie bez preBattle / bitwy; jednostka wchodzi na heks miasta. */
+    /**
+     * R1 (R-WEB-PALISADE-BATTLE-WALL-RULES-Q1): miasto z PALISADA albo MUREM nie moze
+     * byc zdobyte, dopoki nie zniszczono bramy/muru/palisady -- potrzebne MACHINY
+     * OBLEZNICZE w skladzie atakujacego. Dotyczy tez pustego miasta (wejscie bez bitwy).
+     */
+    function fortifiedCityCaptureBlocked(city: City, atkRoster: RuntimeUnit[]): boolean {
+      const fortified = cityIsFortified(city.maMur, cityBuilt.get(city.id));
+      const hasMachine = atkRoster.some(u => isSiegeUnit(unitDefFor(u)));
+      return !canCaptureCity(fortified, autoStormBreach(hasMachine));
+    }
+
     function captureCityWithoutBattle(
       city: City,
       anchor: RuntimeUnit,
@@ -33019,6 +33058,8 @@ async function boot(): Promise<void> {
         survivors?: BattleUnit[];
         log: string[];
         eventLog?: BattleEventLog;
+        /** R1: faktyczny wylom ze sceny taktycznej; brak = szturm Auto (machina => wylom). */
+        wallBreached?: boolean;
       },
       opts?: {
         atkStart?: Map<string | number, { q: number; r: number }>;
@@ -33036,6 +33077,11 @@ async function boot(): Promise<void> {
       const atkStart = opts?.atkStart ?? snapshotRosterPositions(atkRoster);
       const atkOwner = atkRoster[0]?.ownerId;
       const showSummary = atkOwner === 0 && opts?.summary;
+      // R1: wygrana atakujacego NIE zdobywa obwarowanego miasta bez wylomu.
+      const stormWallBreached = res.wallBreached
+        ?? autoStormBreach(atkRoster.some(u => isSiegeUnit(unitDefFor(u))));
+      const stormCaptureBlocked = res.winner === 'atakujacy'
+        && !canCaptureCity(cityIsFortified(city.maMur, cityBuilt.get(city.id)), stormWallBreached);
       // R-BRAK-KOMUNIKATU-ELIMINACJA-CYWILIZACJI RUNDA 3, Defekt B (ścieżka 2): wypełnione
       // przez opts.onCityCaptured w applyMapBattleOutcome (synchronicznie, PRZED afterSiegeUi —
       // także w wariancie z podsumowaniem bitwy, bo applyMapBattleOutcomeWithSummary woła
@@ -33059,6 +33105,14 @@ async function boot(): Promise<void> {
             ? `${elimLabel} — ELIMINACJA! ${baseSzturmMsg} ${siegeCaptureInfo?.eliminatedDetails ?? ''}`.trim()
             : `${baseSzturmMsg} ${szturmBilans}`.trim();
           showHintMessage(szturmMsg, elimLabel ? 6000 : 5000);
+        } else if (stormCaptureBlocked) {
+          showHintMessage(city.name + ': obrońcy rozbici, ale mur/palisada stoi — bez wyłomu (machiny oblężnicze: taran, katapulta, wieża) miasta nie zdobędziesz. Oblężenie trwa.', 6000);
+          syncUnitsRender();
+          cityRenderer.sync(cities, _cityRenderOpts());
+          refreshFog();
+          updateHud();
+          refreshD1bHud();
+          refreshSiegeMarkers();
         } else if (res.winner === 'obronca') {
           showHintMessage('Szturm odparty — oblężenie trwa.', 4500);
           syncUnitsRender();
@@ -33095,6 +33149,7 @@ async function boot(): Promise<void> {
         lossDefPct: opts?.lossDefPct,
         battleEventLog: res.eventLog ?? buildBattleEventLog(atkRoster, defRoster),
         siegeContext: true as const,
+        cityCaptureBlocked: stormCaptureBlocked,
         deferUnitRenderSyncAfterSiegeCapture: opts?.deferUnitRenderSyncAfterSuccessfulCapture === true
           && atkOwner !== 0,
         onCityCaptured: (info: CityCaptureCallbackInfo) => {
@@ -33136,6 +33191,12 @@ async function boot(): Promise<void> {
       }
 
       let atkRoster = collectSiegeAtkRoster(city, anchor);
+      // R1: AI bez machin nie szturmuje obwarowanego miasta (nie moze go zdobyc) --
+      // oblezenie trwa, machiny powstaja w kolejce (startMapSiege).
+      if (fortifiedCityCaptureBlocked(city, appendReadyMachinesToRoster(atkRoster, city, anchor.ownerId, false))) {
+        if (!city.oblegane) startMapSiege(ctx); // nie resetuj licznika tur trwajacego oblezenia
+        return;
+      }
       atkRoster = appendReadyMachinesToRoster(atkRoster, city, anchor.ownerId);
       if (!cityHasDefenders(city)) {
         captureCityWithoutBattle(city, anchor, atkRoster);
@@ -33216,17 +33277,16 @@ async function boot(): Promise<void> {
         anchor.ownerId,
         false,
       );
-      if (!cityHasDefenders(city)) {
+      if (!cityHasDefenders(city) || collectSiegeDefRoster(city).length === 0) {
+        if (fortifiedCityCaptureBlocked(city, atkRoster)) {
+          showHintMessage(city.name + ': mur/palisada nienaruszone — bez machin oblężniczych miasta nie zdobędziesz (brama lub mur muszą runąć).', 5000);
+          return;
+        }
         consumeReadyMachines(city);
         captureCityWithoutBattle(city, anchor, atkRoster);
         return;
       }
       const defRoster = collectSiegeDefRoster(city);
-      if (defRoster.length === 0) {
-        consumeReadyMachines(city);
-        captureCityWithoutBattle(city, anchor, atkRoster);
-        return;
-      }
 
       const dHexKey = keyOf(city.q, city.r);
       const dHex = map.hexes[dHexKey];
@@ -39333,7 +39393,11 @@ async function boot(): Promise<void> {
                   // chroniona mutacyjnie przez REALNE wykonanie testu na tej funkcji.
                   const moveDestCity = cities.find(c => c.q === bcmd.toQ && c.r === bcmd.toR);
                   const barbCanWalkIntoEmptyCity =
-                    canBarbarianWalkIntoEmptyCity(moveDestCity, units, _menuDifficulty);
+                    canBarbarianWalkIntoEmptyCity(
+                      moveDestCity, units, _menuDifficulty,
+                      moveDestCity !== undefined
+                        && cityIsFortified(moveDestCity.maMur, cityBuilt.get(moveDestCity.id)),
+                    );
                   if (!barbCanWalkIntoEmptyCity
                       && !canUnitOccupyCityHex(bu.ownerId, bcmd.toQ, bcmd.toR, cities)) continue;
                   // R-WEB-AI-MOVE-RANGE-Q1 r5: nie wchodz na heks zajety przez inna jednostke
