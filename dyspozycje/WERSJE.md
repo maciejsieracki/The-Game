@@ -1,3 +1,12 @@
+## ROBOCZA 4e022fcd -- 2026-11-03 -- panel „Rozdziel armię”: przewijanie, siatka 3×5, brandbook (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`ae292911f` + ARMY-SPLIT-PANEL `798ec59eb`) i commit wdrożenia bundla; zgłoszenie właściciela, stała zgoda na poprawki.
+- Bundle MD5 `4e022fcd0c2f3602d9a184a6434c849e`, 70,156,155 B, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, outDir poza repo, stempel ROBOCZA.
+- Zakres: lista jednostek nie wraca na początek po zaznaczeniu; siatka 3×5; wygląd zgodny z brandbookiem; pasek statusu zaznaczenia.
+- Testy: tsc PASS; 18/0 (RED przed); regresje split/merge zielone.
+- Ograniczenia: render z prawdziwymi tokenami/ikonami i kontrast WCAG NIE_ZMIERZONO.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `6ee8f07f2ac5ecdee81a713a80b4847d`, 70,151,183 bajtów.
+
 ## ROBOCZA 6ee8f07f -- 2026-11-03 -- wieżyczki strzeleckie przy murze i palisadzie, model palisady w bitwie (testowa)
 
 - **STATUS: DEPLOYED** — merge do `origin/main` (`bb6cac3d4` + PALISADE r2 `7553d5f11`) i commit wdrożenia bundla; zgłoszenie właściciela, stała zgoda na poprawki.
