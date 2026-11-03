@@ -8602,3 +8602,9 @@ Backlog z FC: oznaczenie modeli milicji jako „Milicja” (osobny temat, bez zm
 
 ## 2026-11-03 — zgłoszenie (zrzut: obozy łowieckie na wzgórzu): Obóz łowiecki wypłaszcza wzgórze
 Właściciel: Obóz łowiecki „znowu” wypłaszcza wzgórze (heks traci bryłę wzgórza i staje się płaski, zrzut: duży płaski heks z kilkoma obozami), a powinien być WKOMPONOWANY we wzgórze, jeśli jest na nim las — bez zmiany rzeźby terenu. Powiązane wcześniejsze tematy: `R-ULEPSZENIA-OBOZ-LOWIECKI-LAS-ZNIKA-I-TEREN-Q1`, `R-ULEPSZENIA-OBOZ-LOWIECKI-TYLKO-LAS-Q1`. Temat `R-WEB-HUNTING-CAMP-HILL-NO-FLATTEN-Q1`.
+
+## 2026-11-03 — wdrożono ROBOCZA 83d4cbb5 (main f568e1ed3): bonus muru dla obrońców + zasięg ×2 strzelców
+## 2026-11-03 — zgłoszenie (zrzut Nankin/Feng): AI buduje farmy i ulepszenia żywności wszędzie, nie tylko tam, gdzie są obywatele
+Właściciel: AI innych cywilizacji buduje farmy (czerwone domki z kłosami) na prawie każdym płaskim heksie terytorium, także bez obywatela (ikony obywateli tylko na części heksów). Domyślnie AI ma karczować i budować farmy oraz inne ulepszenia związane z żywnością WYŁĄCZNIE tam, gdzie są obywatele — inaczej marnuje zasoby. Temat `R-WEB-AI-FOOD-ONLY-WORKED-HEXES-Q1` (te same pliki `auto-improvements.ts`/`ai.ts` co AI-group i `R-WEB-IMPROVEMENT-ERA-SCALING-Q1` — SEKWENCYJNIE).
+## 2026-11-03 — zgłoszenie (zrzut „POŁĄCZENIE ARMII”): panel łączenia armii — nie widać, ile jednostek jest poniżej
+Właściciel: przewijanie w panelu łączenia armii działa, ale nie da się sprawdzić, ile jednostek jest poniżej (zrzut: „Armia — 20 jednostek”, lista „NA POLU (18)” w siatce 3 kolumn pokazuje 18 pozycji, po prawej „PRZYBYWA: Skład (2)”; dół panelu ucięty, pionowy pasek przewijania po prawej). Temat `R-WEB-ARMY-MERGE-PANEL-LIST-VISIBILITY-Q1`.
