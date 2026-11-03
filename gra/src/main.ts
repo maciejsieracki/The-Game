@@ -949,7 +949,7 @@ import {
   ownerResourceStockAll, deductBuildingStockCostAcrossCities, creditOwnerResourceStock,
   missingStockFor, stockResourceLabel, EMPIRE_STOCK_RESOURCE_KEYS,
 } from './game/building-stock-cost';
-import { empireHasKopalniaNaZlozuZelaza, hasZelazoAccess } from './game/zelazo-access';
+import { empireHasKopalniaNaZlozuZelaza, ownerHasNativeZelazoAccess } from './game/zelazo-access';
 import { empireHasKopalniaNaZlozuCyny, cityHasOdlewniaForCyna } from './game/cyna-access';
 import {
   bestBuildingProgressAfterCityVisit,
@@ -3320,14 +3320,14 @@ async function boot(): Promise<void> {
       if (!labels.has('Żelazo')) {
         const ownImprovements = placedImprovementsForOwner(ownerId);
         const hasKopalniaZelazo = empireHasKopalniaNaZlozuZelaza(ownImprovements, map);
-        if (hasKopalniaZelazo) {
-          for (const c of cities) {
-            if (c.ownerId !== ownerId) continue;
-            if (hasZelazoAccess(hasKopalniaZelazo, cityBuilt.get(c.id) ?? [])) {
-              labels.add('Żelazo');
-              break;
-            }
-          }
+        // R-WEB-IRON-NATIVE-ACCESS-FIX-Q1: zapas państwa (nie boolean) — wspólna ścieżka z
+        // ownerHasNativeResourceAccess('zelazo').
+        if (ownerHasNativeZelazoAccess(
+          hasKopalniaZelazo,
+          citySurowceSumForOwner(ownerId),
+          cities.filter(c => c.ownerId === ownerId).map(c => cityBuilt.get(c.id) ?? []),
+        )) {
+          labels.add('Żelazo');
         }
       }
       // Ruda cyny (Maciej 2026-08-13): analogiczny empire-wide fallback do Żelaza wyżej —
@@ -3336,9 +3336,9 @@ async function boot(): Promise<void> {
       // (rzadki przypadek bootstrap fair-play) nie dawałaby etykiety mimo realnego dostępu
       // gdziekolwiek w imperium. UWAGA: celowo NIE przez hasCynaAccess(bool, builtIds) — ten
       // sam wzorzec przy Żelazie wyżej przekazuje `hasKopalniaZelazo` (boolean) w miejsce
-      // `empireStock` (Record), co w hasZelazoAccess/hasCynaAccess zeruje `stock` (typeof
-      // 'boolean' -> undefined) i czyni wynik zawsze `false` — pre-istniejący, poza zakresem
-      // tego zlecenia stan w zelazo-access.ts (nie naprawiane tutaj, patrz raport). Tu wprost:
+      // `empireStock` (Record), co w hasZelazoAccess/hasCynaAccess zerowało `stock` (typeof
+      // 'boolean' -> undefined) i czyniło wynik zawsze `false` — dla Żelaza NAPRAWIONE w
+      // R-WEB-IRON-NATIVE-ACCESS-FIX-Q1 (ownerHasNativeZelazoAccess); cyna poza zakresem. Tu wprost:
       // dostęp mapowy (kopalnia gdziekolwiek) AND odlewnia w tym mieście.
       if (!labels.has('Ruda cyny')) {
         const ownImprovements = placedImprovementsForOwner(ownerId);
@@ -5148,12 +5148,12 @@ async function boot(): Promise<void> {
         return false;
       }
       if (key === 'zelazo') {
-        const hasKopalniaZelazo = empireHasKopalniaNaZlozuZelaza(ownImprovements, map);
-        if (!hasKopalniaZelazo) return false;
-        for (const c of cities) {
-          if (c.ownerId === ownerId && hasZelazoAccess(hasKopalniaZelazo, cityBuilt.get(c.id) ?? [])) return true;
-        }
-        return false;
+        // R-WEB-IRON-NATIVE-ACCESS-FIX-Q1: zapas państwa (nie boolean) w miejsce `empireStock`.
+        return ownerHasNativeZelazoAccess(
+          empireHasKopalniaNaZlozuZelaza(ownImprovements, map),
+          citySurowceSumForOwner(ownerId),
+          cities.filter(c => c.ownerId === ownerId).map(c => cityBuilt.get(c.id) ?? []),
+        );
       }
       if (key === 'cegla') {
         if (!empireHasGlinianka(ownImprovements)) return false;
