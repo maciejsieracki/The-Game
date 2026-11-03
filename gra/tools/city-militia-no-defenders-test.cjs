@@ -30,14 +30,15 @@ const unitRow = (n) => UNITS.find((r) => r['Jednostka'] === n);
 const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'city-militia-nodef-'));
 const fwd = (p) => p.replace(/\\/g, '/');
 
-function bundle(mutation) {
+async function bundle(mutation) {
   const entry = path.join(tempDir, 'entry.ts');
   fs.writeFileSync(entry, `
 export * as SD from '${fwd(path.join(ROOT, 'src/game/siegeDefenders'))}';
 export * as SG from '${fwd(path.join(ROOT, 'src/game/siege'))}';
+export * as BB from '${fwd(path.join(ROOT, 'src/game/barbarians'))}';
 `, 'utf8');
   const outfile = path.join(tempDir, 'bundle-' + (mutation ? mutation.name : 'base') + '.cjs');
-  esbuild.buildSync({
+  await esbuild.build({
     entryPoints: [entry],
     bundle: true,
     platform: 'node',
@@ -48,7 +49,7 @@ export * as SG from '${fwd(path.join(ROOT, 'src/game/siege'))}';
     plugins: mutation ? [{
       name: 'mutate',
       setup(b) {
-        b.onLoad({ filter: /game[\\/]siegeDefenders\.ts$/ }, (args) => {
+        b.onLoad({ filter: mutation.file === 'barbarians' ? /game[\\/]barbarians\.ts$/ : /game[\\/]siegeDefenders\.ts$/ }, (args) => {
           let src = fs.readFileSync(args.path, 'utf8');
           if (!src.includes(mutation.from)) throw new Error('mutation anchor missing: ' + mutation.name);
           src = src.replace(mutation.from, mutation.to);
@@ -69,6 +70,8 @@ const MUTATIONS = [
   { name: 'era-iron-shifted', from: 'if (e >= 3) return', to: 'if (e >= 4) return' },
   { name: 'pop-floor-zero', from: 'Math.max(1, before - fallen)', to: 'Math.max(0, before - fallen)' },
   { name: 'replace-not-append', from: 'roster: [...roster, ...virtual]', to: 'roster: virtual' },
+  { name: 'barb-ignores-garrison-building', file: 'barbarians', from: 'canCaptureCityWithoutBattle(destCity, units, defenderOptions)', to: 'canCaptureCityWithoutBattle(destCity, units)' },
+  { name: 'fallen-partial-log-inferred', from: 'if (logged && !logged.has(id)) continue;', to: '' },
   { name: 'morale-not-reduced', from: "def['Morale bazowe'] = Math.min(", to: "def['Morale bazowe'] = base + 0 * Math.min(" },
 ];
 
@@ -205,6 +208,50 @@ function checks(M, rec) {
     rec(SD.applyMilitiaPopulationLoss(city3, r3, new Set()) === 0 && city3.population === 10, 'brak poleglych -> ludnosc bez zmian');
   }
 
+  // ---- zarzut 1 (runda 2): barbarzyncy -- miasto z budynkiem Garnizon NIE jest puste -----------
+  if (M.BB && typeof M.BB.canBarbarianWalkIntoEmptyCity === 'function') {
+    const BB = M.BB;
+    const bc = mkCity(10);
+    rec(BB.canBarbarianWalkIntoEmptyCity(bc, [], 'hard', false, completed) === false,
+      'barbarzyncy hard: miasto z budynkiem Garnizon (pop 10, bez wojska) NIE jest puste -> nie wchodza');
+    rec(BB.canBarbarianWalkIntoEmptyCity(bc, [], 'hard', false, { completedBuildingIds: [] }) === true,
+      'barbarzyncy hard: miasto bez budynku Garnizon i bez wojska nadal puste (zdobycie bez walki, bez zmian)');
+    rec(BB.canBarbarianWalkIntoEmptyCity(bc, [], 'hard', false) === true,
+      'barbarzyncy: bez opcji zachowanie wsteczne (puste)');
+    rec(BB.canBarbarianWalkIntoEmptyCity(mkCity(0), [], 'hard', false, completed) === true,
+      'barbarzyncy: Garnizon, ale ludnosc 0 (brak milicji) -> puste');
+  } else {
+    rec(false, 'API: barbarians.canBarbarianWalkIntoEmptyCity');
+  }
+
+  // ---- zarzut 4 (runda 2): polegli milicjanci -- semantyka czesciowego logu ---------------------
+  if (fn('fallenMilitiaIds')) {
+    const fc = mkCity(6);
+    const fr = SD.collectCityDefRoster(fc, [real('r1')], completed).roster;
+    const mids = fr.filter((u) => u.isMilitia).map((u) => u.id);
+    const survivors = [{ id: 'r1', hp: 5 }, { id: mids[0], hp: 3 }];
+    const all = SD.fallenMilitiaIds(fr, { survivors, loggedDefenderIds: new Set(fr.map((u) => String(u.id))) });
+    rec(all.size === 5 && !all.has(mids[0]) && !all.has('r1'), 'recznie, pelny log: polegli = milicjanci bez wpisu w survivors (5 z 6)');
+    const partial = SD.fallenMilitiaIds(fr, { survivors, loggedDefenderIds: new Set(['r1', mids[0], mids[1]]) });
+    rec(partial.size === 1 && partial.has(mids[1]), 'recznie, CZESCIOWY log: milicjant bez wpisu w logu NIE jest poleglym (tylko ten z logu)');
+    const legacy = SD.fallenMilitiaIds(fr, { survivors, loggedDefenderIds: null });
+    rec(legacy.size === 5, 'recznie, brak logu (legacy): jak pelny log');
+    const hp0 = SD.fallenMilitiaIds(fr, { survivors: [{ id: mids[0], hp: 0 }], loggedDefenderIds: null });
+    rec(hp0.has(mids[0]), 'recznie: survivor z hp<=0 = polegly');
+    const auto = SD.fallenMilitiaIds(fr, { autoDeadIds: new Set([mids[2], 'r1']), loggedDefenderIds: new Set(fr.map((u) => String(u.id))) });
+    rec(auto.size === 1 && auto.has(mids[2]), 'auto: polegli = autoDeadIds przeciete z milicja (realny ignorowany)');
+    const autoPartial = SD.fallenMilitiaIds(fr, { autoDeadIds: new Set([mids[2]]), loggedDefenderIds: new Set(['r1']) });
+    rec(autoPartial.size === 0, 'auto, czesciowy log bez milicjanta: nikt nie polegl');
+  } else {
+    rec(false, 'API: fallenMilitiaIds');
+  }
+
+  // ---- zarzut 2 (runda 2): abstrakcyjna pula = ZAŁOZENIE (zbiorczy model, 1 mieszkaniec = 1 HP-share) ----
+  const pool60 = SG.makeMilitia(60);
+  const halfHp = 9; // STONE_WARRIOR.Health 17 x 0,5 (roundHalfUp) — stala siege.ts, nie units.json
+  rec(pool60 && pool60.militiaCount === 60 && pool60.Health === 60 * halfHp,
+    'abstrakcyjna pula: 60 mieszkancow -> HP = 60 x 9 (polowa HP STONE_WARRIOR; model zbiorczy; tylko estymacja/oblezenie abstrakcyjne, nie bitwa rosterowa)');
+
   // ---- tytul strony obroncy ---------------------------------------------------------------------
   const tCity = mkCity(10);
   const tRoster = SD.collectCityDefRoster(tCity, [], completed).roster;
@@ -224,8 +271,9 @@ function mkRec(quiet) {
 }
 
 log('city-militia-no-defenders-test (root: ' + ROOT + ')');
+(async () => {
 try {
-  const base = bundle(null);
+  const base = await bundle(null);
   checks(base, mkRec(false));
 
   // ---- mutacje --------------------------------------------------------------------------------
@@ -233,10 +281,10 @@ try {
   for (const mu of MUTATIONS) {
     let failures = 0;
     try {
-      const mod = bundle(mu);
+      const mod = await bundle(mu);
       checks(mod, (cond) => { if (!cond) failures++; });
     } catch (e) {
-      failures++; // rzut wyjatku tez zlamal kontrakt
+      if (/anchor missing/.test(String(e && e.message))) { console.error("  [FAIL] kotwica mutacji nie istnieje: " + mu.name); failures = 0; } else { failures++; if (process.env.MUT_DEBUG) console.error(String(e && e.message).slice(0,300)); } // rzut wyjatku tez zlamal kontrakt
     }
     if (failures > 0) { ok++; log('  [OK] mutacja ' + mu.name + ' lamie test (' + failures + ' asercji)'); } else { fail++; console.error('  [FAIL] mutacja ' + mu.name + ' PRZESZLA niezauwazona'); }
   }
@@ -248,3 +296,4 @@ try {
 }
 log('wynik: ' + ok + ' OK, ' + fail + ' FAIL');
 process.exit(fail === 0 ? 0 : 1);
+})();

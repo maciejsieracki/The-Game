@@ -488,6 +488,7 @@ import {
   survivorsLiveSet,
   defenderSideTitle,
   applyMilitiaPopulationLoss,
+  fallenMilitiaIds,
   isMilitiaUnit,
   militiaHeadcount,
 } from './game/siegeDefenders';
@@ -883,6 +884,7 @@ import {
   sumRosterFieldMSplit,
   autoBattleWinPct,
   applyLossPctToRoster,
+  isFieldBattleUnit,
 } from './game/auto-battle-power';
 import {
   applyPostBattleMap,
@@ -31415,6 +31417,32 @@ async function boot(): Promise<void> {
         }
       }
 
+      // R-WEB-CITY-MILITIA-NO-DEFENDERS-Q1 (M4): polegli milicjanci zmniejszaja ludnosc miasta
+      // (min. 1 zostaje). Wirtualni milicjanci nie sa w units[] -- polegli liczeni PRZED
+      // applyPostBattleMap (ten sam rozklad strat z pelnego rosteru i ten sam log zdarzen co
+      // applyAutoLosses/applyManualSurvivors w post-battle-map.ts: czesciowy log to wynik
+      // czesciowy, milicjant bez wpisu w logu NIE jest uznany za poleglego).
+      let fallenMilitia: Set<string> | null = null;
+      if (cityOnHex && defRoster.some(isMilitiaUnit)) {
+        const evLog = opts?.battleEventLog ?? buildBattleEventLog(atkRoster, defRoster);
+        const loggedDef = evLog ? new Set((evLog.defenderUnitIds ?? []).map(String)) : null;
+        const autoDeadIds = new Set<string>();
+        if (survivors === undefined && opts?.lossDefPct != null && opts.lossDefPct > 0) {
+          const rows = defRoster
+            .filter(m => !loggedDef || loggedDef.has(String(m.id)))
+            .map(m => ({ id: String(m.id), typeId: m.typeId, def: unitDefFor(m), hp: m.hp }))
+            .filter(r => isFieldBattleUnit(r.typeId, r.def));
+          for (const row of applyLossPctToRoster(rows, opts.lossDefPct, def => unitHealth(def))) {
+            if (row.dead) autoDeadIds.add(row.id);
+          }
+        }
+        fallenMilitia = fallenMilitiaIds(defRoster, {
+          survivors: survivors?.map(sv => ({ id: String(sv.id), hp: sv.hp })),
+          loggedDefenderIds: loggedDef,
+          autoDeadIds,
+        });
+      }
+
       applyPostBattleMap({
         units,
         map,
@@ -31442,29 +31470,8 @@ async function boot(): Promise<void> {
         cityOnBattleHex: cityOnHex,
         holdPositionAfterWin: fortifiedCaptureBlocked,
       });
+      if (cityOnHex && fallenMilitia) applyMilitiaPopulationLoss(cityOnHex, defRoster, fallenMilitia);
 
-      // R-WEB-CITY-MILITIA-NO-DEFENDERS-Q1 (M4): polegli milicjanci zmniejszają ludność miasta
-      // (min. 1 zostaje). Wirtualni milicjanci nie są w units[] — ocalałych czytamy z wyniku
-      // bitwy (manual) albo z tego samego rozkładu strat co applyAutoLosses (auto).
-      if (cityOnHex && defRoster.some(isMilitiaUnit)) {
-        const fallen = new Set<string>();
-        if (survivors !== undefined) {
-          const live = new Map(survivors.map(sv => [String(sv.id), sv.hp] as const));
-          for (const m of defRoster) {
-            if (!isMilitiaUnit(m)) continue;
-            const hp = live.get(String(m.id));
-            if (hp === undefined || hp <= 0) fallen.add(String(m.id));
-          }
-        } else if (opts?.lossDefPct != null && opts.lossDefPct > 0) {
-          const rows = defRoster.filter(isMilitiaUnit).map(m => ({
-            id: String(m.id), typeId: m.typeId, def: unitDefFor(m),
-          }));
-          for (const row of applyLossPctToRoster(rows, opts.lossDefPct, def => unitHealth(def))) {
-            if (row.dead) fallen.add(row.id);
-          }
-        }
-        applyMilitiaPopulationLoss(cityOnHex, defRoster, fallen);
-      }
 
       // P-BARBARZYNCY-USUWANIE-SEMANTYKA-Q1 (właściciel, 2026-08-12): obóz
       // niszczy WEJŚCIE (najechanie) jednostki na jego heks -- NIE walka /
@@ -39481,6 +39488,7 @@ async function boot(): Promise<void> {
                       moveDestCity, units, _menuDifficulty,
                       moveDestCity !== undefined
                         && cityIsFortified(moveDestCity.maMur, cityBuilt.get(moveDestCity.id)),
+                      moveDestCity !== undefined ? cityDefenderOptions(moveDestCity) : undefined,
                     );
                   if (!barbCanWalkIntoEmptyCity
                       && !canUnitOccupyCityHex(bu.ownerId, bcmd.toQ, bcmd.toR, cities)) continue;

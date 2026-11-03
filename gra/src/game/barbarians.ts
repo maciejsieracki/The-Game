@@ -32,7 +32,7 @@ import type { GameData } from '../data/loader';
 import { TerenBazowy } from '../types/hex';
 import type { City } from './cities';
 import { addForeignCityBlocks } from './city-hex-movement';
-import { canCaptureCityWithoutBattle } from './siegeDefenders';
+import { canCaptureCityWithoutBattle, type CityDefRosterOptions } from './siegeDefenders';
 import type { Hex } from '../types/hex';
 import type { RuntimeUnit } from '../units/setup';
 import { hexDistance, computePath, pathCost, keyOf, isWaterTerrain, embarkMoveCost, terrainMoveCost, isCivilianUnit } from '../units/setup';
@@ -402,11 +402,18 @@ export function canBarbarianWalkIntoEmptyCity(
    * pustego miasta (jednostka nie jest nawet przesuwana na heks miasta).
    */
   destCityFortified: boolean = false,
+  /**
+   * R-WEB-CITY-MILITIA-NO-DEFENDERS-Q1 (spec M2, runda 2): ukonczone budynki + epoka
+   * wlasciciela miasta. Bez nich miasto z budynkiem Garnizon i bez wojska bylo uznane
+   * za puste (barbarzynca wchodzil na heks, a tryAutoCaptureEmptyCityAt odmawial
+   * zdobycia -- wrog w miescie bez bitwy). Milicja zawsze liczy sie jako obronca.
+   */
+  defenderOptions?: CityDefRosterOptions,
 ): boolean {
   return destCity !== undefined
     && !destCityFortified
     && shouldAllowBarbCityCapture(difficulty)
-    && canCaptureCityWithoutBattle(destCity, units);
+    && canCaptureCityWithoutBattle(destCity, units, defenderOptions);
 }
 
 /**

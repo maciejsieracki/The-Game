@@ -311,6 +311,42 @@ export function applyMilitiaPopulationLoss(
   return loss;
 }
 
+export interface FallenMilitiaInput {
+  /** Manual 3D result: survivors list (`undefined` = auto battle). */
+  survivors?: ReadonlyArray<{ id: string | number; hp?: number }>;
+  /** Defender ids present in the battle event log (`null`/absent = legacy: no log filter). */
+  loggedDefenderIds?: ReadonlySet<string> | null;
+  /** Auto battle: ids marked dead by the loss-percentage distribution. */
+  autoDeadIds?: ReadonlySet<string>;
+}
+
+/**
+ * Ids of fallen virtual militiamen. Same semantics as post-battle-map.ts: a PARTIAL event
+ * log is a partial result, so a militiaman missing from the log is NOT inferred dead.
+ * Manual: dead = logged and absent from `survivors` (or hp <= 0). Auto: `autoDeadIds`.
+ */
+export function fallenMilitiaIds(
+  defRoster: readonly RuntimeUnit[],
+  input: FallenMilitiaInput,
+): Set<string> {
+  const fallen = new Set<string>();
+  const logged = input.loggedDefenderIds ?? null;
+  const live = input.survivors
+    ? new Map(input.survivors.map(sv => [String(sv.id), sv.hp] as const))
+    : null;
+  for (const m of defRoster) {
+    if (!isMilitiaUnit(m)) continue;
+    const id = String(m.id);
+    if (logged && !logged.has(id)) continue;
+    if (live) {
+      if (!live.has(id) || (live.get(id) ?? 1) <= 0) fallen.add(id);
+    } else if (input.autoDeadIds?.has(id)) {
+      fallen.add(id);
+    }
+  }
+  return fallen;
+}
+
 /** Tytuł strony obrońcy w preBattle (miasto otwarte / szturm). */
 export function defenderSideTitle(city: City, defRoster: readonly RuntimeUnit[]): string {
   if (defRoster.length === 0) return 'Brak';
