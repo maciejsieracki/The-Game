@@ -37,3 +37,5 @@ BLOKADY: brak. NIE_ZMIERZONO: drugi seed/swiat; AI per-heks; wplyw tech przy duz
 POSPRZATANE: `gra/node_modules`, `/dev/shm/aiu-*`.
 NASTĘPNY KROK: Evaluator (ten sam ID), potem Final Control; ABC dla wlasciciela (A/B/C).
 DEPLOY/PUSH: NIE WYKONANO
+
+COMMIT: 87b41b1deb2b333b74033b84f69591866069634e (harness + raport + dowody); ten wpis SHA dodany kolejnym commitem dokumentacyjnym. Brak push.
