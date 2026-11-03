@@ -8590,3 +8590,6 @@ Stan: ufortyfikowany garnizon w mieście dostaje +50% Obrony (jak w polu, `forti
 
 ## 2026-11-03 — wdrożono ROBOCZA 3b1c46da (main 4cd4c35cb): eliminacja cywilizacji — żywność ze Spichlerza w bilansie
 Ustalenie: surowce/Praca/Nauka/złoto były przenoszone wcześniej; brakowało żywności ze Spichlerza i wiersza w oknie. Zrzut „Glina +134, Ruda +40” = magazyn ostatniego miasta. Backlog: wchłonięcie dyplomatyczne państwa-miasta (`annexCityStateToOwner`) nie przenosi majątku — DECYZJA do właściciela.
+
+## 2026-11-03 — DECYZJE WŁAŚCICIELA (ABC): żelazo = A (poprawić od razu); wieża oblężnicza = B (wyłom wszędzie)
+(1) Natywny dostęp do żelaza z własnego złoża (`main.ts:5101`, `:3275` — `hasZelazoAccess` dostaje `boolean` zamiast `empireStock`): POPRAWIĆ web od razu (balans się przesunie); pomiar PRZED/PO w raporcie; Rust po wznowieniu. Temat `R-WEB-IRON-NATIVE-ACCESS-FIX-Q1`. (2) Wieża oblężnicza liczy się jako wyłom WSZĘDZIE (też w bitwie taktycznej, zgodnie z Auto/„Pomiń”): miasto z murem/palisadą można zdobyć po wejściu wieżą na mur bez taranu. Temat `R-WEB-SIEGE-TOWER-BREACH-EVERYWHERE-Q1` (battleScene/city-fortification — SEKWENCYJNIE po `R-WEB-CITY-MILITIA-NO-DEFENDERS-Q1` i `R-WEB-WALL-DEFENDERS-BONUS-RANGE-Q1`).
