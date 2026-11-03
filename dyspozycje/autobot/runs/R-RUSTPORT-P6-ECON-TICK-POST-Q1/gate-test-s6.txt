@@ -1,0 +1,468 @@
+
+running 8 tests
+test build_territory_nodes_matches_web ... ok
+test is_territory_hex_owned_by_matches_web ... ok
+test reconcile_without_reczne_is_noop ... ok
+test city_center_keys_match_web ... ok
+test reconcile_all_matches_web ... ok
+test reconcile_for_owner_matches_web ... ok
+test reczne_key_legal_matches_web ... ok
+test workable_filter_matches_web ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.20s
+
+
+running 8 tests
+test constants_match_web ... ok
+test is_road_key_matches_web ... ok
+test has_road_matches_web ... ok
+test collect_road_keys_matches_web_order ... ok
+test road_table_shape_and_key_names ... ok
+test roads_source_has_no_numeric_data_literals ... ok
+test p64_ruch_modifier_agrees_with_roads_module ... ok
+test apply_modifier_matches_web_bitwise ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.10s
+
+
+running 1 test
+test web_allows_farm_irrigation_terraces_on_deposit_hexes ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.83s
+
+
+running 1 test
+test document_has_a_status_row_for_every_web_symbol ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 2 tests
+test gallery_terrain_eligible_matches_web ... ok
+test gallery_combo_eligible_and_show_model_match_web ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.08s
+
+
+running 4 tests
+test forest_build_block_reason_matches_web ... ok
+test api_hex_click_and_on_select_match_web ... ok
+test qualifier_bits_match_web_for_every_key_and_hex ... ok
+test api_qualifying_hexes_and_work_cost_match_web ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 3.71s
+
+
+running 15 tests
+test deposit_rules_match_web ... ok
+test forest_blocking_and_hints_match_web ... ok
+test can_add_food_layer_matches_web ... ok
+test farm_and_owce_base_terrain_match_web ... ok
+test format_impact_list_matches_web ... ok
+test improvement_meta_and_tech_gate_match_web ... ok
+test legacy_farm_layer_and_strip_match_web ... ok
+test hex_has_road_matches_web ... ok
+test hex_keys_within_radius_matches_web ... ok
+test livestock_dependency_matches_web ... ok
+test mine_keys_tarasy_civ_and_food_keys_match_web ... ok
+test plan_and_remove_legacy_farms_match_web ... ok
+test strip_improvements_when_forest_removed_matches_web ... ok
+test replaced_by_build_and_impact_match_web ... ok
+test work_cost_scale_matches_web ... ok
+
+test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.29s
+
+
+running 5 tests
+test food_and_sector_tables_are_consistent ... ok
+test terrain_codes_in_tables_are_valid ... ok
+test livestock_and_tech_tables_are_consistent ... ok
+test rule_keys_are_known_improvements ... ok
+test improvement_build_has_no_balance_number_literals ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+
+running 5 tests
+test js_keyed_map_orders_array_index_keys_first ... ok
+test rebuild_errors_name_the_failing_field ... ok
+test rebuild_error_class_matches_web_failure_class ... ok
+test serialize_rebuild_serialize_is_stable_without_duplicate_coords ... ok
+test rebuild_matches_web ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.08s
+
+
+running 5 tests
+test js_num_writes_integers_without_fraction_and_non_finite_as_null ... ok
+test serialize_vectors_touch_every_branch ... ok
+test snapshot_shape_invariants_hold_for_every_vector ... ok
+test serialize_text_is_byte_identical_to_web_json_stringify ... ok
+test serialize_matches_web_structurally ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.07s
+
+
+running 2 tests
+test is_valid_matches_web_for_all_vectors ... ok
+test every_serialize_vector_snapshot_has_a_web_validity_vector ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.11s
+
+
+running 11 tests
+test e2e::dump_tick1_econ_for_web_generator ... ignored
+test float_probe_json_parse_is_bit_exact ... ok
+test culture_functions_match_web ... ok
+test law_garrison_and_war_match_web ... ok
+test make_rng_matches_web_including_zero_seed ... ok
+test post_capture_law_matches_web ... ok
+test order_effects_with_civ_matrix_matches_web ... ok
+test pressure_and_civ_religion_match_web ... ok
+test religion_functions_match_web ... ok
+test full_order_lane_matches_running_web ... ok
+test e2e::e2e_state_order_ordermultmap_tick_equals_web ... ok
+
+test result: ok. 10 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 5.33s
+
+
+running 6 tests
+test scout_is_free_regardless_of_cost_mult ... ok
+test unit_cost_for_type_uses_cost_mult_not_max_mult ... ok
+test replenish_cost_uses_cost_mult_not_max_mult ... ok
+test unit_cost_for_type_with_equal_mults_matches_single_mult ... ok
+test zero_cost_branch_heals_without_spending_manpower ... ok
+test civ_matrix_path_reads_matrix_fields ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 17 tests
+test civ_matrix_cost_discount_uses_first_marker_only ... ok
+test building_work_cost_nan_and_infinity_propagate_like_web ... ok
+test civ_production_cost_markers_match_web_vectors ... ok
+test civ_recruitment_discount_impi_rule_and_realizuje ... ok
+test difficulty_multiplier_thresholds_exact ... ok
+test matrix_discount_floor_and_minimum_one ... ok
+test epoch_number_matches_web_vectors ... ok
+test epoch_number_missing_and_unknown_default_to_stone ... ok
+test newest_same_type_unit_only_strictly_newer_epoch ... ok
+test newest_same_type_unit_matches_web_vectors ... ok
+test newest_same_type_unit_missing_keys_and_empty_typ_yield_none ... ok
+test newest_same_type_unit_tie_keeps_first_in_units_order ... ok
+test newest_same_type_unit_trims_unicode_whitespace_like_js ... ok
+test newest_same_type_unit_trims_current_typ_like_web ... ok
+test pace_zero_nan_and_empty_key_are_falsy_like_web ... ok
+test building_work_cost_matches_web_vectors ... ok
+test unit_money_cost_matches_web_vectors ... ok
+
+test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.28s
+
+
+running 4 tests
+test route_cash_clamps_maritime_to_total_and_non_negative ... ok
+test route_cash_empty_or_missing_civ_key_is_untreated_sea_cash ... ok
+test route_cash_matches_web_vectors_real_matrix ... ok
+test route_cash_matches_web_vectors_modified_matrix ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s
+
+
+running 4 tests
+test wealth_owner_without_civ_key_returns_base ... ok
+test wealth_modifiers_match_web_vectors ... ok
+test wealth_owner_matches_web_vectors_real_matrix ... ok
+test wealth_owner_matches_web_vectors_modified_matrix ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+
+running 3 tests
+test era_thresholds_are_exact ... ok
+test era_multiplier_matches_web_grid ... ok
+test ration_cost_with_era_matches_web_bits ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+
+running 2 tests
+test vector_covers_era_2_and_4_with_nonzero_cost ... ok
+test recompute_with_owner_era_matches_web ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.14s
+
+
+running 4 tests
+test construction_multiplier_missing_or_invalid_era_is_stone ... ok
+test construction_multiplier_stone_bronze_iron_boundaries ... ok
+test construction_is_separated_from_upkeep_multiplier ... ok
+test scale_work_cost_uses_construction_rates_at_boundaries ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 14 tests
+test boundary_negative_zero_additional_tax_is_positive_zero_in_trade ... ok
+test parity_full_main_exercises_port_bonus_and_owner_paths ... ok
+test real_buildings_cover_port_and_port_wielki ... ok
+test structural_additional_tax_enters_gross_trade_after_matrix ... ok
+test structural_building_value_follows_level_formula ... ok
+test structural_neutral_praca_is_mlyn_then_cegielnia_then_integer ... ok
+test structural_port_bonus_requires_owner_and_nonzero_param ... ok
+test structural_pieniadz_z_pracy_is_always_zero ... ok
+test structural_port_zero_param_is_neutral_and_nan_propagates ... ok
+test structural_praca_integer_rounds_and_zeroes_non_positive ... ok
+test structural_tile_forest_and_river_modifiers_and_unknown_terrain ... ok
+test structural_port_sum_only_counts_id_port_at_level ... ok
+test aggregates_bit_exact_vs_web_loops ... ok
+test parity_full_main_bit_exact ... ok
+
+test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.54s
+
+
+running 11 tests
+test boundary_port_zero_keeps_negative_zero_bits ... ok
+test structural_cegielnia_alone_scales_terrain_only ... ok
+test structural_mlyn_then_cegielnia_order ... ok
+test structural_no_mlyn_no_cegielnia_is_identity ... ok
+test boundary_port_zero_skips_bonus_even_for_infinite_port_income ... ok
+test boundary_port_nan_propagates_into_pieniadz ... ok
+test structural_port_bonus_needs_owner_and_matrix ... ok
+test synthetic_port_matrix_applied_to_port_income_only ... ok
+test synthetic_praca_matrix_uses_brutto_after_mlyn ... ok
+test synthetic_praca_matrix_applied_to_brutto_sum ... ok
+test parity_head_main_bit_exact ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
+
+
+running 16 tests
+test boundary_unknown_terrain_zero_then_bonus_only ... ok
+test parity_city_terrain_sums_imp_bit_exact ... ok
+test parity_building_happiness_bit_exact ... ok
+test structural_empty_key_is_noop ... ok
+test structural_empty_list_falls_back_to_single_key ... ok
+test structural_forest_adds_wood_river_adds_clay ... ok
+test structural_happiness_branches ... ok
+test parity_tile_yield_full_bit_exact ... ok
+test structural_imp_keys_list_wins_over_single_key ... ok
+test structural_improvement_bonuses_nonnegative_in_data ... ok
+test structural_ore_mines_and_zloze_ignored ... ok
+test structural_pieniadz_bonus_goes_to_handel ... ok
+test structural_unknown_and_legacy_key_no_bonus ... ok
+test parity_full_city_with_improvements_bit_exact ... ok
+test structural_city_uses_improved_tile_sums ... ok
+test structural_happiness_sums_across_buildings_then_floor ... ok
+
+test result: ok. 16 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.76s
+
+
+running 18 tests
+test boundary_additional_tax_negative_zero_is_positive_zero ... ok
+test boundary_premia_zero_with_negative_zero_trade_is_positive_zero ... ok
+test boundary_nan_strata_reaches_money_but_not_gross_trade ... ok
+test structural_additional_tax_clamped_at_zero_and_nan_propagates ... ok
+test structural_biblioteka_and_akademia_are_additive ... ok
+test structural_garncarnia_food_and_consumption ... ok
+test structural_civ_nauka_mult_without_owner ... ok
+test structural_korupcja_cap_limits_strata ... ok
+test structural_legacy_civ_handel_mult_only_without_owner ... ok
+test structural_neutral_baseline ... ok
+test structural_mint_needs_both_flags ... ok
+test structural_premia_only_when_positive ... ok
+test structural_poborca_adds_two_each ... ok
+test synthetic_kultura_matrix_applied_and_floored ... ok
+test synthetic_luksus_matrix_applied_then_floored ... ok
+test synthetic_matrix_ignored_without_owner ... ok
+test synthetic_zywnosc_matrix_applied_to_brutto_and_netto ... ok
+test parity_tail_main_bit_exact ... ok
+
+test result: ok. 18 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.28s
+
+
+running 13 tests
+test boundary_trudnosc_delta_table ... ok
+test parity_civ_economy_yield_multipliers ... ok
+test parity_mnoznik_by_difficulty_main ... ok
+test structural_empty_or_missing_key_is_unknown ... ok
+test structural_fallback_default_is_web_default_one ... ok
+test structural_key_lookup_is_case_insensitive_across_three_fields ... ok
+test parity_mnoznik_by_difficulty_zero_matrix ... ok
+test parity_mnoznik_for_civ_main ... ok
+test structural_non_finite_matrix_value_is_unknown ... ok
+test structural_unknown_key_returns_fallback_without_delta ... ok
+test structural_known_row_missing_field_uses_matrix_default ... ok
+test parity_mnoznik_for_civ_zero_matrix ... ok
+test structural_known_raw_zero_is_authoritative_and_gets_delta ... ok
+
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
+
+
+running 13 tests
+test boundary_tax_floor_and_rate_defaults ... ok
+test boundary_pool_and_request_are_sanitized ... ok
+test parity_convert_work_pool_to_tax ... ok
+test parity_execute_manual_work_tax_conversion ... ok
+test parity_restore_pending_work_tax ... ok
+test structural_can_convert_requires_human_and_targowisko ... ok
+test structural_disabled_or_empty_request_spends_nothing ... ok
+test structural_restore_rejects_bad_rows_and_overwrites_in_place ... ok
+test structural_serialize_then_restore_roundtrip ... ok
+test structural_work_not_spent_when_tax_rounds_to_zero ... ok
+test parity_owner_can_convert_work_to_tax ... ok
+test parity_tax_for_work_amount ... ok
+test parity_serialize_pending_work_tax ... ok
+
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
+
+
+running 3 tests
+test edge_tax_for_work_amount_bitexact ... ok
+test edge_serialize_pending_work_tax_bitexact ... ok
+test edge_convert_work_pool_to_tax_bitexact ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+
+running 7 tests
+test edge_n_minus_1_n_plus_1_real_table_bronze ... ok
+test missing_rate_field_parses_as_none_and_round_trips ... ok
+test nonfinite_and_negative_row_rates_fall_back ... ok
+test rate_and_required_grid_match_web ... ok
+test display_lines_use_rate_from_coverage_like_web ... ok
+test real_file_has_era_rates_one_two_three ... ok
+test coverage_drain_lines_match_running_web ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.26s
+
+
+running 7 tests
+test edges_n_minus_1_n_n_plus_1 ... ok
+test ceramika_amount_matches_running_web ... ok
+test constants_and_keys_match_web ... ok
+test load_throughput_matches_running_web ... ok
+test real_econ_params_keys_match_pin_and_resolve_to_25 ... ok
+test load_params_matches_running_web ... ok
+test pay_and_inactive_status_match_running_web ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.24s
+
+
+running 2 tests
+test surowiec_ilosc_tura_zgodne_z_pinem ... ok
+test brak_dodatkowych_stawek_poza_pinem ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 6 tests
+test capture_by_occupation_matches_web ... ok
+test fort_territory_nodes_match_web ... ok
+test foreign_fort_territory_matches_web ... ok
+test next_seq_and_backfill_match_web ... ok
+test radii_and_boundaries_match_web ... ok
+test territory_owner_at_matches_web ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.45s
+
+
+running 3 tests
+test legacy_save_without_marker_is_not_automatic_only ... ok
+test version_constant_matches_web ... ok
+test automatic_only_matches_web_on_all_vectors ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 13 tests
+test deferred_batch_matches_web ... ok
+test can_recruit_matches_web ... ok
+test general_follow_destination_matches_web ... ok
+test issue_matches_web ... ok
+test nearest_living_general_matches_web ... ok
+test limit_for_era_matches_web ... ok
+test labels_match_web ... ok
+test purchase_matches_web_and_calls_continuation_only_when_valid ... ok
+test slots_used_matches_web ... ok
+test plan_enabled_matches_web ... ok
+test stone_unit_matches_web ... ok
+test sync_tracked_matches_web ... ok
+test tracked_march_matches_web ... ok
+
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.14s
+
+
+running 3 tests
+test legacy_save_without_marker_never_activates_auto_only ... ok
+test player_battle_automatic_only_matches_web_on_all_combinations ... ok
+test restored_setting_version_matches_web ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 1 test
+test nearest_living_general_with_nan_candidate_matches_web ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+
+running 3 tests
+test general_target_edge_cases_are_explicit ... ok
+test planned_marches_to_save_with_general_target_matches_web ... ok
+test planned_marches_from_save_with_general_target_matches_web ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+
+
+running 8 tests
+test non_conforming_r4_values_normalize_like_web_without_load_errors ... ok
+test meta_and_planned_marches_round_trip_through_snapshot_json ... ok
+test player_auto_only_from_save_needs_player_marker_and_explicit_false_in_advanced ... ok
+test snapshot_without_r4_fields_omits_them_and_loads_with_defaults ... ok
+test wrong_json_types_for_r4_fields_are_ignored_like_web_optional_lookups ... ok
+test save_meta_vectors_match_web_restore_and_automatic_only ... ok
+test planned_marches_web_object_form_decodes_like_list_form ... ok
+test planned_marches_wiring_through_save_matches_web_from_save_vectors ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.12s
+
+   Compiling civ-engine v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_6dcea91b-ec4-1/rust-port/engine)
+    Finished `test` profile [unoptimized] target(s) in 8.93s
+     Running tests/p6_m14_work.rs (/dev/shm/ptq1-full/debug/deps/p6_m14_work-1ce45b3a771ecceb)
+     Running tests/p6_m15_roads.rs (/dev/shm/ptq1-full/debug/deps/p6_m15_roads-00c1796d2d44aacd)
+     Running tests/p6_m16_divergence.rs (/dev/shm/ptq1-full/debug/deps/p6_m16_divergence-36f41f9340105fdf)
+     Running tests/p6_m16_doc.rs (/dev/shm/ptq1-full/debug/deps/p6_m16_doc-a783ecb95132fc08)
+     Running tests/p6_m16_gallery.rs (/dev/shm/ptq1-full/debug/deps/p6_m16_gallery-40cbda6184b177cf)
+     Running tests/p6_m16_qualifier.rs (/dev/shm/ptq1-full/debug/deps/p6_m16_qualifier-54c27efc7f24500a)
+     Running tests/p6_m16_rules.rs (/dev/shm/ptq1-full/debug/deps/p6_m16_rules-33e7267e34428bc9)
+     Running tests/p6_m16_tables.rs (/dev/shm/ptq1-full/debug/deps/p6_m16_tables-fd1582fd8a835964)
+     Running tests/p6_m17_rebuild.rs (/dev/shm/ptq1-full/debug/deps/p6_m17_rebuild-60f4b8705aae281a)
+     Running tests/p6_m17_serialize.rs (/dev/shm/ptq1-full/debug/deps/p6_m17_serialize-bc527bf55aa676f5)
+     Running tests/p6_m17_validate.rs (/dev/shm/ptq1-full/debug/deps/p6_m17_validate-f52da1b0e7422d55)
+     Running tests/p6_order_lane.rs (/dev/shm/ptq1-full/debug/deps/p6_order_lane-579db7526eb79d52)
+     Running tests/p6_repin_a_costmult.rs (/dev/shm/ptq1-full/debug/deps/p6_repin_a_costmult-84a633d5940ce98f)
+     Running tests/p6_repin_b2_production.rs (/dev/shm/ptq1-full/debug/deps/p6_repin_b2_production-370faf1d68fbbfa9)
+     Running tests/p6_repin_b3_route.rs (/dev/shm/ptq1-full/debug/deps/p6_repin_b3_route-4dafd35f5ec34a70)
+     Running tests/p6_repin_b3_wealth.rs (/dev/shm/ptq1-full/debug/deps/p6_repin_b3_wealth-5ac6be5ea922b5b5)
+     Running tests/p6_repin_b_ration_era.rs (/dev/shm/ptq1-full/debug/deps/p6_repin_b_ration_era-8f3eff588548f414)
+     Running tests/p6_repin_b_recompute_era.rs (/dev/shm/ptq1-full/debug/deps/p6_repin_b_recompute_era-aaf5d8ca78ff2b7a)
+     Running tests/p6_repin_c_construction.rs (/dev/shm/ptq1-full/debug/deps/p6_repin_c_construction-0fbfe8ea6e68f358)
+     Running tests/p6_repin_d2_full.rs (/dev/shm/ptq1-full/debug/deps/p6_repin_d2_full-924b479502af8de3)
+     Running tests/p6_repin_d2_head.rs (/dev/shm/ptq1-full/debug/deps/p6_repin_d2_head-927d7a6fd5c26b44)
+     Running tests/p6_repin_d2_imp.rs (/dev/shm/ptq1-full/debug/deps/p6_repin_d2_imp-e33724850b6d16e6)
+     Running tests/p6_repin_d2_tail.rs (/dev/shm/ptq1-full/debug/deps/p6_repin_d2_tail-56581f76f4bf4b0c)
+     Running tests/p6_repin_d_economy_mnoznik.rs (/dev/shm/ptq1-full/debug/deps/p6_repin_d_economy_mnoznik-e3e12d28e22d8837)
+     Running tests/p6_repin_d_work_tax.rs (/dev/shm/ptq1-full/debug/deps/p6_repin_d_work_tax-f2f289e329addd22)
+     Running tests/p6_repin_d_work_tax_edge.rs (/dev/shm/ptq1-full/debug/deps/p6_repin_d_work_tax_edge-6b587688281ee3e3)
+     Running tests/p6_repin_ekonomia_e_citizen.rs (/dev/shm/ptq1-full/debug/deps/p6_repin_ekonomia_e_citizen-dc5ea319f4e2dbf3)
+     Running tests/p6_repin_ekonomia_e_spichlerz.rs (/dev/shm/ptq1-full/debug/deps/p6_repin_ekonomia_e_spichlerz-52c6ef3ae48814a3)
+     Running tests/p6_repin_ekonomia_e_terrain_rates.rs (/dev/shm/ptq1-full/debug/deps/p6_repin_ekonomia_e_terrain_rates-544b651c33f0626e)
+     Running tests/p6_repin_teren_domain.rs (/dev/shm/ptq1-full/debug/deps/p6_repin_teren_domain-d424815a0e5724a3)
+     Running tests/p6_repin_wojna_2_battle_mode.rs (/dev/shm/ptq1-full/debug/deps/p6_repin_wojna_2_battle_mode-f7e55fc660860dda)
+     Running tests/p6_repin_wojna_2_generals.rs (/dev/shm/ptq1-full/debug/deps/p6_repin_wojna_2_generals-b2a41bf653684b50)
+     Running tests/p6_repin_wojna_2_r3_battle_mode.rs (/dev/shm/ptq1-full/debug/deps/p6_repin_wojna_2_r3_battle_mode-c6b83aa9bd979177)
+     Running tests/p6_repin_wojna_2_r3_nearest_nan.rs (/dev/shm/ptq1-full/debug/deps/p6_repin_wojna_2_r3_nearest_nan-d9afa4583664b987)
+     Running tests/p6_repin_wojna_2_r3_planned_march.rs (/dev/shm/ptq1-full/debug/deps/p6_repin_wojna_2_r3_planned_march-f18d7955fbd96bcf)
+     Running tests/p6_repin_wojna_2_r4_save.rs (/dev/shm/ptq1-full/debug/deps/p6_repin_wojna_2_r4_save-aca1f1e7af14b279)
+
+EXIT=0
