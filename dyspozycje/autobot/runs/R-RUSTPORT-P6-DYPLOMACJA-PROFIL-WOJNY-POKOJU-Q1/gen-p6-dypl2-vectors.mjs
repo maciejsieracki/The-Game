@@ -334,7 +334,7 @@ for (const [ps, pf] of profPool) {
   const n = poolIdx++ % 3 === 0 ? 120 : 50;
   for (let i = 0; i < n; i++) {
     const rw = pick([-1, 0, 0.3, 0.5, 1, NaN, undefined, Infinity, ...around(C.odrzucenieRwProg), ...around(C.progSilyWysoki), ...around(C.progSilyNiski)]);
-    const t = pick(gateTurns(pf, ps)); const l = pick([0, 0, 0, 1, 2, NaN, undefined, 0.5, -0]);
+    const t = pick(gateTurns(pf, ps)); const l = pick([0, 0, 0, 1, 2, NaN, undefined, 0.5, -0, -1, -0.5]);
     const input = { rw, turnsAtWar: t, lostCitiesInWar: l };
     const g = W.evaluatePeaceAiGate(input, pf, PARAMSETS[ps]);
     gateCases.push({ k: 'g', p: ps, pf: PF(pf), in: [E(rw), E(t), E(l)], out: [g.verdict, N(g.priceMultiplier), g.reason === undefined ? null : g.reason], fs: W.isFeelingStronger(input, PARAMSETS[ps]) });
