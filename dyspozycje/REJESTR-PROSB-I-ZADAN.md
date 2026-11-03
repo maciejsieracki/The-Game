@@ -8458,3 +8458,6 @@ Właściciel: automat nadal nie daje priorytetu wycince lasu wokół rzek, choć
 
 ## 2026-11-03 — zgłoszenie: automat nie wydaje ogromnego budżetu Pracy; wiele pól bez ulepszeń
 Właściciel: sprawdzić, czy nie ma ogranicznika liczby ulepszeń na miasto lub innych parametrów, bo budżet jest ogromny i niewydawany, a wiele pól, które system mógłby zabudować, nie ma ulepszeń. Temat diagnostyczny `R-WEB-AUTO-IMPROVE-BUDGET-UNSPENT-DIAG-Q1` (TYLKO diagnoza + pomiar; poprawka osobnym tematem PO zakończeniu `R-WEB-AUTOCLEAR-RIVER-FOREST-PRIORITY-Q2` — te same pliki, sekwencyjnie). Status: DISPATCH → Workflow.
+
+## 2026-11-03 — DECYZJA WŁAŚCICIELA: zlikwidować limit liczby ulepszeń na miasto (gracz, państwa-miasta, AI)
+Właściciel: „Ten limit ulepszeń na miasto zlikwiduj zarówno dla gracza, jak i dla państw-miast, jak i dla cywilizacji AI. To miało być już wcześniej zlikwidowane.” Stan zastany: `ai.ts:2633` `maxItemsPerCity: 1` (AI). Temat: `R-WEB-AUTO-IMPROVE-REMOVE-ITEM-CAP-Q1` (stała zgoda; niezależnie od trwającej diagnozy `R-WEB-AUTO-IMPROVE-BUDGET-UNSPENT-DIAG-Q1`). Status: DISPATCH → Workflow.
