@@ -1,3 +1,12 @@
+## ROBOCZA acb3c562 -- 2026-11-03 -- Milicja = mieszkańcy, wręcz i dystans wg epoki (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`4cd4c35cb` + CITY-MILITIA `5605d38ff`) i commit wdrożenia bundla; decyzje właściciela (nowa specyfikacja Milicji), stała zgoda na poprawki.
+- Bundle MD5 `acb3c562ac9677091bf002fe1b75a3f8`, 70,160,592 B, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, outDir poza repo, stempel ROBOCZA.
+- Zakres: Milicja = liczba mieszkańców, zawsze przy ataku na miasto z budynkiem Garnizon (także gdy jest wojsko), połowa wręcz (×0,5 statystyk), połowa dystans (pełne statystyki: Oszczepnik/Łucznik/Procarz), niższe morale, straty zmniejszają ludność.
+- Testy: tsc PASS; 113/0 (RED przed); 10 mutacji łamie test; regresje zielone.
+- Ograniczenia: brak pomiaru w pełnej grze (60 jednostek w bitwie 3D); zamiast „Miecznika z tarczą” użyto „Wojownik z mieczem i tarczą”.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `3b1c46dadf8bcd29c49f8bb18ba71946`, 70,157,366 bajtów.
+
 ## ROBOCZA 3b1c46da -- 2026-11-03 -- eliminacja cywilizacji: żywność ze Spichlerza w bilansie zdobycia (testowa)
 
 - **STATUS: DEPLOYED** — merge do `origin/main` (`f832f6223` + ELIMINATION-FULL-SPOILS `b88ace31b`) i commit wdrożenia bundla; zgłoszenie właściciela (zrzut), stała zgoda na poprawki.

@@ -1,113 +1,114 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA; push do origin/main wykonany na polecenie właściciela (2026-10-31)",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "3b1c46dadf8bcd29c49f8bb18ba71946",
-  "bundleSha256": "77cf12a6b97fdfc935de6ff5f4818ced9d89ac4bac162213491e8256e971c4fa",
-  "bundleBytes": 70157366,
+  "bundleMd5": "acb3c562ac9677091bf002fe1b75a3f8",
+  "bundleSha256": "8e17ba911ab7e6947624a3ebfd95823580b15a6a4386339c9a38aa64433d769c",
+  "bundleBytes": 70160592,
   "sourceSnapshot": {
-    "source": "main f832f6223 + ELIMINATION-FULL-SPOILS (b88ace31b)",
+    "source": "main 4cd4c35cb + CITY-MILITIA (5605d38ff)",
     "build": "Vite 5.4.x direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "R-WEB-ELIMINATION-FULL-SPOILS-Q1: przy eliminacji cywilizacji (zdobycie ostatniego miasta) zwycięzca przejmuje także CAŁĄ żywność ze Spichlerza ofiary (do pojemności własnego Spichlerza; nadwyżka ginie, ofiara zerowana; barbarzyńcy żywności nie dziedziczą), a okno „Bilans zdobycia” ma wiersz „Żywność ze spichlerza” (przy limicie „przejęto X z Y”) i listę surowców z faktycznie przejętych wartości. Ustalenie: surowce, Praca, Nauka i złoto były przenoszone wcześniej; „Glina +134, Ruda +40” to magazyn ostatniego miasta; brakowało żywności ze Spichlerza."
+    "R-WEB-CITY-MILITIA-NO-DEFENDERS-Q1: Milicja miasta wg decyzji właściciela: liczba jednostek = liczba mieszkańców (1 mieszkaniec = 1 jednostka), powstaje ZAWSZE przy ataku na miasto z budynkiem Garnizon, także gdy w mieście są jednostki wojskowe (wspiera obrońców); połowa walczy wręcz (Wojownik/Włócznik/Wojownik z mieczem i tarczą wg epoki, statystyki ×0,5), połowa dystansowo (Oszczepnik/Łucznik/Procarz, pełne statystyki); morale obniżone (×0,5 z podłogą +3 nad progiem ucieczki); polegli milicjanci zmniejszają ludność (min. 1); barbarzyńcy uwzględniają budynek Garnizon. Opis §9c PROJEKT-GRY-master.md zaktualizowany."
   ],
   "verification": [
     "tsc --noEmit PASS po scaleniu",
-    "elimination-full-spoils 114/0 (RED przed), 7 mutacji łamie test; elimination-toast-merge, capital-capture, miasto-zdobycie-raport zielone",
-    "5 testów padających tak samo na bazie (conquest-stability, hud-skarbiec, barb-city-capture-cluster, ai-zdobycie-miasta-adiacencja, rekrutacja-skarbiec-only)"
+    "city-militia-no-defenders 113/0 (RED na bazie), 10 mutacji łamie test; map-field-battle 24/0, militia-garrison-contract 17/0, militia-garrison-router-siege 8/0, siege-defenders 12/0",
+    "palisade-battle-wall-rules, city-wall-towers zielone po scaleniu"
   ],
   "limits": [
-    "NIE_ZMIERZONO w przeglądarce (main.ts bez eksportów); wiązanie sprawdzone po źródle",
-    "Wchłonięcie dyplomatyczne państwa-miasta (annexCityStateToOwner) nie przenosi majątku — poza zakresem, do decyzji",
-    "Objaw „tylko Glina i Ruda” może nie zniknąć w oknie dla jednego ostatniego miasta, bo magazyn jedzie z miastem; realna poprawka to żywność ze Spichlerza"
+    "NIE_ZMIERZONO w pełnej grze (build zakazany): bitwa 3D przy 60 jednostkach, ścieżki AI→AI, państw-miast, barbarzyńców; integracja strat ludności w main.ts bez testu",
+    "W danych brak „Miecznika z tarczą” — użyto „Wojownik z mieczem i tarczą”; Procarz ma w units.json Epokę Brąz (zastosowano specyfikację: Żelazo)",
+    "Abstrakcyjne oblężenie (siege.ts makeMilitia) zostaje na modelu zbiorczym (niewołane z main.ts)",
+    "Oznaczenie modeli milicji jako „Milicja” — osobny temat; testy barb-city-capture-cluster i budynek-garnizon padają także na bazie"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
-    "notes": "ELIMINATION-FULL-SPOILS (r1): Operator → Evaluator → Obrona → FC PASS-WITH-NOTES."
+    "notes": "CITY-MILITIA (runda 2): Operator → Evaluator FAIL r1 → Operator r2 → Obrona → FC PASS-WITH-NOTES."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-03T20:21:13",
+  "hubGeneratedAt": "2026-11-03T20:39:47",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "3b1c46dadf8bcd29c49f8bb18ba71946",
-      "sizeBytes": 70157366
+      "md5": "acb3c562ac9677091bf002fe1b75a3f8",
+      "sizeBytes": 70160592
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "3b1c46dadf8bcd29c49f8bb18ba71946",
-      "sizeBytes": 70157366
+      "md5": "acb3c562ac9677091bf002fe1b75a3f8",
+      "sizeBytes": 70160592
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "3b1c46dadf8bcd29c49f8bb18ba71946",
-      "sizeBytes": 70157366
+      "md5": "acb3c562ac9677091bf002fe1b75a3f8",
+      "sizeBytes": 70160592
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "3b1c46dadf8bcd29c49f8bb18ba71946",
-      "sizeBytes": 70157366
+      "md5": "acb3c562ac9677091bf002fe1b75a3f8",
+      "sizeBytes": 70160592
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "3b1c46dadf8bcd29c49f8bb18ba71946",
-      "sizeBytes": 70157366
+      "md5": "acb3c562ac9677091bf002fe1b75a3f8",
+      "sizeBytes": 70160592
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "3b1c46dadf8bcd29c49f8bb18ba71946",
-      "sizeBytes": 70157366
+      "md5": "acb3c562ac9677091bf002fe1b75a3f8",
+      "sizeBytes": 70160592
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "3b1c46dadf8bcd29c49f8bb18ba71946",
-      "sizeBytes": 70157366
+      "md5": "acb3c562ac9677091bf002fe1b75a3f8",
+      "sizeBytes": 70160592
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "3b1c46dadf8bcd29c49f8bb18ba71946",
-      "sizeBytes": 70157366
+      "md5": "acb3c562ac9677091bf002fe1b75a3f8",
+      "sizeBytes": 70160592
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "3b1c46dadf8bcd29c49f8bb18ba71946",
-      "sizeBytes": 70157366
+      "md5": "acb3c562ac9677091bf002fe1b75a3f8",
+      "sizeBytes": 70160592
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "3b1c46dadf8bcd29c49f8bb18ba71946",
-      "sizeBytes": 70157366
+      "md5": "acb3c562ac9677091bf002fe1b75a3f8",
+      "sizeBytes": 70160592
     }
   ],
-  "md5": "3b1c46dadf8bcd29c49f8bb18ba71946",
-  "sizeBytes": 70157366,
+  "md5": "acb3c562ac9677091bf002fe1b75a3f8",
+  "sizeBytes": 70160592,
   "publisher": "Claude Code orkiestrator — stała zgoda właściciela 2026-10-31",
   "source": "gra/src; main 9ce1f5e50 + merge b38f40860",
   "immediatePreviousRelease": {
-    "bundleMd5": "4e022fcd0c2f3602d9a184a6434c849e"
+    "bundleMd5": "3b1c46dadf8bcd29c49f8bb18ba71946"
   },
   "rollbackPlan": {
-    "method": "git revert commitu wdrożenia; poprzedni bundel MD5 4e022fcd0c2f3602d9a184a6434c849e, 70156155 bajtów."
+    "method": "git revert commitu wdrożenia; poprzedni bundel MD5 3b1c46dadf8bcd29c49f8bb18ba71946, 70157366 bajtów."
   },
   "previousRelease": {
     "releaseState": "DEPLOYED TO ROBOCZA; push do origin/main wykonany na polecenie właściciela (2026-10-31)",
@@ -1283,8 +1284,8 @@
     "sourceCommit": "c46d6c47ff8643fabdcdd58d5c8067e07737326f",
     "publicationCommit": "0e85b43814f503fe34b42c88df4dd07233dbdfb"
   },
-  "publishedAt": "2026-11-03T20:21:13+00:00",
-  "buildStamp": "2026-11-03 20:21",
+  "publishedAt": "2026-11-03T20:39:47+00:00",
+  "buildStamp": "2026-11-03 20:39",
   "battleBundle": {
     "file": "Gra-ROBOCZA-POLE-BITWY.html",
     "md5": "daf66e2423e0f550db70ee41d8cdf12f",
