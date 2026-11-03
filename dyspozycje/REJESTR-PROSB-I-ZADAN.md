@@ -8567,3 +8567,6 @@ Mnożnik Mennicy (×2,0 łatwy / ×1,5 normalny / ×1,0 trudny; wymaga Waluty + 
 
 ## 2026-11-03 — wdrożono ROBOCZA bba4ae4e (main e0b20f430): palisada jako mur (runda 1), tooltip ulepszeń
 Palisada r1 (R1–R3) + tooltip. W toku: runda 2 palisady (wieżyczki przy murze i palisadzie, model palisady w bitwie). Do decyzji: czy wieża oblężnicza w bitwie taktycznej ma liczyć się jako wyłom (dziś nie; w Auto/„Pomiń” tak).
+
+## 2026-11-03 — DECYZJA WŁAŚCICIELA: nowe zasady Milicji
+Liczba milicji = liczba mieszkańców (nie 20%); milicja powstaje ZAWSZE przy ataku jako jednostki wspierające (niezależnie od obecności wojska), pod warunkiem GARNIZONU (przyjęto: budynek Garnizon — ZAŁOŻENIE); połowa wręcz, połowa dystans: Kamień — Oszczepnik, Brąz — Łucznik, Żelazo — Procarz (pełne statystyki; tylko morale niższe); wręcz: Kamień — Wojownik, Brąz — Włócznik, Żelazo — Miecznik z tarczą, każdy ×0,5 statystyk. Wpisane do dispatchu `R-WEB-CITY-MILITIA-NO-DEFENDERS-Q1` (nadrzędne). Start po rundzie 2 palisady (te same pliki).
