@@ -8599,3 +8599,6 @@ Backlog z FC: oznaczenie modeli milicji jako „Milicja” (osobny temat, bez zm
 
 ## 2026-11-03 — DECYZJA WŁAŚCICIELA (ABC): ulepszenia terenu rosną z epoką
 (1) Każde ulepszenie terenu zwiększa Żywność, Pracę i Handel (tylko te pola, które ma >0) o +1 w Epoce Brązu i +2 w Epoce Żelaza — wg AKTUALNEJ epoki właściciela (też dla już postawionych ulepszeń, niezależnie od epoki odblokowania ulepszenia); dotyczy ulepszeń żywnościowych i surowcowych (i dróg, wycinki). (2) Wszystkie ulepszenia surowcowe (Tartak i Kamieniołom już tak mają) zwiększają produkcję surowca ×1,5 za epokę (Kamień ×1 → Brąz ×1,5 → Żelazo ×2,25; zaokrąglenie do całości); **Złoto też ×1,5** (1 → 2 → 2). Temat `R-WEB-IMPROVEMENT-ERA-SCALING-Q1`.
+
+## 2026-11-03 — zgłoszenie (zrzut: obozy łowieckie na wzgórzu): Obóz łowiecki wypłaszcza wzgórze
+Właściciel: Obóz łowiecki „znowu” wypłaszcza wzgórze (heks traci bryłę wzgórza i staje się płaski, zrzut: duży płaski heks z kilkoma obozami), a powinien być WKOMPONOWANY we wzgórze, jeśli jest na nim las — bez zmiany rzeźby terenu. Powiązane wcześniejsze tematy: `R-ULEPSZENIA-OBOZ-LOWIECKI-LAS-ZNIKA-I-TEREN-Q1`, `R-ULEPSZENIA-OBOZ-LOWIECKI-TYLKO-LAS-Q1`. Temat `R-WEB-HUNTING-CAMP-HILL-NO-FLATTEN-Q1`.
