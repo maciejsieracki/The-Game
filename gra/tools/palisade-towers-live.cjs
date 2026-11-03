@@ -6,6 +6,7 @@
  * Usage: node tools/palisade-towers-live.cjs <distDir> <outDir> <label> <fort: palisada|mury> [--probe]
  *   distDir : zbudowany vite bundle gry (poza repo, np. /dev/shm/...)
  *   --probe : dodatkowo zmierz ostrzal wiezyczek (liczba wiezyczek, zasieg, HP celu, log).
+ * Env DEFERA=1..3 -- epoka obroncy (pomiar ostrzalu w epokach 2-3; domyslnie epoka gracza).
  * Zrzuty: <outDir>/<label>-<fort>-{daleko,blisko}.png (JPEG-owe kompresje nie sa uzywane; <= 1 MB).
  * Wynik JSON na stdout (ostatnia linia).
  */
@@ -22,7 +23,7 @@ const { chromium } = require(path.resolve(__dirname, '..', 'node_modules', 'play
   const page = await browser.newPage({ viewport: { width: 1100, height: 700 } });
   const errors = [];
   page.on('pageerror', (e) => errors.push(String(e)));
-  await page.goto('file://' + path.join(dist, 'index.html') + '?playtest=oblezenie-duze&fort=' + fort, { waitUntil: 'load', timeout: 120000 });
+  await page.goto('file://' + path.join(dist, 'index.html') + '?playtest=oblezenie-duze&fort=' + fort + (process.env.DEFERA ? '&defera=' + process.env.DEFERA : ''), { waitUntil: 'load', timeout: 120000 });
   await page.waitForFunction(() => !!window.__lastBattleScene, { timeout: 40000 });
   await page.evaluate(() => { window.__lastBattleScene._endDeployPhase(); });
   const info = await page.evaluate(() => {
@@ -49,7 +50,7 @@ const { chromium } = require(path.resolve(__dirname, '..', 'node_modules', 'play
       bs.camDistTarget = dist; bs.camDist = dist; bs._applyCamera();
     }, { dist, ROW });
     await page.waitForTimeout(900);
-    const f = path.join(outDir, `${label}-${fort}-${suffix}.png`);
+    const f = path.join(outDir, `${label}-${fort}${process.env.DEFERA ? '-e' + process.env.DEFERA : ''}-${suffix}.png`);
     await page.screenshot({ path: f });
     return f;
   };
