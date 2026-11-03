@@ -8532,3 +8532,6 @@ Właściciel: obrona miasta bez wojska miała zależeć od liczby ludności (Mil
 
 ## 2026-11-03 — wdrożono ROBOCZA c02b4df4 (main 1247214fd): kolejność rekrutacji wg epok + AUTO-IMPROVE-Q3
 Do osobnych tematów (z notatek FC): zapis w save rejestru wyciętych heksów (Q3); żywa weryfikacja wskaźnika „Budżet niewydany”; pomiar zużycia Pracy przez forty/posterunki bez limitu; `lesneMin` (decyzja czy limit).
+
+## 2026-11-03 — wdrożono ROBOCZA abb556ee (main 1a2f1c721): skracanie liczb HUD + widoczna zamiana Pracy na podatek
+LABOR: złoto dochodziło na koniec tury (zmierzone 0→20 903); błąd = brak odświeżenia „+N/turę”, brak podglądu i komunikatu. Do Skarbca idzie udział „Podatek” suwaka stolicy (domyślnie 60%; reszta na Naukę i Zamożność) — decyzja produktowa „100% do Skarbca” NIEPODJĘTA (pytanie do właściciela).
