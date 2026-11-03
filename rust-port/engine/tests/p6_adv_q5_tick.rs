@@ -416,7 +416,7 @@ fn run_rust(ctx: &Ctx, s: &Value, zloto_override: Option<&BTreeMap<i64, bool>>) 
         .as_object()
         .map(|o| o.iter().map(|(k, v)| (k.clone(), num(v))).collect())
         .unwrap_or_default();
-    let get_max_hp = |t: &str| max_hp[t];
+    let get_max_hp = |t: &str, _u: &ManpowerHealUnit| max_hp[t];
     let mut hp_calls: Vec<Value> = Vec::new();
     let mut on_changed = |id: &str, hp: f64, hp_max: f64| {
         hp_calls.push(json!([id, enc(hp), enc(hp_max)]));

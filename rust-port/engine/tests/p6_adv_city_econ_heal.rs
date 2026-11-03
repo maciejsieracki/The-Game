@@ -127,7 +127,7 @@ fn s9_manpower_heal_matches_web() {
             "normal" => ManpowerDifficulty::Normal,
             _ => ManpowerDifficulty::Hard,
         };
-        let get_max_hp = |t: &str| max_hp[t];
+        let get_max_hp = |t: &str, _u: &ManpowerHealUnit| max_hp[t];
         let mut calls: Vec<Value> = Vec::new();
         let mut on_changed = |id: &str, hp: f64, hp_max: f64| {
             calls.push(json!([id, enc(hp), enc(hp_max)]));
@@ -237,7 +237,7 @@ fn s9_empty_civ_key_and_unknown_owner_are_neutral() {
     let run = |civ: Option<&str>| {
         let (mut c, mut u) = mk();
         let m: BTreeMap<i64, String> = civ.map(|k| (0, k.to_string())).into_iter().collect();
-        let max_hp = |_: &str| 100.0;
+        let max_hp = |_: &str, _u: &ManpowerHealUnit| 100.0;
         advance_manpower_heal(
             &mut c,
             &mut u,

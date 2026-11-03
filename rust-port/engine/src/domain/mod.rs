@@ -68,6 +68,7 @@ pub mod turn_economy_upkeep;
 pub mod turn_economy_wire;
 pub mod types;
 pub mod unit_epoch;
+pub mod unit_health;
 pub mod war_all_in_capital;
 pub mod war_all_in_capital_nav;
 pub mod war_all_in_capital_plan;

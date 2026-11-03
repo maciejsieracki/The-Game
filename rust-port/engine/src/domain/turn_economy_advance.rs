@@ -448,8 +448,9 @@ pub struct AdvanceManpowerHealInput<'a> {
     pub matrix: &'a CivMatrixFile,
     /// Web `ownerCivByOwnerId` (ownerId -> klucz cywilizacji).
     pub owner_civ_by_owner_id: &'a BTreeMap<i64, String>,
-    /// Web `manpowerHeal.getMaxHp(typeId)`.
-    pub get_max_hp: &'a dyn Fn(&str) -> f64,
+    /// Web `manpowerHeal.getMaxHp(typeId, liveUnit)` (`main.ts:34561`; `manpower.ts:319` wola z zywa jednostka).
+    /// Gotowe zrodlo: `unit_health::UnitHealthSource::as_get_max_hp`.
+    pub get_max_hp: &'a dyn Fn(&str, &ManpowerHealUnit) -> f64,
     /// Web `manpowerHeal.onUnitHpChanged`.
     pub on_unit_hp_changed: Option<&'a mut HpChangedFn<'a>>,
 }
@@ -488,7 +489,7 @@ pub fn advance_manpower_heal(
         &resolve_era,
         &|_| None,
         Some(&resolve_matrix),
-        &|type_id, _unit| get_max_hp(type_id),
+        get_max_hp,
         None,
         input.on_unit_hp_changed,
     )

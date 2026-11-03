@@ -59,10 +59,10 @@ pub struct EconUnit {
     pub type_id: String,
 }
 
-/// Web `manpowerHeal` (`:2280-2284`): zywe jednostki + `getMaxHp` + `onUnitHpChanged`.
+/// Web `manpowerHeal` (`:2280-2284`): zywe jednostki + `getMaxHp(typeId, liveUnit)` + `onUnitHpChanged`.
 pub struct HealRequest<'a> {
     pub units: &'a mut [ManpowerHealUnit],
-    pub get_max_hp: &'a dyn Fn(&str) -> f64,
+    pub get_max_hp: &'a dyn Fn(&str, &ManpowerHealUnit) -> f64,
     pub on_unit_hp_changed: Option<&'a mut HpChangedFn<'a>>,
 }
 

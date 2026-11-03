@@ -1,0 +1,5 @@
+sprawdzen: 6283, e2e getMaxHp: 1640, callbacki: 1001, rozbieznosci: 0
+EXIT=0
+sprawdzen: 6283, e2e getMaxHp: 1640, callbacki: 1001, rozbieznosci: 871
+   frac {'out': {'won': 3, 'stars': 3, 'frac': '~0.2'}, 'bs': 3}: got=0.25 want=0.2
+   frac {'out': {'won': 4, 'stars': 3, 'frac': '~0.2'}, 'bs': 4}: got=0.25 want=0.2

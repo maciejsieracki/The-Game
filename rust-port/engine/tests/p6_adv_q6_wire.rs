@@ -621,7 +621,7 @@ fn run_rust(ctx: &Ctx, s: &Value) -> Ran {
         .as_object()
         .map(|o| o.iter().map(|(k, v)| (k.clone(), num(v))).collect())
         .unwrap_or_default();
-    let get_max_hp = |t: &str| max_hp[t];
+    let get_max_hp = |t: &str, _u: &ManpowerHealUnit| max_hp[t];
     let hp_calls: RefCell<Vec<Value>> = RefCell::new(Vec::new());
     let mut on_changed = |id: &str, hp: f64, hp_max: f64| {
         hp_calls
