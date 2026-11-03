@@ -69,3 +69,23 @@ export function isSiegeStillValid(
     u => u.ownerId === besiegerOwnerId && hexDistance(u.q, u.r, city.q, city.r) === 1,
   );
 }
+
+/**
+ * R-WEB-AI-WAR-NEAREST-CITY-PEACE-2T-Q1 (C): czy auto-oblężenie po turze AI wolno założyć na miasto `cityOwnerId`
+ * z kotwicą `besiegerOwnerId`. Dotąd (OBL-MAP-01) skanowano WYŁĄCZNIE miasta gracza (`ownerId === 0`), więc AI nigdy
+ * nie oblegało obwarowanych miast innej AI (wejście na heks miasta z murem jest zablokowane, a bez oblężenia i machin
+ * nie ma szturmu) -- AI niszczyły armię wroga i stały pod murami bez zdobycia miasta.
+ * Reguła: miasto człowieka -- jak dotąd (każdy wróg w wojnie); miasto innego właściciela -- tylko oblegający
+ * główny AI (nie człowiek, nie barbarzyńca) i miasto nie należące do barbarzyńców (barbarzyńcy zdobywają inaczej).
+ */
+export function aiAutoSiegeAllowed(
+  cityOwnerId: number,
+  besiegerOwnerId: number,
+  isHumanOwner: (ownerId: number) => boolean,
+  isBarbarianOwner: (ownerId: number) => boolean,
+): boolean {
+  if (isHumanOwner(cityOwnerId)) return true;
+  if (isHumanOwner(besiegerOwnerId)) return false;
+  if (isBarbarianOwner(cityOwnerId) || isBarbarianOwner(besiegerOwnerId)) return false;
+  return cityOwnerId !== besiegerOwnerId;
+}

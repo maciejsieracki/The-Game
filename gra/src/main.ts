@@ -465,7 +465,7 @@ import {
   type MapSiegeContext,
 } from './game/mapSiegeDetect';
 import {
-  siegeAllowedBetween, detectWarAutoSiegeOnCity, isSiegeStillValid, enemyUnitsAdjacentToCity,
+  siegeAllowedBetween, detectWarAutoSiegeOnCity, isSiegeStillValid, enemyUnitsAdjacentToCity, aiAutoSiegeAllowed,
 } from './game/diplomacy-siege-war-gate';
 import { resolveEnemyCityClick, type MapEnemyCityClickAction } from './map/map-attack-city';
 import { launchFieldBattleFromMap } from './battle/mapFieldBattle';
@@ -1460,7 +1460,12 @@ import {
   type DiploPairMeta,
   type ZlozeGrant,
 } from './game/diplomacy-pn-engine';
-import { resolveWarPeaceProfile, brakeRelationThreshold, recordWarCityLoss, warStateFromRecord, type WarPeaceProfile } from './game/diplomacy-war-peace-profile';
+import { resolveWarPeaceProfile, brakeRelationThreshold, recordWarCityLoss, warStateFromRecord, evaluatePeaceAiGate, type WarPeaceProfile } from './game/diplomacy-war-peace-profile';
+import { buildWarCityTargets } from './game/ai-war-target-select';
+import {
+  registerAiPeaceRequest, isForcedPeaceEligiblePair, planPeacePayment, decideAiPeaceRequest,
+  type AiPeaceRequest, type PeaceAsset,
+} from './game/diplomacy-ai-forced-peace';
 import {
   isPeaceTreatyLocked,
   startPeaceTreatyLock,
@@ -2166,6 +2171,14 @@ async function boot(): Promise<void> {
       string,
       { ownerA: number; ownerB: number; capturedByA: number; capturedByB: number }
     >();
+    /**
+     * R-WEB-AI-WAR-NEAREST-CITY-PEACE-2T-Q1 (B): prośby przegrywającej AI o pokój z inną AI (klucz diploPairKey).
+     * Do tej pory komendy `zaproponuj_pokoj`/`oferuj_trybut_za_pokoj` AI→AI były odrzucane przez pętlę komend
+     * dyplomacji (obsługa tylko wobec gracza), więc jedyną drogą do pokoju AI↔AI był auto-pokój po 2 zdobytych miastach.
+     * Licznik tur biegnie od pierwszej prośby; po `tury_do_pokoju_po_prosbie` tur pokój wchodzi automatycznie
+     * (tickAiAiPeaceRequests). Czyszczony w cleanupRegularWarOnPeace (każdy pokój pary), nowej grze i wczytaniu.
+     */
+    const aiAiPeaceRequestByPairKey = new Map<string, AiPeaceRequest>();
     /**
      * R-EPOKA-KAMIEN-WYMUSZONA-WOJNA: osobny rejestr od Brązu. Ochrona startowa
      * kończy się po 20 turach gry; dalej cykl działa według tych samych reguł
@@ -10632,6 +10645,7 @@ async function boot(): Promise<void> {
      * następnej wojny tej samej pary po cooldownie. */
     function cleanupRegularWarOnPeace(proposerId: number, responderId: number): void {
       regularWarCapturedByPairKey.delete(diploPairKey(proposerId, responderId));
+      aiAiPeaceRequestByPairKey.delete(diploPairKey(proposerId, responderId));
     }
 
     /** Pokój kończy aktywne oblężenia między tą parą, zanim kolejny tick może je rozstrzygnąć. */
@@ -16295,9 +16309,14 @@ async function boot(): Promise<void> {
     function scanAutoSiegesAfterAiTurn(): void {
       validateActiveSieges();
       for (const city of cities) {
-        if (city.oblegane || city.ownerId !== 0 || !city.maMur) continue;
+        if (city.oblegane || !city.maMur) continue;
         const auto = detectWarAutoSiegeOnCity(city, units, areEnemyOwners);
         if (!auto) continue;
+        // R-WEB-AI-WAR-NEAREST-CITY-PEACE-2T-Q1 (C): dotąd tylko miasta gracza (`ownerId !== 0` => continue);
+        // teraz także obwarowane miasta innej AI, gdy oblega je główna AI w stanie wojny (barbarzyńcy bez zmian).
+        // (miasta innych foteli człowieka -- jak dotąd pominięte: hotseat bez zmian.)
+        if (city.ownerId !== 0 && isHuman(city.ownerId)) continue;
+        if (!aiAutoSiegeAllowed(city.ownerId, auto.oblegajacyOwnerId, isHuman, isBarbarian)) continue;
 
         const atkUnits = collectSiegeAtkRoster(city, auto.atakujacy);
         const siegeArmy = atkUnits.map(runtimeUnitToSiegeUnit);
@@ -31803,13 +31822,19 @@ async function boot(): Promise<void> {
       const ownerIds = [...new Set(cities.map(c => c.ownerId))]
         .filter(o => o !== selfOwnerId && !isBarbarian(o) && !eliminatedOwners.has(o))
         .sort((a, b) => a - b);
-      const targets: WarCapitalTarget[] = [];
-      for (const o of ownerIds) {
-        if (!engage(o)) continue;
-        const capId = capitalCityIdForOwner(o);
-        const cap = capId ? cities.find(c => c.id === capId && c.ownerId === o) : undefined;
-        if (cap) targets.push({ ownerId: o, cityId: cap.id, q: cap.q, r: cap.r });
-      }
+      // R-WEB-AI-WAR-NEAREST-CITY-PEACE-2T-Q1 (A): cel ataku AI w wojnie z inną AI = NAJBLIŻSZE miasto wroga
+      // (planWarAllInCapital wybiera najbliższy cel od kotwicy grupy; remis: słabiej broniowane, potem niższe id).
+      // Gracz jako cel i barbarzyńcy jako atakujący -- bez zmian (tylko stolica). Logika: game/ai-war-target-select.ts.
+      const targets: WarCapitalTarget[] = buildWarCityTargets({
+        selfOwnerId,
+        enemyOwnerIds: ownerIds,
+        engage,
+        cities,
+        combatUnits: units.filter(u => !isCivilianUnit(u) && !isScoutUnit(u)),
+        isHuman,
+        isBarbarian,
+        capitalCityIdForOwner,
+      });
       // R-WEB-WAR-RULES-MULTIWAR-Q1 (flaga ON): W1 -- armie wrogów w wojnie z `selfOwnerId`
       // (bez cywilów/zwiadowców/barbarzyńców); W2 -- siła militarna każdego wroga (liczba
       // jednostek bojowych). Flaga OFF = kontekst bez tych pól = dotychczasowe zachowanie.
@@ -32479,6 +32504,112 @@ async function boot(): Promise<void> {
     // Funkcje licznika miast (po jednej na epokę) oraz pętla limitu czasu wojny wymuszonej
     // zostały usunięte; cleanup*ForcedWarOnPeace działa jak dotąd.
     // Żywy dowód: tools/forced-war-r9-no-auto-end-live-test.cjs.
+
+    /**
+     * R-WEB-AI-WAR-NEAREST-CITY-PEACE-2T-Q1 (B): główna cywilizacja AI (nie człowiek, nie barbarzyńcy, nie
+     * miasto-państwo/kopia typu, nie wyeliminowana) -- jedyne strony pokoju wymuszonego po prośbie.
+     */
+    function isMajorAiCivForForcedPeace(ownerId: number): boolean {
+      return !isHuman(ownerId) && !isBarbarian(ownerId) && !eliminatedOwners.has(ownerId)
+        && aiOwnerCivMap.has(ownerId) && !typCityCopyOwners.has(ownerId) && !isCityStateOwner(ownerId);
+    }
+
+    /** Para w zwykłej (niewymuszonej epoką) wojnie dwóch głównych AI -- kwalifikuje się do pokoju wymuszonego. */
+    function aiAiForcedPeacePairEligible(a: number, b: number): boolean {
+      const pairKey = diploPairKey(a, b);
+      return isForcedPeaceEligiblePair({
+        aIsHuman: isHuman(a),
+        bIsHuman: isHuman(b),
+        aIsMajorAi: isMajorAiCivForForcedPeace(a),
+        bIsMajorAi: isMajorAiCivForForcedPeace(b),
+        eliminated: eliminatedOwners.has(a) || eliminatedOwners.has(b),
+        forcedEpochWar: bronzeForceWarActiveByPairKey.has(pairKey)
+          || stoneForceWarActiveByPairKey.has(pairKey)
+          || ironForceWarActiveByPairKey.has(pairKey),
+        atWar: getDiploRelation(a, b).status === 'wojna',
+      });
+    }
+
+    /** Rejestruje prośbę przegrywającej AI (`requesterId`) o pokój do zwycięzcy (`otherId`); start licznika tur. */
+    function registerAiAiPeaceRequest(requesterId: number, otherId: number, cmdType: string): void {
+      if (!aiAiForcedPeacePairEligible(requesterId, otherId)) return;
+      const key = diploPairKey(requesterId, otherId);
+      if (registerAiPeaceRequest(aiAiPeaceRequestByPairKey, key, requesterId, otherId, turn)) {
+        console.log(`[Dyplomacja] R-AI-PEACE-2T: prośba AI${requesterId}→AI${otherId} o pokój (${cmdType}) w turze ${turn}`);
+      }
+    }
+
+    /** Majątek przegranego do zapłaty za pokój w istniejących formach koszyka: złoto, surowce, cesja miasta. */
+    function aiPeacePaymentAssets(loserId: number, winnerId: number, skipCityIds: ReadonlySet<string>): PeaceAsset[] {
+      const assets: PeaceAsset[] = [];
+      const gold = Math.floor(buildDiploTreasury().getPieniadze(loserId));
+      if (gold > 0) assets.push({ kind: 'zloto', id: 'zloto', amount: gold, pn: diplomacyPnZloto(gold) });
+      for (const key of Object.keys(diplomacyHandelSurowceCatalog())) {
+        const qty = diplomacyNormalizeSurowiecIlosc(key, ownerResourceStock(loserId, key));
+        if (qty <= 0) continue;
+        const pn = diplomacyPnSurowiecIlosc(key, qty);
+        if (pn != null && pn > 0) assets.push({ kind: 'surowiec_ilosc', id: key, amount: qty, pn });
+      }
+      for (const w of diploMiastaWycenaDla(loserId)) {
+        if (skipCityIds.has(w.cityId)) continue;
+        const plan = cityCessionPlanFor(w.cityId, loserId, winnerId);
+        assets.push({ kind: 'miasto', id: w.cityId, amount: 1, pn: w.cityPn, forbidden: w.zakazane || !plan.ok });
+      }
+      return assets;
+    }
+
+    /**
+     * R-WEB-AI-WAR-NEAREST-CITY-PEACE-2T-Q1 (B): rozstrzyga prośby AI↔AI o pokój, raz na turę po fazie AI.
+     * Cena pokoju: bilans zwycięzcy przed zapłatą = −(baza PW pokoju × mnożnik bramki zwycięzcy) < 0; przegrany
+     * płaci (złoto -> surowce -> cesja miasta), pokój przechodzi gdy bilans po zapłacie ≥ 0 i bramka zwycięzcy 'ok',
+     * a po `tury_do_pokoju_po_prosbie` turach ZAWSZE (płatność maksymalna możliwa). Skutki pokoju: zwykłe
+     * (`finalizePeaceTreatyBetween` -> blokada PEACE_TREATY_LOCK_TURNS bez zmian).
+     */
+    function tickAiAiPeaceRequests(): void {
+      if (aiAiPeaceRequestByPairKey.size === 0) return;
+      for (const [key, req] of Array.from(aiAiPeaceRequestByPairKey.entries())) {
+        const loser = req.requesterId;
+        const winner = req.otherId;
+        if (!aiAiForcedPeacePairEligible(loser, winner)) {
+          aiAiPeaceRequestByPairKey.delete(key);
+          continue;
+        }
+        const pot = (o: number): number => objectivePowerByOwner.get(o)?.power ?? 0;
+        const winnerRw = (pot(winner) + pot(loser)) > 0 ? pot(winner) / (pot(winner) + pot(loser)) : 0.5;
+        const warW = diploWarStateFor(winner, loser);
+        const gate = evaluatePeaceAiGate(
+          { rw: winnerRw, turnsAtWar: warW.turnsAtWar, lostCitiesInWar: warW.lostCities },
+          resolveWarPeaceProfile(civKeyForOwnerId(winner)),
+        );
+        const basePn = treatyBasePnFromConfig('pokoj');
+        const requiredPn = Math.round(basePn * (gate.verdict === 'ok' ? gate.priceMultiplier : 1));
+        const skipCities = new Set<string>();
+        let plan = planPeacePayment(requiredPn, aiPeacePaymentAssets(loser, winner, skipCities));
+        // Cesja musi być wykonalna (pre-kontrola jak w pokoju z udziałem gracza); inaczej planujemy bez tego miasta.
+        for (let guard = 0; guard < 8; guard++) {
+          const cityItem = plan.items.find(i => i.kind === 'miasto');
+          if (!cityItem || cityCessionPlanFor(cityItem.id, loser, winner).ok) break;
+          skipCities.add(cityItem.id);
+          plan = planPeacePayment(requiredPn, aiPeacePaymentAssets(loser, winner, skipCities));
+        }
+        const decision = decideAiPeaceRequest({ req, turn, requiredPn, plan, winnerGateVerdict: gate.verdict });
+        if (decision.action === 'wait') continue;
+        const basket: BasketItem[] = plan.items.map(i => ({
+          typ: i.kind,
+          id: i.id,
+          ilosc: i.kind === 'miasto' ? 1 : i.amount,
+          ...(i.kind === 'miasto' ? { cityPn: i.pn } : {}),
+        }));
+        transferBasketItems(loser, winner, basket);
+        console.log(
+          `[Dyplomacja] R-AI-PEACE-2T: pokój AI${loser}↔AI${winner} (${decision.action}, tury od prośby ${decision.turnsSince}); `
+          + `bilans zwycięzcy przed ${decision.balanceBefore} -> po ${decision.balanceAfter}; zapłata `
+          + `zloto=${plan.histogram.zloto} surowce=${plan.histogram.surowiec_ilosc} miasto=${plan.histogram.miasto} `
+          + `(${plan.coveredPn}/${requiredPn} PW)`,
+        );
+        finalizePeaceTreatyBetween(loser, winner);
+      }
+    }
 
     /**
      * R-AI-WOJNY-ZWYKLE-CAP-DWA-MIASTA-Q1: bezpiecznik dla ZWYKŁYCH (niewymuszonych epoki)
@@ -33855,6 +33986,7 @@ async function boot(): Promise<void> {
           // zwykłych wojen AI↔AI zerowałby się po każdym save/load (mechanizm celowo NIE
           // przechodzi przez serializeForcedWarState, patrz komentarz przy deklaracji mapy).
           regularWarCapturedByPairKey: Array.from(regularWarCapturedByPairKey.entries()),
+          aiAiPeaceRequestByPairKey: Array.from(aiAiPeaceRequestByPairKey.entries()),
           // r6 (zarzut 3): przy flagi OFF klucz NIE trafia do zapisu (zapis = baza bit w bit).
           ...(isWarRulesMultiwarEnabled()
             ? { warRulesForcedEraDeclared: Array.from(forcedEraWarDeclaredByTag.entries()) }
@@ -38289,6 +38421,10 @@ async function boot(): Promise<void> {
                       } else if (cmd.type === 'zaproponuj_pakt') {
                         enqueueDiplomacyPendingFromCmd(ownerId, cmd);
                       }
+                    } else if (cmd.type === 'zaproponuj_pokoj' || cmd.type === 'oferuj_trybut_za_pokoj') {
+                      // R-WEB-AI-WAR-NEAREST-CITY-PEACE-2T-Q1 (B): prośba przegrywającej AI o pokój z inną AI
+                      // (dotąd gubiona) -- start licznika tur; rozstrzyga tickAiAiPeaceRequests.
+                      registerAiAiPeaceRequest(ownerId, targetId, cmd.type);
                     } else if (cmd.type === 'zaproponuj_handel_surowiec') {
                       applyAiAiHandelSurowiecCmd(ownerId, targetId, cmd);
                     }
@@ -39188,6 +39324,11 @@ async function boot(): Promise<void> {
             }
 
             if (!aiTurnAwaitingBattle) {
+              try {
+                tickAiAiPeaceRequests();
+              } catch (eAiAiPeace) {
+                console.error('[Dyplomacja] Blad pokoju AI-AI po prosbie:', eAiAiPeace);
+              }
               scanAutoSiegesAfterAiTurn();
             }
           };
@@ -41200,6 +41341,7 @@ async function boot(): Promise<void> {
       forcedWarWavesByPairKey.clear();
       aiGeneralWarCampaignByOwner.clear();
       barbCamps = [];
+      aiAiPeaceRequestByPairKey.clear(); // R-WEB-AI-WAR-NEAREST-CITY-PEACE-2T-Q1: prośby o pokój AI↔AI nie przechodzą do nowej gry.
       // R-AI-WOJNY-ZWYKLE-CAP-DWA-MIASTA-Q1: nowa gra bez przeładowania strony nie może
       // dziedziczyć liczników zwykłych wojen AI↔AI z poprzedniej rozgrywki (ownerId reużywane).
       regularWarCapturedByPairKey.clear();
@@ -42632,6 +42774,7 @@ async function boot(): Promise<void> {
       // R-AI-WOJNY-ZWYKLE-CAP-DWA-MIASTA-Q1: brak wpisu (stary zapis sprzed tej naprawy) =
       // bezpieczny pusty stan (mechanizm po prostu nieaktywny dla tej gry), nie wyjątek.
       regularWarCapturedByPairKey.clear();
+      aiAiPeaceRequestByPairKey.clear();
       // R-WEB-WAR-RULES-MULTIWAR-Q1 (R3): brak wpisu (stary zapis) = pusty licznik.
       forcedEraWarDeclaredByTag.clear();
       const savedForcedEraDeclared = saved.meta?.warRulesForcedEraDeclared as
@@ -42645,6 +42788,10 @@ async function boot(): Promise<void> {
         | undefined;
       if (savedRegularWarCaptured?.length) {
         for (const [key, st] of savedRegularWarCaptured) regularWarCapturedByPairKey.set(key, st);
+      }
+      const savedAiAiPeaceRequests = saved.meta?.aiAiPeaceRequestByPairKey as Array<[string, AiPeaceRequest]> | undefined;
+      if (savedAiAiPeaceRequests?.length) {
+        for (const [key, rq] of savedAiAiPeaceRequests) aiAiPeaceRequestByPairKey.set(key, rq);
       }
       // R-WOJNA-WYMUSZONA-REGULY-Q1 (Część A): odtworzenie tury wejścia w Brąz per-owner —
       // brak wpisu dla danego ownera (stary zapis) = `undefined`, `isEligibleForBronzeForcedWar`
