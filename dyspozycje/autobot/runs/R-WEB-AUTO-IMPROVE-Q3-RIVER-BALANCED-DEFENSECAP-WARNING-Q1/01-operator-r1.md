@@ -46,3 +46,5 @@ Brak. Nie uruchamiano `npm run build/dev` w `gra/`; bundle przez vite z kopii po
 RUNDY: 1/5
 NASTĘPNY KROK: Evaluator (r1) tego samego ID.
 DEPLOY/PUSH: NIE WYKONANO
+
+COMMIT: 9c45790fb (kod + testy + raport + dowody, baza 57a7ada40); ten wpis SHA dodany kolejnym commitem dokumentacyjnym. Brak push.
