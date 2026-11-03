@@ -1326,6 +1326,8 @@ import {
   hasNonFoodResourceDeficit,
   AUTO_ULEPSZENIA_PRACA_RESERVE,
   freshSurplusReport,
+  unspentBudgetWarning,
+  type UnspentBudgetWarning,
   // R-ULEPSZENIA-OBOZ-LOWIECKI-LAS-ZNIKA-I-TEREN-Q1: kanoniczny zbiór ulepszeń
   // żywnościowych — CZYTANY (nie kopiowany) przez `syncImprovementDecorForHex`,
   // żeby lista „co nie kasuje kępy lasu" nie była drugi raz zahardkodowana.
@@ -4954,6 +4956,8 @@ async function boot(): Promise<void> {
      */
     const ownerDefaultPoziomRacji = new Map<number, PoziomRacji>();
     const ulepszeniaEmpireByOwner = new Map<number, UlepszeniaEmpirePolicy>();
+    /** R-WEB-AUTO-IMPROVE-Q3-RIVER-BALANCED-DEFENSECAP-WARNING-Q1: stały wskaźnik niewydanego budżetu (gracz; liczony na EOT). */
+    let playerUnspentBudgetWarning: UnspentBudgetWarning | null = null;
     /** PYTANIE-77-DOP=B: łaska 1 tury Mennicy po utracie dostępu do złota (per owner). */
     const mennicaZlotoGraceState: MennicaZlotoGraceState = createMennicaZlotoGraceState();
     let playerArmyFoodHintShown = false;
@@ -24394,6 +24398,17 @@ async function boot(): Promise<void> {
             const pol = ulepszeniaEmpireForOwner(0);
             return { ...pol };
           },
+          // Q3: stały wskaźnik „Budżet niewydany” + przycisk „Wyłącz filtr” (wyłącza „Tylko pola z obywatelami” dla państwa).
+          getUnspentBudgetWarning: () => playerUnspentBudgetWarning,
+          onUnspentBudgetDisableFilter: () => {
+            const pol = ulepszeniaEmpireForOwner(0);
+            pol.onlyWorked = false;
+            pol.tryb = 'auto';
+            ulepszeniaEmpireByOwner.set(0, pol);
+            playerUnspentBudgetWarning = null;
+            showHintMessage('Państwo: auto ulepszenia w całym terytorium', 2800);
+            refreshD1bHud();
+          },
           // R-PRACA-PANEL-BUDOWY-WLASCIWA-WARSTWA-Q1: podpiecie warstwy (a)
           // (`CityPodzialPracy.procentBudynki` przez `ownerDefaultPodzialPracy`) USUNIETE —
           // panel trybu budowy byl TRZECIM egzemplarzem tego samego suwaka. Warstwa (a)
@@ -36316,6 +36331,9 @@ async function boot(): Promise<void> {
                   return effectiveUlepszeniaForCity(c).tryb === 'auto';
                 });
                 const hOidPracaPool = ownerPracaPool(hOid);
+                // R-WEB-AUTO-IMPROVE-Q3-RIVER-BALANCED-DEFENSECAP-WARNING-Q1: stały wskaźnik „Budżet niewydany” liczony od nowa co turę;
+                // gdy picker nie rusza (tryb ręczny / pula <= rezerwa), wskaźnik znika.
+                if (hOid === humanOwnerId) playerUnspentBudgetWarning = null;
                 if (autoImpCities.length > 0 && hOidPracaPool > AUTO_ULEPSZENIA_PRACA_RESERVE) {
                 let playerPracaPool = hOidPracaPool;
                 const playerCivArch = civTypeForOwner(hOid);
@@ -36481,7 +36499,13 @@ async function boot(): Promise<void> {
                   // zauważy, że ma za dużo zapasów na ulepszenia, może odpowiednio
                   // przesunąć suwak na rzecz budynków"). Sygnał pokazuje się tylko wtedy,
                   // gdy automat NIC nie postawił — inaczej zjadałby toast z listą ulepszeń.
-                  if (playerSurplusReport.surplus && toastLines.length === 0) {
+                  // Q3: stały wskaźnik przy suwaku „Z puli imperium na pracę automatyczną” (panel trybu budowy) — NIE toast co turę.
+                  playerUnspentBudgetWarning = unspentBudgetWarning(playerSurplusReport, {
+                    onlyWorkedOn: autoImpCities.some(c => effectiveUlepszeniaForCity(c as City).onlyWorked),
+                    poolAboveReserve: hOidPracaPool > AUTO_ULEPSZENIA_PRACA_RESERVE,
+                  });
+                  // Toast nadwyżki zostaje wyłącznie, gdy stały wskaźnik go nie zastępuje (nadwyżka NIE z powodu filtra).
+                  if (playerSurplusReport.surplus && toastLines.length === 0 && !playerUnspentBudgetWarning) {
                     showHintMessage(
                       'Automat ulepszeń: nadwyżka budżetu Pracy — brak niedoboru surowców i brak pól '
                       + 'z obywatelami do ulepszenia. Rozważ przesunięcie suwaka na rzecz budynków.',

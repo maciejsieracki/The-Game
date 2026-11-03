@@ -139,7 +139,7 @@ function callInfra(map, over = {}) {
   return pickAutoImprovements({
     cities: [{ ...CITY, population: 5, ulepszeniaFocus: 'infrastruktura' }], ownerId: 0, map,
     territoryNodes: over.territoryNodes ?? mkTN(),
-    placedImprovements: placed, pracaAvailable: over.pool ?? 100000, unlockedTechs: FULL,
+    placedImprovements: placed, pracaAvailable: over.pool ?? 100000, unlockedTechs: over.techs ?? FULL,
     pracaSurplusThreshold: 30, skipWyrab: true, demandDriven: false,
     getFocus: () => 'infrastruktura', getOnlyWorked: () => false, getWorkedHexKeys: () => new Set(),
     pracaBudgetPercent: 100, civArchetype: 'grecy', playerEra: 3,
@@ -172,8 +172,17 @@ console.log('C. U-3: kandydat wystajacy poza koło fortu -> powstaje; fort obceg
   const tnForeign = mkTN(); tnForeign.push({ q: F.q, r: F.r, ownerId: 7, pop: 0, level: 1, isFort: true });
   const withForeign = callInfra(map, { territoryNodes: tnForeign, placed: new Map([[K(F.q, F.r), ['fort']]]), maxItems: 10 });
   console.log('  [info] z fortem obcego: ' + JSON.stringify(forts(withForeign).map(p => p.key + '@' + p.q + ',' + p.r)));
-  ok(forts(withForeign).some(p => insideFort(p, F)),
+  // R-WEB-AUTO-IMPROVE-Q3-RIVER-BALANCED-DEFENSECAP-WARNING-Q1 (zdjecie `defenseCap`): dawna asercja (posterunek w kole F) opierala sie na
+  // pulapie 1 sztuka/klucz, ktory blokowal `fort` przy istniejacym forcie F i zostawial do wyboru wylacznie posterunek. Bez pulapu wybierany
+  // jest fort, a posterunek zamkniety w jego kole cofa U-3 — asercja przestala mierzyc to, co miala mierzyc. Zachowujemy PELNA sile testu,
+  // izolujac posterunek jawnie: bez technologii fortu (Wojskowosc) do wyboru jest tylko posterunek, wiec fort OBCY go nie blokuje, a WLASNY blokuje.
+  const TECHS_NO_FORT = new Set([...FULL].filter(t => t !== 'Wojskowość'));
+  const posForeign = forts(callInfra(map, { territoryNodes: tnForeign, techs: TECHS_NO_FORT, placed: new Map([[K(F.q, F.r), ['fort']]]) }));
+  const posOwn = forts(callInfra(map, { territoryNodes: tn, techs: TECHS_NO_FORT, placed: new Map([[K(F.q, F.r), ['fort']]]) }));
+  console.log('  [info] posterunek-only: obcy fort=' + JSON.stringify(posForeign.map(p => p.key + '@' + p.q + ',' + p.r)) + ', wlasny fort=' + JSON.stringify(posOwn.map(p => p.key + '@' + p.q + ',' + p.r)));
+  ok(posForeign.some(p => p.key === 'posterunek' && insideFort(p, F)),
     'fort OBCEGO wlasciciela nie wlacza filtra (regula dotyczy fortow tego samego wlasciciela): posterunek obok nadal powstaje');
+  ok(!posOwn.some(p => insideFort(p, F)), 'kontrola: fort WLASNY blokuje posterunek w swoim kole (filtr U-3 dziala)');
 }
 
 console.log('D. U-3: pick zaplanowany w TYM wywolaniu tez blokuje (brak kol zagniezdzonych)');

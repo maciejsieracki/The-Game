@@ -1,0 +1,11 @@
+
+--- A: predykat isOutpostPlacementAllowed (promien miasta 5) ---
+
+--- B: panel gracza / automat (buildImprovementQualifier) ---
+
+--- C: AI -- planExpansionFortBuilding (jednostka poza zasiegiem) ---
+
+--- D: straznik tekstowy (main.ts, ai.ts) -- jedna sciezka predykatu ---
+
+40 passed, 0 failed
+EXIT=0

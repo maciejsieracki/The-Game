@@ -1,0 +1,14 @@
+PASS: Grecy profile easy
+PASS: Grecy profile normal
+PASS: Grecy profile hard
+PASS: profile resolves the display-name alias
+PASS: non-pilot civilization keeps its existing policy
+PASS: AI owner roles use the full cumulative improvement pool on easy
+PASS: AI owner roles use the full cumulative improvement pool on normal
+PASS: AI owner roles use the full cumulative improvement pool on hard
+PASS: player and hotseat owners keep the 33% automation policy
+PASS: automation budget is calculated from the cumulative pool
+PASS: picker consumes the owner envelope from the cumulative pool
+
+11/11 PASS
+EXIT=0
