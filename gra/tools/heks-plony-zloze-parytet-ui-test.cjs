@@ -1,6 +1,7 @@
 'use strict';
 /**
  * heks-plony-zloze-parytet-ui-test.cjs -- P-HEKS-ZLOZE-PARYTET-NIEDOMKNIETY (2026-08-10)
+ * R-WEB-IMPROVEMENT-ERA-SCALING-Q1: regexy sygnatur akceptuja opcjonalny parametr `ownerEra?: number` (plony ulepszen wg epoki wlasciciela).
  * Run: cd gra && node tools/heks-plony-zloze-parytet-ui-test.cjs
  *
  * Kontekst: `yieldOfMapHex` (src/game/okolica.ts) juz przekazuje `hex.zloze` do
@@ -82,7 +83,7 @@ const ZLOZE_HEX_LINE = 'zloze: (hex as { zloze?: string }).zloze,';
 const ZLOZE_CHEX_LINE = 'zloze: (c.hex as { zloze?: string }).zloze,';
 
 const tileYieldLabelMatch = cityPanelSrc.match(
-  /function tileYieldLabel\(hex: Hex\): string \{[\s\S]{0,500}?\n\}/,
+  /function tileYieldLabel\(hex: Hex(?:, ownerEra\?: number)?\): string \{[\s\S]{0,600}?\n\}/,
 );
 assert(tileYieldLabelMatch !== null, 'znaleziono cialo funkcji tileYieldLabel()');
 if (tileYieldLabelMatch) {
@@ -100,7 +101,7 @@ if (appendMatch) {
 }
 
 const fullTileYieldMatch = tooltipSrc.match(
-  /function fullTileYield\(hex: Hex\): TileYield \{[\s\S]{0,400}?\n\}/,
+  /function fullTileYield\(hex: Hex(?:, ownerEra\?: number)?\): TileYield \{[\s\S]{0,500}?\n\}/,
 );
 assert(fullTileYieldMatch !== null, 'znaleziono cialo funkcji fullTileYield()');
 if (fullTileYieldMatch) {

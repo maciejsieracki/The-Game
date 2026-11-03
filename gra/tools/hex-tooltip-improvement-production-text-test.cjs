@@ -68,9 +68,11 @@ async function main() {
   ok(!/do magazynu/i.test(plain), 'brak "DO MAGAZYNU"');
   ok(!/automatycznie/.test(plain), 'brak "automatycznie"');
   ok(!/bez 👤/.test(plain), 'brak "bez 👤"');
-  ok(/\+50 Kamień\/t/.test(plain), 'jest "+50 Kamień/t"');
-  ok(/\+50 Drewno\/t/.test(plain), 'jest "+50 Drewno/t"');
-  ok(/\+20 Ruda cyny\/t/.test(plain), 'jest "+20 Ruda cyny/t"');
+  // R-WEB-IMPROVEMENT-ERA-SCALING-Q1: test renderuje epokę 3 (currentEra: 3) -> produkcja x1,5^2:
+  // Kamieniołom/Tartak 50 -> 113, Kopalnia cyny 20 -> 45 (wartość zależna od epoki, nie stała).
+  ok(/\+113 Kamień\/t/.test(plain), 'jest "+113 Kamień/t" (epoka 3)');
+  ok(/\+113 Drewno\/t/.test(plain), 'jest "+113 Drewno/t" (epoka 3)');
+  ok(/\+45 Ruda cyny\/t/.test(plain), 'jest "+45 Ruda cyny/t" (epoka 3)');
   ok(/Kamieniołom<\/b> \(postawione\)<br><span[^>]*><span class="cp-yield-ic">/.test(html),
     'Kamieniołom: bezposrednio pod nazwa linia produkcji z ikona surowca');
   ok(/\+20 Drewno\/t · przy 👤/.test(plain), 'plony terenu (drewno przy 👤) nietkniete');

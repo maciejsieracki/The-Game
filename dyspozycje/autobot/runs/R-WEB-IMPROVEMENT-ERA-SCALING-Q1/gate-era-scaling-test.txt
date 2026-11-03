@@ -1,0 +1,1 @@
+node tools/improvement-era-scaling-test.cjs: 138 PASS 0 FAIL; baseline: 40 FAIL + crash; mutacje yield/resource/pieniadz/zloto: 40/18/4/4 FAIL EXIT=0

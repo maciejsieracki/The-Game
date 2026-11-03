@@ -272,6 +272,12 @@ export interface WorkedTile {
   ulepszenieKey?: string;
   /** Wiele warstw ulepszeń na heksie (farma+irygacja, farma+bydło). */
   ulepszeniaKeys?: string[];
+  /**
+   * R-WEB-IMPROVEMENT-ERA-SCALING-Q1: AKTUALNA epoka właściciela heksu (1=Kamień, 2=Brąz, 3=Żelazo).
+   * Skaluje plony ulepszeń (+1 Żyw/Pra/Han/Pieniądz za epokę ponad Kamień) w `tileYield`.
+   * Brak = Kamień (wartości bazowe).
+   */
+  wlascicielEra?: number;
 }
 
 // ---------------------------------------------------------------------------
@@ -459,7 +465,7 @@ export function tileYield(tile: WorkedTile): TileYield {
     ? tile.ulepszeniaKeys
     : (tile.ulepszenieKey ? [tile.ulepszenieKey] : []);
   if (impKeys.length) {
-    applyImprovementBonuses(out, impKeys);
+    applyImprovementBonuses(out, impKeys, tile.wlascicielEra);
     out.zywnosc = Math.max(0, out.zywnosc);
     out.praca   = Math.max(0, out.praca);
     out.handel  = Math.max(0, out.handel);

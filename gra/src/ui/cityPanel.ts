@@ -1197,7 +1197,7 @@ function computeView(city: City, map: GameMap, data: GameData): CityView | null 
     const maAkwedukt = built.includes('akwedukt');
     // P-HEKS-SPOR-SASIAD runda 2 nota A: excludeHexKeys tak samo jak silnik tury /
     // overlay 👤 (getWorkedTiles) -- bez tego panel liczyl A=4/B=2 zamiast A=3/B=2.
-    const worked = cityWorkedTilesForEconomy(city, map, territoryNodesForPanel(), cfg.getExcludeHexKeys?.(city.id));
+    const worked = cityWorkedTilesForEconomy(city, map, territoryNodesForPanel(), cfg.getExcludeHexKeys?.(city.id), cfg.getEpoch?.(city.ownerId) ?? 1);
     const healthBd = computeCityHealthBreakdown(
       city.population,
       worked,
@@ -3348,7 +3348,7 @@ function resolveCityHealth(city: City, map: GameMap, data: GameData): { total: n
   const builtIds = cfg.getBuiltBuildingIds?.(city.id) ?? [];
   // P-HEKS-SPOR-SASIAD runda 2 nota A: fallback (gdy cfg.getCityHealth nie odpowiedzial)
   // musi liczyc tak samo jak silnik -- ta sama excludeHexKeys.
-  const tiles = cityWorkedTilesForEconomy(city, map, territoryNodesForPanel(), cfg.getExcludeHexKeys?.(city.id));
+  const tiles = cityWorkedTilesForEconomy(city, map, territoryNodesForPanel(), cfg.getExcludeHexKeys?.(city.id), cfg.getEpoch?.(city.ownerId) ?? 1);
   const br = computeCityHealthBreakdown(
     city.population, tiles, builtIds, data.societyParams, cfg.difficulty ?? 'normal',
     { city, map },
@@ -10013,7 +10013,7 @@ function formatTileYieldShort(y: { zywnosc: number; praca: number; handel: numbe
  * `foodPotentialOfMapHex` w okolica.ts — nie tylko legacy pojedyncze pole
  * `hex.ulepszenie` (ostatnia postawiona warstwa).
  */
-function tileYieldLabel(hex: Hex): string {
+function tileYieldLabel(hex: Hex, ownerEra?: number): string {
   const ulepszeniaKeys = improvementKeysForHex(hex);
   const y = tileYield({
     terenBazowy: hex.terenBazowy,
@@ -10022,6 +10022,7 @@ function tileYieldLabel(hex: Hex): string {
     zloze: (hex as { zloze?: string }).zloze,
     ulepszenieKey: ulepszeniaKeys[0],
     ulepszeniaKeys: ulepszeniaKeys.length ? ulepszeniaKeys : undefined,
+    wlascicielEra: ownerEra,
   });
   return formatTileYieldShort(y);
 }
@@ -10031,6 +10032,7 @@ function appendOkolicaYieldLabel(
   c: { cx: number; cy: number; hex: Hex | null; isCity: boolean },
   SIZE: number,
   fontScale: number,
+  ownerEra?: number,
 ): void {
   if (!c.hex) return;
   const ulepszeniaKeys = improvementKeysForHex(c.hex);
@@ -10041,6 +10043,7 @@ function appendOkolicaYieldLabel(
     zloze: (c.hex as { zloze?: string }).zloze,
     ulepszenieKey: ulepszeniaKeys[0],
     ulepszeniaKeys: ulepszeniaKeys.length ? ulepszeniaKeys : undefined,
+    wlascicielEra: ownerEra,
   });
   const ytxt = document.createElementNS('http://www.w3.org/2000/svg', 'text');
   ytxt.setAttribute('x', String(c.cx));
@@ -10159,12 +10162,12 @@ function renderWorkedPreview(
       // nielegalny (poza terytorium / centrum cudzego miasta / przegrany sąsiadowi)
       // dostaje ostrzeżenie w tooltipie zamiast zwykłego opisu "zabierz 👤".
       tip.textContent = c.isCity
-        ? `Centrum — plony z terenu (bez 👤) · ${tileYieldLabel(c.hex)}`
+        ? `Centrum — plony z terenu (bez 👤) · ${tileYieldLabel(c.hex, cfg.getEpoch?.(city.ownerId) ?? 1)}`
         : c.isIllegal
           ? `⚠ Nielegalny wpis (poza terytorium) — zniknie automatycznie na koniec tury. Klik: usuń teraz`
           : hasW
-            ? `Plon: ${tileYieldLabel(c.hex)} · Klik: zabierz 👤`
-            : `Plon: ${tileYieldLabel(c.hex)} · Klik: przypisz 👤`;
+            ? `Plon: ${tileYieldLabel(c.hex, cfg.getEpoch?.(city.ownerId) ?? 1)} · Klik: zabierz 👤`
+            : `Plon: ${tileYieldLabel(c.hex, cfg.getEpoch?.(city.ownerId) ?? 1)} · Klik: przypisz 👤`;
       poly.appendChild(tip);
     }
     svg.appendChild(poly);
@@ -10203,7 +10206,7 @@ function renderWorkedPreview(
     svg.appendChild(txt);
 
     if (c.hex) {
-      appendOkolicaYieldLabel(svg, c, SIZE, c.isCity ? 0.35 : 0.35);
+      appendOkolicaYieldLabel(svg, c, SIZE, c.isCity ? 0.35 : 0.35, cfg.getEpoch?.(city.ownerId) ?? 1);
     }
 
     const workers = c.isWorked ? (reczne?.[`${c.q},${c.r}`] ?? 1) : undefined;
@@ -10238,8 +10241,8 @@ function renderWorkedPreview(
       btn.style.height = `${pctD}%`;
       const hasW = okolicaTileHasWorkerAt(city, c.q, c.r, tryb, reczne, workedSet, c.d);
       btn.title = hasW
-        ? `Zabierz pracownika · plon: ${tileYieldLabel(c.hex)}`
-        : `Przypisz pracownika · plon: ${tileYieldLabel(c.hex)}`;
+        ? `Zabierz pracownika · plon: ${tileYieldLabel(c.hex, cfg.getEpoch?.(city.ownerId) ?? 1)}`
+        : `Przypisz pracownika · plon: ${tileYieldLabel(c.hex, cfg.getEpoch?.(city.ownerId) ?? 1)}`;
       btn.addEventListener('click', (ev) => {
         ev.stopPropagation();
         ev.preventDefault();
