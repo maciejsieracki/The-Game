@@ -309,3 +309,131 @@ fn top_up_pangea_matches_web() {
         "za malo dosypanych heksow: {total_added}"
     );
 }
+
+const VISIBILITY: &str = include_str!("p6_repin4_vectors/visibility.json");
+
+/// Hunk 16: `computePlayerVisibility` z `extraSightSources` (visibility.ts:268-310 @23dd158e9).
+/// Wariant bez zrodel (`compute_player_visibility`) musi dawac wynik weba BEZ `extraSightSources`.
+#[test]
+fn player_visibility_extra_sight_sources_match_web() {
+    use civ_engine::domain::fort_territory::SightSource;
+    use civ_engine::domain::pathfinding::ruch_jednostek::{
+        RuchHex, RuchJednostka, RuchMapa, TerenBazowy as RuchTeren,
+    };
+    use civ_engine::domain::terrain::visibility::{
+        compute_player_visibility, compute_player_visibility_with_extra,
+        ComputePlayerVisibilityOptions, PlayerVisibilityCity,
+    };
+
+    let v: Value = serde_json::from_str(VISIBILITY).expect("json");
+    assert_eq!(v["pin"].as_str(), Some("23dd158e9"));
+    let table: Vec<(f64, f64)> = v["border"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|b| (b["kultura"].as_f64().unwrap(), b["ring"].as_f64().unwrap()))
+        .collect();
+    let border = move |k: f64| -> f64 {
+        table
+            .iter()
+            .find(|(kk, _)| *kk == k)
+            .map(|(_, ring)| *ring)
+            .unwrap_or_else(|| panic!("brak cityBorderRadius dla {k}"))
+    };
+    let parse = |s: &str| -> (i32, i32) {
+        let (q, r) = s.split_once(',').unwrap();
+        (q.parse().unwrap(), r.parse().unwrap())
+    };
+    let strings = |a: &Value| -> Vec<(i32, i32)> {
+        a.as_array()
+            .unwrap()
+            .iter()
+            .map(|s| parse(s.as_str().unwrap()))
+            .collect()
+    };
+    let mut changed = 0;
+    let mut fractional = 0;
+    for (n, c) in v["cases"].as_array().unwrap().iter().enumerate() {
+        let mut map = RuchMapa::new();
+        for k in c["keys"].as_array().unwrap() {
+            map.insert(
+                parse(k.as_str().unwrap()),
+                RuchHex::new(RuchTeren::from_web("laka").expect("teren")),
+            );
+        }
+        let units: Vec<RuchJednostka> = c["units"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|u| {
+                let mut ru = RuchJednostka::new(
+                    u["id"].as_str().unwrap(),
+                    u["ownerId"].as_i64().unwrap(),
+                    "x",
+                    i(&u["q"]),
+                    i(&u["r"]),
+                );
+                ru.ruch = u["sight"].as_f64().unwrap();
+                ru
+            })
+            .collect();
+        let cities: Vec<PlayerVisibilityCity> = c["cities"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|x| PlayerVisibilityCity {
+                q: i(&x["q"]),
+                r: i(&x["r"]),
+                population: x["population"].as_f64().unwrap(),
+                kultura: x["kultura"].as_f64(),
+            })
+            .collect();
+        let start = if c["startHex"].is_null() {
+            None
+        } else {
+            Some((i(&c["startHex"]["q"]), i(&c["startHex"]["r"])))
+        };
+        let extra: Vec<SightSource> = c["extra"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|s| SightSource {
+                q: i(&s["q"]),
+                r: i(&s["r"]),
+                radius: s["radius"].as_f64().unwrap(),
+            })
+            .collect();
+        if extra.iter().any(|s| s.radius.fract() != 0.0) {
+            fractional += 1;
+        }
+        let sight = |u: &RuchJednostka| u.ruch;
+        let opts = ComputePlayerVisibilityOptions {
+            map: &map,
+            player_units: &units,
+            player_cities: &cities,
+            unit_sight: &sight,
+            start_hex: start,
+            start_reveal_radius: None,
+        };
+        let with: Vec<(i32, i32)> = compute_player_visibility_with_extra(&opts, &border, &extra)
+            .into_iter()
+            .collect();
+        let without: Vec<(i32, i32)> = compute_player_visibility(&opts, &border)
+            .into_iter()
+            .collect();
+        assert_eq!(with, strings(&c["withExtra"]), "z extra, przypadek {n}");
+        assert_eq!(
+            without,
+            strings(&c["withoutExtra"]),
+            "bez extra, przypadek {n}"
+        );
+        if with != without {
+            changed += 1;
+        }
+    }
+    assert!(
+        changed >= 40,
+        "za malo przypadkow z wplywem extra: {changed}"
+    );
+    assert!(fractional >= 5, "za malo ulamkowych promieni: {fractional}");
+}

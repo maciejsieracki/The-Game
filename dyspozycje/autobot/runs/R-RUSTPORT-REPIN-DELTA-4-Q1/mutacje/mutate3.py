@@ -32,7 +32,7 @@ M = {
  'P18': (CL, "            if avoid_polar\n                && u32::try_from(h.q)", "            if false\n                && u32::try_from(h.q)"),
 }
 ids = list(M) if sel == 'all' else sel.split(',')
-env = dict(os.environ, CARGO_TARGET_DIR='/dev/shm/repin4_r2', CARGO_INCREMENTAL='0', CARGO_PROFILE_DEV_DEBUG='0', CARGO_PROFILE_TEST_DEBUG='0')
+env = dict(os.environ, CARGO_TARGET_DIR='/dev/shm/repin4_r3', CARGO_INCREMENTAL='0', CARGO_PROFILE_DEV_DEBUG='0', CARGO_PROFILE_TEST_DEBUG='0')
 for i in ids:
     path, old, new = M[i]
     src = open(path).read()

@@ -1011,6 +1011,20 @@ pub mod visibility {
         opts: &ComputePlayerVisibilityOptions,
         border_radius: &dyn Fn(f64) -> f64,
     ) -> BTreeSet<Klucz> {
+        compute_player_visibility_with_extra(opts, border_radius, &[])
+    }
+
+    /// Web `computePlayerVisibility` z `extraSightSources` (`visibility.ts:268-310` @23dd158e9,
+    /// REPIN-DELTA-4 hunk 16, R-WEB-FORT-VISION-FOG-Q1): dodatkowe stale zrodla wzroku (forty/posterunki z
+    /// `fort_territory::fort_sight_sources`; promien = terytorium). Web `if (s.radius <= 0) continue`.
+    /// Zalozenie Z5: osobna funkcja zamiast nowego pola `ComputePlayerVisibilityOptions` (pole zlamaloby
+    /// literaly struktury w istniejacym `tests/p6_6a_visibility.rs`); `compute_player_visibility` = wariant
+    /// z pustym `extraSightSources` (domyslne `[]` weba).
+    pub fn compute_player_visibility_with_extra(
+        opts: &ComputePlayerVisibilityOptions,
+        border_radius: &dyn Fn(f64) -> f64,
+        extra_sight_sources: &[crate::domain::fort_territory::SightSource],
+    ) -> BTreeSet<Klucz> {
         let mut visible = BTreeSet::new();
 
         for u in opts.player_units {
@@ -1024,6 +1038,13 @@ pub mod visibility {
                 continue;
             }
             add_disc(&mut visible, c.q, c.r, opts.map, sight);
+        }
+
+        for s in extra_sight_sources {
+            if s.radius <= 0.0 {
+                continue;
+            }
+            add_disc(&mut visible, s.q, s.r, opts.map, s.radius);
         }
 
         if !visible.is_empty() {
