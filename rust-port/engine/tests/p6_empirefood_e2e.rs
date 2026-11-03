@@ -14,6 +14,8 @@ use std::collections::{BTreeMap, BTreeSet};
 use civ_engine::data::buildings_tech::{parse_buildings, parse_wonders};
 use civ_engine::data::civilizations::Num;
 use civ_engine::data::terrain_map::{parse_terrain_yields, TerrainYieldsFile};
+use civ_engine::domain::city_growth::p6_7a::empire_food::EmpireFoodState;
+use civ_engine::domain::city_growth::p6_7a::{EmpireFoodRuntime, OwnerFoodStates};
 use civ_engine::domain::civ_matrix::load_civ_matrix;
 use civ_engine::domain::improvement_build::{terrain_from_web_value, BuildHex, BuildMap};
 use civ_engine::domain::okolica::Reczne;
@@ -23,6 +25,8 @@ use civ_engine::domain::terrain::city_founding::p6_6b::cities::{
     City, CityPodzialHandlu, CityPodzialPracy, FoodBuffer, OkolicaFocus, OkolicaTryb, WealthState,
 };
 use civ_engine::domain::trade::{TradeRoute, TradeRouteMedium, TradeRouteStatus};
+use civ_engine::domain::turn_economy_attrition::{AttritionUnit, SiegeCityState};
+use civ_engine::domain::turn_economy_empirefood::{EmpireFoodBlockState, FoodUnit};
 use civ_engine::domain::turn_economy_inputs_state::{
     build_manual_work_tax_by_city, capital_city_id_for_owner, MennicaZlotoGraceState,
 };
@@ -37,13 +41,9 @@ use civ_engine::domain::turn_economy_loop::{CityLoopExtra, OrderYieldMults};
 use civ_engine::domain::turn_economy_territory::TerrainContext;
 use civ_engine::domain::turn_economy_tick::EconUnit;
 use civ_engine::domain::turn_economy_upkeep::unit_rows_from_json_str;
-use civ_engine::domain::city_growth::p6_7a::{EmpireFoodRuntime, OwnerFoodStates};
-use civ_engine::domain::city_growth::p6_7a::empire_food::EmpireFoodState;
-use civ_engine::domain::turn_economy_attrition::{AttritionUnit, SiegeCityState};
-use civ_engine::domain::turn_economy_empirefood::{EmpireFoodBlockState, FoodUnit};
 use civ_engine::domain::turn_economy_wire::{
-    run_economy_tick_for_game_with_food, EmpireFoodWireInput,
-    GameEconomyContext, GameEconomyTickOutcome,
+    run_economy_tick_for_game_with_food, EmpireFoodWireInput, GameEconomyContext,
+    GameEconomyTickOutcome,
 };
 use civ_engine::domain::PlayerId;
 use common::*;
@@ -470,7 +470,6 @@ fn compare(name: &str, s: &Value, ran: &Ran) -> Result<(), String> {
     Ok(())
 }
 
-
 fn chk_opt(label: &str, got: Option<f64>, want: &Value) -> Result<(), String> {
     match (got, want.is_null()) {
         (None, true) => Ok(()),
@@ -513,7 +512,10 @@ fn compare_food(name: &str, s: &Value, ran: &Ran) -> Result<(), String> {
         ] {
             chk_bits(&format!("{l} {k}"), g, num(&x[k]))?;
         }
-        chk!(t.glod_wojska == x["glodWojska"].as_bool().unwrap(), "{l} glodWojska");
+        chk!(
+            t.glod_wojska == x["glodWojska"].as_bool().unwrap(),
+            "{l} glodWojska"
+        );
         chk!(
             t.glod_wojska_atrycja_aktywna == x["atrycja"].as_bool().unwrap(),
             "{l} atrycja"
@@ -530,7 +532,10 @@ fn compare_food(name: &str, s: &Value, ran: &Ran) -> Result<(), String> {
             ] {
                 chk_bits(&format!("{l} {} {k}", r.city_id), g, num(&xr[k]))?;
             }
-            chk!(r.nakarmione == xr["nakarmione"].as_bool().unwrap(), "{l} nakarmione");
+            chk!(
+                r.nakarmione == xr["nakarmione"].as_bool().unwrap(),
+                "{l} nakarmione"
+            );
         }
         let fed = x["fed"].as_object().unwrap();
         chk!(t.fed_by_city_id.len() == fed.len(), "{l} fed liczba");
@@ -544,24 +549,49 @@ fn compare_food(name: &str, s: &Value, ran: &Ran) -> Result<(), String> {
     for o in ran.states.keys() {
         let st = ran.states.get(o).unwrap();
         let x = &ws[&o.to_string()];
-        chk_bits(&format!("{name} stan[{o}] zapasy"), st.zapasy_panstwa, num(&x["z"]))?;
-        chk_opt(&format!("{name} stan[{o}] tury"), st.tury_ujemnych_zapasow, &x["t"])?;
+        chk_bits(
+            &format!("{name} stan[{o}] zapasy"),
+            st.zapasy_panstwa,
+            num(&x["z"]),
+        )?;
+        chk_opt(
+            &format!("{name} stan[{o}] tury"),
+            st.tury_ujemnych_zapasow,
+            &x["t"],
+        )?;
     }
     // ---- auto-racje ----
     chk!(
         out.auto_ration_any_adjusted == w["anyAdjusted"].as_bool().unwrap(),
         "{name} anyAdjusted"
     );
-    chk!(out.clamped_any == w["clampedAny"].as_bool().unwrap(), "{name} clampedAny");
+    chk!(
+        out.clamped_any == w["clampedAny"].as_bool().unwrap(),
+        "{name} clampedAny"
+    );
     match (&out.pending_auto_ration, w["pending"].as_array()) {
         (None, None) => {}
         (Some(p), Some(wc)) => {
-            chk!(p.adjusted == w["pendingAdjusted"].as_bool().unwrap(), "{name} pending.adjusted");
+            chk!(
+                p.adjusted == w["pendingAdjusted"].as_bool().unwrap(),
+                "{name} pending.adjusted"
+            );
             chk!(p.changes.len() == wc.len(), "{name} pending liczba");
             for (c, x) in p.changes.iter().zip(wc) {
-                chk!(c.city_id == text(&x["cityId"]) && c.name == text(&x["name"]), "{name} pending id");
-                chk_bits(&format!("{name} pending old"), c.old_level, num(&x["oldLevel"]))?;
-                chk_bits(&format!("{name} pending new"), c.new_level, num(&x["newLevel"]))?;
+                chk!(
+                    c.city_id == text(&x["cityId"]) && c.name == text(&x["name"]),
+                    "{name} pending id"
+                );
+                chk_bits(
+                    &format!("{name} pending old"),
+                    c.old_level,
+                    num(&x["oldLevel"]),
+                )?;
+                chk_bits(
+                    &format!("{name} pending new"),
+                    c.new_level,
+                    num(&x["newLevel"]),
+                )?;
             }
         }
         (g, x) => return Err(format!("{name} pending rust={g:?} web={x:?}")),
@@ -575,9 +605,16 @@ fn compare_food(name: &str, s: &Value, ran: &Ran) -> Result<(), String> {
         "{name} popCap liczba"
     );
     let wk = w["kosztArmiiOwners"].as_object().unwrap();
-    chk!(out.koszt_armii_by_owner.len() == wk.len(), "{name} kosztArmii liczba");
+    chk!(
+        out.koszt_armii_by_owner.len() == wk.len(),
+        "{name} kosztArmii liczba"
+    );
     for (o, v) in &out.koszt_armii_by_owner {
-        chk_bits(&format!("{name} kosztArmii[{o}]"), *v, num(&wk[&o.to_string()]))?;
+        chk_bits(
+            &format!("{name} kosztArmii[{o}]"),
+            *v,
+            num(&wk[&o.to_string()]),
+        )?;
     }
     // ---- miasta: poziom racji + pola domyslne ----
     for (c, wa) in ran.cities.iter().zip(arr(&s["out"], "after")) {
@@ -586,7 +623,11 @@ fn compare_food(name: &str, s: &Value, ran: &Ran) -> Result<(), String> {
         chk_opt(&format!("{l} procent"), c.procent_rozwoj, &wa["proc"])?;
         chk_opt(&format!("{l} frac"), c.wzrost_ulamkowy, &wa["frac"])?;
         chk_opt(&format!("{l} tbd"), c.tury_bez_doplaty, &wa["tbd"])?;
-        chk_opt(&format!("{l} hunger"), out.hunger_loss_by_city[&c.id], &wa["hunger"])?;
+        chk_opt(
+            &format!("{l} hunger"),
+            out.hunger_loss_by_city[&c.id],
+            &wa["hunger"],
+        )?;
         match (c.ration_migrated_v114, wa["migr"].as_bool()) {
             (g, x) if g == x => {}
             (g, x) => return Err(format!("{l} migr rust={g:?} web={x:?}")),
@@ -594,7 +635,11 @@ fn compare_food(name: &str, s: &Value, ran: &Ran) -> Result<(), String> {
     }
     // ---- atrycja ----
     let wd: Vec<String> = arr(w, "destroyed").iter().map(text).collect();
-    chk!(out.destroyed_ids == wd, "{name} zniszczone {:?} vs {wd:?}", out.destroyed_ids);
+    chk!(
+        out.destroyed_ids == wd,
+        "{name} zniszczone {:?} vs {wd:?}",
+        out.destroyed_ids
+    );
     chk!(
         out.player_damaged_count as u64 == w["playerDamaged"].as_u64().unwrap(),
         "{name} playerDamaged"
@@ -610,16 +655,31 @@ fn compare_food(name: &str, s: &Value, ran: &Ran) -> Result<(), String> {
         chk!(u.id == text(&x["id"]), "{l} id");
         chk_opt(&format!("{l} hp"), u.hp, &x["hp"])?;
         chk_opt(&format!("{l} hpMax"), u.hp_max, &x["hpMax"])?;
-        chk!(u.oblega_city_id.as_deref() == x["oblega"].as_str(), "{l} oblega");
+        chk!(
+            u.oblega_city_id.as_deref() == x["oblega"].as_str(),
+            "{l} oblega"
+        );
     }
     // ---- oblezenia, garnizony ----
     for (c, x) in ran.siege.iter().zip(arr(w, "siege")) {
         let l = format!("{name} siege {}", c.id);
         chk!(c.id == text(&x["id"]), "{l} id");
-        chk!(c.oblegane == x["oblegane"].as_bool().unwrap(), "{l} oblegane");
-        chk!(c.oblegajacy_owner_id == x["owner"].as_i64(), "{l} oblegajacyOwnerId");
-        chk!(c.siege_capitulation_pending == x["cap"].as_bool().unwrap(), "{l} cap");
-        chk!(c.has_siege_machines == x["mach"].as_bool().unwrap(), "{l} machines");
+        chk!(
+            c.oblegane == x["oblegane"].as_bool().unwrap(),
+            "{l} oblegane"
+        );
+        chk!(
+            c.oblegajacy_owner_id == x["owner"].as_i64(),
+            "{l} oblegajacyOwnerId"
+        );
+        chk!(
+            c.siege_capitulation_pending == x["cap"].as_bool().unwrap(),
+            "{l} cap"
+        );
+        chk!(
+            c.has_siege_machines == x["mach"].as_bool().unwrap(),
+            "{l} machines"
+        );
         chk_opt(&format!("{l} garnizon"), c.garnizon, &x["garn"])?;
     }
     let wb = w["besieger"].as_object().unwrap();
@@ -629,6 +689,21 @@ fn compare_food(name: &str, s: &Value, ran: &Ran) -> Result<(), String> {
     }
     let we: Vec<String> = arr(w, "ended").iter().map(text).collect();
     chk!(out.cleanup.ended_sieges == we, "{name} ended");
+    // ---- N3: atrycja garnizonu miast oblezonych ----
+    let wn3 = arr(w, "n3");
+    chk!(out.siege_garrison.len() == wn3.len(), "{name} n3 liczba");
+    for (g, x) in out.siege_garrison.iter().zip(wn3) {
+        chk!(g.city_id == text(&x["city"]), "{name} n3 miasto");
+        chk!(
+            g.before as u64 == x["before"].as_u64().unwrap(),
+            "{name} n3 before"
+        );
+        chk_bits(
+            &format!("{name} n3 {} after", g.city_id),
+            g.after,
+            num(&x["after"]),
+        )?;
+    }
     let wg: Vec<String> = arr(w, "garnSynced").iter().map(text).collect();
     chk!(out.cleanup.garnizon_synced == wg, "{name} garnSynced");
     Ok(())
@@ -824,7 +899,11 @@ fn run_rust(ctx: &Ctx, s: &Value) -> Ran {
             r: num(&c["r"]),
             oblegane: c["obl"].as_bool().unwrap(),
             // generator zapisuje pola oblezenia na obiekcie miasta weba TYLKO gdy `obl`
-            oblegajacy_owner_id: if c["obl"].as_bool().unwrap() { c["sOwner"].as_i64() } else { None },
+            oblegajacy_owner_id: if c["obl"].as_bool().unwrap() {
+                c["sOwner"].as_i64()
+            } else {
+                None
+            },
             siege_capitulation_pending: c["obl"].as_bool().unwrap() && c["sCap"].as_bool().unwrap(),
             has_siege_machines: c["obl"].as_bool().unwrap() && c["sMach"].as_bool().unwrap(),
             garnizon: opt_num(&c["garn"]),
@@ -1182,9 +1261,12 @@ fn empire_food_block_matches_running_web() {
     let d: Value = serde_json::from_str(VECTORS).expect("empirefood.json");
     let ctx = make_ctx(&d);
     let scenarios = arr(&d, "scenarios");
-    assert!(scenarios.len() >= 310, "scenariuszy {}", scenarios.len());
-    let (mut n_ticks, mut n_ef, mut n_adj, mut n_pending, mut n_clamp, mut n_atr) = (0, 0, 0, 0, 0, 0);
-    let (mut n_destroyed, mut n_ended, mut n_garn, mut n_glod, mut n_human, mut n_deficyt) = (0, 0, 0, 0, 0, 0);
+    assert!(scenarios.len() >= 330, "scenariuszy {}", scenarios.len());
+    let (mut n_ticks, mut n_ef, mut n_adj, mut n_pending, mut n_clamp, mut n_atr) =
+        (0, 0, 0, 0, 0, 0);
+    let (mut n_destroyed, mut n_ended, mut n_garn, mut n_glod, mut n_human, mut n_deficyt) =
+        (0, 0, 0, 0, 0, 0);
+    let (mut n_n3, mut n_n3_destroyed) = (0, 0);
     for s in scenarios {
         let name = text(&s["name"]);
         let ran = run_rust(&ctx, s);
@@ -1203,16 +1285,23 @@ fn empire_food_block_matches_running_web() {
         n_adj += usize::from(out.auto_ration_any_adjusted);
         n_pending += usize::from(out.pending_auto_ration.is_some());
         n_clamp += usize::from(out.clamped_any);
-        n_atr += usize::from(out.ef.per_owner.iter().any(|t| t.glod_wojska_atrycja_aktywna));
+        n_atr += usize::from(
+            out.ef
+                .per_owner
+                .iter()
+                .any(|t| t.glod_wojska_atrycja_aktywna),
+        );
         n_destroyed += usize::from(!out.destroyed_ids.is_empty());
         n_ended += usize::from(!out.cleanup.ended_sieges.is_empty());
         n_garn += usize::from(!out.cleanup.garnizon_synced.is_empty());
         n_glod += usize::from(out.ef.per_owner.iter().any(|t| t.glod_wojska));
+        n_n3 += usize::from(!out.siege_garrison.is_empty());
+        n_n3_destroyed += usize::from(out.siege_garrison.iter().any(|g| g.after < g.before as f64));
         n_human += usize::from(ran.wire.banks.iter().any(|b| b.is_human));
         n_deficyt += usize::from(ran.wire.banks.iter().any(|b| b.deficyt));
     }
     eprintln!(
-        "empirefood: scenariuszy {} ticki {n_ticks} tiki-panstwa {n_ef} korekta {n_adj} pending {n_pending} clamp {n_clamp} atrycja {n_atr} zniszczone {n_destroyed} oblezenie-zakonczone {n_ended} garnizon {n_garn} glod {n_glod} czlowiek {n_human} deficyt {n_deficyt}",
+        "empirefood: scenariuszy {} ticki {n_ticks} tiki-panstwa {n_ef} korekta {n_adj} pending {n_pending} clamp {n_clamp} atrycja {n_atr} zniszczone {n_destroyed} oblezenie-zakonczone {n_ended} garnizon {n_garn} glod {n_glod} czlowiek {n_human} deficyt {n_deficyt} n3 {n_n3} n3-zniszczone {n_n3_destroyed}",
         scenarios.len()
     );
     assert!(n_ticks >= 600, "ticki {n_ticks}");
@@ -1227,6 +1316,8 @@ fn empire_food_block_matches_running_web() {
     assert!(n_glod >= 100, "glod {n_glod}");
     assert!(n_human >= 100, "czlowiek {n_human}");
     assert!(n_deficyt >= 80, "deficyt {n_deficyt}");
+    assert!(n_n3 >= 100, "n3 {n_n3}");
+    assert!(n_n3_destroyed >= 25, "n3 zniszczone {n_n3_destroyed}");
 }
 
 /// Kontrola negatywna: zmiana wejsc bloku (zapasy panstwa +7, hp jednostek +50) ROZJEZDZA wynik z webem.

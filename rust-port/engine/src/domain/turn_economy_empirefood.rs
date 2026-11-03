@@ -9,6 +9,7 @@
 //! * [`run_empire_food_block`] = sklejka `main.ts:34594-34850` (mapa Spichlerza per miasto, `popCapByCityId`,
 //!   petla po wlascicielach: auto-obnizenie + auto-podniesienie, clamp foteli czlowieka, `advanceEmpireFood`,
 //!   atrycja HP + sprzatanie po zniszczonych jednostkach);
+//!
 //! oraz adaptery miedzy typem ticku petli ([`CityLoopTick`]) a podzbiorem `CityEconomyTick` modulu `p6_7a`.
 //!
 //! ZALOZENIA (do akceptacji):
@@ -18,7 +19,7 @@
 //! * Z-EF-5 Komunikaty HUD (`showHintMessage`), `refreshFog`, `_maxSafeRationCache.clear()`, `pendingAutoRationForNextTurn`
 //!   (tu: [`EmpireFoodBlockOutcome::pending_auto_ration`]) to UI/stan poza silnikiem; zwracane jako dane.
 //! * Z-EF-6 `maxSafePoziomRacjiForCity` w clampie weba wolane BEZ `humanOwnerIds` i BEZ `kosztArmii` (domyslne `[0]`, `0`):
-//!   odtworzone doslownie (`main.ts:34601-34614`), mimo ze petla idzie po `humanSeats.humanOwnerIds`.
+//!   odtworzone doslownie (`main.ts:34710-34747`), mimo ze petla idzie po `humanSeats.humanOwnerIds`.
 //! * Z-EF-7 `ownerCitiesForAutoAdjust` weba uzywa `isCityAutoWyzywienieEnabled(c)` z domyslnym `humanOwnerIds=[0]`
 //!   (port `p6_7a` robi tak samo, `DEFAULT_HUMAN_OWNER_IDS`).
 
@@ -34,10 +35,11 @@ use crate::domain::city_growth::p6_7a::empire_food::{
     AutoRationAdjustResult, MaxSafePoziomOpts,
 };
 use crate::domain::city_growth::p6_7a::{
-    city_has_spichlerz_building, city_population_cap, CityEconomyTick, EconomyTickResult as FoodEconomy, game_difficulty_from_web,
+    city_has_spichlerz_building, city_population_cap, game_difficulty_from_web,
     get_city_ration_level, recompute_city_food_balances_in_econ,
-    resolve_population_cap_matrix_delta_in, EmpireFoodRuntime, EmpireFoodTickResult, GameDifficulty,
-    GrowthCity, OwnerFoodStates, PopCapParams, SpichlerzCityBonusState,
+    resolve_population_cap_matrix_delta_in, CityEconomyTick, EconomyTickResult as FoodEconomy,
+    EmpireFoodRuntime, EmpireFoodTickResult, GameDifficulty, GrowthCity, OwnerFoodStates,
+    PopCapParams, SpichlerzCityBonusState,
 };
 use crate::domain::economy_city_params::load_econ_params;
 use crate::domain::terrain::city_founding::p6_6b::cities::City;
@@ -45,8 +47,8 @@ use crate::domain::turn_economy::economy_upkeep_p2::{
     build_unit_food_table, load_upkeep_params, unit_food_per_turn, UnitFoodLike, UnitRow,
 };
 use crate::domain::turn_economy_attrition::{
-    apply_army_starvation_hp_loss, cleanup_after_starvation_destroy, sync_runtime_unit_hp_state,
-    AttritionUnit, SiegeCityState, StarvationCleanup,
+    apply_army_starvation_hp_loss, cleanup_after_starvation_destroy, siege_turn_garrison_attrition,
+    sync_runtime_unit_hp_state, AttritionUnit, SiegeCityState, SiegeGarrisonLog, StarvationCleanup,
 };
 use crate::domain::turn_economy_loop::CityLoopTick;
 use crate::domain::turn_economy_tick::EconomyTickResult;
@@ -186,6 +188,8 @@ pub struct EmpireFoodBlockOutcome {
     pub player_damaged_count: usize,
     pub player_destroyed_count: usize,
     pub cleanup: StarvationCleanup,
+    /// Czysta czesc N3 (atrycja garnizonu miast oblezonych, `main.ts:34986-35004`) - po EmpireFood, przed bankowaniem.
+    pub siege_garrison: Vec<SiegeGarrisonLog>,
     /// `popCapByCityId` (diagnostyka bloku).
     pub pop_cap_by_city_id: BTreeMap<String, f64>,
     /// `hungerLossUlamkowy` per miasto po `ensureCityRationDefaults` (pole poza Rust `City`, wlasnosc `GrowthCity`).
@@ -231,14 +235,14 @@ pub fn run_empire_food_block(
     };
     let mut gcities: Vec<GrowthCity> = cities.iter().cloned().map(GrowthCity::new).collect();
 
-    // ---- spichlerzByCityForAuto (:34603-34612) ----
+    // ---- spichlerzByCityForAuto (:34594-34608) ----
     let mut spichlerz_by_city: BTreeMap<String, SpichlerzCityBonusState> = BTreeMap::new();
     for c in gcities.iter() {
         let t = econ.per_city.iter().find(|t| t.city_id == c.city.id);
         spichlerz_by_city.insert(c.city.id.clone(), spichlerz_state_of(t));
     }
 
-    // ---- popCapByCityId (:34646-34657) ----
+    // ---- popCapByCityId (:34625-34636) ----
     let econ_cfg = load_econ_params(ctx.econ_params, ctx.difficulty);
     let pop_cap_params = PopCapParams {
         akwedukt_prog_ludnosci: econ_cfg.akwedukt_prog_ludnosci,
@@ -251,7 +255,10 @@ pub fn run_empire_food_block(
         let built = ctx.built_by_city.get(&c.id).unwrap_or(&empty);
         let ma_akwedukt = built.iter().any(|b| b == "akwedukt");
         let ma_spichlerz = city_has_spichlerz_building(built);
-        let civ_key = ctx.owner_civ_by_owner_id.get(&c.owner_id).map(String::as_str);
+        let civ_key = ctx
+            .owner_civ_by_owner_id
+            .get(&c.owner_id)
+            .map(String::as_str);
         pop_cap_by_city_id.insert(
             c.id.clone(),
             city_population_cap(
@@ -263,7 +270,7 @@ pub fn run_empire_food_block(
         );
     }
 
-    // ---- ownerIdsForAutoRation (:34658-34664) ----
+    // ---- ownerIdsForAutoRation (:34637-34643) ----
     let mut owner_ids: Vec<i64> = Vec::new();
     for c in cities.iter() {
         if c.owner_id >= 0 && !owner_ids.contains(&c.owner_id) {
@@ -292,10 +299,7 @@ pub fn run_empire_food_block(
     let mut any_adjusted = false;
     let mut pending_auto_ration: Option<AutoRationAdjustResult> = None;
     for &owner_id in &owner_ids {
-        let zapasy_przed = st
-            .states
-            .get(owner_id)
-            .map_or(0.0, |s| s.zapasy_panstwa);
+        let zapasy_przed = st.states.get(owner_id).map_or(0.0, |s| s.zapasy_panstwa);
         let koszt_armii = military_food(owner_id);
         let human = is_human(owner_id);
         let auto_result = auto_balance_rations_to_solvency(
@@ -341,7 +345,7 @@ pub fn run_empire_food_block(
         total_zywnosc = Some(refresh_economy_food_totals(&econ.per_city));
     }
 
-    // ---- clamp foteli czlowieka (:34707-34733) ----
+    // ---- clamp foteli czlowieka (:34710-34747) ----
     let mut clamped_any = false;
     for &h_oid in ctx.human_owner_ids {
         let zapasy0 = st.states.get(h_oid).map_or(0.0, |s| s.zapasy_panstwa);
@@ -375,11 +379,15 @@ pub fn run_empire_food_block(
         }
     }
     if clamped_any {
-        recompute_city_food_balances_in_econ(&mut econ.per_city, &gcities, Some(&spichlerz_by_city));
+        recompute_city_food_balances_in_econ(
+            &mut econ.per_city,
+            &gcities,
+            Some(&spichlerz_by_city),
+        );
         total_zywnosc = Some(refresh_economy_food_totals(&econ.per_city));
     }
 
-    // ---- advanceEmpireFood (:34750) ----
+    // ---- advanceEmpireFood (:34749) ----
     let unit_owner_ids: Vec<i64> = ctx.econ_units.iter().map(|u| u.owner_id).collect();
     let mut military = military_food;
     let ef = advance_empire_food(
@@ -398,11 +406,7 @@ pub fn run_empire_food_block(
         *dst = src.city.clone();
     }
     for src in &econ.per_city {
-        if let Some(dst) = tick
-            .per_city
-            .iter_mut()
-            .find(|d| d.city_id == src.city_id)
-        {
+        if let Some(dst) = tick.per_city.iter_mut().find(|d| d.city_id == src.city_id) {
             write_back_food(dst, src);
         }
     }
@@ -410,7 +414,7 @@ pub fn run_empire_food_block(
         tick.total_zywnosc = t;
     }
 
-    // ---- atrycja (:34776-34850) ----
+    // ---- atrycja (:34777-34830) ----
     let mut destroyed_all: Vec<String> = Vec::new();
     let mut player_damaged = 0usize;
     let mut player_destroyed = 0usize;
@@ -439,6 +443,21 @@ pub fn run_empire_food_block(
         st.siege_cities,
         st.besieger_by_city,
         &destroyed_all,
+    );
+
+    // ---- N3 (:34986-35004): atrycja garnizonu miast oblezonych (po EmpireFood, przed bankowaniem) ----
+    let besieged: Vec<String> = tick
+        .per_city
+        .iter()
+        .filter(|t| t.oblegany)
+        .map(|t| t.city_id.clone())
+        .collect();
+    let siege_garrison = siege_turn_garrison_attrition(
+        st.units,
+        st.siege_cities,
+        &besieged,
+        ef_params.glod_wojska_hp_frac,
+        ctx.unit_health_by_type,
     );
 
     let hunger_loss_by_city: BTreeMap<String, Option<f64>> = gcities
@@ -473,6 +492,7 @@ pub fn run_empire_food_block(
         player_damaged_count: player_damaged,
         player_destroyed_count: player_destroyed,
         cleanup,
+        siege_garrison,
         pop_cap_by_city_id,
         hunger_loss_by_city,
         koszt_armii_by_owner,

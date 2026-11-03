@@ -1,12 +1,15 @@
 //! R-RUSTPORT-P6-ECON-TICK-EMPIREFOOD-Q1: atrycja glodowa armii (`army-starvation.ts`) + sprzatanie po zniszczonych
-//! jednostkach z `main.ts:34680-34745` (pin weba `4bbef081d`).
+//! jednostkach z `main.ts:34777-34830` (pin weba `4bbef081d`).
 //!
 //! Portowane (numery linii = web, pin):
 //! * [`apply_army_starvation_hp_loss`] = `applyArmyStarvationHpLoss` (`army-starvation.ts:58-87`);
 //! * [`sync_runtime_unit_hp_state`] = `syncRuntimeUnitHpState` (`main.ts:29894-29902`), `maxHp` dostarcza wolajacy
 //!   (`effectiveRuntimeUnitMaxHp`, zob. `domain/unit_health.rs`);
-//! * [`cleanup_after_starvation_destroy`] = inline'owy blok `main.ts:34692-34745` (usuniecie zniszczonych jednostek,
-//!   `endMapSiege` w czesci dotyczacej stanu miasta/jednostek, `syncGarnizonForCity`).
+//! * [`cleanup_after_starvation_destroy`] = inline'owy blok `main.ts:34796-34830` (usuniecie zniszczonych jednostek,
+//!   `endMapSiege` w czesci dotyczacej stanu miasta/jednostek, `syncGarnizonForCity`);
+//! * [`siege_turn_garrison_attrition`] = czesc czysta bloku N3 "TURA OBLEZENIA" `main.ts:34986-35004` (atrycja garnizonu
+//!   miasta oblezonego + `syncGarnizonForCity`). Reszta N3 (`handleSiegeCapitulationPhase`, `resolveSiegeSurrender`,
+//!   `tickSiegeMachinesForCity`, `maybeAiAssaultAfterMachines`, panel UI; `main.ts:35005-35030`) NIE jest portowana (dlug).
 //!
 //! ZALOZENIA (do akceptacji):
 //! * Z-EF-1 `Rust City` (`state.rs`) NIE niesie pol `oblegane`/`oblegajacyOwnerId`/`garnizon`/`siegeMachines`
@@ -163,7 +166,7 @@ fn end_map_siege_engine(
     besieger_by_city.remove(city_id);
 }
 
-/// Inline'owy blok `main.ts:34692-34745`: po atrycji usuwa zniszczone jednostki, konczy oblezenia bez
+/// Inline'owy blok `main.ts:34796-34830`: po atrycji usuwa zniszczone jednostki, konczy oblezenia bez
 /// pozostalego wojska i przelicza garnizony. `destroyed_ids` = zebrane `starv.destroyedIds` (kolejnosc wlascicieli).
 pub fn cleanup_after_starvation_destroy(
     units: &mut Vec<AttritionUnit>,
@@ -245,4 +248,64 @@ pub fn cleanup_after_starvation_destroy(
         out.garnizon_synced.push(cid.clone());
     }
     out
+}
+
+/// Wynik atrycji garnizonu jednego miasta oblezonego.
+#[derive(Debug, Clone, PartialEq)]
+pub struct SiegeGarrisonLog {
+    pub city_id: String,
+    /// `realGarnizonUnits.length` przed atrycja.
+    pub before: usize,
+    /// `city.garnizon` po `syncGarnizonForCity`.
+    pub after: f64,
+}
+
+/// Czysta czesc N3 (`main.ts:34986-35004`): dla kazdego ticku `oblegany` (w kolejnosci `econ.perCity`) atrycja HP garnizonu
+/// wlasciciela miasta (`applyArmyStarvationHpLoss` na podzbiorze `inGarnizon` na heksie miasta), usuniecie zniszczonych
+/// z `units`, `syncGarnizonForCity`. `besieged_city_ids` = `tick.cityId` ticków z `oblegany === true`.
+pub fn siege_turn_garrison_attrition(
+    units: &mut Vec<AttritionUnit>,
+    cities: &mut [SiegeCityState],
+    besieged_city_ids: &[String],
+    hp_frac: f64,
+    get_max_hp: &dyn Fn(&str) -> f64,
+) -> Vec<SiegeGarrisonLog> {
+    let mut log = Vec::new();
+    for city_id in besieged_city_ids {
+        let Some(ci) = cities.iter().position(|c| &c.id == city_id) else {
+            continue;
+        };
+        let (owner, q, r) = (cities[ci].owner_id, cities[ci].q, cities[ci].r);
+        let idxs: Vec<usize> = units
+            .iter()
+            .enumerate()
+            .filter(|(_, u)| u.owner_id == owner && u.q == q && u.r == r && u.in_garnizon)
+            .map(|(i, _)| i)
+            .collect();
+        if idxs.is_empty() {
+            continue;
+        }
+        let before = idxs.len();
+        // web przekazuje do funkcji NOWA tablice (filter), ale elementy to te same obiekty - hp/hpMax mutuja zywe jednostki
+        let mut sub: Vec<AttritionUnit> = idxs.iter().map(|&i| units[i].clone()).collect();
+        let starv = apply_army_starvation_hp_loss(&mut sub, owner, hp_frac, get_max_hp);
+        for (k, &i) in idxs.iter().enumerate() {
+            units[i].hp = sub[k].hp;
+            units[i].hp_max = sub[k].hp_max;
+        }
+        if !starv.destroyed_ids.is_empty() {
+            units.retain(|u| !starv.destroyed_ids.contains(&u.id));
+        }
+        let n = units
+            .iter()
+            .filter(|u| u.owner_id == owner && u.q == q && u.r == r && u.in_garnizon)
+            .count();
+        cities[ci].garnizon = Some(n as f64);
+        log.push(SiegeGarrisonLog {
+            city_id: city_id.clone(),
+            before,
+            after: n as f64,
+        });
+    }
+    log
 }

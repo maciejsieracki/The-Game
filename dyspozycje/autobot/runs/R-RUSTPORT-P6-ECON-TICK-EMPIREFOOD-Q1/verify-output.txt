@@ -1,0 +1,10 @@
+sprawdzen: 20270, rozbieznosci: 0
+EXIT=0
+== --neg
+sprawdzen: 20270, rozbieznosci: 325
+   ef-0 ef[1] zapasyPo 603.0 vs 604.0
+EXIT=0
+== --neg2
+sprawdzen: 20270, rozbieznosci: 250
+   ef-0 unit u0 (nietknieta) hp 5.0 vs 6.0
+EXIT=0

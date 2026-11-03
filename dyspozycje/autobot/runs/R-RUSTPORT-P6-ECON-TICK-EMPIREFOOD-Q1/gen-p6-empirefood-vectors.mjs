@@ -415,6 +415,17 @@ function edgeScenario(sc, how) {
     // garnizon obcego wlasciciela na heksie cudzego miasta: cityAtUnit sprawdza ownerId
     for (let k = 0; k < 5; k++) live.push(mkU('fg' + k, other, c0.q, c0.r, { inGarnizon: true }));
     c0.garn = 5;
+  } else if (how === 3) {
+    // nieskończone/NaN hp: syncRuntimeUnitHpState (main.ts:29898) przywraca maxHp
+    live.push(mkU('fh0', c0.owner, c0.q + 2, c0.r, { hp: Infinity }));
+    live.push(mkU('fh1', c0.owner, c0.q + 2, c0.r + 1, { hp: NaN }));
+    live.push(mkU('fh2', c0.owner, c0.q - 2, c0.r, { hp: -Infinity }));
+    for (let k = 0; k < 3; k++) live.push(mkU('fl' + k, c0.owner, c0.q, c0.r + 2, { hp: 1 }));
+  } else if (how === 4) {
+    // N3: miasto oblezone z realnym garnizonem o niskim HP (atrycja garnizonu + syncGarnizonForCity)
+    c0.obl = true; c0.sOwner = other; c0.sCap = false; c0.sMach = false;
+    for (let k = 0; k < 4; k++) live.push(mkU('fn' + k, c0.owner, c0.q, c0.r, { inGarnizon: true, hp: pick([1, 1, 2, 40]), hpMax: pick([40, 12, undefined]) }));
+    live.push(mkU('fn9', c0.owner, c0.q, c0.r, { inGarnizon: false, hp: 1 }));
   } else if (how === 1) {
     // przestarzale oblegaCityId na miescie bez oblezenia (oblegane=false)
     c0.obl = false;
@@ -430,6 +441,8 @@ function edgeScenario(sc, how) {
   return sc;
 }
 for (let i = 0; i < 30; i++) scenarios.push(edgeScenario(mk(`ef-edge-${i}`, 'ef-edge', ri(2, 5), { kind: 'army' }), i % 3));
+for (let i = 0; i < 10; i++) scenarios.push(edgeScenario(mk(`ef-edge-hp-${i}`, 'ef-edge', ri(2, 5), { kind: 'army' }), 3));
+for (let i = 0; i < 12; i++) scenarios.push(edgeScenario(mk(`ef-edge-n3-${i}`, 'ef-edge', ri(2, 5), { kind: 'army' }), 4));
 
 // ---- uruchomienie weba ---------------------------------------------------------------------------------------------
 const recEnc = (r) => Object.fromEntries(Object.entries(r).map(([k, v]) => [k, enc(v)]));
@@ -581,6 +594,26 @@ function runEmpireFoodBlock(s, cities, econ, econUnits, units, cityBuilt, ownerC
       garnSynced.push(c.id);
     }
   }
+  // ---- N3 "TURA OBLEZENIA" (main.ts:34986-35004): czysta czesc - atrycja garnizonu miast oblezonych + syncGarnizonForCity ----
+  const n3 = [];
+  {
+    const hpFracObl = W.buildEmpireFoodParams(data.econParams, difficulty).glodWojskaHpFrac;
+    for (const tick of econ.perCity) {
+      if (!tick.oblegany) continue;
+      const oblCity = cities.find((c) => c.id === tick.cityId);
+      if (!oblCity) continue;
+      const realGarnizonUnits = units.filter((u) => u.ownerId === oblCity.ownerId && u.q === oblCity.q && u.r === oblCity.r && u.inGarnizon === true);
+      if (realGarnizonUnits.length > 0) {
+        const garnizonBefore = realGarnizonUnits.length;
+        const starv = W.applyArmyStarvationHpLoss(realGarnizonUnits, oblCity.ownerId, hpFracObl, (typeId) => unitHealth(defOf(typeId)));
+        if (starv.destroyedIds.length > 0) {
+          for (let i = units.length - 1; i >= 0; i--) if (starv.destroyedIds.includes(units[i].id)) units.splice(i, 1);
+        }
+        oblCity.garnizon = units.filter((u) => u.ownerId === oblCity.ownerId && u.q === oblCity.q && u.r === oblCity.r && u.inGarnizon === true).length;
+        n3.push({ city: oblCity.id, before: garnizonBefore, after: enc(oblCity.garnizon) });
+      }
+    }
+  }
   const encTick = (t) => ({
     ownerId: t.ownerId, uprawaHodowla: enc(t.uprawaHodowla), wyzwienieLudnosci: enc(t.wyzwienieLudnosci), nadwyzka: enc(t.nadwyzka), pomocMiastom: enc(t.pomocMiastom),
     spichlerzStolicy: enc(t.spichlerzStolicy), wojsko: enc(t.wojsko), przyrostZapasow: enc(t.przyrostZapasow), zapasyPrzed: enc(t.zapasyPrzed), zapasyPo: enc(t.zapasyPo),
@@ -602,7 +635,7 @@ function runEmpireFoodBlock(s, cities, econ, econUnits, units, cityBuilt, ownerC
     units: units.map((u) => ({ id: u.id, hp: enc(u.hp), hpMax: enc(u.hpMax), oblega: u.oblegaCityId ?? null })),
     siege: cities.map((c) => ({ id: c.id, oblegane: c.oblegane === true, owner: c.oblegajacyOwnerId === undefined ? null : c.oblegajacyOwnerId, cap: c.siegeCapitulationPending === true, mach: c.siegeMachines !== undefined, garn: c.garnizon === undefined ? null : enc(c.garnizon) })),
     besieger: Object.fromEntries([...siegeBesiegerByCity]),
-    ended, garnSynced,
+    ended, garnSynced, n3,
     kosztArmiiOwners: Object.fromEntries([...new Set([...cities.map((c) => c.ownerId), ...econUnits.map((u) => u.ownerId)])].map((o) => [o, enc(W.militaryFoodConsumptionWithSpichlerz(econUnits, o, upkeepParams, unitFoodTbl))])),
   };
 }
@@ -813,6 +846,8 @@ const stat = {
   withDamaged: scenarios.filter((s) => F(s).playerDamaged > 0 || F(s).destroyed.length > 0).length,
   withDestroyed: scenarios.filter((s) => F(s).destroyed.length > 0).length,
   withSiegeEnded: scenarios.filter((s) => F(s).ended.length > 0).length,
+  withN3: scenarios.filter((s) => F(s).n3.length > 0).length,
+  withN3Destroyed: scenarios.filter((s) => F(s).n3.some((x) => x.after < x.before)).length,
   withGarnSynced: scenarios.filter((s) => F(s).garnSynced.length > 0).length,
   withGlod: scenarios.filter((s) => F(s).efTicks.some((t) => t.glodWojska)).length,
   withCappedPop: scenarios.filter((s) => s.cities.some((c) => c.pop >= F(s).popCap[c.id])).length,
