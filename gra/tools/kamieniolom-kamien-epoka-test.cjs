@@ -105,9 +105,10 @@ for (const era of [undefined, 0, 4, NaN]) {
 eq(M.resourceProductionAmountForEra('tartak', 50, 1), 50, 'tartak era 1 → 50');
 eq(M.resourceProductionAmountForEra('tartak', 50, 2), 75, 'tartak era 2 → 75');
 eq(M.resourceProductionAmountForEra('tartak', 50, 3), 113, 'tartak era 3 → 113');
-eq(M.resourceProductionAmountForEra('glinianka', 50, 3), 50, 'glinianka bez skalowania epoką: era 3 → 50');
-eq(M.territoryResourceYieldForImprovement('glinianka', null, 3)?.amount, 50,
-  'glinianka bez skalowania (resolver, era 3) = 50');
+// R-WEB-IMPROVEMENT-ERA-SCALING-Q1 (2026-11-03): Glinianka też x1,5/epokę (decyzja właściciela) -- było „bez skalowania”.
+eq(M.resourceProductionAmountForEra('glinianka', 50, 3), 113, 'glinianka skalowana epoką: era 3 → 113');
+eq(M.territoryResourceYieldForImprovement('glinianka', null, 3)?.amount, 113,
+  'glinianka skalowana epoką (resolver, era 3) = 113');
 eq(M.territoryResourceYieldForImprovement('tartak', null, 1)?.amount, 50,
   'tartak epoka 1 = 50 (wartość startowa)');
 eq(territoryTotal(['kamieniolom', 'kamieniolom'], 1), 100,

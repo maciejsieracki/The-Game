@@ -137,8 +137,8 @@ function territoryResourceIconHtml(key: TerritoryResourceKey): string {
  * to reguła domyślna, więc nie dopisujemy „automatycznie"/„bez 👤" ani „magazyn państwa"
  * (R-WEB-HEX-TOOLTIP-IMPROVEMENT-PRODUCTION-TEXT-Q1).
  */
-function formatTerritoryMagazynPart(key: string, zloze?: string | null): string | null {
-  const row = territoryResourceYieldForImprovement(key, zloze);
+function formatTerritoryMagazynPart(key: string, zloze?: string | null, ownerEra?: number): string | null {
+  const row = territoryResourceYieldForImprovement(key, zloze, ownerEra);
   if (!row || !(row.amount > 0)) return null;
   const label = TERRITORY_RESOURCE_LABEL[row.resourceKey];
   const icon = territoryResourceIconHtml(row.resourceKey);
@@ -157,8 +157,8 @@ function formatTerrainMagazynWorkedPart(
 }
 
 /** Drewno/kamień z terrain-yields — trafia do magazynu przy obrabianiu pola. */
-function formatTerrainMagazynWorkedNotes(hex: Hex): string[] {
-  const y = fullTileYield(hex);
+function formatTerrainMagazynWorkedNotes(hex: Hex, ownerEra?: number): string[] {
+  const y = fullTileYield(hex, ownerEra);
   const notes: string[] = [];
   const drewno = formatTerrainMagazynWorkedPart('drewno', y.drewno ?? 0);
   if (drewno) notes.push(drewno);
@@ -174,10 +174,11 @@ function formatImprovementDesc(
   hex: Hex,
   esc: (raw: string) => string,
   tag?: string,
+  ownerEra?: number,
 ): string {
   const name = esc(improvementDisplayName(key));
-  const bonus = formatCityBonusParts(improvementBonusForKey(key));
-  const mag = formatTerritoryMagazynPart(key, (hex as { zloze?: string }).zloze);
+  const bonus = formatCityBonusParts(improvementBonusForKey(key, ownerEra));
+  const mag = formatTerritoryMagazynPart(key, (hex as { zloze?: string }).zloze, ownerEra);
   const unlocks = labelsForImprovementUnlock(key);
   let s = `<b>${name}</b>`;
   if (tag) s += ` (${esc(tag)})`;
@@ -249,13 +250,14 @@ function terrainBaseYield(hex: Hex): TileYield {
   });
 }
 
-function fullTileYield(hex: Hex): TileYield {
+function fullTileYield(hex: Hex, ownerEra?: number): TileYield {
   return tileYield({
     terenBazowy: hex.terenBazowy,
     nakladka: hex.nakladka ?? Nakladka.Brak,
     maRzeke: !!(hex.rzeka && hex.rzeka.obecna),
     zloze: (hex as { zloze?: string }).zloze,
     ulepszeniaKeys: improvementKeysForHex(hex),
+    wlascicielEra: ownerEra,
   });
 }
 
@@ -265,7 +267,7 @@ interface YieldPart {
 }
 
 /** Składowe plonów — teren, las, rzeka, ulepszenia / złoża hodowlane. */
-function yieldParts(hex: Hex): YieldPart[] {
+function yieldParts(hex: Hex, ownerEra?: number): YieldPart[] {
   const parts: YieldPart[] = [
     { label: 'teren bazowy', delta: terrainBaseYield(hex) },
   ];
@@ -277,7 +279,7 @@ function yieldParts(hex: Hex): YieldPart[] {
   }
   const builtSet = new Set(builtImprovementKeys(hex));
   for (const key of improvementKeysForHex(hex)) {
-    const bonus = cityYieldOnly(bonusToTileYield(improvementBonusForKey(key)));
+    const bonus = cityYieldOnly(bonusToTileYield(improvementBonusForKey(key, ownerEra)));
     const hasBonus = CITY_YIELD_ROWS.some(({ key: yk }) => (bonus[yk] ?? 0) !== 0);
     if (!hasBonus) continue;
     const name = improvementDisplayName(key);
@@ -288,9 +290,9 @@ function yieldParts(hex: Hex): YieldPart[] {
 }
 
 /** Rozbicie plonów miasta: baza + modyfikatory = suma (tylko Żywność/Praca/Podatek). */
-function formatCityYieldBreakdownHtml(hex: Hex): string {
-  const parts = yieldParts(hex);
-  const total = cityYieldOnly(fullTileYield(hex));
+function formatCityYieldBreakdownHtml(hex: Hex, ownerEra?: number): string {
+  const parts = yieldParts(hex, ownerEra);
+  const total = cityYieldOnly(fullTileYield(hex, ownerEra));
   const lines: string[] = [];
 
   for (const { key, label } of CITY_YIELD_ROWS) {
@@ -434,6 +436,7 @@ function listTerrainPossibleImprovements(
   hex: Hex,
   playerCivType?: string | null,
   map?: GameMap,
+  ownerEra?: number,
 ): string[] {
   const active = new Set(improvementKeysForHex(hex));
   const teren = hex.terenBazowy;
@@ -493,8 +496,8 @@ function listTerrainPossibleImprovements(
     // Irygacja wymaga rzeki NA heksie lub na sąsiedzie (isRiverAdjacent w createQualifier).
     // EN: irrigation requires a river on the hex or a neighbor (isRiverAdjacent in createQualifier).
     if (key === 'irygacja' && !hexHasRiverAccess(hex, map)) continue;
-    const bonus = formatCityBonusParts(improvementBonusForKey(key));
-    const mag = formatTerritoryMagazynPart(key);
+    const bonus = formatCityBonusParts(improvementBonusForKey(key, ownerEra));
+    const mag = formatTerritoryMagazynPart(key, undefined, ownerEra);
     const unlocks = labelsForImprovementUnlock(key);
     let line = `<b>${improvementDisplayName(key)}</b> → ${mag ? `${mag} · ` : ''}plony miasta: ${bonus}`;
     if (unlocks.length) line += ` · odblok. ${unlocks.join(', ')}`;
@@ -543,11 +546,13 @@ export interface HexContextTooltipInput {
 export function buildHexContextTooltipHtml(input: HexContextTooltipInput): string {
   const { q, r, hex, esc, cityName } = input;
   const era = input.currentEra ?? 99;
+  // R-WEB-IMPROVEMENT-ERA-SCALING-Q1: plony ulepszeń wg aktualnej epoki gracza (brak = Kamień).
+  const yieldEra = input.currentEra;
   const teren = TEREN_LABEL[hex.terenBazowy] ?? esc(String(hex.terenBazowy));
   const resources = collectResourceLabels(hex, era, input.playerCivType);
   const built = builtImprovementKeys(hex);
   const implicitKeys = improvementKeysForHex(hex).filter(k => !built.includes(k));
-  const possible = listTerrainPossibleImprovements(hex, input.playerCivType, input.map);
+  const possible = listTerrainPossibleImprovements(hex, input.playerCivType, input.map, yieldEra);
 
   const lines: string[] = [];
 
@@ -566,13 +571,13 @@ export function buildHexContextTooltipHtml(input: HexContextTooltipInput): strin
   }
 
   if (built.length > 0) {
-    const builtDesc = built.map((key) => formatImprovementDesc(key, hex, esc, 'postawione')).join('<br>');
+    const builtDesc = built.map((key) => formatImprovementDesc(key, hex, esc, 'postawione', yieldEra)).join('<br>');
     lines.push(subLine('Ulepszenia postawione', builtDesc));
   }
 
   if (implicitKeys.length > 0) {
     const impDesc = implicitKeys.map((key) => {
-      const bonus = formatCityBonusParts(improvementBonusForKey(key));
+      const bonus = formatCityBonusParts(improvementBonusForKey(key, yieldEra));
       return `<b>${esc(improvementDisplayName(key))}</b> (naturalne) → plony miasta: ${bonus}`;
     }).join('<br>');
     lines.push(subLine('Hodowla / złoże aktywne', impDesc));
@@ -583,7 +588,7 @@ export function buildHexContextTooltipHtml(input: HexContextTooltipInput): strin
   }
 
   const terrainMagazyn = input.hexWorkedForMagazyn
-    ? formatTerrainMagazynWorkedNotes(hex)
+    ? formatTerrainMagazynWorkedNotes(hex, yieldEra)
     : [];
   // Produkcja ulepszeń jest w ich własnych wierszach (wyżej); tu zostaje tylko teren (przy 👤).
   if (terrainMagazyn.length > 0) {
@@ -592,8 +597,8 @@ export function buildHexContextTooltipHtml(input: HexContextTooltipInput): strin
   }
 
   lines.push('<div class="cp-yield-head">Plony miasta — rozbicie (przy 👤)</div>');
-  lines.push(formatCityYieldBreakdownHtml(hex));
-  lines.push(`<div class="cp-total">Razem (miasto): ${formatCityYieldLine(cityYieldOnly(fullTileYield(hex)), '0')}</div>`);
+  lines.push(formatCityYieldBreakdownHtml(hex, yieldEra));
+  lines.push(`<div class="cp-total">Razem (miasto): ${formatCityYieldLine(cityYieldOnly(fullTileYield(hex, yieldEra)), '0')}</div>`);
   lines.push('<div class="cp-sub cp-yield-foot">Żywność · Praca · Podatek → ekonomia miasta (przy 👤). Surowce z ulepszeń (Tartak, Kamieniołom…) — w wierszu produkcji przy ulepszeniu; drewno/kamień/glina z terenu — przy 👤 lub centrum.</div>');
 
   if (possible.length > 0) {

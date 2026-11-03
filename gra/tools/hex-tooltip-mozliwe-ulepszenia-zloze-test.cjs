@@ -94,7 +94,7 @@ console.log('[1] regex na źródle: listTerrainPossibleImprovements() + hexHasRi
 
 const tooltipSrc = fs.readFileSync(TOOLTIP_SRC, 'utf8');
 const fnMatch = tooltipSrc.match(
-  /function listTerrainPossibleImprovements\(\s*hex: Hex,\s*playerCivType\?: string \| null,\s*map\?: GameMap,\s*\): string\[\] \{[\s\S]*?\n\}/,
+  /function listTerrainPossibleImprovements\(\s*hex: Hex,\s*playerCivType\?: string \| null,\s*map\?: GameMap,\s*(?:ownerEra\?: number,\s*)?\): string\[\] \{[\s\S]*?\n\}/,
 );
 assert(fnMatch !== null, 'znaleziono ciało funkcji listTerrainPossibleImprovements()');
 const fnBody = fnMatch ? fnMatch[0] : '';

@@ -2648,7 +2648,7 @@ function planCityImprovements(
     const hit = workedKeysCache.get(city.id);
     if (hit) return hit;
     const set = new Set<string>(
-      workedHexCoordsForCity(city, map, territoryNodes).map(({ q, r }) => `${q},${r}`),
+      workedHexCoordsForCity(city, map, territoryNodes, undefined, opts.civEra).map(({ q, r }) => `${q},${r}`),
     );
     workedKeysCache.set(city.id, set);
     return set;

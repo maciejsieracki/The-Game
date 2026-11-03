@@ -379,7 +379,13 @@ export function resolveWorkedTiles(
  * (które trzyma jedynie OSTATNIĄ postawioną warstwę, i to tylko dla części typów
  * ulepszeń — patrz main.ts `improvementKeyToUlepszenie`).
  */
-export function yieldOfMapHex(map: GameMap, q: number, r: number): TileYield {
+export function yieldOfMapHex(
+  map: GameMap,
+  q: number,
+  r: number,
+  /** R-WEB-IMPROVEMENT-ERA-SCALING-Q1: aktualna epoka właściciela (brak = Kamień). */
+  ownerEra?: number,
+): TileYield {
   const h = map.hexes[`${q},${r}`];
   if (!h) return {};
   const ulepszeniaKeys = improvementKeysForHex(h);
@@ -390,6 +396,7 @@ export function yieldOfMapHex(map: GameMap, q: number, r: number): TileYield {
     zloze: (h as { zloze?: string }).zloze,
     ulepszenieKey: ulepszeniaKeys[0],
     ulepszeniaKeys: ulepszeniaKeys.length ? ulepszeniaKeys : undefined,
+    wlascicielEra: ownerEra,
   });
   return { zywnosc: y.zywnosc, praca: y.praca, handel: y.handel };
 }

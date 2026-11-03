@@ -3440,6 +3440,7 @@ async function boot(): Promise<void> {
         map,
         territoryNodes,
         computeLostToNearerSiblingByCity(ownerCities, map),
+        empireEpochForOwner,
       );
       const out: Record<string, number> = {};
       for (const c of ownerCities) {
@@ -5982,7 +5983,8 @@ async function boot(): Promise<void> {
 
     function okolicaWorkedKeySet(city: City): Set<string> {
       const nodes = buildAllTerritoryNodes();
-      const worked = resolveWorkedTiles(city, map, (q, rr) => yieldOfMapHex(map, q, rr), {
+      const ownerEra = empireEpochForOwner(city.ownerId);
+      const worked = resolveWorkedTiles(city, map, (q, rr) => yieldOfMapHex(map, q, rr, ownerEra), {
         isWorkable: okolicaHexWorkable,
         territoryNodes: nodes,
         ownerId: city.ownerId,
@@ -6014,7 +6016,7 @@ async function boot(): Promise<void> {
         cityR: city.r,
         range: cityRangeForPopulation(city.population),
         workedKeys: okolicaWorkedKeySet(city),
-        yieldOf: (q, rr) => yieldOfMapHex(map, q, rr),
+        yieldOf: (q, rr) => yieldOfMapHex(map, q, rr, empireEpochForOwner(city.ownerId)),
         showYields: true,
         // P-CHLOPEK-DWA-SYSTEMY-KOLOR-NIESPOJNE: odznaka 👤 w okolicy bierze kolor z tej samej
         // palety co ikona 👤 na mapie świata — właściciel z miasta, nie sztywne 0.
@@ -8058,7 +8060,7 @@ async function boot(): Promise<void> {
         getWorkedTiles: (cityId: string) => {
           const city = cities.find(c => c.id === cityId);
           if (!city) return undefined;
-          return workedHexCoordsForCity(city, map, buildAllTerritoryNodes(), siblingClaimedHexKeysForCity(city));
+          return workedHexCoordsForCity(city, map, buildAllTerritoryNodes(), siblingClaimedHexKeysForCity(city), empireEpochForOwner(city.ownerId));
         },
         onOkolicaFocusChange: (cityId: string, focus: import('./game/cities').OkolicaFocus) => {
           const city = cities.find(c => c.id === cityId);
@@ -25586,7 +25588,7 @@ async function boot(): Promise<void> {
         const city = cities.find(c => isMe(c.ownerId));
         if (!city) return { workedHex: null, unworkedHex: null };
         const nodes = buildAllTerritoryNodes();
-        const workedCoords = workedHexCoordsForCity(city, map, nodes, siblingClaimedHexKeysForCity(city));
+        const workedCoords = workedHexCoordsForCity(city, map, nodes, siblingClaimedHexKeysForCity(city), empireEpochForOwner(city.ownerId));
         const workedSet = new Set(workedCoords.map(({ q, r }) => `${q},${r}`));
         const freeExisting = (q: number, r: number) => (placedImprovements.get(`${q},${r}`) ?? []).length === 0;
         const workedPick = workedCoords.find(({ q, r }) => {
@@ -25615,7 +25617,7 @@ async function boot(): Promise<void> {
         const city = cities.find(c => isMe(c.ownerId));
         if (!city) return null;
         const nodes = buildAllTerritoryNodes();
-        const workedCoords = workedHexCoordsForCity(city, map, nodes, siblingClaimedHexKeysForCity(city));
+        const workedCoords = workedHexCoordsForCity(city, map, nodes, siblingClaimedHexKeysForCity(city), empireEpochForOwner(city.ownerId));
         const workedSet = new Set(workedCoords.map(({ q, r }) => `${q},${r}`));
         const radius = cityTerritoryRadius({ q: city.q, r: city.r, pop: city.population, level: 1 });
         for (const key of hexKeysWithinRadius(city.q, city.r, radius, map)) {
@@ -28094,7 +28096,7 @@ async function boot(): Promise<void> {
         const city = cities.find(c => c.id === cityId);
         if (!city) return null;
         const builtIds = cityBuilt.get(cityId) ?? [];
-        const tiles = cityWorkedTilesForEconomy(city, map, buildAllTerritoryNodes(), siblingClaimedHexKeysForCity(city));
+        const tiles = cityWorkedTilesForEconomy(city, map, buildAllTerritoryNodes(), siblingClaimedHexKeysForCity(city), empireEpochForOwner(city.ownerId));
         return computeCityHealthBreakdown(
           city.population, tiles, builtIds, data.societyParams, _menuDifficulty,
           { city, map },
@@ -36605,6 +36607,7 @@ async function boot(): Promise<void> {
                     const coords = workedHexCoordsForCity(
                       city as City, map, territoryNodesAuto,
                       lostToSiblingByCityAuto.get((city as City).id),
+                      empireEpochForOwner((city as City).ownerId),
                     );
                     return new Set(coords.map(({ q, r }) => `${q},${r}`));
                   },
@@ -40830,7 +40833,7 @@ async function boot(): Promise<void> {
           const city = cities.find(c => c.id === cityId);
           if (!city) return null;
           const builtIds = cityBuilt.get(cityId) ?? [];
-          const tiles = cityWorkedTilesForEconomy(city, map, buildAllTerritoryNodes(), siblingClaimedHexKeysForCity(city));
+          const tiles = cityWorkedTilesForEconomy(city, map, buildAllTerritoryNodes(), siblingClaimedHexKeysForCity(city), empireEpochForOwner(city.ownerId));
           return computeCityHealthBreakdown(
             city.population, tiles, builtIds, data.societyParams, _menuDifficulty,
             { city, map },

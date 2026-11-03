@@ -567,7 +567,11 @@ const HEX_NEIGHBORS: ReadonlyArray<readonly [number, number]> = [
   [+1,  0], [-1,  0], [ 0, +1], [ 0, -1], [+1, -1], [-1, +1],
 ];
 
-export function hexToWorkedTile(hex: Hex & { ulepszenia?: readonly string[] | null; zloze?: string }): WorkedTile {
+export function hexToWorkedTile(
+  hex: Hex & { ulepszenia?: readonly string[] | null; zloze?: string },
+  /** R-WEB-IMPROVEMENT-ERA-SCALING-Q1: aktualna epoka właściciela (skaluje plony ulepszeń). */
+  ownerEra?: number,
+): WorkedTile {
   const ulepszeniaKeys = improvementKeysForHex(hex);
   return {
     terenBazowy: hex.terenBazowy,
@@ -576,6 +580,7 @@ export function hexToWorkedTile(hex: Hex & { ulepszenia?: readonly string[] | nu
     zloze:       hex.zloze,
     ulepszenieKey: ulepszeniaKeys[0],
     ulepszeniaKeys: ulepszeniaKeys.length ? ulepszeniaKeys : undefined,
+    wlascicielEra: ownerEra,
   };
 }
 
@@ -614,11 +619,13 @@ export function cityWorkedTilesForEconomy(
    * przez wołającego (advanceCityEconomy/previewCityEconomy), nie tutaj.
    */
   excludeHexKeys?: ReadonlySet<string>,
+  /** R-WEB-IMPROVEMENT-ERA-SCALING-Q1: aktualna epoka właściciela miasta (brak = Kamień). */
+  ownerEra?: number,
 ): WorkedTile[] {
   const tiles: WorkedTile[] = [];
 
   const centreHex = map.hexes[`${city.q},${city.r}`];
-  if (centreHex) tiles.push(hexToWorkedTile(centreHex));
+  if (centreHex) tiles.push(hexToWorkedTile(centreHex, ownerEra));
 
   const pop = Math.max(0, Math.floor(city.population ?? 0));
   if (pop <= 0) return tiles;
@@ -629,7 +636,7 @@ export function cityWorkedTilesForEconomy(
   const yieldOf = (q: number, r: number): OkolicaTileYield => {
     const h = map.hexes[`${q},${r}`];
     if (!h) return {};
-    const wt = hexToWorkedTile(h);
+    const wt = hexToWorkedTile(h, ownerEra);
     const y = tileYield(wt);
     return {
       zywnosc: y.zywnosc,
@@ -656,7 +663,7 @@ export function cityWorkedTilesForEconomy(
   // Konwertuj przypisane pozycje na WorkedTile.
   for (const t of assigned) {
     const h = map.hexes[t.key];
-    if (h) tiles.push(hexToWorkedTile(h));
+    if (h) tiles.push(hexToWorkedTile(h, ownerEra));
   }
 
   return tiles;
@@ -669,6 +676,8 @@ export function workedHexCoordsForCity(
   territoryNodes?: readonly TerritoryNode[],
   /** P-HEKS-SPOR-SASIAD: patrz `cityWorkedTilesForEconomy`. */
   excludeHexKeys?: ReadonlySet<string>,
+  /** R-WEB-IMPROVEMENT-ERA-SCALING-Q1: epoka właściciela (ranking pól wg plonów skalowanych epoką). */
+  ownerEra?: number,
 ): Array<{ q: number; r: number }> {
   const pop = Math.max(0, Math.floor(city.population ?? 0));
   if (pop <= 0) return [];
@@ -676,7 +685,7 @@ export function workedHexCoordsForCity(
   const yieldOf = (q: number, r: number): OkolicaTileYield => {
     const h = map.hexes[`${q},${r}`];
     if (!h) return {};
-    const wt = hexToWorkedTile(h);
+    const wt = hexToWorkedTile(h, ownerEra);
     const y = tileYield(wt);
     return { zywnosc: y.zywnosc, praca: y.praca, handel: y.handel };
   };
@@ -814,11 +823,15 @@ export function computeWorkedMagazynYieldsByCity(
    * `advanceCityEconomy` przekazuje go jawnie (liczony RAZ na tick, patrz tam).
    */
   lostToSiblingByCity?: ReadonlyMap<string, ReadonlySet<string>>,
+  /** R-WEB-IMPROVEMENT-ERA-SCALING-Q1: epoka właściciela (plony pól skalowane epoką). */
+  resolveOwnerEra?: OwnerEraResolver,
 ): ReadonlyMap<string, WorkedMagazynYield> {
   const lostMap = lostToSiblingByCity ?? computeLostToNearerSiblingByCity(cities, map);
   const out = new Map<string, WorkedMagazynYield>();
   for (const city of cities) {
-    const worked = cityWorkedTilesForEconomy(city as City, map, territoryNodes, lostMap.get(city.id));
+    const worked = cityWorkedTilesForEconomy(
+      city as City, map, territoryNodes, lostMap.get(city.id), resolveOwnerEra?.(city.ownerId),
+    );
     let drewno = 0;
     let kamien = 0;
     let glina = 0;
@@ -1428,7 +1441,7 @@ function simulateResourcePipelineForPreview(
     resolveOwnerEra ?? ((ownerId: number) => ownerId === 0 ? playerEra : 1),
   );
   const workedMagazynByCity = computeWorkedMagazynYieldsByCity(
-    cities, map, territoryNodes, lostToSiblingByCity,
+    cities, map, territoryNodes, lostToSiblingByCity, eraForOwner,
   );
   const stolarniaCountByOwner = new Map<number, number>();
   const kamieniarskiCountByOwner = new Map<number, number>();
@@ -1916,7 +1929,10 @@ export function previewCityEconomy(
     const isCapital = !capitalSeen.has(city.ownerId);
     capitalSeen.add(city.ownerId);
 
-    const worked = cityWorkedTilesForEconomy(city, map, territoryNodes, lostToSiblingByCity.get(city.id));
+    const worked = cityWorkedTilesForEconomy(
+      city, map, territoryNodes, lostToSiblingByCity.get(city.id),
+      resolveOwnerEra ? resolveOwnerEra(city.ownerId) : (city.ownerId === 0 ? playerEra : 1),
+    );
     const builtIds = builtByCity.get(city.id) ?? [];
     const runtimeBuiltIds = runtimeActiveBuiltIdsForCity(
       builtIds,
@@ -2455,7 +2471,10 @@ export function advanceCityEconomy(
   const incomeByOwner = new Map<number, number>();
 
   // PYTANIE-84 R2: wpływ mapy → konwertery → drain Spichlerza PRZED plonami miast.
-  const workedMagazynByCity = computeWorkedMagazynYieldsByCity(cities, map, territoryNodes, lostToSiblingByCity);
+  const workedMagazynByCity = computeWorkedMagazynYieldsByCity(
+    cities, map, territoryNodes, lostToSiblingByCity,
+    resolveOwnerEra ?? ((ownerId: number) => ownerId === 0 ? playerEra : 1),
+  );
   // R-WEB-SPICHLERZ-DRAIN-KEYS-Q1: zużycie Spichlerza z econ-params wg trudności (jedno źródło prawdy).
   const spichlerzDrainParams = loadSpichlerzDrainParams(
     data.econParams as unknown as RawConverterParamsJson,
@@ -2485,7 +2504,10 @@ export function advanceCityEconomy(
     const isCapital = !capitalSeen.has(city.ownerId);
     capitalSeen.add(city.ownerId);
 
-    const worked    = cityWorkedTilesForEconomy(city, map, territoryNodes, lostToSiblingByCity.get(city.id));
+    const worked    = cityWorkedTilesForEconomy(
+      city, map, territoryNodes, lostToSiblingByCity.get(city.id),
+      resolveOwnerEra ? resolveOwnerEra(city.ownerId) : (city.ownerId === 0 ? playerEra : 1),
+    );
     const builtIds  = builtByCity.get(city.id) ?? [];
     const runtimeBuiltIds = runtimeActiveBuiltIdsForCity(
       builtIds,
