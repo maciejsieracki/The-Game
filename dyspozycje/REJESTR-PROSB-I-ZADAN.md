@@ -8613,3 +8613,5 @@ Właściciel: przewijanie w panelu łączenia armii działa, ale nie da się spr
 (1) Pieniądz z Obozu łowieckiego i Warzelni soli rośnie +1 za epokę (dopisane do `R-WEB-IMPROVEMENT-ERA-SCALING-Q1`). (2) Aneksja (wchłonięcie) państwa-miasta drogą dyplomatyczną przenosi majątek jak przy eliminacji — temat `R-WEB-ANNEX-CITYSTATE-SPOILS-Q1`. (3) Atakujący na koronie muru wieżą nie ma bonusu obrony muru — tak jest (WALL-DEFENDERS wdrożone).
 
 - 2026-11-03 — R-WEB-IRON-NATIVE-ACCESS-FIX-Q1: FC PASS-WITH-NOTES (`c62c1064f`), zdeployowane do ROBOCZEJ `a7b56a71` (main). Notatki: brak pomiaru w symulacji; `zelazo-gate`/`deposit-building-gate` czerwone też na bazie; REPIN Rust po wznowieniu portu.
+
+- 2026-11-03 — ZGŁOSZENIE: Milicja odnawia się w pełni przy każdym ataku. Wymaganie: po zniszczeniu Milicji 5 tur odnowy bez Milicji, potem odnowa → temat R-WEB-CITY-MILITIA-REGEN-COOLDOWN-Q1 (dispatch zapisany; kolejka — sekwencyjnie wg plików siege*/main.ts).
