@@ -57,6 +57,32 @@ export function convertWorkPoolToTax(
   };
 }
 
+/**
+ * Komunikat po akcji zamiany (zawsze zgodny ze stanem: powod odmowy albo realny skutek).
+ * `skarbDelta`/`naukaDelta` = zmiana projekcji przychodu/ture z silnika ekonomii (przed -> po).
+ * Podatek NIE trafia 1:1 do Skarbca: silnik stosuje korupcje, Mennice, suwak i mnoznik Zamoznosci
+ * (zmierzone live: 20 000 Podatku przy 60/20/20 dalo ok. +20 900 Skarbca - Zamoznosc mnozy Skarbiec)
+ * Podatek/Nauka/Zamoznosc stolicy (economy.ts, Step 5-8) - komunikat to wprost mowi.
+ */
+export function workTaxResultMessage(
+  conversion: WorkTaxConversion,
+  requestedWork: number,
+  enabled: boolean,
+  poolBefore: number,
+  skarbDelta: number,
+  naukaDelta: number,
+): string {
+  if (!enabled) return 'Zamiana Pracy na podatek wymaga Targowiska w imperium.';
+  const req = Number.isFinite(requestedWork) ? Math.floor(requestedWork) : 0;
+  if (req < 1) return 'Podaj ilość Pracy większą od 0.';
+  if (!Number.isFinite(poolBefore) || poolBefore < 1) return 'Brak Pracy w puli imperium - nie ma czego zamienić.';
+  if (conversion.workSpent < 1) return 'Przy tym kursie ta ilość Pracy daje 0 Podatku - Praca nie została odjęta.';
+  const s = Math.max(0, Math.round(skarbDelta));
+  const n = Math.max(0, Math.round(naukaDelta));
+  return `Zamieniono ${conversion.workSpent} Pracy na ${conversion.taxGained} Podatku. `
+    + `Na koniec tury: +${s} do Skarbca, +${n} do Nauki (wartości z silnika: po korupcji i Mennicy, wg suwaka Podatek/Nauka/Zamożność stolicy; Zamożność dodatkowo mnoży Skarbiec).`;
+}
+
 export function executeManualWorkTaxConversion(
   ownerId: number,
   requestedWork: number,
@@ -74,4 +100,40 @@ export function executeManualWorkTaxConversion(
     deps.queueTax(ownerId, conversion.taxGained);
   }
   return conversion;
+}
+
+/**
+ * Cala akcja zamiany (wstrzykiwalna, testowalna): projekcja PRZED -> zamiana -> markDirty+refresh
+ * (tylko przy sukcesie) -> projekcja PO -> komunikat -> HUD. Kolejnosc jest kontraktem:
+ * refresh PRZED zamiana zapisuje baze, markDirty musi poprzedzac refresh PO (bramka `empireEconDirty`).
+ */
+export function runManualWorkTaxAction(
+  ownerId: number,
+  requestedWork: number,
+  rate: number,
+  enabled: boolean,
+  io: {
+    getWorkPool: (ownerId: number) => number;
+    setWorkPool: (ownerId: number, value: number) => void;
+    queueTax: (ownerId: number, tax: number) => void;
+    refreshRates: () => void;
+    markDirty: () => void;
+    readRates: () => { skarb: number; nauka: number };
+    showMessage: (msg: string) => void;
+    updateHud: () => void;
+  },
+): number {
+  const poolBefore = io.getWorkPool(ownerId);
+  io.refreshRates();
+  const before = io.readRates();
+  const conversion = executeManualWorkTaxConversion(ownerId, requestedWork, rate, enabled, io);
+  if (conversion.workSpent >= 1) {
+    io.markDirty();
+    io.refreshRates();
+  }
+  const after = io.readRates();
+  io.showMessage(workTaxResultMessage(conversion, requestedWork, enabled, poolBefore,
+    after.skarb - before.skarb, after.nauka - before.nauka));
+  io.updateHud();
+  return conversion.workSpent;
 }

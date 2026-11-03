@@ -155,6 +155,7 @@ export interface EmpireGlobalDefaultsUiConfig {
   onOwnerDefaultPodzialPracyChange?: (ownerId: number, split: CityPodzialPracy) => void;
   canConvertOwnerWorkToTax?: (ownerId: number) => boolean;
   getOwnerWorkTaxRate?: (ownerId: number) => number;
+  previewOwnerWorkTaxEffect?: (ownerId: number, tax: number) => { skarb: number; nauka: number } | null;
   onConvertOwnerWorkToTax?: (ownerId: number, amount: number) => number;
   // R-PRACA-JEDEN-PODZIAL-Q1: `getOwnerDefaultPracaSplit`/`onOwnerDefaultPracaSplitChange`
   // USUNIETE — byly DRUGIM, niezaleznym suwakiem tej samej Pracy. Globalny podzial
@@ -1423,28 +1424,43 @@ function renderPracaSection(
   if (empireGlobalDefaultsUi.canConvertOwnerWorkToTax?.(ownerId)) {
     const max = Math.max(0, stock);
     const taxRate = empireGlobalDefaultsUi.getOwnerWorkTaxRate?.(ownerId) ?? 1;
+    const previewText = (work: number, withEffect: boolean): string => {
+      const tax = taxForWorkAmount(work, taxRate);
+      const base = `${work} Pracy → ${tax} Podatku`;
+      if (!withEffect || tax < 1) return base;
+      const eff = empireGlobalDefaultsUi.previewOwnerWorkTaxEffect?.(ownerId, tax);
+      return eff
+        ? `${base} · na koniec tury: +${Math.max(0, Math.round(eff.skarb))} do Skarbca, +${Math.max(0, Math.round(eff.nauka))} do Nauki (wg silnika: suwak, korupcja, Mennica)`
+        : base;
+    };
     h += `<div class="civ-emp-box civ-emp-work-tax" data-work-tax-convert>`
       + '<div class="k">ZAMIANA PRACY NA PODATEK</div>'
       + `<div class="v">Pozostała pula: ${max} Pracy · 1 Praca → ${taxRate} Podatku</div>`
       + `<div class="civ-emp-work-tax-controls">`
       + `<input type="number" min="0" max="${max}" step="1" value="0" data-work-tax-amount aria-label="Praca do zamiany na podatek" />`
       + `<button type="button" data-work-tax-submit${max < 1 ? ' disabled' : ''}>Zamień na podatek</button></div>`
-      + `<div class="civ-emp-foot" data-work-tax-preview>0 Pracy → 0 Podatku</div>`
-      + '<div class="civ-emp-foot">Zamiana trafia do zwykłego strumienia podatku w najbliższej turze. Niewykorzystana Praca zostaje w puli.</div></div>';
+      + `<div class="civ-emp-foot" data-work-tax-preview>${previewText(0, false)}</div>`
+      + '<div class="civ-emp-foot">Zamiana trafia do zwykłego strumienia podatku stolicy na koniec tury: po korupcji i Mennicy dzieli się wg suwaka Podatek/Nauka/Zamożność — do Skarbca idzie udział „Podatek” (Zamożność dodatkowo go mnoży). Dokładny wpływ pokazuje podgląd (po wpisaniu ilości), komunikat po zamianie i „+N/turę” przy Skarbcu. Niewykorzystana Praca zostaje w puli.</div></div>';
     queueMicrotask(() => {
       const host = document.querySelector<HTMLElement>('[data-work-tax-convert]');
       const input = host?.querySelector<HTMLInputElement>('[data-work-tax-amount]');
       const button = host?.querySelector<HTMLButtonElement>('[data-work-tax-submit]');
       const preview = host?.querySelector<HTMLElement>('[data-work-tax-preview]');
+      // `input`: tani podglad Praca -> Podatek; `change` (Enter/blur): + realny wplyw na Skarbiec z silnika.
       input?.addEventListener('input', () => {
         const work = Math.max(0, Math.min(max, Math.floor(Number(input.value) || 0)));
-        if (preview) preview.textContent = `${work} Pracy → ${taxForWorkAmount(work, taxRate)} Podatku`;
+        if (preview) preview.textContent = previewText(work, false);
+      });
+      input?.addEventListener('change', () => {
+        const work = Math.max(0, Math.min(max, Math.floor(Number(input.value) || 0)));
+        if (preview) preview.textContent = previewText(work, true);
       });
       button?.addEventListener('click', () => {
         if (!input) return;
         const amount = Math.max(0, Math.min(max, Math.floor(Number(input.value) || 0)));
         const tax = taxForWorkAmount(amount, taxRate);
-        if (amount < 1 || tax < 1 || !window.confirm(`Zamienić ${amount} Pracy na ${tax} Podatku?`)) return;
+        // Odmowa (0 Pracy / 0 Podatku) idzie do hooka, ktory pokazuje powod - nie cichy brak reakcji.
+        if (amount >= 1 && tax >= 1 && !window.confirm(`Zamienić ${amount} Pracy na ${tax} Podatku?`)) return;
         empireGlobalDefaultsUi.onConvertOwnerWorkToTax?.(ownerId, amount);
       });
     });

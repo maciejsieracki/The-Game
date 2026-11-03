@@ -270,6 +270,7 @@ import {
 import { applyCityFoundingToHex, cityKeepsImprovement, clearForestUnderCity } from './game/city-hex-clear';
 import {
   executeManualWorkTaxConversion,
+  runManualWorkTaxAction,
   ownerCanConvertWorkToTax,
   restorePendingWorkTax,
   serializePendingWorkTax,
@@ -24788,6 +24789,27 @@ async function boot(): Promise<void> {
           const rate = rawParams.budynki?.targowisko_praca_na_podatek_kurs?.[_menuDifficulty];
           return typeof rate === 'number' && Number.isFinite(rate) && rate >= 0 ? rate : 1;
         },
+        // Podglad (panel): REALNY skutek `tax` Podatku wg silnika (korupcja, Mennica, suwak, bonusy
+        // cywilizacji) - tymczasowo dolicza podatek do kolejki, przelicza projekcje, przywraca stan.
+        previewOwnerWorkTaxEffect: (ownerId, tax) => {
+          if (!(tax >= 1)) return null;
+          const prev = pendingManualWorkTaxByOwner.get(ownerId) ?? 0;
+          try {
+            markCityStateDirty();
+            refreshLiveEmpireRates();
+            const skarb0 = _lastPieniadzRate;
+            const nauka0 = _lastNaukaRate;
+            pendingManualWorkTaxByOwner.set(ownerId, prev + tax);
+            markCityStateDirty();
+            refreshLiveEmpireRates();
+            return { skarb: _lastPieniadzRate - skarb0, nauka: _lastNaukaRate - nauka0 };
+          } finally {
+            if (prev > 0) pendingManualWorkTaxByOwner.set(ownerId, prev);
+            else pendingManualWorkTaxByOwner.delete(ownerId);
+            markCityStateDirty();
+            refreshLiveEmpireRates();
+          }
+        },
         onConvertOwnerWorkToTax: (ownerId, requested) => {
           // The action is available only to a human owner with a Market. Clamp again
           // against the live pool because the panel amount is only a preview.
@@ -24796,15 +24818,18 @@ async function boot(): Promise<void> {
           const configuredRate = rawParams.budynki?.targowisko_praca_na_podatek_kurs?.[_menuDifficulty];
           const rate = typeof configuredRate === 'number' && Number.isFinite(configuredRate) && configuredRate >= 0
             ? configuredRate : 1;
-          const conversion = executeManualWorkTaxConversion(ownerId, requested, rate, enabled, {
+          // R-WEB-LABOR-TO-TAX-CONVERSION-NO-GOLD-Q1: cala akcja w work-tax.ts (testowalna).
+          return runManualWorkTaxAction(ownerId, requested, rate, enabled, {
             getWorkPool: ownerPracaPool,
             setWorkPool: setOwnerPracaPool,
             queueTax: (id, tax) => pendingManualWorkTaxByOwner.set(id,
               (pendingManualWorkTaxByOwner.get(id) ?? 0) + tax),
+            refreshRates: () => refreshLiveEmpireRates(),
+            markDirty: () => markCityStateDirty(),
+            readRates: () => ({ skarb: _lastPieniadzRate, nauka: _lastNaukaRate }),
+            showMessage: (msg) => showHintMessage(msg, 6000),
+            updateHud: () => updateHud(),
           });
-          if (conversion.workSpent < 1) return 0;
-          updateHud();
-          return conversion.workSpent;
         },
         getOwnerDefaultPodzialPracy: (ownerId) => ownerDefaultPodzialPracy.get(ownerId) ?? null,
         onOwnerDefaultPodzialPracyChange: (ownerId, split) => {
