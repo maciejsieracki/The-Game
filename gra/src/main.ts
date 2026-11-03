@@ -461,6 +461,9 @@ import {
   canInitiateSiege, classifyCityAttack, detectAutoSiegeOnCity,
   type MapSiegeContext,
 } from './game/mapSiegeDetect';
+import {
+  siegeAllowedBetween, detectWarAutoSiegeOnCity, isSiegeStillValid, enemyUnitsAdjacentToCity,
+} from './game/diplomacy-siege-war-gate';
 import { resolveEnemyCityClick, type MapEnemyCityClickAction } from './map/map-attack-city';
 import { launchFieldBattleFromMap } from './battle/mapFieldBattle';
 import {
@@ -15768,7 +15771,8 @@ async function boot(): Promise<void> {
         if (!c.oblegane) continue;
         const camps: string[] = [];
         for (const u of units) {
-          if (u.ownerId === c.ownerId) continue;
+          // R-WEB-AI-SIEGE-WITHOUT-WAR-Q1: obóz oblężniczy = wyłącznie jednostki stron w wojnie z właścicielem miasta.
+          if (!siegeAllowedBetween(u.ownerId, c.ownerId, areEnemyOwners)) continue;
           if (hexDistance(u.q, u.r, c.q, c.r) === 1) {
             camps.push(keyOf(u.q, u.r));
             ownerColorById.set(u.ownerId, civColorFn(u.ownerId));
@@ -16179,6 +16183,13 @@ async function boot(): Promise<void> {
         return;
       }
       const city = ctx.city;
+      // R-WEB-AI-SIEGE-WITHOUT-WAR-Q1: JEDNA bramka — oblężenie tylko między stronami w wojnie.
+      if (!siegeAllowedBetween(ctx.oblegajacyOwnerId, city.ownerId, areEnemyOwners)) {
+        if (ctx.oblegajacyOwnerId === 0) {
+          showHintMessage(city.name + ': oblężenie możliwe tylko w stanie wojny.', 4000);
+        }
+        return;
+      }
       city.oblegane = true;
       city.oblegajacyOwnerId = ctx.oblegajacyOwnerId;
       city.siegeCapitulationPending = false;
@@ -16212,10 +16223,12 @@ async function boot(): Promise<void> {
           endMapSiege(city.id);
           continue;
         }
-        const stillBesieging = units.some(
-          u => u.ownerId === bId && hexDistance(u.q, u.r, city.q, city.r) === 1,
-        );
-        if (!stillBesieging) {
+        if (!siegeAllowedBetween(bId, city.ownerId, areEnemyOwners)) {
+          // R-WEB-AI-SIEGE-WITHOUT-WAR-Q1: koniec wojny (pokój/rozejm/NAP/sojusz) zdejmuje oblężenie.
+          endMapSiege(city.id);
+          continue;
+        }
+        if (!isSiegeStillValid(city, bId, units, areEnemyOwners)) {
           endMapSiege(city.id);
           showHintMessage(city.name + ': oblężenie zniesione — brak wojsk przy murach.', 4500);
         }
@@ -16227,7 +16240,7 @@ async function boot(): Promise<void> {
       validateActiveSieges();
       for (const city of cities) {
         if (city.oblegane || city.ownerId !== 0 || !city.maMur) continue;
-        const auto = detectAutoSiegeOnCity(city, units);
+        const auto = detectWarAutoSiegeOnCity(city, units, areEnemyOwners);
         if (!auto) continue;
 
         const atkUnits = collectSiegeAtkRoster(city, auto.atakujacy);
@@ -16285,6 +16298,7 @@ async function boot(): Promise<void> {
 
     function offerCityAttackChoice(atakujacy: RuntimeUnit, city: City): boolean {
       if (!canInitiateSiege(atakujacy, city)) return false;
+      if (!siegeAllowedBetween(atakujacy.ownerId, city.ownerId, areEnemyOwners)) return false;
       const ctx = classifyCityAttack(atakujacy, city, units);
       if (ctx.tryb !== 'oblezenie') return false;
       hideCityAttackChoice();
@@ -29261,10 +29275,7 @@ async function boot(): Promise<void> {
       if (isSiegeMapPanelOpen()) {
         const clickedCity = cities.find(c => c.q === hit.q && c.r === hit.r);
         if (clickedCity?.oblegane) {
-          const besieger = units.find(
-            u => u.ownerId !== clickedCity.ownerId &&
-              hexDistance(u.q, u.r, clickedCity.q, clickedCity.r) === 1,
-          );
+          const besieger = enemyUnitsAdjacentToCity(clickedCity, units, areEnemyOwners)[0];
           if (besieger) {
             syncSiegePanelMeta(clickedCity);
             showSiegeMapPanel(
@@ -33066,6 +33077,11 @@ async function boot(): Promise<void> {
       const city = cities.find(c => c.id === ctx.city.id);
       const anchor = units.find(u => u.id === ctx.atakujacy.id);
       if (!city || !anchor || !city.maMur) return;
+      // R-WEB-AI-SIEGE-WITHOUT-WAR-Q1: szturm miasta tylko w stanie wojny.
+      if (!siegeAllowedBetween(anchor.ownerId, city.ownerId, areEnemyOwners)) {
+        if (city.oblegane) endMapSiege(city.id);
+        return;
+      }
 
       let atkRoster = collectSiegeAtkRoster(city, anchor);
       atkRoster = appendReadyMachinesToRoster(atkRoster, city, anchor.ownerId);
@@ -43072,6 +43088,8 @@ async function boot(): Promise<void> {
           if (o !== undefined) c.oblegajacyOwnerId = o;
         }
       }
+      // R-WEB-AI-SIEGE-WITHOUT-WAR-Q1: migracja starych zapisów — oblężenia bez wojny między stronami zdejmowane.
+      validateActiveSieges();
       refreshObjectivePowerCache();
       selectedId = null;
       reachable = new Set<string>();
