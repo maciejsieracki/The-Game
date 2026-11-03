@@ -117,7 +117,6 @@ check('picker consumes the owner envelope from the cumulative pool', () => {
     pracaSurplusThreshold: 0,
     skipWyrab: true,
     civArchetype: 'grecy',
-    maxItemsPerCity: 10,
   };
   const full = api.pickAutoImprovements({
     ...base,

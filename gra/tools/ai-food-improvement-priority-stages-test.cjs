@@ -44,13 +44,13 @@ function makeMap(width = 22, height = 14) {
   return { szerokoscQ: width, wysokoscR: height, hexes, seed: 11, riverPaths: [] };
 }
 
-function runPicker({ map, cities, worked, placed = new Map(), unlockedTechs = techs, maxItemsPerCity = Infinity, skipWyrab = false, getSkipWyrab, foodImprovementStages = true, priorityOverride }) {
+function runPicker({ map, cities, worked, placed = new Map(), unlockedTechs = techs, skipWyrab = false, getSkipWyrab, foodImprovementStages = true, priorityOverride }) {
   const territoryNodes = cities.map(c => ({ q: c.q, r: c.r, ownerId: c.ownerId, cityId: c.id, pop: c.population, level: 1 }));
   return pickAutoImprovements({
     cities, ownerId: cities[0]?.ownerId ?? 0, map, territoryNodes, placedImprovements: placed,
     pracaAvailable: 100000, unlockedTechs, getFocus: () => 'zywnosc', getOnlyWorked: () => true,
     getWorkedHexKeys: c => worked.get(c.id) ?? new Set(), pracaBudgetPercent: 100,
-    maxItemsPerCity, pracaSurplusThreshold: 0, skipWyrab, getSkipWyrab,
+    pracaSurplusThreshold: 0, skipWyrab, getSkipWyrab,
     foodImprovementStages, priorityOverride,
     civArchetype: 'grecy', playerEra: 3,
   });
@@ -104,41 +104,41 @@ try {
   // BEZ lasu (5,4) ma PIERWSZENSTWO przed wycinka lasu na rzece (E1 > E2) — wczesniej wycinka byla
   // etapem 0 i wyprzedzala kazda farme. Zmiana oczekiwan zgodna z wiazaca specyfikacja
   // ("Farma na heksach z rzeka, na ktorych NIE MA lasu - pierwszy priorytet, wszedzie, zanim cokolwiek z E2+").
-  const farmFirst = runPicker({ map, cities, worked, placed, maxItemsPerCity: 1, getSkipWyrab: () => true });
+  const farmFirst = runPicker({ map, cities, worked, placed, getSkipWyrab: () => true });
   onlyKey(farmFirst, 'farma', 'E1: farm on the river hex without forest comes before river forest clearing');
-  assert.equal(farmFirst.length, 1, 'AI-style one-order-per-city cap must remain intact');
+  assert.ok(farmFirst.length >= 1, 'no item-count cap: E1 may place every eligible river farm in one call');
   assert.ok(farmFirst.some(p => p.cityId === 'a' && p.q === 5 && p.r === 4), 'E1 target is the river hex 5,4');
-  check('0. E1 river farm (no forest) precedes river forest clearing; AI throttle intact', () => {});
+  check('0. E1 river farm (no forest) precedes river forest clearing; no item-count cap', () => {});
   place(farmFirst, map, placed);
 
   // R-WEB-AUTOIMPROVE-STAGES2-Q1 (decyzja wlasciciela 2026-10-31, przycisk „Wolno wycinac las”): przy przycisku
   // WYLACZONYM (getSkipWyrab=true) automat gracza NIE wycina nigdzie — takze przy rzece (dawny pin: „E2 overrides
   // the toggle”, 1 wycinka). Przy WLACZONYM wycinka E2 rusza.
-  const clearOff = runPicker({ map, cities, worked, placed, maxItemsPerCity: 1, getSkipWyrab: () => true });
+  const clearOff = runPicker({ map, cities, worked, placed, getSkipWyrab: () => true });
   assert.ok(!clearOff.some(p => p.key === 'wyrab'), 'toggle OFF: zero wycinek, takze przy rzece (E2 nie omija przycisku)');
-  const clear = runPicker({ map, cities, worked, placed, maxItemsPerCity: 1, getSkipWyrab: () => false });
+  const clear = runPicker({ map, cities, worked, placed, getSkipWyrab: () => false });
   onlyKey(clear, 'wyrab', 'stage E2 river clearing runs when the woodcut toggle is ON');
-  assert.equal(clear.length, 1, 'AI-style one-order-per-city cap must remain intact');
-  check('0a. E2 river forest clearing is isolated from farms/livestock and respects AI throttle', () => {});
+  assert.ok(clear.length >= 1, 'no item-count cap: E2 may clear every eligible river forest in one call');
+  check('0a. E2 river forest clearing is isolated from farms/livestock and has no item-count cap', () => {});
   place(clear, map, placed);
 
-  // E1 > E2: the freshly cleared river hex gets its farm BEFORE the next river forest is cut.
-  const farmCleared = runPicker({ map, cities, worked, placed, maxItemsPerCity: 1 });
-  onlyKey(farmCleared, 'farma', 'E1: farm on the cleared river hex precedes clearing the next river forest');
+  // E1 > E2: freshly cleared river hexes get their farms BEFORE any further clearing. Bez limitu liczby sztuk
+  // (R-WEB-AUTO-IMPROVE-REMOVE-ITEM-CAP-Q1) jedno wywolanie E2 wycina WSZYSTKIE kwalifikujace sie lasy rzeczne
+  // (dawniej po 1 na wywolanie), wiec nastepny przebieg to farmy E1 na wszystkich wycietych heksach.
+  assert.ok(clear.length >= 2, 'no item-count cap: both river forests are cleared in ONE E2 call');
+  const farmCleared = runPicker({ map, cities, worked, placed });
+  onlyKey(farmCleared, 'farma', 'E1: farms on the cleared river hexes precede any further clearing');
+  assert.ok(farmCleared.length >= clear.length, 'every cleared river hex gets its farm in one E1 call');
   place(farmCleared, map, placed);
-  const clearAgain = runPicker({ map, cities, worked, placed, maxItemsPerCity: 1 });
-  onlyKey(clearAgain, 'wyrab', 'E2 continues with the remaining river forest');
-  place(clearAgain, map, placed);
-  const farmCleared2 = runPicker({ map, cities, worked, placed, maxItemsPerCity: 1 });
-  onlyKey(farmCleared2, 'farma', 'E1: farm on the second cleared river hex');
-  place(farmCleared2, map, placed);
-  check('0b. river hexes are developed one by one: clear -> farm (E1 > E2), all river forests prepared before E3+', () => {});
+  const noMoreClearing = runPicker({ map, cities, worked, placed });
+  assert.ok(!noMoreClearing.some(p => p.key === 'wyrab'), 'all river forests are already cut; no further E2 clearing');
+  check('0b. river hexes: clear (all in one call) -> farm (E1 > E2), all river forests prepared before E3+', () => {});
 
   // E3: trzoda przy rzece (poprzednio etap 2 po WSZYSTKICH farmach; teraz farmy poza rzeka sa E5).
   let livestockPasses = 0;
   let lateFood = [];
   for (let turn = 0; turn < 20; turn++) {
-    const picks = runPicker({ map, cities, worked, placed, maxItemsPerCity: 1 });
+    const picks = runPicker({ map, cities, worked, placed });
     if (picks.length > 0 && picks.every(p => ['bydlo', 'owce', 'lama'].includes(p.key))) {
       if (turn === 0) {
         assert.ok(picks.some(p => p.key === 'bydlo'), 'the first available livestock action should be Trzoda');
@@ -161,7 +161,7 @@ try {
     if (offRiver.length > 0 && offRiver.every(p => ['irygacja', 'tarasy'].includes(p.key))) {
       irrPasses++;
       place(offRiver, map, placed);
-      offRiver = runPicker({ map, cities, worked, placed, maxItemsPerCity: 1 });
+      offRiver = runPicker({ map, cities, worked, placed });
       continue;
     }
     break;
@@ -175,7 +175,7 @@ try {
     if (offRiver.length > 0 && offRiver.every(p => p.key === 'farma')) {
       farmPasses++;
       place(offRiver, map, placed);
-      offRiver = runPicker({ map, cities, worked, placed, maxItemsPerCity: 1 });
+      offRiver = runPicker({ map, cities, worked, placed });
       continue;
     }
     break;
@@ -183,7 +183,7 @@ try {
   assert.ok(farmPasses >= 1, 'AI keeps filling the eligible off-river farm fields');
   check('1b. AI keeps the E5 farm stage active until all eligible off-river farms are placed', () => {});
   const saltStillAvailable = runPicker({
-    map, cities, worked, placed, maxItemsPerCity: 1, foodImprovementStages: false,
+    map, cities, worked, placed, foodImprovementStages: false,
     priorityOverride: ['warzelnia_soli'],
   });
   assert.ok(saltStillAvailable.some(p => p.key === 'warzelnia_soli'),
@@ -195,7 +195,7 @@ try {
   // D4: etap bez odblokowanej technologii NIE jest celem i nie blokuje nastepnych (poprzednio
   // sonda dodawala technologie etapu i wstrzymywala irygacje, dopoki istnial niepostawiony cel farmy).
   const noFarmTech = runPicker({
-    map, cities, worked, placed: new Map(), maxItemsPerCity: 1,
+    map, cities, worked, placed: new Map(),
     unlockedTechs: new Set(['Gospodarka wodna']),
   });
   assert.ok(noFarmTech.length > 0 && noFarmTech.every(p => p.key === 'irygacja'),
@@ -223,7 +223,7 @@ try {
   check('wiring. AI civilization and player auto-build use staged planning', () => {});
 
   // Exercise the real AI turn planner, not just the shared picker. One city has two
-  // worked river forests and one worked bare farm target; maxItemsPerCity stays 1.
+  // worked river forests and one worked bare farm target; no item-count cap exists.
   const aiMap = makeMap(16, 16);
   const aiCity = {
     id: 'ai', ownerId: 3, q: 7, r: 7, name: 'AI', population: 6,

@@ -201,7 +201,7 @@ console.log('Z1h. TRZY POZOSTALE PROFILE AUTOMATU GRACZA — bez zmiany zachowan
       cities: [city], ownerId: 0, map,
       territoryNodes: territory(7, 7, 0, 'c0'),
       placedImprovements: new Map(), pracaAvailable: 100000, unlockedTechs: TECHS,
-      pracaBudgetPercent: 100, maxItemsPerCity: 40, skipWyrab: true, playerEra: 3,
+      pracaBudgetPercent: 100, skipWyrab: true, playerEra: 3,
       getFocus: c => c.ulepszeniaFocus, getOnlyWorked: () => false,
       demandDriven, resourceDeficitKeys: [],
     });
@@ -235,7 +235,7 @@ console.log('Z2. BUDOWA TYLKO PRZY OBYWATELACH — z wyjatkiem zloz');
   const picks = AUTO.pickAutoImprovements({
     cities: [city], ownerId: 0, map, territoryNodes: tn,
     placedImprovements: new Map(), pracaAvailable: 1000000, unlockedTechs: TECHS,
-    pracaBudgetPercent: 100, maxItemsPerCity: 60, skipWyrab: true, playerEra: 3,
+    pracaBudgetPercent: 100, skipWyrab: true, playerEra: 3,
     getFocus: c => c.ulepszeniaFocus,
     getOnlyWorked: () => true,
     getWorkedHexKeys: () => worked,
@@ -466,7 +466,7 @@ console.log('Q2. R4-Q2 — przelacznik „wolno wycinac las" automatu GRACZA');
     const tura = AUTO.pickAutoImprovements({
       cities: [cA, cB], ownerId: 0, map, territoryNodes: tn,
       placedImprovements: new Map(placedQ2), pracaAvailable: 1000000, unlockedTechs: TECHS,
-      pracaBudgetPercent: 100, maxItemsPerCity: 1, playerEra: 3,
+      pracaBudgetPercent: 100, playerEra: 3,
       skipWyrab: true,
       getSkipWyrab: c => !c.__wolno,
       getFocus: c => c.ulepszeniaFocus,

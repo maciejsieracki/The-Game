@@ -101,7 +101,7 @@ console.log('A. petla po HEKSACH, nie po TYPACH');
     territoryNodes: territory(5, 5, 3, 0, 'c0', map),
     placedImprovements: new Map(),
     pracaAvailable: 100000, unlockedTechs: TECHS,
-    pracaBudgetPercent: 100, maxItemsPerCity: 6, skipWyrab: true, playerEra: 3,
+    pracaBudgetPercent: 100, skipWyrab: true, playerEra: 3,
     priorityOverride: M.AI_IMPROVEMENT_PRIORITY.filter(k => k !== 'wyrab'),
   });
   ok(picks.length >= 4, `picker zwrocil >= 4 ulepszenia (jest ${picks.length})`);
@@ -119,7 +119,7 @@ console.log('A. petla po HEKSACH, nie po TYPACH');
     territoryNodes: territory(5, 5, 3, 0, 'c0', noRiverMap),
     placedImprovements: new Map(),
     pracaAvailable: 100000, unlockedTechs: TECHS,
-    pracaBudgetPercent: 100, maxItemsPerCity: 6, skipWyrab: true, playerEra: 3,
+    pracaBudgetPercent: 100, skipWyrab: true, playerEra: 3,
     priorityOverride: M.AI_IMPROVEMENT_PRIORITY.filter(k => k !== 'wyrab'),
   });
   ok(!noRiverPicks.some(p => p.key === 'bydlo' || p.key === 'owce' || p.key === 'lama'),
@@ -136,10 +136,10 @@ console.log('B. heks z rzeka ma priorytet przed heksem bez rzeki');
     territoryNodes: territory(5, 5, 3, 0, 'c0', map),
     placedImprovements: new Map(),
     pracaAvailable: 100000, unlockedTechs: TECHS,
-    pracaBudgetPercent: 100, maxItemsPerCity: 1, skipWyrab: true, playerEra: 3,
+    pracaBudgetPercent: 100, skipWyrab: true, playerEra: 3,
     priorityOverride: M.AI_IMPROVEMENT_PRIORITY.filter(k => k !== 'wyrab'),
   });
-  ok(picks.length === 1, `maxItemsPerCity=1 -> dokladnie 1 pick (jest ${picks.length})`);
+  ok(picks.length > 1, `brak limitu liczby sztuk -> wiecej niz 1 pick w jednym wywolaniu (jest ${picks.length})`);
   ok(picks[0] && picks[0].q === 8 && picks[0].r === 5,
     `pierwszy pick trafia na heks Z RZEKA (8,5), nie na blizszy heks bez rzeki (jest ${picks[0] ? picks[0].q + ',' + picks[0].r : 'brak'})`);
 }
@@ -156,7 +156,7 @@ console.log('C. brak duplikatu tego samego ulepszenia na tym samym heksie');
       territoryNodes: territory(5, 5, 3, 0, 'c0', map),
       placedImprovements: placed,
       pracaAvailable: 100000, unlockedTechs: TECHS,
-      pracaBudgetPercent: 100, maxItemsPerCity: 1, skipWyrab: true, playerEra: 3,
+      pracaBudgetPercent: 100, skipWyrab: true, playerEra: 3,
       priorityOverride: M.AI_IMPROVEMENT_PRIORITY.filter(k => k !== 'wyrab'),
     });
     for (const p of picks) {
@@ -166,22 +166,23 @@ console.log('C. brak duplikatu tego samego ulepszenia na tym samym heksie');
       placed.set(hk, [...cur, p.key]);
     }
   }
-  // Uwaga: limit `maxItemsPerCity: 1` jest tu podany JAWNIE bezposrednio pickerowi (test straznika duplikatow na poziomie
-  // pickera, niezalezny od konfiguracji AI w ai.ts — po ABC-D=B AI sam juz tego limitu nie przekazuje; sekcja D).
-  ok(dubel === null, `20 tur x maxItemsPerCity=1 (jawnie w pickerze): zero duplikatow warstwy${dubel ? ' (znaleziony: ' + dubel + ')' : ''}`);
+  // Bez limitu liczby sztuk (R-WEB-AUTO-IMPROVE-REMOVE-ITEM-CAP-Q1) straznik duplikatow dziala na pelnych wywolaniach pickera.
+  ok(dubel === null, `20 tur bez limitu sztuk: zero duplikatow warstwy${dubel ? ' (znaleziony: ' + dubel + ')' : ''}`);
 }
 
-console.log('D. AI CYWILIZACJI — BEZ limitu maxItemsPerCity: 1 (R-WEB-AUTOIMPROVE-STAGES-Q1 R3, ABC-D=B wlasciciela 2026-10-31; zastepuje ECHO „Zostaw limit")');
+console.log('D. AI CYWILIZACJI — BEZ limitu liczby sztuk na miasto (R-WEB-AUTOIMPROVE-STAGES-Q1 R3 ABC-D=B 2026-10-31; parametr usuniety calkowicie: R-WEB-AUTO-IMPROVE-REMOVE-ITEM-CAP-Q1 2026-11-03)');
 {
   const aiSrc = fs.readFileSync(path.resolve(SRC, 'game', 'ai.ts'), 'utf8');
   const i = aiSrc.indexOf('function planCityImprovements');
   // RUNDA 4: okno poszerzone 4000 -> 8000 znakow. Runda 4 dopisala w tej funkcji blok
-  // `workedHexKeysForAiCity` (ZASADA 2) wraz z komentarzem, przez co `maxItemsPerCity: 1`
+  // `workedHexKeysForAiCity` (ZASADA 2) wraz z komentarzem, przez co pilnowany kod
   // wypadlo poza stare okno — straznik czerwienil sie MIMO ze pilnowany kod jest na miejscu.
   // To jest zmiana SZEROKOSCI OKNA straznika, nie zmiana asercji.
   const blok = i >= 0 ? aiSrc.slice(i, i + 8000) : '';
-  ok(!/maxItemsPerCity:\s*1\b/.test(blok),
-    'ai.ts / planCityImprovements NIE przekazuje juz `maxItemsPerCity: 1` do pickera (ABC-D=B)');
+  ok(!/maxItemsPerCity/.test(blok),
+    'ai.ts / planCityImprovements nie przekazuje zadnego `maxItemsPerCity` do pickera (parametr usuniety)');
+  ok(!/maxItemsPerCity|FOOD_STAGE_MAX_ITEMS_PER_CITY/.test(fs.readFileSync(path.resolve(SRC, 'game', 'auto-improvements.ts'), 'utf8')),
+    'auto-improvements.ts: brak parametru `maxItemsPerCity` i stalej FOOD_STAGE_MAX_ITEMS_PER_CITY');
   ok(/pracaBudgetPercent:\s*100\b/.test(blok),
     'ai.ts / planCityImprovements nadal przekazuje `pracaBudgetPercent: 100`');
   // dowod behawioralny — nie regex
@@ -196,7 +197,7 @@ console.log('D. AI CYWILIZACJI — BEZ limitu maxItemsPerCity: 1 (R-WEB-AUTOIMPR
     territoryNodes: tn, placedImprovements: new Map(), improvementTechs: TECHS,
     pracaAvailable: 100000, civEra: 3,
   }).filter(c => c.type === 'buildImprovement');
-  // ABC-D=B: AI jak gracz — wiecej niz 1 rozkaz na miasto na ture, najwyzej FOOD_STAGE_MAX_ITEMS_PER_CITY (3).
+  // ABC-D=B: AI jak gracz — wiecej niz 1 rozkaz na miasto na ture, bez gornego limitu (ogranicza tylko budzet).
   const perCity = new Map();
   for (const c of cmds) {
     const own = Math.abs(c.q - 5) + Math.abs(c.r - 5) <= Math.abs(c.q - 14) + Math.abs(c.r - 14) ? 'c0' : 'c1';
@@ -319,7 +320,7 @@ console.log('H. W-B: posterunek/fort NIE domykaja heksa i maja pulap ceil(pop/10
     territoryNodes: territory(6, 6, 3, 0, 'c0', map),
     placedImprovements: placedH,
     pracaAvailable: 100000, unlockedTechs: TECHS,
-    pracaBudgetPercent: 100, maxItemsPerCity: 14, skipWyrab: true, playerEra: 3,
+    pracaBudgetPercent: 100, skipWyrab: true, playerEra: 3,
     priorityOverride: M.AI_IMPROVEMENT_PRIORITY.filter(k => k !== 'wyrab'),
   });
   const cap = Math.max(1, Math.ceil(city.population / CAPDIV));
@@ -431,7 +432,7 @@ console.log('L. sciezka AI GRACZA: silnik wycinki jest WSPOLNY — blokuje ja wy
     cities: [city], ownerId: 0, map,
     territoryNodes: territory(6, 6, 3, 0, 'c0', map),
     pracaAvailable: 100000, unlockedTechs: TECHS,
-    pracaBudgetPercent: 100, maxItemsPerCity: 40, playerEra: 3,
+    pracaBudgetPercent: 100, playerEra: 3,
   };
   const placed = new Map([['6,6', ['tartak']], ['6,5', ['oboz_lowiecki']]]);
   const zSkip = M.pickAutoImprovements({ ...wspolne, placedImprovements: new Map(placed), skipWyrab: true });
