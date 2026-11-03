@@ -771,7 +771,7 @@ function reorderQueueItem(prod: CityProduction, fromIndex: number, toIndex: numb
   };
 }
 
-function bindRecruitQueueDragReorder(sc: HTMLElement, city: City): void {
+function bindRecruitQueueDragReorder(sc: HTMLElement, city: City, onMutated?: () => void): void {
   let dragFromIndex: number | null = null;
 
   const clearDropMarks = (): void => {
@@ -830,6 +830,7 @@ function bindRecruitQueueDragReorder(sc: HTMLElement, city: City): void {
     dragFromIndex = null;
     clearDropMarks();
     rerender();
+    onMutated?.();
   });
 }
 
@@ -8336,7 +8337,20 @@ export function mountCityRecruitmentCardsForArmy(cityId: string, host: HTMLEleme
   if (!document.getElementById(STYLE_ID)) ensureStyles();
   host.classList.add('civ-cs', 'civ-emp-mass-city-recruit-list');
   renderPurchasableUnits(host, city, data, { w4: true, visibleRows: LIST_SCROLL_VISIBLE_CATALOG });
+  // R-WEB-ARMY-PANEL-RECRUIT-REMOVE-Q1: ta sama „Kolejka rekrutacji:” co w panelu miasta
+  // (uchwyt, ikona, koszt, ETA, ↑ ↓ ✕, przeciąganie) -- ten sam appendRecruitmentQueue.
+  appendRecruitmentQueueForArmy(host, city);
   return true;
+}
+
+function appendRecruitmentQueueForArmy(host: HTMLElement, city: City): void {
+  host.querySelectorAll(':scope > .civ-army-recruit-queue').forEach(n => n.remove());
+  const holder = el('div', 'civ-army-recruit-queue');
+  appendRecruitmentQueue(holder, city, true, {
+    // Gdy updateHud() odświeżył cały panel, stary host jest odpięty -- wtedy nic nie robimy.
+    onMutated: () => { if (host.isConnected) appendRecruitmentQueueForArmy(host, city); },
+  });
+  if (holder.childElementCount > 0) host.appendChild(holder);
 }
 
 function recruitUnit(city: City, item: ProductionItem, quantity = 1): boolean {
@@ -8366,7 +8380,33 @@ function recruitUnit(city: City, item: ProductionItem, quantity = 1): boolean {
   return true;
 }
 
-function appendRecruitmentQueue(mount: HTMLElement, city: City, player: boolean, opts?: { w4?: boolean }): void {
+/**
+ * R-WEB-ARMY-PANEL-RECRUIT-REMOVE-Q1: JEDNA logika mutacji kolejki rekrutacji, wspólna dla panelu
+ * miasta i panelu armii (Imperium → Armia). Każda mutacja idzie przez setProd (→ cfg.onChange →
+ * updateHud → odświeżenie panelu armii) i rerender() (panel miasta).
+ * `onMutated` pozwala widokowi spoza panelu miasta odświeżyć się, gdy host nadal jest w DOM.
+ */
+function cancelRecruitmentQueueItem(city: City, index: number, onMutated?: () => void): void {
+  const it = (getProd(city.id).rekrutacja ?? [])[index];
+  if (!it) return;
+  cfg.onCancelRecruitment?.(city.id, it.id, it.koszt);
+  setProd(city.id, dequeueRecruitment(getProd(city.id), index));
+  rerender();
+  onMutated?.();
+}
+
+function moveRecruitmentQueueItemBy(city: City, index: number, dir: -1 | 1, onMutated?: () => void): void {
+  setProd(city.id, moveRecruitQueueItem(getProd(city.id), index, dir));
+  rerender();
+  onMutated?.();
+}
+
+function appendRecruitmentQueue(
+  mount: HTMLElement,
+  city: City,
+  player: boolean,
+  opts?: { w4?: boolean; onMutated?: () => void },
+): void {
   const prod = getProd(city.id);
   const rq = prod.rekrutacja ?? [];
   if (rq.length === 0) return;
@@ -8429,32 +8469,25 @@ function appendRecruitmentQueue(mount: HTMLElement, city: City, player: boolean,
         const up = el('button', 'btn btn-sm', '↑');
         up.style.cssText = 'padding:0 0.35em;';
         (up as HTMLButtonElement).disabled = i <= 0;
-        up.addEventListener('click', () => {
-          setProd(city.id, moveRecruitQueueItem(getProd(city.id), i, -1));
-          rerender();
-        });
+        up.setAttribute('aria-label', `Przesuń „${it.nazwa}” wyżej w kolejce rekrutacji`);
+        up.addEventListener('click', () => moveRecruitmentQueueItemBy(city, i, -1, opts?.onMutated));
         const down = el('button', 'btn btn-sm', '↓');
         down.style.cssText = 'padding:0 0.35em;';
         (down as HTMLButtonElement).disabled = i >= rq.length - 1;
-        down.addEventListener('click', () => {
-          setProd(city.id, moveRecruitQueueItem(getProd(city.id), i, 1));
-          rerender();
-        });
+        down.setAttribute('aria-label', `Przesuń „${it.nazwa}” niżej w kolejce rekrutacji`);
+        down.addEventListener('click', () => moveRecruitmentQueueItemBy(city, i, 1, opts?.onMutated));
         const x = el('button', 'btn btn-sm', '✕');
         x.style.cssText = 'padding:0 0.35em;';
         x.title = 'Usuń z kolejki (zwrot opłaty do skarbca)';
-        x.addEventListener('click', () => {
-          cfg.onCancelRecruitment?.(city.id, it.id, it.koszt);
-          setProd(city.id, dequeueRecruitment(getProd(city.id), i));
-          rerender();
-        });
+        x.setAttribute('aria-label', `Usuń „${it.nazwa}” z kolejki rekrutacji (zwrot opłaty)`);
+        x.addEventListener('click', () => cancelRecruitmentQueueItem(city, i, opts?.onMutated));
         qi.appendChild(up);
         qi.appendChild(down);
         qi.appendChild(x);
       }
       sc.appendChild(qi);
     }
-    if (player) bindRecruitQueueDragReorder(sc, city);
+    if (player) bindRecruitQueueDragReorder(sc, city, opts?.onMutated);
     wrap.appendChild(sc);
   }
   mount.appendChild(wrap);
