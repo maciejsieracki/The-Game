@@ -1,0 +1,14 @@
+== tools/work-tax-conversion-test.cjs EXIT=0 :: work-tax-conversion-test: 10 assertions passed 
+== tools/praca-na-pieniadz-test.cjs EXIT=0 :: 6 passed, 0 failed 
+== tools/empire-skarbiec-bilans-test.cjs EXIT=0 :: empire-skarbiec-bilans-test: 11 passed, 0 failed 
+== tools/hud-skarbiec-test.cjs EXIT=1 :: hud-skarbiec-test: 33 passed, 1 failed 
+== tools/converters-test.cjs EXIT=0 :: converters-test: 49 passed, 0 failed 
+== tools/converter-era-scaling-test.cjs EXIT=0 :: converter-era-scaling-test: 87 passed, 0 failed 
+== tools/waluta-mennica-test.cjs EXIT=0 :: waluta-mennica-test: 61 passed, 0 failed 
+== tools/mennica-uspienie-test.cjs EXIT=0 :: mennica-uspienie-test: 49 passed, 0 failed 
+== tools/trade-routes-income-test.cjs EXIT=0 :: trade-routes-income-test: 131 passed, 0 failed 
+== tools/currency-test.cjs EXIT=0 :: currency-test: 37 passed, 0 failed 
+== tools/owner-economy-test.cjs EXIT=0 :: 20 passed, 0 failed 
+== tools/mennica-magazyn-test.cjs EXIT=1 :: mennica-magazyn-test: 34 passed, 7 failed 
+== tools/resource-usage-breakdown-test.cjs EXIT=1 :: resource-usage-breakdown-test: 98 passed, 2 failed 
+EXIT=0
