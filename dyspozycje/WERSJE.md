@@ -1,3 +1,12 @@
+## ROBOCZA 8409e6ac -- 2026-11-03 -- powiadomienia po turach AI, skala ×2 złóż i fortów (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`e0b20f430` + EVENTS-DEFER `0d86a0d5c`, MAP-MODELS-SCALE-2X `ad7c81907`) i commit wdrożenia bundla; zgłoszenia właściciela, stała zgoda na poprawki.
+- Bundle MD5 `8409e6acbadad4ea4014278a2a579dd4`, 70,142,370 B, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, outDir poza repo, stempel ROBOCZA.
+- Zakres: (1) modale odkryć technologii, cudów i zdobycia miasta z fazy tur AI pokazują się dopiero na początku tury gracza (wyjątek: dyplomacja, okno przed bitwą); (2) złoża/surowce oraz Fort i Posterunek na mapie ×2.
+- Testy: tsc PASS po scaleniu; testy tematów zielone (40/0, 285/0); mutacje łamią testy.
+- Ograniczenia: rudy po ×2 wystają poza krawędź heksa (decyzja: skala 1,5?); EVENTS bez pomiaru w 2+ fotelach i przy zapisie w trakcie tury.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `bba4ae4efc75a18c55886ce2abfe934a`, 70,141,011 bajtów.
+
 ## ROBOCZA bba4ae4e -- 2026-11-03 -- palisada jako mur, oblężenie wymaga wyłomu, tooltip ulepszeń (testowa)
 
 - **STATUS: DEPLOYED** — merge do `origin/main` (`1a2f1c721` + HEX-TOOLTIP `7e5c4aaca`, PALISADE r1 `ce77ddffa`) i commit wdrożenia bundla; zgłoszenia właściciela, stała zgoda na poprawki.
