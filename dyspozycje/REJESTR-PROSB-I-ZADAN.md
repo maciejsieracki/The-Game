@@ -8575,3 +8575,7 @@ Liczba milicji = liczba mieszkańców (nie 20%); milicja powstaje ZAWSZE przy at
 
 ## 2026-11-03 — zgłoszenie (zrzut „ROZDZIEL ARMIĘ”): panel podziału armii — przewijanie, układ, brandbook
 Właściciel: (1) przy wyborze jednostek do odłączenia lista przewijania wraca za każdym razem na początek — ma zostać w miejscu kliknięcia; (2) lista jednostek w trzech kolumnach i pięciu rzędach (5 wysokość × 3 szerokość) — więcej widocznych i zaznaczanych naraz; (3) wygląd panelu niezgodny z brandbookiem gry — przepracować. Temat `R-WEB-ARMY-SPLIT-PANEL-SCROLL-GRID-BRAND-Q1` (stała zgoda). Kod: `gra/src/ui/armySplitPanel.ts`.
+
+## 2026-11-03 — DECYZJA WŁAŚCICIELA: skala ×2 złóż zostaje; rudy mogą wystawać poza heks
+Właściciel: zostawiamy ×2, wystawanie poza krawędź heksa (rudy do ok. 0,35 promienia) akceptowane. Brak zmian w kodzie; wariant 1,5 odrzucony. Zamknięte (`R-WEB-MAP-MODELS-SCALE-2X-Q1`).
+Pytania bez odpowiedzi (domyślne założenia obowiązują): Milicja — „garnizon” = budynek Garnizon; wieża oblężnicza w bitwie taktycznej nie liczy się jako wyłom; żelazo natywne — najpierw pomiar (C).
