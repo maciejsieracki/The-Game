@@ -312,4 +312,21 @@ impl<'a> StateSources<'a> {
             self.border_radius,
         )
     }
+
+    /// R-RUSTPORT-P6-ECON-TICK-ORDER-LANE-Q1: `orderMultMap` (`main.ts:35789`) jako zrodlo stanu ticku. Mapa jest
+    /// PRODUKTEM petli porzadku (`order_effects_lane::compute_order_lane`, `main.ts:35358-35789`) liczonej PO ticku z
+    /// jego `econ.perCity`; wynik zasila `order_mult_by_city` KOLEJNEGO ticku (web: mapa trwala miedzy turami, `state`).
+    /// `ctx.owner_era` ma byc tym samym resolverem co `StateSources::owner_era` (`empireEpochForOwner`).
+    pub fn order_mult_map(
+        &self,
+        cities: &mut [crate::domain::order_effects_lane::OrderLaneCity],
+        state: &mut crate::domain::order_effects_lane::OrderLaneState,
+        ctx: &crate::domain::order_effects_lane::OrderLaneCtx<'_>,
+    ) -> (
+        crate::domain::order_effects_lane::OrderLaneOutput,
+        BTreeMap<String, crate::domain::turn_economy_loop::OrderYieldMults>,
+    ) {
+        let out = crate::domain::order_effects_lane::compute_order_lane(cities, state, ctx);
+        (out, state.order_mult_map.clone())
+    }
 }

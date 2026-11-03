@@ -11,7 +11,7 @@ import { mkdirSync, writeFileSync, rmSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
-const [repoRoot, workDir, esbuildMain, outFile] = process.argv.slice(2);
+const [repoRoot, workDir, esbuildMain, outFile, econFile] = process.argv.slice(2);
 if (!repoRoot || !workDir || !esbuildMain || !outFile) throw new Error('uzycie: <REPO_ROOT> <WORK_DIR> <ESBUILD_MAIN_JS> <OUT_JSON>');
 const PIN = execFileSync('git', ['-C', repoRoot, 'rev-parse', '4bbef081d'], { encoding: 'utf8' }).trim();
 rmSync(workDir, { recursive: true, force: true });
@@ -276,11 +276,11 @@ function genRelState(pop) {
   return { counts };
 }
 
-function genScenario(idx) {
+function genScenario(idx, ownersOpt) {
   const difficulty = pick(DIFFS);
   const turn = pick([0, 1, 2, 5, 9, 10, 11, ri(12, 400), ri(12, 400), 4294967296, 4294967297]);
   const nCities = ri(1, 7);
-  const owners = pick([[0], [0, 1], [0, 1, 2], [1, 2], [0, 1, 2, 3], [0, -1, 1]]);
+  const owners = ownersOpt ?? pick([[0], [0, 1], [0, 1, 2], [1, 2], [0, 1, 2, 3], [0, -1, 1]]);
   const cities = [];
   const built = {};
   const econ = [];
@@ -448,6 +448,23 @@ for (const key of [...CIV_KEYS, ...CIV_KEYS.map((k) => k.toUpperCase()), 'Grecy'
 const probeBits = [];
 for (let i = 0; i < 400; i++) { const v = rf(-3, 3) * pick([1, 1e-9, 1e9, 0.1]); const b = new DataView(new ArrayBuffer(8)); b.setFloat64(0, v); probeBits.push([v, b.getBigUint64(0).toString(16).padStart(16, '0')]); }
 
-const json = JSON.stringify({ pin: PIN, cov, scenarios, effectsCases, postCases, rngCases, garrCases, warCases, cultCases, relCases, pressCases, civRelCases, probeBits });
+// ---- e2e: stan -> (tick Rust) -> porzadek -> orderMultMap -> tick. Dwie fazy (patrz doc sek. 5):
+// faza 1 (bez econFile) emituje swiaty; Rust tick 1 zrzuca econ per miasto; faza 2 (z econFile) uruchamia web-petle z TYMI econ.
+const e2eEcon = econFile ? JSON.parse(readFileSync(econFile, 'utf8')) : null;
+const e2e = [];
+for (let i = 0; i < 80; i++) {
+  const sc = genScenario(10000 + i, pick([[0], [0, 1], [0, 1, 2], [1, 2], [0, 1, 2, 3]]));
+  sc.humans = pick([[0], [0, 1]]);
+  sc.turn = pick([1, 2, 7, 12, 50, 300]);
+  if (e2eEcon) {
+    const rows = e2eEcon[i];
+    sc.econ = rows.map((r) => [r.cityId, { kultura: r.kultura, wealthZadowolenie: r.wealthZadowolenie, garncarniaSurplusZadowolenie: r.garncarniaSurplusZadowolenie, maSpichlerz: r.maSpichlerz, maSpichlerzII: r.maSpichlerzII }]);
+    e2e.push({ in: sc, out: runLane(sc) });
+  } else {
+    e2e.push({ in: sc });
+  }
+}
+
+const json = JSON.stringify({ pin: PIN, cov, scenarios, e2e, effectsCases, postCases, rngCases, garrCases, warCases, cultCases, relCases, pressCases, civRelCases, probeBits });
 writeFileSync(outFile, json);
 console.log(`scenariusze=${scenarios.length} bytes=${json.length} cov=${JSON.stringify(cov)} -> ${outFile}`);

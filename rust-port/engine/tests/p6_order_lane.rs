@@ -17,6 +17,7 @@ use civ_engine::domain::society_breakdown::{
     evaluate_order_from_breakdown, HappinessBreakdownInput, LawBreakdownInput,
 };
 use civ_engine::domain::territory::ReligionState;
+use civ_engine::domain::turn_economy_inputs_native::{StateSources, StateSourcesWorld};
 use civ_engine::domain::types::porzadek::{society_params, OrderEffects, OrderTier};
 use civ_engine::domain::types::Difficulty;
 use serde_json::Value;
@@ -839,7 +840,7 @@ fn opt_ref(v: &Value) -> Option<f64> {
 }
 
 /// Uruchamia petle Rust dla scenariusza; zwraca (miasta po petli, stan, wynik).
-pub fn run_rust_lane(inp: &mut LaneInputs) -> OrderLaneOutput {
+pub fn run_rust_lane(inp: &mut LaneInputs, src: Option<&StateSources<'_>>) -> OrderLaneOutput {
     let matrix = load_civ_matrix().file.clone();
     let buildings = parse_buildings().unwrap();
     let table = parse_citizen_resource_upkeep().unwrap();
@@ -877,7 +878,10 @@ pub fn run_rust_lane(inp: &mut LaneInputs) -> OrderLaneOutput {
         human_owner_ids: &inp.humans,
         capital_city_id_by_owner: &inp.capital,
     };
-    compute_order_lane(&mut inp.cities, &mut inp.state, &ctx)
+    match src {
+        Some(s) => s.order_mult_map(&mut inp.cities, &mut inp.state, &ctx).0,
+        None => compute_order_lane(&mut inp.cities, &mut inp.state, &ctx),
+    }
 }
 
 #[test]
@@ -889,7 +893,7 @@ fn full_order_lane_matches_running_web() {
     for sc in scenarios {
         let idx = num(&sc["in"]["idx"]) as i64;
         let mut inp = lane_inputs(&sc["in"]);
-        let out = run_rust_lane(&mut inp);
+        let out = run_rust_lane(&mut inp, None);
         let w = &sc["out"];
         let l = |what: &str| format!("sc{idx} {what}");
         // raporty
@@ -1033,4 +1037,251 @@ fn full_order_lane_matches_running_web() {
     assert!(bunt >= 30, "za malo buntow w wektorach: {bunt}");
     assert!(rebelled >= 3, "za malo rebelii w wektorach: {rebelled}");
     report(errs, "petla porzadku (700 scenariuszy)");
+}
+
+// ------------------------------------------------------------------------------------------
+// e2e: stan -> tick 1 (Rust) -> porzadek -> orderMultMap -> tick 2 == web
+// ------------------------------------------------------------------------------------------
+
+mod e2e {
+    use super::*;
+    use civ_engine::data::buildings_tech::parse_wonders;
+    use civ_engine::data::terrain_map::parse_terrain_yields;
+    use civ_engine::domain::improvement_build::{terrain_from_web_value, BuildHex, BuildMap};
+    use civ_engine::domain::start_position::Overlay;
+    use civ_engine::domain::terrain::city_founding::p6_6b::cities::City;
+    use civ_engine::domain::turn_economy_inputs_podzial::{
+        init_owner_default_podzial_handlu, init_owner_default_podzial_pracy,
+        seed_city_owner_defaults_podzial,
+    };
+    use civ_engine::domain::turn_economy_inputs_state::MennicaZlotoGraceState;
+    use civ_engine::domain::turn_economy_loop::{CityLoopExtra, OrderYieldMults};
+    use civ_engine::domain::turn_economy_territory::TerrainContext;
+    use civ_engine::domain::turn_economy_tick::EconomyTickResult;
+    use civ_engine::domain::turn_economy_upkeep::unit_rows_from_json_str;
+    use civ_engine::domain::turn_economy_wire::{run_economy_tick_for_game, GameEconomyContext};
+
+    const SOCIETY: &str = include_str!("../data/society-params.json");
+    const ECON: &str = include_str!("../data/econ-params.json");
+    const UNITS: &str = include_str!("../data/units.json");
+
+    pub fn tick_cities(cities: &[OrderLaneCity]) -> Vec<City> {
+        cities
+            .iter()
+            .map(|c| City {
+                id: c.id.clone(),
+                owner_id: c.owner_id,
+                q: c.q,
+                r: c.r,
+                name: c.name.clone(),
+                population: c.population,
+                surowce: c.surowce.clone(),
+                ..City::default()
+            })
+            .collect()
+    }
+
+    /// Jeden tick `run_economy_tick_for_game` (te same wejscia dla obu wariantow, rozni sie tylko `order`).
+    pub fn run_tick(
+        cities: &[OrderLaneCity],
+        built: &BTreeMap<String, Vec<String>>,
+        owner_civ: &BTreeMap<i64, String>,
+        era: &BTreeMap<i64, f64>,
+        order: &BTreeMap<String, OrderYieldMults>,
+    ) -> (String, EconomyTickResult) {
+        let mut cs = tick_cities(cities);
+        let mut extras: BTreeMap<String, CityLoopExtra> = BTreeMap::new();
+        let mut grace = MennicaZlotoGraceState::default();
+        let ty = parse_terrain_yields().expect("terrain-yields");
+        let matrix = load_civ_matrix().file.clone();
+        let society: Value = serde_json::from_str(SOCIETY).unwrap();
+        let econ: Value = serde_json::from_str(ECON).unwrap();
+        let unit_rows = unit_rows_from_json_str(UNITS).expect("units");
+        let buildings = parse_buildings().expect("buildings");
+        let wonders = parse_wonders().expect("wonders");
+        let mut hexes = Vec::new();
+        for q in 0..=6 {
+            for r in 0..=6 {
+                hexes.push(BuildHex::new(q, r, terrain_from_web_value("rownina").unwrap(), Overlay::Brak));
+            }
+        }
+        let map = BuildMap::new(hexes, Vec::new());
+        let tctx = TerrainContext { map: &map, terrain_yields: &ty };
+        let zbadane: BTreeSet<String> = BTreeSet::new();
+        let mut def_h = init_owner_default_podzial_handlu(&[0], &[]);
+        let mut def_p = init_owner_default_podzial_pracy(&[0], &[]);
+        for c in &cs {
+            seed_city_owner_defaults_podzial(c, &|x| x == 0, &mut def_h, &mut def_p);
+        }
+        let routes = Vec::new();
+        let placed_w = Vec::new();
+        let tax = BTreeMap::new();
+        let capital = BTreeMap::new();
+        let humans: BTreeSet<i64> = [0].into_iter().collect();
+        let era_f = |o: i64| era.get(&o).copied().unwrap_or(1.0);
+        let tech_f = |_o: i64| BTreeSet::<String>::new();
+        let econ_units = Vec::new();
+        let native = |_o: i64| false;
+        let labels = |_o: i64| Vec::<String>::new();
+        let gctx = GameEconomyContext {
+            difficulty: "normal",
+            player_era: 1.0,
+            player_zbadane: &zbadane,
+            econ_params: &econ,
+            terrain: &tctx,
+            matrix: &matrix,
+            buildings: &buildings,
+            unit_rows: &unit_rows,
+            society_params: Some(&society),
+            wonders: &wonders,
+            built_by_city: built,
+            owner_civ_by_owner_id: owner_civ,
+            order_mult_by_city: order,
+            owner_default_podzial_handlu_by_owner: &def_h,
+            owner_default_podzial_pracy_by_owner: &def_p,
+            trade_routes: &routes,
+            placed_wonders: &placed_w,
+            pending_manual_work_tax_by_owner: &tax,
+            capital_city_id_by_owner: &capital,
+            human_owner_ids: &humans,
+            econ_units: &econ_units,
+            owner_era: &era_f,
+            owner_tech: &tech_f,
+            native_zloto_access: &native,
+            empire_active_labels: &labels,
+        };
+        let out = run_economy_tick_for_game(&mut cs, &mut extras, &mut grace, &gctx, None);
+        (format!("{:?}|{:?}|{:?}|{:?}", out, cs, extras, grace), out.tick.result)
+    }
+
+    fn econ_rows(res: &EconomyTickResult, cities: &[OrderLaneCity]) -> BTreeMap<String, OrderLaneEconTick> {
+        let mut m = BTreeMap::new();
+        for c in cities {
+            if let Some(t) = res.per_city.iter().find(|t| t.city_id == c.id) {
+                m.insert(
+                    c.id.clone(),
+                    OrderLaneEconTick {
+                        kultura: t.kultura,
+                        wealth_zadowolenie: t.wealth_zadowolenie,
+                        garncarnia_surplus_zadowolenie: t.garncarnia_surplus_zadowolenie,
+                        ma_spichlerz: t.ma_spichlerz,
+                        ma_spichlerz_ii: t.ma_spichlerz_ii,
+                    },
+                );
+            }
+        }
+        m
+    }
+
+    /// Faza 1 generatora: zrzut econ z ticku 1 Rust (`P6_OL_ECON_OUT=<plik> cargo test -- --ignored`).
+    #[test]
+    #[ignore]
+    fn dump_tick1_econ_for_web_generator() {
+        let path = std::env::var("P6_OL_ECON_OUT").expect("P6_OL_ECON_OUT");
+        let d = vectors();
+        let mut worlds = Vec::new();
+        for w in d["e2e"].as_array().unwrap() {
+            let inp = lane_inputs(&w["in"]);
+            let era = inp.era.clone();
+            let (_, res) = run_tick(&inp.cities, &inp.built, &inp.owner_civ, &era, &BTreeMap::new());
+            let rows: Vec<String> = inp
+                .cities
+                .iter()
+                .filter_map(|c| {
+                    let t = res.per_city.iter().find(|t| t.city_id == c.id)?;
+                    Some(format!(
+                        "{{\"cityId\":{:?},\"kultura\":{},\"wealthZadowolenie\":{},\"garncarniaSurplusZadowolenie\":{},\"maSpichlerz\":{},\"maSpichlerzII\":{}}}",
+                        c.id, t.kultura, t.wealth_zadowolenie, t.garncarnia_surplus_zadowolenie, t.ma_spichlerz, t.ma_spichlerz_ii
+                    ))
+                })
+                .collect();
+            worlds.push(format!("[{}]", rows.join(",")));
+        }
+        std::fs::write(path, format!("[{}]", worlds.join(","))).unwrap();
+    }
+
+    #[test]
+    fn e2e_state_order_ordermultmap_tick_equals_web() {
+        let d = vectors();
+        let worlds = d["e2e"].as_array().unwrap();
+        assert!(worlds.len() >= 80);
+        let mut errs = Vec::new();
+        let (mut differs_from_empty, mut nonneutral, mut ran) = (0, 0, 0);
+        for (i, w) in worlds.iter().enumerate() {
+            assert!(!w["out"].is_null(), "wektory e2e bez fazy 2 generatora");
+            let mut inp = lane_inputs(&w["in"]);
+            let era = inp.era.clone();
+            // 1. tick 1 (stan -> econ), bez mapy porzadku.
+            let (_, res1) = run_tick(&inp.cities, &inp.built, &inp.owner_civ, &era, &BTreeMap::new());
+            inp.econ = econ_rows(&res1, &inp.cities);
+            // econ z Rust ticku == econ, z ktorym uruchomiono web (wektor niesie je jako wejscie).
+            let web_econ: BTreeMap<String, OrderLaneEconTick> = lane_inputs(&w["in"]).econ;
+            if inp.econ != web_econ {
+                errs.push(format!("e2e{i}: econ z ticku 1 Rust != econ wejsciowy weba"));
+                continue;
+            }
+            // 2. porzadek.
+            // (przez `StateSources::order_mult_map` - podpiecie zrodla stanu ticku)
+            let t_cities = tick_cities(&inp.cities);
+            let built_clone = inp.built.clone();
+            let kultura = BTreeMap::new();
+            let hex_owners = std::collections::HashMap::new();
+            let map = BuildMap::new(Vec::new(), Vec::new());
+            let world = StateSourcesWorld {
+                cities: &t_cities,
+                built_by_city: &built_clone,
+                placed: &[],
+                extra_territory_nodes: &[],
+                map: &map,
+                hex_owners: &hex_owners,
+                kultura_by_city: &kultura,
+            };
+            let era_src = |o: i64| era.get(&o).copied().unwrap_or(1.0);
+            let border = |_p: f64| 0.0;
+            let src = StateSources::new(world, &[], &era_src, &border);
+            let _out = run_rust_lane(&mut inp, Some(&src));
+            // 3. orderMultMap Rust == web.
+            let wm = w["out"]["orderMultMap"].as_object().unwrap();
+            let mut web_map: BTreeMap<String, OrderYieldMults> = BTreeMap::new();
+            for (k, x) in wm {
+                web_map.insert(
+                    k.clone(),
+                    OrderYieldMults {
+                        production_mult: num(&x["productionMult"]),
+                        pieniadz_mult: num(&x["pieniadzMult"]),
+                        nauka_mult: num(&x["naukaMult"]),
+                        kultura_mult: num(&x["kulturaMult"]),
+                    },
+                );
+            }
+            if inp.state.order_mult_map != web_map {
+                errs.push(format!("e2e{i}: orderMultMap Rust != web"));
+                continue;
+            }
+            if inp.state.order_mult_map.values().any(|m| {
+                m.production_mult != 1.0 || m.pieniadz_mult != 1.0 || m.nauka_mult != 1.0 || m.kultura_mult != 1.0
+            }) {
+                nonneutral += 1;
+            }
+            // 4. tick 2 z mapa Rust == tick 2 z mapa weba (stan po petli, ten sam dla obu).
+            let (a, _) = run_tick(&inp.cities, &inp.built, &inp.owner_civ, &era, &inp.state.order_mult_map);
+            let (b, _) = run_tick(&inp.cities, &inp.built, &inp.owner_civ, &era, &web_map);
+            if a != b {
+                errs.push(format!("e2e{i}: tick 2 z orderMultMap Rust != tick 2 z orderMultMap weba"));
+            }
+            // kontrola negatywna: pusta mapa zmienia tick w czesci swiatow.
+            let (c, _) = run_tick(&inp.cities, &inp.built, &inp.owner_civ, &era, &BTreeMap::new());
+            if a != c {
+                differs_from_empty += 1;
+            }
+            ran += 1;
+        }
+        report(errs, "e2e");
+        assert!(ran >= 80, "ran={ran}");
+        assert!(nonneutral >= 20, "za malo swiatow z nieneutralnym porzadkiem: {nonneutral}");
+        assert!(
+            differs_from_empty >= 15,
+            "kontrola negatywna: orderMultMap prawie nie wplywa na tick ({differs_from_empty})"
+        );
+    }
 }
