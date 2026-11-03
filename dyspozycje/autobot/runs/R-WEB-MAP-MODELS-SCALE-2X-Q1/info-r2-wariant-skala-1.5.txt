@@ -1,0 +1,329 @@
+PASS: main.ts: compactDepositAtEdge + DEPOSIT_* identyczne z baza (zmiana skali nie dotyka main.ts)
+PASS: brak bledow strony (base/cur): [[],[]]
+FAIL: deposits/konie: depositDisplayScale 4 -> 3 (2x)
+FAIL: deposits/konie: skala koncowa 2.4000 -> 1.8000 (2x)
+FAIL: deposits/konie: wymiary bbox 2x (0.451 -> 0.338)
+FAIL: deposits/konie: uziemienie proporcjonalne (minY-origin 0.0060 -> 0.0045), brak zawieszenia/zapadniecia
+PASS: deposits/konie: pozycja podstawy (origin Y) bez zmian (0.01)
+PASS: deposits/konie: srodek XZ modelu skaluje sie proporcjonalnie (cx 0.0000 -> 0.0000)
+FAIL: deposits/owce: depositDisplayScale 2 -> 1.5 (2x)
+FAIL: deposits/owce: skala koncowa 1.2000 -> 0.9000 (2x)
+FAIL: deposits/owce: wymiary bbox 2x (0.606 -> 0.455)
+PASS: deposits/owce: uziemienie proporcjonalne (minY-origin -0.0000 -> -0.0000), brak zawieszenia/zapadniecia
+PASS: deposits/owce: pozycja podstawy (origin Y) bez zmian (0.01)
+PASS: deposits/owce: srodek XZ modelu skaluje sie proporcjonalnie (cx 0.0000 -> 0.0000)
+FAIL: deposits/bydlo: depositDisplayScale 2 -> 1.5 (2x)
+FAIL: deposits/bydlo: skala koncowa 1.2000 -> 0.9000 (2x)
+FAIL: deposits/bydlo: wymiary bbox 2x (0.874 -> 0.656)
+PASS: deposits/bydlo: uziemienie proporcjonalne (minY-origin -0.0000 -> -0.0000), brak zawieszenia/zapadniecia
+PASS: deposits/bydlo: pozycja podstawy (origin Y) bez zmian (0.01)
+PASS: deposits/bydlo: srodek XZ modelu skaluje sie proporcjonalnie (cx 0.0000 -> 0.0000)
+FAIL: deposits/lama: depositDisplayScale 2 -> 1.5 (2x)
+FAIL: deposits/lama: skala koncowa 1.2000 -> 0.9000 (2x)
+FAIL: deposits/lama: wymiary bbox 2x (0.105 -> 0.078)
+PASS: deposits/lama: uziemienie proporcjonalne (minY-origin 0.0000 -> 0.0000), brak zawieszenia/zapadniecia
+PASS: deposits/lama: pozycja podstawy (origin Y) bez zmian (0.01)
+PASS: deposits/lama: srodek XZ modelu skaluje sie proporcjonalnie (cx 0.0000 -> 0.0000)
+FAIL: deposits/glina: depositDisplayScale 2 -> 1.5 (2x)
+FAIL: deposits/glina: skala koncowa 0.8409 -> 0.6307 (2x)
+FAIL: deposits/glina: wymiary bbox 2x (1.100 -> 0.825)
+FAIL: deposits/glina: uziemienie proporcjonalne (minY-origin -0.0004 -> -0.0003), brak zawieszenia/zapadniecia
+PASS: deposits/glina: pozycja podstawy (origin Y) bez zmian (0.01)
+PASS: deposits/glina: srodek XZ modelu skaluje sie proporcjonalnie (cx 0.0000 -> 0.0000)
+FAIL: deposits/ruda: depositDisplayScale 2 -> 1.5 (2x)
+FAIL: deposits/ruda: skala koncowa 1.2000 -> 0.9000 (2x)
+FAIL: deposits/ruda: wymiary bbox 2x (0.169 -> 0.127)
+FAIL: deposits/ruda: uziemienie proporcjonalne (minY-origin -0.0013 -> -0.0009), brak zawieszenia/zapadniecia
+PASS: deposits/ruda: pozycja podstawy (origin Y) bez zmian (0.01)
+PASS: deposits/ruda: srodek XZ modelu skaluje sie proporcjonalnie (cx 0.0000 -> 0.0000)
+FAIL: deposits/miedz: depositDisplayScale 2 -> 1.5 (2x)
+FAIL: deposits/miedz: skala koncowa 0.7688 -> 0.5766 (2x)
+FAIL: deposits/miedz: wymiary bbox 2x (1.100 -> 0.825)
+FAIL: deposits/miedz: uziemienie proporcjonalne (minY-origin -0.0026 -> -0.0020), brak zawieszenia/zapadniecia
+PASS: deposits/miedz: pozycja podstawy (origin Y) bez zmian (0.01)
+PASS: deposits/miedz: srodek XZ modelu skaluje sie proporcjonalnie (cx 0.0000 -> 0.0000)
+FAIL: deposits/zelazo: depositDisplayScale 2 -> 1.5 (2x)
+FAIL: deposits/zelazo: skala koncowa 0.9090 -> 0.6817 (2x)
+FAIL: deposits/zelazo: wymiary bbox 2x (1.100 -> 0.825)
+FAIL: deposits/zelazo: uziemienie proporcjonalne (minY-origin -0.0063 -> -0.0047), brak zawieszenia/zapadniecia
+PASS: deposits/zelazo: pozycja podstawy (origin Y) bez zmian (0.01)
+PASS: deposits/zelazo: srodek XZ modelu skaluje sie proporcjonalnie (cx 0.0000 -> 0.0000)
+FAIL: deposits/wegiel: depositDisplayScale 2 -> 1.5 (2x)
+FAIL: deposits/wegiel: skala koncowa 0.8198 -> 0.6149 (2x)
+FAIL: deposits/wegiel: wymiary bbox 2x (1.097 -> 0.823)
+PASS: deposits/wegiel: uziemienie proporcjonalne (minY-origin -0.0000 -> -0.0000), brak zawieszenia/zapadniecia
+PASS: deposits/wegiel: pozycja podstawy (origin Y) bez zmian (0.01)
+PASS: deposits/wegiel: srodek XZ modelu skaluje sie proporcjonalnie (cx 0.0000 -> 0.0000)
+FAIL: deposits/sol: depositDisplayScale 2 -> 1.5 (2x)
+FAIL: deposits/sol: skala koncowa 0.8146 -> 0.6110 (2x)
+FAIL: deposits/sol: wymiary bbox 2x (0.917 -> 0.688)
+FAIL: deposits/sol: uziemienie proporcjonalne (minY-origin -0.0047 -> -0.0035), brak zawieszenia/zapadniecia
+PASS: deposits/sol: pozycja podstawy (origin Y) bez zmian (0.01)
+PASS: deposits/sol: srodek XZ modelu skaluje sie proporcjonalnie (cx 0.0000 -> 0.0000)
+FAIL: deposits/zloto: depositDisplayScale 2 -> 1.5 (2x)
+FAIL: deposits/zloto: skala koncowa 0.8370 -> 0.6278 (2x)
+FAIL: deposits/zloto: wymiary bbox 2x (1.098 -> 0.823)
+FAIL: deposits/zloto: uziemienie proporcjonalne (minY-origin -0.0138 -> -0.0104), brak zawieszenia/zapadniecia
+PASS: deposits/zloto: pozycja podstawy (origin Y) bez zmian (0.01)
+PASS: deposits/zloto: srodek XZ modelu skaluje sie proporcjonalnie (cx 0.0000 -> 0.0000)
+FAIL: deposits/cyna: depositDisplayScale 2 -> 1.5 (2x)
+FAIL: deposits/cyna: skala koncowa 0.9053 -> 0.6790 (2x)
+FAIL: deposits/cyna: wymiary bbox 2x (1.074 -> 0.805)
+FAIL: deposits/cyna: uziemienie proporcjonalne (minY-origin -0.0062 -> -0.0047), brak zawieszenia/zapadniecia
+PASS: deposits/cyna: pozycja podstawy (origin Y) bez zmian (0.01)
+PASS: deposits/cyna: srodek XZ modelu skaluje sie proporcjonalnie (cx 0.0000 -> 0.0000)
+FAIL: hill/konie: depositDisplayScale 4 -> 3 (2x)
+FAIL: hill/konie: skala koncowa 2.4000 -> 1.8000 (2x)
+FAIL: hill/konie: wymiary bbox 2x (0.451 -> 0.338)
+FAIL: hill/konie: uziemienie proporcjonalne (minY-origin 0.0060 -> 0.0045), brak zawieszenia/zapadniecia
+PASS: hill/konie: na wzgorzu/gorze spod nie ponizej plaszczyzny heksa (Y>=0) (minY 0.015)
+PASS: hill/konie: srodek XZ modelu skaluje sie proporcjonalnie (cx 0.0000 -> 0.0000)
+FAIL: hill/owce: depositDisplayScale 2 -> 1.5 (2x)
+FAIL: hill/owce: skala koncowa 1.2000 -> 0.9000 (2x)
+FAIL: hill/owce: wymiary bbox 2x (0.606 -> 0.455)
+PASS: hill/owce: uziemienie proporcjonalne (minY-origin -0.0000 -> -0.0000), brak zawieszenia/zapadniecia
+PASS: hill/owce: na wzgorzu/gorze spod nie ponizej plaszczyzny heksa (Y>=0) (minY 0.010)
+PASS: hill/owce: srodek XZ modelu skaluje sie proporcjonalnie (cx 0.0000 -> 0.0000)
+FAIL: hill/bydlo: depositDisplayScale 2 -> 1.5 (2x)
+FAIL: hill/bydlo: skala koncowa 0.9331 -> 0.6999 (2x)
+FAIL: hill/bydlo: wymiary bbox 2x (0.680 -> 0.510)
+PASS: hill/bydlo: uziemienie proporcjonalne (minY-origin -0.0000 -> -0.0000), brak zawieszenia/zapadniecia
+PASS: hill/bydlo: na wzgorzu/gorze spod nie ponizej plaszczyzny heksa (Y>=0) (minY 0.010)
+PASS: hill/bydlo: srodek XZ modelu skaluje sie proporcjonalnie (cx 0.0000 -> 0.0000)
+FAIL: hill/lama: depositDisplayScale 2 -> 1.5 (2x)
+FAIL: hill/lama: skala koncowa 1.2000 -> 0.9000 (2x)
+FAIL: hill/lama: wymiary bbox 2x (0.105 -> 0.078)
+PASS: hill/lama: uziemienie proporcjonalne (minY-origin 0.0000 -> 0.0000), brak zawieszenia/zapadniecia
+PASS: hill/lama: na wzgorzu/gorze spod nie ponizej plaszczyzny heksa (Y>=0) (minY 0.010)
+PASS: hill/lama: srodek XZ modelu skaluje sie proporcjonalnie (cx 0.0000 -> 0.0000)
+FAIL: hill/glina: depositDisplayScale 2 -> 1.5 (2x)
+FAIL: hill/glina: skala koncowa 0.5198 -> 0.3899 (2x)
+FAIL: hill/glina: wymiary bbox 2x (0.680 -> 0.510)
+FAIL: hill/glina: uziemienie proporcjonalne (minY-origin -0.0003 -> -0.0002), brak zawieszenia/zapadniecia
+PASS: hill/glina: na wzgorzu/gorze spod nie ponizej plaszczyzny heksa (Y>=0) (minY 0.010)
+PASS: hill/glina: srodek XZ modelu skaluje sie proporcjonalnie (cx 0.0000 -> 0.0000)
+FAIL: hill/ruda: depositDisplayScale 2 -> 1.5 (2x)
+FAIL: hill/ruda: skala koncowa 1.2000 -> 0.9000 (2x)
+FAIL: hill/ruda: wymiary bbox 2x (0.169 -> 0.127)
+FAIL: hill/ruda: uziemienie proporcjonalne (minY-origin -0.0013 -> -0.0009), brak zawieszenia/zapadniecia
+PASS: hill/ruda: na wzgorzu/gorze spod nie ponizej plaszczyzny heksa (Y>=0) (minY 0.009)
+PASS: hill/ruda: srodek XZ modelu skaluje sie proporcjonalnie (cx 0.0000 -> 0.0000)
+FAIL: hill/miedz: depositDisplayScale 2 -> 1.5 (2x)
+FAIL: hill/miedz: skala koncowa 0.4753 -> 0.3565 (2x)
+FAIL: hill/miedz: wymiary bbox 2x (0.680 -> 0.510)
+FAIL: hill/miedz: uziemienie proporcjonalne (minY-origin -0.0016 -> -0.0012), brak zawieszenia/zapadniecia
+PASS: hill/miedz: na wzgorzu/gorze spod nie ponizej plaszczyzny heksa (Y>=0) (minY 0.009)
+PASS: hill/miedz: srodek XZ modelu skaluje sie proporcjonalnie (cx 0.0000 -> 0.0000)
+FAIL: hill/zelazo: depositDisplayScale 2 -> 1.5 (2x)
+FAIL: hill/zelazo: skala koncowa 0.5619 -> 0.4214 (2x)
+FAIL: hill/zelazo: wymiary bbox 2x (0.680 -> 0.510)
+FAIL: hill/zelazo: uziemienie proporcjonalne (minY-origin -0.0039 -> -0.0029), brak zawieszenia/zapadniecia
+PASS: hill/zelazo: na wzgorzu/gorze spod nie ponizej plaszczyzny heksa (Y>=0) (minY 0.007)
+PASS: hill/zelazo: srodek XZ modelu skaluje sie proporcjonalnie (cx 0.0000 -> 0.0000)
+FAIL: hill/wegiel: depositDisplayScale 2 -> 1.5 (2x)
+FAIL: hill/wegiel: skala koncowa 0.5068 -> 0.3801 (2x)
+FAIL: hill/wegiel: wymiary bbox 2x (0.678 -> 0.509)
+PASS: hill/wegiel: uziemienie proporcjonalne (minY-origin -0.0000 -> -0.0000), brak zawieszenia/zapadniecia
+PASS: hill/wegiel: na wzgorzu/gorze spod nie ponizej plaszczyzny heksa (Y>=0) (minY 0.010)
+PASS: hill/wegiel: srodek XZ modelu skaluje sie proporcjonalnie (cx 0.0000 -> 0.0000)
+FAIL: hill/sol: depositDisplayScale 2 -> 1.5 (2x)
+FAIL: hill/sol: skala koncowa 0.5036 -> 0.3777 (2x)
+FAIL: hill/sol: wymiary bbox 2x (0.567 -> 0.425)
+FAIL: hill/sol: uziemienie proporcjonalne (minY-origin -0.0029 -> -0.0022), brak zawieszenia/zapadniecia
+PASS: hill/sol: na wzgorzu/gorze spod nie ponizej plaszczyzny heksa (Y>=0) (minY 0.008)
+PASS: hill/sol: srodek XZ modelu skaluje sie proporcjonalnie (cx 0.0000 -> 0.0000)
+FAIL: hill/zloto: depositDisplayScale 2 -> 1.5 (2x)
+FAIL: hill/zloto: skala koncowa 0.5174 -> 0.3881 (2x)
+FAIL: hill/zloto: wymiary bbox 2x (0.679 -> 0.509)
+FAIL: hill/zloto: uziemienie proporcjonalne (minY-origin -0.0085 -> -0.0064), brak zawieszenia/zapadniecia
+PASS: hill/zloto: na wzgorzu/gorze spod nie ponizej plaszczyzny heksa (Y>=0) (minY 0.004)
+PASS: hill/zloto: srodek XZ modelu skaluje sie proporcjonalnie (cx 0.0000 -> 0.0000)
+FAIL: hill/cyna: depositDisplayScale 2 -> 1.5 (2x)
+FAIL: hill/cyna: skala koncowa 0.5596 -> 0.4197 (2x)
+FAIL: hill/cyna: wymiary bbox 2x (0.664 -> 0.498)
+FAIL: hill/cyna: uziemienie proporcjonalne (minY-origin -0.0038 -> -0.0029), brak zawieszenia/zapadniecia
+PASS: hill/cyna: na wzgorzu/gorze spod nie ponizej plaszczyzny heksa (Y>=0) (minY 0.007)
+PASS: hill/cyna: srodek XZ modelu skaluje sie proporcjonalnie (cx 0.0000 -> 0.0000)
+FAIL: mount/konie: depositDisplayScale 4 -> 3 (2x)
+FAIL: mount/konie: skala koncowa 2.4000 -> 1.8000 (2x)
+FAIL: mount/konie: wymiary bbox 2x (0.451 -> 0.338)
+FAIL: mount/konie: uziemienie proporcjonalne (minY-origin 0.0060 -> 0.0045), brak zawieszenia/zapadniecia
+PASS: mount/konie: na wzgorzu/gorze spod nie ponizej plaszczyzny heksa (Y>=0) (minY 0.015)
+PASS: mount/konie: srodek XZ modelu skaluje sie proporcjonalnie (cx 0.0000 -> 0.0000)
+FAIL: mount/owce: depositDisplayScale 2 -> 1.5 (2x)
+FAIL: mount/owce: skala koncowa 1.2000 -> 0.9000 (2x)
+FAIL: mount/owce: wymiary bbox 2x (0.606 -> 0.455)
+PASS: mount/owce: uziemienie proporcjonalne (minY-origin -0.0000 -> -0.0000), brak zawieszenia/zapadniecia
+PASS: mount/owce: na wzgorzu/gorze spod nie ponizej plaszczyzny heksa (Y>=0) (minY 0.010)
+PASS: mount/owce: srodek XZ modelu skaluje sie proporcjonalnie (cx 0.0000 -> 0.0000)
+FAIL: mount/bydlo: depositDisplayScale 2 -> 1.5 (2x)
+FAIL: mount/bydlo: skala koncowa 0.9331 -> 0.6999 (2x)
+FAIL: mount/bydlo: wymiary bbox 2x (0.680 -> 0.510)
+PASS: mount/bydlo: uziemienie proporcjonalne (minY-origin -0.0000 -> -0.0000), brak zawieszenia/zapadniecia
+PASS: mount/bydlo: na wzgorzu/gorze spod nie ponizej plaszczyzny heksa (Y>=0) (minY 0.010)
+PASS: mount/bydlo: srodek XZ modelu skaluje sie proporcjonalnie (cx 0.0000 -> 0.0000)
+FAIL: mount/lama: depositDisplayScale 2 -> 1.5 (2x)
+FAIL: mount/lama: skala koncowa 1.2000 -> 0.9000 (2x)
+FAIL: mount/lama: wymiary bbox 2x (0.105 -> 0.078)
+PASS: mount/lama: uziemienie proporcjonalne (minY-origin 0.0000 -> 0.0000), brak zawieszenia/zapadniecia
+PASS: mount/lama: na wzgorzu/gorze spod nie ponizej plaszczyzny heksa (Y>=0) (minY 0.010)
+PASS: mount/lama: srodek XZ modelu skaluje sie proporcjonalnie (cx 0.0000 -> 0.0000)
+FAIL: mount/glina: depositDisplayScale 2 -> 1.5 (2x)
+FAIL: mount/glina: skala koncowa 0.5198 -> 0.3899 (2x)
+FAIL: mount/glina: wymiary bbox 2x (0.680 -> 0.510)
+FAIL: mount/glina: uziemienie proporcjonalne (minY-origin -0.0003 -> -0.0002), brak zawieszenia/zapadniecia
+PASS: mount/glina: na wzgorzu/gorze spod nie ponizej plaszczyzny heksa (Y>=0) (minY 0.010)
+PASS: mount/glina: srodek XZ modelu skaluje sie proporcjonalnie (cx 0.0000 -> 0.0000)
+FAIL: mount/ruda: depositDisplayScale 2 -> 1.5 (2x)
+FAIL: mount/ruda: skala koncowa 1.2000 -> 0.9000 (2x)
+FAIL: mount/ruda: wymiary bbox 2x (0.169 -> 0.127)
+FAIL: mount/ruda: uziemienie proporcjonalne (minY-origin -0.0013 -> -0.0009), brak zawieszenia/zapadniecia
+PASS: mount/ruda: na wzgorzu/gorze spod nie ponizej plaszczyzny heksa (Y>=0) (minY 0.009)
+PASS: mount/ruda: srodek XZ modelu skaluje sie proporcjonalnie (cx 0.0000 -> 0.0000)
+FAIL: mount/miedz: depositDisplayScale 2 -> 1.5 (2x)
+FAIL: mount/miedz: skala koncowa 0.4753 -> 0.3565 (2x)
+FAIL: mount/miedz: wymiary bbox 2x (0.680 -> 0.510)
+FAIL: mount/miedz: uziemienie proporcjonalne (minY-origin -0.0016 -> -0.0012), brak zawieszenia/zapadniecia
+PASS: mount/miedz: na wzgorzu/gorze spod nie ponizej plaszczyzny heksa (Y>=0) (minY 0.009)
+PASS: mount/miedz: srodek XZ modelu skaluje sie proporcjonalnie (cx 0.0000 -> 0.0000)
+FAIL: mount/zelazo: depositDisplayScale 2 -> 1.5 (2x)
+FAIL: mount/zelazo: skala koncowa 0.5619 -> 0.4214 (2x)
+FAIL: mount/zelazo: wymiary bbox 2x (0.680 -> 0.510)
+FAIL: mount/zelazo: uziemienie proporcjonalne (minY-origin -0.0039 -> -0.0029), brak zawieszenia/zapadniecia
+PASS: mount/zelazo: na wzgorzu/gorze spod nie ponizej plaszczyzny heksa (Y>=0) (minY 0.007)
+PASS: mount/zelazo: srodek XZ modelu skaluje sie proporcjonalnie (cx 0.0000 -> 0.0000)
+FAIL: mount/wegiel: depositDisplayScale 2 -> 1.5 (2x)
+FAIL: mount/wegiel: skala koncowa 0.5068 -> 0.3801 (2x)
+FAIL: mount/wegiel: wymiary bbox 2x (0.678 -> 0.509)
+PASS: mount/wegiel: uziemienie proporcjonalne (minY-origin -0.0000 -> -0.0000), brak zawieszenia/zapadniecia
+PASS: mount/wegiel: na wzgorzu/gorze spod nie ponizej plaszczyzny heksa (Y>=0) (minY 0.010)
+PASS: mount/wegiel: srodek XZ modelu skaluje sie proporcjonalnie (cx 0.0000 -> 0.0000)
+FAIL: mount/sol: depositDisplayScale 2 -> 1.5 (2x)
+FAIL: mount/sol: skala koncowa 0.5036 -> 0.3777 (2x)
+FAIL: mount/sol: wymiary bbox 2x (0.567 -> 0.425)
+FAIL: mount/sol: uziemienie proporcjonalne (minY-origin -0.0029 -> -0.0022), brak zawieszenia/zapadniecia
+PASS: mount/sol: na wzgorzu/gorze spod nie ponizej plaszczyzny heksa (Y>=0) (minY 0.008)
+PASS: mount/sol: srodek XZ modelu skaluje sie proporcjonalnie (cx 0.0000 -> 0.0000)
+FAIL: mount/zloto: depositDisplayScale 2 -> 1.5 (2x)
+FAIL: mount/zloto: skala koncowa 0.5174 -> 0.3881 (2x)
+FAIL: mount/zloto: wymiary bbox 2x (0.679 -> 0.509)
+FAIL: mount/zloto: uziemienie proporcjonalne (minY-origin -0.0085 -> -0.0064), brak zawieszenia/zapadniecia
+PASS: mount/zloto: na wzgorzu/gorze spod nie ponizej plaszczyzny heksa (Y>=0) (minY 0.004)
+PASS: mount/zloto: srodek XZ modelu skaluje sie proporcjonalnie (cx 0.0000 -> 0.0000)
+FAIL: mount/cyna: depositDisplayScale 2 -> 1.5 (2x)
+FAIL: mount/cyna: skala koncowa 0.5596 -> 0.4197 (2x)
+FAIL: mount/cyna: wymiary bbox 2x (0.664 -> 0.498)
+FAIL: mount/cyna: uziemienie proporcjonalne (minY-origin -0.0038 -> -0.0029), brak zawieszenia/zapadniecia
+PASS: mount/cyna: na wzgorzu/gorze spod nie ponizej plaszczyzny heksa (Y>=0) (minY 0.007)
+PASS: mount/cyna: srodek XZ modelu skaluje sie proporcjonalnie (cx 0.0000 -> 0.0000)
+FAIL: ulepszenie fort: wymiary 2x (w 0.427 -> 0.427)
+PASS: ulepszenie fort: uziemienie minY -0.0000 -> -0.0000 (proporcjonalne 2x, origin bez zmian)
+PASS: ulepszenie fort: wszystkie wierzcholki w obrebie heksa (wystawanie -0.035 <= 0, baza -0.035)
+FAIL: ulepszenie posterunek: wymiary 2x (w 0.186 -> 0.186)
+FAIL: ulepszenie posterunek: uziemienie minY -0.0009 -> -0.0009 (proporcjonalne 2x, origin bez zmian)
+PASS: ulepszenie posterunek: wszystkie wierzcholki w obrebie heksa (wystawanie -0.107 <= 0, baza -0.107)
+PASS: ulepszenie farma: wymiary 1x (w 0.484 -> 0.484)
+PASS: ulepszenie farma: uziemienie minY -0.0000 -> -0.0000 (proporcjonalne 1x, origin bez zmian)
+PASS: ulepszenie tartak: wymiary 1x (w 0.339 -> 0.339)
+PASS: ulepszenie tartak: uziemienie minY -0.0000 -> -0.0000 (proporcjonalne 1x, origin bez zmian)
+PASS: ulepszenie kopalnia_miedzi: wymiary 1x (w 0.269 -> 0.269)
+PASS: ulepszenie kopalnia_miedzi: uziemienie minY -0.0000 -> -0.0000 (proporcjonalne 1x, origin bez zmian)
+PASS: ulepszenie kamieniolom: wymiary 1x (w 0.404 -> 0.404)
+PASS: ulepszenie kamieniolom: uziemienie minY -0.0000 -> -0.0000 (proporcjonalne 1x, origin bez zmian)
+PASS: ulepszenie oboz_lowiecki: wymiary 1x (w 0.381 -> 0.381)
+PASS: ulepszenie oboz_lowiecki: uziemienie minY -0.0000 -> -0.0000 (proporcjonalne 1x, origin bez zmian)
+PASS: ulepszenie glinianka: wymiary 1x (w 0.395 -> 0.395)
+PASS: ulepszenie glinianka: uziemienie minY -0.0000 -> -0.0000 (proporcjonalne 1x, origin bez zmian)
+PASS: ulepszenie warzelnia_soli: wymiary 1x (w 0.353 -> 0.353)
+PASS: ulepszenie warzelnia_soli: uziemienie minY -0.0000 -> -0.0000 (proporcjonalne 1x, origin bez zmian)
+PASS: ulepszenie stadnina: wymiary 1x (w 0.349 -> 0.349)
+PASS: ulepszenie stadnina: uziemienie minY -0.0000 -> -0.0000 (proporcjonalne 1x, origin bez zmian)
+PASS: ulepszenie pastwisko: wymiary 1x (w 0.400 -> 0.400)
+PASS: ulepszenie pastwisko: uziemienie minY -0.0000 -> -0.0000 (proporcjonalne 1x, origin bez zmian)
+PASS: ulepszenie tarasy: wymiary 1x (w 0.636 -> 0.636)
+PASS: ulepszenie tarasy: uziemienie minY 0.0000 -> 0.0000 (proporcjonalne 1x, origin bez zmian)
+PASS: ulepszenie droga: wymiary 1x (w 1.732 -> 1.732)
+PASS: ulepszenie droga: uziemienie minY -0.0000 -> -0.0000 (proporcjonalne 1x, origin bez zmian)
+INFO: kolizja zloz — wystawanie poza heks (max po wierzcholkach; <=0 = w srodku), odleglosc od srodka heksu (miasto), od srodka sasiada
+INFO: DEPOSIT_EDGE_R (main.ts) = 0.62
+INFO: deposits/konie: wystaje -0.042 -> -0.114; od srodka 0.467 -> 0.494; od sasiada 0.933 -> 1.008
+PASS: deposits/konie: zloze nie siega srodka sasiedniego heksu (miasto/jednostka sasiada): min odl. 1.008 > 0.25
+INFO: deposits/owce: wystaje 0.048 -> -0.046; od srodka 0.371 -> 0.424; od sasiada 0.844 -> 0.942
+PASS: deposits/owce: zloze nie siega srodka sasiedniego heksu (miasto/jednostka sasiada): min odl. 0.942 > 0.25
+INFO: deposits/bydlo: wystaje 0.167 -> 0.043; od srodka 0.379 -> 0.403; od sasiada 0.720 -> 0.847
+PASS: deposits/bydlo: zloze nie siega srodka sasiedniego heksu (miasto/jednostka sasiada): min odl. 0.847 > 0.25
+INFO: deposits/lama: wystaje -0.278 -> -0.291; od srodka 0.593 -> 0.599; od sasiada 1.178 -> 1.192
+PASS: deposits/lama: zloze nie siega srodka sasiedniego heksu (miasto/jednostka sasiada): min odl. 1.192 > 0.25
+INFO: deposits/glina: wystaje 0.255 -> 0.109; od srodka 0.195 -> 0.284; od sasiada 0.616 -> 0.769
+PASS: deposits/glina: zloze nie siega srodka sasiedniego heksu (miasto/jednostka sasiada): min odl. 0.769 > 0.25
+INFO: deposits/ruda: wystaje -0.272 -> -0.286; od srodka 0.569 -> 0.582; od sasiada 1.175 -> 1.190
+PASS: deposits/ruda: zloze nie siega srodka sasiedniego heksu (miasto/jednostka sasiada): min odl. 1.190 > 0.25
+INFO: deposits/miedz: wystaje 0.206 -> 0.072; od srodka 0.092 -> 0.214; od sasiada 0.697 -> 0.827
+PASS: deposits/miedz: zloze nie siega srodka sasiedniego heksu (miasto/jednostka sasiada): min odl. 0.827 > 0.25
+INFO: deposits/zelazo: wystaje 0.353 -> 0.182; od srodka 0.256 -> 0.292; od sasiada 0.520 -> 0.698
+PASS: deposits/zelazo: zloze nie siega srodka sasiedniego heksu (miasto/jednostka sasiada): min odl. 0.698 > 0.25
+INFO: deposits/wegiel: wystaje 0.214 -> 0.078; od srodka 0.198 -> 0.268; od sasiada 0.673 -> 0.809
+PASS: deposits/wegiel: zloze nie siega srodka sasiedniego heksu (miasto/jednostka sasiada): min odl. 0.809 > 0.25
+INFO: deposits/sol: wystaje 0.263 -> 0.115; od srodka 0.182 -> 0.257; od sasiada 0.649 -> 0.794
+PASS: deposits/sol: zloze nie siega srodka sasiedniego heksu (miasto/jednostka sasiada): min odl. 0.794 > 0.25
+INFO: deposits/zloto: wystaje 0.279 -> 0.127; od srodka 0.272 -> 0.293; od sasiada 0.598 -> 0.757
+PASS: deposits/zloto: zloze nie siega srodka sasiedniego heksu (miasto/jednostka sasiada): min odl. 0.757 > 0.25
+INFO: deposits/cyna: wystaje 0.347 -> 0.178; od srodka 0.331 -> 0.329; od sasiada 0.548 -> 0.720
+PASS: deposits/cyna: zloze nie siega srodka sasiedniego heksu (miasto/jednostka sasiada): min odl. 0.720 > 0.25
+INFO: hill/konie: wystaje 0.114 -> 0.042; od srodka 0.633 -> 0.667; od sasiada 0.812 -> 0.887
+PASS: hill/konie: zloze nie siega srodka sasiedniego heksu (miasto/jednostka sasiada): min odl. 0.887 > 0.25
+INFO: hill/owce: wystaje 0.204 -> 0.110; od srodka 0.539 -> 0.598; od sasiada 0.726 -> 0.823
+PASS: hill/owce: zloze nie siega srodka sasiedniego heksu (miasto/jednostka sasiada): min odl. 0.823 > 0.25
+INFO: hill/bydlo: wystaje 0.213 -> 0.116; od srodka 0.558 -> 0.607; od sasiada 0.704 -> 0.806
+PASS: hill/bydlo: zloze nie siega srodka sasiedniego heksu (miasto/jednostka sasiada): min odl. 0.806 > 0.25
+INFO: hill/lama: wystaje -0.122 -> -0.135; od srodka 0.772 -> 0.779; od sasiada 1.055 -> 1.070
+PASS: hill/lama: zloze nie siega srodka sasiedniego heksu (miasto/jednostka sasiada): min odl. 1.070 > 0.25
+INFO: hill/glina: wystaje 0.188 -> 0.098; od srodka 0.517 -> 0.586; od sasiada 0.726 -> 0.823
+PASS: hill/glina: zloze nie siega srodka sasiedniego heksu (miasto/jednostka sasiada): min odl. 0.823 > 0.25
+INFO: hill/ruda: wystaje -0.116 -> -0.130; od srodka 0.749 -> 0.761; od sasiada 1.048 -> 1.064
+PASS: hill/ruda: zloze nie siega srodka sasiedniego heksu (miasto/jednostka sasiada): min odl. 1.064 > 0.25
+INFO: hill/miedz: wystaje 0.157 -> 0.075; od srodka 0.463 -> 0.547; od sasiada 0.765 -> 0.851
+PASS: hill/miedz: zloze nie siega srodka sasiedniego heksu (miasto/jednostka sasiada): min odl. 0.851 > 0.25
+INFO: hill/zelazo: wystaje 0.248 -> 0.143; od srodka 0.502 -> 0.571; od sasiada 0.668 -> 0.779
+PASS: hill/zelazo: zloze nie siega srodka sasiedniego heksu (miasto/jednostka sasiada): min odl. 0.779 > 0.25
+INFO: hill/wegiel: wystaje 0.163 -> 0.079; od srodka 0.484 -> 0.557; od sasiada 0.751 -> 0.842
+PASS: hill/wegiel: zloze nie siega srodka sasiedniego heksu (miasto/jednostka sasiada): min odl. 0.842 > 0.25
+INFO: hill/sol: wystaje 0.193 -> 0.101; od srodka 0.477 -> 0.553; od sasiada 0.762 -> 0.849
+PASS: hill/sol: zloze nie siega srodka sasiedniego heksu (miasto/jednostka sasiada): min odl. 0.849 > 0.25
+INFO: hill/zloto: wystaje 0.202 -> 0.109; od srodka 0.497 -> 0.564; od sasiada 0.712 -> 0.812
+PASS: hill/zloto: zloze nie siega srodka sasiedniego heksu (miasto/jednostka sasiada): min odl. 0.812 > 0.25
+INFO: hill/cyna: wystaje 0.245 -> 0.140; od srodka 0.516 -> 0.576; od sasiada 0.694 -> 0.798
+PASS: hill/cyna: zloze nie siega srodka sasiedniego heksu (miasto/jednostka sasiada): min odl. 0.798 > 0.25
+INFO: mount/konie: wystaje 0.114 -> 0.042; od srodka 0.633 -> 0.667; od sasiada 0.812 -> 0.887
+PASS: mount/konie: zloze nie siega srodka sasiedniego heksu (miasto/jednostka sasiada): min odl. 0.887 > 0.25
+INFO: mount/owce: wystaje 0.204 -> 0.110; od srodka 0.539 -> 0.598; od sasiada 0.726 -> 0.823
+PASS: mount/owce: zloze nie siega srodka sasiedniego heksu (miasto/jednostka sasiada): min odl. 0.823 > 0.25
+INFO: mount/bydlo: wystaje 0.213 -> 0.116; od srodka 0.558 -> 0.607; od sasiada 0.704 -> 0.806
+PASS: mount/bydlo: zloze nie siega srodka sasiedniego heksu (miasto/jednostka sasiada): min odl. 0.806 > 0.25
+INFO: mount/lama: wystaje -0.122 -> -0.135; od srodka 0.772 -> 0.779; od sasiada 1.055 -> 1.070
+PASS: mount/lama: zloze nie siega srodka sasiedniego heksu (miasto/jednostka sasiada): min odl. 1.070 > 0.25
+INFO: mount/glina: wystaje 0.188 -> 0.098; od srodka 0.517 -> 0.586; od sasiada 0.726 -> 0.823
+PASS: mount/glina: zloze nie siega srodka sasiedniego heksu (miasto/jednostka sasiada): min odl. 0.823 > 0.25
+INFO: mount/ruda: wystaje -0.116 -> -0.130; od srodka 0.749 -> 0.761; od sasiada 1.048 -> 1.064
+PASS: mount/ruda: zloze nie siega srodka sasiedniego heksu (miasto/jednostka sasiada): min odl. 1.064 > 0.25
+INFO: mount/miedz: wystaje 0.157 -> 0.075; od srodka 0.463 -> 0.547; od sasiada 0.765 -> 0.851
+PASS: mount/miedz: zloze nie siega srodka sasiedniego heksu (miasto/jednostka sasiada): min odl. 0.851 > 0.25
+INFO: mount/zelazo: wystaje 0.248 -> 0.143; od srodka 0.502 -> 0.571; od sasiada 0.668 -> 0.779
+PASS: mount/zelazo: zloze nie siega srodka sasiedniego heksu (miasto/jednostka sasiada): min odl. 0.779 > 0.25
+INFO: mount/wegiel: wystaje 0.163 -> 0.079; od srodka 0.484 -> 0.557; od sasiada 0.751 -> 0.842
+PASS: mount/wegiel: zloze nie siega srodka sasiedniego heksu (miasto/jednostka sasiada): min odl. 0.842 > 0.25
+INFO: mount/sol: wystaje 0.193 -> 0.101; od srodka 0.477 -> 0.553; od sasiada 0.762 -> 0.849
+PASS: mount/sol: zloze nie siega srodka sasiedniego heksu (miasto/jednostka sasiada): min odl. 0.849 > 0.25
+INFO: mount/zloto: wystaje 0.202 -> 0.109; od srodka 0.497 -> 0.564; od sasiada 0.712 -> 0.812
+PASS: mount/zloto: zloze nie siega srodka sasiedniego heksu (miasto/jednostka sasiada): min odl. 0.812 > 0.25
+INFO: mount/cyna: wystaje 0.245 -> 0.140; od srodka 0.516 -> 0.576; od sasiada 0.694 -> 0.798
+PASS: mount/cyna: zloze nie siega srodka sasiedniego heksu (miasto/jednostka sasiada): min odl. 0.798 > 0.25
+INFO: najwieksze wystawanie poza heks po x2: 0.182 HEX_R (deposits/zelazo) — kosmetyka do decyzji (DEPOSIT_EDGE_R w main.ts poza allowlista)
+INFO: propozycja DEPOSIT_EDGE_R=0.5: najwieksze wystawanie 0.143, min odl. od srodka heksu 0.099 (NIE zastosowano w main.ts)
+INFO: propozycja DEPOSIT_EDGE_R=0.4: najwieksze wystawanie 0.143, min odl. od srodka heksu 0.037 (NIE zastosowano w main.ts)
+INFO: mapa przegladowa (961 zloz + forty/posterunki), 18 serii x 15 klatek (swiftshader, maszyna wspoldzielona): MIN przed 25.70 ms, po 32.60 ms; mediana przed 53.70, po 47.00; draw calls 5632 -> 5632; trojkaty 301116 -> 301116; obiekty sceny 2030 -> 2030
+PASS: instancing/draw calls bez zmian (draw calls 5632 -> 5632, obiekty 2030 -> 2030)
+PASS: liczba trojkatow bez zmian (301116 -> 301116) — skala nie zmienia geometrii
+PASS: czas klatki (min z serii) po (32.60 ms) <= 1.25x przed (25.70 ms) + 1 ms
+
+WYNIK: 150 PASS, 135 FAIL
