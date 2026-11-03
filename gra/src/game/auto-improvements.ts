@@ -1481,7 +1481,7 @@ function pickAutoImprovementsSinglePass(opts: PickAutoImprovementsOpts): AutoImp
     // ---------------------------------------------------------------------
     // Obrona rusza dopiero, gdy miasto ma w promieniu co najmniej `population` ulepszeń
     // PLONOWYCH — „najpierw wykarm obywateli, potem strażnica". Bez tej zwłoki FAZA 0
-    // zabierała (przy dawnym limitu 1 sztuki/miasto, zdjętym decyzją #10) turę 0 i 1, więc PIERWSZE ulepszenie miasta
+    // zabierała (przy dawnym limicie 1 sztuki/miasto, zdjętym decyzją #10) turę 0 i 1, więc PIERWSZE ulepszenie miasta
     // trafiało na heks graniczny zamiast na heks z rzeką — a priorytet rzeki jest
     // wynikiem rundy 2, którego ta runda nie podważa (bramka tematu, test B).
     const plonoweWPromieniu = radiusHexes.reduce((n, { q, r }) => {
@@ -1562,7 +1562,7 @@ function pickAutoImprovementsSinglePass(opts: PickAutoImprovementsOpts): AutoImp
     // R-AI-WYRAB-PRZY-RZECE-FARMY-Q1 (runda 3, część B) — WYRĄB NA HEKSACH RZEKA+LAS.
     // GOAL tematu („AI ma samo wycinać lasy przy rzekach i stawiać tam farmy") był po
     // rundzie 2 STRUKTURALNIE nieosiągalny: `wyrab` żył wyłącznie w FAZIE 2, która rusza
-    // tylko gdy FAZA 1 nic nie postawiła — a przy dawnym limitu 1 sztuki/miasto (zdjęty, decyzja #10) FAZA 1 stawiała coś
+    // tylko gdy FAZA 1 nic nie postawiła — a przy dawnym limicie 1 sztuki/miasto (zdjęty, decyzja #10) FAZA 1 stawiała coś
     // w 600 na 600 rozkazów AI CYWILIZACJI (zmierzone, runda 2, 5 ziaren × 40 tur).
     // Dlatego wyrąb dostaje własny krok NA POCZĄTKU sekwencji heksa — ale WYŁĄCZNIE na
     // heksie, który ma rzekę I nakładkę Las.
@@ -1950,7 +1950,7 @@ function pickAutoImprovementsSinglePass(opts: PickAutoImprovementsOpts): AutoImp
               // RUNDA 4: ten sam straznik co w KROKU 0 — heks z tartakiem albo obozem
               // NIE idzie pod topor (wycinka skasowalaby ulepszenie stojace na lesie,
               // `stripImprovementsWhenForestRemoved`). W rundzie 3 FAZA 2 tego warunku
-              // nie miala; przy dawnym limitu 1 sztuki/miasto (zdjety, decyzja #10) prawie nigdy nie ruszala, wiec luka
+              // nie miala; przy dawnym limicie 1 sztuki/miasto (zdjety, decyzja #10) prawie nigdy nie ruszala, wiec luka
               // nie ujawniala sie w pomiarze. Bramka tematu (test I) lapie ja teraz wprost.
               if ((workingPlaced.get(hexKey) ?? []).some(k => k === 'tartak' || k === 'oboz_lowiecki')) continue;
               if (!qualifies(key, q, r)) continue;

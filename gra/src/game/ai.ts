@@ -3243,7 +3243,7 @@ export function decideAITurn(
   }
 
   // -------------------------------------------------------------------------
-  // Step 2b: TERRAIN IMPROVEMENTS -- max 1/miasto/turę (patrz planCityImprovements)
+  // Step 2b: TERRAIN IMPROVEMENTS -- bez limitu liczby na miasto (patrz planCityImprovements; liczy się tylko budżet Pracy)
   // -------------------------------------------------------------------------
   if (opts.recruitStockDeficitScratch.size > 0) {
     const merged = new Set(opts.resourceDeficitKeys ?? []);
