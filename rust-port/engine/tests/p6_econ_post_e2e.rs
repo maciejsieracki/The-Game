@@ -1,4 +1,4 @@
-//! R-RUSTPORT-P6-ECON-TICK-POST-Q1 (pin weba `4bbef081d`): etapy kroku ekonomii tury PO bankowaniu
+//! R-RUSTPORT-P6-ECON-TICK-POST-Q1 (pin weba `23dd158e9`; wektory zregenerowane z uruchomionego weba tego pinu (REPIN-VECTORS-POSTMERGE-Q1)): etapy kroku ekonomii tury PO bankowaniu
 //! (`turn_economy_post.rs`): deficyt Zlota (`main.ts:35250-35354`), wzrost po centrali z `growthMultMap` i
 //! `manpowerMaxMultByOwnerId` (`:36009-36092`), upkeep Pracy (`:36093-36118`).
 //! Wektory z URUCHOMIONEGO weba (`dyspozycje/autobot/runs/R-RUSTPORT-P6-ECON-TICK-POST-Q1/gen-p6-econ-post-vectors.mjs`):

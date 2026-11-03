@@ -1,4 +1,4 @@
-//! R-RUSTPORT-P6-ECON-TICK-EMPIREFOOD-Q1 (pin weba `4bbef081d`): blok EmpireFood / auto-racje / atrycja MIEDZY tickiem
+//! R-RUSTPORT-P6-ECON-TICK-EMPIREFOOD-Q1 (pin weba `23dd158e9`; wektory zregenerowane z uruchomionego weba tego pinu (REPIN-VECTORS-POSTMERGE-Q1)): blok EmpireFood / auto-racje / atrycja MIEDZY tickiem
 //! ekonomii a bankowaniem (`main.ts:34594-34850`), przez `run_economy_tick_for_game_with_food`.
 //! Wektory z URUCHOMIONEGO weba (`dyspozycje/autobot/runs/R-RUSTPORT-P6-ECON-TICK-EMPIREFOOD-Q1/gen-p6-empirefood-vectors.mjs`):
 //! prawdziwe `advanceCityEconomy`, `advanceEmpireFood`, `autoBalanceRationsToSolvency`, `autoRaiseRationsForGrowth`,

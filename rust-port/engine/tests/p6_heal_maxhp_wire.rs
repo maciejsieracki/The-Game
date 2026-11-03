@@ -1,4 +1,4 @@
-//! R-RUSTPORT-P6-ECON-TICK-HEAL-MAXHP-Q1 (pin weba `4bbef081d`): zrodlo `getMaxHp` dla leczenia jednostek w
+//! R-RUSTPORT-P6-ECON-TICK-HEAL-MAXHP-Q1 (pin weba `23dd158e9`; wektory zregenerowane z uruchomionego weba tego pinu (REPIN-VECTORS-POSTMERGE-Q1)): zrodlo `getMaxHp` dla leczenia jednostek w
 //! ticku ekonomii (`domain::unit_health`). Wektory z URUCHOMIONEGO weba
 //! (`dyspozycje/autobot/runs/R-RUSTPORT-P6-ECON-TICK-HEAL-MAXHP-Q1/gen-p6-heal-maxhp-vectors.mjs`): prawdziwe
 //! `effectiveMaxHp`, `veteran*`, `unitParametryBonusFrac`, `tickManpowerUnitReplenishment` w `advanceCityEconomy`.

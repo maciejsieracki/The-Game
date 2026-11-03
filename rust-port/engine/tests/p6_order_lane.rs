@@ -1,4 +1,4 @@
-//! R-RUSTPORT-P6-ECON-TICK-ORDER-LANE-Q1 (pin weba 4bbef081d): PETLA PORZADKU (`orderMultMap`) wobec URUCHOMIONEGO weba
+//! R-RUSTPORT-P6-ECON-TICK-ORDER-LANE-Q1 (pin weba 23dd158e9; wektory zregenerowane z uruchomionego weba tego pinu (REPIN-VECTORS-POSTMERGE-Q1)): PETLA PORZADKU (`orderMultMap`) wobec URUCHOMIONEGO weba
 //! (`dyspozycje/autobot/runs/R-RUSTPORT-P6-ECON-TICK-ORDER-LANE-Q1/gen-p6-order-lane-vectors.mjs`).
 //!
 //! Testy: sonda floatow, `orderEffectsWithCivMatrix`, post-capture-law, `makeRng` (culture-religion.ts:974),

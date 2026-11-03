@@ -1,4 +1,4 @@
-//! R-RUSTPORT-P6-TRADE-INCOME-PIN-Q1: `domain/trade.rs` 1:1 z pinem weba `4bbef081d` (`gra/src/game/trade-routes.ts`,
+//! R-RUSTPORT-P6-TRADE-INCOME-PIN-Q1: `domain/trade.rs` 1:1 z pinem weba `23dd158e9` (wektory zregenerowane z uruchomionego weba tego pinu, REPIN-VECTORS-POSTMERGE-Q1) (`gra/src/game/trade-routes.ts`,
 //! `map/territory.ts`). Wektory z URUCHOMIONEGO weba (generator `gen-p6-trade-pin-vectors.mjs` w katalogu runu):
 //! odswiezanie tras, polaczenia (BFS, sciezki), granica ladowa, diagnoza, limity, dochod (krzywe `handel_szlaki`),
 //! bonusy, granty, przeplyw surowcow, diff, loadery parametrow, kolejnosc `localeCompare`. Porownanie bit w bit.

@@ -1,0 +1,581 @@
+   Compiling civ-engine v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_5aadb561-3e2-1/rust-port/engine)
+    Finished `test` profile [unoptimized] target(s) in 1.23s
+     Running tests/bridge_add_player.rs (/dev/shm/postmerge_q1/debug/deps/bridge_add_player-29d21d45c2674db3)
+
+running 1 test
+test bridge::add_player_atomicity_tests::add_player_leaves_mock_state_untouched_when_the_game_rejects_it ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/counter_multipliers.rs (/dev/shm/postmerge_q1/debug/deps/counter_multipliers-c944a65d0a384717)
+
+running 5 tests
+test explicit_unit_bonus_overrides_table ... ok
+test table_is_readable_for_every_pair_and_misses_are_none ... ok
+test domain_reads_table_and_unknown_types_give_no_bonus ... ok
+test table_lists_each_type_pair_once_with_finite_positive_multiplier ... ok
+test table_type_keys_are_canonical ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/data_terrain_map.rs (/dev/shm/postmerge_q1/debug/deps/data_terrain_map-c0e779a3719f4442)
+
+running 4 tests
+test terrain_movement_parses_and_spot_checks ... ok
+test map_gen_params_parses_and_spot_checks ... ok
+test terrain_yields_parses_and_spot_checks ... ok
+test terrain_improvements_parses_and_spot_checks ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/economy_city_vectors_r4.rs (/dev/shm/postmerge_q1/debug/deps/economy_city_vectors_r4-77152306e768ed57)
+
+running 7 tests
+test building_gives_happiness_matches_pin ... ok
+test building_happiness_at_level_matches_pin ... ok
+test build_terrain_yields_synthetic_matches_pin ... ok
+test civ_bonusy_for_civ_key_matches_pin ... ok
+test corruption_rate_r4_matches_pin ... ok
+test city_building_entries_match_pin ... ok
+test city_yield_per_turn_matches_pin ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.10s
+
+     Running tests/p6_1_civ_entry_epoch.rs (/dev/shm/postmerge_q1/debug/deps/p6_1_civ_entry_epoch-c29112b12d237024)
+
+running 8 tests
+test civ_ids_available_match_web_roster_vectors ... ok
+test civ_entry_label_matches_web_vectors ... ok
+test game_epoch_hud_label_matches_web_vectors ... ok
+test civ_availability_matches_web_vectors_for_every_game_epoch ... ok
+test civ_entry_epoch_matches_web_vectors ... ok
+test game_epoch_order_matches_web ... ok
+test game_epoch_index_matches_web_for_every_probe ... ok
+test strict_epoch_ids_reject_non_canonical_spellings ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/p6_1c_llama_seed.rs (/dev/shm/postmerge_q1/debug/deps/p6_1c_llama_seed-e56bbca479ca6477)
+
+running 3 tests
+test hex_keys_within_radius_matches_web_loop_order ... ok
+test hash_pos_matches_web_hash_pos_verbatim ... ok
+test seed_inca_llama_deposits_matches_web_for_all_cases ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.11s
+
+     Running tests/p6_1e_civ_gaps.rs (/dev/shm/postmerge_q1/debug/deps/p6_1e_civ_gaps-0759360e77f120ce)
+
+running 10 tests
+test gap_combat_modifier_requires_finite_value ... ok
+test gap_combat_modifier_requires_realizuje_walka ... ok
+test gap_baseline_skips_parameter_with_nonfinite_value ... ok
+test gap_egipt_keeps_shallow_sea_infantry_movement_entry ... ok
+test gap_egipt_skips_strategic_movement_params_only_for_egipt ... ok
+test gap_galera_role_is_naval_category ... ok
+test gap_invariant_extra_cel_exceptions_only_for_skipped_civs ... ok
+test gap_invariant_excluded_param_is_zero_everywhere ... ok
+test gap_resolve_row_matches_ikona_id_when_it_differs_from_typ ... ok
+test gap_semantic_profile_resolves_ikona_id_when_it_differs_from_typ ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/p6_23_hexmove.rs (/dev/shm/postmerge_q1/debug/deps/p6_23_hexmove-a546770c25695422)
+
+running 4 tests
+test foreign_city_blocks_feed_pathfinding_and_roads_use_p3_23_divisors ... ok
+test city_at_hex_and_occupancy_match_web ... ok
+test ai_entry_into_empty_enemy_city_matches_web ... ok
+test foreign_city_blocks_match_web ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+
+     Running tests/p6_4_march.rs (/dev/shm/postmerge_q1/debug/deps/p6_4_march-bae7bfc63cf555d2)
+
+running 6 tests
+test save_validation_and_round_trip_match_web ... ok
+test fog_frontier_and_fog_plan_match_web ... ok
+test truncate_path_to_budget_matches_web_including_min_move ... ok
+test execute_march_step_matches_web ... ok
+test plan_path_turns_matches_web ... ok
+test should_stop_at_obstacle_matches_web ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.62s
+
+     Running tests/p6_5a_ruch.rs (/dev/shm/postmerge_q1/debug/deps/p6_5a_ruch-0e062d5664866c50)
+
+running 8 tests
+test bounce_from_origin_and_separate_return_hex_match_web ... ok
+test bounce_hex_assignment_matches_web_including_duplicates_and_blocking ... ok
+test hud_actions_match_web ... ok
+test adjacent_empty_and_split_destinations_match_web ... ok
+test separate_return_matches_web_bitwise ... ok
+test ruch_pools_match_web_bitwise ... ok
+test unit_with_pooled_ruch_matches_web ... ok
+test sync_and_deduct_match_web ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.41s
+
+     Running tests/p6_5b_replenish.rs (/dev/shm/postmerge_q1/debug/deps/p6_5b_replenish-11d5c4ac4b77306b)
+
+running 1 test
+test replenishment_matches_web_state_results_and_closure_protocol ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.17s
+
+     Running tests/p6_6a_visibility.rs (/dev/shm/postmerge_q1/debug/deps/p6_6a_visibility-0615129695460042)
+
+running 11 tests
+test city_sight_radius_reexport_matches_web ... ok
+test compute_visible_along_path_matches_web ... ok
+test add_explored_and_render_sets_match_web ... ok
+test compute_player_visibility_matches_web ... ok
+test default_sight_uses_the_data_value_only_when_positive ... ok
+test constants_match_running_web ... ok
+test key_listings_and_terrain_predicates_match_web ... ok
+test compute_visible_at_matches_web ... ok
+test compute_visible_fixed_sight_matches_web ... ok
+test units_visible_on_map_matches_web ... ok
+test unit_sight_resolver_and_compute_visible_match_web ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.82s
+
+     Running tests/p6_6b_percent.rs (/dev/shm/postmerge_q1/debug/deps/p6_6b_percent-1f6b6df5d7367a50)
+
+running 10 tests
+test clamp_functions_match_web ... ok
+test budowa_priority_helpers_match_web ... ok
+test adjust_handel_split_matches_web ... ok
+test podzial_pracy_z_procentu_puli_matches_web ... ok
+test constants_match_running_web ... ok
+test normalize_podzial_handlu_matches_web ... ok
+test resolve_effective_ulepszenia_matches_web ... ok
+test snap_and_migrate_match_web ... ok
+test resolve_praca_percent_from_raw_matches_web ... ok
+test ulepszenia_policy_and_caps_match_web ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.40s
+
+     Running tests/p6_7a_tempo.rs (/dev/shm/postmerge_q1/debug/deps/p6_7a_tempo-128bb6a4bfbb174c)
+
+running 8 tests
+test magazyn_era_multiplier_matches_web ... ok
+test pace_table_matches_web ... ok
+test happiness_matches_web ... ok
+test research_era_matches_web ... ok
+test spichlerz_inputs_match_web ... ok
+test stawki_constants_and_scalars_match_web ... ok
+test tempo_threshold_matches_web ... ok
+test stock_cost_record_matches_web ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/p6_7b_tables.rs (/dev/shm/postmerge_q1/debug/deps/p6_7b_tables-9d36b155f7295696)
+
+running 10 tests
+test era_multiplier_matches_flattened_work_tables ... ok
+test building_references_exist_in_buildings_json ... ok
+test pace_and_era_tables_have_valid_shape ... ok
+test params_file_parses_and_has_no_unresolved_tokens ... ok
+test spichlerz_and_unit_parameters_have_valid_shape ... ok
+test storage_and_label_tables_are_consistent ... ok
+test nfd_strip_table_has_valid_shape ... ok
+test building_stock_cost_matches_flattened_p3_19_table ... ok
+test unit_stock_cost_matches_flattened_p3_19_table ... ok
+test pace_matches_flattened_work_states_for_normal_mode ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests/p6_8b2_p2_vectors.rs (/dev/shm/postmerge_q1/debug/deps/p6_8b2_p2_vectors-18e8543e8850dba3)
+
+running 14 tests
+test advance_recruitment_nan_limit_completes_nothing ... ok
+test buildable_and_purchasable_empty_input ... ok
+test enqueue_non_unit_is_identity ... ok
+test gated_manpower_n_minus_n_plus ... ok
+test output_split_matches_web ... ok
+test output_split_sums_to_total_and_falls_back ... ok
+test enqueue_and_dequeue_match_web ... ok
+test praca_rounding_thresholds_n_minus_n_plus ... ok
+test rush_cost_boundaries ... ok
+test praca_split_matches_web ... ok
+test advance_recruitment_matches_web ... ok
+test rush_matches_web ... ok
+test unit_cost_matches_web ... ok
+test era_building_catalog_matches_web ... ok
+
+test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.20s
+
+     Running tests/p6_8c_vectors.rs (/dev/shm/postmerge_q1/debug/deps/p6_8c_vectors-2917562851ba301e)
+
+running 13 tests
+test bank_overwrites_and_withdraw_consumes ... ok
+test dequeue_front_forfeits_own_and_new_front_regains_banked ... ok
+test enqueue_unit_is_gated_and_banked_progress_restored ... ok
+test eta_turns_threshold_and_nan ... ok
+test advance_completes_at_threshold_and_pauses ... ok
+test bank_ignores_units_and_proto_key ... ok
+test advance_speed_bonus_applies_to_buildings_only ... ok
+test promote_to_front_moves_progress_per_item ... ok
+test sanitize_refunds_legacy_units_front_and_waiting ... ok
+test unit_capacity_min_one_and_no_carry ... ok
+test p8c_vectors_queue_ops ... ok
+test p8c_vectors_enqueue_forfeit_bank_withdraw ... ok
+test p8c_vectors_front_eta_work_capacity ... ok
+
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.22s
+
+     Running tests/p6_8e_upkeep_p2.rs (/dev/shm/postmerge_q1/debug/deps/p6_8e_upkeep_p2-f3200bef469d4595)
+
+running 12 tests
+test default_unit_upkeep_by_category_matches_web ... ok
+test building_upkeep_matches_web ... ok
+test building_upkeep_for_built_ids_matches_web ... ok
+test defaults_and_load_upkeep_match_web ... ok
+test building_resource_upkeep_matches_web ... ok
+test recruitment_gate_matches_web ... ok
+test total_building_upkeep_matches_web ... ok
+test food_and_balance_match_web ... ok
+test unit_gold_upkeep_tables_match_web ... ok
+test preview_and_add_costs_match_web ... ok
+test unit_resource_upkeep_and_reserve_match_web ... ok
+test unit_resource_totals_match_web ... ok
+
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.64s
+
+     Running tests/p6_8h2_capital_labels.rs (/dev/shm/postmerge_q1/debug/deps/p6_8h2_capital_labels-563bfca85dc5ec6d)
+
+running 11 tests
+test designated_none_falls_back_to_oldest_owner_city ... ok
+test designated_some_overrides_fallback ... ok
+test non_easy_difficulty_disables_bonus ... ok
+test non_human_owner_is_never_capital ... ok
+test surowiec_fallback_capitalizes_and_empty_is_empty ... ok
+test panel_range_filter_keeps_only_three_and_sorts ... ok
+test stolica_bonus_honours_designated_capital ... ok
+test tie_keeps_first_in_array_and_nan_keeps_first ... ok
+test turn_bounds_n_minus_1_n_n_plus_1 ... ok
+test zloze_labels_table ... ok
+test surowiec_labels_full_table ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/p6_8j_order.rs (/dev/shm/postmerge_q1/debug/deps/p6_8j_order-b8740f3802739057)
+
+running 18 tests
+test band_boundaries_unit ... ok
+test contribution_unit ... ok
+test effects_branches_unit ... ok
+test contribution_matches_web ... ok
+test grace_matches_web ... ok
+test grace_unit ... ok
+test bands_match_web ... ok
+test matrix_unit ... ok
+test message_unit ... ok
+test breakdown_matches_web ... ok
+test order_struct_is_clone_eq ... ok
+test por_pct_cap_unit ... ok
+test por_pct_match_web ... ok
+test tier_boundaries_unit ... ok
+test effects_match_web ... ok
+test messages_match_web ... ok
+test matrix_matches_web ... ok
+test tiers_match_web ... ok
+
+test result: ok. 18 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.34s
+
+     Running tests/p6_adv_q4_pipeline.rs (/dev/shm/postmerge_q1/debug/deps/p6_adv_q4_pipeline-1ecd45283e194ea3)
+
+running 2 tests
+test city_loop_manual_mode_matches_running_web ... ok
+test city_loop_matches_running_web ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 3.15s
+
+     Running tests/p6_empirefood_e2e.rs (/dev/shm/postmerge_q1/debug/deps/p6_empirefood_e2e-4270d5fd46aeabc5)
+
+running 2 tests
+test negative_control_changed_food_inputs_diverge_from_web ... ok
+test empire_food_block_matches_running_web ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 4.93s
+
+     Running tests/p6_m01_params_shape.rs (/dev/shm/postmerge_q1/debug/deps/p6_m01_params_shape-188a388bb5a09197)
+
+running 9 tests
+test climate_is_polar_outside_the_map ... ok
+test params_files_parse_and_have_the_expected_shape ... ok
+test params_floats_are_parsed_exactly_from_the_raw_json_text ... ok
+test subsample_and_threshold_tiers_never_decrease_resolution_for_bigger_maps ... ok
+test ocean_buffers_never_shrink_with_height_and_respect_their_lower_bound ... ok
+test template_sampling_is_zero_outside_the_unit_square ... ok
+test climate_bands_are_ordered_north_to_south_and_cover_the_playable_rows ... ok
+test mask_file_is_well_formed ... ok
+test template_land_respects_border_and_polar_buffers_and_yields_binary_values ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.15s
+
+     Running tests/p6_m02_quality.rs (/dev/shm/postmerge_q1/debug/deps/p6_m02_quality-07b289bbbb867c75)
+
+running 4 tests
+test constants_match_web ... ok
+test per_label_functions_match_web ... ok
+test tier_to_label_and_preset_match_web ... ok
+test web_quirk_ignores_z_with_dot ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/p6_m03_masks.rs (/dev/shm/postmerge_q1/debug/deps/p6_m03_masks-92f5032984be63fd)
+
+running 5 tests
+test masks_are_bounded_and_zero_in_the_hard_ocean_border ... ok
+test pangea_blob_score_matches_web_on_fixed_centers ... ok
+test border_dependencies_match_web ... ok
+test full_seed_pipeline_reproduces_the_web_land_masks ... ok
+test land_masks_match_web_for_every_type_size_and_seed ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 5.59s
+
+     Running tests/p6_m04_tables.rs (/dev/shm/postmerge_q1/debug/deps/p6_m04_tables-4d2b90ef46470e0e)
+
+running 4 tests
+test every_value_has_a_web_source_with_file_and_line ... ok
+test values_have_sane_shape ... ok
+test floats_are_parsed_exactly_from_the_raw_json_text ... ok
+test table_parses_with_deny_unknown_fields ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/p6_m05b_helpers.rs (/dev/shm/postmerge_q1/debug/deps/p6_m05b_helpers-09835cab363112f3)
+
+running 3 tests
+test is_excluded_for_regrow_follows_per_type_zones ... ok
+test helper_functions_match_web ... ok
+test regrow_lost_mountain_clusters_matches_web ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.32s
+
+     Running tests/p6_m06a4_landsea.rs (/dev/shm/postmerge_q1/debug/deps/p6_m06a4_landsea-3611ddffc901bafa)
+
+running 4 tests
+test non_canonical_key_is_skipped_not_processed ... ok
+test coverage_matches_threshold_rule_on_both_sides ... ok
+test vectors_meta_pin_and_counts ... ok
+test purge_desert_enclave_water_matches_web ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.89s
+
+     Running tests/p6_m06a8_landsea.rs (/dev/shm/postmerge_q1/debug/deps/p6_m06a8_landsea-19c126e7d926fe44)
+
+running 5 tests
+test ensure_pangea_invokes_fill_hook_exactly_once_with_map_size ... ok
+test vector_file_has_expected_families_and_size ... ok
+test group_dry_land_mass_keys_matches_web ... ok
+test bridge_boundary_n_minus_1_n_n_plus_1_are_distinguishable ... ok
+test ensure_pangea_single_continent_matches_web_with_fill_hook_zero ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.00s
+
+     Running tests/p6_m06b1_cap.rs (/dev/shm/postmerge_q1/debug/deps/p6_m06b1_cap-d1de035149342a0e)
+
+running 3 tests
+test cap12_thicken_maps_match_web_cap12 ... ok
+test cap_is_observable_in_rust_on_web_maps ... ok
+test explicit_passes_match_web_cap11_12_13 ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.48s
+
+     Running tests/p6_m06b2_finalize.rs (/dev/shm/postmerge_q1/debug/deps/p6_m06b2_finalize-8d7243a89836359a)
+
+running 4 tests
+test coast_passes_neighbours_are_discriminated ... ok
+test land_mass_loop_second_pass_is_noop_on_vectors ... ok
+test finalize_default_wrapper_equals_explicit_default_on_vectors ... ok
+test finalize_land_mass_after_coast_matches_web ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 3.62s
+
+     Running tests/p6_m07a_rivers_a_caps.rs (/dev/shm/postmerge_q1/debug/deps/p6_m07a_rivers_a_caps-28df17641680196b)
+
+running 4 tests
+test main_river_coast_mouth_gap_matches_web_size_labels ... ok
+test coastal_extension_cap_matches_web ... ok
+test repair_loop_cap_matches_web_n_minus_1_n_n_plus_1 ... ok
+test can_river_flow_through_matches_web_all_branches ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 3.25s
+
+     Running tests/p6_m07b4_q4.rs (/dev/shm/postmerge_q1/debug/deps/p6_m07b4_q4-64b13884606e1a01)
+
+running 2 tests
+test cap_quotas_hand_cases ... ok
+test q4_vectors_match_web has been running for over 60 seconds
+test q4_vectors_match_web ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 70.59s
+
+     Running tests/p6_m10_start_scoring.rs (/dev/shm/postmerge_q1/debug/deps/p6_m10_start_scoring-a1f4519e6663b8a9)
+
+running 4 tests
+test reveal_radius_matches_web ... ok
+test score_city_start_hex_over_whole_maps_matches_web ... ok
+test score_city_start_hex_matches_web ... ok
+test find_best_player_start_hex_matches_web ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.55s
+
+     Running tests/p6_m11_repair.rs (/dev/shm/postmerge_q1/debug/deps/p6_m11_repair-2ea5f9383c7a3744)
+
+running 7 tests
+test cluster_helpers_match_web ... ok
+test fixtures_have_web_shape_and_variety ... ok
+test quarter_spread_matches_web ... ok
+test hard_capital_separation_matches_web ... ok
+test body_separation_matches_web ... ok
+test repack_one_matches_web ... ok
+test repack_all_matches_web ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 4.83s
+
+     Running tests/p6_m14_range.rs (/dev/shm/postmerge_q1/debug/deps/p6_m14_range-11a976a1d8c0add9)
+
+running 3 tests
+test territory_keys_by_owner_match_web ... ok
+test culture_range_matches_web ... ok
+test religion_range_matches_web ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.08s
+
+     Running tests/p6_m16_doc.rs (/dev/shm/postmerge_q1/debug/deps/p6_m16_doc-a783ecb95132fc08)
+
+running 1 test
+test document_has_a_status_row_for_every_web_symbol ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/p6_m17_serialize.rs (/dev/shm/postmerge_q1/debug/deps/p6_m17_serialize-bc527bf55aa676f5)
+
+running 5 tests
+test js_num_writes_integers_without_fraction_and_non_finite_as_null ... ok
+test serialize_vectors_touch_every_branch ... ok
+test serialize_text_is_byte_identical_to_web_json_stringify ... ok
+test serialize_matches_web_structurally ... ok
+test snapshot_shape_invariants_hold_for_every_vector ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.11s
+
+     Running tests/p6_repin_b3_route.rs (/dev/shm/postmerge_q1/debug/deps/p6_repin_b3_route-4dafd35f5ec34a70)
+
+running 4 tests
+test route_cash_clamps_maritime_to_total_and_non_negative ... ok
+test route_cash_empty_or_missing_civ_key_is_untreated_sea_cash ... ok
+test route_cash_matches_web_vectors_real_matrix ... ok
+test route_cash_matches_web_vectors_modified_matrix ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
+
+     Running tests/p6_repin_d2_head.rs (/dev/shm/postmerge_q1/debug/deps/p6_repin_d2_head-927d7a6fd5c26b44)
+
+running 11 tests
+test boundary_port_zero_keeps_negative_zero_bits ... ok
+test boundary_port_zero_skips_bonus_even_for_infinite_port_income ... ok
+test boundary_port_nan_propagates_into_pieniadz ... ok
+test structural_mlyn_then_cegielnia_order ... ok
+test structural_cegielnia_alone_scales_terrain_only ... ok
+test structural_no_mlyn_no_cegielnia_is_identity ... ok
+test synthetic_port_matrix_applied_to_port_income_only ... ok
+test synthetic_praca_matrix_applied_to_brutto_sum ... ok
+test structural_port_bonus_needs_owner_and_matrix ... ok
+test synthetic_praca_matrix_uses_brutto_after_mlyn ... ok
+test parity_head_main_bit_exact ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.08s
+
+     Running tests/p6_repin_ekonomia_e_citizen.rs (/dev/shm/postmerge_q1/debug/deps/p6_repin_ekonomia_e_citizen-dc5ea319f4e2dbf3)
+
+running 7 tests
+test missing_rate_field_parses_as_none_and_round_trips ... ok
+test edge_n_minus_1_n_plus_1_real_table_bronze ... ok
+test nonfinite_and_negative_row_rates_fall_back ... ok
+test display_lines_use_rate_from_coverage_like_web ... ok
+test rate_and_required_grid_match_web ... ok
+test real_file_has_era_rates_one_two_three ... ok
+test coverage_drain_lines_match_running_web ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.26s
+
+     Running tests/p6_repin_wojna_2_r3_battle_mode.rs (/dev/shm/postmerge_q1/debug/deps/p6_repin_wojna_2_r3_battle_mode-c6b83aa9bd979177)
+
+running 3 tests
+test legacy_save_without_marker_never_activates_auto_only ... ok
+test restored_setting_version_matches_web ... ok
+test player_battle_automatic_only_matches_web_on_all_combinations ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/p6_repin_wojna_a_leadership.rs (/dev/shm/postmerge_q1/debug/deps/p6_repin_wojna_a_leadership-c42b6e832cddb483)
+
+running 5 tests
+test empty_army_ratio_edge_cases ... ok
+test withdraw_commanders_matches_web ... ok
+test academy_title_and_bonus_match_web ... ok
+test morale_with_bonus_matches_web ... ok
+test morale_ratio_matches_web ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.09s
+
+     Running tests/p6_repin_wojna_d_engage.rs (/dev/shm/postmerge_q1/debug/deps/p6_repin_wojna_d_engage-e3bb02f8b40e08ea)
+
+running 12 tests
+test allocate_empty_inputs_return_empty_map ... ok
+test allocate_fewer_groups_than_enemies_skips_min_one_phase ... ok
+test allocate_deficit_assigns_remaining_group_to_largest_deficit ... ok
+test allocate_equal_sizes_orders_groups_by_id ... ok
+test allocate_min_one_group_per_enemy_strongest_gets_largest ... ok
+test allocate_negative_strength_is_clamped_to_zero ... ok
+test engage_radius_boundary_n_minus_1_hits ... ok
+test engage_full_tie_prefers_smaller_owner_id ... ok
+test engage_tie_same_distance_prefers_smaller_q_then_r_then_owner ... ok
+test engage_radius_boundary_n_hits_n_plus_1_misses ... ok
+test w2_empty_enemy_strength_list_still_splits_engage_pool ... ok
+test w2_empty_enemy_strength_list_blocks_spare_targets_of_other_owners ... ok
+
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/parity_suite.rs (/dev/shm/postmerge_q1/debug/deps/parity_suite-8699c8ce8b7a5315)
+
+running 11 tests
+test city_growth_vector_preserves_health_threshold_and_population_cap ... ok
+test hex_terrain_and_pathfinding_vectors_preserve_geometry_and_costs ... ok
+test canonical_state_dto_vector_round_trips_through_json ... ok
+test lcg_golden_vector_matches_the_typescript_stream ... ok
+test improvements_and_resource_production_vectors_match_catalogue_rules ... ok
+test map_generator_coordinate_vector_is_distinct_and_serializable ... ok
+test public_engine_wire_aliases_are_stable ... ok
+test turn_economy_vector_credits_before_spending_and_resets_work ... ok
+test trade_route_vector_uses_stable_hex_path_and_wire_identity ... ok
+test map_generator_golden_vector_matches_the_public_wire_contract ... ok
+test building_and_recruitment_vectors_keep_purchase_and_work_costs_separate ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/rng.rs (/dev/shm/postmerge_q1/debug/deps/rng-044cb5e0327fdca7)
+
+running 4 tests
+test copied_state_and_forks_reproduce_independent_streams ... ok
+test serialized_state_round_trip_resumes_the_exact_stream ... ok
+test seeded_stream_matches_the_typescript_lcg_and_repeats ... ok
+test ranges_reject_empty_or_reversed_bounds_and_stay_inside_exclusive_end ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/structure_defense_max.rs (/dev/shm/postmerge_q1/debug/deps/structure_defense_max-97cd066d284c179b)
+
+running 3 tests
+test structures_are_ignored_outside_siege ... ok
+test no_structure_gives_neutral_multiplier ... ok
+test combined_structures_equal_the_strongest_single_structure ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+EXIT=0

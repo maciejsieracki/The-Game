@@ -1,4 +1,4 @@
-//! R-RUSTPORT-P6-ADVANCE-CITY-ECONOMY-Q6-Q1 (pin weba 4bbef081d): WIAZANIE `advance_city_economy` z petla tury
+//! R-RUSTPORT-P6-ADVANCE-CITY-ECONOMY-Q6-Q1 (pin weba 23dd158e9; wektory zregenerowane z uruchomionego weba tego pinu (REPIN-VECTORS-POSTMERGE-Q1)): WIAZANIE `advance_city_economy` z petla tury
 //! (`turn_economy_wire::run_economy_tick_for_game`) i moduly wejsc (`turn_economy_inputs_{trade,wonders,state}`).
 //! Porownanie BITOWE z URUCHOMIONYM webem
 //! (`dyspozycje/autobot/runs/R-RUSTPORT-P6-ADVANCE-CITY-ECONOMY-Q6-Q1/gen-p6-adv-q6-vectors.mjs`): wszystkie pola

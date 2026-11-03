@@ -1,4 +1,4 @@
-//! R-RUSTPORT-P6-ECON-TICK-STATE-SOURCES-Q1 (pin weba 4bbef081d): ZRODLA STANU ticku ekonomii
+//! R-RUSTPORT-P6-ECON-TICK-STATE-SOURCES-Q1 (pin weba 23dd158e9; wektory zregenerowane z uruchomionego weba tego pinu (REPIN-VECTORS-POSTMERGE-Q1)): ZRODLA STANU ticku ekonomii
 //! (`turn_economy_inputs_{civ,podzial,native}`) wobec URUCHOMIONEGO weba
 //! (`dyspozycje/autobot/runs/R-RUSTPORT-P6-ECON-TICK-STATE-SOURCES-Q1/gen-p6-state-src-vectors.mjs`).
 //!
