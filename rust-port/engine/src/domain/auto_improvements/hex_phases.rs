@@ -5,10 +5,10 @@ use super::city_phases::{count_forest, hex_dist, pop_or_zero, Acc, CityEnv};
 use super::opts::{AutoImprovementCity, AutoImprovementPick, PickAutoImprovementsOpts};
 use super::single_pass::{in_zero_yield, Shared};
 use super::{js_max, territory_radius_pin, JEDEN_NA_ILU_OBYWATELI, WYRAB_MIN_FOREST_IN_RADIUS};
-use crate::domain::improvement_build::PlacedLayers;
-use crate::domain::terrain::{axial_distance, CityNode};
 use crate::domain::improvement_build::get_improvement_meta;
+use crate::domain::improvement_build::PlacedLayers;
 use crate::domain::start_position::Overlay;
+use crate::domain::terrain::{axial_distance, CityNode};
 
 /// Web `fortKeyRadius` (auto-improvements.ts:773 @23dd158e9): promien twardego terytorium fortu (5) /
 /// posterunku (3).
@@ -200,9 +200,11 @@ pub(super) fn phase_defense(
         if !enclosed {
             continue;
         }
-        let Some(idx) = acc.picks.iter().position(|p| {
-            p.city_id == pk.city_id && p.q == pk.q && p.r == pk.r && p.key == pk.key
-        }) else {
+        let Some(idx) = acc
+            .picks
+            .iter()
+            .position(|p| p.city_id == pk.city_id && p.q == pk.q && p.r == pk.r && p.key == pk.key)
+        else {
             continue;
         };
         acc.picks.remove(idx);
@@ -212,7 +214,9 @@ pub(super) fn phase_defense(
         let hk = format!("{},{}", pk.q, pk.r);
         if let Some(placed) = sh.state.placed_improvements.as_mut() {
             let left: Vec<String> = match placed.get(&hk) {
-                Some(PlacedLayers::Many(v)) => v.iter().filter(|l| *l != "posterunek").cloned().collect(),
+                Some(PlacedLayers::Many(v)) => {
+                    v.iter().filter(|l| *l != "posterunek").cloned().collect()
+                }
                 _ => Vec::new(),
             };
             if matches!(placed.get(&hk), Some(PlacedLayers::Many(_))) {

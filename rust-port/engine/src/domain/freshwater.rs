@@ -158,9 +158,10 @@ impl FreshwaterCtx {
 }
 
 type CacheKey = (usize, usize, u64);
+type LakeCacheEntry = (CacheKey, HashSet<(i32, i32)>);
 
 thread_local! {
-    static LAKE_CACHE: RefCell<Option<(CacheKey, HashSet<(i32, i32)>)>> = const { RefCell::new(None) };
+    static LAKE_CACHE: RefCell<Option<LakeCacheEntry>> = const { RefCell::new(None) };
 }
 
 /// Odcisk ukladu wody mapy (liczba heksow + zmieszane (q,r,woda)) - klucz cache jezior; jezioro
@@ -168,7 +169,8 @@ thread_local! {
 fn fingerprint(map: &BuildMap) -> CacheKey {
     let mut acc: u64 = 0xcbf2_9ce4_8422_2325;
     for h in map.hexes() {
-        let mut x = (h.q as u32 as u64) << 33 | (h.r as u32 as u64) << 1 | u64::from(is_water(h.terrain));
+        let mut x =
+            (h.q as u32 as u64) << 33 | (h.r as u32 as u64) << 1 | u64::from(is_water(h.terrain));
         x = x.wrapping_mul(0x9e37_79b9_7f4a_7c15);
         x ^= x >> 29;
         acc = acc.wrapping_add(x);
@@ -188,6 +190,9 @@ pub fn is_lake_adjacent_cached(map: &BuildMap, q: i32, r: i32) -> bool {
         if lakes.is_empty() {
             return false;
         }
-        lakes.contains(&(q, r)) || NEIGHBORS.iter().any(|(dq, dr)| lakes.contains(&(q + dq, r + dr)))
+        lakes.contains(&(q, r))
+            || NEIGHBORS
+                .iter()
+                .any(|(dq, dr)| lakes.contains(&(q + dq, r + dr)))
     })
 }

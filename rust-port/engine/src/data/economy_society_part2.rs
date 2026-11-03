@@ -413,6 +413,13 @@ pub struct AiParams {
     pub ekspansja_heurystyka_surowiec_pkt: AiParamsTrudnoscPoziom1BonusProdukcja,
     #[serde(rename = "ekspansja_heurystyka_granica_kara")]
     pub ekspansja_heurystyka_granica_kara: AiParamsTrudnoscPoziom1BonusProdukcja,
+    /// REPIN-DELTA-4 (ai-params.json @23dd158e9, R-WEB-AI-CITY-YIELD-FIX-Q1): dane bez konsumenta w Rust
+    /// (hexCityScore/ai.ts - dlug); `wartosc` ulamkowa.
+    #[serde(rename = "ekspansja_waga_plonu_heksu")]
+    pub ekspansja_waga_plonu_heksu: AiParamsTrudnoscPoziom1BonusWalka,
+    /// R-WEB-AI-AVOID-POLAR-CITIES-Q1 (dane bez konsumenta w Rust - dlug ai.ts).
+    #[serde(rename = "ekspansja_kara_polarna_sasiedztwo")]
+    pub ekspansja_kara_polarna_sasiedztwo: AiParamsTrudnoscPoziom1BonusProdukcja,
     #[serde(rename = "barbarzyncy_start_tura")]
     pub barbarzyncy_start_tura: AiParamsTrudnoscPoziom1BonusProdukcja,
     #[serde(rename = "barbarzyncy_max_obozy")]

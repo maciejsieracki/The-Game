@@ -27,6 +27,7 @@
 
 use crate::data::derived::{mapgen_cluster_layout, ClusterActiveTypes};
 use crate::domain::hex::HexCoord;
+use crate::domain::improvements::js_round;
 use crate::domain::map_generator::GeneratedMap;
 use crate::domain::mapgen::cluster_mass::{
     allocate_typy_to_masses, assign_voronoi_regions, development_space_score, js_array_sort_by,
@@ -271,6 +272,90 @@ pub fn capital_min_separation_for_map(rozmiar: MapSizeLabel, map_w: i64, map_h: 
         return 0;
     }
     capital_min_separation(rozmiar)
+}
+
+/// Web `FALLBACK_CAPITAL_SEP_COEF` (`map-gen-params-loader.ts:224`).
+const FALLBACK_CAPITAL_SEP_COEF: f64 = 0.15;
+
+/// Web `mapGenCapitalSepShortSideCoef()` (`map-gen-params-loader.ts:225`, pin 23dd158e9,
+/// R-WEB-CAPITAL-SPACING-FIX-Q1): `generator.capital_sep_short_side_coef.wartosc` z
+/// `data/map-gen-params.json`, gdy skonczona i `>= 0`; inaczej 0,15.
+pub fn map_gen_capital_sep_short_side_coef() -> f64 {
+    static COEF: std::sync::OnceLock<f64> = std::sync::OnceLock::new();
+    *COEF.get_or_init(|| {
+        let file: crate::data::terrain_map::MapGenParamsFile =
+            serde_json::from_str(crate::data::terrain_map::MAP_GEN_PARAMS_JSON)
+                .expect("map-gen-params.json must parse");
+        match file.generator.capital_sep_short_side_coef {
+            Some(c) if c.wartosc.is_finite() && c.wartosc >= 0.0 => c.wartosc,
+            _ => FALLBACK_CAPITAL_SEP_COEF,
+        }
+    })
+}
+
+/// Web `capitalMinSeparationProportional` (`clusters.ts:1530` @23dd158e9): `max(tabela, round(wsp x
+/// krotszy bok))`. REPIN-DELTA-4: NIE podpiete jeszcze do `compute_clusters` (patrz
+/// `REPIN-DELTA-4.md`, dlug CLUSTERS-SEP-POLAR) - stary `capital_min_separation_for_map` nie ma
+/// tej semantyki.
+pub fn capital_min_separation_proportional(rozmiar: MapSizeLabel, map_w: i64, map_h: i64) -> i64 {
+    let short = map_w.min(map_h);
+    let table = capital_min_separation(rozmiar);
+    let prop = js_round(map_gen_capital_sep_short_side_coef() * short as f64) as i64;
+    table.max(prop)
+}
+
+/// Web `CAPITAL_SEP_AREA_FACTOR` (`clusters.ts:1555`).
+const CAPITAL_SEP_AREA_FACTOR: f64 = 0.8;
+/// Web `CAPITAL_SEP_AREA_FACTOR_SMALL` (`clusters.ts:1556`).
+const CAPITAL_SEP_AREA_FACTOR_SMALL: f64 = 0.25;
+
+/// Web `capitalSepFeasibleCap` (`clusters.ts:1549`): `floor(sqrt(pole x wspolczynnik / n))`.
+fn capital_sep_feasible_cap(
+    map_w: i64,
+    map_h: i64,
+    civ_count: i64,
+    land_count: Option<i64>,
+) -> i64 {
+    let n = civ_count.max(1) as f64;
+    let factor = if map_w.min(map_h) < 80 {
+        CAPITAL_SEP_AREA_FACTOR_SMALL
+    } else {
+        CAPITAL_SEP_AREA_FACTOR
+    };
+    let area = match land_count {
+        Some(l) if l > 0 => l as f64,
+        _ => (map_w * map_h) as f64,
+    };
+    ((area * factor) / n).sqrt().floor() as i64
+}
+
+/// Web `capitalMinSeparationForMap(rozmiar, mapW, mapH, civCount?, landCount?)` (`clusters.ts:1569`
+/// @23dd158e9). `civ_count`/`land_count` `None` = `undefined`; `civ_count` `Some(0)` liczy sie jak brak
+/// (`!civCount`). Funkcja czysta (bez logowania).
+pub fn capital_min_separation_for_map_pin(
+    rozmiar: MapSizeLabel,
+    map_w: i64,
+    map_h: i64,
+    civ_count: Option<i64>,
+    land_count: Option<i64>,
+) -> i64 {
+    let short = map_w.min(map_h);
+    let table = capital_min_separation(rozmiar);
+    let prop = capital_min_separation_proportional(rozmiar, map_w, map_h);
+    let civ = civ_count.unwrap_or(0);
+    if short < 80 {
+        if civ < 2 {
+            return 0;
+        }
+        let cap = capital_sep_feasible_cap(map_w, map_h, civ, land_count);
+        let v = prop.min(cap);
+        return if v >= 4 { v } else { 0 };
+    }
+    if civ < 2 {
+        return prop;
+    }
+    let cap = capital_sep_feasible_cap(map_w, map_h, civ, land_count);
+    table.max(prop.min(cap))
 }
 
 /// Web `clusterBodySeparation` (`clusters.ts:1500`).

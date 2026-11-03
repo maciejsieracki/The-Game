@@ -194,8 +194,8 @@ function runTopUp(W, H, base, noise, target, minNb, maxRounds, landTerrain) {
 }
 const landT = () => pick([TB.Laka, TB.Rownina, TB.Wzgorza, TB.Pustynia]);
 for (const [W, H] of [[48, 32], [60, 40], [40, 40], [72, 44]]) {
-  for (const base of [0.15, 0.3, 0.45, 0.55]) {
-    for (const target of [0.3, 0.5, 0.6, 0.7, 0.8, 0.9, 0.1]) topup.push(runTopUp(W, H, base, 0.18, target, undefined, undefined, landT));
+  for (const base of [0.03, 0.15, 0.3, 0.45, 0.55, 0.7]) {
+    for (const target of [0.3, 0.5, 0.6, 0.7, 0.8, 0.9, 0.1, 0.12, 0.85]) topup.push(runTopUp(W, H, base, 0.18, target, undefined, undefined, landT));
   }
 }
 for (const [mn, mr] of [[2, 12], [4, 12], [3, 1], [3, 0], [1, 30]]) topup.push(runTopUp(48, 32, 0.4, 0.2, 0.65, mn, mr, () => TB.Laka));

@@ -1875,6 +1875,241 @@ pub fn rebalance_land_fraction_pangea(
     enforce_map_border_ocean(hexes, width, height, None);
 }
 
+/// Web `PANGEA_TOPUP_MARGIN_MIN_D` (gen-helpers.ts @23dd158e9 :3838): faza 3, najmniejsza odleglosc od krawedzi.
+const PANGEA_TOPUP_MARGIN_MIN_D: f64 = 4.0;
+/// Web `PANGEA_TOPUP_MARGIN_RING_CEIL` (:3839): sufit udzialu ladu w pierscieniu (faza 3).
+const PANGEA_TOPUP_MARGIN_RING_CEIL: f64 = 0.6;
+/// Web `PANGEA_TOPUP_DEFICIT_PHASE2_FRACTION` (:3842): faza 2 gdy brakuje > 1,5 pp heksow mapy.
+const PANGEA_TOPUP_DEFICIT_PHASE2_FRACTION: f64 = 0.015;
+/// Web `PANGEA_TOPUP_PHASE2_MAX_ROUNDS` (:3843).
+const PANGEA_TOPUP_PHASE2_MAX_ROUNDS: usize = 200;
+
+/// Web `topUpPangeaLandFraction(hexes, landScores, targetLandFraction, width, height, minLandNeighbors = 3,
+/// maxRounds = 12)` (gen-helpers.ts @23dd158e9 :3705-3837, R-WEB-PANGEA-LAND-FRACTION-Q1 + OTHER-Q1):
+/// dosyp ladu Pangei do celu (faza 1: >= 3 suchych sasiadow, faza 2: dylatacja >= 2 / >= 1 przy duzym
+/// niedoborze, faza 3: strefa brzegowa d >= 4 z sufitem pierscienia). Zwraca liczbe dodanych heksow.
+/// ZALOZENIE: wywolanie w `generateMap` (generator.ts :468) nie istnieje jeszcze w Rust (`generate.rs` to
+/// stub) - funkcja czysta, weryfikowana wektorami weba.
+pub fn top_up_pangea_land_fraction(
+    hexes: &mut HexRecord,
+    land_scores: &HashMap<String, f64>,
+    target_land_fraction: f64,
+    width: i64,
+    height: i64,
+    min_land_neighbors: usize,
+    max_rounds: usize,
+) -> usize {
+    let clamped = js_max(0.15, js_min(0.85, target_land_fraction));
+    let keys: Vec<String> = hexes.keys().cloned().collect();
+    let target_land = js_round(keys.len() as f64 * clamped) as i64;
+    let mut land = count_land_sea_hexes(hexes).land as i64;
+    if land >= target_land {
+        return 0;
+    }
+    let (wf, hf) = (width as f64, height as f64);
+    let buf = i64::from(latitudinal_ocean_buffer_rows(height as u32, false));
+    let score = |k: &str| land_scores.get(k).copied().unwrap_or(0.0);
+    // Kandydat wodny poza obramowaniem mapy, strefa brzegowa i buforem szerokosci, z >= `min_nb` suchych sasiadow.
+    let base_ok = |hexes: &HexRecord, k: &str, min_nb: usize, margin_check: bool| -> bool {
+        let Some(h) = hexes.get(k) else { return false };
+        if !is_water_terrain_local(h.terrain) {
+            return false;
+        }
+        let (q, r) = parse_hex_key(k);
+        if is_in_map_border(q, r, wf, hf, None) {
+            return false;
+        }
+        if margin_check && hex_border_distance(q, r, wf, hf) <= map_margin_land_zone_hexes() {
+            return false;
+        }
+        let ri = r as i64;
+        if ri < buf || ri >= height - buf {
+            return false;
+        }
+        count_land_neighbors(hexes, q as i64, r as i64) >= min_nb
+    };
+    let mut added = 0usize;
+    let mut round = 0usize;
+    while round < max_rounds && land < target_land {
+        let mut cands: Vec<String> = keys
+            .iter()
+            .filter(|k| base_ok(hexes, k, min_land_neighbors, true))
+            .cloned()
+            .collect();
+        if cands.is_empty() {
+            break;
+        }
+        js_array_sort_by(&mut cands, |a, b| {
+            let d = score(b) - score(a);
+            if d.abs() > 1e-9 {
+                d
+            } else {
+                f64::from(locale_compare(a, b))
+            }
+        });
+        for k in &cands {
+            if land >= target_land {
+                break;
+            }
+            if let Some(h) = hexes.get_mut(k) {
+                set_hex_to_laka(h);
+            }
+            land += 1;
+            added += 1;
+        }
+        round += 1;
+    }
+    // Faza 2 (OTHER-Q1): duzy niedobor -> dylatacja brzegu.
+    let deficit_threshold =
+        js_round(keys.len() as f64 * PANGEA_TOPUP_DEFICIT_PHASE2_FRACTION) as i64;
+    if target_land - land > deficit_threshold {
+        let mut round = 0usize;
+        while round < PANGEA_TOPUP_PHASE2_MAX_ROUNDS && land < target_land {
+            let mut cands: Vec<String> = Vec::new();
+            for min_nb in [2usize, 1] {
+                cands = keys
+                    .iter()
+                    .filter(|k| base_ok(hexes, k, min_nb, true))
+                    .cloned()
+                    .collect();
+                if !cands.is_empty() {
+                    break;
+                }
+            }
+            if cands.is_empty() {
+                break;
+            }
+            let cd: HashMap<String, f64> = cands
+                .iter()
+                .map(|k| {
+                    let (q, r) = parse_hex_key(k);
+                    (k.clone(), map_center_distance_norm(q, r, wf, hf))
+                })
+                .collect();
+            js_array_sort_by(&mut cands, |a, b| {
+                let d = score(b) - score(a);
+                if d.abs() > 1e-9 {
+                    return d;
+                }
+                let dc = cd[a] - cd[b];
+                if dc.abs() > 1e-9 {
+                    dc
+                } else {
+                    f64::from(locale_compare(a, b))
+                }
+            });
+            for k in &cands {
+                if land >= target_land {
+                    break;
+                }
+                if let Some(h) = hexes.get_mut(k) {
+                    set_hex_to_laka(h);
+                }
+                land += 1;
+                added += 1;
+            }
+            round += 1;
+        }
+        // Faza 3 (Maly 70%): dilacja do strefy brzegowej z sufitem udzialu ladu w pierscieniu.
+        if land < target_land {
+            let mut ring_total: HashMap<i64, f64> = HashMap::new();
+            let mut ring_land: HashMap<i64, f64> = HashMap::new();
+            for k in &keys {
+                let (q, r) = parse_hex_key(k);
+                let d = hex_border_distance(q, r, wf, hf) as i64;
+                *ring_total.entry(d).or_insert(0.0) += 1.0;
+                if hexes
+                    .get(k)
+                    .is_some_and(|h| !is_water_terrain_local(h.terrain))
+                {
+                    *ring_land.entry(d).or_insert(0.0) += 1.0;
+                }
+            }
+            let ceil_hit = |rl: &HashMap<i64, f64>, rt: &HashMap<i64, f64>, d: i64| {
+                rl.get(&d).copied().unwrap_or(0.0)
+                    >= rt.get(&d).copied().unwrap_or(0.0) * PANGEA_TOPUP_MARGIN_RING_CEIL
+            };
+            let mut round = 0usize;
+            while round < PANGEA_TOPUP_PHASE2_MAX_ROUNDS && land < target_land {
+                let mut cands: Vec<String> = Vec::new();
+                let mut cd: HashMap<String, f64> = HashMap::new();
+                let mut d_of: HashMap<String, i64> = HashMap::new();
+                for k in &keys {
+                    let Some(h) = hexes.get(k) else { continue };
+                    if !is_water_terrain_local(h.terrain) {
+                        continue;
+                    }
+                    let (q, r) = parse_hex_key(k);
+                    let d = hex_border_distance(q, r, wf, hf);
+                    if d < PANGEA_TOPUP_MARGIN_MIN_D || d > map_margin_land_zone_hexes() {
+                        continue;
+                    }
+                    let ri = r as i64;
+                    if ri < buf || ri >= height - buf {
+                        continue;
+                    }
+                    if ceil_hit(&ring_land, &ring_total, d as i64) {
+                        continue;
+                    }
+                    if count_land_neighbors(hexes, q as i64, r as i64) < 2 {
+                        continue;
+                    }
+                    cands.push(k.clone());
+                    cd.insert(k.clone(), map_center_distance_norm(q, r, wf, hf));
+                    d_of.insert(k.clone(), d as i64);
+                }
+                if cands.is_empty() {
+                    break;
+                }
+                js_array_sort_by(&mut cands, |a, b| {
+                    let dc = cd[a] - cd[b];
+                    if dc.abs() > 1e-9 {
+                        dc
+                    } else {
+                        f64::from(locale_compare(a, b))
+                    }
+                });
+                for k in &cands {
+                    if land >= target_land {
+                        break;
+                    }
+                    let d = d_of[k];
+                    if ceil_hit(&ring_land, &ring_total, d) {
+                        continue;
+                    }
+                    if let Some(h) = hexes.get_mut(k) {
+                        set_hex_to_laka(h);
+                    }
+                    *ring_land.entry(d).or_insert(0.0) += 1.0;
+                    land += 1;
+                    added += 1;
+                }
+                round += 1;
+            }
+        }
+    }
+    added
+}
+
+/// `topUpPangeaLandFraction` z domyslnymi `minLandNeighbors = 3`, `maxRounds = 12`.
+pub fn top_up_pangea_land_fraction_default(
+    hexes: &mut HexRecord,
+    land_scores: &HashMap<String, f64>,
+    target_land_fraction: f64,
+    width: i64,
+    height: i64,
+) -> usize {
+    top_up_pangea_land_fraction(
+        hexes,
+        land_scores,
+        target_land_fraction,
+        width,
+        height,
+        3,
+        12,
+    )
+}
+
 /// Web `rebalanceLandSeaRatio(hexes, width, height, targetLandFraction)` (gen-helpers.ts :3791, export).
 /// Zwraca liczbe zmian (`adjusted`). Warstwy: maxLayers = ceil(sqrt(w*h)).
 pub fn rebalance_land_sea_ratio(

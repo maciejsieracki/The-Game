@@ -353,6 +353,15 @@ pub struct Generator {
     pub default_width: i64,
     pub default_height: i64,
     pub rozmiar_dims: RozmiarDims,
+    /// REPIN-DELTA-4 (pin 23dd158e9, R-WEB-CAPITAL-SPACING-FIX-Q1): wspolczynnik x krotszy bok mapy.
+    pub capital_sep_short_side_coef: Option<CapitalSepCoef>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct CapitalSepCoef {
+    pub wartosc: f64,
+    pub opis: String,
 }
 
 /// Wymiary [szerokosc, wysokosc] per rozmiar mapy.

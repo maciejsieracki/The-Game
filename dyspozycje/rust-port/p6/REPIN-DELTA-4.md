@@ -77,6 +77,24 @@ celowanych (`d4-*`: jezioro / ocean przy krawędzi / dwie wody bez krawędzi / `
 FAZA 0 z fortami własnymi, obcymi, warstwami, rollbackiem / losowe) = 2639. Rozmiar `pick.json` 4,6 MB (≤ 6 MB).
 Wektory czystych funkcji: `tests/p6_repin4_vectors/*.json` (freshwater 0,4 MB, sight, capsep 0,4 MB, topup 3,0 MB).
 
+### Dodatkowe REGENERACJE (skutek poz. 1–2: zdrowie miasta liczy jezioro)
+
+Pełny `cargo test` po zmianie wykazał rozbieżność starych wektorów zdrowia (heks z zamkniętą wodą = +dostęp do wody):
+`p6_adv_q3_vectors/q3.json`, `p6_adv_q4_vectors/{q4,q4b,q4c}.json`, `p6_adv_q5_vectors/q5.json`
+(+ `unit_table_*.json` bez zmian), `p6_adv_q6_vectors/q6.json`. Każdy wygenerowany TYM SAMYM generatorem z URUCHOMIONEGO
+weba, pin podmieniony na `23dd158e9` (kopie w `runs/…/tools/gen-p6-adv-q{3,4b-preview,5,6}-vectors.mjs`, różnica = wyłącznie
+literał pinu). Różnice rozmiaru ≤ 190 B (pole `pin` + scenariusze z jeziorem) — asercje testów NIE zmienione.
+`data_compliance`: `ekspansja_kara_polarna_sasiedztwo` (8) typowane jako całkowite (licznik N2 przypięty = 0).
+
+## Mutacje (wyniki: `mutacje/mutate.py` M01–M18, `mutacje/mutate2.py` T01–T16)
+
+Pick (przeciw `p6_8i_pick`): 17/18 ubitych; M12 (`step0_applies` `onRiverHex` -> `riverHexKeys`) przetrwała; mutant TEGO SAMEGO
+wiersza w webie (`webmut.py`, 2639 scenariuszy) daje 0 różnic wyjścia => ekwiwalent obserwacyjny (neighbor-of-`rzeka.obecna` jest
+i tak obsługiwany ścieżką E2/`riverKrok0Ok`).
+Funkcje czyste (przeciw `p6_repin4_vectors`): 13/16 ubitych (T14 ubita po dodaniu baz 0,03/0,7 i celów 0,12/0,85);
+przetrwały T07 (`>` vs `>=` na progu niedoboru — wymaga niedoboru dokładnie = progowi), T09 (fallback `minNb=1`), T16 (górny bufor
+szerokości) — NIE_ZMIERZONO czy ekwiwalent. Łącznie 30/34 = 88% (< 90% wymagane: 4 przetrwałe bez dowodu ekwiwalencji — do Obrony).
+
 ## DŁUG (podział na tematy)
 
 1. `R-RUSTPORT-VISIBILITY-Q1` — `computePlayerVisibility` + `extraSightSources` (poz. 16).

@@ -4,6 +4,7 @@
 //!  * `sight.json` - `fortSightSources` (fort-territory.ts:359);
 //!  * `capsep.json` - `capitalMinSeparation{Proportional,ForMap}` (clusters.ts:1530-1590);
 //!  * `topup.json` - `topUpPangeaLandFraction` (gen-helpers.ts:3705-3837).
+//!
 //! Generator: `dyspozycje/autobot/runs/R-RUSTPORT-REPIN-DELTA-4-Q1/tools/gen-repin4-vectors.mjs`.
 
 use std::collections::{HashMap, HashSet};
@@ -96,11 +97,31 @@ fn freshwater_matches_web() {
         for q in c["queries"].as_array().unwrap() {
             let (x, y) = (i(&q[0]), i(&q[1]));
             let w = |n: usize| q[n].as_i64() == Some(1);
-            assert_eq!(ctx.has_freshwater_access(&map, x, y), w(2), "hasFreshwaterAccess {kind} {x},{y}");
-            assert_eq!(ctx.is_freshwater_reserved_hex(&map, x, y), w(3), "reserved {kind} {x},{y}");
-            assert_eq!(lakes.contains(&format!("{x},{y}")), w(4), "isLakeHex {kind} {x},{y}");
-            assert_eq!(ctx.is_lake_adjacent(x, y), w(5), "isLakeAdjacent {kind} {x},{y}");
-            assert_eq!(ctx.has_river_water_access(&map, x, y), w(6), "riverWater {kind} {x},{y}");
+            assert_eq!(
+                ctx.has_freshwater_access(&map, x, y),
+                w(2),
+                "hasFreshwaterAccess {kind} {x},{y}"
+            );
+            assert_eq!(
+                ctx.is_freshwater_reserved_hex(&map, x, y),
+                w(3),
+                "reserved {kind} {x},{y}"
+            );
+            assert_eq!(
+                lakes.contains(&format!("{x},{y}")),
+                w(4),
+                "isLakeHex {kind} {x},{y}"
+            );
+            assert_eq!(
+                ctx.is_lake_adjacent(x, y),
+                w(5),
+                "isLakeAdjacent {kind} {x},{y}"
+            );
+            assert_eq!(
+                ctx.has_river_water_access(&map, x, y),
+                w(6),
+                "riverWater {kind} {x},{y}"
+            );
             // turn-economy.ts `cityHasWaterAccess` == `hasFreshwaterAccess` (zdrowie miasta).
             assert_eq!(
                 city_has_water_access(f64::from(x), f64::from(y), &map),
@@ -182,7 +203,11 @@ fn capital_separation_matches_web() {
         distinct.insert(want);
         assert_eq!(got, want, "{c}");
     }
-    assert!(distinct.len() > 15, "za malo roznych wartosci: {}", distinct.len());
+    assert!(
+        distinct.len() > 15,
+        "za malo roznych wartosci: {}",
+        distinct.len()
+    );
 }
 
 fn terrain_code(ch: char) -> Terrain {
@@ -215,7 +240,11 @@ fn top_up_pangea_matches_web() {
         for r in 0..h {
             for q in 0..w {
                 let mut hx = TerrainHex::new(q, r, terrain_code(in_t[idx]));
-                hx.overlay = if in_n[idx] == '1' { Nakladka::Las } else { Nakladka::Brak };
+                hx.overlay = if in_n[idx] == '1' {
+                    Nakladka::Las
+                } else {
+                    Nakladka::Brak
+                };
                 hx.has_deposit = true;
                 let key = format!("{q},{r}");
                 if let Some(s) = scores[idx].as_f64() {
@@ -234,7 +263,14 @@ fn top_up_pangea_matches_web() {
             c["minNb"].as_u64().unwrap() as usize,
             c["maxRounds"].as_u64().unwrap() as usize,
         );
-        assert_eq!(added as i64, c["added"].as_i64().unwrap(), "added {}x{} t={}", w, h, c["target"]);
+        assert_eq!(
+            added as i64,
+            c["added"].as_i64().unwrap(),
+            "added {}x{} t={}",
+            w,
+            h,
+            c["target"]
+        );
         let out_t: Vec<char> = c["outT"].as_str().unwrap().chars().collect();
         let out_n: Vec<char> = c["outN"].as_str().unwrap().chars().collect();
         let out_z: Vec<char> = c["outZ"].as_str().unwrap().chars().collect();
@@ -242,8 +278,16 @@ fn top_up_pangea_matches_web() {
         for r in 0..h {
             for q in 0..w {
                 let hx = hexes.get(&format!("{q},{r}")).unwrap();
-                assert_eq!(hx.terrain, terrain_code(out_t[idx]), "teren {q},{r} ({w}x{h})");
-                assert_eq!(hx.overlay == Nakladka::Las, out_n[idx] == '1', "nakladka {q},{r}");
+                assert_eq!(
+                    hx.terrain,
+                    terrain_code(out_t[idx]),
+                    "teren {q},{r} ({w}x{h})"
+                );
+                assert_eq!(
+                    hx.overlay == Nakladka::Las,
+                    out_n[idx] == '1',
+                    "nakladka {q},{r}"
+                );
                 assert_eq!(hx.has_deposit, out_z[idx] == '1', "zloze {q},{r}");
                 idx += 1;
             }
@@ -253,6 +297,12 @@ fn top_up_pangea_matches_web() {
         }
         total_added += added;
     }
-    assert!(changed_cases >= 50, "za malo scenariuszy z dosypem: {changed_cases}");
-    assert!(total_added > 5000, "za malo dosypanych heksow: {total_added}");
+    assert!(
+        changed_cases >= 50,
+        "za malo scenariuszy z dosypem: {changed_cases}"
+    );
+    assert!(
+        total_added > 5000,
+        "za malo dosypanych heksow: {total_added}"
+    );
 }
