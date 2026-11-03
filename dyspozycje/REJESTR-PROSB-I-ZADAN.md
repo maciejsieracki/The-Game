@@ -8448,3 +8448,7 @@ Port Rust ma odtwarzać weba (pin `4bbef081d` i kolejne) 1:1 — zachowanie, kol
 ## 2026-11-02 — R-WEB-FORT-VISION-FOG-Q1: ZROBIONE, ROBOCZA `4049e780` (main `23dd158e9`)
 
 Strażnica/posterunek (r=3) i fort (r=5) odsłaniają mgłę wojny jak miasto — całe koło terytorium odkryte i widoczne (żywy pomiar: 91/91 nieodkrytych PRZED → 0/91 PO). Raz odkryte zostaje odkryte po utracie fortu; fort wroga nie odsłania. Uwaga: AI z fortem widzi jego koło (91 → 182 pola) — wpływ na grę AI NIE_ZMIERZONO. NIE_ZMIERZONO: budowa/cofnięcie fortu przez panel gracza (do sprawdzenia przez właściciela w grze). Rust: REPIN widoczności fortów (zasada 1:1) przy portowaniu mgły/UI.
+
+## 2026-11-03 — ZNALEZISKO przy porcie Rust (STATE-SOURCES): natywny dostęp do ŻELAZA w webie jest zawsze `false` — PYTANIE DO WŁAŚCICIELA
+
+Port `ownerHasNativeResourceAccess` (`gra/src/main.ts:5088-5121`, pin `4bbef081d`) wykazał: dla klucza `zelazo` wywołanie `hasZelazoAccess` dostaje `boolean` w miejscu `empireStock` (`main.ts:5101`; identyczna sklejka `main.ts:3275`, komentarz w webie przy `:3280` już opisuje to zjawisko) i `zelazo-access.ts:79-89` traktuje to jak brak zapasu → natywny dostęp do żelaza jest ZAWSZE fałszywy. Skutek w grze: dostęp do żelaza (np. grant z trasy handlowej / bramki budynków na żelazie) może nie działać tak, jak zamierzono. Rust odtwarza to literalnie (zasada 1:1). Decyzja produktowa: **czy poprawić web** (to zmieni balans: żelazo stanie się dostępne natywnie)? Zgłoszone właścicielowi; do czasu odpowiedzi bez zmian w webie.
