@@ -1,0 +1,12 @@
+STATUS: PASS-WITH-NOTES
+DOMAIN: GAME
+TEMAT: R-RUSTPORT-REPIN-DELTA-4-Q1
+GOAL: Repin pinu weba 4bbef081d -> 23dd158e9; tabela delty 100%, port hunkow z modulem Rust, wektory z weba.
+ZMIANY/COMMIT: SHA do integracji 65413034a (origin/rust-port-wip/D4-ob), baza 94139bc0c. Po 86cd0a034 (ostatni kod) w 65413034a zero zmian w rust-port (tylko docs+logi). Zero zmian w gra/**, turn_economy_{wire,tick,loop,empirefood,attrition,order*}.rs, Cargo.toml, renderer, src-tauri. Poza allowlista: Z1 (data/terrain_map.rs, economy_society_part2.rs), Z5 (domain/state.rs), Z6, Z7 (p6_m12_tables.rs, p6_1c_llama_seed.rs) - do akceptacji wlasciciela.
+WERDYKT ZARZUTOW: 1 mutacje 88% -> ODDAL (53/55 = 96%; topup_bound.json 99 wektorow; M12 ekwiwalent webmut; P15 przezyl = jawna luka pokrycia, nie blokuje). 2 poz. 23-25 -> ODDAL (zaportowane, compute_clusters woła capital_min_separation_for_map_pin; testy m10/m11/m12 zmienione tylko o dopisane argumenty/Z7, assert_eq 912->960 wynika z regeneracji map, bez oslabienia). 3 weryfikator Python -> ODDAL (tools/verify_repin4.py, zakres czesciowy, zadeklarowany). 4 hashe map -> OTWARTE jako dlug (generate.rs stub), zgodne z dispatchem. 5 poz. 16 -> ODDAL (compute_player_visibility_with_extra, visibility.json 160 przyp.). 6 liczby -> ODDAL (REPIN-DELTA-4.md: topup 221/143, 5 637 451 B; zgodne z ls).
+TESTY (samodzielnie): logi gate-*.txt: kazdy 1 linia EXIT=0; shardy 402+344+324+347+361+309 = 2087 passed / 0 failed (baza 2082 + 5); fmt EXIT=0, clippy -D warnings EXIT=0; git diff --check 94139bc0c..65413034a czyste. Ponowione: cargo test -j 2 --test p6_repin4_vectors (5/5), p6_8i_pick (12/12 lacznie z drugim plikiem), p6_m12_compute (5/5) - OK. Rozmiary fixture <= 6 MB (max 5 637 451 B). NIE_ZMIERZONO przeze mnie: pelne 6 shardow od nowa, regeneracja M09-M12/P6.1C/pick/q3-q6 z weba (opis commitu 08ba9f38d).
+KOLEJNOSC: origin/rust-port/parity-v2 = c0e8ee7d5 (ECON-TICK-EMPIREFOOD i ECON-TICK-POST wczesniej zintegrowane). git merge-tree 65413034a z c0e8ee7d5: czysty merge bez konfliktow (w tym domain/mod.rs). Zalecenie: integrowac PO c0e8ee7d5, potem powtorzyc fmt/clippy/pelny cargo test w shardach na wyniku merge (baza ~2091 + 5 nowych).
+BLOKADY: dlug poza tematem: hashe map/generateMap, ai.ts i pickBonusCityHex, domyslny udzial ladu (playable.rs), P15 (wektor archipelagu z polarnymi).
+RUNDY: 2/5
+NASTEPNY KROK: integracja orkiestratora (merge na parity-v2, bramki na merge), akceptacja zalozen Z1/Z5/Z6/Z7, potem READY_FOR_DEPLOY.
+DEPLOY/PUSH: NIE WYKONANO
