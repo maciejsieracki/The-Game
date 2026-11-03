@@ -27,10 +27,11 @@ M = {
  'T13': (TH, "    is_lake_adjacent_cached(map, cq, cr)\n}", "    false\n}"),
  'T14': (LS, "    let clamped = js_max(0.15, js_min(0.85, target_land_fraction));", "    let clamped = js_max(0.10, js_min(0.85, target_land_fraction));"),
  'T15': (LS, "                if ceil_hit(&ring_land, &ring_total, d) {\n                        continue;\n                    }\n                    if let Some(h) = hexes.get_mut(k) {", "                if false {\n                        continue;\n                    }\n                    if let Some(h) = hexes.get_mut(k) {"),
+ 'T17': (LS, "                    if ri < buf || ri >= height - buf {\n                        continue;\n                    }\n                    if ceil_hit", "                    if ri < buf {\n                        continue;\n                    }\n                    if ceil_hit"),
  'T16': (LS, "        if ri < buf || ri >= height - buf {\n            return false;\n        }\n        count_land_neighbors", "        if ri < buf {\n            return false;\n        }\n        count_land_neighbors"),
 }
 ids = list(M) if sel == 'all' else sel.split(',')
-env = dict(os.environ, CARGO_TARGET_DIR='/dev/shm/repin4_target', CARGO_INCREMENTAL='0', CARGO_PROFILE_DEV_DEBUG='0', CARGO_PROFILE_TEST_DEBUG='0')
+env = dict(os.environ, CARGO_TARGET_DIR='/dev/shm/repin4_r2', CARGO_INCREMENTAL='0', CARGO_PROFILE_DEV_DEBUG='0', CARGO_PROFILE_TEST_DEBUG='0')
 for i in ids:
     path, old, new = M[i]
     src = open(path).read()

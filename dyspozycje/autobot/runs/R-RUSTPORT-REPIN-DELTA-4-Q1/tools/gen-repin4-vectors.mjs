@@ -200,6 +200,82 @@ for (const [W, H] of [[48, 32], [60, 40], [40, 40], [72, 44]]) {
 }
 for (const [mn, mr] of [[2, 12], [4, 12], [3, 1], [3, 0], [1, 30]]) topup.push(runTopUp(48, 32, 0.4, 0.2, 0.65, mn, mr, () => TB.Laka));
 
+
+// ---------------------------------------------------------------- topUp: wektory GRANICZNE (runda 2: T07, T09, T16)
+// Osobny plik `topup_bound.json` (ten sam schemat co topup.json). Generowany PO glownym zestawie, wiec nie przesuwa
+// strumienia rnd i `freshwater/sight/capsep/topup.json` pozostaja bajt-w-bajt takie same jak w rundzie 1.
+function runTopUpFrom(W, H, landSet, target, minNb, maxRounds, tag) {
+  const hexes = {};
+  const scoreMap = new Map();
+  const order = [];
+  const cx = (W - 1) / 2, cy = (H - 1) / 2;
+  for (let r = 0; r < H; r++) for (let q = 0; q < W; q++) {
+    const k = `${q},${r}`;
+    order.push(k);
+    const dx = (q - cx) / (cx + 0.5), dy = (r - cy) / (cy + 0.5);
+    const d = Math.sqrt(dx * dx + dy * dy);
+    hexes[k] = { coords: { q, r }, terenBazowy: landSet.has(k) ? pick([TB.Laka, TB.Rownina, TB.Wzgorza, TB.Pustynia]) : (chance(0.15) ? TB.PlytkieMorze : TB.Morze), nakladka: chance(0.5) ? NK.Las : NK.Brak, zloze: 'zelazo' };
+    if (!chance(0.05)) scoreMap.set(k, chance(0.5) ? Math.round((1 - d) * 20) / 20 : q6(1 - d));
+  }
+  const inT = order.map(k => CODE[hexes[k].terenBazowy]).join('');
+  const inN = order.map(k => (hexes[k].nakladka === NK.Las ? '1' : '0')).join('');
+  const scores = order.map(k => (scoreMap.has(k) ? scoreMap.get(k) : null));
+  const added = GH.topUpPangeaLandFraction(hexes, scoreMap, target, W, H, minNb, maxRounds);
+  return {
+    tag, W, H, target, minNb, maxRounds, added, inT, inN, scores,
+    outT: order.map(k => CODE[hexes[k].terenBazowy]).join(''),
+    outN: order.map(k => (hexes[k].nakladka === NK.Las ? '1' : '0')).join(''),
+    outZ: order.map(k => (hexes[k].zloze === undefined ? '0' : '1')).join(''),
+  };
+}
+const topupBound = [];
+// (T07) prog niedoboru fazy 2: niedobor == prog-1 / prog / prog+1 (maxRounds=0 => faza 1 nic nie dosypuje, niedobor = target-land).
+for (const [W, H] of [[48, 32], [60, 40], [40, 40], [72, 44], [50, 50]]) {
+  for (const base of [0.12, 0.3, 0.45]) {
+    const { landSet } = mkPangeaMap(W, H, base, 0.18);
+    const n = W * H, thr = Math.round(n * 0.015), land0 = landSet.size;
+    for (const delta of [thr - 1, thr, thr + 1]) {
+      const t = (land0 + delta) / n;
+      if (t < 0.15 || t > 0.85) continue;
+      topupBound.push(runTopUpFrom(W, H, landSet, t, 3, 0, `T07 prog thr=${thr} delta=${delta}`));
+    }
+  }
+}
+// (T09) fallback minNb 2 -> 1: pojedyncze, rozlaczne heksy ladu (zaden wodny sasiad nie ma >= 2 suchych sasiadow).
+for (const [W, H] of [[48, 32], [60, 40], [40, 40], [72, 44]]) {
+  for (const nSeeds of [1, 2, 3]) {
+    const landSet = new Set();
+    for (let s = 0; s < nSeeds; s++) {
+      const q = Math.floor(W * (s + 1) / (nSeeds + 1)) + (s % 2), r = Math.floor(H / 2) + (s === 1 ? 3 : 0);
+      landSet.add(`${q},${r}`);
+    }
+    for (const target of [0.2, 0.35, 0.5]) topupBound.push(runTopUpFrom(W, H, landSet, target, 3, 12, `T09 ziarna=${nSeeds}`));
+  }
+}
+// (T09b) ziarno + faza 2 wyczerpana na >=2 (tylko pojedyncze kontakty) przy minNb=4 w fazie 1.
+topupBound.push(runTopUpFrom(48, 32, new Set(['24,16', '10,10']), 0.3, 4, 12, 'T09 minNb=4'));
+// (T16) gorny bufor szerokosci (r >= height - buf), istotny gdy buf > 4 (H >= 90) w fazie 3 (strefa brzegowa d 4..10).
+for (const [W, H] of [[24, 92], [30, 100], [26, 120], [24, 140]]) {
+  for (const base of [0.6, 0.75, 0.9]) {
+    for (const target of [0.8, 0.85]) {
+      const { landSet } = mkPangeaMap(W, H, base, 0.12);
+      topupBound.push(runTopUpFrom(W, H, landSet, target, 3, 12, `T16 bufor ${W}x${H} base=${base}`));
+    }
+  }
+}
+// (T16 fazy 1-2) buf = round(0.05*H) > 10 dopiero od H = 230 (buf 12): wtedy r >= H-buf wycina wiersze o d = 11 (poza strefa brzegowa d <= 10),
+// ktore sama strefa brzegowa NIE odrzuca. Dwa pasy ladu rozdzielone wierszem wody r = H-buf (4 suche sasiady) + dysk w srodku.
+for (const [W, H] of [[30, 230], [26, 240]]) {
+  const buf = Math.max(2, Math.round(H * 0.05));
+  for (const nb of [2, 3]) for (const target of [0.3, 0.4]) {
+    const { landSet } = mkPangeaMap(W, H, 0.1, 0.1);
+    for (const r of [H - buf - 2, H - buf - 1, H - buf + 1, H - buf + 2]) for (let q = 4; q < W - 4; q++) landSet.add(`${q},${r}`);
+    topupBound.push(runTopUpFrom(W, H, landSet, target, nb, 12, `T16 pas ${W}x${H} buf=${buf} minNb=${nb}`));
+  }
+}
+writeFileSync(join(outDir, 'topup_bound.json'), JSON.stringify({ pin: PIN, cases: topupBound }) + '\n');
+console.log(`topup_bound=${topupBound.length} (added>0: ${topupBound.filter(t => t.added > 0).length})`);
+
 writeFileSync(join(outDir, 'freshwater.json'), JSON.stringify({ pin: PIN, cases: fw }) + '\n');
 writeFileSync(join(outDir, 'sight.json'), JSON.stringify({ pin: PIN, cases: sight }) + '\n');
 writeFileSync(join(outDir, 'capsep.json'), JSON.stringify({ pin: PIN, cases: capsep }) + '\n');

@@ -3,7 +3,7 @@
 //!  * `freshwater.json` - `map/freshwater.ts` (rzeka/jezioro) + `cityHasWaterAccess` (turn-economy.ts:417);
 //!  * `sight.json` - `fortSightSources` (fort-territory.ts:359);
 //!  * `capsep.json` - `capitalMinSeparation{Proportional,ForMap}` (clusters.ts:1530-1590);
-//!  * `topup.json` - `topUpPangeaLandFraction` (gen-helpers.ts:3705-3837).
+//!  * `topup.json` + `topup_bound.json` - `topUpPangeaLandFraction` (gen-helpers.ts:3705-3837; `_bound` = wektory graniczne).
 //!
 //! Generator: `dyspozycje/autobot/runs/R-RUSTPORT-REPIN-DELTA-4-Q1/tools/gen-repin4-vectors.mjs`.
 
@@ -28,6 +28,7 @@ const FRESHWATER: &str = include_str!("p6_repin4_vectors/freshwater.json");
 const SIGHT: &str = include_str!("p6_repin4_vectors/sight.json");
 const CAPSEP: &str = include_str!("p6_repin4_vectors/capsep.json");
 const TOPUP: &str = include_str!("p6_repin4_vectors/topup.json");
+const TOPUP_BOUND: &str = include_str!("p6_repin4_vectors/topup_bound.json");
 
 fn cases(src: &str) -> Vec<Value> {
     let v: Value = serde_json::from_str(src).expect("json");
@@ -226,7 +227,9 @@ fn terrain_code(ch: char) -> Terrain {
 
 #[test]
 fn top_up_pangea_matches_web() {
-    let all = cases(TOPUP);
+    // `topup_bound.json` (runda 2): wektory graniczne progu niedoboru, fallbacku sasiada i bufora szerokosci.
+    let mut all = cases(TOPUP);
+    all.extend(cases(TOPUP_BOUND));
     let mut changed_cases = 0;
     let mut total_added = 0usize;
     for c in &all {
