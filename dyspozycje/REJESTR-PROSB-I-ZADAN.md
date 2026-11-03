@@ -8620,3 +8620,5 @@ Właściciel: przewijanie w panelu łączenia armii działa, ale nie da się spr
 
 - 2026-11-03 — DECYZJA WŁAŚCICIELA (twarda zasada): „Tylko pola z obywatelami” dla ulepszeń żywności obowiązuje bez wyjątków, gracz i AI jednakowo (też ścieżki rzeka/wyrąb). Zapisane w dispatchu R-WEB-AI-FOOD-ONLY-WORKED-HEXES-Q1 (zakres rozszerzony na automat gracza). Zrzut: farmy bez obywateli w automacie gracza — ten sam temat.
 - 2026-11-03 — R-WEB-ARMY-MERGE-PANEL-LIST-VISIBILITY-Q1 zdeployowane (ROBOCZA f937a3f9). R-WEB-CITY-MILITIA-REGEN-COOLDOWN-Q1: FC PASS-WITH-NOTES (`97e5e9108`), w trakcie deployu.
+
+- 2026-11-03 — ZGŁOSZENIE (zrzut Armia (112,101)): jednostka „zamiera” ufortyfikowana, nieklikalna, po połączeniu zaraża armię (nie da się wybrać/ruszyć/odfortyfikować) → temat R-WEB-UNIT-FROZEN-FORTIFIED-UNSELECTABLE-Q1 (dispatch zapisany; wysoki priorytet — start przy pierwszym wolnym slocie/dysku).
