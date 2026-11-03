@@ -8461,3 +8461,6 @@ Właściciel: sprawdzić, czy nie ma ogranicznika liczby ulepszeń na miasto lub
 
 ## 2026-11-03 — DECYZJA WŁAŚCICIELA: zlikwidować limit liczby ulepszeń na miasto (gracz, państwa-miasta, AI)
 Właściciel: „Ten limit ulepszeń na miasto zlikwiduj zarówno dla gracza, jak i dla państw-miast, jak i dla cywilizacji AI. To miało być już wcześniej zlikwidowane.” Stan zastany: `ai.ts:2633` `maxItemsPerCity: 1` (AI). Temat: `R-WEB-AUTO-IMPROVE-REMOVE-ITEM-CAP-Q1` (stała zgoda; niezależnie od trwającej diagnozy `R-WEB-AUTO-IMPROVE-BUDGET-UNSPENT-DIAG-Q1`). Status: DISPATCH → Workflow.
+
+## 2026-11-03 — DECYZJA WŁAŚCICIELA + zgłoszenie: reguły stawiania fortów i posterunków
+Zgłoszenie: inne cywilizacje budują forty poza terenem swojej cywilizacji, nie przylegające do niej — błąd. Reguła (właściciel): **posterunek** musi być budowany w terenie obecnej cywilizacji i zawsze przylegać do jej granicy (rozszerza teren, nie może być „byle gdzie”); **fort** może być postawiony w dowolnym miejscu (potrzebny do zakładania miast na innych kontynentach i wyspach). Dotyczy gracza i AI. Temat `R-WEB-FORT-OUTPOST-PLACEMENT-RULES-Q1`. Niejednoznaczność (zgłoszony „błąd” fortów poza terenem vs reguła „fort gdziekolwiek”) przyjęta jako ZAŁOŻENIE: wiążąca jest reguła końcowa; Operator ma zmierzyć, co faktycznie buduje AI poza granicą (fort czy posterunek).
