@@ -154,12 +154,16 @@ fn min_cluster_distance_fallback_uses_short_side_divisor_from_table() {
             w.min(h)
                 .div_euclid(t.dystans_klastrow.dzielnik_krotszego_boku.wartosc),
         );
+        // REPIN-DELTA-4: od pinu 23dd158e9 `computeClusters` przekazuje `civCount`; przy >= 2 civ mala mapa dostaje
+        // sep > 0 (sufit wykonalnosci), wiec galaz tabeli (sep = 0) wymaga `aktywneTypy = 1` (`!civCount || civCount < 2`).
         let base = ComputeClustersOpts {
             seed: Some(3),
             rywale_na_klaster: Some(2),
+            aktywne_typy: Some(1),
             ..ComputeClustersOpts::default()
         };
         let implicit = compute_clusters(map, &base).expect("implicit");
+        assert_eq!(implicit.capital_min_sep, Some(0), "{id}: sep = 0");
         let explicit = compute_clusters(
             map,
             &ComputeClustersOpts {

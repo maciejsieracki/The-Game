@@ -71,7 +71,12 @@ fn assert_shape_invariants(
     let placed = got.klastry.iter().filter(|k| !k.miasta.is_empty()).count() as i64;
     assert_eq!(got.aktywne_typy, placed, "{id}");
     let (w, h) = (i64::from(map.width), i64::from(map.height));
-    let min_sep = capital_min_separation_for_map(got.rozmiar_mapy, w, h) as f64;
+    // REPIN-DELTA-4: efektywny sep stolic = `placement.capitalMinSep` (sep zalezy od liczby civ i ladu), a nie
+    // 3-argumentowy `capitalMinSeparationForMap`; invariant ten sam (stolice >= sep), tylko z poprawna wartoscia.
+    let min_sep = got
+        .capital_min_sep
+        .unwrap_or_else(|| capital_min_separation_for_map(got.rozmiar_mapy, w, h))
+        as f64;
     if min_sep > 0.0 && got.klastry.len() > 1 && spec.min_dyst_kl.is_none() {
         let caps: Vec<HexCoord> = got
             .klastry

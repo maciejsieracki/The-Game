@@ -600,6 +600,8 @@ fn place_cluster_centers_across_landmasses_matches_web() {
                 bounds,
                 sea.as_ref(),
                 i(&c["minSea"]) as f64,
+                // REPIN-DELTA-4: web `ladowePlayer = ladowe` (domyslnie).
+                &lad,
                 &h,
             )
         };

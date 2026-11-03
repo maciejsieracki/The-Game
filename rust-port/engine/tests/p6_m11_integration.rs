@@ -203,6 +203,8 @@ fn m11_hooks_reproduce_m10_center_placement() {
                 bounds,
                 sea.as_ref(),
                 i(&c["minSea"]) as f64,
+                // REPIN-DELTA-4: web `ladowePlayer = ladowe` (domyslnie).
+                &lad,
                 &HOOKS,
             )
         };

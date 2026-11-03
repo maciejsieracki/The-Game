@@ -4,9 +4,65 @@
 use super::city_phases::{count_forest, hex_dist, pop_or_zero, Acc, CityEnv};
 use super::opts::{AutoImprovementCity, AutoImprovementPick, PickAutoImprovementsOpts};
 use super::single_pass::{in_zero_yield, Shared};
-use super::{js_max, JEDEN_NA_ILU_OBYWATELI, WYRAB_MIN_FOREST_IN_RADIUS};
+use super::{js_max, territory_radius_pin, JEDEN_NA_ILU_OBYWATELI, WYRAB_MIN_FOREST_IN_RADIUS};
 use crate::domain::improvement_build::get_improvement_meta;
+use crate::domain::improvement_build::PlacedLayers;
 use crate::domain::start_position::Overlay;
+use crate::domain::terrain::{axial_distance, CityNode};
+
+/// Web `fortKeyRadius` (auto-improvements.ts:773 @23dd158e9): promien twardego terytorium fortu (5) /
+/// posterunku (3).
+fn fort_key_radius(key: &str) -> f64 {
+    territory_radius_pin(&CityNode {
+        q: 0,
+        r: 0,
+        is_outpost: Some(key == "posterunek"),
+        is_fort: Some(key == "fort"),
+        pop: 0.0,
+        level: 1.0,
+        civ: None,
+    })
+}
+
+/// Web `getOwnFortCircles` (:1293-1313): kola wlasnych fortow/posterunkow (wezly terytorium wlasciciela
+/// + warstwy bez wezla, np. postawione wczesniej w tym wywolaniu). Liczone leniwie, raz na przebieg.
+fn own_fort_circles<'a>(
+    sh: &Shared,
+    acc: &'a mut Acc,
+    owner_id: i64,
+) -> &'a mut Vec<(i32, i32, f64)> {
+    if acc.own_fort_circles.is_none() {
+        let mut out: Vec<(i32, i32, f64)> = Vec::new();
+        let mut node_at: std::collections::HashSet<(i32, i32)> = std::collections::HashSet::new();
+        for tn in sh.state.territory_nodes.as_deref().unwrap_or(&[]) {
+            let n = &tn.node;
+            if n.is_fort != Some(true) && n.is_outpost != Some(true) {
+                continue;
+            }
+            node_at.insert((n.q, n.r));
+            if tn.owner_id == owner_id {
+                out.push((n.q, n.r, territory_radius_pin(n)));
+            }
+        }
+        if let Some(placed) = &sh.state.placed_improvements {
+            for (hk, layers) in placed {
+                let (q, r) = super::single_pass::parse_key(hk);
+                if node_at.contains(&(q, r)) {
+                    continue;
+                }
+                if let PlacedLayers::Many(v) = layers {
+                    for l in v {
+                        if l == "fort" || l == "posterunek" {
+                            out.push((q, r, fort_key_radius(l)));
+                        }
+                    }
+                }
+            }
+        }
+        acc.own_fort_circles = Some(out);
+    }
+    acc.own_fort_circles.as_mut().expect("kola")
+}
 
 pub(super) fn push_pick(
     acc: &mut Acc,
@@ -47,6 +103,7 @@ pub(super) fn phase_defense(
     if env.defense_priority.is_empty() || plonowe < pop {
         return;
     }
+    let zero_start = acc.picks.len();
     let defense_cap = js_max(1.0, (pop / JEDEN_NA_ILU_OBYWATELI).ceil());
     let mut border: Vec<(i32, i32)> = env.candidate_hexes.clone();
     border.sort_by(|a, b| {
@@ -100,12 +157,83 @@ pub(super) fn phase_defense(
             if !sh.qualifies(key, q, r) {
                 continue;
             }
+            // U-3 (hunk :1569-1573): kolo kandydata w CALOSCI wewnatrz kola wlasnego fortu/posterunku
+            // (istniejacego albo zaplanowanego) nie daje nowego heksu terytorium - odpada.
+            let is_fort_key = key == "fort" || key == "posterunek";
+            if is_fort_key {
+                let cand_rad = fort_key_radius(key);
+                if own_fort_circles(sh, acc, opts.owner_id)
+                    .iter()
+                    .any(|&(fq, fr, frad)| axial_distance(q, r, fq, fr) + cand_rad <= frad)
+                {
+                    continue;
+                }
+            }
             if let Some(sr) = opts.surplus_report {
                 sr.borrow_mut().any_candidate = true;
             }
             push_pick(acc, opts, &env.city, (q, r), key, meta.koszt_praca);
+            if is_fort_key {
+                own_fort_circles(sh, acc, opts.owner_id).push((q, r, fort_key_radius(key)));
+            }
             sh.add_layer(&hk, key);
             break;
+        }
+    }
+    // U-3 (hunk :1587-1608, obrona): posterunek zaplanowany PRZED fortem, ktorego kolo go w calosci
+    // obejmuje, nic nie daje - cofamy go (zwrot Pracy, miejsca w miescie i warstwy).
+    let zero_new: Vec<AutoImprovementPick> = acc.picks[zero_start..]
+        .iter()
+        .filter(|p| p.city_id == env.city.id && (p.key == "fort" || p.key == "posterunek"))
+        .cloned()
+        .collect();
+    for pk in &zero_new {
+        if pk.key != "posterunek" {
+            continue;
+        }
+        let enclosed = zero_new.iter().any(|o| {
+            !std::ptr::eq(o, pk)
+                && o.key == "fort"
+                && axial_distance(pk.q, pk.r, o.q, o.r) + fort_key_radius("posterunek")
+                    <= fort_key_radius("fort")
+        });
+        if !enclosed {
+            continue;
+        }
+        let Some(idx) = acc
+            .picks
+            .iter()
+            .position(|p| p.city_id == pk.city_id && p.q == pk.q && p.r == pk.r && p.key == pk.key)
+        else {
+            continue;
+        };
+        acc.picks.remove(idx);
+        acc.praca_left += pk.koszt_praca;
+        acc.global_spent -= pk.koszt_praca;
+        acc.placed_this_city -= 1.0;
+        let hk = format!("{},{}", pk.q, pk.r);
+        if let Some(placed) = sh.state.placed_improvements.as_mut() {
+            let left: Vec<String> = match placed.get(&hk) {
+                Some(PlacedLayers::Many(v)) => {
+                    v.iter().filter(|l| *l != "posterunek").cloned().collect()
+                }
+                _ => Vec::new(),
+            };
+            if matches!(placed.get(&hk), Some(PlacedLayers::Many(_))) {
+                if left.is_empty() {
+                    placed.remove(&hk);
+                } else {
+                    placed.insert(hk, PlacedLayers::Many(left));
+                }
+            }
+        }
+        let rad = fort_key_radius("posterunek");
+        let circles = own_fort_circles(sh, acc, opts.owner_id);
+        if let Some(ci) = circles
+            .iter()
+            .position(|&(cq, cr, crad)| cq == pk.q && cr == pk.r && crad == rad)
+        {
+            circles.remove(ci);
         }
     }
 }
@@ -195,7 +323,7 @@ fn step0_applies(sh: &Shared, env: &CityEnv, acc: &Acc, q: i32, r: i32, hex_key:
     env.wyrab_wlaczony
         && (env.off_river_clearing || env.lesne_min_spelnione)
         && env.wolno_karczowac_poza_rzeka
-        && !sh.river_hex_keys.contains(hex_key)
+        && !sh.on_river_hex(hex_key)
         && !acc.scheduled_wyrab.contains(hex_key)
         && sh.map.hex(hex_key).map(|h| h.overlay) == Some(Overlay::Las)
         && env.wyrab_ma_sens(sh, q, r)

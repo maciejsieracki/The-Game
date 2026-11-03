@@ -53,6 +53,17 @@ function slice(file, from, to, firstStarts, lastEquals) {
   if (last !== lastEquals) throw new Error(`anchor drift ${file}:${to}: ${last}`);
   return lines.slice(from - 1, to).join('\n');
 }
+// REPIN-DELTA-4 (pin 23dd158e9): numery linii clusters.ts przesunely sie (+delta); wycinek lokalizowany po NAZWIE funkcji
+// (pierwsza linia zaczyna sie od `firstStarts`, koniec = pierwsza linia rowna `}` w kolumnie 0). Dla pinu edb8fb56
+// daje te same zakresy co wczesniejsze numery linii (dowod: odtworzenie bajt-w-bajt starych wektorow).
+function sliceFn(file, firstStarts) {
+  const lines = readFileSync(srcPath(file), 'utf8').split('\n');
+  const from = lines.findIndex((l) => l.startsWith(firstStarts));
+  if (from < 0) throw new Error(`anchor missing ${file}: ${firstStarts}`);
+  let to = from;
+  while (lines[to] !== '}') to++;
+  return lines.slice(from, to + 1).join('\n');
+}
 const exported = (text) => 'export ' + text;
 
 const clustersUrl = src('map/clusters.ts');
@@ -61,10 +72,10 @@ const clustersStub = [
   `import { mulberry32, hexDistanceAxial, HEX_DIRECTIONS } from '${helpersUrl}';`,
   `import { clusterPackRadius, passesForeignClusterBufferGate, isInSameTypeRivalHalfPlane } from '${clustersUrl}';`,
   `import type { ForeignClusterBuffer, SameTypeRivalHalfPlaneAxis } from '${clustersUrl}';`,
-  exported(slice('map/clusters.ts', 168, 175, 'function shuffleInPlace<T>(', '}')),
-  exported(slice('map/clusters.ts', 1771, 1800, 'function landPoolNearCore(', '}')),
-  exported(slice('map/clusters.ts', 1848, 1867, 'function hexesAtDistance(', '}')),
-  exported(slice('map/clusters.ts', 1975, 2030, 'function packNearestLegalLand(', '}')),
+  exported(sliceFn('map/clusters.ts', 'function shuffleInPlace<T>(')),
+  exported(sliceFn('map/clusters.ts', 'function landPoolNearCore(')),
+  exported(sliceFn('map/clusters.ts', 'function hexesAtDistance(')),
+  exported(sliceFn('map/clusters.ts', 'function packNearestLegalLand(')),
 ].join('\n\n');
 const clustersStubPath = join(stubDir, 'clusters-private.ts');
 writeFileSync(clustersStubPath, clustersStub + '\n');

@@ -19,6 +19,7 @@ use super::{
     deficit_improvement_keys, has_non_food_resource_deficit, js_max, js_min,
     ZERO_YIELD_IMPROVEMENTS,
 };
+use crate::domain::freshwater::FreshwaterCtx;
 use crate::domain::improvement_build::{
     is_improvement_tech_unlocked, BuildMap, ImprovementBuildState, PlacedLayers, Qualifier,
 };
@@ -42,6 +43,8 @@ pub(super) struct Shared<'a> {
     pub map: &'a BuildMap,
     pub state: ImprovementBuildState,
     pub river_hex_keys: HashSet<String>,
+    /// REPIN-DELTA-4: rzeki i jeziora (`map/freshwater.ts`), liczone raz na przebieg.
+    pub fw: FreshwaterCtx,
     pub unlocked: &'a BTreeSet<String>,
     pub civ_gate: &'a dyn Fn(&str, Option<&str>) -> bool,
     pub civ: Option<&'a str>,
@@ -103,6 +106,38 @@ impl Shared<'_> {
                 self.river_hex_keys
                     .contains(&format!("{},{}", q + dq, r + dr))
             })
+    }
+
+    /// Web `isOnRiver` (auto-improvements.ts:1250 @23dd158e9): heks NA rzece (`riverPaths` albo
+    /// wlasne `rzeka.obecna`).
+    pub fn is_on_river(&self, hk: &str) -> bool {
+        self.river_hex_keys.contains(hk) || self.map.hex(hk).is_some_and(|h| h.river_present)
+    }
+
+    /// Web `onRiverHex` (:1268): `hasRiverAccess` LUB sasiad z wlasnym `rzeka.obecna` (picker
+    /// FOOD E1-E3).
+    pub fn on_river_hex(&self, hk: &str) -> bool {
+        if self.has_river_access(hk) {
+            return true;
+        }
+        let (q, r) = parse_key(hk);
+        [(1, 0), (-1, 0), (0, 1), (0, -1), (1, -1), (-1, 1)]
+            .iter()
+            .any(|(dq, dr)| {
+                self.map
+                    .hex(&format!("{},{}", q + dq, r + dr))
+                    .is_some_and(|h| h.river_present)
+            })
+    }
+
+    /// Web `foodReservedHex` (:1275): `hasRiverAccess` LUB `isFreshwaterReservedHex` (rzeka /
+    /// jezioro na heksie lub sasiedzie). Blokada tartaku/obozu (FRESHWATER-LAKE-Q1).
+    pub fn food_reserved_hex(&self, hk: &str) -> bool {
+        if self.has_river_access(hk) {
+            return true;
+        }
+        let (q, r) = parse_key(hk);
+        self.fw.is_freshwater_reserved_hex(self.map, q, r)
     }
 }
 
@@ -205,6 +240,7 @@ pub fn pick_auto_improvements_single_pass(
         map,
         state,
         river_hex_keys,
+        fw: FreshwaterCtx::new(map),
         unlocked: &opts.unlocked_techs,
         civ_gate,
         civ: opts.civ_archetype.as_deref(),
@@ -234,6 +270,7 @@ pub fn pick_auto_improvements_single_pass(
         scheduled_wyrab: opts.clearing_hex_keys.clone().unwrap_or_default(),
         forest_left: 0.0,
         city_budget_exhausted: false,
+        own_fort_circles: None,
     };
 
     for city in ordered_cities {

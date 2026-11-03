@@ -83,7 +83,8 @@ fn seed_inca_llama_deposits_matches_web_for_all_cases() {
     let maps: Value = serde_json::from_str(MAPS).expect("maps parse");
     let llama: Value = serde_json::from_str(LLAMA).expect("llama vectors parse");
     let cases = llama["cases"].as_array().expect("cases");
-    assert_eq!(cases.len(), 912);
+    // REPIN-DELTA-4: liczba przypadkow zalezy od map z `generateMap` (regeneracja pinu 23dd158e9: 912 -> 960).
+    assert_eq!(cases.len(), 960);
     let mut bases: BTreeMap<String, BTreeMap<HexCoord, StartMapHex>> = BTreeMap::new();
     let mut seeded_cases = 0;
     let mut zloze_blocked_cases = 0;

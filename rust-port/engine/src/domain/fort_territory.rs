@@ -180,3 +180,28 @@ pub fn apply_fort_capture_by_occupation(
     }
     events
 }
+
+/// Zrodlo wzroku z fortu/posterunku (web `fortSightSources` zwraca `{q, r, radius}`).
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct SightSource {
+    pub q: i32,
+    pub r: i32,
+    pub radius: f64,
+}
+
+/// Web `fortSightSources` (`fort-territory.ts:359-369` @23dd158e9, R-WEB-FORT-VISION-FOG-Q1): fort /
+/// posterunek jest ZRODLEM WZROKU wlasciciela o promieniu rownym promieniowi jego terytorium (fort 5,
+/// posterunek 3). `contested_useless` nie daje terytorium, wiec nie daje tez wzroku; fort wroga nie jest
+/// zrodlem wzroku `owner_id`. REPIN-DELTA-4: sama funkcja czysta; `computePlayerVisibility`/mgla nie maja
+/// jeszcze modulu w Rust (dlug), wiec zrodla nie sa nigdzie konsumowane.
+pub fn fort_sight_sources(forts: &[FortNode], owner_id: i64) -> Vec<SightSource> {
+    forts
+        .iter()
+        .filter(|f| f.owner_id == owner_id && f.contested_useless != Some(true))
+        .map(|f| SightSource {
+            q: f.q,
+            r: f.r,
+            radius: city_territory_radius(&fort_node_as_city_node(f.q, f.r, f.kind)),
+        })
+        .collect()
+}

@@ -409,6 +409,16 @@
     "sekcja": "§3 Ekspansja",
     "opis": "Kara punktowa za bliskość granicy wroga < 5 pól."
   },
+  "ekspansja_waga_plonu_heksu": {
+    "wartosc": 0.3,
+    "sekcja": "§3 Ekspansja",
+    "opis": "R-WEB-AI-CITY-YIELD-FIX-Q1: mnożnik części „plon terenu” (Żywność/Praca/Handel) w hexCityScore. Po naprawie dopasowania terenu po id plon przestał być zerem; 1 = pełny plon (tempo ekspansji AI rośnie wielokrotnie w symulacji silnikowej), 0 = zachowanie sprzed naprawy (plon ignorowany). Wartość 0,3 dobrana pomiarem symulacji silnikowej (15 map 168×120; plateau 0,25–0,30: miasta AI major w t100 +4% łącznie, ≤ +20% w każdym typie świata; skok od 0,35 — Wyspy +27% — i od 0,5 — Pangea +100%). Rzeka/surowce/kara granicy bez zmian."
+  },
+  "ekspansja_kara_polarna_sasiedztwo": {
+    "wartosc": 8,
+    "sekcja": "§3 Ekspansja",
+    "opis": "R-WEB-AI-AVOID-POLAR-CITIES-Q1: kara rankingowa kandydata na miasto AI za heks Polarny w promieniu 1 (połowa przy promieniu 2). Sam heks Polarny jest zakazany, o ile istnieje kandydat niepolarny. 0 = wyłączona."
+  },
   "barbarzyncy_start_tura": {
     "wartosc": 5,
     "sekcja": "§5 Barbarzyncy",
