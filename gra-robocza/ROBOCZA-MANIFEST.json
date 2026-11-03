@@ -1,114 +1,114 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA; push do origin/main wykonany na polecenie właściciela (2026-10-31)",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "acb3c562ac9677091bf002fe1b75a3f8",
-  "bundleSha256": "8e17ba911ab7e6947624a3ebfd95823580b15a6a4386339c9a38aa64433d769c",
-  "bundleBytes": 70160592,
+  "bundleMd5": "83d4cbb583fed6cffb4f26b362dd085a",
+  "bundleSha256": "ce9fefe14c6470ff3d8d1ebdadf7cea6223c2a0bf75c7e67265449bc6e59ef7b",
+  "bundleBytes": 70161331,
   "sourceSnapshot": {
-    "source": "main 4cd4c35cb + CITY-MILITIA (5605d38ff)",
+    "source": "main 1117c6515 + WALL-DEFENDERS-BONUS-RANGE (4d41f3060)",
     "build": "Vite 5.4.x direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "R-WEB-CITY-MILITIA-NO-DEFENDERS-Q1: Milicja miasta wg decyzji właściciela: liczba jednostek = liczba mieszkańców (1 mieszkaniec = 1 jednostka), powstaje ZAWSZE przy ataku na miasto z budynkiem Garnizon, także gdy w mieście są jednostki wojskowe (wspiera obrońców); połowa walczy wręcz (Wojownik/Włócznik/Wojownik z mieczem i tarczą wg epoki, statystyki ×0,5), połowa dystansowo (Oszczepnik/Łucznik/Procarz, pełne statystyki); morale obniżone (×0,5 z podłogą +3 nad progiem ucieczki); polegli milicjanci zmniejszają ludność (min. 1); barbarzyńcy uwzględniają budynek Garnizon. Opis §9c PROJEKT-GRY-master.md zaktualizowany."
+    "R-WEB-WALL-DEFENDERS-BONUS-RANGE-Q1: bonus obrony obwarowania (mur +200%, palisada +100%, cytadela/baszta +100%) dla WSZYSTKICH obrońców na murze i za murem (nie tylko na koronie) — bitwa taktyczna i „Pomiń” (Auto już tak liczyło); strzelcy-obrońcy na koronie muru/palisady mają zasięg ×2 (zaokrąglony w górę; zastępuje dawne +1); atakujący na koronie nie ma bonusu obrony muru (decyzja właściciela); katapulty i wieżyczki bez zmian."
   ],
   "verification": [
     "tsc --noEmit PASS po scaleniu",
-    "city-militia-no-defenders 113/0 (RED na bazie), 10 mutacji łamie test; map-field-battle 24/0, militia-garrison-contract 17/0, militia-garrison-router-siege 8/0, siege-defenders 12/0",
-    "palisade-battle-wall-rules, city-wall-towers zielone po scaleniu"
+    "wall-defenders-bonus-range 58/0 (RED 22/13) na prawdziwej scenie Chromium; city-siege-wall-rules 50/0, palisade-battle-wall-rules, city-wall-towers, city-militia-no-defenders zielone po scaleniu",
+    "mutacje łamią test"
   ],
   "limits": [
-    "NIE_ZMIERZONO w pełnej grze (build zakazany): bitwa 3D przy 60 jednostkach, ścieżki AI→AI, państw-miast, barbarzyńców; integracja strat ludności w main.ts bez testu",
-    "W danych brak „Miecznika z tarczą” — użyto „Wojownik z mieczem i tarczą”; Procarz ma w units.json Epokę Brąz (zastosowano specyfikację: Żelazo)",
-    "Abstrakcyjne oblężenie (siege.ts makeMilitia) zostaje na modelu zbiorczym (niewołane z main.ts)",
-    "Oznaczenie modeli milicji jako „Milicja” — osobny temat; testy barb-city-capture-cluster i budynek-garnizon padają także na bazie"
+    "Pełna tura z ostrzałem ×2 nie zmierzona end-to-end (zmierzony ru.range 3→6)",
+    "Zrzuty PRZED/PO identyczne (zmiana niewizualna); dowód w logu",
+    "Cztery testy czerwone na bazie: mur-paradoks, auto-battle-simultaneous, battle-loot, pr141-combat-defense-owner-route",
+    "Test wall-defenders-bonus-range przekracza 250 s przy równoległym obciążeniu (buduje warianty vite)"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
-    "notes": "CITY-MILITIA (runda 2): Operator → Evaluator FAIL r1 → Operator r2 → Obrona → FC PASS-WITH-NOTES."
+    "notes": "WALL-DEFENDERS-BONUS-RANGE (r1): Operator → Evaluator → Obrona → FC PASS-WITH-NOTES."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-03T20:39:47",
+  "hubGeneratedAt": "2026-11-03T22:02:14",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "acb3c562ac9677091bf002fe1b75a3f8",
-      "sizeBytes": 70160592
+      "md5": "83d4cbb583fed6cffb4f26b362dd085a",
+      "sizeBytes": 70161331
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "acb3c562ac9677091bf002fe1b75a3f8",
-      "sizeBytes": 70160592
+      "md5": "83d4cbb583fed6cffb4f26b362dd085a",
+      "sizeBytes": 70161331
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "acb3c562ac9677091bf002fe1b75a3f8",
-      "sizeBytes": 70160592
+      "md5": "83d4cbb583fed6cffb4f26b362dd085a",
+      "sizeBytes": 70161331
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "acb3c562ac9677091bf002fe1b75a3f8",
-      "sizeBytes": 70160592
+      "md5": "83d4cbb583fed6cffb4f26b362dd085a",
+      "sizeBytes": 70161331
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "acb3c562ac9677091bf002fe1b75a3f8",
-      "sizeBytes": 70160592
+      "md5": "83d4cbb583fed6cffb4f26b362dd085a",
+      "sizeBytes": 70161331
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "acb3c562ac9677091bf002fe1b75a3f8",
-      "sizeBytes": 70160592
+      "md5": "83d4cbb583fed6cffb4f26b362dd085a",
+      "sizeBytes": 70161331
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "acb3c562ac9677091bf002fe1b75a3f8",
-      "sizeBytes": 70160592
+      "md5": "83d4cbb583fed6cffb4f26b362dd085a",
+      "sizeBytes": 70161331
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "acb3c562ac9677091bf002fe1b75a3f8",
-      "sizeBytes": 70160592
+      "md5": "83d4cbb583fed6cffb4f26b362dd085a",
+      "sizeBytes": 70161331
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "acb3c562ac9677091bf002fe1b75a3f8",
-      "sizeBytes": 70160592
+      "md5": "83d4cbb583fed6cffb4f26b362dd085a",
+      "sizeBytes": 70161331
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "acb3c562ac9677091bf002fe1b75a3f8",
-      "sizeBytes": 70160592
+      "md5": "83d4cbb583fed6cffb4f26b362dd085a",
+      "sizeBytes": 70161331
     }
   ],
-  "md5": "acb3c562ac9677091bf002fe1b75a3f8",
-  "sizeBytes": 70160592,
+  "md5": "83d4cbb583fed6cffb4f26b362dd085a",
+  "sizeBytes": 70161331,
   "publisher": "Claude Code orkiestrator — stała zgoda właściciela 2026-10-31",
   "source": "gra/src; main 9ce1f5e50 + merge b38f40860",
   "immediatePreviousRelease": {
-    "bundleMd5": "3b1c46dadf8bcd29c49f8bb18ba71946"
+    "bundleMd5": "acb3c562ac9677091bf002fe1b75a3f8"
   },
   "rollbackPlan": {
-    "method": "git revert commitu wdrożenia; poprzedni bundel MD5 3b1c46dadf8bcd29c49f8bb18ba71946, 70157366 bajtów."
+    "method": "git revert commitu wdrożenia; poprzedni bundel MD5 acb3c562ac9677091bf002fe1b75a3f8, 70160592 bajtów."
   },
   "previousRelease": {
     "releaseState": "DEPLOYED TO ROBOCZA; push do origin/main wykonany na polecenie właściciela (2026-10-31)",
@@ -1284,8 +1284,8 @@
     "sourceCommit": "c46d6c47ff8643fabdcdd58d5c8067e07737326f",
     "publicationCommit": "0e85b43814f503fe34b42c88df4dd07233dbdfb"
   },
-  "publishedAt": "2026-11-03T20:39:47+00:00",
-  "buildStamp": "2026-11-03 20:39",
+  "publishedAt": "2026-11-03T22:02:15+00:00",
+  "buildStamp": "2026-11-03 22:02",
   "battleBundle": {
     "file": "Gra-ROBOCZA-POLE-BITWY.html",
     "md5": "daf66e2423e0f550db70ee41d8cdf12f",

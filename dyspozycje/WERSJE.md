@@ -1,3 +1,12 @@
+## ROBOCZA 83d4cbb5 -- 2026-11-03 -- bonus obrony muru dla obrońców wewnątrz murów, zasięg ×2 strzelców na murze (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`1117c6515` + WALL-DEFENDERS-BONUS-RANGE `4d41f3060`) i commit wdrożenia bundla; decyzje właściciela, stała zgoda na poprawki.
+- Bundle MD5 `83d4cbb583fed6cffb4f26b362dd085a`, 70,161,331 B, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, outDir poza repo, stempel ROBOCZA.
+- Zakres: bonus obrony muru/palisady dla wszystkich obrońców na murze i za murem (taktyczna i „Pomiń”); zasięg strzelców na koronie ×2; atakujący na koronie bez bonusu.
+- Testy: tsc PASS; 58/0 (RED 22/13); regresje oblężenia zielone.
+- Ograniczenia: pełna tura z ostrzałem ×2 nie zmierzona end-to-end; 4 testy czerwone także na bazie.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `acb3c562ac9677091bf002fe1b75a3f8`, 70,160,592 bajtów.
+
 ## ROBOCZA acb3c562 -- 2026-11-03 -- Milicja = mieszkańcy, wręcz i dystans wg epoki (testowa)
 
 - **STATUS: DEPLOYED** — merge do `origin/main` (`4cd4c35cb` + CITY-MILITIA `5605d38ff`) i commit wdrożenia bundla; decyzje właściciela (nowa specyfikacja Milicji), stała zgoda na poprawki.
