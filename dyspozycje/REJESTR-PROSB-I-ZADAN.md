@@ -8561,3 +8561,6 @@ Właściciel: podatek z zamiany Pracy ma iść zależnie od podziału suwaka Ska
 
 ## 2026-11-03 — DECYZJA WŁAŚCICELA: wieże przy murze/palisadzie — automatycznie, za darmo (Baszta bez zmian)
 Właściciel potwierdził: wieże strzeleckie co 4 heksy powstają automatycznie przy murze lub palisadzie, bez kosztu; budynek Baszta zostaje bez zmian (+100% obrony). Zgodne z domyślnym ZAŁOŻENIEM w dispatchu `R-WEB-PALISADE-BATTLE-WALL-RULES-Q1` — brak zmian w dispatchu. Backlog pkt 7 ZAMKNIĘTY.
+
+## 2026-11-03 — DECYZJA WŁAŚCICIELA (ABC): Mennica — mnożnik zostaje jak jest
+Mnożnik Mennicy (×2,0 łatwy / ×1,5 normalny / ×1,0 trudny; wymaga Waluty + Mennicy) mnoży cały Handel netto (= Podatek) miasta przed podziałem suwakiem Skarbiec/Badania/Bogactwo. Właściciel: zostawić jak jest. Brak zmian w kodzie.
