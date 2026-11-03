@@ -1,0 +1,24 @@
+# R-RUSTPORT-REPIN-3D-A-Q1 r1 Operator: niezalezny weryfikator generatora A1 (node v22.22.0)
+# Kazdy katalog: wlasny `npm install --ignore-scripts three@0.169.0 esbuild@0.24.0`,
+# wlasny `git archive <web> gra/src gra/data` (A: origin/main=c1581619f, B: c1581619f jawnie),
+# kopie gen_a1.ts / build_a1.mjs (tests/repin3d_fixtures) + dom_stub.ts / three_shim.ts (tests/fixtures/battle3d).
+
+## Katalog A: /tmp/repin3d-web.aJBOJX
+$ node build_a1.mjs && node gen_a1.mjs ../out
+repin3d a1 queued=4 issue=6 activate=6 breaches=6
+5b8baa9a4c27df1bce7637f5af87258315aa7f7ea01a91f2e8bafa956390d637  out/a1.json
+8b623934d82bff00e7bfcc54058c9f5702aa8e4ffd9a531d990d9a776e5adf6d  refscript/gen_a1.mjs
+
+## Katalog B: /tmp/repin3d-web2.Ae5j85 (osobny npm install, osobny git archive)
+$ node build_a1.mjs && node gen_a1.mjs ../out
+repin3d a1 queued=4 issue=6 activate=6 breaches=6
+5b8baa9a4c27df1bce7637f5af87258315aa7f7ea01a91f2e8bafa956390d637  out/a1.json
+8b623934d82bff00e7bfcc54058c9f5702aa8e4ffd9a531d990d9a776e5adf6d  refscript/gen_a1.mjs (2 814 655 B, nie commitowany)
+
+## Repo
+5b8baa9a4c27df1bce7637f5af87258315aa7f7ea01a91f2e8bafa956390d637  rust-port/renderer/tests/repin3d_fixtures/a1.json (618 850 B)
+-> identyczne bajt w bajt (A = B = repo). Brak Math.random w przypadkach (LCG ziarno 11 dla kafli).
+
+## Zakres webu c1581619f vs origin/main w chwili raportu (60621493a)
+$ git diff --stat c1581619f..origin/main -- gra/src/battle gra/src/render gra/src/game/siege.ts gra/src/game/siegeDefenders.ts gra/data/units.json
+(pusto)

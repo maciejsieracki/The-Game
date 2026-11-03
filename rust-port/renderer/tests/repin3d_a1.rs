@@ -607,6 +607,25 @@ fn replay_morale(fs: &mut FieldScene, units: &[SU], log: &Json) -> usize {
     log.arr().len()
 }
 
+/// The `ru.removed` arm of the `_startFade` guard (main `:9441`) on its own.
+/// In the web `removed` is only set by `_removeUnitFromScene` (`:9425`), which
+/// also sets `dead` (`:9426`), so the vectors cannot separate it from the
+/// `dead` arm; the port's API can (a caller passing `dead = false`), and the
+/// guard must still make it a no-op.
+#[test]
+fn kill_guard_removed_alone_is_a_no_op() {
+    let d = load("a1.json");
+    let grid = grid_of(d.get("tilesHex").str());
+    let (mut fs, _layer) = overlay();
+    let p = BattleSide::Atk;
+    let mut s = scene_unit(&mut fs, &grid, p, "r0", p, 30, 70, (30.0, 40.0), false);
+    remove_unit_from_scene(&mut fs.scene, &mut s.u);
+    let before = dump_tree(&fs, ROOT, true).0;
+    assert!(!kill_unit(&mut fs.scene, &mut s.u, false, false));
+    assert_eq!(dump_tree(&fs, ROOT, true).0, before);
+    assert!(s.u.removed && !s.dead && !s.fading_out && !s.routed);
+}
+
 #[test]
 #[allow(clippy::too_many_lines)]
 fn killed_units_are_removed_at_once_like_web() {
