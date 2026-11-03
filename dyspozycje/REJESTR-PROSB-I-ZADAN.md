@@ -8470,3 +8470,6 @@ Zgłoszenie: cywilizacja prowadząca wojnę z inną zamiast iść naokoło idzie
 
 ## 2026-11-03 — zgłoszenie: palisada w bitwie nie działa jak mur
 Właściciel: gdy miasto ma palisadę, bitwa wygląda tak, jakby nie było muru; palisada jest formą muru, więc zasady obrony (i wygląd bitwy) mają być takie jak przy murze. Potrzebne grafiki palisady zamiast murów. Temat `R-WEB-PALISADE-BATTLE-WALL-RULES-Q1` (faza A: reguły/logika bitwy; faza B: grafika palisady w widoku bitwy i miasta). Dispatch zapisany; START po zwolnieniu miejsca (dysk).
+
+## 2026-11-03 — zgłoszenie: panel armii — brak odejmowania rekrutowanych jednostek
+Właściciel: jednostki dodawane w panelu armii mają mieć możliwość odejmowania tak samo jak w mieście — pod miastem ma się pojawiać lista rekrutowanych jednostek z możliwością ich usunięcia. Temat `R-WEB-ARMY-PANEL-RECRUIT-REMOVE-Q1`. Niejednoznaczność (co dokładnie znaczy „panel armii”) przyjęta jako ZAŁOŻENIE — Operator ma ją ustalić z kodu i opisać. START po zwolnieniu miejsca.
