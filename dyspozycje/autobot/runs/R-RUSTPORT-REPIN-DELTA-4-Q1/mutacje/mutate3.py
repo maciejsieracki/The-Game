@@ -26,7 +26,7 @@ M = {
  'P12': (CM, "    if is_polar(q, r) {\n        return 3;\n    }", "    if is_polar(q, r) {\n        return 2;\n    }"),
  'P13': (CC, "    let placement = ClusterPlacement {\n        rozmiar_mapy,\n        aktywne_typy: placed_typy,\n        requested_typy: n_typy,\n        capital_min_sep: Some(min_capital_sep_i),", "    let placement = ClusterPlacement {\n        rozmiar_mapy,\n        aktywne_typy: placed_typy,\n        requested_typy: n_typy,\n        capital_min_sep: None,"),
  'P14': (CC, "    let ladowe = if ladowe_non_polar.is_empty() && !ladowe_player.is_empty() {", "    let ladowe = if false && !ladowe_player.is_empty() {"),
- 'P15': (CC, "        &ladowe_player,\n        &HOOKS,\n    );\n\n    // FALA 188: dopelnij", "        &ladowe,\n        &HOOKS,\n    );\n\n    // FALA 188: dopelnij"),
+ 'P15': (CC, "        &ladowe,\n        &HOOKS,\n    );\n\n    // FALA 188: dopelnij", "        &ladowe_player,\n        &HOOKS,\n    );\n\n    // FALA 188: dopelnij"),
  'P16': (CC, "    let land_cache = create_mass_land_cache(&ladowe_player);", "    let land_cache = create_mass_land_cache(&ladowe);"),
  'P17': (CL, "                polar: if avoid_polar {\n                    polar_proximity_tier(map, h.q, h.r)\n                } else {\n                    0\n                },", "                polar: 0,"),
  'P18': (CL, "            if avoid_polar\n                && u32::try_from(h.q)", "            if false\n                && u32::try_from(h.q)"),
