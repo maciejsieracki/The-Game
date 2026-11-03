@@ -1,3 +1,12 @@
+## ROBOCZA c02b4df4 -- 2026-11-03 -- kolejność rekrutacji wg epok, automat Q3 (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`57a7ada40` + RECRUIT-LIST-ORDER `6f61f1d70`, AUTO-IMPROVE-Q3 `20bb45c49`) i commit wdrożenia bundla; zgłoszenia właściciela, stała zgoda na poprawki.
+- Bundle MD5 `c02b4df42f1ba9976c959a5faf06929a`, 70,136,020 B, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, outDir poza repo, stempel ROBOCZA.
+- Zakres: (1) lista rekrutacji (miasto i panel Armia) — najnowsza epoka na górze, w epoce od najsilniejszej; (2) automat ulepszeń: wycinka przy rzece także w „Zrównoważone”, farma na wyciętym heksie rzeki bez obywatela, zlikwidowany limit fortów/posterunków (defenseCap), stały wskaźnik „Budżet niewydany” z przyciskiem „Wyłącz filtr”.
+- Testy: tsc PASS; recruit-list-order 18/0, auto-improve-q3 50/0 (RED 19/12), mutacje łamią testy; żywy pomiar K1 farmy 3→9, K2 wycinki 0→9.
+- Ograniczenia: rejestr wyciętych heksów nie jest w zapisie gry; wskaźnik niezweryfikowany w żywej grze; zużycie Pracy przez forty bez limitu NIE_ZMIERZONO.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `12546c5e2abb88ebad3737c9060b98cb`, 70,132,826 bajtów.
+
 ## ROBOCZA 12546c5e -- 2026-11-03 -- oblężenie tylko na wojnie, reguły fortu/posterunku, Stadnina (testowa)
 
 - **STATUS: DEPLOYED** — merge do `origin/main` (`1099bdac2` + SIEGE `e6d4c8f85`, FORT-OUTPOST `3f7972629`, STADNINA `e88103e0d`, CAP `a8b953dbe`) i commit wdrożenia bundla; zgłoszenia właściciela (zrzuty), stała zgoda na poprawki.
