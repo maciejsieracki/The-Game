@@ -741,11 +741,8 @@ pub fn apply_culture_religion_pressure_to_target(
     let mut rel_pct: BTreeMap<i64, f64> = target_religion_pressure_pct.cloned().unwrap_or_default();
     let rate = js_max(0.0, rate_pct) / 100.0;
     let o_t = target_owner_id;
-    let sr = |o: i64| -> Option<&str> {
-        state_religion_by_owner
-            .get(&o)
-            .and_then(|v| v.as_deref())
-    };
+    let sr =
+        |o: i64| -> Option<&str> { state_religion_by_owner.get(&o).and_then(|v| v.as_deref()) };
     let total_rel_t = empire_religion_total(cities, o_t, sr(o_t));
 
     for &o_s in source_owner_ids {

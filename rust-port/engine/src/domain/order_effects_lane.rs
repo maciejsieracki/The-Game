@@ -33,13 +33,15 @@ use crate::domain::building_costs::p6_7b::{
     StockRecord,
 };
 use crate::domain::civ_matrix::civ_matrix_param;
-use crate::domain::economy_city_fns::{sum_building_happiness_from_built_ids, HappinessCatalogEntry};
+use crate::domain::economy_city_fns::{
+    sum_building_happiness_from_built_ids, HappinessCatalogEntry,
+};
 use crate::domain::order_effects_culture::{
     accumulate_culture, apply_culture_religion_pressure_to_target, convert_culture_share,
     convert_via_temple, culture_accrual_with_modifier, culture_happiness, load_culture_params,
-    load_culture_pressure_rate, load_religion_params, CultureParams, ReligionParams, make_rng, religion_happiness,
+    load_culture_pressure_rate, load_religion_params, make_rng, religion_happiness,
     religion_params_with_spread_modifier, resolve_city_religion_state, spread_religion,
-    PressureCity, ReligionNeighbor,
+    CultureParams, PressureCity, ReligionNeighbor, ReligionParams,
 };
 use crate::domain::production_units::{building_level_for_epoch, city_palac_tier};
 use crate::domain::resource_access::capital_labels::{stolica_easy_bonus_active, CapitalCityView};
@@ -47,7 +49,9 @@ use crate::domain::resource_access::society_inputs::is_foreign_religion_dominant
 use crate::domain::resource_access::{
     city_culture_mix_active, resolve_own_culture_share, CultureMixFields,
 };
-use crate::domain::resource_production::{compute_citizen_resource_drain, CitizenResourceDrainResult};
+use crate::domain::resource_production::{
+    compute_citizen_resource_drain, CitizenResourceDrainResult,
+};
 use crate::domain::society_breakdown::{
     apply_civ_matrix_happiness_modifier, compute_por_pct, evaluate_order_from_breakdown,
     is_osiedle_revolt_immune, load_revolt_params, order_effects_from_por_pct, por_pct_band,
@@ -56,17 +60,17 @@ use crate::domain::society_breakdown::{
 };
 use crate::domain::terrain::city_range_for_population;
 use crate::domain::terrain::conquest_stability::{
-    conquest_revolt_risk_multiplier, tick_city_culture_religion,
-    CultureBuildings, CultureCity, ReligionBuildings, ReligionConversion,
+    conquest_revolt_risk_multiplier, tick_city_culture_religion, CultureBuildings, CultureCity,
+    ReligionBuildings, ReligionConversion,
 };
 use crate::domain::territory::ReligionState;
 use crate::domain::turn_economy_inputs_state::city_found_order;
+use crate::domain::turn_economy_loop::OrderYieldMults;
 use crate::domain::types::porzadek::{
     load_order_params, order_effects_to_yield_mults, pick_revolt_migration_target, OrderEffects,
     RevoltMigrationCity,
 };
 use crate::domain::types::Difficulty;
-use crate::domain::turn_economy_loop::OrderYieldMults;
 
 /// Web `REBEL_FACTION_OWNER_ID` (`society-breakdown.ts:206`).
 pub const REBEL_FACTION_OWNER_ID: i64 = -99;
@@ -424,7 +428,11 @@ fn resolved_city_religion(
     ctx: &OrderLaneCtx<'_>,
 ) -> ReligionState {
     let own = (ctx.owner_religion)(city.owner_id);
-    resolve_city_religion_state(state.city_relig.get(&city.id), city.population, own.as_deref())
+    resolve_city_religion_state(
+        state.city_relig.get(&city.id),
+        city.population,
+        own.as_deref(),
+    )
 }
 
 /// Web `capitalCityIdForOwner` (`main.ts:31575`): jawna stolica, jeśli nadal należy do ownera, inaczej najstarsze.
@@ -434,7 +442,10 @@ fn capital_city_id_for_owner(
     cities: &[OrderLaneCity],
 ) -> Option<String> {
     if let Some(explicit) = explicit_map.get(&owner_id) {
-        if !explicit.is_empty() && cities.iter().any(|c| &c.id == explicit && c.owner_id == owner_id)
+        if !explicit.is_empty()
+            && cities
+                .iter()
+                .any(|c| &c.id == explicit && c.owner_id == owner_id)
         {
             return Some(explicit.clone());
         }
@@ -530,9 +541,9 @@ pub fn compute_order_lane(
 
         // KULTURA :35446-35455
         let civ_key = ctx.owner_civ_map.get(&owner_id0).cloned();
-        let culture_modifier = civ_key
-            .as_deref()
-            .map_or(0.0, |k| civ_matrix_param(ctx.matrix, k, "kultura_naplyw_proc"));
+        let culture_modifier = civ_key.as_deref().map_or(0.0, |k| {
+            civ_matrix_param(ctx.matrix, k, "kultura_naplyw_proc")
+        });
         let culture_gain = culture_accrual_with_modifier(kultura_tick, culture_modifier);
         let acc = accumulate_culture(cities[idx].kultura, culture_gain, &cp);
         cities[idx].kultura = acc.kultura_skumulowana;
@@ -626,17 +637,20 @@ pub fn compute_order_lane(
         }
 
         // SZCZĘŚCIE :35560-35577
-        let pop_matrix = crate::domain::city_growth::p6_7a::growth_v85::resolve_population_matrix_for_civ(
-            ctx.owner_civ_map.get(&owner_id0).map(String::as_str),
-        );
+        let pop_matrix =
+            crate::domain::city_growth::p6_7a::growth_v85::resolve_population_matrix_for_civ_in(
+                ctx.matrix,
+                ctx.owner_civ_map.get(&owner_id0).map(String::as_str),
+            );
         let unlocked = (ctx.owner_tech)(owner_id0);
         let era_owner = (ctx.owner_era)(owner_id0);
         let ha_buildings = sum_building_happiness_from_built_ids(&built_refs, &catalog, |bdef| {
             match ctx.buildings.iter().find(|b| b.id == bdef.id) {
                 Some(b) => {
-                    let gate: Option<Vec<(String, String)>> = b.poziom_tech_gate.as_ref().map(|g| {
-                        g.iter().map(|(k, v)| (k.clone(), v.clone())).collect()
-                    });
+                    let gate: Option<Vec<(String, String)>> = b
+                        .poziom_tech_gate
+                        .as_ref()
+                        .map(|g| g.iter().map(|(k, v)| (k.clone(), v.clone())).collect());
                     building_level_for_epoch(
                         b.epoka_wejscia as f64,
                         era_owner,
@@ -651,12 +665,8 @@ pub fn compute_order_lane(
         let ha_wealth = econ.map_or(0.0, |e| e.wealth_zadowolenie);
         let ha_cuda = (ctx.wonder_zadowolenie)(owner_id0);
         let luksus = (ctx.podzial_procent_luksus)(&cid);
-        let g_count_law = count_law_garrison_on_city_hex(
-            ctx.units,
-            cities[idx].q,
-            cities[idx].r,
-            owner_id0,
-        );
+        let g_count_law =
+            count_law_garrison_on_city_hex(ctx.units, cities[idx].q, cities[idx].r, owner_id0);
         let owner_at_war = is_owner_at_war_in_relations(owner_id0, ctx.relations);
         let designated = capital_city_id_for_owner(owner_id0, ctx.capital_city_id_by_owner, cities);
         let views: Vec<CapitalCityView<'_>> = cities
@@ -682,10 +692,14 @@ pub fn compute_order_lane(
         let owner_era_upkeep = era_owner;
 
         // citizenUpkeepDrainForOwner :35380-35403
-        if !drain_cache.contains_key(&owner_id0) {
-            let owner_population: f64 = cities
-                .iter()
-                .fold(0.0, |s, c| if c.owner_id == owner_id0 { s + c.population } else { s });
+        if let std::collections::btree_map::Entry::Vacant(slot) = drain_cache.entry(owner_id0) {
+            let owner_population: f64 = cities.iter().fold(0.0, |s, c| {
+                if c.owner_id == owner_id0 {
+                    s + c.population
+                } else {
+                    s
+                }
+            });
             let stock = owner_resource_stock_all(cities, owner_id0);
             let v = compute_citizen_resource_drain(
                 ctx.citizen_table,
@@ -697,7 +711,7 @@ pub fn compute_order_lane(
                 deduct_building_stock_cost_across_cities(cities, owner_id0, &v.deductions);
             }
             out.citizen_upkeep_by_owner.push((owner_id0, v.clone()));
-            drain_cache.insert(owner_id0, v);
+            slot.insert(v);
         }
         let citizen_upkeep = drain_cache[&owner_id0].clone();
 
@@ -732,7 +746,8 @@ pub fn compute_order_lane(
             stolica_easy_bonus: stolica_bonus,
             has_garnizon_budynek: built_refs.contains(&"garnizon"),
         };
-        let ord_eval = evaluate_order_from_breakdown(&happiness_input, &law_input, society, difficulty);
+        let ord_eval =
+            evaluate_order_from_breakdown(&happiness_input, &law_input, society, difficulty);
         let ord_raw = match civ_key.as_deref() {
             Some(k) => apply_civ_matrix_happiness_modifier(
                 &ord_eval,
@@ -753,10 +768,22 @@ pub fn compute_order_lane(
 
         let mods = match civ_key.as_deref() {
             Some(k) => CivOrderModifiers {
-                porzadek_produkcja_proc: Some(civ_matrix_param(ctx.matrix, k, "porzadek_produkcja_proc")),
-                porzadek_pieniadz_proc: Some(civ_matrix_param(ctx.matrix, k, "porzadek_pieniadz_proc")),
+                porzadek_produkcja_proc: Some(civ_matrix_param(
+                    ctx.matrix,
+                    k,
+                    "porzadek_produkcja_proc",
+                )),
+                porzadek_pieniadz_proc: Some(civ_matrix_param(
+                    ctx.matrix,
+                    k,
+                    "porzadek_pieniadz_proc",
+                )),
                 porzadek_nauka_proc: Some(civ_matrix_param(ctx.matrix, k, "porzadek_nauka_proc")),
-                porzadek_kultura_proc: Some(civ_matrix_param(ctx.matrix, k, "porzadek_kultura_proc")),
+                porzadek_kultura_proc: Some(civ_matrix_param(
+                    ctx.matrix,
+                    k,
+                    "porzadek_kultura_proc",
+                )),
                 porzadek_wzrost_proc: Some(civ_matrix_param(ctx.matrix, k, "porzadek_wzrost_proc")),
             },
             None => CivOrderModifiers::default(),
@@ -818,8 +845,12 @@ pub fn compute_order_lane(
                     population: c.population,
                 })
                 .collect();
-            let target_id =
-                pick_revolt_migration_target(&cid, cities[idx].owner_id, &migr, &state.order_value_map);
+            let target_id = pick_revolt_migration_target(
+                &cid,
+                cities[idx].owner_id,
+                &migr,
+                &state.order_value_map,
+            );
             if let Some(tid) = target_id.filter(|t| !t.is_empty()) {
                 if let Some(tidx) = cities.iter().position(|c| c.id == tid) {
                     if cities[idx].population > 1.0 {
@@ -850,18 +881,18 @@ pub fn compute_order_lane(
         }
 
         state.order_value_map.insert(cid.clone(), ord_pct.por_pct);
-        state.growth_mult_map.insert(cid.clone(), order_eff.growth_mult);
         state
-            .order_mult_map
-            .insert(cid.clone(), {
-                let m = order_effects_to_yield_mults(tier, &order_eff);
-                OrderYieldMults {
-                    production_mult: m.production_mult,
-                    pieniadz_mult: m.pieniadz_mult,
-                    nauka_mult: m.nauka_mult,
-                    kultura_mult: m.kultura_mult,
-                }
-            });
+            .growth_mult_map
+            .insert(cid.clone(), order_eff.growth_mult);
+        state.order_mult_map.insert(cid.clone(), {
+            let m = order_effects_to_yield_mults(tier, &order_eff);
+            OrderYieldMults {
+                production_mult: m.production_mult,
+                pieniadz_mult: m.pieniadz_mult,
+                nauka_mult: m.nauka_mult,
+                kultura_mult: m.kultura_mult,
+            }
+        });
     }
     out
 }

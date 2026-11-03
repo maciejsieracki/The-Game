@@ -1,0 +1,69 @@
+[00] ZABITA    order_effects_culture.rs :: cultureHappiness: <0.25 -> <=0.25
+[01] ZABITA    order_effects_culture.rs :: cultureHappiness: <0.5 -> <=0.5
+[02] ZABITA    order_effects_culture.rs :: cultureHappiness: >=1 -> >1
+[03] ZABITA    order_effects_culture.rs :: cultureHappiness: >=0.75 -> >0.75
+[04] ZABITA    order_effects_culture.rs :: convertCulture: sad liczony jako stela
+[05] ZABITA    order_effects_culture.rs :: convertCulture: brak capu
+[06] ZABITA    order_effects_culture.rs :: accumulateCulture: ujemny zysk nie obciety
+[07] ZABITA    order_effects_culture.rs :: cityBorderRadius: prog 2 >=
+[08] ZABITA    order_effects_culture.rs :: cultureAccrualWithModifier: brak max(0)
+[09] ZABITA    order_effects_culture.rs :: religionOwnShare: neutralne 0.5 -> 0
+[10] ZABITA    order_effects_culture.rs :: religionHappiness: zla skala
+[11] ZABITA    order_effects_culture.rs :: makeRng: ziarno 0 nie daje stanu 1
+[12] ZABITA    order_effects_culture.rs :: spreadReligion: odwrocona kolejnosc id
+[13] ZABITA    order_effects_culture.rs :: spreadReligion: brak limitu slotow
+[14] ZABITA    order_effects_culture.rs :: spreadReligion: brak limitu populacji
+[15] ZABITA    order_effects_culture.rs :: spreadReligion: dystans <
+[16] ZABITA    order_effects_culture.rs :: convertViaTemple: brak 'never stall'
+[17] ZABITA    order_effects_culture.rs :: convertViaTemple: odwrocony remis dawcow
+[18] ZABITA    order_effects_culture.rs :: convertViaTemple: floor zamiast round
+[19] ZABITA    order_effects_culture.rs :: convertViaTemple: kregi = swiatynia
+[20] ZABITA    order_effects_culture.rs :: presja: kierunek spadku kultury
+[21] ZABITA    order_effects_culture.rs :: presja: religia > -> >=
+[22] ZABITA    order_effects_culture.rs :: presja: brak continue przy nieaktywnym mixie
+[23] ZABITA    order_effects_culture.rs :: presja: domyslne 100 -> 0
+[24] PRZEZYLA  order_effects_culture.rs :: presja: fallback tempa 5 -> 3
+[25] ZABITA    order_effects_culture.rs :: civReligionForKey: brak lowercase
+[26] ZABITA    order_effects_culture.rs :: resolveCityReligionState: odwrocone
+[27] PRZEZYLA  order_effects_culture.rs :: defaultCityReligionState: brak floor
+[28] ZABITA    order_effects_culture.rs :: empireCultureTotal: ujemna kultura
+[29] ZABITA    order_effects_lane.rs :: civMatrix: trade z zlym modyfikatorem
+[30] ZABITA    order_effects_lane.rs :: civMatrix: growth z zlym modyfikatorem
+[31] PRZEZYLA  order_effects_lane.rs :: civMatrix: brak max(0) w czynniku
+[32] ZABITA    order_effects_lane.rs :: tickPostCaptureLaw: <= -> <
+[33] ZABITA    order_effects_lane.rs :: tickRebelProtection: <= -> <
+[34] ZABITA    order_effects_lane.rs :: markCityRebellionStarted: 19 zamiast 20
+[35] ZABITA    order_effects_lane.rs :: override: linia na koncu
+[36] ZABITA    order_effects_lane.rs :: override: ryzyko buntu nie zerowane
+[37] ZABITA    order_effects_lane.rs :: garnizon: jednostki oblegajace liczone
+[38] ZABITA    order_effects_lane.rs :: wojna: barbarzynca ||->&&
+[39] ZABITA    order_effects_lane.rs :: wojna: dlugosc klucza
+[40] PRZEZYLA  order_effects_lane.rs :: lane: brak materializacji mixu <1
+[41] ZABITA    order_effects_lane.rs :: lane: rng(turn+1)
+[42] ZABITA    order_effects_lane.rs :: lane: bunt bez warunku risk>0
+[43] PRZEZYLA  order_effects_lane.rs :: lane: bez mnoznika podboju
+[44] PRZEZYLA  order_effects_lane.rs :: lane: migracja przy pop>=1
+[45] ZABITA    order_effects_lane.rs :: lane: rebelia tez AI
+[46] ZABITA    order_effects_lane.rs :: lane: populacja drenazu wszystkich ownerow
+[47] PRZEZYLA  order_effects_lane.rs :: lane: seed spread q*30
+[48] ZABITA    order_effects_lane.rs :: lane: sasiedzi religii dystans <
+[49] ZABITA    order_effects_lane.rs :: lane: zrodla presji dystans <
+[50] PRZEZYLA  order_effects_lane.rs :: lane: zly parametr macierzy kultury
+[51] ZABITA    order_effects_lane.rs :: lane: haWealth=0
+[52] ZABITA    order_effects_lane.rs :: lane: brak ticku ochrony rebelii
+[53] ZABITA    order_effects_lane.rs :: lane: tick post-capture odwrocony
+[54] ZABITA    order_effects_lane.rs :: lane: orderValueMap = szPct
+[55] ZABITA    order_effects_lane.rs :: lane: brak odjecia drenazu
+[56] ZABITA    order_effects_lane.rs :: lane: swiatynia w spreadzie
+[57] ZABITA    order_effects_lane.rs :: lane: luksus pominiety
+[58] ZABITA    order_effects_lane.rs :: lane: stolica bez wyznaczonej
+[59] ZABITA    order_effects_lane.rs :: lane: stolica easy wylaczona
+[60] ZABITA    order_effects_lane.rs :: lane: maxTur 11
+[61] PRZEZYLA  order_effects_lane.rs :: lane: brak happiness_base macierzy
+[62] PRZEZYLA  order_effects_lane.rs :: lane: ownCultureShare zawsze w szczesciu
+[63] ZABITA    order_effects_lane.rs :: lane: garnizon budynek = sad
+[64] ZABITA    order_effects_lane.rs :: lane: brak tieru palacu
+[65] ZABITA    order_effects_lane.rs :: lane: immunitet nie zeruje laski
+[66] ZABITA    order_effects_lane.rs :: lane: brak markCityRebellionStarted
+[67] PRZEZYLA  order_effects_lane.rs :: lane: modyfikator kultury pominiety
+[68] PRZEZYLA  order_effects_lane.rs :: lane: brak ponownego liczenia obcej religii

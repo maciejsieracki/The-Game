@@ -1,0 +1,10 @@
+SHARD 0/8 targets=35 exit=0 passed=286 failed=0
+SHARD 1/8 targets=35 exit=0 passed=306 failed=0
+SHARD 2/8 targets=35 exit=0 passed=283 failed=0
+SHARD 3/8 targets=35 exit=0 passed=256 failed=0
+SHARD 4/8 targets=35 exit=0 passed=263 failed=0
+SHARD 5/8 targets=35 exit=0 passed=236 failed=0
+SHARD 6/8 targets=35 exit=0 passed=215 failed=0
+SHARD 7/8 targets=34 exit=0 passed=237 failed=0
+SUMA passed=2082 failed=0 (baza 2072/0 na 40c358d6f + 10 nowych: p6_order_lane; --lib w shardzie 0)
+EXIT=0

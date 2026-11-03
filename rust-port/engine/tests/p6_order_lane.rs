@@ -109,7 +109,10 @@ fn parse_json_exact(text: &str) -> Value {
                 _ => {
                     let st = self.i;
                     while self.i < self.b.len()
-                        && matches!(self.b[self.i], b'-' | b'+' | b'.' | b'e' | b'E' | b'0'..=b'9')
+                        && matches!(
+                            self.b[self.i],
+                            b'-' | b'+' | b'.' | b'e' | b'E' | b'0'..=b'9'
+                        )
                     {
                         self.i += 1;
                     }
@@ -230,7 +233,10 @@ fn rel_state(v: &Value) -> ReligionState {
 
 fn cmp_state(errs: &mut Vec<String>, label: &str, got: &ReligionState, want: &ReligionState) {
     if got.counts.len() != want.counts.len() {
-        errs.push(format!("{label}: counts rust={:?} web={:?}", got.counts, want.counts));
+        errs.push(format!(
+            "{label}: counts rust={:?} web={:?}",
+            got.counts, want.counts
+        ));
         return;
     }
     for (k, w) in &want.counts {
@@ -260,7 +266,10 @@ fn float_probe_json_parse_is_bit_exact() {
             bad += 1;
         }
     }
-    assert_eq!(bad, 0, "serde_json parsuje floaty nie-bit-w-bit ({bad}/400)");
+    assert_eq!(
+        bad, 0,
+        "serde_json parsuje floaty nie-bit-w-bit ({bad}/400)"
+    );
 }
 
 #[test]
@@ -288,13 +297,48 @@ fn order_effects_with_civ_matrix_matches_web() {
         };
         let got = order_effects_with_civ_matrix(&eff, &mods);
         let o = &c["out"];
-        eqf!(errs, format!("{i} prod"), got.production_mult, num(&o["productionMult"]));
-        eqf!(errs, format!("{i} pien"), got.pieniadz_mult, num(&o["pieniadzMult"]));
-        eqf!(errs, format!("{i} trade"), got.trade_mult, num(&o["tradeMult"]));
-        eqf!(errs, format!("{i} nauka"), got.nauka_mult, num(&o["naukaMult"]));
-        eqf!(errs, format!("{i} kult"), got.kultura_mult, num(&o["kulturaMult"]));
-        eqf!(errs, format!("{i} wzrost"), got.growth_mult, num(&o["growthMult"]));
-        eqf!(errs, format!("{i} risk"), got.revolt_risk, num(&o["revoltRisk"]));
+        eqf!(
+            errs,
+            format!("{i} prod"),
+            got.production_mult,
+            num(&o["productionMult"])
+        );
+        eqf!(
+            errs,
+            format!("{i} pien"),
+            got.pieniadz_mult,
+            num(&o["pieniadzMult"])
+        );
+        eqf!(
+            errs,
+            format!("{i} trade"),
+            got.trade_mult,
+            num(&o["tradeMult"])
+        );
+        eqf!(
+            errs,
+            format!("{i} nauka"),
+            got.nauka_mult,
+            num(&o["naukaMult"])
+        );
+        eqf!(
+            errs,
+            format!("{i} kult"),
+            got.kultura_mult,
+            num(&o["kulturaMult"])
+        );
+        eqf!(
+            errs,
+            format!("{i} wzrost"),
+            got.growth_mult,
+            num(&o["growthMult"])
+        );
+        eqf!(
+            errs,
+            format!("{i} risk"),
+            got.revolt_risk,
+            num(&o["revoltRisk"])
+        );
     }
     report(errs, "orderEffectsWithCivMatrix");
 }
@@ -361,35 +405,80 @@ fn post_capture_law_matches_web() {
         let ord = evaluate_order_from_breakdown(&hi, &li, Some(society), dif);
         let o = &c["ord"];
         eqf!(errs, format!("{i} ord.por"), ord.por_pct, num(&o["porPct"]));
-        eqf!(errs, format!("{i} ord.prawNetto"), ord.prawo.netto, num(&o["prawNetto"]));
+        eqf!(
+            errs,
+            format!("{i} ord.prawNetto"),
+            ord.prawo.netto,
+            num(&o["prawNetto"])
+        );
         let f = post_fields(&c["city"]);
         let ov = apply_post_capture_law_override(&ord, &f, Some(society), dif);
         let w = &c["ov"];
         eqf!(errs, format!("{i} ov.por"), ov.por_pct, num(&w["porPct"]));
-        eqf!(errs, format!("{i} ov.prawPct"), ov.prawo.praw_pct, num(&w["prawPct"]));
-        eqf!(errs, format!("{i} ov.prawNetto"), ov.prawo.netto, num(&w["prawNetto"]));
+        eqf!(
+            errs,
+            format!("{i} ov.prawPct"),
+            ov.prawo.praw_pct,
+            num(&w["prawPct"])
+        );
+        eqf!(
+            errs,
+            format!("{i} ov.prawNetto"),
+            ov.prawo.netto,
+            num(&w["prawNetto"])
+        );
         if tier_str(ov.tier) != w["tier"].as_str().unwrap() {
             errs.push(format!("{i} ov.tier {:?} vs {}", ov.tier, w["tier"]));
         }
         if ov.band_label != w["bandLabel"].as_str().unwrap() {
-            errs.push(format!("{i} ov.bandLabel {} vs {}", ov.band_label, w["bandLabel"]));
+            errs.push(format!(
+                "{i} ov.bandLabel {} vs {}",
+                ov.band_label, w["bandLabel"]
+            ));
         }
         if ov.prawo.lines.len() as f64 != num(&w["nLines"]) {
-            errs.push(format!("{i} ov.nLines {} vs {}", ov.prawo.lines.len(), w["nLines"]));
+            errs.push(format!(
+                "{i} ov.nLines {} vs {}",
+                ov.prawo.lines.len(),
+                w["nLines"]
+            ));
         }
         let fl = &w["firstLine"];
         if !fl.is_null() {
             if ov.prawo.lines[0].id != s(&fl["id"]) || ov.prawo.lines[0].label != s(&fl["label"]) {
                 errs.push(format!("{i} firstLine {:?} vs {fl}", ov.prawo.lines[0]));
             }
-            eqf!(errs, format!("{i} firstLine.value"), ov.prawo.lines[0].value, num(&fl["value"]));
+            eqf!(
+                errs,
+                format!("{i} firstLine.value"),
+                ov.prawo.lines[0].value,
+                num(&fl["value"])
+            );
         } else if !ov.prawo.lines.is_empty() {
-            errs.push(format!("{i} firstLine: web brak, rust {:?}", ov.prawo.lines[0]));
+            errs.push(format!(
+                "{i} firstLine: web brak, rust {:?}",
+                ov.prawo.lines[0]
+            ));
         }
         let e = &w["effects"];
-        eqf!(errs, format!("{i} ov.prod"), ov.effects.production_mult, num(&e["productionMult"]));
-        eqf!(errs, format!("{i} ov.risk"), ov.effects.revolt_risk, num(&e["revoltRisk"]));
-        eqf!(errs, format!("{i} ov.growth"), ov.effects.growth_mult, num(&e["growthMult"]));
+        eqf!(
+            errs,
+            format!("{i} ov.prod"),
+            ov.effects.production_mult,
+            num(&e["productionMult"])
+        );
+        eqf!(
+            errs,
+            format!("{i} ov.risk"),
+            ov.effects.revolt_risk,
+            num(&e["revoltRisk"])
+        );
+        eqf!(
+            errs,
+            format!("{i} ov.growth"),
+            ov.effects.growth_mult,
+            num(&e["growthMult"])
+        );
         if is_post_capture_law_active(&f) != c["active"].as_bool().unwrap() {
             errs.push(format!("{i} active"));
         }
@@ -398,24 +487,33 @@ fn post_capture_law_matches_web() {
         tick_post_capture_law_end_of_turn(&mut t);
         let tw = &c["tickPost"];
         if t.post_capture_law_turns_remaining != tw.get("postCaptureLawTurnsRemaining").map(num) {
-            errs.push(format!("{i} tickPost.turns {:?} vs {tw}", t.post_capture_law_turns_remaining));
+            errs.push(format!(
+                "{i} tickPost.turns {:?} vs {tw}",
+                t.post_capture_law_turns_remaining
+            ));
         }
         if t.was_rebellion_reconquest
-            != tw.get("wasRebellionReconquest").and_then(Value::as_bool).unwrap_or(false)
+            != tw
+                .get("wasRebellionReconquest")
+                .and_then(Value::as_bool)
+                .unwrap_or(false)
         {
             errs.push(format!("{i} tickPost.reconquest"));
         }
         let mut r = post_fields(&c["tickRebel"]["before"]);
         tick_rebel_protection_end_of_turn(&mut r);
         if r.rebel_protection_turns_remaining
-            != c["tickRebel"]["after"].get("rebelProtectionTurnsRemaining").map(num)
+            != c["tickRebel"]["after"]
+                .get("rebelProtectionTurnsRemaining")
+                .map(num)
         {
             errs.push(format!("{i} tickRebel {:?} vs {}", r, c["tickRebel"]));
         }
         let mut m = PostCaptureLawFields::default();
         mark_city_rebellion_started(&mut m, num(&c["mark"]["ownerId"]) as i64);
         if m.rebel_previous_owner_id != Some(num(&c["mark"]["rebelPreviousOwnerId"]) as i64)
-            || m.rebel_protection_turns_remaining != Some(num(&c["mark"]["rebelProtectionTurnsRemaining"]))
+            || m.rebel_protection_turns_remaining
+                != Some(num(&c["mark"]["rebelProtectionTurnsRemaining"]))
         {
             errs.push(format!("{i} mark"));
         }
@@ -453,7 +551,8 @@ fn law_garrison_and_war_match_web() {
                 oblega: u["oblegaCityId"].as_str().is_some_and(|x| !x.is_empty()),
             })
             .collect();
-        let got = count_law_garrison_on_city_hex(&units, num(&c["q"]), num(&c["r"]), num(&c["o"]) as i64);
+        let got =
+            count_law_garrison_on_city_hex(&units, num(&c["q"]), num(&c["r"]), num(&c["o"]) as i64);
         eqf!(errs, format!("garr {i}"), got, num(&c["out"]));
     }
     for (i, c) in d["warCases"].as_array().unwrap().iter().enumerate() {
@@ -509,7 +608,12 @@ fn religion_entries(p: &ReligionParams) -> Vec<(&'static str, f64)> {
 }
 
 fn cmp_entries(errs: &mut Vec<String>, label: &str, got: &[(&str, f64)], want: &Value) {
-    for (k, v) in want.as_array().unwrap().iter().map(|e| (s(&e[0]), num(&e[1]))) {
+    for (k, v) in want
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|e| (s(&e[0]), num(&e[1])))
+    {
         match got.iter().find(|(n, _)| *n == k) {
             Some((_, g)) if same(*g, v) => {}
             other => errs.push(format!("{label}.{k}: rust={other:?} web={v:?}")),
@@ -526,7 +630,12 @@ fn culture_functions_match_web() {
     for (i, c) in d["cultCases"].as_array().unwrap().iter().enumerate() {
         let dif = diff(c["difficulty"].as_str().unwrap());
         let cp = load_culture_params(Some(society), dif);
-        cmp_entries(&mut errs, &format!("{i} cpar"), &culture_entries(&cp), &c["cpar"]);
+        cmp_entries(
+            &mut errs,
+            &format!("{i} cpar"),
+            &culture_entries(&cp),
+            &c["cpar"],
+        );
         let share = opt(&c["share"]);
         let h = &c["has"];
         let has = CultureBuildings {
@@ -537,18 +646,43 @@ fn culture_functions_match_web() {
             has_sad: h["hasSad"].as_bool().unwrap(),
             has_laznia: h["hasLaznia"].as_bool().unwrap(),
         };
-        eqf!(errs, format!("{i} conv"), convert_culture_share(share, &has, &cp), num(&c["conv"]));
-        eqf!(errs, format!("{i} hap"), culture_happiness(share, &cp), num(&c["hap"]));
+        eqf!(
+            errs,
+            format!("{i} conv"),
+            convert_culture_share(share, &has, &cp),
+            num(&c["conv"])
+        );
+        eqf!(
+            errs,
+            format!("{i} hap"),
+            culture_happiness(share, &cp),
+            num(&c["hap"])
+        );
         let acc = accumulate_culture(num(&c["kum"]), num(&c["perTurn"]), &cp);
-        eqf!(errs, format!("{i} acc"), acc.kultura_skumulowana, num(&c["acc"]["kulturaSkumulowana"]));
+        eqf!(
+            errs,
+            format!("{i} acc"),
+            acc.kultura_skumulowana,
+            num(&c["acc"]["kulturaSkumulowana"])
+        );
         if acc.poprzedni_zasieg as f64 != num(&c["acc"]["poprzedniZasieg"])
             || acc.nowy_zasieg as f64 != num(&c["acc"]["nowyZasieg"])
             || acc.granica_rozszerzona != c["acc"]["granicaRozszerzona"].as_bool().unwrap()
         {
             errs.push(format!("{i} acc zasieg"));
         }
-        eqf!(errs, format!("{i} accr"), culture_accrual_with_modifier(num(&c["perTurn"]), num(&c["modifier"])), num(&c["accr"]));
-        eqf!(errs, format!("{i} radius"), city_border_radius(num(&c["kum"]), &cp) as f64, num(&c["radius"]));
+        eqf!(
+            errs,
+            format!("{i} accr"),
+            culture_accrual_with_modifier(num(&c["perTurn"]), num(&c["modifier"])),
+            num(&c["accr"])
+        );
+        eqf!(
+            errs,
+            format!("{i} radius"),
+            city_border_radius(num(&c["kum"]), &cp) as f64,
+            num(&c["radius"])
+        );
     }
     report(errs, "kultura");
 }
@@ -561,9 +695,19 @@ fn religion_functions_match_web() {
     for (i, c) in d["relCases"].as_array().unwrap().iter().enumerate() {
         let dif = diff(c["difficulty"].as_str().unwrap());
         let rp = load_religion_params(Some(society), dif);
-        cmp_entries(&mut errs, &format!("{i} rpar"), &religion_entries(&rp), &c["rpar"]);
+        cmp_entries(
+            &mut errs,
+            &format!("{i} rpar"),
+            &religion_entries(&rp),
+            &c["rpar"],
+        );
         let sp = religion_params_with_spread_modifier(&rp, num(&c["mod"]));
-        cmp_entries(&mut errs, &format!("{i} sp"), &religion_entries(&sp), &c["sp"]);
+        cmp_entries(
+            &mut errs,
+            &format!("{i} sp"),
+            &religion_entries(&sp),
+            &c["sp"],
+        );
         let state = rel_state(&c["state"]);
         let target = c["target"].as_str().unwrap_or("");
         let b = &c["b"];
@@ -574,8 +718,18 @@ fn religion_functions_match_web() {
             b["hasKamienneKregi"].as_bool().unwrap(),
             &rp,
         );
-        cmp_state(&mut errs, &format!("{i} conv.state"), &conv.state, &rel_state(&c["conv"]["state"]));
-        eqf!(errs, format!("{i} conv.n"), conv.converted, num(&c["conv"]["converted"]));
+        cmp_state(
+            &mut errs,
+            &format!("{i} conv.state"),
+            &conv.state,
+            &rel_state(&c["conv"]["state"]),
+        );
+        eqf!(
+            errs,
+            format!("{i} conv.n"),
+            conv.converted,
+            num(&c["conv"]["converted"])
+        );
         let neighbors: Vec<ReligionNeighbor> = c["neighbors"]
             .as_array()
             .unwrap()
@@ -597,23 +751,54 @@ fn religion_functions_match_web() {
         );
         let want = c["spread"].as_array().unwrap();
         if events.len() != want.len() {
-            errs.push(format!("{i} spread.len rust={} web={}", events.len(), want.len()));
+            errs.push(format!(
+                "{i} spread.len rust={} web={}",
+                events.len(),
+                want.len()
+            ));
         } else {
             for (k, (e, w)) in events.iter().zip(want).enumerate() {
                 if e.id != s(&w["id"]) || e.religion != s(&w["religion"]) {
-                    errs.push(format!("{i} spread[{k}] id/religion {} {}", e.id, e.religion));
+                    errs.push(format!(
+                        "{i} spread[{k}] id/religion {} {}",
+                        e.id, e.religion
+                    ));
                 }
-                eqf!(errs, format!("{i} spread[{k}].added"), e.added, num(&w["added"]));
-                cmp_state(&mut errs, &format!("{i} spread[{k}]"), &e.state, &rel_state(&w["state"]));
+                eqf!(
+                    errs,
+                    format!("{i} spread[{k}].added"),
+                    e.added,
+                    num(&w["added"])
+                );
+                cmp_state(
+                    &mut errs,
+                    &format!("{i} spread[{k}]"),
+                    &e.state,
+                    &rel_state(&w["state"]),
+                );
             }
         }
         let own = c["ownR"].as_str();
-        eqf!(errs, format!("{i} ownShare"), religion_own_share(&state, own), num(&c["ownShare"]));
-        eqf!(errs, format!("{i} hap"), religion_happiness(&state, own), num(&c["hap"]));
+        eqf!(
+            errs,
+            format!("{i} ownShare"),
+            religion_own_share(&state, own),
+            num(&c["ownShare"])
+        );
+        eqf!(
+            errs,
+            format!("{i} hap"),
+            religion_happiness(&state, own),
+            num(&c["hap"])
+        );
         if is_empty_religion_state(Some(&state)) != c["isEmpty"].as_bool().unwrap() {
             errs.push(format!("{i} isEmpty"));
         }
-        let stored = if c["resolve"].is_null() { None } else { Some(&state) };
+        let stored = if c["resolve"].is_null() {
+            None
+        } else {
+            Some(&state)
+        };
         let _ = stored;
     }
     report(errs, "religia");
@@ -643,7 +828,12 @@ fn pressure_and_civ_religion_match_web() {
             .map(|e| (num(&e[0]) as i64, e[1].as_str().map(str::to_string)))
             .collect();
         let t_owner = num(&c["tOwner"]) as i64;
-        let srcs: Vec<i64> = c["srcOwners"].as_array().unwrap().iter().map(|x| num(x) as i64).collect();
+        let srcs: Vec<i64> = c["srcOwners"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|x| num(x) as i64)
+            .collect();
         let rel_pct = pct_map(&c["relPct"]);
         let got = apply_culture_religion_pressure_to_target(
             t_owner,
@@ -654,10 +844,18 @@ fn pressure_and_civ_religion_match_web() {
             num(&c["rate"]),
             &srm,
         );
-        eqf!(errs, format!("{i} share"), got.own_culture_share, num(&c["out"]["ownCultureShare"]));
+        eqf!(
+            errs,
+            format!("{i} share"),
+            got.own_culture_share,
+            num(&c["out"]["ownCultureShare"])
+        );
         let want = pct_map(&c["out"]["religionPressurePct"]).unwrap();
         if got.religion_pressure_pct.len() != want.len() {
-            errs.push(format!("{i} relPct len {:?} vs {:?}", got.religion_pressure_pct, want));
+            errs.push(format!(
+                "{i} relPct len {:?} vs {:?}",
+                got.religion_pressure_pct, want
+            ));
         }
         for (k, w) in &want {
             match got.religion_pressure_pct.get(k) {
@@ -665,7 +863,12 @@ fn pressure_and_civ_religion_match_web() {
                 other => errs.push(format!("{i} relPct[{k}] rust={other:?} web={w}")),
             }
         }
-        eqf!(errs, format!("{i} ect"), empire_culture_total(&cs, t_owner), num(&c["ect"]));
+        eqf!(
+            errs,
+            format!("{i} ect"),
+            empire_culture_total(&cs, t_owner),
+            num(&c["ect"])
+        );
         eqf!(
             errs,
             format!("{i} ert"),
@@ -681,7 +884,10 @@ fn pressure_and_civ_religion_match_web() {
         }
         let got2 = civ_religion_for_key(key, Some(society), None);
         if got2.as_deref() != c["noCivs"].as_str() {
-            errs.push(format!("civRel(noCivs) {key:?}: rust={got2:?} web={}", c["noCivs"]));
+            errs.push(format!(
+                "civRel(noCivs) {key:?}: rust={got2:?} web={}",
+                c["noCivs"]
+            ));
         }
     }
     report(errs, "presja/civReligion");
@@ -726,7 +932,10 @@ fn lane_inputs(sc: &Value) -> LaneInputs {
             own_culture_share: c.get("ownCultureShare").map(num),
             kultura_own_share: c.get("kulturaOwnShare").map(num),
             religion_pressure_pct: c.get("religionPressurePct").and_then(pct_map),
-            rebel_state: c.get("rebelState").and_then(Value::as_bool).unwrap_or(false),
+            rebel_state: c
+                .get("rebelState")
+                .and_then(Value::as_bool)
+                .unwrap_or(false),
             revolt_grace_remaining: c.get("revoltGraceRemaining").and_then(opt_ref),
             post: post_fields(c),
             surowce: c.get("surowce").map(|o| {
@@ -803,7 +1012,12 @@ fn lane_inputs(sc: &Value) -> LaneInputs {
             .as_object()
             .unwrap()
             .iter()
-            .map(|(o, v)| (o.parse().unwrap(), v.as_array().unwrap().iter().map(s).collect()))
+            .map(|(o, v)| {
+                (
+                    o.parse().unwrap(),
+                    v.as_array().unwrap().iter().map(s).collect(),
+                )
+            })
             .collect(),
         wonder: by_owner_f("wonderZad"),
         units: sc["units"]
@@ -814,7 +1028,10 @@ fn lane_inputs(sc: &Value) -> LaneInputs {
                 owner_id: num(&u["ownerId"]) as i64,
                 q: num(&u["q"]),
                 r: num(&u["r"]),
-                oblega: u.get("oblegaCityId").and_then(Value::as_str).is_some_and(|x| !x.is_empty()),
+                oblega: u
+                    .get("oblegaCityId")
+                    .and_then(Value::as_str)
+                    .is_some_and(|x| !x.is_empty()),
             })
             .collect(),
         relations: sc["relations"]
@@ -823,7 +1040,12 @@ fn lane_inputs(sc: &Value) -> LaneInputs {
             .iter()
             .map(|r| (s(&r[0]), r[1].as_bool().unwrap()))
             .collect(),
-        humans: sc["humans"].as_array().unwrap().iter().map(|x| num(x) as i64).collect(),
+        humans: sc["humans"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|x| num(x) as i64)
+            .collect(),
         capital: sc["capitalByOwner"]
             .as_array()
             .unwrap()
@@ -840,8 +1062,31 @@ fn opt_ref(v: &Value) -> Option<f64> {
 }
 
 /// Uruchamia petle Rust dla scenariusza; zwraca (miasta po petli, stan, wynik).
+/// Macierz cywilizacji z ZALATA wektorow (`matrixPatch`): w danych pinu parametry porzadku/kultury/religii sa wszedzie 0,
+/// wiec web uruchomiono na macierzy z niezerowymi wartosciami (generator), a tu nakladamy ta sama latke.
+fn patched_matrix() -> &'static civ_engine::domain::civ_matrix::CivMatrixData {
+    use std::sync::OnceLock;
+    static M: OnceLock<civ_engine::domain::civ_matrix::CivMatrixData> = OnceLock::new();
+    M.get_or_init(|| {
+        let d = vectors();
+        let mut m: Value =
+            serde_json::from_str(civ_engine::data::civilizations::CIV_MATRIX_JSON).unwrap();
+        let patch = d["matrixPatch"].as_object().unwrap();
+        for civ in m["cywilizacje"].as_array_mut().unwrap() {
+            let key = civ["ikonaId"].as_str().unwrap().to_string();
+            if let Some(p) = patch.get(&key) {
+                for (param, v) in p.as_object().unwrap() {
+                    civ["params"][param] =
+                        Value::Number(serde_json::Number::from_f64(num(v)).unwrap());
+                }
+            }
+        }
+        civ_engine::domain::civ_matrix::CivMatrixData::from_json(&m.to_string()).unwrap()
+    })
+}
+
 pub fn run_rust_lane(inp: &mut LaneInputs, src: Option<&StateSources<'_>>) -> OrderLaneOutput {
-    let matrix = load_civ_matrix().file.clone();
+    let matrix = patched_matrix().file.clone();
     let buildings = parse_buildings().unwrap();
     let table = parse_citizen_resource_upkeep().unwrap();
     let society = society_params();
@@ -909,10 +1154,20 @@ fn full_order_lane_matches_running_web() {
             }
             eqf!(errs, format!("{lab} porPct"), r.por_pct, num(&x["porPct"]));
             eqf!(errs, format!("{lab} szPct"), r.sz_pct, num(&x["szPct"]));
-            eqf!(errs, format!("{lab} prawPct"), r.praw_pct, num(&x["prawPct"]));
+            eqf!(
+                errs,
+                format!("{lab} prawPct"),
+                r.praw_pct,
+                num(&x["prawPct"])
+            );
             eqf!(errs, format!("{lab} haKult"), r.ha_kult, num(&x["haKult"]));
             eqf!(errs, format!("{lab} haRel"), r.ha_rel, num(&x["haRel"]));
-            eqf!(errs, format!("{lab} share"), r.own_culture_share, num(&x["ownCultureShare"]));
+            eqf!(
+                errs,
+                format!("{lab} share"),
+                r.own_culture_share,
+                num(&x["ownCultureShare"])
+            );
             if tier_str(r.tier) != x["tier"].as_str().unwrap() {
                 errs.push(format!("{lab} tier {:?} vs {}", r.tier, x["tier"]));
             }
@@ -926,12 +1181,20 @@ fn full_order_lane_matches_running_web() {
                 errs.push(format!("{lab} revoltWarning"));
             }
             if r.revolt_grace_turns_left != opt(&x["graceTurnsLeft"]) {
-                errs.push(format!("{lab} graceTurnsLeft {:?} vs {}", r.revolt_grace_turns_left, x["graceTurnsLeft"]));
+                errs.push(format!(
+                    "{lab} graceTurnsLeft {:?} vs {}",
+                    r.revolt_grace_turns_left, x["graceTurnsLeft"]
+                ));
             }
         }
         // rng, rebelia
         if f64::from(out.rng_draws) != num(&w["rngDraws"]) {
-            errs.push(format!("{} rust={} web={}", l("rngDraws"), out.rng_draws, w["rngDraws"]));
+            errs.push(format!(
+                "{} rust={} web={}",
+                l("rngDraws"),
+                out.rng_draws,
+                w["rngDraws"]
+            ));
         }
         let wreb: Vec<String> = w["rebelled"].as_array().unwrap().iter().map(s).collect();
         rebelled += wreb.len();
@@ -947,10 +1210,30 @@ fn full_order_lane_matches_running_web() {
             match inp.state.order_mult_map.get(k) {
                 None => errs.push(format!("{} brak {k}", l("orderMultMap"))),
                 Some(m) => {
-                    eqf!(errs, format!("sc{idx} {k} mult.prod"), m.production_mult, num(&x["productionMult"]));
-                    eqf!(errs, format!("sc{idx} {k} mult.pien"), m.pieniadz_mult, num(&x["pieniadzMult"]));
-                    eqf!(errs, format!("sc{idx} {k} mult.nauka"), m.nauka_mult, num(&x["naukaMult"]));
-                    eqf!(errs, format!("sc{idx} {k} mult.kult"), m.kultura_mult, num(&x["kulturaMult"]));
+                    eqf!(
+                        errs,
+                        format!("sc{idx} {k} mult.prod"),
+                        m.production_mult,
+                        num(&x["productionMult"])
+                    );
+                    eqf!(
+                        errs,
+                        format!("sc{idx} {k} mult.pien"),
+                        m.pieniadz_mult,
+                        num(&x["pieniadzMult"])
+                    );
+                    eqf!(
+                        errs,
+                        format!("sc{idx} {k} mult.nauka"),
+                        m.nauka_mult,
+                        num(&x["naukaMult"])
+                    );
+                    eqf!(
+                        errs,
+                        format!("sc{idx} {k} mult.kult"),
+                        m.kultura_mult,
+                        num(&x["kulturaMult"])
+                    );
                 }
             }
         }
@@ -968,11 +1251,20 @@ fn full_order_lane_matches_running_web() {
         }
         let wrel = w["cityRelig"].as_object().unwrap();
         if inp.state.city_relig.len() != wrel.len() {
-            errs.push(format!("sc{idx} cityRelig.len {} vs {}", inp.state.city_relig.len(), wrel.len()));
+            errs.push(format!(
+                "sc{idx} cityRelig.len {} vs {}",
+                inp.state.city_relig.len(),
+                wrel.len()
+            ));
         }
         for (k, x) in wrel {
             match inp.state.city_relig.get(k) {
-                Some(g) => cmp_state(&mut errs, &format!("sc{idx} cityRelig[{k}]"), g, &rel_state(x)),
+                Some(g) => cmp_state(
+                    &mut errs,
+                    &format!("sc{idx} cityRelig[{k}]"),
+                    g,
+                    &rel_state(x),
+                ),
                 None => errs.push(format!("sc{idx} cityRelig brak {k}")),
             }
         }
@@ -982,30 +1274,62 @@ fn full_order_lane_matches_running_web() {
             if c.owner_id != num(&x["ownerId"]) as i64 {
                 errs.push(format!("{lab} ownerId"));
             }
-            eqf!(errs, format!("{lab} pop"), c.population, num(&x["population"]));
-            eqf!(errs, format!("{lab} kultura"), c.kultura, num(&x["kultura"]));
-            if c.own_culture_share.map(f64::to_bits) != x.get("ownCultureShare").map(|v| num(v).to_bits())
-                && !(c.own_culture_share == Some(0.0) && x.get("ownCultureShare").map(num) == Some(0.0))
+            eqf!(
+                errs,
+                format!("{lab} pop"),
+                c.population,
+                num(&x["population"])
+            );
+            eqf!(
+                errs,
+                format!("{lab} kultura"),
+                c.kultura,
+                num(&x["kultura"])
+            );
+            if c.own_culture_share.map(f64::to_bits)
+                != x.get("ownCultureShare").map(|v| num(v).to_bits())
+                && !(c.own_culture_share == Some(0.0)
+                    && x.get("ownCultureShare").map(num) == Some(0.0))
             {
-                errs.push(format!("{lab} ownCultureShare {:?} vs {:?}", c.own_culture_share, x.get("ownCultureShare")));
+                errs.push(format!(
+                    "{lab} ownCultureShare {:?} vs {:?}",
+                    c.own_culture_share,
+                    x.get("ownCultureShare")
+                ));
             }
             if c.kultura_own_share != x.get("kulturaOwnShare").map(num) {
                 errs.push(format!("{lab} kulturaOwnShare"));
             }
             if c.religion_pressure_pct != x.get("religionPressurePct").and_then(pct_map) {
-                errs.push(format!("{lab} religionPressurePct {:?} vs {:?}", c.religion_pressure_pct, x.get("religionPressurePct")));
+                errs.push(format!(
+                    "{lab} religionPressurePct {:?} vs {:?}",
+                    c.religion_pressure_pct,
+                    x.get("religionPressurePct")
+                ));
             }
-            if c.rebel_state != x.get("rebelState").and_then(Value::as_bool).unwrap_or(false) {
+            if c.rebel_state
+                != x.get("rebelState")
+                    .and_then(Value::as_bool)
+                    .unwrap_or(false)
+            {
                 errs.push(format!("{lab} rebelState"));
             }
             if c.revolt_grace_remaining != x.get("revoltGraceRemaining").and_then(opt_ref) {
-                errs.push(format!("{lab} grace {:?} vs {:?}", c.revolt_grace_remaining, x.get("revoltGraceRemaining")));
+                errs.push(format!(
+                    "{lab} grace {:?} vs {:?}",
+                    c.revolt_grace_remaining,
+                    x.get("revoltGraceRemaining")
+                ));
             }
             if c.post != post_fields(x) {
                 errs.push(format!("{lab} post {:?} vs {x}", c.post));
             }
             let want_sur: Option<BTreeMap<String, f64>> = x.get("surowce").map(|o| {
-                o.as_object().unwrap().iter().map(|(k, v)| (k.clone(), num(v))).collect()
+                o.as_object()
+                    .unwrap()
+                    .iter()
+                    .map(|(k, v)| (k.clone(), num(v)))
+                    .collect()
             });
             if c.surowce != want_sur {
                 errs.push(format!("{lab} surowce {:?} vs {:?}", c.surowce, want_sur));
@@ -1021,12 +1345,26 @@ fn full_order_lane_matches_running_web() {
                     errs.push(l("citizen.owner"));
                 }
                 let y = &x[1];
-                eqf!(errs, format!("sc{idx} citizen happiness"), v.coverage.happiness_delta as f64, num(&y["happinessDelta"]));
-                let want_d: BTreeMap<String, f64> = y["deductions"].as_object().unwrap().iter().map(|(k, v)| (k.clone(), num(v))).collect();
+                eqf!(
+                    errs,
+                    format!("sc{idx} citizen happiness"),
+                    v.coverage.happiness_delta as f64,
+                    num(&y["happinessDelta"])
+                );
+                let want_d: BTreeMap<String, f64> = y["deductions"]
+                    .as_object()
+                    .unwrap()
+                    .iter()
+                    .map(|(k, v)| (k.clone(), num(v)))
+                    .collect();
                 if v.deductions != want_d {
-                    errs.push(format!("sc{idx} citizen deductions {:?} vs {:?}", v.deductions, want_d));
+                    errs.push(format!(
+                        "sc{idx} citizen deductions {:?} vs {:?}",
+                        v.deductions, want_d
+                    ));
                 }
-                let want_av: Vec<String> = y["available"].as_array().unwrap().iter().map(s).collect();
+                let want_av: Vec<String> =
+                    y["available"].as_array().unwrap().iter().map(s).collect();
                 if v.coverage.available != want_av {
                     errs.push(format!("sc{idx} citizen available"));
                 }
@@ -1102,11 +1440,19 @@ mod e2e {
         let mut hexes = Vec::new();
         for q in 0..=6 {
             for r in 0..=6 {
-                hexes.push(BuildHex::new(q, r, terrain_from_web_value("rownina").unwrap(), Overlay::Brak));
+                hexes.push(BuildHex::new(
+                    q,
+                    r,
+                    terrain_from_web_value("rownina").unwrap(),
+                    Overlay::Brak,
+                ));
             }
         }
         let map = BuildMap::new(hexes, Vec::new());
-        let tctx = TerrainContext { map: &map, terrain_yields: &ty };
+        let tctx = TerrainContext {
+            map: &map,
+            terrain_yields: &ty,
+        };
         let zbadane: BTreeSet<String> = BTreeSet::new();
         let mut def_h = init_owner_default_podzial_handlu(&[0], &[]);
         let mut def_p = init_owner_default_podzial_pracy(&[0], &[]);
@@ -1151,10 +1497,16 @@ mod e2e {
             empire_active_labels: &labels,
         };
         let out = run_economy_tick_for_game(&mut cs, &mut extras, &mut grace, &gctx, None);
-        (format!("{:?}|{:?}|{:?}|{:?}", out, cs, extras, grace), out.tick.result)
+        (
+            format!("{:?}|{:?}|{:?}|{:?}", out, cs, extras, grace),
+            out.tick.result,
+        )
     }
 
-    fn econ_rows(res: &EconomyTickResult, cities: &[OrderLaneCity]) -> BTreeMap<String, OrderLaneEconTick> {
+    fn econ_rows(
+        res: &EconomyTickResult,
+        cities: &[OrderLaneCity],
+    ) -> BTreeMap<String, OrderLaneEconTick> {
         let mut m = BTreeMap::new();
         for c in cities {
             if let Some(t) = res.per_city.iter().find(|t| t.city_id == c.id) {
@@ -1183,7 +1535,13 @@ mod e2e {
         for w in d["e2e"].as_array().unwrap() {
             let inp = lane_inputs(&w["in"]);
             let era = inp.era.clone();
-            let (_, res) = run_tick(&inp.cities, &inp.built, &inp.owner_civ, &era, &BTreeMap::new());
+            let (_, res) = run_tick(
+                &inp.cities,
+                &inp.built,
+                &inp.owner_civ,
+                &era,
+                &BTreeMap::new(),
+            );
             let rows: Vec<String> = inp
                 .cities
                 .iter()
@@ -1212,12 +1570,20 @@ mod e2e {
             let mut inp = lane_inputs(&w["in"]);
             let era = inp.era.clone();
             // 1. tick 1 (stan -> econ), bez mapy porzadku.
-            let (_, res1) = run_tick(&inp.cities, &inp.built, &inp.owner_civ, &era, &BTreeMap::new());
+            let (_, res1) = run_tick(
+                &inp.cities,
+                &inp.built,
+                &inp.owner_civ,
+                &era,
+                &BTreeMap::new(),
+            );
             inp.econ = econ_rows(&res1, &inp.cities);
             // econ z Rust ticku == econ, z ktorym uruchomiono web (wektor niesie je jako wejscie).
             let web_econ: BTreeMap<String, OrderLaneEconTick> = lane_inputs(&w["in"]).econ;
             if inp.econ != web_econ {
-                errs.push(format!("e2e{i}: econ z ticku 1 Rust != econ wejsciowy weba"));
+                errs.push(format!(
+                    "e2e{i}: econ z ticku 1 Rust != econ wejsciowy weba"
+                ));
                 continue;
             }
             // 2. porzadek.
@@ -1259,18 +1625,35 @@ mod e2e {
                 continue;
             }
             if inp.state.order_mult_map.values().any(|m| {
-                m.production_mult != 1.0 || m.pieniadz_mult != 1.0 || m.nauka_mult != 1.0 || m.kultura_mult != 1.0
+                m.production_mult != 1.0
+                    || m.pieniadz_mult != 1.0
+                    || m.nauka_mult != 1.0
+                    || m.kultura_mult != 1.0
             }) {
                 nonneutral += 1;
             }
             // 4. tick 2 z mapa Rust == tick 2 z mapa weba (stan po petli, ten sam dla obu).
-            let (a, _) = run_tick(&inp.cities, &inp.built, &inp.owner_civ, &era, &inp.state.order_mult_map);
+            let (a, _) = run_tick(
+                &inp.cities,
+                &inp.built,
+                &inp.owner_civ,
+                &era,
+                &inp.state.order_mult_map,
+            );
             let (b, _) = run_tick(&inp.cities, &inp.built, &inp.owner_civ, &era, &web_map);
             if a != b {
-                errs.push(format!("e2e{i}: tick 2 z orderMultMap Rust != tick 2 z orderMultMap weba"));
+                errs.push(format!(
+                    "e2e{i}: tick 2 z orderMultMap Rust != tick 2 z orderMultMap weba"
+                ));
             }
             // kontrola negatywna: pusta mapa zmienia tick w czesci swiatow.
-            let (c, _) = run_tick(&inp.cities, &inp.built, &inp.owner_civ, &era, &BTreeMap::new());
+            let (c, _) = run_tick(
+                &inp.cities,
+                &inp.built,
+                &inp.owner_civ,
+                &era,
+                &BTreeMap::new(),
+            );
             if a != c {
                 differs_from_empty += 1;
             }
@@ -1278,7 +1661,10 @@ mod e2e {
         }
         report(errs, "e2e");
         assert!(ran >= 80, "ran={ran}");
-        assert!(nonneutral >= 20, "za malo swiatow z nieneutralnym porzadkiem: {nonneutral}");
+        assert!(
+            nonneutral >= 20,
+            "za malo swiatow z nieneutralnym porzadkiem: {nonneutral}"
+        );
         assert!(
             differs_from_empty >= 15,
             "kontrola negatywna: orderMultMap prawie nie wplywa na tick ({differs_from_empty})"

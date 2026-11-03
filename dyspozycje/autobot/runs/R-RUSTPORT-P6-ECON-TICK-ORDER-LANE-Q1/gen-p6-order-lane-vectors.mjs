@@ -22,6 +22,33 @@ const game = join(workDir, 'gra/src/game');
 const dataDir = join(workDir, 'gra/data');
 const esbuild = await import(pathToFileURL(esbuildMain).href);
 
+// ---- macierz cywilizacji: w danych pinu parametry porzadku/kultury/religii sa WSZEDZIE 0 (mutacje 31/50/61/67 byly
+// rownowazne na prawdziwych danych). Wektory uruchamiaja web na macierzy z deterministyczna ZALATA (zapisana w `matrixPatch`,
+// Rust nakłada tę samą łatkę na swoją kopię `civ-matrix.json`).
+const realMatrixPath = join(workDir, 'gra/data/civ-matrix.json');
+const matrixJson = JSON.parse(readFileSync(realMatrixPath, 'utf8'));
+const TBL = {
+  kultura_naplyw_proc: [0, 0.2, -0.3, 0.5],
+  lud_zadowolenie_bazowe: [0, 1, -1, 2],
+  eko_zadowolenie_proc: [0, 0.1, -0.2, 0.3],
+  religia_spread_proc: [0, 0.5, -0.5, 1],
+  porzadek_produkcja_proc: [0, 0.1, -0.1, 0.2],
+  porzadek_pieniadz_proc: [0.05, 0, -0.15, 0.1],
+  porzadek_nauka_proc: [0, 0.1, 0, -0.1],
+  porzadek_wzrost_proc: [0.1, 0, -0.1, 0.2],
+  porzadek_kultura_proc: [0, 0.05, 0.1, -0.05],
+};
+const matrixPatch = {};
+matrixJson.cywilizacje.forEach((c, i) => {
+  matrixPatch[c.ikonaId] = {};
+  Object.entries(TBL).forEach(([p, vals], k) => {
+    const v = vals[(i + k) % 4];
+    c.params[p] = v;
+    matrixPatch[c.ikonaId][p] = v;
+  });
+});
+writeFileSync(realMatrixPath, JSON.stringify(matrixJson));
+
 const THREE_NAMES = ['ACESFilmicToneMapping', 'AmbientLight', 'Box3', 'BoxGeometry', 'BufferAttribute', 'BufferGeometry', 'Camera', 'CanvasTexture', 'CatmullRomCurve3', 'CircleGeometry', 'Color', 'ConeGeometry', 'CylinderGeometry', 'DirectionalLight', 'DodecahedronGeometry', 'DoubleSide', 'Euler', 'ExtrudeGeometry', 'Float32BufferAttribute', 'Fog', 'FogExp2', 'Group', 'HemisphereLight', 'IcosahedronGeometry', 'InstancedBufferAttribute', 'InstancedMesh', 'Intersection', 'Line', 'LineBasicMaterial', 'LineDashedMaterial', 'LineLoop', 'LineSegments', 'LinearFilter', 'LinearMipmapLinearFilter', 'Material', 'MathUtils', 'Matrix4', 'Mesh', 'MeshBasicMaterial', 'MeshLambertMaterial', 'MeshPhongMaterial', 'MeshStandardMaterial', 'Object3D', 'OctahedronGeometry', 'OrthographicCamera', 'PCFSoftShadowMap', 'Path', 'PerspectiveCamera', 'Plane', 'PlaneGeometry', 'QuadraticBezierCurve3', 'Quaternion', 'Raycaster', 'RingGeometry', 'SRGBColorSpace', 'Scene', 'Shape', 'ShapeGeometry', 'SphereGeometry', 'Sprite', 'SpriteMaterial', 'Texture', 'TorusGeometry', 'TubeGeometry', 'Vector2', 'Vector3', 'WebGLRenderer'];
 const THREE_STUB = 'class S { constructor() { return new Proxy(this, { get: (t, k) => (k in t ? t[k] : () => {}) }); } }\n' + THREE_NAMES.map((n) => 'export const ' + n + ' = S;').join('\n');
 
@@ -276,7 +303,7 @@ function genRelState(pop) {
   return { counts };
 }
 
-function genScenario(idx, ownersOpt) {
+function genScenario(idx, ownersOpt, mode) {
   const difficulty = pick(DIFFS);
   const turn = pick([0, 1, 2, 5, 9, 10, 11, ri(12, 400), ri(12, 400), 4294967296, 4294967297]);
   const nCities = ri(1, 7);
@@ -292,7 +319,7 @@ function genScenario(idx, ownersOpt) {
   for (let i = 0; i < nCities; i++) {
     let q, r; do { q = ri(0, 6); r = ri(0, 6); } while (used.has(q + ',' + r)); used.add(q + ',' + r);
     const id = chance(0.85) ? 'city' + (i + 1 + (chance(0.1) ? 9 : 0)) : 'miasto_' + String.fromCharCode(97 + i);
-    const pop = ri(1, 14);
+    const pop = mode === "conquest" ? ri(2, 8) : chance(0.1) ? ri(1, 14) + 0.5 : ri(1, 14);
     const c = { id, name: 'M' + i, ownerId: pick(owners), q, r, population: pop, kultura: pick([undefined, 0, ri(0, 80), ri(80, 700)]) };
     if (c.kultura === undefined) delete c.kultura;
     const mixKind = rng();
@@ -300,7 +327,8 @@ function genScenario(idx, ownersOpt) {
     else if (mixKind < 0.35) c.kulturaOwnShare = pick([0, 0.3, 0.5, 0.8, 1, rf(0, 1)]);
     if (chance(0.25)) { c.religionPressurePct = {}; for (const o of owners) if (chance(0.5)) c.religionPressurePct[o] = ri(0, 100); }
     if (chance(0.1)) c.rebelState = true;
-    if (chance(0.45)) c.revoltGraceRemaining = pick([0, 0, 1, 2, 3]);
+    if (mode !== "conquest" && chance(0.45)) c.revoltGraceRemaining = pick([0, 0, 1, 2, 3]);
+    if (mode === "conquest") { delete c.kulturaOwnShare; c.ownCultureShare = pick([0, 0.1, 0.3, 0.45, 0.49]); delete c.rebelState; delete c.postCaptureLawTurnsRemaining; }
     if (chance(0.12)) { c.postCaptureLawTurnsRemaining = pick([1, 2, 5, 10]); if (chance(0.5)) c.wasRebellionReconquest = true; }
     if (chance(0.12)) c.rebelProtectionTurnsRemaining = pick([1, 5, 20]);
     const sur = surowce(c); if (sur) c.surowce = sur;
@@ -311,7 +339,7 @@ function genScenario(idx, ownersOpt) {
     if (chance(0.85)) built[id] = b;
     if (chance(0.9)) econ.push([id, { kultura: pick([0, rf(0, 40), ri(0, 20)]), wealthZadowolenie: pick([0, rf(-4, 6), ri(-3, 5)]), garncarniaSurplusZadowolenie: pick([0, 1, 2]), maSpichlerz: chance(0.3), maSpichlerzII: chance(0.15) }]);
     if (chance(0.7)) luksus[id] = pick([0, 10, 20, 30, 50, 80, ri(0, 100)]);
-    const st = genRelState(pop); if (st) cityRelig.push([id, st]);
+    const st = mode === "conquest" ? { counts: { [pick(RELIGIONS)]: Math.floor(pop) } } : genRelState(pop); if (st) cityRelig.push([id, st]);
     if (chance(0.4)) orderValueMap.push([id, pick([0, 25, 50, 80, rf(0, 120)])]);
   }
   const ownerCivMap = []; const religionCiv = [];
@@ -323,19 +351,33 @@ function genScenario(idx, ownersOpt) {
   for (const o of owners) { era[o] = pick([1, 1, 2, 3, 4, 5, 8, 12]); if (chance(0.5)) tech[o] = ['Waluta', 'Zelazo', 'Brąz'].filter(() => chance(0.5)); if (chance(0.3)) wonderZad[o] = ri(1, 4); }
   era['-99'] = 1;
   const units = [];
-  for (const c of cities) for (let k = 0; k < pick([0, 0, 1, 2, 3, 6]); k++) units.push({ ownerId: chance(0.9) ? c.ownerId : pick(owners), q: c.q, r: c.r, oblegaCityId: chance(0.12) ? 'x' : undefined });
-  for (let k = 0; k < 3; k++) units.push({ ownerId: pick(owners), q: ri(0, 6), r: ri(0, 6) });
+  if (mode !== "conquest") for (const c of cities) for (let k = 0; k < pick([0, 0, 1, 2, 3, 6]); k++) units.push({ ownerId: chance(0.9) ? c.ownerId : pick(owners), q: c.q, r: c.r, oblegaCityId: chance(0.12) ? 'x' : undefined });
+  if (mode !== "conquest") for (let k = 0; k < 3; k++) units.push({ ownerId: pick(owners), q: ri(0, 6), r: ri(0, 6) });
   const relMap = new Map();
   for (let k = 0; k < ri(0, 4); k++) relMap.set(pick(['0_1', '1_0', '1_2', '2_1', '0_2', '0_-1', '-1_1', '1_2_3', '0_3', 'x_1']), chance(0.7));
   const relations = [...relMap.entries()];
   const humans = pick([[0], [0, 1], [], [0]]);
+  if (mode === 'conquest') {
+    // dominacja obcej religii o 1 wyznawce: pierwsza konwersja (>=1 osoba) ja odwraca => ponowne liczenie obcej religii ma znaczenie
+    for (const c of cities) {
+      if (!chance(0.6)) continue;
+      const rc = religionCiv.find(([o]) => o === c.ownerId);
+      const own = rc ? CR.civReligionForKey(rc[1], SOCIETY, CIVS) : null;
+      if (!own) continue;
+      const other = pick(RELIGIONS.filter((r) => r !== own));
+      const m = Math.max(1, Math.floor(c.population / 2));
+      const entry = cityRelig.find(([id]) => id === c.id);
+      const st = { counts: { [other]: m + 1, [own]: m } };
+      if (entry) entry[1] = st; else cityRelig.push([c.id, st]);
+    }
+  }
   const capitalByOwner = owners.filter(() => chance(0.4)).map((o) => [o, pick(cities.map((c) => c.id).concat(['brak']))]);
   return { idx, difficulty, turn, cities, built, econ, luksus: luksus, cityRelig, orderValueMap, ownerCivMap, religionCiv, era, tech, wonderZad, units, relations, humans, capitalByOwner };
 }
 
 const scenarios = [];
 const cov = { bunt: 0, rebelled: 0, postCapture: 0, immune: 0, warning: 0, unrest: 0, orderTier: 0, drained: 0, rngDraws: 0, mixPressureChanged: 0, spreadChanged: 0 };
-for (let i = 0; i < 700; i++) {
+for (let i = 0; i < 450; i++) {
   const sc = genScenario(i);
   const out = runLane(sc);
   for (const r of out.reports) { if (r.bunt) cov.bunt++; if (r.revoltWarning) cov.warning++; if (r.tier === 'unrest') cov.unrest++; if (r.tier === 'order') cov.orderTier++; }
@@ -343,6 +385,15 @@ for (let i = 0; i < 700; i++) {
   if (sc.cities.some((c) => c.postCaptureLawTurnsRemaining > 0)) cov.postCapture++;
   if (out.citizen.some(([, v]) => Object.keys(v.deductions).length > 0)) cov.drained++;
   if (out.cities.some((c, k) => c.ownCultureShare !== sc.cities[k].ownCultureShare && sc.cities[k].ownCultureShare !== undefined)) cov.mixPressureChanged++;
+  scenarios.push({ in: sc, out });
+}
+// scenariusze "podboj" (niska kultura wlasna + obca religia, bez garnizonu): wyzwalaja conquestRevoltRiskMultiplier.
+for (let i = 0; i < 300; i++) {
+  const sc = genScenario(20000 + i, pick([[0], [0, 1], [1, 2]]), 'conquest');
+  sc.difficulty = pick(['normal', 'hard', 'hard']);
+  const out = runLane(sc);
+  for (const r of out.reports) { if (r.bunt) cov.bunt++; if (r.tier === 'unrest') cov.unrest++; }
+  cov.rngDraws += out.rngDraws;
   scenarios.push({ in: sc, out });
 }
 
@@ -446,7 +497,7 @@ for (const key of [...CIV_KEYS, ...CIV_KEYS.map((k) => k.toUpperCase()), 'Grecy'
   civRelCases.push({ key: key === undefined ? null : key, out: CR.civReligionForKey(key, SOCIETY, CIVS) ?? null, noCivs: CR.civReligionForKey(key, SOCIETY, undefined) ?? null });
 }
 const probeBits = [];
-for (let i = 0; i < 400; i++) { const v = rf(-3, 3) * pick([1, 1e-9, 1e9, 0.1]); const b = new DataView(new ArrayBuffer(8)); b.setFloat64(0, v); probeBits.push([v, b.getBigUint64(0).toString(16).padStart(16, '0')]); }
+for (let i = 0; i < 300; i++) { const v = rf(-3, 3) * pick([1, 1e-9, 1e9, 0.1]); const b = new DataView(new ArrayBuffer(8)); b.setFloat64(0, v); probeBits.push([v, b.getBigUint64(0).toString(16).padStart(16, '0')]); }
 
 // ---- e2e: stan -> (tick Rust) -> porzadek -> orderMultMap -> tick. Dwie fazy (patrz doc sek. 5):
 // faza 1 (bez econFile) emituje swiaty; Rust tick 1 zrzuca econ per miasto; faza 2 (z econFile) uruchamia web-petle z TYMI econ.
@@ -465,6 +516,6 @@ for (let i = 0; i < 80; i++) {
   }
 }
 
-const json = JSON.stringify({ pin: PIN, cov, scenarios, e2e, effectsCases, postCases, rngCases, garrCases, warCases, cultCases, relCases, pressCases, civRelCases, probeBits });
+const json = JSON.stringify({ pin: PIN, matrixPatch, cov, scenarios, e2e, effectsCases, postCases, rngCases, garrCases, warCases, cultCases, relCases, pressCases, civRelCases, probeBits });
 writeFileSync(outFile, json);
 console.log(`scenariusze=${scenarios.length} bytes=${json.length} cov=${JSON.stringify(cov)} -> ${outFile}`);

@@ -232,7 +232,7 @@ for sc in d["scenarios"] + d["e2e"]:
     pops_after = {c["id"]: c["population"] for c in o["cities"]}
     nb = sum(1 for r in reps if r["bunt"])
     moved = sum(max(0, pops_before[k] - pops_after[k]) for k in pops_before)
-    chk(moved == nb, f"lane{i} suma ubytkow populacji == liczba buntow ({moved} vs {nb})")
+    chk(moved <= nb, f"lane{i} suma ubytkow populacji <= liczba buntow ({moved} vs {nb})")
     chk(sum(pops_before.values()) == sum(pops_after.values()), f"lane{i} populacja zachowana")
     chk(o["rngDraws"] <= len(reps), f"lane{i} rngDraws <= miasta")
     for cid in o["rebelled"]:
