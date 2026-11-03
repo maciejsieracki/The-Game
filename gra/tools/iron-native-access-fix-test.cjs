@@ -56,7 +56,8 @@ console.log('\n3. Straznik zrodla main.ts (obie sklejki na wspolnej sciezce; ta 
 const main = fs.readFileSync(path.resolve(__dirname, '..', 'src', 'main.ts'), 'utf8');
 assert(!/hasZelazoAccess\s*\(\s*hasKopalniaZelazo/.test(main), 'main.ts nie wola hasZelazoAccess(hasKopalniaZelazo, ...)');
 assert(!/import\s*\{[^}]*\bhasZelazoAccess\b[^}]*\}\s*from\s*'\.\/game\/zelazo-access'/.test(main), 'main.ts nie importuje juz hasZelazoAccess');
-const calls = main.match(/ownerHasNativeZelazoAccess\([^;]{0,200}?citySurowceSumForOwner\(ownerId\)/g) || [];
+assert(!/\bhasZelazoAccess\s*\(/.test(main.replace(/\/\/[^\n]*|\/\*[\s\S]*?\*\//g, '')), 'main.ts (bez komentarzy) w ogole nie wola hasZelazoAccess( -- odporne na refaktor formatowania');
+const calls = main.match(/ownerHasNativeZelazoAccess\s*\([^;]{0,300}?citySurowceSumForOwner\s*\(\s*ownerId\s*\)/g) || [];
 assert(calls.length === 2, 'main.ts: 2 wywolania ownerHasNativeZelazoAccess(.., citySurowceSumForOwner(ownerId), ..) (znaleziono ' + calls.length + ')');
 
 console.log('\n' + passed + ' passed, ' + failed + ' failed');
