@@ -1,0 +1,6 @@
+M1 bez guardu kopalni: exit=1 FAIL=1 (ZABITA)
+M2 ignoruje zapas: exit=1 FAIL=4 (ZABITA)
+M3 stary boolean zamiast zapasu: exit=1 FAIL=3 (ZABITA)
+M4 ignoruje odlewnie: exit=1 FAIL=1 (ZABITA)
+restored=true
+EXIT=0
