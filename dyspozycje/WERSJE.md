@@ -1,3 +1,12 @@
+## ROBOCZA 300a5c5b -- 2026-11-03 -- automat wycina las przy rzekach (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`23dd158e9` + `R-WEB-AUTOCLEAR-RIVER-FOREST-PRIORITY-Q2` `451dacd61`) i commit wdrożenia bundla; zgłoszenie właściciela (2026-11-03, zrzut Mykeny), stała zgoda na poprawki z testów.
+- Bundle MD5 `300a5c5bafa7811a2f044165cbce8939`, 70,129,262 B, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, outDir poza repo, stempel ROBOCZA; `verify-robocza-bundle.cjs` VERIFY OK.
+- Zakres: w trybie Żywność przy „Wolno wycinać las” ON automat wycina las na i przy rzece (pod farmę) także przy włączonym „Tylko pola z obywatelami” (wcześniej filtr odcinał las rzeczny bez obywatela i automat budował trzodę/irygację). OFF nadal blokuje całą wycinkę. Żywy pomiar: 0 wycinek w 15 turach → wycinka w t2.
+- Testy: tsc PASS; autoclear-river-forest-priority 19/0 (PRZED 9/2), mutacje M1–M3 łamią test; 13 testów regresji EXIT=0.
+- Ograniczenia: farma na wyciętym heksie rzeki bez obywatela nadal podlega filtrowi „tylko pola z obywatelami” (DECYZJA do właściciela); poprawka tylko w trybie Żywność, „Zrównoważone” bez zmian (DECYZJA); `oboz-lowiecki-las` pada też na bazie.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `4049e7807bdb1508e35f83dd6f7b0d2d`, 70,129,073 bajtów.
+
 ## ROBOCZA 4049e780 -- 2026-11-02 -- strażnica i fort odsłaniają mgłę wojny (testowa)
 
 - **STATUS: DEPLOYED** — merge do `origin/main` (`9ce1f5e50` + `R-WEB-FORT-VISION-FOG-Q1` `b38f40860`) i commit wdrożenia bundla; zgłoszenie właściciela (2026-11-02, zrzut), stała zgoda na poprawki.

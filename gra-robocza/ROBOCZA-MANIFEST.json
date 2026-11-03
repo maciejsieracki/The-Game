@@ -1,114 +1,115 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA; push do origin/main wykonany na polecenie właściciela (2026-10-31)",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "4049e7807bdb1508e35f83dd6f7b0d2d",
-  "bundleSha256": "def97de6042e8aa72d93808f726ce231665dc9ffd1f102018c36b0ec5efbd414",
-  "bundleBytes": 70129073,
+  "bundleMd5": "300a5c5bafa7811a2f044165cbce8939",
+  "bundleSha256": "08dc38a91be4ac573b65d3bd14a9930ba3deba0bbe940579028d158ca1821e4b",
+  "bundleBytes": 70129262,
   "sourceSnapshot": {
-    "source": "main 9ce1f5e50 + R-WEB-FORT-VISION-FOG-Q1 (b38f40860)",
+    "source": "main 23dd158e9 + R-WEB-AUTOCLEAR-RIVER-FOREST-PRIORITY-Q2 (451dacd61)",
     "build": "Vite 5.4.x direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "R-WEB-FORT-VISION-FOG-Q1 (zgłoszenie właściciela, zrzut): posterunek (promień 3) i fort (promień 5) gracza są teraz źródłami wzroku o promieniu swojego terytorium — całe koło terytorium jest odkryte i widoczne jak przy mieście (wcześniej fort/posterunek rozszerzał terytorium, ale pola zostawały pod mgłą wojny). Zmierzone w żywej grze: fort 20 pól od miasta, koło 91 pól: nieodkrytych PRZED 91/91, PO 0/91 (także po zdobyciu fortu obcego). Raz odkryte pola zostają odkryte po utracie fortu (znika tylko bieżąca widoczność); fort wroga niczego nie odsłania graczowi. Zmiana dotyczy też AI: AI z fortem/posterunkiem widzi jego koło (widoczność właściciela z fortem r=5: 91 → 182 pola)."
+    "R-WEB-AUTOCLEAR-RIVER-FOREST-PRIORITY-Q2 (zgłoszenie właściciela, zrzut Mykeny): w trybie Żywność, przy „Wolno wycinać las” ON, automat wycina las na i przy rzece (pod farmę) także przy włączonym „Tylko pola z obywatelami” (wcześniej filtr odcinał las rzeczny bez obywatela, więc wycinka nie miała celu, a automat budował trzodę/irygację). Żywy pomiar: 0 wycinek w 15 turach → wycinka w t2. OFF nadal blokuje całą wycinkę."
   ],
   "verification": [
     "tsc --noEmit PASS",
-    "fort-vision-test 15/0, auto-fort-claim 63/0, auto-fort-diag 17/0, fort-outpost-hard-territory 80/0, river-fog-visibility 31/0, autoimprove-live-hooks 37/0",
-    "Żywy pomiar w Chromium (PRZED 91/91 → PO 0/91 nieodkrytych)",
-    "Build Vite PASS, verify-robocza-bundle"
+    "autoclear-river-forest-priority-test 19/0 (PRZED 9/2), mutacje M1–M3 łamią test",
+    "regresje 13/13 EXIT=0 (ai-food-improvement-priority-stages, ai-improvements, auto-improvements, autoclear-priority-q1, autoimprove-stages-q1, city-clears-forest, farma-nie-w-lesie, food-hodowla, hodowla-las, oboz-lowiecki-wymaga-tartaku, wyrab-rzeka-d1/krok0/r2)",
+    "Żywy pomiar w Chromium: PRZED 0 wycinek / PO wycinka w t2"
   ],
   "limits": [
-    "NIE_ZMIERZONO: budowa i cofnięcie fortu przez panel gracza (hak placeFort omija kod panelu `main.ts:15087`, `:14875`) — do ręcznej weryfikacji w grze",
-    "NIE_ZMIERZONO: wpływ zwiększonej widoczności fortów na zachowanie AI w pełnej grze",
-    "`ai-fog-test` pada także na bazie 420d97ffe (wcześniejsza porażka, niezwiązana)"
+    "Przy „Tylko pola z obywatelami” ON farma na wyciętym heksie rzeki bez obywatela nadal podlega filtrowi (do czasu obywatela na heksie) — DECYZJA do właściciela",
+    "Poprawka tylko w trybie Żywność (K1); „Zrównoważone” bez zmian — DECYZJA do właściciela",
+    "NIE_ZMIERZONO: etykieta „wycinka (rzeka+las)” w samym UI",
+    "`oboz-lowiecki-las` EXIT=1 także na bazie (wcześniejsza porażka, niezwiązana)"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES / PASS",
-    "notes": "FORT-VISION-FOG (r2): Operator → Evaluator PASS-WITH-NOTES → Obrona (żywy pomiar) → FC PASS."
+    "notes": "AUTOCLEAR-RIVER-FOREST (r1): Operator → Evaluator PASS-WITH-NOTES → Obrona → FC PASS."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-02T16:45:16",
+  "hubGeneratedAt": "2026-11-03T16:03:16",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "4049e7807bdb1508e35f83dd6f7b0d2d",
-      "sizeBytes": 70129073
+      "md5": "300a5c5bafa7811a2f044165cbce8939",
+      "sizeBytes": 70129262
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "4049e7807bdb1508e35f83dd6f7b0d2d",
-      "sizeBytes": 70129073
+      "md5": "300a5c5bafa7811a2f044165cbce8939",
+      "sizeBytes": 70129262
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "4049e7807bdb1508e35f83dd6f7b0d2d",
-      "sizeBytes": 70129073
+      "md5": "300a5c5bafa7811a2f044165cbce8939",
+      "sizeBytes": 70129262
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "4049e7807bdb1508e35f83dd6f7b0d2d",
-      "sizeBytes": 70129073
+      "md5": "300a5c5bafa7811a2f044165cbce8939",
+      "sizeBytes": 70129262
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "4049e7807bdb1508e35f83dd6f7b0d2d",
-      "sizeBytes": 70129073
+      "md5": "300a5c5bafa7811a2f044165cbce8939",
+      "sizeBytes": 70129262
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "4049e7807bdb1508e35f83dd6f7b0d2d",
-      "sizeBytes": 70129073
+      "md5": "300a5c5bafa7811a2f044165cbce8939",
+      "sizeBytes": 70129262
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "4049e7807bdb1508e35f83dd6f7b0d2d",
-      "sizeBytes": 70129073
+      "md5": "300a5c5bafa7811a2f044165cbce8939",
+      "sizeBytes": 70129262
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "4049e7807bdb1508e35f83dd6f7b0d2d",
-      "sizeBytes": 70129073
+      "md5": "300a5c5bafa7811a2f044165cbce8939",
+      "sizeBytes": 70129262
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "4049e7807bdb1508e35f83dd6f7b0d2d",
-      "sizeBytes": 70129073
+      "md5": "300a5c5bafa7811a2f044165cbce8939",
+      "sizeBytes": 70129262
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "4049e7807bdb1508e35f83dd6f7b0d2d",
-      "sizeBytes": 70129073
+      "md5": "300a5c5bafa7811a2f044165cbce8939",
+      "sizeBytes": 70129262
     }
   ],
-  "md5": "4049e7807bdb1508e35f83dd6f7b0d2d",
-  "sizeBytes": 70129073,
+  "md5": "300a5c5bafa7811a2f044165cbce8939",
+  "sizeBytes": 70129262,
   "publisher": "Claude Code orkiestrator — stała zgoda właściciela 2026-10-31",
   "source": "gra/src; main 9ce1f5e50 + merge b38f40860",
   "immediatePreviousRelease": {
-    "bundleMd5": "1d59a3469fcee88c93c4c380e0867ef6"
+    "bundleMd5": "4049e7807bdb1508e35f83dd6f7b0d2d"
   },
   "rollbackPlan": {
-    "method": "git revert commitu wdrożenia; poprzedni bundel MD5 1d59a3469fcee88c93c4c380e0867ef6, 70128592 bajtów."
+    "method": "git revert commitu wdrożenia; poprzedni bundel MD5 4049e7807bdb1508e35f83dd6f7b0d2d, 70129073 bajtów."
   },
   "previousRelease": {
     "releaseState": "DEPLOYED TO ROBOCZA; push do origin/main wykonany na polecenie właściciela (2026-10-31)",
@@ -1284,8 +1285,8 @@
     "sourceCommit": "c46d6c47ff8643fabdcdd58d5c8067e07737326f",
     "publicationCommit": "0e85b43814f503fe34b42c88df4dd07233dbdfb"
   },
-  "publishedAt": "2026-11-02T17:30:00+00:00",
-  "buildStamp": "2026-11-02 17:29",
+  "publishedAt": "2026-11-03T16:03:28+00:00",
+  "buildStamp": "2026-11-03 16:03",
   "battleBundle": {
     "file": "Gra-ROBOCZA-POLE-BITWY.html",
     "md5": "daf66e2423e0f550db70ee41d8cdf12f",
