@@ -8596,3 +8596,6 @@ Ustalenie: surowce/Praca/Nauka/złoto były przenoszone wcześniej; brakowało �
 
 ## 2026-11-03 — wdrożono ROBOCZA acb3c562 (main 1117c6515): Milicja = mieszkańcy, wręcz/dystans wg epoki
 Backlog z FC: oznaczenie modeli milicji jako „Milicja” (osobny temat, bez zmiany `typeId`); testy `barb-city-capture-cluster`, `budynek-garnizon` padają na bazie; pomiar bitwy 3D przy 60 jednostkach; „Wojownik z mieczem i tarczą” zamiast „Miecznika z tarczą” (nazwa w danych).
+
+## 2026-11-03 — DECYZJA WŁAŚCICIELA (ABC): ulepszenia terenu rosną z epoką
+(1) Każde ulepszenie terenu zwiększa Żywność, Pracę i Handel (tylko te pola, które ma >0) o +1 w Epoce Brązu i +2 w Epoce Żelaza — wg AKTUALNEJ epoki właściciela (też dla już postawionych ulepszeń, niezależnie od epoki odblokowania ulepszenia); dotyczy ulepszeń żywnościowych i surowcowych (i dróg, wycinki). (2) Wszystkie ulepszenia surowcowe (Tartak i Kamieniołom już tak mają) zwiększają produkcję surowca ×1,5 za epokę (Kamień ×1 → Brąz ×1,5 → Żelazo ×2,25; zaokrąglenie do całości); **Złoto też ×1,5** (1 → 2 → 2). Temat `R-WEB-IMPROVEMENT-ERA-SCALING-Q1`.
