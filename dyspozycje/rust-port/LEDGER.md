@@ -690,3 +690,6 @@ Zasada: stale 2 tematy Rust równolegle (limit dysku: worktree ≈ 1 GB każdy, 
 - 2026-11-03 15:14 kontrola: TRUCE-AGRESOR (wf_6b1cca1c-10e) i PROFIL-WOJNY-POKOJU (wf_5f3dd8c7-4cd, powtorka r1) trwaja; nic do integracji.
 
 - 2026-11-03 kolejka web: R-WEB-AI-MARCH-AVOID-FOREIGN-TERRITORY-Q1 (dispatch gotowy, start po zwolnieniu slotu/dysku).
+
+## 2026-11-03 — R-RUSTPORT-P6-DYPLOMACJA-TRUCE-AGRESOR-Q1 ZINTEGROWANE
+FC PASS-WITH-NOTES, kandydat `79e51289f` (`rust-port-wip/DYPL1-fc`), merge z parity-v2 `66df65a1b` → `6b3882cad` (bez konfliktów). fmt/clippy `-D warnings` EXIT=0, pełny `cargo test -j 2`: 2112 passed / 0 failed. Push na `rust-port/parity-v2`. Dług: dwie bramki walutowe w wojnie (`diplomacy.rs:2726` vs `diplomacy_war_gates.rs`) do przepięcia w temacie 5 POKOJ-ROZEJM-CESJA; nowy kod niepodpięty do `session.rs`/`state.rs`. Następny: 3 MULTIWAR-ERA-BRAMKI (po zwolnieniu slotu/dysku).
