@@ -17,30 +17,36 @@ const entry = path.join(tmp, 'entry.ts');
 const bundle = path.join(tmp, 'bundle.cjs');
 fs.writeFileSync(entry, [
   `export { convertWorkPoolToTax, executeManualWorkTaxConversion } from ${JSON.stringify(SRC + '/game/work-tax')};`,
-  `import * as W from ${JSON.stringify(SRC + '/game/work-tax')}; export const workTaxResultMessage = (W as any).workTaxResultMessage;`,
+  `import * as W from ${JSON.stringify(SRC + '/game/work-tax')}; export const workTaxResultMessage = (W as any).workTaxResultMessage; export const runManualWorkTaxAction = (W as any).runManualWorkTaxAction;`,
   `export { loadEconParams, cityYieldPerTurn } from ${JSON.stringify(SRC + '/game/economy')};`,
   `export { TerenBazowy, Nakladka } from ${JSON.stringify(SRC + '/types/hex')};`,
 ].join('\n'));
 esbuild.buildSync({ entryPoints: [entry], bundle: true, platform: 'node', format: 'cjs', target: 'node18', outfile: bundle,
   absWorkingDir: ROOT, logLevel: 'silent', nodePaths: [path.join(ROOT, 'node_modules')] });
-const { convertWorkPoolToTax, executeManualWorkTaxConversion, workTaxResultMessage, loadEconParams, cityYieldPerTurn, TerenBazowy, Nakladka } = require(bundle);
+const { convertWorkPoolToTax, executeManualWorkTaxConversion, workTaxResultMessage, runManualWorkTaxAction, loadEconParams, cityYieldPerTurn, TerenBazowy, Nakladka } = require(bundle);
 
 let passed = 0, failed = 0;
 function ok(c, m) { if (c) { passed++; console.log('PASS: ' + m); } else { failed++; console.error('FAIL: ' + m); } }
 function eq(a, b, m) { ok(a === b, `${m} (got ${a}, want ${b})`); }
 
 // --- (A) sondy zrodlowe main.ts / panel -------------------------------------------------------
-const main = fs.readFileSync(path.join(SRC, 'main.ts'), 'utf8');
+const stripComments = (t) => t.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:])\/\/.*$/gm, '$1');
+const main = stripComments(fs.readFileSync(path.join(SRC, 'main.ts'), 'utf8'));
 const hookStart = main.indexOf('onConvertOwnerWorkToTax: (ownerId, requested) =>');
 const hookEnd = main.indexOf('getOwnerDefaultPodzialPracy:', hookStart);
 const hook = hookStart > 0 && hookEnd > hookStart ? main.slice(hookStart, hookEnd) : '';
 ok(hook.length > 0, 'hook onConvertOwnerWorkToTax istnieje w main.ts');
-ok(/markCityStateDirty\(\)/.test(hook), 'hook oznacza ekonomie jako brudna (HUD +N/ture doliczy podatek)');
-ok(/workTaxResultMessage\(/.test(hook) && /showHintMessage\(/.test(hook), 'hook zawsze pokazuje komunikat (sukces i odmowa)');
-ok(/refreshLiveEmpireRates\(\)/.test(hook), 'hook przelicza projekcje przychodu po akcji');
-const panel = fs.readFileSync(path.join(SRC, 'ui', 'empireDetailPanel.ts'), 'utf8');
+ok(/runManualWorkTaxAction\(ownerId, requested, rate, enabled,/.test(hook), 'hook deleguje do runManualWorkTaxAction (testowanej behawioralnie w sekcji F)');
+ok(/markDirty:\s*\(\)\s*=>\s*markCityStateDirty\(\)/.test(hook), 'io.markDirty = markCityStateDirty (ustawia empireEconDirty)');
+ok(/refreshRates:\s*\(\)\s*=>\s*refreshLiveEmpireRates\(\)/.test(hook), 'io.refreshRates = refreshLiveEmpireRates');
+ok(/readRates:[^\n]*_lastPieniadzRate[^\n]*_lastNaukaRate/.test(hook), 'io.readRates czyta _lastPieniadzRate/_lastNaukaRate');
+ok(/showMessage:\s*\(msg\)\s*=>\s*showHintMessage\(msg/.test(hook), 'io.showMessage = showHintMessage');
+ok(/previewOwnerWorkTaxEffect:/.test(main) && /finally\s*\{[\s\S]*pendingManualWorkTaxByOwner\.(set|delete)\(ownerId/.test(main), 'main udostepnia panelowi podglad wplywu z silnika i przywraca kolejke (finally)');
+const panelRaw = fs.readFileSync(path.join(SRC, 'ui', 'empireDetailPanel.ts'), 'utf8');
+const panel = stripComments(panelRaw);
 ok(!/amount < 1 \|\| tax < 1 \|\| !window\.confirm/.test(panel), 'panel nie gubi cicho odmowy (0 Pracy / 0 Podatku)');
-ok(/udział „Podatek”/.test(panel), 'panel mowi, ze do Skarbca idzie tylko udzial "Podatek"');
+ok(/udział „Podatek” \(Zamożność dodatkowo go mnoży\)/.test(panelRaw), 'panel mowi, ze do Skarbca idzie udzial "Podatek" (Zamoznosc mnozy)');
+ok(/na koniec tury: \+\$\{[^}]*eff\.skarb[^}]*\} do Skarbca/.test(panel) && /addEventListener\('change'[\s\S]*previewText\(work, true\)/.test(panel), 'panel: podglad "+X do Skarbca na koniec tury" (z silnika) przed akcja');
 
 // --- (B) przeplyw konwersji: 20 000 Pracy ------------------------------------------------------
 let pool = 25000; const queued = [];
@@ -101,6 +107,62 @@ r = run(-7, 1, true, 100); eq(r.p, 100, 'ujemna: pula nietknieta'); eq(r.q, 0, '
 r = run(NaN, 1, true, 100); eq(r.p, 100, 'NaN: pula nietknieta'); eq(r.q, 0, 'NaN: brak podatku');
 r = run(1, 0.5, true, 100); eq(r.p, 100, 'kurs 0.5, 1 Praca: nie marnuje Pracy'); eq(r.q, 0, 'kurs 0.5, 1 Praca: brak podatku');
 r = run(5, 1, true, 100); eq(r.p, 95, 'mala kwota: Praca -5'); eq(r.q, 5, 'mala kwota: +5 Podatku');
+
+
+// --- (F) BEHAWIORALNIE: prawdziwa runManualWorkTaxAction + model HUD z bramka `empireEconDirty` -----
+// Model odtwarza main.ts: refreshLiveEmpireRates() jest no-op gdy !empireEconDirty; przelicza projekcje
+// prawdziwym cityYieldPerTurn z additionalTax = zakolejkowany podatek; markCityStateDirty ustawia dirty.
+function makeHud(startPool, startQueued) {
+  const st = { pool: startPool, queued: startQueued, dirty: false, skarb: 0, nauka: 0, msgs: [], log: [], hud: 0 };
+  const recompute = () => { const y = yf(st.queued); st.skarb = y.pieniadz; st.nauka = y.nauka; };
+  recompute(); // stan poczatkowy ekranu
+  const io = {
+    getWorkPool: () => st.pool, setWorkPool: (_o, v) => { st.pool = v; },
+    queueTax: (_o, t) => { st.queued += t; st.log.push('queue'); },
+    refreshRates: () => { st.log.push('refresh'); if (!st.dirty) return; st.dirty = false; recompute(); },
+    markDirty: () => { st.log.push('dirty'); st.dirty = true; },
+    readRates: () => ({ skarb: st.skarb, nauka: st.nauka }),
+    showMessage: (m) => st.msgs.push(m), updateHud: () => { st.hud++; },
+  };
+  return { st, io };
+}
+ok(typeof runManualWorkTaxAction === 'function', 'F: runManualWorkTaxAction wyeksportowana');
+if (typeof runManualWorkTaxAction === 'function') {
+  let h = makeHud(25000, 0);
+  const skarbScreenBefore = h.st.skarb;
+  const spent = runManualWorkTaxAction(0, 20000, 1, true, h.io);
+  eq(spent, 20000, 'F: zwrocono 20 000 wydanej Pracy');
+  eq(h.st.pool, 5000, 'F: Praca w puli -20 000');
+  eq(h.st.skarb - skarbScreenBefore, 12000, 'F: "+N/ture" Skarbca na ekranie rosnie o 12 000 zaraz po zamianie');
+  eq(h.st.nauka, yf(20000).nauka, 'F: Nauka na ekranie zgodna z silnikiem');
+  eq(h.st.msgs.length, 1, 'F: dokladnie jeden komunikat');
+  ok(/\+12000 do Skarbca/.test(h.st.msgs[0] || ''), 'F: komunikat podaje +12000 do Skarbca (zgodny z ekranem)');
+  eq(h.st.hud, 1, 'F: updateHud wywolany raz');
+  eq(h.st.log.join(','), 'refresh,queue,dirty,refresh', 'F: kolejnosc: refresh(baza) -> queue -> markDirty -> refresh(po)');
+  // brak markDirty = pierwotny blad (HUD nie widzi podatku)
+  h = makeHud(25000, 0);
+  const noDirty = { ...h.io, markDirty: () => {} };
+  const before0 = h.st.skarb;
+  runManualWorkTaxAction(0, 20000, 1, true, noDirty);
+  eq(h.st.skarb - before0, 0, 'F: bez markDirty ekran NIE rosnie (odtworzenie pierwotnego bledu w modelu)');
+  ok(/\+0 do Skarbca/.test(h.st.msgs[0] || ''), 'F: ... a komunikat zdradza brak wplywu (+0)');
+  // odmowy: brak markDirty, brak zmiany Pracy, komunikat z powodem
+  for (const [req, en, pool, re] of [[0, true, 100, /większą od 0/], [-3, true, 100, /większą od 0/], [NaN, true, 100, /większą od 0/],
+    [10, false, 100, /Targowiska/], [10, true, 0, /Brak Pracy/]]) {
+    const hh = makeHud(pool, 0);
+    const sp = runManualWorkTaxAction(0, req, 1, en, hh.io);
+    ok(sp === 0 && hh.st.pool === pool && !hh.st.log.includes('dirty') && hh.st.msgs.length === 1 && re.test(hh.st.msgs[0]),
+      `F: odmowa (req=${req}, enabled=${en}, pula=${pool}): 0 wydane, pula nietknieta, bez markDirty, komunikat z powodem`);
+  }
+  { const hh = makeHud(100, 0); const sp = runManualWorkTaxAction(0, 1, 0.5, true, hh.io);
+    ok(sp === 0 && hh.st.pool === 100 && /0 Podatku/.test(hh.st.msgs[0]), 'F: kurs 0.5 / 1 Praca: Praca nie odjeta, komunikat z powodem'); }
+  // druga zamiana sumuje sie z pierwsza
+  h = makeHud(40000, 0);
+  runManualWorkTaxAction(0, 20000, 1, true, h.io);
+  const mid = h.st.skarb;
+  runManualWorkTaxAction(0, 10000, 1, true, h.io);
+  eq(h.st.skarb - mid, 6000, 'F: druga zamiana 10 000 -> kolejne +6 000 na ekranie');
+}
 
 console.log(`\n${passed} passed, ${failed} failed`);
 fs.rmSync(tmp, { recursive: true, force: true });
