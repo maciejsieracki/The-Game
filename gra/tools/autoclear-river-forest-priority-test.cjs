@@ -66,10 +66,11 @@ function pick({ map, worked, onlyWorked = true, skipWyrab = false, focus = 'zywn
     unlockedTechs: new Set(FULL), pracaSurplusThreshold: 0, skipWyrab, demandDriven: true, resourceDeficitKeys: [],
     getFocus: () => focus, getOnlyWorked: () => onlyWorked, getWorkedHexKeys: () => workedSet,
     pracaBudgetPercent: 100, getPracaBudgetPercent: () => 100, civArchetype: 'rzymianie', playerEra: 1,
-    foodImprovementStages: () => true, clearingHexKeys: clearing, onDecision: d => decisions.push(d),
+    foodImprovementStages: () => true, clearingHexKeys: clearing, onDecision: d => { decisions.push(d); ALLDEC.push(d); },
   });
   return { picks, decisions };
 }
+const ALLDEC = [];
 const desc = picks => picks.map(p => p.key + '@' + K(p.q, p.r)).join(' ') || 'nic';
 
 // Miasto (12,12) w lesie; rzeka na (12,10),(12,11),(13,10); obywatele pracuja na polach lesnych NIE na rzece.
@@ -148,7 +149,7 @@ console.log('(d4) zakres: profil „Zrownowazone” (K2) bez zmian — las przy 
   ok(!log.some(e => e.key === 'wyrab' && isRiver(e.q, e.r)), `K2: brak wycinki na heksie rzeki bez obywatela (log: ${dl(log.slice(0, 6))})`);
 }
 
-console.log('(e) wycinka -> farma: po wycieciu heksu rzeki farma na nim (przy obywatelu na wycietym polu)');
+console.log("(e) wycinka -> farma, gdy obywatel wejdzie na wyciete pole (zalozenie jawne; bez obywatela patrz e2)");
 {
   const map = makeMap({ river: RIVER, forest: FOREST_AROUND });
   const first = sim({ map, worked: WORKED_NO_RIVER, onlyWorked: true, turns: MAXT });
@@ -156,10 +157,39 @@ console.log('(e) wycinka -> farma: po wycieciu heksu rzeki farma na nim (przy ob
   ok(!!rc, 'wycinka rzeczna wykonana');
   if (rc) {
     ok(map.hexes[rc.hk].nakladka === 'brak', `heks ${rc.hk} po wycince bez lasu`);
-    const second = pick({ map, worked: [...WORKED_NO_RIVER, [rc.q, rc.r]], onlyWorked: true, placed: first.placed });
-    ok(second.picks.some(p => p.key === 'farma' && p.q === rc.q && p.r === rc.r),
-      `farma na wycietym ${rc.hk} (wybrano: ${desc(second.picks)})`);
+    // ZALOZENIE (jawne): obywatel wchodzi na wyciete pole (worked += rc). Bez tego patrz (e2).
+    const second = pick({ map, worked: [...WORKED_NO_RIVER, [rc.q, rc.r]], onlyWorked: true, placed: new Map() });
+    ok(second.picks.some(p => p.key === 'farma' && p.q === rc.q && p.r === rc.r), `farma na wycietym ${rc.hk} gdy obywatel wejdzie na pole (wybrano: ${desc(second.picks)})`);
   }
+}
+
+console.log('(e2) REALISTYCZNIE (bez recznego dopisywania do worked): ZNANE OGRANICZENIE onlyWorked=ON — wycinka rzeczna bez obywatela nie ma farmy (DECYZJA_WYMAGANA)');
+{
+  for (const onlyWorked of [true, false]) {
+    const map = makeMap({ river: RIVER, forest: FOREST_AROUND });
+    const { log } = sim({ map, worked: WORKED_NO_RIVER, onlyWorked, turns: 12 });
+    const rc = log.filter(e => e.key === 'wyrab' && isRiver(e.q, e.r));
+    const withFarm = rc.filter(c => log.some(e => e.key === 'farma' && e.hk === c.hk));
+    console.log(`  [INFO] onlyWorked=${onlyWorked}: wycinek rzecznych ${rc.length}, z farma w 12 turach ${withFarm.length}`);
+    ok(rc.length === 3, `onlyWorked=${onlyWorked}: wszystkie 3 heksy rzeczne wycinane (${rc.length})`);
+    if (!onlyWorked) ok(withFarm.length === rc.length, 'OFF: kazda wycinka rzeczna konczy sie farma');
+    else ok(withFarm.length === 0, 'ON: pin znanego ograniczenia — brak farmy na wycietym heksie bez obywatela (zmiana wymaga zmiany filtra i testow d1/q1/stages poza allowlista)');
+  }
+}
+console.log('(f) log pickera: wybor ma etykiete „E2 wycinka (rzeka+las)” (naRzece) takze przy onlyWorked ON; zmierzony koszt wycinki');
+for (const onlyWorked of [true, false]) {
+  const map = makeMap({ river: RIVER, forest: FOREST_AROUND });
+  ALLDEC.length = 0;
+  sim({ map, worked: WORKED_NO_RIVER, onlyWorked, turns: 4 });
+  const chosen = ALLDEC.filter(d => d.scope === 'las' && d.verdict === 'wybrany' && /E2 wycinka \(rzeka\+las\)/.test(d.reason));
+  ok(chosen.length > 0 && chosen.every(d => d.detail && d.detail.naRzece === true), `onlyWorked=${onlyWorked}: wybrany E2 wycinka (rzeka+las) na heksie rzeki x${chosen.length}; kosztWyrab=${chosen[0] && chosen[0].detail.kosztWyrab}`);
+}
+console.log('(g) koszt zbiorczy w 12 turach (informacyjnie): wycinki ON vs OFF');
+for (const onlyWorked of [true, false]) {
+  const map = makeMap({ river: RIVER, forest: FOREST_AROUND });
+  const { log } = sim({ map, worked: WORKED_NO_RIVER, onlyWorked, turns: 12 });
+  const w = log.filter(e => e.key === 'wyrab'), rv = w.filter(e => isRiver(e.q, e.r));
+  console.log(`  [INFO] onlyWorked=${onlyWorked}: wycinek ${w.length} (w tym rzecznych ${rv.length}), farm ${log.filter(e => e.key === 'farma').length}`);
 }
 
 console.log(`\n${passed} OK, ${failed} FAIL`);
