@@ -1,3 +1,12 @@
+## ROBOCZA a7b56a71 -- 2026-11-03 -- żelazo: natywny dostęp z własnego złoża naprawiony (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`f568e1ed3` + IRON-NATIVE-ACCESS-FIX `c62c1064f`) i commit wdrożenia bundla; zgłoszenie właściciela, stała zgoda na poprawki.
+- Bundle MD5 `a7b56a71335b8e9632c7666fcd01fe95`, 70,161,374 B, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, outDir poza repo, stempel ROBOCZA.
+- Zakres: dostęp do żelaza z własnej Kopalni (Kopalnia na złożu + zapas żelaza + Odlewnia) wreszcie się włącza; dotyczy grantów z tras handlowych i etykiety w dyplomacji, gracz i AI tą samą ścieżką.
+- Testy: tsc PASS; iron-native-access-fix 17/0 (RED 2/4); 4 mutacje łamią test.
+- Ograniczenia: brak pomiaru w symulacji; zelazo-gate i deposit-building-gate czerwone także na bazie; port Rust wymaga REPIN.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `83d4cbb583fed6cffb4f26b362dd085a`, 70,161,331 bajtów.
+
 ## ROBOCZA 83d4cbb5 -- 2026-11-03 -- bonus obrony muru dla obrońców wewnątrz murów, zasięg ×2 strzelców na murze (testowa)
 
 - **STATUS: DEPLOYED** — merge do `origin/main` (`1117c6515` + WALL-DEFENDERS-BONUS-RANGE `4d41f3060`) i commit wdrożenia bundla; decyzje właściciela, stała zgoda na poprawki.
