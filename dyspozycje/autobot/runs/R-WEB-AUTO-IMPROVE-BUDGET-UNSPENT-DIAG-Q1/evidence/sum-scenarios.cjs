@@ -1,5 +1,5 @@
 const fs = require('fs');
-const EV = '/home/user/The-Game/.claude/worktrees/wf_38915974-af5-1/dyspozycje/autobot/runs/R-WEB-AUTO-IMPROVE-BUDGET-UNSPENT-DIAG-Q1/evidence/';
+const EV = require('path').join(__dirname) + '/';
 for (const f of process.argv.slice(2)) {
   const j = JSON.parse(fs.readFileSync(EV + f + '.json', 'utf8'));
   console.log('\n##### ' + f, 'errors=', JSON.stringify(j.errors), 'foundAt=', JSON.stringify(j.foundAt), 'policy=', JSON.stringify(j.effectivePolicy0 && j.effectivePolicy0[0]));
