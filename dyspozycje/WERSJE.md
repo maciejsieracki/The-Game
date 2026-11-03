@@ -1,3 +1,12 @@
+## ROBOCZA 83961b9b -- 2026-11-03 -- wojny AI↔AI: najbliższe miasto, pokój po 2 turach z ceną, zajmowanie miast (testowa)
+
+- **STATUS: DEPLOYED** — merge do `origin/main` (`c1581619f` + AI-WAR-NEAREST-CITY-PEACE-2T `954a130cd`) i commit wdrożenia bundla; decyzje właściciela (cel = najbliższe miasto, pokój wymuszony po 2 turach, przegrywający płaci), stała zgoda na poprawki.
+- Bundle MD5 `83961b9bca4234b85f0a635e6f49e6de`, 70,173,786 B, SHA-256 w `gra-robocza/ROBOCZA-MANIFEST.json`. Vite direct build, outDir poza repo, stempel ROBOCZA.
+- Zakres: cel ataku AI→AI = najbliższe miasto wroga; AI oblega i zajmuje obwarowane miasta innej AI; pokój po prośbie najpóźniej w 2. turze (cena: złoto → surowce → cesja miasta; rozejm osobno); bez gracza, wojen wymuszonych epok i państw-miast.
+- Testy: tsc PASS; ai-war-nearest-city-peace-2t 40/0 (mutacje 16/16).
+- Ograniczenia: pełne symulacje AI NIE_ZMIERZONO (liczba zajęć, opóźnienie pokoju, czas tury); część testów live ma timeouty także na bazie.
+- Rollback: `git revert` commitu wdrożenia; poprzedni bundel MD5 `4cff1d2384438a0dead09b37e514eb7d`, 70,166,764 bajtów.
+
 ## ROBOCZA 4cff1d23 -- 2026-11-03 -- generator map: koń nie leży pod lasem (testowa)
 
 - **STATUS: DEPLOYED** — merge do `origin/main` i commit wdrożenia bundla; decyzja właściciela (koń tylko równiny/trawa/łąki), stała zgoda na poprawki.

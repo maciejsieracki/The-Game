@@ -1,113 +1,113 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA; push do origin/main wykonany na polecenie właściciela (2026-10-31)",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "4cff1d2384438a0dead09b37e514eb7d",
-  "bundleSha256": "def7878e8d7f1ffd269b926b456de4f62b0829449fc985929dfe1bbc2617433c",
-  "bundleBytes": 70166764,
+  "bundleMd5": "83961b9bca4234b85f0a635e6f49e6de",
+  "bundleSha256": "17b5201d3048597c64b7abc533bf4bd04649fdc60c7f41aa844f1bf0847cc6eb",
+  "bundleBytes": 70173786,
   "sourceSnapshot": {
-    "source": "main (po ERA-SCALING) + HORSE-RESOURCE-TERRAIN (524cdb9b5)",
+    "source": "main c1581619f + AI-WAR-NEAREST-CITY-PEACE-2T (954a130cd)",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "R-WEB-HORSE-RESOURCE-TERRAIN-Q1: generator map nie stawia już złoża konia pod lasem (dotąd 59% koni leżało na lesie i Stadnina odmawiała); koń przesuwany na najbliższy wolny heks Równiny, liczba koni bez zmian, teren/rzeki/pozycje startowe bez zmian. Dotyczy NOWYCH map (zapisy bez zmian)."
+    "R-WEB-AI-WAR-NEAREST-CITY-PEACE-2T-Q1: wojny AI↔AI — cel ataku = najbliższe miasto wroga (remis: słabsza obrona); AI oblega i zajmuje także obwarowane miasta innej AI (dotąd tylko miasta gracza); pokój AI↔AI po prośbie wchodzi najpóźniej w 2. turze z ceną (złoto, surowce, cesja miasta; rozejm osobno, 200 PW); wyłączone: gracz, wojny wymuszone epok, miasta-państwa. Klucz tury_do_pokoju_po_prosbie=2 w ai-params.json."
   ],
   "verification": [
     "tsc --noEmit PASS po scaleniu",
-    "pangea-land-determinism PASS; horse-resource-terrain 14/0 w FC (kontynenty+pangea 44/0, wyspy 24/0 u Operatora); stadnina-hex-candidates 15/0, stadnina-las 28/0"
+    "ai-war-nearest-city-peace-2t 40/0, 16/16 mutacji; testy live diplomacja zielone (z wyjątkami jak na bazie)"
   ],
   "limits": [
-    "Wyspy zmierzone dla 4 z 8 ziaren",
-    "Zapisy z koniem pod lasem bez naprawy (osobny temat)",
-    "Port Rust: REPIN wektorów mapgen (krok relocate_forest_horses)",
-    "Test horse-resource-terrain przy deployu przekroczył limit czasu (obciążenie hosta); zielony w FC"
+    "Pełne symulacje AI (≥6 ziaren, 150+ tur) NIE_ZMIERZONO — liczba zajęć miast, opóźnienie pokoju, czas tury AI",
+    "Bilans pokoju przez evaluate_proposal w pełnej grze NIE_ZMIERZONO",
+    "Testy live z timeoutami/crashem także na bazie",
+    "Zalecane: sim-harness-war-sim.cjs poza limitem 590 s"
   ],
   "finalControl": {
     "status": "PASS-WITH-NOTES",
-    "notes": "HORSE-RESOURCE-TERRAIN (r1): Operator → Evaluator → Obrona → FC PASS-WITH-NOTES."
+    "notes": "AI-WAR-NEAREST-CITY-PEACE-2T (r1+obrona): Operator → Evaluator FAIL (8 zarzutów) → Obrona → FC PASS-WITH-NOTES (8 ODDAL)."
   },
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-03T23:14:33",
+  "hubGeneratedAt": "2026-11-03T23:35:13",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "4cff1d2384438a0dead09b37e514eb7d",
-      "sizeBytes": 70166764
+      "md5": "83961b9bca4234b85f0a635e6f49e6de",
+      "sizeBytes": 70173786
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "4cff1d2384438a0dead09b37e514eb7d",
-      "sizeBytes": 70166764
+      "md5": "83961b9bca4234b85f0a635e6f49e6de",
+      "sizeBytes": 70173786
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "4cff1d2384438a0dead09b37e514eb7d",
-      "sizeBytes": 70166764
+      "md5": "83961b9bca4234b85f0a635e6f49e6de",
+      "sizeBytes": 70173786
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "4cff1d2384438a0dead09b37e514eb7d",
-      "sizeBytes": 70166764
+      "md5": "83961b9bca4234b85f0a635e6f49e6de",
+      "sizeBytes": 70173786
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "4cff1d2384438a0dead09b37e514eb7d",
-      "sizeBytes": 70166764
+      "md5": "83961b9bca4234b85f0a635e6f49e6de",
+      "sizeBytes": 70173786
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "4cff1d2384438a0dead09b37e514eb7d",
-      "sizeBytes": 70166764
+      "md5": "83961b9bca4234b85f0a635e6f49e6de",
+      "sizeBytes": 70173786
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "4cff1d2384438a0dead09b37e514eb7d",
-      "sizeBytes": 70166764
+      "md5": "83961b9bca4234b85f0a635e6f49e6de",
+      "sizeBytes": 70173786
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "4cff1d2384438a0dead09b37e514eb7d",
-      "sizeBytes": 70166764
+      "md5": "83961b9bca4234b85f0a635e6f49e6de",
+      "sizeBytes": 70173786
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "4cff1d2384438a0dead09b37e514eb7d",
-      "sizeBytes": 70166764
+      "md5": "83961b9bca4234b85f0a635e6f49e6de",
+      "sizeBytes": 70173786
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "4cff1d2384438a0dead09b37e514eb7d",
-      "sizeBytes": 70166764
+      "md5": "83961b9bca4234b85f0a635e6f49e6de",
+      "sizeBytes": 70173786
     }
   ],
-  "md5": "4cff1d2384438a0dead09b37e514eb7d",
-  "sizeBytes": 70166764,
+  "md5": "83961b9bca4234b85f0a635e6f49e6de",
+  "sizeBytes": 70173786,
   "publisher": "Claude Code orkiestrator — stała zgoda właściciela 2026-10-31",
   "source": "gra/src; main 9ce1f5e50 + merge b38f40860",
   "immediatePreviousRelease": {
-    "bundleMd5": "7c6b06c7e7e89c1f842d4257193a2717"
+    "bundleMd5": "4cff1d2384438a0dead09b37e514eb7d"
   },
   "rollbackPlan": {
-    "method": "git revert commitu wdrożenia; poprzedni bundel MD5 7c6b06c7e7e89c1f842d4257193a2717, 70165138 bajtów."
+    "method": "git revert commitu wdrożenia; poprzedni bundel MD5 4cff1d2384438a0dead09b37e514eb7d, 70166764 bajtów."
   },
   "previousRelease": {
     "releaseState": "DEPLOYED TO ROBOCZA; push do origin/main wykonany na polecenie właściciela (2026-10-31)",
@@ -1283,8 +1283,8 @@
     "sourceCommit": "c46d6c47ff8643fabdcdd58d5c8067e07737326f",
     "publicationCommit": "0e85b43814f503fe34b42c88df4dd07233dbdfb"
   },
-  "publishedAt": "2026-11-03T23:14:34+00:00",
-  "buildStamp": "2026-11-03 23:14",
+  "publishedAt": "2026-11-03T23:35:14+00:00",
+  "buildStamp": "2026-11-03 23:35",
   "battleBundle": {
     "file": "Gra-ROBOCZA-POLE-BITWY.html",
     "md5": "daf66e2423e0f550db70ee41d8cdf12f",
