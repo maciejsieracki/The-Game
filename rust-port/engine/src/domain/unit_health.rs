@@ -22,7 +22,9 @@ use std::collections::HashMap;
 use serde_json::Value;
 
 use crate::data::units_combat::UnitRecord;
-use crate::domain::combat::unit_building_bonuses::{unit_parametry_bonus_frac, UnitBuildingProgress};
+use crate::domain::combat::unit_building_bonuses::{
+    unit_parametry_bonus_frac, UnitBuildingProgress,
+};
 use crate::domain::recruitment::manpower::ManpowerHealUnit;
 use crate::domain::society_breakdown::js_round;
 
@@ -36,9 +38,7 @@ pub const VETERAN_BONUS_FRAC: [f64; 4] = [0.0, 0.10, 0.15, 0.20];
 /// Web `parseFloat` dla napisu: wiodace biale znaki JS, znak, `Infinity`, liczba dziesietna z wykladnikiem;
 /// brak prefiksu liczbowego = `NaN`.
 pub fn js_parse_float(s: &str) -> f64 {
-    let t = s.trim_start_matches(|c: char| {
-        c.is_whitespace() || c == '\u{feff}' || c == '\u{a0}'
-    });
+    let t = s.trim_start_matches(|c: char| c.is_whitespace() || c == '\u{feff}' || c == '\u{a0}');
     let b = t.as_bytes();
     let mut i = 0;
     let mut neg = false;
@@ -47,7 +47,11 @@ pub fn js_parse_float(s: &str) -> f64 {
         i += 1;
     }
     if t[i..].starts_with("Infinity") {
-        return if neg { f64::NEG_INFINITY } else { f64::INFINITY };
+        return if neg {
+            f64::NEG_INFINITY
+        } else {
+            f64::INFINITY
+        };
     }
     let start = i;
     let mut digits = 0;
@@ -170,7 +174,7 @@ pub fn veteran_star_count(battles_survived: Option<f64>) -> f64 {
 
 /// Web `veteranBonusFracForWins` (`veteran.ts:123`).
 pub fn veteran_bonus_frac_for_wins(wins: f64) -> f64 {
-    let w = wins.floor().max(0.0).min(VETERAN_MAX_BATTLES_TRACKED);
+    let w = wins.floor().clamp(0.0, VETERAN_MAX_BATTLES_TRACKED);
     VETERAN_BONUS_FRAC[w as usize]
 }
 

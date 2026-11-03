@@ -189,7 +189,9 @@ fn get_max_hp_closure_matches_web_on_real_unit_rows() {
             let g = src.max_hp(&t, Some(&live));
             // ta sama sciezka przez gotowy `get_max_hp`
             assert_bits("as_get_max_hp", (src.as_get_max_hp())(&t, &live), g);
-            if live.parametry_bonus_proc.unwrap_or(0.0) > 0.0 || live.battles_survived.unwrap_or(0.0) > 0.0 {
+            if live.parametry_bonus_proc.unwrap_or(0.0) > 0.0
+                || live.battles_survived.unwrap_or(0.0) > 0.0
+            {
                 n_bonus += 1;
             }
             g
@@ -365,4 +367,18 @@ fn e2e_heal_with_rust_get_max_hp_matches_web() {
     assert!(n_bonus_heal >= 200, "healed z bonusami {n_bonus_heal}");
     assert!(n_calls >= 250, "calls {n_calls}");
     assert!(n_asked >= 1500, "getMaxHp wywolan {n_asked}");
+}
+
+#[test]
+fn source_takes_first_row_of_duplicated_type_like_array_find() {
+    // Web `data.units.find(...)` zwraca PIERWSZY wiersz; w danych pinu nazwy sa unikalne (75/75), wiec test
+    // wymusza kolejnosc na zduplikowanym wierszu.
+    let mut units = parse_units().unwrap();
+    let mut dup = units[0].clone();
+    dup.health_lc += 100;
+    let first = units[0].health_lc as f64;
+    let name = units[0].jednostka.clone();
+    units.push(dup);
+    let src = UnitHealthSource::new(&units);
+    assert_bits("pierwszy wiersz", src.max_hp(&name, None), first);
 }

@@ -1,0 +1,41 @@
+H01-fallback-30: KILLED
+H02-vet-frac-1: KILLED
+H03-vet-frac-2: KILLED
+H04-vet-frac-3: KILLED
+H05-vet-max-tracked: KILLED
+H06-won-floor-ceil: KILLED
+H07-won-ge0: KILLED [EKW]
+H08-won-nonfinite: KILLED
+H09-star-no-min: KILLED [EKW]
+H10-wins-no-max0: SURVIVED
+H11-wins-no-floor: SURVIVED
+H12-vet-from-wrong: KILLED
+H13-parametry-dropped: KILLED
+H14-parametry-no-live: KILLED
+H15-emh-multiply-twice: KILLED
+H16-emh-minus: KILLED
+H17-emh-no-round: KILLED
+H18-card-nonfinite-keep: KILLED
+H19-card-tenth: KILLED
+H20-card-snap-eps: KILLED
+H21-card-snap-off: SURVIVED
+H22-health-uses-capital: KILLED
+H23-health-none: KILLED
+H24-value-capital-first: KILLED
+H25-value-null-passes: KILLED
+H26-norm-em-dash: SURVIVED
+H27-norm-dashes: SURVIVED
+H28-norm-empty: SURVIVED
+H29-norm-bool: KILLED
+H30-norm-nan-keep: KILLED
+H31-pf-neg: KILLED
+H32-pf-infinity: KILLED
+H33-pf-exponent: KILLED
+H34-pf-dot: KILLED
+H35-pf-ws: KILLED
+H36-adapter-first-row: SURVIVED [EKW]
+H37-adapter-ignores-unit: KILLED
+A01-advance-passes-fn: KILLED
+H36-adapter-first-row: KILLED [EKW]
+H10-wins-no-max0: SURVIVED
+H11-wins-no-floor: SURVIVED
