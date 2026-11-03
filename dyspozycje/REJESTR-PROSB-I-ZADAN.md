@@ -8510,3 +8510,6 @@ Właściciel: „Zamieniłem 20 tysięcy pracy na podatek, ale niestety tych pie
 
 ## 2026-11-03 — zgłoszenie (zrzut: tooltip heksu „Wzgórza”): kolejność i treść opisu ulepszeń surowcowych
 Właściciel: w opisach ulepszeń powinno być najpierw podane, ile surowca dane ulepszenie daje (np. Kamień), a dopiero potem informacja o magazynie; właściwie informacja „do magazynu państwa” w ogóle nie jest potrzebna — wystarczy ile DODATKOWO produkuje danego surowca. Temat `R-WEB-HEX-TOOLTIP-IMPROVEMENT-PRODUCTION-TEXT-Q1`. Kod: `gra/src/ui/hexContextTooltip.ts` (wiersze „magazyn państwa: +50 Kamień/t · bez 👤 · Kamień”, sekcja „DO MAGAZYNU PAŃSTWA”).
+
+## 2026-11-03 — DECYZJA WŁAŚCICIELA: powiększyć 2× wizerunki surowców oraz fortu i posterunku na mapie
+Właściciel: wizerunki surowców na mapie (koń, kopalnie/surowce pod kopalnie, wszystkie inne surowce) powiększyć dwukrotnie — praktycznie niewidoczne; to samo fort i posterunek jako ulepszenia (2×). Resztę ulepszeń zostawić bez zmian. Temat `R-WEB-MAP-MODELS-SCALE-2X-Q1`. Założenie: dotyczy modeli/sprajtów na mapie świata (nie minimapy ani ikon UI).
