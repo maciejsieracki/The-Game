@@ -53,6 +53,11 @@ export interface WarCapitalTarget {
   cityId: string;
   q: number;
   r: number;
+  /**
+   * R-WEB-AI-WAR-NEAREST-CITY-PEACE-2T-Q1 (A): liczba jednostek bojowych broniacych miasta (remis odleglosci:
+   * slabiej broniowane wygrywa, potem nizsze id). Brak pola = dotychczasowy porzadek remisu (q, r, id).
+   */
+  defenders?: number;
 }
 
 /** Kontekst przekazywany z main.ts do ai.ts / barbarians.ts (tylko gdy flaga ON). */
@@ -394,6 +399,18 @@ function cmpTarget(a: WarCapitalTarget, b: WarCapitalTarget): number {
   return a.q - b.q || a.r - b.r || (a.cityId < b.cityId ? -1 : a.cityId > b.cityId ? 1 : 0);
 }
 
+/**
+ * Remis odleglosci przy wyborze najblizszego celu (R-WEB-AI-WAR-NEAREST-CITY-PEACE-2T-Q1, A):
+ * gdy oba cele maja `defenders` -- slabiej broniowany, potem nizsze id miasta; inaczej stary porzadek (q, r, id).
+ */
+function tieBeforeTarget(a: WarCapitalTarget, b: WarCapitalTarget): boolean {
+  if (a.defenders !== undefined && b.defenders !== undefined) {
+    if (a.defenders !== b.defenders) return a.defenders < b.defenders;
+    return a.cityId < b.cityId;
+  }
+  return cmpTarget(a, b) < 0;
+}
+
 function nearestTarget(
   q: number,
   r: number,
@@ -403,7 +420,7 @@ function nearestTarget(
   let bestD = Infinity;
   for (const t of targets) {
     const d = hexDistance(q, r, t.q, t.r);
-    if (d < bestD || (d === bestD && best !== undefined && cmpTarget(t, best) < 0)) {
+    if (d < bestD || (d === bestD && best !== undefined && tieBeforeTarget(t, best))) {
       best = t;
       bestD = d;
     }

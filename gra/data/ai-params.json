@@ -688,5 +688,10 @@
     "wartosc": 1,
     "sekcja": "§9 Ludy Morza",
     "opis": "TEMAT #15 (placeholder do strojenia): fala rajdów co N tur na poziomie Trudnym (często — co turę)."
+  },
+  "tury_do_pokoju_po_prosbie": {
+    "wartosc": 2,
+    "sekcja": "§6 Dyplomacja",
+    "opis": "R-WEB-AI-WAR-NEAREST-CITY-PEACE-2T-Q1 (decyzja właściciela 2026-11-03): liczba tur od prośby AI o pokój (przegrywająca AI ↔ wygrywająca AI), po której pokój wchodzi w życie automatycznie (z maksymalną możliwą płatnością przegranego). Dotyczy WYŁĄCZNIE par AI↔AI zwykłych wojen; gracz i wojny wymuszone epok bez zmian. Czytane w gra/src/game/diplomacy-ai-forced-peace.ts."
   }
 }
